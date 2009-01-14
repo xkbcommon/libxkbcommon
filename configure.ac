@@ -27,14 +27,36 @@ AM_INIT_AUTOMAKE([dist-bzip2 foreign])
 AM_MAINTAINER_MODE
 
 AC_PROG_LIBTOOL
+AC_PROG_CC
 
-# Require xorg-macros version 1.1.0 or newer for XORG_WITH_LINT macro
+m4_ifndef([PKG_PROG_PKG_CONFIG],
+    [m4_fatal([Could not locate the pkg-config autoconf macros.
+    These are usually located in /usr/share/aclocal/pkg.m4. If your
+    macros are in a different location, try setting the environment
+    variable ACLOCAL="aclocal -I/other/macro/dir" before running
+    autoreconf/autogen.sh.])])
+PKG_PROG_PKG_CONFIG
+
+dnl Build native compiler needed for makekeys
+AC_ARG_VAR([CC_FOR_BUILD], [Build native C compiler program])
+if test "x$CC_FOR_BUILD" != x; then
+    if test "$cross_compiling" != no; then
+        AC_PATH_PROGS([CC_FOR_BUILD], [gcc cc], [cc])
+    else
+        CC_FOR_BUILD="$CC"
+    fi
+fi
+
+PKG_CHECK_MODULES([X11], [xproto])
+
+# Require xorg-macros version 1.2.0 or newer for XORG_CHANGELOG macro
 m4_ifndef([XORG_MACROS_VERSION],
-    [m4_fatal([must install xorg-macros 1.1 or later before running autoconf/autogen])])
-XORG_MACROS_VERSION([1.1])
+    [m4_fatal([must install xorg-macros before running autoconf/autogen.sh])])
+XORG_MACROS_VERSION([1.2.0])
 XORG_RELEASE_VERSION
 XORG_CHANGELOG
 
 AC_OUTPUT([
 Makefile
+src/Makefile
 ])

@@ -1,3 +1,5 @@
+SUBDIRS = src
+
 EXTRA_DIST = ChangeLog
 
 MAINTAINERCLEANFILES = ChangeLog
