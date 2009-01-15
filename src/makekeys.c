@@ -154,7 +154,8 @@ next1:  ;
     }
 
     z = best_z;
-    printf("#ifdef NEEDKTABLE\n");
+    printf("#ifndef KS_TABLES_H\n");
+    printf("#define KS_TABLES_H\n\n");
     printf("const unsigned char _XkeyTable[] = {\n");
     printf("0,\n");
     k = 1;
@@ -195,7 +196,6 @@ next1:  ;
     }
     printf("\n");
     printf("};\n");
-    printf("#endif /* NEEDKTABLE */\n");
 
     best_max_rehash = ksnum;
     num_found = 0;
@@ -251,7 +251,6 @@ next2:  ;
 skip2:  ;
     }
     printf("\n");
-    printf("#ifdef NEEDVTABLE\n");
     printf("#define VTABLESIZE %d\n", z);
     printf("#define VMAXHASH %d\n", best_max_rehash + 1);
     printf("\n");
@@ -265,7 +264,7 @@ skip2:  ;
     }
     printf("\n");
     printf("};\n");
-    printf("#endif /* NEEDVTABLE */\n");
+    printf("\n#endif /* KS_TABLES_H */\n");
 
     exit(0);
 }
