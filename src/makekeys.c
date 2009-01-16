@@ -74,11 +74,42 @@ main(int argc, char *argv[])
 
 
     while (fgets(buf, sizeof(buf), stdin)) {
+        int handled = 0;
+
+        /* Manage keysyms from keysymdef.h */
         i = sscanf(buf, "#define XK_%127s 0x%lx", key, &info[ksnum].val);
-        if (i != 2) {
+        if (i == 2) {
+            handled = 1;
+        } else {
             i = sscanf(buf, "#define XK_%127s XK_%127s", key, alias);
-            if (i != 2)
-                continue;
+            if (i == 2) {
+                for (i = ksnum - 1; i >= 0; i--) {
+                    if (strcmp(info[i].name, alias) == 0) {
+                        info[ksnum].val = info[i].val;
+                        handled = 1;
+                        break;
+                    }
+                }
+                if (i < 0) {  /* Didn't find a match */
+                    fprintf(stderr,
+                            "can't find matching definition %s for keysym %s\n",
+                            alias, key);
+                    continue;
+                }
+            }
+        }
+
+        /* Manage keysyms from XF86keysym.h */
+        if (!handled)
+            i = sscanf(buf, "#define XF86XK_%127s 0x%lx", key, &info[ksnum].val);
+        if (!handled && i != 2) {
+            /* Try to handle both XF86XK and XK aliases */
+            i = sscanf(buf, "#define XF86XK_%127s XF86XK_%127s", key, alias);
+            if (i != 2) {
+                i = sscanf(buf, "#define XF86XK_%127s XK_%127s", key, alias);
+                if (i != 2)
+                    continue;
+            }
             for (i = ksnum - 1; i >= 0; i--) {
                 if (strcmp(info[i].name, alias) == 0) {
                     info[ksnum].val = info[i].val;
@@ -92,6 +123,7 @@ main(int argc, char *argv[])
                 continue;
             }
         }
+
         if (info[ksnum].val == XK_VoidSymbol)
             info[ksnum].val = 0;
         if (info[ksnum].val > 0x1fffffff) {
