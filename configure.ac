@@ -25,6 +25,7 @@ AC_INIT([libxkbcommon], [0.1.0],
     [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg])
 AM_INIT_AUTOMAKE([dist-bzip2 foreign])
 AM_MAINTAINER_MODE
+AC_CONFIG_HEADERS([src/config.h])
 
 AC_PROG_LIBTOOL
 AC_PROG_CC

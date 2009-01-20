@@ -1,2 +1,3 @@
+config.h*
 ks_tables.h
 libxkbcommon.la
