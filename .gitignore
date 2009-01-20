@@ -1,3 +1,5 @@
+*.lo
+*.o
 INSTALL
 Makefile
 Makefile.in

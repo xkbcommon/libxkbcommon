@@ -75,5 +75,6 @@ XORG_CHANGELOG
 
 AC_OUTPUT([
 Makefile
+include/Makefile
 src/Makefile
 ])

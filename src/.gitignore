@@ -1,2 +1,3 @@
 ks_tables.h
+libxkbcommon.la
 makekeys
