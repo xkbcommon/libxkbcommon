@@ -1,4 +1,4 @@
-SUBDIRS = include src
+SUBDIRS = include src test
 
 EXTRA_DIST = ChangeLog
 
