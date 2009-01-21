@@ -39,7 +39,7 @@ PKG_PROG_PKG_CONFIG
 
 dnl Build native compiler needed for makekeys
 AC_ARG_VAR([CC_FOR_BUILD], [Build native C compiler program])
-if test "x$CC_FOR_BUILD" != x; then
+if test "x$CC_FOR_BUILD" = x; then
     if test "$cross_compiling" != no; then
         AC_PATH_PROGS([CC_FOR_BUILD], [gcc cc], [cc])
     else
