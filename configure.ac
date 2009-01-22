@@ -77,5 +77,6 @@ AC_OUTPUT([
 Makefile
 include/Makefile
 src/Makefile
+src/makekeys/Makefile
 test/Makefile
 ])
