@@ -55,6 +55,70 @@ static unsigned short indexes[KTNUM];
 static KeySym values[KTNUM];
 static char buf[1024];
 
+static int
+get_keysym(const char *buf, char *key, int index)
+{
+    if (sscanf(buf, "#define XK_%127s 0x%lx", key, &info[index].val) != 2)
+        return 0;
+    return 1;
+}
+
+static int
+get_keysym_alias(const char *buf, char *key, char *alias, int index)
+{
+    int i;
+
+    if (sscanf(buf, "#define XK_%127s XK_%127s", key, alias) != 2)
+        return 0;
+
+    for (i = index - 1; i >= 0; i--) {
+        if (strcmp(info[i].name, alias) == 0) {
+            info[index].val = info[i].val;
+            return 1;
+        }
+    }
+
+    /* Didn't find a match */
+    if (i < 0) {
+        fprintf(stderr, "can't find matching definition %s for keysym %s\n",
+                alias, key);
+        return -1;
+    }
+}
+
+static int
+get_xf86_keysym(const char *buf, char *key, int index)
+{
+    if (sscanf(buf, "#define XF86XK_%127s 0x%lx", key, &info[index].val) != 2)
+        return 0;
+    return 1;
+}
+
+static int
+get_xf86_keysym_alias(const char *buf, char *key, char *alias, int index)
+{
+    int i;
+
+    /* Try to handle both XF86XK and XK aliases */
+    if (sscanf(buf, "#define XF86XK_%127s XF86XK_%127s", key, alias) != 2 &&
+        sscanf(buf, "#define XF86XK_%127s XK_%127s", key, alias) != 2)
+        return 0;
+
+    for (i = index - 1; i >= 0; i--) {
+        if (strcmp(info[i].name, alias) == 0) {
+            info[index].val = info[i].val;
+            return 1;
+        }
+    }
+
+    /* Didn't find a match */
+    if (i < 0) {
+        fprintf(stderr, "can't find matching definition %s for keysym %s\n",
+                alias, key);
+        return -1;
+    }
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -74,54 +138,23 @@ main(int argc, char *argv[])
 
 
     while (fgets(buf, sizeof(buf), stdin)) {
-        int handled = 0;
+        int ret;
 
         /* Manage keysyms from keysymdef.h */
-        i = sscanf(buf, "#define XK_%127s 0x%lx", key, &info[ksnum].val);
-        if (i == 2) {
-            handled = 1;
-        } else {
-            i = sscanf(buf, "#define XK_%127s XK_%127s", key, alias);
-            if (i == 2) {
-                for (i = ksnum - 1; i >= 0; i--) {
-                    if (strcmp(info[i].name, alias) == 0) {
-                        info[ksnum].val = info[i].val;
-                        handled = 1;
-                        break;
-                    }
-                }
-                if (i < 0) {  /* Didn't find a match */
-                    fprintf(stderr,
-                            "can't find matching definition %s for keysym %s\n",
-                            alias, key);
-                    continue;
-                }
-            }
+        ret = get_keysym(buf, key, ksnum);
+        if (!ret) {
+            ret = get_keysym_alias(buf, key, alias, ksnum);
+            if (ret == -1)
+                continue;
         }
 
         /* Manage keysyms from XF86keysym.h */
-        if (!handled)
-            i = sscanf(buf, "#define XF86XK_%127s 0x%lx", key, &info[ksnum].val);
-        if (!handled && i != 2) {
-            /* Try to handle both XF86XK and XK aliases */
-            i = sscanf(buf, "#define XF86XK_%127s XF86XK_%127s", key, alias);
-            if (i != 2) {
-                i = sscanf(buf, "#define XF86XK_%127s XK_%127s", key, alias);
-                if (i != 2)
-                    continue;
-            }
-            for (i = ksnum - 1; i >= 0; i--) {
-                if (strcmp(info[i].name, alias) == 0) {
-                    info[ksnum].val = info[i].val;
-                    break;
-                }
-            }
-            if (i < 0) {  /* Didn't find a match */
-                fprintf(stderr,
-                        "can't find matching definition %s for keysym %s\n",
-                        alias, key);
+        if (!ret)
+            ret = get_xf86_keysym(buf, key, ksnum);
+        if (!ret) {
+            ret = get_xf86_keysym_alias(buf, key, alias, ksnum);
+            if (!ret)
                 continue;
-            }
         }
 
         if (info[ksnum].val == XK_VoidSymbol)
