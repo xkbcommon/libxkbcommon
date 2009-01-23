@@ -27,7 +27,7 @@ check_key()
         exit $?
 }
 
-check_string Undo 0xff65
+check_string Undo 0xFF65
 check_key 0x1008FF56 XF86Close
 check_string ThisKeyShouldNotExist NoSymbol
 check_key 0x0 NULL

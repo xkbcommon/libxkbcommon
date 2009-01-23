@@ -9,7 +9,7 @@ static void print_keysym(const char *s)
     if (ks == NoSymbol)
         printf("NoSymbol\n");
     else
-        printf("0x%lx\n", ks);
+        printf("0x%lX\n", ks);
 }
 
 static void print_string(KeySym ks)
