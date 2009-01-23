@@ -171,7 +171,7 @@ main(int argc, char *argv[])
             ret = get_xf86_keysym(buf, key, sizeof(key), ksnum);
         if (!ret) {
             ret = get_xf86_keysym_alias(buf, key, sizeof(key), ksnum);
-            if (!ret)
+            if (ret < 1)
                 continue;
         }
 
