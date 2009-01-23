@@ -55,6 +55,42 @@ static unsigned short indexes[KTNUM];
 static KeySym values[KTNUM];
 static char buf[1024];
 
+/*
+ * XFree86 special action keys - for some reason, these have an
+ * underscore after the XF86 prefix.
+ */
+static const char *xf86_special_keys[] = {
+    "Switch_VT_1",
+    "Switch_VT_2",
+    "Switch_VT_3",
+    "Switch_VT_4",
+    "Switch_VT_5",
+    "Switch_VT_6",
+    "Switch_VT_7",
+    "Switch_VT_8",
+    "Switch_VT_9",
+    "Switch_VT_10",
+    "Switch_VT_11",
+    "Switch_VT_12",
+    "Ungrab",
+    "ClearGrab",
+    "Next_VMode",
+    "Prev_VMode",
+    NULL
+};
+
+static int
+is_xf86_special(const char *key)
+{
+    char **s = (char **)xf86_special_keys;
+    while (*s) {
+        if (strcmp(key, *s) == 0)
+            return 1;
+        s++;
+    }
+    return 0;
+}
+
 static int
 get_keysym(const char *buf, char *key, int index)
 {
@@ -95,8 +131,8 @@ get_xf86_keysym(const char *buf, char *key, size_t len, int index)
     if (sscanf(buf, "#define XF86XK_%127s 0x%lx", tmp, &info[index].val) != 2)
         return 0;
 
-    /* Prepend XF86 to the key */
-    strncpy(key, "XF86", len - 1);
+    /* Prepend XF86 or XF86_ to the key */
+    snprintf(key, len, "XF86%s", is_xf86_special(tmp) ? "_" : "");
     strncat(key, tmp, len - strlen(key) - 1);
 
     return 1;
@@ -111,15 +147,16 @@ get_xf86_keysym_alias(const char *buf, char *key, size_t len, int index)
     /* Try to handle both XF86XK and XK aliases */
     if (sscanf(buf, "#define XF86XK_%127s XF86XK_%127s", ktmp, atmp) == 2) {
         /* Prepend XF86 to the key and alias */
-        strncpy(key, "XF86", len - 1);
+        snprintf(key, len, "XF86%s", is_xf86_special(ktmp) ? "_" : "");
         strncat(key, ktmp, len - strlen(key) - 1);
-        strncpy(alias, "XF86", sizeof(alias) - 1);
+        snprintf(alias, sizeof(alias), "XF86%s",
+                 is_xf86_special(atmp) ? "_" : "");
         strncat(alias, atmp, sizeof(alias) - strlen(alias) - 1);
     } else {
         if (sscanf(buf, "#define XF86XK_%127s XK_%127s", ktmp, alias) != 2)
             return 0;
         /* Prepend XF86 to the key */
-        strncpy(key, "XF86", len - 1);
+        snprintf(key, len, "XF86%s", is_xf86_special(ktmp) ? "_" : "");
         strncat(key, ktmp, len - strlen(key) - 1);
     }
 
