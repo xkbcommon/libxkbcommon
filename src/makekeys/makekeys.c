@@ -87,22 +87,41 @@ get_keysym_alias(const char *buf, char *key, char *alias, int index)
 }
 
 static int
-get_xf86_keysym(const char *buf, char *key, int index)
+get_xf86_keysym(const char *buf, char *key, size_t len, int index)
 {
-    if (sscanf(buf, "#define XF86XK_%127s 0x%lx", key, &info[index].val) != 2)
+    char tmp[128];
+
+    if (sscanf(buf, "#define XF86XK_%127s 0x%lx", tmp, &info[index].val) != 2)
         return 0;
+
+    /* Prepend XF86 to the key */
+    strncpy(key, "XF86", len - 1);
+    strncat(key, tmp, len - strlen(key) - 1);
+
     return 1;
 }
 
 static int
-get_xf86_keysym_alias(const char *buf, char *key, char *alias, int index)
+get_xf86_keysym_alias(const char *buf, char *key, size_t klen,
+                      char *alias, size_t alen, int index)
 {
     int i;
+    char ktmp[128], atmp[128];
 
     /* Try to handle both XF86XK and XK aliases */
-    if (sscanf(buf, "#define XF86XK_%127s XF86XK_%127s", key, alias) != 2 &&
-        sscanf(buf, "#define XF86XK_%127s XK_%127s", key, alias) != 2)
-        return 0;
+    if (sscanf(buf, "#define XF86XK_%127s XF86XK_%127s", ktmp, atmp) == 2) {
+        /* Prepend XF86 to the key and alias */
+        strncpy(key, "XF86", klen - 1);
+        strncat(key, ktmp, klen - strlen(key) - 1);
+        strncpy(alias, "XF86", alen - 1);
+        strncat(alias, atmp, alen - strlen(alias) - 1);
+    } else {
+        if (sscanf(buf, "#define XF86XK_%127s XK_%127s", ktmp, alias) != 2)
+            return 0;
+        /* Prepend XF86 to the key */
+        strncpy(key, "XF86", klen - 1);
+        strncat(key, ktmp, klen - strlen(key) - 1);
+    }
 
     for (i = index - 1; i >= 0; i--) {
         if (strcmp(info[i].name, alias) == 0) {
@@ -150,9 +169,10 @@ main(int argc, char *argv[])
 
         /* Manage keysyms from XF86keysym.h */
         if (!ret)
-            ret = get_xf86_keysym(buf, key, ksnum);
+            ret = get_xf86_keysym(buf, key, sizeof(key), ksnum);
         if (!ret) {
-            ret = get_xf86_keysym_alias(buf, key, alias, ksnum);
+            ret = get_xf86_keysym_alias(buf, key, sizeof(key), alias,
+                                        sizeof(alias), ksnum);
             if (!ret)
                 continue;
         }
