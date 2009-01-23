@@ -13,18 +13,21 @@ check_error()
     fi
 }
 
-val=`${builddir}/xkey -s Undo` && \
-    check_error Undo 0xff65 $val || \
-    exit $?
+check_string()
+{
+    val=`${builddir}/xkey -s "$1"` &&
+        check_error "$1" "$2" "$val" ||
+        exit $?
+}
 
-val=`${builddir}/xkey -k 0x1008ff56` && \
-    check_error 0x1008FF56 XF86Close $val || \
-    exit $?
+check_key()
+{
+    val=`${builddir}/xkey -k "$1"` && \
+        check_error "$1" "$2" "$val" || \
+        exit $?
+}
 
-val=`${builddir}/xkey -s ThisKeyShouldNotExist` && \
-    check_error ThisKeyShouldNotExist NoSymbol $val || \
-    exit $?
-
-val=`${builddir}/xkey -k 0x0` && \
-    check_error 0x0 NULL $val || \
-    exit $?
+check_string Undo 0xff65
+check_key 0x1008FF56 XF86Close
+check_string ThisKeyShouldNotExist NoSymbol
+check_key 0x0 NULL
