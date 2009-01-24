@@ -71,6 +71,7 @@ m4_ifndef([XORG_MACROS_VERSION],
     [m4_fatal([must install xorg-macros before running autoconf/autogen.sh])])
 XORG_MACROS_VERSION([1.2.0])
 XORG_RELEASE_VERSION
+XORG_CWARNFLAGS
 XORG_CHANGELOG
 
 AC_OUTPUT([

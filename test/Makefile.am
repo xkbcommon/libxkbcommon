@@ -1,5 +1,5 @@
 INCLUDES = -I$(top_srcdir)/include
-AM_CFLAGS = $(X11_CFLAGS)
+AM_CFLAGS = $(X11_CFLAGS) $(CWARNFLAGS)
 
 check_PROGRAMS = xkey
 xkey_SOURCES = xkey.c
