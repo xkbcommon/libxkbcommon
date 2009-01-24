@@ -116,11 +116,9 @@ get_keysym_alias(const char *buf, char *key, int index)
     }
 
     /* Didn't find a match */
-    if (i < 0) {
-        fprintf(stderr, "can't find matching definition %s for keysym %s\n",
-                alias, key);
-        return -1;
-    }
+    fprintf(stderr, "can't find matching definition %s for keysym %s\n",
+            alias, key);
+    return -1;
 }
 
 static int
@@ -166,11 +164,9 @@ get_xf86_keysym_alias(const char *buf, char *key, size_t len, int index)
     }
 
     /* Didn't find a match */
-    if (i < 0) {
-        fprintf(stderr, "can't find matching definition %s for keysym %s\n",
-                alias, key);
-        return -1;
-    }
+    fprintf(stderr, "can't find matching definition %s for keysym %s\n",
+            alias, key);
+    return -1;
 }
 
 int
