@@ -132,8 +132,7 @@ get_xf86_keysym(const char *buf, char *key, size_t len, int index)
         return 0;
 
     /* Prepend XF86 or XF86_ to the key */
-    snprintf(key, len, "XF86%s", is_xf86_special(tmp) ? "_" : "");
-    strncat(key, tmp, len - strlen(key) - 1);
+    snprintf(key, len, "XF86%s%s", is_xf86_special(tmp) ? "_" : "", tmp);
 
     return 1;
 }
@@ -147,17 +146,16 @@ get_xf86_keysym_alias(const char *buf, char *key, size_t len, int index)
     /* Try to handle both XF86XK and XK aliases */
     if (sscanf(buf, "#define XF86XK_%127s XF86XK_%127s", ktmp, atmp) == 2) {
         /* Prepend XF86 to the key and alias */
-        snprintf(key, len, "XF86%s", is_xf86_special(ktmp) ? "_" : "");
-        strncat(key, ktmp, len - strlen(key) - 1);
-        snprintf(alias, sizeof(alias), "XF86%s",
-                 is_xf86_special(atmp) ? "_" : "");
-        strncat(alias, atmp, sizeof(alias) - strlen(alias) - 1);
+        snprintf(key, len, "XF86%s%s", is_xf86_special(ktmp) ? "_" : "",
+                 ktmp);
+        snprintf(alias, sizeof(alias), "XF86%s%s",
+                 is_xf86_special(atmp) ? "_" : "", atmp);
     } else {
         if (sscanf(buf, "#define XF86XK_%127s XK_%127s", ktmp, alias) != 2)
             return 0;
         /* Prepend XF86 to the key */
-        snprintf(key, len, "XF86%s", is_xf86_special(ktmp) ? "_" : "");
-        strncat(key, ktmp, len - strlen(key) - 1);
+        snprintf(key, len, "XF86%s%s", is_xf86_special(ktmp) ? "_" : "",
+                 ktmp);
     }
 
     for (i = index - 1; i >= 0; i--) {
