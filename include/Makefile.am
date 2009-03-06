@@ -1,2 +1,2 @@
-x11includedir = $(includedir)/X11
-x11include_HEADERS = X11/XkbCommon.h
+x11includedir = $(includedir)/extensions/X11
+x11include_HEADERS = X11/extensions/XKBcommon.h

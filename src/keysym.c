@@ -30,7 +30,7 @@ authorization from the authors.
 #endif
 #include <X11/X.h>
 #include <X11/keysymdef.h>
-#include "X11/XkbCommon.h"
+#include "X11/extensions/XKBcommon.h"
 #include <stdlib.h>
 #include <string.h>
 

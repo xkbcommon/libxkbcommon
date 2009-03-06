@@ -1,4 +1,4 @@
-#include <X11/XkbCommon.h>
+#include "X11/extensions/XKBcommon.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

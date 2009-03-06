@@ -14,7 +14,7 @@ $(builddir)/makekeys/makekeys$(EXEEXT):
 
 lib_LTLIBRARIES = libxkbcommon.la
 libxkbcommon_la_SOURCES = \
-	XkbCommonInt.h \
+	XKBcommonint.h \
 	ks_tables.h \
 	alloc.c \
 	galloc.c \
