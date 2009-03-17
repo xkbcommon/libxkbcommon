@@ -30,6 +30,7 @@ authorization from the authors.
 
 #include <X11/X.h>
 #include <X11/Xdefs.h>
+#include <X11/Xfuncproto.h>
 #include <X11/keysymdef.h>
 #include <X11/extensions/XKBstrcommon.h>
 #include <X11/extensions/XKBgeomcommon.h>
@@ -50,6 +51,8 @@ typedef struct _XkbcDesc {
     XkbCompatMapPtr     compat;
     XkbGeometryPtr      geom;
 } XkbcDescRec, *XkbcDescPtr;
+
+_XFUNCPROTOBEGIN
 
 extern char *
 XkbcKeysymToString(KeySym ks);
@@ -154,5 +157,7 @@ XkbcAtomGetString(Atom atom);
 
 extern Atom
 XkbcInternAtom(char *name, Bool onlyIfExists);
+
+_XFUNCPROTOEND
 
 #endif /* _XKBCOMMON_H_ */
