@@ -1,7 +1,7 @@
 SUBDIRS = makekeys
 
 INCLUDES = -I$(top_srcdir)/include
-AM_CFLAGS = $(X11_CFLAGS) $(CWARNFLAGS)
+AM_CFLAGS = $(X11_CFLAGS) $(CWARNFLAGS) $(XMALLOC_ZERO_CFLAGS)
 
 BUILT_SOURCES = ks_tables.h
 ks_tables.h: $(builddir)/makekeys/makekeys$(EXEEXT)
@@ -14,5 +14,6 @@ $(builddir)/makekeys/makekeys$(EXEEXT):
 
 lib_LTLIBRARIES = libxkbcommon.la
 libxkbcommon_la_SOURCES = \
+	XkbCommonInt.h \
 	ks_tables.h \
 	keysym.c
