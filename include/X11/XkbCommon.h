@@ -29,7 +29,26 @@ authorization from the authors.
 #define _XKBCOMMON_H_
 
 #include <X11/X.h>
+#include <X11/Xdefs.h>
 #include <X11/keysymdef.h>
+#include <X11/extensions/XKBstrcommon.h>
+
+/* Common keyboard description structure */
+typedef struct _XkbcDesc {
+    unsigned int        defined;
+    unsigned short      flags;
+    unsigned short      device_spec;
+    KeyCode             min_key_code;
+    KeyCode             max_key_code;
+
+    XkbControlsPtr      ctrls;
+    XkbServerMapPtr     server;
+    XkbClientMapPtr     map;
+    XkbIndicatorPtr     indicators;
+    XkbNamesPtr         names;
+    XkbCompatMapPtr     compat;
+    XkbGeometryPtr      geom;
+} XkbcDescRec, *XkbcDescPtr;
 
 extern char *
 XkbcKeysymToString(KeySym ks);

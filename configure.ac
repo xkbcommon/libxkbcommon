@@ -48,7 +48,7 @@ if test "x$CC_FOR_BUILD" = x; then
     fi
 fi
 
-PKG_CHECK_MODULES([X11], [xproto])
+PKG_CHECK_MODULES([X11], [xproto kbproto >= 1.0.99.1])
 
 dnl Ensure we have keysym headers
 AC_MSG_CHECKING([for X11 includedir])
