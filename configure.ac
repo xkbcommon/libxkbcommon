@@ -67,6 +67,8 @@ test -f "$XF86KEYSYM_H" || AC_MSG_ERROR([can't locate XF86keysym.h in $x11includ
 AC_MSG_RESULT([$XF86KEYSYM_H])
 AC_SUBST([XF86KEYSYM_H])
 
+AC_SUBST([KS_HEADERS], ['$(KEYSYMDEF_H) $(XF86KEYSYM_H)'])
+
 # Require xorg-macros version 1.2.0 or newer for XORG_CHANGELOG macro
 m4_ifndef([XORG_MACROS_VERSION],
     [m4_fatal([must install xorg-macros before running autoconf/autogen.sh])])
