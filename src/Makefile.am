@@ -18,4 +18,5 @@ libxkbcommon_la_SOURCES = \
 	ks_tables.h \
 	alloc.c \
 	galloc.c \
+	atom.c \
 	keysym.c

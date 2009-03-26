@@ -146,4 +146,13 @@ XkbcFreeGeometry(XkbGeometryPtr geom, unsigned which, Bool freeMap);
 extern int
 XkbcAllocGeometry(XkbcDescPtr xkb, XkbGeometrySizesPtr sizes);
 
+extern void
+XkbcInitAtoms(void);
+
+extern char *
+XkbcAtomGetString(Atom atom);
+
+extern Atom
+XkbcInternAtom(char *name, Bool onlyIfExists);
+
 #endif /* _XKBCOMMON_H_ */
