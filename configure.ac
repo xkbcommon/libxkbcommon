@@ -29,6 +29,7 @@ AC_CONFIG_HEADERS([src/config.h])
 
 AC_PROG_LIBTOOL
 AC_PROG_CC
+AC_PROG_YACC
 
 m4_ifndef([PKG_PROG_PKG_CONFIG],
     [m4_fatal([Could not locate the pkg-config autoconf macros.
@@ -37,6 +38,11 @@ m4_ifndef([PKG_PROG_PKG_CONFIG],
     variable ACLOCAL="aclocal -I/other/macro/dir" before running
     autoreconf/autogen.sh.])])
 PKG_PROG_PKG_CONFIG
+
+# Require xorg-macros version 1.2.0 or newer for XORG_CHANGELOG macro
+m4_ifndef([XORG_MACROS_VERSION],
+    [m4_fatal([must install xorg-macros before running autoconf/autogen.sh])])
+XORG_MACROS_VERSION([1.2.0])
 
 dnl Build native compiler needed for makekeys
 AC_ARG_VAR([CC_FOR_BUILD], [Build native C compiler program])
@@ -47,6 +53,10 @@ if test "x$CC_FOR_BUILD" = x; then
         CC_FOR_BUILD="$CC"
     fi
 fi
+
+AC_CHECK_FUNCS([strdup strcasecmp])
+XORG_CHECK_MALLOC_ZERO
+XORG_CWARNFLAGS
 
 PKG_CHECK_MODULES([X11], [xproto kbproto >= 1.0.99.1])
 
@@ -69,13 +79,14 @@ AC_SUBST([XF86KEYSYM_H])
 
 AC_SUBST([KS_HEADERS], ['$(KEYSYMDEF_H) $(XF86KEYSYM_H)'])
 
-# Require xorg-macros version 1.2.0 or newer for XORG_CHANGELOG macro
-m4_ifndef([XORG_MACROS_VERSION],
-    [m4_fatal([must install xorg-macros before running autoconf/autogen.sh])])
-XORG_MACROS_VERSION([1.2.0])
+AC_ARG_WITH([xkb_config_root],
+    [AC_HELP_STRING([--with-xkb-config-root=<paths>],
+        [Set default XKB config root (default: ${datadir}/X11/xkb)])],
+    [XKBCONFIGROOT="$withval"],
+    [XKBCONFIGROOT='${datadir}/X11/xkb'])
+AC_SUBST([XKBCONFIGROOT])
+
 XORG_RELEASE_VERSION
-XORG_CHECK_MALLOC_ZERO
-XORG_CWARNFLAGS
 XORG_CHANGELOG
 
 AC_OUTPUT([
@@ -83,5 +94,6 @@ Makefile
 include/Makefile
 src/Makefile
 src/makekeys/Makefile
+src/xkbcomp/Makefile
 test/Makefile
 ])

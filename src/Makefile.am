@@ -1,9 +1,10 @@
-SUBDIRS = makekeys
+SUBDIRS = makekeys xkbcomp
 
 INCLUDES = -I$(top_srcdir)/include -I$(builddir)/makekeys
 AM_CFLAGS = $(X11_CFLAGS) $(CWARNFLAGS) $(XMALLOC_ZERO_CFLAGS)
 
 lib_LTLIBRARIES = libxkbcommon.la
+libxkbcommon_la_LIBADD = xkbcomp/libxkbcomp.la
 libxkbcommon_la_SOURCES = \
 	XKBcommonint.h \
 	alloc.c \
