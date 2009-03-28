@@ -120,7 +120,7 @@ InitCompatInfo(CompatInfo * info, XkbcDescPtr xkb)
     {
         info->dflt.interp.act.data[i] = 0;
     }
-    ClearIndicatorMapInfo(xkb->dpy, &info->ledDflt);
+    ClearIndicatorMapInfo(&info->ledDflt);
     info->ledDflt.defs.fileID = info->fileID;
     info->ledDflt.defs.defined = 0;
     info->ledDflt.defs.merge = MergeOverride;
@@ -148,7 +148,7 @@ ClearCompatInfo(CompatInfo * info, XkbcDescPtr xkb)
     {
         info->dflt.interp.act.data[i] = 0;
     }
-    ClearIndicatorMapInfo(xkb->dpy, &info->ledDflt);
+    ClearIndicatorMapInfo(&info->ledDflt);
     info->nInterps = 0;
     info->interps = (SymInterpInfo *) ClearCommonInfo(&info->interps->defs);
     bzero((char *) &info->groupCompat[0],

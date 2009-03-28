@@ -50,7 +50,6 @@ typedef struct _PreserveInfo
 typedef struct _KeyTypeInfo
 {
     CommonInfo defs;
-    Display *dpy;
     Atom name;
     int fileID;
     unsigned mask;
@@ -67,7 +66,6 @@ typedef struct _KeyTypeInfo
 
 typedef struct _KeyTypesInfo
 {
-    Display *dpy;
     char *name;
     int errorCount;
     int fileID;
@@ -85,10 +83,10 @@ Atom tok_KEYPAD;
 
 /***====================================================================***/
 
-#define	ReportTypeShouldBeArray(t,f) \
-	ReportShouldBeArray("key type",(f),TypeTxt(t))
-#define	ReportTypeBadType(t,f,w) \
-	ReportBadType("key type",(f),TypeTxt(t),(w))
+#define ReportTypeShouldBeArray(t, f) \
+    ReportShouldBeArray("key type", (f), TypeTxt(t))
+#define ReportTypeBadType(t, f, w) \
+    ReportBadType("key type", (f), TypeTxt(t), (w))
 
 /***====================================================================***/
 
@@ -113,15 +111,16 @@ extern Bool AddLevelName(KeyTypeInfo * /* type */ ,
                          Bool   /* report */
     );
 
-#define	MapEntryTxt(t,x,e)	\
-    XkbVModMaskText((t)->dpy,(x),(e)->mods.real_mods,(e)->mods.vmods,XkbMessage)
-#define	PreserveIndexTxt(t,x,p)	\
-	XkbVModMaskText((t)->dpy,(x),(p)->indexMods,(p)->indexVMods,XkbMessage)
-#define	PreserveTxt(t,x,p)	\
-	XkbVModMaskText((t)->dpy,(x),(p)->preMods,(p)->preVMods,XkbMessage)
-#define	TypeTxt(t)	XkbcAtomText((t)->name)
-#define	TypeMaskTxt(t,x)	\
-	XkbVModMaskText((t)->dpy,(x),(t)->mask,(t)->vmask,XkbMessage)
+#define MapEntryTxt(x, e) \
+    XkbVModMaskText((x), (e)->mods.real_mods, (e)->mods.vmods, XkbMessage)
+#define PreserveIndexTxt(x, p) \
+    XkbVModMaskText((x), (p)->indexMods, (p)->indexVMods, XkbMessage)
+#define PreserveTxt(x, p) \
+    XkbVModMaskText((x), (p)->preMods, (p)->preVMods, XkbMessage)
+#define TypeTxt(t) \
+    XkbcAtomText((t)->name)
+#define TypeMaskTxt(t, x) \
+    XkbVModMaskText((x), (t)->mask, (t)->vmask, XkbMessage)
 
 /***====================================================================***/
 
@@ -132,7 +131,6 @@ InitKeyTypesInfo(KeyTypesInfo * info, XkbcDescPtr xkb, KeyTypesInfo * from)
     tok_TWO_LEVEL = XkbcInternAtom("TWO_LEVEL", False);
     tok_ALPHABETIC = XkbcInternAtom("ALPHABETIC", False);
     tok_KEYPAD = XkbcInternAtom("KEYPAD", False);
-    info->dpy = NULL;
     info->name = uStringDup("default");
     info->errorCount = 0;
     info->stdPresent = 0;
@@ -155,7 +153,6 @@ InitKeyTypesInfo(KeyTypesInfo * info, XkbcDescPtr xkb, KeyTypesInfo * from)
     InitVModInfo(&info->vmods, xkb);
     if (from != NULL)
     {
-        info->dpy = from->dpy;
         info->dflt = from->dflt;
         if (from->dflt.entries)
         {
@@ -223,7 +220,6 @@ FreeKeyTypeInfo(KeyTypeInfo * type)
 static void
 FreeKeyTypesInfo(KeyTypesInfo * info)
 {
-    info->dpy = NULL;
     if (info->name)
         uFree(info->name);
     info->name = NULL;
@@ -250,7 +246,6 @@ NextKeyType(KeyTypesInfo * info)
     {
         bzero(type, sizeof(KeyTypeInfo));
         type->defs.fileID = info->fileID;
-        type->dpy = info->dpy;
         info->types = (KeyTypeInfo *) AddCommonInfo(&info->types->defs,
                                                     (CommonInfo *) type);
         info->nTypes++;
@@ -564,7 +559,7 @@ AddPreserve(XkbcDescPtr xkb,
             if (warningLevel > 9)
             {
                 WARN2("Identical definitions for preserve[%s] in %s\n",
-                      PreserveIndexTxt(type, xkb, old), TypeTxt(type));
+                      PreserveIndexTxt(xkb, old), TypeTxt(type));
                 ACTION("Ignored\n");
             }
             return True;
@@ -573,17 +568,17 @@ AddPreserve(XkbcDescPtr xkb,
         {
             char *str;
             WARN2("Multiple definitions for preserve[%s] in %s\n",
-                  PreserveIndexTxt(type, xkb, old), TypeTxt(type));
+                  PreserveIndexTxt(xkb, old), TypeTxt(type));
 
             if (clobber)
-                str = PreserveTxt(type, xkb, new);
+                str = PreserveTxt(xkb, new);
             else
-                str = PreserveTxt(type, xkb, old);
+                str = PreserveTxt(xkb, old);
             ACTION1("Using %s, ", str);
             if (clobber)
-                str = PreserveTxt(type, xkb, old);
+                str = PreserveTxt(xkb, old);
             else
-                str = PreserveTxt(type, xkb, new);
+                str = PreserveTxt(xkb, new);
             INFO1("ignoring %s\n", str);
         }
         if (clobber)
@@ -597,7 +592,7 @@ AddPreserve(XkbcDescPtr xkb,
     if (!old)
     {
         WSGO1("Couldn't allocate preserve in %s\n", TypeTxt(type));
-        ACTION1("Preserve[%s] lost\n", PreserveIndexTxt(type, xkb, old));
+        ACTION1("Preserve[%s] lost\n", PreserveIndexTxt(xkb, old));
         return False;
     }
     *old = *new;
@@ -639,13 +634,13 @@ AddMapEntry(XkbcDescPtr xkb,
                 ignore = new->level + 1;
             }
             WARN2("Multiple map entries for %s in %s\n",
-                  MapEntryTxt(type, xkb, new), TypeTxt(type));
+                  MapEntryTxt(xkb, new), TypeTxt(type));
             ACTION2("Using %d, ignoring %d\n", use, ignore);
         }
         else if (warningLevel > 9)
         {
             WARN3("Multiple occurences of map[%s]= %d in %s\n",
-                  MapEntryTxt(type, xkb, new), new->level + 1, TypeTxt(type));
+                  MapEntryTxt(xkb, new), new->level + 1, TypeTxt(type));
             ACTION("Ignored\n");
             return True;
         }
@@ -700,11 +695,11 @@ SetMapEntry(KeyTypeInfo * type,
         {
             WARN1("Map entry for unused modifiers in %s\n", TypeTxt(type));
             ACTION1("Using %s instead of ",
-                    XkbVModMaskText(type->dpy, xkb,
+                    XkbVModMaskText(xkb,
                                     entry.mods.real_mods & type->mask,
                                     entry.mods.vmods & type->vmask,
                                     XkbMessage));
-            INFO1("%s\n", MapEntryTxt(type, xkb, &entry));
+            INFO1("%s\n", MapEntryTxt(xkb, &entry));
         }
         entry.mods.real_mods &= type->mask;
         entry.mods.vmods &= type->vmask;
@@ -720,7 +715,7 @@ SetMapEntry(KeyTypeInfo * type,
         ERROR3("Shift level %d out of range (1..%d) in key type %s\n",
                XkbMaxShiftLevel + 1, rtrn.ival, TypeTxt(type));
         ACTION1("Ignoring illegal definition of map[%s]\n",
-                MapEntryTxt(type, xkb, &entry));
+                MapEntryTxt(xkb, &entry));
         return False;
     }
     entry.level = rtrn.ival - 1;
@@ -748,19 +743,18 @@ SetPreserve(KeyTypeInfo * type,
         {
             WARN1("Preserve for modifiers not used by the %s type\n",
                   TypeTxt(type));
-            ACTION1("Index %s converted to ",
-                    PreserveIndexTxt(type, xkb, &new));
+            ACTION1("Index %s converted to ", PreserveIndexTxt(xkb, &new));
         }
         new.indexMods &= type->mask;
         new.indexVMods &= type->vmask;
         if (warningLevel > 0)
-            INFO1("%s\n", PreserveIndexTxt(type, xkb, &new));
+            INFO1("%s\n", PreserveIndexTxt(xkb, &new));
     }
     if (!ExprResolveModMask(value, &rtrn, LookupVModMask, (char *) xkb))
     {
         ERROR("Preserve value in a key type is not a modifier mask\n");
         ACTION2("Ignoring preserve[%s] in type %s\n",
-                PreserveIndexTxt(type, xkb, &new), TypeTxt(type));
+                PreserveIndexTxt(xkb, &new), TypeTxt(type));
         return False;
     }
     new.preMods = rtrn.uval & 0xff;
@@ -771,14 +765,14 @@ SetPreserve(KeyTypeInfo * type,
         if (warningLevel > 0)
         {
             WARN2("Illegal value for preserve[%s] in type %s\n",
-                  PreserveTxt(type, xkb, &new), TypeTxt(type));
-            ACTION1("Converted %s to ", PreserveIndexTxt(type, xkb, &new));
+                  PreserveTxt(xkb, &new), TypeTxt(type));
+            ACTION1("Converted %s to ", PreserveIndexTxt(xkb, &new));
         }
         new.preMods &= new.indexMods;
         new.preVMods &= new.indexVMods;
         if (warningLevel > 0)
         {
-            INFO1("%s\n", PreserveIndexTxt(type, xkb, &new));
+            INFO1("%s\n", PreserveIndexTxt(xkb, &new));
         }
     }
     return AddPreserve(xkb, type, &new, True, True);
@@ -906,8 +900,8 @@ SetKeyTypeField(KeyTypeInfo * type,
             WARN1("Multiple modifier mask definitions for key type %s\n",
                   XkbcAtomText(type->name));
             ACTION1("Using %s, ", TypeMaskTxt(type, xkb));
-            INFO1("ignoring %s\n", XkbVModMaskText(type->dpy, xkb, mods,
-                                                   vmods, XkbMessage));
+            INFO1("ignoring %s\n", XkbVModMaskText(xkb, mods, vmods,
+                                                   XkbMessage));
             return False;
         }
         type->mask = mods;
@@ -1002,7 +996,6 @@ HandleKeyTypeDef(KeyTypeDef * def,
     type.defs.fileID = info->fileID;
     type.defs.merge = merge;
     type.defs.next = NULL;
-    type.dpy = info->dpy;
     type.name = def->name;
     type.mask = info->dflt.mask;
     type.vmask = info->dflt.vmask;

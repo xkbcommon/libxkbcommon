@@ -51,8 +51,7 @@ typedef struct _LEDInfo
     unsigned int ctrls;
 } LEDInfo;
 
-extern void ClearIndicatorMapInfo(Display * /* dpy */ ,
-                                  LEDInfo *     /* info */
+extern void ClearIndicatorMapInfo(LEDInfo *     /* info */
     );
 
 

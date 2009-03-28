@@ -871,8 +871,7 @@ CompileKeycodes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
                  ii = (IndicatorNameInfo *) ii->defs.next)
             {
                 xkb->names->indicators[ii->ndx - 1] =
-                    XkbcInternAtom(xkb->dpy,
-                                  XkbcAtomGetString(ii->name), False);
+                    XkbcInternAtom(XkbcAtomGetString(ii->name), False);
                 if (xkb->indicators != NULL)
                 {
                     register unsigned bit;

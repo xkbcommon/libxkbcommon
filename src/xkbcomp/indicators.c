@@ -35,15 +35,15 @@
 
 /***====================================================================***/
 
-#define ReportIndicatorBadType(d,l,f,w) \
+#define ReportIndicatorBadType(l, f, w) \
     ReportBadType("indicator map", (f), XkbcAtomText((l)->name), (w))
-#define ReportIndicatorNotArray(d,l,f) \
+#define ReportIndicatorNotArray(l, f) \
     ReportNotArray("indicator map", (f), XkbcAtomText((l)->name))
 
 /***====================================================================***/
 
 void
-ClearIndicatorMapInfo(Display * dpy, LEDInfo * info)
+ClearIndicatorMapInfo(LEDInfo * info)
 {
     info->name = XkbcInternAtom("default", False);
     info->indicator = _LED_NotBound;
@@ -208,10 +208,9 @@ SetIndicatorMapField(LEDInfo * led,
         || (uStrCaseCmp(field, "mods") == 0))
     {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(xkb->dpy, led, field);
+            return ReportIndicatorNotArray(led, field);
         if (!ExprResolveModMask(value, &rtrn, LookupVModMask, (char *) xkb))
-            return ReportIndicatorBadType(xkb->dpy, led, field,
-                                          "modifier mask");
+            return ReportIndicatorBadType(led, field, "modifier mask");
         led->real_mods = rtrn.uval & 0xff;
         led->vmods = (rtrn.uval >> 8) & 0xff;
         led->defs.defined |= _LED_Mods;
@@ -219,10 +218,10 @@ SetIndicatorMapField(LEDInfo * led,
     else if (uStrCaseCmp(field, "groups") == 0)
     {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(xkb->dpy, led, field);
+            return ReportIndicatorNotArray(led, field);
         if (!ExprResolveMask
             (value, &rtrn, SimpleLookup, (char *) groupNames))
-            return ReportIndicatorBadType(xkb->dpy, led, field, "group mask");
+            return ReportIndicatorBadType(led, field, "group mask");
         led->groups = rtrn.uval;
         led->defs.defined |= _LED_Groups;
     }
@@ -230,10 +229,10 @@ SetIndicatorMapField(LEDInfo * led,
              (uStrCaseCmp(field, "ctrls") == 0))
     {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(xkb->dpy, led, field);
+            return ReportIndicatorNotArray(led, field);
         if (!ExprResolveMask
             (value, &rtrn, SimpleLookup, (char *) ctrlNames))
-            return ReportIndicatorBadType(xkb->dpy, led, field,
+            return ReportIndicatorBadType(led, field,
                                           "controls mask");
         led->ctrls = rtrn.uval;
         led->defs.defined |= _LED_Ctrls;
@@ -241,9 +240,9 @@ SetIndicatorMapField(LEDInfo * led,
     else if (uStrCaseCmp(field, "allowexplicit") == 0)
     {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(xkb->dpy, led, field);
+            return ReportIndicatorNotArray(led, field);
         if (!ExprResolveBoolean(value, &rtrn, NULL, NULL))
-            return ReportIndicatorBadType(xkb->dpy, led, field, "boolean");
+            return ReportIndicatorBadType(led, field, "boolean");
         if (rtrn.uval)
             led->flags &= ~XkbIM_NoExplicit;
         else
@@ -254,11 +253,11 @@ SetIndicatorMapField(LEDInfo * led,
              (uStrCaseCmp(field, "whichmodifierstate") == 0))
     {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(xkb->dpy, led, field);
+            return ReportIndicatorNotArray(led, field);
         if (!ExprResolveMask(value, &rtrn, SimpleLookup,
                              (char *) modComponentNames))
         {
-            return ReportIndicatorBadType(xkb->dpy, led, field,
+            return ReportIndicatorBadType(led, field,
                                           "mask of modifier state components");
         }
         led->which_mods = rtrn.uval;
@@ -266,11 +265,11 @@ SetIndicatorMapField(LEDInfo * led,
     else if (uStrCaseCmp(field, "whichgroupstate") == 0)
     {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(xkb->dpy, led, field);
+            return ReportIndicatorNotArray(led, field);
         if (!ExprResolveMask(value, &rtrn, SimpleLookup,
                              (char *) groupComponentNames))
         {
-            return ReportIndicatorBadType(xkb->dpy, led, field,
+            return ReportIndicatorBadType(led, field,
                                           "mask of group state components");
         }
         led->which_groups = rtrn.uval;
@@ -283,9 +282,9 @@ SetIndicatorMapField(LEDInfo * led,
              (uStrCaseCmp(field, "indicatordriveskeyboard") == 0))
     {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(xkb->dpy, led, field);
+            return ReportIndicatorNotArray(led, field);
         if (!ExprResolveBoolean(value, &rtrn, NULL, NULL))
-            return ReportIndicatorBadType(xkb->dpy, led, field, "boolean");
+            return ReportIndicatorBadType(led, field, "boolean");
         if (rtrn.uval)
             led->flags |= XkbIM_LEDDrivesKB;
         else
@@ -295,9 +294,9 @@ SetIndicatorMapField(LEDInfo * led,
     else if (uStrCaseCmp(field, "index") == 0)
     {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(xkb->dpy, led, field);
+            return ReportIndicatorNotArray(led, field);
         if (!ExprResolveInteger(value, &rtrn, NULL, NULL))
-            return ReportIndicatorBadType(xkb->dpy, led, field,
+            return ReportIndicatorBadType(led, field,
                                           "indicator index");
         if ((rtrn.uval < 1) || (rtrn.uval > 32))
         {

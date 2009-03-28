@@ -67,7 +67,7 @@ typedef struct _ShapeInfo
     int dfltCornerRadius;
 } ShapeInfo;
 
-#define	shText(d, s) \
+#define	shText(s) \
     ((s) ? XkbcAtomText((s)->name) : "default shape")
 
 #define	_GD_Priority	(1<<0)
@@ -158,7 +158,7 @@ typedef struct _RowInfo
     KeyInfo dfltKey;
     struct _SectionInfo *section;
 } RowInfo;
-#define	rowText(d, r) \
+#define	rowText(r) \
     ((r) ? XkbcAtomText((r)->section->name) : "default")
 
 #define	_GOK_UnknownRow	-1
@@ -179,7 +179,7 @@ typedef struct _OverlayInfo
     unsigned short nKeys;
     OverlayKeyInfo *keys;
 } OverlayInfo;
-#define	oiText(d, o) \
+#define	oiText(o) \
     ((o) ? XkbcAtomText((o)->name) : "default")
 
 
@@ -212,13 +212,12 @@ typedef struct _SectionInfo
     OverlayInfo *overlays;
     struct _GeometryInfo *geometry;
 } SectionInfo;
-#define	scText(d, s) \
+#define	scText(s) \
     ((s) ? XkbcAtomText((s)->name) : "default")
 
 typedef struct _GeometryInfo
 {
     char *name;
-    Display *dpy;
     unsigned fileID;
     unsigned merge;
     int errorCount;
@@ -250,7 +249,7 @@ typedef struct _GeometryInfo
 } GeometryInfo;
 
 static char *
-ddText(Display * dpy, DoodadInfo * di)
+ddText(DoodadInfo * di)
 {
     static char buf[64];
 
@@ -262,7 +261,7 @@ ddText(Display * dpy, DoodadInfo * di)
     if (di->section)
     {
         sprintf(buf, "%s in section %s",
-                XkbcAtomText(di->name), scText(dpy, di->section));
+                XkbcAtomText(di->name), scText(di->section));
         return buf;
     }
     return XkbcAtomText(di->name);
@@ -810,8 +809,7 @@ FindShape(GeometryInfo * info, Atom name, const char *type, const char *which)
               XkbcAtomText(name), type, which);
         if (old)
         {
-            ACTION1("Using default shape %s instead\n",
-                    shText(info->dpy, old));
+            ACTION1("Using default shape %s instead\n", shText(old));
             return old;
         }
         ACTION("No default shape; definition ignored\n");
@@ -835,8 +833,7 @@ AddShape(GeometryInfo * info, ShapeInfo * new)
             if (((old->defs.fileID == new->defs.fileID)
                  && (warningLevel > 0)) || (warningLevel > 9))
             {
-                WARN1("Duplicate shape name \"%s\"\n",
-                      shText(info->dpy, old));
+                WARN1("Duplicate shape name \"%s\"\n", shText(old));
                 ACTION("Using last definition\n");
             }
             *old = *new;
@@ -846,7 +843,7 @@ AddShape(GeometryInfo * info, ShapeInfo * new)
         if (((old->defs.fileID == new->defs.fileID) && (warningLevel > 0))
             || (warningLevel > 9))
         {
-            WARN1("Multiple shapes named \"%s\"\n", shText(info->dpy, old));
+            WARN1("Multiple shapes named \"%s\"\n", shText(old));
             ACTION("Using first definition\n");
         }
         return True;
@@ -1121,8 +1118,7 @@ AddSection(GeometryInfo * info, SectionInfo * new)
             if (((old->defs.fileID == new->defs.fileID)
                  && (warningLevel > 0)) || (warningLevel > 9))
             {
-                WARN1("Duplicate shape name \"%s\"\n",
-                      shText(info->dpy, old));
+                WARN1("Duplicate shape name \"%s\"\n", shText(old));
                 ACTION("Using last definition\n");
             }
             *old = *new;
@@ -1132,7 +1128,7 @@ AddSection(GeometryInfo * info, SectionInfo * new)
         if (((old->defs.fileID == new->defs.fileID) && (warningLevel > 0))
             || (warningLevel > 9))
         {
-            WARN1("Multiple shapes named \"%s\"\n", shText(info->dpy, old));
+            WARN1("Multiple shapes named \"%s\"\n", shText(old));
             ACTION("Using first definition\n");
         }
         return True;
@@ -1419,13 +1415,12 @@ SetShapeField(ShapeInfo * si,
         if (arrayNdx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray("key shape", field, shText(info->dpy, si));
+            return ReportNotArray("key shape", field, shText(si));
         }
         if (!ExprResolveFloat(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType("key shape", field,
-                                 shText(info->dpy, si), "number");
+            return ReportBadType("key shape", field, shText(si), "number");
         }
         if (si)
             si->dfltCornerRadius = tmp.ival;
@@ -1434,7 +1429,7 @@ SetShapeField(ShapeInfo * si,
         return True;
     }
     info->errorCount++;
-    return ReportBadField("key shape", field, shText(info->dpy, si));
+    return ReportBadField("key shape", field, shText(si));
 }
 
 static int
@@ -1454,13 +1449,12 @@ SetShapeDoodadField(DoodadInfo * di,
         if (arrayNdx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray(typeName, field, ddText(info->dpy, di));
+            return ReportNotArray(typeName, field, ddText(di));
         }
         if (!ExprResolveFloat(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType(typeName, field, ddText(info->dpy, di),
-                                 "number");
+            return ReportBadType(typeName, field, ddText(di), "number");
         }
         di->defs.defined |= _GD_Corner;
         di->corner = tmp.ival;
@@ -1471,13 +1465,12 @@ SetShapeDoodadField(DoodadInfo * di,
         if (arrayNdx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray(typeName, field, ddText(info->dpy, di));
+            return ReportNotArray(typeName, field, ddText(di));
         }
         if (!ExprResolveFloat(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType(typeName, field, ddText(info->dpy, di),
-                                 "number");
+            return ReportBadType(typeName, field, ddText(di), "number");
         }
         di->defs.defined |= _GD_Angle;
         di->angle = tmp.ival;
@@ -1488,19 +1481,18 @@ SetShapeDoodadField(DoodadInfo * di,
         if (arrayNdx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray(typeName, field, ddText(info->dpy, di));
+            return ReportNotArray(typeName, field, ddText(di));
         }
         if (!ExprResolveString(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType(typeName, field, ddText(info->dpy, di),
-                                 "string");
+            return ReportBadType(typeName, field, ddText(di), "string");
         }
         di->shape = XkbcInternAtom(tmp.str, False);
         di->defs.defined |= _GD_Shape;
         return True;
     }
-    return ReportBadField(typeName, field, ddText(info->dpy, di));
+    return ReportBadField(typeName, field, ddText(di));
 }
 
 #define	FIELD_STRING	0
@@ -1529,13 +1521,12 @@ SetTextDoodadField(DoodadInfo * di,
         if (arrayNdx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray(typeName, field, ddText(info->dpy, di));
+            return ReportNotArray(typeName, field, ddText(di));
         }
         if (!ExprResolveFloat(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType(typeName, field, ddText(info->dpy, di),
-                                 "number");
+            return ReportBadType(typeName, field, ddText(di), "number");
         }
         di->defs.defined |= _GD_Angle;
         di->angle = tmp.ival;
@@ -1615,20 +1606,19 @@ SetTextDoodadField(DoodadInfo * di,
     }
     else
     {
-        return ReportBadField(typeName, field, ddText(info->dpy, di));
+        return ReportBadField(typeName, field, ddText(di));
     }
     if (arrayNdx != NULL)
     {
         info->errorCount++;
-        return ReportNotArray(typeName, field, ddText(info->dpy, di));
+        return ReportNotArray(typeName, field, ddText(di));
     }
     if (type == FIELD_STRING)
     {
         if (!ExprResolveString(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType(typeName, field, ddText(info->dpy, di),
-                                 "string");
+            return ReportBadType(typeName, field, ddText(di), "string");
         }
         di->defs.defined |= def;
         *pField.str = XkbcInternAtom(tmp.str, False);
@@ -1638,15 +1628,13 @@ SetTextDoodadField(DoodadInfo * di,
         if (!ExprResolveFloat(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType(typeName, field, ddText(info->dpy, di),
-                                 "number");
+            return ReportBadType(typeName, field, ddText(di), "number");
         }
         if ((type == FIELD_USHORT) && (tmp.ival < 0))
         {
             info->errorCount++;
             return
-                ReportBadType(typeName, field, ddText(info->dpy, di),
-                              "unsigned");
+                ReportBadType(typeName, field, ddText(di), "unsigned");
         }
         di->defs.defined |= def;
         if (type == FIELD_USHORT)
@@ -1673,14 +1661,13 @@ SetIndicatorDoodadField(DoodadInfo * di,
         if (arrayNdx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray("indicator doodad", field,
-                                  ddText(info->dpy, di));
+            return ReportNotArray("indicator doodad", field, ddText(di));
         }
         if (!ExprResolveString(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
             return ReportBadType("indicator doodad", field,
-                                 ddText(info->dpy, di), "string");
+                                 ddText(di), "string");
         }
         if (uStrCaseCmp(field, "oncolor") == 0)
         {
@@ -1699,7 +1686,7 @@ SetIndicatorDoodadField(DoodadInfo * di,
         }
         return True;
     }
-    return ReportBadField("indicator doodad", field, ddText(info->dpy, di));
+    return ReportBadField("indicator doodad", field, ddText(di));
 }
 
 static int
@@ -1717,13 +1704,12 @@ SetLogoDoodadField(DoodadInfo * di,
         if (arrayNdx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray(typeName, field, ddText(info->dpy, di));
+            return ReportNotArray(typeName, field, ddText(di));
         }
         if (!ExprResolveFloat(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType(typeName, field, ddText(info->dpy, di),
-                                 "number");
+            return ReportBadType(typeName, field, ddText(di), "number");
         }
         di->defs.defined |= _GD_Corner;
         di->corner = tmp.ival;
@@ -1734,13 +1720,12 @@ SetLogoDoodadField(DoodadInfo * di,
         if (arrayNdx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray(typeName, field, ddText(info->dpy, di));
+            return ReportNotArray(typeName, field, ddText(di));
         }
         if (!ExprResolveFloat(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType(typeName, field, ddText(info->dpy, di),
-                                 "number");
+            return ReportBadType(typeName, field, ddText(di), "number");
         }
         di->defs.defined |= _GD_Angle;
         di->angle = tmp.ival;
@@ -1751,13 +1736,12 @@ SetLogoDoodadField(DoodadInfo * di,
         if (arrayNdx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray(typeName, field, ddText(info->dpy, di));
+            return ReportNotArray(typeName, field, ddText(di));
         }
         if (!ExprResolveString(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType(typeName, field, ddText(info->dpy, di),
-                                 "string");
+            return ReportBadType(typeName, field, ddText(di), "string");
         }
         di->shape = XkbcInternAtom(tmp.str, False);
         di->defs.defined |= _GD_Shape;
@@ -1769,18 +1753,18 @@ SetLogoDoodadField(DoodadInfo * di,
         if (arrayNdx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray(typeName, field, ddText(info->dpy, di));
+            return ReportNotArray(typeName, field, ddText(di));
         }
         if (!ExprResolveString(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType(typeName, field, ddText(info->dpy, di),
+            return ReportBadType(typeName, field, ddText(di),
                                  "string");
         }
         di->logoName = uStringDup(tmp.str);
         return True;
     }
-    return ReportBadField(typeName, field, ddText(info->dpy, di));
+    return ReportBadField(typeName, field, ddText(di));
 }
 
 static int
@@ -1796,21 +1780,19 @@ SetDoodadField(DoodadInfo * di,
         if (arrayNdx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray("doodad", field, ddText(info->dpy, di));
+            return ReportNotArray("doodad", field, ddText(di));
         }
         if (!ExprResolveInteger(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType("doodad", field, ddText(info->dpy, di),
-                                 "integer");
+            return ReportBadType("doodad", field, ddText(di), "integer");
         }
         if ((tmp.ival < 0) || (tmp.ival > XkbGeomMaxPriority))
         {
             info->errorCount++;
             ERROR2("Doodad priority %d out of range (must be 0..%d)\n",
                    tmp.ival, XkbGeomMaxPriority);
-            ACTION1("Priority for doodad %s not changed",
-                    ddText(info->dpy, di));
+            ACTION1("Priority for doodad %s not changed", ddText(di));
             return False;
         }
         di->defs.defined |= _GD_Priority;
@@ -1822,13 +1804,12 @@ SetDoodadField(DoodadInfo * di,
         if (arrayNdx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray("doodad", field, ddText(info->dpy, di));
+            return ReportNotArray("doodad", field, ddText(di));
         }
         if (!ExprResolveFloat(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType("doodad", field, ddText(info->dpy, di),
-                                 "number");
+            return ReportBadType("doodad", field, ddText(di), "number");
         }
         di->defs.defined |= _GD_Left;
         di->left = tmp.ival;
@@ -1839,13 +1820,12 @@ SetDoodadField(DoodadInfo * di,
         if (arrayNdx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray("doodad", field, ddText(info->dpy, di));
+            return ReportNotArray("doodad", field, ddText(di));
         }
         if (!ExprResolveFloat(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType("doodad", field, ddText(info->dpy, di),
-                                 "number");
+            return ReportBadType("doodad", field, ddText(di), "number");
         }
         di->defs.defined |= _GD_Top;
         di->top = tmp.ival;
@@ -1856,13 +1836,12 @@ SetDoodadField(DoodadInfo * di,
         if (arrayNdx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray("doodad", field, ddText(info->dpy, di));
+            return ReportNotArray("doodad", field, ddText(di));
         }
         if (!ExprResolveString(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType("doodad", field, ddText(info->dpy, di),
-                                 "string");
+            return ReportBadType("doodad", field, ddText(di), "string");
         }
         di->defs.defined |= _GD_Color;
         di->color = XkbcInternAtom(tmp.str, False);
@@ -1882,7 +1861,7 @@ SetDoodadField(DoodadInfo * di,
     }
     WSGO1("Unknown doodad type %d in SetDoodadField\n",
           (unsigned int) di->type);
-    ACTION2("Definition of %s in %s ignored\n", field, ddText(info->dpy, di));
+    ACTION2("Definition of %s in %s ignored\n", field, ddText(di));
     return False;
 }
 
@@ -1902,14 +1881,12 @@ SetSectionField(SectionInfo * si,
         if (arrayNdx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray("keyboard section", field,
-                                  scText(info->dpy, si));
+            return ReportNotArray("keyboard section", field, scText(si));
         }
         if (!ExprResolveInteger(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            ReportBadType("keyboard section", field,
-                          scText(info->dpy, si), "integer");
+            ReportBadType("keyboard section", field, scText(si), "integer");
             return False;
         }
         if ((tmp.ival < 0) || (tmp.ival > XkbGeomMaxPriority))
@@ -1917,8 +1894,7 @@ SetSectionField(SectionInfo * si,
             info->errorCount++;
             ERROR2("Section priority %d out of range (must be 0..%d)\n",
                    tmp.ival, XkbGeomMaxPriority);
-            ACTION1("Priority for section %s not changed",
-                    scText(info->dpy, si));
+            ACTION1("Priority for section %s not changed", scText(si));
             return False;
         }
         si->priority = tmp.ival;
@@ -1953,20 +1929,17 @@ SetSectionField(SectionInfo * si,
     else
     {
         info->errorCount++;
-        return ReportBadField("keyboard section", field,
-                              scText(info->dpy, si));
+        return ReportBadField("keyboard section", field, scText(si));
     }
     if (arrayNdx != NULL)
     {
         info->errorCount++;
-        return ReportNotArray("keyboard section", field,
-                              scText(info->dpy, si));
+        return ReportNotArray("keyboard section", field, scText(si));
     }
     if (!ExprResolveFloat(value, &tmp, NULL, NULL))
     {
         info->errorCount++;
-        ReportBadType("keyboard section", field, scText(info->dpy, si),
-                      "number");
+        ReportBadType("keyboard section", field, scText(si), "number");
         return False;
     }
     si->defs.defined |= def;
@@ -1986,14 +1959,13 @@ SetRowField(RowInfo * row,
         if (arrayNdx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray("keyboard row", field,
-                                  rowText(info->dpy, row));
+            return ReportNotArray("keyboard row", field, rowText(row));
         }
         if (!ExprResolveFloat(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType("keyboard row", field,
-                                 rowText(info->dpy, row), "number");
+            return ReportBadType("keyboard row", field, rowText(row),
+                                 "number");
         }
         row->defs.defined |= _GR_Top;
         row->top = tmp.uval;
@@ -2003,14 +1975,13 @@ SetRowField(RowInfo * row,
         if (arrayNdx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray("keyboard row", field,
-                                  rowText(info->dpy, row));
+            return ReportNotArray("keyboard row", field, rowText(row));
         }
         if (!ExprResolveFloat(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType("keyboard row", field,
-                                 rowText(info->dpy, row), "number");
+            return ReportBadType("keyboard row", field, rowText(row),
+                                 "number");
         }
         row->defs.defined |= _GR_Left;
         row->left = tmp.uval;
@@ -2020,14 +1991,13 @@ SetRowField(RowInfo * row,
         if (arrayNdx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray("keyboard row", field,
-                                  rowText(info->dpy, row));
+            return ReportNotArray("keyboard row", field, rowText(row));
         }
         if (!ExprResolveBoolean(value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType("keyboard row", field,
-                                 rowText(info->dpy, row), "boolean");
+            return ReportBadType("keyboard row", field, rowText(row),
+                                 "boolean");
         }
         row->defs.defined |= _GR_Vertical;
         row->vertical = tmp.uval;
@@ -2035,7 +2005,7 @@ SetRowField(RowInfo * row,
     else
     {
         info->errorCount++;
-        return ReportBadField("keyboard row", field, rowText(info->dpy, row));
+        return ReportBadField("keyboard row", field, rowText(row));
     }
     return True;
 }
@@ -2395,7 +2365,7 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
 
     if (def->nOutlines < 1)
     {
-        WARN1("Shape \"%s\" has no outlines\n", shText(info->dpy, si));
+        WARN1("Shape \"%s\" has no outlines\n", shText(si));
         ACTION("Definition ignored\n");
         return True;
     }
@@ -2403,8 +2373,7 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
     si->outlines = uTypedCalloc(def->nOutlines, XkbOutlineRec);
     if (!si->outlines)
     {
-        ERROR1("Couldn't allocate outlines for \"%s\"\n",
-               shText(info->dpy, si));
+        ERROR1("Couldn't allocate outlines for \"%s\"\n", shText(si));
         ACTION("Definition ignored\n");
         info->errorCount++;
         return False;
@@ -2425,8 +2394,7 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
         outline->points = uTypedCalloc(ol->nPoints, XkbPointRec);
         if (!outline->points)
         {
-            ERROR1("Can't allocate points for \"%s\"\n",
-                   shText(info->dpy, si));
+            ERROR1("Can't allocate points for \"%s\"\n", shText(si));
             ACTION("Definition ignored\n");
             info->errorCount++;
             return False;
@@ -2449,7 +2417,7 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
                 else
                 {
                     WARN1("Multiple approximations for \"%s\"\n",
-                          shText(info->dpy, si));
+                          shText(si));
                     ACTION("Treating all but the first as normal outlines\n");
                 }
             }
@@ -2460,14 +2428,14 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
                 else
                 {
                     WARN1("Multiple primary outlines for \"%s\"\n",
-                          shText(info->dpy, si));
+                          shText(si));
                     ACTION("Treating all but the first as normal outlines\n");
                 }
             }
             else
             {
                 WARN2("Unknown outline type %s for \"%s\"\n", str,
-                      shText(info->dpy, si));
+                      shText(si));
                 ACTION("Treated as a normal outline\n");
             }
         }
@@ -2493,7 +2461,7 @@ HandleShapeDef(ShapeDef * def, XkbcDescPtr xkb, unsigned merge,
     bzero(&si, sizeof(ShapeInfo));
     si.defs.merge = merge;
     si.name =
-        XkbcInternAtom(info->dpy, XkbcAtomGetString(def->name), False);
+        XkbcInternAtom(XkbcAtomGetString(def->name), False);
     si.dfltCornerRadius = info->dfltCornerRadius;
     if (!HandleShapeBody(def, &si, merge, info))
         return False;
@@ -2520,7 +2488,7 @@ HandleDoodadDef(DoodadDef * def,
     }
     InitDoodadInfo(&new, def->type, si, info);
     new.name =
-        XkbcInternAtom(info->dpy, XkbcAtomGetString(def->name), False);
+        XkbcInternAtom(XkbcAtomGetString(def->name), False);
     for (var = def->body; var != NULL; var = (VarDef *) var->common.next)
     {
         if (ExprResolveLhs(var->name, &elem, &field, &ndx) == 0)
@@ -2528,7 +2496,7 @@ HandleDoodadDef(DoodadDef * def,
         if (elem.str != NULL)
         {
             WARN1("Assignment to field of unknown element in doodad %s\n",
-                  ddText(info->dpy, &new));
+                  ddText(&new));
             ACTION2("No value assigned to %s.%s\n", elem.str, field.str);
         }
         else if (!SetDoodadField(&new, field.str, ndx, var->value, si, info))
@@ -2553,13 +2521,13 @@ HandleOverlayDef(OverlayDef * def,
     if ((def->nKeys < 1) && (warningLevel > 3))
     {
         WARN2("Overlay \"%s\" in section \"%s\" has no keys\n",
-              XkbcAtomText(def->name), scText(info->dpy, si));
+              XkbcAtomText(def->name), scText(si));
         ACTION("Overlay ignored\n");
         return True;
     }
     bzero(&ol, sizeof(OverlayInfo));
     ol.name =
-        XkbcInternAtom(info->dpy, XkbcAtomGetString(def->name), False);
+        XkbcInternAtom(XkbcAtomGetString(def->name), False);
     for (keyDef = def->keys; keyDef;
          keyDef = (OverlayKeyDef *) keyDef->common.next)
     {
@@ -2568,7 +2536,7 @@ HandleOverlayDef(OverlayDef * def,
         {
             WSGO("Couldn't allocate OverlayKeyInfo\n");
             ACTION2("Overlay %s for section %s will be incomplete\n",
-                    oiText(info->dpy, &ol), scText(info->dpy, si));
+                    oiText(&ol), scText(si));
             return False;
         }
         strncpy(key->over, keyDef->over, XkbKeyNameLength);
@@ -2636,7 +2604,7 @@ HandleComplexKey(KeyDef * def, KeyInfo * key, GeometryInfo * info)
                 ERROR("Cannot determine field for unnamed expression\n");
                 ACTION3("Ignoring key %d in row %d of section %s\n",
                         row->nKeys + 1, row->section->nRows + 1,
-                        rowText(info->dpy, row));
+                        rowText(row));
                 return False;
             }
         }
@@ -2652,7 +2620,7 @@ HandleRowBody(RowDef * def, RowInfo * row, unsigned merge,
 
     if ((def->nKeys < 1) && (warningLevel > 3))
     {
-        ERROR1("Row in section %s has no keys\n", rowText(info->dpy, row));
+        ERROR1("Row in section %s has no keys\n", rowText(row));
         ACTION("Section ignored\n");
         return True;
     }
@@ -2693,7 +2661,7 @@ HandleRowBody(RowDef * def, RowInfo * row, unsigned merge,
                 if ((len < 1) || (len > XkbKeyNameLength))
                 {
                     ERROR2("Illegal name %s for key in section %s\n",
-                           keyDef->name, rowText(info->dpy, row));
+                           keyDef->name, rowText(row));
                     ACTION("Section not compiled\n");
                     return False;
                 }
@@ -2794,8 +2762,7 @@ HandleSectionBody(SectionDef * def,
     {
         WSGO2("Expected %d rows, found %d\n", (unsigned int) def->nRows,
               (unsigned int) si->nRows);
-        ACTION1("Definition of section %s might be incorrect\n",
-                scText(info->dpy, si));
+        ACTION1("Definition of section %s might be incorrect\n", scText(si));
     }
     return True;
 }
@@ -2819,7 +2786,7 @@ HandleSectionDef(SectionDef * def,
         return False;
     }
     si.name =
-        XkbcInternAtom(info->dpy, XkbcAtomGetString(def->name), False);
+        XkbcInternAtom(XkbcAtomGetString(def->name), False);
     if (!HandleSectionBody(def, &si, merge, info))
         return False;
     if (!AddSection(info, &si))
@@ -2911,7 +2878,7 @@ HandleGeometryFile(XkbFile * file,
 /***====================================================================***/
 
 static Bool
-CopyShapeDef(Display * dpy, XkbGeometryPtr geom, ShapeInfo * si)
+CopyShapeDef(XkbGeometryPtr geom, ShapeInfo * si)
 {
     register int i, n;
     XkbShapePtr shape;
@@ -2919,12 +2886,12 @@ CopyShapeDef(Display * dpy, XkbGeometryPtr geom, ShapeInfo * si)
     Atom name;
 
     si->index = geom->num_shapes;
-    name = XkbcInternAtom(dpy, XkbcAtomGetString(si->name), False);
+    name = XkbcInternAtom(XkbcAtomGetString(si->name), False);
     shape = XkbAddGeomShape(geom, name, si->nOutlines);
     if (!shape)
     {
         WSGO("Couldn't allocate shape in geometry\n");
-        ACTION1("Shape %s not compiled\n", shText(dpy, si));
+        ACTION1("Shape %s not compiled\n", shText(si));
         return False;
     }
     old_outline = si->outlines;
@@ -2934,7 +2901,7 @@ CopyShapeDef(Display * dpy, XkbGeometryPtr geom, ShapeInfo * si)
         if (!outline)
         {
             WSGO("Couldn't allocate outline in shape\n");
-            ACTION1("Shape %s is incomplete\n", shText(dpy, si));
+            ACTION1("Shape %s is incomplete\n", shText(si));
             return False;
         }
         n = old_outline->num_points;
@@ -2964,7 +2931,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
         if (warningLevel < 9)
         {
             ERROR1("No position defined for doodad %s\n",
-                   ddText(info->dpy, di));
+                   ddText(di));
             ACTION("Illegal doodad ignored\n");
             return False;
         }
@@ -2981,7 +2948,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
         {
             ERROR2("No shape defined for %s doodad %s\n",
                    (di->type == XkbOutlineDoodad ? "outline" : "filled"),
-                   ddText(info->dpy, di));
+                   ddText(di));
             ACTION("Incomplete definition ignored\n");
             return False;
         }
@@ -2991,12 +2958,12 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
             si = FindShape(info, di->shape,
                            (di->type ==
                             XkbOutlineDoodad ? "outline doodad" :
-                            "solid doodad"), ddText(info->dpy, di));
+                            "solid doodad"), ddText(di));
             if (si)
                 di->shape = si->name;
             else
             {
-                ERROR1("No legal shape for %s\n", ddText(info->dpy, di));
+                ERROR1("No legal shape for %s\n", ddText(di));
                 ACTION("Incomplete definition ignored\n");
                 return False;
             }
@@ -3005,7 +2972,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
         {
             if (warningLevel > 5)
             {
-                WARN1("No color for doodad %s\n", ddText(info->dpy, di));
+                WARN1("No color for doodad %s\n", ddText(di));
                 ACTION("Using black\n");
             }
             di->color = XkbcInternAtom("black", False);
@@ -3014,8 +2981,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
     case XkbTextDoodad:
         if ((di->defs.defined & _GD_Text) == 0)
         {
-            ERROR1("No text specified for text doodad %s\n",
-                   ddText(info->dpy, di));
+            ERROR1("No text specified for text doodad %s\n", ddText(di));
             ACTION("Illegal doodad definition ignored\n");
             return False;
         }
@@ -3025,8 +2991,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
         {
             if (warningLevel > 5)
             {
-                WARN1("No color specified for doodad %s\n",
-                      ddText(info->dpy, di));
+                WARN1("No color specified for doodad %s\n", ddText(di));
                 ACTION("Using black\n");
             }
             di->color = XkbcInternAtom("black", False);
@@ -3039,7 +3004,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
             {
                 WARN1
                     ("Text doodad %s has full and partial font definition\n",
-                     ddText(info->dpy, di));
+                     ddText(di));
                 ACTION("Full specification ignored\n");
             }
             di->defs.defined &= ~_GD_FontSpec;
@@ -3049,8 +3014,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
         {
             if (warningLevel > 5)
             {
-                WARN1("No font specified for doodad %s\n",
-                      ddText(info->dpy, di));
+                WARN1("No font specified for doodad %s\n", ddText(di));
                 ACTION1("Using \"%s\"\n", DFLT_FONT);
             }
             di->font = XkbcInternAtom(DFLT_FONT, False);
@@ -3059,8 +3023,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
         {
             if (warningLevel > 7)
             {
-                WARN1("No font slant for text doodad %s\n",
-                      ddText(info->dpy, di));
+                WARN1("No font slant for text doodad %s\n", ddText(di));
                 ACTION1("Using \"%s\"\n", DFLT_SLANT);
             }
             di->fontSlant = XkbcInternAtom(DFLT_SLANT, False);
@@ -3069,8 +3032,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
         {
             if (warningLevel > 7)
             {
-                WARN1("No font weight for text doodad %s\n",
-                      ddText(info->dpy, di));
+                WARN1("No font weight for text doodad %s\n", ddText(di));
                 ACTION1("Using \"%s\"\n", DFLT_WEIGHT);
             }
             di->fontWeight = XkbcInternAtom(DFLT_WEIGHT, False);
@@ -3079,8 +3041,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
         {
             if (warningLevel > 9)
             {
-                WARN1("No font set width for text doodad %s\n",
-                      ddText(info->dpy, di));
+                WARN1("No font set width for text doodad %s\n", ddText(di));
                 ACTION1("Using \"%s\"\n", DFLT_SET_WIDTH);
             }
             di->fontSetWidth = XkbcInternAtom(DFLT_SET_WIDTH, False);
@@ -3089,8 +3050,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
         {
             if (warningLevel > 9)
             {
-                WARN1("No font variant for text doodad %s\n",
-                      ddText(info->dpy, di));
+                WARN1("No font variant for text doodad %s\n", ddText(di));
                 ACTION1("Using \"%s\"\n", DFLT_VARIANT);
             }
             di->fontVariant = XkbcInternAtom(DFLT_VARIANT, False);
@@ -3099,8 +3059,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
         {
             if (warningLevel > 7)
             {
-                WARN1("No font encoding for doodad %s\n",
-                      ddText(info->dpy, di));
+                WARN1("No font encoding for doodad %s\n", ddText(di));
                 ACTION1("Using \"%s\"\n", DFLT_ENCODING);
             }
             di->fontEncoding = XkbcInternAtom(DFLT_ENCODING, False);
@@ -3109,8 +3068,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
         {
             if (warningLevel > 7)
             {
-                WARN1("No font size for text doodad %s\n",
-                      ddText(info->dpy, di));
+                WARN1("No font size for text doodad %s\n", ddText(di));
                 ACTION1("Using %s point text\n", XkbcGeomFPText(DFLT_SIZE));
             }
             di->fontSize = DFLT_SIZE;
@@ -3130,8 +3088,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
             size *= nLines;
             if (warningLevel > 5)
             {
-                WARN1("No height for text doodad %s\n",
-                      ddText(info->dpy, di));
+                WARN1("No height for text doodad %s\n", ddText(di));
                 ACTION1("Using calculated height %s millimeters\n",
                         XkbcGeomFPText(size));
             }
@@ -3158,7 +3115,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
             width *= (di->height * 2) / 3;
             if (warningLevel > 5)
             {
-                WARN1("No width for text doodad %s\n", ddText(info->dpy, di));
+                WARN1("No width for text doodad %s\n", ddText(di));
                 ACTION1("Using calculated width %s millimeters\n",
                         XkbcGeomFPText(width));
             }
@@ -3168,22 +3125,19 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
     case XkbIndicatorDoodad:
         if ((di->defs.defined & _GD_Shape) == 0)
         {
-            ERROR1("No shape defined for indicator doodad %s\n",
-                   ddText(info->dpy, di));
+            ERROR1("No shape defined for indicator doodad %s\n", ddText(di));
             ACTION("Incomplete definition ignored\n");
             return False;
         }
         else
         {
             ShapeInfo *si;
-            si = FindShape(info, di->shape, "indicator doodad",
-                           ddText(info->dpy, di));
+            si = FindShape(info, di->shape, "indicator doodad", ddText(di));
             if (si)
                 di->shape = si->name;
             else
             {
-                ERROR1("No legal shape for doodad %s\n",
-                       ddText(info->dpy, di));
+                ERROR1("No legal shape for doodad %s\n", ddText(di));
                 ACTION("Incomplete definition ignored\n");
                 return False;
             }
@@ -3193,7 +3147,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
             if (warningLevel > 5)
             {
                 WARN1("No \"on\" color for indicator doodad %s\n",
-                      ddText(info->dpy, di));
+                      ddText(di));
                 ACTION("Using green\n");
             }
             di->color = XkbcInternAtom("green", False);
@@ -3203,7 +3157,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
             if (warningLevel > 5)
             {
                 WARN1("No \"off\" color for indicator doodad %s\n",
-                      ddText(info->dpy, di));
+                      ddText(di));
                 ACTION("Using black\n");
             }
             di->offColor = XkbcInternAtom("black", False);
@@ -3212,15 +3166,13 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
     case XkbLogoDoodad:
         if (di->logoName == NULL)
         {
-            ERROR1("No logo name defined for logo doodad %s\n",
-                   ddText(info->dpy, di));
+            ERROR1("No logo name defined for logo doodad %s\n", ddText(di));
             ACTION("Incomplete definition ignored\n");
             return False;
         }
         if ((di->defs.defined & _GD_Shape) == 0)
         {
-            ERROR1("No shape defined for logo doodad %s\n",
-                   ddText(info->dpy, di));
+            ERROR1("No shape defined for logo doodad %s\n", ddText(di));
             ACTION("Incomplete definition ignored\n");
             return False;
         }
@@ -3228,12 +3180,12 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
         {
             ShapeInfo *si;
             si = FindShape(info, di->shape, "logo doodad",
-                           ddText(info->dpy, di));
+                           ddText(di));
             if (si)
                 di->shape = si->name;
             else
             {
-                ERROR1("No legal shape for %s\n", ddText(info->dpy, di));
+                ERROR1("No legal shape for %s\n", ddText(di));
                 ACTION("Incomplete definition ignored\n");
                 return False;
             }
@@ -3242,7 +3194,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
         {
             if (warningLevel > 5)
             {
-                WARN1("No color for doodad %s\n", ddText(info->dpy, di));
+                WARN1("No color for doodad %s\n", ddText(di));
                 ACTION("Using black\n");
             }
             di->color = XkbcInternAtom("black", False);
@@ -3313,7 +3265,7 @@ CopyDoodadDef(XkbGeometryPtr geom,
     {
         WSGO1("Couldn't allocate doodad in %s\n",
               (section ? "section" : "geometry"));
-        ACTION1("Cannot copy doodad %s\n", ddText(info->dpy, di));
+        ACTION1("Cannot copy doodad %s\n", ddText(di));
         return False;
     }
     doodad->any.type = di->type;
@@ -3553,7 +3505,7 @@ CopySectionDef(XkbGeometryPtr geom, SectionInfo * si, GeometryInfo * info)
     if (section == NULL)
     {
         WSGO("Couldn't allocate section in geometry\n");
-        ACTION1("Section %s not compiled\n", scText(info->dpy, si));
+        ACTION1("Section %s not compiled\n", scText(si));
         return False;
     }
     section->top = si->top;
@@ -3568,7 +3520,7 @@ CopySectionDef(XkbGeometryPtr geom, SectionInfo * si, GeometryInfo * info)
         if (row == NULL)
         {
             WSGO("Couldn't allocate row in section\n");
-            ACTION1("Section %s is incomplete\n", scText(info->dpy, si));
+            ACTION1("Section %s is incomplete\n", scText(si));
             return False;
         }
         row->top = ri->top;
@@ -3580,16 +3532,15 @@ CopySectionDef(XkbGeometryPtr geom, SectionInfo * si, GeometryInfo * info)
             if ((ki->defs.defined & _GK_Name) == 0)
             {
                 ERROR3("Key %d of row %d in section %s has no name\n",
-                       (int) ki->index, (int) ri->index,
-                       scText(info->dpy, si));
-                ACTION1("Section %s ignored\n", scText(info->dpy, si));
+                       (int) ki->index, (int) ri->index, scText(si));
+                ACTION1("Section %s ignored\n", scText(si));
                 return False;
             }
             key = XkbAddGeomKey(row);
             if (key == NULL)
             {
                 WSGO("Couldn't allocate key in row\n");
-                ACTION1("Section %s is incomplete\n", scText(info->dpy, si));
+                ACTION1("Section %s is incomplete\n", scText(si));
                 return False;
             }
             memcpy(key->name.name, ki->name, XkbKeyNameLength);
@@ -3650,7 +3601,6 @@ CompileGeometry(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
     GeometryInfo info;
 
     InitGeometryInfo(&info, file->id, merge);
-    info.dpy = xkb->dpy;
     HandleGeometryFile(file, xkb, merge, &info);
 
     if (info.errorCount == 0)
@@ -3720,7 +3670,7 @@ CompileGeometry(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
             for (si = info.shapes; si != NULL;
                  si = (ShapeInfo *) si->defs.next)
             {
-                if (!CopyShapeDef(xkb->dpy, geom, si))
+                if (!CopyShapeDef(geom, si))
                     return False;
             }
         }
