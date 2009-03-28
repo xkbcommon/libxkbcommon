@@ -604,3 +604,27 @@ XkbConfigText(unsigned config, unsigned format)
         return "unknown";
     }
 }
+
+static char *actionTypeNames[XkbSA_NumActions]= {
+    "NoAction",
+    "SetMods",      "LatchMods",    "LockMods",
+    "SetGroup",     "LatchGroup",   "LockGroup",
+    "MovePtr",
+    "PtrBtn",       "LockPtrBtn",
+    "SetPtrDflt",
+    "ISOLock",
+    "Terminate",    "SwitchScreen",
+    "SetControls",  "LockControls",
+    "ActionMessage",
+    "RedirectKey",
+    "DeviceBtn",    "LockDeviceBtn"
+};
+
+char *
+XkbActionTypeText(unsigned type, unsigned format)
+{
+
+    if (type <= XkbSA_LastAction)
+        return actionTypeNames[type];
+    return "Private";
+}
