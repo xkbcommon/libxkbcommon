@@ -48,7 +48,7 @@ extern Bool MergeAliases(AliasInfo ** /* into */ ,
                          unsigned       /* how_merge */
     );
 
-extern int ApplyAliases(XkbDescPtr /* xkb */ ,
+extern int ApplyAliases(XkbcDescPtr /* xkb */ ,
                         Bool /* toGeom */ ,
                         AliasInfo **    /* info */
     );

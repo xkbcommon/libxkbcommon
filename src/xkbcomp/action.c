@@ -333,7 +333,7 @@ ReportNotFound(unsigned action, unsigned field, const char *what, char *bad)
 }
 
 static Bool
-HandleNoAction(XkbDescPtr xkb,
+HandleNoAction(XkbcDescPtr xkb,
                XkbAnyAction * action,
                unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -363,7 +363,7 @@ CheckLatchLockFlags(unsigned action,
 }
 
 static Bool
-CheckModifierField(XkbDescPtr xkb,
+CheckModifierField(XkbcDescPtr xkb,
                    unsigned action,
                    ExprDef * value,
                    unsigned *flags_inout, unsigned *mods_rtrn)
@@ -391,7 +391,7 @@ CheckModifierField(XkbDescPtr xkb,
 }
 
 static Bool
-HandleSetLatchMods(XkbDescPtr xkb,
+HandleSetLatchMods(XkbcDescPtr xkb,
                    XkbAnyAction * action,
                    unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -437,7 +437,7 @@ HandleSetLatchMods(XkbDescPtr xkb,
 }
 
 static Bool
-HandleLockMods(XkbDescPtr xkb,
+HandleLockMods(XkbcDescPtr xkb,
                XkbAnyAction * action,
                unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -514,7 +514,7 @@ CheckGroupField(unsigned action,
 }
 
 static Bool
-HandleSetLatchGroup(XkbDescPtr xkb,
+HandleSetLatchGroup(XkbcDescPtr xkb,
                     XkbAnyAction * action,
                     unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -559,7 +559,7 @@ HandleSetLatchGroup(XkbDescPtr xkb,
 }
 
 static Bool
-HandleLockGroup(XkbDescPtr xkb,
+HandleLockGroup(XkbcDescPtr xkb,
                 XkbAnyAction * action,
                 unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -585,7 +585,7 @@ HandleLockGroup(XkbDescPtr xkb,
 }
 
 static Bool
-HandleMovePtr(XkbDescPtr xkb,
+HandleMovePtr(XkbcDescPtr xkb,
               XkbAnyAction * action,
               unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -650,7 +650,7 @@ static LookupEntry lockWhich[] = {
 };
 
 static Bool
-HandlePtrBtn(XkbDescPtr xkb,
+HandlePtrBtn(XkbcDescPtr xkb,
              XkbAnyAction * action,
              unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -712,7 +712,7 @@ static LookupEntry ptrDflts[] = {
 };
 
 static Bool
-HandleSetPtrDflt(XkbDescPtr xkb,
+HandleSetPtrDflt(XkbcDescPtr xkb,
                  XkbAnyAction * action,
                  unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -785,7 +785,7 @@ static LookupEntry isoNames[] = {
 };
 
 static Bool
-HandleISOLock(XkbDescPtr xkb,
+HandleISOLock(XkbcDescPtr xkb,
               XkbAnyAction * action,
               unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -833,7 +833,7 @@ HandleISOLock(XkbDescPtr xkb,
 }
 
 static Bool
-HandleSwitchScreen(XkbDescPtr xkb,
+HandleSwitchScreen(XkbcDescPtr xkb,
                    XkbAnyAction * action,
                    unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -925,7 +925,7 @@ LookupEntry ctrlNames[] = {
 };
 
 static Bool
-HandleSetLockControls(XkbDescPtr xkb,
+HandleSetLockControls(XkbcDescPtr xkb,
                       XkbAnyAction * action,
                       unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -957,7 +957,7 @@ static LookupEntry evNames[] = {
 };
 
 static Bool
-HandleActionMessage(XkbDescPtr xkb,
+HandleActionMessage(XkbcDescPtr xkb,
                     XkbAnyAction * action,
                     unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -1035,7 +1035,7 @@ HandleActionMessage(XkbDescPtr xkb,
 }
 
 static Bool
-HandleRedirectKey(XkbDescPtr xkb,
+HandleRedirectKey(XkbcDescPtr xkb,
                   XkbAnyAction * action,
                   unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -1091,7 +1091,7 @@ HandleRedirectKey(XkbDescPtr xkb,
 }
 
 static Bool
-HandleDeviceBtn(XkbDescPtr xkb,
+HandleDeviceBtn(XkbcDescPtr xkb,
                 XkbAnyAction * action,
                 unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -1161,7 +1161,7 @@ HandleDeviceBtn(XkbDescPtr xkb,
 }
 
 static Bool
-HandleDeviceValuator(XkbDescPtr xkb,
+HandleDeviceValuator(XkbcDescPtr xkb,
                      XkbAnyAction * action,
                      unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -1176,7 +1176,7 @@ HandleDeviceValuator(XkbDescPtr xkb,
 }
 
 static Bool
-HandlePrivate(XkbDescPtr xkb,
+HandlePrivate(XkbcDescPtr xkb,
               XkbAnyAction * action,
               unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -1244,7 +1244,7 @@ HandlePrivate(XkbDescPtr xkb,
     return ReportIllegal(PrivateAction, field);
 }
 
-typedef Bool(*actionHandler) (XkbDescPtr /* xkb */ ,
+typedef Bool(*actionHandler) (XkbcDescPtr /* xkb */ ,
                               XkbAnyAction * /* action */ ,
                               unsigned /* field */ ,
                               ExprDef * /* array_ndx */ ,
@@ -1297,7 +1297,7 @@ ApplyActionFactoryDefaults(XkbAction * action)
 
 int
 HandleActionDef(ExprDef * def,
-                XkbDescPtr xkb,
+                XkbcDescPtr xkb,
                 XkbAnyAction * action, unsigned mergeMode, ActionInfo * info)
 {
     ExprDef *arg;
@@ -1396,7 +1396,7 @@ HandleActionDef(ExprDef * def,
 /***====================================================================***/
 
 int
-SetActionField(XkbDescPtr xkb,
+SetActionField(XkbcDescPtr xkb,
                char *elem,
                char *field,
                ExprDef * array_ndx, ExprDef * value, ActionInfo ** info_rtrn)

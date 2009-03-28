@@ -1324,13 +1324,13 @@ MergeIncludedGeometry(GeometryInfo * into, GeometryInfo * from,
 }
 
 typedef void (*FileHandler) (XkbFile * /* file */ ,
-                             XkbDescPtr /* xkb */ ,
+                             XkbcDescPtr /* xkb */ ,
                              unsigned /* merge */ ,
                              GeometryInfo *     /* info */
     );
 
 static Bool
-HandleIncludeGeometry(IncludeStmt * stmt, XkbDescPtr xkb, GeometryInfo * info,
+HandleIncludeGeometry(IncludeStmt * stmt, XkbcDescPtr xkb, GeometryInfo * info,
                       FileHandler hndlr)
 {
     unsigned newMerge;
@@ -2140,7 +2140,7 @@ SetGeometryProperty(GeometryInfo * info, char *property, ExprDef * value)
 }
 
 static int
-HandleGeometryVar(VarDef * stmt, XkbDescPtr xkb, GeometryInfo * info)
+HandleGeometryVar(VarDef * stmt, XkbcDescPtr xkb, GeometryInfo * info)
 {
     ExprResult elem, field, tmp;
     ExprDef *ndx;
@@ -2488,7 +2488,7 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
 }
 
 static int
-HandleShapeDef(ShapeDef * def, XkbDescPtr xkb, unsigned merge,
+HandleShapeDef(ShapeDef * def, XkbcDescPtr xkb, unsigned merge,
                GeometryInfo * info)
 {
     ShapeInfo si;
@@ -2809,7 +2809,7 @@ HandleSectionBody(SectionDef * def,
 
 static int
 HandleSectionDef(SectionDef * def,
-                 XkbDescPtr xkb, unsigned merge, GeometryInfo * info)
+                 XkbcDescPtr xkb, unsigned merge, GeometryInfo * info)
 {
     SectionInfo si;
     char *str;
@@ -2838,7 +2838,7 @@ HandleSectionDef(SectionDef * def,
 
 static void
 HandleGeometryFile(XkbFile * file,
-                   XkbDescPtr xkb, unsigned merge, GeometryInfo * info)
+                   XkbcDescPtr xkb, unsigned merge, GeometryInfo * info)
 {
     ParseCommon *stmt;
     char *failWhat;

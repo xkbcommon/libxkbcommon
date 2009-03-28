@@ -92,14 +92,14 @@ Atom tok_KEYPAD;
 
 /***====================================================================***/
 
-extern Bool AddMapEntry(XkbDescPtr /* xkb */ ,
+extern Bool AddMapEntry(XkbcDescPtr /* xkb */ ,
                         KeyTypeInfo * /* type */ ,
                         XkbKTMapEntryPtr /* new */ ,
                         Bool /* clobber */ ,
                         Bool    /* report */
     );
 
-extern Bool AddPreserve(XkbDescPtr /* xkb */ ,
+extern Bool AddPreserve(XkbcDescPtr /* xkb */ ,
                         KeyTypeInfo * /* type */ ,
                         PreserveInfo * /* new */ ,
                         Bool /* clobber */ ,
@@ -126,7 +126,7 @@ extern Bool AddLevelName(KeyTypeInfo * /* type */ ,
 /***====================================================================***/
 
 static void
-InitKeyTypesInfo(KeyTypesInfo * info, XkbDescPtr xkb, KeyTypesInfo * from)
+InitKeyTypesInfo(KeyTypesInfo * info, XkbcDescPtr xkb, KeyTypesInfo * from)
 {
     tok_ONE_LEVEL = XkbInternAtom(NULL, "ONE_LEVEL", False);
     tok_TWO_LEVEL = XkbInternAtom(NULL, "TWO_LEVEL", False);
@@ -280,7 +280,7 @@ ReportTypeBadWidth(const char *type, int has, int needs)
 }
 
 static Bool
-AddKeyType(XkbDescPtr xkb, KeyTypesInfo * info, KeyTypeInfo * new)
+AddKeyType(XkbcDescPtr xkb, KeyTypesInfo * info, KeyTypeInfo * new)
 {
     KeyTypeInfo *old;
 
@@ -366,7 +366,7 @@ AddKeyType(XkbDescPtr xkb, KeyTypesInfo * info, KeyTypeInfo * new)
 
 static void
 MergeIncludedKeyTypes(KeyTypesInfo * into,
-                      KeyTypesInfo * from, unsigned merge, XkbDescPtr xkb)
+                      KeyTypesInfo * from, unsigned merge, XkbcDescPtr xkb)
 {
     KeyTypeInfo *type;
 
@@ -392,14 +392,14 @@ MergeIncludedKeyTypes(KeyTypesInfo * into,
 }
 
 typedef void (*FileHandler) (XkbFile * /* file */ ,
-                             XkbDescPtr /* xkb */ ,
+                             XkbcDescPtr /* xkb */ ,
                              unsigned /* merge */ ,
                              KeyTypesInfo *     /* included */
     );
 
 static Bool
 HandleIncludeKeyTypes(IncludeStmt * stmt,
-                      XkbDescPtr xkb, KeyTypesInfo * info, FileHandler hndlr)
+                      XkbcDescPtr xkb, KeyTypesInfo * info, FileHandler hndlr)
 {
     unsigned newMerge;
     XkbFile *rtrn;
@@ -544,7 +544,7 @@ NextMapEntry(KeyTypeInfo * type)
 }
 
 Bool
-AddPreserve(XkbDescPtr xkb,
+AddPreserve(XkbcDescPtr xkb,
             KeyTypeInfo * type, PreserveInfo * new, Bool clobber, Bool report)
 {
     PreserveInfo *old;
@@ -616,7 +616,7 @@ AddPreserve(XkbDescPtr xkb,
  * @param report True if a warning is to be printed on.
  */
 Bool
-AddMapEntry(XkbDescPtr xkb,
+AddMapEntry(XkbcDescPtr xkb,
             KeyTypeInfo * type,
             XkbKTMapEntryPtr new, Bool clobber, Bool report)
 {
@@ -682,7 +682,7 @@ static LookupEntry lnames[] = {
 
 static Bool
 SetMapEntry(KeyTypeInfo * type,
-            XkbDescPtr xkb, ExprDef * arrayNdx, ExprDef * value)
+            XkbcDescPtr xkb, ExprDef * arrayNdx, ExprDef * value)
 {
     ExprResult rtrn;
     XkbKTMapEntryRec entry;
@@ -729,7 +729,7 @@ SetMapEntry(KeyTypeInfo * type,
 
 static Bool
 SetPreserve(KeyTypeInfo * type,
-            XkbDescPtr xkb, ExprDef * arrayNdx, ExprDef * value)
+            XkbcDescPtr xkb, ExprDef * arrayNdx, ExprDef * value)
 {
     ExprResult rtrn;
     PreserveInfo new;
@@ -878,7 +878,7 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
  */
 static Bool
 SetKeyTypeField(KeyTypeInfo * type,
-                XkbDescPtr xkb,
+                XkbcDescPtr xkb,
                 char *field,
                 ExprDef * arrayNdx, ExprDef * value, KeyTypesInfo * info)
 {
@@ -937,7 +937,7 @@ SetKeyTypeField(KeyTypeInfo * type,
 }
 
 static Bool
-HandleKeyTypeVar(VarDef * stmt, XkbDescPtr xkb, KeyTypesInfo * info)
+HandleKeyTypeVar(VarDef * stmt, XkbcDescPtr xkb, KeyTypesInfo * info)
 {
     ExprResult elem, field;
     ExprDef *arrayNdx;
@@ -963,7 +963,7 @@ HandleKeyTypeVar(VarDef * stmt, XkbDescPtr xkb, KeyTypesInfo * info)
 
 static int
 HandleKeyTypeBody(VarDef * def,
-                  XkbDescPtr xkb, KeyTypeInfo * type, KeyTypesInfo * info)
+                  XkbcDescPtr xkb, KeyTypeInfo * type, KeyTypesInfo * info)
 {
     int ok = 1;
     ExprResult tmp, field;
@@ -990,7 +990,7 @@ HandleKeyTypeBody(VarDef * def,
  */
 static int
 HandleKeyTypeDef(KeyTypeDef * def,
-                 XkbDescPtr xkb, unsigned merge, KeyTypesInfo * info)
+                 XkbcDescPtr xkb, unsigned merge, KeyTypesInfo * info)
 {
     register int i;
     KeyTypeInfo type;
@@ -1071,7 +1071,7 @@ HandleKeyTypeDef(KeyTypeDef * def,
  */
 static void
 HandleKeyTypesFile(XkbFile * file,
-                   XkbDescPtr xkb, unsigned merge, KeyTypesInfo * info)
+                   XkbcDescPtr xkb, unsigned merge, KeyTypesInfo * info)
 {
     ParseCommon *stmt;
 
@@ -1132,7 +1132,7 @@ HandleKeyTypesFile(XkbFile * file,
 }
 
 static Bool
-CopyDefToKeyType(XkbDescPtr xkb, XkbKeyTypePtr type, KeyTypeInfo * def)
+CopyDefToKeyType(XkbcDescPtr xkb, XkbKeyTypePtr type, KeyTypeInfo * def)
 {
     register int i;
     PreserveInfo *pre;

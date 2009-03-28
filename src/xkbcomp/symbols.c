@@ -238,7 +238,7 @@ typedef struct _SymbolsInfo
 } SymbolsInfo;
 
 static void
-InitSymbolsInfo(SymbolsInfo * info, XkbDescPtr xkb)
+InitSymbolsInfo(SymbolsInfo * info, XkbcDescPtr xkb)
 {
     register int i;
 
@@ -601,7 +601,7 @@ MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
 }
 
 static Bool
-AddKeySymbols(SymbolsInfo * info, KeyInfo * key, XkbDescPtr xkb)
+AddKeySymbols(SymbolsInfo * info, KeyInfo * key, XkbcDescPtr xkb)
 {
     register int i;
     unsigned long real_name;
@@ -713,7 +713,7 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
 
 static void
 MergeIncludedSymbols(SymbolsInfo * into, SymbolsInfo * from,
-                     unsigned merge, XkbDescPtr xkb)
+                     unsigned merge, XkbcDescPtr xkb)
 {
     register int i;
     KeyInfo *key;
@@ -763,14 +763,14 @@ MergeIncludedSymbols(SymbolsInfo * into, SymbolsInfo * from,
 }
 
 typedef void (*FileHandler) (XkbFile * /* rtrn */ ,
-                             XkbDescPtr /* xkb */ ,
+                             XkbcDescPtr /* xkb */ ,
                              unsigned /* merge */ ,
                              SymbolsInfo *      /* included */
     );
 
 static Bool
 HandleIncludeSymbols(IncludeStmt * stmt,
-                     XkbDescPtr xkb, SymbolsInfo * info, FileHandler hndlr)
+                     XkbcDescPtr xkb, SymbolsInfo * info, FileHandler hndlr)
 {
     unsigned newMerge;
     XkbFile *rtrn;
@@ -930,7 +930,7 @@ GetGroupIndex(KeyInfo * key,
 
 static Bool
 AddSymbolsToKey(KeyInfo * key,
-                XkbDescPtr xkb,
+                XkbcDescPtr xkb,
                 char *field,
                 ExprDef * arrayNdx, ExprDef * value, SymbolsInfo * info)
 {
@@ -980,7 +980,7 @@ AddSymbolsToKey(KeyInfo * key,
 
 static Bool
 AddActionsToKey(KeyInfo * key,
-                XkbDescPtr xkb,
+                XkbcDescPtr xkb,
                 char *field,
                 ExprDef * arrayNdx, ExprDef * value, SymbolsInfo * info)
 {
@@ -1116,7 +1116,7 @@ static LookupEntry rgEntries[] = {
 
 static Bool
 SetSymbolsField(KeyInfo * key,
-                XkbDescPtr xkb,
+                XkbcDescPtr xkb,
                 char *field,
                 ExprDef * arrayNdx, ExprDef * value, SymbolsInfo * info)
 {
@@ -1402,7 +1402,7 @@ SetGroupName(SymbolsInfo * info, ExprDef * arrayNdx, ExprDef * value)
 }
 
 static int
-HandleSymbolsVar(VarDef * stmt, XkbDescPtr xkb, SymbolsInfo * info)
+HandleSymbolsVar(VarDef * stmt, XkbcDescPtr xkb, SymbolsInfo * info)
 {
     ExprResult elem, field, tmp;
     ExprDef *arrayNdx;
@@ -1484,7 +1484,7 @@ HandleSymbolsVar(VarDef * stmt, XkbDescPtr xkb, SymbolsInfo * info)
 
 static Bool
 HandleSymbolsBody(VarDef * def,
-                  XkbDescPtr xkb, KeyInfo * key, SymbolsInfo * info)
+                  XkbcDescPtr xkb, KeyInfo * key, SymbolsInfo * info)
 {
     Bool ok = True;
     ExprResult tmp, field;
@@ -1562,7 +1562,7 @@ SetExplicitGroup(SymbolsInfo * info, KeyInfo * key)
 
 static int
 HandleSymbolsDef(SymbolsDef * stmt,
-                 XkbDescPtr xkb, unsigned merge, SymbolsInfo * info)
+                 XkbcDescPtr xkb, unsigned merge, SymbolsInfo * info)
 {
     KeyInfo key;
 
@@ -1592,7 +1592,7 @@ HandleSymbolsDef(SymbolsDef * stmt,
 
 static Bool
 HandleModMapDef(ModMapDef * def,
-                XkbDescPtr xkb, unsigned merge, SymbolsInfo * info)
+                XkbcDescPtr xkb, unsigned merge, SymbolsInfo * info)
 {
     ExprDef *key;
     ModMapEntry tmp;
@@ -1635,7 +1635,7 @@ HandleModMapDef(ModMapDef * def,
 
 static void
 HandleSymbolsFile(XkbFile * file,
-                  XkbDescPtr xkb, unsigned merge, SymbolsInfo * info)
+                  XkbcDescPtr xkb, unsigned merge, SymbolsInfo * info)
 {
     ParseCommon *stmt;
 
@@ -1695,7 +1695,7 @@ HandleSymbolsFile(XkbFile * file,
 }
 
 static Bool
-FindKeyForSymbol(XkbDescPtr xkb, KeySym sym, unsigned int *kc_rtrn)
+FindKeyForSymbol(XkbcDescPtr xkb, KeySym sym, unsigned int *kc_rtrn)
 {
     register int i, j;
     register Bool gotOne;
@@ -1731,7 +1731,7 @@ FindKeyForSymbol(XkbDescPtr xkb, KeySym sym, unsigned int *kc_rtrn)
  * @return True if found, False otherwise.
  */
 static Bool
-FindNamedType(XkbDescPtr xkb, Atom name, unsigned *type_rtrn)
+FindNamedType(XkbcDescPtr xkb, Atom name, unsigned *type_rtrn)
 {
     register unsigned n;
 

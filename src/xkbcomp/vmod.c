@@ -37,7 +37,7 @@
 #include "vmod.h"
 
 void
-InitVModInfo(VModInfo * info, XkbDescPtr xkb)
+InitVModInfo(VModInfo * info, XkbcDescPtr xkb)
 {
     ClearVModInfo(info, xkb);
     info->errorCount = 0;
@@ -45,7 +45,7 @@ InitVModInfo(VModInfo * info, XkbDescPtr xkb)
 }
 
 void
-ClearVModInfo(VModInfo * info, XkbDescPtr xkb)
+ClearVModInfo(VModInfo * info, XkbcDescPtr xkb)
 {
     register int i;
 
@@ -173,9 +173,9 @@ LookupVModIndex(XPointer priv,
     register int i;
     register char *fieldStr;
     register char *modStr;
-    XkbDescPtr xkb;
+    XkbcDescPtr xkb;
 
-    xkb = (XkbDescPtr) priv;
+    xkb = (XkbcDescPtr) priv;
     if ((xkb == NULL) || (xkb->names == NULL) || (elem != None)
         || (type != TypeInt))
     {
@@ -226,7 +226,7 @@ LookupVModMask(XPointer priv,
 }
 
 int
-FindKeypadVMod(XkbDescPtr xkb)
+FindKeypadVMod(XkbcDescPtr xkb)
 {
     Atom name;
     ExprResult rtrn;

@@ -92,10 +92,10 @@ extern Bool ProcessIncludeFile(IncludeStmt * /* stmt */ ,
                                unsigned *       /* merge_rtrn */
     );
 
-extern Status ComputeKbdDefaults(XkbDescPtr     /* xkb */
+extern Status ComputeKbdDefaults(XkbcDescPtr     /* xkb */
     );
 
-extern Bool FindNamedKey(XkbDescPtr /* xkb */ ,
+extern Bool FindNamedKey(XkbcDescPtr /* xkb */ ,
                          unsigned long /* name */ ,
                          unsigned int * /* kc_rtrn */ ,
                          Bool /* use_aliases */ ,
@@ -103,7 +103,7 @@ extern Bool FindNamedKey(XkbDescPtr /* xkb */ ,
                          int    /* start_from */
     );
 
-extern Bool FindKeyNameForAlias(XkbDescPtr /* xkb */ ,
+extern Bool FindKeyNameForAlias(XkbcDescPtr /* xkb */ ,
                                 unsigned long /* lname */ ,
                                 unsigned long * /* real_name */
     );

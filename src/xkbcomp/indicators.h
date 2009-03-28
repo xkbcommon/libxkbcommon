@@ -61,14 +61,14 @@ extern LEDInfo *AddIndicatorMap(LEDInfo * /* oldLEDs */ ,
     );
 
 extern int SetIndicatorMapField(LEDInfo * /* led */ ,
-                                XkbDescPtr /* xkb */ ,
+                                XkbcDescPtr /* xkb */ ,
                                 char * /* field */ ,
                                 ExprDef * /* arrayNdx */ ,
                                 ExprDef *       /* value */
     );
 
 extern LEDInfo *HandleIndicatorMapDef(IndicatorMapDef * /* stmt */ ,
-                                      XkbDescPtr /* xkb */ ,
+                                      XkbcDescPtr /* xkb */ ,
                                       LEDInfo * /* dflt */ ,
                                       LEDInfo * /* oldLEDs */ ,
                                       unsigned  /* mergeMode */

@@ -377,7 +377,7 @@ static KeyNameDesc dfltKeys[] = {
 };
 
 Status
-ComputeKbdDefaults(XkbDescPtr xkb)
+ComputeKbdDefaults(XkbcDescPtr xkb)
 {
     Status rtrn;
     register int i, tmp, nUnknown;
@@ -463,7 +463,7 @@ ComputeKbdDefaults(XkbDescPtr xkb)
  * @return True if found, False otherwise.
  */
 Bool
-FindNamedKey(XkbDescPtr xkb,
+FindNamedKey(XkbcDescPtr xkb,
              unsigned long name,
              unsigned int *kc_rtrn,
              Bool use_aliases, Bool create, int start_from)
@@ -536,7 +536,7 @@ FindNamedKey(XkbDescPtr xkb,
 }
 
 Bool
-FindKeyNameForAlias(XkbDescPtr xkb, unsigned long lname,
+FindKeyNameForAlias(XkbcDescPtr xkb, unsigned long lname,
                     unsigned long *real_name)
 {
     register int i;

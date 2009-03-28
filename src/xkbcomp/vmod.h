@@ -29,7 +29,7 @@
 
 typedef struct _VModInfo
 {
-    XkbDescPtr xkb;
+    XkbcDescPtr xkb;
     unsigned defined;
     unsigned available;
     unsigned newlyDefined;
@@ -37,11 +37,11 @@ typedef struct _VModInfo
 } VModInfo;
 
 extern void InitVModInfo(VModInfo * /* info */ ,
-                         XkbDescPtr     /* xkb */
+                         XkbcDescPtr     /* xkb */
     );
 
 extern void ClearVModInfo(VModInfo * /* info */ ,
-                          XkbDescPtr    /* xkb */
+                          XkbcDescPtr    /* xkb */
     );
 
 extern Bool HandleVModDef(VModDef * /* stmt */ ,
@@ -50,7 +50,7 @@ extern Bool HandleVModDef(VModDef * /* stmt */ ,
     );
 
 extern Bool ApplyVModDefs(VModInfo * /* info */ ,
-                          XkbDescPtr    /* xkb */
+                          XkbcDescPtr    /* xkb */
     );
 
 extern int LookupVModIndex(XPointer /* priv */ ,
@@ -67,7 +67,7 @@ extern int LookupVModMask(XPointer /* priv */ ,
                           ExprResult *  /* val_rtrn */
     );
 
-extern int FindKeypadVMod(XkbDescPtr    /* xkb */
+extern int FindKeypadVMod(XkbcDescPtr    /* xkb */
     );
 
 extern Bool ResolveVirtualModifier(ExprDef * /* def */ ,

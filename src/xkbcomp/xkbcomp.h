@@ -37,6 +37,7 @@
 #include "utils.h"
 
 #include <X11/extensions/XKM.h>
+#include "X11/extensions/XKBcommon.h"
 
 extern char *scanFile;
 

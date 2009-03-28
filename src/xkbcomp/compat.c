@@ -67,7 +67,7 @@ typedef struct _CompatInfo
     LEDInfo *leds;
     VModInfo vmods;
     ActionInfo *act;
-    XkbDescPtr xkb;
+    XkbcDescPtr xkb;
 } CompatInfo;
 
 /***====================================================================***/
@@ -99,7 +99,7 @@ siText(SymInterpInfo * si, CompatInfo * info)
 }
 
 static void
-InitCompatInfo(CompatInfo * info, XkbDescPtr xkb)
+InitCompatInfo(CompatInfo * info, XkbcDescPtr xkb)
 {
     register int i;
 
@@ -132,7 +132,7 @@ InitCompatInfo(CompatInfo * info, XkbDescPtr xkb)
 }
 
 static void
-ClearCompatInfo(CompatInfo * info, XkbDescPtr xkb)
+ClearCompatInfo(CompatInfo * info, XkbcDescPtr xkb)
 {
     register int i;
 
@@ -392,14 +392,14 @@ MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from, unsigned merge)
 }
 
 typedef void (*FileHandler) (XkbFile * /* rtrn */ ,
-                             XkbDescPtr /* xkb */ ,
+                             XkbcDescPtr /* xkb */ ,
                              unsigned /* merge */ ,
                              CompatInfo *       /* info */
     );
 
 static Bool
 HandleIncludeCompatMap(IncludeStmt * stmt,
-                       XkbDescPtr xkb, CompatInfo * info, FileHandler hndlr)
+                       XkbcDescPtr xkb, CompatInfo * info, FileHandler hndlr)
 {
     unsigned newMerge;
     XkbFile *rtrn;
@@ -492,7 +492,7 @@ static LookupEntry useModMapValues[] = {
 
 static int
 SetInterpField(SymInterpInfo * si,
-               XkbDescPtr xkb,
+               XkbcDescPtr xkb,
                char *field,
                ExprDef * arrayNdx, ExprDef * value, CompatInfo * info)
 {
@@ -603,7 +603,7 @@ LookupEntry groupNames[] = {
 };
 
 static int
-HandleInterpVar(VarDef * stmt, XkbDescPtr xkb, CompatInfo * info)
+HandleInterpVar(VarDef * stmt, XkbcDescPtr xkb, CompatInfo * info)
 {
     ExprResult elem, field;
     ExprDef *ndx;
@@ -623,7 +623,7 @@ HandleInterpVar(VarDef * stmt, XkbDescPtr xkb, CompatInfo * info)
 }
 
 static int
-HandleInterpBody(VarDef * def, XkbDescPtr xkb, SymInterpInfo * si,
+HandleInterpBody(VarDef * def, XkbcDescPtr xkb, SymInterpInfo * si,
                  CompatInfo * info)
 {
     int ok = 1;
@@ -646,7 +646,7 @@ HandleInterpBody(VarDef * def, XkbDescPtr xkb, SymInterpInfo * si,
 }
 
 static int
-HandleInterpDef(InterpDef * def, XkbDescPtr xkb, unsigned merge,
+HandleInterpDef(InterpDef * def, XkbcDescPtr xkb, unsigned merge,
                 CompatInfo * info)
 {
     unsigned pred, mods;
@@ -682,7 +682,7 @@ HandleInterpDef(InterpDef * def, XkbDescPtr xkb, unsigned merge,
 
 static int
 HandleGroupCompatDef(GroupCompatDef * def,
-                     XkbDescPtr xkb, unsigned merge, CompatInfo * info)
+                     XkbcDescPtr xkb, unsigned merge, CompatInfo * info)
 {
     ExprResult val;
     GroupCompatInfo tmp;
@@ -713,7 +713,7 @@ HandleGroupCompatDef(GroupCompatDef * def,
 
 static void
 HandleCompatMapFile(XkbFile * file,
-                    XkbDescPtr xkb, unsigned merge, CompatInfo * info)
+                    XkbcDescPtr xkb, unsigned merge, CompatInfo * info)
 {
     ParseCommon *stmt;
 

@@ -156,7 +156,7 @@ MergeAliases(AliasInfo ** into, AliasInfo ** merge, unsigned how_merge)
 }
 
 int
-ApplyAliases(XkbDescPtr xkb, Bool toGeom, AliasInfo ** info_in)
+ApplyAliases(XkbcDescPtr xkb, Bool toGeom, AliasInfo ** info_in)
 {
     register int i;
     XkbKeyAliasPtr old, a;

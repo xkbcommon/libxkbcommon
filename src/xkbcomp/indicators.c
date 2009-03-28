@@ -199,7 +199,7 @@ static LookupEntry groupComponentNames[] = {
 
 int
 SetIndicatorMapField(LEDInfo * led,
-                     XkbDescPtr xkb,
+                     XkbcDescPtr xkb,
                      char *field, ExprDef * arrayNdx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -324,7 +324,7 @@ SetIndicatorMapField(LEDInfo * led,
 
 LEDInfo *
 HandleIndicatorMapDef(IndicatorMapDef * def,
-                      XkbDescPtr xkb,
+                      XkbcDescPtr xkb,
                       LEDInfo * dflt, LEDInfo * oldLEDs, unsigned merge)
 {
     LEDInfo led, *rtrn;
