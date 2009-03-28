@@ -1052,7 +1052,7 @@ ExprResolveKeySym(ExprDef * expr,
     {
         char *str;
         str = XkbcAtomGetString(expr->value.str);
-        if ((str != NULL) && ((sym = XStringToKeysym(str)) != NoSymbol))
+        if ((str != NULL) && ((sym = XkbcStringToKeysym(str)) != NoSymbol))
         {
             val_rtrn->uval = sym;
             return True;
