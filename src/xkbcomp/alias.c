@@ -162,7 +162,7 @@ ApplyAliases(XkbcDescPtr xkb, Bool toGeom, AliasInfo ** info_in)
     XkbKeyAliasPtr old, a;
     AliasInfo *info;
     int nNew, nOld;
-    Status status;
+    int status;
 
     if (*info_in == NULL)
         return True;

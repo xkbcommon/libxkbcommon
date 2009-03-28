@@ -374,10 +374,10 @@ static KeyNameDesc dfltKeys[] = {
     {NoSymbol, NoSymbol, "\0\0\0\0"}
 };
 
-Status
+int
 ComputeKbdDefaults(XkbcDescPtr xkb)
 {
-    Status rtrn;
+    int rtrn;
     register int i, tmp, nUnknown;
     KeyNameDesc *name;
     KeySym *syms;

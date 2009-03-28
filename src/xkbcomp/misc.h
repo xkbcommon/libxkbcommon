@@ -92,7 +92,7 @@ extern Bool ProcessIncludeFile(IncludeStmt * /* stmt */ ,
                                unsigned *       /* merge_rtrn */
     );
 
-extern Status ComputeKbdDefaults(XkbcDescPtr     /* xkb */
+extern int ComputeKbdDefaults(XkbcDescPtr     /* xkb */
     );
 
 extern Bool FindNamedKey(XkbcDescPtr /* xkb */ ,
