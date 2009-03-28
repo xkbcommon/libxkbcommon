@@ -840,7 +840,7 @@ CompileKeycodes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
             xkb->max_key_code = info.effectiveMax;
         else
             xkb->max_key_code = info.computedMax;
-        if (XkbAllocNames(xkb, XkbKeyNamesMask | XkbIndicatorNamesMask, 0, 0)
+        if (XkbcAllocNames(xkb, XkbKeyNamesMask | XkbIndicatorNamesMask, 0, 0)
                 == Success)
         {
             register int i;
@@ -862,7 +862,7 @@ CompileKeycodes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
         if (info.leds)
         {
             IndicatorNameInfo *ii;
-            if (XkbAllocIndicatorMaps(xkb) != Success)
+            if (XkbcAllocIndicatorMaps(xkb) != Success)
             {
                 WSGO("Couldn't allocate IndicatorRec in CompileKeycodes\n");
                 ACTION("Physical indicators not set\n");

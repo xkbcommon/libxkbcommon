@@ -238,18 +238,18 @@ ApplyAliases(XkbcDescPtr xkb, Bool toGeom, AliasInfo ** info_in)
             bzero((char *) &sizes, sizeof(XkbGeometrySizesRec));
             sizes.which = XkbGeomKeyAliasesMask;
             sizes.num_key_aliases = nOld + nNew;
-            status = XkbAllocGeometry(xkb, &sizes);
+            status = XkbcAllocGeometry(xkb, &sizes);
         }
         else
         {
-            status = XkbAllocGeomKeyAliases(xkb->geom, nOld + nNew);
+            status = XkbcAllocGeomKeyAliases(xkb->geom, nOld + nNew);
         }
         if (xkb->geom)
             old = xkb->geom->key_aliases;
     }
     else
     {
-        status = XkbAllocNames(xkb, XkbKeyAliasesMask, 0, nOld + nNew);
+        status = XkbcAllocNames(xkb, XkbKeyAliasesMask, 0, nOld + nNew);
         if (xkb->names)
             old = xkb->names->key_aliases;
     }

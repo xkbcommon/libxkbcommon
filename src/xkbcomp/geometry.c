@@ -3614,7 +3614,7 @@ CompileGeometry(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
         sizes.num_shapes = info.nShapes;
         sizes.num_sections = info.nSections;
         sizes.num_doodads = info.nDoodads;
-        if (XkbAllocGeometry(xkb, &sizes) != Success)
+        if (XkbcAllocGeometry(xkb, &sizes) != Success)
         {
             WSGO("Couldn't allocate GeometryRec\n");
             ACTION("Geometry not compiled\n");
@@ -3627,7 +3627,7 @@ CompileGeometry(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
         if (info.name != NULL)
         {
             geom->name = XkbcInternAtom(info.name, False);
-            if (XkbAllocNames(xkb, XkbGeometryNameMask, 0, 0) == Success)
+            if (XkbcAllocNames(xkb, XkbGeometryNameMask, 0, 0) == Success)
                 xkb->names->geometry = geom->name;
         }
         if (info.fontSpec != None)

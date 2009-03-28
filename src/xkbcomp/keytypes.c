@@ -1214,7 +1214,7 @@ CompileKeyTypes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
 
         if (info.name != NULL)
         {
-            if (XkbAllocNames(xkb, XkbTypesNameMask, 0, 0) == Success)
+            if (XkbcAllocNames(xkb, XkbTypesNameMask, 0, 0) == Success)
                 xkb->names->types = XkbcInternAtom(info.name, False);
             else
             {
@@ -1232,7 +1232,7 @@ CompileKeyTypes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
             i++;
         if ((info.stdPresent & XkbAlphabeticMask) == 0)
             i++;
-        if (XkbAllocClientMap(xkb, XkbKeyTypesMask, i) != Success)
+        if (XkbcAllocClientMap(xkb, XkbKeyTypesMask, i) != Success)
         {
             WSGO("Couldn't allocate client map\n");
             ACTION("Exiting\n");

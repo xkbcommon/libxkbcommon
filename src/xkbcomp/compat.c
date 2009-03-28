@@ -819,7 +819,7 @@ CompileCompatMap(XkbFile *file, XkbcDescPtr xkb, unsigned merge,
     if (info.errorCount == 0)
     {
         int size;
-        if (XkbAllocCompatMap(xkb, XkbAllCompatMask, info.nInterps) !=
+        if (XkbcAllocCompatMap(xkb, XkbAllCompatMask, info.nInterps) !=
             Success)
         {
             WSGO("Couldn't allocate compatibility map\n");
@@ -828,7 +828,7 @@ CompileCompatMap(XkbFile *file, XkbcDescPtr xkb, unsigned merge,
         }
         if (info.name != NULL)
         {
-            if (XkbAllocNames(xkb, XkbCompatNameMask, 0, 0) == Success)
+            if (XkbcAllocNames(xkb, XkbCompatNameMask, 0, 0) == Success)
                 xkb->names->compat =
                     XkbcInternAtom(info.name, False);
             else

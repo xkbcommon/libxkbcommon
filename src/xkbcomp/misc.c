@@ -384,7 +384,7 @@ ComputeKbdDefaults(XkbcDescPtr xkb)
 
     if ((xkb->names == NULL) || (xkb->names->keys == NULL))
     {
-        if ((rtrn = XkbAllocNames(xkb, XkbKeyNamesMask, 0, 0)) != Success)
+        if ((rtrn = XkbcAllocNames(xkb, XkbKeyNamesMask, 0, 0)) != Success)
             return rtrn;
     }
     for (name = dfltKeys; (name->name[0] != '\0'); name++)
@@ -506,7 +506,7 @@ FindNamedKey(XkbcDescPtr xkb,
                 xkb->min_key_code = XkbMinLegalKeyCode;
                 xkb->max_key_code = XkbMaxLegalKeyCode;
             }
-            if (XkbAllocNames(xkb, XkbKeyNamesMask, 0, 0) != Success)
+            if (XkbcAllocNames(xkb, XkbKeyNamesMask, 0, 0) != Success)
             {
                 if (warningLevel > 0)
                 {

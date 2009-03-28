@@ -2212,27 +2212,27 @@ CompileSymbols(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
         KeyInfo *key;
 
         /* alloc memory in the xkb struct */
-        if (XkbAllocNames(xkb, XkbSymbolsNameMask | XkbGroupNamesMask, 0, 0)
+        if (XkbcAllocNames(xkb, XkbSymbolsNameMask | XkbGroupNamesMask, 0, 0)
             != Success)
         {
             WSGO("Can not allocate names in CompileSymbols\n");
             ACTION("Symbols not added\n");
             return False;
         }
-        if (XkbAllocClientMap(xkb, XkbKeySymsMask | XkbModifierMapMask, 0)
+        if (XkbcAllocClientMap(xkb, XkbKeySymsMask | XkbModifierMapMask, 0)
             != Success)
         {
             WSGO("Could not allocate client map in CompileSymbols\n");
             ACTION("Symbols not added\n");
             return False;
         }
-        if (XkbAllocServerMap(xkb, XkbAllServerInfoMask, 32) != Success)
+        if (XkbcAllocServerMap(xkb, XkbAllServerInfoMask, 32) != Success)
         {
             WSGO("Could not allocate server map in CompileSymbols\n");
             ACTION("Symbols not added\n");
             return False;
         }
-        if (XkbAllocControls(xkb, XkbPerKeyRepeatMask) != Success)
+        if (XkbcAllocControls(xkb, XkbPerKeyRepeatMask) != Success)
         {
             WSGO("Could not allocate controls in CompileSymbols\n");
             ACTION("Symbols not added\n");

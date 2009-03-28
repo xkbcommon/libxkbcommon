@@ -373,12 +373,12 @@ CopyIndicatorMapDefs(XkbcDescPtr xkb, LEDInfo *leds, LEDInfo **unboundRtrn)
     LEDInfo *led, *next;
     LEDInfo *unbound, *last;
 
-    if (XkbAllocNames(xkb, XkbIndicatorNamesMask, 0, 0) != Success)
+    if (XkbcAllocNames(xkb, XkbIndicatorNamesMask, 0, 0) != Success)
     {
         WSGO("Couldn't allocate names\n");
         ACTION("Indicator names may be incorrect\n");
     }
-    if (XkbAllocIndicatorMaps(xkb) != Success)
+    if (XkbcAllocIndicatorMaps(xkb) != Success)
     {
         WSGO("Can't allocate indicator maps\n");
         ACTION("Indicator map definitions may be lost\n");

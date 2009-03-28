@@ -49,9 +49,9 @@ ClearVModInfo(VModInfo * info, XkbcDescPtr xkb)
 {
     register int i;
 
-    if (XkbAllocNames(xkb, XkbVirtualModNamesMask, 0, 0) != Success)
+    if (XkbcAllocNames(xkb, XkbVirtualModNamesMask, 0, 0) != Success)
         return;
-    if (XkbAllocServerMap(xkb, XkbVirtualModsMask, 0) != Success)
+    if (XkbcAllocServerMap(xkb, XkbVirtualModsMask, 0) != Success)
         return;
     info->xkb = xkb;
     info->newlyDefined = info->defined = info->available = 0;
