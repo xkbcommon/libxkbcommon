@@ -208,7 +208,7 @@
 #define	DEBUG_VAR parseDebug
 #include "parseutils.h"
 #include <X11/keysym.h>
-#include <X11/extensions/XKBgeom.h>
+#include <X11/extensions/XKBgeomcommon.h>
 #include <stdlib.h>
 
 unsigned int parseDebug;

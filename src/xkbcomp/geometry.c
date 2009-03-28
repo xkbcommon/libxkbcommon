@@ -34,7 +34,7 @@
 #include "keycodes.h"
 #include "alias.h"
 
-#include "X11/extensions/XKBgeom.h"
+#include <X11/extensions/XKBgeomcommon.h>
 
 #define	DFLT_FONT	"helvetica"
 #define	DFLT_SLANT	"r"

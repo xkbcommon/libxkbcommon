@@ -24,9 +24,6 @@
 
  ********************************************************/
 
-#include <X11/Xlib.h>
-#include <X11/XKBlib.h>
-
 #define	DEBUG_VAR debugFlags
 #include "utils.h"
 #include <stdlib.h>

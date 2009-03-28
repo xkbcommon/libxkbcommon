@@ -28,7 +28,7 @@
 #include "parseutils.h"
 #include "xkbpath.h"
 #include <X11/keysym.h>
-#include <X11/extensions/XKBgeom.h>
+#include <X11/extensions/XKBgeomcommon.h>
 #include <X11/Xalloca.h>
 
 XkbFile *rtrnValue;

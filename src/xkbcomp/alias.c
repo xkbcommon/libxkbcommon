@@ -29,7 +29,7 @@
 #include "alias.h"
 #include "keycodes.h"
 
-#include <X11/extensions/XKBgeom.h>
+#include <X11/extensions/XKBgeomcommon.h>
 
 static void
 HandleCollision(AliasInfo * old, AliasInfo * new)

@@ -32,7 +32,7 @@
 #include "misc.h"
 
 #include <X11/extensions/XKB.h>
-#include <X11/extensions/XKBstr.h>
+#include <X11/extensions/XKBstrcommon.h>
 
 #include "vmod.h"
 

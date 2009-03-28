@@ -31,13 +31,9 @@
 #define	DEBUG_VAR debugFlags
 #endif
 
-#include <X11/Xlib.h>
-#include <X11/XKBlib.h>
-
 #include "utils.h"
 
 #include <X11/extensions/XKM.h>
-#include <X11/extensions/XKBfile.h>
 
 extern char *scanFile;
 

@@ -121,7 +121,7 @@ SOFTWARE.
 #include "parseutils.h"
 #include "misc.h"
 #include "tokens.h"
-#include <X11/extensions/XKBgeom.h>
+#include <X11/extensions/XKBgeomcommon.h>
 
 #define	lowbit(x)	((x) & (-(x)))
 
