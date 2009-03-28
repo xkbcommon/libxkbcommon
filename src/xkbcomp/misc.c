@@ -574,3 +574,33 @@ FindKeyNameForAlias(XkbDescPtr xkb, unsigned long lname,
     }
     return False;
 }
+
+char *
+XkbConfigText(unsigned config, unsigned format)
+{
+    switch (config) {
+    case XkmSemanticsFile:
+        return "Semantics";
+    case XkmLayoutFile:
+        return "Layout";
+    case XkmKeymapFile:
+        return "Keymap";
+    case XkmGeometryFile:
+    case XkmGeometryIndex:
+        return "Geometry";
+    case XkmTypesIndex:
+        return "Types";
+    case XkmCompatMapIndex:
+        return "CompatMap";
+    case XkmSymbolsIndex:
+        return "Symbols";
+    case XkmIndicatorsIndex:
+        return "Indicators";
+    case XkmKeyNamesIndex:
+        return "KeyNames";
+    case XkmVirtualModsIndex:
+        return "VirtualMods";
+    default:
+        return "unknown";
+    }
+}
