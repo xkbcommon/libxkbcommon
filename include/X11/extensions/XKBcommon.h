@@ -52,6 +52,11 @@ typedef struct _XkbcDesc {
     XkbGeometryPtr      geom;
 } XkbcDescRec, *XkbcDescPtr;
 
+#define XkbcKSIsKeypad(k) \
+    (((k) >= XK_KP_Space) && ((k) <= XK_KP_Equal))
+#define XkbcKSIsDeadKey(k) \
+    (((k) >= XK_dead_grave) && ((k) <= XK_dead_semivoiced_sound))
+
 _XFUNCPROTOBEGIN
 
 extern char *

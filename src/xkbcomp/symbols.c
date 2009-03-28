@@ -1802,7 +1802,7 @@ FindAutomaticType(int width, KeySym * syms, Atom * typeNameRtrn,
         {
             *typeNameRtrn = XkbcInternAtom("ALPHABETIC", False);
         }
-        else if (syms && (XkbKSIsKeypad(syms[0]) || XkbKSIsKeypad(syms[1])))
+        else if (syms && (XkbcKSIsKeypad(syms[0]) || XkbcKSIsKeypad(syms[1])))
         {
             *typeNameRtrn = XkbcInternAtom("KEYPAD", False);
             *autoType = True;
@@ -1823,7 +1823,7 @@ FindAutomaticType(int width, KeySym * syms, Atom * typeNameRtrn,
                 *typeNameRtrn = XkbcInternAtom("FOUR_LEVEL_SEMIALPHABETIC",
                                               False);
 
-        else if (syms && (XkbKSIsKeypad(syms[0]) || XkbKSIsKeypad(syms[1])))
+        else if (syms && (XkbcKSIsKeypad(syms[0]) || XkbcKSIsKeypad(syms[1])))
             *typeNameRtrn = XkbcInternAtom("FOUR_LEVEL_KEYPAD", False);
         else
             *typeNameRtrn = XkbcInternAtom("FOUR_LEVEL", False);
