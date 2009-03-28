@@ -158,6 +158,12 @@ XkbcAtomGetString(Atom atom);
 extern Atom
 XkbcInternAtom(char *name, Bool onlyIfExists);
 
+extern char *
+XkbConfigText(unsigned config);
+
+extern char *
+XkbActionTypeText(unsigned type);
+
 _XFUNCPROTOEND
 
 #endif /* _XKBCOMMON_H_ */

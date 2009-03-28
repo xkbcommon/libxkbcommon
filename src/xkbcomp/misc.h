@@ -108,10 +108,4 @@ extern Bool FindKeyNameForAlias(XkbcDescPtr /* xkb */ ,
                                 unsigned long * /* real_name */
     );
 
-extern char *
-XkbConfigText(unsigned config);
-
-extern char *
-XkbActionTypeText(unsigned type);
-
 #endif /* MISC_H */

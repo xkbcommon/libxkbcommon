@@ -10,4 +10,5 @@ libxkbcommon_la_SOURCES = \
 	alloc.c \
 	galloc.c \
 	atom.c \
-	keysym.c
+	keysym.c \
+	text.c
