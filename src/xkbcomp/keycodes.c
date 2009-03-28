@@ -728,7 +728,7 @@ HandleIndicatorNameDef(IndicatorNameDef * def,
         info->errorCount++;
         return ReportBadType("indicator", "name", buf, "string");
     }
-    ii.name = XkbInternAtom(NULL, tmp.str, False);
+    ii.name = XkbcInternAtom(NULL, tmp.str, False);
     ii.virtual = def->virtual;
     if (!AddIndicatorName(info, &ii))
         return False;
@@ -845,7 +845,7 @@ CompileKeycodes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
                 == Success)
         {
             register int i;
-            xkb->names->keycodes = XkbInternAtom(xkb->dpy, info.name, False);
+            xkb->names->keycodes = XkbcInternAtom(xkb->dpy, info.name, False);
             uDEBUG2(1, "key range: %d..%d\n", xkb->min_key_code,
                     xkb->max_key_code);
             for (i = info.computedMin; i <= info.computedMax; i++)
@@ -872,8 +872,8 @@ CompileKeycodes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
                  ii = (IndicatorNameInfo *) ii->defs.next)
             {
                 xkb->names->indicators[ii->ndx - 1] =
-                    XkbInternAtom(xkb->dpy,
-                                  XkbAtomGetString(NULL, ii->name), False);
+                    XkbcInternAtom(xkb->dpy,
+                                  XkbcAtomGetString(NULL, ii->name), False);
                 if (xkb->indicators != NULL)
                 {
                     register unsigned bit;

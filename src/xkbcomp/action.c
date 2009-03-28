@@ -372,7 +372,7 @@ CheckModifierField(XkbcDescPtr xkb,
     if (value->op == ExprIdent)
     {
         register char *valStr;
-        valStr = XkbAtomGetString(NULL, value->value.str);
+        valStr = XkbcAtomGetString(NULL, value->value.str);
         if (valStr && ((uStrCaseCmp(valStr, "usemodmapmods") == 0) ||
                        (uStrCaseCmp(valStr, "modmapmods") == 0)))
         {
@@ -1311,7 +1311,7 @@ HandleActionDef(ExprDef * def,
                exprOpText(def->op));
         return False;
     }
-    str = XkbAtomGetString(NULL, def->value.action.name);
+    str = XkbcAtomGetString(NULL, def->value.action.name);
     if (!str)
     {
         WSGO("Missing name in action definition!!\n");
@@ -1454,12 +1454,12 @@ ActionsInit(void)
         constTrue.common.next = NULL;
         constTrue.op = ExprIdent;
         constTrue.type = TypeBoolean;
-        constTrue.value.str = XkbInternAtom(NULL, "true", False);
+        constTrue.value.str = XkbcInternAtom(NULL, "true", False);
         constFalse.common.stmtType = StmtExpr;
         constFalse.common.next = NULL;
         constFalse.op = ExprIdent;
         constFalse.type = TypeBoolean;
-        constFalse.value.str = XkbInternAtom(NULL, "false", False);
+        constFalse.value.str = XkbcInternAtom(NULL, "false", False);
         actionsInitialized = 1;
     }
     return;
