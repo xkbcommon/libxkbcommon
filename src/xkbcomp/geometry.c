@@ -540,7 +540,7 @@ InitSectionInfo(SectionInfo * si, GeometryInfo * info)
     {
         *si = info->dfltSection;
         si->defs.defined &= ~_GS_Default;
-        si->name = XkbcInternAtom(info->dpy, "unknown", False);
+        si->name = XkbcInternAtom("unknown", False);
         si->priority = info->nextPriority++;
         if (info->nextPriority > XkbGeomMaxPriority)
             info->nextPriority = XkbGeomMaxPriority;
@@ -552,7 +552,7 @@ InitSectionInfo(SectionInfo * si, GeometryInfo * info)
         si->defs.merge = info->merge;
         si->defs.next = NULL;
         si->geometry = info;
-        si->name = XkbcInternAtom(info->dpy, "default", False);
+        si->name = XkbcInternAtom("default", False);
         InitRowInfo(&si->dfltRow, si, info);
     }
     return;
@@ -584,7 +584,7 @@ ClearSectionInfo(SectionInfo * si, GeometryInfo * info)
 {
 
     si->defs.defined &= ~_GS_Default;
-    si->name = XkbcInternAtom(info->dpy, "default", False);
+    si->name = XkbcInternAtom("default", False);
     si->top = si->left = 0;
     si->width = si->height = 0;
     si->angle = 0;
@@ -1498,7 +1498,7 @@ SetShapeDoodadField(DoodadInfo * di,
             return ReportBadType(typeName, field, ddText(info->dpy, di),
                                  "string");
         }
-        di->shape = XkbcInternAtom(info->dpy, tmp.str, False);
+        di->shape = XkbcInternAtom(tmp.str, False);
         di->defs.defined |= _GD_Shape;
         return True;
     }
@@ -1633,7 +1633,7 @@ SetTextDoodadField(DoodadInfo * di,
                                  "string");
         }
         di->defs.defined |= def;
-        *pField.str = XkbcInternAtom(NULL, tmp.str, False);
+        *pField.str = XkbcInternAtom(tmp.str, False);
     }
     else
     {
@@ -1687,17 +1687,17 @@ SetIndicatorDoodadField(DoodadInfo * di,
         if (uStrCaseCmp(field, "oncolor") == 0)
         {
             di->defs.defined |= _GD_Color;
-            di->color = XkbcInternAtom(NULL, tmp.str, False);
+            di->color = XkbcInternAtom(tmp.str, False);
         }
         else if (uStrCaseCmp(field, "offcolor") == 0)
         {
             di->defs.defined |= _GD_OffColor;
-            di->offColor = XkbcInternAtom(NULL, tmp.str, False);
+            di->offColor = XkbcInternAtom(tmp.str, False);
         }
         else if (uStrCaseCmp(field, "shape") == 0)
         {
             di->defs.defined |= _GD_Shape;
-            di->shape = XkbcInternAtom(info->dpy, tmp.str, False);
+            di->shape = XkbcInternAtom(tmp.str, False);
         }
         return True;
     }
@@ -1761,7 +1761,7 @@ SetLogoDoodadField(DoodadInfo * di,
             return ReportBadType(typeName, field, ddText(info->dpy, di),
                                  "string");
         }
-        di->shape = XkbcInternAtom(info->dpy, tmp.str, False);
+        di->shape = XkbcInternAtom(tmp.str, False);
         di->defs.defined |= _GD_Shape;
         return True;
     }
@@ -1867,7 +1867,7 @@ SetDoodadField(DoodadInfo * di,
                                  "string");
         }
         di->defs.defined |= _GD_Color;
-        di->color = XkbcInternAtom(NULL, tmp.str, False);
+        di->color = XkbcInternAtom(tmp.str, False);
         return True;
     }
     switch (di->type)
@@ -2077,7 +2077,7 @@ SetKeyField(KeyInfo * key,
             return ReportBadType("key", field, keyText(key), "string");
         }
         key->defs.defined |= _GK_Shape;
-        key->shape = XkbcInternAtom(info->dpy, tmp.str, False);
+        key->shape = XkbcInternAtom(tmp.str, False);
     }
     else if ((uStrCaseCmp(field, "color") == 0) ||
              (uStrCaseCmp(field, "keycolor") == 0))
@@ -2093,7 +2093,7 @@ SetKeyField(KeyInfo * key,
             return ReportBadType("key", field, keyText(key), "string");
         }
         key->defs.defined |= _GK_Color;
-        key->color = XkbcInternAtom(NULL, tmp.str, False);
+        key->color = XkbcInternAtom(tmp.str, False);
     }
     else if ((uStrCaseCmp(field, "name") == 0)
              || (uStrCaseCmp(field, "keyname") == 0))
@@ -2351,7 +2351,7 @@ HandleGeometryVar(VarDef * stmt, XkbcDescPtr xkb, GeometryInfo * info)
             info->errorCount++;
             return ReportBadType("keyboard", field.str, "geometry", "string");
         }
-        info->baseColor = XkbcInternAtom(NULL, tmp.str, False);
+        info->baseColor = XkbcInternAtom(tmp.str, False);
         return True;
     }
     else if (uStrCaseCmp(field.str, "labelcolor") == 0)
@@ -2366,7 +2366,7 @@ HandleGeometryVar(VarDef * stmt, XkbcDescPtr xkb, GeometryInfo * info)
             info->errorCount++;
             return ReportBadType("keyboard", field.str, "geometry", "string");
         }
-        info->labelColor = XkbcInternAtom(NULL, tmp.str, False);
+        info->labelColor = XkbcInternAtom(tmp.str, False);
         return True;
     }
     else
@@ -2384,7 +2384,7 @@ HandleGeometryVar(VarDef * stmt, XkbcDescPtr xkb, GeometryInfo * info)
         info->errorCount++;
         return ReportBadType("keyboard", field.str, "geometry", "string");
     }
-    *pField = XkbcInternAtom(NULL, tmp.str, False);
+    *pField = XkbcInternAtom(tmp.str, False);
     return True;
 }
 
@@ -2420,7 +2420,7 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
     {
         if (ol->nPoints < 1)
         {
-            SetShapeField(si, XkbcAtomGetString(NULL, ol->field), NULL,
+            SetShapeField(si, XkbcAtomGetString(ol->field), NULL,
                           ol->points, info);
             continue;
         }
@@ -2499,7 +2499,7 @@ HandleShapeDef(ShapeDef * def, XkbcDescPtr xkb, unsigned merge,
     bzero(&si, sizeof(ShapeInfo));
     si.defs.merge = merge;
     si.name =
-        XkbcInternAtom(info->dpy, XkbcAtomGetString(NULL, def->name), False);
+        XkbcInternAtom(info->dpy, XkbcAtomGetString(def->name), False);
     si.dfltCornerRadius = info->dfltCornerRadius;
     if (!HandleShapeBody(def, &si, merge, info))
         return False;
@@ -2526,7 +2526,7 @@ HandleDoodadDef(DoodadDef * def,
     }
     InitDoodadInfo(&new, def->type, si, info);
     new.name =
-        XkbcInternAtom(info->dpy, XkbcAtomGetString(NULL, def->name), False);
+        XkbcInternAtom(info->dpy, XkbcAtomGetString(def->name), False);
     for (var = def->body; var != NULL; var = (VarDef *) var->common.next)
     {
         if (ExprResolveLhs(var->name, &elem, &field, &ndx) == 0)
@@ -2566,7 +2566,7 @@ HandleOverlayDef(OverlayDef * def,
     }
     bzero(&ol, sizeof(OverlayInfo));
     ol.name =
-        XkbcInternAtom(info->dpy, XkbcAtomGetString(NULL, def->name), False);
+        XkbcInternAtom(info->dpy, XkbcAtomGetString(def->name), False);
     for (keyDef = def->keys; keyDef;
          keyDef = (OverlayKeyDef *) keyDef->common.next)
     {
@@ -2818,7 +2818,7 @@ HandleSectionDef(SectionDef * def,
         merge = def->merge;
     InitSectionInfo(&si, info);
     si.defs.merge = merge;
-    str = XkbcAtomGetString(NULL, def->name);
+    str = XkbcAtomGetString(def->name);
     if ((str == NULL) || (strlen(str) < 1))
     {
         ERROR("Section defined without a name\n");
@@ -2826,7 +2826,7 @@ HandleSectionDef(SectionDef * def,
         return False;
     }
     si.name =
-        XkbcInternAtom(info->dpy, XkbcAtomGetString(NULL, def->name), False);
+        XkbcInternAtom(info->dpy, XkbcAtomGetString(def->name), False);
     if (!HandleSectionBody(def, &si, merge, info))
         return False;
     if (!AddSection(info, &si))
@@ -2926,7 +2926,7 @@ CopyShapeDef(Display * dpy, XkbGeometryPtr geom, ShapeInfo * si)
     Atom name;
 
     si->index = geom->num_shapes;
-    name = XkbcInternAtom(dpy, XkbcAtomGetString(NULL, si->name), False);
+    name = XkbcInternAtom(dpy, XkbcAtomGetString(si->name), False);
     shape = XkbAddGeomShape(geom, name, si->nOutlines);
     if (!shape)
     {
@@ -3015,7 +3015,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
                 WARN1("No color for doodad %s\n", ddText(info->dpy, di));
                 ACTION("Using black\n");
             }
-            di->color = XkbcInternAtom(NULL, "black", False);
+            di->color = XkbcInternAtom("black", False);
         }
         break;
     case XkbTextDoodad:
@@ -3036,7 +3036,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
                       ddText(info->dpy, di));
                 ACTION("Using black\n");
             }
-            di->color = XkbcInternAtom(NULL, "black", False);
+            di->color = XkbcInternAtom("black", False);
         }
         if ((di->defs.defined & _GD_FontSpec) != 0)
         {
@@ -3060,7 +3060,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
                       ddText(info->dpy, di));
                 ACTION1("Using \"%s\"\n", DFLT_FONT);
             }
-            di->font = XkbcInternAtom(NULL, DFLT_FONT, False);
+            di->font = XkbcInternAtom(DFLT_FONT, False);
         }
         if ((di->defs.defined & _GD_FontSlant) == 0)
         {
@@ -3070,7 +3070,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
                       ddText(info->dpy, di));
                 ACTION1("Using \"%s\"\n", DFLT_SLANT);
             }
-            di->fontSlant = XkbcInternAtom(NULL, DFLT_SLANT, False);
+            di->fontSlant = XkbcInternAtom(DFLT_SLANT, False);
         }
         if ((di->defs.defined & _GD_FontWeight) == 0)
         {
@@ -3080,7 +3080,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
                       ddText(info->dpy, di));
                 ACTION1("Using \"%s\"\n", DFLT_WEIGHT);
             }
-            di->fontWeight = XkbcInternAtom(NULL, DFLT_WEIGHT, False);
+            di->fontWeight = XkbcInternAtom(DFLT_WEIGHT, False);
         }
         if ((di->defs.defined & _GD_FontSetWidth) == 0)
         {
@@ -3090,7 +3090,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
                       ddText(info->dpy, di));
                 ACTION1("Using \"%s\"\n", DFLT_SET_WIDTH);
             }
-            di->fontSetWidth = XkbcInternAtom(NULL, DFLT_SET_WIDTH, False);
+            di->fontSetWidth = XkbcInternAtom(DFLT_SET_WIDTH, False);
         }
         if ((di->defs.defined & _GD_FontVariant) == 0)
         {
@@ -3100,7 +3100,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
                       ddText(info->dpy, di));
                 ACTION1("Using \"%s\"\n", DFLT_VARIANT);
             }
-            di->fontVariant = XkbcInternAtom(NULL, DFLT_VARIANT, False);
+            di->fontVariant = XkbcInternAtom(DFLT_VARIANT, False);
         }
         if ((di->defs.defined & _GD_FontEncoding) == 0)
         {
@@ -3110,7 +3110,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
                       ddText(info->dpy, di));
                 ACTION1("Using \"%s\"\n", DFLT_ENCODING);
             }
-            di->fontEncoding = XkbcInternAtom(NULL, DFLT_ENCODING, False);
+            di->fontEncoding = XkbcInternAtom(DFLT_ENCODING, False);
         }
         if ((di->defs.defined & _GD_FontSize) == 0)
         {
@@ -3129,7 +3129,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
             char *tmp;
             size = (di->fontSize * 120) / 100;
             size = (size * 254) / 720;  /* convert to mm/10 */
-            for (nLines = 1, tmp = XkbcAtomGetString(NULL, di->text); *tmp;
+            for (nLines = 1, tmp = XkbcAtomGetString(di->text); *tmp;
                  tmp++)
             {
                 if (*tmp == '\n')
@@ -3150,7 +3150,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
             unsigned width, tmp;
             char *str;
             width = tmp = 0;
-            for (str = XkbcAtomGetString(NULL, di->text); *str; str++)
+            for (str = XkbcAtomGetString(di->text); *str; str++)
             {
                 if (*str != '\n')
                     tmp++;
@@ -3204,7 +3204,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
                       ddText(info->dpy, di));
                 ACTION("Using green\n");
             }
-            di->color = XkbcInternAtom(NULL, "green", False);
+            di->color = XkbcInternAtom("green", False);
         }
         if ((di->defs.defined & _GD_OffColor) == 0)
         {
@@ -3214,7 +3214,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
                       ddText(info->dpy, di));
                 ACTION("Using black\n");
             }
-            di->offColor = XkbcInternAtom(NULL, "black", False);
+            di->offColor = XkbcInternAtom("black", False);
         }
         break;
     case XkbLogoDoodad:
@@ -3253,7 +3253,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
                 WARN1("No color for doodad %s\n", ddText(info->dpy, di));
                 ACTION("Using black\n");
             }
-            di->color = XkbcInternAtom(NULL, "black", False);
+            di->color = XkbcInternAtom("black", False);
         }
         break;
     default:
@@ -3276,19 +3276,19 @@ FontFromParts(Atom fontTok,
     char *font, *weight, *slant, *setWidth, *variant, *encoding;
     char *rtrn;
 
-    font = (fontTok != None ? XkbcAtomGetString(NULL, fontTok) : DFLT_FONT);
+    font = (fontTok != None ? XkbcAtomGetString(fontTok) : DFLT_FONT);
     weight =
-        (weightTok != None ? XkbcAtomGetString(NULL, weightTok) : DFLT_WEIGHT);
+        (weightTok != None ? XkbcAtomGetString(weightTok) : DFLT_WEIGHT);
     slant =
-        (slantTok != None ? XkbcAtomGetString(NULL, slantTok) : DFLT_SLANT);
+        (slantTok != None ? XkbcAtomGetString(slantTok) : DFLT_SLANT);
     setWidth =
         (setWidthTok !=
-         None ? XkbcAtomGetString(NULL, setWidthTok) : DFLT_SET_WIDTH);
+         None ? XkbcAtomGetString(setWidthTok) : DFLT_SET_WIDTH);
     variant =
-        (varTok != None ? XkbcAtomGetString(NULL, varTok) : DFLT_VARIANT);
+        (varTok != None ? XkbcAtomGetString(varTok) : DFLT_VARIANT);
     encoding =
         (encodingTok !=
-         None ? XkbcAtomGetString(NULL, encodingTok) : DFLT_ENCODING);
+         None ? XkbcAtomGetString(encodingTok) : DFLT_ENCODING);
     if (size == 0)
         size = DFLT_SIZE;
     totalSize =
@@ -3315,7 +3315,7 @@ CopyDoodadDef(XkbGeometryPtr geom,
 
     if (!VerifyDoodadInfo(di, info))
         return False;
-    name = XkbcInternAtom(NULL, XkbcAtomGetString(NULL, di->name), False);
+    name = XkbcInternAtom(XkbcAtomGetString(di->name), False);
     doodad = XkbAddGeomDoodad(geom, section, name);
     if (!doodad)
     {
@@ -3337,7 +3337,7 @@ CopyDoodadDef(XkbGeometryPtr geom,
             return False;
         doodad->shape.angle = di->angle;
         color =
-            XkbAddGeomColor(geom, XkbcAtomGetString(NULL, di->color),
+            XkbAddGeomColor(geom, XkbcAtomGetString(di->color),
                             geom->num_colors);
         shape = &geom->shapes[si->index];
         XkbSetShapeDoodadColor(geom, &doodad->shape, color);
@@ -3354,10 +3354,10 @@ CopyDoodadDef(XkbGeometryPtr geom,
                                               di->fontVariant, di->fontSize,
                                               di->fontEncoding);
         else
-            doodad->text.font = XkbcAtomGetString(NULL, di->fontSpec);
-        doodad->text.text = XkbcAtomGetString(NULL, di->text);
+            doodad->text.font = XkbcAtomGetString(di->fontSpec);
+        doodad->text.text = XkbcAtomGetString(di->text);
         color =
-            XkbAddGeomColor(geom, XkbcAtomGetString(NULL, di->color),
+            XkbAddGeomColor(geom, XkbcAtomGetString(di->color),
                             geom->num_colors);
         XkbSetTextDoodadColor(geom, &doodad->text, color);
         break;
@@ -3367,12 +3367,12 @@ CopyDoodadDef(XkbGeometryPtr geom,
             return False;
         shape = &geom->shapes[si->index];
         color =
-            XkbAddGeomColor(geom, XkbcAtomGetString(NULL, di->color),
+            XkbAddGeomColor(geom, XkbcAtomGetString(di->color),
                             geom->num_colors);
         XkbSetIndicatorDoodadShape(geom, &doodad->indicator, shape);
         XkbSetIndicatorDoodadOnColor(geom, &doodad->indicator, color);
         color =
-            XkbAddGeomColor(geom, XkbcAtomGetString(NULL, di->offColor),
+            XkbAddGeomColor(geom, XkbcAtomGetString(di->offColor),
                             geom->num_colors);
         XkbSetIndicatorDoodadOffColor(geom, &doodad->indicator, color);
         break;
@@ -3382,7 +3382,7 @@ CopyDoodadDef(XkbGeometryPtr geom,
             return False;
         doodad->logo.angle = di->angle;
         color =
-            XkbAddGeomColor(geom, XkbcAtomGetString(NULL, di->color),
+            XkbAddGeomColor(geom, XkbcAtomGetString(di->color),
                             geom->num_colors);
         shape = &geom->shapes[si->index];
         XkbSetLogoDoodadColor(geom, &doodad->logo, color);
@@ -3510,7 +3510,7 @@ CopyOverlayDef(XkbGeometryPtr geom,
 
     if (!VerifyOverlayInfo(geom, section, oi, info, rowMap, rowSize))
         return False;
-    name = XkbcInternAtom(NULL, XkbcAtomGetString(NULL, oi->name), False);
+    name = XkbcInternAtom(XkbcAtomGetString(oi->name), False);
     ol = XkbAddGeomOverlay(section, name, oi->nRows);
     if (!ol)
     {
@@ -3560,7 +3560,7 @@ CopySectionDef(XkbGeometryPtr geom, SectionInfo * si, GeometryInfo * info)
     RowInfo *ri;
     Atom name;
 
-    name = XkbcInternAtom(NULL, XkbcAtomGetString(NULL, si->name), False);
+    name = XkbcInternAtom(XkbcAtomGetString(si->name), False);
     section =
         XkbAddGeomSection(geom, name, si->nRows, si->nDoodads, si->nOverlays);
     if (section == NULL)
@@ -3620,7 +3620,7 @@ CopySectionDef(XkbGeometryPtr geom, SectionInfo * si, GeometryInfo * info)
             if (ki->color != None)
                 color =
                     XkbAddGeomColor(geom,
-                                    XkbcAtomGetString(NULL, ki->color),
+                                    XkbcAtomGetString(ki->color),
                                     geom->num_colors);
             else
                 color = XkbAddGeomColor(geom, "white", geom->num_colors);
@@ -3689,13 +3689,13 @@ CompileGeometry(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
         geom->height_mm = info.heightMM;
         if (info.name != NULL)
         {
-            geom->name = XkbcInternAtom(xkb->dpy, info.name, False);
+            geom->name = XkbcInternAtom(info.name, False);
             if (XkbAllocNames(xkb, XkbGeometryNameMask, 0, 0) == Success)
                 xkb->names->geometry = geom->name;
         }
         if (info.fontSpec != None)
             geom->label_font =
-                uStringDup(XkbcAtomGetString(NULL, info.fontSpec));
+                uStringDup(XkbcAtomGetString(info.fontSpec));
         else
             geom->label_font = FontFromParts(info.font, info.fontWeight,
                                              info.fontSlant,
@@ -3707,14 +3707,14 @@ CompileGeometry(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
         XkbAddGeomColor(geom, "white", geom->num_colors);
 
         if (info.baseColor == None)
-            info.baseColor = XkbcInternAtom(NULL, "white", False);
+            info.baseColor = XkbcInternAtom("white", False);
         if (info.labelColor == None)
-            info.labelColor = XkbcInternAtom(NULL, "black", False);
+            info.labelColor = XkbcInternAtom("black", False);
         geom->base_color =
-            XkbAddGeomColor(geom, XkbcAtomGetString(NULL, info.baseColor),
+            XkbAddGeomColor(geom, XkbcAtomGetString(info.baseColor),
                             geom->num_colors);
         geom->label_color =
-            XkbAddGeomColor(geom, XkbcAtomGetString(NULL, info.labelColor),
+            XkbAddGeomColor(geom, XkbcAtomGetString(info.labelColor),
                             geom->num_colors);
 
         if (info.props)

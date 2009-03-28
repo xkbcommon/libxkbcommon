@@ -242,9 +242,9 @@ InitSymbolsInfo(SymbolsInfo * info, XkbcDescPtr xkb)
 {
     register int i;
 
-    tok_ONE_LEVEL = XkbcInternAtom(NULL, "ONE_LEVEL", False);
-    tok_TWO_LEVEL = XkbcInternAtom(NULL, "TWO_LEVEL", False);
-    tok_KEYPAD = XkbcInternAtom(NULL, "KEYPAD", False);
+    tok_ONE_LEVEL = XkbcInternAtom("ONE_LEVEL", False);
+    tok_TWO_LEVEL = XkbcInternAtom("TWO_LEVEL", False);
+    tok_KEYPAD = XkbcInternAtom("KEYPAD", False);
     info->name = NULL;
     info->explicit_group = 0;
     info->errorCount = 0;
@@ -1134,7 +1134,7 @@ SetSymbolsField(KeyInfo * key,
         }
         if (arrayNdx == NULL)
         {
-            key->dfltType = XkbcInternAtom(NULL, tmp.str, False);
+            key->dfltType = XkbcInternAtom(tmp.str, False);
             key->defs.defined |= _Key_Type_Dflt;
         }
         else if (!ExprResolveInteger(arrayNdx, &ndx, SimpleLookup,
@@ -1155,7 +1155,7 @@ SetSymbolsField(KeyInfo * key,
         }
         else
         {
-            key->types[ndx.uval - 1] = XkbcInternAtom(NULL, tmp.str, False);
+            key->types[ndx.uval - 1] = XkbcInternAtom(tmp.str, False);
             key->typesDefined |= (1 << (ndx.uval - 1));
         }
     }
@@ -1396,7 +1396,7 @@ SetGroupName(SymbolsInfo * info, ExprDef * arrayNdx, ExprDef * value)
         return False;
     }
     info->groupNames[tmp.uval - 1 + info->explicit_group] =
-        XkbcInternAtom(NULL, name.str, False);
+        XkbcInternAtom(name.str, False);
 
     return True;
 }
@@ -1794,23 +1794,23 @@ FindAutomaticType(int width, KeySym * syms, Atom * typeNameRtrn,
     *autoType = False;
     if ((width == 1) || (width == 0))
     {
-        *typeNameRtrn = XkbcInternAtom(NULL, "ONE_LEVEL", False);
+        *typeNameRtrn = XkbcInternAtom("ONE_LEVEL", False);
         *autoType = True;
     }
     else if (width == 2)
     {
         if (syms && KSIsLower(syms[0]) && KSIsUpper(syms[1]))
         {
-            *typeNameRtrn = XkbcInternAtom(NULL, "ALPHABETIC", False);
+            *typeNameRtrn = XkbcInternAtom("ALPHABETIC", False);
         }
         else if (syms && (XkbKSIsKeypad(syms[0]) || XkbKSIsKeypad(syms[1])))
         {
-            *typeNameRtrn = XkbcInternAtom(NULL, "KEYPAD", False);
+            *typeNameRtrn = XkbcInternAtom("KEYPAD", False);
             *autoType = True;
         }
         else
         {
-            *typeNameRtrn = XkbcInternAtom(NULL, "TWO_LEVEL", False);
+            *typeNameRtrn = XkbcInternAtom("TWO_LEVEL", False);
             *autoType = True;
         }
     }
@@ -1819,16 +1819,15 @@ FindAutomaticType(int width, KeySym * syms, Atom * typeNameRtrn,
         if (syms && KSIsLower(syms[0]) && KSIsUpper(syms[1]))
             if (KSIsLower(syms[2]) && KSIsUpper(syms[3]))
                 *typeNameRtrn =
-                    XkbcInternAtom(NULL, "FOUR_LEVEL_ALPHABETIC", False);
+                    XkbcInternAtom("FOUR_LEVEL_ALPHABETIC", False);
             else
-                *typeNameRtrn = XkbcInternAtom(NULL,
-                                              "FOUR_LEVEL_SEMIALPHABETIC",
+                *typeNameRtrn = XkbcInternAtom("FOUR_LEVEL_SEMIALPHABETIC",
                                               False);
 
         else if (syms && (XkbKSIsKeypad(syms[0]) || XkbKSIsKeypad(syms[1])))
-            *typeNameRtrn = XkbcInternAtom(NULL, "FOUR_LEVEL_KEYPAD", False);
+            *typeNameRtrn = XkbcInternAtom("FOUR_LEVEL_KEYPAD", False);
         else
-            *typeNameRtrn = XkbcInternAtom(NULL, "FOUR_LEVEL", False);
+            *typeNameRtrn = XkbcInternAtom("FOUR_LEVEL", False);
         /* XXX: why not set autoType here? */
     }
     return ((width >= 0) && (width <= 4));
@@ -2243,7 +2242,7 @@ CompileSymbols(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
         }
 
         /* now copy info into xkb. */
-        xkb->names->symbols = XkbcInternAtom(xkb->dpy, info.name, False);
+        xkb->names->symbols = XkbcInternAtom(info.name, False);
         if (info.aliases)
             ApplyAliases(xkb, False, &info.aliases);
         for (i = 0; i < XkbNumKbdGroups; i++)

@@ -135,17 +135,17 @@ ExprResolveLhs(ExprDef * expr,
     {
     case ExprIdent:
         elem_rtrn->str = NULL;
-        field_rtrn->str = XkbcAtomGetString(NULL, expr->value.str);
+        field_rtrn->str = XkbcAtomGetString(expr->value.str);
         *index_rtrn = NULL;
         return True;
     case ExprFieldRef:
-        elem_rtrn->str = XkbcAtomGetString(NULL, expr->value.field.element);
-        field_rtrn->str = XkbcAtomGetString(NULL, expr->value.field.field);
+        elem_rtrn->str = XkbcAtomGetString(expr->value.field.element);
+        field_rtrn->str = XkbcAtomGetString(expr->value.field.field);
         *index_rtrn = NULL;
         return True;
     case ExprArrayRef:
-        elem_rtrn->str = XkbcAtomGetString(NULL, expr->value.array.element);
-        field_rtrn->str = XkbcAtomGetString(NULL, expr->value.array.field);
+        elem_rtrn->str = XkbcAtomGetString(expr->value.array.element);
+        field_rtrn->str = XkbcAtomGetString(expr->value.array.field);
         *index_rtrn = expr->value.array.entry;
         return True;
     }
@@ -166,7 +166,7 @@ SimpleLookup(char * priv,
     {
         return False;
     }
-    str = XkbcAtomGetString(NULL, field);
+    str = XkbcAtomGetString(field);
     for (entry = (LookupEntry *) priv;
          (entry != NULL) && (entry->name != NULL); entry++)
     {
@@ -190,7 +190,7 @@ RadioLookup(char * priv,
 
     if ((field == None) || (elem != None) || (type != TypeInt))
         return False;
-    str = XkbcAtomGetString(NULL, field);
+    str = XkbcAtomGetString(field);
     if (str)
     {
         if (uStrCasePrefix("group", str))
@@ -218,7 +218,7 @@ TableLookup(char * priv,
 
     if ((priv == NULL) || (field == None) || (type != TypeInt))
         return False;
-    str = XkbcAtomGetString(NULL, elem);
+    str = XkbcAtomGetString(elem);
     while (tbl)
     {
         if (((str == NULL) && (tbl->element == NULL)) ||
@@ -264,7 +264,7 @@ LookupModMask(char * priv,
 
     if ((elem != None) || (type != TypeInt))
         return False;
-    str = XkbcAtomGetString(NULL, field);
+    str = XkbcAtomGetString(field);
     if (str == NULL)
         return False;
     if (uStrCaseCmp(str, "all") == 0)
@@ -397,7 +397,7 @@ ExprResolveBoolean(ExprDef * expr,
         val_rtrn->ival = expr->value.ival;
         return True;
     case ExprIdent:
-        bogus = XkbcAtomGetString(NULL, expr->value.str);
+        bogus = XkbcAtomGetString(expr->value.str);
         if (bogus)
         {
             if ((uStrCaseCmp(bogus, "true") == 0) ||
@@ -487,7 +487,7 @@ ExprResolveFloat(ExprDef * expr,
         if (expr->type == TypeString)
         {
             register char *str;
-            str = XkbcAtomGetString(NULL, expr->value.str);
+            str = XkbcAtomGetString(expr->value.str);
             if ((str != NULL) && (strlen(str) == 1))
             {
                 val_rtrn->uval = str[0] * XkbGeomPtsPerMM;
@@ -600,7 +600,7 @@ ExprResolveInteger(ExprDef * expr,
         if (expr->type == TypeString)
         {
             register char *str;
-            str = XkbcAtomGetString(NULL, expr->value.str);
+            str = XkbcAtomGetString(expr->value.str);
             if (str != NULL)
                 switch (strlen(str))
                 {
@@ -726,7 +726,7 @@ ExprResolveString(ExprDef * expr,
                    exprTypeText(expr->type));
             return False;
         }
-        val_rtrn->str = XkbcAtomGetString(NULL, expr->value.str);
+        val_rtrn->str = XkbcAtomGetString(expr->value.str);
         if (val_rtrn->str == NULL)
         {
             static char *empty = "";
@@ -1051,7 +1051,7 @@ ExprResolveKeySym(ExprDef * expr,
     if (expr->op == ExprIdent)
     {
         char *str;
-        str = XkbcAtomGetString(NULL, expr->value.str);
+        str = XkbcAtomGetString(expr->value.str);
         if ((str != NULL) && ((sym = XStringToKeysym(str)) != NoSymbol))
         {
             val_rtrn->uval = sym;

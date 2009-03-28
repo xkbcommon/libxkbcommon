@@ -128,10 +128,10 @@ extern Bool AddLevelName(KeyTypeInfo * /* type */ ,
 static void
 InitKeyTypesInfo(KeyTypesInfo * info, XkbcDescPtr xkb, KeyTypesInfo * from)
 {
-    tok_ONE_LEVEL = XkbcInternAtom(NULL, "ONE_LEVEL", False);
-    tok_TWO_LEVEL = XkbcInternAtom(NULL, "TWO_LEVEL", False);
-    tok_ALPHABETIC = XkbcInternAtom(NULL, "ALPHABETIC", False);
-    tok_KEYPAD = XkbcInternAtom(NULL, "KEYPAD", False);
+    tok_ONE_LEVEL = XkbcInternAtom("ONE_LEVEL", False);
+    tok_TWO_LEVEL = XkbcInternAtom("TWO_LEVEL", False);
+    tok_ALPHABETIC = XkbcInternAtom("ALPHABETIC", False);
+    tok_KEYPAD = XkbcInternAtom("KEYPAD", False);
     info->dpy = NULL;
     info->name = uStringDup("default");
     info->errorCount = 0;
@@ -327,7 +327,7 @@ AddKeyType(XkbcDescPtr xkb, KeyTypesInfo * info, KeyTypeInfo * new)
                  && (warningLevel > 0)) || (warningLevel > 9))
             {
                 WARN1("Multiple definitions of the %s key type\n",
-                      XkbcAtomGetString(NULL, new->name));
+                      XkbcAtomGetString(new->name));
                 ACTION("Earlier definition ignored\n");
             }
             FreeKeyTypeInfo(old);
@@ -343,7 +343,7 @@ AddKeyType(XkbcDescPtr xkb, KeyTypesInfo * info, KeyTypeInfo * new)
         if (report)
         {
             WARN1("Multiple definitions of the %s key type\n",
-                  XkbcAtomGetString(NULL, new->name));
+                  XkbcAtomGetString(new->name));
             ACTION("Later definition ignored\n");
         }
         FreeKeyTypeInfo(new);
@@ -865,7 +865,7 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
         return False;
     }
     return
-        AddLevelName(type, level, XkbcInternAtom(NULL, rtrn.str, False), True,
+        AddLevelName(type, level, XkbcInternAtom(rtrn.str, False), True,
                      True);
 }
 
@@ -1222,7 +1222,7 @@ CompileKeyTypes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
         if (info.name != NULL)
         {
             if (XkbAllocNames(xkb, XkbTypesNameMask, 0, 0) == Success)
-                xkb->names->types = XkbcInternAtom(xkb->dpy, info.name, False);
+                xkb->names->types = XkbcInternAtom(info.name, False);
             else
             {
                 WSGO("Couldn't allocate space for types name\n");

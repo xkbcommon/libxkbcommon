@@ -47,7 +47,7 @@
 void
 ClearIndicatorMapInfo(Display * dpy, LEDInfo * info)
 {
-    info->name = XkbcInternAtom(dpy, "default", False);
+    info->name = XkbcInternAtom("default", False);
     info->indicator = _LED_NotBound;
     info->flags = info->which_mods = info->real_mods = 0;
     info->vmods = 0;
@@ -481,7 +481,7 @@ BindIndicators(XkbcDescPtr xkb, Bool force, LEDInfo *unbound,
                         ERROR("No unnamed indicators found\n");
                         ACTION1
                             ("Virtual indicator map \"%s\" not bound\n",
-                             XkbcAtomGetString(xkb->dpy, led->name));
+                             XkbcAtomGetString(led->name));
                         continue;
                     }
                 }
@@ -516,8 +516,8 @@ BindIndicators(XkbcDescPtr xkb, Bool force, LEDInfo *unbound,
                 ERROR1("Multiple names bound to indicator %d\n",
                        (unsigned int) led->indicator);
                 ACTION2("Using %s, ignoring %s\n",
-                        XkbcAtomGetString(xkb->dpy, old),
-                        XkbcAtomGetString(xkb->dpy, led->name));
+                        XkbcAtomGetString(old),
+                        XkbcAtomGetString(led->name));
                 led->indicator = _LED_NotBound;
                 if (force)
                 {

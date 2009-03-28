@@ -88,9 +88,7 @@ HandleVModDef(VModDef * stmt, unsigned mergeMode, VModInfo * info)
 
     srv = info->xkb->server;
     names = info->xkb->names;
-    stmtName =
-        XkbcInternAtom(info->xkb->dpy, XkbcAtomGetString(NULL, stmt->name),
-                      False);
+    stmtName = XkbcInternAtom(XkbcAtomGetString(stmt->name), False);
     for (i = 0, bit = 1, nextFree = -1; i < XkbNumVirtualMods; i++, bit <<= 1)
     {
         if (info->defined & bit)
@@ -182,7 +180,7 @@ LookupVModIndex(char * priv,
         return False;
     }
     /* get the actual name */
-    fieldStr = XkbcAtomGetString(xkb->dpy, field);
+    fieldStr = XkbcAtomGetString(field);
     if (fieldStr == NULL)
         return False;
     /* For each named modifier, get the name and compare it to the one passed
@@ -192,7 +190,7 @@ LookupVModIndex(char * priv,
      */
     for (i = 0; i < XkbNumVirtualMods; i++)
     {
-        modStr = XkbcAtomGetString(xkb->dpy, xkb->names->vmods[i]);
+        modStr = XkbcAtomGetString(xkb->names->vmods[i]);
         if ((modStr != NULL) && (uStrCaseCmp(fieldStr, modStr) == 0))
         {
             val_rtrn->uval = i;
@@ -231,7 +229,7 @@ FindKeypadVMod(XkbcDescPtr xkb)
     Atom name;
     ExprResult rtrn;
 
-    name = XkbcInternAtom(xkb->dpy, "NumLock", False);
+    name = XkbcInternAtom("NumLock", False);
     if ((xkb) && LookupVModIndex((char *) xkb, None, name, TypeInt, &rtrn))
     {
         return rtrn.ival;
@@ -251,8 +249,8 @@ ResolveVirtualModifier(ExprDef * def, ExprResult * val_rtrn, VModInfo * info)
         for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1)
         {
             char *str1, *str2;
-            str1 = XkbcAtomGetString(info->xkb->dpy, names->vmods[i]);
-            str2 = XkbcAtomGetString(NULL, def->value.str);
+            str1 = XkbcAtomGetString(names->vmods[i]);
+            str2 = XkbcAtomGetString(def->value.str);
             if ((info->available & bit) && (uStrCaseCmp(str1, str2) == Equal))
             {
                 val_rtrn->uval = i;

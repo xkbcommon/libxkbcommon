@@ -2596,57 +2596,57 @@ yyreduce:
 
   case 118:
 #line 630 "xkbparse.y"
-    { (yyval.sval)= XkbcInternAtom(NULL,"action",False); }
+    { (yyval.sval)= XkbcInternAtom("action",False); }
     break;
 
   case 119:
 #line 632 "xkbparse.y"
-    { (yyval.sval)= XkbcInternAtom(NULL,"interpret",False); }
+    { (yyval.sval)= XkbcInternAtom("interpret",False); }
     break;
 
   case 120:
 #line 634 "xkbparse.y"
-    { (yyval.sval)= XkbcInternAtom(NULL,"type",False); }
+    { (yyval.sval)= XkbcInternAtom("type",False); }
     break;
 
   case 121:
 #line 636 "xkbparse.y"
-    { (yyval.sval)= XkbcInternAtom(NULL,"key",False); }
+    { (yyval.sval)= XkbcInternAtom("key",False); }
     break;
 
   case 122:
 #line 638 "xkbparse.y"
-    { (yyval.sval)= XkbcInternAtom(NULL,"group",False); }
+    { (yyval.sval)= XkbcInternAtom("group",False); }
     break;
 
   case 123:
 #line 640 "xkbparse.y"
-    {(yyval.sval)=XkbcInternAtom(NULL,"modifier_map",False);}
+    {(yyval.sval)=XkbcInternAtom("modifier_map",False);}
     break;
 
   case 124:
 #line 642 "xkbparse.y"
-    { (yyval.sval)= XkbcInternAtom(NULL,"indicator",False); }
+    { (yyval.sval)= XkbcInternAtom("indicator",False); }
     break;
 
   case 125:
 #line 644 "xkbparse.y"
-    { (yyval.sval)= XkbcInternAtom(NULL,"shape",False); }
+    { (yyval.sval)= XkbcInternAtom("shape",False); }
     break;
 
   case 126:
 #line 646 "xkbparse.y"
-    { (yyval.sval)= XkbcInternAtom(NULL,"row",False); }
+    { (yyval.sval)= XkbcInternAtom("row",False); }
     break;
 
   case 127:
 #line 648 "xkbparse.y"
-    { (yyval.sval)= XkbcInternAtom(NULL,"section",False); }
+    { (yyval.sval)= XkbcInternAtom("section",False); }
     break;
 
   case 128:
 #line 650 "xkbparse.y"
-    { (yyval.sval)= XkbcInternAtom(NULL,"text",False); }
+    { (yyval.sval)= XkbcInternAtom("text",False); }
     break;
 
   case 129:
@@ -2974,17 +2974,17 @@ yyreduce:
 
   case 179:
 #line 844 "xkbparse.y"
-    { (yyval.sval)= XkbcInternAtom(NULL,scanStr,False); }
+    { (yyval.sval)= XkbcInternAtom(scanStr,False); }
     break;
 
   case 180:
 #line 845 "xkbparse.y"
-    { (yyval.sval)= XkbcInternAtom(NULL,"default",False); }
+    { (yyval.sval)= XkbcInternAtom("default",False); }
     break;
 
   case 181:
 #line 848 "xkbparse.y"
-    { (yyval.sval)= XkbcInternAtom(NULL,scanStr,False); }
+    { (yyval.sval)= XkbcInternAtom(scanStr,False); }
     break;
 
   case 182:

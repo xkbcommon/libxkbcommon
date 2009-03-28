@@ -831,7 +831,7 @@ CompileCompatMap(XkbFile *file, XkbcDescPtr xkb, unsigned merge,
         {
             if (XkbAllocNames(xkb, XkbCompatNameMask, 0, 0) == Success)
                 xkb->names->compat =
-                    XkbcInternAtom(xkb->dpy, info.name, False);
+                    XkbcInternAtom(info.name, False);
             else
             {
                 WSGO("Couldn't allocate space for compat name\n");
