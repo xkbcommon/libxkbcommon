@@ -300,8 +300,7 @@ static Bool
 ReportMismatch(unsigned action, unsigned field, const char *type)
 {
     ERROR2("Value of %s field must be of type %s\n", fieldText(field), type);
-    ACTION1("Action %s definition ignored\n",
-            XkbActionTypeText(action, XkbMessage));
+    ACTION1("Action %s definition ignored\n", XkbActionTypeText(action));
     return False;
 }
 
@@ -309,7 +308,7 @@ static Bool
 ReportIllegal(unsigned action, unsigned field)
 {
     ERROR2("Field %s is not defined for an action of type %s\n",
-           fieldText(field), XkbActionTypeText(action, XkbMessage));
+           fieldText(field), XkbActionTypeText(action));
     ACTION("Action definition ignored\n");
     return False;
 }
@@ -318,7 +317,7 @@ static Bool
 ReportActionNotArray(unsigned action, unsigned field)
 {
     ERROR2("The %s field in the %s action is not an array\n",
-           fieldText(field), XkbActionTypeText(action, XkbMessage));
+           fieldText(field), XkbActionTypeText(action));
     ACTION("Action definition ignored\n");
     return False;
 }
@@ -328,7 +327,7 @@ ReportNotFound(unsigned action, unsigned field, const char *what, char *bad)
 {
     ERROR2("%s named %s not found\n", what, bad);
     ACTION2("Ignoring the %s field of an %s action\n", fieldText(field),
-            XkbActionTypeText(action, XkbMessage));
+            XkbActionTypeText(action));
     return False;
 }
 
@@ -500,8 +499,7 @@ CheckGroupField(unsigned action,
     {
         ERROR2("Illegal group %d (must be in the range 1..%d)\n", rtrn.ival,
                XkbNumKbdGroups);
-        ACTION1("Action %s definition ignored\n",
-                XkbActionTypeText(action, XkbMessage));
+        ACTION1("Action %s definition ignored\n", XkbActionTypeText(action));
         return False;
     }
     if (value->op == OpNegate)

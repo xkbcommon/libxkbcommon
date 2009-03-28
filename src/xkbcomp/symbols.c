@@ -449,8 +449,8 @@ MergeKeyGroups(SymbolsInfo * info,
                         ("Multiple actions for level %d/group %d on key %s\n",
                          i + 1, group + 1, longText(into->name, XkbMessage));
                     ACTION2("Using %s, ignoring %s\n",
-                            XkbActionTypeText(use->type, XkbMessage),
-                            XkbActionTypeText(ignore->type, XkbMessage));
+                            XkbActionTypeText(use->type),
+                            XkbActionTypeText(ignore->type));
                 }
                 resultActs[i] = *use;
             }

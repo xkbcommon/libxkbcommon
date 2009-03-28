@@ -75,7 +75,7 @@ CompileKeymap(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
         break;
     default:
         ERROR1("Cannot compile %s alone into an XKM file\n",
-               XkbConfigText(mainType, XkbMessage));
+               XkbConfigText(mainType));
         return False;
     }
     have = 0;
@@ -88,16 +88,14 @@ CompileKeymap(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
         if ((have & (1 << file->type)) != 0)
         {
             ERROR2("More than one %s section in a %s file\n",
-                   XkbConfigText(file->type, XkbMessage),
-                   XkbConfigText(mainType, XkbMessage));
+                   XkbConfigText(file->type), XkbConfigText(mainType));
             ACTION("All sections after the first ignored\n");
             ok = False;
         }
         else if ((1 << file->type) & (~legal))
         {
             ERROR2("Cannot define %s in a %s file\n",
-                   XkbConfigText(file->type, XkbMessage),
-                   XkbConfigText(mainType, XkbMessage));
+                   XkbConfigText(file->type), XkbConfigText(mainType));
             ok = False;
         }
         else
@@ -107,8 +105,7 @@ CompileKeymap(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
             case XkmLayoutFile:
             case XkmKeymapFile:
                 WSGO2("Illegal %s configuration in a %s file\n",
-                      XkbConfigText(file->type, XkbMessage),
-                      XkbConfigText(mainType, XkbMessage));
+                      XkbConfigText(file->type), XkbConfigText(mainType));
                 ACTION("Ignored\n");
                 ok = False;
                 break;
@@ -131,7 +128,7 @@ CompileKeymap(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
             case XkmVirtualModsIndex:
             case XkmIndicatorsIndex:
                 WSGO1("Found an isolated %s section\n",
-                      XkbConfigText(file->type, XkbMessage));
+                      XkbConfigText(file->type));
                 break;
             default:
                 WSGO1("Unknown file type %d\n", file->type);
@@ -169,13 +166,12 @@ CompileKeymap(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
             if (missing & bit)
             {
                 ERROR2("Missing %s section in a %s file\n",
-                       XkbConfigText(i, XkbMessage),
-                       XkbConfigText(mainType, XkbMessage));
+                       XkbConfigText(i), XkbConfigText(mainType));
                 missing &= ~bit;
             }
         }
         ACTION1("Description of %s not compiled\n",
-                XkbConfigText(mainType, XkbMessage));
+                XkbConfigText(mainType));
         ok = False;
     }
     ok = BindIndicators(xkb, True, unbound, NULL);

@@ -99,8 +99,7 @@ ProcessIncludeFile(IncludeStmt * stmt,
         if (!mapToUse)
         {
             ERROR3("No %s named \"%s\" in the include file \"%s\"\n",
-                   XkbConfigText(file_type, XkbMessage), stmt->map,
-                   stmt->file);
+                   XkbConfigText(file_type), stmt->map, stmt->file);
             ACTION("Exiting\n");
             return False;
         }
@@ -115,8 +114,7 @@ ProcessIncludeFile(IncludeStmt * stmt,
     if (mapToUse->type != file_type)
     {
         ERROR2("Include file wrong type (expected %s, got %s)\n",
-               XkbConfigText(file_type, XkbMessage),
-               XkbConfigText(mapToUse->type, XkbMessage));
+               XkbConfigText(file_type), XkbConfigText(mapToUse->type));
         ACTION1("Include file \"%s\" ignored\n", stmt->file);
         return False;
     }
@@ -576,7 +574,7 @@ FindKeyNameForAlias(XkbcDescPtr xkb, unsigned long lname,
 }
 
 char *
-XkbConfigText(unsigned config, unsigned format)
+XkbConfigText(unsigned config)
 {
     switch (config) {
     case XkmSemanticsFile:
@@ -621,7 +619,7 @@ static char *actionTypeNames[XkbSA_NumActions]= {
 };
 
 char *
-XkbActionTypeText(unsigned type, unsigned format)
+XkbActionTypeText(unsigned type)
 {
 
     if (type <= XkbSA_LastAction)

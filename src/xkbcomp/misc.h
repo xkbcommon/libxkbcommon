@@ -109,9 +109,9 @@ extern Bool FindKeyNameForAlias(XkbcDescPtr /* xkb */ ,
     );
 
 extern char *
-XkbConfigText(unsigned config, unsigned format);
+XkbConfigText(unsigned config);
 
 extern char *
-XkbActionTypeText(unsigned type, unsigned format);
+XkbActionTypeText(unsigned type);
 
 #endif /* MISC_H */
