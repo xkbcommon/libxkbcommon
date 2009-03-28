@@ -211,7 +211,7 @@ SetIndicatorMapField(LEDInfo * led,
     {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(xkb->dpy, led, field);
-        if (!ExprResolveModMask(value, &rtrn, LookupVModMask, (XPointer) xkb))
+        if (!ExprResolveModMask(value, &rtrn, LookupVModMask, (char *) xkb))
             return ReportIndicatorBadType(xkb->dpy, led, field,
                                           "modifier mask");
         led->real_mods = rtrn.uval & 0xff;
@@ -223,7 +223,7 @@ SetIndicatorMapField(LEDInfo * led,
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(xkb->dpy, led, field);
         if (!ExprResolveMask
-            (value, &rtrn, SimpleLookup, (XPointer) groupNames))
+            (value, &rtrn, SimpleLookup, (char *) groupNames))
             return ReportIndicatorBadType(xkb->dpy, led, field, "group mask");
         led->groups = rtrn.uval;
         led->defs.defined |= _LED_Groups;
@@ -234,7 +234,7 @@ SetIndicatorMapField(LEDInfo * led,
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(xkb->dpy, led, field);
         if (!ExprResolveMask
-            (value, &rtrn, SimpleLookup, (XPointer) ctrlNames))
+            (value, &rtrn, SimpleLookup, (char *) ctrlNames))
             return ReportIndicatorBadType(xkb->dpy, led, field,
                                           "controls mask");
         led->ctrls = rtrn.uval;
@@ -258,7 +258,7 @@ SetIndicatorMapField(LEDInfo * led,
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(xkb->dpy, led, field);
         if (!ExprResolveMask(value, &rtrn, SimpleLookup,
-                             (XPointer) modComponentNames))
+                             (char *) modComponentNames))
         {
             return ReportIndicatorBadType(xkb->dpy, led, field,
                                           "mask of modifier state components");
@@ -270,7 +270,7 @@ SetIndicatorMapField(LEDInfo * led,
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(xkb->dpy, led, field);
         if (!ExprResolveMask(value, &rtrn, SimpleLookup,
-                             (XPointer) groupComponentNames))
+                             (char *) groupComponentNames))
         {
             return ReportIndicatorBadType(xkb->dpy, led, field,
                                           "mask of group state components");

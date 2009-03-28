@@ -167,7 +167,7 @@ HandleVModDef(VModDef * stmt, unsigned mergeMode, VModInfo * info)
  * undefined.
  */
 int
-LookupVModIndex(XPointer priv,
+LookupVModIndex(char * priv,
                 Atom elem, Atom field, unsigned type, ExprResult * val_rtrn)
 {
     register int i;
@@ -213,7 +213,7 @@ LookupVModIndex(XPointer priv,
  * undefined.
  */
 int
-LookupVModMask(XPointer priv,
+LookupVModMask(char * priv,
                Atom elem, Atom field, unsigned type, ExprResult * val_rtrn)
 {
     if (LookupVModIndex(priv, elem, field, type, val_rtrn))
@@ -232,7 +232,7 @@ FindKeypadVMod(XkbcDescPtr xkb)
     ExprResult rtrn;
 
     name = XkbInternAtom(xkb->dpy, "NumLock", False);
-    if ((xkb) && LookupVModIndex((XPointer) xkb, None, name, TypeInt, &rtrn))
+    if ((xkb) && LookupVModIndex((char *) xkb, None, name, TypeInt, &rtrn))
     {
         return rtrn.ival;
     }

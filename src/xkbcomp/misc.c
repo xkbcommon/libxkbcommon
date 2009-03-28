@@ -223,7 +223,7 @@ MergeNewField(unsigned field,
     return False;
 }
 
-XPointer
+char *
 ClearCommonInfo(CommonInfo * cmn)
 {
     if (cmn != NULL)
@@ -238,7 +238,7 @@ ClearCommonInfo(CommonInfo * cmn)
     return NULL;
 }
 
-XPointer
+char *
 AddCommonInfo(CommonInfo * old, CommonInfo * new)
 {
     CommonInfo *first;
@@ -252,9 +252,9 @@ AddCommonInfo(CommonInfo * old, CommonInfo * new)
     if (old)
     {
         old->next = new;
-        return (XPointer) first;
+        return (char *) first;
     }
-    return (XPointer) new;
+    return (char *) new;
 }
 
 /***====================================================================***/

@@ -53,14 +53,14 @@ extern Bool ApplyVModDefs(VModInfo * /* info */ ,
                           XkbcDescPtr    /* xkb */
     );
 
-extern int LookupVModIndex(XPointer /* priv */ ,
+extern int LookupVModIndex(char * /* priv */ ,
                            Atom /* elem */ ,
                            Atom /* field */ ,
                            unsigned /* type */ ,
                            ExprResult * /* val_rtrn */
     );
 
-extern int LookupVModMask(XPointer /* priv */ ,
+extern int LookupVModMask(char * /* priv */ ,
                           Atom /* elem */ ,
                           Atom /* field */ ,
                           unsigned /* type */ ,

@@ -154,7 +154,7 @@ ExprResolveLhs(ExprDef * expr,
 }
 
 Bool
-SimpleLookup(XPointer priv,
+SimpleLookup(char * priv,
              Atom elem, Atom field, unsigned type, ExprResult * val_rtrn)
 {
     LookupEntry *entry;
@@ -182,7 +182,7 @@ SimpleLookup(XPointer priv,
 }
 
 Bool
-RadioLookup(XPointer priv,
+RadioLookup(char * priv,
             Atom elem, Atom field, unsigned type, ExprResult * val_rtrn)
 {
     register char *str;
@@ -210,7 +210,7 @@ RadioLookup(XPointer priv,
 }
 
 int
-TableLookup(XPointer priv,
+TableLookup(char * priv,
             Atom elem, Atom field, unsigned type, ExprResult * val_rtrn)
 {
     LookupTable *tbl = (LookupTable *) priv;
@@ -231,7 +231,7 @@ TableLookup(XPointer priv,
     }
     if (tbl == NULL)            /* didn't find a matching element */
         return False;
-    priv = (XPointer) tbl->entries;
+    priv = (char *) tbl->entries;
     return SimpleLookup(priv, (Atom) None, field, type, val_rtrn);
 }
 
@@ -249,15 +249,15 @@ static LookupEntry modIndexNames[] = {
 };
 
 int
-LookupModIndex(XPointer priv,
+LookupModIndex(char * priv,
                Atom elem, Atom field, unsigned type, ExprResult * val_rtrn)
 {
-    return SimpleLookup((XPointer) modIndexNames, elem, field, type,
+    return SimpleLookup((char *) modIndexNames, elem, field, type,
                         val_rtrn);
 }
 
 int
-LookupModMask(XPointer priv,
+LookupModMask(char * priv,
               Atom elem, Atom field, unsigned type, ExprResult * val_rtrn)
 {
     char *str;
@@ -289,7 +289,7 @@ LookupModMask(XPointer priv,
 int
 ExprResolveModIndex(ExprDef * expr,
                     ExprResult * val_rtrn,
-                    IdentLookupFunc lookup, XPointer lookupPriv)
+                    IdentLookupFunc lookup, char * lookupPriv)
 {
     int ok = 0;
     char *bogus = NULL;
@@ -366,20 +366,20 @@ ExprResolveModIndex(ExprDef * expr,
 int
 ExprResolveModMask(ExprDef * expr,
                    ExprResult * val_rtrn,
-                   IdentLookupFunc lookup, XPointer lookupPriv)
+                   IdentLookupFunc lookup, char * lookupPriv)
 {
     LookupPriv priv;
 
     priv.priv = NULL;
     priv.chain = lookup;
     priv.chainPriv = lookupPriv;
-    return ExprResolveMask(expr, val_rtrn, LookupModMask, (XPointer) & priv);
+    return ExprResolveMask(expr, val_rtrn, LookupModMask, (char *) & priv);
 }
 
 int
 ExprResolveBoolean(ExprDef * expr,
                    ExprResult * val_rtrn,
-                   IdentLookupFunc lookup, XPointer lookupPriv)
+                   IdentLookupFunc lookup, char * lookupPriv)
 {
     int ok = 0;
     char *bogus = NULL;
@@ -475,7 +475,7 @@ ExprResolveBoolean(ExprDef * expr,
 int
 ExprResolveFloat(ExprDef * expr,
                  ExprResult * val_rtrn,
-                 IdentLookupFunc lookup, XPointer lookupPriv)
+                 IdentLookupFunc lookup, char * lookupPriv)
 {
     int ok = 0;
     ExprResult leftRtrn, rightRtrn;
@@ -588,7 +588,7 @@ ExprResolveFloat(ExprDef * expr,
 int
 ExprResolveInteger(ExprDef * expr,
                    ExprResult * val_rtrn,
-                   IdentLookupFunc lookup, XPointer lookupPriv)
+                   IdentLookupFunc lookup, char * lookupPriv)
 {
     int ok = 0;
     ExprResult leftRtrn, rightRtrn;
@@ -709,7 +709,7 @@ ExprResolveInteger(ExprDef * expr,
 int
 ExprResolveString(ExprDef * expr,
                   ExprResult * val_rtrn,
-                  IdentLookupFunc lookup, XPointer lookupPriv)
+                  IdentLookupFunc lookup, char * lookupPriv)
 {
     int ok = 0;
     ExprResult leftRtrn, rightRtrn;
@@ -817,7 +817,7 @@ ExprResolveString(ExprDef * expr,
 int
 ExprResolveKeyName(ExprDef * expr,
                    ExprResult * val_rtrn,
-                   IdentLookupFunc lookup, XPointer lookupPriv)
+                   IdentLookupFunc lookup, char * lookupPriv)
 {
     int ok = 0;
     ExprDef *left;
@@ -912,7 +912,7 @@ ExprResolveEnum(ExprDef * expr, ExprResult * val_rtrn, LookupEntry * values)
                exprOpText(expr->op));
         return False;
     }
-    if (!SimpleLookup((XPointer) values, (Atom) None, expr->value.str,
+    if (!SimpleLookup((char *) values, (Atom) None, expr->value.str,
                       (unsigned) TypeInt, val_rtrn))
     {
         int nOut = 0;
@@ -936,7 +936,7 @@ ExprResolveEnum(ExprDef * expr, ExprResult * val_rtrn, LookupEntry * values)
 int
 ExprResolveMask(ExprDef * expr,
                 ExprResult * val_rtrn,
-                IdentLookupFunc lookup, XPointer lookupPriv)
+                IdentLookupFunc lookup, char * lookupPriv)
 {
     int ok = 0;
     ExprResult leftRtrn, rightRtrn;
@@ -1043,7 +1043,7 @@ ExprResolveMask(ExprDef * expr,
 int
 ExprResolveKeySym(ExprDef * expr,
                   ExprResult * val_rtrn,
-                  IdentLookupFunc lookup, XPointer lookupPriv)
+                  IdentLookupFunc lookup, char * lookupPriv)
 {
     int ok = 0;
     KeySym sym;

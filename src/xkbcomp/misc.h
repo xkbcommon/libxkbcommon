@@ -47,10 +47,10 @@ extern Bool MergeNewField(unsigned /* field */ ,
                           unsigned *    /* pCollide */
     );
 
-extern XPointer ClearCommonInfo(CommonInfo *    /* cmn */
+extern char * ClearCommonInfo(CommonInfo *    /* cmn */
     );
 
-extern XPointer AddCommonInfo(CommonInfo * /* old */ ,
+extern char * AddCommonInfo(CommonInfo * /* old */ ,
                               CommonInfo *      /* new */
     );
 

@@ -910,7 +910,7 @@ GetGroupIndex(KeyInfo * key,
         return False;
     }
     if (!ExprResolveInteger
-        (arrayNdx, &tmp, SimpleLookup, (XPointer) groupNames))
+        (arrayNdx, &tmp, SimpleLookup, (char *) groupNames))
     {
         ERROR2("Illegal group index for %s of key %s\n", name,
                longText(key->name, XkbMessage));
@@ -1138,7 +1138,7 @@ SetSymbolsField(KeyInfo * key,
             key->defs.defined |= _Key_Type_Dflt;
         }
         else if (!ExprResolveInteger(arrayNdx, &ndx, SimpleLookup,
-                                     (XPointer) groupNames))
+                                     (char *) groupNames))
         {
             ERROR1("Illegal group index for type of key %s\n",
                    longText(key->name, XkbMessage));
@@ -1167,7 +1167,7 @@ SetSymbolsField(KeyInfo * key,
              (uStrCaseCmp(field, "virtualmods") == 0) ||
              (uStrCaseCmp(field, "virtualmodifiers") == 0))
     {
-        ok = ExprResolveModMask(value, &tmp, LookupVModMask, (XPointer) xkb);
+        ok = ExprResolveModMask(value, &tmp, LookupVModMask, (char *) xkb);
         if (ok)
         {
             key->vmodmap = (tmp.uval >> 8);
@@ -1197,7 +1197,7 @@ SetSymbolsField(KeyInfo * key,
         if (uStrCaseCmp(field, "permanentradiogroup") == 0)
             permanent = True;
         ok = ExprResolveInteger(value, &tmp, SimpleLookup,
-                                (XPointer) rgEntries);
+                                (char *) rgEntries);
         if (!ok)
         {
             ERROR1("Illegal radio group specification for %s\n",
@@ -1336,7 +1336,7 @@ SetSymbolsField(KeyInfo * key,
              (uStrCaseCmp(field, "redirectgroups") == 0))
     {
         if (!ExprResolveInteger
-            (value, &tmp, SimpleLookup, (XPointer) groupNames))
+            (value, &tmp, SimpleLookup, (char *) groupNames))
         {
             ERROR1("Illegal group index for redirect of key %s\n",
                    longText(key->name, XkbMessage));
@@ -1375,7 +1375,7 @@ SetGroupName(SymbolsInfo * info, ExprDef * arrayNdx, ExprDef * value)
         return False;
     }
     if (!ExprResolveInteger
-        (arrayNdx, &tmp, SimpleLookup, (XPointer) groupNames))
+        (arrayNdx, &tmp, SimpleLookup, (char *) groupNames))
     {
         ERROR("Illegal index in group name definition\n");
         ACTION("Definition with non-integer array index ignored\n");
@@ -1457,7 +1457,7 @@ HandleSymbolsVar(VarDef * stmt, XkbcDescPtr xkb, SymbolsInfo * info)
                  || (uStrCaseCmp(field.str, "redirectgroups") == 0)))
     {
         if (!ExprResolveInteger(stmt->value, &tmp,
-                                SimpleLookup, (XPointer) groupNames))
+                                SimpleLookup, (char *) groupNames))
         {
             ERROR("Illegal group index for global groupsRedirect\n");
             ACTION("Definition with non-integer group ignored\n");

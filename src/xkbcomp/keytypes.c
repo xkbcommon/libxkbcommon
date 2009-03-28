@@ -689,7 +689,7 @@ SetMapEntry(KeyTypeInfo * type,
 
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(type, "map entry");
-    if (!ExprResolveModMask(arrayNdx, &rtrn, LookupVModMask, (XPointer) xkb))
+    if (!ExprResolveModMask(arrayNdx, &rtrn, LookupVModMask, (char *) xkb))
         return ReportTypeBadType(type, "map entry", "modifier mask");
     entry.mods.real_mods = rtrn.uval & 0xff;      /* modifiers < 512 */
     entry.mods.vmods = (rtrn.uval >> 8) & 0xffff; /* modifiers > 512 */
@@ -709,7 +709,7 @@ SetMapEntry(KeyTypeInfo * type,
         entry.mods.real_mods &= type->mask;
         entry.mods.vmods &= type->vmask;
     }
-    if (!ExprResolveInteger(value, &rtrn, SimpleLookup, (XPointer) lnames))
+    if (!ExprResolveInteger(value, &rtrn, SimpleLookup, (char *) lnames))
     {
         ERROR("Level specifications in a key type must be integer\n");
         ACTION("Ignoring malformed level specification\n");
@@ -736,7 +736,7 @@ SetPreserve(KeyTypeInfo * type,
 
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(type, "preserve entry");
-    if (!ExprResolveModMask(arrayNdx, &rtrn, LookupVModMask, (XPointer) xkb))
+    if (!ExprResolveModMask(arrayNdx, &rtrn, LookupVModMask, (char *) xkb))
         return ReportTypeBadType(type, "preserve entry", "modifier mask");
     new.defs = type->defs;
     new.defs.next = NULL;
@@ -756,7 +756,7 @@ SetPreserve(KeyTypeInfo * type,
         if (warningLevel > 0)
             INFO1("%s\n", PreserveIndexTxt(type, xkb, &new));
     }
-    if (!ExprResolveModMask(value, &rtrn, LookupVModMask, (XPointer) xkb))
+    if (!ExprResolveModMask(value, &rtrn, LookupVModMask, (char *) xkb))
     {
         ERROR("Preserve value in a key type is not a modifier mask\n");
         ACTION2("Ignoring preserve[%s] in type %s\n",
@@ -845,7 +845,7 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
 
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(type, "level name");
-    if (!ExprResolveInteger(arrayNdx, &rtrn, SimpleLookup, (XPointer) lnames))
+    if (!ExprResolveInteger(arrayNdx, &rtrn, SimpleLookup, (char *) lnames))
         return ReportTypeBadType(type, "level name", "integer");
     if ((rtrn.ival < 1) || (rtrn.ival > XkbMaxShiftLevel + 1))
     {
@@ -893,7 +893,7 @@ SetKeyTypeField(KeyTypeInfo * type,
             ACTION("Illegal array subscript ignored\n");
         }
         /* get modifier mask for current type */
-        if (!ExprResolveModMask(value, &tmp, LookupVModMask, (XPointer) xkb))
+        if (!ExprResolveModMask(value, &tmp, LookupVModMask, (char *) xkb))
         {
             ERROR("Key type mask field must be a modifier mask\n");
             ACTION("Key type definition ignored\n");

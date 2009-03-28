@@ -35,7 +35,7 @@ typedef union _ExprResult
     XkbKeyNameRec keyName;
 } ExprResult;
 
-typedef Bool(*IdentLookupFunc) (XPointer /* priv */ ,
+typedef Bool(*IdentLookupFunc) (char * /* priv */ ,
                                 Atom /* elem */ ,
                                 Atom /* field */ ,
                                 unsigned /* type */ ,
@@ -53,9 +53,9 @@ extern int ExprResolveLhs(ExprDef * /* expr */ ,
 
 typedef struct _LookupPriv
 {
-    XPointer priv;
+    char * priv;
     IdentLookupFunc chain;
-    XPointer chainPriv;
+    char * chainPriv;
 } LookupPriv;
 
 typedef struct _LookupEntry
@@ -75,35 +75,35 @@ typedef struct _LookupTable
 extern char *exprOpText(unsigned        /* type */
     );
 
-extern int RadioLookup(XPointer /* priv */ ,
+extern int RadioLookup(char * /* priv */ ,
                        Atom /* elem */ ,
                        Atom /* field */ ,
                        unsigned /* type */ ,
                        ExprResult *     /* val_rtrn */
     );
 
-extern int SimpleLookup(XPointer /* priv */ ,
+extern int SimpleLookup(char * /* priv */ ,
                         Atom /* elem */ ,
                         Atom /* field */ ,
                         unsigned /* type */ ,
                         ExprResult *    /* val_rtrn */
     );
 
-extern int TableLookup(XPointer /* priv */ ,
+extern int TableLookup(char * /* priv */ ,
                        Atom /* elem */ ,
                        Atom /* field */ ,
                        unsigned /* type */ ,
                        ExprResult *     /* val_rtrn */
     );
 
-extern int LookupModIndex(XPointer /* priv */ ,
+extern int LookupModIndex(char * /* priv */ ,
                           Atom /* elem */ ,
                           Atom /* field */ ,
                           unsigned /* type */ ,
                           ExprResult *  /* val_rtrn */
     );
 
-extern int LookupModMask(XPointer /* priv */ ,
+extern int LookupModMask(char * /* priv */ ,
                          Atom /* elem */ ,
                          Atom /* field */ ,
                          unsigned /* type */ ,
@@ -113,43 +113,43 @@ extern int LookupModMask(XPointer /* priv */ ,
 extern int ExprResolveModIndex(ExprDef * /* expr */ ,
                                ExprResult * /* val_rtrn */ ,
                                IdentLookupFunc /* lookup */ ,
-                               XPointer /* lookupPriv */
+                               char * /* lookupPriv */
     );
 
 extern int ExprResolveModMask(ExprDef * /* expr */ ,
                               ExprResult * /* val_rtrn */ ,
                               IdentLookupFunc /* lookup */ ,
-                              XPointer  /* priv */
+                              char *  /* priv */
     );
 
 extern int ExprResolveBoolean(ExprDef * /* expr */ ,
                               ExprResult * /* val_rtrn */ ,
                               IdentLookupFunc /* lookup */ ,
-                              XPointer  /* lookupPriv */
+                              char *  /* lookupPriv */
     );
 
 extern int ExprResolveInteger(ExprDef * /* expr */ ,
                               ExprResult * /* val_rtrn */ ,
                               IdentLookupFunc /* lookup */ ,
-                              XPointer  /* lookupPriv */
+                              char *  /* lookupPriv */
     );
 
 extern int ExprResolveFloat(ExprDef * /* expr */ ,
                             ExprResult * /* val_rtrn */ ,
                             IdentLookupFunc /* lookup */ ,
-                            XPointer    /* lookupPriv */
+                            char *    /* lookupPriv */
     );
 
 extern int ExprResolveString(ExprDef * /* expr */ ,
                              ExprResult * /* val_rtrn */ ,
                              IdentLookupFunc /* lookup */ ,
-                             XPointer   /* lookupPriv */
+                             char *   /* lookupPriv */
     );
 
 extern int ExprResolveKeyName(ExprDef * /* expr */ ,
                               ExprResult * /* val_rtrn */ ,
                               IdentLookupFunc /* lookup */ ,
-                              XPointer  /* lookupPriv */
+                              char *  /* lookupPriv */
     );
 
 extern int ExprResolveEnum(ExprDef * /* expr */ ,
@@ -160,13 +160,13 @@ extern int ExprResolveEnum(ExprDef * /* expr */ ,
 extern int ExprResolveMask(ExprDef * /* expr */ ,
                            ExprResult * /* val_rtrn */ ,
                            IdentLookupFunc /* lookup */ ,
-                           XPointer     /* lookupPriv */
+                           char *     /* lookupPriv */
     );
 
 extern int ExprResolveKeySym(ExprDef * /* expr */ ,
                              ExprResult * /* val_rtrn */ ,
                              IdentLookupFunc /* lookup */ ,
-                             XPointer   /* lookupPriv */
+                             char *   /* lookupPriv */
     );
 
 #endif /* EXPR_H */

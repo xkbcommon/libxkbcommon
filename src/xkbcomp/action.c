@@ -383,7 +383,7 @@ CheckModifierField(XkbcDescPtr xkb,
             return True;
         }
     }
-    if (!ExprResolveModMask(value, &rtrn, LookupVModMask, (XPointer) xkb))
+    if (!ExprResolveModMask(value, &rtrn, LookupVModMask, (char *) xkb))
         return ReportMismatch(action, F_Modifiers, "modifier mask");
     *mods_rtrn = rtrn.uval;
     *flags_inout &= ~XkbSA_UseModMapMods;
@@ -494,7 +494,7 @@ CheckGroupField(unsigned action,
         spec = value;
     }
 
-    if (!ExprResolveInteger(spec, &rtrn, SimpleLookup, (XPointer) groupNames))
+    if (!ExprResolveInteger(spec, &rtrn, SimpleLookup, (char *) groupNames))
         return ReportMismatch(action, F_Group, "integer (range 1..8)");
     if ((rtrn.ival < 1) || (rtrn.ival > XkbNumKbdGroups))
     {
@@ -663,7 +663,7 @@ HandlePtrBtn(XkbcDescPtr xkb,
         if (array_ndx != NULL)
             return ReportActionNotArray(action->type, field);
         if (!ExprResolveInteger
-            (value, &rtrn, SimpleLookup, (XPointer) btnNames))
+            (value, &rtrn, SimpleLookup, (char *) btnNames))
             return ReportMismatch(action->type, field,
                                   "integer (range 1..5)");
         if ((rtrn.ival < 0) || (rtrn.ival > 5))
@@ -690,7 +690,7 @@ HandlePtrBtn(XkbcDescPtr xkb,
         if (array_ndx != NULL)
             return ReportActionNotArray(action->type, field);
         if (!ExprResolveInteger
-            (value, &rtrn, SimpleLookup, (XPointer) btnNames))
+            (value, &rtrn, SimpleLookup, (char *) btnNames))
             return ReportMismatch(action->type, field, "integer");
         if ((rtrn.ival < 0) || (rtrn.ival > 255))
         {
@@ -746,7 +746,7 @@ HandleSetPtrDflt(XkbcDescPtr xkb,
         }
 
         if (!ExprResolveInteger
-            (btn, &rtrn, SimpleLookup, (XPointer) btnNames))
+            (btn, &rtrn, SimpleLookup, (char *) btnNames))
             return ReportMismatch(action->type, field,
                                   "integer (range 1..5)");
         if ((rtrn.ival < 0) || (rtrn.ival > 5))
@@ -824,7 +824,7 @@ HandleISOLock(XkbcDescPtr xkb,
     case F_Affect:
         if (array_ndx != NULL)
             return ReportActionNotArray(action->type, field);
-        if (!ExprResolveMask(value, &rtrn, SimpleLookup, (XPointer) isoNames))
+        if (!ExprResolveMask(value, &rtrn, SimpleLookup, (char *) isoNames))
             return ReportMismatch(action->type, field, "keyboard component");
         act->affect = (~rtrn.uval) & XkbSA_ISOAffectMask;
         return True;
@@ -938,7 +938,7 @@ HandleSetLockControls(XkbcDescPtr xkb,
         if (array_ndx != NULL)
             return ReportActionNotArray(action->type, field);
         if (!ExprResolveMask
-            (value, &rtrn, SimpleLookup, (XPointer) ctrlNames))
+            (value, &rtrn, SimpleLookup, (char *) ctrlNames))
             return ReportMismatch(action->type, field, "controls mask");
         XkbActionSetCtrls(act, rtrn.uval);
         return True;
@@ -970,7 +970,7 @@ HandleActionMessage(XkbcDescPtr xkb,
     case F_Report:
         if (array_ndx != NULL)
             return ReportActionNotArray(action->type, field);
-        if (!ExprResolveMask(value, &rtrn, SimpleLookup, (XPointer) evNames))
+        if (!ExprResolveMask(value, &rtrn, SimpleLookup, (char *) evNames))
             return ReportMismatch(action->type, field, "key event mask");
         act->flags &= ~(XkbSA_MessageOnPress | XkbSA_MessageOnRelease);
         act->flags =
@@ -1130,7 +1130,7 @@ HandleDeviceBtn(XkbcDescPtr xkb,
         if (array_ndx != NULL)
             return ReportActionNotArray(action->type, field);
         if (!ExprResolveInteger
-            (value, &rtrn, SimpleLookup, (XPointer) btnNames))
+            (value, &rtrn, SimpleLookup, (char *) btnNames))
             return ReportMismatch(action->type, field, "integer");
         if ((rtrn.ival < 0) || (rtrn.ival > 255))
         {

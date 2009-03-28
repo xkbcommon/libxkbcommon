@@ -699,7 +699,7 @@ HandleGroupCompatDef(GroupCompatDef * def,
     }
     tmp.fileID = info->fileID;
     tmp.merge = merge;
-    if (!ExprResolveModMask(def->def, &val, LookupVModMask, (XPointer) xkb))
+    if (!ExprResolveModMask(def->def, &val, LookupVModMask, (char *) xkb))
     {
         ERROR("Expected a modifier mask in group compatibility definition\n");
         ACTION1("Ignoring illegal compatibility map for group %d\n",
