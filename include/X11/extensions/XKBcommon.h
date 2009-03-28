@@ -242,6 +242,12 @@ extern char *
 XkbcAtomText(Atom atm);
 
 extern char *
+XkbcVModIndexText(XkbcDescPtr xkb, unsigned ndx);
+
+extern char *
+XkbcVModMaskText(XkbcDescPtr xkb, unsigned modMask, unsigned mask);
+
+extern char *
 XkbcModMaskText(unsigned mask, Bool cFormat);
 
 extern char *

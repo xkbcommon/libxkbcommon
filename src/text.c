@@ -153,6 +153,89 @@ XkbcAtomText(Atom atm)
     return XkbStringText(rtrn);
 }
 
+char *
+XkbcVModIndexText(XkbcDescPtr xkb, unsigned ndx)
+{
+    int len;
+    Atom *vmodNames;
+    char *rtrn, *tmp = NULL;
+
+    if (xkb && xkb->names)
+        vmodNames = xkb->names->vmods;
+    else
+        vmodNames = NULL;
+
+    if (ndx >= XkbNumVirtualMods)
+         tmp = strdup("illegal");
+    else if (vmodNames && (vmodNames[ndx] != None))
+         tmp = XkbcAtomGetString(vmodNames[ndx]);
+
+    if (!tmp) {
+        tmp = _XkbAlloc(20 * sizeof(char));
+        snprintf(tmp, 20, "%d", ndx);
+    }
+
+    len = strlen(tmp) + 1;
+    if (len >= BUFFER_SIZE)
+        len = BUFFER_SIZE - 1;
+
+    rtrn = tbGetBuffer(len);
+    strncpy(rtrn, tmp, len);
+
+    _XkbFree(tmp);
+
+    return rtrn;
+}
+
+char *
+XkbcVModMaskText(XkbcDescPtr xkb, unsigned modMask, unsigned mask)
+{
+    int i, bit, len, rem;
+    char *mm = NULL, *rtrn, *str;
+    char buf[BUFFER_SIZE];
+
+    if ((modMask == 0) && (mask == 0))
+        return "none";
+
+    if (modMask != 0)
+        mm = XkbcModMaskText(modMask, False);
+
+    str = buf;
+    buf[0]= '\0';
+    rem = BUFFER_SIZE;
+
+    if (mask) {
+        for (i = 0, bit = 1; i < XkbNumVirtualMods && rem > 1; i++, bit <<= 1)
+        {
+            if (!(mask & bit))
+                continue;
+
+            len = snprintf(str, rem, "%s%s",
+                           (str != buf) ? "+" : "",
+                           XkbcVModIndexText(xkb, i));
+            rem -= len;
+            str += len;
+        }
+
+        str = buf;
+    }
+    else
+        str = NULL;
+
+    len = ((str) ? strlen(str) : 0) + ((mm) ? strlen(mm) : 0) +
+          ((str && mm) ? 1 : 0);
+    if (len >= BUFFER_SIZE)
+        len = BUFFER_SIZE - 1;
+
+    rtrn = tbGetBuffer(len + 1);
+    rtrn[0] = '\0';
+
+    snprintf(rtrn, len + 1, "%s%s%s", (mm) ? mm : "",
+             (mm && str) ? "+" : "", (str) ? str : "");
+
+    return rtrn;
+}
+
 static char *modNames[XkbNumModifiers] = {
     "Shift",
     "Lock",

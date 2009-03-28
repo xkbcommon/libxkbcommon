@@ -112,15 +112,15 @@ extern Bool AddLevelName(KeyTypeInfo * /* type */ ,
     );
 
 #define MapEntryTxt(x, e) \
-    XkbVModMaskText((x), (e)->mods.real_mods, (e)->mods.vmods, XkbMessage)
+    XkbcVModMaskText((x), (e)->mods.real_mods, (e)->mods.vmods)
 #define PreserveIndexTxt(x, p) \
-    XkbVModMaskText((x), (p)->indexMods, (p)->indexVMods, XkbMessage)
+    XkbcVModMaskText((x), (p)->indexMods, (p)->indexVMods)
 #define PreserveTxt(x, p) \
-    XkbVModMaskText((x), (p)->preMods, (p)->preVMods, XkbMessage)
+    XkbcVModMaskText((x), (p)->preMods, (p)->preVMods)
 #define TypeTxt(t) \
     XkbcAtomText((t)->name)
 #define TypeMaskTxt(t, x) \
-    XkbVModMaskText((x), (t)->mask, (t)->vmask, XkbMessage)
+    XkbcVModMaskText((x), (t)->mask, (t)->vmask)
 
 /***====================================================================***/
 
@@ -695,10 +695,9 @@ SetMapEntry(KeyTypeInfo * type,
         {
             WARN1("Map entry for unused modifiers in %s\n", TypeTxt(type));
             ACTION1("Using %s instead of ",
-                    XkbVModMaskText(xkb,
+                    XkbcVModMaskText(xkb,
                                     entry.mods.real_mods & type->mask,
-                                    entry.mods.vmods & type->vmask,
-                                    XkbMessage));
+                                    entry.mods.vmods & type->vmask));
             INFO1("%s\n", MapEntryTxt(xkb, &entry));
         }
         entry.mods.real_mods &= type->mask;
@@ -900,8 +899,7 @@ SetKeyTypeField(KeyTypeInfo * type,
             WARN1("Multiple modifier mask definitions for key type %s\n",
                   XkbcAtomText(type->name));
             ACTION1("Using %s, ", TypeMaskTxt(type, xkb));
-            INFO1("ignoring %s\n", XkbVModMaskText(xkb, mods, vmods,
-                                                   XkbMessage));
+            INFO1("ignoring %s\n", XkbcVModMaskText(xkb, mods, vmods));
             return False;
         }
         type->mask = mods;
