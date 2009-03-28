@@ -477,6 +477,90 @@ _XkbGeomAlloc(char **old, unsigned short *num, unsigned short *total,
                                                   (n), sizeof(XkbOverlayKeyRec))
 
 int
+XkbcAllocGeomProps(XkbGeometryPtr geom, int nProps)
+{
+    return _XkbAllocProps(geom, nProps);
+}
+
+int
+XkbcAllocGeomColors(XkbGeometryPtr geom, int nColors)
+{
+    return _XkbAllocColors(geom, nColors);
+}
+
+int
+XkbcAllocGeomKeyAliases(XkbGeometryPtr geom, int nKeyAliases)
+{
+    return _XkbAllocKeyAliases(geom, nKeyAliases);
+}
+
+int
+XkbcAllocGeomShapes(XkbGeometryPtr geom, int nShapes)
+{
+    return _XkbAllocShapes(geom, nShapes);
+}
+
+int
+XkbcAllocGeomSections(XkbGeometryPtr geom, int nSections)
+{
+    return _XkbAllocSections(geom, nSections);
+}
+
+int
+XkbcAllocGeomOverlays(XkbSectionPtr section, int nOverlays)
+{
+    return _XkbAllocOverlays(section, nOverlays);
+}
+
+int
+XkbcAllocGeomOverlayRows(XkbOverlayPtr overlay, int nRows)
+{
+    return _XkbAllocOverlayRows(overlay, nRows);
+}
+
+int
+XkbcAllocGeomOverlayKeys(XkbOverlayRowPtr row, int nKeys)
+{
+    return _XkbAllocOverlayKeys(row, nKeys);
+}
+
+int
+XkbcAllocGeomDoodads(XkbGeometryPtr geom, int nDoodads)
+{
+    return _XkbAllocDoodads(geom, nDoodads);
+}
+
+int
+XkbcAllocGeomSectionDoodads(XkbSectionPtr section, int nDoodads)
+{
+    return _XkbAllocDoodads(section, nDoodads);
+}
+
+int
+XkbcAllocGeomOutlines(XkbShapePtr shape, int nOL)
+{
+    return _XkbAllocOutlines(shape, nOL);
+}
+
+int
+XkbcAllocGeomRows(XkbSectionPtr section, int nRows)
+{
+    return _XkbAllocRows(section, nRows);
+}
+
+int
+XkbcAllocGeomPoints(XkbOutlinePtr ol, int nPts)
+{
+    return _XkbAllocPoints(ol, nPts);
+}
+
+int
+XkbcAllocGeomKeys(XkbRowPtr row, int nKeys)
+{
+    return _XkbAllocKeys(row, nKeys);
+}
+
+int
 XkbcAllocGeometry(XkbcDescPtr xkb, XkbGeometrySizesPtr sizes)
 {
     XkbGeometryPtr geom;

@@ -147,6 +147,48 @@ extern void
 XkbcFreeGeometry(XkbGeometryPtr geom, unsigned which, Bool freeMap);
 
 extern int
+XkbcAllocGeomProps(XkbGeometryPtr geom, int nProps);
+
+extern int
+XkbcAllocGeomColors(XkbGeometryPtr geom, int nColors);
+
+extern int
+XkbcAllocGeomKeyAliases(XkbGeometryPtr geom, int nKeyAliases);
+
+extern int
+XkbcAllocGeomShapes(XkbGeometryPtr geom, int nShapes);
+
+extern int
+XkbcAllocGeomSections(XkbGeometryPtr geom, int nSections);
+
+extern int
+XkbcAllocGeomOverlays(XkbSectionPtr section, int nOverlays);
+
+extern int
+XkbcAllocGeomOverlayRows(XkbOverlayPtr overlay, int nRows);
+
+extern int
+XkbcAllocGeomOverlayKeys(XkbOverlayRowPtr row, int nKeys);
+
+extern int
+XkbcAllocGeomDoodads(XkbGeometryPtr geom, int nDoodads);
+
+extern int
+XkbcAllocGeomSectionDoodads(XkbSectionPtr section, int nDoodads);
+
+extern int
+XkbcAllocGeomOutlines(XkbShapePtr shape, int nOL);
+
+extern int
+XkbcAllocGeomRows(XkbSectionPtr section, int nRows);
+
+extern int
+XkbcAllocGeomPoints(XkbOutlinePtr ol, int nPts);
+
+extern int
+XkbcAllocGeomKeys(XkbRowPtr row, int nKeys);
+
+extern int
 XkbcAllocGeometry(XkbcDescPtr xkb, XkbGeometrySizesPtr sizes);
 
 extern void
