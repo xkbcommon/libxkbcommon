@@ -512,7 +512,7 @@ FindNamedKey(XkbcDescPtr xkb,
                 {
                     WARN("Couldn't allocate key names in FindNamedKey\n");
                     ACTION1("Key \"%s\" not automatically created\n",
-                            longText(name, XkbMessage));
+                            longText(name));
                 }
                 return False;
             }
