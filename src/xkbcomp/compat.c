@@ -805,15 +805,13 @@ CopyInterps(CompatInfo * info,
 }
 
 Bool
-CompileCompatMap(XkbFile * file,
-                 XkbFileInfo * result, unsigned merge, LEDInfo ** unboundLEDs)
+CompileCompatMap(XkbFile *file, XkbcDescPtr xkb, unsigned merge,
+                 LEDInfoPtr *unboundLEDs)
 {
     int i;
     CompatInfo info;
-    XkbDescPtr xkb;
     GroupCompatInfo *gcm;
 
-    xkb = result->xkb;
     InitCompatInfo(&info, xkb);
     info.dflt.defs.merge = merge;
     info.ledDflt.defs.merge = merge;
@@ -867,7 +865,7 @@ CompileCompatMap(XkbFile * file,
         }
         if (info.leds != NULL)
         {
-            if (!CopyIndicatorMapDefs(result, info.leds, unboundLEDs))
+            if (!CopyIndicatorMapDefs(xkb, info.leds, unboundLEDs))
                 info.errorCount++;
             info.leds = NULL;
         }

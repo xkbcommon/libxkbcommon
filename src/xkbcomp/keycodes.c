@@ -822,12 +822,10 @@ HandleKeycodesFile(XkbFile * file,
  * @return True on success, False otherwise.
  */
 Bool
-CompileKeycodes(XkbFile * file, XkbFileInfo * result, unsigned merge)
+CompileKeycodes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
 {
     KeyNamesInfo info; /* contains all the info after parsing */
-    XkbDescPtr xkb;
 
-    xkb = result->xkb;
     InitKeyNamesInfo(&info);
     HandleKeycodesFile(file, xkb, merge, &info);
 

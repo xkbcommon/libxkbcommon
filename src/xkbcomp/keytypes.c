@@ -1205,12 +1205,10 @@ CopyDefToKeyType(XkbDescPtr xkb, XkbKeyTypePtr type, KeyTypeInfo * def)
 }
 
 Bool
-CompileKeyTypes(XkbFile * file, XkbFileInfo * result, unsigned merge)
+CompileKeyTypes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
 {
     KeyTypesInfo info;
-    XkbDescPtr xkb;
 
-    xkb = result->xkb;
     InitKeyTypesInfo(&info, xkb, NULL);
     info.fileID = file->id;
     HandleKeyTypesFile(file, xkb, merge, &info);

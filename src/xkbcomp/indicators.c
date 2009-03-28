@@ -371,14 +371,11 @@ HandleIndicatorMapDef(IndicatorMapDef * def,
 }
 
 Bool
-CopyIndicatorMapDefs(XkbFileInfo * result, LEDInfo * leds,
-                     LEDInfo ** unboundRtrn)
+CopyIndicatorMapDefs(XkbcDescPtr xkb, LEDInfo *leds, LEDInfo **unboundRtrn)
 {
     LEDInfo *led, *next;
     LEDInfo *unbound, *last;
-    XkbDescPtr xkb;
 
-    xkb = result->xkb;
     if (XkbAllocNames(xkb, XkbIndicatorNamesMask, 0, 0) != Success)
     {
         WSGO("Couldn't allocate names\n");
@@ -441,14 +438,12 @@ CopyIndicatorMapDefs(XkbFileInfo * result, LEDInfo * leds,
 }
 
 Bool
-BindIndicators(XkbFileInfo * result,
-               Bool force, LEDInfo * unbound, LEDInfo ** unboundRtrn)
+BindIndicators(XkbcDescPtr xkb, Bool force, LEDInfo *unbound,
+               LEDInfo **unboundRtrn)
 {
-    XkbDescPtr xkb;
     register int i;
     register LEDInfo *led, *next, *last;
 
-    xkb = result->xkb;
     if (xkb->names != NULL)
     {
         for (led = unbound; led != NULL; led = (LEDInfo *) led->defs.next)

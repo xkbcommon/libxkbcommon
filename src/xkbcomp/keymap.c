@@ -42,12 +42,12 @@
 static XkbFile *sections[MAX_SECTIONS];
 
 /**
- * Compile the given file and store the output in result.
+ * Compile the given file and store the output in xkb.
  * @param file A list of XkbFiles, each denoting one type (e.g.
  * XkmKeyNamesIdx, etc.)
  */
 Bool
-CompileKeymap(XkbFile * file, XkbFileInfo * result, unsigned merge)
+CompileKeymap(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
 {
     unsigned have;
     Bool ok;
@@ -145,20 +145,20 @@ CompileKeymap(XkbFile * file, XkbFileInfo * result, unsigned merge)
     if (ok)
     {
         if (ok && (sections[KEYCODES] != NULL))
-            ok = CompileKeycodes(sections[KEYCODES], result, MergeOverride);
+            ok = CompileKeycodes(sections[KEYCODES], xkb, MergeOverride);
         if (ok && (sections[GEOMETRY] != NULL))
-            ok = CompileGeometry(sections[GEOMETRY], result, MergeOverride);
+            ok = CompileGeometry(sections[GEOMETRY], xkb, MergeOverride);
         if (ok && (sections[TYPES] != NULL))
-            ok = CompileKeyTypes(sections[TYPES], result, MergeOverride);
+            ok = CompileKeyTypes(sections[TYPES], xkb, MergeOverride);
         if (ok && (sections[COMPAT] != NULL))
-            ok = CompileCompatMap(sections[COMPAT], result, MergeOverride,
+            ok = CompileCompatMap(sections[COMPAT], xkb, MergeOverride,
                                   &unbound);
         if (ok && (sections[SYMBOLS] != NULL))
-            ok = CompileSymbols(sections[SYMBOLS], result, MergeOverride);
+            ok = CompileSymbols(sections[SYMBOLS], xkb, MergeOverride);
     }
     if (!ok)
         return False;
-    result->defined = have;
+    xkb->defined = have;
     if (required & (~have))
     {
         register int i, bit;
@@ -178,6 +178,6 @@ CompileKeymap(XkbFile * file, XkbFileInfo * result, unsigned merge)
                 XkbConfigText(mainType, XkbMessage));
         ok = False;
     }
-    ok = BindIndicators(result, True, unbound, NULL);
+    ok = BindIndicators(xkb, True, unbound, NULL);
     return ok;
 }

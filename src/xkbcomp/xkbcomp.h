@@ -336,38 +336,26 @@ typedef struct _XkbFile
     Bool compiled;
 } XkbFile;
 
-extern Bool CompileKeymap(XkbFile * /* file */ ,
-                          XkbFileInfo * /* result */ ,
-                          unsigned      /* merge */
-    );
+extern Bool
+CompileKeymap(XkbFile *file, XkbcDescPtr xkb, unsigned merge);
 
-extern Bool CompileKeycodes(XkbFile * /* file */ ,
-                            XkbFileInfo * /* result */ ,
-                            unsigned    /* merge */
-    );
+extern Bool
+CompileKeycodes(XkbFile *file, XkbcDescPtr xkb, unsigned merge);
 
-extern Bool CompileGeometry(XkbFile * /* file */ ,
-                            XkbFileInfo * /* result */ ,
-                            unsigned    /* merge */
-    );
+extern Bool
+CompileGeometry(XkbFile *file, XkbcDescPtr xkb, unsigned merge);
 
-extern Bool CompileKeyTypes(XkbFile * /* file */ ,
-                            XkbFileInfo * /* result */ ,
-                            unsigned    /* merge */
-    );
+extern Bool
+CompileKeyTypes(XkbFile *file, XkbcDescPtr xkb, unsigned merge);
 
 typedef struct _LEDInfo *LEDInfoPtr;
 
-extern Bool CompileCompatMap(XkbFile * /* file */ ,
-                             XkbFileInfo * /* result */ ,
-                             unsigned /* merge */ ,
-                             LEDInfoPtr *       /* unboundLEDs */
-    );
+extern Bool
+CompileCompatMap(XkbFile *file, XkbcDescPtr xkb, unsigned merge,
+                 LEDInfoPtr *unboundLEDs);
 
-extern Bool CompileSymbols(XkbFile * /* file */ ,
-                           XkbFileInfo * /* result */ ,
-                           unsigned     /* merge */
-    );
+extern Bool
+CompileSymbols(XkbFile *file, XkbcDescPtr xkb, unsigned merge);
 
 #define	WantLongListing	(1<<0)
 #define	WantPartialMaps	(1<<1)

@@ -1944,12 +1944,12 @@ PrepareKeyDef(KeyInfo * key)
 }
 
 /**
- * Copy the KeyInfo into result.
+ * Copy the KeyInfo into the keyboard description.
  *
  * This function recurses.
  */
 static Bool
-CopySymbolsDef(XkbFileInfo * result, KeyInfo * key, int start_from)
+CopySymbolsDef(XkbcDescPtr xkb, KeyInfo *key, int start_from)
 {
     register int i;
     unsigned okc, kc, width, tmp, nGroups;
@@ -1957,10 +1957,8 @@ CopySymbolsDef(XkbFileInfo * result, KeyInfo * key, int start_from)
     Bool haveActions, autoType, useAlias;
     KeySym *outSyms;
     XkbAction *outActs;
-    XkbDescPtr xkb;
     unsigned types[XkbNumKbdGroups];
 
-    xkb = result->xkb;
     useAlias = (start_from == 0);
 
     /* get the keycode for the key. */
@@ -2151,17 +2149,15 @@ CopySymbolsDef(XkbFileInfo * result, KeyInfo * key, int start_from)
     }
 
     /* do the same thing for the next key */
-    CopySymbolsDef(result, key, kc + 1);
+    CopySymbolsDef(xkb, key, kc + 1);
     return True;
 }
 
 static Bool
-CopyModMapDef(XkbFileInfo * result, ModMapEntry * entry)
+CopyModMapDef(XkbcDescPtr xkb, ModMapEntry *entry)
 {
     unsigned kc;
-    XkbDescPtr xkb;
 
-    xkb = result->xkb;
     if ((!entry->haveSymbol)
         &&
         (!FindNamedKey
@@ -2198,17 +2194,15 @@ CopyModMapDef(XkbFileInfo * result, ModMapEntry * entry)
  * Handle the xkb_symbols section of an xkb file.
  *
  * @param file The parsed xkb_symbols section of the xkb file.
- * @param result Handle to the data to store the result in.
+ * @param xkb Handle to the keyboard description to store the symbols in.
  * @param merge Merge strategy (e.g. MergeOverride).
  */
 Bool
-CompileSymbols(XkbFile * file, XkbFileInfo * result, unsigned merge)
+CompileSymbols(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
 {
     register int i;
     SymbolsInfo info;
-    XkbDescPtr xkb;
 
-    xkb = result->xkb;
     InitSymbolsInfo(&info, xkb);
     info.dflt.defs.fileID = file->id;
     info.dflt.defs.merge = merge;
@@ -2265,7 +2259,7 @@ CompileSymbols(XkbFile * file, XkbFileInfo * result, unsigned merge)
         /* copy! */
         for (key = info.keys, i = 0; i < info.nKeys; i++, key++)
         {
-            if (!CopySymbolsDef(result, key, 0))
+            if (!CopySymbolsDef(xkb, key, 0))
                 info.errorCount++;
         }
         if (warningLevel > 3)
@@ -2290,7 +2284,7 @@ CompileSymbols(XkbFile * file, XkbFileInfo * result, unsigned merge)
             ModMapEntry *mm, *next;
             for (mm = info.modMap; mm != NULL; mm = next)
             {
-                if (!CopyModMapDef(result, mm))
+                if (!CopyModMapDef(xkb, mm))
                     info.errorCount++;
                 next = (ModMapEntry *) mm->defs.next;
             }

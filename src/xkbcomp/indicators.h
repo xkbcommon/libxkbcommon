@@ -74,15 +74,11 @@ extern LEDInfo *HandleIndicatorMapDef(IndicatorMapDef * /* stmt */ ,
                                       unsigned  /* mergeMode */
     );
 
-extern Bool CopyIndicatorMapDefs(XkbFileInfo * /* result */ ,
-                                 LEDInfo * /* leds */ ,
-                                 LEDInfo **     /* unboundRtrn */
-    );
+extern Bool
+CopyIndicatorMapDefs(XkbcDescPtr xkb, LEDInfo *leds, LEDInfo **unboundRtrn);
 
-extern Bool BindIndicators(XkbFileInfo * /* result */ ,
-                           Bool /* force */ ,
-                           LEDInfo * /* unbound */ ,
-                           LEDInfo **   /* unboundRtrn */
-    );
+extern Bool
+BindIndicators(XkbcDescPtr xkb, Bool force, LEDInfo *unbound,
+               LEDInfo **unboundRtrn);
 
 #endif /* INDICATORS_H */

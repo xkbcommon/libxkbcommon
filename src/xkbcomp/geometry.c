@@ -3658,12 +3658,10 @@ CopySectionDef(XkbGeometryPtr geom, SectionInfo * si, GeometryInfo * info)
 /***====================================================================***/
 
 Bool
-CompileGeometry(XkbFile * file, XkbFileInfo * result, unsigned merge)
+CompileGeometry(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
 {
     GeometryInfo info;
-    XkbDescPtr xkb;
 
-    xkb = result->xkb;
     InitGeometryInfo(&info, file->id, merge);
     info.dpy = xkb->dpy;
     HandleGeometryFile(file, xkb, merge, &info);
