@@ -191,6 +191,44 @@ XkbcAllocGeomKeys(XkbRowPtr row, int nKeys);
 extern int
 XkbcAllocGeometry(XkbcDescPtr xkb, XkbGeometrySizesPtr sizes);
 
+extern XkbPropertyPtr
+XkbcAddGeomProperty(XkbGeometryPtr geom, char *name, char *value);
+
+extern XkbKeyAliasPtr
+XkbcAddGeomKeyAlias(XkbGeometryPtr geom, char *aliasStr, char *realStr);
+
+extern XkbColorPtr
+XkbcAddGeomColor(XkbGeometryPtr geom, char *spec, unsigned int pixel);
+
+extern XkbOutlinePtr
+XkbcAddGeomOutline(XkbShapePtr shape, int sz_points);
+
+extern XkbShapePtr
+XkbcAddGeomShape(XkbGeometryPtr geom, Atom name, int sz_outlines);
+
+extern XkbKeyPtr
+XkbcAddGeomKey(XkbRowPtr row);
+
+extern XkbRowPtr
+XkbcAddGeomRow(XkbSectionPtr section, int sz_keys);
+
+extern XkbSectionPtr
+XkbcAddGeomSection(XkbGeometryPtr geom, Atom name,
+                   int sz_rows, int sz_doodads, int sz_over);
+
+extern XkbDoodadPtr
+XkbcAddGeomDoodad(XkbGeometryPtr geom, XkbSectionPtr section, Atom name);
+
+extern XkbOverlayKeyPtr
+XkbcAddGeomOverlayKey(XkbOverlayPtr overlay, XkbOverlayRowPtr row,
+                      char *over, char *under);
+
+extern XkbOverlayRowPtr
+XkbcAddGeomOverlayRow(XkbOverlayPtr overlay, int row_under, int sz_keys);
+
+extern XkbOverlayPtr
+XkbcAddGeomOverlay(XkbSectionPtr section, Atom name, int sz_rows);
+
 extern void
 XkbcInitAtoms(void);
 

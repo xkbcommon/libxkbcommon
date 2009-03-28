@@ -2887,7 +2887,7 @@ CopyShapeDef(XkbGeometryPtr geom, ShapeInfo * si)
 
     si->index = geom->num_shapes;
     name = XkbcInternAtom(XkbcAtomGetString(si->name), False);
-    shape = XkbAddGeomShape(geom, name, si->nOutlines);
+    shape = XkbcAddGeomShape(geom, name, si->nOutlines);
     if (!shape)
     {
         WSGO("Couldn't allocate shape in geometry\n");
@@ -2897,7 +2897,7 @@ CopyShapeDef(XkbGeometryPtr geom, ShapeInfo * si)
     old_outline = si->outlines;
     for (i = 0; i < si->nOutlines; i++, old_outline++)
     {
-        outline = XkbAddGeomOutline(shape, old_outline->num_points);
+        outline = XkbcAddGeomOutline(shape, old_outline->num_points);
         if (!outline)
         {
             WSGO("Couldn't allocate outline in shape\n");
@@ -3260,7 +3260,7 @@ CopyDoodadDef(XkbGeometryPtr geom,
     if (!VerifyDoodadInfo(di, info))
         return False;
     name = XkbcInternAtom(XkbcAtomGetString(di->name), False);
-    doodad = XkbAddGeomDoodad(geom, section, name);
+    doodad = XkbcAddGeomDoodad(geom, section, name);
     if (!doodad)
     {
         WSGO1("Couldn't allocate doodad in %s\n",
@@ -3281,7 +3281,7 @@ CopyDoodadDef(XkbGeometryPtr geom,
             return False;
         doodad->shape.angle = di->angle;
         color =
-            XkbAddGeomColor(geom, XkbcAtomGetString(di->color),
+            XkbcAddGeomColor(geom, XkbcAtomGetString(di->color),
                             geom->num_colors);
         shape = &geom->shapes[si->index];
         XkbSetShapeDoodadColor(geom, &doodad->shape, color);
@@ -3301,7 +3301,7 @@ CopyDoodadDef(XkbGeometryPtr geom,
             doodad->text.font = XkbcAtomGetString(di->fontSpec);
         doodad->text.text = XkbcAtomGetString(di->text);
         color =
-            XkbAddGeomColor(geom, XkbcAtomGetString(di->color),
+            XkbcAddGeomColor(geom, XkbcAtomGetString(di->color),
                             geom->num_colors);
         XkbSetTextDoodadColor(geom, &doodad->text, color);
         break;
@@ -3311,12 +3311,12 @@ CopyDoodadDef(XkbGeometryPtr geom,
             return False;
         shape = &geom->shapes[si->index];
         color =
-            XkbAddGeomColor(geom, XkbcAtomGetString(di->color),
+            XkbcAddGeomColor(geom, XkbcAtomGetString(di->color),
                             geom->num_colors);
         XkbSetIndicatorDoodadShape(geom, &doodad->indicator, shape);
         XkbSetIndicatorDoodadOnColor(geom, &doodad->indicator, color);
         color =
-            XkbAddGeomColor(geom, XkbcAtomGetString(di->offColor),
+            XkbcAddGeomColor(geom, XkbcAtomGetString(di->offColor),
                             geom->num_colors);
         XkbSetIndicatorDoodadOffColor(geom, &doodad->indicator, color);
         break;
@@ -3326,7 +3326,7 @@ CopyDoodadDef(XkbGeometryPtr geom,
             return False;
         doodad->logo.angle = di->angle;
         color =
-            XkbAddGeomColor(geom, XkbcAtomGetString(di->color),
+            XkbcAddGeomColor(geom, XkbcAtomGetString(di->color),
                             geom->num_colors);
         shape = &geom->shapes[si->index];
         XkbSetLogoDoodadColor(geom, &doodad->logo, color);
@@ -3452,7 +3452,7 @@ CopyOverlayDef(XkbGeometryPtr geom,
     if (!VerifyOverlayInfo(geom, section, oi, info, rowMap, rowSize))
         return False;
     name = XkbcInternAtom(XkbcAtomGetString(oi->name), False);
-    ol = XkbAddGeomOverlay(section, name, oi->nRows);
+    ol = XkbcAddGeomOverlay(section, name, oi->nRows);
     if (!ol)
     {
         WSGO2("Couldn't add overlay \"%s\" to section \"%s\"\n",
@@ -3468,7 +3468,7 @@ CopyOverlayDef(XkbGeometryPtr geom,
             if (rowMap[tmp] == i)
                 row_under = tmp;
         }
-        if (!XkbAddGeomOverlayRow(ol, row_under, rowSize[i]))
+        if (!XkbcAddGeomOverlayRow(ol, row_under, rowSize[i]))
         {
             WSGO3
                 ("Can't add row %d to overlay \"%s\" of section \"%s\"\n",
@@ -3501,7 +3501,7 @@ CopySectionDef(XkbGeometryPtr geom, SectionInfo * si, GeometryInfo * info)
 
     name = XkbcInternAtom(XkbcAtomGetString(si->name), False);
     section =
-        XkbAddGeomSection(geom, name, si->nRows, si->nDoodads, si->nOverlays);
+        XkbcAddGeomSection(geom, name, si->nRows, si->nDoodads, si->nOverlays);
     if (section == NULL)
     {
         WSGO("Couldn't allocate section in geometry\n");
@@ -3516,7 +3516,7 @@ CopySectionDef(XkbGeometryPtr geom, SectionInfo * si, GeometryInfo * info)
     section->priority = si->priority;
     for (ri = si->rows; ri != NULL; ri = (RowInfo *) ri->defs.next)
     {
-        row = XkbAddGeomRow(section, ri->nKeys);
+        row = XkbcAddGeomRow(section, ri->nKeys);
         if (row == NULL)
         {
             WSGO("Couldn't allocate row in section\n");
@@ -3536,7 +3536,7 @@ CopySectionDef(XkbGeometryPtr geom, SectionInfo * si, GeometryInfo * info)
                 ACTION1("Section %s ignored\n", scText(si));
                 return False;
             }
-            key = XkbAddGeomKey(row);
+            key = XkbcAddGeomKey(row);
             if (key == NULL)
             {
                 WSGO("Couldn't allocate key in row\n");
@@ -3557,11 +3557,11 @@ CopySectionDef(XkbGeometryPtr geom, SectionInfo * si, GeometryInfo * info)
             }
             if (ki->color != None)
                 color =
-                    XkbAddGeomColor(geom,
+                    XkbcAddGeomColor(geom,
                                     XkbcAtomGetString(ki->color),
                                     geom->num_colors);
             else
-                color = XkbAddGeomColor(geom, "white", geom->num_colors);
+                color = XkbcAddGeomColor(geom, "white", geom->num_colors);
             XkbSetKeyColor(geom, key, color);
         }
     }
@@ -3640,18 +3640,18 @@ CompileGeometry(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
                                              info.fontVariant,
                                              info.fontSize,
                                              info.fontEncoding);
-        XkbAddGeomColor(geom, "black", geom->num_colors);
-        XkbAddGeomColor(geom, "white", geom->num_colors);
+        XkbcAddGeomColor(geom, "black", geom->num_colors);
+        XkbcAddGeomColor(geom, "white", geom->num_colors);
 
         if (info.baseColor == None)
             info.baseColor = XkbcInternAtom("white", False);
         if (info.labelColor == None)
             info.labelColor = XkbcInternAtom("black", False);
         geom->base_color =
-            XkbAddGeomColor(geom, XkbcAtomGetString(info.baseColor),
+            XkbcAddGeomColor(geom, XkbcAtomGetString(info.baseColor),
                             geom->num_colors);
         geom->label_color =
-            XkbAddGeomColor(geom, XkbcAtomGetString(info.labelColor),
+            XkbcAddGeomColor(geom, XkbcAtomGetString(info.labelColor),
                             geom->num_colors);
 
         if (info.props)
@@ -3660,7 +3660,7 @@ CompileGeometry(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
             for (pi = info.props; pi != NULL;
                  pi = (PropertyInfo *) pi->defs.next)
             {
-                if (!XkbAddGeomProperty(geom, pi->name, pi->value))
+                if (!XkbcAddGeomProperty(geom, pi->name, pi->value))
                     return False;
             }
         }
