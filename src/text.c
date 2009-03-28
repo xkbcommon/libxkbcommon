@@ -28,9 +28,177 @@
 #include <config.h>
 #endif
 #include "X11/extensions/XKBcommon.h"
+#include "XKBcommonint.h"
+#include <X11/extensions/XKM.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#define BUFFER_SIZE 512
+static char textBuffer[BUFFER_SIZE];
+static int tbNext = 0;
+
+static char *
+tbGetBuffer(unsigned size)
+{
+    char *rtrn;
+
+    if (size >= BUFFER_SIZE)
+        return NULL;
+
+    if ((BUFFER_SIZE - tbNext) <= size)
+        tbNext = 0;
+
+    rtrn = &textBuffer[tbNext];
+    tbNext += size;
+
+    return rtrn;
+}
+
+static char *
+XkbStringText(char *str)
+{
+    char *buf, *in, *out;
+    int len;
+    Bool ok;
+
+    if (!str) {
+        buf = tbGetBuffer(2);
+        buf[0] = '\0';
+        return buf;
+    }
+
+    /* Find if there are any non-printable characters */
+    for (ok = True, len = 0, in = str; *in != '\0'; in++, len++) {
+        if (isprint(*in))
+            continue;
+
+        ok = False;
+        switch (*in) {
+        case '\n': case '\t': case '\v':
+        case '\b': case '\r': case '\f':
+            len++;
+            break;
+        default:
+            /* octal: \0ooo */
+            len += 4;
+            break;
+        }
+    }
+
+    if (ok)
+        return str;
+
+    /* Cleanup non-printable characters */
+    buf = tbGetBuffer(len + 1);
+    for (in = str, out = buf; *in != '\0'; in++) {
+        if (isprint(*in)) {
+            *out++ = *in;
+            continue;
+        }
+
+        *out++ = '\\';
+        switch (*in) {
+        case '\n':
+            *out++ = 'n';
+            break;
+        case '\t':
+            *out++ = 't';
+            break;
+        case '\v':
+            *out++ = 'v';
+            break;
+        case '\b':
+            *out++ = 'b';
+            break;
+        case '\r':
+            *out++ = 'r';
+            break;
+        case '\f':
+            *out++ = 'f';
+            break;
+        default:
+            *out++ = '0';
+            snprintf(out, 3, "%o", *in);
+            while (*out != '\0')
+                out++;
+        }
+    }
+
+    *out++ = '\0';
+    return buf;
+}
 
 char *
-XkbConfigText(unsigned config)
+XkbcAtomText(Atom atm)
+{
+    char *tmp, *rtrn;
+    int len;
+
+    tmp = XkbcAtomGetString(atm);
+
+    if (!tmp)
+        return "";
+
+    len = strlen(tmp) + 1;
+    if (len >= BUFFER_SIZE)
+        len = BUFFER_SIZE - 2;
+
+    rtrn = tbGetBuffer(len);
+    strncpy(rtrn, tmp, len);
+    rtrn[len] = '\0';
+
+    _XkbFree(tmp);
+
+    return XkbStringText(rtrn);
+}
+
+static char *modNames[XkbNumModifiers] = {
+    "Shift",
+    "Lock",
+    "Control",
+    "Mod1",
+    "Mod2",
+    "Mod3",
+    "Mod4",
+    "Mod5"
+};
+
+char *
+XkbcModMaskText(unsigned mask, Bool cFormat)
+{
+    int i, rem, bit;
+    char *str, *buf;
+
+    if ((mask & 0xff) == 0xff)
+        return (cFormat ? "0xff" : "all");
+
+    if ((mask & 0xff) == 0)
+        return (cFormat ? "0" : "none");
+
+    rem = 64;
+    buf = tbGetBuffer(rem);
+    str = buf;
+    buf[0] = '\0';
+    for (i = 0, bit = 1; i < XkbNumModifiers && rem > 1; i++, bit <<= 1) {
+        int len;
+
+        if (!(mask & bit))
+            continue;
+
+        len = snprintf(str, rem, "%s%s%s",
+                       (str != buf) ? (cFormat ? "|" : "+") : "",
+                       modNames[i],
+                       cFormat ? "Mask" : "");
+        rem -= len;
+        str += len;
+    }
+
+    return buf;
+}
+
+char *
+XkbcConfigText(unsigned config)
 {
     switch (config) {
     case XkmSemanticsFile:
@@ -59,6 +227,24 @@ XkbConfigText(unsigned config)
     }
 }
 
+char *
+XkbcGeomFPText(int val)
+{
+    char *buf;
+    int whole, frac;
+
+    buf = tbGetBuffer(12);
+    whole = val / XkbGeomPtsPerMM;
+    frac = val % XkbGeomPtsPerMM;
+
+    if (frac != 0)
+        snprintf(buf, 12, "%d.%d", whole, frac);
+    else
+        snprintf(buf, 12, "%d", whole);
+
+    return buf;
+}
+
 static char *actionTypeNames[XkbSA_NumActions]= {
     "NoAction",         /* XkbSA_NoAction */
     "SetMods",          /* XkbSA_SetMods */
@@ -84,9 +270,73 @@ static char *actionTypeNames[XkbSA_NumActions]= {
 };
 
 char *
-XkbActionTypeText(unsigned type)
+XkbcActionTypeText(unsigned type)
 {
     if (type <= XkbSA_LastAction)
         return actionTypeNames[type];
     return "Private";
+}
+
+char *
+XkbcKeysymText(KeySym sym)
+{
+    char *buf;
+
+    if (sym == NoSymbol)
+        return "NoSymbol";
+
+    if ((buf = XkbcKeysymToString(sym)))
+        return buf;
+
+    buf = tbGetBuffer(32);
+    snprintf(buf, 32, "0x%lx", (long)sym);
+    return buf;
+}
+
+char *
+XkbcKeyNameText(char *name)
+{
+    char *buf;
+    int len;
+
+    buf = tbGetBuffer(7);
+    buf[0] = '<';
+    strncpy(&buf[1], name, 4);
+    buf[5] = '\0';
+    len = strlen(buf);
+    buf[len++] = '>';
+    buf[len] = '\0';
+
+    return buf;
+}
+
+static char *siMatchText[5] = {
+    "NoneOf",       /* XkbSI_NoneOf */
+    "AnyOfOrNone",  /* XkbSI_AnyOfOrNone */
+    "AnyOf",        /* XkbSI_AnyOf */
+    "AllOf",        /* XkbSI_AllOf */
+    "Exactly"       /* XkbSI_Exactly */
+};
+
+char *
+XkbcSIMatchText(unsigned type)
+{
+    char *buf;
+
+    switch (type & XkbSI_OpMask) {
+    case XkbSI_NoneOf:
+        return siMatchText[0];
+    case XkbSI_AnyOfOrNone:
+        return siMatchText[1];
+    case XkbSI_AnyOf:
+        return siMatchText[2];
+    case XkbSI_AllOf:
+        return siMatchText[3];
+    case XkbSI_Exactly:
+        return siMatchText[4];
+    default:
+        buf = tbGetBuffer(40);
+        snprintf(buf, 40, "0x%x", type & XkbSI_OpMask);
+        return buf;
+    }
 }

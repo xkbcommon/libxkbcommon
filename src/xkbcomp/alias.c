@@ -40,8 +40,7 @@ HandleCollision(AliasInfo * old, AliasInfo * new)
             (warningLevel > 9))
         {
             WARN2("Alias of %s for %s declared more than once\n",
-                  XkbKeyNameText(new->alias, XkbMessage),
-                  XkbKeyNameText(new->real, XkbMessage));
+                  XkbcKeyNameText(new->alias), XkbcKeyNameText(new->real));
             ACTION("First definition ignored\n");
         }
     }
@@ -62,10 +61,9 @@ HandleCollision(AliasInfo * old, AliasInfo * new)
             (warningLevel > 9))
         {
             WARN1("Multiple definitions for alias %s\n",
-                  XkbKeyNameText(old->alias, XkbMessage));
+                  XkbcKeyNameText(old->alias));
             ACTION2("Using %s, ignoring %s\n",
-                    XkbKeyNameText(use, XkbMessage),
-                    XkbKeyNameText(ignore, XkbMessage));
+                    XkbcKeyNameText(use), XkbcKeyNameText(ignore));
         }
         if (use != old->real)
             memcpy(old->real, use, XkbKeyNameLength);
@@ -188,8 +186,7 @@ ApplyAliases(XkbcDescPtr xkb, Bool toGeom, AliasInfo ** info_in)
             if (warningLevel > 4)
             {
                 WARN2("Attempt to alias %s to non-existent key %s\n",
-                      XkbKeyNameText(info->alias, XkbMessage),
-                      XkbKeyNameText(info->real, XkbMessage));
+                      XkbcKeyNameText(info->alias), XkbcKeyNameText(info->real));
                 ACTION("Ignored\n");
             }
             info->alias[0] = '\0';
@@ -202,8 +199,8 @@ ApplyAliases(XkbcDescPtr xkb, Bool toGeom, AliasInfo ** info_in)
             {
                 WARN("Attempt to create alias with the name of a real key\n");
                 ACTION2("Alias \"%s = %s\" ignored\n",
-                        XkbKeyNameText(info->alias, XkbMessage),
-                        XkbKeyNameText(info->real, XkbMessage));
+                        XkbcKeyNameText(info->alias),
+                        XkbcKeyNameText(info->real));
             }
             info->alias[0] = '\0';
             continue;

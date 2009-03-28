@@ -410,8 +410,7 @@ MergeKeyGroups(SymbolsInfo * info,
                     ("Multiple symbols for level %d/group %d on key %s\n",
                      i + 1, group + 1, longText(into->name, XkbMessage));
                 ACTION2("Using %s, ignoring %s\n",
-                        XkbKeysymText(use, XkbMessage),
-                        XkbKeysymText(ignore, XkbMessage));
+                        XkbcKeysymText(use), XkbcKeysymText(ignore));
             }
             resultSyms[i] = use;
         }
@@ -449,8 +448,8 @@ MergeKeyGroups(SymbolsInfo * info,
                         ("Multiple actions for level %d/group %d on key %s\n",
                          i + 1, group + 1, longText(into->name, XkbMessage));
                     ACTION2("Using %s, ignoring %s\n",
-                            XkbActionTypeText(use->type),
-                            XkbActionTypeText(ignore->type));
+                            XkbcActionTypeText(use->type),
+                            XkbcActionTypeText(ignore->type));
                 }
                 resultActs[i] = *use;
             }
@@ -554,8 +553,8 @@ MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
                     ("Multiple definitions for group %d type of key %s\n",
                      i, longText(into->name, XkbMessage));
                 ACTION2("Using %s, ignoring %s\n",
-                        XkbAtomText(NULL, use, XkbMessage),
-                        XkbAtomText(NULL, ignore, XkbMessage));
+                        XkbcAtomText(use),
+                        XkbcAtomText(ignore));
             }
             if ((from->defs.merge != MergeAugment)
                 || (into->types[i] == None))
@@ -661,7 +660,7 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
                 }
                 ERROR1
                     ("%s added to symbol map for multiple modifiers\n",
-                     XkbKeysymText(new->u.keySym, XkbMessage));
+                     XkbcKeysymText(new->u.keySym));
                 ACTION2("Using %s, ignoring %s.\n",
                         XkbModIndexText(use, XkbMessage),
                         XkbModIndexText(ignore, XkbMessage));
@@ -1603,7 +1602,7 @@ HandleModMapDef(ModMapDef * def,
     {
         ERROR("Illegal modifier map definition\n");
         ACTION1("Ignoring map for non-modifier \"%s\"\n",
-                XkbAtomText(NULL, def->modifier, XkbMessage));
+                XkbcAtomText(def->modifier));
         return False;
     }
     ok = True;
@@ -1968,7 +1967,7 @@ CopySymbolsDef(XkbcDescPtr xkb, KeyInfo *key, int start_from)
         {
             WARN2("Key %s not found in %s keycodes\n",
                   longText(key->name, XkbMessage),
-                  XkbAtomText(NULL, xkb->names->keycodes, XkbMessage));
+                  XkbcAtomText(xkb->names->keycodes));
             ACTION("Symbols ignored\n");
         }
         return False;
@@ -2000,8 +1999,7 @@ CopySymbolsDef(XkbcDescPtr xkb, KeyInfo *key, int start_from)
                     WARN1("No automatic type for %d symbols\n",
                           (unsigned int) key->numLevels[i]);
                     ACTION3("Using %s for the %s key (keycode %d)\n",
-                            XkbAtomText(NULL, key->types[i],
-                                        XkbMessage),
+                            XkbcAtomText(key->types[i]),
                             longText(key->name, XkbMessage), kc);
                 }
             }
@@ -2016,7 +2014,7 @@ CopySymbolsDef(XkbcDescPtr xkb, KeyInfo *key, int start_from)
             if (warningLevel >= 3)
             {
                 WARN1("Type \"%s\" is not defined\n",
-                      XkbAtomText(NULL, key->types[i], XkbMessage));
+                      XkbcAtomText(key->types[i]));
                 ACTION2("Using TWO_LEVEL for the %s key (keycode %d)\n",
                         longText(key->name, XkbMessage), kc);
             }
@@ -2030,7 +2028,7 @@ CopySymbolsDef(XkbcDescPtr xkb, KeyInfo *key, int start_from)
             {
                 WARN4
                     ("Type \"%s\" has %d levels, but %s has %d symbols\n",
-                     XkbAtomText(NULL, type->name, XkbMessage),
+                     XkbcAtomText(type->name),
                      (unsigned int) type->num_levels,
                      longText(key->name, XkbMessage),
                      (unsigned int) key->numLevels[i]);
@@ -2121,7 +2119,7 @@ CopySymbolsDef(XkbcDescPtr xkb, KeyInfo *key, int start_from)
             {
                 WARN2("Key %s not found in %s keycodes\n",
                       longText(key->nameForOverlayKey, XkbMessage),
-                      XkbAtomText(NULL, xkb->names->keycodes, XkbMessage));
+                      XkbcAtomText(xkb->names->keycodes));
                 ACTION1("Not treating %s as an overlay key \n",
                         longText(key->name, XkbMessage));
             }
@@ -2166,7 +2164,7 @@ CopyModMapDef(XkbcDescPtr xkb, ModMapEntry *entry)
         {
             WARN2("Key %s not found in %s keycodes\n",
                   longText(entry->u.keyName, XkbMessage),
-                  XkbAtomText(NULL, xkb->names->keycodes, XkbMessage));
+                  XkbcAtomText(xkb->names->keycodes));
             ACTION1("Modifier map entry for %s not updated\n",
                     XkbModIndexText(entry->modifier, XkbMessage));
         }
@@ -2178,8 +2176,8 @@ CopyModMapDef(XkbcDescPtr xkb, ModMapEntry *entry)
         if (warningLevel > 5)
         {
             WARN2("Key \"%s\" not found in %s symbol map\n",
-                  XkbKeysymText(entry->u.keySym, XkbMessage),
-                  XkbAtomText(NULL, xkb->names->symbols, XkbMessage));
+                  XkbcKeysymText(entry->u.keySym),
+                  XkbcAtomText(xkb->names->symbols));
             ACTION1("Modifier map entry for %s not updated\n",
                     XkbModIndexText(entry->modifier, XkbMessage));
         }

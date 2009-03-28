@@ -90,10 +90,10 @@ siText(SymInterpInfo * si, CompatInfo * info)
     }
     else
     {
-        snprintf(buf, sizeof(buf), "%s+%s(%s)", 
-		XkbKeysymText(si->interp.sym, XkbMessage),
-                XkbSIMatchText(si->interp.match, XkbMessage),
-                XkbModMaskText(si->interp.mods, XkbMessage));
+        snprintf(buf, sizeof(buf), "%s+%s(%s)",
+                XkbcKeysymText(si->interp.sym),
+                XkbcSIMatchText(si->interp.match),
+                XkbcModMaskText(si->interp.mods, False));
     }
     return buf;
 }
@@ -304,8 +304,7 @@ ResolveStateAndPredicate(ExprDef * expr,
     *pred_rtrn = XkbSI_Exactly;
     if (expr->op == ExprActionDecl)
     {
-        char *pred_txt =
-            XkbAtomText(NULL, expr->value.action.name, XkbMessage);
+        char *pred_txt = XkbcAtomText(expr->value.action.name);
         if (uStrCaseCmp(pred_txt, "noneof") == 0)
             *pred_rtrn = XkbSI_NoneOf;
         else if (uStrCaseCmp(pred_txt, "anyofornone") == 0)
@@ -326,7 +325,7 @@ ResolveStateAndPredicate(ExprDef * expr,
     }
     else if (expr->op == ExprIdent)
     {
-        char *pred_txt = XkbAtomText(NULL, expr->value.str, XkbMessage);
+        char *pred_txt = XkbcAtomText(expr->value.str);
         if ((pred_txt) && (uStrCaseCmp(pred_txt, "any") == 0))
         {
             *pred_rtrn = XkbSI_AnyOf;

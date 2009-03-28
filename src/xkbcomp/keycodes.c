@@ -37,7 +37,7 @@ longText(unsigned long val, unsigned format)
     char buf[4];
 
     LongToKeyName(val, buf);
-    return XkbKeyNameText(buf, format);
+    return XkbcKeyNameText(buf);
 }
 
 /***====================================================================***/
@@ -168,8 +168,7 @@ AddIndicatorName(KeyNamesInfo * info, IndicatorNameInfo * new)
         if (((old->defs.fileID == new->defs.fileID) && (warningLevel > 0))
             || (warningLevel > 9))
         {
-            WARN1("Multiple indicators named %s\n",
-                  XkbAtomText(NULL, new->name, XkbMessage));
+            WARN1("Multiple indicators named %s\n", XkbcAtomText(new->name));
             if (old->ndx == new->ndx)
             {
                 if (old->virtual != new->virtual)
@@ -248,8 +247,8 @@ AddIndicatorName(KeyNamesInfo * info, IndicatorNameInfo * new)
                     ignoring = new->name;
                 }
                 ACTION4("Using %s %s, ignoring %s %s\n",
-                        oldType, XkbAtomText(NULL, using, XkbMessage),
-                        newType, XkbAtomText(NULL, ignoring, XkbMessage));
+                        oldType, XkbcAtomText(using),
+                        newType, XkbcAtomText(ignoring));
             }
         }
         if (replace)
@@ -852,7 +851,7 @@ CompileKeycodes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
             {
                 LongToKeyName(info.names[i], xkb->names->keys[i].name);
                 uDEBUG2(2, "key %d = %s\n", i,
-                        XkbKeyNameText(xkb->names->keys[i].name, XkbMessage));
+                        XkbcKeyNameText(xkb->names->keys[i].name));
             }
         }
         else

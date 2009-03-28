@@ -159,10 +159,28 @@ extern Atom
 XkbcInternAtom(char *name, Bool onlyIfExists);
 
 extern char *
-XkbConfigText(unsigned config);
+XkbcAtomText(Atom atm);
 
 extern char *
-XkbActionTypeText(unsigned type);
+XkbcModMaskText(unsigned mask, Bool cFormat);
+
+extern char *
+XkbcConfigText(unsigned config);
+
+extern char *
+XkbcGeomFPText(int val);
+
+extern char *
+XkbcActionTypeText(unsigned type);
+
+extern char *
+XkbcKeysymText(KeySym sym);
+
+extern char *
+XkbcKeyNameText(char *name);
+
+extern char *
+XkbcSIMatchText(unsigned type);
 
 _XFUNCPROTOEND
 

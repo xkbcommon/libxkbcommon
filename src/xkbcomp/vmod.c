@@ -104,20 +104,20 @@ HandleVModDef(VModDef * stmt, unsigned mergeMode, VModInfo * info)
                     const char *str2 = "";
                     if (!ExprResolveModMask(stmt->value, &mod, NULL, NULL))
                     {
-                        str1 = XkbAtomText(NULL, stmt->name, XkbMessage);
+                        str1 = XkbcAtomText(stmt->name);
                         ACTION1("Declaration of %s ignored\n", str1);
                         return False;
                     }
                     if (mod.uval == srv->vmods[i])
                         return True;
 
-                    str1 = XkbAtomText(NULL, stmt->name, XkbMessage);
+                    str1 = XkbcAtomText(stmt->name);
                     WARN1("Virtual modifier %s multiply defined\n", str1);
-                    str1 = XkbModMaskText(srv->vmods[i], XkbCFile);
+                    str1 = XkbcModMaskText(srv->vmods[i], True);
                     if (mergeMode == MergeOverride)
                     {
                         str2 = str1;
-                        str1 = XkbModMaskText(mod.uval, XkbCFile);
+                        str1 = XkbcModMaskText(mod.uval, True);
                     }
                     ACTION2("Using %s, ignoring %s\n", str1, str2);
                     if (mergeMode == MergeOverride)
@@ -148,7 +148,7 @@ HandleVModDef(VModDef * stmt, unsigned mergeMode, VModInfo * info)
         return True;
     }
     ACTION1("Declaration of %s ignored\n",
-            XkbAtomText(NULL, stmt->name, XkbMessage));
+            XkbcAtomText(stmt->name));
     return False;
 }
 

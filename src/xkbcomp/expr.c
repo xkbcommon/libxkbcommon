@@ -326,7 +326,7 @@ ExprResolveModIndex(ExprDef * expr,
         }
         if (!ok)
             ERROR1("Cannot determine modifier index for \"%s\"\n",
-                   XkbAtomText(NULL, expr->value.str, XkbMessage));
+                   XkbcAtomText(expr->value.str));
         break;
     case ExprFieldRef:
         bogus = "field reference";
@@ -422,7 +422,7 @@ ExprResolveBoolean(ExprDef * expr,
         }
         if (!ok)
             ERROR1("Identifier \"%s\" of type int is unknown\n",
-                   XkbAtomText(NULL, expr->value.str, XkbMessage));
+                   XkbcAtomText(expr->value.str));
         return ok;
     case ExprFieldRef:
         if (lookup)
@@ -433,8 +433,8 @@ ExprResolveBoolean(ExprDef * expr,
         }
         if (!ok)
             ERROR2("Default \"%s.%s\" of type boolean is unknown\n",
-                   XkbAtomText(NULL, expr->value.field.element, XkbMessage),
-                   XkbAtomText(NULL, expr->value.field.field, XkbMessage));
+                   XkbcAtomText(expr->value.field.element),
+                   XkbcAtomText(expr->value.field.field));
         return ok;
     case OpInvert:
     case OpNot:
@@ -512,7 +512,7 @@ ExprResolveFloat(ExprDef * expr,
         }
         if (!ok)
             ERROR1("Numeric identifier \"%s\" unknown\n",
-                   XkbAtomText(NULL, expr->value.str, XkbMessage));
+                   XkbcAtomText(expr->value.str));
         return ok;
     case ExprFieldRef:
         if (lookup)
@@ -523,8 +523,8 @@ ExprResolveFloat(ExprDef * expr,
         }
         if (!ok)
             ERROR2("Numeric default \"%s.%s\" unknown\n",
-                   XkbAtomText(NULL, expr->value.field.element, XkbMessage),
-                   XkbAtomText(NULL, expr->value.field.field, XkbMessage));
+                   XkbcAtomText(expr->value.field.element),
+                   XkbcAtomText(expr->value.field.field));
         return ok;
     case OpAdd:
     case OpSubtract:
@@ -633,7 +633,7 @@ ExprResolveInteger(ExprDef * expr,
         }
         if (!ok)
             ERROR1("Identifier \"%s\" of type int is unknown\n",
-                   XkbAtomText(NULL, expr->value.str, XkbMessage));
+                   XkbcAtomText(expr->value.str));
         return ok;
     case ExprFieldRef:
         if (lookup)
@@ -644,8 +644,8 @@ ExprResolveInteger(ExprDef * expr,
         }
         if (!ok)
             ERROR2("Default \"%s.%s\" of type int is unknown\n",
-                   XkbAtomText(NULL, expr->value.field.element, XkbMessage),
-                   XkbAtomText(NULL, expr->value.field.field, XkbMessage));
+                   XkbcAtomText(expr->value.field.element),
+                   XkbcAtomText(expr->value.field.field));
         return ok;
     case OpAdd:
     case OpSubtract:
@@ -741,7 +741,7 @@ ExprResolveString(ExprDef * expr,
         }
         if (!ok)
             ERROR1("Identifier \"%s\" of type string not found\n",
-                   XkbAtomText(NULL, expr->value.str, XkbMessage));
+                   XkbcAtomText(expr->value.str));
         return ok;
     case ExprFieldRef:
         if (lookup)
@@ -752,8 +752,8 @@ ExprResolveString(ExprDef * expr,
         }
         if (!ok)
             ERROR2("Default \"%s.%s\" of type string not found\n",
-                   XkbAtomText(NULL, expr->value.field.element, XkbMessage),
-                   XkbAtomText(NULL, expr->value.field.field, XkbMessage));
+                   XkbcAtomText(expr->value.field.element),
+                   XkbcAtomText(expr->value.field.field));
         return ok;
     case OpAdd:
         left = expr->value.binary.left;
@@ -843,7 +843,7 @@ ExprResolveKeyName(ExprDef * expr,
         }
         if (!ok)
             ERROR1("Identifier \"%s\" of type string not found\n",
-                   XkbAtomText(NULL, expr->value.str, XkbMessage));
+                   XkbcAtomText(expr->value.str));
         return ok;
     case ExprFieldRef:
         if (lookup)
@@ -854,8 +854,8 @@ ExprResolveKeyName(ExprDef * expr,
         }
         if (!ok)
             ERROR2("Default \"%s.%s\" of type key name not found\n",
-                   XkbAtomText(NULL, expr->value.field.element, XkbMessage),
-                   XkbAtomText(NULL, expr->value.field.field, XkbMessage));
+                   XkbcAtomText(expr->value.field.element),
+                   XkbcAtomText(expr->value.field.field));
         return ok;
     case OpAdd:
         if (bogus == NULL)
@@ -917,7 +917,7 @@ ExprResolveEnum(ExprDef * expr, ExprResult * val_rtrn, LookupEntry * values)
     {
         int nOut = 0;
         ERROR1("Illegal identifier %s (expected one of: ",
-               XkbAtomText(NULL, expr->value.str, XkbMessage));
+               XkbcAtomText(expr->value.str));
         while (values && values->name)
         {
             if (nOut != 0)
@@ -963,7 +963,7 @@ ExprResolveMask(ExprDef * expr,
         }
         if (!ok)
             ERROR1("Identifier \"%s\" of type int is unknown\n",
-                   XkbAtomText(NULL, expr->value.str, XkbMessage));
+                   XkbcAtomText(expr->value.str));
         return ok;
     case ExprFieldRef:
         if (lookup)
@@ -974,8 +974,8 @@ ExprResolveMask(ExprDef * expr,
         }
         if (!ok)
             ERROR2("Default \"%s.%s\" of type int is unknown\n",
-                   XkbAtomText(NULL, expr->value.field.element, XkbMessage),
-                   XkbAtomText(NULL, expr->value.field.field, XkbMessage));
+                   XkbcAtomText(expr->value.field.element),
+                   XkbcAtomText(expr->value.field.field));
         return ok;
     case ExprArrayRef:
         bogus = "array reference";

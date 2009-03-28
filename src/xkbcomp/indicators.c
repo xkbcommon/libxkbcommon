@@ -35,12 +35,10 @@
 
 /***====================================================================***/
 
-#define	ReportIndicatorBadType(d,l,f,w)	\
-		ReportBadType("indicator map",(f),\
-		      	XkbAtomText((d),(l)->name,XkbMessage),(w))
-#define	ReportIndicatorNotArray(d,l,f)	\
-		ReportNotArray("indicator map",(f),\
-			XkbAtomText((d),(l)->name,XkbMessage))
+#define ReportIndicatorBadType(d,l,f,w) \
+    ReportBadType("indicator map", (f), XkbcAtomText((l)->name), (w))
+#define ReportIndicatorNotArray(d,l,f) \
+    ReportNotArray("indicator map", (f), XkbcAtomText((l)->name))
 
 /***====================================================================***/
 
@@ -84,7 +82,7 @@ AddIndicatorMap(LEDInfo * oldLEDs, LEDInfo * new)
                      && (warningLevel > 0)) || (warningLevel > 9))
                 {
                     WARN1("Map for indicator %s redefined\n",
-                          XkbAtomText(NULL, old->name, XkbMessage));
+                          XkbcAtomText(old->name));
                     ACTION("Earlier definition ignored\n");
                 }
                 *old = *new;
@@ -136,7 +134,7 @@ AddIndicatorMap(LEDInfo * oldLEDs, LEDInfo * new)
             if (collide)
             {
                 WARN1("Map for indicator %s redefined\n",
-                      XkbAtomText(NULL, old->name, XkbMessage));
+                      XkbcAtomText(old->name));
                 ACTION1("Using %s definition for duplicate fields\n",
                         (new->defs.merge == MergeAugment ? "first" : "last"));
             }
@@ -151,7 +149,7 @@ AddIndicatorMap(LEDInfo * oldLEDs, LEDInfo * new)
     {
         WSGO("Couldn't allocate indicator map\n");
         ACTION1("Map for indicator %s not compiled\n",
-                XkbAtomText(NULL, new->name, XkbMessage));
+                XkbcAtomText(new->name));
         return NULL;
     }
     *old = *new;
@@ -306,7 +304,7 @@ SetIndicatorMapField(LEDInfo * led,
             ERROR2("Illegal indicator index %d (range 1..%d)\n",
                    rtrn.uval, XkbNumIndicators);
             ACTION1("Index definition for %s indicator ignored\n",
-                    XkbAtomText(NULL, led->name, XkbMessage));
+                    XkbcAtomText(led->name));
             return False;
         }
         led->indicator = rtrn.uval;
@@ -315,7 +313,7 @@ SetIndicatorMapField(LEDInfo * led,
     else
     {
         ERROR2("Unknown field %s in map for %s indicator\n", field,
-               XkbAtomText(NULL, led->name, XkbMessage));
+               XkbcAtomText(led->name));
         ACTION("Definition ignored\n");
         ok = False;
     }

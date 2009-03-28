@@ -119,7 +119,7 @@ extern Bool AddLevelName(KeyTypeInfo * /* type */ ,
 	XkbVModMaskText((t)->dpy,(x),(p)->indexMods,(p)->indexVMods,XkbMessage)
 #define	PreserveTxt(t,x,p)	\
 	XkbVModMaskText((t)->dpy,(x),(p)->preMods,(p)->preVMods,XkbMessage)
-#define	TypeTxt(t)	XkbAtomText((t)->dpy,(t)->name,XkbMessage)
+#define	TypeTxt(t)	XkbcAtomText((t)->name)
 #define	TypeMaskTxt(t,x)	\
 	XkbVModMaskText((t)->dpy,(x),(t)->mask,(t)->vmask,XkbMessage)
 
@@ -819,8 +819,8 @@ AddLevelName(KeyTypeInfo * type,
         if (warningLevel > 0)
         {
             char *old, *new;
-            old = XkbAtomText(type->dpy, type->lvlNames[level], XkbMessage);
-            new = XkbAtomText(type->dpy, name, XkbMessage);
+            old = XkbcAtomText(type->lvlNames[level]);
+            new = XkbcAtomText(name);
             WARN2("Multiple names for level %d of key type %s\n",
                   level + 1, TypeTxt(type));
             if (clobber)
@@ -852,7 +852,7 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
         ERROR3("Level name %d out of range (1..%d) in key type %s\n",
                rtrn.ival,
                XkbMaxShiftLevel + 1,
-               XkbAtomText(type->dpy, type->name, XkbMessage));
+               XkbcAtomText(type->name));
         ACTION("Ignoring illegal level name definition\n");
         return False;
     }
@@ -860,7 +860,7 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
     if (!ExprResolveString(value, &rtrn, NULL, NULL))
     {
         ERROR2("Non-string name for level %d in key type %s\n", level + 1,
-               XkbAtomText(type->dpy, type->name, XkbMessage));
+               XkbcAtomText(type->name));
         ACTION("Ignoring illegal level name definition\n");
         return False;
     }
@@ -904,7 +904,7 @@ SetKeyTypeField(KeyTypeInfo * type,
         if (type->defs.defined & _KT_Mask)
         {
             WARN1("Multiple modifier mask definitions for key type %s\n",
-                  XkbAtomText(type->dpy, type->name, XkbMessage));
+                  XkbcAtomText(type->name));
             ACTION1("Using %s, ", TypeMaskTxt(type, xkb));
             INFO1("ignoring %s\n", XkbVModMaskText(type->dpy, xkb, mods,
                                                    vmods, XkbMessage));
@@ -1167,7 +1167,7 @@ CopyDefToKeyType(XkbcDescPtr xkb, XkbKeyTypePtr type, KeyTypeInfo * def)
         {
             WARN("Couldn't allocate preserve array in CopyDefToKeyType\n");
             ACTION1("Preserve setting for type %s lost\n",
-                    XkbAtomText(def->dpy, def->name, XkbMessage));
+                    XkbcAtomText(def->name));
         }
         else
         {

@@ -67,8 +67,8 @@ typedef struct _ShapeInfo
     int dfltCornerRadius;
 } ShapeInfo;
 
-#define	shText(d,s)	\
-		((s)?XkbAtomText((d),(s)->name,XkbMessage):"default shape")
+#define	shText(d, s) \
+    ((s) ? XkbcAtomText((s)->name) : "default shape")
 
 #define	_GD_Priority	(1<<0)
 #define	_GD_Top		(1<<1)
@@ -158,8 +158,8 @@ typedef struct _RowInfo
     KeyInfo dfltKey;
     struct _SectionInfo *section;
 } RowInfo;
-#define	rowText(d,r)	\
-	((r)?XkbAtomText((d),(r)->section->name,XkbMessage):"default")
+#define	rowText(d, r) \
+    ((r) ? XkbcAtomText((r)->section->name) : "default")
 
 #define	_GOK_UnknownRow	-1
 typedef struct _OverlayKeyInfo
@@ -179,7 +179,8 @@ typedef struct _OverlayInfo
     unsigned short nKeys;
     OverlayKeyInfo *keys;
 } OverlayInfo;
-#define	oiText(d,o)	((o)?XkbAtomText((d),(o)->name,XkbMessage):"default")
+#define	oiText(d, o) \
+    ((o) ? XkbcAtomText((o)->name) : "default")
 
 
 #define	_GS_Default	(1<<0)
@@ -211,7 +212,8 @@ typedef struct _SectionInfo
     OverlayInfo *overlays;
     struct _GeometryInfo *geometry;
 } SectionInfo;
-#define	scText(d,s)	((s)?XkbAtomText((d),(s)->name,XkbMessage):"default")
+#define	scText(d, s) \
+    ((s) ? XkbcAtomText((s)->name) : "default")
 
 typedef struct _GeometryInfo
 {
@@ -260,11 +262,10 @@ ddText(Display * dpy, DoodadInfo * di)
     if (di->section)
     {
         sprintf(buf, "%s in section %s",
-                XkbAtomText(dpy, di->name, XkbMessage), scText(dpy,
-                                                               di->section));
+                XkbcAtomText(di->name), scText(dpy, di->section));
         return buf;
     }
-    return XkbAtomText(dpy, di->name, XkbMessage);
+    return XkbcAtomText(di->name);
 }
 
 /***====================================================================***/
@@ -806,7 +807,7 @@ FindShape(GeometryInfo * info, Atom name, const char *type, const char *which)
     {
         old = info->shapes;
         WARN3("Unknown shape \"%s\" for %s %s\n",
-              XkbAtomText(info->dpy, name, XkbMessage), type, which);
+              XkbcAtomText(name), type, which);
         if (old)
         {
             ACTION1("Using default shape %s instead\n",
@@ -942,7 +943,7 @@ AddDoodad(SectionInfo * si, GeometryInfo * info, DoodadInfo * new)
                  && (warningLevel > 0)) || (warningLevel > 9))
             {
                 WARN1("Multiple doodads named \"%s\"\n",
-                      XkbAtomText(info->dpy, old->name, XkbMessage));
+                      XkbcAtomText(old->name));
                 ACTION("Using last definition\n");
             }
             ReplaceDoodad(old, new);
@@ -953,7 +954,7 @@ AddDoodad(SectionInfo * si, GeometryInfo * info, DoodadInfo * new)
             || (warningLevel > 9))
         {
             WARN1("Multiple doodads named \"%s\"\n",
-                  XkbAtomText(info->dpy, old->name, XkbMessage));
+                  XkbcAtomText(old->name));
             ACTION("Using first definition\n");
         }
         return True;
@@ -1026,8 +1027,7 @@ AddOverlay(SectionInfo * si, GeometryInfo * info, OverlayInfo * new)
             {
                 WARN2
                     ("Multiple overlays named \"%s\" for section \"%s\"\n",
-                     XkbAtomText(info->dpy, old->name, XkbMessage),
-                     XkbAtomText(info->dpy, si->name, XkbMessage));
+                     XkbcAtomText(old->name), XkbcAtomText(si->name));
                 ACTION("Using last definition\n");
             }
             ClearOverlayInfo(old);
@@ -1041,8 +1041,7 @@ AddOverlay(SectionInfo * si, GeometryInfo * info, OverlayInfo * new)
             || (warningLevel > 9))
         {
             WARN2("Multiple doodads named \"%s\" in section \"%s\"\n",
-                  XkbAtomText(info->dpy, old->name, XkbMessage),
-                  XkbAtomText(info->dpy, si->name, XkbMessage));
+                  XkbcAtomText(old->name), XkbcAtomText(si->name));
             ACTION("Using first definition\n");
         }
         return True;
@@ -1056,8 +1055,7 @@ AddOverlay(SectionInfo * si, GeometryInfo * info, OverlayInfo * new)
             WSGO("Couldn't allocate a new OverlayInfo\n");
             ACTION2
                 ("Overlay \"%s\" in section \"%s\" will be incomplete\n",
-                 XkbAtomText(info->dpy, old->name, XkbMessage),
-                 XkbAtomText(info->dpy, si->name, XkbMessage));
+                 XkbcAtomText(old->name), XkbcAtomText(si->name));
         }
         return False;
     }
@@ -2242,16 +2240,14 @@ HandleGeometryVar(VarDef * stmt, XkbcDescPtr xkb, GeometryInfo * info)
         {
             WARN("Keyboard width must be positive\n");
             ACTION1("Ignoring illegal keyboard width %s\n",
-                    XkbGeomFPText(tmp.ival, XkbMessage));
+                    XkbcGeomFPText(tmp.ival));
             return True;
         }
         if (info->widthMM != 0)
         {
             WARN("Keyboard width multiply defined\n");
-            ACTION1("Using last definition (%s),",
-                    XkbGeomFPText(tmp.ival, XkbMessage));
-            INFO1(" ignoring first (%s)\n",
-                  XkbGeomFPText(info->widthMM, XkbMessage));
+            ACTION1("Using last definition (%s),", XkbcGeomFPText(tmp.ival));
+            INFO1(" ignoring first (%s)\n", XkbcGeomFPText(info->widthMM));
         }
         info->widthMM = tmp.ival;
         return True;
@@ -2273,16 +2269,14 @@ HandleGeometryVar(VarDef * stmt, XkbcDescPtr xkb, GeometryInfo * info)
         {
             WARN("Keyboard height must be positive\n");
             ACTION1("Ignoring illegal keyboard height %s\n",
-                    XkbGeomFPText(tmp.ival, XkbMessage));
+                    XkbcGeomFPText(tmp.ival));
             return True;
         }
         if (info->heightMM != 0)
         {
             WARN("Keyboard height multiply defined\n");
-            ACTION1("Using last definition (%s),",
-                    XkbGeomFPText(tmp.ival, XkbMessage));
-            INFO1(" ignoring first (%s)\n",
-                  XkbGeomFPText(info->heightMM, XkbMessage));
+            ACTION1("Using last definition (%s),", XkbcGeomFPText(tmp.ival));
+            INFO1(" ignoring first (%s)\n", XkbcGeomFPText(info->heightMM));
         }
         info->heightMM = tmp.ival;
         return True;
@@ -2446,7 +2440,7 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
         }
         if (ol->field != None)
         {
-            char *str = XkbAtomText(NULL, ol->field, XkbMessage);
+            char *str = XkbcAtomText(ol->field);
             if ((uStrCaseCmp(str, "approximation") == 0) ||
                 (uStrCaseCmp(str, "approx") == 0))
             {
@@ -2559,8 +2553,7 @@ HandleOverlayDef(OverlayDef * def,
     if ((def->nKeys < 1) && (warningLevel > 3))
     {
         WARN2("Overlay \"%s\" in section \"%s\" has no keys\n",
-              XkbAtomText(NULL, def->name, XkbMessage), scText(info->dpy,
-                                                               si));
+              XkbcAtomText(def->name), scText(info->dpy, si));
         ACTION("Overlay ignored\n");
         return True;
     }
@@ -3118,8 +3111,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
             {
                 WARN1("No font size for text doodad %s\n",
                       ddText(info->dpy, di));
-                ACTION1("Using %s point text\n",
-                        XkbGeomFPText(DFLT_SIZE, XkbMessage));
+                ACTION1("Using %s point text\n", XkbcGeomFPText(DFLT_SIZE));
             }
             di->fontSize = DFLT_SIZE;
         }
@@ -3141,7 +3133,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
                 WARN1("No height for text doodad %s\n",
                       ddText(info->dpy, di));
                 ACTION1("Using calculated height %s millimeters\n",
-                        XkbGeomFPText(size, XkbMessage));
+                        XkbcGeomFPText(size));
             }
             di->height = size;
         }
@@ -3168,7 +3160,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
             {
                 WARN1("No width for text doodad %s\n", ddText(info->dpy, di));
                 ACTION1("Using calculated width %s millimeters\n",
-                        XkbGeomFPText(width, XkbMessage));
+                        XkbcGeomFPText(width));
             }
             di->width = width;
         }
@@ -3426,11 +3418,9 @@ VerifyOverlayInfo(XkbGeometryPtr geom,
                     {
                         WARN3
                             ("Key %s in section \"%s\" and overlay \"%s\"\n",
-                             XkbKeyNameText(key->name.name,
-                                            XkbMessage),
-                             XkbAtomText(info->dpy, section->name,
-                                         XkbMessage),
-                             XkbAtomText(info->dpy, oi->name, XkbMessage));
+                             XkbcKeyNameText(key->name.name),
+                             XkbcAtomText(section->name),
+                             XkbcAtomText(oi->name));
                         ACTION("Overlay definition ignored\n");
                     }
                     oKey = 0;
@@ -3446,9 +3436,9 @@ VerifyOverlayInfo(XkbGeometryPtr geom,
         {
             WARN3
                 ("Key %s not in \"%s\", but has an overlay key in \"%s\"\n",
-                 XkbKeyNameText(ki->under, XkbMessage),
-                 XkbAtomText(info->dpy, section->name, XkbMessage),
-                 XkbAtomText(info->dpy, oi->name, XkbMessage));
+                 XkbcKeyNameText(ki->under),
+                 XkbcAtomText(section->name),
+                 XkbcAtomText(oi->name));
             ACTION("Definition ignored\n");
         }
     }
@@ -3474,8 +3464,7 @@ VerifyOverlayInfo(XkbGeometryPtr geom,
     if (oi->nKeys < 1)
     {
         ERROR2("Overlay \"%s\" for section \"%s\" has no legal keys\n",
-               XkbAtomText(info->dpy, oi->name, XkbMessage),
-               XkbAtomText(info->dpy, section->name, XkbMessage));
+               XkbcAtomText(oi->name), XkbcAtomText(section->name));
         ACTION("Overlay definition ignored\n");
         return False;
     }
@@ -3515,8 +3504,7 @@ CopyOverlayDef(XkbGeometryPtr geom,
     if (!ol)
     {
         WSGO2("Couldn't add overlay \"%s\" to section \"%s\"\n",
-              XkbAtomText(info->dpy, name, XkbMessage),
-              XkbAtomText(info->dpy, section->name, XkbMessage));
+              XkbcAtomText(name), XkbcAtomText(section->name));
         return False;
     }
     for (i = 0; i < oi->nRows; i++)
@@ -3532,8 +3520,7 @@ CopyOverlayDef(XkbGeometryPtr geom,
         {
             WSGO3
                 ("Can't add row %d to overlay \"%s\" of section \"%s\"\n",
-                 i, XkbAtomText(info->dpy, name, XkbMessage),
-                 XkbAtomText(info->dpy, section->name, XkbMessage));
+                 i, XkbcAtomText(name), XkbcAtomText(section->name));
             return False;
         }
     }

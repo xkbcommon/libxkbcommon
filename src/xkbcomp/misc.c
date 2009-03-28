@@ -99,7 +99,7 @@ ProcessIncludeFile(IncludeStmt * stmt,
         if (!mapToUse)
         {
             ERROR3("No %s named \"%s\" in the include file \"%s\"\n",
-                   XkbConfigText(file_type), stmt->map, stmt->file);
+                   XkbcConfigText(file_type), stmt->map, stmt->file);
             ACTION("Exiting\n");
             return False;
         }
@@ -114,7 +114,7 @@ ProcessIncludeFile(IncludeStmt * stmt,
     if (mapToUse->type != file_type)
     {
         ERROR2("Include file wrong type (expected %s, got %s)\n",
-               XkbConfigText(file_type), XkbConfigText(mapToUse->type));
+               XkbcConfigText(file_type), XkbcConfigText(mapToUse->type));
         ACTION1("Include file \"%s\" ignored\n", stmt->file);
         return False;
     }
@@ -424,7 +424,7 @@ ComputeKbdDefaults(XkbcDescPtr xkb)
                         {
                             WARN1
                                 ("Several keys match pattern for %s\n",
-                                 XkbKeyNameText(name->name, XkbMessage));
+                                 XkbcKeyNameText(name->name));
                             ACTION2("Using <U%03d> for key %d\n",
                                     nUnknown, i);
                         }
