@@ -248,6 +248,22 @@ static char *modNames[XkbNumModifiers] = {
 };
 
 char *
+XkbcModIndexText(unsigned ndx)
+{
+    char *buf;
+
+    if (ndx < XkbNumModifiers)
+        return modNames[ndx];
+    else if (ndx == XkbNoModifier)
+        return "none";
+
+    buf = tbGetBuffer(32);
+    snprintf(buf, 32, "ILLEGAL_%02x", ndx);
+
+    return buf;
+}
+
+char *
 XkbcModMaskText(unsigned mask, Bool cFormat)
 {
     int i, rem, bit;

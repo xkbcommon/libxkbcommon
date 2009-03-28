@@ -248,6 +248,9 @@ extern char *
 XkbcVModMaskText(XkbcDescPtr xkb, unsigned modMask, unsigned mask);
 
 extern char *
+XkbcModIndexText(unsigned ndx);
+
+extern char *
 XkbcModMaskText(unsigned mask, Bool cFormat);
 
 extern char *

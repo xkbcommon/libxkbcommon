@@ -662,8 +662,8 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
                     ("%s added to symbol map for multiple modifiers\n",
                      XkbcKeysymText(new->u.keySym));
                 ACTION2("Using %s, ignoring %s.\n",
-                        XkbModIndexText(use, XkbMessage),
-                        XkbModIndexText(ignore, XkbMessage));
+                        XkbcModIndexText(use),
+                        XkbcModIndexText(ignore));
                 mm->modifier = use;
             }
             return True;
@@ -687,8 +687,8 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
                 ERROR1("Key %s added to map for multiple modifiers\n",
                        longText(new->u.keyName));
                 ACTION2("Using %s, ignoring %s.\n",
-                        XkbModIndexText(use, XkbMessage),
-                        XkbModIndexText(ignore, XkbMessage));
+                        XkbcModIndexText(use),
+                        XkbcModIndexText(ignore));
                 mm->modifier = use;
             }
             return True;
@@ -699,7 +699,7 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
     {
         WSGO("Could not allocate modifier map entry\n");
         ACTION1("Modifier map for %s will be incomplete\n",
-                XkbModIndexText(new->modifier, XkbMessage));
+                XkbcModIndexText(new->modifier));
         return False;
     }
     *mm = *new;
@@ -1623,7 +1623,7 @@ HandleModMapDef(ModMapDef * def,
         {
             ERROR("Modmap entries may contain only key names or keysyms\n");
             ACTION1("Illegal definition for %s modifier ignored\n",
-                    XkbModIndexText(tmp.modifier, XkbMessage));
+                    XkbcModIndexText(tmp.modifier));
             continue;
         }
 
@@ -2166,7 +2166,7 @@ CopyModMapDef(XkbcDescPtr xkb, ModMapEntry *entry)
                   longText(entry->u.keyName),
                   XkbcAtomText(xkb->names->keycodes));
             ACTION1("Modifier map entry for %s not updated\n",
-                    XkbModIndexText(entry->modifier, XkbMessage));
+                    XkbcModIndexText(entry->modifier));
         }
         return False;
     }
@@ -2179,7 +2179,7 @@ CopyModMapDef(XkbcDescPtr xkb, ModMapEntry *entry)
                   XkbcKeysymText(entry->u.keySym),
                   XkbcAtomText(xkb->names->symbols));
             ACTION1("Modifier map entry for %s not updated\n",
-                    XkbModIndexText(entry->modifier, XkbMessage));
+                    XkbcModIndexText(entry->modifier));
         }
         return False;
     }
