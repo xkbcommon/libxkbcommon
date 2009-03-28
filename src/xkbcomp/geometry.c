@@ -2919,7 +2919,7 @@ CopyShapeDef(XkbGeometryPtr geom, ShapeInfo * si)
         n = (si->primary - si->outlines);
         shape->primary = &shape->outlines[n];
     }
-    XkbComputeShapeBounds(shape);
+    XkbcComputeShapeBounds(shape);
     return True;
 }
 
@@ -3582,7 +3582,7 @@ CopySectionDef(XkbGeometryPtr geom, SectionInfo * si, GeometryInfo * info)
             CopyOverlayDef(geom, section, oi, info);
         }
     }
-    if (XkbComputeSectionBounds(geom, section))
+    if (XkbcComputeSectionBounds(geom, section))
     {
         /* 7/6/94 (ef) --  check for negative origin and translate */
         if ((si->defs.defined & _GS_Width) == 0)

@@ -8,7 +8,8 @@ libxkbcommon_la_LIBADD = xkbcomp/libxkbcomp.la
 libxkbcommon_la_SOURCES = \
 	XKBcommonint.h \
 	alloc.c \
-	galloc.c \
 	atom.c \
+	galloc.c \
+	geom.c \
 	keysym.c \
 	text.c

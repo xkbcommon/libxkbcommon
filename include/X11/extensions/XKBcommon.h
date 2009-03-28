@@ -276,6 +276,18 @@ XkbcKeyNameText(char *name);
 extern char *
 XkbcSIMatchText(unsigned type);
 
+extern Bool
+XkbcComputeShapeBounds(XkbShapePtr shape);
+
+extern Bool
+XkbcComputeShapeTop(XkbShapePtr shape, XkbBoundsPtr bounds);
+
+extern Bool
+XkbcComputeRowBounds(XkbGeometryPtr geom, XkbSectionPtr section, XkbRowPtr row);
+
+extern Bool
+XkbcComputeSectionBounds(XkbGeometryPtr geom, XkbSectionPtr section);
+
 _XFUNCPROTOEND
 
 #endif /* _XKBCOMMON_H_ */
