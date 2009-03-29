@@ -358,27 +358,4 @@ CompileCompatMap(XkbFile *file, XkbcDescPtr xkb, unsigned merge,
 extern Bool
 CompileSymbols(XkbFile *file, XkbcDescPtr xkb, unsigned merge);
 
-#define	WantLongListing	(1<<0)
-#define	WantPartialMaps	(1<<1)
-#define	WantHiddenMaps	(1<<2)
-#define	WantFullNames	(1<<3)
-#define	ListRecursive	(1<<4)
-
-extern char *rootDir;
-extern unsigned verboseLevel;
-extern unsigned dirsToStrip;
-
-extern Bool AddListing(char * /* file */ ,
-                       char *   /* map */
-    );
-
-extern Bool AddMatchingFiles(char *     /* head_in */
-    );
-
-extern int AddMapOnly(char *    /* map */
-    );
-
-extern int GenerateListing(char *       /* filename */
-    );
-
 #endif /* XKBCOMP_H */
