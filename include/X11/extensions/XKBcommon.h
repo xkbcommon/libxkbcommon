@@ -92,20 +92,26 @@ XkbcFreeIndicatorMaps(XkbcDescPtr xkb);
 extern XkbcDescRec *
 XkbcAllocKeyboard(void);
 
+extern void
+XkbcFreeKeyboard(XkbcDescPtr xkb, unsigned which, Bool freeAll);
+
 extern int
 XkbcAllocClientMap(XkbcDescPtr xkb, unsigned which, unsigned nTotalTypes);
 
 extern int
 XkbcAllocServerMap(XkbcDescPtr xkb, unsigned which, unsigned nNewActions);
 
+extern int
+XkbcCopyKeyType(XkbKeyTypePtr from, XkbKeyTypePtr into);
+
+extern int
+XkbcCopyKeyTypes(XkbKeyTypePtr from, XkbKeyTypePtr into, int num_types);
+
 extern void
 XkbcFreeClientMap(XkbcDescPtr xkb, unsigned what, Bool freeMap);
 
 extern void
 XkbcFreeServerMap(XkbcDescPtr xkb, unsigned what, Bool freeMap);
-
-extern void
-XkbcFreeKeyboard(XkbcDescPtr xkb, unsigned which, Bool freeAll);
 
 extern void
 XkbcFreeGeomProperties(XkbGeometryPtr geom, int first, int count, Bool freeAll);
@@ -287,6 +293,17 @@ XkbcComputeRowBounds(XkbGeometryPtr geom, XkbSectionPtr section, XkbRowPtr row);
 
 extern Bool
 XkbcComputeSectionBounds(XkbGeometryPtr geom, XkbSectionPtr section);
+
+extern int
+XkbcInitCanonicalKeyTypes(XkbcDescPtr xkb, unsigned which, int keypadVMod);
+
+extern Bool
+XkbcVirtualModsToReal(XkbcDescPtr xkb, unsigned virtual_mask,
+                      unsigned *mask_rtrn);
+
+extern Bool
+XkbcComputeEffectiveMap(XkbcDescPtr xkb, XkbKeyTypePtr type,
+                        unsigned char *map_rtrn);
 
 _XFUNCPROTOEND
 

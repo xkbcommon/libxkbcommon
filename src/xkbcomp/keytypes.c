@@ -1192,7 +1192,7 @@ CopyDefToKeyType(XkbcDescPtr xkb, XkbKeyTypePtr type, KeyTypeInfo * def)
 
     def->nEntries = def->szEntries = 0;
     def->entries = NULL;
-    return XkbComputeEffectiveMap(xkb, type, NULL);
+    return XkbcComputeEffectiveMap(xkb, type, NULL);
 }
 
 Bool
@@ -1243,7 +1243,7 @@ CompileKeyTypes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
 
             missing = XkbAllRequiredTypes & (~info.stdPresent);
             keypadVMod = FindKeypadVMod(xkb);
-            if (XkbInitCanonicalKeyTypes(xkb, missing, keypadVMod) != Success)
+            if (XkbcInitCanonicalKeyTypes(xkb, missing, keypadVMod) != Success)
             {
                 WSGO("Couldn't initialize canonical key types\n");
                 ACTION("Exiting\n");
