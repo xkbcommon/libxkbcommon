@@ -28,12 +28,14 @@ authorization from the authors.
 #ifndef _XKBCOMMON_H_
 #define _XKBCOMMON_H_
 
+#include <stdio.h>
 #include <X11/X.h>
 #include <X11/Xdefs.h>
 #include <X11/Xfuncproto.h>
 #include <X11/keysym.h>
 #include <X11/extensions/XKBstrcommon.h>
 #include <X11/extensions/XKBgeomcommon.h>
+#include <X11/extensions/XKBrulescommon.h>
 
 /* Common keyboard description structure */
 typedef struct _XkbcDesc {
@@ -315,6 +317,46 @@ XkbcComputeRowBounds(XkbGeometryPtr geom, XkbSectionPtr section, XkbRowPtr row);
 
 extern Bool
 XkbcComputeSectionBounds(XkbGeometryPtr geom, XkbSectionPtr section);
+
+extern Bool
+XkbcRF_GetComponents(XkbRF_RulesPtr rules, XkbRF_VarDefsPtr defs,
+                     XkbComponentNamesPtr names);
+
+extern XkbRF_RulePtr
+XkbcRF_AddRule(XkbRF_RulesPtr rules);
+
+extern XkbRF_GroupPtr
+XkbcRF_AddGroup(XkbRF_RulesPtr rules);
+
+extern Bool
+XkbcRF_LoadRules(FILE *file, XkbRF_RulesPtr rules);
+
+extern Bool
+XkbcRF_LoadRulesByName(char *base, char *locale, XkbRF_RulesPtr rules);
+
+extern XkbRF_VarDescPtr
+XkbcRF_AddVarDesc(XkbRF_DescribeVarsPtr vars);
+
+extern XkbRF_VarDescPtr
+XkbcRF_AddVarDescCopy(XkbRF_DescribeVarsPtr vars, XkbRF_VarDescPtr from);
+
+extern XkbRF_DescribeVarsPtr
+XkbcRF_AddVarToDescribe(XkbRF_RulesPtr rules, char *name);
+
+extern Bool
+XkbcRF_LoadDescriptions(FILE *file, XkbRF_RulesPtr rules);
+
+extern Bool
+XkbcRF_LoadDescriptionsByName(char *base, char *locale, XkbRF_RulesPtr rules);
+
+extern XkbRF_RulesPtr
+XkbcRF_Load(char *base, char *locale, Bool wantDesc, Bool wantRules);
+
+extern XkbRF_RulesPtr
+XkbcRF_Create(int szRules, int szExtra);
+
+extern void
+XkbcRF_Free(XkbRF_RulesPtr rules, Bool freeRules);
 
 extern int
 XkbcInitCanonicalKeyTypes(XkbcDescPtr xkb, unsigned which, int keypadVMod);

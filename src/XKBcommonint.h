@@ -55,4 +55,7 @@ authorization from the authors.
 #define _XkbClearElems(a,f,l,t) bzero(&(a)[f],((l)-(f)+1)*sizeof(t))
 #define _XkbFree(p)             free((p))
 
+#define _XkbDupString(s)        ((s) ? strdup(s) : NULL)
+#define _XkbStrCaseCmp          strcasecmp
+
 #endif /* _XKBCOMMONINT_H_ */
