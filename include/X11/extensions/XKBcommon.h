@@ -64,6 +64,9 @@ typedef struct _XkbcDesc {
 
 _XFUNCPROTOBEGIN
 
+extern XkbcDescPtr
+XkbcCompileKeymap(XkbComponentNamesPtr ktcsg);
+
 extern char *
 XkbcKeysymToString(KeySym ks);
 

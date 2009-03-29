@@ -32,6 +32,7 @@ libxkbcomp_la_SOURCES = \
 	utils.h \
 	vmod.c \
 	vmod.h \
+	xkbcomp.c \
 	xkbcomp.h \
 	xkbparse.y \
 	xkbpath.c \
