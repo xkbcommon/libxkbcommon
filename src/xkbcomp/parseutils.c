@@ -809,7 +809,7 @@ CreateXKBFile(int type, char *name, ParseCommon * defs, unsigned flags)
     file = uTypedAlloc(XkbFile);
     if (file)
     {
-        XkbEnsureSafeMapName(name);
+        XkbcEnsureSafeMapName(name);
         bzero(file, sizeof(XkbFile));
         file->type = type;
         file->topName = uStringDup(name);

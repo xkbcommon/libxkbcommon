@@ -305,6 +305,9 @@ extern Bool
 XkbcComputeEffectiveMap(XkbcDescPtr xkb, XkbKeyTypePtr type,
                         unsigned char *map_rtrn);
 
+extern void
+XkbcEnsureSafeMapName(char *name);
+
 _XFUNCPROTOEND
 
 #endif /* _XKBCOMMON_H_ */

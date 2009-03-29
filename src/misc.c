@@ -160,3 +160,27 @@ XkbcVirtualModsToReal(XkbcDescPtr xkb, unsigned virtual_mask,
     *mask_rtrn = mask;
     return True;
 }
+
+/*
+ * All latin-1 alphanumerics, plus parens, slash, minus, underscore and
+ * wildcards.
+ */
+static unsigned char componentSpecLegal[] = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0xa7, 0xff, 0x83,
+    0xfe, 0xff, 0xff, 0x87, 0xfe, 0xff, 0xff, 0x07,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0xff, 0xff, 0x7f, 0xff, 0xff, 0xff, 0x7f, 0xff
+};
+
+void
+XkbcEnsureSafeMapName(char *name)
+{
+    if (!name)
+        return;
+
+    while (*name!='\0') {
+        if ((componentSpecLegal[(*name) / 8] & (1 << ((*name) % 8))) == 0)
+            *name= '_';
+        name++;
+    }
+}
