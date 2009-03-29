@@ -230,57 +230,66 @@ XkbcAllocServerMap(XkbcDescPtr xkb, unsigned which, unsigned nNewActions)
 }
 
 int
-XkbcCopyKeyType(XkbKeyTypePtr from,XkbKeyTypePtr into)
+XkbcCopyKeyType(XkbKeyTypePtr from, XkbKeyTypePtr into)
 {
-    if ((!from)||(!into))
-	return BadMatch;
+    if (!from || !into)
+        return BadMatch;
+
     if (into->map) {
-	_XkbFree(into->map);
-	into->map= NULL;
+        _XkbFree(into->map);
+        into->map = NULL;
     }
     if (into->preserve) {
-	_XkbFree(into->preserve);
-	into->preserve= NULL;
+       _XkbFree(into->preserve);
+       into->preserve= NULL;
     }
     if (into->level_names) {
-	_XkbFree(into->level_names);
-	into->level_names= NULL;
+        _XkbFree(into->level_names);
+        into->level_names = NULL;
     }
-    *into= *from;
-    if ((from->map)&&(into->map_count>0)) {
-	into->map= _XkbTypedCalloc(into->map_count,XkbKTMapEntryRec);
-	if (!into->map)
-	    return BadAlloc;
-	memcpy(into->map,from->map,into->map_count*sizeof(XkbKTMapEntryRec));
+
+    *into = *from;
+
+    if (from->map && (into->map_count > 0)) {
+        into->map = _XkbTypedCalloc(into->map_count, XkbKTMapEntryRec);
+        if (!into->map)
+            return BadAlloc;
+        memcpy(into->map, from->map,
+               into->map_count * sizeof(XkbKTMapEntryRec));
     }
-    if ((from->preserve)&&(into->map_count>0)) {
-	into->preserve= _XkbTypedCalloc(into->map_count,XkbModsRec);
-	if (!into->preserve)
-	    return BadAlloc;
-	memcpy(into->preserve,from->preserve,
-				into->map_count*sizeof(XkbModsRec));
+
+    if (from->preserve && (into->map_count > 0)) {
+        into->preserve = _XkbTypedCalloc(into->map_count, XkbModsRec);
+        if (!into->preserve)
+            return BadAlloc;
+        memcpy(into->preserve, from->preserve,
+               into->map_count * sizeof(XkbModsRec));
     }
-    if ((from->level_names)&&(into->num_levels>0)) {
-	into->level_names= _XkbTypedCalloc(into->num_levels,Atom);
-	if (!into->level_names)
-	    return BadAlloc;
-	memcpy(into->level_names,from->level_names,
-				 into->num_levels*sizeof(Atom));
+
+    if (from->level_names && (into->num_levels > 0)) {
+        into->level_names = _XkbTypedCalloc(into->num_levels, Atom);
+        if (!into->level_names)
+            return BadAlloc;
+        memcpy(into->level_names, from->level_names,
+               into->num_levels * sizeof(Atom));
     }
+
     return Success;
 }
 
 int
-XkbcCopyKeyTypes(XkbKeyTypePtr from,XkbKeyTypePtr into,int num_types)
+XkbcCopyKeyTypes(XkbKeyTypePtr from, XkbKeyTypePtr into, int num_types)
 {
-register int i,rtrn;
+    int i, rtrn;
 
-    if ((!from)||(!into)||(num_types<0))
-	return BadMatch;
-    for (i=0;i<num_types;i++) {
-	if ((rtrn= XkbcCopyKeyType(from++,into++))!=Success)
-	    return rtrn;
+    if (!from || !into || (num_types < 0))
+        return BadMatch;
+
+    for (i = 0; i < num_types; i++) {
+        if ((rtrn = XkbcCopyKeyType(from++, into++)) != Success)
+            return rtrn;
     }
+
     return Success;
 }
 
