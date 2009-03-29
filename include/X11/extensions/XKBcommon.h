@@ -31,7 +31,7 @@ authorization from the authors.
 #include <X11/X.h>
 #include <X11/Xdefs.h>
 #include <X11/Xfuncproto.h>
-#include <X11/keysymdef.h>
+#include <X11/keysym.h>
 #include <X11/extensions/XKBstrcommon.h>
 #include <X11/extensions/XKBgeomcommon.h>
 
@@ -52,6 +52,11 @@ typedef struct _XkbcDesc {
     XkbGeometryPtr      geom;
 } XkbcDescRec, *XkbcDescPtr;
 
+#define _XkbcKSLower (1 << 0)
+#define _XkbcKSUpper (1 << 1)
+
+#define XkbcKSIsLower(k) (_XkbcKSCheckCase(k) & _XkbcKSLower)
+#define XkbcKSIsUpper(k) (_XkbcKSCheckCase(k) & _XkbcKSUpper)
 #define XkbcKSIsKeypad(k) \
     (((k) >= XK_KP_Space) && ((k) <= XK_KP_Equal))
 #define XkbcKSIsDeadKey(k) \
@@ -307,6 +312,9 @@ XkbcComputeEffectiveMap(XkbcDescPtr xkb, XkbKeyTypePtr type,
 
 extern void
 XkbcEnsureSafeMapName(char *name);
+
+extern unsigned
+_XkbcKSCheckCase(KeySym  sym);
 
 _XFUNCPROTOEND
 

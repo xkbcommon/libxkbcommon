@@ -29,7 +29,6 @@
 #include "expr.h"
 
 #include <X11/keysym.h>
-#include <X11/Xutil.h>
 #include <stdlib.h>
 
 #include "expr.h"
@@ -1748,28 +1747,6 @@ FindNamedType(XkbcDescPtr xkb, Atom name, unsigned *type_rtrn)
     return False;
 }
 
-static Bool
-KSIsLower(KeySym ks)
-{
-    KeySym lower, upper;
-    XConvertCase(ks, &lower, &upper);
-
-    if (lower == upper)
-        return False;
-    return (ks == lower ? True : False);
-}
-
-static Bool
-KSIsUpper(KeySym ks)
-{
-    KeySym lower, upper;
-    XConvertCase(ks, &lower, &upper);
-
-    if (lower == upper)
-        return False;
-    return (ks == upper ? True : False);
-}
-
 /**
  * Assign a type to the given sym and return the Atom for the type assigned.
  *
@@ -1798,7 +1775,7 @@ FindAutomaticType(int width, KeySym * syms, Atom * typeNameRtrn,
     }
     else if (width == 2)
     {
-        if (syms && KSIsLower(syms[0]) && KSIsUpper(syms[1]))
+        if (syms && XkbcKSIsLower(syms[0]) && XkbcKSIsUpper(syms[1]))
         {
             *typeNameRtrn = XkbcInternAtom("ALPHABETIC", False);
         }
@@ -1815,8 +1792,8 @@ FindAutomaticType(int width, KeySym * syms, Atom * typeNameRtrn,
     }
     else if (width <= 4)
     {
-        if (syms && KSIsLower(syms[0]) && KSIsUpper(syms[1]))
-            if (KSIsLower(syms[2]) && KSIsUpper(syms[3]))
+        if (syms && XkbcKSIsLower(syms[0]) && XkbcKSIsUpper(syms[1]))
+            if (XkbcKSIsLower(syms[2]) && XkbcKSIsUpper(syms[3]))
                 *typeNameRtrn =
                     XkbcInternAtom("FOUR_LEVEL_ALPHABETIC", False);
             else
