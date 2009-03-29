@@ -26,6 +26,8 @@
 #ifndef TOKENS_H
 #define	TOKENS_H 1
 
+#include <X11/Xdefs.h>
+
 #define	END_OF_FILE	0
 #define	ERROR_TOK	255
 
