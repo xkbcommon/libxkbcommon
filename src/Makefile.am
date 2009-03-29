@@ -13,6 +13,7 @@ libxkbcommon_la_SOURCES = \
 	geom.c \
 	keysym.c \
 	malloc.c \
+	maprules.c \
 	misc.c \
 	text.c \
 	xkb.c
