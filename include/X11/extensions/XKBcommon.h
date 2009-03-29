@@ -112,6 +112,20 @@ XkbcCopyKeyType(XkbKeyTypePtr from, XkbKeyTypePtr into);
 extern int
 XkbcCopyKeyTypes(XkbKeyTypePtr from, XkbKeyTypePtr into, int num_types);
 
+extern int
+XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
+                  Bool want_preserve, int new_num_lvls);
+
+extern KeySym *
+XkbcResizeKeySyms(XkbcDescPtr xkb, int key, int needed);
+
+extern int
+XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
+                       XkbChangesPtr changes);
+
+extern XkbAction *
+XkbcResizeKeyActions(XkbcDescPtr xkb, int key, int needed);
+
 extern void
 XkbcFreeClientMap(XkbcDescPtr xkb, unsigned what, Bool freeMap);
 

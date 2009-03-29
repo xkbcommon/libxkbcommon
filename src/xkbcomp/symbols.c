@@ -2022,7 +2022,7 @@ CopySymbolsDef(XkbcDescPtr xkb, KeyInfo *key, int start_from)
     /* width is now the largest width found */
 
     i = width * nGroups;
-    outSyms = XkbResizeKeySyms(xkb, kc, i);
+    outSyms = XkbcResizeKeySyms(xkb, kc, i);
     if (outSyms == NULL)
     {
         WSGO2("Could not enlarge symbols for %s (keycode %d)\n",
@@ -2031,7 +2031,7 @@ CopySymbolsDef(XkbcDescPtr xkb, KeyInfo *key, int start_from)
     }
     if (haveActions)
     {
-        outActs = XkbResizeKeyActions(xkb, kc, i);
+        outActs = XkbcResizeKeyActions(xkb, kc, i);
         if (outActs == NULL)
         {
             WSGO2("Could not enlarge actions for %s (key %d)\n",
