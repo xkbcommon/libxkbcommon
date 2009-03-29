@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <X11/extensions/XKM.h>
 #include "xkbpath.h"
+#include "XKBcommonint.h"
 
 #ifndef DFLT_XKB_CONFIG_ROOT
 #define DFLT_XKB_CONFIG_ROOT	"/usr/lib/X11/xkb"

@@ -27,6 +27,8 @@
 #ifndef _XKBPATH_H_
 #define _XKBPATH_H_ 1
 
+#include "X11/extensions/XKBcommon.h"
+
 extern Bool XkbInitIncludePath(void);
 
 extern void XkbClearIncludePath(void);
