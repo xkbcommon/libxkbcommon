@@ -2536,7 +2536,7 @@ HandleOverlayDef(OverlayDef * def,
         {
             WSGO("Couldn't allocate OverlayKeyInfo\n");
             ACTION2("Overlay %s for section %s will be incomplete\n",
-                    oiText(&ol), scText(si));
+                    XkbcAtomText(ol.name), scText(si));
             return False;
         }
         strncpy(key->over, keyDef->over, XkbKeyNameLength);

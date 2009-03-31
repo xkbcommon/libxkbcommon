@@ -237,7 +237,7 @@ uInformation(const char * /* s */ , ...
     );
 #endif
 #ifdef HAVE_STRDUP
-#define	uStringDup(s1)		((s1) ? strdup(s1) : NULL)
+#define	uStringDup(s1)		(strdup(s1))
 #else
      extern char *uStringDup(const char *       /* s1 */
     );
