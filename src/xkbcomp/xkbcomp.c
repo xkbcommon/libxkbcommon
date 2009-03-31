@@ -24,11 +24,17 @@ sale, use or other dealings in this Software without prior written
 authorization from the authors.
 */
 
+#include <limits.h>
 #include "X11/extensions/XKBcommon.h"
 #include <X11/extensions/XKM.h>
+#include "XKBcommonint.h"
 #include "xkbcomp.h"
 #include "parseutils.h"
 #include "utils.h"
+
+#ifndef DFLT_XKB_CONFIG_ROOT
+#define DFLT_XKB_CONFIG_ROOT "/usr/share/X11/xkb"
+#endif
 
 static int
 XkbFileFromComponents(const XkbComponentNamesPtr ktcsg, XkbFile **file)
@@ -60,8 +66,71 @@ XkbFileFromComponents(const XkbComponentNamesPtr ktcsg, XkbFile **file)
     return 1;
 }
 
+static XkbComponentNamesPtr
+XkbComponentsFromRules(const char *rulesPath, const XkbRF_VarDefsPtr defs)
+{
+    XkbRF_RulesPtr rules;
+    XkbComponentNamesPtr names = NULL;
+
+    if (!(rules = XkbcRF_Load((char *)rulesPath, NULL, False, True))) {
+        ERROR("Failed to load XKB rules \"%s\"\n", rulesPath);
+        goto fail;
+    }
+
+    if (!(names = _XkbTypedCalloc(1, XkbComponentNamesRec))) {
+        ERROR("Failed to allocate XKB components\n");
+        goto unwind_rules;
+    }
+
+    if (!XkbcRF_GetComponents(rules, defs, names))
+        ERROR("No components returned from XKB rules \"%s\"\n", rulesPath);
+
+unwind_rules:
+    XkbcRF_Free(rules, True);
+fail:
+    return names;
+}
+
 XkbcDescPtr
-XkbcCompileKeymap(XkbComponentNamesPtr ktcsg)
+XkbcCompileKeymapFromRules(const char *rules, XkbRF_VarDefsPtr defs)
+{
+    char rulesPath[PATH_MAX];
+    int pathlen;
+    XkbComponentNamesPtr names;
+    XkbcDescPtr xkb;
+
+    if (!rules)
+        return NULL;
+
+    pathlen = snprintf(rulesPath, sizeof(rulesPath),
+                       DFLT_XKB_CONFIG_ROOT "/rules/%s", rules);
+    if (pathlen >= sizeof(rulesPath)) {
+        ERROR("XKB rules path truncated\n");
+        return NULL;
+    }
+
+    names = XkbComponentsFromRules(rulesPath, defs);
+    if (!names) {
+        ERROR("Failed to generate XKB components from rules \"%s\"\n",
+              rules);
+        return NULL;
+    }
+
+    xkb = XkbcCompileKeymapFromComponents(names);
+
+    _XkbFree(names->keymap);
+    _XkbFree(names->keycodes);
+    _XkbFree(names->types);
+    _XkbFree(names->compat);
+    _XkbFree(names->symbols);
+    _XkbFree(names->geometry);
+    _XkbFree(names);
+
+    return xkb;
+}
+
+XkbcDescPtr
+XkbcCompileKeymapFromComponents(XkbComponentNamesPtr ktcsg)
 {
     XkbFile *file, *mapToUse;
     XkbcDescPtr xkb;
