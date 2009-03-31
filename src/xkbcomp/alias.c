@@ -39,7 +39,7 @@ HandleCollision(AliasInfo * old, AliasInfo * new)
         if (((new->def.fileID == old->def.fileID) && (warningLevel > 0)) ||
             (warningLevel > 9))
         {
-            WARN2("Alias of %s for %s declared more than once\n",
+            WARN("Alias of %s for %s declared more than once\n",
                   XkbcKeyNameText(new->alias), XkbcKeyNameText(new->real));
             ACTION("First definition ignored\n");
         }
@@ -60,9 +60,9 @@ HandleCollision(AliasInfo * old, AliasInfo * new)
         if (((old->def.fileID == new->def.fileID) && (warningLevel > 0)) ||
             (warningLevel > 9))
         {
-            WARN1("Multiple definitions for alias %s\n",
+            WARN("Multiple definitions for alias %s\n",
                   XkbcKeyNameText(old->alias));
-            ACTION2("Using %s, ignoring %s\n",
+            ACTION("Using %s, ignoring %s\n",
                     XkbcKeyNameText(use), XkbcKeyNameText(ignore));
         }
         if (use != old->real)
@@ -185,7 +185,7 @@ ApplyAliases(XkbcDescPtr xkb, Bool toGeom, AliasInfo ** info_in)
         {
             if (warningLevel > 4)
             {
-                WARN2("Attempt to alias %s to non-existent key %s\n",
+                WARN("Attempt to alias %s to non-existent key %s\n",
                       XkbcKeyNameText(info->alias), XkbcKeyNameText(info->real));
                 ACTION("Ignored\n");
             }
@@ -198,7 +198,7 @@ ApplyAliases(XkbcDescPtr xkb, Bool toGeom, AliasInfo ** info_in)
             if (warningLevel > 4)
             {
                 WARN("Attempt to create alias with the name of a real key\n");
-                ACTION2("Alias \"%s = %s\" ignored\n",
+                ACTION("Alias \"%s = %s\" ignored\n",
                         XkbcKeyNameText(info->alias),
                         XkbcKeyNameText(info->real));
             }
@@ -274,7 +274,7 @@ ApplyAliases(XkbcDescPtr xkb, Bool toGeom, AliasInfo ** info_in)
 #ifdef DEBUG
     if ((a - old) != (nOld + nNew))
     {
-        WSGO2("Expected %d aliases total but created %d\n", nOld + nNew,
+        WSGO("Expected %d aliases total but created %d\n", nOld + nNew,
               a - old);
     }
 #endif

@@ -709,7 +709,7 @@ IncludeCreate(char *str, unsigned merge)
         uFree(stmt);
     return first;
   BAIL:
-    ERROR1("Illegal include statement \"%s\"\n", stmt);
+    ERROR("Illegal include statement \"%s\"\n", stmt);
     ACTION("Ignored\n");
     while (first)
     {
@@ -766,9 +766,9 @@ CheckDefaultMap(XkbFile * maps)
             {
                 if (warningLevel > 2)
                 {
-                    WARN1("Multiple default components in %s\n",
+                    WARN("Multiple default components in %s\n",
                           (scanFile ? scanFile : "(unknown)"));
-                    ACTION2("Using %s, ignoring %s\n",
+                    ACTION("Using %s, ignoring %s\n",
                             (dflt->name ? dflt->name : "(first)"),
                             (tmp->name ? tmp->name : "(subsequent)"));
                 }

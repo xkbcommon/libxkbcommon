@@ -81,7 +81,7 @@ AddIndicatorMap(LEDInfo * oldLEDs, LEDInfo * new)
                 if (((old->defs.fileID == new->defs.fileID)
                      && (warningLevel > 0)) || (warningLevel > 9))
                 {
-                    WARN1("Map for indicator %s redefined\n",
+                    WARN("Map for indicator %s redefined\n",
                           XkbcAtomText(old->name));
                     ACTION("Earlier definition ignored\n");
                 }
@@ -133,9 +133,9 @@ AddIndicatorMap(LEDInfo * oldLEDs, LEDInfo * new)
             }
             if (collide)
             {
-                WARN1("Map for indicator %s redefined\n",
+                WARN("Map for indicator %s redefined\n",
                       XkbcAtomText(old->name));
-                ACTION1("Using %s definition for duplicate fields\n",
+                ACTION("Using %s definition for duplicate fields\n",
                         (new->defs.merge == MergeAugment ? "first" : "last"));
             }
             return oldLEDs;
@@ -148,7 +148,7 @@ AddIndicatorMap(LEDInfo * oldLEDs, LEDInfo * new)
     if (!old)
     {
         WSGO("Couldn't allocate indicator map\n");
-        ACTION1("Map for indicator %s not compiled\n",
+        ACTION("Map for indicator %s not compiled\n",
                 XkbcAtomText(new->name));
         return NULL;
     }
@@ -300,9 +300,9 @@ SetIndicatorMapField(LEDInfo * led,
                                           "indicator index");
         if ((rtrn.uval < 1) || (rtrn.uval > 32))
         {
-            ERROR2("Illegal indicator index %d (range 1..%d)\n",
+            ERROR("Illegal indicator index %d (range 1..%d)\n",
                    rtrn.uval, XkbNumIndicators);
-            ACTION1("Index definition for %s indicator ignored\n",
+            ACTION("Index definition for %s indicator ignored\n",
                     XkbcAtomText(led->name));
             return False;
         }
@@ -311,7 +311,7 @@ SetIndicatorMapField(LEDInfo * led,
     }
     else
     {
-        ERROR2("Unknown field %s in map for %s indicator\n", field,
+        ERROR("Unknown field %s in map for %s indicator\n", field,
                XkbcAtomText(led->name));
         ACTION("Definition ignored\n");
         ok = False;
@@ -347,10 +347,10 @@ HandleIndicatorMapDef(IndicatorMapDef * def,
         }
         if (elem.str != NULL)
         {
-            ERROR1
+            ERROR
                 ("Cannot set defaults for \"%s\" element in indicator map\n",
                  elem.str);
-            ACTION2("Assignment to %s.%s ignored\n", elem.str, field.str);
+            ACTION("Assignment to %s.%s ignored\n", elem.str, field.str);
             ok = False;
         }
         else
@@ -476,7 +476,7 @@ BindIndicators(XkbcDescPtr xkb, Bool force, LEDInfo *unbound,
                     if (led->indicator == _LED_NotBound)
                     {
                         ERROR("No unnamed indicators found\n");
-                        ACTION1
+                        ACTION
                             ("Virtual indicator map \"%s\" not bound\n",
                              XkbcAtomGetString(led->name));
                         continue;
@@ -510,9 +510,9 @@ BindIndicators(XkbcDescPtr xkb, Bool force, LEDInfo *unbound,
                 (xkb->names->indicators[led->indicator - 1] != led->name))
             {
                 Atom old = xkb->names->indicators[led->indicator - 1];
-                ERROR1("Multiple names bound to indicator %d\n",
+                ERROR("Multiple names bound to indicator %d\n",
                        (unsigned int) led->indicator);
-                ACTION2("Using %s, ignoring %s\n",
+                ACTION("Using %s, ignoring %s\n",
                         XkbcAtomGetString(old),
                         XkbcAtomGetString(led->name));
                 led->indicator = _LED_NotBound;

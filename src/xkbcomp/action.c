@@ -299,15 +299,15 @@ fieldText(unsigned field)
 static Bool
 ReportMismatch(unsigned action, unsigned field, const char *type)
 {
-    ERROR2("Value of %s field must be of type %s\n", fieldText(field), type);
-    ACTION1("Action %s definition ignored\n", XkbcActionTypeText(action));
+    ERROR("Value of %s field must be of type %s\n", fieldText(field), type);
+    ACTION("Action %s definition ignored\n", XkbcActionTypeText(action));
     return False;
 }
 
 static Bool
 ReportIllegal(unsigned action, unsigned field)
 {
-    ERROR2("Field %s is not defined for an action of type %s\n",
+    ERROR("Field %s is not defined for an action of type %s\n",
            fieldText(field), XkbcActionTypeText(action));
     ACTION("Action definition ignored\n");
     return False;
@@ -316,7 +316,7 @@ ReportIllegal(unsigned action, unsigned field)
 static Bool
 ReportActionNotArray(unsigned action, unsigned field)
 {
-    ERROR2("The %s field in the %s action is not an array\n",
+    ERROR("The %s field in the %s action is not an array\n",
            fieldText(field), XkbcActionTypeText(action));
     ACTION("Action definition ignored\n");
     return False;
@@ -325,8 +325,8 @@ ReportActionNotArray(unsigned action, unsigned field)
 static Bool
 ReportNotFound(unsigned action, unsigned field, const char *what, char *bad)
 {
-    ERROR2("%s named %s not found\n", what, bad);
-    ACTION2("Ignoring the %s field of an %s action\n", fieldText(field),
+    ERROR("%s named %s not found\n", what, bad);
+    ACTION("Ignoring the %s field of an %s action\n", fieldText(field),
             XkbcActionTypeText(action));
     return False;
 }
@@ -497,9 +497,9 @@ CheckGroupField(unsigned action,
         return ReportMismatch(action, F_Group, "integer (range 1..8)");
     if ((rtrn.ival < 1) || (rtrn.ival > XkbNumKbdGroups))
     {
-        ERROR2("Illegal group %d (must be in the range 1..%d)\n", rtrn.ival,
+        ERROR("Illegal group %d (must be in the range 1..%d)\n", rtrn.ival,
                XkbNumKbdGroups);
-        ACTION1("Action %s definition ignored\n", XkbcActionTypeText(action));
+        ACTION("Action %s definition ignored\n", XkbcActionTypeText(action));
         return False;
     }
     if (value->op == OpNegate)
@@ -667,7 +667,7 @@ HandlePtrBtn(XkbcDescPtr xkb,
         if ((rtrn.ival < 0) || (rtrn.ival > 5))
         {
             ERROR("Button must specify default or be in the range 1..5\n");
-            ACTION1("Illegal button value %d ignored\n", rtrn.ival);
+            ACTION("Illegal button value %d ignored\n", rtrn.ival);
             return False;
         }
         act->button = rtrn.ival;
@@ -693,7 +693,7 @@ HandlePtrBtn(XkbcDescPtr xkb,
         if ((rtrn.ival < 0) || (rtrn.ival > 255))
         {
             ERROR("The count field must have a value in the range 0..255\n");
-            ACTION1("Illegal count %d ignored\n", rtrn.ival);
+            ACTION("Illegal count %d ignored\n", rtrn.ival);
             return False;
         }
         act->count = rtrn.ival;
@@ -750,7 +750,7 @@ HandleSetPtrDflt(XkbcDescPtr xkb,
         if ((rtrn.ival < 0) || (rtrn.ival > 5))
         {
             ERROR("New default button value must be in the range 1..5\n");
-            ACTION1("Illegal default button value %d ignored\n", rtrn.ival);
+            ACTION("Illegal default button value %d ignored\n", rtrn.ival);
             return False;
         }
         if (rtrn.ival == 0)
@@ -860,7 +860,7 @@ HandleSwitchScreen(XkbcDescPtr xkb,
         if ((rtrn.ival < 0) || (rtrn.ival > 255))
         {
             ERROR("Screen index must be in the range 1..255\n");
-            ACTION1("Illegal screen value %d ignored\n", rtrn.ival);
+            ACTION("Illegal screen value %d ignored\n", rtrn.ival);
             return False;
         }
         if (value->op == OpNegate)
@@ -995,7 +995,7 @@ HandleActionMessage(XkbcDescPtr xkb,
                 if ((len < 1) || (len > 6))
                 {
                     WARN("An action message can hold only 6 bytes\n");
-                    ACTION1("Extra %d bytes ignored\n", len - 6);
+                    ACTION("Extra %d bytes ignored\n", len - 6);
                 }
                 strncpy((char *) act->message, rtrn.str, 6);
             }
@@ -1014,7 +1014,7 @@ HandleActionMessage(XkbcDescPtr xkb,
             if (ndx > 5)
             {
                 ERROR("An action message is at most 6 bytes long\n");
-                ACTION1("Attempt to use data[%d] ignored\n", ndx);
+                ACTION("Attempt to use data[%d] ignored\n", ndx);
                 return False;
             }
             if (!ExprResolveInteger(value, &rtrn, NULL, NULL))
@@ -1022,7 +1022,7 @@ HandleActionMessage(XkbcDescPtr xkb,
             if ((rtrn.ival < 0) || (rtrn.ival > 255))
             {
                 ERROR("Message data must be in the range 0..255\n");
-                ACTION1("Illegal datum %d ignored\n", rtrn.ival);
+                ACTION("Illegal datum %d ignored\n", rtrn.ival);
                 return False;
             }
             act->message[ndx] = rtrn.uval;
@@ -1106,7 +1106,7 @@ HandleDeviceBtn(XkbcDescPtr xkb,
         if ((rtrn.ival < 0) || (rtrn.ival > 255))
         {
             ERROR("Button must specify default or be in the range 1..255\n");
-            ACTION1("Illegal button value %d ignored\n", rtrn.ival);
+            ACTION("Illegal button value %d ignored\n", rtrn.ival);
             return False;
         }
         act->button = rtrn.ival;
@@ -1132,7 +1132,7 @@ HandleDeviceBtn(XkbcDescPtr xkb,
         if ((rtrn.ival < 0) || (rtrn.ival > 255))
         {
             ERROR("The count field must have a value in the range 0..255\n");
-            ACTION1("Illegal count %d ignored\n", rtrn.ival);
+            ACTION("Illegal count %d ignored\n", rtrn.ival);
             return False;
         }
         act->count = rtrn.ival;
@@ -1148,7 +1148,7 @@ HandleDeviceBtn(XkbcDescPtr xkb,
         if ((rtrn.ival < 0) || (rtrn.ival > 255))
         {
             ERROR("Device must specify default or be in the range 1..255\n");
-            ACTION1("Illegal device value %d ignored\n", rtrn.ival);
+            ACTION("Illegal device value %d ignored\n", rtrn.ival);
             return False;
         }
         act->device = rtrn.ival;
@@ -1187,7 +1187,7 @@ HandlePrivate(XkbcDescPtr xkb,
         if ((rtrn.ival < 0) || (rtrn.ival > 255))
         {
             ERROR("Private action type must be in the range 0..255\n");
-            ACTION1("Illegal type %d ignored\n", rtrn.ival);
+            ACTION("Illegal type %d ignored\n", rtrn.ival);
             return False;
         }
         action->type = rtrn.uval;
@@ -1203,7 +1203,7 @@ HandlePrivate(XkbcDescPtr xkb,
                 if ((len < 1) || (len > 7))
                 {
                     WARN("A private action has 7 data bytes\n");
-                    ACTION1("Extra %d bytes ignored\n", len - 6);
+                    ACTION("Extra %d bytes ignored\n", len - 6);
                     return False;
                 }
                 strncpy((char *) action->data, rtrn.str, 7);
@@ -1223,7 +1223,7 @@ HandlePrivate(XkbcDescPtr xkb,
             if (ndx > 6)
             {
                 ERROR("The data for a private action is 7 bytes long\n");
-                ACTION1("Attempt to use data[%d] ignored\n", ndx);
+                ACTION("Attempt to use data[%d] ignored\n", ndx);
                 return False;
             }
             if (!ExprResolveInteger(value, &rtrn, NULL, NULL))
@@ -1231,7 +1231,7 @@ HandlePrivate(XkbcDescPtr xkb,
             if ((rtrn.ival < 0) || (rtrn.ival > 255))
             {
                 ERROR("All data for a private action must be 0..255\n");
-                ACTION1("Illegal datum %d ignored\n", rtrn.ival);
+                ACTION("Illegal datum %d ignored\n", rtrn.ival);
                 return False;
             }
             action->data[ndx] = rtrn.uval;
@@ -1306,7 +1306,7 @@ HandleActionDef(ExprDef * def,
 
     if (def->op != ExprActionDecl)
     {
-        ERROR1("Expected an action definition, found %s\n",
+        ERROR("Expected an action definition, found %s\n",
                exprOpText(def->op));
         return False;
     }
@@ -1318,7 +1318,7 @@ HandleActionDef(ExprDef * def,
     }
     if (!stringToAction(str, &tmp))
     {
-        ERROR1("Unknown action %s\n", str);
+        ERROR("Unknown action %s\n", str);
         return False;
     }
     action->type = hndlrType = tmp;
@@ -1372,13 +1372,13 @@ HandleActionDef(ExprDef * def,
         if (elemRtrn.str != NULL)
         {
             ERROR("Cannot change defaults in an action definition\n");
-            ACTION2("Ignoring attempt to change %s.%s\n", elemRtrn.str,
+            ACTION("Ignoring attempt to change %s.%s\n", elemRtrn.str,
                     fieldRtrn.str);
             return False;
         }
         if (!stringToField(fieldRtrn.str, &fieldNdx))
         {
-            ERROR1("Unknown field name %s\n", uStringText(fieldRtrn.str));
+            ERROR("Unknown field name %s\n", uStringText(fieldRtrn.str));
             return False;
         }
         if (!(*handleAction[hndlrType])
@@ -1417,14 +1417,14 @@ SetActionField(XkbcDescPtr xkb,
             return False;
         if (new->action == XkbSA_NoAction)
         {
-            ERROR1("\"%s\" is not a valid field in a NoAction action\n",
+            ERROR("\"%s\" is not a valid field in a NoAction action\n",
                    field);
             return False;
         }
     }
     if (!stringToField(field, &new->field))
     {
-        ERROR1("\"%s\" is not a legal field name\n", field);
+        ERROR("\"%s\" is not a legal field name\n", field);
         return False;
     }
     new->array_ndx = array_ndx;

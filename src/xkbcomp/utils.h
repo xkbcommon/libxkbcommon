@@ -105,12 +105,6 @@ extern void uFree(Opaque        /* ptr */
 extern Boolean uSetErrorFile(char *     /* name */
     );
 
-#define INFO6 			uInformation
-#define INFO5 			uInformation
-#define INFO4 			uInformation
-#define INFO3 			uInformation
-#define INFO2 			uInformation
-#define INFO1 			uInformation
 #define INFO 			uInformation
 
 extern void
@@ -122,12 +116,6 @@ uInformation(const char * /* s */ , ...
 #endif
     ;
 
-#define ACTION6			uAction
-#define ACTION5			uAction
-#define ACTION4			uAction
-#define ACTION3			uAction
-#define ACTION2			uAction
-#define ACTION1			uAction
 #define ACTION			uAction
 
      extern void uAction(const char * /* s  */ , ...
@@ -138,12 +126,6 @@ uInformation(const char * /* s */ , ...
 #endif
     ;
 
-#define WARN6			uWarning
-#define WARN5			uWarning
-#define WARN4			uWarning
-#define WARN3			uWarning
-#define WARN2			uWarning
-#define WARN1			uWarning
 #define WARN			uWarning
 
      extern void uWarning(const char * /* s  */ , ...
@@ -154,12 +136,6 @@ uInformation(const char * /* s */ , ...
 #endif
     ;
 
-#define ERROR6			uError
-#define ERROR5			uError
-#define ERROR4			uError
-#define ERROR3			uError
-#define ERROR2			uError
-#define ERROR1			uError
 #define ERROR			uError
 
      extern void uError(const char * /* s  */ , ...
@@ -170,12 +146,6 @@ uInformation(const char * /* s */ , ...
 #endif
     ;
 
-#define FATAL6			uFatalError
-#define FATAL5			uFatalError
-#define FATAL4			uFatalError
-#define FATAL3			uFatalError
-#define FATAL2			uFatalError
-#define FATAL1			uFatalError
 #define FATAL			uFatalError
 
      extern void uFatalError(const char * /* s  */ , ...
@@ -186,13 +156,7 @@ uInformation(const char * /* s */ , ...
 #endif
     ;
 
-/* WSGO stands for "Weird Stuff Going On" */
-#define WSGO6			uInternalError
-#define WSGO5			uInternalError
-#define WSGO4			uInternalError
-#define WSGO3			uInternalError
-#define WSGO2			uInternalError
-#define WSGO1			uInternalError
+/* WSGO stands for "Weird Stuff Going On" (wtf???) */
 #define WSGO			uInternalError
 
      extern void uInternalError(const char * /* s  */ , ...

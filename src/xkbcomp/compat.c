@@ -210,7 +210,7 @@ AddInterp(CompatInfo * info, SymInterpInfo * new)
             if (((old->defs.fileID == new->defs.fileID)
                  && (warningLevel > 0)) || (warningLevel > 9))
             {
-                WARN1("Multiple definitions for \"%s\"\n", siText(new, info));
+                WARN("Multiple definitions for \"%s\"\n", siText(new, info));
                 ACTION("Earlier interpretation ignored\n");
             }
             *old = *new;
@@ -247,8 +247,8 @@ AddInterp(CompatInfo * info, SymInterpInfo * new)
         }
         if (collide)
         {
-            WARN1("Multiple interpretations of \"%s\"\n", siText(new, info));
-            ACTION1("Using %s definition for duplicate fields\n",
+            WARN("Multiple interpretations of \"%s\"\n", siText(new, info));
+            ACTION("Using %s definition for duplicate fields\n",
                     (new->defs.merge != MergeAugment ? "last" : "first"));
         }
         return True;
@@ -276,8 +276,8 @@ AddGroupCompat(CompatInfo * info, unsigned group, GroupCompatInfo * newGC)
     if (((gc->fileID == newGC->fileID) && (warningLevel > 0))
         || (warningLevel > 9))
     {
-        WARN1("Compat map for group %d redefined\n", group + 1);
-        ACTION1("Using %s definition\n",
+        WARN("Compat map for group %d redefined\n", group + 1);
+        ACTION("Using %s definition\n",
                 (merge == MergeAugment ? "old" : "new"));
     }
     if (merge != MergeAugment)
@@ -317,7 +317,7 @@ ResolveStateAndPredicate(ExprDef * expr,
             *pred_rtrn = XkbSI_Exactly;
         else
         {
-            ERROR1("Illegal modifier predicate \"%s\"\n", pred_txt);
+            ERROR("Illegal modifier predicate \"%s\"\n", pred_txt);
             ACTION("Ignored\n");
             return False;
         }
@@ -690,9 +690,9 @@ HandleGroupCompatDef(GroupCompatDef * def,
         merge = def->merge;
     if (!XkbIsLegalGroup(def->group - 1))
     {
-        ERROR1("Keyboard group must be in the range 1..%d\n",
+        ERROR("Keyboard group must be in the range 1..%d\n",
                XkbNumKbdGroups + 1);
-        ACTION1("Compatibility map for illegal group %d ignored\n",
+        ACTION("Compatibility map for illegal group %d ignored\n",
                 def->group);
         return False;
     }
@@ -701,7 +701,7 @@ HandleGroupCompatDef(GroupCompatDef * def,
     if (!ExprResolveModMask(def->def, &val, LookupVModMask, (char *) xkb))
     {
         ERROR("Expected a modifier mask in group compatibility definition\n");
-        ACTION1("Ignoring illegal compatibility map for group %d\n",
+        ACTION("Ignoring illegal compatibility map for group %d\n",
                 def->group);
         return False;
     }
@@ -763,7 +763,7 @@ HandleCompatMapFile(XkbFile * file,
             info->errorCount++;
             break;
         default:
-            WSGO1("Unexpected statement type %d in HandleCompatMapFile\n",
+            WSGO("Unexpected statement type %d in HandleCompatMapFile\n",
                   stmt->stmtType);
             break;
         }
@@ -773,7 +773,7 @@ HandleCompatMapFile(XkbFile * file,
 #ifdef NOISY
             ERROR("Too many errors\n");
 #endif
-            ACTION1("Abandoning compatibility map \"%s\"\n", file->topName);
+            ACTION("Abandoning compatibility map \"%s\"\n", file->topName);
             break;
         }
     }
@@ -834,7 +834,7 @@ CompileCompatMap(XkbFile *file, XkbcDescPtr xkb, unsigned merge,
             else
             {
                 WSGO("Couldn't allocate space for compat name\n");
-                ACTION2("Name \"%s\" (from %s) NOT assigned\n",
+                ACTION("Name \"%s\" (from %s) NOT assigned\n",
                         scanFile, info.name);
             }
         }

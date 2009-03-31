@@ -105,21 +105,21 @@ HandleVModDef(VModDef * stmt, unsigned mergeMode, VModInfo * info)
                     if (!ExprResolveModMask(stmt->value, &mod, NULL, NULL))
                     {
                         str1 = XkbcAtomText(stmt->name);
-                        ACTION1("Declaration of %s ignored\n", str1);
+                        ACTION("Declaration of %s ignored\n", str1);
                         return False;
                     }
                     if (mod.uval == srv->vmods[i])
                         return True;
 
                     str1 = XkbcAtomText(stmt->name);
-                    WARN1("Virtual modifier %s multiply defined\n", str1);
+                    WARN("Virtual modifier %s multiply defined\n", str1);
                     str1 = XkbcModMaskText(srv->vmods[i], True);
                     if (mergeMode == MergeOverride)
                     {
                         str2 = str1;
                         str1 = XkbcModMaskText(mod.uval, True);
                     }
-                    ACTION2("Using %s, ignoring %s\n", str1, str2);
+                    ACTION("Using %s, ignoring %s\n", str1, str2);
                     if (mergeMode == MergeOverride)
                         srv->vmods[i] = mod.uval;
                     return True;
@@ -131,7 +131,7 @@ HandleVModDef(VModDef * stmt, unsigned mergeMode, VModInfo * info)
     }
     if (nextFree < 0)
     {
-        ERROR1("Too many virtual modifiers defined (maximum %d)\n",
+        ERROR("Too many virtual modifiers defined (maximum %d)\n",
                XkbNumVirtualMods);
         ACTION("Exiting\n");
         return False;
@@ -147,7 +147,7 @@ HandleVModDef(VModDef * stmt, unsigned mergeMode, VModInfo * info)
         srv->vmods[nextFree] = mod.uval;
         return True;
     }
-    ACTION1("Declaration of %s ignored\n",
+    ACTION("Declaration of %s ignored\n",
             XkbcAtomText(stmt->name));
     return False;
 }
@@ -262,7 +262,7 @@ ResolveVirtualModifier(ExprDef * def, ExprResult * val_rtrn, VModInfo * info)
     {
         if (val_rtrn->uval < XkbNumVirtualMods)
             return True;
-        ERROR2("Illegal virtual modifier %d (must be 0..%d inclusive)\n",
+        ERROR("Illegal virtual modifier %d (must be 0..%d inclusive)\n",
                val_rtrn->uval, XkbNumVirtualMods - 1);
     }
     return False;
