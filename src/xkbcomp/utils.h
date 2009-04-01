@@ -72,21 +72,20 @@ typedef int Comparison;
 
 /***====================================================================***/
 
-extern Opaque uAlloc(unsigned   /* size */
-    );
-extern Opaque uCalloc(unsigned /* n */ ,
-                      unsigned  /* size */
-    );
-extern Opaque uRealloc(Opaque /* old */ ,
-                       unsigned /* newSize */
-    );
-extern Opaque uRecalloc(Opaque /* old */ ,
-                        unsigned /* nOld */ ,
-                        unsigned /* nNew */ ,
-                        unsigned        /* newSize */
-    );
-extern void uFree(Opaque        /* ptr */
-    );
+extern Opaque
+uAlloc(unsigned size);
+
+extern Opaque
+uCalloc(unsigned n, unsigned  size);
+
+extern Opaque
+uRealloc(Opaque old, unsigned newSize);
+
+extern Opaque
+uRecalloc(Opaque old, unsigned nOld, unsigned nNew, unsigned newSize);
+
+extern void
+uFree(Opaque ptr);
 
 #define	uTypedAlloc(t)		((t *)uAlloc((unsigned)sizeof(t)))
 #define	uTypedCalloc(n,t)	((t *)uCalloc((unsigned)n,(unsigned)sizeof(t)))
@@ -102,81 +101,58 @@ extern void uFree(Opaque        /* ptr */
 
 /***====================================================================***/
 
-extern Boolean uSetErrorFile(char *     /* name */
-    );
+extern Boolean
+uSetErrorFile(char *name);
+
+#if defined(__GNUC__) && \
+    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
+#define __ATTR_PRINTF(i, f) __attribute__ ((format(printf, (i), (f))))
+#else
+#define __ATTR_PRINTF(i, f)
+#endif
 
 #define INFO 			uInformation
 
-extern void
-uInformation(const char * /* s */ , ...
-    )
-#if defined(__GNUC__) && \
-    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
-    __attribute__ ((format(printf, 1, 2)))
-#endif
-    ;
+extern __ATTR_PRINTF(1, 2) void
+uInformation(const char *s, ...);
 
 #define ACTION			uAction
 
-     extern void uAction(const char * /* s  */ , ...
-    )
-#if defined(__GNUC__) && \
-    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
-    __attribute__ ((format(printf, 1, 2)))
-#endif
-    ;
+extern __ATTR_PRINTF(1, 2) void
+uAction(const char *s, ...);
 
 #define WARN			uWarning
 
-     extern void uWarning(const char * /* s  */ , ...
-    )
-#if defined(__GNUC__) && \
-    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
-    __attribute__ ((format(printf, 1, 2)))
-#endif
-    ;
+extern __ATTR_PRINTF(1, 2) void
+uWarning(const char *s, ...);
 
 #define ERROR			uError
 
-     extern void uError(const char * /* s  */ , ...
-    )
-#if defined(__GNUC__) && \
-    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
-    __attribute__ ((format(printf, 1, 2)))
-#endif
-    ;
+extern __ATTR_PRINTF(1, 2) void
+uError(const char *s, ...);
 
 #define FATAL			uFatalError
 
-     extern void uFatalError(const char * /* s  */ , ...
-    )
-#if defined(__GNUC__) && \
-    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
-    __attribute__ ((format(printf, 1, 2)))
-#endif
-    ;
+extern __ATTR_PRINTF(1, 2) void
+uFatalError(const char *s, ...);
 
 /* WSGO stands for "Weird Stuff Going On" (wtf???) */
 #define WSGO			uInternalError
 
-     extern void uInternalError(const char * /* s  */ , ...
-    )
-#if defined(__GNUC__) && \
-    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
-    __attribute__ ((format(printf, 1, 2)))
-#endif
-    ;
+extern __ATTR_PRINTF(1, 2) void
+uInternalError(const char *s, ...);
 
-     extern void uSetPreErrorMessage(char *     /* msg */
-    );
+extern void
+uSetPreErrorMessage(char *msg);
 
-     extern void uSetPostErrorMessage(char *    /* msg */
-    );
+extern void
+uSetPostErrorMessage(char *msg);
 
-     extern void uSetErrorPrefix(char * /* void */
-    );
+extern void
+uSetErrorPrefix(char *pre);
 
-     extern void uFinishUp(void);
+extern void
+uFinishUp(void);
 
 
 /***====================================================================***/
@@ -193,18 +169,16 @@ uInformation(const char * /* s */ , ...
 #define	uStrCaseCmp(s1,s2)	(strcasecmp(s1,s2))
 #define	uStrCasePrefix(p,s)	(strncasecmp(p,s,strlen(p))==0)
 #else
-     extern int uStrCaseCmp(const char * /* s1 */ ,
-                            const char *        /* s2 */
-    );
-     extern int uStrCasePrefix(const char * /* p */ ,
-                               char *   /* str */
-    );
+extern int
+uStrCaseCmp(const char *s1, const char *s2);
+extern int
+uStrCasePrefix(const char *p, char *str);
 #endif
 #ifdef HAVE_STRDUP
 #define	uStringDup(s1)		(strdup(s1))
 #else
-     extern char *uStringDup(const char *       /* s1 */
-    );
+extern char *
+uStringDup(const char *s);
 #endif
 
 /***====================================================================***/
@@ -222,31 +196,21 @@ uInformation(const char * /* s */ , ...
 #define	DEBUG_VAR	debugFlags
 #endif
 
-extern
-     unsigned int DEBUG_VAR;
+extern unsigned int DEBUG_VAR;
 
-     extern void uDebug(char * /* s  */ , ...
-    )
-#if defined(__GNUC__) && \
-    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
-    __attribute__ ((format(printf, 1, 2)))
-#endif
-    ;
+extern __ATTR_PRINTF(1, 2) void
+uDebug(char *s, ...);
 
-     extern void uDebugNOI(     /* no indent */
-                              char * /* s  */ , ...
-    )
-#if defined(__GNUC__) && \
-    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
-    __attribute__ ((format(printf, 1, 2)))
-#endif
-    ;
+extern __ATTR_PRINTF(1, 2) void
+uDebugNOI(char *s, ...);
 
-     extern Boolean uSetDebugFile(char *name);
+extern Boolean
+uSetDebugFile(char *name);
 
-     extern FILE *uDebugFile;
-     extern int uDebugIndentLevel;
-     extern int uDebugIndentSize;
+extern FILE *uDebugFile;
+extern int uDebugIndentLevel;
+extern int uDebugIndentSize;
+
 #define	uDebugIndent(l)		(uDebugIndentLevel+=(l))
 #define	uDebugOutdent(l)	(uDebugIndentLevel-=(l))
 #ifdef DEBUG_ON
@@ -277,24 +241,22 @@ extern
 #define	uDEBUG_NOI5(f,s,a,b,c,d,e)
 #endif
 
-     extern Boolean uSetEntryFile(char *name);
-     extern void uEntry(int /* l */ ,
-                        char * /* s  */ , ...
-    )
-#if defined(__GNUC__) && \
-    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
-    __attribute__ ((format(printf, 2, 3)))
-#endif
-    ;
+extern Boolean
+uSetEntryFile(char *name);
 
-     extern void uExit(int l, char *rtVal);
+extern __ATTR_PRINTF(2, 3) void
+uEntry(int l, char *s, ...);
+
+extern void
+uExit(int l, char *rtVal);
+
 #ifdef ENTRY_TRACKING_ON
 #define	ENTRY_BIT	0x10
 #define	LOW_ENTRY_BIT	0x1000
 #define	ENTER	(DEBUG_VAR&ENTRY_BIT)
 #define	FLAG(fLag)	(DEBUG_VAR&(fLag))
 
-     extern int uEntryLevel;
+extern int uEntryLevel;
 
 #define	uENTRY(s)			{ if (ENTER) uEntry(1,s);}
 #define	uENTRY1(s,a)			{ if (ENTER) uEntry(1,s,a);}
@@ -340,6 +302,5 @@ extern
 #define	uFLAG_RETURN(v)			{ return(v);}
 #define	uFLAG_VOIDRETURN		{ return; }
 #endif
-
 
 #endif /* UTILS_H */
