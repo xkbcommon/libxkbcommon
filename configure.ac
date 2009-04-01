@@ -91,6 +91,7 @@ XORG_CHANGELOG
 
 AC_OUTPUT([
 Makefile
+xkbcommon.pc
 include/Makefile
 src/Makefile
 src/makekeys/Makefile

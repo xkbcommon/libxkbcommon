@@ -1,5 +1,8 @@
 SUBDIRS = include src test
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = xkbcommon.pc
+
 EXTRA_DIST = ChangeLog
 
 MAINTAINERCLEANFILES = ChangeLog

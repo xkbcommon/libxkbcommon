@@ -17,6 +17,7 @@ libtool
 ltmain.sh
 missing
 stamp-h1
+xkbcommon.pc
 ylwrap
 .deps/
 .libs/
