@@ -32,7 +32,6 @@ authorization from the authors.
 #include <X11/X.h>
 #include <X11/Xdefs.h>
 #include <X11/Xfuncproto.h>
-#include <X11/keysym.h>
 #include <X11/extensions/XKBstrcommon.h>
 #include <X11/extensions/XKBgeomcommon.h>
 #include <X11/extensions/XKBrulescommon.h>
@@ -376,7 +375,7 @@ extern void
 XkbcEnsureSafeMapName(char *name);
 
 extern unsigned
-_XkbcKSCheckCase(KeySym  sym);
+_XkbcKSCheckCase(KeySym sym);
 
 _XFUNCPROTOEND
 

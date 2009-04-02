@@ -30,6 +30,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "X11/extensions/XKBcommon.h"
 #include "XKBcommonint.h"
+#include <X11/keysym.h>
 
 #define mapSize(m) (sizeof(m) / sizeof(XkbKTMapEntryRec))
 static XkbKTMapEntryRec map2Level[]= {
