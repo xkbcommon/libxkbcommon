@@ -72,7 +72,8 @@ XkbKeymapFileFromComponents(const XkbComponentNamesPtr ktcsg)
     geometry = CreateXKBFile(XkmGeometryIndex, NULL, (ParseCommon *)inc, 0);
     AppendStmt(&keycodes->common, &geometry->common);
 
-    return CreateXKBFile(XkmKeymapFile, ktcsg->keymap, &keycodes->common, 0);
+    return CreateXKBFile(XkmKeymapFile, ktcsg->keymap ? ktcsg->keymap : "",
+                         &keycodes->common, 0);
 }
 
 static XkbComponentNamesPtr
