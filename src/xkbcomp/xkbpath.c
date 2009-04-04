@@ -39,12 +39,16 @@
 #define	PATH_MAX 1024
 #endif
 
-#define	PATH_CHUNK	8       /* initial szPath */
+/* initial szPath */
+#define	PATH_CHUNK	8
 
 static Bool noDefaultPath = False;
-static int szPath;         /* number of entries allocated for includePath */
-static int nPathEntries;   /* number of actual entries in includePath */
-static char **includePath; /* Holds all directories we might be including data from */
+/* number of entries allocated for includePath */
+static int szPath;
+/* number of actual entries in includePath */
+static int nPathEntries;
+/* Holds all directories we might be including data from */
+static char **includePath = NULL;
 
 /**
  * Extract the first token from an include statement.
@@ -159,16 +163,23 @@ XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
 Bool
 XkbInitIncludePath(void)
 {
+    if (includePath)
+        return True;
+
     szPath = PATH_CHUNK;
     includePath = (char **) calloc(szPath, sizeof(char *));
-    if (includePath == NULL)
+    if (!includePath)
         return False;
+
+    XkbAddDefaultDirectoriesToPath();
     return True;
 }
 
 void
 XkbAddDefaultDirectoriesToPath(void)
 {
+    if (!XkbInitIncludePath())
+        return;
     if (noDefaultPath)
         return;
     XkbAddDirectoryToPath(DFLT_XKB_CONFIG_ROOT);
@@ -206,6 +217,10 @@ Bool
 XkbAddDirectoryToPath(const char *dir)
 {
     int len;
+
+    if (!XkbInitIncludePath())
+        return False;
+
     if ((dir == NULL) || (dir[0] == '\0'))
     {
         XkbClearIncludePath();
@@ -385,6 +400,9 @@ XkbFindFileInPath(char *name, unsigned type, char **pathRtrn)
     FILE *file = NULL;
     int nameLen, typeLen, pathLen;
     char buf[PATH_MAX], *typeDir;
+
+    if (!XkbInitIncludePath())
+        return NULL;
 
     typeDir = XkbDirectoryForInclude(type);
     nameLen = strlen(name);
