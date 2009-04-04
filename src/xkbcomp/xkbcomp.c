@@ -77,17 +77,17 @@ XkbComponentsFromRules(const char *rulesPath, const XkbRF_VarDefsPtr defs)
     XkbComponentNamesPtr names = NULL;
 
     if (!(rules = XkbcRF_Load((char *)rulesPath, NULL, False, True))) {
-        ERROR("Failed to load XKB rules \"%s\"\n", rulesPath);
+        ERROR("failed to load XKB rules \"%s\"\n", rulesPath);
         goto fail;
     }
 
     if (!(names = _XkbTypedCalloc(1, XkbComponentNamesRec))) {
-        ERROR("Failed to allocate XKB components\n");
+        ERROR("failed to allocate XKB components\n");
         goto unwind_rules;
     }
 
     if (!XkbcRF_GetComponents(rules, defs, names))
-        ERROR("No components returned from XKB rules \"%s\"\n", rulesPath);
+        ERROR("no components returned from XKB rules \"%s\"\n", rulesPath);
 
 unwind_rules:
     XkbcRF_Free(rules, True);
@@ -104,7 +104,7 @@ XkbcCompileKeymapFromRules(const char *rules, XkbRF_VarDefsPtr defs)
     XkbcDescPtr xkb;
 
     if (!rules || strlen(rules) == 0) {
-        ERROR("No rules supplied\n");
+        ERROR("no rules supplied for generating XKB keymap\n");
         return NULL;
     }
 
@@ -117,7 +117,7 @@ XkbcCompileKeymapFromRules(const char *rules, XkbRF_VarDefsPtr defs)
 
     names = XkbComponentsFromRules(rulesPath, defs);
     if (!names) {
-        ERROR("Failed to generate XKB components from rules \"%s\"\n",
+        ERROR("failed to generate XKB components from rules \"%s\"\n",
               rules);
         return NULL;
     }
@@ -142,7 +142,7 @@ XkbcCompileKeymapFromComponents(XkbComponentNamesPtr ktcsg)
     XkbcDescPtr xkb;
 
     if (!XkbFileFromComponents(ktcsg, &file)) {
-        ERROR("failed to generate parsed XKB file from components");
+        ERROR("failed to generate parsed XKB file from components\n");
         goto fail;
     }
 
@@ -155,18 +155,18 @@ XkbcCompileKeymapFromComponents(XkbComponentNamesPtr ktcsg)
         }
         if (!mapToUse) {
             mapToUse = file;
-            WARN("no map specified, but components have several");
+            WARN("no map specified, but components have several\n");
         }
     }
 
     /* Compile the keyboard */
     if (!(xkb = XkbcAllocKeyboard())) {
-        ERROR("Could not allocate keyboard description");
+        ERROR("could not allocate keyboard description\n");
         goto unwind_file;
     }
 
     if (!CompileKeymap(mapToUse, xkb, MergeReplace)) {
-        ERROR("Failed to compile keymap");
+        ERROR("failed to compile keymap\n");
         goto unwind_xkb;
     }
 
