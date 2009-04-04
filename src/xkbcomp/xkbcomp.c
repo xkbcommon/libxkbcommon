@@ -86,8 +86,17 @@ XkbComponentsFromRules(const char *rulesPath, const XkbRF_VarDefsPtr defs)
         goto unwind_rules;
     }
 
-    if (!XkbcRF_GetComponents(rules, defs, names))
+    if (!XkbcRF_GetComponents(rules, defs, names)) {
+        _XkbFree(names->keymap);
+        _XkbFree(names->keycodes);
+        _XkbFree(names->types);
+        _XkbFree(names->compat);
+        _XkbFree(names->symbols);
+        _XkbFree(names->geometry);
+        _XkbFree(names);
+        names = NULL;
         ERROR("no components returned from XKB rules \"%s\"\n", rulesPath);
+    }
 
 unwind_rules:
     XkbcRF_Free(rules, True);
