@@ -36,6 +36,10 @@ authorization from the authors.
 #define DFLT_XKB_CONFIG_ROOT "/usr/share/X11/xkb"
 #endif
 
+/* Global debugging flags */
+unsigned int debugFlags = 0;
+unsigned int warningLevel = 0;
+
 static int
 XkbFileFromComponents(const XkbComponentNamesPtr ktcsg, XkbFile **file)
 {
