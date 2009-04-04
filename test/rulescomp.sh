@@ -3,18 +3,20 @@
 srcdir=${srcdir-.}
 builddir=${builddir-.}
 
-log="$builddir/rulescomp.log"
+name=rulescomp
+prog="$builddir/$name$EXEEXT"
+log="$builddir/$name.log"
 
 compile()
 {
-    echo "${builddir}/rulescomp '$1' '$2' '$3' '$4' '$5'" >>"$log"
-    ${builddir}/rulescomp "$1" "$2" "$3" "$4" "$5" >>"$log" 2>&1 || exit $?
+    echo "$prog '$1' '$2' '$3' '$4' '$5'" >>"$log"
+    $prog "$1" "$2" "$3" "$4" "$5" >>"$log" 2>&1 || exit $?
 }
 
 failcompile()
 {
-    echo "${builddir}/rulescomp '$1' '$2' '$3' '$4' '$5'" >>"$log"
-    if ${builddir}/rulescomp "$1" "$2" "$3" "$4" "$5" >>"$log" 2>&1; then
+    echo "$prog '$1' '$2' '$3' '$4' '$5'" >>"$log"
+    if $prog "$1" "$2" "$3" "$4" "$5" >>"$log" 2>&1; then
         exit 1
     fi
 }

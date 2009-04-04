@@ -3,7 +3,9 @@
 srcdir=${srcdir-.}
 builddir=${builddir-.}
 
-log="$builddir/xkey.log"
+name=xkey
+prog="$builddir/$name$EXEEXT"
+log="$builddir/$name.log"
 
 check_error()
 {
@@ -17,8 +19,8 @@ check_error()
 
 check_string()
 {
-    echo "${builddir}/xkey -s '$1'" >>"$log"
-    val=`${builddir}/xkey -s "$1"` &&
+    echo "$prog -s '$1'" >>"$log"
+    val=`$prog -s "$1"` &&
         echo "$val" >>"$log" &&
         check_error "$1" "$2" "$val" >>"$log" 2>&1 ||
         exit $?
@@ -26,8 +28,8 @@ check_string()
 
 check_key()
 {
-    echo "${builddir}/xkey -k '$1'" >>"$log"
-    val=`${builddir}/xkey -k "$1"` && \
+    echo "$prog -k '$1'" >>"$log"
+    val=`$prog -k "$1"` && \
         echo "$val" >>"$log" &&
         check_error "$1" "$2" "$val" >>"$log" 2>&1 || \
         exit $?
