@@ -117,7 +117,7 @@ XkbcCompileKeymapFromRules(const char *rules, XkbRF_VarDefsPtr defs)
     XkbComponentNamesPtr names;
     XkbcDescPtr xkb;
 
-    if (ISEMPTY(rules) || ISEMPTY(defs->layout)) {
+    if (ISEMPTY(rules) || !defs || ISEMPTY(defs->layout)) {
         ERROR("rules and layout required to generate XKB keymap\n");
         return NULL;
     }
