@@ -6,6 +6,9 @@ TESTS_ENVIRONMENT = $(SHELL)
 check_PROGRAMS = xkey rulescomp
 TESTS = xkey.sh rulescomp.sh
 
+clean-local:
+	rm -f *.log
+
 xkey_SOURCES = xkey.c
 xkey_LDADD = $(top_builddir)/src/libxkbcommon.la
 
