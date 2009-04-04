@@ -40,6 +40,8 @@ authorization from the authors.
 unsigned int debugFlags = 0;
 unsigned int warningLevel = 0;
 
+#define ISEMPTY(str) (!(str) || (strlen(str) == 0))
+
 static int
 XkbFileFromComponents(const XkbComponentNamesPtr ktcsg, XkbFile **file)
 {
@@ -112,8 +114,8 @@ XkbcCompileKeymapFromRules(const char *rules, XkbRF_VarDefsPtr defs)
     XkbComponentNamesPtr names;
     XkbcDescPtr xkb;
 
-    if (!rules || strlen(rules) == 0) {
-        ERROR("no rules supplied for generating XKB keymap\n");
+    if (ISEMPTY(rules) || ISEMPTY(defs->layout)) {
+        ERROR("rules and layout required to generate XKB keymap\n");
         return NULL;
     }
 
