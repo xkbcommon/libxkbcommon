@@ -29,11 +29,9 @@ authorization from the authors.
 #include "X11/extensions/XKBcommon.h"
 #include <X11/extensions/XKBstrcommon.h>
 #include "../src/xkbcomp/utils.h"
-#include "../src/xkbcomp/xkbpath.h"
 
 int main(int argc, char *argv[])
 {
-    int i;
     char *rules = NULL;
     XkbRF_VarDefsRec defs;
     XkbcDescPtr xkb;
@@ -53,8 +51,6 @@ int main(int argc, char *argv[])
     defs.options = argv[5];
 
     uSetErrorFile(NULL);
-    XkbInitIncludePath();
-    XkbAddDefaultDirectoriesToPath();
     XkbcInitAtoms();
 
     xkb = XkbcCompileKeymapFromRules(rules, &defs);
