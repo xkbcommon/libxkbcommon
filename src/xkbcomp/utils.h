@@ -175,7 +175,7 @@ extern int
 uStrCasePrefix(const char *p, char *str);
 #endif
 #ifdef HAVE_STRDUP
-#define	uStringDup(s1)		(strdup(s1))
+#define	uStringDup(s1)		((s1) ? strdup(s1) : NULL)
 #else
 extern char *
 uStringDup(const char *s);
