@@ -155,6 +155,11 @@ XkbcCompileKeymapFromComponents(XkbComponentNamesPtr ktcsg)
     XkbFile *file, *mapToUse;
     XkbcDescPtr xkb;
 
+    if (!ktcsg || ISEMPTY(ktcsg->keycodes)) {
+        ERROR("keycodes required to generate XKB keymap\n");
+        goto fail;
+    }
+
     if (!(file = XkbKeymapFileFromComponents(ktcsg))) {
         ERROR("failed to generate parsed XKB file from components\n");
         goto fail;
