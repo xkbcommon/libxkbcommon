@@ -823,7 +823,6 @@ CompileCompatMap(XkbFile *file, XkbcDescPtr xkb, unsigned merge,
             Success)
         {
             WSGO("Couldn't allocate compatibility map\n");
-            ACTION("Exiting\n");
             return False;
         }
         if (info.name != NULL)

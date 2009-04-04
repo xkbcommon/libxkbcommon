@@ -1233,7 +1233,6 @@ CompileKeyTypes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
         if (XkbcAllocClientMap(xkb, XkbKeyTypesMask, i) != Success)
         {
             WSGO("Couldn't allocate client map\n");
-            ACTION("Exiting\n");
             return False;
         }
         xkb->map->num_types = i;
@@ -1246,7 +1245,6 @@ CompileKeyTypes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
             if (XkbcInitCanonicalKeyTypes(xkb, missing, keypadVMod) != Success)
             {
                 WSGO("Couldn't initialize canonical key types\n");
-                ACTION("Exiting\n");
                 return False;
             }
             if (missing & XkbOneLevelMask)

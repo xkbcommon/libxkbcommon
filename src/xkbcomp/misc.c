@@ -68,7 +68,6 @@ ProcessIncludeFile(IncludeStmt * stmt,
         {
             ERROR("Can't find file \"%s\" for %s include\n", stmt->file,
                    XkbDirectoryForInclude(file_type));
-            ACTION("Exiting\n");
             return False;
         }
         strcpy(oldFile, scanFile);
@@ -81,7 +80,6 @@ ProcessIncludeFile(IncludeStmt * stmt,
         {
             setScanState(oldFile, oldLine);
             ERROR("Error interpreting include file \"%s\"\n", stmt->file);
-            ACTION("Exiting\n");
             fclose(file);
             return False;
         }
@@ -100,7 +98,6 @@ ProcessIncludeFile(IncludeStmt * stmt,
         {
             ERROR("No %s named \"%s\" in the include file \"%s\"\n",
                    XkbcConfigText(file_type), stmt->map, stmt->file);
-            ACTION("Exiting\n");
             return False;
         }
     }

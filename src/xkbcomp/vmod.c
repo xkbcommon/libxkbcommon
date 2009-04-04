@@ -133,7 +133,6 @@ HandleVModDef(VModDef * stmt, unsigned mergeMode, VModInfo * info)
     {
         ERROR("Too many virtual modifiers defined (maximum %d)\n",
                XkbNumVirtualMods);
-        ACTION("Exiting\n");
         return False;
     }
     info->defined |= (1 << nextFree);
