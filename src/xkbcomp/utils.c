@@ -120,6 +120,9 @@ uEntry(int l, char *s, ...)
     int i;
     va_list args;
 
+    if (!entryFile)
+        return;
+
     for (i = 0; i < uEntryLevel; i++)
     {
         putc(' ', entryFile);
@@ -134,6 +137,9 @@ void
 uExit(int l, char *rtVal)
 {
     int i;
+
+    if (!entryFile)
+        return;
 
     uEntryLevel -= l;
     if (uEntryLevel < 0)
@@ -180,6 +186,9 @@ uDebug(char *s, ...)
     int i;
     va_list args;
 
+    if (!uDebugFile)
+        return;
+
     for (i = (uDebugIndentLevel * uDebugIndentSize); i > 0; i--)
     {
         putc(' ', uDebugFile);
@@ -194,6 +203,9 @@ void
 uDebugNOI(char *s, ...)
 {
     va_list args;
+
+    if (!uDebugFile)
+        return;
 
     va_start(args, s);
     vfprintf(uDebugFile, s, args);
@@ -234,6 +246,9 @@ uInformation(const char *s, ...)
 {
     va_list args;
 
+    if (!errorFile)
+        return;
+
     va_start(args, s);
     vfprintf(errorFile, s, args);
     va_end(args);
@@ -246,6 +261,9 @@ void
 uAction(const char *s, ...)
 {
     va_list args;
+
+    if (!errorFile)
+        return;
 
     if (prefix != NULL)
         fprintf(errorFile, "%s", prefix);
@@ -262,6 +280,9 @@ void
 uWarning(const char *s, ...)
 {
     va_list args;
+
+    if (!errorFile)
+        return;
 
     if ((outCount == 0) && (preMsg != NULL))
         fprintf(errorFile, "%s\n", preMsg);
@@ -282,6 +303,9 @@ uError(const char *s, ...)
 {
     va_list args;
 
+    if (!errorFile)
+        return;
+
     if ((outCount == 0) && (preMsg != NULL))
         fprintf(errorFile, "%s\n", preMsg);
     if (prefix != NULL)
@@ -300,6 +324,9 @@ void
 uFatalError(const char *s, ...)
 {
     va_list args;
+
+    if (!errorFile)
+        return;
 
     if ((outCount == 0) && (preMsg != NULL))
         fprintf(errorFile, "%s\n", preMsg);
@@ -322,6 +349,9 @@ void
 uInternalError(const char *s, ...)
 {
     va_list args;
+
+    if (!errorFile)
+        return;
 
     if ((outCount == 0) && (preMsg != NULL))
         fprintf(errorFile, "%s\n", preMsg);
@@ -360,7 +390,7 @@ uSetErrorPrefix(char *pre)
 void
 uFinishUp(void)
 {
-    if ((outCount > 0) && (postMsg != NULL))
+    if (errorFile && (outCount > 0) && (postMsg != NULL))
         fprintf(errorFile, "%s\n", postMsg);
     return;
 }
