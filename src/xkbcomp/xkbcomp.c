@@ -103,8 +103,10 @@ XkbcCompileKeymapFromRules(const char *rules, XkbRF_VarDefsPtr defs)
     XkbComponentNamesPtr names;
     XkbcDescPtr xkb;
 
-    if (!rules)
+    if (!rules || strlen(rules) == 0) {
+        ERROR("No rules supplied\n");
         return NULL;
+    }
 
     pathlen = snprintf(rulesPath, sizeof(rulesPath),
                        DFLT_XKB_CONFIG_ROOT "/rules/%s", rules);
