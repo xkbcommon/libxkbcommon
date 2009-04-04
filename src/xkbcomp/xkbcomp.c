@@ -42,11 +42,16 @@ unsigned int warningLevel = 0;
 
 #define ISEMPTY(str) (!(str) || (strlen(str) == 0))
 
-static int
-XkbFileFromComponents(const XkbComponentNamesPtr ktcsg, XkbFile **file)
+static XkbFile *
+XkbKeymapFileFromComponents(const XkbComponentNamesPtr ktcsg)
 {
     XkbFile *keycodes, *types, *compat, *symbols, *geometry;
     IncludeStmt *inc;
+
+    if (!ktcsg) {
+        ERROR("no components to generate keymap file from\n");
+        return NULL;
+    }
 
     inc = IncludeCreate(ktcsg->keycodes, MergeDefault);
     keycodes = CreateXKBFile(XkmKeyNamesIndex, NULL, (ParseCommon *)inc, 0);
@@ -67,9 +72,7 @@ XkbFileFromComponents(const XkbComponentNamesPtr ktcsg, XkbFile **file)
     geometry = CreateXKBFile(XkmGeometryIndex, NULL, (ParseCommon *)inc, 0);
     AppendStmt(&keycodes->common, &geometry->common);
 
-    *file = CreateXKBFile(XkmKeymapFile, ktcsg->keymap, &keycodes->common, 0);
-
-    return 1;
+    return CreateXKBFile(XkmKeymapFile, ktcsg->keymap, &keycodes->common, 0);
 }
 
 static XkbComponentNamesPtr
@@ -152,7 +155,7 @@ XkbcCompileKeymapFromComponents(XkbComponentNamesPtr ktcsg)
     XkbFile *file, *mapToUse;
     XkbcDescPtr xkb;
 
-    if (!XkbFileFromComponents(ktcsg, &file)) {
+    if (!(file = XkbKeymapFileFromComponents(ktcsg))) {
         ERROR("failed to generate parsed XKB file from components\n");
         goto fail;
     }
