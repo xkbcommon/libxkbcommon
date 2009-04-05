@@ -125,13 +125,13 @@ int
 XkbcAllocServerMap(XkbcDescPtr xkb, unsigned which, unsigned nNewActions)
 {
     int i;
-    XkbServerMapPtr map;
+    XkbcServerMapPtr map;
 
     if (!xkb)
         return BadMatch;
 
     if (!xkb->server) {
-        map = _XkbTypedCalloc(1, XkbServerMapRec);
+        map = _XkbTypedCalloc(1, XkbcServerMapRec);
         if (!map)
             return BadAlloc;
 
@@ -167,7 +167,7 @@ XkbcAllocServerMap(XkbcDescPtr xkb, unsigned which, unsigned nNewActions)
             nNewActions = 1;
 
         if (!map->acts) {
-            map->acts = _XkbTypedCalloc(nNewActions + 1, XkbAction);
+            map->acts = _XkbTypedCalloc(nNewActions + 1, XkbcAction);
             if (!map->acts)
                 return BadAlloc;
             map->num_acts = 1;
@@ -175,10 +175,10 @@ XkbcAllocServerMap(XkbcDescPtr xkb, unsigned which, unsigned nNewActions)
         }
         else if ((map->size_acts - map->num_acts) < nNewActions) {
             unsigned need;
-            XkbAction *prev_acts = map->acts;
+            XkbcAction *prev_acts = map->acts;
 
             need = map->num_acts + nNewActions;
-            map->acts = _XkbTypedRealloc(map->acts, need, XkbAction);
+            map->acts = _XkbTypedRealloc(map->acts, need, XkbcAction);
             if (!map->acts) {
                 _XkbFree(prev_acts);
                 map->num_acts = map->size_acts = 0;
@@ -187,7 +187,7 @@ XkbcAllocServerMap(XkbcDescPtr xkb, unsigned which, unsigned nNewActions)
 
             map->size_acts = need;
             bzero(&map->acts[map->num_acts],
-                  (map->size_acts - map->num_acts) * sizeof(XkbAction));
+                  (map->size_acts - map->num_acts) * sizeof(XkbcAction));
         }
 
         if (!map->key_acts) {
@@ -814,11 +814,11 @@ XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
     return Success;
 }
 
-XkbAction *
+XkbcAction *
 XkbcResizeKeyActions(XkbcDescPtr xkb, int key, int needed)
 {
     int i, nActs;
-    XkbAction *newActs;
+    XkbcAction *newActs;
 
     if (needed == 0) {
         xkb->server->key_acts[key] = 0;
@@ -829,7 +829,7 @@ XkbcResizeKeyActions(XkbcDescPtr xkb, int key, int needed)
         (XkbKeyNumSyms(xkb, key) >= (unsigned)needed))
         return XkbKeyActionsPtr(xkb, key);
 
-    if (xkb->server->size_acts-xkb->server->num_acts >= (unsigned)needed) {
+    if (xkb->server->size_acts - xkb->server->num_acts >= (unsigned)needed) {
         xkb->server->key_acts[key] = xkb->server->num_acts;
         xkb->server->num_acts += needed;
 
@@ -837,7 +837,7 @@ XkbcResizeKeyActions(XkbcDescPtr xkb, int key, int needed)
     }
 
     xkb->server->size_acts = xkb->server->num_acts + needed + 8;
-    newActs = _XkbTypedCalloc(xkb->server->size_acts, XkbAction);
+    newActs = _XkbTypedCalloc(xkb->server->size_acts, XkbcAction);
     if (!newActs)
         return NULL;
     newActs[0].type = XkbSA_NoAction;
@@ -858,10 +858,10 @@ XkbcResizeKeyActions(XkbcDescPtr xkb, int key, int needed)
 
         if (nCopy > 0)
             memcpy(&newActs[nActs], XkbKeyActionsPtr(xkb, i),
-                   nCopy * sizeof(XkbAction));
+                   nCopy * sizeof(XkbcAction));
         if (nCopy < nKeyActs)
-            bzero(&newActs[nActs+nCopy],
-                  (nKeyActs - nCopy) * sizeof(XkbAction));
+            bzero(&newActs[nActs + nCopy],
+                  (nKeyActs - nCopy) * sizeof(XkbcAction));
 
         xkb->server->key_acts[i] = nActs;
         nActs += nKeyActs;
@@ -940,7 +940,7 @@ XkbcFreeClientMap(XkbcDescPtr xkb, unsigned what, Bool freeMap)
 void
 XkbcFreeServerMap(XkbcDescPtr xkb, unsigned what, Bool freeMap)
 {
-    XkbServerMapPtr map;
+    XkbcServerMapPtr map;
 
     if (!xkb || !xkb->server)
         return;

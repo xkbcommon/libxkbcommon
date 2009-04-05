@@ -394,11 +394,11 @@ HandleSetLatchMods(XkbcDescPtr xkb,
                    XkbAnyAction * action,
                    unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
-    XkbModAction *act;
+    XkbcModAction *act;
     unsigned rtrn;
     unsigned t1, t2;
 
-    act = (XkbModAction *) action;
+    act = (XkbcModAction *) action;
     if (array_ndx != NULL)
     {
         switch (field)
@@ -426,8 +426,7 @@ HandleSetLatchMods(XkbcDescPtr xkb,
         {
             act->flags = t1;
             act->real_mods = act->mask = (t2 & 0xff);
-            t2 = (t2 >> 8) & 0xffff;
-            XkbSetModActionVMods(act, t2);
+            act->vmods = (t2 >> 8) & 0xffff;
             return True;
         }
         return False;
@@ -440,10 +439,10 @@ HandleLockMods(XkbcDescPtr xkb,
                XkbAnyAction * action,
                unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
-    XkbModAction *act;
+    XkbcModAction *act;
     unsigned t1, t2;
 
-    act = (XkbModAction *) action;
+    act = (XkbcModAction *) action;
     if ((array_ndx != NULL) && (field == F_Modifiers))
         return ReportActionNotArray(action->type, field);
     switch (field)
@@ -454,8 +453,7 @@ HandleLockMods(XkbcDescPtr xkb,
         {
             act->flags = t1;
             act->real_mods = act->mask = (t2 & 0xff);
-            t2 = (t2 >> 8) & 0xffff;
-            XkbSetModActionVMods(act, t2);
+            act->vmods = (t2 >> 8) & 0xffff;
             return True;
         }
         return False;
@@ -588,10 +586,10 @@ HandleMovePtr(XkbcDescPtr xkb,
               unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
-    XkbPtrAction *act;
+    XkbcPtrAction *act;
     Bool absolute;
 
-    act = (XkbPtrAction *) action;
+    act = (XkbcPtrAction *) action;
     if ((array_ndx != NULL) && ((field == F_X) || (field == F_Y)))
         return ReportActionNotArray(action->type, field);
 
@@ -607,13 +605,13 @@ HandleMovePtr(XkbcDescPtr xkb,
         {
             if (absolute)
                 act->flags |= XkbSA_MoveAbsoluteX;
-            XkbSetPtrActionX(act, rtrn.ival);
+            act->x = rtrn.ival;
         }
         else
         {
             if (absolute)
                 act->flags |= XkbSA_MoveAbsoluteY;
-            XkbSetPtrActionY(act, rtrn.ival);
+            act->y = rtrn.ival;
         }
         return True;
     }
@@ -788,11 +786,11 @@ HandleISOLock(XkbcDescPtr xkb,
               unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
-    XkbISOAction *act;
+    XkbcISOAction *act;
     unsigned flags, mods;
     int group;
 
-    act = (XkbISOAction *) action;
+    act = (XkbcISOAction *) action;
     switch (field)
     {
     case F_Modifiers:
@@ -803,8 +801,7 @@ HandleISOLock(XkbcDescPtr xkb,
         {
             act->flags = flags & (~XkbSA_ISODfltIsGroup);
             act->real_mods = mods & 0xff;
-            mods = (mods >> 8) & 0xff;
-            XkbSetModActionVMods(act, mods);
+            act->vmods = (mods >> 8) & 0xff;
             return True;
         }
         return False;
@@ -928,9 +925,9 @@ HandleSetLockControls(XkbcDescPtr xkb,
                       unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
-    XkbCtrlsAction *act;
+    XkbcCtrlsAction *act;
 
-    act = (XkbCtrlsAction *) action;
+    act = (XkbcCtrlsAction *) action;
     if (field == F_Controls)
     {
         if (array_ndx != NULL)
@@ -938,7 +935,7 @@ HandleSetLockControls(XkbcDescPtr xkb,
         if (!ExprResolveMask
             (value, &rtrn, SimpleLookup, (char *) ctrlNames))
             return ReportMismatch(action->type, field, "controls mask");
-        XkbActionSetCtrls(act, rtrn.uval);
+        act->ctrls = rtrn.uval;
         return True;
     }
     return ReportIllegal(action->type, field);
@@ -1038,14 +1035,14 @@ HandleRedirectKey(XkbcDescPtr xkb,
                   unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
-    XkbRedirectKeyAction *act;
-    unsigned t1, t2, vmods, vmask;
+    XkbcRedirectKeyAction *act;
+    unsigned t1, t2;
     unsigned long tmp;
 
     if (array_ndx != NULL)
         return ReportActionNotArray(action->type, field);
 
-    act = (XkbRedirectKeyAction *) action;
+    act = (XkbcRedirectKeyAction *) action;
     switch (field)
     {
     case F_Keycode:
@@ -1071,15 +1068,11 @@ HandleRedirectKey(XkbcDescPtr xkb,
                 act->mods &= ~(t2 & 0xff);
 
             t2 = (t2 >> 8) & 0xffff;
-            vmods = XkbSARedirectVMods(act);
-            vmask = XkbSARedirectVModsMask(act);
-            vmask |= t2;
+            act->vmods_mask |= t2;
             if (field == F_Modifiers)
-                vmods |= t2;
+                act->vmods |= t2;
             else
-                vmods &= ~t2;
-            XkbSARedirectSetVMods(act, vmods);
-            XkbSARedirectSetVModsMask(act, vmask);
+                act->vmods &= ~t2;
             return True;
         }
         return True;
@@ -1276,7 +1269,7 @@ static actionHandler handleAction[XkbSA_NumActions + 1] = {
 /***====================================================================***/
 
 static void
-ApplyActionFactoryDefaults(XkbAction * action)
+ApplyActionFactoryDefaults(XkbcAction * action)
 {
     if (action->type == XkbSA_SetPtrDflt)
     {                           /* increment default button */
@@ -1324,7 +1317,7 @@ HandleActionDef(ExprDef * def,
     action->type = hndlrType = tmp;
     if (action->type != XkbSA_NoAction)
     {
-        ApplyActionFactoryDefaults((XkbAction *) action);
+        ApplyActionFactoryDefaults((XkbcAction *) action);
         while (info)
         {
             if ((info->action == XkbSA_NoAction)

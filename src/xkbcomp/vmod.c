@@ -82,7 +82,7 @@ HandleVModDef(VModDef * stmt, unsigned mergeMode, VModInfo * info)
 {
     register int i, bit, nextFree;
     ExprResult mod;
-    XkbServerMapPtr srv;
+    XkbcServerMapPtr srv;
     XkbNamesPtr names;
     Atom stmtName;
 

@@ -36,6 +36,82 @@ authorization from the authors.
 #include <X11/extensions/XKBgeomcommon.h>
 #include <X11/extensions/XKBrulescommon.h>
 
+/* Action structures used in the server */
+typedef struct _XkbcModAction {
+    unsigned char   type;
+    unsigned char   flags;
+    unsigned char   mask;
+    unsigned char   real_mods;
+    unsigned int    vmods;
+} XkbcModAction;
+
+typedef struct _XkbcISOAction {
+    unsigned char   type;
+    unsigned char   flags;
+    unsigned char   mask;
+    unsigned char   real_mods;
+    /* FIXME: Make this an int. */
+    char            group_XXX;
+    unsigned char   affect;
+    unsigned int    vmods;
+} XkbcISOAction;
+
+typedef struct _XkbcPtrAction {
+    unsigned char   type;
+    unsigned char   flags;
+    int             x;
+    int             y;
+} XkbcPtrAction;
+
+typedef struct _XkbcCtrlsAction {
+    unsigned char   type;
+    unsigned char   flags;
+    unsigned long   ctrls;
+} XkbcCtrlsAction;
+
+typedef struct  _XkbcRedirectKeyAction {
+    unsigned char   type;
+    unsigned char   new_key;
+    unsigned char   mods_mask;
+    unsigned char   mods;
+    unsigned int    vmods_mask;
+    unsigned int    vmods;
+} XkbcRedirectKeyAction;
+
+typedef union _XkbcAction {
+    XkbAnyAction            any;
+    XkbcModAction           mods;
+    XkbGroupAction          group;
+    XkbcISOAction           iso;
+    XkbcPtrAction           ptr;
+    XkbPtrBtnAction         btn;
+    XkbPtrDfltAction        dflt;
+    XkbSwitchScreenAction   screen;
+    XkbcCtrlsAction         ctrls;
+    XkbMessageAction        msg;
+    XkbcRedirectKeyAction   redirect;
+    XkbDeviceBtnAction      devbtn;
+    XkbDeviceValuatorAction devval;
+    unsigned char           type;
+} XkbcAction;
+
+typedef struct _XkbcServerMapRec {
+    unsigned short      num_acts;
+    unsigned short      size_acts;
+    XkbcAction *        acts;
+
+    XkbBehavior *       behaviors;
+    unsigned short *    key_acts;
+#if defined(__cplusplus) || defined(c_plusplus)
+    /* explicit is a C++ reserved word */
+    unsigned char *     c_explicit;
+#else
+    unsigned char *     explicit;
+#endif
+    unsigned char       vmods[XkbNumVirtualMods];
+    unsigned short *    vmodmap;
+} XkbcServerMapRec, *XkbcServerMapPtr;
+
 /* Common keyboard description structure */
 typedef struct _XkbcDesc {
     unsigned int        defined;
@@ -45,7 +121,7 @@ typedef struct _XkbcDesc {
     KeyCode             max_key_code;
 
     XkbControlsPtr      ctrls;
-    XkbServerMapPtr     server;
+    XkbcServerMapPtr    server;
     XkbClientMapPtr     map;
     XkbIndicatorPtr     indicators;
     XkbNamesPtr         names;
@@ -130,7 +206,7 @@ extern int
 XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
                        XkbChangesPtr changes);
 
-extern XkbAction *
+extern XkbcAction *
 XkbcResizeKeyActions(XkbcDescPtr xkb, int key, int needed);
 
 extern void
