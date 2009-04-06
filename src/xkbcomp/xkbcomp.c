@@ -27,7 +27,6 @@ authorization from the authors.
 #include <limits.h>
 #include "X11/extensions/XKBcommon.h"
 #include <X11/extensions/XKM.h>
-#include "XKBcommonint.h"
 #include "xkbcomp.h"
 #include "parseutils.h"
 #include "utils.h"

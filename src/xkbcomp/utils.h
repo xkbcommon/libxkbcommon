@@ -174,12 +174,6 @@ uStrCaseCmp(const char *s1, const char *s2);
 extern int
 uStrCasePrefix(const char *p, char *str);
 #endif
-#ifdef HAVE_STRDUP
-#define	uStringDup(s1)		((s1) ? strdup(s1) : NULL)
-#else
-extern char *
-uStringDup(const char *s);
-#endif
 
 /***====================================================================***/
 

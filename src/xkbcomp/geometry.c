@@ -752,7 +752,7 @@ AddProperty(GeometryInfo * info, PropertyInfo * new)
             }
             if (old->value)
                 uFree(old->value);
-            old->value = uStringDup(new->value);
+            old->value = _XkbDupString(new->value);
             return True;
         }
         if (((old->defs.fileID == new->defs.fileID) && (warningLevel > 0))
@@ -768,8 +768,8 @@ AddProperty(GeometryInfo * info, PropertyInfo * new)
     if ((new = NextProperty(info)) == NULL)
         return False;
     new->defs.next = NULL;
-    new->name = uStringDup(old->name);
-    new->value = uStringDup(old->value);
+    new->name = _XkbDupString(old->name);
+    new->value = _XkbDupString(old->value);
     return True;
 }
 
@@ -1761,7 +1761,7 @@ SetLogoDoodadField(DoodadInfo * di,
             return ReportBadType(typeName, field, ddText(di),
                                  "string");
         }
-        di->logoName = uStringDup(tmp.str);
+        di->logoName = _XkbDupString(tmp.str);
         return True;
     }
     return ReportBadField(typeName, field, ddText(di));
@@ -2805,7 +2805,7 @@ HandleGeometryFile(XkbFile * file,
 
     if (merge == MergeDefault)
         merge = MergeAugment;
-    info->name = uStringDup(file->name);
+    info->name = _XkbDupString(file->name);
     stmt = file->defs;
     while (stmt)
     {
@@ -3632,7 +3632,7 @@ CompileGeometry(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
         }
         if (info.fontSpec != None)
             geom->label_font =
-                uStringDup(XkbcAtomGetString(info.fontSpec));
+                _XkbDupString(XkbcAtomGetString(info.fontSpec));
         else
             geom->label_font = FontFromParts(info.font, info.fontWeight,
                                              info.fontSlant,

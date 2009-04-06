@@ -353,7 +353,7 @@ yyGetString(void)
         buf[nInBuf++] = '\0';
         if (scanStr)
             uFree(scanStr);
-        scanStr = (char *) uStringDup(buf);
+        scanStr = strdup(buf);
         scanStrLine = lineNum;
         return STRING;
     }
@@ -434,7 +434,7 @@ yyGetKeyName(void)
         buf[nInBuf++] = '\0';
         if (scanStr)
             uFree(scanStr);
-        scanStr = (char *) uStringDup(buf);
+        scanStr = strdup(buf);
         scanStrLine = lineNum;
         return KEYNAME;
     }
@@ -568,7 +568,7 @@ yyGetIdent(int first)
     {
         if (scanStr)
             uFree(scanStr);
-        scanStr = (char *) uStringDup(buf);
+        scanStr = strdup(buf);
         scanStrLine = lineNum;
         rtrn = IDENT;
     }

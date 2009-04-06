@@ -131,7 +131,7 @@ InitKeyTypesInfo(KeyTypesInfo * info, XkbcDescPtr xkb, KeyTypesInfo * from)
     tok_TWO_LEVEL = XkbcInternAtom("TWO_LEVEL", False);
     tok_ALPHABETIC = XkbcInternAtom("ALPHABETIC", False);
     tok_KEYPAD = XkbcInternAtom("KEYPAD", False);
-    info->name = uStringDup("default");
+    info->name = strdup("default");
     info->errorCount = 0;
     info->stdPresent = 0;
     info->nTypes = 0;
@@ -1066,7 +1066,7 @@ HandleKeyTypesFile(XkbFile * file,
 {
     ParseCommon *stmt;
 
-    info->name = uStringDup(file->name);
+    info->name = _XkbDupString(file->name);
     stmt = file->defs;
     while (stmt)
     {

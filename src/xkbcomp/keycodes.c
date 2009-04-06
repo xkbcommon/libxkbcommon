@@ -753,7 +753,7 @@ HandleKeycodesFile(XkbFile * file,
 {
     ParseCommon *stmt;
 
-    info->name = uStringDup(file->name);
+    info->name = _XkbDupString(file->name);
     stmt = file->defs;
     while (stmt)
     {

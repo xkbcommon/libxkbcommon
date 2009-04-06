@@ -38,6 +38,7 @@
 
 #include <X11/extensions/XKM.h>
 #include "X11/extensions/XKBcommon.h"
+#include "XKBcommonint.h"
 
 extern char *scanFile;
 

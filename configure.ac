@@ -54,7 +54,7 @@ if test "x$CC_FOR_BUILD" = x; then
     fi
 fi
 
-AC_CHECK_FUNCS([strdup strcasecmp])
+AC_CHECK_FUNCS([strcasecmp])
 XORG_CHECK_MALLOC_ZERO
 XORG_CWARNFLAGS
 
