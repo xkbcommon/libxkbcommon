@@ -1,0 +1,178 @@
+/*
+Copyright 2009  Dan Nicholson
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the names of the authors or their
+institutions shall not be used in advertising or otherwise to promote the
+sale, use or other dealings in this Software without prior written
+authorization from the authors.
+*/
+
+#ifndef _XKBGEOM_H_
+#define _XKBGEOM_H_
+
+#include <X11/X.h>
+#include <X11/Xdefs.h>
+#include <X11/extensions/XKBstrcommon.h>
+#include <X11/extensions/XKBgeomcommon.h>
+#include <X11/extensions/XKBrulescommon.h>
+#include "X11/extensions/XKBcommon.h"
+
+extern void
+XkbcFreeGeomProperties(XkbGeometryPtr geom, int first, int count, Bool freeAll);
+
+extern void
+XkbcFreeGeomKeyAliases(XkbGeometryPtr geom, int first, int count, Bool freeAll);
+
+extern void
+XkbcFreeGeomColors(XkbGeometryPtr geom, int first, int count, Bool freeAll);
+
+extern void
+XkbcFreeGeomPoints(XkbOutlinePtr outline, int first, int count, Bool freeAll);
+
+extern void
+XkbcFreeGeomOutlines(XkbShapePtr shape, int first, int count, Bool freeAll);
+
+extern void
+XkbcFreeGeomShapes(XkbGeometryPtr geom, int first, int count, Bool freeAll);
+
+extern void
+XkbcFreeGeomOverlayKeys(XkbOverlayRowPtr row, int first, int count,
+                        Bool freeAll);
+
+extern void
+XkbcFreeGeomOverlayRows(XkbOverlayPtr overlay, int first, int count,
+                        Bool freeAll);
+
+extern void
+XkbcFreeGeomOverlays(XkbSectionPtr section, int first, int count, Bool freeAll);
+
+extern void
+XkbcFreeGeomKeys(XkbRowPtr row, int first, int count, Bool freeAll);
+
+extern void
+XkbcFreeGeomRows(XkbSectionPtr section, int first, int count, Bool freeAll);
+
+extern void
+XkbcFreeGeomSections(XkbGeometryPtr geom, int first, int count, Bool freeAll);
+
+extern void
+XkbcFreeGeomDoodads(XkbDoodadPtr doodads, int nDoodads, Bool freeAll);
+
+extern void
+XkbcFreeGeometry(XkbGeometryPtr geom, unsigned which, Bool freeMap);
+
+extern int
+XkbcAllocGeomProps(XkbGeometryPtr geom, int nProps);
+
+extern int
+XkbcAllocGeomColors(XkbGeometryPtr geom, int nColors);
+
+extern int
+XkbcAllocGeomKeyAliases(XkbGeometryPtr geom, int nKeyAliases);
+
+extern int
+XkbcAllocGeomShapes(XkbGeometryPtr geom, int nShapes);
+
+extern int
+XkbcAllocGeomSections(XkbGeometryPtr geom, int nSections);
+
+extern int
+XkbcAllocGeomOverlays(XkbSectionPtr section, int nOverlays);
+
+extern int
+XkbcAllocGeomOverlayRows(XkbOverlayPtr overlay, int nRows);
+
+extern int
+XkbcAllocGeomOverlayKeys(XkbOverlayRowPtr row, int nKeys);
+
+extern int
+XkbcAllocGeomDoodads(XkbGeometryPtr geom, int nDoodads);
+
+extern int
+XkbcAllocGeomSectionDoodads(XkbSectionPtr section, int nDoodads);
+
+extern int
+XkbcAllocGeomOutlines(XkbShapePtr shape, int nOL);
+
+extern int
+XkbcAllocGeomRows(XkbSectionPtr section, int nRows);
+
+extern int
+XkbcAllocGeomPoints(XkbOutlinePtr ol, int nPts);
+
+extern int
+XkbcAllocGeomKeys(XkbRowPtr row, int nKeys);
+
+extern int
+XkbcAllocGeometry(XkbcDescPtr xkb, XkbGeometrySizesPtr sizes);
+
+extern XkbPropertyPtr
+XkbcAddGeomProperty(XkbGeometryPtr geom, char *name, char *value);
+
+extern XkbKeyAliasPtr
+XkbcAddGeomKeyAlias(XkbGeometryPtr geom, char *aliasStr, char *realStr);
+
+extern XkbColorPtr
+XkbcAddGeomColor(XkbGeometryPtr geom, char *spec, unsigned int pixel);
+
+extern XkbOutlinePtr
+XkbcAddGeomOutline(XkbShapePtr shape, int sz_points);
+
+extern XkbShapePtr
+XkbcAddGeomShape(XkbGeometryPtr geom, Atom name, int sz_outlines);
+
+extern XkbKeyPtr
+XkbcAddGeomKey(XkbRowPtr row);
+
+extern XkbRowPtr
+XkbcAddGeomRow(XkbSectionPtr section, int sz_keys);
+
+extern XkbSectionPtr
+XkbcAddGeomSection(XkbGeometryPtr geom, Atom name,
+                   int sz_rows, int sz_doodads, int sz_over);
+
+extern XkbDoodadPtr
+XkbcAddGeomDoodad(XkbGeometryPtr geom, XkbSectionPtr section, Atom name);
+
+extern XkbOverlayKeyPtr
+XkbcAddGeomOverlayKey(XkbOverlayPtr overlay, XkbOverlayRowPtr row,
+                      char *over, char *under);
+
+extern XkbOverlayRowPtr
+XkbcAddGeomOverlayRow(XkbOverlayPtr overlay, int row_under, int sz_keys);
+
+extern XkbOverlayPtr
+XkbcAddGeomOverlay(XkbSectionPtr section, Atom name, int sz_rows);
+
+/***====================================================================***/
+
+extern Bool
+XkbcComputeShapeBounds(XkbShapePtr shape);
+
+extern Bool
+XkbcComputeShapeTop(XkbShapePtr shape, XkbBoundsPtr bounds);
+
+extern Bool
+XkbcComputeRowBounds(XkbGeometryPtr geom, XkbSectionPtr section, XkbRowPtr row);
+
+extern Bool
+XkbcComputeSectionBounds(XkbGeometryPtr geom, XkbSectionPtr section);
+
+#endif /* _XKBGEOM_H_ */

@@ -25,6 +25,7 @@
  ********************************************************/
 
 #include "xkbcomp.h"
+#include "xkbmisc.h"
 #include "tokens.h"
 #include "expr.h"
 

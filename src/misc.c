@@ -28,9 +28,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <config.h>
 #endif
 
+#include "xkballoc.h"
+#include "xkbmisc.h"
 #include "X11/extensions/XKBcommon.h"
 #include "XKBcommonint.h"
 #include <X11/keysym.h>
+#include <X11/extensions/XKBfilecommon.h>
 
 #define mapSize(m) (sizeof(m) / sizeof(XkbKTMapEntryRec))
 static XkbKTMapEntryRec map2Level[]= {

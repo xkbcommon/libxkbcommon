@@ -25,9 +25,10 @@ authorization from the authors.
 */
 
 #include <limits.h>
-#include "X11/extensions/XKBcommon.h"
-#include <X11/extensions/XKM.h>
 #include "xkbcomp.h"
+#include "xkballoc.h"
+#include "xkbrules.h"
+#include <X11/extensions/XKM.h>
 #include "parseutils.h"
 #include "utils.h"
 

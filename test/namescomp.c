@@ -26,9 +26,10 @@ authorization from the authors.
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "xkbmisc.h"
 #include "X11/extensions/XKBcommon.h"
 #include <X11/extensions/XKBstrcommon.h>
-#include "../src/xkbcomp/utils.h"
+#include "xkbcomp/utils.h"
 
 int main(int argc, char *argv[])
 {

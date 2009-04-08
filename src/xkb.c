@@ -27,7 +27,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-
+#include "xkbmisc.h"
 #include "X11/extensions/XKBcommon.h"
 #include "XKBcommonint.h"
 

@@ -25,9 +25,12 @@
  ********************************************************/
 
 #include "xkbcomp.h"
+#include "xkballoc.h"
+#include "xkbmisc.h"
 #include "tokens.h"
 #include "expr.h"
 
+#include <X11/extensions/XKBfilecommon.h>
 #include <X11/keysym.h>
 #include <stdlib.h>
 

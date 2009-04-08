@@ -16,4 +16,8 @@ libxkbcommon_la_SOURCES = \
 	maprules.c \
 	misc.c \
 	text.c \
-	xkb.c
+	xkb.c \
+	xkballoc.h \
+	xkbgeom.h \
+	xkbmisc.h \
+	xkbrules.h

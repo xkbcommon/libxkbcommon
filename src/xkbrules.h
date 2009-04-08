@@ -1,5 +1,5 @@
 /*
-Copyright 2009 Dan Nicholson
+Copyright 2009  Dan Nicholson
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -24,43 +24,54 @@ sale, use or other dealings in this Software without prior written
 authorization from the authors.
 */
 
-#include <stdlib.h>
+#ifndef _XKBRULES_H_
+#define _XKBRULES_H_
+
 #include <stdio.h>
-#include "xkbmisc.h"
-#include "xkbrules.h"
-#include "X11/extensions/XKBcommon.h"
+#include <X11/X.h>
+#include <X11/Xdefs.h>
 #include <X11/extensions/XKBstrcommon.h>
-#include "xkbcomp/utils.h"
+#include <X11/extensions/XKBrulescommon.h>
+#include "X11/extensions/XKBcommon.h"
 
-int main(int argc, char *argv[])
-{
-    char *rules = NULL;
-    XkbRF_VarDefsRec defs;
-    XkbcDescPtr xkb;
+extern Bool
+XkbcRF_GetComponents(XkbRF_RulesPtr rules, XkbRF_VarDefsPtr defs,
+                     XkbComponentNamesPtr names);
 
-    /* Require rmlvo */
-    if (argc < 6) {
-        fprintf(stderr, "Not enough arguments\n");
-        fprintf(stderr, "Usage: %s RULES MODEL LAYOUT VARIANT OPTIONS\n",
-                argv[0]);
-        exit(1);
-    }
+extern XkbRF_RulePtr
+XkbcRF_AddRule(XkbRF_RulesPtr rules);
 
-    rules = argv[1];
-    defs.model = argv[2];
-    defs.layout = argv[3];
-    defs.variant = argv[4];
-    defs.options = argv[5];
+extern XkbRF_GroupPtr
+XkbcRF_AddGroup(XkbRF_RulesPtr rules);
 
-    uSetErrorFile(NULL);
-    XkbcInitAtoms();
+extern Bool
+XkbcRF_LoadRules(FILE *file, XkbRF_RulesPtr rules);
 
-    xkb = XkbcCompileKeymapFromRules(rules, &defs);
+extern Bool
+XkbcRF_LoadRulesByName(char *base, char *locale, XkbRF_RulesPtr rules);
 
-    if (!xkb) {
-        fprintf(stderr, "Failed to compile keymap\n");
-        exit(1);
-    }
+extern XkbRF_VarDescPtr
+XkbcRF_AddVarDesc(XkbRF_DescribeVarsPtr vars);
 
-    return 0;
-}
+extern XkbRF_VarDescPtr
+XkbcRF_AddVarDescCopy(XkbRF_DescribeVarsPtr vars, XkbRF_VarDescPtr from);
+
+extern XkbRF_DescribeVarsPtr
+XkbcRF_AddVarToDescribe(XkbRF_RulesPtr rules, char *name);
+
+extern Bool
+XkbcRF_LoadDescriptions(FILE *file, XkbRF_RulesPtr rules);
+
+extern Bool
+XkbcRF_LoadDescriptionsByName(char *base, char *locale, XkbRF_RulesPtr rules);
+
+extern XkbRF_RulesPtr
+XkbcRF_Load(char *base, char *locale, Bool wantDesc, Bool wantRules);
+
+extern XkbRF_RulesPtr
+XkbcRF_Create(int szRules, int szExtra);
+
+extern void
+XkbcRF_Free(XkbRF_RulesPtr rules, Bool freeRules);
+
+#endif /* _XKBRULES_H_ */

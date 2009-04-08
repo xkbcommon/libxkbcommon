@@ -26,6 +26,7 @@
 
 #define	DEBUG_VAR parseDebug
 #include "parseutils.h"
+#include "xkbmisc.h"
 #include "xkbpath.h"
 #include <X11/keysym.h>
 #include <X11/extensions/XKBgeomcommon.h>

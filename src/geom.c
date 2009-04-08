@@ -28,6 +28,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <config.h>
 #endif
 
+#include "xkbgeom.h"
 #include "X11/extensions/XKBcommon.h"
 #include "XKBcommonint.h"
 

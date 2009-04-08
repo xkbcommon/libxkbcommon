@@ -25,6 +25,9 @@
  ********************************************************/
 
 #include "xkbcomp.h"
+#include "xkballoc.h"
+#include "xkbgeom.h"
+#include "xkbmisc.h"
 #include "misc.h"
 #include "alias.h"
 #include "keycodes.h"

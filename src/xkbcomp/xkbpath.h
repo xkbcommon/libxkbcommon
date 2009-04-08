@@ -27,7 +27,9 @@
 #ifndef _XKBPATH_H_
 #define _XKBPATH_H_ 1
 
-#include "X11/extensions/XKBcommon.h"
+#include <stdio.h>
+#include <X11/X.h>
+#include <X11/Xdefs.h>
 
 extern Bool XkbInitIncludePath(void);
 
