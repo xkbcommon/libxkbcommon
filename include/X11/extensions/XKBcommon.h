@@ -129,15 +129,8 @@ typedef struct _XkbcDesc {
     XkbGeometryPtr      geom;
 } XkbcDescRec, *XkbcDescPtr;
 
-#define _XkbcKSLower (1 << 0)
-#define _XkbcKSUpper (1 << 1)
-
 #define XkbcKSIsLower(k) (_XkbcKSCheckCase(k) & _XkbcKSLower)
 #define XkbcKSIsUpper(k) (_XkbcKSCheckCase(k) & _XkbcKSUpper)
-#define XkbcKSIsKeypad(k) \
-    (((k) >= XK_KP_Space) && ((k) <= XK_KP_Equal))
-#define XkbcKSIsDeadKey(k) \
-    (((k) >= XK_dead_grave) && ((k) <= XK_dead_semivoiced_sound))
 
 _XFUNCPROTOBEGIN
 
