@@ -111,7 +111,7 @@ fail:
 }
 
 XkbcDescPtr
-XkbcCompileKeymapFromRules(XkbRMLVOSet *rmlvo)
+XkbcCompileKeymapFromRules(const XkbRMLVOSet *rmlvo)
 {
     char rulesPath[PATH_MAX];
     int pathlen;
@@ -157,7 +157,7 @@ XkbcCompileKeymapFromRules(XkbRMLVOSet *rmlvo)
 }
 
 XkbcDescPtr
-XkbcCompileKeymapFromComponents(XkbComponentNamesPtr ktcsg)
+XkbcCompileKeymapFromComponents(const XkbComponentNamesPtr ktcsg)
 {
     XkbFile *file, *mapToUse;
     XkbcDescPtr xkb;
