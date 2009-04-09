@@ -111,29 +111,35 @@ fail:
 }
 
 XkbcDescPtr
-XkbcCompileKeymapFromRules(const char *rules, XkbRF_VarDefsPtr defs)
+XkbcCompileKeymapFromRules(XkbRMLVOSet *rmlvo)
 {
     char rulesPath[PATH_MAX];
     int pathlen;
+    XkbRF_VarDefsRec defs;
     XkbComponentNamesPtr names;
     XkbcDescPtr xkb;
 
-    if (ISEMPTY(rules) || !defs || ISEMPTY(defs->layout)) {
+    if (!rmlvo || ISEMPTY(rmlvo->rules) || ISEMPTY(rmlvo->layout)) {
         ERROR("rules and layout required to generate XKB keymap\n");
         return NULL;
     }
 
     pathlen = snprintf(rulesPath, sizeof(rulesPath),
-                       DFLT_XKB_CONFIG_ROOT "/rules/%s", rules);
+                       DFLT_XKB_CONFIG_ROOT "/rules/%s", rmlvo->rules);
     if (pathlen >= sizeof(rulesPath)) {
         ERROR("XKB rules path truncated\n");
         return NULL;
     }
 
-    names = XkbComponentsFromRules(rulesPath, defs);
+    defs.model = rmlvo->model;
+    defs.layout = rmlvo->layout;
+    defs.variant = rmlvo->variant;
+    defs.options = rmlvo->options;
+
+    names = XkbComponentsFromRules(rulesPath, &defs);
     if (!names) {
         ERROR("failed to generate XKB components from rules \"%s\"\n",
-              rules);
+              rmlvo->rules);
         return NULL;
     }
 

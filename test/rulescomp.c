@@ -34,8 +34,7 @@ authorization from the authors.
 
 int main(int argc, char *argv[])
 {
-    char *rules = NULL;
-    XkbRF_VarDefsRec defs;
+    XkbRMLVOSet rmlvo;
     XkbcDescPtr xkb;
 
     /* Require rmlvo */
@@ -46,16 +45,16 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    rules = argv[1];
-    defs.model = argv[2];
-    defs.layout = argv[3];
-    defs.variant = argv[4];
-    defs.options = argv[5];
+    rmlvo.rules = argv[1];
+    rmlvo.model = argv[2];
+    rmlvo.layout = argv[3];
+    rmlvo.variant = argv[4];
+    rmlvo.options = argv[5];
 
     uSetErrorFile(NULL);
     XkbcInitAtoms();
 
-    xkb = XkbcCompileKeymapFromRules(rules, &defs);
+    xkb = XkbcCompileKeymapFromRules(&rmlvo);
 
     if (!xkb) {
         fprintf(stderr, "Failed to compile keymap\n");

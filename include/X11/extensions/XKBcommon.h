@@ -126,7 +126,7 @@ typedef struct _XkbcDesc {
 _XFUNCPROTOBEGIN
 
 extern XkbcDescPtr
-XkbcCompileKeymapFromRules(const char *rules, XkbRF_VarDefsPtr defs);
+XkbcCompileKeymapFromRules(XkbRMLVOSet *rmlvo);
 
 extern XkbcDescPtr
 XkbcCompileKeymapFromComponents(XkbComponentNamesPtr ktcsg);
