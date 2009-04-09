@@ -65,9 +65,6 @@ _XkbcKSCheckCase(KeySym sym);
 
 /***====================================================================***/
 
-extern void
-XkbcInitAtoms(void);
-
 extern char *
 XkbcAtomGetString(Atom atom);
 
