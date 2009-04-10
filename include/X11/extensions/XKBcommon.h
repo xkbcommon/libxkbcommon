@@ -28,6 +28,7 @@ authorization from the authors.
 #ifndef _XKBCOMMON_H_
 #define _XKBCOMMON_H_
 
+#include <stdio.h>
 #include <X11/Xfuncproto.h>
 
 /* Action structures used in the server */
@@ -133,6 +134,9 @@ XkbcCompileKeymapFromRules(const XkbRMLVOSet *rmlvo);
 
 extern XkbcDescPtr
 XkbcCompileKeymapFromComponents(const XkbComponentNamesPtr ktcsg);
+
+extern XkbcDescPtr
+XkbcCompileKeymapFromFile(FILE *inputFile, const char *mapName);
 
 _XFUNCPROTOEND
 

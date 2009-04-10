@@ -156,6 +156,40 @@ XkbcCompileKeymapFromRules(const XkbRMLVOSet *rmlvo)
     return xkb;
 }
 
+static XkbFile *
+XkbChooseMap(XkbFile *file, const char *name)
+{
+    XkbFile *map = file;
+
+    /* map specified? */
+    if (name) {
+        while (map) {
+            if (map->name && strcmp(map->name, name) == 0)
+                break;
+            map = (XkbFile *) map->common.next;
+        }
+
+        if (!map)
+            ERROR("no map named \"%s\" in input file\n", name);
+    }
+    else if (file->common.next) {
+        /* look for map with XkbLC_Default flag. */
+        for (; map; map = (XkbFile *) map->common.next) {
+            if (map->flags & XkbLC_Default)
+                break;
+        }
+
+        if (!map) {
+            map = file;
+            WARN("no map specified, but components have several\n");
+            WARN("using the first defined map, \"%s\"\n",
+                 map->name ? map->name : "");
+        }
+    }
+
+    return map;
+}
+
 XkbcDescPtr
 XkbcCompileKeymapFromComponents(const XkbComponentNamesPtr ktcsg)
 {
@@ -173,16 +207,58 @@ XkbcCompileKeymapFromComponents(const XkbComponentNamesPtr ktcsg)
     }
 
     /* Find map to use */
-    mapToUse = file;
-    if (file->common.next) {
-        for (; mapToUse; mapToUse = (XkbFile *)mapToUse->common.next) {
-            if (mapToUse->flags & XkbLC_Default)
-                break;
-        }
-        if (!mapToUse) {
-            mapToUse = file;
-            WARN("no map specified, but components have several\n");
-        }
+    if (!(mapToUse = XkbChooseMap(file, NULL)))
+        goto unwind_file;
+
+    /* Compile the keyboard */
+    if (!(xkb = XkbcAllocKeyboard())) {
+        ERROR("could not allocate keyboard description\n");
+        goto unwind_file;
+    }
+
+    if (!CompileKeymap(mapToUse, xkb, MergeReplace)) {
+        ERROR("failed to compile keymap\n");
+        goto unwind_xkb;
+    }
+
+    return xkb;
+unwind_xkb:
+    XkbcFreeKeyboard(xkb, XkbAllComponentsMask, True);
+unwind_file:
+    /* XXX: here's where we would free the XkbFile */
+fail:
+    return NULL;
+}
+
+XkbcDescPtr
+XkbcCompileKeymapFromFile(FILE *inputFile, const char *mapName)
+{
+    XkbFile *file, *mapToUse;
+    XkbcDescPtr xkb;
+
+    if (!inputFile) {
+        ERROR("no file specified to generate XKB keymap\n");
+        goto fail;
+    }
+
+    setScanState("input", 1);
+    if (!XKBParseFile(inputFile, &file) || !file) {
+        ERROR("failed to parse input xkb file\n");
+        goto fail;
+    }
+
+    /* Find map to use */
+    if (!(mapToUse = XkbChooseMap(file, mapName)))
+        goto unwind_file;
+
+    switch (mapToUse->type) {
+    case XkmSemanticsFile:
+    case XkmLayoutFile:
+    case XkmKeymapFile:
+        break;
+    default:
+        ERROR("file type %d not handled\n", mapToUse->type);
+        goto unwind_file;
     }
 
     /* Compile the keyboard */
