@@ -1,0 +1,15 @@
+xkb_keymap {
+    xkb_keycodes  { include "xfree86+aliases(qwerty)" };
+    xkb_types     { include "complete" };
+    xkb_compat    { include "complete" };
+    xkb_symbols   { include "pc+us" };
+    xkb_geometry  { include "pc(pc105)" };
+};
+
+default xkb_keymap {
+    xkb_keycodes  { include "xfree86+aliases(qwertz)" };
+    xkb_types     { include "complete" };
+    xkb_compat    { include "complete" };
+    xkb_symbols   { include "pc+de" };
+    xkb_geometry  { include "pc(pc105)" };
+};
