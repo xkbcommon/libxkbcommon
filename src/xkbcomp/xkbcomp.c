@@ -29,12 +29,9 @@ authorization from the authors.
 #include "xkballoc.h"
 #include "xkbrules.h"
 #include <X11/extensions/XKM.h>
+#include "xkbpath.h"
 #include "parseutils.h"
 #include "utils.h"
-
-#ifndef DFLT_XKB_CONFIG_ROOT
-#define DFLT_XKB_CONFIG_ROOT "/usr/share/X11/xkb"
-#endif
 
 /* Global debugging flags */
 unsigned int debugFlags = 0;
@@ -77,14 +74,27 @@ XkbKeymapFileFromComponents(const XkbComponentNamesPtr ktcsg)
 }
 
 static XkbComponentNamesPtr
-XkbComponentsFromRules(const char *rulesPath, const XkbRF_VarDefsPtr defs)
+XkbComponentsFromRules(const char *rules, const XkbRF_VarDefsPtr defs)
 {
-    XkbRF_RulesPtr rules;
+    FILE *rulesFile;
+    char *rulesPath;
+    XkbRF_RulesPtr loaded;
     XkbComponentNamesPtr names = NULL;
 
-    if (!(rules = XkbcRF_Load((char *)rulesPath, NULL, False, True))) {
+    rulesFile = XkbFindFileInPath((char *)rules, XkmRulesFile, &rulesPath);
+    if (!rulesFile) {
+        ERROR("could not find \"%s\" rules in XKB path\n", rules);
+        goto out;
+    }
+
+    if (!(loaded = _XkbTypedCalloc(1, XkbRF_RulesRec))) {
+        ERROR("failed to allocate XKB rules\n");
+        goto unwind_file;
+    }
+
+    if (!XkbcRF_LoadRules(rulesFile, loaded)) {
         ERROR("failed to load XKB rules \"%s\"\n", rulesPath);
-        goto fail;
+        goto unwind_rules;
     }
 
     if (!(names = _XkbTypedCalloc(1, XkbComponentNamesRec))) {
@@ -92,7 +102,7 @@ XkbComponentsFromRules(const char *rulesPath, const XkbRF_VarDefsPtr defs)
         goto unwind_rules;
     }
 
-    if (!XkbcRF_GetComponents(rules, defs, names)) {
+    if (!XkbcRF_GetComponents(loaded, defs, names)) {
         _XkbFree(names->keymap);
         _XkbFree(names->keycodes);
         _XkbFree(names->types);
@@ -105,16 +115,17 @@ XkbComponentsFromRules(const char *rulesPath, const XkbRF_VarDefsPtr defs)
     }
 
 unwind_rules:
-    XkbcRF_Free(rules, True);
-fail:
+    XkbcRF_Free(loaded, True);
+unwind_file:
+    fclose(rulesFile);
+    free(rulesPath);
+out:
     return names;
 }
 
 XkbcDescPtr
 XkbcCompileKeymapFromRules(const XkbRMLVOSet *rmlvo)
 {
-    char rulesPath[PATH_MAX];
-    int pathlen;
     XkbRF_VarDefsRec defs;
     XkbComponentNamesPtr names;
     XkbcDescPtr xkb;
@@ -124,19 +135,12 @@ XkbcCompileKeymapFromRules(const XkbRMLVOSet *rmlvo)
         return NULL;
     }
 
-    pathlen = snprintf(rulesPath, sizeof(rulesPath),
-                       DFLT_XKB_CONFIG_ROOT "/rules/%s", rmlvo->rules);
-    if (pathlen >= sizeof(rulesPath)) {
-        ERROR("XKB rules path truncated\n");
-        return NULL;
-    }
-
     defs.model = rmlvo->model;
     defs.layout = rmlvo->layout;
     defs.variant = rmlvo->variant;
     defs.options = rmlvo->options;
 
-    names = XkbComponentsFromRules(rulesPath, &defs);
+    names = XkbComponentsFromRules(rmlvo->rules, &defs);
     if (!names) {
         ERROR("failed to generate XKB components from rules \"%s\"\n",
               rmlvo->rules);

@@ -295,6 +295,9 @@ XkbDirectoryForInclude(unsigned type)
     case XkmGeometryIndex:
         strcpy(buf, "geometry");
         break;
+    case XkmRulesFile:
+        strcpy(buf, "rules");
+        break;
     default:
         strcpy(buf, "");
         break;
