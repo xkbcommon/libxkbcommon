@@ -22,6 +22,7 @@ libxkbcomp_la_SOURCES = \
 	keycodes.h \
 	keymap.c \
 	keytypes.c \
+	listing.c \
 	misc.c \
 	misc.h \
 	parseutils.c \
