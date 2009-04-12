@@ -192,82 +192,70 @@ XkbcEnsureSafeMapName(char *name)
 unsigned
 _XkbcKSCheckCase(KeySym ks)
 {
-unsigned	set,rtrn;
+    unsigned set = (ks & (~0xff)) >> 8;
+    unsigned rtrn = 0;
 
-    set= (ks & (~0xff)) >> 8;
-    rtrn= 0;
     switch (set) {
-	case 0:		/* latin 1 */
-	    if (((ks>=XK_A)&&(ks<=XK_Z))||
-		((ks>=XK_Agrave)&&(ks<=XK_THORN)&&(ks!=XK_multiply))) {
-		rtrn|= _XkbKSUpper;
-	    }
-	    if (((ks>=XK_a)&&(ks<=XK_z))||
-		((ks>=XK_agrave)&&(ks<=XK_ydiaeresis))) {
-		rtrn|= _XkbKSLower;
-	    }
-	    break;
-	case 1:		/* latin 2 */
-	    if (((ks>=XK_Aogonek)&&(ks<=XK_Zabovedot)&&(ks!=XK_breve))||
-		((ks>=XK_Racute)&&(ks<=XK_Tcedilla))) {
-		rtrn|= _XkbKSUpper;
-	    }
-	    if (((ks>=XK_aogonek)&&(ks<=XK_zabovedot)&&(ks!=XK_caron))||
-		((ks>=XK_racute)&&(ks<=XK_tcedilla))) {
-		rtrn|= _XkbKSLower;
-	    }
-	    break;
-	case 2:		/* latin 3 */
-	    if (((ks>=XK_Hstroke)&&(ks<=XK_Jcircumflex))||
-		((ks>=XK_Cabovedot)&&(ks<=XK_Scircumflex))) {
-		rtrn|= _XkbKSUpper;
-	    }
-	    if (((ks>=XK_hstroke)&&(ks<=XK_jcircumflex))||
-		((ks>=XK_cabovedot)&&(ks<=XK_scircumflex))) {
-		rtrn|= _XkbKSLower;
-	    }
-	    break;
-	case 3:		/* latin 4 */
-	    if (((ks>=XK_Rcedilla)&&(ks<=XK_Tslash))||
-	        (ks==XK_ENG)||
-		((ks>=XK_Amacron)&&(ks<=XK_Umacron))) {
-		rtrn|= _XkbKSUpper;
-	    }
-	    if (((ks>=XK_rcedilla)&&(ks<=XK_tslash))||
-	        (ks==XK_eng)||
-		((ks>=XK_amacron)&&(ks<=XK_umacron))) {
-		rtrn|= _XkbKSLower;
-	    }
-	    break;
-	case 18:		/* latin 8 */
-	    if ((ks==XK_Babovedot)||
-                ((ks>=XK_Dabovedot)&&(ks<=XK_Wacute))||
-		((ks>=XK_Ygrave)&&(ks<=XK_Fabovedot))||
-	        (ks==XK_Mabovedot)||
-	        (ks==XK_Pabovedot)||
-	        (ks==XK_Sabovedot)||
-	        (ks==XK_Wdiaeresis)||
-		((ks>=XK_Wcircumflex)&&(ks<=XK_Ycircumflex))) {
-		rtrn|= _XkbKSUpper;
-	    }
-	    if ((ks==XK_babovedot)||
-	        (ks==XK_dabovedot)||
-	        (ks==XK_fabovedot)||
-	        (ks==XK_mabovedot)||
-                ((ks>=XK_wgrave)&&(ks<=XK_wacute))||
-	        (ks==XK_ygrave)||
-		((ks>=XK_wdiaeresis)&&(ks<=XK_ycircumflex))) {
-		rtrn|= _XkbKSLower;
-	    }
-	    break;
-	case 19:		/* latin 9 */
-	    if ((ks==XK_OE)||(ks==XK_Ydiaeresis)) {
-		rtrn|= _XkbKSUpper;
-	    }
-	    if (ks==XK_oe) {
-		rtrn|= _XkbKSLower;
-	    }
-	    break;
+    case 0: /* latin 1 */
+        if ((ks >= XK_A && ks <= XK_Z) ||
+            (ks >= XK_Agrave && ks <= XK_THORN && ks != XK_multiply))
+            rtrn |= _XkbKSUpper;
+        if ((ks >= XK_a && ks <= XK_z) ||
+            (ks >= XK_agrave && ks <= XK_ydiaeresis))
+            rtrn |= _XkbKSLower;
+        break;
+    case 1: /* latin 2 */
+        if ((ks >= XK_Aogonek && ks <= XK_Zabovedot && ks != XK_breve) ||
+            (ks >= XK_Racute && ks<=XK_Tcedilla))
+            rtrn |= _XkbKSUpper;
+        if ((ks >= XK_aogonek && ks <= XK_zabovedot && ks != XK_caron) ||
+            (ks >= XK_racute && ks <= XK_tcedilla))
+            rtrn |= _XkbKSLower;
+        break;
+    case 2: /* latin 3 */
+        if ((ks >= XK_Hstroke && ks <= XK_Jcircumflex) ||
+            (ks >= XK_Cabovedot && ks <= XK_Scircumflex))
+            rtrn |= _XkbKSUpper;
+        if ((ks >= XK_hstroke && ks <= XK_jcircumflex) ||
+            (ks >= XK_cabovedot && ks <= XK_scircumflex))
+            rtrn |= _XkbKSLower;
+        break;
+    case 3: /* latin 4 */
+        if ((ks >= XK_Rcedilla && ks <= XK_Tslash) ||
+            (ks == XK_ENG) ||
+            (ks >= XK_Amacron && ks <= XK_Umacron))
+            rtrn |= _XkbKSUpper;
+        if ((ks >= XK_rcedilla && ks <= XK_tslash) ||
+            (ks == XK_eng) ||
+            (ks >= XK_amacron && ks <= XK_umacron))
+            rtrn |= _XkbKSLower;
+        break;
+    case 18: /* latin 8 */
+        if ((ks == XK_Babovedot) ||
+            (ks >= XK_Dabovedot && ks <= XK_Wacute) ||
+            (ks >= XK_Ygrave && ks <= XK_Fabovedot) ||
+            (ks == XK_Mabovedot) ||
+            (ks == XK_Pabovedot) ||
+            (ks == XK_Sabovedot) ||
+            (ks == XK_Wdiaeresis) ||
+            (ks >= XK_Wcircumflex && ks <= XK_Ycircumflex))
+            rtrn |= _XkbKSUpper;
+        if ((ks == XK_babovedot) ||
+            (ks == XK_dabovedot) ||
+            (ks == XK_fabovedot) ||
+            (ks == XK_mabovedot) ||
+            (ks >= XK_wgrave && ks <= XK_wacute) ||
+            (ks == XK_ygrave) ||
+            (ks >= XK_wdiaeresis && ks <= XK_ycircumflex))
+            rtrn |= _XkbKSLower;
+        break;
+    case 19: /* latin 9 */
+        if (ks == XK_OE || ks == XK_Ydiaeresis)
+            rtrn |= _XkbKSUpper;
+        if (ks == XK_oe)
+            rtrn |= _XkbKSLower;
+        break;
     }
+
     return rtrn;
 }
