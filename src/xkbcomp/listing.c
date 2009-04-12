@@ -278,7 +278,7 @@ AddDirectory(char *head, char *ptrn, char *rest, char *map)
             tmp = strchr(tmp, ')');
             if ((tmp == NULL) || (tmp[1] != '\0'))
             {
-                ERROR1("File and map must have the format file(map)\n");
+                ERROR("File and map must have the format file(map)\n");
                 return 0;
             }
             *map = '\0';
@@ -386,7 +386,7 @@ AddMatchingFiles(char *head_in)
         || (head
             && ((strchr(head, '(') != NULL) || (strchr(head, ')') != NULL))))
     {
-        ERROR1("Files/maps to list must have the form file(map)\n");
+        ERROR("Files/maps to list must have the form file(map)\n");
         ACTION("Illegal specifier ignored\n");
         return 0;
     }
@@ -423,14 +423,14 @@ GenerateListing(char *out_name)
 
     if (nFilesListed < 1)
     {
-        ERROR1("Must specify at least one file or pattern to list\n");
+        ERROR("Must specify at least one file or pattern to list\n");
         return 0;
     }
     if ((!out_name) || ((out_name[0] == '-') && (out_name[1] == '\0')))
         outFile = stdout;
     else if ((outFile = fopen(out_name, "w")) == NULL)
     {
-        ERROR1("Cannot open \"%s\" to write keyboard description\n",
+        ERROR("Cannot open \"%s\" to write keyboard description\n",
                out_name);
         ACTION("Exiting\n");
         return 0;
@@ -458,7 +458,7 @@ GenerateListing(char *out_name)
             if (stat(list[i].file, &sbuf) < 0)
             {
                 if (oldWarningLevel > 5)
-                    WARN1("Couldn't open \"%s\"\n", list[i].file);
+                    WARN("Couldn't open \"%s\"\n", list[i].file);
                 continue;
             }
             if (S_ISDIR(sbuf.st_mode))
@@ -472,7 +472,7 @@ GenerateListing(char *out_name)
             if (!inputFile)
             {
                 if (oldWarningLevel > 5)
-                    WARN1("Couldn't open \"%s\"\n", list[i].file);
+                    WARN("Couldn't open \"%s\"\n", list[i].file);
                 continue;
             }
             setScanState(list[i].file, 1);
