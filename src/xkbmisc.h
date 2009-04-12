@@ -63,6 +63,9 @@ _XkbcKSCheckCase(KeySym sym);
 #define XkbcKSIsLower(k) (_XkbcKSCheckCase(k) & _XkbKSLower)
 #define XkbcKSIsUpper(k) (_XkbcKSCheckCase(k) & _XkbKSUpper)
 
+extern Bool
+XkbcNameMatchesPattern(char *name, char *ptrn);
+
 /***====================================================================***/
 
 extern char *

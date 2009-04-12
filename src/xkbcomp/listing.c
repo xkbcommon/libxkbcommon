@@ -117,6 +117,7 @@ SOFTWARE.
 # define FileName(file) file->d_name
 #endif
 
+#include "xkbmisc.h"
 #include "xkbpath.h"
 #include "parseutils.h"
 #include "misc.h"
@@ -306,7 +307,7 @@ AddDirectory(char *head, char *ptrn, char *rest, char *map)
         filename = FileName(file);
         if (!filename || filename[0] == '.')
             continue;
-        if (ptrn && (!XkbNameMatchesPattern(filename, ptrn)))
+        if (ptrn && (!XkbcNameMatchesPattern(filename, ptrn)))
             continue;
         tmp =
             (char *) uAlloc((head ? strlen(head) : 0) + strlen(filename) + 2);
@@ -401,12 +402,12 @@ MapMatches(char *mapToConsider, char *ptrn)
     int i;
 
     if (ptrn != NULL)
-        return XkbNameMatchesPattern(mapToConsider, ptrn);
+        return XkbcNameMatchesPattern(mapToConsider, ptrn);
     if (nMapOnly < 1)
         return True;
     for (i = 0; i < nMapOnly; i++)
     {
-        if (XkbNameMatchesPattern(mapToConsider, mapOnly[i]))
+        if (XkbcNameMatchesPattern(mapToConsider, mapOnly[i]))
             return True;
     }
     return False;
