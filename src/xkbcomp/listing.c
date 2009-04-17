@@ -138,10 +138,6 @@ typedef struct _Listing
     char *map;
 } Listing;
 
-static int szMapOnly;
-static int nMapOnly;
-static char **mapOnly;
-
 static Listing *list = NULL;
 
 static unsigned verboseLevel;
@@ -149,27 +145,7 @@ static unsigned dirsToStrip;
 
 /***====================================================================***/
 
-int
-AddMapOnly(char *map)
-{
-    if (nMapOnly >= szMapOnly)
-    {
-        if (szMapOnly < 1)
-            szMapOnly = 5;
-        else
-            szMapOnly *= 2;
-        mapOnly = uTypedRealloc(list, szMapOnly, char *);
-        if (!mapOnly)
-        {
-            WSGO("Couldn't allocate list of maps\n");
-            return 0;
-        }
-    }
-    mapOnly[nMapOnly++] = map;
-    return 1;
-}
-
-int
+static int
 AddListing(char *file, char *map)
 {
     if (nListed >= szListing)
@@ -345,8 +321,8 @@ AddDirectory(char *head, char *ptrn, char *rest, char *map)
 
 /***====================================================================***/
 
-Bool
-AddMatchingFiles(char *head_in)
+static Bool
+AddMatchingFiles(char *head_in, unsigned type)
 {
     char *str, *head, *ptrn, *rest = NULL;
 
@@ -402,17 +378,8 @@ AddMatchingFiles(char *head_in)
 static Bool
 MapMatches(char *mapToConsider, char *ptrn)
 {
-    int i;
-
     if (ptrn != NULL)
         return XkbcNameMatchesPattern(mapToConsider, ptrn);
-    if (nMapOnly < 1)
-        return True;
-    for (i = 0; i < nMapOnly; i++)
-    {
-        if (XkbcNameMatchesPattern(mapToConsider, mapOnly[i]))
-            return True;
-    }
     return False;
 }
 

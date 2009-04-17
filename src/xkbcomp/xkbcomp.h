@@ -366,16 +366,6 @@ CompileSymbols(XkbFile *file, XkbcDescPtr xkb, unsigned merge);
 #define	WantFullNames	(1<<3)
 #define	ListRecursive	(1<<4)
 
-extern Bool AddListing(char * /* file */ ,
-                       char *   /* map */
-    );
-
-extern Bool AddMatchingFiles(char *     /* head_in */
-    );
-
-extern int AddMapOnly(char *    /* map */
-    );
-
 extern int GenerateListing(char *       /* filename */
     );
 
