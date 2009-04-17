@@ -144,6 +144,9 @@ static char **mapOnly;
 
 static Listing *list = NULL;
 
+static unsigned verboseLevel;
+static unsigned dirsToStrip;
+
 /***====================================================================***/
 
 int

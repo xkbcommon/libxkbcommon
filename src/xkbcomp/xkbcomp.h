@@ -113,7 +113,6 @@ typedef struct _ParseCommon
 #define	CreateKeyNames(x)	((x)->flags&AutoKeyNames)
 
 extern unsigned warningLevel;
-extern unsigned optionalParts;
 
 typedef struct _IncludeStmt
 {
@@ -366,10 +365,6 @@ CompileSymbols(XkbFile *file, XkbcDescPtr xkb, unsigned merge);
 #define	WantHiddenMaps	(1<<2)
 #define	WantFullNames	(1<<3)
 #define	ListRecursive	(1<<4)
-
-extern char *rootDir;
-extern unsigned verboseLevel;
-extern unsigned dirsToStrip;
 
 extern Bool AddListing(char * /* file */ ,
                        char *   /* map */
