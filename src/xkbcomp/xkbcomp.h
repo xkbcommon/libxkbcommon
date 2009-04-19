@@ -360,13 +360,4 @@ CompileCompatMap(XkbFile *file, XkbcDescPtr xkb, unsigned merge,
 extern Bool
 CompileSymbols(XkbFile *file, XkbcDescPtr xkb, unsigned merge);
 
-#define	WantLongListing	(1<<0)
-#define	WantPartialMaps	(1<<1)
-#define	WantHiddenMaps	(1<<2)
-#define	WantFullNames	(1<<3)
-#define	ListRecursive	(1<<4)
-
-extern int GenerateListing(char *       /* filename */
-    );
-
 #endif /* XKBCOMP_H */

@@ -6,19 +6,19 @@
  fee is hereby granted, provided that the above copyright
  notice appear in all copies and that both that copyright
  notice and this permission notice appear in supporting
- documentation, and that the name of Silicon Graphics not be 
- used in advertising or publicity pertaining to distribution 
+ documentation, and that the name of Silicon Graphics not be
+ used in advertising or publicity pertaining to distribution
  of the software without specific prior written permission.
- Silicon Graphics makes no representation about the suitability 
+ Silicon Graphics makes no representation about the suitability
  of this software for any purpose. It is provided "as is"
  without any express or implied warranty.
- 
- SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS 
- SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY 
+
+ SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+ SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
  AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
- GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL 
- DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, 
- DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE 
+ GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
  OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
@@ -52,13 +52,13 @@ Copyright 1988 by Digital Equipment Corporation, Maynard, Massachusetts.
 
                         All Rights Reserved
 
-Permission to use, copy, modify, and distribute this software and its 
-documentation for any purpose and without fee is hereby granted, 
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted,
 provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in 
+both that copyright notice and this permission notice appear in
 supporting documentation, and that the name of Digital not be
 used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.  
+software without specific, written prior permission.
 
 DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
 ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
@@ -124,111 +124,167 @@ SOFTWARE.
 #include "tokens.h"
 #include <X11/extensions/XKBgeomcommon.h>
 
-#define	lowbit(x)	((x) & (-(x)))
+#ifndef DFLT_XKB_CONFIG_ROOT
+#define DFLT_XKB_CONFIG_ROOT "/usr/share/X11/xkb"
+#endif
 
 unsigned int listingDebug;
 
-static int szListing = 0;
-static int nListed = 0;
-static int nFilesListed = 0;
-
-typedef struct _Listing
-{
+typedef struct _Listing {
     char *file;
     char *map;
 } Listing;
 
-static Listing *list = NULL;
+typedef struct _ListHead {
+    int szListing;
+    int nListed;
 
-static unsigned verboseLevel;
-static unsigned dirsToStrip;
+    Listing *list;
+} ListHead;
 
-/***====================================================================***/
+typedef struct _CompPair {
+    int num;
+    int sz;
 
-static int
-AddListing(char *file, char *map)
-{
-    if (nListed >= szListing)
-    {
-        if (szListing < 1)
-            szListing = 10;
-        else
-            szListing *= 2;
-        list = uTypedRealloc(list, szListing, Listing);
-        if (!list)
-        {
-            WSGO("Couldn't allocate list of files and maps\n");
-            ACTION("Exiting\n");
-            exit(1);
-        }
-    }
-
-    list[nListed].file = file;
-    list[nListed].map = map;
-    nListed++;
-    if (file != NULL)
-        nFilesListed++;
-    return 1;
-}
+    XkbComponentNamePtr comp;
+} CompPair;
 
 /***====================================================================***/
 
 static void
-ListFile(FILE * outFile, char *fileName, XkbFile * map)
+ClearList(ListHead *lh)
 {
-    register unsigned flags;
-    char *mapName;
+    int i;
 
-    flags = map->flags;
-    if ((flags & XkbLC_Hidden) && (!(verboseLevel & WantHiddenMaps)))
+    if (!lh)
         return;
-    if ((flags & XkbLC_Partial) && (!(verboseLevel & WantPartialMaps)))
-        return;
-    if (verboseLevel & WantLongListing)
-    {
-        fprintf(outFile, (flags & XkbLC_Hidden) ? "h" : "-");
-        fprintf(outFile, (flags & XkbLC_Default) ? "d" : "-");
-        fprintf(outFile, (flags & XkbLC_Partial) ? "p" : "-");
-        fprintf(outFile, "----- ");
-        if (map->type == XkmSymbolsIndex)
-        {
-            fprintf(outFile, (flags & XkbLC_AlphanumericKeys) ? "a" : "-");
-            fprintf(outFile, (flags & XkbLC_ModifierKeys) ? "m" : "-");
-            fprintf(outFile, (flags & XkbLC_KeypadKeys) ? "k" : "-");
-            fprintf(outFile, (flags & XkbLC_FunctionKeys) ? "f" : "-");
-            fprintf(outFile, (flags & XkbLC_AlternateGroup) ? "g" : "-");
-            fprintf(outFile, "--- ");
-        }
-        else
-            fprintf(outFile, "-------- ");
+
+    for (i = 0; i < lh->nListed; i++) {
+        _XkbFree(lh->list[i].file);
+        lh->list[i].file = NULL;
+        _XkbFree(lh->list[i].map);
+        lh->list[i].map = NULL;
     }
-    mapName = map->name;
-    if ((!(verboseLevel & WantFullNames)) && ((flags & XkbLC_Default) != 0))
-        mapName = NULL;
-    if (dirsToStrip > 0)
-    {
+
+    lh->nListed = 0;
+}
+
+static void
+FreeList(ListHead *lh)
+{
+    int i;
+
+    if (!lh)
+        return;
+
+    for (i = 0; i < lh->nListed; i++) {
+        _XkbFree(lh->list[i].file);
+        _XkbFree(lh->list[i].map);
+    }
+
+    _XkbFree(lh->list);
+
+    memset(lh, 0, sizeof(ListHead));
+}
+
+static Bool
+AddListing(ListHead *lh, char *file, char *map)
+{
+    if (lh->nListed >= lh->szListing) {
+        int orig_sz = lh->szListing;
+        Listing *orig_list = lh->list;
+
+        if (lh->szListing < 1)
+            lh->szListing = 10;
+        else
+            lh->szListing *= 2;
+
+        lh->list = _XkbRealloc(lh->list, lh->szListing * sizeof(Listing));
+        if (!lh->list) {
+            ERROR("Couldn't allocate list of files and maps\n");
+            lh->szListing = orig_sz;
+            lh->list = orig_list;
+            return False;
+        }
+    }
+
+    lh->list[lh->nListed].file = file;
+    lh->list[lh->nListed].map = map;
+    lh->nListed++;
+
+    return True;
+}
+
+/***====================================================================***/
+
+static Bool
+AddComponent(CompPair *cp, char *fileName, XkbFile *map, unsigned dirsToStrip)
+{
+    if (!cp || !fileName || !map)
+        return False;
+
+    if (cp->num >= cp->sz) {
+        int orig_sz = cp->sz;
+        XkbComponentNamePtr orig_comp = cp->comp;
+
+        if (cp->sz < 1)
+            cp->sz = 10;
+        else
+            cp->sz *= 2;
+
+        cp->comp = _XkbRealloc(cp->comp,
+                               cp->sz * sizeof(XkbComponentNameRec));
+        if (!cp->comp) {
+            ERROR("Failed reallocating component name list\n");
+            cp->sz = orig_sz;
+            cp->comp = orig_comp;
+            return False;
+        }
+    }
+
+    /* Strip off leading directories of component */
+    if (dirsToStrip > 0) {
         char *tmp, *last;
         int i;
-        for (i = 0, tmp = last = fileName; (i < dirsToStrip) && tmp; i++)
-        {
+
+        for (i = 0, tmp = last = fileName; (i <= dirsToStrip) && tmp; i++) {
             last = tmp;
             tmp = strchr(tmp, '/');
             if (tmp != NULL)
                 tmp++;
         }
+
         fileName = (tmp ? tmp : last);
     }
-    if (mapName)
-        fprintf(outFile, "%s(%s)\n", fileName, mapName);
-    else
-        fprintf(outFile, "%s\n", fileName);
-    return;
+
+    if (map->name) {
+        size_t len = strlen(fileName) + strlen(map->name) + 3;
+
+        cp->comp[cp->num].name = _XkbAlloc(len * sizeof(char));
+        if (!cp->comp[cp->num].name) {
+            ERROR("Could not allocate space for component name\n");
+            return False;
+        }
+        sprintf(cp->comp[cp->num].name, "%s(%s)", fileName, map->name);
+    }
+    else {
+        cp->comp[cp->num].name = strdup(fileName);
+        if (!cp->comp[cp->num].name) {
+            ERROR("Could not duplicate component name\n");
+            return False;
+        }
+    }
+
+    cp->comp[cp->num].flags = map->flags;
+    cp->num++;
+
+    return True;
 }
 
 /***====================================================================***/
 
 static int
-AddDirectory(char *head, char *ptrn, char *rest, char *map)
+AddDirectory(ListHead *lh, char *head, char *ptrn, char *rest, char *map)
 {
 #ifdef WIN32
     HANDLE dirh;
@@ -288,10 +344,11 @@ AddDirectory(char *head, char *ptrn, char *rest, char *map)
             continue;
         if (ptrn && (!XkbcNameMatchesPattern(filename, ptrn)))
             continue;
-        tmp =
-            (char *) uAlloc((head ? strlen(head) : 0) + strlen(filename) + 2);
-        if (!tmp)
+        tmp = _XkbAlloc((head ? strlen(head) : 0) + strlen(filename) + 2);
+        if (!tmp) {
+            ERROR("Could not allocate space for file listing\n");
             continue;
+        }
         sprintf(tmp, "%s%s%s", (head ? head : ""), (head ? "/" : ""),
                 filename);
         if (stat(tmp, &sbuf) < 0)
@@ -306,12 +363,9 @@ AddDirectory(char *head, char *ptrn, char *rest, char *map)
             continue;
         }
         if (S_ISDIR(sbuf.st_mode))
-        {
-            if ((rest != NULL) || (verboseLevel & ListRecursive))
-                nMatch += AddDirectory(tmp, rest, NULL, map);
-        }
+            nMatch += AddDirectory(lh, tmp, rest, NULL, map);
         else
-            nMatch += AddListing(tmp, map);
+            nMatch += AddListing(lh, tmp, map);
     }
 #ifdef WIN32
     while (FindNextFile(dirh, &file));
@@ -321,13 +375,16 @@ AddDirectory(char *head, char *ptrn, char *rest, char *map)
 
 /***====================================================================***/
 
-static Bool
-AddMatchingFiles(char *head_in, unsigned type)
+static int
+AddMatchingFiles(ListHead *lh, char *head_in, char *base, unsigned type)
 {
     char *str, *head, *ptrn, *rest = NULL;
+    char buf[PATH_MAX];
+    size_t len;
 
     if (head_in == NULL)
         return 0;
+
     ptrn = NULL;
     for (str = head_in; (*str != '\0') && (*str != '?') && (*str != '*');
          str++)
@@ -352,6 +409,7 @@ AddMatchingFiles(char *head_in, unsigned type)
         *ptrn = '\0';
         ptrn++;
     }
+
     if (ptrn)
     {
         rest = strchr(ptrn, '/');
@@ -361,6 +419,7 @@ AddMatchingFiles(char *head_in, unsigned type)
             rest++;
         }
     }
+
     if (((rest && ptrn)
          && ((strchr(ptrn, '(') != NULL) || (strchr(ptrn, ')') != NULL)))
         || (head
@@ -370,7 +429,16 @@ AddMatchingFiles(char *head_in, unsigned type)
         ACTION("Illegal specifier ignored\n");
         return 0;
     }
-    return AddDirectory(head, ptrn, rest, NULL);
+
+    /* Prepend XKB directory */
+    snprintf(buf, PATH_MAX, "%s%s%s", base ? base : "", base ? "/" : "",
+             XkbDirectoryForInclude(type));
+    len = strlen(buf);
+    if (head)
+        snprintf(&buf[len], PATH_MAX - len, "/%s", head);
+    head = buf;
+
+    return AddDirectory(lh, head, ptrn, rest, NULL);
 }
 
 /***====================================================================***/
@@ -378,89 +446,205 @@ AddMatchingFiles(char *head_in, unsigned type)
 static Bool
 MapMatches(char *mapToConsider, char *ptrn)
 {
-    if (ptrn != NULL)
-        return XkbcNameMatchesPattern(mapToConsider, ptrn);
-    return False;
+    return ptrn ? XkbcNameMatchesPattern(mapToConsider, ptrn) : True;
 }
 
-int
-GenerateListing(char *out_name)
+static int
+GenerateComponents(ListHead *lh, XkbComponentListPtr complist, unsigned type,
+                   int *max, unsigned strip)
 {
-    int i;
-    FILE *inputFile, *outFile;
+    int i, extra = 0;
+    FILE *inputFile;
+    CompPair cp = { 0 };
     XkbFile *rtrn, *mapToUse;
     unsigned oldWarningLevel;
     char *mapName;
 
-    if (nFilesListed < 1)
-    {
-        ERROR("Must specify at least one file or pattern to list\n");
+    if (!lh || !complist || !max) {
+        ERROR("Missing arguments to GenerateComponents\n");
         return 0;
     }
-    if ((!out_name) || ((out_name[0] == '-') && (out_name[1] == '\0')))
-        outFile = stdout;
-    else if ((outFile = fopen(out_name, "w")) == NULL)
-    {
-        ERROR("Cannot open \"%s\" to write keyboard description\n",
-               out_name);
-        ACTION("Exiting\n");
-        return 0;
-    }
+
 #ifdef DEBUG
     if (warningLevel > 9)
         fprintf(stderr, "should list:\n");
 #endif
-    for (i = 0; i < nListed; i++)
-    {
+
+    oldWarningLevel = warningLevel;
+    warningLevel = 0;
+
+    for (i = 0; i < lh->nListed; i++) {
+        struct stat sbuf;
+
 #ifdef DEBUG
-        if (warningLevel > 9)
-        {
+        if (oldWarningLevel > 9) {
             fprintf(stderr, "%s(%s)\n",
-                    (list[i].file ? list[i].file : "*"),
-                    (list[i].map ? list[i].map : "*"));
+                    (lh->list[i].file ? lh->list[i].file : "*"),
+                    (lh->list[i].map ? lh->list[i].map : "*"));
         }
 #endif
-        oldWarningLevel = warningLevel;
-        warningLevel = 0;
-        if (list[i].file)
-        {
-            struct stat sbuf;
 
-            if (stat(list[i].file, &sbuf) < 0)
-            {
-                if (oldWarningLevel > 5)
-                    WARN("Couldn't open \"%s\"\n", list[i].file);
-                continue;
-            }
-            if (S_ISDIR(sbuf.st_mode))
-            {
-                if (verboseLevel & ListRecursive)
-                    AddDirectory(list[i].file, NULL, NULL, NULL);
-                continue;
-            }
+        if (!lh->list[i].file)
+            continue;
 
-            inputFile = fopen(list[i].file, "r");
-            if (!inputFile)
-            {
-                if (oldWarningLevel > 5)
-                    WARN("Couldn't open \"%s\"\n", list[i].file);
-                continue;
-            }
-            setScanState(list[i].file, 1);
-            if (XKBParseFile(inputFile, &rtrn) && (rtrn != NULL))
-            {
-                mapName = list[i].map;
-                mapToUse = rtrn;
-                for (; mapToUse; mapToUse = (XkbFile *) mapToUse->common.next)
-                {
-                    if (!MapMatches(mapToUse->name, mapName))
-                        continue;
-                    ListFile(outFile, list[i].file, mapToUse);
-                }
-            }
-            fclose(inputFile);
+        if (stat(lh->list[i].file, &sbuf) < 0) {
+            if (oldWarningLevel > 5)
+                WARN("Couldn't open \"%s\"\n", lh->list[i].file);
+            continue;
         }
-        warningLevel = oldWarningLevel;
+
+        if (S_ISDIR(sbuf.st_mode))
+            continue;
+
+        inputFile = fopen(lh->list[i].file, "r");
+        if (!inputFile) {
+            if (oldWarningLevel > 5)
+                WARN("Couldn't open \"%s\"\n", lh->list[i].file);
+            continue;
+        }
+
+        setScanState(lh->list[i].file, 1);
+        if (!XKBParseFile(inputFile, &rtrn) || !rtrn) {
+            if (oldWarningLevel > 5)
+                WARN("Couldn't parse file \"%s\"\n", lh->list[i].file);
+            continue;
+        }
+
+        mapName = lh->list[i].map;
+        mapToUse = rtrn;
+        for (; mapToUse; mapToUse = (XkbFile *)mapToUse->common.next) {
+            if (!MapMatches(mapToUse->name, mapName))
+                continue;
+            if (cp.num >= *max) {
+                extra++;
+                continue;
+            }
+            AddComponent(&cp, lh->list[i].file, mapToUse, strip);
+        }
     }
-    return 1;
+    warningLevel = oldWarningLevel;
+
+    /* Trim excess component slots */
+    if (cp.sz > 0 && cp.sz > cp.num) {
+        if (_XkbRealloc(cp.comp, cp.num * sizeof(XkbComponentNameRec)))
+            cp.sz = cp.num;
+        else
+            WARN("Could not reallocate component name list\n");
+    }
+
+    if (extra)
+        *max = 0;
+    else
+        *max -= cp.num;
+
+    switch (type) {
+    case XkmKeymapFile:
+        complist->num_keymaps = cp.num;
+        complist->keymaps = cp.comp;
+        break;
+    case XkmKeyNamesIndex:
+        complist->num_keycodes = cp.num;
+        complist->keycodes = cp.comp;
+        break;
+    case XkmTypesIndex:
+        complist->num_types = cp.num;
+        complist->types = cp.comp;
+        break;
+    case XkmCompatMapIndex:
+        complist->num_compat = cp.num;
+        complist->compat = cp.comp;
+        break;
+    case XkmSymbolsIndex:
+        complist->num_symbols = cp.num;
+        complist->symbols = cp.comp;
+        break;
+    case XkmGeometryIndex:
+        complist->num_geometry = cp.num;
+        complist->geometry = cp.comp;
+        break;
+    }
+
+    return extra;
+}
+
+XkbComponentListPtr
+XkbcListComponents(unsigned int deviceSpec, XkbComponentNamesPtr ptrns,
+                   int *maxMatch)
+{
+    XkbComponentListPtr complist = NULL;
+    char *cur;
+    ListHead lh = { 0 };
+    int extra = 0;
+    unsigned dirsToStrip;
+
+    complist = _XkbTypedCalloc(1, XkbComponentListRec);
+    if (!complist) {
+        ERROR("could not allocate space for listing\n");
+        goto out;
+    }
+
+    if (!maxMatch || *maxMatch <= 0)
+        goto out;
+
+    /* Figure out directory stripping (including 1 for type directory) */
+    cur = DFLT_XKB_CONFIG_ROOT;
+    dirsToStrip = 1;
+    while ((cur = strchr(cur, '/')) != NULL) {
+        cur++;
+        dirsToStrip++;
+    }
+
+    if (ptrns->keymap) {
+        AddMatchingFiles(&lh, ptrns->keymap, DFLT_XKB_CONFIG_ROOT,
+                         XkmKeymapFile);
+        extra += GenerateComponents(&lh, complist, XkmKeymapFile,
+                                    maxMatch, dirsToStrip);
+        ClearList(&lh);
+    }
+
+    if (ptrns->keycodes) {
+        AddMatchingFiles(&lh, ptrns->keycodes, DFLT_XKB_CONFIG_ROOT,
+                         XkmKeyNamesIndex);
+        extra += GenerateComponents(&lh, complist, XkmKeyNamesIndex,
+                                    maxMatch, dirsToStrip);
+        ClearList(&lh);
+    }
+
+    if (ptrns->types) {
+        AddMatchingFiles(&lh, ptrns->types, DFLT_XKB_CONFIG_ROOT,
+                         XkmTypesIndex);
+        extra += GenerateComponents(&lh, complist, XkmTypesIndex,
+                                    maxMatch, dirsToStrip);
+        ClearList(&lh);
+    }
+
+    if (ptrns->compat) {
+        AddMatchingFiles(&lh, ptrns->compat, DFLT_XKB_CONFIG_ROOT,
+                         XkmCompatMapIndex);
+        extra += GenerateComponents(&lh, complist, XkmCompatMapIndex,
+                                    maxMatch, dirsToStrip);
+        ClearList(&lh);
+    }
+
+    if (ptrns->symbols) {
+        AddMatchingFiles(&lh, ptrns->symbols, DFLT_XKB_CONFIG_ROOT,
+                         XkmSymbolsIndex);
+        extra += GenerateComponents(&lh, complist, XkmSymbolsIndex,
+                                    maxMatch, dirsToStrip);
+        ClearList(&lh);
+    }
+
+    if (ptrns->geometry) {
+        AddMatchingFiles(&lh, ptrns->geometry, DFLT_XKB_CONFIG_ROOT,
+                         XkmGeometryIndex);
+        extra += GenerateComponents(&lh, complist, XkmGeometryIndex,
+                                    maxMatch, dirsToStrip);
+        ClearList(&lh);
+    }
+
+    FreeList(&lh);
+out:
+    if (maxMatch)
+        *maxMatch = extra;
+    return complist;
 }

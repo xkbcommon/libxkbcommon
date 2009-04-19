@@ -138,6 +138,10 @@ XkbcCompileKeymapFromComponents(const XkbComponentNamesPtr ktcsg);
 extern XkbcDescPtr
 XkbcCompileKeymapFromFile(FILE *inputFile, const char *mapName);
 
+extern XkbComponentListPtr
+XkbcListComponents(unsigned int deviceSpec, XkbComponentNamesPtr ptrns,
+                   int *maxMatch);
+
 _XFUNCPROTOEND
 
 #endif /* _XKBCOMMON_H_ */
