@@ -479,8 +479,7 @@ GenerateComponent(XkbComponentListPtr complist, unsigned type, char *head_in,
 /***====================================================================***/
 
 XkbComponentListPtr
-XkbcListComponents(unsigned int deviceSpec, XkbComponentNamesPtr ptrns,
-                   int *maxMatch)
+XkbcListComponents(XkbComponentNamesPtr ptrns, int *maxMatch)
 {
     XkbComponentListPtr complist = NULL;
     int extra = 0;
