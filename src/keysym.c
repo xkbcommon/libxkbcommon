@@ -54,6 +54,7 @@ XkbcKeysymToString(KeySym ks)
         return ret;
     }
 
+    /* Try to find it in our hash table. */
     if (ks <= 0x1fffffff) {
         val1 = ks >> 24;
         val2 = (ks >> 16) & 0xff;
@@ -79,35 +80,15 @@ XkbcKeysymToString(KeySym ks)
         }
     }
 
+    /* Unnamed Unicode codepoint. */
     if (ks >= 0x01000100 && ks <= 0x0110ffff) {
-        KeySym val = ks & 0xffffff;
-        char *s;
-        int i;
-
-        if (val & 0xff0000)
-            i = 10;
-        else
-            i = 6;
-
-        s = malloc(i);
-        if (!s)
-            return s;
-
-        i--;
-        s[i--] = '\0';
-        for (; i; i--) {
-            val1 = val & 0xf;
-            val >>= 4;
-            if (val1 < 10)
-                s[i] = '0' + val1;
-            else
-                s[i] = 'A' + val1 - 10;
-        }
-        s[i] = 'U';
-        return s;
+        sprintf(ret, "U%lx", ks & 0xffffffUL);
+        return ret;
     }
 
-    return NULL;
+    /* Unnamed, non-Unicode, symbol (shouldn't generally happen). */
+    sprintf(ret, "0x%08lx", ks);
+    return ret;
 }
 
 KeySym
@@ -151,29 +132,18 @@ XkbcStringToKeysym(const char *s)
     }
 
     if (*s == 'U') {
-        val = 0;
-
-        for (p = &s[1]; *p; p++) {
-            c = *p;
-
-            if ('0' <= c && c <= '9')
-                val = (val << 4) + c - '0';
-            else if ('a' <= c && c <= 'f')
-                val = (val << 4) + c - 'a' + 10;
-            else if ('A' <= c && c <= 'F')
-                val = (val << 4) + c - 'A' + 10;
-            else
-                return NoSymbol;
-
-            if (val > 0x10ffff)
-                return NoSymbol;
-        }
+        val = strtoul(&s[1], NULL, 16);
 
         if (val < 0x20 || (val > 0x7e && val < 0xa0))
             return NoSymbol;
         if (val < 0x100)
             return val;
+        if (val > 0x10ffff)
+            return NoSymbol;
         return val | 0x01000000;
+    }
+    else if (s[0] == '0' && s[1] == 'x') {
+        return strtoul(&s[2], NULL, 16);
     }
 
     return NoSymbol;
