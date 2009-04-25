@@ -31,6 +31,72 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "X11/extensions/XKBcommon.h"
 #include "XKBcommonint.h"
 
+static char *
+XkbcCanonicaliseComponent(char *name, const char *old)
+{
+    char *tmp;
+    int i;
+
+    if (!name)
+        return NULL;
+
+    /* Treachery. */
+    if (old && strchr(old, '%'))
+        return NULL;
+
+    if (name[0] == '+' || name[0] == '|') {
+        if (old) {
+            tmp = malloc(strlen(name) + strlen(old) + 1);
+            if (!tmp)
+                return NULL;
+            sprintf(tmp, "%s%s", old, name);
+            free(name);
+            name = tmp;
+        }
+        else {
+            memmove(name, &name[1], strlen(&name[1]) + 1);
+        }
+    }
+
+    for (i = 0; name[i]; i++) {
+        if (name[i] == '%') {
+            if (old) {
+                tmp = malloc(strlen(name) + strlen(old));
+                if (!tmp)
+                    return NULL;
+                strncpy(tmp, name, i);
+                strcat(tmp + i, old);
+                strcat(tmp + i + strlen(old), &name[i + 1]);
+                free(name);
+                name = tmp;
+                i--;
+            }
+            else {
+                memmove(&name[i - 1], &name[i + 1], strlen(&name[i + 1]) + 1);
+                i -= 2;
+            }
+        }
+    }
+
+    return name;
+}
+
+void
+XkbcCanonicaliseComponents(XkbComponentNamesPtr names,
+                           const XkbComponentNamesPtr old)
+{
+    names->keycodes = XkbcCanonicaliseComponent(names->keycodes,
+                                                old ? old->keycodes : NULL);
+    names->compat = XkbcCanonicaliseComponent(names->compat,
+                                              old ? old->compat : NULL);
+    names->geometry = XkbcCanonicaliseComponent(names->geometry,
+                                                old ? old->geometry : NULL);
+    names->symbols = XkbcCanonicaliseComponent(names->symbols,
+                                               old ? old->symbols : NULL);
+    names->types = XkbcCanonicaliseComponent(names->types,
+                                             old ? old->types : NULL);
+}
+
 Bool
 XkbcComputeEffectiveMap(XkbcDescPtr xkb, XkbKeyTypePtr type,
                         unsigned char *map_rtrn)

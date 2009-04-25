@@ -144,6 +144,24 @@ extern XkbComponentListPtr
 XkbcListComponents(XkbComponentNamesPtr ptrns, int *maxMatch);
 
 /*
+ * Canonicalises component names by prepending the relevant component from
+ * 'old' to the one in 'names' when the latter has a leading '+' or '|', and
+ * by replacing a '%' with the relevant component, e.g.:
+ *
+ * names        old           output
+ * ------------------------------------------
+ * +bar         foo           foo+bar
+ * |quux        baz           baz|quux
+ * foo+%|baz    bar           foo+bar|baz
+ *
+ * If a component in names needs to be modified, the existing value will be
+ * free()d, and a new one allocated with malloc().
+ */
+extern void
+XkbcCanonicaliseComponents(XkbComponentNamesPtr names,
+                           const XkbComponentNamesPtr old);
+
+/*
  * Converts a keysym to a string; will return unknown Unicode codepoints
  * as "Ua1b2", and other unknown keysyms as "0xabcd1234".
  *
