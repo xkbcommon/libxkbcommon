@@ -141,9 +141,21 @@ XkbcCompileKeymapFromFile(FILE *inputFile, const char *mapName);
 extern XkbComponentListPtr
 XkbcListComponents(XkbComponentNamesPtr ptrns, int *maxMatch);
 
+/*
+ * Converts a keysym to a string; will return unknown Unicode codepoints
+ * as "Ua1b2", and other unknown keysyms as "0xabcd1234".
+ *
+ * The string returned may become invalidated after the next call to
+ * XkbcKeysymToString: if you need to preserve it, then you must
+ * duplicate it.
+ */
 extern char *
 XkbcKeysymToString(KeySym ks);
 
+/*
+ * See XkbcKeysymToString comments: this function will accept any string
+ * from that function.
+ */
 extern KeySym
 XkbcStringToKeysym(const char *s);
 
