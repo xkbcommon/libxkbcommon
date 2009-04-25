@@ -33,12 +33,6 @@ authorization from the authors.
 #include <X11/extensions/XKBrulescommon.h>
 #include "X11/extensions/XKBcommon.h"
 
-extern char *
-XkbcKeysymToString(KeySym ks);
-
-extern KeySym
-XkbcStringToKeysym(const char *s);
-
 /***====================================================================***/
 
 extern Bool

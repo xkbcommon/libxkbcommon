@@ -141,6 +141,12 @@ XkbcCompileKeymapFromFile(FILE *inputFile, const char *mapName);
 extern XkbComponentListPtr
 XkbcListComponents(XkbComponentNamesPtr ptrns, int *maxMatch);
 
+extern char *
+XkbcKeysymToString(KeySym ks);
+
+extern KeySym
+XkbcStringToKeysym(const char *s);
+
 _XFUNCPROTOEND
 
 #endif /* _XKBCOMMON_H_ */
