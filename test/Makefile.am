@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/include
+INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/src
 AM_CFLAGS = $(X11_CFLAGS) $(CWARNFLAGS)
 
 TESTS_ENVIRONMENT = $(SHELL)

@@ -23,12 +23,12 @@ failcompile()
 
 rm -f "$log"
 
-compile basic.xkb
-compile named.xkb
-compile named.xkb de
-compile named.xkb us
-compile default.xkb
+compile $srcdir/basic.xkb
+compile $srcdir/named.xkb
+compile $srcdir/named.xkb de
+compile $srcdir/named.xkb us
+compile $srcdir/default.xkb
 
-failcompile basic.xkb foo
-failcompile named.xkb foo
-failcompile bad.xkb
+failcompile $srcdir/basic.xkb foo
+failcompile $srcdir/named.xkb foo
+failcompile $srcdir/bad.xkb
