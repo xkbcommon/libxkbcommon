@@ -44,3 +44,6 @@ check_key 0x0 NoSymbol
 check_string XF86_Switch_VT_5 0x1008FE05
 check_key 0x1008FE20 XF86_Ungrab
 check_string VoidSymbol 0xFFFFFF
+check_key 0x01001234 U1234
+check_string U4567 0x1004567
+check_string 0x10203040 0x10203040
