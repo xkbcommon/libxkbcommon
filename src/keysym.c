@@ -42,13 +42,17 @@ XkbcKeysymToString(KeySym ks)
 {
     int i, n, h, idx;
     const unsigned char *entry;
+    static char ret[11];
     unsigned char val1, val2, val3, val4;
 
-    if (!ks || (ks & ((unsigned long) ~0x1fffffff)) != 0)
+    if ((ks & ((unsigned long) ~0x1fffffff)) != 0)
         return NULL;
 
-    if (ks == XK_VoidSymbol)
-        ks = 0;
+    /* Not listed in keysymdef.h for hysterical raisins. */
+    if (ks == NoSymbol) {
+        sprintf(ret, "NoSymbol");
+        return ret;
+    }
 
     if (ks <= 0x1fffffff) {
         val1 = ks >> 24;

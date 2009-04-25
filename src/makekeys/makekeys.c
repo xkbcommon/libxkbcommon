@@ -206,8 +206,6 @@ main(int argc, char *argv[])
                 continue;
         }
 
-        if (info[ksnum].val == XK_VoidSymbol)
-            info[ksnum].val = 0;
         if (info[ksnum].val > 0x1fffffff) {
             fprintf(stderr,
                     "ignoring illegal keysym (%s), remove it from .h file!\n",
@@ -227,6 +225,11 @@ main(int argc, char *argv[])
             exit(1);
         }
     }
+
+    /* Special case NoSymbol. */
+    info[ksnum].name = strdup("NoSymbol");
+    info[ksnum].val = 0L;
+    ksnum++;
 
     printf("/* This file is generated from keysymdef.h. */\n");
     printf("/* Do not edit. */\n");

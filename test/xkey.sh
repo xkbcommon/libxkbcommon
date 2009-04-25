@@ -40,6 +40,7 @@ rm -f "$log"
 check_string Undo 0xFF65
 check_key 0x1008FF56 XF86Close
 check_string ThisKeyShouldNotExist NoSymbol
-check_key 0x0 NULL
+check_key 0x0 NoSymbol
 check_string XF86_Switch_VT_5 0x1008FE05
 check_key 0x1008FE20 XF86_Ungrab
+check_string VoidSymbol 0xFFFFFF
