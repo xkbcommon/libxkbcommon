@@ -380,17 +380,7 @@ XkbcActionTypeText(unsigned type)
 char *
 XkbcKeysymText(KeySym sym)
 {
-    char *buf;
-
-    if (sym == NoSymbol)
-        return "NoSymbol";
-
-    if ((buf = XkbcKeysymToString(sym)))
-        return buf;
-
-    buf = tbGetBuffer(32);
-    snprintf(buf, 32, "0x%lx", (long)sym);
-    return buf;
+    return XkbcKeysymToString(sym);
 }
 
 char *
