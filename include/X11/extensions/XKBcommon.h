@@ -30,6 +30,8 @@ authorization from the authors.
 
 #include <stdio.h>
 #include <X11/Xfuncproto.h>
+#include <X11/extensions/XKBstrcommon.h>
+#include <X11/extensions/XKBrulescommon.h>
 
 /* Action structures used in the server */
 typedef struct _XkbcModAction {
