@@ -313,10 +313,10 @@ Decl		:	OptMergeMode VarDecl
 			{
 			    if ($1==MergeAltForm) {
 				yyerror("cannot use 'alternate' to include other maps");
-				$$= &IncludeCreate(scanStr,MergeDefault)->common;
+				$$= &IncludeCreate(scanBuf,MergeDefault)->common;
 			    }
 			    else {
-				$$= &IncludeCreate(scanStr,$1)->common;
+				$$= &IncludeCreate(scanBuf,$1)->common;
 			    }
                         }
 		;
@@ -723,7 +723,7 @@ KeySymList	:	KeySymList COMMA KeySym
 			{ $$= CreateKeysymList($1); }
 		;
 
-KeySym		:	IDENT	{ $$= scanStr; scanStr= NULL; }
+KeySym		:	IDENT	{ $$= strdup(scanBuf); }
 		|	SECTION	{ $$= strdup("section"); }
 		|	Integer		
 			{
@@ -753,21 +753,21 @@ Float		:	FLOAT		{ $$= scanInt; }
 Integer		:	INTEGER		{ $$= scanInt; }
 		;
 
-KeyName		:	KEYNAME		{ $$= scanStr; scanStr= NULL; }
+KeyName		:	KEYNAME		{ $$= strdup(scanBuf); }
 		;
 
-Ident		:	IDENT	{ $$= XkbcInternAtom(scanStr,False); }
+Ident		:	IDENT	{ $$= XkbcInternAtom(scanBuf,False); }
 		|	DEFAULT { $$= XkbcInternAtom("default",False); }
 		;
 
-String		:	STRING	{ $$= XkbcInternAtom(scanStr,False); }
+String		:	STRING	{ $$= XkbcInternAtom(scanBuf,False); }
 		;
 
 OptMapName	:	MapName	{ $$= $1; }
 		|		{ $$= NULL; }
 		;
 
-MapName		:	STRING 	{ $$= scanStr; scanStr= NULL; }
+MapName		:	STRING 	{ $$= strdup(scanBuf); }
 		;
 %%
 void
@@ -776,8 +776,8 @@ yyerror(const char *s)
     if (warningLevel>0) {
 	(void)fprintf(stderr,"%s: line %d of %s\n",s,lineNum,
 					(scanFile?scanFile:"(unknown)"));
-	if ((scanStr)&&(warningLevel>3))
-	    (void)fprintf(stderr,"last scanned symbol is: %s\n",scanStr);
+	if ((warningLevel>3))
+	    (void)fprintf(stderr,"last scanned symbol is: %s\n",scanBuf);
     }
     return;
 }

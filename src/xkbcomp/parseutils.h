@@ -33,7 +33,7 @@
 
 #include "xkbcomp.h"
 
-extern char *scanStr;
+extern char scanBuf[1024];
 extern int scanInt;
 extern int lineNum;
 

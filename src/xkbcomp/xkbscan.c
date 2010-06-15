@@ -43,11 +43,10 @@ int lineNum = 0;
 
 int scanInt;
 
-char *scanStr = NULL;
+char scanBuf[1024];
 static int scanStrLine = 0;
 
 #define	BUFSIZE	4096
-static int nInBuf = 0;
 static char readBuf[BUFSIZE];
 static int readBufPos = 0;
 static int readBufLen = 0;
@@ -218,7 +217,7 @@ tokText(int tok)
         break;
 
     case STRING:
-        snprintf(buf, sizeof(buf), "STRING (%s)", scanStr);
+        snprintf(buf, sizeof(buf), "STRING (%s)", scanBuf);
         break;
     case INTEGER:
         snprintf(buf, sizeof(buf), "INTEGER (0x%x)", scanInt);
@@ -228,10 +227,10 @@ tokText(int tok)
                 scanInt / XkbGeomPtsPerMM, scanInt % XkbGeomPtsPerMM);
         break;
     case IDENT:
-        snprintf(buf, sizeof(buf), "IDENT (%s)", scanStr);
+        snprintf(buf, sizeof(buf), "IDENT (%s)", scanBuf);
         break;
     case KEYNAME:
-        snprintf(buf, sizeof(buf), "KEYNAME (%s)", scanStr);
+        snprintf(buf, sizeof(buf), "KEYNAME (%s)", scanBuf);
         break;
 
     case PARTIAL:
@@ -308,7 +307,6 @@ static int
 yyGetString(void)
 {
     int ch, i;
-    char buf[1024];
 
     i = 0;
     while (((ch = scanchar()) != EOF) && (ch != '"'))
@@ -376,15 +374,12 @@ yyGetString(void)
             else
                 return ERROR_TOK;
         }
-        if (i < sizeof(buf) - 1)
-            buf[i++] = ch;
+        if (i < sizeof(scanBuf) - 1)
+            scanBuf[i++] = ch;
     }
     if (ch == '"')
     {
-        buf[i++] = '\0';
-        if (scanStr)
-            uFree(scanStr);
-        scanStr = strdup(buf);
+        scanBuf[i++] = '\0';
         scanStrLine = lineNum;
         return STRING;
     }
@@ -395,7 +390,6 @@ static int
 yyGetKeyName(void)
 {
     int ch, i;
-    char buf[1024];
 
     i = 0;
     while (((ch = scanchar()) != EOF) && (ch != '>'))
@@ -458,15 +452,12 @@ yyGetKeyName(void)
                 return ERROR_TOK;
         }
 
-        if (i < sizeof(buf) - 1)
-            buf[i++] = ch;
+        if (i < sizeof(scanBuf) - 1)
+            scanBuf[i++] = ch;
     }
     if ((ch == '>') && (i < 5))
     {
-        buf[i++] = '\0';
-        if (scanStr)
-            uFree(scanStr);
-        scanStr = strdup(buf);
+        scanBuf[i++] = '\0';
         scanStrLine = lineNum;
         return KEYNAME;
     }
@@ -577,21 +568,20 @@ yyGetIdent(int first)
 {
     int ch, i, j, found;
     int rtrn = IDENT;
-    char buf[1024];
 
-    buf[0] = first;
+    scanBuf[0] = first;
     j = 1;
     while (((ch = scanchar()) != EOF) && (isalnum(ch) || (ch == '_')))
     {
-        if (j < sizeof(buf) - 1)
-            buf[j++] = ch;
+        if (j < sizeof(scanBuf) - 1)
+            scanBuf[j++] = ch;
     }
-    buf[j++] = '\0';
+    scanBuf[j++] = '\0';
     found = 0;
 
     for (i = 0; (!found) && (i < numKeywords); i++)
     {
-        if (uStrCaseCmp(buf, keywords[i].keyword) == 0)
+        if (uStrCaseCmp(scanBuf, keywords[i].keyword) == 0)
         {
             rtrn = keywords[i].token;
             found = 1;
@@ -599,9 +589,6 @@ yyGetIdent(int first)
     }
     if (!found)
     {
-        if (scanStr)
-            uFree(scanStr);
-        scanStr = strdup(buf);
         scanStrLine = lineNum;
         rtrn = IDENT;
     }
@@ -619,6 +606,7 @@ yyGetNumber(int ch)
 {
     int isFloat = 0;
     char buf[1024];
+    int nInBuf = 0;
 
     buf[0] = ch;
     nInBuf = 1;
