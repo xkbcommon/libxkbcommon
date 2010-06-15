@@ -1144,6 +1144,7 @@ SetSymbolsField(KeyInfo * key,
             ERROR("Illegal group index for type of key %s\n",
                    longText(key->name));
             ACTION("Definition with non-integer array index ignored\n");
+            free(tmp.str);
             return False;
         }
         else if ((ndx.uval < 1) || (ndx.uval > XkbNumKbdGroups))
@@ -1152,6 +1153,7 @@ SetSymbolsField(KeyInfo * key,
                 ("Group index for type of key %s is out of range (1..%d)\n",
                  longText(key->name), XkbNumKbdGroups + 1);
             ACTION("Ignoring type for group %d\n", ndx.uval);
+            free(tmp.str);
             return False;
         }
         else
@@ -1159,6 +1161,7 @@ SetSymbolsField(KeyInfo * key,
             key->types[ndx.uval - 1] = XkbcInternAtom(tmp.str, False);
             key->typesDefined |= (1 << (ndx.uval - 1));
         }
+        free(tmp.str);
     }
     else if (uStrCaseCmp(field, "symbols") == 0)
         return AddSymbolsToKey(key, xkb, field, arrayNdx, value, info);
@@ -1407,19 +1410,20 @@ HandleSymbolsVar(VarDef * stmt, XkbcDescPtr xkb, SymbolsInfo * info)
 {
     ExprResult elem, field, tmp;
     ExprDef *arrayNdx;
+    Bool ret;
 
     if (ExprResolveLhs(stmt->name, &elem, &field, &arrayNdx) == 0)
         return 0;               /* internal error, already reported */
     if (elem.str && (uStrCaseCmp(elem.str, "key") == 0))
     {
-        return SetSymbolsField(&info->dflt, xkb, field.str, arrayNdx,
-                               stmt->value, info);
+        ret = SetSymbolsField(&info->dflt, xkb, field.str, arrayNdx,
+                              stmt->value, info);
     }
     else if ((elem.str == NULL) && ((uStrCaseCmp(field.str, "name") == 0) ||
                                     (uStrCaseCmp(field.str, "groupname") ==
                                      0)))
     {
-        return SetGroupName(info, arrayNdx, stmt->value);
+        ret = SetGroupName(info, arrayNdx, stmt->value);
     }
     else if ((elem.str == NULL)
              && ((uStrCaseCmp(field.str, "groupswrap") == 0)
@@ -1429,13 +1433,15 @@ HandleSymbolsVar(VarDef * stmt, XkbcDescPtr xkb, SymbolsInfo * info)
         {
             ERROR("Illegal setting for global groupsWrap\n");
             ACTION("Non-boolean value ignored\n");
-            return False;
+            ret = False;
         }
-        if (tmp.uval)
-            info->groupInfo = XkbWrapIntoRange;
-        else
-            info->groupInfo = XkbClampIntoRange;
-        return True;
+        else {
+            if (tmp.uval)
+                info->groupInfo = XkbWrapIntoRange;
+            else
+                info->groupInfo = XkbClampIntoRange;
+            ret = True;
+        }
     }
     else if ((elem.str == NULL)
              && ((uStrCaseCmp(field.str, "groupsclamp") == 0)
@@ -1447,11 +1453,13 @@ HandleSymbolsVar(VarDef * stmt, XkbcDescPtr xkb, SymbolsInfo * info)
             ACTION("Non-boolean value ignored\n");
             return False;
         }
-        if (tmp.uval)
-            info->groupInfo = XkbClampIntoRange;
-        else
-            info->groupInfo = XkbWrapIntoRange;
-        return True;
+        else {
+            if (tmp.uval)
+                info->groupInfo = XkbClampIntoRange;
+            else
+                info->groupInfo = XkbWrapIntoRange;
+            ret = True;
+        }
     }
     else if ((elem.str == NULL)
              && ((uStrCaseCmp(field.str, "groupsredirect") == 0)
@@ -1462,25 +1470,36 @@ HandleSymbolsVar(VarDef * stmt, XkbcDescPtr xkb, SymbolsInfo * info)
         {
             ERROR("Illegal group index for global groupsRedirect\n");
             ACTION("Definition with non-integer group ignored\n");
-            return False;
+            ret = False;
         }
-        if ((tmp.uval < 1) || (tmp.uval > XkbNumKbdGroups))
-        {
-            ERROR
-                ("Out-of-range (1..%d) group for global groupsRedirect\n",
-                 XkbNumKbdGroups);
-            ACTION("Ignoring illegal group %d\n", tmp.uval);
-            return False;
+        else {
+            if ((tmp.uval < 1) || (tmp.uval > XkbNumKbdGroups))
+            {
+                ERROR
+                    ("Out-of-range (1..%d) group for global groupsRedirect\n",
+                     XkbNumKbdGroups);
+                ACTION("Ignoring illegal group %d\n", tmp.uval);
+                ret = False;
+            }
+            else {
+                info->groupInfo = XkbSetGroupInfo(0, XkbRedirectIntoRange,
+                                                  tmp.uval);
+                ret = True;
+            }
         }
-        info->groupInfo = XkbSetGroupInfo(0, XkbRedirectIntoRange, tmp.uval);
-        return True;
     }
     else if ((elem.str == NULL) && (uStrCaseCmp(field.str, "allownone") == 0))
     {
-        return SetAllowNone(&info->dflt, arrayNdx, stmt->value);
+        ret = SetAllowNone(&info->dflt, arrayNdx, stmt->value);
     }
-    return SetActionField(xkb, elem.str, field.str, arrayNdx, stmt->value,
-                          &info->action);
+    else {
+        ret = SetActionField(xkb, elem.str, field.str, arrayNdx, stmt->value,
+                             &info->action);
+    }
+
+    free(elem.str);
+    free(field.str);
+    return ret;
 }
 
 static Bool

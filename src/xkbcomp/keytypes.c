@@ -324,7 +324,7 @@ AddKeyType(XkbcDescPtr xkb, KeyTypesInfo * info, KeyTypeInfo * new)
                  && (warningLevel > 0)) || (warningLevel > 9))
             {
                 WARN("Multiple definitions of the %s key type\n",
-                      XkbcAtomGetString(new->name));
+                     XkbcAtomText(new->name));
                 ACTION("Earlier definition ignored\n");
             }
             FreeKeyTypeInfo(old);
@@ -340,7 +340,7 @@ AddKeyType(XkbcDescPtr xkb, KeyTypesInfo * info, KeyTypeInfo * new)
         if (report)
         {
             WARN("Multiple definitions of the %s key type\n",
-                  XkbcAtomGetString(new->name));
+                 XkbcAtomText(new->name));
             ACTION("Later definition ignored\n");
         }
         FreeKeyTypeInfo(new);
@@ -837,6 +837,7 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
 {
     ExprResult rtrn;
     unsigned level;
+    Atom level_name;
 
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(type, "level name");
@@ -859,9 +860,9 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
         ACTION("Ignoring illegal level name definition\n");
         return False;
     }
-    return
-        AddLevelName(type, level, XkbcInternAtom(rtrn.str, False), True,
-                     True);
+    level_name = XkbcInternAtom(rtrn.str, False);
+    free(rtrn.str);
+    return AddLevelName(type, level, level_name, True, True);
 }
 
 /***====================================================================***/
