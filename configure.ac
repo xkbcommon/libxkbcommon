@@ -59,6 +59,7 @@ XORG_CHECK_MALLOC_ZERO
 XORG_CWARNFLAGS
 
 PKG_CHECK_MODULES([X11], [xproto kbproto >= 1.0.99.1])
+PKG_CHECK_MODULES([XLIB], [x11])
 
 dnl Ensure we have keysym headers
 AC_MSG_CHECKING([for X11 includedir])

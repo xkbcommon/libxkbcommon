@@ -393,7 +393,7 @@ ActionCreate(Atom name, ExprDef * args)
 }
 
 ExprDef *
-CreateKeysymList(KeySym sym)
+CreateKeysymList(char *sym)
 {
     ExprDef *def;
 
@@ -401,8 +401,8 @@ CreateKeysymList(KeySym sym)
     if (def)
     {
         def->value.list.nSyms = 1;
-        def->value.list.szSyms = 2;
-        def->value.list.syms = uTypedCalloc(2, KeySym);
+        def->value.list.szSyms = 4;
+        def->value.list.syms = uTypedCalloc(4, char *);
         if (def->value.list.syms != NULL)
         {
             def->value.list.syms[0] = sym;
@@ -601,7 +601,7 @@ DoodadCreate(unsigned type, Atom name, VarDef * body)
 }
 
 ExprDef *
-AppendKeysymList(ExprDef * list, KeySym sym)
+AppendKeysymList(ExprDef * list, char *sym)
 {
     if (list->value.list.nSyms >= list->value.list.szSyms)
     {
@@ -609,7 +609,7 @@ AppendKeysymList(ExprDef * list, KeySym sym)
         list->value.list.syms = uTypedRecalloc(list->value.list.syms,
                                                list->value.list.nSyms,
                                                list->value.list.szSyms,
-                                               KeySym);
+                                               char *);
         if (list->value.list.syms == NULL)
         {
             FATAL("Couldn't resize list of symbols for append\n");
