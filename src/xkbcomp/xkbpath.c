@@ -246,14 +246,13 @@ XkbAddDirectoryToPath(const char *dir)
             return False;
         }
     }
-    includePath[nPathEntries] =
-        (char *) calloc(strlen(dir) + 1, sizeof(char));
+    includePath[nPathEntries] = strdup(dir);
     if (includePath[nPathEntries] == NULL)
     {
         WSGO("Allocation failed (includePath[%d])\n", nPathEntries);
         return False;
     }
-    strcpy(includePath[nPathEntries++], dir);
+    nPathEntries++;
     return True;
 }
 
