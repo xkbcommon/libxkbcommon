@@ -971,7 +971,7 @@ AddDoodad(SectionInfo * si, GeometryInfo * info, DoodadInfo * new)
 static DoodadInfo *
 FindDfltDoodadByTypeName(char *name, SectionInfo * si, GeometryInfo * info)
 {
-    DoodadInfo *dflt;
+    DoodadInfo *dflt = NULL;
     unsigned type;
 
     if (uStrCaseCmp(name, "outline") == 0)
@@ -988,8 +988,6 @@ FindDfltDoodadByTypeName(char *name, SectionInfo * si, GeometryInfo * info)
         return NULL;
     if ((si) && (si->dfltDoodads))
         dflt = FindDoodadByType(si->dfltDoodads, type);
-    else
-        dflt = NULL;
     if ((!dflt) && (info->dfltDoodads))
         dflt = FindDoodadByType(info->dfltDoodads, type);
     if (dflt == NULL)
@@ -1848,6 +1846,7 @@ SetDoodadField(DoodadInfo * di,
         }
         di->defs.defined |= _GD_Color;
         di->color = XkbcInternAtom(tmp.str, False);
+        free(tmp.str);
         return True;
     }
     switch (di->type)
@@ -2049,6 +2048,7 @@ SetKeyField(KeyInfo * key,
         }
         key->defs.defined |= _GK_Shape;
         key->shape = XkbcInternAtom(tmp.str, False);
+        free(tmp.str);
     }
     else if ((uStrCaseCmp(field, "color") == 0) ||
              (uStrCaseCmp(field, "keycolor") == 0))
@@ -2065,6 +2065,7 @@ SetKeyField(KeyInfo * key,
         }
         key->defs.defined |= _GK_Color;
         key->color = XkbcInternAtom(tmp.str, False);
+        free(tmp.str);
     }
     else if ((uStrCaseCmp(field, "name") == 0)
              || (uStrCaseCmp(field, "keyname") == 0))
@@ -2096,6 +2097,7 @@ SetGeometryProperty(GeometryInfo * info, char *property, ExprDef * value)
 {
     PropertyInfo pi;
     ExprResult result;
+    int ret;
 
     InitPropertyInfo(&pi, info);
     pi.name = property;
@@ -2107,7 +2109,9 @@ SetGeometryProperty(GeometryInfo * info, char *property, ExprDef * value)
         return False;
     }
     pi.value = result.str;
-    return AddProperty(info, &pi);
+    ret = AddProperty(info, &pi);
+    free(pi.value);
+    return ret;
 }
 
 static int
@@ -2116,84 +2120,88 @@ HandleGeometryVar(VarDef * stmt, XkbcDescPtr xkb, GeometryInfo * info)
     ExprResult elem, field, tmp;
     ExprDef *ndx;
     DoodadInfo *di;
-    Atom *pField;
+    Atom *pField = NULL;
+    int ret;
 
     if (ExprResolveLhs(stmt->name, &elem, &field, &ndx) == 0)
         return 0;               /* internal error, already reported */
-    if (elem.str && (uStrCaseCmp(elem.str, "shape") == 0))
-        return SetShapeField(NULL, field.str, ndx, stmt->value, info);
-    if (elem.str && (uStrCaseCmp(elem.str, "key") == 0))
-        return SetKeyField(&info->dfltSection.dfltRow.dfltKey,
-                           field.str, ndx, stmt->value, info);
-    if (elem.str && (uStrCaseCmp(elem.str, "row") == 0))
-        return SetRowField(&info->dfltSection.dfltRow, field.str, ndx,
-                           stmt->value, info);
-    if (elem.str && (uStrCaseCmp(elem.str, "section") == 0))
-    {
-        return SetSectionField(&info->dfltSection, field.str, ndx,
+
+    if (elem.str) {
+        if (uStrCaseCmp(elem.str, "shape") == 0)
+            ret = SetShapeField(NULL, field.str, ndx, stmt->value, info);
+        else if (uStrCaseCmp(elem.str, "key") == 0)
+            ret = SetKeyField(&info->dfltSection.dfltRow.dfltKey,
+                               field.str, ndx, stmt->value, info);
+        else if (uStrCaseCmp(elem.str, "row") == 0)
+            ret = SetRowField(&info->dfltSection.dfltRow, field.str, ndx,
                                stmt->value, info);
-    }
-    if (elem.str && (uStrCaseCmp(elem.str, "property") == 0))
-    {
-        if (ndx != NULL)
+        else if (uStrCaseCmp(elem.str, "section") == 0)
+            ret = SetSectionField(&info->dfltSection, field.str, ndx,
+                                   stmt->value, info);
+        else if (uStrCaseCmp(elem.str, "property") == 0)
         {
-            info->errorCount++;
-            ERROR("The %s geometry property is not an array\n", field.str);
-            ACTION("Ignoring illegal property definition\n");
-            return False;
+            if (ndx != NULL)
+            {
+                info->errorCount++;
+                ERROR("The %s geometry property is not an array\n", field.str);
+                ACTION("Ignoring illegal property definition\n");
+                ret = False;
+            }
+            else {
+                ret = SetGeometryProperty(info, field.str, stmt->value);
+            }
         }
-        return SetGeometryProperty(info, field.str, stmt->value);
-    }
-    if (elem.str
-        && ((di = FindDfltDoodadByTypeName(elem.str, NULL, info)) != NULL))
-    {
-        return SetDoodadField(di, field.str, ndx, stmt->value, NULL, info);
-    }
-    if (elem.str && (uStrCaseCmp(elem.str, "solid") == 0))
-    {
-        DoodadInfo *dflt;
-        dflt = FindDoodadByType(info->dfltDoodads, XkbSolidDoodad);
-        if (dflt == NULL)
-            dflt = NextDfltDoodad(NULL, info);
-        return SetDoodadField(dflt, field.str, ndx, stmt->value, NULL, info);
-    }
-    if (elem.str && (uStrCaseCmp(elem.str, "outline") == 0))
-    {
-        DoodadInfo *dflt;
-        dflt = FindDoodadByType(info->dfltDoodads, XkbOutlineDoodad);
-        if (dflt == NULL)
-            dflt = NextDfltDoodad(NULL, info);
-        return SetDoodadField(dflt, field.str, ndx, stmt->value, NULL, info);
-    }
-    if (elem.str && (uStrCaseCmp(elem.str, "text") == 0))
-    {
-        DoodadInfo *dflt;
-        dflt = FindDoodadByType(info->dfltDoodads, XkbTextDoodad);
-        if (dflt == NULL)
-            dflt = NextDfltDoodad(NULL, info);
-        return SetDoodadField(dflt, field.str, ndx, stmt->value, NULL, info);
-    }
-    if (elem.str && (uStrCaseCmp(elem.str, "indicator") == 0))
-    {
-        DoodadInfo *dflt;
-        dflt = FindDoodadByType(info->dfltDoodads, XkbIndicatorDoodad);
-        if (dflt == NULL)
-            dflt = NextDfltDoodad(NULL, info);
-        return SetDoodadField(dflt, field.str, ndx, stmt->value, NULL, info);
-    }
-    if (elem.str && (uStrCaseCmp(elem.str, "logo") == 0))
-    {
-        DoodadInfo *dflt;
-        dflt = FindDoodadByType(info->dfltDoodads, XkbLogoDoodad);
-        if (dflt == NULL)
-            dflt = NextDfltDoodad(NULL, info);
-        return SetDoodadField(dflt, field.str, ndx, stmt->value, NULL, info);
-    }
-    if (elem.str)
-    {
-        WARN("Assignment to field of unknown element\n");
-        ACTION("No value assigned to %s.%s\n", elem.str, field.str);
-        return False;
+        else if ((di = FindDfltDoodadByTypeName(elem.str, NULL, info)) != NULL)
+            ret = SetDoodadField(di, field.str, ndx, stmt->value, NULL, info);
+        else if (uStrCaseCmp(elem.str, "solid") == 0)
+        {
+            DoodadInfo *dflt;
+            dflt = FindDoodadByType(info->dfltDoodads, XkbSolidDoodad);
+            if (dflt == NULL)
+                dflt = NextDfltDoodad(NULL, info);
+            ret = SetDoodadField(dflt, field.str, ndx, stmt->value, NULL, info);
+        }
+        else if (uStrCaseCmp(elem.str, "outline") == 0)
+        {
+            DoodadInfo *dflt;
+            dflt = FindDoodadByType(info->dfltDoodads, XkbOutlineDoodad);
+            if (dflt == NULL)
+                dflt = NextDfltDoodad(NULL, info);
+            ret = SetDoodadField(dflt, field.str, ndx, stmt->value, NULL, info);
+        }
+        else if (uStrCaseCmp(elem.str, "text") == 0)
+        {
+            DoodadInfo *dflt;
+            dflt = FindDoodadByType(info->dfltDoodads, XkbTextDoodad);
+            if (dflt == NULL)
+                dflt = NextDfltDoodad(NULL, info);
+            ret = SetDoodadField(dflt, field.str, ndx, stmt->value, NULL, info);
+        }
+        else if (uStrCaseCmp(elem.str, "indicator") == 0)
+        {
+            DoodadInfo *dflt;
+            dflt = FindDoodadByType(info->dfltDoodads, XkbIndicatorDoodad);
+            if (dflt == NULL)
+                dflt = NextDfltDoodad(NULL, info);
+            ret = SetDoodadField(dflt, field.str, ndx, stmt->value, NULL, info);
+        }
+        else if (uStrCaseCmp(elem.str, "logo") == 0)
+        {
+            DoodadInfo *dflt;
+            dflt = FindDoodadByType(info->dfltDoodads, XkbLogoDoodad);
+            if (dflt == NULL)
+                dflt = NextDfltDoodad(NULL, info);
+            ret = SetDoodadField(dflt, field.str, ndx, stmt->value, NULL, info);
+        }
+        else
+        {
+            WARN("Assignment to field of unknown element\n");
+            ACTION("No value assigned to %s.%s\n", elem.str, field.str);
+            ret = False;
+        }
+        free(elem.str);
+        free(field.str);
+        return ret;
     }
 
     if ((uStrCaseCmp(field.str, "width") == 0) ||
@@ -2202,28 +2210,32 @@ HandleGeometryVar(VarDef * stmt, XkbcDescPtr xkb, GeometryInfo * info)
         if (ndx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray("keyboard", field.str, "geometry");
+            ret = ReportNotArray("keyboard", field.str, "geometry");
         }
-        if (!ExprResolveFloat(stmt->value, &tmp, NULL, NULL))
+        else if (!ExprResolveFloat(stmt->value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType("keyboard", field.str, "geometry", "number");
+            ret = ReportBadType("keyboard", field.str, "geometry", "number");
         }
-        if (tmp.ival < 1)
+        else if (tmp.ival < 1)
         {
             WARN("Keyboard width must be positive\n");
             ACTION("Ignoring illegal keyboard width %s\n",
                     XkbcGeomFPText(tmp.ival));
-            return True;
+            ret = True;
         }
-        if (info->widthMM != 0)
-        {
-            WARN("Keyboard width multiply defined\n");
-            ACTION("Using last definition (%s),", XkbcGeomFPText(tmp.ival));
-            INFO(" ignoring first (%s)\n", XkbcGeomFPText(info->widthMM));
+        else {
+            if (info->widthMM != 0)
+            {
+                WARN("Keyboard width multiply defined\n");
+                ACTION("Using last definition (%s),", XkbcGeomFPText(tmp.ival));
+                INFO(" ignoring first (%s)\n", XkbcGeomFPText(info->widthMM));
+            }
+            info->widthMM = tmp.ival;
+            ret = True;
         }
-        info->widthMM = tmp.ival;
-        return True;
+        free(field.str);
+        return ret;
     }
     else if ((uStrCaseCmp(field.str, "height") == 0) ||
              (uStrCaseCmp(field.str, "heightmm") == 0))
@@ -2231,28 +2243,99 @@ HandleGeometryVar(VarDef * stmt, XkbcDescPtr xkb, GeometryInfo * info)
         if (ndx != NULL)
         {
             info->errorCount++;
-            return ReportNotArray("keyboard", field.str, "geometry");
+            ret = ReportNotArray("keyboard", field.str, "geometry");
         }
         if (!ExprResolveFloat(stmt->value, &tmp, NULL, NULL))
         {
             info->errorCount++;
-            return ReportBadType("keyboard", field.str, "geometry", "number");
+            ret = ReportBadType("keyboard", field.str, "geometry", "number");
         }
         if (tmp.ival < 1)
         {
             WARN("Keyboard height must be positive\n");
             ACTION("Ignoring illegal keyboard height %s\n",
                     XkbcGeomFPText(tmp.ival));
-            return True;
+            ret = True;
         }
-        if (info->heightMM != 0)
+        else {
+            if (info->heightMM != 0)
+            {
+                WARN("Keyboard height multiply defined\n");
+                ACTION("Using last definition (%s),", XkbcGeomFPText(tmp.ival));
+                INFO(" ignoring first (%s)\n", XkbcGeomFPText(info->heightMM));
+            }
+            info->heightMM = tmp.ival;
+            ret = True;
+        }
+        free(field.str);
+        return ret;
+    }
+    else if (uStrCaseCmp(field.str, "fontsize") == 0)
+    {
+        if (ndx != NULL)
         {
-            WARN("Keyboard height multiply defined\n");
-            ACTION("Using last definition (%s),", XkbcGeomFPText(tmp.ival));
-            INFO(" ignoring first (%s)\n", XkbcGeomFPText(info->heightMM));
+            info->errorCount++;
+            ret = ReportNotArray("keyboard", field.str, "geometry");
         }
-        info->heightMM = tmp.ival;
-        return True;
+        else if (!ExprResolveFloat(stmt->value, &tmp, NULL, NULL))
+        {
+            info->errorCount++;
+            ret = ReportBadType("keyboard", field.str, "geometry", "number");
+        }
+        else if ((tmp.ival < 40) || (tmp.ival > 2550))
+        {
+            info->errorCount++;
+            ERROR("Illegal font size %d (must be 4..255)\n", tmp.ival);
+            ACTION("Ignoring font size in keyboard geometry\n");
+            ret = False;
+        }
+        else {
+            info->fontSize = tmp.ival;
+            ret = True;
+        }
+        free(field.str);
+        return ret;
+    }
+    else if ((uStrCaseCmp(field.str, "color") == 0) ||
+             (uStrCaseCmp(field.str, "basecolor") == 0))
+    {
+        if (ndx != NULL)
+        {
+            info->errorCount++;
+            ret = ReportNotArray("keyboard", field.str, "geometry");
+        }
+        if (!ExprResolveString(stmt->value, &tmp, NULL, NULL))
+        {
+            info->errorCount++;
+            ret = ReportBadType("keyboard", field.str, "geometry", "string");
+        }
+        else {
+            info->baseColor = XkbcInternAtom(tmp.str, False);
+            free(tmp.str);
+            ret = True;
+        }
+        free(field.str);
+        return ret;
+    }
+    else if (uStrCaseCmp(field.str, "labelcolor") == 0)
+    {
+        if (ndx != NULL)
+        {
+            info->errorCount++;
+            ret = ReportNotArray("keyboard", field.str, "geometry");
+        }
+        if (!ExprResolveString(stmt->value, &tmp, NULL, NULL))
+        {
+            info->errorCount++;
+            ret = ReportBadType("keyboard", field.str, "geometry", "string");
+        }
+        else {
+            info->labelColor = XkbcInternAtom(tmp.str, False);
+            free(tmp.str);
+            ret = True;
+        }
+        free(field.str);
+        return ret;
     }
     else if (uStrCaseCmp(field.str, "font") == 0)
     {
@@ -2283,76 +2366,30 @@ HandleGeometryVar(VarDef * stmt, XkbcDescPtr xkb, GeometryInfo * info)
     {
         pField = &info->fontSpec;
     }
-    else if (uStrCaseCmp(field.str, "fontsize") == 0)
-    {
-        if (ndx != NULL)
-        {
-            info->errorCount++;
-            return ReportNotArray("keyboard", field.str, "geometry");
-        }
-        if (!ExprResolveFloat(stmt->value, &tmp, NULL, NULL))
-        {
-            info->errorCount++;
-            return ReportBadType("keyboard", field.str, "geometry", "number");
-        }
-        if ((tmp.ival < 40) || (tmp.ival > 2550))
-        {
-            info->errorCount++;
-            ERROR("Illegal font size %d (must be 4..255)\n", tmp.ival);
-            ACTION("Ignoring font size in keyboard geometry\n");
-            return False;
-        }
-        info->fontSize = tmp.ival;
-        return True;
-    }
-    else if ((uStrCaseCmp(field.str, "color") == 0) ||
-             (uStrCaseCmp(field.str, "basecolor") == 0))
-    {
-        if (ndx != NULL)
-        {
-            info->errorCount++;
-            return ReportNotArray("keyboard", field.str, "geometry");
-        }
-        if (!ExprResolveString(stmt->value, &tmp, NULL, NULL))
-        {
-            info->errorCount++;
-            return ReportBadType("keyboard", field.str, "geometry", "string");
-        }
-        info->baseColor = XkbcInternAtom(tmp.str, False);
-        return True;
-    }
-    else if (uStrCaseCmp(field.str, "labelcolor") == 0)
-    {
-        if (ndx != NULL)
-        {
-            info->errorCount++;
-            return ReportNotArray("keyboard", field.str, "geometry");
-        }
-        if (!ExprResolveString(stmt->value, &tmp, NULL, NULL))
-        {
-            info->errorCount++;
-            return ReportBadType("keyboard", field.str, "geometry", "string");
-        }
-        info->labelColor = XkbcInternAtom(tmp.str, False);
-        return True;
-    }
     else
     {
-        return SetGeometryProperty(info, field.str, stmt->value);
+        ret = SetGeometryProperty(info, field.str, stmt->value);
+        free(field.str);
+        return ret;
     }
 
+    /* fallthrough for the cases that set pField */
     if (ndx != NULL)
     {
         info->errorCount++;
-        return ReportNotArray("keyboard", field.str, "geometry");
+        ret = ReportNotArray("keyboard", field.str, "geometry");
     }
-    if (!ExprResolveString(stmt->value, &tmp, NULL, NULL))
+    else if (!ExprResolveString(stmt->value, &tmp, NULL, NULL))
     {
         info->errorCount++;
-        return ReportBadType("keyboard", field.str, "geometry", "string");
+        ret = ReportBadType("keyboard", field.str, "geometry", "string");
     }
-    *pField = XkbcInternAtom(tmp.str, False);
-    return True;
+    else {
+        *pField = XkbcInternAtom(tmp.str, False);
+        free(tmp.str);
+    }
+    free(field.str);
+    return ret;
 }
 
 /***====================================================================***/
@@ -2386,8 +2423,7 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
     {
         if (ol->nPoints < 1)
         {
-            SetShapeField(si, XkbcAtomGetString(ol->field), NULL,
-                          ol->points, info);
+            SetShapeField(si, XkbcAtomText(ol->field), NULL, ol->points, info);
             continue;
         }
         outline = NULL;
@@ -2399,6 +2435,7 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
         {
             ERROR("Can't allocate points for \"%s\"\n", shText(si));
             ACTION("Definition ignored\n");
+            /* XXX leaks */
             info->errorCount++;
             return False;
         }
@@ -2441,6 +2478,7 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
                       shText(si));
                 ACTION("Treated as a normal outline\n");
             }
+            free(str);
         }
     }
     if (nOut != si->nOutlines)
@@ -2463,8 +2501,7 @@ HandleShapeDef(ShapeDef * def, XkbcDescPtr xkb, unsigned merge,
 
     bzero(&si, sizeof(ShapeInfo));
     si.defs.merge = merge;
-    si.name =
-        XkbcInternAtom(XkbcAtomGetString(def->name), False);
+    si.name = def->name;
     si.dfltCornerRadius = info->dfltCornerRadius;
     if (!HandleShapeBody(def, &si, merge, info))
         return False;
@@ -2490,8 +2527,7 @@ HandleDoodadDef(DoodadDef * def,
         def->type = XkbIndicatorDoodad;
     }
     InitDoodadInfo(&new, def->type, si, info);
-    new.name =
-        XkbcInternAtom(XkbcAtomGetString(def->name), False);
+    new.name = def->name;
     for (var = def->body; var != NULL; var = (VarDef *) var->common.next)
     {
         if (ExprResolveLhs(var->name, &elem, &field, &ndx) == 0)
@@ -2501,9 +2537,13 @@ HandleDoodadDef(DoodadDef * def,
             WARN("Assignment to field of unknown element in doodad %s\n",
                   ddText(&new));
             ACTION("No value assigned to %s.%s\n", elem.str, field.str);
+            free(elem.str);
         }
-        else if (!SetDoodadField(&new, field.str, ndx, var->value, si, info))
+        else if (!SetDoodadField(&new, field.str, ndx, var->value, si, info)) {
+            free(field.str);
             return False;
+        }
+        free(field.str);
     }
     if (!AddDoodad(si, info, &new))
         return False;
@@ -2529,8 +2569,7 @@ HandleOverlayDef(OverlayDef * def,
         return True;
     }
     bzero(&ol, sizeof(OverlayInfo));
-    ol.name =
-        XkbcInternAtom(XkbcAtomGetString(def->name), False);
+    ol.name = def->name;
     for (keyDef = def->keys; keyDef;
          keyDef = (OverlayKeyDef *) keyDef->common.next)
     {
@@ -2707,31 +2746,45 @@ HandleSectionBody(SectionDef * def,
             if ((elem.str == NULL) || (uStrCaseCmp(elem.str, "section") == 0))
             {
                 if (!SetSectionField(si, field.str, ndx, var->value, info))
+                {
+                    free(field.str);
                     return False;
+                }
             }
             else if (uStrCaseCmp(elem.str, "row") == 0)
             {
                 if (!SetRowField
                     (&si->dfltRow, field.str, ndx, var->value, info))
+                {
+                    free(field.str);
                     return False;
+                }
             }
             else if (uStrCaseCmp(elem.str, "key") == 0)
             {
                 if (!SetKeyField(&si->dfltRow.dfltKey, field.str, ndx,
                                  var->value, info))
+                {
+                    free(field.str);
                     return False;
+                }
             }
             else if ((di =
                       FindDfltDoodadByTypeName(elem.str, si, info)) != NULL)
             {
                 if (!SetDoodadField(di, field.str, ndx, var->value, si, info))
+                {
+                    free(field.str);
                     return False;
+                }
             }
             else
             {
                 WARN("Assignment to field of unknown element in section\n");
                 ACTION("No value assigned to %s.%s\n", elem.str, field.str);
             }
+            free(field.str);
+            free(elem.str);
         }
         else if (rowDef->common.stmtType == StmtRowDef)
         {
@@ -2775,21 +2828,12 @@ HandleSectionDef(SectionDef * def,
                  XkbcDescPtr xkb, unsigned merge, GeometryInfo * info)
 {
     SectionInfo si;
-    char *str;
 
     if (def->merge != MergeDefault)
         merge = def->merge;
     InitSectionInfo(&si, info);
     si.defs.merge = merge;
-    str = XkbcAtomGetString(def->name);
-    if ((str == NULL) || (strlen(str) < 1))
-    {
-        ERROR("Section defined without a name\n");
-        ACTION("Definition ignored\n");
-        return False;
-    }
-    si.name =
-        XkbcInternAtom(XkbcAtomGetString(def->name), False);
+    si.name = def->name;
     if (!HandleSectionBody(def, &si, merge, info))
         return False;
     if (!AddSection(info, &si))
@@ -2889,7 +2933,7 @@ CopyShapeDef(XkbGeometryPtr geom, ShapeInfo * si)
     Atom name;
 
     si->index = geom->num_shapes;
-    name = XkbcInternAtom(XkbcAtomGetString(si->name), False);
+    name = si->name;
     shape = XkbcAddGeomShape(geom, name, si->nOutlines);
     if (!shape)
     {
@@ -3082,8 +3126,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
             char *tmp;
             size = (di->fontSize * 120) / 100;
             size = (size * 254) / 720;  /* convert to mm/10 */
-            for (nLines = 1, tmp = XkbcAtomGetString(di->text); *tmp;
-                 tmp++)
+            for (nLines = 1, tmp = XkbcAtomText(di->text); *tmp; tmp++)
             {
                 if (*tmp == '\n')
                     nLines++;
@@ -3102,7 +3145,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
             unsigned width, tmp;
             char *str;
             width = tmp = 0;
-            for (str = XkbcAtomGetString(di->text); *str; str++)
+            for (str = XkbcAtomText(di->text); *str; str++)
             {
                 if (*str != '\n')
                     tmp++;
@@ -3223,19 +3266,14 @@ FontFromParts(Atom fontTok,
     char *font, *weight, *slant, *setWidth, *variant, *encoding;
     char *rtrn;
 
-    font = (fontTok != None ? XkbcAtomGetString(fontTok) : DFLT_FONT);
-    weight =
-        (weightTok != None ? XkbcAtomGetString(weightTok) : DFLT_WEIGHT);
-    slant =
-        (slantTok != None ? XkbcAtomGetString(slantTok) : DFLT_SLANT);
+    font = (fontTok != None ? XkbcAtomText(fontTok) : DFLT_FONT);
+    weight = (weightTok != None ? XkbcAtomText(weightTok) : DFLT_WEIGHT);
+    slant = (slantTok != None ? XkbcAtomText(slantTok) : DFLT_SLANT);
     setWidth =
-        (setWidthTok !=
-         None ? XkbcAtomGetString(setWidthTok) : DFLT_SET_WIDTH);
-    variant =
-        (varTok != None ? XkbcAtomGetString(varTok) : DFLT_VARIANT);
+        (setWidthTok != None ? XkbcAtomText(setWidthTok) : DFLT_SET_WIDTH);
+    variant = (varTok != None ? XkbcAtomText(varTok) : DFLT_VARIANT);
     encoding =
-        (encodingTok !=
-         None ? XkbcAtomGetString(encodingTok) : DFLT_ENCODING);
+        (encodingTok != None ? XkbcAtomText(encodingTok) : DFLT_ENCODING);
     if (size == 0)
         size = DFLT_SIZE;
     totalSize =
@@ -3243,10 +3281,8 @@ FontFromParts(Atom fontTok,
     totalSize += strlen(setWidth) + strlen(variant) + strlen(encoding);
     rtrn = uCalloc(totalSize, 1);
     if (rtrn)
-    {
         sprintf(rtrn, FONT_TEMPLATE, font, weight, slant, setWidth, variant,
                 size, encoding);
-    }
     return rtrn;
 }
 
@@ -3262,7 +3298,7 @@ CopyDoodadDef(XkbGeometryPtr geom,
 
     if (!VerifyDoodadInfo(di, info))
         return False;
-    name = XkbcInternAtom(XkbcAtomGetString(di->name), False);
+    name = di->name;
     doodad = XkbcAddGeomDoodad(geom, section, name);
     if (!doodad)
     {
@@ -3283,9 +3319,8 @@ CopyDoodadDef(XkbGeometryPtr geom,
         if (!si)
             return False;
         doodad->shape.angle = di->angle;
-        color =
-            XkbcAddGeomColor(geom, XkbcAtomGetString(di->color),
-                            geom->num_colors);
+        color = XkbcAddGeomColor(geom, XkbcAtomText(di->color),
+                                 geom->num_colors);
         shape = &geom->shapes[si->index];
         XkbSetShapeDoodadColor(geom, &doodad->shape, color);
         XkbSetShapeDoodadShape(geom, &doodad->shape, shape);
@@ -3303,9 +3338,8 @@ CopyDoodadDef(XkbGeometryPtr geom,
         else
             doodad->text.font = XkbcAtomGetString(di->fontSpec);
         doodad->text.text = XkbcAtomGetString(di->text);
-        color =
-            XkbcAddGeomColor(geom, XkbcAtomGetString(di->color),
-                            geom->num_colors);
+        color = XkbcAddGeomColor(geom, XkbcAtomText(di->color),
+                                 geom->num_colors);
         XkbSetTextDoodadColor(geom, &doodad->text, color);
         break;
     case XkbIndicatorDoodad:
@@ -3313,14 +3347,12 @@ CopyDoodadDef(XkbGeometryPtr geom,
         if (!si)
             return False;
         shape = &geom->shapes[si->index];
-        color =
-            XkbcAddGeomColor(geom, XkbcAtomGetString(di->color),
-                            geom->num_colors);
+        color = XkbcAddGeomColor(geom, XkbcAtomText(di->color),
+                                 geom->num_colors);
         XkbSetIndicatorDoodadShape(geom, &doodad->indicator, shape);
         XkbSetIndicatorDoodadOnColor(geom, &doodad->indicator, color);
-        color =
-            XkbcAddGeomColor(geom, XkbcAtomGetString(di->offColor),
-                            geom->num_colors);
+        color = XkbcAddGeomColor(geom, XkbcAtomText(di->offColor),
+                                 geom->num_colors);
         XkbSetIndicatorDoodadOffColor(geom, &doodad->indicator, color);
         break;
     case XkbLogoDoodad:
@@ -3328,9 +3360,8 @@ CopyDoodadDef(XkbGeometryPtr geom,
         if (!si)
             return False;
         doodad->logo.angle = di->angle;
-        color =
-            XkbcAddGeomColor(geom, XkbcAtomGetString(di->color),
-                            geom->num_colors);
+        color = XkbcAddGeomColor(geom, XkbcAtomText(di->color),
+                                 geom->num_colors);
         shape = &geom->shapes[si->index];
         XkbSetLogoDoodadColor(geom, &doodad->logo, color);
         XkbSetLogoDoodadShape(geom, &doodad->logo, shape);
@@ -3454,7 +3485,7 @@ CopyOverlayDef(XkbGeometryPtr geom,
 
     if (!VerifyOverlayInfo(geom, section, oi, info, rowMap, rowSize))
         return False;
-    name = XkbcInternAtom(XkbcAtomGetString(oi->name), False);
+    name = oi->name;
     ol = XkbcAddGeomOverlay(section, name, oi->nRows);
     if (!ol)
     {
@@ -3500,11 +3531,9 @@ CopySectionDef(XkbGeometryPtr geom, SectionInfo * si, GeometryInfo * info)
     XkbKeyPtr key;
     KeyInfo *ki;
     RowInfo *ri;
-    Atom name;
 
-    name = XkbcInternAtom(XkbcAtomGetString(si->name), False);
-    section =
-        XkbcAddGeomSection(geom, name, si->nRows, si->nDoodads, si->nOverlays);
+    section = XkbcAddGeomSection(geom, si->name, si->nRows, si->nDoodads,
+                                 si->nOverlays);
     if (section == NULL)
     {
         WSGO("Couldn't allocate section in geometry\n");
@@ -3560,9 +3589,8 @@ CopySectionDef(XkbGeometryPtr geom, SectionInfo * si, GeometryInfo * info)
             }
             if (ki->color != None)
                 color =
-                    XkbcAddGeomColor(geom,
-                                    XkbcAtomGetString(ki->color),
-                                    geom->num_colors);
+                    XkbcAddGeomColor(geom, XkbcAtomText(ki->color),
+                                     geom->num_colors);
             else
                 color = XkbcAddGeomColor(geom, "white", geom->num_colors);
             XkbSetKeyColor(geom, key, color);
@@ -3634,8 +3662,7 @@ CompileGeometry(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
                 xkb->names->geometry = geom->name;
         }
         if (info.fontSpec != None)
-            geom->label_font =
-                _XkbDupString(XkbcAtomGetString(info.fontSpec));
+            geom->label_font = XkbcAtomGetString(info.fontSpec);
         else
             geom->label_font = FontFromParts(info.font, info.fontWeight,
                                              info.fontSlant,
@@ -3651,11 +3678,11 @@ CompileGeometry(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
         if (info.labelColor == None)
             info.labelColor = XkbcInternAtom("black", False);
         geom->base_color =
-            XkbcAddGeomColor(geom, XkbcAtomGetString(info.baseColor),
-                            geom->num_colors);
+            XkbcAddGeomColor(geom, XkbcAtomText(info.baseColor),
+                             geom->num_colors);
         geom->label_color =
-            XkbcAddGeomColor(geom, XkbcAtomGetString(info.labelColor),
-                            geom->num_colors);
+            XkbcAddGeomColor(geom, XkbcAtomText(info.labelColor),
+                             geom->num_colors);
 
         if (info.props)
         {
