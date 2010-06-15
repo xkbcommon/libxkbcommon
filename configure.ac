@@ -24,7 +24,7 @@ AC_PREREQ([2.57])
 AC_INIT([libxkbcommon], [0.1.0],
     [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg])
 AM_INIT_AUTOMAKE([dist-bzip2 foreign])
-AM_MAINTAINER_MODE
+AM_SILENT_RULES([yes])
 AC_CONFIG_HEADERS([src/config.h])
 
 AC_PROG_LIBTOOL
