@@ -167,7 +167,7 @@ SimpleLookup(char * priv,
     {
         return False;
     }
-    str = XkbcAtomGetString(field);
+    str = XkbcAtomText(field);
     for (entry = (LookupEntry *) priv;
          (entry != NULL) && (entry->name != NULL); entry++)
     {
@@ -191,7 +191,7 @@ RadioLookup(char * priv,
 
     if ((field == None) || (elem != None) || (type != TypeInt))
         return False;
-    str = XkbcAtomGetString(field);
+    str = XkbcAtomText(field);
     if (str)
     {
         if (uStrCasePrefix("group", str))
@@ -219,7 +219,7 @@ TableLookup(char * priv,
 
     if ((priv == NULL) || (field == None) || (type != TypeInt))
         return False;
-    str = XkbcAtomGetString(elem);
+    str = XkbcAtomText(elem);
     while (tbl)
     {
         if (((str == NULL) && (tbl->element == NULL)) ||
@@ -262,6 +262,7 @@ LookupModMask(char * priv,
               Atom elem, Atom field, unsigned type, ExprResult * val_rtrn)
 {
     char *str;
+    Bool ret = True;
 
     if ((elem != None) || (type != TypeInt))
         return False;
@@ -280,11 +281,12 @@ LookupModMask(char * priv,
         if ((lpriv->chain == NULL) ||
             (!(*lpriv->chain) (lpriv->chainPriv, elem, field, type,
                                val_rtrn)))
-            return False;
+            ret = False;
     }
     else
-        return False;
-    return True;
+        ret = False;
+    free(str);
+    return ret;
 }
 
 int
@@ -398,7 +400,7 @@ ExprResolveBoolean(ExprDef * expr,
         val_rtrn->ival = expr->value.ival;
         return True;
     case ExprIdent:
-        bogus = XkbcAtomGetString(expr->value.str);
+        bogus = XkbcAtomText(expr->value.str);
         if (bogus)
         {
             if ((uStrCaseCmp(bogus, "true") == 0) ||
@@ -487,8 +489,8 @@ ExprResolveFloat(ExprDef * expr,
     case ExprValue:
         if (expr->type == TypeString)
         {
-            register char *str;
-            str = XkbcAtomGetString(expr->value.str);
+            char *str;
+            str = XkbcAtomText(expr->value.str);
             if ((str != NULL) && (strlen(str) == 1))
             {
                 val_rtrn->uval = str[0] * XkbGeomPtsPerMM;
@@ -600,8 +602,8 @@ ExprResolveInteger(ExprDef * expr,
     case ExprValue:
         if (expr->type == TypeString)
         {
-            register char *str;
-            str = XkbcAtomGetString(expr->value.str);
+            char *str;
+            str = XkbcAtomText(expr->value.str);
             if (str != NULL)
                 switch (strlen(str))
                 {
@@ -1052,7 +1054,7 @@ ExprResolveKeySym(ExprDef * expr,
     if (expr->op == ExprIdent)
     {
         char *str;
-        str = XkbcAtomGetString(expr->value.str);
+        str = XkbcAtomText(expr->value.str);
         if ((str != NULL) && ((sym = XkbcStringToKeysym(str)) != NoSymbol))
         {
             val_rtrn->uval = sym;
