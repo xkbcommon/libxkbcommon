@@ -104,8 +104,8 @@ XkbcInitAtoms(void)
     nodeTable[None] = NULL;
 }
 
-char *
-XkbcAtomGetString(Atom atom)
+static char *
+_XkbcAtomGetString(Atom atom)
 {
     NodePtr node;
 
@@ -113,7 +113,31 @@ XkbcAtomGetString(Atom atom)
         return NULL;
     if (!(node = nodeTable[atom]))
         return NULL;
-    return strdup(node->string);
+    return node->string;
+}
+
+char *
+XkbcAtomGetString(Atom atom)
+{
+    char *ret = _XkbcAtomGetString(atom);
+    return ret ? strdup(ret) : NULL;
+}
+
+char *
+XkbcAtomText(Atom atom)
+{
+    char *tmp, *ret;
+
+    tmp = _XkbcAtomGetString(atom);
+    if (!tmp)
+        return "";
+
+    ret = tbGetBuffer(strlen(tmp) + 1);
+    if (!ret)
+        return "";
+
+    strcpy(ret, tmp);
+    return ret;
 }
 
 static Atom
