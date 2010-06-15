@@ -608,19 +608,22 @@ HandleInterpVar(VarDef * stmt, XkbcDescPtr xkb, CompatInfo * info)
 {
     ExprResult elem, field;
     ExprDef *ndx;
+    int ret;
 
     if (ExprResolveLhs(stmt->name, &elem, &field, &ndx) == 0)
-        return 0;               /* internal error, already reported */
-    if (elem.str && (uStrCaseCmp(elem.str, "interpret") == 0))
-        return SetInterpField(&info->dflt, xkb, field.str, ndx, stmt->value,
+        ret = 0;               /* internal error, already reported */
+    else if (elem.str && (uStrCaseCmp(elem.str, "interpret") == 0))
+        ret = SetInterpField(&info->dflt, xkb, field.str, ndx, stmt->value,
                               info);
-    if (elem.str && (uStrCaseCmp(elem.str, "indicator") == 0))
-    {
-        return SetIndicatorMapField(&info->ledDflt, xkb, field.str, ndx,
-                                    stmt->value);
-    }
-    return SetActionField(xkb, elem.str, field.str, ndx, stmt->value,
-                          &info->act);
+    else if (elem.str && (uStrCaseCmp(elem.str, "indicator") == 0))
+        ret = SetIndicatorMapField(&info->ledDflt, xkb, field.str, ndx,
+                                  stmt->value);
+    else
+        ret = SetActionField(xkb, elem.str, field.str, ndx, stmt->value,
+                            &info->act);
+    free(elem.str);
+    free(field.str);
+    return ret;
 }
 
 static int

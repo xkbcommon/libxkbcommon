@@ -373,7 +373,7 @@ CheckModifierField(XkbcDescPtr xkb,
     if (value->op == ExprIdent)
     {
         register char *valStr;
-        valStr = XkbcAtomGetString(value->value.str);
+        valStr = XkbcAtomText(value->value.str);
         if (valStr && ((uStrCaseCmp(valStr, "usemodmapmods") == 0) ||
                        (uStrCaseCmp(valStr, "modmapmods") == 0)))
         {
@@ -1202,6 +1202,7 @@ HandlePrivate(XkbcDescPtr xkb,
                 }
                 strncpy((char *) action->data, rtrn.str, 7);
             }
+            free(rtrn.str);
             return True;
         }
         else
@@ -1368,13 +1369,19 @@ HandleActionDef(ExprDef * def,
             ERROR("Cannot change defaults in an action definition\n");
             ACTION("Ignoring attempt to change %s.%s\n", elemRtrn.str,
                     fieldRtrn.str);
+            free(elemRtrn.str);
+            free(fieldRtrn.str);
             return False;
         }
         if (!stringToField(fieldRtrn.str, &fieldNdx))
         {
             ERROR("Unknown field name %s\n", uStringText(fieldRtrn.str));
+            free(elemRtrn.str);
+            free(fieldRtrn.str);
             return False;
         }
+        free(elemRtrn.str);
+        free(fieldRtrn.str);
         if (!(*handleAction[hndlrType])
             (xkb, action, fieldNdx, arrayRtrn, value))
         {
@@ -1408,17 +1415,22 @@ SetActionField(XkbcDescPtr xkb,
     else
     {
         if (!stringToAction(elem, &new->action))
+        {
+            free(new);
             return False;
+        }
         if (new->action == XkbSA_NoAction)
         {
             ERROR("\"%s\" is not a valid field in a NoAction action\n",
                    field);
+            free(new);
             return False;
         }
     }
     if (!stringToField(field, &new->field))
     {
         ERROR("\"%s\" is not a legal field name\n", field);
+        free(new);
         return False;
     }
     new->array_ndx = array_ndx;
