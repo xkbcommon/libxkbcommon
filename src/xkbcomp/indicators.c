@@ -360,6 +360,8 @@ HandleIndicatorMapDef(IndicatorMapDef * def,
             ok = SetIndicatorMapField(&led, xkb, field.str, arrayNdx,
                                       var->value) && ok;
         }
+        free(elem.str);
+        free(field.str);
     }
     if (ok)
     {
@@ -480,7 +482,7 @@ BindIndicators(XkbcDescPtr xkb, Bool force, LEDInfo *unbound,
                         ERROR("No unnamed indicators found\n");
                         ACTION
                             ("Virtual indicator map \"%s\" not bound\n",
-                             XkbcAtomGetString(led->name));
+                             XkbcAtomText(led->name));
                         continue;
                     }
                 }
@@ -515,8 +517,8 @@ BindIndicators(XkbcDescPtr xkb, Bool force, LEDInfo *unbound,
                 ERROR("Multiple names bound to indicator %d\n",
                        (unsigned int) led->indicator);
                 ACTION("Using %s, ignoring %s\n",
-                        XkbcAtomGetString(old),
-                        XkbcAtomGetString(led->name));
+                        XkbcAtomText(old),
+                        XkbcAtomText(led->name));
                 led->indicator = _LED_NotBound;
                 if (force)
                 {

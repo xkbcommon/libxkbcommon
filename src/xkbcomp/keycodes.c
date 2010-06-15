@@ -730,6 +730,7 @@ HandleIndicatorNameDef(IndicatorNameDef * def,
         return ReportBadType("indicator", "name", buf, "string");
     }
     ii.name = XkbcInternAtom(tmp.str, False);
+    free(tmp.str);
     ii.virtual = def->virtual;
     if (!AddIndicatorName(info, &ii))
         return False;
@@ -872,8 +873,7 @@ CompileKeycodes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
             for (ii = info.leds; ii != NULL;
                  ii = (IndicatorNameInfo *) ii->defs.next)
             {
-                xkb->names->indicators[ii->ndx - 1] =
-                    XkbcInternAtom(XkbcAtomGetString(ii->name), False);
+                xkb->names->indicators[ii->ndx - 1] = ii->name;
                 if (xkb->indicators != NULL)
                 {
                     register unsigned bit;
