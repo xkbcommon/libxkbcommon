@@ -86,16 +86,14 @@ HandleVModDef(VModDef * stmt, unsigned mergeMode, VModInfo * info)
     ExprResult mod;
     XkbcServerMapPtr srv;
     XkbNamesPtr names;
-    Atom stmtName;
 
     srv = info->xkb->server;
     names = info->xkb->names;
-    stmtName = XkbcInternAtom(XkbcAtomGetString(stmt->name), False);
     for (i = 0, bit = 1, nextFree = -1; i < XkbNumVirtualMods; i++, bit <<= 1)
     {
         if (info->defined & bit)
         {
-            if (names->vmods[i] == stmtName)
+            if (names->vmods[i] == stmt->name)
             {                   /* already defined */
                 info->available |= bit;
                 if (stmt->value == NULL)
@@ -140,7 +138,7 @@ HandleVModDef(VModDef * stmt, unsigned mergeMode, VModInfo * info)
     info->defined |= (1 << nextFree);
     info->newlyDefined |= (1 << nextFree);
     info->available |= (1 << nextFree);
-    names->vmods[nextFree] = stmtName;
+    names->vmods[nextFree] = stmt->name;
     if (stmt->value == NULL)
         return True;
     if (ExprResolveModMask(stmt->value, &mod, NULL, NULL))
@@ -148,8 +146,7 @@ HandleVModDef(VModDef * stmt, unsigned mergeMode, VModInfo * info)
         srv->vmods[nextFree] = mod.uval;
         return True;
     }
-    ACTION("Declaration of %s ignored\n",
-            XkbcAtomText(stmt->name));
+    ACTION("Declaration of %s ignored\n", XkbcAtomText(stmt->name));
     return False;
 }
 
@@ -169,9 +166,7 @@ int
 LookupVModIndex(char * priv,
                 Atom elem, Atom field, unsigned type, ExprResult * val_rtrn)
 {
-    register int i;
-    register char *fieldStr;
-    register char *modStr;
+    int i;
     XkbcDescPtr xkb;
 
     xkb = (XkbcDescPtr) priv;
@@ -180,10 +175,6 @@ LookupVModIndex(char * priv,
     {
         return False;
     }
-    /* get the actual name */
-    fieldStr = XkbcAtomGetString(field);
-    if (fieldStr == NULL)
-        return False;
     /* For each named modifier, get the name and compare it to the one passed
      * in. If we get a match, return the index of the modifier.
      * The order of modifiers is the same as in the virtual_modifiers line in
@@ -191,8 +182,7 @@ LookupVModIndex(char * priv,
      */
     for (i = 0; i < XkbNumVirtualMods; i++)
     {
-        modStr = XkbcAtomGetString(xkb->names->vmods[i]);
-        if ((modStr != NULL) && (uStrCaseCmp(fieldStr, modStr) == 0))
+        if (xkb->names->vmods[i] == field)
         {
             val_rtrn->uval = i;
             return True;
@@ -246,13 +236,10 @@ ResolveVirtualModifier(ExprDef * def, ExprResult * val_rtrn, VModInfo * info)
     names = info->xkb->names;
     if (def->op == ExprIdent)
     {
-        register int i, bit;
+        int i, bit;
         for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1)
         {
-            char *str1, *str2;
-            str1 = XkbcAtomGetString(names->vmods[i]);
-            str2 = XkbcAtomGetString(def->value.str);
-            if ((info->available & bit) && (uStrCaseCmp(str1, str2) == Equal))
+            if ((info->available & bit) && names->vmods[i] == def->value.str)
             {
                 val_rtrn->uval = i;
                 return True;
