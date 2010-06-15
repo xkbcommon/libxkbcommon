@@ -35,12 +35,12 @@
 #include <string.h>
 #include <ctype.h>
 
-#define BUFFER_SIZE 512
+#define BUFFER_SIZE 1024
 static char textBuffer[BUFFER_SIZE];
 static int tbNext = 0;
 
-static char *
-tbGetBuffer(unsigned size)
+char *
+tbGetBuffer(unsigned int size)
 {
     char *rtrn;
 
