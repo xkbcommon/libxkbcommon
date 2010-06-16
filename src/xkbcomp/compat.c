@@ -118,7 +118,7 @@ InitCompatInfo(CompatInfo * info, XkbcDescPtr xkb)
     info->dflt.interp.flags = 0;
     info->dflt.interp.virtual_mod = XkbNoModifier;
     info->dflt.interp.act.type = XkbSA_NoAction;
-    for (i = 0; i < XkbAnyActionDataSize; i++)
+    for (i = 0; i < XkbcAnyActionDataSize; i++)
     {
         info->dflt.interp.act.data[i] = 0;
     }
@@ -146,7 +146,7 @@ ClearCompatInfo(CompatInfo * info, XkbcDescPtr xkb)
     info->dflt.interp.flags = 0;
     info->dflt.interp.virtual_mod = XkbNoModifier;
     info->dflt.interp.act.type = XkbSA_NoAction;
-    for (i = 0; i < XkbAnyActionDataSize; i++)
+    for (i = 0; i < XkbcAnyActionDataSize; i++)
     {
         info->dflt.interp.act.data[i] = 0;
     }

@@ -28,85 +28,116 @@ authorization from the authors.
 #ifndef _XKBCOMMON_H_
 #define _XKBCOMMON_H_
 
+#include <stdint.h>
 #include <stdio.h>
 #include <X11/Xfuncproto.h>
 #include <X11/extensions/XKBstrcommon.h>
 #include <X11/extensions/XKBrulescommon.h>
 
 /* Action structures used in the server */
+
+#define XkbcAnyActionDataSize 18
+typedef struct _XkbcAnyAction {
+    unsigned char   type;
+    unsigned char   pad[XkbcAnyActionDataSize];
+} XkbcAnyAction;
+
 typedef struct _XkbcModAction {
     unsigned char   type;
-    unsigned char   flags;
-    unsigned char   mask;
-    unsigned char   real_mods;
-    unsigned int    vmods;
+    uint8_t         flags;
+    uint32_t        mask;
+    uint32_t        real_mods;
+    uint32_t        vmods;
 } XkbcModAction;
+
+typedef struct _XkbcGroupAction {
+    unsigned char   type;
+    unsigned char   flags;
+    int16_t         group;
+} XkbcGroupAction;
 
 typedef struct _XkbcISOAction {
     unsigned char   type;
-    unsigned char   flags;
-    unsigned char   mask;
-    unsigned char   real_mods;
-    /* FIXME: Make this an int. */
-    char            group_XXX;
-    unsigned char   affect;
-    unsigned int    vmods;
+    uint8_t         flags;
+    int16_t         group;
+    uint32_t        mask;
+    uint32_t        vmods;
+    uint32_t        real_mods;
+    uint8_t         affect;
 } XkbcISOAction;
-
-typedef struct _XkbcPtrAction {
-    unsigned char   type;
-    unsigned char   flags;
-    int             x;
-    int             y;
-} XkbcPtrAction;
 
 typedef struct _XkbcCtrlsAction {
     unsigned char   type;
     unsigned char   flags;
-    unsigned long   ctrls;
+    uint32_t        ctrls;
 } XkbcCtrlsAction;
 
-typedef struct  _XkbcRedirectKeyAction {
+typedef struct _XkbcDeviceBtnAction {
     unsigned char   type;
-    unsigned char   new_key;
-    unsigned char   mods_mask;
-    unsigned char   mods;
-    unsigned int    vmods_mask;
-    unsigned int    vmods;
-} XkbcRedirectKeyAction;
+    unsigned char   flags;
+    uint16_t        device;
+    uint16_t        button;
+    uint8_t         count;
+} XkbcDeviceBtnAction;
+
+typedef struct _XkbcDeviceValuatorAction {
+    unsigned char   type;
+    uint8_t         v1_what;
+    uint16_t        device;
+    uint16_t        v1_index;
+    int16_t         v1_value;
+    uint16_t        v2_index;
+    int16_t         v2_value;
+    uint8_t         v2_what;
+} XkbcDeviceValuatorAction;
+
+typedef struct _XkbcPtrDfltAction {
+    unsigned char   type;
+    uint8_t         flags;
+    uint8_t         affect;
+    uint8_t         value;
+} XkbcPtrDfltAction;
+
+typedef struct _XkbcSwitchScreenAction {
+    unsigned char   type;
+    uint8_t         flags;
+    uint8_t         screen;
+} XkbcSwitchScreenAction;
 
 typedef union _XkbcAction {
-    XkbAnyAction            any;
-    XkbcModAction           mods;
-    XkbGroupAction          group;
-    XkbcISOAction           iso;
-    XkbcPtrAction           ptr;
-    XkbPtrBtnAction         btn;
-    XkbPtrDfltAction        dflt;
-    XkbSwitchScreenAction   screen;
-    XkbcCtrlsAction         ctrls;
-    XkbMessageAction        msg;
-    XkbcRedirectKeyAction   redirect;
-    XkbDeviceBtnAction      devbtn;
-    XkbDeviceValuatorAction devval;
+    XkbcAnyAction            any;
+    XkbcModAction            mods;
+    XkbcGroupAction          group;
+    XkbcISOAction            iso;
+    XkbcCtrlsAction          ctrls;
+    XkbcDeviceBtnAction      devbtn;
+    XkbcDeviceValuatorAction devval;
+    XkbcPtrDfltAction        dflt;
+    XkbcSwitchScreenAction   screen;
+    XkbRedirectKeyAction     redirect; /* XXX wholly unnecessary? */
+    XkbPtrAction             ptr; /* XXX delete for DeviceValuator */
+    XkbPtrBtnAction          btn; /* XXX delete for DeviceBtn */
+    XkbMessageAction         msg; /* XXX just delete */
     unsigned char           type;
 } XkbcAction;
 
 typedef struct _XkbcServerMapRec {
     unsigned short      num_acts;
     unsigned short      size_acts;
-    XkbcAction *        acts;
 
-    XkbBehavior *       behaviors;
-    unsigned short *    key_acts;
 #if defined(__cplusplus) || defined(c_plusplus)
     /* explicit is a C++ reserved word */
     unsigned char *     c_explicit;
 #else
     unsigned char *     explicit;
 #endif
-    unsigned char       vmods[XkbNumVirtualMods];
-    unsigned short *    vmodmap;
+
+    XkbcAction          *acts;
+    XkbBehavior         *behaviors;
+    unsigned short      *key_acts;
+    unsigned char       *explicits;
+    uint32_t            vmods[XkbNumVirtualMods];
+    uint32_t            *vmodmap;
 } XkbcServerMapRec, *XkbcServerMapPtr;
 
 /* Common keyboard description structure */

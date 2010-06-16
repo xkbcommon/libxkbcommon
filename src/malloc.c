@@ -221,7 +221,7 @@ XkbcAllocServerMap(XkbcDescPtr xkb, unsigned which, unsigned nNewActions)
 
         if (!map->vmodmap) {
             i = xkb->max_key_code + 1;
-            map->vmodmap = _XkbTypedCalloc(i, unsigned short);
+            map->vmodmap = _XkbTypedCalloc(i, uint32_t);
             if (!map->vmodmap)
                 return BadAlloc;
         }
@@ -770,18 +770,18 @@ XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
             }
 
             if (xkb->server->vmodmap) {
-                unsigned short *prev_vmodmap = xkb->server->vmodmap;
+                uint32_t *prev_vmodmap = xkb->server->vmodmap;
 
                 xkb->server->vmodmap = _XkbTypedRealloc(xkb->server->vmodmap,
                                                         maxKC + 1,
-                                                        unsigned short);
+                                                        uint32_t);
                 if (!xkb->server->vmodmap) {
                     _XkbFree(prev_vmodmap);
                     return BadAlloc;
                 }
 
                 bzero(&xkb->server->vmodmap[xkb->max_key_code],
-                      tmp * sizeof(unsigned short));
+                      tmp * sizeof(uint32_t));
                 if (changes)
                     changes->map.changed = _ExtendRange(changes->map.changed,
                                                 XkbVirtualModMapMask, maxKC,

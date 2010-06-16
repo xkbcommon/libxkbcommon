@@ -587,10 +587,10 @@ HandleMovePtr(XkbcDescPtr xkb,
               unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
-    XkbcPtrAction *act;
+    XkbPtrAction *act;
     Bool absolute;
 
-    act = (XkbcPtrAction *) action;
+    act = (XkbPtrAction *) action;
     if ((array_ndx != NULL) && ((field == F_X) || (field == F_Y)))
         return ReportActionNotArray(action->type, field);
 
@@ -606,13 +606,13 @@ HandleMovePtr(XkbcDescPtr xkb,
         {
             if (absolute)
                 act->flags |= XkbSA_MoveAbsoluteX;
-            act->x = rtrn.ival;
+            XkbSetPtrActionX(act, rtrn.ival);
         }
         else
         {
             if (absolute)
                 act->flags |= XkbSA_MoveAbsoluteY;
-            act->y = rtrn.ival;
+            XkbSetPtrActionY(act, rtrn.ival);
         }
         return True;
     }
@@ -813,7 +813,7 @@ HandleISOLock(XkbcDescPtr xkb,
         if (CheckGroupField(action->type, value, &flags, &group))
         {
             act->flags = flags | XkbSA_ISODfltIsGroup;
-            XkbSASetGroup(act, group);
+            act->group = group;
             return True;
         }
         return False;
@@ -1036,14 +1036,14 @@ HandleRedirectKey(XkbcDescPtr xkb,
                   unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
-    XkbcRedirectKeyAction *act;
+    XkbRedirectKeyAction *act;
     unsigned t1, t2;
     unsigned long tmp;
 
     if (array_ndx != NULL)
         return ReportActionNotArray(action->type, field);
 
-    act = (XkbcRedirectKeyAction *) action;
+    act = (XkbRedirectKeyAction *) action;
     switch (field)
     {
     case F_Keycode:
@@ -1069,11 +1069,11 @@ HandleRedirectKey(XkbcDescPtr xkb,
                 act->mods &= ~(t2 & 0xff);
 
             t2 = (t2 >> 8) & 0xffff;
-            act->vmods_mask |= t2;
+            XkbSARedirectSetVModsMask(act, XkbSARedirectVModsMask(act) | t2);
             if (field == F_Modifiers)
-                act->vmods |= t2;
+                XkbSARedirectSetVMods(act, XkbSARedirectVMods(act) | t2);
             else
-                act->vmods &= ~t2;
+                XkbSARedirectSetVMods(act, XkbSARedirectVMods(act) & ~t2);
             return True;
         }
         return True;
@@ -1277,7 +1277,7 @@ ApplyActionFactoryDefaults(XkbcAction * action)
     {                           /* increment default button */
         action->dflt.affect = XkbSA_AffectDfltBtn;
         action->dflt.flags = 0;
-        XkbSASetPtrDfltValue(&action->dflt, 1);
+        action->dflt.value = 1;
     }
     else if (action->type == XkbSA_ISOLock)
     {
