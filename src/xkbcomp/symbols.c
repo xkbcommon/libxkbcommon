@@ -993,7 +993,7 @@ AddActionsToKey(KeyInfo * key,
     register int i;
     unsigned ndx, nActs;
     ExprDef *act;
-    XkbAnyAction *toAct;
+    XkbcAnyAction *toAct;
 
     if (!GetGroupIndex(key, arrayNdx, ACTIONS, &ndx))
         return False;
@@ -1035,7 +1035,7 @@ AddActionsToKey(KeyInfo * key,
     }
     key->actsDefined |= (1 << ndx);
 
-    toAct = (XkbAnyAction *) key->acts[ndx];
+    toAct = (XkbcAnyAction *) key->acts[ndx];
     act = value->value.child;
     for (i = 0; i < nActs; i++, toAct++)
     {

@@ -185,7 +185,7 @@ typedef struct _XkbcDesc {
     XkbcClientMapPtr    map;
     XkbIndicatorPtr     indicators;
     XkbNamesPtr         names;
-    XkbCompatMapPtr     compat;
+    XkbcCompatMapPtr    compat;
     XkbGeometryPtr      geom;
 } XkbcDescRec, *XkbcDescPtr;
 

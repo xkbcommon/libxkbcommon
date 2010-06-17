@@ -556,7 +556,9 @@ XkbcAllocGeomPoints(XkbOutlinePtr ol, int nPts)
 int
 XkbcAllocGeomKeys(XkbRowPtr row, int nKeys)
 {
-    return _XkbAllocKeys(row, nKeys);
+    int ret = _XkbAllocKeys(row, nKeys);
+    fprintf(stderr, "!!! allocated %d keys at %p\n", nKeys, row->keys);
+    return ret;
 }
 
 int

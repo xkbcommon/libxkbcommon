@@ -39,7 +39,7 @@
 typedef struct _SymInterpInfo
 {
     CommonInfo defs;
-    XkbSymInterpretRec interp;
+    XkbcSymInterpretRec interp;
 } SymInterpInfo;
 
 #define	_SI_VirtualMod		(1<<0)
@@ -120,7 +120,7 @@ InitCompatInfo(CompatInfo * info, XkbcDescPtr xkb)
     info->dflt.interp.act.type = XkbSA_NoAction;
     for (i = 0; i < XkbcAnyActionDataSize; i++)
     {
-        info->dflt.interp.act.data[i] = 0;
+        info->dflt.interp.act.pad[i] = 0;
     }
     ClearIndicatorMapInfo(&info->ledDflt);
     info->ledDflt.defs.fileID = info->fileID;
@@ -148,7 +148,7 @@ ClearCompatInfo(CompatInfo * info, XkbcDescPtr xkb)
     info->dflt.interp.act.type = XkbSA_NoAction;
     for (i = 0; i < XkbcAnyActionDataSize; i++)
     {
-        info->dflt.interp.act.data[i] = 0;
+        info->dflt.interp.act.pad[i] = 0;
     }
     ClearIndicatorMapInfo(&info->ledDflt);
     info->nInterps = 0;
@@ -787,7 +787,7 @@ HandleCompatMapFile(XkbFile * file,
 
 static void
 CopyInterps(CompatInfo * info,
-            XkbCompatMapPtr compat, Bool needSymbol, unsigned pred)
+            XkbcCompatMapPtr compat, Bool needSymbol, unsigned pred)
 {
     SymInterpInfo *si;
 
@@ -842,7 +842,7 @@ CompileCompatMap(XkbFile *file, XkbcDescPtr xkb, unsigned merge,
                         scanFile, info.name);
             }
         }
-        size = info.nInterps * sizeof(XkbSymInterpretRec);
+        size = info.nInterps * sizeof(XkbcSymInterpretRec);
         if (size > 0)
         {
             CopyInterps(&info, xkb->compat, True, XkbSI_Exactly);

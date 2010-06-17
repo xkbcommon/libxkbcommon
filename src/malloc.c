@@ -662,7 +662,7 @@ XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
 
             if (xkb->server->vmodmap) {
                 bzero(&xkb->server->vmodmap[minKC],
-                      tmp * sizeof(unsigned short));
+                      tmp * sizeof(uint32_t));
                 if (changes)
                     changes->map.changed = _ExtendRange(changes->map.changed,
                                                 XkbVirtualModMapMask, minKC,

@@ -35,8 +35,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 int
 XkbcAllocCompatMap(XkbcDescPtr xkb, unsigned which, unsigned nSI)
 {
-    XkbCompatMapPtr compat;
-    XkbSymInterpretRec *prev_interpret;
+    XkbcCompatMapPtr compat;
+    XkbcSymInterpretRec *prev_interpret;
 
     if (!xkb)
         return BadMatch;
@@ -52,7 +52,7 @@ XkbcAllocCompatMap(XkbcDescPtr xkb, unsigned which, unsigned nSI)
 
         prev_interpret = compat->sym_interpret;
         compat->sym_interpret = _XkbTypedRealloc(compat->sym_interpret,
-                                                 nSI, XkbSymInterpretRec);
+                                                 nSI, XkbcSymInterpretRec);
         if (!compat->sym_interpret) {
             _XkbFree(prev_interpret);
             compat->size_si = compat->num_si = 0;
@@ -61,17 +61,17 @@ XkbcAllocCompatMap(XkbcDescPtr xkb, unsigned which, unsigned nSI)
 
         if (compat->num_si != 0)
             _XkbClearElems(compat->sym_interpret, compat->num_si,
-                           compat->size_si - 1, XkbSymInterpretRec);
+                           compat->size_si - 1, XkbcSymInterpretRec);
 
         return Success;
     }
 
-    compat = _XkbTypedCalloc(1, XkbCompatMapRec);
+    compat = _XkbTypedCalloc(1, XkbcCompatMapRec);
     if (!compat)
         return BadAlloc;
 
     if (nSI > 0) {
-        compat->sym_interpret = _XkbTypedCalloc(nSI, XkbSymInterpretRec);
+        compat->sym_interpret = _XkbTypedCalloc(nSI, XkbcSymInterpretRec);
         if (!compat->sym_interpret) {
             _XkbFree(compat);
             return BadAlloc;
@@ -89,7 +89,7 @@ XkbcAllocCompatMap(XkbcDescPtr xkb, unsigned which, unsigned nSI)
 void
 XkbcFreeCompatMap(XkbcDescPtr xkb, unsigned which, Bool freeMap)
 {
-    XkbCompatMapPtr compat;
+    XkbcCompatMapPtr compat;
 
     if (!xkb || !xkb->compat)
         return;

@@ -334,7 +334,7 @@ ReportNotFound(unsigned action, unsigned field, const char *what, char *bad)
 
 static Bool
 HandleNoAction(XkbcDescPtr xkb,
-               XkbAnyAction * action,
+               XkbcAnyAction * action,
                unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     return ReportIllegal(action->type, field);
@@ -392,7 +392,7 @@ CheckModifierField(XkbcDescPtr xkb,
 
 static Bool
 HandleSetLatchMods(XkbcDescPtr xkb,
-                   XkbAnyAction * action,
+                   XkbcAnyAction * action,
                    unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     XkbcModAction *act;
@@ -437,7 +437,7 @@ HandleSetLatchMods(XkbcDescPtr xkb,
 
 static Bool
 HandleLockMods(XkbcDescPtr xkb,
-               XkbAnyAction * action,
+               XkbcAnyAction * action,
                unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     XkbcModAction *act;
@@ -512,7 +512,7 @@ CheckGroupField(unsigned action,
 
 static Bool
 HandleSetLatchGroup(XkbcDescPtr xkb,
-                    XkbAnyAction * action,
+                    XkbcAnyAction * action,
                     unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     XkbGroupAction *act;
@@ -557,7 +557,7 @@ HandleSetLatchGroup(XkbcDescPtr xkb,
 
 static Bool
 HandleLockGroup(XkbcDescPtr xkb,
-                XkbAnyAction * action,
+                XkbcAnyAction * action,
                 unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     XkbGroupAction *act;
@@ -583,7 +583,7 @@ HandleLockGroup(XkbcDescPtr xkb,
 
 static Bool
 HandleMovePtr(XkbcDescPtr xkb,
-              XkbAnyAction * action,
+              XkbcAnyAction * action,
               unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -648,7 +648,7 @@ static LookupEntry lockWhich[] = {
 
 static Bool
 HandlePtrBtn(XkbcDescPtr xkb,
-             XkbAnyAction * action,
+             XkbcAnyAction * action,
              unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -710,7 +710,7 @@ static LookupEntry ptrDflts[] = {
 
 static Bool
 HandleSetPtrDflt(XkbcDescPtr xkb,
-                 XkbAnyAction * action,
+                 XkbcAnyAction * action,
                  unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -783,7 +783,7 @@ static LookupEntry isoNames[] = {
 
 static Bool
 HandleISOLock(XkbcDescPtr xkb,
-              XkbAnyAction * action,
+              XkbcAnyAction * action,
               unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -830,7 +830,7 @@ HandleISOLock(XkbcDescPtr xkb,
 
 static Bool
 HandleSwitchScreen(XkbcDescPtr xkb,
-                   XkbAnyAction * action,
+                   XkbcAnyAction * action,
                    unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -922,7 +922,7 @@ LookupEntry ctrlNames[] = {
 
 static Bool
 HandleSetLockControls(XkbcDescPtr xkb,
-                      XkbAnyAction * action,
+                      XkbcAnyAction * action,
                       unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -954,7 +954,7 @@ static LookupEntry evNames[] = {
 
 static Bool
 HandleActionMessage(XkbcDescPtr xkb,
-                    XkbAnyAction * action,
+                    XkbcAnyAction * action,
                     unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -1032,7 +1032,7 @@ HandleActionMessage(XkbcDescPtr xkb,
 
 static Bool
 HandleRedirectKey(XkbcDescPtr xkb,
-                  XkbAnyAction * action,
+                  XkbcAnyAction * action,
                   unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -1083,7 +1083,7 @@ HandleRedirectKey(XkbcDescPtr xkb,
 
 static Bool
 HandleDeviceBtn(XkbcDescPtr xkb,
-                XkbAnyAction * action,
+                XkbcAnyAction * action,
                 unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -1153,7 +1153,7 @@ HandleDeviceBtn(XkbcDescPtr xkb,
 
 static Bool
 HandleDeviceValuator(XkbcDescPtr xkb,
-                     XkbAnyAction * action,
+                     XkbcAnyAction * action,
                      unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
 #if 0
@@ -1168,7 +1168,7 @@ HandleDeviceValuator(XkbcDescPtr xkb,
 
 static Bool
 HandlePrivate(XkbcDescPtr xkb,
-              XkbAnyAction * action,
+              XkbcAnyAction * action,
               unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -1200,7 +1200,7 @@ HandlePrivate(XkbcDescPtr xkb,
                     ACTION("Extra %d bytes ignored\n", len - 6);
                     return False;
                 }
-                strncpy((char *) action->data, rtrn.str, 7);
+                strncpy((char *) action->pad, rtrn.str, XkbcAnyActionDataSize);
             }
             free(rtrn.str);
             return True;
@@ -1215,9 +1215,9 @@ HandlePrivate(XkbcDescPtr xkb,
                 return False;
             }
             ndx = rtrn.uval;
-            if (ndx > 6)
+            if (ndx >= XkbcAnyActionDataSize)
             {
-                ERROR("The data for a private action is 7 bytes long\n");
+                ERROR("The data for a private action is 18 bytes long\n");
                 ACTION("Attempt to use data[%d] ignored\n", ndx);
                 return False;
             }
@@ -1229,7 +1229,7 @@ HandlePrivate(XkbcDescPtr xkb,
                 ACTION("Illegal datum %d ignored\n", rtrn.ival);
                 return False;
             }
-            action->data[ndx] = rtrn.uval;
+            action->pad[ndx] = rtrn.uval;
             return True;
         }
     }
@@ -1237,7 +1237,7 @@ HandlePrivate(XkbcDescPtr xkb,
 }
 
 typedef Bool(*actionHandler) (XkbcDescPtr /* xkb */ ,
-                              XkbAnyAction * /* action */ ,
+                              XkbcAnyAction * /* action */ ,
                               unsigned /* field */ ,
                               ExprDef * /* array_ndx */ ,
                               ExprDef * /* value */
@@ -1290,7 +1290,7 @@ ApplyActionFactoryDefaults(XkbcAction * action)
 int
 HandleActionDef(ExprDef * def,
                 XkbcDescPtr xkb,
-                XkbAnyAction * action, unsigned mergeMode, ActionInfo * info)
+                XkbcAnyAction * action, unsigned mergeMode, ActionInfo * info)
 {
     ExprDef *arg;
     register char *str;
@@ -1305,7 +1305,7 @@ HandleActionDef(ExprDef * def,
                exprOpText(def->op));
         return False;
     }
-    str = XkbcAtomGetString(def->value.action.name);
+    str = XkbcAtomText(def->value.action.name);
     if (!str)
     {
         WSGO("Missing name in action definition!!\n");
