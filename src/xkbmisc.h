@@ -52,7 +52,7 @@ extern void
 XkbcEnsureSafeMapName(char *name);
 
 extern unsigned
-_XkbcKSCheckCase(KeySym sym);
+_XkbcKSCheckCase(CARD32 sym);
 
 #define XkbcKSIsLower(k) (_XkbcKSCheckCase(k) & _XkbKSLower)
 #define XkbcKSIsUpper(k) (_XkbcKSCheckCase(k) & _XkbKSUpper)
@@ -95,7 +95,7 @@ extern char *
 XkbcActionTypeText(unsigned type);
 
 extern char *
-XkbcKeysymText(KeySym sym);
+XkbcKeysymText(CARD32 sym);
 
 extern char *
 XkbcKeyNameText(char *name);

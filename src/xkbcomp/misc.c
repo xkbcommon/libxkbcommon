@@ -258,8 +258,8 @@ AddCommonInfo(CommonInfo * old, CommonInfo * new)
 
 typedef struct _KeyNameDesc
 {
-    KeySym level1;
-    KeySym level2;
+    CARD32 level1;
+    CARD32 level2;
     char name[5];
     Bool used;
 } KeyNameDesc;
@@ -379,7 +379,7 @@ ComputeKbdDefaults(XkbcDescPtr xkb)
     int rtrn;
     register int i, tmp, nUnknown;
     KeyNameDesc *name;
-    KeySym *syms;
+    uint32_t *syms;
 
     if ((xkb->names == NULL) || (xkb->names->keys == NULL))
     {

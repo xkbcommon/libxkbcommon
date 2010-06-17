@@ -1180,12 +1180,12 @@ CopyDefToKeyType(XkbcDescPtr xkb, XkbKeyTypePtr type, KeyTypeInfo * def)
     type->name = (Atom) def->name;
     if (def->szNames > 0)
     {
-        type->level_names = uTypedCalloc(def->numLevels, Atom);
+        type->level_names = uTypedCalloc(def->numLevels, CARD32);
 
         /* assert def->szNames<=def->numLevels */
         for (i = 0; i < def->szNames; i++)
         {
-            type->level_names[i] = (Atom) def->lvlNames[i];
+            type->level_names[i] = (CARD32) def->lvlNames[i];
         }
     }
     else

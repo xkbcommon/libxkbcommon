@@ -86,7 +86,7 @@ static XkbKeyTypeRec canonicalTypes[XkbNumRequiredTypes] = {
 int
 XkbcInitCanonicalKeyTypes(XkbcDescPtr xkb, unsigned which, int keypadVMod)
 {
-    XkbClientMapPtr map;
+    XkbcClientMapPtr map;
     XkbKeyTypePtr from,to;
     int rtrn;
 
@@ -190,7 +190,7 @@ XkbcEnsureSafeMapName(char *name)
 }
 
 unsigned
-_XkbcKSCheckCase(KeySym ks)
+_XkbcKSCheckCase(CARD32 ks)
 {
     unsigned set = (ks & (~0xff)) >> 8;
     unsigned rtrn = 0;

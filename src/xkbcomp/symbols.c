@@ -70,7 +70,7 @@ typedef struct _KeyInfo
     unsigned char symsDefined;
     unsigned char actsDefined;
     short numLevels[XkbNumKbdGroups];
-    KeySym *syms[XkbNumKbdGroups];
+    CARD32 *syms[XkbNumKbdGroups];
     XkbcAction *acts[XkbNumKbdGroups];
     Atom types[XkbNumKbdGroups];
     unsigned repeat;
@@ -178,7 +178,7 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
             width = new->numLevels[i];
             if (old->syms[i] != NULL)
             {
-                new->syms[i] = uTypedCalloc(width, KeySym);
+                new->syms[i] = uTypedCalloc(width, CARD32);
                 if (!new->syms[i])
                 {
                     new->syms[i] = NULL;
@@ -186,7 +186,7 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
                     return False;
                 }
                 memcpy((char *) new->syms[i], (char *) old->syms[i],
-                       width * sizeof(KeySym));
+                       width * sizeof(CARD32));
             }
             if (old->acts[i] != NULL)
             {
@@ -214,7 +214,7 @@ typedef struct _ModMapEntry
     union
     {
         unsigned long keyName;
-        KeySym keySym;
+        CARD32 keySym;
     } u;
 } ModMapEntry;
 
@@ -315,7 +315,7 @@ ResizeKeyGroup(KeyInfo * key,
     {
         key->syms[group] = uTypedRecalloc(key->syms[group],
                                           key->numLevels[group], newWidth,
-                                          KeySym);
+                                          CARD32);
         if (!key->syms[group])
             return False;
     }
@@ -336,7 +336,7 @@ static Bool
 MergeKeyGroups(SymbolsInfo * info,
                KeyInfo * into, KeyInfo * from, unsigned group)
 {
-    KeySym *resultSyms;
+    CARD32 *resultSyms;
     XkbcAction *resultActs;
     int resultWidth;
     register int i;
@@ -359,7 +359,7 @@ MergeKeyGroups(SymbolsInfo * info,
     }
     if (resultSyms == NULL)
     {
-        resultSyms = uTypedCalloc(resultWidth, KeySym);
+        resultSyms = uTypedCalloc(resultWidth, CARD32);
         if (!resultSyms)
         {
             WSGO("Could not allocate symbols for group merge\n");
@@ -381,7 +381,7 @@ MergeKeyGroups(SymbolsInfo * info,
     }
     for (i = 0; i < resultWidth; i++)
     {
-        KeySym fromSym, toSym;
+        CARD32 fromSym, toSym;
         if (from->syms[group] && (i < from->numLevels[group]))
             fromSym = from->syms[group][i];
         else
@@ -396,7 +396,7 @@ MergeKeyGroups(SymbolsInfo * info,
             resultSyms[i] = fromSym;
         else
         {
-            KeySym use, ignore;
+            CARD32 use, ignore;
             if (clobber)
             {
                 use = fromSym;
@@ -1565,7 +1565,7 @@ SetExplicitGroup(SymbolsInfo * info, KeyInfo * key)
             key->numLevels[i] = 0;
             if (key->syms[i] != NULL)
                 uFree(key->syms[i]);
-            key->syms[i] = (KeySym *) NULL;
+            key->syms[i] = (CARD32 *) NULL;
             if (key->acts[i] != NULL)
                 uFree(key->acts[i]);
             key->acts[i] = (XkbcAction *) NULL;
@@ -1577,7 +1577,7 @@ SetExplicitGroup(SymbolsInfo * info, KeyInfo * key)
     key->numLevels[group] = key->numLevels[0];
     key->numLevels[0] = 0;
     key->syms[group] = key->syms[0];
-    key->syms[0] = (KeySym *) NULL;
+    key->syms[0] = (CARD32 *) NULL;
     key->acts[group] = key->acts[0];
     key->acts[0] = (XkbcAction *) NULL;
     key->types[group] = key->types[0];
@@ -1720,7 +1720,7 @@ HandleSymbolsFile(XkbFile * file,
 }
 
 static Bool
-FindKeyForSymbol(XkbcDescPtr xkb, KeySym sym, unsigned int *kc_rtrn)
+FindKeyForSymbol(XkbcDescPtr xkb, CARD32 sym, unsigned int *kc_rtrn)
 {
     register int i, j;
     register Bool gotOne;
@@ -1791,7 +1791,7 @@ FindNamedType(XkbcDescPtr xkb, Atom name, unsigned *type_rtrn)
  * @returns True if a type could be found, False otherwise.
  */
 static Bool
-FindAutomaticType(int width, KeySym * syms, Atom * typeNameRtrn,
+FindAutomaticType(int width, CARD32 * syms, Atom * typeNameRtrn,
                   Bool * autoType)
 {
     *autoType = False;
@@ -1885,11 +1885,11 @@ PrepareKeyDef(KeyInfo * key)
         }
         if ((key->symsDefined & 1) && key->syms[0])
         {
-            key->syms[i] = uTypedCalloc(width, KeySym);
+            key->syms[i] = uTypedCalloc(width, CARD32);
             if (key->syms[i] == NULL)
                 continue;
             memcpy((void *) key->syms[i], (void *) key->syms[0],
-                   width * sizeof(KeySym));
+                   width * sizeof(CARD32));
             key->symsDefined |= 1 << i;
         }
         if (defined & 1)
@@ -1911,7 +1911,7 @@ PrepareKeyDef(KeyInfo * key)
         if ((key->syms[i] != key->syms[0]) &&
             (key->syms[i] == NULL || key->syms[0] == NULL ||
              memcmp((void *) key->syms[i], (void *) key->syms[0],
-                    sizeof(KeySym) * key->numLevels[0])))
+                    sizeof(CARD32) * key->numLevels[0])))
         {
             identical = False;
             break;
@@ -1932,7 +1932,7 @@ PrepareKeyDef(KeyInfo * key)
             key->numLevels[i] = 0;
             if (key->syms[i] != NULL)
                 uFree(key->syms[i]);
-            key->syms[i] = (KeySym *) NULL;
+            key->syms[i] = (CARD32 *) NULL;
             if (key->acts[i] != NULL)
                 uFree(key->acts[i]);
             key->acts[i] = (XkbcAction *) NULL;
@@ -1957,7 +1957,7 @@ CopySymbolsDef(XkbcDescPtr xkb, KeyInfo *key, int start_from)
     unsigned okc, kc, width, tmp, nGroups;
     XkbKeyTypePtr type;
     Bool haveActions, autoType, useAlias;
-    KeySym *outSyms;
+    CARD32 *outSyms;
     XkbcAction *outActs;
     unsigned types[XkbNumKbdGroups];
 

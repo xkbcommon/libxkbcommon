@@ -1049,7 +1049,7 @@ ExprResolveKeySym(ExprDef * expr,
                   IdentLookupFunc lookup, char * lookupPriv)
 {
     int ok = 0;
-    KeySym sym;
+    CARD32 sym;
 
     if (expr->op == ExprIdent)
     {

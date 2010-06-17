@@ -219,7 +219,7 @@ BoolVarCreate(Atom nameToken, unsigned set)
 }
 
 InterpDef *
-InterpCreate(KeySym sym, ExprDef * match)
+InterpCreate(CARD32 sym, ExprDef * match)
 {
     InterpDef *def;
 
@@ -621,9 +621,9 @@ AppendKeysymList(ExprDef * list, char *sym)
 }
 
 int
-LookupKeysym(char *str, KeySym * sym_rtrn)
+LookupKeysym(char *str, CARD32 * sym_rtrn)
 {
-    KeySym sym;
+    CARD32 sym;
 
     if ((!str) || (uStrCaseCmp(str, "any") == 0)
         || (uStrCaseCmp(str, "nosymbol") == 0))

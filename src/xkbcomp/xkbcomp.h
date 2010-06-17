@@ -242,7 +242,7 @@ typedef struct _InterpDef
 {
     ParseCommon common;
     unsigned merge;
-    KeySym sym;
+    CARD32 sym;
     ExprDef *match;
     VarDef *def;
 } InterpDef;

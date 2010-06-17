@@ -34,6 +34,9 @@ authorization from the authors.
 #include <X11/extensions/XKBstrcommon.h>
 #include <X11/extensions/XKBrulescommon.h>
 
+#define KeySym CARD32
+#define Atom CARD32
+
 /* Action structures used in the server */
 
 #define XkbcAnyActionDataSize 18
@@ -121,6 +124,35 @@ typedef union _XkbcAction {
     unsigned char           type;
 } XkbcAction;
 
+typedef struct _XkbcSymInterpretRec {
+    CARD32          sym;
+    unsigned char   flags;
+    unsigned char   match;
+    unsigned char   mods;
+    unsigned char   virtual_mod;
+    XkbcAnyAction    act;
+} XkbcSymInterpretRec,*XkbcSymInterpretPtr;
+
+typedef struct _XkbcCompatMapRec {
+    XkbcSymInterpretPtr      sym_interpret;
+    XkbModsRec               groups[XkbNumKbdGroups];
+    unsigned short           num_si;
+    unsigned short           size_si;
+} XkbcCompatMapRec, *XkbcCompatMapPtr;
+
+typedef struct _XkbcClientMapRec {
+    unsigned char            size_types;
+    unsigned char            num_types;
+    XkbKeyTypePtr            types;
+
+    unsigned short           size_syms;
+    unsigned short           num_syms;
+    uint32_t                *syms;
+    XkbSymMapPtr             key_sym_map;
+
+    unsigned char           *modmap;
+} XkbcClientMapRec, *XkbcClientMapPtr;
+
 typedef struct _XkbcServerMapRec {
     unsigned short      num_acts;
     unsigned short      size_acts;
@@ -150,7 +182,7 @@ typedef struct _XkbcDesc {
 
     XkbControlsPtr      ctrls;
     XkbcServerMapPtr    server;
-    XkbClientMapPtr     map;
+    XkbcClientMapPtr    map;
     XkbIndicatorPtr     indicators;
     XkbNamesPtr         names;
     XkbCompatMapPtr     compat;
@@ -199,17 +231,23 @@ XkbcCanonicaliseComponents(XkbComponentNamesPtr names,
  * The string returned may become invalidated after the next call to
  * XkbcKeysymToString: if you need to preserve it, then you must
  * duplicate it.
+ *
+ * This is CARD32 rather than KeySym, as KeySym changes size between
+ * client and server (no, really).
  */
 extern char *
-XkbcKeysymToString(KeySym ks);
+XkbcKeysymToString(CARD32 ks);
 
 /*
  * See XkbcKeysymToString comments: this function will accept any string
  * from that function.
  */
-extern KeySym
+extern CARD32
 XkbcStringToKeysym(const char *s);
 
 _XFUNCPROTOEND
+
+#undef KeySym
+#undef Atom
 
 #endif /* _XKBCOMMON_H_ */
