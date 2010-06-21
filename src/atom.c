@@ -81,21 +81,31 @@ SOFTWARE.
 
 typedef struct _Node {
     struct _Node    *left, *right;
-    Atom            a;
+    CARD32          a;
     unsigned int    fingerPrint;
     char            *string;
 } NodeRec, *NodePtr;
 
 #define BAD_RESOURCE 0xe0000000
 
-static Atom lastAtom = None;
+static CARD32 lastAtom = None;
 static NodePtr atomRoot = NULL;
 static unsigned long tableLength;
 static NodePtr *nodeTable = NULL;
+InternAtomFuncPtr do_intern_atom = NULL;
+GetAtomValueFuncPtr do_get_atom_value = NULL;
 
 void
-XkbcInitAtoms(void)
+XkbcInitAtoms(InternAtomFuncPtr intern, GetAtomValueFuncPtr get_atom_value)
 {
+    if (intern && get_atom_value) {
+        if (do_intern_atom && do_get_atom_value)
+            return;
+        do_intern_atom = intern;
+        do_get_atom_value = get_atom_value;
+        return;
+    }
+
     if (nodeTable)
         return;
 
@@ -104,10 +114,13 @@ XkbcInitAtoms(void)
     nodeTable[None] = NULL;
 }
 
-static char *
-_XkbcAtomGetString(Atom atom)
+static const char *
+_XkbcAtomGetString(CARD32 atom)
 {
     NodePtr node;
+
+    if (do_get_atom_value)
+        return do_get_atom_value(atom);
 
     if ((atom == None) || (atom > lastAtom))
         return NULL;
@@ -117,16 +130,17 @@ _XkbcAtomGetString(Atom atom)
 }
 
 char *
-XkbcAtomGetString(Atom atom)
+XkbcAtomGetString(CARD32 atom)
 {
-    char *ret = _XkbcAtomGetString(atom);
+    const char *ret = _XkbcAtomGetString(atom);
     return ret ? strdup(ret) : NULL;
 }
 
 char *
-XkbcAtomText(Atom atom)
+XkbcAtomText(CARD32 atom)
 {
-    char *tmp, *ret;
+    const char *tmp;
+    char *ret;
 
     tmp = _XkbcAtomGetString(atom);
     if (!tmp)
@@ -140,8 +154,8 @@ XkbcAtomText(Atom atom)
     return ret;
 }
 
-static Atom
-_XkbcMakeAtom(char *string, unsigned len, Bool makeit)
+static CARD32
+_XkbcMakeAtom(const char *string, unsigned len, Bool makeit)
 {
     NodePtr *np;
     unsigned i;
@@ -214,10 +228,12 @@ _XkbcMakeAtom(char *string, unsigned len, Bool makeit)
         return None;
 }
 
-Atom
-XkbcInternAtom(char *name, Bool onlyIfExists)
+CARD32
+XkbcInternAtom(const char *name, Bool onlyIfExists)
 {
     if (!name)
         return None;
+    if (do_intern_atom)
+        return do_intern_atom(name);
     return _XkbcMakeAtom(name, strlen(name), !onlyIfExists);
 }

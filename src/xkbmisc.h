@@ -63,15 +63,15 @@ XkbcNameMatchesPattern(char *name, char *ptrn);
 /***====================================================================***/
 
 extern char *
-XkbcAtomGetString(Atom atom);
+XkbcAtomGetString(uint32_t atom);
 
-extern Atom
-XkbcInternAtom(char *name, Bool onlyIfExists);
+extern uint32_t
+XkbcInternAtom(const char *name, Bool onlyIfExists);
 
 /***====================================================================***/
 
 extern char *
-XkbcAtomText(Atom atm);
+XkbcAtomText(uint32_t atm);
 
 extern char *
 XkbcVModIndexText(XkbcDescPtr xkb, unsigned ndx);

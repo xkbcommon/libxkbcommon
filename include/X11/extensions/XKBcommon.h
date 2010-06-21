@@ -191,8 +191,11 @@ typedef struct _XkbcDesc {
 
 _XFUNCPROTOBEGIN
 
+typedef uint32_t (*InternAtomFuncPtr)(const char *val);
+typedef const char *(*GetAtomValueFuncPtr)(uint32_t atom);
+
 extern void
-XkbcInitAtoms(void);
+XkbcInitAtoms(InternAtomFuncPtr intern, GetAtomValueFuncPtr get_atom_value);
 
 extern XkbcDescPtr
 XkbcCompileKeymapFromRules(const XkbRMLVOSet *rmlvo);
