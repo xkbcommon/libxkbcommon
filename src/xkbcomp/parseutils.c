@@ -219,7 +219,7 @@ BoolVarCreate(Atom nameToken, unsigned set)
 }
 
 InterpDef *
-InterpCreate(CARD32 sym, ExprDef * match)
+InterpCreate(char *sym, ExprDef * match)
 {
     InterpDef *def;
 
@@ -228,7 +228,7 @@ InterpCreate(CARD32 sym, ExprDef * match)
     {
         def->common.stmtType = StmtInterpDef;
         def->common.next = NULL;
-        def->sym = sym;
+        def->sym = strdup(sym);
         def->match = match;
     }
     else

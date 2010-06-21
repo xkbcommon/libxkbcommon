@@ -88,7 +88,7 @@ extern VarDef *BoolVarCreate(Atom /* nameToken */ ,
                              unsigned   /* set */
     );
 
-extern InterpDef *InterpCreate(CARD32 /* sym */ ,
+extern InterpDef *InterpCreate(char * /* sym */ ,
                                ExprDef *        /* match */
     );
 

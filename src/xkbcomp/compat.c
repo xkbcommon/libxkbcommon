@@ -35,6 +35,7 @@
 #include "indicators.h"
 #include "action.h"
 #include "compat.h"
+#include "parseutils.h"
 
 typedef struct _SymInterpInfo
 {
@@ -667,7 +668,12 @@ HandleInterpDef(InterpDef * def, XkbcDescPtr xkb, unsigned merge,
 
     si = info->dflt;
     si.defs.merge = merge;
-    si.interp.sym = def->sym;
+    if (!LookupKeysym(def->sym, &si.interp.sym))
+    {
+        WARN("Could not resolve keysym %s\n", def->sym);
+        info->errorCount++;
+        return False;
+    }
     si.interp.match = pred & XkbSI_OpMask;
     si.interp.mods = mods;
     if (!HandleInterpBody(def->def, xkb, &si, info))
