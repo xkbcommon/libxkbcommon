@@ -85,7 +85,7 @@ HandleVModDef(VModDef * stmt, unsigned mergeMode, VModInfo * info)
     register int i, bit, nextFree;
     ExprResult mod;
     XkbcServerMapPtr srv;
-    XkbNamesPtr names;
+    XkbcNamesPtr names;
 
     srv = info->xkb->server;
     names = info->xkb->names;
@@ -164,7 +164,7 @@ HandleVModDef(VModDef * stmt, unsigned mergeMode, VModInfo * info)
  */
 int
 LookupVModIndex(char * priv,
-                Atom elem, Atom field, unsigned type, ExprResult * val_rtrn)
+                CARD32 elem, CARD32 field, unsigned type, ExprResult * val_rtrn)
 {
     int i;
     XkbcDescPtr xkb;
@@ -203,7 +203,7 @@ LookupVModIndex(char * priv,
  */
 int
 LookupVModMask(char * priv,
-               Atom elem, Atom field, unsigned type, ExprResult * val_rtrn)
+               CARD32 elem, CARD32 field, unsigned type, ExprResult * val_rtrn)
 {
     if (LookupVModIndex(priv, elem, field, type, val_rtrn))
     {
@@ -217,7 +217,7 @@ LookupVModMask(char * priv,
 int
 FindKeypadVMod(XkbcDescPtr xkb)
 {
-    Atom name;
+    CARD32 name;
     ExprResult rtrn;
 
     name = XkbcInternAtom("NumLock", False);
@@ -231,7 +231,7 @@ FindKeypadVMod(XkbcDescPtr xkb)
 Bool
 ResolveVirtualModifier(ExprDef * def, ExprResult * val_rtrn, VModInfo * info)
 {
-    XkbNamesPtr names;
+    XkbcNamesPtr names;
 
     names = info->xkb->names;
     if (def->op == ExprIdent)

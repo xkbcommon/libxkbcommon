@@ -54,15 +54,15 @@ extern Bool ApplyVModDefs(VModInfo * /* info */ ,
     );
 
 extern int LookupVModIndex(char * /* priv */ ,
-                           Atom /* elem */ ,
-                           Atom /* field */ ,
+                           CARD32 /* elem */ ,
+                           CARD32 /* field */ ,
                            unsigned /* type */ ,
                            ExprResult * /* val_rtrn */
     );
 
 extern int LookupVModMask(char * /* priv */ ,
-                          Atom /* elem */ ,
-                          Atom /* field */ ,
+                          CARD32 /* elem */ ,
+                          CARD32 /* field */ ,
                           unsigned /* type */ ,
                           ExprResult *  /* val_rtrn */
     );

@@ -200,6 +200,8 @@ XkbcCompileKeymapFromComponents(const XkbComponentNamesPtr ktcsg)
     XkbFile *file, *mapToUse;
     XkbcDescPtr xkb;
 
+    uSetErrorFile(NULL);
+
     if (!ktcsg || ISEMPTY(ktcsg->keycodes)) {
         ERROR("keycodes required to generate XKB keymap\n");
         goto fail;

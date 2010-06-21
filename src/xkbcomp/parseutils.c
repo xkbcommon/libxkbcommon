@@ -29,7 +29,6 @@
 #include "xkbmisc.h"
 #include "xkbpath.h"
 #include <X11/keysym.h>
-#include <X11/extensions/XKBgeomcommon.h>
 #include <X11/Xalloca.h>
 
 XkbFile *rtrnValue;
@@ -167,7 +166,7 @@ KeyAliasCreate(char *alias, char *real)
 }
 
 VModDef *
-VModCreate(Atom name, ExprDef * value)
+VModCreate(CARD32 name, ExprDef * value)
 {
     VModDef *def;
     def = uTypedAlloc(VModDef);
@@ -207,7 +206,7 @@ VarCreate(ExprDef * name, ExprDef * value)
 }
 
 VarDef *
-BoolVarCreate(Atom nameToken, unsigned set)
+BoolVarCreate(CARD32 nameToken, unsigned set)
 {
     ExprDef *name, *value;
 
@@ -240,7 +239,7 @@ InterpCreate(char *sym, ExprDef * match)
 }
 
 KeyTypeDef *
-KeyTypeCreate(Atom name, VarDef * body)
+KeyTypeCreate(CARD32 name, VarDef * body)
 {
     KeyTypeDef *def;
 
@@ -307,7 +306,7 @@ GroupCompatCreate(int group, ExprDef * val)
 }
 
 ModMapDef *
-ModMapCreate(Atom modifier, ExprDef * keys)
+ModMapCreate(CARD32 modifier, ExprDef * keys)
 {
     ModMapDef *def;
 
@@ -329,7 +328,7 @@ ModMapCreate(Atom modifier, ExprDef * keys)
 }
 
 IndicatorMapDef *
-IndicatorMapCreate(Atom name, VarDef * body)
+IndicatorMapCreate(CARD32 name, VarDef * body)
 {
     IndicatorMapDef *def;
 
@@ -374,7 +373,7 @@ IndicatorNameCreate(int ndx, ExprDef * name, Bool virtual)
 }
 
 ExprDef *
-ActionCreate(Atom name, ExprDef * args)
+ActionCreate(CARD32 name, ExprDef * args)
 {
     ExprDef *act;
 
@@ -414,7 +413,7 @@ CreateKeysymList(char *sym)
 }
 
 ShapeDef *
-ShapeDeclCreate(Atom name, OutlineDef * outlines)
+ShapeDeclCreate(CARD32 name, OutlineDef * outlines)
 {
     ShapeDef *shape;
     OutlineDef *ol;
@@ -439,7 +438,7 @@ ShapeDeclCreate(Atom name, OutlineDef * outlines)
 }
 
 OutlineDef *
-OutlineCreate(Atom field, ExprDef * points)
+OutlineCreate(CARD32 field, ExprDef * points)
 {
     OutlineDef *outline;
     ExprDef *pt;
@@ -517,7 +516,7 @@ RowDeclCreate(KeyDef * keys)
 }
 
 SectionDef *
-SectionDeclCreate(Atom name, RowDef * rows)
+SectionDeclCreate(CARD32 name, RowDef * rows)
 {
     SectionDef *section;
     RowDef *row;
@@ -561,7 +560,7 @@ OverlayKeyCreate(char *under, char *over)
 }
 
 OverlayDef *
-OverlayDeclCreate(Atom name, OverlayKeyDef * keys)
+OverlayDeclCreate(CARD32 name, OverlayKeyDef * keys)
 {
     OverlayDef *ol;
     OverlayKeyDef *key;
@@ -583,7 +582,7 @@ OverlayDeclCreate(Atom name, OverlayKeyDef * keys)
 }
 
 DoodadDef *
-DoodadCreate(unsigned type, Atom name, VarDef * body)
+DoodadCreate(unsigned type, CARD32 name, VarDef * body)
 {
     DoodadDef *doodad;
 

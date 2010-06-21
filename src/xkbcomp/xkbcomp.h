@@ -140,18 +140,18 @@ typedef struct _Expr
         } binary;
         struct
         {
-            Atom element;
-            Atom field;
+            CARD32 element;
+            CARD32 field;
         } field;
         struct
         {
-            Atom element;
-            Atom field;
+            CARD32 element;
+            CARD32 field;
             struct _Expr *entry;
         } array;
         struct
         {
-            Atom name;
+            CARD32 name;
             struct _Expr *args;
         } action;
         struct
@@ -166,7 +166,7 @@ typedef struct _Expr
             int y;
         } coord;
         struct _Expr *child;
-        Atom str;
+        CARD32 str;
         unsigned uval;
         int ival;
         char keyName[5];
@@ -186,7 +186,7 @@ typedef struct _VModDef
 {
     ParseCommon common;
     unsigned merge;
-    Atom name;
+    CARD32 name;
     ExprDef *value;
 } VModDef;
 
@@ -210,7 +210,7 @@ typedef struct _KeyTypeDef
 {
     ParseCommon common;
     unsigned merge;
-    Atom name;
+    CARD32 name;
     VarDef *body;
 } KeyTypeDef;
 
@@ -226,7 +226,7 @@ typedef struct _ModMapDef
 {
     ParseCommon common;
     unsigned merge;
-    Atom modifier;
+    CARD32 modifier;
     ExprDef *keys;
 } ModMapDef;
 
@@ -242,7 +242,7 @@ typedef struct _InterpDef
 {
     ParseCommon common;
     unsigned merge;
-    CARD32 sym;
+    char *sym;
     ExprDef *match;
     VarDef *def;
 } InterpDef;
@@ -259,7 +259,7 @@ typedef struct _IndicatorNameDef
 typedef struct _OutlineDef
 {
     ParseCommon common;
-    Atom field;
+    CARD32 field;
     int nPoints;
     ExprDef *points;
 } OutlineDef;
@@ -268,7 +268,7 @@ typedef struct _ShapeDef
 {
     ParseCommon common;
     unsigned merge;
-    Atom name;
+    CARD32 name;
     int nOutlines;
     OutlineDef *outlines;
 } ShapeDef;
@@ -292,7 +292,7 @@ typedef struct _SectionDef
 {
     ParseCommon common;
     unsigned merge;
-    Atom name;
+    CARD32 name;
     int nRows;
     RowDef *rows;
 } SectionDef;
@@ -308,7 +308,7 @@ typedef struct _OverlayDef
 {
     ParseCommon common;
     unsigned merge;
-    Atom name;
+    CARD32 name;
     int nKeys;
     OverlayKeyDef *keys;
 } OverlayDef;
@@ -318,7 +318,7 @@ typedef struct _DoodadDef
     ParseCommon common;
     unsigned merge;
     unsigned type;
-    Atom name;
+    CARD32 name;
     VarDef *body;
 } DoodadDef;
 

@@ -27,6 +27,7 @@
 #define	TOKENS_H 1
 
 #include <X11/Xdefs.h>
+#include <X11/Xmd.h>
 
 #define	END_OF_FILE	0
 #define	ERROR_TOK	255
@@ -98,9 +99,9 @@
 #define	FUNCTION_KEYS		76
 #define	ALTERNATE_GROUP		77
 
-extern Atom tok_ONE_LEVEL;
-extern Atom tok_TWO_LEVEL;
-extern Atom tok_ALPHABETIC;
-extern Atom tok_KEYPAD;
+extern CARD32 tok_ONE_LEVEL;
+extern CARD32 tok_TWO_LEVEL;
+extern CARD32 tok_ALPHABETIC;
+extern CARD32 tok_KEYPAD;
 
 #endif

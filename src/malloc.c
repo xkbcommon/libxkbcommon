@@ -59,7 +59,7 @@ XkbcAllocClientMap(XkbcDescPtr xkb, unsigned which, unsigned nTotalTypes)
 
     if ((which & XkbKeyTypesMask) && (nTotalTypes > 0)) {
         if (!map->types) {
-            map->types = _XkbTypedCalloc(nTotalTypes, XkbKeyTypeRec);
+            map->types = _XkbTypedCalloc(nTotalTypes, XkbcKeyTypeRec);
             if (!map->types)
                 return BadAlloc;
 
@@ -67,10 +67,10 @@ XkbcAllocClientMap(XkbcDescPtr xkb, unsigned which, unsigned nTotalTypes)
             map->size_types = nTotalTypes;
         }
         else if (map->size_types < nTotalTypes) {
-            XkbKeyTypeRec *prev_types = map->types;
+            XkbcKeyTypeRec *prev_types = map->types;
 
             map->types = _XkbTypedRealloc(map->types, nTotalTypes,
-                                          XkbKeyTypeRec);
+                                          XkbcKeyTypeRec);
             if (!map->types) {
                 _XkbFree(prev_types);
                 map->num_types = map->size_types = 0;
@@ -79,7 +79,7 @@ XkbcAllocClientMap(XkbcDescPtr xkb, unsigned which, unsigned nTotalTypes)
 
             map->size_types = nTotalTypes;
             bzero(&map->types[map->num_types],
-                  (map->size_types - map->num_types) * sizeof(XkbKeyTypeRec));
+                  (map->size_types - map->num_types) * sizeof(XkbcKeyTypeRec));
         }
     }
 
@@ -231,7 +231,7 @@ XkbcAllocServerMap(XkbcDescPtr xkb, unsigned which, unsigned nNewActions)
 }
 
 int
-XkbcCopyKeyType(XkbKeyTypePtr from, XkbKeyTypePtr into)
+XkbcCopyKeyType(XkbcKeyTypePtr from, XkbcKeyTypePtr into)
 {
     if (!from || !into)
         return BadMatch;
@@ -279,7 +279,7 @@ XkbcCopyKeyType(XkbKeyTypePtr from, XkbKeyTypePtr into)
 }
 
 int
-XkbcCopyKeyTypes(XkbKeyTypePtr from, XkbKeyTypePtr into, int num_types)
+XkbcCopyKeyTypes(XkbcKeyTypePtr from, XkbcKeyTypePtr into, int num_types)
 {
     int i, rtrn;
 
@@ -298,7 +298,7 @@ int
 XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
                   Bool want_preserve, int new_num_lvls)
 {
-    XkbKeyTypePtr type;
+    XkbcKeyTypePtr type;
     KeyCode matchingKeys[XkbMaxKeyCount], nMatchingKeys;
 
     if ((type_ndx < 0) || (type_ndx >= xkb->map->num_types) ||
@@ -891,7 +891,7 @@ XkbcFreeClientMap(XkbcDescPtr xkb, unsigned what, Bool freeMap)
         if (map->types) {
             if (map->num_types > 0) {
                 int i;
-                XkbKeyTypePtr type;
+                XkbcKeyTypePtr type;
 
                 for (i = 0, type = map->types; i < map->num_types; i++, type++) {
                     if (type->map) {

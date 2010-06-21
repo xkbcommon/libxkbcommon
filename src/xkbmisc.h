@@ -36,7 +36,7 @@ authorization from the authors.
 /***====================================================================***/
 
 extern Bool
-XkbcComputeEffectiveMap(XkbcDescPtr xkb, XkbKeyTypePtr type,
+XkbcComputeEffectiveMap(XkbcDescPtr xkb, XkbcKeyTypePtr type,
                         unsigned char *map_rtrn);
 
 /***====================================================================***/

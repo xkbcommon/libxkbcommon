@@ -56,7 +56,7 @@ static  XkbKTMapEntryRec mapKeypad[]= {
     { False, 0,         { 1, 0, NL_VMOD_MASK } }
 };
 
-static XkbKeyTypeRec canonicalTypes[XkbNumRequiredTypes] = {
+static XkbcKeyTypeRec canonicalTypes[XkbNumRequiredTypes] = {
     { { 0, 0, 0 },
       1,        /* num_levels */
       0,        /* map_count */
@@ -87,7 +87,7 @@ int
 XkbcInitCanonicalKeyTypes(XkbcDescPtr xkb, unsigned which, int keypadVMod)
 {
     XkbcClientMapPtr map;
-    XkbKeyTypePtr from,to;
+    XkbcKeyTypePtr from,to;
     int rtrn;
 
     if (!xkb)
@@ -116,7 +116,7 @@ XkbcInitCanonicalKeyTypes(XkbcDescPtr xkb, unsigned which, int keypadVMod)
                                &to[XkbAlphabeticIndex]);
 
     if ((which & XkbKeypadMask) && (rtrn == Success)) {
-        XkbKeyTypePtr type;
+        XkbcKeyTypePtr type;
 
         rtrn = XkbcCopyKeyType(&from[XkbKeypadIndex], &to[XkbKeypadIndex]);
         type = &to[XkbKeypadIndex];

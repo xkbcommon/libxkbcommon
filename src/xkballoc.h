@@ -73,10 +73,10 @@ extern int
 XkbcAllocServerMap(XkbcDescPtr xkb, unsigned which, unsigned nNewActions);
 
 extern int
-XkbcCopyKeyType(XkbKeyTypePtr from, XkbKeyTypePtr into);
+XkbcCopyKeyType(XkbcKeyTypePtr from, XkbcKeyTypePtr into);
 
 extern int
-XkbcCopyKeyTypes(XkbKeyTypePtr from, XkbKeyTypePtr into, int num_types);
+XkbcCopyKeyTypes(XkbcKeyTypePtr from, XkbcKeyTypePtr into, int num_types);
 
 extern int
 XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,

@@ -156,7 +156,7 @@ ExprResolveLhs(ExprDef * expr,
 
 Bool
 SimpleLookup(char * priv,
-             Atom elem, Atom field, unsigned type, ExprResult * val_rtrn)
+             CARD32 elem, CARD32 field, unsigned type, ExprResult * val_rtrn)
 {
     LookupEntry *entry;
     register char *str;
@@ -184,7 +184,7 @@ SimpleLookup(char * priv,
 
 Bool
 RadioLookup(char * priv,
-            Atom elem, Atom field, unsigned type, ExprResult * val_rtrn)
+            CARD32 elem, CARD32 field, unsigned type, ExprResult * val_rtrn)
 {
     register char *str;
     int rg;
@@ -212,7 +212,7 @@ RadioLookup(char * priv,
 
 int
 TableLookup(char * priv,
-            Atom elem, Atom field, unsigned type, ExprResult * val_rtrn)
+            CARD32 elem, CARD32 field, unsigned type, ExprResult * val_rtrn)
 {
     LookupTable *tbl = (LookupTable *) priv;
     register char *str;
@@ -233,7 +233,7 @@ TableLookup(char * priv,
     if (tbl == NULL)            /* didn't find a matching element */
         return False;
     priv = (char *) tbl->entries;
-    return SimpleLookup(priv, (Atom) None, field, type, val_rtrn);
+    return SimpleLookup(priv, (CARD32) None, field, type, val_rtrn);
 }
 
 static LookupEntry modIndexNames[] = {
@@ -251,7 +251,7 @@ static LookupEntry modIndexNames[] = {
 
 int
 LookupModIndex(char * priv,
-               Atom elem, Atom field, unsigned type, ExprResult * val_rtrn)
+               CARD32 elem, CARD32 field, unsigned type, ExprResult * val_rtrn)
 {
     return SimpleLookup((char *) modIndexNames, elem, field, type,
                         val_rtrn);
@@ -259,7 +259,7 @@ LookupModIndex(char * priv,
 
 int
 LookupModMask(char * priv,
-              Atom elem, Atom field, unsigned type, ExprResult * val_rtrn)
+              CARD32 elem, CARD32 field, unsigned type, ExprResult * val_rtrn)
 {
     char *str;
     Bool ret = True;
@@ -317,7 +317,7 @@ ExprResolveModIndex(ExprDef * expr,
         val_rtrn->ival = expr->value.ival;
         return True;
     case ExprIdent:
-        if (LookupModIndex(lookupPriv, (Atom) None, expr->value.str,
+        if (LookupModIndex(lookupPriv, (CARD32) None, expr->value.str,
                            (unsigned) TypeInt, val_rtrn))
         {
             return True;
@@ -915,7 +915,7 @@ ExprResolveEnum(ExprDef * expr, ExprResult * val_rtrn, LookupEntry * values)
                exprOpText(expr->op));
         return False;
     }
-    if (!SimpleLookup((char *) values, (Atom) None, expr->value.str,
+    if (!SimpleLookup((char *) values, (CARD32) None, expr->value.str,
                       (unsigned) TypeInt, val_rtrn))
     {
         int nOut = 0;

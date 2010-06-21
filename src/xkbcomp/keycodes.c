@@ -60,7 +60,7 @@ typedef struct _IndicatorNameInfo
 {
     CommonInfo defs;
     int ndx;
-    Atom name;
+    CARD32 name;
     Bool virtual;
 } IndicatorNameInfo;
 
@@ -142,7 +142,7 @@ FindIndicatorByIndex(KeyNamesInfo * info, int ndx)
 }
 
 static IndicatorNameInfo *
-FindIndicatorByName(KeyNamesInfo * info, Atom name)
+FindIndicatorByName(KeyNamesInfo * info, CARD32 name)
 {
     IndicatorNameInfo *old;
 
@@ -227,7 +227,7 @@ AddIndicatorName(KeyNamesInfo * info, IndicatorNameInfo * new)
             else
             {
                 const char *oldType, *newType;
-                Atom using, ignoring;
+                CARD32 using, ignoring;
                 if (old->virtual)
                     oldType = "virtual indicator";
                 else
@@ -857,7 +857,7 @@ CompileKeycodes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
         }
         else
         {
-            WSGO("Cannot create XkbNamesRec in CompileKeycodes\n");
+            WSGO("Cannot create XkbcNamesRec in CompileKeycodes\n");
             return False;
         }
         if (info.leds)

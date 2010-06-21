@@ -122,7 +122,6 @@ SOFTWARE.
 #include "parseutils.h"
 #include "misc.h"
 #include "tokens.h"
-#include <X11/extensions/XKBgeomcommon.h>
 
 #ifndef DFLT_XKB_CONFIG_ROOT
 #define DFLT_XKB_CONFIG_ROOT "/usr/share/X11/xkb"

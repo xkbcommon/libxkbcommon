@@ -36,8 +36,8 @@ typedef union _ExprResult
 } ExprResult;
 
 typedef Bool(*IdentLookupFunc) (char * /* priv */ ,
-                                Atom /* elem */ ,
-                                Atom /* field */ ,
+                                CARD32 /* elem */ ,
+                                CARD32 /* field */ ,
                                 unsigned /* type */ ,
                                 ExprResult *    /* val_rtrn */
     );
@@ -76,36 +76,36 @@ extern char *exprOpText(unsigned        /* type */
     );
 
 extern int RadioLookup(char * /* priv */ ,
-                       Atom /* elem */ ,
-                       Atom /* field */ ,
+                       CARD32 /* elem */ ,
+                       CARD32 /* field */ ,
                        unsigned /* type */ ,
                        ExprResult *     /* val_rtrn */
     );
 
 extern int SimpleLookup(char * /* priv */ ,
-                        Atom /* elem */ ,
-                        Atom /* field */ ,
+                        CARD32 /* elem */ ,
+                        CARD32 /* field */ ,
                         unsigned /* type */ ,
                         ExprResult *    /* val_rtrn */
     );
 
 extern int TableLookup(char * /* priv */ ,
-                       Atom /* elem */ ,
-                       Atom /* field */ ,
+                       CARD32 /* elem */ ,
+                       CARD32 /* field */ ,
                        unsigned /* type */ ,
                        ExprResult *     /* val_rtrn */
     );
 
 extern int LookupModIndex(char * /* priv */ ,
-                          Atom /* elem */ ,
-                          Atom /* field */ ,
+                          CARD32 /* elem */ ,
+                          CARD32 /* field */ ,
                           unsigned /* type */ ,
                           ExprResult *  /* val_rtrn */
     );
 
 extern int LookupModMask(char * /* priv */ ,
-                         Atom /* elem */ ,
-                         Atom /* field */ ,
+                         CARD32 /* elem */ ,
+                         CARD32 /* field */ ,
                          unsigned /* type */ ,
                          ExprResult *   /* val_rtrn */
     );

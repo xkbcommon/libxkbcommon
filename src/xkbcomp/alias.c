@@ -32,8 +32,6 @@
 #include "alias.h"
 #include "keycodes.h"
 
-#include <X11/extensions/XKBgeomcommon.h>
-
 static void
 HandleCollision(AliasInfo * old, AliasInfo * new)
 {
@@ -237,8 +235,8 @@ ApplyAliases(XkbcDescPtr xkb, Bool toGeom, AliasInfo ** info_in)
     {
         if (!xkb->geom)
         {
-            XkbGeometrySizesRec sizes;
-            bzero((char *) &sizes, sizeof(XkbGeometrySizesRec));
+            XkbcGeometrySizesRec sizes;
+            bzero((char *) &sizes, sizeof(XkbcGeometrySizesRec));
             sizes.which = XkbGeomKeyAliasesMask;
             sizes.num_key_aliases = nOld + nNew;
             status = XkbcAllocGeometry(xkb, &sizes);

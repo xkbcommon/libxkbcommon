@@ -40,7 +40,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #endif
 
 static void
-_XkbCheckBounds(XkbBoundsPtr bounds, int x, int y)
+_XkbCheckBounds(XkbcBoundsPtr bounds, int x, int y)
 {
     if (x < bounds->x1)
         bounds->x1 = x;
@@ -53,11 +53,11 @@ _XkbCheckBounds(XkbBoundsPtr bounds, int x, int y)
 }
 
 Bool
-XkbcComputeShapeBounds(XkbShapePtr shape)
+XkbcComputeShapeBounds(XkbcShapePtr shape)
 {
     int o, p;
-    XkbOutlinePtr outline;
-    XkbPointPtr pt;
+    XkbcOutlinePtr outline;
+    XkbcPointPtr pt;
 
     if ((!shape) || (shape->num_outlines < 1))
         return False;
@@ -77,11 +77,11 @@ XkbcComputeShapeBounds(XkbShapePtr shape)
 }
 
 Bool
-XkbcComputeShapeTop(XkbShapePtr shape, XkbBoundsPtr bounds)
+XkbcComputeShapeTop(XkbcShapePtr shape, XkbcBoundsPtr bounds)
 {
     int p;
-    XkbOutlinePtr outline;
-    XkbPointPtr pt;
+    XkbcOutlinePtr outline;
+    XkbcPointPtr pt;
 
     if ((!shape) || (shape->num_outlines < 1))
         return False;
@@ -107,18 +107,18 @@ XkbcComputeShapeTop(XkbShapePtr shape, XkbBoundsPtr bounds)
 }
 
 Bool
-XkbcComputeRowBounds(XkbGeometryPtr geom, XkbSectionPtr section, XkbRowPtr row)
+XkbcComputeRowBounds(XkbcGeometryPtr geom, XkbcSectionPtr section, XkbcRowPtr row)
 {
     int k, pos;
-    XkbKeyPtr key;
-    XkbBoundsPtr bounds, sbounds;
+    XkbcKeyPtr key;
+    XkbcBoundsPtr bounds, sbounds;
 
     if (!geom || !section || !row)
         return False;
 
     pos = 0;
     bounds = &row->bounds;
-    bzero(bounds, sizeof(XkbBoundsRec));
+    bzero(bounds, sizeof(XkbcBoundsRec));
 
     for (key = row->keys, pos = k = 0; k < row->num_keys; k++, key++) {
         sbounds = &XkbKeyShape(geom, key)->bounds;
@@ -148,19 +148,19 @@ XkbcComputeRowBounds(XkbGeometryPtr geom, XkbSectionPtr section, XkbRowPtr row)
 }
 
 Bool
-XkbcComputeSectionBounds(XkbGeometryPtr geom, XkbSectionPtr section)
+XkbcComputeSectionBounds(XkbcGeometryPtr geom, XkbcSectionPtr section)
 {
     int i;
-    XkbShapePtr shape;
-    XkbRowPtr row;
-    XkbDoodadPtr doodad;
-    XkbBoundsPtr bounds, rbounds = NULL;
+    XkbcShapePtr shape;
+    XkbcRowPtr row;
+    XkbcDoodadPtr doodad;
+    XkbcBoundsPtr bounds, rbounds = NULL;
 
     if (!geom || !section)
         return False;
 
     bounds = &section->bounds;
-    bzero(bounds, sizeof(XkbBoundsRec));
+    bzero(bounds, sizeof(XkbcBoundsRec));
 
     for (i = 0, row = section->rows; i < section->num_rows; i++, row++) {
         if (!XkbcComputeRowBounds(geom, section, row))
@@ -175,7 +175,7 @@ XkbcComputeSectionBounds(XkbGeometryPtr geom, XkbSectionPtr section)
     for (i = 0, doodad = section->doodads; i < section->num_doodads;
          i++, doodad++)
     {
-        static XkbBoundsRec tbounds;
+        static XkbcBoundsRec tbounds;
 
         switch (doodad->any.type) {
         case XkbOutlineDoodad:

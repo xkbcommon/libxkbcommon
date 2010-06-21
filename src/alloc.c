@@ -117,13 +117,13 @@ XkbcFreeCompatMap(XkbcDescPtr xkb, unsigned which, Bool freeMap)
 int
 XkbcAllocNames(XkbcDescPtr xkb, unsigned which, int nTotalRG, int nTotalAliases)
 {
-    XkbNamesPtr names;
+    XkbcNamesPtr names;
 
     if (!xkb)
         return BadMatch;
 
     if (!xkb->names) {
-        xkb->names = _XkbTypedCalloc(1, XkbNamesRec);
+        xkb->names = _XkbTypedCalloc(1, XkbcNamesRec);
         if (!xkb->names)
             return BadAlloc;
     }
@@ -131,7 +131,7 @@ XkbcAllocNames(XkbcDescPtr xkb, unsigned which, int nTotalRG, int nTotalAliases)
 
     if ((which & XkbKTLevelNamesMask) && xkb->map && xkb->map->types) {
         int i;
-        XkbKeyTypePtr type;
+        XkbcKeyTypePtr type;
 
         type = xkb->map->types;
         for (i = 0; i < xkb->map->num_types; i++, type++) {
@@ -206,7 +206,7 @@ XkbcAllocNames(XkbcDescPtr xkb, unsigned which, int nTotalRG, int nTotalAliases)
 void
 XkbcFreeNames(XkbcDescPtr xkb, unsigned which, Bool freeMap)
 {
-    XkbNamesPtr names;
+    XkbcNamesPtr names;
 
     if (!xkb || !xkb->names)
         return;
@@ -220,7 +220,7 @@ XkbcFreeNames(XkbcDescPtr xkb, unsigned which, Bool freeMap)
 
         if (map && map->types) {
             int i;
-            XkbKeyTypePtr type = map->types;
+            XkbcKeyTypePtr type = map->types;
 
             for (i = 0; i < map->num_types; i++, type++) {
                 if (type->level_names) {

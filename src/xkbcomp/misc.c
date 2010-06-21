@@ -34,8 +34,6 @@
 #include <X11/keysym.h>
 #include "parseutils.h"
 
-#include <X11/extensions/XKBgeomcommon.h>
-
 /***====================================================================***/
 
 /**

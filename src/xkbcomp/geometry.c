@@ -37,8 +37,6 @@
 #include "keycodes.h"
 #include "alias.h"
 
-#include <X11/extensions/XKBgeomcommon.h>
-
 #define	DFLT_FONT	"helvetica"
 #define	DFLT_SLANT	"r"
 #define	DFLT_WEIGHT	"medium"
@@ -60,13 +58,13 @@ typedef struct _PropertyInfo
 typedef struct _ShapeInfo
 {
     CommonInfo defs;
-    Atom name;
+    CARD32 name;
     short index;
     unsigned short nOutlines;
     unsigned short szOutlines;
-    XkbOutlinePtr outlines;
-    XkbOutlinePtr approx;
-    XkbOutlinePtr primary;
+    XkbcOutlinePtr outlines;
+    XkbcOutlinePtr approx;
+    XkbcOutlinePtr primary;
     int dfltCornerRadius;
 } ShapeInfo;
 
@@ -99,7 +97,7 @@ typedef struct _ShapeInfo
 typedef struct _DoodadInfo
 {
     CommonInfo defs;
-    Atom name;
+    CARD32 name;
     unsigned char type;
     unsigned char priority;
     short top;
@@ -108,18 +106,18 @@ typedef struct _DoodadInfo
     unsigned short corner;
     unsigned short width;
     unsigned short height;
-    Atom shape;
-    Atom color;
-    Atom offColor;
-    Atom text;
-    Atom font;
-    Atom fontSlant;
-    Atom fontWeight;
-    Atom fontSetWidth;
-    Atom fontVariant;
+    CARD32 shape;
+    CARD32 color;
+    CARD32 offColor;
+    CARD32 text;
+    CARD32 font;
+    CARD32 fontSlant;
+    CARD32 fontWeight;
+    CARD32 fontSetWidth;
+    CARD32 fontVariant;
     unsigned short fontSize;
-    Atom fontEncoding;
-    Atom fontSpec;
+    CARD32 fontEncoding;
+    CARD32 fontSpec;
     char *logoName;
     struct _SectionInfo *section;
 } DoodadInfo;
@@ -139,8 +137,8 @@ typedef struct _KeyInfo
     char name[8];
     short gap;
     short index;
-    Atom shape;
-    Atom color;
+    CARD32 shape;
+    CARD32 color;
     struct _RowInfo *row;
 } KeyInfo;
 #define	keyText(k)	((k)&&(k)->name[0]?(k)->name:"default")
@@ -177,7 +175,7 @@ typedef struct _OverlayKeyInfo
 typedef struct _OverlayInfo
 {
     CommonInfo defs;
-    Atom name;
+    CARD32 name;
     unsigned short nRows;
     unsigned short nKeys;
     OverlayKeyInfo *keys;
@@ -197,7 +195,7 @@ typedef struct _OverlayInfo
 typedef struct _SectionInfo
 {
     CommonInfo defs;
-    Atom name;
+    CARD32 name;
     unsigned short top;
     unsigned short left;
     unsigned short width;
@@ -235,16 +233,16 @@ typedef struct _GeometryInfo
     DoodadInfo *doodads;
     int widthMM;
     int heightMM;
-    Atom font;
-    Atom fontSlant;
-    Atom fontWeight;
-    Atom fontSetWidth;
-    Atom fontVariant;
+    CARD32 font;
+    CARD32 fontSlant;
+    CARD32 fontWeight;
+    CARD32 fontSetWidth;
+    CARD32 fontVariant;
     unsigned fontSize;
-    Atom fontEncoding;
-    Atom fontSpec;
-    Atom baseColor;
-    Atom labelColor;
+    CARD32 fontEncoding;
+    CARD32 fontSpec;
+    CARD32 baseColor;
+    CARD32 labelColor;
     int dfltCornerRadius;
     SectionInfo dfltSection;
     DoodadInfo *dfltDoodads;
@@ -430,7 +428,7 @@ FindDoodadByType(DoodadInfo * di, unsigned type)
 }
 
 static DoodadInfo *
-FindDoodadByName(DoodadInfo * di, Atom name)
+FindDoodadByName(DoodadInfo * di, CARD32 name)
 {
     while (di)
     {
@@ -796,7 +794,7 @@ NextShape(GeometryInfo * info)
 }
 
 static ShapeInfo *
-FindShape(GeometryInfo * info, Atom name, const char *type, const char *which)
+FindShape(GeometryInfo * info, CARD32 name, const char *type, const char *which)
 {
     ShapeInfo *old;
 
@@ -1512,7 +1510,7 @@ SetTextDoodadField(DoodadInfo * di,
     char *typeName = "text doodad";
     union
     {
-        Atom *str;
+        CARD32 *str;
         short *ival;
         unsigned short *uval;
     } pField;
@@ -2120,7 +2118,7 @@ HandleGeometryVar(VarDef * stmt, XkbcDescPtr xkb, GeometryInfo * info)
     ExprResult elem, field, tmp;
     ExprDef *ndx;
     DoodadInfo *di;
-    Atom *pField = NULL;
+    CARD32 *pField = NULL;
     int ret;
 
     if (ExprResolveLhs(stmt->name, &elem, &field, &ndx) == 0)
@@ -2400,7 +2398,7 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
 {
     OutlineDef *ol;
     int nOut, nPt;
-    XkbOutlinePtr outline;
+    XkbcOutlinePtr outline;
     ExprDef *pt;
 
     if (def->nOutlines < 1)
@@ -2410,7 +2408,7 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
         return True;
     }
     si->nOutlines = def->nOutlines;
-    si->outlines = uTypedCalloc(def->nOutlines, XkbOutlineRec);
+    si->outlines = uTypedCalloc(def->nOutlines, XkbcOutlineRec);
     if (!si->outlines)
     {
         ERROR("Couldn't allocate outlines for \"%s\"\n", shText(si));
@@ -2430,7 +2428,7 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
         outline = &si->outlines[nOut++];
         outline->num_points = ol->nPoints;
         outline->corner_radius = si->dfltCornerRadius;
-        outline->points = uTypedCalloc(ol->nPoints, XkbPointRec);
+        outline->points = uTypedCalloc(ol->nPoints, XkbcPointRec);
         if (!outline->points)
         {
             ERROR("Can't allocate points for \"%s\"\n", shText(si));
@@ -2925,12 +2923,12 @@ HandleGeometryFile(XkbFile * file,
 /***====================================================================***/
 
 static Bool
-CopyShapeDef(XkbGeometryPtr geom, ShapeInfo * si)
+CopyShapeDef(XkbcGeometryPtr geom, ShapeInfo * si)
 {
     register int i, n;
-    XkbShapePtr shape;
-    XkbOutlinePtr old_outline, outline;
-    Atom name;
+    XkbcShapePtr shape;
+    XkbcOutlinePtr old_outline, outline;
+    CARD32 name;
 
     si->index = geom->num_shapes;
     name = si->name;
@@ -2952,7 +2950,7 @@ CopyShapeDef(XkbGeometryPtr geom, ShapeInfo * si)
             return False;
         }
         n = old_outline->num_points;
-        memcpy(outline->points, old_outline->points, n * sizeof(XkbPointRec));
+        memcpy(outline->points, old_outline->points, n * sizeof(XkbcPointRec));
         outline->num_points = old_outline->num_points;
         outline->corner_radius = old_outline->corner_radius;
     }
@@ -3257,10 +3255,10 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
 #define	FONT_TEMPLATE	"-*-%s-%s-%s-%s-%s-*-%d-*-*-*-*-%s"
 
 static char *
-FontFromParts(Atom fontTok,
-              Atom weightTok,
-              Atom slantTok,
-              Atom setWidthTok, Atom varTok, int size, Atom encodingTok)
+FontFromParts(CARD32 fontTok,
+              CARD32 weightTok,
+              CARD32 slantTok,
+              CARD32 setWidthTok, CARD32 varTok, int size, CARD32 encodingTok)
 {
     int totalSize;
     char *font, *weight, *slant, *setWidth, *variant, *encoding;
@@ -3287,13 +3285,13 @@ FontFromParts(Atom fontTok,
 }
 
 static Bool
-CopyDoodadDef(XkbGeometryPtr geom,
-              XkbSectionPtr section, DoodadInfo * di, GeometryInfo * info)
+CopyDoodadDef(XkbcGeometryPtr geom,
+              XkbcSectionPtr section, DoodadInfo * di, GeometryInfo * info)
 {
-    Atom name;
-    XkbDoodadPtr doodad;
-    XkbColorPtr color;
-    XkbShapePtr shape;
+    CARD32 name;
+    XkbcDoodadPtr doodad;
+    XkbcColorPtr color;
+    XkbcShapePtr shape;
     ShapeInfo *si;
 
     if (!VerifyDoodadInfo(di, info))
@@ -3375,15 +3373,15 @@ CopyDoodadDef(XkbGeometryPtr geom,
 /***====================================================================***/
 
 static Bool
-VerifyOverlayInfo(XkbGeometryPtr geom,
-                  XkbSectionPtr section,
+VerifyOverlayInfo(XkbcGeometryPtr geom,
+                  XkbcSectionPtr section,
                   OverlayInfo * oi,
                   GeometryInfo * info, short rowMap[256], short rowSize[256])
 {
     register OverlayKeyInfo *ki, *next;
     unsigned long oKey, uKey, sKey;
-    XkbRowPtr row;
-    XkbKeyPtr key;
+    XkbcRowPtr row;
+    XkbcKeyPtr key;
     int r, k;
 
     /* find out which row each key is in */
@@ -3472,13 +3470,13 @@ VerifyOverlayInfo(XkbGeometryPtr geom,
 }
 
 static Bool
-CopyOverlayDef(XkbGeometryPtr geom,
-               XkbSectionPtr section, OverlayInfo * oi, GeometryInfo * info)
+CopyOverlayDef(XkbcGeometryPtr geom,
+               XkbcSectionPtr section, OverlayInfo * oi, GeometryInfo * info)
 {
-    Atom name;
-    XkbOverlayPtr ol;
-    XkbOverlayRowPtr row;
-    XkbOverlayKeyPtr key;
+    CARD32 name;
+    XkbcOverlayPtr ol;
+    XkbcOverlayRowPtr row;
+    XkbcOverlayKeyPtr key;
     OverlayKeyInfo *ki;
     short rowMap[256], rowSize[256];
     int i;
@@ -3514,7 +3512,7 @@ CopyOverlayDef(XkbGeometryPtr geom,
     {
         row = &ol->rows[ki->overlayRow];
         key = &row->keys[row->num_keys++];
-        bzero(key, sizeof(XkbOverlayKeyRec));
+        bzero(key, sizeof(XkbcOverlayKeyRec));
         strncpy(key->over.name, ki->over, XkbKeyNameLength);
         strncpy(key->under.name, ki->under, XkbKeyNameLength);
     }
@@ -3524,11 +3522,11 @@ CopyOverlayDef(XkbGeometryPtr geom,
 /***====================================================================***/
 
 static Bool
-CopySectionDef(XkbGeometryPtr geom, SectionInfo * si, GeometryInfo * info)
+CopySectionDef(XkbcGeometryPtr geom, SectionInfo * si, GeometryInfo * info)
 {
-    XkbSectionPtr section;
-    XkbRowPtr row;
-    XkbKeyPtr key;
+    XkbcSectionPtr section;
+    XkbcRowPtr row;
+    XkbcKeyPtr key;
     KeyInfo *ki;
     RowInfo *ri;
 
@@ -3560,7 +3558,7 @@ CopySectionDef(XkbGeometryPtr geom, SectionInfo * si, GeometryInfo * info)
         row->vertical = ri->vertical;
         for (ki = ri->keys; ki != NULL; ki = (KeyInfo *) ki->defs.next)
         {
-            XkbColorPtr color;
+            XkbcColorPtr color;
             if ((ki->defs.defined & _GK_Name) == 0)
             {
                 ERROR("Key %d of row %d in section %s has no name\n",
@@ -3636,8 +3634,8 @@ CompileGeometry(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
 
     if (info.errorCount == 0)
     {
-        XkbGeometryPtr geom;
-        XkbGeometrySizesRec sizes;
+        XkbcGeometryPtr geom;
+        XkbcGeometrySizesRec sizes;
         bzero(&sizes, sizeof(sizes));
         sizes.which = XkbGeomAllMask;
         sizes.num_properties = info.nProps;
