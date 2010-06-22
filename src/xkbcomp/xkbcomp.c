@@ -76,30 +76,43 @@ XkbKeymapFileFromComponents(const XkbComponentNamesPtr ktcsg)
 static XkbComponentNamesPtr
 XkbComponentsFromRules(const char *rules, const XkbRF_VarDefsPtr defs)
 {
-    FILE *rulesFile;
-    char *rulesPath;
-    XkbRF_RulesPtr loaded;
+    FILE *rulesFile = NULL;
+    char *rulesPath = NULL;
+    static XkbRF_RulesPtr loaded = NULL;
+    static char *cached_name = NULL;
     XkbComponentNamesPtr names = NULL;
 
-    rulesFile = XkbFindFileInPath((char *)rules, XkmRulesFile, &rulesPath);
-    if (!rulesFile) {
-        ERROR("could not find \"%s\" rules in XKB path\n", rules);
-        goto out;
+    if (!cached_name || strcmp(rules, cached_name) != 0) {
+        if (loaded)
+            XkbcRF_Free(loaded, True);
+        loaded = NULL;
+        free(cached_name);
+        cached_name = NULL;
     }
 
-    if (!(loaded = _XkbTypedCalloc(1, XkbRF_RulesRec))) {
-        ERROR("failed to allocate XKB rules\n");
-        goto unwind_file;
-    }
+    if (!loaded) {
+        rulesFile = XkbFindFileInPath((char *)rules, XkmRulesFile, &rulesPath);
+        if (!rulesFile) {
+            ERROR("could not find \"%s\" rules in XKB path\n", rules);
+            goto out;
+        }
 
-    if (!XkbcRF_LoadRules(rulesFile, loaded)) {
-        ERROR("failed to load XKB rules \"%s\"\n", rulesPath);
-        goto unwind_rules;
+        if (!(loaded = _XkbTypedCalloc(1, XkbRF_RulesRec))) {
+            ERROR("failed to allocate XKB rules\n");
+            goto unwind_file;
+        }
+
+        if (!XkbcRF_LoadRules(rulesFile, loaded)) {
+            ERROR("failed to load XKB rules \"%s\"\n", rulesPath);
+            goto unwind_file;
+        }
+
+        cached_name = strdup(rules);
     }
 
     if (!(names = _XkbTypedCalloc(1, XkbComponentNamesRec))) {
         ERROR("failed to allocate XKB components\n");
-        goto unwind_rules;
+        goto unwind_file;
     }
 
     if (!XkbcRF_GetComponents(loaded, defs, names)) {
@@ -114,10 +127,9 @@ XkbComponentsFromRules(const char *rules, const XkbRF_VarDefsPtr defs)
         ERROR("no components returned from XKB rules \"%s\"\n", rulesPath);
     }
 
-unwind_rules:
-    XkbcRF_Free(loaded, True);
 unwind_file:
-    fclose(rulesFile);
+    if (rulesFile)
+        fclose(rulesFile);
     free(rulesPath);
 out:
     return names;
