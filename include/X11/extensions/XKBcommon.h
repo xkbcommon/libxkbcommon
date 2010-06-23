@@ -73,8 +73,8 @@ typedef struct _XkbcAnyAction {
 typedef struct _XkbcModAction {
     unsigned char   type;
     uint8_t         flags;
+    uint8_t         real_mods;
     uint32_t        mask;
-    uint32_t        real_mods;
     uint32_t        vmods;
 } XkbcModAction;
 
@@ -90,19 +90,19 @@ typedef struct _XkbcISOAction {
     int16_t         group;
     uint32_t        mask;
     uint32_t        vmods;
-    uint32_t        real_mods;
+    uint8_t         real_mods;
     uint8_t         affect;
 } XkbcISOAction;
 
 typedef struct _XkbcCtrlsAction {
     unsigned char   type;
-    unsigned char   flags;
+    uint8_t         flags;
     uint32_t        ctrls;
 } XkbcCtrlsAction;
 
 typedef struct _XkbcDeviceBtnAction {
     unsigned char   type;
-    unsigned char   flags;
+    uint8_t         flags;
     uint16_t        device;
     uint16_t        button;
     uint8_t         count;
@@ -163,8 +163,8 @@ typedef struct _XkbcSymInterpretRec {
     CARD32          sym;
     unsigned char   flags;
     unsigned char   match;
-    unsigned char   mods;
-    unsigned char   virtual_mod;
+    uint8_t         mods; /* XXX real or virt? */
+    uint32_t        virtual_mod;
     XkbcAnyAction   act;
 } XkbcSymInterpretRec, *XkbcSymInterpretPtr;
 
