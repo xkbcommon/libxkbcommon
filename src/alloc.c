@@ -79,7 +79,7 @@ XkbcAllocCompatMap(XkbcDescPtr xkb, unsigned which, unsigned nSI)
     }
     compat->size_si = nSI;
     compat->num_si = 0;
-    bzero(&compat->groups[0], XkbNumKbdGroups * sizeof(XkbModsRec));
+    bzero(&compat->groups[0], XkbNumKbdGroups * sizeof(XkbcModsRec));
     xkb->compat = compat;
 
     return Success;
@@ -99,7 +99,7 @@ XkbcFreeCompatMap(XkbcDescPtr xkb, unsigned which, Bool freeMap)
         which = XkbAllCompatMask;
 
     if (which & XkbGroupCompatMask)
-        bzero(&compat->groups[0], XkbNumKbdGroups * sizeof(XkbModsRec));
+        bzero(&compat->groups[0], XkbNumKbdGroups * sizeof(XkbcModsRec));
 
     if (which & XkbSymInterpMask) {
         if (compat->sym_interpret && (compat->size_si > 0))

@@ -149,12 +149,24 @@ typedef union _XkbcAction {
     unsigned char            type;
 } XkbcAction;
 
+typedef struct _XkbcMods {
+        uint32_t        mask;   /* effective mods */
+        uint32_t        vmods;
+        uint8_t         real_mods;
+} XkbcModsRec, *XkbcModsPtr;
+
+typedef struct _XkbcKTMapEntry {
+        Bool            active;
+        uint16_t        level;
+        XkbcModsRec     mods;
+} XkbcKTMapEntryRec, *XkbcKTMapEntryPtr;
+
 typedef struct _XkbcKeyType {
-    XkbModsRec              mods;
-    unsigned char           num_levels;
+    XkbcModsRec             mods;
+    uint16_t                num_levels;
     unsigned char           map_count;
-    XkbKTMapEntryPtr        map;
-    XkbModsPtr              preserve;
+    XkbcKTMapEntryPtr       map;
+    XkbcModsPtr             preserve;
     CARD32                  name;
     CARD32                 *level_names;
 } XkbcKeyTypeRec, *XkbcKeyTypePtr;
@@ -170,7 +182,7 @@ typedef struct _XkbcSymInterpretRec {
 
 typedef struct _XkbcCompatMapRec {
     XkbcSymInterpretPtr      sym_interpret;
-    XkbModsRec               groups[XkbNumKbdGroups];
+    XkbcModsRec              groups[XkbNumKbdGroups];
     unsigned short           num_si;
     unsigned short           size_si;
 } XkbcCompatMapRec, *XkbcCompatMapPtr;

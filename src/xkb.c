@@ -103,7 +103,7 @@ XkbcComputeEffectiveMap(XkbcDescPtr xkb, XkbcKeyTypePtr type,
 {
     int i;
     unsigned tmp;
-    XkbKTMapEntryPtr entry = NULL;
+    XkbcKTMapEntryPtr entry = NULL;
 
     if (!xkb || !type || !xkb->server)
         return False;

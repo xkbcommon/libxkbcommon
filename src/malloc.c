@@ -252,19 +252,19 @@ XkbcCopyKeyType(XkbcKeyTypePtr from, XkbcKeyTypePtr into)
     *into = *from;
 
     if (from->map && (into->map_count > 0)) {
-        into->map = _XkbTypedCalloc(into->map_count, XkbKTMapEntryRec);
+        into->map = _XkbTypedCalloc(into->map_count, XkbcKTMapEntryRec);
         if (!into->map)
             return BadAlloc;
         memcpy(into->map, from->map,
-               into->map_count * sizeof(XkbKTMapEntryRec));
+               into->map_count * sizeof(XkbcKTMapEntryRec));
     }
 
     if (from->preserve && (into->map_count > 0)) {
-        into->preserve = _XkbTypedCalloc(into->map_count, XkbModsRec);
+        into->preserve = _XkbTypedCalloc(into->map_count, XkbcModsRec);
         if (!into->preserve)
             return BadAlloc;
         memcpy(into->preserve, from->preserve,
-               into->map_count * sizeof(XkbModsRec));
+               into->map_count * sizeof(XkbcModsRec));
     }
 
     if (from->level_names && (into->num_levels > 0)) {
@@ -330,11 +330,11 @@ XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
         type->map_count = 0;
     }
     else {
-        XkbKTMapEntryRec *prev_map = type->map;
+        XkbcKTMapEntryRec *prev_map = type->map;
 
         if ((map_count > type->map_count) || !type->map)
             type->map = _XkbTypedRealloc(type->map, map_count,
-                                         XkbKTMapEntryRec);
+                                         XkbcKTMapEntryRec);
         if (!type->map) {
             if (prev_map)
                 _XkbFree(prev_map);
@@ -342,11 +342,11 @@ XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
         }
 
         if (want_preserve) {
-            XkbModsRec *prev_preserve = type->preserve;
+            XkbcModsRec *prev_preserve = type->preserve;
 
             if ((map_count > type->map_count) || !type->preserve)
                 type->preserve = _XkbTypedRealloc(type->preserve, map_count,
-                                                  XkbModsRec);
+                                                  XkbcModsRec);
             if (!type->preserve) {
                 if (prev_preserve)
                     _XkbFree(prev_preserve);

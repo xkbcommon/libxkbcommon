@@ -60,7 +60,7 @@ typedef struct _KeyTypeInfo
     int numLevels;
     int nEntries;
     int szEntries;
-    XkbKTMapEntryPtr entries;
+    XkbcKTMapEntryPtr entries;
     PreserveInfo *preserve;
     int szNames;
     CARD32 *lvlNames;
@@ -94,7 +94,7 @@ CARD32 tok_KEYPAD;
 
 extern Bool AddMapEntry(XkbcDescPtr /* xkb */ ,
                         KeyTypeInfo * /* type */ ,
-                        XkbKTMapEntryPtr /* new */ ,
+                        XkbcKTMapEntryPtr /* new */ ,
                         Bool /* clobber */ ,
                         Bool    /* report */
     );
@@ -159,10 +159,10 @@ InitKeyTypesInfo(KeyTypesInfo * info, XkbcDescPtr xkb, KeyTypesInfo * from)
         if (from->dflt.entries)
         {
             info->dflt.entries = uTypedCalloc(from->dflt.szEntries,
-                                              XkbKTMapEntryRec);
+                                              XkbcKTMapEntryRec);
             if (info->dflt.entries)
             {
-                unsigned sz = from->dflt.nEntries * sizeof(XkbKTMapEntryRec);
+                unsigned sz = from->dflt.nEntries * sizeof(XkbcKTMapEntryRec);
                 memcpy(info->dflt.entries, from->dflt.entries, sz);
             }
         }
@@ -472,11 +472,11 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
 
 /***====================================================================***/
 
-static XkbKTMapEntryPtr
+static XkbcKTMapEntryPtr
 FindMatchingMapEntry(KeyTypeInfo * type, unsigned mask, unsigned vmask)
 {
     register int i;
-    XkbKTMapEntryPtr entry;
+    XkbcKTMapEntryPtr entry;
 
     for (i = 0, entry = type->entries; i < type->nEntries; i++, entry++)
     {
@@ -506,15 +506,15 @@ DeleteLevel1MapEntries(KeyTypeInfo * type)
 }
 
 /**
- * Return a pointer to the next free XkbKTMapEntry, reallocating space if
+ * Return a pointer to the next free XkbcKTMapEntry, reallocating space if
  * necessary.
  */
-static XkbKTMapEntryPtr
+static XkbcKTMapEntryPtr
 NextMapEntry(KeyTypeInfo * type)
 {
     if (type->entries == NULL)
     {
-        type->entries = uTypedCalloc(2, XkbKTMapEntryRec);
+        type->entries = uTypedCalloc(2, XkbcKTMapEntryRec);
         if (type->entries == NULL)
         {
             ERROR("Couldn't allocate map entries for %s\n", TypeTxt(type));
@@ -529,7 +529,7 @@ NextMapEntry(KeyTypeInfo * type)
         type->szEntries *= 2;
         type->entries = uTypedRecalloc(type->entries,
                                        type->nEntries, type->szEntries,
-                                       XkbKTMapEntryRec);
+                                       XkbcKTMapEntryRec);
         if (type->entries == NULL)
         {
             ERROR("Couldn't reallocate map entries for %s\n", TypeTxt(type));
@@ -615,9 +615,9 @@ AddPreserve(XkbcDescPtr xkb,
 Bool
 AddMapEntry(XkbcDescPtr xkb,
             KeyTypeInfo * type,
-            XkbKTMapEntryPtr new, Bool clobber, Bool report)
+            XkbcKTMapEntryPtr new, Bool clobber, Bool report)
 {
-    XkbKTMapEntryPtr old;
+    XkbcKTMapEntryPtr old;
 
     if ((old =
          FindMatchingMapEntry(type, new->mods.real_mods, new->mods.vmods)))
@@ -682,7 +682,7 @@ SetMapEntry(KeyTypeInfo * type,
             XkbcDescPtr xkb, ExprDef * arrayNdx, ExprDef * value)
 {
     ExprResult rtrn;
-    XkbKTMapEntryRec entry;
+    XkbcKTMapEntryRec entry;
 
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(type, "map entry");
@@ -1019,7 +1019,7 @@ HandleKeyTypeDef(KeyTypeDef * def,
     /* default type */
     for (i = 0; i < info->dflt.nEntries; i++)
     {
-        XkbKTMapEntryPtr dflt;
+        XkbcKTMapEntryPtr dflt;
         dflt = &info->dflt.entries[i];
         if (((dflt->mods.real_mods & type.mask) == dflt->mods.real_mods) &&
             ((dflt->mods.vmods & type.vmask) == dflt->mods.vmods))
@@ -1134,8 +1134,8 @@ CopyDefToKeyType(XkbcDescPtr xkb, XkbcKeyTypePtr type, KeyTypeInfo * def)
     for (pre = def->preserve; pre != NULL;
          pre = (PreserveInfo *) pre->defs.next)
     {
-        XkbKTMapEntryPtr match;
-        XkbKTMapEntryRec tmp;
+        XkbcKTMapEntryPtr match;
+        XkbcKTMapEntryRec tmp;
         tmp.mods.real_mods = pre->indexMods;
         tmp.mods.vmods = pre->indexVMods;
         tmp.level = 0;
@@ -1156,7 +1156,7 @@ CopyDefToKeyType(XkbcDescPtr xkb, XkbcKeyTypePtr type, KeyTypeInfo * def)
     type->map = def->entries;
     if (def->preserve)
     {
-        type->preserve = uTypedCalloc(type->map_count, XkbModsRec);
+        type->preserve = uTypedCalloc(type->map_count, XkbcModsRec);
         if (!type->preserve)
         {
             WARN("Couldn't allocate preserve array in CopyDefToKeyType\n");

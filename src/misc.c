@@ -35,23 +35,23 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/keysym.h>
 #include <X11/extensions/XKBfilecommon.h>
 
-#define mapSize(m) (sizeof(m) / sizeof(XkbKTMapEntryRec))
-static XkbKTMapEntryRec map2Level[]= {
+#define mapSize(m) (sizeof(m) / sizeof(XkbcKTMapEntryRec))
+static XkbcKTMapEntryRec map2Level[]= {
     { True, ShiftMask, {1, ShiftMask, 0} }
 };
 
-static XkbKTMapEntryRec mapAlpha[]= {
+static XkbcKTMapEntryRec mapAlpha[]= {
     { True, ShiftMask, { 1, ShiftMask, 0 } },
     { True, LockMask,  { 0, LockMask,  0 } }
 };
 
-static XkbModsRec preAlpha[]= {
+static XkbcModsRec preAlpha[]= {
     { 0,        0,        0 },
     { LockMask, LockMask, 0 }
 };
 
 #define NL_VMOD_MASK 0
-static  XkbKTMapEntryRec mapKeypad[]= {
+static  XkbcKTMapEntryRec mapKeypad[]= {
     { True,  ShiftMask, { 1, ShiftMask, 0 } },
     { False, 0,         { 1, 0, NL_VMOD_MASK } }
 };

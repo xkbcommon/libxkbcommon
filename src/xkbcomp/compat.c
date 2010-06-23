@@ -54,7 +54,7 @@ typedef struct _GroupCompatInfo
     unsigned char fileID;
     unsigned char merge;
     unsigned char real_mods;
-    unsigned short vmods;
+    uint32_t vmods;
 } GroupCompatInfo;
 
 typedef struct _CompatInfo
