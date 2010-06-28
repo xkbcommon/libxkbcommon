@@ -30,37 +30,8 @@
 #include	<stdlib.h>
 #include	<stdarg.h>
 
-/***====================================================================***/
-
 void *
-uAlloc(unsigned size)
-{
-    return ((void *) malloc(size));
-}
-
-/***====================================================================***/
-
-void *
-uCalloc(unsigned n, unsigned size)
-{
-    return ((void *) calloc(n, size));
-}
-
-/***====================================================================***/
-
-void *
-uRealloc(void * old, unsigned newSize)
-{
-    if (old == NULL)
-        return ((void *) malloc(newSize));
-    else
-        return ((void *) realloc((char *) old, newSize));
-}
-
-/***====================================================================***/
-
-void *
-uRecalloc(void * old, unsigned nOld, unsigned nNew, unsigned itemSize)
+recalloc(void * old, unsigned nOld, unsigned nNew, unsigned itemSize)
 {
     char *rtrn;
 
@@ -75,16 +46,6 @@ uRecalloc(void * old, unsigned nOld, unsigned nNew, unsigned itemSize)
         }
     }
     return (void *) rtrn;
-}
-
-/***====================================================================***/
-
-void
-uFree(void * ptr)
-{
-    if (ptr != (void *) NULL)
-        free((char *) ptr);
-    return;
 }
 
 /***====================================================================***/

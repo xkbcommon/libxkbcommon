@@ -129,7 +129,7 @@ XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
         }
         else if (str[0] == '(')
         {
-            uFree(*extra_data);
+            free(*extra_data);
             return False;
         }
         else
@@ -140,8 +140,8 @@ XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
             tmp = strchr(str, ')');
             if ((tmp == NULL) || (tmp[1] != '\0'))
             {
-                uFree(*file_rtrn);
-                uFree(*extra_data);
+                free(*file_rtrn);
+                free(*extra_data);
                 return False;
             }
             *tmp++ = '\0';
@@ -199,7 +199,7 @@ XkbClearIncludePath(void)
         {
             if (includePath[i] != NULL)
             {
-                uFree(includePath[i]);
+                free(includePath[i]);
                 includePath[i] = NULL;
             }
         }

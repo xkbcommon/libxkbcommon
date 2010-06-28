@@ -203,12 +203,12 @@ FreeKeyTypeInfo(KeyTypeInfo * type)
 {
     if (type->entries != NULL)
     {
-        uFree(type->entries);
+        free(type->entries);
         type->entries = NULL;
     }
     if (type->lvlNames != NULL)
     {
-        uFree(type->lvlNames);
+        free(type->lvlNames);
         type->lvlNames = NULL;
     }
     if (type->preserve != NULL)
@@ -223,7 +223,7 @@ static void
 FreeKeyTypesInfo(KeyTypesInfo * info)
 {
     if (info->name)
-        uFree(info->name);
+        free(info->name);
     info->name = NULL;
     if (info->types)
     {
@@ -420,7 +420,7 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
         if (stmt->stmt != NULL)
         {
             if (included.name != NULL)
-                uFree(included.name);
+                free(included.name);
             included.name = stmt->stmt;
             stmt->stmt = NULL;
         }

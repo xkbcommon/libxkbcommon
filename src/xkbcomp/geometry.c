@@ -294,12 +294,12 @@ FreeProperties(PropertyInfo * pi, GeometryInfo * info)
     for (tmp = pi; tmp != NULL; tmp = next)
     {
         if (tmp->name)
-            uFree(tmp->name);
+            free(tmp->name);
         if (tmp->value)
-            uFree(tmp->value);
+            free(tmp->value);
         tmp->name = tmp->value = NULL;
         next = (PropertyInfo *) tmp->defs.next;
-        uFree(tmp);
+        free(tmp);
     }
     return;
 }
@@ -353,7 +353,7 @@ FreeKeys(KeyInfo * key, RowInfo * row, GeometryInfo * info)
     {
         ClearKeyInfo(tmp);
         next = (KeyInfo *) tmp->defs.next;
-        uFree(tmp);
+        free(tmp);
     }
     return;
 }
@@ -410,7 +410,7 @@ FreeRows(RowInfo * row, SectionInfo * section, GeometryInfo * info)
     {
         ClearRowInfo(tmp, info);
         next = (RowInfo *) tmp->defs.next;
-        uFree(tmp);
+        free(tmp);
     }
     return;
 }
@@ -529,7 +529,7 @@ FreeDoodads(DoodadInfo * di, SectionInfo * si, GeometryInfo * info)
     {
         next = (DoodadInfo *) tmp->defs.next;
         ClearDoodadInfo(tmp);
-        uFree(tmp);
+        free(tmp);
     }
     return;
 }
@@ -619,7 +619,7 @@ FreeSections(SectionInfo * si, GeometryInfo * info)
     {
         ClearSectionInfo(tmp, info);
         next = (SectionInfo *) tmp->defs.next;
-        uFree(tmp);
+        free(tmp);
     }
     return;
 }
@@ -644,19 +644,19 @@ FreeShapes(ShapeInfo * si, GeometryInfo * info)
             {
                 if (tmp->outlines[i].points != NULL)
                 {
-                    uFree(tmp->outlines[i].points);
+                    free(tmp->outlines[i].points);
                     tmp->outlines[i].num_points = 0;
                     tmp->outlines[i].points = NULL;
                 }
             }
-            uFree(tmp->outlines);
+            free(tmp->outlines);
             tmp->szOutlines = 0;
             tmp->nOutlines = 0;
             tmp->outlines = NULL;
             tmp->primary = tmp->approx = NULL;
         }
         next = (ShapeInfo *) tmp->defs.next;
-        uFree(tmp);
+        free(tmp);
     }
     return;
 }
@@ -678,7 +678,7 @@ static void
 ClearGeometryInfo(GeometryInfo * info)
 {
     if (info->name)
-        uFree(info->name);
+        free(info->name);
     info->name = NULL;
     if (info->props)
         FreeProperties(info->props, info);
@@ -752,7 +752,7 @@ AddProperty(GeometryInfo * info, PropertyInfo * new)
                         new->value);
             }
             if (old->value)
-                uFree(old->value);
+                free(old->value);
             old->value = _XkbDupString(new->value);
             return True;
         }
@@ -1348,7 +1348,7 @@ HandleIncludeGeometry(IncludeStmt * stmt, XkbcDescPtr xkb, GeometryInfo * info,
         if (stmt->stmt != NULL)
         {
             if (included.name != NULL)
-                uFree(included.name);
+                free(included.name);
             included.name = stmt->stmt;
             stmt->stmt = NULL;
         }
@@ -3277,7 +3277,7 @@ FontFromParts(uint32_t fontTok,
     totalSize =
         strlen(FONT_TEMPLATE) + strlen(font) + strlen(weight) + strlen(slant);
     totalSize += strlen(setWidth) + strlen(variant) + strlen(encoding);
-    rtrn = uCalloc(totalSize, 1);
+    rtrn = calloc(totalSize, 1);
     if (rtrn)
         sprintf(rtrn, FONT_TEMPLATE, font, weight, slant, setWidth, variant,
                 size, encoding);
@@ -3430,7 +3430,7 @@ VerifyOverlayInfo(XkbcGeometryPtr geom,
     while ((oi->keys != NULL) && (oi->keys->sectionRow == _GOK_UnknownRow))
     {
         next = (OverlayKeyInfo *) oi->keys->defs.next;
-        uFree(oi->keys);
+        free(oi->keys);
         oi->keys = next;
         oi->nKeys--;
     }
@@ -3441,7 +3441,7 @@ VerifyOverlayInfo(XkbcGeometryPtr geom,
         {
             ki->defs.next = next->defs.next;
             oi->nKeys--;
-            uFree(next);
+            free(next);
             next = (OverlayKeyInfo *) ki->defs.next;
         }
     }

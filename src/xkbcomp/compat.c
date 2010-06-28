@@ -140,7 +140,7 @@ ClearCompatInfo(CompatInfo * info, XkbcDescPtr xkb)
     register int i;
 
     if (info->name != NULL)
-        uFree(info->name);
+        free(info->name);
     info->name = NULL;
     info->dflt.defs.defined = 0;
     info->dflt.defs.merge = MergeAugment;
@@ -429,7 +429,7 @@ HandleIncludeCompatMap(IncludeStmt * stmt,
         if (stmt->stmt != NULL)
         {
             if (included.name != NULL)
-                uFree(included.name);
+                free(included.name);
             included.name = stmt->stmt;
             stmt->stmt = NULL;
         }
@@ -882,6 +882,6 @@ CompileCompatMap(XkbFile *file, XkbcDescPtr xkb, unsigned merge,
         return True;
     }
     if (info.interps != NULL)
-        uFree(info.interps);
+        free(info.interps);
     return False;
 }

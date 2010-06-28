@@ -412,7 +412,7 @@ CopyIndicatorMapDefs(XkbcDescPtr xkb, LEDInfo *leds, LEDInfo **unboundRtrn)
                 last = led;
             }
             else
-                uFree(led);
+                free(led);
         }
         else
         {
@@ -428,7 +428,7 @@ CopyIndicatorMapDefs(XkbcDescPtr xkb, LEDInfo *leds, LEDInfo **unboundRtrn)
             im->ctrls = led->ctrls;
             if (xkb->names != NULL)
                 xkb->names->indicators[led->indicator - 1] = led->name;
-            uFree(led);
+            free(led);
         }
     }
     if (unboundRtrn != NULL)
@@ -497,7 +497,7 @@ BindIndicators(XkbcDescPtr xkb, Bool force, LEDInfo *unbound,
             if (force)
             {
                 unbound = next;
-                uFree(led);
+                free(led);
             }
             else
             {
@@ -522,7 +522,7 @@ BindIndicators(XkbcDescPtr xkb, Bool force, LEDInfo *unbound,
                 led->indicator = _LED_NotBound;
                 if (force)
                 {
-                    uFree(led);
+                    free(led);
                     unbound = next;
                 }
                 else
@@ -551,7 +551,7 @@ BindIndicators(XkbcDescPtr xkb, Bool force, LEDInfo *unbound,
                 else
                     unbound = next;
                 led->defs.next = NULL;
-                uFree(led);
+                free(led);
             }
         }
     }
@@ -564,7 +564,7 @@ BindIndicators(XkbcDescPtr xkb, Bool force, LEDInfo *unbound,
         for (led = unbound; led != NULL; led = next)
         {
             next = (LEDInfo *) led->defs.next;
-            uFree(led);
+            free(led);
         }
     }
     return True;

@@ -488,7 +488,7 @@ KeyDeclMerge(KeyDef * into, KeyDef * from)
     into->expr =
         (ExprDef *) AppendStmt(&into->expr->common, &from->expr->common);
     from->expr = NULL;
-    uFree(from);
+    free(from);
     return into;
 }
 
@@ -552,9 +552,9 @@ OverlayKeyCreate(char *under, char *over)
         strncpy(key->over, over, XkbKeyNameLength);
         strncpy(key->under, under, XkbKeyNameLength);
         if (over)
-            uFree(over);
+            free(over);
         if (under)
-            uFree(under);
+            free(under);
     }
     return key;
 }
@@ -706,7 +706,7 @@ IncludeCreate(char *str, unsigned merge)
     if (first)
         first->stmt = stmt;
     else if (stmt)
-        uFree(stmt);
+        free(stmt);
     return first;
   BAIL:
     ERROR("Illegal include statement \"%s\"\n", stmt);
@@ -715,19 +715,19 @@ IncludeCreate(char *str, unsigned merge)
     {
         incl = first->next;
         if (first->file)
-            uFree(first->file);
+            free(first->file);
         if (first->map)
-            uFree(first->map);
+            free(first->map);
         if (first->modifier)
-            uFree(first->modifier);
+            free(first->modifier);
         if (first->path)
-            uFree(first->path);
+            free(first->path);
         first->file = first->map = first->path = NULL;
-        uFree(first);
+        free(first);
         first = incl;
     }
     if (stmt)
-        uFree(stmt);
+        free(stmt);
     return NULL;
 }
 

@@ -211,7 +211,7 @@ AddIndicatorName(KeyNamesInfo * info, IndicatorNameInfo * new)
                         }
                     }
                 }
-                uFree(old);
+                free(old);
             }
         }
     }
@@ -276,7 +276,7 @@ static void
 ClearKeyNamesInfo(KeyNamesInfo * info)
 {
     if (info->name != NULL)
-        uFree(info->name);
+        free(info->name);
     info->name = NULL;
     info->computedMax = info->explicitMax = info->explicitMin = -1;
     info->computedMin = 256;
@@ -523,7 +523,7 @@ HandleIncludeKeycodes(IncludeStmt * stmt, XkbcDescPtr xkb, KeyNamesInfo * info)
         if (stmt->stmt != NULL)
         {
             if (included.name != NULL)
-                uFree(included.name);
+                free(included.name);
             included.name = stmt->stmt;
             stmt->stmt = NULL;
         }

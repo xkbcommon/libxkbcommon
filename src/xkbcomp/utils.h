@@ -66,30 +66,18 @@ typedef int Comparison;
 /***====================================================================***/
 
 extern void *
-uAlloc(unsigned size);
+recalloc(void * old, unsigned nOld, unsigned nNew, unsigned newSize);
 
-extern void *
-uCalloc(unsigned n, unsigned  size);
-
-extern void *
-uRealloc(void * old, unsigned newSize);
-
-extern void *
-uRecalloc(void * old, unsigned nOld, unsigned nNew, unsigned newSize);
-
-extern void
-uFree(void * ptr);
-
-#define	uTypedAlloc(t)		((t *)uAlloc((unsigned)sizeof(t)))
-#define	uTypedCalloc(n,t)	((t *)uCalloc((unsigned)n,(unsigned)sizeof(t)))
-#define	uTypedRealloc(pO,n,t)	((t *)uRealloc((void *)pO,((unsigned)n)*sizeof(t)))
-#define	uTypedRecalloc(pO,o,n,t) ((t *)uRecalloc((void *)pO,((unsigned)o),((unsigned)n),sizeof(t)))
+#define	uTypedAlloc(t)		((t *)malloc((unsigned)sizeof(t)))
+#define	uTypedCalloc(n,t)	((t *)calloc((unsigned)n,(unsigned)sizeof(t)))
+#define	uTypedRealloc(pO,n,t)	((t *)realloc((void *)pO,((unsigned)n)*sizeof(t)))
+#define	uTypedRecalloc(pO,o,n,t) ((t *)recalloc((void *)pO,((unsigned)o),((unsigned)n),sizeof(t)))
 #if (defined mdHasAlloca) && (mdHasAlloca)
 #define	uTmpAlloc(n)	((void *)alloca((unsigned)n))
 #define	uTmpFree(p)
 #else
-#define	uTmpAlloc(n)	uAlloc(n)
-#define	uTmpFree(p)	uFree(p)
+#define	uTmpAlloc(n)	malloc(n)
+#define	uTmpFree(p)	free(p)
 #endif
 
 /***====================================================================***/

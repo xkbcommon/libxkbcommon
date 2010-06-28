@@ -227,7 +227,7 @@ ClearCommonInfo(CommonInfo * cmn)
         for (this = cmn; this != NULL; this = next)
         {
             next = this->next;
-            uFree(this);
+            free(this);
         }
     }
     return NULL;
