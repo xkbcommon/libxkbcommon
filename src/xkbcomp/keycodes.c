@@ -60,7 +60,7 @@ typedef struct _IndicatorNameInfo
 {
     CommonInfo defs;
     int ndx;
-    CARD32 name;
+    uint32_t name;
     Bool virtual;
 } IndicatorNameInfo;
 
@@ -142,7 +142,7 @@ FindIndicatorByIndex(KeyNamesInfo * info, int ndx)
 }
 
 static IndicatorNameInfo *
-FindIndicatorByName(KeyNamesInfo * info, CARD32 name)
+FindIndicatorByName(KeyNamesInfo * info, uint32_t name)
 {
     IndicatorNameInfo *old;
 
@@ -227,7 +227,7 @@ AddIndicatorName(KeyNamesInfo * info, IndicatorNameInfo * new)
             else
             {
                 const char *oldType, *newType;
-                CARD32 using, ignoring;
+                uint32_t using, ignoring;
                 if (old->virtual)
                     oldType = "virtual indicator";
                 else

@@ -166,7 +166,7 @@ KeyAliasCreate(char *alias, char *real)
 }
 
 VModDef *
-VModCreate(CARD32 name, ExprDef * value)
+VModCreate(uint32_t name, ExprDef * value)
 {
     VModDef *def;
     def = uTypedAlloc(VModDef);
@@ -206,7 +206,7 @@ VarCreate(ExprDef * name, ExprDef * value)
 }
 
 VarDef *
-BoolVarCreate(CARD32 nameToken, unsigned set)
+BoolVarCreate(uint32_t nameToken, unsigned set)
 {
     ExprDef *name, *value;
 
@@ -239,7 +239,7 @@ InterpCreate(char *sym, ExprDef * match)
 }
 
 KeyTypeDef *
-KeyTypeCreate(CARD32 name, VarDef * body)
+KeyTypeCreate(uint32_t name, VarDef * body)
 {
     KeyTypeDef *def;
 
@@ -306,7 +306,7 @@ GroupCompatCreate(int group, ExprDef * val)
 }
 
 ModMapDef *
-ModMapCreate(CARD32 modifier, ExprDef * keys)
+ModMapCreate(uint32_t modifier, ExprDef * keys)
 {
     ModMapDef *def;
 
@@ -328,7 +328,7 @@ ModMapCreate(CARD32 modifier, ExprDef * keys)
 }
 
 IndicatorMapDef *
-IndicatorMapCreate(CARD32 name, VarDef * body)
+IndicatorMapCreate(uint32_t name, VarDef * body)
 {
     IndicatorMapDef *def;
 
@@ -373,7 +373,7 @@ IndicatorNameCreate(int ndx, ExprDef * name, Bool virtual)
 }
 
 ExprDef *
-ActionCreate(CARD32 name, ExprDef * args)
+ActionCreate(uint32_t name, ExprDef * args)
 {
     ExprDef *act;
 
@@ -413,7 +413,7 @@ CreateKeysymList(char *sym)
 }
 
 ShapeDef *
-ShapeDeclCreate(CARD32 name, OutlineDef * outlines)
+ShapeDeclCreate(uint32_t name, OutlineDef * outlines)
 {
     ShapeDef *shape;
     OutlineDef *ol;
@@ -438,7 +438,7 @@ ShapeDeclCreate(CARD32 name, OutlineDef * outlines)
 }
 
 OutlineDef *
-OutlineCreate(CARD32 field, ExprDef * points)
+OutlineCreate(uint32_t field, ExprDef * points)
 {
     OutlineDef *outline;
     ExprDef *pt;
@@ -516,7 +516,7 @@ RowDeclCreate(KeyDef * keys)
 }
 
 SectionDef *
-SectionDeclCreate(CARD32 name, RowDef * rows)
+SectionDeclCreate(uint32_t name, RowDef * rows)
 {
     SectionDef *section;
     RowDef *row;
@@ -560,7 +560,7 @@ OverlayKeyCreate(char *under, char *over)
 }
 
 OverlayDef *
-OverlayDeclCreate(CARD32 name, OverlayKeyDef * keys)
+OverlayDeclCreate(uint32_t name, OverlayKeyDef * keys)
 {
     OverlayDef *ol;
     OverlayKeyDef *key;
@@ -582,7 +582,7 @@ OverlayDeclCreate(CARD32 name, OverlayKeyDef * keys)
 }
 
 DoodadDef *
-DoodadCreate(unsigned type, CARD32 name, VarDef * body)
+DoodadCreate(unsigned type, uint32_t name, VarDef * body)
 {
     DoodadDef *doodad;
 
@@ -620,9 +620,9 @@ AppendKeysymList(ExprDef * list, char *sym)
 }
 
 int
-LookupKeysym(char *str, CARD32 * sym_rtrn)
+LookupKeysym(char *str, uint32_t * sym_rtrn)
 {
-    CARD32 sym;
+    uint32_t sym;
 
     if ((!str) || (uStrCaseCmp(str, "any") == 0)
         || (uStrCaseCmp(str, "nosymbol") == 0))

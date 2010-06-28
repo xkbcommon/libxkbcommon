@@ -82,7 +82,7 @@ extern int
 XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
                   Bool want_preserve, int new_num_lvls);
 
-extern CARD32 *
+extern uint32_t *
 XkbcResizeKeySyms(XkbcDescPtr xkb, int key, int needed);
 
 extern int

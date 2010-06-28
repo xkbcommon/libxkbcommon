@@ -268,11 +268,11 @@ XkbcCopyKeyType(XkbcKeyTypePtr from, XkbcKeyTypePtr into)
     }
 
     if (from->level_names && (into->num_levels > 0)) {
-        into->level_names = _XkbTypedCalloc(into->num_levels, CARD32);
+        into->level_names = _XkbTypedCalloc(into->num_levels, uint32_t);
         if (!into->level_names)
             return BadAlloc;
         memcpy(into->level_names, from->level_names,
-               into->num_levels * sizeof(CARD32));
+               into->num_levels * sizeof(uint32_t));
     }
 
     return Success;
@@ -362,10 +362,10 @@ XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
     }
 
     if ((new_num_lvls > type->num_levels) || !type->level_names) {
-        CARD32 *prev_level_names = type->level_names;
+        uint32_t *prev_level_names = type->level_names;
 
         type->level_names = _XkbTypedRealloc(type->level_names, new_num_lvls,
-                                             CARD32);
+                                             uint32_t);
         if (!type->level_names) {
             if (prev_level_names)
                 _XkbFree(prev_level_names);
@@ -398,7 +398,7 @@ XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
     nMatchingKeys = 0;
     if (new_num_lvls > type->num_levels) {
         int nTotal;
-        CARD32 *newSyms;
+        uint32_t *newSyms;
         int width, match, nResize = 0;
         int i, g, nSyms;
 
@@ -427,7 +427,7 @@ XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
             int nextMatch;
 
             xkb->map->size_syms = (nTotal * 12) / 10;
-            newSyms = _XkbTypedCalloc(xkb->map->size_syms, CARD32);
+            newSyms = _XkbTypedCalloc(xkb->map->size_syms, uint32_t);
             if (!newSyms)
                 return BadAlloc;
             nextMatch = 0;
@@ -435,20 +435,20 @@ XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
 
             for (i = xkb->min_key_code; i <= xkb->max_key_code; i++) {
                 if (matchingKeys[nextMatch] == i) {
-                    CARD32 *pOld;
+                    uint32_t *pOld;
 
                     nextMatch++;
                     width = XkbKeyGroupsWidth(xkb, i);
                     pOld = XkbKeySymsPtr(xkb, i);
                     for (g = XkbKeyNumGroups(xkb, i) - 1; g >= 0; g--)
                         memcpy(&newSyms[nSyms+(new_num_lvls * g)],
-                               &pOld[width * g], width * sizeof(CARD32));
+                               &pOld[width * g], width * sizeof(uint32_t));
                     xkb->map->key_sym_map[i].offset = nSyms;
                     nSyms += XkbKeyNumGroups(xkb, i) * new_num_lvls;
                 }
                 else {
                     memcpy(&newSyms[nSyms], XkbKeySymsPtr(xkb, i),
-                           XkbKeyNumSyms(xkb, i) * sizeof(CARD32));
+                           XkbKeyNumSyms(xkb, i) * sizeof(uint32_t));
                     xkb->map->key_sym_map[i].offset = nSyms;
                     nSyms += XkbKeyNumSyms(xkb,i);
                 }
@@ -491,7 +491,7 @@ XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
             firstClear = new_num_lvls;
 
         for (i = 0; i < nMatchingKeys; i++) {
-            CARD32 *pSyms;
+            uint32_t *pSyms;
             int width, nClear;
 
             key = matchingKeys[i];
@@ -502,7 +502,7 @@ XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
                 if (XkbKeyKeyTypeIndex(xkb, key, g) == type_ndx) {
                     if (nClear>0)
                         bzero(&pSyms[g * width + firstClear],
-                              nClear * sizeof(CARD32));
+                              nClear * sizeof(uint32_t));
                 }
             }
         }
@@ -513,12 +513,12 @@ XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
     return Success;
 }
 
-CARD32 *
+uint32_t *
 XkbcResizeKeySyms(XkbcDescPtr xkb, int key, int needed)
 {
     int i, nSyms, nKeySyms;
     unsigned nOldSyms;
-    CARD32 *newSyms;
+    uint32_t *newSyms;
 
     if (needed == 0) {
         xkb->map->key_sym_map[key].offset = 0;
@@ -532,11 +532,11 @@ XkbcResizeKeySyms(XkbcDescPtr xkb, int key, int needed)
     if (xkb->map->size_syms - xkb->map->num_syms >= (unsigned)needed) {
         if (nOldSyms > 0)
             memcpy(&xkb->map->syms[xkb->map->num_syms],
-                   XkbKeySymsPtr(xkb, key), nOldSyms * sizeof(CARD32));
+                   XkbKeySymsPtr(xkb, key), nOldSyms * sizeof(uint32_t));
 
         if ((needed - nOldSyms) > 0)
             bzero(&xkb->map->syms[xkb->map->num_syms + XkbKeyNumSyms(xkb, key)],
-                  (needed - nOldSyms) * sizeof(CARD32));
+                  (needed - nOldSyms) * sizeof(uint32_t));
 
         xkb->map->key_sym_map[key].offset = xkb->map->num_syms;
         xkb->map->num_syms += needed;
@@ -545,7 +545,7 @@ XkbcResizeKeySyms(XkbcDescPtr xkb, int key, int needed)
     }
 
     xkb->map->size_syms += (needed > 32 ? needed : 32);
-    newSyms = _XkbTypedCalloc(xkb->map->size_syms, CARD32);
+    newSyms = _XkbTypedCalloc(xkb->map->size_syms, uint32_t);
     if (!newSyms)
         return NULL;
 
@@ -562,9 +562,9 @@ XkbcResizeKeySyms(XkbcDescPtr xkb, int key, int needed)
             nKeySyms = needed;
         if (nCopy != 0)
            memcpy(&newSyms[nSyms], XkbKeySymsPtr(xkb, i),
-                  nCopy * sizeof(CARD32));
+                  nCopy * sizeof(uint32_t));
         if (nKeySyms > nCopy)
-            bzero(&newSyms[nSyms+nCopy], (nKeySyms - nCopy) * sizeof(CARD32));
+            bzero(&newSyms[nSyms+nCopy], (nKeySyms - nCopy) * sizeof(uint32_t));
 
         xkb->map->key_sym_map[i].offset = nSyms;
         nSyms += nKeySyms;

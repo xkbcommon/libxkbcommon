@@ -58,7 +58,7 @@ typedef struct _PropertyInfo
 typedef struct _ShapeInfo
 {
     CommonInfo defs;
-    CARD32 name;
+    uint32_t name;
     short index;
     unsigned short nOutlines;
     unsigned short szOutlines;
@@ -97,7 +97,7 @@ typedef struct _ShapeInfo
 typedef struct _DoodadInfo
 {
     CommonInfo defs;
-    CARD32 name;
+    uint32_t name;
     unsigned char type;
     unsigned char priority;
     short top;
@@ -106,18 +106,18 @@ typedef struct _DoodadInfo
     unsigned short corner;
     unsigned short width;
     unsigned short height;
-    CARD32 shape;
-    CARD32 color;
-    CARD32 offColor;
-    CARD32 text;
-    CARD32 font;
-    CARD32 fontSlant;
-    CARD32 fontWeight;
-    CARD32 fontSetWidth;
-    CARD32 fontVariant;
+    uint32_t shape;
+    uint32_t color;
+    uint32_t offColor;
+    uint32_t text;
+    uint32_t font;
+    uint32_t fontSlant;
+    uint32_t fontWeight;
+    uint32_t fontSetWidth;
+    uint32_t fontVariant;
     unsigned short fontSize;
-    CARD32 fontEncoding;
-    CARD32 fontSpec;
+    uint32_t fontEncoding;
+    uint32_t fontSpec;
     char *logoName;
     struct _SectionInfo *section;
 } DoodadInfo;
@@ -137,8 +137,8 @@ typedef struct _KeyInfo
     char name[8];
     short gap;
     short index;
-    CARD32 shape;
-    CARD32 color;
+    uint32_t shape;
+    uint32_t color;
     struct _RowInfo *row;
 } KeyInfo;
 #define	keyText(k)	((k)&&(k)->name[0]?(k)->name:"default")
@@ -175,7 +175,7 @@ typedef struct _OverlayKeyInfo
 typedef struct _OverlayInfo
 {
     CommonInfo defs;
-    CARD32 name;
+    uint32_t name;
     unsigned short nRows;
     unsigned short nKeys;
     OverlayKeyInfo *keys;
@@ -195,7 +195,7 @@ typedef struct _OverlayInfo
 typedef struct _SectionInfo
 {
     CommonInfo defs;
-    CARD32 name;
+    uint32_t name;
     unsigned short top;
     unsigned short left;
     unsigned short width;
@@ -233,16 +233,16 @@ typedef struct _GeometryInfo
     DoodadInfo *doodads;
     int widthMM;
     int heightMM;
-    CARD32 font;
-    CARD32 fontSlant;
-    CARD32 fontWeight;
-    CARD32 fontSetWidth;
-    CARD32 fontVariant;
+    uint32_t font;
+    uint32_t fontSlant;
+    uint32_t fontWeight;
+    uint32_t fontSetWidth;
+    uint32_t fontVariant;
     unsigned fontSize;
-    CARD32 fontEncoding;
-    CARD32 fontSpec;
-    CARD32 baseColor;
-    CARD32 labelColor;
+    uint32_t fontEncoding;
+    uint32_t fontSpec;
+    uint32_t baseColor;
+    uint32_t labelColor;
     int dfltCornerRadius;
     SectionInfo dfltSection;
     DoodadInfo *dfltDoodads;
@@ -428,7 +428,7 @@ FindDoodadByType(DoodadInfo * di, unsigned type)
 }
 
 static DoodadInfo *
-FindDoodadByName(DoodadInfo * di, CARD32 name)
+FindDoodadByName(DoodadInfo * di, uint32_t name)
 {
     while (di)
     {
@@ -794,7 +794,7 @@ NextShape(GeometryInfo * info)
 }
 
 static ShapeInfo *
-FindShape(GeometryInfo * info, CARD32 name, const char *type, const char *which)
+FindShape(GeometryInfo * info, uint32_t name, const char *type, const char *which)
 {
     ShapeInfo *old;
 
@@ -1510,7 +1510,7 @@ SetTextDoodadField(DoodadInfo * di,
     char *typeName = "text doodad";
     union
     {
-        CARD32 *str;
+        uint32_t *str;
         short *ival;
         unsigned short *uval;
     } pField;
@@ -2118,7 +2118,7 @@ HandleGeometryVar(VarDef * stmt, XkbcDescPtr xkb, GeometryInfo * info)
     ExprResult elem, field, tmp;
     ExprDef *ndx;
     DoodadInfo *di;
-    CARD32 *pField = NULL;
+    uint32_t *pField = NULL;
     int ret;
 
     if (ExprResolveLhs(stmt->name, &elem, &field, &ndx) == 0)
@@ -2928,7 +2928,7 @@ CopyShapeDef(XkbcGeometryPtr geom, ShapeInfo * si)
     register int i, n;
     XkbcShapePtr shape;
     XkbcOutlinePtr old_outline, outline;
-    CARD32 name;
+    uint32_t name;
 
     si->index = geom->num_shapes;
     name = si->name;
@@ -3255,10 +3255,10 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
 #define	FONT_TEMPLATE	"-*-%s-%s-%s-%s-%s-*-%d-*-*-*-*-%s"
 
 static char *
-FontFromParts(CARD32 fontTok,
-              CARD32 weightTok,
-              CARD32 slantTok,
-              CARD32 setWidthTok, CARD32 varTok, int size, CARD32 encodingTok)
+FontFromParts(uint32_t fontTok,
+              uint32_t weightTok,
+              uint32_t slantTok,
+              uint32_t setWidthTok, uint32_t varTok, int size, uint32_t encodingTok)
 {
     int totalSize;
     char *font, *weight, *slant, *setWidth, *variant, *encoding;
@@ -3288,7 +3288,7 @@ static Bool
 CopyDoodadDef(XkbcGeometryPtr geom,
               XkbcSectionPtr section, DoodadInfo * di, GeometryInfo * info)
 {
-    CARD32 name;
+    uint32_t name;
     XkbcDoodadPtr doodad;
     XkbcColorPtr color;
     XkbcShapePtr shape;
@@ -3473,7 +3473,7 @@ static Bool
 CopyOverlayDef(XkbcGeometryPtr geom,
                XkbcSectionPtr section, OverlayInfo * oi, GeometryInfo * info)
 {
-    CARD32 name;
+    uint32_t name;
     XkbcOverlayPtr ol;
     XkbcOverlayRowPtr row;
     XkbcOverlayKeyPtr key;

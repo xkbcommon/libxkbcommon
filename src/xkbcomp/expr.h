@@ -36,8 +36,8 @@ typedef union _ExprResult
 } ExprResult;
 
 typedef Bool(*IdentLookupFunc) (char * /* priv */ ,
-                                CARD32 /* elem */ ,
-                                CARD32 /* field */ ,
+                                uint32_t /* elem */ ,
+                                uint32_t /* field */ ,
                                 unsigned /* type */ ,
                                 ExprResult *    /* val_rtrn */
     );
@@ -76,36 +76,36 @@ extern char *exprOpText(unsigned        /* type */
     );
 
 extern int RadioLookup(char * /* priv */ ,
-                       CARD32 /* elem */ ,
-                       CARD32 /* field */ ,
+                       uint32_t /* elem */ ,
+                       uint32_t /* field */ ,
                        unsigned /* type */ ,
                        ExprResult *     /* val_rtrn */
     );
 
 extern int SimpleLookup(char * /* priv */ ,
-                        CARD32 /* elem */ ,
-                        CARD32 /* field */ ,
+                        uint32_t /* elem */ ,
+                        uint32_t /* field */ ,
                         unsigned /* type */ ,
                         ExprResult *    /* val_rtrn */
     );
 
 extern int TableLookup(char * /* priv */ ,
-                       CARD32 /* elem */ ,
-                       CARD32 /* field */ ,
+                       uint32_t /* elem */ ,
+                       uint32_t /* field */ ,
                        unsigned /* type */ ,
                        ExprResult *     /* val_rtrn */
     );
 
 extern int LookupModIndex(char * /* priv */ ,
-                          CARD32 /* elem */ ,
-                          CARD32 /* field */ ,
+                          uint32_t /* elem */ ,
+                          uint32_t /* field */ ,
                           unsigned /* type */ ,
                           ExprResult *  /* val_rtrn */
     );
 
 extern int LookupModMask(char * /* priv */ ,
-                         CARD32 /* elem */ ,
-                         CARD32 /* field */ ,
+                         uint32_t /* elem */ ,
+                         uint32_t /* field */ ,
                          unsigned /* type */ ,
                          ExprResult *   /* val_rtrn */
     );

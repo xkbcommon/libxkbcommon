@@ -81,14 +81,14 @@ SOFTWARE.
 
 typedef struct _Node {
     struct _Node    *left, *right;
-    CARD32          a;
+    uint32_t          a;
     unsigned int    fingerPrint;
     char            *string;
 } NodeRec, *NodePtr;
 
 #define BAD_RESOURCE 0xe0000000
 
-static CARD32 lastAtom = None;
+static uint32_t lastAtom = None;
 static NodePtr atomRoot = NULL;
 static unsigned long tableLength;
 static NodePtr *nodeTable = NULL;
@@ -115,7 +115,7 @@ XkbcInitAtoms(InternAtomFuncPtr intern, GetAtomValueFuncPtr get_atom_value)
 }
 
 static const char *
-_XkbcAtomGetString(CARD32 atom)
+_XkbcAtomGetString(uint32_t atom)
 {
     NodePtr node;
 
@@ -130,14 +130,14 @@ _XkbcAtomGetString(CARD32 atom)
 }
 
 char *
-XkbcAtomGetString(CARD32 atom)
+XkbcAtomGetString(uint32_t atom)
 {
     const char *ret = _XkbcAtomGetString(atom);
     return ret ? strdup(ret) : NULL;
 }
 
 char *
-XkbcAtomText(CARD32 atom)
+XkbcAtomText(uint32_t atom)
 {
     const char *tmp;
     char *ret;
@@ -154,7 +154,7 @@ XkbcAtomText(CARD32 atom)
     return ret;
 }
 
-static CARD32
+static uint32_t
 _XkbcMakeAtom(const char *string, unsigned len, Bool makeit)
 {
     NodePtr *np;
@@ -228,7 +228,7 @@ _XkbcMakeAtom(const char *string, unsigned len, Bool makeit)
         return None;
 }
 
-CARD32
+uint32_t
 XkbcInternAtom(const char *name, Bool onlyIfExists)
 {
     if (!name)

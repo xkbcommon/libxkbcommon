@@ -136,7 +136,7 @@ XkbcAllocNames(XkbcDescPtr xkb, unsigned which, int nTotalRG, int nTotalAliases)
         type = xkb->map->types;
         for (i = 0; i < xkb->map->num_types; i++, type++) {
             if (!type->level_names) {
-                type->level_names = _XkbTypedCalloc(type->num_levels, CARD32);
+                type->level_names = _XkbTypedCalloc(type->num_levels, uint32_t);
                 if (!type->level_names)
                     return BadAlloc;
             }
@@ -181,15 +181,15 @@ XkbcAllocNames(XkbcDescPtr xkb, unsigned which, int nTotalRG, int nTotalAliases)
 
     if ((which & XkbRGNamesMask) && (nTotalRG > 0)) {
         if (!names->radio_groups)
-            names->radio_groups = _XkbTypedCalloc(nTotalRG, CARD32);
+            names->radio_groups = _XkbTypedCalloc(nTotalRG, uint32_t);
         else if (nTotalRG > names->num_rg) {
-            CARD32 *prev_radio_groups = names->radio_groups;
+            uint32_t *prev_radio_groups = names->radio_groups;
 
             names->radio_groups = _XkbTypedRealloc(names->radio_groups,
-                                                   nTotalRG, CARD32);
+                                                   nTotalRG, uint32_t);
             if (names->radio_groups)
                 _XkbClearElems(names->radio_groups, names->num_rg,
-                               nTotalRG - 1, CARD32);
+                               nTotalRG - 1, uint32_t);
             else
                 _XkbFree(prev_radio_groups);
         }

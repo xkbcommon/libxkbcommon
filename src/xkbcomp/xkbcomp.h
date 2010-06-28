@@ -140,18 +140,18 @@ typedef struct _Expr
         } binary;
         struct
         {
-            CARD32 element;
-            CARD32 field;
+            uint32_t element;
+            uint32_t field;
         } field;
         struct
         {
-            CARD32 element;
-            CARD32 field;
+            uint32_t element;
+            uint32_t field;
             struct _Expr *entry;
         } array;
         struct
         {
-            CARD32 name;
+            uint32_t name;
             struct _Expr *args;
         } action;
         struct
@@ -166,11 +166,11 @@ typedef struct _Expr
             int y;
         } coord;
         struct _Expr *child;
-        CARD32 str;
+        uint32_t str;
         unsigned uval;
         int ival;
         char keyName[5];
-        Opaque ptr;
+        void * ptr;
     } value;
 } ExprDef;
 
@@ -186,7 +186,7 @@ typedef struct _VModDef
 {
     ParseCommon common;
     unsigned merge;
-    CARD32 name;
+    uint32_t name;
     ExprDef *value;
 } VModDef;
 
@@ -210,7 +210,7 @@ typedef struct _KeyTypeDef
 {
     ParseCommon common;
     unsigned merge;
-    CARD32 name;
+    uint32_t name;
     VarDef *body;
 } KeyTypeDef;
 
@@ -226,7 +226,7 @@ typedef struct _ModMapDef
 {
     ParseCommon common;
     unsigned merge;
-    CARD32 modifier;
+    uint32_t modifier;
     ExprDef *keys;
 } ModMapDef;
 
@@ -259,7 +259,7 @@ typedef struct _IndicatorNameDef
 typedef struct _OutlineDef
 {
     ParseCommon common;
-    CARD32 field;
+    uint32_t field;
     int nPoints;
     ExprDef *points;
 } OutlineDef;
@@ -268,7 +268,7 @@ typedef struct _ShapeDef
 {
     ParseCommon common;
     unsigned merge;
-    CARD32 name;
+    uint32_t name;
     int nOutlines;
     OutlineDef *outlines;
 } ShapeDef;
@@ -292,7 +292,7 @@ typedef struct _SectionDef
 {
     ParseCommon common;
     unsigned merge;
-    CARD32 name;
+    uint32_t name;
     int nRows;
     RowDef *rows;
 } SectionDef;
@@ -308,7 +308,7 @@ typedef struct _OverlayDef
 {
     ParseCommon common;
     unsigned merge;
-    CARD32 name;
+    uint32_t name;
     int nKeys;
     OverlayKeyDef *keys;
 } OverlayDef;
@@ -318,7 +318,7 @@ typedef struct _DoodadDef
     ParseCommon common;
     unsigned merge;
     unsigned type;
-    CARD32 name;
+    uint32_t name;
     VarDef *body;
 } DoodadDef;
 

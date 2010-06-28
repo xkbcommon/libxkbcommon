@@ -167,12 +167,12 @@ typedef struct _XkbcKeyType {
     unsigned char           map_count;
     XkbcKTMapEntryPtr       map;
     XkbcModsPtr             preserve;
-    CARD32                  name;
-    CARD32                 *level_names;
+    uint32_t                  name;
+    uint32_t                 *level_names;
 } XkbcKeyTypeRec, *XkbcKeyTypePtr;
 
 typedef struct _XkbcSymInterpretRec {
-    CARD32          sym;
+    uint32_t          sym;
     unsigned char   flags;
     unsigned char   match;
     uint8_t         mods; /* XXX real or virt? */
@@ -220,18 +220,18 @@ typedef struct _XkbcServerMapRec {
 } XkbcServerMapRec, *XkbcServerMapPtr;
 
 typedef struct _XkbcNamesRec {
-    CARD32            keycodes;
-    CARD32            geometry;
-    CARD32            symbols;
-    CARD32            types;
-    CARD32            compat;
-    CARD32            vmods[XkbNumVirtualMods];
-    CARD32            indicators[XkbNumIndicators];
-    CARD32            groups[XkbNumKbdGroups];
+    uint32_t            keycodes;
+    uint32_t            geometry;
+    uint32_t            symbols;
+    uint32_t            types;
+    uint32_t            compat;
+    uint32_t            vmods[XkbNumVirtualMods];
+    uint32_t            indicators[XkbNumIndicators];
+    uint32_t            groups[XkbNumKbdGroups];
     XkbKeyNamePtr     keys;
     XkbKeyAliasPtr    key_aliases;
-    CARD32           *radio_groups;
-    CARD32            phys_symbols;
+    uint32_t           *radio_groups;
+    uint32_t            phys_symbols;
 
     unsigned char     num_keys;
     unsigned char     num_key_aliases;
@@ -268,7 +268,7 @@ typedef struct _XkbcOutline {
 } XkbcOutlineRec, *XkbcOutlinePtr;
 
 typedef struct _XkbcShape {
-	CARD32		 name;
+	uint32_t		 name;
 	unsigned short	 num_outlines;
 	unsigned short	 sz_outlines;
 	XkbcOutlinePtr	 outlines;
@@ -279,7 +279,7 @@ typedef struct _XkbcShape {
 #define	XkbOutlineIndex(s,o)	((int)((o)-&(s)->outlines[0]))
 
 typedef struct _XkbcShapeDoodad {
-	CARD32		 name;
+	uint32_t		 name;
 	unsigned char	 type;
 	unsigned char	 priority;
 	short		 top;
@@ -294,7 +294,7 @@ typedef struct _XkbcShapeDoodad {
 #define	XkbSetShapeDoodadShape(g,d,s)	((d)->shape_ndx= (s)-&(g)->shapes[0])
 
 typedef struct _XkbcTextDoodad {
-	CARD32		 name;
+	uint32_t		 name;
 	unsigned char	 type;
 	unsigned char	 priority;
 	short		 top;
@@ -310,7 +310,7 @@ typedef struct _XkbcTextDoodad {
 #define	XkbSetTextDoodadColor(g,d,c)	((d)->color_ndx= (c)-&(g)->colors[0])
 
 typedef struct _XkbcIndicatorDoodad {
-	CARD32		 name;
+	uint32_t		 name;
 	unsigned char	 type;
 	unsigned char	 priority;
 	short		 top;
@@ -331,7 +331,7 @@ typedef struct _XkbcIndicatorDoodad {
 				((d)->shape_ndx= (s)-&(g)->shapes[0])
 
 typedef struct _XkbcLogoDoodad {
-	CARD32		 name;
+	uint32_t		 name;
 	unsigned char	 type;
 	unsigned char	 priority;
 	short		 top;
@@ -347,7 +347,7 @@ typedef struct _XkbcLogoDoodad {
 #define	XkbSetLogoDoodadShape(g,d,s)	((d)->shape_ndx= (s)-&(g)->shapes[0])
 
 typedef struct _XkbcAnyDoodad {
-	CARD32		 name;
+	uint32_t		 name;
 	unsigned char	 type;
 	unsigned char	 priority;
 	short		 top;
@@ -392,7 +392,7 @@ typedef struct _XkbRow {
 } XkbcRowRec, *XkbcRowPtr;
 
 typedef struct _XkbcSection {
-	CARD32		 name;
+	uint32_t		 name;
 	unsigned char	 priority;
 	short	 	 top;
 	short	 	 left;
@@ -424,7 +424,7 @@ typedef struct _XkbOverlayRow {
 } XkbcOverlayRowRec, *XkbcOverlayRowPtr;
 
 typedef struct _XkbOverlay {
-	CARD32			name;
+	uint32_t			name;
 	XkbcSectionPtr		section_under;
 	unsigned short		num_rows;
 	unsigned short		sz_rows;
@@ -433,7 +433,7 @@ typedef struct _XkbOverlay {
 } XkbcOverlayRec, *XkbcOverlayPtr;
 
 typedef struct _XkbcGeometry {
-	CARD32		 name;
+	uint32_t		 name;
 	unsigned short	 width_mm;
 	unsigned short	 height_mm;
 	char *		 label_font;
@@ -541,17 +541,17 @@ XkbcCanonicaliseComponents(XkbComponentNamesPtr names,
  * XkbcKeysymToString: if you need to preserve it, then you must
  * duplicate it.
  *
- * This is CARD32 rather than KeySym, as KeySym changes size between
+ * This is uint32_t rather than KeySym, as KeySym changes size between
  * client and server (no, really).
  */
 extern char *
-XkbcKeysymToString(CARD32 ks);
+XkbcKeysymToString(uint32_t ks);
 
 /*
  * See XkbcKeysymToString comments: this function will accept any string
  * from that function.
  */
-extern CARD32
+extern uint32_t
 XkbcStringToKeysym(const char *s);
 
 _XFUNCPROTOEND

@@ -32,35 +32,35 @@
 
 /***====================================================================***/
 
-Opaque
+void *
 uAlloc(unsigned size)
 {
-    return ((Opaque) malloc(size));
+    return ((void *) malloc(size));
 }
 
 /***====================================================================***/
 
-Opaque
+void *
 uCalloc(unsigned n, unsigned size)
 {
-    return ((Opaque) calloc(n, size));
+    return ((void *) calloc(n, size));
 }
 
 /***====================================================================***/
 
-Opaque
-uRealloc(Opaque old, unsigned newSize)
+void *
+uRealloc(void * old, unsigned newSize)
 {
     if (old == NULL)
-        return ((Opaque) malloc(newSize));
+        return ((void *) malloc(newSize));
     else
-        return ((Opaque) realloc((char *) old, newSize));
+        return ((void *) realloc((char *) old, newSize));
 }
 
 /***====================================================================***/
 
-Opaque
-uRecalloc(Opaque old, unsigned nOld, unsigned nNew, unsigned itemSize)
+void *
+uRecalloc(void * old, unsigned nOld, unsigned nNew, unsigned itemSize)
 {
     char *rtrn;
 
@@ -74,15 +74,15 @@ uRecalloc(Opaque old, unsigned nOld, unsigned nNew, unsigned itemSize)
             bzero(&rtrn[nOld * itemSize], (nNew - nOld) * itemSize);
         }
     }
-    return (Opaque) rtrn;
+    return (void *) rtrn;
 }
 
 /***====================================================================***/
 
 void
-uFree(Opaque ptr)
+uFree(void * ptr)
 {
-    if (ptr != (Opaque) NULL)
+    if (ptr != (void *) NULL)
         free((char *) ptr);
     return;
 }

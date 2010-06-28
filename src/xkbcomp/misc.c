@@ -256,8 +256,8 @@ AddCommonInfo(CommonInfo * old, CommonInfo * new)
 
 typedef struct _KeyNameDesc
 {
-    CARD32 level1;
-    CARD32 level2;
+    uint32_t level1;
+    uint32_t level2;
     char name[5];
     Bool used;
 } KeyNameDesc;

@@ -38,7 +38,7 @@ authorization from the authors.
 #include "ks_tables.h"
 
 char *
-XkbcKeysymToString(CARD32 ks)
+XkbcKeysymToString(uint32_t ks)
 {
     int i, n, h, idx;
     const unsigned char *entry;
@@ -91,7 +91,7 @@ XkbcKeysymToString(CARD32 ks)
     return ret;
 }
 
-CARD32
+uint32_t
 XkbcStringToKeysym(const char *s)
 {
     int i, n, h, c, idx;
@@ -99,7 +99,7 @@ XkbcStringToKeysym(const char *s)
     const char *p = s;
     const unsigned char *entry;
     unsigned char sig1, sig2;
-    CARD32 val;
+    uint32_t val;
 
     while ((c = *p++))
         sig = (sig << 1) + c;

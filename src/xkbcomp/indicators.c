@@ -513,7 +513,7 @@ BindIndicators(XkbcDescPtr xkb, Bool force, LEDInfo *unbound,
             if ((xkb->names != NULL) &&
                 (xkb->names->indicators[led->indicator - 1] != led->name))
             {
-                CARD32 old = xkb->names->indicators[led->indicator - 1];
+                uint32_t old = xkb->names->indicators[led->indicator - 1];
                 ERROR("Multiple names bound to indicator %d\n",
                        (unsigned int) led->indicator);
                 ACTION("Using %s, ignoring %s\n",

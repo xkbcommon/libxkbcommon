@@ -52,7 +52,7 @@ typedef struct _PreserveInfo
 typedef struct _KeyTypeInfo
 {
     CommonInfo defs;
-    CARD32 name;
+    uint32_t name;
     int fileID;
     unsigned mask;
     unsigned vmask;
@@ -63,7 +63,7 @@ typedef struct _KeyTypeInfo
     XkbcKTMapEntryPtr entries;
     PreserveInfo *preserve;
     int szNames;
-    CARD32 *lvlNames;
+    uint32_t *lvlNames;
 } KeyTypeInfo;
 
 typedef struct _KeyTypesInfo
@@ -78,10 +78,10 @@ typedef struct _KeyTypesInfo
     VModInfo vmods;
 } KeyTypesInfo;
 
-CARD32 tok_ONE_LEVEL;
-CARD32 tok_TWO_LEVEL;
-CARD32 tok_ALPHABETIC;
-CARD32 tok_KEYPAD;
+uint32_t tok_ONE_LEVEL;
+uint32_t tok_TWO_LEVEL;
+uint32_t tok_ALPHABETIC;
+uint32_t tok_KEYPAD;
 
 /***====================================================================***/
 
@@ -108,7 +108,7 @@ extern Bool AddPreserve(XkbcDescPtr /* xkb */ ,
 
 extern Bool AddLevelName(KeyTypeInfo * /* type */ ,
                          unsigned /* level */ ,
-                         CARD32 /* name */ ,
+                         uint32_t /* name */ ,
                          Bool /* clobber */ ,
                          Bool   /* report */
     );
@@ -168,10 +168,10 @@ InitKeyTypesInfo(KeyTypesInfo * info, XkbcDescPtr xkb, KeyTypesInfo * from)
         }
         if (from->dflt.lvlNames)
         {
-            info->dflt.lvlNames = uTypedCalloc(from->dflt.szNames, CARD32);
+            info->dflt.lvlNames = uTypedCalloc(from->dflt.szNames, uint32_t);
             if (info->dflt.lvlNames)
             {
-                register unsigned sz = from->dflt.szNames * sizeof(CARD32);
+                register unsigned sz = from->dflt.szNames * sizeof(uint32_t);
                 memcpy(info->dflt.lvlNames, from->dflt.lvlNames, sz);
             }
         }
@@ -783,12 +783,12 @@ SetPreserve(KeyTypeInfo * type,
 
 Bool
 AddLevelName(KeyTypeInfo * type,
-             unsigned level, CARD32 name, Bool clobber, Bool report)
+             unsigned level, uint32_t name, Bool clobber, Bool report)
 {
     if ((type->lvlNames == NULL) || (type->szNames <= level))
     {
         type->lvlNames =
-            uTypedRecalloc(type->lvlNames, type->szNames, level + 1, CARD32);
+            uTypedRecalloc(type->lvlNames, type->szNames, level + 1, uint32_t);
         if (type->lvlNames == NULL)
         {
             ERROR("Couldn't allocate level names for type %s\n",
@@ -837,7 +837,7 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
 {
     ExprResult rtrn;
     unsigned level;
-    CARD32 level_name;
+    uint32_t level_name;
 
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(type, "level name");
@@ -1177,15 +1177,15 @@ CopyDefToKeyType(XkbcDescPtr xkb, XkbcKeyTypePtr type, KeyTypeInfo * def)
     }
     else
         type->preserve = NULL;
-    type->name = (CARD32) def->name;
+    type->name = (uint32_t) def->name;
     if (def->szNames > 0)
     {
-        type->level_names = uTypedCalloc(def->numLevels, CARD32);
+        type->level_names = uTypedCalloc(def->numLevels, uint32_t);
 
         /* assert def->szNames<=def->numLevels */
         for (i = 0; i < def->szNames; i++)
         {
-            type->level_names[i] = (CARD32) def->lvlNames[i];
+            type->level_names[i] = (uint32_t) def->lvlNames[i];
         }
     }
     else

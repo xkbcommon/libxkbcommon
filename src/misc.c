@@ -190,7 +190,7 @@ XkbcEnsureSafeMapName(char *name)
 }
 
 unsigned
-_XkbcKSCheckCase(CARD32 ks)
+_XkbcKSCheckCase(uint32_t ks)
 {
     unsigned set = (ks & (~0xff)) >> 8;
     unsigned rtrn = 0;

@@ -26,8 +26,7 @@
 #ifndef TOKENS_H
 #define	TOKENS_H 1
 
-#include <X11/Xdefs.h>
-#include <X11/Xmd.h>
+#include <stdint.h>
 
 #define	END_OF_FILE	0
 #define	ERROR_TOK	255
@@ -99,9 +98,9 @@
 #define	FUNCTION_KEYS		76
 #define	ALTERNATE_GROUP		77
 
-extern CARD32 tok_ONE_LEVEL;
-extern CARD32 tok_TWO_LEVEL;
-extern CARD32 tok_ALPHABETIC;
-extern CARD32 tok_KEYPAD;
+extern uint32_t tok_ONE_LEVEL;
+extern uint32_t tok_TWO_LEVEL;
+extern uint32_t tok_ALPHABETIC;
+extern uint32_t tok_KEYPAD;
 
 #endif

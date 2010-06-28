@@ -60,7 +60,7 @@ char *
 XkbcVModIndexText(XkbcDescPtr xkb, unsigned ndx)
 {
     int len;
-    CARD32 *vmodNames;
+    uint32_t *vmodNames;
     char *rtrn, *tmp = NULL;
 
     if (xkb && xkb->names)
@@ -280,7 +280,7 @@ XkbcActionTypeText(unsigned type)
 }
 
 char *
-XkbcKeysymText(CARD32 sym)
+XkbcKeysymText(uint32_t sym)
 {
     return XkbcKeysymToString(sym);
 }

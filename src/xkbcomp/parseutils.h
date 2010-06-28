@@ -76,7 +76,7 @@ extern KeyAliasDef *KeyAliasCreate(char * /* alias */ ,
                                    char *       /* real */
     );
 
-extern VModDef *VModCreate(CARD32 /* name */ ,
+extern VModDef *VModCreate(uint32_t /* name */ ,
                            ExprDef *    /* value */
     );
 
@@ -84,7 +84,7 @@ extern VarDef *VarCreate(ExprDef * /* name */ ,
                          ExprDef *      /* value */
     );
 
-extern VarDef *BoolVarCreate(CARD32 /* nameToken */ ,
+extern VarDef *BoolVarCreate(uint32_t /* nameToken */ ,
                              unsigned   /* set */
     );
 
@@ -92,7 +92,7 @@ extern InterpDef *InterpCreate(char * /* sym */ ,
                                ExprDef *        /* match */
     );
 
-extern KeyTypeDef *KeyTypeCreate(CARD32 /* name */ ,
+extern KeyTypeDef *KeyTypeCreate(uint32_t /* name */ ,
                                  VarDef *       /* body */
     );
 
@@ -104,11 +104,11 @@ extern GroupCompatDef *GroupCompatCreate(int /* group */ ,
                                          ExprDef *      /* def */
     );
 
-extern ModMapDef *ModMapCreate(CARD32 /* modifier */ ,
+extern ModMapDef *ModMapCreate(uint32_t /* modifier */ ,
                                ExprDef *        /* keys */
     );
 
-extern IndicatorMapDef *IndicatorMapCreate(CARD32 /* name */ ,
+extern IndicatorMapDef *IndicatorMapCreate(uint32_t /* name */ ,
                                            VarDef *     /* body */
     );
 
@@ -117,18 +117,18 @@ extern IndicatorNameDef *IndicatorNameCreate(int /* ndx */ ,
                                              Bool       /* virtual */
     );
 
-extern ExprDef *ActionCreate(CARD32 /* name */ ,
+extern ExprDef *ActionCreate(uint32_t /* name */ ,
                              ExprDef *  /* args */
     );
 
 extern ExprDef *CreateKeysymList(char * /* sym */
     );
 
-extern ShapeDef *ShapeDeclCreate(CARD32 /* name */ ,
+extern ShapeDef *ShapeDeclCreate(uint32_t /* name */ ,
                                  OutlineDef *   /* outlines */
     );
 
-extern OutlineDef *OutlineCreate(CARD32 /* field */ ,
+extern OutlineDef *OutlineCreate(uint32_t /* field */ ,
                                  ExprDef *      /* points */
     );
 
@@ -143,7 +143,7 @@ extern KeyDef *KeyDeclMerge(KeyDef * /* into */ ,
 extern RowDef *RowDeclCreate(KeyDef *   /* keys */
     );
 
-extern SectionDef *SectionDeclCreate(CARD32 /* name */ ,
+extern SectionDef *SectionDeclCreate(uint32_t /* name */ ,
                                      RowDef *   /* rows */
     );
 
@@ -151,12 +151,12 @@ extern OverlayKeyDef *OverlayKeyCreate(char * /* under */ ,
                                        char *   /* over  */
     );
 
-extern OverlayDef *OverlayDeclCreate(CARD32 /* name */ ,
+extern OverlayDef *OverlayDeclCreate(uint32_t /* name */ ,
                                      OverlayKeyDef *    /* rows */
     );
 
 extern DoodadDef *DoodadCreate(unsigned /* type */ ,
-                               CARD32 /* name */ ,
+                               uint32_t /* name */ ,
                                VarDef * /* body */
     );
 
@@ -165,7 +165,7 @@ extern ExprDef *AppendKeysymList(ExprDef * /* list */ ,
     );
 
 extern int LookupKeysym(char * /* str */ ,
-                        CARD32 *        /* sym_rtrn */
+                        uint32_t *        /* sym_rtrn */
     );
 
 extern IncludeStmt *IncludeCreate(char * /* str */ ,

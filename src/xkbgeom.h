@@ -135,7 +135,7 @@ extern XkbcOutlinePtr
 XkbcAddGeomOutline(XkbcShapePtr shape, int sz_points);
 
 extern XkbcShapePtr
-XkbcAddGeomShape(XkbcGeometryPtr geom, CARD32 name, int sz_outlines);
+XkbcAddGeomShape(XkbcGeometryPtr geom, uint32_t name, int sz_outlines);
 
 extern XkbcKeyPtr
 XkbcAddGeomKey(XkbcRowPtr row);
@@ -144,11 +144,11 @@ extern XkbcRowPtr
 XkbcAddGeomRow(XkbcSectionPtr section, int sz_keys);
 
 extern XkbcSectionPtr
-XkbcAddGeomSection(XkbcGeometryPtr geom, CARD32 name,
+XkbcAddGeomSection(XkbcGeometryPtr geom, uint32_t name,
                    int sz_rows, int sz_doodads, int sz_over);
 
 extern XkbcDoodadPtr
-XkbcAddGeomDoodad(XkbcGeometryPtr geom, XkbcSectionPtr section, CARD32 name);
+XkbcAddGeomDoodad(XkbcGeometryPtr geom, XkbcSectionPtr section, uint32_t name);
 
 extern XkbcOverlayKeyPtr
 XkbcAddGeomOverlayKey(XkbcOverlayPtr overlay, XkbcOverlayRowPtr row,
@@ -158,7 +158,7 @@ extern XkbcOverlayRowPtr
 XkbcAddGeomOverlayRow(XkbcOverlayPtr overlay, int row_under, int sz_keys);
 
 extern XkbcOverlayPtr
-XkbcAddGeomOverlay(XkbcSectionPtr section, CARD32 name, int sz_rows);
+XkbcAddGeomOverlay(XkbcSectionPtr section, uint32_t name, int sz_rows);
 
 /***====================================================================***/
 

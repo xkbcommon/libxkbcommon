@@ -164,7 +164,7 @@ HandleVModDef(VModDef * stmt, unsigned mergeMode, VModInfo * info)
  */
 int
 LookupVModIndex(char * priv,
-                CARD32 elem, CARD32 field, unsigned type, ExprResult * val_rtrn)
+                uint32_t elem, uint32_t field, unsigned type, ExprResult * val_rtrn)
 {
     int i;
     XkbcDescPtr xkb;
@@ -203,7 +203,7 @@ LookupVModIndex(char * priv,
  */
 int
 LookupVModMask(char * priv,
-               CARD32 elem, CARD32 field, unsigned type, ExprResult * val_rtrn)
+               uint32_t elem, uint32_t field, unsigned type, ExprResult * val_rtrn)
 {
     if (LookupVModIndex(priv, elem, field, type, val_rtrn))
     {
@@ -217,7 +217,7 @@ LookupVModMask(char * priv,
 int
 FindKeypadVMod(XkbcDescPtr xkb)
 {
-    CARD32 name;
+    uint32_t name;
     ExprResult rtrn;
 
     name = XkbcInternAtom("NumLock", False);
