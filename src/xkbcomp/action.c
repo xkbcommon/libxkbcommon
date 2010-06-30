@@ -515,12 +515,12 @@ HandleSetLatchGroup(XkbcDescPtr xkb,
                     struct xkb_any_action * action,
                     unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
-    XkbGroupAction *act;
+    struct xkb_group_action *act;
     unsigned rtrn;
     unsigned t1;
     int t2;
 
-    act = (XkbGroupAction *) action;
+    act = (struct xkb_group_action *) action;
     if (array_ndx != NULL)
     {
         switch (field)
@@ -560,11 +560,11 @@ HandleLockGroup(XkbcDescPtr xkb,
                 struct xkb_any_action * action,
                 unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
-    XkbGroupAction *act;
+    struct xkb_group_action *act;
     unsigned t1;
     int t2;
 
-    act = (XkbGroupAction *) action;
+    act = (struct xkb_group_action *) action;
     if ((array_ndx != NULL) && (field == F_Group))
         return ReportActionNotArray(action->type, field);
     if (field == F_Group)
@@ -714,9 +714,9 @@ HandleSetPtrDflt(XkbcDescPtr xkb,
                  unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
-    XkbPtrDfltAction *act;
+    struct xkb_pointer_default_action *act;
 
-    act = (XkbPtrDfltAction *) action;
+    act = (struct xkb_pointer_default_action *) action;
     if (field == F_Affect)
     {
         if (array_ndx != NULL)
@@ -834,9 +834,9 @@ HandleSwitchScreen(XkbcDescPtr xkb,
                    unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
-    XkbSwitchScreenAction *act;
+    struct xkb_switch_screen_action *act;
 
-    act = (XkbSwitchScreenAction *) action;
+    act = (struct xkb_switch_screen_action *) action;
     if (field == F_Screen)
     {
         ExprDef *scrn;
@@ -1087,9 +1087,9 @@ HandleDeviceBtn(XkbcDescPtr xkb,
                 unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
-    XkbDeviceBtnAction *act;
+    struct xkb_device_button_action *act;
 
-    act = (XkbDeviceBtnAction *) action;
+    act = (struct xkb_device_button_action *) action;
     if (field == F_Button)
     {
         if (array_ndx != NULL)
@@ -1158,9 +1158,9 @@ HandleDeviceValuator(XkbcDescPtr xkb,
 {
 #if 0
     ExprResult rtrn;
-    XkbDeviceValuatorAction *act;
+    struct xkb_device_valuator_action *act;
 
-    act = (XkbDeviceValuatorAction *) action;
+    act = (struct xkb_device_valuator_action *) action;
     /*  XXX - Not yet implemented */
 #endif
     return False;
@@ -1277,7 +1277,7 @@ ApplyActionFactoryDefaults(union xkb_action * action)
     {                           /* increment default button */
         action->dflt.affect = XkbSA_AffectDfltBtn;
         action->dflt.flags = 0;
-        action->dflt.value = 1;
+        action->dflt.valueXXX = 1;
     }
     else if (action->type == XkbSA_ISOLock)
     {

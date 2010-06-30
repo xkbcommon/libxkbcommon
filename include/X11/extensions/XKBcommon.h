@@ -81,7 +81,7 @@ struct xkb_mod_action {
 struct xkb_group_action {
     unsigned char   type;
     unsigned char   flags;
-    int16_t         group;
+    int16_t         group_XXX;
 };
 
 struct xkb_iso_action {
@@ -124,13 +124,13 @@ struct xkb_pointer_default_action {
     unsigned char   type;
     uint8_t         flags;
     uint8_t         affect;
-    uint8_t         value;
+    uint8_t         valueXXX;
 };
 
 struct xkb_switch_screen_action {
     unsigned char   type;
     uint8_t         flags;
-    uint8_t         screen;
+    uint8_t         screenXXX;
 };
 
 struct xkb_redirect_key_action {
