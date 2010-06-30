@@ -60,7 +60,6 @@ int main(int argc, char *argv[])
     }
 
     uSetErrorFile(NULL);
-    XkbcInitAtoms(NULL, NULL);
 
     xkb = XkbcCompileKeymapFromFile(file, name);
     fclose(file);

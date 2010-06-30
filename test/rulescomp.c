@@ -53,7 +53,6 @@ int main(int argc, char *argv[])
     rmlvo.options = argv[5];
 
     uSetErrorFile(NULL);
-    XkbcInitAtoms(NULL, NULL);
 
     xkb = XkbcCompileKeymapFromRules(&rmlvo);
 

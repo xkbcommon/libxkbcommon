@@ -54,7 +54,6 @@ int main(int argc, char *argv[])
     ktcsg.geometry = argv[5];
 
     uSetErrorFile(NULL);
-    XkbcInitAtoms(NULL, NULL);
 
     xkb = XkbcCompileKeymapFromComponents(&ktcsg);
 

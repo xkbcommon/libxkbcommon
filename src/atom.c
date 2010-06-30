@@ -105,13 +105,6 @@ XkbcInitAtoms(InternAtomFuncPtr intern, GetAtomValueFuncPtr get_atom_value)
         do_get_atom_value = get_atom_value;
         return;
     }
-
-    if (nodeTable)
-        return;
-
-    tableLength = InitialTableSize;
-    nodeTable = (NodePtr *)malloc(InitialTableSize * sizeof(NodePtr));
-    nodeTable[None] = NULL;
 }
 
 static const char *
@@ -202,16 +195,22 @@ _XkbcMakeAtom(const char *string, unsigned len, Bool makeit)
 
         if ((lastAtom + 1) >= tableLength) {
             NodePtr *table;
+	    int newLength;
 
-            table = (NodePtr *)realloc(nodeTable,
-                                           tableLength * 2 * sizeof(NodePtr));
+	    if (tableLength == 0)
+		newLength = InitialTableSize;
+	    else
+		newLength = tableLength * 2;
+
+            table = realloc(nodeTable, newLength * sizeof(NodePtr));
             if (!table) {
                 if (nd->string != string)
                     free(nd->string);
                 free(nd);
                 return BAD_RESOURCE;
             }
-            tableLength <<= 1;
+            tableLength = newLength;
+	    table[None] = NULL;
 
             nodeTable = table;
         }
