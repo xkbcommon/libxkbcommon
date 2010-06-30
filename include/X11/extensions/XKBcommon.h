@@ -58,7 +58,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <stdint.h>
 #include <stdio.h>
 #include <X11/Xfuncproto.h>
-#include <X11/Xmd.h>
 #include <X11/extensions/XKBstrcommon.h>
 #include <X11/extensions/XKBrulescommon.h>
 
