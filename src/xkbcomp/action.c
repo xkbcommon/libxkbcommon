@@ -587,10 +587,10 @@ HandleMovePtr(XkbcDescPtr xkb,
               unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
-    XkbPtrAction *act;
+    struct xkb_pointer_action *act;
     Bool absolute;
 
-    act = (XkbPtrAction *) action;
+    act = (struct xkb_pointer_action *) action;
     if ((array_ndx != NULL) && ((field == F_X) || (field == F_Y)))
         return ReportActionNotArray(action->type, field);
 
@@ -652,9 +652,9 @@ HandlePtrBtn(XkbcDescPtr xkb,
              unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
-    XkbPtrBtnAction *act;
+    struct xkb_pointer_button_action *act;
 
-    act = (XkbPtrBtnAction *) action;
+    act = (struct xkb_pointer_button_action *) action;
     if (field == F_Button)
     {
         if (array_ndx != NULL)
@@ -958,9 +958,9 @@ HandleActionMessage(XkbcDescPtr xkb,
                     unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
-    XkbMessageAction *act;
+    struct xkb_message_action *act;
 
-    act = (XkbMessageAction *) action;
+    act = (struct xkb_message_action *) action;
     switch (field)
     {
     case F_Report:
@@ -1036,14 +1036,14 @@ HandleRedirectKey(XkbcDescPtr xkb,
                   unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
-    XkbRedirectKeyAction *act;
+    struct xkb_redirect_key_action *act;
     unsigned t1, t2;
     unsigned long tmp;
 
     if (array_ndx != NULL)
         return ReportActionNotArray(action->type, field);
 
-    act = (XkbRedirectKeyAction *) action;
+    act = (struct xkb_redirect_key_action *) action;
     switch (field)
     {
     case F_Keycode:

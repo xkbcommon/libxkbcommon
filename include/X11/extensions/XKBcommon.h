@@ -133,21 +133,54 @@ struct xkb_switch_screen_action {
     uint8_t         screen;
 };
 
+struct xkb_redirect_key_action {
+	unsigned char	type;
+	unsigned char	new_key;
+	unsigned char	mods_mask;
+	unsigned char	mods;
+	unsigned char	vmods_mask0;
+	unsigned char	vmods_mask1;
+	unsigned char	vmods0;
+	unsigned char	vmods1;
+};
+
+struct xkb_pointer_action {
+	unsigned char	type;
+	unsigned char	flags;
+	unsigned char	high_XXX;
+	unsigned char	low_XXX;
+	unsigned char	high_YYY;
+	unsigned char	low_YYY;
+};
+
+struct xkb_message_action {
+	unsigned char	type;
+	unsigned char	flags;
+	unsigned char	message[6];
+};
+
+struct xkb_pointer_button_action {
+	unsigned char	type;
+	unsigned char	flags;
+	unsigned char	count;
+	unsigned char	button;
+};
+
 union xkb_action {
-    struct xkb_any_action            any;
-    struct xkb_mod_action            mods;
-    struct xkb_group_action          group;
-    struct xkb_iso_action            iso;
-    struct xkb_controls_action          ctrls;
-    struct xkb_device_button_action      devbtn;
+    struct xkb_any_action             any;
+    struct xkb_mod_action             mods;
+    struct xkb_group_action           group;
+    struct xkb_iso_action             iso;
+    struct xkb_controls_action        ctrls;
+    struct xkb_device_button_action   devbtn;
     struct xkb_device_valuator_action devval;
-    struct xkb_pointer_default_action        dflt;
+    struct xkb_pointer_default_action dflt;
     struct xkb_switch_screen_action   screen;
-    XkbRedirectKeyAction     redirect; /* XXX wholly unnecessary? */
-    XkbPtrAction             ptr; /* XXX delete for DeviceValuator */
-    XkbPtrBtnAction          btn; /* XXX delete for DeviceBtn */
-    XkbMessageAction         msg; /* XXX just delete */
-    unsigned char            type;
+    struct xkb_redirect_key_action    redirect; /* XXX wholly unnecessary? */
+    struct xkb_pointer_action         ptr; /* XXX delete for DeviceValuator */
+    struct xkb_pointer_button_action  btn; /* XXX delete for DeviceBtn */
+    struct xkb_message_action         msg; /* XXX just delete */
+    unsigned char                     type;
 };
 
 typedef struct _XkbcMods {
