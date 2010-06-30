@@ -153,7 +153,7 @@ AddComponent(CompPair *cp, char *fileName, XkbFile *map, unsigned dirsToStrip)
         else
             cp->sz *= 2;
 
-        cp->comp = _XkbRealloc(cp->comp,
+        cp->comp = realloc(cp->comp,
                                cp->sz * sizeof(XkbComponentNameRec));
         if (!cp->comp) {
             ERROR("Failed reallocating component name list\n");
@@ -181,7 +181,7 @@ AddComponent(CompPair *cp, char *fileName, XkbFile *map, unsigned dirsToStrip)
     if (map->name) {
         size_t len = strlen(fileName) + strlen(map->name) + 3;
 
-        cp->comp[cp->num].name = _XkbAlloc(len * sizeof(char));
+        cp->comp[cp->num].name = malloc(len * sizeof(char));
         if (!cp->comp[cp->num].name) {
             ERROR("Could not allocate space for component name\n");
             return False;
@@ -439,7 +439,7 @@ GenerateComponent(XkbComponentListPtr complist, unsigned type, char *head_in,
 
     /* Trim excess component slots */
     if (cp.sz > 0 && cp.sz > cp.num) {
-        if (_XkbRealloc(cp.comp, cp.num * sizeof(XkbComponentNameRec)))
+        if (realloc(cp.comp, cp.num * sizeof(XkbComponentNameRec)))
             cp.sz = cp.num;
         else
             WARN("Could not reallocate component name list\n");

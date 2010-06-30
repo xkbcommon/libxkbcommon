@@ -72,7 +72,7 @@ XkbcAllocClientMap(XkbcDescPtr xkb, unsigned which, unsigned nTotalTypes)
             map->types = _XkbTypedRealloc(map->types, nTotalTypes,
                                           XkbcKeyTypeRec);
             if (!map->types) {
-                _XkbFree(prev_types);
+                free(prev_types);
                 map->num_types = map->size_types = 0;
                 return BadAlloc;
             }
@@ -181,7 +181,7 @@ XkbcAllocServerMap(XkbcDescPtr xkb, unsigned which, unsigned nNewActions)
             need = map->num_acts + nNewActions;
             map->acts = _XkbTypedRealloc(map->acts, need, union xkb_action);
             if (!map->acts) {
-                _XkbFree(prev_acts);
+                free(prev_acts);
                 map->num_acts = map->size_acts = 0;
                 return BadAlloc;
             }
@@ -237,15 +237,15 @@ XkbcCopyKeyType(XkbcKeyTypePtr from, XkbcKeyTypePtr into)
         return BadMatch;
 
     if (into->map) {
-        _XkbFree(into->map);
+        free(into->map);
         into->map = NULL;
     }
     if (into->preserve) {
-       _XkbFree(into->preserve);
+       free(into->preserve);
        into->preserve= NULL;
     }
     if (into->level_names) {
-        _XkbFree(into->level_names);
+        free(into->level_names);
         into->level_names = NULL;
     }
 
@@ -320,11 +320,11 @@ XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
 
     if (map_count == 0) {
         if (type->map)
-            _XkbFree(type->map);
+            free(type->map);
         type->map = NULL;
 
         if (type->preserve)
-            _XkbFree(type->preserve);
+            free(type->preserve);
         type->preserve = NULL;
 
         type->map_count = 0;
@@ -337,7 +337,7 @@ XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
                                          XkbcKTMapEntryRec);
         if (!type->map) {
             if (prev_map)
-                _XkbFree(prev_map);
+                free(prev_map);
             return BadAlloc;
         }
 
@@ -349,12 +349,12 @@ XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
                                                   XkbcModsRec);
             if (!type->preserve) {
                 if (prev_preserve)
-                    _XkbFree(prev_preserve);
+                    free(prev_preserve);
                 return BadAlloc;
             }
         }
         else if (type->preserve) {
-            _XkbFree(type->preserve);
+            free(type->preserve);
             type->preserve = NULL;
         }
 
@@ -368,7 +368,7 @@ XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
                                              uint32_t);
         if (!type->level_names) {
             if (prev_level_names)
-                _XkbFree(prev_level_names);
+                free(prev_level_names);
             return BadAlloc;
         }
     }
@@ -455,7 +455,7 @@ XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
             }
 
             type->num_levels = new_num_lvls;
-            _XkbFree(xkb->map->syms);
+            free(xkb->map->syms);
             xkb->map->syms = newSyms;
             xkb->map->num_syms = nSyms;
 
@@ -570,7 +570,7 @@ XkbcResizeKeySyms(XkbcDescPtr xkb, int key, int needed)
         nSyms += nKeySyms;
     }
 
-    _XkbFree(xkb->map->syms);
+    free(xkb->map->syms);
     xkb->map->syms = newSyms;
     xkb->map->num_syms = nSyms;
 
@@ -696,7 +696,7 @@ XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
                                                          maxKC + 1,
                                                          XkbSymMapRec);
                 if (!xkb->map->key_sym_map) {
-                    _XkbFree(prev_key_sym_map);
+                    free(prev_key_sym_map);
                     return BadAlloc;
                 }
 
@@ -715,7 +715,7 @@ XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
                 xkb->map->modmap = _XkbTypedRealloc(xkb->map->modmap,
                                                     maxKC + 1, unsigned char);
                 if (!xkb->map->modmap) {
-                    _XkbFree(prev_modmap);
+                    free(prev_modmap);
                     return BadAlloc;
                 }
 
@@ -736,7 +736,7 @@ XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
                                                           maxKC + 1,
                                                           XkbBehavior);
                 if (!xkb->server->behaviors) {
-                    _XkbFree(prev_behaviors);
+                    free(prev_behaviors);
                     return BadAlloc;
                 }
 
@@ -756,7 +756,7 @@ XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
                                                          maxKC + 1,
                                                          unsigned short);
                 if (!xkb->server->key_acts) {
-                    _XkbFree(prev_key_acts);
+                    free(prev_key_acts);
                     return BadAlloc;
                 }
 
@@ -776,7 +776,7 @@ XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
                                                         maxKC + 1,
                                                         uint32_t);
                 if (!xkb->server->vmodmap) {
-                    _XkbFree(prev_vmodmap);
+                    free(prev_vmodmap);
                     return BadAlloc;
                 }
 
@@ -796,7 +796,7 @@ XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
             xkb->names->keys = _XkbTypedRealloc(xkb->names->keys, maxKC + 1,
                                                 XkbKeyNameRec);
             if (!xkb->names->keys) {
-                _XkbFree(prev_keys);
+                free(prev_keys);
                 return BadAlloc;
             }
 
@@ -868,7 +868,7 @@ XkbcResizeKeyActions(XkbcDescPtr xkb, int key, int needed)
         nActs += nKeyActs;
     }
 
-    _XkbFree(xkb->server->acts);
+    free(xkb->server->acts);
     xkb->server->acts = newActs;
     xkb->server->num_acts = nActs;
 
@@ -895,21 +895,21 @@ XkbcFreeClientMap(XkbcDescPtr xkb, unsigned what, Bool freeMap)
 
                 for (i = 0, type = map->types; i < map->num_types; i++, type++) {
                     if (type->map) {
-                        _XkbFree(type->map);
+                        free(type->map);
                         type->map = NULL;
                     }
                     if (type->preserve) {
-                        _XkbFree(type->preserve);
+                        free(type->preserve);
                         type->preserve = NULL;
                     }
                     type->map_count = 0;
                     if (type->level_names) {
-                        _XkbFree(type->level_names);
+                        free(type->level_names);
                         type->level_names = NULL;
                     }
                 }
             }
-            _XkbFree(map->types);
+            free(map->types);
             map->num_types = map->size_types = 0;
             map->types = NULL;
         }
@@ -917,23 +917,23 @@ XkbcFreeClientMap(XkbcDescPtr xkb, unsigned what, Bool freeMap)
 
     if (what & XkbKeySymsMask) {
         if (map->key_sym_map) {
-            _XkbFree(map->key_sym_map);
+            free(map->key_sym_map);
             map->key_sym_map = NULL;
         }
         if (map->syms) {
-            _XkbFree(map->syms);
+            free(map->syms);
             map->size_syms = map->num_syms = 0;
             map->syms = NULL;
         }
     }
 
     if ((what & XkbModifierMapMask) && map->modmap) {
-        _XkbFree(map->modmap);
+        free(map->modmap);
         map->modmap = NULL;
     }
 
     if (freeMap) {
-        _XkbFree(xkb->map);
+        free(xkb->map);
         xkb->map = NULL;
     }
 }
@@ -951,34 +951,34 @@ XkbcFreeServerMap(XkbcDescPtr xkb, unsigned what, Bool freeMap)
     map = xkb->server;
 
     if ((what & XkbExplicitComponentsMask) && map->explicit) {
-        _XkbFree(map->explicit);
+        free(map->explicit);
         map->explicit = NULL;
     }
 
     if (what & XkbKeyActionsMask) {
         if (map->key_acts) {
-            _XkbFree(map->key_acts);
+            free(map->key_acts);
             map->key_acts = NULL;
         }
         if (map->acts) {
-            _XkbFree(map->acts);
+            free(map->acts);
             map->num_acts = map->size_acts = 0;
             map->acts = NULL;
         }
     }
 
     if ((what & XkbKeyBehaviorsMask) && map->behaviors) {
-        _XkbFree(map->behaviors);
+        free(map->behaviors);
         map->behaviors = NULL;
     }
 
     if ((what & XkbVirtualModMapMask) && map->vmodmap) {
-        _XkbFree(map->vmodmap);
+        free(map->vmodmap);
         map->vmodmap = NULL;
     }
 
     if (freeMap) {
-        _XkbFree(xkb->server);
+        free(xkb->server);
         xkb->server = NULL;
     }
 }

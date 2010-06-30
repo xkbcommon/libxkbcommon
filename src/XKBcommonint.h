@@ -35,25 +35,11 @@ authorization from the authors.
 #define False 0
 #endif
 
-#ifdef MALLOC_0_RETURNS_NULL
-# define Xmalloc(size) malloc(((size) == 0 ? 1 : (size)))
-# define Xrealloc(ptr, size) realloc((ptr), ((size) == 0 ? 1 : (size)))
-# define Xcalloc(nelem, elsize) calloc(((nelem) == 0 ? 1 : (nelem)), (elsize))
-#else
-# define Xmalloc(size) malloc((size))
-# define Xrealloc(ptr, size) realloc((ptr), (size))
-# define Xcalloc(nelem, elsize) calloc((nelem), (elsize))
-#endif
-
-#define _XkbAlloc(s)            Xmalloc((s))
-#define _XkbCalloc(n,s)         Xcalloc((n),(s))
-#define _XkbRealloc(o,s)        Xrealloc((o),(s))
-#define _XkbTypedAlloc(t)       ((t *)Xmalloc(sizeof(t)))
-#define _XkbTypedCalloc(n,t)    ((t *)Xcalloc((n),sizeof(t)))
+#define _XkbTypedAlloc(t)       ((t *)malloc(sizeof(t)))
+#define _XkbTypedCalloc(n,t)    ((t *)calloc((n),sizeof(t)))
 #define _XkbTypedRealloc(o,n,t) \
-    ((o)?(t *)Xrealloc((o),(n)*sizeof(t)):_XkbTypedCalloc(n,t))
+    ((o)?(t *)realloc((o),(n)*sizeof(t)):_XkbTypedCalloc(n,t))
 #define _XkbClearElems(a,f,l,t) bzero(&(a)[f],((l)-(f)+1)*sizeof(t))
-#define _XkbFree(p)             free((p))
 
 #define _XkbDupString(s)        ((s) ? strdup(s) : NULL)
 #define _XkbStrCaseCmp          strcasecmp

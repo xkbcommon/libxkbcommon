@@ -110,7 +110,7 @@ XkbcInitAtoms(InternAtomFuncPtr intern, GetAtomValueFuncPtr get_atom_value)
         return;
 
     tableLength = InitialTableSize;
-    nodeTable = (NodePtr *)_XkbAlloc(InitialTableSize * sizeof(NodePtr));
+    nodeTable = (NodePtr *)malloc(InitialTableSize * sizeof(NodePtr));
     nodeTable[None] = NULL;
 }
 
@@ -188,13 +188,13 @@ _XkbcMakeAtom(const char *string, unsigned len, Bool makeit)
     if (makeit) {
         NodePtr nd;
 
-        nd = (NodePtr)_XkbAlloc(sizeof(NodeRec));
+        nd = (NodePtr)malloc(sizeof(NodeRec));
         if (!nd)
             return BAD_RESOURCE;
 
-        nd->string = (char *)_XkbAlloc(len + 1);
+        nd->string = (char *)malloc(len + 1);
         if (!nd->string) {
-            _XkbFree(nd);
+            free(nd);
             return BAD_RESOURCE;
         }
         strncpy(nd->string, string, (int)len);
@@ -203,12 +203,12 @@ _XkbcMakeAtom(const char *string, unsigned len, Bool makeit)
         if ((lastAtom + 1) >= tableLength) {
             NodePtr *table;
 
-            table = (NodePtr *)_XkbRealloc(nodeTable,
+            table = (NodePtr *)realloc(nodeTable,
                                            tableLength * 2 * sizeof(NodePtr));
             if (!table) {
                 if (nd->string != string)
-                    _XkbFree(nd->string);
-                _XkbFree(nd);
+                    free(nd->string);
+                free(nd);
                 return BAD_RESOURCE;
             }
             tableLength <<= 1;

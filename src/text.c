@@ -74,7 +74,7 @@ XkbcVModIndexText(XkbcDescPtr xkb, unsigned ndx)
          tmp = XkbcAtomGetString(vmodNames[ndx]);
 
     if (!tmp) {
-        tmp = _XkbAlloc(20 * sizeof(char));
+        tmp = malloc(20 * sizeof(char));
         snprintf(tmp, 20, "%d", ndx);
     }
 
@@ -85,7 +85,7 @@ XkbcVModIndexText(XkbcDescPtr xkb, unsigned ndx)
     rtrn = tbGetBuffer(len);
     strncpy(rtrn, tmp, len);
 
-    _XkbFree(tmp);
+    free(tmp);
 
     return rtrn;
 }

@@ -116,13 +116,13 @@ XkbComponentsFromRules(const char *rules, const XkbRF_VarDefsPtr defs)
     }
 
     if (!XkbcRF_GetComponents(loaded, defs, names)) {
-        _XkbFree(names->keymap);
-        _XkbFree(names->keycodes);
-        _XkbFree(names->types);
-        _XkbFree(names->compat);
-        _XkbFree(names->symbols);
-        _XkbFree(names->geometry);
-        _XkbFree(names);
+        free(names->keymap);
+        free(names->keycodes);
+        free(names->types);
+        free(names->compat);
+        free(names->symbols);
+        free(names->geometry);
+        free(names);
         names = NULL;
         ERROR("no components returned from XKB rules \"%s\"\n", rulesPath);
     }
@@ -161,13 +161,13 @@ XkbcCompileKeymapFromRules(const XkbRMLVOSet *rmlvo)
 
     xkb = XkbcCompileKeymapFromComponents(names);
 
-    _XkbFree(names->keymap);
-    _XkbFree(names->keycodes);
-    _XkbFree(names->types);
-    _XkbFree(names->compat);
-    _XkbFree(names->symbols);
-    _XkbFree(names->geometry);
-    _XkbFree(names);
+    free(names->keymap);
+    free(names->keycodes);
+    free(names->types);
+    free(names->compat);
+    free(names->symbols);
+    free(names->geometry);
+    free(names);
 
     return xkb;
 }

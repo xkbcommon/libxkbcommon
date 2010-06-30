@@ -54,7 +54,7 @@ XkbcAllocCompatMap(XkbcDescPtr xkb, unsigned which, unsigned nSI)
         compat->sym_interpret = _XkbTypedRealloc(compat->sym_interpret,
                                                  nSI, XkbcSymInterpretRec);
         if (!compat->sym_interpret) {
-            _XkbFree(prev_interpret);
+            free(prev_interpret);
             compat->size_si = compat->num_si = 0;
             return BadAlloc;
         }
@@ -73,7 +73,7 @@ XkbcAllocCompatMap(XkbcDescPtr xkb, unsigned which, unsigned nSI)
     if (nSI > 0) {
         compat->sym_interpret = _XkbTypedCalloc(nSI, XkbcSymInterpretRec);
         if (!compat->sym_interpret) {
-            _XkbFree(compat);
+            free(compat);
             return BadAlloc;
         }
     }
@@ -103,13 +103,13 @@ XkbcFreeCompatMap(XkbcDescPtr xkb, unsigned which, Bool freeMap)
 
     if (which & XkbSymInterpMask) {
         if (compat->sym_interpret && (compat->size_si > 0))
-            _XkbFree(compat->sym_interpret);
+            free(compat->sym_interpret);
         compat->size_si = compat->num_si = 0;
         compat->sym_interpret = NULL;
     }
 
     if (freeMap) {
-        _XkbFree(compat);
+        free(compat);
         xkb->compat = NULL;
     }
 }
@@ -168,7 +168,7 @@ XkbcAllocNames(XkbcDescPtr xkb, unsigned which, int nTotalRG, int nTotalAliases)
                 _XkbClearElems(names->key_aliases, names->num_key_aliases,
                                nTotalAliases - 1, XkbKeyAliasRec);
             else
-                _XkbFree(prev_aliases);
+                free(prev_aliases);
         }
 
         if (!names->key_aliases) {
@@ -191,7 +191,7 @@ XkbcAllocNames(XkbcDescPtr xkb, unsigned which, int nTotalRG, int nTotalAliases)
                 _XkbClearElems(names->radio_groups, names->num_rg,
                                nTotalRG - 1, uint32_t);
             else
-                _XkbFree(prev_radio_groups);
+                free(prev_radio_groups);
         }
 
         if (!names->radio_groups)
@@ -224,7 +224,7 @@ XkbcFreeNames(XkbcDescPtr xkb, unsigned which, Bool freeMap)
 
             for (i = 0; i < map->num_types; i++, type++) {
                 if (type->level_names) {
-                    _XkbFree(type->level_names);
+                    free(type->level_names);
                     type->level_names = NULL;
                 }
             }
@@ -232,25 +232,25 @@ XkbcFreeNames(XkbcDescPtr xkb, unsigned which, Bool freeMap)
     }
 
     if ((which & XkbKeyNamesMask) && names->keys) {
-        _XkbFree(names->keys);
+        free(names->keys);
         names->keys = NULL;
         names->num_keys = 0;
     }
 
     if ((which & XkbKeyAliasesMask) && names->key_aliases) {
-        _XkbFree(names->key_aliases);
+        free(names->key_aliases);
         names->key_aliases = NULL;
         names->num_key_aliases = 0;
     }
 
     if ((which & XkbRGNamesMask) && names->radio_groups) {
-        _XkbFree(names->radio_groups);
+        free(names->radio_groups);
         names->radio_groups = NULL;
         names->num_rg = 0;
     }
 
     if (freeMap) {
-        _XkbFree(names);
+        free(names);
         xkb->names = NULL;
     }
 }
@@ -274,7 +274,7 @@ void
 XkbcFreeControls(XkbcDescPtr xkb, unsigned which, Bool freeMap)
 {
     if (freeMap && xkb && xkb->ctrls) {
-        _XkbFree(xkb->ctrls);
+        free(xkb->ctrls);
         xkb->ctrls = NULL;
     }
 }
@@ -298,7 +298,7 @@ void
 XkbcFreeIndicatorMaps(XkbcDescPtr xkb)
 {
     if (xkb && xkb->indicators) {
-        _XkbFree(xkb->indicators);
+        free(xkb->indicators);
         xkb->indicators = NULL;
     }
 }
@@ -338,5 +338,5 @@ XkbcFreeKeyboard(XkbcDescPtr xkb, unsigned which, Bool freeAll)
     if (which & XkbControlsMask)
         XkbcFreeControls(xkb, XkbAllControlsMask, True);
     if (freeAll)
-        _XkbFree(xkb);
+        free(xkb);
 }

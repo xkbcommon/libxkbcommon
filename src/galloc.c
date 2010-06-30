@@ -39,7 +39,7 @@ _XkbFreeGeomLeafElems(Bool freeAll, int first, int count,
     if (freeAll || !(*elems)) {
         *num_inout = *sz_inout = 0;
         if (*elems) {
-            _XkbFree(*elems);
+            free(*elems);
             *elems = NULL;
         }
         return;
@@ -98,7 +98,7 @@ _XkbFreeGeomNonLeafElems(Bool freeAll, int first, int count,
     if (freeAll) {
         *num_inout = *sz_inout = 0;
         if (*elems) {
-            _XkbFree(*elems);
+            free(*elems);
             *elems = NULL;
         }
     }
@@ -118,11 +118,11 @@ _XkbClearProperty(char *prop_in)
     XkbcPropertyPtr prop = (XkbcPropertyPtr)prop_in;
 
     if (prop->name) {
-        _XkbFree(prop->name);
+        free(prop->name);
         prop->name = NULL;
     }
     if (prop->value) {
-        _XkbFree(prop->value);
+        free(prop->value);
         prop->value = NULL;
     }
 }
@@ -152,7 +152,7 @@ _XkbClearColor(char *color_in)
     XkbcColorPtr color = (XkbcColorPtr)color_in;
 
     if (color->spec)
-        _XkbFree(color->spec);
+        free(color->spec);
 }
 
 void
@@ -318,18 +318,18 @@ _XkbClearDoodad(char *doodad_in)
     switch (doodad->any.type) {
     case XkbTextDoodad:
         if (doodad->text.text) {
-            _XkbFree(doodad->text.text);
+            free(doodad->text.text);
             doodad->text.text = NULL;
         }
         if (doodad->text.font) {
-            _XkbFree(doodad->text.font);
+            free(doodad->text.font);
             doodad->text.font = NULL;
         }
         break;
 
     case XkbLogoDoodad:
         if (doodad->logo.logo_name) {
-            _XkbFree(doodad->logo.logo_name);
+            free(doodad->logo.logo_name);
             doodad->logo.logo_name = NULL;
         }
         break;
@@ -346,7 +346,7 @@ XkbcFreeGeomDoodads(XkbcDoodadPtr doodads, int nDoodads, Bool freeAll)
         for (i = 0, doodad = doodads; i < nDoodads; i++, doodad++)
             _XkbClearDoodad((char *)doodad);
         if (freeAll)
-            _XkbFree(doodads);
+            free(doodads);
     }
 }
 
@@ -382,10 +382,10 @@ XkbcFreeGeometry(XkbcGeometryPtr geom, unsigned which, Bool freeMap)
 
     if (freeMap) {
         if (geom->label_font) {
-            _XkbFree(geom->label_font);
+            free(geom->label_font);
             geom->label_font = NULL;
         }
-        _XkbFree(geom);
+        free(geom);
     }
 }
 
@@ -405,9 +405,9 @@ _XkbGeomAlloc(char **old, unsigned short *num, unsigned short *total,
     *total = (*num) + num_new;
 
     if (*old)
-        *old = (char *)_XkbRealloc(*old, (*total) * sz_elem);
+        *old = (char *)realloc(*old, (*total) * sz_elem);
     else
-        *old = (char *)_XkbCalloc(*total, sz_elem);
+        *old = (char *)calloc(*total, sz_elem);
     if (!(*old)) {
         *total = *num = 0;
         return BadAlloc;
@@ -616,8 +616,8 @@ register XkbcPropertyPtr prop;
     for (i=0,prop=geom->properties;i<geom->num_properties;i++,prop++) {
 	if ((prop->name)&&(strcmp(name,prop->name)==0)) {
 	    if (prop->value)
-		_XkbFree(prop->value);
-	    prop->value= (char *)_XkbAlloc(strlen(value)+1);
+		free(prop->value);
+	    prop->value= (char *)malloc(strlen(value)+1);
 	    if (prop->value)
 		strcpy(prop->value,value);
 	    return prop;
@@ -628,13 +628,13 @@ register XkbcPropertyPtr prop;
 	return NULL;
     }
     prop= &geom->properties[geom->num_properties];
-    prop->name= (char *)_XkbAlloc(strlen(name)+1);
+    prop->name= (char *)malloc(strlen(name)+1);
     if (!name)
 	return NULL;
     strcpy(prop->name,name);
-    prop->value= (char *)_XkbAlloc(strlen(value)+1);
+    prop->value= (char *)malloc(strlen(value)+1);
     if (!value) {
-	_XkbFree(prop->name);
+	free(prop->name);
 	prop->name= NULL;
 	return NULL;
     }
@@ -690,7 +690,7 @@ register XkbcColorPtr color;
     }
     color= &geom->colors[geom->num_colors];
     color->pixel= pixel;
-    color->spec= (char *)_XkbAlloc(strlen(spec)+1);
+    color->spec= (char *)malloc(strlen(spec)+1);
     if (!color->spec)
 	return NULL;
     strcpy(color->spec,spec);
@@ -804,7 +804,7 @@ XkbcSectionPtr	section;
 	return NULL;
     if ((sz_doodads>0)&&(_XkbAllocDoodads(section,sz_doodads)!=Success)) {
 	if (section->rows) {
-	    _XkbFree(section->rows);
+	    free(section->rows);
 	    section->rows= NULL;
 	    section->sz_rows= section->num_rows= 0;
 	}

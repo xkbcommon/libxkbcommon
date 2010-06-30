@@ -86,7 +86,7 @@ static void
 FreeInputLine(InputLine *line)
 {
     if (line->line!=line->buf)
-	_XkbFree(line->line);
+	free(line->line);
     line->line_num= 1;
     line->num_line= 0;
     line->sz_line= DFLT_LINE_SIZE;
@@ -99,11 +99,11 @@ InputLineAddChar(InputLine *line,int ch)
 {
     if (line->num_line>=line->sz_line) {
 	if (line->line==line->buf) {
-	    line->line= (char *)_XkbAlloc(line->sz_line*2);
+	    line->line= (char *)malloc(line->sz_line*2);
 	    memcpy(line->line,line->buf,line->sz_line);
 	}
 	else {
-	    line->line=(char *)_XkbRealloc((char *)line->line,line->sz_line*2);
+	    line->line=(char *)realloc((char *)line->line,line->sz_line*2);
 	}
 	line->sz_line*= 2;
     }
@@ -580,9 +580,9 @@ MakeMultiDefs(XkbRF_MultiDefsPtr mdefs, XkbRF_VarDefsPtr defs)
 static void
 FreeMultiDefs(XkbRF_MultiDefsPtr defs)
 {
-  if (defs->options) _XkbFree(defs->options);
-  if (defs->layout[1])  _XkbFree(defs->layout[1]);
-  if (defs->variant[1])  _XkbFree(defs->variant[1]);
+  if (defs->options) free(defs->options);
+  if (defs->layout[1])  free(defs->layout[1]);
+  if (defs->variant[1])  free(defs->variant[1]);
 }
 
 static void
@@ -797,7 +797,7 @@ int	len, ndx;
 	}
 	str= index(&str[0],'%');
     }
-    name= (char *)_XkbAlloc(len+1);
+    name= (char *)malloc(len+1);
     str= orig;
     outstr= name;
     while (*str!='\0') {
@@ -847,7 +847,7 @@ int	len, ndx;
     }
     *outstr++= '\0';
     if (orig!=name)
-	_XkbFree(orig);
+	free(orig);
     return name;
 }
 
@@ -1233,7 +1233,7 @@ XkbRF_RulesPtr rules;
 	rules->sz_rules= szRules;
 	rules->rules= _XkbTypedCalloc(rules->sz_rules,XkbRF_RuleRec);
 	if (!rules->rules) {
-	    _XkbFree(rules);
+	    free(rules);
 	    return NULL;
 	}
     }
@@ -1242,8 +1242,8 @@ XkbRF_RulesPtr rules;
 	rules->extra= _XkbTypedCalloc(rules->sz_extra,XkbRF_DescribeVarsRec);
 	if (!rules->extra) {
 	    if (rules->rules)
-		_XkbFree(rules->rules);
-	    _XkbFree(rules);
+		free(rules->rules);
+	    free(rules);
 	    return NULL;
 	}
     }
@@ -1259,13 +1259,13 @@ register int i;
 
     for (i=0;i<var->num_desc;i++) {
 	if (var->desc[i].name)
-	    _XkbFree(var->desc[i].name);
+	    free(var->desc[i].name);
 	if (var->desc[i].desc)
-	    _XkbFree(var->desc[i].desc);
+	    free(var->desc[i].desc);
 	var->desc[i].name= var->desc[i].desc= NULL;
     }
     if (var->desc)
-	_XkbFree(var->desc);
+	free(var->desc);
     var->desc= NULL;
     return;
 }
@@ -1287,39 +1287,39 @@ XkbRF_GroupPtr	group;
 	for (i = 0; i < rules->num_extra; i++) {
 	    XkbRF_ClearVarDescriptions(&rules->extra[i]);
 	}
-	_XkbFree(rules->extra);
+	free(rules->extra);
 	rules->num_extra= rules->sz_extra= 0;
 	rules->extra= NULL;
     }
     if (rules->rules) {
 	for (i=0,rule=rules->rules;i<rules->num_rules;i++,rule++) {
-	    if (rule->model)	_XkbFree(rule->model);
-	    if (rule->layout)	_XkbFree(rule->layout);
-	    if (rule->variant)	_XkbFree(rule->variant);
-	    if (rule->option)	_XkbFree(rule->option);
-	    if (rule->keycodes)	_XkbFree(rule->keycodes);
-	    if (rule->symbols)	_XkbFree(rule->symbols);
-	    if (rule->types)	_XkbFree(rule->types);
-	    if (rule->compat)	_XkbFree(rule->compat);
-	    if (rule->geometry)	_XkbFree(rule->geometry);
-	    if (rule->keymap)	_XkbFree(rule->keymap);
+	    if (rule->model)	free(rule->model);
+	    if (rule->layout)	free(rule->layout);
+	    if (rule->variant)	free(rule->variant);
+	    if (rule->option)	free(rule->option);
+	    if (rule->keycodes)	free(rule->keycodes);
+	    if (rule->symbols)	free(rule->symbols);
+	    if (rule->types)	free(rule->types);
+	    if (rule->compat)	free(rule->compat);
+	    if (rule->geometry)	free(rule->geometry);
+	    if (rule->keymap)	free(rule->keymap);
 	    bzero((char *)rule,sizeof(XkbRF_RuleRec));
 	}
-	_XkbFree(rules->rules);
+	free(rules->rules);
 	rules->num_rules= rules->sz_rules= 0;
 	rules->rules= NULL;
     }
 
     if (rules->groups) {
 	for (i=0, group=rules->groups;i<rules->num_groups;i++,group++) {
-	    if (group->name)	_XkbFree(group->name);
-	    if (group->words)	_XkbFree(group->words);
+	    if (group->name)	free(group->name);
+	    if (group->words)	free(group->words);
 	}
-	_XkbFree(rules->groups);
+	free(rules->groups);
 	rules->num_groups= 0;
 	rules->groups= NULL;
     }
     if (freeRules)
-	_XkbFree(rules);
+	free(rules);
     return;
 }
