@@ -87,7 +87,7 @@ XkbcKeysymToString(uint32_t ks)
     }
 
     /* Unnamed, non-Unicode, symbol (shouldn't generally happen). */
-    sprintf(ret, "0x%08lx", ks);
+    sprintf(ret, "0x%08x", ks);
     return ret;
 }
 
