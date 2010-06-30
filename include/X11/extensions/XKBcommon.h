@@ -65,50 +65,51 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /* Action structures used in the server */
 
 #define XkbcAnyActionDataSize 18
-typedef struct _XkbcAnyAction {
+struct xkb_any_action {
     unsigned char   type;
     unsigned char   pad[XkbcAnyActionDataSize];
-} XkbcAnyAction;
+};
 
-typedef struct _XkbcModAction {
+struct xkb_mod_action {
     unsigned char   type;
     uint8_t         flags;
     uint8_t         real_mods;
     uint32_t        mask;
     uint32_t        vmods;
-} XkbcModAction;
+};
 
-typedef struct _XkbcGroupAction {
+struct xkb_group_action {
     unsigned char   type;
     unsigned char   flags;
     int16_t         group;
-} XkbcGroupAction;
+};
 
-typedef struct _XkbcISOAction {
+struct xkb_iso_action {
     unsigned char   type;
     uint8_t         flags;
     int16_t         group;
     uint32_t        mask;
     uint32_t        vmods;
     uint8_t         real_mods;
-    uint8_t         affect;
-} XkbcISOAction;
+ 
+   uint8_t         affect;
+};
 
-typedef struct _XkbcCtrlsAction {
+struct xkb_controls_action {
     unsigned char   type;
     uint8_t         flags;
     uint32_t        ctrls;
-} XkbcCtrlsAction;
+};
 
-typedef struct _XkbcDeviceBtnAction {
+struct xkb_device_button_action {
     unsigned char   type;
     uint8_t         flags;
     uint16_t        device;
     uint16_t        button;
     uint8_t         count;
-} XkbcDeviceBtnAction;
+};
 
-typedef struct _XkbcDeviceValuatorAction {
+struct xkb_device_valuator_action {
     unsigned char   type;
     uint8_t         v1_what;
     uint16_t        device;
@@ -117,37 +118,37 @@ typedef struct _XkbcDeviceValuatorAction {
     uint16_t        v2_index;
     int16_t         v2_value;
     uint8_t         v2_what;
-} XkbcDeviceValuatorAction;
+};
 
-typedef struct _XkbcPtrDfltAction {
+struct xkb_pointer_default_action {
     unsigned char   type;
     uint8_t         flags;
     uint8_t         affect;
     uint8_t         value;
-} XkbcPtrDfltAction;
+};
 
-typedef struct _XkbcSwitchScreenAction {
+struct xkb_switch_screen_action {
     unsigned char   type;
     uint8_t         flags;
     uint8_t         screen;
-} XkbcSwitchScreenAction;
+};
 
-typedef union _XkbcAction {
-    XkbcAnyAction            any;
-    XkbcModAction            mods;
-    XkbcGroupAction          group;
-    XkbcISOAction            iso;
-    XkbcCtrlsAction          ctrls;
-    XkbcDeviceBtnAction      devbtn;
-    XkbcDeviceValuatorAction devval;
-    XkbcPtrDfltAction        dflt;
-    XkbcSwitchScreenAction   screen;
+union xkb_action {
+    struct xkb_any_action            any;
+    struct xkb_mod_action            mods;
+    struct xkb_group_action          group;
+    struct xkb_iso_action            iso;
+    struct xkb_controls_action          ctrls;
+    struct xkb_device_button_action      devbtn;
+    struct xkb_device_valuator_action devval;
+    struct xkb_pointer_default_action        dflt;
+    struct xkb_switch_screen_action   screen;
     XkbRedirectKeyAction     redirect; /* XXX wholly unnecessary? */
     XkbPtrAction             ptr; /* XXX delete for DeviceValuator */
     XkbPtrBtnAction          btn; /* XXX delete for DeviceBtn */
     XkbMessageAction         msg; /* XXX just delete */
     unsigned char            type;
-} XkbcAction;
+};
 
 typedef struct _XkbcMods {
         uint32_t        mask;   /* effective mods */
@@ -177,7 +178,7 @@ typedef struct _XkbcSymInterpretRec {
     unsigned char   match;
     uint8_t         mods; /* XXX real or virt? */
     uint32_t        virtual_mod;
-    XkbcAnyAction   act;
+    struct xkb_any_action   act;
 } XkbcSymInterpretRec, *XkbcSymInterpretPtr;
 
 typedef struct _XkbcCompatMapRec {
@@ -211,7 +212,7 @@ typedef struct _XkbcServerMapRec {
     unsigned char *     explicit;
 #endif
 
-    XkbcAction          *acts;
+    union xkb_action          *acts;
     XkbBehavior         *behaviors;
     unsigned short      *key_acts;
     unsigned char       *explicits;

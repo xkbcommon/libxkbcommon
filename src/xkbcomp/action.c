@@ -334,7 +334,7 @@ ReportNotFound(unsigned action, unsigned field, const char *what, char *bad)
 
 static Bool
 HandleNoAction(XkbcDescPtr xkb,
-               XkbcAnyAction * action,
+               struct xkb_any_action * action,
                unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     return ReportIllegal(action->type, field);
@@ -392,14 +392,14 @@ CheckModifierField(XkbcDescPtr xkb,
 
 static Bool
 HandleSetLatchMods(XkbcDescPtr xkb,
-                   XkbcAnyAction * action,
+                   struct xkb_any_action * action,
                    unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
-    XkbcModAction *act;
+    struct xkb_mod_action *act;
     unsigned rtrn;
     unsigned t1, t2;
 
-    act = (XkbcModAction *) action;
+    act = (struct xkb_mod_action *) action;
     if (array_ndx != NULL)
     {
         switch (field)
@@ -437,13 +437,13 @@ HandleSetLatchMods(XkbcDescPtr xkb,
 
 static Bool
 HandleLockMods(XkbcDescPtr xkb,
-               XkbcAnyAction * action,
+               struct xkb_any_action * action,
                unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
-    XkbcModAction *act;
+    struct xkb_mod_action *act;
     unsigned t1, t2;
 
-    act = (XkbcModAction *) action;
+    act = (struct xkb_mod_action *) action;
     if ((array_ndx != NULL) && (field == F_Modifiers))
         return ReportActionNotArray(action->type, field);
     switch (field)
@@ -512,7 +512,7 @@ CheckGroupField(unsigned action,
 
 static Bool
 HandleSetLatchGroup(XkbcDescPtr xkb,
-                    XkbcAnyAction * action,
+                    struct xkb_any_action * action,
                     unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     XkbGroupAction *act;
@@ -557,7 +557,7 @@ HandleSetLatchGroup(XkbcDescPtr xkb,
 
 static Bool
 HandleLockGroup(XkbcDescPtr xkb,
-                XkbcAnyAction * action,
+                struct xkb_any_action * action,
                 unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     XkbGroupAction *act;
@@ -583,7 +583,7 @@ HandleLockGroup(XkbcDescPtr xkb,
 
 static Bool
 HandleMovePtr(XkbcDescPtr xkb,
-              XkbcAnyAction * action,
+              struct xkb_any_action * action,
               unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -648,7 +648,7 @@ static LookupEntry lockWhich[] = {
 
 static Bool
 HandlePtrBtn(XkbcDescPtr xkb,
-             XkbcAnyAction * action,
+             struct xkb_any_action * action,
              unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -710,7 +710,7 @@ static LookupEntry ptrDflts[] = {
 
 static Bool
 HandleSetPtrDflt(XkbcDescPtr xkb,
-                 XkbcAnyAction * action,
+                 struct xkb_any_action * action,
                  unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -783,15 +783,15 @@ static LookupEntry isoNames[] = {
 
 static Bool
 HandleISOLock(XkbcDescPtr xkb,
-              XkbcAnyAction * action,
+              struct xkb_any_action * action,
               unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
-    XkbcISOAction *act;
+    struct xkb_iso_action *act;
     unsigned flags, mods;
     int group;
 
-    act = (XkbcISOAction *) action;
+    act = (struct xkb_iso_action *) action;
     switch (field)
     {
     case F_Modifiers:
@@ -830,7 +830,7 @@ HandleISOLock(XkbcDescPtr xkb,
 
 static Bool
 HandleSwitchScreen(XkbcDescPtr xkb,
-                   XkbcAnyAction * action,
+                   struct xkb_any_action * action,
                    unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -922,13 +922,13 @@ LookupEntry ctrlNames[] = {
 
 static Bool
 HandleSetLockControls(XkbcDescPtr xkb,
-                      XkbcAnyAction * action,
+                      struct xkb_any_action * action,
                       unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
-    XkbcCtrlsAction *act;
+    struct xkb_controls_action *act;
 
-    act = (XkbcCtrlsAction *) action;
+    act = (struct xkb_controls_action *) action;
     if (field == F_Controls)
     {
         if (array_ndx != NULL)
@@ -954,7 +954,7 @@ static LookupEntry evNames[] = {
 
 static Bool
 HandleActionMessage(XkbcDescPtr xkb,
-                    XkbcAnyAction * action,
+                    struct xkb_any_action * action,
                     unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -1032,7 +1032,7 @@ HandleActionMessage(XkbcDescPtr xkb,
 
 static Bool
 HandleRedirectKey(XkbcDescPtr xkb,
-                  XkbcAnyAction * action,
+                  struct xkb_any_action * action,
                   unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -1083,7 +1083,7 @@ HandleRedirectKey(XkbcDescPtr xkb,
 
 static Bool
 HandleDeviceBtn(XkbcDescPtr xkb,
-                XkbcAnyAction * action,
+                struct xkb_any_action * action,
                 unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -1153,7 +1153,7 @@ HandleDeviceBtn(XkbcDescPtr xkb,
 
 static Bool
 HandleDeviceValuator(XkbcDescPtr xkb,
-                     XkbcAnyAction * action,
+                     struct xkb_any_action * action,
                      unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
 #if 0
@@ -1168,7 +1168,7 @@ HandleDeviceValuator(XkbcDescPtr xkb,
 
 static Bool
 HandlePrivate(XkbcDescPtr xkb,
-              XkbcAnyAction * action,
+              struct xkb_any_action * action,
               unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -1237,7 +1237,7 @@ HandlePrivate(XkbcDescPtr xkb,
 }
 
 typedef Bool(*actionHandler) (XkbcDescPtr /* xkb */ ,
-                              XkbcAnyAction * /* action */ ,
+                              struct xkb_any_action * /* action */ ,
                               unsigned /* field */ ,
                               ExprDef * /* array_ndx */ ,
                               ExprDef * /* value */
@@ -1271,7 +1271,7 @@ static actionHandler handleAction[XkbSA_NumActions + 1] = {
 /***====================================================================***/
 
 static void
-ApplyActionFactoryDefaults(XkbcAction * action)
+ApplyActionFactoryDefaults(union xkb_action * action)
 {
     if (action->type == XkbSA_SetPtrDflt)
     {                           /* increment default button */
@@ -1290,7 +1290,7 @@ ApplyActionFactoryDefaults(XkbcAction * action)
 int
 HandleActionDef(ExprDef * def,
                 XkbcDescPtr xkb,
-                XkbcAnyAction * action, unsigned mergeMode, ActionInfo * info)
+                struct xkb_any_action * action, unsigned mergeMode, ActionInfo * info)
 {
     ExprDef *arg;
     register char *str;
@@ -1319,7 +1319,7 @@ HandleActionDef(ExprDef * def,
     action->type = hndlrType = tmp;
     if (action->type != XkbSA_NoAction)
     {
-        ApplyActionFactoryDefaults((XkbcAction *) action);
+        ApplyActionFactoryDefaults((union xkb_action *) action);
         while (info)
         {
             if ((info->action == XkbSA_NoAction)

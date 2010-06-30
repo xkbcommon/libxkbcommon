@@ -89,7 +89,7 @@ extern int
 XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
                        XkbChangesPtr changes);
 
-extern XkbcAction *
+extern union xkb_action *
 XkbcResizeKeyActions(XkbcDescPtr xkb, int key, int needed);
 
 extern void

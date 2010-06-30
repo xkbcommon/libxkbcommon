@@ -71,7 +71,7 @@ typedef struct _KeyInfo
     unsigned char actsDefined;
     short numLevels[XkbNumKbdGroups];
     uint32_t *syms[XkbNumKbdGroups];
-    XkbcAction *acts[XkbNumKbdGroups];
+    union xkb_action *acts[XkbNumKbdGroups];
     uint32_t types[XkbNumKbdGroups];
     unsigned repeat;
     XkbBehavior behavior;
@@ -190,14 +190,14 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
             }
             if (old->acts[i] != NULL)
             {
-                new->acts[i] = uTypedCalloc(width, XkbcAction);
+                new->acts[i] = uTypedCalloc(width, union xkb_action);
                 if (!new->acts[i])
                 {
                     new->acts[i] = NULL;
                     return False;
                 }
                 memcpy((char *) new->acts[i], (char *) old->acts[i],
-                       width * sizeof(XkbcAction));
+                       width * sizeof(union xkb_action));
             }
         }
     }
@@ -324,7 +324,7 @@ ResizeKeyGroup(KeyInfo * key,
     {
         key->acts[group] = uTypedRecalloc(key->acts[group],
                                           key->numLevels[group], newWidth,
-                                          XkbcAction);
+                                          union xkb_action);
         if (!key->acts[group])
             return False;
     }
@@ -337,7 +337,7 @@ MergeKeyGroups(SymbolsInfo * info,
                KeyInfo * into, KeyInfo * from, unsigned group)
 {
     uint32_t *resultSyms;
-    XkbcAction *resultActs;
+    union xkb_action *resultActs;
     int resultWidth;
     register int i;
     Bool report, clobber;
@@ -370,7 +370,7 @@ MergeKeyGroups(SymbolsInfo * info,
     }
     if ((resultActs == NULL) && (into->acts[group] || from->acts[group]))
     {
-        resultActs = uTypedCalloc(resultWidth, XkbcAction);
+        resultActs = uTypedCalloc(resultWidth, union xkb_action);
         if (!resultActs)
         {
             WSGO("Could not allocate actions for group merge\n");
@@ -419,7 +419,7 @@ MergeKeyGroups(SymbolsInfo * info,
         }
         if (resultActs != NULL)
         {
-            XkbcAction *fromAct, *toAct;
+            union xkb_action *fromAct, *toAct;
             fromAct = (from->acts[group] ? &from->acts[group][i] : NULL);
             toAct = (into->acts[group] ? &into->acts[group][i] : NULL);
             if (((fromAct == NULL) || (fromAct->type == XkbSA_NoAction))
@@ -434,7 +434,7 @@ MergeKeyGroups(SymbolsInfo * info,
             }
             else
             {
-                XkbcAction *use, *ignore;
+                union xkb_action *use, *ignore;
                 if (clobber)
                 {
                     use = fromAct;
@@ -993,7 +993,7 @@ AddActionsToKey(KeyInfo * key,
     register int i;
     unsigned ndx, nActs;
     ExprDef *act;
-    XkbcAnyAction *toAct;
+    struct xkb_any_action *toAct;
 
     if (!GetGroupIndex(key, arrayNdx, ACTIONS, &ndx))
         return False;
@@ -1035,7 +1035,7 @@ AddActionsToKey(KeyInfo * key,
     }
     key->actsDefined |= (1 << ndx);
 
-    toAct = (XkbcAnyAction *) key->acts[ndx];
+    toAct = (struct xkb_any_action *) key->acts[ndx];
     act = value->value.child;
     for (i = 0; i < nActs; i++, toAct++)
     {
@@ -1568,7 +1568,7 @@ SetExplicitGroup(SymbolsInfo * info, KeyInfo * key)
             key->syms[i] = (uint32_t *) NULL;
             if (key->acts[i] != NULL)
                 free(key->acts[i]);
-            key->acts[i] = (XkbcAction *) NULL;
+            key->acts[i] = (union xkb_action *) NULL;
             key->types[i] = (uint32_t) 0;
         }
     }
@@ -1579,7 +1579,7 @@ SetExplicitGroup(SymbolsInfo * info, KeyInfo * key)
     key->syms[group] = key->syms[0];
     key->syms[0] = (uint32_t *) NULL;
     key->acts[group] = key->acts[0];
-    key->acts[0] = (XkbcAction *) NULL;
+    key->acts[0] = (union xkb_action *) NULL;
     key->types[group] = key->types[0];
     key->types[0] = (uint32_t) 0;
     return True;
@@ -1876,11 +1876,11 @@ PrepareKeyDef(KeyInfo * key)
         }
         if ((key->actsDefined & 1) && key->acts[0])
         {
-            key->acts[i] = uTypedCalloc(width, XkbcAction);
+            key->acts[i] = uTypedCalloc(width, union xkb_action);
             if (key->acts[i] == NULL)
                 continue;
             memcpy((void *) key->acts[i], (void *) key->acts[0],
-                   width * sizeof(XkbcAction));
+                   width * sizeof(union xkb_action));
             key->actsDefined |= 1 << i;
         }
         if ((key->symsDefined & 1) && key->syms[0])
@@ -1919,7 +1919,7 @@ PrepareKeyDef(KeyInfo * key)
         if ((key->acts[i] != key->acts[0]) &&
             (key->acts[i] == NULL || key->acts[0] == NULL ||
              memcmp((void *) key->acts[i], (void *) key->acts[0],
-                    sizeof(XkbcAction) * key->numLevels[0])))
+                    sizeof(union xkb_action) * key->numLevels[0])))
         {
             identical = False;
             break;
@@ -1935,7 +1935,7 @@ PrepareKeyDef(KeyInfo * key)
             key->syms[i] = (uint32_t *) NULL;
             if (key->acts[i] != NULL)
                 free(key->acts[i]);
-            key->acts[i] = (XkbcAction *) NULL;
+            key->acts[i] = (union xkb_action *) NULL;
             key->types[i] = (uint32_t) 0;
         }
         key->symsDefined &= 1;
@@ -1958,7 +1958,7 @@ CopySymbolsDef(XkbcDescPtr xkb, KeyInfo *key, int start_from)
     XkbcKeyTypePtr type;
     Bool haveActions, autoType, useAlias;
     uint32_t *outSyms;
-    XkbcAction *outActs;
+    union xkb_action *outActs;
     unsigned types[XkbNumKbdGroups];
 
     useAlias = (start_from == 0);

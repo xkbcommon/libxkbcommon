@@ -66,7 +66,7 @@ typedef struct _ActionInfo
 
 extern int HandleActionDef(ExprDef * /* def */ ,
                            XkbcDescPtr /* xkb */ ,
-                           XkbcAnyAction * /* action */ ,
+                           struct xkb_any_action * /* action */ ,
                            unsigned /* mergeMode */ ,
                            ActionInfo * /* info */
     );
