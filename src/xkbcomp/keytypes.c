@@ -813,7 +813,7 @@ AddLevelName(KeyTypeInfo * type,
     {
         if (warningLevel > 0)
         {
-            char *old, *new;
+            const char *old, *new;
             old = XkbcAtomText(type->lvlNames[level]);
             new = XkbcAtomText(name);
             WARN("Multiple names for level %d of key type %s\n",

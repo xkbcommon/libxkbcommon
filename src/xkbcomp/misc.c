@@ -134,7 +134,7 @@ ReportNotArray(const char *type, const char *field, const char *name)
 }
 
 int
-ReportShouldBeArray(const char *type, const char *field, char *name)
+ReportShouldBeArray(const char *type, const char *field, const char *name)
 {
     ERROR("Missing subscript for %s %s\n", type, field);
     ACTION("Ignoring illegal assignment in %s\n", name);
@@ -151,7 +151,8 @@ ReportBadType(const char *type, const char *field,
 }
 
 int
-ReportBadIndexType(char *type, char *field, char *name, char *wanted)
+ReportBadIndexType(const char *type, const char *field,
+		   const char *name, const char *wanted)
 {
     ERROR("Index for the %s %s field must be a %s\n", type, field, wanted);
     ACTION("Ignoring assignment to illegal field in %s\n", name);
@@ -167,7 +168,7 @@ ReportBadField(const char *type, const char *field, const char *name)
 }
 
 int
-ReportMultipleDefs(char *type, char *field, char *name)
+ReportMultipleDefs(const char *type, const char *field, const char *name)
 {
     WARN("Multiple definitions of %s in %s \"%s\"\n", field, type, name);
     ACTION("Using last definition\n");

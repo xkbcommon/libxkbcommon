@@ -44,6 +44,4 @@ authorization from the authors.
 #define _XkbDupString(s)        ((s) ? strdup(s) : NULL)
 #define _XkbStrCaseCmp          strcasecmp
 
-extern char *tbGetBuffer(unsigned int len);
-
 #endif /* _XKBCOMMONINT_H_ */

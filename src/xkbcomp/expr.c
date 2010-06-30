@@ -159,7 +159,7 @@ SimpleLookup(char * priv,
              uint32_t elem, uint32_t field, unsigned type, ExprResult * val_rtrn)
 {
     LookupEntry *entry;
-    register char *str;
+    const char *str;
 
     if ((priv == NULL) ||
         (field == None) || (elem != None) ||
@@ -186,7 +186,7 @@ Bool
 RadioLookup(char * priv,
             uint32_t elem, uint32_t field, unsigned type, ExprResult * val_rtrn)
 {
-    register char *str;
+    const char *str;
     int rg;
 
     if ((field == None) || (elem != None) || (type != TypeInt))
@@ -215,7 +215,7 @@ TableLookup(char * priv,
             uint32_t elem, uint32_t field, unsigned type, ExprResult * val_rtrn)
 {
     LookupTable *tbl = (LookupTable *) priv;
-    register char *str;
+    const char *str;
 
     if ((priv == NULL) || (field == None) || (type != TypeInt))
         return False;
@@ -385,7 +385,7 @@ ExprResolveBoolean(ExprDef * expr,
                    IdentLookupFunc lookup, char * lookupPriv)
 {
     int ok = 0;
-    char *bogus = NULL;
+    const char *bogus = NULL;
 
     switch (expr->op)
     {
@@ -489,7 +489,7 @@ ExprResolveFloat(ExprDef * expr,
     case ExprValue:
         if (expr->type == TypeString)
         {
-            char *str;
+            const char *str;
             str = XkbcAtomText(expr->value.str);
             if ((str != NULL) && (strlen(str) == 1))
             {
@@ -602,7 +602,7 @@ ExprResolveInteger(ExprDef * expr,
     case ExprValue:
         if (expr->type == TypeString)
         {
-            char *str;
+            const char *str;
             str = XkbcAtomText(expr->value.str);
             if (str != NULL)
                 switch (strlen(str))
@@ -1053,7 +1053,7 @@ ExprResolveKeySym(ExprDef * expr,
 
     if (expr->op == ExprIdent)
     {
-        char *str;
+        const char *str;
         str = XkbcAtomText(expr->value.str);
         if ((str != NULL) && ((sym = XkbcStringToKeysym(str)) != NoSymbol))
         {

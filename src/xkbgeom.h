@@ -123,13 +123,13 @@ extern int
 XkbcAllocGeometry(XkbcDescPtr xkb, XkbcGeometrySizesPtr sizes);
 
 extern XkbcPropertyPtr
-XkbcAddGeomProperty(XkbcGeometryPtr geom, char *name, char *value);
+XkbcAddGeomProperty(XkbcGeometryPtr geom, const char *name, const char *value);
 
 extern XkbKeyAliasPtr
-XkbcAddGeomKeyAlias(XkbcGeometryPtr geom, char *aliasStr, char *realStr);
+XkbcAddGeomKeyAlias(XkbcGeometryPtr geom, const char *aliasStr, const char *realStr);
 
 extern XkbcColorPtr
-XkbcAddGeomColor(XkbcGeometryPtr geom, char *spec, unsigned int pixel);
+XkbcAddGeomColor(XkbcGeometryPtr geom, const char *spec, unsigned int pixel);
 
 extern XkbcOutlinePtr
 XkbcAddGeomOutline(XkbcShapePtr shape, int sz_points);
@@ -152,7 +152,7 @@ XkbcAddGeomDoodad(XkbcGeometryPtr geom, XkbcSectionPtr section, uint32_t name);
 
 extern XkbcOverlayKeyPtr
 XkbcAddGeomOverlayKey(XkbcOverlayPtr overlay, XkbcOverlayRowPtr row,
-                      char *over, char *under);
+                      const char *over, const char *under);
 
 extern XkbcOverlayRowPtr
 XkbcAddGeomOverlayRow(XkbcOverlayPtr overlay, int row_under, int sz_keys);

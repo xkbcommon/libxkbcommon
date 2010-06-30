@@ -70,7 +70,7 @@ XkbcInternAtom(const char *name, Bool onlyIfExists);
 
 /***====================================================================***/
 
-extern char *
+extern const char *
 XkbcAtomText(uint32_t atm);
 
 extern char *

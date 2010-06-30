@@ -107,8 +107,8 @@ XkbcInitAtoms(InternAtomFuncPtr intern, GetAtomValueFuncPtr get_atom_value)
     }
 }
 
-static const char *
-_XkbcAtomGetString(uint32_t atom)
+const char *
+XkbcAtomText(uint32_t atom)
 {
     NodePtr node;
 
@@ -125,26 +125,8 @@ _XkbcAtomGetString(uint32_t atom)
 char *
 XkbcAtomGetString(uint32_t atom)
 {
-    const char *ret = _XkbcAtomGetString(atom);
+    const char *ret = XkbcAtomText(atom);
     return ret ? strdup(ret) : NULL;
-}
-
-char *
-XkbcAtomText(uint32_t atom)
-{
-    const char *tmp;
-    char *ret;
-
-    tmp = _XkbcAtomGetString(atom);
-    if (!tmp)
-        return "";
-
-    ret = tbGetBuffer(strlen(tmp) + 1);
-    if (!ret)
-        return "";
-
-    strcpy(ret, tmp);
-    return ret;
 }
 
 static uint32_t

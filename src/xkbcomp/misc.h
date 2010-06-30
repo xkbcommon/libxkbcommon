@@ -61,7 +61,7 @@ extern int ReportNotArray(const char * /* type */ ,
 
 extern int ReportShouldBeArray(const char * /* type */ ,
                                const char * /* field */ ,
-                               char *   /* name */
+                               const char *   /* name */
     );
 
 extern int ReportBadType(const char * /* type */ ,
@@ -70,10 +70,10 @@ extern int ReportBadType(const char * /* type */ ,
                          const char *   /* wanted */
     );
 
-extern int ReportBadIndexType(char * /* type */ ,
-                              char * /* field */ ,
-                              char * /* name */ ,
-                              char *    /* wanted */
+extern int ReportBadIndexType(const char * /* type */ ,
+                              const char * /* field */ ,
+                              const char * /* name */ ,
+                              const char *    /* wanted */
     );
 
 extern int ReportBadField(const char * /* type */ ,
@@ -81,9 +81,9 @@ extern int ReportBadField(const char * /* type */ ,
                           const char *  /* name */
     );
 
-extern int ReportMultipleDefs(char * /* type */ ,
-                              char * /* field */ ,
-                              char *    /* which */
+extern int ReportMultipleDefs(const char * /* type */ ,
+                              const char * /* field */ ,
+                              const char *    /* which */
     );
 
 extern Bool ProcessIncludeFile(IncludeStmt * /* stmt */ ,

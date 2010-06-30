@@ -249,7 +249,7 @@ typedef struct _GeometryInfo
     AliasInfo *aliases;
 } GeometryInfo;
 
-static char *
+static const char *
 ddText(DoodadInfo * di)
 {
     static char buf[64];
@@ -1402,7 +1402,7 @@ HandleIncludeGeometry(IncludeStmt * stmt, XkbcDescPtr xkb, GeometryInfo * info,
 
 static int
 SetShapeField(ShapeInfo * si,
-              char *field,
+              const char *field,
               ExprDef * arrayNdx, ExprDef * value, GeometryInfo * info)
 {
     ExprResult tmp;
@@ -2446,7 +2446,7 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
         }
         if (ol->field != None)
         {
-            char *str = XkbcAtomText(ol->field);
+            const char *str = XkbcAtomText(ol->field);
             if ((uStrCaseCmp(str, "approximation") == 0) ||
                 (uStrCaseCmp(str, "approx") == 0))
             {
@@ -2476,7 +2476,6 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
                       shText(si));
                 ACTION("Treated as a normal outline\n");
             }
-            free(str);
         }
     }
     if (nOut != si->nOutlines)
@@ -3121,7 +3120,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
         if ((di->defs.defined & _GD_Height) == 0)
         {
             unsigned size, nLines;
-            char *tmp;
+            const char *tmp;
             size = (di->fontSize * 120) / 100;
             size = (size * 254) / 720;  /* convert to mm/10 */
             for (nLines = 1, tmp = XkbcAtomText(di->text); *tmp; tmp++)
@@ -3141,7 +3140,7 @@ VerifyDoodadInfo(DoodadInfo * di, GeometryInfo * info)
         if ((di->defs.defined & _GD_Width) == 0)
         {
             unsigned width, tmp;
-            char *str;
+            const char *str;
             width = tmp = 0;
             for (str = XkbcAtomText(di->text); *str; str++)
             {
@@ -3261,7 +3260,7 @@ FontFromParts(uint32_t fontTok,
               uint32_t setWidthTok, uint32_t varTok, int size, uint32_t encodingTok)
 {
     int totalSize;
-    char *font, *weight, *slant, *setWidth, *variant, *encoding;
+    const char *font, *weight, *slant, *setWidth, *variant, *encoding;
     char *rtrn;
 
     font = (fontTok != None ? XkbcAtomText(fontTok) : DFLT_FONT);

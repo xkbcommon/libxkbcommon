@@ -42,7 +42,7 @@ static ExprDef constFalse;
 /***====================================================================***/
 
 static Bool
-stringToAction(char *str, unsigned *type_rtrn)
+stringToAction(const char *str, unsigned *type_rtrn)
 {
     if (str == NULL)
         return False;
@@ -372,7 +372,7 @@ CheckModifierField(XkbcDescPtr xkb,
 
     if (value->op == ExprIdent)
     {
-        register char *valStr;
+        const char *valStr;
         valStr = XkbcAtomText(value->value.str);
         if (valStr && ((uStrCaseCmp(valStr, "usemodmapmods") == 0) ||
                        (uStrCaseCmp(valStr, "modmapmods") == 0)))
@@ -1293,7 +1293,7 @@ HandleActionDef(ExprDef * def,
                 struct xkb_any_action * action, unsigned mergeMode, ActionInfo * info)
 {
     ExprDef *arg;
-    register char *str;
+    const char *str;
     unsigned tmp, hndlrType;
 
     if (!actionsInitialized)

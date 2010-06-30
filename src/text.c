@@ -39,7 +39,7 @@
 static char textBuffer[BUFFER_SIZE];
 static int tbNext = 0;
 
-char *
+static char *
 tbGetBuffer(unsigned int size)
 {
     char *rtrn;

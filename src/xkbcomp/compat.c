@@ -307,7 +307,7 @@ ResolveStateAndPredicate(ExprDef * expr,
     *pred_rtrn = XkbSI_Exactly;
     if (expr->op == ExprActionDecl)
     {
-        char *pred_txt = XkbcAtomText(expr->value.action.name);
+        const char *pred_txt = XkbcAtomText(expr->value.action.name);
         if (uStrCaseCmp(pred_txt, "noneof") == 0)
             *pred_rtrn = XkbSI_NoneOf;
         else if (uStrCaseCmp(pred_txt, "anyofornone") == 0)
@@ -328,7 +328,7 @@ ResolveStateAndPredicate(ExprDef * expr,
     }
     else if (expr->op == ExprIdent)
     {
-        char *pred_txt = XkbcAtomText(expr->value.str);
+        const char *pred_txt = XkbcAtomText(expr->value.str);
         if ((pred_txt) && (uStrCaseCmp(pred_txt, "any") == 0))
         {
             *pred_rtrn = XkbSI_AnyOf;

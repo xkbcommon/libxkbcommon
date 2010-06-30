@@ -100,7 +100,7 @@ HandleVModDef(VModDef * stmt, unsigned mergeMode, VModInfo * info)
                     return True;
                 else
                 {
-                    char *str1;
+                    const char *str1;
                     const char *str2 = "";
                     if (!ExprResolveModMask(stmt->value, &mod, NULL, NULL))
                     {
