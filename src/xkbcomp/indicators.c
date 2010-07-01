@@ -199,7 +199,7 @@ static LookupEntry groupComponentNames[] = {
 
 int
 SetIndicatorMapField(LEDInfo * led,
-                     XkbcDescPtr xkb,
+                     struct xkb_desc * xkb,
                      char *field, ExprDef * arrayNdx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -323,7 +323,7 @@ SetIndicatorMapField(LEDInfo * led,
 
 LEDInfo *
 HandleIndicatorMapDef(IndicatorMapDef * def,
-                      XkbcDescPtr xkb,
+                      struct xkb_desc * xkb,
                       LEDInfo * dflt, LEDInfo * oldLEDs, unsigned merge)
 {
     LEDInfo led, *rtrn;
@@ -372,7 +372,7 @@ HandleIndicatorMapDef(IndicatorMapDef * def,
 }
 
 Bool
-CopyIndicatorMapDefs(XkbcDescPtr xkb, LEDInfo *leds, LEDInfo **unboundRtrn)
+CopyIndicatorMapDefs(struct xkb_desc * xkb, LEDInfo *leds, LEDInfo **unboundRtrn)
 {
     LEDInfo *led, *next;
     LEDInfo *unbound, *last;
@@ -416,7 +416,7 @@ CopyIndicatorMapDefs(XkbcDescPtr xkb, LEDInfo *leds, LEDInfo **unboundRtrn)
         }
         else
         {
-            register XkbIndicatorMapPtr im;
+            register struct xkb_indicator_map * im;
             im = &xkb->indicators->maps[led->indicator - 1];
             im->flags = led->flags;
             im->which_groups = led->which_groups;
@@ -439,7 +439,7 @@ CopyIndicatorMapDefs(XkbcDescPtr xkb, LEDInfo *leds, LEDInfo **unboundRtrn)
 }
 
 Bool
-BindIndicators(XkbcDescPtr xkb, Bool force, LEDInfo *unbound,
+BindIndicators(struct xkb_desc * xkb, Bool force, LEDInfo *unbound,
                LEDInfo **unboundRtrn)
 {
     register int i;
@@ -536,7 +536,7 @@ BindIndicators(XkbcDescPtr xkb, Bool force, LEDInfo *unbound,
             }
             else
             {
-                XkbIndicatorMapPtr map;
+                struct xkb_indicator_map * map;
                 map = &xkb->indicators->maps[led->indicator - 1];
                 map->flags = led->flags;
                 map->which_groups = led->which_groups;

@@ -57,7 +57,7 @@ tbGetBuffer(unsigned int size)
 }
 
 char *
-XkbcVModIndexText(XkbcDescPtr xkb, unsigned ndx)
+XkbcVModIndexText(struct xkb_desc * xkb, unsigned ndx)
 {
     int len;
     uint32_t *vmodNames;
@@ -91,7 +91,7 @@ XkbcVModIndexText(XkbcDescPtr xkb, unsigned ndx)
 }
 
 char *
-XkbcVModMaskText(XkbcDescPtr xkb, unsigned modMask, unsigned mask)
+XkbcVModMaskText(struct xkb_desc * xkb, unsigned modMask, unsigned mask)
 {
     int i, bit, len, rem;
     char *mm = NULL, *rtrn, *str;

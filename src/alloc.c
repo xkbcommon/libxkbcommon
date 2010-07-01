@@ -33,10 +33,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/extensions/XKB.h>
 
 int
-XkbcAllocCompatMap(XkbcDescPtr xkb, unsigned which, unsigned nSI)
+XkbcAllocCompatMap(struct xkb_desc * xkb, unsigned which, unsigned nSI)
 {
-    XkbcCompatMapPtr compat;
-    XkbcSymInterpretRec *prev_interpret;
+    struct xkb_compat_map * compat;
+    struct xkb_sym_interpret *prev_interpret;
 
     if (!xkb)
         return BadMatch;
@@ -52,7 +52,7 @@ XkbcAllocCompatMap(XkbcDescPtr xkb, unsigned which, unsigned nSI)
 
         prev_interpret = compat->sym_interpret;
         compat->sym_interpret = _XkbTypedRealloc(compat->sym_interpret,
-                                                 nSI, XkbcSymInterpretRec);
+                                                 nSI, struct xkb_sym_interpret);
         if (!compat->sym_interpret) {
             free(prev_interpret);
             compat->size_si = compat->num_si = 0;
@@ -61,17 +61,17 @@ XkbcAllocCompatMap(XkbcDescPtr xkb, unsigned which, unsigned nSI)
 
         if (compat->num_si != 0)
             _XkbClearElems(compat->sym_interpret, compat->num_si,
-                           compat->size_si - 1, XkbcSymInterpretRec);
+                           compat->size_si - 1, struct xkb_sym_interpret);
 
         return Success;
     }
 
-    compat = _XkbTypedCalloc(1, XkbcCompatMapRec);
+    compat = _XkbTypedCalloc(1, struct xkb_compat_map);
     if (!compat)
         return BadAlloc;
 
     if (nSI > 0) {
-        compat->sym_interpret = _XkbTypedCalloc(nSI, XkbcSymInterpretRec);
+        compat->sym_interpret = _XkbTypedCalloc(nSI, struct xkb_sym_interpret);
         if (!compat->sym_interpret) {
             free(compat);
             return BadAlloc;
@@ -79,7 +79,7 @@ XkbcAllocCompatMap(XkbcDescPtr xkb, unsigned which, unsigned nSI)
     }
     compat->size_si = nSI;
     compat->num_si = 0;
-    bzero(&compat->groups[0], XkbNumKbdGroups * sizeof(XkbcModsRec));
+    bzero(&compat->groups[0], XkbNumKbdGroups * sizeof(struct xkb_mods));
     xkb->compat = compat;
 
     return Success;
@@ -87,9 +87,9 @@ XkbcAllocCompatMap(XkbcDescPtr xkb, unsigned which, unsigned nSI)
 
 
 void
-XkbcFreeCompatMap(XkbcDescPtr xkb, unsigned which, Bool freeMap)
+XkbcFreeCompatMap(struct xkb_desc * xkb, unsigned which, Bool freeMap)
 {
-    XkbcCompatMapPtr compat;
+    struct xkb_compat_map * compat;
 
     if (!xkb || !xkb->compat)
         return;
@@ -99,7 +99,7 @@ XkbcFreeCompatMap(XkbcDescPtr xkb, unsigned which, Bool freeMap)
         which = XkbAllCompatMask;
 
     if (which & XkbGroupCompatMask)
-        bzero(&compat->groups[0], XkbNumKbdGroups * sizeof(XkbcModsRec));
+        bzero(&compat->groups[0], XkbNumKbdGroups * sizeof(struct xkb_mods));
 
     if (which & XkbSymInterpMask) {
         if (compat->sym_interpret && (compat->size_si > 0))
@@ -115,15 +115,15 @@ XkbcFreeCompatMap(XkbcDescPtr xkb, unsigned which, Bool freeMap)
 }
 
 int
-XkbcAllocNames(XkbcDescPtr xkb, unsigned which, int nTotalRG, int nTotalAliases)
+XkbcAllocNames(struct xkb_desc * xkb, unsigned which, int nTotalRG, int nTotalAliases)
 {
-    XkbcNamesPtr names;
+    struct xkb_names * names;
 
     if (!xkb)
         return BadMatch;
 
     if (!xkb->names) {
-        xkb->names = _XkbTypedCalloc(1, XkbcNamesRec);
+        xkb->names = _XkbTypedCalloc(1, struct xkb_names);
         if (!xkb->names)
             return BadAlloc;
     }
@@ -131,7 +131,7 @@ XkbcAllocNames(XkbcDescPtr xkb, unsigned which, int nTotalRG, int nTotalAliases)
 
     if ((which & XkbKTLevelNamesMask) && xkb->map && xkb->map->types) {
         int i;
-        XkbcKeyTypePtr type;
+        struct xkb_key_type * type;
 
         type = xkb->map->types;
         for (i = 0; i < xkb->map->num_types; i++, type++) {
@@ -149,7 +149,7 @@ XkbcAllocNames(XkbcDescPtr xkb, unsigned which, int nTotalRG, int nTotalAliases)
             (xkb->max_key_code < xkb->min_key_code))
             return BadValue;
 
-        names->keys = _XkbTypedCalloc(xkb->max_key_code + 1, XkbKeyNameRec);
+        names->keys = _XkbTypedCalloc(xkb->max_key_code + 1, struct xkb_key_name);
         if (!names->keys)
             return BadAlloc;
     }
@@ -157,16 +157,16 @@ XkbcAllocNames(XkbcDescPtr xkb, unsigned which, int nTotalRG, int nTotalAliases)
     if ((which & XkbKeyAliasesMask) && (nTotalAliases > 0)) {
         if (!names->key_aliases)
             names->key_aliases = _XkbTypedCalloc(nTotalAliases,
-                                                 XkbKeyAliasRec);
+                                                 struct xkb_key_alias);
         else if (nTotalAliases > names->num_key_aliases) {
-            XkbKeyAliasRec *prev_aliases = names->key_aliases;
+            struct xkb_key_alias *prev_aliases = names->key_aliases;
 
             names->key_aliases = _XkbTypedRealloc(names->key_aliases,
                                                   nTotalAliases,
-                                                  XkbKeyAliasRec);
+                                                  struct xkb_key_alias);
             if (names->key_aliases)
                 _XkbClearElems(names->key_aliases, names->num_key_aliases,
-                               nTotalAliases - 1, XkbKeyAliasRec);
+                               nTotalAliases - 1, struct xkb_key_alias);
             else
                 free(prev_aliases);
         }
@@ -204,9 +204,9 @@ XkbcAllocNames(XkbcDescPtr xkb, unsigned which, int nTotalRG, int nTotalAliases)
 }
 
 void
-XkbcFreeNames(XkbcDescPtr xkb, unsigned which, Bool freeMap)
+XkbcFreeNames(struct xkb_desc * xkb, unsigned which, Bool freeMap)
 {
-    XkbcNamesPtr names;
+    struct xkb_names * names;
 
     if (!xkb || !xkb->names)
         return;
@@ -216,11 +216,11 @@ XkbcFreeNames(XkbcDescPtr xkb, unsigned which, Bool freeMap)
         which = XkbAllNamesMask;
 
     if (which & XkbKTLevelNamesMask) {
-        XkbcClientMapPtr map = xkb->map;
+        struct xkb_client_map * map = xkb->map;
 
         if (map && map->types) {
             int i;
-            XkbcKeyTypePtr type = map->types;
+            struct xkb_key_type * type = map->types;
 
             for (i = 0; i < map->num_types; i++, type++) {
                 if (type->level_names) {
@@ -256,13 +256,13 @@ XkbcFreeNames(XkbcDescPtr xkb, unsigned which, Bool freeMap)
 }
 
 int
-XkbcAllocControls(XkbcDescPtr xkb, unsigned which)
+XkbcAllocControls(struct xkb_desc * xkb, unsigned which)
 {
     if (!xkb)
         return BadMatch;
 
     if (!xkb->ctrls) {
-        xkb->ctrls = _XkbTypedCalloc(1, XkbControlsRec);
+        xkb->ctrls = _XkbTypedCalloc(1, struct xkb_controls);
         if (!xkb->ctrls)
             return BadAlloc;
     }
@@ -271,7 +271,7 @@ XkbcAllocControls(XkbcDescPtr xkb, unsigned which)
 }
 
 void
-XkbcFreeControls(XkbcDescPtr xkb, unsigned which, Bool freeMap)
+XkbcFreeControls(struct xkb_desc * xkb, unsigned which, Bool freeMap)
 {
     if (freeMap && xkb && xkb->ctrls) {
         free(xkb->ctrls);
@@ -280,13 +280,13 @@ XkbcFreeControls(XkbcDescPtr xkb, unsigned which, Bool freeMap)
 }
 
 int
-XkbcAllocIndicatorMaps(XkbcDescPtr xkb)
+XkbcAllocIndicatorMaps(struct xkb_desc * xkb)
 {
     if (!xkb)
         return BadMatch;
 
     if (!xkb->indicators) {
-        xkb->indicators = _XkbTypedCalloc(1, XkbIndicatorRec);
+        xkb->indicators = _XkbTypedCalloc(1, struct xkb_indicator);
         if (!xkb->indicators)
             return BadAlloc;
     }
@@ -295,7 +295,7 @@ XkbcAllocIndicatorMaps(XkbcDescPtr xkb)
 }
 
 void
-XkbcFreeIndicatorMaps(XkbcDescPtr xkb)
+XkbcFreeIndicatorMaps(struct xkb_desc * xkb)
 {
     if (xkb && xkb->indicators) {
         free(xkb->indicators);
@@ -303,19 +303,19 @@ XkbcFreeIndicatorMaps(XkbcDescPtr xkb)
     }
 }
 
-XkbcDescRec *
+struct xkb_desc *
 XkbcAllocKeyboard(void)
 {
-    XkbcDescRec *xkb;
+    struct xkb_desc *xkb;
 
-    xkb = _XkbTypedCalloc(1, XkbcDescRec);
+    xkb = _XkbTypedCalloc(1, struct xkb_desc);
     if (xkb)
         xkb->device_spec = XkbUseCoreKbd;
     return xkb;
 }
 
 void
-XkbcFreeKeyboard(XkbcDescPtr xkb, unsigned which, Bool freeAll)
+XkbcFreeKeyboard(struct xkb_desc * xkb, unsigned which, Bool freeAll)
 {
     if (!xkb)
         return;

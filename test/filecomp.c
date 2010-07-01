@@ -30,8 +30,6 @@ authorization from the authors.
 #include <errno.h>
 #include <X11/X.h>
 #include <X11/Xdefs.h>
-#include <X11/extensions/XKBstrcommon.h>
-#include <X11/extensions/XKBrulescommon.h>
 #include "X11/extensions/XKBcommon.h"
 #include "xkbcomp/utils.h"
 
@@ -39,7 +37,7 @@ int main(int argc, char *argv[])
 {
     char *path, *name;
     FILE *file;
-    XkbcDescPtr xkb;
+    struct xkb_desc * xkb;
 
     /* Require xkb file */
     if (argc < 2) {

@@ -84,7 +84,7 @@ typedef struct _KeyNamesInfo
 } KeyNamesInfo;
 
 static void HandleKeycodesFile(XkbFile * file,
-                               XkbcDescPtr xkb,
+                               struct xkb_desc * xkb,
                                unsigned merge,
                                KeyNamesInfo * info);
 
@@ -495,7 +495,7 @@ MergeIncludedKeycodes(KeyNamesInfo * into, KeyNamesInfo * from,
  * @param info Struct to store the key info in.
  */
 static Bool
-HandleIncludeKeycodes(IncludeStmt * stmt, XkbcDescPtr xkb, KeyNamesInfo * info)
+HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_desc * xkb, KeyNamesInfo * info)
 {
     unsigned newMerge;
     XkbFile *rtrn;
@@ -750,7 +750,7 @@ HandleIndicatorNameDef(IndicatorNameDef * def,
  */
 static void
 HandleKeycodesFile(XkbFile * file,
-                   XkbcDescPtr xkb, unsigned merge, KeyNamesInfo * info)
+                   struct xkb_desc * xkb, unsigned merge, KeyNamesInfo * info)
 {
     ParseCommon *stmt;
 
@@ -822,7 +822,7 @@ HandleKeycodesFile(XkbFile * file,
  * @return True on success, False otherwise.
  */
 Bool
-CompileKeycodes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
+CompileKeycodes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
 {
     KeyNamesInfo info; /* contains all the info after parsing */
 
@@ -857,7 +857,7 @@ CompileKeycodes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
         }
         else
         {
-            WSGO("Cannot create XkbcNamesRec in CompileKeycodes\n");
+            WSGO("Cannot create struct xkb_names in CompileKeycodes\n");
             return False;
         }
         if (info.leds)

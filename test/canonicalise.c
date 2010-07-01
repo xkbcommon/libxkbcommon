@@ -30,7 +30,7 @@
 
 int main(int argc, char *argv[])
 {
-    XkbComponentNamesRec *new, *old = NULL;
+    struct xkb_component_names *new, *old = NULL;
 
     if (argc != 6 && argc != 11) {
         fprintf(stderr, "usage: canonicalise (new kccgst) [old kccgst]\n");

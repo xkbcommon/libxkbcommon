@@ -60,7 +60,7 @@ typedef struct _KeyTypeInfo
     int numLevels;
     int nEntries;
     int szEntries;
-    XkbcKTMapEntryPtr entries;
+    struct xkb_kt_map_entry * entries;
     PreserveInfo *preserve;
     int szNames;
     uint32_t *lvlNames;
@@ -92,14 +92,14 @@ uint32_t tok_KEYPAD;
 
 /***====================================================================***/
 
-extern Bool AddMapEntry(XkbcDescPtr /* xkb */ ,
+extern Bool AddMapEntry(struct xkb_desc * /* xkb */ ,
                         KeyTypeInfo * /* type */ ,
-                        XkbcKTMapEntryPtr /* new */ ,
+                        struct xkb_kt_map_entry * /* new */ ,
                         Bool /* clobber */ ,
                         Bool    /* report */
     );
 
-extern Bool AddPreserve(XkbcDescPtr /* xkb */ ,
+extern Bool AddPreserve(struct xkb_desc * /* xkb */ ,
                         KeyTypeInfo * /* type */ ,
                         PreserveInfo * /* new */ ,
                         Bool /* clobber */ ,
@@ -127,7 +127,7 @@ extern Bool AddLevelName(KeyTypeInfo * /* type */ ,
 /***====================================================================***/
 
 static void
-InitKeyTypesInfo(KeyTypesInfo * info, XkbcDescPtr xkb, KeyTypesInfo * from)
+InitKeyTypesInfo(KeyTypesInfo * info, struct xkb_desc * xkb, KeyTypesInfo * from)
 {
     tok_ONE_LEVEL = XkbcInternAtom("ONE_LEVEL", False);
     tok_TWO_LEVEL = XkbcInternAtom("TWO_LEVEL", False);
@@ -159,10 +159,10 @@ InitKeyTypesInfo(KeyTypesInfo * info, XkbcDescPtr xkb, KeyTypesInfo * from)
         if (from->dflt.entries)
         {
             info->dflt.entries = uTypedCalloc(from->dflt.szEntries,
-                                              XkbcKTMapEntryRec);
+                                              struct xkb_kt_map_entry);
             if (info->dflt.entries)
             {
-                unsigned sz = from->dflt.nEntries * sizeof(XkbcKTMapEntryRec);
+                unsigned sz = from->dflt.nEntries * sizeof(struct xkb_kt_map_entry);
                 memcpy(info->dflt.entries, from->dflt.entries, sz);
             }
         }
@@ -277,7 +277,7 @@ ReportTypeBadWidth(const char *type, int has, int needs)
 }
 
 static Bool
-AddKeyType(XkbcDescPtr xkb, KeyTypesInfo * info, KeyTypeInfo * new)
+AddKeyType(struct xkb_desc * xkb, KeyTypesInfo * info, KeyTypeInfo * new)
 {
     KeyTypeInfo *old;
 
@@ -363,7 +363,7 @@ AddKeyType(XkbcDescPtr xkb, KeyTypesInfo * info, KeyTypeInfo * new)
 
 static void
 MergeIncludedKeyTypes(KeyTypesInfo * into,
-                      KeyTypesInfo * from, unsigned merge, XkbcDescPtr xkb)
+                      KeyTypesInfo * from, unsigned merge, struct xkb_desc * xkb)
 {
     KeyTypeInfo *type;
 
@@ -389,14 +389,14 @@ MergeIncludedKeyTypes(KeyTypesInfo * into,
 }
 
 typedef void (*FileHandler) (XkbFile * /* file */ ,
-                             XkbcDescPtr /* xkb */ ,
+                             struct xkb_desc * /* xkb */ ,
                              unsigned /* merge */ ,
                              KeyTypesInfo *     /* included */
     );
 
 static Bool
 HandleIncludeKeyTypes(IncludeStmt * stmt,
-                      XkbcDescPtr xkb, KeyTypesInfo * info, FileHandler hndlr)
+                      struct xkb_desc * xkb, KeyTypesInfo * info, FileHandler hndlr)
 {
     unsigned newMerge;
     XkbFile *rtrn;
@@ -472,11 +472,11 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
 
 /***====================================================================***/
 
-static XkbcKTMapEntryPtr
+static struct xkb_kt_map_entry *
 FindMatchingMapEntry(KeyTypeInfo * type, unsigned mask, unsigned vmask)
 {
     register int i;
-    XkbcKTMapEntryPtr entry;
+    struct xkb_kt_map_entry * entry;
 
     for (i = 0, entry = type->entries; i < type->nEntries; i++, entry++)
     {
@@ -509,12 +509,12 @@ DeleteLevel1MapEntries(KeyTypeInfo * type)
  * Return a pointer to the next free XkbcKTMapEntry, reallocating space if
  * necessary.
  */
-static XkbcKTMapEntryPtr
+static struct xkb_kt_map_entry *
 NextMapEntry(KeyTypeInfo * type)
 {
     if (type->entries == NULL)
     {
-        type->entries = uTypedCalloc(2, XkbcKTMapEntryRec);
+        type->entries = uTypedCalloc(2, struct xkb_kt_map_entry);
         if (type->entries == NULL)
         {
             ERROR("Couldn't allocate map entries for %s\n", TypeTxt(type));
@@ -529,7 +529,7 @@ NextMapEntry(KeyTypeInfo * type)
         type->szEntries *= 2;
         type->entries = uTypedRecalloc(type->entries,
                                        type->nEntries, type->szEntries,
-                                       XkbcKTMapEntryRec);
+                                       struct xkb_kt_map_entry);
         if (type->entries == NULL)
         {
             ERROR("Couldn't reallocate map entries for %s\n", TypeTxt(type));
@@ -541,7 +541,7 @@ NextMapEntry(KeyTypeInfo * type)
 }
 
 Bool
-AddPreserve(XkbcDescPtr xkb,
+AddPreserve(struct xkb_desc * xkb,
             KeyTypeInfo * type, PreserveInfo * new, Bool clobber, Bool report)
 {
     PreserveInfo *old;
@@ -613,11 +613,11 @@ AddPreserve(XkbcDescPtr xkb,
  * @param report True if a warning is to be printed on.
  */
 Bool
-AddMapEntry(XkbcDescPtr xkb,
+AddMapEntry(struct xkb_desc * xkb,
             KeyTypeInfo * type,
-            XkbcKTMapEntryPtr new, Bool clobber, Bool report)
+            struct xkb_kt_map_entry * new, Bool clobber, Bool report)
 {
-    XkbcKTMapEntryPtr old;
+    struct xkb_kt_map_entry * old;
 
     if ((old =
          FindMatchingMapEntry(type, new->mods.real_mods, new->mods.vmods)))
@@ -679,10 +679,10 @@ static LookupEntry lnames[] = {
 
 static Bool
 SetMapEntry(KeyTypeInfo * type,
-            XkbcDescPtr xkb, ExprDef * arrayNdx, ExprDef * value)
+            struct xkb_desc * xkb, ExprDef * arrayNdx, ExprDef * value)
 {
     ExprResult rtrn;
-    XkbcKTMapEntryRec entry;
+    struct xkb_kt_map_entry entry;
 
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(type, "map entry");
@@ -725,7 +725,7 @@ SetMapEntry(KeyTypeInfo * type,
 
 static Bool
 SetPreserve(KeyTypeInfo * type,
-            XkbcDescPtr xkb, ExprDef * arrayNdx, ExprDef * value)
+            struct xkb_desc * xkb, ExprDef * arrayNdx, ExprDef * value)
 {
     ExprResult rtrn;
     PreserveInfo new;
@@ -874,7 +874,7 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
  */
 static Bool
 SetKeyTypeField(KeyTypeInfo * type,
-                XkbcDescPtr xkb,
+                struct xkb_desc * xkb,
                 char *field,
                 ExprDef * arrayNdx, ExprDef * value, KeyTypesInfo * info)
 {
@@ -932,7 +932,7 @@ SetKeyTypeField(KeyTypeInfo * type,
 }
 
 static Bool
-HandleKeyTypeVar(VarDef * stmt, XkbcDescPtr xkb, KeyTypesInfo * info)
+HandleKeyTypeVar(VarDef * stmt, struct xkb_desc * xkb, KeyTypesInfo * info)
 {
     ExprResult elem, field;
     ExprDef *arrayNdx;
@@ -958,7 +958,7 @@ HandleKeyTypeVar(VarDef * stmt, XkbcDescPtr xkb, KeyTypesInfo * info)
 
 static int
 HandleKeyTypeBody(VarDef * def,
-                  XkbcDescPtr xkb, KeyTypeInfo * type, KeyTypesInfo * info)
+                  struct xkb_desc * xkb, KeyTypeInfo * type, KeyTypesInfo * info)
 {
     int ok = 1;
     ExprResult tmp, field;
@@ -985,7 +985,7 @@ HandleKeyTypeBody(VarDef * def,
  */
 static int
 HandleKeyTypeDef(KeyTypeDef * def,
-                 XkbcDescPtr xkb, unsigned merge, KeyTypesInfo * info)
+                 struct xkb_desc * xkb, unsigned merge, KeyTypesInfo * info)
 {
     register int i;
     KeyTypeInfo type;
@@ -1019,7 +1019,7 @@ HandleKeyTypeDef(KeyTypeDef * def,
     /* default type */
     for (i = 0; i < info->dflt.nEntries; i++)
     {
-        XkbcKTMapEntryPtr dflt;
+        struct xkb_kt_map_entry * dflt;
         dflt = &info->dflt.entries[i];
         if (((dflt->mods.real_mods & type.mask) == dflt->mods.real_mods) &&
             ((dflt->mods.vmods & type.vmask) == dflt->mods.vmods))
@@ -1065,7 +1065,7 @@ HandleKeyTypeDef(KeyTypeDef * def,
  */
 static void
 HandleKeyTypesFile(XkbFile * file,
-                   XkbcDescPtr xkb, unsigned merge, KeyTypesInfo * info)
+                   struct xkb_desc * xkb, unsigned merge, KeyTypesInfo * info)
 {
     ParseCommon *stmt;
 
@@ -1126,7 +1126,7 @@ HandleKeyTypesFile(XkbFile * file,
 }
 
 static Bool
-CopyDefToKeyType(XkbcDescPtr xkb, XkbcKeyTypePtr type, KeyTypeInfo * def)
+CopyDefToKeyType(struct xkb_desc * xkb, struct xkb_key_type * type, KeyTypeInfo * def)
 {
     register int i;
     PreserveInfo *pre;
@@ -1134,8 +1134,8 @@ CopyDefToKeyType(XkbcDescPtr xkb, XkbcKeyTypePtr type, KeyTypeInfo * def)
     for (pre = def->preserve; pre != NULL;
          pre = (PreserveInfo *) pre->defs.next)
     {
-        XkbcKTMapEntryPtr match;
-        XkbcKTMapEntryRec tmp;
+        struct xkb_kt_map_entry * match;
+        struct xkb_kt_map_entry tmp;
         tmp.mods.real_mods = pre->indexMods;
         tmp.mods.vmods = pre->indexVMods;
         tmp.level = 0;
@@ -1156,7 +1156,7 @@ CopyDefToKeyType(XkbcDescPtr xkb, XkbcKeyTypePtr type, KeyTypeInfo * def)
     type->map = def->entries;
     if (def->preserve)
     {
-        type->preserve = uTypedCalloc(type->map_count, XkbcModsRec);
+        type->preserve = uTypedCalloc(type->map_count, struct xkb_mods);
         if (!type->preserve)
         {
             WARN("Couldn't allocate preserve array in CopyDefToKeyType\n");
@@ -1199,7 +1199,7 @@ CopyDefToKeyType(XkbcDescPtr xkb, XkbcKeyTypePtr type, KeyTypeInfo * def)
 }
 
 Bool
-CompileKeyTypes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
+CompileKeyTypes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
 {
     KeyTypesInfo info;
 
@@ -1211,7 +1211,7 @@ CompileKeyTypes(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
     {
         register int i;
         register KeyTypeInfo *def;
-        register XkbcKeyTypePtr type, next;
+        register struct xkb_key_type *type, *next;
 
         if (info.name != NULL)
         {

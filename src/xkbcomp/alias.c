@@ -155,10 +155,10 @@ MergeAliases(AliasInfo ** into, AliasInfo ** merge, unsigned how_merge)
 }
 
 int
-ApplyAliases(XkbcDescPtr xkb, Bool toGeom, AliasInfo ** info_in)
+ApplyAliases(struct xkb_desc * xkb, Bool toGeom, AliasInfo ** info_in)
 {
     register int i;
-    XkbKeyAliasPtr old, a;
+    struct xkb_key_alias *old, *a;
     AliasInfo *info;
     int nNew, nOld;
     int status;
@@ -235,8 +235,8 @@ ApplyAliases(XkbcDescPtr xkb, Bool toGeom, AliasInfo ** info_in)
     {
         if (!xkb->geom)
         {
-            XkbcGeometrySizesRec sizes;
-            bzero((char *) &sizes, sizeof(XkbcGeometrySizesRec));
+            struct xkb_geometry_sizes sizes;
+            bzero((char *) &sizes, sizeof(struct xkb_geometry_sizes));
             sizes.which = XkbGeomKeyAliasesMask;
             sizes.num_key_aliases = nOld + nNew;
             status = XkbcAllocGeometry(xkb, &sizes);

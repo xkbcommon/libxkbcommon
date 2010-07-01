@@ -82,8 +82,8 @@ XkbcCanonicaliseComponent(char *name, const char *old)
 }
 
 void
-XkbcCanonicaliseComponents(XkbComponentNamesPtr names,
-                           const XkbComponentNamesPtr old)
+XkbcCanonicaliseComponents(struct xkb_component_names * names,
+                           const struct xkb_component_names * old)
 {
     names->keycodes = XkbcCanonicaliseComponent(names->keycodes,
                                                 old ? old->keycodes : NULL);
@@ -98,12 +98,12 @@ XkbcCanonicaliseComponents(XkbComponentNamesPtr names,
 }
 
 Bool
-XkbcComputeEffectiveMap(XkbcDescPtr xkb, XkbcKeyTypePtr type,
+XkbcComputeEffectiveMap(struct xkb_desc * xkb, struct xkb_key_type * type,
                         unsigned char *map_rtrn)
 {
     int i;
     unsigned tmp;
-    XkbcKTMapEntryPtr entry = NULL;
+    struct xkb_kt_map_entry * entry = NULL;
 
     if (!xkb || !type || !xkb->server)
         return False;

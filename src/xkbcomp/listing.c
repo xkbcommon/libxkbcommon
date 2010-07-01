@@ -133,7 +133,7 @@ typedef struct _CompPair {
     int num;
     int sz;
 
-    XkbComponentNamePtr comp;
+    struct xkb_component_name * comp;
 } CompPair;
 
 /***====================================================================***/
@@ -146,7 +146,7 @@ AddComponent(CompPair *cp, char *fileName, XkbFile *map, unsigned dirsToStrip)
 
     if (cp->num >= cp->sz) {
         int orig_sz = cp->sz;
-        XkbComponentNamePtr orig_comp = cp->comp;
+        struct xkb_component_name * orig_comp = cp->comp;
 
         if (cp->sz < 1)
             cp->sz = 8;
@@ -154,7 +154,7 @@ AddComponent(CompPair *cp, char *fileName, XkbFile *map, unsigned dirsToStrip)
             cp->sz *= 2;
 
         cp->comp = realloc(cp->comp,
-                               cp->sz * sizeof(XkbComponentNameRec));
+                               cp->sz * sizeof(struct xkb_component_name));
         if (!cp->comp) {
             ERROR("Failed reallocating component name list\n");
             cp->sz = orig_sz;
@@ -366,7 +366,7 @@ AddDirectory(CompPair *cp, char *head, char *ptrn, char *rest, char *map,
 /***====================================================================***/
 
 static int
-GenerateComponent(XkbComponentListPtr complist, unsigned type, char *head_in,
+GenerateComponent(struct xkb_component_list * complist, unsigned type, char *head_in,
                  char *base, int *max)
 {
     char *str, *head, *ptrn = NULL, *rest = NULL;
@@ -439,7 +439,7 @@ GenerateComponent(XkbComponentListPtr complist, unsigned type, char *head_in,
 
     /* Trim excess component slots */
     if (cp.sz > 0 && cp.sz > cp.num) {
-        if (realloc(cp.comp, cp.num * sizeof(XkbComponentNameRec)))
+        if (realloc(cp.comp, cp.num * sizeof(struct xkb_component_name)))
             cp.sz = cp.num;
         else
             WARN("Could not reallocate component name list\n");
@@ -477,13 +477,13 @@ GenerateComponent(XkbComponentListPtr complist, unsigned type, char *head_in,
 
 /***====================================================================***/
 
-XkbComponentListPtr
-XkbcListComponents(XkbComponentNamesPtr ptrns, int *maxMatch)
+struct xkb_component_list *
+XkbcListComponents(struct xkb_component_names * ptrns, int *maxMatch)
 {
-    XkbComponentListPtr complist = NULL;
+    struct xkb_component_list * complist = NULL;
     int extra = 0;
 
-    complist = _XkbTypedCalloc(1, XkbComponentListRec);
+    complist = _XkbTypedCalloc(1, struct xkb_component_list);
     if (!complist) {
         ERROR("could not allocate space for listing\n");
         goto out;

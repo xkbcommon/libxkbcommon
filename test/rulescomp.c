@@ -28,15 +28,13 @@ authorization from the authors.
 #include <stdio.h>
 #include <X11/X.h>
 #include <X11/Xdefs.h>
-#include <X11/extensions/XKBstrcommon.h>
-#include <X11/extensions/XKBrulescommon.h>
 #include "X11/extensions/XKBcommon.h"
 #include "xkbcomp/utils.h"
 
 int main(int argc, char *argv[])
 {
     XkbRMLVOSet rmlvo;
-    XkbcDescPtr xkb;
+    struct xkb_desc * xkb;
 
     /* Require rmlvo */
     if (argc < 6) {

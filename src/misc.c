@@ -33,30 +33,29 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "X11/extensions/XKBcommon.h"
 #include "XKBcommonint.h"
 #include <X11/keysym.h>
-#include <X11/extensions/XKBfilecommon.h>
 
-#define mapSize(m) (sizeof(m) / sizeof(XkbcKTMapEntryRec))
-static XkbcKTMapEntryRec map2Level[]= {
+#define mapSize(m) (sizeof(m) / sizeof(struct xkb_kt_map_entry))
+static struct xkb_kt_map_entry map2Level[]= {
     { True, ShiftMask, {1, ShiftMask, 0} }
 };
 
-static XkbcKTMapEntryRec mapAlpha[]= {
+static struct xkb_kt_map_entry mapAlpha[]= {
     { True, ShiftMask, { 1, ShiftMask, 0 } },
     { True, LockMask,  { 0, LockMask,  0 } }
 };
 
-static XkbcModsRec preAlpha[]= {
+static struct xkb_mods preAlpha[]= {
     { 0,        0,        0 },
     { LockMask, LockMask, 0 }
 };
 
 #define NL_VMOD_MASK 0
-static  XkbcKTMapEntryRec mapKeypad[]= {
+static  struct xkb_kt_map_entry mapKeypad[]= {
     { True,  ShiftMask, { 1, ShiftMask, 0 } },
     { False, 0,         { 1, 0, NL_VMOD_MASK } }
 };
 
-static XkbcKeyTypeRec canonicalTypes[XkbNumRequiredTypes] = {
+static struct xkb_key_type canonicalTypes[XkbNumRequiredTypes] = {
     { { 0, 0, 0 },
       1,        /* num_levels */
       0,        /* map_count */
@@ -84,10 +83,10 @@ static XkbcKeyTypeRec canonicalTypes[XkbNumRequiredTypes] = {
 };
 
 int
-XkbcInitCanonicalKeyTypes(XkbcDescPtr xkb, unsigned which, int keypadVMod)
+XkbcInitCanonicalKeyTypes(struct xkb_desc * xkb, unsigned which, int keypadVMod)
 {
-    XkbcClientMapPtr map;
-    XkbcKeyTypePtr from,to;
+    struct xkb_client_map * map;
+    struct xkb_key_type *from, *to;
     int rtrn;
 
     if (!xkb)
@@ -116,7 +115,7 @@ XkbcInitCanonicalKeyTypes(XkbcDescPtr xkb, unsigned which, int keypadVMod)
                                &to[XkbAlphabeticIndex]);
 
     if ((which & XkbKeypadMask) && (rtrn == Success)) {
-        XkbcKeyTypePtr type;
+        struct xkb_key_type * type;
 
         rtrn = XkbcCopyKeyType(&from[XkbKeypadIndex], &to[XkbKeypadIndex]);
         type = &to[XkbKeypadIndex];
@@ -141,7 +140,7 @@ XkbcInitCanonicalKeyTypes(XkbcDescPtr xkb, unsigned which, int keypadVMod)
 }
 
 Bool
-XkbcVirtualModsToReal(XkbcDescPtr xkb, unsigned virtual_mask,
+XkbcVirtualModsToReal(struct xkb_desc * xkb, unsigned virtual_mask,
                       unsigned *mask_rtrn)
 {
     int i, bit;

@@ -29,23 +29,21 @@ authorization from the authors.
 
 #include <X11/X.h>
 #include <X11/Xdefs.h>
-#include <X11/extensions/XKBstrcommon.h>
-#include <X11/extensions/XKBrulescommon.h>
 #include "X11/extensions/XKBcommon.h"
 
 /***====================================================================***/
 
 extern Bool
-XkbcComputeEffectiveMap(XkbcDescPtr xkb, XkbcKeyTypePtr type,
+XkbcComputeEffectiveMap(struct xkb_desc * xkb, struct xkb_key_type * type,
                         unsigned char *map_rtrn);
 
 /***====================================================================***/
 
 extern int
-XkbcInitCanonicalKeyTypes(XkbcDescPtr xkb, unsigned which, int keypadVMod);
+XkbcInitCanonicalKeyTypes(struct xkb_desc * xkb, unsigned which, int keypadVMod);
 
 extern Bool
-XkbcVirtualModsToReal(XkbcDescPtr xkb, unsigned virtual_mask,
+XkbcVirtualModsToReal(struct xkb_desc * xkb, unsigned virtual_mask,
                       unsigned *mask_rtrn);
 
 extern void
@@ -74,10 +72,10 @@ extern const char *
 XkbcAtomText(uint32_t atm);
 
 extern char *
-XkbcVModIndexText(XkbcDescPtr xkb, unsigned ndx);
+XkbcVModIndexText(struct xkb_desc * xkb, unsigned ndx);
 
 extern char *
-XkbcVModMaskText(XkbcDescPtr xkb, unsigned modMask, unsigned mask);
+XkbcVModMaskText(struct xkb_desc * xkb, unsigned modMask, unsigned mask);
 
 extern char *
 XkbcModIndexText(unsigned ndx);

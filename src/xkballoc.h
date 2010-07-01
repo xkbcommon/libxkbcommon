@@ -29,73 +29,71 @@ authorization from the authors.
 
 #include <X11/X.h>
 #include <X11/Xdefs.h>
-#include <X11/extensions/XKBstrcommon.h>
-#include <X11/extensions/XKBrulescommon.h>
 #include "X11/extensions/XKBcommon.h"
 
 extern int
-XkbcAllocCompatMap(XkbcDescPtr xkb, unsigned which, unsigned nSI);
+XkbcAllocCompatMap(struct xkb_desc * xkb, unsigned which, unsigned nSI);
 
 extern void
-XkbcFreeCompatMap(XkbcDescPtr xkb, unsigned which, Bool freeMap);
+XkbcFreeCompatMap(struct xkb_desc * xkb, unsigned which, Bool freeMap);
 
 extern int
-XkbcAllocNames(XkbcDescPtr xkb, unsigned which, int nTotalRG,
+XkbcAllocNames(struct xkb_desc * xkb, unsigned which, int nTotalRG,
                int nTotalAliases);
 
 extern void
-XkbcFreeNames(XkbcDescPtr xkb, unsigned which, Bool freeMap);
+XkbcFreeNames(struct xkb_desc * xkb, unsigned which, Bool freeMap);
 
 extern int
-XkbcAllocControls(XkbcDescPtr xkb, unsigned which);
+XkbcAllocControls(struct xkb_desc * xkb, unsigned which);
 
 extern void
-XkbcFreeControls(XkbcDescPtr xkb, unsigned which, Bool freeMap);
+XkbcFreeControls(struct xkb_desc * xkb, unsigned which, Bool freeMap);
 
 extern int
-XkbcAllocIndicatorMaps(XkbcDescPtr xkb);
+XkbcAllocIndicatorMaps(struct xkb_desc * xkb);
 
 extern void
-XkbcFreeIndicatorMaps(XkbcDescPtr xkb);
+XkbcFreeIndicatorMaps(struct xkb_desc * xkb);
 
-extern XkbcDescRec *
+extern struct xkb_desc *
 XkbcAllocKeyboard(void);
 
 extern void
-XkbcFreeKeyboard(XkbcDescPtr xkb, unsigned which, Bool freeAll);
+XkbcFreeKeyboard(struct xkb_desc * xkb, unsigned which, Bool freeAll);
 
 /***====================================================================***/
 
 extern int
-XkbcAllocClientMap(XkbcDescPtr xkb, unsigned which, unsigned nTotalTypes);
+XkbcAllocClientMap(struct xkb_desc * xkb, unsigned which, unsigned nTotalTypes);
 
 extern int
-XkbcAllocServerMap(XkbcDescPtr xkb, unsigned which, unsigned nNewActions);
+XkbcAllocServerMap(struct xkb_desc * xkb, unsigned which, unsigned nNewActions);
 
 extern int
-XkbcCopyKeyType(XkbcKeyTypePtr from, XkbcKeyTypePtr into);
+XkbcCopyKeyType(struct xkb_key_type * from, struct xkb_key_type *into);
 
 extern int
-XkbcCopyKeyTypes(XkbcKeyTypePtr from, XkbcKeyTypePtr into, int num_types);
+XkbcCopyKeyTypes(struct xkb_key_type * from, struct xkb_key_type *into, int num_types);
 
 extern int
-XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
+XkbcResizeKeyType(struct xkb_desc * xkb, int type_ndx, int map_count,
                   Bool want_preserve, int new_num_lvls);
 
 extern uint32_t *
-XkbcResizeKeySyms(XkbcDescPtr xkb, int key, int needed);
+XkbcResizeKeySyms(struct xkb_desc * xkb, int key, int needed);
 
 extern int
-XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
-                       XkbChangesPtr changes);
+XkbcChangeKeycodeRange(struct xkb_desc * xkb, int minKC, int maxKC,
+                       struct xkb_changes * changes);
 
 extern union xkb_action *
-XkbcResizeKeyActions(XkbcDescPtr xkb, int key, int needed);
+XkbcResizeKeyActions(struct xkb_desc * xkb, int key, int needed);
 
 extern void
-XkbcFreeClientMap(XkbcDescPtr xkb, unsigned what, Bool freeMap);
+XkbcFreeClientMap(struct xkb_desc * xkb, unsigned what, Bool freeMap);
 
 extern void
-XkbcFreeServerMap(XkbcDescPtr xkb, unsigned what, Bool freeMap);
+XkbcFreeServerMap(struct xkb_desc * xkb, unsigned what, Bool freeMap);
 
 #endif /* _XKBALLOC_H_ */

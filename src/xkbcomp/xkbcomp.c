@@ -40,7 +40,7 @@ unsigned int warningLevel = 0;
 #define ISEMPTY(str) (!(str) || (strlen(str) == 0))
 
 static XkbFile *
-XkbKeymapFileFromComponents(const XkbComponentNamesPtr ktcsg)
+XkbKeymapFileFromComponents(const struct xkb_component_names * ktcsg)
 {
     XkbFile *keycodes, *types, *compat, *symbols, *geometry;
     IncludeStmt *inc;
@@ -73,14 +73,14 @@ XkbKeymapFileFromComponents(const XkbComponentNamesPtr ktcsg)
                          &keycodes->common, 0);
 }
 
-static XkbComponentNamesPtr
+static struct xkb_component_names *
 XkbComponentsFromRules(const char *rules, const XkbRF_VarDefsPtr defs)
 {
     FILE *rulesFile = NULL;
     char *rulesPath = NULL;
     static XkbRF_RulesPtr loaded = NULL;
     static char *cached_name = NULL;
-    XkbComponentNamesPtr names = NULL;
+    struct xkb_component_names * names = NULL;
 
     if (!cached_name || strcmp(rules, cached_name) != 0) {
         if (loaded)
@@ -110,7 +110,7 @@ XkbComponentsFromRules(const char *rules, const XkbRF_VarDefsPtr defs)
         cached_name = strdup(rules);
     }
 
-    if (!(names = _XkbTypedCalloc(1, XkbComponentNamesRec))) {
+    if (!(names = _XkbTypedCalloc(1, struct xkb_component_names))) {
         ERROR("failed to allocate XKB components\n");
         goto unwind_file;
     }
@@ -135,12 +135,12 @@ out:
     return names;
 }
 
-XkbcDescPtr
+struct xkb_desc *
 XkbcCompileKeymapFromRules(const XkbRMLVOSet *rmlvo)
 {
     XkbRF_VarDefsRec defs;
-    XkbComponentNamesPtr names;
-    XkbcDescPtr xkb;
+    struct xkb_component_names * names;
+    struct xkb_desc * xkb;
 
     if (!rmlvo || ISEMPTY(rmlvo->rules) || ISEMPTY(rmlvo->layout)) {
         ERROR("rules and layout required to generate XKB keymap\n");
@@ -206,11 +206,11 @@ XkbChooseMap(XkbFile *file, const char *name)
     return map;
 }
 
-XkbcDescPtr
-XkbcCompileKeymapFromComponents(const XkbComponentNamesPtr ktcsg)
+struct xkb_desc *
+XkbcCompileKeymapFromComponents(const struct xkb_component_names * ktcsg)
 {
     XkbFile *file, *mapToUse;
-    XkbcDescPtr xkb;
+    struct xkb_desc * xkb;
 
     uSetErrorFile(NULL);
 
@@ -248,11 +248,11 @@ fail:
     return NULL;
 }
 
-XkbcDescPtr
+struct xkb_desc *
 XkbcCompileKeymapFromFile(FILE *inputFile, const char *mapName)
 {
     XkbFile *file, *mapToUse;
-    XkbcDescPtr xkb;
+    struct xkb_desc * xkb;
 
     if (!inputFile) {
         ERROR("no file specified to generate XKB keymap\n");

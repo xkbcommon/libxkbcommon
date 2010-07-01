@@ -29,149 +29,147 @@ authorization from the authors.
 
 #include <X11/X.h>
 #include <X11/Xdefs.h>
-#include <X11/extensions/XKBstrcommon.h>
-#include <X11/extensions/XKBrulescommon.h>
 #include "X11/extensions/XKBcommon.h"
 
 extern void
-XkbcFreeGeomProperties(XkbcGeometryPtr geom, int first, int count, Bool freeAll);
+XkbcFreeGeomProperties(struct xkb_geometry * geom, int first, int count, Bool freeAll);
 
 extern void
-XkbcFreeGeomKeyAliases(XkbcGeometryPtr geom, int first, int count, Bool freeAll);
+XkbcFreeGeomKeyAliases(struct xkb_geometry * geom, int first, int count, Bool freeAll);
 
 extern void
-XkbcFreeGeomColors(XkbcGeometryPtr geom, int first, int count, Bool freeAll);
+XkbcFreeGeomColors(struct xkb_geometry * geom, int first, int count, Bool freeAll);
 
 extern void
-XkbcFreeGeomPoints(XkbcOutlinePtr outline, int first, int count, Bool freeAll);
+XkbcFreeGeomPoints(struct xkb_outline * outline, int first, int count, Bool freeAll);
 
 extern void
-XkbcFreeGeomOutlines(XkbcShapePtr shape, int first, int count, Bool freeAll);
+XkbcFreeGeomOutlines(struct xkb_shape * shape, int first, int count, Bool freeAll);
 
 extern void
-XkbcFreeGeomShapes(XkbcGeometryPtr geom, int first, int count, Bool freeAll);
+XkbcFreeGeomShapes(struct xkb_geometry * geom, int first, int count, Bool freeAll);
 
 extern void
-XkbcFreeGeomOverlayKeys(XkbcOverlayRowPtr row, int first, int count,
+XkbcFreeGeomOverlayKeys(struct xkb_overlay_row * row, int first, int count,
                         Bool freeAll);
 
 extern void
-XkbcFreeGeomOverlayRows(XkbcOverlayPtr overlay, int first, int count,
+XkbcFreeGeomOverlayRows(struct xkb_overlay * overlay, int first, int count,
                         Bool freeAll);
 
 extern void
-XkbcFreeGeomOverlays(XkbcSectionPtr section, int first, int count, Bool freeAll);
+XkbcFreeGeomOverlays(struct xkb_section * section, int first, int count, Bool freeAll);
 
 extern void
-XkbcFreeGeomKeys(XkbcRowPtr row, int first, int count, Bool freeAll);
+XkbcFreeGeomKeys(struct xkb_row * row, int first, int count, Bool freeAll);
 
 extern void
-XkbcFreeGeomRows(XkbcSectionPtr section, int first, int count, Bool freeAll);
+XkbcFreeGeomRows(struct xkb_section * section, int first, int count, Bool freeAll);
 
 extern void
-XkbcFreeGeomSections(XkbcGeometryPtr geom, int first, int count, Bool freeAll);
+XkbcFreeGeomSections(struct xkb_geometry * geom, int first, int count, Bool freeAll);
 
 extern void
-XkbcFreeGeomDoodads(XkbcDoodadPtr doodads, int nDoodads, Bool freeAll);
+XkbcFreeGeomDoodads(union xkb_doodad * doodads, int nDoodads, Bool freeAll);
 
 extern void
-XkbcFreeGeometry(XkbcGeometryPtr geom, unsigned which, Bool freeMap);
+XkbcFreeGeometry(struct xkb_geometry * geom, unsigned which, Bool freeMap);
 
 extern int
-XkbcAllocGeomProps(XkbcGeometryPtr geom, int nProps);
+XkbcAllocGeomProps(struct xkb_geometry * geom, int nProps);
 
 extern int
-XkbcAllocGeomColors(XkbcGeometryPtr geom, int nColors);
+XkbcAllocGeomColors(struct xkb_geometry * geom, int nColors);
 
 extern int
-XkbcAllocGeomKeyAliases(XkbcGeometryPtr geom, int nKeyAliases);
+XkbcAllocGeomKeyAliases(struct xkb_geometry * geom, int nKeyAliases);
 
 extern int
-XkbcAllocGeomShapes(XkbcGeometryPtr geom, int nShapes);
+XkbcAllocGeomShapes(struct xkb_geometry * geom, int nShapes);
 
 extern int
-XkbcAllocGeomSections(XkbcGeometryPtr geom, int nSections);
+XkbcAllocGeomSections(struct xkb_geometry * geom, int nSections);
 
 extern int
-XkbcAllocGeomOverlays(XkbcSectionPtr section, int nOverlays);
+XkbcAllocGeomOverlays(struct xkb_section * section, int nOverlays);
 
 extern int
-XkbcAllocGeomOverlayRows(XkbcOverlayPtr overlay, int nRows);
+XkbcAllocGeomOverlayRows(struct xkb_overlay * overlay, int nRows);
 
 extern int
-XkbcAllocGeomOverlayKeys(XkbcOverlayRowPtr row, int nKeys);
+XkbcAllocGeomOverlayKeys(struct xkb_overlay_row * row, int nKeys);
 
 extern int
-XkbcAllocGeomDoodads(XkbcGeometryPtr geom, int nDoodads);
+XkbcAllocGeomDoodads(struct xkb_geometry * geom, int nDoodads);
 
 extern int
-XkbcAllocGeomSectionDoodads(XkbcSectionPtr section, int nDoodads);
+XkbcAllocGeomSectionDoodads(struct xkb_section * section, int nDoodads);
 
 extern int
-XkbcAllocGeomOutlines(XkbcShapePtr shape, int nOL);
+XkbcAllocGeomOutlines(struct xkb_shape * shape, int nOL);
 
 extern int
-XkbcAllocGeomRows(XkbcSectionPtr section, int nRows);
+XkbcAllocGeomRows(struct xkb_section * section, int nRows);
 
 extern int
-XkbcAllocGeomPoints(XkbcOutlinePtr ol, int nPts);
+XkbcAllocGeomPoints(struct xkb_outline * ol, int nPts);
 
 extern int
-XkbcAllocGeomKeys(XkbcRowPtr row, int nKeys);
+XkbcAllocGeomKeys(struct xkb_row * row, int nKeys);
 
 extern int
-XkbcAllocGeometry(XkbcDescPtr xkb, XkbcGeometrySizesPtr sizes);
+XkbcAllocGeometry(struct xkb_desc * xkb, struct xkb_geometry_sizes * sizes);
 
-extern XkbcPropertyPtr
-XkbcAddGeomProperty(XkbcGeometryPtr geom, const char *name, const char *value);
+extern struct xkb_property *
+XkbcAddGeomProperty(struct xkb_geometry * geom, const char *name, const char *value);
 
-extern XkbKeyAliasPtr
-XkbcAddGeomKeyAlias(XkbcGeometryPtr geom, const char *aliasStr, const char *realStr);
+extern struct xkb_key_alias *
+XkbcAddGeomKeyAlias(struct xkb_geometry * geom, const char *aliasStr, const char *realStr);
 
-extern XkbcColorPtr
-XkbcAddGeomColor(XkbcGeometryPtr geom, const char *spec, unsigned int pixel);
+extern struct xkb_color *
+XkbcAddGeomColor(struct xkb_geometry * geom, const char *spec, unsigned int pixel);
 
-extern XkbcOutlinePtr
-XkbcAddGeomOutline(XkbcShapePtr shape, int sz_points);
+extern struct xkb_outline *
+XkbcAddGeomOutline(struct xkb_shape * shape, int sz_points);
 
-extern XkbcShapePtr
-XkbcAddGeomShape(XkbcGeometryPtr geom, uint32_t name, int sz_outlines);
+extern struct xkb_shape *
+XkbcAddGeomShape(struct xkb_geometry * geom, uint32_t name, int sz_outlines);
 
-extern XkbcKeyPtr
-XkbcAddGeomKey(XkbcRowPtr row);
+extern struct xkb_key *
+XkbcAddGeomKey(struct xkb_row * row);
 
-extern XkbcRowPtr
-XkbcAddGeomRow(XkbcSectionPtr section, int sz_keys);
+extern struct xkb_row *
+XkbcAddGeomRow(struct xkb_section * section, int sz_keys);
 
-extern XkbcSectionPtr
-XkbcAddGeomSection(XkbcGeometryPtr geom, uint32_t name,
+extern struct xkb_section *
+XkbcAddGeomSection(struct xkb_geometry * geom, uint32_t name,
                    int sz_rows, int sz_doodads, int sz_over);
 
-extern XkbcDoodadPtr
-XkbcAddGeomDoodad(XkbcGeometryPtr geom, XkbcSectionPtr section, uint32_t name);
+extern union xkb_doodad *
+XkbcAddGeomDoodad(struct xkb_geometry * geom, struct xkb_section * section, uint32_t name);
 
-extern XkbcOverlayKeyPtr
-XkbcAddGeomOverlayKey(XkbcOverlayPtr overlay, XkbcOverlayRowPtr row,
+extern struct xkb_overlay_key *
+XkbcAddGeomOverlayKey(struct xkb_overlay * overlay, struct xkb_overlay_row * row,
                       const char *over, const char *under);
 
-extern XkbcOverlayRowPtr
-XkbcAddGeomOverlayRow(XkbcOverlayPtr overlay, int row_under, int sz_keys);
+extern struct xkb_overlay_row *
+XkbcAddGeomOverlayRow(struct xkb_overlay * overlay, int row_under, int sz_keys);
 
-extern XkbcOverlayPtr
-XkbcAddGeomOverlay(XkbcSectionPtr section, uint32_t name, int sz_rows);
+extern struct xkb_overlay *
+XkbcAddGeomOverlay(struct xkb_section * section, uint32_t name, int sz_rows);
 
 /***====================================================================***/
 
 extern Bool
-XkbcComputeShapeBounds(XkbcShapePtr shape);
+XkbcComputeShapeBounds(struct xkb_shape * shape);
 
 extern Bool
-XkbcComputeShapeTop(XkbcShapePtr shape, XkbcBoundsPtr bounds);
+XkbcComputeShapeTop(struct xkb_shape * shape, struct xkb_bounds * bounds);
 
 extern Bool
-XkbcComputeRowBounds(XkbcGeometryPtr geom, XkbcSectionPtr section, XkbcRowPtr row);
+XkbcComputeRowBounds(struct xkb_geometry * geom, struct xkb_section * section, struct xkb_row * row);
 
 extern Bool
-XkbcComputeSectionBounds(XkbcGeometryPtr geom, XkbcSectionPtr section);
+XkbcComputeSectionBounds(struct xkb_geometry * geom, struct xkb_section * section);
 
 #endif /* _XKBGEOM_H_ */

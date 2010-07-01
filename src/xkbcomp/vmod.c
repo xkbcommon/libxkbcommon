@@ -34,12 +34,11 @@
 #include "misc.h"
 
 #include <X11/extensions/XKB.h>
-#include <X11/extensions/XKBstrcommon.h>
 
 #include "vmod.h"
 
 void
-InitVModInfo(VModInfo * info, XkbcDescPtr xkb)
+InitVModInfo(VModInfo * info, struct xkb_desc * xkb)
 {
     ClearVModInfo(info, xkb);
     info->errorCount = 0;
@@ -47,7 +46,7 @@ InitVModInfo(VModInfo * info, XkbcDescPtr xkb)
 }
 
 void
-ClearVModInfo(VModInfo * info, XkbcDescPtr xkb)
+ClearVModInfo(VModInfo * info, struct xkb_desc * xkb)
 {
     register int i;
 
@@ -84,8 +83,8 @@ HandleVModDef(VModDef * stmt, unsigned mergeMode, VModInfo * info)
 {
     register int i, bit, nextFree;
     ExprResult mod;
-    XkbcServerMapPtr srv;
-    XkbcNamesPtr names;
+    struct xkb_server_map * srv;
+    struct xkb_names * names;
 
     srv = info->xkb->server;
     names = info->xkb->names;
@@ -167,9 +166,9 @@ LookupVModIndex(char * priv,
                 uint32_t elem, uint32_t field, unsigned type, ExprResult * val_rtrn)
 {
     int i;
-    XkbcDescPtr xkb;
+    struct xkb_desc * xkb;
 
-    xkb = (XkbcDescPtr) priv;
+    xkb = (struct xkb_desc *) priv;
     if ((xkb == NULL) || (xkb->names == NULL) || (elem != None)
         || (type != TypeInt))
     {
@@ -215,7 +214,7 @@ LookupVModMask(char * priv,
 }
 
 int
-FindKeypadVMod(XkbcDescPtr xkb)
+FindKeypadVMod(struct xkb_desc * xkb)
 {
     uint32_t name;
     ExprResult rtrn;
@@ -231,7 +230,7 @@ FindKeypadVMod(XkbcDescPtr xkb)
 Bool
 ResolveVirtualModifier(ExprDef * def, ExprResult * val_rtrn, VModInfo * info)
 {
-    XkbcNamesPtr names;
+    struct xkb_names * names;
 
     names = info->xkb->names;
     if (def->op == ExprIdent)

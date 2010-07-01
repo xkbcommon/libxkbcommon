@@ -32,7 +32,7 @@ typedef union _ExprResult
     char *str;
     int ival;
     unsigned uval;
-    XkbKeyNameRec keyName;
+    struct xkb_key_name keyName;
 } ExprResult;
 
 typedef Bool(*IdentLookupFunc) (char * /* priv */ ,

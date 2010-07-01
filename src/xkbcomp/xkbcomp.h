@@ -37,8 +37,6 @@
 #include "utils.h"
 
 #include <X11/extensions/XKM.h>
-#include <X11/extensions/XKBstrcommon.h>
-#include <X11/extensions/XKBrulescommon.h>
 #include "X11/extensions/XKBcommon.h"
 #include "XKBcommonint.h"
 
@@ -340,24 +338,24 @@ typedef struct _XkbFile
 } XkbFile;
 
 extern Bool
-CompileKeymap(XkbFile *file, XkbcDescPtr xkb, unsigned merge);
+CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge);
 
 extern Bool
-CompileKeycodes(XkbFile *file, XkbcDescPtr xkb, unsigned merge);
+CompileKeycodes(XkbFile *file, struct xkb_desc * xkb, unsigned merge);
 
 extern Bool
-CompileGeometry(XkbFile *file, XkbcDescPtr xkb, unsigned merge);
+CompileGeometry(XkbFile *file, struct xkb_desc * xkb, unsigned merge);
 
 extern Bool
-CompileKeyTypes(XkbFile *file, XkbcDescPtr xkb, unsigned merge);
+CompileKeyTypes(XkbFile *file, struct xkb_desc * xkb, unsigned merge);
 
 typedef struct _LEDInfo *LEDInfoPtr;
 
 extern Bool
-CompileCompatMap(XkbFile *file, XkbcDescPtr xkb, unsigned merge,
+CompileCompatMap(XkbFile *file, struct xkb_desc * xkb, unsigned merge,
                  LEDInfoPtr *unboundLEDs);
 
 extern Bool
-CompileSymbols(XkbFile *file, XkbcDescPtr xkb, unsigned merge);
+CompileSymbols(XkbFile *file, struct xkb_desc * xkb, unsigned merge);
 
 #endif /* XKBCOMP_H */

@@ -31,7 +31,6 @@
 #include "expr.h"
 #include "parseutils.h"
 
-#include <X11/extensions/XKBfilecommon.h>
 #include <X11/keysym.h>
 #include <stdlib.h>
 
@@ -74,7 +73,7 @@ typedef struct _KeyInfo
     union xkb_action *acts[XkbNumKbdGroups];
     uint32_t types[XkbNumKbdGroups];
     unsigned repeat;
-    XkbBehavior behavior;
+    struct xkb_behavior behavior;
     unsigned short vmodmap;
     unsigned long nameForOverlayKey;
     unsigned long allowNone;
@@ -241,7 +240,7 @@ typedef struct _SymbolsInfo
 } SymbolsInfo;
 
 static void
-InitSymbolsInfo(SymbolsInfo * info, XkbcDescPtr xkb)
+InitSymbolsInfo(SymbolsInfo * info, struct xkb_desc * xkb)
 {
     register int i;
 
@@ -603,7 +602,7 @@ MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
 }
 
 static Bool
-AddKeySymbols(SymbolsInfo * info, KeyInfo * key, XkbcDescPtr xkb)
+AddKeySymbols(SymbolsInfo * info, KeyInfo * key, struct xkb_desc * xkb)
 {
     register int i;
     unsigned long real_name;
@@ -715,7 +714,7 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
 
 static void
 MergeIncludedSymbols(SymbolsInfo * into, SymbolsInfo * from,
-                     unsigned merge, XkbcDescPtr xkb)
+                     unsigned merge, struct xkb_desc * xkb)
 {
     register int i;
     KeyInfo *key;
@@ -765,14 +764,14 @@ MergeIncludedSymbols(SymbolsInfo * into, SymbolsInfo * from,
 }
 
 typedef void (*FileHandler) (XkbFile * /* rtrn */ ,
-                             XkbcDescPtr /* xkb */ ,
+                             struct xkb_desc * /* xkb */ ,
                              unsigned /* merge */ ,
                              SymbolsInfo *      /* included */
     );
 
 static Bool
 HandleIncludeSymbols(IncludeStmt * stmt,
-                     XkbcDescPtr xkb, SymbolsInfo * info, FileHandler hndlr)
+                     struct xkb_desc * xkb, SymbolsInfo * info, FileHandler hndlr)
 {
     unsigned newMerge;
     XkbFile *rtrn;
@@ -932,7 +931,7 @@ GetGroupIndex(KeyInfo * key,
 
 static Bool
 AddSymbolsToKey(KeyInfo * key,
-                XkbcDescPtr xkb,
+                struct xkb_desc * xkb,
                 char *field,
                 ExprDef * arrayNdx, ExprDef * value, SymbolsInfo * info)
 {
@@ -986,7 +985,7 @@ AddSymbolsToKey(KeyInfo * key,
 
 static Bool
 AddActionsToKey(KeyInfo * key,
-                XkbcDescPtr xkb,
+                struct xkb_desc * xkb,
                 char *field,
                 ExprDef * arrayNdx, ExprDef * value, SymbolsInfo * info)
 {
@@ -1122,7 +1121,7 @@ static LookupEntry rgEntries[] = {
 
 static Bool
 SetSymbolsField(KeyInfo * key,
-                XkbcDescPtr xkb,
+                struct xkb_desc * xkb,
                 char *field,
                 ExprDef * arrayNdx, ExprDef * value, SymbolsInfo * info)
 {
@@ -1411,7 +1410,7 @@ SetGroupName(SymbolsInfo * info, ExprDef * arrayNdx, ExprDef * value)
 }
 
 static int
-HandleSymbolsVar(VarDef * stmt, XkbcDescPtr xkb, SymbolsInfo * info)
+HandleSymbolsVar(VarDef * stmt, struct xkb_desc * xkb, SymbolsInfo * info)
 {
     ExprResult elem, field, tmp;
     ExprDef *arrayNdx;
@@ -1509,7 +1508,7 @@ HandleSymbolsVar(VarDef * stmt, XkbcDescPtr xkb, SymbolsInfo * info)
 
 static Bool
 HandleSymbolsBody(VarDef * def,
-                  XkbcDescPtr xkb, KeyInfo * key, SymbolsInfo * info)
+                  struct xkb_desc * xkb, KeyInfo * key, SymbolsInfo * info)
 {
     Bool ok = True;
     ExprResult tmp, field;
@@ -1587,7 +1586,7 @@ SetExplicitGroup(SymbolsInfo * info, KeyInfo * key)
 
 static int
 HandleSymbolsDef(SymbolsDef * stmt,
-                 XkbcDescPtr xkb, unsigned merge, SymbolsInfo * info)
+                 struct xkb_desc * xkb, unsigned merge, SymbolsInfo * info)
 {
     KeyInfo key;
 
@@ -1617,7 +1616,7 @@ HandleSymbolsDef(SymbolsDef * stmt,
 
 static Bool
 HandleModMapDef(ModMapDef * def,
-                XkbcDescPtr xkb, unsigned merge, SymbolsInfo * info)
+                struct xkb_desc * xkb, unsigned merge, SymbolsInfo * info)
 {
     ExprDef *key;
     ModMapEntry tmp;
@@ -1660,7 +1659,7 @@ HandleModMapDef(ModMapDef * def,
 
 static void
 HandleSymbolsFile(XkbFile * file,
-                  XkbcDescPtr xkb, unsigned merge, SymbolsInfo * info)
+                  struct xkb_desc * xkb, unsigned merge, SymbolsInfo * info)
 {
     ParseCommon *stmt;
 
@@ -1720,7 +1719,7 @@ HandleSymbolsFile(XkbFile * file,
 }
 
 static Bool
-FindKeyForSymbol(XkbcDescPtr xkb, uint32_t sym, unsigned int *kc_rtrn)
+FindKeyForSymbol(struct xkb_desc * xkb, uint32_t sym, unsigned int *kc_rtrn)
 {
     register int i, j;
     register Bool gotOne;
@@ -1756,7 +1755,7 @@ FindKeyForSymbol(XkbcDescPtr xkb, uint32_t sym, unsigned int *kc_rtrn)
  * @return True if found, False otherwise.
  */
 static Bool
-FindNamedType(XkbcDescPtr xkb, uint32_t name, unsigned *type_rtrn)
+FindNamedType(struct xkb_desc * xkb, uint32_t name, unsigned *type_rtrn)
 {
     register unsigned n;
 
@@ -1951,11 +1950,11 @@ PrepareKeyDef(KeyInfo * key)
  * This function recurses.
  */
 static Bool
-CopySymbolsDef(XkbcDescPtr xkb, KeyInfo *key, int start_from)
+CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
 {
     register int i;
     unsigned okc, kc, width, tmp, nGroups;
-    XkbcKeyTypePtr type;
+    struct xkb_key_type * type;
     Bool haveActions, autoType, useAlias;
     uint32_t *outSyms;
     union xkb_action *outActs;
@@ -2155,7 +2154,7 @@ CopySymbolsDef(XkbcDescPtr xkb, KeyInfo *key, int start_from)
 }
 
 static Bool
-CopyModMapDef(XkbcDescPtr xkb, ModMapEntry *entry)
+CopyModMapDef(struct xkb_desc * xkb, ModMapEntry *entry)
 {
     unsigned kc;
 
@@ -2199,7 +2198,7 @@ CopyModMapDef(XkbcDescPtr xkb, ModMapEntry *entry)
  * @param merge Merge strategy (e.g. MergeOverride).
  */
 Bool
-CompileSymbols(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
+CompileSymbols(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
 {
     register int i;
     SymbolsInfo info;

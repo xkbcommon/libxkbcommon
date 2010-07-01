@@ -48,7 +48,7 @@ static XkbFile *sections[MAX_SECTIONS];
  * XkmKeyNamesIdx, etc.)
  */
 Bool
-CompileKeymap(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
+CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
 {
     unsigned have;
     Bool ok;

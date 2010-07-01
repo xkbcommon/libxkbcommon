@@ -40,7 +40,7 @@
 typedef struct _SymInterpInfo
 {
     CommonInfo defs;
-    XkbcSymInterpretRec interp;
+    struct xkb_sym_interpret interp;
 } SymInterpInfo;
 
 #define	_SI_VirtualMod		(1<<0)
@@ -70,7 +70,7 @@ typedef struct _CompatInfo
     LEDInfo *leds;
     VModInfo vmods;
     ActionInfo *act;
-    XkbcDescPtr xkb;
+    struct xkb_desc * xkb;
 } CompatInfo;
 
 /***====================================================================***/
@@ -102,7 +102,7 @@ siText(SymInterpInfo * si, CompatInfo * info)
 }
 
 static void
-InitCompatInfo(CompatInfo * info, XkbcDescPtr xkb)
+InitCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
 {
     register int i;
 
@@ -135,7 +135,7 @@ InitCompatInfo(CompatInfo * info, XkbcDescPtr xkb)
 }
 
 static void
-ClearCompatInfo(CompatInfo * info, XkbcDescPtr xkb)
+ClearCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
 {
     register int i;
 
@@ -394,14 +394,14 @@ MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from, unsigned merge)
 }
 
 typedef void (*FileHandler) (XkbFile * /* rtrn */ ,
-                             XkbcDescPtr /* xkb */ ,
+                             struct xkb_desc * /* xkb */ ,
                              unsigned /* merge */ ,
                              CompatInfo *       /* info */
     );
 
 static Bool
 HandleIncludeCompatMap(IncludeStmt * stmt,
-                       XkbcDescPtr xkb, CompatInfo * info, FileHandler hndlr)
+                       struct xkb_desc * xkb, CompatInfo * info, FileHandler hndlr)
 {
     unsigned newMerge;
     XkbFile *rtrn;
@@ -494,7 +494,7 @@ static LookupEntry useModMapValues[] = {
 
 static int
 SetInterpField(SymInterpInfo * si,
-               XkbcDescPtr xkb,
+               struct xkb_desc * xkb,
                char *field,
                ExprDef * arrayNdx, ExprDef * value, CompatInfo * info)
 {
@@ -605,7 +605,7 @@ LookupEntry groupNames[] = {
 };
 
 static int
-HandleInterpVar(VarDef * stmt, XkbcDescPtr xkb, CompatInfo * info)
+HandleInterpVar(VarDef * stmt, struct xkb_desc * xkb, CompatInfo * info)
 {
     ExprResult elem, field;
     ExprDef *ndx;
@@ -628,7 +628,7 @@ HandleInterpVar(VarDef * stmt, XkbcDescPtr xkb, CompatInfo * info)
 }
 
 static int
-HandleInterpBody(VarDef * def, XkbcDescPtr xkb, SymInterpInfo * si,
+HandleInterpBody(VarDef * def, struct xkb_desc * xkb, SymInterpInfo * si,
                  CompatInfo * info)
 {
     int ok = 1;
@@ -651,7 +651,7 @@ HandleInterpBody(VarDef * def, XkbcDescPtr xkb, SymInterpInfo * si,
 }
 
 static int
-HandleInterpDef(InterpDef * def, XkbcDescPtr xkb, unsigned merge,
+HandleInterpDef(InterpDef * def, struct xkb_desc * xkb, unsigned merge,
                 CompatInfo * info)
 {
     unsigned pred, mods;
@@ -692,7 +692,7 @@ HandleInterpDef(InterpDef * def, XkbcDescPtr xkb, unsigned merge,
 
 static int
 HandleGroupCompatDef(GroupCompatDef * def,
-                     XkbcDescPtr xkb, unsigned merge, CompatInfo * info)
+                     struct xkb_desc * xkb, unsigned merge, CompatInfo * info)
 {
     ExprResult val;
     GroupCompatInfo tmp;
@@ -723,7 +723,7 @@ HandleGroupCompatDef(GroupCompatDef * def,
 
 static void
 HandleCompatMapFile(XkbFile * file,
-                    XkbcDescPtr xkb, unsigned merge, CompatInfo * info)
+                    struct xkb_desc * xkb, unsigned merge, CompatInfo * info)
 {
     ParseCommon *stmt;
 
@@ -793,7 +793,7 @@ HandleCompatMapFile(XkbFile * file,
 
 static void
 CopyInterps(CompatInfo * info,
-            XkbcCompatMapPtr compat, Bool needSymbol, unsigned pred)
+            struct xkb_compat_map * compat, Bool needSymbol, unsigned pred)
 {
     SymInterpInfo *si;
 
@@ -815,7 +815,7 @@ CopyInterps(CompatInfo * info,
 }
 
 Bool
-CompileCompatMap(XkbFile *file, XkbcDescPtr xkb, unsigned merge,
+CompileCompatMap(XkbFile *file, struct xkb_desc * xkb, unsigned merge,
                  LEDInfoPtr *unboundLEDs)
 {
     int i;
@@ -848,7 +848,7 @@ CompileCompatMap(XkbFile *file, XkbcDescPtr xkb, unsigned merge,
                         scanFile, info.name);
             }
         }
-        size = info.nInterps * sizeof(XkbcSymInterpretRec);
+        size = info.nInterps * sizeof(struct xkb_sym_interpret);
         if (size > 0)
         {
             CopyInterps(&info, xkb->compat, True, XkbSI_Exactly);

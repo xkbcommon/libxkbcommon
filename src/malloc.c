@@ -29,10 +29,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XKBcommonint.h"
 
 int
-XkbcAllocClientMap(XkbcDescPtr xkb, unsigned which, unsigned nTotalTypes)
+XkbcAllocClientMap(struct xkb_desc * xkb, unsigned which, unsigned nTotalTypes)
 {
     int i;
-    XkbcClientMapPtr map;
+    struct xkb_client_map * map;
 
     if (!xkb || ((nTotalTypes > 0) && (nTotalTypes < XkbNumRequiredTypes)))
         return BadValue;
@@ -49,7 +49,7 @@ XkbcAllocClientMap(XkbcDescPtr xkb, unsigned which, unsigned nTotalTypes)
     }
 
     if (!xkb->map) {
-        map = _XkbTypedCalloc(1, XkbcClientMapRec);
+        map = _XkbTypedCalloc(1, struct xkb_client_map);
         if (!map)
             return BadAlloc;
         xkb->map = map;
@@ -59,7 +59,7 @@ XkbcAllocClientMap(XkbcDescPtr xkb, unsigned which, unsigned nTotalTypes)
 
     if ((which & XkbKeyTypesMask) && (nTotalTypes > 0)) {
         if (!map->types) {
-            map->types = _XkbTypedCalloc(nTotalTypes, XkbcKeyTypeRec);
+            map->types = _XkbTypedCalloc(nTotalTypes, struct xkb_key_type);
             if (!map->types)
                 return BadAlloc;
 
@@ -67,10 +67,10 @@ XkbcAllocClientMap(XkbcDescPtr xkb, unsigned which, unsigned nTotalTypes)
             map->size_types = nTotalTypes;
         }
         else if (map->size_types < nTotalTypes) {
-            XkbcKeyTypeRec *prev_types = map->types;
+            struct xkb_key_type *prev_types = map->types;
 
             map->types = _XkbTypedRealloc(map->types, nTotalTypes,
-                                          XkbcKeyTypeRec);
+                                          struct xkb_key_type);
             if (!map->types) {
                 free(prev_types);
                 map->num_types = map->size_types = 0;
@@ -79,7 +79,7 @@ XkbcAllocClientMap(XkbcDescPtr xkb, unsigned which, unsigned nTotalTypes)
 
             map->size_types = nTotalTypes;
             bzero(&map->types[map->num_types],
-                  (map->size_types - map->num_types) * sizeof(XkbcKeyTypeRec));
+                  (map->size_types - map->num_types) * sizeof(struct xkb_key_type));
         }
     }
 
@@ -99,7 +99,7 @@ XkbcAllocClientMap(XkbcDescPtr xkb, unsigned which, unsigned nTotalTypes)
 
         if (!map->key_sym_map) {
             i = xkb->max_key_code + 1;
-            map->key_sym_map = _XkbTypedCalloc(i, XkbSymMapRec);
+            map->key_sym_map = _XkbTypedCalloc(i, struct xkb_sym_map);
             if (!map->key_sym_map)
                 return BadAlloc;
         }
@@ -123,16 +123,16 @@ XkbcAllocClientMap(XkbcDescPtr xkb, unsigned which, unsigned nTotalTypes)
 }
 
 int
-XkbcAllocServerMap(XkbcDescPtr xkb, unsigned which, unsigned nNewActions)
+XkbcAllocServerMap(struct xkb_desc * xkb, unsigned which, unsigned nNewActions)
 {
     int i;
-    XkbcServerMapPtr map;
+    struct xkb_server_map * map;
 
     if (!xkb)
         return BadMatch;
 
     if (!xkb->server) {
-        map = _XkbTypedCalloc(1, XkbcServerMapRec);
+        map = _XkbTypedCalloc(1, struct xkb_server_map);
         if (!map)
             return BadAlloc;
 
@@ -207,7 +207,7 @@ XkbcAllocServerMap(XkbcDescPtr xkb, unsigned which, unsigned nNewActions)
 
         if (!map->behaviors) {
             i = xkb->max_key_code + 1;
-            map->behaviors = _XkbTypedCalloc(i, XkbBehavior);
+            map->behaviors = _XkbTypedCalloc(i, struct xkb_behavior);
             if (!map->behaviors)
                 return BadAlloc;
         }
@@ -231,7 +231,7 @@ XkbcAllocServerMap(XkbcDescPtr xkb, unsigned which, unsigned nNewActions)
 }
 
 int
-XkbcCopyKeyType(XkbcKeyTypePtr from, XkbcKeyTypePtr into)
+XkbcCopyKeyType(struct xkb_key_type * from, struct xkb_key_type * into)
 {
     if (!from || !into)
         return BadMatch;
@@ -252,19 +252,19 @@ XkbcCopyKeyType(XkbcKeyTypePtr from, XkbcKeyTypePtr into)
     *into = *from;
 
     if (from->map && (into->map_count > 0)) {
-        into->map = _XkbTypedCalloc(into->map_count, XkbcKTMapEntryRec);
+        into->map = _XkbTypedCalloc(into->map_count, struct xkb_kt_map_entry);
         if (!into->map)
             return BadAlloc;
         memcpy(into->map, from->map,
-               into->map_count * sizeof(XkbcKTMapEntryRec));
+               into->map_count * sizeof(struct xkb_kt_map_entry));
     }
 
     if (from->preserve && (into->map_count > 0)) {
-        into->preserve = _XkbTypedCalloc(into->map_count, XkbcModsRec);
+        into->preserve = _XkbTypedCalloc(into->map_count, struct xkb_mods);
         if (!into->preserve)
             return BadAlloc;
         memcpy(into->preserve, from->preserve,
-               into->map_count * sizeof(XkbcModsRec));
+               into->map_count * sizeof(struct xkb_mods));
     }
 
     if (from->level_names && (into->num_levels > 0)) {
@@ -279,7 +279,7 @@ XkbcCopyKeyType(XkbcKeyTypePtr from, XkbcKeyTypePtr into)
 }
 
 int
-XkbcCopyKeyTypes(XkbcKeyTypePtr from, XkbcKeyTypePtr into, int num_types)
+XkbcCopyKeyTypes(struct xkb_key_type * from, struct xkb_key_type * into, int num_types)
 {
     int i, rtrn;
 
@@ -295,10 +295,10 @@ XkbcCopyKeyTypes(XkbcKeyTypePtr from, XkbcKeyTypePtr into, int num_types)
 }
 
 int
-XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
+XkbcResizeKeyType(struct xkb_desc * xkb, int type_ndx, int map_count,
                   Bool want_preserve, int new_num_lvls)
 {
-    XkbcKeyTypePtr type;
+    struct xkb_key_type * type;
     KeyCode matchingKeys[XkbMaxKeyCount], nMatchingKeys;
 
     if ((type_ndx < 0) || (type_ndx >= xkb->map->num_types) ||
@@ -330,11 +330,11 @@ XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
         type->map_count = 0;
     }
     else {
-        XkbcKTMapEntryRec *prev_map = type->map;
+        struct xkb_kt_map_entry *prev_map = type->map;
 
         if ((map_count > type->map_count) || !type->map)
             type->map = _XkbTypedRealloc(type->map, map_count,
-                                         XkbcKTMapEntryRec);
+                                         struct xkb_kt_map_entry);
         if (!type->map) {
             if (prev_map)
                 free(prev_map);
@@ -342,11 +342,11 @@ XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
         }
 
         if (want_preserve) {
-            XkbcModsRec *prev_preserve = type->preserve;
+            struct xkb_mods *prev_preserve = type->preserve;
 
             if ((map_count > type->map_count) || !type->preserve)
                 type->preserve = _XkbTypedRealloc(type->preserve, map_count,
-                                                  XkbcModsRec);
+                                                  struct xkb_mods);
             if (!type->preserve) {
                 if (prev_preserve)
                     free(prev_preserve);
@@ -514,7 +514,7 @@ XkbcResizeKeyType(XkbcDescPtr xkb, int type_ndx, int map_count,
 }
 
 uint32_t *
-XkbcResizeKeySyms(XkbcDescPtr xkb, int key, int needed)
+XkbcResizeKeySyms(struct xkb_desc * xkb, int key, int needed)
 {
     int i, nSyms, nKeySyms;
     unsigned nOldSyms;
@@ -602,8 +602,8 @@ _ExtendRange(unsigned int old_flags, unsigned int flag, KeyCode newKC,
 }
 
 int
-XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
-                       XkbChangesPtr changes)
+XkbcChangeKeycodeRange(struct xkb_desc * xkb, int minKC, int maxKC,
+                       struct xkb_changes * changes)
 {
     int tmp;
 
@@ -621,7 +621,7 @@ XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
         if (xkb->map)  {
             if (xkb->map->key_sym_map) {
                 bzero(&xkb->map->key_sym_map[minKC],
-                      tmp * sizeof(XkbSymMapRec));
+                      tmp * sizeof(struct xkb_sym_map));
                 if (changes)
                     changes->map.changed = _ExtendRange(changes->map.changed,
                                                 XkbKeySymsMask, minKC,
@@ -642,7 +642,7 @@ XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
         if (xkb->server) {
             if (xkb->server->behaviors) {
                 bzero(&xkb->server->behaviors[minKC],
-                      tmp * sizeof(XkbBehavior));
+                      tmp * sizeof(struct xkb_behavior));
                 if (changes)
                     changes->map.changed = _ExtendRange(changes->map.changed,
                                                 XkbKeyBehaviorsMask, minKC,
@@ -672,7 +672,7 @@ XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
         }
 
         if (xkb->names && xkb->names->keys) {
-            bzero(&xkb->names->keys[minKC], tmp * sizeof(XkbKeyNameRec));
+            bzero(&xkb->names->keys[minKC], tmp * sizeof(struct xkb_key_name));
             if (changes)
                 changes->names.changed = _ExtendRange(changes->names.changed,
                                                 XkbKeyNamesMask, minKC,
@@ -690,18 +690,18 @@ XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
 
         if (xkb->map) {
             if (xkb->map->key_sym_map) {
-                XkbSymMapRec *prev_key_sym_map = xkb->map->key_sym_map;
+                struct xkb_sym_map *prev_key_sym_map = xkb->map->key_sym_map;
 
                 xkb->map->key_sym_map = _XkbTypedRealloc(xkb->map->key_sym_map,
                                                          maxKC + 1,
-                                                         XkbSymMapRec);
+                                                         struct xkb_sym_map);
                 if (!xkb->map->key_sym_map) {
                     free(prev_key_sym_map);
                     return BadAlloc;
                 }
 
                 bzero(&xkb->map->key_sym_map[xkb->max_key_code],
-                      tmp * sizeof(XkbSymMapRec));
+                      tmp * sizeof(struct xkb_sym_map));
                 if (changes)
                     changes->map.changed = _ExtendRange(changes->map.changed,
                                                     XkbKeySymsMask, maxKC,
@@ -730,18 +730,18 @@ XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
 
         if (xkb->server) {
             if (xkb->server->behaviors) {
-                XkbBehavior *prev_behaviors = xkb->server->behaviors;
+                struct xkb_behavior *prev_behaviors = xkb->server->behaviors;
 
                 xkb->server->behaviors = _XkbTypedRealloc(xkb->server->behaviors,
                                                           maxKC + 1,
-                                                          XkbBehavior);
+                                                          struct xkb_behavior);
                 if (!xkb->server->behaviors) {
                     free(prev_behaviors);
                     return BadAlloc;
                 }
 
                 bzero(&xkb->server->behaviors[xkb->max_key_code],
-                      tmp * sizeof(XkbBehavior));
+                      tmp * sizeof(struct xkb_behavior));
                 if (changes)
                     changes->map.changed = _ExtendRange(changes->map.changed,
                                                 XkbKeyBehaviorsMask, maxKC,
@@ -791,17 +791,17 @@ XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
         }
 
         if (xkb->names && xkb->names->keys ) {
-            XkbKeyNameRec *prev_keys = xkb->names->keys;
+            struct xkb_key_name *prev_keys = xkb->names->keys;
 
             xkb->names->keys = _XkbTypedRealloc(xkb->names->keys, maxKC + 1,
-                                                XkbKeyNameRec);
+                                                struct xkb_key_name);
             if (!xkb->names->keys) {
                 free(prev_keys);
                 return BadAlloc;
             }
 
             bzero(&xkb->names->keys[xkb->max_key_code],
-                  tmp * sizeof(XkbKeyNameRec));
+                  tmp * sizeof(struct xkb_key_name));
             if (changes)
                 changes->names.changed = _ExtendRange(changes->names.changed,
                                                 XkbKeyNamesMask, maxKC,
@@ -816,7 +816,7 @@ XkbcChangeKeycodeRange(XkbcDescPtr xkb, int minKC, int maxKC,
 }
 
 union xkb_action *
-XkbcResizeKeyActions(XkbcDescPtr xkb, int key, int needed)
+XkbcResizeKeyActions(struct xkb_desc * xkb, int key, int needed)
 {
     int i, nActs;
     union xkb_action *newActs;
@@ -876,9 +876,9 @@ XkbcResizeKeyActions(XkbcDescPtr xkb, int key, int needed)
 }
 
 void
-XkbcFreeClientMap(XkbcDescPtr xkb, unsigned what, Bool freeMap)
+XkbcFreeClientMap(struct xkb_desc * xkb, unsigned what, Bool freeMap)
 {
-    XkbcClientMapPtr map;
+    struct xkb_client_map * map;
 
     if (!xkb || !xkb->map)
         return;
@@ -891,7 +891,7 @@ XkbcFreeClientMap(XkbcDescPtr xkb, unsigned what, Bool freeMap)
         if (map->types) {
             if (map->num_types > 0) {
                 int i;
-                XkbcKeyTypePtr type;
+                struct xkb_key_type * type;
 
                 for (i = 0, type = map->types; i < map->num_types; i++, type++) {
                     if (type->map) {
@@ -939,9 +939,9 @@ XkbcFreeClientMap(XkbcDescPtr xkb, unsigned what, Bool freeMap)
 }
 
 void
-XkbcFreeServerMap(XkbcDescPtr xkb, unsigned what, Bool freeMap)
+XkbcFreeServerMap(struct xkb_desc * xkb, unsigned what, Bool freeMap)
 {
-    XkbcServerMapPtr map;
+    struct xkb_server_map * map;
 
     if (!xkb || !xkb->server)
         return;

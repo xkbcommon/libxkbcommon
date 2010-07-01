@@ -30,13 +30,11 @@ authorization from the authors.
 #include <stdio.h>
 #include <X11/X.h>
 #include <X11/Xdefs.h>
-#include <X11/extensions/XKBstrcommon.h>
-#include <X11/extensions/XKBrulescommon.h>
 #include "X11/extensions/XKBcommon.h"
 
 extern Bool
 XkbcRF_GetComponents(XkbRF_RulesPtr rules, XkbRF_VarDefsPtr defs,
-                     XkbComponentNamesPtr names);
+                     struct xkb_component_names * names);
 
 extern XkbRF_RulePtr
 XkbcRF_AddRule(XkbRF_RulesPtr rules);

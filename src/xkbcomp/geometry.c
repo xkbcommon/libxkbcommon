@@ -62,9 +62,9 @@ typedef struct _ShapeInfo
     short index;
     unsigned short nOutlines;
     unsigned short szOutlines;
-    XkbcOutlinePtr outlines;
-    XkbcOutlinePtr approx;
-    XkbcOutlinePtr primary;
+    struct xkb_outline * outlines;
+    struct xkb_outline * approx;
+    struct xkb_outline * primary;
     int dfltCornerRadius;
 } ShapeInfo;
 
@@ -1317,13 +1317,13 @@ MergeIncludedGeometry(GeometryInfo * into, GeometryInfo * from,
 }
 
 typedef void (*FileHandler) (XkbFile * /* file */ ,
-                             XkbcDescPtr /* xkb */ ,
+                             struct xkb_desc * /* xkb */ ,
                              unsigned /* merge */ ,
                              GeometryInfo *     /* info */
     );
 
 static Bool
-HandleIncludeGeometry(IncludeStmt * stmt, XkbcDescPtr xkb, GeometryInfo * info,
+HandleIncludeGeometry(IncludeStmt * stmt, struct xkb_desc * xkb, GeometryInfo * info,
                       FileHandler hndlr)
 {
     unsigned newMerge;
@@ -2113,7 +2113,7 @@ SetGeometryProperty(GeometryInfo * info, char *property, ExprDef * value)
 }
 
 static int
-HandleGeometryVar(VarDef * stmt, XkbcDescPtr xkb, GeometryInfo * info)
+HandleGeometryVar(VarDef * stmt, struct xkb_desc * xkb, GeometryInfo * info)
 {
     ExprResult elem, field, tmp;
     ExprDef *ndx;
@@ -2398,7 +2398,7 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
 {
     OutlineDef *ol;
     int nOut, nPt;
-    XkbcOutlinePtr outline;
+    struct xkb_outline * outline;
     ExprDef *pt;
 
     if (def->nOutlines < 1)
@@ -2408,7 +2408,7 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
         return True;
     }
     si->nOutlines = def->nOutlines;
-    si->outlines = uTypedCalloc(def->nOutlines, XkbcOutlineRec);
+    si->outlines = uTypedCalloc(def->nOutlines, struct xkb_outline);
     if (!si->outlines)
     {
         ERROR("Couldn't allocate outlines for \"%s\"\n", shText(si));
@@ -2428,7 +2428,7 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
         outline = &si->outlines[nOut++];
         outline->num_points = ol->nPoints;
         outline->corner_radius = si->dfltCornerRadius;
-        outline->points = uTypedCalloc(ol->nPoints, XkbcPointRec);
+        outline->points = uTypedCalloc(ol->nPoints, struct xkb_point);
         if (!outline->points)
         {
             ERROR("Can't allocate points for \"%s\"\n", shText(si));
@@ -2488,7 +2488,7 @@ HandleShapeBody(ShapeDef * def, ShapeInfo * si, unsigned merge,
 }
 
 static int
-HandleShapeDef(ShapeDef * def, XkbcDescPtr xkb, unsigned merge,
+HandleShapeDef(ShapeDef * def, struct xkb_desc * xkb, unsigned merge,
                GeometryInfo * info)
 {
     ShapeInfo si;
@@ -2822,7 +2822,7 @@ HandleSectionBody(SectionDef * def,
 
 static int
 HandleSectionDef(SectionDef * def,
-                 XkbcDescPtr xkb, unsigned merge, GeometryInfo * info)
+                 struct xkb_desc * xkb, unsigned merge, GeometryInfo * info)
 {
     SectionInfo si;
 
@@ -2842,7 +2842,7 @@ HandleSectionDef(SectionDef * def,
 
 static void
 HandleGeometryFile(XkbFile * file,
-                   XkbcDescPtr xkb, unsigned merge, GeometryInfo * info)
+                   struct xkb_desc * xkb, unsigned merge, GeometryInfo * info)
 {
     ParseCommon *stmt;
     char *failWhat;
@@ -2922,11 +2922,11 @@ HandleGeometryFile(XkbFile * file,
 /***====================================================================***/
 
 static Bool
-CopyShapeDef(XkbcGeometryPtr geom, ShapeInfo * si)
+CopyShapeDef(struct xkb_geometry * geom, ShapeInfo * si)
 {
     register int i, n;
-    XkbcShapePtr shape;
-    XkbcOutlinePtr old_outline, outline;
+    struct xkb_shape * shape;
+    struct xkb_outline *old_outline, *outline;
     uint32_t name;
 
     si->index = geom->num_shapes;
@@ -2949,7 +2949,7 @@ CopyShapeDef(XkbcGeometryPtr geom, ShapeInfo * si)
             return False;
         }
         n = old_outline->num_points;
-        memcpy(outline->points, old_outline->points, n * sizeof(XkbcPointRec));
+        memcpy(outline->points, old_outline->points, n * sizeof(struct xkb_point));
         outline->num_points = old_outline->num_points;
         outline->corner_radius = old_outline->corner_radius;
     }
@@ -3284,13 +3284,13 @@ FontFromParts(uint32_t fontTok,
 }
 
 static Bool
-CopyDoodadDef(XkbcGeometryPtr geom,
-              XkbcSectionPtr section, DoodadInfo * di, GeometryInfo * info)
+CopyDoodadDef(struct xkb_geometry * geom,
+              struct xkb_section * section, DoodadInfo * di, GeometryInfo * info)
 {
     uint32_t name;
-    XkbcDoodadPtr doodad;
-    XkbcColorPtr color;
-    XkbcShapePtr shape;
+    union xkb_doodad * doodad;
+    struct xkb_color * color;
+    struct xkb_shape * shape;
     ShapeInfo *si;
 
     if (!VerifyDoodadInfo(di, info))
@@ -3372,15 +3372,15 @@ CopyDoodadDef(XkbcGeometryPtr geom,
 /***====================================================================***/
 
 static Bool
-VerifyOverlayInfo(XkbcGeometryPtr geom,
-                  XkbcSectionPtr section,
+VerifyOverlayInfo(struct xkb_geometry * geom,
+                  struct xkb_section * section,
                   OverlayInfo * oi,
                   GeometryInfo * info, short rowMap[256], short rowSize[256])
 {
     register OverlayKeyInfo *ki, *next;
     unsigned long oKey, uKey, sKey;
-    XkbcRowPtr row;
-    XkbcKeyPtr key;
+    struct xkb_row * row;
+    struct xkb_key * key;
     int r, k;
 
     /* find out which row each key is in */
@@ -3469,13 +3469,13 @@ VerifyOverlayInfo(XkbcGeometryPtr geom,
 }
 
 static Bool
-CopyOverlayDef(XkbcGeometryPtr geom,
-               XkbcSectionPtr section, OverlayInfo * oi, GeometryInfo * info)
+CopyOverlayDef(struct xkb_geometry * geom,
+               struct xkb_section * section, OverlayInfo * oi, GeometryInfo * info)
 {
     uint32_t name;
-    XkbcOverlayPtr ol;
-    XkbcOverlayRowPtr row;
-    XkbcOverlayKeyPtr key;
+    struct xkb_overlay * ol;
+    struct xkb_overlay_row * row;
+    struct xkb_overlay_key * key;
     OverlayKeyInfo *ki;
     short rowMap[256], rowSize[256];
     int i;
@@ -3511,7 +3511,7 @@ CopyOverlayDef(XkbcGeometryPtr geom,
     {
         row = &ol->rows[ki->overlayRow];
         key = &row->keys[row->num_keys++];
-        bzero(key, sizeof(XkbcOverlayKeyRec));
+        bzero(key, sizeof(struct xkb_overlay_key));
         strncpy(key->over.name, ki->over, XkbKeyNameLength);
         strncpy(key->under.name, ki->under, XkbKeyNameLength);
     }
@@ -3521,11 +3521,11 @@ CopyOverlayDef(XkbcGeometryPtr geom,
 /***====================================================================***/
 
 static Bool
-CopySectionDef(XkbcGeometryPtr geom, SectionInfo * si, GeometryInfo * info)
+CopySectionDef(struct xkb_geometry * geom, SectionInfo * si, GeometryInfo * info)
 {
-    XkbcSectionPtr section;
-    XkbcRowPtr row;
-    XkbcKeyPtr key;
+    struct xkb_section * section;
+    struct xkb_row * row;
+    struct xkb_key * key;
     KeyInfo *ki;
     RowInfo *ri;
 
@@ -3557,7 +3557,7 @@ CopySectionDef(XkbcGeometryPtr geom, SectionInfo * si, GeometryInfo * info)
         row->vertical = ri->vertical;
         for (ki = ri->keys; ki != NULL; ki = (KeyInfo *) ki->defs.next)
         {
-            XkbcColorPtr color;
+            struct xkb_color * color;
             if ((ki->defs.defined & _GK_Name) == 0)
             {
                 ERROR("Key %d of row %d in section %s has no name\n",
@@ -3624,7 +3624,7 @@ CopySectionDef(XkbcGeometryPtr geom, SectionInfo * si, GeometryInfo * info)
 /***====================================================================***/
 
 Bool
-CompileGeometry(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
+CompileGeometry(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
 {
     GeometryInfo info;
 
@@ -3633,8 +3633,8 @@ CompileGeometry(XkbFile *file, XkbcDescPtr xkb, unsigned merge)
 
     if (info.errorCount == 0)
     {
-        XkbcGeometryPtr geom;
-        XkbcGeometrySizesRec sizes;
+        struct xkb_geometry * geom;
+        struct xkb_geometry_sizes sizes;
         bzero(&sizes, sizeof(sizes));
         sizes.which = XkbGeomAllMask;
         sizes.num_properties = info.nProps;

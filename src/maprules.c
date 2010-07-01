@@ -600,7 +600,7 @@ Apply(char *src, char **dst)
 
 static void
 XkbRF_ApplyRule(	XkbRF_RulePtr 		rule,
-			XkbComponentNamesPtr	names)
+			struct xkb_component_names *	names)
 {
     rule->flags&= ~XkbRF_PendingMatch; /* clear the flag because it's applied */
 
@@ -639,7 +639,7 @@ CheckGroup(	XkbRF_RulesPtr          rules,
 static int
 XkbRF_CheckApplyRule(	XkbRF_RulePtr 		rule,
 			XkbRF_MultiDefsPtr	mdefs,
-			XkbComponentNamesPtr	names,
+			struct xkb_component_names *	names,
 			XkbRF_RulesPtr          rules)
 {
     Bool pending = False;
@@ -722,7 +722,7 @@ XkbRF_RulePtr	rule;
 }
 
 static void
-XkbRF_ApplyPartialMatches(XkbRF_RulesPtr rules,XkbComponentNamesPtr names)
+XkbRF_ApplyPartialMatches(XkbRF_RulesPtr rules,struct xkb_component_names * names)
 {
 int		i;
 XkbRF_RulePtr	rule;
@@ -737,7 +737,7 @@ XkbRF_RulePtr	rule;
 static void
 XkbRF_CheckApplyRules(	XkbRF_RulesPtr 		rules,
 			XkbRF_MultiDefsPtr	mdefs,
-			XkbComponentNamesPtr	names,
+			struct xkb_component_names *	names,
 			int			flags)
 {
 int		i;
@@ -856,13 +856,13 @@ int	len, ndx;
 Bool
 XkbcRF_GetComponents(	XkbRF_RulesPtr		rules,
 			XkbRF_VarDefsPtr	defs,
-			XkbComponentNamesPtr	names)
+			struct xkb_component_names *	names)
 {
     XkbRF_MultiDefsRec mdefs;
 
     MakeMultiDefs(&mdefs, defs);
 
-    bzero((char *)names,sizeof(XkbComponentNamesRec));
+    bzero((char *)names,sizeof(struct xkb_component_names));
     XkbRF_ClearPartialMatches(rules);
     XkbRF_CheckApplyRules(rules, &mdefs, names, XkbRF_Normal);
     XkbRF_ApplyPartialMatches(rules, names);

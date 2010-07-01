@@ -373,7 +373,7 @@ static KeyNameDesc dfltKeys[] = {
 };
 
 int
-ComputeKbdDefaults(XkbcDescPtr xkb)
+ComputeKbdDefaults(struct xkb_desc * xkb)
 {
     int rtrn;
     register int i, tmp, nUnknown;
@@ -459,7 +459,7 @@ ComputeKbdDefaults(XkbcDescPtr xkb)
  * @return True if found, False otherwise.
  */
 Bool
-FindNamedKey(XkbcDescPtr xkb,
+FindNamedKey(struct xkb_desc * xkb,
              unsigned long name,
              unsigned int *kc_rtrn,
              Bool use_aliases, Bool create, int start_from)
@@ -532,7 +532,7 @@ FindNamedKey(XkbcDescPtr xkb,
 }
 
 Bool
-FindKeyNameForAlias(XkbcDescPtr xkb, unsigned long lname,
+FindKeyNameForAlias(struct xkb_desc * xkb, unsigned long lname,
                     unsigned long *real_name)
 {
     register int i;
@@ -540,7 +540,7 @@ FindKeyNameForAlias(XkbcDescPtr xkb, unsigned long lname,
 
     if (xkb && xkb->geom && xkb->geom->key_aliases)
     {
-        XkbKeyAliasPtr a;
+        struct xkb_key_alias * a;
         a = xkb->geom->key_aliases;
         LongToKeyName(lname, name);
         name[XkbKeyNameLength] = '\0';
@@ -555,7 +555,7 @@ FindKeyNameForAlias(XkbcDescPtr xkb, unsigned long lname,
     }
     if (xkb && xkb->names && xkb->names->key_aliases)
     {
-        XkbKeyAliasPtr a;
+        struct xkb_key_alias * a;
         a = xkb->names->key_aliases;
         LongToKeyName(lname, name);
         name[XkbKeyNameLength] = '\0';
