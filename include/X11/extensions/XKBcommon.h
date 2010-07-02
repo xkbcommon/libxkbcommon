@@ -68,13 +68,13 @@ typedef unsigned char KeyCode;
 typedef int Bool;
 #endif
 
-typedef struct _XkbRMLVOSet {
+struct xkb_rule_names {
     char *  rules;
     char *  model;
     char *  layout;
     char *  variant;
     char *  options;
-} XkbRMLVOSet;
+};
 
 #define XkbcAnyActionDataSize 18
 struct xkb_any_action {
@@ -760,7 +760,7 @@ _X_EXPORT extern void
 xkb_init_atoms(InternAtomFuncPtr intern, GetAtomValueFuncPtr get_atom_value);
 
 _X_EXPORT extern struct xkb_desc *
-xkb_compile_keymap_from_rules(const XkbRMLVOSet *rmlvo);
+xkb_compile_keymap_from_rules(const struct xkb_rule_names *rules);
 
 _X_EXPORT extern struct xkb_desc *
 xkb_compile_keymap_from_components(const struct xkb_component_names * ktcsg);

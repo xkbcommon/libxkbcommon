@@ -33,7 +33,7 @@ authorization from the authors.
 
 int main(int argc, char *argv[])
 {
-    XkbRMLVOSet rmlvo;
+    struct xkb_rule_names rmlvo;
     struct xkb_desc * xkb;
 
     /* Require rmlvo */

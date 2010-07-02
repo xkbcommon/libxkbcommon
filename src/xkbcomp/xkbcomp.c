@@ -136,7 +136,7 @@ out:
 }
 
 struct xkb_desc *
-xkb_compile_keymap_from_rules(const XkbRMLVOSet *rmlvo)
+xkb_compile_keymap_from_rules(const struct xkb_rule_names *rmlvo)
 {
     XkbRF_VarDefsRec defs;
     struct xkb_component_names * names;
