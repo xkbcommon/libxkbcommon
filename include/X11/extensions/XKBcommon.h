@@ -76,10 +76,9 @@ struct xkb_rule_names {
     char *  options;
 };
 
-#define XkbcAnyActionDataSize 18
 struct xkb_any_action {
     unsigned char   type;
-    unsigned char   pad[XkbcAnyActionDataSize];
+    unsigned char   pad[18];
 };
 
 struct xkb_mod_action {
@@ -371,8 +370,6 @@ struct xkb_bounds {
 	short	x1,y1;
 	short	x2,y2;
 };
-#define	XkbBoundsWidth(b)	(((b)->x2)-((b)->x1))
-#define	XkbBoundsHeight(b)	(((b)->y2)-((b)->y1))
 
 struct xkb_outline {
 	unsigned short	num_points;
@@ -390,7 +387,6 @@ struct xkb_shape {
 	struct xkb_outline *	 primary;
 	struct xkb_bounds	 bounds;
 };
-#define	XkbOutlineIndex(s,o)	((int)((o)-&(s)->outlines[0]))
 
 struct xkb_shape_doodad {
 	uint32_t		 name;

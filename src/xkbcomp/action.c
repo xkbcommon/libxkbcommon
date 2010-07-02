@@ -1200,7 +1200,7 @@ HandlePrivate(struct xkb_desc * xkb,
                     ACTION("Extra %d bytes ignored\n", len - 6);
                     return False;
                 }
-                strncpy((char *) action->pad, rtrn.str, XkbcAnyActionDataSize);
+                strncpy((char *) action->pad, rtrn.str, sizeof action->pad);
             }
             free(rtrn.str);
             return True;
@@ -1215,7 +1215,7 @@ HandlePrivate(struct xkb_desc * xkb,
                 return False;
             }
             ndx = rtrn.uval;
-            if (ndx >= XkbcAnyActionDataSize)
+            if (ndx >= sizeof action->pad)
             {
                 ERROR("The data for a private action is 18 bytes long\n");
                 ACTION("Attempt to use data[%d] ignored\n", ndx);
