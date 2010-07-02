@@ -64,10 +64,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 typedef unsigned char KeyCode;
 #endif
 
-#ifndef _XTYPEDEF_BOOL
-typedef int Bool;
-#endif
-
 struct xkb_rule_names {
     char *  rules;
     char *  model;
@@ -215,7 +211,7 @@ struct xkb_mods {
 };
 
 struct xkb_kt_map_entry {
-        Bool            active;
+        int            active;
         uint16_t        level;
         struct xkb_mods     mods;
 };
@@ -679,7 +675,7 @@ struct xkb_map_changes {
 struct xkb_controls_changes {
 	unsigned int 		 changed_ctrls;
 	unsigned int		 enabled_ctrls_changes;
-	Bool			 num_groups_changed;
+	int			 num_groups_changed;
 };
 
 struct xkb_indicator_changes {
