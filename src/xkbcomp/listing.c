@@ -478,7 +478,7 @@ GenerateComponent(struct xkb_component_list * complist, unsigned type, char *hea
 /***====================================================================***/
 
 struct xkb_component_list *
-XkbcListComponents(struct xkb_component_names * ptrns, int *maxMatch)
+xkb_list_components(struct xkb_component_names * ptrns, int *maxMatch)
 {
     struct xkb_component_list * complist = NULL;
     int extra = 0;

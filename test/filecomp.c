@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    xkb = XkbcCompileKeymapFromFile(file, name);
+    xkb = xkb_compile_keymap_from_file(file, name);
     fclose(file);
 
     if (!xkb) {

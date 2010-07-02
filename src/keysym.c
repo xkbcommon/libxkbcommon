@@ -38,7 +38,7 @@ authorization from the authors.
 #include "ks_tables.h"
 
 char *
-XkbcKeysymToString(uint32_t ks)
+xkb_keysym_to_string(uint32_t ks)
 {
     int i, n, h, idx;
     const unsigned char *entry;
@@ -92,7 +92,7 @@ XkbcKeysymToString(uint32_t ks)
 }
 
 uint32_t
-XkbcStringToKeysym(const char *s)
+xkb_string_to_keysym(const char *s)
 {
     int i, n, h, c, idx;
     unsigned long sig = 0;

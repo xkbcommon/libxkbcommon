@@ -885,19 +885,19 @@ typedef uint32_t (*InternAtomFuncPtr)(const char *val);
 typedef const char *(*GetAtomValueFuncPtr)(uint32_t atom);
 
 _X_EXPORT extern void
-XkbcInitAtoms(InternAtomFuncPtr intern, GetAtomValueFuncPtr get_atom_value);
+xkb_init_atoms(InternAtomFuncPtr intern, GetAtomValueFuncPtr get_atom_value);
 
 _X_EXPORT extern struct xkb_desc *
-XkbcCompileKeymapFromRules(const XkbRMLVOSet *rmlvo);
+xkb_compile_keymap_from_rules(const XkbRMLVOSet *rmlvo);
 
 _X_EXPORT extern struct xkb_desc *
-XkbcCompileKeymapFromComponents(const struct xkb_component_names * ktcsg);
+xkb_compile_keymap_from_components(const struct xkb_component_names * ktcsg);
 
 _X_EXPORT extern struct xkb_desc *
-XkbcCompileKeymapFromFile(FILE *inputFile, const char *mapName);
+xkb_compile_keymap_from_file(FILE *inputFile, const char *mapName);
 
 _X_EXPORT extern struct xkb_component_list *
-XkbcListComponents(struct xkb_component_names * ptrns, int *maxMatch);
+xkb_list_components(struct xkb_component_names * ptrns, int *maxMatch);
 
 /*
  * Canonicalises component names by prepending the relevant component from
@@ -914,7 +914,7 @@ XkbcListComponents(struct xkb_component_names * ptrns, int *maxMatch);
  * free()d, and a new one allocated with malloc().
  */
 _X_EXPORT extern void
-XkbcCanonicaliseComponents(struct xkb_component_names * names,
+xkb_canonicalise_components(struct xkb_component_names * names,
                            const struct xkb_component_names * old);
 
 /*
@@ -922,21 +922,21 @@ XkbcCanonicaliseComponents(struct xkb_component_names * names,
  * as "Ua1b2", and other unknown keysyms as "0xabcd1234".
  *
  * The string returned may become invalidated after the next call to
- * XkbcKeysymToString: if you need to preserve it, then you must
+ * xkb_keysym_to_string: if you need to preserve it, then you must
  * duplicate it.
  *
  * This is uint32_t rather than KeySym, as KeySym changes size between
  * client and server (no, really).
  */
 _X_EXPORT extern char *
-XkbcKeysymToString(uint32_t ks);
+xkb_keysym_to_string(uint32_t ks);
 
 /*
- * See XkbcKeysymToString comments: this function will accept any string
+ * See xkb_keysym_to_string comments: this function will accept any string
  * from that function.
  */
 _X_EXPORT extern uint32_t
-XkbcStringToKeysym(const char *s);
+xkb_string_to_keysym(const char *s);
 
 _XFUNCPROTOEND
 

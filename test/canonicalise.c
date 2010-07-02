@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
         old->types = strdup(argv[10]);
     }
 
-    XkbcCanonicaliseComponents(new, old);
+    xkb_canonicalise_components(new, old);
 
     printf("%s %s %s %s %s\n", new->keycodes, new->compat, new->geometry,
            new->symbols, new->types);

@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     ktcsg.symbols = argv[4];
     ktcsg.geometry = argv[5];
 
-    xkb = XkbcCompileKeymapFromComponents(&ktcsg);
+    xkb = xkb_compile_keymap_from_components(&ktcsg);
 
     if (!xkb) {
         fprintf(stderr, "Failed to compile keymap\n");

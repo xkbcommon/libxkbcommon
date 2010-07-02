@@ -1055,7 +1055,7 @@ ExprResolveKeySym(ExprDef * expr,
     {
         const char *str;
         str = XkbcAtomText(expr->value.str);
-        if ((str != NULL) && ((sym = XkbcStringToKeysym(str)) != NoSymbol))
+        if ((str != NULL) && ((sym = xkb_string_to_keysym(str)) != NoSymbol))
         {
             val_rtrn->uval = sym;
             return True;

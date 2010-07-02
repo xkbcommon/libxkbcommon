@@ -6,7 +6,7 @@
 
 static void print_keysym(const char *s)
 {
-    KeySym ks = XkbcStringToKeysym(s);
+    KeySym ks = xkb_string_to_keysym(s);
     if (ks == NoSymbol)
         printf("NoSymbol\n");
     else
@@ -15,7 +15,7 @@ static void print_keysym(const char *s)
 
 static void print_string(KeySym ks)
 {
-    char *s = XkbcKeysymToString(ks);
+    char *s = xkb_keysym_to_string(ks);
     printf("%s\n", s ? s : "NULL");
 }
 

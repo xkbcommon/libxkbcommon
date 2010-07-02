@@ -96,7 +96,7 @@ InternAtomFuncPtr do_intern_atom = NULL;
 GetAtomValueFuncPtr do_get_atom_value = NULL;
 
 void
-XkbcInitAtoms(InternAtomFuncPtr intern, GetAtomValueFuncPtr get_atom_value)
+xkb_init_atoms(InternAtomFuncPtr intern, GetAtomValueFuncPtr get_atom_value)
 {
     if (intern && get_atom_value) {
         if (do_intern_atom && do_get_atom_value)

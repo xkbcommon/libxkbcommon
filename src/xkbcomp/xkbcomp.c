@@ -136,7 +136,7 @@ out:
 }
 
 struct xkb_desc *
-XkbcCompileKeymapFromRules(const XkbRMLVOSet *rmlvo)
+xkb_compile_keymap_from_rules(const XkbRMLVOSet *rmlvo)
 {
     XkbRF_VarDefsRec defs;
     struct xkb_component_names * names;
@@ -159,7 +159,7 @@ XkbcCompileKeymapFromRules(const XkbRMLVOSet *rmlvo)
         return NULL;
     }
 
-    xkb = XkbcCompileKeymapFromComponents(names);
+    xkb = xkb_compile_keymap_from_components(names);
 
     free(names->keymap);
     free(names->keycodes);
@@ -207,7 +207,7 @@ XkbChooseMap(XkbFile *file, const char *name)
 }
 
 struct xkb_desc *
-XkbcCompileKeymapFromComponents(const struct xkb_component_names * ktcsg)
+xkb_compile_keymap_from_components(const struct xkb_component_names * ktcsg)
 {
     XkbFile *file, *mapToUse;
     struct xkb_desc * xkb;
@@ -249,7 +249,7 @@ fail:
 }
 
 struct xkb_desc *
-XkbcCompileKeymapFromFile(FILE *inputFile, const char *mapName)
+xkb_compile_keymap_from_file(FILE *inputFile, const char *mapName)
 {
     XkbFile *file, *mapToUse;
     struct xkb_desc * xkb;

@@ -282,7 +282,7 @@ XkbcActionTypeText(unsigned type)
 char *
 XkbcKeysymText(uint32_t sym)
 {
-    return XkbcKeysymToString(sym);
+    return xkb_keysym_to_string(sym);
 }
 
 char *

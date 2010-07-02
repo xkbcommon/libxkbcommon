@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     rmlvo.variant = argv[4];
     rmlvo.options = argv[5];
 
-    xkb = XkbcCompileKeymapFromRules(&rmlvo);
+    xkb = xkb_compile_keymap_from_rules(&rmlvo);
 
     if (!xkb) {
         fprintf(stderr, "Failed to compile keymap\n");

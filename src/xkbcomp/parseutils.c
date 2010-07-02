@@ -636,7 +636,7 @@ LookupKeysym(char *str, uint32_t * sym_rtrn)
         *sym_rtrn = XK_VoidSymbol;
         return 1;
     }
-    sym = XkbcStringToKeysym(str);
+    sym = xkb_string_to_keysym(str);
     if (sym != NoSymbol)
     {
         *sym_rtrn = sym;

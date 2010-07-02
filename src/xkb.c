@@ -82,7 +82,7 @@ XkbcCanonicaliseComponent(char *name, const char *old)
 }
 
 void
-XkbcCanonicaliseComponents(struct xkb_component_names * names,
+xkb_canonicalise_components(struct xkb_component_names * names,
                            const struct xkb_component_names * old)
 {
     names->keycodes = XkbcCanonicaliseComponent(names->keycodes,
