@@ -884,19 +884,19 @@ _XFUNCPROTOBEGIN
 typedef uint32_t (*InternAtomFuncPtr)(const char *val);
 typedef const char *(*GetAtomValueFuncPtr)(uint32_t atom);
 
-extern void
+_X_EXPORT extern void
 XkbcInitAtoms(InternAtomFuncPtr intern, GetAtomValueFuncPtr get_atom_value);
 
-extern struct xkb_desc *
+_X_EXPORT extern struct xkb_desc *
 XkbcCompileKeymapFromRules(const XkbRMLVOSet *rmlvo);
 
-extern struct xkb_desc *
+_X_EXPORT extern struct xkb_desc *
 XkbcCompileKeymapFromComponents(const struct xkb_component_names * ktcsg);
 
-extern struct xkb_desc *
+_X_EXPORT extern struct xkb_desc *
 XkbcCompileKeymapFromFile(FILE *inputFile, const char *mapName);
 
-extern struct xkb_component_list *
+_X_EXPORT extern struct xkb_component_list *
 XkbcListComponents(struct xkb_component_names * ptrns, int *maxMatch);
 
 /*
@@ -913,7 +913,7 @@ XkbcListComponents(struct xkb_component_names * ptrns, int *maxMatch);
  * If a component in names needs to be modified, the existing value will be
  * free()d, and a new one allocated with malloc().
  */
-extern void
+_X_EXPORT extern void
 XkbcCanonicaliseComponents(struct xkb_component_names * names,
                            const struct xkb_component_names * old);
 
@@ -928,14 +928,14 @@ XkbcCanonicaliseComponents(struct xkb_component_names * names,
  * This is uint32_t rather than KeySym, as KeySym changes size between
  * client and server (no, really).
  */
-extern char *
+_X_EXPORT extern char *
 XkbcKeysymToString(uint32_t ks);
 
 /*
  * See XkbcKeysymToString comments: this function will accept any string
  * from that function.
  */
-extern uint32_t
+_X_EXPORT extern uint32_t
 XkbcStringToKeysym(const char *s);
 
 _XFUNCPROTOEND

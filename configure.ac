@@ -58,6 +58,10 @@ AC_CHECK_FUNCS([strcasecmp])
 XORG_CHECK_MALLOC_ZERO
 XORG_CWARNFLAGS
 
+if  test "x$GCC" = xyes ; then
+  CFLAGS="$CFLAGS -fvisibility=hidden"
+fi
+
 PKG_CHECK_MODULES([X11], [xproto kbproto >= 1.0.99.1])
 PKG_CHECK_MODULES([XLIB], [x11])
 

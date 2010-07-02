@@ -50,8 +50,6 @@ int main(int argc, char *argv[])
     rmlvo.variant = argv[4];
     rmlvo.options = argv[5];
 
-    uSetErrorFile(NULL);
-
     xkb = XkbcCompileKeymapFromRules(&rmlvo);
 
     if (!xkb) {
