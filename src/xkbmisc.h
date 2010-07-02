@@ -52,8 +52,15 @@ XkbcEnsureSafeMapName(char *name);
 extern unsigned
 _XkbcKSCheckCase(uint32_t sym);
 
+#define _XkbKSLower (1 << 0)
+#define _XkbKSUpper (1 << 1)
+
 #define XkbcKSIsLower(k) (_XkbcKSCheckCase(k) & _XkbKSLower)
 #define XkbcKSIsUpper(k) (_XkbcKSCheckCase(k) & _XkbKSUpper)
+
+#define XkbKSIsKeypad(k) (((k) >= XK_KP_Space) && ((k) <= XK_KP_Equal))
+#define XkbKSIsDeadKey(k) \
+    (((k) >= XK_dead_grave) && ((k) <= XK_dead_semivoiced_sound))
 
 extern Bool
 XkbcNameMatchesPattern(char *name, char *ptrn);
