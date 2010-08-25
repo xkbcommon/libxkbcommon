@@ -28,7 +28,6 @@ authorization from the authors.
 #include "xkbcomp.h"
 #include "xkballoc.h"
 #include "xkbrules.h"
-#include <X11/extensions/XKM.h>
 #include "xkbpath.h"
 #include "parseutils.h"
 #include "utils.h"

@@ -30,7 +30,6 @@
 #include "xkbmisc.h"
 #include "X11/extensions/XKBcommon.h"
 #include "XKBcommonint.h"
-#include <X11/extensions/XKM.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>

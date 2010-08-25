@@ -27,8 +27,8 @@
 #define	DEBUG_VAR debugFlags
 #include "utils.h"
 #include <stdlib.h>
-#include <X11/extensions/XKM.h>
 #include "xkbpath.h"
+#include "X11/extensions/XKBcommon.h"
 #include "XKBcommonint.h"
 
 #ifndef DFLT_XKB_CONFIG_ROOT

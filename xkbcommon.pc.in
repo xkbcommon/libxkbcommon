@@ -6,6 +6,6 @@ includedir=@includedir@
 Name: xkbcommon
 Description: XKB API common to servers and clients
 Version: @PACKAGE_VERSION@
-Requires: xproto kbproto >= 1.0.99.1
+Requires: xproto kbproto >= 1.0.5
 Cflags: -I${includedir}
 Libs: -L${libdir} -lxkbcommon
