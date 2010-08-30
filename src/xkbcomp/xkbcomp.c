@@ -146,10 +146,10 @@ xkb_compile_keymap_from_rules(const struct xkb_rule_names *rmlvo)
         return NULL;
     }
 
-    defs.model = rmlvo->model;
-    defs.layout = rmlvo->layout;
-    defs.variant = rmlvo->variant;
-    defs.options = rmlvo->options;
+    defs.model = (char *) rmlvo->model;
+    defs.layout = (char *) rmlvo->layout;
+    defs.variant = (char *) rmlvo->variant;
+    defs.options = (char *) rmlvo->options;
 
     names = XkbComponentsFromRules(rmlvo->rules, &defs);
     if (!names) {
