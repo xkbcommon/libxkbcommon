@@ -64,24 +64,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 typedef unsigned char KeyCode;
 #endif
 
-#define	XkmFileVersion		15
-
-#define	XkmIllegalFile		-1
-#define	XkmSemanticsFile	20
-#define	XkmLayoutFile		21
-#define	XkmKeymapFile		22
-#define	XkmGeometryFile		23
-#define	XkmRulesFile		24
-
-#define	XkmTypesIndex		0
-#define	XkmCompatMapIndex	1
-#define	XkmSymbolsIndex		2
-#define	XkmIndicatorsIndex	3
-#define	XkmKeyNamesIndex	4
-#define	XkmGeometryIndex	5
-#define	XkmVirtualModsIndex	6
-#define	XkmLastIndex		XkmVirtualModsIndex
-
 struct xkb_rule_names {
     const char *  rules;
     const char *  model;
