@@ -92,8 +92,8 @@ static uint32_t lastAtom = None;
 static NodePtr atomRoot = NULL;
 static unsigned long tableLength;
 static NodePtr *nodeTable = NULL;
-InternAtomFuncPtr do_intern_atom = NULL;
-GetAtomValueFuncPtr do_get_atom_value = NULL;
+static InternAtomFuncPtr do_intern_atom = NULL;
+static GetAtomValueFuncPtr do_get_atom_value = NULL;
 
 void
 xkb_init_atoms(InternAtomFuncPtr intern, GetAtomValueFuncPtr get_atom_value)

@@ -76,37 +76,7 @@ XkbcComputeShapeBounds(struct xkb_shape * shape)
     return True;
 }
 
-Bool
-XkbcComputeShapeTop(struct xkb_shape * shape, struct xkb_bounds * bounds)
-{
-    int p;
-    struct xkb_outline * outline;
-    struct xkb_point * pt;
-
-    if ((!shape) || (shape->num_outlines < 1))
-        return False;
-
-    if (shape->approx)
-        outline = shape->approx;
-    else
-        outline = &shape->outlines[shape->num_outlines - 1];
-
-    if (outline->num_points < 2) {
-         bounds->x1 = bounds->y1 = 0;
-         bounds->x2 = bounds->y2 = 0;
-    }
-    else {
-        bounds->x1 = bounds->y1 = MAXSHORT;
-        bounds->x2 = bounds->y2 = MINSHORT;
-    }
-
-    for (pt = outline->points, p = 0; p < outline->num_points; p++, pt++)
-        _XkbCheckBounds(bounds, pt->x, pt->y);
-
-    return True;
-}
-
-Bool
+static Bool
 XkbcComputeRowBounds(struct xkb_geometry * geom, struct xkb_section * section, struct xkb_row * row)
 {
     int k, pos;

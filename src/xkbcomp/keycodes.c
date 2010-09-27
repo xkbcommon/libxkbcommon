@@ -846,13 +846,9 @@ CompileKeycodes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
         {
             register int i;
             xkb->names->keycodes = XkbcInternAtom(info.name, False);
-            uDEBUG2(1, "key range: %d..%d\n", xkb->min_key_code,
-                    xkb->max_key_code);
             for (i = info.computedMin; i <= info.computedMax; i++)
             {
                 LongToKeyName(info.names[i], xkb->names->keys[i].name);
-                uDEBUG2(2, "key %d = %s\n", i,
-                        XkbcKeyNameText(xkb->names->keys[i].name));
             }
         }
         else

@@ -151,27 +151,10 @@ ReportBadType(const char *type, const char *field,
 }
 
 int
-ReportBadIndexType(const char *type, const char *field,
-		   const char *name, const char *wanted)
-{
-    ERROR("Index for the %s %s field must be a %s\n", type, field, wanted);
-    ACTION("Ignoring assignment to illegal field in %s\n", name);
-    return False;
-}
-
-int
 ReportBadField(const char *type, const char *field, const char *name)
 {
     ERROR("Unknown %s field %s in %s\n", type, field, name);
     ACTION("Ignoring assignment to unknown field in %s\n", name);
-    return False;
-}
-
-int
-ReportMultipleDefs(const char *type, const char *field, const char *name)
-{
-    WARN("Multiple definitions of %s in %s \"%s\"\n", field, type, name);
-    ACTION("Using last definition\n");
     return False;
 }
 
@@ -200,23 +183,6 @@ UseNewField(unsigned field,
     else if (newDefs->defined & field)
         useNew = True;
     return useNew;
-}
-
-Bool
-MergeNewField(unsigned field,
-              CommonInfo * oldDefs, CommonInfo * newDefs, unsigned *pCollide)
-{
-    if ((oldDefs->defined & field) && (newDefs->defined & field))
-    {
-        if (((oldDefs->fileID == newDefs->fileID) && (warningLevel > 0)) ||
-            (warningLevel > 9))
-        {
-            *pCollide |= field;
-        }
-        if (newDefs->merge == MergeAugment)
-            return True;
-    }
-    return False;
 }
 
 char *
@@ -262,189 +228,6 @@ typedef struct _KeyNameDesc
     char name[5];
     Bool used;
 } KeyNameDesc;
-
-static KeyNameDesc dfltKeys[] = {
-    {XK_Escape, NoSymbol, "ESC\0"},
-    {XK_quoteleft, XK_asciitilde, "TLDE"},
-    {XK_1, XK_exclam, "AE01"},
-    {XK_2, XK_at, "AE02"},
-    {XK_3, XK_numbersign, "AE03"},
-    {XK_4, XK_dollar, "AE04"},
-    {XK_5, XK_percent, "AE05"},
-    {XK_6, XK_asciicircum, "AE06"},
-    {XK_7, XK_ampersand, "AE07"},
-    {XK_8, XK_asterisk, "AE08"},
-    {XK_9, XK_parenleft, "AE09"},
-    {XK_0, XK_parenright, "AE10"},
-    {XK_minus, XK_underscore, "AE11"},
-    {XK_equal, XK_plus, "AE12"},
-    {XK_BackSpace, NoSymbol, "BKSP"},
-    {XK_Tab, NoSymbol, "TAB\0"},
-    {XK_q, XK_Q, "AD01"},
-    {XK_w, XK_W, "AD02"},
-    {XK_e, XK_E, "AD03"},
-    {XK_r, XK_R, "AD04"},
-    {XK_t, XK_T, "AD05"},
-    {XK_y, XK_Y, "AD06"},
-    {XK_u, XK_U, "AD07"},
-    {XK_i, XK_I, "AD08"},
-    {XK_o, XK_O, "AD09"},
-    {XK_p, XK_P, "AD10"},
-    {XK_bracketleft, XK_braceleft, "AD11"},
-    {XK_bracketright, XK_braceright, "AD12"},
-    {XK_Return, NoSymbol, "RTRN"},
-    {XK_Caps_Lock, NoSymbol, "CAPS"},
-    {XK_a, XK_A, "AC01"},
-    {XK_s, XK_S, "AC02"},
-    {XK_d, XK_D, "AC03"},
-    {XK_f, XK_F, "AC04"},
-    {XK_g, XK_G, "AC05"},
-    {XK_h, XK_H, "AC06"},
-    {XK_j, XK_J, "AC07"},
-    {XK_k, XK_K, "AC08"},
-    {XK_l, XK_L, "AC09"},
-    {XK_semicolon, XK_colon, "AC10"},
-    {XK_quoteright, XK_quotedbl, "AC11"},
-    {XK_Shift_L, NoSymbol, "LFSH"},
-    {XK_z, XK_Z, "AB01"},
-    {XK_x, XK_X, "AB02"},
-    {XK_c, XK_C, "AB03"},
-    {XK_v, XK_V, "AB04"},
-    {XK_b, XK_B, "AB05"},
-    {XK_n, XK_N, "AB06"},
-    {XK_m, XK_M, "AB07"},
-    {XK_comma, XK_less, "AB08"},
-    {XK_period, XK_greater, "AB09"},
-    {XK_slash, XK_question, "AB10"},
-    {XK_backslash, XK_bar, "BKSL"},
-    {XK_Control_L, NoSymbol, "LCTL"},
-    {XK_space, NoSymbol, "SPCE"},
-    {XK_Shift_R, NoSymbol, "RTSH"},
-    {XK_Alt_L, NoSymbol, "LALT"},
-    {XK_space, NoSymbol, "SPCE"},
-    {XK_Control_R, NoSymbol, "RCTL"},
-    {XK_Alt_R, NoSymbol, "RALT"},
-    {XK_F1, NoSymbol, "FK01"},
-    {XK_F2, NoSymbol, "FK02"},
-    {XK_F3, NoSymbol, "FK03"},
-    {XK_F4, NoSymbol, "FK04"},
-    {XK_F5, NoSymbol, "FK05"},
-    {XK_F6, NoSymbol, "FK06"},
-    {XK_F7, NoSymbol, "FK07"},
-    {XK_F8, NoSymbol, "FK08"},
-    {XK_F9, NoSymbol, "FK09"},
-    {XK_F10, NoSymbol, "FK10"},
-    {XK_F11, NoSymbol, "FK11"},
-    {XK_F12, NoSymbol, "FK12"},
-    {XK_Print, NoSymbol, "PRSC"},
-    {XK_Scroll_Lock, NoSymbol, "SCLK"},
-    {XK_Pause, NoSymbol, "PAUS"},
-    {XK_Insert, NoSymbol, "INS\0"},
-    {XK_Home, NoSymbol, "HOME"},
-    {XK_Prior, NoSymbol, "PGUP"},
-    {XK_Delete, NoSymbol, "DELE"},
-    {XK_End, NoSymbol, "END"},
-    {XK_Next, NoSymbol, "PGDN"},
-    {XK_Up, NoSymbol, "UP\0\0"},
-    {XK_Left, NoSymbol, "LEFT"},
-    {XK_Down, NoSymbol, "DOWN"},
-    {XK_Right, NoSymbol, "RGHT"},
-    {XK_Num_Lock, NoSymbol, "NMLK"},
-    {XK_KP_Divide, NoSymbol, "KPDV"},
-    {XK_KP_Multiply, NoSymbol, "KPMU"},
-    {XK_KP_Subtract, NoSymbol, "KPSU"},
-    {NoSymbol, XK_KP_7, "KP7\0"},
-    {NoSymbol, XK_KP_8, "KP8\0"},
-    {NoSymbol, XK_KP_9, "KP9\0"},
-    {XK_KP_Add, NoSymbol, "KPAD"},
-    {NoSymbol, XK_KP_4, "KP4\0"},
-    {NoSymbol, XK_KP_5, "KP5\0"},
-    {NoSymbol, XK_KP_6, "KP6\0"},
-    {NoSymbol, XK_KP_1, "KP1\0"},
-    {NoSymbol, XK_KP_2, "KP2\0"},
-    {NoSymbol, XK_KP_3, "KP3\0"},
-    {XK_KP_Enter, NoSymbol, "KPEN"},
-    {NoSymbol, XK_KP_0, "KP0\0"},
-    {XK_KP_Delete, NoSymbol, "KPDL"},
-    {XK_less, XK_greater, "LSGT"},
-    {XK_KP_Separator, NoSymbol, "KPCO"},
-    {XK_Find, NoSymbol, "FIND"},
-    {NoSymbol, NoSymbol, "\0\0\0\0"}
-};
-
-int
-ComputeKbdDefaults(struct xkb_desc * xkb)
-{
-    int rtrn;
-    register int i, tmp, nUnknown;
-    KeyNameDesc *name;
-    uint32_t *syms;
-
-    if ((xkb->names == NULL) || (xkb->names->keys == NULL))
-    {
-        if ((rtrn = XkbcAllocNames(xkb, XkbKeyNamesMask, 0, 0)) != Success)
-            return rtrn;
-    }
-    for (name = dfltKeys; (name->name[0] != '\0'); name++)
-    {
-        name->used = False;
-    }
-    nUnknown = 0;
-    for (i = xkb->min_key_code; i <= xkb->max_key_code; i++)
-    {
-        tmp = XkbKeyNumSyms(xkb, i);
-        if ((xkb->names->keys[i].name[0] == '\0') && (tmp > 0))
-        {
-            tmp = XkbKeyGroupsWidth(xkb, i);
-            syms = XkbKeySymsPtr(xkb, i);
-            for (name = dfltKeys; (name->name[0] != '\0'); name++)
-            {
-                Bool match = True;
-                if (((name->level1 != syms[0])
-                     && (name->level1 != NoSymbol))
-                    || ((name->level2 != NoSymbol) && (tmp < 2))
-                    || ((name->level2 != syms[1])
-                        && (name->level2 != NoSymbol)))
-                {
-                    match = False;
-                }
-                if (match)
-                {
-                    if (!name->used)
-                    {
-                        memcpy(xkb->names->keys[i].name, name->name,
-                               XkbKeyNameLength);
-                        name->used = True;
-                    }
-                    else
-                    {
-                        if (warningLevel > 2)
-                        {
-                            WARN
-                                ("Several keys match pattern for %s\n",
-                                 XkbcKeyNameText(name->name));
-                            ACTION("Using <U%03d> for key %d\n",
-                                    nUnknown, i);
-                        }
-                        sprintf(xkb->names->keys[i].name, "U%03d",
-                                nUnknown++);
-                    }
-                    break;
-                }
-            }
-            if (xkb->names->keys[i].name[0] == '\0')
-            {
-                if (warningLevel > 2)
-                {
-                    WARN("Key %d does not match any defaults\n", i);
-                    ACTION("Using name <U%03d>\n", nUnknown);
-                    sprintf(xkb->names->keys[i].name, "U%03d", nUnknown++);
-                }
-            }
-        }
-    }
-    return Success;
-}
 
 /**
  * Find the key with the given name and return its keycode in kc_rtrn.

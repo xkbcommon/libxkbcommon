@@ -86,7 +86,7 @@ XkbcAllocCompatMap(struct xkb_desc * xkb, unsigned which, unsigned nSI)
 }
 
 
-void
+static void
 XkbcFreeCompatMap(struct xkb_desc * xkb, unsigned which, Bool freeMap)
 {
     struct xkb_compat_map * compat;
@@ -203,7 +203,7 @@ XkbcAllocNames(struct xkb_desc * xkb, unsigned which, int nTotalRG, int nTotalAl
     return Success;
 }
 
-void
+static void
 XkbcFreeNames(struct xkb_desc * xkb, unsigned which, Bool freeMap)
 {
     struct xkb_names * names;
@@ -270,7 +270,7 @@ XkbcAllocControls(struct xkb_desc * xkb, unsigned which)
     return Success;
 }
 
-void
+static void
 XkbcFreeControls(struct xkb_desc * xkb, unsigned which, Bool freeMap)
 {
     if (freeMap && xkb && xkb->ctrls) {
@@ -294,7 +294,7 @@ XkbcAllocIndicatorMaps(struct xkb_desc * xkb)
     return Success;
 }
 
-void
+static void
 XkbcFreeIndicatorMaps(struct xkb_desc * xkb)
 {
     if (xkb && xkb->indicators) {

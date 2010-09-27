@@ -34,27 +34,15 @@ authorization from the authors.
 extern int
 XkbcAllocCompatMap(struct xkb_desc * xkb, unsigned which, unsigned nSI);
 
-extern void
-XkbcFreeCompatMap(struct xkb_desc * xkb, unsigned which, Bool freeMap);
-
 extern int
 XkbcAllocNames(struct xkb_desc * xkb, unsigned which, int nTotalRG,
                int nTotalAliases);
 
-extern void
-XkbcFreeNames(struct xkb_desc * xkb, unsigned which, Bool freeMap);
-
 extern int
 XkbcAllocControls(struct xkb_desc * xkb, unsigned which);
 
-extern void
-XkbcFreeControls(struct xkb_desc * xkb, unsigned which, Bool freeMap);
-
 extern int
 XkbcAllocIndicatorMaps(struct xkb_desc * xkb);
-
-extern void
-XkbcFreeIndicatorMaps(struct xkb_desc * xkb);
 
 extern struct xkb_desc *
 XkbcAllocKeyboard(void);
@@ -73,19 +61,8 @@ XkbcAllocServerMap(struct xkb_desc * xkb, unsigned which, unsigned nNewActions);
 extern int
 XkbcCopyKeyType(struct xkb_key_type * from, struct xkb_key_type *into);
 
-extern int
-XkbcCopyKeyTypes(struct xkb_key_type * from, struct xkb_key_type *into, int num_types);
-
-extern int
-XkbcResizeKeyType(struct xkb_desc * xkb, int type_ndx, int map_count,
-                  Bool want_preserve, int new_num_lvls);
-
 extern uint32_t *
 XkbcResizeKeySyms(struct xkb_desc * xkb, int key, int needed);
-
-extern int
-XkbcChangeKeycodeRange(struct xkb_desc * xkb, int minKC, int maxKC,
-                       struct xkb_changes * changes);
 
 extern union xkb_action *
 XkbcResizeKeyActions(struct xkb_desc * xkb, int key, int needed);

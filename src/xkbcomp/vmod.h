@@ -53,13 +53,6 @@ extern Bool ApplyVModDefs(VModInfo * /* info */ ,
                           struct xkb_desc *    /* xkb */
     );
 
-extern int LookupVModIndex(char * /* priv */ ,
-                           uint32_t /* elem */ ,
-                           uint32_t /* field */ ,
-                           unsigned /* type */ ,
-                           ExprResult * /* val_rtrn */
-    );
-
 extern int LookupVModMask(char * /* priv */ ,
                           uint32_t /* elem */ ,
                           uint32_t /* field */ ,

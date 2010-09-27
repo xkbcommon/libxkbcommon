@@ -27,10 +27,6 @@
 #ifndef XKBPARSE_H
 #define	XKBPARSE_H 1
 
-#ifndef DEBUG_VAR
-#define	DEBUG_VAR	parseDebug
-#endif
-
 #include "xkbcomp.h"
 
 extern char scanBuf[1024];
@@ -134,10 +130,6 @@ extern OutlineDef *OutlineCreate(uint32_t /* field */ ,
 
 extern KeyDef *KeyDeclCreate(char * /* name */ ,
                              ExprDef *  /* expr */
-    );
-
-extern KeyDef *KeyDeclMerge(KeyDef * /* into */ ,
-                            KeyDef *    /* from */
     );
 
 extern RowDef *RowDeclCreate(KeyDef *   /* keys */

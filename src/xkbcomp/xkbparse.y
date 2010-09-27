@@ -92,14 +92,11 @@
 #ifdef DEBUG
 #define	YYDEBUG 1
 #endif
-#define	DEBUG_VAR parseDebug
 #include "parseutils.h"
 #include "xkbmisc.h"
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 #include <stdlib.h>
-
-unsigned int parseDebug;
 
 %}
 %right	EQUALS

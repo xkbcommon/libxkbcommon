@@ -95,7 +95,7 @@ exprOpText(unsigned type)
     return buf;
 }
 
-char *
+static char *
 exprTypeText(unsigned type)
 {
     static char buf[20];
@@ -210,32 +210,6 @@ RadioLookup(char * priv,
     return True;
 }
 
-int
-TableLookup(char * priv,
-            uint32_t elem, uint32_t field, unsigned type, ExprResult * val_rtrn)
-{
-    LookupTable *tbl = (LookupTable *) priv;
-    const char *str;
-
-    if ((priv == NULL) || (field == None) || (type != TypeInt))
-        return False;
-    str = XkbcAtomText(elem);
-    while (tbl)
-    {
-        if (((str == NULL) && (tbl->element == NULL)) ||
-            ((str != NULL) && (tbl->element != NULL) &&
-             (uStrCaseCmp(str, tbl->element) == 0)))
-        {
-            break;
-        }
-        tbl = tbl->nextElement;
-    }
-    if (tbl == NULL)            /* didn't find a matching element */
-        return False;
-    priv = (char *) tbl->entries;
-    return SimpleLookup(priv, (uint32_t) None, field, type, val_rtrn);
-}
-
 static LookupEntry modIndexNames[] = {
     {"shift", ShiftMapIndex},
     {"control", ControlMapIndex},
@@ -257,7 +231,7 @@ LookupModIndex(char * priv,
                         val_rtrn);
 }
 
-int
+static int
 LookupModMask(char * priv,
               uint32_t elem, uint32_t field, unsigned type, ExprResult * val_rtrn)
 {
@@ -287,83 +261,6 @@ LookupModMask(char * priv,
         ret = False;
     free(str);
     return ret;
-}
-
-int
-ExprResolveModIndex(ExprDef * expr,
-                    ExprResult * val_rtrn,
-                    IdentLookupFunc lookup, char * lookupPriv)
-{
-    int ok = 0;
-    char *bogus = NULL;
-
-    switch (expr->op)
-    {
-    case ExprValue:
-        if (expr->type != TypeInt)
-        {
-            ERROR
-                ("Found constant of type %s where a modifier mask was expected\n",
-                 exprTypeText(expr->type));
-            return False;
-        }
-        else if ((expr->value.ival >= XkbNumModifiers)
-                 || (expr->value.ival < 0))
-        {
-            ERROR("Illegal modifier index (%d, must be 0..%d)\n",
-                   expr->value.ival, XkbNumModifiers - 1);
-            return False;
-        }
-        val_rtrn->ival = expr->value.ival;
-        return True;
-    case ExprIdent:
-        if (LookupModIndex(lookupPriv, (uint32_t) None, expr->value.str,
-                           (unsigned) TypeInt, val_rtrn))
-        {
-            return True;
-        }
-        if (lookup)
-        {
-            ok = (*lookup) (lookupPriv,
-                            None, expr->value.str, TypeInt, val_rtrn);
-        }
-        if (!ok)
-            ERROR("Cannot determine modifier index for \"%s\"\n",
-                   XkbcAtomText(expr->value.str));
-        break;
-    case ExprFieldRef:
-        bogus = "field reference";
-        break;
-    case ExprArrayRef:
-        bogus = "array reference";
-        break;
-    case ExprActionDecl:
-        bogus = "function";
-        break;
-    case OpAdd:
-    case OpSubtract:
-    case OpMultiply:
-    case OpDivide:
-    case OpInvert:
-    case OpNegate:
-    case OpNot:
-    case OpUnaryPlus:
-        bogus = "arithmetic operations";
-        break;
-    case OpAssign:
-        bogus = "assignment";
-        break;
-    default:
-        WSGO("Unknown operator %d in ResolveModIndex\n", expr->op);
-        return False;
-    }
-    if (bogus)
-    {
-        ERROR("Modifier index must be a name or number, %s ignored\n",
-               bogus);
-        return False;
-    }
-    return ok;
 }
 
 int

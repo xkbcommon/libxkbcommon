@@ -157,10 +157,13 @@ XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
     return True;
 }
 
+static void
+XkbAddDefaultDirectoriesToPath(void);
+
 /**
  * Init memory for include paths.
  */
-Bool
+static Bool
 XkbInitIncludePath(void)
 {
     if (includePath)
@@ -175,20 +178,10 @@ XkbInitIncludePath(void)
     return True;
 }
 
-void
-XkbAddDefaultDirectoriesToPath(void)
-{
-    if (!XkbInitIncludePath())
-        return;
-    if (noDefaultPath)
-        return;
-    XkbAddDirectoryToPath(DFLT_XKB_CONFIG_ROOT);
-}
-
 /**
  * Remove all entries from the global includePath.
  */
-void
+static void
 XkbClearIncludePath(void)
 {
     register int i;
@@ -213,7 +206,7 @@ XkbClearIncludePath(void)
  * Add the given path to the global includePath variable.
  * If dir is NULL, the includePath is emptied.
  */
-Bool
+static Bool
 XkbAddDirectoryToPath(const char *dir)
 {
     int len;
@@ -254,6 +247,16 @@ XkbAddDirectoryToPath(const char *dir)
     }
     nPathEntries++;
     return True;
+}
+
+static void
+XkbAddDefaultDirectoriesToPath(void)
+{
+    if (!XkbInitIncludePath())
+        return;
+    if (noDefaultPath)
+        return;
+    XkbAddDirectoryToPath(DFLT_XKB_CONFIG_ROOT);
 }
 
 /***====================================================================***/

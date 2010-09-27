@@ -127,7 +127,7 @@ _XkbClearProperty(char *prop_in)
     }
 }
 
-void
+static void
 XkbcFreeGeomProperties(struct xkb_geometry * geom, int first, int count, Bool freeAll)
 {
     _XkbFreeGeomNonLeafElems(freeAll, first, count,
@@ -137,7 +137,7 @@ XkbcFreeGeomProperties(struct xkb_geometry * geom, int first, int count, Bool fr
                              _XkbClearProperty);
 }
 
-void
+static void
 XkbcFreeGeomKeyAliases(struct xkb_geometry * geom, int first, int count, Bool freeAll)
 {
     _XkbFreeGeomLeafElems(freeAll, first, count,
@@ -155,7 +155,7 @@ _XkbClearColor(char *color_in)
         free(color->spec);
 }
 
-void
+static void
 XkbcFreeGeomColors(struct xkb_geometry * geom, int first, int count, Bool freeAll)
 {
     _XkbFreeGeomNonLeafElems(freeAll, first, count,
@@ -164,7 +164,7 @@ XkbcFreeGeomColors(struct xkb_geometry * geom, int first, int count, Bool freeAl
                              _XkbClearColor);
 }
 
-void
+static void
 XkbcFreeGeomPoints(struct xkb_outline * outline, int first, int count, Bool freeAll)
 {
     _XkbFreeGeomLeafElems(freeAll, first, count,
@@ -181,7 +181,7 @@ _XkbClearOutline(char *outline_in)
         XkbcFreeGeomPoints(outline, 0, outline->num_points, True);
 }
 
-void
+static void
 XkbcFreeGeomOutlines(struct xkb_shape * shape, int first, int count, Bool freeAll)
 {
     _XkbFreeGeomNonLeafElems(freeAll, first, count,
@@ -199,7 +199,7 @@ _XkbClearShape(char *shape_in)
         XkbcFreeGeomOutlines(shape, 0, shape->num_outlines, True);
 }
 
-void
+static void
 XkbcFreeGeomShapes(struct xkb_geometry * geom, int first, int count, Bool freeAll)
 {
     _XkbFreeGeomNonLeafElems(freeAll, first, count,
@@ -208,65 +208,13 @@ XkbcFreeGeomShapes(struct xkb_geometry * geom, int first, int count, Bool freeAl
                              _XkbClearShape);
 }
 
-void
-XkbcFreeGeomOverlayKeys(struct xkb_overlay_row * row, int first, int count,
-                        Bool freeAll)
-{
-    _XkbFreeGeomLeafElems(freeAll, first, count,
-                          &row->num_keys, &row->sz_keys,
-                          (char **)&row->keys, sizeof(struct xkb_overlay_key));
-}
-
-
 static void
-_XkbClearOverlayRow(char *row_in)
-{
-    struct xkb_overlay_row * row = (struct xkb_overlay_row *)row_in;
-
-    if (row->keys)
-        XkbcFreeGeomOverlayKeys(row, 0, row->num_keys, True);
-}
-
-void
-XkbcFreeGeomOverlayRows(struct xkb_overlay * overlay, int first, int count,
-                        Bool freeAll)
-{
-    _XkbFreeGeomNonLeafElems(freeAll, first, count,
-                             &overlay->num_rows, &overlay->sz_rows,
-                             (char **)&overlay->rows,
-                             sizeof(struct xkb_overlay_row),
-                             _XkbClearOverlayRow);
-}
-
-
-static void
-_XkbClearOverlay(char *overlay_in)
-{
-    struct xkb_overlay * overlay = (struct xkb_overlay *)overlay_in;
-
-    if (overlay->rows)
-        XkbcFreeGeomOverlayRows(overlay, 0, overlay->num_rows, True);
-}
-
-void
-XkbcFreeGeomOverlays(struct xkb_section * section, int first, int count, Bool freeAll)
-{
-    _XkbFreeGeomNonLeafElems(freeAll, first, count,
-                             &section->num_overlays, &section->sz_overlays,
-                             (char **)&section->overlays,
-                             sizeof(struct xkb_overlay),
-                             _XkbClearOverlay);
-}
-
-
-void
 XkbcFreeGeomKeys(struct xkb_row * row, int first, int count, Bool freeAll)
 {
     _XkbFreeGeomLeafElems(freeAll, first, count,
                           &row->num_keys, &row->sz_keys,
                           (char **)&row->keys, sizeof(struct xkb_key));
 }
-
 
 static void
 _XkbClearRow(char *row_in)
@@ -277,7 +225,7 @@ _XkbClearRow(char *row_in)
         XkbcFreeGeomKeys(row, 0, row->num_keys, True);
 }
 
-void
+static void
 XkbcFreeGeomRows(struct xkb_section * section, int first, int count, Bool freeAll)
 {
     _XkbFreeGeomNonLeafElems(freeAll, first, count,
@@ -286,28 +234,6 @@ XkbcFreeGeomRows(struct xkb_section * section, int first, int count, Bool freeAl
                              _XkbClearRow);
 }
 
-
-static void
-_XkbClearSection(char *section_in)
-{
-    struct xkb_section * section = (struct xkb_section *)section_in;
-
-    if (section->rows)
-        XkbcFreeGeomRows(section, 0, section->num_rows, True);
-    if (section->doodads) {
-        XkbcFreeGeomDoodads(section->doodads, section->num_doodads, True);
-        section->doodads = NULL;
-    }
-}
-
-void
-XkbcFreeGeomSections(struct xkb_geometry * geom, int first, int count, Bool freeAll)
-{
-    _XkbFreeGeomNonLeafElems(freeAll, first, count,
-                             &geom->num_sections, &geom->sz_sections,
-                             (char **)&geom->sections, sizeof(struct xkb_section),
-                             _XkbClearSection);
-}
 
 
 static void
@@ -336,7 +262,7 @@ _XkbClearDoodad(char *doodad_in)
     }
 }
 
-void
+static void
 XkbcFreeGeomDoodads(union xkb_doodad * doodads, int nDoodads, Bool freeAll)
 {
     int i;
@@ -348,6 +274,28 @@ XkbcFreeGeomDoodads(union xkb_doodad * doodads, int nDoodads, Bool freeAll)
         if (freeAll)
             free(doodads);
     }
+}
+
+static void
+_XkbClearSection(char *section_in)
+{
+    struct xkb_section * section = (struct xkb_section *)section_in;
+
+    if (section->rows)
+        XkbcFreeGeomRows(section, 0, section->num_rows, True);
+    if (section->doodads) {
+        XkbcFreeGeomDoodads(section->doodads, section->num_doodads, True);
+        section->doodads = NULL;
+    }
+}
+
+static void
+XkbcFreeGeomSections(struct xkb_geometry * geom, int first, int count, Bool freeAll)
+{
+    _XkbFreeGeomNonLeafElems(freeAll, first, count,
+                             &geom->num_sections, &geom->sz_sections,
+                             (char **)&geom->sections, sizeof(struct xkb_section),
+                             _XkbClearSection);
 }
 
 void
@@ -476,89 +424,9 @@ _XkbGeomAlloc(char **old, unsigned short *num, unsigned short *total,
                                                   (n), sizeof(struct xkb_overlay_key))
 
 int
-XkbcAllocGeomProps(struct xkb_geometry * geom, int nProps)
-{
-    return _XkbAllocProps(geom, nProps);
-}
-
-int
-XkbcAllocGeomColors(struct xkb_geometry * geom, int nColors)
-{
-    return _XkbAllocColors(geom, nColors);
-}
-
-int
 XkbcAllocGeomKeyAliases(struct xkb_geometry * geom, int nKeyAliases)
 {
     return _XkbAllocKeyAliases(geom, nKeyAliases);
-}
-
-int
-XkbcAllocGeomShapes(struct xkb_geometry * geom, int nShapes)
-{
-    return _XkbAllocShapes(geom, nShapes);
-}
-
-int
-XkbcAllocGeomSections(struct xkb_geometry * geom, int nSections)
-{
-    return _XkbAllocSections(geom, nSections);
-}
-
-int
-XkbcAllocGeomOverlays(struct xkb_section * section, int nOverlays)
-{
-    return _XkbAllocOverlays(section, nOverlays);
-}
-
-int
-XkbcAllocGeomOverlayRows(struct xkb_overlay * overlay, int nRows)
-{
-    return _XkbAllocOverlayRows(overlay, nRows);
-}
-
-int
-XkbcAllocGeomOverlayKeys(struct xkb_overlay_row * row, int nKeys)
-{
-    return _XkbAllocOverlayKeys(row, nKeys);
-}
-
-int
-XkbcAllocGeomDoodads(struct xkb_geometry * geom, int nDoodads)
-{
-    return _XkbAllocDoodads(geom, nDoodads);
-}
-
-int
-XkbcAllocGeomSectionDoodads(struct xkb_section * section, int nDoodads)
-{
-    return _XkbAllocDoodads(section, nDoodads);
-}
-
-int
-XkbcAllocGeomOutlines(struct xkb_shape * shape, int nOL)
-{
-    return _XkbAllocOutlines(shape, nOL);
-}
-
-int
-XkbcAllocGeomRows(struct xkb_section * section, int nRows)
-{
-    return _XkbAllocRows(section, nRows);
-}
-
-int
-XkbcAllocGeomPoints(struct xkb_outline * ol, int nPts)
-{
-    return _XkbAllocPoints(ol, nPts);
-}
-
-int
-XkbcAllocGeomKeys(struct xkb_row * row, int nKeys)
-{
-    int ret = _XkbAllocKeys(row, nKeys);
-    fprintf(stderr, "!!! allocated %d keys at %p\n", nKeys, row->keys);
-    return ret;
 }
 
 int
@@ -641,33 +509,6 @@ register struct xkb_property * prop;
     strcpy(prop->value,value);
     geom->num_properties++;
     return prop;
-}
-
-struct xkb_key_alias *
-XkbcAddGeomKeyAlias(struct xkb_geometry * geom,const char *aliasStr,const char *realStr)
-{
-register int i;
-register struct xkb_key_alias * alias;
-
-    if ((!geom)||(!aliasStr)||(!realStr)||(!aliasStr[0])||(!realStr[0]))
-	return NULL;
-    for (i=0,alias=geom->key_aliases;i<geom->num_key_aliases;i++,alias++) {
-	if (strncmp(alias->alias,aliasStr,XkbKeyNameLength)==0) {
-	    bzero(alias->real,XkbKeyNameLength);
-	    strncpy(alias->real,realStr,XkbKeyNameLength);
-	    return alias;
-	}
-    }
-    if ((geom->num_key_aliases>=geom->sz_key_aliases)&&
-				(_XkbAllocKeyAliases(geom,1)!=Success)) {
-	return NULL;
-    }
-    alias= &geom->key_aliases[geom->num_key_aliases];
-    bzero(alias,sizeof(struct xkb_key_alias));
-    strncpy(alias->alias,aliasStr,XkbKeyNameLength);
-    strncpy(alias->real,realStr,XkbKeyNameLength);
-    geom->num_key_aliases++;
-    return alias;
 }
 
 struct xkb_color *
@@ -851,41 +692,6 @@ register int	i,nDoodads;
     bzero(doodad,sizeof(union xkb_doodad));
     doodad->any.name= name;
     return doodad;
-}
-
-struct xkb_overlay_key *
-XkbcAddGeomOverlayKey(	struct xkb_overlay *		overlay,
-			struct xkb_overlay_row * 	row,
-			const char *		over,
-			const char *		under)
-{
-register int	i;
-struct xkb_overlay_key * key;
-struct xkb_section *	section;
-struct xkb_row *	row_under;
-Bool		found;
-
-    if ((!overlay)||(!row)||(!over)||(!under))
-	return NULL;
-    section= overlay->section_under;
-    if (row->row_under>=section->num_rows)
-	return NULL;
-    row_under= &section->rows[row->row_under];
-    for (i=0,found=False;i<row_under->num_keys;i++) {
-	if (strncmp(under,row_under->keys[i].name.name,XkbKeyNameLength)==0) {
-	    found= True;
-	    break;
-	}
-    }
-    if (!found)
-   	return NULL;
-    if ((row->num_keys>=row->sz_keys)&&(_XkbAllocOverlayKeys(row,1)!=Success))
-	return NULL;
-    key= &row->keys[row->num_keys];
-    strncpy(key->under.name,under,XkbKeyNameLength);
-    strncpy(key->over.name,over,XkbKeyNameLength);
-    row->num_keys++;
-    return key;
 }
 
 struct xkb_overlay_row *

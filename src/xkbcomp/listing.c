@@ -80,7 +80,6 @@ SOFTWARE.
 #include <malloc.h>
 #endif
 
-#define	DEBUG_VAR listingDebug
 #include "xkbcomp.h"
 #include <stdlib.h>
 
@@ -126,8 +125,6 @@ SOFTWARE.
 #ifndef DFLT_XKB_CONFIG_ROOT
 #define DFLT_XKB_CONFIG_ROOT "/usr/share/X11/xkb"
 #endif
-
-unsigned int listingDebug;
 
 typedef struct _CompPair {
     int num;

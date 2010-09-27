@@ -55,7 +55,7 @@ tbGetBuffer(unsigned int size)
     return rtrn;
 }
 
-char *
+static char *
 XkbcVModIndexText(struct xkb_desc * xkb, unsigned ndx)
 {
     int len;

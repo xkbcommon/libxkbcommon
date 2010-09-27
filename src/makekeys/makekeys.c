@@ -273,7 +273,7 @@ next1:  ;
     z = best_z;
     printf("#ifndef KS_TABLES_H\n");
     printf("#define KS_TABLES_H\n\n");
-    printf("const unsigned char _XkeyTable[] = {\n");
+    printf("static const unsigned char _XkeyTable[] = {\n");
     printf("0,\n");
     k = 1;
     for (i = 0; i < ksnum; i++) {

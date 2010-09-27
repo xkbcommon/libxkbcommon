@@ -24,7 +24,6 @@
 
  ********************************************************/
 
-#define	DEBUG_VAR parseDebug
 #include "parseutils.h"
 #include "xkbmisc.h"
 #include "xkbpath.h"
@@ -480,16 +479,6 @@ KeyDeclCreate(char *name, ExprDef * expr)
             key->expr = expr;
     }
     return key;
-}
-
-KeyDef *
-KeyDeclMerge(KeyDef * into, KeyDef * from)
-{
-    into->expr =
-        (ExprDef *) AppendStmt(&into->expr->common, &from->expr->common);
-    from->expr = NULL;
-    free(from);
-    return into;
 }
 
 RowDef *

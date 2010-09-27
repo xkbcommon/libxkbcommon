@@ -41,12 +41,6 @@ extern Bool UseNewField(unsigned /* field */ ,
                         unsigned *      /* pCollide */
     );
 
-extern Bool MergeNewField(unsigned /* field */ ,
-                          CommonInfo * /* oldDefs */ ,
-                          CommonInfo * /* newDefs */ ,
-                          unsigned *    /* pCollide */
-    );
-
 extern char * ClearCommonInfo(CommonInfo *    /* cmn */
     );
 
@@ -70,29 +64,15 @@ extern int ReportBadType(const char * /* type */ ,
                          const char *   /* wanted */
     );
 
-extern int ReportBadIndexType(const char * /* type */ ,
-                              const char * /* field */ ,
-                              const char * /* name */ ,
-                              const char *    /* wanted */
-    );
-
 extern int ReportBadField(const char * /* type */ ,
                           const char * /* field */ ,
                           const char *  /* name */
-    );
-
-extern int ReportMultipleDefs(const char * /* type */ ,
-                              const char * /* field */ ,
-                              const char *    /* which */
     );
 
 extern Bool ProcessIncludeFile(IncludeStmt * /* stmt */ ,
                                unsigned /* file_type */ ,
                                XkbFile ** /* file_rtrn */ ,
                                unsigned *       /* merge_rtrn */
-    );
-
-extern int ComputeKbdDefaults(struct xkb_desc *     /* xkb */
     );
 
 extern Bool FindNamedKey(struct xkb_desc * /* xkb */ ,

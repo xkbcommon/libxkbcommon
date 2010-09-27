@@ -80,7 +80,7 @@ typedef struct _KeyTypesInfo
 
 uint32_t tok_ONE_LEVEL;
 uint32_t tok_TWO_LEVEL;
-uint32_t tok_ALPHABETIC;
+static uint32_t tok_ALPHABETIC;
 uint32_t tok_KEYPAD;
 
 /***====================================================================***/
@@ -91,27 +91,6 @@ uint32_t tok_KEYPAD;
     ReportBadType("key type", (f), TypeTxt(t), (w))
 
 /***====================================================================***/
-
-extern Bool AddMapEntry(struct xkb_desc * /* xkb */ ,
-                        KeyTypeInfo * /* type */ ,
-                        struct xkb_kt_map_entry * /* new */ ,
-                        Bool /* clobber */ ,
-                        Bool    /* report */
-    );
-
-extern Bool AddPreserve(struct xkb_desc * /* xkb */ ,
-                        KeyTypeInfo * /* type */ ,
-                        PreserveInfo * /* new */ ,
-                        Bool /* clobber */ ,
-                        Bool    /* report */
-    );
-
-extern Bool AddLevelName(KeyTypeInfo * /* type */ ,
-                         unsigned /* level */ ,
-                         uint32_t /* name */ ,
-                         Bool /* clobber */ ,
-                         Bool   /* report */
-    );
 
 #define MapEntryTxt(x, e) \
     XkbcVModMaskText((x), (e)->mods.real_mods, (e)->mods.vmods)
@@ -540,7 +519,7 @@ NextMapEntry(KeyTypeInfo * type)
     return &type->entries[type->nEntries++];
 }
 
-Bool
+static Bool
 AddPreserve(struct xkb_desc * xkb,
             KeyTypeInfo * type, PreserveInfo * new, Bool clobber, Bool report)
 {
@@ -612,7 +591,7 @@ AddPreserve(struct xkb_desc * xkb,
  * @param clobber Overwrite existing entry.
  * @param report True if a warning is to be printed on.
  */
-Bool
+static Bool
 AddMapEntry(struct xkb_desc * xkb,
             KeyTypeInfo * type,
             struct xkb_kt_map_entry * new, Bool clobber, Bool report)
@@ -781,7 +760,7 @@ SetPreserve(KeyTypeInfo * type,
 
 /***====================================================================***/
 
-Bool
+static Bool
 AddLevelName(KeyTypeInfo * type,
              unsigned level, uint32_t name, Bool clobber, Bool report)
 {

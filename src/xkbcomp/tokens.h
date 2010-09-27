@@ -100,7 +100,6 @@
 
 extern uint32_t tok_ONE_LEVEL;
 extern uint32_t tok_TWO_LEVEL;
-extern uint32_t tok_ALPHABETIC;
 extern uint32_t tok_KEYPAD;
 
 #endif

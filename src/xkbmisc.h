@@ -79,9 +79,6 @@ extern const char *
 XkbcAtomText(uint32_t atm);
 
 extern char *
-XkbcVModIndexText(struct xkb_desc * xkb, unsigned ndx);
-
-extern char *
 XkbcVModMaskText(struct xkb_desc * xkb, unsigned modMask, unsigned mask);
 
 extern char *

@@ -42,9 +42,6 @@ typedef Bool(*IdentLookupFunc) (char * /* priv */ ,
                                 ExprResult *    /* val_rtrn */
     );
 
-extern char *exprTypeText(unsigned      /* type */
-    );
-
 extern int ExprResolveLhs(ExprDef * /* expr */ ,
                           ExprResult * /* elem_rtrn */ ,
                           ExprResult * /* field_rtrn */ ,
@@ -89,31 +86,11 @@ extern int SimpleLookup(char * /* priv */ ,
                         ExprResult *    /* val_rtrn */
     );
 
-extern int TableLookup(char * /* priv */ ,
-                       uint32_t /* elem */ ,
-                       uint32_t /* field */ ,
-                       unsigned /* type */ ,
-                       ExprResult *     /* val_rtrn */
-    );
-
 extern int LookupModIndex(char * /* priv */ ,
                           uint32_t /* elem */ ,
                           uint32_t /* field */ ,
                           unsigned /* type */ ,
                           ExprResult *  /* val_rtrn */
-    );
-
-extern int LookupModMask(char * /* priv */ ,
-                         uint32_t /* elem */ ,
-                         uint32_t /* field */ ,
-                         unsigned /* type */ ,
-                         ExprResult *   /* val_rtrn */
-    );
-
-extern int ExprResolveModIndex(ExprDef * /* expr */ ,
-                               ExprResult * /* val_rtrn */ ,
-                               IdentLookupFunc /* lookup */ ,
-                               char * /* lookupPriv */
     );
 
 extern int ExprResolveModMask(ExprDef * /* expr */ ,

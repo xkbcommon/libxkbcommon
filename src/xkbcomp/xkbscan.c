@@ -29,11 +29,8 @@
 #include <X11/Xos.h>
 
 #include "tokens.h"
-#define	DEBUG_VAR	scanDebug
 #include "utils.h"
 #include "parseutils.h"
-
-unsigned int scanDebug;
 
 FILE *yyin = NULL;
 

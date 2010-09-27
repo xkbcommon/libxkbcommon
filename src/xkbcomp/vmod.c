@@ -161,7 +161,7 @@ HandleVModDef(VModDef * stmt, unsigned mergeMode, VModInfo * info)
  * @return True on success, False otherwise. If False is returned, val_rtrn is
  * undefined.
  */
-int
+static int
 LookupVModIndex(char * priv,
                 uint32_t elem, uint32_t field, unsigned type, ExprResult * val_rtrn)
 {

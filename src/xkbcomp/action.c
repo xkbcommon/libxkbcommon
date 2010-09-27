@@ -1286,6 +1286,8 @@ ApplyActionFactoryDefaults(union xkb_action * action)
     return;
 }
 
+static void
+ActionsInit(void);
 
 int
 HandleActionDef(ExprDef * def,
@@ -1448,7 +1450,7 @@ SetActionField(struct xkb_desc * xkb,
 
 /***====================================================================***/
 
-void
+static void
 ActionsInit(void)
 {
     if (!actionsInitialized)
