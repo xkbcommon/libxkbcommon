@@ -64,6 +64,18 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 typedef unsigned char KeyCode;
 #endif
 
+/* Duplicate the modifier mask defines so libxkcommon can be used
+ * without X.h */
+#define XKB_COMMON_SHIFT_MASK		(1<<0)
+#define XKB_COMMON_LOCK_MASK		(1<<1)
+#define XKB_COMMON_CONTROL_MASK		(1<<2)
+#define XKB_COMMON_MOD1_MASK		(1<<3)
+#define XKB_COMMON_MOD2_MASK		(1<<4)
+#define XKB_COMMON_MOD3_MASK		(1<<5)
+#define XKB_COMMON_MOD4_MASK		(1<<6)
+#define XKB_COMMON_MOD5_MASK		(1<<7)
+
+
 struct xkb_rule_names {
     const char *  rules;
     const char *  model;
