@@ -37,21 +37,22 @@ authorization from the authors.
 
 #include "ks_tables.h"
 
-char *
-xkb_keysym_to_string(uint32_t ks)
+void
+xkb_keysym_to_string(uint32_t ks, char *buffer, size_t size)
 {
     int i, n, h, idx;
     const unsigned char *entry;
-    static char ret[11];
     unsigned char val1, val2, val3, val4;
 
-    if ((ks & ((unsigned long) ~0x1fffffff)) != 0)
-        return NULL;
+    if ((ks & ((unsigned long) ~0x1fffffff)) != 0) {
+        snprintf(buffer, size, "Invalid");
+        return;
+    }
 
     /* Not listed in keysymdef.h for hysterical raisins. */
     if (ks == NoSymbol) {
-        sprintf(ret, "NoSymbol");
-        return ret;
+        snprintf(buffer, size, "NoSymbol");
+        return;
     }
 
     /* Try to find it in our hash table. */
@@ -68,8 +69,10 @@ xkb_keysym_to_string(uint32_t ks)
             entry = &_XkeyTable[idx];
 
             if ((entry[0] == val1) && (entry[1] == val2) &&
-                (entry[2] == val3) && (entry[3] == val4))
-                return ((char *)entry + 4);
+                (entry[2] == val3) && (entry[3] == val4)) {
+		snprintf(buffer, size, "%s", entry + 4);
+		return;
+	    }
 
             if (!--n)
                 break;
@@ -80,15 +83,12 @@ xkb_keysym_to_string(uint32_t ks)
         }
     }
 
-    /* Unnamed Unicode codepoint. */
-    if (ks >= 0x01000100 && ks <= 0x0110ffff) {
-        sprintf(ret, "U%lx", ks & 0xffffffUL);
-        return ret;
-    }
-
-    /* Unnamed, non-Unicode, symbol (shouldn't generally happen). */
-    sprintf(ret, "0x%08x", ks);
-    return ret;
+    if (ks >= 0x01000100 && ks <= 0x0110ffff)
+	/* Unnamed Unicode codepoint. */
+        snprintf(buffer, size, "U%lx", ks & 0xffffffUL);
+    else
+	/* Unnamed, non-Unicode, symbol (shouldn't generally happen). */
+	snprintf(buffer, size, "0x%08x", ks);
 }
 
 uint32_t

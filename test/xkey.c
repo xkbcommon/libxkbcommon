@@ -15,8 +15,10 @@ static void print_keysym(const char *s)
 
 static void print_string(KeySym ks)
 {
-    char *s = xkb_keysym_to_string(ks);
-    printf("%s\n", s ? s : "NULL");
+    char s[16];
+
+    xkb_keysym_to_string(ks, s, sizeof s);
+    printf("%s\n", s);
 }
 
 int main(int argc, char *argv[])
