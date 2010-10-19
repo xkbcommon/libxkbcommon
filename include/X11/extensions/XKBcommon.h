@@ -755,6 +755,42 @@ struct xkb_component_list {
 	struct xkb_component_name *	geometry;
 };
 
+struct xkb_state {
+	unsigned char   group; /* base + latched + locked */
+	/* FIXME: Why are base + latched short and not char?? */
+	unsigned short  base_group; /* physically ... down? */
+	unsigned short  latched_group;
+	unsigned char   locked_group;
+
+	unsigned char   mods; /* base + latched + locked */
+	unsigned char   base_mods; /* physically down */
+	unsigned char   latched_mods;
+	unsigned char   locked_mods;
+
+	unsigned char   compat_state; /* mods + group for core state */
+
+	/* grab mods = all depressed and latched mods, _not_ locked mods */
+	unsigned char   grab_mods; /* grab mods minus internal mods */
+	unsigned char   compat_grab_mods; /* grab mods + group for core state,
+	                                     but not locked groups if
+                                             IgnoreGroupLocks set */
+
+	/* effective mods = all mods (depressed, latched, locked) */
+	unsigned char   lookup_mods; /* effective mods minus internal mods */
+	unsigned char   compat_lookup_mods; /* effective mods + group */
+
+	unsigned short  ptr_buttons; /* core pointer buttons */
+};
+
+#define	XkbStateFieldFromRec(s)	XkbBuildCoreState((s)->lookup_mods,(s)->group)
+#define	XkbGrabStateFromRec(s)	XkbBuildCoreState((s)->grab_mods,(s)->group)
+
+#define	XkbNumGroups(g)			((g)&0x0f)
+#define	XkbOutOfRangeGroupInfo(g)	((g)&0xf0)
+#define	XkbOutOfRangeGroupAction(g)	((g)&0xc0)
+#define	XkbOutOfRangeGroupNumber(g)	(((g)&0x30)>>4)
+#define	XkbSetNumGroups(g,n)	(((g)&0xf0)|((n)&0x0f))
+
 _XFUNCPROTOBEGIN
 
 typedef uint32_t (*InternAtomFuncPtr)(const char *val);
