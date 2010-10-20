@@ -38,4 +38,4 @@ libxkbcomp_la_SOURCES = \
 	xkbparse.y \
 	xkbpath.c \
 	xkbpath.h \
-	xkbscan.c
+	xkbscan.l

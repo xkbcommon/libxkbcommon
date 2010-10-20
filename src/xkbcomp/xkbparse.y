@@ -89,6 +89,7 @@
 	FUNCTION_KEYS		76
 	ALTERNATE_GROUP		77
 %{
+#define DEBUG 1
 #ifdef DEBUG
 #define	YYDEBUG 1
 #endif
@@ -765,23 +766,3 @@ OptMapName	:	MapName	{ $$= $1; }
 
 MapName		:	STRING 	{ $$= strdup(scanBuf); }
 		;
-%%
-void
-yyerror(const char *s)
-{
-    if (warningLevel>0) {
-	(void)fprintf(stderr,"%s: line %d of %s\n",s,lineNum,
-					(scanFile?scanFile:"(unknown)"));
-	if ((warningLevel>3))
-	    (void)fprintf(stderr,"last scanned symbol is: %s\n",scanBuf);
-    }
-    return;
-}
-
-
-int
-yywrap(void)
-{
-   return 1;
-}
-

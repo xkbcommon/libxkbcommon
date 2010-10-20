@@ -33,22 +33,31 @@ authorization from the authors.
 #include "X11/extensions/XKBcommon.h"
 #include "xkbcomp/utils.h"
 
+static char buffer[8192];
+
 int main(int argc, char *argv[])
 {
     char *path, *name;
     FILE *file;
     struct xkb_desc * xkb;
+    int i, len, from_string = 0;
 
     /* Require xkb file */
     if (argc < 2) {
         fprintf(stderr, "Not enough arguments\n");
-        fprintf(stderr, "Usage: %s XKBFILE [NAME]\n",
+        fprintf(stderr, "Usage: %s [-s] XKBFILE [NAME]\n",
                 argv[0]);
         exit(1);
     }
 
-    path = argv[1];
-    name = (argc > 2) ? argv[2] : NULL;
+    i = 1;
+    if (strcmp(argv[1], "-s") == 0) {
+	from_string = 2;
+	i++;
+    }
+
+    path = argv[i];
+    name = (argc > i + 1) ? argv[i + 1] : NULL;
 
     file = fopen(path, "r");
     if (!file) {
@@ -57,7 +66,13 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    xkb = xkb_compile_keymap_from_file(file, name);
+    if (from_string) {
+	len = fread(buffer, 1, sizeof buffer, file);
+	buffer[len] = '\0';
+	xkb = xkb_compile_keymap_from_string(buffer, name);
+    } else {
+	xkb = xkb_compile_keymap_from_file(file, name);
+    }
     fclose(file);
 
     if (!xkb) {

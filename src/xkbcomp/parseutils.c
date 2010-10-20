@@ -738,7 +738,7 @@ PrintStmtAddrs(ParseCommon * stmt)
 }
 #endif
 
-static void
+void
 CheckDefaultMap(XkbFile * maps)
 {
     XkbFile *dflt, *tmp;
@@ -766,27 +766,6 @@ CheckDefaultMap(XkbFile * maps)
         }
     }
     return;
-}
-
-int
-XKBParseFile(FILE * file, XkbFile ** pRtrn)
-{
-    if (file)
-    {
-        yyin = file;
-        rtrnValue = NULL;
-        if (yyparse() == 0)
-        {
-            *pRtrn = rtrnValue;
-            CheckDefaultMap(rtrnValue);
-            rtrnValue = NULL;
-            return 1;
-        }
-        *pRtrn = NULL;
-        return 0;
-    }
-    *pRtrn = NULL;
-    return 1;
 }
 
 XkbFile *

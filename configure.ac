@@ -30,6 +30,7 @@ AC_CONFIG_HEADERS([src/config.h])
 AC_PROG_LIBTOOL
 AC_PROG_CC
 AC_PROG_YACC
+AC_PROG_LEX
 
 m4_ifndef([PKG_PROG_PKG_CONFIG],
     [m4_fatal([Could not locate the pkg-config autoconf macros.

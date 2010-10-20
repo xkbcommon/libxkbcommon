@@ -247,22 +247,11 @@ fail:
     return NULL;
 }
 
-struct xkb_desc *
-xkb_compile_keymap_from_file(FILE *inputFile, const char *mapName)
+static struct xkb_desc *
+compile_keymap(XkbFile *file, const char *mapName)
 {
-    XkbFile *file, *mapToUse;
+    XkbFile *mapToUse;
     struct xkb_desc * xkb;
-
-    if (!inputFile) {
-        ERROR("no file specified to generate XKB keymap\n");
-        goto fail;
-    }
-
-    setScanState("input", 1);
-    if (!XKBParseFile(inputFile, &file) || !file) {
-        ERROR("failed to parse input xkb file\n");
-        goto fail;
-    }
 
     /* Find map to use */
     if (!(mapToUse = XkbChooseMap(file, mapName)))
@@ -294,6 +283,44 @@ unwind_xkb:
     XkbcFreeKeyboard(xkb, XkbAllComponentsMask, True);
 unwind_file:
     /* XXX: here's where we would free the XkbFile */
-fail:
+
     return NULL;
+}
+
+struct xkb_desc *
+xkb_compile_keymap_from_string(const char *string, const char *mapName)
+{
+    XkbFile *file;
+
+    if (!string) {
+        ERROR("no string specified to generate XKB keymap\n");
+        return NULL;
+    }
+
+    setScanState("input", 1);
+    if (!XKBParseString(string, &file) || !file) {
+        ERROR("failed to parse input xkb file\n");
+        return NULL;
+    }
+
+    return compile_keymap(file, mapName);
+}
+
+struct xkb_desc *
+xkb_compile_keymap_from_file(FILE *inputFile, const char *mapName)
+{
+    XkbFile *file;
+
+    if (!inputFile) {
+        ERROR("no file specified to generate XKB keymap\n");
+	return NULL;
+    }
+
+    setScanState("input", 1);
+    if (!XKBParseFile(inputFile, &file) || !file) {
+        ERROR("failed to parse input xkb file\n");
+	return NULL;
+    }
+
+    return compile_keymap(file, mapName);
 }

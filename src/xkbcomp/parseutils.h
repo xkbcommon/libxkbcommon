@@ -177,6 +177,8 @@ extern int XKBParseFile(FILE * /* file */ ,
                         XkbFile **      /* pRtrn */
     );
 
+extern int XKBParseString(const char *string, XkbFile ** pRtrn);
+
 extern XkbFile *CreateXKBFile(int /* type */ ,
                               char * /* name */ ,
                               ParseCommon * /* defs */ ,
@@ -186,8 +188,6 @@ extern XkbFile *CreateXKBFile(int /* type */ ,
 extern void yyerror(const char *        /* s */
     );
 
-extern int yywrap(void);
-
 extern int yylex(void);
 extern int yyparse(void);
 
@@ -196,5 +196,6 @@ extern int setScanState(char * /* file */ ,
     );
 
 extern FILE *yyin;
+extern const char *yystring;
 
 #endif /* XKBPARSE_H */
