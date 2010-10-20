@@ -85,118 +85,99 @@ struct xkb_rule_names {
 };
 
 struct xkb_any_action {
-    unsigned char   type;
-    unsigned char   pad[18];
+    uint8_t   type;
+    uint8_t   data[7];
 };
 
 struct xkb_mod_action {
-    unsigned char   type;
+    uint8_t         type;
     uint8_t         flags;
+    uint8_t         mask;
     uint8_t         real_mods;
-    uint32_t        mask;
-    uint32_t        vmods;
+    uint16_t        vmods;
 };
 
 struct xkb_group_action {
-    unsigned char   type;
-    unsigned char   flags;
+    uint8_t         type;
+    uint8_t         flags;
     int16_t         group;
 };
 
 struct xkb_iso_action {
-    unsigned char   type;
+    uint8_t         type;
     uint8_t         flags;
-    int16_t         group;
-    uint32_t        mask;
-    uint32_t        vmods;
+    uint8_t         mask;
     uint8_t         real_mods;
- 
-   uint8_t         affect;
+    uint8_t         group;
+    uint8_t         affect;
+    uint16_t        vmods;
 };
 
 struct xkb_controls_action {
-    unsigned char   type;
+    uint8_t         type;
     uint8_t         flags;
     uint32_t        ctrls;
 };
 
 struct xkb_device_button_action {
-    unsigned char   type;
+    uint8_t         type;
     uint8_t         flags;
-    uint16_t        device;
-    uint16_t        button;
     uint8_t         count;
+    uint8_t         button;
+    uint8_t         device;
 };
 
 struct xkb_device_valuator_action {
-    unsigned char   type;
+    uint8_t         type;
+    uint8_t         device;
     uint8_t         v1_what;
-    uint16_t        device;
-    uint16_t        v1_index;
-    int16_t         v1_value;
-    uint16_t        v2_index;
-    int16_t         v2_value;
+    uint8_t         v1_index;
+    uint8_t         v1_value;
     uint8_t         v2_what;
+    uint8_t         v2_index;
+    uint8_t         v2_value;
 };
 
 struct xkb_pointer_default_action {
-    unsigned char   type;
+    uint8_t         type;
     uint8_t         flags;
     uint8_t         affect;
     uint8_t         value;
 };
 
 struct xkb_switch_screen_action {
-    unsigned char   type;
+    uint8_t         type;
     uint8_t         flags;
     uint8_t         screen;
 };
 
 struct xkb_redirect_key_action {
-	unsigned char	type;
-	unsigned char	new_key;
-	unsigned char	mods_mask;
-	unsigned char	mods;
-	unsigned char	vmods_mask0;
-	unsigned char	vmods_mask1;
-	unsigned char	vmods0;
-	unsigned char	vmods1;
+    uint8_t		type;
+    uint8_t		new_key;
+    uint8_t		mods_mask;
+    uint8_t		mods;
+    uint16_t		vmods_mask;
+    uint16_t		vmods;
 };
-#define	XkbSARedirectVMods(a)		((((unsigned int)(a)->vmods1)<<8)|\
-					((unsigned int)(a)->vmods0))
-#define	XkbSARedirectSetVMods(a,m)	(((a)->vmods_mask1=(((m)>>8)&0xff)),\
-					 ((a)->vmods_mask0=((m)&0xff)))
-#define	XkbSARedirectVModsMask(a)	((((unsigned int)(a)->vmods_mask1)<<8)|\
-					((unsigned int)(a)->vmods_mask0))
-#define	XkbSARedirectSetVModsMask(a,m)	(((a)->vmods_mask1=(((m)>>8)&0xff)),\
-					 ((a)->vmods_mask0=((m)&0xff)))
-
 
 struct xkb_pointer_action {
-	unsigned char	type;
-	unsigned char	flags;
-	unsigned char	high_XXX;
-	unsigned char	low_XXX;
-	unsigned char	high_YYY;
-	unsigned char	low_YYY;
+    uint8_t	type;
+    uint8_t	flags;
+    uint16_t	x;
+    uint16_t	y;
 };
-#define	XkbIntTo2Chars(i,h,l)	(((h)=((i>>8)&0xff)),((l)=((i)&0xff)))
-#define	XkbPtrActionX(a)      (Xkb2CharsToInt((a)->high_XXX,(a)->low_XXX))
-#define	XkbPtrActionY(a)      (Xkb2CharsToInt((a)->high_YYY,(a)->low_YYY))
-#define	XkbSetPtrActionX(a,x) (XkbIntTo2Chars(x,(a)->high_XXX,(a)->low_XXX))
-#define	XkbSetPtrActionY(a,y) (XkbIntTo2Chars(y,(a)->high_YYY,(a)->low_YYY))
 
 struct xkb_message_action {
-	unsigned char	type;
-	unsigned char	flags;
-	unsigned char	message[6];
+    uint8_t	type;
+    uint8_t	flags;
+    uint8_t	message[6];
 };
 
 struct xkb_pointer_button_action {
-	unsigned char	type;
-	unsigned char	flags;
-	unsigned char	count;
-	unsigned char	button;
+    uint8_t	type;
+    uint8_t	flags;
+    uint8_t	count;
+    uint8_t	button;
 };
 
 union xkb_action {

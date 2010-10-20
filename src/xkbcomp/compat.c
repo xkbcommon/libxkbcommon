@@ -119,9 +119,9 @@ InitCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
     info->dflt.interp.flags = 0;
     info->dflt.interp.virtual_mod = XkbNoModifier;
     info->dflt.interp.act.type = XkbSA_NoAction;
-    for (i = 0; i < sizeof info->dflt.interp.act.pad; i++)
+    for (i = 0; i < sizeof info->dflt.interp.act.data; i++)
     {
-        info->dflt.interp.act.pad[i] = 0;
+        info->dflt.interp.act.data[i] = 0;
     }
     ClearIndicatorMapInfo(&info->ledDflt);
     info->ledDflt.defs.fileID = info->fileID;
@@ -147,9 +147,9 @@ ClearCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
     info->dflt.interp.flags = 0;
     info->dflt.interp.virtual_mod = XkbNoModifier;
     info->dflt.interp.act.type = XkbSA_NoAction;
-    for (i = 0; i < sizeof info->dflt.interp.act.pad; i++)
+    for (i = 0; i < sizeof info->dflt.interp.act.data; i++)
     {
-        info->dflt.interp.act.pad[i] = 0;
+        info->dflt.interp.act.data[i] = 0;
     }
     ClearIndicatorMapInfo(&info->ledDflt);
     info->nInterps = 0;

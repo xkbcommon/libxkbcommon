@@ -606,13 +606,13 @@ HandleMovePtr(struct xkb_desc * xkb,
         {
             if (absolute)
                 act->flags |= XkbSA_MoveAbsoluteX;
-            XkbSetPtrActionX(act, rtrn.ival);
+            act->x = rtrn.ival;
         }
         else
         {
             if (absolute)
                 act->flags |= XkbSA_MoveAbsoluteY;
-            XkbSetPtrActionY(act, rtrn.ival);
+            act->y = rtrn.ival;
         }
         return True;
     }
@@ -1069,11 +1069,11 @@ HandleRedirectKey(struct xkb_desc * xkb,
                 act->mods &= ~(t2 & 0xff);
 
             t2 = (t2 >> 8) & 0xffff;
-            XkbSARedirectSetVModsMask(act, XkbSARedirectVModsMask(act) | t2);
+            act->vmods_mask |= t2;
             if (field == F_Modifiers)
-                XkbSARedirectSetVMods(act, XkbSARedirectVMods(act) | t2);
+                act->vmods |= t2;
             else
-                XkbSARedirectSetVMods(act, XkbSARedirectVMods(act) & ~t2);
+                act->vmods &= ~t2;
             return True;
         }
         return True;
@@ -1200,7 +1200,7 @@ HandlePrivate(struct xkb_desc * xkb,
                     ACTION("Extra %d bytes ignored\n", len - 6);
                     return False;
                 }
-                strncpy((char *) action->pad, rtrn.str, sizeof action->pad);
+                strncpy((char *) action->data, rtrn.str, sizeof action->data);
             }
             free(rtrn.str);
             return True;
@@ -1215,7 +1215,7 @@ HandlePrivate(struct xkb_desc * xkb,
                 return False;
             }
             ndx = rtrn.uval;
-            if (ndx >= sizeof action->pad)
+            if (ndx >= sizeof action->data)
             {
                 ERROR("The data for a private action is 18 bytes long\n");
                 ACTION("Attempt to use data[%d] ignored\n", ndx);
@@ -1229,7 +1229,7 @@ HandlePrivate(struct xkb_desc * xkb,
                 ACTION("Illegal datum %d ignored\n", rtrn.ival);
                 return False;
             }
-            action->pad[ndx] = rtrn.uval;
+            action->data[ndx] = rtrn.uval;
             return True;
         }
     }
