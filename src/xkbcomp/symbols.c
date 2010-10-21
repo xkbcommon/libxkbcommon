@@ -2148,6 +2148,9 @@ CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
         xkb->server->explicit[kc] |= XkbExplicitAutoRepeatMask;
     }
 
+    if (nGroups > xkb->ctrls->num_groups)
+	xkb->ctrls->num_groups = nGroups;
+
     /* do the same thing for the next key */
     CopySymbolsDef(xkb, key, kc + 1);
     return True;
