@@ -64,7 +64,6 @@ if  test "x$GCC" = xyes ; then
 fi
 
 PKG_CHECK_MODULES([X11], [xproto kbproto >= 1.0.5])
-PKG_CHECK_MODULES([XLIB], [x11])
 
 dnl Ensure we have keysym headers
 AC_MSG_CHECKING([for X11 includedir])
