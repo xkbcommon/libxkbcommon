@@ -20,7 +20,7 @@ dnl  PERFORMANCE OF THIS SOFTWARE.
 dnl
 dnl Process this file with autoconf to create configure.
 
-AC_PREREQ([2.57])
+AC_PREREQ([2.65])
 AC_INIT([libxkbcommon], [0.1.0],
     [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg])
 AM_INIT_AUTOMAKE([dist-bzip2 foreign])
@@ -86,7 +86,7 @@ AC_SUBST([XF86KEYSYM_H])
 AC_SUBST([KS_HEADERS], ['$(KEYSYMDEF_H) $(XF86KEYSYM_H)'])
 
 AC_ARG_WITH([xkb_config_root],
-    [AC_HELP_STRING([--with-xkb-config-root=<paths>],
+    [AS_HELP_STRING([--with-xkb-config-root=<paths>],
         [Set default XKB config root (default: ${datadir}/X11/xkb)])],
     [XKBCONFIGROOT="$withval"],
     [XKBCONFIGROOT='${datadir}/X11/xkb'])
@@ -95,7 +95,7 @@ AC_SUBST([XKBCONFIGROOT])
 XORG_RELEASE_VERSION
 XORG_CHANGELOG
 
-AC_OUTPUT([
+AC_CONFIG_FILES([
 Makefile
 xkbcommon.pc
 include/Makefile
@@ -104,3 +104,4 @@ src/makekeys/Makefile
 src/xkbcomp/Makefile
 test/Makefile
 ])
+AC_OUTPUT
