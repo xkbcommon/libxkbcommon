@@ -26,6 +26,7 @@ AC_INIT([libxkbcommon], [0.1.0],
 AM_INIT_AUTOMAKE([dist-bzip2 foreign])
 AM_SILENT_RULES([yes])
 AC_CONFIG_HEADERS([src/config.h])
+AC_CONFIG_MACRO_DIR([m4])
 
 AC_PROG_LIBTOOL
 AC_PROG_CC
