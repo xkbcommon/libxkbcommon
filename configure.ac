@@ -24,7 +24,6 @@ AC_PREREQ([2.60])
 AC_INIT([libxkbcommon], [0.1.0],
     [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg])
 AM_INIT_AUTOMAKE([dist-bzip2 foreign])
-AM_SILENT_RULES([yes])
 AC_CONFIG_HEADERS([src/config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -41,10 +40,12 @@ m4_ifndef([PKG_PROG_PKG_CONFIG],
     autoreconf/autogen.sh.])])
 PKG_PROG_PKG_CONFIG
 
-# Require xorg-macros version 1.2.0 or newer for XORG_CHANGELOG macro
+# Require xorg-macros minimum of 1.8 for AM_SILENT_RULES
 m4_ifndef([XORG_MACROS_VERSION],
-    [m4_fatal([must install xorg-macros before running autoconf/autogen.sh])])
-XORG_MACROS_VERSION([1.2.0])
+	  [m4_fatal([must install xorg-macros 1.8 or later before running autoconf/autogen])])
+XORG_MACROS_VERSION(1.8)
+XORG_DEFAULT_OPTIONS
+XORG_CHECK_MALLOC_ZERO
 
 dnl Build native compiler needed for makekeys
 AC_ARG_VAR([CC_FOR_BUILD], [Build native C compiler program])
@@ -57,8 +58,6 @@ if test "x$CC_FOR_BUILD" = x; then
 fi
 
 AC_CHECK_FUNCS([strcasecmp])
-XORG_CHECK_MALLOC_ZERO
-XORG_CWARNFLAGS
 
 if  test "x$GCC" = xyes ; then
   CFLAGS="$CFLAGS -fvisibility=hidden"
@@ -91,9 +90,6 @@ AC_ARG_WITH([xkb_config_root],
     [XKBCONFIGROOT="$withval"],
     [XKBCONFIGROOT='${datadir}/X11/xkb'])
 AC_SUBST([XKBCONFIGROOT])
-
-XORG_RELEASE_VERSION
-XORG_CHANGELOG
 
 AC_CONFIG_FILES([
 Makefile
