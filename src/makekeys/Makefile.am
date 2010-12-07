@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/include
+AM_CPPFLAGS = -I$(top_srcdir)/include
 AM_CFLAGS = $(X11_CFLAGS) $(CWARNFLAGS)
 
 # need to use build-native compiler

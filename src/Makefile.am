@@ -1,6 +1,6 @@
 SUBDIRS = makekeys xkbcomp
 
-INCLUDES = -I$(top_srcdir)/include -I$(builddir)/makekeys
+AM_CPPFLAGS = -I$(top_srcdir)/include -I$(builddir)/makekeys
 AM_CFLAGS = $(X11_CFLAGS) $(CWARNFLAGS) $(XMALLOC_ZERO_CFLAGS)
 
 lib_LTLIBRARIES = libxkbcommon.la
