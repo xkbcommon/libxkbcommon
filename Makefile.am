@@ -3,13 +3,14 @@ SUBDIRS = include src test
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = xkbcommon.pc
 
-EXTRA_DIST = ChangeLog
+MAINTAINERCLEANFILES = ChangeLog INSTALL
 
-MAINTAINERCLEANFILES = ChangeLog
+.PHONY: ChangeLog INSTALL
 
-.PHONY: ChangeLog
+INSTALL:
+	$(INSTALL_CMD)
 
 ChangeLog:
 	$(CHANGELOG_CMD)
 
-dist-hook: ChangeLog
+dist-hook: ChangeLog INSTALL
