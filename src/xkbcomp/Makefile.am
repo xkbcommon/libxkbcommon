@@ -2,9 +2,6 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src
 AM_CFLAGS = $(X11_CFLAGS) $(CWARNFLAGS) \
 	-DDFLT_XKB_CONFIG_ROOT='"$(XKBCONFIGROOT)"'
 
-BUILT_SOURCES = xkbparse.c
-MAINTAINERCLEANFILES = $(BUILT_SOURCES)
-
 noinst_LTLIBRARIES = libxkbcomp.la
 libxkbcomp_la_SOURCES = \
 	action.c \
