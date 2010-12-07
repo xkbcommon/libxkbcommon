@@ -35,6 +35,14 @@ AM_MAINTAINER_MODE
 # Initialize libtool
 AC_PROG_LIBTOOL
 
+# Require xorg-macros minimum of 1.8 for AM_SILENT_RULES
+m4_ifndef([XORG_MACROS_VERSION],
+	  [m4_fatal([must install xorg-macros 1.8 or later before running autoconf/autogen])])
+XORG_MACROS_VERSION(1.8)
+XORG_DEFAULT_OPTIONS
+XORG_CHECK_MALLOC_ZERO
+
+# Check for programs
 AC_PROG_LEX
 AC_PROG_YACC
 AC_PATH_PROG([YACC_INST], $YACC)
@@ -43,21 +51,6 @@ if test ! -f "src/xkbcomp/xkbparse.c"; then
       AC_MSG_ERROR([yacc not found - unable to compile src/xkbcomp/xkbparse.y])
    fi
 fi
-
-m4_ifndef([PKG_PROG_PKG_CONFIG],
-    [m4_fatal([Could not locate the pkg-config autoconf macros.
-    These are usually located in /usr/share/aclocal/pkg.m4. If your
-    macros are in a different location, try setting the environment
-    variable ACLOCAL="aclocal -I/other/macro/dir" before running
-    autoreconf/autogen.sh.])])
-PKG_PROG_PKG_CONFIG
-
-# Require xorg-macros minimum of 1.8 for AM_SILENT_RULES
-m4_ifndef([XORG_MACROS_VERSION],
-	  [m4_fatal([must install xorg-macros 1.8 or later before running autoconf/autogen])])
-XORG_MACROS_VERSION(1.8)
-XORG_DEFAULT_OPTIONS
-XORG_CHECK_MALLOC_ZERO
 
 dnl Build native compiler needed for makekeys
 AC_ARG_VAR([CC_FOR_BUILD], [Build native C compiler program])
