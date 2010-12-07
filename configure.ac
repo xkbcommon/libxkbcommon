@@ -52,7 +52,10 @@ if test ! -f "src/xkbcomp/xkbparse.c"; then
    fi
 fi
 
-dnl Build native compiler needed for makekeys
+# Checks for library functions.
+AC_CHECK_FUNCS([strcasecmp])
+
+# Build native compiler needed for makekeys
 AC_ARG_VAR([CC_FOR_BUILD], [Build native C compiler program])
 if test "x$CC_FOR_BUILD" = x; then
     if test "$cross_compiling" != no; then
@@ -62,33 +65,36 @@ if test "x$CC_FOR_BUILD" = x; then
     fi
 fi
 
-AC_CHECK_FUNCS([strcasecmp])
-
 if  test "x$GCC" = xyes ; then
   CFLAGS="$CFLAGS -fvisibility=hidden"
 fi
 
+# Obtain protocol headers include directives
 PKG_CHECK_MODULES([X11], [xproto kbproto >= 1.0.5])
 
-dnl Ensure we have keysym headers
+# Obtain the path to the X Window System Core Protocol
 AC_MSG_CHECKING([for X11 includedir])
 x11includedir="`$PKG_CONFIG --variable=includedir xproto`/X11"
 AC_MSG_RESULT([$x11includedir])
 
+# Obtain full path for keysymdef header file
 AC_MSG_CHECKING([for keysymdef.h])
 KEYSYMDEF_H="$x11includedir/keysymdef.h"
 test -f "$KEYSYMDEF_H" || AC_MSG_ERROR([can't locate keysymdef.h in $x11includedir])
 AC_MSG_RESULT([$KEYSYMDEF_H])
 AC_SUBST([KEYSYMDEF_H])
 
+# Obtain full path for XF86keysym header file
 AC_MSG_CHECKING([for XF86keysym.h])
 XF86KEYSYM_H="$x11includedir/XF86keysym.h"
 test -f "$XF86KEYSYM_H" || AC_MSG_ERROR([can't locate XF86keysym.h in $x11includedir])
 AC_MSG_RESULT([$XF86KEYSYM_H])
 AC_SUBST([XF86KEYSYM_H])
 
+# Aggregate the headers full paths for makekeys
 AC_SUBST([KS_HEADERS], ['$(KEYSYMDEF_H) $(XF86KEYSYM_H)'])
 
+# Define a configuration option for the XKB config root
 AC_ARG_WITH([xkb_config_root],
     [AS_HELP_STRING([--with-xkb-config-root=<paths>],
         [Set default XKB config root (default: ${datadir}/X11/xkb)])],
@@ -97,12 +103,11 @@ AC_ARG_WITH([xkb_config_root],
 AC_SUBST([XKBCONFIGROOT])
 
 AC_CONFIG_FILES([
-Makefile
-xkbcommon.pc
-include/Makefile
-src/Makefile
-src/makekeys/Makefile
-src/xkbcomp/Makefile
-test/Makefile
-])
+	Makefile
+	xkbcommon.pc
+	include/Makefile
+	src/Makefile
+	src/makekeys/Makefile
+	src/xkbcomp/Makefile
+	test/Makefile])
 AC_OUTPUT
