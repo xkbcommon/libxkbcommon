@@ -1,4 +1,5 @@
 *.log
+canonicalise
 filecomp
 namescomp
 rulescomp

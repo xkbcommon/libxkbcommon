@@ -1,2 +1,2 @@
-libxkbcomp.la
 xkbparse.c
+xkbscan.c
