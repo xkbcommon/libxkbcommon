@@ -35,8 +35,14 @@ AM_MAINTAINER_MODE
 # Initialize libtool
 AC_PROG_LIBTOOL
 
-AC_PROG_YACC
 AC_PROG_LEX
+AC_PROG_YACC
+AC_PATH_PROG([YACC_INST], $YACC)
+if test ! -f "src/xkbcomp/xkbparse.c"; then
+   if test -z "$YACC_INST"; then
+      AC_MSG_ERROR([yacc not found - unable to compile src/xkbcomp/xkbparse.y])
+   fi
+fi
 
 m4_ifndef([PKG_PROG_PKG_CONFIG],
     [m4_fatal([Could not locate the pkg-config autoconf macros.
