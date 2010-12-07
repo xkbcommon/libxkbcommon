@@ -69,25 +69,25 @@ if  test "x$GCC" = xyes ; then
   CFLAGS="$CFLAGS -fvisibility=hidden"
 fi
 
-# Obtain protocol headers include directives
+# Obtain protocols headers include directives
 PKG_CHECK_MODULES([X11], [xproto kbproto >= 1.0.5])
 
 # Obtain the path to the X Window System Core Protocol
 AC_MSG_CHECKING([for X11 includedir])
-x11includedir="`$PKG_CONFIG --variable=includedir xproto`/X11"
-AC_MSG_RESULT([$x11includedir])
+includex11dir="`$PKG_CONFIG --variable=includex11dir xproto`"
+AC_MSG_RESULT([$includex11dir])
 
 # Obtain full path for keysymdef header file
 AC_MSG_CHECKING([for keysymdef.h])
-KEYSYMDEF_H="$x11includedir/keysymdef.h"
-test -f "$KEYSYMDEF_H" || AC_MSG_ERROR([can't locate keysymdef.h in $x11includedir])
+KEYSYMDEF_H="$includex11dir/keysymdef.h"
+test -f "$KEYSYMDEF_H" || AC_MSG_ERROR([can't locate keysymdef.h in $includex11dir])
 AC_MSG_RESULT([$KEYSYMDEF_H])
 AC_SUBST([KEYSYMDEF_H])
 
 # Obtain full path for XF86keysym header file
 AC_MSG_CHECKING([for XF86keysym.h])
-XF86KEYSYM_H="$x11includedir/XF86keysym.h"
-test -f "$XF86KEYSYM_H" || AC_MSG_ERROR([can't locate XF86keysym.h in $x11includedir])
+XF86KEYSYM_H="$includex11dir/XF86keysym.h"
+test -f "$XF86KEYSYM_H" || AC_MSG_ERROR([can't locate XF86keysym.h in $includex11dir])
 AC_MSG_RESULT([$XF86KEYSYM_H])
 AC_SUBST([XF86KEYSYM_H])
 
