@@ -26,5 +26,5 @@ libxkbcommon_la_SOURCES = \
 BUILT_SOURCES = ks_tables.h
 CLEANFILES = $(BUILT_SOURCES)
 
-ks_tables.h: $(top_builddir)/makekeys/makekeys$(EXEEXT)
+ks_tables.h: $(top_builddir)/makekeys/makekeys$(EXEEXT) $(KEYSYMDEF_H) $(XF86KEYSYM_H)
 	$(AM_V_GEN)cat $(KEYSYMDEF_H) $(XF86KEYSYM_H) | $(top_builddir)/makekeys/makekeys$(EXEEXT) > $@
