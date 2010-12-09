@@ -10,4 +10,4 @@ CLEANFILES = ks_tables.h
 
 ks_tables.h: makekeys$(EXEEXT)
 	@rm -f $@
-	cat $(KS_HEADERS) | $(builddir)/makekeys$(EXEEXT) > $@
+	cat $(KEYSYMDEF_H) $(XF86KEYSYM_H) | $(builddir)/makekeys$(EXEEXT) > $@

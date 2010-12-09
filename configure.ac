@@ -87,9 +87,6 @@ test -f "$XF86KEYSYM_H" || AC_MSG_ERROR([can't locate XF86keysym.h in $includex1
 AC_MSG_RESULT([$XF86KEYSYM_H])
 AC_SUBST([XF86KEYSYM_H])
 
-# Aggregate the headers full paths for makekeys
-AC_SUBST([KS_HEADERS], ['$(KEYSYMDEF_H) $(XF86KEYSYM_H)'])
-
 # Define a configuration option for the XKB config root
 AC_ARG_WITH([xkb_config_root],
     [AS_HELP_STRING([--with-xkb-config-root=<paths>],
