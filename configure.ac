@@ -99,8 +99,8 @@ AC_CONFIG_FILES([
 	Makefile
 	xkbcommon.pc
 	include/Makefile
+	makekeys/Makefile
 	src/Makefile
-	src/makekeys/Makefile
 	src/xkbcomp/Makefile
 	test/Makefile])
 AC_OUTPUT

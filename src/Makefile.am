@@ -1,6 +1,6 @@
-SUBDIRS = makekeys xkbcomp
+SUBDIRS = xkbcomp
 
-AM_CPPFLAGS = -I$(top_srcdir)/include -I$(builddir)/makekeys
+AM_CPPFLAGS = -I$(top_srcdir)/include
 AM_CFLAGS = $(X11_CFLAGS) $(CWARNFLAGS) $(XMALLOC_ZERO_CFLAGS)
 
 lib_LTLIBRARIES = libxkbcommon.la
@@ -22,3 +22,9 @@ libxkbcommon_la_SOURCES = \
 	xkbgeom.h \
 	xkbmisc.h \
 	xkbrules.h
+
+BUILT_SOURCES = ks_tables.h
+CLEANFILES = $(BUILT_SOURCES)
+
+ks_tables.h: $(top_builddir)/makekeys/makekeys$(EXEEXT)
+	$(AM_V_GEN)cat $(KEYSYMDEF_H) $(XF86KEYSYM_H) | $(top_builddir)/makekeys/makekeys$(EXEEXT) > $@

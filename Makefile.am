@@ -1,4 +1,5 @@
-SUBDIRS = include src test
+# Order: makekeys before src
+SUBDIRS = include makekeys src test
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = xkbcommon.pc
