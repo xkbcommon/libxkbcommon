@@ -7,5 +7,12 @@ TESTS_ENVIRONMENT = $(SHELL)
 check_PROGRAMS = xkey filecomp namescomp rulescomp canonicalise
 TESTS = $(check_PROGRAMS:=.sh)
 
+EXTRA_DIST =		\
+	$(TESTS)	\
+	bad.xkb		\
+	basic.xkb	\
+	default.xkb	\
+	named.xkb
+
 clean-local:
 	rm -f *.log
