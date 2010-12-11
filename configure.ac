@@ -88,11 +88,12 @@ AC_MSG_RESULT([$XF86KEYSYM_H])
 AC_SUBST([XF86KEYSYM_H])
 
 # Define a configuration option for the XKB config root
+xkb_base=`$PKG_CONFIG --variable=xkb_base xkeyboard-config`
 AC_ARG_WITH([xkb_config_root],
     [AS_HELP_STRING([--with-xkb-config-root=<paths>],
         [Set default XKB config root (default: ${datadir}/X11/xkb)])],
     [XKBCONFIGROOT="$withval"],
-    [XKBCONFIGROOT='${datadir}/X11/xkb'])
+    [XKBCONFIGROOT="$xkb_base"])
 AC_SUBST([XKBCONFIGROOT])
 
 AC_CONFIG_FILES([
