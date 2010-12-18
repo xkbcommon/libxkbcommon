@@ -1461,12 +1461,12 @@ ActionsInit(void)
         constTrue.common.next = NULL;
         constTrue.op = ExprIdent;
         constTrue.type = TypeBoolean;
-        constTrue.value.str = XkbcInternAtom("true", False);
+        constTrue.value.str = xkb_intern_atom("true");
         constFalse.common.stmtType = StmtExpr;
         constFalse.common.next = NULL;
         constFalse.op = ExprIdent;
         constFalse.type = TypeBoolean;
-        constFalse.value.str = XkbcInternAtom("false", False);
+        constFalse.value.str = xkb_intern_atom("false");
         actionsInitialized = 1;
     }
     return;

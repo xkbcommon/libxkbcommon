@@ -219,7 +219,7 @@ FindKeypadVMod(struct xkb_desc * xkb)
     uint32_t name;
     ExprResult rtrn;
 
-    name = XkbcInternAtom("NumLock", False);
+    name = xkb_intern_atom("NumLock");
     if ((xkb) && LookupVModIndex((char *) xkb, None, name, TypeInt, &rtrn))
     {
         return rtrn.ival;

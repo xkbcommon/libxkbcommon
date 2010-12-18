@@ -557,27 +557,27 @@ FieldSpec	:	Ident			{ $$= $1; }
 		;
 
 Element		:	ACTION_TOK		
-			{ $$= XkbcInternAtom("action",False); }
+			{ $$= xkb_intern_atom("action"); }
 		|	INTERPRET
-			{ $$= XkbcInternAtom("interpret",False); }
+			{ $$= xkb_intern_atom("interpret"); }
 		|	TYPE
-			{ $$= XkbcInternAtom("type",False); }
+			{ $$= xkb_intern_atom("type"); }
 		|	KEY
-			{ $$= XkbcInternAtom("key",False); }
+			{ $$= xkb_intern_atom("key"); }
 		|	GROUP
-			{ $$= XkbcInternAtom("group",False); }
+			{ $$= xkb_intern_atom("group"); }
 		|	MODIFIER_MAP
-			{$$=XkbcInternAtom("modifier_map",False);}
+			{$$= xkb_intern_atom("modifier_map");}
 		|	INDICATOR
-			{ $$= XkbcInternAtom("indicator",False); }
+			{ $$= xkb_intern_atom("indicator"); }
 		|	SHAPE	
-			{ $$= XkbcInternAtom("shape",False); }
+			{ $$= xkb_intern_atom("shape"); }
 		|	ROW	
-			{ $$= XkbcInternAtom("row",False); }
+			{ $$= xkb_intern_atom("row"); }
 		|	SECTION	
-			{ $$= XkbcInternAtom("section",False); }
+			{ $$= xkb_intern_atom("section"); }
 		|	TEXT
-			{ $$= XkbcInternAtom("text",False); }
+			{ $$= xkb_intern_atom("text"); }
 		;
 
 OptMergeMode	:	MergeMode		{ $$= $1; }
@@ -753,11 +753,11 @@ Integer		:	INTEGER		{ $$= scanInt; }
 KeyName		:	KEYNAME		{ $$= strdup(scanBuf); }
 		;
 
-Ident		:	IDENT	{ $$= XkbcInternAtom(scanBuf,False); }
-		|	DEFAULT { $$= XkbcInternAtom("default",False); }
+Ident		:	IDENT	{ $$= xkb_intern_atom(scanBuf); }
+		|	DEFAULT { $$= xkb_intern_atom("default"); }
 		;
 
-String		:	STRING	{ $$= XkbcInternAtom(scanBuf,False); }
+String		:	STRING	{ $$= xkb_intern_atom(scanBuf); }
 		;
 
 OptMapName	:	MapName	{ $$= $1; }

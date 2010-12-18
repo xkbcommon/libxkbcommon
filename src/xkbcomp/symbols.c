@@ -244,9 +244,9 @@ InitSymbolsInfo(SymbolsInfo * info, struct xkb_desc * xkb)
 {
     register int i;
 
-    tok_ONE_LEVEL = XkbcInternAtom("ONE_LEVEL", False);
-    tok_TWO_LEVEL = XkbcInternAtom("TWO_LEVEL", False);
-    tok_KEYPAD = XkbcInternAtom("KEYPAD", False);
+    tok_ONE_LEVEL = xkb_intern_atom("ONE_LEVEL");
+    tok_TWO_LEVEL = xkb_intern_atom("TWO_LEVEL");
+    tok_KEYPAD = xkb_intern_atom("KEYPAD");
     info->name = NULL;
     info->explicit_group = 0;
     info->errorCount = 0;
@@ -1139,7 +1139,7 @@ SetSymbolsField(KeyInfo * key,
         }
         if (arrayNdx == NULL)
         {
-            key->dfltType = XkbcInternAtom(tmp.str, False);
+            key->dfltType = xkb_intern_atom(tmp.str);
             key->defs.defined |= _Key_Type_Dflt;
         }
         else if (!ExprResolveInteger(arrayNdx, &ndx, SimpleLookup,
@@ -1162,7 +1162,7 @@ SetSymbolsField(KeyInfo * key,
         }
         else
         {
-            key->types[ndx.uval - 1] = XkbcInternAtom(tmp.str, False);
+            key->types[ndx.uval - 1] = xkb_intern_atom(tmp.str);
             key->typesDefined |= (1 << (ndx.uval - 1));
         }
         free(tmp.str);
@@ -1404,7 +1404,7 @@ SetGroupName(SymbolsInfo * info, ExprDef * arrayNdx, ExprDef * value)
         return False;
     }
     info->groupNames[tmp.uval - 1 + info->explicit_group] =
-        XkbcInternAtom(name.str, False);
+        xkb_intern_atom(name.str);
 
     return True;
 }
@@ -1796,23 +1796,23 @@ FindAutomaticType(int width, uint32_t * syms, uint32_t * typeNameRtrn,
     *autoType = False;
     if ((width == 1) || (width == 0))
     {
-        *typeNameRtrn = XkbcInternAtom("ONE_LEVEL", False);
+        *typeNameRtrn = xkb_intern_atom("ONE_LEVEL");
         *autoType = True;
     }
     else if (width == 2)
     {
         if (syms && XkbcKSIsLower(syms[0]) && XkbcKSIsUpper(syms[1]))
         {
-            *typeNameRtrn = XkbcInternAtom("ALPHABETIC", False);
+            *typeNameRtrn = xkb_intern_atom("ALPHABETIC");
         }
         else if (syms && (XkbKSIsKeypad(syms[0]) || XkbKSIsKeypad(syms[1])))
         {
-            *typeNameRtrn = XkbcInternAtom("KEYPAD", False);
+            *typeNameRtrn = xkb_intern_atom("KEYPAD");
             *autoType = True;
         }
         else
         {
-            *typeNameRtrn = XkbcInternAtom("TWO_LEVEL", False);
+            *typeNameRtrn = xkb_intern_atom("TWO_LEVEL");
             *autoType = True;
         }
     }
@@ -1821,15 +1821,14 @@ FindAutomaticType(int width, uint32_t * syms, uint32_t * typeNameRtrn,
         if (syms && XkbcKSIsLower(syms[0]) && XkbcKSIsUpper(syms[1]))
             if (XkbcKSIsLower(syms[2]) && XkbcKSIsUpper(syms[3]))
                 *typeNameRtrn =
-                    XkbcInternAtom("FOUR_LEVEL_ALPHABETIC", False);
+                    xkb_intern_atom("FOUR_LEVEL_ALPHABETIC");
             else
-                *typeNameRtrn = XkbcInternAtom("FOUR_LEVEL_SEMIALPHABETIC",
-                                              False);
+                *typeNameRtrn = xkb_intern_atom("FOUR_LEVEL_SEMIALPHABETIC");
 
         else if (syms && (XkbKSIsKeypad(syms[0]) || XkbKSIsKeypad(syms[1])))
-            *typeNameRtrn = XkbcInternAtom("FOUR_LEVEL_KEYPAD", False);
+            *typeNameRtrn = xkb_intern_atom("FOUR_LEVEL_KEYPAD");
         else
-            *typeNameRtrn = XkbcInternAtom("FOUR_LEVEL", False);
+            *typeNameRtrn = xkb_intern_atom("FOUR_LEVEL");
         /* XXX: why not set autoType here? */
     }
     return ((width >= 0) && (width <= 4));
@@ -2246,7 +2245,7 @@ CompileSymbols(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
         }
 
         /* now copy info into xkb. */
-        xkb->names->symbols = XkbcInternAtom(info.name, False);
+        xkb->names->symbols = xkb_intern_atom(info.name);
         if (info.aliases)
             ApplyAliases(xkb, False, &info.aliases);
         for (i = 0; i < XkbNumKbdGroups; i++)

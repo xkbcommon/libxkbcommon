@@ -727,7 +727,7 @@ HandleIndicatorNameDef(IndicatorNameDef * def,
         info->errorCount++;
         return ReportBadType("indicator", "name", buf, "string");
     }
-    ii.name = XkbcInternAtom(tmp.str, False);
+    ii.name = xkb_intern_atom(tmp.str);
     free(tmp.str);
     ii.virtual = def->virtual;
     if (!AddIndicatorName(info, &ii))
@@ -845,7 +845,7 @@ CompileKeycodes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
                 == Success)
         {
             register int i;
-            xkb->names->keycodes = XkbcInternAtom(info.name, False);
+            xkb->names->keycodes = xkb_intern_atom(info.name);
             for (i = info.computedMin; i <= info.computedMax; i++)
             {
                 LongToKeyName(info.names[i], xkb->names->keys[i].name);

@@ -129,14 +129,22 @@ XkbcAtomGetString(uint32_t atom)
     return ret ? strdup(ret) : NULL;
 }
 
-static uint32_t
-_XkbcMakeAtom(const char *string, unsigned len, Bool makeit)
+uint32_t
+xkb_intern_atom(const char *string)
 {
     NodePtr *np;
     unsigned i;
     int comp;
     unsigned int fp = 0;
+    unsigned len;
+    int makeit = True;
 
+    if (!string)
+	return None;
+    if (do_intern_atom)
+	return do_intern_atom(string);
+
+    len = strlen(string);
     np = &atomRoot;
     for (i = 0; i < (len + 1) / 2; i++) {
         fp = fp * 27 + string[i];
@@ -207,14 +215,4 @@ _XkbcMakeAtom(const char *string, unsigned len, Bool makeit)
     }
     else
         return None;
-}
-
-uint32_t
-XkbcInternAtom(const char *name, Bool onlyIfExists)
-{
-    if (!name)
-        return None;
-    if (do_intern_atom)
-        return do_intern_atom(name);
-    return _XkbcMakeAtom(name, strlen(name), !onlyIfExists);
 }

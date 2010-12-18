@@ -47,7 +47,7 @@
 void
 ClearIndicatorMapInfo(LEDInfo * info)
 {
-    info->name = XkbcInternAtom("default", False);
+    info->name = xkb_intern_atom("default");
     info->indicator = _LED_NotBound;
     info->flags = info->which_mods = info->real_mods = 0;
     info->vmods = 0;

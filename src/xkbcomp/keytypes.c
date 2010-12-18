@@ -108,10 +108,10 @@ uint32_t tok_KEYPAD;
 static void
 InitKeyTypesInfo(KeyTypesInfo * info, struct xkb_desc * xkb, KeyTypesInfo * from)
 {
-    tok_ONE_LEVEL = XkbcInternAtom("ONE_LEVEL", False);
-    tok_TWO_LEVEL = XkbcInternAtom("TWO_LEVEL", False);
-    tok_ALPHABETIC = XkbcInternAtom("ALPHABETIC", False);
-    tok_KEYPAD = XkbcInternAtom("KEYPAD", False);
+    tok_ONE_LEVEL = xkb_intern_atom("ONE_LEVEL");
+    tok_TWO_LEVEL = xkb_intern_atom("TWO_LEVEL");
+    tok_ALPHABETIC = xkb_intern_atom("ALPHABETIC");
+    tok_KEYPAD = xkb_intern_atom("KEYPAD");
     info->name = strdup("default");
     info->errorCount = 0;
     info->stdPresent = 0;
@@ -839,7 +839,7 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
         ACTION("Ignoring illegal level name definition\n");
         return False;
     }
-    level_name = XkbcInternAtom(rtrn.str, False);
+    level_name = xkb_intern_atom(rtrn.str);
     free(rtrn.str);
     return AddLevelName(type, level, level_name, True, True);
 }
@@ -1195,7 +1195,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
         if (info.name != NULL)
         {
             if (XkbcAllocNames(xkb, XkbTypesNameMask, 0, 0) == Success)
-                xkb->names->types = XkbcInternAtom(info.name, False);
+                xkb->names->types = xkb_intern_atom(info.name);
             else
             {
                 WSGO("Couldn't allocate space for types name\n");
