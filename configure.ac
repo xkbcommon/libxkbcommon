@@ -65,6 +65,10 @@ if test "x$CC_FOR_BUILD" = x; then
     fi
 fi
 
+if  test "x$GCC" = xyes ; then
+  CFLAGS="$CFLAGS -fvisibility=hidden"
+fi
+
 # Obtain protocols headers include directives
 PKG_CHECK_MODULES([X11], [xproto kbproto >= 1.0.5])
 
