@@ -70,7 +70,7 @@ if  test "x$GCC" = xyes ; then
 fi
 
 # Obtain protocols headers include directives
-PKG_CHECK_MODULES([X11], [xproto kbproto >= 1.0.5])
+PKG_CHECK_MODULES([X11], [xproto kbproto >= 1.0.4])
 
 # Obtain the path to the X Window System Core Protocol
 AC_MSG_CHECKING([for X11 includedir])
