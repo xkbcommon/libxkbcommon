@@ -179,6 +179,8 @@ extern int XKBParseFile(FILE * /* file */ ,
 
 extern int XKBParseString(const char *string, XkbFile ** pRtrn);
 
+extern void CheckDefaultMap(XkbFile * maps);
+
 extern XkbFile *CreateXKBFile(int /* type */ ,
                               char * /* name */ ,
                               ParseCommon * /* defs */ ,
