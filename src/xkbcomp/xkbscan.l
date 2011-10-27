@@ -196,7 +196,8 @@ yyerror(const char *s)
 void setScanState(char *file, int lineno)
 {
   yylineno = 1;
-  scanFile = file;
+  strncpy(scanFile, file, 1023);
+  scanFile[1023]='\0';
 }
 
 int
