@@ -324,3 +324,9 @@ xkb_compile_keymap_from_file(FILE *inputFile, const char *mapName)
 
     return compile_keymap(file, mapName);
 }
+
+void
+xkb_free_keymap(struct xkb_desc *xkb)
+{
+       XkbcFreeKeyboard(xkb, 0, True);
+}

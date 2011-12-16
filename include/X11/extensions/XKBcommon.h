@@ -795,6 +795,9 @@ xkb_compile_keymap_from_file(FILE *inputFile, const char *mapName);
 _X_EXPORT extern struct xkb_desc *
 xkb_compile_keymap_from_string(const char *string, const char *mapName);
 
+_X_EXPORT extern void
+xkb_free_keymap(struct xkb_desc *xkb);
+
 _X_EXPORT extern struct xkb_component_list *
 xkb_list_components(struct xkb_component_names * ptrns, int *maxMatch);
 
