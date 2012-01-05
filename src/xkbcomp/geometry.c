@@ -2119,7 +2119,7 @@ HandleGeometryVar(VarDef * stmt, struct xkb_desc * xkb, GeometryInfo * info)
     ExprDef *ndx;
     DoodadInfo *di;
     uint32_t *pField = NULL;
-    int ret;
+    int ret = True; /* default to no error */
 
     if (ExprResolveLhs(stmt->name, &elem, &field, &ndx) == 0)
         return 0;               /* internal error, already reported */
