@@ -1683,7 +1683,7 @@ HandleSymbolsFile(XkbFile * file,
                 info->errorCount++;
             break;
         case StmtVModDef:
-            if (!HandleVModDef((VModDef *) stmt, merge, &info->vmods))
+            if (!HandleVModDef((VModDef *) stmt, xkb, merge, &info->vmods))
                 info->errorCount++;
             break;
         case StmtInterpDef:

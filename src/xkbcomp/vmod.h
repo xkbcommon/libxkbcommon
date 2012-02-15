@@ -45,6 +45,7 @@ extern void ClearVModInfo(VModInfo * /* info */ ,
     );
 
 extern Bool HandleVModDef(VModDef * /* stmt */ ,
+                          struct xkb_desc * /* xkb */ ,
                           unsigned /* mergeMode */ ,
                           VModInfo *    /* info */
     );
@@ -64,6 +65,7 @@ extern int FindKeypadVMod(struct xkb_desc *    /* xkb */
     );
 
 extern Bool ResolveVirtualModifier(ExprDef * /* def */ ,
+                                   struct xkb_desc * /* xkb */ ,
                                    ExprResult * /* value_rtrn */ ,
                                    VModInfo *   /* info */
     );

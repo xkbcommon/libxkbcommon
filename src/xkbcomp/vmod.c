@@ -79,15 +79,16 @@ ClearVModInfo(VModInfo * info, struct xkb_desc * xkb)
  * @param mergeMode Merge strategy (e.g. MergeOverride)
  */
 Bool
-HandleVModDef(VModDef * stmt, unsigned mergeMode, VModInfo * info)
+HandleVModDef(VModDef * stmt, struct xkb_desc *xkb, unsigned mergeMode,
+              VModInfo * info)
 {
     register int i, bit, nextFree;
     ExprResult mod;
     struct xkb_server_map * srv;
     struct xkb_names * names;
 
-    srv = info->xkb->server;
-    names = info->xkb->names;
+    srv = xkb->server;
+    names = xkb->names;
     for (i = 0, bit = 1, nextFree = -1; i < XkbNumVirtualMods; i++, bit <<= 1)
     {
         if (info->defined & bit)
@@ -228,11 +229,12 @@ FindKeypadVMod(struct xkb_desc * xkb)
 }
 
 Bool
-ResolveVirtualModifier(ExprDef * def, ExprResult * val_rtrn, VModInfo * info)
+ResolveVirtualModifier(ExprDef * def, struct xkb_desc *xkb,
+                       ExprResult * val_rtrn, VModInfo * info)
 {
     struct xkb_names * names;
 
-    names = info->xkb->names;
+    names = xkb->names;
     if (def->op == ExprIdent)
     {
         int i, bit;

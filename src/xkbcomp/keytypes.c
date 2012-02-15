@@ -1068,7 +1068,7 @@ HandleKeyTypesFile(XkbFile * file,
                 info->errorCount++;
             break;
         case StmtVModDef: /* virtual_modifiers NumLock, ... */
-            if (!HandleVModDef((VModDef *) stmt, merge, &info->vmods))
+            if (!HandleVModDef((VModDef *) stmt, xkb, merge, &info->vmods))
                 info->errorCount++;
             break;
         case StmtKeyAliasDef:

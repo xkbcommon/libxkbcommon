@@ -515,7 +515,7 @@ SetInterpField(SymInterpInfo * si,
     {
         if (arrayNdx != NULL)
             return ReportSINotArray(si, field, info);
-        ok = ResolveVirtualModifier(value, &tmp, &info->vmods);
+        ok = ResolveVirtualModifier(value, xkb, &tmp, &info->vmods);
         if (ok)
         {
             si->interp.virtual_mod = tmp.uval;
@@ -765,7 +765,7 @@ HandleCompatMapFile(XkbFile * file,
                 info->errorCount++;
             break;
         case StmtVModDef:
-            if (!HandleVModDef((VModDef *) stmt, merge, &info->vmods))
+            if (!HandleVModDef((VModDef *) stmt, xkb, merge, &info->vmods))
                 info->errorCount++;
             break;
         case StmtKeycodeDef:
