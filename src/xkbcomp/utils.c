@@ -79,7 +79,7 @@ uInformation(const char *s, ...)
     va_list args;
 
     if (!errorFile)
-        return;
+        errorFile = stderr;
 
     va_start(args, s);
     vfprintf(errorFile, s, args);
@@ -95,7 +95,7 @@ uAction(const char *s, ...)
     va_list args;
 
     if (!errorFile)
-        return;
+        errorFile = stderr;
 
     if (prefix != NULL)
         fprintf(errorFile, "%s", prefix);
@@ -114,7 +114,7 @@ uWarning(const char *s, ...)
     va_list args;
 
     if (!errorFile)
-        return;
+        errorFile = stderr;
 
     if ((outCount == 0) && (preMsg != NULL))
         fprintf(errorFile, "%s\n", preMsg);
@@ -136,7 +136,7 @@ uError(const char *s, ...)
     va_list args;
 
     if (!errorFile)
-        return;
+        errorFile = stderr;
 
     if ((outCount == 0) && (preMsg != NULL))
         fprintf(errorFile, "%s\n", preMsg);
@@ -158,7 +158,7 @@ uFatalError(const char *s, ...)
     va_list args;
 
     if (!errorFile)
-        return;
+        errorFile = stderr;
 
     if ((outCount == 0) && (preMsg != NULL))
         fprintf(errorFile, "%s\n", preMsg);
@@ -183,7 +183,7 @@ uInternalError(const char *s, ...)
     va_list args;
 
     if (!errorFile)
-        return;
+        errorFile = stderr;
 
     if ((outCount == 0) && (preMsg != NULL))
         fprintf(errorFile, "%s\n", preMsg);
