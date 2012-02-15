@@ -28,7 +28,7 @@
 #include "utils.h"
 #include <stdlib.h>
 #include "xkbpath.h"
-#include "X11/extensions/XKBcommon.h"
+#include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
 
 #ifndef DFLT_XKB_CONFIG_ROOT

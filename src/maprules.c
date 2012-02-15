@@ -28,7 +28,7 @@
 #include <config.h>
 #endif
 #include "xkbrules.h"
-#include "X11/extensions/XKBcommon.h"
+#include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
 
 #ifdef HAVE_DIX_CONFIG_H

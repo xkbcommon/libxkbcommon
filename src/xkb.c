@@ -28,7 +28,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <config.h>
 #endif
 #include "xkbmisc.h"
-#include "X11/extensions/XKBcommon.h"
+#include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
 
 static char *

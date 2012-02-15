@@ -1,5 +1,5 @@
 #include "xkbmisc.h"
-#include "X11/extensions/XKBcommon.h"
+#include "xkbcommon/xkbcommon.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

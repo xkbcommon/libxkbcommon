@@ -30,7 +30,7 @@ authorization from the authors.
 #include <stdio.h>
 #include <X11/X.h>
 #include <X11/Xdefs.h>
-#include "X11/extensions/XKBcommon.h"
+#include "xkbcommon/xkbcommon.h"
 
 
 /* From filecommon */

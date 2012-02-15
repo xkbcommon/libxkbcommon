@@ -29,7 +29,7 @@ authorization from the authors.
 
 #include <X11/X.h>
 #include <X11/Xdefs.h>
-#include "X11/extensions/XKBcommon.h"
+#include "xkbcommon/xkbcommon.h"
 
 extern int
 XkbcAllocCompatMap(struct xkb_desc * xkb, unsigned which, unsigned nSI);

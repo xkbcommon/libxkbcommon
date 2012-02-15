@@ -36,7 +36,7 @@
 
 #include "utils.h"
 
-#include "X11/extensions/XKBcommon.h"
+#include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
 
 extern char *scanFile;

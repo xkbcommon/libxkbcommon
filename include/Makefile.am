@@ -1,1 +1,1 @@
-nobase_include_HEADERS = X11/extensions/XKBcommon.h
+nobase_include_HEADERS = xkbcommon/xkbcommon.h

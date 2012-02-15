@@ -31,7 +31,7 @@ authorization from the authors.
 #include <X11/X.h>
 #include <X11/keysymdef.h>
 #include "xkbmisc.h"
-#include "X11/extensions/XKBcommon.h"
+#include "xkbcommon/xkbcommon.h"
 #include <stdlib.h>
 #include <string.h>
 

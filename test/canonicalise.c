@@ -23,7 +23,7 @@
  * Author: Daniel Stone <daniel@fooishbar.org>
  */
 
-#include "X11/extensions/XKBcommon.h"
+#include "xkbcommon/xkbcommon.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
