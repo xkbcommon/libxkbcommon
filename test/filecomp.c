@@ -80,5 +80,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    xkb_free_keymap(xkb);
+
     return 0;
 }
