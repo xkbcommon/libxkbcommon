@@ -2211,8 +2211,11 @@ CompileSymbols(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
     info.dflt.defs.merge = merge;
     HandleSymbolsFile(file, xkb, merge, &info);
 
-    if (info.nKeys == 0)
+    if (info.nKeys == 0) {
+        FreeSymbolsInfo(&info);
         return True;
+    }
+
     if (info.errorCount == 0)
     {
         KeyInfo *key;
@@ -2292,7 +2295,10 @@ CompileSymbols(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
                 next = (ModMapEntry *) mm->defs.next;
             }
         }
+        FreeSymbolsInfo(&info);
         return True;
     }
+
+    FreeSymbolsInfo(&info);
     return False;
 }
