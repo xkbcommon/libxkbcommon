@@ -192,7 +192,7 @@ typedef struct _KeycodeDef
     ParseCommon common;
     unsigned merge;
     char name[5];
-    ExprDef *value;
+    unsigned long value;
 } KeycodeDef;
 
 typedef struct _KeyAliasDef

@@ -31,6 +31,7 @@
 
 extern char scanBuf[1024];
 extern int scanInt;
+extern unsigned long scanULong;
 extern int lineNum;
 
 extern XkbFile *rtrnValue;
@@ -65,7 +66,7 @@ extern ExprDef *ExprCreateBinary(unsigned /* op */ ,
     );
 
 extern KeycodeDef *KeycodeCreate(char * /* name */ ,
-                                 ExprDef *      /* value */
+                                 unsigned long /* value */
     );
 
 extern KeyAliasDef *KeyAliasCreate(char * /* alias */ ,

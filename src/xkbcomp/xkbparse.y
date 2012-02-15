@@ -707,13 +707,6 @@ Terminal	:	String
 			    free($1);
 			    $$= expr;
 			}
-                |       KeyCode
-                        {
-                            ExprDef *expr;
-                            expr= ExprCreate(ExprValue,TypeKeyCode);
-                            expr->value.uval= $1;
-                            $$= expr;
-                        }
 		;
 
 OptKeySymList	:	KeySymList			{ $$= $1; }

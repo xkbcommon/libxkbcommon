@@ -120,7 +120,7 @@ ExprCreateBinary(unsigned op, ExprDef * left, ExprDef * right)
 }
 
 KeycodeDef *
-KeycodeCreate(char *name, ExprDef * value)
+KeycodeCreate(char *name, unsigned long value)
 {
     KeycodeDef *def;
 

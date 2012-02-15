@@ -636,19 +636,10 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_desc * xkb, KeyNamesInfo * 
 static int
 HandleKeycodeDef(KeycodeDef * stmt, unsigned merge, KeyNamesInfo * info)
 {
-    int code;
-    ExprResult result;
-
-    if (!ExprResolveKeyCode(stmt->value, &result))
+    if ((info->explicitMin != 0 && stmt->value < info->explicitMin) ||
+        (info->explicitMax != 0 && stmt->value > info->explicitMax))
     {
-        ACTION("No value keycode assigned to name <%s>\n", stmt->name);
-        return 0;
-    }
-    code = result.uval;
-    if ((info->explicitMin != 0 && code < info->explicitMin) ||
-        (info->explicitMax != 0 && code > info->explicitMax))
-    {
-        ERROR("Illegal keycode %d for name <%s>\n", code, stmt->name);
+        ERROR("Illegal keycode %lu for name <%s>\n", stmt->value, stmt->name);
         ACTION("Must be in the range %d-%d inclusive\n",
                 info->explicitMin,
                 info->explicitMax ? info->explicitMax : XKB_KEYCODE_MAX);
@@ -661,7 +652,8 @@ HandleKeycodeDef(KeycodeDef * stmt, unsigned merge, KeyNamesInfo * info)
         else
             merge = stmt->merge;
     }
-    return AddKeyName(info, code, stmt->name, merge, info->fileID, True);
+    return AddKeyName(info, stmt->value, stmt->name, merge, info->fileID,
+                      True);
 }
 
 #define	MIN_KEYCODE_DEF		0
