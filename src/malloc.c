@@ -37,10 +37,7 @@ XkbcAllocClientMap(struct xkb_desc * xkb, unsigned which, unsigned nTotalTypes)
     if (!xkb || ((nTotalTypes > 0) && (nTotalTypes < XkbNumRequiredTypes)))
         return BadValue;
 
-    if ((which & XkbKeySymsMask) &&
-        ((!XkbIsLegalKeycode(xkb->min_key_code)) ||
-         (!XkbIsLegalKeycode(xkb->max_key_code)) ||
-         (xkb->max_key_code < xkb->min_key_code))) {
+    if ((which & XkbKeySymsMask) && !xkb_keymap_keycode_range_is_legal(xkb)) {
 #ifdef DEBUG
         fprintf(stderr, "bad keycode (%d,%d) in XkbAllocClientMap\n",
                 xkb->min_key_code, xkb->max_key_code);
@@ -106,9 +103,7 @@ XkbcAllocClientMap(struct xkb_desc * xkb, unsigned which, unsigned nTotalTypes)
     }
 
     if (which & XkbModifierMapMask) {
-        if ((!XkbIsLegalKeycode(xkb->min_key_code)) ||
-            (!XkbIsLegalKeycode(xkb->max_key_code)) ||
-            (xkb->max_key_code < xkb->min_key_code))
+        if (!xkb_keymap_keycode_range_is_legal(xkb))
             return BadMatch;
 
         if (!map->modmap) {
@@ -144,12 +139,13 @@ XkbcAllocServerMap(struct xkb_desc * xkb, unsigned which, unsigned nNewActions)
     else
         map = xkb->server;
 
-    if (which & XkbExplicitComponentsMask) {
-        if ((!XkbIsLegalKeycode(xkb->min_key_code)) ||
-            (!XkbIsLegalKeycode(xkb->max_key_code)) ||
-            (xkb->max_key_code < xkb->min_key_code))
-            return BadMatch;
+    if (!which)
+        return Success;
 
+    if (!xkb_keymap_keycode_range_is_legal(xkb))
+        return BadMatch;
+
+    if (which & XkbExplicitComponentsMask) {
         if (!map->explicit) {
             i = xkb->max_key_code + 1;
             map->explicit = _XkbTypedCalloc(i, unsigned char);
@@ -159,11 +155,6 @@ XkbcAllocServerMap(struct xkb_desc * xkb, unsigned which, unsigned nNewActions)
     }
 
     if (which&XkbKeyActionsMask) {
-        if ((!XkbIsLegalKeycode(xkb->min_key_code)) ||
-            (!XkbIsLegalKeycode(xkb->max_key_code)) ||
-            (xkb->max_key_code < xkb->min_key_code))
-            return BadMatch;
-
         if (nNewActions < 1)
             nNewActions = 1;
 
@@ -200,11 +191,6 @@ XkbcAllocServerMap(struct xkb_desc * xkb, unsigned which, unsigned nNewActions)
     }
 
     if (which & XkbKeyBehaviorsMask) {
-        if ((!XkbIsLegalKeycode(xkb->min_key_code)) ||
-            (!XkbIsLegalKeycode(xkb->max_key_code)) ||
-            (xkb->max_key_code < xkb->min_key_code))
-            return BadMatch;
-
         if (!map->behaviors) {
             i = xkb->max_key_code + 1;
             map->behaviors = _XkbTypedCalloc(i, struct xkb_behavior);
@@ -214,11 +200,6 @@ XkbcAllocServerMap(struct xkb_desc * xkb, unsigned which, unsigned nNewActions)
     }
 
     if (which & XkbVirtualModMapMask) {
-        if ((!XkbIsLegalKeycode(xkb->min_key_code)) ||
-            (!XkbIsLegalKeycode(xkb->max_key_code)) ||
-            (xkb->max_key_code < xkb->min_key_code))
-            return BadMatch;
-
         if (!map->vmodmap) {
             i = xkb->max_key_code + 1;
             map->vmodmap = _XkbTypedCalloc(i, uint32_t);
@@ -279,10 +260,11 @@ XkbcCopyKeyType(struct xkb_key_type * from, struct xkb_key_type * into)
 }
 
 uint32_t *
-XkbcResizeKeySyms(struct xkb_desc * xkb, int key, int needed)
+XkbcResizeKeySyms(struct xkb_desc * xkb, xkb_keycode_t key,
+                  unsigned int needed)
 {
-    int i, nSyms, nKeySyms;
-    unsigned nOldSyms;
+    uint32_t i, nSyms, nKeySyms;
+    uint32_t nOldSyms;
     uint32_t *newSyms;
 
     if (needed == 0) {
@@ -291,10 +273,10 @@ XkbcResizeKeySyms(struct xkb_desc * xkb, int key, int needed)
     }
 
     nOldSyms = XkbKeyNumSyms(xkb, key);
-    if (nOldSyms >= (unsigned)needed)
+    if (nOldSyms >= needed)
         return XkbKeySymsPtr(xkb, key);
 
-    if (xkb->map->size_syms - xkb->map->num_syms >= (unsigned)needed) {
+    if (xkb->map->size_syms - xkb->map->num_syms >= needed) {
         if (nOldSyms > 0)
             memcpy(&xkb->map->syms[xkb->map->num_syms],
                    XkbKeySymsPtr(xkb, key), nOldSyms * sizeof(uint32_t));
@@ -343,9 +325,9 @@ XkbcResizeKeySyms(struct xkb_desc * xkb, int key, int needed)
 }
 
 union xkb_action *
-XkbcResizeKeyActions(struct xkb_desc * xkb, int key, int needed)
+XkbcResizeKeyActions(struct xkb_desc * xkb, xkb_keycode_t key, int needed)
 {
-    int i, nActs;
+    xkb_keycode_t i, nActs;
     union xkb_action *newActs;
 
     if (needed == 0) {
@@ -372,7 +354,7 @@ XkbcResizeKeyActions(struct xkb_desc * xkb, int key, int needed)
     nActs = 1;
 
     for (i = xkb->min_key_code; i <= xkb->max_key_code; i++) {
-        int nKeyActs, nCopy;
+        xkb_keycode_t nKeyActs, nCopy;
 
         if ((xkb->server->key_acts[i] == 0) && (i != key))
             continue;

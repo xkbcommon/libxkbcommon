@@ -1719,7 +1719,7 @@ HandleSymbolsFile(XkbFile * file,
 }
 
 static Bool
-FindKeyForSymbol(struct xkb_desc * xkb, uint32_t sym, unsigned int *kc_rtrn)
+FindKeyForSymbol(struct xkb_desc * xkb, uint32_t sym, xkb_keycode_t *kc_rtrn)
 {
     register int i, j;
     register Bool gotOne;
@@ -1952,7 +1952,8 @@ static Bool
 CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
 {
     register int i;
-    unsigned okc, kc, width, tmp, nGroups;
+    xkb_keycode_t okc, kc;
+    unsigned width, tmp, nGroups;
     struct xkb_key_type * type;
     Bool haveActions, autoType, useAlias;
     uint32_t *outSyms;
@@ -2158,7 +2159,7 @@ CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
 static Bool
 CopyModMapDef(struct xkb_desc * xkb, ModMapEntry *entry)
 {
-    unsigned kc;
+    xkb_keycode_t kc;
 
     if ((!entry->haveSymbol)
         &&

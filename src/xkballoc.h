@@ -62,10 +62,10 @@ extern int
 XkbcCopyKeyType(struct xkb_key_type * from, struct xkb_key_type *into);
 
 extern uint32_t *
-XkbcResizeKeySyms(struct xkb_desc * xkb, int key, int needed);
+XkbcResizeKeySyms(struct xkb_desc * xkb, xkb_keycode_t key, uint32_t needed);
 
 extern union xkb_action *
-XkbcResizeKeyActions(struct xkb_desc * xkb, int key, int needed);
+XkbcResizeKeyActions(struct xkb_desc * xkb, xkb_keycode_t key, int needed);
 
 extern void
 XkbcFreeClientMap(struct xkb_desc * xkb, unsigned what, Bool freeMap);

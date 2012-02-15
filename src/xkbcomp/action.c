@@ -1038,6 +1038,7 @@ HandleRedirectKey(struct xkb_desc * xkb,
     ExprResult rtrn;
     struct xkb_redirect_key_action *act;
     unsigned t1, t2;
+    xkb_keycode_t kc;
     unsigned long tmp;
 
     if (array_ndx != NULL)
@@ -1050,12 +1051,12 @@ HandleRedirectKey(struct xkb_desc * xkb,
         if (!ExprResolveKeyName(value, &rtrn, NULL, NULL))
             return ReportMismatch(action->type, field, "key name");
         tmp = KeyNameToLong(rtrn.keyName.name);
-        if (!FindNamedKey(xkb, tmp, &t1, True, CreateKeyNames(xkb), 0))
+        if (!FindNamedKey(xkb, tmp, &kc, True, CreateKeyNames(xkb), 0))
         {
             return ReportNotFound(action->type, field, "Key",
                                   XkbcKeyNameText(rtrn.keyName.name));
         }
-        act->new_key = t1;
+        act->new_key = kc;
         return True;
     case F_ModsToClear:
     case F_Modifiers:

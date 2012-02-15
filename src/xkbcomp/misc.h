@@ -77,7 +77,7 @@ extern Bool ProcessIncludeFile(IncludeStmt * /* stmt */ ,
 
 extern Bool FindNamedKey(struct xkb_desc * /* xkb */ ,
                          unsigned long /* name */ ,
-                         unsigned int * /* kc_rtrn */ ,
+                         xkb_keycode_t * /* kc_rtrn */ ,
                          Bool /* use_aliases */ ,
                          Bool /* create */ ,
                          int    /* start_from */

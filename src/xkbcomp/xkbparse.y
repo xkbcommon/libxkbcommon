@@ -135,7 +135,7 @@
 }
 %type <ival>	Number Integer Float SignedNumber
 %type <uval>	XkbCompositeType FileType MergeMode OptMergeMode
-%type <uval>	DoodadType Flag Flags OptFlags
+%type <uval>	DoodadType Flag Flags OptFlags KeyCode
 %type <str>	KeyName MapName OptMapName KeySym
 %type <sval>	FieldSpec Ident Element String
 %type <any>	DeclList Decl
@@ -325,7 +325,7 @@ VarDecl		:	Lhs EQUALS Expr SEMI
 			{ $$= BoolVarCreate($2,0); }
 		;
 
-KeyNameDecl	:	KeyName EQUALS Expr SEMI
+KeyNameDecl	:	KeyName EQUALS KeyCode SEMI
                         {
 			    KeycodeDef *def;
 
@@ -707,6 +707,13 @@ Terminal	:	String
 			    free($1);
 			    $$= expr;
 			}
+                |       KeyCode
+                        {
+                            ExprDef *expr;
+                            expr= ExprCreate(ExprValue,TypeKeyCode);
+                            expr->value.uval= $1;
+                            $$= expr;
+                        }
 		;
 
 OptKeySymList	:	KeySymList			{ $$= $1; }
@@ -748,6 +755,9 @@ Float		:	FLOAT		{ $$= scanInt; }
 
 Integer		:	INTEGER		{ $$= scanInt; }
 		;
+
+KeyCode         :       INTEGER         { $$= scanULong; }
+                ;
 
 KeyName		:	KEYNAME		{ $$= strdup(scanBuf); }
 		;

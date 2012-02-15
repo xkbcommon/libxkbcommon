@@ -60,9 +60,16 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/Xfuncproto.h>
 #include <X11/extensions/XKB.h>
 
-#ifndef X_PROTOCOL
-typedef unsigned char KeyCode;
-#endif
+typedef uint8_t xkb_keycode_t;
+
+#define XKB_KEYCODE_MAX                 255
+#define xkb_keycode_is_legal_ext(kc)    (kc <= XKB_KEYCODE_MAX)
+#define xkb_keycode_is_legal_x11(kc)    (kc <= XKB_KEYCODE_MAX)
+#define xkb_keymap_keycode_range_is_legal(xkb) \
+    (xkb->max_key_code > 0 && \
+     xkb->max_key_code > xkb->min_key_code && \
+     xkb_keycode_is_legal_ext(xkb->min_key_code) && \
+     xkb_keycode_is_legal_ext(xkb->max_key_code))
 
 /* Duplicate the modifier mask defines so libxkcommon can be used
  * without X.h */
@@ -153,7 +160,7 @@ struct xkb_switch_screen_action {
 
 struct xkb_redirect_key_action {
     uint8_t		type;
-    uint8_t		new_key;
+    xkb_keycode_t	new_key;
     uint8_t		mods_mask;
     uint8_t		mods;
     uint16_t		vmods_mask;
@@ -254,8 +261,8 @@ struct xkb_client_map {
     unsigned char            num_types;
     struct xkb_key_type *           types;
 
-    unsigned short           size_syms;
-    unsigned short           num_syms;
+    uint32_t                 size_syms;
+    uint32_t                 num_syms;
     uint32_t                *syms;
     struct xkb_sym_map *             key_sym_map;
 
@@ -335,8 +342,8 @@ struct xkb_names {
     uint32_t           *radio_groups;
     uint32_t            phys_symbols;
 
-    unsigned char     num_keys;
-    unsigned char     num_key_aliases;
+    xkb_keycode_t     num_keys;
+    xkb_keycode_t     num_key_aliases;
     unsigned short    num_rg;
 };
 
@@ -599,7 +606,7 @@ struct xkb_controls {
 	unsigned short	axt_opts_values;
 	unsigned int	axt_ctrls_mask;
 	unsigned int	axt_ctrls_values;
-	unsigned char	per_key_repeat[XkbPerKeyBitArraySize];
+	unsigned char	*per_key_repeat;
 };
 
 /* Common keyboard description structure */
@@ -607,8 +614,8 @@ struct xkb_desc {
     unsigned int        defined;
     unsigned short      flags;
     unsigned short      device_spec;
-    KeyCode             min_key_code;
-    KeyCode             max_key_code;
+    xkb_keycode_t       min_key_code;
+    xkb_keycode_t       max_key_code;
 
     struct xkb_controls *      ctrls;
     struct xkb_server_map *    server;
@@ -645,23 +652,22 @@ struct xkb_desc {
 
 struct xkb_map_changes {
 	unsigned short		 changed;
-	KeyCode			 min_key_code;
-	KeyCode			 max_key_code;
+	xkb_keycode_t		 min_key_code;
+	xkb_keycode_t		 max_key_code;
 	unsigned char		 first_type;
 	unsigned char		 num_types;
-	KeyCode			 first_key_sym;
-	unsigned char		 num_key_syms;
-	KeyCode			 first_key_act;
-	unsigned char		 num_key_acts;
-	KeyCode			 first_key_behavior;
-	unsigned char		 num_key_behaviors;
-	KeyCode 		 first_key_explicit;
-	unsigned char		 num_key_explicit;
-	KeyCode			 first_modmap_key;
-	unsigned char		 num_modmap_keys;
-	KeyCode			 first_vmodmap_key;
-	unsigned char		 num_vmodmap_keys;
-	unsigned char		 pad;
+	xkb_keycode_t		 first_key_sym;
+	xkb_keycode_t		 num_key_syms;
+	xkb_keycode_t		 first_key_act;
+	xkb_keycode_t		 num_key_acts;
+	xkb_keycode_t		 first_key_behavior;
+	xkb_keycode_t		 num_key_behaviors;
+	xkb_keycode_t		 first_key_explicit;
+	xkb_keycode_t		 num_key_explicit;
+	xkb_keycode_t		 first_modmap_key;
+	xkb_keycode_t		 num_modmap_keys;
+	xkb_keycode_t		 first_vmodmap_key;
+	xkb_keycode_t		 num_vmodmap_keys;
 	unsigned short		 vmods;
 };
 
@@ -682,10 +688,10 @@ struct xkb_name_changes {
 	unsigned char		num_types;
 	unsigned char		first_lvl;
 	unsigned char		num_lvls;
-	unsigned char		num_aliases;
+	xkb_keycode_t		num_aliases;
 	unsigned char		num_rg;
-	unsigned char		first_key;
-	unsigned char		num_keys;
+	xkb_keycode_t		first_key;
+	xkb_keycode_t		num_keys;
 	unsigned short		changed_vmods;
 	unsigned long		changed_indicators;
 	unsigned char		changed_groups;

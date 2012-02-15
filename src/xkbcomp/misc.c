@@ -247,7 +247,7 @@ typedef struct _KeyNameDesc
 Bool
 FindNamedKey(struct xkb_desc * xkb,
              unsigned long name,
-             unsigned int *kc_rtrn,
+             xkb_keycode_t *kc_rtrn,
              Bool use_aliases, Bool create, int start_from)
 {
     register unsigned n;
@@ -285,11 +285,6 @@ FindNamedKey(struct xkb_desc * xkb,
     {
         if ((!xkb->names) || (!xkb->names->keys))
         {
-            if (xkb->min_key_code < XkbMinLegalKeyCode)
-            {
-                xkb->min_key_code = XkbMinLegalKeyCode;
-                xkb->max_key_code = XkbMaxLegalKeyCode;
-            }
             if (XkbcAllocNames(xkb, XkbKeyNamesMask, 0, 0) != Success)
             {
                 if (warningLevel > 0)

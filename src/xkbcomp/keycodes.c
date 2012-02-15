@@ -70,15 +70,14 @@ typedef struct _KeyNamesInfo
     int errorCount;
     unsigned fileID;
     unsigned merge;
-    int computedMin; /* lowest keycode stored */
-    int computedMax; /* highest keycode stored */
-    int explicitMin;
-    int explicitMax;
-    int effectiveMin;
-    int effectiveMax;
-    unsigned long names[XkbMaxLegalKeyCode + 1]; /* 4-letter name of key, keycode is the index */
-    unsigned files[XkbMaxLegalKeyCode + 1];
-    unsigned char has_alt_forms[XkbMaxLegalKeyCode + 1];
+    xkb_keycode_t computedMin; /* lowest keycode stored */
+    xkb_keycode_t computedMax; /* highest keycode stored */
+    xkb_keycode_t explicitMin;
+    xkb_keycode_t explicitMax;
+    xkb_keycode_t arraySize;
+    unsigned long *names;
+    unsigned *files;
+    unsigned char *has_alt_forms;
     IndicatorNameInfo *leds;
     AliasInfo *aliases;
 } KeyNamesInfo;
@@ -87,6 +86,53 @@ static void HandleKeycodesFile(XkbFile * file,
                                struct xkb_desc * xkb,
                                unsigned merge,
                                KeyNamesInfo * info);
+
+static int
+ResizeKeyNameArrays(KeyNamesInfo *info, int newMax)
+{
+    void *tmp;
+    int i;
+
+    tmp = _XkbTypedRealloc(info->names, newMax + 1, unsigned long);
+    if (!tmp) {
+        ERROR
+            ("Couldn't reallocate for larger maximum keycode (%d)\n",
+             newMax);
+        ACTION("Maximum key value not changed\n");
+        return 0;
+    }
+    info->names = tmp;
+    for (i = info->arraySize + 1; i <= newMax; i++)
+        info->names[i] = 0;
+
+    tmp = _XkbTypedRealloc(info->files, newMax + 1, unsigned);
+    if (!tmp) {
+        ERROR
+            ("Couldn't reallocate for larger maximum keycode (%d)\n",
+             newMax);
+        ACTION("Maximum key value not changed\n");
+        return 0;
+    }
+    info->files = tmp;
+    for (i = info->arraySize + 1; i <= newMax; i++)
+        info->files[i] = 0;
+
+    tmp = _XkbTypedRealloc(info->has_alt_forms, newMax + 1, unsigned char);
+    if (!tmp) {
+        ERROR
+            ("Couldn't reallocate for larger maximum keycode (%d)\n",
+             newMax);
+        ACTION("Maximum key value not changed\n");
+        return 0;
+    }
+    info->has_alt_forms = tmp;
+    for (i = info->arraySize + 1; i <= newMax; i++)
+        info->has_alt_forms[i] = 0;
+
+    info->arraySize = newMax;
+
+    return 1;
+}
 
 static void
 InitIndicatorNameInfo(IndicatorNameInfo * ii, KeyNamesInfo * info)
@@ -278,13 +324,15 @@ ClearKeyNamesInfo(KeyNamesInfo * info)
     if (info->name != NULL)
         free(info->name);
     info->name = NULL;
-    info->computedMax = info->explicitMax = info->explicitMin = -1;
-    info->computedMin = 256;
-    info->effectiveMin = 8;
-    info->effectiveMax = 255;
-    bzero((char *) info->names, sizeof(info->names));
-    bzero((char *) info->files, sizeof(info->files));
-    bzero((char *) info->has_alt_forms, sizeof(info->has_alt_forms));
+    info->computedMax = info->explicitMax = info->explicitMin = 0;
+    info->computedMin = XKB_KEYCODE_MAX;
+    info->arraySize = 0;
+    free(info->names);
+    info->names = NULL;
+    free(info->files);
+    info->files = NULL;
+    free(info->has_alt_forms);
+    info->has_alt_forms = NULL;
     if (info->leds)
         ClearIndicatorNameInfo(info->leds, info);
     if (info->aliases)
@@ -298,6 +346,9 @@ InitKeyNamesInfo(KeyNamesInfo * info)
     info->name = NULL;
     info->leds = NULL;
     info->aliases = NULL;
+    info->names = NULL;
+    info->files = NULL;
+    info->has_alt_forms = NULL;
     ClearKeyNamesInfo(info);
     info->errorCount = 0;
     return;
@@ -308,7 +359,7 @@ FindKeyByLong(KeyNamesInfo * info, unsigned long name)
 {
     register int i;
 
-    for (i = info->effectiveMin; i <= info->effectiveMax; i++)
+    for (i = info->computedMin; i <= info->computedMax; i++)
     {
         if (info->names[i] == name)
             return i;
@@ -323,17 +374,15 @@ FindKeyByLong(KeyNamesInfo * info, unsigned long name)
  */
 static Bool
 AddKeyName(KeyNamesInfo * info,
-           int kc,
+           xkb_keycode_t kc,
            char *name, unsigned merge, unsigned fileID, Bool reportCollisions)
 {
     int old;
     unsigned long lval;
 
-    if ((kc < info->effectiveMin) || (kc > info->effectiveMax))
-    {
-        ERROR("Illegal keycode %d for name <%s>\n", kc, name);
-        ACTION("Must be in the range %d-%d inclusive\n",
-                info->effectiveMin, info->effectiveMax);
+    if (kc > info->arraySize && !ResizeKeyNameArrays(info, kc)) {
+        ERROR("Couldn't resize KeyNames arrays for keycode %d\n", kc);
+        ACTION("Ignoring key %d\n", kc);
         return False;
     }
     if (kc < info->computedMin)
@@ -444,6 +493,14 @@ MergeIncludedKeycodes(KeyNamesInfo * into, KeyNamesInfo * from,
         into->name = from->name;
         from->name = NULL;
     }
+    if (from->computedMax > into->arraySize &&
+        !ResizeKeyNameArrays(into, from->computedMax)) {
+        ERROR("Couldn't resize KeyNames arrays for key %d\n",
+              from->computedMax);
+        ACTION("Ignoring include file %s\n", from->name);
+        into->errorCount += 10;
+        return;
+    }
     for (i = from->computedMin; i <= from->computedMax; i++)
     {
         unsigned thisMerge;
@@ -472,17 +529,17 @@ MergeIncludedKeycodes(KeyNamesInfo * into, KeyNamesInfo * from,
     }
     if (!MergeAliases(&into->aliases, &from->aliases, merge))
         into->errorCount++;
-    if (from->explicitMin > 0)
+    if (from->explicitMin != 0)
     {
         if ((into->explicitMin < 0)
             || (into->explicitMin > from->explicitMin))
-            into->effectiveMin = into->explicitMin = from->explicitMin;
+            into->explicitMin = from->explicitMin;
     }
     if (from->explicitMax > 0)
     {
         if ((into->explicitMax < 0)
             || (into->explicitMax < from->explicitMax))
-            into->effectiveMax = into->explicitMax = from->explicitMax;
+            into->explicitMax = from->explicitMax;
     }
     return;
 }
@@ -512,8 +569,8 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_desc * xkb, KeyNamesInfo * 
     else if (strcmp(stmt->file, "computed") == 0)
     {
         xkb->flags |= AutoKeyNames;
-        info->explicitMin = XkbMinLegalKeyCode;
-        info->explicitMax = XkbMaxLegalKeyCode;
+        info->explicitMin = 0;
+        info->explicitMax = XKB_KEYCODE_MAX;
         return (info->errorCount == 0);
     } /* parse file, store returned info in the xkb struct */
     else if (ProcessIncludeFile(stmt, XkmKeyNamesIndex, &rtrn, &newMerge))
@@ -582,17 +639,19 @@ HandleKeycodeDef(KeycodeDef * stmt, unsigned merge, KeyNamesInfo * info)
     int code;
     ExprResult result;
 
-    if (!ExprResolveInteger(stmt->value, &result, NULL, NULL))
+    if (!ExprResolveKeyCode(stmt->value, &result))
     {
         ACTION("No value keycode assigned to name <%s>\n", stmt->name);
         return 0;
     }
-    code = result.ival;
-    if ((code < info->effectiveMin) || (code > info->effectiveMax))
+    code = result.uval;
+    if ((info->explicitMin != 0 && code < info->explicitMin) ||
+        (info->explicitMax != 0 && code > info->explicitMax))
     {
         ERROR("Illegal keycode %d for name <%s>\n", code, stmt->name);
         ACTION("Must be in the range %d-%d inclusive\n",
-                info->effectiveMin, info->effectiveMax);
+                info->explicitMin,
+                info->explicitMax ? info->explicitMax : XKB_KEYCODE_MAX);
         return 0;
     }
     if (stmt->merge != MergeDefault)
@@ -610,7 +669,7 @@ HandleKeycodeDef(KeycodeDef * stmt, unsigned merge, KeyNamesInfo * info)
 
 /**
  * Handle the minimum/maximum statement of the xkb file.
- * Sets explicitMin/Max and effectiveMin/Max of the info struct.
+ * Sets explicitMin/Max of the info struct.
  *
  * @return 1 on success, 0 otherwise.
  */
@@ -647,59 +706,57 @@ HandleKeyNameVar(VarDef * stmt, KeyNamesInfo * info)
         return 0;
     }
 
-    if (ExprResolveInteger(stmt->value, &tmp, NULL, NULL) == 0)
+    if (ExprResolveKeyCode(stmt->value, &tmp) == 0)
     {
         ACTION("Assignment to field %s ignored\n", field.str);
         return 0;
     }
-    if ((tmp.ival < XkbMinLegalKeyCode) || (tmp.ival > XkbMaxLegalKeyCode))
+    if (tmp.uval > XKB_KEYCODE_MAX)
     {
         ERROR
             ("Illegal keycode %d (must be in the range %d-%d inclusive)\n",
-             tmp.ival, XkbMinLegalKeyCode, XkbMaxLegalKeyCode);
+             tmp.uval, 0, XKB_KEYCODE_MAX);
         ACTION("Value of \"%s\" not changed\n", field.str);
         return 0;
     }
     if (which == MIN_KEYCODE_DEF)
     {
-        if ((info->explicitMax > 0) && (info->explicitMax < tmp.ival))
+        if ((info->explicitMax > 0) && (info->explicitMax < tmp.uval))
         {
             ERROR
                 ("Minimum key code (%d) must be <= maximum key code (%d)\n",
-                 tmp.ival, info->explicitMax);
+                 tmp.uval, info->explicitMax);
             ACTION("Minimum key code value not changed\n");
             return 0;
         }
-        if ((info->computedMax > 0) && (info->computedMin < tmp.ival))
+        if ((info->computedMax > 0) && (info->computedMin < tmp.uval))
         {
             ERROR
                 ("Minimum key code (%d) must be <= lowest defined key (%d)\n",
-                 tmp.ival, info->computedMin);
+                 tmp.uval, info->computedMin);
             ACTION("Minimum key code value not changed\n");
             return 0;
         }
-        info->explicitMin = tmp.ival;
-        info->effectiveMin = tmp.ival;
+        info->explicitMin = tmp.uval;
     }
     if (which == MAX_KEYCODE_DEF)
     {
-        if ((info->explicitMin > 0) && (info->explicitMin > tmp.ival))
+        if ((info->explicitMin > 0) && (info->explicitMin > tmp.uval))
         {
             ERROR("Maximum code (%d) must be >= minimum key code (%d)\n",
-                   tmp.ival, info->explicitMin);
+                   tmp.uval, info->explicitMin);
             ACTION("Maximum code value not changed\n");
             return 0;
         }
-        if ((info->computedMax > 0) && (info->computedMax > tmp.ival))
+        if ((info->computedMax > 0) && (info->computedMax > tmp.uval))
         {
             ERROR
                 ("Maximum code (%d) must be >= highest defined key (%d)\n",
-                 tmp.ival, info->computedMax);
+                 tmp.uval, info->computedMax);
             ACTION("Maximum code value not changed\n");
             return 0;
         }
-        info->explicitMax = tmp.ival;
-        info->effectiveMax = tmp.ival;
+        info->explicitMax = tmp.uval;
     }
     return 1;
 }
@@ -834,11 +891,11 @@ CompileKeycodes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
     if (info.errorCount == 0)
     {
         if (info.explicitMin > 0) /* if "minimum" statement was present */
-            xkb->min_key_code = info.effectiveMin;
+            xkb->min_key_code = info.explicitMin;
         else
             xkb->min_key_code = info.computedMin;
         if (info.explicitMax > 0) /* if "maximum" statement was present */
-            xkb->max_key_code = info.effectiveMax;
+            xkb->max_key_code = info.explicitMax;
         else
             xkb->max_key_code = info.computedMax;
         if (XkbcAllocNames(xkb, XkbKeyNamesMask | XkbIndicatorNamesMask, 0, 0)

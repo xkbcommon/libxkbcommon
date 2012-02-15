@@ -486,6 +486,69 @@ ExprResolveFloat(ExprDef * expr,
 }
 
 int
+ExprResolveKeyCode(ExprDef * expr,
+                   ExprResult * val_rtrn)
+{
+    ExprResult leftRtrn, rightRtrn;
+    ExprDef *left, *right;
+
+    switch (expr->op)
+    {
+    case ExprValue:
+        if (expr->type != TypeInt)
+        {
+            ERROR
+                ("Found constant of type %s where an int was expected\n",
+                 exprTypeText(expr->type));
+            return False;
+        }
+        val_rtrn->uval = expr->value.uval;
+        return True;
+    case OpAdd:
+    case OpSubtract:
+    case OpMultiply:
+    case OpDivide:
+        left = expr->value.binary.left;
+        right = expr->value.binary.right;
+        if (ExprResolveKeyCode(left, &leftRtrn) &&
+            ExprResolveKeyCode(right, &rightRtrn))
+        {
+            switch (expr->op)
+            {
+            case OpAdd:
+                val_rtrn->uval = leftRtrn.uval + rightRtrn.uval;
+                break;
+            case OpSubtract:
+                val_rtrn->uval = leftRtrn.uval - rightRtrn.uval;
+                break;
+            case OpMultiply:
+                val_rtrn->uval = leftRtrn.uval * rightRtrn.uval;
+                break;
+            case OpDivide:
+                val_rtrn->uval = leftRtrn.uval / rightRtrn.uval;
+                break;
+            }
+            return True;
+        }
+        return False;
+    case OpNegate:
+        left = expr->value.child;
+        if (ExprResolveKeyCode(left, &leftRtrn))
+        {
+            val_rtrn->uval = ~leftRtrn.uval;
+            return True;
+        }
+        return False;
+    case OpUnaryPlus:
+        left = expr->value.child;
+        return ExprResolveKeyCode(left, val_rtrn);
+    default:
+        WSGO("Unknown operator %d in ResolveInteger\n", expr->op);
+        break;
+    }
+    return False;
+}
+int
 ExprResolveInteger(ExprDef * expr,
                    ExprResult * val_rtrn,
                    IdentLookupFunc lookup, char * lookupPriv)

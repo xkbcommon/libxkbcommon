@@ -39,6 +39,7 @@ char *scanFile = NULL;
 int lineNum = 0;
 
 int scanInt;
+unsigned long scanULong;
 
 static char *s;
 char scanBuf[1024];
@@ -145,6 +146,7 @@ alternate_group		return ALTERNATE_GROUP;
 [0-9]+			{
 			    char *end;
 			    scanInt = strtol(yytext, &end, 0);
+                            scanULong = strtoul(yytext, &end, 0);
 
 			    return INTEGER;
 			}

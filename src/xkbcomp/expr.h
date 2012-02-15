@@ -105,6 +105,10 @@ extern int ExprResolveBoolean(ExprDef * /* expr */ ,
                               char *  /* lookupPriv */
     );
 
+extern int ExprResolveKeyCode(ExprDef * /* expr */ ,
+                              ExprResult * /* val_rtrn */
+    );
+
 extern int ExprResolveInteger(ExprDef * /* expr */ ,
                               ExprResult * /* val_rtrn */ ,
                               IdentLookupFunc /* lookup */ ,

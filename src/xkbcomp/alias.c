@@ -179,7 +179,7 @@ ApplyAliases(struct xkb_desc * xkb, Bool toGeom, AliasInfo ** info_in)
          info = (AliasInfo *) info->def.next)
     {
         unsigned long lname;
-        unsigned int kc;
+        xkb_keycode_t kc;
 
         lname = KeyNameToLong(info->real);
         if (!FindNamedKey(xkb, lname, &kc, False, CreateKeyNames(xkb), 0))

@@ -144,10 +144,8 @@ XkbcAllocNames(struct xkb_desc * xkb, unsigned which, int nTotalRG, int nTotalAl
     }
 
     if ((which & XkbKeyNamesMask) && !names->keys) {
-        if ((!XkbIsLegalKeycode(xkb->min_key_code)) ||
-            (!XkbIsLegalKeycode(xkb->max_key_code)) ||
-            (xkb->max_key_code < xkb->min_key_code))
-            return BadValue;
+        if (!xkb_keymap_keycode_range_is_legal(xkb))
+            return BadMatch;
 
         names->keys = _XkbTypedCalloc(xkb->max_key_code + 1, struct xkb_key_name);
         if (!names->keys)
@@ -264,6 +262,13 @@ XkbcAllocControls(struct xkb_desc * xkb, unsigned which)
     if (!xkb->ctrls) {
         xkb->ctrls = _XkbTypedCalloc(1, struct xkb_controls);
         if (!xkb->ctrls)
+            return BadAlloc;
+    }
+
+    if (!xkb->ctrls->per_key_repeat) {
+        xkb->ctrls->per_key_repeat = _XkbTypedCalloc(xkb->max_key_code << 3,
+                                                     unsigned char);
+        if (!xkb->ctrls->per_key_repeat)
             return BadAlloc;
     }
 
