@@ -60,9 +60,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/Xfuncproto.h>
 #include <X11/extensions/XKB.h>
 
-typedef uint8_t xkb_keycode_t;
+typedef uint32_t xkb_keycode_t;
 
-#define XKB_KEYCODE_MAX                 255
+#define XKB_KEYCODE_MAX                 (0xffffffff - 1)
 #define xkb_keycode_is_legal_ext(kc)    (kc <= XKB_KEYCODE_MAX)
 #define xkb_keycode_is_legal_x11(kc)    (kc <= XKB_KEYCODE_MAX)
 #define xkb_keymap_keycode_range_is_legal(xkb) \
