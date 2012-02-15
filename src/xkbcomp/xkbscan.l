@@ -35,8 +35,7 @@
 #include "parseutils.h"
 
 const char *yystring;
-static char scanFileBuf[1024] = {0};
-char *scanFile = scanFileBuf;
+char *scanFile = NULL;
 int lineNum = 0;
 
 int scanInt;
@@ -196,8 +195,9 @@ yyerror(const char *s)
 void setScanState(char *file, int lineno)
 {
   yylineno = 1;
-  strncpy(scanFile, file, 1023);
-  scanFile[1023]='\0';
+  if (scanFile)
+    free(scanFile);
+  scanFile = strdup(file);
 }
 
 int

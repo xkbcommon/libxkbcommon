@@ -70,7 +70,10 @@ ProcessIncludeFile(IncludeStmt * stmt,
                    XkbDirectoryForInclude(file_type));
             return False;
         }
-        strcpy(oldFile, scanFile);
+        if (scanFile)
+            strcpy(oldFile, scanFile);
+        else
+            memset(oldFile, 0, sizeof(oldFile));
         oldLine = lineNum;
         setScanState(stmt->file, 1);
         if (debugFlags & 2)
