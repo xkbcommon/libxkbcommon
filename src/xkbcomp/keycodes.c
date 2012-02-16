@@ -531,13 +531,13 @@ MergeIncludedKeycodes(KeyNamesInfo * into, KeyNamesInfo * from,
         into->errorCount++;
     if (from->explicitMin != 0)
     {
-        if ((into->explicitMin < 0)
+        if ((into->explicitMin == 0)
             || (into->explicitMin > from->explicitMin))
             into->explicitMin = from->explicitMin;
     }
     if (from->explicitMax > 0)
     {
-        if ((into->explicitMax < 0)
+        if ((into->explicitMax == 0)
             || (into->explicitMax < from->explicitMax))
             into->explicitMax = from->explicitMax;
     }
