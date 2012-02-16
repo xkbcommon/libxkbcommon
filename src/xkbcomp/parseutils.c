@@ -226,7 +226,7 @@ InterpCreate(char *sym, ExprDef * match)
     {
         def->common.stmtType = StmtInterpDef;
         def->common.next = NULL;
-        def->sym = strdup(sym);
+        def->sym = sym;
         def->match = match;
     }
     else

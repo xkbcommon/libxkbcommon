@@ -643,9 +643,11 @@ HandleInterpBody(VarDef * def, struct xkb_desc * xkb, SymInterpInfo * si,
             continue;
         }
         ok = ExprResolveLhs(def->name, &tmp, &field, &arrayNdx);
-        if (ok)
+        if (ok) {
             ok = SetInterpField(si, xkb, field.str, arrayNdx, def->value,
                                 info);
+            free(field.str);
+        }
     }
     return ok;
 }

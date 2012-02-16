@@ -1405,6 +1405,7 @@ SetGroupName(SymbolsInfo * info, ExprDef * arrayNdx, ExprDef * value)
     }
     info->groupNames[tmp.uval - 1 + info->explicit_group] =
         xkb_intern_atom(name.str);
+    free(name.str);
 
     return True;
 }
@@ -1527,9 +1528,9 @@ HandleSymbolsBody(VarDef * def,
             {
                 if ((def->value == NULL)
                     || (def->value->op == ExprKeysymList))
-                    field.str = "symbols";
+                    field.str = strdup("symbols");
                 else
-                    field.str = "actions";
+                    field.str = strdup("actions");
                 arrayNdx = NULL;
             }
             else
@@ -1539,6 +1540,7 @@ HandleSymbolsBody(VarDef * def,
             if (ok)
                 ok = SetSymbolsField(key, xkb, field.str, arrayNdx,
                                      def->value, info);
+            free(field.str);
         }
     }
     return ok;

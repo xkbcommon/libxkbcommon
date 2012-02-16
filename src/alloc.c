@@ -279,6 +279,7 @@ static void
 XkbcFreeControls(struct xkb_desc * xkb, unsigned which, Bool freeMap)
 {
     if (freeMap && xkb && xkb->ctrls) {
+        free(xkb->ctrls->per_key_repeat);
         free(xkb->ctrls);
         xkb->ctrls = NULL;
     }

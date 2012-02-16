@@ -691,10 +691,7 @@ ExprResolveString(ExprDef * expr,
         }
         val_rtrn->str = XkbcAtomGetString(expr->value.str);
         if (val_rtrn->str == NULL)
-        {
-            static char *empty = "";
-            val_rtrn->str = empty;
-        }
+            val_rtrn->str = strdup("");
         return True;
     case ExprIdent:
         if (lookup)
@@ -731,9 +728,13 @@ ExprResolveString(ExprDef * expr,
             if (new)
             {
                 sprintf(new, "%s%s", leftRtrn.str, rightRtrn.str);
+                free(leftRtrn.str);
+                free(rightRtrn.str);
                 val_rtrn->str = new;
                 return True;
             }
+            free(leftRtrn.str);
+            free(rightRtrn.str);
         }
         return False;
     case OpSubtract:

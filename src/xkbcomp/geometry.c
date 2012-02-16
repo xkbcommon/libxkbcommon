@@ -1489,6 +1489,7 @@ SetShapeDoodadField(DoodadInfo * di,
         }
         di->shape = xkb_intern_atom(tmp.str);
         di->defs.defined |= _GD_Shape;
+        free(tmp.str);
         return True;
     }
     return ReportBadField(typeName, field, ddText(di));
@@ -1621,6 +1622,7 @@ SetTextDoodadField(DoodadInfo * di,
         }
         di->defs.defined |= def;
         *pField.str = xkb_intern_atom(tmp.str);
+        free(tmp.str);
     }
     else
     {
@@ -1683,6 +1685,7 @@ SetIndicatorDoodadField(DoodadInfo * di,
             di->defs.defined |= _GD_Shape;
             di->shape = xkb_intern_atom(tmp.str);
         }
+        free(tmp.str);
         return True;
     }
     return ReportBadField("indicator doodad", field, ddText(di));
@@ -1743,6 +1746,7 @@ SetLogoDoodadField(DoodadInfo * di,
             return ReportBadType(typeName, field, ddText(di), "string");
         }
         di->shape = xkb_intern_atom(tmp.str);
+        free(tmp.str);
         di->defs.defined |= _GD_Shape;
         return True;
     }
@@ -1761,6 +1765,7 @@ SetLogoDoodadField(DoodadInfo * di,
                                  "string");
         }
         di->logoName = _XkbDupString(tmp.str);
+        free(tmp.str);
         return True;
     }
     return ReportBadField(typeName, field, ddText(di));
@@ -2613,12 +2618,20 @@ HandleComplexKey(KeyDef * def, KeyInfo * key, GeometryInfo * info)
             {
                 if (!SetKeyField
                     (key, f.str, ndx, expr->value.binary.right, info))
+                {
+                    free(elem.str);
+                    free(f.str);
                     return False;
+                }
+                free(elem.str);
+                free(f.str);
             }
             else
             {
                 ERROR("Illegal element used in a key definition\n");
                 ACTION("Assignment to %s.%s ignored\n", elem.str, f.str);
+                free(elem.str);
+                free(f.str);
                 return False;
             }
         }
@@ -2689,6 +2702,8 @@ HandleRowBody(RowDef * def, RowInfo * row, unsigned merge,
                 WARN("Assignment to field of unknown element in row\n");
                 ACTION("No value assigned to %s.%s\n", elem.str, field.str);
             }
+            free(elem.str);
+            free(field.str);
         }
         else if (keyDef->common.stmtType == StmtKeyDef)
         {

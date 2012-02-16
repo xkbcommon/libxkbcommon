@@ -615,6 +615,7 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_desc * xkb, KeyNamesInfo * 
             else
             {
                 info->errorCount += 10; /* XXX: Why 10?? */
+                ClearKeyNamesInfo(&included);
                 return False;
             }
         }

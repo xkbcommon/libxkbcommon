@@ -435,6 +435,7 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
             else
             {
                 info->errorCount += 10;
+                FreeKeyTypesInfo(&included);
                 return False;
             }
         }
@@ -951,9 +952,11 @@ HandleKeyTypeBody(VarDef * def,
             continue;
         }
         ok = ExprResolveLhs(def->name, &tmp, &field, &arrayNdx);
-        if (ok)
+        if (ok) {
             ok = SetKeyTypeField(type, xkb, field.str, arrayNdx, def->value,
                                  info);
+            free(field.str);
+        }
     }
     return ok;
 }
@@ -1214,6 +1217,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
             i++;
         if (XkbcAllocClientMap(xkb, XkbKeyTypesMask, i) != Success)
         {
+            FreeKeyTypesInfo(&info);
             WSGO("Couldn't allocate client map\n");
             return False;
         }
@@ -1226,6 +1230,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
             keypadVMod = FindKeypadVMod(xkb);
             if (XkbcInitCanonicalKeyTypes(xkb, missing, keypadVMod) != Success)
             {
+                FreeKeyTypesInfo(&info);
                 WSGO("Couldn't initialize canonical key types\n");
                 return False;
             }
@@ -1252,11 +1257,16 @@ CompileKeyTypes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
             else
                 type = next++;
             DeleteLevel1MapEntries(def);
-            if (!CopyDefToKeyType(xkb, type, def))
+            if (!CopyDefToKeyType(xkb, type, def)) {
+                FreeKeyTypesInfo(&info);
                 return False;
+            }
             def = (KeyTypeInfo *) def->defs.next;
         }
+        FreeKeyTypesInfo(&info);
         return True;
     }
+
+    FreeKeyTypesInfo(&info);
     return False;
 }
