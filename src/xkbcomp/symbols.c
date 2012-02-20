@@ -1175,7 +1175,7 @@ SetSymbolsField(KeyInfo * key,
              (uStrCaseCmp(field, "virtualmods") == 0) ||
              (uStrCaseCmp(field, "virtualmodifiers") == 0))
     {
-        ok = ExprResolveModMask(value, &tmp, LookupVModMask, (char *) xkb);
+        ok = ExprResolveVModMask(value, &tmp, xkb);
         if (ok)
         {
             key->vmodmap = (tmp.uval >> 8);

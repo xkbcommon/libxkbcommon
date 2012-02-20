@@ -99,6 +99,11 @@ extern int ExprResolveModMask(ExprDef * /* expr */ ,
                               char *  /* priv */
     );
 
+extern int ExprResolveVModMask(ExprDef * /* expr */ ,
+                               ExprResult * /* val_rtrn */ ,
+                               struct xkb_desc * /* xkb */
+    );
+
 extern int ExprResolveBoolean(ExprDef * /* expr */ ,
                               ExprResult * /* val_rtrn */ ,
                               IdentLookupFunc /* lookup */ ,

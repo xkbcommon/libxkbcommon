@@ -28,6 +28,7 @@
 #include "xkbmisc.h"
 #include "tokens.h"
 #include "expr.h"
+#include "vmod.h"
 
 #include <ctype.h>
 
@@ -273,6 +274,19 @@ ExprResolveModMask(ExprDef * expr,
     priv.priv = NULL;
     priv.chain = lookup;
     priv.chainPriv = lookupPriv;
+    return ExprResolveMask(expr, val_rtrn, LookupModMask, (char *) & priv);
+}
+
+int
+ExprResolveVModMask(ExprDef * expr,
+                    ExprResult * val_rtrn,
+                    struct xkb_desc *xkb)
+{
+    LookupPriv priv;
+
+    priv.priv = NULL;
+    priv.chain = LookupVModMask;
+    priv.chainPriv = (char *) xkb;
     return ExprResolveMask(expr, val_rtrn, LookupModMask, (char *) & priv);
 }
 

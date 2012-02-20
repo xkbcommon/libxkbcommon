@@ -383,7 +383,7 @@ CheckModifierField(struct xkb_desc * xkb,
             return True;
         }
     }
-    if (!ExprResolveModMask(value, &rtrn, LookupVModMask, (char *) xkb))
+    if (!ExprResolveVModMask(value, &rtrn, xkb))
         return ReportMismatch(action, F_Modifiers, "modifier mask");
     *mods_rtrn = rtrn.uval;
     *flags_inout &= ~XkbSA_UseModMapMods;

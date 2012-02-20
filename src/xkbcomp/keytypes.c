@@ -666,7 +666,7 @@ SetMapEntry(KeyTypeInfo * type,
 
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(type, "map entry");
-    if (!ExprResolveModMask(arrayNdx, &rtrn, LookupVModMask, (char *) xkb))
+    if (!ExprResolveVModMask(arrayNdx, &rtrn, xkb))
         return ReportTypeBadType(type, "map entry", "modifier mask");
     entry.mods.real_mods = rtrn.uval & 0xff;      /* modifiers < 512 */
     entry.mods.vmods = (rtrn.uval >> 8) & 0xffff; /* modifiers > 512 */
@@ -712,7 +712,7 @@ SetPreserve(KeyTypeInfo * type,
 
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(type, "preserve entry");
-    if (!ExprResolveModMask(arrayNdx, &rtrn, LookupVModMask, (char *) xkb))
+    if (!ExprResolveVModMask(arrayNdx, &rtrn, xkb))
         return ReportTypeBadType(type, "preserve entry", "modifier mask");
     new.defs = type->defs;
     new.defs.next = NULL;
@@ -731,7 +731,7 @@ SetPreserve(KeyTypeInfo * type,
         if (warningLevel > 0)
             INFO("%s\n", PreserveIndexTxt(xkb, &new));
     }
-    if (!ExprResolveModMask(value, &rtrn, LookupVModMask, (char *) xkb))
+    if (!ExprResolveVModMask(value, &rtrn, xkb))
     {
         ERROR("Preserve value in a key type is not a modifier mask\n");
         ACTION("Ignoring preserve[%s] in type %s\n",
@@ -869,7 +869,7 @@ SetKeyTypeField(KeyTypeInfo * type,
             ACTION("Illegal array subscript ignored\n");
         }
         /* get modifier mask for current type */
-        if (!ExprResolveModMask(value, &tmp, LookupVModMask, (char *) xkb))
+        if (!ExprResolveVModMask(value, &tmp, xkb))
         {
             ERROR("Key type mask field must be a modifier mask\n");
             ACTION("Key type definition ignored\n");

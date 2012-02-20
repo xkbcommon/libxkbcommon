@@ -211,7 +211,7 @@ SetIndicatorMapField(LEDInfo * led,
     {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(led, field);
-        if (!ExprResolveModMask(value, &rtrn, LookupVModMask, (char *) xkb))
+        if (!ExprResolveVModMask(value, &rtrn, xkb))
             return ReportIndicatorBadType(led, field, "modifier mask");
         led->real_mods = rtrn.uval & 0xff;
         led->vmods = (rtrn.uval >> 8) & 0xff;
