@@ -243,7 +243,7 @@ LookupModIndex(char * priv, uint32_t field, unsigned type,
     return SimpleLookup((char *) modIndexNames, field, type, val_rtrn);
 }
 
-static int
+int
 LookupModMask(char * priv, uint32_t field, unsigned type,
               ExprResult * val_rtrn)
 {
@@ -999,12 +999,7 @@ int
 ExprResolveModMask(ExprDef * expr,
                    ExprResult * val_rtrn)
 {
-    LookupPriv priv;
-
-    priv.chain = NULL;
-    priv.chainPriv = NULL;
-    return ExprResolveMaskLookup(expr, val_rtrn, LookupModMask,
-                                 (char *) & priv);
+    return ExprResolveMaskLookup(expr, val_rtrn, LookupModMask, NULL);
 }
 
 int
@@ -1012,12 +1007,8 @@ ExprResolveVModMask(ExprDef * expr,
                     ExprResult * val_rtrn,
                     struct xkb_desc *xkb)
 {
-    LookupPriv priv;
-
-    priv.chain = LookupVModMask;
-    priv.chainPriv = (char *) xkb;
-    return ExprResolveMaskLookup(expr, val_rtrn, LookupModMask,
-                                 (char *) & priv);
+    return ExprResolveMaskLookup(expr, val_rtrn, LookupVModMask,
+                                 (char *) xkb);
 }
 
 int

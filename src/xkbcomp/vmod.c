@@ -190,19 +190,24 @@ LookupVModIndex(char * priv, uint32_t field, unsigned type,
 }
 
 /**
- * Get the mask for the given modifier and set val_rtrn.uval to the mask.
- * Note that the mask returned is always > 512.
+ * Get the mask for the given (virtual or core) modifier and set
+ * val_rtrn.uval to the mask value.
  *
  * @param priv Pointer to xkb data structure.
- * @param val_rtrn Set to the mask returned.
+ * @param val_rtrn Member uval is set to the mask returned.
  *
  * @return True on success, False otherwise. If False is returned, val_rtrn is
  * undefined.
  */
 int
-LookupVModMask(char * priv, uint32_t field, unsigned type, ExprResult * val_rtrn)
+LookupVModMask(char * priv, uint32_t field, unsigned type,
+               ExprResult * val_rtrn)
 {
-    if (LookupVModIndex(priv, field, type, val_rtrn))
+    if (LookupModMask(NULL, field, type, val_rtrn))
+    {
+        return True;
+    }
+    else if (LookupVModIndex(priv, field, type, val_rtrn))
     {
         register unsigned ndx = val_rtrn->uval;
         val_rtrn->uval = (1 << (XkbNumModifiers + ndx));
