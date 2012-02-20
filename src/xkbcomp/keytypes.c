@@ -645,18 +645,6 @@ AddMapEntry(struct xkb_desc * xkb,
     return True;
 }
 
-static LookupEntry lnames[] = {
-    {"level1", 1},
-    {"level2", 2},
-    {"level3", 3},
-    {"level4", 4},
-    {"level5", 5},
-    {"level6", 6},
-    {"level7", 7},
-    {"level8", 8},
-    {NULL, 0}
-};
-
 static Bool
 SetMapEntry(KeyTypeInfo * type,
             struct xkb_desc * xkb, ExprDef * arrayNdx, ExprDef * value)
@@ -685,7 +673,7 @@ SetMapEntry(KeyTypeInfo * type,
         entry.mods.real_mods &= type->mask;
         entry.mods.vmods &= type->vmask;
     }
-    if (!ExprResolveInteger(value, &rtrn, SimpleLookup, (char *) lnames))
+    if (!ExprResolveLevel(value, &rtrn))
     {
         ERROR("Level specifications in a key type must be integer\n");
         ACTION("Ignoring malformed level specification\n");
@@ -821,7 +809,7 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
 
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(type, "level name");
-    if (!ExprResolveInteger(arrayNdx, &rtrn, SimpleLookup, (char *) lnames))
+    if (!ExprResolveLevel(arrayNdx, &rtrn))
         return ReportTypeBadType(type, "level name", "integer");
     if ((rtrn.ival < 1) || (rtrn.ival > XkbMaxShiftLevel + 1))
     {

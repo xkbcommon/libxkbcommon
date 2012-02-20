@@ -120,6 +120,10 @@ extern int ExprResolveRadioGroup(ExprDef * /* expr */ ,
                                  ExprResult * /* val_rtrn */
     );
 
+extern int ExprResolveLevel(ExprDef * /* expr */ ,
+                            ExprResult * /* val_rtrn */
+    );
+
 extern int ExprResolveFloat(ExprDef * /* expr */ ,
                             ExprResult * /* val_rtrn */
     );

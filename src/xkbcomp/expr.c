@@ -658,6 +658,26 @@ ExprResolveRadioGroup(ExprDef * expr,
 }
 
 int
+ExprResolveLevel(ExprDef * expr,
+                 ExprResult * val_rtrn)
+{
+    static LookupEntry level_names[] = {
+        { "level1", 1 },
+        { "level2", 2 },
+        { "level3", 3 },
+        { "level4", 4 },
+        { "level5", 5 },
+        { "level6", 6 },
+        { "level7", 7 },
+        { "level8", 8 },
+        { NULL, 0 }
+    };
+
+    return ExprResolveInteger(expr, val_rtrn, SimpleLookup,
+                              (char *) level_names);
+}
+
+int
 ExprResolveString(ExprDef * expr,
                   ExprResult * val_rtrn)
 {
