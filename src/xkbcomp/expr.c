@@ -34,6 +34,21 @@
 
 /***====================================================================***/
 
+typedef Bool(*IdentLookupFunc) (char * /* priv */ ,
+                                uint32_t /* field */ ,
+                                unsigned /* type */ ,
+                                ExprResult *    /* val_rtrn */
+    );
+
+typedef struct _LookupPriv
+{
+    char * priv;
+    IdentLookupFunc chain;
+    char * chainPriv;
+} LookupPriv;
+
+/***====================================================================***/
+
 char *
 exprOpText(unsigned type)
 {
@@ -155,7 +170,7 @@ ExprResolveLhs(ExprDef * expr,
     return False;
 }
 
-Bool
+static Bool
 SimpleLookup(char * priv, uint32_t field, unsigned type,
              ExprResult * val_rtrn)
 {
@@ -182,7 +197,7 @@ SimpleLookup(char * priv, uint32_t field, unsigned type,
     return False;
 }
 
-Bool
+static Bool
 RadioLookup(char * priv, uint32_t field, unsigned type, ExprResult * val_rtrn)
 {
     const char *str;

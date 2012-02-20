@@ -35,24 +35,11 @@ typedef union _ExprResult
     struct xkb_key_name keyName;
 } ExprResult;
 
-typedef Bool(*IdentLookupFunc) (char * /* priv */ ,
-                                uint32_t /* field */ ,
-                                unsigned /* type */ ,
-                                ExprResult *    /* val_rtrn */
-    );
-
 extern int ExprResolveLhs(ExprDef * /* expr */ ,
                           ExprResult * /* elem_rtrn */ ,
                           ExprResult * /* field_rtrn */ ,
                           ExprDef **    /* index_rtrn */
     );
-
-typedef struct _LookupPriv
-{
-    char * priv;
-    IdentLookupFunc chain;
-    char * chainPriv;
-} LookupPriv;
 
 typedef struct _LookupEntry
 {
@@ -60,27 +47,8 @@ typedef struct _LookupEntry
     unsigned result;
 } LookupEntry;
 
-typedef struct _LookupTable
-{
-    char *element;
-    LookupEntry *entries;
-    struct _LookupTable *nextElement;
-} LookupTable;
-
 
 extern char *exprOpText(unsigned        /* type */
-    );
-
-extern int RadioLookup(char * /* priv */ ,
-                       uint32_t /* field */ ,
-                       unsigned /* type */ ,
-                       ExprResult *     /* val_rtrn */
-    );
-
-extern int SimpleLookup(char * /* priv */ ,
-                        uint32_t /* field */ ,
-                        unsigned /* type */ ,
-                        ExprResult *    /* val_rtrn */
     );
 
 extern int LookupModIndex(char * /* priv */ ,
