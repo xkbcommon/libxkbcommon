@@ -2078,7 +2078,7 @@ SetKeyField(KeyInfo * key,
             info->errorCount++;
             return ReportNotArray("key", field, keyText(key));
         }
-        if (!ExprResolveKeyName(value, &tmp, NULL, NULL))
+        if (!ExprResolveKeyName(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType("key", field, keyText(key), "key name");

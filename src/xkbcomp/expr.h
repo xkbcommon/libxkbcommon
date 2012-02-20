@@ -127,9 +127,7 @@ extern int ExprResolveString(ExprDef * /* expr */ ,
     );
 
 extern int ExprResolveKeyName(ExprDef * /* expr */ ,
-                              ExprResult * /* val_rtrn */ ,
-                              IdentLookupFunc /* lookup */ ,
-                              char *  /* lookupPriv */
+                              ExprResult * /* val_rtrn */
     );
 
 extern int ExprResolveEnum(ExprDef * /* expr */ ,

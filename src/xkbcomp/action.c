@@ -1048,7 +1048,7 @@ HandleRedirectKey(struct xkb_desc * xkb,
     switch (field)
     {
     case F_Keycode:
-        if (!ExprResolveKeyName(value, &rtrn, NULL, NULL))
+        if (!ExprResolveKeyName(value, &rtrn))
             return ReportMismatch(action->type, field, "key name");
         tmp = KeyNameToLong(rtrn.keyName.name);
         if (!FindNamedKey(xkb, tmp, &kc, True, CreateKeyNames(xkb), 0))

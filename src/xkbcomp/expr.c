@@ -761,12 +761,8 @@ ExprResolveString(ExprDef * expr,
 
 int
 ExprResolveKeyName(ExprDef * expr,
-                   ExprResult * val_rtrn,
-                   IdentLookupFunc lookup, char * lookupPriv)
+                   ExprResult * val_rtrn)
 {
-    int ok = 0;
-    ExprDef *left;
-    ExprResult leftRtrn;
     char *bogus = NULL;
 
     switch (expr->op)
@@ -781,27 +777,14 @@ ExprResolveKeyName(ExprDef * expr,
         memcpy(val_rtrn->keyName.name, expr->value.keyName, XkbKeyNameLength);
         return True;
     case ExprIdent:
-        if (lookup)
-        {
-            ok = (*lookup) (lookupPriv,
-                            None, expr->value.str, TypeString, val_rtrn);
-        }
-        if (!ok)
-            ERROR("Identifier \"%s\" of type string not found\n",
-                   XkbcAtomText(expr->value.str));
-        return ok;
+        ERROR("Identifier \"%s\" of type string not found\n",
+              XkbcAtomText(expr->value.str));
+        return False;
     case ExprFieldRef:
-        if (lookup)
-        {
-            ok = (*lookup) (lookupPriv,
-                            expr->value.field.element,
-                            expr->value.field.field, TypeString, val_rtrn);
-        }
-        if (!ok)
-            ERROR("Default \"%s.%s\" of type key name not found\n",
-                   XkbcAtomText(expr->value.field.element),
-                   XkbcAtomText(expr->value.field.field));
-        return ok;
+        ERROR("Default \"%s.%s\" of type key name not found\n",
+              XkbcAtomText(expr->value.field.element),
+              XkbcAtomText(expr->value.field.field));
+        return False;
     case OpAdd:
         if (bogus == NULL)
             bogus = "Addition";
@@ -826,18 +809,10 @@ ExprResolveKeyName(ExprDef * expr,
         ERROR("%s of key name values not permitted\n", bogus);
         return False;
     case OpNot:
-        left = expr->value.binary.left;
-        if (ExprResolveString(left, &leftRtrn, lookup, lookupPriv))
-        {
-            ERROR("The ! operator cannot be applied to a key name\n");
-        }
+        ERROR("The ! operator cannot be applied to a key name\n");
         return False;
     case OpUnaryPlus:
-        left = expr->value.binary.left;
-        if (ExprResolveString(left, &leftRtrn, lookup, lookupPriv))
-        {
-            ERROR("The + operator cannot be applied to a key name\n");
-        }
+        ERROR("The + operator cannot be applied to a key name\n");
         return False;
     default:
         WSGO("Unknown operator %d in ResolveKeyName\n", expr->op);

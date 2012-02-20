@@ -1272,7 +1272,7 @@ SetSymbolsField(KeyInfo * key,
             ACTION("Ignored\n");
             return False;
         }
-        ok = ExprResolveKeyName(value, &tmp, NULL, NULL);
+        ok = ExprResolveKeyName(value, &tmp);
         if (!ok)
         {
             ERROR("Illegal overlay key specification for %s\n",
