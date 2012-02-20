@@ -291,8 +291,7 @@ ExprResolveVModMask(ExprDef * expr,
 
 int
 ExprResolveBoolean(ExprDef * expr,
-                   ExprResult * val_rtrn,
-                   IdentLookupFunc lookup, char * lookupPriv)
+                   ExprResult * val_rtrn)
 {
     int ok = 0;
     const char *bogus = NULL;
@@ -328,30 +327,17 @@ ExprResolveBoolean(ExprDef * expr,
                 return True;
             }
         }
-        if (lookup)
-        {
-            ok = (*lookup) (lookupPriv,
-                            None, expr->value.str, TypeBoolean, val_rtrn);
-        }
-        if (!ok)
-            ERROR("Identifier \"%s\" of type int is unknown\n",
-                   XkbcAtomText(expr->value.str));
-        return ok;
+        ERROR("Identifier \"%s\" of type int is unknown\n",
+              XkbcAtomText(expr->value.str));
+        return False;
     case ExprFieldRef:
-        if (lookup)
-        {
-            ok = (*lookup) (lookupPriv,
-                            expr->value.field.element,
-                            expr->value.field.field, TypeBoolean, val_rtrn);
-        }
-        if (!ok)
-            ERROR("Default \"%s.%s\" of type boolean is unknown\n",
-                   XkbcAtomText(expr->value.field.element),
-                   XkbcAtomText(expr->value.field.field));
-        return ok;
+        ERROR("Default \"%s.%s\" of type boolean is unknown\n",
+              XkbcAtomText(expr->value.field.element),
+              XkbcAtomText(expr->value.field.field));
+        return False;
     case OpInvert:
     case OpNot:
-        ok = ExprResolveBoolean(expr, val_rtrn, lookup, lookupPriv);
+        ok = ExprResolveBoolean(expr, val_rtrn);
         if (ok)
             val_rtrn->uval = !val_rtrn->uval;
         return ok;

@@ -528,7 +528,7 @@ SetInterpField(SymInterpInfo * si,
     {
         if (arrayNdx != NULL)
             return ReportSINotArray(si, field, info);
-        ok = ExprResolveBoolean(value, &tmp, NULL, NULL);
+        ok = ExprResolveBoolean(value, &tmp);
         if (ok)
         {
             if (tmp.uval)
@@ -544,7 +544,7 @@ SetInterpField(SymInterpInfo * si,
     {
         if (arrayNdx != NULL)
             return ReportSINotArray(si, field, info);
-        ok = ExprResolveBoolean(value, &tmp, NULL, NULL);
+        ok = ExprResolveBoolean(value, &tmp);
         if (ok)
         {
             if (tmp.uval)

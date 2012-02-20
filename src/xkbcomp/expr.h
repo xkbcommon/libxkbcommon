@@ -103,9 +103,7 @@ extern int ExprResolveVModMask(ExprDef * /* expr */ ,
     );
 
 extern int ExprResolveBoolean(ExprDef * /* expr */ ,
-                              ExprResult * /* val_rtrn */ ,
-                              IdentLookupFunc /* lookup */ ,
-                              char *  /* lookupPriv */
+                              ExprResult * /* val_rtrn */
     );
 
 extern int ExprResolveKeyCode(ExprDef * /* expr */ ,

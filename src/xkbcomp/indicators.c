@@ -243,7 +243,7 @@ SetIndicatorMapField(LEDInfo * led,
     {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(led, field);
-        if (!ExprResolveBoolean(value, &rtrn, NULL, NULL))
+        if (!ExprResolveBoolean(value, &rtrn))
             return ReportIndicatorBadType(led, field, "boolean");
         if (rtrn.uval)
             led->flags &= ~XkbIM_NoExplicit;
@@ -285,7 +285,7 @@ SetIndicatorMapField(LEDInfo * led,
     {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(led, field);
-        if (!ExprResolveBoolean(value, &rtrn, NULL, NULL))
+        if (!ExprResolveBoolean(value, &rtrn))
             return ReportIndicatorBadType(led, field, "boolean");
         if (rtrn.uval)
             led->flags |= XkbIM_LEDDrivesKB;

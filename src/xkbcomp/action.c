@@ -353,7 +353,7 @@ CheckLatchLockFlags(unsigned action,
         tmp = XkbSA_LatchToLock;
     else
         return False;           /* WSGO! */
-    if (!ExprResolveBoolean(value, &result, NULL, NULL))
+    if (!ExprResolveBoolean(value, &result))
         return ReportMismatch(action, field, "boolean");
     if (result.uval)
         *flags_inout |= tmp;
@@ -618,7 +618,7 @@ HandleMovePtr(struct xkb_desc * xkb,
     }
     else if (field == F_Accel)
     {
-        if (!ExprResolveBoolean(value, &rtrn, NULL, NULL))
+        if (!ExprResolveBoolean(value, &rtrn))
             return ReportMismatch(action->type, field, "boolean");
         if (rtrn.uval)
             act->flags &= ~XkbSA_NoAcceleration;
@@ -871,7 +871,7 @@ HandleSwitchScreen(struct xkb_desc * xkb,
     {
         if (array_ndx != NULL)
             return ReportActionNotArray(action->type, field);
-        if (!ExprResolveBoolean(value, &rtrn, NULL, NULL))
+        if (!ExprResolveBoolean(value, &rtrn))
             return ReportMismatch(action->type, field, "boolean");
         if (rtrn.uval)
             act->flags &= ~XkbSA_SwitchApplication;
@@ -975,7 +975,7 @@ HandleActionMessage(struct xkb_desc * xkb,
     case F_GenKeyEvent:
         if (array_ndx != NULL)
             return ReportActionNotArray(action->type, field);
-        if (!ExprResolveBoolean(value, &rtrn, NULL, NULL))
+        if (!ExprResolveBoolean(value, &rtrn))
             return ReportMismatch(action->type, field, "boolean");
         if (rtrn.uval)
             act->flags |= XkbSA_MessageGenKeyEvent;

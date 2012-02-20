@@ -1077,7 +1077,7 @@ SetAllowNone(KeyInfo * key, ExprDef * arrayNdx, ExprDef * value)
         }
         radio_groups |= (1 << (tmp.uval - 1));
     }
-    if (!ExprResolveBoolean(value, &tmp, NULL, NULL))
+    if (!ExprResolveBoolean(value, &tmp))
     {
         ERROR("Illegal \"allow none\" value for %s\n",
                longText(key->name));
@@ -1309,7 +1309,7 @@ SetSymbolsField(KeyInfo * key,
     else if ((uStrCaseCmp(field, "groupswrap") == 0) ||
              (uStrCaseCmp(field, "wrapgroups") == 0))
     {
-        ok = ExprResolveBoolean(value, &tmp, NULL, NULL);
+        ok = ExprResolveBoolean(value, &tmp);
         if (!ok)
         {
             ERROR("Illegal groupsWrap setting for %s\n",
@@ -1326,7 +1326,7 @@ SetSymbolsField(KeyInfo * key,
     else if ((uStrCaseCmp(field, "groupsclamp") == 0) ||
              (uStrCaseCmp(field, "clampgroups") == 0))
     {
-        ok = ExprResolveBoolean(value, &tmp, NULL, NULL);
+        ok = ExprResolveBoolean(value, &tmp);
         if (!ok)
         {
             ERROR("Illegal groupsClamp setting for %s\n",
@@ -1434,7 +1434,7 @@ HandleSymbolsVar(VarDef * stmt, struct xkb_desc * xkb, SymbolsInfo * info)
              && ((uStrCaseCmp(field.str, "groupswrap") == 0)
                  || (uStrCaseCmp(field.str, "wrapgroups") == 0)))
     {
-        if (!ExprResolveBoolean(stmt->value, &tmp, NULL, NULL))
+        if (!ExprResolveBoolean(stmt->value, &tmp))
         {
             ERROR("Illegal setting for global groupsWrap\n");
             ACTION("Non-boolean value ignored\n");
@@ -1452,7 +1452,7 @@ HandleSymbolsVar(VarDef * stmt, struct xkb_desc * xkb, SymbolsInfo * info)
              && ((uStrCaseCmp(field.str, "groupsclamp") == 0)
                  || (uStrCaseCmp(field.str, "clampgroups") == 0)))
     {
-        if (!ExprResolveBoolean(stmt->value, &tmp, NULL, NULL))
+        if (!ExprResolveBoolean(stmt->value, &tmp))
         {
             ERROR("Illegal setting for global groupsClamp\n");
             ACTION("Non-boolean value ignored\n");

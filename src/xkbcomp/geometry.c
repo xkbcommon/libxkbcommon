@@ -1998,7 +1998,7 @@ SetRowField(RowInfo * row,
             info->errorCount++;
             return ReportNotArray("keyboard row", field, rowText(row));
         }
-        if (!ExprResolveBoolean(value, &tmp, NULL, NULL))
+        if (!ExprResolveBoolean(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType("keyboard row", field, rowText(row),
