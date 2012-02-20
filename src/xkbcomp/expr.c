@@ -673,6 +673,7 @@ int
 ExprResolveLevel(ExprDef * expr,
                  ExprResult * val_rtrn)
 {
+    int ret;
     static LookupEntry level_names[] = {
         { "level1", 1 },
         { "level2", 2 },
@@ -685,8 +686,17 @@ ExprResolveLevel(ExprDef * expr,
         { NULL, 0 }
     };
 
-    return ExprResolveIntegerLookup(expr, val_rtrn, SimpleLookup,
-                                    level_names);
+    ret = ExprResolveIntegerLookup(expr, val_rtrn, SimpleLookup, level_names);
+    if (ret == False)
+        return ret;
+
+    if (val_rtrn->ival < 1 || val_rtrn->ival > XkbMaxShiftLevel) {
+        ERROR("Shift level %d is out of range (1..%d)\n", val_rtrn->ival,
+              XkbMaxShiftLevel);
+        return False;
+    }
+
+    return True;
 }
 
 int

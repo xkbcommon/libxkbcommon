@@ -679,14 +679,6 @@ SetMapEntry(KeyTypeInfo * type,
         ACTION("Ignoring malformed level specification\n");
         return False;
     }
-    if ((rtrn.ival < 1) || (rtrn.ival > XkbMaxShiftLevel + 1))
-    {
-        ERROR("Shift level %d out of range (1..%d) in key type %s\n",
-               XkbMaxShiftLevel + 1, rtrn.ival, TypeTxt(type));
-        ACTION("Ignoring illegal definition of map[%s]\n",
-                MapEntryTxt(xkb, &entry));
-        return False;
-    }
     entry.level = rtrn.ival - 1;
     return AddMapEntry(xkb, type, &entry, True, True);
 }
@@ -811,15 +803,6 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
         return ReportTypeShouldBeArray(type, "level name");
     if (!ExprResolveLevel(arrayNdx, &rtrn))
         return ReportTypeBadType(type, "level name", "integer");
-    if ((rtrn.ival < 1) || (rtrn.ival > XkbMaxShiftLevel + 1))
-    {
-        ERROR("Level name %d out of range (1..%d) in key type %s\n",
-               rtrn.ival,
-               XkbMaxShiftLevel + 1,
-               XkbcAtomText(type->name));
-        ACTION("Ignoring illegal level name definition\n");
-        return False;
-    }
     level = rtrn.ival - 1;
     if (!ExprResolveString(value, &rtrn))
     {
