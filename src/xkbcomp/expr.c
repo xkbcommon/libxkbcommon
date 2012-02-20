@@ -962,8 +962,7 @@ ExprResolveMask(ExprDef * expr,
 
 int
 ExprResolveKeySym(ExprDef * expr,
-                  ExprResult * val_rtrn,
-                  IdentLookupFunc lookup, char * lookupPriv)
+                  ExprResult * val_rtrn)
 {
     int ok = 0;
     uint32_t sym;
@@ -978,7 +977,7 @@ ExprResolveKeySym(ExprDef * expr,
             return True;
         }
     }
-    ok = ExprResolveInteger(expr, val_rtrn, lookup, lookupPriv);
+    ok = ExprResolveInteger(expr, val_rtrn, NULL, NULL);
     if ((ok) && (val_rtrn->uval < 10))
         val_rtrn->uval += '0';
     return ok;

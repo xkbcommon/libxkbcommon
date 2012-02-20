@@ -142,9 +142,7 @@ extern int ExprResolveMask(ExprDef * /* expr */ ,
     );
 
 extern int ExprResolveKeySym(ExprDef * /* expr */ ,
-                             ExprResult * /* val_rtrn */ ,
-                             IdentLookupFunc /* lookup */ ,
-                             char *   /* lookupPriv */
+                             ExprResult * /* val_rtrn */
     );
 
 #endif /* EXPR_H */

@@ -1641,7 +1641,7 @@ HandleModMapDef(ModMapDef * def,
             tmp.haveSymbol = False;
             tmp.u.keyName = KeyNameToLong(key->value.keyName);
         }
-        else if (ExprResolveKeySym(key, &rtrn, NULL, NULL))
+        else if (ExprResolveKeySym(key, &rtrn))
         {
             tmp.haveSymbol = True;
             tmp.u.keySym = rtrn.uval;
