@@ -266,14 +266,13 @@ LookupModMask(char * priv,
 
 int
 ExprResolveModMask(ExprDef * expr,
-                   ExprResult * val_rtrn,
-                   IdentLookupFunc lookup, char * lookupPriv)
+                   ExprResult * val_rtrn)
 {
     LookupPriv priv;
 
     priv.priv = NULL;
-    priv.chain = lookup;
-    priv.chainPriv = lookupPriv;
+    priv.chain = NULL;
+    priv.chainPriv = NULL;
     return ExprResolveMask(expr, val_rtrn, LookupModMask, (char *) & priv);
 }
 

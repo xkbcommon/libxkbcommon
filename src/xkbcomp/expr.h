@@ -94,9 +94,7 @@ extern int LookupModIndex(char * /* priv */ ,
     );
 
 extern int ExprResolveModMask(ExprDef * /* expr */ ,
-                              ExprResult * /* val_rtrn */ ,
-                              IdentLookupFunc /* lookup */ ,
-                              char *  /* priv */
+                              ExprResult * /* val_rtrn */
     );
 
 extern int ExprResolveVModMask(ExprDef * /* expr */ ,

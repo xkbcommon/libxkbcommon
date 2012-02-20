@@ -102,7 +102,7 @@ HandleVModDef(VModDef * stmt, struct xkb_desc *xkb, unsigned mergeMode,
                 {
                     const char *str1;
                     const char *str2 = "";
-                    if (!ExprResolveModMask(stmt->value, &mod, NULL, NULL))
+                    if (!ExprResolveModMask(stmt->value, &mod))
                     {
                         str1 = XkbcAtomText(stmt->name);
                         ACTION("Declaration of %s ignored\n", str1);
@@ -141,7 +141,7 @@ HandleVModDef(VModDef * stmt, struct xkb_desc *xkb, unsigned mergeMode,
     names->vmods[nextFree] = stmt->name;
     if (stmt->value == NULL)
         return True;
-    if (ExprResolveModMask(stmt->value, &mod, NULL, NULL))
+    if (ExprResolveModMask(stmt->value, &mod))
     {
         srv->vmods[nextFree] = mod.uval;
         return True;

@@ -337,7 +337,7 @@ ResolveStateAndPredicate(ExprDef * expr,
         }
     }
 
-    if (ExprResolveModMask(expr, &result, NULL, NULL))
+    if (ExprResolveModMask(expr, &result))
     {
         *mods_rtrn = result.uval;
         return True;
