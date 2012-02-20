@@ -51,19 +51,19 @@ typedef struct _LookupEntry
 extern char *exprOpText(unsigned        /* type */
     );
 
-extern int LookupModMask(char * /* priv */ ,
+extern int LookupModMask(void * /* priv */ ,
                          uint32_t /* field */ ,
                          unsigned /* type */ ,
                          ExprResult *  /* val_rtrn */
     );
 
-extern int LookupVModMask(char * /* priv */ ,
+extern int LookupVModMask(void * /* priv */ ,
                           uint32_t /* field */ ,
                           unsigned /* type */ ,
                           ExprResult *  /* val_rtrn */
     );
 
-extern int LookupModIndex(char * /* priv */ ,
+extern int LookupModIndex(void * /* priv */ ,
                           uint32_t /* field */ ,
                           unsigned /* type */ ,
                           ExprResult *  /* val_rtrn */

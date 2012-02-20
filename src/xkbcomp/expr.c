@@ -34,7 +34,7 @@
 
 /***====================================================================***/
 
-typedef Bool(*IdentLookupFunc) (char * /* priv */ ,
+typedef Bool(*IdentLookupFunc) (void * /* priv */ ,
                                 uint32_t /* field */ ,
                                 unsigned /* type */ ,
                                 ExprResult *    /* val_rtrn */
@@ -164,7 +164,7 @@ ExprResolveLhs(ExprDef * expr,
 }
 
 static Bool
-SimpleLookup(char * priv, uint32_t field, unsigned type,
+SimpleLookup(void * priv, uint32_t field, unsigned type,
              ExprResult * val_rtrn)
 {
     LookupEntry *entry;
@@ -176,8 +176,7 @@ SimpleLookup(char * priv, uint32_t field, unsigned type,
         return False;
     }
     str = XkbcAtomText(field);
-    for (entry = (LookupEntry *) priv;
-         (entry != NULL) && (entry->name != NULL); entry++)
+    for (entry = priv; (entry != NULL) && (entry->name != NULL); entry++)
     {
         if (uStrCaseCmp(str, entry->name) == 0)
         {
@@ -191,7 +190,7 @@ SimpleLookup(char * priv, uint32_t field, unsigned type,
 }
 
 static Bool
-RadioLookup(char * priv, uint32_t field, unsigned type, ExprResult * val_rtrn)
+RadioLookup(void * priv, uint32_t field, unsigned type, ExprResult * val_rtrn)
 {
     const char *str;
     int rg;
@@ -231,14 +230,14 @@ static LookupEntry modIndexNames[] = {
 };
 
 int
-LookupModIndex(char * priv, uint32_t field, unsigned type,
+LookupModIndex(void * priv, uint32_t field, unsigned type,
                ExprResult * val_rtrn)
 {
-    return SimpleLookup((char *) modIndexNames, field, type, val_rtrn);
+    return SimpleLookup(modIndexNames, field, type, val_rtrn);
 }
 
 int
-LookupModMask(char * priv, uint32_t field, unsigned type,
+LookupModMask(void * priv, uint32_t field, unsigned type,
               ExprResult * val_rtrn)
 {
     char *str;
@@ -520,7 +519,7 @@ ExprResolveKeyCode(ExprDef * expr,
 static int
 ExprResolveIntegerLookup(ExprDef * expr,
                          ExprResult * val_rtrn,
-                         IdentLookupFunc lookup, char * lookupPriv)
+                         IdentLookupFunc lookup, void * lookupPriv)
 {
     int ok = 0;
     ExprResult leftRtrn, rightRtrn;
@@ -657,7 +656,7 @@ ExprResolveGroup(ExprDef * expr,
     };
 
     return ExprResolveIntegerLookup(expr, val_rtrn, SimpleLookup,
-                                    (char *) group_names);
+                                    group_names);
 }
 
 int
@@ -677,7 +676,7 @@ ExprResolveLevel(ExprDef * expr,
     };
 
     return ExprResolveIntegerLookup(expr, val_rtrn, SimpleLookup,
-                                    (char *) level_names);
+                                    level_names);
 }
 
 int
@@ -695,7 +694,7 @@ ExprResolveButton(ExprDef * expr,
     };
 
     return ExprResolveIntegerLookup(expr, val_rtrn, SimpleLookup,
-                                    (char *) button_names);
+                                    button_names);
 }
 
 int
@@ -856,7 +855,7 @@ ExprResolveEnum(ExprDef * expr, ExprResult * val_rtrn, LookupEntry * values)
                exprOpText(expr->op));
         return False;
     }
-    if (!SimpleLookup((char *) values, expr->value.str, TypeInt, val_rtrn))
+    if (!SimpleLookup(values, expr->value.str, TypeInt, val_rtrn))
     {
         int nOut = 0;
         ERROR("Illegal identifier %s (expected one of: ",
@@ -880,7 +879,7 @@ static int
 ExprResolveMaskLookup(ExprDef * expr,
                       ExprResult * val_rtrn,
                       IdentLookupFunc lookup,
-                      char * lookupPriv)
+                      void * lookupPriv)
 {
     int ok = 0;
     ExprResult leftRtrn, rightRtrn;
@@ -978,8 +977,7 @@ ExprResolveMask(ExprDef * expr,
                 ExprResult * val_rtrn,
                 LookupEntry * values)
 {
-    return ExprResolveMaskLookup(expr, val_rtrn, SimpleLookup,
-                                 (char *) values);
+    return ExprResolveMaskLookup(expr, val_rtrn, SimpleLookup, values);
 }
 
 int
@@ -994,8 +992,7 @@ ExprResolveVModMask(ExprDef * expr,
                     ExprResult * val_rtrn,
                     struct xkb_desc *xkb)
 {
-    return ExprResolveMaskLookup(expr, val_rtrn, LookupVModMask,
-                                 (char *) xkb);
+    return ExprResolveMaskLookup(expr, val_rtrn, LookupVModMask, xkb);
 }
 
 int

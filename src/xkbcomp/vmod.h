@@ -54,12 +54,6 @@ extern Bool ApplyVModDefs(VModInfo * /* info */ ,
                           struct xkb_desc *    /* xkb */
     );
 
-extern int LookupVModMask(char * /* priv */ ,
-                          uint32_t /* field */ ,
-                          unsigned /* type */ ,
-                          ExprResult *  /* val_rtrn */
-    );
-
 extern int FindKeypadVMod(struct xkb_desc *    /* xkb */
     );
 
