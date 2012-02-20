@@ -658,6 +658,26 @@ ExprResolveRadioGroup(ExprDef * expr,
 }
 
 int
+ExprResolveGroup(ExprDef * expr,
+                 ExprResult * val_rtrn)
+{
+    static LookupEntry group_names[] = {
+        { "group1", 1 },
+        { "group2", 2 },
+        { "group3", 3 },
+        { "group4", 4 },
+        { "group5", 5 },
+        { "group6", 6 },
+        { "group7", 7 },
+        { "group8", 8 },
+        { NULL, 0 }
+    };
+
+    return ExprResolveInteger(expr, val_rtrn, SimpleLookup,
+                              (char *) group_names);
+}
+
+int
 ExprResolveLevel(ExprDef * expr,
                  ExprResult * val_rtrn)
 {

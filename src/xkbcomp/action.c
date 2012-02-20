@@ -462,18 +462,6 @@ HandleLockMods(struct xkb_desc * xkb,
     return ReportIllegal(action->type, field);
 }
 
-static LookupEntry groupNames[] = {
-    {"group1", 1},
-    {"group2", 2},
-    {"group3", 3},
-    {"group4", 4},
-    {"group5", 5},
-    {"group6", 6},
-    {"group7", 7},
-    {"group8", 8},
-    {NULL, 0},
-};
-
 static Bool
 CheckGroupField(unsigned action,
                 ExprDef * value, unsigned *flags_inout, int *grp_rtrn)
@@ -492,7 +480,7 @@ CheckGroupField(unsigned action,
         spec = value;
     }
 
-    if (!ExprResolveInteger(spec, &rtrn, SimpleLookup, (char *) groupNames))
+    if (!ExprResolveGroup(spec, &rtrn))
         return ReportMismatch(action, F_Group, "integer (range 1..8)");
     if ((rtrn.ival < 1) || (rtrn.ival > XkbNumKbdGroups))
     {

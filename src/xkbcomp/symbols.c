@@ -860,19 +860,6 @@ HandleIncludeSymbols(IncludeStmt * stmt,
     return (info->errorCount == 0);
 }
 
-static LookupEntry groupNames[] = {
-    {"group1", 1},
-    {"group2", 2},
-    {"group3", 3},
-    {"group4", 4},
-    {"group5", 5},
-    {"group6", 6},
-    {"group7", 7},
-    {"group8", 8},
-    {NULL, 0}
-};
-
-
 #define	SYMBOLS 1
 #define	ACTIONS	2
 
@@ -910,8 +897,7 @@ GetGroupIndex(KeyInfo * key,
         ACTION("Ignoring %s defined for extra groups\n", name);
         return False;
     }
-    if (!ExprResolveInteger
-        (arrayNdx, &tmp, SimpleLookup, (char *) groupNames))
+    if (!ExprResolveGroup(arrayNdx, &tmp))
     {
         ERROR("Illegal group index for %s of key %s\n", name,
                longText(key->name));
@@ -1142,8 +1128,7 @@ SetSymbolsField(KeyInfo * key,
             key->dfltType = xkb_intern_atom(tmp.str);
             key->defs.defined |= _Key_Type_Dflt;
         }
-        else if (!ExprResolveInteger(arrayNdx, &ndx, SimpleLookup,
-                                     (char *) groupNames))
+        else if (!ExprResolveGroup(arrayNdx, &ndx))
         {
             ERROR("Illegal group index for type of key %s\n",
                    longText(key->name));
@@ -1343,8 +1328,7 @@ SetSymbolsField(KeyInfo * key,
     else if ((uStrCaseCmp(field, "groupsredirect") == 0) ||
              (uStrCaseCmp(field, "redirectgroups") == 0))
     {
-        if (!ExprResolveInteger
-            (value, &tmp, SimpleLookup, (char *) groupNames))
+        if (!ExprResolveGroup(value, &tmp))
         {
             ERROR("Illegal group index for redirect of key %s\n",
                    longText(key->name));
@@ -1382,8 +1366,7 @@ SetGroupName(SymbolsInfo * info, ExprDef * arrayNdx, ExprDef * value)
         ACTION("Group name definition without array subscript ignored\n");
         return False;
     }
-    if (!ExprResolveInteger
-        (arrayNdx, &tmp, SimpleLookup, (char *) groupNames))
+    if (!ExprResolveGroup(arrayNdx, &tmp))
     {
         ERROR("Illegal index in group name definition\n");
         ACTION("Definition with non-integer array index ignored\n");
@@ -1470,8 +1453,7 @@ HandleSymbolsVar(VarDef * stmt, struct xkb_desc * xkb, SymbolsInfo * info)
              && ((uStrCaseCmp(field.str, "groupsredirect") == 0)
                  || (uStrCaseCmp(field.str, "redirectgroups") == 0)))
     {
-        if (!ExprResolveInteger(stmt->value, &tmp,
-                                SimpleLookup, (char *) groupNames))
+        if (!ExprResolveGroup(stmt->value, &tmp))
         {
             ERROR("Illegal group index for global groupsRedirect\n");
             ACTION("Definition with non-integer group ignored\n");
