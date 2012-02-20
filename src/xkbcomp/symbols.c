@@ -1100,11 +1100,6 @@ static LookupEntry repeatEntries[] = {
     {NULL, 0}
 };
 
-static LookupEntry rgEntries[] = {
-    {"none", 0},
-    {NULL, 0}
-};
-
 static Bool
 SetSymbolsField(KeyInfo * key,
                 struct xkb_desc * xkb,
@@ -1189,12 +1184,19 @@ SetSymbolsField(KeyInfo * key,
         Bool permanent = False;
         if (uStrCaseCmp(field, "permanentradiogroup") == 0)
             permanent = True;
-        ok = ExprResolveInteger(value, &tmp, SimpleLookup,
-                                (char *) rgEntries);
+        if (ExprResolveString(value, &tmp)) {
+            ok = (strcmp(tmp.str, "none") == 0);
+            free(tmp.str);
+            if (ok)
+                tmp.uval = 0;
+        }
+        else {
+            ok = ExprResolveInteger(value, &tmp, NULL, 0);
+        }
         if (!ok)
         {
             ERROR("Illegal radio group specification for %s\n",
-                   longText(key->name));
+                  longText(key->name));
             ACTION("Non-integer radio group ignored\n");
             return False;
         }
