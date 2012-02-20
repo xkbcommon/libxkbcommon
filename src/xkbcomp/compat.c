@@ -34,7 +34,6 @@
 #include "misc.h"
 #include "indicators.h"
 #include "action.h"
-#include "compat.h"
 #include "parseutils.h"
 
 typedef struct _SymInterpInfo
@@ -579,30 +578,6 @@ SetInterpField(SymInterpInfo * si,
     }
     return ok;
 }
-
-LookupEntry groupNames[] = {
-    {"group1", 0x01}
-    ,
-    {"group2", 0x02}
-    ,
-    {"group3", 0x04}
-    ,
-    {"group4", 0x08}
-    ,
-    {"group5", 0x10}
-    ,
-    {"group6", 0x20}
-    ,
-    {"group7", 0x40}
-    ,
-    {"group8", 0x80}
-    ,
-    {"none", 0x00}
-    ,
-    {"all", 0xff}
-    ,
-    {NULL, 0}
-};
 
 static int
 HandleInterpVar(VarDef * stmt, struct xkb_desc * xkb, CompatInfo * info)

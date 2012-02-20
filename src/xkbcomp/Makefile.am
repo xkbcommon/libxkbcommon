@@ -9,7 +9,6 @@ libxkbcomp_la_SOURCES = \
 	alias.c \
 	alias.h \
 	compat.c \
-	compat.h \
 	expr.c \
 	expr.h \
 	geometry.c \
