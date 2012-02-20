@@ -119,9 +119,7 @@ extern int ExprResolveInteger(ExprDef * /* expr */ ,
     );
 
 extern int ExprResolveFloat(ExprDef * /* expr */ ,
-                            ExprResult * /* val_rtrn */ ,
-                            IdentLookupFunc /* lookup */ ,
-                            char *    /* lookupPriv */
+                            ExprResult * /* val_rtrn */
     );
 
 extern int ExprResolveString(ExprDef * /* expr */ ,

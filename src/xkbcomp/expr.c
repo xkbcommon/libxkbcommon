@@ -387,8 +387,7 @@ ExprResolveBoolean(ExprDef * expr,
 
 int
 ExprResolveFloat(ExprDef * expr,
-                 ExprResult * val_rtrn,
-                 IdentLookupFunc lookup, char * lookupPriv)
+                 ExprResult * val_rtrn)
 {
     int ok = 0;
     ExprResult leftRtrn, rightRtrn;
@@ -418,26 +417,13 @@ ExprResolveFloat(ExprDef * expr,
             val_rtrn->ival *= XkbGeomPtsPerMM;
         return True;
     case ExprIdent:
-        if (lookup)
-        {
-            ok = (*lookup) (lookupPriv,
-                            None, expr->value.str, TypeFloat, val_rtrn);
-        }
-        if (!ok)
-            ERROR("Numeric identifier \"%s\" unknown\n",
-                   XkbcAtomText(expr->value.str));
+        ERROR("Numeric identifier \"%s\" unknown\n",
+              XkbcAtomText(expr->value.str));
         return ok;
     case ExprFieldRef:
-        if (lookup)
-        {
-            ok = (*lookup) (lookupPriv,
-                            expr->value.field.element,
-                            expr->value.field.field, TypeFloat, val_rtrn);
-        }
-        if (!ok)
-            ERROR("Numeric default \"%s.%s\" unknown\n",
-                   XkbcAtomText(expr->value.field.element),
-                   XkbcAtomText(expr->value.field.field));
+        ERROR("Numeric default \"%s.%s\" unknown\n",
+              XkbcAtomText(expr->value.field.element),
+              XkbcAtomText(expr->value.field.field));
         return ok;
     case OpAdd:
     case OpSubtract:
@@ -445,8 +431,8 @@ ExprResolveFloat(ExprDef * expr,
     case OpDivide:
         left = expr->value.binary.left;
         right = expr->value.binary.right;
-        if (ExprResolveFloat(left, &leftRtrn, lookup, lookupPriv) &&
-            ExprResolveFloat(right, &rightRtrn, lookup, lookupPriv))
+        if (ExprResolveFloat(left, &leftRtrn) &&
+            ExprResolveFloat(right, &rightRtrn))
         {
             switch (expr->op)
             {
@@ -470,16 +456,12 @@ ExprResolveFloat(ExprDef * expr,
         WSGO("Assignment operator not implemented yet\n");
         break;
     case OpNot:
-        left = expr->value.child;
-        if (ExprResolveFloat(left, &leftRtrn, lookup, lookupPriv))
-        {
-            ERROR("The ! operator cannot be applied to a number\n");
-        }
+        ERROR("The ! operator cannot be applied to a number\n");
         return False;
     case OpInvert:
     case OpNegate:
         left = expr->value.child;
-        if (ExprResolveFloat(left, &leftRtrn, lookup, lookupPriv))
+        if (ExprResolveFloat(left, &leftRtrn))
         {
             if (expr->op == OpNegate)
                 val_rtrn->ival = -leftRtrn.ival;
@@ -490,7 +472,7 @@ ExprResolveFloat(ExprDef * expr,
         return False;
     case OpUnaryPlus:
         left = expr->value.child;
-        return ExprResolveFloat(left, val_rtrn, lookup, lookupPriv);
+        return ExprResolveFloat(left, val_rtrn);
     default:
         WSGO("Unknown operator %d in ResolveFloat\n", expr->op);
         break;

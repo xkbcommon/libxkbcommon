@@ -1416,7 +1416,7 @@ SetShapeField(ShapeInfo * si,
             info->errorCount++;
             return ReportNotArray("key shape", field, shText(si));
         }
-        if (!ExprResolveFloat(value, &tmp, NULL, NULL))
+        if (!ExprResolveFloat(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType("key shape", field, shText(si), "number");
@@ -1450,7 +1450,7 @@ SetShapeDoodadField(DoodadInfo * di,
             info->errorCount++;
             return ReportNotArray(typeName, field, ddText(di));
         }
-        if (!ExprResolveFloat(value, &tmp, NULL, NULL))
+        if (!ExprResolveFloat(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType(typeName, field, ddText(di), "number");
@@ -1466,7 +1466,7 @@ SetShapeDoodadField(DoodadInfo * di,
             info->errorCount++;
             return ReportNotArray(typeName, field, ddText(di));
         }
-        if (!ExprResolveFloat(value, &tmp, NULL, NULL))
+        if (!ExprResolveFloat(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType(typeName, field, ddText(di), "number");
@@ -1523,7 +1523,7 @@ SetTextDoodadField(DoodadInfo * di,
             info->errorCount++;
             return ReportNotArray(typeName, field, ddText(di));
         }
-        if (!ExprResolveFloat(value, &tmp, NULL, NULL))
+        if (!ExprResolveFloat(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType(typeName, field, ddText(di), "number");
@@ -1626,7 +1626,7 @@ SetTextDoodadField(DoodadInfo * di,
     }
     else
     {
-        if (!ExprResolveFloat(value, &tmp, NULL, NULL))
+        if (!ExprResolveFloat(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType(typeName, field, ddText(di), "number");
@@ -1708,7 +1708,7 @@ SetLogoDoodadField(DoodadInfo * di,
             info->errorCount++;
             return ReportNotArray(typeName, field, ddText(di));
         }
-        if (!ExprResolveFloat(value, &tmp, NULL, NULL))
+        if (!ExprResolveFloat(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType(typeName, field, ddText(di), "number");
@@ -1724,7 +1724,7 @@ SetLogoDoodadField(DoodadInfo * di,
             info->errorCount++;
             return ReportNotArray(typeName, field, ddText(di));
         }
-        if (!ExprResolveFloat(value, &tmp, NULL, NULL))
+        if (!ExprResolveFloat(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType(typeName, field, ddText(di), "number");
@@ -1810,7 +1810,7 @@ SetDoodadField(DoodadInfo * di,
             info->errorCount++;
             return ReportNotArray("doodad", field, ddText(di));
         }
-        if (!ExprResolveFloat(value, &tmp, NULL, NULL))
+        if (!ExprResolveFloat(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType("doodad", field, ddText(di), "number");
@@ -1826,7 +1826,7 @@ SetDoodadField(DoodadInfo * di,
             info->errorCount++;
             return ReportNotArray("doodad", field, ddText(di));
         }
-        if (!ExprResolveFloat(value, &tmp, NULL, NULL))
+        if (!ExprResolveFloat(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType("doodad", field, ddText(di), "number");
@@ -1941,7 +1941,7 @@ SetSectionField(SectionInfo * si,
         info->errorCount++;
         return ReportNotArray("keyboard section", field, scText(si));
     }
-    if (!ExprResolveFloat(value, &tmp, NULL, NULL))
+    if (!ExprResolveFloat(value, &tmp))
     {
         info->errorCount++;
         ReportBadType("keyboard section", field, scText(si), "number");
@@ -1966,7 +1966,7 @@ SetRowField(RowInfo * row,
             info->errorCount++;
             return ReportNotArray("keyboard row", field, rowText(row));
         }
-        if (!ExprResolveFloat(value, &tmp, NULL, NULL))
+        if (!ExprResolveFloat(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType("keyboard row", field, rowText(row),
@@ -1982,7 +1982,7 @@ SetRowField(RowInfo * row,
             info->errorCount++;
             return ReportNotArray("keyboard row", field, rowText(row));
         }
-        if (!ExprResolveFloat(value, &tmp, NULL, NULL))
+        if (!ExprResolveFloat(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType("keyboard row", field, rowText(row),
@@ -2029,7 +2029,7 @@ SetKeyField(KeyInfo * key,
             info->errorCount++;
             return ReportNotArray("key", field, keyText(key));
         }
-        if (!ExprResolveFloat(value, &tmp, NULL, NULL))
+        if (!ExprResolveFloat(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType("key", field, keyText(key), "number");
@@ -2215,7 +2215,7 @@ HandleGeometryVar(VarDef * stmt, struct xkb_desc * xkb, GeometryInfo * info)
             info->errorCount++;
             ret = ReportNotArray("keyboard", field.str, "geometry");
         }
-        else if (!ExprResolveFloat(stmt->value, &tmp, NULL, NULL))
+        else if (!ExprResolveFloat(stmt->value, &tmp))
         {
             info->errorCount++;
             ret = ReportBadType("keyboard", field.str, "geometry", "number");
@@ -2248,7 +2248,7 @@ HandleGeometryVar(VarDef * stmt, struct xkb_desc * xkb, GeometryInfo * info)
             info->errorCount++;
             ret = ReportNotArray("keyboard", field.str, "geometry");
         }
-        if (!ExprResolveFloat(stmt->value, &tmp, NULL, NULL))
+        if (!ExprResolveFloat(stmt->value, &tmp))
         {
             info->errorCount++;
             ret = ReportBadType("keyboard", field.str, "geometry", "number");
@@ -2280,7 +2280,7 @@ HandleGeometryVar(VarDef * stmt, struct xkb_desc * xkb, GeometryInfo * info)
             info->errorCount++;
             ret = ReportNotArray("keyboard", field.str, "geometry");
         }
-        else if (!ExprResolveFloat(stmt->value, &tmp, NULL, NULL))
+        else if (!ExprResolveFloat(stmt->value, &tmp))
         {
             info->errorCount++;
             ret = ReportBadType("keyboard", field.str, "geometry", "number");
