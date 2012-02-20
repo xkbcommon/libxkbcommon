@@ -40,12 +40,6 @@ typedef Bool(*IdentLookupFunc) (char * /* priv */ ,
                                 ExprResult *    /* val_rtrn */
     );
 
-typedef struct _LookupPriv
-{
-    IdentLookupFunc chain;
-    char * chainPriv;
-} LookupPriv;
-
 /***====================================================================***/
 
 char *
@@ -261,13 +255,6 @@ LookupModMask(char * priv, uint32_t field, unsigned type,
         val_rtrn->uval = 0;
     else if (LookupModIndex(priv, field, type, val_rtrn))
         val_rtrn->uval = (1 << val_rtrn->uval);
-    else if (priv != NULL)
-    {
-        LookupPriv *lpriv = (LookupPriv *) priv;
-        if ((lpriv->chain == NULL) ||
-            (!(*lpriv->chain) (lpriv->chainPriv, field, type, val_rtrn)))
-            ret = False;
-    }
     else
         ret = False;
     free(str);
