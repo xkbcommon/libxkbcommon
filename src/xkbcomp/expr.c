@@ -678,6 +678,24 @@ ExprResolveLevel(ExprDef * expr,
 }
 
 int
+ExprResolveButton(ExprDef * expr,
+                  ExprResult * val_rtrn)
+{
+    static LookupEntry button_names[] = {
+        { "button1", 1 },
+        { "button2", 2 },
+        { "button3", 3 },
+        { "button4", 4 },
+        { "button5", 5 },
+        { "default", 0 },
+        { NULL, 0 }
+    };
+
+    return ExprResolveInteger(expr, val_rtrn, SimpleLookup,
+                              (char *) button_names);
+}
+
+int
 ExprResolveString(ExprDef * expr,
                   ExprResult * val_rtrn)
 {

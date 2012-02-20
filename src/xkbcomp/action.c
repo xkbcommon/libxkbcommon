@@ -628,16 +628,6 @@ HandleMovePtr(struct xkb_desc * xkb,
     return ReportIllegal(action->type, field);
 }
 
-static LookupEntry btnNames[] = {
-    {"button1", 1},
-    {"button2", 2},
-    {"button3", 3},
-    {"button4", 4},
-    {"button5", 5},
-    {"default", 0},
-    {NULL, 0}
-};
-
 static LookupEntry lockWhich[] = {
     {"both", 0},
     {"lock", XkbSA_LockNoUnlock},
@@ -659,8 +649,7 @@ HandlePtrBtn(struct xkb_desc * xkb,
     {
         if (array_ndx != NULL)
             return ReportActionNotArray(action->type, field);
-        if (!ExprResolveInteger
-            (value, &rtrn, SimpleLookup, (char *) btnNames))
+        if (!ExprResolveButton(value, &rtrn))
             return ReportMismatch(action->type, field,
                                   "integer (range 1..5)");
         if ((rtrn.ival < 0) || (rtrn.ival > 5))
@@ -686,8 +675,7 @@ HandlePtrBtn(struct xkb_desc * xkb,
     {
         if (array_ndx != NULL)
             return ReportActionNotArray(action->type, field);
-        if (!ExprResolveInteger
-            (value, &rtrn, SimpleLookup, (char *) btnNames))
+        if (!ExprResolveButton(value, &rtrn))
             return ReportMismatch(action->type, field, "integer");
         if ((rtrn.ival < 0) || (rtrn.ival > 255))
         {
@@ -742,8 +730,7 @@ HandleSetPtrDflt(struct xkb_desc * xkb,
             btn = value;
         }
 
-        if (!ExprResolveInteger
-            (btn, &rtrn, SimpleLookup, (char *) btnNames))
+        if (!ExprResolveButton(btn, &rtrn))
             return ReportMismatch(action->type, field,
                                   "integer (range 1..5)");
         if ((rtrn.ival < 0) || (rtrn.ival > 5))
@@ -1121,8 +1108,7 @@ HandleDeviceBtn(struct xkb_desc * xkb,
     {
         if (array_ndx != NULL)
             return ReportActionNotArray(action->type, field);
-        if (!ExprResolveInteger
-            (value, &rtrn, SimpleLookup, (char *) btnNames))
+        if (!ExprResolveButton(value, &rtrn))
             return ReportMismatch(action->type, field, "integer");
         if ((rtrn.ival < 0) || (rtrn.ival > 255))
         {

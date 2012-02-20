@@ -124,6 +124,10 @@ extern int ExprResolveLevel(ExprDef * /* expr */ ,
                             ExprResult * /* val_rtrn */
     );
 
+extern int ExprResolveButton(ExprDef * /* expr */ ,
+                             ExprResult * /* val_rtrn */
+    );
+
 extern int ExprResolveFloat(ExprDef * /* expr */ ,
                             ExprResult * /* val_rtrn */
     );
