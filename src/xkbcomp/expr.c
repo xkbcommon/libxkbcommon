@@ -42,7 +42,6 @@ typedef Bool(*IdentLookupFunc) (char * /* priv */ ,
 
 typedef struct _LookupPriv
 {
-    char * priv;
     IdentLookupFunc chain;
     char * chainPriv;
 } LookupPriv;
@@ -1002,7 +1001,6 @@ ExprResolveModMask(ExprDef * expr,
 {
     LookupPriv priv;
 
-    priv.priv = NULL;
     priv.chain = NULL;
     priv.chainPriv = NULL;
     return ExprResolveMaskLookup(expr, val_rtrn, LookupModMask,
@@ -1016,7 +1014,6 @@ ExprResolveVModMask(ExprDef * expr,
 {
     LookupPriv priv;
 
-    priv.priv = NULL;
     priv.chain = LookupVModMask;
     priv.chainPriv = (char *) xkb;
     return ExprResolveMaskLookup(expr, val_rtrn, LookupModMask,
