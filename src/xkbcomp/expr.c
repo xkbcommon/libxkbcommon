@@ -643,6 +643,7 @@ int
 ExprResolveGroup(ExprDef * expr,
                  ExprResult * val_rtrn)
 {
+    int ret;
     static LookupEntry group_names[] = {
         { "group1", 1 },
         { "group2", 2 },
@@ -655,8 +656,17 @@ ExprResolveGroup(ExprDef * expr,
         { NULL, 0 }
     };
 
-    return ExprResolveIntegerLookup(expr, val_rtrn, SimpleLookup,
-                                    group_names);
+    ret = ExprResolveIntegerLookup(expr, val_rtrn, SimpleLookup, group_names);
+    if (ret == False)
+        return ret;
+
+    if (val_rtrn->uval == 0 || val_rtrn->uval > XkbNumKbdGroups) {
+        ERROR("Group index %d is out of range (1..%d)\n",
+              val_rtrn->uval, XkbNumKbdGroups);
+        return False;
+    }
+
+    return True;
 }
 
 int

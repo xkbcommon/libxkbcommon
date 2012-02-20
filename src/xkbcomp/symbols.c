@@ -904,13 +904,6 @@ GetGroupIndex(KeyInfo * key,
         ACTION("Definition with non-integer array index ignored\n");
         return False;
     }
-    if ((tmp.uval < 1) || (tmp.uval > XkbNumKbdGroups))
-    {
-        ERROR("Group index for %s of key %s is out of range (1..%d)\n",
-               name, longText(key->name), XkbNumKbdGroups + 1);
-        ACTION("Ignoring %s for group %d\n", name, tmp.uval);
-        return False;
-    }
     *ndx_rtrn = tmp.uval - 1;
     return True;
 }
@@ -1131,15 +1124,6 @@ SetSymbolsField(KeyInfo * key,
             free(tmp.str);
             return False;
         }
-        else if ((ndx.uval < 1) || (ndx.uval > XkbNumKbdGroups))
-        {
-            ERROR
-                ("Group index for type of key %s is out of range (1..%d)\n",
-                 longText(key->name), XkbNumKbdGroups + 1);
-            ACTION("Ignoring type for group %d\n", ndx.uval);
-            free(tmp.str);
-            return False;
-        }
         else
         {
             key->types[ndx.uval - 1] = xkb_intern_atom(tmp.str);
@@ -1337,13 +1321,6 @@ SetSymbolsField(KeyInfo * key,
             ACTION("Definition with non-integer group ignored\n");
             return False;
         }
-        if ((tmp.uval < 1) || (tmp.uval > XkbNumKbdGroups))
-        {
-            ERROR("Out-of-range (1..%d) group for redirect of key %s\n",
-                   XkbNumKbdGroups, longText(key->name));
-            ERROR("Ignoring illegal group %d\n", tmp.uval);
-            return False;
-        }
         key->groupInfo =
             XkbSetGroupInfo(0, XkbRedirectIntoRange, tmp.uval - 1);
         key->defs.defined |= _Key_GroupInfo;
@@ -1372,14 +1349,6 @@ SetGroupName(SymbolsInfo * info, ExprDef * arrayNdx, ExprDef * value)
     {
         ERROR("Illegal index in group name definition\n");
         ACTION("Definition with non-integer array index ignored\n");
-        return False;
-    }
-    if ((tmp.uval < 1) || (tmp.uval > XkbNumKbdGroups))
-    {
-        ERROR
-            ("Attempt to specify name for illegal group (must be 1..%d)\n",
-             XkbNumKbdGroups + 1);
-        ACTION("Name for group %d ignored\n", tmp.uval);
         return False;
     }
     if (!ExprResolveString(value, &name))
@@ -1462,19 +1431,9 @@ HandleSymbolsVar(VarDef * stmt, struct xkb_desc * xkb, SymbolsInfo * info)
             ret = False;
         }
         else {
-            if ((tmp.uval < 1) || (tmp.uval > XkbNumKbdGroups))
-            {
-                ERROR
-                    ("Out-of-range (1..%d) group for global groupsRedirect\n",
-                     XkbNumKbdGroups);
-                ACTION("Ignoring illegal group %d\n", tmp.uval);
-                ret = False;
-            }
-            else {
-                info->groupInfo = XkbSetGroupInfo(0, XkbRedirectIntoRange,
-                                                  tmp.uval);
-                ret = True;
-            }
+            info->groupInfo = XkbSetGroupInfo(0, XkbRedirectIntoRange,
+                                              tmp.uval);
+            ret = True;
         }
     }
     else if ((elem.str == NULL) && (uStrCaseCmp(field.str, "allownone") == 0))

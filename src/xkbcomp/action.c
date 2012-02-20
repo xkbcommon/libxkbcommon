@@ -482,13 +482,6 @@ CheckGroupField(unsigned action,
 
     if (!ExprResolveGroup(spec, &rtrn))
         return ReportMismatch(action, F_Group, "integer (range 1..8)");
-    if ((rtrn.ival < 1) || (rtrn.ival > XkbNumKbdGroups))
-    {
-        ERROR("Illegal group %d (must be in the range 1..%d)\n", rtrn.ival,
-               XkbNumKbdGroups);
-        ACTION("Action %s definition ignored\n", XkbcActionTypeText(action));
-        return False;
-    }
     if (value->op == OpNegate)
         *grp_rtrn = -rtrn.ival;
     else if (value->op == OpUnaryPlus)
