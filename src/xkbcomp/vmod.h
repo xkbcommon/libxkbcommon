@@ -55,7 +55,6 @@ extern Bool ApplyVModDefs(VModInfo * /* info */ ,
     );
 
 extern int LookupVModMask(char * /* priv */ ,
-                          uint32_t /* elem */ ,
                           uint32_t /* field */ ,
                           unsigned /* type */ ,
                           ExprResult *  /* val_rtrn */

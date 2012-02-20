@@ -154,7 +154,6 @@ HandleVModDef(VModDef * stmt, struct xkb_desc *xkb, unsigned mergeMode,
  * Returns the index of the given modifier in the xkb->names->vmods array.
  *
  * @param priv Pointer to the xkb data structure.
- * @param elem Must be None, otherwise return False.
  * @param field The Atom of the modifier's name (e.g. Atom for LAlt)
  * @param type Must be TypeInt, otherwise return False.
  * @param val_rtrn Set to the index of the modifier that matches.
@@ -163,15 +162,14 @@ HandleVModDef(VModDef * stmt, struct xkb_desc *xkb, unsigned mergeMode,
  * undefined.
  */
 static int
-LookupVModIndex(char * priv,
-                uint32_t elem, uint32_t field, unsigned type, ExprResult * val_rtrn)
+LookupVModIndex(char * priv, uint32_t field, unsigned type,
+                ExprResult * val_rtrn)
 {
     int i;
     struct xkb_desc * xkb;
 
     xkb = (struct xkb_desc *) priv;
-    if ((xkb == NULL) || (xkb->names == NULL) || (elem != None)
-        || (type != TypeInt))
+    if ((xkb == NULL) || (xkb->names == NULL) || (type != TypeInt))
     {
         return False;
     }
@@ -202,10 +200,9 @@ LookupVModIndex(char * priv,
  * undefined.
  */
 int
-LookupVModMask(char * priv,
-               uint32_t elem, uint32_t field, unsigned type, ExprResult * val_rtrn)
+LookupVModMask(char * priv, uint32_t field, unsigned type, ExprResult * val_rtrn)
 {
-    if (LookupVModIndex(priv, elem, field, type, val_rtrn))
+    if (LookupVModIndex(priv, field, type, val_rtrn))
     {
         register unsigned ndx = val_rtrn->uval;
         val_rtrn->uval = (1 << (XkbNumModifiers + ndx));
@@ -221,7 +218,7 @@ FindKeypadVMod(struct xkb_desc * xkb)
     ExprResult rtrn;
 
     name = xkb_intern_atom("NumLock");
-    if ((xkb) && LookupVModIndex((char *) xkb, None, name, TypeInt, &rtrn))
+    if ((xkb) && LookupVModIndex((char *) xkb, name, TypeInt, &rtrn))
     {
         return rtrn.ival;
     }

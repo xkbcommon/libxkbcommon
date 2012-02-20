@@ -156,14 +156,13 @@ ExprResolveLhs(ExprDef * expr,
 }
 
 Bool
-SimpleLookup(char * priv,
-             uint32_t elem, uint32_t field, unsigned type, ExprResult * val_rtrn)
+SimpleLookup(char * priv, uint32_t field, unsigned type,
+             ExprResult * val_rtrn)
 {
     LookupEntry *entry;
     const char *str;
 
-    if ((priv == NULL) ||
-        (field == None) || (elem != None) ||
+    if ((priv == NULL) || (field == None) ||
         ((type != TypeInt) && (type != TypeFloat)))
     {
         return False;
@@ -184,13 +183,12 @@ SimpleLookup(char * priv,
 }
 
 Bool
-RadioLookup(char * priv,
-            uint32_t elem, uint32_t field, unsigned type, ExprResult * val_rtrn)
+RadioLookup(char * priv, uint32_t field, unsigned type, ExprResult * val_rtrn)
 {
     const char *str;
     int rg;
 
-    if ((field == None) || (elem != None) || (type != TypeInt))
+    if ((field == None) || (type != TypeInt))
         return False;
     str = XkbcAtomText(field);
     if (str)
@@ -225,21 +223,20 @@ static LookupEntry modIndexNames[] = {
 };
 
 int
-LookupModIndex(char * priv,
-               uint32_t elem, uint32_t field, unsigned type, ExprResult * val_rtrn)
+LookupModIndex(char * priv, uint32_t field, unsigned type,
+               ExprResult * val_rtrn)
 {
-    return SimpleLookup((char *) modIndexNames, elem, field, type,
-                        val_rtrn);
+    return SimpleLookup((char *) modIndexNames, field, type, val_rtrn);
 }
 
 static int
-LookupModMask(char * priv,
-              uint32_t elem, uint32_t field, unsigned type, ExprResult * val_rtrn)
+LookupModMask(char * priv, uint32_t field, unsigned type,
+              ExprResult * val_rtrn)
 {
     char *str;
     Bool ret = True;
 
-    if ((elem != None) || (type != TypeInt))
+    if (type != TypeInt)
         return False;
     str = XkbcAtomGetString(field);
     if (str == NULL)
@@ -248,45 +245,19 @@ LookupModMask(char * priv,
         val_rtrn->uval = 0xff;
     else if (uStrCaseCmp(str, "none") == 0)
         val_rtrn->uval = 0;
-    else if (LookupModIndex(priv, elem, field, type, val_rtrn))
+    else if (LookupModIndex(priv, field, type, val_rtrn))
         val_rtrn->uval = (1 << val_rtrn->uval);
     else if (priv != NULL)
     {
         LookupPriv *lpriv = (LookupPriv *) priv;
         if ((lpriv->chain == NULL) ||
-            (!(*lpriv->chain) (lpriv->chainPriv, elem, field, type,
-                               val_rtrn)))
+            (!(*lpriv->chain) (lpriv->chainPriv, field, type, val_rtrn)))
             ret = False;
     }
     else
         ret = False;
     free(str);
     return ret;
-}
-
-int
-ExprResolveModMask(ExprDef * expr,
-                   ExprResult * val_rtrn)
-{
-    LookupPriv priv;
-
-    priv.priv = NULL;
-    priv.chain = NULL;
-    priv.chainPriv = NULL;
-    return ExprResolveMask(expr, val_rtrn, LookupModMask, (char *) & priv);
-}
-
-int
-ExprResolveVModMask(ExprDef * expr,
-                    ExprResult * val_rtrn,
-                    struct xkb_desc *xkb)
-{
-    LookupPriv priv;
-
-    priv.priv = NULL;
-    priv.chain = LookupVModMask;
-    priv.chainPriv = (char *) xkb;
-    return ExprResolveMask(expr, val_rtrn, LookupModMask, (char *) & priv);
 }
 
 int
@@ -410,7 +381,7 @@ ExprResolveFloat(ExprDef * expr,
         ERROR("Numeric default \"%s.%s\" unknown\n",
               XkbcAtomText(expr->value.field.element),
               XkbcAtomText(expr->value.field.field));
-        return ok;
+        return False;
     case OpAdd:
     case OpSubtract:
     case OpMultiply:
@@ -588,25 +559,17 @@ ExprResolveIntegerLookup(ExprDef * expr,
     case ExprIdent:
         if (lookup)
         {
-            ok = (*lookup) (lookupPriv,
-                            None, expr->value.str, TypeInt, val_rtrn);
+            ok = (*lookup) (lookupPriv, expr->value.str, TypeInt, val_rtrn);
         }
         if (!ok)
             ERROR("Identifier \"%s\" of type int is unknown\n",
                    XkbcAtomText(expr->value.str));
         return ok;
     case ExprFieldRef:
-        if (lookup)
-        {
-            ok = (*lookup) (lookupPriv,
-                            expr->value.field.element,
-                            expr->value.field.field, TypeInt, val_rtrn);
-        }
-        if (!ok)
-            ERROR("Default \"%s.%s\" of type int is unknown\n",
-                   XkbcAtomText(expr->value.field.element),
-                   XkbcAtomText(expr->value.field.field));
-        return ok;
+        ERROR("Default \"%s.%s\" of type int is unknown\n",
+              XkbcAtomText(expr->value.field.element),
+              XkbcAtomText(expr->value.field.field));
+        return False;
     case OpAdd:
     case OpSubtract:
     case OpMultiply:
@@ -892,8 +855,7 @@ ExprResolveEnum(ExprDef * expr, ExprResult * val_rtrn, LookupEntry * values)
                exprOpText(expr->op));
         return False;
     }
-    if (!SimpleLookup((char *) values, (uint32_t) None, expr->value.str,
-                      (unsigned) TypeInt, val_rtrn))
+    if (!SimpleLookup((char *) values, expr->value.str, TypeInt, val_rtrn))
     {
         int nOut = 0;
         ERROR("Illegal identifier %s (expected one of: ",
@@ -913,10 +875,11 @@ ExprResolveEnum(ExprDef * expr, ExprResult * val_rtrn, LookupEntry * values)
     return True;
 }
 
-int
-ExprResolveMask(ExprDef * expr,
-                ExprResult * val_rtrn,
-                IdentLookupFunc lookup, char * lookupPriv)
+static int
+ExprResolveMaskLookup(ExprDef * expr,
+                      ExprResult * val_rtrn,
+                      IdentLookupFunc lookup,
+                      char * lookupPriv)
 {
     int ok = 0;
     ExprResult leftRtrn, rightRtrn;
@@ -936,27 +899,16 @@ ExprResolveMask(ExprDef * expr,
         val_rtrn->ival = expr->value.ival;
         return True;
     case ExprIdent:
-        if (lookup)
-        {
-            ok = (*lookup) (lookupPriv,
-                            None, expr->value.str, TypeInt, val_rtrn);
-        }
+        ok = (*lookup) (lookupPriv, expr->value.str, TypeInt, val_rtrn);
         if (!ok)
             ERROR("Identifier \"%s\" of type int is unknown\n",
                    XkbcAtomText(expr->value.str));
         return ok;
     case ExprFieldRef:
-        if (lookup)
-        {
-            ok = (*lookup) (lookupPriv,
-                            expr->value.field.element,
-                            expr->value.field.field, TypeInt, val_rtrn);
-        }
-        if (!ok)
-            ERROR("Default \"%s.%s\" of type int is unknown\n",
-                   XkbcAtomText(expr->value.field.element),
-                   XkbcAtomText(expr->value.field.field));
-        return ok;
+        ERROR("Default \"%s.%s\" of type int is unknown\n",
+              XkbcAtomText(expr->value.field.element),
+              XkbcAtomText(expr->value.field.field));
+        return False;
     case ExprArrayRef:
         bogus = "array reference";
     case ExprActionDecl:
@@ -971,8 +923,8 @@ ExprResolveMask(ExprDef * expr,
     case OpDivide:
         left = expr->value.binary.left;
         right = expr->value.binary.right;
-        if (ExprResolveMask(left, &leftRtrn, lookup, lookupPriv) &&
-            ExprResolveMask(right, &rightRtrn, lookup, lookupPriv))
+        if (ExprResolveMaskLookup(left, &leftRtrn, lookup, lookupPriv) &&
+            ExprResolveMaskLookup(right, &rightRtrn, lookup, lookupPriv))
         {
             switch (expr->op)
             {
@@ -1018,6 +970,42 @@ ExprResolveMask(ExprDef * expr,
         break;
     }
     return False;
+}
+
+int
+ExprResolveMask(ExprDef * expr,
+                ExprResult * val_rtrn,
+                LookupEntry * values)
+{
+    return ExprResolveMaskLookup(expr, val_rtrn, SimpleLookup,
+                                 (char *) values);
+}
+
+int
+ExprResolveModMask(ExprDef * expr,
+                   ExprResult * val_rtrn)
+{
+    LookupPriv priv;
+
+    priv.priv = NULL;
+    priv.chain = NULL;
+    priv.chainPriv = NULL;
+    return ExprResolveMaskLookup(expr, val_rtrn, LookupModMask,
+                                 (char *) & priv);
+}
+
+int
+ExprResolveVModMask(ExprDef * expr,
+                    ExprResult * val_rtrn,
+                    struct xkb_desc *xkb)
+{
+    LookupPriv priv;
+
+    priv.priv = NULL;
+    priv.chain = LookupVModMask;
+    priv.chainPriv = (char *) xkb;
+    return ExprResolveMaskLookup(expr, val_rtrn, LookupModMask,
+                                 (char *) & priv);
 }
 
 int

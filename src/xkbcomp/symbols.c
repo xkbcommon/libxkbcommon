@@ -1609,7 +1609,7 @@ HandleModMapDef(ModMapDef * def,
     ExprResult rtrn;
     Bool ok;
 
-    if (!LookupModIndex(NULL, None, def->modifier, TypeInt, &rtrn))
+    if (!LookupModIndex(NULL, def->modifier, TypeInt, &rtrn))
     {
         ERROR("Illegal modifier map definition\n");
         ACTION("Ignoring map for non-modifier \"%s\"\n",

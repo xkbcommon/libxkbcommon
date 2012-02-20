@@ -795,7 +795,7 @@ HandleISOLock(struct xkb_desc * xkb,
     case F_Affect:
         if (array_ndx != NULL)
             return ReportActionNotArray(action->type, field);
-        if (!ExprResolveMask(value, &rtrn, SimpleLookup, (char *) isoNames))
+        if (!ExprResolveMask(value, &rtrn, isoNames))
             return ReportMismatch(action->type, field, "keyboard component");
         act->affect = (~rtrn.uval) & XkbSA_ISOAffectMask;
         return True;
@@ -908,8 +908,7 @@ HandleSetLockControls(struct xkb_desc * xkb,
     {
         if (array_ndx != NULL)
             return ReportActionNotArray(action->type, field);
-        if (!ExprResolveMask
-            (value, &rtrn, SimpleLookup, (char *) ctrlNames))
+        if (!ExprResolveMask(value, &rtrn, ctrlNames))
             return ReportMismatch(action->type, field, "controls mask");
         act->ctrls = rtrn.uval;
         return True;
@@ -941,7 +940,7 @@ HandleActionMessage(struct xkb_desc * xkb,
     case F_Report:
         if (array_ndx != NULL)
             return ReportActionNotArray(action->type, field);
-        if (!ExprResolveMask(value, &rtrn, SimpleLookup, (char *) evNames))
+        if (!ExprResolveMask(value, &rtrn, evNames))
             return ReportMismatch(action->type, field, "key event mask");
         act->flags &= ~(XkbSA_MessageOnPress | XkbSA_MessageOnRelease);
         act->flags =

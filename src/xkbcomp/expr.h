@@ -36,7 +36,6 @@ typedef union _ExprResult
 } ExprResult;
 
 typedef Bool(*IdentLookupFunc) (char * /* priv */ ,
-                                uint32_t /* elem */ ,
                                 uint32_t /* field */ ,
                                 unsigned /* type */ ,
                                 ExprResult *    /* val_rtrn */
@@ -73,21 +72,18 @@ extern char *exprOpText(unsigned        /* type */
     );
 
 extern int RadioLookup(char * /* priv */ ,
-                       uint32_t /* elem */ ,
                        uint32_t /* field */ ,
                        unsigned /* type */ ,
                        ExprResult *     /* val_rtrn */
     );
 
 extern int SimpleLookup(char * /* priv */ ,
-                        uint32_t /* elem */ ,
                         uint32_t /* field */ ,
                         unsigned /* type */ ,
                         ExprResult *    /* val_rtrn */
     );
 
 extern int LookupModIndex(char * /* priv */ ,
-                          uint32_t /* elem */ ,
                           uint32_t /* field */ ,
                           unsigned /* type */ ,
                           ExprResult *  /* val_rtrn */
@@ -149,8 +145,7 @@ extern int ExprResolveEnum(ExprDef * /* expr */ ,
 
 extern int ExprResolveMask(ExprDef * /* expr */ ,
                            ExprResult * /* val_rtrn */ ,
-                           IdentLookupFunc /* lookup */ ,
-                           char *     /* lookupPriv */
+                           LookupEntry * /* values */
     );
 
 extern int ExprResolveKeySym(ExprDef * /* expr */ ,

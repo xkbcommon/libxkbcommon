@@ -244,8 +244,7 @@ SetIndicatorMapField(LEDInfo * led,
     {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(led, field);
-        if (!ExprResolveMask
-            (value, &rtrn, SimpleLookup, (char *) groupNames))
+        if (!ExprResolveMask(value, &rtrn, groupNames))
             return ReportIndicatorBadType(led, field, "group mask");
         led->groups = rtrn.uval;
         led->defs.defined |= _LED_Groups;
@@ -255,8 +254,7 @@ SetIndicatorMapField(LEDInfo * led,
     {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(led, field);
-        if (!ExprResolveMask
-            (value, &rtrn, SimpleLookup, (char *) ctrlNames))
+        if (!ExprResolveMask(value, &rtrn, ctrlNames))
             return ReportIndicatorBadType(led, field,
                                           "controls mask");
         led->ctrls = rtrn.uval;
@@ -279,8 +277,7 @@ SetIndicatorMapField(LEDInfo * led,
     {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(led, field);
-        if (!ExprResolveMask(value, &rtrn, SimpleLookup,
-                             (char *) modComponentNames))
+        if (!ExprResolveMask(value, &rtrn, modComponentNames))
         {
             return ReportIndicatorBadType(led, field,
                                           "mask of modifier state components");
@@ -291,8 +288,7 @@ SetIndicatorMapField(LEDInfo * led,
     {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(led, field);
-        if (!ExprResolveMask(value, &rtrn, SimpleLookup,
-                             (char *) groupComponentNames))
+        if (!ExprResolveMask(value, &rtrn, groupComponentNames))
         {
             return ReportIndicatorBadType(led, field,
                                           "mask of group state components");
