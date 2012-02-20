@@ -495,7 +495,7 @@ ExprResolveKeyCode(ExprDef * expr,
         left = expr->value.child;
         return ExprResolveKeyCode(left, val_rtrn);
     default:
-        WSGO("Unknown operator %d in ResolveInteger\n", expr->op);
+        WSGO("Unknown operator %d in ResolveKeyCode\n", expr->op);
         break;
     }
     return False;
