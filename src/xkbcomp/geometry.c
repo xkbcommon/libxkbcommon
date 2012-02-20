@@ -1482,7 +1482,7 @@ SetShapeDoodadField(DoodadInfo * di,
             info->errorCount++;
             return ReportNotArray(typeName, field, ddText(di));
         }
-        if (!ExprResolveString(value, &tmp, NULL, NULL))
+        if (!ExprResolveString(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType(typeName, field, ddText(di), "string");
@@ -1615,7 +1615,7 @@ SetTextDoodadField(DoodadInfo * di,
     }
     if (type == FIELD_STRING)
     {
-        if (!ExprResolveString(value, &tmp, NULL, NULL))
+        if (!ExprResolveString(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType(typeName, field, ddText(di), "string");
@@ -1664,7 +1664,7 @@ SetIndicatorDoodadField(DoodadInfo * di,
             info->errorCount++;
             return ReportNotArray("indicator doodad", field, ddText(di));
         }
-        if (!ExprResolveString(value, &tmp, NULL, NULL))
+        if (!ExprResolveString(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType("indicator doodad", field,
@@ -1740,7 +1740,7 @@ SetLogoDoodadField(DoodadInfo * di,
             info->errorCount++;
             return ReportNotArray(typeName, field, ddText(di));
         }
-        if (!ExprResolveString(value, &tmp, NULL, NULL))
+        if (!ExprResolveString(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType(typeName, field, ddText(di), "string");
@@ -1758,7 +1758,7 @@ SetLogoDoodadField(DoodadInfo * di,
             info->errorCount++;
             return ReportNotArray(typeName, field, ddText(di));
         }
-        if (!ExprResolveString(value, &tmp, NULL, NULL))
+        if (!ExprResolveString(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType(typeName, field, ddText(di),
@@ -1842,7 +1842,7 @@ SetDoodadField(DoodadInfo * di,
             info->errorCount++;
             return ReportNotArray("doodad", field, ddText(di));
         }
-        if (!ExprResolveString(value, &tmp, NULL, NULL))
+        if (!ExprResolveString(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType("doodad", field, ddText(di), "string");
@@ -2044,7 +2044,7 @@ SetKeyField(KeyInfo * key,
             info->errorCount++;
             return ReportNotArray("key", field, keyText(key));
         }
-        if (!ExprResolveString(value, &tmp, NULL, NULL))
+        if (!ExprResolveString(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType("key", field, keyText(key), "string");
@@ -2061,7 +2061,7 @@ SetKeyField(KeyInfo * key,
             info->errorCount++;
             return ReportNotArray("key", field, keyText(key));
         }
-        if (!ExprResolveString(value, &tmp, NULL, NULL))
+        if (!ExprResolveString(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType("key", field, keyText(key), "string");
@@ -2104,7 +2104,7 @@ SetGeometryProperty(GeometryInfo * info, char *property, ExprDef * value)
 
     InitPropertyInfo(&pi, info);
     pi.name = property;
-    if (!ExprResolveString(value, &result, NULL, NULL))
+    if (!ExprResolveString(value, &result))
     {
         info->errorCount++;
         ERROR("Property values must be type string\n");
@@ -2307,7 +2307,7 @@ HandleGeometryVar(VarDef * stmt, struct xkb_desc * xkb, GeometryInfo * info)
             info->errorCount++;
             ret = ReportNotArray("keyboard", field.str, "geometry");
         }
-        if (!ExprResolveString(stmt->value, &tmp, NULL, NULL))
+        if (!ExprResolveString(stmt->value, &tmp))
         {
             info->errorCount++;
             ret = ReportBadType("keyboard", field.str, "geometry", "string");
@@ -2327,7 +2327,7 @@ HandleGeometryVar(VarDef * stmt, struct xkb_desc * xkb, GeometryInfo * info)
             info->errorCount++;
             ret = ReportNotArray("keyboard", field.str, "geometry");
         }
-        if (!ExprResolveString(stmt->value, &tmp, NULL, NULL))
+        if (!ExprResolveString(stmt->value, &tmp))
         {
             info->errorCount++;
             ret = ReportBadType("keyboard", field.str, "geometry", "string");
@@ -2382,7 +2382,7 @@ HandleGeometryVar(VarDef * stmt, struct xkb_desc * xkb, GeometryInfo * info)
         info->errorCount++;
         ret = ReportNotArray("keyboard", field.str, "geometry");
     }
-    else if (!ExprResolveString(stmt->value, &tmp, NULL, NULL))
+    else if (!ExprResolveString(stmt->value, &tmp))
     {
         info->errorCount++;
         ret = ReportBadType("keyboard", field.str, "geometry", "string");

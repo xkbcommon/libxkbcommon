@@ -121,9 +121,7 @@ extern int ExprResolveFloat(ExprDef * /* expr */ ,
     );
 
 extern int ExprResolveString(ExprDef * /* expr */ ,
-                             ExprResult * /* val_rtrn */ ,
-                             IdentLookupFunc /* lookup */ ,
-                             char *   /* lookupPriv */
+                             ExprResult * /* val_rtrn */
     );
 
 extern int ExprResolveKeyName(ExprDef * /* expr */ ,

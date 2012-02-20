@@ -833,7 +833,7 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
         return False;
     }
     level = rtrn.ival - 1;
-    if (!ExprResolveString(value, &rtrn, NULL, NULL))
+    if (!ExprResolveString(value, &rtrn))
     {
         ERROR("Non-string name for level %d in key type %s\n", level + 1,
                XkbcAtomText(type->name));

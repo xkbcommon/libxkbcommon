@@ -770,7 +770,7 @@ HandleIndicatorNameDef(IndicatorNameDef * def,
     }
     InitIndicatorNameInfo(&ii, info);
     ii.ndx = def->ndx;
-    if (!ExprResolveString(def->name, &tmp, NULL, NULL))
+    if (!ExprResolveString(def->name, &tmp))
     {
         char buf[20];
         snprintf(buf, sizeof(buf), "%d", def->ndx);

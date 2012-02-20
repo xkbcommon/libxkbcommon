@@ -652,10 +652,8 @@ ExprResolveInteger(ExprDef * expr,
 
 int
 ExprResolveString(ExprDef * expr,
-                  ExprResult * val_rtrn,
-                  IdentLookupFunc lookup, char * lookupPriv)
+                  ExprResult * val_rtrn)
 {
-    int ok = 0;
     ExprResult leftRtrn, rightRtrn;
     ExprDef *left;
     ExprDef *right;
@@ -675,40 +673,26 @@ ExprResolveString(ExprDef * expr,
             val_rtrn->str = strdup("");
         return True;
     case ExprIdent:
-        if (lookup)
-        {
-            ok = (*lookup) (lookupPriv,
-                            None, expr->value.str, TypeString, val_rtrn);
-        }
-        if (!ok)
-            ERROR("Identifier \"%s\" of type string not found\n",
-                   XkbcAtomText(expr->value.str));
-        return ok;
+        ERROR("Identifier \"%s\" of type string not found\n",
+              XkbcAtomText(expr->value.str));
+        return False;
     case ExprFieldRef:
-        if (lookup)
-        {
-            ok = (*lookup) (lookupPriv,
-                            expr->value.field.element,
-                            expr->value.field.field, TypeString, val_rtrn);
-        }
-        if (!ok)
-            ERROR("Default \"%s.%s\" of type string not found\n",
-                   XkbcAtomText(expr->value.field.element),
-                   XkbcAtomText(expr->value.field.field));
-        return ok;
+        ERROR("Default \"%s.%s\" of type string not found\n",
+              XkbcAtomText(expr->value.field.element),
+              XkbcAtomText(expr->value.field.field));
+        return False;
     case OpAdd:
         left = expr->value.binary.left;
         right = expr->value.binary.right;
-        if (ExprResolveString(left, &leftRtrn, lookup, lookupPriv) &&
-            ExprResolveString(right, &rightRtrn, lookup, lookupPriv))
+        if (ExprResolveString(left, &leftRtrn) &&
+            ExprResolveString(right, &rightRtrn))
         {
             int len;
             char *new;
             len = strlen(leftRtrn.str) + strlen(rightRtrn.str) + 1;
             new = (char *) malloc(len);
             if (new)
-            {
-                sprintf(new, "%s%s", leftRtrn.str, rightRtrn.str);
+            { sprintf(new, "%s%s", leftRtrn.str, rightRtrn.str);
                 free(leftRtrn.str);
                 free(rightRtrn.str);
                 val_rtrn->str = new;
@@ -739,18 +723,10 @@ ExprResolveString(ExprDef * expr,
         ERROR("%s of string values not permitted\n", bogus);
         return False;
     case OpNot:
-        left = expr->value.child;
-        if (ExprResolveString(left, &leftRtrn, lookup, lookupPriv))
-        {
-            ERROR("The ! operator cannot be applied to a string\n");
-        }
+        ERROR("The ! operator cannot be applied to a string\n");
         return False;
     case OpUnaryPlus:
-        left = expr->value.child;
-        if (ExprResolveString(left, &leftRtrn, lookup, lookupPriv))
-        {
-            ERROR("The + operator cannot be applied to a string\n");
-        }
+        ERROR("The + operator cannot be applied to a string\n");
         return False;
     default:
         WSGO("Unknown operator %d in ResolveString\n", expr->op);

@@ -1131,7 +1131,7 @@ SetSymbolsField(KeyInfo * key,
     if (uStrCaseCmp(field, "type") == 0)
     {
         ExprResult ndx;
-        if ((!ExprResolveString(value, &tmp, NULL, NULL))
+        if ((!ExprResolveString(value, &tmp))
             && (warningLevel > 0))
         {
             WARN("The type field of a key symbol map must be a string\n");
@@ -1397,7 +1397,7 @@ SetGroupName(SymbolsInfo * info, ExprDef * arrayNdx, ExprDef * value)
         ACTION("Name for group %d ignored\n", tmp.uval);
         return False;
     }
-    if (!ExprResolveString(value, &name, NULL, NULL))
+    if (!ExprResolveString(value, &name))
     {
         ERROR("Group name must be a string\n");
         ACTION("Illegal name for group %d ignored\n", tmp.uval);

@@ -985,7 +985,7 @@ HandleActionMessage(struct xkb_desc * xkb,
     case F_Data:
         if (array_ndx == NULL)
         {
-            if (!ExprResolveString(value, &rtrn, NULL, NULL))
+            if (!ExprResolveString(value, &rtrn))
                 return ReportMismatch(action->type, field, "string");
             else
             {
@@ -1190,7 +1190,7 @@ HandlePrivate(struct xkb_desc * xkb,
     case F_Data:
         if (array_ndx == NULL)
         {
-            if (!ExprResolveString(value, &rtrn, NULL, NULL))
+            if (!ExprResolveString(value, &rtrn))
                 return ReportMismatch(action->type, field, "string");
             else
             {
