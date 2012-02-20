@@ -1786,7 +1786,7 @@ SetDoodadField(DoodadInfo * di,
             info->errorCount++;
             return ReportNotArray("doodad", field, ddText(di));
         }
-        if (!ExprResolveInteger(value, &tmp, NULL, NULL))
+        if (!ExprResolveInteger(value, &tmp))
         {
             info->errorCount++;
             return ReportBadType("doodad", field, ddText(di), "integer");
@@ -1888,7 +1888,7 @@ SetSectionField(SectionInfo * si,
             info->errorCount++;
             return ReportNotArray("keyboard section", field, scText(si));
         }
-        if (!ExprResolveInteger(value, &tmp, NULL, NULL))
+        if (!ExprResolveInteger(value, &tmp))
         {
             info->errorCount++;
             ReportBadType("keyboard section", field, scText(si), "integer");

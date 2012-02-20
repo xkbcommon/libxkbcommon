@@ -297,7 +297,7 @@ SetIndicatorMapField(LEDInfo * led,
     {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(led, field);
-        if (!ExprResolveInteger(value, &rtrn, NULL, NULL))
+        if (!ExprResolveInteger(value, &rtrn))
             return ReportIndicatorBadType(led, field,
                                           "indicator index");
         if ((rtrn.uval < 1) || (rtrn.uval > 32))

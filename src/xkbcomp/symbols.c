@@ -1191,7 +1191,7 @@ SetSymbolsField(KeyInfo * key,
                 tmp.uval = 0;
         }
         else {
-            ok = ExprResolveInteger(value, &tmp, NULL, 0);
+            ok = ExprResolveInteger(value, &tmp);
         }
         if (!ok)
         {

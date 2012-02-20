@@ -588,7 +588,7 @@ HandleMovePtr(struct xkb_desc * xkb,
             absolute = False;
         else
             absolute = True;
-        if (!ExprResolveInteger(value, &rtrn, NULL, NULL))
+        if (!ExprResolveInteger(value, &rtrn))
             return ReportMismatch(action->type, field, "integer");
         if (field == F_X)
         {
@@ -828,7 +828,7 @@ HandleSwitchScreen(struct xkb_desc * xkb,
             scrn = value;
         }
 
-        if (!ExprResolveInteger(scrn, &rtrn, NULL, NULL))
+        if (!ExprResolveInteger(scrn, &rtrn))
             return ReportMismatch(action->type, field, "integer (0..255)");
         if ((rtrn.ival < 0) || (rtrn.ival > 255))
         {
@@ -977,7 +977,7 @@ HandleActionMessage(struct xkb_desc * xkb,
         else
         {
             unsigned ndx;
-            if (!ExprResolveInteger(array_ndx, &rtrn, NULL, NULL))
+            if (!ExprResolveInteger(array_ndx, &rtrn))
             {
                 ERROR("Array subscript must be integer\n");
                 ACTION("Illegal subscript ignored\n");
@@ -990,7 +990,7 @@ HandleActionMessage(struct xkb_desc * xkb,
                 ACTION("Attempt to use data[%d] ignored\n", ndx);
                 return False;
             }
-            if (!ExprResolveInteger(value, &rtrn, NULL, NULL))
+            if (!ExprResolveInteger(value, &rtrn))
                 return ReportMismatch(action->type, field, "integer");
             if ((rtrn.ival < 0) || (rtrn.ival > 255))
             {
@@ -1070,7 +1070,7 @@ HandleDeviceBtn(struct xkb_desc * xkb,
     {
         if (array_ndx != NULL)
             return ReportActionNotArray(action->type, field);
-        if (!ExprResolveInteger(value, &rtrn, NULL, NULL))
+        if (!ExprResolveInteger(value, &rtrn))
             return ReportMismatch(action->type, field,
                                   "integer (range 1..255)");
         if ((rtrn.ival < 0) || (rtrn.ival > 255))
@@ -1111,7 +1111,7 @@ HandleDeviceBtn(struct xkb_desc * xkb,
     {
         if (array_ndx != NULL)
             return ReportActionNotArray(action->type, field);
-        if (!ExprResolveInteger(value, &rtrn, NULL, NULL))
+        if (!ExprResolveInteger(value, &rtrn))
             return ReportMismatch(action->type, field,
                                   "integer (range 1..255)");
         if ((rtrn.ival < 0) || (rtrn.ival > 255))
@@ -1151,7 +1151,7 @@ HandlePrivate(struct xkb_desc * xkb,
     switch (field)
     {
     case F_Type:
-        if (!ExprResolveInteger(value, &rtrn, NULL, NULL))
+        if (!ExprResolveInteger(value, &rtrn))
             return ReportMismatch(PrivateAction, field, "integer");
         if ((rtrn.ival < 0) || (rtrn.ival > 255))
         {
@@ -1183,7 +1183,7 @@ HandlePrivate(struct xkb_desc * xkb,
         else
         {
             unsigned ndx;
-            if (!ExprResolveInteger(array_ndx, &rtrn, NULL, NULL))
+            if (!ExprResolveInteger(array_ndx, &rtrn))
             {
                 ERROR("Array subscript must be integer\n");
                 ACTION("Illegal subscript ignored\n");
@@ -1196,7 +1196,7 @@ HandlePrivate(struct xkb_desc * xkb,
                 ACTION("Attempt to use data[%d] ignored\n", ndx);
                 return False;
             }
-            if (!ExprResolveInteger(value, &rtrn, NULL, NULL))
+            if (!ExprResolveInteger(value, &rtrn))
                 return ReportMismatch(action->type, field, "integer");
             if ((rtrn.ival < 0) || (rtrn.ival > 255))
             {

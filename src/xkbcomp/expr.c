@@ -529,10 +529,26 @@ ExprResolveKeyCode(ExprDef * expr,
     }
     return False;
 }
-int
-ExprResolveInteger(ExprDef * expr,
-                   ExprResult * val_rtrn,
-                   IdentLookupFunc lookup, char * lookupPriv)
+
+/**
+ * This function returns ... something.  It's a bit of a guess, really.
+ *
+ * If a string is given in value context, its first character will be
+ * returned in uval.  If an integer is given in value context, it will be
+ * returned in ival.  If a float is given in value context, it will be
+ * returned as millimetres (rather than points) in ival.
+ *
+ * If an ident or field reference is given, the lookup function (if given)
+ * will be called.  At the moment, only RadioLookup and SimpleLookup use
+ * this, and they both return the results in uval.  And don't support field
+ * references.
+ *
+ * Cool.
+ */
+static int
+ExprResolveIntegerLookup(ExprDef * expr,
+                         ExprResult * val_rtrn,
+                         IdentLookupFunc lookup, char * lookupPriv)
 {
     int ok = 0;
     ExprResult leftRtrn, rightRtrn;
@@ -597,8 +613,8 @@ ExprResolveInteger(ExprDef * expr,
     case OpDivide:
         left = expr->value.binary.left;
         right = expr->value.binary.right;
-        if (ExprResolveInteger(left, &leftRtrn, lookup, lookupPriv) &&
-            ExprResolveInteger(right, &rightRtrn, lookup, lookupPriv))
+        if (ExprResolveIntegerLookup(left, &leftRtrn, lookup, lookupPriv) &&
+            ExprResolveIntegerLookup(right, &rightRtrn, lookup, lookupPriv))
         {
             switch (expr->op)
             {
@@ -622,16 +638,12 @@ ExprResolveInteger(ExprDef * expr,
         WSGO("Assignment operator not implemented yet\n");
         break;
     case OpNot:
-        left = expr->value.child;
-        if (ExprResolveInteger(left, &leftRtrn, lookup, lookupPriv))
-        {
-            ERROR("The ! operator cannot be applied to an integer\n");
-        }
+        ERROR("The ! operator cannot be applied to an integer\n");
         return False;
     case OpInvert:
     case OpNegate:
         left = expr->value.child;
-        if (ExprResolveInteger(left, &leftRtrn, lookup, lookupPriv))
+        if (ExprResolveIntegerLookup(left, &leftRtrn, lookup, lookupPriv))
         {
             if (expr->op == OpNegate)
                 val_rtrn->ival = -leftRtrn.ival;
@@ -642,7 +654,7 @@ ExprResolveInteger(ExprDef * expr,
         return False;
     case OpUnaryPlus:
         left = expr->value.child;
-        return ExprResolveInteger(left, val_rtrn, lookup, lookupPriv);
+        return ExprResolveIntegerLookup(left, val_rtrn, lookup, lookupPriv);
     default:
         WSGO("Unknown operator %d in ResolveInteger\n", expr->op);
         break;
@@ -651,10 +663,17 @@ ExprResolveInteger(ExprDef * expr,
 }
 
 int
+ExprResolveInteger(ExprDef * expr,
+                   ExprResult * val_rtrn)
+{
+    return ExprResolveIntegerLookup(expr, val_rtrn, NULL, NULL);
+}
+
+int
 ExprResolveRadioGroup(ExprDef * expr,
                       ExprResult * val_rtrn)
 {
-    return ExprResolveInteger(expr, val_rtrn, RadioLookup, NULL);
+    return ExprResolveIntegerLookup(expr, val_rtrn, RadioLookup, NULL);
 }
 
 int
@@ -673,8 +692,8 @@ ExprResolveGroup(ExprDef * expr,
         { NULL, 0 }
     };
 
-    return ExprResolveInteger(expr, val_rtrn, SimpleLookup,
-                              (char *) group_names);
+    return ExprResolveIntegerLookup(expr, val_rtrn, SimpleLookup,
+                                    (char *) group_names);
 }
 
 int
@@ -693,8 +712,8 @@ ExprResolveLevel(ExprDef * expr,
         { NULL, 0 }
     };
 
-    return ExprResolveInteger(expr, val_rtrn, SimpleLookup,
-                              (char *) level_names);
+    return ExprResolveIntegerLookup(expr, val_rtrn, SimpleLookup,
+                                    (char *) level_names);
 }
 
 int
@@ -711,8 +730,8 @@ ExprResolveButton(ExprDef * expr,
         { NULL, 0 }
     };
 
-    return ExprResolveInteger(expr, val_rtrn, SimpleLookup,
-                              (char *) button_names);
+    return ExprResolveIntegerLookup(expr, val_rtrn, SimpleLookup,
+                                    (char *) button_names);
 }
 
 int
@@ -978,7 +997,7 @@ ExprResolveMask(ExprDef * expr,
         break;
     case OpInvert:
         left = expr->value.child;
-        if (ExprResolveInteger(left, &leftRtrn, lookup, lookupPriv))
+        if (ExprResolveIntegerLookup(left, &leftRtrn, lookup, lookupPriv))
         {
             val_rtrn->ival = ~leftRtrn.ival;
             return True;
@@ -988,7 +1007,7 @@ ExprResolveMask(ExprDef * expr,
     case OpNegate:
     case OpNot:
         left = expr->value.child;
-        if (ExprResolveInteger(left, &leftRtrn, lookup, lookupPriv))
+        if (ExprResolveIntegerLookup(left, &leftRtrn, lookup, lookupPriv))
         {
             ERROR("The %s operator cannot be used with a mask\n",
                    (expr->op == OpNegate ? "-" : "!"));
@@ -1018,7 +1037,7 @@ ExprResolveKeySym(ExprDef * expr,
             return True;
         }
     }
-    ok = ExprResolveInteger(expr, val_rtrn, NULL, NULL);
+    ok = ExprResolveInteger(expr, val_rtrn);
     if ((ok) && (val_rtrn->uval < 10))
         val_rtrn->uval += '0';
     return ok;

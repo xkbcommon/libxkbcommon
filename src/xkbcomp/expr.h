@@ -111,9 +111,7 @@ extern int ExprResolveKeyCode(ExprDef * /* expr */ ,
     );
 
 extern int ExprResolveInteger(ExprDef * /* expr */ ,
-                              ExprResult * /* val_rtrn */ ,
-                              IdentLookupFunc /* lookup */ ,
-                              char *  /* lookupPriv */
+                              ExprResult * /* val_rtrn */
     );
 
 extern int ExprResolveRadioGroup(ExprDef * /* expr */ ,

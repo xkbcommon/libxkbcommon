@@ -247,7 +247,7 @@ ResolveVirtualModifier(ExprDef * def, struct xkb_desc *xkb,
             }
         }
     }
-    if (ExprResolveInteger(def, val_rtrn, NULL, NULL))
+    if (ExprResolveInteger(def, val_rtrn))
     {
         if (val_rtrn->uval < XkbNumVirtualMods)
             return True;
