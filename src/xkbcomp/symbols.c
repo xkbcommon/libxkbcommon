@@ -1061,7 +1061,7 @@ SetAllowNone(KeyInfo * key, ExprDef * arrayNdx, ExprDef * value)
     }
     else
     {
-        if (!ExprResolveInteger(arrayNdx, &tmp, RadioLookup, NULL))
+        if (!ExprResolveRadioGroup(arrayNdx, &tmp))
         {
             ERROR("Illegal index in group name definition\n");
             ACTION("Definition with non-integer array index ignored\n");

@@ -116,6 +116,10 @@ extern int ExprResolveInteger(ExprDef * /* expr */ ,
                               char *  /* lookupPriv */
     );
 
+extern int ExprResolveRadioGroup(ExprDef * /* expr */ ,
+                                 ExprResult * /* val_rtrn */
+    );
+
 extern int ExprResolveFloat(ExprDef * /* expr */ ,
                             ExprResult * /* val_rtrn */
     );

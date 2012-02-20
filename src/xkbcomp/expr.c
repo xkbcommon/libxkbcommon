@@ -651,6 +651,13 @@ ExprResolveInteger(ExprDef * expr,
 }
 
 int
+ExprResolveRadioGroup(ExprDef * expr,
+                      ExprResult * val_rtrn)
+{
+    return ExprResolveInteger(expr, val_rtrn, RadioLookup, NULL);
+}
+
+int
 ExprResolveString(ExprDef * expr,
                   ExprResult * val_rtrn)
 {
