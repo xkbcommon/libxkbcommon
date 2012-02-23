@@ -30,9 +30,9 @@
 #include <ctype.h>
 #include <X11/Xos.h>
 
-#include "tokens.h"
 #include "utils.h"
 #include "parseutils.h"
+#include "xkbparse.h"
 
 char *scanFile = NULL;
 int lineNum = 0;
