@@ -77,36 +77,23 @@ XkbComponentsFromRules(const char *rules, const XkbRF_VarDefsPtr defs)
 {
     FILE *rulesFile = NULL;
     char *rulesPath = NULL;
-    static XkbRF_RulesPtr loaded = NULL;
-    static char *cached_name = NULL;
+    XkbRF_RulesPtr loaded = NULL;
     struct xkb_component_names * names = NULL;
 
-    if (!cached_name || strcmp(rules, cached_name) != 0) {
-        if (loaded)
-            XkbcRF_Free(loaded);
-        loaded = NULL;
-        free(cached_name);
-        cached_name = NULL;
+    rulesFile = XkbFindFileInPath(rules, XkmRulesFile, &rulesPath);
+    if (!rulesFile) {
+        ERROR("could not find \"%s\" rules in XKB path\n", rules);
+        return NULL;
     }
 
-    if (!loaded) {
-        rulesFile = XkbFindFileInPath(rules, XkmRulesFile, &rulesPath);
-        if (!rulesFile) {
-            ERROR("could not find \"%s\" rules in XKB path\n", rules);
-            goto out;
-        }
+    if (!(loaded = _XkbTypedCalloc(1, XkbRF_RulesRec))) {
+        ERROR("failed to allocate XKB rules\n");
+        goto unwind_file;
+    }
 
-        if (!(loaded = _XkbTypedCalloc(1, XkbRF_RulesRec))) {
-            ERROR("failed to allocate XKB rules\n");
-            goto unwind_file;
-        }
-
-        if (!XkbcRF_LoadRules(rulesFile, loaded)) {
-            ERROR("failed to load XKB rules \"%s\"\n", rulesPath);
-            goto unwind_file;
-        }
-
-        cached_name = strdup(rules);
+    if (!XkbcRF_LoadRules(rulesFile, loaded)) {
+        ERROR("failed to load XKB rules \"%s\"\n", rulesPath);
+        goto unwind_file;
     }
 
     if (!(names = _XkbTypedCalloc(1, struct xkb_component_names))) {
@@ -127,10 +114,10 @@ XkbComponentsFromRules(const char *rules, const XkbRF_VarDefsPtr defs)
     }
 
 unwind_file:
+    XkbcRF_Free(loaded);
     if (rulesFile)
         fclose(rulesFile);
     free(rulesPath);
-out:
     return names;
 }
 
