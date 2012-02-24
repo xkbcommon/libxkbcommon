@@ -565,8 +565,6 @@ DupSectionInfo(SectionInfo * into, SectionInfo * from, GeometryInfo * info)
 
     defs = into->defs;
     *into = *from;
-    into->defs.fileID = defs.fileID;
-    into->defs.merge = defs.merge;
     into->defs.next = NULL;
     into->dfltRow.defs.fileID = defs.fileID;
     into->dfltRow.defs.merge = defs.merge;
@@ -1879,7 +1877,6 @@ SetSectionField(SectionInfo * si,
     ExprResult tmp;
 
     pField = NULL;
-    def = 0;
     if (uStrCaseCmp(field, "priority") == 0)
     {
         if (arrayNdx != NULL)
@@ -2601,10 +2598,8 @@ HandleOverlayDef(OverlayDef * def,
 static Bool
 HandleComplexKey(KeyDef * def, KeyInfo * key, GeometryInfo * info)
 {
-    RowInfo *row;
     ExprDef *expr;
 
-    row = key->row;
     for (expr = def->expr; expr != NULL; expr = (ExprDef *) expr->common.next)
     {
         if (expr->op == OpAssign)
@@ -2636,6 +2631,7 @@ HandleComplexKey(KeyDef * def, KeyInfo * key, GeometryInfo * info)
         }
         else
         {
+            RowInfo *row = key->row;
             switch (expr->type)
             {
             case TypeInt:

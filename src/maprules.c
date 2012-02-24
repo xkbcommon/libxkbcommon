@@ -174,7 +174,6 @@ Bool	endOfFile,spacePending,slashPending,inComment;
 			PR_DEBUG("The '!' legal only at start of line\n");
 			PR_DEBUG("Line containing '!' ignored\n");
 			line->num_line= 0;
-			inComment= 0;
 			break;
 		    }
 
@@ -521,7 +520,6 @@ squeeze_spaces(char *p1)
 static Bool
 MakeMultiDefs(XkbRF_MultiDefsPtr mdefs, XkbRF_VarDefsPtr defs)
 {
-
    bzero((char *)mdefs,sizeof(XkbRF_MultiDefsRec));
    mdefs->model = defs->model;
    mdefs->options = _XkbDupString(defs->options);

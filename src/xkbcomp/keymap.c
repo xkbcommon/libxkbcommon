@@ -172,7 +172,7 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
         }
         ACTION("Description of %s not compiled\n",
                 XkbcConfigText(mainType));
-        ok = False;
+        return False;
     }
     ok = BindIndicators(xkb, True, unbound, NULL);
     return ok;

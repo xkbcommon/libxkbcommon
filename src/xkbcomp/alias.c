@@ -230,7 +230,6 @@ ApplyAliases(struct xkb_desc * xkb, Bool toGeom, AliasInfo ** info_in)
         *info_in = NULL;
         return True;
     }
-    status = Success;
     if (toGeom)
     {
         if (!xkb->geom)

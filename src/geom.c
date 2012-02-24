@@ -86,7 +86,6 @@ XkbcComputeRowBounds(struct xkb_geometry * geom, struct xkb_section * section, s
     if (!geom || !section || !row)
         return False;
 
-    pos = 0;
     bounds = &row->bounds;
     bzero(bounds, sizeof(struct xkb_bounds));
 
