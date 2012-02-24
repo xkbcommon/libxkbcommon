@@ -34,7 +34,7 @@
 extern char *XkbDirectoryForInclude(unsigned    /* type */
     );
 
-extern FILE *XkbFindFileInPath(char * /* name */ ,
+extern FILE *XkbFindFileInPath(const char * /* name */ ,
                                unsigned /* type */ ,
                                char **  /* pathRtrn */
     );

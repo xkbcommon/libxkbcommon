@@ -183,7 +183,7 @@ extern void yyerror(const char *        /* s */
 extern int yylex(void);
 extern int yyparse(void);
 
-extern void setScanState(char * /* file */ ,
+extern void setScanState(const char * /* file */ ,
                          int     /* line */
     );
 

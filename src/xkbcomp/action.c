@@ -323,7 +323,8 @@ ReportActionNotArray(unsigned action, unsigned field)
 }
 
 static Bool
-ReportNotFound(unsigned action, unsigned field, const char *what, char *bad)
+ReportNotFound(unsigned action, unsigned field, const char *what,
+               const char *bad)
 {
     ERROR("%s named %s not found\n", what, bad);
     ACTION("Ignoring the %s field of an %s action\n", fieldText(field),

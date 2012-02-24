@@ -194,7 +194,7 @@ yyerror(const char *s)
     return;
 }
 
-void setScanState(char *file, int lineno)
+void setScanState(const char *file, int lineno)
 {
   yylineno = 1;
   if (scanFile)

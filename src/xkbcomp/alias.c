@@ -213,10 +213,10 @@ ApplyAliases(struct xkb_desc * xkb, Bool toGeom, AliasInfo ** info_in)
             {
                 if (strncmp(a->alias, info->alias, XkbKeyNameLength) == 0)
                 {
-                    AliasInfo old;
-                    InitAliasInfo(&old, MergeAugment, 0, a->alias, a->real);
-                    HandleCollision(&old, info);
-                    memcpy(old.real, a->real, XkbKeyNameLength);
+                    AliasInfo old_info;
+                    InitAliasInfo(&old_info, MergeAugment, 0, a->alias, a->real);
+                    HandleCollision(&old_info, info);
+                    memcpy(old_info.real, a->real, XkbKeyNameLength);
                     info->alias[0] = '\0';
                     nNew--;
                     break;

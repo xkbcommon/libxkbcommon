@@ -547,7 +547,7 @@ AddPreserve(struct xkb_desc * xkb,
         }
         if (report && (warningLevel > 0))
         {
-            char *str;
+            const char *str;
             WARN("Multiple definitions for preserve[%s] in %s\n",
                   PreserveIndexTxt(xkb, old), TypeTxt(type));
 

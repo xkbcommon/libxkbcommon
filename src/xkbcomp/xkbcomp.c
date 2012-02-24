@@ -68,7 +68,7 @@ XkbKeymapFileFromComponents(const struct xkb_component_names * ktcsg)
     geometry = CreateXKBFile(XkmGeometryIndex, NULL, (ParseCommon *)inc, 0);
     AppendStmt(&keycodes->common, &geometry->common);
 
-    return CreateXKBFile(XkmKeymapFile, ktcsg->keymap ? ktcsg->keymap : "",
+    return CreateXKBFile(XkmKeymapFile, ktcsg->keymap ? ktcsg->keymap : strdup(""),
                          &keycodes->common, 0);
 }
 
@@ -90,7 +90,7 @@ XkbComponentsFromRules(const char *rules, const XkbRF_VarDefsPtr defs)
     }
 
     if (!loaded) {
-        rulesFile = XkbFindFileInPath((char *)rules, XkmRulesFile, &rulesPath);
+        rulesFile = XkbFindFileInPath(rules, XkmRulesFile, &rulesPath);
         if (!rulesFile) {
             ERROR("could not find \"%s\" rules in XKB path\n", rules);
             goto out;
@@ -146,10 +146,10 @@ xkb_compile_keymap_from_rules(const struct xkb_rule_names *rmlvo)
         return NULL;
     }
 
-    defs.model = (char *) rmlvo->model;
-    defs.layout = (char *) rmlvo->layout;
-    defs.variant = (char *) rmlvo->variant;
-    defs.options = (char *) rmlvo->options;
+    defs.model = rmlvo->model;
+    defs.layout = rmlvo->layout;
+    defs.variant = rmlvo->variant;
+    defs.options = rmlvo->options;
 
     names = XkbComponentsFromRules(rmlvo->rules, &defs);
     if (!names) {

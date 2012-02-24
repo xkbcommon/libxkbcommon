@@ -1505,7 +1505,7 @@ SetTextDoodadField(DoodadInfo * di,
     ExprResult tmp;
     unsigned def;
     unsigned type;
-    char *typeName = "text doodad";
+    const char *typeName = "text doodad";
     union
     {
         uint32_t *str;
@@ -1695,7 +1695,7 @@ SetLogoDoodadField(DoodadInfo * di,
                    ExprDef * value, SectionInfo * si, GeometryInfo * info)
 {
     ExprResult tmp;
-    char *typeName = "logo doodad";
+    const char *typeName = "logo doodad";
 
     if ((!uStrCaseCmp(field, "corner"))
         || (!uStrCaseCmp(field, "cornerradius")))
@@ -2859,7 +2859,7 @@ HandleGeometryFile(XkbFile * file,
                    struct xkb_desc * xkb, unsigned merge, GeometryInfo * info)
 {
     ParseCommon *stmt;
-    char *failWhat;
+    const char *failWhat;
 
     if (merge == MergeDefault)
         merge = MergeAugment;

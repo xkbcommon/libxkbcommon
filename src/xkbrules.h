@@ -74,10 +74,10 @@ authorization from the authors.
 #define _XkbErrBadImplementation    26
 
 typedef struct _XkbRF_VarDefs {
-    char *          model;
-    char *          layout;
-    char *          variant;
-    char *          options;
+    const char *    model;
+    const char *    layout;
+    const char *    variant;
+    const char *    options;
     unsigned short  sz_extra;
     unsigned short  num_extra;
     char *          extra_names;

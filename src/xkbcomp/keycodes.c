@@ -32,7 +32,7 @@
 #include "misc.h"
 #include "alias.h"
 
-char *
+const char *
 longText(unsigned long val)
 {
     char buf[4];
