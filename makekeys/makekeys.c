@@ -50,7 +50,6 @@ static char tab[KTNUM];
 static unsigned short offsets[KTNUM];
 static unsigned short indexes[KTNUM];
 static KeySym values[KTNUM];
-static char buf[1024];
 
 /*
  * XFree86 special action keys - for some reason, these have an
@@ -181,6 +180,7 @@ main(int argc, char *argv[])
     int num_found;
     KeySym val;
     char key[128];
+    char buf[1024];
 
 
     while (fgets(buf, sizeof(buf), stdin)) {
