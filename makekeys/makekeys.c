@@ -78,7 +78,7 @@ static const char *xf86_special_keys[] = {
 static int
 is_xf86_special(const char *key)
 {
-    char **s = (char **)xf86_special_keys;
+    const char **s = xf86_special_keys;
     while (*s) {
         if (strcmp(key, *s) == 0)
             return 1;
@@ -88,15 +88,15 @@ is_xf86_special(const char *key)
 }
 
 static int
-get_keysym(const char *buf, char *key, int index)
+get_keysym(const char *buf, char *key, int ndx)
 {
-    if (sscanf(buf, "#define XK_%127s 0x%lx", key, &info[index].val) != 2)
+    if (sscanf(buf, "#define XK_%127s 0x%lx", key, &info[ndx].val) != 2)
         return 0;
     return 1;
 }
 
 static int
-get_keysym_alias(const char *buf, char *key, int index)
+get_keysym_alias(const char *buf, char *key, int ndx)
 {
     int i;
     char alias[128];
@@ -104,9 +104,9 @@ get_keysym_alias(const char *buf, char *key, int index)
     if (sscanf(buf, "#define XK_%127s XK_%127s", key, alias) != 2)
         return 0;
 
-    for (i = index - 1; i >= 0; i--) {
+    for (i = ndx - 1; i >= 0; i--) {
         if (strcmp(info[i].name, alias) == 0) {
-            info[index].val = info[i].val;
+            info[ndx].val = info[i].val;
             return 1;
         }
     }
@@ -118,11 +118,11 @@ get_keysym_alias(const char *buf, char *key, int index)
 }
 
 static int
-get_xf86_keysym(const char *buf, char *key, size_t len, int index)
+get_xf86_keysym(const char *buf, char *key, size_t len, int ndx)
 {
     char tmp[128];
 
-    if (sscanf(buf, "#define XF86XK_%127s 0x%lx", tmp, &info[index].val) != 2)
+    if (sscanf(buf, "#define XF86XK_%127s 0x%lx", tmp, &info[ndx].val) != 2)
         return 0;
 
     /* Prepend XF86 or XF86_ to the key */
@@ -132,7 +132,7 @@ get_xf86_keysym(const char *buf, char *key, size_t len, int index)
 }
 
 static int
-get_xf86_keysym_alias(const char *buf, char *key, size_t len, int index)
+get_xf86_keysym_alias(const char *buf, char *key, size_t len, int ndx)
 {
     int i;
     char alias[128], ktmp[128], atmp[128];
@@ -152,9 +152,9 @@ get_xf86_keysym_alias(const char *buf, char *key, size_t len, int index)
                  ktmp);
     }
 
-    for (i = index - 1; i >= 0; i--) {
+    for (i = ndx - 1; i >= 0; i--) {
         if (strcmp(info[i].name, alias) == 0) {
-            info[index].val = info[i].val;
+            info[ndx].val = info[i].val;
             return 1;
         }
     }
