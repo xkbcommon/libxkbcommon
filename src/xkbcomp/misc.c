@@ -57,37 +57,31 @@ ProcessIncludeFile(IncludeStmt * stmt,
     char oldFile[1024] = {0};
     int oldLine = lineNum;
 
-    rtrn = XkbFindFileInCache(stmt->file, file_type, &stmt->path);
-    if (rtrn == NULL)
+    file = XkbFindFileInPath(stmt->file, file_type, &stmt->path);
+    if (file == NULL)
     {
-        /* file not in cache, open it, parse it and store it in cache for next
-           time. */
-        file = XkbFindFileInPath(stmt->file, file_type, &stmt->path);
-        if (file == NULL)
-        {
-            ERROR("Can't find file \"%s\" for %s include\n", stmt->file,
-                   XkbDirectoryForInclude(file_type));
-            return False;
-        }
-        if (scanFile)
-            strcpy(oldFile, scanFile);
-        else
-            memset(oldFile, 0, sizeof(oldFile));
-        oldLine = lineNum;
-        setScanState(stmt->file, 1);
-        if (debugFlags & 2)
-            INFO("About to parse include file %s\n", stmt->file);
-        /* parse the file */
-        if ((XKBParseFile(file, &rtrn) == 0) || (rtrn == NULL))
-        {
-            setScanState(oldFile, oldLine);
-            ERROR("Error interpreting include file \"%s\"\n", stmt->file);
-            fclose(file);
-            return False;
-        }
-        fclose(file);
-        XkbAddFileToCache(stmt->file, file_type, stmt->path, rtrn);
+        ERROR("Can't find file \"%s\" for %s include\n", stmt->file,
+                XkbDirectoryForInclude(file_type));
+        return False;
     }
+    if (scanFile)
+        strcpy(oldFile, scanFile);
+    else
+        memset(oldFile, 0, sizeof(oldFile));
+    oldLine = lineNum;
+    setScanState(stmt->file, 1);
+    if (debugFlags & 2)
+        INFO("About to parse include file %s\n", stmt->file);
+    /* parse the file */
+    if ((XKBParseFile(file, &rtrn) == 0) || (rtrn == NULL))
+    {
+        setScanState(oldFile, oldLine);
+        ERROR("Error interpreting include file \"%s\"\n", stmt->file);
+        fclose(file);
+        return False;
+    }
+    fclose(file);
+
     mapToUse = rtrn;
     if (stmt->map != NULL)
     {

@@ -39,17 +39,6 @@ extern FILE *XkbFindFileInPath(const char * /* name */ ,
                                char **  /* pathRtrn */
     );
 
-extern void *XkbAddFileToCache(char * /* name */ ,
-                               unsigned /* type */ ,
-                               char * /* path */ ,
-                               void *   /* data */
-    );
-
-extern void *XkbFindFileInCache(char * /* name */ ,
-                                unsigned /* type */ ,
-                                char ** /* pathRtrn */
-    );
-
 extern Bool XkbParseIncludeMap(char ** /* str_inout */ ,
                                char ** /* file_rtrn */ ,
                                char ** /* map_rtrn */ ,
