@@ -3592,11 +3592,11 @@ CopySectionDef(struct xkb_geometry * geom, SectionInfo * si, GeometryInfo * info
                 key->shape_ndx = 0;
             else
             {
-                ShapeInfo *si;
-                si = FindShape(info, ki->shape, "key", keyText(ki));
-                if (!si)
+                ShapeInfo *shapei;
+                shapei = FindShape(info, ki->shape, "key", keyText(ki));
+                if (!shapei)
                     return False;
-                key->shape_ndx = si->index;
+                key->shape_ndx = shapei->index;
             }
             if (ki->color != None)
                 color =

@@ -1678,7 +1678,7 @@ FindKeyForSymbol(struct xkb_desc * xkb, uint32_t sym, xkb_keycode_t *kc_rtrn)
             if (j < (int) XkbKeyNumSyms(xkb, i))
             {
                 gotOne = True;
-                if ((XkbKeySym(xkb, i, j) == sym))
+                if (XkbKeySym(xkb, i, j) == sym)
                 {
                     *kc_rtrn = i;
                     return True;
