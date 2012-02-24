@@ -577,11 +577,11 @@ BindIndicators(struct xkb_desc * xkb, Bool force, LEDInfo *unbound,
     {
         *unboundRtrn = unbound;
     }
-    else if (unbound)
+    else
     {
         for (led = unbound; led != NULL; led = next)
         {
-            next = (LEDInfo *) led->defs.next;
+            next = led ? (LEDInfo *) led->defs.next : NULL;
             free(led);
         }
     }

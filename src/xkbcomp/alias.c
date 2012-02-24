@@ -261,7 +261,7 @@ ApplyAliases(struct xkb_desc * xkb, Bool toGeom, AliasInfo ** info_in)
     if (toGeom)
         a = &xkb->geom->key_aliases[nOld];
     else
-        a = &xkb->names->key_aliases[nOld];
+        a = xkb->names ? &xkb->names->key_aliases[nOld] : NULL;
     for (info = *info_in; info != NULL; info = (AliasInfo *) info->def.next)
     {
         if (info->alias[0] != '\0')

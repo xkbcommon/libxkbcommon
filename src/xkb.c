@@ -133,10 +133,9 @@ XkbcComputeEffectiveMap(struct xkb_desc * xkb, struct xkb_key_type * type,
 
     if (map_rtrn) {
         bzero(map_rtrn, type->mods.mask + 1);
-        for (i = 0; i < type->map_count; i++) {
-            if (entry->active)
+        if (entry && entry->active)
+            for (i = 0; i < type->map_count; i++)
                 map_rtrn[type->map[i].mods.mask] = type->map[i].level;
-        }
     }
 
     return True;

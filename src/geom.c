@@ -170,6 +170,7 @@ XkbcComputeSectionBounds(struct xkb_geometry * geom, struct xkb_section * sectio
         default:
             tbounds.x1 = tbounds.x2 = doodad->any.left;
             tbounds.y1 = tbounds.y2 = doodad->any.top;
+            rbounds = &tbounds;
             break;
         }
 

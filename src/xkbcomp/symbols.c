@@ -452,7 +452,8 @@ MergeKeyGroups(SymbolsInfo * info,
                             XkbcActionTypeText(use->type),
                             XkbcActionTypeText(ignore->type));
                 }
-                resultActs[i] = *use;
+                if (use)
+                    resultActs[i] = *use;
             }
         }
     }

@@ -307,7 +307,7 @@ AddIndicatorName(KeyNamesInfo * info, IndicatorNameInfo * new)
     new = NextIndicatorName(info);
     if (!new)
     {
-        WSGO("Couldn't allocate name for indicator %d\n", new->ndx);
+        WSGO("Couldn't allocate name for indicator %d\n", old->ndx);
         ACTION("Ignored\n");
         return False;
     }
@@ -565,7 +565,7 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_desc * xkb, KeyNamesInfo * 
         included = *info;
         bzero(info, sizeof(KeyNamesInfo));
     }
-    else if (strcmp(stmt->file, "computed") == 0)
+    else if (stmt->file && strcmp(stmt->file, "computed") == 0)
     {
         xkb->flags |= AutoKeyNames;
         info->explicitMin = 0;

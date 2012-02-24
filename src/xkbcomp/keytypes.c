@@ -573,7 +573,7 @@ AddPreserve(struct xkb_desc * xkb,
     if (!old)
     {
         WSGO("Couldn't allocate preserve in %s\n", TypeTxt(type));
-        ACTION("Preserve[%s] lost\n", PreserveIndexTxt(xkb, old));
+        ACTION("Preserve[%s] lost\n", PreserveIndexTxt(xkb, new));
         return False;
     }
     *old = *new;
