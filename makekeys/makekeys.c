@@ -33,9 +33,6 @@ from The Open Group.
 #include <X11/keysymdef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
-char *malloc();
-#endif /* macII */
 
 typedef unsigned long Signature;
 
