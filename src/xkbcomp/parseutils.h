@@ -36,17 +36,6 @@ extern int lineNum;
 
 extern XkbFile *rtrnValue;
 
-#ifdef DEBUG
-#define	d(str)		fprintf(stderr,"%s\n",str);
-#define d1(str,a)	fprintf(stderr,str,a);
-#define d2(str,a,b)	fprintf(stderr,str,a,b);
-#else
-#define	d(str)
-#define	d1(str,a)
-#define d2(str,a,b)
-#endif
-
-
 extern ParseCommon *AppendStmt(ParseCommon * /* to */ ,
                                ParseCommon *    /* append */
     );
