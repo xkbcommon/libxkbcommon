@@ -170,9 +170,10 @@ int
 main(int argc, char *argv[])
 {
     int ksnum = 0;
+    FILE *fptr;
     int max_rehash;
     Signature sig;
-    int i, j, k, z;
+    int i, j, k, l, z;
     char *name;
     char c;
     int first;
@@ -183,45 +184,54 @@ main(int argc, char *argv[])
     char key[128];
     char buf[1024];
 
-
-    while (fgets(buf, sizeof(buf), stdin)) {
-        int ret;
-
-        /* Manage keysyms from keysymdef.h */
-        ret = get_keysym(buf, key, ksnum);
-        if (!ret) {
-            ret = get_keysym_alias(buf, key, ksnum);
-            if (ret == -1)
-                continue;
-        }
-
-        /* Manage keysyms from XF86keysym.h */
-        if (!ret)
-            ret = get_xf86_keysym(buf, key, sizeof(key), ksnum);
-        if (!ret) {
-            ret = get_xf86_keysym_alias(buf, key, sizeof(key), ksnum);
-            if (ret < 1)
-                continue;
-        }
-
-        if (info[ksnum].val > 0x1fffffff) {
-            fprintf(stderr,
-                    "ignoring illegal keysym (%s), remove it from .h file!\n",
-                    key);
+    for (l = 1; l < argc; l++) {
+        fptr = fopen(argv[l], "r");
+        if (!fptr) {
+            fprintf(stderr, "couldn't open %s\n", argv[l]);
             continue;
         }
-        name = malloc((unsigned)strlen(key) + 1);
-        if (!name) {
-            fprintf(stderr, "makekeys: out of memory!\n");
-            exit(1);
+
+        while (fgets(buf, sizeof(buf), fptr)) {
+            int ret;
+
+            /* Manage keysyms from keysymdef.h */
+            ret = get_keysym(buf, key, ksnum);
+            if (!ret) {
+                ret = get_keysym_alias(buf, key, ksnum);
+                if (ret == -1)
+                    continue;
+            }
+
+            /* Manage keysyms from XF86keysym.h */
+            if (!ret)
+                ret = get_xf86_keysym(buf, key, sizeof(key), ksnum);
+            if (!ret) {
+                ret = get_xf86_keysym_alias(buf, key, sizeof(key), ksnum);
+                if (ret < 1)
+                    continue;
+            }
+
+            if (info[ksnum].val > 0x1fffffff) {
+                fprintf(stderr,
+                        "ignoring illegal keysym (%s), remove it from .h file!\n",
+                        key);
+                continue;
+            }
+            name = malloc((unsigned)strlen(key) + 1);
+            if (!name) {
+                fprintf(stderr, "makekeys: out of memory!\n");
+                exit(1);
+            }
+            (void)strcpy(name, key);
+            info[ksnum].name = name;
+            ksnum++;
+            if (ksnum == KTNUM) {
+                fprintf(stderr, "makekeys: too many keysyms!\n");
+                exit(1);
+            }
         }
-        (void)strcpy(name, key);
-        info[ksnum].name = name;
-        ksnum++;
-        if (ksnum == KTNUM) {
-            fprintf(stderr, "makekeys: too many keysyms!\n");
-            exit(1);
-        }
+
+        fclose(fptr);
     }
 
     /* Special case NoSymbol. */
