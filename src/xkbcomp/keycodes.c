@@ -27,7 +27,6 @@
 #include "xkbcomp.h"
 #include "xkballoc.h"
 #include "xkbmisc.h"
-#include "tokens.h"
 #include "expr.h"
 #include "keycodes.h"
 #include "misc.h"

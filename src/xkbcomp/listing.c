@@ -120,7 +120,6 @@ SOFTWARE.
 #include "xkbpath.h"
 #include "parseutils.h"
 #include "misc.h"
-#include "tokens.h"
 
 #ifndef DFLT_XKB_CONFIG_ROOT
 #define DFLT_XKB_CONFIG_ROOT "/usr/share/X11/xkb"
