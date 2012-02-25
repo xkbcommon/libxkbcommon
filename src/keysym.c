@@ -95,7 +95,7 @@ uint32_t
 xkb_string_to_keysym(const char *s)
 {
     int i, n, h, c, idx;
-    unsigned long sig = 0;
+    uint32_t sig = 0;
     const char *p = s;
     const unsigned char *entry;
     unsigned char sig1, sig2;
