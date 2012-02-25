@@ -177,17 +177,11 @@ extern XkbFile *CreateXKBFile(int /* type */ ,
                               unsigned  /* flags */
     );
 
-extern void yyerror(const char *        /* s */
+extern void yyerror(const char *        /* msg */
     );
-
-extern int yylex(void);
-extern int yyparse(void);
 
 extern void setScanState(const char * /* file */ ,
                          int     /* line */
     );
-
-extern FILE *yyin;
-extern const char *yystring;
 
 #endif /* XKBPARSE_H */

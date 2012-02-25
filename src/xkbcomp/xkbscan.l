@@ -34,7 +34,6 @@
 #include "utils.h"
 #include "parseutils.h"
 
-const char *yystring;
 char *scanFile = NULL;
 int lineNum = 0;
 
@@ -44,13 +43,16 @@ unsigned long scanULong;
 static char *s;
 char scanBuf[1024];
 
-#define	BUFSIZE	4096
+extern int yyparse(void);
 
 %}
 
 %option case-insensitive
 %option yylineno
 %option noyywrap
+%option never-interactive
+%option noinput
+%option nounput
 
 %x S_STR S_KEY
 
@@ -183,13 +185,13 @@ alternate_group		return ALTERNATE_GROUP;
 %%
 
 void
-yyerror(const char *s)
+yyerror(const char *msg)
 {
     if (warningLevel>0) {
-	(void)fprintf(stderr,"%s: line %d of %s\n",s,yylineno,
-					(scanFile?scanFile:"(unknown)"));
-	if ((warningLevel>3))
-	    (void)fprintf(stderr,"last scanned symbol is: %s\n",scanBuf);
+        fprintf(stderr,"%s: line %d of %s\n",msg,yylineno,
+                                        (scanFile?scanFile:"(unknown)"));
+        if (warningLevel>3)
+            fprintf(stderr,"last scanned symbol is: %s\n",scanBuf);
     }
     return;
 }
@@ -231,7 +233,6 @@ XKBParseFile(FILE * file, XkbFile ** pRtrn)
     if (file)
     {
         yyin = file;
-	yystring = NULL;
         rtrnValue = NULL;
         if (yyparse() == 0)
         {

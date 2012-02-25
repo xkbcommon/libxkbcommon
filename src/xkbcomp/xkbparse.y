@@ -98,6 +98,8 @@
 #include <X11/keysym.h>
 #include <stdlib.h>
 
+extern int yylex(void);
+extern FILE *yyin;
 %}
 %right	EQUALS
 %left	PLUS MINUS
