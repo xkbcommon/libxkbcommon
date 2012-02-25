@@ -146,5 +146,19 @@ xkb_string_to_keysym(const char *s)
         return strtoul(&s[2], NULL, 16);
     }
 
+    /* Stupid inconsistency between the headers and XKeysymDB: the former has
+     * no separating underscore, while some XF86* syms in the latter did.
+     * As a last ditch effort, try without. */
+    if (strncmp(s, "XF86_", 5) == 0) {
+        uint32_t ret;
+        char *tmp = strdup(s);
+        if (!tmp)
+            return NoSymbol;
+        memmove(&tmp[4], &tmp[5], strlen(s) - 5 + 1);
+        ret = xkb_string_to_keysym(tmp);
+        free(tmp);
+        return ret;
+    }
+
     return NoSymbol;
 }
