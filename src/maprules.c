@@ -118,8 +118,8 @@ InputLineAddChar(InputLine *line,int ch)
 static Bool
 GetInputLine(FILE *file,InputLine *line,Bool checkbang)
 {
-int	ch;
-Bool	endOfFile,spacePending,slashPending,inComment;
+     int ch;
+     Bool endOfFile,spacePending,slashPending,inComment;
 
      endOfFile= False;
      while ((!endOfFile)&&(line->num_line==0)) {
@@ -267,13 +267,13 @@ get_index(char *str, int *ndx)
 static void
 SetUpRemap(InputLine *line,RemapSpec *remap)
 {
-char *		tok,*str;
-unsigned	present, l_ndx_present, v_ndx_present;
-register int	i;
-int		len, ndx;
-_Xstrtokparams	strtok_buf;
+   char *tok, *str;
+   unsigned present, l_ndx_present, v_ndx_present;
+   int i;
+   int len, ndx;
+   _Xstrtokparams strtok_buf;
 #ifdef DEBUG
-Bool		found;
+   Bool found;
 #endif
 
 
@@ -369,8 +369,8 @@ Bool		found;
 static Bool
 MatchOneOf(char *wanted,char *vals_defined)
 {
-char	*str,*next;
-int	want_len= strlen(wanted);
+    char *str, *next;
+    int want_len = strlen(wanted);
 
     for (str=vals_defined,next=NULL;str!=NULL;str=next) {
 	int len;
@@ -396,11 +396,11 @@ CheckLine(	InputLine *		line,
 		XkbRF_RulePtr		rule,
 		XkbRF_GroupPtr		group)
 {
-char *		str,*tok;
-register int	nread, i;
-FileSpec	tmp;
-_Xstrtokparams	strtok_buf;
-Bool 		append = False;
+    char *str, *tok;
+    int nread, i;
+    FileSpec tmp;
+    _Xstrtokparams strtok_buf;
+    Bool append = False;
 
     if (line->line[0]=='!') {
         if (line->line[1] == '$' ||
@@ -495,7 +495,7 @@ Bool 		append = False;
 static char *
 _Concat(char *str1,char *str2)
 {
-int len;
+    int len;
 
     if ((!str1)||(!str2))
 	return str1;
@@ -712,8 +712,8 @@ XkbRF_CheckApplyRule(	XkbRF_RulePtr 		rule,
 static void
 XkbRF_ClearPartialMatches(XkbRF_RulesPtr rules)
 {
-register int 	i;
-XkbRF_RulePtr	rule;
+    int i;
+    XkbRF_RulePtr rule;
 
     for (i=0,rule=rules->rules;i<rules->num_rules;i++,rule++) {
 	rule->flags&= ~XkbRF_PendingMatch;
@@ -723,8 +723,8 @@ XkbRF_RulePtr	rule;
 static void
 XkbRF_ApplyPartialMatches(XkbRF_RulesPtr rules,struct xkb_component_names * names)
 {
-int		i;
-XkbRF_RulePtr	rule;
+    int i;
+    XkbRF_RulePtr rule;
 
     for (rule = rules->rules, i = 0; i < rules->num_rules; i++, rule++) {
 	if ((rule->flags&XkbRF_PendingMatch)==0)
@@ -739,9 +739,9 @@ XkbRF_CheckApplyRules(	XkbRF_RulesPtr 		rules,
 			struct xkb_component_names *	names,
 			int			flags)
 {
-int		i;
-XkbRF_RulePtr	rule;
-int		skip;
+    int i;
+    XkbRF_RulePtr rule;
+    int skip;
 
     for (rule = rules->rules, i=0; i < rules->num_rules; rule++, i++) {
 	if ((rule->flags & flags) != flags)
@@ -760,8 +760,8 @@ int		skip;
 static char *
 XkbRF_SubstituteVars(char *name, XkbRF_MultiDefsPtr mdefs)
 {
-char 	*str, *outstr, *orig, *var;
-int	len, ndx;
+    char *str, *outstr, *orig, *var;
+    int len, ndx;
 
     orig= name;
     str= index(name,'%');
@@ -970,7 +970,7 @@ XkbRF_GroupRec  tgroup,*group;
 static void
 XkbRF_ClearVarDescriptions(XkbRF_DescribeVarsPtr var)
 {
-register int i;
+    int i;
 
     for (i=0;i<var->num_desc;i++) {
 	free(var->desc[i].name);
@@ -985,9 +985,9 @@ register int i;
 void
 XkbcRF_Free(XkbRF_RulesPtr rules,Bool freeRules)
 {
-int		i;
-XkbRF_RulePtr	rule;
-XkbRF_GroupPtr	group;
+    int i;
+    XkbRF_RulePtr rule;
+    XkbRF_GroupPtr group;
 
     if (!rules)
 	return;

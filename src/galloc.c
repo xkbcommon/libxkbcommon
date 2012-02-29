@@ -455,8 +455,8 @@ bail:
 struct xkb_property *
 XkbcAddGeomProperty(struct xkb_geometry * geom,const char *name,const char *value)
 {
-register int i;
-register struct xkb_property * prop;
+    int i;
+    struct xkb_property * prop;
 
     if ((!geom)||(!name)||(!value))
 	return NULL;
@@ -488,8 +488,8 @@ register struct xkb_property * prop;
 struct xkb_color *
 XkbcAddGeomColor(struct xkb_geometry * geom,const char *spec,unsigned int pixel)
 {
-register int i;
-register struct xkb_color * color;
+    int i;
+    struct xkb_color * color;
 
     if ((!geom)||(!spec))
 	return NULL;
@@ -534,8 +534,8 @@ struct xkb_outline *	outline;
 struct xkb_shape *
 XkbcAddGeomShape(struct xkb_geometry * geom,uint32_t name,int sz_outlines)
 {
-struct xkb_shape *	shape;
-register int	i;
+    struct xkb_shape *shape;
+    int i;
 
     if ((!geom)||(!name)||(sz_outlines<0))
 	return NULL;
@@ -596,8 +596,8 @@ XkbcAddGeomSection(	struct xkb_geometry *	geom,
 			int		sz_doodads,
 			int		sz_over)
 {
-register int	i;
-struct xkb_section *	section;
+    int	i;
+    struct xkb_section *	section;
 
     if ((!geom)||(name==None)||(sz_rows<0))
 	return NULL;
@@ -630,8 +630,8 @@ struct xkb_section *	section;
 union xkb_doodad *
 XkbcAddGeomDoodad(struct xkb_geometry * geom,struct xkb_section * section,uint32_t name)
 {
-union xkb_doodad *old, *doodad;
-register int	i,nDoodads;
+    union xkb_doodad *old, *doodad;
+    int i, nDoodads;
 
     if ((!geom)||(name==None))
 	return NULL;
@@ -668,8 +668,8 @@ register int	i,nDoodads;
 struct xkb_overlay_row *
 XkbcAddGeomOverlayRow(struct xkb_overlay * overlay,int row_under,int sz_keys)
 {
-register int		i;
-struct xkb_overlay_row *	row;
+    int i;
+    struct xkb_overlay_row *row;
 
     if ((!overlay)||(sz_keys<0))
 	return NULL;
@@ -700,8 +700,8 @@ struct xkb_overlay_row *	row;
 struct xkb_overlay *
 XkbcAddGeomOverlay(struct xkb_section * section,uint32_t name,int sz_rows)
 {
-register int	i;
-struct xkb_overlay *	overlay;
+    int i;
+    struct xkb_overlay *overlay;
 
     if ((!section)||(name==None)||(sz_rows==0))
 	return NULL;

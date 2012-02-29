@@ -47,7 +47,7 @@ InitVModInfo(VModInfo * info, struct xkb_desc * xkb)
 void
 ClearVModInfo(VModInfo * info, struct xkb_desc * xkb)
 {
-    register int i;
+    int i;
 
     if (XkbcAllocNames(xkb, XkbVirtualModNamesMask, 0, 0) != Success)
         return;
@@ -57,7 +57,7 @@ ClearVModInfo(VModInfo * info, struct xkb_desc * xkb)
     info->newlyDefined = info->defined = info->available = 0;
     if (xkb && xkb->names)
     {
-        register int bit;
+        int bit;
         for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1)
         {
             if (xkb->names->vmods[i] != None)
@@ -81,7 +81,7 @@ Bool
 HandleVModDef(VModDef * stmt, struct xkb_desc *xkb, unsigned mergeMode,
               VModInfo * info)
 {
-    register int i, bit, nextFree;
+    int i, bit, nextFree;
     ExprResult mod;
     struct xkb_server_map * srv;
     struct xkb_names * names;
@@ -206,7 +206,7 @@ LookupVModMask(void * priv, uint32_t field, unsigned type,
     }
     else if (LookupVModIndex(priv, field, type, val_rtrn))
     {
-        register unsigned ndx = val_rtrn->uval;
+        unsigned ndx = val_rtrn->uval;
         val_rtrn->uval = (1 << (XkbNumModifiers + ndx));
         return True;
     }

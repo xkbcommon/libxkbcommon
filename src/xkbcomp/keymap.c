@@ -158,7 +158,7 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
     xkb->defined = have;
     if (required & (~have))
     {
-        register int i, bit;
+        int i, bit;
         unsigned missing;
         missing = required & (~have);
         for (i = 0, bit = 1; missing != 0; i++, bit <<= 1)

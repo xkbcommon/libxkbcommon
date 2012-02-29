@@ -149,7 +149,7 @@ InitKeyTypesInfo(KeyTypesInfo * info, struct xkb_desc * xkb, KeyTypesInfo * from
             info->dflt.lvlNames = uTypedCalloc(from->dflt.szNames, uint32_t);
             if (info->dflt.lvlNames)
             {
-                register unsigned sz = from->dflt.szNames * sizeof(uint32_t);
+                unsigned sz = from->dflt.szNames * sizeof(uint32_t);
                 memcpy(info->dflt.lvlNames, from->dflt.lvlNames, sz);
             }
         }
@@ -198,7 +198,7 @@ FreeKeyTypesInfo(KeyTypesInfo * info)
     info->name = NULL;
     if (info->types)
     {
-        register KeyTypeInfo *type;
+        KeyTypeInfo *type;
         for (type = info->types; type; type = (KeyTypeInfo *) type->defs.next)
         {
             FreeKeyTypeInfo(type);
@@ -446,7 +446,7 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
 static struct xkb_kt_map_entry *
 FindMatchingMapEntry(KeyTypeInfo * type, unsigned mask, unsigned vmask)
 {
-    register int i;
+    int i;
     struct xkb_kt_map_entry * entry;
 
     for (i = 0, entry = type->entries; i < type->nEntries; i++, entry++)
@@ -460,7 +460,7 @@ FindMatchingMapEntry(KeyTypeInfo * type, unsigned mask, unsigned vmask)
 static void
 DeleteLevel1MapEntries(KeyTypeInfo * type)
 {
-    register int i, n;
+    int i, n;
 
     for (i = 0; i < type->nEntries; i++)
     {
@@ -948,7 +948,7 @@ static int
 HandleKeyTypeDef(KeyTypeDef * def,
                  struct xkb_desc * xkb, unsigned merge, KeyTypesInfo * info)
 {
-    register int i;
+    int i;
     KeyTypeInfo type;
 
     if (def->merge != MergeDefault)
@@ -1089,7 +1089,7 @@ HandleKeyTypesFile(XkbFile * file,
 static Bool
 CopyDefToKeyType(struct xkb_desc * xkb, struct xkb_key_type * type, KeyTypeInfo * def)
 {
-    register int i;
+    int i;
     PreserveInfo *pre;
 
     for (pre = def->preserve; pre != NULL;
@@ -1170,9 +1170,9 @@ CompileKeyTypes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
 
     if (info.errorCount == 0)
     {
-        register int i;
-        register KeyTypeInfo *def;
-        register struct xkb_key_type *type, *next;
+        int i;
+        KeyTypeInfo *def;
+        struct xkb_key_type *type, *next;
 
         if (info.name != NULL)
         {

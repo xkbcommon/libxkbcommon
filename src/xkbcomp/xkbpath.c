@@ -184,7 +184,7 @@ XkbInitIncludePath(void)
 static void
 XkbClearIncludePath(void)
 {
-    register int i;
+    int i;
 
     if (szPath > 0)
     {
@@ -401,7 +401,7 @@ XkbFindFileInCache(char *name, unsigned type, char **pathRtrn)
 FILE *
 XkbFindFileInPath(const char *name, unsigned type, char **pathRtrn)
 {
-    register int i;
+    int i;
     FILE *file = NULL;
     int nameLen, typeLen, pathLen;
     char buf[PATH_MAX], *typeDir;

@@ -355,7 +355,7 @@ InitKeyNamesInfo(KeyNamesInfo * info)
 static int
 FindKeyByLong(KeyNamesInfo * info, unsigned long name)
 {
-    register int i;
+    int i;
 
     for (i = info->computedMin; i <= info->computedMax; i++)
     {
@@ -478,7 +478,7 @@ static void
 MergeIncludedKeycodes(KeyNamesInfo * into, KeyNamesInfo * from,
                       unsigned merge)
 {
-    register int i;
+    int i;
     char buf[5];
 
     if (from->errorCount > 0)
@@ -891,7 +891,7 @@ CompileKeycodes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
         if (XkbcAllocNames(xkb, XkbKeyNamesMask | XkbIndicatorNamesMask, 0, 0)
                 == Success)
         {
-            register int i;
+            int i;
             xkb->names->keycodes = xkb_intern_atom(info.name);
             for (i = info.computedMin; i <= info.computedMax; i++)
             {
@@ -917,7 +917,7 @@ CompileKeycodes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
                 xkb->names->indicators[ii->ndx - 1] = ii->name;
                 if (xkb->indicators != NULL)
                 {
-                    register unsigned bit;
+                    unsigned bit;
                     bit = 1 << (ii->ndx - 1);
                     if (ii->virtual)
                         xkb->indicators->phys_indicators &= ~bit;

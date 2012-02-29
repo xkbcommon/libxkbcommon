@@ -205,7 +205,7 @@ uStrCaseCmp(const char *str1, const char *str2)
 {
     char buf1[512], buf2[512];
     char c, *s;
-    register int n;
+    int n;
 
     for (n = 0, s = buf1; (c = *str1++); n++)
     {

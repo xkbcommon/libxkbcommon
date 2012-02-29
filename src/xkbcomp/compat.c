@@ -102,7 +102,7 @@ siText(SymInterpInfo * si, CompatInfo * info)
 static void
 InitCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
 {
-    register int i;
+    int i;
 
     info->xkb = xkb;
     info->name = NULL;
@@ -135,7 +135,7 @@ InitCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
 static void
 ClearCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
 {
-    register int i;
+    int i;
 
     free(info->name);
     info->name = NULL;
@@ -350,7 +350,7 @@ MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from, unsigned merge)
     SymInterpInfo *si;
     LEDInfo *led, *rtrn, *next;
     GroupCompatInfo *gcm;
-    register int i;
+    int i;
 
     if (from->errorCount > 0)
     {

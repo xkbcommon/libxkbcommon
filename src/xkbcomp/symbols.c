@@ -85,7 +85,7 @@ typedef struct _KeyInfo
 static void
 InitKeyInfo(KeyInfo * info)
 {
-    register int i;
+    int i;
     static char dflt[4] = "*";
 
     info->defs.defined = 0;
@@ -118,7 +118,7 @@ InitKeyInfo(KeyInfo * info)
 static void
 FreeKeyInfo(KeyInfo * info)
 {
-    register int i;
+    int i;
 
     info->defs.defined = 0;
     info->defs.fileID = 0;
@@ -153,7 +153,7 @@ FreeKeyInfo(KeyInfo * info)
 static Bool
 CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
 {
-    register int i;
+    int i;
 
     *new = *old;
     new->defs.next = NULL;
@@ -239,7 +239,7 @@ typedef struct _SymbolsInfo
 static void
 InitSymbolsInfo(SymbolsInfo * info, struct xkb_desc * xkb)
 {
-    register int i;
+    int i;
 
     tok_ONE_LEVEL = xkb_intern_atom("ONE_LEVEL");
     tok_TWO_LEVEL = xkb_intern_atom("TWO_LEVEL");
@@ -266,7 +266,7 @@ InitSymbolsInfo(SymbolsInfo * info, struct xkb_desc * xkb)
 static void
 FreeSymbolsInfo(SymbolsInfo * info)
 {
-    register int i;
+    int i;
 
     free(info->name);
     if (info->keys)
@@ -324,7 +324,7 @@ MergeKeyGroups(SymbolsInfo * info,
     uint32_t *resultSyms;
     union xkb_action *resultActs;
     int resultWidth;
-    register int i;
+    int i;
     Bool report, clobber;
 
     clobber = (from->defs.merge != MergeAugment);
@@ -467,7 +467,7 @@ MergeKeyGroups(SymbolsInfo * info,
 static Bool
 MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
 {
-    register int i;
+    int i;
     unsigned collide = 0;
     Bool report;
 
@@ -589,7 +589,7 @@ MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
 static Bool
 AddKeySymbols(SymbolsInfo * info, KeyInfo * key, struct xkb_desc * xkb)
 {
-    register int i;
+    int i;
     unsigned long real_name;
 
     for (i = 0; i < info->nKeys; i++)
@@ -701,7 +701,7 @@ static void
 MergeIncludedSymbols(SymbolsInfo * into, SymbolsInfo * from,
                      unsigned merge, struct xkb_desc * xkb)
 {
-    register int i;
+    int i;
     KeyInfo *key;
 
     if (from->errorCount > 0)
@@ -861,7 +861,7 @@ GetGroupIndex(KeyInfo * key,
 
     if (arrayNdx == NULL)
     {
-        register int i;
+        int i;
         unsigned defined;
         if (what == SYMBOLS)
             defined = key->symsDefined;
@@ -952,7 +952,7 @@ AddActionsToKey(KeyInfo * key,
                 char *field,
                 ExprDef * arrayNdx, ExprDef * value, SymbolsInfo * info)
 {
-    register int i;
+    int i;
     unsigned ndx, nActs;
     ExprDef *act;
     struct xkb_any_action *toAct;
@@ -1648,8 +1648,8 @@ HandleSymbolsFile(XkbFile * file,
 static Bool
 FindKeyForSymbol(struct xkb_desc * xkb, uint32_t sym, xkb_keycode_t *kc_rtrn)
 {
-    register int i, j;
-    register Bool gotOne;
+    int i, j;
+    Bool gotOne;
 
     j = 0;
     do
@@ -1684,7 +1684,7 @@ FindKeyForSymbol(struct xkb_desc * xkb, uint32_t sym, xkb_keycode_t *kc_rtrn)
 static Bool
 FindNamedType(struct xkb_desc * xkb, uint32_t name, unsigned *type_rtrn)
 {
-    register unsigned n;
+    unsigned n;
 
     if (xkb && xkb->map && xkb->map->types)
     {
@@ -1876,7 +1876,7 @@ PrepareKeyDef(KeyInfo * key)
 static Bool
 CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
 {
-    register int i;
+    int i;
     xkb_keycode_t okc, kc;
     unsigned width, tmp, nGroups;
     struct xkb_key_type * type;
@@ -2128,7 +2128,7 @@ CopyModMapDef(struct xkb_desc * xkb, ModMapEntry *entry)
 Bool
 CompileSymbols(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
 {
-    register int i;
+    int i;
     SymbolsInfo info;
 
     InitSymbolsInfo(&info, xkb);

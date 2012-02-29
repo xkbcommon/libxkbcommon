@@ -157,7 +157,7 @@ MergeAliases(AliasInfo ** into, AliasInfo ** merge, unsigned how_merge)
 int
 ApplyAliases(struct xkb_desc * xkb, Bool toGeom, AliasInfo ** info_in)
 {
-    register int i;
+    int i;
     struct xkb_key_alias *old, *a;
     AliasInfo *info;
     int nNew, nOld;

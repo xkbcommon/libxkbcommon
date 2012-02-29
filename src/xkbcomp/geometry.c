@@ -634,7 +634,7 @@ FreeShapes(ShapeInfo * si, GeometryInfo * info)
     {
         if (tmp->outlines)
         {
-            register int i;
+            int i;
             for (i = 0; i < tmp->nOutlines; i++)
             {
                 if (tmp->outlines[i].points != NULL)
@@ -2933,7 +2933,7 @@ HandleGeometryFile(XkbFile * file,
 static Bool
 CopyShapeDef(struct xkb_geometry * geom, ShapeInfo * si)
 {
-    register int i, n;
+    int i, n;
     struct xkb_shape * shape;
     struct xkb_outline *old_outline, *outline;
     uint32_t name;
@@ -3386,7 +3386,7 @@ VerifyOverlayInfo(struct xkb_geometry * geom,
                   OverlayInfo * oi,
                   GeometryInfo * info, short rowMap[256], short rowSize[256])
 {
-    register OverlayKeyInfo *ki, *next;
+    OverlayKeyInfo *ki, *next;
     unsigned long oKey, uKey, sKey;
     struct xkb_row * row;
     struct xkb_key * key;

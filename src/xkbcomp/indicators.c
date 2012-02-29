@@ -434,7 +434,7 @@ CopyIndicatorMapDefs(struct xkb_desc * xkb, LEDInfo *leds, LEDInfo **unboundRtrn
         }
         else
         {
-            register struct xkb_indicator_map * im;
+            struct xkb_indicator_map * im;
             im = &xkb->indicators->maps[led->indicator - 1];
             im->flags = led->flags;
             im->which_groups = led->which_groups;
@@ -460,8 +460,8 @@ Bool
 BindIndicators(struct xkb_desc * xkb, Bool force, LEDInfo *unbound,
                LEDInfo **unboundRtrn)
 {
-    register int i;
-    register LEDInfo *led, *next, *last;
+    int i;
+    LEDInfo *led, *next, *last;
 
     if (xkb->names != NULL)
     {
