@@ -270,7 +270,7 @@ SymbolsCreate(char *keyName, ExprDef * symbols)
         def->common.stmtType = StmtSymbolsDef;
         def->common.next = NULL;
         def->merge = MergeDefault;
-        bzero(def->keyName, 5);
+        memset(def->keyName, 0, 5);
         strncpy(def->keyName, keyName, 4);
         def->symbols = symbols;
     }
@@ -420,7 +420,7 @@ ShapeDeclCreate(uint32_t name, OutlineDef * outlines)
     shape = uTypedAlloc(ShapeDef);
     if (shape != NULL)
     {
-        bzero(shape, sizeof(ShapeDef));
+        memset(shape, 0, sizeof(ShapeDef));
         shape->common.stmtType = StmtShapeDef;
         shape->common.next = NULL;
         shape->merge = MergeDefault;
@@ -445,7 +445,7 @@ OutlineCreate(uint32_t field, ExprDef * points)
     outline = uTypedAlloc(OutlineDef);
     if (outline != NULL)
     {
-        bzero(outline, sizeof(OutlineDef));
+        memset(outline, 0, sizeof(OutlineDef));
         outline->common.stmtType = StmtOutlineDef;
         outline->common.next = NULL;
         outline->field = field;
@@ -470,7 +470,7 @@ KeyDeclCreate(char *name, ExprDef * expr)
     key = uTypedAlloc(KeyDef);
     if (key != NULL)
     {
-        bzero(key, sizeof(KeyDef));
+        memset(key, 0, sizeof(KeyDef));
         key->common.stmtType = StmtKeyDef;
         key->common.next = NULL;
         if (name)
@@ -490,7 +490,7 @@ RowDeclCreate(KeyDef * keys)
     row = uTypedAlloc(RowDef);
     if (row != NULL)
     {
-        bzero(row, sizeof(RowDef));
+        memset(row, 0, sizeof(RowDef));
         row->common.stmtType = StmtRowDef;
         row->common.next = NULL;
         row->nKeys = 0;
@@ -513,7 +513,7 @@ SectionDeclCreate(uint32_t name, RowDef * rows)
     section = uTypedAlloc(SectionDef);
     if (section != NULL)
     {
-        bzero(section, sizeof(SectionDef));
+        memset(section, 0, sizeof(SectionDef));
         section->common.stmtType = StmtSectionDef;
         section->common.next = NULL;
         section->name = name;
@@ -536,7 +536,7 @@ OverlayKeyCreate(char *under, char *over)
     key = uTypedAlloc(OverlayKeyDef);
     if (key != NULL)
     {
-        bzero(key, sizeof(OverlayKeyDef));
+        memset(key, 0, sizeof(OverlayKeyDef));
         key->common.stmtType = StmtOverlayKeyDef;
         strncpy(key->over, over, XkbKeyNameLength);
         strncpy(key->under, under, XkbKeyNameLength);
@@ -555,7 +555,7 @@ OverlayDeclCreate(uint32_t name, OverlayKeyDef * keys)
     ol = uTypedAlloc(OverlayDef);
     if (ol != NULL)
     {
-        bzero(ol, sizeof(OverlayDef));
+        memset(ol, 0, sizeof(OverlayDef));
         ol->common.stmtType = StmtOverlayDef;
         ol->name = name;
         ol->keys = keys;
@@ -576,7 +576,7 @@ DoodadCreate(unsigned type, uint32_t name, VarDef * body)
     doodad = uTypedAlloc(DoodadDef);
     if (doodad != NULL)
     {
-        bzero(doodad, sizeof(DoodadDef));
+        memset(doodad, 0, sizeof(DoodadDef));
         doodad->common.stmtType = StmtDoodadDef;
         doodad->common.next = NULL;
         doodad->type = type;
@@ -770,7 +770,7 @@ CreateXKBFile(int type, char *name, ParseCommon * defs, unsigned flags)
     if (file)
     {
         XkbcEnsureSafeMapName(name);
-        bzero(file, sizeof(XkbFile));
+        memset(file, 0, sizeof(XkbFile));
         file->type = type;
         file->topName = _XkbDupString(name);
         file->name = name;

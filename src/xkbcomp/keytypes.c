@@ -214,7 +214,7 @@ NextKeyType(KeyTypesInfo * info)
     type = uTypedAlloc(KeyTypeInfo);
     if (type != NULL)
     {
-        bzero(type, sizeof(KeyTypeInfo));
+        memset(type, 0, sizeof(KeyTypeInfo));
         type->defs.fileID = info->fileID;
         info->types = (KeyTypeInfo *) AddCommonInfo(&info->types->defs,
                                                     (CommonInfo *) type);
@@ -375,7 +375,7 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
     {
         haveSelf = True;
         included = *info;
-        bzero(info, sizeof(KeyTypesInfo));
+        memset(info, 0, sizeof(KeyTypesInfo));
     }
     else if (ProcessIncludeFile(stmt, XkmTypesIndex, &rtrn, &newMerge))
     {

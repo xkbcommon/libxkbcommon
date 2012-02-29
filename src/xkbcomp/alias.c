@@ -77,7 +77,7 @@ static void
 InitAliasInfo(AliasInfo * info,
               unsigned merge, unsigned file_id, char *alias, char *real)
 {
-    bzero(info, sizeof(AliasInfo));
+    memset(info, 0, sizeof(AliasInfo));
     info->def.merge = merge;
     info->def.fileID = file_id;
     strncpy(info->alias, alias, XkbKeyNameLength);
@@ -136,7 +136,7 @@ MergeAliases(AliasInfo ** into, AliasInfo ** merge, unsigned how_merge)
         *merge = NULL;
         return True;
     }
-    bzero((char *) &def, sizeof(KeyAliasDef));
+    memset(&def, 0, sizeof(KeyAliasDef));
     for (tmp = *merge; tmp != NULL; tmp = (AliasInfo *) tmp->def.next)
     {
         if (how_merge == MergeDefault)
@@ -232,7 +232,7 @@ ApplyAliases(struct xkb_desc * xkb, Bool toGeom, AliasInfo ** info_in)
         if (!xkb->geom)
         {
             struct xkb_geometry_sizes sizes;
-            bzero((char *) &sizes, sizeof(struct xkb_geometry_sizes));
+            memset(&sizes, 0, sizeof(struct xkb_geometry_sizes));
             sizes.which = XkbGeomKeyAliasesMask;
             sizes.num_key_aliases = nOld + nNew;
             status = XkbcAllocGeometry(xkb, &sizes);

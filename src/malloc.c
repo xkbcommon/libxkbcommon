@@ -75,8 +75,8 @@ XkbcAllocClientMap(struct xkb_desc * xkb, unsigned which, unsigned nTotalTypes)
             }
 
             map->size_types = nTotalTypes;
-            bzero(&map->types[map->num_types],
-                  (map->size_types - map->num_types) * sizeof(struct xkb_key_type));
+            memset(&map->types[map->num_types], 0,
+                   (map->size_types - map->num_types) * sizeof(struct xkb_key_type));
         }
     }
 
@@ -178,8 +178,8 @@ XkbcAllocServerMap(struct xkb_desc * xkb, unsigned which, unsigned nNewActions)
             }
 
             map->size_acts = need;
-            bzero(&map->acts[map->num_acts],
-                  (map->size_acts - map->num_acts) * sizeof(union xkb_action));
+            memset(&map->acts[map->num_acts], 0,
+                   (map->size_acts - map->num_acts) * sizeof(union xkb_action));
         }
 
         if (!map->key_acts) {
@@ -276,8 +276,8 @@ XkbcResizeKeySyms(struct xkb_desc * xkb, xkb_keycode_t key,
                    XkbKeySymsPtr(xkb, key), nOldSyms * sizeof(uint32_t));
 
         if ((needed - nOldSyms) > 0)
-            bzero(&xkb->map->syms[xkb->map->num_syms + XkbKeyNumSyms(xkb, key)],
-                  (needed - nOldSyms) * sizeof(uint32_t));
+            memset(&xkb->map->syms[xkb->map->num_syms + XkbKeyNumSyms(xkb, key)],
+                   0, (needed - nOldSyms) * sizeof(uint32_t));
 
         xkb->map->key_sym_map[key].offset = xkb->map->num_syms;
         xkb->map->num_syms += needed;
@@ -305,7 +305,8 @@ XkbcResizeKeySyms(struct xkb_desc * xkb, xkb_keycode_t key,
            memcpy(&newSyms[nSyms], XkbKeySymsPtr(xkb, i),
                   nCopy * sizeof(uint32_t));
         if (nKeySyms > nCopy)
-            bzero(&newSyms[nSyms+nCopy], (nKeySyms - nCopy) * sizeof(uint32_t));
+            memset(&newSyms[nSyms + nCopy], 0,
+                   (nKeySyms - nCopy) * sizeof(uint32_t));
 
         xkb->map->key_sym_map[i].offset = nSyms;
         nSyms += nKeySyms;
@@ -364,8 +365,8 @@ XkbcResizeKeyActions(struct xkb_desc * xkb, xkb_keycode_t key, int needed)
             memcpy(&newActs[nActs], XkbKeyActionsPtr(xkb, i),
                    nCopy * sizeof(union xkb_action));
         if (nCopy < nKeyActs)
-            bzero(&newActs[nActs + nCopy],
-                  (nKeyActs - nCopy) * sizeof(union xkb_action));
+            memset(&newActs[nActs + nCopy], 0,
+                   (nKeyActs - nCopy) * sizeof(union xkb_action));
 
         xkb->server->key_acts[i] = nActs;
         nActs += nKeyActs;

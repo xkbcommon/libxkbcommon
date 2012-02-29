@@ -42,7 +42,7 @@ recalloc(void * old, unsigned nOld, unsigned nNew, unsigned itemSize)
         rtrn = (char *) realloc((char *) old, nNew * itemSize);
         if ((rtrn) && (nNew > nOld))
         {
-            bzero(&rtrn[nOld * itemSize], (nNew - nOld) * itemSize);
+            memset(&rtrn[nOld * itemSize], 0, (nNew - nOld) * itemSize);
         }
     }
     return (void *) rtrn;

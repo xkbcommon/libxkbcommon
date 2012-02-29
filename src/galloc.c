@@ -342,7 +342,7 @@ _XkbGeomAlloc(char **old, unsigned short *num, unsigned short *total,
 
     if (*num > 0) {
         char *tmp = *old;
-        bzero(&tmp[sz_elem * (*num)], num_new * sz_elem);
+        memset(&tmp[sz_elem * (*num)], 0, num_new * sz_elem);
     }
 
     return Success;
@@ -524,7 +524,7 @@ struct xkb_outline *	outline;
 	return NULL;
     }
     outline= &shape->outlines[shape->num_outlines];
-    bzero(outline,sizeof(struct xkb_outline));
+    memset(outline, 0, sizeof(struct xkb_outline));
     if ((sz_points>0)&&(_XkbAllocPoints(outline,sz_points)!=Success))
 	return NULL;
     shape->num_outlines++;
@@ -549,7 +549,7 @@ XkbcAddGeomShape(struct xkb_geometry * geom,uint32_t name,int sz_outlines)
 					(_XkbAllocShapes(geom,1)!=Success))
 	return NULL;
     shape= &geom->shapes[geom->num_shapes];
-    bzero(shape,sizeof(struct xkb_shape));
+    memset(shape, 0, sizeof(struct xkb_shape));
     if ((sz_outlines>0)&&(_XkbAllocOutlines(shape,sz_outlines)!=Success))
 	return NULL;
     shape->name= name;
@@ -567,7 +567,7 @@ struct xkb_key *	key;
     if ((row->num_keys>=row->sz_keys)&&(_XkbAllocKeys(row,1)!=Success))
 	return NULL;
     key= &row->keys[row->num_keys++];
-    bzero(key,sizeof(struct xkb_key));
+    memset(key, 0, sizeof(struct xkb_key));
     return key;
 }
 
@@ -582,7 +582,7 @@ struct xkb_row *	row;
     					(_XkbAllocRows(section,1)!=Success))
 	return NULL;
     row= &section->rows[section->num_rows];
-    bzero(row,sizeof(struct xkb_row));
+    memset(row, 0, sizeof(struct xkb_row));
     if ((sz_keys>0)&&(_XkbAllocKeys(row,sz_keys)!=Success))
 	return NULL;
     section->num_rows++;
@@ -660,7 +660,7 @@ XkbcAddGeomDoodad(struct xkb_geometry * geom,struct xkb_section * section,uint32
 	    return NULL;
 	doodad= &geom->doodads[geom->num_doodads++];
     }
-    bzero(doodad,sizeof(union xkb_doodad));
+    memset(doodad, 0, sizeof(union xkb_doodad));
     doodad->any.name= name;
     return doodad;
 }
@@ -689,7 +689,7 @@ XkbcAddGeomOverlayRow(struct xkb_overlay * overlay,int row_under,int sz_keys)
 				(_XkbAllocOverlayRows(overlay,1)!=Success))
 	return NULL;
     row= &overlay->rows[overlay->num_rows];
-    bzero(row,sizeof(struct xkb_overlay_row));
+    memset(row, 0, sizeof(struct xkb_overlay_row));
     if ((sz_keys>0)&&(_XkbAllocOverlayKeys(row,sz_keys)!=Success))
 	return NULL;
     row->row_under= row_under;

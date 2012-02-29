@@ -1421,8 +1421,8 @@ ActionsInit(void)
 {
     if (!actionsInitialized)
     {
-        bzero((char *) &constTrue, sizeof(constTrue));
-        bzero((char *) &constFalse, sizeof(constFalse));
+        memset(&constTrue, 0, sizeof(constTrue));
+        memset(&constFalse, 0, sizeof(constFalse));
         constTrue.common.stmtType = StmtExpr;
         constTrue.common.next = NULL;
         constTrue.op = ExprIdent;

@@ -276,7 +276,7 @@ FreeSymbolsInfo(SymbolsInfo * info)
         ClearCommonInfo(&info->modMap->defs);
     if (info->aliases)
         ClearAliases(&info->aliases);
-    bzero((char *) info, sizeof(SymbolsInfo));
+    memset(info, 0, sizeof(SymbolsInfo));
 }
 
 static Bool
@@ -478,7 +478,7 @@ MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
             }
         }
         *into = *from;
-        bzero(from, sizeof(KeyInfo));
+        memset(from, 0, sizeof(KeyInfo));
         return True;
     }
     report = ((warningLevel > 9) ||
@@ -763,7 +763,7 @@ HandleIncludeSymbols(IncludeStmt * stmt,
     {
         haveSelf = True;
         included = *info;
-        bzero(info, sizeof(SymbolsInfo));
+        memset(info, 0, sizeof(SymbolsInfo));
     }
     else if (ProcessIncludeFile(stmt, XkmSymbolsIndex, &rtrn, &newMerge))
     {

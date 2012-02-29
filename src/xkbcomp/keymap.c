@@ -56,7 +56,7 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
     char *mainName;
     LEDInfo *unbound = NULL;
 
-    bzero(sections, MAX_SECTIONS * sizeof(XkbFile *));
+    memset(sections, 0, MAX_SECTIONS * sizeof(XkbFile *));
     mainType = file->type;
     mainName = file->name;
     switch (mainType)

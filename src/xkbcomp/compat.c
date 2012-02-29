@@ -125,8 +125,8 @@ InitCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
     info->ledDflt.defs.fileID = info->fileID;
     info->ledDflt.defs.defined = 0;
     info->ledDflt.defs.merge = MergeOverride;
-    bzero((char *) &info->groupCompat[0],
-          XkbNumKbdGroups * sizeof(GroupCompatInfo));
+    memset(&info->groupCompat[0], 0,
+           XkbNumKbdGroups * sizeof(GroupCompatInfo));
     info->leds = NULL;
     InitVModInfo(&info->vmods, xkb);
 }
@@ -150,8 +150,8 @@ ClearCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
     ClearIndicatorMapInfo(&info->ledDflt);
     info->nInterps = 0;
     info->interps = (SymInterpInfo *) ClearCommonInfo(&info->interps->defs);
-    bzero((char *) &info->groupCompat[0],
-          XkbNumKbdGroups * sizeof(GroupCompatInfo));
+    memset(&info->groupCompat[0], 0,
+           XkbNumKbdGroups * sizeof(GroupCompatInfo));
     info->leds = (LEDInfo *) ClearCommonInfo(&info->leds->defs);
     /* 3/30/94 (ef) -- XXX! Should free action info here */
     ClearVModInfo(&info->vmods, xkb);
@@ -165,7 +165,7 @@ NextInterp(CompatInfo * info)
     si = uTypedAlloc(SymInterpInfo);
     if (si)
     {
-        bzero((char *) si, sizeof(SymInterpInfo));
+        memset(si, 0, sizeof(SymInterpInfo));
         info->interps =
             (SymInterpInfo *) AddCommonInfo(&info->interps->defs,
                                             (CommonInfo *) si);
@@ -407,7 +407,7 @@ HandleIncludeCompatMap(IncludeStmt * stmt,
     {
         haveSelf = True;
         included = *info;
-        bzero(info, sizeof(CompatInfo));
+        memset(info, 0, sizeof(CompatInfo));
     }
     else if (ProcessIncludeFile(stmt, XkmCompatMapIndex, &rtrn, &newMerge))
     {

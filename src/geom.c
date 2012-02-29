@@ -87,7 +87,7 @@ XkbcComputeRowBounds(struct xkb_geometry * geom, struct xkb_section * section, s
         return False;
 
     bounds = &row->bounds;
-    bzero(bounds, sizeof(struct xkb_bounds));
+    memset(bounds, 0, sizeof(struct xkb_bounds));
 
     for (key = row->keys, pos = k = 0; k < row->num_keys; k++, key++) {
         sbounds = &XkbKeyShape(geom, key)->bounds;
@@ -129,7 +129,7 @@ XkbcComputeSectionBounds(struct xkb_geometry * geom, struct xkb_section * sectio
         return False;
 
     bounds = &section->bounds;
-    bzero(bounds, sizeof(struct xkb_bounds));
+    memset(bounds, 0, sizeof(struct xkb_bounds));
 
     for (i = 0, row = section->rows; i < section->num_rows; i++, row++) {
         if (!XkbcComputeRowBounds(geom, section, row))

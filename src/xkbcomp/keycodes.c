@@ -556,7 +556,7 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_desc * xkb, KeyNamesInfo * 
     {
         haveSelf = True;
         included = *info;
-        bzero(info, sizeof(KeyNamesInfo));
+        memset(info, 0, sizeof(KeyNamesInfo));
     }
     else if (stmt->file && strcmp(stmt->file, "computed") == 0)
     {
