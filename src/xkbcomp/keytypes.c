@@ -179,16 +179,10 @@ InitKeyTypesInfo(KeyTypesInfo * info, struct xkb_desc * xkb, KeyTypesInfo * from
 static void
 FreeKeyTypeInfo(KeyTypeInfo * type)
 {
-    if (type->entries != NULL)
-    {
-        free(type->entries);
-        type->entries = NULL;
-    }
-    if (type->lvlNames != NULL)
-    {
-        free(type->lvlNames);
-        type->lvlNames = NULL;
-    }
+    free(type->entries);
+    type->entries = NULL;
+    free(type->lvlNames);
+    type->lvlNames = NULL;
     if (type->preserve != NULL)
     {
         ClearCommonInfo(&type->preserve->defs);
@@ -200,8 +194,7 @@ FreeKeyTypeInfo(KeyTypeInfo * type)
 static void
 FreeKeyTypesInfo(KeyTypesInfo * info)
 {
-    if (info->name)
-        free(info->name);
+    free(info->name);
     info->name = NULL;
     if (info->types)
     {
@@ -397,8 +390,7 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
         (*hndlr) (rtrn, xkb, newMerge, &included);
         if (stmt->stmt != NULL)
         {
-            if (included.name != NULL)
-                free(included.name);
+            free(included.name);
             included.name = stmt->stmt;
             stmt->stmt = NULL;
         }

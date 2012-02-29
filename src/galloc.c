@@ -38,10 +38,8 @@ _XkbFreeGeomLeafElems(Bool freeAll, int first, int count,
 {
     if (freeAll || !(*elems)) {
         *num_inout = *sz_inout = 0;
-        if (*elems) {
-            free(*elems);
-            *elems = NULL;
-        }
+        free(*elems);
+        *elems = NULL;
         return;
     }
 
@@ -97,10 +95,8 @@ _XkbFreeGeomNonLeafElems(Bool freeAll, int first, int count,
 
     if (freeAll) {
         *num_inout = *sz_inout = 0;
-        if (*elems) {
-            free(*elems);
-            *elems = NULL;
-        }
+        free(*elems);
+        *elems = NULL;
     }
     else if (first + count >= (*num_inout))
         *num_inout = first;
@@ -117,14 +113,10 @@ _XkbClearProperty(char *prop_in)
 {
     struct xkb_property * prop = (struct xkb_property *)prop_in;
 
-    if (prop->name) {
-        free(prop->name);
-        prop->name = NULL;
-    }
-    if (prop->value) {
-        free(prop->value);
-        prop->value = NULL;
-    }
+    free(prop->name);
+    prop->name = NULL;
+    free(prop->value);
+    prop->value = NULL;
 }
 
 static void
@@ -151,8 +143,7 @@ _XkbClearColor(char *color_in)
 {
     struct xkb_color * color = (struct xkb_color *)color_in;
 
-    if (color->spec)
-        free(color->spec);
+    free(color->spec);
 }
 
 static void
@@ -243,21 +234,15 @@ _XkbClearDoodad(char *doodad_in)
 
     switch (doodad->any.type) {
     case XkbTextDoodad:
-        if (doodad->text.text) {
-            free(doodad->text.text);
-            doodad->text.text = NULL;
-        }
-        if (doodad->text.font) {
-            free(doodad->text.font);
-            doodad->text.font = NULL;
-        }
+        free(doodad->text.text);
+        doodad->text.text = NULL;
+        free(doodad->text.font);
+        doodad->text.font = NULL;
         break;
 
     case XkbLogoDoodad:
-        if (doodad->logo.logo_name) {
-            free(doodad->logo.logo_name);
-            doodad->logo.logo_name = NULL;
-        }
+        free(doodad->logo.logo_name);
+        doodad->logo.logo_name = NULL;
         break;
     }
 }
@@ -268,12 +253,10 @@ XkbcFreeGeomDoodads(union xkb_doodad * doodads, int nDoodads, Bool freeAll)
     int i;
     union xkb_doodad * doodad;
 
-    if (doodads) {
-        for (i = 0, doodad = doodads; i < nDoodads; i++, doodad++)
-            _XkbClearDoodad((char *)doodad);
-        if (freeAll)
-            free(doodads);
-    }
+    for (i = 0, doodad = doodads; i < nDoodads && doodad; i++, doodad++)
+        _XkbClearDoodad((char *)doodad);
+    if (freeAll)
+        free(doodads);
 }
 
 static void
@@ -283,10 +266,8 @@ _XkbClearSection(char *section_in)
 
     if (section->rows)
         XkbcFreeGeomRows(section, 0, section->num_rows, True);
-    if (section->doodads) {
-        XkbcFreeGeomDoodads(section->doodads, section->num_doodads, True);
-        section->doodads = NULL;
-    }
+    XkbcFreeGeomDoodads(section->doodads, section->num_doodads, True);
+    section->doodads = NULL;
 }
 
 static void
@@ -329,10 +310,8 @@ XkbcFreeGeometry(struct xkb_geometry * geom, unsigned which, Bool freeMap)
         XkbcFreeGeomKeyAliases(geom, 0, geom->num_key_aliases, True);
 
     if (freeMap) {
-        if (geom->label_font) {
-            free(geom->label_font);
-            geom->label_font = NULL;
-        }
+        free(geom->label_font);
+        geom->label_font = NULL;
         free(geom);
     }
 }
@@ -483,8 +462,7 @@ register struct xkb_property * prop;
 	return NULL;
     for (i=0,prop=geom->properties;i<geom->num_properties;i++,prop++) {
 	if ((prop->name)&&(strcmp(name,prop->name)==0)) {
-	    if (prop->value)
-		free(prop->value);
+	    free(prop->value);
 	    prop->value= (char *)malloc(strlen(value)+1);
 	    if (prop->value)
 		strcpy(prop->value,value);
@@ -644,11 +622,9 @@ struct xkb_section *	section;
     if ((sz_rows>0)&&(_XkbAllocRows(section,sz_rows)!=Success))
 	return NULL;
     if ((sz_doodads>0)&&(_XkbAllocDoodads(section,sz_doodads)!=Success)) {
-	if (section->rows) {
-	    free(section->rows);
-	    section->rows= NULL;
-	    section->sz_rows= section->num_rows= 0;
-	}
+        free(section->rows);
+        section->rows= NULL;
+        section->sz_rows= section->num_rows= 0;
 	return NULL;
     }
     section->name= name;

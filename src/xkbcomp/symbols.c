@@ -130,11 +130,9 @@ FreeKeyInfo(KeyInfo * info)
     {
         info->numLevels[i] = 0;
         info->types[i] = None;
-        if (info->syms[i] != NULL)
-            free(info->syms[i]);
+        free(info->syms[i]);
         info->syms[i] = NULL;
-        if (info->acts[i] != NULL)
-            free(info->acts[i]);
+        free(info->acts[i]);
         info->acts[i] = NULL;
     }
     info->dfltType = None;
@@ -270,28 +268,17 @@ FreeSymbolsInfo(SymbolsInfo * info)
 {
     register int i;
 
-    if (info->name)
-        free(info->name);
-    info->name = NULL;
+    free(info->name);
     if (info->keys)
     {
         for (i = 0; i < info->nKeys; i++)
-        {
             FreeKeyInfo(&info->keys[i]);
-        }
         free(info->keys);
-        info->keys = NULL;
     }
     if (info->modMap)
-    {
         ClearCommonInfo(&info->modMap->defs);
-        info->modMap = NULL;
-    }
     if (info->aliases)
-    {
         ClearAliases(&info->aliases);
-        info->aliases = NULL;
-    }
     bzero((char *) info, sizeof(SymbolsInfo));
     return;
 }
@@ -457,13 +444,13 @@ MergeKeyGroups(SymbolsInfo * info,
             }
         }
     }
-    if ((into->syms[group] != NULL) && (resultSyms != into->syms[group]))
+    if (resultSyms != into->syms[group])
         free(into->syms[group]);
-    if ((from->syms[group] != NULL) && (resultSyms != from->syms[group]))
+    if (resultSyms != from->syms[group])
         free(from->syms[group]);
-    if ((into->acts[group] != NULL) && (resultActs != into->acts[group]))
+    if (resultActs != into->acts[group])
         free(into->acts[group]);
-    if ((from->acts[group] != NULL) && (resultActs != from->acts[group]))
+    if (resultActs != from->acts[group])
         free(from->acts[group]);
     into->numLevels[group] = resultWidth;
     into->syms[group] = resultSyms;
@@ -490,10 +477,8 @@ MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
         {
             if (into->numLevels[i] != 0)
             {
-                if (into->syms[i])
-                    free(into->syms[i]);
-                if (into->acts[i])
-                    free(into->acts[i]);
+                free(into->syms[i]);
+                free(into->acts[i]);
             }
         }
         *into = *from;
@@ -801,8 +786,7 @@ HandleIncludeSymbols(IncludeStmt * stmt,
         (*hndlr) (rtrn, xkb, MergeOverride, &included);
         if (stmt->stmt != NULL)
         {
-            if (included.name != NULL)
-                free(included.name);
+            free(included.name);
             included.name = stmt->stmt;
             stmt->stmt = NULL;
         }
@@ -1507,11 +1491,9 @@ SetExplicitGroup(SymbolsInfo * info, KeyInfo * key)
         for (i = 1; i < XkbNumKbdGroups; i++)
         {
             key->numLevels[i] = 0;
-            if (key->syms[i] != NULL)
-                free(key->syms[i]);
+            free(key->syms[i]);
             key->syms[i] = (uint32_t *) NULL;
-            if (key->acts[i] != NULL)
-                free(key->acts[i]);
+            free(key->acts[i]);
             key->acts[i] = (union xkb_action *) NULL;
             key->types[i] = (uint32_t) 0;
         }
@@ -1873,11 +1855,9 @@ PrepareKeyDef(KeyInfo * key)
         for (i = lastGroup; i > 0; i--)
         {
             key->numLevels[i] = 0;
-            if (key->syms[i] != NULL)
-                free(key->syms[i]);
+            free(key->syms[i]);
             key->syms[i] = (uint32_t *) NULL;
-            if (key->acts[i] != NULL)
-                free(key->acts[i]);
+            free(key->acts[i]);
             key->acts[i] = (union xkb_action *) NULL;
             key->types[i] = (uint32_t) 0;
         }

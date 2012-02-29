@@ -540,10 +540,8 @@ OverlayKeyCreate(char *under, char *over)
         key->common.stmtType = StmtOverlayKeyDef;
         strncpy(key->over, over, XkbKeyNameLength);
         strncpy(key->under, under, XkbKeyNameLength);
-        if (over)
-            free(over);
-        if (under)
-            free(under);
+        free(over);
+        free(under);
     }
     return key;
 }
@@ -694,7 +692,7 @@ IncludeCreate(char *str, unsigned merge)
     }
     if (first)
         first->stmt = stmt;
-    else if (stmt)
+    else
         free(stmt);
     return first;
   BAIL:
@@ -703,20 +701,15 @@ IncludeCreate(char *str, unsigned merge)
     while (first)
     {
         incl = first->next;
-        if (first->file)
-            free(first->file);
-        if (first->map)
-            free(first->map);
-        if (first->modifier)
-            free(first->modifier);
-        if (first->path)
-            free(first->path);
+        free(first->file);
+        free(first->map);
+        free(first->modifier);
+        free(first->path);
         first->file = first->map = first->path = NULL;
         free(first);
         first = incl;
     }
-    if (stmt)
-        free(stmt);
+    free(stmt);
     return NULL;
 }
 

@@ -199,8 +199,7 @@ yyerror(const char *msg)
 void setScanState(const char *file, int lineno)
 {
   yylineno = 1;
-  if (scanFile)
-    free(scanFile);
+  free(scanFile);
   scanFile = strdup(file);
 }
 

@@ -102,8 +102,7 @@ XkbcFreeCompatMap(struct xkb_desc * xkb, unsigned which, Bool freeMap)
         bzero(&compat->groups[0], XkbNumKbdGroups * sizeof(struct xkb_mods));
 
     if (which & XkbSymInterpMask) {
-        if (compat->sym_interpret && (compat->size_si > 0))
-            free(compat->sym_interpret);
+        free(compat->sym_interpret);
         compat->size_si = compat->num_si = 0;
         compat->sym_interpret = NULL;
     }
@@ -221,27 +220,25 @@ XkbcFreeNames(struct xkb_desc * xkb, unsigned which, Bool freeMap)
             struct xkb_key_type * type = map->types;
 
             for (i = 0; i < map->num_types; i++, type++) {
-                if (type->level_names) {
-                    free(type->level_names);
-                    type->level_names = NULL;
-                }
+                free(type->level_names);
+                type->level_names = NULL;
             }
         }
     }
 
-    if ((which & XkbKeyNamesMask) && names->keys) {
+    if (which & XkbKeyNamesMask) {
         free(names->keys);
         names->keys = NULL;
         names->num_keys = 0;
     }
 
-    if ((which & XkbKeyAliasesMask) && names->key_aliases) {
+    if (which & XkbKeyAliasesMask) {
         free(names->key_aliases);
         names->key_aliases = NULL;
         names->num_key_aliases = 0;
     }
 
-    if ((which & XkbRGNamesMask) && names->radio_groups) {
+    if (which & XkbRGNamesMask) {
         free(names->radio_groups);
         names->radio_groups = NULL;
         names->num_rg = 0;
@@ -303,7 +300,7 @@ XkbcAllocIndicatorMaps(struct xkb_desc * xkb)
 static void
 XkbcFreeIndicatorMaps(struct xkb_desc * xkb)
 {
-    if (xkb && xkb->indicators) {
+    if (xkb) {
         free(xkb->indicators);
         xkb->indicators = NULL;
     }

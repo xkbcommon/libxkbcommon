@@ -320,8 +320,7 @@ AddIndicatorName(KeyNamesInfo * info, IndicatorNameInfo * new)
 static void
 ClearKeyNamesInfo(KeyNamesInfo * info)
 {
-    if (info->name != NULL)
-        free(info->name);
+    free(info->name);
     info->name = NULL;
     info->computedMax = info->explicitMax = info->explicitMin = 0;
     info->computedMin = XKB_KEYCODE_MAX;
@@ -578,8 +577,7 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_desc * xkb, KeyNamesInfo * 
         HandleKeycodesFile(rtrn, xkb, MergeOverride, &included);
         if (stmt->stmt != NULL)
         {
-            if (included.name != NULL)
-                free(included.name);
+            free(included.name);
             included.name = stmt->stmt;
             stmt->stmt = NULL;
         }

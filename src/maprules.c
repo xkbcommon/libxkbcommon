@@ -578,13 +578,10 @@ MakeMultiDefs(XkbRF_MultiDefsPtr mdefs, XkbRF_VarDefsPtr defs)
 static void
 FreeMultiDefs(XkbRF_MultiDefsPtr defs)
 {
-  if (defs->options)
     free(defs->options);
-  /* Avoid -Wcast-qual warnings. */
-  if (defs->layout[1])
+    /* Avoid -Wcast-qual warnings. */
     free((void *)(uintptr_t)defs->layout[1]);
-  if (defs->variant[1])
-     free((void *)(uintptr_t)defs->variant[1]);
+    free((void *)(uintptr_t)defs->variant[1]);
 }
 
 static void
@@ -976,14 +973,11 @@ XkbRF_ClearVarDescriptions(XkbRF_DescribeVarsPtr var)
 register int i;
 
     for (i=0;i<var->num_desc;i++) {
-	if (var->desc[i].name)
-	    free(var->desc[i].name);
-	if (var->desc[i].desc)
-	    free(var->desc[i].desc);
+	free(var->desc[i].name);
+	free(var->desc[i].desc);
 	var->desc[i].name= var->desc[i].desc= NULL;
     }
-    if (var->desc)
-	free(var->desc);
+    free(var->desc);
     var->desc= NULL;
     return;
 }
@@ -1009,34 +1003,31 @@ XkbRF_GroupPtr	group;
 	rules->num_extra= rules->sz_extra= 0;
 	rules->extra= NULL;
     }
-    if (rules->rules) {
-	for (i=0,rule=rules->rules;i<rules->num_rules;i++,rule++) {
-	    if (rule->model)	free(rule->model);
-	    if (rule->layout)	free(rule->layout);
-	    if (rule->variant)	free(rule->variant);
-	    if (rule->option)	free(rule->option);
-	    if (rule->keycodes)	free(rule->keycodes);
-	    if (rule->symbols)	free(rule->symbols);
-	    if (rule->types)	free(rule->types);
-	    if (rule->compat)	free(rule->compat);
-	    if (rule->geometry)	free(rule->geometry);
-	    if (rule->keymap)	free(rule->keymap);
-	    bzero((char *)rule,sizeof(XkbRF_RuleRec));
-	}
-	free(rules->rules);
-	rules->num_rules= rules->sz_rules= 0;
-	rules->rules= NULL;
+    for (i=0, rule = rules->rules; i < rules->num_rules && rules; i++, rule++) {
+        free(rule->model);
+        free(rule->layout);
+        free(rule->variant);
+        free(rule->option);
+        free(rule->keycodes);
+        free(rule->symbols);
+        free(rule->types);
+        free(rule->compat);
+        free(rule->geometry);
+        free(rule->keymap);
+        bzero((char *)rule,sizeof(XkbRF_RuleRec));
     }
+    free(rules->rules);
+    rules->num_rules= rules->sz_rules= 0;
+    rules->rules= NULL;
 
-    if (rules->groups) {
-	for (i=0, group=rules->groups;i<rules->num_groups;i++,group++) {
-	    if (group->name)	free(group->name);
-	    if (group->words)	free(group->words);
-	}
-	free(rules->groups);
-	rules->num_groups= 0;
-	rules->groups= NULL;
+    for (i=0, group = rules->groups; i < rules->num_groups && group; i++, group++) {
+        free(group->name);
+        free(group->words);
     }
+    free(rules->groups);
+    rules->num_groups= 0;
+    rules->groups= NULL;
+
     if (freeRules)
 	free(rules);
     return;

@@ -332,8 +332,7 @@ KeyNameDecl	:	KeyName EQUALS KeyCode SEMI
 			    KeycodeDef *def;
 
 			    def= KeycodeCreate($1,$3);
-			    if ($1)
-				free($1);
+			    free($1);
 			    $$= def;
 			}
 		;
@@ -342,8 +341,8 @@ KeyAliasDecl	:	ALIAS KeyName EQUALS KeyName SEMI
 			{
 			    KeyAliasDef	*def;
 			    def= KeyAliasCreate($2,$4);
-			    if ($2)	free($2);	
-			    if ($4)	free($4);	
+			    free($2);
+			    free($4);
 			    $$= def;
 			}
 		;

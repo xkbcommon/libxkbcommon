@@ -292,10 +292,8 @@ FreeProperties(PropertyInfo * pi, GeometryInfo * info)
     }
     for (tmp = pi; tmp != NULL; tmp = next)
     {
-        if (tmp->name)
-            free(tmp->name);
-        if (tmp->value)
-            free(tmp->value);
+        free(tmp->name);
+        free(tmp->value);
         tmp->name = tmp->value = NULL;
         next = (PropertyInfo *) tmp->defs.next;
         free(tmp);
@@ -674,8 +672,7 @@ InitGeometryInfo(GeometryInfo * info, unsigned fileID, unsigned merge)
 static void
 ClearGeometryInfo(GeometryInfo * info)
 {
-    if (info->name)
-        free(info->name);
+    free(info->name);
     info->name = NULL;
     if (info->props)
         FreeProperties(info->props, info);
@@ -748,8 +745,7 @@ AddProperty(GeometryInfo * info, PropertyInfo * new)
                 ACTION("Ignoring \"%s\", using \"%s\"\n", old->value,
                         new->value);
             }
-            if (old->value)
-                free(old->value);
+            free(old->value);
             old->value = _XkbDupString(new->value);
             return True;
         }
@@ -1344,8 +1340,7 @@ HandleIncludeGeometry(IncludeStmt * stmt, struct xkb_desc * xkb, GeometryInfo * 
         (*hndlr) (rtrn, xkb, MergeOverride, &included);
         if (stmt->stmt != NULL)
         {
-            if (included.name != NULL)
-                free(included.name);
+            free(included.name);
             included.name = stmt->stmt;
             stmt->stmt = NULL;
         }
