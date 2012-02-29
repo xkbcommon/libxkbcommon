@@ -170,11 +170,11 @@ xkb_intern_atom(const char *string)
     if (makeit) {
         NodePtr nd;
 
-        nd = (NodePtr)malloc(sizeof(NodeRec));
+        nd = malloc(sizeof(NodeRec));
         if (!nd)
             return BAD_RESOURCE;
 
-        nd->string = (char *)malloc(len + 1);
+        nd->string = malloc(len + 1);
         if (!nd->string) {
             free(nd);
             return BAD_RESOURCE;

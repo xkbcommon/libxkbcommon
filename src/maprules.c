@@ -97,11 +97,11 @@ InputLineAddChar(InputLine *line,int ch)
 {
     if (line->num_line>=line->sz_line) {
 	if (line->line==line->buf) {
-	    line->line= (char *)malloc(line->sz_line*2);
+            line->line = malloc(line->sz_line * 2);
 	    memcpy(line->line,line->buf,line->sz_line);
 	}
 	else {
-	    line->line=(char *)realloc((char *)line->line,line->sz_line*2);
+            line->line = realloc(line->line, line->sz_line * 2);
 	}
 	line->sz_line*= 2;
     }
@@ -793,7 +793,7 @@ XkbRF_SubstituteVars(char *name, XkbRF_MultiDefsPtr mdefs)
 	}
 	str= strchr(&str[0],'%');
     }
-    name= (char *)malloc(len+1);
+    name = malloc(len + 1);
     str= orig;
     outstr= name;
     while (*str!='\0') {

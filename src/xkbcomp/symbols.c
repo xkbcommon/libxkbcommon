@@ -179,8 +179,7 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
                     new->numLevels[i] = 0;
                     return False;
                 }
-                memcpy((char *) new->syms[i], (char *) old->syms[i],
-                       width * sizeof(uint32_t));
+                memcpy(new->syms[i], old->syms[i], width * sizeof(uint32_t));
             }
             if (old->acts[i] != NULL)
             {
@@ -190,7 +189,7 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
                     new->acts[i] = NULL;
                     return False;
                 }
-                memcpy((char *) new->acts[i], (char *) old->acts[i],
+                memcpy(new->acts[i], old->acts[i],
                        width * sizeof(union xkb_action));
             }
         }
@@ -1487,10 +1486,10 @@ SetExplicitGroup(SymbolsInfo * info, KeyInfo * key)
         {
             key->numLevels[i] = 0;
             free(key->syms[i]);
-            key->syms[i] = (uint32_t *) NULL;
+            key->syms[i] = NULL;
             free(key->acts[i]);
-            key->acts[i] = (union xkb_action *) NULL;
-            key->types[i] = (uint32_t) 0;
+            key->acts[i] = NULL;
+            key->types[i] = 0;
         }
     }
     key->typesDefined = key->symsDefined = key->actsDefined = 1 << group;
@@ -1498,11 +1497,11 @@ SetExplicitGroup(SymbolsInfo * info, KeyInfo * key)
     key->numLevels[group] = key->numLevels[0];
     key->numLevels[0] = 0;
     key->syms[group] = key->syms[0];
-    key->syms[0] = (uint32_t *) NULL;
+    key->syms[0] = NULL;
     key->acts[group] = key->acts[0];
-    key->acts[0] = (union xkb_action *) NULL;
+    key->acts[0] = NULL;
     key->types[group] = key->types[0];
-    key->types[0] = (uint32_t) 0;
+    key->types[0] = 0;
     return True;
 }
 
@@ -1798,7 +1797,7 @@ PrepareKeyDef(KeyInfo * key)
             key->acts[i] = uTypedCalloc(width, union xkb_action);
             if (key->acts[i] == NULL)
                 continue;
-            memcpy((void *) key->acts[i], (void *) key->acts[0],
+            memcpy(key->acts[i], key->acts[0],
                    width * sizeof(union xkb_action));
             key->actsDefined |= 1 << i;
         }
@@ -1807,8 +1806,7 @@ PrepareKeyDef(KeyInfo * key)
             key->syms[i] = uTypedCalloc(width, uint32_t);
             if (key->syms[i] == NULL)
                 continue;
-            memcpy((void *) key->syms[i], (void *) key->syms[0],
-                   width * sizeof(uint32_t));
+            memcpy(key->syms[i], key->syms[0], width * sizeof(uint32_t));
             key->symsDefined |= 1 << i;
         }
         if (defined & 1)
@@ -1829,7 +1827,7 @@ PrepareKeyDef(KeyInfo * key)
         }
         if ((key->syms[i] != key->syms[0]) &&
             (key->syms[i] == NULL || key->syms[0] == NULL ||
-             memcmp((void *) key->syms[i], (void *) key->syms[0],
+             memcmp(key->syms[i], key->syms[0],
                     sizeof(uint32_t) * key->numLevels[0])))
         {
             identical = False;
@@ -1837,7 +1835,7 @@ PrepareKeyDef(KeyInfo * key)
         }
         if ((key->acts[i] != key->acts[0]) &&
             (key->acts[i] == NULL || key->acts[0] == NULL ||
-             memcmp((void *) key->acts[i], (void *) key->acts[0],
+             memcmp(key->acts[i], key->acts[0],
                     sizeof(union xkb_action) * key->numLevels[0])))
         {
             identical = False;
@@ -1850,10 +1848,10 @@ PrepareKeyDef(KeyInfo * key)
         {
             key->numLevels[i] = 0;
             free(key->syms[i]);
-            key->syms[i] = (uint32_t *) NULL;
+            key->syms[i] = NULL;
             free(key->acts[i]);
-            key->acts[i] = (union xkb_action *) NULL;
-            key->types[i] = (uint32_t) 0;
+            key->acts[i] = NULL;
+            key->types[i] = 0;
         }
         key->symsDefined &= 1;
         key->actsDefined &= 1;

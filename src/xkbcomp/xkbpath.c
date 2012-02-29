@@ -170,7 +170,7 @@ XkbInitIncludePath(void)
         return True;
 
     szPath = PATH_CHUNK;
-    includePath = (char **) calloc(szPath, sizeof(char *));
+    includePath = calloc(szPath, sizeof(char *));
     if (!includePath)
         return False;
 
@@ -231,7 +231,7 @@ XkbAddDirectoryToPath(const char *dir)
     if (nPathEntries >= szPath)
     {
         szPath += PATH_CHUNK;
-        includePath = (char **) realloc(includePath, szPath * sizeof(char *));
+        includePath = realloc(includePath, szPath * sizeof(char *));
         if (includePath == NULL)
         {
             WSGO("Allocation failed (includePath)\n");
@@ -432,7 +432,7 @@ XkbFindFileInPath(const char *name, unsigned type, char **pathRtrn)
 
     if ((file != NULL) && (pathRtrn != NULL))
     {
-        *pathRtrn = (char *) calloc(strlen(buf) + 1, sizeof(char));
+        *pathRtrn = calloc(strlen(buf) + 1, sizeof(char));
         if (*pathRtrn != NULL)
             strcpy(*pathRtrn, buf);
     }

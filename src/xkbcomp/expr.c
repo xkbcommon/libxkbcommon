@@ -746,7 +746,7 @@ ExprResolveString(ExprDef * expr,
             int len;
             char *new;
             len = strlen(leftRtrn.str) + strlen(rightRtrn.str) + 1;
-            new = (char *) malloc(len);
+            new = malloc(len);
             if (new)
             { sprintf(new, "%s%s", leftRtrn.str, rightRtrn.str);
                 free(leftRtrn.str);

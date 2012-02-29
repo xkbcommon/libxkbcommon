@@ -332,9 +332,9 @@ _XkbGeomAlloc(char **old, unsigned short *num, unsigned short *total,
     *total = (*num) + num_new;
 
     if (*old)
-        *old = (char *)realloc(*old, (*total) * sz_elem);
+        *old = realloc(*old, (*total) * sz_elem);
     else
-        *old = (char *)calloc(*total, sz_elem);
+        *old = calloc(*total, sz_elem);
     if (!(*old)) {
         *total = *num = 0;
         return BadAlloc;
