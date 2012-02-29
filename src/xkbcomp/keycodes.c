@@ -674,7 +674,7 @@ HandleKeyNameVar(VarDef * stmt, KeyNamesInfo * info)
     {
         ERROR("Unknown element %s encountered\n", tmp.str);
         ACTION("Default for field %s ignored\n", field.str);
-        return 0;
+        goto err_out;
     }
     if (uStrCaseCmp(field.str, "minimum") == 0)
         which = MIN_KEYCODE_DEF;
@@ -684,19 +684,19 @@ HandleKeyNameVar(VarDef * stmt, KeyNamesInfo * info)
     {
         ERROR("Unknown field encountered\n");
         ACTION("Assigment to field %s ignored\n", field.str);
-        return 0;
+        goto err_out;
     }
     if (arrayNdx != NULL)
     {
         ERROR("The %s setting is not an array\n", field.str);
         ACTION("Illegal array reference ignored\n");
-        return 0;
+        goto err_out;
     }
 
     if (ExprResolveKeyCode(stmt->value, &tmp) == 0)
     {
         ACTION("Assignment to field %s ignored\n", field.str);
-        return 0;
+        goto err_out;
     }
     if (tmp.uval > XKB_KEYCODE_MAX)
     {
@@ -704,7 +704,7 @@ HandleKeyNameVar(VarDef * stmt, KeyNamesInfo * info)
             ("Illegal keycode %d (must be in the range %d-%d inclusive)\n",
              tmp.uval, 0, XKB_KEYCODE_MAX);
         ACTION("Value of \"%s\" not changed\n", field.str);
-        return 0;
+        goto err_out;
     }
     if (which == MIN_KEYCODE_DEF)
     {
@@ -714,7 +714,7 @@ HandleKeyNameVar(VarDef * stmt, KeyNamesInfo * info)
                 ("Minimum key code (%d) must be <= maximum key code (%d)\n",
                  tmp.uval, info->explicitMax);
             ACTION("Minimum key code value not changed\n");
-            return 0;
+            goto err_out;
         }
         if ((info->computedMax > 0) && (info->computedMin < tmp.uval))
         {
@@ -722,7 +722,7 @@ HandleKeyNameVar(VarDef * stmt, KeyNamesInfo * info)
                 ("Minimum key code (%d) must be <= lowest defined key (%d)\n",
                  tmp.uval, info->computedMin);
             ACTION("Minimum key code value not changed\n");
-            return 0;
+            goto err_out;
         }
         info->explicitMin = tmp.uval;
     }
@@ -733,7 +733,7 @@ HandleKeyNameVar(VarDef * stmt, KeyNamesInfo * info)
             ERROR("Maximum code (%d) must be >= minimum key code (%d)\n",
                    tmp.uval, info->explicitMin);
             ACTION("Maximum code value not changed\n");
-            return 0;
+            goto err_out;
         }
         if ((info->computedMax > 0) && (info->computedMax > tmp.uval))
         {
@@ -741,11 +741,17 @@ HandleKeyNameVar(VarDef * stmt, KeyNamesInfo * info)
                 ("Maximum code (%d) must be >= highest defined key (%d)\n",
                  tmp.uval, info->computedMax);
             ACTION("Maximum code value not changed\n");
-            return 0;
+            goto err_out;
         }
         info->explicitMax = tmp.uval;
     }
+
+    free(field.str);
     return 1;
+
+err_out:
+    free(field.str);
+    return 0;
 }
 
 static int
