@@ -1250,7 +1250,6 @@ ApplyActionFactoryDefaults(union xkb_action * action)
     {
         action->iso.real_mods = LockMask;
     }
-    return;
 }
 
 static void
@@ -1436,5 +1435,4 @@ ActionsInit(void)
         constFalse.value.str = xkb_intern_atom("false");
         actionsInitialized = 1;
     }
-    return;
 }

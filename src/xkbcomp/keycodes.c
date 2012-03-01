@@ -50,7 +50,6 @@ LongToKeyName(unsigned long val, char *name)
     name[1] = ((val >> 16) & 0xff);
     name[2] = ((val >> 8) & 0xff);
     name[3] = (val & 0xff);
-    return;
 }
 
 /***====================================================================***/
@@ -143,7 +142,6 @@ InitIndicatorNameInfo(IndicatorNameInfo * ii, KeyNamesInfo * info)
     ii->ndx = 0;
     ii->name = None;
     ii->virtual = False;
-    return;
 }
 
 static void
@@ -154,7 +152,6 @@ ClearIndicatorNameInfo(IndicatorNameInfo * ii, KeyNamesInfo * info)
         ClearCommonInfo(&ii->defs);
         info->leds = NULL;
     }
-    return;
 }
 
 static IndicatorNameInfo *
@@ -335,7 +332,6 @@ ClearKeyNamesInfo(KeyNamesInfo * info)
         ClearIndicatorNameInfo(info->leds, info);
     if (info->aliases)
         ClearAliases(&info->aliases);
-    return;
 }
 
 static void
@@ -349,7 +345,6 @@ InitKeyNamesInfo(KeyNamesInfo * info)
     info->has_alt_forms = NULL;
     ClearKeyNamesInfo(info);
     info->errorCount = 0;
-    return;
 }
 
 static int
@@ -539,7 +534,6 @@ MergeIncludedKeycodes(KeyNamesInfo * into, KeyNamesInfo * from,
             || (into->explicitMax < from->explicitMax))
             into->explicitMax = from->explicitMax;
     }
-    return;
 }
 
 /**
@@ -855,7 +849,6 @@ HandleKeycodesFile(XkbFile * file,
             break;
         }
     }
-    return;
 }
 
 /**

@@ -758,7 +758,6 @@ CheckDefaultMap(XkbFile * maps)
             }
         }
     }
-    return;
 }
 
 XkbFile *

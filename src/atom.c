@@ -103,7 +103,6 @@ xkb_init_atoms(InternAtomFuncPtr intern, GetAtomValueFuncPtr get_atom_value)
             return;
         do_intern_atom = intern;
         do_get_atom_value = get_atom_value;
-        return;
     }
 }
 

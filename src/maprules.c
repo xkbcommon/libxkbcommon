@@ -79,7 +79,6 @@ InitInputLine(InputLine *line)
     line->num_line= 0;
     line->sz_line= DFLT_LINE_SIZE;
     line->line=	line->buf;
-    return;
 }
 
 static void
@@ -91,7 +90,6 @@ FreeInputLine(InputLine *line)
     line->num_line= 0;
     line->sz_line= DFLT_LINE_SIZE;
     line->line= line->buf;
-    return;
 }
 
 static int
@@ -363,7 +361,6 @@ SetUpRemap(InputLine *line,RemapSpec *remap)
 	return;
    }
    remap->number++;
-   return;
 }
 
 static Bool
@@ -979,7 +976,6 @@ XkbRF_ClearVarDescriptions(XkbRF_DescribeVarsPtr var)
     }
     free(var->desc);
     var->desc= NULL;
-    return;
 }
 
 void
@@ -1030,5 +1026,4 @@ XkbcRF_Free(XkbRF_RulesPtr rules,Bool freeRules)
 
     if (freeRules)
 	free(rules);
-    return;
 }

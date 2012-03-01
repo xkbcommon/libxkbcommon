@@ -199,7 +199,6 @@ XkbClearIncludePath(void)
         nPathEntries = 0;
     }
     noDefaultPath = True;
-    return;
 }
 
 /**

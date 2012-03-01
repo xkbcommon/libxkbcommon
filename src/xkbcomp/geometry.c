@@ -276,7 +276,6 @@ InitPropertyInfo(PropertyInfo * pi, GeometryInfo * info)
     pi->defs.fileID = info->fileID;
     pi->defs.merge = info->merge;
     pi->name = pi->value = NULL;
-    return;
 }
 
 static void
@@ -298,7 +297,6 @@ FreeProperties(PropertyInfo * pi, GeometryInfo * info)
         next = (PropertyInfo *) tmp->defs.next;
         free(tmp);
     }
-    return;
 }
 
 static void
@@ -321,7 +319,6 @@ InitKeyInfo(KeyInfo * key, RowInfo * row, GeometryInfo * info)
         key->defs.next = NULL;
         key->row = row;
     }
-    return;
 }
 
 static void
@@ -332,7 +329,6 @@ ClearKeyInfo(KeyInfo * key)
     key->gap = 0;
     key->shape = None;
     key->color = None;
-    return;
 }
 
 static void
@@ -352,7 +348,6 @@ FreeKeys(KeyInfo * key, RowInfo * row, GeometryInfo * info)
         next = (KeyInfo *) tmp->defs.next;
         free(tmp);
     }
-    return;
 }
 
 static void
@@ -375,7 +370,6 @@ InitRowInfo(RowInfo * row, SectionInfo * section, GeometryInfo * info)
         row->keys = NULL;
         InitKeyInfo(&row->dfltKey, row, info);
     }
-    return;
 }
 
 static void
@@ -389,7 +383,6 @@ ClearRowInfo(RowInfo * row, GeometryInfo * info)
         FreeKeys(row->keys, row, info);
     ClearKeyInfo(&row->dfltKey);
     row->dfltKey.defs.defined |= _GK_Default;
-    return;
 }
 
 static void
@@ -409,7 +402,6 @@ FreeRows(RowInfo * row, SectionInfo * section, GeometryInfo * info)
         next = (RowInfo *) tmp->defs.next;
         free(tmp);
     }
-    return;
 }
 
 static DoodadInfo *
@@ -473,7 +465,6 @@ InitDoodadInfo(DoodadInfo * di, unsigned type, SectionInfo * si,
         if (info->nextPriority > XkbGeomMaxPriority)
             info->nextPriority = XkbGeomMaxPriority;
     }
-    return;
 }
 
 static void
@@ -485,7 +476,6 @@ ClearDoodadInfo(DoodadInfo * di)
     bzero(di, sizeof(DoodadInfo));
     di->defs = defs;
     di->defs.defined = 0;
-    return;
 }
 
 static void
@@ -496,7 +486,6 @@ ClearOverlayInfo(OverlayInfo * ol)
         ol->keys = (OverlayKeyInfo *) ClearCommonInfo(&ol->keys->defs);
         ol->nKeys = 0;
     }
-    return;
 }
 
 static void
@@ -528,7 +517,6 @@ FreeDoodads(DoodadInfo * di, SectionInfo * si, GeometryInfo * info)
         ClearDoodadInfo(tmp);
         free(tmp);
     }
-    return;
 }
 
 static void
@@ -553,7 +541,6 @@ InitSectionInfo(SectionInfo * si, GeometryInfo * info)
         si->name = xkb_intern_atom("default");
         InitRowInfo(&si->dfltRow, si, info);
     }
-    return;
 }
 
 static void
@@ -572,7 +559,6 @@ DupSectionInfo(SectionInfo * into, SectionInfo * from, GeometryInfo * info)
     into->dfltRow.dfltKey.defs.merge = defs.merge;
     into->dfltRow.dfltKey.defs.next = NULL;
     into->dfltRow.dfltKey.row = &into->dfltRow;
-    return;
 }
 
 static void
@@ -596,7 +582,6 @@ ClearSectionInfo(SectionInfo * si, GeometryInfo * info)
         si->doodads = NULL;
     }
     si->dfltRow.defs.defined = _GR_Default;
-    return;
 }
 
 static void
@@ -616,7 +601,6 @@ FreeSections(SectionInfo * si, GeometryInfo * info)
         next = (SectionInfo *) tmp->defs.next;
         free(tmp);
     }
-    return;
 }
 
 static void
@@ -653,7 +637,6 @@ FreeShapes(ShapeInfo * si, GeometryInfo * info)
         next = (ShapeInfo *) tmp->defs.next;
         free(tmp);
     }
-    return;
 }
 
 /***====================================================================***/
@@ -666,7 +649,6 @@ InitGeometryInfo(GeometryInfo * info, unsigned fileID, unsigned merge)
     info->merge = merge;
     InitSectionInfo(&info->dfltSection, info);
     info->dfltSection.defs.defined = _GS_Default;
-    return;
 }
 
 static void
@@ -687,7 +669,6 @@ ClearGeometryInfo(GeometryInfo * info)
     info->dfltSection.defs.defined = _GS_Default;
     if (info->aliases)
         ClearAliases(&info->aliases);
-    return;
 }
 
 /***====================================================================***/
@@ -868,7 +849,6 @@ ReplaceDoodad(DoodadInfo * into, DoodadInfo * from)
     next = from->defs.next;
     ClearDoodadInfo(from);
     from->defs.next = next;
-    return;
 }
 
 static DoodadInfo *
@@ -1306,7 +1286,6 @@ MergeIncludedGeometry(GeometryInfo * into, GeometryInfo * from,
     }
     if (!MergeAliases(&into->aliases, &from->aliases, merge))
         into->errorCount++;
-    return;
 }
 
 typedef void (*FileHandler) (XkbFile * /* file */ ,
@@ -2925,7 +2904,6 @@ HandleGeometryFile(XkbFile * file,
             break;
         }
     }
-    return;
 }
 
 /***====================================================================***/

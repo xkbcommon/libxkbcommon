@@ -173,7 +173,6 @@ InitKeyTypesInfo(KeyTypesInfo * info, struct xkb_desc * xkb, KeyTypesInfo * from
             }
         }
     }
-    return;
 }
 
 static void
@@ -188,7 +187,6 @@ FreeKeyTypeInfo(KeyTypeInfo * type)
         ClearCommonInfo(&type->preserve->defs);
         type->preserve = NULL;
     }
-    return;
 }
 
 static void
@@ -206,7 +204,6 @@ FreeKeyTypesInfo(KeyTypesInfo * info)
         info->types = (KeyTypeInfo *) ClearCommonInfo(&info->types->defs);
     }
     FreeKeyTypeInfo(&info->dflt);
-    return;
 }
 
 static KeyTypeInfo *
@@ -356,7 +353,6 @@ MergeIncludedKeyTypes(KeyTypesInfo * into,
             into->errorCount++;
     }
     into->stdPresent |= from->stdPresent;
-    return;
 }
 
 typedef void (*FileHandler) (XkbFile * /* file */ ,
@@ -473,7 +469,6 @@ DeleteLevel1MapEntries(KeyTypeInfo * type)
             type->nEntries--;
         }
     }
-    return;
 }
 
 /**
@@ -1083,7 +1078,6 @@ HandleKeyTypesFile(XkbFile * file,
             break;
         }
     }
-    return;
 }
 
 static Bool

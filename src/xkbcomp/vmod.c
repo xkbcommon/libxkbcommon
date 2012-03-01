@@ -41,7 +41,6 @@ InitVModInfo(VModInfo * info, struct xkb_desc * xkb)
 {
     ClearVModInfo(info, xkb);
     info->errorCount = 0;
-    return;
 }
 
 void
@@ -64,7 +63,6 @@ ClearVModInfo(VModInfo * info, struct xkb_desc * xkb)
                 info->defined |= bit;
         }
     }
-    return;
 }
 
 /***====================================================================***/

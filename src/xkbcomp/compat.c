@@ -129,7 +129,6 @@ InitCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
           XkbNumKbdGroups * sizeof(GroupCompatInfo));
     info->leds = NULL;
     InitVModInfo(&info->vmods, xkb);
-    return;
 }
 
 static void
@@ -156,7 +155,6 @@ ClearCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
     info->leds = (LEDInfo *) ClearCommonInfo(&info->leds->defs);
     /* 3/30/94 (ef) -- XXX! Should free action info here */
     ClearVModInfo(&info->vmods, xkb);
-    return;
 }
 
 static SymInterpInfo *
@@ -387,7 +385,6 @@ MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from, unsigned merge)
         else
             into->errorCount++;
     }
-    return;
 }
 
 typedef void (*FileHandler) (XkbFile * /* rtrn */ ,
@@ -762,7 +759,6 @@ HandleCompatMapFile(XkbFile * file,
             break;
         }
     }
-    return;
 }
 
 static void
@@ -785,7 +781,6 @@ CopyInterps(CompatInfo * info,
         }
         compat->sym_interpret[compat->num_si++] = si->interp;
     }
-    return;
 }
 
 Bool

@@ -71,7 +71,6 @@ HandleCollision(AliasInfo * old, AliasInfo * new)
     }
     old->def.fileID = new->def.fileID;
     old->def.merge = new->def.merge;
-    return;
 }
 
 static void
@@ -83,7 +82,6 @@ InitAliasInfo(AliasInfo * info,
     info->def.fileID = file_id;
     strncpy(info->alias, alias, XkbKeyNameLength);
     strncpy(info->real, real, XkbKeyNameLength);
-    return;
 }
 
 int
@@ -122,7 +120,6 @@ ClearAliases(AliasInfo ** info_in)
 {
     if ((info_in) && (*info_in))
         ClearCommonInfo(&(*info_in)->def);
-    return;
 }
 
 Bool

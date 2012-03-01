@@ -51,7 +51,6 @@ ClearIndicatorMapInfo(LEDInfo * info)
     info->vmods = 0;
     info->which_groups = info->groups = 0;
     info->ctrls = 0;
-    return;
 }
 
 LEDInfo *

@@ -109,7 +109,6 @@ InitKeyInfo(KeyInfo * info)
     info->nameForOverlayKey = 0;
     info->repeat = RepeatUndefined;
     info->allowNone = 0;
-    return;
 }
 
 /**
@@ -142,7 +141,6 @@ FreeKeyInfo(KeyInfo * info)
     info->nameForOverlayKey = 0;
     info->repeat = RepeatUndefined;
     info->allowNone = 0;
-    return;
 }
 
 /**
@@ -260,7 +258,6 @@ InitSymbolsInfo(SymbolsInfo * info, struct xkb_desc * xkb)
     InitVModInfo(&info->vmods, xkb);
     info->action = NULL;
     info->aliases = NULL;
-    return;
 }
 
 static void
@@ -280,7 +277,6 @@ FreeSymbolsInfo(SymbolsInfo * info)
     if (info->aliases)
         ClearAliases(&info->aliases);
     bzero((char *) info, sizeof(SymbolsInfo));
-    return;
 }
 
 static Bool
@@ -745,7 +741,6 @@ MergeIncludedSymbols(SymbolsInfo * into, SymbolsInfo * from,
     }
     if (!MergeAliases(&into->aliases, &from->aliases, merge))
         into->errorCount++;
-    return;
 }
 
 typedef void (*FileHandler) (XkbFile * /* rtrn */ ,
@@ -1642,7 +1637,6 @@ HandleSymbolsFile(XkbFile * file,
             break;
         }
     }
-    return;
 }
 
 static Bool
@@ -1865,7 +1859,6 @@ PrepareKeyDef(KeyInfo * key)
         key->actsDefined &= 1;
         key->typesDefined &= 1;
     }
-    return;
 }
 
 /**
