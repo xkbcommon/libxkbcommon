@@ -27,6 +27,7 @@
 #include "parseutils.h"
 #include "xkbmisc.h"
 #include "xkbpath.h"
+#include "xkbparse.h"
 #include <X11/keysym.h>
 #include <X11/Xalloca.h>
 
@@ -791,4 +792,183 @@ StmtSetMerge(ParseCommon * stmt, unsigned merge)
         merge = MergeDefault;
     }
     return merge;
+}
+
+static void
+FreeStmt(ParseCommon *stmt);
+
+static void
+FreeExpr(ExprDef *expr)
+{
+    int i;
+
+    if (!expr)
+        return;
+
+    switch (expr->op)
+    {
+    case ExprActionList:
+    case OpNegate:
+    case OpUnaryPlus:
+    case OpNot:
+    case OpInvert:
+        FreeStmt(&expr->value.child->common);
+        break;
+    case OpDivide:
+    case OpAdd:
+    case OpSubtract:
+    case OpMultiply:
+    case OpAssign:
+        FreeStmt(&expr->value.binary.left->common);
+        FreeStmt(&expr->value.binary.right->common);
+        break;
+    case ExprActionDecl:
+        FreeStmt(&expr->value.action.args->common);
+        break;
+    case ExprArrayRef:
+        FreeStmt(&expr->value.array.entry->common);
+        break;
+    case ExprKeysymList:
+        for (i = 0; i < expr->value.list.nSyms; i++)
+            free(expr->value.list.syms[i]);
+        free(expr->value.list.syms);
+        break;
+    default:
+        break;
+    }
+}
+
+static void
+FreeInclude(IncludeStmt *incl)
+{
+    IncludeStmt *next;
+
+    while (incl)
+    {
+        next = incl->next;
+
+        free(incl->file);
+        free(incl->map);
+        free(incl->modifier);
+        free(incl->path);
+        free(incl->stmt);
+
+        free(incl);
+        incl = next;
+    }
+}
+
+static void
+FreeStmt(ParseCommon *stmt)
+{
+    ParseCommon *next;
+    YYSTYPE u;
+
+    while (stmt)
+    {
+        next = stmt->next;
+        u.any = stmt;
+
+        switch (stmt->stmtType)
+        {
+        case StmtInclude:
+            FreeInclude((IncludeStmt *)stmt);
+            stmt = NULL;
+            break;
+        case StmtExpr:
+            FreeExpr(u.expr);
+            break;
+        case StmtVarDef:
+            FreeStmt(&u.var->name->common);
+            FreeStmt(&u.var->value->common);
+            break;
+        case StmtKeyTypeDef:
+            FreeStmt(&u.keyType->body->common);
+            break;
+        case StmtInterpDef:
+            free(u.interp->sym);
+            FreeStmt(&u.interp->match->common);
+            FreeStmt(&u.interp->def->common);
+            break;
+        case StmtVModDef:
+            FreeStmt(&u.vmod->value->common);
+            break;
+        case StmtSymbolsDef:
+            FreeStmt(&u.syms->symbols->common);
+            break;
+        case StmtModMapDef:
+            FreeStmt(&u.modMask->keys->common);
+            break;
+        case StmtGroupCompatDef:
+            FreeStmt(&u.groupCompat->def->common);
+            break;
+        case StmtIndicatorMapDef:
+            FreeStmt(&u.ledMap->body->common);
+            break;
+        case StmtIndicatorNameDef:
+            FreeStmt(&u.ledName->name->common);
+            break;
+        case StmtOutlineDef:
+            FreeStmt(&u.outline->points->common);
+            break;
+        case StmtShapeDef:
+            FreeStmt(&u.shape->outlines->common);
+            break;
+        case StmtKeyDef:
+            free(u.key->name);
+            FreeStmt(&u.key->expr->common);
+            break;
+        case StmtRowDef:
+            FreeStmt(&u.row->keys->common);
+            break;
+        case StmtSectionDef:
+            FreeStmt(&u.section->rows->common);
+            break;
+        case StmtOverlayKeyDef:
+            break;
+        case StmtOverlayDef:
+            FreeStmt(&u.overlay->keys->common);
+            break;
+        case StmtDoodadDef:
+            FreeStmt(&u.doodad->body->common);
+            break;
+        default:
+            break;
+        }
+
+        free(stmt);
+        stmt = next;
+    }
+}
+
+void
+FreeXKBFile(XkbFile *file)
+{
+    XkbFile *next;
+
+    while (file)
+    {
+        next = (XkbFile *)file->common.next;
+
+        switch (file->type)
+        {
+        case XkmKeymapFile:
+        case XkmSemanticsFile:
+        case XkmLayoutFile:
+            FreeXKBFile((XkbFile *)file->defs);
+            break;
+        case XkmTypesIndex:
+        case XkmCompatMapIndex:
+        case XkmSymbolsIndex:
+        case XkmKeyNamesIndex:
+        case XkmGeometryIndex:
+            FreeStmt(file->defs);
+            break;
+        }
+
+        free(file->name);
+        /* free(file->topName); */
+        free(file);
+        file = next;
+    }
 }
