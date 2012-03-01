@@ -663,6 +663,10 @@ ClearGeometryInfo(GeometryInfo * info)
         FreeShapes(info->shapes, info);
     if (info->sections)
         FreeSections(info->sections, info);
+    if (info->doodads)
+        FreeDoodads(info->doodads, NULL, info);
+    if (info->dfltDoodads)
+        FreeDoodads(info->dfltDoodads, NULL, info);
     info->widthMM = 0;
     info->heightMM = 0;
     info->dfltCornerRadius = 0;
