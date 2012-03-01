@@ -196,7 +196,7 @@ struct xkb_desc *
 xkb_compile_keymap_from_components(const struct xkb_component_names * ktcsg)
 {
     XkbFile *file, *mapToUse;
-    struct xkb_desc * xkb;
+    struct xkb_desc * xkb = NULL;
 
     uSetErrorFile(NULL);
 
@@ -222,24 +222,22 @@ xkb_compile_keymap_from_components(const struct xkb_component_names * ktcsg)
 
     if (!CompileKeymap(mapToUse, xkb, MergeReplace)) {
         ERROR("failed to compile keymap\n");
-        goto unwind_xkb;
+        XkbcFreeKeyboard(xkb);
+        xkb = NULL;
     }
 
-    FreeXKBFile(file);
-    return xkb;
-unwind_xkb:
-    XkbcFreeKeyboard(xkb);
 unwind_file:
     FreeXKBFile(file);
+    free(scanFile);
 fail:
-    return NULL;
+    return xkb;
 }
 
 static struct xkb_desc *
 compile_keymap(XkbFile *file, const char *mapName)
 {
     XkbFile *mapToUse;
-    struct xkb_desc * xkb;
+    struct xkb_desc * xkb = NULL;
 
     /* Find map to use */
     if (!(mapToUse = XkbChooseMap(file, mapName)))
@@ -263,17 +261,14 @@ compile_keymap(XkbFile *file, const char *mapName)
 
     if (!CompileKeymap(mapToUse, xkb, MergeReplace)) {
         ERROR("failed to compile keymap\n");
-        goto unwind_xkb;
+        XkbcFreeKeyboard(xkb);
+        xkb = NULL;
     }
 
-    FreeXKBFile(file);
-    return xkb;
-unwind_xkb:
-    XkbcFreeKeyboard(xkb);
 unwind_file:
     FreeXKBFile(file);
-
-    return NULL;
+    free(scanFile);
+    return xkb;
 }
 
 struct xkb_desc *
