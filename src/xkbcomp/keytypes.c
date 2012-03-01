@@ -1028,6 +1028,7 @@ HandleKeyTypesFile(XkbFile * file,
 {
     ParseCommon *stmt;
 
+    free(info->name);
     info->name = _XkbDupString(file->name);
     stmt = file->defs;
     while (stmt)
