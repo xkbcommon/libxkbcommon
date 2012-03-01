@@ -201,6 +201,14 @@ XkbClearIncludePath(void)
     noDefaultPath = True;
 }
 
+void
+XkbFreeIncludePath(void)
+{
+    XkbClearIncludePath();
+    free(includePath);
+    includePath = NULL;
+}
+
 /**
  * Add the given path to the global includePath variable.
  * If dir is NULL, the includePath is emptied.

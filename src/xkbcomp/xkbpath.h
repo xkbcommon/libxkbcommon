@@ -46,4 +46,6 @@ extern Bool XkbParseIncludeMap(char ** /* str_inout */ ,
                                char **  /* extra_data */
     );
 
+extern void XkbFreeIncludePath(void);
+
 #endif /* _XKBPATH_H_ */

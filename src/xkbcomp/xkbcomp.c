@@ -229,6 +229,7 @@ xkb_compile_keymap_from_components(const struct xkb_component_names * ktcsg)
 unwind_file:
     FreeXKBFile(file);
     free(scanFile);
+    XkbFreeIncludePath();
 fail:
     return xkb;
 }
@@ -268,6 +269,7 @@ compile_keymap(XkbFile *file, const char *mapName)
 unwind_file:
     FreeXKBFile(file);
     free(scanFile);
+    XkbFreeIncludePath();
     return xkb;
 }
 
