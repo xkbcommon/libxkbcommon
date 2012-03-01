@@ -29,6 +29,7 @@ authorization from the authors.
 #include "xkballoc.h"
 #include "xkbrules.h"
 #include "xkbpath.h"
+#include "xkbmisc.h"
 #include "parseutils.h"
 #include "utils.h"
 
@@ -315,4 +316,5 @@ void
 xkb_free_keymap(struct xkb_desc *xkb)
 {
     XkbcFreeKeyboard(xkb);
+    XkbcFreeAllAtoms();
 }

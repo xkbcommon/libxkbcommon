@@ -70,6 +70,9 @@ XkbcNameMatchesPattern(char *name, char *ptrn);
 extern char *
 XkbcAtomGetString(uint32_t atom);
 
+extern void
+XkbcFreeAllAtoms(void);
+
 /***====================================================================***/
 
 extern const char *

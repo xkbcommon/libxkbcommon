@@ -215,3 +215,26 @@ xkb_intern_atom(const char *string)
     else
         return None;
 }
+
+static void
+FreeAtom(NodePtr patom)
+{
+    if (patom->left)
+        FreeAtom(patom->left);
+    if (patom->right)
+        FreeAtom(patom->right);
+    free(patom->string);
+    free(patom);
+}
+
+void
+XkbcFreeAllAtoms(void)
+{
+    if (atomRoot == NULL)
+        return;
+    FreeAtom(atomRoot);
+    atomRoot = NULL;
+    free(nodeTable);
+    nodeTable = NULL;
+    lastAtom = None;
+}
