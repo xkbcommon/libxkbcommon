@@ -135,6 +135,7 @@ static void
 ClearCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
 {
     int i;
+    ActionInfo *next;
 
     free(info->name);
     info->name = NULL;
@@ -153,7 +154,11 @@ ClearCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
     memset(&info->groupCompat[0], 0,
            XkbNumKbdGroups * sizeof(GroupCompatInfo));
     info->leds = (LEDInfo *) ClearCommonInfo(&info->leds->defs);
-    /* 3/30/94 (ef) -- XXX! Should free action info here */
+    while (info->act) {
+            next = info->act->next;
+            free(info->act);
+            info->act = next;
+    }
     ClearVModInfo(&info->vmods, xkb);
 }
 
@@ -426,6 +431,8 @@ HandleIncludeCompatMap(IncludeStmt * stmt,
             included.name = stmt->stmt;
             stmt->stmt = NULL;
         }
+        if (info->act != NULL)
+                included.act = NULL;
         FreeXKBFile(rtrn);
     }
     else
@@ -459,6 +466,8 @@ HandleIncludeCompatMap(IncludeStmt * stmt,
                 next_incl.act = info->act;
                 (*hndlr) (rtrn, xkb, MergeOverride, &next_incl);
                 MergeIncludedCompatMaps(&included, &next_incl, op);
+                if (info->act != NULL)
+                        next_incl.act = NULL;
                 ClearCompatInfo(&next_incl, xkb);
                 FreeXKBFile(rtrn);
             }
