@@ -83,7 +83,7 @@ XkbComponentsFromRules(const char *rules, const XkbRF_VarDefsPtr defs)
 
     if (!cached_name || strcmp(rules, cached_name) != 0) {
         if (loaded)
-            XkbcRF_Free(loaded, True);
+            XkbcRF_Free(loaded);
         loaded = NULL;
         free(cached_name);
         cached_name = NULL;
@@ -240,7 +240,7 @@ xkb_compile_keymap_from_components(const struct xkb_component_names * ktcsg)
 
     return xkb;
 unwind_xkb:
-    XkbcFreeKeyboard(xkb, XkbAllComponentsMask, True);
+    XkbcFreeKeyboard(xkb);
 unwind_file:
     /* XXX: here's where we would free the XkbFile */
 fail:
@@ -280,7 +280,7 @@ compile_keymap(XkbFile *file, const char *mapName)
 
     return xkb;
 unwind_xkb:
-    XkbcFreeKeyboard(xkb, XkbAllComponentsMask, True);
+    XkbcFreeKeyboard(xkb);
 unwind_file:
     /* XXX: here's where we would free the XkbFile */
 
@@ -328,5 +328,5 @@ xkb_compile_keymap_from_file(FILE *inputFile, const char *mapName)
 void
 xkb_free_keymap(struct xkb_desc *xkb)
 {
-       XkbcFreeKeyboard(xkb, 0, True);
+    XkbcFreeKeyboard(xkb);
 }

@@ -87,7 +87,7 @@ XkbcAllocCompatMap(struct xkb_desc * xkb, unsigned which, unsigned nSI)
 
 
 static void
-XkbcFreeCompatMap(struct xkb_desc * xkb, unsigned which, Bool freeMap)
+XkbcFreeCompatMap(struct xkb_desc * xkb)
 {
     struct xkb_compat_map * compat;
 
@@ -95,23 +95,10 @@ XkbcFreeCompatMap(struct xkb_desc * xkb, unsigned which, Bool freeMap)
         return;
 
     compat = xkb->compat;
-    if (freeMap)
-        which = XkbAllCompatMask;
 
-    if (which & XkbGroupCompatMask)
-        memset(&compat->groups[0], 0,
-               XkbNumKbdGroups * sizeof(struct xkb_mods));
-
-    if (which & XkbSymInterpMask) {
-        free(compat->sym_interpret);
-        compat->size_si = compat->num_si = 0;
-        compat->sym_interpret = NULL;
-    }
-
-    if (freeMap) {
-        free(compat);
-        xkb->compat = NULL;
-    }
+    free(compat->sym_interpret);
+    free(compat);
+    xkb->compat = NULL;
 }
 
 int
@@ -202,53 +189,32 @@ XkbcAllocNames(struct xkb_desc * xkb, unsigned which, int nTotalRG, int nTotalAl
 }
 
 static void
-XkbcFreeNames(struct xkb_desc * xkb, unsigned which, Bool freeMap)
+XkbcFreeNames(struct xkb_desc * xkb)
 {
     struct xkb_names * names;
+    struct xkb_client_map * map;
 
     if (!xkb || !xkb->names)
         return;
 
     names = xkb->names;
-    if (freeMap)
-        which = XkbAllNamesMask;
+    map = xkb->map;
 
-    if (which & XkbKTLevelNamesMask) {
-        struct xkb_client_map * map = xkb->map;
+    if (map && map->types) {
+        int i;
+        struct xkb_key_type * type = map->types;
 
-        if (map && map->types) {
-            int i;
-            struct xkb_key_type * type = map->types;
-
-            for (i = 0; i < map->num_types; i++, type++) {
-                free(type->level_names);
-                type->level_names = NULL;
-            }
+        for (i = 0; i < map->num_types; i++, type++) {
+            free(type->level_names);
+            type->level_names = NULL;
         }
     }
 
-    if (which & XkbKeyNamesMask) {
-        free(names->keys);
-        names->keys = NULL;
-        names->num_keys = 0;
-    }
-
-    if (which & XkbKeyAliasesMask) {
-        free(names->key_aliases);
-        names->key_aliases = NULL;
-        names->num_key_aliases = 0;
-    }
-
-    if (which & XkbRGNamesMask) {
-        free(names->radio_groups);
-        names->radio_groups = NULL;
-        names->num_rg = 0;
-    }
-
-    if (freeMap) {
-        free(names);
-        xkb->names = NULL;
-    }
+    free(names->keys);
+    free(names->key_aliases);
+    free(names->radio_groups);
+    free(names);
+    xkb->names = NULL;
 }
 
 int
@@ -274,9 +240,9 @@ XkbcAllocControls(struct xkb_desc * xkb, unsigned which)
 }
 
 static void
-XkbcFreeControls(struct xkb_desc * xkb, unsigned which, Bool freeMap)
+XkbcFreeControls(struct xkb_desc * xkb)
 {
-    if (freeMap && xkb && xkb->ctrls) {
+    if (xkb && xkb->ctrls) {
         free(xkb->ctrls->per_key_repeat);
         free(xkb->ctrls);
         xkb->ctrls = NULL;
@@ -319,28 +285,17 @@ XkbcAllocKeyboard(void)
 }
 
 void
-XkbcFreeKeyboard(struct xkb_desc * xkb, unsigned which, Bool freeAll)
+XkbcFreeKeyboard(struct xkb_desc * xkb)
 {
     if (!xkb)
         return;
 
-    if (freeAll)
-        which = XkbAllComponentsMask;
-
-    if (which & XkbClientMapMask)
-        XkbcFreeClientMap(xkb, XkbAllClientInfoMask, True);
-    if (which & XkbServerMapMask)
-        XkbcFreeServerMap(xkb, XkbAllServerInfoMask, True);
-    if (which & XkbCompatMapMask)
-        XkbcFreeCompatMap(xkb, XkbAllCompatMask, True);
-    if (which & XkbIndicatorMapMask)
-        XkbcFreeIndicatorMaps(xkb);
-    if (which & XkbNamesMask)
-        XkbcFreeNames(xkb, XkbAllNamesMask, True);
-    if ((which & XkbGeometryMask) && xkb->geom)
-        XkbcFreeGeometry(xkb->geom, XkbGeomAllMask, True);
-    if (which & XkbControlsMask)
-        XkbcFreeControls(xkb, XkbAllControlsMask, True);
-    if (freeAll)
-        free(xkb);
+    XkbcFreeClientMap(xkb);
+    XkbcFreeServerMap(xkb);
+    XkbcFreeCompatMap(xkb);
+    XkbcFreeIndicatorMaps(xkb);
+    XkbcFreeNames(xkb);
+    XkbcFreeGeometry(xkb);
+    XkbcFreeControls(xkb);
+    free(xkb);
 }

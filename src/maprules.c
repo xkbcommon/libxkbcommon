@@ -979,7 +979,7 @@ XkbRF_ClearVarDescriptions(XkbRF_DescribeVarsPtr var)
 }
 
 void
-XkbcRF_Free(XkbRF_RulesPtr rules,Bool freeRules)
+XkbcRF_Free(XkbRF_RulesPtr rules)
 {
     int i;
     XkbRF_RulePtr rule;
@@ -996,8 +996,6 @@ XkbcRF_Free(XkbRF_RulesPtr rules,Bool freeRules)
 	    XkbRF_ClearVarDescriptions(&rules->extra[i]);
 	}
 	free(rules->extra);
-	rules->num_extra= rules->sz_extra= 0;
-	rules->extra= NULL;
     }
     for (i=0, rule = rules->rules; i < rules->num_rules && rules; i++, rule++) {
         free(rule->model);
@@ -1010,20 +1008,14 @@ XkbcRF_Free(XkbRF_RulesPtr rules,Bool freeRules)
         free(rule->compat);
         free(rule->geometry);
         free(rule->keymap);
-        memset(rule, 0, sizeof(XkbRF_RuleRec));
     }
     free(rules->rules);
-    rules->num_rules= rules->sz_rules= 0;
-    rules->rules= NULL;
 
     for (i=0, group = rules->groups; i < rules->num_groups && group; i++, group++) {
         free(group->name);
         free(group->words);
     }
     free(rules->groups);
-    rules->num_groups= 0;
-    rules->groups= NULL;
 
-    if (freeRules)
-	free(rules);
+    free(rules);
 }

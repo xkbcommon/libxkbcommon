@@ -48,7 +48,7 @@ extern struct xkb_desc *
 XkbcAllocKeyboard(void);
 
 extern void
-XkbcFreeKeyboard(struct xkb_desc * xkb, unsigned which, Bool freeAll);
+XkbcFreeKeyboard(struct xkb_desc * xkb);
 
 /***====================================================================***/
 
@@ -68,9 +68,9 @@ extern union xkb_action *
 XkbcResizeKeyActions(struct xkb_desc * xkb, xkb_keycode_t key, int needed);
 
 extern void
-XkbcFreeClientMap(struct xkb_desc * xkb, unsigned what, Bool freeMap);
+XkbcFreeClientMap(struct xkb_desc * xkb);
 
 extern void
-XkbcFreeServerMap(struct xkb_desc * xkb, unsigned what, Bool freeMap);
+XkbcFreeServerMap(struct xkb_desc * xkb);
 
 #endif /* _XKBALLOC_H_ */
