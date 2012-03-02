@@ -31,7 +31,7 @@
 #include <X11/X.h>
 #include <X11/Xdefs.h>
 
-extern char *XkbDirectoryForInclude(unsigned    /* type */
+extern const char *XkbDirectoryForInclude(unsigned    /* type */
     );
 
 extern FILE *XkbFindFileInPath(const char * /* name */ ,

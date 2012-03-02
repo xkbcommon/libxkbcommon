@@ -80,7 +80,7 @@ typedef struct _CompatInfo
 
 /***====================================================================***/
 
-static char *
+static const char *
 siText(SymInterpInfo * si, CompatInfo * info)
 {
     static char buf[128];

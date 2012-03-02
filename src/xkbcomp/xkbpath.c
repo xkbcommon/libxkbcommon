@@ -262,48 +262,34 @@ XkbAddDefaultDirectoriesToPath(void)
 
 /**
  * Return the xkb directory based on the type.
- * Do not free the memory returned by this function.
  */
-char *
+const char *
 XkbDirectoryForInclude(unsigned type)
 {
-    static char buf[32];
-
     switch (type)
     {
     case XkmSemanticsFile:
-        strcpy(buf, "semantics");
-        break;
+        return "semantics";
     case XkmLayoutFile:
-        strcpy(buf, "layout");
-        break;
+        return "layout";
     case XkmKeymapFile:
-        strcpy(buf, "keymap");
-        break;
+        return "keymap";
     case XkmKeyNamesIndex:
-        strcpy(buf, "keycodes");
-        break;
+        return "keycodes";
     case XkmTypesIndex:
-        strcpy(buf, "types");
-        break;
+        return "types";
     case XkmSymbolsIndex:
-        strcpy(buf, "symbols");
-        break;
+        return "symbols";
     case XkmCompatMapIndex:
-        strcpy(buf, "compat");
-        break;
+        return "compat";
     case XkmGeometryFile:
     case XkmGeometryIndex:
-        strcpy(buf, "geometry");
-        break;
+        return "geometry";
     case XkmRulesFile:
-        strcpy(buf, "rules");
-        break;
+        return "rules";
     default:
-        strcpy(buf, "");
-        break;
+        return "";
     }
-    return buf;
 }
 
 /***====================================================================***/
@@ -403,7 +389,8 @@ XkbFindFileInPath(const char *name, unsigned type, char **pathRtrn)
     int i;
     FILE *file = NULL;
     int nameLen, typeLen, pathLen;
-    char buf[PATH_MAX], *typeDir;
+    char buf[PATH_MAX];
+    const char *typeDir;
 
     if (!XkbInitIncludePath())
         return NULL;

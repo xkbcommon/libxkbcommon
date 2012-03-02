@@ -48,7 +48,7 @@ typedef struct _LookupEntry
 } LookupEntry;
 
 
-extern char *exprOpText(unsigned        /* type */
+extern const char *exprOpText(unsigned        /* type */
     );
 
 extern int LookupModMask(const void * /* priv */ ,

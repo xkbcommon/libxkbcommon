@@ -41,7 +41,7 @@ typedef Bool(*IdentLookupFunc) (const void * /* priv */ ,
 
 /***====================================================================***/
 
-char *
+const char *
 exprOpText(unsigned type)
 {
     static char buf[32];
@@ -103,7 +103,7 @@ exprOpText(unsigned type)
     return buf;
 }
 
-static char *
+static const char *
 exprTypeText(unsigned type)
 {
     static char buf[20];
