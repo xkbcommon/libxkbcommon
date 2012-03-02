@@ -40,10 +40,6 @@
 #include "misc.h"
 #include "alias.h"
 
-extern uint32_t tok_ONE_LEVEL;
-extern uint32_t tok_TWO_LEVEL;
-extern uint32_t tok_KEYPAD;
-
 /***====================================================================***/
 
 #define	RepeatYes	1
@@ -238,9 +234,6 @@ InitSymbolsInfo(SymbolsInfo * info, struct xkb_desc * xkb)
 {
     int i;
 
-    tok_ONE_LEVEL = xkb_intern_atom("ONE_LEVEL");
-    tok_TWO_LEVEL = xkb_intern_atom("TWO_LEVEL");
-    tok_KEYPAD = xkb_intern_atom("KEYPAD");
     info->name = NULL;
     info->explicit_group = 0;
     info->errorCount = 0;

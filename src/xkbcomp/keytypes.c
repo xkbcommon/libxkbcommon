@@ -77,10 +77,10 @@ typedef struct _KeyTypesInfo
     VModInfo vmods;
 } KeyTypesInfo;
 
-uint32_t tok_ONE_LEVEL;
-uint32_t tok_TWO_LEVEL;
+static uint32_t tok_ONE_LEVEL;
+static uint32_t tok_TWO_LEVEL;
 static uint32_t tok_ALPHABETIC;
-uint32_t tok_KEYPAD;
+static uint32_t tok_KEYPAD;
 
 /***====================================================================***/
 
