@@ -51,19 +51,19 @@ typedef struct _LookupEntry
 extern char *exprOpText(unsigned        /* type */
     );
 
-extern int LookupModMask(void * /* priv */ ,
+extern int LookupModMask(const void * /* priv */ ,
                          uint32_t /* field */ ,
                          unsigned /* type */ ,
                          ExprResult *  /* val_rtrn */
     );
 
-extern int LookupVModMask(void * /* priv */ ,
+extern int LookupVModMask(const void * /* priv */ ,
                           uint32_t /* field */ ,
                           unsigned /* type */ ,
                           ExprResult *  /* val_rtrn */
     );
 
-extern int LookupModIndex(void * /* priv */ ,
+extern int LookupModIndex(const void * /* priv */ ,
                           uint32_t /* field */ ,
                           unsigned /* type */ ,
                           ExprResult *  /* val_rtrn */
@@ -120,12 +120,12 @@ extern int ExprResolveKeyName(ExprDef * /* expr */ ,
 
 extern int ExprResolveEnum(ExprDef * /* expr */ ,
                            ExprResult * /* val_rtrn */ ,
-                           LookupEntry *        /* values */
+                           const LookupEntry *  /* values */
     );
 
 extern int ExprResolveMask(ExprDef * /* expr */ ,
                            ExprResult * /* val_rtrn */ ,
-                           LookupEntry * /* values */
+                           const LookupEntry * /* values */
     );
 
 extern int ExprResolveKeySym(ExprDef * /* expr */ ,

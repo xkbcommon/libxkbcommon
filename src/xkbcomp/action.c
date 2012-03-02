@@ -609,7 +609,7 @@ HandleMovePtr(struct xkb_desc * xkb,
     return ReportIllegal(action->type, field);
 }
 
-static LookupEntry lockWhich[] = {
+static const LookupEntry lockWhich[] = {
     {"both", 0},
     {"lock", XkbSA_LockNoUnlock},
     {"neither", (XkbSA_LockNoLock | XkbSA_LockNoUnlock)},
@@ -670,7 +670,7 @@ HandlePtrBtn(struct xkb_desc * xkb,
     return ReportIllegal(action->type, field);
 }
 
-static LookupEntry ptrDflts[] = {
+static const LookupEntry ptrDflts[] = {
     {"dfltbtn", XkbSA_AffectDfltBtn},
     {"defaultbutton", XkbSA_AffectDfltBtn},
     {"button", XkbSA_AffectDfltBtn},
@@ -735,7 +735,7 @@ HandleSetPtrDflt(struct xkb_desc * xkb,
     return ReportIllegal(action->type, field);
 }
 
-static LookupEntry isoNames[] = {
+static const LookupEntry isoNames[] = {
     {"mods", XkbSA_ISONoAffectMods},
     {"modifiers", XkbSA_ISONoAffectMods},
     {"group", XkbSA_ISONoAffectGroup},
@@ -850,41 +850,24 @@ HandleSwitchScreen(struct xkb_desc * xkb,
     return ReportIllegal(action->type, field);
 }
 
-LookupEntry ctrlNames[] = {
-    {"repeatkeys", XkbRepeatKeysMask}
-    ,
-    {"repeat", XkbRepeatKeysMask}
-    ,
-    {"autorepeat", XkbRepeatKeysMask}
-    ,
-    {"slowkeys", XkbSlowKeysMask}
-    ,
-    {"bouncekeys", XkbBounceKeysMask}
-    ,
-    {"stickykeys", XkbStickyKeysMask}
-    ,
-    {"mousekeys", XkbMouseKeysMask}
-    ,
-    {"mousekeysaccel", XkbMouseKeysAccelMask}
-    ,
-    {"accessxkeys", XkbAccessXKeysMask}
-    ,
-    {"accessxtimeout", XkbAccessXTimeoutMask}
-    ,
-    {"accessxfeedback", XkbAccessXFeedbackMask}
-    ,
-    {"audiblebell", XkbAudibleBellMask}
-    ,
-    {"overlay1", XkbOverlay1Mask}
-    ,
-    {"overlay2", XkbOverlay2Mask}
-    ,
-    {"ignoregrouplock", XkbIgnoreGroupLockMask}
-    ,
-    {"all", XkbAllBooleanCtrlsMask}
-    ,
-    {"none", 0}
-    ,
+const LookupEntry ctrlNames[] = {
+    {"repeatkeys", XkbRepeatKeysMask},
+    {"repeat", XkbRepeatKeysMask},
+    {"autorepeat", XkbRepeatKeysMask},
+    {"slowkeys", XkbSlowKeysMask},
+    {"bouncekeys", XkbBounceKeysMask},
+    {"stickykeys", XkbStickyKeysMask},
+    {"mousekeys", XkbMouseKeysMask},
+    {"mousekeysaccel", XkbMouseKeysAccelMask},
+    {"accessxkeys", XkbAccessXKeysMask},
+    {"accessxtimeout", XkbAccessXTimeoutMask},
+    {"accessxfeedback", XkbAccessXFeedbackMask},
+    {"audiblebell", XkbAudibleBellMask},
+    {"overlay1", XkbOverlay1Mask},
+    {"overlay2", XkbOverlay2Mask},
+    {"ignoregrouplock", XkbIgnoreGroupLockMask},
+    {"all", XkbAllBooleanCtrlsMask},
+    {"none", 0},
     {NULL, 0}
 };
 
@@ -909,7 +892,7 @@ HandleSetLockControls(struct xkb_desc * xkb,
     return ReportIllegal(action->type, field);
 }
 
-static LookupEntry evNames[] = {
+static const LookupEntry evNames[] = {
     {"press", XkbSA_MessageOnPress},
     {"keypress", XkbSA_MessageOnPress},
     {"release", XkbSA_MessageOnRelease},
@@ -1210,7 +1193,7 @@ typedef Bool(*actionHandler) (struct xkb_desc * /* xkb */ ,
                               ExprDef * /* value */
     );
 
-static actionHandler handleAction[XkbSA_NumActions + 1] = {
+static const actionHandler handleAction[XkbSA_NumActions + 1] = {
     HandleNoAction /* NoAction     */ ,
     HandleSetLatchMods /* SetMods      */ ,
     HandleSetLatchMods /* LatchMods    */ ,

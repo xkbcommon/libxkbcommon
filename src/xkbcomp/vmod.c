@@ -159,7 +159,7 @@ HandleVModDef(VModDef * stmt, struct xkb_desc *xkb, unsigned mergeMode,
  * undefined.
  */
 static int
-LookupVModIndex(struct xkb_desc *xkb, uint32_t field, unsigned type,
+LookupVModIndex(const struct xkb_desc *xkb, uint32_t field, unsigned type,
                 ExprResult * val_rtrn)
 {
     int i;
@@ -195,7 +195,7 @@ LookupVModIndex(struct xkb_desc *xkb, uint32_t field, unsigned type,
  * undefined.
  */
 int
-LookupVModMask(void * priv, uint32_t field, unsigned type,
+LookupVModMask(const void * priv, uint32_t field, unsigned type,
                ExprResult * val_rtrn)
 {
     if (LookupModMask(NULL, field, type, val_rtrn))

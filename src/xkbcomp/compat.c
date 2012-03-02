@@ -477,7 +477,7 @@ HandleIncludeCompatMap(IncludeStmt * stmt,
     return (info->errorCount == 0);
 }
 
-static LookupEntry useModMapValues[] = {
+static const LookupEntry useModMapValues[] = {
     {"levelone", 1},
     {"level1", 1},
     {"anylevel", 0},

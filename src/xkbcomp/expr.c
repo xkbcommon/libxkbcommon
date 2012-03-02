@@ -33,7 +33,7 @@
 
 /***====================================================================***/
 
-typedef Bool(*IdentLookupFunc) (void * /* priv */ ,
+typedef Bool(*IdentLookupFunc) (const void * /* priv */ ,
                                 uint32_t /* field */ ,
                                 unsigned /* type */ ,
                                 ExprResult *    /* val_rtrn */
@@ -163,10 +163,10 @@ ExprResolveLhs(ExprDef * expr,
 }
 
 static Bool
-SimpleLookup(void * priv, uint32_t field, unsigned type,
+SimpleLookup(const void * priv, uint32_t field, unsigned type,
              ExprResult * val_rtrn)
 {
-    LookupEntry *entry;
+    const LookupEntry *entry;
     const char *str;
 
     if ((priv == NULL) || (field == None) ||
@@ -189,7 +189,7 @@ SimpleLookup(void * priv, uint32_t field, unsigned type,
 }
 
 static Bool
-RadioLookup(void * priv, uint32_t field, unsigned type, ExprResult * val_rtrn)
+RadioLookup(const void * priv, uint32_t field, unsigned type, ExprResult * val_rtrn)
 {
     const char *str;
     int rg;
@@ -215,7 +215,7 @@ RadioLookup(void * priv, uint32_t field, unsigned type, ExprResult * val_rtrn)
     return True;
 }
 
-static LookupEntry modIndexNames[] = {
+static const LookupEntry modIndexNames[] = {
     {"shift", ShiftMapIndex},
     {"control", ControlMapIndex},
     {"lock", LockMapIndex},
@@ -229,14 +229,14 @@ static LookupEntry modIndexNames[] = {
 };
 
 int
-LookupModIndex(void * priv, uint32_t field, unsigned type,
+LookupModIndex(const void * priv, uint32_t field, unsigned type,
                ExprResult * val_rtrn)
 {
     return SimpleLookup(modIndexNames, field, type, val_rtrn);
 }
 
 int
-LookupModMask(void * priv, uint32_t field, unsigned type,
+LookupModMask(const void * priv, uint32_t field, unsigned type,
               ExprResult * val_rtrn)
 {
     char *str;
@@ -518,7 +518,7 @@ ExprResolveKeyCode(ExprDef * expr,
 static int
 ExprResolveIntegerLookup(ExprDef * expr,
                          ExprResult * val_rtrn,
-                         IdentLookupFunc lookup, void * lookupPriv)
+                         IdentLookupFunc lookup, const void * lookupPriv)
 {
     int ok = 0;
     ExprResult leftRtrn, rightRtrn;
@@ -643,7 +643,7 @@ ExprResolveGroup(ExprDef * expr,
                  ExprResult * val_rtrn)
 {
     int ret;
-    static LookupEntry group_names[] = {
+    static const LookupEntry group_names[] = {
         { "group1", 1 },
         { "group2", 2 },
         { "group3", 3 },
@@ -672,7 +672,7 @@ int
 ExprResolveLevel(ExprDef * expr,
                  ExprResult * val_rtrn)
 {
-    static LookupEntry level_names[] = {
+    static const LookupEntry level_names[] = {
         { "level1", 1 },
         { "level2", 2 },
         { "level3", 3 },
@@ -692,7 +692,7 @@ int
 ExprResolveButton(ExprDef * expr,
                   ExprResult * val_rtrn)
 {
-    static LookupEntry button_names[] = {
+    static const LookupEntry button_names[] = {
         { "button1", 1 },
         { "button2", 2 },
         { "button3", 3 },
@@ -856,7 +856,7 @@ ExprResolveKeyName(ExprDef * expr,
 /***====================================================================***/
 
 int
-ExprResolveEnum(ExprDef * expr, ExprResult * val_rtrn, LookupEntry * values)
+ExprResolveEnum(ExprDef * expr, ExprResult * val_rtrn, const LookupEntry * values)
 {
     if (expr->op != ExprIdent)
     {
@@ -888,7 +888,7 @@ static int
 ExprResolveMaskLookup(ExprDef * expr,
                       ExprResult * val_rtrn,
                       IdentLookupFunc lookup,
-                      void * lookupPriv)
+                      const void * lookupPriv)
 {
     int ok = 0;
     ExprResult leftRtrn, rightRtrn;
@@ -984,7 +984,7 @@ ExprResolveMaskLookup(ExprDef * expr,
 int
 ExprResolveMask(ExprDef * expr,
                 ExprResult * val_rtrn,
-                LookupEntry * values)
+                const LookupEntry * values)
 {
     return ExprResolveMaskLookup(expr, val_rtrn, SimpleLookup, values);
 }

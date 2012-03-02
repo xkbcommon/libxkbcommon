@@ -1049,7 +1049,7 @@ SetAllowNone(KeyInfo * key, ExprDef * arrayNdx, ExprDef * value)
 }
 
 
-static LookupEntry lockingEntries[] = {
+static const LookupEntry lockingEntries[] = {
     {"true", XkbKB_Lock},
     {"yes", XkbKB_Lock},
     {"on", XkbKB_Lock},
@@ -1060,7 +1060,7 @@ static LookupEntry lockingEntries[] = {
     {NULL, 0}
 };
 
-static LookupEntry repeatEntries[] = {
+static const LookupEntry repeatEntries[] = {
     {"true", RepeatYes},
     {"yes", RepeatYes},
     {"on", RepeatYes},

@@ -79,6 +79,6 @@ extern int SetActionField(struct xkb_desc * /* xkb */ ,
                           ActionInfo ** /* info_rtrn */
     );
 
-extern LookupEntry ctrlNames[];
+extern const LookupEntry ctrlNames[];
 
 #endif /* ACTION_H */
