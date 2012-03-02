@@ -31,6 +31,7 @@
 #include "vmod.h"
 #include "action.h"
 #include "misc.h"
+#include "parseutils.h"
 
 typedef struct _PreserveInfo
 {
@@ -390,6 +391,7 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
             included.name = stmt->stmt;
             stmt->stmt = NULL;
         }
+        FreeXKBFile(rtrn);
     }
     else
     {
@@ -418,6 +420,7 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
                 (*hndlr) (rtrn, xkb, op, &next_incl);
                 MergeIncludedKeyTypes(&included, &next_incl, op, xkb);
                 FreeKeyTypesInfo(&next_incl);
+                FreeXKBFile(rtrn);
             }
             else
             {

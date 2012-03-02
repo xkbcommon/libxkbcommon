@@ -426,6 +426,7 @@ HandleIncludeCompatMap(IncludeStmt * stmt,
             included.name = stmt->stmt;
             stmt->stmt = NULL;
         }
+        FreeXKBFile(rtrn);
     }
     else
     {
@@ -459,6 +460,7 @@ HandleIncludeCompatMap(IncludeStmt * stmt,
                 (*hndlr) (rtrn, xkb, MergeOverride, &next_incl);
                 MergeIncludedCompatMaps(&included, &next_incl, op);
                 ClearCompatInfo(&next_incl, xkb);
+                FreeXKBFile(rtrn);
             }
             else
             {

@@ -225,11 +225,12 @@ xkb_compile_keymap_from_components(const struct xkb_component_names * ktcsg)
         goto unwind_xkb;
     }
 
+    FreeXKBFile(file);
     return xkb;
 unwind_xkb:
     XkbcFreeKeyboard(xkb);
 unwind_file:
-    /* XXX: here's where we would free the XkbFile */
+    FreeXKBFile(file);
 fail:
     return NULL;
 }
@@ -265,11 +266,12 @@ compile_keymap(XkbFile *file, const char *mapName)
         goto unwind_xkb;
     }
 
+    FreeXKBFile(file);
     return xkb;
 unwind_xkb:
     XkbcFreeKeyboard(xkb);
 unwind_file:
-    /* XXX: here's where we would free the XkbFile */
+    FreeXKBFile(file);
 
     return NULL;
 }

@@ -777,6 +777,7 @@ HandleIncludeSymbols(IncludeStmt * stmt,
             included.name = stmt->stmt;
             stmt->stmt = NULL;
         }
+        FreeXKBFile(rtrn);
     }
     else
     {
@@ -813,6 +814,7 @@ HandleIncludeSymbols(IncludeStmt * stmt,
                 (*hndlr) (rtrn, xkb, MergeOverride, &next_incl);
                 MergeIncludedSymbols(&included, &next_incl, op, xkb);
                 FreeSymbolsInfo(&next_incl);
+                FreeXKBFile(rtrn);
             }
             else
             {

@@ -35,6 +35,7 @@
 #include "action.h"
 #include "keycodes.h"
 #include "alias.h"
+#include "parseutils.h"
 
 #define	DFLT_FONT	"helvetica"
 #define	DFLT_SLANT	"r"
@@ -1323,6 +1324,7 @@ HandleIncludeGeometry(IncludeStmt * stmt, struct xkb_desc * xkb, GeometryInfo * 
             included.name = stmt->stmt;
             stmt->stmt = NULL;
         }
+        FreeXKBFile(rtrn);
     }
     else
     {
@@ -1353,6 +1355,7 @@ HandleIncludeGeometry(IncludeStmt * stmt, struct xkb_desc * xkb, GeometryInfo * 
                 (*hndlr) (rtrn, xkb, MergeOverride, &next_incl);
                 MergeIncludedGeometry(&included, &next_incl, op);
                 ClearGeometryInfo(&next_incl);
+                FreeXKBFile(rtrn);
             }
             else
             {

@@ -31,6 +31,7 @@
 #include "keycodes.h"
 #include "misc.h"
 #include "alias.h"
+#include "parseutils.h"
 
 const char *
 longText(unsigned long val)
@@ -575,6 +576,7 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_desc * xkb, KeyNamesInfo * 
             included.name = stmt->stmt;
             stmt->stmt = NULL;
         }
+        FreeXKBFile(rtrn);
     }
     else
     {
@@ -602,6 +604,7 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_desc * xkb, KeyNamesInfo * 
                 HandleKeycodesFile(rtrn, xkb, MergeOverride, &next_incl);
                 MergeIncludedKeycodes(&included, &next_incl, op);
                 ClearKeyNamesInfo(&next_incl);
+                FreeXKBFile(rtrn);
             }
             else
             {

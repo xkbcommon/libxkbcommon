@@ -53,7 +53,7 @@ ProcessIncludeFile(IncludeStmt * stmt,
                    XkbFile ** file_rtrn, unsigned *merge_rtrn)
 {
     FILE *file;
-    XkbFile *rtrn, *mapToUse;
+    XkbFile *rtrn, *mapToUse, *next;
     char oldFile[1024] = {0};
     int oldLine = lineNum;
 
@@ -85,10 +85,21 @@ ProcessIncludeFile(IncludeStmt * stmt,
     mapToUse = rtrn;
     if (stmt->map != NULL)
     {
-        while ((mapToUse) && ((!uStringEqual(mapToUse->name, stmt->map)) ||
-                              (mapToUse->type != file_type)))
+        while (mapToUse)
         {
-            mapToUse = (XkbFile *) mapToUse->common.next;
+            next = (XkbFile *)mapToUse->common.next;
+            mapToUse->common.next = NULL;
+            if (uStringEqual(mapToUse->name, stmt->map) &&
+                mapToUse->type == file_type)
+            {
+                    FreeXKBFile(next);
+                    break;
+            }
+            else
+            {
+                FreeXKBFile(mapToUse);
+            }
+            mapToUse = next;
         }
         if (!mapToUse)
         {

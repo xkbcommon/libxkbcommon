@@ -83,7 +83,10 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
     /* Check for duplicate entries in the input file */
     while ((file) && (ok))
     {
-        file->topName = mainName;
+        if (file->topName != mainName) {
+            free(file->topName);
+            file->topName = strdup(mainName);
+        }
         if ((have & (1 << file->type)) != 0)
         {
             ERROR("More than one %s section in a %s file\n",

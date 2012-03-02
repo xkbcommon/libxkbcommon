@@ -633,6 +633,9 @@ LookupKeysym(char *str, uint32_t * sym_rtrn)
     return 0;
 }
 
+static void
+FreeInclude(IncludeStmt *incl);
+
 IncludeStmt *
 IncludeCreate(char *str, unsigned merge)
 {
@@ -696,20 +699,11 @@ IncludeCreate(char *str, unsigned merge)
     else
         free(stmt);
     return first;
-  BAIL:
+
+BAIL:
     ERROR("Illegal include statement \"%s\"\n", stmt);
     ACTION("Ignored\n");
-    while (first)
-    {
-        incl = first->next;
-        free(first->file);
-        free(first->map);
-        free(first->modifier);
-        free(first->path);
-        first->file = first->map = first->path = NULL;
-        free(first);
-        first = incl;
-    }
+    FreeInclude(first);
     free(stmt);
     return NULL;
 }
@@ -873,6 +867,7 @@ FreeStmt(ParseCommon *stmt)
         {
         case StmtInclude:
             FreeInclude((IncludeStmt *)stmt);
+            /* stmt is already free'd here. */
             stmt = NULL;
             break;
         case StmtExpr:
@@ -967,7 +962,7 @@ FreeXKBFile(XkbFile *file)
         }
 
         free(file->name);
-        /* free(file->topName); */
+        free(file->topName);
         free(file);
         file = next;
     }
