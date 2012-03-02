@@ -40,258 +40,135 @@ static ExprDef constFalse;
 
 /***====================================================================***/
 
+static const LookupEntry actionStrings[] = {
+    { "noaction",          XkbSA_NoAction       },
+    { "setmods",           XkbSA_SetMods        },
+    { "latchmods",         XkbSA_LatchMods      },
+    { "lockmods",          XkbSA_LockMods       },
+    { "setgroup",          XkbSA_SetGroup       },
+    { "latchgroup",        XkbSA_LatchGroup     },
+    { "lockgroup",         XkbSA_LockGroup      },
+    { "moveptr",           XkbSA_MovePtr        },
+    { "movepointer",       XkbSA_MovePtr        },
+    { "ptrbtn",            XkbSA_PtrBtn         },
+    { "pointerbutton",     XkbSA_PtrBtn         },
+    { "lockptrbtn",        XkbSA_LockPtrBtn     },
+    { "lockpointerbutton", XkbSA_LockPtrBtn     },
+    { "lockptrbutton",     XkbSA_LockPtrBtn     },
+    { "lockpointerbtn",    XkbSA_LockPtrBtn     },
+    { "setptrdflt",        XkbSA_SetPtrDflt     },
+    { "setpointerdefault", XkbSA_SetPtrDflt     },
+    { "isolock",           XkbSA_ISOLock        },
+    { "terminate",         XkbSA_Terminate      },
+    { "terminateserver",   XkbSA_Terminate      },
+    { "switchscreen",      XkbSA_SwitchScreen   },
+    { "setcontrols",       XkbSA_SetControls    },
+    { "lockcontrols",      XkbSA_LockControls   },
+    { "actionmessage",     XkbSA_ActionMessage  },
+    { "messageaction",     XkbSA_ActionMessage  },
+    { "message",           XkbSA_ActionMessage  },
+    { "redirect",          XkbSA_RedirectKey    },
+    { "redirectkey",       XkbSA_RedirectKey    },
+    { "devbtn",            XkbSA_DeviceBtn      },
+    { "devicebtn",         XkbSA_DeviceBtn      },
+    { "devbutton",         XkbSA_DeviceBtn      },
+    { "devicebutton",      XkbSA_DeviceBtn      },
+    { "lockdevbtn",        XkbSA_DeviceBtn      },
+    { "lockdevicebtn",     XkbSA_LockDeviceBtn  },
+    { "lockdevbutton",     XkbSA_LockDeviceBtn  },
+    { "lockdevicebutton",  XkbSA_LockDeviceBtn  },
+    { "devval",            XkbSA_DeviceValuator },
+    { "deviceval",         XkbSA_DeviceValuator },
+    { "devvaluator",       XkbSA_DeviceValuator },
+    { "devicevaluator",    XkbSA_DeviceValuator },
+    { "private",           PrivateAction        },
+    { NULL,                0                    }
+};
+
+static const LookupEntry fieldStrings[] = {
+    { "clearLocks",       F_ClearLocks  },
+    { "latchToLock",      F_LatchToLock },
+    { "genKeyEvent",      F_GenKeyEvent },
+    { "generateKeyEvent", F_GenKeyEvent },
+    { "report",           F_Report      },
+    { "default",          F_Default     },
+    { "affect",           F_Affect      },
+    { "increment",        F_Increment   },
+    { "modifiers",        F_Modifiers   },
+    { "mods",             F_Modifiers   },
+    { "group",            F_Group       },
+    { "x",                F_X           },
+    { "y",                F_Y           },
+    { "accel",            F_Accel       },
+    { "accelerate",       F_Accel       },
+    { "repeat",           F_Accel       },
+    { "button",           F_Button      },
+    { "value",            F_Value       },
+    { "controls",         F_Controls    },
+    { "ctrls",            F_Controls    },
+    { "type",             F_Type        },
+    { "count",            F_Count       },
+    { "screen",           F_Screen      },
+    { "same",             F_Same        },
+    { "sameServer",       F_Same        },
+    { "data",             F_Data        },
+    { "device",           F_Device      },
+    { "dev",              F_Device      },
+    { "key",              F_Keycode     },
+    { "keycode",          F_Keycode     },
+    { "kc",               F_Keycode     },
+    { "clearmods",        F_ModsToClear },
+    { "clearmodifiers",   F_ModsToClear },
+    { NULL,               0             }
+};
+
+static Bool
+stringToValue(const LookupEntry tab[], const char *string,
+              unsigned *value_rtrn)
+{
+    const LookupEntry *entry;
+
+    if (!string)
+        return False;
+
+    for (entry = tab; entry->name != NULL; entry++) {
+        if (uStrCaseCmp(entry->name, string) == 0) {
+            *value_rtrn = entry->result;
+            return True;
+        }
+    }
+
+    return False;
+}
+
+static const char *
+valueToString(const LookupEntry tab[], unsigned value)
+{
+    const LookupEntry *entry;
+
+    for (entry = tab; entry->name != NULL; entry++)
+        if (entry->result == value)
+            return entry->name;
+
+    return "unknown";
+}
+
 static Bool
 stringToAction(const char *str, unsigned *type_rtrn)
 {
-    if (str == NULL)
-        return False;
-
-    if (uStrCaseCmp(str, "noaction") == 0)
-        *type_rtrn = XkbSA_NoAction;
-    else if (uStrCaseCmp(str, "setmods") == 0)
-        *type_rtrn = XkbSA_SetMods;
-    else if (uStrCaseCmp(str, "latchmods") == 0)
-        *type_rtrn = XkbSA_LatchMods;
-    else if (uStrCaseCmp(str, "lockmods") == 0)
-        *type_rtrn = XkbSA_LockMods;
-    else if (uStrCaseCmp(str, "setgroup") == 0)
-        *type_rtrn = XkbSA_SetGroup;
-    else if (uStrCaseCmp(str, "latchgroup") == 0)
-        *type_rtrn = XkbSA_LatchGroup;
-    else if (uStrCaseCmp(str, "lockgroup") == 0)
-        *type_rtrn = XkbSA_LockGroup;
-    else if (uStrCaseCmp(str, "moveptr") == 0)
-        *type_rtrn = XkbSA_MovePtr;
-    else if (uStrCaseCmp(str, "movepointer") == 0)
-        *type_rtrn = XkbSA_MovePtr;
-    else if (uStrCaseCmp(str, "ptrbtn") == 0)
-        *type_rtrn = XkbSA_PtrBtn;
-    else if (uStrCaseCmp(str, "pointerbutton") == 0)
-        *type_rtrn = XkbSA_PtrBtn;
-    else if (uStrCaseCmp(str, "lockptrbtn") == 0)
-        *type_rtrn = XkbSA_LockPtrBtn;
-    else if (uStrCaseCmp(str, "lockpointerbutton") == 0)
-        *type_rtrn = XkbSA_LockPtrBtn;
-    else if (uStrCaseCmp(str, "lockptrbutton") == 0)
-        *type_rtrn = XkbSA_LockPtrBtn;
-    else if (uStrCaseCmp(str, "lockpointerbtn") == 0)
-        *type_rtrn = XkbSA_LockPtrBtn;
-    else if (uStrCaseCmp(str, "setptrdflt") == 0)
-        *type_rtrn = XkbSA_SetPtrDflt;
-    else if (uStrCaseCmp(str, "setpointerdefault") == 0)
-        *type_rtrn = XkbSA_SetPtrDflt;
-    else if (uStrCaseCmp(str, "isolock") == 0)
-        *type_rtrn = XkbSA_ISOLock;
-    else if (uStrCaseCmp(str, "terminate") == 0)
-        *type_rtrn = XkbSA_Terminate;
-    else if (uStrCaseCmp(str, "terminateserver") == 0)
-        *type_rtrn = XkbSA_Terminate;
-    else if (uStrCaseCmp(str, "switchscreen") == 0)
-        *type_rtrn = XkbSA_SwitchScreen;
-    else if (uStrCaseCmp(str, "setcontrols") == 0)
-        *type_rtrn = XkbSA_SetControls;
-    else if (uStrCaseCmp(str, "lockcontrols") == 0)
-        *type_rtrn = XkbSA_LockControls;
-    else if (uStrCaseCmp(str, "actionmessage") == 0)
-        *type_rtrn = XkbSA_ActionMessage;
-    else if (uStrCaseCmp(str, "messageaction") == 0)
-        *type_rtrn = XkbSA_ActionMessage;
-    else if (uStrCaseCmp(str, "message") == 0)
-        *type_rtrn = XkbSA_ActionMessage;
-    else if (uStrCaseCmp(str, "redirect") == 0)
-        *type_rtrn = XkbSA_RedirectKey;
-    else if (uStrCaseCmp(str, "redirectkey") == 0)
-        *type_rtrn = XkbSA_RedirectKey;
-    else if (uStrCaseCmp(str, "devbtn") == 0)
-        *type_rtrn = XkbSA_DeviceBtn;
-    else if (uStrCaseCmp(str, "devicebtn") == 0)
-        *type_rtrn = XkbSA_DeviceBtn;
-    else if (uStrCaseCmp(str, "devbutton") == 0)
-        *type_rtrn = XkbSA_DeviceBtn;
-    else if (uStrCaseCmp(str, "devicebutton") == 0)
-        *type_rtrn = XkbSA_DeviceBtn;
-    else if (uStrCaseCmp(str, "lockdevbtn") == 0)
-        *type_rtrn = XkbSA_DeviceBtn;
-    else if (uStrCaseCmp(str, "lockdevicebtn") == 0)
-        *type_rtrn = XkbSA_LockDeviceBtn;
-    else if (uStrCaseCmp(str, "lockdevbutton") == 0)
-        *type_rtrn = XkbSA_LockDeviceBtn;
-    else if (uStrCaseCmp(str, "lockdevicebutton") == 0)
-        *type_rtrn = XkbSA_LockDeviceBtn;
-    else if (uStrCaseCmp(str, "devval") == 0)
-        *type_rtrn = XkbSA_DeviceValuator;
-    else if (uStrCaseCmp(str, "deviceval") == 0)
-        *type_rtrn = XkbSA_DeviceValuator;
-    else if (uStrCaseCmp(str, "devvaluator") == 0)
-        *type_rtrn = XkbSA_DeviceValuator;
-    else if (uStrCaseCmp(str, "devicevaluator") == 0)
-        *type_rtrn = XkbSA_DeviceValuator;
-    else if (uStrCaseCmp(str, "private") == 0)
-        *type_rtrn = PrivateAction;
-    else
-        return False;
-    return True;
+    return stringToValue(actionStrings, str, type_rtrn);
 }
 
 static Bool
-stringToField(char *str, unsigned *field_rtrn)
+stringToField(const char *str, unsigned *field_rtrn)
 {
-
-    if (str == NULL)
-        return False;
-
-    if (uStrCaseCmp(str, "clearlocks") == 0)
-        *field_rtrn = F_ClearLocks;
-    else if (uStrCaseCmp(str, "latchtolock") == 0)
-        *field_rtrn = F_LatchToLock;
-    else if (uStrCaseCmp(str, "genkeyevent") == 0)
-        *field_rtrn = F_GenKeyEvent;
-    else if (uStrCaseCmp(str, "generatekeyevent") == 0)
-        *field_rtrn = F_GenKeyEvent;
-    else if (uStrCaseCmp(str, "report") == 0)
-        *field_rtrn = F_Report;
-    else if (uStrCaseCmp(str, "default") == 0)
-        *field_rtrn = F_Default;
-    else if (uStrCaseCmp(str, "affect") == 0)
-        *field_rtrn = F_Affect;
-    else if (uStrCaseCmp(str, "increment") == 0)
-        *field_rtrn = F_Increment;
-    else if (uStrCaseCmp(str, "mods") == 0)
-        *field_rtrn = F_Modifiers;
-    else if (uStrCaseCmp(str, "modifiers") == 0)
-        *field_rtrn = F_Modifiers;
-    else if (uStrCaseCmp(str, "group") == 0)
-        *field_rtrn = F_Group;
-    else if (uStrCaseCmp(str, "x") == 0)
-        *field_rtrn = F_X;
-    else if (uStrCaseCmp(str, "y") == 0)
-        *field_rtrn = F_Y;
-    else if (uStrCaseCmp(str, "accel") == 0)
-        *field_rtrn = F_Accel;
-    else if (uStrCaseCmp(str, "accelerate") == 0)
-        *field_rtrn = F_Accel;
-    else if (uStrCaseCmp(str, "repeat") == 0)
-        *field_rtrn = F_Accel;
-    else if (uStrCaseCmp(str, "button") == 0)
-        *field_rtrn = F_Button;
-    else if (uStrCaseCmp(str, "value") == 0)
-        *field_rtrn = F_Value;
-    else if (uStrCaseCmp(str, "controls") == 0)
-        *field_rtrn = F_Controls;
-    else if (uStrCaseCmp(str, "ctrls") == 0)
-        *field_rtrn = F_Controls;
-    else if (uStrCaseCmp(str, "type") == 0)
-        *field_rtrn = F_Type;
-    else if (uStrCaseCmp(str, "count") == 0)
-        *field_rtrn = F_Count;
-    else if (uStrCaseCmp(str, "screen") == 0)
-        *field_rtrn = F_Screen;
-    else if (uStrCaseCmp(str, "same") == 0)
-        *field_rtrn = F_Same;
-    else if (uStrCaseCmp(str, "sameserver") == 0)
-        *field_rtrn = F_Same;
-    else if (uStrCaseCmp(str, "data") == 0)
-        *field_rtrn = F_Data;
-    else if (uStrCaseCmp(str, "device") == 0)
-        *field_rtrn = F_Device;
-    else if (uStrCaseCmp(str, "dev") == 0)
-        *field_rtrn = F_Device;
-    else if (uStrCaseCmp(str, "key") == 0)
-        *field_rtrn = F_Keycode;
-    else if (uStrCaseCmp(str, "keycode") == 0)
-        *field_rtrn = F_Keycode;
-    else if (uStrCaseCmp(str, "kc") == 0)
-        *field_rtrn = F_Keycode;
-    else if (uStrCaseCmp(str, "clearmods") == 0)
-        *field_rtrn = F_ModsToClear;
-    else if (uStrCaseCmp(str, "clearmodifiers") == 0)
-        *field_rtrn = F_ModsToClear;
-    else
-        return False;
-    return True;
+    return stringToValue(fieldStrings, str, field_rtrn);
 }
 
-static char *
+static const char *
 fieldText(unsigned field)
 {
-    static char buf[32];
-
-    switch (field)
-    {
-    case F_ClearLocks:
-        strcpy(buf, "clearLocks");
-        break;
-    case F_LatchToLock:
-        strcpy(buf, "latchToLock");
-        break;
-    case F_GenKeyEvent:
-        strcpy(buf, "genKeyEvent");
-        break;
-    case F_Report:
-        strcpy(buf, "report");
-        break;
-    case F_Default:
-        strcpy(buf, "default");
-        break;
-    case F_Affect:
-        strcpy(buf, "affect");
-        break;
-    case F_Increment:
-        strcpy(buf, "increment");
-        break;
-    case F_Modifiers:
-        strcpy(buf, "modifiers");
-        break;
-    case F_Group:
-        strcpy(buf, "group");
-        break;
-    case F_X:
-        strcpy(buf, "x");
-        break;
-    case F_Y:
-        strcpy(buf, "y");
-        break;
-    case F_Accel:
-        strcpy(buf, "accel");
-        break;
-    case F_Button:
-        strcpy(buf, "button");
-        break;
-    case F_Value:
-        strcpy(buf, "value");
-        break;
-    case F_Controls:
-        strcpy(buf, "controls");
-        break;
-    case F_Type:
-        strcpy(buf, "type");
-        break;
-    case F_Count:
-        strcpy(buf, "count");
-        break;
-    case F_Screen:
-        strcpy(buf, "screen");
-        break;
-    case F_Same:
-        strcpy(buf, "sameServer");
-        break;
-    case F_Data:
-        strcpy(buf, "data");
-        break;
-    case F_Device:
-        strcpy(buf, "device");
-        break;
-    case F_Keycode:
-        strcpy(buf, "keycode");
-        break;
-    case F_ModsToClear:
-        strcpy(buf, "clearmods");
-        break;
-    default:
-        strcpy(buf, "unknown");
-        break;
-    }
-    return buf;
+    return valueToString(fieldStrings, field);
 }
 
 /***====================================================================***/
