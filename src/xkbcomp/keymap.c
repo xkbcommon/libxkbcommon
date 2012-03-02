@@ -39,8 +39,6 @@
 #define	SYMBOLS		4
 #define	MAX_SECTIONS	5
 
-static XkbFile *sections[MAX_SECTIONS];
-
 /**
  * Compile the given file and store the output in xkb.
  * @param file A list of XkbFiles, each denoting one type (e.g.
@@ -55,8 +53,9 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
     unsigned mainType;
     char *mainName;
     LEDInfo *unbound = NULL;
+    XkbFile *sections[MAX_SECTIONS];
 
-    memset(sections, 0, MAX_SECTIONS * sizeof(XkbFile *));
+    memset(sections, 0, sizeof(sections));
     mainType = file->type;
     mainName = file->name;
     switch (mainType)
