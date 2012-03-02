@@ -761,7 +761,7 @@ XkbRF_SubstituteVars(char *name, XkbRF_MultiDefsPtr mdefs)
     int len, ndx;
 
     orig= name;
-    str= index(name,'%');
+    str= strchr(name,'%');
     if (str==NULL)
 	return name;
     len= strlen(name);
@@ -779,7 +779,7 @@ XkbRF_SubstituteVars(char *name, XkbRF_MultiDefsPtr mdefs)
 	var = str + 1;
 	str = get_index(var + 1, &ndx);
 	if (ndx == -1) {
-	    str = index(str,'%');
+	    str = strchr(str,'%');
 	    continue;
         }
 	if ((*var=='l') && mdefs->layout[ndx] && *mdefs->layout[ndx])
@@ -791,7 +791,7 @@ XkbRF_SubstituteVars(char *name, XkbRF_MultiDefsPtr mdefs)
 	if ((pfx=='(')&&(*str==')')) {
 	    str++;
 	}
-	str= index(&str[0],'%');
+	str= strchr(&str[0],'%');
     }
     name= (char *)malloc(len+1);
     str= orig;
