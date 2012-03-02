@@ -28,16 +28,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <config.h>
 #endif
 
+#include <limits.h>
 #include "xkbgeom.h"
 #include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
-
-#ifndef MINSHORT
-#define MINSHORT -32768
-#endif
-#ifndef MAXSHORT
-#define MAXSHORT 32767
-#endif
 
 static void
 _XkbCheckBounds(struct xkb_bounds * bounds, int x, int y)
@@ -62,8 +56,8 @@ XkbcComputeShapeBounds(struct xkb_shape * shape)
     if ((!shape) || (shape->num_outlines < 1))
         return False;
 
-    shape->bounds.x1 = shape->bounds.y1 = MAXSHORT;
-    shape->bounds.x2 = shape->bounds.y2 = MINSHORT;
+    shape->bounds.x1 = shape->bounds.y1 = SHRT_MAX;
+    shape->bounds.x2 = shape->bounds.y2 = SHRT_MIN;
 
     for (outline = shape->outlines, o = 0; o < shape->num_outlines;
          o++, outline++)
