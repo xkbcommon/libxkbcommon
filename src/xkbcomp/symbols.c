@@ -349,6 +349,9 @@ MergeKeyGroups(SymbolsInfo * info,
             WSGO("Could not allocate actions for group merge\n");
             ACTION("Group %d of key %s not merged\n", group,
                     longText(into->name));
+            if (resultSyms != into->syms[group] &&
+                resultSyms != from->syms[group])
+                free(resultSyms);
             return False;
         }
     }
