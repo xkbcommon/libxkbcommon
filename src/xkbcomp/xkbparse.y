@@ -731,7 +731,7 @@ KeySym		:	IDENT	{ $$= strdup(scanBuf); }
 			    }
 			    else {
 				$$= malloc(17);
-				snprintf($$, 17, "%x", $1);
+				snprintf($$, 17, "0x%x", $1);
 			    }
 			}
 		;
