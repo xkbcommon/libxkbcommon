@@ -26,6 +26,7 @@
 
 #define	DEBUG_VAR debugFlags
 #include "utils.h"
+#include <errno.h>
 #include <stdlib.h>
 #include "xkbpath.h"
 #include "xkbcommon/xkbcommon.h"
@@ -315,9 +316,8 @@ XkbDirectoryForInclude(unsigned type)
 FILE *
 XkbFindFileInPath(const char *name, unsigned type, char **pathRtrn)
 {
-    int i;
+    int i, ret;
     FILE *file = NULL;
-    int nameLen, typeLen, pathLen;
     char buf[PATH_MAX];
     const char *typeDir;
 
@@ -325,32 +325,31 @@ XkbFindFileInPath(const char *name, unsigned type, char **pathRtrn)
         return NULL;
 
     typeDir = XkbDirectoryForInclude(type);
-    nameLen = strlen(name);
-    typeLen = strlen(typeDir);
     for (i = 0; i < nPathEntries; i++)
     {
-        pathLen = strlen(includePath[i]);
-        if (typeLen < 1)
+        if (includePath[i] == NULL || *includePath[i] == '\0')
             continue;
 
-        if ((nameLen + typeLen + pathLen + 2) >= PATH_MAX)
+        ret = snprintf(buf, sizeof(buf), "%s/%s/%s",
+                       includePath[i], typeDir, name);
+        if (ret >= sizeof(buf))
         {
             ERROR("File name (%s/%s/%s) too long\n", includePath[i],
                    typeDir, name);
             ACTION("Ignored\n");
             continue;
         }
-        snprintf(buf, sizeof(buf), "%s/%s/%s", includePath[i], typeDir, name);
         file = fopen(buf, "r");
-        if (file != NULL)
-            break;
+        if (file == NULL) {
+            ERROR("Couldn't open file (%s/%s/%s): %s\n", includePath[i],
+                   typeDir, name, strerror(-errno));
+            ACTION("Ignored\n");
+            continue;
+        }
+        break;
     }
 
     if ((file != NULL) && (pathRtrn != NULL))
-    {
-        *pathRtrn = calloc(strlen(buf) + 1, sizeof(char));
-        if (*pathRtrn != NULL)
-            strcpy(*pathRtrn, buf);
-    }
+        *pathRtrn = strdup(buf);
     return file;
 }
