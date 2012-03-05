@@ -31,13 +31,11 @@ from The Open Group.
 #include <X11/X.h>
 #include <X11/Xos.h>
 #include <X11/keysymdef.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
-char *malloc();
-#endif /* macII */
 
-typedef unsigned long Signature;
+typedef uint32_t Signature;
 
 #define KTNUM 4000
 
@@ -53,177 +51,103 @@ static char tab[KTNUM];
 static unsigned short offsets[KTNUM];
 static unsigned short indexes[KTNUM];
 static KeySym values[KTNUM];
-static char buf[1024];
-
-/*
- * XFree86 special action keys - for some reason, these have an
- * underscore after the XF86 prefix.
- */
-static const char *xf86_special_keys[] = {
-    "Switch_VT_1",
-    "Switch_VT_2",
-    "Switch_VT_3",
-    "Switch_VT_4",
-    "Switch_VT_5",
-    "Switch_VT_6",
-    "Switch_VT_7",
-    "Switch_VT_8",
-    "Switch_VT_9",
-    "Switch_VT_10",
-    "Switch_VT_11",
-    "Switch_VT_12",
-    "Ungrab",
-    "ClearGrab",
-    "Next_VMode",
-    "Prev_VMode",
-    NULL
-};
+static int ksnum = 0;
 
 static int
-is_xf86_special(const char *key)
-{
-    char **s = (char **)xf86_special_keys;
-    while (*s) {
-        if (strcmp(key, *s) == 0)
-            return 1;
-        s++;
-    }
-    return 0;
-}
-
-static int
-get_keysym(const char *buf, char *key, int index)
-{
-    if (sscanf(buf, "#define XK_%127s 0x%lx", key, &info[index].val) != 2)
-        return 0;
-    return 1;
-}
-
-static int
-get_keysym_alias(const char *buf, char *key, int index)
+parse_line(const char *buf, char *key, KeySym *val, char *prefix)
 {
     int i;
     char alias[128];
+    char *tmp, *tmpa;
 
-    if (sscanf(buf, "#define XK_%127s XK_%127s", key, alias) != 2)
-        return 0;
+    /* See if we can catch a straight XK_foo 0x1234-style definition first;
+     * the trickery around tmp is to account for prefices. */
+    i = sscanf(buf, "#define %127s 0x%lx", key, val);
+    if (i == 2 && (tmp = strstr(key, "XK_"))) {
+        memcpy(prefix, key, tmp - key);
+        prefix[tmp - key] = '\0';
+        tmp += 3;
+        memmove(key, tmp, strlen(tmp) + 1);
+        return 1;
+    }
 
-    for (i = index - 1; i >= 0; i--) {
-        if (strcmp(info[i].name, alias) == 0) {
-            info[index].val = info[i].val;
-            return 1;
+    /* Now try to catch alias (XK_foo XK_bar) definitions, and resolve them
+     * immediately: if the target is in the form XF86XK_foo, we need to
+     * canonicalise this to XF86foo before we do the lookup. */
+    i = sscanf(buf, "#define %127s %127s", key, alias);
+    if (i == 2 && (tmp = strstr(key, "XK_")) && (tmpa = strstr(alias, "XK_"))) {
+        memcpy(prefix, key, tmp - key);
+        prefix[tmp - key] = '\0';
+        tmp += 3;
+        memmove(key, tmp, strlen(tmp) + 1);
+        memmove(tmpa, tmpa + 3, strlen(tmpa + 3) + 1);
+
+        for (i = ksnum - 1; i >= 0; i--) {
+            if (strcmp(info[i].name, alias) == 0) {
+                *val = info[i].val;
+                return 1;
+            }
         }
+
+        fprintf(stderr, "can't find matching definition %s for keysym %s%s\n",
+                alias, prefix, key);
     }
 
-    /* Didn't find a match */
-    fprintf(stderr, "can't find matching definition %s for keysym %s\n",
-            alias, key);
-    return -1;
-}
-
-static int
-get_xf86_keysym(const char *buf, char *key, size_t len, int index)
-{
-    char tmp[128];
-
-    if (sscanf(buf, "#define XF86XK_%127s 0x%lx", tmp, &info[index].val) != 2)
-        return 0;
-
-    /* Prepend XF86 or XF86_ to the key */
-    snprintf(key, len, "XF86%s%s", is_xf86_special(tmp) ? "_" : "", tmp);
-
-    return 1;
-}
-
-static int
-get_xf86_keysym_alias(const char *buf, char *key, size_t len, int index)
-{
-    int i;
-    char alias[128], ktmp[128], atmp[128];
-
-    /* Try to handle both XF86XK and XK aliases */
-    if (sscanf(buf, "#define XF86XK_%127s XF86XK_%127s", ktmp, atmp) == 2) {
-        /* Prepend XF86 to the key and alias */
-        snprintf(key, len, "XF86%s%s", is_xf86_special(ktmp) ? "_" : "",
-                 ktmp);
-        snprintf(alias, sizeof(alias), "XF86%s%s",
-                 is_xf86_special(atmp) ? "_" : "", atmp);
-    } else {
-        if (sscanf(buf, "#define XF86XK_%127s XK_%127s", ktmp, alias) != 2)
-            return 0;
-        /* Prepend XF86 to the key */
-        snprintf(key, len, "XF86%s%s", is_xf86_special(ktmp) ? "_" : "",
-                 ktmp);
-    }
-
-    for (i = index - 1; i >= 0; i--) {
-        if (strcmp(info[i].name, alias) == 0) {
-            info[index].val = info[i].val;
-            return 1;
-        }
-    }
-
-    /* Didn't find a match */
-    fprintf(stderr, "can't find matching definition %s for keysym %s\n",
-            alias, key);
-    return -1;
+    return 0;
 }
 
 int
 main(int argc, char *argv[])
 {
-    int ksnum = 0;
+    FILE *fptr;
     int max_rehash;
     Signature sig;
-    register int i, j, k, z;
-    register char *name;
-    register char c;
+    int i, j, k, l, z;
+    char *name;
+    char c;
     int first;
     int best_max_rehash;
     int best_z = 0;
     int num_found;
     KeySym val;
-    char key[128];
+    char key[128], prefix[128];
+    char buf[1024];
 
-
-    while (fgets(buf, sizeof(buf), stdin)) {
-        int ret;
-
-        /* Manage keysyms from keysymdef.h */
-        ret = get_keysym(buf, key, ksnum);
-        if (!ret) {
-            ret = get_keysym_alias(buf, key, ksnum);
-            if (ret == -1)
-                continue;
-        }
-
-        /* Manage keysyms from XF86keysym.h */
-        if (!ret)
-            ret = get_xf86_keysym(buf, key, sizeof(key), ksnum);
-        if (!ret) {
-            ret = get_xf86_keysym_alias(buf, key, sizeof(key), ksnum);
-            if (ret < 1)
-                continue;
-        }
-
-        if (info[ksnum].val > 0x1fffffff) {
-            fprintf(stderr,
-                    "ignoring illegal keysym (%s), remove it from .h file!\n",
-                    key);
+    for (l = 1; l < argc; l++) {
+        fptr = fopen(argv[l], "r");
+        if (!fptr) {
+            fprintf(stderr, "couldn't open %s\n", argv[l]);
             continue;
         }
-        name = malloc((unsigned)strlen(key) + 1);
-        if (!name) {
-            fprintf(stderr, "makekeys: out of memory!\n");
-            exit(1);
+
+        while (fgets(buf, sizeof(buf), fptr)) {
+            if (!parse_line(buf, key, &val, prefix))
+                continue;
+
+            if (val == XK_VoidSymbol)
+                val = 0;
+            if (val > 0x1fffffff) {
+                fprintf(stderr, "ignoring illegal keysym (%s, %lx)\n", key,
+                        val);
+                continue;
+            }
+
+            name = malloc(strlen(prefix) + strlen(key) + 1);
+            if (!name) {
+                fprintf(stderr, "makekeys: out of memory!\n");
+                exit(1);
+            }
+            sprintf(name, "%s%s", prefix, key);
+            info[ksnum].name = name;
+            info[ksnum].val = val;
+            ksnum++;
+            if (ksnum == KTNUM) {
+                fprintf(stderr, "makekeys: too many keysyms!\n");
+                exit(1);
+            }
         }
-        (void)strcpy(name, key);
-        info[ksnum].name = name;
-        ksnum++;
-        if (ksnum == KTNUM) {
-            fprintf(stderr, "makekeys: too many keysyms!\n");
-            exit(1);
-        }
+
+        fclose(fptr);
     }
 
     /* Special case NoSymbol. */
@@ -274,6 +198,11 @@ next1:  ;
     printf("#ifndef KS_TABLES_H\n");
     printf("#define KS_TABLES_H\n\n");
     printf("static const unsigned char _XkeyTable[] = {\n");
+    if (z == 0) {
+        fprintf(stderr, "makekeys: failed to find small enough hash!\n"
+                "Try increasing KTNUM in makekeys.c\n");
+        exit(1);
+    }
     printf("0,\n");
     k = 1;
     for (i = 0; i < ksnum; i++) {
@@ -290,7 +219,7 @@ next1:  ;
         offsets[j] = k;
         indexes[i] = k;
         val = info[i].val;
-        printf("0x%.2lx, 0x%.2lx, 0x%.2lx, 0x%.2lx, 0x%.2lx, 0x%.2lx, ",
+        printf("0x%.2"PRIx32", 0x%.2"PRIx32", 0x%.2lx, 0x%.2lx, 0x%.2lx, 0x%.2lx, ",
                (sig >> 8) & 0xff, sig & 0xff,
                (val >> 24) & 0xff, (val >> 16) & 0xff,
                (val >> 8) & 0xff, val & 0xff);
@@ -351,6 +280,11 @@ next2:  ;
     }
 
     z = best_z;
+    if (z == 0) {
+        fprintf(stderr, "makekeys: failed to find small enough hash!\n"
+                "Try increasing KTNUM in makekeys.c\n");
+        exit(1);
+    }
     for (i = z; --i >= 0;)
         offsets[i] = 0;
     for (i = 0; i < ksnum; i++) {

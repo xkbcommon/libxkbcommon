@@ -28,7 +28,6 @@
 #include "xkbcomp.h"
 #include "xkballoc.h"
 #include "xkbmisc.h"
-#include "tokens.h"
 #include "expr.h"
 #include "vmod.h"
 #include "misc.h"

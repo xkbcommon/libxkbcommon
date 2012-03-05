@@ -28,7 +28,6 @@
 #include "xkballoc.h"
 #include "xkbmisc.h"
 #include "xkbpath.h"
-#include "tokens.h"
 #include "keycodes.h"
 #include "misc.h"
 #include <X11/keysym.h>

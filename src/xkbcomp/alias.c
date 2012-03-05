@@ -213,10 +213,10 @@ ApplyAliases(struct xkb_desc * xkb, Bool toGeom, AliasInfo ** info_in)
             {
                 if (strncmp(a->alias, info->alias, XkbKeyNameLength) == 0)
                 {
-                    AliasInfo old;
-                    InitAliasInfo(&old, MergeAugment, 0, a->alias, a->real);
-                    HandleCollision(&old, info);
-                    memcpy(old.real, a->real, XkbKeyNameLength);
+                    AliasInfo old_info;
+                    InitAliasInfo(&old_info, MergeAugment, 0, a->alias, a->real);
+                    HandleCollision(&old_info, info);
+                    memcpy(old_info.real, a->real, XkbKeyNameLength);
                     info->alias[0] = '\0';
                     nNew--;
                     break;
@@ -230,7 +230,6 @@ ApplyAliases(struct xkb_desc * xkb, Bool toGeom, AliasInfo ** info_in)
         *info_in = NULL;
         return True;
     }
-    status = Success;
     if (toGeom)
     {
         if (!xkb->geom)
@@ -262,7 +261,7 @@ ApplyAliases(struct xkb_desc * xkb, Bool toGeom, AliasInfo ** info_in)
     if (toGeom)
         a = &xkb->geom->key_aliases[nOld];
     else
-        a = &xkb->names->key_aliases[nOld];
+        a = xkb->names ? &xkb->names->key_aliases[nOld] : NULL;
     for (info = *info_in; info != NULL; info = (AliasInfo *) info->def.next)
     {
         if (info->alias[0] != '\0')

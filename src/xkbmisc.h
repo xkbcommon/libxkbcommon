@@ -75,31 +75,31 @@ XkbcAtomGetString(uint32_t atom);
 extern const char *
 XkbcAtomText(uint32_t atm);
 
-extern char *
+extern const char *
 XkbcVModMaskText(struct xkb_desc * xkb, unsigned modMask, unsigned mask);
 
-extern char *
+extern const char *
 XkbcModIndexText(unsigned ndx);
 
-extern char *
+extern const char *
 XkbcModMaskText(unsigned mask, Bool cFormat);
 
-extern char *
+extern const char *
 XkbcConfigText(unsigned config);
 
-extern char *
+extern const char *
 XkbcGeomFPText(int val);
 
-extern char *
+extern const char *
 XkbcActionTypeText(unsigned type);
 
-extern char *
+extern const char *
 XkbcKeysymText(uint32_t sym);
 
-extern char *
+extern const char *
 XkbcKeyNameText(char *name);
 
-extern char *
+extern const char *
 XkbcSIMatchText(unsigned type);
 
 #endif /* _XKBMISC_H_ */

@@ -1,6 +1,7 @@
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src
 AM_CFLAGS = $(X11_CFLAGS) $(CWARNFLAGS) \
 	-DDFLT_XKB_CONFIG_ROOT='"$(XKBCONFIGROOT)"'
+AM_YFLAGS = -d
 
 noinst_LTLIBRARIES = libxkbcomp.la
 libxkbcomp_la_SOURCES = \
@@ -24,7 +25,6 @@ libxkbcomp_la_SOURCES = \
 	parseutils.c \
 	parseutils.h \
 	symbols.c \
-	tokens.h \
 	utils.c \
 	utils.h \
 	vmod.c \
@@ -35,3 +35,5 @@ libxkbcomp_la_SOURCES = \
 	xkbpath.c \
 	xkbpath.h \
 	xkbscan.l
+
+BUILT_SOURCES = xkbparse.h

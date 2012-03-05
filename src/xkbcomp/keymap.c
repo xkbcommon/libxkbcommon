@@ -26,7 +26,6 @@
 
 #include "xkbcomp.h"
 #include "xkbmisc.h"
-#include "tokens.h"
 #include "expr.h"
 #include "vmod.h"
 #include "action.h"
@@ -173,7 +172,7 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
         }
         ACTION("Description of %s not compiled\n",
                 XkbcConfigText(mainType));
-        ok = False;
+        return False;
     }
     ok = BindIndicators(xkb, True, unbound, NULL);
     return ok;

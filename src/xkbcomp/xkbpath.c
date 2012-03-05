@@ -399,7 +399,7 @@ XkbFindFileInCache(char *name, unsigned type, char **pathRtrn)
  * pathRtrn is undefined.
  */
 FILE *
-XkbFindFileInPath(char *name, unsigned type, char **pathRtrn)
+XkbFindFileInPath(const char *name, unsigned type, char **pathRtrn)
 {
     register int i;
     FILE *file = NULL;

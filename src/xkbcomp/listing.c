@@ -120,7 +120,6 @@ SOFTWARE.
 #include "xkbpath.h"
 #include "parseutils.h"
 #include "misc.h"
-#include "tokens.h"
 
 #ifndef DFLT_XKB_CONFIG_ROOT
 #define DFLT_XKB_CONFIG_ROOT "/usr/share/X11/xkb"
@@ -364,7 +363,7 @@ AddDirectory(CompPair *cp, char *head, char *ptrn, char *rest, char *map,
 
 static int
 GenerateComponent(struct xkb_component_list * complist, unsigned type, char *head_in,
-                 char *base, int *max)
+                 const char *base, int *max)
 {
     char *str, *head, *ptrn = NULL, *rest = NULL;
     char buf[PATH_MAX];

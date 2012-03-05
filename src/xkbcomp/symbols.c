@@ -27,7 +27,6 @@
 #include "xkbcomp.h"
 #include "xkballoc.h"
 #include "xkbmisc.h"
-#include "tokens.h"
 #include "expr.h"
 #include "parseutils.h"
 
@@ -453,7 +452,8 @@ MergeKeyGroups(SymbolsInfo * info,
                             XkbcActionTypeText(use->type),
                             XkbcActionTypeText(ignore->type));
                 }
-                resultActs[i] = *use;
+                if (use)
+                    resultActs[i] = *use;
             }
         }
     }
@@ -1678,7 +1678,7 @@ FindKeyForSymbol(struct xkb_desc * xkb, uint32_t sym, xkb_keycode_t *kc_rtrn)
             if (j < (int) XkbKeyNumSyms(xkb, i))
             {
                 gotOne = True;
-                if ((XkbKeySym(xkb, i, j) == sym))
+                if (XkbKeySym(xkb, i, j) == sym)
                 {
                     *kc_rtrn = i;
                     return True;

@@ -28,7 +28,6 @@
 #include "xkballoc.h"
 #include "xkbgeom.h"
 #include "xkbmisc.h"
-#include "tokens.h"
 #include "expr.h"
 #include "vmod.h"
 #include "misc.h"
@@ -368,7 +367,7 @@ InitRowInfo(RowInfo * row, SectionInfo * section, GeometryInfo * info)
     }
     else
     {
-        bzero(row, sizeof(RowInfo *));
+        bzero(row, sizeof(RowInfo));
         row->defs.defined = _GR_Default;
         row->defs.fileID = info->fileID;
         row->defs.merge = info->merge;
@@ -566,8 +565,6 @@ DupSectionInfo(SectionInfo * into, SectionInfo * from, GeometryInfo * info)
 
     defs = into->defs;
     *into = *from;
-    into->defs.fileID = defs.fileID;
-    into->defs.merge = defs.merge;
     into->defs.next = NULL;
     into->dfltRow.defs.fileID = defs.fileID;
     into->dfltRow.defs.merge = defs.merge;
@@ -1508,7 +1505,7 @@ SetTextDoodadField(DoodadInfo * di,
     ExprResult tmp;
     unsigned def;
     unsigned type;
-    char *typeName = "text doodad";
+    const char *typeName = "text doodad";
     union
     {
         uint32_t *str;
@@ -1698,7 +1695,7 @@ SetLogoDoodadField(DoodadInfo * di,
                    ExprDef * value, SectionInfo * si, GeometryInfo * info)
 {
     ExprResult tmp;
-    char *typeName = "logo doodad";
+    const char *typeName = "logo doodad";
 
     if ((!uStrCaseCmp(field, "corner"))
         || (!uStrCaseCmp(field, "cornerradius")))
@@ -1880,7 +1877,6 @@ SetSectionField(SectionInfo * si,
     ExprResult tmp;
 
     pField = NULL;
-    def = 0;
     if (uStrCaseCmp(field, "priority") == 0)
     {
         if (arrayNdx != NULL)
@@ -2248,12 +2244,12 @@ HandleGeometryVar(VarDef * stmt, struct xkb_desc * xkb, GeometryInfo * info)
             info->errorCount++;
             ret = ReportNotArray("keyboard", field.str, "geometry");
         }
-        if (!ExprResolveFloat(stmt->value, &tmp))
+        else if (!ExprResolveFloat(stmt->value, &tmp))
         {
             info->errorCount++;
             ret = ReportBadType("keyboard", field.str, "geometry", "number");
         }
-        if (tmp.ival < 1)
+        else if (tmp.ival < 1)
         {
             WARN("Keyboard height must be positive\n");
             ACTION("Ignoring illegal keyboard height %s\n",
@@ -2307,7 +2303,7 @@ HandleGeometryVar(VarDef * stmt, struct xkb_desc * xkb, GeometryInfo * info)
             info->errorCount++;
             ret = ReportNotArray("keyboard", field.str, "geometry");
         }
-        if (!ExprResolveString(stmt->value, &tmp))
+        else if (!ExprResolveString(stmt->value, &tmp))
         {
             info->errorCount++;
             ret = ReportBadType("keyboard", field.str, "geometry", "string");
@@ -2327,7 +2323,7 @@ HandleGeometryVar(VarDef * stmt, struct xkb_desc * xkb, GeometryInfo * info)
             info->errorCount++;
             ret = ReportNotArray("keyboard", field.str, "geometry");
         }
-        if (!ExprResolveString(stmt->value, &tmp))
+        else if (!ExprResolveString(stmt->value, &tmp))
         {
             info->errorCount++;
             ret = ReportBadType("keyboard", field.str, "geometry", "string");
@@ -2576,11 +2572,14 @@ HandleOverlayDef(OverlayDef * def,
          keyDef = (OverlayKeyDef *) keyDef->common.next)
     {
         key = uTypedCalloc(1, OverlayKeyInfo);
-        if ((!key) && warningLevel > 0)
+        if (!key)
         {
-            WSGO("Couldn't allocate OverlayKeyInfo\n");
-            ACTION("Overlay %s for section %s will be incomplete\n",
-                    XkbcAtomText(ol.name), scText(si));
+            if (warningLevel > 0)
+            {
+                WSGO("Couldn't allocate OverlayKeyInfo\n");
+                ACTION("Overlay %s for section %s will be incomplete\n",
+                        XkbcAtomText(ol.name), scText(si));
+            }
             return False;
         }
         strncpy(key->over, keyDef->over, XkbKeyNameLength);
@@ -2602,10 +2601,8 @@ HandleOverlayDef(OverlayDef * def,
 static Bool
 HandleComplexKey(KeyDef * def, KeyInfo * key, GeometryInfo * info)
 {
-    RowInfo *row;
     ExprDef *expr;
 
-    row = key->row;
     for (expr = def->expr; expr != NULL; expr = (ExprDef *) expr->common.next)
     {
         if (expr->op == OpAssign)
@@ -2637,6 +2634,7 @@ HandleComplexKey(KeyDef * def, KeyInfo * key, GeometryInfo * info)
         }
         else
         {
+            RowInfo *row = key->row;
             switch (expr->type)
             {
             case TypeInt:
@@ -2654,9 +2652,10 @@ HandleComplexKey(KeyDef * def, KeyInfo * key, GeometryInfo * info)
                 break;
             default:
                 ERROR("Cannot determine field for unnamed expression\n");
-                ACTION("Ignoring key %d in row %d of section %s\n",
-                        row->nKeys + 1, row->section->nRows + 1,
-                        rowText(row));
+                if (row)
+                    ACTION("Ignoring key %d in row %d of section %s\n",
+                            row->nKeys + 1, row->section->nRows + 1,
+                            rowText(row));
                 return False;
             }
         }
@@ -2860,7 +2859,7 @@ HandleGeometryFile(XkbFile * file,
                    struct xkb_desc * xkb, unsigned merge, GeometryInfo * info)
 {
     ParseCommon *stmt;
-    char *failWhat;
+    const char *failWhat;
 
     if (merge == MergeDefault)
         merge = MergeAugment;
@@ -3593,11 +3592,11 @@ CopySectionDef(struct xkb_geometry * geom, SectionInfo * si, GeometryInfo * info
                 key->shape_ndx = 0;
             else
             {
-                ShapeInfo *si;
-                si = FindShape(info, ki->shape, "key", keyText(ki));
-                if (!si)
+                ShapeInfo *shapei;
+                shapei = FindShape(info, ki->shape, "key", keyText(ki));
+                if (!shapei)
                     return False;
-                key->shape_ndx = si->index;
+                key->shape_ndx = shapei->index;
             }
             if (ki->color != None)
                 color =

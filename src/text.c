@@ -55,7 +55,7 @@ tbGetBuffer(unsigned int size)
     return rtrn;
 }
 
-static char *
+static const char *
 XkbcVModIndexText(struct xkb_desc * xkb, unsigned ndx)
 {
     int len;
@@ -89,11 +89,12 @@ XkbcVModIndexText(struct xkb_desc * xkb, unsigned ndx)
     return rtrn;
 }
 
-char *
+const char *
 XkbcVModMaskText(struct xkb_desc * xkb, unsigned modMask, unsigned mask)
 {
     int i, bit, len, rem;
-    char *mm = NULL, *rtrn, *str;
+    const char *mm = NULL;
+    char *rtrn, *str;
     char buf[BUFFER_SIZE];
 
     if ((modMask == 0) && (mask == 0))
@@ -138,7 +139,7 @@ XkbcVModMaskText(struct xkb_desc * xkb, unsigned modMask, unsigned mask)
     return rtrn;
 }
 
-static char *modNames[XkbNumModifiers] = {
+static const char *modNames[XkbNumModifiers] = {
     "Shift",
     "Lock",
     "Control",
@@ -149,7 +150,7 @@ static char *modNames[XkbNumModifiers] = {
     "Mod5"
 };
 
-char *
+const char *
 XkbcModIndexText(unsigned ndx)
 {
     char *buf;
@@ -165,7 +166,7 @@ XkbcModIndexText(unsigned ndx)
     return buf;
 }
 
-char *
+const char *
 XkbcModMaskText(unsigned mask, Bool cFormat)
 {
     int i, rem, bit;
@@ -198,7 +199,7 @@ XkbcModMaskText(unsigned mask, Bool cFormat)
     return buf;
 }
 
-char *
+const char *
 XkbcConfigText(unsigned config)
 {
     switch (config) {
@@ -228,7 +229,7 @@ XkbcConfigText(unsigned config)
     }
 }
 
-char *
+const char *
 XkbcGeomFPText(int val)
 {
     char *buf;
@@ -246,7 +247,7 @@ XkbcGeomFPText(int val)
     return buf;
 }
 
-static char *actionTypeNames[XkbSA_NumActions]= {
+static const char *actionTypeNames[XkbSA_NumActions]= {
     "NoAction",         /* XkbSA_NoAction */
     "SetMods",          /* XkbSA_SetMods */
     "LatchMods",        /* XkbSA_LatchMods */
@@ -270,7 +271,7 @@ static char *actionTypeNames[XkbSA_NumActions]= {
     "DeviceValuator"    /* XkbSA_DeviceValuator */
 };
 
-char *
+const char *
 XkbcActionTypeText(unsigned type)
 {
     if (type <= XkbSA_LastAction)
@@ -278,7 +279,7 @@ XkbcActionTypeText(unsigned type)
     return "Private";
 }
 
-char *
+const char *
 XkbcKeysymText(uint32_t sym)
 {
     static char buffer[16];
@@ -288,7 +289,7 @@ XkbcKeysymText(uint32_t sym)
     return buffer;
 }
 
-char *
+const char *
 XkbcKeyNameText(char *name)
 {
     char *buf;
@@ -305,7 +306,7 @@ XkbcKeyNameText(char *name)
     return buf;
 }
 
-static char *siMatchText[5] = {
+static const char *siMatchText[5] = {
     "NoneOf",       /* XkbSI_NoneOf */
     "AnyOfOrNone",  /* XkbSI_AnyOfOrNone */
     "AnyOf",        /* XkbSI_AnyOf */
@@ -313,7 +314,7 @@ static char *siMatchText[5] = {
     "Exactly"       /* XkbSI_Exactly */
 };
 
-char *
+const char *
 XkbcSIMatchText(unsigned type)
 {
     char *buf;

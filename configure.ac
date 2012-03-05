@@ -77,19 +77,18 @@ AC_MSG_CHECKING([for X11 includedir])
 includex11dir="`$PKG_CONFIG --variable=includex11dir xproto`"
 AC_MSG_RESULT([$includex11dir])
 
-# Obtain full path for keysymdef header file
-AC_MSG_CHECKING([for keysymdef.h])
-KEYSYMDEF_H="$includex11dir/keysymdef.h"
-test -f "$KEYSYMDEF_H" || AC_MSG_ERROR([can't locate keysymdef.h in $includex11dir])
-AC_MSG_RESULT([$KEYSYMDEF_H])
-AC_SUBST([KEYSYMDEF_H])
-
-# Obtain full path for XF86keysym header file
-AC_MSG_CHECKING([for XF86keysym.h])
-XF86KEYSYM_H="$includex11dir/XF86keysym.h"
-test -f "$XF86KEYSYM_H" || AC_MSG_ERROR([can't locate XF86keysym.h in $includex11dir])
-AC_MSG_RESULT([$XF86KEYSYM_H])
-AC_SUBST([XF86KEYSYM_H])
+AC_MSG_CHECKING([keysym definitions])
+KEYSYMDEFDIR=`$PKG_CONFIG --variable=includedir xproto`/X11
+FILES="keysymdef.h XF86keysym.h Sunkeysym.h DECkeysym.h HPkeysym.h"
+for i in $FILES; do
+    if test -f "$KEYSYMDEFDIR/$i"; then
+            KEYSYMDEFS="$KEYSYMDEFS $KEYSYMDEFDIR/$i"
+    elif test "x$i" = "xkeysymdef.h"; then
+            AC_MSG_ERROR([Cannot find keysymdef.h])
+    fi
+done
+AC_MSG_RESULT([$KEYSYMDEFS])
+AC_SUBST(KEYSYMDEFS)
 
 # Define a configuration option for the XKB config root
 xkb_base=`$PKG_CONFIG --variable=xkb_base xkeyboard-config`

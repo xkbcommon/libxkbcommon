@@ -27,7 +27,6 @@
 #include "xkbcomp.h"
 #include "xkballoc.h"
 #include "xkbmisc.h"
-#include "tokens.h"
 #include "expr.h"
 #include "vmod.h"
 #include "action.h"
@@ -548,7 +547,7 @@ AddPreserve(struct xkb_desc * xkb,
         }
         if (report && (warningLevel > 0))
         {
-            char *str;
+            const char *str;
             WARN("Multiple definitions for preserve[%s] in %s\n",
                   PreserveIndexTxt(xkb, old), TypeTxt(type));
 
@@ -574,7 +573,7 @@ AddPreserve(struct xkb_desc * xkb,
     if (!old)
     {
         WSGO("Couldn't allocate preserve in %s\n", TypeTxt(type));
-        ACTION("Preserve[%s] lost\n", PreserveIndexTxt(xkb, old));
+        ACTION("Preserve[%s] lost\n", PreserveIndexTxt(xkb, new));
         return False;
     }
     *old = *new;

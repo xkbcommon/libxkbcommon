@@ -26,7 +26,6 @@
 
 #include "xkbcomp.h"
 #include "xkbmisc.h"
-#include "tokens.h"
 #include "expr.h"
 #include "vmod.h"
 
@@ -724,7 +723,7 @@ ExprResolveString(ExprDef * expr,
     ExprResult leftRtrn, rightRtrn;
     ExprDef *left;
     ExprDef *right;
-    char *bogus = NULL;
+    const char *bogus = NULL;
 
     switch (expr->op)
     {
@@ -806,7 +805,7 @@ int
 ExprResolveKeyName(ExprDef * expr,
                    ExprResult * val_rtrn)
 {
-    char *bogus = NULL;
+    const char *bogus = NULL;
 
     switch (expr->op)
     {
@@ -904,7 +903,7 @@ ExprResolveMaskLookup(ExprDef * expr,
     int ok = 0;
     ExprResult leftRtrn, rightRtrn;
     ExprDef *left, *right;
-    char *bogus = NULL;
+    const char *bogus = NULL;
 
     switch (expr->op)
     {

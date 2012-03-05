@@ -95,7 +95,7 @@ uint32_t
 xkb_string_to_keysym(const char *s)
 {
     int i, n, h, c, idx;
-    unsigned long sig = 0;
+    uint32_t sig = 0;
     const char *p = s;
     const unsigned char *entry;
     unsigned char sig1, sig2;
@@ -114,7 +114,7 @@ xkb_string_to_keysym(const char *s)
         entry = &_XkeyTable[idx];
 
         if ((entry[0] == sig1) && (entry[1] == sig2) &&
-            !strcmp(s, (char *)entry + 6))
+            !strcmp(s, (const char *)entry + 6))
         {
             val = (entry[2] << 24) | (entry[3] << 16) |
                   (entry[4] << 8)  | entry[5];
@@ -144,6 +144,20 @@ xkb_string_to_keysym(const char *s)
     }
     else if (s[0] == '0' && s[1] == 'x') {
         return strtoul(&s[2], NULL, 16);
+    }
+
+    /* Stupid inconsistency between the headers and XKeysymDB: the former has
+     * no separating underscore, while some XF86* syms in the latter did.
+     * As a last ditch effort, try without. */
+    if (strncmp(s, "XF86_", 5) == 0) {
+        uint32_t ret;
+        char *tmp = strdup(s);
+        if (!tmp)
+            return NoSymbol;
+        memmove(&tmp[4], &tmp[5], strlen(s) - 5 + 1);
+        ret = xkb_string_to_keysym(tmp);
+        free(tmp);
+        return ret;
     }
 
     return NoSymbol;

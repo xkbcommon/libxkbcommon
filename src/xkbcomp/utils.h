@@ -114,7 +114,7 @@ uError(const char *s, ...);
 
 #define FATAL			uFatalError
 
-extern __ATTR_PRINTF(1, 2) void
+extern __ATTR_PRINTF(1, 2) _X_NORETURN void
 uFatalError(const char *s, ...);
 
 /* WSGO stands for "Weird Stuff Going On" (wtf???) */
