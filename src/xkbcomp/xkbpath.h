@@ -31,23 +31,12 @@
 #include <X11/X.h>
 #include <X11/Xdefs.h>
 
-extern char *XkbDirectoryForInclude(unsigned    /* type */
+extern const char *XkbDirectoryForInclude(unsigned    /* type */
     );
 
 extern FILE *XkbFindFileInPath(const char * /* name */ ,
                                unsigned /* type */ ,
                                char **  /* pathRtrn */
-    );
-
-extern void *XkbAddFileToCache(char * /* name */ ,
-                               unsigned /* type */ ,
-                               char * /* path */ ,
-                               void *   /* data */
-    );
-
-extern void *XkbFindFileInCache(char * /* name */ ,
-                                unsigned /* type */ ,
-                                char ** /* pathRtrn */
     );
 
 extern Bool XkbParseIncludeMap(char ** /* str_inout */ ,
@@ -56,5 +45,7 @@ extern Bool XkbParseIncludeMap(char ** /* str_inout */ ,
                                char * /* nextop_rtrn */ ,
                                char **  /* extra_data */
     );
+
+extern void XkbFreeIncludePath(void);
 
 #endif /* _XKBPATH_H_ */

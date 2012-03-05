@@ -35,6 +35,7 @@
 #include "action.h"
 #include "keycodes.h"
 #include "alias.h"
+#include "parseutils.h"
 
 #define	DFLT_FONT	"helvetica"
 #define	DFLT_SLANT	"r"
@@ -276,7 +277,6 @@ InitPropertyInfo(PropertyInfo * pi, GeometryInfo * info)
     pi->defs.fileID = info->fileID;
     pi->defs.merge = info->merge;
     pi->name = pi->value = NULL;
-    return;
 }
 
 static void
@@ -292,15 +292,12 @@ FreeProperties(PropertyInfo * pi, GeometryInfo * info)
     }
     for (tmp = pi; tmp != NULL; tmp = next)
     {
-        if (tmp->name)
-            free(tmp->name);
-        if (tmp->value)
-            free(tmp->value);
+        free(tmp->name);
+        free(tmp->value);
         tmp->name = tmp->value = NULL;
         next = (PropertyInfo *) tmp->defs.next;
         free(tmp);
     }
-    return;
 }
 
 static void
@@ -315,7 +312,7 @@ InitKeyInfo(KeyInfo * key, RowInfo * row, GeometryInfo * info)
     }
     else
     {
-        bzero(key, sizeof(KeyInfo));
+        memset(key, 0, sizeof(KeyInfo));
         strcpy(key->name, "default");
         key->defs.defined = _GK_Default;
         key->defs.fileID = info->fileID;
@@ -323,7 +320,6 @@ InitKeyInfo(KeyInfo * key, RowInfo * row, GeometryInfo * info)
         key->defs.next = NULL;
         key->row = row;
     }
-    return;
 }
 
 static void
@@ -334,7 +330,6 @@ ClearKeyInfo(KeyInfo * key)
     key->gap = 0;
     key->shape = None;
     key->color = None;
-    return;
 }
 
 static void
@@ -354,7 +349,6 @@ FreeKeys(KeyInfo * key, RowInfo * row, GeometryInfo * info)
         next = (KeyInfo *) tmp->defs.next;
         free(tmp);
     }
-    return;
 }
 
 static void
@@ -367,7 +361,7 @@ InitRowInfo(RowInfo * row, SectionInfo * section, GeometryInfo * info)
     }
     else
     {
-        bzero(row, sizeof(RowInfo));
+        memset(row, 0, sizeof(RowInfo));
         row->defs.defined = _GR_Default;
         row->defs.fileID = info->fileID;
         row->defs.merge = info->merge;
@@ -377,7 +371,6 @@ InitRowInfo(RowInfo * row, SectionInfo * section, GeometryInfo * info)
         row->keys = NULL;
         InitKeyInfo(&row->dfltKey, row, info);
     }
-    return;
 }
 
 static void
@@ -391,7 +384,6 @@ ClearRowInfo(RowInfo * row, GeometryInfo * info)
         FreeKeys(row->keys, row, info);
     ClearKeyInfo(&row->dfltKey);
     row->dfltKey.defs.defined |= _GK_Default;
-    return;
 }
 
 static void
@@ -411,7 +403,6 @@ FreeRows(RowInfo * row, SectionInfo * section, GeometryInfo * info)
         next = (RowInfo *) tmp->defs.next;
         free(tmp);
     }
-    return;
 }
 
 static DoodadInfo *
@@ -456,7 +447,7 @@ InitDoodadInfo(DoodadInfo * di, unsigned type, SectionInfo * si,
     }
     else
     {
-        bzero(di, sizeof(DoodadInfo));
+        memset(di, 0, sizeof(DoodadInfo));
         di->defs.fileID = info->fileID;
         di->type = type;
     }
@@ -475,7 +466,6 @@ InitDoodadInfo(DoodadInfo * di, unsigned type, SectionInfo * si,
         if (info->nextPriority > XkbGeomMaxPriority)
             info->nextPriority = XkbGeomMaxPriority;
     }
-    return;
 }
 
 static void
@@ -484,10 +474,9 @@ ClearDoodadInfo(DoodadInfo * di)
     CommonInfo defs;
 
     defs = di->defs;
-    bzero(di, sizeof(DoodadInfo));
+    memset(di, 0, sizeof(DoodadInfo));
     di->defs = defs;
     di->defs.defined = 0;
-    return;
 }
 
 static void
@@ -498,7 +487,6 @@ ClearOverlayInfo(OverlayInfo * ol)
         ol->keys = (OverlayKeyInfo *) ClearCommonInfo(&ol->keys->defs);
         ol->nKeys = 0;
     }
-    return;
 }
 
 static void
@@ -530,7 +518,6 @@ FreeDoodads(DoodadInfo * di, SectionInfo * si, GeometryInfo * info)
         ClearDoodadInfo(tmp);
         free(tmp);
     }
-    return;
 }
 
 static void
@@ -547,7 +534,7 @@ InitSectionInfo(SectionInfo * si, GeometryInfo * info)
     }
     else
     {
-        bzero(si, sizeof(SectionInfo));
+        memset(si, 0, sizeof(SectionInfo));
         si->defs.fileID = info->fileID;
         si->defs.merge = info->merge;
         si->defs.next = NULL;
@@ -555,7 +542,6 @@ InitSectionInfo(SectionInfo * si, GeometryInfo * info)
         si->name = xkb_intern_atom("default");
         InitRowInfo(&si->dfltRow, si, info);
     }
-    return;
 }
 
 static void
@@ -574,7 +560,6 @@ DupSectionInfo(SectionInfo * into, SectionInfo * from, GeometryInfo * info)
     into->dfltRow.dfltKey.defs.merge = defs.merge;
     into->dfltRow.dfltKey.defs.next = NULL;
     into->dfltRow.dfltKey.row = &into->dfltRow;
-    return;
 }
 
 static void
@@ -598,7 +583,6 @@ ClearSectionInfo(SectionInfo * si, GeometryInfo * info)
         si->doodads = NULL;
     }
     si->dfltRow.defs.defined = _GR_Default;
-    return;
 }
 
 static void
@@ -618,7 +602,6 @@ FreeSections(SectionInfo * si, GeometryInfo * info)
         next = (SectionInfo *) tmp->defs.next;
         free(tmp);
     }
-    return;
 }
 
 static void
@@ -636,7 +619,7 @@ FreeShapes(ShapeInfo * si, GeometryInfo * info)
     {
         if (tmp->outlines)
         {
-            register int i;
+            int i;
             for (i = 0; i < tmp->nOutlines; i++)
             {
                 if (tmp->outlines[i].points != NULL)
@@ -655,7 +638,6 @@ FreeShapes(ShapeInfo * si, GeometryInfo * info)
         next = (ShapeInfo *) tmp->defs.next;
         free(tmp);
     }
-    return;
 }
 
 /***====================================================================***/
@@ -663,19 +645,17 @@ FreeShapes(ShapeInfo * si, GeometryInfo * info)
 static void
 InitGeometryInfo(GeometryInfo * info, unsigned fileID, unsigned merge)
 {
-    bzero(info, sizeof(GeometryInfo));
+    memset(info, 0, sizeof(GeometryInfo));
     info->fileID = fileID;
     info->merge = merge;
     InitSectionInfo(&info->dfltSection, info);
     info->dfltSection.defs.defined = _GS_Default;
-    return;
 }
 
 static void
 ClearGeometryInfo(GeometryInfo * info)
 {
-    if (info->name)
-        free(info->name);
+    free(info->name);
     info->name = NULL;
     if (info->props)
         FreeProperties(info->props, info);
@@ -683,6 +663,10 @@ ClearGeometryInfo(GeometryInfo * info)
         FreeShapes(info->shapes, info);
     if (info->sections)
         FreeSections(info->sections, info);
+    if (info->doodads)
+        FreeDoodads(info->doodads, NULL, info);
+    if (info->dfltDoodads)
+        FreeDoodads(info->dfltDoodads, NULL, info);
     info->widthMM = 0;
     info->heightMM = 0;
     info->dfltCornerRadius = 0;
@@ -690,7 +674,6 @@ ClearGeometryInfo(GeometryInfo * info)
     info->dfltSection.defs.defined = _GS_Default;
     if (info->aliases)
         ClearAliases(&info->aliases);
-    return;
 }
 
 /***====================================================================***/
@@ -703,7 +686,7 @@ NextProperty(GeometryInfo * info)
     pi = uTypedAlloc(PropertyInfo);
     if (pi)
     {
-        bzero((char *) pi, sizeof(PropertyInfo));
+        memset(pi, 0, sizeof(PropertyInfo));
         info->props = (PropertyInfo *) AddCommonInfo(&info->props->defs,
                                                      (CommonInfo *) pi);
         info->nProps++;
@@ -748,8 +731,7 @@ AddProperty(GeometryInfo * info, PropertyInfo * new)
                 ACTION("Ignoring \"%s\", using \"%s\"\n", old->value,
                         new->value);
             }
-            if (old->value)
-                free(old->value);
+            free(old->value);
             old->value = _XkbDupString(new->value);
             return True;
         }
@@ -781,7 +763,7 @@ NextShape(GeometryInfo * info)
     si = uTypedAlloc(ShapeInfo);
     if (si)
     {
-        bzero((char *) si, sizeof(ShapeInfo));
+        memset(si, 0, sizeof(ShapeInfo));
         info->shapes = (ShapeInfo *) AddCommonInfo(&info->shapes->defs,
                                                    (CommonInfo *) si);
         info->nShapes++;
@@ -872,7 +854,6 @@ ReplaceDoodad(DoodadInfo * into, DoodadInfo * from)
     next = from->defs.next;
     ClearDoodadInfo(from);
     from->defs.next = next;
-    return;
 }
 
 static DoodadInfo *
@@ -1310,7 +1291,6 @@ MergeIncludedGeometry(GeometryInfo * into, GeometryInfo * from,
     }
     if (!MergeAliases(&into->aliases, &from->aliases, merge))
         into->errorCount++;
-    return;
 }
 
 typedef void (*FileHandler) (XkbFile * /* file */ ,
@@ -1333,7 +1313,7 @@ HandleIncludeGeometry(IncludeStmt * stmt, struct xkb_desc * xkb, GeometryInfo * 
     {
         haveSelf = True;
         included = *info;
-        bzero(info, sizeof(GeometryInfo));
+        memset(info, 0, sizeof(GeometryInfo));
     }
     else if (ProcessIncludeFile(stmt, XkmGeometryIndex, &rtrn, &newMerge))
     {
@@ -1344,11 +1324,11 @@ HandleIncludeGeometry(IncludeStmt * stmt, struct xkb_desc * xkb, GeometryInfo * 
         (*hndlr) (rtrn, xkb, MergeOverride, &included);
         if (stmt->stmt != NULL)
         {
-            if (included.name != NULL)
-                free(included.name);
+            free(included.name);
             included.name = stmt->stmt;
             stmt->stmt = NULL;
         }
+        FreeXKBFile(rtrn);
     }
     else
     {
@@ -1379,6 +1359,7 @@ HandleIncludeGeometry(IncludeStmt * stmt, struct xkb_desc * xkb, GeometryInfo * 
                 (*hndlr) (rtrn, xkb, MergeOverride, &next_incl);
                 MergeIncludedGeometry(&included, &next_incl, op);
                 ClearGeometryInfo(&next_incl);
+                FreeXKBFile(rtrn);
             }
             else
             {
@@ -2080,7 +2061,7 @@ SetKeyField(KeyInfo * key,
             return ReportBadType("key", field, keyText(key), "key name");
         }
         key->defs.defined |= _GK_Name;
-        bzero(key->name, XkbKeyNameLength + 1);
+        memset(key->name, 0, XkbKeyNameLength + 1);
         strncpy(key->name, tmp.keyName.name, XkbKeyNameLength);
     }
     else
@@ -2497,7 +2478,7 @@ HandleShapeDef(ShapeDef * def, struct xkb_desc * xkb, unsigned merge,
     if (def->merge != MergeDefault)
         merge = def->merge;
 
-    bzero(&si, sizeof(ShapeInfo));
+    memset(&si, 0, sizeof(ShapeInfo));
     si.defs.merge = merge;
     si.name = def->name;
     si.dfltCornerRadius = info->dfltCornerRadius;
@@ -2566,7 +2547,7 @@ HandleOverlayDef(OverlayDef * def,
         ACTION("Overlay ignored\n");
         return True;
     }
-    bzero(&ol, sizeof(OverlayInfo));
+    memset(&ol, 0, sizeof(OverlayInfo));
     ol.name = def->name;
     for (keyDef = def->keys; keyDef;
          keyDef = (OverlayKeyDef *) keyDef->common.next)
@@ -2718,7 +2699,7 @@ HandleRowBody(RowDef * def, RowInfo * row, unsigned merge,
                     ACTION("Section not compiled\n");
                     return False;
                 }
-                bzero(key.name, XkbKeyNameLength + 1);
+                memset(key.name, 0, XkbKeyNameLength + 1);
                 strncpy(key.name, keyDef->name, XkbKeyNameLength);
                 key.defs.defined |= _GK_Name;
             }
@@ -2863,6 +2844,7 @@ HandleGeometryFile(XkbFile * file,
 
     if (merge == MergeDefault)
         merge = MergeAugment;
+    free(info->name);
     info->name = _XkbDupString(file->name);
     stmt = file->defs;
     while (stmt)
@@ -2930,7 +2912,6 @@ HandleGeometryFile(XkbFile * file,
             break;
         }
     }
-    return;
 }
 
 /***====================================================================***/
@@ -2938,7 +2919,7 @@ HandleGeometryFile(XkbFile * file,
 static Bool
 CopyShapeDef(struct xkb_geometry * geom, ShapeInfo * si)
 {
-    register int i, n;
+    int i, n;
     struct xkb_shape * shape;
     struct xkb_outline *old_outline, *outline;
     uint32_t name;
@@ -3391,7 +3372,7 @@ VerifyOverlayInfo(struct xkb_geometry * geom,
                   OverlayInfo * oi,
                   GeometryInfo * info, short rowMap[256], short rowSize[256])
 {
-    register OverlayKeyInfo *ki, *next;
+    OverlayKeyInfo *ki, *next;
     unsigned long oKey, uKey, sKey;
     struct xkb_row * row;
     struct xkb_key * key;
@@ -3466,7 +3447,7 @@ VerifyOverlayInfo(struct xkb_geometry * geom,
         return False;
     }
     /* now figure out how many rows are defined for the overlay */
-    bzero(rowSize, sizeof(short) * 256);
+    memset(rowSize, 0, sizeof(short) * 256);
     for (k = 0; k < 256; k++)
     {
         rowMap[k] = -1;
@@ -3525,7 +3506,7 @@ CopyOverlayDef(struct xkb_geometry * geom,
     {
         row = &ol->rows[ki->overlayRow];
         key = &row->keys[row->num_keys++];
-        bzero(key, sizeof(struct xkb_overlay_key));
+        memset(key, 0, sizeof(struct xkb_overlay_key));
         strncpy(key->over.name, ki->over, XkbKeyNameLength);
         strncpy(key->under.name, ki->under, XkbKeyNameLength);
     }
@@ -3649,7 +3630,7 @@ CompileGeometry(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
     {
         struct xkb_geometry * geom;
         struct xkb_geometry_sizes sizes;
-        bzero(&sizes, sizeof(sizes));
+        memset(&sizes, 0, sizeof(sizes));
         sizes.which = XkbGeomAllMask;
         sizes.num_properties = info.nProps;
         sizes.num_colors = 8;

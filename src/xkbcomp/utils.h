@@ -70,10 +70,10 @@ recalloc(void * old, unsigned nOld, unsigned nNew, unsigned newSize);
 
 #define	uTypedAlloc(t)		((t *)malloc((unsigned)sizeof(t)))
 #define	uTypedCalloc(n,t)	((t *)calloc((unsigned)n,(unsigned)sizeof(t)))
-#define	uTypedRealloc(pO,n,t)	((t *)realloc((void *)pO,((unsigned)n)*sizeof(t)))
-#define	uTypedRecalloc(pO,o,n,t) ((t *)recalloc((void *)pO,((unsigned)o),((unsigned)n),sizeof(t)))
+#define	uTypedRealloc(pO,n,t)	((t *)realloc(pO,((unsigned)n)*sizeof(t)))
+#define	uTypedRecalloc(pO,o,n,t) ((t *)recalloc(pO,((unsigned)o),((unsigned)n),sizeof(t)))
 #if (defined mdHasAlloca) && (mdHasAlloca)
-#define	uTmpAlloc(n)	((void *)alloca((unsigned)n))
+#define	uTmpAlloc(n)	alloca((unsigned)n)
 #define	uTmpFree(p)
 #else
 #define	uTmpAlloc(n)	malloc(n)

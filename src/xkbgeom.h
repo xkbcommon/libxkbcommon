@@ -32,7 +32,7 @@ authorization from the authors.
 #include "xkbcommon/xkbcommon.h"
 
 extern void
-XkbcFreeGeometry(struct xkb_geometry * geom, unsigned which, Bool freeMap);
+XkbcFreeGeometry(struct xkb_desc * xkb);
 
 extern int
 XkbcAllocGeomKeyAliases(struct xkb_geometry * geom, int nKeyAliases);

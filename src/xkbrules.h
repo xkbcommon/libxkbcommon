@@ -156,6 +156,6 @@ extern Bool
 XkbcRF_LoadRules(FILE *file, XkbRF_RulesPtr rules);
 
 extern void
-XkbcRF_Free(XkbRF_RulesPtr rules, Bool freeRules);
+XkbcRF_Free(XkbRF_RulesPtr rules);
 
 #endif /* _XKBRULES_H_ */

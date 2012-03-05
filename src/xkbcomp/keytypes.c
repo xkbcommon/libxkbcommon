@@ -31,6 +31,7 @@
 #include "vmod.h"
 #include "action.h"
 #include "misc.h"
+#include "parseutils.h"
 
 typedef struct _PreserveInfo
 {
@@ -77,10 +78,10 @@ typedef struct _KeyTypesInfo
     VModInfo vmods;
 } KeyTypesInfo;
 
-uint32_t tok_ONE_LEVEL;
-uint32_t tok_TWO_LEVEL;
+static uint32_t tok_ONE_LEVEL;
+static uint32_t tok_TWO_LEVEL;
 static uint32_t tok_ALPHABETIC;
-uint32_t tok_KEYPAD;
+static uint32_t tok_KEYPAD;
 
 /***====================================================================***/
 
@@ -149,7 +150,7 @@ InitKeyTypesInfo(KeyTypesInfo * info, struct xkb_desc * xkb, KeyTypesInfo * from
             info->dflt.lvlNames = uTypedCalloc(from->dflt.szNames, uint32_t);
             if (info->dflt.lvlNames)
             {
-                register unsigned sz = from->dflt.szNames * sizeof(uint32_t);
+                unsigned sz = from->dflt.szNames * sizeof(uint32_t);
                 memcpy(info->dflt.lvlNames, from->dflt.lvlNames, sz);
             }
         }
@@ -173,39 +174,30 @@ InitKeyTypesInfo(KeyTypesInfo * info, struct xkb_desc * xkb, KeyTypesInfo * from
             }
         }
     }
-    return;
 }
 
 static void
 FreeKeyTypeInfo(KeyTypeInfo * type)
 {
-    if (type->entries != NULL)
-    {
-        free(type->entries);
-        type->entries = NULL;
-    }
-    if (type->lvlNames != NULL)
-    {
-        free(type->lvlNames);
-        type->lvlNames = NULL;
-    }
+    free(type->entries);
+    type->entries = NULL;
+    free(type->lvlNames);
+    type->lvlNames = NULL;
     if (type->preserve != NULL)
     {
         ClearCommonInfo(&type->preserve->defs);
         type->preserve = NULL;
     }
-    return;
 }
 
 static void
 FreeKeyTypesInfo(KeyTypesInfo * info)
 {
-    if (info->name)
-        free(info->name);
+    free(info->name);
     info->name = NULL;
     if (info->types)
     {
-        register KeyTypeInfo *type;
+        KeyTypeInfo *type;
         for (type = info->types; type; type = (KeyTypeInfo *) type->defs.next)
         {
             FreeKeyTypeInfo(type);
@@ -213,7 +205,6 @@ FreeKeyTypesInfo(KeyTypesInfo * info)
         info->types = (KeyTypeInfo *) ClearCommonInfo(&info->types->defs);
     }
     FreeKeyTypeInfo(&info->dflt);
-    return;
 }
 
 static KeyTypeInfo *
@@ -224,7 +215,7 @@ NextKeyType(KeyTypesInfo * info)
     type = uTypedAlloc(KeyTypeInfo);
     if (type != NULL)
     {
-        bzero(type, sizeof(KeyTypeInfo));
+        memset(type, 0, sizeof(KeyTypeInfo));
         type->defs.fileID = info->fileID;
         info->types = (KeyTypeInfo *) AddCommonInfo(&info->types->defs,
                                                     (CommonInfo *) type);
@@ -363,7 +354,6 @@ MergeIncludedKeyTypes(KeyTypesInfo * into,
             into->errorCount++;
     }
     into->stdPresent |= from->stdPresent;
-    return;
 }
 
 typedef void (*FileHandler) (XkbFile * /* file */ ,
@@ -386,7 +376,7 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
     {
         haveSelf = True;
         included = *info;
-        bzero(info, sizeof(KeyTypesInfo));
+        memset(info, 0, sizeof(KeyTypesInfo));
     }
     else if (ProcessIncludeFile(stmt, XkmTypesIndex, &rtrn, &newMerge))
     {
@@ -397,11 +387,11 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
         (*hndlr) (rtrn, xkb, newMerge, &included);
         if (stmt->stmt != NULL)
         {
-            if (included.name != NULL)
-                free(included.name);
+            free(included.name);
             included.name = stmt->stmt;
             stmt->stmt = NULL;
         }
+        FreeXKBFile(rtrn);
     }
     else
     {
@@ -430,6 +420,7 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
                 (*hndlr) (rtrn, xkb, op, &next_incl);
                 MergeIncludedKeyTypes(&included, &next_incl, op, xkb);
                 FreeKeyTypesInfo(&next_incl);
+                FreeXKBFile(rtrn);
             }
             else
             {
@@ -454,7 +445,7 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
 static struct xkb_kt_map_entry *
 FindMatchingMapEntry(KeyTypeInfo * type, unsigned mask, unsigned vmask)
 {
-    register int i;
+    int i;
     struct xkb_kt_map_entry * entry;
 
     for (i = 0, entry = type->entries; i < type->nEntries; i++, entry++)
@@ -468,7 +459,7 @@ FindMatchingMapEntry(KeyTypeInfo * type, unsigned mask, unsigned vmask)
 static void
 DeleteLevel1MapEntries(KeyTypeInfo * type)
 {
-    register int i, n;
+    int i, n;
 
     for (i = 0; i < type->nEntries; i++)
     {
@@ -481,7 +472,6 @@ DeleteLevel1MapEntries(KeyTypeInfo * type)
             type->nEntries--;
         }
     }
-    return;
 }
 
 /**
@@ -939,7 +929,7 @@ static int
 HandleKeyTypeDef(KeyTypeDef * def,
                  struct xkb_desc * xkb, unsigned merge, KeyTypesInfo * info)
 {
-    register int i;
+    int i;
     KeyTypeInfo type;
 
     if (def->merge != MergeDefault)
@@ -1021,6 +1011,7 @@ HandleKeyTypesFile(XkbFile * file,
 {
     ParseCommon *stmt;
 
+    free(info->name);
     info->name = _XkbDupString(file->name);
     stmt = file->defs;
     while (stmt)
@@ -1074,13 +1065,12 @@ HandleKeyTypesFile(XkbFile * file,
             break;
         }
     }
-    return;
 }
 
 static Bool
 CopyDefToKeyType(struct xkb_desc * xkb, struct xkb_key_type * type, KeyTypeInfo * def)
 {
-    register int i;
+    int i;
     PreserveInfo *pre;
 
     for (pre = def->preserve; pre != NULL;
@@ -1161,9 +1151,9 @@ CompileKeyTypes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
 
     if (info.errorCount == 0)
     {
-        register int i;
-        register KeyTypeInfo *def;
-        register struct xkb_key_type *type, *next;
+        int i;
+        KeyTypeInfo *def;
+        struct xkb_key_type *type, *next;
 
         if (info.name != NULL)
         {

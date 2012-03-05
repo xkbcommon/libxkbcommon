@@ -355,6 +355,8 @@ AddDirectory(CompPair *cp, char *head, char *ptrn, char *rest, char *map,
     }
 #ifdef WIN32
     while (FindNextFile(dirh, &file));
+#else
+    closedir(dirp);
 #endif
     return nMatch;
 }

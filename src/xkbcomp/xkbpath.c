@@ -26,6 +26,7 @@
 
 #define	DEBUG_VAR debugFlags
 #include "utils.h"
+#include <errno.h>
 #include <stdlib.h>
 #include "xkbpath.h"
 #include "xkbcommon/xkbcommon.h"
@@ -170,7 +171,7 @@ XkbInitIncludePath(void)
         return True;
 
     szPath = PATH_CHUNK;
-    includePath = (char **) calloc(szPath, sizeof(char *));
+    includePath = calloc(szPath, sizeof(char *));
     if (!includePath)
         return False;
 
@@ -184,7 +185,7 @@ XkbInitIncludePath(void)
 static void
 XkbClearIncludePath(void)
 {
-    register int i;
+    int i;
 
     if (szPath > 0)
     {
@@ -199,7 +200,14 @@ XkbClearIncludePath(void)
         nPathEntries = 0;
     }
     noDefaultPath = True;
-    return;
+}
+
+void
+XkbFreeIncludePath(void)
+{
+    XkbClearIncludePath();
+    free(includePath);
+    includePath = NULL;
 }
 
 /**
@@ -232,7 +240,7 @@ XkbAddDirectoryToPath(const char *dir)
     if (nPathEntries >= szPath)
     {
         szPath += PATH_CHUNK;
-        includePath = (char **) realloc(includePath, szPath * sizeof(char *));
+        includePath = realloc(includePath, szPath * sizeof(char *));
         if (includePath == NULL)
         {
             WSGO("Allocation failed (includePath)\n");
@@ -263,127 +271,34 @@ XkbAddDefaultDirectoriesToPath(void)
 
 /**
  * Return the xkb directory based on the type.
- * Do not free the memory returned by this function.
  */
-char *
+const char *
 XkbDirectoryForInclude(unsigned type)
 {
-    static char buf[32];
-
     switch (type)
     {
     case XkmSemanticsFile:
-        strcpy(buf, "semantics");
-        break;
+        return "semantics";
     case XkmLayoutFile:
-        strcpy(buf, "layout");
-        break;
+        return "layout";
     case XkmKeymapFile:
-        strcpy(buf, "keymap");
-        break;
+        return "keymap";
     case XkmKeyNamesIndex:
-        strcpy(buf, "keycodes");
-        break;
+        return "keycodes";
     case XkmTypesIndex:
-        strcpy(buf, "types");
-        break;
+        return "types";
     case XkmSymbolsIndex:
-        strcpy(buf, "symbols");
-        break;
+        return "symbols";
     case XkmCompatMapIndex:
-        strcpy(buf, "compat");
-        break;
+        return "compat";
     case XkmGeometryFile:
     case XkmGeometryIndex:
-        strcpy(buf, "geometry");
-        break;
+        return "geometry";
     case XkmRulesFile:
-        strcpy(buf, "rules");
-        break;
+        return "rules";
     default:
-        strcpy(buf, "");
-        break;
+        return "";
     }
-    return buf;
-}
-
-/***====================================================================***/
-
-typedef struct _FileCacheEntry
-{
-    char *name;
-    unsigned type;
-    char *path;
-    void *data;
-    struct _FileCacheEntry *next;
-} FileCacheEntry;
-static FileCacheEntry *fileCache;
-
-/**
- * Add the file with the given name to the internal cache to avoid opening and
- * parsing the file multiple times. If a cache entry for the same name + type
- * is already present, the entry is overwritten and the data belonging to the
- * previous entry is returned.
- *
- * @parameter name The name of the file (e.g. evdev).
- * @parameter type Type of the file (XkbTypesIdx, ... or XkbSemanticsFile, ...)
- * @parameter path The full path to the file.
- * @parameter data Already parsed data.
- *
- * @return The data from the overwritten file or NULL.
- */
-void *
-XkbAddFileToCache(char *name, unsigned type, char *path, void *data)
-{
-    FileCacheEntry *entry;
-
-    for (entry = fileCache; entry != NULL; entry = entry->next)
-    {
-        if ((type == entry->type) && (uStringEqual(name, entry->name)))
-        {
-            void *old = entry->data;
-            WSGO("Replacing file cache entry (%s/%d)\n", name, type);
-            entry->path = path;
-            entry->data = data;
-            return old;
-        }
-    }
-    entry = uTypedAlloc(FileCacheEntry);
-    if (entry != NULL)
-    {
-        entry->name = name;
-        entry->type = type;
-        entry->path = path;
-        entry->data = data;
-        entry->next = fileCache;
-        fileCache = entry;
-    }
-    return NULL;
-}
-
-/**
- * Search for the given name + type in the cache.
- *
- * @parameter name The name of the file (e.g. evdev).
- * @parameter type Type of the file (XkbTypesIdx, ... or XkbSemanticsFile, ...)
- * @parameter pathRtrn Set to the full path of the given entry.
- *
- * @return the data from the cache entry or NULL if no matching entry was found.
- */
-void *
-XkbFindFileInCache(char *name, unsigned type, char **pathRtrn)
-{
-    FileCacheEntry *entry;
-
-    for (entry = fileCache; entry != NULL; entry = entry->next)
-    {
-        if ((type == entry->type) && (uStringEqual(name, entry->name)))
-        {
-            *pathRtrn = entry->path;
-            return entry->data;
-        }
-    }
-    return NULL;
 }
 
 /***====================================================================***/
@@ -401,41 +316,40 @@ XkbFindFileInCache(char *name, unsigned type, char **pathRtrn)
 FILE *
 XkbFindFileInPath(const char *name, unsigned type, char **pathRtrn)
 {
-    register int i;
+    int i, ret;
     FILE *file = NULL;
-    int nameLen, typeLen, pathLen;
-    char buf[PATH_MAX], *typeDir;
+    char buf[PATH_MAX];
+    const char *typeDir;
 
     if (!XkbInitIncludePath())
         return NULL;
 
     typeDir = XkbDirectoryForInclude(type);
-    nameLen = strlen(name);
-    typeLen = strlen(typeDir);
     for (i = 0; i < nPathEntries; i++)
     {
-        pathLen = strlen(includePath[i]);
-        if (typeLen < 1)
+        if (includePath[i] == NULL || *includePath[i] == '\0')
             continue;
 
-        if ((nameLen + typeLen + pathLen + 2) >= PATH_MAX)
+        ret = snprintf(buf, sizeof(buf), "%s/%s/%s",
+                       includePath[i], typeDir, name);
+        if (ret >= sizeof(buf))
         {
             ERROR("File name (%s/%s/%s) too long\n", includePath[i],
                    typeDir, name);
             ACTION("Ignored\n");
             continue;
         }
-        snprintf(buf, sizeof(buf), "%s/%s/%s", includePath[i], typeDir, name);
         file = fopen(buf, "r");
-        if (file != NULL)
-            break;
+        if (file == NULL) {
+            ERROR("Couldn't open file (%s/%s/%s): %s\n", includePath[i],
+                   typeDir, name, strerror(-errno));
+            ACTION("Ignored\n");
+            continue;
+        }
+        break;
     }
 
     if ((file != NULL) && (pathRtrn != NULL))
-    {
-        *pathRtrn = (char *) calloc(strlen(buf) + 1, sizeof(char));
-        if (*pathRtrn != NULL)
-            strcpy(*pathRtrn, buf);
-    }
+        *pathRtrn = strdup(buf);
     return file;
 }

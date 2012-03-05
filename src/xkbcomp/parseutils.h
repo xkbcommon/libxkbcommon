@@ -177,6 +177,8 @@ extern XkbFile *CreateXKBFile(int /* type */ ,
                               unsigned  /* flags */
     );
 
+extern void FreeXKBFile(XkbFile *file);
+
 extern void yyerror(const char *        /* msg */
     );
 

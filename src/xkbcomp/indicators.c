@@ -51,7 +51,6 @@ ClearIndicatorMapInfo(LEDInfo * info)
     info->vmods = 0;
     info->which_groups = info->groups = 0;
     info->ctrls = 0;
-    return;
 }
 
 LEDInfo *
@@ -162,60 +161,37 @@ AddIndicatorMap(LEDInfo * oldLEDs, LEDInfo * new)
     return old;
 }
 
-static LookupEntry modComponentNames[] = {
-    {"base", XkbIM_UseBase}
-    ,
-    {"latched", XkbIM_UseLatched}
-    ,
-    {"locked", XkbIM_UseLocked}
-    ,
-    {"effective", XkbIM_UseEffective}
-    ,
-    {"compat", XkbIM_UseCompat}
-    ,
-    {"any", XkbIM_UseAnyMods}
-    ,
-    {"none", 0}
-    ,
+static const LookupEntry modComponentNames[] = {
+    {"base", XkbIM_UseBase},
+    {"latched", XkbIM_UseLatched},
+    {"locked", XkbIM_UseLocked},
+    {"effective", XkbIM_UseEffective},
+    {"compat", XkbIM_UseCompat},
+    {"any", XkbIM_UseAnyMods},
+    {"none", 0},
     {NULL, 0}
 };
-static LookupEntry groupComponentNames[] = {
-    {"base", XkbIM_UseBase}
-    ,
-    {"latched", XkbIM_UseLatched}
-    ,
-    {"locked", XkbIM_UseLocked}
-    ,
-    {"effective", XkbIM_UseEffective}
-    ,
-    {"any", XkbIM_UseAnyGroup}
-    ,
-    {"none", 0}
-    ,
+static const LookupEntry groupComponentNames[] = {
+    {"base", XkbIM_UseBase},
+    {"latched", XkbIM_UseLatched},
+    {"locked", XkbIM_UseLocked},
+    {"effective", XkbIM_UseEffective},
+    {"any", XkbIM_UseAnyGroup},
+    {"none", 0},
     {NULL, 0}
 };
 
-static LookupEntry groupNames[] = {
-    {"group1", 0x01}
-    ,
-    {"group2", 0x02}
-    ,
-    {"group3", 0x04}
-    ,
-    {"group4", 0x08}
-    ,
-    {"group5", 0x10}
-    ,
-    {"group6", 0x20}
-    ,
-    {"group7", 0x40}
-    ,
-    {"group8", 0x80}
-    ,
-    {"none", 0x00}
-    ,
-    {"all", 0xff}
-    ,
+static const LookupEntry groupNames[] = {
+    {"group1", 0x01},
+    {"group2", 0x02},
+    {"group3", 0x04},
+    {"group4", 0x08},
+    {"group5", 0x10},
+    {"group6", 0x20},
+    {"group7", 0x40},
+    {"group8", 0x80},
+    {"none", 0x00},
+    {"all", 0xff},
     {NULL, 0}
 };
 
@@ -434,7 +410,7 @@ CopyIndicatorMapDefs(struct xkb_desc * xkb, LEDInfo *leds, LEDInfo **unboundRtrn
         }
         else
         {
-            register struct xkb_indicator_map * im;
+            struct xkb_indicator_map * im;
             im = &xkb->indicators->maps[led->indicator - 1];
             im->flags = led->flags;
             im->which_groups = led->which_groups;
@@ -460,8 +436,8 @@ Bool
 BindIndicators(struct xkb_desc * xkb, Bool force, LEDInfo *unbound,
                LEDInfo **unboundRtrn)
 {
-    register int i;
-    register LEDInfo *led, *next, *last;
+    int i;
+    LEDInfo *led, *next, *last;
 
     if (xkb->names != NULL)
     {

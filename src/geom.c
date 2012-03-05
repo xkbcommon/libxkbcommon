@@ -28,16 +28,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <config.h>
 #endif
 
+#include <limits.h>
 #include "xkbgeom.h"
 #include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
-
-#ifndef MINSHORT
-#define MINSHORT -32768
-#endif
-#ifndef MAXSHORT
-#define MAXSHORT 32767
-#endif
 
 static void
 _XkbCheckBounds(struct xkb_bounds * bounds, int x, int y)
@@ -62,8 +56,8 @@ XkbcComputeShapeBounds(struct xkb_shape * shape)
     if ((!shape) || (shape->num_outlines < 1))
         return False;
 
-    shape->bounds.x1 = shape->bounds.y1 = MAXSHORT;
-    shape->bounds.x2 = shape->bounds.y2 = MINSHORT;
+    shape->bounds.x1 = shape->bounds.y1 = SHRT_MAX;
+    shape->bounds.x2 = shape->bounds.y2 = SHRT_MIN;
 
     for (outline = shape->outlines, o = 0; o < shape->num_outlines;
          o++, outline++)
@@ -87,7 +81,7 @@ XkbcComputeRowBounds(struct xkb_geometry * geom, struct xkb_section * section, s
         return False;
 
     bounds = &row->bounds;
-    bzero(bounds, sizeof(struct xkb_bounds));
+    memset(bounds, 0, sizeof(struct xkb_bounds));
 
     for (key = row->keys, pos = k = 0; k < row->num_keys; k++, key++) {
         sbounds = &XkbKeyShape(geom, key)->bounds;
@@ -129,7 +123,7 @@ XkbcComputeSectionBounds(struct xkb_geometry * geom, struct xkb_section * sectio
         return False;
 
     bounds = &section->bounds;
-    bzero(bounds, sizeof(struct xkb_bounds));
+    memset(bounds, 0, sizeof(struct xkb_bounds));
 
     for (i = 0, row = section->rows; i < section->num_rows; i++, row++) {
         if (!XkbcComputeRowBounds(geom, section, row))

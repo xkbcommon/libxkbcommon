@@ -53,48 +53,53 @@ ProcessIncludeFile(IncludeStmt * stmt,
                    XkbFile ** file_rtrn, unsigned *merge_rtrn)
 {
     FILE *file;
-    XkbFile *rtrn, *mapToUse;
+    XkbFile *rtrn, *mapToUse, *next;
     char oldFile[1024] = {0};
     int oldLine = lineNum;
 
-    rtrn = XkbFindFileInCache(stmt->file, file_type, &stmt->path);
-    if (rtrn == NULL)
+    file = XkbFindFileInPath(stmt->file, file_type, &stmt->path);
+    if (file == NULL)
     {
-        /* file not in cache, open it, parse it and store it in cache for next
-           time. */
-        file = XkbFindFileInPath(stmt->file, file_type, &stmt->path);
-        if (file == NULL)
-        {
-            ERROR("Can't find file \"%s\" for %s include\n", stmt->file,
-                   XkbDirectoryForInclude(file_type));
-            return False;
-        }
-        if (scanFile)
-            strcpy(oldFile, scanFile);
-        else
-            memset(oldFile, 0, sizeof(oldFile));
-        oldLine = lineNum;
-        setScanState(stmt->file, 1);
-        if (debugFlags & 2)
-            INFO("About to parse include file %s\n", stmt->file);
-        /* parse the file */
-        if ((XKBParseFile(file, &rtrn) == 0) || (rtrn == NULL))
-        {
-            setScanState(oldFile, oldLine);
-            ERROR("Error interpreting include file \"%s\"\n", stmt->file);
-            fclose(file);
-            return False;
-        }
-        fclose(file);
-        XkbAddFileToCache(stmt->file, file_type, stmt->path, rtrn);
+        ERROR("Can't find file \"%s\" for %s include\n", stmt->file,
+                XkbDirectoryForInclude(file_type));
+        return False;
     }
+    if (scanFile)
+        strcpy(oldFile, scanFile);
+    else
+        memset(oldFile, 0, sizeof(oldFile));
+    oldLine = lineNum;
+    setScanState(stmt->file, 1);
+    if (debugFlags & 2)
+        INFO("About to parse include file %s\n", stmt->file);
+    /* parse the file */
+    if ((XKBParseFile(file, &rtrn) == 0) || (rtrn == NULL))
+    {
+        setScanState(oldFile, oldLine);
+        ERROR("Error interpreting include file \"%s\"\n", stmt->file);
+        fclose(file);
+        return False;
+    }
+    fclose(file);
+
     mapToUse = rtrn;
     if (stmt->map != NULL)
     {
-        while ((mapToUse) && ((!uStringEqual(mapToUse->name, stmt->map)) ||
-                              (mapToUse->type != file_type)))
+        while (mapToUse)
         {
-            mapToUse = (XkbFile *) mapToUse->common.next;
+            next = (XkbFile *)mapToUse->common.next;
+            mapToUse->common.next = NULL;
+            if (uStringEqual(mapToUse->name, stmt->map) &&
+                mapToUse->type == file_type)
+            {
+                    FreeXKBFile(next);
+                    break;
+            }
+            else
+            {
+                FreeXKBFile(mapToUse);
+            }
+            mapToUse = next;
         }
         if (!mapToUse)
         {
@@ -249,7 +254,7 @@ FindNamedKey(struct xkb_desc * xkb,
              xkb_keycode_t *kc_rtrn,
              Bool use_aliases, Bool create, int start_from)
 {
-    register unsigned n;
+    unsigned n;
 
     if (start_from < xkb->min_key_code)
     {
@@ -315,7 +320,7 @@ Bool
 FindKeyNameForAlias(struct xkb_desc * xkb, unsigned long lname,
                     unsigned long *real_name)
 {
-    register int i;
+    int i;
     char name[XkbKeyNameLength + 1];
 
     if (xkb && xkb->geom && xkb->geom->key_aliases)

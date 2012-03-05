@@ -36,16 +36,16 @@ recalloc(void * old, unsigned nOld, unsigned nNew, unsigned itemSize)
     char *rtrn;
 
     if (old == NULL)
-        rtrn = (char *) calloc(nNew, itemSize);
+        rtrn = calloc(nNew, itemSize);
     else
     {
-        rtrn = (char *) realloc((char *) old, nNew * itemSize);
+        rtrn = realloc(old, nNew * itemSize);
         if ((rtrn) && (nNew > nOld))
         {
-            bzero(&rtrn[nOld * itemSize], (nNew - nOld) * itemSize);
+            memset(&rtrn[nOld * itemSize], 0, (nNew - nOld) * itemSize);
         }
     }
-    return (void *) rtrn;
+    return rtrn;
 }
 
 static FILE *errorFile = NULL;
@@ -205,7 +205,7 @@ uStrCaseCmp(const char *str1, const char *str2)
 {
     char buf1[512], buf2[512];
     char c, *s;
-    register int n;
+    int n;
 
     for (n = 0, s = buf1; (c = *str1++); n++)
     {

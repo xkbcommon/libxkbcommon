@@ -39,8 +39,6 @@
 #define	SYMBOLS		4
 #define	MAX_SECTIONS	5
 
-static XkbFile *sections[MAX_SECTIONS];
-
 /**
  * Compile the given file and store the output in xkb.
  * @param file A list of XkbFiles, each denoting one type (e.g.
@@ -55,8 +53,9 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
     unsigned mainType;
     char *mainName;
     LEDInfo *unbound = NULL;
+    XkbFile *sections[MAX_SECTIONS];
 
-    bzero(sections, MAX_SECTIONS * sizeof(XkbFile *));
+    memset(sections, 0, sizeof(sections));
     mainType = file->type;
     mainName = file->name;
     switch (mainType)
@@ -84,7 +83,10 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
     /* Check for duplicate entries in the input file */
     while ((file) && (ok))
     {
-        file->topName = mainName;
+        if (file->topName != mainName) {
+            free(file->topName);
+            file->topName = strdup(mainName);
+        }
         if ((have & (1 << file->type)) != 0)
         {
             ERROR("More than one %s section in a %s file\n",
@@ -158,7 +160,7 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
     xkb->defined = have;
     if (required & (~have))
     {
-        register int i, bit;
+        int i, bit;
         unsigned missing;
         missing = required & (~have);
         for (i = 0, bit = 1; missing != 0; i++, bit <<= 1)

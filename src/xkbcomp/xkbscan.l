@@ -199,8 +199,7 @@ yyerror(const char *msg)
 void setScanState(const char *file, int lineno)
 {
   yylineno = 1;
-  if (scanFile)
-    free(scanFile);
+  free(scanFile);
   scanFile = strdup(file);
 }
 
@@ -230,20 +229,18 @@ XKBParseString(const char *string, XkbFile ** pRtrn)
 int
 XKBParseFile(FILE * file, XkbFile ** pRtrn)
 {
-    if (file)
-    {
-        yyin = file;
-        rtrnValue = NULL;
-        if (yyparse() == 0)
-        {
-            *pRtrn = rtrnValue;
-            CheckDefaultMap(rtrnValue);
-            rtrnValue = NULL;
-            return 1;
-        }
-        *pRtrn = NULL;
-        return 0;
-    }
     *pRtrn = NULL;
+    if (!file)
+        return 1;
+
+    yyin = file;
+    rtrnValue = NULL;
+    if (yyparse() != 0)
+        return 0;
+
+    yylex_destroy();
+    *pRtrn = rtrnValue;
+    CheckDefaultMap(rtrnValue);
+    rtrnValue = NULL;
     return 1;
 }

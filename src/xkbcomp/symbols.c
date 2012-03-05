@@ -40,10 +40,6 @@
 #include "misc.h"
 #include "alias.h"
 
-extern uint32_t tok_ONE_LEVEL;
-extern uint32_t tok_TWO_LEVEL;
-extern uint32_t tok_KEYPAD;
-
 /***====================================================================***/
 
 #define	RepeatYes	1
@@ -85,7 +81,7 @@ typedef struct _KeyInfo
 static void
 InitKeyInfo(KeyInfo * info)
 {
-    register int i;
+    int i;
     static char dflt[4] = "*";
 
     info->defs.defined = 0;
@@ -109,7 +105,6 @@ InitKeyInfo(KeyInfo * info)
     info->nameForOverlayKey = 0;
     info->repeat = RepeatUndefined;
     info->allowNone = 0;
-    return;
 }
 
 /**
@@ -118,7 +113,7 @@ InitKeyInfo(KeyInfo * info)
 static void
 FreeKeyInfo(KeyInfo * info)
 {
-    register int i;
+    int i;
 
     info->defs.defined = 0;
     info->defs.fileID = 0;
@@ -130,11 +125,9 @@ FreeKeyInfo(KeyInfo * info)
     {
         info->numLevels[i] = 0;
         info->types[i] = None;
-        if (info->syms[i] != NULL)
-            free(info->syms[i]);
+        free(info->syms[i]);
         info->syms[i] = NULL;
-        if (info->acts[i] != NULL)
-            free(info->acts[i]);
+        free(info->acts[i]);
         info->acts[i] = NULL;
     }
     info->dfltType = None;
@@ -144,7 +137,6 @@ FreeKeyInfo(KeyInfo * info)
     info->nameForOverlayKey = 0;
     info->repeat = RepeatUndefined;
     info->allowNone = 0;
-    return;
 }
 
 /**
@@ -155,7 +147,7 @@ FreeKeyInfo(KeyInfo * info)
 static Bool
 CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
 {
-    register int i;
+    int i;
 
     *new = *old;
     new->defs.next = NULL;
@@ -183,8 +175,7 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
                     new->numLevels[i] = 0;
                     return False;
                 }
-                memcpy((char *) new->syms[i], (char *) old->syms[i],
-                       width * sizeof(uint32_t));
+                memcpy(new->syms[i], old->syms[i], width * sizeof(uint32_t));
             }
             if (old->acts[i] != NULL)
             {
@@ -194,7 +185,7 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
                     new->acts[i] = NULL;
                     return False;
                 }
-                memcpy((char *) new->acts[i], (char *) old->acts[i],
+                memcpy(new->acts[i], old->acts[i],
                        width * sizeof(union xkb_action));
             }
         }
@@ -241,11 +232,8 @@ typedef struct _SymbolsInfo
 static void
 InitSymbolsInfo(SymbolsInfo * info, struct xkb_desc * xkb)
 {
-    register int i;
+    int i;
 
-    tok_ONE_LEVEL = xkb_intern_atom("ONE_LEVEL");
-    tok_TWO_LEVEL = xkb_intern_atom("TWO_LEVEL");
-    tok_KEYPAD = xkb_intern_atom("KEYPAD");
     info->name = NULL;
     info->explicit_group = 0;
     info->errorCount = 0;
@@ -262,38 +250,25 @@ InitSymbolsInfo(SymbolsInfo * info, struct xkb_desc * xkb)
     InitVModInfo(&info->vmods, xkb);
     info->action = NULL;
     info->aliases = NULL;
-    return;
 }
 
 static void
 FreeSymbolsInfo(SymbolsInfo * info)
 {
-    register int i;
+    int i;
 
-    if (info->name)
-        free(info->name);
-    info->name = NULL;
+    free(info->name);
     if (info->keys)
     {
         for (i = 0; i < info->nKeys; i++)
-        {
             FreeKeyInfo(&info->keys[i]);
-        }
         free(info->keys);
-        info->keys = NULL;
     }
     if (info->modMap)
-    {
         ClearCommonInfo(&info->modMap->defs);
-        info->modMap = NULL;
-    }
     if (info->aliases)
-    {
         ClearAliases(&info->aliases);
-        info->aliases = NULL;
-    }
-    bzero((char *) info, sizeof(SymbolsInfo));
-    return;
+    memset(info, 0, sizeof(SymbolsInfo));
 }
 
 static Bool
@@ -337,7 +312,7 @@ MergeKeyGroups(SymbolsInfo * info,
     uint32_t *resultSyms;
     union xkb_action *resultActs;
     int resultWidth;
-    register int i;
+    int i;
     Bool report, clobber;
 
     clobber = (from->defs.merge != MergeAugment);
@@ -374,6 +349,9 @@ MergeKeyGroups(SymbolsInfo * info,
             WSGO("Could not allocate actions for group merge\n");
             ACTION("Group %d of key %s not merged\n", group,
                     longText(into->name));
+            if (resultSyms != into->syms[group] &&
+                resultSyms != from->syms[group])
+                free(resultSyms);
             return False;
         }
     }
@@ -457,13 +435,13 @@ MergeKeyGroups(SymbolsInfo * info,
             }
         }
     }
-    if ((into->syms[group] != NULL) && (resultSyms != into->syms[group]))
+    if (resultSyms != into->syms[group])
         free(into->syms[group]);
-    if ((from->syms[group] != NULL) && (resultSyms != from->syms[group]))
+    if (resultSyms != from->syms[group])
         free(from->syms[group]);
-    if ((into->acts[group] != NULL) && (resultActs != into->acts[group]))
+    if (resultActs != into->acts[group])
         free(into->acts[group]);
-    if ((from->acts[group] != NULL) && (resultActs != from->acts[group]))
+    if (resultActs != from->acts[group])
         free(from->acts[group]);
     into->numLevels[group] = resultWidth;
     into->syms[group] = resultSyms;
@@ -480,7 +458,7 @@ MergeKeyGroups(SymbolsInfo * info,
 static Bool
 MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
 {
-    register int i;
+    int i;
     unsigned collide = 0;
     Bool report;
 
@@ -490,14 +468,12 @@ MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
         {
             if (into->numLevels[i] != 0)
             {
-                if (into->syms[i])
-                    free(into->syms[i]);
-                if (into->acts[i])
-                    free(into->acts[i]);
+                free(into->syms[i]);
+                free(into->acts[i]);
             }
         }
         *into = *from;
-        bzero(from, sizeof(KeyInfo));
+        memset(from, 0, sizeof(KeyInfo));
         return True;
     }
     report = ((warningLevel > 9) ||
@@ -604,7 +580,7 @@ MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
 static Bool
 AddKeySymbols(SymbolsInfo * info, KeyInfo * key, struct xkb_desc * xkb)
 {
-    register int i;
+    int i;
     unsigned long real_name;
 
     for (i = 0; i < info->nKeys; i++)
@@ -716,7 +692,7 @@ static void
 MergeIncludedSymbols(SymbolsInfo * into, SymbolsInfo * from,
                      unsigned merge, struct xkb_desc * xkb)
 {
-    register int i;
+    int i;
     KeyInfo *key;
 
     if (from->errorCount > 0)
@@ -760,7 +736,6 @@ MergeIncludedSymbols(SymbolsInfo * into, SymbolsInfo * from,
     }
     if (!MergeAliases(&into->aliases, &from->aliases, merge))
         into->errorCount++;
-    return;
 }
 
 typedef void (*FileHandler) (XkbFile * /* rtrn */ ,
@@ -783,7 +758,7 @@ HandleIncludeSymbols(IncludeStmt * stmt,
     {
         haveSelf = True;
         included = *info;
-        bzero(info, sizeof(SymbolsInfo));
+        memset(info, 0, sizeof(SymbolsInfo));
     }
     else if (ProcessIncludeFile(stmt, XkmSymbolsIndex, &rtrn, &newMerge))
     {
@@ -801,11 +776,11 @@ HandleIncludeSymbols(IncludeStmt * stmt,
         (*hndlr) (rtrn, xkb, MergeOverride, &included);
         if (stmt->stmt != NULL)
         {
-            if (included.name != NULL)
-                free(included.name);
+            free(included.name);
             included.name = stmt->stmt;
             stmt->stmt = NULL;
         }
+        FreeXKBFile(rtrn);
     }
     else
     {
@@ -842,6 +817,7 @@ HandleIncludeSymbols(IncludeStmt * stmt,
                 (*hndlr) (rtrn, xkb, MergeOverride, &next_incl);
                 MergeIncludedSymbols(&included, &next_incl, op, xkb);
                 FreeSymbolsInfo(&next_incl);
+                FreeXKBFile(rtrn);
             }
             else
             {
@@ -877,7 +853,7 @@ GetGroupIndex(KeyInfo * key,
 
     if (arrayNdx == NULL)
     {
-        register int i;
+        int i;
         unsigned defined;
         if (what == SYMBOLS)
             defined = key->symsDefined;
@@ -968,7 +944,7 @@ AddActionsToKey(KeyInfo * key,
                 char *field,
                 ExprDef * arrayNdx, ExprDef * value, SymbolsInfo * info)
 {
-    register int i;
+    int i;
     unsigned ndx, nActs;
     ExprDef *act;
     struct xkb_any_action *toAct;
@@ -1071,7 +1047,7 @@ SetAllowNone(KeyInfo * key, ExprDef * arrayNdx, ExprDef * value)
 }
 
 
-static LookupEntry lockingEntries[] = {
+static const LookupEntry lockingEntries[] = {
     {"true", XkbKB_Lock},
     {"yes", XkbKB_Lock},
     {"on", XkbKB_Lock},
@@ -1082,7 +1058,7 @@ static LookupEntry lockingEntries[] = {
     {NULL, 0}
 };
 
-static LookupEntry repeatEntries[] = {
+static const LookupEntry repeatEntries[] = {
     {"true", RepeatYes},
     {"yes", RepeatYes},
     {"on", RepeatYes},
@@ -1507,13 +1483,11 @@ SetExplicitGroup(SymbolsInfo * info, KeyInfo * key)
         for (i = 1; i < XkbNumKbdGroups; i++)
         {
             key->numLevels[i] = 0;
-            if (key->syms[i] != NULL)
-                free(key->syms[i]);
-            key->syms[i] = (uint32_t *) NULL;
-            if (key->acts[i] != NULL)
-                free(key->acts[i]);
-            key->acts[i] = (union xkb_action *) NULL;
-            key->types[i] = (uint32_t) 0;
+            free(key->syms[i]);
+            key->syms[i] = NULL;
+            free(key->acts[i]);
+            key->acts[i] = NULL;
+            key->types[i] = 0;
         }
     }
     key->typesDefined = key->symsDefined = key->actsDefined = 1 << group;
@@ -1521,11 +1495,11 @@ SetExplicitGroup(SymbolsInfo * info, KeyInfo * key)
     key->numLevels[group] = key->numLevels[0];
     key->numLevels[0] = 0;
     key->syms[group] = key->syms[0];
-    key->syms[0] = (uint32_t *) NULL;
+    key->syms[0] = NULL;
     key->acts[group] = key->acts[0];
-    key->acts[0] = (union xkb_action *) NULL;
+    key->acts[0] = NULL;
     key->types[group] = key->types[0];
-    key->types[0] = (uint32_t) 0;
+    key->types[0] = 0;
     return True;
 }
 
@@ -1608,6 +1582,7 @@ HandleSymbolsFile(XkbFile * file,
 {
     ParseCommon *stmt;
 
+    free(info->name);
     info->name = _XkbDupString(file->name);
     stmt = file->defs;
     while (stmt)
@@ -1660,14 +1635,13 @@ HandleSymbolsFile(XkbFile * file,
             break;
         }
     }
-    return;
 }
 
 static Bool
 FindKeyForSymbol(struct xkb_desc * xkb, uint32_t sym, xkb_keycode_t *kc_rtrn)
 {
-    register int i, j;
-    register Bool gotOne;
+    int i, j;
+    Bool gotOne;
 
     j = 0;
     do
@@ -1702,7 +1676,7 @@ FindKeyForSymbol(struct xkb_desc * xkb, uint32_t sym, xkb_keycode_t *kc_rtrn)
 static Bool
 FindNamedType(struct xkb_desc * xkb, uint32_t name, unsigned *type_rtrn)
 {
-    register unsigned n;
+    unsigned n;
 
     if (xkb && xkb->map && xkb->map->types)
     {
@@ -1822,7 +1796,7 @@ PrepareKeyDef(KeyInfo * key)
             key->acts[i] = uTypedCalloc(width, union xkb_action);
             if (key->acts[i] == NULL)
                 continue;
-            memcpy((void *) key->acts[i], (void *) key->acts[0],
+            memcpy(key->acts[i], key->acts[0],
                    width * sizeof(union xkb_action));
             key->actsDefined |= 1 << i;
         }
@@ -1831,8 +1805,7 @@ PrepareKeyDef(KeyInfo * key)
             key->syms[i] = uTypedCalloc(width, uint32_t);
             if (key->syms[i] == NULL)
                 continue;
-            memcpy((void *) key->syms[i], (void *) key->syms[0],
-                   width * sizeof(uint32_t));
+            memcpy(key->syms[i], key->syms[0], width * sizeof(uint32_t));
             key->symsDefined |= 1 << i;
         }
         if (defined & 1)
@@ -1853,7 +1826,7 @@ PrepareKeyDef(KeyInfo * key)
         }
         if ((key->syms[i] != key->syms[0]) &&
             (key->syms[i] == NULL || key->syms[0] == NULL ||
-             memcmp((void *) key->syms[i], (void *) key->syms[0],
+             memcmp(key->syms[i], key->syms[0],
                     sizeof(uint32_t) * key->numLevels[0])))
         {
             identical = False;
@@ -1861,7 +1834,7 @@ PrepareKeyDef(KeyInfo * key)
         }
         if ((key->acts[i] != key->acts[0]) &&
             (key->acts[i] == NULL || key->acts[0] == NULL ||
-             memcmp((void *) key->acts[i], (void *) key->acts[0],
+             memcmp(key->acts[i], key->acts[0],
                     sizeof(union xkb_action) * key->numLevels[0])))
         {
             identical = False;
@@ -1873,19 +1846,16 @@ PrepareKeyDef(KeyInfo * key)
         for (i = lastGroup; i > 0; i--)
         {
             key->numLevels[i] = 0;
-            if (key->syms[i] != NULL)
-                free(key->syms[i]);
-            key->syms[i] = (uint32_t *) NULL;
-            if (key->acts[i] != NULL)
-                free(key->acts[i]);
-            key->acts[i] = (union xkb_action *) NULL;
-            key->types[i] = (uint32_t) 0;
+            free(key->syms[i]);
+            key->syms[i] = NULL;
+            free(key->acts[i]);
+            key->acts[i] = NULL;
+            key->types[i] = 0;
         }
         key->symsDefined &= 1;
         key->actsDefined &= 1;
         key->typesDefined &= 1;
     }
-    return;
 }
 
 /**
@@ -1896,7 +1866,7 @@ PrepareKeyDef(KeyInfo * key)
 static Bool
 CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
 {
-    register int i;
+    int i;
     xkb_keycode_t okc, kc;
     unsigned width, tmp, nGroups;
     struct xkb_key_type * type;
@@ -2148,7 +2118,7 @@ CopyModMapDef(struct xkb_desc * xkb, ModMapEntry *entry)
 Bool
 CompileSymbols(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
 {
-    register int i;
+    int i;
     SymbolsInfo info;
 
     InitSymbolsInfo(&info, xkb);

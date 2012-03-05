@@ -31,6 +31,7 @@
 #include "keycodes.h"
 #include "misc.h"
 #include "alias.h"
+#include "parseutils.h"
 
 const char *
 longText(unsigned long val)
@@ -50,7 +51,6 @@ LongToKeyName(unsigned long val, char *name)
     name[1] = ((val >> 16) & 0xff);
     name[2] = ((val >> 8) & 0xff);
     name[3] = (val & 0xff);
-    return;
 }
 
 /***====================================================================***/
@@ -143,7 +143,6 @@ InitIndicatorNameInfo(IndicatorNameInfo * ii, KeyNamesInfo * info)
     ii->ndx = 0;
     ii->name = None;
     ii->virtual = False;
-    return;
 }
 
 static void
@@ -154,7 +153,6 @@ ClearIndicatorNameInfo(IndicatorNameInfo * ii, KeyNamesInfo * info)
         ClearCommonInfo(&ii->defs);
         info->leds = NULL;
     }
-    return;
 }
 
 static IndicatorNameInfo *
@@ -320,8 +318,7 @@ AddIndicatorName(KeyNamesInfo * info, IndicatorNameInfo * new)
 static void
 ClearKeyNamesInfo(KeyNamesInfo * info)
 {
-    if (info->name != NULL)
-        free(info->name);
+    free(info->name);
     info->name = NULL;
     info->computedMax = info->explicitMax = info->explicitMin = 0;
     info->computedMin = XKB_KEYCODE_MAX;
@@ -336,7 +333,6 @@ ClearKeyNamesInfo(KeyNamesInfo * info)
         ClearIndicatorNameInfo(info->leds, info);
     if (info->aliases)
         ClearAliases(&info->aliases);
-    return;
 }
 
 static void
@@ -350,13 +346,12 @@ InitKeyNamesInfo(KeyNamesInfo * info)
     info->has_alt_forms = NULL;
     ClearKeyNamesInfo(info);
     info->errorCount = 0;
-    return;
 }
 
 static int
 FindKeyByLong(KeyNamesInfo * info, unsigned long name)
 {
-    register int i;
+    int i;
 
     for (i = info->computedMin; i <= info->computedMax; i++)
     {
@@ -479,7 +474,7 @@ static void
 MergeIncludedKeycodes(KeyNamesInfo * into, KeyNamesInfo * from,
                       unsigned merge)
 {
-    register int i;
+    int i;
     char buf[5];
 
     if (from->errorCount > 0)
@@ -540,7 +535,6 @@ MergeIncludedKeycodes(KeyNamesInfo * into, KeyNamesInfo * from,
             || (into->explicitMax < from->explicitMax))
             into->explicitMax = from->explicitMax;
     }
-    return;
 }
 
 /**
@@ -563,7 +557,7 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_desc * xkb, KeyNamesInfo * 
     {
         haveSelf = True;
         included = *info;
-        bzero(info, sizeof(KeyNamesInfo));
+        memset(info, 0, sizeof(KeyNamesInfo));
     }
     else if (stmt->file && strcmp(stmt->file, "computed") == 0)
     {
@@ -578,11 +572,11 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_desc * xkb, KeyNamesInfo * 
         HandleKeycodesFile(rtrn, xkb, MergeOverride, &included);
         if (stmt->stmt != NULL)
         {
-            if (included.name != NULL)
-                free(included.name);
+            free(included.name);
             included.name = stmt->stmt;
             stmt->stmt = NULL;
         }
+        FreeXKBFile(rtrn);
     }
     else
     {
@@ -610,6 +604,7 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_desc * xkb, KeyNamesInfo * 
                 HandleKeycodesFile(rtrn, xkb, MergeOverride, &next_incl);
                 MergeIncludedKeycodes(&included, &next_incl, op);
                 ClearKeyNamesInfo(&next_incl);
+                FreeXKBFile(rtrn);
             }
             else
             {
@@ -679,7 +674,7 @@ HandleKeyNameVar(VarDef * stmt, KeyNamesInfo * info)
     {
         ERROR("Unknown element %s encountered\n", tmp.str);
         ACTION("Default for field %s ignored\n", field.str);
-        return 0;
+        goto err_out;
     }
     if (uStrCaseCmp(field.str, "minimum") == 0)
         which = MIN_KEYCODE_DEF;
@@ -689,19 +684,19 @@ HandleKeyNameVar(VarDef * stmt, KeyNamesInfo * info)
     {
         ERROR("Unknown field encountered\n");
         ACTION("Assigment to field %s ignored\n", field.str);
-        return 0;
+        goto err_out;
     }
     if (arrayNdx != NULL)
     {
         ERROR("The %s setting is not an array\n", field.str);
         ACTION("Illegal array reference ignored\n");
-        return 0;
+        goto err_out;
     }
 
     if (ExprResolveKeyCode(stmt->value, &tmp) == 0)
     {
         ACTION("Assignment to field %s ignored\n", field.str);
-        return 0;
+        goto err_out;
     }
     if (tmp.uval > XKB_KEYCODE_MAX)
     {
@@ -709,7 +704,7 @@ HandleKeyNameVar(VarDef * stmt, KeyNamesInfo * info)
             ("Illegal keycode %d (must be in the range %d-%d inclusive)\n",
              tmp.uval, 0, XKB_KEYCODE_MAX);
         ACTION("Value of \"%s\" not changed\n", field.str);
-        return 0;
+        goto err_out;
     }
     if (which == MIN_KEYCODE_DEF)
     {
@@ -719,7 +714,7 @@ HandleKeyNameVar(VarDef * stmt, KeyNamesInfo * info)
                 ("Minimum key code (%d) must be <= maximum key code (%d)\n",
                  tmp.uval, info->explicitMax);
             ACTION("Minimum key code value not changed\n");
-            return 0;
+            goto err_out;
         }
         if ((info->computedMax > 0) && (info->computedMin < tmp.uval))
         {
@@ -727,7 +722,7 @@ HandleKeyNameVar(VarDef * stmt, KeyNamesInfo * info)
                 ("Minimum key code (%d) must be <= lowest defined key (%d)\n",
                  tmp.uval, info->computedMin);
             ACTION("Minimum key code value not changed\n");
-            return 0;
+            goto err_out;
         }
         info->explicitMin = tmp.uval;
     }
@@ -738,7 +733,7 @@ HandleKeyNameVar(VarDef * stmt, KeyNamesInfo * info)
             ERROR("Maximum code (%d) must be >= minimum key code (%d)\n",
                    tmp.uval, info->explicitMin);
             ACTION("Maximum code value not changed\n");
-            return 0;
+            goto err_out;
         }
         if ((info->computedMax > 0) && (info->computedMax > tmp.uval))
         {
@@ -746,11 +741,17 @@ HandleKeyNameVar(VarDef * stmt, KeyNamesInfo * info)
                 ("Maximum code (%d) must be >= highest defined key (%d)\n",
                  tmp.uval, info->computedMax);
             ACTION("Maximum code value not changed\n");
-            return 0;
+            goto err_out;
         }
         info->explicitMax = tmp.uval;
     }
+
+    free(field.str);
     return 1;
+
+err_out:
+    free(field.str);
+    return 0;
 }
 
 static int
@@ -803,6 +804,7 @@ HandleKeycodesFile(XkbFile * file,
 {
     ParseCommon *stmt;
 
+    free(info->name);
     info->name = _XkbDupString(file->name);
     stmt = file->defs;
     while (stmt)
@@ -857,7 +859,6 @@ HandleKeycodesFile(XkbFile * file,
             break;
         }
     }
-    return;
 }
 
 /**
@@ -893,7 +894,7 @@ CompileKeycodes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
         if (XkbcAllocNames(xkb, XkbKeyNamesMask | XkbIndicatorNamesMask, 0, 0)
                 == Success)
         {
-            register int i;
+            int i;
             xkb->names->keycodes = xkb_intern_atom(info.name);
             for (i = info.computedMin; i <= info.computedMax; i++)
             {
@@ -919,7 +920,7 @@ CompileKeycodes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
                 xkb->names->indicators[ii->ndx - 1] = ii->name;
                 if (xkb->indicators != NULL)
                 {
-                    register unsigned bit;
+                    unsigned bit;
                     bit = 1 << (ii->ndx - 1);
                     if (ii->virtual)
                         xkb->indicators->phys_indicators &= ~bit;
@@ -930,6 +931,7 @@ CompileKeycodes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
         }
         if (info.aliases)
             ApplyAliases(xkb, False, &info.aliases);
+        ClearKeyNamesInfo(&info);
         return True;
     }
     ClearKeyNamesInfo(&info);

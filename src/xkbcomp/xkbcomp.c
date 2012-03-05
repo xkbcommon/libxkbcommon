@@ -29,6 +29,7 @@ authorization from the authors.
 #include "xkballoc.h"
 #include "xkbrules.h"
 #include "xkbpath.h"
+#include "xkbmisc.h"
 #include "parseutils.h"
 #include "utils.h"
 
@@ -77,36 +78,23 @@ XkbComponentsFromRules(const char *rules, const XkbRF_VarDefsPtr defs)
 {
     FILE *rulesFile = NULL;
     char *rulesPath = NULL;
-    static XkbRF_RulesPtr loaded = NULL;
-    static char *cached_name = NULL;
+    XkbRF_RulesPtr loaded = NULL;
     struct xkb_component_names * names = NULL;
 
-    if (!cached_name || strcmp(rules, cached_name) != 0) {
-        if (loaded)
-            XkbcRF_Free(loaded, True);
-        loaded = NULL;
-        free(cached_name);
-        cached_name = NULL;
+    rulesFile = XkbFindFileInPath(rules, XkmRulesFile, &rulesPath);
+    if (!rulesFile) {
+        ERROR("could not find \"%s\" rules in XKB path\n", rules);
+        return NULL;
     }
 
-    if (!loaded) {
-        rulesFile = XkbFindFileInPath(rules, XkmRulesFile, &rulesPath);
-        if (!rulesFile) {
-            ERROR("could not find \"%s\" rules in XKB path\n", rules);
-            goto out;
-        }
+    if (!(loaded = _XkbTypedCalloc(1, XkbRF_RulesRec))) {
+        ERROR("failed to allocate XKB rules\n");
+        goto unwind_file;
+    }
 
-        if (!(loaded = _XkbTypedCalloc(1, XkbRF_RulesRec))) {
-            ERROR("failed to allocate XKB rules\n");
-            goto unwind_file;
-        }
-
-        if (!XkbcRF_LoadRules(rulesFile, loaded)) {
-            ERROR("failed to load XKB rules \"%s\"\n", rulesPath);
-            goto unwind_file;
-        }
-
-        cached_name = strdup(rules);
+    if (!XkbcRF_LoadRules(rulesFile, loaded)) {
+        ERROR("failed to load XKB rules \"%s\"\n", rulesPath);
+        goto unwind_file;
     }
 
     if (!(names = _XkbTypedCalloc(1, struct xkb_component_names))) {
@@ -127,10 +115,10 @@ XkbComponentsFromRules(const char *rules, const XkbRF_VarDefsPtr defs)
     }
 
 unwind_file:
+    XkbcRF_Free(loaded);
     if (rulesFile)
         fclose(rulesFile);
     free(rulesPath);
-out:
     return names;
 }
 
@@ -209,7 +197,7 @@ struct xkb_desc *
 xkb_compile_keymap_from_components(const struct xkb_component_names * ktcsg)
 {
     XkbFile *file, *mapToUse;
-    struct xkb_desc * xkb;
+    struct xkb_desc * xkb = NULL;
 
     uSetErrorFile(NULL);
 
@@ -235,23 +223,23 @@ xkb_compile_keymap_from_components(const struct xkb_component_names * ktcsg)
 
     if (!CompileKeymap(mapToUse, xkb, MergeReplace)) {
         ERROR("failed to compile keymap\n");
-        goto unwind_xkb;
+        XkbcFreeKeyboard(xkb);
+        xkb = NULL;
     }
 
-    return xkb;
-unwind_xkb:
-    XkbcFreeKeyboard(xkb, XkbAllComponentsMask, True);
 unwind_file:
-    /* XXX: here's where we would free the XkbFile */
+    FreeXKBFile(file);
+    free(scanFile);
+    XkbFreeIncludePath();
 fail:
-    return NULL;
+    return xkb;
 }
 
 static struct xkb_desc *
 compile_keymap(XkbFile *file, const char *mapName)
 {
     XkbFile *mapToUse;
-    struct xkb_desc * xkb;
+    struct xkb_desc * xkb = NULL;
 
     /* Find map to use */
     if (!(mapToUse = XkbChooseMap(file, mapName)))
@@ -275,16 +263,15 @@ compile_keymap(XkbFile *file, const char *mapName)
 
     if (!CompileKeymap(mapToUse, xkb, MergeReplace)) {
         ERROR("failed to compile keymap\n");
-        goto unwind_xkb;
+        XkbcFreeKeyboard(xkb);
+        xkb = NULL;
     }
 
-    return xkb;
-unwind_xkb:
-    XkbcFreeKeyboard(xkb, XkbAllComponentsMask, True);
 unwind_file:
-    /* XXX: here's where we would free the XkbFile */
-
-    return NULL;
+    FreeXKBFile(file);
+    free(scanFile);
+    XkbFreeIncludePath();
+    return xkb;
 }
 
 struct xkb_desc *
@@ -328,5 +315,6 @@ xkb_compile_keymap_from_file(FILE *inputFile, const char *mapName)
 void
 xkb_free_keymap(struct xkb_desc *xkb)
 {
-       XkbcFreeKeyboard(xkb, 0, True);
+    XkbcFreeKeyboard(xkb);
+    XkbcFreeAllAtoms();
 }

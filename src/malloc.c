@@ -75,8 +75,8 @@ XkbcAllocClientMap(struct xkb_desc * xkb, unsigned which, unsigned nTotalTypes)
             }
 
             map->size_types = nTotalTypes;
-            bzero(&map->types[map->num_types],
-                  (map->size_types - map->num_types) * sizeof(struct xkb_key_type));
+            memset(&map->types[map->num_types], 0,
+                   (map->size_types - map->num_types) * sizeof(struct xkb_key_type));
         }
     }
 
@@ -178,8 +178,8 @@ XkbcAllocServerMap(struct xkb_desc * xkb, unsigned which, unsigned nNewActions)
             }
 
             map->size_acts = need;
-            bzero(&map->acts[map->num_acts],
-                  (map->size_acts - map->num_acts) * sizeof(union xkb_action));
+            memset(&map->acts[map->num_acts], 0,
+                   (map->size_acts - map->num_acts) * sizeof(union xkb_action));
         }
 
         if (!map->key_acts) {
@@ -217,18 +217,12 @@ XkbcCopyKeyType(struct xkb_key_type * from, struct xkb_key_type * into)
     if (!from || !into)
         return BadMatch;
 
-    if (into->map) {
-        free(into->map);
-        into->map = NULL;
-    }
-    if (into->preserve) {
-       free(into->preserve);
-       into->preserve= NULL;
-    }
-    if (into->level_names) {
-        free(into->level_names);
-        into->level_names = NULL;
-    }
+    free(into->map);
+    into->map = NULL;
+    free(into->preserve);
+    into->preserve= NULL;
+    free(into->level_names);
+    into->level_names = NULL;
 
     *into = *from;
 
@@ -282,8 +276,8 @@ XkbcResizeKeySyms(struct xkb_desc * xkb, xkb_keycode_t key,
                    XkbKeySymsPtr(xkb, key), nOldSyms * sizeof(uint32_t));
 
         if ((needed - nOldSyms) > 0)
-            bzero(&xkb->map->syms[xkb->map->num_syms + XkbKeyNumSyms(xkb, key)],
-                  (needed - nOldSyms) * sizeof(uint32_t));
+            memset(&xkb->map->syms[xkb->map->num_syms + XkbKeyNumSyms(xkb, key)],
+                   0, (needed - nOldSyms) * sizeof(uint32_t));
 
         xkb->map->key_sym_map[key].offset = xkb->map->num_syms;
         xkb->map->num_syms += needed;
@@ -311,7 +305,8 @@ XkbcResizeKeySyms(struct xkb_desc * xkb, xkb_keycode_t key,
            memcpy(&newSyms[nSyms], XkbKeySymsPtr(xkb, i),
                   nCopy * sizeof(uint32_t));
         if (nKeySyms > nCopy)
-            bzero(&newSyms[nSyms+nCopy], (nKeySyms - nCopy) * sizeof(uint32_t));
+            memset(&newSyms[nSyms + nCopy], 0,
+                   (nKeySyms - nCopy) * sizeof(uint32_t));
 
         xkb->map->key_sym_map[i].offset = nSyms;
         nSyms += nKeySyms;
@@ -370,8 +365,8 @@ XkbcResizeKeyActions(struct xkb_desc * xkb, xkb_keycode_t key, int needed)
             memcpy(&newActs[nActs], XkbKeyActionsPtr(xkb, i),
                    nCopy * sizeof(union xkb_action));
         if (nCopy < nKeyActs)
-            bzero(&newActs[nActs + nCopy],
-                  (nKeyActs - nCopy) * sizeof(union xkb_action));
+            memset(&newActs[nActs + nCopy], 0,
+                   (nKeyActs - nCopy) * sizeof(union xkb_action));
 
         xkb->server->key_acts[i] = nActs;
         nActs += nKeyActs;
@@ -385,109 +380,45 @@ XkbcResizeKeyActions(struct xkb_desc * xkb, xkb_keycode_t key, int needed)
 }
 
 void
-XkbcFreeClientMap(struct xkb_desc * xkb, unsigned what, Bool freeMap)
+XkbcFreeClientMap(struct xkb_desc * xkb)
 {
+    int i;
     struct xkb_client_map * map;
+    struct xkb_key_type * type;
 
     if (!xkb || !xkb->map)
         return;
 
-    if (freeMap)
-        what = XkbAllClientInfoMask;
     map = xkb->map;
 
-    if (what & XkbKeyTypesMask) {
-        if (map->types) {
-            if (map->num_types > 0) {
-                int i;
-                struct xkb_key_type * type;
-
-                for (i = 0, type = map->types; i < map->num_types; i++, type++) {
-                    if (type->map) {
-                        free(type->map);
-                        type->map = NULL;
-                    }
-                    if (type->preserve) {
-                        free(type->preserve);
-                        type->preserve = NULL;
-                    }
-                    type->map_count = 0;
-                    if (type->level_names) {
-                        free(type->level_names);
-                        type->level_names = NULL;
-                    }
-                }
-            }
-            free(map->types);
-            map->num_types = map->size_types = 0;
-            map->types = NULL;
-        }
+    for (i = 0, type = map->types; i < map->num_types && type; i++, type++) {
+        free(type->map);
+        free(type->preserve);
+        free(type->level_names);
     }
-
-    if (what & XkbKeySymsMask) {
-        if (map->key_sym_map) {
-            free(map->key_sym_map);
-            map->key_sym_map = NULL;
-        }
-        if (map->syms) {
-            free(map->syms);
-            map->size_syms = map->num_syms = 0;
-            map->syms = NULL;
-        }
-    }
-
-    if ((what & XkbModifierMapMask) && map->modmap) {
-        free(map->modmap);
-        map->modmap = NULL;
-    }
-
-    if (freeMap) {
-        free(xkb->map);
-        xkb->map = NULL;
-    }
+    free(map->types);
+    free(map->key_sym_map);
+    free(map->syms);
+    free(map->modmap);
+    free(xkb->map);
+    xkb->map = NULL;
 }
 
 void
-XkbcFreeServerMap(struct xkb_desc * xkb, unsigned what, Bool freeMap)
+XkbcFreeServerMap(struct xkb_desc * xkb)
 {
     struct xkb_server_map * map;
 
     if (!xkb || !xkb->server)
         return;
 
-    if (freeMap)
-        what = XkbAllServerInfoMask;
     map = xkb->server;
 
-    if ((what & XkbExplicitComponentsMask) && map->explicit) {
-        free(map->explicit);
-        map->explicit = NULL;
-    }
-
-    if (what & XkbKeyActionsMask) {
-        if (map->key_acts) {
-            free(map->key_acts);
-            map->key_acts = NULL;
-        }
-        if (map->acts) {
-            free(map->acts);
-            map->num_acts = map->size_acts = 0;
-            map->acts = NULL;
-        }
-    }
-
-    if ((what & XkbKeyBehaviorsMask) && map->behaviors) {
-        free(map->behaviors);
-        map->behaviors = NULL;
-    }
-
-    if ((what & XkbVirtualModMapMask) && map->vmodmap) {
-        free(map->vmodmap);
-        map->vmodmap = NULL;
-    }
-
-    if (freeMap) {
-        free(xkb->server);
-        xkb->server = NULL;
-    }
+    free(map->explicit);
+    free(map->key_acts);
+    free(map->acts);
+    free(map->behaviors);
+    free(map->vmodmap);
+    free(xkb->server);
+    xkb->server = NULL;
 }

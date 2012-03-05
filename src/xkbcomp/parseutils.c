@@ -27,6 +27,7 @@
 #include "parseutils.h"
 #include "xkbmisc.h"
 #include "xkbpath.h"
+#include "xkbparse.h"
 #include <X11/keysym.h>
 #include <X11/Xalloca.h>
 
@@ -270,7 +271,7 @@ SymbolsCreate(char *keyName, ExprDef * symbols)
         def->common.stmtType = StmtSymbolsDef;
         def->common.next = NULL;
         def->merge = MergeDefault;
-        bzero(def->keyName, 5);
+        memset(def->keyName, 0, 5);
         strncpy(def->keyName, keyName, 4);
         def->symbols = symbols;
     }
@@ -420,7 +421,7 @@ ShapeDeclCreate(uint32_t name, OutlineDef * outlines)
     shape = uTypedAlloc(ShapeDef);
     if (shape != NULL)
     {
-        bzero(shape, sizeof(ShapeDef));
+        memset(shape, 0, sizeof(ShapeDef));
         shape->common.stmtType = StmtShapeDef;
         shape->common.next = NULL;
         shape->merge = MergeDefault;
@@ -445,7 +446,7 @@ OutlineCreate(uint32_t field, ExprDef * points)
     outline = uTypedAlloc(OutlineDef);
     if (outline != NULL)
     {
-        bzero(outline, sizeof(OutlineDef));
+        memset(outline, 0, sizeof(OutlineDef));
         outline->common.stmtType = StmtOutlineDef;
         outline->common.next = NULL;
         outline->field = field;
@@ -470,7 +471,7 @@ KeyDeclCreate(char *name, ExprDef * expr)
     key = uTypedAlloc(KeyDef);
     if (key != NULL)
     {
-        bzero(key, sizeof(KeyDef));
+        memset(key, 0, sizeof(KeyDef));
         key->common.stmtType = StmtKeyDef;
         key->common.next = NULL;
         if (name)
@@ -490,7 +491,7 @@ RowDeclCreate(KeyDef * keys)
     row = uTypedAlloc(RowDef);
     if (row != NULL)
     {
-        bzero(row, sizeof(RowDef));
+        memset(row, 0, sizeof(RowDef));
         row->common.stmtType = StmtRowDef;
         row->common.next = NULL;
         row->nKeys = 0;
@@ -513,7 +514,7 @@ SectionDeclCreate(uint32_t name, RowDef * rows)
     section = uTypedAlloc(SectionDef);
     if (section != NULL)
     {
-        bzero(section, sizeof(SectionDef));
+        memset(section, 0, sizeof(SectionDef));
         section->common.stmtType = StmtSectionDef;
         section->common.next = NULL;
         section->name = name;
@@ -536,14 +537,12 @@ OverlayKeyCreate(char *under, char *over)
     key = uTypedAlloc(OverlayKeyDef);
     if (key != NULL)
     {
-        bzero(key, sizeof(OverlayKeyDef));
+        memset(key, 0, sizeof(OverlayKeyDef));
         key->common.stmtType = StmtOverlayKeyDef;
         strncpy(key->over, over, XkbKeyNameLength);
         strncpy(key->under, under, XkbKeyNameLength);
-        if (over)
-            free(over);
-        if (under)
-            free(under);
+        free(over);
+        free(under);
     }
     return key;
 }
@@ -557,7 +556,7 @@ OverlayDeclCreate(uint32_t name, OverlayKeyDef * keys)
     ol = uTypedAlloc(OverlayDef);
     if (ol != NULL)
     {
-        bzero(ol, sizeof(OverlayDef));
+        memset(ol, 0, sizeof(OverlayDef));
         ol->common.stmtType = StmtOverlayDef;
         ol->name = name;
         ol->keys = keys;
@@ -578,7 +577,7 @@ DoodadCreate(unsigned type, uint32_t name, VarDef * body)
     doodad = uTypedAlloc(DoodadDef);
     if (doodad != NULL)
     {
-        bzero(doodad, sizeof(DoodadDef));
+        memset(doodad, 0, sizeof(DoodadDef));
         doodad->common.stmtType = StmtDoodadDef;
         doodad->common.next = NULL;
         doodad->type = type;
@@ -633,6 +632,9 @@ LookupKeysym(char *str, uint32_t * sym_rtrn)
     }
     return 0;
 }
+
+static void
+FreeInclude(IncludeStmt *incl);
 
 IncludeStmt *
 IncludeCreate(char *str, unsigned merge)
@@ -694,29 +696,15 @@ IncludeCreate(char *str, unsigned merge)
     }
     if (first)
         first->stmt = stmt;
-    else if (stmt)
+    else
         free(stmt);
     return first;
-  BAIL:
+
+BAIL:
     ERROR("Illegal include statement \"%s\"\n", stmt);
     ACTION("Ignored\n");
-    while (first)
-    {
-        incl = first->next;
-        if (first->file)
-            free(first->file);
-        if (first->map)
-            free(first->map);
-        if (first->modifier)
-            free(first->modifier);
-        if (first->path)
-            free(first->path);
-        first->file = first->map = first->path = NULL;
-        free(first);
-        first = incl;
-    }
-    if (stmt)
-        free(stmt);
+    FreeInclude(first);
+    free(stmt);
     return NULL;
 }
 
@@ -765,7 +753,6 @@ CheckDefaultMap(XkbFile * maps)
             }
         }
     }
-    return;
 }
 
 XkbFile *
@@ -778,7 +765,7 @@ CreateXKBFile(int type, char *name, ParseCommon * defs, unsigned flags)
     if (file)
     {
         XkbcEnsureSafeMapName(name);
-        bzero(file, sizeof(XkbFile));
+        memset(file, 0, sizeof(XkbFile));
         file->type = type;
         file->topName = _XkbDupString(name);
         file->name = name;
@@ -799,4 +786,184 @@ StmtSetMerge(ParseCommon * stmt, unsigned merge)
         merge = MergeDefault;
     }
     return merge;
+}
+
+static void
+FreeStmt(ParseCommon *stmt);
+
+static void
+FreeExpr(ExprDef *expr)
+{
+    int i;
+
+    if (!expr)
+        return;
+
+    switch (expr->op)
+    {
+    case ExprActionList:
+    case OpNegate:
+    case OpUnaryPlus:
+    case OpNot:
+    case OpInvert:
+        FreeStmt(&expr->value.child->common);
+        break;
+    case OpDivide:
+    case OpAdd:
+    case OpSubtract:
+    case OpMultiply:
+    case OpAssign:
+        FreeStmt(&expr->value.binary.left->common);
+        FreeStmt(&expr->value.binary.right->common);
+        break;
+    case ExprActionDecl:
+        FreeStmt(&expr->value.action.args->common);
+        break;
+    case ExprArrayRef:
+        FreeStmt(&expr->value.array.entry->common);
+        break;
+    case ExprKeysymList:
+        for (i = 0; i < expr->value.list.nSyms; i++)
+            free(expr->value.list.syms[i]);
+        free(expr->value.list.syms);
+        break;
+    default:
+        break;
+    }
+}
+
+static void
+FreeInclude(IncludeStmt *incl)
+{
+    IncludeStmt *next;
+
+    while (incl)
+    {
+        next = incl->next;
+
+        free(incl->file);
+        free(incl->map);
+        free(incl->modifier);
+        free(incl->path);
+        free(incl->stmt);
+
+        free(incl);
+        incl = next;
+    }
+}
+
+static void
+FreeStmt(ParseCommon *stmt)
+{
+    ParseCommon *next;
+    YYSTYPE u;
+
+    while (stmt)
+    {
+        next = stmt->next;
+        u.any = stmt;
+
+        switch (stmt->stmtType)
+        {
+        case StmtInclude:
+            FreeInclude((IncludeStmt *)stmt);
+            /* stmt is already free'd here. */
+            stmt = NULL;
+            break;
+        case StmtExpr:
+            FreeExpr(u.expr);
+            break;
+        case StmtVarDef:
+            FreeStmt(&u.var->name->common);
+            FreeStmt(&u.var->value->common);
+            break;
+        case StmtKeyTypeDef:
+            FreeStmt(&u.keyType->body->common);
+            break;
+        case StmtInterpDef:
+            free(u.interp->sym);
+            FreeStmt(&u.interp->match->common);
+            FreeStmt(&u.interp->def->common);
+            break;
+        case StmtVModDef:
+            FreeStmt(&u.vmod->value->common);
+            break;
+        case StmtSymbolsDef:
+            FreeStmt(&u.syms->symbols->common);
+            break;
+        case StmtModMapDef:
+            FreeStmt(&u.modMask->keys->common);
+            break;
+        case StmtGroupCompatDef:
+            FreeStmt(&u.groupCompat->def->common);
+            break;
+        case StmtIndicatorMapDef:
+            FreeStmt(&u.ledMap->body->common);
+            break;
+        case StmtIndicatorNameDef:
+            FreeStmt(&u.ledName->name->common);
+            break;
+        case StmtOutlineDef:
+            FreeStmt(&u.outline->points->common);
+            break;
+        case StmtShapeDef:
+            FreeStmt(&u.shape->outlines->common);
+            break;
+        case StmtKeyDef:
+            free(u.key->name);
+            FreeStmt(&u.key->expr->common);
+            break;
+        case StmtRowDef:
+            FreeStmt(&u.row->keys->common);
+            break;
+        case StmtSectionDef:
+            FreeStmt(&u.section->rows->common);
+            break;
+        case StmtOverlayKeyDef:
+            break;
+        case StmtOverlayDef:
+            FreeStmt(&u.overlay->keys->common);
+            break;
+        case StmtDoodadDef:
+            FreeStmt(&u.doodad->body->common);
+            break;
+        default:
+            break;
+        }
+
+        free(stmt);
+        stmt = next;
+    }
+}
+
+void
+FreeXKBFile(XkbFile *file)
+{
+    XkbFile *next;
+
+    while (file)
+    {
+        next = (XkbFile *)file->common.next;
+
+        switch (file->type)
+        {
+        case XkmKeymapFile:
+        case XkmSemanticsFile:
+        case XkmLayoutFile:
+            FreeXKBFile((XkbFile *)file->defs);
+            break;
+        case XkmTypesIndex:
+        case XkmCompatMapIndex:
+        case XkmSymbolsIndex:
+        case XkmKeyNamesIndex:
+        case XkmGeometryIndex:
+            FreeStmt(file->defs);
+            break;
+        }
+
+        free(file->name);
+        free(file->topName);
+        free(file);
+        file = next;
+    }
 }
