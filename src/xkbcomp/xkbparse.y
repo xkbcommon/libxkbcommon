@@ -546,10 +546,10 @@ DoodadDecl	:	DoodadType String OBRACE VarDeclList CBRACE SEMI
 			{ $$= DoodadCreate($1,$2,$4); }
 		;
 
-DoodadType	:	TEXT			{ $$= XkbTextDoodad; }
-		|	OUTLINE			{ $$= XkbOutlineDoodad; }
-		|	SOLID			{ $$= XkbSolidDoodad; }
-		|	LOGO			{ $$= XkbLogoDoodad; }
+DoodadType	:	TEXT			{ $$= 0; }
+		|	OUTLINE			{ $$= 0; }
+		|	SOLID			{ $$= 0; }
+		|	LOGO			{ $$= 0; }
 		;
 
 FieldSpec	:	Ident			{ $$= $1; }

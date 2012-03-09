@@ -464,10 +464,6 @@ GenerateComponent(struct xkb_component_list * complist, unsigned type, char *hea
         complist->num_symbols = cp.num;
         complist->symbols = cp.comp;
         break;
-    case XkmGeometryIndex:
-        complist->num_geometry = cp.num;
-        complist->geometry = cp.comp;
-        break;
     }
 
     return extra;
@@ -508,10 +504,6 @@ xkb_list_components(struct xkb_component_names * ptrns, int *maxMatch)
 
     if (ptrns->symbols && *ptrns->symbols != '\0')
         extra += GenerateComponent(complist, XkmSymbolsIndex, ptrns->symbols,
-                                   DFLT_XKB_CONFIG_ROOT, maxMatch);
-
-    if (ptrns->geometry && *ptrns->geometry != '\0')
-        extra += GenerateComponent(complist, XkmGeometryIndex, ptrns->geometry,
                                    DFLT_XKB_CONFIG_ROOT, maxMatch);
 
 out:

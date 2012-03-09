@@ -11,9 +11,8 @@ log_kccgst()
 {
     echo "  keycodes: $1" >>"$log"
     echo "  compat: $2" >>"$log"
-    echo "  geometry: $3" >>"$log"
-    echo "  symbols: $4" >>"$log"
-    echo "  types: $5" >>"$log"
+    echo "  symbols: $3" >>"$log"
+    echo "  types: $4" >>"$log"
 }
 
 rm -f "$log"
@@ -44,12 +43,12 @@ test() {
 
 # This is a bit of a horror, but I can't really remember how to properly
 # handle arrays in shell, and I'm offline.
-twopart_new="+inet(pc104)        %+complete     pc104   pc(pc104)+%+ctrl(nocaps)          |complete"
-twopart_old="xfree86             basic          invalid us(dvorak)                        xfree86"
-twopart_exp="xfree86+inet(pc104) basic+complete pc104   pc(pc104)+us(dvorak)+ctrl(nocaps) xfree86|complete"
+twopart_new="+inet(pc104)        %+complete     pc(pc104)+%+ctrl(nocaps)          |complete"
+twopart_old="xfree86             basic          us(dvorak)                        xfree86"
+twopart_exp="xfree86+inet(pc104) basic+complete pc(pc104)+us(dvorak)+ctrl(nocaps) xfree86|complete"
 
-onepart_new="evdev               complete       pc104   pc(pc104)+us+compose(ralt)        complete"
-onepart_exp="evdev               complete       pc104   pc(pc104)+us+compose(ralt)        complete"
+onepart_new="evdev               complete       pc(pc104)+us+compose(ralt)        complete"
+onepart_exp="evdev               complete       pc(pc104)+us+compose(ralt)        complete"
 
 test "$twopart_exp" "$twopart_new" "$twopart_old"
 echo >>"$log"

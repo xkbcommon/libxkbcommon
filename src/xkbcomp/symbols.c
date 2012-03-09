@@ -2159,7 +2159,7 @@ CompileSymbols(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
 
         /* now copy info into xkb. */
         if (info.aliases)
-            ApplyAliases(xkb, False, &info.aliases);
+            ApplyAliases(xkb, &info.aliases);
         for (i = 0; i < XkbNumKbdGroups; i++)
         {
             if (info.groupNames[i] != None)

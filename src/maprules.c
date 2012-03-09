@@ -474,7 +474,6 @@ CheckLine(	InputLine *		line,
     rule->symbols= _XkbDupString(tmp.name[SYMBOLS]);
     rule->types= _XkbDupString(tmp.name[TYPES]);
     rule->compat= _XkbDupString(tmp.name[COMPAT]);
-    rule->geometry= _XkbDupString(tmp.name[GEOMETRY]);
     rule->keymap= _XkbDupString(tmp.name[KEYMAP]);
 
     rule->layout_num = rule->variant_num = 0;
@@ -604,7 +603,6 @@ XkbRF_ApplyRule(	XkbRF_RulePtr 		rule,
     Apply(rule->symbols,  &names->symbols);
     Apply(rule->types,    &names->types);
     Apply(rule->compat,   &names->compat);
-    Apply(rule->geometry, &names->geometry);
     Apply(rule->keymap,   &names->keymap);
 }
 
@@ -875,14 +873,12 @@ XkbcRF_GetComponents(	XkbRF_RulesPtr		rules,
 	names->types= XkbRF_SubstituteVars(names->types, &mdefs);
     if (names->compat)
 	names->compat= XkbRF_SubstituteVars(names->compat, &mdefs);
-    if (names->geometry)
-	names->geometry= XkbRF_SubstituteVars(names->geometry, &mdefs);
     if (names->keymap)	
 	names->keymap= XkbRF_SubstituteVars(names->keymap, &mdefs);
 
     FreeMultiDefs(&mdefs);
     return (names->keycodes && names->symbols && names->types &&
-		names->compat && names->geometry ) || names->keymap;
+		names->compat) || names->keymap;
 }
 
 static XkbRF_RulePtr
@@ -1006,7 +1002,6 @@ XkbcRF_Free(XkbRF_RulesPtr rules)
         free(rule->symbols);
         free(rule->types);
         free(rule->compat);
-        free(rule->geometry);
         free(rule->keymap);
     }
     free(rules->rules);

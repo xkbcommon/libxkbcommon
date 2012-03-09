@@ -927,7 +927,7 @@ CompileKeycodes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
             }
         }
         if (info.aliases)
-            ApplyAliases(xkb, False, &info.aliases);
+            ApplyAliases(xkb, &info.aliases);
         ClearKeyNamesInfo(&info);
         return True;
     }

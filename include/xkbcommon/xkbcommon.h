@@ -340,243 +340,6 @@ struct xkb_names {
     unsigned short    num_rg;
 };
 
-struct xkb_property {
-	char	*name;
-	char	*value;
-};
-
-struct xkb_color {
-	unsigned int 	pixel;
-	char *		spec;
-};
-
-struct xkb_point {
-	short	x;
-	short	y;
-};
-
-struct xkb_bounds {
-	short	x1,y1;
-	short	x2,y2;
-};
-
-struct xkb_outline {
-	unsigned short	num_points;
-	unsigned short	sz_points;
-	unsigned short	corner_radius;
-	struct xkb_point *	points;
-};
-
-struct xkb_shape {
-	uint32_t		 name;
-	unsigned short	 num_outlines;
-	unsigned short	 sz_outlines;
-	struct xkb_outline *	 outlines;
-	struct xkb_outline *	 approx;
-	struct xkb_outline *	 primary;
-	struct xkb_bounds	 bounds;
-};
-
-struct xkb_shape_doodad {
-	uint32_t		 name;
-	unsigned char	 type;
-	unsigned char	 priority;
-	short		 top;
-	short		 left;
-	short		 angle;
-	unsigned short	 color_ndx;
-	unsigned short	 shape_ndx;
-};
-#define	XkbShapeDoodadColor(g,d)	(&(g)->colors[(d)->color_ndx])
-#define	XkbShapeDoodadShape(g,d)	(&(g)->shapes[(d)->shape_ndx])
-#define	XkbSetShapeDoodadColor(g,d,c)	((d)->color_ndx= (c)-&(g)->colors[0])
-#define	XkbSetShapeDoodadShape(g,d,s)	((d)->shape_ndx= (s)-&(g)->shapes[0])
-
-struct xkb_text_doodad {
-	uint32_t		 name;
-	unsigned char	 type;
-	unsigned char	 priority;
-	short		 top;
-	short		 left;
-	short		 angle;
-	short		 width;
-	short		 height;
-	unsigned short	 color_ndx;
-	char *		 text;
-	char *		 font;
-};
-#define	XkbTextDoodadColor(g,d)	(&(g)->colors[(d)->color_ndx])
-#define	XkbSetTextDoodadColor(g,d,c)	((d)->color_ndx= (c)-&(g)->colors[0])
-
-struct xkb_indicator_doodad {
-	uint32_t		 name;
-	unsigned char	 type;
-	unsigned char	 priority;
-	short		 top;
-	short		 left;
-	short		 angle;
-	unsigned short	 shape_ndx;
-	unsigned short	 on_color_ndx;
-	unsigned short	 off_color_ndx;
-};
-#define	XkbIndicatorDoodadShape(g,d)	(&(g)->shapes[(d)->shape_ndx])
-#define	XkbIndicatorDoodadOnColor(g,d)	(&(g)->colors[(d)->on_color_ndx])
-#define	XkbIndicatorDoodadOffColor(g,d)	(&(g)->colors[(d)->off_color_ndx])
-#define	XkbSetIndicatorDoodadOnColor(g,d,c) \
-				((d)->on_color_ndx= (c)-&(g)->colors[0])
-#define	XkbSetIndicatorDoodadOffColor(g,d,c) \
-				((d)->off_color_ndx= (c)-&(g)->colors[0])
-#define	XkbSetIndicatorDoodadShape(g,d,s) \
-				((d)->shape_ndx= (s)-&(g)->shapes[0])
-
-struct xkb_logo_doodad {
-	uint32_t		 name;
-	unsigned char	 type;
-	unsigned char	 priority;
-	short		 top;
-	short		 left;
-	short		 angle;
-	unsigned short	 color_ndx;
-	unsigned short	 shape_ndx;
-	char *		 logo_name;
-};
-#define	XkbLogoDoodadColor(g,d)		(&(g)->colors[(d)->color_ndx])
-#define	XkbLogoDoodadShape(g,d)		(&(g)->shapes[(d)->shape_ndx])
-#define	XkbSetLogoDoodadColor(g,d,c)	((d)->color_ndx= (c)-&(g)->colors[0])
-#define	XkbSetLogoDoodadShape(g,d,s)	((d)->shape_ndx= (s)-&(g)->shapes[0])
-
-struct xkb_any_doodad {
-	uint32_t		 name;
-	unsigned char	 type;
-	unsigned char	 priority;
-	short		 top;
-	short		 left;
-	short		 angle;
-};
-
-union xkb_doodad {
-	struct xkb_any_doodad	any;
-	struct xkb_shape_doodad	shape;
-	struct xkb_text_doodad	text;
-	struct xkb_indicator_doodad	indicator;
-	struct xkb_logo_doodad	logo;
-};
-
-#define	XkbUnknownDoodad	0
-#define	XkbOutlineDoodad	1
-#define	XkbSolidDoodad		2
-#define	XkbTextDoodad		3
-#define	XkbIndicatorDoodad	4
-#define	XkbLogoDoodad		5
-
-struct xkb_key {
-	struct xkb_key_name	 name;
-	short		 gap;
-	unsigned char	 shape_ndx;
-	unsigned char	 color_ndx;
-};
-#define	XkbKeyShape(g,k)	(&(g)->shapes[(k)->shape_ndx])
-#define	XkbKeyColor(g,k)	(&(g)->colors[(k)->color_ndx])
-#define	XkbSetKeyShape(g,k,s)	((k)->shape_ndx= (s)-&(g)->shapes[0])
-#define	XkbSetKeyColor(g,k,c)	((k)->color_ndx= (c)-&(g)->colors[0])
-
-struct xkb_row {
-	short	 	top;
-	short	 	left;
-	unsigned short	num_keys;
-	unsigned short	sz_keys;
-	int		vertical;
-	struct xkb_key *	keys;
-	struct xkb_bounds	bounds;
-};
-
-struct xkb_section {
-	uint32_t		 name;
-	unsigned char	 priority;
-	short	 	 top;
-	short	 	 left;
-	unsigned short	 width;
-	unsigned short	 height;
-	short	 	 angle;
-	unsigned short	 num_rows;
-	unsigned short	 num_doodads;
-	unsigned short	 num_overlays;
-	unsigned short	 sz_rows;
-	unsigned short	 sz_doodads;
-	unsigned short	 sz_overlays;
-	struct xkb_row *	 rows;
-	union xkb_doodad *	 doodads;
-	struct xkb_bounds	 bounds;
-	struct xkb_overlay *overlays;
-};
-
-struct xkb_overlay_key {
-	struct xkb_key_name	over;
-	struct xkb_key_name	under;
-};
-
-struct xkb_overlay_row {
-	unsigned short		row_under;
-	unsigned short		num_keys;
-	unsigned short		sz_keys;
-	struct xkb_overlay_key *	keys;
-};
-
-struct xkb_overlay {
-	uint32_t			name;
-	struct xkb_section *		section_under;
-	unsigned short		num_rows;
-	unsigned short		sz_rows;
-	struct xkb_overlay_row *	rows;
-	struct xkb_bounds *		bounds;
-};
-
-struct xkb_geometry {
-	uint32_t		 name;
-	unsigned short	 width_mm;
-	unsigned short	 height_mm;
-	char *		 label_font;
-	struct xkb_color *	 label_color;
-	struct xkb_color *	 base_color;
-	unsigned short	 sz_properties;
-	unsigned short	 sz_colors;
-	unsigned short	 sz_shapes;
-	unsigned short   sz_sections;
-	unsigned short	 sz_doodads;
-	unsigned short	 sz_key_aliases;
-	unsigned short	 num_properties;
-	unsigned short	 num_colors;
-	unsigned short	 num_shapes;
-	unsigned short	 num_sections;
-	unsigned short	 num_doodads;
-	unsigned short	 num_key_aliases;
-	struct xkb_property *	 properties;
-	struct xkb_color *	 colors;
-	struct xkb_shape *	 shapes;
-	struct xkb_section *	 sections;
-	union xkb_doodad *	 doodads;
-	struct xkb_key_alias *	 key_aliases;
-};
-#define	XkbGeomColorIndex(g,c)	((int)((c)-&(g)->colors[0]))
-
-#define	XkbGeomPropertiesMask	(1<<0)
-#define	XkbGeomColorsMask	(1<<1)
-#define	XkbGeomShapesMask	(1<<2)
-#define	XkbGeomSectionsMask	(1<<3)
-#define	XkbGeomDoodadsMask	(1<<4)
-#define	XkbGeomKeyAliasesMask	(1<<5)
-#define	XkbGeomAllMask		(0x3f)
-
-struct xkb_geometry_sizes {
-	unsigned int	which;
-	unsigned short	num_properties;
-	unsigned short	num_colors;
-	unsigned short	num_shapes;
-	unsigned short	num_sections;
-	unsigned short	num_doodads;
-	unsigned short	num_key_aliases;
-};
-
 struct xkb_controls {
 	unsigned char	mk_dflt_btn;
 	unsigned char	num_groups;
@@ -616,7 +379,6 @@ struct xkb_desc {
     struct xkb_indicator *     indicators;
     struct xkb_names *        names;
     struct xkb_compat_map *    compat;
-    struct xkb_geometry *     geom;
 };
 
 #define	XkbKeyKeyTypeIndex(d,k,g)	(XkbCMKeyTypeIndex((d)->map,k,g))
@@ -712,7 +474,6 @@ struct xkb_component_names {
 	char *			 types;
 	char *			 compat;
 	char *			 symbols;
-	char *			 geometry;
 };
 
 struct xkb_component_name {
@@ -726,13 +487,11 @@ struct xkb_component_list {
 	int			num_types;
 	int			num_compat;
 	int			num_symbols;
-	int			num_geometry;
 	struct xkb_component_name *	keymaps;
 	struct xkb_component_name * 	keycodes;
 	struct xkb_component_name *	types;
 	struct xkb_component_name *	compat;
 	struct xkb_component_name *	symbols;
-	struct xkb_component_name *	geometry;
 };
 
 struct xkb_state {

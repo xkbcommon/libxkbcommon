@@ -89,8 +89,6 @@ xkb_canonicalise_components(struct xkb_component_names * names,
                                                 old ? old->keycodes : NULL);
     names->compat = XkbcCanonicaliseComponent(names->compat,
                                               old ? old->compat : NULL);
-    names->geometry = XkbcCanonicaliseComponent(names->geometry,
-                                                old ? old->geometry : NULL);
     names->symbols = XkbcCanonicaliseComponent(names->symbols,
                                                old ? old->symbols : NULL);
     names->types = XkbcCanonicaliseComponent(names->types,

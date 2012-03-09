@@ -42,7 +42,7 @@ unsigned int warningLevel = 0;
 static XkbFile *
 XkbKeymapFileFromComponents(const struct xkb_component_names * ktcsg)
 {
-    XkbFile *keycodes, *types, *compat, *symbols, *geometry;
+    XkbFile *keycodes, *types, *compat, *symbols;
     IncludeStmt *inc;
 
     if (!ktcsg) {
@@ -64,10 +64,6 @@ XkbKeymapFileFromComponents(const struct xkb_component_names * ktcsg)
     inc = IncludeCreate(ktcsg->symbols, MergeDefault);
     symbols = CreateXKBFile(XkmSymbolsIndex, NULL, (ParseCommon *)inc, 0);
     AppendStmt(&keycodes->common, &symbols->common);
-
-    inc = IncludeCreate(ktcsg->geometry, MergeDefault);
-    geometry = CreateXKBFile(XkmGeometryIndex, NULL, (ParseCommon *)inc, 0);
-    AppendStmt(&keycodes->common, &geometry->common);
 
     return CreateXKBFile(XkmKeymapFile, ktcsg->keymap ? ktcsg->keymap : strdup(""),
                          &keycodes->common, 0);
@@ -108,7 +104,6 @@ XkbComponentsFromRules(const char *rules, const XkbRF_VarDefsPtr defs)
         free(names->types);
         free(names->compat);
         free(names->symbols);
-        free(names->geometry);
         free(names);
         names = NULL;
         ERROR("no components returned from XKB rules \"%s\"\n", rulesPath);
@@ -153,7 +148,6 @@ xkb_compile_keymap_from_rules(const struct xkb_rule_names *rmlvo)
     free(names->types);
     free(names->compat);
     free(names->symbols);
-    free(names->geometry);
     free(names);
 
     return xkb;

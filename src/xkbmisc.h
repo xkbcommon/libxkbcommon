@@ -91,9 +91,6 @@ extern const char *
 XkbcConfigText(unsigned config);
 
 extern const char *
-XkbcGeomFPText(int val);
-
-extern const char *
 XkbcActionTypeText(unsigned type);
 
 extern const char *

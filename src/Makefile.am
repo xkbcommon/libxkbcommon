@@ -10,8 +10,6 @@ libxkbcommon_la_SOURCES = \
 	XKBcommonint.h \
 	alloc.c \
 	atom.c \
-	galloc.c \
-	geom.c \
 	keysym.c \
 	malloc.c \
 	maprules.c \
@@ -19,7 +17,6 @@ libxkbcommon_la_SOURCES = \
 	text.c \
 	xkb.c \
 	xkballoc.h \
-	xkbgeom.h \
 	xkbmisc.h \
 	xkbrules.h
 

@@ -343,9 +343,6 @@ extern Bool
 CompileKeycodes(XkbFile *file, struct xkb_desc * xkb, unsigned merge);
 
 extern Bool
-CompileGeometry(XkbFile *file, struct xkb_desc * xkb, unsigned merge);
-
-extern Bool
 CompileKeyTypes(XkbFile *file, struct xkb_desc * xkb, unsigned merge);
 
 typedef struct _LEDInfo *LEDInfoPtr;

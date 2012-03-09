@@ -12,7 +12,6 @@ libxkbcomp_la_SOURCES = \
 	compat.c \
 	expr.c \
 	expr.h \
-	geometry.c \
 	indicators.c \
 	indicators.h \
 	keycodes.c \

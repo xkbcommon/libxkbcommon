@@ -49,7 +49,6 @@ extern Bool MergeAliases(AliasInfo ** /* into */ ,
     );
 
 extern int ApplyAliases(struct xkb_desc * /* xkb */ ,
-                        Bool /* toGeom */ ,
                         AliasInfo **    /* info */
     );
 

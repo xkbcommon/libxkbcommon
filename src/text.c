@@ -209,9 +209,6 @@ XkbcConfigText(unsigned config)
         return "Layout";
     case XkmKeymapFile:
         return "Keymap";
-    case XkmGeometryFile:
-    case XkmGeometryIndex:
-        return "Geometry";
     case XkmTypesIndex:
         return "Types";
     case XkmCompatMapIndex:
@@ -227,24 +224,6 @@ XkbcConfigText(unsigned config)
     default:
         return "unknown";
     }
-}
-
-const char *
-XkbcGeomFPText(int val)
-{
-    char *buf;
-    int whole, frac;
-
-    buf = tbGetBuffer(12);
-    whole = val / XkbGeomPtsPerMM;
-    frac = val % XkbGeomPtsPerMM;
-
-    if (frac != 0)
-        snprintf(buf, 12, "%d.%d", whole, frac);
-    else
-        snprintf(buf, 12, "%d", whole);
-
-    return buf;
 }
 
 static const char *actionTypeNames[XkbSA_NumActions]= {

@@ -36,10 +36,10 @@ int main(int argc, char *argv[])
     struct xkb_component_names ktcsg;
     struct xkb_desc * xkb;
 
-    /* Require rmlvo */
-    if (argc < 6) {
+    /* Require Kc + T + C + S */
+    if (argc < 5) {
         fprintf(stderr, "Not enough arguments\n");
-        fprintf(stderr, "Usage: %s KEYCODES TYPES COMPAT SYMBOLS GEOMETRY\n",
+        fprintf(stderr, "Usage: %s KEYCODES TYPES COMPAT SYMBOLS\n",
                 argv[0]);
         exit(1);
     }
@@ -49,7 +49,6 @@ int main(int argc, char *argv[])
     ktcsg.types = argv[2];
     ktcsg.compat = argv[3];
     ktcsg.symbols = argv[4];
-    ktcsg.geometry = argv[5];
 
     xkb = xkb_compile_keymap_from_components(&ktcsg);
 

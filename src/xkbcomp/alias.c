@@ -26,7 +26,6 @@
 
 #include "xkbcomp.h"
 #include "xkballoc.h"
-#include "xkbgeom.h"
 #include "xkbmisc.h"
 #include "misc.h"
 #include "alias.h"
@@ -152,7 +151,7 @@ MergeAliases(AliasInfo ** into, AliasInfo ** merge, unsigned how_merge)
 }
 
 int
-ApplyAliases(struct xkb_desc * xkb, Bool toGeom, AliasInfo ** info_in)
+ApplyAliases(struct xkb_desc * xkb, AliasInfo ** info_in)
 {
     int i;
     struct xkb_key_alias *old, *a;
@@ -162,16 +161,8 @@ ApplyAliases(struct xkb_desc * xkb, Bool toGeom, AliasInfo ** info_in)
 
     if (*info_in == NULL)
         return True;
-    if (toGeom)
-    {
-        nOld = (xkb->geom ? xkb->geom->num_key_aliases : 0);
-        old = (xkb->geom ? xkb->geom->key_aliases : NULL);
-    }
-    else
-    {
-        nOld = (xkb->names ? xkb->names->num_key_aliases : 0);
-        old = (xkb->names ? xkb->names->key_aliases : NULL);
-    }
+    nOld = (xkb->names ? xkb->names->num_key_aliases : 0);
+    old = (xkb->names ? xkb->names->key_aliases : NULL);
     for (nNew = 0, info = *info_in; info != NULL;
          info = (AliasInfo *) info->def.next)
     {
@@ -227,38 +218,15 @@ ApplyAliases(struct xkb_desc * xkb, Bool toGeom, AliasInfo ** info_in)
         *info_in = NULL;
         return True;
     }
-    if (toGeom)
-    {
-        if (!xkb->geom)
-        {
-            struct xkb_geometry_sizes sizes;
-            memset(&sizes, 0, sizeof(struct xkb_geometry_sizes));
-            sizes.which = XkbGeomKeyAliasesMask;
-            sizes.num_key_aliases = nOld + nNew;
-            status = XkbcAllocGeometry(xkb, &sizes);
-        }
-        else
-        {
-            status = XkbcAllocGeomKeyAliases(xkb->geom, nOld + nNew);
-        }
-        if (xkb->geom)
-            old = xkb->geom->key_aliases;
-    }
-    else
-    {
-        status = XkbcAllocNames(xkb, XkbKeyAliasesMask, nOld + nNew);
-        if (xkb->names)
-            old = xkb->names->key_aliases;
-    }
+    status = XkbcAllocNames(xkb, XkbKeyAliasesMask, nOld + nNew);
+    if (xkb->names)
+        old = xkb->names->key_aliases;
     if (status != Success)
     {
         WSGO("Allocation failure in ApplyAliases\n");
         return False;
     }
-    if (toGeom)
-        a = &xkb->geom->key_aliases[nOld];
-    else
-        a = xkb->names ? &xkb->names->key_aliases[nOld] : NULL;
+    a = xkb->names ? &xkb->names->key_aliases[nOld] : NULL;
     for (info = *info_in; info != NULL; info = (AliasInfo *) info->def.next)
     {
         if (info->alias[0] != '\0')
@@ -275,8 +243,6 @@ ApplyAliases(struct xkb_desc * xkb, Bool toGeom, AliasInfo ** info_in)
               a - old);
     }
 #endif
-    if (toGeom)
-        xkb->geom->num_key_aliases += nNew;
     ClearCommonInfo(&(*info_in)->def);
     *info_in = NULL;
     return True;

@@ -323,21 +323,6 @@ FindKeyNameForAlias(struct xkb_desc * xkb, unsigned long lname,
     int i;
     char name[XkbKeyNameLength + 1];
 
-    if (xkb && xkb->geom && xkb->geom->key_aliases)
-    {
-        struct xkb_key_alias * a;
-        a = xkb->geom->key_aliases;
-        LongToKeyName(lname, name);
-        name[XkbKeyNameLength] = '\0';
-        for (i = 0; i < xkb->geom->num_key_aliases; i++, a++)
-        {
-            if (strncmp(name, a->alias, XkbKeyNameLength) == 0)
-            {
-                *real_name = KeyNameToLong(a->real);
-                return True;
-            }
-        }
-    }
     if (xkb && xkb->names && xkb->names->key_aliases)
     {
         struct xkb_key_alias * a;

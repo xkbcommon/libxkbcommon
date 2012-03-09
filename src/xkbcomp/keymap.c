@@ -33,11 +33,10 @@
 #include "indicators.h"
 
 #define	KEYCODES	0
-#define	GEOMETRY	1
-#define	TYPES		2
-#define	COMPAT		3
-#define	SYMBOLS		4
-#define	MAX_SECTIONS	5
+#define	TYPES		1
+#define	COMPAT		2
+#define	SYMBOLS		3
+#define	MAX_SECTIONS	(SYMBOLS + 1)
 
 /**
  * Compile the given file and store the output in xkb.
@@ -124,8 +123,7 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
                 sections[COMPAT] = file;
                 break;
             case XkmGeometryIndex:
-            case XkmGeometryFile:
-                sections[GEOMETRY] = file;
+                /* XXX free me! */
                 break;
             case XkmVirtualModsIndex:
             case XkmIndicatorsIndex:
@@ -145,8 +143,6 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
     {
         if (ok && (sections[KEYCODES] != NULL))
             ok = CompileKeycodes(sections[KEYCODES], xkb, MergeOverride);
-        if (ok && (sections[GEOMETRY] != NULL))
-            ok = CompileGeometry(sections[GEOMETRY], xkb, MergeOverride);
         if (ok && (sections[TYPES] != NULL))
             ok = CompileKeyTypes(sections[TYPES], xkb, MergeOverride);
         if (ok && (sections[COMPAT] != NULL))
