@@ -67,6 +67,9 @@ XkbcNameMatchesPattern(char *name, char *ptrn);
 
 /***====================================================================***/
 
+extern uint32_t
+xkb_intern_atom(const char *string);
+
 extern char *
 XkbcAtomGetString(uint32_t atom);
 

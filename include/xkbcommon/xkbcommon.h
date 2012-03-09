@@ -532,15 +532,6 @@ struct xkb_state {
 
 _XFUNCPROTOBEGIN
 
-typedef uint32_t (*InternAtomFuncPtr)(const char *val);
-typedef const char *(*GetAtomValueFuncPtr)(uint32_t atom);
-
-_X_EXPORT extern void
-xkb_init_atoms(InternAtomFuncPtr intern, GetAtomValueFuncPtr get_atom_value);
-
-_X_EXPORT extern uint32_t
-xkb_intern_atom(const char *name);
-
 _X_EXPORT extern struct xkb_desc *
 xkb_compile_keymap_from_rules(const struct xkb_rule_names *rules);
 

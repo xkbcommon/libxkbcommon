@@ -92,27 +92,11 @@ static uint32_t lastAtom = None;
 static NodePtr atomRoot = NULL;
 static unsigned long tableLength;
 static NodePtr *nodeTable = NULL;
-static InternAtomFuncPtr do_intern_atom = NULL;
-static GetAtomValueFuncPtr do_get_atom_value = NULL;
-
-void
-xkb_init_atoms(InternAtomFuncPtr intern, GetAtomValueFuncPtr get_atom_value)
-{
-    if (intern && get_atom_value) {
-        if (do_intern_atom && do_get_atom_value)
-            return;
-        do_intern_atom = intern;
-        do_get_atom_value = get_atom_value;
-    }
-}
 
 const char *
 XkbcAtomText(uint32_t atom)
 {
     NodePtr node;
-
-    if (do_get_atom_value)
-        return do_get_atom_value(atom);
 
     if ((atom == None) || (atom > lastAtom))
         return NULL;
@@ -140,8 +124,6 @@ xkb_intern_atom(const char *string)
 
     if (!string)
 	return None;
-    if (do_intern_atom)
-	return do_intern_atom(string);
 
     len = strlen(string);
     np = &atomRoot;
