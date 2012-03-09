@@ -31,6 +31,8 @@ authorization from the authors.
 #include <X11/Xdefs.h>
 #include "xkbcommon/xkbcommon.h"
 
+typedef uint32_t xkb_atom_t;
+
 /***====================================================================***/
 
 extern Bool
@@ -67,11 +69,11 @@ XkbcNameMatchesPattern(char *name, char *ptrn);
 
 /***====================================================================***/
 
-extern uint32_t
+extern xkb_atom_t
 xkb_intern_atom(const char *string);
 
 extern char *
-XkbcAtomGetString(uint32_t atom);
+XkbcAtomGetString(xkb_atom_t atom);
 
 extern void
 XkbcFreeAllAtoms(void);
@@ -79,7 +81,7 @@ XkbcFreeAllAtoms(void);
 /***====================================================================***/
 
 extern const char *
-XkbcAtomText(uint32_t atm);
+XkbcAtomText(xkb_atom_t atm);
 
 extern const char *
 XkbcVModMaskText(struct xkb_desc * xkb, unsigned modMask, unsigned mask);

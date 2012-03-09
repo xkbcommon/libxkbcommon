@@ -166,7 +166,7 @@ KeyAliasCreate(char *alias, char *real)
 }
 
 VModDef *
-VModCreate(uint32_t name, ExprDef * value)
+VModCreate(xkb_atom_t name, ExprDef * value)
 {
     VModDef *def;
     def = uTypedAlloc(VModDef);
@@ -206,7 +206,7 @@ VarCreate(ExprDef * name, ExprDef * value)
 }
 
 VarDef *
-BoolVarCreate(uint32_t nameToken, unsigned set)
+BoolVarCreate(xkb_atom_t nameToken, unsigned set)
 {
     ExprDef *name, *value;
 
@@ -239,7 +239,7 @@ InterpCreate(char *sym, ExprDef * match)
 }
 
 KeyTypeDef *
-KeyTypeCreate(uint32_t name, VarDef * body)
+KeyTypeCreate(xkb_atom_t name, VarDef * body)
 {
     KeyTypeDef *def;
 
@@ -328,7 +328,7 @@ ModMapCreate(uint32_t modifier, ExprDef * keys)
 }
 
 IndicatorMapDef *
-IndicatorMapCreate(uint32_t name, VarDef * body)
+IndicatorMapCreate(xkb_atom_t name, VarDef * body)
 {
     IndicatorMapDef *def;
 
@@ -373,7 +373,7 @@ IndicatorNameCreate(int ndx, ExprDef * name, Bool virtual)
 }
 
 ExprDef *
-ActionCreate(uint32_t name, ExprDef * args)
+ActionCreate(xkb_atom_t name, ExprDef * args)
 {
     ExprDef *act;
 
@@ -413,7 +413,7 @@ CreateKeysymList(char *sym)
 }
 
 ShapeDef *
-ShapeDeclCreate(uint32_t name, OutlineDef * outlines)
+ShapeDeclCreate(xkb_atom_t name, OutlineDef * outlines)
 {
     ShapeDef *shape;
     OutlineDef *ol;
@@ -438,7 +438,7 @@ ShapeDeclCreate(uint32_t name, OutlineDef * outlines)
 }
 
 OutlineDef *
-OutlineCreate(uint32_t field, ExprDef * points)
+OutlineCreate(xkb_atom_t field, ExprDef * points)
 {
     OutlineDef *outline;
     ExprDef *pt;
@@ -506,7 +506,7 @@ RowDeclCreate(KeyDef * keys)
 }
 
 SectionDef *
-SectionDeclCreate(uint32_t name, RowDef * rows)
+SectionDeclCreate(xkb_atom_t name, RowDef * rows)
 {
     SectionDef *section;
     RowDef *row;
@@ -548,7 +548,7 @@ OverlayKeyCreate(char *under, char *over)
 }
 
 OverlayDef *
-OverlayDeclCreate(uint32_t name, OverlayKeyDef * keys)
+OverlayDeclCreate(xkb_atom_t name, OverlayKeyDef * keys)
 {
     OverlayDef *ol;
     OverlayKeyDef *key;
@@ -570,7 +570,7 @@ OverlayDeclCreate(uint32_t name, OverlayKeyDef * keys)
 }
 
 DoodadDef *
-DoodadCreate(unsigned type, uint32_t name, VarDef * body)
+DoodadCreate(unsigned type, xkb_atom_t name, VarDef * body)
 {
     DoodadDef *doodad;
 

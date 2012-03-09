@@ -66,13 +66,13 @@ typedef struct _KeyInfo
     short numLevels[XkbNumKbdGroups];
     xkb_keysym_t *syms[XkbNumKbdGroups];
     union xkb_action *acts[XkbNumKbdGroups];
-    uint32_t types[XkbNumKbdGroups];
+    xkb_atom_t types[XkbNumKbdGroups];
     unsigned repeat;
     struct xkb_behavior behavior;
     unsigned short vmodmap;
     unsigned long nameForOverlayKey;
     unsigned long allowNone;
-    uint32_t dfltType;
+    xkb_atom_t dfltType;
 } KeyInfo;
 
 /**
@@ -223,7 +223,7 @@ typedef struct _SymbolsInfo
     KeyInfo dflt;
     VModInfo vmods;
     ActionInfo *action;
-    uint32_t groupNames[XkbNumKbdGroups];
+    xkb_atom_t groupNames[XkbNumKbdGroups];
 
     ModMapEntry *modMap;
     AliasInfo *aliases;
@@ -515,7 +515,7 @@ MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
             if ((into->types[i] != None) && (report) &&
                 (into->types[i] != from->types[i]))
             {
-                uint32_t use, ignore;
+                xkb_atom_t use, ignore;
                 collide |= _Key_Types;
                 if (from->defs.merge != MergeAugment)
                 {
@@ -1674,7 +1674,7 @@ FindKeyForSymbol(struct xkb_desc * xkb, xkb_keysym_t sym, xkb_keycode_t *kc_rtrn
  * @return True if found, False otherwise.
  */
 static Bool
-FindNamedType(struct xkb_desc * xkb, uint32_t atom, unsigned *type_rtrn)
+FindNamedType(struct xkb_desc * xkb, xkb_atom_t atom, unsigned *type_rtrn)
 {
     unsigned n;
     const char *name = XkbcAtomText(atom);

@@ -59,7 +59,7 @@ typedef struct _IndicatorNameInfo
 {
     CommonInfo defs;
     int ndx;
-    uint32_t name;
+    xkb_atom_t name;
     Bool virtual;
 } IndicatorNameInfo;
 
@@ -185,7 +185,7 @@ FindIndicatorByIndex(KeyNamesInfo * info, int ndx)
 }
 
 static IndicatorNameInfo *
-FindIndicatorByName(KeyNamesInfo * info, uint32_t name)
+FindIndicatorByName(KeyNamesInfo * info, xkb_atom_t name)
 {
     IndicatorNameInfo *old;
 
@@ -270,7 +270,7 @@ AddIndicatorName(KeyNamesInfo * info, IndicatorNameInfo * new)
             else
             {
                 const char *oldType, *newType;
-                uint32_t using, ignoring;
+                xkb_atom_t using, ignoring;
                 if (old->virtual)
                     oldType = "virtual indicator";
                 else

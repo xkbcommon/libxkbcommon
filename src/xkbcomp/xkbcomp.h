@@ -38,6 +38,7 @@
 
 #include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
+#include "xkbmisc.h"
 
 extern char *scanFile;
 
@@ -137,18 +138,18 @@ typedef struct _Expr
         } binary;
         struct
         {
-            uint32_t element;
-            uint32_t field;
+            xkb_atom_t element;
+            xkb_atom_t field;
         } field;
         struct
         {
-            uint32_t element;
-            uint32_t field;
+            xkb_atom_t element;
+            xkb_atom_t field;
             struct _Expr *entry;
         } array;
         struct
         {
-            uint32_t name;
+            xkb_atom_t name;
             struct _Expr *args;
         } action;
         struct
@@ -163,7 +164,7 @@ typedef struct _Expr
             int y;
         } coord;
         struct _Expr *child;
-        uint32_t str;
+        xkb_atom_t str;
         unsigned uval;
         int ival;
         char keyName[5];
@@ -183,7 +184,7 @@ typedef struct _VModDef
 {
     ParseCommon common;
     unsigned merge;
-    uint32_t name;
+    xkb_atom_t name;
     ExprDef *value;
 } VModDef;
 
@@ -207,7 +208,7 @@ typedef struct _KeyTypeDef
 {
     ParseCommon common;
     unsigned merge;
-    uint32_t name;
+    xkb_atom_t name;
     VarDef *body;
 } KeyTypeDef;
 
@@ -223,7 +224,7 @@ typedef struct _ModMapDef
 {
     ParseCommon common;
     unsigned merge;
-    uint32_t modifier;
+    xkb_atom_t modifier;
     ExprDef *keys;
 } ModMapDef;
 
@@ -256,7 +257,7 @@ typedef struct _IndicatorNameDef
 typedef struct _OutlineDef
 {
     ParseCommon common;
-    uint32_t field;
+    xkb_atom_t field;
     int nPoints;
     ExprDef *points;
 } OutlineDef;
@@ -265,7 +266,7 @@ typedef struct _ShapeDef
 {
     ParseCommon common;
     unsigned merge;
-    uint32_t name;
+    xkb_atom_t name;
     int nOutlines;
     OutlineDef *outlines;
 } ShapeDef;
@@ -289,7 +290,7 @@ typedef struct _SectionDef
 {
     ParseCommon common;
     unsigned merge;
-    uint32_t name;
+    xkb_atom_t name;
     int nRows;
     RowDef *rows;
 } SectionDef;
@@ -305,7 +306,7 @@ typedef struct _OverlayDef
 {
     ParseCommon common;
     unsigned merge;
-    uint32_t name;
+    xkb_atom_t name;
     int nKeys;
     OverlayKeyDef *keys;
 } OverlayDef;
@@ -315,7 +316,7 @@ typedef struct _DoodadDef
     ParseCommon common;
     unsigned merge;
     unsigned type;
-    uint32_t name;
+    xkb_atom_t name;
     VarDef *body;
 } DoodadDef;
 

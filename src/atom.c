@@ -88,13 +88,13 @@ typedef struct _Node {
 
 #define BAD_RESOURCE 0xe0000000
 
-static uint32_t lastAtom = None;
+static xkb_atom_t lastAtom = None;
 static NodePtr atomRoot = NULL;
 static unsigned long tableLength;
 static NodePtr *nodeTable = NULL;
 
 const char *
-XkbcAtomText(uint32_t atom)
+XkbcAtomText(xkb_atom_t atom)
 {
     NodePtr node;
 
@@ -106,13 +106,13 @@ XkbcAtomText(uint32_t atom)
 }
 
 char *
-XkbcAtomGetString(uint32_t atom)
+XkbcAtomGetString(xkb_atom_t atom)
 {
     const char *ret = XkbcAtomText(atom);
     return ret ? strdup(ret) : NULL;
 }
 
-uint32_t
+xkb_atom_t
 xkb_intern_atom(const char *string)
 {
     NodePtr *np;

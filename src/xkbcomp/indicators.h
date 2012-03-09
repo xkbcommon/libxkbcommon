@@ -40,7 +40,7 @@
 typedef struct _LEDInfo
 {
     CommonInfo defs;
-    uint32_t name;
+    xkb_atom_t name;
     unsigned char indicator;
     unsigned char flags;
     unsigned char which_mods;

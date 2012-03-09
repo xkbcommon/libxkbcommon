@@ -34,7 +34,7 @@
 /***====================================================================***/
 
 typedef Bool(*IdentLookupFunc) (const void * /* priv */ ,
-                                uint32_t /* field */ ,
+                                xkb_atom_t /* field */ ,
                                 unsigned /* type */ ,
                                 ExprResult *    /* val_rtrn */
     );
@@ -163,7 +163,7 @@ ExprResolveLhs(ExprDef * expr,
 }
 
 static Bool
-SimpleLookup(const void * priv, uint32_t field, unsigned type,
+SimpleLookup(const void * priv, xkb_atom_t field, unsigned type,
              ExprResult * val_rtrn)
 {
     const LookupEntry *entry;
@@ -189,7 +189,7 @@ SimpleLookup(const void * priv, uint32_t field, unsigned type,
 }
 
 static Bool
-RadioLookup(const void * priv, uint32_t field, unsigned type, ExprResult * val_rtrn)
+RadioLookup(const void * priv, xkb_atom_t field, unsigned type, ExprResult * val_rtrn)
 {
     const char *str;
     int rg;
@@ -229,14 +229,14 @@ static const LookupEntry modIndexNames[] = {
 };
 
 int
-LookupModIndex(const void * priv, uint32_t field, unsigned type,
+LookupModIndex(const void * priv, xkb_atom_t field, unsigned type,
                ExprResult * val_rtrn)
 {
     return SimpleLookup(modIndexNames, field, type, val_rtrn);
 }
 
 int
-LookupModMask(const void * priv, uint32_t field, unsigned type,
+LookupModMask(const void * priv, xkb_atom_t field, unsigned type,
               ExprResult * val_rtrn)
 {
     char *str;

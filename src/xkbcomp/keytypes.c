@@ -52,7 +52,7 @@ typedef struct _PreserveInfo
 typedef struct _KeyTypeInfo
 {
     CommonInfo defs;
-    uint32_t name;
+    xkb_atom_t name;
     int fileID;
     unsigned mask;
     unsigned vmask;
@@ -63,7 +63,7 @@ typedef struct _KeyTypeInfo
     struct xkb_kt_map_entry * entries;
     PreserveInfo *preserve;
     int szNames;
-    uint32_t *lvlNames;
+    xkb_atom_t *lvlNames;
 } KeyTypeInfo;
 
 typedef struct _KeyTypesInfo
@@ -78,10 +78,10 @@ typedef struct _KeyTypesInfo
     VModInfo vmods;
 } KeyTypesInfo;
 
-static uint32_t tok_ONE_LEVEL;
-static uint32_t tok_TWO_LEVEL;
-static uint32_t tok_ALPHABETIC;
-static uint32_t tok_KEYPAD;
+static xkb_atom_t tok_ONE_LEVEL;
+static xkb_atom_t tok_TWO_LEVEL;
+static xkb_atom_t tok_ALPHABETIC;
+static xkb_atom_t tok_KEYPAD;
 
 /***====================================================================***/
 
@@ -147,10 +147,10 @@ InitKeyTypesInfo(KeyTypesInfo * info, struct xkb_desc * xkb, KeyTypesInfo * from
         }
         if (from->dflt.lvlNames)
         {
-            info->dflt.lvlNames = uTypedCalloc(from->dflt.szNames, uint32_t);
+            info->dflt.lvlNames = uTypedCalloc(from->dflt.szNames, xkb_atom_t);
             if (info->dflt.lvlNames)
             {
-                unsigned sz = from->dflt.szNames * sizeof(uint32_t);
+                unsigned sz = from->dflt.szNames * sizeof(xkb_atom_t);
                 memcpy(info->dflt.lvlNames, from->dflt.lvlNames, sz);
             }
         }
@@ -732,12 +732,12 @@ SetPreserve(KeyTypeInfo * type,
 
 static Bool
 AddLevelName(KeyTypeInfo * type,
-             unsigned level, uint32_t name, Bool clobber, Bool report)
+             unsigned level, xkb_atom_t name, Bool clobber, Bool report)
 {
     if ((type->lvlNames == NULL) || (type->szNames <= level))
     {
         type->lvlNames =
-            uTypedRecalloc(type->lvlNames, type->szNames, level + 1, uint32_t);
+            uTypedRecalloc(type->lvlNames, type->szNames, level + 1, xkb_atom_t);
         if (type->lvlNames == NULL)
         {
             ERROR("Couldn't allocate level names for type %s\n",
@@ -786,7 +786,7 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
 {
     ExprResult rtrn;
     unsigned level;
-    uint32_t level_name;
+    xkb_atom_t level_name;
 
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(type, "level name");

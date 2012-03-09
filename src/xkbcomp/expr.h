@@ -52,19 +52,19 @@ extern const char *exprOpText(unsigned        /* type */
     );
 
 extern int LookupModMask(const void * /* priv */ ,
-                         uint32_t /* field */ ,
+                         xkb_atom_t /* field */ ,
                          unsigned /* type */ ,
                          ExprResult *  /* val_rtrn */
     );
 
 extern int LookupVModMask(const void * /* priv */ ,
-                          uint32_t /* field */ ,
+                          xkb_atom_t /* field */ ,
                           unsigned /* type */ ,
                           ExprResult *  /* val_rtrn */
     );
 
 extern int LookupModIndex(const void * /* priv */ ,
-                          uint32_t /* field */ ,
+                          xkb_atom_t /* field */ ,
                           unsigned /* type */ ,
                           ExprResult *  /* val_rtrn */
     );

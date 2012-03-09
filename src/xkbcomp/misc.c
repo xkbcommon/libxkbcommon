@@ -230,8 +230,8 @@ AddCommonInfo(CommonInfo * old, CommonInfo * new)
 
 typedef struct _KeyNameDesc
 {
-    uint32_t level1;
-    uint32_t level2;
+    xkb_atom_t level1;
+    xkb_atom_t level2;
     char name[5];
     Bool used;
 } KeyNameDesc;

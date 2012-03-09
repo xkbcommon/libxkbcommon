@@ -160,7 +160,7 @@ HandleVModDef(VModDef * stmt, struct xkb_desc *xkb, unsigned mergeMode,
  * undefined.
  */
 static int
-LookupVModIndex(const struct xkb_desc *xkb, uint32_t field, unsigned type,
+LookupVModIndex(const struct xkb_desc *xkb, xkb_atom_t field, unsigned type,
                 ExprResult * val_rtrn)
 {
     int i;
@@ -197,7 +197,7 @@ LookupVModIndex(const struct xkb_desc *xkb, uint32_t field, unsigned type,
  * undefined.
  */
 int
-LookupVModMask(const void * priv, uint32_t field, unsigned type,
+LookupVModMask(const void * priv, xkb_atom_t field, unsigned type,
                ExprResult * val_rtrn)
 {
     if (LookupModMask(NULL, field, type, val_rtrn))
@@ -216,7 +216,7 @@ LookupVModMask(const void * priv, uint32_t field, unsigned type,
 int
 FindKeypadVMod(struct xkb_desc * xkb)
 {
-    uint32_t name;
+    xkb_atom_t name;
     ExprResult rtrn;
 
     name = xkb_intern_atom("NumLock");

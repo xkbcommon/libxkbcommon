@@ -62,7 +62,7 @@ extern KeyAliasDef *KeyAliasCreate(char * /* alias */ ,
                                    char *       /* real */
     );
 
-extern VModDef *VModCreate(uint32_t /* name */ ,
+extern VModDef *VModCreate(xkb_atom_t /* name */ ,
                            ExprDef *    /* value */
     );
 
@@ -70,7 +70,7 @@ extern VarDef *VarCreate(ExprDef * /* name */ ,
                          ExprDef *      /* value */
     );
 
-extern VarDef *BoolVarCreate(uint32_t /* nameToken */ ,
+extern VarDef *BoolVarCreate(xkb_atom_t /* nameToken */ ,
                              unsigned   /* set */
     );
 
@@ -78,7 +78,7 @@ extern InterpDef *InterpCreate(char * /* sym */ ,
                                ExprDef *        /* match */
     );
 
-extern KeyTypeDef *KeyTypeCreate(uint32_t /* name */ ,
+extern KeyTypeDef *KeyTypeCreate(xkb_atom_t /* name */ ,
                                  VarDef *       /* body */
     );
 
@@ -94,7 +94,7 @@ extern ModMapDef *ModMapCreate(uint32_t /* modifier */ ,
                                ExprDef *        /* keys */
     );
 
-extern IndicatorMapDef *IndicatorMapCreate(uint32_t /* name */ ,
+extern IndicatorMapDef *IndicatorMapCreate(xkb_atom_t /* name */ ,
                                            VarDef *     /* body */
     );
 
@@ -103,18 +103,18 @@ extern IndicatorNameDef *IndicatorNameCreate(int /* ndx */ ,
                                              Bool       /* virtual */
     );
 
-extern ExprDef *ActionCreate(uint32_t /* name */ ,
+extern ExprDef *ActionCreate(xkb_atom_t /* name */ ,
                              ExprDef *  /* args */
     );
 
 extern ExprDef *CreateKeysymList(char * /* sym */
     );
 
-extern ShapeDef *ShapeDeclCreate(uint32_t /* name */ ,
+extern ShapeDef *ShapeDeclCreate(xkb_atom_t /* name */ ,
                                  OutlineDef *   /* outlines */
     );
 
-extern OutlineDef *OutlineCreate(uint32_t /* field */ ,
+extern OutlineDef *OutlineCreate(xkb_atom_t /* field */ ,
                                  ExprDef *      /* points */
     );
 
@@ -125,7 +125,7 @@ extern KeyDef *KeyDeclCreate(char * /* name */ ,
 extern RowDef *RowDeclCreate(KeyDef *   /* keys */
     );
 
-extern SectionDef *SectionDeclCreate(uint32_t /* name */ ,
+extern SectionDef *SectionDeclCreate(xkb_atom_t /* name */ ,
                                      RowDef *   /* rows */
     );
 
@@ -133,12 +133,12 @@ extern OverlayKeyDef *OverlayKeyCreate(char * /* under */ ,
                                        char *   /* over  */
     );
 
-extern OverlayDef *OverlayDeclCreate(uint32_t /* name */ ,
+extern OverlayDef *OverlayDeclCreate(xkb_atom_t /* name */ ,
                                      OverlayKeyDef *    /* rows */
     );
 
 extern DoodadDef *DoodadCreate(unsigned /* type */ ,
-                               uint32_t /* name */ ,
+                               xkb_atom_t /* name */ ,
                                VarDef * /* body */
     );
 
