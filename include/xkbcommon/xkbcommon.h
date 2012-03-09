@@ -572,9 +572,6 @@ xkb_canonicalise_components(struct xkb_component_names * names,
 /*
  * Converts a keysym to a string; will return unknown Unicode codepoints
  * as "Ua1b2", and other unknown keysyms as "0xabcd1234".
- *
- * This is uint32_t rather than KeySym, as KeySym changes size between
- * client and server (no, really).
  */
 _X_EXPORT extern void
 xkb_keysym_to_string(xkb_keysym_t ks, char *buffer, size_t size);
