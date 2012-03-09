@@ -187,48 +187,6 @@ XkbChooseMap(XkbFile *file, const char *name)
     return map;
 }
 
-struct xkb_desc *
-xkb_compile_keymap_from_components(const struct xkb_component_names * ktcsg)
-{
-    XkbFile *file, *mapToUse;
-    struct xkb_desc * xkb = NULL;
-
-    uSetErrorFile(NULL);
-
-    if (!ktcsg || ISEMPTY(ktcsg->keycodes)) {
-        ERROR("keycodes required to generate XKB keymap\n");
-        goto fail;
-    }
-
-    if (!(file = XkbKeymapFileFromComponents(ktcsg))) {
-        ERROR("failed to generate parsed XKB file from components\n");
-        goto fail;
-    }
-
-    /* Find map to use */
-    if (!(mapToUse = XkbChooseMap(file, NULL)))
-        goto unwind_file;
-
-    /* Compile the keyboard */
-    if (!(xkb = XkbcAllocKeyboard())) {
-        ERROR("could not allocate keyboard description\n");
-        goto unwind_file;
-    }
-
-    if (!CompileKeymap(mapToUse, xkb, MergeReplace)) {
-        ERROR("failed to compile keymap\n");
-        XkbcFreeKeyboard(xkb);
-        xkb = NULL;
-    }
-
-unwind_file:
-    FreeXKBFile(file);
-    free(scanFile);
-    XkbFreeIncludePath();
-fail:
-    return xkb;
-}
-
 static struct xkb_desc *
 compile_keymap(XkbFile *file, const char *mapName)
 {
@@ -266,6 +224,24 @@ unwind_file:
     free(scanFile);
     XkbFreeIncludePath();
     return xkb;
+}
+
+struct xkb_desc *
+xkb_compile_keymap_from_components(const struct xkb_component_names * ktcsg)
+{
+    XkbFile *file;
+
+    if (!ktcsg || ISEMPTY(ktcsg->keycodes)) {
+        ERROR("keycodes required to generate XKB keymap\n");
+        return NULL;
+    }
+
+    if (!(file = XkbKeymapFileFromComponents(ktcsg))) {
+        ERROR("failed to generate parsed XKB file from components\n");
+        return NULL;
+    }
+
+    return compile_keymap(file, NULL);
 }
 
 struct xkb_desc *
