@@ -32,12 +32,6 @@
 #include "misc.h"
 #include "indicators.h"
 
-#define	KEYCODES	0
-#define	TYPES		1
-#define	COMPAT		2
-#define	SYMBOLS		3
-#define	MAX_SECTIONS	(SYMBOLS + 1)
-
 /**
  * Compile the given file and store the output in xkb.
  * @param file A list of XkbFiles, each denoting one type (e.g.
@@ -52,9 +46,14 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
     unsigned mainType;
     char *mainName;
     LEDInfo *unbound = NULL;
-    XkbFile *sections[MAX_SECTIONS];
+    struct {
+        XkbFile *keycodes;
+        XkbFile *types;
+        XkbFile *compat;
+        XkbFile *symbols;
+    } sections;
 
-    memset(sections, 0, sizeof(sections));
+    memset(&sections, 0, sizeof(sections));
     mainType = file->type;
     mainName = file->name;
     switch (mainType)
@@ -111,16 +110,16 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
                 ok = False;
                 break;
             case XkmKeyNamesIndex:
-                sections[KEYCODES] = file;
+                sections.keycodes = file;
                 break;
             case XkmTypesIndex:
-                sections[TYPES] = file;
+                sections.types = file;
                 break;
             case XkmSymbolsIndex:
-                sections[SYMBOLS] = file;
+                sections.symbols = file;
                 break;
             case XkmCompatMapIndex:
-                sections[COMPAT] = file;
+                sections.compat = file;
                 break;
             case XkmGeometryIndex:
                 /* XXX free me! */
@@ -141,15 +140,15 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
     /* compile the sections we have in the file one-by-one, or fail. */
     if (ok)
     {
-        if (ok && (sections[KEYCODES] != NULL))
-            ok = CompileKeycodes(sections[KEYCODES], xkb, MergeOverride);
-        if (ok && (sections[TYPES] != NULL))
-            ok = CompileKeyTypes(sections[TYPES], xkb, MergeOverride);
-        if (ok && (sections[COMPAT] != NULL))
-            ok = CompileCompatMap(sections[COMPAT], xkb, MergeOverride,
+        if (ok && (sections.keycodes != NULL))
+            ok = CompileKeycodes(sections.keycodes, xkb, MergeOverride);
+        if (ok && (sections.types != NULL))
+            ok = CompileKeyTypes(sections.types, xkb, MergeOverride);
+        if (ok && (sections.compat != NULL))
+            ok = CompileCompatMap(sections.compat, xkb, MergeOverride,
                                   &unbound);
-        if (ok && (sections[SYMBOLS] != NULL))
-            ok = CompileSymbols(sections[SYMBOLS], xkb, MergeOverride);
+        if (ok && (sections.symbols != NULL))
+            ok = CompileSymbols(sections.symbols, xkb, MergeOverride);
     }
     if (!ok)
         return False;
