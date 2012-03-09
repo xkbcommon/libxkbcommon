@@ -77,83 +77,79 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
     }
     have = 0;
     ok = 1;
-    file = (XkbFile *) file->defs;
     /* Check for duplicate entries in the input file */
-    while ((file) && (ok))
+    for (file = (XkbFile *) file->defs; file; file = (XkbFile *) file->common.next)
     {
         if (file->topName != mainName) {
             free(file->topName);
             file->topName = strdup(mainName);
         }
+
         if ((have & (1 << file->type)) != 0)
         {
             ERROR("More than one %s section in a %s file\n",
                    XkbcConfigText(file->type), XkbcConfigText(mainType));
             ACTION("All sections after the first ignored\n");
-            ok = False;
+            return False;
         }
         else if ((1 << file->type) & (~legal))
         {
             ERROR("Cannot define %s in a %s file\n",
                    XkbcConfigText(file->type), XkbcConfigText(mainType));
-            ok = False;
+            return False;
         }
-        else
+
+        switch (file->type)
         {
-            switch (file->type)
-            {
-            case XkmSemanticsFile:
-            case XkmLayoutFile:
-            case XkmKeymapFile:
-                WSGO("Illegal %s configuration in a %s file\n",
-                      XkbcConfigText(file->type), XkbcConfigText(mainType));
-                ACTION("Ignored\n");
-                ok = False;
-                break;
-            case XkmKeyNamesIndex:
-                sections.keycodes = file;
-                break;
-            case XkmTypesIndex:
-                sections.types = file;
-                break;
-            case XkmSymbolsIndex:
-                sections.symbols = file;
-                break;
-            case XkmCompatMapIndex:
-                sections.compat = file;
-                break;
-            case XkmGeometryIndex:
-                /* XXX free me! */
-                break;
-            case XkmVirtualModsIndex:
-            case XkmIndicatorsIndex:
-                WSGO("Found an isolated %s section\n",
-                      XkbcConfigText(file->type));
-                break;
-            default:
-                WSGO("Unknown file type %d\n", file->type);
-                break;
-            }
+        case XkmKeyNamesIndex:
+            sections.keycodes = file;
+            break;
+        case XkmTypesIndex:
+            sections.types = file;
+            break;
+        case XkmSymbolsIndex:
+            sections.symbols = file;
+            break;
+        case XkmCompatMapIndex:
+            sections.compat = file;
+            break;
+        case XkmGeometryIndex:
+            continue;
+        case XkmVirtualModsIndex:
+        case XkmIndicatorsIndex:
+            WSGO("Found an isolated %s section\n", XkbcConfigText(file->type));
+            ACTION("Ignored\n");
+            continue;
+        default:
+            WSGO("Unknown file type %d\n", file->type);
+            ACTION("Ignored\n");
+            continue;
+        case XkmSemanticsFile:
+        case XkmLayoutFile:
+        case XkmKeymapFile:
+            WSGO("Illegal %s configuration in a %s file\n",
+                  XkbcConfigText(file->type), XkbcConfigText(mainType));
+            ACTION("Ignored\n");
+            continue;
         }
-        if (ok)
-            have |= (1 << file->type);
-        file = (XkbFile *) file->common.next;
+
+        have |= (1 << file->type);
     }
+
     /* compile the sections we have in the file one-by-one, or fail. */
-    if (ok)
-    {
-        if (ok && (sections.keycodes != NULL))
-            ok = CompileKeycodes(sections.keycodes, xkb, MergeOverride);
-        if (ok && (sections.types != NULL))
-            ok = CompileKeyTypes(sections.types, xkb, MergeOverride);
-        if (ok && (sections.compat != NULL))
-            ok = CompileCompatMap(sections.compat, xkb, MergeOverride,
-                                  &unbound);
-        if (ok && (sections.symbols != NULL))
-            ok = CompileSymbols(sections.symbols, xkb, MergeOverride);
-    }
-    if (!ok)
+    if (sections.keycodes != NULL &&
+        !CompileKeycodes(sections.keycodes, xkb, MergeOverride))
         return False;
+    if (sections.types != NULL &&
+        !CompileKeyTypes(sections.types, xkb, MergeOverride))
+        return False;
+    if (sections.compat != NULL &&
+        !CompileCompatMap(sections.compat, xkb, MergeOverride, &unbound))
+        return False;
+    if (sections.symbols != NULL &&
+        !CompileSymbols(sections.symbols, xkb, MergeOverride))
+        return False;
+
     xkb->defined = have;
     if (required & (~have))
     {
@@ -173,6 +169,7 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
                 XkbcConfigText(mainType));
         return False;
     }
+
     ok = BindIndicators(xkb, True, unbound, NULL);
     return ok;
 }
