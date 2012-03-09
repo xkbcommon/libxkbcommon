@@ -67,7 +67,8 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
         legal = XkmKeymapLegal;
         break;
     case XkmKeymapFile:
-        required = XkmKeymapRequired;
+        required = XkmKeyNamesIndex | XkmTypesIndex | XkmSymbolsIndex | \
+                   XkmCompatMapIndex | XkmVirtualModsIndex;
         legal = XkmKeymapLegal;
         break;
     default:
@@ -136,21 +137,6 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
         have |= (1 << file->type);
     }
 
-    /* compile the sections we have in the file one-by-one, or fail. */
-    if (sections.keycodes != NULL &&
-        !CompileKeycodes(sections.keycodes, xkb, MergeOverride))
-        return False;
-    if (sections.types != NULL &&
-        !CompileKeyTypes(sections.types, xkb, MergeOverride))
-        return False;
-    if (sections.compat != NULL &&
-        !CompileCompatMap(sections.compat, xkb, MergeOverride, &unbound))
-        return False;
-    if (sections.symbols != NULL &&
-        !CompileSymbols(sections.symbols, xkb, MergeOverride))
-        return False;
-
-    xkb->defined = have;
     if (required & (~have))
     {
         int i, bit;
@@ -169,6 +155,22 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
                 XkbcConfigText(mainType));
         return False;
     }
+
+    /* compile the sections we have in the file one-by-one, or fail. */
+    if (sections.keycodes != NULL &&
+        !CompileKeycodes(sections.keycodes, xkb, MergeOverride))
+        return False;
+    if (sections.types != NULL &&
+        !CompileKeyTypes(sections.types, xkb, MergeOverride))
+        return False;
+    if (sections.compat != NULL &&
+        !CompileCompatMap(sections.compat, xkb, MergeOverride, &unbound))
+        return False;
+    if (sections.symbols != NULL &&
+        !CompileSymbols(sections.symbols, xkb, MergeOverride))
+        return False;
+
+    xkb->defined = have;
 
     ok = BindIndicators(xkb, True, unbound, NULL);
     return ok;

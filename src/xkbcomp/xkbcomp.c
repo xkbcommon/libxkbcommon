@@ -45,11 +45,6 @@ XkbKeymapFileFromComponents(const struct xkb_component_names * ktcsg)
     XkbFile *keycodes, *types, *compat, *symbols;
     IncludeStmt *inc;
 
-    if (!ktcsg) {
-        ERROR("no components to generate keymap file from\n");
-        return NULL;
-    }
-
     inc = IncludeCreate(ktcsg->keycodes, MergeDefault);
     keycodes = CreateXKBFile(XkmKeyNamesIndex, NULL, (ParseCommon *)inc, 0);
 
@@ -231,8 +226,28 @@ xkb_compile_keymap_from_components(const struct xkb_component_names * ktcsg)
 {
     XkbFile *file;
 
-    if (!ktcsg || ISEMPTY(ktcsg->keycodes)) {
+    if (!ktcsg) {
+        ERROR("no components specified\n");
+        return NULL;
+    }
+
+    if (ISEMPTY(ktcsg->keycodes)) {
         ERROR("keycodes required to generate XKB keymap\n");
+        return NULL;
+    }
+
+    if (ISEMPTY(ktcsg->compat)) {
+        ERROR("compat map required to generate XKB keymap\n");
+        return NULL;
+    }
+
+    if (ISEMPTY(ktcsg->types)) {
+        ERROR("types required to generate XKB keymap\n");
+        return NULL;
+    }
+
+    if (ISEMPTY(ktcsg->symbols)) {
+        ERROR("symbols required to generate XKB keymap\n");
         return NULL;
     }
 
