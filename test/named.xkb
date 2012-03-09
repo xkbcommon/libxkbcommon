@@ -1,4 +1,4 @@
-xkb_keymap "us" {
+default xkb_keymap "us" {
     xkb_keycodes  { include "xfree86+aliases(qwerty)" };
     xkb_types     { include "complete" };
     xkb_compat    { include "complete" };
