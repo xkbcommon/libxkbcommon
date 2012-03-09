@@ -125,14 +125,7 @@ extern FILE *yyin;
 	IndicatorNameDef *ledName;
 	KeycodeDef	*keyName;
 	KeyAliasDef	*keyAlias;
-	ShapeDef	*shape;
-	SectionDef	*section;
-	RowDef		*row;
-	KeyDef		*key;
-	OverlayDef	*overlay;
-	OverlayKeyDef	*olKey;
-	OutlineDef	*outline;
-	DoodadDef	*doodad;
+        void            *geom;
 	XkbFile		*file;
 }
 %type <ival>	Number Integer Float SignedNumber
@@ -154,14 +147,9 @@ extern FILE *yyin;
 %type <ledName>	IndicatorNameDecl
 %type <keyName>	KeyNameDecl
 %type <keyAlias> KeyAliasDecl
-%type <shape>	ShapeDecl
-%type <section>	SectionDecl
-%type <row>	SectionBody SectionBodyItem
-%type <key>	RowBody RowBodyItem Keys Key
-%type <overlay>	OverlayDecl
-%type <olKey>	OverlayKeyList OverlayKey
-%type <outline>	OutlineList OutlineInList
-%type <doodad>	DoodadDecl
+%type <geom>	ShapeDecl SectionDecl SectionBody SectionBodyItem RowBody RowBodyItem
+%type <geom>    Keys Key OverlayDecl OverlayKeyList OverlayKey OutlineList OutlineInList
+%type <geom>    DoodadDecl
 %type <file>	XkbFile XkbMapConfigList XkbMapConfig XkbConfig
 %type <file>	XkbCompositeMap XkbCompMapList
 %%
@@ -191,7 +179,12 @@ XkbCompositeType:	XKB_KEYMAP	{ $$= XkmKeymapFile; }
 		;
 
 XkbMapConfigList :	XkbMapConfigList XkbMapConfig
-			{ $$= (XkbFile *)AppendStmt(&$1->common,&$2->common); }
+			{
+                            if (!$2)
+                                $$= $1;
+                            else
+                                $$= (XkbFile *)AppendStmt(&$1->common,&$2->common);
+                        }
 		|	XkbMapConfig
 			{ $$= $1; }
 		;
@@ -199,11 +192,21 @@ XkbMapConfigList :	XkbMapConfigList XkbMapConfig
 XkbMapConfig	:	OptFlags FileType OptMapName OBRACE
 			    DeclList
 			CBRACE SEMI
-			{ $$= CreateXKBFile($2,$3,$5,$1); }
+			{
+                            if ($2 == XkmGeometryIndex)
+                                $$= NULL;
+                            else
+                                $$= CreateXKBFile($2,$3,$5,$1);
+                        }
 		;
 
 XkbConfig	:	OptFlags FileType OptMapName DeclList
-			{ $$= CreateXKBFile($2,$3,$4,$1); }
+			{
+                            if ($2 == XkmGeometryIndex)
+                                $$= NULL;
+                            else
+                                $$= CreateXKBFile($2,$3,$4,$1);
+                        }
 		;
 
 
@@ -294,18 +297,12 @@ Decl		:	OptMergeMode VarDecl
 			}
 		|	OptMergeMode ShapeDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1);
-			    $$= &$2->common;
 			}
 		|	OptMergeMode SectionDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1);
-			    $$= &$2->common;
 			}
 		|	OptMergeMode DoodadDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1);
-			    $$= &$2->common;
 			}
 		|	MergeMode STRING
 			{
@@ -440,110 +437,99 @@ IndicatorNameDecl:	INDICATOR Integer EQUALS Expr SEMI
 		;
 
 ShapeDecl	:	SHAPE String OBRACE OutlineList CBRACE SEMI
-			{ $$= ShapeDeclCreate($2,(OutlineDef *)&$4->common); }
+			{ $$= NULL; }
 		|	SHAPE String OBRACE CoordList CBRACE SEMI
-			{
-			    OutlineDef *outlines;
-			    outlines= OutlineCreate(None,$4);
-			    $$= ShapeDeclCreate($2,outlines);
-			}
+			{ $$= NULL; }
 		;
 
 SectionDecl	:	SECTION String OBRACE SectionBody CBRACE SEMI
-			{ $$= SectionDeclCreate($2,$4); }
+			{ $$= NULL; }
 		;
 
 SectionBody	:	SectionBody SectionBodyItem
-			{ $$=(RowDef *)AppendStmt(&$1->common,&$2->common);}
+			{ $$= NULL;}
 		|	SectionBodyItem
-			{ $$= $1; }
+			{ $$= NULL; }
 		;
 
 SectionBodyItem	:	ROW OBRACE RowBody CBRACE SEMI
-			{ $$= RowDeclCreate($3); }
+			{ $$= NULL; }
 		|	VarDecl
-			{ $$= (RowDef *)$1; }
+			{ $$= NULL; }
 		|	DoodadDecl
-			{ $$= (RowDef *)$1; }
+			{ $$= NULL; }
 		|	IndicatorMapDecl
-			{ $$= (RowDef *)$1; }
+			{ $$= NULL; }
 		|	OverlayDecl
-			{ $$= (RowDef *)$1; }
+			{ $$= NULL; }
 		;
 
 RowBody		:	RowBody RowBodyItem
-			{ $$=(KeyDef *)AppendStmt(&$1->common,&$2->common);}
+			{ $$= NULL;}
 		|	RowBodyItem
-			{ $$= $1; }
+			{ $$= NULL; }
 		;
 
 RowBodyItem	:	KEYS OBRACE Keys CBRACE SEMI
-			{ $$= $3; }
+			{ $$= NULL; }
 		|	VarDecl
-			{ $$= (KeyDef *)$1; }
+			{ $$= NULL; }
 		;
 
 Keys		:	Keys COMMA Key
-			{ $$=(KeyDef *)AppendStmt(&$1->common,&$3->common);}
+			{ $$= NULL; }
 		|	Key
-			{ $$= $1; }
+			{ $$= NULL; }
 		;
 
 Key		:	KeyName
-			{ $$= KeyDeclCreate($1,NULL); }
+			{ $$= NULL; }
 		|	OBRACE ExprList CBRACE
-			{ $$= KeyDeclCreate(NULL,$2); }
+			{ $$= NULL; }
 		;
 
 OverlayDecl	:	OVERLAY String OBRACE OverlayKeyList CBRACE SEMI
-			{ $$= OverlayDeclCreate($2,$4); }
+			{ $$= NULL; }
 		;
 
 OverlayKeyList	:	OverlayKeyList COMMA OverlayKey
 			{
-			    $$= (OverlayKeyDef *)
-				AppendStmt(&$1->common,&$3->common);
+			    $$= NULL;
 			}
 		|	OverlayKey
-			{ $$= $1; }
+			{ $$= NULL; }
 		;
 
 OverlayKey	:	KeyName EQUALS KeyName
-			{ $$= OverlayKeyCreate($1,$3); }
+			{ $$= NULL; }
 		;
 
 OutlineList	:	OutlineList COMMA OutlineInList
-			{ $$=(OutlineDef *)AppendStmt(&$1->common,&$3->common);}
+			{ $$= NULL;}
 		|	OutlineInList
-			{ $$= $1; }
+			{ $$= NULL; }
 		;
 
 OutlineInList	:	OBRACE CoordList CBRACE
-			{ $$= OutlineCreate(None,$2); }
+			{ $$= NULL; }
 		|	Ident EQUALS OBRACE CoordList CBRACE
-			{ $$= OutlineCreate($1,$4); }
+			{ $$= NULL; }
 		|	Ident EQUALS Expr
-			{ $$= OutlineCreate($1,$3); }
+			{ $$= NULL; }
 		;
 
 CoordList	:	CoordList COMMA Coord
-			{ $$= (ExprDef *)AppendStmt(&$1->common,&$3->common); }
+			{ $$= NULL; }
 		|	Coord
-			{ $$= $1; }
+			{ $$= NULL; }
 		;
 
 Coord		:	OBRACKET SignedNumber COMMA SignedNumber CBRACKET
-			{
-			    ExprDef *expr;
-			    expr= ExprCreate(ExprCoord,TypeUnknown);
-			    expr->value.coord.x= $2;
-			    expr->value.coord.y= $4;
-			    $$= expr;
-			}
+			{ $$= NULL; }
 		;
 
 DoodadDecl	:	DoodadType String OBRACE VarDeclList CBRACE SEMI
-			{ $$= DoodadCreate($1,$2,$4); }
+			{ $$= NULL; }
 		;
 
 DoodadType	:	TEXT			{ $$= 0; }
@@ -573,11 +559,11 @@ Element		:	ACTION_TOK
 		|	SHAPE	
 			{ $$= xkb_intern_atom("shape"); }
 		|	ROW	
-			{ $$= xkb_intern_atom("row"); }
+			{ $$= None; }
 		|	SECTION	
-			{ $$= xkb_intern_atom("section"); }
+			{ $$= None; }
 		|	TEXT
-			{ $$= xkb_intern_atom("text"); }
+			{ $$= None; }
 		;
 
 OptMergeMode	:	MergeMode		{ $$= $1; }
@@ -744,7 +730,7 @@ Number		:	FLOAT		{ $$= scanInt; }
 		|	INTEGER		{ $$= scanInt*XkbGeomPtsPerMM; }
 		;
 
-Float		:	FLOAT		{ $$= scanInt; }
+Float		:	FLOAT		{ $$= 0; }
 		;
 
 Integer		:	INTEGER		{ $$= scanInt; }

@@ -65,14 +65,6 @@ extern char *scanFile;
 #define	StmtGroupCompatDef 	11
 #define	StmtIndicatorMapDef	12
 #define	StmtIndicatorNameDef	13
-#define	StmtOutlineDef		14
-#define	StmtShapeDef		15
-#define	StmtKeyDef		16
-#define	StmtRowDef		17
-#define	StmtSectionDef		18
-#define	StmtOverlayKeyDef	19
-#define	StmtOverlayDef		20
-#define	StmtDoodadDef		21
 
 #define	FileSymInterp	100
 
@@ -254,76 +246,14 @@ typedef struct _IndicatorNameDef
     Bool virtual;
 } IndicatorNameDef;
 
-typedef struct _OutlineDef
-{
-    ParseCommon common;
-    xkb_atom_t field;
-    int nPoints;
-    ExprDef *points;
-} OutlineDef;
-
-typedef struct _ShapeDef
-{
-    ParseCommon common;
-    unsigned merge;
-    xkb_atom_t name;
-    int nOutlines;
-    OutlineDef *outlines;
-} ShapeDef;
-
-typedef struct _KeyDef
-{
-    ParseCommon common;
-    unsigned defined;
-    char *name;
-    ExprDef *expr;
-} KeyDef;
-
-typedef struct _RowDef
-{
-    ParseCommon common;
-    int nKeys;
-    KeyDef *keys;
-} RowDef;
-
-typedef struct _SectionDef
-{
-    ParseCommon common;
-    unsigned merge;
-    xkb_atom_t name;
-    int nRows;
-    RowDef *rows;
-} SectionDef;
-
-typedef struct _OverlayKeyDef
-{
-    ParseCommon common;
-    char over[5];
-    char under[5];
-} OverlayKeyDef;
-
-typedef struct _OverlayDef
-{
-    ParseCommon common;
-    unsigned merge;
-    xkb_atom_t name;
-    int nKeys;
-    OverlayKeyDef *keys;
-} OverlayDef;
-
-typedef struct _DoodadDef
+typedef struct _IndicatorMapDef
 {
     ParseCommon common;
     unsigned merge;
     unsigned type;
     xkb_atom_t name;
     VarDef *body;
-} DoodadDef;
-
-/* IndicatorMapDef doesn't use the type field, but the rest of the fields
-   need to be at the same offsets as in DoodadDef.  Use #define to avoid
-   any strict aliasing problems.  */
-#define IndicatorMapDef DoodadDef
+} IndicatorMapDef;
 
 typedef struct _XkbFile
 {

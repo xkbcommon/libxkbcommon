@@ -110,38 +110,6 @@ extern ExprDef *ActionCreate(xkb_atom_t /* name */ ,
 extern ExprDef *CreateKeysymList(char * /* sym */
     );
 
-extern ShapeDef *ShapeDeclCreate(xkb_atom_t /* name */ ,
-                                 OutlineDef *   /* outlines */
-    );
-
-extern OutlineDef *OutlineCreate(xkb_atom_t /* field */ ,
-                                 ExprDef *      /* points */
-    );
-
-extern KeyDef *KeyDeclCreate(char * /* name */ ,
-                             ExprDef *  /* expr */
-    );
-
-extern RowDef *RowDeclCreate(KeyDef *   /* keys */
-    );
-
-extern SectionDef *SectionDeclCreate(xkb_atom_t /* name */ ,
-                                     RowDef *   /* rows */
-    );
-
-extern OverlayKeyDef *OverlayKeyCreate(char * /* under */ ,
-                                       char *   /* over  */
-    );
-
-extern OverlayDef *OverlayDeclCreate(xkb_atom_t /* name */ ,
-                                     OverlayKeyDef *    /* rows */
-    );
-
-extern DoodadDef *DoodadCreate(unsigned /* type */ ,
-                               xkb_atom_t /* name */ ,
-                               VarDef * /* body */
-    );
-
 extern ExprDef *AppendKeysymList(ExprDef * /* list */ ,
                                  char * /* sym */
     );
