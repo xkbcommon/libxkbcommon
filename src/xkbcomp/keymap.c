@@ -99,6 +99,7 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
             ok = False;
         }
         else
+        {
             switch (file->type)
             {
             case XkmSemanticsFile:
@@ -133,6 +134,7 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
                 WSGO("Unknown file type %d\n", file->type);
                 break;
             }
+        }
         if (ok)
             have |= (1 << file->type);
         file = (XkbFile *) file->common.next;
