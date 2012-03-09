@@ -1019,7 +1019,7 @@ ExprResolveKeySym(ExprDef * expr,
                   ExprResult * val_rtrn)
 {
     int ok = 0;
-    uint32_t sym;
+    xkb_keysym_t sym;
 
     if (expr->op == ExprIdent)
     {

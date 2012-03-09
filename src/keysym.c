@@ -38,7 +38,7 @@ authorization from the authors.
 #include "ks_tables.h"
 
 void
-xkb_keysym_to_string(uint32_t ks, char *buffer, size_t size)
+xkb_keysym_to_string(xkb_keysym_t ks, char *buffer, size_t size)
 {
     int i, n, h, idx;
     const unsigned char *entry;
@@ -91,7 +91,7 @@ xkb_keysym_to_string(uint32_t ks, char *buffer, size_t size)
 	snprintf(buffer, size, "0x%08x", ks);
 }
 
-uint32_t
+xkb_keysym_t
 xkb_string_to_keysym(const char *s)
 {
     int i, n, h, c, idx;
@@ -99,7 +99,7 @@ xkb_string_to_keysym(const char *s)
     const char *p = s;
     const unsigned char *entry;
     unsigned char sig1, sig2;
-    uint32_t val;
+    xkb_keysym_t val;
 
     while ((c = *p++))
         sig = (sig << 1) + c;
@@ -150,7 +150,7 @@ xkb_string_to_keysym(const char *s)
      * no separating underscore, while some XF86* syms in the latter did.
      * As a last ditch effort, try without. */
     if (strncmp(s, "XF86_", 5) == 0) {
-        uint32_t ret;
+        xkb_keysym_t ret;
         char *tmp = strdup(s);
         if (!tmp)
             return NoSymbol;

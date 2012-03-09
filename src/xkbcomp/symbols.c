@@ -64,7 +64,7 @@ typedef struct _KeyInfo
     unsigned char symsDefined;
     unsigned char actsDefined;
     short numLevels[XkbNumKbdGroups];
-    uint32_t *syms[XkbNumKbdGroups];
+    xkb_keysym_t *syms[XkbNumKbdGroups];
     union xkb_action *acts[XkbNumKbdGroups];
     uint32_t types[XkbNumKbdGroups];
     unsigned repeat;
@@ -168,14 +168,14 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
             width = new->numLevels[i];
             if (old->syms[i] != NULL)
             {
-                new->syms[i] = uTypedCalloc(width, uint32_t);
+                new->syms[i] = uTypedCalloc(width, xkb_keysym_t);
                 if (!new->syms[i])
                 {
                     new->syms[i] = NULL;
                     new->numLevels[i] = 0;
                     return False;
                 }
-                memcpy(new->syms[i], old->syms[i], width * sizeof(uint32_t));
+                memcpy(new->syms[i], old->syms[i], width * sizeof(xkb_keysym_t));
             }
             if (old->acts[i] != NULL)
             {
@@ -203,7 +203,7 @@ typedef struct _ModMapEntry
     union
     {
         unsigned long keyName;
-        uint32_t keySym;
+        xkb_keysym_t keySym;
     } u;
 } ModMapEntry;
 
@@ -288,7 +288,7 @@ ResizeKeyGroup(KeyInfo * key,
     {
         key->syms[group] = uTypedRecalloc(key->syms[group],
                                           key->numLevels[group], newWidth,
-                                          uint32_t);
+                                          xkb_keysym_t);
         if (!key->syms[group])
             return False;
     }
@@ -309,7 +309,7 @@ static Bool
 MergeKeyGroups(SymbolsInfo * info,
                KeyInfo * into, KeyInfo * from, unsigned group)
 {
-    uint32_t *resultSyms;
+    xkb_keysym_t *resultSyms;
     union xkb_action *resultActs;
     int resultWidth;
     int i;
@@ -332,7 +332,7 @@ MergeKeyGroups(SymbolsInfo * info,
     }
     if (resultSyms == NULL)
     {
-        resultSyms = uTypedCalloc(resultWidth, uint32_t);
+        resultSyms = uTypedCalloc(resultWidth, xkb_keysym_t);
         if (!resultSyms)
         {
             WSGO("Could not allocate symbols for group merge\n");
@@ -357,7 +357,7 @@ MergeKeyGroups(SymbolsInfo * info,
     }
     for (i = 0; i < resultWidth; i++)
     {
-        uint32_t fromSym, toSym;
+        xkb_keysym_t fromSym, toSym;
         if (from->syms[group] && (i < from->numLevels[group]))
             fromSym = from->syms[group][i];
         else
@@ -372,7 +372,7 @@ MergeKeyGroups(SymbolsInfo * info,
             resultSyms[i] = fromSym;
         else
         {
-            uint32_t use, ignore;
+            xkb_keysym_t use, ignore;
             if (clobber)
             {
                 use = fromSym;
@@ -1638,7 +1638,7 @@ HandleSymbolsFile(XkbFile * file,
 }
 
 static Bool
-FindKeyForSymbol(struct xkb_desc * xkb, uint32_t sym, xkb_keycode_t *kc_rtrn)
+FindKeyForSymbol(struct xkb_desc * xkb, xkb_keysym_t sym, xkb_keycode_t *kc_rtrn)
 {
     int i, j;
     Bool gotOne;
@@ -1710,7 +1710,7 @@ FindNamedType(struct xkb_desc * xkb, uint32_t atom, unsigned *type_rtrn)
  * @returns True if a type could be found, False otherwise.
  */
 static Bool
-FindAutomaticType(int width, uint32_t * syms, uint32_t * typeNameRtrn,
+FindAutomaticType(int width, xkb_keysym_t * syms, xkb_atom_t * typeNameRtrn,
                   Bool * autoType)
 {
     *autoType = False;
@@ -1803,10 +1803,10 @@ PrepareKeyDef(KeyInfo * key)
         }
         if ((key->symsDefined & 1) && key->syms[0])
         {
-            key->syms[i] = uTypedCalloc(width, uint32_t);
+            key->syms[i] = uTypedCalloc(width, xkb_keysym_t);
             if (key->syms[i] == NULL)
                 continue;
-            memcpy(key->syms[i], key->syms[0], width * sizeof(uint32_t));
+            memcpy(key->syms[i], key->syms[0], width * sizeof(xkb_keysym_t));
             key->symsDefined |= 1 << i;
         }
         if (defined & 1)
@@ -1828,7 +1828,7 @@ PrepareKeyDef(KeyInfo * key)
         if ((key->syms[i] != key->syms[0]) &&
             (key->syms[i] == NULL || key->syms[0] == NULL ||
              memcmp(key->syms[i], key->syms[0],
-                    sizeof(uint32_t) * key->numLevels[0])))
+                    sizeof(xkb_keysym_t) * key->numLevels[0])))
         {
             identical = False;
             break;
@@ -1872,7 +1872,7 @@ CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
     unsigned width, tmp, nGroups;
     struct xkb_key_type * type;
     Bool haveActions, autoType, useAlias;
-    uint32_t *outSyms;
+    xkb_keysym_t *outSyms;
     union xkb_action *outActs;
     unsigned types[XkbNumKbdGroups];
 

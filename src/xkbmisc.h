@@ -50,7 +50,7 @@ extern void
 XkbcEnsureSafeMapName(char *name);
 
 extern unsigned
-_XkbcKSCheckCase(uint32_t sym);
+_XkbcKSCheckCase(xkb_keysym_t sym);
 
 #define _XkbKSLower (1 << 0)
 #define _XkbKSUpper (1 << 1)
@@ -97,7 +97,7 @@ extern const char *
 XkbcActionTypeText(unsigned type);
 
 extern const char *
-XkbcKeysymText(uint32_t sym);
+XkbcKeysymText(xkb_keysym_t sym);
 
 extern const char *
 XkbcKeyNameText(char *name);

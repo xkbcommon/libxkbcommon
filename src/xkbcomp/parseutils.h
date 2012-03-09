@@ -147,7 +147,7 @@ extern ExprDef *AppendKeysymList(ExprDef * /* list */ ,
     );
 
 extern int LookupKeysym(char * /* str */ ,
-                        uint32_t *        /* sym_rtrn */
+                        xkb_keysym_t *        /* sym_rtrn */
     );
 
 extern IncludeStmt *IncludeCreate(char * /* str */ ,

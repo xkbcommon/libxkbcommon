@@ -608,9 +608,9 @@ AppendKeysymList(ExprDef * list, char *sym)
 }
 
 int
-LookupKeysym(char *str, uint32_t * sym_rtrn)
+LookupKeysym(char *str, xkb_keysym_t * sym_rtrn)
 {
-    uint32_t sym;
+    xkb_keysym_t sym;
 
     if ((!str) || (uStrCaseCmp(str, "any") == 0)
         || (uStrCaseCmp(str, "nosymbol") == 0))

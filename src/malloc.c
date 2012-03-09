@@ -85,7 +85,7 @@ XkbcAllocClientMap(struct xkb_desc * xkb, unsigned which, unsigned nTotalTypes)
 
         if (!map->syms) {
             map->size_syms = (nKeys * 15) / 10;
-            map->syms = _XkbTypedCalloc(map->size_syms, uint32_t);
+            map->syms = _XkbTypedCalloc(map->size_syms, xkb_keysym_t);
             if (!map->syms) {
                 map->size_syms = 0;
                 return BadAlloc;
@@ -257,13 +257,13 @@ XkbcCopyKeyType(struct xkb_key_type * from, struct xkb_key_type * into)
     return Success;
 }
 
-uint32_t *
+xkb_keysym_t *
 XkbcResizeKeySyms(struct xkb_desc * xkb, xkb_keycode_t key,
                   unsigned int needed)
 {
     uint32_t i, nSyms, nKeySyms;
     uint32_t nOldSyms;
-    uint32_t *newSyms;
+    xkb_keysym_t *newSyms;
 
     if (needed == 0) {
         xkb->map->key_sym_map[key].offset = 0;
@@ -277,11 +277,11 @@ XkbcResizeKeySyms(struct xkb_desc * xkb, xkb_keycode_t key,
     if (xkb->map->size_syms - xkb->map->num_syms >= needed) {
         if (nOldSyms > 0)
             memcpy(&xkb->map->syms[xkb->map->num_syms],
-                   XkbKeySymsPtr(xkb, key), nOldSyms * sizeof(uint32_t));
+                   XkbKeySymsPtr(xkb, key), nOldSyms * sizeof(xkb_keysym_t));
 
         if ((needed - nOldSyms) > 0)
             memset(&xkb->map->syms[xkb->map->num_syms + XkbKeyNumSyms(xkb, key)],
-                   0, (needed - nOldSyms) * sizeof(uint32_t));
+                   0, (needed - nOldSyms) * sizeof(xkb_keysym_t));
 
         xkb->map->key_sym_map[key].offset = xkb->map->num_syms;
         xkb->map->num_syms += needed;
@@ -290,7 +290,7 @@ XkbcResizeKeySyms(struct xkb_desc * xkb, xkb_keycode_t key,
     }
 
     xkb->map->size_syms += (needed > 32 ? needed : 32);
-    newSyms = _XkbTypedCalloc(xkb->map->size_syms, uint32_t);
+    newSyms = _XkbTypedCalloc(xkb->map->size_syms, xkb_keysym_t);
     if (!newSyms)
         return NULL;
 
@@ -307,10 +307,10 @@ XkbcResizeKeySyms(struct xkb_desc * xkb, xkb_keycode_t key,
             nKeySyms = needed;
         if (nCopy != 0)
            memcpy(&newSyms[nSyms], XkbKeySymsPtr(xkb, i),
-                  nCopy * sizeof(uint32_t));
+                  nCopy * sizeof(xkb_keysym_t));
         if (nKeySyms > nCopy)
             memset(&newSyms[nSyms + nCopy], 0,
-                   (nKeySyms - nCopy) * sizeof(uint32_t));
+                   (nKeySyms - nCopy) * sizeof(xkb_keysym_t));
 
         xkb->map->key_sym_map[i].offset = nSyms;
         nSyms += nKeySyms;

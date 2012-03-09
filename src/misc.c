@@ -189,7 +189,7 @@ XkbcEnsureSafeMapName(char *name)
 }
 
 unsigned
-_XkbcKSCheckCase(uint32_t ks)
+_XkbcKSCheckCase(xkb_keysym_t ks)
 {
     unsigned set = (ks & (~0xff)) >> 8;
     unsigned rtrn = 0;

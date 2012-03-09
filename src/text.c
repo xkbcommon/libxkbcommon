@@ -253,7 +253,7 @@ XkbcActionTypeText(unsigned type)
 }
 
 const char *
-XkbcKeysymText(uint32_t sym)
+XkbcKeysymText(xkb_keysym_t sym)
 {
     static char buffer[16];
 

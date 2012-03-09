@@ -61,6 +61,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/extensions/XKB.h>
 
 typedef uint32_t xkb_keycode_t;
+typedef uint32_t xkb_keysym_t;
 
 #define XKB_KEYCODE_MAX                 (0xffffffff - 1)
 #define xkb_keycode_is_legal_ext(kc)    (kc <= XKB_KEYCODE_MAX)
@@ -227,7 +228,7 @@ struct xkb_key_type {
 };
 
 struct xkb_sym_interpret {
-    uint32_t          sym;
+    xkb_keysym_t    sym;
     unsigned char   flags;
     unsigned char   match;
     uint8_t         mods; /* XXX real or virt? */
@@ -263,7 +264,7 @@ struct xkb_client_map {
 
     uint32_t                 size_syms;
     uint32_t                 num_syms;
-    uint32_t                *syms;
+    xkb_keysym_t             *syms;
     struct xkb_sym_map *             key_sym_map;
 
     unsigned char           *modmap;
@@ -576,13 +577,13 @@ xkb_canonicalise_components(struct xkb_component_names * names,
  * client and server (no, really).
  */
 _X_EXPORT extern void
-xkb_keysym_to_string(uint32_t ks, char *buffer, size_t size);
+xkb_keysym_to_string(xkb_keysym_t ks, char *buffer, size_t size);
 
 /*
  * See xkb_keysym_to_string comments: this function will accept any string
  * from that function.
  */
-_X_EXPORT extern uint32_t
+_X_EXPORT extern xkb_keysym_t
 xkb_string_to_keysym(const char *s);
 
 _XFUNCPROTOEND
