@@ -371,7 +371,7 @@ CopyIndicatorMapDefs(struct xkb_desc * xkb, LEDInfo *leds, LEDInfo **unboundRtrn
     LEDInfo *led, *next;
     LEDInfo *unbound, *last;
 
-    if (XkbcAllocNames(xkb, XkbIndicatorNamesMask, 0, 0) != Success)
+    if (XkbcAllocNames(xkb, XkbIndicatorNamesMask, 0) != Success)
     {
         WSGO("Couldn't allocate names\n");
         ACTION("Indicator names may be incorrect\n");

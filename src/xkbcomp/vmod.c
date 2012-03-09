@@ -48,7 +48,7 @@ ClearVModInfo(VModInfo * info, struct xkb_desc * xkb)
 {
     int i;
 
-    if (XkbcAllocNames(xkb, XkbVirtualModNamesMask, 0, 0) != Success)
+    if (XkbcAllocNames(xkb, XkbVirtualModNamesMask, 0) != Success)
         return;
     if (XkbcAllocServerMap(xkb, XkbVirtualModsMask, 0) != Success)
         return;

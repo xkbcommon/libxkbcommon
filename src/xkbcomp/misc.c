@@ -289,7 +289,7 @@ FindNamedKey(struct xkb_desc * xkb,
     {
         if ((!xkb->names) || (!xkb->names->keys))
         {
-            if (XkbcAllocNames(xkb, XkbKeyNamesMask, 0, 0) != Success)
+            if (XkbcAllocNames(xkb, XkbKeyNamesMask, 0) != Success)
             {
                 if (warningLevel > 0)
                 {

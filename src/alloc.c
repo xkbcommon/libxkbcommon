@@ -102,7 +102,7 @@ XkbcFreeCompatMap(struct xkb_desc * xkb)
 }
 
 int
-XkbcAllocNames(struct xkb_desc * xkb, unsigned which, int nTotalRG, int nTotalAliases)
+XkbcAllocNames(struct xkb_desc * xkb, unsigned which, int nTotalAliases)
 {
     struct xkb_names * names;
 
@@ -164,27 +164,6 @@ XkbcAllocNames(struct xkb_desc * xkb, unsigned which, int nTotalRG, int nTotalAl
         names->num_key_aliases = nTotalAliases;
     }
 
-    if ((which & XkbRGNamesMask) && (nTotalRG > 0)) {
-        if (!names->radio_groups)
-            names->radio_groups = _XkbTypedCalloc(nTotalRG, uint32_t);
-        else if (nTotalRG > names->num_rg) {
-            uint32_t *prev_radio_groups = names->radio_groups;
-
-            names->radio_groups = _XkbTypedRealloc(names->radio_groups,
-                                                   nTotalRG, uint32_t);
-            if (names->radio_groups)
-                _XkbClearElems(names->radio_groups, names->num_rg,
-                               nTotalRG - 1, uint32_t);
-            else
-                free(prev_radio_groups);
-        }
-
-        if (!names->radio_groups)
-            return BadAlloc;
-
-        names->num_rg = nTotalRG;
-    }
-
     return Success;
 }
 
@@ -212,7 +191,6 @@ XkbcFreeNames(struct xkb_desc * xkb)
 
     free(names->keys);
     free(names->key_aliases);
-    free(names->radio_groups);
     free(names);
     xkb->names = NULL;
 }

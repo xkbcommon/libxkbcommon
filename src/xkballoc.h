@@ -35,8 +35,7 @@ extern int
 XkbcAllocCompatMap(struct xkb_desc * xkb, unsigned which, unsigned nSI);
 
 extern int
-XkbcAllocNames(struct xkb_desc * xkb, unsigned which, int nTotalRG,
-               int nTotalAliases);
+XkbcAllocNames(struct xkb_desc * xkb, unsigned which, int nTotalAliases);
 
 extern int
 XkbcAllocControls(struct xkb_desc * xkb, unsigned which);

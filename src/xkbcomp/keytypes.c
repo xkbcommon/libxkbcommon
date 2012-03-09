@@ -1155,17 +1155,6 @@ CompileKeyTypes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
         KeyTypeInfo *def;
         struct xkb_key_type *type, *next;
 
-        if (info.name != NULL)
-        {
-            if (XkbcAllocNames(xkb, XkbTypesNameMask, 0, 0) == Success)
-                xkb->names->types = xkb_intern_atom(info.name);
-            else
-            {
-                WSGO("Couldn't allocate space for types name\n");
-                ACTION("Name \"%s\" (from %s) NOT assigned\n",
-                        scanFile, info.name);
-            }
-        }
         i = info.nTypes;
         if ((info.stdPresent & XkbOneLevelMask) == 0)
             i++;

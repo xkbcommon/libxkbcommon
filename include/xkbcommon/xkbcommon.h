@@ -329,18 +329,11 @@ struct xkb_key_alias {
 };
 
 struct xkb_names {
-    uint32_t            keycodes;
-    uint32_t            geometry;
-    uint32_t            symbols;
-    uint32_t            types;
-    uint32_t            compat;
     uint32_t            vmods[XkbNumVirtualMods];
     uint32_t            indicators[XkbNumIndicators];
     uint32_t            groups[XkbNumKbdGroups];
     struct xkb_key_name *     keys;
     struct xkb_key_alias *    key_aliases;
-    uint32_t           *radio_groups;
-    uint32_t            phys_symbols;
 
     xkb_keycode_t     num_keys;
     xkb_keycode_t     num_key_aliases;

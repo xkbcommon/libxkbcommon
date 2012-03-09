@@ -246,7 +246,7 @@ ApplyAliases(struct xkb_desc * xkb, Bool toGeom, AliasInfo ** info_in)
     }
     else
     {
-        status = XkbcAllocNames(xkb, XkbKeyAliasesMask, 0, nOld + nNew);
+        status = XkbcAllocNames(xkb, XkbKeyAliasesMask, nOld + nNew);
         if (xkb->names)
             old = xkb->names->key_aliases;
     }

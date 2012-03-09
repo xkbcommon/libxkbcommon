@@ -1883,9 +1883,7 @@ CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
     {
         if ((start_from == 0) && (warningLevel >= 5))
         {
-            WARN("Key %s not found in %s keycodes\n",
-                  longText(key->name),
-                  XkbcAtomText(xkb->names->keycodes));
+            WARN("Key %s not found in keycodes\n", longText(key->name));
             ACTION("Symbols ignored\n");
         }
         return False;
@@ -2035,9 +2033,8 @@ CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
         {
             if (warningLevel >= 1)
             {
-                WARN("Key %s not found in %s keycodes\n",
-                      longText(key->nameForOverlayKey),
-                      XkbcAtomText(xkb->names->keycodes));
+                WARN("Key %s not found in keycodes\n",
+                      longText(key->nameForOverlayKey));
                 ACTION("Not treating %s as an overlay key \n",
                         longText(key->name));
             }
@@ -2083,9 +2080,8 @@ CopyModMapDef(struct xkb_desc * xkb, ModMapEntry *entry)
     {
         if (warningLevel >= 5)
         {
-            WARN("Key %s not found in %s keycodes\n",
-                  longText(entry->u.keyName),
-                  XkbcAtomText(xkb->names->keycodes));
+            WARN("Key %s not found in keycodes\n",
+                  longText(entry->u.keyName));
             ACTION("Modifier map entry for %s not updated\n",
                     XkbcModIndexText(entry->modifier));
         }
@@ -2096,9 +2092,8 @@ CopyModMapDef(struct xkb_desc * xkb, ModMapEntry *entry)
     {
         if (warningLevel > 5)
         {
-            WARN("Key \"%s\" not found in %s symbol map\n",
-                  XkbcKeysymText(entry->u.keySym),
-                  XkbcAtomText(xkb->names->symbols));
+            WARN("Key \"%s\" not found in symbol map\n",
+                  XkbcKeysymText(entry->u.keySym));
             ACTION("Modifier map entry for %s not updated\n",
                     XkbcModIndexText(entry->modifier));
         }
@@ -2136,8 +2131,7 @@ CompileSymbols(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
         KeyInfo *key;
 
         /* alloc memory in the xkb struct */
-        if (XkbcAllocNames(xkb, XkbSymbolsNameMask | XkbGroupNamesMask, 0, 0)
-            != Success)
+        if (XkbcAllocNames(xkb, XkbGroupNamesMask, 0) != Success)
         {
             WSGO("Can not allocate names in CompileSymbols\n");
             ACTION("Symbols not added\n");
@@ -2164,7 +2158,6 @@ CompileSymbols(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
         }
 
         /* now copy info into xkb. */
-        xkb->names->symbols = xkb_intern_atom(info.name);
         if (info.aliases)
             ApplyAliases(xkb, False, &info.aliases);
         for (i = 0; i < XkbNumKbdGroups; i++)

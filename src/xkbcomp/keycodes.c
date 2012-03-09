@@ -891,15 +891,12 @@ CompileKeycodes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
             xkb->max_key_code = info.explicitMax;
         else
             xkb->max_key_code = info.computedMax;
-        if (XkbcAllocNames(xkb, XkbKeyNamesMask | XkbIndicatorNamesMask, 0, 0)
+        if (XkbcAllocNames(xkb, XkbKeyNamesMask | XkbIndicatorNamesMask, 0)
                 == Success)
         {
             int i;
-            xkb->names->keycodes = xkb_intern_atom(info.name);
             for (i = info.computedMin; i <= info.computedMax; i++)
-            {
                 LongToKeyName(info.names[i], xkb->names->keys[i].name);
-            }
         }
         else
         {

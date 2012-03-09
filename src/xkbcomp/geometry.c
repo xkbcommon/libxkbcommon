@@ -3650,8 +3650,7 @@ CompileGeometry(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
         if (info.name != NULL)
         {
             geom->name = xkb_intern_atom(info.name);
-            if (XkbcAllocNames(xkb, XkbGeometryNameMask, 0, 0) == Success)
-                xkb->names->geometry = geom->name;
+            XkbcAllocNames(xkb, XkbGeometryNameMask, 0);
         }
         if (info.fontSpec != None)
             geom->label_font = XkbcAtomGetString(info.fontSpec);

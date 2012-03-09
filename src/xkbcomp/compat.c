@@ -817,18 +817,6 @@ CompileCompatMap(XkbFile *file, struct xkb_desc * xkb, unsigned merge,
             WSGO("Couldn't allocate compatibility map\n");
             return False;
         }
-        if (info.name != NULL)
-        {
-            if (XkbcAllocNames(xkb, XkbCompatNameMask, 0, 0) == Success)
-                xkb->names->compat =
-                    xkb_intern_atom(info.name);
-	    else
-            {
-                WSGO("Couldn't allocate space for compat name\n");
-                ACTION("Name \"%s\" (from %s) NOT assigned\n",
-                        scanFile, info.name);
-            }
-        }
         size = info.nInterps * sizeof(struct xkb_sym_interpret);
         if (size > 0)
         {
