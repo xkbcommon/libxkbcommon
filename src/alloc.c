@@ -122,7 +122,7 @@ XkbcAllocNames(struct xkb_desc * xkb, unsigned which, int nTotalAliases)
         type = xkb->map->types;
         for (i = 0; i < xkb->map->num_types; i++, type++) {
             if (!type->level_names) {
-                type->level_names = _XkbTypedCalloc(type->num_levels, uint32_t);
+                type->level_names = _XkbTypedCalloc(type->num_levels, const char *);
                 if (!type->level_names)
                     return BadAlloc;
             }
@@ -171,6 +171,7 @@ XkbcFreeNames(struct xkb_desc * xkb)
 {
     struct xkb_names * names;
     struct xkb_client_map * map;
+    int i;
 
     if (!xkb || !xkb->names)
         return;
@@ -179,14 +180,23 @@ XkbcFreeNames(struct xkb_desc * xkb)
     map = xkb->map;
 
     if (map && map->types) {
-        int i;
         struct xkb_key_type * type = map->types;
 
         for (i = 0; i < map->num_types; i++, type++) {
+            int j;
+            for (j = 0; j < type->num_levels; j++)
+                free((char *) type->level_names[i]);
             free(type->level_names);
             type->level_names = NULL;
         }
     }
+
+    for (i = 0; i < XkbNumVirtualMods; i++)
+        free((char *) names->vmods[i]);
+    for (i = 0; i < XkbNumIndicators; i++)
+        free((char *) names->indicators[i]);
+    for (i = 0; i < XkbNumKbdGroups; i++)
+        free((char *) names->groups[i]);
 
     free(names->keys);
     free(names->key_aliases);

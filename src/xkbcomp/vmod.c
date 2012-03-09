@@ -59,7 +59,7 @@ ClearVModInfo(VModInfo * info, struct xkb_desc * xkb)
         int bit;
         for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1)
         {
-            if (xkb->names->vmods[i] != None)
+            if (xkb->names->vmods[i] != NULL)
                 info->defined |= bit;
         }
     }
@@ -90,7 +90,8 @@ HandleVModDef(VModDef * stmt, struct xkb_desc *xkb, unsigned mergeMode,
     {
         if (info->defined & bit)
         {
-            if (names->vmods[i] == stmt->name)
+            if (names->vmods[i] &&
+                strcmp(names->vmods[i], XkbcAtomText(stmt->name)) == 0)
             {                   /* already defined */
                 info->available |= bit;
                 if (stmt->value == NULL)
@@ -135,7 +136,7 @@ HandleVModDef(VModDef * stmt, struct xkb_desc *xkb, unsigned mergeMode,
     info->defined |= (1 << nextFree);
     info->newlyDefined |= (1 << nextFree);
     info->available |= (1 << nextFree);
-    names->vmods[nextFree] = stmt->name;
+    names->vmods[nextFree] = XkbcAtomGetString(stmt->name);
     if (stmt->value == NULL)
         return True;
     if (ExprResolveModMask(stmt->value, &mod))
@@ -163,6 +164,7 @@ LookupVModIndex(const struct xkb_desc *xkb, uint32_t field, unsigned type,
                 ExprResult * val_rtrn)
 {
     int i;
+    const char *name = XkbcAtomText(field);
 
     if ((xkb == NULL) || (xkb->names == NULL) || (type != TypeInt))
     {
@@ -175,7 +177,7 @@ LookupVModIndex(const struct xkb_desc *xkb, uint32_t field, unsigned type,
      */
     for (i = 0; i < XkbNumVirtualMods; i++)
     {
-        if (xkb->names->vmods[i] == field)
+        if (xkb->names->vmods[i] && strcmp(xkb->names->vmods[i], name) == 0)
         {
             val_rtrn->uval = i;
             return True;
@@ -235,9 +237,10 @@ ResolveVirtualModifier(ExprDef * def, struct xkb_desc *xkb,
     if (def->op == ExprIdent)
     {
         int i, bit;
+        const char *name = XkbcAtomText(def->value.str);
         for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1)
         {
-            if ((info->available & bit) && names->vmods[i] == def->value.str)
+            if ((info->available & bit) && strcmp(names->vmods[i], name) == 0)
             {
                 val_rtrn->uval = i;
                 return True;

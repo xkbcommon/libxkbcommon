@@ -59,22 +59,18 @@ static const char *
 XkbcVModIndexText(struct xkb_desc * xkb, unsigned ndx)
 {
     int len;
-    uint32_t *vmodNames;
-    char *rtrn, *tmp = NULL;
-
-    if (xkb && xkb->names)
-        vmodNames = xkb->names->vmods;
-    else
-        vmodNames = NULL;
+    char *rtrn;
+    const char *tmp = NULL;
+    char buf[20];
 
     if (ndx >= XkbNumVirtualMods)
-         tmp = strdup("illegal");
-    else if (vmodNames && (vmodNames[ndx] != None))
-         tmp = XkbcAtomGetString(vmodNames[ndx]);
+         tmp = "illegal";
+    else if (xkb && xkb->names)
+         tmp = xkb->names->vmods[ndx];
 
     if (!tmp) {
-        tmp = malloc(20 * sizeof(char));
-        snprintf(tmp, 20, "%d", ndx);
+        snprintf(buf, sizeof(buf) - 1, "%d", ndx);
+        tmp = buf;
     }
 
     len = strlen(tmp) + 1;
@@ -83,8 +79,6 @@ XkbcVModIndexText(struct xkb_desc * xkb, unsigned ndx)
 
     rtrn = tbGetBuffer(len);
     strncpy(rtrn, tmp, len);
-
-    free(tmp);
 
     return rtrn;
 }

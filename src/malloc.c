@@ -214,6 +214,8 @@ XkbcAllocServerMap(struct xkb_desc * xkb, unsigned which, unsigned nNewActions)
 int
 XkbcCopyKeyType(struct xkb_key_type * from, struct xkb_key_type * into)
 {
+    int i;
+
     if (!from || !into)
         return BadMatch;
 
@@ -221,6 +223,8 @@ XkbcCopyKeyType(struct xkb_key_type * from, struct xkb_key_type * into)
     into->map = NULL;
     free(into->preserve);
     into->preserve= NULL;
+    for (i = 0; i < into->num_levels; i++)
+        free((char *) into->level_names[i]);
     free(into->level_names);
     into->level_names = NULL;
 
@@ -243,11 +247,11 @@ XkbcCopyKeyType(struct xkb_key_type * from, struct xkb_key_type * into)
     }
 
     if (from->level_names && (into->num_levels > 0)) {
-        into->level_names = _XkbTypedCalloc(into->num_levels, uint32_t);
+        into->level_names = _XkbTypedCalloc(into->num_levels, const char *);
         if (!into->level_names)
             return BadAlloc;
-        memcpy(into->level_names, from->level_names,
-               into->num_levels * sizeof(uint32_t));
+        for (i = 0; i < into->num_levels; i++)
+            into->level_names[i] = strdup(from->level_names[i]);
     }
 
     return Success;
@@ -392,9 +396,13 @@ XkbcFreeClientMap(struct xkb_desc * xkb)
     map = xkb->map;
 
     for (i = 0, type = map->types; i < map->num_types && type; i++, type++) {
+        int j;
         free(type->map);
         free(type->preserve);
+        for (j = 0; j < type->num_levels; j++)
+            free((char *) type->level_names[j]);
         free(type->level_names);
+        free((char *) type->name);
     }
     free(map->types);
     free(map->key_sym_map);

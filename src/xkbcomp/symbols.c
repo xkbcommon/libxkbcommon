@@ -1668,21 +1668,22 @@ FindKeyForSymbol(struct xkb_desc * xkb, uint32_t sym, xkb_keycode_t *kc_rtrn)
 /**
  * Find the given name in the xkb->map->types and return its index.
  *
- * @param name The atom to search for.
+ * @param atom The atom to search for.
  * @param type_rtrn Set to the index of the name if found.
  *
  * @return True if found, False otherwise.
  */
 static Bool
-FindNamedType(struct xkb_desc * xkb, uint32_t name, unsigned *type_rtrn)
+FindNamedType(struct xkb_desc * xkb, uint32_t atom, unsigned *type_rtrn)
 {
     unsigned n;
+    const char *name = XkbcAtomText(atom);
 
     if (xkb && xkb->map && xkb->map->types)
     {
         for (n = 0; n < xkb->map->num_types; n++)
         {
-            if (xkb->map->types[n].name == (uint32_t) name)
+            if (strcmp(xkb->map->types[n].name, name) == 0)
             {
                 *type_rtrn = n;
                 return True;
@@ -1942,12 +1943,9 @@ CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
         {
             if (warningLevel > 0)
             {
-                WARN
-                    ("Type \"%s\" has %d levels, but %s has %d symbols\n",
-                     XkbcAtomText(type->name),
-                     (unsigned int) type->num_levels,
-                     longText(key->name),
-                     (unsigned int) key->numLevels[i]);
+                WARN("Type \"%s\" has %d levels, but %s has %d symbols\n",
+                     type->name, type->num_levels,
+                     XkbcAtomText(key->name), key->numLevels[i]);
                 ACTION("Ignoring extra symbols\n");
             }
             key->numLevels[i] = type->num_levels;
@@ -2163,7 +2161,10 @@ CompileSymbols(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
         for (i = 0; i < XkbNumKbdGroups; i++)
         {
             if (info.groupNames[i] != None)
-                xkb->names->groups[i] = info.groupNames[i];
+            {
+                free((char *) xkb->names->groups[i]);
+                xkb->names->groups[i] = XkbcAtomGetString(info.groupNames[i]);
+            }
         }
         /* sanitize keys */
         for (key = info.keys, i = 0; i < info.nKeys; i++, key++)

@@ -1119,15 +1119,15 @@ CopyDefToKeyType(struct xkb_desc * xkb, struct xkb_key_type * type, KeyTypeInfo 
     }
     else
         type->preserve = NULL;
-    type->name = (uint32_t) def->name;
+    type->name = XkbcAtomGetString(def->name);
     if (def->szNames > 0)
     {
-        type->level_names = uTypedCalloc(def->numLevels, uint32_t);
+        type->level_names = uTypedCalloc(def->numLevels, const char *);
 
         /* assert def->szNames<=def->numLevels */
         for (i = 0; i < def->szNames; i++)
         {
-            type->level_names[i] = (uint32_t) def->lvlNames[i];
+            type->level_names[i] = XkbcAtomGetString(def->lvlNames[i]);
         }
     }
     else
@@ -1184,13 +1184,17 @@ CompileKeyTypes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
                 return False;
             }
             if (missing & XkbOneLevelMask)
-                xkb->map->types[XkbOneLevelIndex].name = tok_ONE_LEVEL;
+                xkb->map->types[XkbOneLevelIndex].name =
+                    XkbcAtomGetString(tok_ONE_LEVEL);
             if (missing & XkbTwoLevelMask)
-                xkb->map->types[XkbTwoLevelIndex].name = tok_TWO_LEVEL;
+                xkb->map->types[XkbTwoLevelIndex].name =
+                    XkbcAtomGetString(tok_TWO_LEVEL);
             if (missing & XkbAlphabeticMask)
-                xkb->map->types[XkbAlphabeticIndex].name = tok_ALPHABETIC;
+                xkb->map->types[XkbAlphabeticIndex].name =
+                    XkbcAtomGetString(tok_ALPHABETIC);
             if (missing & XkbKeypadMask)
-                xkb->map->types[XkbKeypadIndex].name = tok_KEYPAD;
+                xkb->map->types[XkbKeypadIndex].name =
+                    XkbcAtomGetString(tok_KEYPAD);
         }
         next = &xkb->map->types[XkbLastRequiredType + 1];
         for (i = 0, def = info.types; i < info.nTypes; i++)

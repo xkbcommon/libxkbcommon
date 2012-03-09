@@ -222,8 +222,8 @@ struct xkb_key_type {
     unsigned char           map_count;
     struct xkb_kt_map_entry *       map;
     struct xkb_mods *             preserve;
-    uint32_t                  name;
-    uint32_t                 *level_names;
+    const char              *name;
+    const char              **level_names;
 };
 
 struct xkb_sym_interpret {
@@ -329,9 +329,9 @@ struct xkb_key_alias {
 };
 
 struct xkb_names {
-    uint32_t            vmods[XkbNumVirtualMods];
-    uint32_t            indicators[XkbNumIndicators];
-    uint32_t            groups[XkbNumKbdGroups];
+    const char            *vmods[XkbNumVirtualMods];
+    const char            *indicators[XkbNumIndicators];
+    const char            *groups[XkbNumKbdGroups];
     struct xkb_key_name *     keys;
     struct xkb_key_alias *    key_aliases;
 

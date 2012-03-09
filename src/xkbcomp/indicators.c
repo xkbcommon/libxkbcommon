@@ -421,7 +421,10 @@ CopyIndicatorMapDefs(struct xkb_desc * xkb, LEDInfo *leds, LEDInfo **unboundRtrn
             im->mods.vmods = led->vmods;
             im->ctrls = led->ctrls;
             if (xkb->names != NULL)
-                xkb->names->indicators[led->indicator - 1] = led->name;
+            {
+                free((char *) xkb->names->indicators[led->indicator - 1]);
+                xkb->names->indicators[led->indicator-1] = XkbcAtomGetString(led->name);
+            }
             free(led);
         }
     }
@@ -447,7 +450,7 @@ BindIndicators(struct xkb_desc * xkb, Bool force, LEDInfo *unbound,
             {
                 for (i = 0; i < XkbNumIndicators; i++)
                 {
-                    if (xkb->names->indicators[i] == led->name)
+                    if (xkb->names->indicators[i] == XkbcAtomText(led->name))
                     {
                         led->indicator = i + 1;
                         break;
@@ -463,9 +466,9 @@ BindIndicators(struct xkb_desc * xkb, Bool force, LEDInfo *unbound,
                 {
                     for (i = 0; i < XkbNumIndicators; i++)
                     {
-                        if (xkb->names->indicators[i] == None)
+                        if (xkb->names->indicators[i] == NULL)
                         {
-                            xkb->names->indicators[i] = led->name;
+                            xkb->names->indicators[i] = XkbcAtomGetString(led->name);
                             led->indicator = i + 1;
                             xkb->indicators->phys_indicators &= ~(1 << i);
                             break;
@@ -505,14 +508,13 @@ BindIndicators(struct xkb_desc * xkb, Bool force, LEDInfo *unbound,
         else
         {
             if ((xkb->names != NULL) &&
-                (xkb->names->indicators[led->indicator - 1] != led->name))
+                (strcmp(xkb->names->indicators[led->indicator - 1],
+                        XkbcAtomText(led->name)) != 0))
             {
-                uint32_t old = xkb->names->indicators[led->indicator - 1];
+                const char *old = xkb->names->indicators[led->indicator - 1];
                 ERROR("Multiple names bound to indicator %d\n",
                        (unsigned int) led->indicator);
-                ACTION("Using %s, ignoring %s\n",
-                        XkbcAtomText(old),
-                        XkbcAtomText(led->name));
+                ACTION("Using %s, ignoring %s\n", old, XkbcAtomText(led->name));
                 led->indicator = _LED_NotBound;
                 if (force)
                 {
