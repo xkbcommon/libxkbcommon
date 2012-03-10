@@ -189,8 +189,9 @@ compile_keymap(XkbFile *file, const char *mapName)
     struct xkb_desc * xkb = NULL;
 
     /* Find map to use */
-    if (!(mapToUse = XkbChooseMap(file, mapName)))
-        goto unwind_file;
+    mapToUse = XkbChooseMap(file, mapName);
+    if (!mapToUse)
+        goto err;
 
     switch (mapToUse->type) {
     case XkmSemanticsFile:
@@ -199,26 +200,20 @@ compile_keymap(XkbFile *file, const char *mapName)
         break;
     default:
         ERROR("file type %d not handled\n", mapToUse->type);
-        goto unwind_file;
+        goto err;
     }
 
-    /* Compile the keyboard */
-    if (!(xkb = XkbcAllocKeyboard())) {
-        ERROR("could not allocate keyboard description\n");
-        goto unwind_file;
-    }
+    xkb = CompileKeymap(mapToUse, MergeReplace);
+    if (!xkb)
+        goto err;
 
-    if (!CompileKeymap(mapToUse, xkb, MergeReplace)) {
-        ERROR("failed to compile keymap\n");
-        XkbcFreeKeyboard(xkb);
-        xkb = NULL;
-    }
+    return xkb;
 
-unwind_file:
+err:
     FreeXKBFile(file);
     free(scanFile);
     XkbFreeIncludePath();
-    return xkb;
+    return NULL;
 }
 
 struct xkb_desc *

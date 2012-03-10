@@ -267,8 +267,8 @@ typedef struct _XkbFile
     Bool compiled;
 } XkbFile;
 
-extern Bool
-CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge);
+extern struct xkb_desc *
+CompileKeymap(XkbFile *file, unsigned merge);
 
 extern Bool
 CompileKeycodes(XkbFile *file, struct xkb_desc * xkb, unsigned merge);

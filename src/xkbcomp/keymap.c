@@ -31,14 +31,15 @@
 #include "action.h"
 #include "misc.h"
 #include "indicators.h"
+#include "xkballoc.h"
 
 /**
  * Compile the given file and store the output in xkb.
  * @param file A list of XkbFiles, each denoting one type (e.g.
  * XkmKeyNamesIdx, etc.)
  */
-Bool
-CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
+struct xkb_desc *
+CompileKeymap(XkbFile *file, unsigned merge)
 {
     unsigned have;
     Bool ok;
@@ -46,12 +47,16 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
     unsigned mainType;
     char *mainName;
     LEDInfo *unbound = NULL;
+    struct xkb_desc *xkb = XkbcAllocKeyboard();
     struct {
         XkbFile *keycodes;
         XkbFile *types;
         XkbFile *compat;
         XkbFile *symbols;
     } sections;
+
+    if (!xkb)
+        return NULL;
 
     memset(&sections, 0, sizeof(sections));
     mainType = file->type;
@@ -91,13 +96,13 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
             ERROR("More than one %s section in a %s file\n",
                    XkbcConfigText(file->type), XkbcConfigText(mainType));
             ACTION("All sections after the first ignored\n");
-            return False;
+            continue;
         }
         else if ((1 << file->type) & (~legal))
         {
             ERROR("Cannot define %s in a %s file\n",
                    XkbcConfigText(file->type), XkbcConfigText(mainType));
-            return False;
+            continue;
         }
 
         switch (file->type)
@@ -146,32 +151,50 @@ CompileKeymap(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
         {
             if (missing & bit)
             {
-                ERROR("Missing %s section in a %s file\n",
-                       XkbcConfigText(i), XkbcConfigText(mainType));
+                ERROR("Required section %s missing from keymap\n", XkbcConfigText(i));
                 missing &= ~bit;
             }
         }
-        ACTION("Description of %s not compiled\n",
-                XkbcConfigText(mainType));
-        return False;
+        goto err;
     }
 
     /* compile the sections we have in the file one-by-one, or fail. */
     if (sections.keycodes != NULL &&
         !CompileKeycodes(sections.keycodes, xkb, MergeOverride))
-        return False;
+    {
+        ERROR("Failed to compile keycodes\n");
+        goto err;
+    }
     if (sections.types != NULL &&
         !CompileKeyTypes(sections.types, xkb, MergeOverride))
-        return False;
+    {
+        ERROR("Failed to compile key types\n");
+        goto err;
+    }
     if (sections.compat != NULL &&
         !CompileCompatMap(sections.compat, xkb, MergeOverride, &unbound))
-        return False;
+    {
+        ERROR("Failed to compile compat map\n");
+        goto err;
+    }
     if (sections.symbols != NULL &&
         !CompileSymbols(sections.symbols, xkb, MergeOverride))
-        return False;
+    {
+        ERROR("Failed to compile symbols\n");
+        goto err;
+    }
 
     xkb->defined = have;
 
     ok = BindIndicators(xkb, True, unbound, NULL);
-    return ok;
+    if (!ok)
+        goto err;
+
+    return xkb;
+
+err:
+    ACTION("Failed to compile keymap\n");
+    if (xkb)
+        xkb_free_keymap(xkb);
+    return NULL;
 }
