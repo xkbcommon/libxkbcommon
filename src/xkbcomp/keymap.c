@@ -60,7 +60,7 @@ CompileKeymap(XkbFile *file, unsigned merge)
 
     memset(&sections, 0, sizeof(sections));
     mainType = file->type;
-    mainName = file->name;
+    mainName = file->name ? file->name : "(unnamed)";
     switch (mainType)
     {
     case XkmSemanticsFile:
@@ -86,11 +86,6 @@ CompileKeymap(XkbFile *file, unsigned merge)
     /* Check for duplicate entries in the input file */
     for (file = (XkbFile *) file->defs; file; file = (XkbFile *) file->common.next)
     {
-        if (file->topName != mainName) {
-            free(file->topName);
-            file->topName = strdup(mainName);
-        }
-
         if ((have & (1 << file->type)) != 0)
         {
             ERROR("More than one %s section in a %s file\n",
@@ -137,6 +132,11 @@ CompileKeymap(XkbFile *file, unsigned merge)
                   XkbcConfigText(file->type), XkbcConfigText(mainType));
             ACTION("Ignored\n");
             continue;
+        }
+
+        if (!file->topName || strcmp(file->topName, mainName) != 0) {
+            free(file->topName);
+            file->topName = strdup(mainName);
         }
 
         have |= (1 << file->type);
