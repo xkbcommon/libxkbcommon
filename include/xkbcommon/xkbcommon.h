@@ -270,16 +270,6 @@ struct xkb_client_map {
     unsigned char           *modmap;
 };
 
-#define	XkbCMKeyGroupInfo(m,k)  ((m)->key_sym_map[k].group_info)
-#define	XkbCMKeyNumGroups(m,k)	 (XkbNumGroups((m)->key_sym_map[k].group_info))
-#define	XkbCMKeyGroupWidth(m,k,g) (XkbCMKeyType(m,k,g)->num_levels)
-#define	XkbCMKeyGroupsWidth(m,k) ((m)->key_sym_map[k].width)
-#define	XkbCMKeyTypeIndex(m,k,g) ((m)->key_sym_map[k].kt_index[g&0x3])
-#define	XkbCMKeyType(m,k,g)	 (&(m)->types[XkbCMKeyTypeIndex(m,k,g)])
-#define	XkbCMKeyNumSyms(m,k) (XkbCMKeyGroupsWidth(m,k)*XkbCMKeyNumGroups(m,k))
-#define	XkbCMKeySymsOffset(m,k)	((m)->key_sym_map[k].offset)
-#define	XkbCMKeySymsPtr(m,k)	(&(m)->syms[XkbCMKeySymsOffset(m,k)])
-
 struct xkb_behavior {
 	unsigned char	type;
 	unsigned char	data;
@@ -304,7 +294,6 @@ struct xkb_server_map {
     uint32_t            *vmodmap;
 };
 
-#define	XkbSMKeyActionsPtr(m,k) (&(m)->acts[(m)->key_acts[k]])
 
 struct xkb_indicator_map {
 	unsigned char	flags;
@@ -382,26 +371,28 @@ struct xkb_desc {
     struct xkb_compat_map *    compat;
 };
 
-#define	XkbKeyKeyTypeIndex(d,k,g)	(XkbCMKeyTypeIndex((d)->map,k,g))
-#define	XkbKeyKeyType(d,k,g)		(XkbCMKeyType((d)->map,k,g))
-#define	XkbKeyGroupWidth(d,k,g)		(XkbCMKeyGroupWidth((d)->map,k,g))
-#define	XkbKeyGroupsWidth(d,k)		(XkbCMKeyGroupsWidth((d)->map,k))
-#define	XkbKeyGroupInfo(d,k)		(XkbCMKeyGroupInfo((d)->map,(k)))
-#define	XkbKeyNumGroups(d,k)		(XkbCMKeyNumGroups((d)->map,(k)))
-#define	XkbKeyNumSyms(d,k)		(XkbCMKeyNumSyms((d)->map,(k)))
-#define	XkbKeySymsPtr(d,k)		(XkbCMKeySymsPtr((d)->map,(k)))
-#define	XkbKeySym(d,k,n)		(XkbKeySymsPtr(d,k)[n])
+
+#define	XkbKeyGroupInfo(d,k)    ((d)->map->key_sym_map[k].group_info)
+#define	XkbKeyNumGroups(d,k)    (XkbNumGroups((d)->map->key_sym_map[k].group_info))
+#define	XkbKeyGroupWidth(d,k,g) (XkbKeyType(d,k,g)->num_levels)
+#define	XkbKeyGroupsWidth(d,k)  ((d)->map->key_sym_map[k].width)
+#define	XkbKeyTypeIndex(d,k,g)  ((d)->map->key_sym_map[k].kt_index[g&0x3])
+#define	XkbKeyType(d,k,g)	(&(d)->map->types[XkbKeyTypeIndex(d,k,g)])
+#define	XkbKeyNumSyms(d,k)      (XkbKeyGroupsWidth(d,k)*XkbKeyNumGroups(d,k))
+#define	XkbKeySymsOffset(d,k)	((d)->map->key_sym_map[k].offset)
+#define	XkbKeySymsPtr(d,k)	(&(d)->map->syms[XkbKeySymsOffset(d,k)])
+#define	XkbKeySym(d,k,n)	(XkbKeySymsPtr(d,k)[n])
 #define	XkbKeySymEntry(d,k,sl,g) \
 	(XkbKeySym(d,k,((XkbKeyGroupsWidth(d,k)*(g))+(sl))))
+#define	XkbKeyHasActions(d,k)	((d)->server->key_acts[k]!=0)
+#define	XkbKeyNumActions(d,k)	(XkbKeyHasActions(d,k)?XkbKeyNumSyms(d,k):1)
+#define	XkbKeyActionsPtr(d,k)   (&(d)->server->acts[(d)->server->key_acts[k]])
 #define	XkbKeyAction(d,k,n) \
 	(XkbKeyHasActions(d,k)?&XkbKeyActionsPtr(d,k)[n]:NULL)
 #define	XkbKeyActionEntry(d,k,sl,g) \
 	(XkbKeyHasActions(d,k)?\
 		XkbKeyAction(d,k,((XkbKeyGroupsWidth(d,k)*(g))+(sl))):NULL)
 
-#define	XkbKeyHasActions(d,k)	((d)->server->key_acts[k]!=0)
-#define	XkbKeyNumActions(d,k)	(XkbKeyHasActions(d,k)?XkbKeyNumSyms(d,k):1)
-#define	XkbKeyActionsPtr(d,k)	(XkbSMKeyActionsPtr((d)->server,k))
 #define	XkbKeycodeInRange(d,k)	(((k)>=(d)->min_key_code)&&\
 				 ((k)<=(d)->max_key_code))
 #define	XkbNumKeys(d)		((d)->max_key_code-(d)->min_key_code+1)
