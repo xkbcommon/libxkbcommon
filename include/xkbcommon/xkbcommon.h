@@ -327,7 +327,6 @@ struct xkb_names {
 
     xkb_keycode_t     num_keys;
     xkb_keycode_t     num_key_aliases;
-    unsigned short    num_rg;
 };
 
 struct xkb_controls {
@@ -436,7 +435,6 @@ struct xkb_name_changes {
 	unsigned char		first_lvl;
 	unsigned char		num_lvls;
 	xkb_keycode_t		num_aliases;
-	unsigned char		num_rg;
 	xkb_keycode_t		first_key;
 	xkb_keycode_t		num_keys;
 	unsigned short		changed_vmods;

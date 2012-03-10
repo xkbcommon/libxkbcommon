@@ -188,33 +188,6 @@ SimpleLookup(const void * priv, xkb_atom_t field, unsigned type,
     return False;
 }
 
-static Bool
-RadioLookup(const void * priv, xkb_atom_t field, unsigned type, ExprResult * val_rtrn)
-{
-    const char *str;
-    int rg;
-
-    if ((field == None) || (type != TypeInt))
-        return False;
-    str = XkbcAtomText(field);
-    if (str)
-    {
-        if (uStrCasePrefix("group", str))
-            str += strlen("group");
-        else if (uStrCasePrefix("radiogroup", str))
-            str += strlen("radiogroup");
-        else if (uStrCasePrefix("rg", str))
-            str += strlen("rg");
-        else if (!isdigit(str[0]))
-            str = NULL;
-    }
-    if ((!str) || (sscanf(str, "%i", &rg) < 1) || (rg < 1)
-        || (rg > XkbMaxRadioGroups))
-        return False;
-    val_rtrn->uval = rg;
-    return True;
-}
-
 static const LookupEntry modIndexNames[] = {
     {"shift", ShiftMapIndex},
     {"control", ControlMapIndex},
@@ -509,9 +482,8 @@ ExprResolveKeyCode(ExprDef * expr,
  * returned as millimetres (rather than points) in ival.
  *
  * If an ident or field reference is given, the lookup function (if given)
- * will be called.  At the moment, only RadioLookup and SimpleLookup use
- * this, and they both return the results in uval.  And don't support field
- * references.
+ * will be called.  At the moment, only SimpleLookup use this, and they both
+ * return the results in uval.  And don't support field references.
  *
  * Cool.
  */
@@ -629,13 +601,6 @@ ExprResolveInteger(ExprDef * expr,
                    ExprResult * val_rtrn)
 {
     return ExprResolveIntegerLookup(expr, val_rtrn, NULL, NULL);
-}
-
-int
-ExprResolveRadioGroup(ExprDef * expr,
-                      ExprResult * val_rtrn)
-{
-    return ExprResolveIntegerLookup(expr, val_rtrn, RadioLookup, NULL);
 }
 
 int

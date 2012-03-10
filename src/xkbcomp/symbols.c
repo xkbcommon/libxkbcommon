@@ -1004,49 +1004,6 @@ AddActionsToKey(KeyInfo * key,
     return True;
 }
 
-static int
-SetAllowNone(KeyInfo * key, ExprDef * arrayNdx, ExprDef * value)
-{
-    ExprResult tmp;
-    unsigned radio_groups = 0;
-
-    if (arrayNdx == NULL)
-    {
-        radio_groups = XkbAllRadioGroupsMask;
-    }
-    else
-    {
-        if (!ExprResolveRadioGroup(arrayNdx, &tmp))
-        {
-            ERROR("Illegal index in group name definition\n");
-            ACTION("Definition with non-integer array index ignored\n");
-            return False;
-        }
-        if ((tmp.uval < 1) || (tmp.uval > XkbMaxRadioGroups))
-        {
-            ERROR("Illegal radio group specified (must be 1..%d)\n",
-                   XkbMaxRadioGroups + 1);
-            ACTION("Value of \"allow none\" for group %d ignored\n",
-                    tmp.uval);
-            return False;
-        }
-        radio_groups |= (1 << (tmp.uval - 1));
-    }
-    if (!ExprResolveBoolean(value, &tmp))
-    {
-        ERROR("Illegal \"allow none\" value for %s\n",
-               longText(key->name));
-        ACTION("Non-boolean value ignored\n");
-        return False;
-    }
-    if (tmp.uval)
-        key->allowNone |= radio_groups;
-    else
-        key->allowNone &= ~radio_groups;
-    return True;
-}
-
-
 static const LookupEntry lockingEntries[] = {
     {"true", XkbKB_Lock},
     {"yes", XkbKB_Lock},
@@ -1139,51 +1096,12 @@ SetSymbolsField(KeyInfo * key,
         key->defs.defined |= _Key_Behavior;
     }
     else if ((uStrCaseCmp(field, "radiogroup") == 0) ||
-             (uStrCaseCmp(field, "permanentradiogroup") == 0))
+             (uStrCaseCmp(field, "permanentradiogroup") == 0) ||
+             (uStrCaseEqual(field, "allownone")))
     {
-        Bool permanent = False;
-        if (uStrCaseCmp(field, "permanentradiogroup") == 0)
-            permanent = True;
-        if (ExprResolveString(value, &tmp)) {
-            ok = (strcmp(tmp.str, "none") == 0);
-            free(tmp.str);
-            if (ok)
-                tmp.uval = 0;
-        }
-        else {
-            ok = ExprResolveInteger(value, &tmp);
-        }
-        if (!ok)
-        {
-            ERROR("Illegal radio group specification for %s\n",
-                  longText(key->name));
-            ACTION("Non-integer radio group ignored\n");
-            return False;
-        }
-        if (tmp.uval == 0)
-        {
-            key->behavior.type = XkbKB_Default;
-            key->behavior.data = 0;
-            return ok;
-        }
-        if ((tmp.uval < 1) || (tmp.uval > XkbMaxRadioGroups))
-        {
-            ERROR
-                ("Radio group specification for %s out of range (1..32)\n",
-                 longText(key->name));
-            ACTION("Illegal radio group %d ignored\n", tmp.uval);
-            return False;
-        }
-        key->behavior.type =
-            XkbKB_RadioGroup | (permanent ? XkbKB_Permanent : 0);
-        key->behavior.data = tmp.uval - 1;
-        if (key->allowNone & (1 << (tmp.uval - 1)))
-            key->behavior.data |= XkbKB_RGAllowNone;
-        key->defs.defined |= _Key_Behavior;
-    }
-    else if (uStrCaseEqual(field, "allownone"))
-    {
-        ok = SetAllowNone(key, arrayNdx, value);
+        ERROR("Radio groups not supported\n");
+        ACTION("Ignoring radio group specification for key %s\n", longText(key->name));
+        return False;
     }
     else if (uStrCasePrefix("overlay", field) ||
              uStrCasePrefix("permanentoverlay", field))
@@ -1414,7 +1332,9 @@ HandleSymbolsVar(VarDef * stmt, struct xkb_desc * xkb, SymbolsInfo * info)
     }
     else if ((elem.str == NULL) && (uStrCaseCmp(field.str, "allownone") == 0))
     {
-        ret = SetAllowNone(&info->dflt, arrayNdx, stmt->value);
+        ERROR("Radio groups not supported\n");
+        ACTION("Ignoring \"allow none\" specification\n");
+        ret = False;
     }
     else {
         ret = SetActionField(xkb, elem.str, field.str, arrayNdx, stmt->value,

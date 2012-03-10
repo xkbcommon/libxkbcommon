@@ -90,10 +90,6 @@ extern int ExprResolveInteger(ExprDef * /* expr */ ,
                               ExprResult * /* val_rtrn */
     );
 
-extern int ExprResolveRadioGroup(ExprDef * /* expr */ ,
-                                 ExprResult * /* val_rtrn */
-    );
-
 extern int ExprResolveLevel(ExprDef * /* expr */ ,
                             ExprResult * /* val_rtrn */
     );
