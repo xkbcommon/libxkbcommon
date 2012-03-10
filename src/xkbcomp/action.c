@@ -740,10 +740,10 @@ const LookupEntry ctrlNames[] = {
     {"accessxtimeout", XkbAccessXTimeoutMask},
     {"accessxfeedback", XkbAccessXFeedbackMask},
     {"audiblebell", XkbAudibleBellMask},
-    {"overlay1", XkbOverlay1Mask},
-    {"overlay2", XkbOverlay2Mask},
     {"ignoregrouplock", XkbIgnoreGroupLockMask},
     {"all", XkbAllBooleanCtrlsMask},
+    {"overlay1", 0},
+    {"overlay2", 0},
     {"none", 0},
     {NULL, 0}
 };

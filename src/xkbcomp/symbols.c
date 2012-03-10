@@ -70,7 +70,6 @@ typedef struct _KeyInfo
     unsigned repeat;
     struct xkb_behavior behavior;
     unsigned short vmodmap;
-    unsigned long nameForOverlayKey;
     unsigned long allowNone;
     xkb_atom_t dfltType;
 } KeyInfo;
@@ -102,7 +101,6 @@ InitKeyInfo(KeyInfo * info)
     info->behavior.type = XkbKB_Default;
     info->behavior.data = 0;
     info->vmodmap = 0;
-    info->nameForOverlayKey = 0;
     info->repeat = RepeatUndefined;
     info->allowNone = 0;
 }
@@ -134,7 +132,6 @@ FreeKeyInfo(KeyInfo * info)
     info->behavior.type = XkbKB_Default;
     info->behavior.data = 0;
     info->vmodmap = 0;
-    info->nameForOverlayKey = 0;
     info->repeat = RepeatUndefined;
     info->allowNone = 0;
 }
@@ -544,7 +541,6 @@ MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
     if (UseNewField(_Key_Behavior, &into->defs, &from->defs, &collide))
     {
         into->behavior = from->behavior;
-        into->nameForOverlayKey = from->nameForOverlayKey;
         into->defs.defined |= _Key_Behavior;
     }
     if (UseNewField(_Key_VModMap, &into->defs, &from->defs, &collide))
@@ -1106,55 +1102,8 @@ SetSymbolsField(KeyInfo * key,
     else if (uStrCasePrefix("overlay", field) ||
              uStrCasePrefix("permanentoverlay", field))
     {
-        Bool permanent = False;
-        char *which;
-        int overlayNdx;
-        if (uStrCasePrefix("permanent", field))
-        {
-            permanent = True;
-            which = &field[sizeof("permanentoverlay") - 1];
-        }
-        else
-        {
-            which = &field[sizeof("overlay") - 1];
-        }
-        if (sscanf(which, "%d", &overlayNdx) == 1)
-        {
-            if (((overlayNdx < 1) || (overlayNdx > 2)) && (warningLevel > 0))
-            {
-                ERROR("Illegal overlay %d specified for %s\n",
-                       overlayNdx, longText(key->name));
-                ACTION("Ignored\n");
-                return False;
-            }
-        }
-        else if (*which == '\0')
-            overlayNdx = 1;
-        else if (warningLevel > 0)
-        {
-            ERROR("Illegal overlay \"%s\" specified for %s\n",
-                   which, longText(key->name));
-            ACTION("Ignored\n");
-            return False;
-        }
-        ok = ExprResolveKeyName(value, &tmp);
-        if (!ok)
-        {
-            ERROR("Illegal overlay key specification for %s\n",
-                   longText(key->name));
-            ACTION("Overlay key must be specified by name\n");
-            return False;
-        }
-        if (overlayNdx == 1)
-            key->behavior.type = XkbKB_Overlay1;
-        else
-            key->behavior.type = XkbKB_Overlay2;
-        if (permanent)
-            key->behavior.type |= XkbKB_Permanent;
-
-        key->behavior.data = 0;
-        key->nameForOverlayKey = KeyNameToLong(tmp.keyName.name);
-        key->defs.defined |= _Key_Behavior;
+        ERROR("Overlays not supported\n");
+        ACTION("Ignoring overlay specification for key %s\n", longText(key->name));
     }
     else if ((uStrCaseCmp(field, "repeating") == 0) ||
              (uStrCaseCmp(field, "repeats") == 0) ||
@@ -1788,7 +1737,7 @@ static Bool
 CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
 {
     int i;
-    xkb_keycode_t okc, kc;
+    xkb_keycode_t kc;
     unsigned width, tmp, nGroups;
     struct xkb_key_type * type;
     Bool haveActions, autoType, useAlias;
@@ -1943,22 +1892,6 @@ CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
     {
     case XkbKB_Default:
         break;
-    case XkbKB_Overlay1:
-    case XkbKB_Overlay2:
-        /* find key by name! */
-        if (!FindNamedKey(xkb, key->nameForOverlayKey, &okc, True,
-                          CreateKeyNames(xkb), 0))
-        {
-            if (warningLevel >= 1)
-            {
-                WARN("Key %s not found in keycodes\n",
-                      longText(key->nameForOverlayKey));
-                ACTION("Not treating %s as an overlay key \n",
-                        longText(key->name));
-            }
-            break;
-        }
-        key->behavior.data = okc;
     default:
         xkb->server->behaviors[kc] = key->behavior;
         xkb->server->explicit[kc] |= XkbExplicitBehaviorMask;
