@@ -189,15 +189,15 @@ SimpleLookup(const void * priv, xkb_atom_t field, unsigned type,
 }
 
 static const LookupEntry modIndexNames[] = {
-    {"shift", XKB_COMMON_SHIFT_MASK},
-    {"control", XKB_COMMON_CONTROL_MASK},
-    {"lock", XKB_COMMON_LOCK_MASK},
-    {"mod1", XKB_COMMON_MOD1_MASK},
-    {"mod2", XKB_COMMON_MOD2_MASK},
-    {"mod3", XKB_COMMON_MOD3_MASK},
-    {"mod4", XKB_COMMON_MOD4_MASK},
-    {"mod5", XKB_COMMON_MOD5_MASK},
-    {"none", 0xff},
+    {"shift", ShiftMapIndex},
+    {"control", ControlMapIndex},
+    {"lock", LockMapIndex},
+    {"mod1", Mod1MapIndex},
+    {"mod2", Mod2MapIndex},
+    {"mod3", Mod3MapIndex},
+    {"mod4", Mod4MapIndex},
+    {"mod5", Mod5MapIndex},
+    {"none", XkbNoModifier},
     {NULL, 0}
 };
 
