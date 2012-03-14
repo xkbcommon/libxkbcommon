@@ -465,19 +465,6 @@ struct xkb_component_name {
 	char *			name;
 };
 
-struct xkb_component_list {
-	int			num_keymaps;
-	int			num_keycodes;
-	int			num_types;
-	int			num_compat;
-	int			num_symbols;
-	struct xkb_component_name *	keymaps;
-	struct xkb_component_name * 	keycodes;
-	struct xkb_component_name *	types;
-	struct xkb_component_name *	compat;
-	struct xkb_component_name *	symbols;
-};
-
 struct xkb_state {
 	unsigned char   group; /* base + latched + locked */
 	/* FIXME: Why are base + latched short and not char?? */
@@ -530,9 +517,6 @@ xkb_compile_keymap_from_string(const char *string, const char *mapName);
 
 _X_EXPORT extern void
 xkb_free_keymap(struct xkb_desc *xkb);
-
-_X_EXPORT extern struct xkb_component_list *
-xkb_list_components(struct xkb_component_names * ptrns, int *maxMatch);
 
 /*
  * Canonicalises component names by prepending the relevant component from
