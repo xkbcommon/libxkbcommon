@@ -207,13 +207,11 @@ compile_keymap(XkbFile *file, const char *mapName)
     if (!xkb)
         goto err;
 
-    return xkb;
-
 err:
     FreeXKBFile(file);
     free(scanFile);
     XkbFreeIncludePath();
-    return NULL;
+    return xkb;
 }
 
 struct xkb_desc *
