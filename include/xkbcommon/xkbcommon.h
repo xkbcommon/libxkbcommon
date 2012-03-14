@@ -330,7 +330,6 @@ struct xkb_names {
 };
 
 struct xkb_controls {
-	unsigned char	mk_dflt_btn;
 	unsigned char	num_groups;
 	unsigned char	groups_wrap;
 	struct xkb_mods	internal;
@@ -340,11 +339,6 @@ struct xkb_controls {
 	unsigned short	repeat_interval;
 	unsigned short	slow_keys_delay;
 	unsigned short	debounce_delay;
-	unsigned short	mk_delay;
-	unsigned short	mk_interval;
-	unsigned short	mk_time_to_max;
-	unsigned short	mk_max_speed;
-		 short	mk_curve;
 	unsigned short	ax_options;
 	unsigned short	ax_timeout;
 	unsigned short	axt_opts_mask;
