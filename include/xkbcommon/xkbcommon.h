@@ -231,9 +231,9 @@ struct xkb_sym_interpret {
     xkb_keysym_t    sym;
     unsigned char   flags;
     unsigned char   match;
-    uint8_t         mods; /* XXX real or virt? */
+    uint8_t         mods;
     uint32_t        virtual_mod;
-    struct xkb_any_action   act;
+    union xkb_action act;
 };
 
 struct xkb_compat_map {

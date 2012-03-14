@@ -117,10 +117,8 @@ InitCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
     info->dflt.interp.flags = 0;
     info->dflt.interp.virtual_mod = XkbNoModifier;
     info->dflt.interp.act.type = XkbSA_NoAction;
-    for (i = 0; i < sizeof info->dflt.interp.act.data; i++)
-    {
-        info->dflt.interp.act.data[i] = 0;
-    }
+    for (i = 0; i < sizeof(info->dflt.interp.act.any.data); i++)
+        info->dflt.interp.act.any.data[i] = 0;
     ClearIndicatorMapInfo(&info->ledDflt);
     info->ledDflt.defs.fileID = info->fileID;
     info->ledDflt.defs.defined = 0;
@@ -144,10 +142,8 @@ ClearCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
     info->dflt.interp.flags = 0;
     info->dflt.interp.virtual_mod = XkbNoModifier;
     info->dflt.interp.act.type = XkbSA_NoAction;
-    for (i = 0; i < sizeof info->dflt.interp.act.data; i++)
-    {
-        info->dflt.interp.act.data[i] = 0;
-    }
+    for (i = 0; i < sizeof(info->dflt.interp.act.any.data); i++)
+        info->dflt.interp.act.any.data[i] = 0;
     ClearIndicatorMapInfo(&info->ledDflt);
     info->nInterps = 0;
     info->interps = (SymInterpInfo *) ClearCommonInfo(&info->interps->defs);
@@ -509,7 +505,7 @@ SetInterpField(SymInterpInfo * si,
     {
         if (arrayNdx != NULL)
             return ReportSINotArray(si, field, info);
-        ok = HandleActionDef(value, xkb, &si->interp.act, si->defs.merge,
+        ok = HandleActionDef(value, xkb, &si->interp.act.any, si->defs.merge,
                              info->act);
         if (ok)
             si->defs.defined |= _SI_Action;
