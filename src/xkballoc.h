@@ -72,4 +72,9 @@ XkbcFreeClientMap(struct xkb_desc * xkb);
 extern void
 XkbcFreeServerMap(struct xkb_desc * xkb);
 
+extern unsigned int
+xkb_key_get_syms_by_level(struct xkb_desc *xkb, xkb_keycode_t key,
+                          unsigned int group, unsigned int level,
+                          xkb_keysym_t **syms_out);
+
 #endif /* _XKBALLOC_H_ */

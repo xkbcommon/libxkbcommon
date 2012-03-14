@@ -55,6 +55,7 @@
 
 #include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
+#include "xkballoc.h"
 #include <X11/X.h>
 
 /**
@@ -119,6 +120,24 @@ xkb_key_get_group(struct xkb_desc *xkb, struct xkb_state *state,
 }
 
 /**
+ * As below, but takes an explicit group/level rather than state.
+ */
+unsigned int
+xkb_key_get_syms_by_level(struct xkb_desc *xkb, xkb_keycode_t key, unsigned int group,
+                          unsigned int level, xkb_keysym_t **syms_out)
+{
+    *syms_out = &(XkbKeySymEntry(xkb, key, level, group));
+    if (**syms_out == NoSymbol)
+        goto err;
+
+    return 1;
+
+err:
+    *syms_out = NULL;
+    return 0;
+}
+
+/**
  * Provides the symbols to use for the given key and state.  Returns the
  * number of symbols pointed to in syms_out.
  */
@@ -139,11 +158,7 @@ xkb_key_get_syms(struct xkb_desc *xkb, struct xkb_state *state,
     if (level == -1)
         goto err;
 
-    *syms_out = &(XkbKeySymEntry(xkb, key, level, group));
-    if (**syms_out == NoSymbol)
-        goto err;
-
-    return 1;
+    return xkb_key_get_syms_by_level(xkb, key, group, level, syms_out);
 
 err:
     *syms_out = NULL;
