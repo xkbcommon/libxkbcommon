@@ -849,3 +849,257 @@ CompileCompatMap(XkbFile *file, struct xkb_desc * xkb, unsigned merge,
     free(info.interps);
     return False;
 }
+
+static uint32_t
+VModsToReal(struct xkb_desc *xkb, uint32_t vmodmask)
+{
+    uint32_t ret = 0;
+    int i;
+
+    if (!vmodmask)
+        return 0;
+
+    for (i = 0; i < XkbNumVirtualMods; i++) {
+        if (!(vmodmask & (1 << i)))
+            continue;
+        ret |= xkb->server->vmods[i];
+    }
+
+    return ret;
+}
+
+static void
+UpdateActionMods(struct xkb_desc *xkb, union xkb_action *act, uint32_t rmodmask)
+{
+    uint32_t vmodmask; /* actually real mods, inferred from vmods */
+
+    switch (act->type) {
+    case XkbSA_SetMods:
+    case XkbSA_LatchMods:
+    case XkbSA_LockMods:
+        if (act->mods.flags & XkbSA_UseModMapMods) {
+            act->mods.real_mods = rmodmask;
+            act->mods.mask = act->mods.real_mods;
+        }
+        vmodmask = VModsToReal(xkb, act->mods.vmods);
+        act->mods.mask |= vmodmask;
+        break;
+    case XkbSA_ISOLock:
+        if (act->iso.flags & XkbSA_UseModMapMods) {
+            act->iso.real_mods = rmodmask;
+            act->iso.mask = act->iso.real_mods;
+        }
+        vmodmask = VModsToReal(xkb, act->iso.vmods);
+        act->iso.mask |= vmodmask;
+        break;
+    default:
+        break;
+    }
+}
+
+/**
+ * Find an interpretation which applies to this particular level, either by
+ * finding an exact match for the symbol and modifier combination, or a
+ * generic NoSymbol match.
+ */
+static struct xkb_sym_interpret *
+FindInterpForKey(struct xkb_desc *xkb, xkb_keycode_t key, uint32_t group, uint32_t level)
+{
+    struct xkb_sym_interpret *ret = NULL;
+    xkb_keysym_t *syms;
+    int num_syms;
+    int i;
+
+    num_syms = xkb_key_get_syms_by_level(xkb, key, group, level, &syms);
+    if (num_syms == 0)
+        return NULL;
+
+    for (i = 0; i < xkb->compat->num_si; i++) {
+        struct xkb_sym_interpret *interp = &xkb->compat->sym_interpret[i];
+        uint32_t mods;
+        Bool found;
+
+        if ((num_syms != 1 || interp->sym != syms[0]) &&
+            interp->sym != NoSymbol)
+            continue;
+
+        if (level == 0 || !(interp->match & XkbSI_LevelOneOnly))
+            mods = xkb->map->modmap[key];
+        else
+            mods = 0;
+
+        switch (interp->match & XkbSI_OpMask) {
+        case XkbSI_NoneOf:
+            found = !(interp->mods & mods);
+            break;
+        case XkbSI_AnyOfOrNone:
+            found = (!mods || (interp->mods & mods));
+            break;
+        case XkbSI_AnyOf:
+            found = !!(interp->mods & mods);
+            break;
+        case XkbSI_AllOf:
+            found = ((interp->mods & mods) == mods);
+            break;
+        case XkbSI_Exactly:
+            found = (interp->mods == mods);
+            break;
+        default:
+            found = False;
+            break;
+        }
+
+        if (found && interp->sym != NoSymbol)
+            return interp;
+        else if (found && !ret)
+            ret = interp;
+    }
+
+    return ret;
+}
+
+/**
+ */
+static Bool
+ApplyInterpsToKey(struct xkb_desc *xkb, xkb_keycode_t key)
+{
+#define INTERP_SIZE (8 * 4)
+    struct xkb_sym_interpret *interps[INTERP_SIZE];
+    union xkb_action *acts;
+    uint32_t vmodmask = 0;
+    int num_acts = 0;
+    int group, level;
+    int width = XkbKeyGroupsWidth(xkb, key);
+    int i;
+
+    /* If we've been told not to bind interps to this key, then don't. */
+    if (xkb->server->explicit[key] & XkbExplicitInterpretMask)
+        return True;
+
+    for (i = 0; i < INTERP_SIZE; i++)
+        interps[i] = NULL;
+
+    for (group = 0; group < XkbKeyNumGroups(xkb, key); group++) {
+        for (level = 0; level < XkbKeyGroupWidth(xkb, key, group); level++) {
+            i = (group * width) + level;
+            if (i >= INTERP_SIZE) /* XXX FIXME */
+                return False;
+            interps[i] = FindInterpForKey(xkb, key, group, level);
+            if (interps[i])
+                num_acts++;
+        }
+    }
+
+    if (num_acts)
+        num_acts = XkbKeyNumGroups(xkb, key) * width;
+    acts = XkbcResizeKeyActions(xkb, key, num_acts);
+    if (!num_acts)
+        return True;
+    else if (!acts)
+        return False;
+
+    for (group = 0; group < XkbKeyNumGroups(xkb, key); group++) {
+        for (level = 0; level < XkbKeyGroupWidth(xkb, key, group); level++) {
+            struct xkb_sym_interpret *interp;
+
+            i = (group * width) + level;
+            interp = interps[i];
+
+            /* Infer default key behaviours from the base level. */
+            if (group == 0 && level == 0) {
+                if (!(xkb->server->explicit[key] & XkbExplicitAutoRepeatMask) &&
+                    (!interp || interp->flags & XkbSI_AutoRepeat))
+                    xkb->ctrls->per_key_repeat[key / 8] |= (1 << (key % 8));
+                if (!(xkb->server->explicit[key] & XkbExplicitBehaviorMask) &&
+                    interp && (interp->flags & XkbSI_LockingKey))
+                    xkb->server->behaviors[key].type = XkbKB_Lock;
+            }
+
+            if (!interp)
+                continue;
+
+            if ((group == 0 && level == 0) ||
+                !(interp->match & XkbSI_LevelOneOnly)) {
+                if (interp->virtual_mod != XkbNoModifier)
+                    vmodmask |= (1 << interp->virtual_mod);
+            }
+            acts[i] = interp->act;
+        }
+    }
+
+    if (!(xkb->server->explicit[key] & XkbExplicitVModMapMask))
+        xkb->server->vmodmap[key] = vmodmask;
+
+    return True;
+#undef INTERP_SIZE
+}
+
+/**
+ * This collects a bunch of disparate functions which was done in the server
+ * at various points that really should've been done within xkbcomp.  Turns out
+ * your actions and types are a lot more useful when any of your modifiers
+ * other than Shift actually do something ...
+ */
+Bool
+UpdateModifiersFromCompat(struct xkb_desc *xkb)
+{
+    xkb_keycode_t key;
+    int i;
+
+    /* Find all the interprets for the key and bind them to actions,
+     * which will also update the vmodmap. */
+    for (key = xkb->min_key_code; key <= xkb->max_key_code; key++)
+        if (!ApplyInterpsToKey(xkb, key))
+            return False;
+
+    /* Update xkb->server->vmods, the virtual -> real mod mapping. */
+    for (i = 0; i < XkbNumVirtualMods; i++)
+        xkb->server->vmods[i] = 0;
+    for (key = xkb->min_key_code; key <= xkb->max_key_code; key++) {
+        if (!xkb->server->vmodmap[key])
+            continue;
+        for (i = 0; i < XkbNumVirtualMods; i++) {
+            if (!(xkb->server->vmodmap[key] & (1 << i)))
+                continue;
+            xkb->server->vmods[i] |= xkb->map->modmap[key];
+        }
+    }
+
+    /* Now update the level masks for all the types to reflect the vmods. */
+    for (i = 0; i < xkb->map->num_types; i++) {
+        struct xkb_key_type *type = &xkb->map->types[i];
+        uint32_t mask = 0;
+        int j;
+        type->mods.mask = type->mods.real_mods;
+        type->mods.mask |= VModsToReal(xkb, type->mods.vmods);
+        for (j = 0; j < XkbNumVirtualMods; j++) {
+            if (!(type->mods.vmods & (1 << j)))
+                continue;
+            mask |= xkb->server->vmods[j];
+        }
+        for (j = 0; j < type->map_count; j++) {
+            struct xkb_mods *mods = &type->map[j].mods;
+            mods->mask = mods->real_mods | VModsToReal(xkb, mods->vmods);
+        }
+    }
+
+    /* Update action modifiers. */
+    for (key = xkb->min_key_code; key <= xkb->max_key_code; key++) {
+        union xkb_action *acts = XkbKeyActionsPtr(xkb, key);
+        for (i = 0; i < XkbKeyNumActions(xkb, key); i++) {
+            if (acts[i].any.type == XkbSA_NoAction)
+                continue;
+            UpdateActionMods(xkb, &acts[i], xkb->map->modmap[key]);
+        }
+    }
+
+    /* Update group modifiers. */
+    for (i = 0; i < XkbNumKbdGroups; i++) {
+        struct xkb_mods *group = &xkb->compat->groups[i];
+        group->mask = group->real_mods | VModsToReal(xkb, group->vmods);
+    }
+
+    /* Update vmod -> indicator maps. */
+
+    return True;
+}

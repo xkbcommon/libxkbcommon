@@ -285,4 +285,7 @@ CompileCompatMap(XkbFile *file, struct xkb_desc * xkb, unsigned merge,
 extern Bool
 CompileSymbols(XkbFile *file, struct xkb_desc * xkb, unsigned merge);
 
+extern Bool
+UpdateModifiersFromCompat(struct xkb_desc *xkb);
+
 #endif /* XKBCOMP_H */

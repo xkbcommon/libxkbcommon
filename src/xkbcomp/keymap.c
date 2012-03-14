@@ -190,6 +190,10 @@ CompileKeymap(XkbFile *file, unsigned merge)
     if (!ok)
         goto err;
 
+    ok = UpdateModifiersFromCompat(xkb);
+    if (!ok)
+        goto err;
+
     return xkb;
 
 err:
