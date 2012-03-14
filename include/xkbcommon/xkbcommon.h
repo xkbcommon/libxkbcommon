@@ -290,8 +290,8 @@ struct xkb_server_map {
     struct xkb_behavior         *behaviors;
     unsigned short      *key_acts;
     unsigned char       *explicits;
-    uint32_t            vmods[XkbNumVirtualMods];
-    uint32_t            *vmodmap;
+    uint32_t            vmods[XkbNumVirtualMods]; /* vmod -> mod mapping */
+    uint32_t            *vmodmap; /* key -> vmod mapping */
 };
 
 
