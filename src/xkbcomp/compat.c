@@ -1100,6 +1100,10 @@ UpdateModifiersFromCompat(struct xkb_desc *xkb)
     }
 
     /* Update vmod -> indicator maps. */
+    for (i = 0; i < XkbNumIndicators; i++) {
+        struct xkb_mods *led = &xkb->indicators->maps[i].mods;
+        led->mask = led->real_mods | VModsToReal(xkb, led->vmods);
+    }
 
     return True;
 }
