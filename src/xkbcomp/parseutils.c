@@ -614,9 +614,6 @@ StmtSetMerge(ParseCommon * stmt, unsigned merge)
 }
 
 static void
-FreeStmt(ParseCommon *stmt);
-
-static void
 FreeExpr(ExprDef *expr)
 {
     int i;
@@ -677,7 +674,7 @@ FreeInclude(IncludeStmt *incl)
     }
 }
 
-static void
+void
 FreeStmt(ParseCommon *stmt)
 {
     ParseCommon *next;

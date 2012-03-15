@@ -154,4 +154,7 @@ extern void setScanState(const char * /* file */ ,
                          int     /* line */
     );
 
+extern void FreeStmt(ParseCommon * /* stmt */
+    );
+
 #endif /* XKBPARSE_H */

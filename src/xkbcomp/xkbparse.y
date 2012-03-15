@@ -194,18 +194,30 @@ XkbMapConfig	:	OptFlags FileType OptMapName OBRACE
 			CBRACE SEMI
 			{
                             if ($2 == XkmGeometryIndex)
+                            {
+                                free($3);
+                                FreeStmt($5);
                                 $$= NULL;
+                            }
                             else
+                            {
                                 $$= CreateXKBFile($2,$3,$5,$1);
+                            }
                         }
 		;
 
 XkbConfig	:	OptFlags FileType OptMapName DeclList
 			{
                             if ($2 == XkmGeometryIndex)
+                            {
+                                free($3);
+                                FreeStmt($4);
                                 $$= NULL;
+                            }
                             else
+                            {
                                 $$= CreateXKBFile($2,$3,$4,$1);
+                            }
                         }
 		;
 
@@ -455,11 +467,11 @@ SectionBody	:	SectionBody SectionBodyItem
 SectionBodyItem	:	ROW OBRACE RowBody CBRACE SEMI
 			{ $$= NULL; }
 		|	VarDecl
-			{ $$= NULL; }
+			{ FreeStmt(&$1->common); $$= NULL; }
 		|	DoodadDecl
 			{ $$= NULL; }
 		|	IndicatorMapDecl
-			{ $$= NULL; }
+			{ FreeStmt(&$1->common); $$= NULL; }
 		|	OverlayDecl
 			{ $$= NULL; }
 		;
@@ -473,7 +485,7 @@ RowBody		:	RowBody RowBodyItem
 RowBodyItem	:	KEYS OBRACE Keys CBRACE SEMI
 			{ $$= NULL; }
 		|	VarDecl
-			{ $$= NULL; }
+			{ FreeStmt(&$1->common); $$= NULL; }
 		;
 
 Keys		:	Keys COMMA Key
@@ -483,9 +495,9 @@ Keys		:	Keys COMMA Key
 		;
 
 Key		:	KeyName
-			{ $$= NULL; }
+			{ free($1); $$= NULL; }
 		|	OBRACE ExprList CBRACE
-			{ $$= NULL; }
+			{ FreeStmt(&$2->common); $$= NULL; }
 		;
 
 OverlayDecl	:	OVERLAY String OBRACE OverlayKeyList CBRACE SEMI
@@ -493,15 +505,13 @@ OverlayDecl	:	OVERLAY String OBRACE OverlayKeyList CBRACE SEMI
 		;
 
 OverlayKeyList	:	OverlayKeyList COMMA OverlayKey
-			{
-			    $$= NULL;
-			}
+			{ $$= NULL; }
 		|	OverlayKey
 			{ $$= NULL; }
 		;
 
 OverlayKey	:	KeyName EQUALS KeyName
-			{ $$= NULL; }
+			{ free($1); free($3); $$= NULL; }
 		;
 
 OutlineList	:	OutlineList COMMA OutlineInList
@@ -515,7 +525,7 @@ OutlineInList	:	OBRACE CoordList CBRACE
 		|	Ident EQUALS OBRACE CoordList CBRACE
 			{ $$= NULL; }
 		|	Ident EQUALS Expr
-			{ $$= NULL; }
+			{ FreeStmt(&$3->common); $$= NULL; }
 		;
 
 CoordList	:	CoordList COMMA Coord
@@ -529,7 +539,7 @@ Coord		:	OBRACKET SignedNumber COMMA SignedNumber CBRACKET
 		;
 
 DoodadDecl	:	DoodadType String OBRACE VarDeclList CBRACE SEMI
-			{ $$= NULL; }
+			{ FreeStmt(&$4->common); $$= NULL; }
 		;
 
 DoodadType	:	TEXT			{ $$= 0; }
