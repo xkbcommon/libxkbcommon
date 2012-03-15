@@ -45,7 +45,6 @@ extern char *scanFile;
 #define	TypeUnknown	0
 #define	TypeBoolean	1
 #define	TypeInt		2
-#define	TypeFloat	3
 #define	TypeString	4
 #define	TypeAction	5
 #define	TypeKeyName	6

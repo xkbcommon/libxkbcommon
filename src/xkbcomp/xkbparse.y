@@ -680,10 +680,7 @@ Terminal	:	String
 			}
 		|	Float
 			{
-			    ExprDef *expr;
-			    expr= ExprCreate(ExprValue,TypeFloat);
-			    expr->value.ival= $1;
-			    $$= expr;
+			    $$= NULL;
 			}
 		|	KeyName
 			{

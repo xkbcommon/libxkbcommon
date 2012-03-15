@@ -169,8 +169,7 @@ SimpleLookup(const void * priv, xkb_atom_t field, unsigned type,
     const LookupEntry *entry;
     const char *str;
 
-    if ((priv == NULL) || (field == None) ||
-        ((type != TypeInt) && (type != TypeFloat)))
+    if ((priv == NULL) || (field == None) || (type != TypeInt))
     {
         return False;
     }
@@ -180,8 +179,6 @@ SimpleLookup(const void * priv, xkb_atom_t field, unsigned type,
         if (uStrCaseCmp(str, entry->name) == 0)
         {
             val_rtrn->uval = entry->result;
-            if (type == TypeFloat)
-                val_rtrn->uval *= XkbGeomPtsPerMM;
             return True;
         }
     }
@@ -335,7 +332,7 @@ ExprResolveFloat(ExprDef * expr,
                 return True;
             }
         }
-        if ((expr->type != TypeInt) && (expr->type != TypeFloat))
+        if (expr->type != TypeInt)
         {
             ERROR("Found constant of type %s, expected a number\n",
                    exprTypeText(expr->type));
@@ -516,7 +513,7 @@ ExprResolveIntegerLookup(ExprDef * expr,
                     break;
                 }
         }
-        if ((expr->type != TypeInt) && (expr->type != TypeFloat))
+        if (expr->type != TypeInt)
         {
             ERROR
                 ("Found constant of type %s where an int was expected\n",
@@ -524,8 +521,6 @@ ExprResolveIntegerLookup(ExprDef * expr,
             return False;
         }
         val_rtrn->ival = expr->value.ival;
-        if (expr->type == TypeFloat)
-            val_rtrn->ival /= XkbGeomPtsPerMM;
         return True;
     case ExprIdent:
         if (lookup)
