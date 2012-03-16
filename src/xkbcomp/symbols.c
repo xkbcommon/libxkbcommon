@@ -899,14 +899,14 @@ AddSymbolsToKey(KeyInfo * key,
     if (value->op != ExprKeysymList)
     {
         ERROR("Expected a list of symbols, found %s\n", exprOpText(value->op));
-        ACTION("Ignoring symbols for group %d of %s\n", ndx,
+        ACTION("Ignoring symbols for group %d of %s\n", ndx + 1,
                 longText(key->name));
         return False;
     }
     if (key->syms[ndx] != NULL)
     {
         ERROR("Symbols for key %s, group %d already defined\n",
-               longText(key->name), ndx);
+               longText(key->name), ndx + 1);
         ACTION("Ignoring duplicate definition\n");
         return False;
     }
@@ -914,16 +914,17 @@ AddSymbolsToKey(KeyInfo * key,
     if (((key->numLevels[ndx] < nSyms) || (key->syms[ndx] == NULL)) &&
         (!ResizeKeyGroup(key, ndx, nSyms, False)))
     {
-        WSGO("Could not resize group %d of key %s to contain %d levels\n", ndx,
-             longText(key->name), nSyms);
+        WSGO("Could not resize group %d of key %s to contain %d levels\n",
+             ndx + 1, longText(key->name), nSyms);
         ACTION("Symbols lost\n");
         return False;
     }
     key->symsDefined |= (1 << ndx);
     for (i = 0; i < nSyms; i++) {
         if (!LookupKeysym(value->value.list.syms[i], &key->syms[ndx][i])) {
-            WARN("Could not resolve keysym %s for key %s, group %d, level %d\n",
-                  value->value.list.syms[i], longText(key->name), ndx, nSyms);
+            WARN("Could not resolve keysym %s for key %s, group %d (%s), level %d\n",
+                  value->value.list.syms[i], longText(key->name), ndx + 1,
+                  XkbcAtomText(info->groupNames[ndx]), nSyms);
             key->syms[ndx][i] = NoSymbol;
         }
     }
