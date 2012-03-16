@@ -871,8 +871,6 @@ VModsToReal(struct xkb_desc *xkb, uint32_t vmodmask)
 static void
 UpdateActionMods(struct xkb_desc *xkb, union xkb_action *act, uint32_t rmodmask)
 {
-    uint32_t vmodmask; /* actually real mods, inferred from vmods */
-
     switch (act->type) {
     case XkbSA_SetMods:
     case XkbSA_LatchMods:
@@ -881,16 +879,20 @@ UpdateActionMods(struct xkb_desc *xkb, union xkb_action *act, uint32_t rmodmask)
             act->mods.real_mods = rmodmask;
             act->mods.mask = act->mods.real_mods;
         }
-        vmodmask = VModsToReal(xkb, act->mods.vmods);
-        act->mods.mask |= vmodmask;
+        else {
+            act->mods.mask = 0;
+        }
+        act->mods.mask |= VModsToReal(xkb, act->mods.vmods);
         break;
     case XkbSA_ISOLock:
         if (act->iso.flags & XkbSA_UseModMapMods) {
             act->iso.real_mods = rmodmask;
             act->iso.mask = act->iso.real_mods;
         }
-        vmodmask = VModsToReal(xkb, act->iso.vmods);
-        act->iso.mask |= vmodmask;
+        else {
+            act->iso.mask = 0;
+        }
+        act->iso.mask |= VModsToReal(xkb, act->iso.vmods);
         break;
     default:
         break;
