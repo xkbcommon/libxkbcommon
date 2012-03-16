@@ -648,8 +648,8 @@ HandleInterpDef(InterpDef * def, struct xkb_desc * xkb, unsigned merge,
     si.defs.merge = merge;
     if (!LookupKeysym(def->sym, &si.interp.sym))
     {
-        WARN("Could not resolve keysym %s\n", def->sym);
-        info->errorCount++;
+        ERROR("Could not resolve keysym %s\n", def->sym);
+        ACTION("Symbol interpretation ignored\n");
         return False;
     }
     si.interp.match = pred & XkbSI_OpMask;
