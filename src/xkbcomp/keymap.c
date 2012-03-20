@@ -45,7 +45,7 @@ CompileKeymap(XkbFile *file, unsigned merge)
     Bool ok;
     unsigned required, legal;
     unsigned mainType;
-    char *mainName;
+    const char *mainName;
     LEDInfo *unbound = NULL;
     struct xkb_desc *xkb = XkbcAllocKeyboard();
     struct {
