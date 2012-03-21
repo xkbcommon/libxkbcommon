@@ -86,4 +86,10 @@ authorization from the authors.
 #define	XkmLegalSection(m)	(((m)&(~XkmKeymapLegal))==0)
 #define	XkmSingleSection(m)	(XkmLegalSection(m)&&(((m)&(~(m)+1))==(m)))
 
+extern unsigned int xkb_key_get_group(struct xkb_state *state,
+                                      xkb_keycode_t key);
+extern unsigned int xkb_key_get_level(struct xkb_state *state,
+                                      xkb_keycode_t key,
+                                      unsigned int group);
+
 #endif /* _XKBCOMMONINT_H_ */

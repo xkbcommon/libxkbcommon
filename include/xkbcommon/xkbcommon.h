@@ -490,6 +490,11 @@ struct xkb_state {
 	unsigned char   compat_lookup_mods; /* effective mods + group */
 
 	unsigned short  ptr_buttons; /* core pointer buttons */
+
+        int refcnt;
+        void *filters;
+        int num_filters;
+        struct xkb_desc *xkb;
 };
 
 #define	XkbStateFieldFromRec(s)	XkbBuildCoreState((s)->lookup_mods,(s)->group)
@@ -551,8 +556,42 @@ _X_EXPORT extern xkb_keysym_t
 xkb_string_to_keysym(const char *s);
 
 _X_EXPORT unsigned int
-xkb_key_get_syms(struct xkb_desc *xkb, struct xkb_state *state,
-                 xkb_keycode_t key, xkb_keysym_t **syms_out);
+xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
+                 xkb_keysym_t **syms_out);
+
+/**
+ * @defgroup state XKB state objects
+ * Creation, destruction and manipulation of keyboard state objects, * representing modifier and group state.
+ *
+ * @{
+ */
+
+/**
+ * Allocates a new XKB state object for use with the given keymap.
+ */
+_X_EXPORT struct xkb_state *
+xkb_state_new(struct xkb_desc *xkb);
+
+/**
+ * Adds a reference to a state object, so it will not be freed until unref.
+ */
+_X_EXPORT void
+xkb_state_ref(struct xkb_state *state);
+
+/**
+ * Unrefs and potentially deallocates a state object; the caller must not
+ * use the state object after calling this.
+ */
+_X_EXPORT void
+xkb_state_unref(struct xkb_state *state);
+
+/**
+ * Updates a state object to reflect the given key being pressed or released.
+ */
+_X_EXPORT void
+xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key, int down);
+
+/** @} */
 
 _XFUNCPROTOEND
 

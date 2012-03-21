@@ -15,6 +15,7 @@ libxkbcommon_la_SOURCES = \
 	map.c \
 	maprules.c \
 	misc.c \
+	state.c \
 	text.c \
 	xkb.c \
 	xkballoc.h \

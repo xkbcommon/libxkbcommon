@@ -61,11 +61,11 @@
 /**
  * Returns the level to use for the given key and state, or -1 if invalid.
  */
-static int
-xkb_key_get_level(struct xkb_desc *xkb, struct xkb_state *state,
-                  xkb_keycode_t key, unsigned int group)
+unsigned int
+xkb_key_get_level(struct xkb_state *state, xkb_keycode_t key,
+                  unsigned int group)
 {
-    struct xkb_key_type *type = XkbKeyType(xkb, key, group);
+    struct xkb_key_type *type = XkbKeyType(state->xkb, key, group);
     unsigned int active_mods = state->mods & type->mods.mask;
     int i;
 
@@ -80,18 +80,17 @@ xkb_key_get_level(struct xkb_desc *xkb, struct xkb_state *state,
 }
 
 /**
- * Returns the group to use for the given key and state, or -1 if invalid,
- * taking wrapping/clamping/etc into account.
+ * Returns the group to use for the given key and state, taking
+ * wrapping/clamping/etc into account.
  */
-static int
-xkb_key_get_group(struct xkb_desc *xkb, struct xkb_state *state,
-                  xkb_keycode_t key)
+unsigned int
+xkb_key_get_group(struct xkb_state *state, xkb_keycode_t key)
 {
-    unsigned int info = XkbKeyGroupInfo(xkb, key);
-    unsigned int num_groups = XkbKeyNumGroups(xkb, key);
+    unsigned int info = XkbKeyGroupInfo(state->xkb, key);
+    unsigned int num_groups = XkbKeyNumGroups(state->xkb, key);
     int ret = state->group;
 
-    if (ret < XkbKeyNumGroups(xkb, key))
+    if (ret < XkbKeyNumGroups(state->xkb, key))
         return ret;
 
     switch (XkbOutOfRangeGroupAction(info)) {
@@ -135,19 +134,20 @@ err:
  * number of symbols pointed to in syms_out.
  */
 unsigned int
-xkb_key_get_syms(struct xkb_desc *xkb, struct xkb_state *state,
-                 xkb_keycode_t key, xkb_keysym_t **syms_out)
+xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
+                 xkb_keysym_t **syms_out)
 {
+    struct xkb_desc *xkb = state->xkb;
     int group;
     int level;
 
-    if (!xkb || !state || key < xkb->min_key_code || key > xkb->max_key_code)
+    if (!state || key < xkb->min_key_code || key > xkb->max_key_code)
         return -1;
 
-    group = xkb_key_get_group(xkb, state, key);
+    group = xkb_key_get_group(state, key);
     if (group == -1)
         goto err;
-    level = xkb_key_get_level(xkb, state, key, group);
+    level = xkb_key_get_level(state, key, group);
     if (level == -1)
         goto err;
 
