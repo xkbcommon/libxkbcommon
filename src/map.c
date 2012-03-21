@@ -69,16 +69,9 @@ xkb_key_get_level(struct xkb_desc *xkb, struct xkb_state *state,
     unsigned int active_mods = state->mods & type->mods.mask;
     int i;
 
-    fprintf(stderr, "get_level: %s, %d entries, mods %x, mask %x (v%x r%x)\n",
-            type->name, type->map_count, state->mods, type->mods.mask,
-            type->mods.vmods, type->mods.real_mods);
-
     for (i = 0; i < type->map_count; i++) {
         if (!type->map[i].active)
             continue;
-        fprintf(stderr, "    type active, level %d (%s), mask %x (v%x r%x), active %x\n",
-                type->map[i].level, type->level_names[i], type->map[i].mods.mask,
-                type->map[i].mods.real_mods, type->map[i].mods.vmods, active_mods);
         if (type->map[i].mods.mask == active_mods)
             return type->map[i].level;
     }
