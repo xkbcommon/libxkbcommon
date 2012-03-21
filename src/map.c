@@ -59,6 +59,145 @@
 #include <X11/X.h>
 
 /**
+ * Returns the total number of modifiers active in the keymap.
+ */
+xkb_mod_index_t
+xkb_map_num_mods(struct xkb_desc *xkb)
+{
+    xkb_mod_index_t i;
+
+    for (i = 0; i < XkbNumVirtualMods; i++)
+        if (!xkb->names->vmods[i])
+            break;
+
+    /* We always have all the core modifiers (for now), plus any virtual
+     * modifiers we may have defined, and then shift to one-based indexing. */
+    return i + Mod5MapIndex + 1;
+}
+
+/**
+ * Return the name for a given modifier.
+ */
+const char *
+xkb_map_mod_get_name(struct xkb_desc *xkb, xkb_mod_index_t idx)
+{
+    if (idx >= xkb_map_num_mods(xkb))
+        return NULL;
+
+    /* First try to find a legacy modifier name. */
+    switch (idx) {
+    case ShiftMapIndex:
+        return "Shift";
+    case ControlMapIndex:
+        return "Control";
+    case LockMapIndex:
+        return "Caps Lock";
+    case Mod1MapIndex:
+        return "Mod1";
+    case Mod2MapIndex:
+        return "Mod2";
+    case Mod3MapIndex:
+        return "Mod3";
+    case Mod4MapIndex:
+        return "Mod4";
+    case Mod5MapIndex:
+        return "Mod5";
+    default:
+        break;
+    }
+
+    /* If that fails, try to find a virtual mod name. */
+    return xkb->names->vmods[idx - Mod5MapIndex];
+}
+
+/**
+ * Returns the index for a named modifier.
+ */
+xkb_mod_index_t
+xkb_map_mod_get_index(struct xkb_desc *xkb, const char *name)
+{
+    xkb_mod_index_t i;
+
+    if (strcasecmp(name, "Shift") == 0)
+        return ShiftMapIndex;
+    if (strcasecmp(name, "Control") == 0)
+        return ControlMapIndex;
+    if (strcasecmp(name, "Caps Lock") == 0)
+        return LockMapIndex;
+    if (strcasecmp(name, "Mod1") == 0)
+        return Mod1MapIndex;
+    if (strcasecmp(name, "Mod2") == 0)
+        return Mod2MapIndex;
+    if (strcasecmp(name, "Mod3") == 0)
+        return Mod3MapIndex;
+    if (strcasecmp(name, "Mod4") == 0)
+        return Mod4MapIndex;
+    if (strcasecmp(name, "Mod5") == 0)
+        return Mod5MapIndex;
+
+    for (i = 0; i < XkbNumVirtualMods && xkb->names->vmods[i]; i++) {
+        if (strcasecmp(name, xkb->names->vmods[i]) == 0)
+            return i + Mod5MapIndex;
+    }
+
+    return XKB_GROUP_INVALID;
+}
+
+/**
+ * Return the total number of active groups in the keymap.
+ */
+xkb_group_index_t
+xkb_map_num_groups(struct xkb_desc *xkb)
+{
+    xkb_group_index_t ret = 0;
+    xkb_group_index_t i;
+
+    for (i = 0; i < XkbNumKbdGroups; i++)
+        if (xkb->compat->groups[i].mask)
+            ret++;
+
+    return ret;
+}
+
+/**
+ * Returns the name for a given group.
+ */
+const char *
+xkb_map_group_get_name(struct xkb_desc *xkb, xkb_group_index_t idx)
+{
+    if (idx >= xkb_map_num_groups(xkb))
+        return NULL;
+
+    return xkb->names->groups[idx];
+}
+
+/**
+ * Returns the index for a named group.
+ */
+xkb_group_index_t
+xkb_map_group_get_index(struct xkb_desc *xkb, const char *name)
+{
+    xkb_group_index_t num_groups = xkb_map_num_groups(xkb);
+    xkb_group_index_t i;
+
+    for (i = 0; i < num_groups; i++) {
+        if (strcasecmp(xkb->names->groups[i], name) == 0)
+            return i;
+    }
+
+    return XKB_MOD_INVALID;
+}
+
+/**
+ * Returns the number of groups active for a particular key.
+ */
+xkb_group_index_t
+xkb_key_num_groups(struct xkb_desc *xkb, xkb_keycode_t key)
+{
+    return XkbKeyNumGroups(xkb, key);
+}
+
+/**
  * Returns the level to use for the given key and state, or -1 if invalid.
  */
 unsigned int

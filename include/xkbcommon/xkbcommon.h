@@ -62,6 +62,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 typedef uint32_t xkb_keycode_t;
 typedef uint32_t xkb_keysym_t;
+typedef uint32_t xkb_mod_index_t;
+typedef uint32_t xkb_group_index_t;
+
+#define XKB_MOD_INVALID                 (0xffffffff)
+#define XKB_GROUP_INVALID               (0xffffffff)
+#define XKB_KEYCODE_INVALID             (0xffffffff)
 
 #define XKB_KEYCODE_MAX                 (0xffffffff - 1)
 #define xkb_keycode_is_legal_ext(kc)    (kc <= XKB_KEYCODE_MAX)
@@ -560,8 +566,61 @@ xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
                  xkb_keysym_t **syms_out);
 
 /**
+ * @defgroup components XKB state components
+ * Allows enumeration of state components such as modifiers and groups within
+ * the current keymap.
+ *
+ * @{
+ */
+
+/**
+ * Returns the number of modifiers active in the keymap.
+ */
+_X_EXPORT xkb_mod_index_t
+xkb_map_num_mods(struct xkb_desc *xkb);
+
+/**
+ * Returns the name of the modifier specified by 'idx', or NULL if invalid.
+ */
+_X_EXPORT const char *
+xkb_map_mod_get_name(struct xkb_desc *xkb, xkb_mod_index_t idx);
+
+/**
+ * Returns the index of the modifier specified by 'name', or NULL if invalid.
+ */
+_X_EXPORT xkb_mod_index_t
+xkb_map_mod_get_index(struct xkb_desc *xkb, const char *name);
+
+/**
+ * Returns the number of groups active in the keymap.
+ */
+_X_EXPORT xkb_group_index_t
+xkb_map_num_groups(struct xkb_desc *xkb);
+
+/**
+ * Returns the name of the group specified by 'idx', or NULL if invalid.
+ */
+_X_EXPORT const char *
+xkb_map_group_get_name(struct xkb_desc *xkb, xkb_group_index_t idx);
+
+/**
+ * Returns the index of the group specified by 'name', or NULL if invalid.
+ */
+_X_EXPORT xkb_group_index_t
+xkb_map_group_get_index(struct xkb_desc *xkb, const char *name);
+
+/**
+ * Returns the number of groups active for the specified key.
+ */
+_X_EXPORT xkb_group_index_t
+xkb_key_num_groups(struct xkb_desc *xkb, xkb_keycode_t key);
+
+/** @} */
+
+/**
  * @defgroup state XKB state objects
- * Creation, destruction and manipulation of keyboard state objects, * representing modifier and group state.
+ * Creation, destruction and manipulation of keyboard state objects,
+ * representing modifier and group state.
  *
  * @{
  */
@@ -590,6 +649,62 @@ xkb_state_unref(struct xkb_state *state);
  */
 _X_EXPORT void
 xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key, int down);
+
+/**
+ * Modifier and group types for state objects.  This enum is bitmaskable,
+ * e.g. (XKB_STATE_DEPRESSED | XKB_STATE_LATCHED) is valid to exclude
+ * locked modifiers.
+ */
+enum xkb_state_component {
+    XKB_STATE_DEPRESSED = (1 << 0),
+        /**< A key holding this modifier or group is currently physically
+         *   depressed; also known as 'base'. */
+    XKB_STATE_LATCHED = (1 << 1),
+        /**< Modifier or group is latched, i.e. will be unset after the next
+         *   non-modifier key press. */
+    XKB_STATE_LOCKED = (1 << 2),
+        /**< Modifier or group is locked, i.e. will be unset after the key
+         *   provoking the lock has been pressed again. */
+    XKB_STATE_EFFECTIVE =
+        (XKB_STATE_DEPRESSED | XKB_STATE_LATCHED | XKB_STATE_LOCKED),
+        /**< Combinatination of depressed, latched, and locked. */
+};
+
+/**
+ * Returns 1 if the modifier specified by 'name' is active in the manner
+ * specified by 'type', 0 if it is unset, or -1 if the modifier does not
+ * exist in the current map.
+ */
+_X_EXPORT int
+xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
+                             enum xkb_state_component type);
+
+/**
+ * Returns 1 if the modifier specified by 'idx' is active in the manner
+ * specified by 'type', 0 if it is unset, or -1 if the modifier does not
+ * exist in the current map.
+ */
+_X_EXPORT int
+xkb_state_mod_index_is_active(struct xkb_state *state, xkb_mod_index_t idx,
+                              enum xkb_state_component type);
+
+/**
+ * Returns 1 if the group specified by 'name' is active in the manner
+ * specified by 'type', 0 if it is unset, or -1 if the group does not
+ * exist in the current map.
+ */
+_X_EXPORT int
+xkb_state_group_name_is_active(struct xkb_state *state, const char *name,
+                               enum xkb_state_component type);
+
+/**
+ * Returns 1 if the group specified by 'idx' is active in the manner
+ * specified by 'type', 0 if it is unset, or -1 if the group does not
+ * exist in the current map.
+ */
+_X_EXPORT int
+xkb_state_group_index_is_active(struct xkb_state *state, xkb_group_index_t idx,
+                                enum xkb_state_component type);
 
 /** @} */
 

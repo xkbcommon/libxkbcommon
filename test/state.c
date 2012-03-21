@@ -38,7 +38,44 @@
  * keycode set (where ESC is 9). */
 #define EVDEV_OFFSET 8
 
-int main(int argc, char *argv[])
+static void
+print_state(struct xkb_state *state)
+{
+    xkb_group_index_t group;
+    xkb_mod_index_t mod;
+
+    if (!state->group && !state->mods) {
+        fprintf(stderr, "\tno state\n");
+        return;
+    }
+
+    for (group = 0; group < xkb_map_num_groups(state->xkb); group++) {
+        if (group != state->group && group != state->base_group &&
+            group != state->latched_group && group != state->locked_group)
+            continue;
+        fprintf(stderr, "\tgroup %s (%d): %s%s%s%s\n",
+                xkb_map_group_get_name(state->xkb, group),
+                group,
+                (state->group == group) ? "effective " : "",
+                (state->base_group == group) ? "depressed " : "",
+                (state->latched_group == group) ? "latched " : "",
+                (state->locked_group == group) ? "locked " : "");
+    }
+
+    for (mod = 0; mod < xkb_map_num_mods(state->xkb); mod++) {
+        if (!(state->mods & (1 << mod)))
+            continue;
+        fprintf(stderr, "\tmod %s (%d): %s%s%s\n",
+                xkb_map_mod_get_name(state->xkb, mod),
+                mod,
+                (state->base_mods & (1 << mod)) ? "depressed " : "",
+                (state->latched_mods & (1 << mod)) ? "latched " : "",
+                (state->locked_mods & (1 << mod)) ? "locked " : "");
+    }
+}
+
+int
+main(int argc, char *argv[])
 {
     struct xkb_rule_names rmlvo;
     struct xkb_desc *xkb;
@@ -60,40 +97,52 @@ int main(int argc, char *argv[])
     }
 
     state = xkb_state_new(xkb);
-    assert(state->mods == 0);
-    assert(state->group == 0);
 
     /* LCtrl down */
     xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, 1);
-    assert(state->mods & ControlMask);
+    fprintf(stderr, "dumping state for LCtrl down:\n");
+    print_state(state);
+    assert(xkb_state_mod_name_is_active(state, "Control",
+                                        XKB_STATE_DEPRESSED));
 
     /* LCtrl + RAlt down */
     xkb_state_update_key(state, KEY_RIGHTALT + EVDEV_OFFSET, 1);
-    assert(state->mods & Mod1Mask);
-    assert(state->locked_mods == 0);
-    assert(state->latched_mods == 0);
+    fprintf(stderr, "dumping state for LCtrl + RAlt down:\n");
+    print_state(state);
+    assert(xkb_state_mod_name_is_active(state, "Control",
+                                        XKB_STATE_DEPRESSED));
+    assert(xkb_state_mod_name_is_active(state, "Mod1",
+                                        XKB_STATE_DEPRESSED));
 
     /* RAlt down */
     xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, 0);
-    assert(!(state->mods & ControlMask) && (state->mods & Mod1Mask));
+    fprintf(stderr, "dumping state for RAlt down:\n");
+    print_state(state);
+    assert(!xkb_state_mod_name_is_active(state, "Control",
+                                         XKB_STATE_EFFECTIVE));
+    assert(xkb_state_mod_name_is_active(state, "Mod1",
+                                        XKB_STATE_DEPRESSED));
 
     /* none down */
     xkb_state_update_key(state, KEY_RIGHTALT + EVDEV_OFFSET, 0);
-    assert(state->mods == 0);
-    assert(state->group == 0);
+    assert(!xkb_state_mod_name_is_active(state, "Mod1",
+                                         XKB_STATE_EFFECTIVE));
 
     /* Caps locked */
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, 1);
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, 0);
-    assert(state->mods & LockMask);
-    assert(state->mods == state->locked_mods);
+    fprintf(stderr, "dumping state for Caps Lock:\n");
+    print_state(state);
+    assert(xkb_state_mod_name_is_active(state, "Caps Lock",
+                                        XKB_STATE_LOCKED));
     num_syms = xkb_key_get_syms(state, KEY_Q + EVDEV_OFFSET, &syms);
     assert(num_syms == 1 && syms[0] == XK_Q);
 
     /* Caps unlocked */
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, 1);
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, 0);
-    assert(state->mods == 0);
+    assert(!xkb_state_mod_name_is_active(state, "Caps Lock",
+                                         XKB_STATE_EFFECTIVE));
     num_syms = xkb_key_get_syms(state, KEY_Q + EVDEV_OFFSET, &syms);
     assert(num_syms == 1 && syms[0] == XK_q);
 

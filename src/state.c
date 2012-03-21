@@ -461,3 +461,73 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key, int down)
 
     /* FIXME: Update LED state. */
 }
+
+/**
+ * Returns 1 if the given modifier is active with the specified type(s), 0 if
+ * not, or -1 if the modifier is invalid.
+ */
+int xkb_state_mod_index_is_active(struct xkb_state *state,
+                                  xkb_mod_index_t idx,
+                                  enum xkb_state_component type)
+{
+    int ret = 0;
+
+    if (type & XKB_STATE_DEPRESSED)
+        ret |= (state->base_mods & (1 << idx));
+    if (type & XKB_STATE_LATCHED)
+        ret |= (state->latched_mods & (1 << idx));
+    if (type & XKB_STATE_LOCKED)
+        ret |= (state->locked_mods & (1 << idx));
+
+    return ret;
+}
+
+/**
+ * Returns 1 if the given modifier is active with the specified type(s), 0 if
+ * not, or -1 if the modifier is invalid.
+ */
+int xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
+                                 enum xkb_state_component type)
+{
+    xkb_mod_index_t idx = xkb_map_mod_get_index(state->xkb, name);
+
+    if (idx == XKB_MOD_INVALID)
+        return -1;
+
+    return xkb_state_mod_index_is_active(state, idx, type);
+}
+
+/**
+ * Returns 1 if the given group is active with the specified type(s), 0 if
+ * not, or -1 if the group is invalid.
+ */
+int xkb_state_group_index_is_active(struct xkb_state *state,
+                                    xkb_group_index_t idx,
+                                    enum xkb_state_component type)
+{
+    int ret = 0;
+
+    if (type & XKB_STATE_DEPRESSED)
+        ret |= (state->base_group == idx);
+    if (type & XKB_STATE_LATCHED)
+        ret |= (state->latched_group == idx);
+    if (type & XKB_STATE_LOCKED)
+        ret |= (state->locked_group == idx);
+
+    return ret;
+}
+
+/**
+ * Returns 1 if the given modifier is active with the specified type(s), 0 if
+ * not, or -1 if the modifier is invalid.
+ */
+int xkb_state_group_name_is_active(struct xkb_state *state, const char *name,
+                                 enum xkb_state_component type)
+{
+    xkb_group_index_t idx = xkb_map_group_get_index(state->xkb, name);
+
+    if (idx == XKB_GROUP_INVALID)
+        return -1;
+
+    return xkb_state_group_index_is_active(state, idx, type);
+}
