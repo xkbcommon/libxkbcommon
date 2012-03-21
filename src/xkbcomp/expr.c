@@ -214,7 +214,7 @@ LookupModMask(const void * priv, xkb_atom_t field, unsigned type,
 
     if (type != TypeInt)
         return False;
-    str = XkbcAtomGetString(field);
+    str = XkbcAtomText(field);
     if (str == NULL)
         return False;
     if (uStrCaseCmp(str, "all") == 0)
@@ -225,7 +225,6 @@ LookupModMask(const void * priv, xkb_atom_t field, unsigned type,
         val_rtrn->uval = (1 << val_rtrn->uval);
     else
         ret = False;
-    free(str);
     return ret;
 }
 
