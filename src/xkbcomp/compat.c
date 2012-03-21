@@ -875,23 +875,15 @@ UpdateActionMods(struct xkb_desc *xkb, union xkb_action *act, uint32_t rmodmask)
     case XkbSA_SetMods:
     case XkbSA_LatchMods:
     case XkbSA_LockMods:
-        if (act->mods.flags & XkbSA_UseModMapMods) {
+        if (act->mods.flags & XkbSA_UseModMapMods)
             act->mods.real_mods = rmodmask;
-            act->mods.mask = act->mods.real_mods;
-        }
-        else {
-            act->mods.mask = 0;
-        }
+        act->mods.mask = act->mods.real_mods;
         act->mods.mask |= VModsToReal(xkb, act->mods.vmods);
         break;
     case XkbSA_ISOLock:
-        if (act->iso.flags & XkbSA_UseModMapMods) {
+        if (act->iso.flags & XkbSA_UseModMapMods)
             act->iso.real_mods = rmodmask;
-            act->iso.mask = act->iso.real_mods;
-        }
-        else {
-            act->iso.mask = 0;
-        }
+        act->iso.mask = act->iso.real_mods;
         act->iso.mask |= VModsToReal(xkb, act->iso.vmods);
         break;
     default:
