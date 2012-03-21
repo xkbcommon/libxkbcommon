@@ -209,7 +209,7 @@ int
 LookupModMask(const void * priv, xkb_atom_t field, unsigned type,
               ExprResult * val_rtrn)
 {
-    char *str;
+    const char *str;
     Bool ret = True;
 
     if (type != TypeInt)
