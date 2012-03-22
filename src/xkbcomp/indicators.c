@@ -450,7 +450,9 @@ BindIndicators(struct xkb_desc * xkb, Bool force, LEDInfo *unbound,
             {
                 for (i = 0; i < XkbNumIndicators; i++)
                 {
-                    if (xkb->names->indicators[i] == XkbcAtomText(led->name))
+                    if (xkb->names->indicators[i] &&
+                        strcmp(xkb->names->indicators[i],
+                               XkbcAtomText(led->name)) == 0)
                     {
                         led->indicator = i + 1;
                         break;
