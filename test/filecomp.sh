@@ -24,12 +24,7 @@ failcompile()
 rm -f "$log"
 
 compile $srcdir/basic.xkb
-compile $srcdir/named.xkb
-compile $srcdir/named.xkb de
-compile $srcdir/named.xkb us
+# XXX check we actually get qwertz here ...
 compile $srcdir/default.xkb
 compile $srcdir/comprehensive-plus-geom.xkb
-
-failcompile $srcdir/basic.xkb foo
-failcompile $srcdir/named.xkb foo
 failcompile $srcdir/bad.xkb

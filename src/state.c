@@ -422,6 +422,7 @@ struct xkb_state *
 xkb_state_new(struct xkb_desc *xkb)
 {
     struct xkb_state *ret;
+
     if (!xkb)
         return NULL;
 
@@ -431,6 +432,8 @@ xkb_state_new(struct xkb_desc *xkb)
 
     ret->refcnt = 1;
     ret->xkb = xkb;
+    xkb_map_ref(xkb);
+
     return ret;
 }
 
@@ -441,6 +444,8 @@ xkb_state_unref(struct xkb_state *state)
     assert(state->refcnt >= 0);
     if (state->refcnt == 0)
         return;
+
+    xkb_map_unref(state->xkb);
     free(state);
 }
 

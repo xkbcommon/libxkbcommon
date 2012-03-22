@@ -104,7 +104,7 @@ main(int argc, char *argv[])
     rmlvo.variant = NULL;
     rmlvo.options = NULL;
 
-    xkb = xkb_compile_keymap_from_rules(&rmlvo);
+    xkb = xkb_map_new_from_names(&rmlvo);
 
     if (!xkb) {
         fprintf(stderr, "Failed to compile keymap\n");
@@ -164,7 +164,7 @@ main(int argc, char *argv[])
     assert(num_syms == 1 && syms[0] == XK_q);
 
     xkb_state_unref(state);
-    xkb_free_keymap(xkb);
+    xkb_map_unref(xkb);
 
     return 0;
 }

@@ -113,7 +113,7 @@ unwind_file:
 }
 
 struct xkb_desc *
-xkb_compile_keymap_from_rules(const struct xkb_rule_names *rmlvo)
+xkb_map_new_from_names(const struct xkb_rule_names *rmlvo)
 {
     XkbRF_VarDefsRec defs;
     struct xkb_component_names * names;
@@ -136,7 +136,7 @@ xkb_compile_keymap_from_rules(const struct xkb_rule_names *rmlvo)
         return NULL;
     }
 
-    xkb = xkb_compile_keymap_from_components(names);
+    xkb = xkb_map_new_from_kccgst(names);
 
     free(names->keymap);
     free(names->keycodes);
@@ -183,13 +183,13 @@ XkbChooseMap(XkbFile *file, const char *name)
 }
 
 static struct xkb_desc *
-compile_keymap(XkbFile *file, const char *mapName)
+compile_keymap(XkbFile *file)
 {
     XkbFile *mapToUse;
     struct xkb_desc * xkb = NULL;
 
     /* Find map to use */
-    mapToUse = XkbChooseMap(file, mapName);
+    mapToUse = XkbChooseMap(file, NULL);
     if (!mapToUse)
         goto err;
 
@@ -211,51 +211,57 @@ err:
     FreeXKBFile(file);
     free(scanFile);
     XkbFreeIncludePath();
+    XkbcFreeAllAtoms();
     return xkb;
 }
 
 struct xkb_desc *
-xkb_compile_keymap_from_components(const struct xkb_component_names * ktcsg)
+xkb_map_new_from_kccgst(const struct xkb_component_names *kccgst)
 {
     XkbFile *file;
 
-    if (!ktcsg) {
+    if (!kccgst) {
         ERROR("no components specified\n");
         return NULL;
     }
 
-    if (ISEMPTY(ktcsg->keycodes)) {
+    if (ISEMPTY(kccgst->keycodes)) {
         ERROR("keycodes required to generate XKB keymap\n");
         return NULL;
     }
 
-    if (ISEMPTY(ktcsg->compat)) {
+    if (ISEMPTY(kccgst->compat)) {
         ERROR("compat map required to generate XKB keymap\n");
         return NULL;
     }
 
-    if (ISEMPTY(ktcsg->types)) {
+    if (ISEMPTY(kccgst->types)) {
         ERROR("types required to generate XKB keymap\n");
         return NULL;
     }
 
-    if (ISEMPTY(ktcsg->symbols)) {
+    if (ISEMPTY(kccgst->symbols)) {
         ERROR("symbols required to generate XKB keymap\n");
         return NULL;
     }
 
-    if (!(file = XkbKeymapFileFromComponents(ktcsg))) {
+    if (!(file = XkbKeymapFileFromComponents(kccgst))) {
         ERROR("failed to generate parsed XKB file from components\n");
         return NULL;
     }
 
-    return compile_keymap(file, NULL);
+    return compile_keymap(file);
 }
 
 struct xkb_desc *
-xkb_compile_keymap_from_string(const char *string, const char *mapName)
+xkb_map_new_from_string(const char *string, enum xkb_keymap_format format)
 {
     XkbFile *file;
+
+    if (format != XKB_KEYMAP_FORMAT_TEXT_V1) {
+        ERROR("unsupported keymap format %d\n", format);
+        return NULL;
+    }
 
     if (!string) {
         ERROR("no string specified to generate XKB keymap\n");
@@ -268,31 +274,51 @@ xkb_compile_keymap_from_string(const char *string, const char *mapName)
         return NULL;
     }
 
-    return compile_keymap(file, mapName);
+    return compile_keymap(file);
 }
 
 struct xkb_desc *
-xkb_compile_keymap_from_file(FILE *inputFile, const char *mapName)
+xkb_map_new_from_fd(int fd, enum xkb_keymap_format format)
 {
     XkbFile *file;
+    FILE *fptr;
 
-    if (!inputFile) {
+    if (format != XKB_KEYMAP_FORMAT_TEXT_V1) {
+        ERROR("unsupported keymap format %d\n", format);
+        return NULL;
+    }
+
+    if (fd < 0) {
         ERROR("no file specified to generate XKB keymap\n");
 	return NULL;
     }
 
+    fptr = fdopen(fd, "r");
+    if (!fptr) {
+        ERROR("couldn't associate fd with file pointer\n");
+        return NULL;
+    }
+
     setScanState("input", 1);
-    if (!XKBParseFile(inputFile, &file) || !file) {
+    if (!XKBParseFile(fptr, &file) || !file) {
         ERROR("failed to parse input xkb file\n");
 	return NULL;
     }
 
-    return compile_keymap(file, mapName);
+    return compile_keymap(file);
 }
 
 void
-xkb_free_keymap(struct xkb_desc *xkb)
+xkb_map_ref(struct xkb_desc *xkb)
 {
+    xkb->refcnt++;
+}
+
+void
+xkb_map_unref(struct xkb_desc *xkb)
+{
+    if (--xkb->refcnt > 0)
+        return;
+
     XkbcFreeKeyboard(xkb);
-    XkbcFreeAllAtoms();
 }

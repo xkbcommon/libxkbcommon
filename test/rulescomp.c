@@ -34,7 +34,7 @@ authorization from the authors.
 int main(int argc, char *argv[])
 {
     struct xkb_rule_names rmlvo;
-    struct xkb_desc * xkb;
+    struct xkb_desc *xkb;
 
     /* Require rmlvo */
     if (argc < 6) {
@@ -50,14 +50,14 @@ int main(int argc, char *argv[])
     rmlvo.variant = argv[4];
     rmlvo.options = argv[5];
 
-    xkb = xkb_compile_keymap_from_rules(&rmlvo);
+    xkb = xkb_map_new_from_names(&rmlvo);
 
     if (!xkb) {
         fprintf(stderr, "Failed to compile keymap\n");
         exit(1);
     }
 
-    xkb_free_keymap(xkb);
+    xkb_map_unref(xkb);
 
     return 0;
 }

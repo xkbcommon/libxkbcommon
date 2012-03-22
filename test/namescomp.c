@@ -33,8 +33,8 @@ authorization from the authors.
 
 int main(int argc, char *argv[])
 {
-    struct xkb_component_names ktcsg;
-    struct xkb_desc * xkb;
+    struct xkb_component_names kccgst;
+    struct xkb_desc *xkb;
 
     /* Require Kc + T + C + S */
     if (argc < 5) {
@@ -44,20 +44,20 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    ktcsg.keymap = NULL;
-    ktcsg.keycodes = argv[1];
-    ktcsg.types = argv[2];
-    ktcsg.compat = argv[3];
-    ktcsg.symbols = argv[4];
+    kccgst.keymap = NULL;
+    kccgst.keycodes = argv[1];
+    kccgst.types = argv[2];
+    kccgst.compat = argv[3];
+    kccgst.symbols = argv[4];
 
-    xkb = xkb_compile_keymap_from_components(&ktcsg);
+    xkb = xkb_map_new_from_kccgst(&kccgst);
 
     if (!xkb) {
         fprintf(stderr, "Failed to compile keymap\n");
         exit(1);
     }
 
-    xkb_free_keymap(xkb);
+    xkb_map_unref(xkb);
 
     return 0;
 }

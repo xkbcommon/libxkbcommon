@@ -266,8 +266,11 @@ XkbcAllocKeyboard(void)
     struct xkb_desc *xkb;
 
     xkb = _XkbTypedCalloc(1, struct xkb_desc);
-    if (xkb)
+    if (xkb) {
         xkb->device_spec = XkbUseCoreKbd;
+        xkb->refcnt = 1;
+    }
+
     return xkb;
 }
 

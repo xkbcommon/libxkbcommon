@@ -37,15 +37,15 @@ static char buffer[8192];
 
 int main(int argc, char *argv[])
 {
-    char *path, *name;
-    FILE *file;
+    char *path;
+    int fd;
     struct xkb_desc * xkb;
     int i, len, from_string = 0;
 
     /* Require xkb file */
     if (argc < 2) {
         fprintf(stderr, "Not enough arguments\n");
-        fprintf(stderr, "Usage: %s [-s] XKBFILE [NAME]\n",
+        fprintf(stderr, "Usage: %s [-s] XKBFILE\n",
                 argv[0]);
         exit(1);
     }
@@ -57,30 +57,29 @@ int main(int argc, char *argv[])
     }
 
     path = argv[i];
-    name = (argc > i + 1) ? argv[i + 1] : NULL;
 
-    file = fopen(path, "r");
-    if (!file) {
+    fd = open(path, O_RDONLY);
+    if (fd < 0) {
         fprintf(stderr, "Failed to open file \"%s\": %s\n", path,
                 strerror(errno));
         exit(1);
     }
 
     if (from_string) {
-	len = fread(buffer, 1, sizeof buffer, file);
+	len = read(fd, buffer, sizeof(buffer));
 	buffer[len] = '\0';
-	xkb = xkb_compile_keymap_from_string(buffer, name);
+	xkb = xkb_map_new_from_string(buffer, XKB_KEYMAP_FORMAT_TEXT_V1);
     } else {
-	xkb = xkb_compile_keymap_from_file(file, name);
+	xkb = xkb_map_new_from_fd(fd, XKB_KEYMAP_FORMAT_TEXT_V1);
     }
-    fclose(file);
+    close(fd);
 
     if (!xkb) {
         fprintf(stderr, "Failed to compile keymap\n");
         exit(1);
     }
 
-    xkb_free_keymap(xkb);
+    xkb_map_unref(xkb);
 
     return 0;
 }

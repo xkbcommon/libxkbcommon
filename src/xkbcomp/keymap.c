@@ -199,6 +199,6 @@ CompileKeymap(XkbFile *file, unsigned merge)
 err:
     ACTION("Failed to compile keymap\n");
     if (xkb)
-        xkb_free_keymap(xkb);
+        xkb_map_unref(xkb);
     return NULL;
 }
