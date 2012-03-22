@@ -586,7 +586,7 @@ _X_EXPORT const char *
 xkb_map_mod_get_name(struct xkb_desc *xkb, xkb_mod_index_t idx);
 
 /**
- * Returns the index of the modifier specified by 'name', or NULL if invalid.
+ * Returns the index of the modifier specified by 'name', or XKB_MOD_INVALID.
  */
 _X_EXPORT xkb_mod_index_t
 xkb_map_mod_get_index(struct xkb_desc *xkb, const char *name);
@@ -604,7 +604,7 @@ _X_EXPORT const char *
 xkb_map_group_get_name(struct xkb_desc *xkb, xkb_group_index_t idx);
 
 /**
- * Returns the index of the group specified by 'name', or NULL if invalid.
+ * Returns the index of the group specified by 'name', or XKB_GROUP_INVALID.
  */
 _X_EXPORT xkb_group_index_t
 xkb_map_group_get_index(struct xkb_desc *xkb, const char *name);

@@ -185,7 +185,7 @@ xkb_map_group_get_index(struct xkb_desc *xkb, const char *name)
             return i;
     }
 
-    return XKB_MOD_INVALID;
+    return XKB_GROUP_INVALID;
 }
 
 /**
