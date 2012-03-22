@@ -198,6 +198,53 @@ xkb_key_num_groups(struct xkb_desc *xkb, xkb_keycode_t key)
 }
 
 /**
+ * Return the total number of active LEDs in the keymap.
+ */
+xkb_led_index_t
+xkb_map_num_leds(struct xkb_desc *xkb)
+{
+    xkb_led_index_t ret = 0;
+    xkb_led_index_t i;
+
+    for (i = 0; i < XkbNumIndicators; i++)
+        if (xkb->indicators->maps[i].which_groups ||
+            xkb->indicators->maps[i].which_mods ||
+            xkb->indicators->maps[i].ctrls)
+            ret++;
+
+    return ret;
+}
+
+/**
+ * Returns the name for a given group.
+ */
+const char *
+xkb_map_led_get_name(struct xkb_desc *xkb, xkb_led_index_t idx)
+{
+    if (idx >= xkb_map_num_leds(xkb))
+        return NULL;
+
+    return xkb->names->indicators[idx];
+}
+
+/**
+ * Returns the index for a named group.
+ */
+xkb_group_index_t
+xkb_map_led_get_index(struct xkb_desc *xkb, const char *name)
+{
+    xkb_led_index_t num_leds = xkb_map_num_leds(xkb);
+    xkb_led_index_t i;
+
+    for (i = 0; i < num_leds; i++) {
+        if (strcasecmp(xkb->names->indicators[i], name) == 0)
+            return i;
+    }
+
+    return XKB_LED_INVALID;
+}
+
+/**
  * Returns the level to use for the given key and state, or -1 if invalid.
  */
 unsigned int

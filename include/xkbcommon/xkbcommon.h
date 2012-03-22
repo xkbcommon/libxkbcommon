@@ -64,10 +64,12 @@ typedef uint32_t xkb_keycode_t;
 typedef uint32_t xkb_keysym_t;
 typedef uint32_t xkb_mod_index_t;
 typedef uint32_t xkb_group_index_t;
+typedef uint32_t xkb_led_index_t;
 
 #define XKB_MOD_INVALID                 (0xffffffff)
 #define XKB_GROUP_INVALID               (0xffffffff)
 #define XKB_KEYCODE_INVALID             (0xffffffff)
+#define XKB_LED_INVALID                 (0xffffffff)
 
 #define XKB_KEYCODE_MAX                 (0xffffffff - 1)
 #define xkb_keycode_is_legal_ext(kc)    (kc <= XKB_KEYCODE_MAX)
@@ -497,6 +499,8 @@ struct xkb_state {
 
 	unsigned short  ptr_buttons; /* core pointer buttons */
 
+        uint32_t        leds;
+
         int refcnt;
         void *filters;
         int num_filters;
@@ -615,6 +619,24 @@ xkb_map_group_get_index(struct xkb_desc *xkb, const char *name);
 _X_EXPORT xkb_group_index_t
 xkb_key_num_groups(struct xkb_desc *xkb, xkb_keycode_t key);
 
+/**
+ * Returns the number of LEDs in the given map.
+ */
+_X_EXPORT xkb_led_index_t
+xkb_map_num_leds(struct xkb_desc *xkb);
+
+/**
+ * Returns the name of the LED specified by 'idx', or NULL if invalid.
+ */
+_X_EXPORT const char *
+xkb_map_led_get_name(struct xkb_desc *xkb, xkb_led_index_t idx);
+
+/**
+ * Returns the index of the LED specified by 'name', or XKB_LED_INVALID.
+ */
+_X_EXPORT xkb_led_index_t
+xkb_map_led_get_index(struct xkb_desc *xkb, const char *name);
+
 /** @} */
 
 /**
@@ -705,6 +727,20 @@ xkb_state_group_name_is_active(struct xkb_state *state, const char *name,
 _X_EXPORT int
 xkb_state_group_index_is_active(struct xkb_state *state, xkb_group_index_t idx,
                                 enum xkb_state_component type);
+
+/**
+ * Returns 1 if the LED specified by 'name' is active, 0 if it is unset, or
+ * -1 if the LED does not exist in the current map.
+ */
+_X_EXPORT int
+xkb_state_led_name_is_active(struct xkb_state *state, const char *name);
+
+/**
+ * Returns 1 if the LED specified by 'idx' is active, 0 if it is unset, or
+ * -1 if the LED does not exist in the current map.
+ */
+_X_EXPORT int
+xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx);
 
 /** @} */
 

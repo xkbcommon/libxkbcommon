@@ -43,34 +43,49 @@ print_state(struct xkb_state *state)
 {
     xkb_group_index_t group;
     xkb_mod_index_t mod;
+    xkb_led_index_t led;
 
-    if (!state->group && !state->mods) {
+    if (!state->group && !state->mods && !state->leds) {
         fprintf(stderr, "\tno state\n");
         return;
     }
 
     for (group = 0; group < xkb_map_num_groups(state->xkb); group++) {
-        if (group != state->group && group != state->base_group &&
-            group != state->latched_group && group != state->locked_group)
+        if (!xkb_state_group_index_is_active(state, group, XKB_STATE_EFFECTIVE))
             continue;
         fprintf(stderr, "\tgroup %s (%d): %s%s%s%s\n",
                 xkb_map_group_get_name(state->xkb, group),
                 group,
-                (state->group == group) ? "effective " : "",
-                (state->base_group == group) ? "depressed " : "",
-                (state->latched_group == group) ? "latched " : "",
-                (state->locked_group == group) ? "locked " : "");
+                xkb_state_group_index_is_active(state, group, XKB_STATE_EFFECTIVE) ?
+                    "effective " : "",
+                xkb_state_group_index_is_active(state, group, XKB_STATE_DEPRESSED) ?
+                    "depressed " : "",
+                xkb_state_group_index_is_active(state, group, XKB_STATE_LATCHED) ?
+                    "latched " : "",
+                xkb_state_group_index_is_active(state, group, XKB_STATE_LOCKED) ?
+                    "locked " : "");
     }
 
     for (mod = 0; mod < xkb_map_num_mods(state->xkb); mod++) {
-        if (!(state->mods & (1 << mod)))
+        if (!xkb_state_mod_index_is_active(state, mod, XKB_STATE_EFFECTIVE))
             continue;
         fprintf(stderr, "\tmod %s (%d): %s%s%s\n",
                 xkb_map_mod_get_name(state->xkb, mod),
                 mod,
-                (state->base_mods & (1 << mod)) ? "depressed " : "",
-                (state->latched_mods & (1 << mod)) ? "latched " : "",
-                (state->locked_mods & (1 << mod)) ? "locked " : "");
+                xkb_state_mod_index_is_active(state, mod, XKB_STATE_DEPRESSED) ?
+                    "depressed " : "",
+                xkb_state_mod_index_is_active(state, mod, XKB_STATE_LATCHED) ?
+                    "latched " : "",
+                xkb_state_mod_index_is_active(state, mod, XKB_STATE_LOCKED) ?
+                    "locked " : "");
+    }
+
+    for (led = 0; led < xkb_map_num_leds(state->xkb); led++) {
+        if (!xkb_state_led_index_is_active(state, led))
+            continue;
+        fprintf(stderr, "\tled %s (%d): active\n",
+                xkb_map_led_get_name(state->xkb, led),
+                led);
     }
 }
 
@@ -135,6 +150,7 @@ main(int argc, char *argv[])
     print_state(state);
     assert(xkb_state_mod_name_is_active(state, "Caps Lock",
                                         XKB_STATE_LOCKED));
+    assert(xkb_state_led_name_is_active(state, "Caps Lock"));
     num_syms = xkb_key_get_syms(state, KEY_Q + EVDEV_OFFSET, &syms);
     assert(num_syms == 1 && syms[0] == XK_Q);
 
@@ -143,6 +159,7 @@ main(int argc, char *argv[])
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, 0);
     assert(!xkb_state_mod_name_is_active(state, "Caps Lock",
                                          XKB_STATE_EFFECTIVE));
+    assert(!xkb_state_led_name_is_active(state, "Caps Lock"));
     num_syms = xkb_key_get_syms(state, KEY_Q + EVDEV_OFFSET, &syms);
     assert(num_syms == 1 && syms[0] == XK_q);
 

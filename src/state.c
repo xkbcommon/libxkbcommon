@@ -445,6 +445,55 @@ xkb_state_unref(struct xkb_state *state)
 }
 
 /**
+ * Update the LED state to match the rest of the xkb_state.
+ */
+static void
+xkb_state_led_update_all(struct xkb_state *state)
+{
+    xkb_led_index_t led;
+
+    state->leds = 0;
+
+    for (led = 0; led < XkbNumIndicators; led++) {
+        struct xkb_indicator_map *map = &state->xkb->indicators->maps[led];
+        uint32_t mod_mask = 0;
+        uint32_t group_mask = 0;
+
+        if (!map->which_mods && !map->which_groups && !map->ctrls)
+            continue;
+
+        if (map->which_mods) {
+            if (map->which_mods & XkbIM_UseBase)
+                mod_mask |= state->base_mods;
+            if (map->which_mods & XkbIM_UseLatched)
+                mod_mask |= state->latched_mods;
+            if (map->which_mods & XkbIM_UseLocked)
+                mod_mask |= state->locked_mods;
+            if (map->which_mods & XkbIM_UseEffective)
+                mod_mask |= state->mods;
+            if ((map->mods.mask & mod_mask))
+                state->leds |= (1 << led);
+        }
+        else if (map->which_groups) {
+            if (map->which_mods & XkbIM_UseBase)
+                group_mask |= (1 << state->base_group);
+            if (map->which_mods & XkbIM_UseLatched)
+                group_mask |= (1 << state->latched_group);
+            if (map->which_mods & XkbIM_UseLocked)
+                group_mask |= (1 << state->locked_group);
+            if (map->which_mods & XkbIM_UseEffective)
+                group_mask |= (1 << state->group);
+            if ((map->groups & group_mask))
+                state->leds |= (1 << led);
+        }
+        else if (map->ctrls) {
+            if ((map->ctrls & state->xkb->ctrls->enabled_ctrls))
+                state->leds |= (1 << led);
+        }
+    }
+}
+
+/**
  * Given a particular key event, updates the state structure to reflect the
  * new modifiers.
  */
@@ -459,7 +508,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key, int down)
                    state->latched_group;
     /* FIXME: Clamp/wrap effective group */
 
-    /* FIXME: Update LED state. */
+    xkb_state_led_update_all(state);
 }
 
 /**
@@ -536,4 +585,28 @@ int xkb_state_group_name_is_active(struct xkb_state *state, const char *name,
         return -1;
 
     return xkb_state_group_index_is_active(state, idx, type);
+}
+
+/**
+ * Returns 1 if the given LED is active, 0 if not, or -1 if the LED is invalid.
+ */
+int xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx)
+{
+    if (idx >= xkb_map_num_leds(state->xkb))
+        return -1;
+
+    return !!(state->leds & (1 << idx));
+}
+
+/**
+ * Returns 1 if the given LED is active, 0 if not, or -1 if the LED is invalid.
+ */
+int xkb_state_led_name_is_active(struct xkb_state *state, const char *name)
+{
+    xkb_led_index_t idx = xkb_map_led_get_index(state->xkb, name);
+
+    if (idx == XKB_LED_INVALID)
+        return -1;
+
+    return xkb_state_led_index_is_active(state, idx);
 }
