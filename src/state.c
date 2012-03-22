@@ -472,6 +472,9 @@ int xkb_state_mod_index_is_active(struct xkb_state *state,
 {
     int ret = 0;
 
+    if (idx >= xkb_map_num_mods(state->xkb))
+        return -1;
+
     if (type & XKB_STATE_DEPRESSED)
         ret |= (state->base_mods & (1 << idx));
     if (type & XKB_STATE_LATCHED)
@@ -506,6 +509,9 @@ int xkb_state_group_index_is_active(struct xkb_state *state,
                                     enum xkb_state_component type)
 {
     int ret = 0;
+
+    if (idx >= xkb_map_num_groups(state->xkb))
+        return -1;
 
     if (type & XKB_STATE_DEPRESSED)
         ret |= (state->base_group == idx);
