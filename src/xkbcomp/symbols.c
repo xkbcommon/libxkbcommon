@@ -1454,7 +1454,7 @@ HandleSymbolsFile(XkbFile * file,
     ParseCommon *stmt;
 
     free(info->name);
-    info->name = _XkbDupString(file->name);
+    info->name = uDupString(file->name);
     stmt = file->defs;
     while (stmt)
     {

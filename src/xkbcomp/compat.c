@@ -708,7 +708,7 @@ HandleCompatMapFile(XkbFile * file,
     if (merge == MergeDefault)
         merge = MergeAugment;
     free(info->name);
-    info->name = _XkbDupString(file->name);
+    info->name = uDupString(file->name);
     stmt = file->defs;
     while (stmt)
     {

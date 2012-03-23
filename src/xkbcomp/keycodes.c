@@ -92,7 +92,7 @@ ResizeKeyNameArrays(KeyNamesInfo *info, int newMax)
     void *tmp;
     int i;
 
-    tmp = _XkbTypedRealloc(info->names, newMax + 1, unsigned long);
+    tmp = uTypedRealloc(info->names, newMax + 1, unsigned long);
     if (!tmp) {
         ERROR
             ("Couldn't reallocate for larger maximum keycode (%d)\n",
@@ -104,7 +104,7 @@ ResizeKeyNameArrays(KeyNamesInfo *info, int newMax)
     for (i = info->arraySize + 1; i <= newMax; i++)
         info->names[i] = 0;
 
-    tmp = _XkbTypedRealloc(info->files, newMax + 1, unsigned);
+    tmp = uTypedRealloc(info->files, newMax + 1, unsigned);
     if (!tmp) {
         ERROR
             ("Couldn't reallocate for larger maximum keycode (%d)\n",
@@ -116,7 +116,7 @@ ResizeKeyNameArrays(KeyNamesInfo *info, int newMax)
     for (i = info->arraySize + 1; i <= newMax; i++)
         info->files[i] = 0;
 
-    tmp = _XkbTypedRealloc(info->has_alt_forms, newMax + 1, unsigned char);
+    tmp = uTypedRealloc(info->has_alt_forms, newMax + 1, unsigned char);
     if (!tmp) {
         ERROR
             ("Couldn't reallocate for larger maximum keycode (%d)\n",
@@ -805,7 +805,7 @@ HandleKeycodesFile(XkbFile * file,
     ParseCommon *stmt;
 
     free(info->name);
-    info->name = _XkbDupString(file->name);
+    info->name = uDupString(file->name);
     stmt = file->defs;
     while (stmt)
     {

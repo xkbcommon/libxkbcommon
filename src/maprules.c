@@ -27,6 +27,7 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+#include "utils.h"
 #include "xkbrules.h"
 #include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
@@ -407,8 +408,8 @@ CheckLine(	InputLine *		line,
             }
             if (*words == '\0')
                 return False;
-            group->name = _XkbDupString(gname);
-            group->words = _XkbDupString(words);
+            group->name = uDupString(gname);
+            group->words = uDupString(words);
             for (i = 1, words = group->words; *words; words++) {
                  if ( *words == ' ') {
                      *words++ = '\0';
@@ -459,16 +460,16 @@ CheckLine(	InputLine *		line,
 	 rule->flags|= XkbRF_Append;
     else
 	 rule->flags|= XkbRF_Normal;
-    rule->model= _XkbDupString(tmp.name[MODEL]);
-    rule->layout= _XkbDupString(tmp.name[LAYOUT]);
-    rule->variant= _XkbDupString(tmp.name[VARIANT]);
-    rule->option= _XkbDupString(tmp.name[OPTION]);
+    rule->model= uDupString(tmp.name[MODEL]);
+    rule->layout= uDupString(tmp.name[LAYOUT]);
+    rule->variant= uDupString(tmp.name[VARIANT]);
+    rule->option= uDupString(tmp.name[OPTION]);
 
-    rule->keycodes= _XkbDupString(tmp.name[KEYCODES]);
-    rule->symbols= _XkbDupString(tmp.name[SYMBOLS]);
-    rule->types= _XkbDupString(tmp.name[TYPES]);
-    rule->compat= _XkbDupString(tmp.name[COMPAT]);
-    rule->keymap= _XkbDupString(tmp.name[KEYMAP]);
+    rule->keycodes= uDupString(tmp.name[KEYCODES]);
+    rule->symbols= uDupString(tmp.name[SYMBOLS]);
+    rule->types= uDupString(tmp.name[TYPES]);
+    rule->compat= uDupString(tmp.name[COMPAT]);
+    rule->keymap= uDupString(tmp.name[KEYMAP]);
 
     rule->layout_num = rule->variant_num = 0;
     for (i = 0; i < nread; i++) {
@@ -490,7 +491,7 @@ _Concat(char *str1,char *str2)
     if ((!str1)||(!str2))
 	return str1;
     len= strlen(str1)+strlen(str2)+1;
-    str1= _XkbTypedRealloc(str1,len,char);
+    str1 = uTypedRealloc(str1, len, char);
     if (str1)
 	strcat(str1,str2);
     return str1;
@@ -512,7 +513,7 @@ MakeMultiDefs(XkbRF_MultiDefsPtr mdefs, XkbRF_VarDefsPtr defs)
 {
    memset(mdefs, 0, sizeof(XkbRF_MultiDefsRec));
    mdefs->model = defs->model;
-   mdefs->options = _XkbDupString(defs->options);
+   mdefs->options = uDupString(defs->options);
    if (mdefs->options) squeeze_spaces(mdefs->options);
 
    if (defs->layout) {
@@ -521,7 +522,7 @@ MakeMultiDefs(XkbRF_MultiDefsPtr mdefs, XkbRF_VarDefsPtr defs)
        } else {
            char *p;
            int i;
-           p = _XkbDupString(defs->layout);
+           p = uDupString(defs->layout);
            if (p == NULL)
               return False;
            squeeze_spaces(p);
@@ -545,7 +546,7 @@ MakeMultiDefs(XkbRF_MultiDefsPtr mdefs, XkbRF_VarDefsPtr defs)
        } else {
            char *p;
            int i;
-           p = _XkbDupString(defs->variant);
+           p = uDupString(defs->variant);
            if (p == NULL)
               return False;
            squeeze_spaces(p);
@@ -582,7 +583,7 @@ Apply(char *src, char **dst)
 	    *dst= _Concat(*dst, src);
         } else {
             if (*dst == NULL)
-	        *dst= _XkbDupString(src);
+	        *dst= uDupString(src);
         }
     }
 }
@@ -881,11 +882,11 @@ XkbcRF_AddRule(XkbRF_RulesPtr	rules)
     if (rules->sz_rules<1) {
 	rules->sz_rules= 16;
 	rules->num_rules= 0;
-	rules->rules= _XkbTypedCalloc(rules->sz_rules,XkbRF_RuleRec);
+	rules->rules= uTypedCalloc(rules->sz_rules,XkbRF_RuleRec);
     }
     else if (rules->num_rules>=rules->sz_rules) {
 	rules->sz_rules*= 2;
-	rules->rules= _XkbTypedRealloc(rules->rules,rules->sz_rules,
+	rules->rules= uTypedRealloc(rules->rules,rules->sz_rules,
 							XkbRF_RuleRec);
     }
     if (!rules->rules) {
@@ -905,12 +906,12 @@ XkbcRF_AddGroup(XkbRF_RulesPtr	rules)
     if (rules->sz_groups<1) {
 	rules->sz_groups= 16;
 	rules->num_groups= 0;
-	rules->groups= _XkbTypedCalloc(rules->sz_groups,XkbRF_GroupRec);
+	rules->groups= uTypedCalloc(rules->sz_groups,XkbRF_GroupRec);
     }
     else if (rules->num_groups >= rules->sz_groups) {
 	rules->sz_groups *= 2;
-	rules->groups= _XkbTypedRealloc(rules->groups,rules->sz_groups,
-							XkbRF_GroupRec);
+	rules->groups= uTypedRealloc(rules->groups,rules->sz_groups,
+                                     XkbRF_GroupRec);
     }
     if (!rules->groups) {
 	rules->sz_groups= rules->num_groups= 0;

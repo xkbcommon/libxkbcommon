@@ -115,7 +115,7 @@ XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
         if (tmp != NULL)
         {
             *tmp++ = '\0';
-            *extra_data = _XkbDupString(tmp);
+            *extra_data = uDupString(tmp);
         }
         else
         {
@@ -124,7 +124,7 @@ XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
         tmp = strchr(str, '(');
         if (tmp == NULL)
         {
-            *file_rtrn = _XkbDupString(str);
+            *file_rtrn = uDupString(str);
             *map_rtrn = NULL;
         }
         else if (str[0] == '(')
@@ -135,7 +135,7 @@ XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
         else
         {
             *tmp++ = '\0';
-            *file_rtrn = _XkbDupString(str);
+            *file_rtrn = uDupString(str);
             str = tmp;
             tmp = strchr(str, ')');
             if ((tmp == NULL) || (tmp[1] != '\0'))
@@ -145,7 +145,7 @@ XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
                 return False;
             }
             *tmp++ = '\0';
-            *map_rtrn = _XkbDupString(str);
+            *map_rtrn = uDupString(str);
         }
     }
     if (*nextop_rtrn == '\0')

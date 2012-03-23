@@ -40,16 +40,20 @@
 extern void *
 recalloc(void *ptr, size_t old_size, size_t new_size);
 
-#define	uTypedAlloc(t)		((t *)malloc((unsigned)sizeof(t)))
-#define	uTypedCalloc(n,t)	((t *)calloc((unsigned)n,(unsigned)sizeof(t)))
-#define	uTypedRealloc(pO,n,t)	((t *)realloc(pO,((unsigned)n)*sizeof(t)))
-#define uTypedRecalloc(pO, o, n, t) recalloc(pO, (o) * sizeof(t), (n) * sizeof(t))
+#define uTypedAlloc(t)              malloc(sizeof(t))
+#define uTypedCalloc(n, t)          calloc((n), sizeof(t))
+#define uTypedRealloc(pO, n, t)     realloc((pO), (n) * sizeof(t))
+#define uTypedRecalloc(pO, o, n, t) recalloc((pO), (o) * sizeof(t), (n) * sizeof(t))
+
+#define uDupString(s)          ((s) ? strdup(s) : NULL)
+#define uStringText(s)         ((s) == NULL ? "<NullString>" : (s))
+#define uStrCaseCmp(s1, s2)    strcasecmp(s1, s2)
+#define uStrCasePrefix(s1, s2) (strncasecmp((s1), (s2), strlen(s1)) == 0)
 
 /***====================================================================***/
 
 extern Bool
 uSetErrorFile(char *name);
-
 
 #define INFO 			uInformation
 
@@ -81,13 +85,5 @@ uFatalError(const char *s, ...);
 
 extern _X_ATTRIBUTE_PRINTF(1, 2) void
 uInternalError(const char *s, ...);
-
-/***====================================================================***/
-
-#define	uStringText(s)		((s) == NULL ? "<NullString>" : (s))
-#define	uStringEqual(s1,s2)	(strcmp(s1,s2) == 0)
-#define	uStringPrefix(p,s)	(strncmp(p,s,strlen(p))==0)
-#define	uStrCaseCmp(s1,s2)	(strcasecmp(s1,s2))
-#define	uStrCasePrefix(p,s)	(strncasecmp(p,s,strlen(p))==0)
 
 #endif /* UTILS_H */

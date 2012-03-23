@@ -53,6 +53,7 @@
 #include <config.h>
 #endif
 
+#include "utils.h"
 #include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
 #include "xkballoc.h"

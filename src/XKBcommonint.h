@@ -89,15 +89,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define False 0
 #endif
 
-#define _XkbTypedAlloc(t)       ((t *)malloc(sizeof(t)))
-#define _XkbTypedCalloc(n,t)    ((t *)calloc((n),sizeof(t)))
-#define _XkbTypedRealloc(o,n,t) \
-    ((o)?(t *)realloc((o),(n)*sizeof(t)):_XkbTypedCalloc(n,t))
-#define _XkbClearElems(a,f,l,t) memset(&(a)[f], 0, ((l) - (f) + 1) * sizeof(t))
-
-#define _XkbDupString(s)        ((s) ? strdup(s) : NULL)
-#define _XkbStrCaseCmp          strcasecmp
-
 /* From XKM.h */
 #define	XkmFileVersion		15
 

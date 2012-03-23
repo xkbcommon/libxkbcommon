@@ -32,6 +32,7 @@
 #include "vmod.h"
 #include "indicators.h"
 #include "action.h"
+#include "utils.h"
 
 /***====================================================================***/
 

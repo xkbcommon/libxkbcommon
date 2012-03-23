@@ -77,7 +77,7 @@ XkbComponentsFromRules(const char *rules, const XkbRF_VarDefsPtr defs)
         return NULL;
     }
 
-    if (!(loaded = _XkbTypedCalloc(1, XkbRF_RulesRec))) {
+    if (!(loaded = uTypedCalloc(1, XkbRF_RulesRec))) {
         ERROR("failed to allocate XKB rules\n");
         goto unwind_file;
     }
@@ -87,7 +87,7 @@ XkbComponentsFromRules(const char *rules, const XkbRF_VarDefsPtr defs)
         goto unwind_file;
     }
 
-    if (!(names = _XkbTypedCalloc(1, struct xkb_component_names))) {
+    if (!(names = uTypedCalloc(1, struct xkb_component_names))) {
         ERROR("failed to allocate XKB components\n");
         goto unwind_file;
     }

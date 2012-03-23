@@ -26,6 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+#include "utils.h"
 #include "xkballoc.h"
 #include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
@@ -50,27 +51,24 @@ XkbcAllocCompatMap(struct xkb_desc * xkb, unsigned which, unsigned nSI)
             compat->num_si = 0;
 
         prev_interpret = compat->sym_interpret;
-        compat->sym_interpret = _XkbTypedRealloc(compat->sym_interpret,
-                                                 nSI, struct xkb_sym_interpret);
+        compat->sym_interpret = uTypedRecalloc(compat->sym_interpret,
+                                               compat->num_si, nSI,
+                                               struct xkb_sym_interpret);
         if (!compat->sym_interpret) {
             free(prev_interpret);
             compat->size_si = compat->num_si = 0;
             return BadAlloc;
         }
 
-        if (compat->num_si != 0)
-            _XkbClearElems(compat->sym_interpret, compat->num_si,
-                           compat->size_si - 1, struct xkb_sym_interpret);
-
         return Success;
     }
 
-    compat = _XkbTypedCalloc(1, struct xkb_compat_map);
+    compat = uTypedCalloc(1, struct xkb_compat_map);
     if (!compat)
         return BadAlloc;
 
     if (nSI > 0) {
-        compat->sym_interpret = _XkbTypedCalloc(nSI, struct xkb_sym_interpret);
+        compat->sym_interpret = uTypedCalloc(nSI, struct xkb_sym_interpret);
         if (!compat->sym_interpret) {
             free(compat);
             return BadAlloc;
@@ -109,7 +107,7 @@ XkbcAllocNames(struct xkb_desc * xkb, unsigned which, int nTotalAliases)
         return BadMatch;
 
     if (!xkb->names) {
-        xkb->names = _XkbTypedCalloc(1, struct xkb_names);
+        xkb->names = uTypedCalloc(1, struct xkb_names);
         if (!xkb->names)
             return BadAlloc;
     }
@@ -122,7 +120,7 @@ XkbcAllocNames(struct xkb_desc * xkb, unsigned which, int nTotalAliases)
         type = xkb->map->types;
         for (i = 0; i < xkb->map->num_types; i++, type++) {
             if (!type->level_names) {
-                type->level_names = _XkbTypedCalloc(type->num_levels, const char *);
+                type->level_names = uTypedCalloc(type->num_levels, const char *);
                 if (!type->level_names)
                     return BadAlloc;
             }
@@ -133,25 +131,23 @@ XkbcAllocNames(struct xkb_desc * xkb, unsigned which, int nTotalAliases)
         if (!xkb_keymap_keycode_range_is_legal(xkb))
             return BadMatch;
 
-        names->keys = _XkbTypedCalloc(xkb->max_key_code + 1, struct xkb_key_name);
+        names->keys = uTypedCalloc(xkb->max_key_code + 1, struct xkb_key_name);
         if (!names->keys)
             return BadAlloc;
     }
 
     if ((which & XkbKeyAliasesMask) && (nTotalAliases > 0)) {
         if (!names->key_aliases)
-            names->key_aliases = _XkbTypedCalloc(nTotalAliases,
+            names->key_aliases = uTypedCalloc(nTotalAliases,
                                                  struct xkb_key_alias);
         else if (nTotalAliases > names->num_key_aliases) {
             struct xkb_key_alias *prev_aliases = names->key_aliases;
 
-            names->key_aliases = _XkbTypedRealloc(names->key_aliases,
-                                                  nTotalAliases,
-                                                  struct xkb_key_alias);
-            if (names->key_aliases)
-                _XkbClearElems(names->key_aliases, names->num_key_aliases,
-                               nTotalAliases - 1, struct xkb_key_alias);
-            else
+            names->key_aliases = uTypedRecalloc(names->key_aliases,
+                                                names->num_key_aliases,
+                                                nTotalAliases,
+                                                struct xkb_key_alias);
+            if (!names->key_aliases)
                 free(prev_aliases);
         }
 
@@ -211,14 +207,14 @@ XkbcAllocControls(struct xkb_desc * xkb, unsigned which)
         return BadMatch;
 
     if (!xkb->ctrls) {
-        xkb->ctrls = _XkbTypedCalloc(1, struct xkb_controls);
+        xkb->ctrls = uTypedCalloc(1, struct xkb_controls);
         if (!xkb->ctrls)
             return BadAlloc;
     }
 
     if (!xkb->ctrls->per_key_repeat) {
-        xkb->ctrls->per_key_repeat = _XkbTypedCalloc(xkb->max_key_code << 3,
-                                                     unsigned char);
+        xkb->ctrls->per_key_repeat = uTypedCalloc(xkb->max_key_code << 3,
+                                                  unsigned char);
         if (!xkb->ctrls->per_key_repeat)
             return BadAlloc;
     }
@@ -243,7 +239,7 @@ XkbcAllocIndicatorMaps(struct xkb_desc * xkb)
         return BadMatch;
 
     if (!xkb->indicators) {
-        xkb->indicators = _XkbTypedCalloc(1, struct xkb_indicator);
+        xkb->indicators = uTypedCalloc(1, struct xkb_indicator);
         if (!xkb->indicators)
             return BadAlloc;
     }
@@ -265,7 +261,7 @@ XkbcAllocKeyboard(void)
 {
     struct xkb_desc *xkb;
 
-    xkb = _XkbTypedCalloc(1, struct xkb_desc);
+    xkb = uTypedCalloc(1, struct xkb_desc);
     if (xkb) {
         xkb->device_spec = XkbUseCoreKbd;
         xkb->refcnt = 1;

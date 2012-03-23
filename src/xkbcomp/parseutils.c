@@ -473,7 +473,7 @@ IncludeCreate(char *str, unsigned merge)
     incl = first = NULL;
     file = map = NULL;
     tmp = str;
-    stmt = _XkbDupString(str);
+    stmt = uDupString(str);
     while ((tmp) && (*tmp))
     {
         if (XkbParseIncludeMap(&tmp, &file, &map, &nextop, &extra_data))
@@ -592,7 +592,7 @@ CreateXKBFile(int type, char *name, ParseCommon * defs, unsigned flags)
         XkbcEnsureSafeMapName(name);
         memset(file, 0, sizeof(XkbFile));
         file->type = type;
-        file->topName = _XkbDupString(name);
+        file->topName = uDupString(name);
         file->name = name;
         file->defs = defs;
         file->id = fileID++;
