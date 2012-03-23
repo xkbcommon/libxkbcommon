@@ -225,7 +225,7 @@ XkbcCopyKeyType(struct xkb_key_type * from, struct xkb_key_type * into)
     free(into->preserve);
     into->preserve= NULL;
     for (i = 0; i < into->num_levels; i++)
-        free((char *) into->level_names[i]);
+        free(UNCONSTIFY(into->level_names[i]));
     free(into->level_names);
     into->level_names = NULL;
 
@@ -401,9 +401,9 @@ XkbcFreeClientMap(struct xkb_desc * xkb)
         free(type->map);
         free(type->preserve);
         for (j = 0; j < type->num_levels; j++)
-            free((char *) type->level_names[j]);
+            free(UNCONSTIFY(type->level_names[j]));
         free(type->level_names);
-        free((char *) type->name);
+        free(UNCONSTIFY(type->name));
     }
     free(map->types);
     free(map->key_sym_map);

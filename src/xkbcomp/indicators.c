@@ -423,7 +423,7 @@ CopyIndicatorMapDefs(struct xkb_desc * xkb, LEDInfo *leds, LEDInfo **unboundRtrn
             im->ctrls = led->ctrls;
             if (xkb->names != NULL)
             {
-                free((char *) xkb->names->indicators[led->indicator - 1]);
+                free(UNCONSTIFY(xkb->names->indicators[led->indicator - 1]));
                 xkb->names->indicators[led->indicator-1] = XkbcAtomGetString(led->name);
             }
             free(led);

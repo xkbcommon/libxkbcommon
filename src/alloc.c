@@ -181,18 +181,18 @@ XkbcFreeNames(struct xkb_desc * xkb)
         for (i = 0; i < map->num_types; i++, type++) {
             int j;
             for (j = 0; j < type->num_levels; j++)
-                free((char *) type->level_names[i]);
+                free(UNCONSTIFY(type->level_names[i]));
             free(type->level_names);
             type->level_names = NULL;
         }
     }
 
     for (i = 0; i < XkbNumVirtualMods; i++)
-        free((char *) names->vmods[i]);
+        free(UNCONSTIFY(names->vmods[i]));
     for (i = 0; i < XkbNumIndicators; i++)
-        free((char *) names->indicators[i]);
+        free(UNCONSTIFY(names->indicators[i]));
     for (i = 0; i < XkbNumKbdGroups; i++)
-        free((char *) names->groups[i]);
+        free(UNCONSTIFY(names->groups[i]));
 
     free(names->keys);
     free(names->key_aliases);

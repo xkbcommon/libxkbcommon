@@ -40,6 +40,13 @@
 extern void *
 recalloc(void *ptr, size_t old_size, size_t new_size);
 
+/*
+ * We sometimes malloc strings and then expose them as const char*'s. This
+ * macro is used when we free these strings in order to avoid -Wcast-qual
+ * errors.
+ */
+#define UNCONSTIFY(const_ptr) ((void *)(uintptr_t)(const_ptr))
+
 #define uTypedAlloc(t)              malloc(sizeof(t))
 #define uTypedCalloc(n, t)          calloc((n), sizeof(t))
 #define uTypedRealloc(pO, n, t)     realloc((pO), (n) * sizeof(t))

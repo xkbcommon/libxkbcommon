@@ -2017,7 +2017,7 @@ CompileSymbols(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
         {
             if (info.groupNames[i] != None)
             {
-                free((char *) xkb->names->groups[i]);
+                free(UNCONSTIFY(xkb->names->groups[i]));
                 xkb->names->groups[i] = XkbcAtomGetString(info.groupNames[i]);
             }
         }

@@ -914,7 +914,7 @@ CompileKeycodes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
             for (ii = info.leds; ii != NULL;
                  ii = (IndicatorNameInfo *) ii->defs.next)
             {
-                free((char *) xkb->names->indicators[ii->ndx - 1]);
+                free(UNCONSTIFY(xkb->names->indicators[ii->ndx - 1]));
                 xkb->names->indicators[ii->ndx - 1] = XkbcAtomGetString(ii->name);
                 if (xkb->indicators != NULL)
                 {
