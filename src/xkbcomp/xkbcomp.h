@@ -76,7 +76,6 @@ typedef struct _ParseCommon
 #define	ExprArrayRef	4
 #define	ExprKeysymList	5
 #define	ExprActionList	6
-#define	ExprCoord	7
 
 #define	OpAdd		20
 #define	OpSubtract	21
@@ -145,17 +144,11 @@ typedef struct _Expr
             int szSyms;
             char **syms;
         } list;
-        struct
-        {
-            int x;
-            int y;
-        } coord;
         struct _Expr *child;
         xkb_atom_t str;
         unsigned uval;
         int ival;
         char keyName[5];
-        void * ptr;
     } value;
 } ExprDef;
 

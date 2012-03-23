@@ -31,12 +31,6 @@
 #include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
 
-#ifdef HAVE_DIX_CONFIG_H
-#include <dix-config.h>
-#elif defined(HAVE_CONFIG_H)
-#include <config.h>
-#endif
-
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
