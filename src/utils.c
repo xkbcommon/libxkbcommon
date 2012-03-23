@@ -25,10 +25,13 @@
    * software without specific, written prior permission.
    \*/
 
-#include 	"utils.h"
-#include	<ctype.h>
-#include	<stdlib.h>
-#include	<stdarg.h>
+#include "utils.h"
+#include "XKBcommonint.h"
+
+#include <ctype.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
 
 void *
 recalloc(void * old, unsigned nOld, unsigned nNew, unsigned itemSize)
@@ -53,7 +56,7 @@ static int outCount = 0;
 static char *preMsg = NULL;
 static char *prefix = NULL;
 
-Boolean
+Bool
 uSetErrorFile(char *name)
 {
     if ((errorFile != NULL) && (errorFile != stderr))
@@ -61,7 +64,7 @@ uSetErrorFile(char *name)
         fprintf(errorFile, "switching to %s\n", name ? name : "stderr");
         fclose(errorFile);
     }
-    if (name != NullString)
+    if (name != NULL)
         errorFile = fopen(name, "w");
     else
         errorFile = stderr;

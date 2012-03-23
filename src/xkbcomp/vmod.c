@@ -24,7 +24,6 @@
 
  ********************************************************/
 
-#define	DEBUG_VAR debugFlags
 #include <stdio.h>
 #include "xkbcomp.h"
 #include "xkballoc.h"

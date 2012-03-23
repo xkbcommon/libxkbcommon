@@ -24,7 +24,6 @@
 
  ********************************************************/
 
-#define	DEBUG_VAR debugFlags
 #include "utils.h"
 #include <errno.h>
 #include <stdlib.h>

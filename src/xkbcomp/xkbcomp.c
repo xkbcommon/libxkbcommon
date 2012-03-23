@@ -33,8 +33,7 @@ authorization from the authors.
 #include "parseutils.h"
 #include "utils.h"
 
-/* Global debugging flags */
-unsigned int debugFlags = 0;
+/* Global warning level */
 unsigned int warningLevel = 0;
 
 #define ISEMPTY(str) (!(str) || (strlen(str) == 0))

@@ -24,10 +24,14 @@ sale, use or other dealings in this Software without prior written
 authorization from the authors.
 */
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <X11/X.h>
 #include <X11/Xdefs.h>
 #include "xkbcommon/xkbcommon.h"

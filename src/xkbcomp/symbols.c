@@ -1095,7 +1095,7 @@ SetSymbolsField(KeyInfo * key,
     }
     else if ((uStrCaseCmp(field, "radiogroup") == 0) ||
              (uStrCaseCmp(field, "permanentradiogroup") == 0) ||
-             (uStrCaseEqual(field, "allownone")))
+             (uStrCaseCmp(field, "allownone") == 0))
     {
         ERROR("Radio groups not supported\n");
         ACTION("Ignoring radio group specification for key %s\n", longText(key->name));

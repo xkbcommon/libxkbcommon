@@ -27,10 +27,6 @@
 #ifndef XKBCOMP_H
 #define	XKBCOMP_H 1
 
-#ifndef DEBUG_VAR
-#define	DEBUG_VAR debugFlags
-#endif
-
 #include <X11/X.h>
 #include <X11/Xdefs.h>
 

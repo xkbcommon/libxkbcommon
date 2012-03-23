@@ -82,6 +82,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <stdlib.h>
 #include <string.h>
 
+#include "xkbcommon/xkbcommon.h"
+
 #ifndef True
 #define True  1
 #define False 0

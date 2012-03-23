@@ -1,5 +1,5 @@
 #ifndef UTILS_H
-#define	UTILS_H 1
+#define UTILS_H 1
 
   /*\
    *
@@ -29,41 +29,13 @@
 
 /***====================================================================***/
 
-#include 	<stdio.h>
-#include	<X11/Xos.h>
-#include	<X11/Xfuncproto.h>
-#include	<X11/Xfuncs.h>
+#include <stdio.h>
+#include <X11/Xdefs.h>
+#include <X11/Xfuncproto.h>
 
-#include <stddef.h>
+#ifdef HAVE_CONFIG_H
 #include "config.h"
-
-#ifndef NUL
-#define	NUL	'\0'
 #endif
-
-/***====================================================================***/
-
-#ifndef BOOLEAN_DEFINED
-typedef char Boolean;
-#endif
-
-#ifndef True
-#define	True	((Boolean)1)
-#define	False	((Boolean)0)
-#endif /* ndef True */
-#define	booleanText(b)	((b)?"True":"False")
-
-#ifndef COMPARISON_DEFINED
-typedef int Comparison;
-
-#define	Greater		((Comparison)1)
-#define	Equal		((Comparison)0)
-#define	Less		((Comparison)-1)
-#define	CannotCompare	((Comparison)-37)
-#define	comparisonText(c)	((c)?((c)<0?"Less":"Greater"):"Equal")
-#endif
-
-/***====================================================================***/
 
 extern void *
 recalloc(void * old, unsigned nOld, unsigned nNew, unsigned newSize);
@@ -72,92 +44,50 @@ recalloc(void * old, unsigned nOld, unsigned nNew, unsigned newSize);
 #define	uTypedCalloc(n,t)	((t *)calloc((unsigned)n,(unsigned)sizeof(t)))
 #define	uTypedRealloc(pO,n,t)	((t *)realloc(pO,((unsigned)n)*sizeof(t)))
 #define	uTypedRecalloc(pO,o,n,t) ((t *)recalloc(pO,((unsigned)o),((unsigned)n),sizeof(t)))
-#if (defined mdHasAlloca) && (mdHasAlloca)
-#define	uTmpAlloc(n)	alloca((unsigned)n)
-#define	uTmpFree(p)
-#else
-#define	uTmpAlloc(n)	malloc(n)
-#define	uTmpFree(p)	free(p)
-#endif
 
 /***====================================================================***/
 
-extern Boolean
+extern Bool
 uSetErrorFile(char *name);
 
-#if defined(__GNUC__) && \
-    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 6)))
-#define __ATTR_PRINTF(i, f) __attribute__ ((format(printf, (i), (f))))
-#else
-#define __ATTR_PRINTF(i, f)
-#endif
 
 #define INFO 			uInformation
 
-extern __ATTR_PRINTF(1, 2) void
+extern _X_ATTRIBUTE_PRINTF(1, 2) void
 uInformation(const char *s, ...);
 
 #define ACTION			uAction
 
-extern __ATTR_PRINTF(1, 2) void
+extern _X_ATTRIBUTE_PRINTF(1, 2) void
 uAction(const char *s, ...);
 
 #define WARN			uWarning
 
-extern __ATTR_PRINTF(1, 2) void
+extern _X_ATTRIBUTE_PRINTF(1, 2) void
 uWarning(const char *s, ...);
 
 #define ERROR			uError
 
-extern __ATTR_PRINTF(1, 2) void
+extern _X_ATTRIBUTE_PRINTF(1, 2) void
 uError(const char *s, ...);
 
 #define FATAL			uFatalError
 
-extern __ATTR_PRINTF(1, 2) _X_NORETURN void
+extern _X_ATTRIBUTE_PRINTF(1, 2) _X_NORETURN void
 uFatalError(const char *s, ...);
 
 /* WSGO stands for "Weird Stuff Going On" (wtf???) */
 #define WSGO			uInternalError
 
-extern __ATTR_PRINTF(1, 2) void
+extern _X_ATTRIBUTE_PRINTF(1, 2) void
 uInternalError(const char *s, ...);
 
 /***====================================================================***/
 
-#define	NullString	((char *)NULL)
-
-#define	uStringText(s)		((s)==NullString?"<NullString>":(s))
-#define	uStringEqual(s1,s2)	(uStringCompare(s1,s2)==Equal)
+#define	uStringText(s)		((s) == NULL ? "<NullString>" : (s))
+#define	uStringEqual(s1,s2)	(strcmp(s1,s2) == 0)
 #define	uStringPrefix(p,s)	(strncmp(p,s,strlen(p))==0)
-#define	uStringCompare(s1,s2)	(((s1)==NullString||(s2)==NullString)?\
-                                 (s1)!=(s2):strcmp(s1,s2))
-#define	uStrCaseEqual(s1,s2)	(uStrCaseCmp(s1,s2)==0)
-#ifdef HAVE_STRCASECMP
 #define	uStrCaseCmp(s1,s2)	(strcasecmp(s1,s2))
 #define	uStrCasePrefix(p,s)	(strncasecmp(p,s,strlen(p))==0)
-#else
-extern int
-uStrCaseCmp(const char *s1, const char *s2);
-extern int
-uStrCasePrefix(const char *p, char *str);
-#endif
-
-/***====================================================================***/
-
-#ifdef	ASSERTIONS_ON
-#define	uASSERT(where,why) \
-	{if (!(why)) uFatalError("assertion botched in %s ( why )\n",where);}
-#else
-#define	uASSERT(where,why)
-#endif
-
-/***====================================================================***/
-
-#ifndef DEBUG_VAR
-#define	DEBUG_VAR	debugFlags
-#endif
-
-extern unsigned int DEBUG_VAR;
 
 #endif /* UTILS_H */

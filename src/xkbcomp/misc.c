@@ -70,8 +70,6 @@ ProcessIncludeFile(IncludeStmt * stmt,
         memset(oldFile, 0, sizeof(oldFile));
     oldLine = lineNum;
     setScanState(stmt->file, 1);
-    if (debugFlags & 2)
-        INFO("About to parse include file %s\n", stmt->file);
     /* parse the file */
     if ((XKBParseFile(file, &rtrn) == 0) || (rtrn == NULL))
     {
@@ -89,7 +87,7 @@ ProcessIncludeFile(IncludeStmt * stmt,
         {
             next = (XkbFile *)mapToUse->common.next;
             mapToUse->common.next = NULL;
-            if (uStringEqual(mapToUse->name, stmt->map) &&
+            if (strcmp(mapToUse->name, stmt->map) == 0 &&
                 mapToUse->type == file_type)
             {
                     FreeXKBFile(next);
