@@ -186,6 +186,45 @@ xkb_filter_group_set_new(struct xkb_state *state, xkb_keycode_t keycode,
 }
 
 static int
+xkb_filter_group_lock_func(struct xkb_filter *filter, xkb_keycode_t keycode,
+                           int down)
+{
+    if (keycode != filter->keycode)
+        return 1;
+
+    if (down) {
+        filter->refcnt++;
+        return 0;
+    }
+    if (--filter->refcnt > 0)
+        return 0;
+
+    filter->func = NULL;
+    return 1;
+}
+
+static int
+xkb_filter_group_lock_new(struct xkb_state *state, xkb_keycode_t keycode,
+                          union xkb_action *action)
+{
+    struct xkb_filter *filter = xkb_filter_new(state);
+
+    if (!filter)
+        return 0;
+
+    filter->keycode = keycode;
+    filter->func = xkb_filter_group_lock_func;
+    filter->action = *action;
+
+    if (action->group.flags & XkbSA_GroupAbsolute)
+        filter->state->locked_group = action->group.group;
+    else
+        filter->state->locked_group += action->group.group;
+
+    return 1;
+}
+
+static int
 xkb_filter_mod_set_func(struct xkb_filter *filter, xkb_keycode_t keycode,
                         enum xkb_key_direction direction)
 {
@@ -411,10 +450,10 @@ xkb_filter_apply_all(struct xkb_state *state, xkb_keycode_t key,
     case XkbSA_LatchGroup:
         send = xkb_filter_mod_latch_new(state, key, act);
         break;
+#endif
     case XkbSA_LockGroup:
         send = xkb_filter_group_lock_new(state, key, act);
         break;
-#endif
     }
 
     return;
