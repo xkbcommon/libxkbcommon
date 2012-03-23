@@ -23,8 +23,6 @@ libxkbcomp_la_SOURCES = \
 	parseutils.c \
 	parseutils.h \
 	symbols.c \
-	utils.c \
-	utils.h \
 	vmod.c \
 	vmod.h \
 	xkbcomp.c \

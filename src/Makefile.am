@@ -17,6 +17,8 @@ libxkbcommon_la_SOURCES = \
 	misc.c \
 	state.c \
 	text.c \
+	utils.c \
+	utils.h \
 	xkb.c \
 	xkballoc.h \
 	xkbmisc.h \

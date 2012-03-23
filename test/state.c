@@ -31,7 +31,7 @@
 #include <X11/keysym.h>
 #include <linux/input.h>
 #include "xkbcommon/xkbcommon.h"
-#include "xkbcomp/utils.h"
+#include "utils.h"
 #include "XKBcommonint.h"
 
 /* Offset between evdev keycodes (where KEY_ESCAPE is 1), and the evdev XKB

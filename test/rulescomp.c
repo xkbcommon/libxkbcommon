@@ -29,7 +29,7 @@ authorization from the authors.
 #include <X11/X.h>
 #include <X11/Xdefs.h>
 #include "xkbcommon/xkbcommon.h"
-#include "xkbcomp/utils.h"
+#include "utils.h"
 
 int main(int argc, char *argv[])
 {
