@@ -318,7 +318,8 @@ xkb_map_led_get_index(struct xkb_desc *xkb, const char *name);
  */
 
 /**
- * Allocates a new XKB state object for use with the given keymap.
+ * Returns a new XKB state object for use with the given keymap, or NULL on
+ * failure.
  */
 _X_EXPORT struct xkb_state *
 xkb_state_new(struct xkb_desc *xkb);
