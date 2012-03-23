@@ -34,20 +34,17 @@
 #include <string.h>
 
 void *
-recalloc(void * old, unsigned nOld, unsigned nNew, unsigned itemSize)
+recalloc(void *ptr, size_t old_size, size_t new_size)
 {
     char *rtrn;
 
-    if (old == NULL)
-        rtrn = calloc(nNew, itemSize);
-    else
-    {
-        rtrn = realloc(old, nNew * itemSize);
-        if ((rtrn) && (nNew > nOld))
-        {
-            memset(&rtrn[nOld * itemSize], 0, (nNew - nOld) * itemSize);
-        }
-    }
+    if (ptr == NULL)
+        return calloc(1, new_size);
+
+    rtrn = realloc(ptr, new_size);
+    if (rtrn && new_size > old_size)
+        memset(&rtrn[old_size], 0, new_size - old_size);
+
     return rtrn;
 }
 

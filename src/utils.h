@@ -38,12 +38,12 @@
 #endif
 
 extern void *
-recalloc(void * old, unsigned nOld, unsigned nNew, unsigned newSize);
+recalloc(void *ptr, size_t old_size, size_t new_size);
 
 #define	uTypedAlloc(t)		((t *)malloc((unsigned)sizeof(t)))
 #define	uTypedCalloc(n,t)	((t *)calloc((unsigned)n,(unsigned)sizeof(t)))
 #define	uTypedRealloc(pO,n,t)	((t *)realloc(pO,((unsigned)n)*sizeof(t)))
-#define	uTypedRecalloc(pO,o,n,t) ((t *)recalloc(pO,((unsigned)o),((unsigned)n),sizeof(t)))
+#define uTypedRecalloc(pO, o, n, t) recalloc(pO, (o) * sizeof(t), (n) * sizeof(t))
 
 /***====================================================================***/
 
