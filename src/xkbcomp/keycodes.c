@@ -676,9 +676,9 @@ HandleKeyNameVar(VarDef * stmt, KeyNamesInfo * info)
         ACTION("Default for field %s ignored\n", field.str);
         goto err_out;
     }
-    if (uStrCaseCmp(field.str, "minimum") == 0)
+    if (strcasecmp(field.str, "minimum") == 0)
         which = MIN_KEYCODE_DEF;
-    else if (uStrCaseCmp(field.str, "maximum") == 0)
+    else if (strcasecmp(field.str, "maximum") == 0)
         which = MAX_KEYCODE_DEF;
     else
     {

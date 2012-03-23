@@ -437,14 +437,14 @@ LookupKeysym(char *str, xkb_keysym_t * sym_rtrn)
 {
     xkb_keysym_t sym;
 
-    if ((!str) || (uStrCaseCmp(str, "any") == 0)
-        || (uStrCaseCmp(str, "nosymbol") == 0))
+    if ((!str) || (strcasecmp(str, "any") == 0) ||
+        (strcasecmp(str, "nosymbol") == 0))
     {
         *sym_rtrn = NoSymbol;
         return 1;
     }
-    else if ((uStrCaseCmp(str, "none") == 0)
-             || (uStrCaseCmp(str, "voidsymbol") == 0))
+    else if ((strcasecmp(str, "none") == 0) ||
+             (strcasecmp(str, "voidsymbol") == 0))
     {
         *sym_rtrn = XK_VoidSymbol;
         return 1;

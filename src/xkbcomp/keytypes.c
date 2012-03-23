@@ -820,7 +820,7 @@ SetKeyTypeField(KeyTypeInfo * type,
 {
     ExprResult tmp;
 
-    if (uStrCaseCmp(field, "modifiers") == 0)
+    if (strcasecmp(field, "modifiers") == 0)
     {
         unsigned mods, vmods;
         if (arrayNdx != NULL)
@@ -850,18 +850,18 @@ SetKeyTypeField(KeyTypeInfo * type,
         type->defs.defined |= _KT_Mask;
         return True;
     }
-    else if (uStrCaseCmp(field, "map") == 0)
+    else if (strcasecmp(field, "map") == 0)
     {
         type->defs.defined |= _KT_Map;
         return SetMapEntry(type, xkb, arrayNdx, value);
     }
-    else if (uStrCaseCmp(field, "preserve") == 0)
+    else if (strcasecmp(field, "preserve") == 0)
     {
         type->defs.defined |= _KT_Preserve;
         return SetPreserve(type, xkb, arrayNdx, value);
     }
-    else if ((uStrCaseCmp(field, "levelname") == 0) ||
-             (uStrCaseCmp(field, "level_name") == 0))
+    else if ((strcasecmp(field, "levelname") == 0) ||
+             (strcasecmp(field, "level_name") == 0))
     {
         type->defs.defined |= _KT_LevelNames;
         return SetLevelName(type, arrayNdx, value);
@@ -879,7 +879,7 @@ HandleKeyTypeVar(VarDef * stmt, struct xkb_desc * xkb, KeyTypesInfo * info)
 
     if (!ExprResolveLhs(stmt->name, &elem, &field, &arrayNdx))
         return False;           /* internal error, already reported */
-    if (elem.str && (uStrCaseCmp(elem.str, "type") == 0))
+    if (elem.str && (strcasecmp(elem.str, "type") == 0))
         return SetKeyTypeField(&info->dflt, xkb, field.str, arrayNdx,
                                stmt->value, info);
     if (elem.str != NULL)

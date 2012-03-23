@@ -47,7 +47,6 @@ recalloc(void *ptr, size_t old_size, size_t new_size);
 
 #define uDupString(s)          ((s) ? strdup(s) : NULL)
 #define uStringText(s)         ((s) == NULL ? "<NullString>" : (s))
-#define uStrCaseCmp(s1, s2)    strcasecmp(s1, s2)
 #define uStrCasePrefix(s1, s2) (strncasecmp((s1), (s2), strlen(s1)) == 0)
 
 /***====================================================================***/

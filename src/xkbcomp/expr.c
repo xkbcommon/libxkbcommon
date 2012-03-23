@@ -176,7 +176,7 @@ SimpleLookup(const void * priv, xkb_atom_t field, unsigned type,
     str = XkbcAtomText(field);
     for (entry = priv; (entry != NULL) && (entry->name != NULL); entry++)
     {
-        if (uStrCaseCmp(str, entry->name) == 0)
+        if (strcasecmp(str, entry->name) == 0)
         {
             val_rtrn->uval = entry->result;
             return True;
@@ -217,9 +217,9 @@ LookupModMask(const void * priv, xkb_atom_t field, unsigned type,
     str = XkbcAtomText(field);
     if (str == NULL)
         return False;
-    if (uStrCaseCmp(str, "all") == 0)
+    if (strcasecmp(str, "all") == 0)
         val_rtrn->uval = 0xff;
-    else if (uStrCaseCmp(str, "none") == 0)
+    else if (strcasecmp(str, "none") == 0)
         val_rtrn->uval = 0;
     else if (LookupModIndex(priv, field, type, val_rtrn))
         val_rtrn->uval = (1 << val_rtrn->uval);
@@ -251,16 +251,16 @@ ExprResolveBoolean(ExprDef * expr,
         bogus = XkbcAtomText(expr->value.str);
         if (bogus)
         {
-            if ((uStrCaseCmp(bogus, "true") == 0) ||
-                (uStrCaseCmp(bogus, "yes") == 0) ||
-                (uStrCaseCmp(bogus, "on") == 0))
+            if ((strcasecmp(bogus, "true") == 0) ||
+                (strcasecmp(bogus, "yes") == 0) ||
+                (strcasecmp(bogus, "on") == 0))
             {
                 val_rtrn->uval = 1;
                 return True;
             }
-            else if ((uStrCaseCmp(bogus, "false") == 0) ||
-                     (uStrCaseCmp(bogus, "no") == 0) ||
-                     (uStrCaseCmp(bogus, "off") == 0))
+            else if ((strcasecmp(bogus, "false") == 0) ||
+                     (strcasecmp(bogus, "no") == 0) ||
+                     (strcasecmp(bogus, "off") == 0))
             {
                 val_rtrn->uval = 0;
                 return True;

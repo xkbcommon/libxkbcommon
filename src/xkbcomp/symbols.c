@@ -1033,7 +1033,7 @@ SetSymbolsField(KeyInfo * key,
     Bool ok = True;
     ExprResult tmp;
 
-    if (uStrCaseCmp(field, "type") == 0)
+    if (strcasecmp(field, "type") == 0)
     {
         ExprResult ndx;
         if ((!ExprResolveString(value, &tmp))
@@ -1062,13 +1062,13 @@ SetSymbolsField(KeyInfo * key,
         }
         free(tmp.str);
     }
-    else if (uStrCaseCmp(field, "symbols") == 0)
+    else if (strcasecmp(field, "symbols") == 0)
         return AddSymbolsToKey(key, xkb, field, arrayNdx, value, info);
-    else if (uStrCaseCmp(field, "actions") == 0)
+    else if (strcasecmp(field, "actions") == 0)
         return AddActionsToKey(key, xkb, field, arrayNdx, value, info);
-    else if ((uStrCaseCmp(field, "vmods") == 0) ||
-             (uStrCaseCmp(field, "virtualmods") == 0) ||
-             (uStrCaseCmp(field, "virtualmodifiers") == 0))
+    else if ((strcasecmp(field, "vmods") == 0) ||
+             (strcasecmp(field, "virtualmods") == 0) ||
+             (strcasecmp(field, "virtualmodifiers") == 0))
     {
         ok = ExprResolveVModMask(value, &tmp, xkb);
         if (ok)
@@ -1084,18 +1084,18 @@ SetSymbolsField(KeyInfo * key,
                     longText(key->name));
         }
     }
-    else if ((uStrCaseCmp(field, "locking") == 0)
-             || (uStrCaseCmp(field, "lock") == 0)
-             || (uStrCaseCmp(field, "locks") == 0))
+    else if ((strcasecmp(field, "locking") == 0) ||
+             (strcasecmp(field, "lock") == 0) ||
+             (strcasecmp(field, "locks") == 0))
     {
         ok = ExprResolveEnum(value, &tmp, lockingEntries);
         if (ok)
             key->behavior.type = tmp.uval;
         key->defs.defined |= _Key_Behavior;
     }
-    else if ((uStrCaseCmp(field, "radiogroup") == 0) ||
-             (uStrCaseCmp(field, "permanentradiogroup") == 0) ||
-             (uStrCaseCmp(field, "allownone") == 0))
+    else if ((strcasecmp(field, "radiogroup") == 0) ||
+             (strcasecmp(field, "permanentradiogroup") == 0) ||
+             (strcasecmp(field, "allownone") == 0))
     {
         ERROR("Radio groups not supported\n");
         ACTION("Ignoring radio group specification for key %s\n", longText(key->name));
@@ -1107,9 +1107,9 @@ SetSymbolsField(KeyInfo * key,
         ERROR("Overlays not supported\n");
         ACTION("Ignoring overlay specification for key %s\n", longText(key->name));
     }
-    else if ((uStrCaseCmp(field, "repeating") == 0) ||
-             (uStrCaseCmp(field, "repeats") == 0) ||
-             (uStrCaseCmp(field, "repeat") == 0))
+    else if ((strcasecmp(field, "repeating") == 0) ||
+             (strcasecmp(field, "repeats") == 0) ||
+             (strcasecmp(field, "repeat") == 0))
     {
         ok = ExprResolveEnum(value, &tmp, repeatEntries);
         if (!ok)
@@ -1122,8 +1122,8 @@ SetSymbolsField(KeyInfo * key,
         key->repeat = tmp.uval;
         key->defs.defined |= _Key_Repeat;
     }
-    else if ((uStrCaseCmp(field, "groupswrap") == 0) ||
-             (uStrCaseCmp(field, "wrapgroups") == 0))
+    else if ((strcasecmp(field, "groupswrap") == 0) ||
+             (strcasecmp(field, "wrapgroups") == 0))
     {
         ok = ExprResolveBoolean(value, &tmp);
         if (!ok)
@@ -1139,8 +1139,8 @@ SetSymbolsField(KeyInfo * key,
             key->groupInfo = XkbClampIntoRange;
         key->defs.defined |= _Key_GroupInfo;
     }
-    else if ((uStrCaseCmp(field, "groupsclamp") == 0) ||
-             (uStrCaseCmp(field, "clampgroups") == 0))
+    else if ((strcasecmp(field, "groupsclamp") == 0) ||
+             (strcasecmp(field, "clampgroups") == 0))
     {
         ok = ExprResolveBoolean(value, &tmp);
         if (!ok)
@@ -1156,8 +1156,8 @@ SetSymbolsField(KeyInfo * key,
             key->groupInfo = XkbWrapIntoRange;
         key->defs.defined |= _Key_GroupInfo;
     }
-    else if ((uStrCaseCmp(field, "groupsredirect") == 0) ||
-             (uStrCaseCmp(field, "redirectgroups") == 0))
+    else if ((strcasecmp(field, "groupsredirect") == 0) ||
+             (strcasecmp(field, "redirectgroups") == 0))
     {
         if (!ExprResolveGroup(value, &tmp))
         {
@@ -1218,20 +1218,20 @@ HandleSymbolsVar(VarDef * stmt, struct xkb_desc * xkb, SymbolsInfo * info)
 
     if (ExprResolveLhs(stmt->name, &elem, &field, &arrayNdx) == 0)
         return 0;               /* internal error, already reported */
-    if (elem.str && (uStrCaseCmp(elem.str, "key") == 0))
+    if (elem.str && (strcasecmp(elem.str, "key") == 0))
     {
         ret = SetSymbolsField(&info->dflt, xkb, field.str, arrayNdx,
                               stmt->value, info);
     }
-    else if ((elem.str == NULL) && ((uStrCaseCmp(field.str, "name") == 0) ||
-                                    (uStrCaseCmp(field.str, "groupname") ==
+    else if ((elem.str == NULL) && ((strcasecmp(field.str, "name") == 0) ||
+                                    (strcasecmp(field.str, "groupname") ==
                                      0)))
     {
         ret = SetGroupName(info, arrayNdx, stmt->value);
     }
     else if ((elem.str == NULL)
-             && ((uStrCaseCmp(field.str, "groupswrap") == 0)
-                 || (uStrCaseCmp(field.str, "wrapgroups") == 0)))
+             && ((strcasecmp(field.str, "groupswrap") == 0) ||
+                 (strcasecmp(field.str, "wrapgroups") == 0)))
     {
         if (!ExprResolveBoolean(stmt->value, &tmp))
         {
@@ -1248,8 +1248,8 @@ HandleSymbolsVar(VarDef * stmt, struct xkb_desc * xkb, SymbolsInfo * info)
         }
     }
     else if ((elem.str == NULL)
-             && ((uStrCaseCmp(field.str, "groupsclamp") == 0)
-                 || (uStrCaseCmp(field.str, "clampgroups") == 0)))
+             && ((strcasecmp(field.str, "groupsclamp") == 0) ||
+                 (strcasecmp(field.str, "clampgroups") == 0)))
     {
         if (!ExprResolveBoolean(stmt->value, &tmp))
         {
@@ -1266,8 +1266,8 @@ HandleSymbolsVar(VarDef * stmt, struct xkb_desc * xkb, SymbolsInfo * info)
         }
     }
     else if ((elem.str == NULL)
-             && ((uStrCaseCmp(field.str, "groupsredirect") == 0)
-                 || (uStrCaseCmp(field.str, "redirectgroups") == 0)))
+             && ((strcasecmp(field.str, "groupsredirect") == 0) ||
+                 (strcasecmp(field.str, "redirectgroups") == 0)))
     {
         if (!ExprResolveGroup(stmt->value, &tmp))
         {
@@ -1281,7 +1281,7 @@ HandleSymbolsVar(VarDef * stmt, struct xkb_desc * xkb, SymbolsInfo * info)
             ret = True;
         }
     }
-    else if ((elem.str == NULL) && (uStrCaseCmp(field.str, "allownone") == 0))
+    else if ((elem.str == NULL) && (strcasecmp(field.str, "allownone") == 0))
     {
         ERROR("Radio groups not supported\n");
         ACTION("Ignoring \"allow none\" specification\n");

@@ -205,8 +205,8 @@ SetIndicatorMapField(LEDInfo * led,
     Bool ok;
 
     ok = True;
-    if ((uStrCaseCmp(field, "modifiers") == 0)
-        || (uStrCaseCmp(field, "mods") == 0))
+    if ((strcasecmp(field, "modifiers") == 0) ||
+        (strcasecmp(field, "mods") == 0))
     {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(led, field);
@@ -216,7 +216,7 @@ SetIndicatorMapField(LEDInfo * led,
         led->vmods = (rtrn.uval >> 8) & 0xff;
         led->defs.defined |= _LED_Mods;
     }
-    else if (uStrCaseCmp(field, "groups") == 0)
+    else if (strcasecmp(field, "groups") == 0)
     {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(led, field);
@@ -225,8 +225,8 @@ SetIndicatorMapField(LEDInfo * led,
         led->groups = rtrn.uval;
         led->defs.defined |= _LED_Groups;
     }
-    else if ((uStrCaseCmp(field, "controls") == 0) ||
-             (uStrCaseCmp(field, "ctrls") == 0))
+    else if ((strcasecmp(field, "controls") == 0) ||
+             (strcasecmp(field, "ctrls") == 0))
     {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(led, field);
@@ -236,7 +236,7 @@ SetIndicatorMapField(LEDInfo * led,
         led->ctrls = rtrn.uval;
         led->defs.defined |= _LED_Ctrls;
     }
-    else if (uStrCaseCmp(field, "allowexplicit") == 0)
+    else if (strcasecmp(field, "allowexplicit") == 0)
     {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(led, field);
@@ -248,8 +248,8 @@ SetIndicatorMapField(LEDInfo * led,
             led->flags |= XkbIM_NoExplicit;
         led->defs.defined |= _LED_Explicit;
     }
-    else if ((uStrCaseCmp(field, "whichmodstate") == 0) ||
-             (uStrCaseCmp(field, "whichmodifierstate") == 0))
+    else if ((strcasecmp(field, "whichmodstate") == 0) ||
+             (strcasecmp(field, "whichmodifierstate") == 0))
     {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(led, field);
@@ -260,7 +260,7 @@ SetIndicatorMapField(LEDInfo * led,
         }
         led->which_mods = rtrn.uval;
     }
-    else if (uStrCaseCmp(field, "whichgroupstate") == 0)
+    else if (strcasecmp(field, "whichgroupstate") == 0)
     {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(led, field);
@@ -271,12 +271,12 @@ SetIndicatorMapField(LEDInfo * led,
         }
         led->which_groups = rtrn.uval;
     }
-    else if ((uStrCaseCmp(field, "driveskbd") == 0) ||
-             (uStrCaseCmp(field, "driveskeyboard") == 0) ||
-             (uStrCaseCmp(field, "leddriveskbd") == 0) ||
-             (uStrCaseCmp(field, "leddriveskeyboard") == 0) ||
-             (uStrCaseCmp(field, "indicatordriveskbd") == 0) ||
-             (uStrCaseCmp(field, "indicatordriveskeyboard") == 0))
+    else if ((strcasecmp(field, "driveskbd") == 0) ||
+             (strcasecmp(field, "driveskeyboard") == 0) ||
+             (strcasecmp(field, "leddriveskbd") == 0) ||
+             (strcasecmp(field, "leddriveskeyboard") == 0) ||
+             (strcasecmp(field, "indicatordriveskbd") == 0) ||
+             (strcasecmp(field, "indicatordriveskeyboard") == 0))
     {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(led, field);
@@ -288,7 +288,7 @@ SetIndicatorMapField(LEDInfo * led,
             led->flags &= ~XkbIM_LEDDrivesKB;
         led->defs.defined |= _LED_DrivesKbd;
     }
-    else if (uStrCaseCmp(field, "index") == 0)
+    else if (strcasecmp(field, "index") == 0)
     {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(led, field);

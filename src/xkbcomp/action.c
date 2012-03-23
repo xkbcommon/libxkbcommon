@@ -132,7 +132,7 @@ stringToValue(const LookupEntry tab[], const char *string,
         return False;
 
     for (entry = tab; entry->name != NULL; entry++) {
-        if (uStrCaseCmp(entry->name, string) == 0) {
+        if (strcasecmp(entry->name, string) == 0) {
             *value_rtrn = entry->result;
             return True;
         }
@@ -251,8 +251,8 @@ CheckModifierField(struct xkb_desc * xkb,
     {
         const char *valStr;
         valStr = XkbcAtomText(value->value.str);
-        if (valStr && ((uStrCaseCmp(valStr, "usemodmapmods") == 0) ||
-                       (uStrCaseCmp(valStr, "modmapmods") == 0)))
+        if (valStr && ((strcasecmp(valStr, "usemodmapmods") == 0) ||
+                       (strcasecmp(valStr, "modmapmods") == 0)))
         {
 
             *mods_rtrn = 0;
@@ -1238,7 +1238,7 @@ SetActionField(struct xkb_desc * xkb,
         WSGO("Couldn't allocate space for action default\n");
         return False;
     }
-    if (uStrCaseCmp(elem, "action") == 0)
+    if (strcasecmp(elem, "action") == 0)
         new->action = XkbSA_NoAction;
     else
     {

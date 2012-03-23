@@ -304,15 +304,15 @@ ResolveStateAndPredicate(ExprDef * expr,
     if (expr->op == ExprActionDecl)
     {
         const char *pred_txt = XkbcAtomText(expr->value.action.name);
-        if (uStrCaseCmp(pred_txt, "noneof") == 0)
+        if (strcasecmp(pred_txt, "noneof") == 0)
             *pred_rtrn = XkbSI_NoneOf;
-        else if (uStrCaseCmp(pred_txt, "anyofornone") == 0)
+        else if (strcasecmp(pred_txt, "anyofornone") == 0)
             *pred_rtrn = XkbSI_AnyOfOrNone;
-        else if (uStrCaseCmp(pred_txt, "anyof") == 0)
+        else if (strcasecmp(pred_txt, "anyof") == 0)
             *pred_rtrn = XkbSI_AnyOf;
-        else if (uStrCaseCmp(pred_txt, "allof") == 0)
+        else if (strcasecmp(pred_txt, "allof") == 0)
             *pred_rtrn = XkbSI_AllOf;
-        else if (uStrCaseCmp(pred_txt, "exactly") == 0)
+        else if (strcasecmp(pred_txt, "exactly") == 0)
             *pred_rtrn = XkbSI_Exactly;
         else
         {
@@ -325,7 +325,7 @@ ResolveStateAndPredicate(ExprDef * expr,
     else if (expr->op == ExprIdent)
     {
         const char *pred_txt = XkbcAtomText(expr->value.str);
-        if ((pred_txt) && (uStrCaseCmp(pred_txt, "any") == 0))
+        if ((pred_txt) && (strcasecmp(pred_txt, "any") == 0))
         {
             *pred_rtrn = XkbSI_AnyOf;
             *mods_rtrn = 0xff;
@@ -501,7 +501,7 @@ SetInterpField(SymInterpInfo * si,
     int ok = 1;
     ExprResult tmp;
 
-    if (uStrCaseCmp(field, "action") == 0)
+    if (strcasecmp(field, "action") == 0)
     {
         if (arrayNdx != NULL)
             return ReportSINotArray(si, field, info);
@@ -510,8 +510,8 @@ SetInterpField(SymInterpInfo * si,
         if (ok)
             si->defs.defined |= _SI_Action;
     }
-    else if ((uStrCaseCmp(field, "virtualmodifier") == 0) ||
-             (uStrCaseCmp(field, "virtualmod") == 0))
+    else if ((strcasecmp(field, "virtualmodifier") == 0) ||
+             (strcasecmp(field, "virtualmod") == 0))
     {
         if (arrayNdx != NULL)
             return ReportSINotArray(si, field, info);
@@ -524,7 +524,7 @@ SetInterpField(SymInterpInfo * si,
         else
             return ReportSIBadType(si, field, "virtual modifier", info);
     }
-    else if (uStrCaseCmp(field, "repeat") == 0)
+    else if (strcasecmp(field, "repeat") == 0)
     {
         if (arrayNdx != NULL)
             return ReportSINotArray(si, field, info);
@@ -540,7 +540,7 @@ SetInterpField(SymInterpInfo * si,
         else
             return ReportSIBadType(si, field, "boolean", info);
     }
-    else if (uStrCaseCmp(field, "locking") == 0)
+    else if (strcasecmp(field, "locking") == 0)
     {
         if (arrayNdx != NULL)
             return ReportSINotArray(si, field, info);
@@ -556,8 +556,8 @@ SetInterpField(SymInterpInfo * si,
         else
             return ReportSIBadType(si, field, "boolean", info);
     }
-    else if ((uStrCaseCmp(field, "usemodmap") == 0) ||
-             (uStrCaseCmp(field, "usemodmapmods") == 0))
+    else if ((strcasecmp(field, "usemodmap") == 0) ||
+             (strcasecmp(field, "usemodmapmods") == 0))
     {
         if (arrayNdx != NULL)
             return ReportSINotArray(si, field, info);
@@ -589,10 +589,10 @@ HandleInterpVar(VarDef * stmt, struct xkb_desc * xkb, CompatInfo * info)
 
     if (ExprResolveLhs(stmt->name, &elem, &field, &ndx) == 0)
         ret = 0;               /* internal error, already reported */
-    else if (elem.str && (uStrCaseCmp(elem.str, "interpret") == 0))
+    else if (elem.str && (strcasecmp(elem.str, "interpret") == 0))
         ret = SetInterpField(&info->dflt, xkb, field.str, ndx, stmt->value,
                               info);
-    else if (elem.str && (uStrCaseCmp(elem.str, "indicator") == 0))
+    else if (elem.str && (strcasecmp(elem.str, "indicator") == 0))
         ret = SetIndicatorMapField(&info->ledDflt, xkb, field.str, ndx,
                                   stmt->value);
     else
