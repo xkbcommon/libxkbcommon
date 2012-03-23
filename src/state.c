@@ -444,10 +444,11 @@ xkb_state_unref(struct xkb_state *state)
 {
     state->refcnt--;
     assert(state->refcnt >= 0);
-    if (state->refcnt == 0)
+    if (state->refcnt > 0)
         return;
 
     xkb_map_unref(state->xkb);
+    free(state->filters);
     free(state);
 }
 
