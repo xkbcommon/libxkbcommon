@@ -12,7 +12,8 @@ EXTRA_DIST =		\
 	bad.xkb		\
 	basic.xkb	\
 	default.xkb	\
-	named.xkb
+	named.xkb	\
+	comprehensive-plus-geom.xkb
 
 clean-local:
 	rm -f *.log
