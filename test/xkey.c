@@ -3,17 +3,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <X11/X.h>
 
 static void print_keysym(const char *s)
 {
-    KeySym ks = xkb_string_to_keysym(s);
+    xkb_keysym_t ks = xkb_string_to_keysym(s);
     if (ks == NoSymbol)
         printf("NoSymbol\n");
     else
         printf("0x%lX\n", ks);
 }
 
-static void print_string(KeySym ks)
+static void print_string(xkb_keysym_t ks)
 {
     char s[16];
 
@@ -24,7 +25,7 @@ static void print_string(KeySym ks)
 int main(int argc, char *argv[])
 {
     int mode;
-    KeySym sym;
+    xkb_keysym_t sym;
 
     if (argc < 3) {
         fprintf(stderr, "error: not enough arguments\n");

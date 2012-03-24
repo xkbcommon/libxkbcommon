@@ -28,12 +28,13 @@ from The Open Group.
 
 /* Constructs hash tables for XStringToKeysym and XKeysymToString. */
 
-#include <X11/X.h>
-#include <X11/Xos.h>
+#include "xkbcommon/xkbcommon.h"
+
 #include <X11/keysymdef.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef uint32_t Signature;
 
@@ -41,7 +42,7 @@ typedef uint32_t Signature;
 
 static struct info {
     char        *name;
-    KeySym      val;
+    xkb_keysym_t val;
 } info[KTNUM];
 
 #define MIN_REHASH 15
@@ -50,11 +51,11 @@ static struct info {
 static char tab[KTNUM];
 static unsigned short offsets[KTNUM];
 static unsigned short indexes[KTNUM];
-static KeySym values[KTNUM];
+static xkb_keysym_t values[KTNUM];
 static int ksnum = 0;
 
 static int
-parse_line(const char *buf, char *key, KeySym *val, char *prefix)
+parse_line(const char *buf, char *key, xkb_keysym_t *val, char *prefix)
 {
     int i;
     char alias[128];
@@ -109,7 +110,7 @@ main(int argc, char *argv[])
     int best_max_rehash;
     int best_z = 0;
     int num_found;
-    KeySym val;
+    xkb_keysym_t val;
     char key[128], prefix[128];
     char buf[1024];
 
