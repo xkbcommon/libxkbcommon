@@ -141,7 +141,7 @@ InitIndicatorNameInfo(IndicatorNameInfo * ii, KeyNamesInfo * info)
     ii->defs.fileID = info->fileID;
     ii->defs.next = NULL;
     ii->ndx = 0;
-    ii->name = None;
+    ii->name = XKB_ATOM_NONE;
     ii->virtual = False;
 }
 

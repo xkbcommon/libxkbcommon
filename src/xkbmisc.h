@@ -27,12 +27,13 @@ authorization from the authors.
 #ifndef _XKBMISC_H_
 #define _XKBMISC_H_
 
-#include <X11/X.h>
 #include <X11/Xdefs.h>
 #include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
 
 typedef uint32_t xkb_atom_t;
+
+#define XKB_ATOM_NONE 0
 
 /***====================================================================***/
 

@@ -26,7 +26,6 @@ authorization from the authors.
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <X11/X.h>
 #include <X11/Xdefs.h>
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"

@@ -30,6 +30,7 @@
 #include "vmod.h"
 
 #include <ctype.h>
+#include <X11/X.h>
 
 /***====================================================================***/
 
@@ -169,7 +170,7 @@ SimpleLookup(const void * priv, xkb_atom_t field, unsigned type,
     const LookupEntry *entry;
     const char *str;
 
-    if ((priv == NULL) || (field == None) || (type != TypeInt))
+    if ((priv == NULL) || (field == XKB_ATOM_NONE) || (type != TypeInt))
     {
         return False;
     }

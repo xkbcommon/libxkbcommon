@@ -27,9 +27,6 @@
 #ifndef XKBCOMP_H
 #define	XKBCOMP_H 1
 
-#include <X11/X.h>
-#include <X11/Xdefs.h>
-
 #include "utils.h"
 
 #include "xkbcommon/xkbcommon.h"

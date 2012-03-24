@@ -121,7 +121,7 @@ InitKeyTypesInfo(KeyTypesInfo * info, struct xkb_desc * xkb, KeyTypesInfo * from
     info->dflt.defs.fileID = 0;
     info->dflt.defs.merge = MergeOverride;
     info->dflt.defs.next = NULL;
-    info->dflt.name = None;
+    info->dflt.name = XKB_ATOM_NONE;
     info->dflt.mask = 0;
     info->dflt.vmask = 0;
     info->dflt.groupInfo = False;
@@ -758,7 +758,7 @@ AddLevelName(KeyTypeInfo * type,
         }
         return True;
     }
-    else if (type->lvlNames[level] != None)
+    else if (type->lvlNames[level] != XKB_ATOM_NONE)
     {
         if (warningLevel > 0)
         {
@@ -984,7 +984,7 @@ HandleKeyTypeDef(KeyTypeDef * def,
     }
     for (i = 0; i < info->dflt.szNames; i++)
     {
-        if ((i < type.numLevels) && (info->dflt.lvlNames[i] != None))
+        if ((i < type.numLevels) && (info->dflt.lvlNames[i] != XKB_ATOM_NONE))
         {
             AddLevelName(&type, i, info->dflt.lvlNames[i], False, False);
         }

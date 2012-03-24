@@ -32,8 +32,6 @@ authorization from the authors.
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <X11/X.h>
-#include <X11/Xdefs.h>
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
 

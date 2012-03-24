@@ -60,25 +60,25 @@ static struct xkb_key_type canonicalTypes[XkbNumRequiredTypes] = {
       1,        /* num_levels */
       0,        /* map_count */
       NULL, NULL,
-      None, NULL
+      NULL, NULL
     },
     { { ShiftMask, ShiftMask, 0 },
       2,        /* num_levels */
       mapSize(map2Level),   /* map_count */
       map2Level, NULL,
-      None,      NULL
+      NULL,      NULL
     },
     { { ShiftMask|LockMask, ShiftMask|LockMask, 0 },
       2,        /* num_levels */
       mapSize(mapAlpha),    /* map_count */
       mapAlpha, preAlpha,
-      None,     NULL
+      NULL,     NULL
     },
     { { ShiftMask, ShiftMask, NL_VMOD_MASK },
       2,        /* num_levels */
       mapSize(mapKeypad),   /* map_count */
       mapKeypad, NULL,
-      None,      NULL
+      NULL,      NULL
     }
 };
 

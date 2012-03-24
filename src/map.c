@@ -57,7 +57,6 @@
 #include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
 #include "xkballoc.h"
-#include <X11/X.h>
 
 /**
  * Returns the total number of modifiers active in the keymap.

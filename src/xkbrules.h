@@ -27,11 +27,8 @@ authorization from the authors.
 #ifndef _XKBRULES_H_
 #define _XKBRULES_H_
 
-#include <stdio.h>
-#include <X11/X.h>
 #include <X11/Xdefs.h>
 #include "xkbcommon/xkbcommon.h"
-
 
 /* From filecommon */
 

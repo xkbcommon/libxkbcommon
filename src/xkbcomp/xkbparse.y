@@ -569,11 +569,11 @@ Element		:	ACTION_TOK
 		|	SHAPE	
 			{ $$= xkb_intern_atom("shape"); }
 		|	ROW	
-			{ $$= None; }
+			{ $$= XKB_ATOM_NONE; }
 		|	SECTION	
-			{ $$= None; }
+			{ $$= XKB_ATOM_NONE; }
 		|	TEXT
-			{ $$= None; }
+			{ $$= XKB_ATOM_NONE; }
 		;
 
 OptMergeMode	:	MergeMode		{ $$= $1; }
@@ -658,7 +658,7 @@ Lhs		:	FieldSpec
 			{
 			    ExprDef *expr;
 			    expr= ExprCreate(ExprArrayRef,TypeUnknown);
-			    expr->value.array.element= None;
+			    expr->value.array.element= XKB_ATOM_NONE;
 			    expr->value.array.field= $1;
 			    expr->value.array.entry= $3;
 			    $$= expr;

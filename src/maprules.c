@@ -40,11 +40,6 @@
 #define XOS_USE_NO_LOCKING
 #include <X11/Xos_r.h>
 
-#include <X11/Xproto.h>
-#include <X11/X.h>
-#include <X11/Xos.h>
-#include <X11/Xfuncs.h>
-
 #ifdef DEBUG
 #define PR_DEBUG(s)		fprintf(stderr,s)
 #define PR_DEBUG1(s,a)		fprintf(stderr,s,a)

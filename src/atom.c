@@ -88,7 +88,7 @@ typedef struct _Node {
 
 #define BAD_RESOURCE 0xe0000000
 
-static xkb_atom_t lastAtom = None;
+static xkb_atom_t lastAtom = XKB_ATOM_NONE;
 static NodePtr atomRoot = NULL;
 static unsigned long tableLength;
 static NodePtr *nodeTable = NULL;
@@ -98,7 +98,7 @@ XkbcAtomText(xkb_atom_t atom)
 {
     NodePtr node;
 
-    if ((atom == None) || (atom > lastAtom))
+    if ((atom == XKB_ATOM_NONE) || (atom > lastAtom))
         return NULL;
     if (!(node = nodeTable[atom]))
         return NULL;
@@ -123,7 +123,7 @@ xkb_intern_atom(const char *string)
     int makeit = True;
 
     if (!string)
-	return None;
+	return XKB_ATOM_NONE;
 
     len = strlen(string);
     np = &atomRoot;
@@ -181,7 +181,7 @@ xkb_intern_atom(const char *string)
                 return BAD_RESOURCE;
             }
             tableLength = newLength;
-	    table[None] = NULL;
+	    table[XKB_ATOM_NONE] = NULL;
 
             nodeTable = table;
         }
@@ -195,7 +195,7 @@ xkb_intern_atom(const char *string)
         return nd->a;
     }
     else
-        return None;
+        return XKB_ATOM_NONE;
 }
 
 static void
@@ -218,5 +218,5 @@ XkbcFreeAllAtoms(void)
     atomRoot = NULL;
     free(nodeTable);
     nodeTable = NULL;
-    lastAtom = None;
+    lastAtom = XKB_ATOM_NONE;
 }

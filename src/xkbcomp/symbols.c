@@ -93,11 +93,11 @@ InitKeyInfo(KeyInfo * info)
     for (i = 0; i < XkbNumKbdGroups; i++)
     {
         info->numLevels[i] = 0;
-        info->types[i] = None;
+        info->types[i] = XKB_ATOM_NONE;
         info->syms[i] = NULL;
         info->acts[i] = NULL;
     }
-    info->dfltType = None;
+    info->dfltType = XKB_ATOM_NONE;
     info->behavior.type = XkbKB_Default;
     info->behavior.data = 0;
     info->vmodmap = 0;
@@ -122,13 +122,13 @@ FreeKeyInfo(KeyInfo * info)
     for (i = 0; i < XkbNumKbdGroups; i++)
     {
         info->numLevels[i] = 0;
-        info->types[i] = None;
+        info->types[i] = XKB_ATOM_NONE;
         free(info->syms[i]);
         info->syms[i] = NULL;
         free(info->acts[i]);
         info->acts[i] = NULL;
     }
-    info->dfltType = None;
+    info->dfltType = XKB_ATOM_NONE;
     info->behavior.type = XkbKB_Default;
     info->behavior.data = 0;
     info->vmodmap = 0;
@@ -242,7 +242,7 @@ InitSymbolsInfo(SymbolsInfo * info, struct xkb_desc * xkb)
     info->keys = uTypedCalloc(SYMBOLS_INIT_SIZE, KeyInfo);
     info->modMap = NULL;
     for (i = 0; i < XkbNumKbdGroups; i++)
-        info->groupNames[i] = None;
+        info->groupNames[i] = XKB_ATOM_NONE;
     InitKeyInfo(&info->dflt);
     InitVModInfo(&info->vmods, xkb);
     info->action = NULL;
@@ -507,9 +507,9 @@ MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
                 MergeKeyGroups(info, into, from, (unsigned) i);
             }
         }
-        if (from->types[i] != None)
+        if (from->types[i] != XKB_ATOM_NONE)
         {
-            if ((into->types[i] != None) && (report) &&
+            if ((into->types[i] != XKB_ATOM_NONE) && report &&
                 (into->types[i] != from->types[i]))
             {
                 xkb_atom_t use, ignore;
@@ -532,7 +532,7 @@ MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
                         XkbcAtomText(ignore));
             }
             if ((from->defs.merge != MergeAugment)
-                || (into->types[i] == None))
+                || (into->types[i] == XKB_ATOM_NONE))
             {
                 into->types[i] = from->types[i];
             }
@@ -703,9 +703,10 @@ MergeIncludedSymbols(SymbolsInfo * into, SymbolsInfo * from,
     }
     for (i = 0; i < XkbNumKbdGroups; i++)
     {
-        if (from->groupNames[i] != None)
+        if (from->groupNames[i] != XKB_ATOM_NONE)
         {
-            if ((merge != MergeAugment) || (into->groupNames[i] == None))
+            if ((merge != MergeAugment) ||
+                (into->groupNames[i] == XKB_ATOM_NONE))
                 into->groupNames[i] = from->groupNames[i];
         }
     }
@@ -1773,9 +1774,9 @@ CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
             haveActions = True;
         autoType = False;
         /* Assign the type to the key, if it is missing. */
-        if (key->types[i] == None)
+        if (key->types[i] == XKB_ATOM_NONE)
         {
-            if (key->dfltType != None)
+            if (key->dfltType != XKB_ATOM_NONE)
                 key->types[i] = key->dfltType;
             else if (FindAutomaticType(key->numLevels[i], key->syms[i],
                                        &key->types[i], &autoType))
@@ -2016,7 +2017,7 @@ CompileSymbols(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
             ApplyAliases(xkb, &info.aliases);
         for (i = 0; i < XkbNumKbdGroups; i++)
         {
-            if (info.groupNames[i] != None)
+            if (info.groupNames[i] != XKB_ATOM_NONE)
             {
                 free(UNCONSTIFY(xkb->names->groups[i]));
                 xkb->names->groups[i] = XkbcAtomGetString(info.groupNames[i]);
