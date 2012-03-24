@@ -57,12 +57,12 @@ typedef struct _KeyTypeInfo
     unsigned mask;
     unsigned vmask;
     Bool groupInfo;
-    int numLevels;
-    int nEntries;
-    int szEntries;
+    unsigned numLevels;
+    unsigned nEntries;
+    unsigned szEntries;
     struct xkb_kt_map_entry * entries;
     PreserveInfo *preserve;
-    int szNames;
+    unsigned szNames;
     xkb_atom_t *lvlNames;
 } KeyTypeInfo;
 
@@ -72,7 +72,7 @@ typedef struct _KeyTypesInfo
     int errorCount;
     int fileID;
     unsigned stdPresent;
-    int nTypes;
+    unsigned nTypes;
     KeyTypeInfo *types;
     KeyTypeInfo dflt;
     VModInfo vmods;
@@ -445,7 +445,7 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
 static struct xkb_kt_map_entry *
 FindMatchingMapEntry(KeyTypeInfo * type, unsigned mask, unsigned vmask)
 {
-    int i;
+    unsigned int i;
     struct xkb_kt_map_entry * entry;
 
     for (i = 0, entry = type->entries; i < type->nEntries; i++, entry++)
@@ -459,7 +459,7 @@ FindMatchingMapEntry(KeyTypeInfo * type, unsigned mask, unsigned vmask)
 static void
 DeleteLevel1MapEntries(KeyTypeInfo * type)
 {
-    int i, n;
+    unsigned int i, n;
 
     for (i = 0; i < type->nEntries; i++)
     {
@@ -929,7 +929,7 @@ static int
 HandleKeyTypeDef(KeyTypeDef * def,
                  struct xkb_desc * xkb, unsigned merge, KeyTypesInfo * info)
 {
-    int i;
+    unsigned int i;
     KeyTypeInfo type;
 
     if (def->merge != MergeDefault)
@@ -1070,7 +1070,7 @@ HandleKeyTypesFile(XkbFile * file,
 static Bool
 CopyDefToKeyType(struct xkb_desc * xkb, struct xkb_key_type * type, KeyTypeInfo * def)
 {
-    int i;
+    unsigned int i;
     PreserveInfo *pre;
 
     for (pre = def->preserve; pre != NULL;
@@ -1151,7 +1151,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
 
     if (info.errorCount == 0)
     {
-        int i;
+        unsigned int i;
         KeyTypeInfo *def;
         struct xkb_key_type *type, *next;
 

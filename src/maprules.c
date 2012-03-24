@@ -263,7 +263,8 @@ SetUpRemap(InputLine *line,RemapSpec *remap)
    char *tok, *str;
    unsigned present, l_ndx_present, v_ndx_present;
    int i;
-   int len, ndx;
+   size_t len;
+   int ndx;
    _Xstrtokparams strtok_buf;
 #ifdef DEBUG
    Bool found;
@@ -727,7 +728,7 @@ static void
 XkbRF_CheckApplyRules(	XkbRF_RulesPtr 		rules,
 			XkbRF_MultiDefsPtr	mdefs,
 			struct xkb_component_names *	names,
-			int			flags)
+			unsigned int			flags)
 {
     int i;
     XkbRF_RulePtr rule;
@@ -751,7 +752,8 @@ static char *
 XkbRF_SubstituteVars(char *name, XkbRF_MultiDefsPtr mdefs)
 {
     char *str, *outstr, *orig, *var;
-    int len, ndx;
+    size_t len;
+    int ndx;
 
     orig= name;
     str= strchr(name,'%');

@@ -121,7 +121,7 @@ XkbcAllocClientMap(struct xkb_desc * xkb, unsigned which, unsigned nTotalTypes)
 int
 XkbcAllocServerMap(struct xkb_desc * xkb, unsigned which, unsigned nNewActions)
 {
-    int i;
+    unsigned i;
     struct xkb_server_map * map;
 
     if (!xkb)
@@ -166,7 +166,7 @@ XkbcAllocServerMap(struct xkb_desc * xkb, unsigned which, unsigned nNewActions)
             map->num_acts = 1;
             map->size_acts = nNewActions + 1;
         }
-        else if ((map->size_acts - map->num_acts) < nNewActions) {
+        else if ((map->size_acts - map->num_acts) < (int)nNewActions) {
             unsigned need;
             union xkb_action *prev_acts = map->acts;
 
@@ -298,7 +298,7 @@ XkbcResizeKeySyms(struct xkb_desc * xkb, xkb_keycode_t key,
     newSyms[0] = NoSymbol;
     nSyms = 1;
     for (i = xkb->min_key_code; i <= xkb->max_key_code; i++) {
-        int nCopy;
+        uint32_t nCopy;
 
         nCopy = nKeySyms = XkbKeyNumSyms(xkb, i);
         if ((nKeySyms == 0) && (i != key))
@@ -325,7 +325,7 @@ XkbcResizeKeySyms(struct xkb_desc * xkb, xkb_keycode_t key,
 }
 
 union xkb_action *
-XkbcResizeKeyActions(struct xkb_desc * xkb, xkb_keycode_t key, int needed)
+XkbcResizeKeyActions(struct xkb_desc * xkb, xkb_keycode_t key, uint32_t needed)
 {
     xkb_keycode_t i, nActs;
     union xkb_action *newActs;
@@ -336,10 +336,10 @@ XkbcResizeKeyActions(struct xkb_desc * xkb, xkb_keycode_t key, int needed)
     }
 
     if (XkbKeyHasActions(xkb, key) &&
-        (XkbKeyNumSyms(xkb, key) >= (unsigned)needed))
+        (XkbKeyNumSyms(xkb, key) >= (int)needed))
         return XkbKeyActionsPtr(xkb, key);
 
-    if (xkb->server->size_acts - xkb->server->num_acts >= (unsigned)needed) {
+    if (xkb->server->size_acts - xkb->server->num_acts >= (int)needed) {
         xkb->server->key_acts[key] = xkb->server->num_acts;
         xkb->server->num_acts += needed;
 

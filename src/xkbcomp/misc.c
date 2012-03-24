@@ -250,7 +250,7 @@ Bool
 FindNamedKey(struct xkb_desc * xkb,
              unsigned long name,
              xkb_keycode_t *kc_rtrn,
-             Bool use_aliases, Bool create, int start_from)
+             Bool use_aliases, Bool create, xkb_keycode_t start_from)
 {
     unsigned n;
 
@@ -318,7 +318,7 @@ Bool
 FindKeyNameForAlias(struct xkb_desc * xkb, unsigned long lname,
                     unsigned long *real_name)
 {
-    int i;
+    unsigned int i;
     char name[XkbKeyNameLength + 1];
 
     if (xkb && xkb->names && xkb->names->key_aliases)

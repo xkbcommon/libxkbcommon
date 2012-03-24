@@ -246,7 +246,7 @@ typedef struct _IndicatorMapDef
 typedef struct _XkbFile
 {
     ParseCommon common;
-    int type;
+    unsigned type;
     char *topName;
     char *name;
     ParseCommon *defs;

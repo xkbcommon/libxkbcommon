@@ -80,7 +80,7 @@ extern Bool FindNamedKey(struct xkb_desc * /* xkb */ ,
                          xkb_keycode_t * /* kc_rtrn */ ,
                          Bool /* use_aliases */ ,
                          Bool /* create */ ,
-                         int    /* start_from */
+                         xkb_keycode_t    /* start_from */
     );
 
 extern Bool FindKeyNameForAlias(struct xkb_desc * /* xkb */ ,

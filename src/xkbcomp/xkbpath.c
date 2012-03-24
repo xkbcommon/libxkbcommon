@@ -44,9 +44,9 @@
 
 static Bool noDefaultPath = False;
 /* number of entries allocated for includePath */
-static int szPath;
+static size_t szPath;
 /* number of actual entries in includePath */
-static int nPathEntries;
+static size_t nPathEntries;
 /* Holds all directories we might be including data from */
 static char **includePath = NULL;
 
@@ -184,7 +184,7 @@ XkbInitIncludePath(void)
 static void
 XkbClearIncludePath(void)
 {
-    int i;
+    size_t i;
 
     if (szPath > 0)
     {
@@ -249,7 +249,7 @@ XkbAddDirectoryToPath(const char *dir)
     includePath[nPathEntries] = strdup(dir);
     if (includePath[nPathEntries] == NULL)
     {
-        WSGO("Allocation failed (includePath[%d])\n", nPathEntries);
+        WSGO("Allocation failed (includePath[%zd])\n", nPathEntries);
         return False;
     }
     nPathEntries++;
@@ -315,7 +315,8 @@ XkbDirectoryForInclude(unsigned type)
 FILE *
 XkbFindFileInPath(const char *name, unsigned type, char **pathRtrn)
 {
-    int i, ret;
+    size_t i;
+    int ret;
     FILE *file = NULL;
     char buf[PATH_MAX];
     const char *typeDir;
@@ -331,7 +332,7 @@ XkbFindFileInPath(const char *name, unsigned type, char **pathRtrn)
 
         ret = snprintf(buf, sizeof(buf), "%s/%s/%s",
                        includePath[i], typeDir, name);
-        if (ret >= sizeof(buf))
+        if (ret >= (ssize_t)sizeof(buf))
         {
             ERROR("File name (%s/%s/%s) too long\n", includePath[i],
                    typeDir, name);

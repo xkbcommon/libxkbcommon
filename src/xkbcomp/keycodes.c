@@ -351,7 +351,7 @@ InitKeyNamesInfo(KeyNamesInfo * info)
 static int
 FindKeyByLong(KeyNamesInfo * info, unsigned long name)
 {
-    int i;
+    uint64_t i;
 
     for (i = info->computedMin; i <= info->computedMax; i++)
     {
@@ -371,7 +371,7 @@ AddKeyName(KeyNamesInfo * info,
            xkb_keycode_t kc,
            char *name, unsigned merge, unsigned fileID, Bool reportCollisions)
 {
-    int old;
+    xkb_keycode_t old;
     unsigned long lval;
 
     if (kc > info->arraySize && !ResizeKeyNameArrays(info, kc)) {
@@ -474,7 +474,7 @@ static void
 MergeIncludedKeycodes(KeyNamesInfo * into, KeyNamesInfo * from,
                       unsigned merge)
 {
-    int i;
+    uint64_t i;
     char buf[5];
 
     if (from->errorCount > 0)
@@ -549,8 +549,10 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_desc * xkb, KeyNamesInfo * 
 {
     unsigned newMerge;
     XkbFile *rtrn;
-    KeyNamesInfo included = {NULL};
+    KeyNamesInfo included;
     Bool haveSelf;
+
+    memset(&included, 0, sizeof(included));
 
     haveSelf = False;
     if ((stmt->file == NULL) && (stmt->map == NULL))
@@ -894,7 +896,7 @@ CompileKeycodes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
         if (XkbcAllocNames(xkb, XkbKeyNamesMask | XkbIndicatorNamesMask, 0)
                 == Success)
         {
-            int i;
+            uint64_t i;
             for (i = info.computedMin; i <= info.computedMax; i++)
                 LongToKeyName(info.names[i], xkb->names->keys[i].name);
         }

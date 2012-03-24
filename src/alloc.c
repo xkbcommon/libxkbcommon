@@ -99,7 +99,7 @@ XkbcFreeCompatMap(struct xkb_desc * xkb)
 }
 
 int
-XkbcAllocNames(struct xkb_desc * xkb, unsigned which, int nTotalAliases)
+XkbcAllocNames(struct xkb_desc * xkb, unsigned which, unsigned nTotalAliases)
 {
     struct xkb_names * names;
 

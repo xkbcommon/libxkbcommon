@@ -63,7 +63,7 @@ typedef struct _KeyInfo
     unsigned char typesDefined;
     unsigned char symsDefined;
     unsigned char actsDefined;
-    short numLevels[XkbNumKbdGroups];
+    unsigned int numLevels[XkbNumKbdGroups];
     xkb_keysym_t *syms[XkbNumKbdGroups];
     union xkb_action *acts[XkbNumKbdGroups];
     xkb_atom_t types[XkbNumKbdGroups];
@@ -159,7 +159,7 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
     }
     else
     {
-        int width;
+        unsigned int width;
         for (i = 0; i < XkbNumKbdGroups; i++)
         {
             width = new->numLevels[i];
@@ -252,7 +252,7 @@ InitSymbolsInfo(SymbolsInfo * info, struct xkb_desc * xkb)
 static void
 FreeSymbolsInfo(SymbolsInfo * info)
 {
-    int i;
+    unsigned int i;
 
     free(info->name);
     if (info->keys)
@@ -308,8 +308,8 @@ MergeKeyGroups(SymbolsInfo * info,
 {
     xkb_keysym_t *resultSyms;
     union xkb_action *resultActs;
-    int resultWidth;
-    int i;
+    unsigned int resultWidth;
+    unsigned int i;
     Bool report, clobber;
 
     clobber = (from->defs.merge != MergeAugment);
@@ -576,7 +576,7 @@ MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
 static Bool
 AddKeySymbols(SymbolsInfo * info, KeyInfo * key, struct xkb_desc * xkb)
 {
-    int i;
+    unsigned int i;
     unsigned long real_name;
 
     for (i = 0; i < info->nKeys; i++)
@@ -688,7 +688,7 @@ static void
 MergeIncludedSymbols(SymbolsInfo * into, SymbolsInfo * from,
                      unsigned merge, struct xkb_desc * xkb)
 {
-    int i;
+    unsigned int i;
     KeyInfo *key;
 
     if (from->errorCount > 0)
@@ -887,7 +887,8 @@ AddSymbolsToKey(KeyInfo * key,
                 ExprDef * arrayNdx, ExprDef * value, SymbolsInfo * info)
 {
     unsigned ndx, nSyms;
-    int i;
+    unsigned int i;
+    long j;
 
     if (!GetGroupIndex(key, arrayNdx, SYMBOLS, &ndx))
         return False;
@@ -928,8 +929,8 @@ AddSymbolsToKey(KeyInfo * key,
             key->syms[ndx][i] = NoSymbol;
         }
     }
-    for (i = key->numLevels[ndx] - 1;
-         (i >= 0) && (key->syms[ndx][i] == NoSymbol); i--)
+    for (j = key->numLevels[ndx] - 1;
+         (j >= 0) && (key->syms[ndx][j] == NoSymbol); j--)
     {
         key->numLevels[ndx]--;
     }
@@ -942,7 +943,7 @@ AddActionsToKey(KeyInfo * key,
                 char *field,
                 ExprDef * arrayNdx, ExprDef * value, SymbolsInfo * info)
 {
-    int i;
+    unsigned int i;
     unsigned ndx, nActs;
     ExprDef *act;
     struct xkb_any_action *toAct;
@@ -1738,7 +1739,7 @@ PrepareKeyDef(KeyInfo * key)
 static Bool
 CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
 {
-    int i;
+    unsigned int i;
     xkb_keycode_t kc;
     unsigned width, tmp, nGroups;
     struct xkb_key_type * type;
@@ -1966,7 +1967,7 @@ CopyModMapDef(struct xkb_desc * xkb, ModMapEntry *entry)
 Bool
 CompileSymbols(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
 {
-    int i;
+    unsigned int i;
     SymbolsInfo info;
 
     InitSymbolsInfo(&info, xkb);

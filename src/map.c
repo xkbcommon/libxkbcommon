@@ -275,7 +275,7 @@ xkb_key_get_group(struct xkb_state *state, xkb_keycode_t key)
 {
     unsigned int info = XkbKeyGroupInfo(state->xkb, key);
     unsigned int num_groups = XkbKeyNumGroups(state->xkb, key);
-    int ret = state->group;
+    unsigned int ret = state->group;
 
     if (ret < XkbKeyNumGroups(state->xkb, key))
         return ret;

@@ -102,7 +102,7 @@ siText(SymInterpInfo * si, CompatInfo * info)
 static void
 InitCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
 {
-    int i;
+    unsigned int i;
 
     info->xkb = xkb;
     info->name = NULL;
@@ -132,7 +132,7 @@ InitCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
 static void
 ClearCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
 {
-    int i;
+    unsigned int i;
     ActionInfo *next;
 
     free(info->name);

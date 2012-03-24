@@ -36,7 +36,7 @@ extern int
 XkbcAllocCompatMap(struct xkb_desc * xkb, unsigned which, unsigned nSI);
 
 extern int
-XkbcAllocNames(struct xkb_desc * xkb, unsigned which, int nTotalAliases);
+XkbcAllocNames(struct xkb_desc * xkb, unsigned which, unsigned nTotalAliases);
 
 extern int
 XkbcAllocControls(struct xkb_desc * xkb, unsigned which);
@@ -65,7 +65,7 @@ extern xkb_keysym_t *
 XkbcResizeKeySyms(struct xkb_desc * xkb, xkb_keycode_t key, uint32_t needed);
 
 extern union xkb_action *
-XkbcResizeKeyActions(struct xkb_desc * xkb, xkb_keycode_t key, int needed);
+XkbcResizeKeyActions(struct xkb_desc * xkb, xkb_keycode_t key, uint32_t needed);
 
 extern void
 XkbcFreeClientMap(struct xkb_desc * xkb);

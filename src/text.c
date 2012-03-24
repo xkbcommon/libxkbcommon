@@ -36,7 +36,7 @@
 
 #define BUFFER_SIZE 1024
 static char textBuffer[BUFFER_SIZE];
-static int tbNext = 0;
+static unsigned int tbNext = 0;
 
 static char *
 tbGetBuffer(unsigned int size)
