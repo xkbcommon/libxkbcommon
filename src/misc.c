@@ -230,22 +230,29 @@ _XkbcKSCheckCase(xkb_keysym_t ks)
             rtrn |= _XkbKSLower;
         break;
     case 18: /* latin 8 */
-        if ((ks == XK_Babovedot) ||
-            (ks >= XK_Dabovedot && ks <= XK_Wacute) ||
-            (ks >= XK_Ygrave && ks <= XK_Fabovedot) ||
+        if ((ks == XK_Wcircumflex) ||
+            (ks == XK_Ycircumflex) ||
+            (ks == XK_Babovedot) ||
+            (ks == XK_Dabovedot) ||
+            (ks == XK_Fabovedot) ||
             (ks == XK_Mabovedot) ||
             (ks == XK_Pabovedot) ||
             (ks == XK_Sabovedot) ||
+            (ks == XK_Tabovedot) ||
             (ks == XK_Wdiaeresis) ||
-            (ks >= XK_Wcircumflex && ks <= XK_Ycircumflex))
+            (ks == XK_Ygrave))
             rtrn |= _XkbKSUpper;
-        if ((ks == XK_babovedot) ||
+        if ((ks == XK_wcircumflex) ||
+            (ks == XK_ycircumflex) ||
+            (ks == XK_babovedot) ||
             (ks == XK_dabovedot) ||
             (ks == XK_fabovedot) ||
             (ks == XK_mabovedot) ||
-            (ks >= XK_wgrave && ks <= XK_wacute) ||
-            (ks == XK_ygrave) ||
-            (ks >= XK_wdiaeresis && ks <= XK_ycircumflex))
+            (ks == XK_pabovedot) ||
+            (ks == XK_sabovedot) ||
+            (ks == XK_tabovedot) ||
+            (ks == XK_wdiaeresis) ||
+            (ks == XK_ygrave))
             rtrn |= _XkbKSLower;
         break;
     case 19: /* latin 9 */
