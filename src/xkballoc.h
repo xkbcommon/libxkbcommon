@@ -27,7 +27,6 @@ authorization from the authors.
 #ifndef _XKBALLOC_H_
 #define _XKBALLOC_H_
 
-#include <X11/Xdefs.h>
 #include <X11/X.h>
 #include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"

@@ -305,7 +305,7 @@ xkb_key_get_syms_by_level(struct xkb_desc *xkb, xkb_keycode_t key, unsigned int 
                           unsigned int level, xkb_keysym_t **syms_out)
 {
     *syms_out = &(XkbKeySymEntry(xkb, key, level, group));
-    if (**syms_out == NoSymbol)
+    if (**syms_out == XKB_KEYSYM_NO_SYMBOL)
         goto err;
 
     return 1;

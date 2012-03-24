@@ -30,7 +30,6 @@
 #include "vmod.h"
 
 #include <ctype.h>
-#include <X11/X.h>
 
 /***====================================================================***/
 
@@ -985,10 +984,12 @@ ExprResolveKeySym(ExprDef * expr,
     {
         const char *str;
         str = XkbcAtomText(expr->value.str);
-        if ((str != NULL) && ((sym = xkb_string_to_keysym(str)) != NoSymbol))
-        {
-            val_rtrn->uval = sym;
-            return True;
+        if (str) {
+            sym = xkb_string_to_keysym(str);
+            if (sym != XKB_KEYSYM_NO_SYMBOL) {
+                val_rtrn->uval = sym;
+                return True;
+            }
         }
     }
     ok = ExprResolveInteger(expr, val_rtrn);

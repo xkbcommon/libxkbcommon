@@ -28,7 +28,6 @@ authorization from the authors.
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <X11/X.h>
 #include <X11/keysymdef.h>
 #include "xkbmisc.h"
 #include "xkbcommon/xkbcommon.h"
@@ -50,7 +49,7 @@ xkb_keysym_to_string(xkb_keysym_t ks, char *buffer, size_t size)
     }
 
     /* Not listed in keysymdef.h for hysterical raisins. */
-    if (ks == NoSymbol) {
+    if (ks == XKB_KEYSYM_NO_SYMBOL) {
         snprintf(buffer, size, "NoSymbol");
         return;
     }
@@ -135,11 +134,11 @@ xkb_string_to_keysym(const char *s)
         val = strtoul(&s[1], NULL, 16);
 
         if (val < 0x20 || (val > 0x7e && val < 0xa0))
-            return NoSymbol;
+            return XKB_KEYSYM_NO_SYMBOL;
         if (val < 0x100)
             return val;
         if (val > 0x10ffff)
-            return NoSymbol;
+            return XKB_KEYSYM_NO_SYMBOL;
         return val | 0x01000000;
     }
     else if (s[0] == '0' && s[1] == 'x') {
@@ -153,12 +152,12 @@ xkb_string_to_keysym(const char *s)
         xkb_keysym_t ret;
         char *tmp = strdup(s);
         if (!tmp)
-            return NoSymbol;
+            return XKB_KEYSYM_NO_SYMBOL;
         memmove(&tmp[4], &tmp[5], strlen(s) - 5 + 1);
         ret = xkb_string_to_keysym(tmp);
         free(tmp);
         return ret;
     }
 
-    return NoSymbol;
+    return XKB_KEYSYM_NO_SYMBOL;
 }

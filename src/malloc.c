@@ -92,7 +92,7 @@ XkbcAllocClientMap(struct xkb_desc * xkb, unsigned which, unsigned nTotalTypes)
                 return BadAlloc;
             }
             map->num_syms = 1;
-            map->syms[0] = NoSymbol;
+            map->syms[0] = XKB_KEYSYM_NO_SYMBOL;
         }
 
         if (!map->key_sym_map) {
@@ -295,7 +295,7 @@ XkbcResizeKeySyms(struct xkb_desc * xkb, xkb_keycode_t key,
     if (!newSyms)
         return NULL;
 
-    newSyms[0] = NoSymbol;
+    newSyms[0] = XKB_KEYSYM_NO_SYMBOL;
     nSyms = 1;
     for (i = xkb->min_key_code; i <= xkb->max_key_code; i++) {
         uint32_t nCopy;

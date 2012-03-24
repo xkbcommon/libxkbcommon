@@ -97,6 +97,8 @@ typedef uint32_t xkb_led_index_t;
 #define XKB_KEYCODE_INVALID             (0xffffffff)
 #define XKB_LED_INVALID                 (0xffffffff)
 
+#define XKB_KEYSYM_NO_SYMBOL            0
+
 #define XKB_KEYCODE_MAX                 (0xffffffff - 1)
 #define xkb_keycode_is_legal_ext(kc)    (kc <= XKB_KEYCODE_MAX)
 #define xkb_keycode_is_legal_x11(kc)    (kc <= XKB_KEYCODE_MAX)

@@ -440,7 +440,7 @@ LookupKeysym(char *str, xkb_keysym_t * sym_rtrn)
     if ((!str) || (strcasecmp(str, "any") == 0) ||
         (strcasecmp(str, "nosymbol") == 0))
     {
-        *sym_rtrn = NoSymbol;
+        *sym_rtrn = XKB_KEYSYM_NO_SYMBOL;
         return 1;
     }
     else if ((strcasecmp(str, "none") == 0) ||
@@ -450,7 +450,7 @@ LookupKeysym(char *str, xkb_keysym_t * sym_rtrn)
         return 1;
     }
     sym = xkb_string_to_keysym(str);
-    if (sym != NoSymbol)
+    if (sym != XKB_KEYSYM_NO_SYMBOL)
     {
         *sym_rtrn = sym;
         return 1;

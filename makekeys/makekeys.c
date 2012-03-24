@@ -26,7 +26,10 @@ from The Open Group.
 
 */
 
-/* Constructs hash tables for XStringToKeysym and XKeysymToString. */
+/*
+ * Constructs hash tables for xkb_keysym_to_string and
+ * xkb_string_from_keysym.
+ */
 
 #include "xkbcommon/xkbcommon.h"
 
@@ -151,9 +154,9 @@ main(int argc, char *argv[])
         fclose(fptr);
     }
 
-    /* Special case NoSymbol. */
+    /* Special case XKB_KEYSYM_NO_SYMBOL. */
     info[ksnum].name = strdup("NoSymbol");
-    info[ksnum].val = 0L;
+    info[ksnum].val = XKB_KEYSYM_NO_SYMBOL;
     ksnum++;
 
     printf("/* This file is generated from keysymdef.h. */\n");

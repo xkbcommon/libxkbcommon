@@ -358,14 +358,14 @@ MergeKeyGroups(SymbolsInfo * info,
         if (from->syms[group] && (i < from->numLevels[group]))
             fromSym = from->syms[group][i];
         else
-            fromSym = NoSymbol;
+            fromSym = XKB_KEYSYM_NO_SYMBOL;
         if (into->syms[group] && (i < into->numLevels[group]))
             toSym = into->syms[group][i];
         else
-            toSym = NoSymbol;
-        if ((fromSym == NoSymbol) || (fromSym == toSym))
+            toSym = XKB_KEYSYM_NO_SYMBOL;
+        if ((fromSym == XKB_KEYSYM_NO_SYMBOL) || (fromSym == toSym))
             resultSyms[i] = toSym;
-        else if (toSym == NoSymbol)
+        else if (toSym == XKB_KEYSYM_NO_SYMBOL)
             resultSyms[i] = fromSym;
         else
         {
@@ -927,11 +927,11 @@ AddSymbolsToKey(KeyInfo * key,
             WARN("Could not resolve keysym %s for key %s, group %d (%s), level %d\n",
                   value->value.list.syms[i], longText(key->name), ndx + 1,
                   XkbcAtomText(info->groupNames[ndx]), nSyms);
-            key->syms[ndx][i] = NoSymbol;
+            key->syms[ndx][i] = XKB_KEYSYM_NO_SYMBOL;
         }
     }
     for (j = key->numLevels[ndx] - 1;
-         (j >= 0) && (key->syms[ndx][j] == NoSymbol); j--)
+         (j >= 0) && (key->syms[ndx][j] == XKB_KEYSYM_NO_SYMBOL); j--)
     {
         key->numLevels[ndx]--;
     }
@@ -1878,7 +1878,7 @@ CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
                 if (tmp < key->numLevels[i])
                     outSyms[tmp] = key->syms[i][tmp];
                 else
-                    outSyms[tmp] = NoSymbol;
+                    outSyms[tmp] = XKB_KEYSYM_NO_SYMBOL;
                 if ((outActs != NULL) && (key->acts[i] != NULL))
                 {
                     if (tmp < key->numLevels[i])

@@ -28,7 +28,6 @@
 
 #include <stdio.h>
 #include <ctype.h>
-#include <X11/Xos.h>
 
 #include "utils.h"
 #include "parseutils.h"

@@ -3,12 +3,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <X11/X.h>
 
 static void print_keysym(const char *s)
 {
     xkb_keysym_t ks = xkb_string_to_keysym(s);
-    if (ks == NoSymbol)
+    if (ks == XKB_KEYSYM_NO_SYMBOL)
         printf("NoSymbol\n");
     else
         printf("0x%lX\n", ks);
