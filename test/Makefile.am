@@ -1,6 +1,6 @@
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src
-AM_CFLAGS = $(X11_CFLAGS) $(CWARNFLAGS)
-LDADD = $(top_builddir)/src/libxkbcommon.la
+AM_CFLAGS = $(X11_CFLAGS) $(XORG_COMPILER_FLAGS)
+LDADD = $(top_builddir)/libxkbcommon.la
 
 TESTS_ENVIRONMENT = $(SHELL)
 

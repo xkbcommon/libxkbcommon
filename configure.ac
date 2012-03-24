@@ -29,7 +29,7 @@ AC_CONFIG_HEADERS([src/config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
 # Initialize Automake
-AM_INIT_AUTOMAKE([foreign dist-bzip2])
+AM_INIT_AUTOMAKE([foreign dist-bzip2 subdir-objects])
 AM_MAINTAINER_MODE
 
 # Initialize libtool
@@ -104,11 +104,7 @@ AC_ARG_WITH([xkb_config_root],
 AC_SUBST([XKBCONFIGROOT])
 
 AC_CONFIG_FILES([
-	Makefile
-	xkbcommon.pc
-	include/Makefile
-	makekeys/Makefile
-	src/Makefile
-	src/xkbcomp/Makefile
-	test/Makefile])
+        Makefile
+        test/Makefile
+        xkbcommon.pc])
 AC_OUTPUT
