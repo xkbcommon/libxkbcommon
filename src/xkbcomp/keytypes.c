@@ -710,7 +710,7 @@ SetPreserve(KeyTypeInfo * type,
     new.preMods = rtrn.uval & 0xff;
     new.preVMods = (rtrn.uval >> 16) & 0xffff;
     if ((new.preMods & (~new.indexMods))
-        || (new.preVMods && (~new.indexVMods)))
+        || (new.preVMods & (~new.indexVMods)))
     {
         if (warningLevel > 0)
         {
