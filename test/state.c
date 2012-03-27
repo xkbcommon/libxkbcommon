@@ -99,14 +99,14 @@ test_update_key(struct xkb_desc *xkb)
     assert(state);
 
     /* LCtrl down */
-    xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, 1);
+    xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_DOWN);
     fprintf(stderr, "dumping state for LCtrl down:\n");
     print_state(state);
     assert(xkb_state_mod_name_is_active(state, "Control",
                                         XKB_STATE_DEPRESSED));
 
     /* LCtrl + RAlt down */
-    xkb_state_update_key(state, KEY_RIGHTALT + EVDEV_OFFSET, 1);
+    xkb_state_update_key(state, KEY_RIGHTALT + EVDEV_OFFSET, XKB_KEY_DOWN);
     fprintf(stderr, "dumping state for LCtrl + RAlt down:\n");
     print_state(state);
     assert(xkb_state_mod_name_is_active(state, "Control",
@@ -115,7 +115,7 @@ test_update_key(struct xkb_desc *xkb)
                                         XKB_STATE_DEPRESSED));
 
     /* RAlt down */
-    xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, 0);
+    xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_UP);
     fprintf(stderr, "dumping state for RAlt down:\n");
     print_state(state);
     assert(!xkb_state_mod_name_is_active(state, "Control",
@@ -124,13 +124,13 @@ test_update_key(struct xkb_desc *xkb)
                                         XKB_STATE_DEPRESSED));
 
     /* none down */
-    xkb_state_update_key(state, KEY_RIGHTALT + EVDEV_OFFSET, 0);
+    xkb_state_update_key(state, KEY_RIGHTALT + EVDEV_OFFSET, XKB_KEY_UP);
     assert(!xkb_state_mod_name_is_active(state, "Mod1",
                                          XKB_STATE_EFFECTIVE));
 
     /* Caps locked */
-    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, 1);
-    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, 0);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
     fprintf(stderr, "dumping state for Caps Lock:\n");
     print_state(state);
     assert(xkb_state_mod_name_is_active(state, "Caps Lock",
@@ -140,8 +140,8 @@ test_update_key(struct xkb_desc *xkb)
     assert(num_syms == 1 && syms[0] == XK_Q);
 
     /* Caps unlocked */
-    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, 1);
-    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, 0);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
     assert(!xkb_state_mod_name_is_active(state, "Caps Lock",
                                          XKB_STATE_EFFECTIVE));
     assert(!xkb_state_led_name_is_active(state, "Caps Lock"));
@@ -173,8 +173,8 @@ test_serialisation(struct xkb_desc *xkb)
     ctrl = xkb_map_mod_get_index(state->xkb, "Control");
     assert(ctrl != XKB_MOD_INVALID);
 
-    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, 1);
-    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, 0);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
     base_mods = xkb_state_serialise_mods(state, XKB_STATE_DEPRESSED);
     assert(base_mods == 0);
     latched_mods = xkb_state_serialise_mods(state, XKB_STATE_LATCHED);
@@ -184,7 +184,7 @@ test_serialisation(struct xkb_desc *xkb)
     effective_mods = xkb_state_serialise_mods(state, XKB_STATE_EFFECTIVE);
     assert(effective_mods == locked_mods);
 
-    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, 1);
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
     base_mods = xkb_state_serialise_mods(state, XKB_STATE_DEPRESSED);
     assert(base_mods == (1 << shift));
     latched_mods = xkb_state_serialise_mods(state, XKB_STATE_LATCHED);

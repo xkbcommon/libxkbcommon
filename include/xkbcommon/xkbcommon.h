@@ -716,11 +716,17 @@ xkb_state_ref(struct xkb_state *state);
 _X_EXPORT void
 xkb_state_unref(struct xkb_state *state);
 
+enum xkb_key_direction {
+    XKB_KEY_UP,
+    XKB_KEY_DOWN,
+};
+
 /**
  * Updates a state object to reflect the given key being pressed or released.
  */
 _X_EXPORT void
-xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key, int down);
+xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
+                     enum xkb_key_direction direction);
 
 /**
  * Modifier and group types for state objects.  This enum is bitmaskable,

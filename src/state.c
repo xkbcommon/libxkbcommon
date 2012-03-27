@@ -72,7 +72,8 @@ struct xkb_filter {
     union xkb_action action;
     xkb_keycode_t keycode;
     uint32_t priv;
-    int (*func)(struct xkb_filter *filter, xkb_keycode_t key, int down);
+    int (*func)(struct xkb_filter *filter, xkb_keycode_t key,
+                enum xkb_key_direction direction);
     int refcnt;
     struct xkb_filter *next;
 };
@@ -134,14 +135,14 @@ xkb_filter_new(struct xkb_state *state)
 
 static int
 xkb_filter_group_set_func(struct xkb_filter *filter, xkb_keycode_t keycode,
-                          int down)
+                          enum xkb_key_direction direction)
 {
     if (keycode != filter->keycode) {
         filter->action.group.flags &= ~XkbSA_ClearLocks;
         return 1;
     }
 
-    if (down) {
+    if (direction == XKB_KEY_DOWN) {
         filter->refcnt++;
         return 0;
     }
@@ -186,14 +187,14 @@ xkb_filter_group_set_new(struct xkb_state *state, xkb_keycode_t keycode,
 
 static int
 xkb_filter_mod_set_func(struct xkb_filter *filter, xkb_keycode_t keycode,
-                        int down)
+                        enum xkb_key_direction direction)
 {
     if (keycode != filter->keycode) {
         filter->action.mods.flags &= ~XkbSA_ClearLocks;
         return 1;
     }
 
-    if (down) {
+    if (direction == XKB_KEY_DOWN) {
         filter->refcnt++;
         return 0;
     }
@@ -229,12 +230,12 @@ xkb_filter_mod_set_new(struct xkb_state *state, xkb_keycode_t keycode,
 
 static int
 xkb_filter_mod_lock_func(struct xkb_filter *filter, xkb_keycode_t keycode,
-                         int down)
+                         enum xkb_key_direction direction)
 {
     if (keycode != filter->keycode)
         return 1;
 
-    if (down) {
+    if (direction == XKB_KEY_DOWN) {
         filter->refcnt++;
         return 0;
     }
@@ -272,11 +273,11 @@ enum xkb_key_latch_state {
 
 static int
 xkb_filter_mod_latch_func(struct xkb_filter *filter, xkb_keycode_t keycode,
-                          int down)
+                          enum xkb_key_direction direction)
 {
     enum xkb_key_latch_state latch = filter->priv;
 
-    if (down && latch == LATCH_PENDING) {
+    if (direction == XKB_KEY_DOWN && latch == LATCH_PENDING) {
         /* If this is a new keypress and we're awaiting our single latched
          * keypress, then either break the latch if any random key is pressed,
          * or promote it to a lock or plain base set if it's the same
@@ -309,7 +310,7 @@ xkb_filter_mod_latch_func(struct xkb_filter *filter, xkb_keycode_t keycode,
             return 1;
         }
     }
-    else if (!down && keycode == filter->keycode) {
+    else if (direction == XKB_KEY_UP && keycode == filter->keycode) {
         /* Our key got released.  If we've set it to clear locks, and we
          * currently have the same modifiers locked, then release them and
          * don't actually latch.  Else we've actually hit the latching
@@ -335,7 +336,7 @@ xkb_filter_mod_latch_func(struct xkb_filter *filter, xkb_keycode_t keycode,
             /* XXX beep beep! */
         }
     }
-    else if (down && latch == LATCH_KEY_DOWN) {
+    else if (direction == XKB_KEY_DOWN && latch == LATCH_KEY_DOWN) {
         /* Someone's pressed another key while we've still got the latching
          * key held down, so keep the base modifier state active (from
          * xkb_filter_mod_latch_new), but don't trip the latch, just clear
@@ -373,7 +374,8 @@ xkb_filter_mod_latch_new(struct xkb_state *state, xkb_keycode_t keycode,
  * apply a new filter from the key action.
  */
 static void
-xkb_filter_apply_all(struct xkb_state *state, xkb_keycode_t key, int down)
+xkb_filter_apply_all(struct xkb_state *state, xkb_keycode_t key,
+                     enum xkb_key_direction direction)
 {
     struct xkb_filter *filters = state->filters;
     union xkb_action *act = NULL;
@@ -385,10 +387,10 @@ xkb_filter_apply_all(struct xkb_state *state, xkb_keycode_t key, int down)
     for (i = 0; i < state->num_filters; i++) {
         if (!filters[i].func)
             continue;
-        send &= (*filters[i].func)(&filters[i], key, down);
+        send &= (*filters[i].func)(&filters[i], key, direction);
     }
 
-    if (!send || !down)
+    if (!send || direction == XKB_KEY_UP)
         return;
 
     act = xkb_key_get_action(state, key);
@@ -519,9 +521,10 @@ xkb_state_update_derived(struct xkb_state *state)
  * new modifiers.
  */
 void
-xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key, int down)
+xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
+                     enum xkb_key_direction direction)
 {
-    xkb_filter_apply_all(state, key, down);
+    xkb_filter_apply_all(state, key, direction);
     xkb_state_update_derived(state);
 }
 
