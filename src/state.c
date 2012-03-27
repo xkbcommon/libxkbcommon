@@ -520,9 +520,10 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key, int down)
  * Returns 1 if the given modifier is active with the specified type(s), 0 if
  * not, or -1 if the modifier is invalid.
  */
-int xkb_state_mod_index_is_active(struct xkb_state *state,
-                                  xkb_mod_index_t idx,
-                                  enum xkb_state_component type)
+int
+xkb_state_mod_index_is_active(struct xkb_state *state,
+                              xkb_mod_index_t idx,
+                              enum xkb_state_component type)
 {
     int ret = 0;
 
@@ -543,8 +544,9 @@ int xkb_state_mod_index_is_active(struct xkb_state *state,
  * Returns 1 if the given modifier is active with the specified type(s), 0 if
  * not, or -1 if the modifier is invalid.
  */
-int xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
-                                 enum xkb_state_component type)
+int
+xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
+                             enum xkb_state_component type)
 {
     xkb_mod_index_t idx = xkb_map_mod_get_index(state->xkb, name);
 
@@ -558,9 +560,10 @@ int xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
  * Returns 1 if the given group is active with the specified type(s), 0 if
  * not, or -1 if the group is invalid.
  */
-int xkb_state_group_index_is_active(struct xkb_state *state,
-                                    xkb_group_index_t idx,
-                                    enum xkb_state_component type)
+int
+xkb_state_group_index_is_active(struct xkb_state *state,
+                                xkb_group_index_t idx,
+                                enum xkb_state_component type)
 {
     int ret = 0;
 
@@ -581,8 +584,9 @@ int xkb_state_group_index_is_active(struct xkb_state *state,
  * Returns 1 if the given modifier is active with the specified type(s), 0 if
  * not, or -1 if the modifier is invalid.
  */
-int xkb_state_group_name_is_active(struct xkb_state *state, const char *name,
-                                 enum xkb_state_component type)
+int
+xkb_state_group_name_is_active(struct xkb_state *state, const char *name,
+                               enum xkb_state_component type)
 {
     xkb_group_index_t idx = xkb_map_group_get_index(state->xkb, name);
 
@@ -595,7 +599,8 @@ int xkb_state_group_name_is_active(struct xkb_state *state, const char *name,
 /**
  * Returns 1 if the given LED is active, 0 if not, or -1 if the LED is invalid.
  */
-int xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx)
+int
+xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx)
 {
     if (idx >= xkb_map_num_leds(state->xkb))
         return -1;
@@ -606,7 +611,8 @@ int xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx)
 /**
  * Returns 1 if the given LED is active, 0 if not, or -1 if the LED is invalid.
  */
-int xkb_state_led_name_is_active(struct xkb_state *state, const char *name)
+int
+xkb_state_led_name_is_active(struct xkb_state *state, const char *name)
 {
     xkb_led_index_t idx = xkb_map_led_get_index(state->xkb, name);
 
