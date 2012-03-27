@@ -354,18 +354,18 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  * locked modifiers.
  */
 enum xkb_state_component {
+    /** A key holding this modifier or group is currently physically
+     *  depressed; also known as 'base'. */
     XKB_STATE_DEPRESSED = (1 << 0),
-        /**< A key holding this modifier or group is currently physically
-         *   depressed; also known as 'base'. */
+    /** Modifier or group is latched, i.e. will be unset after the next
+     *  non-modifier key press. */
     XKB_STATE_LATCHED = (1 << 1),
-        /**< Modifier or group is latched, i.e. will be unset after the next
-         *   non-modifier key press. */
+    /** Modifier or group is locked, i.e. will be unset after the key
+     *  provoking the lock has been pressed again. */
     XKB_STATE_LOCKED = (1 << 2),
-        /**< Modifier or group is locked, i.e. will be unset after the key
-         *   provoking the lock has been pressed again. */
+    /** Combinatination of depressed, latched, and locked. */
     XKB_STATE_EFFECTIVE =
         (XKB_STATE_DEPRESSED | XKB_STATE_LATCHED | XKB_STATE_LOCKED),
-        /**< Combinatination of depressed, latched, and locked. */
 };
 
 /**
