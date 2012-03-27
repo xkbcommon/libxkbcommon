@@ -31,25 +31,26 @@
 
 #include "utils.h"
 #include "parseutils.h"
-#include "xkbparse.h"
 
-char *scanFile = NULL;
-int lineNum = 0;
 
-int scanInt;
-unsigned long scanULong;
+extern int yyparse(struct parser_param *param);
 
-static char *s;
-char scanBuf[1024];
-
-extern int yyparse(void);
+#define YY_USER_ACTION {                \
+        yylloc->first_line = yylineno;  \
+        yylloc->last_line = yylineno;   \
+}
 
 %}
 
+%option reentrant
+%option extra-type="struct scanner_extra *"
+%option bison-bridge bison-locations
+%option never-interactive nounistd
 %option case-insensitive
 %option yylineno
 %option noyywrap
 %option never-interactive
+%option nowarn
 %option noinput
 %option nounput
 
@@ -60,11 +61,21 @@ extern int yyparse(void);
 "//"[^\n]*
 "#"[^\n]*
 
-\"			s = scanBuf; BEGIN(S_STR);
-\<			s = scanBuf; BEGIN(S_KEY);
+\"			yyextra->s = yyextra->scanBuf; BEGIN(S_STR);
+\<			yyextra->s = yyextra->scanBuf; BEGIN(S_KEY);
 
-<S_STR>\"		BEGIN(INITIAL); *s = '\0'; return STRING;
-<S_KEY>\>		BEGIN(INITIAL); *s = '\0'; return KEYNAME;
+<S_STR>\" {
+			BEGIN(INITIAL);
+			*yyextra->s = '\0';
+			yylval->str = strdup(yyextra->scanBuf);
+			return STRING;
+		    }
+<S_KEY>\> {
+			BEGIN(INITIAL);
+			*yyextra->s = '\0';
+			yylval->str = strdup(yyextra->scanBuf);
+			return KEYNAME;
+		    }
 
 <S_STR,S_KEY>\\[0-7]{1,3} {
 			/* octal escape sequence */
@@ -77,7 +88,7 @@ extern int yyparse(void);
 			    return ERROR_TOK;
 			}
 
-			*s++ = result;
+			*yyextra->s++ = result;
 		    }
 
 <S_STR,S_KEY>\\[0-9]+ {
@@ -85,15 +96,15 @@ extern int yyparse(void);
 			return ERROR_TOK;
 		    }
 
-<S_STR,S_KEY>\\n	*s++ = '\n';
-<S_STR,S_KEY>\\t	*s++ = '\t';
-<S_STR,S_KEY>\\r	*s++ = '\r';
-<S_STR,S_KEY>\\b	*s++ = '\b';
-<S_STR,S_KEY>\\f	*s++ = '\f';
-<S_STR,S_KEY>\\v	*s++ = '\v';
-<S_STR,S_KEY>\\e	*s++ = '\033';
+<S_STR,S_KEY>\\n	*yyextra->s++ = '\n';
+<S_STR,S_KEY>\\t	*yyextra->s++ = '\t';
+<S_STR,S_KEY>\\r	*yyextra->s++ = '\r';
+<S_STR,S_KEY>\\b	*yyextra->s++ = '\b';
+<S_STR,S_KEY>\\f	*yyextra->s++ = '\f';
+<S_STR,S_KEY>\\v	*yyextra->s++ = '\v';
+<S_STR,S_KEY>\\e	*yyextra->s++ = '\033';
 
-<S_STR,S_KEY>.		*s++ = yytext[0];
+<S_STR,S_KEY>.		*yyextra->s++ = yytext[0];
 
 xkb_keymap		return XKB_KEYMAP;
 xkb_keycodes		return XKB_KEYCODES;
@@ -141,19 +152,18 @@ keypad_keys		return KEYPAD_KEYS;
 function_keys		return FUNCTION_KEYS;
 alternate_group		return ALTERNATE_GROUP;
 
-[a-zA-Z_][a-zA-Z_0-9]*	memcpy(scanBuf, yytext, yyleng + 1); return IDENT;
+[a-zA-Z_][a-zA-Z_0-9]*	yylval->str = strdup(yytext); return IDENT;
 
 0x[a-fA-F0-9]+		|
 [0-9]+			{
 			    char *end;
-			    scanInt = strtol(yytext, &end, 0);
-                            scanULong = strtoul(yytext, &end, 0);
+			    yylval->num = strtoul(yytext, &end, 0);
 
 			    return INTEGER;
 			}
 [0-9]+\.[0-9]+ {
 			    char *end;
-			    scanInt = strtod(yytext, &end) * XkbGeomPtsPerMM;
+			    yylval->num = strtod(yytext, &end) * XkbGeomPtsPerMM;
 
 			    return FLOAT;
 			}
@@ -184,62 +194,75 @@ alternate_group		return ALTERNATE_GROUP;
 %%
 
 void
-yyerror(const char *msg)
+yyerror(YYLTYPE *loc, void *scanner, const char *msg)
 {
-    if (warningLevel>0) {
-        fprintf(stderr,"%s: line %d of %s\n",msg,yylineno,
-                                        (scanFile?scanFile:"(unknown)"));
-        if (warningLevel>3)
-            fprintf(stderr,"last scanned symbol is: %s\n",scanBuf);
+    struct scanner_extra *extra = yyget_extra(scanner);
+
+    if (warningLevel > 0) {
+        fprintf(stderr, "%s: line %d of %s\n", msg, loc->first_line,
+                extra->scanFile ? extra->scanFile : "(unknown)");
+        if (warningLevel > 3)
+            fprintf(stderr, "last scanned symbol is: %s\n", extra->scanBuf);
     }
     return;
 }
 
-void setScanState(const char *file, int lineno)
-{
-  yylineno = 1;
-  free(scanFile);
-  scanFile = strdup(file);
-}
-
 int
-XKBParseString(const char *string, XkbFile ** pRtrn)
+XKBParseString(const char *string, const char *fileName, XkbFile **pRtrn)
 {
     YY_BUFFER_STATE state;
+    struct parser_param param;
+    struct scanner_extra extra;
+    int ret;
 
     *pRtrn = NULL;
     if (string == NULL)
-	return 1;
+        return 1;
 
-    state = yy_scan_string(string);
-    rtrnValue = NULL;
-    if (yyparse() != 0)
-	return 0;
+    memset(&extra, 0, sizeof(extra));
+    ret = yylex_init_extra(&extra, &param.scanner);
+    if (ret != 0)
+        return 0;
+    extra.scanFile = strdup(fileName);
 
-    yy_delete_buffer(state);
-    yy_switch_to_buffer(yy_create_buffer(yyin, YY_BUF_SIZE));
-    *pRtrn = rtrnValue;
-    CheckDefaultMap(rtrnValue);
-    rtrnValue = NULL;
+    state = yy_scan_string(string, param.scanner);
+    ret = yyparse(&param);
+    yy_delete_buffer(state, param.scanner);
+    yylex_destroy(param.scanner);
+    free(extra.scanFile);
+    if (ret)
+        return 0;
+
+    CheckDefaultMap(param.rtrn, fileName);
+    *pRtrn = param.rtrn;
 
     return 1;
 }
 
 int
-XKBParseFile(FILE * file, XkbFile ** pRtrn)
+XKBParseFile(FILE * file, const char *fileName, XkbFile ** pRtrn)
 {
+    int ret;
+    struct parser_param param;
+    struct scanner_extra extra;
+
     *pRtrn = NULL;
     if (!file)
         return 1;
 
-    yyin = file;
-    rtrnValue = NULL;
-    if (yyparse() != 0)
+    memset(&extra, 0, sizeof(extra));
+    if (yylex_init_extra(&extra, &param.scanner) != 0)
+        return 0;
+    extra.scanFile = strdup(fileName);
+
+    yyset_in(file, param.scanner);
+    ret = yyparse(&param);
+    yylex_destroy(param.scanner);
+    free(extra.scanFile);
+    if (ret)
         return 0;
 
-    yylex_destroy();
-    *pRtrn = rtrnValue;
-    CheckDefaultMap(rtrnValue);
-    rtrnValue = NULL;
+    CheckDefaultMap(param.rtrn, fileName);
+    *pRtrn = param.rtrn;
     return 1;
 }

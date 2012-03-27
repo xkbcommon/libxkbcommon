@@ -56,8 +56,6 @@ ProcessIncludeFile(struct xkb_context *context,
 {
     FILE *file;
     XkbFile *rtrn, *mapToUse, *next;
-    char oldFile[1024] = {0};
-    int oldLine = lineNum;
 
     file = XkbFindFileInPath(context, stmt->file, file_type, &stmt->path);
     if (file == NULL)
@@ -66,16 +64,9 @@ ProcessIncludeFile(struct xkb_context *context,
                 XkbDirectoryForInclude(file_type));
         return False;
     }
-    if (scanFile)
-        strcpy(oldFile, scanFile);
-    else
-        memset(oldFile, 0, sizeof(oldFile));
-    oldLine = lineNum;
-    setScanState(stmt->file, 1);
     /* parse the file */
-    if ((XKBParseFile(file, &rtrn) == 0) || (rtrn == NULL))
+    if ((XKBParseFile(file, stmt->file, &rtrn) == 0) || (rtrn == NULL))
     {
-        setScanState(oldFile, oldLine);
         ERROR("Error interpreting include file \"%s\"\n", stmt->file);
         fclose(file);
         return False;
@@ -114,7 +105,6 @@ ProcessIncludeFile(struct xkb_context *context,
               stmt->file);
         ACTION("Using first defined map, \"%s\"\n", rtrn->name);
     }
-    setScanState(oldFile, oldLine);
     if (mapToUse->type != file_type)
     {
         ERROR("Include file wrong type (expected %s, got %s)\n",

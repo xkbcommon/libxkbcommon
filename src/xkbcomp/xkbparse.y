@@ -24,6 +24,26 @@
 
  ********************************************************/
 
+%{
+#define DEBUG 1
+#ifdef DEBUG
+#define	YYDEBUG 1
+#endif
+#include "parseutils.h"
+#include "xkbmisc.h"
+#include <X11/keysym.h>
+#include <stdlib.h>
+
+extern int yylex(union YYSTYPE *val, struct YYLTYPE *loc, void *scanner);
+
+#define scanner param->scanner
+%}
+
+%define		api.pure
+%locations
+%lex-param	{ void *scanner }
+%parse-param	{ struct parser_param *param }
+
 %token
 	END_OF_FILE	0
 	ERROR_TOK	255
@@ -88,19 +108,7 @@
 	KEYPAD_KEYS		75
 	FUNCTION_KEYS		76
 	ALTERNATE_GROUP		77
-%{
-#define DEBUG 1
-#ifdef DEBUG
-#define	YYDEBUG 1
-#endif
-#include "parseutils.h"
-#include "xkbmisc.h"
-#include <X11/keysym.h>
-#include <stdlib.h>
 
-extern int yylex(void);
-extern FILE *yyin;
-%}
 %right	EQUALS
 %left	PLUS MINUS
 %left	TIMES DIVIDE
@@ -110,6 +118,7 @@ extern FILE *yyin;
 %union	{
 	int		 ival;
 	unsigned	 uval;
+	int64_t		 num;
 	char		*str;
 	Atom	 	sval;
 	ParseCommon	*any;
@@ -128,6 +137,8 @@ extern FILE *yyin;
         void            *geom;
 	XkbFile		*file;
 }
+%type <num>     INTEGER FLOAT
+%type <str>     IDENT KEYNAME STRING
 %type <ival>	Number Integer Float SignedNumber
 %type <uval>	XkbCompositeType FileType MergeMode OptMergeMode
 %type <uval>	DoodadType Flag Flags OptFlags KeyCode
@@ -154,11 +165,11 @@ extern FILE *yyin;
 %type <file>	XkbCompositeMap XkbCompMapList
 %%
 XkbFile		:	XkbCompMapList
-			{ $$= rtrnValue= $1; }
+			{ $$= param->rtrn= $1; }
 		|	XkbMapConfigList
-			{ $$= rtrnValue= $1;  }
+			{ $$= param->rtrn= $1;  }
 		|	XkbConfig
-			{ $$= rtrnValue= $1; }
+			{ $$= param->rtrn= $1; }
 		;
 
 XkbCompMapList	:	XkbCompMapList XkbCompositeMap
@@ -254,57 +265,57 @@ DeclList	:	DeclList Decl
 
 Decl		:	OptMergeMode VarDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1);
+			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
 			    $$= &$2->common;
 			}
 		|	OptMergeMode VModDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1);
+			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
 			    $$= &$2->common;
 			}
 		|	OptMergeMode InterpretDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1);
+			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
 			    $$= &$2->common;
 			}
 		|	OptMergeMode KeyNameDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1);
+			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
 			    $$= &$2->common;
 			}
 		|	OptMergeMode KeyAliasDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1);
+			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
 			    $$= &$2->common;
 			}
 		|	OptMergeMode KeyTypeDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1);
+			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
 			    $$= &$2->common;
 			}
 		|	OptMergeMode SymbolsDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1);
+			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
 			    $$= &$2->common;
 			}
 		|	OptMergeMode ModMapDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1);
+			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
 			    $$= &$2->common;
 			}
 		|	OptMergeMode GroupCompatDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1);
+			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
 			    $$= &$2->common;
 			}
 		|	OptMergeMode IndicatorMapDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1);
+			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
 			    $$= &$2->common;
 			}
 		|	OptMergeMode IndicatorNameDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1);
+			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
 			    $$= &$2->common;
 			}
 		|	OptMergeMode ShapeDecl
@@ -319,11 +330,12 @@ Decl		:	OptMergeMode VarDecl
 		|	MergeMode STRING
 			{
 			    if ($1==MergeAltForm) {
-				yyerror("cannot use 'alternate' to include other maps");
-				$$= &IncludeCreate(scanBuf,MergeDefault)->common;
+				yyerror(&@1, scanner,
+                                        "cannot use 'alternate' to include other maps");
+				$$= &IncludeCreate($2,MergeDefault)->common;
 			    }
 			    else {
-				$$= &IncludeCreate(scanBuf,$1)->common;
+				$$= &IncludeCreate($2,$1)->common;
 			    }
                         }
 		;
@@ -713,7 +725,7 @@ KeySymList	:	KeySymList COMMA KeySym
 			{ $$= CreateKeysymList($1); }
 		;
 
-KeySym		:	IDENT	{ $$= strdup(scanBuf); }
+KeySym		:	IDENT	{ $$= $1; }
 		|	SECTION	{ $$= strdup("section"); }
 		|	Integer		
 			{
@@ -733,32 +745,36 @@ SignedNumber	:	MINUS Number    { $$= -$2; }
 		|	Number              { $$= $1; }
 		;
 
-Number		:	FLOAT		{ $$= scanInt; }
-		|	INTEGER		{ $$= scanInt*XkbGeomPtsPerMM; }
+Number		:	FLOAT		{ $$= $1; }
+		|	INTEGER		{ $$= $1*XkbGeomPtsPerMM; }
 		;
 
 Float		:	FLOAT		{ $$= 0; }
 		;
 
-Integer		:	INTEGER		{ $$= scanInt; }
+Integer		:	INTEGER		{ $$= $1; }
 		;
 
-KeyCode         :       INTEGER         { $$= scanULong; }
+KeyCode         :       INTEGER         { $$= $1; }
                 ;
 
-KeyName		:	KEYNAME		{ $$= strdup(scanBuf); }
+KeyName		:	KEYNAME		{ $$= $1; }
 		;
 
-Ident		:	IDENT	{ $$= xkb_intern_atom(scanBuf); }
+Ident		:	IDENT	{ $$= xkb_intern_atom($1); free($1); }
 		|	DEFAULT { $$= xkb_intern_atom("default"); }
 		;
 
-String		:	STRING	{ $$= xkb_intern_atom(scanBuf); }
+String		:	STRING	{ $$= xkb_intern_atom($1); free($1); }
 		;
 
 OptMapName	:	MapName	{ $$= $1; }
 		|		{ $$= NULL; }
 		;
 
-MapName		:	STRING 	{ $$= strdup(scanBuf); }
+MapName		:	STRING 	{ $$= $1; }
 		;
+
+%%
+
+#undef scanner

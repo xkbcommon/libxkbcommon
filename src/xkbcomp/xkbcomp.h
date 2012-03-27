@@ -33,8 +33,6 @@
 #include "XKBcommonint.h"
 #include "xkbmisc.h"
 
-extern char *scanFile;
-
 #define	TypeUnknown	0
 #define	TypeBoolean	1
 #define	TypeInt		2

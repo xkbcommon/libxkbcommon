@@ -552,7 +552,7 @@ PrintStmtAddrs(ParseCommon * stmt)
 #endif
 
 void
-CheckDefaultMap(XkbFile * maps)
+CheckDefaultMap(XkbFile * maps, const char *fileName)
 {
     XkbFile *dflt, *tmp;
 
@@ -569,7 +569,7 @@ CheckDefaultMap(XkbFile * maps)
                 if (warningLevel > 2)
                 {
                     WARN("Multiple default components in %s\n",
-                          (scanFile ? scanFile : "(unknown)"));
+                          (fileName ? fileName : "(unknown)"));
                     ACTION("Using %s, ignoring %s\n",
                             (dflt->name ? dflt->name : "(first)"),
                             (tmp->name ? tmp->name : "(subsequent)"));
@@ -603,11 +603,11 @@ CreateXKBFile(int type, char *name, ParseCommon * defs, unsigned flags)
 }
 
 unsigned
-StmtSetMerge(ParseCommon * stmt, unsigned merge)
+StmtSetMerge(ParseCommon * stmt, unsigned merge, YYLTYPE *loc, void *scanner)
 {
     if ((merge == MergeAltForm) && (stmt->stmtType != StmtKeycodeDef))
     {
-        yyerror("illegal use of 'alternate' merge mode");
+        yyerror(loc, scanner, "illegal use of 'alternate' merge mode");
         merge = MergeDefault;
     }
     return merge;

@@ -28,13 +28,19 @@
 #define	XKBPARSE_H 1
 
 #include "xkbcomp.h"
+#include "xkbparse.h"
 
-extern char scanBuf[1024];
-extern int scanInt;
-extern unsigned long scanULong;
-extern int lineNum;
+struct parser_param {
+    void *scanner;
+    XkbFile *rtrn;
+};
 
-extern XkbFile *rtrnValue;
+struct scanner_extra {
+    char *scanFile;
+    /* FIXME: This can overflow! */
+    char scanBuf[8192];
+    char *s;
+};
 
 extern ParseCommon *AppendStmt(ParseCommon * /* to */ ,
                                ParseCommon *    /* append */
@@ -123,7 +129,9 @@ extern IncludeStmt *IncludeCreate(char * /* str */ ,
     );
 
 extern unsigned StmtSetMerge(ParseCommon * /* stmt */ ,
-                             unsigned   /* merge */
+                             unsigned   /* merge */,
+                             YYLTYPE *  /* loc */,
+                             void *     /* scanner */
     );
 
 #ifdef DEBUG
@@ -132,12 +140,14 @@ extern void PrintStmtAddrs(ParseCommon *        /* stmt */
 #endif
 
 extern int XKBParseFile(FILE * /* file */ ,
+                        const char *    /* fileName */,
                         XkbFile **      /* pRtrn */
     );
 
-extern int XKBParseString(const char *string, XkbFile ** pRtrn);
+extern int XKBParseString(const char *string, const char *fileName,
+                          XkbFile ** pRtrn);
 
-extern void CheckDefaultMap(XkbFile * maps);
+extern void CheckDefaultMap(XkbFile * maps, const char *fileName);
 
 extern XkbFile *CreateXKBFile(int /* type */ ,
                               char * /* name */ ,
@@ -147,14 +157,9 @@ extern XkbFile *CreateXKBFile(int /* type */ ,
 
 extern void FreeXKBFile(XkbFile *file);
 
-extern void yyerror(const char *        /* msg */
-    );
-
-extern void setScanState(const char * /* file */ ,
-                         int     /* line */
-    );
-
 extern void FreeStmt(ParseCommon * /* stmt */
     );
+
+extern void yyerror(struct YYLTYPE *loc, void *scanner, const char *msg);
 
 #endif /* XKBPARSE_H */

@@ -212,7 +212,6 @@ compile_keymap(struct xkb_context *context, XkbFile *file)
 
 err:
     FreeXKBFile(file);
-    free(scanFile);
     XkbcFreeAllAtoms();
     return xkb;
 }
@@ -273,8 +272,7 @@ xkb_map_new_from_string(struct xkb_context *context,
         return NULL;
     }
 
-    setScanState("input", 1);
-    if (!XKBParseString(string, &file) || !file) {
+    if (!XKBParseString(string, "input", &file) || !file) {
         ERROR("failed to parse input xkb file\n");
         return NULL;
     }
@@ -306,8 +304,7 @@ xkb_map_new_from_fd(struct xkb_context *context,
         return NULL;
     }
 
-    setScanState("input", 1);
-    if (!XKBParseFile(fptr, &file) || !file) {
+    if (!XKBParseFile(fptr, "(unknown file)", &file) || !file) {
         ERROR("failed to parse input xkb file\n");
 	return NULL;
     }
