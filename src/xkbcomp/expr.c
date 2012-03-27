@@ -24,6 +24,8 @@
 
  ********************************************************/
 
+#include <X11/X.h>
+
 #include "xkbcomp.h"
 #include "xkbmisc.h"
 #include "expr.h"
