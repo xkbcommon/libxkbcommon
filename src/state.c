@@ -187,12 +187,12 @@ xkb_filter_group_set_new(struct xkb_state *state, xkb_keycode_t keycode,
 
 static int
 xkb_filter_group_lock_func(struct xkb_filter *filter, xkb_keycode_t keycode,
-                           int down)
+                           enum xkb_key_direction direction)
 {
     if (keycode != filter->keycode)
         return 1;
 
-    if (down) {
+    if (direction == XKB_KEY_DOWN) {
         filter->refcnt++;
         return 0;
     }
