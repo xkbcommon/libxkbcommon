@@ -12,7 +12,6 @@ EXTRA_DIST =		\
 	bad.xkb		\
 	basic.xkb	\
 	default.xkb	\
-	named.xkb	\
 	comprehensive-plus-geom.xkb
 
 clean-local:

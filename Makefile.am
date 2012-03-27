@@ -17,7 +17,11 @@ ChangeLog:
 
 dist-hook: ChangeLog INSTALL
 
-AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src
+AM_CPPFLAGS = \
+	-I$(top_srcdir)/include \
+	-I$(top_srcdir)/src \
+	-I$(top_srcdir)/src/xkbcomp \
+	-Isrc/xkbcomp
 AM_CFLAGS = \
 	$(X11_CFLAGS) \
 	$(XORG_COMPILER_FLAGS) \
@@ -72,11 +76,14 @@ libxkbcommon_la_SOURCES = \
 	src/xkballoc.h \
 	src/xkbmisc.h \
 	src/xkbrules.h \
-	src/XKBcommonint.h \
-	include/xkbcommon/xkbcommon.h
+	src/XKBcommonint.h
 
-BUILT_SOURCES = src/xkbcomp/xkbparse.h src/ks_tables.h
-CLEANFILES = src/ks_tables.h
+BUILT_SOURCES = \
+	src/xkbcomp/xkbparse.c \
+	src/xkbcomp/xkbparse.h \
+	src/xkbcomp/xkbscan.c \
+	src/ks_tables.h
+CLEANFILES = $(BUILT_SOURCES)
 
 noinst_PROGRAMS = makekeys/makekeys
 makekeys_makekeys_SOURCES = makekeys/makekeys.c
