@@ -499,14 +499,12 @@ xkb_state_led_update_all(struct xkb_state *state)
 }
 
 /**
- * Given a particular key event, updates the state structure to reflect the
- * new modifiers.
+ * Calculates the derived state (effective mods/group and LEDs) from an
+ * up-to-date xkb_state.
  */
-void
-xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key, int down)
+static void
+xkb_state_update_derived(struct xkb_state *state)
 {
-    xkb_filter_apply_all(state, key, down);
-
     state->mods = (state->base_mods | state->latched_mods | state->locked_mods);
     /* FIXME: Clamp/wrap locked_group */
     state->group = state->locked_group + state->base_group +
@@ -514,6 +512,101 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key, int down)
     /* FIXME: Clamp/wrap effective group */
 
     xkb_state_led_update_all(state);
+}
+
+/**
+ * Given a particular key event, updates the state structure to reflect the
+ * new modifiers.
+ */
+void
+xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key, int down)
+{
+    xkb_filter_apply_all(state, key, down);
+    xkb_state_update_derived(state);
+}
+
+/**
+ * Updates the state from a set of explicit masks as gained from
+ * xkb_state_serialise_mods and xkb_state_serialise_groups.  As noted in the
+ * documentation for these functions in xkbcommon.h, this round-trip is
+ * lossy, and should only be used to update a slave state mirroring the
+ * master, e.g. in a client/server window system.
+ */
+void
+xkb_state_update_mask(struct xkb_state *state,
+                      xkb_mod_mask_t base_mods,
+                      xkb_mod_mask_t latched_mods,
+                      xkb_mod_mask_t locked_mods,
+                      xkb_group_index_t base_group,
+                      xkb_group_index_t latched_group,
+                      xkb_group_index_t locked_group)
+{
+    xkb_mod_mask_t mod;
+
+    state->base_mods = 0;
+    state->latched_mods = 0;
+    state->locked_mods = 0;
+    for (mod = 0; mod < xkb_map_num_mods(state->xkb); mod++) {
+        xkb_mod_mask_t idx = (1 << mod);
+        if (base_mods & idx)
+            state->base_mods |= idx;
+        if (latched_mods & idx)
+            state->latched_mods |= idx;
+        if (locked_mods & idx)
+            state->locked_mods |= idx;
+    }
+
+    state->base_group = base_group;
+    state->latched_group = latched_group;
+    state->locked_group = locked_group;
+
+    xkb_state_update_derived(state);
+}
+
+/**
+ * Serialises the requested modifier state into an xkb_mod_mask_t, with all
+ * the same disclaimers as in xkb_state_update_mask.
+ */
+xkb_mod_mask_t
+xkb_state_serialise_mods(struct xkb_state *state,
+                         enum xkb_state_component type)
+{
+    xkb_mod_mask_t ret = 0;
+
+    if (type == XKB_STATE_EFFECTIVE)
+        return state->mods;
+
+    if (type & XKB_STATE_DEPRESSED)
+        ret |= state->base_mods;
+    if (type & XKB_STATE_LATCHED)
+        ret |= state->latched_mods;
+    if (type & XKB_STATE_LOCKED)
+        ret |= state->locked_mods;
+
+    return ret;
+}
+
+/**
+ * Serialises the requested group state, with all the same disclaimers as
+ * in xkb_state_update_mask.
+ */
+xkb_group_index_t
+xkb_state_serialise_group(struct xkb_state *state,
+                          enum xkb_state_component type)
+{
+    xkb_group_index_t ret = 0;
+
+    if (type == XKB_STATE_EFFECTIVE)
+        return state->group;
+
+    if (type & XKB_STATE_DEPRESSED)
+        ret += state->base_group;
+    if (type & XKB_STATE_LATCHED)
+        ret += state->latched_group;
+    if (type & XKB_STATE_LOCKED)
+        ret += state->locked_group;
+
+    return ret;
 }
 
 /**

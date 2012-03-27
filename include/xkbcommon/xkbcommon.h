@@ -63,6 +63,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 typedef uint32_t xkb_keycode_t;
 typedef uint32_t xkb_keysym_t;
 typedef uint32_t xkb_mod_index_t;
+typedef uint32_t xkb_mod_mask_t;
 typedef uint32_t xkb_group_index_t;
 typedef uint32_t xkb_led_index_t;
 
@@ -740,6 +741,52 @@ enum xkb_state_component {
         (XKB_STATE_DEPRESSED | XKB_STATE_LATCHED | XKB_STATE_LOCKED),
         /**< Combinatination of depressed, latched, and locked. */
 };
+
+/**
+ * Updates a state object from a set of explicit masks.  This entrypoint is
+ * really only for window systems and the like, where a master process
+ * holds an xkb_state, then serialises it over a wire protocol, and clients
+ * then use the serialisation to feed in to their own xkb_state.
+ *
+ * All parameters must always be passed, or the resulting state may be
+ * incoherent.
+ *
+ * The serialisation is lossy and will not survive round trips; it must only
+ * be used to feed slave state objects, and must not be used to update the
+ * master state.
+ *
+ * Please do not use this unless you fit the description above.
+ */
+_X_EXPORT void
+xkb_state_update_mask(struct xkb_state *state,
+                      xkb_mod_mask_t base_mods,
+                      xkb_mod_mask_t latched_mods,
+                      xkb_mod_mask_t locked_mods,
+                      xkb_group_index_t base_group,
+                      xkb_group_index_t latched_group,
+                      xkb_group_index_t locked_group);
+
+/**
+ * The counterpart to xkb_state_update_mask, to be used on the server side
+ * of serialisation.  Returns a xkb_mod_mask_t representing the given
+ * component(s) of the state.
+ *
+ * This function should not be used in regular clients; please use the
+ * xkb_state_mod_*_is_active or xkb_state_foreach_active_mod API instead.
+ *
+ * Can return NULL on failure.
+ */
+_X_EXPORT xkb_mod_mask_t
+xkb_state_serialise_mods(struct xkb_state *state,
+                         enum xkb_state_component component);
+
+/**
+ * The group equivalent of xkb_state_serialise_mods: please see its
+ * documentation.
+ */
+_X_EXPORT xkb_group_index_t
+xkb_state_serialise_group(struct xkb_state *state,
+                          enum xkb_state_component component);
 
 /**
  * Returns 1 if the modifier specified by 'name' is active in the manner

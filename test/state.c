@@ -89,29 +89,14 @@ print_state(struct xkb_state *state)
     }
 }
 
-int
-main(int argc, char *argv[])
+static void
+test_update_key(struct xkb_desc *xkb)
 {
-    struct xkb_rule_names rmlvo;
-    struct xkb_desc *xkb;
-    struct xkb_state *state;
-    int num_syms;
+    struct xkb_state *state = xkb_state_new(xkb);
     xkb_keysym_t *syms;
+    int num_syms;
 
-    rmlvo.rules = "evdev";
-    rmlvo.model = "pc104";
-    rmlvo.layout = "us";
-    rmlvo.variant = NULL;
-    rmlvo.options = NULL;
-
-    xkb = xkb_map_new_from_names(&rmlvo);
-
-    if (!xkb) {
-        fprintf(stderr, "Failed to compile keymap\n");
-        exit(1);
-    }
-
-    state = xkb_state_new(xkb);
+    assert(state);
 
     /* LCtrl down */
     xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, 1);
@@ -164,7 +149,78 @@ main(int argc, char *argv[])
     assert(num_syms == 1 && syms[0] == XK_q);
 
     xkb_state_unref(state);
-    xkb_map_unref(xkb);
+}
 
-    return 0;
+static void
+test_serialisation(struct xkb_desc *xkb)
+{
+    struct xkb_state *state = xkb_state_new(xkb);
+    xkb_mod_mask_t base_mods;
+    xkb_mod_mask_t latched_mods;
+    xkb_mod_mask_t locked_mods;
+    xkb_mod_mask_t effective_mods;
+    xkb_mod_index_t caps, shift, ctrl;
+    xkb_group_index_t base_group = 0;
+    xkb_group_index_t latched_group = 0;
+    xkb_group_index_t locked_group = 0;
+
+    assert(state);
+
+    caps = xkb_map_mod_get_index(state->xkb, "Caps Lock");
+    assert(caps != XKB_MOD_INVALID);
+    shift = xkb_map_mod_get_index(state->xkb, "Shift");
+    assert(shift != XKB_MOD_INVALID);
+    ctrl = xkb_map_mod_get_index(state->xkb, "Control");
+    assert(ctrl != XKB_MOD_INVALID);
+
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, 1);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, 0);
+    base_mods = xkb_state_serialise_mods(state, XKB_STATE_DEPRESSED);
+    assert(base_mods == 0);
+    latched_mods = xkb_state_serialise_mods(state, XKB_STATE_LATCHED);
+    assert(latched_mods == 0);
+    locked_mods = xkb_state_serialise_mods(state, XKB_STATE_LOCKED);
+    assert(locked_mods == (1 << caps));
+    effective_mods = xkb_state_serialise_mods(state, XKB_STATE_EFFECTIVE);
+    assert(effective_mods == locked_mods);
+
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, 1);
+    base_mods = xkb_state_serialise_mods(state, XKB_STATE_DEPRESSED);
+    assert(base_mods == (1 << shift));
+    latched_mods = xkb_state_serialise_mods(state, XKB_STATE_LATCHED);
+    assert(latched_mods == 0);
+    locked_mods = xkb_state_serialise_mods(state, XKB_STATE_LOCKED);
+    assert(locked_mods == (1 << caps));
+    effective_mods = xkb_state_serialise_mods(state, XKB_STATE_EFFECTIVE);
+    assert(effective_mods == (base_mods | locked_mods));
+
+    base_mods |= (1 << ctrl);
+    xkb_state_update_mask(state, base_mods, latched_mods, locked_mods,
+                          base_group, latched_group, locked_group);
+
+    assert(xkb_state_mod_index_is_active(state, ctrl, XKB_STATE_DEPRESSED));
+    assert(xkb_state_mod_index_is_active(state, ctrl, XKB_STATE_EFFECTIVE));
+
+    xkb_state_unref(state);
+}
+
+int
+main(int argc, char *argv[])
+{
+    struct xkb_rule_names rmlvo;
+    struct xkb_desc *xkb;
+
+    rmlvo.rules = "evdev";
+    rmlvo.model = "pc104";
+    rmlvo.layout = "us";
+    rmlvo.variant = NULL;
+    rmlvo.options = NULL;
+
+    xkb = xkb_map_new_from_names(&rmlvo);
+    assert(xkb);
+
+    test_update_key(xkb);
+    test_serialisation(xkb);
+
+    xkb_map_unref(xkb);
 }
