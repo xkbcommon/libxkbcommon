@@ -374,7 +374,6 @@ struct xkb_desc {
     struct xkb_compat_map *    compat;
 };
 
-
 #define	XkbKeyGroupInfo(d,k)    ((d)->map->key_sym_map[k].group_info)
 #define	XkbKeyNumGroups(d,k)    (XkbNumGroups((d)->map->key_sym_map[k].group_info))
 #define	XkbKeyGroupWidth(d,k,g) (XkbKeyType(d,k,g)->num_levels)
@@ -399,68 +398,6 @@ struct xkb_desc {
 #define	XkbKeycodeInRange(d,k)	(((k)>=(d)->min_key_code)&&\
 				 ((k)<=(d)->max_key_code))
 #define	XkbNumKeys(d)		((d)->max_key_code-(d)->min_key_code+1)
-
-struct xkb_map_changes {
-	unsigned short		 changed;
-	xkb_keycode_t		 min_key_code;
-	xkb_keycode_t		 max_key_code;
-	unsigned char		 first_type;
-	unsigned char		 num_types;
-	xkb_keycode_t		 first_key_sym;
-	xkb_keycode_t		 num_key_syms;
-	xkb_keycode_t		 first_key_act;
-	xkb_keycode_t		 num_key_acts;
-	xkb_keycode_t		 first_key_behavior;
-	xkb_keycode_t		 num_key_behaviors;
-	xkb_keycode_t		 first_key_explicit;
-	xkb_keycode_t		 num_key_explicit;
-	xkb_keycode_t		 first_modmap_key;
-	xkb_keycode_t		 num_modmap_keys;
-	xkb_keycode_t		 first_vmodmap_key;
-	xkb_keycode_t		 num_vmodmap_keys;
-	unsigned short		 vmods;
-};
-
-struct xkb_controls_changes {
-	unsigned int 		 changed_ctrls;
-	unsigned int		 enabled_ctrls_changes;
-	int			 num_groups_changed;
-};
-
-struct xkb_indicator_changes {
-	unsigned int		 state_changes;
-	unsigned int		 map_changes;
-};
-
-struct xkb_name_changes {
-	unsigned int 		changed;
-	unsigned char		first_type;
-	unsigned char		num_types;
-	unsigned char		first_lvl;
-	unsigned char		num_lvls;
-	xkb_keycode_t		num_aliases;
-	xkb_keycode_t		first_key;
-	xkb_keycode_t		num_keys;
-	unsigned short		changed_vmods;
-	unsigned long		changed_indicators;
-	unsigned char		changed_groups;
-};
-
-struct xkb_compat_changes {
-	unsigned char		changed_groups;
-	unsigned short		first_si;
-	unsigned short		num_si;
-};
-
-struct xkb_changes {
-	unsigned short		 device_spec;
-	unsigned short		 state_changes;
-	struct xkb_map_changes	 map;
-	struct xkb_controls_changes	 ctrls;
-	struct xkb_indicator_changes	 indicators;
-	struct xkb_name_changes	 names;
-	struct xkb_compat_changes	 compat;
-};
 
 struct xkb_component_names {
 	char *			 keymap;
