@@ -53,7 +53,11 @@ if test ! -f "src/xkbcomp/xkbparse.c"; then
 fi
 
 # Checks for library functions.
-AC_CHECK_FUNCS([strcasecmp])
+AC_CHECK_FUNCS([strcasecmp strncasecmp])
+if test "x$ac_cv_func_strcasecmp" = xno || \
+   test "x$ac_cv_func_strncasecmp" = xno; then
+    AC_MSG_ERROR([C library does not support strcasecmp/strncasecmp])
+fi
 
 # Build native compiler needed for makekeys
 AC_ARG_VAR([CC_FOR_BUILD], [Build native C compiler program])
