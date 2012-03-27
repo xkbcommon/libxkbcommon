@@ -4,7 +4,7 @@ LDADD = $(top_builddir)/libxkbcommon.la
 
 TESTS_ENVIRONMENT = $(SHELL)
 
-check_PROGRAMS = xkey filecomp namescomp rulescomp canonicalise state
+check_PROGRAMS = xkey filecomp namescomp rulescomp canonicalise state context
 TESTS = $(check_PROGRAMS:=.sh)
 
 EXTRA_DIST =		\

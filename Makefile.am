@@ -63,6 +63,7 @@ libxkbcommon_la_SOURCES = \
 	src/xkbcomp/xkbscan.l \
 	src/alloc.c \
 	src/atom.c \
+	src/context.c \
 	src/keysym.c \
 	src/malloc.c \
 	src/map.c \

@@ -135,7 +135,19 @@ struct xkb_component_names {
 };
 
 /**
- * Opaque state object, may only be created, accessed, manipulated and
+ * Opaque context object; may only be created, accessed, manipulated and
+ * destroyed through the xkb_context_*() API.
+ */
+struct xkb_context;
+
+/**
+ * Opaque keymap object; may only be created, accessed, manipulated and
+ * destroyed through the xkb_state_*() API.
+ */
+struct xkb_desc;
+
+/**
+ * Opaque state object; may only be created, accessed, manipulated and
  * destroyed through the xkb_state_*() API.
  */
 struct xkb_state;
@@ -177,6 +189,66 @@ xkb_string_to_keysym(const char *s);
 _X_EXPORT unsigned int
 xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
                  xkb_keysym_t **syms_out);
+
+/**
+ * @defgroup ctx XKB contexts
+ * Every keymap compilation request must have an XKB context associated with
+ * it.  The context keeps around state such as the include path.
+ *
+ * @{
+ */
+
+/**
+ * Returns a new XKB context, or NULL on failure.  If successful, the caller
+ * holds a reference on the context, and must free it when finished with
+ * xkb_context_unref().
+ */
+_X_EXPORT struct xkb_context *
+xkb_context_new(void);
+
+/**
+ * Appends a new entry to the include path used for keymap compilation.
+ * Returns 1 on success, or 0 if the include path could not be added or is
+ * inaccessible.
+ */
+_X_EXPORT int
+xkb_context_include_path_append(struct xkb_context *context, const char *path);
+
+/**
+ * Appends the default include paths to the context's current include path.
+ * Returns 1 on success, or 0 if the primary include path could not be
+ * added.
+ */
+_X_EXPORT int
+xkb_context_include_path_append_default(struct xkb_context *context);
+
+/**
+ * Removes all entries from the context's include path, and inserts the
+ * default paths.  Returns 1 on success, or 0 if the primary include path
+ * could not be added.
+ */
+_X_EXPORT int
+xkb_context_include_path_reset(struct xkb_context *context);
+
+/**
+ * Removes all entries from the context's include path.
+ */
+_X_EXPORT void
+xkb_context_include_path_clear(struct xkb_context *context);
+
+/**
+ * Takes a new reference on an XKB context.
+ */
+_X_EXPORT void
+xkb_context_ref(struct xkb_context *context);
+
+/**
+ * Releases a reference on an XKB context, and possibly frees it.
+ */
+_X_EXPORT void
+xkb_context_unref(struct xkb_context *context);
+
+/** @} */
 
 /**
  * @defgroup map Keymap management
