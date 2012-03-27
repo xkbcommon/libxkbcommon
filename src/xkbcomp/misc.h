@@ -69,7 +69,8 @@ extern int ReportBadField(const char * /* type */ ,
                           const char *  /* name */
     );
 
-extern Bool ProcessIncludeFile(IncludeStmt * /* stmt */ ,
+extern Bool ProcessIncludeFile(struct xkb_context * /* context */,
+                               IncludeStmt * /* stmt */ ,
                                unsigned /* file_type */ ,
                                XkbFile ** /* file_rtrn */ ,
                                unsigned *       /* merge_rtrn */

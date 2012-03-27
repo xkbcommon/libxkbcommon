@@ -409,7 +409,8 @@ HandleIncludeCompatMap(IncludeStmt * stmt,
         included = *info;
         memset(info, 0, sizeof(CompatInfo));
     }
-    else if (ProcessIncludeFile(stmt, XkmCompatMapIndex, &rtrn, &newMerge))
+    else if (ProcessIncludeFile(xkb->context, stmt, XkmCompatMapIndex, &rtrn,
+                                &newMerge))
     {
         InitCompatInfo(&included, xkb);
         included.fileID = rtrn->id;
@@ -449,7 +450,8 @@ HandleIncludeCompatMap(IncludeStmt * stmt,
                 MergeIncludedCompatMaps(&included, info, next->merge);
                 ClearCompatInfo(info, xkb);
             }
-            else if (ProcessIncludeFile(next, XkmCompatMapIndex, &rtrn, &op))
+            else if (ProcessIncludeFile(xkb->context, next, XkmCompatMapIndex,
+                                        &rtrn, &op))
             {
                 InitCompatInfo(&next_incl, xkb);
                 next_incl.fileID = rtrn->id;

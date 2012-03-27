@@ -134,9 +134,9 @@ xkb_context_include_path_reset_defaults(struct xkb_context *context)
  * Returns the number of entries in the context's include path.
  */
 unsigned int
-xkb_context_include_path_num_entries(struct xkb_context *context)
+xkb_context_num_include_paths(struct xkb_context *context)
 {
-    return context->size_include_paths;
+    return context->num_include_paths;
 }
 
 /**
@@ -144,10 +144,9 @@ xkb_context_include_path_num_entries(struct xkb_context *context)
  * invalid index is passed.
  */
 const char *
-xkb_context_include_path_get_entry(struct xkb_context *context,
-                                   unsigned int index)
+xkb_context_include_path_get(struct xkb_context *context, unsigned int index)
 {
-    if (index >= xkb_context_include_path_num_entries(context))
+    if (index >= xkb_context_num_include_paths(context))
         return NULL;
 
     return context->include_paths[index];

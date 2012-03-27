@@ -568,7 +568,8 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_desc * xkb, KeyNamesInfo * 
         info->explicitMax = XKB_KEYCODE_MAX;
         return (info->errorCount == 0);
     } /* parse file, store returned info in the xkb struct */
-    else if (ProcessIncludeFile(stmt, XkmKeyNamesIndex, &rtrn, &newMerge))
+    else if (ProcessIncludeFile(xkb->context, stmt, XkmKeyNamesIndex, &rtrn,
+                                &newMerge))
     {
         InitKeyNamesInfo(&included);
         HandleKeycodesFile(rtrn, xkb, MergeOverride, &included);
@@ -600,7 +601,8 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_desc * xkb, KeyNamesInfo * 
                 MergeIncludedKeycodes(&included, info, next->merge);
                 ClearKeyNamesInfo(info);
             }
-            else if (ProcessIncludeFile(next, XkmKeyNamesIndex, &rtrn, &op))
+            else if (ProcessIncludeFile(xkb->context, next, XkmKeyNamesIndex,
+                                        &rtrn, &op))
             {
                 InitKeyNamesInfo(&next_incl);
                 HandleKeycodesFile(rtrn, xkb, MergeOverride, &next_incl);

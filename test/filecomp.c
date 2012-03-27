@@ -26,6 +26,7 @@ authorization from the authors.
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <assert.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -39,9 +40,10 @@ static char buffer[8192];
 
 int main(int argc, char *argv[])
 {
+    struct xkb_context *context;
+    struct xkb_desc *xkb;
     char *path;
     int fd;
-    struct xkb_desc * xkb;
     int i, len, from_string = 0;
 
     /* Require xkb file */
@@ -67,12 +69,17 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    context = xkb_context_new();
+    assert(context);
+
     if (from_string) {
 	len = read(fd, buffer, sizeof(buffer));
 	buffer[len] = '\0';
-	xkb = xkb_map_new_from_string(buffer, XKB_KEYMAP_FORMAT_TEXT_V1);
+	xkb = xkb_map_new_from_string(context, buffer,
+                                      XKB_KEYMAP_FORMAT_TEXT_V1);
     } else {
-	xkb = xkb_map_new_from_fd(fd, XKB_KEYMAP_FORMAT_TEXT_V1);
+	xkb = xkb_map_new_from_fd(context, fd,
+                                  XKB_KEYMAP_FORMAT_TEXT_V1);
     }
     close(fd);
 
@@ -82,6 +89,7 @@ int main(int argc, char *argv[])
     }
 
     xkb_map_unref(xkb);
+    xkb_context_unref(context);
 
     return 0;
 }

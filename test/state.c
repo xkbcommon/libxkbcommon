@@ -205,8 +205,9 @@ test_serialisation(struct xkb_desc *xkb)
 int
 main(int argc, char *argv[])
 {
-    struct xkb_rule_names rmlvo;
+    struct xkb_context *context;
     struct xkb_desc *xkb;
+    struct xkb_rule_names rmlvo;
 
     rmlvo.rules = "evdev";
     rmlvo.model = "pc104";
@@ -214,11 +215,15 @@ main(int argc, char *argv[])
     rmlvo.variant = NULL;
     rmlvo.options = NULL;
 
-    xkb = xkb_map_new_from_names(&rmlvo);
+    context = xkb_context_new();
+    assert(context);
+
+    xkb = xkb_map_new_from_names(context, &rmlvo);
     assert(xkb);
 
     test_update_key(xkb);
     test_serialisation(xkb);
 
     xkb_map_unref(xkb);
+    xkb_context_unref(context);
 }

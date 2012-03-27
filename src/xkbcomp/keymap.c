@@ -39,7 +39,7 @@
  * XkmKeyNamesIdx, etc.)
  */
 struct xkb_desc *
-CompileKeymap(XkbFile *file, unsigned merge)
+CompileKeymap(struct xkb_context *context, XkbFile *file, unsigned merge)
 {
     unsigned have;
     Bool ok;
@@ -47,7 +47,7 @@ CompileKeymap(XkbFile *file, unsigned merge)
     unsigned mainType;
     const char *mainName;
     LEDInfo *unbound = NULL;
-    struct xkb_desc *xkb = XkbcAllocKeyboard();
+    struct xkb_desc *xkb = XkbcAllocKeyboard(context);
     struct {
         XkbFile *keycodes;
         XkbFile *types;

@@ -24,31 +24,13 @@
 
  ********************************************************/
 
-#include "utils.h"
 #include <errno.h>
+#include <limits.h>
 #include <stdlib.h>
-#include "xkbpath.h"
 #include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
-
-#ifndef DFLT_XKB_CONFIG_ROOT
-#define DFLT_XKB_CONFIG_ROOT	"/usr/lib/X11/xkb"
-#endif
-
-#ifndef PATH_MAX
-#define	PATH_MAX 1024
-#endif
-
-/* initial szPath */
-#define	PATH_CHUNK	8
-
-static Bool noDefaultPath = False;
-/* number of entries allocated for includePath */
-static size_t szPath;
-/* number of actual entries in includePath */
-static size_t nPathEntries;
-/* Holds all directories we might be including data from */
-static char **includePath = NULL;
+#include "utils.h"
+#include "xkbpath.h"
 
 /**
  * Extract the first token from an include statement.
@@ -157,115 +139,6 @@ XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
     return True;
 }
 
-static void
-XkbAddDefaultDirectoriesToPath(void);
-
-/**
- * Init memory for include paths.
- */
-static Bool
-XkbInitIncludePath(void)
-{
-    if (includePath)
-        return True;
-
-    szPath = PATH_CHUNK;
-    includePath = calloc(szPath, sizeof(char *));
-    if (!includePath)
-        return False;
-
-    XkbAddDefaultDirectoriesToPath();
-    return True;
-}
-
-/**
- * Remove all entries from the global includePath.
- */
-static void
-XkbClearIncludePath(void)
-{
-    size_t i;
-
-    if (szPath > 0)
-    {
-        for (i = 0; i < nPathEntries; i++)
-        {
-            if (includePath[i] != NULL)
-            {
-                free(includePath[i]);
-                includePath[i] = NULL;
-            }
-        }
-        nPathEntries = 0;
-    }
-    noDefaultPath = True;
-}
-
-void
-XkbFreeIncludePath(void)
-{
-    XkbClearIncludePath();
-    free(includePath);
-    includePath = NULL;
-}
-
-/**
- * Add the given path to the global includePath variable.
- * If dir is NULL, the includePath is emptied.
- */
-static Bool
-XkbAddDirectoryToPath(const char *dir)
-{
-    int len;
-
-    if (!XkbInitIncludePath())
-        return False;
-
-    if ((dir == NULL) || (dir[0] == '\0'))
-    {
-        XkbClearIncludePath();
-        return True;
-    }
-#ifdef __UNIXOS2__
-    dir = (char *) __XOS2RedirRoot(dir);
-#endif
-    len = strlen(dir);
-    if (len + 2 >= PATH_MAX)
-    {                           /* allow for '/' and at least one character */
-        ERROR("Path entry (%s) too long (maxiumum length is %d)\n",
-               dir, PATH_MAX - 3);
-        return False;
-    }
-    if (nPathEntries >= szPath)
-    {
-        szPath += PATH_CHUNK;
-        includePath = realloc(includePath, szPath * sizeof(char *));
-        if (includePath == NULL)
-        {
-            WSGO("Allocation failed (includePath)\n");
-            return False;
-        }
-    }
-    includePath[nPathEntries] = strdup(dir);
-    if (includePath[nPathEntries] == NULL)
-    {
-        WSGO("Allocation failed (includePath[%zd])\n", nPathEntries);
-        return False;
-    }
-    nPathEntries++;
-    return True;
-}
-
-static void
-XkbAddDefaultDirectoriesToPath(void)
-{
-    if (!XkbInitIncludePath())
-        return;
-    if (noDefaultPath)
-        return;
-    XkbAddDirectoryToPath(DFLT_XKB_CONFIG_ROOT);
-}
-
 /***====================================================================***/
 
 /**
@@ -305,15 +178,17 @@ XkbDirectoryForInclude(unsigned type)
 /**
  * Search for the given file name in the include directories.
  *
+ * @param context the XKB context containing the include paths
  * @param type one of XkbTypesIndex, XkbCompatMapIndex, ..., or
- * XkbSemanticsFile, XkmKeymapFile, ...
+ *             XkbSemanticsFile, XkmKeymapFile, ...
  * @param pathReturn is set to the full path of the file if found.
  *
  * @return an FD to the file or NULL. If NULL is returned, the value of
  * pathRtrn is undefined.
  */
 FILE *
-XkbFindFileInPath(const char *name, unsigned type, char **pathRtrn)
+XkbFindFileInPath(struct xkb_context *context,
+                  const char *name, unsigned type, char **pathRtrn)
 {
     size_t i;
     int ret;
@@ -321,28 +196,23 @@ XkbFindFileInPath(const char *name, unsigned type, char **pathRtrn)
     char buf[PATH_MAX];
     const char *typeDir;
 
-    if (!XkbInitIncludePath())
-        return NULL;
-
     typeDir = XkbDirectoryForInclude(type);
-    for (i = 0; i < nPathEntries; i++)
+    for (i = 0; i < xkb_context_num_include_paths(context); i++)
     {
-        if (includePath[i] == NULL || *includePath[i] == '\0')
-            continue;
-
         ret = snprintf(buf, sizeof(buf), "%s/%s/%s",
-                       includePath[i], typeDir, name);
+                       xkb_context_include_path_get(context, i), typeDir, name);
         if (ret >= (ssize_t)sizeof(buf))
         {
-            ERROR("File name (%s/%s/%s) too long\n", includePath[i],
-                   typeDir, name);
+            ERROR("File name (%s/%s/%s) too long\n",
+                  xkb_context_include_path_get(context, i), typeDir, name);
             ACTION("Ignored\n");
             continue;
         }
         file = fopen(buf, "r");
         if (file == NULL) {
-            ERROR("Couldn't open file (%s/%s/%s): %s\n", includePath[i],
-                   typeDir, name, strerror(-errno));
+            ERROR("Couldn't open file (%s/%s/%s): %s\n",
+                  xkb_context_include_path_get(context, i), typeDir, name,
+                  strerror(-errno));
             ACTION("Ignored\n");
             continue;
         }

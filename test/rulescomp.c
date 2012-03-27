@@ -24,6 +24,7 @@ sale, use or other dealings in this Software without prior written
 authorization from the authors.
 */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <X11/Xdefs.h>
@@ -32,8 +33,9 @@ authorization from the authors.
 
 int main(int argc, char *argv[])
 {
-    struct xkb_rule_names rmlvo;
+    struct xkb_context *context;
     struct xkb_desc *xkb;
+    struct xkb_rule_names rmlvo;
 
     /* Require rmlvo */
     if (argc < 6) {
@@ -49,7 +51,10 @@ int main(int argc, char *argv[])
     rmlvo.variant = argv[4];
     rmlvo.options = argv[5];
 
-    xkb = xkb_map_new_from_names(&rmlvo);
+    context = xkb_context_new();
+    assert(context);
+
+    xkb = xkb_map_new_from_names(context, &rmlvo);
 
     if (!xkb) {
         fprintf(stderr, "Failed to compile keymap\n");
@@ -57,6 +62,7 @@ int main(int argc, char *argv[])
     }
 
     xkb_map_unref(xkb);
+    xkb_context_unref(context);
 
     return 0;
 }

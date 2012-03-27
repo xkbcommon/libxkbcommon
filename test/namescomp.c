@@ -24,6 +24,7 @@ sale, use or other dealings in this Software without prior written
 authorization from the authors.
 */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "xkbcommon/xkbcommon.h"
@@ -31,8 +32,9 @@ authorization from the authors.
 
 int main(int argc, char *argv[])
 {
-    struct xkb_component_names kccgst;
+    struct xkb_context *context;
     struct xkb_desc *xkb;
+    struct xkb_component_names kccgst;
 
     /* Require Kc + T + C + S */
     if (argc < 5) {
@@ -48,7 +50,10 @@ int main(int argc, char *argv[])
     kccgst.compat = argv[3];
     kccgst.symbols = argv[4];
 
-    xkb = xkb_map_new_from_kccgst(&kccgst);
+    context = xkb_context_new();
+    assert(context);
+
+    xkb = xkb_map_new_from_kccgst(context, &kccgst);
 
     if (!xkb) {
         fprintf(stderr, "Failed to compile keymap\n");
@@ -56,6 +61,7 @@ int main(int argc, char *argv[])
     }
 
     xkb_map_unref(xkb);
+    xkb_context_unref(context);
 
     return 0;
 }

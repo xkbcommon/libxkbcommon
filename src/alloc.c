@@ -257,15 +257,18 @@ XkbcFreeIndicatorMaps(struct xkb_desc * xkb)
 }
 
 struct xkb_desc *
-XkbcAllocKeyboard(void)
+XkbcAllocKeyboard(struct xkb_context *context)
 {
     struct xkb_desc *xkb;
 
     xkb = uTypedCalloc(1, struct xkb_desc);
-    if (xkb) {
-        xkb->device_spec = XkbUseCoreKbd;
-        xkb->refcnt = 1;
-    }
+    if (!xkb)
+        return NULL;
+
+    xkb->refcnt = 1;
+    xkb_context_ref(context);
+    xkb->context = context;
+    xkb->device_spec = XkbUseCoreKbd;
 
     return xkb;
 }
@@ -282,5 +285,6 @@ XkbcFreeKeyboard(struct xkb_desc * xkb)
     XkbcFreeIndicatorMaps(xkb);
     XkbcFreeNames(xkb);
     XkbcFreeControls(xkb);
+    xkb_context_unref(xkb->context);
     free(xkb);
 }

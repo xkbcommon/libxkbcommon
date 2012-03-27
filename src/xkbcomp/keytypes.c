@@ -378,7 +378,8 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
         included = *info;
         memset(info, 0, sizeof(KeyTypesInfo));
     }
-    else if (ProcessIncludeFile(stmt, XkmTypesIndex, &rtrn, &newMerge))
+    else if (ProcessIncludeFile(xkb->context, stmt, XkmTypesIndex, &rtrn,
+                                &newMerge))
     {
         InitKeyTypesInfo(&included, xkb, info);
         included.fileID = included.dflt.defs.fileID = rtrn->id;
@@ -412,7 +413,8 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
                 MergeIncludedKeyTypes(&included, info, next->merge, xkb);
                 FreeKeyTypesInfo(info);
             }
-            else if (ProcessIncludeFile(next, XkmTypesIndex, &rtrn, &op))
+            else if (ProcessIncludeFile(xkb->context, next, XkmTypesIndex,
+                                        &rtrn, &op))
             {
                 InitKeyTypesInfo(&next_incl, xkb, &included);
                 next_incl.fileID = next_incl.dflt.defs.fileID = rtrn->id;

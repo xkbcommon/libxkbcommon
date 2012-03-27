@@ -59,19 +59,22 @@ XkbKeymapFileFromComponents(const struct xkb_component_names * ktcsg)
     symbols = CreateXKBFile(XkmSymbolsIndex, NULL, (ParseCommon *)inc, 0);
     AppendStmt(&keycodes->common, &symbols->common);
 
-    return CreateXKBFile(XkmKeymapFile, ktcsg->keymap ? ktcsg->keymap : strdup(""),
+    return CreateXKBFile(XkmKeymapFile,
+                         ktcsg->keymap ? ktcsg->keymap : strdup(""),
                          &keycodes->common, 0);
 }
 
 static struct xkb_component_names *
-XkbComponentsFromRules(const char *rules, const XkbRF_VarDefsPtr defs)
+XkbComponentsFromRules(struct xkb_context *context,
+                       const char *rules,
+                       const XkbRF_VarDefsPtr defs)
 {
     FILE *rulesFile = NULL;
     char *rulesPath = NULL;
     XkbRF_RulesPtr loaded = NULL;
     struct xkb_component_names * names = NULL;
 
-    rulesFile = XkbFindFileInPath(rules, XkmRulesFile, &rulesPath);
+    rulesFile = XkbFindFileInPath(context, rules, XkmRulesFile, &rulesPath);
     if (!rulesFile) {
         ERROR("could not find \"%s\" rules in XKB path\n", rules);
         return NULL;
@@ -112,11 +115,12 @@ unwind_file:
 }
 
 struct xkb_desc *
-xkb_map_new_from_names(const struct xkb_rule_names *rmlvo)
+xkb_map_new_from_names(struct xkb_context *context,
+                       const struct xkb_rule_names *rmlvo)
 {
     XkbRF_VarDefsRec defs;
-    struct xkb_component_names * names;
-    struct xkb_desc * xkb;
+    struct xkb_component_names *names;
+    struct xkb_desc *xkb;
 
     if (!rmlvo || ISEMPTY(rmlvo->rules) || ISEMPTY(rmlvo->layout)) {
         ERROR("rules and layout required to generate XKB keymap\n");
@@ -128,14 +132,14 @@ xkb_map_new_from_names(const struct xkb_rule_names *rmlvo)
     defs.variant = rmlvo->variant;
     defs.options = rmlvo->options;
 
-    names = XkbComponentsFromRules(rmlvo->rules, &defs);
+    names = XkbComponentsFromRules(context, rmlvo->rules, &defs);
     if (!names) {
         ERROR("failed to generate XKB components from rules \"%s\"\n",
               rmlvo->rules);
         return NULL;
     }
 
-    xkb = xkb_map_new_from_kccgst(names);
+    xkb = xkb_map_new_from_kccgst(context, names);
 
     free(names->keymap);
     free(names->keycodes);
@@ -182,7 +186,7 @@ XkbChooseMap(XkbFile *file, const char *name)
 }
 
 static struct xkb_desc *
-compile_keymap(XkbFile *file)
+compile_keymap(struct xkb_context *context, XkbFile *file)
 {
     XkbFile *mapToUse;
     struct xkb_desc * xkb = NULL;
@@ -202,20 +206,20 @@ compile_keymap(XkbFile *file)
         goto err;
     }
 
-    xkb = CompileKeymap(mapToUse, MergeReplace);
+    xkb = CompileKeymap(context, mapToUse, MergeReplace);
     if (!xkb)
         goto err;
 
 err:
     FreeXKBFile(file);
     free(scanFile);
-    XkbFreeIncludePath();
     XkbcFreeAllAtoms();
     return xkb;
 }
 
 struct xkb_desc *
-xkb_map_new_from_kccgst(const struct xkb_component_names *kccgst)
+xkb_map_new_from_kccgst(struct xkb_context *context,
+                        const struct xkb_component_names *kccgst)
 {
     XkbFile *file;
 
@@ -249,11 +253,13 @@ xkb_map_new_from_kccgst(const struct xkb_component_names *kccgst)
         return NULL;
     }
 
-    return compile_keymap(file);
+    return compile_keymap(context, file);
 }
 
 struct xkb_desc *
-xkb_map_new_from_string(const char *string, enum xkb_keymap_format format)
+xkb_map_new_from_string(struct xkb_context *context,
+                        const char *string,
+                        enum xkb_keymap_format format)
 {
     XkbFile *file;
 
@@ -273,11 +279,13 @@ xkb_map_new_from_string(const char *string, enum xkb_keymap_format format)
         return NULL;
     }
 
-    return compile_keymap(file);
+    return compile_keymap(context, file);
 }
 
 struct xkb_desc *
-xkb_map_new_from_fd(int fd, enum xkb_keymap_format format)
+xkb_map_new_from_fd(struct xkb_context *context,
+                    int fd,
+                    enum xkb_keymap_format format)
 {
     XkbFile *file;
     FILE *fptr;
@@ -304,7 +312,7 @@ xkb_map_new_from_fd(int fd, enum xkb_keymap_format format)
 	return NULL;
     }
 
-    return compile_keymap(file);
+    return compile_keymap(context, file);
 }
 
 void

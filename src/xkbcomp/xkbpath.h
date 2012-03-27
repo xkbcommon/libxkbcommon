@@ -28,12 +28,14 @@
 #define _XKBPATH_H_ 1
 
 #include <stdio.h>
-#include <X11/Xdefs.h>
+
+#include "XKBcommonint.h"
 
 extern const char *XkbDirectoryForInclude(unsigned    /* type */
     );
 
-extern FILE *XkbFindFileInPath(const char * /* name */ ,
+extern FILE *XkbFindFileInPath(struct xkb_context * /* context */,
+                               const char * /* name */ ,
                                unsigned /* type */ ,
                                char **  /* pathRtrn */
     );
@@ -44,7 +46,5 @@ extern Bool XkbParseIncludeMap(char ** /* str_inout */ ,
                                char * /* nextop_rtrn */ ,
                                char **  /* extra_data */
     );
-
-extern void XkbFreeIncludePath(void);
 
 #endif /* _XKBPATH_H_ */

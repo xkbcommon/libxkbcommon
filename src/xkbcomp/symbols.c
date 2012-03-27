@@ -757,7 +757,8 @@ HandleIncludeSymbols(IncludeStmt * stmt,
         included = *info;
         memset(info, 0, sizeof(SymbolsInfo));
     }
-    else if (ProcessIncludeFile(stmt, XkmSymbolsIndex, &rtrn, &newMerge))
+    else if (ProcessIncludeFile(xkb->context, stmt, XkmSymbolsIndex, &rtrn,
+                                &newMerge))
     {
         InitSymbolsInfo(&included, xkb);
         included.fileID = included.dflt.defs.fileID = rtrn->id;
@@ -798,7 +799,8 @@ HandleIncludeSymbols(IncludeStmt * stmt,
                 MergeIncludedSymbols(&included, info, next->merge, xkb);
                 FreeSymbolsInfo(info);
             }
-            else if (ProcessIncludeFile(next, XkmSymbolsIndex, &rtrn, &op))
+            else if (ProcessIncludeFile(xkb->context, next, XkmSymbolsIndex,
+                                        &rtrn, &op))
             {
                 InitSymbolsInfo(&next_incl, xkb);
                 next_incl.fileID = next_incl.dflt.defs.fileID = rtrn->id;

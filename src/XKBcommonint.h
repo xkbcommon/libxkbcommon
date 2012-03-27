@@ -392,6 +392,8 @@ struct xkb_controls {
 
 /* Common keyboard description structure */
 struct xkb_desc {
+    struct xkb_context  *context;
+
     unsigned int        refcnt;
     unsigned int        defined;
     unsigned short      flags;
