@@ -476,30 +476,15 @@ struct xkb_component_name {
 };
 
 struct xkb_state {
-	unsigned char   group; /* base + latched + locked */
-	/* FIXME: Why are base + latched short and not char?? */
-	unsigned short  base_group; /* physically ... down? */
-	unsigned short  latched_group;
-	unsigned char   locked_group;
+	xkb_group_index_t base_group; /**< depressed */
+	xkb_group_index_t latched_group;
+	xkb_group_index_t locked_group;
+        xkb_group_index_t group; /**< effective */
 
-	unsigned char   mods; /* base + latched + locked */
-	unsigned char   base_mods; /* physically down */
-	unsigned char   latched_mods;
-	unsigned char   locked_mods;
-
-	unsigned char   compat_state; /* mods + group for core state */
-
-	/* grab mods = all depressed and latched mods, _not_ locked mods */
-	unsigned char   grab_mods; /* grab mods minus internal mods */
-	unsigned char   compat_grab_mods; /* grab mods + group for core state,
-	                                     but not locked groups if
-                                             IgnoreGroupLocks set */
-
-	/* effective mods = all mods (depressed, latched, locked) */
-	unsigned char   lookup_mods; /* effective mods minus internal mods */
-	unsigned char   compat_lookup_mods; /* effective mods + group */
-
-	unsigned short  ptr_buttons; /* core pointer buttons */
+	xkb_mod_mask_t base_mods; /**< depressed */
+	xkb_mod_mask_t latched_mods;
+	xkb_mod_mask_t locked_mods;
+	xkb_mod_mask_t mods; /**< effective */
 
         uint32_t        leds;
 
