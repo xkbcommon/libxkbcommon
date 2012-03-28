@@ -31,8 +31,6 @@
 #include <X11/keysym.h>
 #include <X11/Xalloca.h>
 
-XkbFile *rtrnValue;
-
 ParseCommon *
 AppendStmt(ParseCommon * to, ParseCommon * append)
 {
