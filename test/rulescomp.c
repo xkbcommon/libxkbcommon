@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
 
     if (!xkb) {
         fprintf(stderr, "Failed to compile keymap\n");
+        xkb_context_unref(context);
         exit(1);
     }
 
