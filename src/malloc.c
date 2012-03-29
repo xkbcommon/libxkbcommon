@@ -346,10 +346,12 @@ XkbcFreeClientMap(struct xkb_desc * xkb)
     }
     free(map->types);
 
-    for (key = xkb->min_key_code; key < xkb->max_key_code; key++) {
-        free(map->key_sym_map[key].sym_index);
-        free(map->key_sym_map[key].num_syms);
-        free(map->key_sym_map[key].syms);
+    if (map->key_sym_map) {
+        for (key = xkb->min_key_code; key < xkb->max_key_code; key++) {
+            free(map->key_sym_map[key].sym_index);
+            free(map->key_sym_map[key].num_syms);
+            free(map->key_sym_map[key].syms);
+        }
     }
     free(map->key_sym_map);
 

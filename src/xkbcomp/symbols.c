@@ -954,9 +954,14 @@ HandleIncludeSymbols(IncludeStmt * stmt,
             else
             {
                 info->errorCount += 10;
+                FreeSymbolsInfo(&included);
                 return False;
             }
         }
+    }
+    else if (stmt->next)
+    {
+        info->errorCount += included.errorCount;
     }
     if (haveSelf)
         *info = included;
@@ -2183,7 +2188,7 @@ CompileSymbols(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
 
     if (info.nKeys == 0) {
         FreeSymbolsInfo(&info);
-        return True;
+        return False;
     }
 
     if (info.errorCount == 0)

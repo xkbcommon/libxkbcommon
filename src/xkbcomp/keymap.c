@@ -46,7 +46,7 @@ CompileKeymap(struct xkb_context *context, XkbFile *file, unsigned merge)
     unsigned required, legal;
     unsigned mainType;
     const char *mainName;
-    LEDInfo *unbound = NULL;
+    LEDInfo *unbound = NULL, *next;
     struct xkb_desc *xkb = XkbcAllocKeyboard(context);
     struct {
         XkbFile *keycodes;
@@ -159,25 +159,25 @@ CompileKeymap(struct xkb_context *context, XkbFile *file, unsigned merge)
     }
 
     /* compile the sections we have in the file one-by-one, or fail. */
-    if (sections.keycodes != NULL &&
+    if (sections.keycodes == NULL ||
         !CompileKeycodes(sections.keycodes, xkb, MergeOverride))
     {
         ERROR("Failed to compile keycodes\n");
         goto err;
     }
-    if (sections.types != NULL &&
+    if (sections.types == NULL ||
         !CompileKeyTypes(sections.types, xkb, MergeOverride))
     {
         ERROR("Failed to compile key types\n");
         goto err;
     }
-    if (sections.compat != NULL &&
+    if (sections.compat == NULL ||
         !CompileCompatMap(sections.compat, xkb, MergeOverride, &unbound))
     {
         ERROR("Failed to compile compat map\n");
         goto err;
     }
-    if (sections.symbols != NULL &&
+    if (sections.symbols == NULL ||
         !CompileSymbols(sections.symbols, xkb, MergeOverride))
     {
         ERROR("Failed to compile symbols\n");
@@ -200,5 +200,10 @@ err:
     ACTION("Failed to compile keymap\n");
     if (xkb)
         xkb_map_unref(xkb);
+    while (unbound) {
+        next = (LEDInfo *) unbound->defs.next;
+        free(unbound);
+        unbound = next;
+    }
     return NULL;
 }
