@@ -101,6 +101,7 @@ xkb_context_include_path_append_default(struct xkb_context *context)
     if (err <= 0)
         return 1;
     (void) xkb_context_include_path_append(context, user_path);
+    free(user_path);
 
     return 1;
 }
@@ -117,6 +118,8 @@ xkb_context_include_path_clear(struct xkb_context *context)
         free(context->include_paths[i]);
         context->include_paths[i] = NULL;
     }
+    free(context->include_paths);
+    context->include_paths = NULL;
     context->num_include_paths = 0;
 }
 
