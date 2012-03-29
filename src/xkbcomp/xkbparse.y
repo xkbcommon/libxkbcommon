@@ -337,6 +337,7 @@ Decl		:	OptMergeMode VarDecl
 			    else {
 				$$= &IncludeCreate($2,$1)->common;
 			    }
+                            free($2);
                         }
 		;
 
