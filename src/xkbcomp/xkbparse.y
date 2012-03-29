@@ -145,7 +145,7 @@ extern int yylex(union YYSTYPE *val, struct YYLTYPE *loc, void *scanner);
 %type <str>	KeyName MapName OptMapName KeySym
 %type <sval>	FieldSpec Ident Element String
 %type <any>	DeclList Decl
-%type <expr>	OptExprList ExprList Expr Term Lhs Terminal ArrayInit
+%type <expr>	OptExprList ExprList Expr Term Lhs Terminal ArrayInit KeySyms
 %type <expr>	OptKeySymList KeySymList Action ActionList Coord CoordList
 %type <var>	VarDecl VarDeclList SymbolsBody SymbolsVarDecl
 %type <vmod>	VModDecl VModDefList VModDef
@@ -722,9 +722,20 @@ OptKeySymList	:	KeySymList			{ $$= $1; }
 
 KeySymList	:	KeySymList COMMA KeySym
 			{ $$= AppendKeysymList($1,$3); }
+                |       KeySymList COMMA KeySyms
+                        {
+                            $$= AppendKeysymList($1, strdup("NoSymbol"));
+                            FreeStmt(&$3->common);
+                        }
 		|	KeySym
 			{ $$= CreateKeysymList($1); }
+                |       KeySyms
+                        { $$= CreateKeysymList(strdup("NoSymbol")); }
 		;
+
+KeySyms         :       OBRACE KeySymList CBRACE
+                        { $$= $2; }
+                ;
 
 KeySym		:	IDENT	{ $$= $1; }
 		|	SECTION	{ $$= strdup("section"); }
