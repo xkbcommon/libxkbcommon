@@ -82,34 +82,17 @@ XkbcAllocClientMap(struct xkb_desc * xkb, unsigned which, unsigned nTotalTypes)
     }
 
     if (which & XkbKeySymsMask) {
-        int nKeys = XkbNumKeys(xkb);
-
-        if (!map->syms) {
-            map->size_syms = (nKeys * 15) / 10;
-            map->syms = uTypedCalloc(map->size_syms, xkb_keysym_t);
-            if (!map->syms) {
-                map->size_syms = 0;
-                return BadAlloc;
-            }
-            map->num_syms = 1;
-            map->syms[0] = XKB_KEYSYM_NO_SYMBOL;
-        }
-
         if (!map->key_sym_map) {
-            i = xkb->max_key_code + 1;
-            map->key_sym_map = uTypedCalloc(i, struct xkb_sym_map);
+            map->key_sym_map = uTypedCalloc(xkb->max_key_code + 1,
+                                            struct xkb_sym_map);
             if (!map->key_sym_map)
                 return BadAlloc;
         }
     }
 
     if (which & XkbModifierMapMask) {
-        if (!xkb_keymap_keycode_range_is_legal(xkb))
-            return BadMatch;
-
         if (!map->modmap) {
-            i = xkb->max_key_code + 1;
-            map->modmap = uTypedCalloc(i, unsigned char);
+            map->modmap = uTypedCalloc(xkb->max_key_code + 1, unsigned char);
             if (!map->modmap)
                 return BadAlloc;
         }
@@ -258,70 +241,25 @@ XkbcCopyKeyType(struct xkb_key_type * from, struct xkb_key_type * into)
     return Success;
 }
 
-xkb_keysym_t *
+Bool
 XkbcResizeKeySyms(struct xkb_desc * xkb, xkb_keycode_t key,
                   unsigned int needed)
 {
-    uint32_t i, nSyms, nKeySyms;
-    uint32_t nOldSyms;
-    xkb_keysym_t *newSyms;
+    if (xkb->map->key_sym_map[key].size_syms >= needed)
+        return True;
 
-    if (needed == 0) {
-        xkb->map->key_sym_map[key].offset = 0;
-        return xkb->map->syms;
+    xkb->map->key_sym_map[key].syms =
+        uTypedRecalloc(xkb->map->key_sym_map[key].syms,
+                       xkb->map->key_sym_map[key].size_syms,
+                       needed,
+                       xkb_keysym_t);
+    if (!xkb->map->key_sym_map[key].syms) {
+        xkb->map->key_sym_map[key].size_syms = 0;
+        return False;
     }
+    xkb->map->key_sym_map[key].size_syms = needed;
 
-    nOldSyms = XkbKeyNumSyms(xkb, key);
-    if (nOldSyms >= needed)
-        return XkbKeySymsPtr(xkb, key);
-
-    if (xkb->map->size_syms - xkb->map->num_syms >= needed) {
-        if (nOldSyms > 0)
-            memcpy(&xkb->map->syms[xkb->map->num_syms],
-                   XkbKeySymsPtr(xkb, key), nOldSyms * sizeof(xkb_keysym_t));
-
-        if ((needed - nOldSyms) > 0)
-            memset(&xkb->map->syms[xkb->map->num_syms + XkbKeyNumSyms(xkb, key)],
-                   0, (needed - nOldSyms) * sizeof(xkb_keysym_t));
-
-        xkb->map->key_sym_map[key].offset = xkb->map->num_syms;
-        xkb->map->num_syms += needed;
-
-        return &xkb->map->syms[xkb->map->key_sym_map[key].offset];
-    }
-
-    xkb->map->size_syms += (needed > 32 ? needed : 32);
-    newSyms = uTypedCalloc(xkb->map->size_syms, xkb_keysym_t);
-    if (!newSyms)
-        return NULL;
-
-    newSyms[0] = XKB_KEYSYM_NO_SYMBOL;
-    nSyms = 1;
-    for (i = xkb->min_key_code; i <= xkb->max_key_code; i++) {
-        uint32_t nCopy;
-
-        nCopy = nKeySyms = XkbKeyNumSyms(xkb, i);
-        if ((nKeySyms == 0) && (i != key))
-            continue;
-
-        if (i == key)
-            nKeySyms = needed;
-        if (nCopy != 0)
-           memcpy(&newSyms[nSyms], XkbKeySymsPtr(xkb, i),
-                  nCopy * sizeof(xkb_keysym_t));
-        if (nKeySyms > nCopy)
-            memset(&newSyms[nSyms + nCopy], 0,
-                   (nKeySyms - nCopy) * sizeof(xkb_keysym_t));
-
-        xkb->map->key_sym_map[i].offset = nSyms;
-        nSyms += nKeySyms;
-    }
-
-    free(xkb->map->syms);
-    xkb->map->syms = newSyms;
-    xkb->map->num_syms = nSyms;
-
-    return &xkb->map->syms[xkb->map->key_sym_map[key].offset];
+    return True;
 }
 
 union xkb_action *
@@ -336,7 +274,7 @@ XkbcResizeKeyActions(struct xkb_desc * xkb, xkb_keycode_t key, uint32_t needed)
     }
 
     if (XkbKeyHasActions(xkb, key) &&
-        (XkbKeyNumSyms(xkb, key) >= (int)needed))
+        (XkbKeyGroupsWidth(xkb, key) >= needed))
         return XkbKeyActionsPtr(xkb, key);
 
     if (xkb->server->size_acts - xkb->server->num_acts >= (int)needed) {
@@ -387,9 +325,10 @@ XkbcResizeKeyActions(struct xkb_desc * xkb, xkb_keycode_t key, uint32_t needed)
 void
 XkbcFreeClientMap(struct xkb_desc * xkb)
 {
-    int i;
     struct xkb_client_map * map;
     struct xkb_key_type * type;
+    xkb_keycode_t key;
+    int i;
 
     if (!xkb || !xkb->map)
         return;
@@ -406,8 +345,14 @@ XkbcFreeClientMap(struct xkb_desc * xkb)
         free(UNCONSTIFY(type->name));
     }
     free(map->types);
+
+    for (key = xkb->min_key_code; key < xkb->max_key_code; key++) {
+        free(map->key_sym_map[key].sym_index);
+        free(map->key_sym_map[key].num_syms);
+        free(map->key_sym_map[key].syms);
+    }
     free(map->key_sym_map);
-    free(map->syms);
+
     free(map->modmap);
     free(xkb->map);
     xkb->map = NULL;

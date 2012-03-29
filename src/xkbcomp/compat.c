@@ -914,7 +914,7 @@ FindInterpForKey(struct xkb_desc *xkb, xkb_keycode_t key, uint32_t group, uint32
         uint32_t mods;
         Bool found;
 
-        if ((num_syms != 1 || interp->sym != syms[0]) &&
+        if ((num_syms > 1 || interp->sym != syms[0]) &&
             interp->sym != XKB_KEYSYM_NO_SYMBOL)
             continue;
 

@@ -389,33 +389,17 @@ ActionCreate(xkb_atom_t name, ExprDef * args)
     return NULL;
 }
 
-ExprDef *
-CreateKeysymList(char *sym)
+static Bool
+ResizeKeysymList(ExprDef *list, unsigned int extra)
 {
-    ExprDef *def;
+    int i;
 
-    def = ExprCreate(ExprKeysymList, TypeSymbols);
-    if (def)
-    {
-        def->value.list.nSyms = 1;
-        def->value.list.szSyms = 4;
-        def->value.list.syms = uTypedCalloc(4, char *);
-        if (def->value.list.syms != NULL)
-        {
-            def->value.list.syms[0] = sym;
-            return def;
-        }
-    }
-    FATAL("Couldn't allocate expression for keysym list in parser\n");
-    return NULL;
-}
-
-ExprDef *
-AppendKeysymList(ExprDef * list, char *sym)
-{
-    if (list->value.list.nSyms >= list->value.list.szSyms)
+    if (list->value.list.nSyms + extra > list->value.list.szSyms)
     {
         list->value.list.szSyms *= 2;
+        list->value.list.szSyms += extra;
+        if (list->value.list.szSyms == 1)
+            list->value.list.szSyms = 4;
         list->value.list.syms = uTypedRecalloc(list->value.list.syms,
                                                list->value.list.nSyms,
                                                list->value.list.szSyms,
@@ -423,10 +407,128 @@ AppendKeysymList(ExprDef * list, char *sym)
         if (list->value.list.syms == NULL)
         {
             FATAL("Couldn't resize list of symbols for append\n");
-            return NULL;
+            return False;
         }
     }
+    if (list->value.list.nLevels >= list->value.list.szLevels)
+    {
+        list->value.list.szLevels *= 2;
+        if (list->value.list.szLevels == 0)
+            list->value.list.szLevels = 4;
+        list->value.list.symsMapIndex =
+            uTypedRecalloc(list->value.list.symsMapIndex,
+                           list->value.list.nLevels,
+                           list->value.list.szLevels,
+                           int);
+        if (list->value.list.symsMapIndex == NULL)
+        {
+            FATAL("Couldn't resize keysym index map for append\n");
+            return False;
+        }
+        list->value.list.symsNumEntries =
+            uTypedRecalloc(list->value.list.symsNumEntries,
+                           list->value.list.nLevels,
+                           list->value.list.szLevels,
+                           unsigned int);
+        if (list->value.list.symsNumEntries == NULL)
+        {
+            FATAL("Couldn't resize num keysym entries for append\n");
+            return False;
+        }
+        for (i = list->value.list.nLevels; i < list->value.list.szLevels; i++)
+            list->value.list.symsMapIndex[i] = -1;
+    }
+
+    return True;
+}
+
+ExprDef *
+CreateKeysymList(char *sym)
+{
+    ExprDef *def;
+
+    def = ExprCreate(ExprKeysymList, TypeSymbols);
+    if (!def)
+    {
+        FATAL("Couldn't allocate expression for keysym list in parser\n");
+        return NULL;
+    }
+
+    def->value.list.nSyms = 0;
+    def->value.list.szSyms = 0;
+    def->value.list.nLevels = 0;
+    def->value.list.szLevels = 0;
+    def->value.list.syms = NULL;
+    def->value.list.symsMapIndex = NULL;
+    def->value.list.symsNumEntries = NULL;
+
+    if (!ResizeKeysymList(def, 1))
+    {
+        FreeStmt(&def->common);
+        return NULL;
+    }
+
+    def->value.list.syms[0] = sym;
+    def->value.list.symsMapIndex[0] = 0;
+    def->value.list.symsNumEntries[0] = 1;
+    def->value.list.nLevels = 1;
+    def->value.list.nSyms = 1;
+
+    return def;
+}
+
+ExprDef *
+CreateMultiKeysymList(ExprDef *list)
+{
+    int i;
+
+    for (i = 1; i < list->value.list.szLevels; i++)
+    {
+        list->value.list.symsMapIndex[i] = -1;
+        list->value.list.symsNumEntries[i] = 0;
+    }
+    list->value.list.symsMapIndex[0] = 0;
+    list->value.list.symsNumEntries[0] = list->value.list.nLevels;
+    list->value.list.nLevels = 1;
+
+    return list;
+}
+
+ExprDef *
+AppendKeysymList(ExprDef * list, char *sym)
+{
+    if (!ResizeKeysymList(list, 1))
+        return NULL;
+
+    list->value.list.symsMapIndex[list->value.list.nLevels] =
+        list->value.list.nSyms;
+    list->value.list.symsNumEntries[list->value.list.nLevels] = 1;
     list->value.list.syms[list->value.list.nSyms++] = sym;
+    list->value.list.nLevels++;
+    return list;
+}
+
+ExprDef *
+AppendMultiKeysymList(ExprDef * list, ExprDef * append)
+{
+    int i;
+
+    if (!ResizeKeysymList(list, append->value.list.nSyms))
+        return NULL;
+
+    list->value.list.symsMapIndex[list->value.list.nLevels] =
+        list->value.list.nSyms;
+    list->value.list.symsNumEntries[list->value.list.nLevels] =
+        append->value.list.nSyms;
+    for (i = 0; i < append->value.list.nSyms; i++) {
+        list->value.list.syms[list->value.list.nSyms++] =
+            append->value.list.syms[i];
+        append->value.list.syms[i] = NULL;
+    }
+    list->value.list.nLevels++;
+
+    FreeStmt(&append->common);
+
     return list;
 }
 
@@ -646,6 +748,8 @@ FreeExpr(ExprDef *expr)
         for (i = 0; i < expr->value.list.nSyms; i++)
             free(expr->value.list.syms[i]);
         free(expr->value.list.syms);
+        free(expr->value.list.symsMapIndex);
+        free(expr->value.list.symsNumEntries);
         break;
     default:
         break;

@@ -65,6 +65,9 @@ typedef struct _KeyInfo
     unsigned char actsDefined;
     unsigned int numLevels[XkbNumKbdGroups];
     xkb_keysym_t *syms[XkbNumKbdGroups];
+    int sizeSyms[XkbNumKbdGroups];
+    int *symsMapIndex[XkbNumKbdGroups];
+    unsigned int *symsMapNumEntries[XkbNumKbdGroups];
     union xkb_action *acts[XkbNumKbdGroups];
     xkb_atom_t types[XkbNumKbdGroups];
     unsigned repeat;
@@ -95,6 +98,9 @@ InitKeyInfo(KeyInfo * info)
         info->numLevels[i] = 0;
         info->types[i] = XKB_ATOM_NONE;
         info->syms[i] = NULL;
+        info->sizeSyms[i] = 0;
+        info->symsMapIndex[i] = NULL;
+        info->symsMapNumEntries[i] = NULL;
         info->acts[i] = NULL;
     }
     info->dfltType = XKB_ATOM_NONE;
@@ -125,6 +131,11 @@ FreeKeyInfo(KeyInfo * info)
         info->types[i] = XKB_ATOM_NONE;
         free(info->syms[i]);
         info->syms[i] = NULL;
+        info->sizeSyms[i] = 0;
+        free(info->symsMapIndex[i]);
+        info->symsMapIndex[i] = NULL;
+        free(info->symsMapNumEntries[i]);
+        info->symsMapNumEntries[i] = NULL;
         free(info->acts[i]);
         info->acts[i] = NULL;
     }
@@ -153,7 +164,10 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
         for (i = 0; i < XkbNumKbdGroups; i++)
         {
             old->numLevels[i] = 0;
+            old->symsMapIndex[i] = NULL;
+            old->symsMapNumEntries[i] = NULL;
             old->syms[i] = NULL;
+            old->sizeSyms[i] = 0;
             old->acts[i] = NULL;
         }
     }
@@ -165,21 +179,57 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
             width = new->numLevels[i];
             if (old->syms[i] != NULL)
             {
-                new->syms[i] = uTypedCalloc(width, xkb_keysym_t);
+                new->syms[i] = uTypedCalloc(new->sizeSyms[i], xkb_keysym_t);
                 if (!new->syms[i])
                 {
                     new->syms[i] = NULL;
+                    new->sizeSyms[i] = 0;
                     new->numLevels[i] = 0;
+                    new->acts[i] = NULL;
                     return False;
                 }
-                memcpy(new->syms[i], old->syms[i], width * sizeof(xkb_keysym_t));
+                memcpy(new->syms[i], old->syms[i],
+                       new->sizeSyms[i] * sizeof(xkb_keysym_t));
+                new->symsMapIndex[i] = uTypedCalloc(width, int);
+                if (!new->symsMapIndex[i])
+                {
+                    free(new->syms[i]);
+                    new->syms[i] = NULL;
+                    new->sizeSyms[i] = 0;
+                    new->numLevels[i] = 0;
+                    new->acts[i] = NULL;
+                    return False;
+                }
+                memcpy(new->symsMapIndex[i], old->symsMapIndex[i],
+                       width * sizeof(int));
+                new->symsMapNumEntries[i] = uTypedCalloc(width, unsigned int);
+                if (!new->symsMapNumEntries[i])
+                {
+                    free(new->syms[i]);
+                    new->syms[i] = NULL;
+                    new->sizeSyms[i] = 0;
+                    free(new->symsMapIndex[i]);
+                    new->symsMapIndex[i] = NULL;
+                    new->numLevels[i] = 0;
+                    new->acts[i] = NULL;
+                    return False;
+                }
+                memcpy(new->symsMapNumEntries[i], old->symsMapNumEntries[i],
+                       sizeof(unsigned int));
             }
             if (old->acts[i] != NULL)
             {
                 new->acts[i] = uTypedCalloc(width, union xkb_action);
                 if (!new->acts[i])
                 {
-                    new->acts[i] = NULL;
+                    free(new->syms[i]);
+                    new->syms[i] = NULL;
+                    new->sizeSyms[i] = 0;
+                    free(new->symsMapIndex[i]);
+                    new->symsMapIndex[i] = NULL;
+                    free(new->symsMapNumEntries[i]);
+                    new->symsMapNumEntries[i] = NULL;
+                    new->numLevels[i] = 0;
                     return False;
                 }
                 memcpy(new->acts[i], old->acts[i],
@@ -269,36 +319,58 @@ FreeSymbolsInfo(SymbolsInfo * info)
 }
 
 static Bool
-ResizeKeyGroup(KeyInfo * key,
-               unsigned group, unsigned atLeastSize, Bool forceActions)
+ResizeKeyGroup(KeyInfo * key, unsigned int group, unsigned int numLevels,
+               unsigned sizeSyms, Bool forceActions)
 {
     Bool tooSmall;
     unsigned newWidth;
+    int i;
 
-    tooSmall = (key->numLevels[group] < atLeastSize);
-    if (tooSmall)
-        newWidth = atLeastSize;
-    else
-        newWidth = key->numLevels[group];
-
-    if ((key->syms[group] == NULL) || tooSmall)
+    if (key->syms[group] == NULL || key->sizeSyms[group] < sizeSyms)
     {
         key->syms[group] = uTypedRecalloc(key->syms[group],
-                                          key->numLevels[group], newWidth,
+                                          key->sizeSyms[group],
+                                          sizeSyms,
                                           xkb_keysym_t);
-        if (!key->syms[group])
+        if (!key->syms[group]) {
+            key->sizeSyms[group] = 0;
+            return False;
+        }
+        key->sizeSyms[group] = sizeSyms;
+    }
+    if (!key->symsMapIndex[group] || key->numLevels[group] < numLevels)
+    {
+        key->symsMapIndex[group] = uTypedRealloc(key->symsMapIndex[group],
+                                                 numLevels,
+                                                 int);
+        if (!key->symsMapIndex[group])
+            return False;
+        for (i = key->numLevels[group]; i < numLevels; i++)
+            key->symsMapIndex[group][i] = -1;
+    }
+    if (!key->symsMapNumEntries[group] || key->numLevels[group] < numLevels)
+    {
+        key->symsMapNumEntries[group] =
+            uTypedRecalloc(key->symsMapNumEntries[group],
+                           key->numLevels[group],
+                           numLevels,
+                           unsigned int);
+        if (!key->symsMapNumEntries[group])
             return False;
     }
-    if (((forceActions) && (tooSmall || (key->acts[group] == NULL))) ||
-        (tooSmall && (key->acts[group] != NULL)))
+    if ((forceActions &&
+         (key->numLevels[group] < numLevels || (key->acts[group] == NULL))) ||
+        (key->numLevels[group] < numLevels && (key->acts[group] != NULL)))
     {
         key->acts[group] = uTypedRecalloc(key->acts[group],
-                                          key->numLevels[group], newWidth,
+                                          key->numLevels[group],
+                                          numLevels,
                                           union xkb_action);
         if (!key->acts[group])
             return False;
     }
-    key->numLevels[group] = newWidth;
+    if (key->numLevels[group] < numLevels)
+        key->numLevels[group] = numLevels;
     return True;
 }
 
@@ -309,7 +381,9 @@ MergeKeyGroups(SymbolsInfo * info,
     xkb_keysym_t *resultSyms;
     union xkb_action *resultActs;
     unsigned int resultWidth;
-    unsigned int i;
+    unsigned int resultSize = 0;
+    int cur_idx = 0;
+    int i, j;
     Bool report, clobber;
 
     clobber = (from->defs.merge != MergeAugment);
@@ -317,27 +391,33 @@ MergeKeyGroups(SymbolsInfo * info,
         ((into->defs.fileID == from->defs.fileID) && (warningLevel > 0));
     if (into->numLevels[group] >= from->numLevels[group])
     {
-        resultSyms = into->syms[group];
         resultActs = into->acts[group];
         resultWidth = into->numLevels[group];
     }
     else
     {
-        resultSyms = from->syms[group];
         resultActs = from->acts[group];
         resultWidth = from->numLevels[group];
-    }
-    if (resultSyms == NULL)
-    {
-        resultSyms = uTypedCalloc(resultWidth, xkb_keysym_t);
-        if (!resultSyms)
+        into->symsMapIndex[group] = uTypedRealloc(into->symsMapIndex[group],
+                                                  from->numLevels[group],
+                                                  int);
+        into->symsMapNumEntries[group] =
+            uTypedRecalloc(into->symsMapNumEntries[group],
+                           from->numLevels[group],
+                           into->numLevels[group],
+                           unsigned int);
+        if (!into->symsMapIndex[group] || !into->symsMapNumEntries[group])
         {
-            WSGO("Could not allocate symbols for group merge\n");
+            WSGO("Could not allocate level indices for key info merge\n");
             ACTION("Group %d of key %s not merged\n", group,
-                    longText(into->name));
+                   longText(into->name));
+
             return False;
         }
+        for (i = into->numLevels[group]; i < from->numLevels[group]; i++)
+            into->symsMapIndex[group][i] = -1;
     }
+
     if ((resultActs == NULL) && (into->acts[group] || from->acts[group]))
     {
         resultActs = uTypedCalloc(resultWidth, union xkb_action);
@@ -346,51 +426,9 @@ MergeKeyGroups(SymbolsInfo * info,
             WSGO("Could not allocate actions for group merge\n");
             ACTION("Group %d of key %s not merged\n", group,
                     longText(into->name));
-            if (resultSyms != into->syms[group] &&
-                resultSyms != from->syms[group])
-                free(resultSyms);
             return False;
         }
-    }
-    for (i = 0; i < resultWidth; i++)
-    {
-        xkb_keysym_t fromSym, toSym;
-        if (from->syms[group] && (i < from->numLevels[group]))
-            fromSym = from->syms[group][i];
-        else
-            fromSym = XKB_KEYSYM_NO_SYMBOL;
-        if (into->syms[group] && (i < into->numLevels[group]))
-            toSym = into->syms[group][i];
-        else
-            toSym = XKB_KEYSYM_NO_SYMBOL;
-        if ((fromSym == XKB_KEYSYM_NO_SYMBOL) || (fromSym == toSym))
-            resultSyms[i] = toSym;
-        else if (toSym == XKB_KEYSYM_NO_SYMBOL)
-            resultSyms[i] = fromSym;
-        else
-        {
-            xkb_keysym_t use, ignore;
-            if (clobber)
-            {
-                use = fromSym;
-                ignore = toSym;
-            }
-            else
-            {
-                use = toSym;
-                ignore = fromSym;
-            }
-            if (report)
-            {
-                WARN
-                    ("Multiple symbols for level %d/group %d on key %s\n",
-                     i + 1, group + 1, longText(into->name));
-                ACTION("Using %s, ignoring %s\n",
-                        XkbcKeysymText(use), XkbcKeysymText(ignore));
-            }
-            resultSyms[i] = use;
-        }
-        if (resultActs != NULL)
+        for (i = 0; i < resultWidth; i++)
         {
             union xkb_action *fromAct, *toAct;
             fromAct = (from->acts[group] ? &from->acts[group][i] : NULL);
@@ -432,23 +470,112 @@ MergeKeyGroups(SymbolsInfo * info,
             }
         }
     }
-    if (resultSyms != into->syms[group])
-        free(into->syms[group]);
-    if (resultSyms != from->syms[group])
-        free(from->syms[group]);
+
+    for (i = 0; i < resultWidth; i++)
+    {
+        unsigned int fromSize = 0;
+        unsigned toSize = 0;
+
+        if (from->symsMapNumEntries[group] && (i < from->numLevels[group]))
+            fromSize = from->symsMapNumEntries[group][i];
+        if (into->symsMapNumEntries[group] && (i < into->numLevels[group]))
+            toSize = into->symsMapNumEntries[group][i];
+
+        if (fromSize == 0 || fromSize == toSize || clobber)
+        {
+            fromSize += toSize;
+        }
+        else if (toSize == 0)
+        {
+            resultSize += fromSize;
+        }
+    }
+
+    if (resultSize == 0)
+        goto out;
+
+    resultSyms = uTypedCalloc(resultSize, xkb_keysym_t);
+    if (!resultSyms)
+    {
+        WSGO("Could not allocate symbols for group merge\n");
+        ACTION("Group %d of key %s not merged\n", group, longText(into->name));
+        return False;
+    }
+
+    for (i = 0; i < resultWidth; i++)
+    {
+        enum { NONE, FROM, TO } use;
+        unsigned int fromSize = 0;
+        unsigned int toSize = 0;
+
+        if (from->symsMapNumEntries[group] && (i < from->numLevels[group]))
+            fromSize = from->symsMapNumEntries[group][i];
+        if (into->symsMapNumEntries[group] && (i < into->numLevels[group]))
+            toSize = into->symsMapNumEntries[group][i];
+
+        if (!fromSize && !toSize)
+        {
+            into->symsMapIndex[group][i] = -1;
+            into->symsMapNumEntries[group][i] = 0;
+            continue;
+        }
+
+        if ((fromSize && !toSize) || clobber)
+            use = FROM;
+        else
+            use = TO;
+
+        if (toSize && fromSize && report)
+        {
+            INFO("Multiple symbols for group %d, level %d on key %s\n",
+                 group + 1, i + 1, longText(into->name));
+            ACTION("Using %s, ignoring %s\n",
+                   (use == FROM ? "from" : "to"),
+                   (use == FROM ? "to" : "from"));
+        }
+
+        if (use == FROM)
+        {
+            memcpy(&resultSyms[cur_idx],
+                   &from->syms[group][from->symsMapIndex[group][i]],
+                   from->symsMapNumEntries[group][i] * sizeof(xkb_keysym_t));
+            into->symsMapIndex[group][i] = cur_idx;
+            into->symsMapNumEntries[group][i] =
+                from->symsMapNumEntries[group][i];
+        }
+        else
+        {
+            memcpy(&resultSyms[cur_idx],
+                   &into->syms[group][from->symsMapIndex[group][i]],
+                   into->symsMapNumEntries[group][i] * sizeof(xkb_keysym_t));
+            into->symsMapIndex[group][i] = cur_idx;
+        }
+        cur_idx += into->symsMapNumEntries[group][i];
+    }
+
+out:
     if (resultActs != into->acts[group])
         free(into->acts[group]);
     if (resultActs != from->acts[group])
         free(from->acts[group]);
     into->numLevels[group] = resultWidth;
+    free(into->syms[group]);
     into->syms[group] = resultSyms;
+    free(from->syms[group]);
     from->syms[group] = NULL;
+    from->sizeSyms[group] = 0;
+    into->sizeSyms[group] = resultSize;
+    free(from->symsMapIndex[group]);
+    from->symsMapIndex[group] = NULL;
+    free(from->symsMapNumEntries[group]);
+    from->symsMapNumEntries[group] = NULL;
     into->acts[group] = resultActs;
     from->acts[group] = NULL;
     into->symsDefined |= (1 << group);
     from->symsDefined &= ~(1 << group);
     into->actsDefined |= (1 << group);
     from->actsDefined &= ~(1 << group);
+
     return True;
 }
 
@@ -484,9 +611,15 @@ MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
             {
                 into->numLevels[i] = from->numLevels[i];
                 into->syms[i] = from->syms[i];
+                into->sizeSyms[i] = from->sizeSyms[i];
+                into->symsMapIndex[i] = from->symsMapIndex[i];
+                into->symsMapNumEntries[i] = from->symsMapNumEntries[i];
                 into->acts[i] = from->acts[i];
                 into->symsDefined |= (1 << i);
                 from->syms[i] = NULL;
+                from->sizeSyms[i] = 0;
+                from->symsMapIndex[i] = NULL;
+                from->symsMapNumEntries[i] = NULL;
                 from->acts[i] = NULL;
                 from->numLevels[i] = 0;
                 from->symsDefined &= ~(1 << i);
@@ -889,7 +1022,7 @@ AddSymbolsToKey(KeyInfo * key,
                 char *field,
                 ExprDef * arrayNdx, ExprDef * value, SymbolsInfo * info)
 {
-    unsigned ndx, nSyms;
+    unsigned ndx, nSyms, nLevels;
     unsigned int i;
     long j;
 
@@ -907,7 +1040,7 @@ AddSymbolsToKey(KeyInfo * key,
                 longText(key->name));
         return False;
     }
-    if (key->syms[ndx] != NULL)
+    if (key->sizeSyms[ndx] != 0)
     {
         ERROR("Symbols for key %s, group %d already defined\n",
                longText(key->name), ndx + 1);
@@ -915,8 +1048,9 @@ AddSymbolsToKey(KeyInfo * key,
         return False;
     }
     nSyms = value->value.list.nSyms;
+    nLevels = value->value.list.nLevels;
     if (((key->numLevels[ndx] < nSyms) || (key->syms[ndx] == NULL)) &&
-        (!ResizeKeyGroup(key, ndx, nSyms, False)))
+        (!ResizeKeyGroup(key, ndx, nLevels, nSyms, False)))
     {
         WSGO("Could not resize group %d of key %s to contain %d levels\n",
              ndx + 1, longText(key->name), nSyms);
@@ -924,19 +1058,28 @@ AddSymbolsToKey(KeyInfo * key,
         return False;
     }
     key->symsDefined |= (1 << ndx);
-    for (i = 0; i < nSyms; i++) {
-        if (!LookupKeysym(value->value.list.syms[i], &key->syms[ndx][i])) {
-            WARN("Could not resolve keysym %s for key %s, group %d (%s), level %d\n",
-                  value->value.list.syms[i], longText(key->name), ndx + 1,
-                  XkbcAtomText(info->groupNames[ndx]), nSyms);
-            key->syms[ndx][i] = XKB_KEYSYM_NO_SYMBOL;
+    for (i = 0; i < nLevels; i++) {
+        key->symsMapIndex[ndx][i] = value->value.list.symsMapIndex[i];
+        key->symsMapNumEntries[ndx][i] = value->value.list.symsNumEntries[i];
+        for (j = 0; j < key->symsMapNumEntries[ndx][i]; j++) {
+            if (key->symsMapIndex[ndx][i] + j >= nSyms)
+                abort();
+            if (!LookupKeysym(value->value.list.syms[value->value.list.symsMapIndex[i] + j],
+                              &key->syms[ndx][key->symsMapIndex[ndx][i] + j])) {
+                WARN("Could not resolve keysym %s for key %s, group %d (%s), level %d\n",
+                     value->value.list.syms[i], longText(key->name), ndx + 1,
+                     XkbcAtomText(info->groupNames[ndx]), nSyms);
+                while (--j >= 0)
+                    key->syms[ndx][key->symsMapIndex[ndx][i] + j] = NoSymbol;
+                key->symsMapIndex[ndx][i] = -1;
+                key->symsMapNumEntries[ndx][i] = 0;
+                break;
+            }
         }
     }
     for (j = key->numLevels[ndx] - 1;
-         (j >= 0) && (key->syms[ndx][j] == XKB_KEYSYM_NO_SYMBOL); j--)
-    {
+         j >= 0 && key->symsMapNumEntries[ndx][j] == 0; j--)
         key->numLevels[ndx]--;
-    }
     return True;
 }
 
@@ -982,7 +1125,7 @@ AddActionsToKey(KeyInfo * key,
         return False;
     }
     if (((key->numLevels[ndx] < nActs) || (key->acts[ndx] == NULL)) &&
-        (!ResizeKeyGroup(key, ndx, nActs, True)))
+        (!ResizeKeyGroup(key, ndx, nActs, nActs, True)))
     {
         WSGO("Could not resize group %d of key %s\n", ndx,
               longText(key->name));
@@ -1371,6 +1514,12 @@ SetExplicitGroup(SymbolsInfo * info, KeyInfo * key)
     key->numLevels[0] = 0;
     key->syms[group] = key->syms[0];
     key->syms[0] = NULL;
+    key->sizeSyms[group] = key->sizeSyms[0];
+    key->sizeSyms[0] = 0;
+    key->symsMapIndex[group] = key->symsMapIndex[0];
+    key->symsMapIndex[0] = NULL;
+    key->symsMapNumEntries[group] = key->symsMapNumEntries[0];
+    key->symsMapNumEntries[0] = NULL;
     key->acts[group] = key->acts[0];
     key->acts[0] = NULL;
     key->types[group] = key->types[0];
@@ -1515,28 +1664,24 @@ HandleSymbolsFile(XkbFile * file,
 static Bool
 FindKeyForSymbol(struct xkb_desc * xkb, xkb_keysym_t sym, xkb_keycode_t *kc_rtrn)
 {
-    int i, j;
-    Bool gotOne;
+    xkb_keycode_t key;
+    unsigned int group, level;
 
-    j = 0;
-    do
+    for (key = xkb->min_key_code; key <= xkb->max_key_code; key++)
     {
-        gotOne = False;
-        for (i = xkb->min_key_code; i <= (int) xkb->max_key_code; i++)
+        for (group = 0; group < XkbKeyNumGroups(xkb, key); group++)
         {
-            if (j < (int) XkbKeyNumSyms(xkb, i))
+            for (level = 0; level < XkbKeyGroupWidth(xkb, key, group); level++)
             {
-                gotOne = True;
-                if (XkbKeySym(xkb, i, j) == sym)
-                {
-                    *kc_rtrn = i;
-                    return True;
-                }
+                if (XkbKeyNumSyms(xkb, key, group, level) != 1 ||
+                    (XkbKeySymEntry(xkb, key, group, level))[0] != sym)
+                    continue;
+                *kc_rtrn = key;
+                return True;
             }
         }
-        j++;
     }
-    while (gotOne);
+
     return False;
 }
 
@@ -1676,12 +1821,34 @@ PrepareKeyDef(KeyInfo * key)
                    width * sizeof(union xkb_action));
             key->actsDefined |= 1 << i;
         }
-        if ((key->symsDefined & 1) && key->syms[0])
+        if ((key->symsDefined & 1) && key->sizeSyms[0])
         {
-            key->syms[i] = uTypedCalloc(width, xkb_keysym_t);
+            key->syms[i] = uTypedCalloc(key->sizeSyms[0], xkb_keysym_t);
             if (key->syms[i] == NULL)
                 continue;
-            memcpy(key->syms[i], key->syms[0], width * sizeof(xkb_keysym_t));
+            memcpy(key->syms[i], key->syms[0],
+                   key->sizeSyms[0] * sizeof(xkb_keysym_t));
+            key->symsMapIndex[i] = uTypedCalloc(width, int);
+            if (!key->symsMapIndex[i])
+            {
+                free(key->syms[i]);
+                key->syms[i] = NULL;
+                continue;
+            }
+            memcpy(key->symsMapIndex[i], key->symsMapIndex[0],
+                   width * sizeof(int));
+            key->symsMapNumEntries[i] = uTypedCalloc(width, unsigned int);
+            if (!key->symsMapNumEntries[i])
+            {
+                free(key->syms[i]);
+                key->syms[i] = NULL;
+                free(key->symsMapIndex[i]);
+                key->symsMapIndex[i] = NULL;
+                continue;
+            }
+            memcpy(key->symsMapNumEntries[i], key->symsMapNumEntries[0],
+                   width * sizeof(int));
+            key->sizeSyms[i] = key->sizeSyms[0];
             key->symsDefined |= 1 << i;
         }
         if (defined & 1)
@@ -1702,11 +1869,29 @@ PrepareKeyDef(KeyInfo * key)
         }
         if ((key->syms[i] != key->syms[0]) &&
             (key->syms[i] == NULL || key->syms[0] == NULL ||
+             key->sizeSyms[i] != key->sizeSyms[0] ||
              memcmp(key->syms[i], key->syms[0],
-                    sizeof(xkb_keysym_t) * key->numLevels[0])))
+                    sizeof(xkb_keysym_t) * key->sizeSyms[0])))
         {
             identical = False;
             break;
+        }
+        if ((key->symsMapIndex[i] != key->symsMapIndex[i]) &&
+            (key->symsMapIndex[i] == NULL || key->symsMapIndex[0] == NULL ||
+             memcmp(key->symsMapIndex[i], key->symsMapIndex[0],
+                    key->numLevels[0] * sizeof(int))))
+        {
+            identical = False;
+            continue;
+        }
+        if ((key->symsMapNumEntries[i] != key->symsMapNumEntries[i]) &&
+            (key->symsMapNumEntries[i] == NULL ||
+             key->symsMapNumEntries[0] == NULL ||
+             memcmp(key->symsMapNumEntries[i], key->symsMapNumEntries[0],
+                    key->numLevels[0] * sizeof(int))))
+        {
+            identical = False;
+            continue;
         }
         if ((key->acts[i] != key->acts[0]) &&
             (key->acts[i] == NULL || key->acts[0] == NULL ||
@@ -1724,6 +1909,11 @@ PrepareKeyDef(KeyInfo * key)
             key->numLevels[i] = 0;
             free(key->syms[i]);
             key->syms[i] = NULL;
+            key->sizeSyms[i] = 0;
+            free(key->symsMapIndex[i]);
+            key->symsMapIndex[i] = NULL;
+            free(key->symsMapNumEntries[i]);
+            key->symsMapNumEntries[i] = NULL;
             free(key->acts[i]);
             key->acts[i] = NULL;
             key->types[i] = 0;
@@ -1744,12 +1934,14 @@ CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
 {
     unsigned int i;
     xkb_keycode_t kc;
+    unsigned int sizeSyms = 0;
     unsigned width, tmp, nGroups;
     struct xkb_key_type * type;
     Bool haveActions, autoType, useAlias;
     xkb_keysym_t *outSyms;
     union xkb_action *outActs;
     unsigned types[XkbNumKbdGroups];
+    unsigned int symIndex = 0;
 
     useAlias = (start_from == 0);
 
@@ -1812,7 +2004,7 @@ CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
             }
             types[i] = XkbTwoLevelIndex;
         }
-        /* if the type specifies less syms than the key has, shrink the key */
+        /* if the type specifies fewer levels than the key has, shrink the key */
         type = &xkb->map->types[types[i]];
         if (type->num_levels < key->numLevels[i])
         {
@@ -1829,13 +2021,10 @@ CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
             width = key->numLevels[i];
         if (type->num_levels > width)
             width = type->num_levels;
+        sizeSyms += key->sizeSyms[i];
     }
 
-    /* width is now the largest width found */
-
-    i = width * nGroups;
-    outSyms = XkbcResizeKeySyms(xkb, kc, i);
-    if (outSyms == NULL)
+    if (!XkbcResizeKeySyms(xkb, kc, sizeSyms))
     {
         WSGO("Could not enlarge symbols for %s (keycode %d)\n",
               longText(key->name), kc);
@@ -1843,7 +2032,7 @@ CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
     }
     if (haveActions)
     {
-        outActs = XkbcResizeKeyActions(xkb, kc, i);
+        outActs = XkbcResizeKeyActions(xkb, kc, width * nGroups);
         if (outActs == NULL)
         {
             WSGO("Could not enlarge actions for %s (key %d)\n",
@@ -1861,6 +2050,9 @@ CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
 
     xkb->map->key_sym_map[kc].group_info = XkbSetNumGroups(i, nGroups);
     xkb->map->key_sym_map[kc].width = width;
+    xkb->map->key_sym_map[kc].sym_index = uTypedCalloc(nGroups * width, int);
+    xkb->map->key_sym_map[kc].num_syms = uTypedCalloc(nGroups * width,
+                                                      unsigned int);
     for (i = 0; i < nGroups; i++)
     {
         /* assign kt_index[i] to the index of the type in map->types.
@@ -1872,15 +2064,29 @@ CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
          */
         if (key->numLevels[i])
             xkb->map->key_sym_map[kc].kt_index[i] = types[i];
-        if (key->syms[i] != NULL)
+        if (key->sizeSyms[i] != 0)
         {
             /* fill key to "width" symbols*/
             for (tmp = 0; tmp < width; tmp++)
             {
-                if (tmp < key->numLevels[i])
-                    outSyms[tmp] = key->syms[i][tmp];
+                if (tmp < key->numLevels[i] && key->symsMapNumEntries[i][tmp])
+                {
+                    memcpy(&xkb->map->key_sym_map[kc].syms[symIndex],
+                           &key->syms[i][key->symsMapIndex[i][tmp]],
+                           key->symsMapNumEntries[i][tmp] *
+                            sizeof(xkb_keysym_t));
+                    xkb->map->key_sym_map[kc].sym_index[(i * width) + tmp] =
+                        symIndex;
+                    xkb->map->key_sym_map[kc].num_syms[(i * width) + tmp] =
+                        key->symsMapNumEntries[i][tmp];
+                    symIndex +=
+                        xkb->map->key_sym_map[kc].num_syms[(i * width) + tmp];
+                }
                 else
-                    outSyms[tmp] = XKB_KEYSYM_NO_SYMBOL;
+                {
+                    xkb->map->key_sym_map[kc].sym_index[(i * width) + tmp] = -1;
+                    xkb->map->key_sym_map[kc].num_syms[(i * width) + tmp] = 0;
+                }
                 if ((outActs != NULL) && (key->acts[i] != NULL))
                 {
                     if (tmp < key->numLevels[i])
@@ -1890,9 +2096,6 @@ CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
                 }
             }
         }
-        outSyms += width;
-        if (outActs)
-            outActs += width;
     }
     switch (key->behavior.type & XkbKB_OpMask)
     {

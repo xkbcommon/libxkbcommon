@@ -89,6 +89,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define False 0
 #endif
 
+typedef int Bool;
+
 /* From XKM.h */
 #define	XkmFileVersion		15
 
@@ -289,7 +291,10 @@ struct xkb_sym_map {
 	unsigned char	 kt_index[XkbNumKbdGroups];
 	unsigned char	 group_info;
 	unsigned char	 width;
-	unsigned short	 offset;
+        int              *sym_index; /* per level/group index into 'syms' */
+        unsigned int     *num_syms; /* per level/group */
+        xkb_keysym_t     *syms;
+        unsigned int     size_syms; /* size of 'syms' */
 };
 
 #define	XkbNumGroups(g)			((g)&0x0f)
@@ -303,12 +308,7 @@ struct xkb_client_map {
     unsigned char            size_types;
     unsigned char            num_types;
     struct xkb_key_type *           types;
-
-    uint32_t                 size_syms;
-    uint32_t                 num_syms;
-    xkb_keysym_t             *syms;
     struct xkb_sym_map *             key_sym_map;
-
     unsigned char           *modmap;
 };
 
@@ -415,14 +415,16 @@ struct xkb_desc {
 #define	XkbKeyGroupsWidth(d,k)  ((d)->map->key_sym_map[k].width)
 #define	XkbKeyTypeIndex(d,k,g)  ((d)->map->key_sym_map[k].kt_index[g&0x3])
 #define	XkbKeyType(d,k,g)	(&(d)->map->types[XkbKeyTypeIndex(d,k,g)])
-#define	XkbKeyNumSyms(d,k)      (XkbKeyGroupsWidth(d,k)*XkbKeyNumGroups(d,k))
-#define	XkbKeySymsOffset(d,k)	((d)->map->key_sym_map[k].offset)
-#define	XkbKeySymsPtr(d,k)	(&(d)->map->syms[XkbKeySymsOffset(d,k)])
-#define	XkbKeySym(d,k,n)	(XkbKeySymsPtr(d,k)[n])
-#define	XkbKeySymEntry(d,k,sl,g) \
-	(XkbKeySym(d,k,((XkbKeyGroupsWidth(d,k)*(g))+(sl))))
+#define	XkbKeyNumSyms(d,k,g,sl) \
+        ((d)->map->key_sym_map[k].num_syms[(g*XkbKeyGroupsWidth(d,k))+sl])
+#define	XkbKeySym(d,k,n)	(&(d)->map->key_sym_map[k].syms[n])
+#define XkbKeySymOffset(d,k,g,sl) \
+        ((d)->map->key_sym_map[k].sym_index[(g*XkbKeyGroupsWidth(d,k))+sl])
+#define	XkbKeySymEntry(d,k,g,sl) \
+	(XkbKeySym(d,k,XkbKeySymOffset(d,k,g,sl)))
 #define	XkbKeyHasActions(d,k)	((d)->server->key_acts[k]!=0)
-#define	XkbKeyNumActions(d,k)	(XkbKeyHasActions(d,k)?XkbKeyNumSyms(d,k):1)
+#define	XkbKeyNumActions(d,k)	\
+        (XkbKeyHasActions(d,k)?(XkbKeyGroupsWidth(d,k)*XkbKeyNumGroups(d,k)):1)
 #define	XkbKeyActionsPtr(d,k)   (&(d)->server->acts[(d)->server->key_acts[k]])
 #define	XkbKeyAction(d,k,n) \
 	(XkbKeyHasActions(d,k)?&XkbKeyActionsPtr(d,k)[n]:NULL)

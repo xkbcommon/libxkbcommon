@@ -113,7 +113,14 @@ extern ExprDef *ActionCreate(xkb_atom_t /* name */ ,
                              ExprDef *  /* args */
     );
 
+extern ExprDef *CreateMultiKeysymList(ExprDef * /* list */
+    );
+
 extern ExprDef *CreateKeysymList(char * /* sym */
+    );
+
+extern ExprDef *AppendMultiKeysymList(ExprDef * /* list */ ,
+                                      ExprDef * /* append */
     );
 
 extern ExprDef *AppendKeysymList(ExprDef * /* list */ ,

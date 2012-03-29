@@ -723,14 +723,11 @@ OptKeySymList	:	KeySymList			{ $$= $1; }
 KeySymList	:	KeySymList COMMA KeySym
 			{ $$= AppendKeysymList($1,$3); }
                 |       KeySymList COMMA KeySyms
-                        {
-                            $$= AppendKeysymList($1, strdup("NoSymbol"));
-                            FreeStmt(&$3->common);
-                        }
+                        { $$= AppendMultiKeysymList($1,$3); }
 		|	KeySym
 			{ $$= CreateKeysymList($1); }
                 |       KeySyms
-                        { $$= CreateKeysymList(strdup("NoSymbol")); }
+                        { $$= CreateMultiKeysymList($1); }
 		;
 
 KeySyms         :       OBRACE KeySymList CBRACE

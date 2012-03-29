@@ -60,7 +60,7 @@ XkbcAllocServerMap(struct xkb_desc * xkb, unsigned which, unsigned nNewActions);
 extern int
 XkbcCopyKeyType(struct xkb_key_type * from, struct xkb_key_type *into);
 
-extern xkb_keysym_t *
+extern Bool
 XkbcResizeKeySyms(struct xkb_desc * xkb, xkb_keycode_t key, uint32_t needed);
 
 extern union xkb_action *

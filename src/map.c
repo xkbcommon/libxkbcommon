@@ -304,11 +304,19 @@ unsigned int
 xkb_key_get_syms_by_level(struct xkb_desc *xkb, xkb_keycode_t key, unsigned int group,
                           unsigned int level, xkb_keysym_t **syms_out)
 {
-    *syms_out = &(XkbKeySymEntry(xkb, key, level, group));
-    if (**syms_out == XKB_KEYSYM_NO_SYMBOL)
+    int num_syms;
+
+    if (group >= XkbKeyNumGroups(xkb, key))
+        goto err;
+    if (level >= XkbKeyGroupWidth(xkb, key, group))
         goto err;
 
-    return 1;
+    num_syms = XkbKeyNumSyms(xkb, key, group, level);
+    if (num_syms == 0)
+        goto err;
+
+    *syms_out = XkbKeySymEntry(xkb, key, group, level);
+    return num_syms;
 
 err:
     *syms_out = NULL;

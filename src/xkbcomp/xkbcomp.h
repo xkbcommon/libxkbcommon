@@ -138,6 +138,10 @@ typedef struct _Expr
             int nSyms;
             int szSyms;
             char **syms;
+            int nLevels;
+            int szLevels;
+            int *symsMapIndex;
+            unsigned int *symsNumEntries;
         } list;
         struct _Expr *child;
         xkb_atom_t str;
