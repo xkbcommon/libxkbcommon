@@ -1183,11 +1183,13 @@ HandleActionDef(ExprDef * def,
             if ((arg->op == OpNot) || (arg->op == OpInvert))
             {
                 field = arg->value.child;
+                constFalse.value.str = xkb_intern_atom("false");
                 value = &constFalse;
             }
             else
             {
                 field = arg;
+                constTrue.value.str = xkb_intern_atom("true");
                 value = &constTrue;
             }
         }
