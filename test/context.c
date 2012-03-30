@@ -24,16 +24,11 @@
  */
 
 #include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <X11/keysym.h>
-#include <linux/input.h>
+
 #include "xkbcommon/xkbcommon.h"
-#include "utils.h"
-#include "XKBcommonint.h"
 
 int
-main(int argc, char *argv[])
+main(void)
 {
     struct xkb_context *context = xkb_context_new();
 

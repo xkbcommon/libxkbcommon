@@ -28,8 +28,8 @@
 #include <stdlib.h>
 #include <X11/keysym.h>
 #include <linux/input.h>
+
 #include "xkbcommon/xkbcommon.h"
-#include "utils.h"
 #include "XKBcommonint.h"
 
 /* Offset between evdev keycodes (where KEY_ESCAPE is 1), and the evdev XKB
@@ -91,7 +91,7 @@ static void
 test_update_key(struct xkb_keymap *xkb)
 {
     struct xkb_state *state = xkb_state_new(xkb);
-    xkb_keysym_t *syms;
+    const xkb_keysym_t *syms;
     int num_syms;
 
     assert(state);
@@ -203,17 +203,17 @@ test_serialisation(struct xkb_keymap *xkb)
 }
 
 int
-main(int argc, char *argv[])
+main(void)
 {
     struct xkb_context *context;
     struct xkb_keymap *xkb;
-    struct xkb_rule_names rmlvo;
-
-    rmlvo.rules = "evdev";
-    rmlvo.model = "pc104";
-    rmlvo.layout = "us";
-    rmlvo.variant = NULL;
-    rmlvo.options = NULL;
+    struct xkb_rule_names rmlvo = {
+        .rules = "evdev",
+        .model = "pc104",
+        .layout = "us",
+        .variant = NULL,
+        .options = NULL,
+    };
 
     context = xkb_context_new();
     assert(context);

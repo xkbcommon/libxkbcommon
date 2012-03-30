@@ -1,7 +1,5 @@
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = . test
-
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = xkbcommon.pc
 
@@ -97,3 +95,29 @@ makekeys_makekeys_LDFLAGS = $(AM_LDFLAGS) $(LDFLAGS_FOR_BUILD)
 
 src/ks_tables.h: $(KEYSYMDEFS) $(top_builddir)/makekeys/makekeys$(EXEEXT)
 	$(top_builddir)/makekeys/makekeys $(KEYSYMDEFS) > $@
+
+# Tests
+
+TESTS_ENVIRONMENT =
+
+TESTS = \
+	test/xkey \
+	test/filecomp \
+	test/namescomp \
+	test/rulescomp \
+	test/canonicalise \
+	test/state \
+	test/context
+TESTS_LDADD = libxkbcommon.la
+
+test_xkey_LDADD = $(TESTS_LDADD)
+test_filecomp_LDADD = $(TESTS_LDADD)
+test_namescomp_LDADD = $(TESTS_LDADD)
+test_rulescomp_LDADD = $(TESTS_LDADD)
+test_canonicalise_LDADD = $(TESTS_LDADD)
+test_state_LDADD = $(TESTS_LDADD)
+test_context_LDADD = $(TESTS_LDADD)
+
+check_PROGRAMS = $(TESTS)
+
+EXTRA_DIST = test/data

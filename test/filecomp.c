@@ -24,73 +24,91 @@ sale, use or other dealings in this Software without prior written
 authorization from the authors.
 */
 
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <assert.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include "xkbcommon/xkbcommon.h"
-#include "utils.h"
 
-static char buffer[8192];
-
-int main(int argc, char *argv[])
+static int
+test_file(const char *path)
 {
+    int fd;
     struct xkb_context *context;
     struct xkb_keymap *xkb;
-    char *path;
-    int fd;
-    int i, len, from_string = 0;
-
-    /* Require xkb file */
-    if (argc < 2) {
-        fprintf(stderr, "Not enough arguments\n");
-        fprintf(stderr, "Usage: %s [-s] XKBFILE\n",
-                argv[0]);
-        exit(1);
-    }
-
-    i = 1;
-    if (strcmp(argv[1], "-s") == 0) {
-	from_string = 2;
-	i++;
-    }
-
-    path = argv[i];
 
     fd = open(path, O_RDONLY);
-    if (fd < 0) {
-        fprintf(stderr, "Failed to open file \"%s\": %s\n", path,
-                strerror(errno));
-        exit(1);
-    }
+    assert(fd >= 0);
 
     context = xkb_context_new();
     assert(context);
 
-    if (from_string) {
-	len = read(fd, buffer, sizeof(buffer));
-	buffer[len] = '\0';
-	xkb = xkb_map_new_from_string(context, buffer,
-                                      XKB_KEYMAP_FORMAT_TEXT_V1);
-    } else {
-	xkb = xkb_map_new_from_fd(context, fd,
-                                  XKB_KEYMAP_FORMAT_TEXT_V1);
-    }
+    fprintf(stderr, "\nCompiling path: %s\n", path);
+
+    xkb = xkb_map_new_from_fd(context, fd, XKB_KEYMAP_FORMAT_TEXT_V1);
     close(fd);
 
     if (!xkb) {
         fprintf(stderr, "Failed to compile keymap\n");
         xkb_context_unref(context);
-        exit(1);
+        return 0;
     }
 
     xkb_map_unref(xkb);
     xkb_context_unref(context);
+    return 1;
+}
+
+static int
+test_file_name(const char *file_name)
+{
+    static char path[PATH_MAX];
+    const char *srcdir = getenv("srcdir");
+
+    snprintf(path, PATH_MAX - 1, "%s/test/data/%s", srcdir ? srcdir : ".", file_name);
+    return test_file(path);
+}
+
+static int
+test_string(const char *string)
+{
+    struct xkb_context *context;
+    struct xkb_keymap *xkb;
+
+    context = xkb_context_new();
+    assert(context);
+
+    fprintf(stderr, "\nCompiling string\n");
+
+    xkb = xkb_map_new_from_string(context, string, XKB_KEYMAP_FORMAT_TEXT_V1);
+    if (!xkb) {
+        xkb_context_unref(context);
+        return 0;
+    }
+
+    xkb_map_unref(xkb);
+    xkb_context_unref(context);
+    return 1;
+}
+
+int
+main(void)
+{
+
+    assert(test_file_name("basic.xkb"));
+    /* XXX check we actually get qwertz here ... */
+    assert(test_file_name("default.xkb"));
+    assert(test_file_name("comprehensive-plus-geom.xkb"));
+
+    assert(!test_file_name("bad.xkb"));
+
+    assert(!test_string(""));
 
     return 0;
 }

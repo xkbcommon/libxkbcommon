@@ -27,42 +27,62 @@ authorization from the authors.
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "xkbcommon/xkbcommon.h"
-#include "utils.h"
+#include <string.h>
 
-int main(int argc, char *argv[])
+#include "xkbcommon/xkbcommon.h"
+
+static int
+test_names(const char *keycodes, const char *types,
+           const char *compat, const char *symbols)
 {
+    int ret = 1;
     struct xkb_context *context;
     struct xkb_keymap *xkb;
-    struct xkb_component_names kccgst;
-
-    /* Require Kc + T + C + S */
-    if (argc < 5) {
-        fprintf(stderr, "Not enough arguments\n");
-        fprintf(stderr, "Usage: %s KEYCODES TYPES COMPAT SYMBOLS\n",
-                argv[0]);
-        exit(1);
-    }
-
-    kccgst.keymap = NULL;
-    kccgst.keycodes = argv[1];
-    kccgst.types = argv[2];
-    kccgst.compat = argv[3];
-    kccgst.symbols = argv[4];
+    struct xkb_component_names kccgst = {
+        .keymap = NULL,
+        .keycodes = strdup(keycodes),
+        .types = strdup(types),
+        .compat = strdup(compat),
+        .symbols = strdup(symbols),
+    };
 
     context = xkb_context_new();
     assert(context);
 
-    xkb = xkb_map_new_from_kccgst(context, &kccgst);
+    fprintf(stderr, "\nCompiling %s %s %s %s\n", kccgst.keycodes, kccgst.types,
+            kccgst.compat, kccgst.symbols);
 
+    xkb = xkb_map_new_from_kccgst(context, &kccgst);
     if (!xkb) {
-        fprintf(stderr, "Failed to compile keymap\n");
-        xkb_context_unref(context);
-        exit(1);
+        ret = 0;
+        goto err_ctx;
     }
 
     xkb_map_unref(xkb);
+err_ctx:
     xkb_context_unref(context);
+    free(kccgst.keycodes);
+    free(kccgst.types);
+    free(kccgst.compat);
+    free(kccgst.symbols);
+    return ret;
+}
+
+int
+main(void)
+{
+    assert(test_names("xfree86+aliases(qwertz)", "complete", "complete", "pc+de"));
+    assert(test_names("xfree86+aliases(qwerty)", "complete", "complete", "pc+us"));
+    assert(test_names("xfree86+aliases(qwertz)", "complete", "complete",
+                      "pc+de+level3(ralt_switch_for_alts_toggle)+group(alts_toggle)"));
+
+    assert(!test_names("",                        "",         "",         ""));
+    assert(!test_names("xfree86+aliases(qwerty)", "",         "",         ""));
+    assert(!test_names("xfree86+aliases(qwertz)", "",         "",         "pc+de"));
+    assert(!test_names("xfree86+aliases(qwertz)", "complete", "",         "pc+de"));
+    assert(!test_names("xfree86+aliases(qwertz)", "",         "complete", "pc+de"));
+    assert(!test_names("xfree86+aliases(qwertz)", "complete", "complete", ""));
+    assert(!test_names("badnames",                "complete", "pc+us",    "pc(pc101)"));
 
     return 0;
 }

@@ -23,60 +23,116 @@
  * Author: Daniel Stone <daniel@fooishbar.org>
  */
 
-#include "xkbcommon/xkbcommon.h"
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-int main(int argc, char *argv[])
+#include "xkbcommon/xkbcommon.h"
+
+struct test_data {
+    struct xkb_component_names new;
+    struct xkb_component_names old;
+    int pass_old;
+    const char *exp_keycodes;
+    const char *exp_compat;
+    const char *exp_symbols;
+    const char *exp_types;
+};
+
+static struct test_data *
+new_data(void)
 {
-    struct xkb_component_names *new, *old = NULL;
+    return calloc(1, sizeof(struct test_data));
+}
 
-    if (argc != 5 && argc != 9) {
-        fprintf(stderr, "usage: canonicalise (new kccgst) [old kccgst]\n");
-        return 1;
-    }
+static void
+free_data(struct test_data *data)
+{
+    free(data->new.keycodes);
+    free(data->new.compat);
+    free(data->new.symbols);
+    free(data->new.types);
+    free(data->old.keycodes);
+    free(data->old.compat);
+    free(data->old.symbols);
+    free(data->old.types);
+    free(data);
+}
 
+static void
+set_new(struct test_data *data, const char *keycodes, const char *compat,
+        const char *symbols, const char *types)
+{
+    data->new.keycodes = strdup(keycodes);
+    data->new.compat = strdup(compat);
+    data->new.symbols = strdup(symbols);
+    data->new.types = strdup(types);
+}
 
-    new = calloc(1, sizeof(*new));
-    if (!new) {
-        fprintf(stderr, "failed to calloc new\n");
-        return 1;
-    }
-    new->keycodes = strdup(argv[1]);
-    new->compat = strdup(argv[2]);
-    new->symbols = strdup(argv[3]);
-    new->types = strdup(argv[4]);
+static void
+set_old(struct test_data *data, const char *keycodes, const char *compat,
+        const char *symbols, const char *types)
+{
+    data->old.keycodes = strdup(keycodes);
+    data->old.compat = strdup(compat);
+    data->old.symbols = strdup(symbols);
+    data->old.types = strdup(types);
+    data->pass_old = 1;
+}
 
-    if (argc == 9) {
-        old = calloc(1, sizeof(*old));
-        if (!old) {
-            fprintf(stderr, "failed to calloc old\n");
-            return 1;
-        }
-        old->keycodes = strdup(argv[5]);
-        old->compat = strdup(argv[6]);
-        old->symbols = strdup(argv[7]);
-        old->types = strdup(argv[8]);
-    }
+static void
+set_exp(struct test_data *data, const char *keycodes, const char *compat,
+        const char *symbols, const char *types)
+{
+    data->exp_keycodes = keycodes;
+    data->exp_compat = compat;
+    data->exp_symbols = symbols;
+    data->exp_types = types;
+}
 
-    xkb_canonicalise_components(new, old);
+static int
+test_canonicalise(struct test_data *data)
+{
+    fprintf(stderr, "New: %s %s %s %s\n", data->new.keycodes,
+            data->new.compat, data->new.symbols, data->new.types);
+    if (data->pass_old)
+        fprintf(stderr, "Old: %s %s %s %s\n", data->old.keycodes,
+                data->old.compat, data->old.symbols, data->old.types);
+    fprintf(stderr, "Expected: %s %s %s %s\n", data->exp_keycodes,
+            data->exp_compat, data->exp_symbols, data->exp_types);
 
-    printf("%s %s %s %s\n", new->keycodes, new->compat, new->symbols, new->types);
+    if (data->pass_old)
+        xkb_canonicalise_components(&data->new, &data->old);
+    else
+        xkb_canonicalise_components(&data->new, NULL);
 
-    free(new->keycodes);
-    free(new->compat);
-    free(new->symbols);
-    free(new->types);
-    free(new);
+    fprintf(stderr, "Received: %s %s %s %s\n\n", data->new.keycodes,
+            data->new.compat, data->new.symbols, data->new.types);
 
-    if (old) {
-        free(old->keycodes);
-        free(old->compat);
-        free(old->symbols);
-        free(old->types);
-        free(old);
-    }
+    return (strcmp(data->new.keycodes, data->exp_keycodes) == 0) &&
+           (strcmp(data->new.compat, data->exp_compat) == 0) &&
+           (strcmp(data->new.symbols, data->exp_symbols) == 0) &&
+           (strcmp(data->new.types, data->exp_types) == 0);
+}
+
+int
+main(void)
+{
+    struct test_data *twopart, *onepart;
+
+    twopart = new_data();
+    set_new(twopart, "+inet(pc104)",        "%+complete",     "pc(pc104)+%+ctrl(nocaps)",          "|complete");
+    set_old(twopart, "xfree86",             "basic",          "us(dvorak)",                        "xfree86");
+    set_exp(twopart, "xfree86+inet(pc104)", "basic+complete", "pc(pc104)+us(dvorak)+ctrl(nocaps)", "xfree86|complete");
+    assert(test_canonicalise(twopart));
+    free_data(twopart);
+
+    onepart = new_data();
+    set_new(onepart, "evdev", "complete", "pc(pc104)+us+compose(ralt)", "complete");
+    set_exp(onepart, "evdev", "complete", "pc(pc104)+us+compose(ralt)", "complete");
+    assert(test_canonicalise(onepart));
+    free_data(onepart);
 
     return 0;
 }

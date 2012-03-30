@@ -29,7 +29,7 @@ AC_CONFIG_HEADERS([src/config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
 # Initialize Automake
-AM_INIT_AUTOMAKE([foreign dist-bzip2 subdir-objects])
+AM_INIT_AUTOMAKE([foreign dist-bzip2 subdir-objects color-tests parallel-tests])
 AM_MAINTAINER_MODE
 
 # Get _GNU_SOURCE and friends
@@ -106,8 +106,5 @@ AC_ARG_WITH([xkb_config_root],
     [XKBCONFIGROOT="$xkb_base"])
 AC_SUBST([XKBCONFIGROOT])
 
-AC_CONFIG_FILES([
-        Makefile
-        test/Makefile
-        xkbcommon.pc])
+AC_CONFIG_FILES([Makefile xkbcommon.pc])
 AC_OUTPUT

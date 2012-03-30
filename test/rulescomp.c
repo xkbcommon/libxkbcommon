@@ -25,45 +25,53 @@ authorization from the authors.
 */
 
 #include <assert.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include <X11/Xdefs.h>
-#include "xkbcommon/xkbcommon.h"
-#include "utils.h"
 
-int main(int argc, char *argv[])
+#include "xkbcommon/xkbcommon.h"
+
+static int
+test_rmlvo(const char *rules, const char *model, const char *layout,
+           const char *variant, const char *options)
 {
     struct xkb_context *context;
     struct xkb_keymap *xkb;
-    struct xkb_rule_names rmlvo;
-
-    /* Require rmlvo */
-    if (argc < 6) {
-        fprintf(stderr, "Not enough arguments\n");
-        fprintf(stderr, "Usage: %s RULES MODEL LAYOUT VARIANT OPTIONS\n",
-                argv[0]);
-        exit(1);
-    }
-
-    rmlvo.rules = argv[1];
-    rmlvo.model = argv[2];
-    rmlvo.layout = argv[3];
-    rmlvo.variant = argv[4];
-    rmlvo.options = argv[5];
+    struct xkb_rule_names rmlvo = {
+        .rules = rules,
+        .model = model,
+        .layout = layout,
+        .variant = variant,
+        .options = options
+    };
 
     context = xkb_context_new();
     assert(context);
 
-    xkb = xkb_map_new_from_names(context, &rmlvo);
+    fprintf(stderr, "\nCompiling %s %s %s %s %s\n", rmlvo.rules, rmlvo.model,
+           rmlvo.layout, rmlvo.variant, rmlvo.options);
 
+    xkb = xkb_map_new_from_names(context, &rmlvo);
     if (!xkb) {
-        fprintf(stderr, "Failed to compile keymap\n");
         xkb_context_unref(context);
-        exit(1);
+        return 0;
     }
 
     xkb_map_unref(xkb);
     xkb_context_unref(context);
+    return 1;
+}
+
+int
+main(void)
+{
+    assert(test_rmlvo("base",       "pc105",  "us",  "",      ""));
+    assert(test_rmlvo("base",       "",       "us",  "",      ""));
+    assert(test_rmlvo("evdev",      "pc105",  "us",  "intl",  ""));
+    assert(test_rmlvo("evdev",      "pc105",  "us",  "intl",  "grp:alts_toggle"));
+
+    assert(!test_rmlvo("",          "",       "",    "",      ""));
+    assert(!test_rmlvo("base",      "",       "",    "",      ""));
+    assert(!test_rmlvo("base",      "pc105",  "",    "",      ""));
+    assert(!test_rmlvo("badrules",  "",       "us",  "",      ""));
 
     return 0;
 }
