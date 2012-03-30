@@ -59,12 +59,12 @@ extern ExprDef *ExprCreateBinary(unsigned /* op */ ,
                                  ExprDef *      /* right */
     );
 
-extern KeycodeDef *KeycodeCreate(char * /* name */ ,
+extern KeycodeDef *KeycodeCreate(const char * /* name */ ,
                                  unsigned long /* value */
     );
 
-extern KeyAliasDef *KeyAliasCreate(char * /* alias */ ,
-                                   char *       /* real */
+extern KeyAliasDef *KeyAliasCreate(const char * /* alias */ ,
+                                   const char * /* real */
     );
 
 extern VModDef *VModCreate(xkb_atom_t /* name */ ,
@@ -87,7 +87,7 @@ extern KeyTypeDef *KeyTypeCreate(xkb_atom_t /* name */ ,
                                  VarDef *       /* body */
     );
 
-extern SymbolsDef *SymbolsCreate(char * /* keyName */ ,
+extern SymbolsDef *SymbolsCreate(const char * /* keyName */ ,
                                  ExprDef *      /* symbols */
     );
 
@@ -126,7 +126,7 @@ extern ExprDef *AppendKeysymList(ExprDef * /* list */ ,
                                  char * /* sym */
     );
 
-extern int LookupKeysym(char * /* str */ ,
+extern int LookupKeysym(const char * /* str */ ,
                         xkb_keysym_t *        /* sym_rtrn */
     );
 

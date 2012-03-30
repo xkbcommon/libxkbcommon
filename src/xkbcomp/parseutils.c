@@ -119,7 +119,7 @@ ExprCreateBinary(unsigned op, ExprDef * left, ExprDef * right)
 }
 
 KeycodeDef *
-KeycodeCreate(char *name, unsigned long value)
+KeycodeCreate(const char *name, unsigned long value)
 {
     KeycodeDef *def;
 
@@ -141,7 +141,7 @@ KeycodeCreate(char *name, unsigned long value)
 }
 
 KeyAliasDef *
-KeyAliasCreate(char *alias, char *real)
+KeyAliasCreate(const char *alias, const char *real)
 {
     KeyAliasDef *def;
 
@@ -259,7 +259,7 @@ KeyTypeCreate(xkb_atom_t name, VarDef * body)
 }
 
 SymbolsDef *
-SymbolsCreate(char *keyName, ExprDef * symbols)
+SymbolsCreate(const char *keyName, ExprDef *symbols)
 {
     SymbolsDef *def;
 
@@ -533,7 +533,7 @@ AppendMultiKeysymList(ExprDef * list, ExprDef * append)
 }
 
 int
-LookupKeysym(char *str, xkb_keysym_t * sym_rtrn)
+LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn)
 {
     xkb_keysym_t sym;
 
