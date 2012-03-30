@@ -213,4 +213,5 @@ XkbcFreeAllAtoms(void)
     free(nodeTable);
     nodeTable = NULL;
     lastAtom = XKB_ATOM_NONE;
+    tableLength = 0;
 }
