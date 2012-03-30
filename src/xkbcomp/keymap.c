@@ -198,8 +198,7 @@ CompileKeymap(struct xkb_context *context, XkbFile *file, unsigned merge)
 
 err:
     ACTION("Failed to compile keymap\n");
-    if (xkb)
-        xkb_map_unref(xkb);
+    xkb_map_unref(xkb);
     while (unbound) {
         next = (LEDInfo *) unbound->defs.next;
         free(unbound);
