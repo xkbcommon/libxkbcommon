@@ -66,7 +66,7 @@ parse_line(const char *buf, char *key, xkb_keysym_t *val, char *prefix)
 
     /* See if we can catch a straight XK_foo 0x1234-style definition first;
      * the trickery around tmp is to account for prefices. */
-    i = sscanf(buf, "#define %127s 0x%lx", key, val);
+    i = sscanf(buf, "#define %127s 0x%"SCNx32, key, val);
     if (i == 2 && (tmp = strstr(key, "XK_"))) {
         memcpy(prefix, key, tmp - key);
         prefix[tmp - key] = '\0';
@@ -131,7 +131,7 @@ main(int argc, char *argv[])
             if (val == XK_VoidSymbol)
                 val = 0;
             if (val > 0x1fffffff) {
-                fprintf(stderr, "ignoring illegal keysym (%s, %lx)\n", key,
+                fprintf(stderr, "ignoring illegal keysym (%s, %"PRIx32")\n", key,
                         val);
                 continue;
             }
@@ -223,10 +223,10 @@ next1:  ;
         offsets[j] = k;
         indexes[i] = k;
         val = info[i].val;
-        printf("0x%.2"PRIx32", 0x%.2"PRIx32", 0x%.2lx, 0x%.2lx, 0x%.2lx, 0x%.2lx, ",
-               (sig >> 8) & 0xff, sig & 0xff,
-               (val >> 24) & 0xff, (val >> 16) & 0xff,
-               (val >> 8) & 0xff, val & 0xff);
+        printf("0x%.2"PRIx32", 0x%.2"PRIx32", 0x%.2"PRIx32", "
+               "0x%.2"PRIx32", 0x%.2"PRIx32", 0x%.2"PRIx32", ",
+               (sig >> 8) & 0xff, sig & 0xff, (val >> 24) & 0xff,
+               (val >> 16) & 0xff, (val >> 8) & 0xff, val & 0xff);
         for (name = info[i].name, k += 7; (c = *name++); k++)
             printf("'%c',", c);
         printf((i == (ksnum-1)) ? "0\n" : "0,\n");
