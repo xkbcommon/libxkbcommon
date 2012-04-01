@@ -36,10 +36,6 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-#define X_INCLUDE_STRING_H
-#define XOS_USE_NO_LOCKING
-#include <X11/Xos_r.h>
-
 #ifdef DEBUG
 #define PR_DEBUG(s)		fprintf(stderr,s)
 #define PR_DEBUG1(s,a)		fprintf(stderr,s,a)
@@ -260,7 +256,7 @@ SetUpRemap(InputLine *line,RemapSpec *remap)
    int i;
    size_t len;
    int ndx;
-   _Xstrtokparams strtok_buf;
+   char *strtok_buf;
 #ifdef DEBUG
    Bool found;
 #endif
@@ -271,7 +267,7 @@ SetUpRemap(InputLine *line,RemapSpec *remap)
    len = remap->number;
    memset(remap, 0, sizeof(RemapSpec));
    remap->number = len;
-   while ((tok=_XStrtok(str," ",strtok_buf))!=NULL) {
+   while ((tok = strtok_r(str, " ", &strtok_buf)) != NULL) {
 #ifdef DEBUG
 	found= False;
 #endif
@@ -387,7 +383,7 @@ CheckLine(	InputLine *		line,
     char *str, *tok;
     int nread, i;
     FileSpec tmp;
-    _Xstrtokparams strtok_buf;
+    char *strtok_buf;
     Bool append = False;
 
     if (line->line[0]=='!') {
@@ -427,7 +423,7 @@ CheckLine(	InputLine *		line,
     }
     memset(&tmp, 0, sizeof(FileSpec));
     str= line->line;
-    for (nread= 0;(tok=_XStrtok(str," ",strtok_buf))!=NULL;nread++) {
+    for (nread = 0; (tok = strtok_r(str, " ", &strtok_buf)) != NULL; nread++) {
 	str= NULL;
 	if (strcmp(tok,"=")==0) {
 	    nread--;
