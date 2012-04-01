@@ -47,12 +47,15 @@ ClearVModInfo(VModInfo * info, struct xkb_desc * xkb)
 {
     int i;
 
+    info->newlyDefined = info->defined = info->available = 0;
+
     if (XkbcAllocNames(xkb, XkbVirtualModNamesMask, 0) != Success)
         return;
+
     if (XkbcAllocServerMap(xkb, XkbVirtualModsMask, 0) != Success)
         return;
+
     info->xkb = xkb;
-    info->newlyDefined = info->defined = info->available = 0;
     if (xkb && xkb->names)
     {
         int bit;
