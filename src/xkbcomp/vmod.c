@@ -242,7 +242,8 @@ ResolveVirtualModifier(ExprDef * def, struct xkb_desc *xkb,
         const char *name = XkbcAtomText(def->value.str);
         for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1)
         {
-            if ((info->available & bit) && strcmp(names->vmods[i], name) == 0)
+            if ((info->available & bit) && names->vmods[i] &&
+                strcmp(names->vmods[i], name) == 0)
             {
                 val_rtrn->uval = i;
                 return True;
