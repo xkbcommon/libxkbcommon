@@ -321,5 +321,8 @@ skip2:  ;
     printf("};\n");
     printf("\n#endif /* KS_TABLES_H */\n");
 
+    for (i = 0; i < ksnum; i++)
+        free(info[i].name);
+
     exit(0);
 }
