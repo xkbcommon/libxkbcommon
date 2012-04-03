@@ -29,7 +29,7 @@
 
 typedef struct _VModInfo
 {
-    struct xkb_desc * xkb;
+    struct xkb_keymap * xkb;
     unsigned defined;
     unsigned available;
     unsigned newlyDefined;
@@ -37,28 +37,28 @@ typedef struct _VModInfo
 } VModInfo;
 
 extern void InitVModInfo(VModInfo * /* info */ ,
-                         struct xkb_desc *     /* xkb */
+                         struct xkb_keymap *     /* xkb */
     );
 
 extern void ClearVModInfo(VModInfo * /* info */ ,
-                          struct xkb_desc *    /* xkb */
+                          struct xkb_keymap *    /* xkb */
     );
 
 extern Bool HandleVModDef(VModDef * /* stmt */ ,
-                          struct xkb_desc * /* xkb */ ,
+                          struct xkb_keymap * /* xkb */ ,
                           unsigned /* mergeMode */ ,
                           VModInfo *    /* info */
     );
 
 extern Bool ApplyVModDefs(VModInfo * /* info */ ,
-                          struct xkb_desc *    /* xkb */
+                          struct xkb_keymap *    /* xkb */
     );
 
-extern int FindKeypadVMod(struct xkb_desc *    /* xkb */
+extern int FindKeypadVMod(struct xkb_keymap *    /* xkb */
     );
 
 extern Bool ResolveVirtualModifier(ExprDef * /* def */ ,
-                                   struct xkb_desc * /* xkb */ ,
+                                   struct xkb_keymap * /* xkb */ ,
                                    ExprResult * /* value_rtrn */ ,
                                    VModInfo *   /* info */
     );

@@ -41,7 +41,7 @@ static char buffer[8192];
 int main(int argc, char *argv[])
 {
     struct xkb_context *context;
-    struct xkb_desc *xkb;
+    struct xkb_keymap *xkb;
     char *path;
     int fd;
     int i, len, from_string = 0;

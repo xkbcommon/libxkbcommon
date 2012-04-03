@@ -88,7 +88,7 @@ print_state(struct xkb_state *state)
 }
 
 static void
-test_update_key(struct xkb_desc *xkb)
+test_update_key(struct xkb_keymap *xkb)
 {
     struct xkb_state *state = xkb_state_new(xkb);
     xkb_keysym_t *syms;
@@ -150,7 +150,7 @@ test_update_key(struct xkb_desc *xkb)
 }
 
 static void
-test_serialisation(struct xkb_desc *xkb)
+test_serialisation(struct xkb_keymap *xkb)
 {
     struct xkb_state *state = xkb_state_new(xkb);
     xkb_mod_mask_t base_mods;
@@ -206,7 +206,7 @@ int
 main(int argc, char *argv[])
 {
     struct xkb_context *context;
-    struct xkb_desc *xkb;
+    struct xkb_keymap *xkb;
     struct xkb_rule_names rmlvo;
 
     rmlvo.rules = "evdev";

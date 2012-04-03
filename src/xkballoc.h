@@ -32,48 +32,48 @@ authorization from the authors.
 #include "XKBcommonint.h"
 
 extern int
-XkbcAllocCompatMap(struct xkb_desc * xkb, unsigned which, unsigned nSI);
+XkbcAllocCompatMap(struct xkb_keymap * xkb, unsigned which, unsigned nSI);
 
 extern int
-XkbcAllocNames(struct xkb_desc * xkb, unsigned which, unsigned nTotalAliases);
+XkbcAllocNames(struct xkb_keymap * xkb, unsigned which, unsigned nTotalAliases);
 
 extern int
-XkbcAllocControls(struct xkb_desc * xkb, unsigned which);
+XkbcAllocControls(struct xkb_keymap * xkb, unsigned which);
 
 extern int
-XkbcAllocIndicatorMaps(struct xkb_desc * xkb);
+XkbcAllocIndicatorMaps(struct xkb_keymap * xkb);
 
-extern struct xkb_desc *
+extern struct xkb_keymap *
 XkbcAllocKeyboard(struct xkb_context *context);
 
 extern void
-XkbcFreeKeyboard(struct xkb_desc * xkb);
+XkbcFreeKeyboard(struct xkb_keymap * xkb);
 
 /***====================================================================***/
 
 extern int
-XkbcAllocClientMap(struct xkb_desc * xkb, unsigned which, unsigned nTotalTypes);
+XkbcAllocClientMap(struct xkb_keymap * xkb, unsigned which, unsigned nTotalTypes);
 
 extern int
-XkbcAllocServerMap(struct xkb_desc * xkb, unsigned which, unsigned nNewActions);
+XkbcAllocServerMap(struct xkb_keymap * xkb, unsigned which, unsigned nNewActions);
 
 extern int
 XkbcCopyKeyType(struct xkb_key_type * from, struct xkb_key_type *into);
 
 extern Bool
-XkbcResizeKeySyms(struct xkb_desc * xkb, xkb_keycode_t key, uint32_t needed);
+XkbcResizeKeySyms(struct xkb_keymap * xkb, xkb_keycode_t key, uint32_t needed);
 
 extern union xkb_action *
-XkbcResizeKeyActions(struct xkb_desc * xkb, xkb_keycode_t key, uint32_t needed);
+XkbcResizeKeyActions(struct xkb_keymap * xkb, xkb_keycode_t key, uint32_t needed);
 
 extern void
-XkbcFreeClientMap(struct xkb_desc * xkb);
+XkbcFreeClientMap(struct xkb_keymap * xkb);
 
 extern void
-XkbcFreeServerMap(struct xkb_desc * xkb);
+XkbcFreeServerMap(struct xkb_keymap * xkb);
 
 extern unsigned int
-xkb_key_get_syms_by_level(struct xkb_desc *xkb, xkb_keycode_t key,
+xkb_key_get_syms_by_level(struct xkb_keymap *xkb, xkb_keycode_t key,
                           unsigned int group, unsigned int level,
                           xkb_keysym_t **syms_out);
 

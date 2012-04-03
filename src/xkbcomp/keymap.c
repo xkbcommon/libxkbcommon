@@ -38,7 +38,7 @@
  * @param file A list of XkbFiles, each denoting one type (e.g.
  * XkmKeyNamesIdx, etc.)
  */
-struct xkb_desc *
+struct xkb_keymap *
 CompileKeymap(struct xkb_context *context, XkbFile *file, unsigned merge)
 {
     unsigned have;
@@ -47,7 +47,7 @@ CompileKeymap(struct xkb_context *context, XkbFile *file, unsigned merge)
     unsigned mainType;
     const char *mainName;
     LEDInfo *unbound = NULL, *next;
-    struct xkb_desc *xkb = XkbcAllocKeyboard(context);
+    struct xkb_keymap *xkb = XkbcAllocKeyboard(context);
     struct {
         XkbFile *keycodes;
         XkbFile *types;

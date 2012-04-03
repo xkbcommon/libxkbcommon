@@ -68,7 +68,7 @@ typedef struct _CompatInfo
     LEDInfo *leds;
     VModInfo vmods;
     ActionInfo *act;
-    struct xkb_desc * xkb;
+    struct xkb_keymap * xkb;
 } CompatInfo;
 
 /***====================================================================***/
@@ -100,7 +100,7 @@ siText(SymInterpInfo * si, CompatInfo * info)
 }
 
 static void
-InitCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
+InitCompatInfo(CompatInfo * info, struct xkb_keymap * xkb)
 {
     unsigned int i;
 
@@ -130,7 +130,7 @@ InitCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
 }
 
 static void
-ClearCompatInfo(CompatInfo * info, struct xkb_desc * xkb)
+ClearCompatInfo(CompatInfo * info, struct xkb_keymap * xkb)
 {
     unsigned int i;
     ActionInfo *next;
@@ -389,14 +389,14 @@ MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from, unsigned merge)
 }
 
 typedef void (*FileHandler) (XkbFile * /* rtrn */ ,
-                             struct xkb_desc * /* xkb */ ,
+                             struct xkb_keymap * /* xkb */ ,
                              unsigned /* merge */ ,
                              CompatInfo *       /* info */
     );
 
 static Bool
 HandleIncludeCompatMap(IncludeStmt * stmt,
-                       struct xkb_desc * xkb, CompatInfo * info, FileHandler hndlr)
+                       struct xkb_keymap * xkb, CompatInfo * info, FileHandler hndlr)
 {
     unsigned newMerge;
     XkbFile *rtrn;
@@ -496,7 +496,7 @@ static const LookupEntry useModMapValues[] = {
 
 static int
 SetInterpField(SymInterpInfo * si,
-               struct xkb_desc * xkb,
+               struct xkb_keymap * xkb,
                char *field,
                ExprDef * arrayNdx, ExprDef * value, CompatInfo * info)
 {
@@ -583,7 +583,7 @@ SetInterpField(SymInterpInfo * si,
 }
 
 static int
-HandleInterpVar(VarDef * stmt, struct xkb_desc * xkb, CompatInfo * info)
+HandleInterpVar(VarDef * stmt, struct xkb_keymap * xkb, CompatInfo * info)
 {
     ExprResult elem, field;
     ExprDef *ndx;
@@ -606,7 +606,7 @@ HandleInterpVar(VarDef * stmt, struct xkb_desc * xkb, CompatInfo * info)
 }
 
 static int
-HandleInterpBody(VarDef * def, struct xkb_desc * xkb, SymInterpInfo * si,
+HandleInterpBody(VarDef * def, struct xkb_keymap * xkb, SymInterpInfo * si,
                  CompatInfo * info)
 {
     int ok = 1;
@@ -631,7 +631,7 @@ HandleInterpBody(VarDef * def, struct xkb_desc * xkb, SymInterpInfo * si,
 }
 
 static int
-HandleInterpDef(InterpDef * def, struct xkb_desc * xkb, unsigned merge,
+HandleInterpDef(InterpDef * def, struct xkb_keymap * xkb, unsigned merge,
                 CompatInfo * info)
 {
     unsigned pred, mods;
@@ -672,7 +672,7 @@ HandleInterpDef(InterpDef * def, struct xkb_desc * xkb, unsigned merge,
 
 static int
 HandleGroupCompatDef(GroupCompatDef * def,
-                     struct xkb_desc * xkb, unsigned merge, CompatInfo * info)
+                     struct xkb_keymap * xkb, unsigned merge, CompatInfo * info)
 {
     ExprResult val;
     GroupCompatInfo tmp;
@@ -704,7 +704,7 @@ HandleGroupCompatDef(GroupCompatDef * def,
 
 static void
 HandleCompatMapFile(XkbFile * file,
-                    struct xkb_desc * xkb, unsigned merge, CompatInfo * info)
+                    struct xkb_keymap * xkb, unsigned merge, CompatInfo * info)
 {
     ParseCommon *stmt;
 
@@ -795,7 +795,7 @@ CopyInterps(CompatInfo * info,
 }
 
 Bool
-CompileCompatMap(XkbFile *file, struct xkb_desc * xkb, unsigned merge,
+CompileCompatMap(XkbFile *file, struct xkb_keymap * xkb, unsigned merge,
                  LEDInfoPtr *unboundLEDs)
 {
     int i;
@@ -854,7 +854,7 @@ CompileCompatMap(XkbFile *file, struct xkb_desc * xkb, unsigned merge,
 }
 
 static uint32_t
-VModsToReal(struct xkb_desc *xkb, uint32_t vmodmask)
+VModsToReal(struct xkb_keymap *xkb, uint32_t vmodmask)
 {
     uint32_t ret = 0;
     int i;
@@ -872,7 +872,7 @@ VModsToReal(struct xkb_desc *xkb, uint32_t vmodmask)
 }
 
 static void
-UpdateActionMods(struct xkb_desc *xkb, union xkb_action *act, uint32_t rmodmask)
+UpdateActionMods(struct xkb_keymap *xkb, union xkb_action *act, uint32_t rmodmask)
 {
     switch (act->type) {
     case XkbSA_SetMods:
@@ -900,7 +900,7 @@ UpdateActionMods(struct xkb_desc *xkb, union xkb_action *act, uint32_t rmodmask)
  * generic XKB_KEYSYM_NO_SYMBOL match.
  */
 static struct xkb_sym_interpret *
-FindInterpForKey(struct xkb_desc *xkb, xkb_keycode_t key, uint32_t group, uint32_t level)
+FindInterpForKey(struct xkb_keymap *xkb, xkb_keycode_t key, uint32_t group, uint32_t level)
 {
     struct xkb_sym_interpret *ret = NULL;
     xkb_keysym_t *syms;
@@ -958,7 +958,7 @@ FindInterpForKey(struct xkb_desc *xkb, xkb_keycode_t key, uint32_t group, uint32
 /**
  */
 static Bool
-ApplyInterpsToKey(struct xkb_desc *xkb, xkb_keycode_t key)
+ApplyInterpsToKey(struct xkb_keymap *xkb, xkb_keycode_t key)
 {
 #define INTERP_SIZE (8 * 4)
     struct xkb_sym_interpret *interps[INTERP_SIZE];
@@ -1038,7 +1038,7 @@ ApplyInterpsToKey(struct xkb_desc *xkb, xkb_keycode_t key)
  * other than Shift actually do something ...
  */
 Bool
-UpdateModifiersFromCompat(struct xkb_desc *xkb)
+UpdateModifiersFromCompat(struct xkb_keymap *xkb)
 {
     xkb_keycode_t key;
     int i;

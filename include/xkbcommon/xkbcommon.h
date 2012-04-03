@@ -144,7 +144,7 @@ struct xkb_context;
  * Opaque keymap object; may only be created, accessed, manipulated and
  * destroyed through the xkb_state_*() API.
  */
-struct xkb_desc;
+struct xkb_keymap;
 
 /**
  * Opaque state object; may only be created, accessed, manipulated and
@@ -272,7 +272,7 @@ xkb_context_unref(struct xkb_context *context);
  * You should almost certainly be using this and nothing else to create
  * keymaps.
  */
-_X_EXPORT extern struct xkb_desc *
+_X_EXPORT extern struct xkb_keymap *
 xkb_map_new_from_names(struct xkb_context *context,
                        const struct xkb_rule_names *names);
 
@@ -286,7 +286,7 @@ xkb_map_new_from_names(struct xkb_context *context,
  *
  * Geometry will be ignored since xkbcommon does not support it in any way.
  */
-_X_EXPORT extern struct xkb_desc *
+_X_EXPORT extern struct xkb_keymap *
 xkb_map_new_from_kccgst(struct xkb_context *context,
                         const struct xkb_component_names *kccgst);
 
@@ -299,7 +299,7 @@ enum xkb_keymap_format {
  * Creates an XKB keymap from a full text XKB keymap passed into the
  * file descriptor.
  */
-_X_EXPORT extern struct xkb_desc *
+_X_EXPORT extern struct xkb_keymap *
 xkb_map_new_from_fd(struct xkb_context *context,
                     int fd, enum xkb_keymap_format format);
 
@@ -307,7 +307,7 @@ xkb_map_new_from_fd(struct xkb_context *context,
  * Creates an XKB keymap from a full text XKB keymap serialised into one
  * enormous string.
  */
-_X_EXPORT extern struct xkb_desc *
+_X_EXPORT extern struct xkb_keymap *
 xkb_map_new_from_string(struct xkb_context *context,
                         const char *string,
                         enum xkb_keymap_format format);
@@ -316,13 +316,13 @@ xkb_map_new_from_string(struct xkb_context *context,
  * Takes a new reference on a keymap.
  */
 _X_EXPORT extern void
-xkb_map_ref(struct xkb_desc *xkb);
+xkb_map_ref(struct xkb_keymap *xkb);
 
 /**
  * Releases a reference on a keymap.
  */
 _X_EXPORT extern void
-xkb_map_unref(struct xkb_desc *xkb);
+xkb_map_unref(struct xkb_keymap *xkb);
 
 /** @} */
 
@@ -338,61 +338,61 @@ xkb_map_unref(struct xkb_desc *xkb);
  * Returns the number of modifiers active in the keymap.
  */
 _X_EXPORT xkb_mod_index_t
-xkb_map_num_mods(struct xkb_desc *xkb);
+xkb_map_num_mods(struct xkb_keymap *xkb);
 
 /**
  * Returns the name of the modifier specified by 'idx', or NULL if invalid.
  */
 _X_EXPORT const char *
-xkb_map_mod_get_name(struct xkb_desc *xkb, xkb_mod_index_t idx);
+xkb_map_mod_get_name(struct xkb_keymap *xkb, xkb_mod_index_t idx);
 
 /**
  * Returns the index of the modifier specified by 'name', or XKB_MOD_INVALID.
  */
 _X_EXPORT xkb_mod_index_t
-xkb_map_mod_get_index(struct xkb_desc *xkb, const char *name);
+xkb_map_mod_get_index(struct xkb_keymap *xkb, const char *name);
 
 /**
  * Returns the number of groups active in the keymap.
  */
 _X_EXPORT xkb_group_index_t
-xkb_map_num_groups(struct xkb_desc *xkb);
+xkb_map_num_groups(struct xkb_keymap *xkb);
 
 /**
  * Returns the name of the group specified by 'idx', or NULL if invalid.
  */
 _X_EXPORT const char *
-xkb_map_group_get_name(struct xkb_desc *xkb, xkb_group_index_t idx);
+xkb_map_group_get_name(struct xkb_keymap *xkb, xkb_group_index_t idx);
 
 /**
  * Returns the index of the group specified by 'name', or XKB_GROUP_INVALID.
  */
 _X_EXPORT xkb_group_index_t
-xkb_map_group_get_index(struct xkb_desc *xkb, const char *name);
+xkb_map_group_get_index(struct xkb_keymap *xkb, const char *name);
 
 /**
  * Returns the number of groups active for the specified key.
  */
 _X_EXPORT xkb_group_index_t
-xkb_key_num_groups(struct xkb_desc *xkb, xkb_keycode_t key);
+xkb_key_num_groups(struct xkb_keymap *xkb, xkb_keycode_t key);
 
 /**
  * Returns the number of LEDs in the given map.
  */
 _X_EXPORT xkb_led_index_t
-xkb_map_num_leds(struct xkb_desc *xkb);
+xkb_map_num_leds(struct xkb_keymap *xkb);
 
 /**
  * Returns the name of the LED specified by 'idx', or NULL if invalid.
  */
 _X_EXPORT const char *
-xkb_map_led_get_name(struct xkb_desc *xkb, xkb_led_index_t idx);
+xkb_map_led_get_name(struct xkb_keymap *xkb, xkb_led_index_t idx);
 
 /**
  * Returns the index of the LED specified by 'name', or XKB_LED_INVALID.
  */
 _X_EXPORT xkb_led_index_t
-xkb_map_led_get_index(struct xkb_desc *xkb, const char *name);
+xkb_map_led_get_index(struct xkb_keymap *xkb, const char *name);
 
 /** @} */
 
@@ -409,7 +409,7 @@ xkb_map_led_get_index(struct xkb_desc *xkb, const char *name);
  * failure.
  */
 _X_EXPORT struct xkb_state *
-xkb_state_new(struct xkb_desc *xkb);
+xkb_state_new(struct xkb_keymap *xkb);
 
 /**
  * Adds a reference to a state object, so it will not be freed until unref.

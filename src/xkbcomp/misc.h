@@ -76,7 +76,7 @@ extern Bool ProcessIncludeFile(struct xkb_context * /* context */,
                                unsigned *       /* merge_rtrn */
     );
 
-extern Bool FindNamedKey(struct xkb_desc * /* xkb */ ,
+extern Bool FindNamedKey(struct xkb_keymap * /* xkb */ ,
                          unsigned long /* name */ ,
                          xkb_keycode_t * /* kc_rtrn */ ,
                          Bool /* use_aliases */ ,
@@ -84,7 +84,7 @@ extern Bool FindNamedKey(struct xkb_desc * /* xkb */ ,
                          xkb_keycode_t    /* start_from */
     );
 
-extern Bool FindKeyNameForAlias(struct xkb_desc * /* xkb */ ,
+extern Bool FindKeyNameForAlias(struct xkb_keymap * /* xkb */ ,
                                 unsigned long /* lname */ ,
                                 unsigned long * /* real_name */
     );

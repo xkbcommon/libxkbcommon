@@ -36,14 +36,14 @@
 #include "vmod.h"
 
 void
-InitVModInfo(VModInfo * info, struct xkb_desc * xkb)
+InitVModInfo(VModInfo * info, struct xkb_keymap * xkb)
 {
     ClearVModInfo(info, xkb);
     info->errorCount = 0;
 }
 
 void
-ClearVModInfo(VModInfo * info, struct xkb_desc * xkb)
+ClearVModInfo(VModInfo * info, struct xkb_keymap * xkb)
 {
     int i;
 
@@ -78,7 +78,7 @@ ClearVModInfo(VModInfo * info, struct xkb_desc * xkb)
  * @param mergeMode Merge strategy (e.g. MergeOverride)
  */
 Bool
-HandleVModDef(VModDef * stmt, struct xkb_desc *xkb, unsigned mergeMode,
+HandleVModDef(VModDef * stmt, struct xkb_keymap *xkb, unsigned mergeMode,
               VModInfo * info)
 {
     int i, bit, nextFree;
@@ -162,7 +162,7 @@ HandleVModDef(VModDef * stmt, struct xkb_desc *xkb, unsigned mergeMode,
  * undefined.
  */
 static int
-LookupVModIndex(const struct xkb_desc *xkb, xkb_atom_t field, unsigned type,
+LookupVModIndex(const struct xkb_keymap *xkb, xkb_atom_t field, unsigned type,
                 ExprResult * val_rtrn)
 {
     int i;
@@ -216,7 +216,7 @@ LookupVModMask(const void * priv, xkb_atom_t field, unsigned type,
 }
 
 int
-FindKeypadVMod(struct xkb_desc * xkb)
+FindKeypadVMod(struct xkb_keymap * xkb)
 {
     xkb_atom_t name;
     ExprResult rtrn;
@@ -230,7 +230,7 @@ FindKeypadVMod(struct xkb_desc * xkb)
 }
 
 Bool
-ResolveVirtualModifier(ExprDef * def, struct xkb_desc *xkb,
+ResolveVirtualModifier(ExprDef * def, struct xkb_keymap *xkb,
                        ExprResult * val_rtrn, VModInfo * info)
 {
     struct xkb_names * names;

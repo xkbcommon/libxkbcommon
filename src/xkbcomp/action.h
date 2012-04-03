@@ -65,13 +65,13 @@ typedef struct _ActionInfo
 } ActionInfo;
 
 extern int HandleActionDef(ExprDef * /* def */ ,
-                           struct xkb_desc * /* xkb */ ,
+                           struct xkb_keymap * /* xkb */ ,
                            struct xkb_any_action * /* action */ ,
                            unsigned /* mergeMode */ ,
                            ActionInfo * /* info */
     );
 
-extern int SetActionField(struct xkb_desc * /* xkb */ ,
+extern int SetActionField(struct xkb_keymap * /* xkb */ ,
                           char * /* elem */ ,
                           char * /* field */ ,
                           ExprDef * /* index */ ,

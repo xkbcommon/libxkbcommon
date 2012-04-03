@@ -30,7 +30,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XKBcommonint.h"
 
 int
-XkbcAllocClientMap(struct xkb_desc * xkb, unsigned which, unsigned nTotalTypes)
+XkbcAllocClientMap(struct xkb_keymap * xkb, unsigned which, unsigned nTotalTypes)
 {
     struct xkb_client_map * map;
 
@@ -101,7 +101,7 @@ XkbcAllocClientMap(struct xkb_desc * xkb, unsigned which, unsigned nTotalTypes)
 }
 
 int
-XkbcAllocServerMap(struct xkb_desc * xkb, unsigned which, unsigned nNewActions)
+XkbcAllocServerMap(struct xkb_keymap * xkb, unsigned which, unsigned nNewActions)
 {
     unsigned i;
     struct xkb_server_map * map;
@@ -241,7 +241,7 @@ XkbcCopyKeyType(struct xkb_key_type * from, struct xkb_key_type * into)
 }
 
 Bool
-XkbcResizeKeySyms(struct xkb_desc * xkb, xkb_keycode_t key,
+XkbcResizeKeySyms(struct xkb_keymap * xkb, xkb_keycode_t key,
                   unsigned int needed)
 {
     if (xkb->map->key_sym_map[key].size_syms >= needed)
@@ -262,7 +262,7 @@ XkbcResizeKeySyms(struct xkb_desc * xkb, xkb_keycode_t key,
 }
 
 union xkb_action *
-XkbcResizeKeyActions(struct xkb_desc * xkb, xkb_keycode_t key, uint32_t needed)
+XkbcResizeKeyActions(struct xkb_keymap * xkb, xkb_keycode_t key, uint32_t needed)
 {
     xkb_keycode_t i, nActs;
     union xkb_action *newActs;
@@ -322,7 +322,7 @@ XkbcResizeKeyActions(struct xkb_desc * xkb, xkb_keycode_t key, uint32_t needed)
 }
 
 void
-XkbcFreeClientMap(struct xkb_desc * xkb)
+XkbcFreeClientMap(struct xkb_keymap * xkb)
 {
     struct xkb_client_map * map;
     struct xkb_key_type * type;
@@ -360,7 +360,7 @@ XkbcFreeClientMap(struct xkb_desc * xkb)
 }
 
 void
-XkbcFreeServerMap(struct xkb_desc * xkb)
+XkbcFreeServerMap(struct xkb_keymap * xkb)
 {
     struct xkb_server_map * map;
 

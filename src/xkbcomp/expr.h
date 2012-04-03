@@ -75,7 +75,7 @@ extern int ExprResolveModMask(ExprDef * /* expr */ ,
 
 extern int ExprResolveVModMask(ExprDef * /* expr */ ,
                                ExprResult * /* val_rtrn */ ,
-                               struct xkb_desc * /* xkb */
+                               struct xkb_keymap * /* xkb */
     );
 
 extern int ExprResolveBoolean(ExprDef * /* expr */ ,

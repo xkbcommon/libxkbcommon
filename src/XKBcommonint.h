@@ -391,7 +391,7 @@ struct xkb_controls {
 };
 
 /* Common keyboard description structure */
-struct xkb_desc {
+struct xkb_keymap {
     struct xkb_context  *context;
 
     unsigned int        refcnt;
@@ -456,7 +456,7 @@ struct xkb_state {
         int refcnt;
         void *filters;
         int num_filters;
-        struct xkb_desc *xkb;
+        struct xkb_keymap *xkb;
 };
 
 #define	XkbStateFieldFromRec(s)	XkbBuildCoreState((s)->lookup_mods,(s)->group)

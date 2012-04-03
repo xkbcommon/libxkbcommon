@@ -38,16 +38,16 @@ typedef uint32_t xkb_atom_t;
 /***====================================================================***/
 
 extern Bool
-XkbcComputeEffectiveMap(struct xkb_desc * xkb, struct xkb_key_type * type,
+XkbcComputeEffectiveMap(struct xkb_keymap * xkb, struct xkb_key_type * type,
                         unsigned char *map_rtrn);
 
 /***====================================================================***/
 
 extern int
-XkbcInitCanonicalKeyTypes(struct xkb_desc * xkb, unsigned which, int keypadVMod);
+XkbcInitCanonicalKeyTypes(struct xkb_keymap * xkb, unsigned which, int keypadVMod);
 
 extern Bool
-XkbcVirtualModsToReal(struct xkb_desc * xkb, unsigned virtual_mask,
+XkbcVirtualModsToReal(struct xkb_keymap * xkb, unsigned virtual_mask,
                       unsigned *mask_rtrn);
 
 extern void
@@ -86,7 +86,7 @@ extern const char *
 XkbcAtomText(xkb_atom_t atm);
 
 extern const char *
-XkbcVModMaskText(struct xkb_desc * xkb, unsigned modMask, unsigned mask);
+XkbcVModMaskText(struct xkb_keymap * xkb, unsigned modMask, unsigned mask);
 
 extern const char *
 XkbcModIndexText(unsigned ndx);

@@ -460,7 +460,7 @@ xkb_filter_apply_all(struct xkb_state *state, xkb_keycode_t key,
 }
 
 struct xkb_state *
-xkb_state_new(struct xkb_desc *xkb)
+xkb_state_new(struct xkb_keymap *xkb)
 {
     struct xkb_state *ret;
 

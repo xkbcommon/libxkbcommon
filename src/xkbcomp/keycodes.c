@@ -82,7 +82,7 @@ typedef struct _KeyNamesInfo
 } KeyNamesInfo;
 
 static void HandleKeycodesFile(XkbFile * file,
-                               struct xkb_desc * xkb,
+                               struct xkb_keymap * xkb,
                                unsigned merge,
                                KeyNamesInfo * info);
 
@@ -545,7 +545,7 @@ MergeIncludedKeycodes(KeyNamesInfo * into, KeyNamesInfo * from,
  * @param info Struct to store the key info in.
  */
 static Bool
-HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_desc * xkb, KeyNamesInfo * info)
+HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_keymap * xkb, KeyNamesInfo * info)
 {
     unsigned newMerge;
     XkbFile *rtrn;
@@ -804,7 +804,7 @@ HandleIndicatorNameDef(IndicatorNameDef * def,
  */
 static void
 HandleKeycodesFile(XkbFile * file,
-                   struct xkb_desc * xkb, unsigned merge, KeyNamesInfo * info)
+                   struct xkb_keymap * xkb, unsigned merge, KeyNamesInfo * info)
 {
     ParseCommon *stmt;
 
@@ -876,7 +876,7 @@ HandleKeycodesFile(XkbFile * file,
  * @return True on success, False otherwise.
  */
 Bool
-CompileKeycodes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
+CompileKeycodes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
 {
     KeyNamesInfo info; /* contains all the info after parsing */
 

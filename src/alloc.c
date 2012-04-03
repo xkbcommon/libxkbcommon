@@ -33,7 +33,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/extensions/XKB.h>
 
 int
-XkbcAllocCompatMap(struct xkb_desc * xkb, unsigned which, unsigned nSI)
+XkbcAllocCompatMap(struct xkb_keymap * xkb, unsigned which, unsigned nSI)
 {
     struct xkb_compat_map * compat;
     struct xkb_sym_interpret *prev_interpret;
@@ -84,7 +84,7 @@ XkbcAllocCompatMap(struct xkb_desc * xkb, unsigned which, unsigned nSI)
 
 
 static void
-XkbcFreeCompatMap(struct xkb_desc * xkb)
+XkbcFreeCompatMap(struct xkb_keymap * xkb)
 {
     struct xkb_compat_map * compat;
 
@@ -99,7 +99,7 @@ XkbcFreeCompatMap(struct xkb_desc * xkb)
 }
 
 int
-XkbcAllocNames(struct xkb_desc * xkb, unsigned which, unsigned nTotalAliases)
+XkbcAllocNames(struct xkb_keymap * xkb, unsigned which, unsigned nTotalAliases)
 {
     struct xkb_names * names;
 
@@ -163,7 +163,7 @@ XkbcAllocNames(struct xkb_desc * xkb, unsigned which, unsigned nTotalAliases)
 }
 
 static void
-XkbcFreeNames(struct xkb_desc * xkb)
+XkbcFreeNames(struct xkb_keymap * xkb)
 {
     struct xkb_names * names;
     struct xkb_client_map * map;
@@ -201,7 +201,7 @@ XkbcFreeNames(struct xkb_desc * xkb)
 }
 
 int
-XkbcAllocControls(struct xkb_desc * xkb, unsigned which)
+XkbcAllocControls(struct xkb_keymap * xkb, unsigned which)
 {
     if (!xkb)
         return BadMatch;
@@ -223,7 +223,7 @@ XkbcAllocControls(struct xkb_desc * xkb, unsigned which)
 }
 
 static void
-XkbcFreeControls(struct xkb_desc * xkb)
+XkbcFreeControls(struct xkb_keymap * xkb)
 {
     if (xkb && xkb->ctrls) {
         free(xkb->ctrls->per_key_repeat);
@@ -233,7 +233,7 @@ XkbcFreeControls(struct xkb_desc * xkb)
 }
 
 int
-XkbcAllocIndicatorMaps(struct xkb_desc * xkb)
+XkbcAllocIndicatorMaps(struct xkb_keymap * xkb)
 {
     if (!xkb)
         return BadMatch;
@@ -248,7 +248,7 @@ XkbcAllocIndicatorMaps(struct xkb_desc * xkb)
 }
 
 static void
-XkbcFreeIndicatorMaps(struct xkb_desc * xkb)
+XkbcFreeIndicatorMaps(struct xkb_keymap * xkb)
 {
     if (xkb) {
         free(xkb->indicators);
@@ -256,12 +256,12 @@ XkbcFreeIndicatorMaps(struct xkb_desc * xkb)
     }
 }
 
-struct xkb_desc *
+struct xkb_keymap *
 XkbcAllocKeyboard(struct xkb_context *context)
 {
-    struct xkb_desc *xkb;
+    struct xkb_keymap *xkb;
 
-    xkb = uTypedCalloc(1, struct xkb_desc);
+    xkb = uTypedCalloc(1, struct xkb_keymap);
     if (!xkb)
         return NULL;
 
@@ -273,7 +273,7 @@ XkbcAllocKeyboard(struct xkb_context *context)
 }
 
 void
-XkbcFreeKeyboard(struct xkb_desc * xkb)
+XkbcFreeKeyboard(struct xkb_keymap * xkb)
 {
     if (!xkb)
         return;

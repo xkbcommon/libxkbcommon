@@ -33,7 +33,7 @@ authorization from the authors.
 int main(int argc, char *argv[])
 {
     struct xkb_context *context;
-    struct xkb_desc *xkb;
+    struct xkb_keymap *xkb;
     struct xkb_component_names kccgst;
 
     /* Require Kc + T + C + S */

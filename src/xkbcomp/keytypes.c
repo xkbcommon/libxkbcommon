@@ -106,7 +106,7 @@ static xkb_atom_t tok_KEYPAD;
 /***====================================================================***/
 
 static void
-InitKeyTypesInfo(KeyTypesInfo * info, struct xkb_desc * xkb, KeyTypesInfo * from)
+InitKeyTypesInfo(KeyTypesInfo * info, struct xkb_keymap * xkb, KeyTypesInfo * from)
 {
     tok_ONE_LEVEL = xkb_intern_atom("ONE_LEVEL");
     tok_TWO_LEVEL = xkb_intern_atom("TWO_LEVEL");
@@ -246,7 +246,7 @@ ReportTypeBadWidth(const char *type, int has, int needs)
 }
 
 static Bool
-AddKeyType(struct xkb_desc * xkb, KeyTypesInfo * info, KeyTypeInfo * new)
+AddKeyType(struct xkb_keymap * xkb, KeyTypesInfo * info, KeyTypeInfo * new)
 {
     KeyTypeInfo *old;
 
@@ -332,7 +332,7 @@ AddKeyType(struct xkb_desc * xkb, KeyTypesInfo * info, KeyTypeInfo * new)
 
 static void
 MergeIncludedKeyTypes(KeyTypesInfo * into,
-                      KeyTypesInfo * from, unsigned merge, struct xkb_desc * xkb)
+                      KeyTypesInfo * from, unsigned merge, struct xkb_keymap * xkb)
 {
     KeyTypeInfo *type;
 
@@ -357,14 +357,14 @@ MergeIncludedKeyTypes(KeyTypesInfo * into,
 }
 
 typedef void (*FileHandler) (XkbFile * /* file */ ,
-                             struct xkb_desc * /* xkb */ ,
+                             struct xkb_keymap * /* xkb */ ,
                              unsigned /* merge */ ,
                              KeyTypesInfo *     /* included */
     );
 
 static Bool
 HandleIncludeKeyTypes(IncludeStmt * stmt,
-                      struct xkb_desc * xkb, KeyTypesInfo * info, FileHandler hndlr)
+                      struct xkb_keymap * xkb, KeyTypesInfo * info, FileHandler hndlr)
 {
     unsigned newMerge;
     XkbFile *rtrn;
@@ -512,7 +512,7 @@ NextMapEntry(KeyTypeInfo * type)
 }
 
 static Bool
-AddPreserve(struct xkb_desc * xkb,
+AddPreserve(struct xkb_keymap * xkb,
             KeyTypeInfo * type, PreserveInfo * new, Bool clobber, Bool report)
 {
     PreserveInfo *old;
@@ -584,7 +584,7 @@ AddPreserve(struct xkb_desc * xkb,
  * @param report True if a warning is to be printed on.
  */
 static Bool
-AddMapEntry(struct xkb_desc * xkb,
+AddMapEntry(struct xkb_keymap * xkb,
             KeyTypeInfo * type,
             struct xkb_kt_map_entry * new, Bool clobber, Bool report)
 {
@@ -638,7 +638,7 @@ AddMapEntry(struct xkb_desc * xkb,
 
 static Bool
 SetMapEntry(KeyTypeInfo * type,
-            struct xkb_desc * xkb, ExprDef * arrayNdx, ExprDef * value)
+            struct xkb_keymap * xkb, ExprDef * arrayNdx, ExprDef * value)
 {
     ExprResult rtrn;
     struct xkb_kt_map_entry entry;
@@ -676,7 +676,7 @@ SetMapEntry(KeyTypeInfo * type,
 
 static Bool
 SetPreserve(KeyTypeInfo * type,
-            struct xkb_desc * xkb, ExprDef * arrayNdx, ExprDef * value)
+            struct xkb_keymap * xkb, ExprDef * arrayNdx, ExprDef * value)
 {
     ExprResult rtrn;
     PreserveInfo new;
@@ -816,7 +816,7 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
  */
 static Bool
 SetKeyTypeField(KeyTypeInfo * type,
-                struct xkb_desc * xkb,
+                struct xkb_keymap * xkb,
                 char *field,
                 ExprDef * arrayNdx, ExprDef * value, KeyTypesInfo * info)
 {
@@ -874,7 +874,7 @@ SetKeyTypeField(KeyTypeInfo * type,
 }
 
 static Bool
-HandleKeyTypeVar(VarDef * stmt, struct xkb_desc * xkb, KeyTypesInfo * info)
+HandleKeyTypeVar(VarDef * stmt, struct xkb_keymap * xkb, KeyTypesInfo * info)
 {
     ExprResult elem, field;
     ExprDef *arrayNdx;
@@ -900,7 +900,7 @@ HandleKeyTypeVar(VarDef * stmt, struct xkb_desc * xkb, KeyTypesInfo * info)
 
 static int
 HandleKeyTypeBody(VarDef * def,
-                  struct xkb_desc * xkb, KeyTypeInfo * type, KeyTypesInfo * info)
+                  struct xkb_keymap * xkb, KeyTypeInfo * type, KeyTypesInfo * info)
 {
     int ok = 1;
     ExprResult tmp, field;
@@ -929,7 +929,7 @@ HandleKeyTypeBody(VarDef * def,
  */
 static int
 HandleKeyTypeDef(KeyTypeDef * def,
-                 struct xkb_desc * xkb, unsigned merge, KeyTypesInfo * info)
+                 struct xkb_keymap * xkb, unsigned merge, KeyTypesInfo * info)
 {
     unsigned int i;
     KeyTypeInfo type;
@@ -1009,7 +1009,7 @@ HandleKeyTypeDef(KeyTypeDef * def,
  */
 static void
 HandleKeyTypesFile(XkbFile * file,
-                   struct xkb_desc * xkb, unsigned merge, KeyTypesInfo * info)
+                   struct xkb_keymap * xkb, unsigned merge, KeyTypesInfo * info)
 {
     ParseCommon *stmt;
 
@@ -1070,7 +1070,7 @@ HandleKeyTypesFile(XkbFile * file,
 }
 
 static Bool
-CopyDefToKeyType(struct xkb_desc * xkb, struct xkb_key_type * type, KeyTypeInfo * def)
+CopyDefToKeyType(struct xkb_keymap * xkb, struct xkb_key_type * type, KeyTypeInfo * def)
 {
     unsigned int i;
     PreserveInfo *pre;
@@ -1143,7 +1143,7 @@ CopyDefToKeyType(struct xkb_desc * xkb, struct xkb_key_type * type, KeyTypeInfo 
 }
 
 Bool
-CompileKeyTypes(XkbFile *file, struct xkb_desc * xkb, unsigned merge)
+CompileKeyTypes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
 {
     KeyTypesInfo info;
 

@@ -151,7 +151,7 @@ MergeAliases(AliasInfo ** into, AliasInfo ** merge, unsigned how_merge)
 }
 
 int
-ApplyAliases(struct xkb_desc * xkb, AliasInfo ** info_in)
+ApplyAliases(struct xkb_keymap * xkb, AliasInfo ** info_in)
 {
     int i;
     struct xkb_key_alias *old, *a;

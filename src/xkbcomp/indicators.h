@@ -60,24 +60,24 @@ extern LEDInfo *AddIndicatorMap(LEDInfo * /* oldLEDs */ ,
     );
 
 extern int SetIndicatorMapField(LEDInfo * /* led */ ,
-                                struct xkb_desc * /* xkb */ ,
+                                struct xkb_keymap * /* xkb */ ,
                                 char * /* field */ ,
                                 ExprDef * /* arrayNdx */ ,
                                 ExprDef *       /* value */
     );
 
 extern LEDInfo *HandleIndicatorMapDef(IndicatorMapDef * /* stmt */ ,
-                                      struct xkb_desc * /* xkb */ ,
+                                      struct xkb_keymap * /* xkb */ ,
                                       LEDInfo * /* dflt */ ,
                                       LEDInfo * /* oldLEDs */ ,
                                       unsigned  /* mergeMode */
     );
 
 extern Bool
-CopyIndicatorMapDefs(struct xkb_desc * xkb, LEDInfo *leds, LEDInfo **unboundRtrn);
+CopyIndicatorMapDefs(struct xkb_keymap * xkb, LEDInfo *leds, LEDInfo **unboundRtrn);
 
 extern Bool
-BindIndicators(struct xkb_desc * xkb, Bool force, LEDInfo *unbound,
+BindIndicators(struct xkb_keymap * xkb, Bool force, LEDInfo *unbound,
                LEDInfo **unboundRtrn);
 
 #endif /* INDICATORS_H */

@@ -254,25 +254,25 @@ typedef struct _XkbFile
     Bool compiled;
 } XkbFile;
 
-extern struct xkb_desc *
+extern struct xkb_keymap *
 CompileKeymap(struct xkb_context *context, XkbFile *file, unsigned merge);
 
 extern Bool
-CompileKeycodes(XkbFile *file, struct xkb_desc * xkb, unsigned merge);
+CompileKeycodes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge);
 
 extern Bool
-CompileKeyTypes(XkbFile *file, struct xkb_desc * xkb, unsigned merge);
+CompileKeyTypes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge);
 
 typedef struct _LEDInfo *LEDInfoPtr;
 
 extern Bool
-CompileCompatMap(XkbFile *file, struct xkb_desc * xkb, unsigned merge,
+CompileCompatMap(XkbFile *file, struct xkb_keymap * xkb, unsigned merge,
                  LEDInfoPtr *unboundLEDs);
 
 extern Bool
-CompileSymbols(XkbFile *file, struct xkb_desc * xkb, unsigned merge);
+CompileSymbols(XkbFile *file, struct xkb_keymap * xkb, unsigned merge);
 
 extern Bool
-UpdateModifiersFromCompat(struct xkb_desc *xkb);
+UpdateModifiersFromCompat(struct xkb_keymap *xkb);
 
 #endif /* XKBCOMP_H */

@@ -212,7 +212,7 @@ ReportNotFound(unsigned action, unsigned field, const char *what,
 }
 
 static Bool
-HandleNoAction(struct xkb_desc * xkb,
+HandleNoAction(struct xkb_keymap * xkb,
                struct xkb_any_action * action,
                unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -242,7 +242,7 @@ CheckLatchLockFlags(unsigned action,
 }
 
 static Bool
-CheckModifierField(struct xkb_desc * xkb,
+CheckModifierField(struct xkb_keymap * xkb,
                    unsigned action,
                    ExprDef * value,
                    unsigned *flags_inout, unsigned *mods_rtrn)
@@ -270,7 +270,7 @@ CheckModifierField(struct xkb_desc * xkb,
 }
 
 static Bool
-HandleSetLatchMods(struct xkb_desc * xkb,
+HandleSetLatchMods(struct xkb_keymap * xkb,
                    struct xkb_any_action * action,
                    unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -315,7 +315,7 @@ HandleSetLatchMods(struct xkb_desc * xkb,
 }
 
 static Bool
-HandleLockMods(struct xkb_desc * xkb,
+HandleLockMods(struct xkb_keymap * xkb,
                struct xkb_any_action * action,
                unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -371,7 +371,7 @@ CheckGroupField(unsigned action,
 }
 
 static Bool
-HandleSetLatchGroup(struct xkb_desc * xkb,
+HandleSetLatchGroup(struct xkb_keymap * xkb,
                     struct xkb_any_action * action,
                     unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -416,7 +416,7 @@ HandleSetLatchGroup(struct xkb_desc * xkb,
 }
 
 static Bool
-HandleLockGroup(struct xkb_desc * xkb,
+HandleLockGroup(struct xkb_keymap * xkb,
                 struct xkb_any_action * action,
                 unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -442,7 +442,7 @@ HandleLockGroup(struct xkb_desc * xkb,
 }
 
 static Bool
-HandleMovePtr(struct xkb_desc * xkb,
+HandleMovePtr(struct xkb_keymap * xkb,
               struct xkb_any_action * action,
               unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -497,7 +497,7 @@ static const LookupEntry lockWhich[] = {
 };
 
 static Bool
-HandlePtrBtn(struct xkb_desc * xkb,
+HandlePtrBtn(struct xkb_keymap * xkb,
              struct xkb_any_action * action,
              unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -557,7 +557,7 @@ static const LookupEntry ptrDflts[] = {
 };
 
 static Bool
-HandleSetPtrDflt(struct xkb_desc * xkb,
+HandleSetPtrDflt(struct xkb_keymap * xkb,
                  struct xkb_any_action * action,
                  unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -629,7 +629,7 @@ static const LookupEntry isoNames[] = {
 };
 
 static Bool
-HandleISOLock(struct xkb_desc * xkb,
+HandleISOLock(struct xkb_keymap * xkb,
               struct xkb_any_action * action,
               unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -676,7 +676,7 @@ HandleISOLock(struct xkb_desc * xkb,
 }
 
 static Bool
-HandleSwitchScreen(struct xkb_desc * xkb,
+HandleSwitchScreen(struct xkb_keymap * xkb,
                    struct xkb_any_action * action,
                    unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -751,7 +751,7 @@ const LookupEntry ctrlNames[] = {
 };
 
 static Bool
-HandleSetLockControls(struct xkb_desc * xkb,
+HandleSetLockControls(struct xkb_keymap * xkb,
                       struct xkb_any_action * action,
                       unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -782,7 +782,7 @@ static const LookupEntry evNames[] = {
 };
 
 static Bool
-HandleActionMessage(struct xkb_desc * xkb,
+HandleActionMessage(struct xkb_keymap * xkb,
                     struct xkb_any_action * action,
                     unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -860,7 +860,7 @@ HandleActionMessage(struct xkb_desc * xkb,
 }
 
 static Bool
-HandleRedirectKey(struct xkb_desc * xkb,
+HandleRedirectKey(struct xkb_keymap * xkb,
                   struct xkb_any_action * action,
                   unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -912,7 +912,7 @@ HandleRedirectKey(struct xkb_desc * xkb,
 }
 
 static Bool
-HandleDeviceBtn(struct xkb_desc * xkb,
+HandleDeviceBtn(struct xkb_keymap * xkb,
                 struct xkb_any_action * action,
                 unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -981,7 +981,7 @@ HandleDeviceBtn(struct xkb_desc * xkb,
 }
 
 static Bool
-HandleDeviceValuator(struct xkb_desc * xkb,
+HandleDeviceValuator(struct xkb_keymap * xkb,
                      struct xkb_any_action * action,
                      unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -996,7 +996,7 @@ HandleDeviceValuator(struct xkb_desc * xkb,
 }
 
 static Bool
-HandlePrivate(struct xkb_desc * xkb,
+HandlePrivate(struct xkb_keymap * xkb,
               struct xkb_any_action * action,
               unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
@@ -1065,7 +1065,7 @@ HandlePrivate(struct xkb_desc * xkb,
     return ReportIllegal(PrivateAction, field);
 }
 
-typedef Bool(*actionHandler) (struct xkb_desc * /* xkb */ ,
+typedef Bool(*actionHandler) (struct xkb_keymap * /* xkb */ ,
                               struct xkb_any_action * /* action */ ,
                               unsigned /* field */ ,
                               ExprDef * /* array_ndx */ ,
@@ -1119,7 +1119,7 @@ ActionsInit(void);
 
 int
 HandleActionDef(ExprDef * def,
-                struct xkb_desc * xkb,
+                struct xkb_keymap * xkb,
                 struct xkb_any_action * action, unsigned mergeMode, ActionInfo * info)
 {
     ExprDef *arg;
@@ -1226,7 +1226,7 @@ HandleActionDef(ExprDef * def,
 /***====================================================================***/
 
 int
-SetActionField(struct xkb_desc * xkb,
+SetActionField(struct xkb_keymap * xkb,
                char *elem,
                char *field,
                ExprDef * array_ndx, ExprDef * value, ActionInfo ** info_rtrn)

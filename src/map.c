@@ -62,7 +62,7 @@
  * Returns the total number of modifiers active in the keymap.
  */
 xkb_mod_index_t
-xkb_map_num_mods(struct xkb_desc *xkb)
+xkb_map_num_mods(struct xkb_keymap *xkb)
 {
     xkb_mod_index_t i;
 
@@ -79,7 +79,7 @@ xkb_map_num_mods(struct xkb_desc *xkb)
  * Return the name for a given modifier.
  */
 const char *
-xkb_map_mod_get_name(struct xkb_desc *xkb, xkb_mod_index_t idx)
+xkb_map_mod_get_name(struct xkb_keymap *xkb, xkb_mod_index_t idx)
 {
     if (idx >= xkb_map_num_mods(xkb))
         return NULL;
@@ -114,7 +114,7 @@ xkb_map_mod_get_name(struct xkb_desc *xkb, xkb_mod_index_t idx)
  * Returns the index for a named modifier.
  */
 xkb_mod_index_t
-xkb_map_mod_get_index(struct xkb_desc *xkb, const char *name)
+xkb_map_mod_get_index(struct xkb_keymap *xkb, const char *name)
 {
     xkb_mod_index_t i;
 
@@ -147,7 +147,7 @@ xkb_map_mod_get_index(struct xkb_desc *xkb, const char *name)
  * Return the total number of active groups in the keymap.
  */
 xkb_group_index_t
-xkb_map_num_groups(struct xkb_desc *xkb)
+xkb_map_num_groups(struct xkb_keymap *xkb)
 {
     xkb_group_index_t ret = 0;
     xkb_group_index_t i;
@@ -163,7 +163,7 @@ xkb_map_num_groups(struct xkb_desc *xkb)
  * Returns the name for a given group.
  */
 const char *
-xkb_map_group_get_name(struct xkb_desc *xkb, xkb_group_index_t idx)
+xkb_map_group_get_name(struct xkb_keymap *xkb, xkb_group_index_t idx)
 {
     if (idx >= xkb_map_num_groups(xkb))
         return NULL;
@@ -175,7 +175,7 @@ xkb_map_group_get_name(struct xkb_desc *xkb, xkb_group_index_t idx)
  * Returns the index for a named group.
  */
 xkb_group_index_t
-xkb_map_group_get_index(struct xkb_desc *xkb, const char *name)
+xkb_map_group_get_index(struct xkb_keymap *xkb, const char *name)
 {
     xkb_group_index_t num_groups = xkb_map_num_groups(xkb);
     xkb_group_index_t i;
@@ -192,7 +192,7 @@ xkb_map_group_get_index(struct xkb_desc *xkb, const char *name)
  * Returns the number of groups active for a particular key.
  */
 xkb_group_index_t
-xkb_key_num_groups(struct xkb_desc *xkb, xkb_keycode_t key)
+xkb_key_num_groups(struct xkb_keymap *xkb, xkb_keycode_t key)
 {
     return XkbKeyNumGroups(xkb, key);
 }
@@ -201,7 +201,7 @@ xkb_key_num_groups(struct xkb_desc *xkb, xkb_keycode_t key)
  * Return the total number of active LEDs in the keymap.
  */
 xkb_led_index_t
-xkb_map_num_leds(struct xkb_desc *xkb)
+xkb_map_num_leds(struct xkb_keymap *xkb)
 {
     xkb_led_index_t ret = 0;
     xkb_led_index_t i;
@@ -219,7 +219,7 @@ xkb_map_num_leds(struct xkb_desc *xkb)
  * Returns the name for a given group.
  */
 const char *
-xkb_map_led_get_name(struct xkb_desc *xkb, xkb_led_index_t idx)
+xkb_map_led_get_name(struct xkb_keymap *xkb, xkb_led_index_t idx)
 {
     if (idx >= xkb_map_num_leds(xkb))
         return NULL;
@@ -231,7 +231,7 @@ xkb_map_led_get_name(struct xkb_desc *xkb, xkb_led_index_t idx)
  * Returns the index for a named group.
  */
 xkb_group_index_t
-xkb_map_led_get_index(struct xkb_desc *xkb, const char *name)
+xkb_map_led_get_index(struct xkb_keymap *xkb, const char *name)
 {
     xkb_led_index_t num_leds = xkb_map_num_leds(xkb);
     xkb_led_index_t i;
@@ -301,7 +301,7 @@ xkb_key_get_group(struct xkb_state *state, xkb_keycode_t key)
  * As below, but takes an explicit group/level rather than state.
  */
 unsigned int
-xkb_key_get_syms_by_level(struct xkb_desc *xkb, xkb_keycode_t key, unsigned int group,
+xkb_key_get_syms_by_level(struct xkb_keymap *xkb, xkb_keycode_t key, unsigned int group,
                           unsigned int level, xkb_keysym_t **syms_out)
 {
     int num_syms;
@@ -331,7 +331,7 @@ unsigned int
 xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
                  xkb_keysym_t **syms_out)
 {
-    struct xkb_desc *xkb = state->xkb;
+    struct xkb_keymap *xkb = state->xkb;
     int group;
     int level;
 

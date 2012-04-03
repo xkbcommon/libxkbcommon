@@ -970,7 +970,7 @@ ExprResolveModMask(ExprDef * expr,
 int
 ExprResolveVModMask(ExprDef * expr,
                     ExprResult * val_rtrn,
-                    struct xkb_desc *xkb)
+                    struct xkb_keymap *xkb)
 {
     return ExprResolveMaskLookup(expr, val_rtrn, LookupVModMask, xkb);
 }

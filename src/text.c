@@ -56,7 +56,7 @@ tbGetBuffer(unsigned int size)
 }
 
 static const char *
-XkbcVModIndexText(struct xkb_desc * xkb, unsigned ndx)
+XkbcVModIndexText(struct xkb_keymap * xkb, unsigned ndx)
 {
     int len;
     char *rtrn;
@@ -84,7 +84,7 @@ XkbcVModIndexText(struct xkb_desc * xkb, unsigned ndx)
 }
 
 const char *
-XkbcVModMaskText(struct xkb_desc * xkb, unsigned modMask, unsigned mask)
+XkbcVModMaskText(struct xkb_keymap * xkb, unsigned modMask, unsigned mask)
 {
     int i, bit, len, rem;
     const char *mm = NULL;

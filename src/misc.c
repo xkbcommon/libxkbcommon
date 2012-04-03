@@ -85,7 +85,7 @@ static struct xkb_key_type canonicalTypes[XkbNumRequiredTypes] = {
 };
 
 int
-XkbcInitCanonicalKeyTypes(struct xkb_desc * xkb, unsigned which, int keypadVMod)
+XkbcInitCanonicalKeyTypes(struct xkb_keymap * xkb, unsigned which, int keypadVMod)
 {
     struct xkb_client_map * map;
     struct xkb_key_type *from, *to;
@@ -142,7 +142,7 @@ XkbcInitCanonicalKeyTypes(struct xkb_desc * xkb, unsigned which, int keypadVMod)
 }
 
 Bool
-XkbcVirtualModsToReal(struct xkb_desc * xkb, unsigned virtual_mask,
+XkbcVirtualModsToReal(struct xkb_keymap * xkb, unsigned virtual_mask,
                       unsigned *mask_rtrn)
 {
     int i, bit;

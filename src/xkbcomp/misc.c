@@ -239,7 +239,7 @@ typedef struct _KeyNameDesc
  * @return True if found, False otherwise.
  */
 Bool
-FindNamedKey(struct xkb_desc * xkb,
+FindNamedKey(struct xkb_keymap * xkb,
              unsigned long name,
              xkb_keycode_t *kc_rtrn,
              Bool use_aliases, Bool create, xkb_keycode_t start_from)
@@ -307,7 +307,7 @@ FindNamedKey(struct xkb_desc * xkb,
 }
 
 Bool
-FindKeyNameForAlias(struct xkb_desc * xkb, unsigned long lname,
+FindKeyNameForAlias(struct xkb_keymap * xkb, unsigned long lname,
                     unsigned long *real_name)
 {
     unsigned int i;

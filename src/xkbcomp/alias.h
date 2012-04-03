@@ -48,7 +48,7 @@ extern Bool MergeAliases(AliasInfo ** /* into */ ,
                          unsigned       /* how_merge */
     );
 
-extern int ApplyAliases(struct xkb_desc * /* xkb */ ,
+extern int ApplyAliases(struct xkb_keymap * /* xkb */ ,
                         AliasInfo **    /* info */
     );
 

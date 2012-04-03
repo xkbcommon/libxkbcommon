@@ -96,7 +96,7 @@ xkb_canonicalise_components(struct xkb_component_names * names,
 }
 
 Bool
-XkbcComputeEffectiveMap(struct xkb_desc * xkb, struct xkb_key_type * type,
+XkbcComputeEffectiveMap(struct xkb_keymap * xkb, struct xkb_key_type * type,
                         unsigned char *map_rtrn)
 {
     int i;
