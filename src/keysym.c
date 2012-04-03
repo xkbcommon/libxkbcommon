@@ -96,6 +96,7 @@ xkb_string_to_keysym(const char *s)
     int i, n, h, c, idx;
     uint32_t sig = 0;
     const char *p = s;
+    char *tmp;
     const unsigned char *entry;
     unsigned char sig1, sig2;
     xkb_keysym_t val;
@@ -131,7 +132,9 @@ xkb_string_to_keysym(const char *s)
     }
 
     if (*s == 'U') {
-        val = strtoul(&s[1], NULL, 16);
+        val = strtoul(&s[1], &tmp, 16);
+        if (tmp && *tmp != '\0')
+            return XKB_KEYSYM_NO_SYMBOL;
 
         if (val < 0x20 || (val > 0x7e && val < 0xa0))
             return XKB_KEYSYM_NO_SYMBOL;
@@ -142,7 +145,11 @@ xkb_string_to_keysym(const char *s)
         return val | 0x01000000;
     }
     else if (s[0] == '0' && s[1] == 'x') {
-        return strtoul(&s[2], NULL, 16);
+        val = strtoul(&s[2], &tmp, 16);
+        if (tmp && *tmp != '\0')
+            return XKB_KEYSYM_NO_SYMBOL;
+
+        return val;
     }
 
     /* Stupid inconsistency between the headers and XKeysymDB: the former has
