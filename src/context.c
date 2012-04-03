@@ -147,12 +147,12 @@ xkb_context_num_include_paths(struct xkb_context *context)
  * invalid index is passed.
  */
 const char *
-xkb_context_include_path_get(struct xkb_context *context, unsigned int index)
+xkb_context_include_path_get(struct xkb_context *context, unsigned int idx)
 {
-    if (index >= xkb_context_num_include_paths(context))
+    if (idx >= xkb_context_num_include_paths(context))
         return NULL;
 
-    return context->include_paths[index];
+    return context->include_paths[idx];
 }
 
 /**

@@ -32,7 +32,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 int
 XkbcAllocClientMap(struct xkb_desc * xkb, unsigned which, unsigned nTotalTypes)
 {
-    int i;
     struct xkb_client_map * map;
 
     if (!xkb || ((nTotalTypes > 0) && (nTotalTypes < XkbNumRequiredTypes)))

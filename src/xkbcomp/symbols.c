@@ -322,8 +322,6 @@ static Bool
 ResizeKeyGroup(KeyInfo * key, unsigned int group, unsigned int numLevels,
                unsigned sizeSyms, Bool forceActions)
 {
-    Bool tooSmall;
-    unsigned newWidth;
     int i;
 
     if (key->syms[group] == NULL || key->sizeSyms[group] < sizeSyms)
@@ -378,12 +376,12 @@ static Bool
 MergeKeyGroups(SymbolsInfo * info,
                KeyInfo * into, KeyInfo * from, unsigned group)
 {
-    xkb_keysym_t *resultSyms;
+    xkb_keysym_t *resultSyms = NULL;
     union xkb_action *resultActs;
     unsigned int resultWidth;
     unsigned int resultSize = 0;
     int cur_idx = 0;
-    int i, j;
+    int i;
     Bool report, clobber;
 
     clobber = (from->defs.merge != MergeAugment);
@@ -1943,9 +1941,9 @@ CopySymbolsDef(struct xkb_desc * xkb, KeyInfo *key, int start_from)
     unsigned width, tmp, nGroups;
     struct xkb_key_type * type;
     Bool haveActions, autoType, useAlias;
-    xkb_keysym_t *outSyms;
+    xkb_atom_t types[XkbNumKbdGroups];
     union xkb_action *outActs;
-    unsigned types[XkbNumKbdGroups];
+
     unsigned int symIndex = 0;
 
     useAlias = (start_from == 0);

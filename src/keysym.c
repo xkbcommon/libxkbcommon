@@ -157,7 +157,7 @@ xkb_string_to_keysym(const char *s)
      * As a last ditch effort, try without. */
     if (strncmp(s, "XF86_", 5) == 0) {
         xkb_keysym_t ret;
-        char *tmp = strdup(s);
+        tmp = strdup(s);
         if (!tmp)
             return XKB_KEYSYM_NO_SYMBOL;
         memmove(&tmp[4], &tmp[5], strlen(s) - 5 + 1);
