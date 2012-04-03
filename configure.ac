@@ -32,6 +32,9 @@ AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([foreign dist-bzip2 subdir-objects])
 AM_MAINTAINER_MODE
 
+# Get _GNU_SOURCE and friends
+AC_USE_SYSTEM_EXTENSIONS
+
 # Initialize libtool
 AC_PROG_LIBTOOL
 
@@ -41,9 +44,6 @@ m4_ifndef([XORG_MACROS_VERSION],
 XORG_MACROS_VERSION(1.8)
 XORG_DEFAULT_OPTIONS
 XORG_CHECK_MALLOC_ZERO
-
-# Get _GNU_SOURCE and friends
-AC_USE_SYSTEM_EXTENSIONS
 
 # Check for programs
 AC_PROG_LEX
@@ -72,8 +72,9 @@ if test "x$CC_FOR_BUILD" = x; then
     fi
 fi
 
-if  test "x$GCC" = xyes ; then
-  CFLAGS="$CFLAGS -fvisibility=hidden"
+CFLAGS="$CFLAGS $BASE_CFLAGS"
+if test "x$GCC" = xyes ; then
+    CFLAGS="$CFLAGS -fvisibility=hidden"
 fi
 
 # Obtain protocols headers include directives
