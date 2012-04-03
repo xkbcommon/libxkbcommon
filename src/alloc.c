@@ -268,7 +268,6 @@ XkbcAllocKeyboard(struct xkb_context *context)
     xkb->refcnt = 1;
     xkb_context_ref(context);
     xkb->context = context;
-    xkb->device_spec = XkbUseCoreKbd;
 
     return xkb;
 }

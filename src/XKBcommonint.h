@@ -397,7 +397,6 @@ struct xkb_desc {
     unsigned int        refcnt;
     unsigned int        defined;
     unsigned short      flags;
-    unsigned short      device_spec;
     xkb_keycode_t       min_key_code;
     xkb_keycode_t       max_key_code;
 
