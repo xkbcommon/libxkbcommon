@@ -50,6 +50,7 @@ typedef struct _GroupCompatInfo
 {
     unsigned char fileID;
     unsigned char merge;
+    Bool defined;
     unsigned char real_mods;
     xkb_atom_t vmods;
 } GroupCompatInfo;
@@ -278,7 +279,7 @@ AddGroupCompat(CompatInfo * info, unsigned group, GroupCompatInfo * newGC)
         ACTION("Using %s definition\n",
                 (merge == MergeAugment ? "old" : "new"));
     }
-    if (merge != MergeAugment)
+    if (newGC->defined && (merge != MergeAugment || !gc->defined))
         *gc = *newGC;
     return True;
 }
@@ -697,6 +698,7 @@ HandleGroupCompatDef(GroupCompatDef * def,
     }
     tmp.real_mods = val.uval & 0xff;
     tmp.vmods = (val.uval >> 8) & 0xffff;
+    tmp.defined = True;
     return AddGroupCompat(info, def->group - 1, &tmp);
 }
 
