@@ -186,10 +186,6 @@ xkb_keysym_to_string(xkb_keysym_t ks, char *buffer, size_t size);
 _X_EXPORT extern xkb_keysym_t
 xkb_string_to_keysym(const char *s);
 
-_X_EXPORT unsigned int
-xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
-                 xkb_keysym_t **syms_out);
-
 /**
  * @defgroup ctx XKB contexts
  * Every keymap compilation request must have an XKB context associated with
@@ -439,6 +435,19 @@ enum xkb_key_direction {
 _X_EXPORT void
 xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
                      enum xkb_key_direction direction);
+
+/**
+ * Gives the symbols obtained from pressing a particular key with the given
+ * state.  *syms_out will be set to point to an array of keysyms, with the
+ * return value being the number of symbols in *syms_out.  If the return
+ * value is 0, *syms_out will be set to NULL, as there are no symbols produced
+ * by this event.
+ *
+ * This should be called before xkb_state_update_key.
+ */
+_X_EXPORT unsigned int
+xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
+                 xkb_keysym_t **syms_out);
 
 /**
  * Modifier and group types for state objects.  This enum is bitmaskable,
