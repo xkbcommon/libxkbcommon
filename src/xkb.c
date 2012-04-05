@@ -27,6 +27,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+#include <stdio.h>
+
 #include "xkbmisc.h"
 #include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
@@ -81,7 +83,7 @@ XkbcCanonicaliseComponent(char *name, const char *old)
     return name;
 }
 
-void
+_X_EXPORT void
 xkb_canonicalise_components(struct xkb_component_names * names,
                            const struct xkb_component_names * old)
 {

@@ -28,6 +28,8 @@ authorization from the authors.
 #define _XKBMISC_H_
 
 #include <X11/Xdefs.h>
+#include <X11/Xfuncproto.h>
+
 #include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
 

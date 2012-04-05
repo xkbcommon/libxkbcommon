@@ -114,7 +114,7 @@ unwind_file:
     return names;
 }
 
-struct xkb_keymap *
+_X_EXPORT struct xkb_keymap *
 xkb_map_new_from_names(struct xkb_context *context,
                        const struct xkb_rule_names *rmlvo)
 {
@@ -216,7 +216,7 @@ err:
     return xkb;
 }
 
-struct xkb_keymap *
+_X_EXPORT struct xkb_keymap *
 xkb_map_new_from_kccgst(struct xkb_context *context,
                         const struct xkb_component_names *kccgst)
 {
@@ -255,7 +255,7 @@ xkb_map_new_from_kccgst(struct xkb_context *context,
     return compile_keymap(context, file);
 }
 
-struct xkb_keymap *
+_X_EXPORT struct xkb_keymap *
 xkb_map_new_from_string(struct xkb_context *context,
                         const char *string,
                         enum xkb_keymap_format format)
@@ -280,7 +280,7 @@ xkb_map_new_from_string(struct xkb_context *context,
     return compile_keymap(context, file);
 }
 
-struct xkb_keymap *
+_X_EXPORT struct xkb_keymap *
 xkb_map_new_from_fd(struct xkb_context *context,
                     int fd,
                     enum xkb_keymap_format format)
@@ -312,14 +312,14 @@ xkb_map_new_from_fd(struct xkb_context *context,
     return compile_keymap(context, file);
 }
 
-struct xkb_keymap *
+_X_EXPORT struct xkb_keymap *
 xkb_map_ref(struct xkb_keymap *xkb)
 {
     xkb->refcnt++;
     return xkb;
 }
 
-void
+_X_EXPORT void
 xkb_map_unref(struct xkb_keymap *xkb)
 {
     if (--xkb->refcnt > 0)

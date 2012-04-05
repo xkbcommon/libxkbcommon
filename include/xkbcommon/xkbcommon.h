@@ -80,10 +80,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef _XKBCOMMON_H_
 #define _XKBCOMMON_H_
 
+#include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <X11/Xfuncproto.h>
-#include <X11/extensions/XKB.h>
 
 typedef uint32_t xkb_keycode_t;
 typedef uint32_t xkb_keysym_t;
@@ -107,7 +105,6 @@ typedef uint32_t xkb_led_index_t;
      xkb->max_key_code > xkb->min_key_code && \
      xkb_keycode_is_legal_ext(xkb->min_key_code) && \
      xkb_keycode_is_legal_ext(xkb->max_key_code))
-
 
 /**
  * Names to compile a keymap with, also known as RMLVO.  These names together
@@ -152,7 +149,9 @@ struct xkb_keymap;
  */
 struct xkb_state;
 
-_XFUNCPROTOBEGIN
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * Canonicalises component names by prepending the relevant component from
@@ -168,7 +167,7 @@ _XFUNCPROTOBEGIN
  * If a component in names needs to be modified, the existing value will be
  * free()d, and a new one allocated with malloc().
  */
-_X_EXPORT extern void
+void
 xkb_canonicalise_components(struct xkb_component_names *names,
                             const struct xkb_component_names *old);
 
@@ -176,14 +175,14 @@ xkb_canonicalise_components(struct xkb_component_names *names,
  * Converts a keysym to a string; will return unknown Unicode codepoints
  * as "Ua1b2", and other unknown keysyms as "0xabcd1234".
  */
-_X_EXPORT extern void
+void
 xkb_keysym_to_string(xkb_keysym_t ks, char *buffer, size_t size);
 
 /*
  * See xkb_keysym_to_string comments: this function will accept any string
  * from that function.
  */
-_X_EXPORT extern xkb_keysym_t
+xkb_keysym_t
 xkb_string_to_keysym(const char *s);
 
 /**
@@ -199,7 +198,7 @@ xkb_string_to_keysym(const char *s);
  * holds a reference on the context, and must free it when finished with
  * xkb_context_unref().
  */
-_X_EXPORT struct xkb_context *
+struct xkb_context *
 xkb_context_new(void);
 
 /**
@@ -207,7 +206,7 @@ xkb_context_new(void);
  * Returns 1 on success, or 0 if the include path could not be added or is
  * inaccessible.
  */
-_X_EXPORT int
+int
 xkb_context_include_path_append(struct xkb_context *context, const char *path);
 
 /**
@@ -215,7 +214,7 @@ xkb_context_include_path_append(struct xkb_context *context, const char *path);
  * Returns 1 on success, or 0 if the primary include path could not be
  * added.
  */
-_X_EXPORT int
+int
 xkb_context_include_path_append_default(struct xkb_context *context);
 
 /**
@@ -223,37 +222,37 @@ xkb_context_include_path_append_default(struct xkb_context *context);
  * default paths.  Returns 1 on success, or 0 if the primary include path
  * could not be added.
  */
-_X_EXPORT int
+int
 xkb_context_include_path_reset_defaults(struct xkb_context *context);
 
 /**
  * Removes all entries from the context's include path.
  */
-_X_EXPORT void
+void
 xkb_context_include_path_clear(struct xkb_context *context);
 
 /**
  * Returns the number of include paths currently active in the context.
  */
-_X_EXPORT unsigned int
+unsigned int
 xkb_context_num_include_paths(struct xkb_context *context);
 
 /**
  * Returns the include path at the specified index within the context.
  */
-_X_EXPORT const char *
+const char *
 xkb_context_include_path_get(struct xkb_context *context, unsigned int index);
 
 /**
  * Takes a new reference on an XKB context.
  */
-_X_EXPORT struct xkb_context *
+struct xkb_context *
 xkb_context_ref(struct xkb_context *context);
 
 /**
  * Releases a reference on an XKB context, and possibly frees it.
  */
-_X_EXPORT void
+void
 xkb_context_unref(struct xkb_context *context);
 
 /** @} */
@@ -272,7 +271,7 @@ xkb_context_unref(struct xkb_context *context);
  * You should almost certainly be using this and nothing else to create
  * keymaps.
  */
-_X_EXPORT extern struct xkb_keymap *
+struct xkb_keymap *
 xkb_map_new_from_names(struct xkb_context *context,
                        const struct xkb_rule_names *names);
 
@@ -286,7 +285,7 @@ xkb_map_new_from_names(struct xkb_context *context,
  *
  * Geometry will be ignored since xkbcommon does not support it in any way.
  */
-_X_EXPORT extern struct xkb_keymap *
+struct xkb_keymap *
 xkb_map_new_from_kccgst(struct xkb_context *context,
                         const struct xkb_component_names *kccgst);
 
@@ -299,7 +298,7 @@ enum xkb_keymap_format {
  * Creates an XKB keymap from a full text XKB keymap passed into the
  * file descriptor.
  */
-_X_EXPORT extern struct xkb_keymap *
+struct xkb_keymap *
 xkb_map_new_from_fd(struct xkb_context *context,
                     int fd, enum xkb_keymap_format format);
 
@@ -307,7 +306,7 @@ xkb_map_new_from_fd(struct xkb_context *context,
  * Creates an XKB keymap from a full text XKB keymap serialised into one
  * enormous string.
  */
-_X_EXPORT extern struct xkb_keymap *
+struct xkb_keymap *
 xkb_map_new_from_string(struct xkb_context *context,
                         const char *string,
                         enum xkb_keymap_format format);
@@ -315,13 +314,13 @@ xkb_map_new_from_string(struct xkb_context *context,
 /**
  * Takes a new reference on a keymap.
  */
-_X_EXPORT extern struct xkb_keymap *
+struct xkb_keymap *
 xkb_map_ref(struct xkb_keymap *xkb);
 
 /**
  * Releases a reference on a keymap.
  */
-_X_EXPORT extern void
+void
 xkb_map_unref(struct xkb_keymap *xkb);
 
 /** @} */
@@ -337,61 +336,61 @@ xkb_map_unref(struct xkb_keymap *xkb);
 /**
  * Returns the number of modifiers active in the keymap.
  */
-_X_EXPORT xkb_mod_index_t
+xkb_mod_index_t
 xkb_map_num_mods(struct xkb_keymap *xkb);
 
 /**
  * Returns the name of the modifier specified by 'idx', or NULL if invalid.
  */
-_X_EXPORT const char *
+const char *
 xkb_map_mod_get_name(struct xkb_keymap *xkb, xkb_mod_index_t idx);
 
 /**
  * Returns the index of the modifier specified by 'name', or XKB_MOD_INVALID.
  */
-_X_EXPORT xkb_mod_index_t
+xkb_mod_index_t
 xkb_map_mod_get_index(struct xkb_keymap *xkb, const char *name);
 
 /**
  * Returns the number of groups active in the keymap.
  */
-_X_EXPORT xkb_group_index_t
+xkb_group_index_t
 xkb_map_num_groups(struct xkb_keymap *xkb);
 
 /**
  * Returns the name of the group specified by 'idx', or NULL if invalid.
  */
-_X_EXPORT const char *
+const char *
 xkb_map_group_get_name(struct xkb_keymap *xkb, xkb_group_index_t idx);
 
 /**
  * Returns the index of the group specified by 'name', or XKB_GROUP_INVALID.
  */
-_X_EXPORT xkb_group_index_t
+xkb_group_index_t
 xkb_map_group_get_index(struct xkb_keymap *xkb, const char *name);
 
 /**
  * Returns the number of groups active for the specified key.
  */
-_X_EXPORT xkb_group_index_t
+xkb_group_index_t
 xkb_key_num_groups(struct xkb_keymap *xkb, xkb_keycode_t key);
 
 /**
  * Returns the number of LEDs in the given map.
  */
-_X_EXPORT xkb_led_index_t
+xkb_led_index_t
 xkb_map_num_leds(struct xkb_keymap *xkb);
 
 /**
  * Returns the name of the LED specified by 'idx', or NULL if invalid.
  */
-_X_EXPORT const char *
+const char *
 xkb_map_led_get_name(struct xkb_keymap *xkb, xkb_led_index_t idx);
 
 /**
  * Returns the index of the LED specified by 'name', or XKB_LED_INVALID.
  */
-_X_EXPORT xkb_led_index_t
+xkb_led_index_t
 xkb_map_led_get_index(struct xkb_keymap *xkb, const char *name);
 
 /** @} */
@@ -408,20 +407,20 @@ xkb_map_led_get_index(struct xkb_keymap *xkb, const char *name);
  * Returns a new XKB state object for use with the given keymap, or NULL on
  * failure.
  */
-_X_EXPORT struct xkb_state *
+struct xkb_state *
 xkb_state_new(struct xkb_keymap *xkb);
 
 /**
  * Takes a new reference on a state object.
  */
-_X_EXPORT struct xkb_state *
+struct xkb_state *
 xkb_state_ref(struct xkb_state *state);
 
 /**
  * Unrefs and potentially deallocates a state object; the caller must not
  * use the state object after calling this.
  */
-_X_EXPORT void
+void
 xkb_state_unref(struct xkb_state *state);
 
 enum xkb_key_direction {
@@ -432,7 +431,7 @@ enum xkb_key_direction {
 /**
  * Updates a state object to reflect the given key being pressed or released.
  */
-_X_EXPORT void
+void
 xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
                      enum xkb_key_direction direction);
 
@@ -445,7 +444,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  *
  * This should be called before xkb_state_update_key.
  */
-_X_EXPORT unsigned int
+unsigned int
 xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
                  const xkb_keysym_t **syms_out);
 
@@ -484,7 +483,7 @@ enum xkb_state_component {
  *
  * Please do not use this unless you fit the description above.
  */
-_X_EXPORT void
+void
 xkb_state_update_mask(struct xkb_state *state,
                       xkb_mod_mask_t base_mods,
                       xkb_mod_mask_t latched_mods,
@@ -503,7 +502,7 @@ xkb_state_update_mask(struct xkb_state *state,
  *
  * Can return NULL on failure.
  */
-_X_EXPORT xkb_mod_mask_t
+xkb_mod_mask_t
 xkb_state_serialise_mods(struct xkb_state *state,
                          enum xkb_state_component component);
 
@@ -511,7 +510,7 @@ xkb_state_serialise_mods(struct xkb_state *state,
  * The group equivalent of xkb_state_serialise_mods: please see its
  * documentation.
  */
-_X_EXPORT xkb_group_index_t
+xkb_group_index_t
 xkb_state_serialise_group(struct xkb_state *state,
                           enum xkb_state_component component);
 
@@ -520,7 +519,7 @@ xkb_state_serialise_group(struct xkb_state *state,
  * specified by 'type', 0 if it is unset, or -1 if the modifier does not
  * exist in the current map.
  */
-_X_EXPORT int
+int
 xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
                              enum xkb_state_component type);
 
@@ -529,7 +528,7 @@ xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
  * specified by 'type', 0 if it is unset, or -1 if the modifier does not
  * exist in the current map.
  */
-_X_EXPORT int
+int
 xkb_state_mod_index_is_active(struct xkb_state *state, xkb_mod_index_t idx,
                               enum xkb_state_component type);
 
@@ -538,7 +537,7 @@ xkb_state_mod_index_is_active(struct xkb_state *state, xkb_mod_index_t idx,
  * specified by 'type', 0 if it is unset, or -1 if the group does not
  * exist in the current map.
  */
-_X_EXPORT int
+int
 xkb_state_group_name_is_active(struct xkb_state *state, const char *name,
                                enum xkb_state_component type);
 
@@ -547,7 +546,7 @@ xkb_state_group_name_is_active(struct xkb_state *state, const char *name,
  * specified by 'type', 0 if it is unset, or -1 if the group does not
  * exist in the current map.
  */
-_X_EXPORT int
+int
 xkb_state_group_index_is_active(struct xkb_state *state, xkb_group_index_t idx,
                                 enum xkb_state_component type);
 
@@ -555,18 +554,20 @@ xkb_state_group_index_is_active(struct xkb_state *state, xkb_group_index_t idx,
  * Returns 1 if the LED specified by 'name' is active, 0 if it is unset, or
  * -1 if the LED does not exist in the current map.
  */
-_X_EXPORT int
+int
 xkb_state_led_name_is_active(struct xkb_state *state, const char *name);
 
 /**
  * Returns 1 if the LED specified by 'idx' is active, 0 if it is unset, or
  * -1 if the LED does not exist in the current map.
  */
-_X_EXPORT int
+int
 xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx);
 
 /** @} */
 
-_XFUNCPROTOEND
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif /* _XKBCOMMON_H_ */

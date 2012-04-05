@@ -28,15 +28,16 @@ authorization from the authors.
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <X11/keysymdef.h>
-#include "xkbmisc.h"
-#include "xkbcommon/xkbcommon.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <X11/keysymdef.h>
 
 #include "ks_tables.h"
+#include "xkbmisc.h"
+#include "xkbcommon/xkbcommon.h"
 
-void
+_X_EXPORT void
 xkb_keysym_to_string(xkb_keysym_t ks, char *buffer, size_t size)
 {
     int i, n, h, idx;
@@ -90,7 +91,7 @@ xkb_keysym_to_string(xkb_keysym_t ks, char *buffer, size_t size)
 	snprintf(buffer, size, "0x%08x", ks);
 }
 
-xkb_keysym_t
+_X_EXPORT xkb_keysym_t
 xkb_string_to_keysym(const char *s)
 {
     int i, n, h, c, idx;
