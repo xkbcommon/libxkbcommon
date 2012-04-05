@@ -472,10 +472,16 @@ xkb_state_new(struct xkb_keymap *xkb)
         return NULL;
 
     ret->refcnt = 1;
-    ret->xkb = xkb;
-    xkb_map_ref(xkb);
+    ret->xkb = xkb_map_ref(xkb);
 
     return ret;
+}
+
+struct xkb_state *
+xkb_state_ref(struct xkb_state *state)
+{
+    state->refcnt++;
+    return state;
 }
 
 void

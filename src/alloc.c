@@ -266,8 +266,7 @@ XkbcAllocKeyboard(struct xkb_context *context)
         return NULL;
 
     xkb->refcnt = 1;
-    xkb_context_ref(context);
-    xkb->context = context;
+    xkb->context = xkb_context_ref(context);
 
     return xkb;
 }

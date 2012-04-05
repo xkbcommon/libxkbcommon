@@ -247,7 +247,7 @@ xkb_context_include_path_get(struct xkb_context *context, unsigned int index);
 /**
  * Takes a new reference on an XKB context.
  */
-_X_EXPORT void
+_X_EXPORT struct xkb_context *
 xkb_context_ref(struct xkb_context *context);
 
 /**
@@ -315,7 +315,7 @@ xkb_map_new_from_string(struct xkb_context *context,
 /**
  * Takes a new reference on a keymap.
  */
-_X_EXPORT extern void
+_X_EXPORT extern struct xkb_keymap *
 xkb_map_ref(struct xkb_keymap *xkb);
 
 /**
@@ -412,9 +412,9 @@ _X_EXPORT struct xkb_state *
 xkb_state_new(struct xkb_keymap *xkb);
 
 /**
- * Adds a reference to a state object, so it will not be freed until unref.
+ * Takes a new reference on a state object.
  */
-_X_EXPORT void
+_X_EXPORT struct xkb_state *
 xkb_state_ref(struct xkb_state *state);
 
 /**

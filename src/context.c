@@ -158,10 +158,11 @@ xkb_context_include_path_get(struct xkb_context *context, unsigned int idx)
 /**
  * Take a new reference on the context.
  */
-void
+struct xkb_context *
 xkb_context_ref(struct xkb_context *context)
 {
     context->refcnt++;
+    return context;
 }
 
 /**

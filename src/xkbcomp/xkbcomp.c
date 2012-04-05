@@ -312,10 +312,11 @@ xkb_map_new_from_fd(struct xkb_context *context,
     return compile_keymap(context, file);
 }
 
-void
+struct xkb_keymap *
 xkb_map_ref(struct xkb_keymap *xkb)
 {
     xkb->refcnt++;
+    return xkb;
 }
 
 void
