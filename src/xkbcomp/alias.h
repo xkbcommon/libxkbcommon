@@ -34,22 +34,17 @@ typedef struct _AliasInfo
     char real[XkbKeyNameLength + 1];
 } AliasInfo;
 
-extern int HandleAliasDef(KeyAliasDef * /* def   */ ,
-                          unsigned /* merge */ ,
-                          unsigned /* file_id */ ,
-                          AliasInfo **  /* info  */
-    );
+extern int
+HandleAliasDef(KeyAliasDef *def, unsigned merge, unsigned file_id,
+               AliasInfo **info);
 
-extern void ClearAliases(AliasInfo **   /* info */
-    );
+extern void
+ClearAliases(AliasInfo **info);
 
-extern Bool MergeAliases(AliasInfo ** /* into */ ,
-                         AliasInfo ** /* merge */ ,
-                         unsigned       /* how_merge */
-    );
+extern Bool
+MergeAliases(AliasInfo **into, AliasInfo **merge, unsigned how_merge);
 
-extern int ApplyAliases(struct xkb_keymap * /* xkb */ ,
-                        AliasInfo **    /* info */
-    );
+extern int
+ApplyAliases(struct xkb_keymap *xkb, AliasInfo **info);
 
 #endif /* ALIAS_H */

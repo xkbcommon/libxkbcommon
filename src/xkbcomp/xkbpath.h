@@ -31,20 +31,15 @@
 
 #include "XKBcommonint.h"
 
-extern const char *XkbDirectoryForInclude(unsigned    /* type */
-    );
+extern const char *
+XkbDirectoryForInclude(unsigned type);
 
-extern FILE *XkbFindFileInPath(struct xkb_context * /* context */,
-                               const char * /* name */ ,
-                               unsigned /* type */ ,
-                               char **  /* pathRtrn */
-    );
+extern FILE *
+XkbFindFileInPath(struct xkb_context *context, const char *name,
+                  unsigned type, char **pathRtrn);
 
-extern Bool XkbParseIncludeMap(char ** /* str_inout */ ,
-                               char ** /* file_rtrn */ ,
-                               char ** /* map_rtrn */ ,
-                               char * /* nextop_rtrn */ ,
-                               char **  /* extra_data */
-    );
+extern Bool
+XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
+                   char *nextop_rtrn, char **extra_data);
 
 #endif /* _XKBPATH_H_ */

@@ -35,58 +35,40 @@ typedef struct _CommonInfo
     struct _CommonInfo *next;
 } CommonInfo;
 
-extern Bool UseNewField(unsigned /* field */ ,
-                        CommonInfo * /* oldDefs */ ,
-                        CommonInfo * /* newDefs */ ,
-                        unsigned *      /* pCollide */
-    );
+extern Bool
+UseNewField(unsigned field, CommonInfo *oldDefs, CommonInfo *newDefs,
+            unsigned *pCollide);
 
-extern char * ClearCommonInfo(CommonInfo *    /* cmn */
-    );
+extern char *
+ClearCommonInfo(CommonInfo *cmn);
 
-extern char * AddCommonInfo(CommonInfo * /* old */ ,
-                              CommonInfo *      /* new */
-    );
+extern char *
+AddCommonInfo(CommonInfo *old, CommonInfo *new);
 
-extern int ReportNotArray(const char * /* type */ ,
-                          const char * /* field */ ,
-                          const char *  /* name */
-    );
+extern int
+ReportNotArray(const char *type, const char *field, const char *name);
 
-extern int ReportShouldBeArray(const char * /* type */ ,
-                               const char * /* field */ ,
-                               const char *   /* name */
-    );
+extern int
+ReportShouldBeArray(const char *type, const char *field, const char *name);
 
-extern int ReportBadType(const char * /* type */ ,
-                         const char * /* field */ ,
-                         const char * /* name */ ,
-                         const char *   /* wanted */
-    );
+extern int
+ReportBadType(const char *type, const char *field, const char *name,
+              const char *wanted);
 
-extern int ReportBadField(const char * /* type */ ,
-                          const char * /* field */ ,
-                          const char *  /* name */
-    );
+extern int
+ReportBadField(const char *type, const char *field, const char *name);
 
-extern Bool ProcessIncludeFile(struct xkb_context * /* context */,
-                               IncludeStmt * /* stmt */ ,
-                               unsigned /* file_type */ ,
-                               XkbFile ** /* file_rtrn */ ,
-                               unsigned *       /* merge_rtrn */
-    );
+extern Bool
+ProcessIncludeFile(struct xkb_context *context,
+                   IncludeStmt *stmt, unsigned file_type, XkbFile **file_rtrn,
+                   unsigned *merge_rtrn);
 
-extern Bool FindNamedKey(struct xkb_keymap * /* xkb */ ,
-                         unsigned long /* name */ ,
-                         xkb_keycode_t * /* kc_rtrn */ ,
-                         Bool /* use_aliases */ ,
-                         Bool /* create */ ,
-                         xkb_keycode_t    /* start_from */
-    );
+extern Bool
+FindNamedKey(struct xkb_keymap *xkb, unsigned long name, xkb_keycode_t *kc_rtrn,
+             Bool use_aliases, Bool create, xkb_keycode_t start_from);
 
-extern Bool FindKeyNameForAlias(struct xkb_keymap * /* xkb */ ,
-                                unsigned long /* lname */ ,
-                                unsigned long * /* real_name */
-    );
+extern Bool
+FindKeyNameForAlias(struct xkb_keymap *xkb, unsigned long lname,
+                    unsigned long *real_name);
 
 #endif /* MISC_H */

@@ -35,11 +35,8 @@
 
 /***====================================================================***/
 
-typedef Bool(*IdentLookupFunc) (const void * /* priv */ ,
-                                xkb_atom_t /* field */ ,
-                                unsigned /* type */ ,
-                                ExprResult *    /* val_rtrn */
-    );
+typedef Bool (*IdentLookupFunc) (const void *priv, xkb_atom_t field,
+                                 unsigned type, ExprResult *val_rtrn);
 
 /***====================================================================***/
 

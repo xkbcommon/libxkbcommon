@@ -876,11 +876,8 @@ MergeIncludedSymbols(SymbolsInfo * into, SymbolsInfo * from,
         into->errorCount++;
 }
 
-typedef void (*FileHandler) (XkbFile * /* rtrn */ ,
-                             struct xkb_keymap * /* xkb */ ,
-                             unsigned /* merge */ ,
-                             SymbolsInfo *      /* included */
-    );
+typedef void (*FileHandler) (XkbFile *rtrn, struct xkb_keymap *xkb,
+                             unsigned merge, SymbolsInfo *included);
 
 static Bool
 HandleIncludeSymbols(IncludeStmt * stmt,

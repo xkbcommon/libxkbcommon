@@ -388,11 +388,8 @@ MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from, unsigned merge)
     }
 }
 
-typedef void (*FileHandler) (XkbFile * /* rtrn */ ,
-                             struct xkb_keymap * /* xkb */ ,
-                             unsigned /* merge */ ,
-                             CompatInfo *       /* info */
-    );
+typedef void (*FileHandler) (XkbFile *rtrn, struct xkb_keymap *xkb,
+                             unsigned merge, CompatInfo *info);
 
 static Bool
 HandleIncludeCompatMap(IncludeStmt * stmt,

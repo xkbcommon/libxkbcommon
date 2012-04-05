@@ -41,131 +41,102 @@ struct scanner_extra {
     char *s;
 };
 
-extern ParseCommon *AppendStmt(ParseCommon * /* to */ ,
-                               ParseCommon *    /* append */
-    );
+extern ParseCommon *
+AppendStmt(ParseCommon *to, ParseCommon *append);
 
-extern ExprDef *ExprCreate(unsigned /* op */ ,
-                           unsigned     /* type */
-    );
+extern ExprDef *
+ExprCreate(unsigned op, unsigned type);
 
-extern ExprDef *ExprCreateUnary(unsigned /* op */ ,
-                                unsigned /* type */ ,
-                                ExprDef *       /* child */
-    );
+extern ExprDef *
+ExprCreateUnary(unsigned op, unsigned type, ExprDef *child);
 
-extern ExprDef *ExprCreateBinary(unsigned /* op */ ,
-                                 ExprDef * /* left */ ,
-                                 ExprDef *      /* right */
-    );
+extern ExprDef *
+ExprCreateBinary(unsigned op, ExprDef *left, ExprDef *right);
 
-extern KeycodeDef *KeycodeCreate(const char * /* name */ ,
-                                 unsigned long /* value */
-    );
+extern KeycodeDef *
+KeycodeCreate(const char *name, unsigned long value);
 
-extern KeyAliasDef *KeyAliasCreate(const char * /* alias */ ,
-                                   const char * /* real */
-    );
+extern KeyAliasDef *
+KeyAliasCreate(const char *alias, const char *real);
 
-extern VModDef *VModCreate(xkb_atom_t /* name */ ,
-                           ExprDef *    /* value */
-    );
+extern VModDef *
+VModCreate(xkb_atom_t name, ExprDef *value);
 
-extern VarDef *VarCreate(ExprDef * /* name */ ,
-                         ExprDef *      /* value */
-    );
+extern VarDef *
+VarCreate(ExprDef *name, ExprDef *value);
 
-extern VarDef *BoolVarCreate(xkb_atom_t /* nameToken */ ,
-                             unsigned   /* set */
-    );
+extern VarDef *
+BoolVarCreate(xkb_atom_t nameToken, unsigned set);
 
-extern InterpDef *InterpCreate(char * /* sym */ ,
-                               ExprDef *        /* match */
-    );
+extern InterpDef *
+InterpCreate(char *sym, ExprDef *match);
 
-extern KeyTypeDef *KeyTypeCreate(xkb_atom_t /* name */ ,
-                                 VarDef *       /* body */
-    );
+extern KeyTypeDef *
+KeyTypeCreate(xkb_atom_t name, VarDef *body);
 
-extern SymbolsDef *SymbolsCreate(const char * /* keyName */ ,
-                                 ExprDef *      /* symbols */
-    );
+extern SymbolsDef *
+SymbolsCreate(const char *keyName, ExprDef *symbols);
 
-extern GroupCompatDef *GroupCompatCreate(int /* group */ ,
-                                         ExprDef *      /* def */
-    );
+extern GroupCompatDef *
+GroupCompatCreate(int group, ExprDef *def);
 
-extern ModMapDef *ModMapCreate(uint32_t /* modifier */ ,
-                               ExprDef *        /* keys */
-    );
+extern ModMapDef *
+ModMapCreate(uint32_t modifier, ExprDef *keys);
 
-extern IndicatorMapDef *IndicatorMapCreate(xkb_atom_t /* name */ ,
-                                           VarDef *     /* body */
-    );
+extern IndicatorMapDef *
+IndicatorMapCreate(xkb_atom_t name, VarDef *body);
 
-extern IndicatorNameDef *IndicatorNameCreate(int /* ndx */ ,
-                                             ExprDef * /* name */ ,
-                                             Bool       /* virtual */
-    );
+extern IndicatorNameDef *
+IndicatorNameCreate(int ndx, ExprDef *name, Bool virtual);
 
-extern ExprDef *ActionCreate(xkb_atom_t /* name */ ,
-                             ExprDef *  /* args */
-    );
+extern ExprDef *
+ActionCreate(xkb_atom_t name, ExprDef *args);
 
-extern ExprDef *CreateMultiKeysymList(ExprDef * /* list */
-    );
+extern ExprDef *
+CreateMultiKeysymList(ExprDef *list);
 
-extern ExprDef *CreateKeysymList(char * /* sym */
-    );
+extern ExprDef *
+CreateKeysymList(char *sym);
 
-extern ExprDef *AppendMultiKeysymList(ExprDef * /* list */ ,
-                                      ExprDef * /* append */
-    );
+extern ExprDef *
+AppendMultiKeysymList(ExprDef *list, ExprDef *append);
 
-extern ExprDef *AppendKeysymList(ExprDef * /* list */ ,
-                                 char * /* sym */
-    );
+extern ExprDef *
+AppendKeysymList(ExprDef *list, char *sym);
 
-extern int LookupKeysym(const char * /* str */ ,
-                        xkb_keysym_t *        /* sym_rtrn */
-    );
+extern int
+LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn);
 
-extern IncludeStmt *IncludeCreate(char * /* str */ ,
-                                  unsigned      /* merge */
-    );
+extern IncludeStmt *
+IncludeCreate(char *str, unsigned merge);
 
-extern unsigned StmtSetMerge(ParseCommon * /* stmt */ ,
-                             unsigned   /* merge */,
-                             YYLTYPE *  /* loc */,
-                             void *     /* scanner */
-    );
+extern unsigned
+StmtSetMerge(ParseCommon *stmt, unsigned merge, YYLTYPE *loc, void *scanner);
 
 #ifdef DEBUG
-extern void PrintStmtAddrs(ParseCommon *        /* stmt */
-    );
+extern void
+PrintStmtAddrs(ParseCommon *stmt);
 #endif
 
-extern int XKBParseFile(FILE * /* file */ ,
-                        const char *    /* fileName */,
-                        XkbFile **      /* pRtrn */
-    );
+extern void
+CheckDefaultMap(XkbFile *maps, const char *fileName);
 
-extern int XKBParseString(const char *string, const char *fileName,
-                          XkbFile ** pRtrn);
+extern int
+XKBParseFile(FILE *file, const char *fileName, XkbFile **pRtrn);
 
-extern void CheckDefaultMap(XkbFile * maps, const char *fileName);
+extern int
+XKBParseString(const char *string, const char *fileName, XkbFile **pRtrn);
 
-extern XkbFile *CreateXKBFile(int /* type */ ,
-                              char * /* name */ ,
-                              ParseCommon * /* defs */ ,
-                              unsigned  /* flags */
-    );
+extern XkbFile *
+CreateXKBFile(int type, char *name, ParseCommon *defs, unsigned flags);
 
-extern void FreeXKBFile(XkbFile *file);
+extern void
+FreeXKBFile(XkbFile *file);
 
-extern void FreeStmt(ParseCommon * /* stmt */
-    );
+extern void
+FreeStmt(ParseCommon *stmt);
 
-extern void yyerror(struct YYLTYPE *loc, void *scanner, const char *msg);
+extern void
+yyerror(struct YYLTYPE *loc, void *scanner, const char *msg);
 
 #endif /* XKBPARSE_H */

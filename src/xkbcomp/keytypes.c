@@ -356,11 +356,8 @@ MergeIncludedKeyTypes(KeyTypesInfo * into,
     into->stdPresent |= from->stdPresent;
 }
 
-typedef void (*FileHandler) (XkbFile * /* file */ ,
-                             struct xkb_keymap * /* xkb */ ,
-                             unsigned /* merge */ ,
-                             KeyTypesInfo *     /* included */
-    );
+typedef void (*FileHandler) (XkbFile *file, struct xkb_keymap *xkb,
+                             unsigned merge, KeyTypesInfo *included);
 
 static Bool
 HandleIncludeKeyTypes(IncludeStmt * stmt,

@@ -64,20 +64,14 @@ typedef struct _ActionInfo
     struct _ActionInfo *next;
 } ActionInfo;
 
-extern int HandleActionDef(ExprDef * /* def */ ,
-                           struct xkb_keymap * /* xkb */ ,
-                           struct xkb_any_action * /* action */ ,
-                           unsigned /* mergeMode */ ,
-                           ActionInfo * /* info */
-    );
+extern int
+HandleActionDef(ExprDef *def, struct xkb_keymap *xkb,
+                struct xkb_any_action *action, unsigned mergeMode,
+                ActionInfo *info);
 
-extern int SetActionField(struct xkb_keymap * /* xkb */ ,
-                          char * /* elem */ ,
-                          char * /* field */ ,
-                          ExprDef * /* index */ ,
-                          ExprDef * /* value */ ,
-                          ActionInfo ** /* info_rtrn */
-    );
+extern int
+SetActionField(struct xkb_keymap *xkb, char *elem, char *field,
+               ExprDef *index, ExprDef *value, ActionInfo **info_rtrn);
 
 extern const LookupEntry ctrlNames[];
 

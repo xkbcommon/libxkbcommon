@@ -1065,12 +1065,9 @@ HandlePrivate(struct xkb_keymap * xkb,
     return ReportIllegal(PrivateAction, field);
 }
 
-typedef Bool(*actionHandler) (struct xkb_keymap * /* xkb */ ,
-                              struct xkb_any_action * /* action */ ,
-                              unsigned /* field */ ,
-                              ExprDef * /* array_ndx */ ,
-                              ExprDef * /* value */
-    );
+typedef Bool (*actionHandler) (struct xkb_keymap *xkb,
+                               struct xkb_any_action *action, unsigned field,
+                               ExprDef *array_ndx, ExprDef *value);
 
 static const actionHandler handleAction[XkbSA_NumActions + 1] = {
     [XkbSA_NoAction]       = HandleNoAction,

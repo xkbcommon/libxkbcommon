@@ -29,38 +29,31 @@
 
 typedef struct _VModInfo
 {
-    struct xkb_keymap * xkb;
+    struct xkb_keymap *xkb;
     unsigned defined;
     unsigned available;
     unsigned newlyDefined;
     int errorCount;
 } VModInfo;
 
-extern void InitVModInfo(VModInfo * /* info */ ,
-                         struct xkb_keymap *     /* xkb */
-    );
+extern void
+InitVModInfo(VModInfo *info, struct xkb_keymap *xkb);
 
-extern void ClearVModInfo(VModInfo * /* info */ ,
-                          struct xkb_keymap *    /* xkb */
-    );
+extern void
+ClearVModInfo(VModInfo *info, struct xkb_keymap *xkb);
 
-extern Bool HandleVModDef(VModDef * /* stmt */ ,
-                          struct xkb_keymap * /* xkb */ ,
-                          unsigned /* mergeMode */ ,
-                          VModInfo *    /* info */
-    );
+extern Bool
+HandleVModDef(VModDef *stmt, struct xkb_keymap *xkb, unsigned mergeMode,
+              VModInfo *info);
 
-extern Bool ApplyVModDefs(VModInfo * /* info */ ,
-                          struct xkb_keymap *    /* xkb */
-    );
+extern Bool
+ApplyVModDefs(VModInfo *info, struct xkb_keymap *xkb);
 
-extern int FindKeypadVMod(struct xkb_keymap *    /* xkb */
-    );
+extern int
+FindKeypadVMod(struct xkb_keymap *xkb);
 
-extern Bool ResolveVirtualModifier(ExprDef * /* def */ ,
-                                   struct xkb_keymap * /* xkb */ ,
-                                   ExprResult * /* value_rtrn */ ,
-                                   VModInfo *   /* info */
-    );
+extern Bool
+ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *xkb,
+                       ExprResult *value_rtrn, VModInfo *info);
 
 #endif /* VMOD_H */

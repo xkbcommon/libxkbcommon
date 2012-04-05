@@ -35,11 +35,9 @@ typedef union _ExprResult
     struct xkb_key_name keyName;
 } ExprResult;
 
-extern int ExprResolveLhs(ExprDef * /* expr */ ,
-                          ExprResult * /* elem_rtrn */ ,
-                          ExprResult * /* field_rtrn */ ,
-                          ExprDef **    /* index_rtrn */
-    );
+extern int
+ExprResolveLhs(ExprDef *expr, ExprResult *elem_rtrn, ExprResult *field_rtrn,
+               ExprDef **index_rtrn);
 
 typedef struct _LookupEntry
 {
@@ -48,84 +46,63 @@ typedef struct _LookupEntry
 } LookupEntry;
 
 
-extern const char *exprOpText(unsigned        /* type */
-    );
+extern const char *
+exprOpText(unsigned type);
 
-extern int LookupModMask(const void * /* priv */ ,
-                         xkb_atom_t /* field */ ,
-                         unsigned /* type */ ,
-                         ExprResult *  /* val_rtrn */
-    );
+extern int
+LookupModMask(const void *priv, xkb_atom_t field, unsigned type,
+              ExprResult *val_rtrn);
 
-extern int LookupVModMask(const void * /* priv */ ,
-                          xkb_atom_t /* field */ ,
-                          unsigned /* type */ ,
-                          ExprResult *  /* val_rtrn */
-    );
+extern int
+LookupVModMask(const void *priv, xkb_atom_t field, unsigned type,
+               ExprResult *val_rtrn);
 
-extern int LookupModIndex(const void * /* priv */ ,
-                          xkb_atom_t /* field */ ,
-                          unsigned /* type */ ,
-                          ExprResult *  /* val_rtrn */
-    );
+extern int
+LookupModIndex(const void *priv, xkb_atom_t field, unsigned type,
+               ExprResult *val_rtrn);
 
-extern int ExprResolveModMask(ExprDef * /* expr */ ,
-                              ExprResult * /* val_rtrn */
-    );
+extern int
+ExprResolveModMask(ExprDef *expr, ExprResult *val_rtrn);
 
-extern int ExprResolveVModMask(ExprDef * /* expr */ ,
-                               ExprResult * /* val_rtrn */ ,
-                               struct xkb_keymap * /* xkb */
-    );
+extern int
+ExprResolveVModMask(ExprDef *expr, ExprResult *val_rtrn,
+                    struct xkb_keymap *xkb);
 
-extern int ExprResolveBoolean(ExprDef * /* expr */ ,
-                              ExprResult * /* val_rtrn */
-    );
+extern int
+ExprResolveBoolean(ExprDef *expr, ExprResult *val_rtrn);
 
-extern int ExprResolveKeyCode(ExprDef * /* expr */ ,
-                              ExprResult * /* val_rtrn */
-    );
+extern int
+ExprResolveKeyCode(ExprDef *expr, ExprResult *val_rtrn);
 
-extern int ExprResolveInteger(ExprDef * /* expr */ ,
-                              ExprResult * /* val_rtrn */
-    );
+extern int
+ExprResolveInteger(ExprDef *expr, ExprResult *val_rtrn);
 
-extern int ExprResolveLevel(ExprDef * /* expr */ ,
-                            ExprResult * /* val_rtrn */
-    );
+extern int
+ExprResolveLevel(ExprDef *expr, ExprResult *val_rtrn);
 
-extern int ExprResolveGroup(ExprDef * /* expr */ ,
-                            ExprResult * /* val_rtrn */
-    );
+extern int
+ExprResolveGroup(ExprDef *expr, ExprResult *val_rtrn);
 
-extern int ExprResolveButton(ExprDef * /* expr */ ,
-                             ExprResult * /* val_rtrn */
-    );
+extern int
+ExprResolveButton(ExprDef *expr, ExprResult *val_rtrn);
 
-extern int ExprResolveFloat(ExprDef * /* expr */ ,
-                            ExprResult * /* val_rtrn */
-    );
+extern int
+ExprResolveFloat(ExprDef *expr, ExprResult *val_rtrn);
 
-extern int ExprResolveString(ExprDef * /* expr */ ,
-                             ExprResult * /* val_rtrn */
-    );
+extern int
+ExprResolveString(ExprDef *expr, ExprResult *val_rtrn);
 
-extern int ExprResolveKeyName(ExprDef * /* expr */ ,
-                              ExprResult * /* val_rtrn */
-    );
+extern int
+ExprResolveKeyName(ExprDef *expr, ExprResult *val_rtrn);
 
-extern int ExprResolveEnum(ExprDef * /* expr */ ,
-                           ExprResult * /* val_rtrn */ ,
-                           const LookupEntry *  /* values */
-    );
+extern int
+ExprResolveEnum(ExprDef *expr, ExprResult *val_rtrn,
+                const LookupEntry *values);
 
-extern int ExprResolveMask(ExprDef * /* expr */ ,
-                           ExprResult * /* val_rtrn */ ,
-                           const LookupEntry * /* values */
-    );
+extern int
+ExprResolveMask(ExprDef *expr, ExprResult *val_rtrn,
+                const LookupEntry *values);
 
-extern int ExprResolveKeySym(ExprDef * /* expr */ ,
-                             ExprResult * /* val_rtrn */
-    );
+extern int ExprResolveKeySym(ExprDef *expr, ExprResult *val_rtrn);
 
 #endif /* EXPR_H */
