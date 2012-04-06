@@ -30,7 +30,6 @@
 #include "xkbpath.h"
 #include "keycodes.h"
 #include "misc.h"
-#include <X11/keysym.h>
 #include "parseutils.h"
 
 /***====================================================================***/

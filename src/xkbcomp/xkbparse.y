@@ -25,10 +25,10 @@
  ********************************************************/
 
 %{
-#define DEBUG 1
 #ifdef DEBUG
-#define	YYDEBUG 1
+#define YYDEBUG 1
 #endif
+
 #include "parseutils.h"
 #include "xkbmisc.h"
 #include <X11/keysym.h>
