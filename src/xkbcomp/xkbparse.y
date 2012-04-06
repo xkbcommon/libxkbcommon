@@ -120,7 +120,7 @@ extern int yylex(union YYSTYPE *val, struct YYLTYPE *loc, void *scanner);
 	unsigned	 uval;
 	int64_t		 num;
 	char		*str;
-	Atom	 	sval;
+	xkb_atom_t	sval;
 	ParseCommon	*any;
 	ExprDef		*expr;
 	VarDef		*var;
