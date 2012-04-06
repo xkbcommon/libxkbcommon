@@ -35,7 +35,7 @@ typedef struct _CommonInfo
     struct _CommonInfo *next;
 } CommonInfo;
 
-extern Bool
+extern bool
 UseNewField(unsigned field, CommonInfo *oldDefs, CommonInfo *newDefs,
             unsigned *pCollide);
 
@@ -58,16 +58,16 @@ ReportBadType(const char *type, const char *field, const char *name,
 extern int
 ReportBadField(const char *type, const char *field, const char *name);
 
-extern Bool
+extern bool
 ProcessIncludeFile(struct xkb_context *context,
                    IncludeStmt *stmt, unsigned file_type, XkbFile **file_rtrn,
                    unsigned *merge_rtrn);
 
-extern Bool
+extern bool
 FindNamedKey(struct xkb_keymap *xkb, unsigned long name, xkb_keycode_t *kc_rtrn,
-             Bool use_aliases, Bool create, xkb_keycode_t start_from);
+             bool use_aliases, bool create, xkb_keycode_t start_from);
 
-extern Bool
+extern bool
 FindKeyNameForAlias(struct xkb_keymap *xkb, unsigned long lname,
                     unsigned long *real_name);
 

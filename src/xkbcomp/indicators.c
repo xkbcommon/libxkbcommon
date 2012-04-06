@@ -202,9 +202,9 @@ SetIndicatorMapField(LEDInfo * led,
                      char *field, ExprDef * arrayNdx, ExprDef * value)
 {
     ExprResult rtrn;
-    Bool ok;
+    bool ok;
 
-    ok = True;
+    ok = true;
     if ((strcasecmp(field, "modifiers") == 0) ||
         (strcasecmp(field, "mods") == 0))
     {
@@ -301,7 +301,7 @@ SetIndicatorMapField(LEDInfo * led,
                    rtrn.uval, XkbNumIndicators);
             ACTION("Index definition for %s indicator ignored\n",
                     XkbcAtomText(led->name));
-            return False;
+            return false;
         }
         led->indicator = rtrn.uval;
         led->defs.defined |= _LED_Index;
@@ -311,7 +311,7 @@ SetIndicatorMapField(LEDInfo * led,
         ERROR("Unknown field %s in map for %s indicator\n", field,
                XkbcAtomText(led->name));
         ACTION("Definition ignored\n");
-        ok = False;
+        ok = false;
     }
     return ok;
 }
@@ -323,7 +323,7 @@ HandleIndicatorMapDef(IndicatorMapDef * def,
 {
     LEDInfo led, *rtrn;
     VarDef *var;
-    Bool ok;
+    bool ok;
 
     if (def->merge != MergeDefault)
         merge = def->merge;
@@ -332,14 +332,14 @@ HandleIndicatorMapDef(IndicatorMapDef * def,
     led.defs.merge = merge;
     led.name = def->name;
 
-    ok = True;
+    ok = true;
     for (var = def->body; var != NULL; var = (VarDef *) var->common.next)
     {
         ExprResult elem, field;
         ExprDef *arrayNdx;
         if (!ExprResolveLhs(var->name, &elem, &field, &arrayNdx))
         {
-            ok = False;
+            ok = false;
             continue;
         }
         if (elem.str != NULL)
@@ -348,7 +348,7 @@ HandleIndicatorMapDef(IndicatorMapDef * def,
                 ("Cannot set defaults for \"%s\" element in indicator map\n",
                  elem.str);
             ACTION("Assignment to %s.%s ignored\n", elem.str, field.str);
-            ok = False;
+            ok = false;
         }
         else
         {
@@ -366,7 +366,7 @@ HandleIndicatorMapDef(IndicatorMapDef * def,
     return NULL;
 }
 
-Bool
+bool
 CopyIndicatorMapDefs(struct xkb_keymap * xkb, LEDInfo *leds, LEDInfo **unboundRtrn)
 {
     LEDInfo *led, *next;
@@ -381,7 +381,7 @@ CopyIndicatorMapDefs(struct xkb_keymap * xkb, LEDInfo *leds, LEDInfo **unboundRt
     {
         WSGO("Can't allocate indicator maps\n");
         ACTION("Indicator map definitions may be lost\n");
-        return False;
+        return false;
     }
     last = unbound = (unboundRtrn ? *unboundRtrn : NULL);
     while ((last != NULL) && (last->defs.next != NULL))
@@ -433,11 +433,11 @@ CopyIndicatorMapDefs(struct xkb_keymap * xkb, LEDInfo *leds, LEDInfo **unboundRt
     {
         *unboundRtrn = unbound;
     }
-    return True;
+    return true;
 }
 
-Bool
-BindIndicators(struct xkb_keymap * xkb, Bool force, LEDInfo *unbound,
+bool
+BindIndicators(struct xkb_keymap * xkb, bool force, LEDInfo *unbound,
                LEDInfo **unboundRtrn)
 {
     int i;
@@ -566,5 +566,5 @@ BindIndicators(struct xkb_keymap * xkb, Bool force, LEDInfo *unbound,
             free(led);
         }
     }
-    return True;
+    return true;
 }

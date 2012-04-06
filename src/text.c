@@ -92,7 +92,7 @@ XkbcVModMaskText(struct xkb_keymap * xkb, unsigned modMask, unsigned mask)
         return "none";
 
     if (modMask != 0)
-        mm = XkbcModMaskText(modMask, False);
+        mm = XkbcModMaskText(modMask, false);
 
     str = buf;
     buf[0]= '\0';
@@ -158,7 +158,7 @@ XkbcModIndexText(unsigned ndx)
 }
 
 const char *
-XkbcModMaskText(unsigned mask, Bool cFormat)
+XkbcModMaskText(unsigned mask, bool cFormat)
 {
     int i, rem, bit;
     char *str, *buf;

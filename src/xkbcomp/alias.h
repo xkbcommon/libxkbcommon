@@ -41,7 +41,7 @@ HandleAliasDef(KeyAliasDef *def, unsigned merge, unsigned file_id,
 extern void
 ClearAliases(AliasInfo **info);
 
-extern Bool
+extern bool
 MergeAliases(AliasInfo **into, AliasInfo **merge, unsigned how_merge);
 
 extern int

@@ -60,7 +60,7 @@ typedef struct _IndicatorNameInfo
     CommonInfo defs;
     int ndx;
     xkb_atom_t name;
-    Bool virtual;
+    bool virtual;
 } IndicatorNameInfo;
 
 typedef struct _KeyNamesInfo
@@ -142,7 +142,7 @@ InitIndicatorNameInfo(IndicatorNameInfo * ii, KeyNamesInfo * info)
     ii->defs.next = NULL;
     ii->ndx = 0;
     ii->name = XKB_ATOM_NONE;
-    ii->virtual = False;
+    ii->virtual = false;
 }
 
 static void
@@ -198,11 +198,11 @@ FindIndicatorByName(KeyNamesInfo * info, xkb_atom_t name)
     return NULL;
 }
 
-static Bool
+static bool
 AddIndicatorName(KeyNamesInfo * info, IndicatorNameInfo * new)
 {
     IndicatorNameInfo *old;
-    Bool replace;
+    bool replace;
 
     replace = (new->defs.merge == MergeReplace) ||
         (new->defs.merge == MergeOverride);
@@ -227,7 +227,7 @@ AddIndicatorName(KeyNamesInfo * info, IndicatorNameInfo * new)
                 {
                     ACTION("Identical definitions ignored\n");
                 }
-                return True;
+                return true;
             }
             else
             {
@@ -299,7 +299,7 @@ AddIndicatorName(KeyNamesInfo * info, IndicatorNameInfo * new)
             old->name = new->name;
             old->virtual = new->virtual;
         }
-        return True;
+        return true;
     }
     old = new;
     new = NextIndicatorName(info);
@@ -307,12 +307,12 @@ AddIndicatorName(KeyNamesInfo * info, IndicatorNameInfo * new)
     {
         WSGO("Couldn't allocate name for indicator %d\n", old->ndx);
         ACTION("Ignored\n");
-        return False;
+        return false;
     }
     new->name = old->name;
     new->ndx = old->ndx;
     new->virtual = old->virtual;
-    return True;
+    return true;
 }
 
 static void
@@ -366,10 +366,10 @@ FindKeyByLong(KeyNamesInfo * info, unsigned long name)
  * keycode. If the same keys is referred to twice, print a warning.
  * Note that the key's name is stored as a long, the keycode is the index.
  */
-static Bool
+static bool
 AddKeyName(KeyNamesInfo * info,
            xkb_keycode_t kc,
-           char *name, unsigned merge, unsigned fileID, Bool reportCollisions)
+           char *name, unsigned merge, unsigned fileID, bool reportCollisions)
 {
     xkb_keycode_t old;
     unsigned long lval;
@@ -377,7 +377,7 @@ AddKeyName(KeyNamesInfo * info,
     if (kc > info->arraySize && !ResizeKeyNameArrays(info, kc)) {
         ERROR("Couldn't resize KeyNames arrays for keycode %d\n", kc);
         ACTION("Ignoring key %d\n", kc);
-        return False;
+        return false;
     }
     if (kc < info->computedMin)
         info->computedMin = kc;
@@ -402,7 +402,7 @@ AddKeyName(KeyNamesInfo * info,
         {
             if (info->has_alt_forms[kc] || (merge == MergeAltForm))
             {
-                info->has_alt_forms[kc] = True;
+                info->has_alt_forms[kc] = true;
             }
             else if (reportCollisions)
             {
@@ -410,7 +410,7 @@ AddKeyName(KeyNamesInfo * info,
                 ACTION("Later occurences of \"<%s> = %d\" ignored\n",
                         buf, kc);
             }
-            return True;
+            return true;
         }
         if (merge == MergeAugment)
         {
@@ -419,7 +419,7 @@ AddKeyName(KeyNamesInfo * info,
                 WARN("Multiple names for keycode %d\n", kc);
                 ACTION("Using <%s>, ignoring <%s>\n", buf, name);
             }
-            return True;
+            return true;
         }
         else
         {
@@ -439,7 +439,7 @@ AddKeyName(KeyNamesInfo * info,
         {
             info->names[old] = 0;
             info->files[old] = 0;
-            info->has_alt_forms[old] = True;
+            info->has_alt_forms[old] = true;
             if (reportCollisions)
             {
                 WARN("Key name <%s> assigned to multiple keys\n", name);
@@ -455,17 +455,17 @@ AddKeyName(KeyNamesInfo * info,
                 ACTION
                     ("Use 'alternate' keyword to assign the same name to multiple keys\n");
             }
-            return True;
+            return true;
         }
         else
         {
-            info->has_alt_forms[old] = True;
+            info->has_alt_forms[old] = true;
         }
     }
     info->names[kc] = lval;
     info->files[kc] = fileID;
     info->has_alt_forms[kc] = (merge == MergeAltForm);
-    return True;
+    return true;
 }
 
 /***====================================================================***/
@@ -506,7 +506,7 @@ MergeIncludedKeycodes(KeyNamesInfo * into, KeyNamesInfo * from,
             thisMerge = MergeAltForm;
         else
             thisMerge = merge;
-        if (!AddKeyName(into, i, buf, thisMerge, from->fileID, False))
+        if (!AddKeyName(into, i, buf, thisMerge, from->fileID, false))
             into->errorCount++;
     }
     if (from->leds)
@@ -544,20 +544,20 @@ MergeIncludedKeycodes(KeyNamesInfo * into, KeyNamesInfo * from,
  * @param xkb Unused for all but the xkb->flags.
  * @param info Struct to store the key info in.
  */
-static Bool
+static bool
 HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_keymap * xkb, KeyNamesInfo * info)
 {
     unsigned newMerge;
     XkbFile *rtrn;
     KeyNamesInfo included;
-    Bool haveSelf;
+    bool haveSelf;
 
     memset(&included, 0, sizeof(included));
 
-    haveSelf = False;
+    haveSelf = false;
     if ((stmt->file == NULL) && (stmt->map == NULL))
     {
-        haveSelf = True;
+        haveSelf = true;
         included = *info;
         memset(info, 0, sizeof(KeyNamesInfo));
     }
@@ -584,7 +584,7 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_keymap * xkb, KeyNamesInfo 
     else
     {
         info->errorCount += 10; /* XXX: why 10?? */
-        return False;
+        return false;
     }
     /* Do we have more than one include statement? */
     if ((stmt->next != NULL) && (included.errorCount < 1))
@@ -597,7 +597,7 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_keymap * xkb, KeyNamesInfo 
         {
             if ((next->file == NULL) && (next->map == NULL))
             {
-                haveSelf = True;
+                haveSelf = true;
                 MergeIncludedKeycodes(&included, info, next->merge);
                 ClearKeyNamesInfo(info);
             }
@@ -614,7 +614,7 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_keymap * xkb, KeyNamesInfo 
             {
                 info->errorCount += 10; /* XXX: Why 10?? */
                 ClearKeyNamesInfo(&included);
-                return False;
+                return false;
             }
         }
     }
@@ -652,7 +652,7 @@ HandleKeycodeDef(KeycodeDef * stmt, unsigned merge, KeyNamesInfo * info)
             merge = stmt->merge;
     }
     return AddKeyName(info, stmt->value, stmt->name, merge, info->fileID,
-                      True);
+                      true);
 }
 
 #define	MIN_KEYCODE_DEF		0
@@ -770,7 +770,7 @@ HandleIndicatorNameDef(IndicatorNameDef * def,
         info->errorCount++;
         ERROR("Name specified for illegal indicator index %d\n", def->ndx);
         ACTION("Ignored\n");
-        return False;
+        return false;
     }
     InitIndicatorNameInfo(&ii, info);
     ii.ndx = def->ndx;
@@ -785,8 +785,8 @@ HandleIndicatorNameDef(IndicatorNameDef * def,
     free(tmp.str);
     ii.virtual = def->virtual;
     if (!AddIndicatorName(info, &ii))
-        return False;
-    return True;
+        return false;
+    return true;
 }
 
 /**
@@ -873,9 +873,9 @@ HandleKeycodesFile(XkbFile * file,
  * @param result The effective keycodes, as gathered from the file.
  * @param merge Merge strategy.
  *
- * @return True on success, False otherwise.
+ * @return true on success, false otherwise.
  */
-Bool
+bool
 CompileKeycodes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
 {
     KeyNamesInfo info; /* contains all the info after parsing */
@@ -905,7 +905,7 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
         else
         {
             WSGO("Cannot create struct xkb_names in CompileKeycodes\n");
-            return False;
+            return false;
         }
         if (info.leds)
         {
@@ -934,8 +934,8 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
         if (info.aliases)
             ApplyAliases(xkb, &info.aliases);
         ClearKeyNamesInfo(&info);
-        return True;
+        return true;
     }
     ClearKeyNamesInfo(&info);
-    return False;
+    return false;
 }

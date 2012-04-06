@@ -87,7 +87,7 @@ extern IndicatorMapDef *
 IndicatorMapCreate(xkb_atom_t name, VarDef *body);
 
 extern IndicatorNameDef *
-IndicatorNameCreate(int ndx, ExprDef *name, Bool virtual);
+IndicatorNameCreate(int ndx, ExprDef *name, bool virtual);
 
 extern ExprDef *
 ActionCreate(xkb_atom_t name, ExprDef *args);

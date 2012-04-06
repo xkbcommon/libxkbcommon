@@ -240,12 +240,12 @@ XkbcCopyKeyType(struct xkb_key_type * from, struct xkb_key_type * into)
     return Success;
 }
 
-Bool
+bool
 XkbcResizeKeySyms(struct xkb_keymap * xkb, xkb_keycode_t key,
                   unsigned int needed)
 {
     if (xkb->map->key_sym_map[key].size_syms >= needed)
-        return True;
+        return true;
 
     xkb->map->key_sym_map[key].syms =
         uTypedRecalloc(xkb->map->key_sym_map[key].syms,
@@ -254,11 +254,11 @@ XkbcResizeKeySyms(struct xkb_keymap * xkb, xkb_keycode_t key,
                        xkb_keysym_t);
     if (!xkb->map->key_sym_map[key].syms) {
         xkb->map->key_sym_map[key].size_syms = 0;
-        return False;
+        return false;
     }
     xkb->map->key_sym_map[key].size_syms = needed;
 
-    return True;
+    return true;
 }
 
 union xkb_action *

@@ -45,9 +45,9 @@
  * @param file_rtrn Returns the key map to be used.
  * @param merge_rtrn Always returns stmt->merge.
  *
- * @return True on success or False otherwise.
+ * @return true on success or false otherwise.
  */
-Bool
+bool
 ProcessIncludeFile(struct xkb_context *context,
                    IncludeStmt * stmt,
                    unsigned file_type,
@@ -61,14 +61,14 @@ ProcessIncludeFile(struct xkb_context *context,
     {
         ERROR("Can't find file \"%s\" for %s include\n", stmt->file,
                 XkbDirectoryForInclude(file_type));
-        return False;
+        return false;
     }
     /* parse the file */
     if ((XKBParseFile(file, stmt->file, &rtrn) == 0) || (rtrn == NULL))
     {
         ERROR("Error interpreting include file \"%s\"\n", stmt->file);
         fclose(file);
-        return False;
+        return false;
     }
     fclose(file);
 
@@ -95,7 +95,7 @@ ProcessIncludeFile(struct xkb_context *context,
         {
             ERROR("No %s named \"%s\" in the include file \"%s\"\n",
                    XkbcConfigText(file_type), stmt->map, stmt->file);
-            return False;
+            return false;
         }
     }
     else if ((rtrn->common.next != NULL) && (warningLevel > 5))
@@ -109,14 +109,14 @@ ProcessIncludeFile(struct xkb_context *context,
         ERROR("Include file wrong type (expected %s, got %s)\n",
                XkbcConfigText(file_type), XkbcConfigText(mapToUse->type));
         ACTION("Include file \"%s\" ignored\n", stmt->file);
-        return False;
+        return false;
     }
     /* FIXME: we have to check recursive includes here (or somewhere) */
 
-    mapToUse->compiled = True;
+    mapToUse->compiled = true;
     *file_rtrn = mapToUse;
     *merge_rtrn = stmt->merge;
-    return True;
+    return true;
 }
 
 /***====================================================================***/
@@ -126,7 +126,7 @@ ReportNotArray(const char *type, const char *field, const char *name)
 {
     ERROR("The %s %s field is not an array\n", type, field);
     ACTION("Ignoring illegal assignment in %s\n", name);
-    return False;
+    return false;
 }
 
 int
@@ -134,7 +134,7 @@ ReportShouldBeArray(const char *type, const char *field, const char *name)
 {
     ERROR("Missing subscript for %s %s\n", type, field);
     ACTION("Ignoring illegal assignment in %s\n", name);
-    return False;
+    return false;
 }
 
 int
@@ -143,7 +143,7 @@ ReportBadType(const char *type, const char *field,
 {
     ERROR("The %s %s field must be a %s\n", type, field, wanted);
     ACTION("Ignoring illegal assignment in %s\n", name);
-    return False;
+    return false;
 }
 
 int
@@ -151,18 +151,18 @@ ReportBadField(const char *type, const char *field, const char *name)
 {
     ERROR("Unknown %s field %s in %s\n", type, field, name);
     ACTION("Ignoring assignment to unknown field in %s\n", name);
-    return False;
+    return false;
 }
 
 /***====================================================================***/
 
-Bool
+bool
 UseNewField(unsigned field,
             CommonInfo * oldDefs, CommonInfo * newDefs, unsigned *pCollide)
 {
-    Bool useNew;
+    bool useNew;
 
-    useNew = False;
+    useNew = false;
     if (oldDefs->defined & field)
     {
         if (newDefs->defined & field)
@@ -173,11 +173,11 @@ UseNewField(unsigned field,
                 *pCollide |= field;
             }
             if (newDefs->merge != MergeAugment)
-                useNew = True;
+                useNew = true;
         }
     }
     else if (newDefs->defined & field)
-        useNew = True;
+        useNew = true;
     return useNew;
 }
 
@@ -222,18 +222,18 @@ AddCommonInfo(CommonInfo * old, CommonInfo * new)
  *
  * @param name The 4-letter name of the key as a long.
  * @param kc_rtrn Set to the keycode if the key was found, otherwise 0.
- * @param use_aliases True if the key aliases should be searched too.
- * @param create If True and the key is not found, it is added to the
+ * @param use_aliases true if the key aliases should be searched too.
+ * @param create If true and the key is not found, it is added to the
  *        xkb->names at the first free keycode.
  * @param start_from Keycode to start searching from.
  *
- * @return True if found, False otherwise.
+ * @return true if found, false otherwise.
  */
-Bool
+bool
 FindNamedKey(struct xkb_keymap * xkb,
              unsigned long name,
              xkb_keycode_t *kc_rtrn,
-             Bool use_aliases, Bool create, xkb_keycode_t start_from)
+             bool use_aliases, bool create, xkb_keycode_t start_from)
 {
     unsigned n;
 
@@ -243,7 +243,7 @@ FindNamedKey(struct xkb_keymap * xkb,
     }
     else if (start_from > xkb->max_key_code)
     {
-        return False;
+        return false;
     }
 
     *kc_rtrn = 0;               /* some callers rely on this */
@@ -256,14 +256,14 @@ FindNamedKey(struct xkb_keymap * xkb,
             if (tmp == name)
             {
                 *kc_rtrn = n;
-                return True;
+                return true;
             }
         }
         if (use_aliases)
         {
             unsigned long new_name;
             if (FindKeyNameForAlias(xkb, name, &new_name))
-                return FindNamedKey(xkb, new_name, kc_rtrn, False, create, 0);
+                return FindNamedKey(xkb, new_name, kc_rtrn, false, create, 0);
         }
     }
     if (create)
@@ -278,7 +278,7 @@ FindNamedKey(struct xkb_keymap * xkb,
                     ACTION("Key \"%s\" not automatically created\n",
                             longText(name));
                 }
-                return False;
+                return false;
             }
         }
         /* Find first unused keycode and store our key here */
@@ -290,14 +290,14 @@ FindNamedKey(struct xkb_keymap * xkb,
                 LongToKeyName(name, buf);
                 memcpy(xkb->names->keys[n].name, buf, XkbKeyNameLength);
                 *kc_rtrn = n;
-                return True;
+                return true;
             }
         }
     }
-    return False;
+    return false;
 }
 
-Bool
+bool
 FindKeyNameForAlias(struct xkb_keymap * xkb, unsigned long lname,
                     unsigned long *real_name)
 {
@@ -315,9 +315,9 @@ FindKeyNameForAlias(struct xkb_keymap * xkb, unsigned long lname,
             if (strncmp(name, a->alias, XkbKeyNameLength) == 0)
             {
                 *real_name = KeyNameToLong(a->real);
-                return True;
+                return true;
             }
         }
     }
-    return False;
+    return false;
 }

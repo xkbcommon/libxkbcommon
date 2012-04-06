@@ -42,7 +42,7 @@ struct xkb_keymap *
 CompileKeymap(struct xkb_context *context, XkbFile *file, unsigned merge)
 {
     unsigned have;
-    Bool ok;
+    bool ok;
     unsigned required, legal;
     unsigned mainType;
     const char *mainName;
@@ -79,7 +79,7 @@ CompileKeymap(struct xkb_context *context, XkbFile *file, unsigned merge)
     default:
         ERROR("Cannot compile %s alone into an XKM file\n",
                XkbcConfigText(mainType));
-        return False;
+        return false;
     }
     have = 0;
     ok = 1;
@@ -186,7 +186,7 @@ CompileKeymap(struct xkb_context *context, XkbFile *file, unsigned merge)
 
     xkb->defined = have;
 
-    ok = BindIndicators(xkb, True, unbound, NULL);
+    ok = BindIndicators(xkb, true, unbound, NULL);
     if (!ok)
         goto err;
 

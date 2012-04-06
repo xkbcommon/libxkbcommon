@@ -96,21 +96,21 @@ InputLineAddChar(InputLine *line,int ch)
 				(int)((l)->line[(l)->num_line++]= (c)):\
 				InputLineAddChar(l,c))
 
-static Bool
-GetInputLine(FILE *file,InputLine *line,Bool checkbang)
+static bool
+GetInputLine(FILE *file,InputLine *line,bool checkbang)
 {
      int ch;
-     Bool endOfFile,spacePending,slashPending,inComment;
+     bool endOfFile,spacePending,slashPending,inComment;
 
-     endOfFile= False;
+     endOfFile= false;
      while ((!endOfFile)&&(line->num_line==0)) {
-	spacePending= slashPending= inComment= False;
+	spacePending= slashPending= inComment= false;
 	while (((ch=getc(file))!='\n')&&(ch!=EOF)) {
 	    if (ch=='\\') {
 		if ((ch=getc(file))==EOF)
 		    break;
 		if (ch=='\n') {
-		    inComment= False;
+		    inComment= false;
 		    ch= ' ';
 		    line->line_num++;
 		}
@@ -119,21 +119,21 @@ GetInputLine(FILE *file,InputLine *line,Bool checkbang)
 		continue;
 	    if (ch=='/') {
 		if (slashPending) {
-		    inComment= True;
-		    slashPending= False;
+		    inComment= true;
+		    slashPending= false;
 		}
 		else {
-		    slashPending= True;
+		    slashPending= true;
 		}
 		continue;
 	    }
 	    else if (slashPending) {
 		if (spacePending) {
 		    ADD_CHAR(line,' ');
-		    spacePending= False;
+		    spacePending= false;
 		}
 		ADD_CHAR(line,'/');
-		slashPending= False;
+		slashPending= false;
 	    }
 	    if (isspace(ch)) {
 		while (isspace(ch)&&(ch!='\n')&&(ch!=EOF)) {
@@ -142,13 +142,13 @@ GetInputLine(FILE *file,InputLine *line,Bool checkbang)
 		if (ch==EOF)
 		    break;
 		if ((ch!='\n')&&(line->num_line>0))
-		    spacePending= True;
+		    spacePending= true;
 		ungetc(ch,file);
 	    }
 	    else {
 		if (spacePending) {
 		    ADD_CHAR(line,' ');
-		    spacePending= False;
+		    spacePending= false;
 		}
 		if (checkbang && ch=='!') {
 		    if (line->num_line!=0) {
@@ -163,13 +163,13 @@ GetInputLine(FILE *file,InputLine *line,Bool checkbang)
 	    }
 	}
 	if (ch==EOF)
-	     endOfFile= True;
+	     endOfFile= true;
 /*	else line->num_line++;*/
      }
      if ((line->num_line==0)&&(endOfFile))
-	return False;
+	return false;
       ADD_CHAR(line,'\0');
-      return True;
+      return true;
 }
 
 /***====================================================================***/
@@ -255,7 +255,7 @@ SetUpRemap(InputLine *line,RemapSpec *remap)
    int ndx;
    char *strtok_buf;
 #ifdef DEBUG
-   Bool found;
+   bool found;
 #endif
 
 
@@ -266,7 +266,7 @@ SetUpRemap(InputLine *line,RemapSpec *remap)
    remap->number = len;
    while ((tok = strtok_r(str, " ", &strtok_buf)) != NULL) {
 #ifdef DEBUG
-	found= False;
+	found= false;
 #endif
 	str= NULL;
 	if (strcmp(tok,"=")==0)
@@ -289,7 +289,7 @@ SetUpRemap(InputLine *line,RemapSpec *remap)
 		    ndx = 0;
                 }
 #ifdef DEBUG
-		found= True;
+		found= true;
 #endif
 		if (present&(1<<i)) {
 		    if ((i == LAYOUT && l_ndx_present&(1<<ndx)) ||
@@ -347,7 +347,7 @@ SetUpRemap(InputLine *line,RemapSpec *remap)
    remap->number++;
 }
 
-static Bool
+static bool
 MatchOneOf(char *wanted,char *vals_defined)
 {
     char *str, *next;
@@ -364,14 +364,14 @@ MatchOneOf(char *wanted,char *vals_defined)
 	    len= strlen(str);
 	}
 	if ((len==want_len)&&(strncmp(wanted,str,len)==0))
-	    return True;
+	    return true;
     }
-    return False;
+    return false;
 }
 
 /***====================================================================***/
 
-static Bool
+static bool
 CheckLine(	InputLine *		line,
 		RemapSpec *		remap,
 		XkbRF_RulePtr		rule,
@@ -381,7 +381,7 @@ CheckLine(	InputLine *		line,
     int nread, i;
     FileSpec tmp;
     char *strtok_buf;
-    Bool append = False;
+    bool append = false;
 
     if (line->line[0]=='!') {
         if (line->line[1] == '$' ||
@@ -389,14 +389,14 @@ CheckLine(	InputLine *		line,
             char *gname = strchr(line->line, '$');
             char *words = strchr(gname, ' ');
             if(!words)
-                return False;
+                return false;
             *words++ = '\0';
             for (; *words; words++) {
                 if (*words != '=' && *words != ' ')
                     break;
             }
             if (*words == '\0')
-                return False;
+                return false;
             group->name = uDupString(gname);
             group->words = uDupString(words);
             for (i = 1, words = group->words; *words; words++) {
@@ -406,17 +406,17 @@ CheckLine(	InputLine *		line,
                  }
             }
             group->number = i;
-            return True;
+            return true;
         } else {
 	    SetUpRemap(line,remap);
-	    return False;
+	    return false;
         }
     }
 
     if (remap->num_remap==0) {
 	PR_DEBUG("Must have a mapping before first line of data\n");
 	PR_DEBUG("Illegal line of data ignored\n");
-	return False;
+	return false;
     }
     memset(&tmp, 0, sizeof(FileSpec));
     str= line->line;
@@ -433,12 +433,12 @@ CheckLine(	InputLine *		line,
 	}
 	tmp.name[remap->remap[nread].word]= tok;
 	if (*tok == '+' || *tok == '|')
-	    append = True;
+	    append = true;
     }
     if (nread<remap->num_remap) {
 	PR_DEBUG1("Too few words on a line: %s\n", line->line);
 	PR_DEBUG("line ignored\n");
-	return False;
+	return false;
     }
 
     rule->flags= 0;
@@ -469,7 +469,7 @@ CheckLine(	InputLine *		line,
 	        rule->variant_num = remap->remap[i].index;
         }
     }
-    return True;
+    return true;
 }
 
 static char *
@@ -497,7 +497,7 @@ squeeze_spaces(char *p1)
    *p1 = '\0';
 }
 
-static Bool
+static bool
 MakeMultiDefs(XkbRF_MultiDefsPtr mdefs, XkbRF_VarDefsPtr defs)
 {
    memset(mdefs, 0, sizeof(XkbRF_MultiDefsRec));
@@ -513,7 +513,7 @@ MakeMultiDefs(XkbRF_MultiDefsPtr mdefs, XkbRF_VarDefsPtr defs)
            int i;
            p = uDupString(defs->layout);
            if (p == NULL)
-              return False;
+              return false;
            squeeze_spaces(p);
            mdefs->layout[1] = p;
            for (i = 2; i <= XkbNumKbdGroups; i++) {
@@ -537,7 +537,7 @@ MakeMultiDefs(XkbRF_MultiDefsPtr mdefs, XkbRF_VarDefsPtr defs)
            int i;
            p = uDupString(defs->variant);
            if (p == NULL)
-              return False;
+              return false;
            squeeze_spaces(p);
            mdefs->variant[1] = p;
            for (i = 2; i <= XkbNumKbdGroups; i++) {
@@ -552,7 +552,7 @@ MakeMultiDefs(XkbRF_MultiDefsPtr mdefs, XkbRF_VarDefsPtr defs)
               *p = '\0';
        }
    }
-   return True;
+   return true;
 }
 
 static void
@@ -589,7 +589,7 @@ XkbRF_ApplyRule(	XkbRF_RulePtr 		rule,
     Apply(rule->keymap,   &names->keymap);
 }
 
-static Bool
+static bool
 CheckGroup(	XkbRF_RulesPtr          rules,
 		const char * 		group_name,
 		const char * 		name)
@@ -604,13 +604,13 @@ CheckGroup(	XkbRF_RulesPtr          rules,
        }
    }
    if (i == rules->num_groups)
-       return False;
+       return false;
    for (i = 0, p = group->words; i < group->number; i++, p += strlen(p)+1) {
        if (! strcmp(p, name)) {
-           return True;
+           return true;
        }
    }
-   return False;
+   return false;
 }
 
 static int
@@ -619,13 +619,13 @@ XkbRF_CheckApplyRule(	XkbRF_RulePtr 		rule,
 			struct xkb_component_names *	names,
 			XkbRF_RulesPtr          rules)
 {
-    Bool pending = False;
+    bool pending = false;
 
     if (rule->model != NULL) {
         if(mdefs->model == NULL)
             return 0;
         if (strcmp(rule->model, "*") == 0) {
-            pending = True;
+            pending = true;
         } else {
             if (rule->model[0] == '$') {
                if (!CheckGroup(rules, rule->model, mdefs->model))
@@ -648,7 +648,7 @@ XkbRF_CheckApplyRule(	XkbRF_RulePtr 		rule,
 	   *mdefs->layout[rule->layout_num] == '\0')
 	    return 0;
         if (strcmp(rule->layout, "*") == 0) {
-            pending = True;
+            pending = true;
         } else {
             if (rule->layout[0] == '$') {
                if (!CheckGroup(rules, rule->layout,
@@ -665,7 +665,7 @@ XkbRF_CheckApplyRule(	XkbRF_RulePtr 		rule,
 	    *mdefs->variant[rule->variant_num] == '\0')
 	    return 0;
         if (strcmp(rule->variant, "*") == 0) {
-            pending = True;
+            pending = true;
         } else {
             if (rule->variant[0] == '$') {
                if (!CheckGroup(rules, rule->variant,
@@ -831,7 +831,7 @@ XkbRF_SubstituteVars(char *name, XkbRF_MultiDefsPtr mdefs)
 
 /***====================================================================***/
 
-Bool
+bool
 XkbcRF_GetComponents(	XkbRF_RulesPtr		rules,
 			XkbRF_VarDefsPtr	defs,
 			struct xkb_component_names *	names)
@@ -911,7 +911,7 @@ XkbcRF_AddGroup(XkbRF_RulesPtr	rules)
     return &rules->groups[rules->num_groups++];
 }
 
-Bool
+bool
 XkbcRF_LoadRules(FILE *file, XkbRF_RulesPtr rules)
 {
 InputLine	line;
@@ -920,11 +920,11 @@ XkbRF_RuleRec	trule,*rule;
 XkbRF_GroupRec  tgroup,*group;
 
     if (!(rules && file))
-	return False;
+        return false;
     memset(&remap, 0, sizeof(RemapSpec));
     memset(&tgroup, 0, sizeof(XkbRF_GroupRec));
     InitInputLine(&line);
-    while (GetInputLine(file,&line,True)) {
+    while (GetInputLine(file, &line, true)) {
 	if (CheckLine(&line,&remap,&trule,&tgroup)) {
             if (tgroup.number) {
 	        if ((group= XkbcRF_AddGroup(rules))!=NULL) {
@@ -941,7 +941,7 @@ XkbRF_GroupRec  tgroup,*group;
 	line.num_line= 0;
     }
     FreeInputLine(&line);
-    return True;
+    return true;
 }
 
 static void

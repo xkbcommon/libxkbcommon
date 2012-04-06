@@ -27,7 +27,7 @@ authorization from the authors.
 #ifndef _XKBMISC_H_
 #define _XKBMISC_H_
 
-#include <X11/Xdefs.h>
+#include <stdbool.h>
 #include <X11/Xfuncproto.h>
 
 #include "xkbcommon/xkbcommon.h"
@@ -39,7 +39,7 @@ typedef uint32_t xkb_atom_t;
 
 /***====================================================================***/
 
-extern Bool
+extern bool
 XkbcComputeEffectiveMap(struct xkb_keymap * xkb, struct xkb_key_type * type,
                         unsigned char *map_rtrn);
 
@@ -48,7 +48,7 @@ XkbcComputeEffectiveMap(struct xkb_keymap * xkb, struct xkb_key_type * type,
 extern int
 XkbcInitCanonicalKeyTypes(struct xkb_keymap * xkb, unsigned which, int keypadVMod);
 
-extern Bool
+extern bool
 XkbcVirtualModsToReal(struct xkb_keymap * xkb, unsigned virtual_mask,
                       unsigned *mask_rtrn);
 
@@ -68,7 +68,7 @@ _XkbcKSCheckCase(xkb_keysym_t sym);
 #define XkbKSIsDeadKey(k) \
     (((k) >= XK_dead_grave) && ((k) <= XK_dead_semivoiced_sound))
 
-extern Bool
+extern bool
 XkbcNameMatchesPattern(char *name, char *ptrn);
 
 /***====================================================================***/
@@ -94,7 +94,7 @@ extern const char *
 XkbcModIndexText(unsigned ndx);
 
 extern const char *
-XkbcModMaskText(unsigned mask, Bool cFormat);
+XkbcModMaskText(unsigned mask, bool cFormat);
 
 extern const char *
 XkbcConfigText(unsigned config);

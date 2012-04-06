@@ -94,7 +94,7 @@ xkb_canonicalise_components(struct xkb_component_names * names,
                                              old ? old->types : NULL);
 }
 
-Bool
+bool
 XkbcComputeEffectiveMap(struct xkb_keymap * xkb, struct xkb_key_type * type,
                         unsigned char *map_rtrn)
 {
@@ -103,11 +103,11 @@ XkbcComputeEffectiveMap(struct xkb_keymap * xkb, struct xkb_key_type * type,
     struct xkb_kt_map_entry * entry = NULL;
 
     if (!xkb || !type || !xkb->server)
-        return False;
+        return false;
 
     if (type->mods.vmods != 0) {
         if (!XkbcVirtualModsToReal(xkb, type->mods.vmods, &tmp))
-            return False;
+            return false;
 
         type->mods.mask = tmp | type->mods.real_mods;
         entry = type->map;
@@ -115,13 +115,13 @@ XkbcComputeEffectiveMap(struct xkb_keymap * xkb, struct xkb_key_type * type,
             tmp = 0;
             if (entry->mods.vmods != 0) {
                 if (!XkbcVirtualModsToReal(xkb, entry->mods.vmods, &tmp))
-                    return False;
+                    return false;
                 if (tmp == 0) {
-                    entry->active = False;
+                    entry->active = false;
                     continue;
                 }
             }
-            entry->active = True;
+            entry->active = true;
             entry->mods.mask = (entry->mods.real_mods | tmp) & type->mods.mask;
         }
     }
@@ -135,5 +135,5 @@ XkbcComputeEffectiveMap(struct xkb_keymap * xkb, struct xkb_key_type * type,
                 map_rtrn[type->map[i].mods.mask] = type->map[i].level;
     }
 
-    return True;
+    return true;
 }

@@ -29,8 +29,9 @@
 
 /***====================================================================***/
 
+#include <stdbool.h>
 #include <stdio.h>
-#include <X11/Xdefs.h>
+
 #include <X11/Xfuncproto.h>
 
 extern void *
@@ -54,7 +55,7 @@ recalloc(void *ptr, size_t old_size, size_t new_size);
 
 /***====================================================================***/
 
-extern Bool
+extern bool
 uSetErrorFile(char *name);
 
 #define INFO 			uInformation

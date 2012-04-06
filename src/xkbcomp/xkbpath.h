@@ -27,6 +27,7 @@
 #ifndef _XKBPATH_H_
 #define _XKBPATH_H_ 1
 
+#include <stdbool.h>
 #include <stdio.h>
 
 #include "XKBcommonint.h"
@@ -38,7 +39,7 @@ extern FILE *
 XkbFindFileInPath(struct xkb_context *context, const char *name,
                   unsigned type, char **pathRtrn);
 
-extern Bool
+extern bool
 XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
                    char *nextop_rtrn, char **extra_data);
 

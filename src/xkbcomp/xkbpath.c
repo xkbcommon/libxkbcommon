@@ -41,7 +41,7 @@
  * @param nextop_rtrn Set to the next operation in the complete statement.
  * @param extra_data Set to the string between ( and ), if any.
  *
- * @return True if parsing was succcessful, False for an illegal string.
+ * @return true if parsing was succcessful, false for an illegal string.
  *
  * Example: "evdev+aliases(qwerty)"
  *      str_inout = aliases(qwerty)
@@ -58,7 +58,7 @@
  *      nextop_retrn = ""
  *
  */
-Bool
+bool
 XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
                    char *nextop_rtrn, char **extra_data)
 {
@@ -112,7 +112,7 @@ XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
         else if (str[0] == '(')
         {
             free(*extra_data);
-            return False;
+            return false;
         }
         else
         {
@@ -124,7 +124,7 @@ XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
             {
                 free(*file_rtrn);
                 free(*extra_data);
-                return False;
+                return false;
             }
             *tmp++ = '\0';
             *map_rtrn = uDupString(str);
@@ -135,8 +135,8 @@ XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
     else if ((*nextop_rtrn == '|') || (*nextop_rtrn == '+'))
         *str_inout = next;
     else
-        return False;
-    return True;
+        return false;
+    return true;
 }
 
 /***====================================================================***/

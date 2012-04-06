@@ -53,7 +53,7 @@ static int outCount = 0;
 static char *preMsg = NULL;
 static char *prefix = NULL;
 
-Bool
+bool
 uSetErrorFile(char *name)
 {
     if ((errorFile != NULL) && (errorFile != stderr))
@@ -68,9 +68,9 @@ uSetErrorFile(char *name)
     if (errorFile == NULL)
     {
         errorFile = stderr;
-        return (False);
+        return false;
     }
-    return (True);
+    return true;
 }
 
 void

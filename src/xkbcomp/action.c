@@ -36,7 +36,7 @@
 #include "action.h"
 #include "misc.h"
 
-static Bool actionsInitialized;
+static bool actionsInitialized;
 static ExprDef constTrue;
 static ExprDef constFalse;
 
@@ -124,23 +124,23 @@ static const LookupEntry fieldStrings[] = {
     { NULL,               0             }
 };
 
-static Bool
+static bool
 stringToValue(const LookupEntry tab[], const char *string,
               unsigned *value_rtrn)
 {
     const LookupEntry *entry;
 
     if (!string)
-        return False;
+        return false;
 
     for (entry = tab; entry->name != NULL; entry++) {
         if (strcasecmp(entry->name, string) == 0) {
             *value_rtrn = entry->result;
-            return True;
+            return true;
         }
     }
 
-    return False;
+    return false;
 }
 
 static const char *
@@ -155,13 +155,13 @@ valueToString(const LookupEntry tab[], unsigned value)
     return "unknown";
 }
 
-static Bool
+static bool
 stringToAction(const char *str, unsigned *type_rtrn)
 {
     return stringToValue(actionStrings, str, type_rtrn);
 }
 
-static Bool
+static bool
 stringToField(const char *str, unsigned *field_rtrn)
 {
     return stringToValue(fieldStrings, str, field_rtrn);
@@ -175,43 +175,43 @@ fieldText(unsigned field)
 
 /***====================================================================***/
 
-static Bool
+static bool
 ReportMismatch(unsigned action, unsigned field, const char *type)
 {
     ERROR("Value of %s field must be of type %s\n", fieldText(field), type);
     ACTION("Action %s definition ignored\n", XkbcActionTypeText(action));
-    return False;
+    return false;
 }
 
-static Bool
+static bool
 ReportIllegal(unsigned action, unsigned field)
 {
     ERROR("Field %s is not defined for an action of type %s\n",
            fieldText(field), XkbcActionTypeText(action));
     ACTION("Action definition ignored\n");
-    return False;
+    return false;
 }
 
-static Bool
+static bool
 ReportActionNotArray(unsigned action, unsigned field)
 {
     ERROR("The %s field in the %s action is not an array\n",
            fieldText(field), XkbcActionTypeText(action));
     ACTION("Action definition ignored\n");
-    return False;
+    return false;
 }
 
-static Bool
+static bool
 ReportNotFound(unsigned action, unsigned field, const char *what,
                const char *bad)
 {
     ERROR("%s named %s not found\n", what, bad);
     ACTION("Ignoring the %s field of an %s action\n", fieldText(field),
             XkbcActionTypeText(action));
-    return False;
+    return false;
 }
 
-static Bool
+static bool
 HandleNoAction(struct xkb_keymap * xkb,
                struct xkb_any_action * action,
                unsigned field, ExprDef * array_ndx, ExprDef * value)
@@ -219,7 +219,7 @@ HandleNoAction(struct xkb_keymap * xkb,
     return ReportIllegal(action->type, field);
 }
 
-static Bool
+static bool
 CheckLatchLockFlags(unsigned action,
                     unsigned field, ExprDef * value, unsigned *flags_inout)
 {
@@ -231,17 +231,17 @@ CheckLatchLockFlags(unsigned action,
     else if (field == F_LatchToLock)
         tmp = XkbSA_LatchToLock;
     else
-        return False;           /* WSGO! */
+        return false;           /* WSGO! */
     if (!ExprResolveBoolean(value, &result))
         return ReportMismatch(action, field, "boolean");
     if (result.uval)
         *flags_inout |= tmp;
     else
         *flags_inout &= ~tmp;
-    return True;
+    return true;
 }
 
-static Bool
+static bool
 CheckModifierField(struct xkb_keymap * xkb,
                    unsigned action,
                    ExprDef * value,
@@ -259,17 +259,17 @@ CheckModifierField(struct xkb_keymap * xkb,
 
             *mods_rtrn = 0;
             *flags_inout |= XkbSA_UseModMapMods;
-            return True;
+            return true;
         }
     }
     if (!ExprResolveVModMask(value, &rtrn, xkb))
         return ReportMismatch(action, F_Modifiers, "modifier mask");
     *mods_rtrn = rtrn.uval;
     *flags_inout &= ~XkbSA_UseModMapMods;
-    return True;
+    return true;
 }
 
-static Bool
+static bool
 HandleSetLatchMods(struct xkb_keymap * xkb,
                    struct xkb_any_action * action,
                    unsigned field, ExprDef * array_ndx, ExprDef * value)
@@ -297,9 +297,9 @@ HandleSetLatchMods(struct xkb_keymap * xkb,
         if (CheckLatchLockFlags(action->type, field, value, &rtrn))
         {
             act->flags = rtrn;
-            return True;
+            return true;
         }
-        return False;
+        return false;
     case F_Modifiers:
         t1 = act->flags;
         if (CheckModifierField(xkb, action->type, value, &t1, &t2))
@@ -307,14 +307,14 @@ HandleSetLatchMods(struct xkb_keymap * xkb,
             act->flags = t1;
             act->real_mods = act->mask = (t2 & 0xff);
             act->vmods = (t2 >> 8) & 0xffff;
-            return True;
+            return true;
         }
-        return False;
+        return false;
     }
     return ReportIllegal(action->type, field);
 }
 
-static Bool
+static bool
 HandleLockMods(struct xkb_keymap * xkb,
                struct xkb_any_action * action,
                unsigned field, ExprDef * array_ndx, ExprDef * value)
@@ -334,14 +334,14 @@ HandleLockMods(struct xkb_keymap * xkb,
             act->flags = t1;
             act->real_mods = act->mask = (t2 & 0xff);
             act->vmods = (t2 >> 8) & 0xffff;
-            return True;
+            return true;
         }
-        return False;
+        return false;
     }
     return ReportIllegal(action->type, field);
 }
 
-static Bool
+static bool
 CheckGroupField(unsigned action,
                 ExprDef * value, unsigned *flags_inout, int *grp_rtrn)
 {
@@ -367,10 +367,10 @@ CheckGroupField(unsigned action,
         *grp_rtrn = rtrn.ival;
     else
         *grp_rtrn = rtrn.ival - 1;
-    return True;
+    return true;
 }
 
-static Bool
+static bool
 HandleSetLatchGroup(struct xkb_keymap * xkb,
                     struct xkb_any_action * action,
                     unsigned field, ExprDef * array_ndx, ExprDef * value)
@@ -399,23 +399,23 @@ HandleSetLatchGroup(struct xkb_keymap * xkb,
         if (CheckLatchLockFlags(action->type, field, value, &rtrn))
         {
             act->flags = rtrn;
-            return True;
+            return true;
         }
-        return False;
+        return false;
     case F_Group:
         t1 = act->flags;
         if (CheckGroupField(action->type, value, &t1, &t2))
         {
             act->flags = t1;
 	    act->group = t2;
-            return True;
+            return true;
         }
-        return False;
+        return false;
     }
     return ReportIllegal(action->type, field);
 }
 
-static Bool
+static bool
 HandleLockGroup(struct xkb_keymap * xkb,
                 struct xkb_any_action * action,
                 unsigned field, ExprDef * array_ndx, ExprDef * value)
@@ -434,21 +434,21 @@ HandleLockGroup(struct xkb_keymap * xkb,
         {
             act->flags = t1;
 	    act->group = t2;
-            return True;
+            return true;
         }
-        return False;
+        return false;
     }
     return ReportIllegal(action->type, field);
 }
 
-static Bool
+static bool
 HandleMovePtr(struct xkb_keymap * xkb,
               struct xkb_any_action * action,
               unsigned field, ExprDef * array_ndx, ExprDef * value)
 {
     ExprResult rtrn;
     struct xkb_pointer_action *act;
-    Bool absolute;
+    bool absolute;
 
     act = (struct xkb_pointer_action *) action;
     if ((array_ndx != NULL) && ((field == F_X) || (field == F_Y)))
@@ -457,9 +457,9 @@ HandleMovePtr(struct xkb_keymap * xkb,
     if ((field == F_X) || (field == F_Y))
     {
         if ((value->op == OpNegate) || (value->op == OpUnaryPlus))
-            absolute = False;
+            absolute = false;
         else
-            absolute = True;
+            absolute = true;
         if (!ExprResolveInteger(value, &rtrn))
             return ReportMismatch(action->type, field, "integer");
         if (field == F_X)
@@ -474,7 +474,7 @@ HandleMovePtr(struct xkb_keymap * xkb,
                 act->flags |= XkbSA_MoveAbsoluteY;
             act->y = rtrn.ival;
         }
-        return True;
+        return true;
     }
     else if (field == F_Accel)
     {
@@ -496,7 +496,7 @@ static const LookupEntry lockWhich[] = {
     {NULL, 0}
 };
 
-static Bool
+static bool
 HandlePtrBtn(struct xkb_keymap * xkb,
              struct xkb_any_action * action,
              unsigned field, ExprDef * array_ndx, ExprDef * value)
@@ -516,10 +516,10 @@ HandlePtrBtn(struct xkb_keymap * xkb,
         {
             ERROR("Button must specify default or be in the range 1..5\n");
             ACTION("Illegal button value %d ignored\n", rtrn.ival);
-            return False;
+            return false;
         }
         act->button = rtrn.ival;
-        return True;
+        return true;
     }
     else if ((action->type == XkbSA_LockPtrBtn) && (field == F_Affect))
     {
@@ -529,7 +529,7 @@ HandlePtrBtn(struct xkb_keymap * xkb,
             return ReportMismatch(action->type, field, "lock or unlock");
         act->flags &= ~(XkbSA_LockNoLock | XkbSA_LockNoUnlock);
         act->flags |= rtrn.ival;
-        return True;
+        return true;
     }
     else if (field == F_Count)
     {
@@ -541,10 +541,10 @@ HandlePtrBtn(struct xkb_keymap * xkb,
         {
             ERROR("The count field must have a value in the range 0..255\n");
             ACTION("Illegal count %d ignored\n", rtrn.ival);
-            return False;
+            return false;
         }
         act->count = rtrn.ival;
-        return True;
+        return true;
     }
     return ReportIllegal(action->type, field);
 }
@@ -556,7 +556,7 @@ static const LookupEntry ptrDflts[] = {
     {NULL, 0}
 };
 
-static Bool
+static bool
 HandleSetPtrDflt(struct xkb_keymap * xkb,
                  struct xkb_any_action * action,
                  unsigned field, ExprDef * array_ndx, ExprDef * value)
@@ -572,7 +572,7 @@ HandleSetPtrDflt(struct xkb_keymap * xkb,
         if (!ExprResolveEnum(value, &rtrn, ptrDflts))
             return ReportMismatch(action->type, field, "pointer component");
         act->affect = rtrn.uval;
-        return True;
+        return true;
     }
     else if ((field == F_Button) || (field == F_Value))
     {
@@ -597,19 +597,19 @@ HandleSetPtrDflt(struct xkb_keymap * xkb,
         {
             ERROR("New default button value must be in the range 1..5\n");
             ACTION("Illegal default button value %d ignored\n", rtrn.ival);
-            return False;
+            return false;
         }
         if (rtrn.ival == 0)
         {
             ERROR("Cannot set default pointer button to \"default\"\n");
             ACTION("Illegal default button setting ignored\n");
-            return False;
+            return false;
         }
         if (value->op == OpNegate)
 	    act->value = -rtrn.ival;
         else
 	    act->value = rtrn.ival;
-        return True;
+        return true;
     }
     return ReportIllegal(action->type, field);
 }
@@ -628,7 +628,7 @@ static const LookupEntry isoNames[] = {
     {NULL, 0},
 };
 
-static Bool
+static bool
 HandleISOLock(struct xkb_keymap * xkb,
               struct xkb_any_action * action,
               unsigned field, ExprDef * array_ndx, ExprDef * value)
@@ -650,9 +650,9 @@ HandleISOLock(struct xkb_keymap * xkb,
             act->flags = flags & (~XkbSA_ISODfltIsGroup);
             act->real_mods = mods & 0xff;
             act->vmods = (mods >> 8) & 0xff;
-            return True;
+            return true;
         }
-        return False;
+        return false;
     case F_Group:
         if (array_ndx != NULL)
             return ReportActionNotArray(action->type, field);
@@ -661,21 +661,21 @@ HandleISOLock(struct xkb_keymap * xkb,
         {
             act->flags = flags | XkbSA_ISODfltIsGroup;
             act->group = group;
-            return True;
+            return true;
         }
-        return False;
+        return false;
     case F_Affect:
         if (array_ndx != NULL)
             return ReportActionNotArray(action->type, field);
         if (!ExprResolveMask(value, &rtrn, isoNames))
             return ReportMismatch(action->type, field, "keyboard component");
         act->affect = (~rtrn.uval) & XkbSA_ISOAffectMask;
-        return True;
+        return true;
     }
     return ReportIllegal(action->type, field);
 }
 
-static Bool
+static bool
 HandleSwitchScreen(struct xkb_keymap * xkb,
                    struct xkb_any_action * action,
                    unsigned field, ExprDef * array_ndx, ExprDef * value)
@@ -706,13 +706,13 @@ HandleSwitchScreen(struct xkb_keymap * xkb,
         {
             ERROR("Screen index must be in the range 1..255\n");
             ACTION("Illegal screen value %d ignored\n", rtrn.ival);
-            return False;
+            return false;
         }
         if (value->op == OpNegate)
 	    act->screen = -rtrn.ival;
         else
 	    act->screen = rtrn.ival;
-        return True;
+        return true;
     }
     else if (field == F_Same)
     {
@@ -724,7 +724,7 @@ HandleSwitchScreen(struct xkb_keymap * xkb,
             act->flags &= ~XkbSA_SwitchApplication;
         else
             act->flags |= XkbSA_SwitchApplication;
-        return True;
+        return true;
     }
     return ReportIllegal(action->type, field);
 }
@@ -750,7 +750,7 @@ const LookupEntry ctrlNames[] = {
     {NULL, 0}
 };
 
-static Bool
+static bool
 HandleSetLockControls(struct xkb_keymap * xkb,
                       struct xkb_any_action * action,
                       unsigned field, ExprDef * array_ndx, ExprDef * value)
@@ -766,7 +766,7 @@ HandleSetLockControls(struct xkb_keymap * xkb,
         if (!ExprResolveMask(value, &rtrn, ctrlNames))
             return ReportMismatch(action->type, field, "controls mask");
         act->ctrls = rtrn.uval;
-        return True;
+        return true;
     }
     return ReportIllegal(action->type, field);
 }
@@ -781,7 +781,7 @@ static const LookupEntry evNames[] = {
     {NULL, 0}
 };
 
-static Bool
+static bool
 HandleActionMessage(struct xkb_keymap * xkb,
                     struct xkb_any_action * action,
                     unsigned field, ExprDef * array_ndx, ExprDef * value)
@@ -800,7 +800,7 @@ HandleActionMessage(struct xkb_keymap * xkb,
         act->flags &= ~(XkbSA_MessageOnPress | XkbSA_MessageOnRelease);
         act->flags =
             rtrn.uval & (XkbSA_MessageOnPress | XkbSA_MessageOnRelease);
-        return True;
+        return true;
     case F_GenKeyEvent:
         if (array_ndx != NULL)
             return ReportActionNotArray(action->type, field);
@@ -810,7 +810,7 @@ HandleActionMessage(struct xkb_keymap * xkb,
             act->flags |= XkbSA_MessageGenKeyEvent;
         else
             act->flags &= ~XkbSA_MessageGenKeyEvent;
-        return True;
+        return true;
     case F_Data:
         if (array_ndx == NULL)
         {
@@ -826,7 +826,7 @@ HandleActionMessage(struct xkb_keymap * xkb,
                 }
                 strncpy((char *) act->message, rtrn.str, 6);
             }
-            return True;
+            return true;
         }
         else
         {
@@ -835,14 +835,14 @@ HandleActionMessage(struct xkb_keymap * xkb,
             {
                 ERROR("Array subscript must be integer\n");
                 ACTION("Illegal subscript ignored\n");
-                return False;
+                return false;
             }
             ndx = rtrn.uval;
             if (ndx > 5)
             {
                 ERROR("An action message is at most 6 bytes long\n");
                 ACTION("Attempt to use data[%d] ignored\n", ndx);
-                return False;
+                return false;
             }
             if (!ExprResolveInteger(value, &rtrn))
                 return ReportMismatch(action->type, field, "integer");
@@ -850,16 +850,16 @@ HandleActionMessage(struct xkb_keymap * xkb,
             {
                 ERROR("Message data must be in the range 0..255\n");
                 ACTION("Illegal datum %d ignored\n", rtrn.ival);
-                return False;
+                return false;
             }
             act->message[ndx] = rtrn.uval;
         }
-        return True;
+        return true;
     }
     return ReportIllegal(action->type, field);
 }
 
-static Bool
+static bool
 HandleRedirectKey(struct xkb_keymap * xkb,
                   struct xkb_any_action * action,
                   unsigned field, ExprDef * array_ndx, ExprDef * value)
@@ -880,13 +880,13 @@ HandleRedirectKey(struct xkb_keymap * xkb,
         if (!ExprResolveKeyName(value, &rtrn))
             return ReportMismatch(action->type, field, "key name");
         tmp = KeyNameToLong(rtrn.keyName.name);
-        if (!FindNamedKey(xkb, tmp, &kc, True, CreateKeyNames(xkb), 0))
+        if (!FindNamedKey(xkb, tmp, &kc, true, CreateKeyNames(xkb), 0))
         {
             return ReportNotFound(action->type, field, "Key",
                                   XkbcKeyNameText(rtrn.keyName.name));
         }
         act->new_key = kc;
-        return True;
+        return true;
     case F_ModsToClear:
     case F_Modifiers:
         t1 = 0;
@@ -904,14 +904,14 @@ HandleRedirectKey(struct xkb_keymap * xkb,
                 act->vmods |= t2;
             else
                 act->vmods &= ~t2;
-            return True;
+            return true;
         }
-        return True;
+        return true;
     }
     return ReportIllegal(action->type, field);
 }
 
-static Bool
+static bool
 HandleDeviceBtn(struct xkb_keymap * xkb,
                 struct xkb_any_action * action,
                 unsigned field, ExprDef * array_ndx, ExprDef * value)
@@ -931,10 +931,10 @@ HandleDeviceBtn(struct xkb_keymap * xkb,
         {
             ERROR("Button must specify default or be in the range 1..255\n");
             ACTION("Illegal button value %d ignored\n", rtrn.ival);
-            return False;
+            return false;
         }
         act->button = rtrn.ival;
-        return True;
+        return true;
     }
     else if ((action->type == XkbSA_LockDeviceBtn) && (field == F_Affect))
     {
@@ -944,7 +944,7 @@ HandleDeviceBtn(struct xkb_keymap * xkb,
             return ReportMismatch(action->type, field, "lock or unlock");
         act->flags &= ~(XkbSA_LockNoLock | XkbSA_LockNoUnlock);
         act->flags |= rtrn.ival;
-        return True;
+        return true;
     }
     else if (field == F_Count)
     {
@@ -956,10 +956,10 @@ HandleDeviceBtn(struct xkb_keymap * xkb,
         {
             ERROR("The count field must have a value in the range 0..255\n");
             ACTION("Illegal count %d ignored\n", rtrn.ival);
-            return False;
+            return false;
         }
         act->count = rtrn.ival;
-        return True;
+        return true;
     }
     else if (field == F_Device)
     {
@@ -972,15 +972,15 @@ HandleDeviceBtn(struct xkb_keymap * xkb,
         {
             ERROR("Device must specify default or be in the range 1..255\n");
             ACTION("Illegal device value %d ignored\n", rtrn.ival);
-            return False;
+            return false;
         }
         act->device = rtrn.ival;
-        return True;
+        return true;
     }
     return ReportIllegal(action->type, field);
 }
 
-static Bool
+static bool
 HandleDeviceValuator(struct xkb_keymap * xkb,
                      struct xkb_any_action * action,
                      unsigned field, ExprDef * array_ndx, ExprDef * value)
@@ -992,10 +992,10 @@ HandleDeviceValuator(struct xkb_keymap * xkb,
     act = (struct xkb_device_valuator_action *) action;
     /*  XXX - Not yet implemented */
 #endif
-    return False;
+    return false;
 }
 
-static Bool
+static bool
 HandlePrivate(struct xkb_keymap * xkb,
               struct xkb_any_action * action,
               unsigned field, ExprDef * array_ndx, ExprDef * value)
@@ -1011,10 +1011,10 @@ HandlePrivate(struct xkb_keymap * xkb,
         {
             ERROR("Private action type must be in the range 0..255\n");
             ACTION("Illegal type %d ignored\n", rtrn.ival);
-            return False;
+            return false;
         }
         action->type = rtrn.uval;
-        return True;
+        return true;
     case F_Data:
         if (array_ndx == NULL)
         {
@@ -1027,12 +1027,12 @@ HandlePrivate(struct xkb_keymap * xkb,
                 {
                     WARN("A private action has 7 data bytes\n");
                     ACTION("Extra %d bytes ignored\n", len - 6);
-                    return False;
+                    return false;
                 }
                 strncpy((char *) action->data, rtrn.str, sizeof action->data);
             }
             free(rtrn.str);
-            return True;
+            return true;
         }
         else
         {
@@ -1041,14 +1041,14 @@ HandlePrivate(struct xkb_keymap * xkb,
             {
                 ERROR("Array subscript must be integer\n");
                 ACTION("Illegal subscript ignored\n");
-                return False;
+                return false;
             }
             ndx = rtrn.uval;
             if (ndx >= sizeof action->data)
             {
                 ERROR("The data for a private action is 18 bytes long\n");
                 ACTION("Attempt to use data[%d] ignored\n", ndx);
-                return False;
+                return false;
             }
             if (!ExprResolveInteger(value, &rtrn))
                 return ReportMismatch(action->type, field, "integer");
@@ -1056,16 +1056,16 @@ HandlePrivate(struct xkb_keymap * xkb,
             {
                 ERROR("All data for a private action must be 0..255\n");
                 ACTION("Illegal datum %d ignored\n", rtrn.ival);
-                return False;
+                return false;
             }
             action->data[ndx] = rtrn.uval;
-            return True;
+            return true;
         }
     }
     return ReportIllegal(PrivateAction, field);
 }
 
-typedef Bool (*actionHandler) (struct xkb_keymap *xkb,
+typedef bool (*actionHandler) (struct xkb_keymap *xkb,
                                struct xkb_any_action *action, unsigned field,
                                ExprDef *array_ndx, ExprDef *value);
 
@@ -1130,18 +1130,18 @@ HandleActionDef(ExprDef * def,
     {
         ERROR("Expected an action definition, found %s\n",
                exprOpText(def->op));
-        return False;
+        return false;
     }
     str = XkbcAtomText(def->value.action.name);
     if (!str)
     {
         WSGO("Missing name in action definition!!\n");
-        return False;
+        return false;
     }
     if (!stringToAction(str, &tmp))
     {
         ERROR("Unknown action %s\n", str);
-        return False;
+        return false;
     }
     action->type = hndlrType = tmp;
     if (action->type != XkbSA_NoAction)
@@ -1157,7 +1157,7 @@ HandleActionDef(ExprDef * def,
                                                  info->array_ndx,
                                                  info->value))
                 {
-                    return False;
+                    return false;
                 }
             }
             info = info->next;
@@ -1191,7 +1191,7 @@ HandleActionDef(ExprDef * def,
             }
         }
         if (!ExprResolveLhs(field, &elemRtrn, &fieldRtrn, &arrayRtrn))
-            return False;       /* internal error -- already reported */
+            return false;       /* internal error -- already reported */
 
         if (elemRtrn.str != NULL)
         {
@@ -1200,24 +1200,24 @@ HandleActionDef(ExprDef * def,
                     fieldRtrn.str);
             free(elemRtrn.str);
             free(fieldRtrn.str);
-            return False;
+            return false;
         }
         if (!stringToField(fieldRtrn.str, &fieldNdx))
         {
             ERROR("Unknown field name %s\n", uStringText(fieldRtrn.str));
             free(elemRtrn.str);
             free(fieldRtrn.str);
-            return False;
+            return false;
         }
         free(elemRtrn.str);
         free(fieldRtrn.str);
         if (!(*handleAction[hndlrType])
             (xkb, action, fieldNdx, arrayRtrn, value))
         {
-            return False;
+            return false;
         }
     }
-    return True;
+    return true;
 }
 
 /***====================================================================***/
@@ -1237,7 +1237,7 @@ SetActionField(struct xkb_keymap * xkb,
     if (new == NULL)
     {
         WSGO("Couldn't allocate space for action default\n");
-        return False;
+        return false;
     }
     if (strcasecmp(elem, "action") == 0)
         new->action = XkbSA_NoAction;
@@ -1246,21 +1246,21 @@ SetActionField(struct xkb_keymap * xkb,
         if (!stringToAction(elem, &new->action))
         {
             free(new);
-            return False;
+            return false;
         }
         if (new->action == XkbSA_NoAction)
         {
             ERROR("\"%s\" is not a valid field in a NoAction action\n",
                    field);
             free(new);
-            return False;
+            return false;
         }
     }
     if (!stringToField(field, &new->field))
     {
         ERROR("\"%s\" is not a legal field name\n", field);
         free(new);
-        return False;
+        return false;
     }
     new->array_ndx = array_ndx;
     new->value = value;
@@ -1272,7 +1272,7 @@ SetActionField(struct xkb_keymap * xkb,
         *info_rtrn = new;
     else
         old->next = new;
-    return True;
+    return true;
 }
 
 /***====================================================================***/

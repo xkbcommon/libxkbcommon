@@ -79,19 +79,13 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef _XKBCOMMONINT_H_
 #define _XKBCOMMONINT_H_
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 #include <X11/extensions/XKB.h>
 
 #include "xkbcommon/xkbcommon.h"
-
-#ifndef True
-#define True  1
-#define False 0
-#endif
-
-typedef int Bool;
 
 /* From XKM.h */
 #define	XkmFileVersion		15

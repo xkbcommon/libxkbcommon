@@ -166,8 +166,8 @@ FreeKeyInfo(KeyInfo * info)
  * If old is reset, new simply re-uses old's memory. Otherwise, the memory is
  * newly allocated and new points to the new memory areas.
  */
-static Bool
-CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
+static bool
+CopyKeyInfo(KeyInfo * old, KeyInfo * new, bool clearOld)
 {
     int i;
 
@@ -200,7 +200,7 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
                     new->sizeSyms[i] = 0;
                     new->numLevels[i] = 0;
                     new->acts[i] = NULL;
-                    return False;
+                    return false;
                 }
                 memcpy(new->syms[i], old->syms[i],
                        new->sizeSyms[i] * sizeof(xkb_keysym_t));
@@ -212,7 +212,7 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
                     new->sizeSyms[i] = 0;
                     new->numLevels[i] = 0;
                     new->acts[i] = NULL;
-                    return False;
+                    return false;
                 }
                 memcpy(new->symsMapIndex[i], old->symsMapIndex[i],
                        width * sizeof(int));
@@ -226,7 +226,7 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
                     new->symsMapIndex[i] = NULL;
                     new->numLevels[i] = 0;
                     new->acts[i] = NULL;
-                    return False;
+                    return false;
                 }
                 memcpy(new->symsMapNumEntries[i], old->symsMapNumEntries[i],
                        width * sizeof(unsigned int));
@@ -244,14 +244,14 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
                     free(new->symsMapNumEntries[i]);
                     new->symsMapNumEntries[i] = NULL;
                     new->numLevels[i] = 0;
-                    return False;
+                    return false;
                 }
                 memcpy(new->acts[i], old->acts[i],
                        width * sizeof(union xkb_action));
             }
         }
     }
-    return True;
+    return true;
 }
 
 /***====================================================================***/
@@ -259,7 +259,7 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
 typedef struct _ModMapEntry
 {
     CommonInfo defs;
-    Bool haveSymbol;
+    bool haveSymbol;
     int modifier;
     union
     {
@@ -332,9 +332,9 @@ FreeSymbolsInfo(SymbolsInfo * info)
     memset(info, 0, sizeof(SymbolsInfo));
 }
 
-static Bool
+static bool
 ResizeKeyGroup(KeyInfo * key, unsigned int group, unsigned int numLevels,
-               unsigned sizeSyms, Bool forceActions)
+               unsigned sizeSyms, bool forceActions)
 {
     int i;
 
@@ -346,7 +346,7 @@ ResizeKeyGroup(KeyInfo * key, unsigned int group, unsigned int numLevels,
                                           xkb_keysym_t);
         if (!key->syms[group]) {
             key->sizeSyms[group] = 0;
-            return False;
+            return false;
         }
         key->sizeSyms[group] = sizeSyms;
     }
@@ -356,7 +356,7 @@ ResizeKeyGroup(KeyInfo * key, unsigned int group, unsigned int numLevels,
                                                  numLevels,
                                                  int);
         if (!key->symsMapIndex[group])
-            return False;
+            return false;
         for (i = key->numLevels[group]; i < numLevels; i++)
             key->symsMapIndex[group][i] = -1;
     }
@@ -368,7 +368,7 @@ ResizeKeyGroup(KeyInfo * key, unsigned int group, unsigned int numLevels,
                            numLevels,
                            unsigned int);
         if (!key->symsMapNumEntries[group])
-            return False;
+            return false;
     }
     if ((forceActions &&
          (key->numLevels[group] < numLevels || (key->acts[group] == NULL))) ||
@@ -379,14 +379,14 @@ ResizeKeyGroup(KeyInfo * key, unsigned int group, unsigned int numLevels,
                                           numLevels,
                                           union xkb_action);
         if (!key->acts[group])
-            return False;
+            return false;
     }
     if (key->numLevels[group] < numLevels)
         key->numLevels[group] = numLevels;
-    return True;
+    return true;
 }
 
-static Bool
+static bool
 MergeKeyGroups(SymbolsInfo * info,
                KeyInfo * into, KeyInfo * from, unsigned group)
 {
@@ -396,7 +396,7 @@ MergeKeyGroups(SymbolsInfo * info,
     unsigned int resultSize = 0;
     int cur_idx = 0;
     int i;
-    Bool report, clobber;
+    bool report, clobber;
 
     clobber = (from->defs.merge != MergeAugment);
     report = (warningLevel > 9) ||
@@ -424,7 +424,7 @@ MergeKeyGroups(SymbolsInfo * info,
             ACTION("Group %d of key %s not merged\n", group,
                    longText(into->name));
 
-            return False;
+            return false;
         }
         for (i = into->numLevels[group]; i < from->numLevels[group]; i++)
             into->symsMapIndex[group][i] = -1;
@@ -438,7 +438,7 @@ MergeKeyGroups(SymbolsInfo * info,
             WSGO("Could not allocate actions for group merge\n");
             ACTION("Group %d of key %s not merged\n", group,
                     longText(into->name));
-            return False;
+            return false;
         }
         for (i = 0; i < resultWidth; i++)
         {
@@ -507,7 +507,7 @@ MergeKeyGroups(SymbolsInfo * info,
     {
         WSGO("Could not allocate symbols for group merge\n");
         ACTION("Group %d of key %s not merged\n", group, longText(into->name));
-        return False;
+        return false;
     }
 
     for (i = 0; i < resultWidth; i++)
@@ -584,15 +584,15 @@ out:
     into->actsDefined |= (1 << group);
     from->actsDefined &= ~(1 << group);
 
-    return True;
+    return true;
 }
 
-static Bool
+static bool
 MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
 {
     int i;
     unsigned collide = 0;
-    Bool report;
+    bool report;
 
     if (from->defs.merge == MergeReplace)
     {
@@ -606,7 +606,7 @@ MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
         }
         *into = *from;
         memset(from, 0, sizeof(KeyInfo));
-        return True;
+        return true;
     }
     report = ((warningLevel > 9) ||
               ((into->defs.fileID == from->defs.fileID)
@@ -711,10 +711,10 @@ MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
         ACTION("Using %s definition for conflicting fields\n",
                 (from->defs.merge == MergeAugment ? "first" : "last"));
     }
-    return True;
+    return true;
 }
 
-static Bool
+static bool
 AddKeySymbols(SymbolsInfo * info, KeyInfo * key, struct xkb_keymap * xkb)
 {
     unsigned int i;
@@ -742,17 +742,17 @@ AddKeySymbols(SymbolsInfo * info, KeyInfo * key, struct xkb_keymap * xkb)
         {
             WSGO("Could not allocate key symbols descriptions\n");
             ACTION("Some key symbols definitions may be lost\n");
-            return False;
+            return false;
         }
     }
-    return CopyKeyInfo(key, &info->keys[info->nKeys++], True);
+    return CopyKeyInfo(key, &info->keys[info->nKeys++], true);
 }
 
-static Bool
+static bool
 AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
 {
     ModMapEntry *mm;
-    Bool clobber;
+    bool clobber;
 
     clobber = (new->defs.merge != MergeAugment);
     for (mm = info->modMap; mm != NULL; mm = (ModMapEntry *) mm->defs.next)
@@ -781,7 +781,7 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
                         XkbcModIndexText(ignore));
                 mm->modifier = use;
             }
-            return True;
+            return true;
         }
         if ((!new->haveSymbol) && (!mm->haveSymbol) &&
             (new->u.keyName == mm->u.keyName))
@@ -806,7 +806,7 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
                         XkbcModIndexText(ignore));
                 mm->modifier = use;
             }
-            return True;
+            return true;
         }
     }
     mm = uTypedAlloc(ModMapEntry);
@@ -815,12 +815,12 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
         WSGO("Could not allocate modifier map entry\n");
         ACTION("Modifier map for %s will be incomplete\n",
                 XkbcModIndexText(new->modifier));
-        return False;
+        return false;
     }
     *mm = *new;
     mm->defs.next = &info->modMap->defs;
     info->modMap = mm;
-    return True;
+    return true;
 }
 
 /***====================================================================***/
@@ -879,19 +879,19 @@ MergeIncludedSymbols(SymbolsInfo * into, SymbolsInfo * from,
 typedef void (*FileHandler) (XkbFile *rtrn, struct xkb_keymap *xkb,
                              unsigned merge, SymbolsInfo *included);
 
-static Bool
+static bool
 HandleIncludeSymbols(IncludeStmt * stmt,
                      struct xkb_keymap * xkb, SymbolsInfo * info, FileHandler hndlr)
 {
     unsigned newMerge;
     XkbFile *rtrn;
     SymbolsInfo included;
-    Bool haveSelf;
+    bool haveSelf;
 
-    haveSelf = False;
+    haveSelf = false;
     if ((stmt->file == NULL) && (stmt->map == NULL))
     {
-        haveSelf = True;
+        haveSelf = true;
         included = *info;
         memset(info, 0, sizeof(SymbolsInfo));
     }
@@ -921,7 +921,7 @@ HandleIncludeSymbols(IncludeStmt * stmt,
     else
     {
         info->errorCount += 10;
-        return False;
+        return false;
     }
     if ((stmt->next != NULL) && (included.errorCount < 1))
     {
@@ -933,7 +933,7 @@ HandleIncludeSymbols(IncludeStmt * stmt,
         {
             if ((next->file == NULL) && (next->map == NULL))
             {
-                haveSelf = True;
+                haveSelf = true;
                 MergeIncludedSymbols(&included, info, next->merge, xkb);
                 FreeSymbolsInfo(info);
             }
@@ -960,7 +960,7 @@ HandleIncludeSymbols(IncludeStmt * stmt,
             {
                 info->errorCount += 10;
                 FreeSymbolsInfo(&included);
-                return False;
+                return false;
             }
         }
     }
@@ -981,7 +981,7 @@ HandleIncludeSymbols(IncludeStmt * stmt,
 #define	SYMBOLS 1
 #define	ACTIONS	2
 
-static Bool
+static bool
 GetGroupIndex(KeyInfo * key,
               ExprDef * arrayNdx, unsigned what, unsigned *ndx_rtrn)
 {
@@ -1007,26 +1007,26 @@ GetGroupIndex(KeyInfo * key,
             if ((defined & (1 << i)) == 0)
             {
                 *ndx_rtrn = i;
-                return True;
+                return true;
             }
         }
         ERROR("Too many groups of %s for key %s (max %d)\n", name,
                longText(key->name), XkbNumKbdGroups + 1);
         ACTION("Ignoring %s defined for extra groups\n", name);
-        return False;
+        return false;
     }
     if (!ExprResolveGroup(arrayNdx, &tmp))
     {
         ERROR("Illegal group index for %s of key %s\n", name,
                longText(key->name));
         ACTION("Definition with non-integer array index ignored\n");
-        return False;
+        return false;
     }
     *ndx_rtrn = tmp.uval - 1;
-    return True;
+    return true;
 }
 
-static Bool
+static bool
 AddSymbolsToKey(KeyInfo * key,
                 struct xkb_keymap * xkb,
                 char *field,
@@ -1037,35 +1037,35 @@ AddSymbolsToKey(KeyInfo * key,
     long j;
 
     if (!GetGroupIndex(key, arrayNdx, SYMBOLS, &ndx))
-        return False;
+        return false;
     if (value == NULL)
     {
         key->symsDefined |= (1 << ndx);
-        return True;
+        return true;
     }
     if (value->op != ExprKeysymList)
     {
         ERROR("Expected a list of symbols, found %s\n", exprOpText(value->op));
         ACTION("Ignoring symbols for group %d of %s\n", ndx + 1,
                 longText(key->name));
-        return False;
+        return false;
     }
     if (key->sizeSyms[ndx] != 0)
     {
         ERROR("Symbols for key %s, group %d already defined\n",
                longText(key->name), ndx + 1);
         ACTION("Ignoring duplicate definition\n");
-        return False;
+        return false;
     }
     nSyms = value->value.list.nSyms;
     nLevels = value->value.list.nLevels;
     if (((key->numLevels[ndx] < nSyms) || (key->syms[ndx] == NULL)) &&
-        (!ResizeKeyGroup(key, ndx, nLevels, nSyms, False)))
+        (!ResizeKeyGroup(key, ndx, nLevels, nSyms, false)))
     {
         WSGO("Could not resize group %d of key %s to contain %d levels\n",
              ndx + 1, longText(key->name), nSyms);
         ACTION("Symbols lost\n");
-        return False;
+        return false;
     }
     key->symsDefined |= (1 << ndx);
     for (i = 0; i < nLevels; i++) {
@@ -1090,10 +1090,10 @@ AddSymbolsToKey(KeyInfo * key,
     for (j = key->numLevels[ndx] - 1;
          j >= 0 && key->symsMapNumEntries[ndx][j] == 0; j--)
         key->numLevels[ndx]--;
-    return True;
+    return true;
 }
 
-static Bool
+static bool
 AddActionsToKey(KeyInfo * key,
                 struct xkb_keymap * xkb,
                 char *field,
@@ -1105,25 +1105,25 @@ AddActionsToKey(KeyInfo * key,
     struct xkb_any_action *toAct;
 
     if (!GetGroupIndex(key, arrayNdx, ACTIONS, &ndx))
-        return False;
+        return false;
 
     if (value == NULL)
     {
         key->actsDefined |= (1 << ndx);
-        return True;
+        return true;
     }
     if (value->op != ExprActionList)
     {
         WSGO("Bad expression type (%d) for action list value\n", value->op);
         ACTION("Ignoring actions for group %d of %s\n", ndx,
                 longText(key->name));
-        return False;
+        return false;
     }
     if (key->acts[ndx] != NULL)
     {
         WSGO("Actions for key %s, group %d already defined\n",
               longText(key->name), ndx);
-        return False;
+        return false;
     }
     for (nActs = 0, act = value->value.child; act != NULL; nActs++)
     {
@@ -1132,15 +1132,15 @@ AddActionsToKey(KeyInfo * key,
     if (nActs < 1)
     {
         WSGO("Action list but not actions in AddActionsToKey\n");
-        return False;
+        return false;
     }
     if (((key->numLevels[ndx] < nActs) || (key->acts[ndx] == NULL)) &&
-        (!ResizeKeyGroup(key, ndx, nActs, nActs, True)))
+        (!ResizeKeyGroup(key, ndx, nActs, nActs, true)))
     {
         WSGO("Could not resize group %d of key %s\n", ndx,
               longText(key->name));
         ACTION("Actions lost\n");
-        return False;
+        return false;
     }
     key->actsDefined |= (1 << ndx);
 
@@ -1156,7 +1156,7 @@ AddActionsToKey(KeyInfo * key,
         }
         act = (ExprDef *) act->common.next;
     }
-    return True;
+    return true;
 }
 
 static const LookupEntry lockingEntries[] = {
@@ -1181,13 +1181,13 @@ static const LookupEntry repeatEntries[] = {
     {NULL, 0}
 };
 
-static Bool
+static bool
 SetSymbolsField(KeyInfo * key,
                 struct xkb_keymap * xkb,
                 char *field,
                 ExprDef * arrayNdx, ExprDef * value, SymbolsInfo * info)
 {
-    Bool ok = True;
+    bool ok = true;
     ExprResult tmp;
 
     if (strcasecmp(field, "type") == 0)
@@ -1210,7 +1210,7 @@ SetSymbolsField(KeyInfo * key,
                    longText(key->name));
             ACTION("Definition with non-integer array index ignored\n");
             free(tmp.str);
-            return False;
+            return false;
         }
         else
         {
@@ -1256,7 +1256,7 @@ SetSymbolsField(KeyInfo * key,
     {
         ERROR("Radio groups not supported\n");
         ACTION("Ignoring radio group specification for key %s\n", longText(key->name));
-        return False;
+        return false;
     }
     else if (uStrCasePrefix("overlay", field) ||
              uStrCasePrefix("permanentoverlay", field))
@@ -1274,7 +1274,7 @@ SetSymbolsField(KeyInfo * key,
             ERROR("Illegal repeat setting for %s\n",
                    longText(key->name));
             ACTION("Non-boolean repeat setting ignored\n");
-            return False;
+            return false;
         }
         key->repeat = tmp.uval;
         key->defs.defined |= _Key_Repeat;
@@ -1288,7 +1288,7 @@ SetSymbolsField(KeyInfo * key,
             ERROR("Illegal groupsWrap setting for %s\n",
                    longText(key->name));
             ACTION("Non-boolean value ignored\n");
-            return False;
+            return false;
         }
         if (tmp.uval)
             key->groupInfo = XkbWrapIntoRange;
@@ -1305,7 +1305,7 @@ SetSymbolsField(KeyInfo * key,
             ERROR("Illegal groupsClamp setting for %s\n",
                    longText(key->name));
             ACTION("Non-boolean value ignored\n");
-            return False;
+            return false;
         }
         if (tmp.uval)
             key->groupInfo = XkbClampIntoRange;
@@ -1321,7 +1321,7 @@ SetSymbolsField(KeyInfo * key,
             ERROR("Illegal group index for redirect of key %s\n",
                    longText(key->name));
             ACTION("Definition with non-integer group ignored\n");
-            return False;
+            return false;
         }
         key->groupInfo =
             XkbSetGroupInfo(0, XkbRedirectIntoRange, tmp.uval - 1);
@@ -1331,7 +1331,7 @@ SetSymbolsField(KeyInfo * key,
     {
         ERROR("Unknown field %s in a symbol interpretation\n", field);
         ACTION("Definition ignored\n");
-        ok = False;
+        ok = false;
     }
     return ok;
 }
@@ -1345,25 +1345,25 @@ SetGroupName(SymbolsInfo * info, ExprDef * arrayNdx, ExprDef * value)
     {
         WARN("You must specify an index when specifying a group name\n");
         ACTION("Group name definition without array subscript ignored\n");
-        return False;
+        return false;
     }
     if (!ExprResolveGroup(arrayNdx, &tmp))
     {
         ERROR("Illegal index in group name definition\n");
         ACTION("Definition with non-integer array index ignored\n");
-        return False;
+        return false;
     }
     if (!ExprResolveString(value, &name))
     {
         ERROR("Group name must be a string\n");
         ACTION("Illegal name for group %d ignored\n", tmp.uval);
-        return False;
+        return false;
     }
     info->groupNames[tmp.uval - 1 + info->explicit_group] =
         xkb_intern_atom(name.str);
     free(name.str);
 
-    return True;
+    return true;
 }
 
 static int
@@ -1371,7 +1371,7 @@ HandleSymbolsVar(VarDef * stmt, struct xkb_keymap * xkb, SymbolsInfo * info)
 {
     ExprResult elem, field, tmp;
     ExprDef *arrayNdx;
-    Bool ret;
+    bool ret;
 
     if (ExprResolveLhs(stmt->name, &elem, &field, &arrayNdx) == 0)
         return 0;               /* internal error, already reported */
@@ -1394,14 +1394,14 @@ HandleSymbolsVar(VarDef * stmt, struct xkb_keymap * xkb, SymbolsInfo * info)
         {
             ERROR("Illegal setting for global groupsWrap\n");
             ACTION("Non-boolean value ignored\n");
-            ret = False;
+            ret = false;
         }
         else {
             if (tmp.uval)
                 info->groupInfo = XkbWrapIntoRange;
             else
                 info->groupInfo = XkbClampIntoRange;
-            ret = True;
+            ret = true;
         }
     }
     else if ((elem.str == NULL)
@@ -1412,14 +1412,14 @@ HandleSymbolsVar(VarDef * stmt, struct xkb_keymap * xkb, SymbolsInfo * info)
         {
             ERROR("Illegal setting for global groupsClamp\n");
             ACTION("Non-boolean value ignored\n");
-            return False;
+            return false;
         }
         else {
             if (tmp.uval)
                 info->groupInfo = XkbClampIntoRange;
             else
                 info->groupInfo = XkbWrapIntoRange;
-            ret = True;
+            ret = true;
         }
     }
     else if ((elem.str == NULL)
@@ -1430,19 +1430,19 @@ HandleSymbolsVar(VarDef * stmt, struct xkb_keymap * xkb, SymbolsInfo * info)
         {
             ERROR("Illegal group index for global groupsRedirect\n");
             ACTION("Definition with non-integer group ignored\n");
-            ret = False;
+            ret = false;
         }
         else {
             info->groupInfo = XkbSetGroupInfo(0, XkbRedirectIntoRange,
                                               tmp.uval);
-            ret = True;
+            ret = true;
         }
     }
     else if ((elem.str == NULL) && (strcasecmp(field.str, "allownone") == 0))
     {
         ERROR("Radio groups not supported\n");
         ACTION("Ignoring \"allow none\" specification\n");
-        ret = False;
+        ret = false;
     }
     else {
         ret = SetActionField(xkb, elem.str, field.str, arrayNdx, stmt->value,
@@ -1454,11 +1454,11 @@ HandleSymbolsVar(VarDef * stmt, struct xkb_keymap * xkb, SymbolsInfo * info)
     return ret;
 }
 
-static Bool
+static bool
 HandleSymbolsBody(VarDef * def,
                   struct xkb_keymap * xkb, KeyInfo * key, SymbolsInfo * info)
 {
-    Bool ok = True;
+    bool ok = true;
     ExprResult tmp, field;
     ExprDef *arrayNdx;
 
@@ -1493,13 +1493,13 @@ HandleSymbolsBody(VarDef * def,
     return ok;
 }
 
-static Bool
+static bool
 SetExplicitGroup(SymbolsInfo * info, KeyInfo * key)
 {
     unsigned group = info->explicit_group;
 
     if (group == 0)
-        return True;
+        return true;
 
     if ((key->typesDefined | key->symsDefined | key->actsDefined) & ~1)
     {
@@ -1534,7 +1534,7 @@ SetExplicitGroup(SymbolsInfo * info, KeyInfo * key)
     key->acts[0] = NULL;
     key->types[group] = key->types[0];
     key->types[0] = 0;
-    return True;
+    return true;
 }
 
 static int
@@ -1544,57 +1544,57 @@ HandleSymbolsDef(SymbolsDef * stmt,
     KeyInfo key;
 
     InitKeyInfo(&key);
-    CopyKeyInfo(&info->dflt, &key, False);
+    CopyKeyInfo(&info->dflt, &key, false);
     key.defs.merge = stmt->merge;
     key.name = KeyNameToLong(stmt->keyName);
     if (!HandleSymbolsBody((VarDef *) stmt->symbols, xkb, &key, info))
     {
         info->errorCount++;
-        return False;
+        return false;
     }
 
     if (!SetExplicitGroup(info, &key))
     {
         info->errorCount++;
-        return False;
+        return false;
     }
 
     if (!AddKeySymbols(info, &key, xkb))
     {
         info->errorCount++;
-        return False;
+        return false;
     }
-    return True;
+    return true;
 }
 
-static Bool
+static bool
 HandleModMapDef(ModMapDef * def,
                 struct xkb_keymap * xkb, unsigned merge, SymbolsInfo * info)
 {
     ExprDef *key;
     ModMapEntry tmp;
     ExprResult rtrn;
-    Bool ok;
+    bool ok;
 
     if (!LookupModIndex(NULL, def->modifier, TypeInt, &rtrn))
     {
         ERROR("Illegal modifier map definition\n");
         ACTION("Ignoring map for non-modifier \"%s\"\n",
                 XkbcAtomText(def->modifier));
-        return False;
+        return false;
     }
-    ok = True;
+    ok = true;
     tmp.modifier = rtrn.uval;
     for (key = def->keys; key != NULL; key = (ExprDef *) key->common.next)
     {
         if ((key->op == ExprValue) && (key->type == TypeKeyName))
         {
-            tmp.haveSymbol = False;
+            tmp.haveSymbol = false;
             tmp.u.keyName = KeyNameToLong(key->value.keyName);
         }
         else if (ExprResolveKeySym(key, &rtrn))
         {
-            tmp.haveSymbol = True;
+            tmp.haveSymbol = true;
             tmp.u.keySym = rtrn.uval;
         }
         else
@@ -1671,7 +1671,7 @@ HandleSymbolsFile(XkbFile * file,
     }
 }
 
-static Bool
+static bool
 FindKeyForSymbol(struct xkb_keymap * xkb, xkb_keysym_t sym, xkb_keycode_t *kc_rtrn)
 {
     xkb_keycode_t key;
@@ -1687,12 +1687,12 @@ FindKeyForSymbol(struct xkb_keymap * xkb, xkb_keysym_t sym, xkb_keycode_t *kc_rt
                     (XkbKeySymEntry(xkb, key, group, level))[0] != sym)
                     continue;
                 *kc_rtrn = key;
-                return True;
+                return true;
             }
         }
     }
 
-    return False;
+    return false;
 }
 
 /**
@@ -1701,9 +1701,9 @@ FindKeyForSymbol(struct xkb_keymap * xkb, xkb_keysym_t sym, xkb_keycode_t *kc_rt
  * @param atom The atom to search for.
  * @param type_rtrn Set to the index of the name if found.
  *
- * @return True if found, False otherwise.
+ * @return true if found, false otherwise.
  */
-static Bool
+static bool
 FindNamedType(struct xkb_keymap * xkb, xkb_atom_t atom, unsigned *type_rtrn)
 {
     unsigned n;
@@ -1716,11 +1716,11 @@ FindNamedType(struct xkb_keymap * xkb, xkb_atom_t atom, unsigned *type_rtrn)
             if (strcmp(xkb->map->types[n].name, name) == 0)
             {
                 *type_rtrn = n;
-                return True;
+                return true;
             }
         }
     }
-    return False;
+    return false;
 }
 
 /**
@@ -1737,17 +1737,17 @@ FindNamedType(struct xkb_keymap * xkb, xkb_atom_t atom, unsigned *type_rtrn)
  * @param syms The keysyms for the given key (must be size width).
  * @param typeNameRtrn Set to the Atom of the type name.
  *
- * @returns True if a type could be found, False otherwise.
+ * @returns true if a type could be found, false otherwise.
  */
-static Bool
+static bool
 FindAutomaticType(int width, xkb_keysym_t * syms, xkb_atom_t * typeNameRtrn,
-                  Bool * autoType)
+                  bool * autoType)
 {
-    *autoType = False;
+    *autoType = false;
     if ((width == 1) || (width == 0))
     {
         *typeNameRtrn = xkb_intern_atom("ONE_LEVEL");
-        *autoType = True;
+        *autoType = true;
     }
     else if (width == 2)
     {
@@ -1758,12 +1758,12 @@ FindAutomaticType(int width, xkb_keysym_t * syms, xkb_atom_t * typeNameRtrn,
         else if (syms && (XkbKSIsKeypad(syms[0]) || XkbKSIsKeypad(syms[1])))
         {
             *typeNameRtrn = xkb_intern_atom("KEYPAD");
-            *autoType = True;
+            *autoType = true;
         }
         else
         {
             *typeNameRtrn = xkb_intern_atom("TWO_LEVEL");
-            *autoType = True;
+            *autoType = true;
         }
     }
     else if (width <= 4)
@@ -1792,7 +1792,7 @@ static void
 PrepareKeyDef(KeyInfo * key)
 {
     int i, j, width, defined, lastGroup;
-    Bool identical;
+    bool identical;
 
     defined = key->symsDefined | key->actsDefined | key->typesDefined;
     /* get highest group number */
@@ -1868,13 +1868,13 @@ PrepareKeyDef(KeyInfo * key)
     }
     /* If all groups are completely identical remove them all */
     /* exept the first one. */
-    identical = True;
+    identical = true;
     for (i = lastGroup; i > 0; i--)
     {
         if ((key->numLevels[i] != key->numLevels[0]) ||
             (key->types[i] != key->types[0]))
         {
-            identical = False;
+            identical = false;
             break;
         }
         if ((key->syms[i] != key->syms[0]) &&
@@ -1883,7 +1883,7 @@ PrepareKeyDef(KeyInfo * key)
              memcmp(key->syms[i], key->syms[0],
                     sizeof(xkb_keysym_t) * key->sizeSyms[0])))
         {
-            identical = False;
+            identical = false;
             break;
         }
         if ((key->symsMapIndex[i] != key->symsMapIndex[i]) &&
@@ -1891,7 +1891,7 @@ PrepareKeyDef(KeyInfo * key)
              memcmp(key->symsMapIndex[i], key->symsMapIndex[0],
                     key->numLevels[0] * sizeof(int))))
         {
-            identical = False;
+            identical = false;
             continue;
         }
         if ((key->symsMapNumEntries[i] != key->symsMapNumEntries[i]) &&
@@ -1900,7 +1900,7 @@ PrepareKeyDef(KeyInfo * key)
              memcmp(key->symsMapNumEntries[i], key->symsMapNumEntries[0],
                     key->numLevels[0] * sizeof(int))))
         {
-            identical = False;
+            identical = false;
             continue;
         }
         if ((key->acts[i] != key->acts[0]) &&
@@ -1908,7 +1908,7 @@ PrepareKeyDef(KeyInfo * key)
              memcmp(key->acts[i], key->acts[0],
                     sizeof(union xkb_action) * key->numLevels[0])))
         {
-            identical = False;
+            identical = false;
             break;
         }
     }
@@ -1939,7 +1939,7 @@ PrepareKeyDef(KeyInfo * key)
  *
  * This function recurses.
  */
-static Bool
+static bool
 CopySymbolsDef(struct xkb_keymap * xkb, KeyInfo *key, int start_from)
 {
     unsigned int i;
@@ -1947,7 +1947,7 @@ CopySymbolsDef(struct xkb_keymap * xkb, KeyInfo *key, int start_from)
     unsigned int sizeSyms = 0;
     unsigned width, tmp, nGroups;
     struct xkb_key_type * type;
-    Bool haveActions, autoType, useAlias;
+    bool haveActions, autoType, useAlias;
     unsigned types[XkbNumKbdGroups];
     union xkb_action *outActs;
     unsigned int symIndex = 0;
@@ -1963,10 +1963,10 @@ CopySymbolsDef(struct xkb_keymap * xkb, KeyInfo *key, int start_from)
             WARN("Key %s not found in keycodes\n", longText(key->name));
             ACTION("Symbols ignored\n");
         }
-        return False;
+        return false;
     }
 
-    haveActions = False;
+    haveActions = false;
     for (i = width = nGroups = 0; i < XkbNumKbdGroups; i++)
     {
         if (((i + 1) > nGroups)
@@ -1974,8 +1974,8 @@ CopySymbolsDef(struct xkb_keymap * xkb, KeyInfo *key, int start_from)
                 || (key->typesDefined) & (1 << i)))
             nGroups = i + 1;
         if (key->acts[i])
-            haveActions = True;
-        autoType = False;
+            haveActions = true;
+        autoType = false;
         /* Assign the type to the key, if it is missing. */
         if (key->types[i] == XKB_ATOM_NONE)
         {
@@ -2037,7 +2037,7 @@ CopySymbolsDef(struct xkb_keymap * xkb, KeyInfo *key, int start_from)
     {
         WSGO("Could not enlarge symbols for %s (keycode %d)\n",
               longText(key->name), kc);
-        return False;
+        return false;
     }
     if (haveActions)
     {
@@ -2046,7 +2046,7 @@ CopySymbolsDef(struct xkb_keymap * xkb, KeyInfo *key, int start_from)
         {
             WSGO("Could not enlarge actions for %s (key %d)\n",
                   longText(key->name), kc);
-            return False;
+            return false;
         }
         xkb->server->explicit[kc] |= XkbExplicitInterpretMask;
     }
@@ -2134,10 +2134,10 @@ CopySymbolsDef(struct xkb_keymap * xkb, KeyInfo *key, int start_from)
 
     /* do the same thing for the next key */
     CopySymbolsDef(xkb, key, kc + 1);
-    return True;
+    return true;
 }
 
-static Bool
+static bool
 CopyModMapDef(struct xkb_keymap * xkb, ModMapEntry *entry)
 {
     xkb_keycode_t kc;
@@ -2145,7 +2145,7 @@ CopyModMapDef(struct xkb_keymap * xkb, ModMapEntry *entry)
     if ((!entry->haveSymbol)
         &&
         (!FindNamedKey
-         (xkb, entry->u.keyName, &kc, True, CreateKeyNames(xkb), 0)))
+         (xkb, entry->u.keyName, &kc, true, CreateKeyNames(xkb), 0)))
     {
         if (warningLevel >= 5)
         {
@@ -2154,7 +2154,7 @@ CopyModMapDef(struct xkb_keymap * xkb, ModMapEntry *entry)
             ACTION("Modifier map entry for %s not updated\n",
                     XkbcModIndexText(entry->modifier));
         }
-        return False;
+        return false;
     }
     else if (entry->haveSymbol
              && (!FindKeyForSymbol(xkb, entry->u.keySym, &kc)))
@@ -2166,10 +2166,10 @@ CopyModMapDef(struct xkb_keymap * xkb, ModMapEntry *entry)
             ACTION("Modifier map entry for %s not updated\n",
                     XkbcModIndexText(entry->modifier));
         }
-        return False;
+        return false;
     }
     xkb->map->modmap[kc] |= (1 << entry->modifier);
-    return True;
+    return true;
 }
 
 /**
@@ -2179,7 +2179,7 @@ CopyModMapDef(struct xkb_keymap * xkb, ModMapEntry *entry)
  * @param xkb Handle to the keyboard description to store the symbols in.
  * @param merge Merge strategy (e.g. MergeOverride).
  */
-Bool
+bool
 CompileSymbols(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
 {
     unsigned int i;
@@ -2192,7 +2192,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
 
     if (info.nKeys == 0) {
         FreeSymbolsInfo(&info);
-        return False;
+        return false;
     }
 
     if (info.errorCount == 0)
@@ -2204,26 +2204,26 @@ CompileSymbols(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
         {
             WSGO("Can not allocate names in CompileSymbols\n");
             ACTION("Symbols not added\n");
-            return False;
+            return false;
         }
         if (XkbcAllocClientMap(xkb, XkbKeySymsMask | XkbModifierMapMask, 0)
             != Success)
         {
             WSGO("Could not allocate client map in CompileSymbols\n");
             ACTION("Symbols not added\n");
-            return False;
+            return false;
         }
         if (XkbcAllocServerMap(xkb, XkbAllServerInfoMask, 32) != Success)
         {
             WSGO("Could not allocate server map in CompileSymbols\n");
             ACTION("Symbols not added\n");
-            return False;
+            return false;
         }
         if (XkbcAllocControls(xkb, XkbPerKeyRepeatMask) != Success)
         {
             WSGO("Could not allocate controls in CompileSymbols\n");
             ACTION("Symbols not added\n");
-            return False;
+            return false;
         }
 
         /* now copy info into xkb. */
@@ -2276,9 +2276,9 @@ CompileSymbols(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
             }
         }
         FreeSymbolsInfo(&info);
-        return True;
+        return true;
     }
 
     FreeSymbolsInfo(&info);
-    return False;
+    return false;
 }

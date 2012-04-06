@@ -456,9 +456,9 @@ IndicatorMapDecl:	INDICATOR String OBRACE VarDeclList CBRACE SEMI
 		;
 
 IndicatorNameDecl:	INDICATOR Integer EQUALS Expr SEMI
-			{ $$= IndicatorNameCreate($2,$4,False); }
+			{ $$= IndicatorNameCreate($2,$4,false); }
 		|	VIRTUAL INDICATOR Integer EQUALS Expr SEMI
-			{ $$= IndicatorNameCreate($3,$5,True); }
+			{ $$= IndicatorNameCreate($3,$5,true); }
 		;
 
 ShapeDecl	:	SHAPE String OBRACE OutlineList CBRACE SEMI

@@ -230,7 +230,7 @@ typedef struct _IndicatorNameDef
     unsigned merge;
     int ndx;
     ExprDef *name;
-    Bool virtual;
+    bool virtual;
 } IndicatorNameDef;
 
 typedef struct _IndicatorMapDef
@@ -251,28 +251,28 @@ typedef struct _XkbFile
     ParseCommon *defs;
     int id;
     unsigned flags;
-    Bool compiled;
+    bool compiled;
 } XkbFile;
 
 extern struct xkb_keymap *
 CompileKeymap(struct xkb_context *context, XkbFile *file, unsigned merge);
 
-extern Bool
+extern bool
 CompileKeycodes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge);
 
-extern Bool
+extern bool
 CompileKeyTypes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge);
 
 typedef struct _LEDInfo *LEDInfoPtr;
 
-extern Bool
+extern bool
 CompileCompatMap(XkbFile *file, struct xkb_keymap * xkb, unsigned merge,
                  LEDInfoPtr *unboundLEDs);
 
-extern Bool
+extern bool
 CompileSymbols(XkbFile *file, struct xkb_keymap * xkb, unsigned merge);
 
-extern Bool
+extern bool
 UpdateModifiersFromCompat(struct xkb_keymap *xkb);
 
 #endif /* XKBCOMP_H */

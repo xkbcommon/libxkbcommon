@@ -56,7 +56,7 @@ typedef struct _KeyTypeInfo
     int fileID;
     unsigned mask;
     unsigned vmask;
-    Bool groupInfo;
+    bool groupInfo;
     unsigned numLevels;
     unsigned nEntries;
     unsigned szEntries;
@@ -124,7 +124,7 @@ InitKeyTypesInfo(KeyTypesInfo * info, struct xkb_keymap * xkb, KeyTypesInfo * fr
     info->dflt.name = XKB_ATOM_NONE;
     info->dflt.mask = 0;
     info->dflt.vmask = 0;
-    info->dflt.groupInfo = False;
+    info->dflt.groupInfo = false;
     info->dflt.numLevels = 1;
     info->dflt.nEntries = info->dflt.szEntries = 0;
     info->dflt.entries = NULL;
@@ -237,15 +237,15 @@ FindMatchingKeyType(KeyTypesInfo * info, KeyTypeInfo * new)
     return NULL;
 }
 
-static Bool
+static bool
 ReportTypeBadWidth(const char *type, int has, int needs)
 {
     ERROR("Key type \"%s\" has %d levels, must have %d\n", type, has, needs);
     ACTION("Illegal type definition ignored\n");
-    return False;
+    return false;
 }
 
-static Bool
+static bool
 AddKeyType(struct xkb_keymap * xkb, KeyTypesInfo * info, KeyTypeInfo * new)
 {
     KeyTypeInfo *old;
@@ -284,7 +284,7 @@ AddKeyType(struct xkb_keymap * xkb, KeyTypesInfo * info, KeyTypeInfo * new)
     old = FindMatchingKeyType(info, new);
     if (old != NULL)
     {
-        Bool report;
+        bool report;
         if ((new->defs.merge == MergeReplace)
             || (new->defs.merge == MergeOverride))
         {
@@ -303,7 +303,7 @@ AddKeyType(struct xkb_keymap * xkb, KeyTypesInfo * info, KeyTypeInfo * new)
             new->preserve = NULL;
             new->lvlNames = NULL;
             old->defs.next = &next->defs;
-            return True;
+            return true;
         }
         report = (old->defs.fileID == new->defs.fileID) && (warningLevel > 0);
         if (report)
@@ -313,11 +313,11 @@ AddKeyType(struct xkb_keymap * xkb, KeyTypesInfo * info, KeyTypeInfo * new)
             ACTION("Later definition ignored\n");
         }
         FreeKeyTypeInfo(new);
-        return True;
+        return true;
     }
     old = NextKeyType(info);
     if (old == NULL)
-        return False;
+        return false;
     *old = *new;
     old->defs.next = NULL;
     new->nEntries = new->szEntries = 0;
@@ -325,7 +325,7 @@ AddKeyType(struct xkb_keymap * xkb, KeyTypesInfo * info, KeyTypeInfo * new)
     new->szNames = 0;
     new->lvlNames = NULL;
     new->preserve = NULL;
-    return True;
+    return true;
 }
 
 /***====================================================================***/
@@ -359,19 +359,19 @@ MergeIncludedKeyTypes(KeyTypesInfo * into,
 typedef void (*FileHandler) (XkbFile *file, struct xkb_keymap *xkb,
                              unsigned merge, KeyTypesInfo *included);
 
-static Bool
+static bool
 HandleIncludeKeyTypes(IncludeStmt * stmt,
                       struct xkb_keymap * xkb, KeyTypesInfo * info, FileHandler hndlr)
 {
     unsigned newMerge;
     XkbFile *rtrn;
     KeyTypesInfo included;
-    Bool haveSelf;
+    bool haveSelf;
 
-    haveSelf = False;
+    haveSelf = false;
     if ((stmt->file == NULL) && (stmt->map == NULL))
     {
-        haveSelf = True;
+        haveSelf = true;
         included = *info;
         memset(info, 0, sizeof(KeyTypesInfo));
     }
@@ -394,7 +394,7 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
     else
     {
         info->errorCount += 10;
-        return False;
+        return false;
     }
     if ((stmt->next != NULL) && (included.errorCount < 1))
     {
@@ -406,7 +406,7 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
         {
             if ((next->file == NULL) && (next->map == NULL))
             {
-                haveSelf = True;
+                haveSelf = true;
                 MergeIncludedKeyTypes(&included, info, next->merge, xkb);
                 FreeKeyTypesInfo(info);
             }
@@ -425,7 +425,7 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
             {
                 info->errorCount += 10;
                 FreeKeyTypesInfo(&included);
-                return False;
+                return false;
             }
         }
     }
@@ -508,9 +508,9 @@ NextMapEntry(KeyTypeInfo * type)
     return &type->entries[type->nEntries++];
 }
 
-static Bool
+static bool
 AddPreserve(struct xkb_keymap * xkb,
-            KeyTypeInfo * type, PreserveInfo * new, Bool clobber, Bool report)
+            KeyTypeInfo * type, PreserveInfo * new, bool clobber, bool report)
 {
     PreserveInfo *old;
 
@@ -532,7 +532,7 @@ AddPreserve(struct xkb_keymap * xkb,
                       PreserveIndexTxt(xkb, old), TypeTxt(type));
                 ACTION("Ignored\n");
             }
-            return True;
+            return true;
         }
         if (report && (warningLevel > 0))
         {
@@ -556,20 +556,20 @@ AddPreserve(struct xkb_keymap * xkb,
             old->preMods = new->preMods;
             old->preVMods = new->preVMods;
         }
-        return True;
+        return true;
     }
     old = uTypedAlloc(PreserveInfo);
     if (!old)
     {
         WSGO("Couldn't allocate preserve in %s\n", TypeTxt(type));
         ACTION("Preserve[%s] lost\n", PreserveIndexTxt(xkb, new));
-        return False;
+        return false;
     }
     *old = *new;
     old->matchingMapIndex = -1;
     type->preserve =
         (PreserveInfo *) AddCommonInfo(&type->preserve->defs, &old->defs);
-    return True;
+    return true;
 }
 
 /**
@@ -578,12 +578,12 @@ AddPreserve(struct xkb_keymap * xkb,
  * entry is created.
  *
  * @param clobber Overwrite existing entry.
- * @param report True if a warning is to be printed on.
+ * @param report true if a warning is to be printed on.
  */
-static Bool
+static bool
 AddMapEntry(struct xkb_keymap * xkb,
             KeyTypeInfo * type,
-            struct xkb_kt_map_entry * new, Bool clobber, Bool report)
+            struct xkb_kt_map_entry * new, bool clobber, bool report)
 {
     struct xkb_kt_map_entry * old;
 
@@ -612,28 +612,28 @@ AddMapEntry(struct xkb_keymap * xkb,
             WARN("Multiple occurences of map[%s]= %d in %s\n",
                   MapEntryTxt(xkb, new), new->level + 1, TypeTxt(type));
             ACTION("Ignored\n");
-            return True;
+            return true;
         }
         if (clobber)
             old->level = new->level;
-        return True;
+        return true;
     }
     if ((old = NextMapEntry(type)) == NULL)
-        return False;           /* allocation failure, already reported */
+        return false;           /* allocation failure, already reported */
     if (new->level >= type->numLevels)
         type->numLevels = new->level + 1;
     if (new->mods.vmods == 0)
-        old->active = True;
+        old->active = true;
     else
-        old->active = False;
+        old->active = false;
     old->mods.mask = new->mods.real_mods;
     old->mods.real_mods = new->mods.real_mods;
     old->mods.vmods = new->mods.vmods;
     old->level = new->level;
-    return True;
+    return true;
 }
 
-static Bool
+static bool
 SetMapEntry(KeyTypeInfo * type,
             struct xkb_keymap * xkb, ExprDef * arrayNdx, ExprDef * value)
 {
@@ -665,13 +665,13 @@ SetMapEntry(KeyTypeInfo * type,
     {
         ERROR("Level specifications in a key type must be integer\n");
         ACTION("Ignoring malformed level specification\n");
-        return False;
+        return false;
     }
     entry.level = rtrn.ival - 1;
-    return AddMapEntry(xkb, type, &entry, True, True);
+    return AddMapEntry(xkb, type, &entry, true, true);
 }
 
-static Bool
+static bool
 SetPreserve(KeyTypeInfo * type,
             struct xkb_keymap * xkb, ExprDef * arrayNdx, ExprDef * value)
 {
@@ -704,7 +704,7 @@ SetPreserve(KeyTypeInfo * type,
         ERROR("Preserve value in a key type is not a modifier mask\n");
         ACTION("Ignoring preserve[%s] in type %s\n",
                 PreserveIndexTxt(xkb, &new), TypeTxt(type));
-        return False;
+        return false;
     }
     new.preMods = rtrn.uval & 0xff;
     new.preVMods = (rtrn.uval >> 16) & 0xffff;
@@ -724,14 +724,14 @@ SetPreserve(KeyTypeInfo * type,
             INFO("%s\n", PreserveIndexTxt(xkb, &new));
         }
     }
-    return AddPreserve(xkb, type, &new, True, True);
+    return AddPreserve(xkb, type, &new, true, true);
 }
 
 /***====================================================================***/
 
-static Bool
+static bool
 AddLevelName(KeyTypeInfo * type,
-             unsigned level, xkb_atom_t name, Bool clobber, Bool report)
+             unsigned level, xkb_atom_t name, bool clobber, bool report)
 {
     if ((type->lvlNames == NULL) || (type->szNames <= level))
     {
@@ -743,7 +743,7 @@ AddLevelName(KeyTypeInfo * type,
                    TypeTxt(type));
             ACTION("Level names lost\n");
             type->szNames = 0;
-            return False;
+            return false;
         }
         type->szNames = level + 1;
     }
@@ -755,7 +755,7 @@ AddLevelName(KeyTypeInfo * type,
                   level + 1, TypeTxt(type));
             ACTION("Ignored\n");
         }
-        return True;
+        return true;
     }
     else if (type->lvlNames[level] != XKB_ATOM_NONE)
     {
@@ -772,15 +772,15 @@ AddLevelName(KeyTypeInfo * type,
                 ACTION("Using %s, ignoring %s\n", old, new);
         }
         if (!clobber)
-            return True;
+            return true;
     }
     if (level >= type->numLevels)
         type->numLevels = level + 1;
     type->lvlNames[level] = name;
-    return True;
+    return true;
 }
 
-static Bool
+static bool
 SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
 {
     ExprResult rtrn;
@@ -797,11 +797,11 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
         ERROR("Non-string name for level %d in key type %s\n", level + 1,
                XkbcAtomText(type->name));
         ACTION("Ignoring illegal level name definition\n");
-        return False;
+        return false;
     }
     level_name = xkb_intern_atom(rtrn.str);
     free(rtrn.str);
-    return AddLevelName(type, level, level_name, True, True);
+    return AddLevelName(type, level, level_name, true, true);
 }
 
 /***====================================================================***/
@@ -811,7 +811,7 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
  *
  * @param field The field to parse (e.g. modifiers, map, level_name)
  */
-static Bool
+static bool
 SetKeyTypeField(KeyTypeInfo * type,
                 struct xkb_keymap * xkb,
                 char *field,
@@ -832,7 +832,7 @@ SetKeyTypeField(KeyTypeInfo * type,
         {
             ERROR("Key type mask field must be a modifier mask\n");
             ACTION("Key type definition ignored\n");
-            return False;
+            return false;
         }
         mods = tmp.uval & 0xff; /* core mods */
         vmods = (tmp.uval >> 8) & 0xffff; /* xkb virtual mods */
@@ -842,12 +842,12 @@ SetKeyTypeField(KeyTypeInfo * type,
                   XkbcAtomText(type->name));
             ACTION("Using %s, ", TypeMaskTxt(type, xkb));
             INFO("ignoring %s\n", XkbcVModMaskText(xkb, mods, vmods));
-            return False;
+            return false;
         }
         type->mask = mods;
         type->vmask = vmods;
         type->defs.defined |= _KT_Mask;
-        return True;
+        return true;
     }
     else if (strcasecmp(field, "map") == 0)
     {
@@ -867,17 +867,17 @@ SetKeyTypeField(KeyTypeInfo * type,
     }
     ERROR("Unknown field %s in key type %s\n", field, TypeTxt(type));
     ACTION("Definition ignored\n");
-    return False;
+    return false;
 }
 
-static Bool
+static bool
 HandleKeyTypeVar(VarDef * stmt, struct xkb_keymap * xkb, KeyTypesInfo * info)
 {
     ExprResult elem, field;
     ExprDef *arrayNdx;
 
     if (!ExprResolveLhs(stmt->name, &elem, &field, &arrayNdx))
-        return False;           /* internal error, already reported */
+        return false;           /* internal error, already reported */
     if (elem.str && (strcasecmp(elem.str, "type") == 0))
         return SetKeyTypeField(&info->dflt, xkb, field.str, arrayNdx,
                                stmt->value, info);
@@ -892,7 +892,7 @@ HandleKeyTypeVar(VarDef * stmt, struct xkb_keymap * xkb, KeyTypesInfo * info)
                uStringText(field.str));
         ACTION("Ignored\n");
     }
-    return False;
+    return false;
 }
 
 static int
@@ -953,7 +953,7 @@ HandleKeyTypeDef(KeyTypeDef * def,
     if (!HandleKeyTypeBody(def->body, xkb, &type, info))
     {
         info->errorCount++;
-        return False;
+        return false;
     }
 
     /* now copy any appropriate map, preserve or level names from the */
@@ -965,7 +965,7 @@ HandleKeyTypeDef(KeyTypeDef * def,
         if (((dflt->mods.real_mods & type.mask) == dflt->mods.real_mods) &&
             ((dflt->mods.vmods & type.vmask) == dflt->mods.vmods))
         {
-            AddMapEntry(xkb, &type, dflt, False, False);
+            AddMapEntry(xkb, &type, dflt, false, false);
         }
     }
     if (info->dflt.preserve)
@@ -976,7 +976,7 @@ HandleKeyTypeDef(KeyTypeDef * def,
             if (((dflt->indexMods & type.mask) == dflt->indexMods) &&
                 ((dflt->indexVMods & type.vmask) == dflt->indexVMods))
             {
-                AddPreserve(xkb, &type, dflt, False, False);
+                AddPreserve(xkb, &type, dflt, false, false);
             }
             dflt = (PreserveInfo *) dflt->defs.next;
         }
@@ -985,16 +985,16 @@ HandleKeyTypeDef(KeyTypeDef * def,
     {
         if ((i < type.numLevels) && (info->dflt.lvlNames[i] != XKB_ATOM_NONE))
         {
-            AddLevelName(&type, i, info->dflt.lvlNames[i], False, False);
+            AddLevelName(&type, i, info->dflt.lvlNames[i], false, false);
         }
     }
     /* Now add the new keytype to the info struct */
     if (!AddKeyType(xkb, info, &type))
     {
         info->errorCount++;
-        return False;
+        return false;
     }
-    return True;
+    return true;
 }
 
 /**
@@ -1066,7 +1066,7 @@ HandleKeyTypesFile(XkbFile * file,
     }
 }
 
-static Bool
+static bool
 CopyDefToKeyType(struct xkb_keymap * xkb, struct xkb_key_type * type, KeyTypeInfo * def)
 {
     unsigned int i;
@@ -1080,13 +1080,13 @@ CopyDefToKeyType(struct xkb_keymap * xkb, struct xkb_key_type * type, KeyTypeInf
         tmp.mods.real_mods = pre->indexMods;
         tmp.mods.vmods = pre->indexVMods;
         tmp.level = 0;
-        AddMapEntry(xkb, def, &tmp, False, False);
+        AddMapEntry(xkb, def, &tmp, false, false);
         match = FindMatchingMapEntry(def, pre->indexMods, pre->indexVMods);
         if (!match)
         {
             WSGO("Couldn't find matching entry for preserve\n");
             ACTION("Aborting\n");
-            return False;
+            return false;
         }
         pre->matchingMapIndex = match - def->entries;
     }
@@ -1139,7 +1139,7 @@ CopyDefToKeyType(struct xkb_keymap * xkb, struct xkb_key_type * type, KeyTypeInf
     return XkbcComputeEffectiveMap(xkb, type, NULL);
 }
 
-Bool
+bool
 CompileKeyTypes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
 {
     KeyTypesInfo info;
@@ -1167,7 +1167,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
         {
             FreeKeyTypesInfo(&info);
             WSGO("Couldn't allocate client map\n");
-            return False;
+            return false;
         }
         xkb->map->num_types = i;
         if (XkbAllRequiredTypes & (~info.stdPresent))
@@ -1180,7 +1180,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
             {
                 FreeKeyTypesInfo(&info);
                 WSGO("Couldn't initialize canonical key types\n");
-                return False;
+                return false;
             }
             if (missing & XkbOneLevelMask)
                 xkb->map->types[XkbOneLevelIndex].name =
@@ -1211,14 +1211,14 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
             DeleteLevel1MapEntries(def);
             if (!CopyDefToKeyType(xkb, type, def)) {
                 FreeKeyTypesInfo(&info);
-                return False;
+                return false;
             }
             def = (KeyTypeInfo *) def->defs.next;
         }
         FreeKeyTypesInfo(&info);
-        return True;
+        return true;
     }
 
     FreeKeyTypesInfo(&info);
-    return False;
+    return false;
 }

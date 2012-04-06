@@ -66,12 +66,12 @@ extern LEDInfo *
 HandleIndicatorMapDef(IndicatorMapDef *stmt, struct xkb_keymap *xkb,
                       LEDInfo *dflt, LEDInfo *oldLEDs, unsigned mergeMode);
 
-extern Bool
+extern bool
 CopyIndicatorMapDefs(struct xkb_keymap *xkb, LEDInfo *leds,
                      LEDInfo **unboundRtrn);
 
-extern Bool
-BindIndicators(struct xkb_keymap *xkb, Bool force, LEDInfo *unbound,
+extern bool
+BindIndicators(struct xkb_keymap *xkb, bool force, LEDInfo *unbound,
                LEDInfo **unboundRtrn);
 
 #endif /* INDICATORS_H */

@@ -96,14 +96,14 @@ HandleAliasDef(KeyAliasDef * def,
             AliasInfo new;
             InitAliasInfo(&new, merge, file_id, def->alias, def->real);
             HandleCollision(info, &new);
-            return True;
+            return true;
         }
     }
     info = uTypedCalloc(1, AliasInfo);
     if (info == NULL)
     {
         WSGO("Allocation failure in HandleAliasDef\n");
-        return False;
+        return false;
     }
     info->def.fileID = file_id;
     info->def.merge = merge;
@@ -111,7 +111,7 @@ HandleAliasDef(KeyAliasDef * def,
     memcpy(info->alias, def->alias, XkbKeyNameLength);
     memcpy(info->real, def->real, XkbKeyNameLength);
     *info_in = (AliasInfo *) AddCommonInfo(&(*info_in)->def, &info->def);
-    return True;
+    return true;
 }
 
 void
@@ -121,19 +121,19 @@ ClearAliases(AliasInfo ** info_in)
         ClearCommonInfo(&(*info_in)->def);
 }
 
-Bool
+bool
 MergeAliases(AliasInfo ** into, AliasInfo ** merge, unsigned how_merge)
 {
     AliasInfo *tmp;
     KeyAliasDef def;
 
     if ((*merge) == NULL)
-        return True;
+        return true;
     if ((*into) == NULL)
     {
         *into = *merge;
         *merge = NULL;
-        return True;
+        return true;
     }
     memset(&def, 0, sizeof(KeyAliasDef));
     for (tmp = *merge; tmp != NULL; tmp = (AliasInfo *) tmp->def.next)
@@ -145,9 +145,9 @@ MergeAliases(AliasInfo ** into, AliasInfo ** merge, unsigned how_merge)
         memcpy(def.alias, tmp->alias, XkbKeyNameLength);
         memcpy(def.real, tmp->real, XkbKeyNameLength);
         if (!HandleAliasDef(&def, def.merge, tmp->def.fileID, into))
-            return False;
+            return false;
     }
-    return True;
+    return true;
 }
 
 int
@@ -160,7 +160,7 @@ ApplyAliases(struct xkb_keymap * xkb, AliasInfo ** info_in)
     int status;
 
     if (*info_in == NULL)
-        return True;
+        return true;
     nOld = (xkb->names ? xkb->names->num_key_aliases : 0);
     old = (xkb->names ? xkb->names->key_aliases : NULL);
     for (nNew = 0, info = *info_in; info != NULL;
@@ -170,7 +170,7 @@ ApplyAliases(struct xkb_keymap * xkb, AliasInfo ** info_in)
         xkb_keycode_t kc;
 
         lname = KeyNameToLong(info->real);
-        if (!FindNamedKey(xkb, lname, &kc, False, CreateKeyNames(xkb), 0))
+        if (!FindNamedKey(xkb, lname, &kc, false, CreateKeyNames(xkb), 0))
         {
             if (warningLevel > 4)
             {
@@ -182,7 +182,7 @@ ApplyAliases(struct xkb_keymap * xkb, AliasInfo ** info_in)
             continue;
         }
         lname = KeyNameToLong(info->alias);
-        if (FindNamedKey(xkb, lname, &kc, False, False, 0))
+        if (FindNamedKey(xkb, lname, &kc, false, false, 0))
         {
             if (warningLevel > 4)
             {
@@ -216,7 +216,7 @@ ApplyAliases(struct xkb_keymap * xkb, AliasInfo ** info_in)
     {
         ClearCommonInfo(&(*info_in)->def);
         *info_in = NULL;
-        return True;
+        return true;
     }
     status = XkbcAllocNames(xkb, XkbKeyAliasesMask, nOld + nNew);
     if (xkb->names)
@@ -224,7 +224,7 @@ ApplyAliases(struct xkb_keymap * xkb, AliasInfo ** info_in)
     if (status != Success)
     {
         WSGO("Allocation failure in ApplyAliases\n");
-        return False;
+        return false;
     }
     a = xkb->names ? &xkb->names->key_aliases[nOld] : NULL;
     for (info = *info_in; info != NULL; info = (AliasInfo *) info->def.next)
@@ -245,5 +245,5 @@ ApplyAliases(struct xkb_keymap * xkb, AliasInfo ** info_in)
 #endif
     ClearCommonInfo(&(*info_in)->def);
     *info_in = NULL;
-    return True;
+    return true;
 }

@@ -77,7 +77,7 @@ ClearVModInfo(VModInfo * info, struct xkb_keymap * xkb)
  * @param stmt The statement specifying the name and (if any the value).
  * @param mergeMode Merge strategy (e.g. MergeOverride)
  */
-Bool
+bool
 HandleVModDef(VModDef * stmt, struct xkb_keymap *xkb, unsigned mergeMode,
               VModInfo * info)
 {
@@ -97,7 +97,7 @@ HandleVModDef(VModDef * stmt, struct xkb_keymap *xkb, unsigned mergeMode,
             {                   /* already defined */
                 info->available |= bit;
                 if (stmt->value == NULL)
-                    return True;
+                    return true;
                 else
                 {
                     const char *str1;
@@ -106,23 +106,23 @@ HandleVModDef(VModDef * stmt, struct xkb_keymap *xkb, unsigned mergeMode,
                     {
                         str1 = XkbcAtomText(stmt->name);
                         ACTION("Declaration of %s ignored\n", str1);
-                        return False;
+                        return false;
                     }
                     if (mod.uval == srv->vmods[i])
-                        return True;
+                        return true;
 
                     str1 = XkbcAtomText(stmt->name);
                     WARN("Virtual modifier %s multiply defined\n", str1);
-                    str1 = XkbcModMaskText(srv->vmods[i], True);
+                    str1 = XkbcModMaskText(srv->vmods[i], true);
                     if (mergeMode == MergeOverride)
                     {
                         str2 = str1;
-                        str1 = XkbcModMaskText(mod.uval, True);
+                        str1 = XkbcModMaskText(mod.uval, true);
                     }
                     ACTION("Using %s, ignoring %s\n", str1, str2);
                     if (mergeMode == MergeOverride)
                         srv->vmods[i] = mod.uval;
-                    return True;
+                    return true;
                 }
             }
         }
@@ -133,21 +133,21 @@ HandleVModDef(VModDef * stmt, struct xkb_keymap *xkb, unsigned mergeMode,
     {
         ERROR("Too many virtual modifiers defined (maximum %d)\n",
                XkbNumVirtualMods);
-        return False;
+        return false;
     }
     info->defined |= (1 << nextFree);
     info->newlyDefined |= (1 << nextFree);
     info->available |= (1 << nextFree);
     names->vmods[nextFree] = XkbcAtomGetString(stmt->name);
     if (stmt->value == NULL)
-        return True;
+        return true;
     if (ExprResolveModMask(stmt->value, &mod))
     {
         srv->vmods[nextFree] = mod.uval;
-        return True;
+        return true;
     }
     ACTION("Declaration of %s ignored\n", XkbcAtomText(stmt->name));
-    return False;
+    return false;
 }
 
 /**
@@ -155,10 +155,10 @@ HandleVModDef(VModDef * stmt, struct xkb_keymap *xkb, unsigned mergeMode,
  *
  * @param priv Pointer to the xkb data structure.
  * @param field The Atom of the modifier's name (e.g. Atom for LAlt)
- * @param type Must be TypeInt, otherwise return False.
+ * @param type Must be TypeInt, otherwise return false.
  * @param val_rtrn Set to the index of the modifier that matches.
  *
- * @return True on success, False otherwise. If False is returned, val_rtrn is
+ * @return true on success, false otherwise. If false is returned, val_rtrn is
  * undefined.
  */
 static int
@@ -170,7 +170,7 @@ LookupVModIndex(const struct xkb_keymap *xkb, xkb_atom_t field, unsigned type,
 
     if ((xkb == NULL) || (xkb->names == NULL) || (type != TypeInt))
     {
-        return False;
+        return false;
     }
     /* For each named modifier, get the name and compare it to the one passed
      * in. If we get a match, return the index of the modifier.
@@ -182,10 +182,10 @@ LookupVModIndex(const struct xkb_keymap *xkb, xkb_atom_t field, unsigned type,
         if (xkb->names->vmods[i] && strcmp(xkb->names->vmods[i], name) == 0)
         {
             val_rtrn->uval = i;
-            return True;
+            return true;
         }
     }
-    return False;
+    return false;
 }
 
 /**
@@ -195,24 +195,24 @@ LookupVModIndex(const struct xkb_keymap *xkb, xkb_atom_t field, unsigned type,
  * @param priv Pointer to xkb data structure.
  * @param val_rtrn Member uval is set to the mask returned.
  *
- * @return True on success, False otherwise. If False is returned, val_rtrn is
+ * @return true on success, false otherwise. If false is returned, val_rtrn is
  * undefined.
  */
-int
+bool
 LookupVModMask(const void * priv, xkb_atom_t field, unsigned type,
                ExprResult * val_rtrn)
 {
     if (LookupModMask(NULL, field, type, val_rtrn))
     {
-        return True;
+        return true;
     }
     else if (LookupVModIndex(priv, field, type, val_rtrn))
     {
         unsigned ndx = val_rtrn->uval;
         val_rtrn->uval = (1 << (XkbNumModifiers + ndx));
-        return True;
+        return true;
     }
-    return False;
+    return false;
 }
 
 int
@@ -229,7 +229,7 @@ FindKeypadVMod(struct xkb_keymap * xkb)
     return -1;
 }
 
-Bool
+bool
 ResolveVirtualModifier(ExprDef * def, struct xkb_keymap *xkb,
                        ExprResult * val_rtrn, VModInfo * info)
 {
@@ -246,16 +246,16 @@ ResolveVirtualModifier(ExprDef * def, struct xkb_keymap *xkb,
                 strcmp(names->vmods[i], name) == 0)
             {
                 val_rtrn->uval = i;
-                return True;
+                return true;
             }
         }
     }
     if (ExprResolveInteger(def, val_rtrn))
     {
         if (val_rtrn->uval < XkbNumVirtualMods)
-            return True;
+            return true;
         ERROR("Illegal virtual modifier %d (must be 0..%d inclusive)\n",
                val_rtrn->uval, XkbNumVirtualMods - 1);
     }
-    return False;
+    return false;
 }

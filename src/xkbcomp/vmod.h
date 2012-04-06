@@ -42,17 +42,17 @@ InitVModInfo(VModInfo *info, struct xkb_keymap *xkb);
 extern void
 ClearVModInfo(VModInfo *info, struct xkb_keymap *xkb);
 
-extern Bool
+extern bool
 HandleVModDef(VModDef *stmt, struct xkb_keymap *xkb, unsigned mergeMode,
               VModInfo *info);
 
-extern Bool
+extern bool
 ApplyVModDefs(VModInfo *info, struct xkb_keymap *xkb);
 
 extern int
 FindKeypadVMod(struct xkb_keymap *xkb);
 
-extern Bool
+extern bool
 ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *xkb,
                        ExprResult *value_rtrn, VModInfo *info);
 

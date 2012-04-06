@@ -27,7 +27,8 @@ authorization from the authors.
 #ifndef _XKBRULES_H_
 #define _XKBRULES_H_
 
-#include <X11/Xdefs.h>
+#include <stdbool.h>
+
 #include "xkbcommon/xkbcommon.h"
 
 /* From filecommon */
@@ -145,11 +146,11 @@ typedef struct _XkbRF_Rules {
 
 /* Action structures used in the server */
 
-extern Bool
+extern bool
 XkbcRF_GetComponents(XkbRF_RulesPtr rules, XkbRF_VarDefsPtr defs,
                      struct xkb_component_names * names);
 
-extern Bool
+extern bool
 XkbcRF_LoadRules(FILE *file, XkbRF_RulesPtr rules);
 
 extern void

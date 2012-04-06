@@ -32,12 +32,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #define mapSize(m) (sizeof(m) / sizeof(struct xkb_kt_map_entry))
 static struct xkb_kt_map_entry map2Level[]= {
-    { True, ShiftMask, {1, ShiftMask, 0} }
+    { true, ShiftMask, {1, ShiftMask, 0} }
 };
 
 static struct xkb_kt_map_entry mapAlpha[]= {
-    { True, ShiftMask, { 1, ShiftMask, 0 } },
-    { True, LockMask,  { 0, LockMask,  0 } }
+    { true, ShiftMask, { 1, ShiftMask, 0 } },
+    { true, LockMask,  { 0, LockMask,  0 } }
 };
 
 static struct xkb_mods preAlpha[]= {
@@ -47,8 +47,8 @@ static struct xkb_mods preAlpha[]= {
 
 #define NL_VMOD_MASK 0
 static  struct xkb_kt_map_entry mapKeypad[]= {
-    { True,  ShiftMask, { 1, ShiftMask, 0 } },
-    { False, 0,         { 1, 0, NL_VMOD_MASK } }
+    { true,  ShiftMask, { 1, ShiftMask, 0 } },
+    { false, 0,         { 1, 0, NL_VMOD_MASK } }
 };
 
 static struct xkb_key_type canonicalTypes[XkbNumRequiredTypes] = {
@@ -119,12 +119,12 @@ XkbcInitCanonicalKeyTypes(struct xkb_keymap * xkb, unsigned which, int keypadVMo
         if ((keypadVMod >= 0) && (keypadVMod < XkbNumVirtualMods) &&
             (rtrn == Success)) {
             type->mods.vmods = (1 << keypadVMod);
-            type->map[0].active = True;
+            type->map[0].active = true;
             type->map[0].mods.mask = ShiftMask;
             type->map[0].mods.real_mods = ShiftMask;
             type->map[0].mods.vmods = 0;
             type->map[0].level = 1;
-            type->map[1].active = False;
+            type->map[1].active = false;
             type->map[1].mods.mask = 0;
             type->map[1].mods.real_mods = 0;
             type->map[1].mods.vmods = (1 << keypadVMod);
@@ -135,7 +135,7 @@ XkbcInitCanonicalKeyTypes(struct xkb_keymap * xkb, unsigned which, int keypadVMo
     return Success;
 }
 
-Bool
+bool
 XkbcVirtualModsToReal(struct xkb_keymap * xkb, unsigned virtual_mask,
                       unsigned *mask_rtrn)
 {
@@ -143,13 +143,13 @@ XkbcVirtualModsToReal(struct xkb_keymap * xkb, unsigned virtual_mask,
     unsigned mask;
 
     if (!xkb)
-        return False;
+        return false;
     if (virtual_mask == 0) {
         *mask_rtrn = 0;
-        return True;
+        return true;
     }
     if (!xkb->server)
-        return False;
+        return false;
 
     for (i = mask = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1) {
         if (virtual_mask & bit)
@@ -157,7 +157,7 @@ XkbcVirtualModsToReal(struct xkb_keymap * xkb, unsigned virtual_mask,
     }
 
     *mask_rtrn = mask;
-    return True;
+    return true;
 }
 
 /*
@@ -264,7 +264,7 @@ _XkbcKSCheckCase(xkb_keysym_t ks)
 
 #define UNMATCHABLE(c) ((c) == '(' || (c) == ')' || (c) == '/')
 
-Bool
+bool
 XkbcNameMatchesPattern(char *name, char *ptrn)
 {
     while (ptrn[0] != '\0') {
@@ -273,21 +273,21 @@ XkbcNameMatchesPattern(char *name, char *ptrn)
                 ptrn++;
                 continue;
             }
-            return False;
+            return false;
         }
 
         if (ptrn[0] == '?') {
             if (UNMATCHABLE(name[0]))
-                return False;
+                return false;
         }
         else if (ptrn[0] == '*') {
             if (!UNMATCHABLE(name[0]) &&
                 XkbcNameMatchesPattern(name + 1, ptrn))
-                return True;
+                return true;
             return XkbcNameMatchesPattern(name, ptrn + 1);
         }
         else if (ptrn[0] != name[0])
-            return False;
+            return false;
 
         name++;
         ptrn++;

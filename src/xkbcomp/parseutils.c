@@ -28,8 +28,8 @@
 #include "xkbmisc.h"
 #include "xkbpath.h"
 #include "xkbparse.h"
+
 #include <X11/keysym.h>
-#include <X11/Xalloca.h>
 
 ParseCommon *
 AppendStmt(ParseCommon * to, ParseCommon * append)
@@ -348,7 +348,7 @@ IndicatorMapCreate(xkb_atom_t name, VarDef * body)
 }
 
 IndicatorNameDef *
-IndicatorNameCreate(int ndx, ExprDef * name, Bool virtual)
+IndicatorNameCreate(int ndx, ExprDef * name, bool virtual)
 {
     IndicatorNameDef *def;
 
@@ -389,7 +389,7 @@ ActionCreate(xkb_atom_t name, ExprDef * args)
     return NULL;
 }
 
-static Bool
+static bool
 ResizeKeysymList(ExprDef *list, unsigned int extra)
 {
     int i;
@@ -407,7 +407,7 @@ ResizeKeysymList(ExprDef *list, unsigned int extra)
         if (list->value.list.syms == NULL)
         {
             FATAL("Couldn't resize list of symbols for append\n");
-            return False;
+            return false;
         }
     }
     if (list->value.list.nLevels >= list->value.list.szLevels)
@@ -423,7 +423,7 @@ ResizeKeysymList(ExprDef *list, unsigned int extra)
         if (list->value.list.symsMapIndex == NULL)
         {
             FATAL("Couldn't resize keysym index map for append\n");
-            return False;
+            return false;
         }
         list->value.list.symsNumEntries =
             uTypedRecalloc(list->value.list.symsNumEntries,
@@ -433,13 +433,13 @@ ResizeKeysymList(ExprDef *list, unsigned int extra)
         if (list->value.list.symsNumEntries == NULL)
         {
             FATAL("Couldn't resize num keysym entries for append\n");
-            return False;
+            return false;
         }
         for (i = list->value.list.nLevels; i < list->value.list.szLevels; i++)
             list->value.list.symsMapIndex[i] = -1;
     }
 
-    return True;
+    return true;
 }
 
 ExprDef *
@@ -567,9 +567,9 @@ IncludeCreate(char *str, unsigned merge)
     IncludeStmt *incl, *first;
     char *file, *map, *stmt, *tmp, *extra_data;
     char nextop;
-    Bool haveSelf;
+    bool haveSelf;
 
-    haveSelf = False;
+    haveSelf = false;
     incl = first = NULL;
     file = map = NULL;
     tmp = str;
@@ -582,7 +582,7 @@ IncludeCreate(char *str, unsigned merge)
             {
                 if (haveSelf)
                     goto BAIL;
-                haveSelf = True;
+                haveSelf = true;
             }
             if (first == NULL)
                 first = incl = uTypedAlloc(IncludeStmt);
@@ -696,7 +696,7 @@ CreateXKBFile(int type, char *name, ParseCommon * defs, unsigned flags)
         file->name = name;
         file->defs = defs;
         file->id = fileID++;
-        file->compiled = False;
+        file->compiled = false;
         file->flags = flags;
     }
     return file;

@@ -27,6 +27,8 @@
 #ifndef EXPR_H
 #define EXPR_H 1
 
+#include <stdbool.h>
+
 typedef union _ExprResult
 {
     char *str;
@@ -49,15 +51,15 @@ typedef struct _LookupEntry
 extern const char *
 exprOpText(unsigned type);
 
-extern int
+extern bool
 LookupModMask(const void *priv, xkb_atom_t field, unsigned type,
               ExprResult *val_rtrn);
 
-extern int
+extern bool
 LookupVModMask(const void *priv, xkb_atom_t field, unsigned type,
                ExprResult *val_rtrn);
 
-extern int
+extern bool
 LookupModIndex(const void *priv, xkb_atom_t field, unsigned type,
                ExprResult *val_rtrn);
 
