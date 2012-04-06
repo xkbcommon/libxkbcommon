@@ -58,10 +58,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *   - messages (very unlikely)
  */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include <assert.h>
 
 #include "xkbcommon/xkbcommon.h"

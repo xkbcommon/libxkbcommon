@@ -24,12 +24,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#include <X11/X.h>
-
 #include "xkballoc.h"
 #include "xkbmisc.h"
 #include "xkbcommon/xkbcommon.h"

@@ -33,10 +33,6 @@
 #include <X11/Xdefs.h>
 #include <X11/Xfuncproto.h>
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 extern void *
 recalloc(void *ptr, size_t old_size, size_t new_size);
 

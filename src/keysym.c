@@ -25,9 +25,6 @@ sale, use or other dealings in this Software without prior written
 authorization from the authors.
 */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
