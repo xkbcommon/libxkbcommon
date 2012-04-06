@@ -218,14 +218,6 @@ AddCommonInfo(CommonInfo * old, CommonInfo * new)
 
 /***====================================================================***/
 
-typedef struct _KeyNameDesc
-{
-    xkb_atom_t level1;
-    xkb_atom_t level2;
-    char name[5];
-    Bool used;
-} KeyNameDesc;
-
 /**
  * Find the key with the given name and return its keycode in kc_rtrn.
  *
