@@ -423,6 +423,12 @@ xkb_state_ref(struct xkb_state *state);
 void
 xkb_state_unref(struct xkb_state *state);
 
+/**
+ * Get the keymap from which the state object was created.
+ */
+struct xkb_keymap *
+xkb_state_get_map(struct xkb_state *state);
+
 enum xkb_key_direction {
     XKB_KEY_UP,
     XKB_KEY_DOWN,

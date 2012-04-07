@@ -494,6 +494,12 @@ xkb_state_unref(struct xkb_state *state)
     free(state);
 }
 
+_X_EXPORT struct xkb_keymap *
+xkb_state_get_map(struct xkb_state *state)
+{
+    return state->xkb;
+}
+
 /**
  * Update the LED state to match the rest of the xkb_state.
  */
