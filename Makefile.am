@@ -131,8 +131,11 @@ test_dump_LDADD = $(TESTS_LDADD)
 test_stringcomp_LDADD = $(TESTS_LDADD)
 test_keyseq_LDADD = $(TESTS_LDADD)
 test_log_LDADD = $(TESTS_LDADD)
+test_interactive_LDADD = $(TESTS_LDADD)
 
-check_PROGRAMS = $(TESTS)
+check_PROGRAMS = \
+	$(TESTS) \
+	test/interactive
 
 EXTRA_DIST = \
 	test/data \
