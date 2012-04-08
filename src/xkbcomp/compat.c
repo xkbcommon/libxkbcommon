@@ -903,7 +903,7 @@ static struct xkb_sym_interpret *
 FindInterpForKey(struct xkb_keymap *xkb, xkb_keycode_t key, uint32_t group, uint32_t level)
 {
     struct xkb_sym_interpret *ret = NULL;
-    xkb_keysym_t *syms;
+    const xkb_keysym_t *syms;
     int num_syms;
     int i;
 

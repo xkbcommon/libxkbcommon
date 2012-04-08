@@ -302,7 +302,7 @@ xkb_key_get_group(struct xkb_state *state, xkb_keycode_t key)
  */
 unsigned int
 xkb_key_get_syms_by_level(struct xkb_keymap *xkb, xkb_keycode_t key, unsigned int group,
-                          unsigned int level, xkb_keysym_t **syms_out)
+                          unsigned int level, const xkb_keysym_t **syms_out)
 {
     int num_syms;
 
@@ -329,7 +329,7 @@ err:
  */
 unsigned int
 xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
-                 xkb_keysym_t **syms_out)
+                 const xkb_keysym_t **syms_out)
 {
     struct xkb_keymap *xkb = state->xkb;
     int group;

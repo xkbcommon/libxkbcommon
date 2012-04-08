@@ -447,7 +447,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  */
 _X_EXPORT unsigned int
 xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
-                 xkb_keysym_t **syms_out);
+                 const xkb_keysym_t **syms_out);
 
 /**
  * Modifier and group types for state objects.  This enum is bitmaskable,
