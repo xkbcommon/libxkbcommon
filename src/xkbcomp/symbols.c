@@ -1941,9 +1941,8 @@ CopySymbolsDef(struct xkb_keymap * xkb, KeyInfo *key, int start_from)
     unsigned width, tmp, nGroups;
     struct xkb_key_type * type;
     Bool haveActions, autoType, useAlias;
-    xkb_atom_t types[XkbNumKbdGroups];
+    unsigned types[XkbNumKbdGroups];
     union xkb_action *outActs;
-
     unsigned int symIndex = 0;
 
     useAlias = (start_from == 0);

@@ -562,9 +562,8 @@ static void
 FreeMultiDefs(XkbRF_MultiDefsPtr defs)
 {
     free(defs->options);
-    /* Avoid -Wcast-qual warnings. */
-    free((void *)(uintptr_t)defs->layout[1]);
-    free((void *)(uintptr_t)defs->variant[1]);
+    free(UNCONSTIFY(defs->layout[1]));
+    free(UNCONSTIFY(defs->variant[1]));
 }
 
 static void

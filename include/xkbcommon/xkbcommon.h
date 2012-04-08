@@ -224,7 +224,7 @@ xkb_context_include_path_append_default(struct xkb_context *context);
  * could not be added.
  */
 _X_EXPORT int
-xkb_context_include_path_reset(struct xkb_context *context);
+xkb_context_include_path_reset_defaults(struct xkb_context *context);
 
 /**
  * Removes all entries from the context's include path.
