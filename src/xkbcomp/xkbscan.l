@@ -40,19 +40,21 @@ extern int yyparse(struct parser_param *param);
         yylloc->last_line = yylineno;   \
 }
 
+#define APPEND_S(ch) do {                                               \
+    if (yyextra->s - yyextra->scanBuf >= sizeof(yyextra->scanBuf) - 1)  \
+        return ERROR_TOK;                                               \
+    *yyextra->s++ = ch;                                                 \
+} while (0)
+
 %}
 
 %option reentrant
 %option extra-type="struct scanner_extra *"
 %option bison-bridge bison-locations
-%option never-interactive nounistd
-%option case-insensitive
 %option yylineno
-%option noyywrap
+%option nounistd noyywrap noinput nounput
 %option never-interactive
-%option nowarn
-%option noinput
-%option nounput
+%option case-insensitive
 
 %x S_STR S_KEY
 
@@ -88,7 +90,7 @@ extern int yyparse(struct parser_param *param);
 			    return ERROR_TOK;
 			}
 
-			*yyextra->s++ = result;
+			APPEND_S(result);
 		    }
 
 <S_STR,S_KEY>\\[0-9]+ {
@@ -96,15 +98,15 @@ extern int yyparse(struct parser_param *param);
 			return ERROR_TOK;
 		    }
 
-<S_STR,S_KEY>\\n	*yyextra->s++ = '\n';
-<S_STR,S_KEY>\\t	*yyextra->s++ = '\t';
-<S_STR,S_KEY>\\r	*yyextra->s++ = '\r';
-<S_STR,S_KEY>\\b	*yyextra->s++ = '\b';
-<S_STR,S_KEY>\\f	*yyextra->s++ = '\f';
-<S_STR,S_KEY>\\v	*yyextra->s++ = '\v';
-<S_STR,S_KEY>\\e	*yyextra->s++ = '\033';
+<S_STR,S_KEY>\\n	APPEND_S('\n');
+<S_STR,S_KEY>\\t	APPEND_S('\t');
+<S_STR,S_KEY>\\r	APPEND_S('\r');
+<S_STR,S_KEY>\\b	APPEND_S('\b');
+<S_STR,S_KEY>\\f	APPEND_S('\f');
+<S_STR,S_KEY>\\v	APPEND_S('\v');
+<S_STR,S_KEY>\\e	APPEND_S('\033');
 
-<S_STR,S_KEY>.		*yyextra->s++ = yytext[0];
+<S_STR,S_KEY>.		APPEND_S(yytext[0]);
 
 xkb_keymap		return XKB_KEYMAP;
 xkb_keycodes		return XKB_KEYCODES;
@@ -204,7 +206,6 @@ yyerror(YYLTYPE *loc, void *scanner, const char *msg)
         if (warningLevel > 3)
             fprintf(stderr, "last scanned symbol is: %s\n", extra->scanBuf);
     }
-    return;
 }
 
 int

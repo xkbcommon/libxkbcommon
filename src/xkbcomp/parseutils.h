@@ -37,8 +37,7 @@ struct parser_param {
 
 struct scanner_extra {
     char *scanFile;
-    /* FIXME: This can overflow! */
-    char scanBuf[8192];
+    char scanBuf[1024];
     char *s;
 };
 
