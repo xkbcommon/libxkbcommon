@@ -64,10 +64,24 @@ typedef struct _KeyInfo
     unsigned char symsDefined;
     unsigned char actsDefined;
     unsigned int numLevels[XkbNumKbdGroups];
+
+    /* syms[group] -> Single array for all the keysyms in the group. */
     xkb_keysym_t *syms[XkbNumKbdGroups];
+    /* sizeSyms[group] -> The size of the syms[group] array. */
     int sizeSyms[XkbNumKbdGroups];
+    /*
+     * symsMapIndex[group][level] -> The index from which the syms for
+     * the level begin in the syms[group] array. Remember each keycode
+     * can have multiple keysyms in each level (that is, each key press
+     * can result in multiple keysyms).
+     */
     int *symsMapIndex[XkbNumKbdGroups];
+    /*
+     * symsMapNumEntries[group][level] -> How many syms are in
+     * syms[group][symsMapIndex[group][level]].
+     */
     unsigned int *symsMapNumEntries[XkbNumKbdGroups];
+
     union xkb_action *acts[XkbNumKbdGroups];
     xkb_atom_t types[XkbNumKbdGroups];
     unsigned repeat;
@@ -215,7 +229,7 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, Bool clearOld)
                     return False;
                 }
                 memcpy(new->symsMapNumEntries[i], old->symsMapNumEntries[i],
-                       sizeof(unsigned int));
+                       width * sizeof(unsigned int));
             }
             if (old->acts[i] != NULL)
             {
@@ -401,8 +415,8 @@ MergeKeyGroups(SymbolsInfo * info,
                                                   int);
         into->symsMapNumEntries[group] =
             uTypedRecalloc(into->symsMapNumEntries[group],
-                           from->numLevels[group],
                            into->numLevels[group],
+                           from->numLevels[group],
                            unsigned int);
         if (!into->symsMapIndex[group] || !into->symsMapNumEntries[group])
         {
@@ -479,14 +493,10 @@ MergeKeyGroups(SymbolsInfo * info,
         if (into->symsMapNumEntries[group] && (i < into->numLevels[group]))
             toSize = into->symsMapNumEntries[group][i];
 
-        if (fromSize == 0 || fromSize == toSize || clobber)
-        {
-            fromSize += toSize;
-        }
-        else if (toSize == 0)
-        {
+        if ((fromSize != 0 && toSize == 0) || clobber)
             resultSize += fromSize;
-        }
+        else
+            resultSize += toSize;
     }
 
     if (resultSize == 0)
