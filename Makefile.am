@@ -18,15 +18,16 @@ ChangeLog:
 dist-hook: ChangeLog INSTALL
 
 AM_CPPFLAGS = \
+	-DDFLT_XKB_CONFIG_ROOT='"$(XKBCONFIGROOT)"' \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/xkbcomp \
 	-Isrc/xkbcomp
+
 AM_CFLAGS = \
-	$(X11_CFLAGS) \
-	$(XORG_COMPILER_FLAGS) \
-	$(XMALLOC_ZERO_CFLAGS) \
-	-DDFLT_XKB_CONFIG_ROOT='"$(XKBCONFIGROOT)"'
+	$(BASE_CFLAGS) \
+	$(XMALLOC_ZERO_CFLAGS)
+
 AM_YFLAGS = -d
 
 xkbcommonincludedir = $(includedir)/xkbcommon

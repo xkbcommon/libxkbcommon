@@ -72,7 +72,6 @@ if test "x$CC_FOR_BUILD" = x; then
     fi
 fi
 
-CFLAGS="$CFLAGS $BASE_CFLAGS"
 if test "x$GCC" = xyes ; then
     CFLAGS="$CFLAGS -fvisibility=hidden"
 fi
