@@ -261,38 +261,3 @@ _XkbcKSCheckCase(xkb_keysym_t ks)
 
     return rtrn;
 }
-
-#define UNMATCHABLE(c) ((c) == '(' || (c) == ')' || (c) == '/')
-
-bool
-XkbcNameMatchesPattern(char *name, char *ptrn)
-{
-    while (ptrn[0] != '\0') {
-        if (name[0] == '\0') {
-            if (ptrn[0] == '*') {
-                ptrn++;
-                continue;
-            }
-            return false;
-        }
-
-        if (ptrn[0] == '?') {
-            if (UNMATCHABLE(name[0]))
-                return false;
-        }
-        else if (ptrn[0] == '*') {
-            if (!UNMATCHABLE(name[0]) &&
-                XkbcNameMatchesPattern(name + 1, ptrn))
-                return true;
-            return XkbcNameMatchesPattern(name, ptrn + 1);
-        }
-        else if (ptrn[0] != name[0])
-            return false;
-
-        name++;
-        ptrn++;
-    }
-
-    /* if we get here, the pattern is exhausted (-:just like me:-) */
-    return (name[0] == '\0');
-}

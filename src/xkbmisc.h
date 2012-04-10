@@ -65,11 +65,6 @@ _XkbcKSCheckCase(xkb_keysym_t sym);
 #define XkbcKSIsUpper(k) (_XkbcKSCheckCase(k) & _XkbKSUpper)
 
 #define XkbKSIsKeypad(k) (((k) >= XK_KP_Space) && ((k) <= XK_KP_Equal))
-#define XkbKSIsDeadKey(k) \
-    (((k) >= XK_dead_grave) && ((k) <= XK_dead_semivoiced_sound))
-
-extern bool
-XkbcNameMatchesPattern(char *name, char *ptrn);
 
 /***====================================================================***/
 
