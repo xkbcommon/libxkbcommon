@@ -36,7 +36,7 @@ AM_MAINTAINER_MODE
 AC_USE_SYSTEM_EXTENSIONS
 
 # Initialize libtool
-AC_PROG_LIBTOOL
+LT_INIT
 
 # Require xorg-macros minimum of 1.8 for AM_SILENT_RULES
 m4_ifndef([XORG_MACROS_VERSION],
