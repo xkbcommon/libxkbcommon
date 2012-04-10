@@ -65,7 +65,6 @@ libxkbcommon_la_SOURCES = \
 	src/atom.c \
 	src/context.c \
 	src/keysym.c \
-	src/malloc.c \
 	src/map.c \
 	src/maprules.c \
 	src/misc.c \

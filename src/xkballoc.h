@@ -49,8 +49,6 @@ XkbcAllocKeyboard(struct xkb_context *context);
 extern void
 XkbcFreeKeyboard(struct xkb_keymap * xkb);
 
-/***====================================================================***/
-
 extern int
 XkbcAllocClientMap(struct xkb_keymap * xkb, unsigned which, unsigned nTotalTypes);
 
