@@ -88,39 +88,28 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "xkbcommon/xkbcommon.h"
 
 /* From XKM.h */
-#define	XkmFileVersion		15
-
-#define	XkmIllegalFile		-1
 #define	XkmSemanticsFile	20
 #define	XkmLayoutFile		21
 #define	XkmKeymapFile		22
-#define	XkmGeometryFile		23
 #define	XkmRulesFile		24
 
 #define	XkmTypesIndex		0
 #define	XkmCompatMapIndex	1
 #define	XkmSymbolsIndex		2
-#define	XkmIndicatorsIndex	3
 #define	XkmKeyNamesIndex	4
 #define	XkmGeometryIndex	5
-#define	XkmVirtualModsIndex	6
-#define	XkmLastIndex		XkmVirtualModsIndex
 
 #define	XkmTypesMask		(1<<0)
 #define	XkmCompatMapMask	(1<<1)
 #define	XkmSymbolsMask		(1<<2)
-#define	XkmIndicatorsMask	(1<<3)
 #define	XkmKeyNamesMask		(1<<4)
 #define XkmGeometryMask         (1<<5)
-#define	XkmVirtualModsMask	(1<<6)
-#define	XkmLegalIndexMask	(0x7f)
-#define	XkmAllIndicesMask	(0x7f)
 
 #define	XkmSemanticsRequired	(XkmCompatMapMask)
-#define	XkmSemanticsOptional	(XkmTypesMask|XkmVirtualModsMask|XkmIndicatorsMask|XkmGeometryMask)
+#define	XkmSemanticsOptional	(XkmTypesMask|XkmGeometryMask)
 #define	XkmSemanticsLegal	(XkmSemanticsRequired|XkmSemanticsOptional)
 #define	XkmLayoutRequired	(XkmKeyNamesMask|XkmSymbolsMask|XkmTypesMask)
-#define	XkmLayoutOptional	(XkmVirtualModsMask|XkmGeometryMask)
+#define	XkmLayoutOptional	(XkmGeometryMask)
 #define	XkmLayoutLegal		(XkmLayoutRequired|XkmLayoutOptional)
 #define	XkmKeymapRequired	(XkmSemanticsRequired|XkmLayoutRequired)
 #define	XkmKeymapOptional	((XkmSemanticsOptional|XkmLayoutOptional)&(~XkmKeymapRequired))
@@ -293,13 +282,6 @@ struct xkb_sym_map {
         unsigned int     size_syms; /* size of 'syms' */
 };
 
-#define	XkbNumGroups(g)			((g)&0x0f)
-#define	XkbOutOfRangeGroupInfo(g)	((g)&0xf0)
-#define	XkbOutOfRangeGroupAction(g)	((g)&0xc0)
-#define	XkbOutOfRangeGroupNumber(g)	(((g)&0x30)>>4)
-#define	XkbSetGroupInfo(g,w,n)	(((w)&0xc0)|(((n)&3)<<4)|((g)&0x0f))
-#define	XkbSetNumGroups(g,n)	(((g)&0xf0)|((n)&0x0f))
-
 struct xkb_client_map {
     unsigned char            size_types;
     unsigned char            num_types;
@@ -317,17 +299,11 @@ struct xkb_server_map {
     unsigned short      num_acts;
     unsigned short      size_acts;
 
-#if defined(__cplusplus) || defined(c_plusplus)
-    /* explicit is a C++ reserved word */
-    unsigned char *     c_explicit;
-#else
     unsigned char *     explicit;
-#endif
 
     union xkb_action          *acts;
     struct xkb_behavior         *behaviors;
     unsigned short      *key_acts;
-    unsigned char       *explicits;
     uint32_t            vmods[XkbNumVirtualMods]; /* vmod -> mod mapping */
     uint32_t            *vmodmap; /* key -> vmod mapping */
 };
@@ -343,7 +319,6 @@ struct xkb_indicator_map {
 };
 
 struct xkb_indicator {
-	unsigned long	  	phys_indicators;
 	struct xkb_indicator_map	maps[XkbNumIndicators];
 };
 
@@ -391,7 +366,6 @@ struct xkb_keymap {
     struct xkb_context  *context;
 
     unsigned int        refcnt;
-    unsigned int        defined;
     unsigned short      flags;
     xkb_keycode_t       min_key_code;
     xkb_keycode_t       max_key_code;
@@ -403,6 +377,13 @@ struct xkb_keymap {
     struct xkb_names *        names;
     struct xkb_compat_map *    compat;
 };
+
+#define	XkbNumGroups(g)			((g)&0x0f)
+#define	XkbOutOfRangeGroupInfo(g)	((g)&0xf0)
+#define	XkbOutOfRangeGroupAction(g)	((g)&0xc0)
+#define	XkbOutOfRangeGroupNumber(g)	(((g)&0x30)>>4)
+#define	XkbSetGroupInfo(g,w,n)	(((w)&0xc0)|(((n)&3)<<4)|((g)&0x0f))
+#define	XkbSetNumGroups(g,n)	(((g)&0xf0)|((n)&0x0f))
 
 #define	XkbKeyGroupInfo(d,k)    ((d)->map->key_sym_map[k].group_info)
 #define	XkbKeyNumGroups(d,k)    (XkbNumGroups((d)->map->key_sym_map[k].group_info))
@@ -431,11 +412,6 @@ struct xkb_keymap {
 				 ((k)<=(d)->max_key_code))
 #define	XkbNumKeys(d)		((d)->max_key_code-(d)->min_key_code+1)
 
-struct xkb_component_name {
-	unsigned short		flags;
-	char *			name;
-};
-
 struct xkb_state {
 	xkb_group_index_t base_group; /**< depressed */
 	xkb_group_index_t latched_group;
@@ -454,14 +430,5 @@ struct xkb_state {
         int num_filters;
         struct xkb_keymap *xkb;
 };
-
-#define	XkbStateFieldFromRec(s)	XkbBuildCoreState((s)->lookup_mods,(s)->group)
-#define	XkbGrabStateFromRec(s)	XkbBuildCoreState((s)->grab_mods,(s)->group)
-
-#define	XkbNumGroups(g)			((g)&0x0f)
-#define	XkbOutOfRangeGroupInfo(g)	((g)&0xf0)
-#define	XkbOutOfRangeGroupAction(g)	((g)&0xc0)
-#define	XkbOutOfRangeGroupNumber(g)	(((g)&0x30)>>4)
-#define	XkbSetNumGroups(g,n)	(((g)&0xf0)|((n)&0x0f))
 
 #endif /* _XKBCOMMONINT_H_ */

@@ -206,12 +206,8 @@ XkbcConfigText(unsigned config)
         return "CompatMap";
     case XkmSymbolsIndex:
         return "Symbols";
-    case XkmIndicatorsIndex:
-        return "Indicators";
     case XkmKeyNamesIndex:
         return "KeyNames";
-    case XkmVirtualModsIndex:
-        return "VirtualMods";
     default:
         return "unknown";
     }

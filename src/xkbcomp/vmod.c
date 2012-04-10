@@ -49,10 +49,10 @@ ClearVModInfo(VModInfo * info, struct xkb_keymap * xkb)
 
     info->newlyDefined = info->defined = info->available = 0;
 
-    if (XkbcAllocNames(xkb, XkbVirtualModNamesMask, 0) != Success)
+    if (XkbcAllocNames(xkb, 0, 0) != Success)
         return;
 
-    if (XkbcAllocServerMap(xkb, XkbVirtualModsMask, 0) != Success)
+    if (XkbcAllocServerMap(xkb, 0, 0) != Success)
         return;
 
     info->xkb = xkb;

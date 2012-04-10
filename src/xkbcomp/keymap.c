@@ -72,8 +72,8 @@ CompileKeymap(struct xkb_context *context, XkbFile *file)
         legal = XkmKeymapLegal;
         break;
     case XkmKeymapFile:
-        required = XkmKeyNamesIndex | XkmTypesIndex | XkmSymbolsIndex | \
-                   XkmCompatMapIndex | XkmVirtualModsIndex;
+        required = XkmKeyNamesIndex | XkmTypesIndex | XkmSymbolsIndex |
+                   XkmCompatMapIndex;
         legal = XkmKeymapLegal;
         break;
     default:
@@ -115,11 +115,6 @@ CompileKeymap(struct xkb_context *context, XkbFile *file)
             sections.compat = file;
             break;
         case XkmGeometryIndex:
-            continue;
-        case XkmVirtualModsIndex:
-        case XkmIndicatorsIndex:
-            WSGO("Found an isolated %s section\n", XkbcConfigText(file->type));
-            ACTION("Ignored\n");
             continue;
         default:
             WSGO("Unknown file type %d\n", file->type);
@@ -183,8 +178,6 @@ CompileKeymap(struct xkb_context *context, XkbFile *file)
         ERROR("Failed to compile symbols\n");
         goto err;
     }
-
-    xkb->defined = have;
 
     ok = BindIndicators(xkb, true, unbound, NULL);
     if (!ok)

@@ -163,7 +163,6 @@ XkbDirectoryForInclude(unsigned type)
         return "symbols";
     case XkmCompatMapIndex:
         return "compat";
-    case XkmGeometryFile:
     case XkmGeometryIndex:
         return "geometry";
     case XkmRulesFile:

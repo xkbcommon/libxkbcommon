@@ -918,15 +918,6 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
             {
                 free(UNCONSTIFY(xkb->names->indicators[ii->ndx - 1]));
                 xkb->names->indicators[ii->ndx - 1] = XkbcAtomGetString(ii->name);
-                if (xkb->indicators != NULL)
-                {
-                    unsigned bit;
-                    bit = 1 << (ii->ndx - 1);
-                    if (ii->virtual)
-                        xkb->indicators->phys_indicators &= ~bit;
-                    else
-                        xkb->indicators->phys_indicators |= bit;
-                }
             }
         }
         if (info.aliases)

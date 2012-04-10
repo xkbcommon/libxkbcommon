@@ -838,7 +838,6 @@ FreeXKBFile(XkbFile *file)
         case XkmSymbolsIndex:
         case XkmKeyNamesIndex:
         case XkmGeometryIndex:
-        case XkmGeometryFile:
             FreeStmt(file->defs);
             break;
         }

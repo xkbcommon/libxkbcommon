@@ -473,7 +473,6 @@ BindIndicators(struct xkb_keymap * xkb, bool force, LEDInfo *unbound,
                         {
                             xkb->names->indicators[i] = XkbcAtomGetString(led->name);
                             led->indicator = i + 1;
-                            xkb->indicators->phys_indicators &= ~(1 << i);
                             break;
                         }
                     }
