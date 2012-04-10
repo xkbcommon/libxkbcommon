@@ -124,7 +124,8 @@ TESTS = \
 	test/context \
 	test/rules-file \
 	test/dump \
-	test/stringcomp
+	test/stringcomp \
+	test/keyseq
 TESTS_LDADD = libxkbcommon-priv.la
 
 test_xkey_LDADD = $(TESTS_LDADD)
@@ -138,6 +139,7 @@ test_rules_file_CFLAGS = $(AM_CFLAGS) -Wno-declaration-after-statement
 test_rules_file_LDADD = $(TESTS_LDADD)
 test_dump_LDADD = $(TESTS_LDADD)
 test_stringcomp_LDADD = $(TESTS_LDADD)
+test_keyseq_LDADD = $(TESTS_LDADD)
 
 check_PROGRAMS = $(TESTS)
 
