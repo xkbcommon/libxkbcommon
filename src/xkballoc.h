@@ -32,13 +32,13 @@ authorization from the authors.
 #include "XKBcommonint.h"
 
 extern int
-XkbcAllocCompatMap(struct xkb_keymap * xkb, unsigned which, unsigned nSI);
+XkbcAllocCompatMap(struct xkb_keymap *xkb, unsigned nSI);
 
 extern int
 XkbcAllocNames(struct xkb_keymap * xkb, unsigned which, unsigned nTotalAliases);
 
 extern int
-XkbcAllocControls(struct xkb_keymap * xkb, unsigned which);
+XkbcAllocControls(struct xkb_keymap *xkb);
 
 extern int
 XkbcAllocIndicatorMaps(struct xkb_keymap * xkb);

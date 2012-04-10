@@ -504,8 +504,7 @@ SetInterpField(SymInterpInfo * si,
     {
         if (arrayNdx != NULL)
             return ReportSINotArray(si, field, info);
-        ok = HandleActionDef(value, xkb, &si->interp.act.any, si->defs.merge,
-                             info->act);
+        ok = HandleActionDef(value, xkb, &si->interp.act.any, info->act);
         if (ok)
             si->defs.defined |= _SI_Action;
     }
@@ -807,8 +806,7 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap * xkb, unsigned merge,
     if (info.errorCount == 0)
     {
         int size;
-        if (XkbcAllocCompatMap(xkb, XkbAllCompatMask, info.nInterps) !=
-            Success)
+        if (XkbcAllocCompatMap(xkb, info.nInterps) != Success)
         {
             WSGO("Couldn't allocate compatibility map\n");
             return false;

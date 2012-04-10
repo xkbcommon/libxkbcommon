@@ -211,7 +211,7 @@ compile_keymap(struct xkb_context *context, XkbFile *file)
         goto err;
     }
 
-    xkb = CompileKeymap(context, mapToUse, MergeReplace);
+    xkb = CompileKeymap(context, mapToUse);
     if (!xkb)
         goto err;
 

@@ -731,7 +731,7 @@ SetPreserve(KeyTypeInfo * type,
 
 static bool
 AddLevelName(KeyTypeInfo * type,
-             unsigned level, xkb_atom_t name, bool clobber, bool report)
+             unsigned level, xkb_atom_t name, bool clobber)
 {
     if ((type->lvlNames == NULL) || (type->szNames <= level))
     {
@@ -801,7 +801,7 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
     }
     level_name = xkb_intern_atom(rtrn.str);
     free(rtrn.str);
-    return AddLevelName(type, level, level_name, true, true);
+    return AddLevelName(type, level, level_name, true);
 }
 
 /***====================================================================***/
@@ -985,7 +985,7 @@ HandleKeyTypeDef(KeyTypeDef * def,
     {
         if ((i < type.numLevels) && (info->dflt.lvlNames[i] != XKB_ATOM_NONE))
         {
-            AddLevelName(&type, i, info->dflt.lvlNames[i], false, false);
+            AddLevelName(&type, i, info->dflt.lvlNames[i], false);
         }
     }
     /* Now add the new keytype to the info struct */

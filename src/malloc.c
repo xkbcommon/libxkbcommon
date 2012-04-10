@@ -128,67 +128,59 @@ XkbcAllocServerMap(struct xkb_keymap * xkb, unsigned which, unsigned nNewActions
     if (!xkb_keymap_keycode_range_is_legal(xkb))
         return BadMatch;
 
-    if (which & XkbExplicitComponentsMask) {
-        if (!map->explicit) {
-            i = xkb->max_key_code + 1;
-            map->explicit = uTypedCalloc(i, unsigned char);
-            if (!map->explicit)
-                return BadAlloc;
-        }
+    if (!map->explicit) {
+        i = xkb->max_key_code + 1;
+        map->explicit = uTypedCalloc(i, unsigned char);
+        if (!map->explicit)
+            return BadAlloc;
     }
 
-    if (which&XkbKeyActionsMask) {
-        if (nNewActions < 1)
-            nNewActions = 1;
+    if (nNewActions < 1)
+        nNewActions = 1;
 
+    if (!map->acts) {
+        map->acts = uTypedCalloc(nNewActions + 1, union xkb_action);
+        if (!map->acts)
+            return BadAlloc;
+        map->num_acts = 1;
+        map->size_acts = nNewActions + 1;
+    }
+    else if ((map->size_acts - map->num_acts) < (int)nNewActions) {
+        unsigned need;
+        union xkb_action *prev_acts = map->acts;
+
+        need = map->num_acts + nNewActions;
+        map->acts = uTypedRealloc(map->acts, need, union xkb_action);
         if (!map->acts) {
-            map->acts = uTypedCalloc(nNewActions + 1, union xkb_action);
-            if (!map->acts)
-                return BadAlloc;
-            map->num_acts = 1;
-            map->size_acts = nNewActions + 1;
-        }
-        else if ((map->size_acts - map->num_acts) < (int)nNewActions) {
-            unsigned need;
-            union xkb_action *prev_acts = map->acts;
-
-            need = map->num_acts + nNewActions;
-            map->acts = uTypedRealloc(map->acts, need, union xkb_action);
-            if (!map->acts) {
-                free(prev_acts);
-                map->num_acts = map->size_acts = 0;
-                return BadAlloc;
-            }
-
-            map->size_acts = need;
-            memset(&map->acts[map->num_acts], 0,
-                   (map->size_acts - map->num_acts) * sizeof(union xkb_action));
+            free(prev_acts);
+            map->num_acts = map->size_acts = 0;
+            return BadAlloc;
         }
 
-        if (!map->key_acts) {
-            i = xkb->max_key_code + 1;
-            map->key_acts = uTypedCalloc(i, unsigned short);
-            if (!map->key_acts)
-                return BadAlloc;
-        }
+        map->size_acts = need;
+        memset(&map->acts[map->num_acts], 0,
+               (map->size_acts - map->num_acts) * sizeof(union xkb_action));
     }
 
-    if (which & XkbKeyBehaviorsMask) {
-        if (!map->behaviors) {
-            i = xkb->max_key_code + 1;
-            map->behaviors = uTypedCalloc(i, struct xkb_behavior);
-            if (!map->behaviors)
-                return BadAlloc;
-        }
+    if (!map->key_acts) {
+        i = xkb->max_key_code + 1;
+        map->key_acts = uTypedCalloc(i, unsigned short);
+        if (!map->key_acts)
+            return BadAlloc;
     }
 
-    if (which & XkbVirtualModMapMask) {
-        if (!map->vmodmap) {
-            i = xkb->max_key_code + 1;
-            map->vmodmap = uTypedCalloc(i, uint32_t);
-            if (!map->vmodmap)
-                return BadAlloc;
-        }
+    if (!map->behaviors) {
+        i = xkb->max_key_code + 1;
+        map->behaviors = uTypedCalloc(i, struct xkb_behavior);
+        if (!map->behaviors)
+            return BadAlloc;
+    }
+
+    if (!map->vmodmap) {
+        i = xkb->max_key_code + 1;
+        map->vmodmap = uTypedCalloc(i, uint32_t);
+        if (!map->vmodmap)
+            return BadAlloc;
     }
 
     return Success;

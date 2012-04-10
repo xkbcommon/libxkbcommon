@@ -30,7 +30,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/extensions/XKB.h>
 
 int
-XkbcAllocCompatMap(struct xkb_keymap * xkb, unsigned which, unsigned nSI)
+XkbcAllocCompatMap(struct xkb_keymap *xkb, unsigned nSI)
 {
     struct xkb_compat_map * compat;
     struct xkb_sym_interpret *prev_interpret;
@@ -198,7 +198,7 @@ XkbcFreeNames(struct xkb_keymap * xkb)
 }
 
 int
-XkbcAllocControls(struct xkb_keymap * xkb, unsigned which)
+XkbcAllocControls(struct xkb_keymap * xkb)
 {
     if (!xkb)
         return BadMatch;
@@ -209,12 +209,10 @@ XkbcAllocControls(struct xkb_keymap * xkb, unsigned which)
             return BadAlloc;
     }
 
-    if (!xkb->ctrls->per_key_repeat) {
-        xkb->ctrls->per_key_repeat = uTypedCalloc(xkb->max_key_code << 3,
-                                                  unsigned char);
-        if (!xkb->ctrls->per_key_repeat)
-            return BadAlloc;
-    }
+    xkb->ctrls->per_key_repeat = uTypedCalloc(xkb->max_key_code << 3,
+                                              unsigned char);
+    if (!xkb->ctrls->per_key_repeat)
+        return BadAlloc;
 
     return Success;
 }

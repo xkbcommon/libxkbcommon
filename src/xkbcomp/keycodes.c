@@ -759,8 +759,7 @@ err_out:
 }
 
 static int
-HandleIndicatorNameDef(IndicatorNameDef * def,
-                       unsigned merge, KeyNamesInfo * info)
+HandleIndicatorNameDef(IndicatorNameDef *def, KeyNamesInfo *info)
 {
     IndicatorNameInfo ii;
     ExprResult tmp;
@@ -833,8 +832,7 @@ HandleKeycodesFile(XkbFile * file,
                 info->errorCount++;
             break;
         case StmtIndicatorNameDef: /* e.g. indicator 1 = "Caps Lock"; */
-            if (!HandleIndicatorNameDef((IndicatorNameDef *) stmt,
-                                        merge, info))
+            if (!HandleIndicatorNameDef((IndicatorNameDef *) stmt, info))
             {
                 info->errorCount++;
             }

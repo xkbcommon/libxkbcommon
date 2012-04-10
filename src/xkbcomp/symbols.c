@@ -1029,7 +1029,6 @@ GetGroupIndex(KeyInfo * key,
 static bool
 AddSymbolsToKey(KeyInfo * key,
                 struct xkb_keymap * xkb,
-                char *field,
                 ExprDef * arrayNdx, ExprDef * value, SymbolsInfo * info)
 {
     unsigned ndx, nSyms, nLevels;
@@ -1096,7 +1095,6 @@ AddSymbolsToKey(KeyInfo * key,
 static bool
 AddActionsToKey(KeyInfo * key,
                 struct xkb_keymap * xkb,
-                char *field,
                 ExprDef * arrayNdx, ExprDef * value, SymbolsInfo * info)
 {
     unsigned int i;
@@ -1148,7 +1146,7 @@ AddActionsToKey(KeyInfo * key,
     act = value->value.child;
     for (i = 0; i < nActs; i++, toAct++)
     {
-        if (!HandleActionDef(act, xkb, toAct, MergeOverride, info->action))
+        if (!HandleActionDef(act, xkb, toAct, info->action))
         {
             ERROR("Illegal action definition for %s\n",
                    longText(key->name));
@@ -1220,9 +1218,9 @@ SetSymbolsField(KeyInfo * key,
         free(tmp.str);
     }
     else if (strcasecmp(field, "symbols") == 0)
-        return AddSymbolsToKey(key, xkb, field, arrayNdx, value, info);
+        return AddSymbolsToKey(key, xkb, arrayNdx, value, info);
     else if (strcasecmp(field, "actions") == 0)
-        return AddActionsToKey(key, xkb, field, arrayNdx, value, info);
+        return AddActionsToKey(key, xkb, arrayNdx, value, info);
     else if ((strcasecmp(field, "vmods") == 0) ||
              (strcasecmp(field, "virtualmods") == 0) ||
              (strcasecmp(field, "virtualmodifiers") == 0))
@@ -1539,7 +1537,7 @@ SetExplicitGroup(SymbolsInfo * info, KeyInfo * key)
 
 static int
 HandleSymbolsDef(SymbolsDef * stmt,
-                 struct xkb_keymap * xkb, unsigned merge, SymbolsInfo * info)
+                 struct xkb_keymap *xkb, SymbolsInfo *info)
 {
     KeyInfo key;
 
@@ -1569,7 +1567,7 @@ HandleSymbolsDef(SymbolsDef * stmt,
 
 static bool
 HandleModMapDef(ModMapDef * def,
-                struct xkb_keymap * xkb, unsigned merge, SymbolsInfo * info)
+                struct xkb_keymap * xkb, SymbolsInfo * info)
 {
     ExprDef *key;
     ModMapEntry tmp;
@@ -1629,7 +1627,7 @@ HandleSymbolsFile(XkbFile * file,
                 info->errorCount++;
             break;
         case StmtSymbolsDef:
-            if (!HandleSymbolsDef((SymbolsDef *) stmt, xkb, merge, info))
+            if (!HandleSymbolsDef((SymbolsDef *) stmt, xkb, info))
                 info->errorCount++;
             break;
         case StmtVarDef:
@@ -1651,7 +1649,7 @@ HandleSymbolsFile(XkbFile * file,
             info->errorCount++;
             break;
         case StmtModMapDef:
-            if (!HandleModMapDef((ModMapDef *) stmt, xkb, merge, info))
+            if (!HandleModMapDef((ModMapDef *) stmt, xkb, info))
                 info->errorCount++;
             break;
         default:
@@ -2219,7 +2217,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
             ACTION("Symbols not added\n");
             return false;
         }
-        if (XkbcAllocControls(xkb, XkbPerKeyRepeatMask) != Success)
+        if (XkbcAllocControls(xkb) != Success)
         {
             WSGO("Could not allocate controls in CompileSymbols\n");
             ACTION("Symbols not added\n");

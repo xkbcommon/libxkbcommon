@@ -39,7 +39,7 @@
  * XkmKeyNamesIdx, etc.)
  */
 struct xkb_keymap *
-CompileKeymap(struct xkb_context *context, XkbFile *file, unsigned merge)
+CompileKeymap(struct xkb_context *context, XkbFile *file)
 {
     unsigned have;
     bool ok;

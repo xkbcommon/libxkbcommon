@@ -254,7 +254,7 @@ typedef struct _XkbFile
 } XkbFile;
 
 extern struct xkb_keymap *
-CompileKeymap(struct xkb_context *context, XkbFile *file, unsigned merge);
+CompileKeymap(struct xkb_context *context, XkbFile *file);
 
 extern bool
 CompileKeycodes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge);
