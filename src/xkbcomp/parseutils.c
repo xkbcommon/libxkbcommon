@@ -678,7 +678,6 @@ CreateXKBFile(int type, char *name, ParseCommon * defs, unsigned flags)
         file->name = name;
         file->defs = defs;
         file->id = fileID++;
-        file->compiled = false;
         file->flags = flags;
     }
     return file;

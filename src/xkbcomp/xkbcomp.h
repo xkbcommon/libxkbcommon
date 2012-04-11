@@ -251,7 +251,6 @@ typedef struct _XkbFile
     ParseCommon *defs;
     int id;
     unsigned flags;
-    bool compiled;
 } XkbFile;
 
 extern struct xkb_keymap *

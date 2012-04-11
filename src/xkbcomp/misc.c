@@ -113,7 +113,6 @@ ProcessIncludeFile(struct xkb_context *context,
     }
     /* FIXME: we have to check recursive includes here (or somewhere) */
 
-    mapToUse->compiled = true;
     *file_rtrn = mapToUse;
     *merge_rtrn = stmt->merge;
     return true;
