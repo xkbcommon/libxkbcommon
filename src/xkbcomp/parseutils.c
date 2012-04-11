@@ -633,24 +633,6 @@ BAIL:
     return NULL;
 }
 
-#ifdef DEBUG
-void
-PrintStmtAddrs(ParseCommon * stmt)
-{
-    fprintf(stderr, "0x%x", stmt);
-    if (stmt)
-    {
-        do
-        {
-            fprintf(stderr, "->0x%x", stmt->next);
-            stmt = stmt->next;
-        }
-        while (stmt);
-    }
-    fprintf(stderr, "\n");
-}
-#endif
-
 void
 CheckDefaultMap(XkbFile * maps, const char *fileName)
 {

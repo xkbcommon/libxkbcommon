@@ -113,11 +113,6 @@ IncludeCreate(char *str, unsigned merge);
 extern unsigned
 StmtSetMerge(ParseCommon *stmt, unsigned merge, YYLTYPE *loc, void *scanner);
 
-#ifdef DEBUG
-extern void
-PrintStmtAddrs(ParseCommon *stmt);
-#endif
-
 extern void
 CheckDefaultMap(XkbFile *maps, const char *fileName);
 
