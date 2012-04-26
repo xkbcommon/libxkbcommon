@@ -81,6 +81,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <X11/extensions/XKB.h>
 
 #include "xkbcommon/xkbcommon.h"
