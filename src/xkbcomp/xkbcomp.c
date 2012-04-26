@@ -73,10 +73,15 @@ XkbComponentsFromRules(struct xkb_context *context,
     char *rulesPath = NULL;
     XkbRF_RulesPtr loaded = NULL;
     struct xkb_component_names * names = NULL;
+    int i;
 
     rulesFile = XkbFindFileInPath(context, rules, XkmRulesFile, &rulesPath);
     if (!rulesFile) {
         ERROR("could not find \"%s\" rules in XKB path\n", rules);
+        ERROR("%d include paths searched:\n",
+              xkb_context_num_include_paths(context));
+        for (i = 0; i < xkb_context_num_include_paths(context); i++)
+            ERROR("\t%s\n", xkb_context_include_path_get(context, i));
         return NULL;
     }
 
