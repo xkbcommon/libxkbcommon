@@ -1142,83 +1142,86 @@ CopyDefToKeyType(struct xkb_keymap * xkb, struct xkb_key_type * type, KeyTypeInf
 bool
 CompileKeyTypes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
 {
+    unsigned int i;
+    struct xkb_key_type *type, *next;
     KeyTypesInfo info;
+    KeyTypeInfo *def;
 
     InitKeyTypesInfo(&info, xkb, NULL);
     info.fileID = file->id;
+
     HandleKeyTypesFile(file, xkb, merge, &info);
 
-    if (info.errorCount == 0)
-    {
-        unsigned int i;
-        KeyTypeInfo *def;
-        struct xkb_key_type *type, *next;
+    if (info.errorCount != 0)
+        goto err_info;
 
-        i = info.nTypes;
-        if ((info.stdPresent & XkbOneLevelMask) == 0)
-            i++;
-        if ((info.stdPresent & XkbTwoLevelMask) == 0)
-            i++;
-        if ((info.stdPresent & XkbKeypadMask) == 0)
-            i++;
-        if ((info.stdPresent & XkbAlphabeticMask) == 0)
-            i++;
-        if (XkbcAllocClientMap(xkb, XkbKeyTypesMask, i) != Success)
-        {
-            FreeKeyTypesInfo(&info);
-            WSGO("Couldn't allocate client map\n");
-            return false;
-        }
-        xkb->map->num_types = i;
-        if (XkbAllRequiredTypes & (~info.stdPresent))
-        {
-            unsigned missing, keypadVMod;
+    i = info.nTypes;
+    if ((info.stdPresent & XkbOneLevelMask) == 0)
+        i++;
+    if ((info.stdPresent & XkbTwoLevelMask) == 0)
+        i++;
+    if ((info.stdPresent & XkbKeypadMask) == 0)
+        i++;
+    if ((info.stdPresent & XkbAlphabeticMask) == 0)
+        i++;
 
-            missing = XkbAllRequiredTypes & (~info.stdPresent);
-            keypadVMod = FindKeypadVMod(xkb);
-            if (XkbcInitCanonicalKeyTypes(xkb, missing, keypadVMod) != Success)
-            {
-                FreeKeyTypesInfo(&info);
-                WSGO("Couldn't initialize canonical key types\n");
-                return false;
-            }
-            if (missing & XkbOneLevelMask)
-                xkb->map->types[XkbOneLevelIndex].name =
-                    XkbcAtomGetString(tok_ONE_LEVEL);
-            if (missing & XkbTwoLevelMask)
-                xkb->map->types[XkbTwoLevelIndex].name =
-                    XkbcAtomGetString(tok_TWO_LEVEL);
-            if (missing & XkbAlphabeticMask)
-                xkb->map->types[XkbAlphabeticIndex].name =
-                    XkbcAtomGetString(tok_ALPHABETIC);
-            if (missing & XkbKeypadMask)
-                xkb->map->types[XkbKeypadIndex].name =
-                    XkbcAtomGetString(tok_KEYPAD);
-        }
-        next = &xkb->map->types[XkbLastRequiredType + 1];
-        for (i = 0, def = info.types; i < info.nTypes; i++)
-        {
-            if (def->name == tok_ONE_LEVEL)
-                type = &xkb->map->types[XkbOneLevelIndex];
-            else if (def->name == tok_TWO_LEVEL)
-                type = &xkb->map->types[XkbTwoLevelIndex];
-            else if (def->name == tok_ALPHABETIC)
-                type = &xkb->map->types[XkbAlphabeticIndex];
-            else if (def->name == tok_KEYPAD)
-                type = &xkb->map->types[XkbKeypadIndex];
-            else
-                type = next++;
-            DeleteLevel1MapEntries(def);
-            if (!CopyDefToKeyType(xkb, type, def)) {
-                FreeKeyTypesInfo(&info);
-                return false;
-            }
-            def = (KeyTypeInfo *) def->defs.next;
-        }
-        FreeKeyTypesInfo(&info);
-        return true;
+    if (XkbcAllocClientMap(xkb, XkbKeyTypesMask, i) != Success) {
+        WSGO("Couldn't allocate client map\n");
+        goto err_info;
     }
 
+    xkb->map->num_types = i;
+
+    if (XkbAllRequiredTypes & (~info.stdPresent)) {
+        unsigned missing, keypadVMod;
+
+        missing = XkbAllRequiredTypes & (~info.stdPresent);
+        keypadVMod = FindKeypadVMod(xkb);
+
+        if (XkbcInitCanonicalKeyTypes(xkb, missing, keypadVMod) != Success) {
+            WSGO("Couldn't initialize canonical key types\n");
+            goto err_info;
+        }
+
+        if (missing & XkbOneLevelMask)
+            xkb->map->types[XkbOneLevelIndex].name =
+                XkbcAtomGetString(tok_ONE_LEVEL);
+        if (missing & XkbTwoLevelMask)
+            xkb->map->types[XkbTwoLevelIndex].name =
+                XkbcAtomGetString(tok_TWO_LEVEL);
+        if (missing & XkbAlphabeticMask)
+            xkb->map->types[XkbAlphabeticIndex].name =
+                XkbcAtomGetString(tok_ALPHABETIC);
+        if (missing & XkbKeypadMask)
+            xkb->map->types[XkbKeypadIndex].name =
+                XkbcAtomGetString(tok_KEYPAD);
+    }
+
+    next = &xkb->map->types[XkbLastRequiredType + 1];
+    for (i = 0, def = info.types; i < info.nTypes; i++) {
+        if (def->name == tok_ONE_LEVEL)
+            type = &xkb->map->types[XkbOneLevelIndex];
+        else if (def->name == tok_TWO_LEVEL)
+            type = &xkb->map->types[XkbTwoLevelIndex];
+        else if (def->name == tok_ALPHABETIC)
+            type = &xkb->map->types[XkbAlphabeticIndex];
+        else if (def->name == tok_KEYPAD)
+            type = &xkb->map->types[XkbKeypadIndex];
+        else
+            type = next++;
+
+        DeleteLevel1MapEntries(def);
+
+        if (!CopyDefToKeyType(xkb, type, def))
+            goto err_info;
+
+        def = (KeyTypeInfo *)def->defs.next;
+    }
+
+    FreeKeyTypesInfo(&info);
+    return true;
+
+err_info:
     FreeKeyTypesInfo(&info);
     return false;
 }

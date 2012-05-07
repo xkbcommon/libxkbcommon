@@ -791,7 +791,7 @@ CopyInterps(CompatInfo * info,
 }
 
 bool
-CompileCompatMap(XkbFile *file, struct xkb_keymap * xkb, unsigned merge,
+CompileCompatMap(XkbFile *file, struct xkb_keymap *xkb, unsigned merge,
                  LEDInfoPtr *unboundLEDs)
 {
     int i;
@@ -801,50 +801,47 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap * xkb, unsigned merge,
     InitCompatInfo(&info, xkb);
     info.dflt.defs.merge = merge;
     info.ledDflt.defs.merge = merge;
+
     HandleCompatMapFile(file, xkb, merge, &info);
 
-    if (info.errorCount == 0)
-    {
-        int size;
-        if (XkbcAllocCompatMap(xkb, info.nInterps) != Success)
-        {
-            WSGO("Couldn't allocate compatibility map\n");
-            return false;
-        }
-        size = info.nInterps * sizeof(struct xkb_sym_interpret);
-        if (size > 0)
-        {
-            CopyInterps(&info, xkb->compat, true, XkbSI_Exactly);
-            CopyInterps(&info, xkb->compat, true, XkbSI_AllOf | XkbSI_NoneOf);
-            CopyInterps(&info, xkb->compat, true, XkbSI_AnyOf);
-            CopyInterps(&info, xkb->compat, true, XkbSI_AnyOfOrNone);
-            CopyInterps(&info, xkb->compat, false, XkbSI_Exactly);
-            CopyInterps(&info, xkb->compat, false,
-                        XkbSI_AllOf | XkbSI_NoneOf);
-            CopyInterps(&info, xkb->compat, false, XkbSI_AnyOf);
-            CopyInterps(&info, xkb->compat, false, XkbSI_AnyOfOrNone);
-        }
-        for (i = 0, gcm = &info.groupCompat[0]; i < XkbNumKbdGroups;
-             i++, gcm++)
-        {
-            if ((gcm->fileID != 0) || (gcm->real_mods != 0)
-                || (gcm->vmods != 0))
-            {
-                xkb->compat->groups[i].mask = gcm->real_mods;
-                xkb->compat->groups[i].real_mods = gcm->real_mods;
-                xkb->compat->groups[i].vmods = gcm->vmods;
-            }
-        }
-        if (info.leds != NULL)
-        {
-            if (!CopyIndicatorMapDefs(xkb, info.leds, unboundLEDs))
-                info.errorCount++;
-            info.leds = NULL;
-        }
-        ClearCompatInfo(&info, xkb);
-        return true;
+    if (info.errorCount != 0)
+        goto err_info;
+
+    if (XkbcAllocCompatMap(xkb, info.nInterps) != Success) {
+        WSGO("Couldn't allocate compatibility map\n");
+        goto err_info;
     }
-    free(info.interps);
+
+    if (info.nInterps > 0) {
+        CopyInterps(&info, xkb->compat, true, XkbSI_Exactly);
+        CopyInterps(&info, xkb->compat, true, XkbSI_AllOf | XkbSI_NoneOf);
+        CopyInterps(&info, xkb->compat, true, XkbSI_AnyOf);
+        CopyInterps(&info, xkb->compat, true, XkbSI_AnyOfOrNone);
+        CopyInterps(&info, xkb->compat, false, XkbSI_Exactly);
+        CopyInterps(&info, xkb->compat, false, XkbSI_AllOf | XkbSI_NoneOf);
+        CopyInterps(&info, xkb->compat, false, XkbSI_AnyOf);
+        CopyInterps(&info, xkb->compat, false, XkbSI_AnyOfOrNone);
+    }
+
+    for (i = 0, gcm = &info.groupCompat[0]; i < XkbNumKbdGroups; i++, gcm++) {
+        if ((gcm->fileID != 0) || (gcm->real_mods != 0) || (gcm->vmods != 0)) {
+            xkb->compat->groups[i].mask = gcm->real_mods;
+            xkb->compat->groups[i].real_mods = gcm->real_mods;
+            xkb->compat->groups[i].vmods = gcm->vmods;
+        }
+    }
+
+    if (info.leds != NULL) {
+        if (!CopyIndicatorMapDefs(xkb, info.leds, unboundLEDs))
+            info.errorCount++;
+        info.leds = NULL;
+    }
+
+    ClearCompatInfo(&info, xkb);
+    return true;
+
+err_info:
+    ClearCompatInfo(&info, xkb);
     return false;
 }
 

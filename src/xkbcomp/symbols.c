@@ -2178,105 +2178,96 @@ CopyModMapDef(struct xkb_keymap * xkb, ModMapEntry *entry)
  * @param merge Merge strategy (e.g. MergeOverride).
  */
 bool
-CompileSymbols(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
+CompileSymbols(XkbFile *file, struct xkb_keymap *xkb, unsigned merge)
 {
     unsigned int i;
     SymbolsInfo info;
+    KeyInfo *key;
 
     InitSymbolsInfo(&info, xkb);
     info.dflt.defs.fileID = file->id;
     info.dflt.defs.merge = merge;
+
     HandleSymbolsFile(file, xkb, merge, &info);
 
-    if (info.nKeys == 0) {
-        FreeSymbolsInfo(&info);
-        return false;
+    if (info.nKeys == 0)
+        goto err_info;
+
+    if (info.errorCount != 0)
+        goto err_info;
+
+    /* alloc memory in the xkb struct */
+    if (XkbcAllocNames(xkb, XkbGroupNamesMask, 0) != Success) {
+        WSGO("Can not allocate names in CompileSymbols\n");
+        ACTION("Symbols not added\n");
+        goto err_info;
     }
 
-    if (info.errorCount == 0)
-    {
-        KeyInfo *key;
+    if (XkbcAllocClientMap(xkb, XkbKeySymsMask | XkbModifierMapMask, 0)
+        != Success) {
+        WSGO("Could not allocate client map in CompileSymbols\n");
+        ACTION("Symbols not added\n");
+        goto err_info;
+    }
 
-        /* alloc memory in the xkb struct */
-        if (XkbcAllocNames(xkb, XkbGroupNamesMask, 0) != Success)
-        {
-            WSGO("Can not allocate names in CompileSymbols\n");
-            ACTION("Symbols not added\n");
-            return false;
-        }
-        if (XkbcAllocClientMap(xkb, XkbKeySymsMask | XkbModifierMapMask, 0)
-            != Success)
-        {
-            WSGO("Could not allocate client map in CompileSymbols\n");
-            ACTION("Symbols not added\n");
-            return false;
-        }
-        if (XkbcAllocServerMap(xkb, XkbAllServerInfoMask, 32) != Success)
-        {
-            WSGO("Could not allocate server map in CompileSymbols\n");
-            ACTION("Symbols not added\n");
-            return false;
-        }
-        if (XkbcAllocControls(xkb) != Success)
-        {
-            WSGO("Could not allocate controls in CompileSymbols\n");
-            ACTION("Symbols not added\n");
-            return false;
-        }
+    if (XkbcAllocServerMap(xkb, XkbAllServerInfoMask, 32) != Success) {
+        WSGO("Could not allocate server map in CompileSymbols\n");
+        ACTION("Symbols not added\n");
+        goto err_info;
+    }
 
-        /* now copy info into xkb. */
-        if (info.aliases)
-            ApplyAliases(xkb, &info.aliases);
-        for (i = 0; i < XkbNumKbdGroups; i++)
-        {
-            if (info.groupNames[i] != XKB_ATOM_NONE)
-            {
-                free(UNCONSTIFY(xkb->names->groups[i]));
-                xkb->names->groups[i] = XkbcAtomGetString(info.groupNames[i]);
+    if (XkbcAllocControls(xkb) != Success) {
+        WSGO("Could not allocate controls in CompileSymbols\n");
+        ACTION("Symbols not added\n");
+        goto err_info;
+    }
+
+    /* now copy info into xkb. */
+    ApplyAliases(xkb, &info.aliases);
+
+    for (i = 0; i < XkbNumKbdGroups; i++) {
+        if (info.groupNames[i] != XKB_ATOM_NONE) {
+            free(UNCONSTIFY(xkb->names->groups[i]));
+            xkb->names->groups[i] = XkbcAtomGetString(info.groupNames[i]);
+        }
+    }
+
+    /* sanitize keys */
+    for (key = info.keys, i = 0; i < info.nKeys; i++, key++)
+        PrepareKeyDef(key);
+
+    /* copy! */
+    for (key = info.keys, i = 0; i < info.nKeys; i++, key++)
+        if (!CopySymbolsDef(xkb, key, 0))
+            info.errorCount++;
+
+    if (warningLevel > 3) {
+        for (i = xkb->min_key_code; i <= xkb->max_key_code; i++) {
+            if (xkb->names->keys[i].name[0] == '\0')
+                continue;
+
+            if (XkbKeyNumGroups(xkb, i) < 1) {
+                char buf[5];
+                memcpy(buf, xkb->names->keys[i].name, 4);
+                buf[4] = '\0';
+                WARN("No symbols defined for <%s> (keycode %d)\n", buf, i);
             }
         }
-        /* sanitize keys */
-        for (key = info.keys, i = 0; i < info.nKeys; i++, key++)
-        {
-            PrepareKeyDef(key);
-        }
-        /* copy! */
-        for (key = info.keys, i = 0; i < info.nKeys; i++, key++)
-        {
-            if (!CopySymbolsDef(xkb, key, 0))
+    }
+
+    if (info.modMap) {
+        ModMapEntry *mm, *next;
+        for (mm = info.modMap; mm != NULL; mm = next) {
+            if (!CopyModMapDef(xkb, mm))
                 info.errorCount++;
+            next = (ModMapEntry *)mm->defs.next;
         }
-        if (warningLevel > 3)
-        {
-            for (i = xkb->min_key_code; i <= xkb->max_key_code; i++)
-            {
-                if (xkb->names->keys[i].name[0] == '\0')
-                    continue;
-                if (XkbKeyNumGroups(xkb, i) < 1)
-                {
-                    char buf[5];
-                    memcpy(buf, xkb->names->keys[i].name, 4);
-                    buf[4] = '\0';
-                    WARN
-                        ("No symbols defined for <%s> (keycode %d)\n",
-                         buf, i);
-                }
-            }
-        }
-        if (info.modMap)
-        {
-            ModMapEntry *mm, *next;
-            for (mm = info.modMap; mm != NULL; mm = next)
-            {
-                if (!CopyModMapDef(xkb, mm))
-                    info.errorCount++;
-                next = (ModMapEntry *) mm->defs.next;
-            }
-        }
-        FreeSymbolsInfo(&info);
-        return true;
     }
 
+    FreeSymbolsInfo(&info);
+    return true;
+
+err_info:
     FreeSymbolsInfo(&info);
     return false;
 }

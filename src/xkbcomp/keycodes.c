@@ -874,57 +874,58 @@ HandleKeycodesFile(XkbFile * file,
  * @return true on success, false otherwise.
  */
 bool
-CompileKeycodes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
+CompileKeycodes(XkbFile *file, struct xkb_keymap *xkb, unsigned merge)
 {
     KeyNamesInfo info; /* contains all the info after parsing */
 
     InitKeyNamesInfo(&info);
+
     HandleKeycodesFile(file, xkb, merge, &info);
 
     /* all the keys are now stored in info */
 
-    if (info.errorCount == 0)
-    {
-        if (info.explicitMin > 0) /* if "minimum" statement was present */
-            xkb->min_key_code = info.explicitMin;
-        else
-            xkb->min_key_code = info.computedMin;
-        if (info.explicitMax > 0) /* if "maximum" statement was present */
-            xkb->max_key_code = info.explicitMax;
-        else
-            xkb->max_key_code = info.computedMax;
-        if (XkbcAllocNames(xkb, XkbKeyNamesMask | XkbIndicatorNamesMask, 0)
-                == Success)
-        {
-            uint64_t i;
-            for (i = info.computedMin; i <= info.computedMax; i++)
-                LongToKeyName(info.names[i], xkb->names->keys[i].name);
-        }
-        else
-        {
-            WSGO("Cannot create struct xkb_names in CompileKeycodes\n");
-            return false;
-        }
-        if (info.leds)
-        {
-            IndicatorNameInfo *ii;
-            if (XkbcAllocIndicatorMaps(xkb) != Success)
-            {
-                WSGO("Couldn't allocate IndicatorRec in CompileKeycodes\n");
-                ACTION("Physical indicators not set\n");
-            }
-            for (ii = info.leds; ii != NULL;
-                 ii = (IndicatorNameInfo *) ii->defs.next)
-            {
-                free(UNCONSTIFY(xkb->names->indicators[ii->ndx - 1]));
-                xkb->names->indicators[ii->ndx - 1] = XkbcAtomGetString(ii->name);
-            }
-        }
-        if (info.aliases)
-            ApplyAliases(xkb, &info.aliases);
-        ClearKeyNamesInfo(&info);
-        return true;
+    if (info.errorCount != 0)
+        goto err_info;
+
+    if (info.explicitMin > 0) /* if "minimum" statement was present */
+        xkb->min_key_code = info.explicitMin;
+    else
+        xkb->min_key_code = info.computedMin;
+
+    if (info.explicitMax > 0) /* if "maximum" statement was present */
+        xkb->max_key_code = info.explicitMax;
+    else
+        xkb->max_key_code = info.computedMax;
+
+    if (XkbcAllocNames(xkb, XkbKeyNamesMask | XkbIndicatorNamesMask, 0)
+        == Success) {
+        uint64_t i;
+        for (i = info.computedMin; i <= info.computedMax; i++)
+            LongToKeyName(info.names[i], xkb->names->keys[i].name);
+    } else {
+        WSGO("Cannot create struct xkb_names in CompileKeycodes\n");
+        goto err_info;
     }
+
+    if (info.leds) {
+        IndicatorNameInfo *ii;
+        if (XkbcAllocIndicatorMaps(xkb) != Success) {
+            WSGO("Couldn't allocate IndicatorRec in CompileKeycodes\n");
+            ACTION("Physical indicators not set\n");
+        }
+
+        for (ii = info.leds; ii; ii = (IndicatorNameInfo *)ii->defs.next) {
+            free(UNCONSTIFY(xkb->names->indicators[ii->ndx - 1]));
+            xkb->names->indicators[ii->ndx - 1] = XkbcAtomGetString(ii->name);
+        }
+    }
+
+    ApplyAliases(xkb, &info.aliases);
+
+    ClearKeyNamesInfo(&info);
+    return true;
+
+err_info:
     ClearKeyNamesInfo(&info);
     return false;
 }
