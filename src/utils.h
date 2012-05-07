@@ -44,10 +44,10 @@ recalloc(void *ptr, size_t old_size, size_t new_size);
  */
 #define UNCONSTIFY(const_ptr) ((void *)(uintptr_t)(const_ptr))
 
-#define uTypedAlloc(t)              malloc(sizeof(t))
-#define uTypedCalloc(n, t)          calloc((n), sizeof(t))
-#define uTypedRealloc(pO, n, t)     realloc((pO), (n) * sizeof(t))
-#define uTypedRecalloc(pO, o, n, t) recalloc((pO), (o) * sizeof(t), (n) * sizeof(t))
+#define uTypedAlloc(t)              ((t*)malloc(sizeof(t)))
+#define uTypedCalloc(n, t)          ((t*)calloc((n), sizeof(t)))
+#define uTypedRealloc(pO, n, t)     ((t*)realloc((pO), (n) * sizeof(t)))
+#define uTypedRecalloc(pO, o, n, t) ((t*)recalloc((pO), (o) * sizeof(t), (n) * sizeof(t)))
 
 #define uDupString(s)          ((s) ? strdup(s) : NULL)
 #define uStringText(s)         ((s) == NULL ? "<NullString>" : (s))

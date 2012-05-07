@@ -55,7 +55,7 @@ xkb_context_include_path_append(struct xkb_context *context, const char *path)
         new_paths = uTypedRecalloc(context->include_paths,
                                    context->size_include_paths,
                                    new_size,
-                                   typeof(new_paths));
+                                   char *);
         if (!new_paths)
             return 0;
         context->include_paths = new_paths;
