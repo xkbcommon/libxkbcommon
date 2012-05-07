@@ -50,7 +50,6 @@ test_rmlvo(const char *rules, const char *model, const char *layout,
            rmlvo.layout, rmlvo.variant, rmlvo.options);
 
     xkb = xkb_map_new_from_names(context, &rmlvo);
-#if 0
     if (!xkb) {
         xkb_context_unref(context);
         return 0;
@@ -58,7 +57,6 @@ test_rmlvo(const char *rules, const char *model, const char *layout,
 
     xkb_map_unref(xkb);
     xkb_context_unref(context);
-#endif
     return 1;
 }
 
@@ -66,7 +64,6 @@ int
 main(void)
 {
     assert(test_rmlvo("base",       "pc105",  "us,il,ru,ca",  ",,,multix",      "grp:alts_toggle,ctrl:nocaps,compose:rwin"));
-#if 0
     assert(test_rmlvo("base",       "",       "us",  "",      ""));
     assert(test_rmlvo("evdev",      "pc105",  "us",  "intl",  ""));
     assert(test_rmlvo("evdev",      "pc105",  "us",  "intl",  "grp:alts_toggle"));
@@ -75,7 +72,6 @@ main(void)
     assert(!test_rmlvo("base",      "",       "",    "",      ""));
     assert(!test_rmlvo("base",      "pc105",  "",    "",      ""));
     assert(!test_rmlvo("badrules",  "",       "us",  "",      ""));
-#endif
 
     return 0;
 }
