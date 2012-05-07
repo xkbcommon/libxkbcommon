@@ -111,7 +111,7 @@ extern IncludeStmt *
 IncludeCreate(char *str, unsigned merge);
 
 extern unsigned
-StmtSetMerge(ParseCommon *stmt, unsigned merge, YYLTYPE *loc, void *scanner);
+StmtSetMerge(ParseCommon *stmt, unsigned merge, struct YYLTYPE *loc, void *scanner);
 
 extern void
 CheckDefaultMap(XkbFile *maps, const char *fileName);

@@ -196,7 +196,7 @@ alternate_group		return ALTERNATE_GROUP;
 %%
 
 void
-yyerror(YYLTYPE *loc, void *scanner, const char *msg)
+yyerror(struct YYLTYPE *loc, void *scanner, const char *msg)
 {
     struct scanner_extra *extra = yyget_extra(scanner);
 

@@ -684,7 +684,7 @@ CreateXKBFile(int type, char *name, ParseCommon * defs, unsigned flags)
 }
 
 unsigned
-StmtSetMerge(ParseCommon * stmt, unsigned merge, YYLTYPE *loc, void *scanner)
+StmtSetMerge(ParseCommon * stmt, unsigned merge, struct YYLTYPE *loc, void *scanner)
 {
     if ((merge == MergeAltForm) && (stmt->stmtType != StmtKeycodeDef))
     {
