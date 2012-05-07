@@ -111,11 +111,11 @@ typedef uint32_t xkb_led_index_t;
  * should be the primary identifier for a keymap.
  */
 struct xkb_rule_names {
-    char *rules;
-    char *model;
-    char *layout;
-    char *variant;
-    char *options;
+    const char *rules;
+    const char *model;
+    const char *layout;
+    const char *variant;
+    const char *options;
 };
 
 /**
