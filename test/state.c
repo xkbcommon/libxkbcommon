@@ -30,7 +30,7 @@
 #include <linux/input.h>
 
 #include "xkbcommon/xkbcommon.h"
-#include "XKBcommonint.h"
+#include "xkb-priv.h"
 
 /* Offset between evdev keycodes (where KEY_ESCAPE is 1), and the evdev XKB
  * keycode set (where ESC is 9). */

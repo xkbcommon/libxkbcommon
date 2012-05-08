@@ -24,11 +24,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-#include "xkballoc.h"
-#include "xkbmisc.h"
-#include "xkbcommon/xkbcommon.h"
-#include "XKBcommonint.h"
 #include <X11/keysym.h>
+
+#include "xkb-priv.h"
+#include "alloc.h"
 
 #define mapSize(m) (sizeof(m) / sizeof(struct xkb_kt_map_entry))
 static struct xkb_kt_map_entry map2Level[]= {
@@ -133,55 +132,6 @@ XkbcInitCanonicalKeyTypes(struct xkb_keymap * xkb, unsigned which, int keypadVMo
     }
 
     return Success;
-}
-
-bool
-XkbcVirtualModsToReal(struct xkb_keymap * xkb, unsigned virtual_mask,
-                      unsigned *mask_rtrn)
-{
-    int i, bit;
-    unsigned mask;
-
-    if (!xkb)
-        return false;
-    if (virtual_mask == 0) {
-        *mask_rtrn = 0;
-        return true;
-    }
-    if (!xkb->server)
-        return false;
-
-    for (i = mask = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1) {
-        if (virtual_mask & bit)
-            mask |= xkb->server->vmods[i];
-    }
-
-    *mask_rtrn = mask;
-    return true;
-}
-
-/*
- * All latin-1 alphanumerics, plus parens, slash, minus, underscore and
- * wildcards.
- */
-static const unsigned char componentSpecLegal[] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0xa7, 0xff, 0x83,
-    0xfe, 0xff, 0xff, 0x87, 0xfe, 0xff, 0xff, 0x07,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0xff, 0xff, 0x7f, 0xff, 0xff, 0xff, 0x7f, 0xff
-};
-
-void
-XkbcEnsureSafeMapName(char *name)
-{
-    if (!name)
-        return;
-
-    while (*name!='\0') {
-        if ((componentSpecLegal[(*name) / 8] & (1 << ((*name) % 8))) == 0)
-            *name= '_';
-        name++;
-    }
 }
 
 unsigned

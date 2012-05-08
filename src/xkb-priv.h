@@ -76,16 +76,17 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Author: Daniel Stone <daniel@fooishbar.org>
  */
 
-#ifndef _XKBCOMMONINT_H_
-#define _XKBCOMMONINT_H_
+#ifndef XKB_PRIV_H
+#define XKB_PRIV_H
 
 #include <stdbool.h>
-#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 #include <X11/extensions/XKB.h>
+#include <X11/X.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "utils.h"
 
 /* From XKM.h */
 #define	XkmSemanticsFile	20
@@ -114,12 +115,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XkmKeymapRequired	(XkmSemanticsRequired|XkmLayoutRequired)
 #define	XkmKeymapOptional	((XkmSemanticsOptional|XkmLayoutOptional)&(~XkmKeymapRequired))
 #define	XkmKeymapLegal		(XkmKeymapRequired|XkmKeymapOptional)
-
-extern unsigned int xkb_key_get_group(struct xkb_state *state,
-                                      xkb_keycode_t key);
-extern unsigned int xkb_key_get_level(struct xkb_state *state,
-                                      xkb_keycode_t key,
-                                      unsigned int group);
 
 struct xkb_any_action {
     uint8_t   type;
@@ -431,4 +426,34 @@ struct xkb_state {
         struct xkb_keymap *xkb;
 };
 
-#endif /* _XKBCOMMONINT_H_ */
+extern unsigned int
+xkb_key_get_group(struct xkb_state *state, xkb_keycode_t key);
+
+extern unsigned int
+xkb_key_get_level(struct xkb_state *state, xkb_keycode_t key,
+                  unsigned int group);
+
+extern unsigned int
+xkb_key_get_syms_by_level(struct xkb_keymap *xkb, xkb_keycode_t key,
+                          unsigned int group, unsigned int level,
+                          const xkb_keysym_t **syms_out);
+extern bool
+XkbcComputeEffectiveMap(struct xkb_keymap * xkb, struct xkb_key_type * type,
+                        unsigned char *map_rtrn);
+
+extern int
+XkbcInitCanonicalKeyTypes(struct xkb_keymap * xkb, unsigned which,
+                          int keypadVMod);
+
+extern unsigned
+_XkbcKSCheckCase(xkb_keysym_t sym);
+
+#define _XkbKSLower (1 << 0)
+#define _XkbKSUpper (1 << 1)
+
+#define XkbcKSIsLower(k) (_XkbcKSCheckCase(k) & _XkbKSLower)
+#define XkbcKSIsUpper(k) (_XkbcKSCheckCase(k) & _XkbKSUpper)
+
+#define XkbKSIsKeypad(k) (((k) >= XK_KP_Space) && ((k) <= XK_KP_Equal))
+
+#endif /* XKB_PRIV_H */

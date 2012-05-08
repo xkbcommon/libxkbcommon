@@ -24,11 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-#include <stdio.h>
-
-#include "xkbmisc.h"
-#include "xkbcommon/xkbcommon.h"
-#include "XKBcommonint.h"
+#include "xkb-priv.h"
 
 static char *
 XkbcCanonicaliseComponent(char *name, const char *old)
@@ -94,6 +90,31 @@ xkb_canonicalise_components(struct xkb_component_names * names,
                                              old ? old->types : NULL);
 }
 
+static bool
+VirtualModsToReal(struct xkb_keymap *xkb, unsigned virtual_mask,
+                  unsigned *mask_rtrn)
+{
+    int i, bit;
+    unsigned mask;
+
+    if (!xkb)
+        return false;
+    if (virtual_mask == 0) {
+        *mask_rtrn = 0;
+        return true;
+    }
+    if (!xkb->server)
+        return false;
+
+    for (i = mask = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1) {
+        if (virtual_mask & bit)
+            mask |= xkb->server->vmods[i];
+    }
+
+    *mask_rtrn = mask;
+    return true;
+}
+
 bool
 XkbcComputeEffectiveMap(struct xkb_keymap * xkb, struct xkb_key_type * type,
                         unsigned char *map_rtrn)
@@ -106,7 +127,7 @@ XkbcComputeEffectiveMap(struct xkb_keymap * xkb, struct xkb_key_type * type,
         return false;
 
     if (type->mods.vmods != 0) {
-        if (!XkbcVirtualModsToReal(xkb, type->mods.vmods, &tmp))
+        if (!VirtualModsToReal(xkb, type->mods.vmods, &tmp))
             return false;
 
         type->mods.mask = tmp | type->mods.real_mods;
@@ -114,7 +135,7 @@ XkbcComputeEffectiveMap(struct xkb_keymap * xkb, struct xkb_key_type * type,
         for (i = 0; i < type->map_count; i++, entry++) {
             tmp = 0;
             if (entry->mods.vmods != 0) {
-                if (!XkbcVirtualModsToReal(xkb, entry->mods.vmods, &tmp))
+                if (!VirtualModsToReal(xkb, entry->mods.vmods, &tmp))
                     return false;
                 if (tmp == 0) {
                     entry->active = false;

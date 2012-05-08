@@ -25,13 +25,12 @@
    * software without specific, written prior permission.
    \*/
 
-#include "utils.h"
-#include "XKBcommonint.h"
-
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+
+#include "utils.h"
 
 void *
 recalloc(void *ptr, size_t old_size, size_t new_size)

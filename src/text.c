@@ -24,12 +24,7 @@
 
  ********************************************************/
 
-#include "xkbmisc.h"
-#include "xkbcommon/xkbcommon.h"
-#include "XKBcommonint.h"
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
+#include "text.h"
 
 #define BUFFER_SIZE 1024
 static char textBuffer[BUFFER_SIZE];

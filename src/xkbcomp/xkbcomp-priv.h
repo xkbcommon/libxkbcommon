@@ -28,7 +28,8 @@
 #define XKBCOMP_PRIV_H
 
 #include "xkbcomp.h"
-#include "xkballoc.h"
+#include "alloc.h"
+#include "text.h"
 #include "utils.h"
 
 typedef struct _CommonInfo

@@ -20,7 +20,6 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/xkbcomp \
-	-Isrc/xkbcomp/ \
 	-include $(top_srcdir)/src/config.h
 
 AM_CFLAGS = \
@@ -61,21 +60,22 @@ libxkbcommon_la_SOURCES = \
 	src/xkbcomp/xkbcomp.h \
 	src/xkbcomp/xkbcomp-priv.h \
 	src/alloc.c \
+	src/alloc.h \
 	src/atom.c \
+	src/atom.h \
 	src/context.c \
 	src/keysym.c \
 	src/map.c \
-	src/maprules.c \
 	src/misc.c \
+	src/rules.c \
+	src/rules.h \
 	src/state.c \
 	src/text.c \
+	src/text.h \
 	src/utils.c \
 	src/utils.h \
 	src/xkb.c \
-	src/xkballoc.h \
-	src/xkbmisc.h \
-	src/xkbrules.h \
-	src/XKBcommonint.h
+	src/xkb-priv.h
 
 BUILT_SOURCES = \
 	src/xkbcomp/parser.c \

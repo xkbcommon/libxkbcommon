@@ -28,11 +28,10 @@ authorization from the authors.
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <X11/keysymdef.h>
+#include <X11/keysym.h>
 
+#include "xkb-priv.h"
 #include "ks_tables.h"
-#include "xkbmisc.h"
-#include "xkbcommon/xkbcommon.h"
 
 _X_EXPORT void
 xkb_keysym_to_string(xkb_keysym_t ks, char *buffer, size_t size)

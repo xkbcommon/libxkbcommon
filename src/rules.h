@@ -24,13 +24,12 @@ sale, use or other dealings in this Software without prior written
 authorization from the authors.
 */
 
-#ifndef _XKBRULES_H_
-#define _XKBRULES_H_
+#ifndef RULES_H
+#define RULES_H
 
-#include <stdbool.h>
 #include <stdio.h>
 
-#include "xkbcommon/xkbcommon.h"
+#include "xkb-priv.h"
 
 /* From filecommon */
 
@@ -101,8 +100,6 @@ typedef struct _XkbRF_Rules {
     XkbRF_GroupPtr          groups;
 } XkbRF_RulesRec, *XkbRF_RulesPtr;
 
-/* Action structures used in the server */
-
 extern bool
 XkbcRF_GetComponents(XkbRF_RulesPtr rules, XkbRF_VarDefsPtr defs,
                      struct xkb_component_names * names);
@@ -113,4 +110,4 @@ XkbcRF_LoadRules(FILE *file, XkbRF_RulesPtr rules);
 extern void
 XkbcRF_Free(XkbRF_RulesPtr rules);
 
-#endif /* _XKBRULES_H_ */
+#endif /* RULES_H */

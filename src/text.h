@@ -24,62 +24,10 @@ sale, use or other dealings in this Software without prior written
 authorization from the authors.
 */
 
-#ifndef _XKBMISC_H_
-#define _XKBMISC_H_
+#ifndef TEXT_H
+#define TEXT_H
 
-#include <stdbool.h>
-#include <X11/Xfuncproto.h>
-
-#include "XKBcommonint.h"
-
-typedef uint32_t xkb_atom_t;
-
-#define XKB_ATOM_NONE 0
-
-/***====================================================================***/
-
-extern bool
-XkbcComputeEffectiveMap(struct xkb_keymap * xkb, struct xkb_key_type * type,
-                        unsigned char *map_rtrn);
-
-/***====================================================================***/
-
-extern int
-XkbcInitCanonicalKeyTypes(struct xkb_keymap * xkb, unsigned which, int keypadVMod);
-
-extern bool
-XkbcVirtualModsToReal(struct xkb_keymap * xkb, unsigned virtual_mask,
-                      unsigned *mask_rtrn);
-
-extern void
-XkbcEnsureSafeMapName(char *name);
-
-extern unsigned
-_XkbcKSCheckCase(xkb_keysym_t sym);
-
-#define _XkbKSLower (1 << 0)
-#define _XkbKSUpper (1 << 1)
-
-#define XkbcKSIsLower(k) (_XkbcKSCheckCase(k) & _XkbKSLower)
-#define XkbcKSIsUpper(k) (_XkbcKSCheckCase(k) & _XkbKSUpper)
-
-#define XkbKSIsKeypad(k) (((k) >= XK_KP_Space) && ((k) <= XK_KP_Equal))
-
-/***====================================================================***/
-
-extern xkb_atom_t
-xkb_intern_atom(const char *string);
-
-extern char *
-XkbcAtomGetString(xkb_atom_t atom);
-
-extern void
-XkbcFreeAllAtoms(void);
-
-/***====================================================================***/
-
-extern const char *
-XkbcAtomText(xkb_atom_t atm);
+#include "xkb-priv.h"
 
 extern const char *
 XkbcVModMaskText(struct xkb_keymap * xkb, unsigned modMask, unsigned mask);
@@ -105,4 +53,4 @@ XkbcKeyNameText(char *name);
 extern const char *
 XkbcSIMatchText(unsigned type);
 
-#endif /* _XKBMISC_H_ */
+#endif /* TEXT_H */

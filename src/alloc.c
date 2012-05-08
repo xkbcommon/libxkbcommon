@@ -23,10 +23,8 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include "utils.h"
-#include "xkballoc.h"
-#include "xkbcommon/xkbcommon.h"
-#include "XKBcommonint.h"
+#include "xkb-priv.h"
+#include "alloc.h"
 
 int
 XkbcAllocClientMap(struct xkb_keymap * xkb, unsigned which, unsigned nTotalTypes)

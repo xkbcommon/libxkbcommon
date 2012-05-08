@@ -659,6 +659,30 @@ CheckDefaultMap(XkbFile * maps, const char *fileName)
     }
 }
 
+/*
+ * All latin-1 alphanumerics, plus parens, slash, minus, underscore and
+ * wildcards.
+ */
+static const unsigned char componentSpecLegal[] = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0xa7, 0xff, 0x83,
+    0xfe, 0xff, 0xff, 0x87, 0xfe, 0xff, 0xff, 0x07,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0xff, 0xff, 0x7f, 0xff, 0xff, 0xff, 0x7f, 0xff
+};
+
+static void
+EnsureSafeMapName(char *name)
+{
+    if (!name)
+        return;
+
+    while (*name!='\0') {
+        if ((componentSpecLegal[(*name) / 8] & (1 << ((*name) % 8))) == 0)
+            *name= '_';
+        name++;
+    }
+}
+
 XkbFile *
 CreateXKBFile(int type, char *name, ParseCommon * defs, unsigned flags)
 {
@@ -668,7 +692,7 @@ CreateXKBFile(int type, char *name, ParseCommon * defs, unsigned flags)
     file = uTypedAlloc(XkbFile);
     if (file)
     {
-        XkbcEnsureSafeMapName(name);
+        EnsureSafeMapName(name);
         memset(file, 0, sizeof(XkbFile));
         file->type = type;
         file->topName = uDupString(name);

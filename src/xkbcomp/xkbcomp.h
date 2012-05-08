@@ -27,8 +27,8 @@
 #ifndef XKBCOMP_H
 #define	XKBCOMP_H 1
 
-#include "XKBcommonint.h"
-#include "xkbmisc.h"
+#include "xkb-priv.h"
+#include "atom.h"
 
 #define	TypeUnknown	0
 #define	TypeBoolean	1

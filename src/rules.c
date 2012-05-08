@@ -24,14 +24,10 @@
 
  ********************************************************/
 
-#include "utils.h"
-#include "xkbrules.h"
-#include "xkbcommon/xkbcommon.h"
-#include "XKBcommonint.h"
-
 #include <stdio.h>
 #include <ctype.h>
-#include <stdlib.h>
+
+#include "rules.h"
 
 #ifdef DEBUG
 #define PR_DEBUG(s)		fprintf(stderr,s)
@@ -851,13 +847,13 @@ XkbcRF_GetComponents(	XkbRF_RulesPtr		rules,
 
     if (names->keycodes)
 	names->keycodes= XkbRF_SubstituteVars(names->keycodes, &mdefs);
-    if (names->symbols)	
+    if (names->symbols)
 	names->symbols=	XkbRF_SubstituteVars(names->symbols, &mdefs);
     if (names->types)
 	names->types= XkbRF_SubstituteVars(names->types, &mdefs);
     if (names->compat)
 	names->compat= XkbRF_SubstituteVars(names->compat, &mdefs);
-    if (names->keymap)	
+    if (names->keymap)
 	names->keymap= XkbRF_SubstituteVars(names->keymap, &mdefs);
 
     FreeMultiDefs(&mdefs);

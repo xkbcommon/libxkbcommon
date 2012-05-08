@@ -60,9 +60,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <assert.h>
 
-#include "xkbcommon/xkbcommon.h"
-#include "XKBcommonint.h"
-#include "xkbmisc.h"
+#include "xkb-priv.h"
 
 struct xkb_filter {
     struct xkb_state *state;

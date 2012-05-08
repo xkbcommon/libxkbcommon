@@ -24,12 +24,10 @@ sale, use or other dealings in this Software without prior written
 authorization from the authors.
 */
 
-#ifndef _XKBALLOC_H_
-#define _XKBALLOC_H_
+#ifndef ALLOC_H
+#define ALLOC_H
 
-#include <X11/X.h>
-#include "xkbcommon/xkbcommon.h"
-#include "XKBcommonint.h"
+#include "xkb-priv.h"
 
 extern int
 XkbcAllocCompatMap(struct xkb_keymap *xkb, unsigned nSI);
@@ -70,9 +68,4 @@ XkbcFreeClientMap(struct xkb_keymap * xkb);
 extern void
 XkbcFreeServerMap(struct xkb_keymap * xkb);
 
-extern unsigned int
-xkb_key_get_syms_by_level(struct xkb_keymap *xkb, xkb_keycode_t key,
-                          unsigned int group, unsigned int level,
-                          const xkb_keysym_t **syms_out);
-
-#endif /* _XKBALLOC_H_ */
+#endif /* ALLOC_H */

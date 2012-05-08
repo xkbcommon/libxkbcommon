@@ -49,10 +49,7 @@
  *
  * ********************************************************/
 
-#include "utils.h"
-#include "xkbcommon/xkbcommon.h"
-#include "XKBcommonint.h"
-#include "xkballoc.h"
+#include "xkb-priv.h"
 
 /**
  * Returns the total number of modifiers active in the keymap.
@@ -296,7 +293,7 @@ xkb_key_get_group(struct xkb_state *state, xkb_keycode_t key)
 /**
  * As below, but takes an explicit group/level rather than state.
  */
-_X_EXPORT unsigned int
+unsigned int
 xkb_key_get_syms_by_level(struct xkb_keymap *xkb, xkb_keycode_t key, unsigned int group,
                           unsigned int level, const xkb_keysym_t **syms_out)
 {

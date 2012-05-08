@@ -25,7 +25,7 @@ authorization from the authors.
 */
 
 #include "xkbcomp-priv.h"
-#include "xkbrules.h"
+#include "rules.h"
 #include "parseutils.h"
 
 /* Global warning level */

@@ -70,9 +70,7 @@ SOFTWARE.
 
  ********************************************************/
 
-#include "xkbmisc.h"
-#include "xkbcommon/xkbcommon.h"
-#include "XKBcommonint.h"
+#include "atom.h"
 
 #define InitialTableSize 100
 

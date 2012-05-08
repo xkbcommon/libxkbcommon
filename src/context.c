@@ -28,9 +28,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "xkbcommon/xkbcommon.h"
-#include "XKBcommonint.h"
-#include "utils.h"
+#include "xkb-priv.h"
 
 struct xkb_context {
     int refcnt;
