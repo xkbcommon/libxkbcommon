@@ -1,5 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4
 
+SUBDIRS = makekeys
+
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = xkbcommon.pc
 
@@ -87,15 +89,11 @@ BUILT_SOURCES = \
 	src/ks_tables.h
 CLEANFILES = $(BUILT_SOURCES)
 
-noinst_PROGRAMS = makekeys/makekeys
-makekeys_makekeys_SOURCES = makekeys/makekeys.c
-makekeys_makekeys_CC = $(CC_FOR_BUILD)
-makekeys_makekeys_CPPFLAGS = $(AM_CPPFLAGS) $(CPPFLAGS_FOR_BUILD)
-makekeys_makekeys_CFLAGS = $(AM_CFLAGS) $(CFLAGS_FOR_BUILD)
-makekeys_makekeys_LDFLAGS = $(AM_LDFLAGS) $(LDFLAGS_FOR_BUILD)
-
 src/ks_tables.h: $(KEYSYMDEFS) $(top_builddir)/makekeys/makekeys$(EXEEXT)
 	$(top_builddir)/makekeys/makekeys $(KEYSYMDEFS) > $@
+
+$(top_builddir)/makekeys/makekeys$(EXEEXT): $(top_srcdir)/makekeys/makekeys.c
+	$(MAKE) -C makekeys
 
 # Tests
 

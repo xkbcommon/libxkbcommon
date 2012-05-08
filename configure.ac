@@ -114,5 +114,9 @@ AC_ARG_WITH([xkb_config_root],
     [XKBCONFIGROOT="$xkb_base"])
 AC_SUBST([XKBCONFIGROOT])
 
-AC_CONFIG_FILES([Makefile xkbcommon.pc])
+
+AC_CONFIG_FILES([
+    Makefile
+    makekeys/Makefile
+    xkbcommon.pc])
 AC_OUTPUT
