@@ -26,11 +26,8 @@
 
 #include <errno.h>
 #include <limits.h>
-#include <stdlib.h>
-#include "xkbcommon/xkbcommon.h"
-#include "XKBcommonint.h"
-#include "utils.h"
-#include "xkbpath.h"
+
+#include "xkbcomp-priv.h"
 
 /**
  * Extract the first token from an include statement.

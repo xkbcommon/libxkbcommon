@@ -27,8 +27,10 @@
 #ifndef XKBPARSE_H
 #define	XKBPARSE_H 1
 
-#include "xkbcomp.h"
-#include "xkbparse.h"
+#include <stdio.h>
+
+#include "xkbcomp-priv.h"
+#include "parser.h"
 
 struct parser_param {
     void *scanner;

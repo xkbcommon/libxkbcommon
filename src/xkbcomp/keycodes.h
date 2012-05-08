@@ -27,6 +27,8 @@
 #ifndef KEYCODES_H
 #define KEYCODES_H 1
 
+#include "xkbcomp-priv.h"
+
 #define KeyNameToLong(n) (              \
     (((unsigned long)n[0]) << 24) |     \
     (((unsigned long)n[1]) << 16) |     \

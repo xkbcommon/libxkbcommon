@@ -27,6 +27,8 @@
 #ifndef INDICATORS_H
 #define INDICATORS_H 1
 
+#include "xkbcomp-priv.h"
+
 #define	_LED_Index	(1<<0)
 #define	_LED_Mods	(1<<1)
 #define	_LED_Groups	(1<<2)

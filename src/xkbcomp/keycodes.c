@@ -24,14 +24,10 @@
 
  ********************************************************/
 
-#include "xkbcomp.h"
-#include "xkballoc.h"
-#include "xkbmisc.h"
-#include "expr.h"
 #include "keycodes.h"
-#include "misc.h"
-#include "alias.h"
+#include "expr.h"
 #include "parseutils.h"
+#include "alias.h"
 
 const char *
 longText(unsigned long val)

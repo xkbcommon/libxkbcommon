@@ -30,7 +30,6 @@ authorization from the authors.
 #include <stdbool.h>
 #include <X11/Xfuncproto.h>
 
-#include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
 
 typedef uint32_t xkb_atom_t;

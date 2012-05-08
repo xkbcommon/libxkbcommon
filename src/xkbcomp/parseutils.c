@@ -25,9 +25,6 @@
  ********************************************************/
 
 #include "parseutils.h"
-#include "xkbmisc.h"
-#include "xkbpath.h"
-#include "xkbparse.h"
 
 #include <X11/keysym.h>
 

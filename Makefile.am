@@ -49,18 +49,17 @@ libxkbcommon_la_SOURCES = \
 	src/xkbcomp/keymap.c \
 	src/xkbcomp/keytypes.c \
 	src/xkbcomp/misc.c \
-	src/xkbcomp/misc.h \
+	src/xkbcomp/parser.y \
 	src/xkbcomp/parseutils.c \
 	src/xkbcomp/parseutils.h \
+	src/xkbcomp/path.c \
+	src/xkbcomp/scanner.l \
 	src/xkbcomp/symbols.c \
 	src/xkbcomp/vmod.c \
 	src/xkbcomp/vmod.h \
 	src/xkbcomp/xkbcomp.c \
 	src/xkbcomp/xkbcomp.h \
-	src/xkbcomp/xkbparse.y \
-	src/xkbcomp/xkbpath.c \
-	src/xkbcomp/xkbpath.h \
-	src/xkbcomp/xkbscan.l \
+	src/xkbcomp/xkbcomp-priv.h \
 	src/alloc.c \
 	src/atom.c \
 	src/context.c \
@@ -79,9 +78,9 @@ libxkbcommon_la_SOURCES = \
 	src/XKBcommonint.h
 
 BUILT_SOURCES = \
-	src/xkbcomp/xkbparse.c \
-	src/xkbcomp/xkbparse.h \
-	src/xkbcomp/xkbscan.c \
+	src/xkbcomp/parser.c \
+	src/xkbcomp/parser.h \
+	src/xkbcomp/scanner.c \
 	src/ks_tables.h
 CLEANFILES = $(BUILT_SOURCES)
 

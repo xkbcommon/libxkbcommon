@@ -24,17 +24,8 @@
 
  ********************************************************/
 
-#include <X11/X.h>
-
-#include "xkbcomp.h"
-#include "xkbmisc.h"
-#include "expr.h"
-
-#include "keycodes.h"
-#include "vmod.h"
-#include "misc.h"
 #include "action.h"
-#include "misc.h"
+#include "keycodes.h"
 
 static bool actionsInitialized;
 static ExprDef constTrue;

@@ -24,14 +24,8 @@
 
  ********************************************************/
 
-#include "xkbcomp.h"
-#include "xkbmisc.h"
-#include "expr.h"
-#include "vmod.h"
-#include "action.h"
-#include "misc.h"
+#include "xkbcomp-priv.h"
 #include "indicators.h"
-#include "xkballoc.h"
 
 /**
  * Compile the given file and store the output in xkb.

@@ -24,21 +24,14 @@
 
  ********************************************************/
 
-#include "xkbcomp.h"
-#include "xkballoc.h"
-#include "xkbmisc.h"
-#include "expr.h"
-#include "parseutils.h"
-
 #include <X11/keysym.h>
-#include <stdlib.h>
 
-#include "expr.h"
-#include "vmod.h"
+#include "xkbcomp-priv.h"
+#include "parseutils.h"
 #include "action.h"
-#include "keycodes.h"
-#include "misc.h"
 #include "alias.h"
+#include "keycodes.h"
+#include "vmod.h"
 
 /***====================================================================***/
 

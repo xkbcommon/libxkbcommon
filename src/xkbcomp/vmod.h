@@ -27,6 +27,9 @@
 #ifndef VMOD_H
 #define VMOD_H 1
 
+#include "xkbcomp-priv.h"
+#include "expr.h"
+
 typedef struct _VModInfo
 {
     struct xkb_keymap *xkb;

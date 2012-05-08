@@ -24,15 +24,6 @@
 
  ********************************************************/
 
-#include <stdio.h>
-#include "xkbcomp.h"
-#include "xkballoc.h"
-#include "xkbmisc.h"
-#include "expr.h"
-#include "misc.h"
-
-#include <X11/extensions/XKB.h>
-
 #include "vmod.h"
 
 void

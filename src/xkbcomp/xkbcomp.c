@@ -24,14 +24,9 @@ sale, use or other dealings in this Software without prior written
 authorization from the authors.
 */
 
-#include <limits.h>
-#include "xkbcomp.h"
-#include "xkballoc.h"
+#include "xkbcomp-priv.h"
 #include "xkbrules.h"
-#include "xkbpath.h"
-#include "xkbmisc.h"
 #include "parseutils.h"
-#include "utils.h"
 
 /* Global warning level */
 unsigned int warningLevel = 0;

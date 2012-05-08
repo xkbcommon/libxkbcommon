@@ -27,7 +27,7 @@
 #ifndef EXPR_H
 #define EXPR_H 1
 
-#include <stdbool.h>
+#include "xkbcomp-priv.h"
 
 typedef union _ExprResult
 {

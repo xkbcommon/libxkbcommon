@@ -24,13 +24,9 @@
 
  ********************************************************/
 
-#include "xkbcomp.h"
-#include "xkballoc.h"
-#include "xkbmisc.h"
-#include "xkbpath.h"
-#include "keycodes.h"
-#include "misc.h"
+#include "xkbcomp-priv.h"
 #include "parseutils.h"
+#include "keycodes.h"
 
 /***====================================================================***/
 

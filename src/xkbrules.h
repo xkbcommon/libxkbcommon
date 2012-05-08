@@ -28,6 +28,7 @@ authorization from the authors.
 #define _XKBRULES_H_
 
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "xkbcommon/xkbcommon.h"
 

@@ -25,13 +25,10 @@
  ********************************************************/
 
 %{
-
 #include <stdio.h>
-#include <ctype.h>
 
-#include "utils.h"
+#include "xkbcomp-priv.h"
 #include "parseutils.h"
-
 
 extern int yyparse(struct parser_param *param);
 
@@ -45,7 +42,6 @@ extern int yyparse(struct parser_param *param);
         return ERROR_TOK;                                               \
     *yyextra->s++ = ch;                                                 \
 } while (0)
-
 %}
 
 %option reentrant

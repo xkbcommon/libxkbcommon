@@ -1,3 +1,3 @@
-xkbparse.c
-xkbparse.h
-xkbscan.c
+parser.c
+parser.h
+scanner.c

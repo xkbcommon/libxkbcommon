@@ -27,6 +27,9 @@
 #ifndef ACTION_H
 #define ACTION_H 1
 
+#include "xkbcomp-priv.h"
+#include "expr.h"
+
 #define	F_ClearLocks	0
 #define	F_LatchToLock	1
 #define	F_GenKeyEvent	2

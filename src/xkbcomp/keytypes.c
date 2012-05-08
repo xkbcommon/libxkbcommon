@@ -24,14 +24,9 @@
 
  ********************************************************/
 
-#include "xkbcomp.h"
-#include "xkballoc.h"
-#include "xkbmisc.h"
-#include "expr.h"
-#include "vmod.h"
-#include "action.h"
-#include "misc.h"
+#include "xkbcomp-priv.h"
 #include "parseutils.h"
+#include "vmod.h"
 
 typedef struct _PreserveInfo
 {

@@ -24,15 +24,9 @@
 
  ********************************************************/
 
-#include "xkbcomp.h"
-#include "xkballoc.h"
-#include "xkbmisc.h"
-#include "misc.h"
-#include "expr.h"
-#include "vmod.h"
 #include "indicators.h"
+#include "expr.h"
 #include "action.h"
-#include "utils.h"
 
 /***====================================================================***/
 

@@ -24,15 +24,11 @@
 
  ********************************************************/
 
-#include "xkbcomp.h"
-#include "xkballoc.h"
-#include "xkbmisc.h"
-#include "expr.h"
-#include "vmod.h"
-#include "misc.h"
-#include "indicators.h"
-#include "action.h"
+#include "xkbcomp-priv.h"
 #include "parseutils.h"
+#include "action.h"
+#include "indicators.h"
+#include "vmod.h"
 
 typedef struct _SymInterpInfo
 {

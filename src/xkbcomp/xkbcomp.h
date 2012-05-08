@@ -27,9 +27,6 @@
 #ifndef XKBCOMP_H
 #define	XKBCOMP_H 1
 
-#include "utils.h"
-
-#include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
 #include "xkbmisc.h"
 
@@ -270,8 +267,5 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap * xkb, unsigned merge,
 
 extern bool
 CompileSymbols(XkbFile *file, struct xkb_keymap * xkb, unsigned merge);
-
-extern bool
-UpdateModifiersFromCompat(struct xkb_keymap *xkb);
 
 #endif /* XKBCOMP_H */

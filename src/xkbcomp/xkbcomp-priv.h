@@ -24,8 +24,12 @@
 
  ********************************************************/
 
-#ifndef MISC_H
-#define MISC_H 1
+#ifndef XKBCOMP_PRIV_H
+#define XKBCOMP_PRIV_H
+
+#include "xkbcomp.h"
+#include "xkballoc.h"
+#include "utils.h"
 
 typedef struct _CommonInfo
 {
@@ -71,4 +75,18 @@ extern bool
 FindKeyNameForAlias(struct xkb_keymap *xkb, unsigned long lname,
                     unsigned long *real_name);
 
-#endif /* MISC_H */
+extern bool
+UpdateModifiersFromCompat(struct xkb_keymap *xkb);
+
+extern const char *
+XkbDirectoryForInclude(unsigned type);
+
+extern FILE *
+XkbFindFileInPath(struct xkb_context *context, const char *name,
+                  unsigned type, char **pathRtrn);
+
+extern bool
+XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
+                   char *nextop_rtrn, char **extra_data);
+
+#endif /* XKBCOMP_PRIV_H */

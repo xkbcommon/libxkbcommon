@@ -27,6 +27,8 @@
 #ifndef ALIAS_H
 #define ALIAS_H 1
 
+#include "xkbcomp-priv.h"
+
 typedef struct _AliasInfo
 {
     CommonInfo def;
