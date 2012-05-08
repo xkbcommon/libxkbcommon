@@ -51,7 +51,7 @@ test_file(const char *path)
 
     fprintf(stderr, "\nCompiling path: %s\n", path);
 
-    xkb = xkb_map_new_from_fd(context, fd, XKB_KEYMAP_FORMAT_TEXT_V1);
+    xkb = xkb_map_new_from_fd(context, fd, XKB_KEYMAP_FORMAT_TEXT_V1, 0);
     close(fd);
 
     if (!xkb) {
@@ -86,7 +86,7 @@ test_string(const char *string)
 
     fprintf(stderr, "\nCompiling string\n");
 
-    xkb = xkb_map_new_from_string(context, string, XKB_KEYMAP_FORMAT_TEXT_V1);
+    xkb = xkb_map_new_from_string(context, string, XKB_KEYMAP_FORMAT_TEXT_V1, 0);
     if (!xkb) {
         xkb_context_unref(context);
         return 0;

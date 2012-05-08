@@ -116,7 +116,8 @@ unwind_file:
 
 _X_EXPORT struct xkb_keymap *
 xkb_map_new_from_names(struct xkb_context *context,
-                       const struct xkb_rule_names *rmlvo)
+                       const struct xkb_rule_names *rmlvo,
+                       enum xkb_map_compile_flags flags)
 {
     XkbRF_VarDefsRec defs;
     struct xkb_component_names *names;
@@ -139,7 +140,7 @@ xkb_map_new_from_names(struct xkb_context *context,
         return NULL;
     }
 
-    xkb = xkb_map_new_from_kccgst(context, names);
+    xkb = xkb_map_new_from_kccgst(context, names, 0);
 
     free(names->keymap);
     free(names->keycodes);
@@ -218,7 +219,8 @@ err:
 
 _X_EXPORT struct xkb_keymap *
 xkb_map_new_from_kccgst(struct xkb_context *context,
-                        const struct xkb_component_names *kccgst)
+                        const struct xkb_component_names *kccgst,
+                        enum xkb_map_compile_flags flags)
 {
     XkbFile *file;
 
@@ -258,7 +260,8 @@ xkb_map_new_from_kccgst(struct xkb_context *context,
 _X_EXPORT struct xkb_keymap *
 xkb_map_new_from_string(struct xkb_context *context,
                         const char *string,
-                        enum xkb_keymap_format format)
+                        enum xkb_keymap_format format,
+                        enum xkb_map_compile_flags flags)
 {
     XkbFile *file;
 
@@ -283,7 +286,8 @@ xkb_map_new_from_string(struct xkb_context *context,
 _X_EXPORT struct xkb_keymap *
 xkb_map_new_from_fd(struct xkb_context *context,
                     int fd,
-                    enum xkb_keymap_format format)
+                    enum xkb_keymap_format format,
+                    enum xkb_map_compile_flags flags)
 {
     XkbFile *file;
     FILE *fptr;

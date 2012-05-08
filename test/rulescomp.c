@@ -49,7 +49,7 @@ test_rmlvo(const char *rules, const char *model, const char *layout,
     fprintf(stderr, "\nCompiling %s %s %s %s %s\n", rmlvo.rules, rmlvo.model,
            rmlvo.layout, rmlvo.variant, rmlvo.options);
 
-    xkb = xkb_map_new_from_names(context, &rmlvo);
+    xkb = xkb_map_new_from_names(context, &rmlvo, 0);
     if (!xkb) {
         xkb_context_unref(context);
         return 0;

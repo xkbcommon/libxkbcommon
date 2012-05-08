@@ -218,7 +218,7 @@ main(void)
     context = xkb_context_new();
     assert(context);
 
-    xkb = xkb_map_new_from_names(context, &rmlvo);
+    xkb = xkb_map_new_from_names(context, &rmlvo, 0);
     assert(xkb);
 
     test_update_key(xkb);

@@ -52,7 +52,7 @@ test_names(const char *keycodes, const char *types,
     fprintf(stderr, "\nCompiling %s %s %s %s\n", kccgst.keycodes, kccgst.types,
             kccgst.compat, kccgst.symbols);
 
-    xkb = xkb_map_new_from_kccgst(context, &kccgst);
+    xkb = xkb_map_new_from_kccgst(context, &kccgst, 0);
     if (!xkb) {
         ret = 0;
         goto err_ctx;
