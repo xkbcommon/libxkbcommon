@@ -193,13 +193,18 @@ xkb_string_to_keysym(const char *s);
  * @{
  */
 
+enum xkb_context_flags {
+    /** Apparently you can't have empty enums.  What a drag. */
+    XKB_CONTEXT_PLACEHOLDER = 0,
+};
+
 /**
  * Returns a new XKB context, or NULL on failure.  If successful, the caller
  * holds a reference on the context, and must free it when finished with
  * xkb_context_unref().
  */
 struct xkb_context *
-xkb_context_new(void);
+xkb_context_new(enum xkb_context_flags flags);
 
 /**
  * Appends a new entry to the include path used for keymap compilation.

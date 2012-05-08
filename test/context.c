@@ -30,7 +30,7 @@
 int
 main(void)
 {
-    struct xkb_context *context = xkb_context_new();
+    struct xkb_context *context = xkb_context_new(0);
 
     assert(context);
 

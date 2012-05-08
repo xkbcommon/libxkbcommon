@@ -215,7 +215,7 @@ main(void)
         .options = NULL,
     };
 
-    context = xkb_context_new();
+    context = xkb_context_new(0);
     assert(context);
 
     xkb = xkb_map_new_from_names(context, &rmlvo, 0);

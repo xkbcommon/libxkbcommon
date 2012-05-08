@@ -46,7 +46,7 @@ test_names(const char *keycodes, const char *types,
         .symbols = strdup(symbols),
     };
 
-    context = xkb_context_new();
+    context = xkb_context_new(0);
     assert(context);
 
     fprintf(stderr, "\nCompiling %s %s %s %s\n", kccgst.keycodes, kccgst.types,

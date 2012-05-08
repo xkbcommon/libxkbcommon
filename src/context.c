@@ -177,7 +177,7 @@ xkb_context_unref(struct xkb_context *context)
  * Create a new context.
  */
 _X_EXPORT struct xkb_context *
-xkb_context_new(void)
+xkb_context_new(enum xkb_context_flags flags)
 {
     struct xkb_context *context = calloc(1, sizeof(*context));
 

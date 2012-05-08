@@ -46,7 +46,7 @@ test_file(const char *path)
     fd = open(path, O_RDONLY);
     assert(fd >= 0);
 
-    context = xkb_context_new();
+    context = xkb_context_new(0);
     assert(context);
 
     fprintf(stderr, "\nCompiling path: %s\n", path);
@@ -81,7 +81,7 @@ test_string(const char *string)
     struct xkb_context *context;
     struct xkb_keymap *xkb;
 
-    context = xkb_context_new();
+    context = xkb_context_new(0);
     assert(context);
 
     fprintf(stderr, "\nCompiling string\n");

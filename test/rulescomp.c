@@ -43,7 +43,7 @@ test_rmlvo(const char *rules, const char *model, const char *layout,
         .options = options
     };
 
-    context = xkb_context_new();
+    context = xkb_context_new(0);
     assert(context);
 
     fprintf(stderr, "\nCompiling %s %s %s %s %s\n", rmlvo.rules, rmlvo.model,
