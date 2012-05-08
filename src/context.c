@@ -186,7 +186,8 @@ xkb_context_new(enum xkb_context_flags flags)
 
     context->refcnt = 1;
 
-    if (!xkb_context_include_path_append_default(context)) {
+    if (!(flags & XKB_CONTEXT_NO_DEFAULT_INCLUDES) &&
+        !xkb_context_include_path_append_default(context)) {
         xkb_context_unref(context);
         return NULL;
     }

@@ -194,8 +194,8 @@ xkb_string_to_keysym(const char *s);
  */
 
 enum xkb_context_flags {
-    /** Apparently you can't have empty enums.  What a drag. */
-    XKB_CONTEXT_PLACEHOLDER = 0,
+    /** Create this context with an empty include path. */
+    XKB_CONTEXT_NO_DEFAULT_INCLUDES = 1,
 };
 
 /**
