@@ -32,4 +32,8 @@
 #define XKB_MOD_NAME_ALT        "Mod1"
 #define XKB_MOD_NAME_LOGO       "Mod4"
 
+#define XKB_LED_NAME_CAPS       "Caps Lock"
+#define XKB_LED_NAME_NUM        "Num Lock"
+#define XKB_LED_NAME_SCROLL     "Scroll Lock"
+
 #endif

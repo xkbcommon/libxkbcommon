@@ -152,7 +152,7 @@ test_update_key(struct xkb_keymap *keymap)
     print_state(state);
     assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CAPS,
                                         XKB_STATE_LOCKED));
-    assert(xkb_state_led_name_is_active(state, XKB_MOD_NAME_CAPS));
+    assert(xkb_state_led_name_is_active(state, XKB_LED_NAME_CAPS));
     num_syms = xkb_key_get_syms(state, KEY_Q + EVDEV_OFFSET, &syms);
     assert(num_syms == 1 && syms[0] == XKB_KEY_Q);
 
@@ -161,7 +161,7 @@ test_update_key(struct xkb_keymap *keymap)
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
     assert(!xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CAPS,
                                          XKB_STATE_EFFECTIVE));
-    assert(!xkb_state_led_name_is_active(state, XKB_MOD_NAME_CAPS));
+    assert(!xkb_state_led_name_is_active(state, XKB_LED_NAME_CAPS));
     num_syms = xkb_key_get_syms(state, KEY_Q + EVDEV_OFFSET, &syms);
     assert(num_syms == 1 && syms[0] == XKB_KEY_q);
 
