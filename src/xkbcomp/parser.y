@@ -176,7 +176,7 @@ XkbCompositeMap	:	OptFlags XkbCompositeType OptMapName OBRACE
 			    XkbMapConfigList
 			CBRACE SEMI
 			{
-                            $$ = CreateXKBFile(param->context, $2, $3,
+                            $$ = CreateXKBFile(param->ctx, $2, $3,
                                                &$5->common, $1);
                         }
 		;
@@ -209,7 +209,7 @@ XkbMapConfig	:	OptFlags FileType OptMapName OBRACE
                             }
                             else
                             {
-                                $$ = CreateXKBFile(param->context, $2, $3, $5, $1);
+                                $$ = CreateXKBFile(param->ctx, $2, $3, $5, $1);
                             }
                         }
 		;
@@ -224,7 +224,7 @@ XkbConfig	:	OptFlags FileType OptMapName DeclList
                             }
                             else
                             {
-                                $$ = CreateXKBFile(param->context, $2, $3, $4, $1);
+                                $$ = CreateXKBFile(param->ctx, $2, $3, $4, $1);
                             }
                         }
 		;
@@ -563,21 +563,21 @@ FieldSpec	:	Ident			{ $$= $1; }
 		;
 
 Element		:	ACTION_TOK		
-			{ $$= xkb_atom_intern(param->context, "action"); }
+			{ $$= xkb_atom_intern(param->ctx, "action"); }
 		|	INTERPRET
-			{ $$= xkb_atom_intern(param->context, "interpret"); }
+			{ $$= xkb_atom_intern(param->ctx, "interpret"); }
 		|	TYPE
-			{ $$= xkb_atom_intern(param->context, "type"); }
+			{ $$= xkb_atom_intern(param->ctx, "type"); }
 		|	KEY
-			{ $$= xkb_atom_intern(param->context, "key"); }
+			{ $$= xkb_atom_intern(param->ctx, "key"); }
 		|	GROUP
-			{ $$= xkb_atom_intern(param->context, "group"); }
+			{ $$= xkb_atom_intern(param->ctx, "group"); }
 		|	MODIFIER_MAP
-			{$$= xkb_atom_intern(param->context, "modifier_map");}
+			{$$= xkb_atom_intern(param->ctx, "modifier_map");}
 		|	INDICATOR
-			{ $$= xkb_atom_intern(param->context, "indicator"); }
+			{ $$= xkb_atom_intern(param->ctx, "indicator"); }
 		|	SHAPE	
-			{ $$= xkb_atom_intern(param->context, "shape"); }
+			{ $$= xkb_atom_intern(param->ctx, "shape"); }
 		|	ROW	
 			{ $$= XKB_ATOM_NONE; }
 		|	SECTION	
@@ -769,18 +769,18 @@ KeyName		:	KEYNAME		{ $$= $1; }
 
 Ident		:	IDENT
                         {
-                            $$ = xkb_atom_intern(param->context, $1);
+                            $$ = xkb_atom_intern(param->ctx, $1);
                             free($1);
                         }
 		|	DEFAULT
                         {
-                            $$ = xkb_atom_intern(param->context, "default");
+                            $$ = xkb_atom_intern(param->ctx, "default");
                         }
 		;
 
 String		:	STRING
                         {
-                            $$ = xkb_atom_intern(param->context, $1);
+                            $$ = xkb_atom_intern(param->ctx, $1);
                             free($1);
                         }
 		;

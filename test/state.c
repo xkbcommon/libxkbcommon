@@ -225,7 +225,7 @@ test_serialisation(struct xkb_keymap *keymap)
 int
 main(void)
 {
-    struct xkb_context *context;
+    struct xkb_ctx *ctx;
     struct xkb_keymap *keymap;
     struct xkb_rule_names rmlvo = {
         .rules = "evdev",
@@ -235,15 +235,15 @@ main(void)
         .options = NULL,
     };
 
-    context = xkb_context_new(0);
-    assert(context);
+    ctx = xkb_ctx_new(0);
+    assert(ctx);
 
-    keymap = xkb_map_new_from_names(context, &rmlvo, 0);
+    keymap = xkb_map_new_from_names(ctx, &rmlvo, 0);
     assert(keymap);
 
     test_update_key(keymap);
     test_serialisation(keymap);
 
     xkb_map_unref(keymap);
-    xkb_context_unref(context);
+    xkb_ctx_unref(ctx);
 }

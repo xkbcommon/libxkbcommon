@@ -174,7 +174,7 @@ XkbDirectoryForInclude(unsigned type)
 /**
  * Search for the given file name in the include directories.
  *
- * @param context the XKB context containing the include paths
+ * @param ctx the XKB ctx containing the include paths
  * @param type one of XkbTypesIndex, XkbCompatMapIndex, ..., or
  *             XkbSemanticsFile, XkmKeymapFile, ...
  * @param pathReturn is set to the full path of the file if found.
@@ -183,7 +183,7 @@ XkbDirectoryForInclude(unsigned type)
  * pathRtrn is undefined.
  */
 FILE *
-XkbFindFileInPath(struct xkb_context *context,
+XkbFindFileInPath(struct xkb_ctx *ctx,
                   const char *name, unsigned type, char **pathRtrn)
 {
     size_t i;
@@ -193,21 +193,21 @@ XkbFindFileInPath(struct xkb_context *context,
     const char *typeDir;
 
     typeDir = XkbDirectoryForInclude(type);
-    for (i = 0; i < xkb_context_num_include_paths(context); i++)
+    for (i = 0; i < xkb_ctx_num_include_paths(ctx); i++)
     {
         ret = snprintf(buf, sizeof(buf), "%s/%s/%s",
-                       xkb_context_include_path_get(context, i), typeDir, name);
+                       xkb_ctx_include_path_get(ctx, i), typeDir, name);
         if (ret >= (ssize_t)sizeof(buf))
         {
             ERROR("File name (%s/%s/%s) too long\n",
-                  xkb_context_include_path_get(context, i), typeDir, name);
+                  xkb_ctx_include_path_get(ctx, i), typeDir, name);
             ACTION("Ignored\n");
             continue;
         }
         file = fopen(buf, "r");
         if (file == NULL) {
             ERROR("Couldn't open file (%s/%s/%s): %s\n",
-                  xkb_context_include_path_get(context, i), typeDir, name,
+                  xkb_ctx_include_path_get(ctx, i), typeDir, name,
                   strerror(-errno));
             ACTION("Ignored\n");
             continue;

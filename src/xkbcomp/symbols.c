@@ -663,8 +663,8 @@ MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
                     ("Multiple definitions for group %d type of key %s\n",
                      i, longText(into->name));
                 ACTION("Using %s, ignoring %s\n",
-                        xkb_atom_text(keymap->context, use),
-                        xkb_atom_text(keymap->context, ignore));
+                        xkb_atom_text(keymap->ctx, use),
+                        xkb_atom_text(keymap->ctx, ignore));
             }
             if ((from->defs.merge != MergeAugment)
                 || (into->types[i] == XKB_ATOM_NONE))
@@ -889,8 +889,8 @@ HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
         included = *info;
         memset(info, 0, sizeof(SymbolsInfo));
     }
-    else if (ProcessIncludeFile(keymap->context, stmt, XkmSymbolsIndex,
-                                &rtrn, &newMerge))
+    else if (ProcessIncludeFile(keymap->ctx, stmt, XkmSymbolsIndex, &rtrn,
+                                &newMerge))
     {
         InitSymbolsInfo(&included, keymap);
         included.fileID = included.dflt.defs.fileID = rtrn->id;
@@ -931,8 +931,8 @@ HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
                 MergeIncludedSymbols(&included, info, next->merge, keymap);
                 FreeSymbolsInfo(info);
             }
-            else if (ProcessIncludeFile(keymap->context, next,
-                                        XkmSymbolsIndex, &rtrn, &op))
+            else if (ProcessIncludeFile(keymap->ctx, next, XkmSymbolsIndex,
+                                        &rtrn, &op))
             {
                 InitSymbolsInfo(&next_incl, keymap);
                 next_incl.fileID = next_incl.dflt.defs.fileID = rtrn->id;
@@ -1009,7 +1009,7 @@ GetGroupIndex(KeyInfo *key, struct xkb_keymap *keymap,
         ACTION("Ignoring %s defined for extra groups\n", name);
         return false;
     }
-    if (!ExprResolveGroup(keymap->context, arrayNdx, &tmp))
+    if (!ExprResolveGroup(keymap->ctx, arrayNdx, &tmp))
     {
         ERROR("Illegal group index for %s of key %s\n", name,
                longText(key->name));
@@ -1070,7 +1070,7 @@ AddSymbolsToKey(KeyInfo *key, struct xkb_keymap *keymap,
                               &key->syms[ndx][key->symsMapIndex[ndx][i] + j])) {
                 WARN("Could not resolve keysym %s for key %s, group %d (%s), level %d\n",
                      value->value.list.syms[i], longText(key->name), ndx + 1,
-                     xkb_atom_text(keymap->context, info->groupNames[ndx]), nSyms);
+                     xkb_atom_text(keymap->ctx, info->groupNames[ndx]), nSyms);
                 while (--j >= 0)
                     key->syms[ndx][key->symsMapIndex[ndx][i] + j] = NoSymbol;
                 key->symsMapIndex[ndx][i] = -1;
@@ -1181,7 +1181,7 @@ SetSymbolsField(KeyInfo *key, struct xkb_keymap *keymap, char *field,
     if (strcasecmp(field, "type") == 0)
     {
         ExprResult ndx;
-        if ((!ExprResolveString(keymap->context, value, &tmp))
+        if ((!ExprResolveString(keymap->ctx, value, &tmp))
             && (warningLevel > 0))
         {
             WARN("The type field of a key symbol map must be a string\n");
@@ -1189,10 +1189,10 @@ SetSymbolsField(KeyInfo *key, struct xkb_keymap *keymap, char *field,
         }
         if (arrayNdx == NULL)
         {
-            key->dfltType = xkb_atom_intern(keymap->context, tmp.str);
+            key->dfltType = xkb_atom_intern(keymap->ctx, tmp.str);
             key->defs.defined |= _Key_Type_Dflt;
         }
-        else if (!ExprResolveGroup(keymap->context, arrayNdx, &ndx))
+        else if (!ExprResolveGroup(keymap->ctx, arrayNdx, &ndx))
         {
             ERROR("Illegal group index for type of key %s\n",
                    longText(key->name));
@@ -1202,8 +1202,7 @@ SetSymbolsField(KeyInfo *key, struct xkb_keymap *keymap, char *field,
         }
         else
         {
-            key->types[ndx.uval - 1] = xkb_atom_intern(keymap->context,
-                                                       tmp.str);
+            key->types[ndx.uval - 1] = xkb_atom_intern(keymap->ctx, tmp.str);
             key->typesDefined |= (1 << (ndx.uval - 1));
         }
         free(tmp.str);
@@ -1234,7 +1233,7 @@ SetSymbolsField(KeyInfo *key, struct xkb_keymap *keymap, char *field,
              (strcasecmp(field, "lock") == 0) ||
              (strcasecmp(field, "locks") == 0))
     {
-        ok = ExprResolveEnum(keymap->context, value, &tmp, lockingEntries);
+        ok = ExprResolveEnum(keymap->ctx, value, &tmp, lockingEntries);
         if (ok)
             key->behavior.type = tmp.uval;
         key->defs.defined |= _Key_Behavior;
@@ -1257,7 +1256,7 @@ SetSymbolsField(KeyInfo *key, struct xkb_keymap *keymap, char *field,
              (strcasecmp(field, "repeats") == 0) ||
              (strcasecmp(field, "repeat") == 0))
     {
-        ok = ExprResolveEnum(keymap->context, value, &tmp, repeatEntries);
+        ok = ExprResolveEnum(keymap->ctx, value, &tmp, repeatEntries);
         if (!ok)
         {
             ERROR("Illegal repeat setting for %s\n",
@@ -1271,7 +1270,7 @@ SetSymbolsField(KeyInfo *key, struct xkb_keymap *keymap, char *field,
     else if ((strcasecmp(field, "groupswrap") == 0) ||
              (strcasecmp(field, "wrapgroups") == 0))
     {
-        ok = ExprResolveBoolean(keymap->context, value, &tmp);
+        ok = ExprResolveBoolean(keymap->ctx, value, &tmp);
         if (!ok)
         {
             ERROR("Illegal groupsWrap setting for %s\n",
@@ -1288,7 +1287,7 @@ SetSymbolsField(KeyInfo *key, struct xkb_keymap *keymap, char *field,
     else if ((strcasecmp(field, "groupsclamp") == 0) ||
              (strcasecmp(field, "clampgroups") == 0))
     {
-        ok = ExprResolveBoolean(keymap->context, value, &tmp);
+        ok = ExprResolveBoolean(keymap->ctx, value, &tmp);
         if (!ok)
         {
             ERROR("Illegal groupsClamp setting for %s\n",
@@ -1305,7 +1304,7 @@ SetSymbolsField(KeyInfo *key, struct xkb_keymap *keymap, char *field,
     else if ((strcasecmp(field, "groupsredirect") == 0) ||
              (strcasecmp(field, "redirectgroups") == 0))
     {
-        if (!ExprResolveGroup(keymap->context, value, &tmp))
+        if (!ExprResolveGroup(keymap->ctx, value, &tmp))
         {
             ERROR("Illegal group index for redirect of key %s\n",
                    longText(key->name));
@@ -1337,20 +1336,20 @@ SetGroupName(SymbolsInfo *info, struct xkb_keymap *keymap, ExprDef *arrayNdx,
         ACTION("Group name definition without array subscript ignored\n");
         return false;
     }
-    if (!ExprResolveGroup(keymap->context, arrayNdx, &tmp))
+    if (!ExprResolveGroup(keymap->ctx, arrayNdx, &tmp))
     {
         ERROR("Illegal index in group name definition\n");
         ACTION("Definition with non-integer array index ignored\n");
         return false;
     }
-    if (!ExprResolveString(keymap->context, value, &name))
+    if (!ExprResolveString(keymap->ctx, value, &name))
     {
         ERROR("Group name must be a string\n");
         ACTION("Illegal name for group %d ignored\n", tmp.uval);
         return false;
     }
     info->groupNames[tmp.uval - 1 + info->explicit_group] =
-        xkb_atom_intern(keymap->context, name.str);
+        xkb_atom_intern(keymap->ctx, name.str);
     free(name.str);
 
     return true;
@@ -1380,7 +1379,7 @@ HandleSymbolsVar(VarDef *stmt, struct xkb_keymap *keymap, SymbolsInfo *info)
              && ((strcasecmp(field.str, "groupswrap") == 0) ||
                  (strcasecmp(field.str, "wrapgroups") == 0)))
     {
-        if (!ExprResolveBoolean(keymap->context, stmt->value, &tmp))
+        if (!ExprResolveBoolean(keymap->ctx, stmt->value, &tmp))
         {
             ERROR("Illegal setting for global groupsWrap\n");
             ACTION("Non-boolean value ignored\n");
@@ -1398,7 +1397,7 @@ HandleSymbolsVar(VarDef *stmt, struct xkb_keymap *keymap, SymbolsInfo *info)
              && ((strcasecmp(field.str, "groupsclamp") == 0) ||
                  (strcasecmp(field.str, "clampgroups") == 0)))
     {
-        if (!ExprResolveBoolean(keymap->context, stmt->value, &tmp))
+        if (!ExprResolveBoolean(keymap->ctx, stmt->value, &tmp))
         {
             ERROR("Illegal setting for global groupsClamp\n");
             ACTION("Non-boolean value ignored\n");
@@ -1416,7 +1415,7 @@ HandleSymbolsVar(VarDef *stmt, struct xkb_keymap *keymap, SymbolsInfo *info)
              && ((strcasecmp(field.str, "groupsredirect") == 0) ||
                  (strcasecmp(field.str, "redirectgroups") == 0)))
     {
-        if (!ExprResolveGroup(keymap->context, stmt->value, &tmp))
+        if (!ExprResolveGroup(keymap->ctx, stmt->value, &tmp))
         {
             ERROR("Illegal group index for global groupsRedirect\n");
             ACTION("Definition with non-integer group ignored\n");
@@ -1566,11 +1565,11 @@ HandleModMapDef(ModMapDef *def, struct xkb_keymap *keymap, SymbolsInfo *info)
     ExprResult rtrn;
     bool ok;
 
-    if (!LookupModIndex(keymap->context, NULL, def->modifier, TypeInt, &rtrn))
+    if (!LookupModIndex(keymap->ctx, NULL, def->modifier, TypeInt, &rtrn))
     {
         ERROR("Illegal modifier map definition\n");
         ACTION("Ignoring map for non-modifier \"%s\"\n",
-                xkb_atom_text(keymap->context, def->modifier));
+                xkb_atom_text(keymap->ctx, def->modifier));
         return false;
     }
     ok = true;
@@ -1582,7 +1581,7 @@ HandleModMapDef(ModMapDef *def, struct xkb_keymap *keymap, SymbolsInfo *info)
             tmp.haveSymbol = false;
             tmp.u.keyName = KeyNameToLong(key->value.keyName);
         }
-        else if (ExprResolveKeySym(keymap->context, key, &rtrn))
+        else if (ExprResolveKeySym(keymap->ctx, key, &rtrn))
         {
             tmp.haveSymbol = true;
             tmp.u.keySym = rtrn.uval;
@@ -1699,7 +1698,7 @@ static bool
 FindNamedType(struct xkb_keymap *keymap, xkb_atom_t atom, unsigned *type_rtrn)
 {
     unsigned n;
-    const char *name = xkb_atom_text(keymap->context, atom);
+    const char *name = xkb_atom_text(keymap->ctx, atom);
 
     if (keymap && keymap->map && keymap->map->types)
     {
@@ -1738,23 +1737,23 @@ FindAutomaticType(struct xkb_keymap *keymap, int width, xkb_keysym_t *syms,
     *autoType = false;
     if ((width == 1) || (width == 0))
     {
-        *typeNameRtrn = xkb_atom_intern(keymap->context, "ONE_LEVEL");
+        *typeNameRtrn = xkb_atom_intern(keymap->ctx, "ONE_LEVEL");
         *autoType = true;
     }
     else if (width == 2)
     {
         if (syms && XkbcKSIsLower(syms[0]) && XkbcKSIsUpper(syms[1]))
         {
-            *typeNameRtrn = xkb_atom_intern(keymap->context, "ALPHABETIC");
+            *typeNameRtrn = xkb_atom_intern(keymap->ctx, "ALPHABETIC");
         }
         else if (syms && (XkbKSIsKeypad(syms[0]) || XkbKSIsKeypad(syms[1])))
         {
-            *typeNameRtrn = xkb_atom_intern(keymap->context, "KEYPAD");
+            *typeNameRtrn = xkb_atom_intern(keymap->ctx, "KEYPAD");
             *autoType = true;
         }
         else
         {
-            *typeNameRtrn = xkb_atom_intern(keymap->context, "TWO_LEVEL");
+            *typeNameRtrn = xkb_atom_intern(keymap->ctx, "TWO_LEVEL");
             *autoType = true;
         }
     }
@@ -1763,15 +1762,15 @@ FindAutomaticType(struct xkb_keymap *keymap, int width, xkb_keysym_t *syms,
         if (syms && XkbcKSIsLower(syms[0]) && XkbcKSIsUpper(syms[1]))
             if (XkbcKSIsLower(syms[2]) && XkbcKSIsUpper(syms[3]))
                 *typeNameRtrn =
-                    xkb_atom_intern(keymap->context, "FOUR_LEVEL_ALPHABETIC");
+                    xkb_atom_intern(keymap->ctx, "FOUR_LEVEL_ALPHABETIC");
             else
-                *typeNameRtrn = xkb_atom_intern(keymap->context,
+                *typeNameRtrn = xkb_atom_intern(keymap->ctx,
                                                 "FOUR_LEVEL_SEMIALPHABETIC");
 
         else if (syms && (XkbKSIsKeypad(syms[0]) || XkbKSIsKeypad(syms[1])))
-            *typeNameRtrn = xkb_atom_intern(keymap->context, "FOUR_LEVEL_KEYPAD");
+            *typeNameRtrn = xkb_atom_intern(keymap->ctx, "FOUR_LEVEL_KEYPAD");
         else
-            *typeNameRtrn = xkb_atom_intern(keymap->context, "FOUR_LEVEL");
+            *typeNameRtrn = xkb_atom_intern(keymap->ctx, "FOUR_LEVEL");
         /* XXX: why not set autoType here? */
     }
     return ((width >= 0) && (width <= 4));
@@ -1985,7 +1984,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
                     WARN("No automatic type for %d symbols\n",
                           (unsigned int) key->numLevels[i]);
                     ACTION("Using %s for the %s key (keycode %d)\n",
-                            xkb_atom_text(keymap->context, key->types[i]),
+                            xkb_atom_text(keymap->ctx, key->types[i]),
                             longText(key->name), kc);
                 }
             }
@@ -2000,7 +1999,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
             if (warningLevel >= 3)
             {
                 WARN("Type \"%s\" is not defined\n",
-                      xkb_atom_text(keymap->context, key->types[i]));
+                      xkb_atom_text(keymap->ctx, key->types[i]));
                 ACTION("Using TWO_LEVEL for the %s key (keycode %d)\n",
                         longText(key->name), kc);
             }
@@ -2014,7 +2013,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
             {
                 WARN("Type \"%s\" has %d levels, but %s has %d symbols\n",
                      type->name, type->num_levels,
-                     xkb_atom_text(keymap->context, key->name), key->numLevels[i]);
+                     xkb_atom_text(keymap->ctx, key->name), key->numLevels[i]);
                 ACTION("Ignoring extra symbols\n");
             }
             key->numLevels[i] = type->num_levels;
@@ -2223,7 +2222,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap, unsigned merge)
     for (i = 0; i < XkbNumKbdGroups; i++) {
         if (info.groupNames[i] != XKB_ATOM_NONE) {
             free(UNCONSTIFY(keymap->names->groups[i]));
-            keymap->names->groups[i] = xkb_atom_strdup(keymap->context,
+            keymap->names->groups[i] = xkb_atom_strdup(keymap->ctx,
                                                        info.groupNames[i]);
         }
     }

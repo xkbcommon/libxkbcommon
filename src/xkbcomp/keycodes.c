@@ -208,7 +208,7 @@ AddIndicatorName(KeyNamesInfo *info, struct xkb_keymap *keymap,
             || (warningLevel > 9))
         {
             WARN("Multiple indicators named %s\n",
-                 xkb_atom_text(keymap->context, new->name));
+                 xkb_atom_text(keymap->ctx, new->name));
             if (old->ndx == new->ndx)
             {
                 if (old->virtual != new->virtual)
@@ -286,8 +286,8 @@ AddIndicatorName(KeyNamesInfo *info, struct xkb_keymap *keymap,
                     ignoring = new->name;
                 }
                 ACTION("Using %s %s, ignoring %s %s\n",
-                        oldType, xkb_atom_text(keymap->context, using),
-                        newType, xkb_atom_text(keymap->context, ignoring));
+                        oldType, xkb_atom_text(keymap->ctx, using),
+                        newType, xkb_atom_text(keymap->ctx, ignoring));
             }
         }
         if (replace)
@@ -565,8 +565,8 @@ HandleIncludeKeycodes(IncludeStmt *stmt, struct xkb_keymap *keymap,
         info->explicitMax = XKB_KEYCODE_MAX;
         return (info->errorCount == 0);
     } /* parse file, store returned info in the xkb struct */
-    else if (ProcessIncludeFile(keymap->context, stmt, XkmKeyNamesIndex,
-                                &rtrn, &newMerge))
+    else if (ProcessIncludeFile(keymap->ctx, stmt, XkmKeyNamesIndex, &rtrn,
+                                &newMerge))
     {
         InitKeyNamesInfo(&included);
         HandleKeycodesFile(rtrn, keymap, MergeOverride, &included);
@@ -598,8 +598,8 @@ HandleIncludeKeycodes(IncludeStmt *stmt, struct xkb_keymap *keymap,
                 MergeIncludedKeycodes(&included, keymap, info, next->merge);
                 ClearKeyNamesInfo(info);
             }
-            else if (ProcessIncludeFile(keymap->context, next,
-                                        XkmKeyNamesIndex, &rtrn, &op))
+            else if (ProcessIncludeFile(keymap->ctx, next, XkmKeyNamesIndex,
+                                        &rtrn, &op))
             {
                 InitKeyNamesInfo(&next_incl);
                 HandleKeycodesFile(rtrn, keymap, MergeOverride, &next_incl);
@@ -694,7 +694,7 @@ HandleKeyNameVar(VarDef *stmt, struct xkb_keymap *keymap, KeyNamesInfo *info)
         goto err_out;
     }
 
-    if (ExprResolveKeyCode(keymap->context, stmt->value, &tmp) == 0)
+    if (ExprResolveKeyCode(keymap->ctx, stmt->value, &tmp) == 0)
     {
         ACTION("Assignment to field %s ignored\n", field.str);
         goto err_out;
@@ -771,14 +771,14 @@ HandleIndicatorNameDef(IndicatorNameDef *def, struct xkb_keymap *keymap,
     }
     InitIndicatorNameInfo(&ii, info);
     ii.ndx = def->ndx;
-    if (!ExprResolveString(keymap->context, def->name, &tmp))
+    if (!ExprResolveString(keymap->ctx, def->name, &tmp))
     {
         char buf[20];
         snprintf(buf, sizeof(buf), "%d", def->ndx);
         info->errorCount++;
         return ReportBadType("indicator", "name", buf, "string");
     }
-    ii.name = xkb_atom_intern(keymap->context, tmp.str);
+    ii.name = xkb_atom_intern(keymap->ctx, tmp.str);
     free(tmp.str);
     ii.virtual = def->virtual;
     if (!AddIndicatorName(info, keymap, &ii))
@@ -913,7 +913,7 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap, unsigned merge)
         for (ii = info.leds; ii; ii = (IndicatorNameInfo *)ii->defs.next) {
             free(UNCONSTIFY(keymap->names->indicators[ii->ndx - 1]));
             keymap->names->indicators[ii->ndx - 1] =
-                xkb_atom_strdup(keymap->context, ii->name);
+                xkb_atom_strdup(keymap->ctx, ii->name);
         }
     }
 

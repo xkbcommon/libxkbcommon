@@ -358,7 +358,7 @@ struct xkb_controls {
 
 /* Common keyboard description structure */
 struct xkb_keymap {
-    struct xkb_context  *context;
+    struct xkb_ctx  *ctx;
 
     unsigned int        refcnt;
     unsigned short      flags;
@@ -431,13 +431,13 @@ typedef uint32_t xkb_atom_t;
 #define XKB_ATOM_NONE 0
 
 xkb_atom_t
-xkb_atom_intern(struct xkb_context *context, const char *string);
+xkb_atom_intern(struct xkb_ctx *ctx, const char *string);
 
 char *
-xkb_atom_strdup(struct xkb_context *context, xkb_atom_t atom);
+xkb_atom_strdup(struct xkb_ctx *ctx, xkb_atom_t atom);
 
 const char *
-xkb_atom_text(struct xkb_context *context, xkb_atom_t atom);
+xkb_atom_text(struct xkb_ctx *ctx, xkb_atom_t atom);
 
 extern unsigned int
 xkb_key_get_group(struct xkb_state *state, xkb_keycode_t key);
@@ -452,7 +452,7 @@ xkb_key_get_syms_by_level(struct xkb_keymap *keymap, xkb_keycode_t key,
                           const xkb_keysym_t **syms_out);
 
 extern int
-xkb_context_take_file_id(struct xkb_context *context);
+xkb_ctx_take_file_id(struct xkb_ctx *ctx);
 
 extern bool
 XkbcComputeEffectiveMap(struct xkb_keymap *keymap, struct xkb_key_type *type,

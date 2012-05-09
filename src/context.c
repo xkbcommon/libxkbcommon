@@ -31,7 +31,7 @@
 #include "xkb-priv.h"
 #include "atom.h"
 
-struct xkb_context {
+struct xkb_ctx {
     int refcnt;
 
     char **include_paths;
@@ -48,23 +48,23 @@ struct xkb_context {
  * Append one directory to the context's include path.
  */
 _X_EXPORT int
-xkb_context_include_path_append(struct xkb_context *context, const char *path)
+xkb_ctx_include_path_append(struct xkb_ctx *ctx, const char *path)
 {
     struct stat stat_buf;
     int err;
 
-    if (context->size_include_paths <= context->num_include_paths) {
+    if (ctx->size_include_paths <= ctx->num_include_paths) {
         int new_size;
         char **new_paths;
-        new_size = context->size_include_paths + 2;
-        new_paths = uTypedRecalloc(context->include_paths,
-                                   context->size_include_paths,
+        new_size = ctx->size_include_paths + 2;
+        new_paths = uTypedRecalloc(ctx->include_paths,
+                                   ctx->size_include_paths,
                                    new_size,
                                    char *);
         if (!new_paths)
             return 0;
-        context->include_paths = new_paths;
-        context->size_include_paths = new_size;
+        ctx->include_paths = new_paths;
+        ctx->size_include_paths = new_size;
     }
 
     err = stat(path, &stat_buf);
@@ -75,10 +75,10 @@ xkb_context_include_path_append(struct xkb_context *context, const char *path)
     if (eaccess(path, R_OK | X_OK) != 0)
         return 0;
 
-    context->include_paths[context->num_include_paths] = strdup(path);
-    if (!context->include_paths[context->num_include_paths])
+    ctx->include_paths[ctx->num_include_paths] = strdup(path);
+    if (!ctx->include_paths[ctx->num_include_paths])
         return 0;
-    context->num_include_paths++;
+    ctx->num_include_paths++;
 
     return 1;
 }
@@ -87,13 +87,13 @@ xkb_context_include_path_append(struct xkb_context *context, const char *path)
  * Append the default include directories to the context.
  */
 _X_EXPORT int
-xkb_context_include_path_append_default(struct xkb_context *context)
+xkb_ctx_include_path_append_default(struct xkb_ctx *ctx)
 {
     const char *home = getenv("HOME");
     char *user_path;
     int err;
 
-    (void) xkb_context_include_path_append(context, DFLT_XKB_CONFIG_ROOT);
+    (void) xkb_ctx_include_path_append(ctx, DFLT_XKB_CONFIG_ROOT);
 
     home = getenv("HOME");
     if (!home)
@@ -101,7 +101,7 @@ xkb_context_include_path_append_default(struct xkb_context *context)
     err = asprintf(&user_path, "%s/.xkb", home);
     if (err <= 0)
         return 1;
-    (void) xkb_context_include_path_append(context, user_path);
+    (void) xkb_ctx_include_path_append(ctx, user_path);
     free(user_path);
 
     return 1;
@@ -111,36 +111,36 @@ xkb_context_include_path_append_default(struct xkb_context *context)
  * Remove all entries in the context's include path.
  */
 _X_EXPORT void
-xkb_context_include_path_clear(struct xkb_context *context)
+xkb_ctx_include_path_clear(struct xkb_ctx *ctx)
 {
     int i;
 
-    for (i = 0; i < context->num_include_paths; i++) {
-        free(context->include_paths[i]);
-        context->include_paths[i] = NULL;
+    for (i = 0; i < ctx->num_include_paths; i++) {
+        free(ctx->include_paths[i]);
+        ctx->include_paths[i] = NULL;
     }
-    free(context->include_paths);
-    context->include_paths = NULL;
-    context->num_include_paths = 0;
+    free(ctx->include_paths);
+    ctx->include_paths = NULL;
+    ctx->num_include_paths = 0;
 }
 
 /**
- * xkb_context_include_path_clear() + xkb_context_include_path_append_default()
+ * xkb_ctx_include_path_clear() + xkb_ctx_include_path_append_default()
  */
 _X_EXPORT int
-xkb_context_include_path_reset_defaults(struct xkb_context *context)
+xkb_ctx_include_path_reset_defaults(struct xkb_ctx *ctx)
 {
-    xkb_context_include_path_clear(context);
-    return xkb_context_include_path_append_default(context);
+    xkb_ctx_include_path_clear(ctx);
+    return xkb_ctx_include_path_append_default(ctx);
 }
 
 /**
  * Returns the number of entries in the context's include path.
  */
 _X_EXPORT unsigned int
-xkb_context_num_include_paths(struct xkb_context *context)
+xkb_ctx_num_include_paths(struct xkb_ctx *ctx)
 {
-    return context->num_include_paths;
+    return ctx->num_include_paths;
 }
 
 /**
@@ -148,28 +148,28 @@ xkb_context_num_include_paths(struct xkb_context *context)
  * invalid index is passed.
  */
 _X_EXPORT const char *
-xkb_context_include_path_get(struct xkb_context *context, unsigned int idx)
+xkb_ctx_include_path_get(struct xkb_ctx *ctx, unsigned int idx)
 {
-    if (idx >= xkb_context_num_include_paths(context))
+    if (idx >= xkb_ctx_num_include_paths(ctx))
         return NULL;
 
-    return context->include_paths[idx];
+    return ctx->include_paths[idx];
 }
 
 int
-xkb_context_take_file_id(struct xkb_context *context)
+xkb_ctx_take_file_id(struct xkb_ctx *ctx)
 {
-    return context->file_id++;
+    return ctx->file_id++;
 }
 
 /**
  * Take a new reference on the context.
  */
-_X_EXPORT struct xkb_context *
-xkb_context_ref(struct xkb_context *context)
+_X_EXPORT struct xkb_ctx *
+xkb_ctx_ref(struct xkb_ctx *ctx)
 {
-    context->refcnt++;
-    return context;
+    ctx->refcnt++;
+    return ctx;
 }
 
 /**
@@ -177,58 +177,58 @@ xkb_context_ref(struct xkb_context *context)
  * now 0.
  */
 _X_EXPORT void
-xkb_context_unref(struct xkb_context *context)
+xkb_ctx_unref(struct xkb_ctx *ctx)
 {
-    if (--context->refcnt > 0)
+    if (--ctx->refcnt > 0)
         return;
 
-    xkb_context_include_path_clear(context);
-    atom_table_free(context->atom_table);
-    free(context);
+    xkb_ctx_include_path_clear(ctx);
+    atom_table_free(ctx->atom_table);
+    free(ctx);
 }
 
 /**
  * Create a new context.
  */
-_X_EXPORT struct xkb_context *
-xkb_context_new(enum xkb_context_flags flags)
+_X_EXPORT struct xkb_ctx *
+xkb_ctx_new(enum xkb_ctx_flags flags)
 {
-    struct xkb_context *context = calloc(1, sizeof(*context));
+    struct xkb_ctx *ctx = calloc(1, sizeof(*ctx));
 
-    if (!context)
+    if (!ctx)
         return NULL;
 
-    context->refcnt = 1;
+    ctx->refcnt = 1;
 
     if (!(flags & XKB_CONTEXT_NO_DEFAULT_INCLUDES) &&
-        !xkb_context_include_path_append_default(context)) {
-        xkb_context_unref(context);
+        !xkb_ctx_include_path_append_default(ctx)) {
+        xkb_ctx_unref(ctx);
         return NULL;
     }
 
-    context->atom_table = atom_table_new();
-    if (!context->atom_table) {
-        xkb_context_unref(context);
+    ctx->atom_table = atom_table_new();
+    if (!ctx->atom_table) {
+        xkb_ctx_unref(ctx);
         return NULL;
     }
 
-    return context;
+    return ctx;
 }
 
 xkb_atom_t
-xkb_atom_intern(struct xkb_context *context, const char *string)
+xkb_atom_intern(struct xkb_ctx *ctx, const char *string)
 {
-    return atom_intern(context->atom_table, string);
+    return atom_intern(ctx->atom_table, string);
 }
 
 char *
-xkb_atom_strdup(struct xkb_context *context, xkb_atom_t atom)
+xkb_atom_strdup(struct xkb_ctx *ctx, xkb_atom_t atom)
 {
-    return atom_strdup(context->atom_table, atom);
+    return atom_strdup(ctx->atom_table, atom);
 }
 
 const char *
-xkb_atom_text(struct xkb_context *context, xkb_atom_t atom)
+xkb_atom_text(struct xkb_ctx *ctx, xkb_atom_t atom)
 {
-    return atom_text(context->atom_table, atom);
+    return atom_text(ctx->atom_table, atom);
 }

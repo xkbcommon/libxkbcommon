@@ -35,7 +35,7 @@
  * If the statement defines a specific map to use, this map is returned in
  * file_rtrn. Otherwise, the default map is returned.
  *
- * @param context The context containing include paths
+ * @param ctx The ctx containing include paths
  * @param stmt The include statement, specifying the file name to look for.
  * @param file_type Type of file (XkmKeyNamesIdx, etc.)
  * @param file_rtrn Returns the key map to be used.
@@ -44,7 +44,7 @@
  * @return true on success or false otherwise.
  */
 bool
-ProcessIncludeFile(struct xkb_context *context,
+ProcessIncludeFile(struct xkb_ctx *ctx,
                    IncludeStmt * stmt,
                    unsigned file_type,
                    XkbFile ** file_rtrn, unsigned *merge_rtrn)
@@ -52,7 +52,7 @@ ProcessIncludeFile(struct xkb_context *context,
     FILE *file;
     XkbFile *rtrn, *mapToUse, *next;
 
-    file = XkbFindFileInPath(context, stmt->file, file_type, &stmt->path);
+    file = XkbFindFileInPath(ctx, stmt->file, file_type, &stmt->path);
     if (file == NULL)
     {
         ERROR("Can't find file \"%s\" for %s include\n", stmt->file,
@@ -61,7 +61,7 @@ ProcessIncludeFile(struct xkb_context *context,
     }
 
 
-    if (!XKBParseFile(context, file, stmt->file, &rtrn))
+    if (!XKBParseFile(ctx, file, stmt->file, &rtrn))
     {
         ERROR("Error interpreting include file \"%s\"\n", stmt->file);
         fclose(file);

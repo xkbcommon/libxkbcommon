@@ -115,7 +115,7 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap)
     info->dflt.interp.act.type = XkbSA_NoAction;
     for (i = 0; i < sizeof(info->dflt.interp.act.any.data); i++)
         info->dflt.interp.act.any.data[i] = 0;
-    ClearIndicatorMapInfo(keymap->context, &info->ledDflt);
+    ClearIndicatorMapInfo(keymap->ctx, &info->ledDflt);
     info->ledDflt.defs.fileID = info->fileID;
     info->ledDflt.defs.defined = 0;
     info->ledDflt.defs.merge = MergeOverride;
@@ -140,7 +140,7 @@ ClearCompatInfo(CompatInfo *info, struct xkb_keymap *keymap)
     info->dflt.interp.act.type = XkbSA_NoAction;
     for (i = 0; i < sizeof(info->dflt.interp.act.any.data); i++)
         info->dflt.interp.act.any.data[i] = 0;
-    ClearIndicatorMapInfo(keymap->context, &info->ledDflt);
+    ClearIndicatorMapInfo(keymap->ctx, &info->ledDflt);
     info->nInterps = 0;
     info->interps = (SymInterpInfo *) ClearCommonInfo(&info->interps->defs);
     memset(&info->groupCompat[0], 0,
@@ -299,7 +299,7 @@ ResolveStateAndPredicate(ExprDef * expr,
     *pred_rtrn = XkbSI_Exactly;
     if (expr->op == ExprActionDecl)
     {
-        const char *pred_txt = xkb_atom_text(info->keymap->context,
+        const char *pred_txt = xkb_atom_text(info->keymap->ctx,
                                              expr->value.action.name);
         if (strcasecmp(pred_txt, "noneof") == 0)
             *pred_rtrn = XkbSI_NoneOf;
@@ -321,7 +321,7 @@ ResolveStateAndPredicate(ExprDef * expr,
     }
     else if (expr->op == ExprIdent)
     {
-        const char *pred_txt = xkb_atom_text(info->keymap->context,
+        const char *pred_txt = xkb_atom_text(info->keymap->ctx,
                                              expr->value.str);
         if ((pred_txt) && (strcasecmp(pred_txt, "any") == 0))
         {
@@ -331,7 +331,7 @@ ResolveStateAndPredicate(ExprDef * expr,
         }
     }
 
-    if (ExprResolveModMask(info->keymap->context, expr, &result))
+    if (ExprResolveModMask(info->keymap->ctx, expr, &result))
     {
         *mods_rtrn = result.uval;
         return true;
@@ -405,8 +405,8 @@ HandleIncludeCompatMap(IncludeStmt *stmt, struct xkb_keymap *keymap,
         included = *info;
         memset(info, 0, sizeof(CompatInfo));
     }
-    else if (ProcessIncludeFile(keymap->context, stmt, XkmCompatMapIndex,
-                                &rtrn, &newMerge))
+    else if (ProcessIncludeFile(keymap->ctx, stmt, XkmCompatMapIndex, &rtrn,
+                                &newMerge))
     {
         InitCompatInfo(&included, keymap);
         included.fileID = rtrn->id;
@@ -446,8 +446,8 @@ HandleIncludeCompatMap(IncludeStmt *stmt, struct xkb_keymap *keymap,
                 MergeIncludedCompatMaps(&included, info, next->merge);
                 ClearCompatInfo(info, keymap);
             }
-            else if (ProcessIncludeFile(keymap->context, next,
-                                        XkmCompatMapIndex, &rtrn, &op))
+            else if (ProcessIncludeFile(keymap->ctx, next, XkmCompatMapIndex,
+                                        &rtrn, &op))
             {
                 InitCompatInfo(&next_incl, keymap);
                 next_incl.fileID = rtrn->id;
@@ -522,7 +522,7 @@ SetInterpField(SymInterpInfo *si, struct xkb_keymap *keymap, char *field,
     {
         if (arrayNdx != NULL)
             return ReportSINotArray(si, field, info);
-        ok = ExprResolveBoolean(keymap->context, value, &tmp);
+        ok = ExprResolveBoolean(keymap->ctx, value, &tmp);
         if (ok)
         {
             if (tmp.uval)
@@ -538,7 +538,7 @@ SetInterpField(SymInterpInfo *si, struct xkb_keymap *keymap, char *field,
     {
         if (arrayNdx != NULL)
             return ReportSINotArray(si, field, info);
-        ok = ExprResolveBoolean(keymap->context, value, &tmp);
+        ok = ExprResolveBoolean(keymap->ctx, value, &tmp);
         if (ok)
         {
             if (tmp.uval)
@@ -555,7 +555,7 @@ SetInterpField(SymInterpInfo *si, struct xkb_keymap *keymap, char *field,
     {
         if (arrayNdx != NULL)
             return ReportSINotArray(si, field, info);
-        ok = ExprResolveEnum(keymap->context, value, &tmp, useModMapValues);
+        ok = ExprResolveEnum(keymap->ctx, value, &tmp, useModMapValues);
         if (ok)
         {
             if (tmp.uval)

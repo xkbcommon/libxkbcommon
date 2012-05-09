@@ -205,7 +205,7 @@ yyerror(struct YYLTYPE *loc, void *scanner, const char *msg)
 }
 
 bool
-XKBParseString(struct xkb_context *context, const char *string,
+XKBParseString(struct xkb_ctx *ctx, const char *string,
                const char *file_name, XkbFile **out)
 {
     int ret;
@@ -216,7 +216,7 @@ XKBParseString(struct xkb_context *context, const char *string,
     if (string == NULL)
         return false;
 
-    param.context = context;
+    param.ctx = ctx;
 
     memset(&extra, 0, sizeof(extra));
     ret = yylex_init_extra(&extra, &param.scanner);
@@ -241,7 +241,7 @@ XKBParseString(struct xkb_context *context, const char *string,
 }
 
 bool
-XKBParseFile(struct xkb_context *context, FILE *file,
+XKBParseFile(struct xkb_ctx *ctx, FILE *file,
              const char *file_name, XkbFile **out)
 {
     int ret;
@@ -251,7 +251,7 @@ XKBParseFile(struct xkb_context *context, FILE *file,
     if (!file)
         return false;
 
-    param.context = context;
+    param.ctx = ctx;
 
     memset(&extra, 0, sizeof(extra));
     ret = yylex_init_extra(&extra, &param.scanner);

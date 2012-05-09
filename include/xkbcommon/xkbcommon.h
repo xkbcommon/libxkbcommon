@@ -133,9 +133,9 @@ struct xkb_component_names {
 
 /**
  * Opaque context object; may only be created, accessed, manipulated and
- * destroyed through the xkb_context_*() API.
+ * destroyed through the xkb_ctx_*() API.
  */
-struct xkb_context;
+struct xkb_ctx;
 
 /**
  * Opaque keymap object; may only be created, accessed, manipulated and
@@ -193,7 +193,7 @@ xkb_keysym_from_name(const char *s);
  * @{
  */
 
-enum xkb_context_flags {
+enum xkb_ctx_flags {
     /** Create this context with an empty include path. */
     XKB_CONTEXT_NO_DEFAULT_INCLUDES = 1,
 };
@@ -201,10 +201,10 @@ enum xkb_context_flags {
 /**
  * Returns a new XKB context, or NULL on failure.  If successful, the caller
  * holds a reference on the context, and must free it when finished with
- * xkb_context_unref().
+ * xkb_ctx_unref().
  */
-struct xkb_context *
-xkb_context_new(enum xkb_context_flags flags);
+struct xkb_ctx *
+xkb_ctx_new(enum xkb_ctx_flags flags);
 
 /**
  * Appends a new entry to the include path used for keymap compilation.
@@ -212,7 +212,7 @@ xkb_context_new(enum xkb_context_flags flags);
  * inaccessible.
  */
 int
-xkb_context_include_path_append(struct xkb_context *context, const char *path);
+xkb_ctx_include_path_append(struct xkb_ctx *ctx, const char *path);
 
 /**
  * Appends the default include paths to the context's current include path.
@@ -220,7 +220,7 @@ xkb_context_include_path_append(struct xkb_context *context, const char *path);
  * added.
  */
 int
-xkb_context_include_path_append_default(struct xkb_context *context);
+xkb_ctx_include_path_append_default(struct xkb_ctx *ctx);
 
 /**
  * Removes all entries from the context's include path, and inserts the
@@ -228,37 +228,37 @@ xkb_context_include_path_append_default(struct xkb_context *context);
  * could not be added.
  */
 int
-xkb_context_include_path_reset_defaults(struct xkb_context *context);
+xkb_ctx_include_path_reset_defaults(struct xkb_ctx *ctx);
 
 /**
  * Removes all entries from the context's include path.
  */
 void
-xkb_context_include_path_clear(struct xkb_context *context);
+xkb_ctx_include_path_clear(struct xkb_ctx *ctx);
 
 /**
  * Returns the number of include paths currently active in the context.
  */
 unsigned int
-xkb_context_num_include_paths(struct xkb_context *context);
+xkb_ctx_num_include_paths(struct xkb_ctx *ctx);
 
 /**
  * Returns the include path at the specified index within the context.
  */
 const char *
-xkb_context_include_path_get(struct xkb_context *context, unsigned int index);
+xkb_ctx_include_path_get(struct xkb_ctx *ctx, unsigned int index);
 
 /**
  * Takes a new reference on an XKB context.
  */
-struct xkb_context *
-xkb_context_ref(struct xkb_context *context);
+struct xkb_ctx *
+xkb_ctx_ref(struct xkb_ctx *ctx);
 
 /**
  * Releases a reference on an XKB context, and possibly frees it.
  */
 void
-xkb_context_unref(struct xkb_context *context);
+xkb_ctx_unref(struct xkb_ctx *ctx);
 
 /** @} */
 
@@ -282,7 +282,7 @@ enum xkb_map_compile_flags {
  * keymaps.
  */
 struct xkb_keymap *
-xkb_map_new_from_names(struct xkb_context *context,
+xkb_map_new_from_names(struct xkb_ctx *ctx,
                        const struct xkb_rule_names *names,
                        enum xkb_map_compile_flags flags);
 
@@ -297,7 +297,7 @@ xkb_map_new_from_names(struct xkb_context *context,
  * Geometry will be ignored since xkbcommon does not support it in any way.
  */
 struct xkb_keymap *
-xkb_map_new_from_kccgst(struct xkb_context *context,
+xkb_map_new_from_kccgst(struct xkb_ctx *ctx,
                         const struct xkb_component_names *kccgst,
                         enum xkb_map_compile_flags flags);
 
@@ -311,7 +311,7 @@ enum xkb_keymap_format {
  * file descriptor.
  */
 struct xkb_keymap *
-xkb_map_new_from_fd(struct xkb_context *context,
+xkb_map_new_from_fd(struct xkb_ctx *ctx,
                     int fd, enum xkb_keymap_format format,
                     enum xkb_map_compile_flags flags);
 
@@ -320,7 +320,7 @@ xkb_map_new_from_fd(struct xkb_context *context,
  * enormous string.
  */
 struct xkb_keymap *
-xkb_map_new_from_string(struct xkb_context *context,
+xkb_map_new_from_string(struct xkb_ctx *ctx,
                         const char *string,
                         enum xkb_keymap_format format,
                         enum xkb_map_compile_flags flags);

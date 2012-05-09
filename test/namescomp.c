@@ -36,7 +36,7 @@ test_names(const char *keycodes, const char *types,
            const char *compat, const char *symbols)
 {
     int ret = 1;
-    struct xkb_context *context;
+    struct xkb_ctx *ctx;
     struct xkb_keymap *keymap;
     struct xkb_component_names kccgst = {
         .keymap = NULL,
@@ -46,13 +46,13 @@ test_names(const char *keycodes, const char *types,
         .symbols = strdup(symbols),
     };
 
-    context = xkb_context_new(0);
-    assert(context);
+    ctx = xkb_ctx_new(0);
+    assert(ctx);
 
     fprintf(stderr, "\nCompiling %s %s %s %s\n", kccgst.keycodes, kccgst.types,
             kccgst.compat, kccgst.symbols);
 
-    keymap = xkb_map_new_from_kccgst(context, &kccgst, 0);
+    keymap = xkb_map_new_from_kccgst(ctx, &kccgst, 0);
     if (!keymap) {
         ret = 0;
         goto err_ctx;
@@ -60,7 +60,7 @@ test_names(const char *keycodes, const char *types,
 
     xkb_map_unref(keymap);
 err_ctx:
-    xkb_context_unref(context);
+    xkb_ctx_unref(ctx);
     free(kccgst.keycodes);
     free(kccgst.types);
     free(kccgst.compat);

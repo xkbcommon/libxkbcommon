@@ -684,7 +684,7 @@ EnsureSafeMapName(char *name)
 }
 
 XkbFile *
-CreateXKBFile(struct xkb_context *context, int type, char *name,
+CreateXKBFile(struct xkb_ctx *ctx, int type, char *name,
               ParseCommon *defs, unsigned flags)
 {
     XkbFile *file;
@@ -698,7 +698,7 @@ CreateXKBFile(struct xkb_context *context, int type, char *name,
         file->topName = uDupString(name);
         file->name = name;
         file->defs = defs;
-        file->id = xkb_context_take_file_id(context);
+        file->id = xkb_ctx_take_file_id(ctx);
         file->flags = flags;
     }
     return file;

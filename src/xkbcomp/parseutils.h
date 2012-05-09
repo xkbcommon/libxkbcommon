@@ -33,7 +33,7 @@
 #include "parser.h"
 
 struct parser_param {
-    struct xkb_context *context;
+    struct xkb_ctx *ctx;
     void *scanner;
     XkbFile *rtrn;
 };
@@ -120,16 +120,16 @@ extern void
 CheckDefaultMap(XkbFile *maps, const char *fileName);
 
 extern XkbFile *
-CreateXKBFile(struct xkb_context *context, int type, char *name,
+CreateXKBFile(struct xkb_ctx *ctx, int type, char *name,
               ParseCommon *defs, unsigned flags);
 
 extern bool
-XKBParseFile(struct xkb_context *context, FILE *file,
+XKBParseFile(struct xkb_ctx *ctx, FILE *file,
                const char *file_name, XkbFile **out);
 
 extern bool
-XKBParseString(struct xkb_context *context, const char *string,
-                 const char *file_name, XkbFile **out);
+XKBParseString(struct xkb_ctx *context, const char *string,
+               const char *file_name, XkbFile **out);
 
 extern void
 FreeXKBFile(XkbFile *file);
