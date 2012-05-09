@@ -83,6 +83,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <stddef.h>
 #include <stdint.h>
 
+#include <xkbcommon/xkbcommon-keysyms.h>
+
 typedef uint32_t xkb_keycode_t;
 typedef uint32_t xkb_keysym_t;
 typedef uint32_t xkb_mod_index_t;
