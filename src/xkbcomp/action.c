@@ -791,7 +791,7 @@ HandleActionMessage(struct xkb_keymap *keymap, struct xkb_any_action *action,
     case F_Data:
         if (array_ndx == NULL)
         {
-            if (!ExprResolveString(value, &rtrn))
+            if (!ExprResolveString(keymap, value, &rtrn))
                 return ReportMismatch(action->type, field, "string");
             else
             {
@@ -991,7 +991,7 @@ HandlePrivate(struct xkb_keymap *keymap, struct xkb_any_action *action,
     case F_Data:
         if (array_ndx == NULL)
         {
-            if (!ExprResolveString(value, &rtrn))
+            if (!ExprResolveString(keymap, value, &rtrn))
                 return ReportMismatch(action->type, field, "string");
             else
             {
@@ -1097,7 +1097,7 @@ HandleActionDef(ExprDef * def,
     unsigned tmp, hndlrType;
 
     if (!actionsInitialized)
-        ActionsInit(xkb->context);
+        ActionsInit(keymap->context);
 
     if (def->op != ExprActionDecl)
     {
@@ -1153,17 +1153,17 @@ HandleActionDef(ExprDef * def,
             if ((arg->op == OpNot) || (arg->op == OpInvert))
             {
                 field = arg->value.child;
-                constFalse.value.str = xkb_atom_intern(xkb->context, "false");
+                constFalse.value.str = xkb_atom_intern(keymap->context, "false");
                 value = &constFalse;
             }
             else
             {
                 field = arg;
-                constTrue.value.str = xkb_atom_intern(xkb->context, "true");
+                constTrue.value.str = xkb_atom_intern(keymap->context, "true");
                 value = &constTrue;
             }
         }
-        if (!ExprResolveLhs(field, &elemRtrn, &fieldRtrn, &arrayRtrn))
+        if (!ExprResolveLhs(keymap, field, &elemRtrn, &fieldRtrn, &arrayRtrn))
             return false;       /* internal error -- already reported */
 
         if (elemRtrn.str != NULL)
@@ -1202,7 +1202,7 @@ SetActionField(struct xkb_keymap *keymap,
     ActionInfo *new, *old;
 
     if (!actionsInitialized)
-        ActionsInit(xkb->context);
+        ActionsInit(keymap->context);
 
     new = uTypedAlloc(ActionInfo);
     if (new == NULL)

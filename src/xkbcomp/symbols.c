@@ -1180,7 +1180,7 @@ SetSymbolsField(KeyInfo *key, struct xkb_keymap *keymap, char *field,
     if (strcasecmp(field, "type") == 0)
     {
         ExprResult ndx;
-        if ((!ExprResolveString(value, &tmp))
+        if ((!ExprResolveString(keymap, value, &tmp))
             && (warningLevel > 0))
         {
             WARN("The type field of a key symbol map must be a string\n");
@@ -1188,7 +1188,7 @@ SetSymbolsField(KeyInfo *key, struct xkb_keymap *keymap, char *field,
         }
         if (arrayNdx == NULL)
         {
-            key->dfltType = xkb_atom_intern(xkb->context, tmp.str);
+            key->dfltType = xkb_atom_intern(keymap->context, tmp.str);
             key->defs.defined |= _Key_Type_Dflt;
         }
         else if (!ExprResolveGroup(arrayNdx, &ndx))
@@ -1201,7 +1201,8 @@ SetSymbolsField(KeyInfo *key, struct xkb_keymap *keymap, char *field,
         }
         else
         {
-            key->types[ndx.uval - 1] = xkb_atom_intern(xkb->context, tmp.str);
+            key->types[ndx.uval - 1] = xkb_atom_intern(keymap->context,
+                                                       tmp.str);
             key->typesDefined |= (1 << (ndx.uval - 1));
         }
         free(tmp.str);
@@ -1324,7 +1325,7 @@ SetSymbolsField(KeyInfo *key, struct xkb_keymap *keymap, char *field,
 }
 
 static int
-SetGroupName(SymbolsInfo *info, struct xkb_keymap *xkb, ExprDef *arrayNdx,
+SetGroupName(SymbolsInfo *info, struct xkb_keymap *keymap, ExprDef *arrayNdx,
              ExprDef *value)
 {
     ExprResult tmp, name;
@@ -1341,14 +1342,14 @@ SetGroupName(SymbolsInfo *info, struct xkb_keymap *xkb, ExprDef *arrayNdx,
         ACTION("Definition with non-integer array index ignored\n");
         return false;
     }
-    if (!ExprResolveString(value, &name))
+    if (!ExprResolveString(keymap, value, &name))
     {
         ERROR("Group name must be a string\n");
         ACTION("Illegal name for group %d ignored\n", tmp.uval);
         return false;
     }
     info->groupNames[tmp.uval - 1 + info->explicit_group] =
-        xkb_atom_intern(xkb->context, name.str);
+        xkb_atom_intern(keymap->context, name.str);
     free(name.str);
 
     return true;
@@ -1361,7 +1362,7 @@ HandleSymbolsVar(VarDef *stmt, struct xkb_keymap *keymap, SymbolsInfo *info)
     ExprDef *arrayNdx;
     bool ret;
 
-    if (ExprResolveLhs(stmt->name, &elem, &field, &arrayNdx) == 0)
+    if (ExprResolveLhs(keymap, stmt->name, &elem, &field, &arrayNdx) == 0)
         return 0;               /* internal error, already reported */
     if (elem.str && (strcasecmp(elem.str, "key") == 0))
     {
@@ -1372,7 +1373,7 @@ HandleSymbolsVar(VarDef *stmt, struct xkb_keymap *keymap, SymbolsInfo *info)
                                     (strcasecmp(field.str, "groupname") ==
                                      0)))
     {
-        ret = SetGroupName(info, xkb, arrayNdx, stmt->value);
+        ret = SetGroupName(info, keymap, arrayNdx, stmt->value);
     }
     else if ((elem.str == NULL)
              && ((strcasecmp(field.str, "groupswrap") == 0) ||
@@ -1470,7 +1471,8 @@ HandleSymbolsBody(VarDef *def, struct xkb_keymap *keymap, KeyInfo *key,
             }
             else
             {
-                ok = ExprResolveLhs(def->name, &tmp, &field, &arrayNdx);
+                ok = ExprResolveLhs(keymap, def->name, &tmp, &field,
+                                    &arrayNdx);
             }
             if (ok)
                 ok = SetSymbolsField(key, keymap, field.str, arrayNdx,
@@ -1729,29 +1731,29 @@ FindNamedType(struct xkb_keymap *keymap, xkb_atom_t atom, unsigned *type_rtrn)
  * @returns true if a type could be found, false otherwise.
  */
 static bool
-FindAutomaticType(struct xkb_keymap *xkb, int width, xkb_keysym_t *syms,
+FindAutomaticType(struct xkb_keymap *keymap, int width, xkb_keysym_t *syms,
                   xkb_atom_t *typeNameRtrn, bool *autoType)
 {
     *autoType = false;
     if ((width == 1) || (width == 0))
     {
-        *typeNameRtrn = xkb_atom_intern(xkb->context, "ONE_LEVEL");
+        *typeNameRtrn = xkb_atom_intern(keymap->context, "ONE_LEVEL");
         *autoType = true;
     }
     else if (width == 2)
     {
         if (syms && XkbcKSIsLower(syms[0]) && XkbcKSIsUpper(syms[1]))
         {
-            *typeNameRtrn = xkb_atom_intern(xkb->context, "ALPHABETIC");
+            *typeNameRtrn = xkb_atom_intern(keymap->context, "ALPHABETIC");
         }
         else if (syms && (XkbKSIsKeypad(syms[0]) || XkbKSIsKeypad(syms[1])))
         {
-            *typeNameRtrn = xkb_atom_intern(xkb->context, "KEYPAD");
+            *typeNameRtrn = xkb_atom_intern(keymap->context, "KEYPAD");
             *autoType = true;
         }
         else
         {
-            *typeNameRtrn = xkb_atom_intern(xkb->context, "TWO_LEVEL");
+            *typeNameRtrn = xkb_atom_intern(keymap->context, "TWO_LEVEL");
             *autoType = true;
         }
     }
@@ -1760,15 +1762,15 @@ FindAutomaticType(struct xkb_keymap *xkb, int width, xkb_keysym_t *syms,
         if (syms && XkbcKSIsLower(syms[0]) && XkbcKSIsUpper(syms[1]))
             if (XkbcKSIsLower(syms[2]) && XkbcKSIsUpper(syms[3]))
                 *typeNameRtrn =
-                    xkb_atom_intern(xkb->context, "FOUR_LEVEL_ALPHABETIC");
+                    xkb_atom_intern(keymap->context, "FOUR_LEVEL_ALPHABETIC");
             else
-                *typeNameRtrn = xkb_atom_intern(xkb->context,
+                *typeNameRtrn = xkb_atom_intern(keymap->context,
                                                 "FOUR_LEVEL_SEMIALPHABETIC");
 
         else if (syms && (XkbKSIsKeypad(syms[0]) || XkbKSIsKeypad(syms[1])))
-            *typeNameRtrn = xkb_atom_intern(xkb->context, "FOUR_LEVEL_KEYPAD");
+            *typeNameRtrn = xkb_atom_intern(keymap->context, "FOUR_LEVEL_KEYPAD");
         else
-            *typeNameRtrn = xkb_atom_intern(xkb->context, "FOUR_LEVEL");
+            *typeNameRtrn = xkb_atom_intern(keymap->context, "FOUR_LEVEL");
         /* XXX: why not set autoType here? */
     }
     return ((width >= 0) && (width <= 4));
@@ -1971,7 +1973,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
         {
             if (key->dfltType != XKB_ATOM_NONE)
                 key->types[i] = key->dfltType;
-            else if (FindAutomaticType(xkb, key->numLevels[i], key->syms[i],
+            else if (FindAutomaticType(keymap, key->numLevels[i], key->syms[i],
                                        &key->types[i], &autoType))
             {
             }
@@ -2220,7 +2222,8 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap, unsigned merge)
     for (i = 0; i < XkbNumKbdGroups; i++) {
         if (info.groupNames[i] != XKB_ATOM_NONE) {
             free(UNCONSTIFY(keymap->names->groups[i]));
-            keymap->names->groups[i] = XkbcAtomGetString(info.groupNames[i]);
+            keymap->names->groups[i] = xkb_atom_strdup(keymap->context,
+                                                       info.groupNames[i]);
         }
     }
 

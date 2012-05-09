@@ -660,13 +660,13 @@ HandleKeycodeDef(KeycodeDef *stmt, unsigned merge, KeyNamesInfo *info)
  * @return 1 on success, 0 otherwise.
  */
 static int
-HandleKeyNameVar(VarDef *stmt, KeyNamesInfo *info)
+HandleKeyNameVar(VarDef *stmt, struct xkb_keymap *keymap, KeyNamesInfo *info)
 {
     ExprResult tmp, field;
     ExprDef *arrayNdx;
     int which;
 
-    if (ExprResolveLhs(stmt->name, &tmp, &field, &arrayNdx) == 0)
+    if (ExprResolveLhs(keymap, stmt->name, &tmp, &field, &arrayNdx) == 0)
         return 0;               /* internal error, already reported */
 
     if (tmp.str != NULL)
@@ -754,7 +754,7 @@ err_out:
 }
 
 static int
-HandleIndicatorNameDef(IndicatorNameDef *def, struct xkb_keymap *xkb,
+HandleIndicatorNameDef(IndicatorNameDef *def, struct xkb_keymap *keymap,
                        KeyNamesInfo *info)
 {
     IndicatorNameInfo ii;
@@ -769,14 +769,14 @@ HandleIndicatorNameDef(IndicatorNameDef *def, struct xkb_keymap *xkb,
     }
     InitIndicatorNameInfo(&ii, info);
     ii.ndx = def->ndx;
-    if (!ExprResolveString(def->name, &tmp))
+    if (!ExprResolveString(keymap, def->name, &tmp))
     {
         char buf[20];
         snprintf(buf, sizeof(buf), "%d", def->ndx);
         info->errorCount++;
         return ReportBadType("indicator", "name", buf, "string");
     }
-    ii.name = xkb_atom_intern(xkb->context, tmp.str);
+    ii.name = xkb_atom_intern(keymap->context, tmp.str);
     free(tmp.str);
     ii.virtual = def->virtual;
     if (!AddIndicatorName(info, &ii))
@@ -824,7 +824,7 @@ HandleKeycodesFile(XkbFile *file, struct xkb_keymap *keymap,
                 info->errorCount++;
             break;
         case StmtVarDef: /* e.g. minimum, maximum */
-            if (!HandleKeyNameVar((VarDef *) stmt, info))
+            if (!HandleKeyNameVar((VarDef *) stmt, keymap, info))
                 info->errorCount++;
             break;
         case StmtIndicatorNameDef: /* e.g. indicator 1 = "Caps Lock"; */
@@ -910,7 +910,8 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap, unsigned merge)
 
         for (ii = info.leds; ii; ii = (IndicatorNameInfo *)ii->defs.next) {
             free(UNCONSTIFY(keymap->names->indicators[ii->ndx - 1]));
-            keymap->names->indicators[ii->ndx - 1] = XkbcAtomGetString(ii->name);
+            keymap->names->indicators[ii->ndx - 1] =
+                xkb_atom_strdup(keymap->context, ii->name);
         }
     }
 

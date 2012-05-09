@@ -104,10 +104,10 @@ static void
 InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
                  KeyTypesInfo *from)
 {
-    tok_ONE_LEVEL = xkb_atom_intern(xkb->context, "ONE_LEVEL");
-    tok_TWO_LEVEL = xkb_atom_intern(xkb->context, "TWO_LEVEL");
-    tok_ALPHABETIC = xkb_atom_intern(xkb->context, "ALPHABETIC");
-    tok_KEYPAD = xkb_atom_intern(xkb->context, "KEYPAD");
+    tok_ONE_LEVEL = xkb_atom_intern(keymap->context, "ONE_LEVEL");
+    tok_TWO_LEVEL = xkb_atom_intern(keymap->context, "TWO_LEVEL");
+    tok_ALPHABETIC = xkb_atom_intern(keymap->context, "ALPHABETIC");
+    tok_KEYPAD = xkb_atom_intern(keymap->context, "KEYPAD");
     info->name = strdup("default");
     info->errorCount = 0;
     info->stdPresent = 0;
@@ -775,7 +775,7 @@ AddLevelName(KeyTypeInfo *type, unsigned level, xkb_atom_t name, bool clobber)
 }
 
 static bool
-SetLevelName(KeyTypeInfo *type, struct xkb_keymap *xkb, ExprDef *arrayNdx,
+SetLevelName(KeyTypeInfo *type, struct xkb_keymap *keymap, ExprDef *arrayNdx,
              ExprDef *value)
 {
     ExprResult rtrn;
@@ -787,14 +787,14 @@ SetLevelName(KeyTypeInfo *type, struct xkb_keymap *xkb, ExprDef *arrayNdx,
     if (!ExprResolveLevel(arrayNdx, &rtrn))
         return ReportTypeBadType(type, "level name", "integer");
     level = rtrn.ival - 1;
-    if (!ExprResolveString(value, &rtrn))
+    if (!ExprResolveString(keymap, value, &rtrn))
     {
         ERROR("Non-string name for level %d in key type %s\n", level + 1,
                XkbcAtomText(type->name));
         ACTION("Ignoring illegal level name definition\n");
         return false;
     }
-    level_name = xkb_atom_intern(xkb->context, rtrn.str);
+    level_name = xkb_atom_intern(keymap->context, rtrn.str);
     free(rtrn.str);
     return AddLevelName(type, level, level_name, true);
 }
@@ -857,7 +857,7 @@ SetKeyTypeField(KeyTypeInfo *type, struct xkb_keymap *keymap,
              (strcasecmp(field, "level_name") == 0))
     {
         type->defs.defined |= _KT_LevelNames;
-        return SetLevelName(type, xkb, arrayNdx, value);
+        return SetLevelName(type, keymap, arrayNdx, value);
     }
     ERROR("Unknown field %s in key type %s\n", field, TypeTxt(type));
     ACTION("Definition ignored\n");
@@ -870,7 +870,7 @@ HandleKeyTypeVar(VarDef *stmt, struct xkb_keymap *keymap, KeyTypesInfo *info)
     ExprResult elem, field;
     ExprDef *arrayNdx;
 
-    if (!ExprResolveLhs(stmt->name, &elem, &field, &arrayNdx))
+    if (!ExprResolveLhs(keymap, stmt->name, &elem, &field, &arrayNdx))
         return false;           /* internal error, already reported */
     if (elem.str && (strcasecmp(elem.str, "type") == 0))
         return SetKeyTypeField(&info->dflt, keymap, field.str, arrayNdx,
@@ -904,7 +904,7 @@ HandleKeyTypeBody(VarDef *def, struct xkb_keymap *keymap,
             ok = HandleKeyTypeVar(def, keymap, info);
             continue;
         }
-        ok = ExprResolveLhs(def->name, &tmp, &field, &arrayNdx);
+        ok = ExprResolveLhs(keymap, def->name, &tmp, &field, &arrayNdx);
         if (ok) {
             ok = SetKeyTypeField(type, keymap, field.str, arrayNdx,
                                  def->value, info);
@@ -1113,7 +1113,7 @@ CopyDefToKeyType(struct xkb_keymap *keymap, struct xkb_key_type *type,
     }
     else
         type->preserve = NULL;
-    type->name = XkbcAtomGetString(def->name);
+    type->name = xkb_atom_strdup(keymap->context, def->name);
     if (def->szNames > 0)
     {
         type->level_names = uTypedCalloc(def->numLevels, const char *);
@@ -1121,7 +1121,8 @@ CopyDefToKeyType(struct xkb_keymap *keymap, struct xkb_key_type *type,
         /* assert def->szNames<=def->numLevels */
         for (i = 0; i < def->szNames; i++)
         {
-            type->level_names[i] = XkbcAtomGetString(def->lvlNames[i]);
+            type->level_names[i] = xkb_atom_strdup(keymap->context,
+                                                   def->lvlNames[i]);
         }
     }
     else
@@ -1180,16 +1181,16 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap, unsigned merge)
 
         if (missing & XkbOneLevelMask)
             keymap->map->types[XkbOneLevelIndex].name =
-                XkbcAtomGetString(tok_ONE_LEVEL);
+                xkb_atom_strdup(keymap->context, tok_ONE_LEVEL);
         if (missing & XkbTwoLevelMask)
             keymap->map->types[XkbTwoLevelIndex].name =
-                XkbcAtomGetString(tok_TWO_LEVEL);
+                xkb_atom_strdup(keymap->context, tok_TWO_LEVEL);
         if (missing & XkbAlphabeticMask)
             keymap->map->types[XkbAlphabeticIndex].name =
-                XkbcAtomGetString(tok_ALPHABETIC);
+                xkb_atom_strdup(keymap->context, tok_ALPHABETIC);
         if (missing & XkbKeypadMask)
             keymap->map->types[XkbKeypadIndex].name =
-                XkbcAtomGetString(tok_KEYPAD);
+                xkb_atom_strdup(keymap->context, tok_KEYPAD);
     }
 
     next = &keymap->map->types[XkbLastRequiredType + 1];

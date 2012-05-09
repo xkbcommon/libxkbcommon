@@ -329,7 +329,7 @@ HandleIndicatorMapDef(IndicatorMapDef *def, struct xkb_keymap *keymap,
     {
         ExprResult elem, field;
         ExprDef *arrayNdx;
-        if (!ExprResolveLhs(var->name, &elem, &field, &arrayNdx))
+        if (!ExprResolveLhs(keymap, var->name, &elem, &field, &arrayNdx))
         {
             ok = false;
             continue;
@@ -418,7 +418,7 @@ CopyIndicatorMapDefs(struct xkb_keymap *keymap, LEDInfo *leds,
             {
                 free(UNCONSTIFY(keymap->names->indicators[led->indicator - 1]));
                 keymap->names->indicators[led->indicator-1] =
-                    XkbcAtomGetString(led->name);
+                    xkb_atom_strdup(keymap->context, led->name);
             }
             free(led);
         }
@@ -466,7 +466,7 @@ BindIndicators(struct xkb_keymap *keymap, bool force, LEDInfo *unbound,
                         if (keymap->names->indicators[i] == NULL)
                         {
                             keymap->names->indicators[i] =
-                                XkbcAtomGetString(led->name);
+                                xkb_atom_strdup(keymap->context, led->name);
                             led->indicator = i + 1;
                             break;
                         }

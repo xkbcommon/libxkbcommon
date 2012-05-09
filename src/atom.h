@@ -37,7 +37,7 @@ extern xkb_atom_t
 xkb_atom_intern(struct xkb_context *context, const char *string);
 
 extern char *
-XkbcAtomGetString(xkb_atom_t atom);
+xkb_atom_strdup(struct xkb_context *context, xkb_atom_t atom);
 
 extern const char *
 XkbcAtomText(xkb_atom_t atm);

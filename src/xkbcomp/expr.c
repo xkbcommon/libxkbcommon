@@ -128,25 +128,30 @@ exprTypeText(unsigned type)
 }
 
 int
-ExprResolveLhs(ExprDef * expr,
-               ExprResult * elem_rtrn,
-               ExprResult * field_rtrn, ExprDef ** index_rtrn)
+ExprResolveLhs(struct xkb_keymap *keymap, ExprDef *expr,
+               ExprResult *elem_rtrn, ExprResult *field_rtrn,
+               ExprDef **index_rtrn)
 {
     switch (expr->op)
     {
     case ExprIdent:
         elem_rtrn->str = NULL;
-        field_rtrn->str = XkbcAtomGetString(expr->value.str);
+        field_rtrn->str = xkb_atom_strdup(keymap->context,
+                                          expr->value.str);
         *index_rtrn = NULL;
         return true;
     case ExprFieldRef:
-        elem_rtrn->str = XkbcAtomGetString(expr->value.field.element);
-        field_rtrn->str = XkbcAtomGetString(expr->value.field.field);
+        elem_rtrn->str = xkb_atom_strdup(keymap->context,
+                                         expr->value.field.element);
+        field_rtrn->str = xkb_atom_strdup(keymap->context,
+                                          expr->value.field.field);
         *index_rtrn = NULL;
         return true;
     case ExprArrayRef:
-        elem_rtrn->str = XkbcAtomGetString(expr->value.array.element);
-        field_rtrn->str = XkbcAtomGetString(expr->value.array.field);
+        elem_rtrn->str = xkb_atom_strdup(keymap->context,
+                                         expr->value.array.element);
+        field_rtrn->str = xkb_atom_strdup(keymap->context,
+                                          expr->value.array.field);
         *index_rtrn = expr->value.array.entry;
         return true;
     }
@@ -668,8 +673,8 @@ ExprResolveButton(ExprDef * expr,
 }
 
 int
-ExprResolveString(ExprDef * expr,
-                  ExprResult * val_rtrn)
+ExprResolveString(struct xkb_keymap *keymap, ExprDef *expr,
+                  ExprResult *val_rtrn)
 {
     ExprResult leftRtrn, rightRtrn;
     ExprDef *left;
@@ -685,7 +690,7 @@ ExprResolveString(ExprDef * expr,
                    exprTypeText(expr->type));
             return false;
         }
-        val_rtrn->str = XkbcAtomGetString(expr->value.str);
+        val_rtrn->str = xkb_atom_strdup(keymap->context, expr->value.str);
         if (val_rtrn->str == NULL)
             val_rtrn->str = strdup("");
         return true;
@@ -701,8 +706,8 @@ ExprResolveString(ExprDef * expr,
     case OpAdd:
         left = expr->value.binary.left;
         right = expr->value.binary.right;
-        if (ExprResolveString(left, &leftRtrn) &&
-            ExprResolveString(right, &rightRtrn))
+        if (ExprResolveString(keymap, left, &leftRtrn) &&
+            ExprResolveString(keymap, right, &rightRtrn))
         {
             int len;
             char *new;

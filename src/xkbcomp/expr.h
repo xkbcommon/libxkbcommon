@@ -38,7 +38,8 @@ typedef union _ExprResult
 } ExprResult;
 
 extern int
-ExprResolveLhs(ExprDef *expr, ExprResult *elem_rtrn, ExprResult *field_rtrn,
+ExprResolveLhs(struct xkb_keymap *keymap, ExprDef *expr,
+               ExprResult *elem_rtrn, ExprResult *field_rtrn,
                ExprDef **index_rtrn);
 
 typedef struct _LookupEntry
@@ -92,7 +93,8 @@ extern int
 ExprResolveFloat(ExprDef *expr, ExprResult *val_rtrn);
 
 extern int
-ExprResolveString(ExprDef *expr, ExprResult *val_rtrn);
+ExprResolveString(struct xkb_keymap *keymap, ExprDef *expr,
+                  ExprResult *val_rtrn);
 
 extern int
 ExprResolveKeyName(ExprDef *expr, ExprResult *val_rtrn);

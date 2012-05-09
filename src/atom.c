@@ -101,7 +101,7 @@ XkbcAtomText(xkb_atom_t atom)
 }
 
 char *
-XkbcAtomGetString(xkb_atom_t atom)
+xkb_atom_strdup(struct xkb_context *context, xkb_atom_t atom)
 {
     const char *ret = XkbcAtomText(atom);
     return ret ? strdup(ret) : NULL;

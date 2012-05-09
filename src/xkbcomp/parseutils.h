@@ -128,7 +128,7 @@ XKBParseFile(struct xkb_context *context, FILE *file,
                const char *file_name, XkbFile **out);
 
 extern bool
-XKBParseString(struct xkb_context *contex, const char *string,
+XKBParseString(struct xkb_context *context, const char *string,
                  const char *file_name, XkbFile **out);
 
 extern void
