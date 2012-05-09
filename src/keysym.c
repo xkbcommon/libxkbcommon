@@ -34,7 +34,7 @@ authorization from the authors.
 #include "ks_tables.h"
 
 _X_EXPORT void
-xkb_keysym_to_string(xkb_keysym_t ks, char *buffer, size_t size)
+xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
 {
     int i, n, h, idx;
     const unsigned char *entry;
@@ -88,7 +88,7 @@ xkb_keysym_to_string(xkb_keysym_t ks, char *buffer, size_t size)
 }
 
 _X_EXPORT xkb_keysym_t
-xkb_string_to_keysym(const char *s)
+xkb_keysym_from_name(const char *s)
 {
     int i, n, h, c, idx;
     uint32_t sig = 0;
@@ -158,7 +158,7 @@ xkb_string_to_keysym(const char *s)
         if (!tmp)
             return XKB_KEYSYM_NO_SYMBOL;
         memmove(&tmp[4], &tmp[5], strlen(s) - 5 + 1);
-        ret = xkb_string_to_keysym(tmp);
+        ret = xkb_keysym_from_name(tmp);
         free(tmp);
         return ret;
     }

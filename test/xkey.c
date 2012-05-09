@@ -10,7 +10,7 @@ test_string(const char *string, xkb_keysym_t expected)
 {
     xkb_keysym_t keysym;
 
-    keysym = xkb_string_to_keysym(string);
+    keysym = xkb_keysym_from_name(string);
 
     fprintf(stderr, "Expected string %s -> %x\n", string, expected);
     fprintf(stderr, "Received string %s -> %x\n\n", string, keysym);
@@ -23,7 +23,7 @@ test_keysym(xkb_keysym_t keysym, const char *expected)
 {
     char s[16];
 
-    xkb_keysym_to_string(keysym, s, sizeof(s));
+    xkb_keysym_get_name(keysym, s, sizeof(s));
 
     fprintf(stderr, "Expected keysym %#x -> %s\n", keysym, expected);
     fprintf(stderr, "Received keysym %#x -> %s\n\n", keysym, s);

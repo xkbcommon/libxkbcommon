@@ -546,7 +546,7 @@ LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn)
         *sym_rtrn = XK_VoidSymbol;
         return 1;
     }
-    sym = xkb_string_to_keysym(str);
+    sym = xkb_keysym_from_name(str);
     if (sym != XKB_KEYSYM_NO_SYMBOL)
     {
         *sym_rtrn = sym;

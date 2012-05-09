@@ -245,7 +245,7 @@ XkbcKeysymText(xkb_keysym_t sym)
 {
     static char buffer[16];
 
-    xkb_keysym_to_string(sym, buffer, sizeof buffer);
+    xkb_keysym_get_name(sym, buffer, sizeof buffer);
 
     return buffer;
 }
