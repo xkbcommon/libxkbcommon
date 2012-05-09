@@ -29,15 +29,19 @@
 #include <unistd.h>
 
 #include "xkb-priv.h"
+#include "atom.h"
 
 struct xkb_context {
     int refcnt;
+
     char **include_paths;
     int num_include_paths;
     int size_include_paths;
 
     /* xkbcomp needs to assign sequential IDs to XkbFile's it creates. */
     int file_id;
+
+    struct atom_table *atom_table;
 };
 
 /**
@@ -179,6 +183,7 @@ xkb_context_unref(struct xkb_context *context)
         return;
 
     xkb_context_include_path_clear(context);
+    atom_table_free(context->atom_table);
     free(context);
 }
 
@@ -201,5 +206,29 @@ xkb_context_new(enum xkb_context_flags flags)
         return NULL;
     }
 
+    context->atom_table = atom_table_new();
+    if (!context->atom_table) {
+        xkb_context_unref(context);
+        return NULL;
+    }
+
     return context;
+}
+
+xkb_atom_t
+xkb_atom_intern(struct xkb_context *context, const char *string)
+{
+    return atom_intern(context->atom_table, string);
+}
+
+char *
+xkb_atom_strdup(struct xkb_context *context, xkb_atom_t atom)
+{
+    return atom_strdup(context->atom_table, atom);
+}
+
+const char *
+xkb_atom_text(struct xkb_context *context, xkb_atom_t atom)
+{
+    return atom_text(context->atom_table, atom);
 }

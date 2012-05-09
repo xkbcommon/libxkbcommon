@@ -28,7 +28,6 @@
 #define	XKBCOMP_H 1
 
 #include "xkb-priv.h"
-#include "atom.h"
 
 #define	TypeUnknown	0
 #define	TypeBoolean	1

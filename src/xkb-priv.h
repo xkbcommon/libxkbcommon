@@ -426,6 +426,19 @@ struct xkb_state {
         struct xkb_keymap *keymap;
 };
 
+typedef uint32_t xkb_atom_t;
+
+#define XKB_ATOM_NONE 0
+
+xkb_atom_t
+xkb_atom_intern(struct xkb_context *context, const char *string);
+
+char *
+xkb_atom_strdup(struct xkb_context *context, xkb_atom_t atom);
+
+const char *
+xkb_atom_text(struct xkb_context *context, xkb_atom_t atom);
+
 extern unsigned int
 xkb_key_get_group(struct xkb_state *state, xkb_keycode_t key);
 

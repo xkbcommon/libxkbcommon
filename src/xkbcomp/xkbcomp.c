@@ -218,7 +218,6 @@ compile_keymap(struct xkb_context *context, XkbFile *file)
 
 err:
     FreeXKBFile(file);
-    XkbcFreeAllAtoms();
     return keymap;
 }
 

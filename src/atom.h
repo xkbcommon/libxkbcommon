@@ -29,20 +29,21 @@ authorization from the authors.
 
 #include "xkb-priv.h"
 
-typedef uint32_t xkb_atom_t;
+struct atom_table;
 
-#define XKB_ATOM_NONE 0
+struct atom_table *
+atom_table_new(void);
 
-extern xkb_atom_t
-xkb_atom_intern(struct xkb_context *context, const char *string);
+void
+atom_table_free(struct atom_table *table);
 
-extern char *
-xkb_atom_strdup(struct xkb_context *context, xkb_atom_t atom);
+xkb_atom_t
+atom_intern(struct atom_table *table, const char *string);
 
-extern const char *
-xkb_atom_text(struct xkb_context *context, xkb_atom_t atom);
+char *
+atom_strdup(struct atom_table *table, xkb_atom_t atom);
 
-extern void
-XkbcFreeAllAtoms(void);
+const char *
+atom_text(struct atom_table *table, xkb_atom_t atom);
 
 #endif /* ATOM_H */

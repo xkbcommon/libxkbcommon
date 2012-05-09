@@ -72,65 +72,100 @@ SOFTWARE.
 
 #include "atom.h"
 
-#define InitialTableSize 100
+#define INITIAL_TABLE_SIZE 100
 
-typedef struct _Node {
-    struct _Node    *left, *right;
-    uint32_t          a;
-    unsigned int    fingerPrint;
-    char            *string;
-} NodeRec, *NodePtr;
+struct atom_node {
+    struct atom_node *left, *right;
+    uint32_t a;
+    unsigned int fingerprint;
+    char *string;
+};
 
-#define BAD_RESOURCE 0xe0000000
+struct atom_table {
+    xkb_atom_t last_atom;
+    struct atom_node *atom_root;
+    size_t table_length;
+    struct atom_node **node_table;
+};
 
-static xkb_atom_t lastAtom = XKB_ATOM_NONE;
-static NodePtr atomRoot;
-static unsigned long tableLength;
-static NodePtr *nodeTable;
+struct atom_table *
+atom_table_new(void)
+{
+    struct atom_table *table;
+
+    table = calloc(1, sizeof(*table));
+    if (!table)
+        return NULL;
+
+    table->last_atom = XKB_ATOM_NONE;
+
+    return table;
+}
+
+static void
+free_atom(struct atom_node *patom)
+{
+    if (!patom)
+        return;
+
+    free_atom(patom->left);
+    free_atom(patom->right);
+    free(patom->string);
+    free(patom);
+}
+
+void
+atom_table_free(struct atom_table *table)
+{
+    if (!table)
+        return;
+
+    free_atom(table->atom_root);
+    free(table->node_table);
+    free(table);
+}
 
 const char *
-xkb_atom_text(struct xkb_context *context, xkb_atom_t atom)
+atom_text(struct atom_table *table, xkb_atom_t atom)
 {
-    NodePtr node;
+    if (atom == XKB_ATOM_NONE || atom > table->last_atom ||
+        !table->node_table[atom])
+        return NULL;
 
-    if ((atom == XKB_ATOM_NONE) || (atom > lastAtom))
-        return NULL;
-    if (!(node = nodeTable[atom]))
-        return NULL;
-    return node->string;
+    return table->node_table[atom]->string;
 }
 
 char *
-xkb_atom_strdup(struct xkb_context *context, xkb_atom_t atom)
+atom_strdup(struct atom_table *table, xkb_atom_t atom)
 {
-    const char *ret = xkb_atom_text(context, atom);
+    const char *ret = atom_text(table, atom);
     return ret ? strdup(ret) : NULL;
 }
 
 xkb_atom_t
-xkb_atom_intern(struct xkb_context *context, const char *string)
+atom_intern(struct atom_table *table, const char *string)
 {
-    NodePtr *np;
-    NodePtr nd;
+    struct atom_node **np;
+    struct atom_node *nd;
     unsigned i;
     int comp;
     unsigned int fp = 0;
     size_t len;
 
     if (!string)
-	return XKB_ATOM_NONE;
+        return XKB_ATOM_NONE;
 
     len = strlen(string);
-    np = &atomRoot;
+    np = &table->atom_root;
     for (i = 0; i < (len + 1) / 2; i++) {
         fp = fp * 27 + string[i];
         fp = fp * 27 + string[len - 1 - i];
     }
 
     while (*np) {
-        if (fp < (*np)->fingerPrint)
+        if (fp < (*np)->fingerprint)
             np = &((*np)->left);
-        else if (fp > (*np)->fingerPrint)
+        else if (fp > (*np)->fingerprint)
             np = &((*np)->right);
         else {
             /* now start testing the strings */
@@ -144,69 +179,46 @@ xkb_atom_intern(struct xkb_context *context, const char *string)
             }
     }
 
-    nd = malloc(sizeof(NodeRec));
+    nd = malloc(sizeof(*nd));
     if (!nd)
-        return BAD_RESOURCE;
+        return XKB_ATOM_NONE;
 
     nd->string = malloc(len + 1);
     if (!nd->string) {
         free(nd);
-        return BAD_RESOURCE;
+        return XKB_ATOM_NONE;
     }
     strncpy(nd->string, string, len);
     nd->string[len] = 0;
 
-    if ((lastAtom + 1) >= tableLength) {
-        NodePtr *table;
-        int newLength;
+    if ((table->last_atom + 1) >= table->table_length) {
+        struct atom_node **new_node_table;
+        int new_length;
 
-        if (tableLength == 0)
-            newLength = InitialTableSize;
+        if (table->table_length == 0)
+            new_length = INITIAL_TABLE_SIZE;
         else
-            newLength = tableLength * 2;
+            new_length = table->table_length * 2;
 
-        table = realloc(nodeTable, newLength * sizeof(NodePtr));
-        if (!table) {
+        new_node_table = realloc(table->node_table,
+                                 new_length * sizeof(*new_node_table));
+        if (!new_node_table) {
             if (nd->string != string)
                 free(nd->string);
             free(nd);
-            return BAD_RESOURCE;
+            return XKB_ATOM_NONE;
         }
-        tableLength = newLength;
-        table[XKB_ATOM_NONE] = NULL;
+        new_node_table[XKB_ATOM_NONE] = NULL;
 
-        nodeTable = table;
+        table->table_length = new_length;
+        table->node_table = new_node_table;
     }
 
     *np = nd;
     nd->left = nd->right = NULL;
-    nd->fingerPrint = fp;
-    nd->a = (++lastAtom);
-    *(nodeTable + lastAtom) = nd;
+    nd->fingerprint = fp;
+    nd->a = (++table->last_atom);
+    *(table->node_table + table->last_atom) = nd;
 
     return nd->a;
-}
-
-static void
-FreeAtom(NodePtr patom)
-{
-    if (patom->left)
-        FreeAtom(patom->left);
-    if (patom->right)
-        FreeAtom(patom->right);
-    free(patom->string);
-    free(patom);
-}
-
-void
-XkbcFreeAllAtoms(void)
-{
-    if (atomRoot == NULL)
-        return;
-    FreeAtom(atomRoot);
-    atomRoot = NULL;
-    free(nodeTable);
-    nodeTable = NULL;
-    lastAtom = XKB_ATOM_NONE;
-    tableLength = 0;
 }
