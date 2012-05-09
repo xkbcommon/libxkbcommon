@@ -49,9 +49,9 @@ XORG_CHECK_MALLOC_ZERO
 AC_PROG_LEX
 AC_PROG_YACC
 AC_PATH_PROG([YACC_INST], $YACC)
-if test ! -f "src/xkbcomp/xkbparse.c"; then
+if test ! -f "src/xkbcomp/parser.c"; then
    if test -z "$YACC_INST"; then
-      AC_MSG_ERROR([yacc not found - unable to compile src/xkbcomp/xkbparse.y])
+      AC_MSG_ERROR([yacc not found - unable to compile src/xkbcomp/parser.y])
    fi
 fi
 
