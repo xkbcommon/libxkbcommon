@@ -29,6 +29,7 @@ authorization from the authors.
 #include <stdio.h>
 #include <string.h>
 
+#include "xkb-priv.h"
 #include "xkbcommon/xkbcommon.h"
 
 static int

@@ -29,6 +29,7 @@
 #include <stdlib.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "xkb-priv.h"
 
 struct test_data {
     struct xkb_component_names new;
