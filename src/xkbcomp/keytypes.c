@@ -80,10 +80,10 @@ static xkb_atom_t tok_KEYPAD;
 
 /***====================================================================***/
 
-#define ReportTypeShouldBeArray(t, f) \
-    ReportShouldBeArray("key type", (f), TypeTxt(t))
-#define ReportTypeBadType(t, f, w) \
-    ReportBadType("key type", (f), TypeTxt(t), (w))
+#define ReportTypeShouldBeArray(keymap, t, f) \
+    ReportShouldBeArray("key type", (f), TypeTxt((keymap), (t)))
+#define ReportTypeBadType(keymap, t, f, w) \
+    ReportBadType("key type", (f), TypeTxt((keymap), (t)), (w))
 
 /***====================================================================***/
 
@@ -93,8 +93,8 @@ static xkb_atom_t tok_KEYPAD;
     XkbcVModMaskText((x), (p)->indexMods, (p)->indexVMods)
 #define PreserveTxt(x, p) \
     XkbcVModMaskText((x), (p)->preMods, (p)->preVMods)
-#define TypeTxt(t) \
-    XkbcAtomText((t)->name)
+#define TypeTxt(keymap, t) \
+    xkb_atom_text((keymap)->context, (t)->name)
 #define TypeMaskTxt(t, x) \
     XkbcVModMaskText((x), (t)->mask, (t)->vmask)
 
@@ -289,7 +289,7 @@ AddKeyType(struct xkb_keymap *keymap, KeyTypesInfo *info, KeyTypeInfo *new)
                  && (warningLevel > 0)) || (warningLevel > 9))
             {
                 WARN("Multiple definitions of the %s key type\n",
-                     XkbcAtomText(new->name));
+                     xkb_atom_text(keymap->context, new->name));
                 ACTION("Earlier definition ignored\n");
             }
             FreeKeyTypeInfo(old);
@@ -305,7 +305,7 @@ AddKeyType(struct xkb_keymap *keymap, KeyTypesInfo *info, KeyTypeInfo *new)
         if (report)
         {
             WARN("Multiple definitions of the %s key type\n",
-                 XkbcAtomText(new->name));
+                 xkb_atom_text(keymap->context, new->name));
             ACTION("Later definition ignored\n");
         }
         FreeKeyTypeInfo(new);
@@ -474,14 +474,15 @@ DeleteLevel1MapEntries(KeyTypeInfo * type)
  * necessary.
  */
 static struct xkb_kt_map_entry *
-NextMapEntry(KeyTypeInfo * type)
+NextMapEntry(struct xkb_keymap *keymap, KeyTypeInfo * type)
 {
     if (type->entries == NULL)
     {
         type->entries = uTypedCalloc(2, struct xkb_kt_map_entry);
         if (type->entries == NULL)
         {
-            ERROR("Couldn't allocate map entries for %s\n", TypeTxt(type));
+            ERROR("Couldn't allocate map entries for %s\n",
+                  TypeTxt(keymap, type));
             ACTION("Map entries lost\n");
             return NULL;
         }
@@ -496,7 +497,8 @@ NextMapEntry(KeyTypeInfo * type)
                                        struct xkb_kt_map_entry);
         if (type->entries == NULL)
         {
-            ERROR("Couldn't reallocate map entries for %s\n", TypeTxt(type));
+            ERROR("Couldn't reallocate map entries for %s\n",
+                  TypeTxt(keymap, type));
             ACTION("Map entries lost\n");
             return NULL;
         }
@@ -525,7 +527,7 @@ AddPreserve(struct xkb_keymap *keymap, KeyTypeInfo *type,
             if (warningLevel > 9)
             {
                 WARN("Identical definitions for preserve[%s] in %s\n",
-                      PreserveIndexTxt(keymap, old), TypeTxt(type));
+                      PreserveIndexTxt(keymap, old), TypeTxt(keymap, type));
                 ACTION("Ignored\n");
             }
             return true;
@@ -534,7 +536,7 @@ AddPreserve(struct xkb_keymap *keymap, KeyTypeInfo *type,
         {
             const char *str;
             WARN("Multiple definitions for preserve[%s] in %s\n",
-                  PreserveIndexTxt(keymap, old), TypeTxt(type));
+                  PreserveIndexTxt(keymap, old), TypeTxt(keymap, type));
 
             if (clobber)
                 str = PreserveTxt(keymap, new);
@@ -557,7 +559,7 @@ AddPreserve(struct xkb_keymap *keymap, KeyTypeInfo *type,
     old = uTypedAlloc(PreserveInfo);
     if (!old)
     {
-        WSGO("Couldn't allocate preserve in %s\n", TypeTxt(type));
+        WSGO("Couldn't allocate preserve in %s\n", TypeTxt(keymap, type));
         ACTION("Preserve[%s] lost\n", PreserveIndexTxt(keymap, new));
         return false;
     }
@@ -599,13 +601,14 @@ AddMapEntry(struct xkb_keymap *keymap, KeyTypeInfo *type,
                 ignore = new->level + 1;
             }
             WARN("Multiple map entries for %s in %s\n",
-                  MapEntryTxt(keymap, new), TypeTxt(type));
+                  MapEntryTxt(keymap, new), TypeTxt(keymap, type));
             ACTION("Using %d, ignoring %d\n", use, ignore);
         }
         else if (warningLevel > 9)
         {
             WARN("Multiple occurences of map[%s]= %d in %s\n",
-                  MapEntryTxt(keymap, new), new->level + 1, TypeTxt(type));
+                  MapEntryTxt(keymap, new), new->level + 1,
+                  TypeTxt(keymap, type));
             ACTION("Ignored\n");
             return true;
         }
@@ -613,7 +616,7 @@ AddMapEntry(struct xkb_keymap *keymap, KeyTypeInfo *type,
             old->level = new->level;
         return true;
     }
-    if ((old = NextMapEntry(type)) == NULL)
+    if ((old = NextMapEntry(keymap, type)) == NULL)
         return false;           /* allocation failure, already reported */
     if (new->level >= type->numLevels)
         type->numLevels = new->level + 1;
@@ -636,9 +639,9 @@ SetMapEntry(KeyTypeInfo *type, struct xkb_keymap *keymap, ExprDef *arrayNdx,
     struct xkb_kt_map_entry entry;
 
     if (arrayNdx == NULL)
-        return ReportTypeShouldBeArray(type, "map entry");
+        return ReportTypeShouldBeArray(keymap, type, "map entry");
     if (!ExprResolveVModMask(arrayNdx, &rtrn, keymap))
-        return ReportTypeBadType(type, "map entry", "modifier mask");
+        return ReportTypeBadType(keymap, type, "map entry", "modifier mask");
     entry.mods.real_mods = rtrn.uval & 0xff;      /* modifiers < 512 */
     entry.mods.vmods = (rtrn.uval >> 8) & 0xffff; /* modifiers > 512 */
     if ((entry.mods.real_mods & (~type->mask)) ||
@@ -646,7 +649,7 @@ SetMapEntry(KeyTypeInfo *type, struct xkb_keymap *keymap, ExprDef *arrayNdx,
     {
         if (warningLevel > 0)
         {
-            WARN("Map entry for unused modifiers in %s\n", TypeTxt(type));
+            WARN("Map entry for unused modifiers in %s\n", TypeTxt(keymap, type));
             ACTION("Using %s instead of ",
                     XkbcVModMaskText(keymap,
                                     entry.mods.real_mods & type->mask,
@@ -656,7 +659,7 @@ SetMapEntry(KeyTypeInfo *type, struct xkb_keymap *keymap, ExprDef *arrayNdx,
         entry.mods.real_mods &= type->mask;
         entry.mods.vmods &= type->vmask;
     }
-    if (!ExprResolveLevel(value, &rtrn))
+    if (!ExprResolveLevel(keymap->context, value, &rtrn))
     {
         ERROR("Level specifications in a key type must be integer\n");
         ACTION("Ignoring malformed level specification\n");
@@ -674,9 +677,10 @@ SetPreserve(KeyTypeInfo *type, struct xkb_keymap *keymap,
     PreserveInfo new;
 
     if (arrayNdx == NULL)
-        return ReportTypeShouldBeArray(type, "preserve entry");
+        return ReportTypeShouldBeArray(keymap, type, "preserve entry");
     if (!ExprResolveVModMask(arrayNdx, &rtrn, keymap))
-        return ReportTypeBadType(type, "preserve entry", "modifier mask");
+        return ReportTypeBadType(keymap, type, "preserve entry",
+                                 "modifier mask");
     new.defs = type->defs;
     new.defs.next = NULL;
     new.indexMods = rtrn.uval & 0xff;
@@ -686,7 +690,7 @@ SetPreserve(KeyTypeInfo *type, struct xkb_keymap *keymap,
         if (warningLevel > 0)
         {
             WARN("Preserve for modifiers not used by the %s type\n",
-                  TypeTxt(type));
+                  TypeTxt(keymap, type));
             ACTION("Index %s converted to ", PreserveIndexTxt(keymap, &new));
         }
         new.indexMods &= type->mask;
@@ -698,7 +702,7 @@ SetPreserve(KeyTypeInfo *type, struct xkb_keymap *keymap,
     {
         ERROR("Preserve value in a key type is not a modifier mask\n");
         ACTION("Ignoring preserve[%s] in type %s\n",
-                PreserveIndexTxt(keymap, &new), TypeTxt(type));
+                PreserveIndexTxt(keymap, &new), TypeTxt(keymap, type));
         return false;
     }
     new.preMods = rtrn.uval & 0xff;
@@ -709,7 +713,7 @@ SetPreserve(KeyTypeInfo *type, struct xkb_keymap *keymap,
         if (warningLevel > 0)
         {
             WARN("Illegal value for preserve[%s] in type %s\n",
-                  PreserveTxt(keymap, &new), TypeTxt(type));
+                  PreserveTxt(keymap, &new), TypeTxt(keymap, type));
             ACTION("Converted %s to ", PreserveIndexTxt(keymap, &new));
         }
         new.preMods &= new.indexMods;
@@ -725,7 +729,8 @@ SetPreserve(KeyTypeInfo *type, struct xkb_keymap *keymap,
 /***====================================================================***/
 
 static bool
-AddLevelName(KeyTypeInfo *type, unsigned level, xkb_atom_t name, bool clobber)
+AddLevelName(struct xkb_keymap *keymap, KeyTypeInfo *type,
+             unsigned level, xkb_atom_t name, bool clobber)
 {
     if ((type->lvlNames == NULL) || (type->szNames <= level))
     {
@@ -734,7 +739,7 @@ AddLevelName(KeyTypeInfo *type, unsigned level, xkb_atom_t name, bool clobber)
         if (type->lvlNames == NULL)
         {
             ERROR("Couldn't allocate level names for type %s\n",
-                   TypeTxt(type));
+                   TypeTxt(keymap, type));
             ACTION("Level names lost\n");
             type->szNames = 0;
             return false;
@@ -746,7 +751,7 @@ AddLevelName(KeyTypeInfo *type, unsigned level, xkb_atom_t name, bool clobber)
         if (warningLevel > 9)
         {
             WARN("Duplicate names for level %d of key type %s\n",
-                  level + 1, TypeTxt(type));
+                  level + 1, TypeTxt(keymap, type));
             ACTION("Ignored\n");
         }
         return true;
@@ -756,10 +761,10 @@ AddLevelName(KeyTypeInfo *type, unsigned level, xkb_atom_t name, bool clobber)
         if (warningLevel > 0)
         {
             const char *old, *new;
-            old = XkbcAtomText(type->lvlNames[level]);
-            new = XkbcAtomText(name);
+            old = xkb_atom_text(keymap->context, type->lvlNames[level]);
+            new = xkb_atom_text(keymap->context, name);
             WARN("Multiple names for level %d of key type %s\n",
-                  level + 1, TypeTxt(type));
+                  level + 1, TypeTxt(keymap, type));
             if (clobber)
                 ACTION("Using %s, ignoring %s\n", new, old);
             else
@@ -783,20 +788,20 @@ SetLevelName(KeyTypeInfo *type, struct xkb_keymap *keymap, ExprDef *arrayNdx,
     xkb_atom_t level_name;
 
     if (arrayNdx == NULL)
-        return ReportTypeShouldBeArray(type, "level name");
-    if (!ExprResolveLevel(arrayNdx, &rtrn))
-        return ReportTypeBadType(type, "level name", "integer");
+        return ReportTypeShouldBeArray(keymap, type, "level name");
+    if (!ExprResolveLevel(keymap->context, arrayNdx, &rtrn))
+        return ReportTypeBadType(keymap, type, "level name", "integer");
     level = rtrn.ival - 1;
-    if (!ExprResolveString(keymap, value, &rtrn))
+    if (!ExprResolveString(keymap->context, value, &rtrn))
     {
         ERROR("Non-string name for level %d in key type %s\n", level + 1,
-               XkbcAtomText(type->name));
+               xkb_atom_text(keymap->context, type->name));
         ACTION("Ignoring illegal level name definition\n");
         return false;
     }
     level_name = xkb_atom_intern(keymap->context, rtrn.str);
     free(rtrn.str);
-    return AddLevelName(type, level, level_name, true);
+    return AddLevelName(keymap, type, level, level_name, true);
 }
 
 /***====================================================================***/
@@ -833,7 +838,7 @@ SetKeyTypeField(KeyTypeInfo *type, struct xkb_keymap *keymap,
         if (type->defs.defined & _KT_Mask)
         {
             WARN("Multiple modifier mask definitions for key type %s\n",
-                  XkbcAtomText(type->name));
+                  xkb_atom_text(keymap->context, type->name));
             ACTION("Using %s, ", TypeMaskTxt(type, keymap));
             INFO("ignoring %s\n", XkbcVModMaskText(keymap, mods, vmods));
             return false;
@@ -859,7 +864,7 @@ SetKeyTypeField(KeyTypeInfo *type, struct xkb_keymap *keymap,
         type->defs.defined |= _KT_LevelNames;
         return SetLevelName(type, keymap, arrayNdx, value);
     }
-    ERROR("Unknown field %s in key type %s\n", field, TypeTxt(type));
+    ERROR("Unknown field %s in key type %s\n", field, TypeTxt(keymap, type));
     ACTION("Definition ignored\n");
     return false;
 }
@@ -979,7 +984,7 @@ HandleKeyTypeDef(KeyTypeDef *def, struct xkb_keymap *keymap,
     {
         if ((i < type.numLevels) && (info->dflt.lvlNames[i] != XKB_ATOM_NONE))
         {
-            AddLevelName(&type, i, info->dflt.lvlNames[i], false);
+            AddLevelName(keymap, &type, i, info->dflt.lvlNames[i], false);
         }
     }
     /* Now add the new keytype to the info struct */
@@ -1097,7 +1102,7 @@ CopyDefToKeyType(struct xkb_keymap *keymap, struct xkb_key_type *type,
         {
             WARN("Couldn't allocate preserve array in CopyDefToKeyType\n");
             ACTION("Preserve setting for type %s lost\n",
-                    XkbcAtomText(def->name));
+                    xkb_atom_text(keymap->context, def->name));
         }
         else
         {

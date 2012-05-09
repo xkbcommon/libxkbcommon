@@ -40,7 +40,7 @@ extern char *
 xkb_atom_strdup(struct xkb_context *context, xkb_atom_t atom);
 
 extern const char *
-XkbcAtomText(xkb_atom_t atm);
+xkb_atom_text(struct xkb_context *context, xkb_atom_t atom);
 
 extern void
 XkbcFreeAllAtoms(void);

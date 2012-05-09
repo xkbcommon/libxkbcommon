@@ -30,10 +30,12 @@
 
 /***====================================================================***/
 
-#define ReportIndicatorBadType(l, f, w) \
-    ReportBadType("indicator map", (f), XkbcAtomText((l)->name), (w))
-#define ReportIndicatorNotArray(l, f) \
-    ReportNotArray("indicator map", (f), XkbcAtomText((l)->name))
+#define ReportIndicatorBadType(keymap, l, f, w)                            \
+    ReportBadType("indicator map", (f),                                 \
+                  xkb_atom_text((keymap)->context, (l)->name), (w))
+#define ReportIndicatorNotArray(keymap, l, f)                              \
+    ReportNotArray("indicator map", (f),                                \
+                   xkb_atom_text((keymap)->context, (l)->name))
 
 /***====================================================================***/
 
@@ -49,7 +51,7 @@ ClearIndicatorMapInfo(struct xkb_context *context, LEDInfo * info)
 }
 
 LEDInfo *
-AddIndicatorMap(LEDInfo * oldLEDs, LEDInfo * new)
+AddIndicatorMap(struct xkb_keymap *keymap, LEDInfo *oldLEDs, LEDInfo *new)
 {
     LEDInfo *old, *last;
     unsigned collide;
@@ -76,7 +78,7 @@ AddIndicatorMap(LEDInfo * oldLEDs, LEDInfo * new)
                      && (warningLevel > 0)) || (warningLevel > 9))
                 {
                     WARN("Map for indicator %s redefined\n",
-                          XkbcAtomText(old->name));
+                          xkb_atom_text(keymap->context, old->name));
                     ACTION("Earlier definition ignored\n");
                 }
                 *old = *new;
@@ -128,7 +130,7 @@ AddIndicatorMap(LEDInfo * oldLEDs, LEDInfo * new)
             if (collide)
             {
                 WARN("Map for indicator %s redefined\n",
-                      XkbcAtomText(old->name));
+                     xkb_atom_text(keymap->context, old->name));
                 ACTION("Using %s definition for duplicate fields\n",
                         (new->defs.merge == MergeAugment ? "first" : "last"));
             }
@@ -143,7 +145,7 @@ AddIndicatorMap(LEDInfo * oldLEDs, LEDInfo * new)
     {
         WSGO("Couldn't allocate indicator map\n");
         ACTION("Map for indicator %s not compiled\n",
-                XkbcAtomText(new->name));
+                xkb_atom_text(keymap->context, new->name));
         return NULL;
     }
     *old = *new;
@@ -202,9 +204,9 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
         (strcasecmp(field, "mods") == 0))
     {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(led, field);
+            return ReportIndicatorNotArray(keymap, led, field);
         if (!ExprResolveVModMask(value, &rtrn, keymap))
-            return ReportIndicatorBadType(led, field, "modifier mask");
+            return ReportIndicatorBadType(keymap, led, field, "modifier mask");
         led->real_mods = rtrn.uval & 0xff;
         led->vmods = (rtrn.uval >> 8) & 0xff;
         led->defs.defined |= _LED_Mods;
@@ -212,9 +214,9 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
     else if (strcasecmp(field, "groups") == 0)
     {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(led, field);
-        if (!ExprResolveMask(value, &rtrn, groupNames))
-            return ReportIndicatorBadType(led, field, "group mask");
+            return ReportIndicatorNotArray(keymap, led, field);
+        if (!ExprResolveMask(keymap->context, value, &rtrn, groupNames))
+            return ReportIndicatorBadType(keymap, led, field, "group mask");
         led->groups = rtrn.uval;
         led->defs.defined |= _LED_Groups;
     }
@@ -222,9 +224,9 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
              (strcasecmp(field, "ctrls") == 0))
     {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(led, field);
-        if (!ExprResolveMask(value, &rtrn, ctrlNames))
-            return ReportIndicatorBadType(led, field,
+            return ReportIndicatorNotArray(keymap, led, field);
+        if (!ExprResolveMask(keymap->context, value, &rtrn, ctrlNames))
+            return ReportIndicatorBadType(keymap, led, field,
                                           "controls mask");
         led->ctrls = rtrn.uval;
         led->defs.defined |= _LED_Ctrls;
@@ -232,9 +234,9 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
     else if (strcasecmp(field, "allowexplicit") == 0)
     {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(led, field);
-        if (!ExprResolveBoolean(value, &rtrn))
-            return ReportIndicatorBadType(led, field, "boolean");
+            return ReportIndicatorNotArray(keymap, led, field);
+        if (!ExprResolveBoolean(keymap->context, value, &rtrn))
+            return ReportIndicatorBadType(keymap, led, field, "boolean");
         if (rtrn.uval)
             led->flags &= ~XkbIM_NoExplicit;
         else
@@ -245,10 +247,10 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
              (strcasecmp(field, "whichmodifierstate") == 0))
     {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(led, field);
-        if (!ExprResolveMask(value, &rtrn, modComponentNames))
+            return ReportIndicatorNotArray(keymap, led, field);
+        if (!ExprResolveMask(keymap->context, value, &rtrn, modComponentNames))
         {
-            return ReportIndicatorBadType(led, field,
+            return ReportIndicatorBadType(keymap, led, field,
                                           "mask of modifier state components");
         }
         led->which_mods = rtrn.uval;
@@ -256,10 +258,10 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
     else if (strcasecmp(field, "whichgroupstate") == 0)
     {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(led, field);
-        if (!ExprResolveMask(value, &rtrn, groupComponentNames))
+            return ReportIndicatorNotArray(keymap, led, field);
+        if (!ExprResolveMask(keymap->context, value, &rtrn, groupComponentNames))
         {
-            return ReportIndicatorBadType(led, field,
+            return ReportIndicatorBadType(keymap, led, field,
                                           "mask of group state components");
         }
         led->which_groups = rtrn.uval;
@@ -272,9 +274,9 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
              (strcasecmp(field, "indicatordriveskeyboard") == 0))
     {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(led, field);
-        if (!ExprResolveBoolean(value, &rtrn))
-            return ReportIndicatorBadType(led, field, "boolean");
+            return ReportIndicatorNotArray(keymap, led, field);
+        if (!ExprResolveBoolean(keymap->context, value, &rtrn))
+            return ReportIndicatorBadType(keymap, led, field, "boolean");
         if (rtrn.uval)
             led->flags |= XkbIM_LEDDrivesKB;
         else
@@ -284,16 +286,16 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
     else if (strcasecmp(field, "index") == 0)
     {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(led, field);
-        if (!ExprResolveInteger(value, &rtrn))
-            return ReportIndicatorBadType(led, field,
+            return ReportIndicatorNotArray(keymap, led, field);
+        if (!ExprResolveInteger(keymap->context, value, &rtrn))
+            return ReportIndicatorBadType(keymap, led, field,
                                           "indicator index");
         if ((rtrn.uval < 1) || (rtrn.uval > 32))
         {
             ERROR("Illegal indicator index %d (range 1..%d)\n",
                    rtrn.uval, XkbNumIndicators);
             ACTION("Index definition for %s indicator ignored\n",
-                    XkbcAtomText(led->name));
+                    xkb_atom_text(keymap->context, led->name));
             return false;
         }
         led->indicator = rtrn.uval;
@@ -302,7 +304,7 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
     else
     {
         ERROR("Unknown field %s in map for %s indicator\n", field,
-               XkbcAtomText(led->name));
+               xkb_atom_text(keymap->context, led->name));
         ACTION("Definition ignored\n");
         ok = false;
     }
@@ -352,7 +354,7 @@ HandleIndicatorMapDef(IndicatorMapDef *def, struct xkb_keymap *keymap,
     }
     if (ok)
     {
-        rtrn = AddIndicatorMap(oldLEDs, &led);
+        rtrn = AddIndicatorMap(keymap, oldLEDs, &led);
         return rtrn;
     }
     return NULL;
@@ -447,7 +449,7 @@ BindIndicators(struct xkb_keymap *keymap, bool force, LEDInfo *unbound,
                 {
                     if (keymap->names->indicators[i] &&
                         strcmp(keymap->names->indicators[i],
-                               XkbcAtomText(led->name)) == 0)
+                               xkb_atom_text(keymap->context, led->name)) == 0)
                     {
                         led->indicator = i + 1;
                         break;
@@ -476,7 +478,7 @@ BindIndicators(struct xkb_keymap *keymap, bool force, LEDInfo *unbound,
                         ERROR("No unnamed indicators found\n");
                         ACTION
                             ("Virtual indicator map \"%s\" not bound\n",
-                             XkbcAtomText(led->name));
+                             xkb_atom_text(keymap->context, led->name));
                         continue;
                     }
                 }
@@ -506,12 +508,13 @@ BindIndicators(struct xkb_keymap *keymap, bool force, LEDInfo *unbound,
         {
             if ((keymap->names != NULL) &&
                 (strcmp(keymap->names->indicators[led->indicator - 1],
-                        XkbcAtomText(led->name)) != 0))
+                        xkb_atom_text(keymap->context, led->name)) != 0))
             {
                 const char *old = keymap->names->indicators[led->indicator - 1];
                 ERROR("Multiple names bound to indicator %d\n",
                        (unsigned int) led->indicator);
-                ACTION("Using %s, ignoring %s\n", old, XkbcAtomText(led->name));
+                ACTION("Using %s, ignoring %s\n", old,
+                       xkb_atom_text(keymap->context, led->name));
                 led->indicator = _LED_NotBound;
                 if (force)
                 {

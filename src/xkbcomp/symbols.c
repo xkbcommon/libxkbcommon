@@ -581,7 +581,8 @@ out:
 }
 
 static bool
-MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
+MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
+          KeyInfo *into, KeyInfo *from)
 {
     int i;
     unsigned collide = 0;
@@ -662,8 +663,8 @@ MergeKeys(SymbolsInfo * info, KeyInfo * into, KeyInfo * from)
                     ("Multiple definitions for group %d type of key %s\n",
                      i, longText(into->name));
                 ACTION("Using %s, ignoring %s\n",
-                        XkbcAtomText(use),
-                        XkbcAtomText(ignore));
+                        xkb_atom_text(keymap->context, use),
+                        xkb_atom_text(keymap->context, ignore));
             }
             if ((from->defs.merge != MergeAugment)
                 || (into->types[i] == XKB_ATOM_NONE))
@@ -716,14 +717,14 @@ AddKeySymbols(SymbolsInfo *info, KeyInfo *key, struct xkb_keymap *keymap)
     for (i = 0; i < info->nKeys; i++)
     {
         if (info->keys[i].name == key->name)
-            return MergeKeys(info, &info->keys[i], key);
+            return MergeKeys(info, keymap, &info->keys[i], key);
     }
     if (FindKeyNameForAlias(keymap, key->name, &real_name))
     {
         for (i = 0; i < info->nKeys; i++)
         {
             if (info->keys[i].name == real_name)
-                return MergeKeys(info, &info->keys[i], key);
+                return MergeKeys(info, keymap, &info->keys[i], key);
         }
     }
     if (info->nKeys >= info->szKeys)
@@ -975,7 +976,7 @@ HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
 #define	ACTIONS	2
 
 static bool
-GetGroupIndex(KeyInfo * key,
+GetGroupIndex(KeyInfo *key, struct xkb_keymap *keymap,
               ExprDef * arrayNdx, unsigned what, unsigned *ndx_rtrn)
 {
     const char *name;
@@ -1008,7 +1009,7 @@ GetGroupIndex(KeyInfo * key,
         ACTION("Ignoring %s defined for extra groups\n", name);
         return false;
     }
-    if (!ExprResolveGroup(arrayNdx, &tmp))
+    if (!ExprResolveGroup(keymap->context, arrayNdx, &tmp))
     {
         ERROR("Illegal group index for %s of key %s\n", name,
                longText(key->name));
@@ -1027,7 +1028,7 @@ AddSymbolsToKey(KeyInfo *key, struct xkb_keymap *keymap,
     unsigned int i;
     long j;
 
-    if (!GetGroupIndex(key, arrayNdx, SYMBOLS, &ndx))
+    if (!GetGroupIndex(key, keymap, arrayNdx, SYMBOLS, &ndx))
         return false;
     if (value == NULL)
     {
@@ -1069,7 +1070,7 @@ AddSymbolsToKey(KeyInfo *key, struct xkb_keymap *keymap,
                               &key->syms[ndx][key->symsMapIndex[ndx][i] + j])) {
                 WARN("Could not resolve keysym %s for key %s, group %d (%s), level %d\n",
                      value->value.list.syms[i], longText(key->name), ndx + 1,
-                     XkbcAtomText(info->groupNames[ndx]), nSyms);
+                     xkb_atom_text(keymap->context, info->groupNames[ndx]), nSyms);
                 while (--j >= 0)
                     key->syms[ndx][key->symsMapIndex[ndx][i] + j] = NoSymbol;
                 key->symsMapIndex[ndx][i] = -1;
@@ -1093,7 +1094,7 @@ AddActionsToKey(KeyInfo *key, struct xkb_keymap *keymap, ExprDef *arrayNdx,
     ExprDef *act;
     struct xkb_any_action *toAct;
 
-    if (!GetGroupIndex(key, arrayNdx, ACTIONS, &ndx))
+    if (!GetGroupIndex(key, keymap, arrayNdx, ACTIONS, &ndx))
         return false;
 
     if (value == NULL)
@@ -1180,7 +1181,7 @@ SetSymbolsField(KeyInfo *key, struct xkb_keymap *keymap, char *field,
     if (strcasecmp(field, "type") == 0)
     {
         ExprResult ndx;
-        if ((!ExprResolveString(keymap, value, &tmp))
+        if ((!ExprResolveString(keymap->context, value, &tmp))
             && (warningLevel > 0))
         {
             WARN("The type field of a key symbol map must be a string\n");
@@ -1191,7 +1192,7 @@ SetSymbolsField(KeyInfo *key, struct xkb_keymap *keymap, char *field,
             key->dfltType = xkb_atom_intern(keymap->context, tmp.str);
             key->defs.defined |= _Key_Type_Dflt;
         }
-        else if (!ExprResolveGroup(arrayNdx, &ndx))
+        else if (!ExprResolveGroup(keymap->context, arrayNdx, &ndx))
         {
             ERROR("Illegal group index for type of key %s\n",
                    longText(key->name));
@@ -1233,7 +1234,7 @@ SetSymbolsField(KeyInfo *key, struct xkb_keymap *keymap, char *field,
              (strcasecmp(field, "lock") == 0) ||
              (strcasecmp(field, "locks") == 0))
     {
-        ok = ExprResolveEnum(value, &tmp, lockingEntries);
+        ok = ExprResolveEnum(keymap->context, value, &tmp, lockingEntries);
         if (ok)
             key->behavior.type = tmp.uval;
         key->defs.defined |= _Key_Behavior;
@@ -1256,7 +1257,7 @@ SetSymbolsField(KeyInfo *key, struct xkb_keymap *keymap, char *field,
              (strcasecmp(field, "repeats") == 0) ||
              (strcasecmp(field, "repeat") == 0))
     {
-        ok = ExprResolveEnum(value, &tmp, repeatEntries);
+        ok = ExprResolveEnum(keymap->context, value, &tmp, repeatEntries);
         if (!ok)
         {
             ERROR("Illegal repeat setting for %s\n",
@@ -1270,7 +1271,7 @@ SetSymbolsField(KeyInfo *key, struct xkb_keymap *keymap, char *field,
     else if ((strcasecmp(field, "groupswrap") == 0) ||
              (strcasecmp(field, "wrapgroups") == 0))
     {
-        ok = ExprResolveBoolean(value, &tmp);
+        ok = ExprResolveBoolean(keymap->context, value, &tmp);
         if (!ok)
         {
             ERROR("Illegal groupsWrap setting for %s\n",
@@ -1287,7 +1288,7 @@ SetSymbolsField(KeyInfo *key, struct xkb_keymap *keymap, char *field,
     else if ((strcasecmp(field, "groupsclamp") == 0) ||
              (strcasecmp(field, "clampgroups") == 0))
     {
-        ok = ExprResolveBoolean(value, &tmp);
+        ok = ExprResolveBoolean(keymap->context, value, &tmp);
         if (!ok)
         {
             ERROR("Illegal groupsClamp setting for %s\n",
@@ -1304,7 +1305,7 @@ SetSymbolsField(KeyInfo *key, struct xkb_keymap *keymap, char *field,
     else if ((strcasecmp(field, "groupsredirect") == 0) ||
              (strcasecmp(field, "redirectgroups") == 0))
     {
-        if (!ExprResolveGroup(value, &tmp))
+        if (!ExprResolveGroup(keymap->context, value, &tmp))
         {
             ERROR("Illegal group index for redirect of key %s\n",
                    longText(key->name));
@@ -1336,13 +1337,13 @@ SetGroupName(SymbolsInfo *info, struct xkb_keymap *keymap, ExprDef *arrayNdx,
         ACTION("Group name definition without array subscript ignored\n");
         return false;
     }
-    if (!ExprResolveGroup(arrayNdx, &tmp))
+    if (!ExprResolveGroup(keymap->context, arrayNdx, &tmp))
     {
         ERROR("Illegal index in group name definition\n");
         ACTION("Definition with non-integer array index ignored\n");
         return false;
     }
-    if (!ExprResolveString(keymap, value, &name))
+    if (!ExprResolveString(keymap->context, value, &name))
     {
         ERROR("Group name must be a string\n");
         ACTION("Illegal name for group %d ignored\n", tmp.uval);
@@ -1379,7 +1380,7 @@ HandleSymbolsVar(VarDef *stmt, struct xkb_keymap *keymap, SymbolsInfo *info)
              && ((strcasecmp(field.str, "groupswrap") == 0) ||
                  (strcasecmp(field.str, "wrapgroups") == 0)))
     {
-        if (!ExprResolveBoolean(stmt->value, &tmp))
+        if (!ExprResolveBoolean(keymap->context, stmt->value, &tmp))
         {
             ERROR("Illegal setting for global groupsWrap\n");
             ACTION("Non-boolean value ignored\n");
@@ -1397,7 +1398,7 @@ HandleSymbolsVar(VarDef *stmt, struct xkb_keymap *keymap, SymbolsInfo *info)
              && ((strcasecmp(field.str, "groupsclamp") == 0) ||
                  (strcasecmp(field.str, "clampgroups") == 0)))
     {
-        if (!ExprResolveBoolean(stmt->value, &tmp))
+        if (!ExprResolveBoolean(keymap->context, stmt->value, &tmp))
         {
             ERROR("Illegal setting for global groupsClamp\n");
             ACTION("Non-boolean value ignored\n");
@@ -1415,7 +1416,7 @@ HandleSymbolsVar(VarDef *stmt, struct xkb_keymap *keymap, SymbolsInfo *info)
              && ((strcasecmp(field.str, "groupsredirect") == 0) ||
                  (strcasecmp(field.str, "redirectgroups") == 0)))
     {
-        if (!ExprResolveGroup(stmt->value, &tmp))
+        if (!ExprResolveGroup(keymap->context, stmt->value, &tmp))
         {
             ERROR("Illegal group index for global groupsRedirect\n");
             ACTION("Definition with non-integer group ignored\n");
@@ -1565,11 +1566,11 @@ HandleModMapDef(ModMapDef *def, struct xkb_keymap *keymap, SymbolsInfo *info)
     ExprResult rtrn;
     bool ok;
 
-    if (!LookupModIndex(NULL, def->modifier, TypeInt, &rtrn))
+    if (!LookupModIndex(keymap->context, NULL, def->modifier, TypeInt, &rtrn))
     {
         ERROR("Illegal modifier map definition\n");
         ACTION("Ignoring map for non-modifier \"%s\"\n",
-                XkbcAtomText(def->modifier));
+                xkb_atom_text(keymap->context, def->modifier));
         return false;
     }
     ok = true;
@@ -1581,7 +1582,7 @@ HandleModMapDef(ModMapDef *def, struct xkb_keymap *keymap, SymbolsInfo *info)
             tmp.haveSymbol = false;
             tmp.u.keyName = KeyNameToLong(key->value.keyName);
         }
-        else if (ExprResolveKeySym(key, &rtrn))
+        else if (ExprResolveKeySym(keymap->context, key, &rtrn))
         {
             tmp.haveSymbol = true;
             tmp.u.keySym = rtrn.uval;
@@ -1687,7 +1688,7 @@ FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym,
 }
 
 /**
- * Find the given name in the xkb->map->types and return its index.
+ * Find the given name in the keymap->map->types and return its index.
  *
  * @param atom The atom to search for.
  * @param type_rtrn Set to the index of the name if found.
@@ -1698,7 +1699,7 @@ static bool
 FindNamedType(struct xkb_keymap *keymap, xkb_atom_t atom, unsigned *type_rtrn)
 {
     unsigned n;
-    const char *name = XkbcAtomText(atom);
+    const char *name = xkb_atom_text(keymap->context, atom);
 
     if (keymap && keymap->map && keymap->map->types)
     {
@@ -1984,7 +1985,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
                     WARN("No automatic type for %d symbols\n",
                           (unsigned int) key->numLevels[i]);
                     ACTION("Using %s for the %s key (keycode %d)\n",
-                            XkbcAtomText(key->types[i]),
+                            xkb_atom_text(keymap->context, key->types[i]),
                             longText(key->name), kc);
                 }
             }
@@ -1999,7 +2000,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
             if (warningLevel >= 3)
             {
                 WARN("Type \"%s\" is not defined\n",
-                      XkbcAtomText(key->types[i]));
+                      xkb_atom_text(keymap->context, key->types[i]));
                 ACTION("Using TWO_LEVEL for the %s key (keycode %d)\n",
                         longText(key->name), kc);
             }
@@ -2013,7 +2014,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
             {
                 WARN("Type \"%s\" has %d levels, but %s has %d symbols\n",
                      type->name, type->num_levels,
-                     XkbcAtomText(key->name), key->numLevels[i]);
+                     xkb_atom_text(keymap->context, key->name), key->numLevels[i]);
                 ACTION("Ignoring extra symbols\n");
             }
             key->numLevels[i] = type->num_levels;

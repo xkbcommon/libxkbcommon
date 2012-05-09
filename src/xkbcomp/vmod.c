@@ -82,7 +82,8 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, unsigned mergeMode,
         if (info->defined & bit)
         {
             if (names->vmods[i] &&
-                strcmp(names->vmods[i], XkbcAtomText(stmt->name)) == 0)
+                strcmp(names->vmods[i],
+                       xkb_atom_text(keymap->context, stmt->name)) == 0)
             {                   /* already defined */
                 info->available |= bit;
                 if (stmt->value == NULL)
@@ -91,16 +92,16 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, unsigned mergeMode,
                 {
                     const char *str1;
                     const char *str2 = "";
-                    if (!ExprResolveModMask(stmt->value, &mod))
+                    if (!ExprResolveModMask(keymap->context, stmt->value, &mod))
                     {
-                        str1 = XkbcAtomText(stmt->name);
+                        str1 = xkb_atom_text(keymap->context, stmt->name);
                         ACTION("Declaration of %s ignored\n", str1);
                         return false;
                     }
                     if (mod.uval == srv->vmods[i])
                         return true;
 
-                    str1 = XkbcAtomText(stmt->name);
+                    str1 = xkb_atom_text(keymap->context, stmt->name);
                     WARN("Virtual modifier %s multiply defined\n", str1);
                     str1 = XkbcModMaskText(srv->vmods[i], true);
                     if (mergeMode == MergeOverride)
@@ -130,17 +131,17 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, unsigned mergeMode,
     names->vmods[nextFree] = xkb_atom_strdup(keymap->context, stmt->name);
     if (stmt->value == NULL)
         return true;
-    if (ExprResolveModMask(stmt->value, &mod))
+    if (ExprResolveModMask(keymap->context, stmt->value, &mod))
     {
         srv->vmods[nextFree] = mod.uval;
         return true;
     }
-    ACTION("Declaration of %s ignored\n", XkbcAtomText(stmt->name));
+    ACTION("Declaration of %s ignored\n", xkb_atom_text(keymap->context, stmt->name));
     return false;
 }
 
 /**
- * Returns the index of the given modifier in the xkb->names->vmods array.
+ * Returns the index of the given modifier in the keymap->names->vmods array.
  *
  * @param keymap Pointer to the xkb data structure.
  * @param field The Atom of the modifier's name (e.g. Atom for LAlt)
@@ -155,7 +156,7 @@ LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
                 unsigned type, ExprResult * val_rtrn)
 {
     int i;
-    const char *name = XkbcAtomText(field);
+    const char *name = xkb_atom_text(keymap->context, field);
 
     if ((keymap == NULL) || (keymap->names == NULL) || (type != TypeInt))
     {
@@ -189,10 +190,10 @@ LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
  * undefined.
  */
 bool
-LookupVModMask(const void * priv, xkb_atom_t field, unsigned type,
-               ExprResult * val_rtrn)
+LookupVModMask(struct xkb_context *context, const void *priv, xkb_atom_t field,
+               unsigned type, ExprResult *val_rtrn)
 {
-    if (LookupModMask(NULL, field, type, val_rtrn))
+    if (LookupModMask(context, NULL, field, type, val_rtrn))
     {
         return true;
     }
@@ -228,7 +229,7 @@ ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
     if (def->op == ExprIdent)
     {
         int i, bit;
-        const char *name = XkbcAtomText(def->value.str);
+        const char *name = xkb_atom_text(keymap->context, def->value.str);
         for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1)
         {
             if ((info->available & bit) && names->vmods[i] &&
@@ -239,7 +240,7 @@ ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
             }
         }
     }
-    if (ExprResolveInteger(def, val_rtrn))
+    if (ExprResolveInteger(keymap->context, def, val_rtrn))
     {
         if (val_rtrn->uval < XkbNumVirtualMods)
             return true;

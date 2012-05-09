@@ -299,7 +299,8 @@ ResolveStateAndPredicate(ExprDef * expr,
     *pred_rtrn = XkbSI_Exactly;
     if (expr->op == ExprActionDecl)
     {
-        const char *pred_txt = XkbcAtomText(expr->value.action.name);
+        const char *pred_txt = xkb_atom_text(info->keymap->context,
+                                             expr->value.action.name);
         if (strcasecmp(pred_txt, "noneof") == 0)
             *pred_rtrn = XkbSI_NoneOf;
         else if (strcasecmp(pred_txt, "anyofornone") == 0)
@@ -320,7 +321,8 @@ ResolveStateAndPredicate(ExprDef * expr,
     }
     else if (expr->op == ExprIdent)
     {
-        const char *pred_txt = XkbcAtomText(expr->value.str);
+        const char *pred_txt = xkb_atom_text(info->keymap->context,
+                                             expr->value.str);
         if ((pred_txt) && (strcasecmp(pred_txt, "any") == 0))
         {
             *pred_rtrn = XkbSI_AnyOf;
@@ -329,7 +331,7 @@ ResolveStateAndPredicate(ExprDef * expr,
         }
     }
 
-    if (ExprResolveModMask(expr, &result))
+    if (ExprResolveModMask(info->keymap->context, expr, &result))
     {
         *mods_rtrn = result.uval;
         return true;
@@ -376,7 +378,7 @@ MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from, unsigned merge)
         next = (LEDInfo *) led->defs.next;
         if (merge != MergeDefault)
             led->defs.merge = merge;
-        rtrn = AddIndicatorMap(into->leds, led);
+        rtrn = AddIndicatorMap(from->keymap, into->leds, led);
         if (rtrn != NULL)
             into->leds = rtrn;
         else
@@ -520,7 +522,7 @@ SetInterpField(SymInterpInfo *si, struct xkb_keymap *keymap, char *field,
     {
         if (arrayNdx != NULL)
             return ReportSINotArray(si, field, info);
-        ok = ExprResolveBoolean(value, &tmp);
+        ok = ExprResolveBoolean(keymap->context, value, &tmp);
         if (ok)
         {
             if (tmp.uval)
@@ -536,7 +538,7 @@ SetInterpField(SymInterpInfo *si, struct xkb_keymap *keymap, char *field,
     {
         if (arrayNdx != NULL)
             return ReportSINotArray(si, field, info);
-        ok = ExprResolveBoolean(value, &tmp);
+        ok = ExprResolveBoolean(keymap->context, value, &tmp);
         if (ok)
         {
             if (tmp.uval)
@@ -553,7 +555,7 @@ SetInterpField(SymInterpInfo *si, struct xkb_keymap *keymap, char *field,
     {
         if (arrayNdx != NULL)
             return ReportSINotArray(si, field, info);
-        ok = ExprResolveEnum(value, &tmp, useModMapValues);
+        ok = ExprResolveEnum(keymap->context, value, &tmp, useModMapValues);
         if (ok)
         {
             if (tmp.uval)

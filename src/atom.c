@@ -89,7 +89,7 @@ static unsigned long tableLength;
 static NodePtr *nodeTable;
 
 const char *
-XkbcAtomText(xkb_atom_t atom)
+xkb_atom_text(struct xkb_context *context, xkb_atom_t atom)
 {
     NodePtr node;
 
@@ -103,7 +103,7 @@ XkbcAtomText(xkb_atom_t atom)
 char *
 xkb_atom_strdup(struct xkb_context *context, xkb_atom_t atom)
 {
-    const char *ret = XkbcAtomText(atom);
+    const char *ret = xkb_atom_text(context, atom);
     return ret ? strdup(ret) : NULL;
 }
 

@@ -193,7 +193,8 @@ FindIndicatorByName(KeyNamesInfo * info, xkb_atom_t name)
 }
 
 static bool
-AddIndicatorName(KeyNamesInfo * info, IndicatorNameInfo * new)
+AddIndicatorName(KeyNamesInfo *info, struct xkb_keymap *keymap,
+                 IndicatorNameInfo *new)
 {
     IndicatorNameInfo *old;
     bool replace;
@@ -206,7 +207,8 @@ AddIndicatorName(KeyNamesInfo * info, IndicatorNameInfo * new)
         if (((old->defs.fileID == new->defs.fileID) && (warningLevel > 0))
             || (warningLevel > 9))
         {
-            WARN("Multiple indicators named %s\n", XkbcAtomText(new->name));
+            WARN("Multiple indicators named %s\n",
+                 xkb_atom_text(keymap->context, new->name));
             if (old->ndx == new->ndx)
             {
                 if (old->virtual != new->virtual)
@@ -284,8 +286,8 @@ AddIndicatorName(KeyNamesInfo * info, IndicatorNameInfo * new)
                     ignoring = new->name;
                 }
                 ACTION("Using %s %s, ignoring %s %s\n",
-                        oldType, XkbcAtomText(using),
-                        newType, XkbcAtomText(ignoring));
+                        oldType, xkb_atom_text(keymap->context, using),
+                        newType, xkb_atom_text(keymap->context, ignoring));
             }
         }
         if (replace)
@@ -465,8 +467,8 @@ AddKeyName(KeyNamesInfo * info,
 /***====================================================================***/
 
 static void
-MergeIncludedKeycodes(KeyNamesInfo * into, KeyNamesInfo * from,
-                      unsigned merge)
+MergeIncludedKeycodes(KeyNamesInfo *into, struct xkb_keymap *keymap,
+                      KeyNamesInfo *from, unsigned merge)
 {
     uint64_t i;
     char buf[5];
@@ -510,7 +512,7 @@ MergeIncludedKeycodes(KeyNamesInfo * into, KeyNamesInfo * from,
         {
             if (merge != MergeDefault)
                 led->defs.merge = merge;
-            if (!AddIndicatorName(into, led))
+            if (!AddIndicatorName(into, keymap, led))
                 into->errorCount++;
             next = (IndicatorNameInfo *) led->defs.next;
         }
@@ -593,7 +595,7 @@ HandleIncludeKeycodes(IncludeStmt *stmt, struct xkb_keymap *keymap,
             if ((next->file == NULL) && (next->map == NULL))
             {
                 haveSelf = true;
-                MergeIncludedKeycodes(&included, info, next->merge);
+                MergeIncludedKeycodes(&included, keymap, info, next->merge);
                 ClearKeyNamesInfo(info);
             }
             else if (ProcessIncludeFile(keymap->context, next,
@@ -601,7 +603,7 @@ HandleIncludeKeycodes(IncludeStmt *stmt, struct xkb_keymap *keymap,
             {
                 InitKeyNamesInfo(&next_incl);
                 HandleKeycodesFile(rtrn, keymap, MergeOverride, &next_incl);
-                MergeIncludedKeycodes(&included, &next_incl, op);
+                MergeIncludedKeycodes(&included, keymap, &next_incl, op);
                 ClearKeyNamesInfo(&next_incl);
                 FreeXKBFile(rtrn);
             }
@@ -617,7 +619,7 @@ HandleIncludeKeycodes(IncludeStmt *stmt, struct xkb_keymap *keymap,
         *info = included;
     else
     {
-        MergeIncludedKeycodes(info, &included, newMerge);
+        MergeIncludedKeycodes(info, keymap, &included, newMerge);
         ClearKeyNamesInfo(&included);
     }
     return (info->errorCount == 0);
@@ -692,7 +694,7 @@ HandleKeyNameVar(VarDef *stmt, struct xkb_keymap *keymap, KeyNamesInfo *info)
         goto err_out;
     }
 
-    if (ExprResolveKeyCode(stmt->value, &tmp) == 0)
+    if (ExprResolveKeyCode(keymap->context, stmt->value, &tmp) == 0)
     {
         ACTION("Assignment to field %s ignored\n", field.str);
         goto err_out;
@@ -769,7 +771,7 @@ HandleIndicatorNameDef(IndicatorNameDef *def, struct xkb_keymap *keymap,
     }
     InitIndicatorNameInfo(&ii, info);
     ii.ndx = def->ndx;
-    if (!ExprResolveString(keymap, def->name, &tmp))
+    if (!ExprResolveString(keymap->context, def->name, &tmp))
     {
         char buf[20];
         snprintf(buf, sizeof(buf), "%d", def->ndx);
@@ -779,7 +781,7 @@ HandleIndicatorNameDef(IndicatorNameDef *def, struct xkb_keymap *keymap,
     ii.name = xkb_atom_intern(keymap->context, tmp.str);
     free(tmp.str);
     ii.virtual = def->virtual;
-    if (!AddIndicatorName(info, &ii))
+    if (!AddIndicatorName(info, keymap, &ii))
         return false;
     return true;
 }

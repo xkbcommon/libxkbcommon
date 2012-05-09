@@ -58,7 +58,7 @@ ClearIndicatorMapInfo(struct xkb_context *context, LEDInfo *info);
 
 
 extern LEDInfo *
-AddIndicatorMap(LEDInfo *oldLEDs, LEDInfo *newLED);
+AddIndicatorMap(struct xkb_keymap *keymap, LEDInfo *oldLEDs, LEDInfo *newLED);
 
 extern int
 SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap, char *field,
