@@ -90,7 +90,7 @@ BUILT_SOURCES = \
 CLEANFILES = $(BUILT_SOURCES)
 
 src/ks_tables.h: $(KEYSYMDEFS) $(top_builddir)/makekeys/makekeys$(EXEEXT)
-	$(top_builddir)/makekeys/makekeys $(KEYSYMDEFS) > $@
+	$(top_builddir)/makekeys/makekeys $(top_srcdir)/include/xkbcommon/xkbcommon-keysyms.h > $@
 
 $(top_builddir)/makekeys/makekeys$(EXEEXT): $(top_srcdir)/makekeys/makekeys.c
 	$(MAKE) -C makekeys
@@ -120,3 +120,11 @@ test_context_LDADD = $(TESTS_LDADD)
 check_PROGRAMS = $(TESTS)
 
 EXTRA_DIST = test/data
+
+# This sed script strips out lines that start with '#define _' which
+# removes #define _OSF_Keysyms and such.  The XK_Ydiaeresis case is to
+# handle a duplicate definition in HPkeysyms.h which kicks in if it's
+# not already defined.
+
+update-keysyms:
+	sed -e '/XK_Ydiaeresis\s*0x100000ee/d; /#define _/d; s/#define\s*\(\w*\)XK_/#define XKB_KEY_\1/; /\(#ifdef\|#ifndef\|#endif\)/d' $(KEYSYMDEFS) > include/xkbcommon/xkbcommon-keysyms.h

@@ -988,7 +988,7 @@ ExprResolveKeySym(struct xkb_ctx *ctx, ExprDef *expr,
         str = xkb_atom_text(ctx, expr->value.str);
         if (str) {
             sym = xkb_keysym_from_name(str);
-            if (sym != XKB_KEYSYM_NO_SYMBOL) {
+            if (sym != XKB_KEY_NoSymbol) {
                 val_rtrn->uval = sym;
                 return true;
             }

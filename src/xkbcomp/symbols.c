@@ -24,8 +24,6 @@
 
  ********************************************************/
 
-#include <X11/keysym.h>
-
 #include "xkbcomp-priv.h"
 #include "parseutils.h"
 #include "action.h"
@@ -1072,7 +1070,7 @@ AddSymbolsToKey(KeyInfo *key, struct xkb_keymap *keymap,
                      value->value.list.syms[i], longText(key->name), ndx + 1,
                      xkb_atom_text(keymap->ctx, info->groupNames[ndx]), nSyms);
                 while (--j >= 0)
-                    key->syms[ndx][key->symsMapIndex[ndx][i] + j] = NoSymbol;
+                    key->syms[ndx][key->symsMapIndex[ndx][i] + j] = XKB_KEY_NoSymbol;
                 key->symsMapIndex[ndx][i] = -1;
                 key->symsMapNumEntries[ndx][i] = 0;
                 break;

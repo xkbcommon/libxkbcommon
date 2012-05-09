@@ -26,7 +26,6 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <X11/keysym.h>
 #include <linux/input.h>
 
 #include "xkbcommon/xkbcommon.h"
@@ -155,7 +154,7 @@ test_update_key(struct xkb_keymap *keymap)
                                         XKB_STATE_LOCKED));
     assert(xkb_state_led_name_is_active(state, XKB_MOD_NAME_CAPS));
     num_syms = xkb_key_get_syms(state, KEY_Q + EVDEV_OFFSET, &syms);
-    assert(num_syms == 1 && syms[0] == XK_Q);
+    assert(num_syms == 1 && syms[0] == XKB_KEY_Q);
 
     /* Caps unlocked */
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
@@ -164,7 +163,7 @@ test_update_key(struct xkb_keymap *keymap)
                                          XKB_STATE_EFFECTIVE));
     assert(!xkb_state_led_name_is_active(state, XKB_MOD_NAME_CAPS));
     num_syms = xkb_key_get_syms(state, KEY_Q + EVDEV_OFFSET, &syms);
-    assert(num_syms == 1 && syms[0] == XK_q);
+    assert(num_syms == 1 && syms[0] == XKB_KEY_q);
 
     xkb_state_unref(state);
 }

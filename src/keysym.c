@@ -28,7 +28,6 @@ authorization from the authors.
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <X11/keysym.h>
 
 #include "xkb-priv.h"
 #include "ks_tables.h"
@@ -46,7 +45,7 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
     }
 
     /* Not listed in keysymdef.h for hysterical raisins. */
-    if (ks == XKB_KEYSYM_NO_SYMBOL) {
+    if (ks == XKB_KEY_NoSymbol) {
         snprintf(buffer, size, "NoSymbol");
         return;
     }
@@ -116,7 +115,7 @@ xkb_keysym_from_name(const char *s)
             val = (entry[2] << 24) | (entry[3] << 16) |
                   (entry[4] << 8)  | entry[5];
             if (!val)
-                val = XK_VoidSymbol;
+                val = XKB_KEY_VoidSymbol;
             return val;
         }
 
@@ -131,20 +130,20 @@ xkb_keysym_from_name(const char *s)
     if (*s == 'U') {
         val = strtoul(&s[1], &tmp, 16);
         if (tmp && *tmp != '\0')
-            return XKB_KEYSYM_NO_SYMBOL;
+            return XKB_KEY_NoSymbol;
 
         if (val < 0x20 || (val > 0x7e && val < 0xa0))
-            return XKB_KEYSYM_NO_SYMBOL;
+            return XKB_KEY_NoSymbol;
         if (val < 0x100)
             return val;
         if (val > 0x10ffff)
-            return XKB_KEYSYM_NO_SYMBOL;
+            return XKB_KEY_NoSymbol;
         return val | 0x01000000;
     }
     else if (s[0] == '0' && s[1] == 'x') {
         val = strtoul(&s[2], &tmp, 16);
         if (tmp && *tmp != '\0')
-            return XKB_KEYSYM_NO_SYMBOL;
+            return XKB_KEY_NoSymbol;
 
         return val;
     }
@@ -156,12 +155,12 @@ xkb_keysym_from_name(const char *s)
         xkb_keysym_t ret;
         tmp = strdup(s);
         if (!tmp)
-            return XKB_KEYSYM_NO_SYMBOL;
+            return XKB_KEY_NoSymbol;
         memmove(&tmp[4], &tmp[5], strlen(s) - 5 + 1);
         ret = xkb_keysym_from_name(tmp);
         free(tmp);
         return ret;
     }
 
-    return XKB_KEYSYM_NO_SYMBOL;
+    return XKB_KEY_NoSymbol;
 }
