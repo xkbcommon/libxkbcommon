@@ -416,7 +416,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  *
  * This should be called before xkb_state_update_key.
  */
-unsigned int
+int
 xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
                  const xkb_keysym_t **syms_out);
 

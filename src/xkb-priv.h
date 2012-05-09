@@ -449,7 +449,7 @@ extern unsigned int
 xkb_key_get_level(struct xkb_state *state, xkb_keycode_t key,
                   unsigned int group);
 
-extern unsigned int
+extern int
 xkb_key_get_syms_by_level(struct xkb_keymap *keymap, xkb_keycode_t key,
                           unsigned int group, unsigned int level,
                           const xkb_keysym_t **syms_out);

@@ -295,7 +295,7 @@ xkb_key_get_group(struct xkb_state *state, xkb_keycode_t key)
 /**
  * As below, but takes an explicit group/level rather than state.
  */
-unsigned int
+int
 xkb_key_get_syms_by_level(struct xkb_keymap *keymap, xkb_keycode_t key,
                           unsigned int group, unsigned int level,
                           const xkb_keysym_t **syms_out)
@@ -323,7 +323,7 @@ err:
  * Provides the symbols to use for the given key and state.  Returns the
  * number of symbols pointed to in syms_out.
  */
-_X_EXPORT unsigned int
+_X_EXPORT int
 xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
                  const xkb_keysym_t **syms_out)
 {
