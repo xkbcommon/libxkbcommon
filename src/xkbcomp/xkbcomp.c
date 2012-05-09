@@ -199,15 +199,7 @@ compile_keymap(struct xkb_ctx *ctx, XkbFile *file)
 
     /* Find map to use */
     mapToUse = XkbChooseMap(file, NULL);
-    if (!mapToUse)
-        goto err;
-
-    switch (mapToUse->type) {
-    case XkmSemanticsFile:
-    case XkmLayoutFile:
-    case XkmKeymapFile:
-        break;
-    default:
+    if (!mapToUse || mapToUse->type != XkmKeymapFile) {
         ERROR("file type %d not handled\n", mapToUse->type);
         goto err;
     }

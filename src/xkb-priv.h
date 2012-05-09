@@ -89,8 +89,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "utils.h"
 
 /* From XKM.h */
-#define	XkmSemanticsFile	20
-#define	XkmLayoutFile		21
 #define	XkmKeymapFile		22
 #define	XkmRulesFile		24
 
@@ -106,14 +104,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XkmKeyNamesMask		(1<<4)
 #define XkmGeometryMask         (1<<5)
 
-#define	XkmSemanticsRequired	(XkmCompatMapMask)
-#define	XkmSemanticsOptional	(XkmTypesMask|XkmGeometryMask)
-#define	XkmSemanticsLegal	(XkmSemanticsRequired|XkmSemanticsOptional)
-#define	XkmLayoutRequired	(XkmKeyNamesMask|XkmSymbolsMask|XkmTypesMask)
-#define	XkmLayoutOptional	(XkmGeometryMask)
-#define	XkmLayoutLegal		(XkmLayoutRequired|XkmLayoutOptional)
-#define	XkmKeymapRequired	(XkmSemanticsRequired|XkmLayoutRequired)
-#define	XkmKeymapOptional	((XkmSemanticsOptional|XkmLayoutOptional)&(~XkmKeymapRequired))
+#define	XkmKeymapRequired	(XkmCompatMapMask|XkmKeyNamesMask|XkmSymbolsMask|XkmTypesMask)
+#define	XkmKeymapOptional	((XkmTypesMask|XkmGeometryMask)&(~XkmKeymapRequired))
 #define	XkmKeymapLegal		(XkmKeymapRequired|XkmKeymapOptional)
 
 struct xkb_any_action {

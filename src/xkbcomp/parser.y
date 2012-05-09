@@ -182,8 +182,8 @@ XkbCompositeMap	:	OptFlags XkbCompositeType OptMapName OBRACE
 		;
 
 XkbCompositeType:	XKB_KEYMAP	{ $$= XkmKeymapFile; }
-		|	XKB_SEMANTICS	{ $$= XkmSemanticsFile; }
-		|	XKB_LAYOUT	{ $$= XkmLayoutFile; }
+		|	XKB_SEMANTICS	{ $$= XkmKeymapFile; }
+		|	XKB_LAYOUT	{ $$= XkmKeymapFile; }
 		;
 
 XkbMapConfigList :	XkbMapConfigList XkbMapConfig

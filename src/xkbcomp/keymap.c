@@ -57,14 +57,6 @@ CompileKeymap(struct xkb_ctx *ctx, XkbFile *file)
     mainName = file->name ? file->name : "(unnamed)";
     switch (mainType)
     {
-    case XkmSemanticsFile:
-        required = XkmSemanticsRequired;
-        legal = XkmSemanticsLegal;
-        break;
-    case XkmLayoutFile:        /* standard type  if setxkbmap -print */
-        required = XkmLayoutRequired;
-        legal = XkmKeymapLegal;
-        break;
     case XkmKeymapFile:
         required = XkmKeyNamesIndex | XkmTypesIndex | XkmSymbolsIndex |
                    XkmCompatMapIndex;
@@ -114,8 +106,6 @@ CompileKeymap(struct xkb_ctx *ctx, XkbFile *file)
             WSGO("Unknown file type %d\n", file->type);
             ACTION("Ignored\n");
             continue;
-        case XkmSemanticsFile:
-        case XkmLayoutFile:
         case XkmKeymapFile:
             WSGO("Illegal %s configuration in a %s file\n",
                   XkbcConfigText(file->type), XkbcConfigText(mainType));

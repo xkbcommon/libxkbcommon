@@ -146,10 +146,6 @@ XkbDirectoryForInclude(unsigned type)
 {
     switch (type)
     {
-    case XkmSemanticsFile:
-        return "semantics";
-    case XkmLayoutFile:
-        return "layout";
     case XkmKeymapFile:
         return "keymap";
     case XkmKeyNamesIndex:
@@ -176,7 +172,7 @@ XkbDirectoryForInclude(unsigned type)
  *
  * @param ctx the XKB ctx containing the include paths
  * @param type one of XkbTypesIndex, XkbCompatMapIndex, ..., or
- *             XkbSemanticsFile, XkmKeymapFile, ...
+ *             XkmKeymapFile
  * @param pathReturn is set to the full path of the file if found.
  *
  * @return an FD to the file or NULL. If NULL is returned, the value of

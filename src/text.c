@@ -189,10 +189,6 @@ const char *
 XkbcConfigText(unsigned config)
 {
     switch (config) {
-    case XkmSemanticsFile:
-        return "Semantics";
-    case XkmLayoutFile:
-        return "Layout";
     case XkmKeymapFile:
         return "Keymap";
     case XkmTypesIndex:

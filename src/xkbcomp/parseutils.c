@@ -850,8 +850,6 @@ FreeXKBFile(XkbFile *file)
         switch (file->type)
         {
         case XkmKeymapFile:
-        case XkmSemanticsFile:
-        case XkmLayoutFile:
             FreeXKBFile((XkbFile *)file->defs);
             break;
         case XkmTypesIndex:
