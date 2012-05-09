@@ -112,6 +112,20 @@ test_update_key(struct xkb_keymap *xkb)
                                         XKB_STATE_DEPRESSED));
     assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_ALT,
                                         XKB_STATE_DEPRESSED));
+    assert(xkb_state_mod_names_are_active(state, XKB_STATE_DEPRESSED,
+                                          XKB_STATE_MATCH_ALL,
+                                          XKB_MOD_NAME_CTRL,
+                                          XKB_MOD_NAME_ALT,
+                                          NULL));
+    assert(!xkb_state_mod_names_are_active(state, XKB_STATE_DEPRESSED,
+                                           XKB_STATE_MATCH_ALL,
+                                           XKB_MOD_NAME_ALT,
+                                           NULL));
+    assert(xkb_state_mod_names_are_active(state, XKB_STATE_DEPRESSED,
+                                          (XKB_STATE_MATCH_ANY |
+                                           XKB_STATE_MATCH_NON_EXCLUSIVE),
+                                          XKB_MOD_NAME_ALT,
+                                          NULL));
 
     /* RAlt down */
     xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_UP);
@@ -121,6 +135,11 @@ test_update_key(struct xkb_keymap *xkb)
                                          XKB_STATE_EFFECTIVE));
     assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_ALT,
                                         XKB_STATE_DEPRESSED));
+    assert(xkb_state_mod_names_are_active(state, XKB_STATE_DEPRESSED,
+                                          XKB_STATE_MATCH_ANY,
+                                          XKB_MOD_NAME_CTRL,
+                                          XKB_MOD_NAME_ALT,
+                                          NULL));
 
     /* none down */
     xkb_state_update_key(state, KEY_RIGHTALT + EVDEV_OFFSET, XKB_KEY_UP);

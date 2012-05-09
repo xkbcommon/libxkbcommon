@@ -489,6 +489,22 @@ enum xkb_state_component {
 };
 
 /**
+ * Match flags for xkb_state_mod_indices_are_active and
+ * xkb_state_mod_names_are_active, specifying how the conditions for a
+ * successful match.  XKB_STATE_MATCH_NON_EXCLUSIVE is bitmaskable with
+ * the other modes.
+ */
+enum xkb_state_match {
+    /** Returns true if any of the modifiers are active. */
+    XKB_STATE_MATCH_ANY = (1 << 0),
+    /** Returns true if all of the modifiers are active. */
+    XKB_STATE_MATCH_ALL = (1 << 1),
+    /** Makes matching non-exclusive, i.e. will not return false if a
+     *  modifier not specified in the arguments is active. */
+    XKB_STATE_MATCH_NON_EXCLUSIVE = (1 << 16),
+};
+
+/**
  * Updates a state object from a set of explicit masks.  This entrypoint is
  * really only for window systems and the like, where a master process
  * holds an xkb_state, then serialises it over a wire protocol, and clients
@@ -537,11 +553,23 @@ xkb_state_serialise_group(struct xkb_state *state,
 /**
  * Returns 1 if the modifier specified by 'name' is active in the manner
  * specified by 'type', 0 if it is unset, or -1 if the modifier does not
- * exist in the current map.
+ * exist in the map.
  */
 int
 xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
                              enum xkb_state_component type);
+
+/**
+ * Returns 1 if the modifiers specified by the varargs (treated as
+ * NULL-terminated pointers to strings) are active in the manner
+ * specified by 'match', 0 otherwise, or -1 if any of the modifiers
+ * do not exist in the map.
+ */
+int
+xkb_state_mod_names_are_active(struct xkb_state *state,
+                               enum xkb_state_component type,
+                               enum xkb_state_match match,
+                               ...);
 
 /**
  * Returns 1 if the modifier specified by 'idx' is active in the manner
@@ -551,6 +579,18 @@ xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
 int
 xkb_state_mod_index_is_active(struct xkb_state *state, xkb_mod_index_t idx,
                               enum xkb_state_component type);
+
+/**
+ * Returns 1 if the modifiers specified by the varargs (treated as
+ * xkb_mod_index_t, terminated with XKB_MOD_INVALID) are active in the manner
+ * specified by 'match' and 'type', 0 otherwise, or -1 if the modifier does not
+ * exist in the current map.
+ */
+int
+xkb_state_mod_indices_are_active(struct xkb_state *state,
+                                 enum xkb_state_component type,
+                                 enum xkb_state_match match,
+                                 ...);
 
 /**
  * Returns 1 if the group specified by 'name' is active in the manner

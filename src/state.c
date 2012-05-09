@@ -59,6 +59,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 #include <assert.h>
+#include <stdarg.h>
 
 #include "xkb-priv.h"
 
@@ -684,6 +685,59 @@ xkb_state_mod_index_is_active(struct xkb_state *state,
 }
 
 /**
+ * Helper function for xkb_state_mod_indices_are_active and
+ * xkb_state_mod_names_are_active.
+ */
+static int
+match_mod_masks(struct xkb_state *state, enum xkb_state_match match,
+                uint32_t wanted)
+{
+    uint32_t active = xkb_state_serialise_mods(state, XKB_STATE_EFFECTIVE);
+
+    if (!(match & XKB_STATE_MATCH_NON_EXCLUSIVE) && (active & ~wanted))
+        return 0;
+
+    if (match & XKB_STATE_MATCH_ANY)
+        return !!(active & wanted);
+    else
+        return (active & wanted) == wanted;
+
+    return 0;
+}
+
+/**
+ * Returns 1 if the modifiers are active with the specified type(s), 0 if
+ * not, or -1 if any of the modifiers are invalid.
+ */
+_X_EXPORT int
+xkb_state_mod_indices_are_active(struct xkb_state *state,
+                                 enum xkb_state_component type,
+                                 enum xkb_state_match match,
+                                 ...)
+{
+    va_list ap;
+    xkb_mod_index_t idx = 0;
+    uint32_t wanted = 0;
+    int ret = 0;
+
+    va_start(ap, match);
+    while (1) {
+        idx = va_arg(ap, xkb_mod_index_t);
+        if (idx == XKB_MOD_INVALID || idx >= xkb_map_num_mods(state->xkb)) {
+            ret = -1;
+            break;
+        }
+        wanted |= (1 << idx);
+    }
+    va_end(ap);
+
+    if (ret == -1)
+        return ret;
+
+    return match_mod_masks(state, match, wanted);
+}
+
+/**
  * Returns 1 if the given modifier is active with the specified type(s), 0 if
  * not, or -1 if the modifier is invalid.
  */
@@ -697,6 +751,42 @@ xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
         return -1;
 
     return xkb_state_mod_index_is_active(state, idx, type);
+}
+
+/**
+ * Returns 1 if the modifiers are active with the specified type(s), 0 if
+ * not, or -1 if any of the modifiers are invalid.
+ */
+_X_EXPORT int
+xkb_state_mod_names_are_active(struct xkb_state *state,
+                               enum xkb_state_component type,
+                               enum xkb_state_match match,
+                               ...)
+{
+    va_list ap;
+    xkb_mod_index_t idx = 0;
+    const char *str;
+    uint32_t wanted = 0;
+    int ret = 0;
+
+    va_start(ap, match);
+    while (1) {
+        str = va_arg(ap, const char *);
+        if (str == NULL)
+            break;
+        idx = xkb_map_mod_get_index(state->xkb, str);
+        if (idx == XKB_MOD_INVALID) {
+            ret = -1;
+            break;
+        }
+        wanted |= (1 << idx);
+    }
+    va_end(ap);
+
+    if (ret == -1)
+        return ret;
+
+    return match_mod_masks(state, match, wanted);
 }
 
 /**
