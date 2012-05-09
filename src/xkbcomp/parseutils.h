@@ -24,8 +24,8 @@
 
  ********************************************************/
 
-#ifndef XKBPARSE_H
-#define	XKBPARSE_H 1
+#ifndef PARSEUTILS_H
+#define PARSEUTILS_H
 
 #include <stdio.h>
 
@@ -33,6 +33,7 @@
 #include "parser.h"
 
 struct parser_param {
+    struct xkb_context *context;
     void *scanner;
     XkbFile *rtrn;
 };
@@ -118,14 +119,17 @@ StmtSetMerge(ParseCommon *stmt, unsigned merge, struct YYLTYPE *loc, void *scann
 extern void
 CheckDefaultMap(XkbFile *maps, const char *fileName);
 
-extern int
-XKBParseFile(FILE *file, const char *fileName, XkbFile **pRtrn);
-
-extern int
-XKBParseString(const char *string, const char *fileName, XkbFile **pRtrn);
-
 extern XkbFile *
-CreateXKBFile(int type, char *name, ParseCommon *defs, unsigned flags);
+CreateXKBFile(int type, char *name,
+              ParseCommon *defs, unsigned flags);
+
+extern bool
+XKBParseFile(struct xkb_context *context, FILE *file,
+               const char *file_name, XkbFile **out);
+
+extern bool
+XKBParseString(struct xkb_context *contex, const char *string,
+                 const char *file_name, XkbFile **out);
 
 extern void
 FreeXKBFile(XkbFile *file);
@@ -136,4 +140,4 @@ FreeStmt(ParseCommon *stmt);
 extern void
 yyerror(struct YYLTYPE *loc, void *scanner, const char *msg);
 
-#endif /* XKBPARSE_H */
+#endif /* PARSEUTILS_H */

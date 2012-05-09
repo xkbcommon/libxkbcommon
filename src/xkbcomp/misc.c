@@ -59,8 +59,9 @@ ProcessIncludeFile(struct xkb_context *context,
                 XkbDirectoryForInclude(file_type));
         return false;
     }
-    /* parse the file */
-    if ((XKBParseFile(file, stmt->file, &rtrn) == 0) || (rtrn == NULL))
+
+
+    if (!XKBParseFile(context, file, stmt->file, &rtrn))
     {
         ERROR("Error interpreting include file \"%s\"\n", stmt->file);
         fclose(file);

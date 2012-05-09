@@ -204,62 +204,72 @@ yyerror(struct YYLTYPE *loc, void *scanner, const char *msg)
     }
 }
 
-int
-XKBParseString(const char *string, const char *fileName, XkbFile **pRtrn)
+bool
+XKBParseString(struct xkb_context *context, const char *string,
+               const char *file_name, XkbFile **out)
 {
-    YY_BUFFER_STATE state;
+    int ret;
     struct parser_param param;
     struct scanner_extra extra;
-    int ret;
+    YY_BUFFER_STATE state;
 
-    *pRtrn = NULL;
     if (string == NULL)
-        return 1;
+        return false;
+
+    param.context = context;
 
     memset(&extra, 0, sizeof(extra));
     ret = yylex_init_extra(&extra, &param.scanner);
     if (ret != 0)
-        return 0;
-    extra.scanFile = strdup(fileName);
+        return false;
+
+    extra.scanFile = strdup(file_name);
+    if (!extra.scanFile)
+        return false;
 
     state = yy_scan_string(string, param.scanner);
     ret = yyparse(&param);
     yy_delete_buffer(state, param.scanner);
     yylex_destroy(param.scanner);
     free(extra.scanFile);
-    if (ret)
-        return 0;
+    if (ret != 0)
+        return false;
 
-    CheckDefaultMap(param.rtrn, fileName);
-    *pRtrn = param.rtrn;
-
-    return 1;
+    CheckDefaultMap(param.rtrn, file_name);
+    *out = param.rtrn;
+    return true;
 }
 
-int
-XKBParseFile(FILE * file, const char *fileName, XkbFile ** pRtrn)
+bool
+XKBParseFile(struct xkb_context *context, FILE *file,
+             const char *file_name, XkbFile **out)
 {
     int ret;
     struct parser_param param;
     struct scanner_extra extra;
 
-    *pRtrn = NULL;
     if (!file)
-        return 1;
+        return false;
+
+    param.context = context;
 
     memset(&extra, 0, sizeof(extra));
-    if (yylex_init_extra(&extra, &param.scanner) != 0)
-        return 0;
-    extra.scanFile = strdup(fileName);
+    ret = yylex_init_extra(&extra, &param.scanner);
+    if (ret != 0)
+        return false;
+
+    extra.scanFile = strdup(file_name);
+    if (!extra.scanFile)
+        return false;
 
     yyset_in(file, param.scanner);
     ret = yyparse(&param);
     yylex_destroy(param.scanner);
     free(extra.scanFile);
-    if (ret)
-        return 0;
+    if (ret != 0)
+        return false;
 
-    CheckDefaultMap(param.rtrn, fileName);
-    *pRtrn = param.rtrn;
-    return 1;
+    CheckDefaultMap(param.rtrn, file_name);
+    *out = param.rtrn;
+    return true;
 }

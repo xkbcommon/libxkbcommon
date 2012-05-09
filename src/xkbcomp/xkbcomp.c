@@ -275,7 +275,7 @@ xkb_map_new_from_string(struct xkb_context *context,
         return NULL;
     }
 
-    if (!XKBParseString(string, "input", &file) || !file) {
+    if (!XKBParseString(context, string, "input", &file)) {
         ERROR("failed to parse input xkb file\n");
         return NULL;
     }
@@ -308,9 +308,9 @@ xkb_map_new_from_fd(struct xkb_context *context,
         return NULL;
     }
 
-    if (!XKBParseFile(fptr, "(unknown file)", &file) || !file) {
+    if (!XKBParseFile(context, fptr, "(unknown file)", &file)) {
         ERROR("failed to parse input xkb file\n");
-	return NULL;
+        return NULL;
     }
 
     return compile_keymap(context, file);
