@@ -34,27 +34,32 @@ unsigned int warningLevel = 0;
 #define ISEMPTY(str) (!(str) || (strlen(str) == 0))
 
 static XkbFile *
-XkbKeymapFileFromComponents(const struct xkb_component_names * ktcsg)
+XkbKeymapFileFromComponents(struct xkb_context *context,
+                            const struct xkb_component_names *ktcsg)
 {
     XkbFile *keycodes, *types, *compat, *symbols;
     IncludeStmt *inc;
 
     inc = IncludeCreate(ktcsg->keycodes, MergeDefault);
-    keycodes = CreateXKBFile(XkmKeyNamesIndex, NULL, (ParseCommon *)inc, 0);
+    keycodes = CreateXKBFile(context, XkmKeyNamesIndex, NULL,
+                             (ParseCommon *)inc, 0);
 
     inc = IncludeCreate(ktcsg->types, MergeDefault);
-    types = CreateXKBFile(XkmTypesIndex, NULL, (ParseCommon *)inc, 0);
+    types = CreateXKBFile(context, XkmTypesIndex, NULL,
+                          (ParseCommon *)inc, 0);
     AppendStmt(&keycodes->common, &types->common);
 
     inc = IncludeCreate(ktcsg->compat, MergeDefault);
-    compat = CreateXKBFile(XkmCompatMapIndex, NULL, (ParseCommon *)inc, 0);
+    compat = CreateXKBFile(context, XkmCompatMapIndex, NULL,
+                           (ParseCommon *)inc, 0);
     AppendStmt(&keycodes->common, &compat->common);
 
     inc = IncludeCreate(ktcsg->symbols, MergeDefault);
-    symbols = CreateXKBFile(XkmSymbolsIndex, NULL, (ParseCommon *)inc, 0);
+    symbols = CreateXKBFile(context, XkmSymbolsIndex, NULL,
+                            (ParseCommon *)inc, 0);
     AppendStmt(&keycodes->common, &symbols->common);
 
-    return CreateXKBFile(XkmKeymapFile,
+    return CreateXKBFile(context, XkmKeymapFile,
                          ktcsg->keymap ? ktcsg->keymap : strdup(""),
                          &keycodes->common, 0);
 }
@@ -249,7 +254,7 @@ xkb_map_new_from_kccgst(struct xkb_context *context,
         return NULL;
     }
 
-    if (!(file = XkbKeymapFileFromComponents(kccgst))) {
+    if (!(file = XkbKeymapFileFromComponents(context, kccgst))) {
         ERROR("failed to generate parsed XKB file from components\n");
         return NULL;
     }

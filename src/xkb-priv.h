@@ -437,6 +437,10 @@ extern unsigned int
 xkb_key_get_syms_by_level(struct xkb_keymap *keymap, xkb_keycode_t key,
                           unsigned int group, unsigned int level,
                           const xkb_keysym_t **syms_out);
+
+extern int
+xkb_context_take_file_id(struct xkb_context *context);
+
 extern bool
 XkbcComputeEffectiveMap(struct xkb_keymap *keymap, struct xkb_key_type *type,
                         unsigned char *map_rtrn);

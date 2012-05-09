@@ -35,6 +35,9 @@ struct xkb_context {
     char **include_paths;
     int num_include_paths;
     int size_include_paths;
+
+    /* xkbcomp needs to assign sequential IDs to XkbFile's it creates. */
+    int file_id;
 };
 
 /**
@@ -147,6 +150,12 @@ xkb_context_include_path_get(struct xkb_context *context, unsigned int idx)
         return NULL;
 
     return context->include_paths[idx];
+}
+
+int
+xkb_context_take_file_id(struct xkb_context *context)
+{
+    return context->file_id++;
 }
 
 /**
