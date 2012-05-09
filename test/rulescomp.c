@@ -34,7 +34,7 @@ test_rmlvo(const char *rules, const char *model, const char *layout,
            const char *variant, const char *options)
 {
     struct xkb_context *context;
-    struct xkb_keymap *xkb;
+    struct xkb_keymap *keymap;
     struct xkb_rule_names rmlvo = {
         .rules = rules,
         .model = model,
@@ -49,13 +49,13 @@ test_rmlvo(const char *rules, const char *model, const char *layout,
     fprintf(stderr, "\nCompiling %s %s %s %s %s\n", rmlvo.rules, rmlvo.model,
            rmlvo.layout, rmlvo.variant, rmlvo.options);
 
-    xkb = xkb_map_new_from_names(context, &rmlvo, 0);
-    if (!xkb) {
+    keymap = xkb_map_new_from_names(context, &rmlvo, 0);
+    if (!keymap) {
         xkb_context_unref(context);
         return 0;
     }
 
-    xkb_map_unref(xkb);
+    xkb_map_unref(keymap);
     xkb_context_unref(context);
     return 1;
 }

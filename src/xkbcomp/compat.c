@@ -64,7 +64,7 @@ typedef struct _CompatInfo
     LEDInfo *leds;
     VModInfo vmods;
     ActionInfo *act;
-    struct xkb_keymap * xkb;
+    struct xkb_keymap *keymap;
 } CompatInfo;
 
 /***====================================================================***/
@@ -96,11 +96,11 @@ siText(SymInterpInfo * si, CompatInfo * info)
 }
 
 static void
-InitCompatInfo(CompatInfo * info, struct xkb_keymap * xkb)
+InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap)
 {
     unsigned int i;
 
-    info->xkb = xkb;
+    info->keymap = keymap;
     info->name = NULL;
     info->fileID = 0;
     info->errorCount = 0;
@@ -122,11 +122,11 @@ InitCompatInfo(CompatInfo * info, struct xkb_keymap * xkb)
     memset(&info->groupCompat[0], 0,
            XkbNumKbdGroups * sizeof(GroupCompatInfo));
     info->leds = NULL;
-    InitVModInfo(&info->vmods, xkb);
+    InitVModInfo(&info->vmods, keymap);
 }
 
 static void
-ClearCompatInfo(CompatInfo * info, struct xkb_keymap * xkb)
+ClearCompatInfo(CompatInfo *info, struct xkb_keymap *keymap)
 {
     unsigned int i;
     ActionInfo *next;
@@ -151,7 +151,7 @@ ClearCompatInfo(CompatInfo * info, struct xkb_keymap * xkb)
             free(info->act);
             info->act = next;
     }
-    ClearVModInfo(&info->vmods, xkb);
+    ClearVModInfo(&info->vmods, keymap);
 }
 
 static SymInterpInfo *
@@ -384,12 +384,12 @@ MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from, unsigned merge)
     }
 }
 
-typedef void (*FileHandler) (XkbFile *rtrn, struct xkb_keymap *xkb,
+typedef void (*FileHandler) (XkbFile *rtrn, struct xkb_keymap *keymap,
                              unsigned merge, CompatInfo *info);
 
 static bool
-HandleIncludeCompatMap(IncludeStmt * stmt,
-                       struct xkb_keymap * xkb, CompatInfo * info, FileHandler hndlr)
+HandleIncludeCompatMap(IncludeStmt *stmt, struct xkb_keymap *keymap,
+                       CompatInfo *info, FileHandler hndlr)
 {
     unsigned newMerge;
     XkbFile *rtrn;
@@ -403,10 +403,10 @@ HandleIncludeCompatMap(IncludeStmt * stmt,
         included = *info;
         memset(info, 0, sizeof(CompatInfo));
     }
-    else if (ProcessIncludeFile(xkb->context, stmt, XkmCompatMapIndex, &rtrn,
-                                &newMerge))
+    else if (ProcessIncludeFile(keymap->context, stmt, XkmCompatMapIndex,
+                                &rtrn, &newMerge))
     {
-        InitCompatInfo(&included, xkb);
+        InitCompatInfo(&included, keymap);
         included.fileID = rtrn->id;
         included.dflt = info->dflt;
         included.dflt.defs.fileID = rtrn->id;
@@ -414,7 +414,7 @@ HandleIncludeCompatMap(IncludeStmt * stmt,
         included.ledDflt.defs.fileID = rtrn->id;
         included.ledDflt.defs.merge = newMerge;
         included.act = info->act;
-        (*hndlr) (rtrn, xkb, MergeOverride, &included);
+        (*hndlr) (rtrn, keymap, MergeOverride, &included);
         if (stmt->stmt != NULL)
         {
             free(included.name);
@@ -442,12 +442,12 @@ HandleIncludeCompatMap(IncludeStmt * stmt,
             {
                 haveSelf = true;
                 MergeIncludedCompatMaps(&included, info, next->merge);
-                ClearCompatInfo(info, xkb);
+                ClearCompatInfo(info, keymap);
             }
-            else if (ProcessIncludeFile(xkb->context, next, XkmCompatMapIndex,
-                                        &rtrn, &op))
+            else if (ProcessIncludeFile(keymap->context, next,
+                                        XkmCompatMapIndex, &rtrn, &op))
             {
-                InitCompatInfo(&next_incl, xkb);
+                InitCompatInfo(&next_incl, keymap);
                 next_incl.fileID = rtrn->id;
                 next_incl.dflt = info->dflt;
                 next_incl.dflt.defs.fileID = rtrn->id;
@@ -455,11 +455,11 @@ HandleIncludeCompatMap(IncludeStmt * stmt,
                 next_incl.ledDflt.defs.fileID = rtrn->id;
                 next_incl.ledDflt.defs.merge = op;
                 next_incl.act = info->act;
-                (*hndlr) (rtrn, xkb, MergeOverride, &next_incl);
+                (*hndlr) (rtrn, keymap, MergeOverride, &next_incl);
                 MergeIncludedCompatMaps(&included, &next_incl, op);
                 if (info->act != NULL)
                         next_incl.act = NULL;
-                ClearCompatInfo(&next_incl, xkb);
+                ClearCompatInfo(&next_incl, keymap);
                 FreeXKBFile(rtrn);
             }
             else
@@ -474,7 +474,7 @@ HandleIncludeCompatMap(IncludeStmt * stmt,
     else
     {
         MergeIncludedCompatMaps(info, &included, newMerge);
-        ClearCompatInfo(&included, xkb);
+        ClearCompatInfo(&included, keymap);
     }
     return (info->errorCount == 0);
 }
@@ -488,10 +488,8 @@ static const LookupEntry useModMapValues[] = {
 };
 
 static int
-SetInterpField(SymInterpInfo * si,
-               struct xkb_keymap * xkb,
-               char *field,
-               ExprDef * arrayNdx, ExprDef * value, CompatInfo * info)
+SetInterpField(SymInterpInfo *si, struct xkb_keymap *keymap, char *field,
+               ExprDef *arrayNdx, ExprDef *value, CompatInfo *info)
 {
     int ok = 1;
     ExprResult tmp;
@@ -500,7 +498,7 @@ SetInterpField(SymInterpInfo * si,
     {
         if (arrayNdx != NULL)
             return ReportSINotArray(si, field, info);
-        ok = HandleActionDef(value, xkb, &si->interp.act.any, info->act);
+        ok = HandleActionDef(value, keymap, &si->interp.act.any, info->act);
         if (ok)
             si->defs.defined |= _SI_Action;
     }
@@ -509,7 +507,7 @@ SetInterpField(SymInterpInfo * si,
     {
         if (arrayNdx != NULL)
             return ReportSINotArray(si, field, info);
-        ok = ResolveVirtualModifier(value, xkb, &tmp, &info->vmods);
+        ok = ResolveVirtualModifier(value, keymap, &tmp, &info->vmods);
         if (ok)
         {
             si->interp.virtual_mod = tmp.uval;
@@ -575,7 +573,7 @@ SetInterpField(SymInterpInfo * si,
 }
 
 static int
-HandleInterpVar(VarDef * stmt, struct xkb_keymap * xkb, CompatInfo * info)
+HandleInterpVar(VarDef * stmt, struct xkb_keymap *keymap, CompatInfo * info)
 {
     ExprResult elem, field;
     ExprDef *ndx;
@@ -584,13 +582,13 @@ HandleInterpVar(VarDef * stmt, struct xkb_keymap * xkb, CompatInfo * info)
     if (ExprResolveLhs(stmt->name, &elem, &field, &ndx) == 0)
         ret = 0;               /* internal error, already reported */
     else if (elem.str && (strcasecmp(elem.str, "interpret") == 0))
-        ret = SetInterpField(&info->dflt, xkb, field.str, ndx, stmt->value,
+        ret = SetInterpField(&info->dflt, keymap, field.str, ndx, stmt->value,
                               info);
     else if (elem.str && (strcasecmp(elem.str, "indicator") == 0))
-        ret = SetIndicatorMapField(&info->ledDflt, xkb, field.str, ndx,
+        ret = SetIndicatorMapField(&info->ledDflt, keymap, field.str, ndx,
                                   stmt->value);
     else
-        ret = SetActionField(xkb, elem.str, field.str, ndx, stmt->value,
+        ret = SetActionField(keymap, elem.str, field.str, ndx, stmt->value,
                             &info->act);
     free(elem.str);
     free(field.str);
@@ -598,8 +596,8 @@ HandleInterpVar(VarDef * stmt, struct xkb_keymap * xkb, CompatInfo * info)
 }
 
 static int
-HandleInterpBody(VarDef * def, struct xkb_keymap * xkb, SymInterpInfo * si,
-                 CompatInfo * info)
+HandleInterpBody(VarDef *def, struct xkb_keymap *keymap, SymInterpInfo *si,
+                 CompatInfo *info)
 {
     int ok = 1;
     ExprResult tmp, field;
@@ -609,12 +607,12 @@ HandleInterpBody(VarDef * def, struct xkb_keymap * xkb, SymInterpInfo * si,
     {
         if ((def->name) && (def->name->type == ExprFieldRef))
         {
-            ok = HandleInterpVar(def, xkb, info);
+            ok = HandleInterpVar(def, keymap, info);
             continue;
         }
         ok = ExprResolveLhs(def->name, &tmp, &field, &arrayNdx);
         if (ok) {
-            ok = SetInterpField(si, xkb, field.str, arrayNdx, def->value,
+            ok = SetInterpField(si, keymap, field.str, arrayNdx, def->value,
                                 info);
             free(field.str);
         }
@@ -623,8 +621,8 @@ HandleInterpBody(VarDef * def, struct xkb_keymap * xkb, SymInterpInfo * si,
 }
 
 static int
-HandleInterpDef(InterpDef * def, struct xkb_keymap * xkb, unsigned merge,
-                CompatInfo * info)
+HandleInterpDef(InterpDef *def, struct xkb_keymap *keymap, unsigned merge,
+                CompatInfo *info)
 {
     unsigned pred, mods;
     SymInterpInfo si;
@@ -648,7 +646,7 @@ HandleInterpDef(InterpDef * def, struct xkb_keymap * xkb, unsigned merge,
     }
     si.interp.match = pred & XkbSI_OpMask;
     si.interp.mods = mods;
-    if (!HandleInterpBody(def->def, xkb, &si, info))
+    if (!HandleInterpBody(def->def, keymap, &si, info))
     {
         info->errorCount++;
         return false;
@@ -663,8 +661,8 @@ HandleInterpDef(InterpDef * def, struct xkb_keymap * xkb, unsigned merge,
 }
 
 static int
-HandleGroupCompatDef(GroupCompatDef * def,
-                     struct xkb_keymap * xkb, unsigned merge, CompatInfo * info)
+HandleGroupCompatDef(GroupCompatDef *def, struct xkb_keymap *keymap,
+                     unsigned merge, CompatInfo *info)
 {
     ExprResult val;
     GroupCompatInfo tmp;
@@ -681,7 +679,7 @@ HandleGroupCompatDef(GroupCompatDef * def,
     }
     tmp.fileID = info->fileID;
     tmp.merge = merge;
-    if (!ExprResolveVModMask(def->def, &val, xkb))
+    if (!ExprResolveVModMask(def->def, &val, keymap))
     {
         ERROR("Expected a modifier mask in group compatibility definition\n");
         ACTION("Ignoring illegal compatibility map for group %d\n",
@@ -695,8 +693,8 @@ HandleGroupCompatDef(GroupCompatDef * def,
 }
 
 static void
-HandleCompatMapFile(XkbFile * file,
-                    struct xkb_keymap * xkb, unsigned merge, CompatInfo * info)
+HandleCompatMapFile(XkbFile *file, struct xkb_keymap *keymap, unsigned merge,
+                    CompatInfo *info)
 {
     ParseCommon *stmt;
 
@@ -710,23 +708,23 @@ HandleCompatMapFile(XkbFile * file,
         switch (stmt->stmtType)
         {
         case StmtInclude:
-            if (!HandleIncludeCompatMap((IncludeStmt *) stmt, xkb, info,
+            if (!HandleIncludeCompatMap((IncludeStmt *) stmt, keymap, info,
                                         HandleCompatMapFile))
                 info->errorCount++;
             break;
         case StmtInterpDef:
-            if (!HandleInterpDef((InterpDef *) stmt, xkb, merge, info))
+            if (!HandleInterpDef((InterpDef *) stmt, keymap, merge, info))
                 info->errorCount++;
             break;
         case StmtGroupCompatDef:
             if (!HandleGroupCompatDef
-                ((GroupCompatDef *) stmt, xkb, merge, info))
+                ((GroupCompatDef *) stmt, keymap, merge, info))
                 info->errorCount++;
             break;
         case StmtIndicatorMapDef:
         {
             LEDInfo *rtrn;
-            rtrn = HandleIndicatorMapDef((IndicatorMapDef *) stmt, xkb,
+            rtrn = HandleIndicatorMapDef((IndicatorMapDef *) stmt, keymap,
                                          &info->ledDflt, info->leds, merge);
             if (rtrn != NULL)
                 info->leds = rtrn;
@@ -735,11 +733,11 @@ HandleCompatMapFile(XkbFile * file,
         }
             break;
         case StmtVarDef:
-            if (!HandleInterpVar((VarDef *) stmt, xkb, info))
+            if (!HandleInterpVar((VarDef *) stmt, keymap, info))
                 info->errorCount++;
             break;
         case StmtVModDef:
-            if (!HandleVModDef((VModDef *) stmt, xkb, merge, &info->vmods))
+            if (!HandleVModDef((VModDef *) stmt, keymap, merge, &info->vmods))
                 info->errorCount++;
             break;
         case StmtKeycodeDef:
@@ -787,62 +785,62 @@ CopyInterps(CompatInfo * info,
 }
 
 bool
-CompileCompatMap(XkbFile *file, struct xkb_keymap *xkb, unsigned merge,
+CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap, unsigned merge,
                  LEDInfoPtr *unboundLEDs)
 {
     int i;
     CompatInfo info;
     GroupCompatInfo *gcm;
 
-    InitCompatInfo(&info, xkb);
+    InitCompatInfo(&info, keymap);
     info.dflt.defs.merge = merge;
     info.ledDflt.defs.merge = merge;
 
-    HandleCompatMapFile(file, xkb, merge, &info);
+    HandleCompatMapFile(file, keymap, merge, &info);
 
     if (info.errorCount != 0)
         goto err_info;
 
-    if (XkbcAllocCompatMap(xkb, info.nInterps) != Success) {
+    if (XkbcAllocCompatMap(keymap, info.nInterps) != Success) {
         WSGO("Couldn't allocate compatibility map\n");
         goto err_info;
     }
 
     if (info.nInterps > 0) {
-        CopyInterps(&info, xkb->compat, true, XkbSI_Exactly);
-        CopyInterps(&info, xkb->compat, true, XkbSI_AllOf | XkbSI_NoneOf);
-        CopyInterps(&info, xkb->compat, true, XkbSI_AnyOf);
-        CopyInterps(&info, xkb->compat, true, XkbSI_AnyOfOrNone);
-        CopyInterps(&info, xkb->compat, false, XkbSI_Exactly);
-        CopyInterps(&info, xkb->compat, false, XkbSI_AllOf | XkbSI_NoneOf);
-        CopyInterps(&info, xkb->compat, false, XkbSI_AnyOf);
-        CopyInterps(&info, xkb->compat, false, XkbSI_AnyOfOrNone);
+        CopyInterps(&info, keymap->compat, true, XkbSI_Exactly);
+        CopyInterps(&info, keymap->compat, true, XkbSI_AllOf | XkbSI_NoneOf);
+        CopyInterps(&info, keymap->compat, true, XkbSI_AnyOf);
+        CopyInterps(&info, keymap->compat, true, XkbSI_AnyOfOrNone);
+        CopyInterps(&info, keymap->compat, false, XkbSI_Exactly);
+        CopyInterps(&info, keymap->compat, false, XkbSI_AllOf | XkbSI_NoneOf);
+        CopyInterps(&info, keymap->compat, false, XkbSI_AnyOf);
+        CopyInterps(&info, keymap->compat, false, XkbSI_AnyOfOrNone);
     }
 
     for (i = 0, gcm = &info.groupCompat[0]; i < XkbNumKbdGroups; i++, gcm++) {
         if ((gcm->fileID != 0) || (gcm->real_mods != 0) || (gcm->vmods != 0)) {
-            xkb->compat->groups[i].mask = gcm->real_mods;
-            xkb->compat->groups[i].real_mods = gcm->real_mods;
-            xkb->compat->groups[i].vmods = gcm->vmods;
+            keymap->compat->groups[i].mask = gcm->real_mods;
+            keymap->compat->groups[i].real_mods = gcm->real_mods;
+            keymap->compat->groups[i].vmods = gcm->vmods;
         }
     }
 
     if (info.leds != NULL) {
-        if (!CopyIndicatorMapDefs(xkb, info.leds, unboundLEDs))
+        if (!CopyIndicatorMapDefs(keymap, info.leds, unboundLEDs))
             info.errorCount++;
         info.leds = NULL;
     }
 
-    ClearCompatInfo(&info, xkb);
+    ClearCompatInfo(&info, keymap);
     return true;
 
 err_info:
-    ClearCompatInfo(&info, xkb);
+    ClearCompatInfo(&info, keymap);
     return false;
 }
 
 static uint32_t
-VModsToReal(struct xkb_keymap *xkb, uint32_t vmodmask)
+VModsToReal(struct xkb_keymap *keymap, uint32_t vmodmask)
 {
     uint32_t ret = 0;
     int i;
@@ -853,14 +851,15 @@ VModsToReal(struct xkb_keymap *xkb, uint32_t vmodmask)
     for (i = 0; i < XkbNumVirtualMods; i++) {
         if (!(vmodmask & (1 << i)))
             continue;
-        ret |= xkb->server->vmods[i];
+        ret |= keymap->server->vmods[i];
     }
 
     return ret;
 }
 
 static void
-UpdateActionMods(struct xkb_keymap *xkb, union xkb_action *act, uint32_t rmodmask)
+UpdateActionMods(struct xkb_keymap *keymap, union xkb_action *act,
+                 uint32_t rmodmask)
 {
     switch (act->type) {
     case XkbSA_SetMods:
@@ -869,13 +868,13 @@ UpdateActionMods(struct xkb_keymap *xkb, union xkb_action *act, uint32_t rmodmas
         if (act->mods.flags & XkbSA_UseModMapMods)
             act->mods.real_mods = rmodmask;
         act->mods.mask = act->mods.real_mods;
-        act->mods.mask |= VModsToReal(xkb, act->mods.vmods);
+        act->mods.mask |= VModsToReal(keymap, act->mods.vmods);
         break;
     case XkbSA_ISOLock:
         if (act->iso.flags & XkbSA_UseModMapMods)
             act->iso.real_mods = rmodmask;
         act->iso.mask = act->iso.real_mods;
-        act->iso.mask |= VModsToReal(xkb, act->iso.vmods);
+        act->iso.mask |= VModsToReal(keymap, act->iso.vmods);
         break;
     default:
         break;
@@ -888,19 +887,20 @@ UpdateActionMods(struct xkb_keymap *xkb, union xkb_action *act, uint32_t rmodmas
  * generic XKB_KEYSYM_NO_SYMBOL match.
  */
 static struct xkb_sym_interpret *
-FindInterpForKey(struct xkb_keymap *xkb, xkb_keycode_t key, uint32_t group, uint32_t level)
+FindInterpForKey(struct xkb_keymap *keymap, xkb_keycode_t key,
+                 uint32_t group, uint32_t level)
 {
     struct xkb_sym_interpret *ret = NULL;
     const xkb_keysym_t *syms;
     int num_syms;
     int i;
 
-    num_syms = xkb_key_get_syms_by_level(xkb, key, group, level, &syms);
+    num_syms = xkb_key_get_syms_by_level(keymap, key, group, level, &syms);
     if (num_syms == 0)
         return NULL;
 
-    for (i = 0; i < xkb->compat->num_si; i++) {
-        struct xkb_sym_interpret *interp = &xkb->compat->sym_interpret[i];
+    for (i = 0; i < keymap->compat->num_si; i++) {
+        struct xkb_sym_interpret *interp = &keymap->compat->sym_interpret[i];
         uint32_t mods;
         bool found;
 
@@ -909,7 +909,7 @@ FindInterpForKey(struct xkb_keymap *xkb, xkb_keycode_t key, uint32_t group, uint
             continue;
 
         if (level == 0 || !(interp->match & XkbSI_LevelOneOnly))
-            mods = xkb->map->modmap[key];
+            mods = keymap->map->modmap[key];
         else
             mods = 0;
 
@@ -946,7 +946,7 @@ FindInterpForKey(struct xkb_keymap *xkb, xkb_keycode_t key, uint32_t group, uint
 /**
  */
 static bool
-ApplyInterpsToKey(struct xkb_keymap *xkb, xkb_keycode_t key)
+ApplyInterpsToKey(struct xkb_keymap *keymap, xkb_keycode_t key)
 {
 #define INTERP_SIZE (8 * 4)
     struct xkb_sym_interpret *interps[INTERP_SIZE];
@@ -954,37 +954,37 @@ ApplyInterpsToKey(struct xkb_keymap *xkb, xkb_keycode_t key)
     uint32_t vmodmask = 0;
     int num_acts = 0;
     int group, level;
-    int width = XkbKeyGroupsWidth(xkb, key);
+    int width = XkbKeyGroupsWidth(keymap, key);
     int i;
 
     /* If we've been told not to bind interps to this key, then don't. */
-    if (xkb->server->explicit[key] & XkbExplicitInterpretMask)
+    if (keymap->server->explicit[key] & XkbExplicitInterpretMask)
         return true;
 
     for (i = 0; i < INTERP_SIZE; i++)
         interps[i] = NULL;
 
-    for (group = 0; group < XkbKeyNumGroups(xkb, key); group++) {
-        for (level = 0; level < XkbKeyGroupWidth(xkb, key, group); level++) {
+    for (group = 0; group < XkbKeyNumGroups(keymap, key); group++) {
+        for (level = 0; level < XkbKeyGroupWidth(keymap, key, group); level++) {
             i = (group * width) + level;
             if (i >= INTERP_SIZE) /* XXX FIXME */
                 return false;
-            interps[i] = FindInterpForKey(xkb, key, group, level);
+            interps[i] = FindInterpForKey(keymap, key, group, level);
             if (interps[i])
                 num_acts++;
         }
     }
 
     if (num_acts)
-        num_acts = XkbKeyNumGroups(xkb, key) * width;
-    acts = XkbcResizeKeyActions(xkb, key, num_acts);
+        num_acts = XkbKeyNumGroups(keymap, key) * width;
+    acts = XkbcResizeKeyActions(keymap, key, num_acts);
     if (!num_acts)
         return true;
     else if (!acts)
         return false;
 
-    for (group = 0; group < XkbKeyNumGroups(xkb, key); group++) {
-        for (level = 0; level < XkbKeyGroupWidth(xkb, key, group); level++) {
+    for (group = 0; group < XkbKeyNumGroups(keymap, key); group++) {
+        for (level = 0; level < XkbKeyGroupWidth(keymap, key, group); level++) {
             struct xkb_sym_interpret *interp;
 
             i = (group * width) + level;
@@ -992,12 +992,12 @@ ApplyInterpsToKey(struct xkb_keymap *xkb, xkb_keycode_t key)
 
             /* Infer default key behaviours from the base level. */
             if (group == 0 && level == 0) {
-                if (!(xkb->server->explicit[key] & XkbExplicitAutoRepeatMask) &&
+                if (!(keymap->server->explicit[key] & XkbExplicitAutoRepeatMask) &&
                     (!interp || interp->flags & XkbSI_AutoRepeat))
-                    xkb->ctrls->per_key_repeat[key / 8] |= (1 << (key % 8));
-                if (!(xkb->server->explicit[key] & XkbExplicitBehaviorMask) &&
+                    keymap->ctrls->per_key_repeat[key / 8] |= (1 << (key % 8));
+                if (!(keymap->server->explicit[key] & XkbExplicitBehaviorMask) &&
                     interp && (interp->flags & XkbSI_LockingKey))
-                    xkb->server->behaviors[key].type = XkbKB_Lock;
+                    keymap->server->behaviors[key].type = XkbKB_Lock;
             }
 
             if (!interp)
@@ -1012,8 +1012,8 @@ ApplyInterpsToKey(struct xkb_keymap *xkb, xkb_keycode_t key)
         }
     }
 
-    if (!(xkb->server->explicit[key] & XkbExplicitVModMapMask))
-        xkb->server->vmodmap[key] = vmodmask;
+    if (!(keymap->server->explicit[key] & XkbExplicitVModMapMask))
+        keymap->server->vmodmap[key] = vmodmask;
 
     return true;
 #undef INTERP_SIZE
@@ -1026,68 +1026,68 @@ ApplyInterpsToKey(struct xkb_keymap *xkb, xkb_keycode_t key)
  * other than Shift actually do something ...
  */
 bool
-UpdateModifiersFromCompat(struct xkb_keymap *xkb)
+UpdateModifiersFromCompat(struct xkb_keymap *keymap)
 {
     xkb_keycode_t key;
     int i;
 
     /* Find all the interprets for the key and bind them to actions,
      * which will also update the vmodmap. */
-    for (key = xkb->min_key_code; key <= xkb->max_key_code; key++)
-        if (!ApplyInterpsToKey(xkb, key))
+    for (key = keymap->min_key_code; key <= keymap->max_key_code; key++)
+        if (!ApplyInterpsToKey(keymap, key))
             return false;
 
-    /* Update xkb->server->vmods, the virtual -> real mod mapping. */
+    /* Update keymap->server->vmods, the virtual -> real mod mapping. */
     for (i = 0; i < XkbNumVirtualMods; i++)
-        xkb->server->vmods[i] = 0;
-    for (key = xkb->min_key_code; key <= xkb->max_key_code; key++) {
-        if (!xkb->server->vmodmap[key])
+        keymap->server->vmods[i] = 0;
+    for (key = keymap->min_key_code; key <= keymap->max_key_code; key++) {
+        if (!keymap->server->vmodmap[key])
             continue;
         for (i = 0; i < XkbNumVirtualMods; i++) {
-            if (!(xkb->server->vmodmap[key] & (1 << i)))
+            if (!(keymap->server->vmodmap[key] & (1 << i)))
                 continue;
-            xkb->server->vmods[i] |= xkb->map->modmap[key];
+            keymap->server->vmods[i] |= keymap->map->modmap[key];
         }
     }
 
     /* Now update the level masks for all the types to reflect the vmods. */
-    for (i = 0; i < xkb->map->num_types; i++) {
-        struct xkb_key_type *type = &xkb->map->types[i];
+    for (i = 0; i < keymap->map->num_types; i++) {
+        struct xkb_key_type *type = &keymap->map->types[i];
         uint32_t mask = 0;
         int j;
         type->mods.mask = type->mods.real_mods;
-        type->mods.mask |= VModsToReal(xkb, type->mods.vmods);
+        type->mods.mask |= VModsToReal(keymap, type->mods.vmods);
         for (j = 0; j < XkbNumVirtualMods; j++) {
             if (!(type->mods.vmods & (1 << j)))
                 continue;
-            mask |= xkb->server->vmods[j];
+            mask |= keymap->server->vmods[j];
         }
         for (j = 0; j < type->map_count; j++) {
             struct xkb_mods *mods = &type->map[j].mods;
-            mods->mask = mods->real_mods | VModsToReal(xkb, mods->vmods);
+            mods->mask = mods->real_mods | VModsToReal(keymap, mods->vmods);
         }
     }
 
     /* Update action modifiers. */
-    for (key = xkb->min_key_code; key <= xkb->max_key_code; key++) {
-        union xkb_action *acts = XkbKeyActionsPtr(xkb, key);
-        for (i = 0; i < XkbKeyNumActions(xkb, key); i++) {
+    for (key = keymap->min_key_code; key <= keymap->max_key_code; key++) {
+        union xkb_action *acts = XkbKeyActionsPtr(keymap, key);
+        for (i = 0; i < XkbKeyNumActions(keymap, key); i++) {
             if (acts[i].any.type == XkbSA_NoAction)
                 continue;
-            UpdateActionMods(xkb, &acts[i], xkb->map->modmap[key]);
+            UpdateActionMods(keymap, &acts[i], keymap->map->modmap[key]);
         }
     }
 
     /* Update group modifiers. */
     for (i = 0; i < XkbNumKbdGroups; i++) {
-        struct xkb_mods *group = &xkb->compat->groups[i];
-        group->mask = group->real_mods | VModsToReal(xkb, group->vmods);
+        struct xkb_mods *group = &keymap->compat->groups[i];
+        group->mask = group->real_mods | VModsToReal(keymap, group->vmods);
     }
 
     /* Update vmod -> indicator maps. */
     for (i = 0; i < XkbNumIndicators; i++) {
-        struct xkb_mods *led = &xkb->indicators->maps[i].mods;
-        led->mask = led->real_mods | VModsToReal(xkb, led->vmods);
+        struct xkb_mods *led = &keymap->indicators->maps[i].mods;
+        led->mask = led->real_mods | VModsToReal(keymap, led->vmods);
     }
 
     return true;

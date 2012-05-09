@@ -69,15 +69,16 @@ ProcessIncludeFile(struct xkb_context *context,
                    unsigned *merge_rtrn);
 
 extern bool
-FindNamedKey(struct xkb_keymap *xkb, unsigned long name, xkb_keycode_t *kc_rtrn,
-             bool use_aliases, bool create, xkb_keycode_t start_from);
+FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
+             xkb_keycode_t *kc_rtrn, bool use_aliases, bool create,
+             xkb_keycode_t start_from);
 
 extern bool
-FindKeyNameForAlias(struct xkb_keymap *xkb, unsigned long lname,
+FindKeyNameForAlias(struct xkb_keymap *keymap, unsigned long lname,
                     unsigned long *real_name);
 
 extern bool
-UpdateModifiersFromCompat(struct xkb_keymap *xkb);
+UpdateModifiersFromCompat(struct xkb_keymap *keymap);
 
 extern const char *
 XkbDirectoryForInclude(unsigned type);

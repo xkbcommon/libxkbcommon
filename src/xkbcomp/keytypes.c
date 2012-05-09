@@ -101,7 +101,8 @@ static xkb_atom_t tok_KEYPAD;
 /***====================================================================***/
 
 static void
-InitKeyTypesInfo(KeyTypesInfo * info, struct xkb_keymap * xkb, KeyTypesInfo * from)
+InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
+                 KeyTypesInfo *from)
 {
     tok_ONE_LEVEL = xkb_intern_atom("ONE_LEVEL");
     tok_TWO_LEVEL = xkb_intern_atom("TWO_LEVEL");
@@ -126,7 +127,7 @@ InitKeyTypesInfo(KeyTypesInfo * info, struct xkb_keymap * xkb, KeyTypesInfo * fr
     info->dflt.szNames = 0;
     info->dflt.lvlNames = NULL;
     info->dflt.preserve = NULL;
-    InitVModInfo(&info->vmods, xkb);
+    InitVModInfo(&info->vmods, keymap);
     if (from != NULL)
     {
         info->dflt = from->dflt;
@@ -241,7 +242,7 @@ ReportTypeBadWidth(const char *type, int has, int needs)
 }
 
 static bool
-AddKeyType(struct xkb_keymap * xkb, KeyTypesInfo * info, KeyTypeInfo * new)
+AddKeyType(struct xkb_keymap *keymap, KeyTypesInfo *info, KeyTypeInfo *new)
 {
     KeyTypeInfo *old;
 
@@ -326,8 +327,8 @@ AddKeyType(struct xkb_keymap * xkb, KeyTypesInfo * info, KeyTypeInfo * new)
 /***====================================================================***/
 
 static void
-MergeIncludedKeyTypes(KeyTypesInfo * into,
-                      KeyTypesInfo * from, unsigned merge, struct xkb_keymap * xkb)
+MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
+                      unsigned merge, struct xkb_keymap *keymap)
 {
     KeyTypeInfo *type;
 
@@ -345,18 +346,18 @@ MergeIncludedKeyTypes(KeyTypesInfo * into,
     {
         if (merge != MergeDefault)
             type->defs.merge = merge;
-        if (!AddKeyType(xkb, into, type))
+        if (!AddKeyType(keymap, into, type))
             into->errorCount++;
     }
     into->stdPresent |= from->stdPresent;
 }
 
-typedef void (*FileHandler) (XkbFile *file, struct xkb_keymap *xkb,
+typedef void (*FileHandler) (XkbFile *file, struct xkb_keymap *keymap,
                              unsigned merge, KeyTypesInfo *included);
 
 static bool
-HandleIncludeKeyTypes(IncludeStmt * stmt,
-                      struct xkb_keymap * xkb, KeyTypesInfo * info, FileHandler hndlr)
+HandleIncludeKeyTypes(IncludeStmt *stmt, struct xkb_keymap *keymap,
+                      KeyTypesInfo *info, FileHandler hndlr)
 {
     unsigned newMerge;
     XkbFile *rtrn;
@@ -370,14 +371,14 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
         included = *info;
         memset(info, 0, sizeof(KeyTypesInfo));
     }
-    else if (ProcessIncludeFile(xkb->context, stmt, XkmTypesIndex, &rtrn,
+    else if (ProcessIncludeFile(keymap->context, stmt, XkmTypesIndex, &rtrn,
                                 &newMerge))
     {
-        InitKeyTypesInfo(&included, xkb, info);
+        InitKeyTypesInfo(&included, keymap, info);
         included.fileID = included.dflt.defs.fileID = rtrn->id;
         included.dflt.defs.merge = newMerge;
 
-        (*hndlr) (rtrn, xkb, newMerge, &included);
+        (*hndlr) (rtrn, keymap, newMerge, &included);
         if (stmt->stmt != NULL)
         {
             free(included.name);
@@ -402,17 +403,17 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
             if ((next->file == NULL) && (next->map == NULL))
             {
                 haveSelf = true;
-                MergeIncludedKeyTypes(&included, info, next->merge, xkb);
+                MergeIncludedKeyTypes(&included, info, next->merge, keymap);
                 FreeKeyTypesInfo(info);
             }
-            else if (ProcessIncludeFile(xkb->context, next, XkmTypesIndex,
+            else if (ProcessIncludeFile(keymap->context, next, XkmTypesIndex,
                                         &rtrn, &op))
             {
-                InitKeyTypesInfo(&next_incl, xkb, &included);
+                InitKeyTypesInfo(&next_incl, keymap, &included);
                 next_incl.fileID = next_incl.dflt.defs.fileID = rtrn->id;
                 next_incl.dflt.defs.merge = op;
-                (*hndlr) (rtrn, xkb, op, &next_incl);
-                MergeIncludedKeyTypes(&included, &next_incl, op, xkb);
+                (*hndlr) (rtrn, keymap, op, &next_incl);
+                MergeIncludedKeyTypes(&included, &next_incl, op, keymap);
                 FreeKeyTypesInfo(&next_incl);
                 FreeXKBFile(rtrn);
             }
@@ -428,7 +429,7 @@ HandleIncludeKeyTypes(IncludeStmt * stmt,
         *info = included;
     else
     {
-        MergeIncludedKeyTypes(info, &included, newMerge, xkb);
+        MergeIncludedKeyTypes(info, &included, newMerge, keymap);
         FreeKeyTypesInfo(&included);
     }
     return (info->errorCount == 0);
@@ -504,8 +505,8 @@ NextMapEntry(KeyTypeInfo * type)
 }
 
 static bool
-AddPreserve(struct xkb_keymap * xkb,
-            KeyTypeInfo * type, PreserveInfo * new, bool clobber, bool report)
+AddPreserve(struct xkb_keymap *keymap, KeyTypeInfo *type,
+            PreserveInfo *new, bool clobber, bool report)
 {
     PreserveInfo *old;
 
@@ -524,7 +525,7 @@ AddPreserve(struct xkb_keymap * xkb,
             if (warningLevel > 9)
             {
                 WARN("Identical definitions for preserve[%s] in %s\n",
-                      PreserveIndexTxt(xkb, old), TypeTxt(type));
+                      PreserveIndexTxt(keymap, old), TypeTxt(type));
                 ACTION("Ignored\n");
             }
             return true;
@@ -533,17 +534,17 @@ AddPreserve(struct xkb_keymap * xkb,
         {
             const char *str;
             WARN("Multiple definitions for preserve[%s] in %s\n",
-                  PreserveIndexTxt(xkb, old), TypeTxt(type));
+                  PreserveIndexTxt(keymap, old), TypeTxt(type));
 
             if (clobber)
-                str = PreserveTxt(xkb, new);
+                str = PreserveTxt(keymap, new);
             else
-                str = PreserveTxt(xkb, old);
+                str = PreserveTxt(keymap, old);
             ACTION("Using %s, ", str);
             if (clobber)
-                str = PreserveTxt(xkb, old);
+                str = PreserveTxt(keymap, old);
             else
-                str = PreserveTxt(xkb, new);
+                str = PreserveTxt(keymap, new);
             INFO("ignoring %s\n", str);
         }
         if (clobber)
@@ -557,7 +558,7 @@ AddPreserve(struct xkb_keymap * xkb,
     if (!old)
     {
         WSGO("Couldn't allocate preserve in %s\n", TypeTxt(type));
-        ACTION("Preserve[%s] lost\n", PreserveIndexTxt(xkb, new));
+        ACTION("Preserve[%s] lost\n", PreserveIndexTxt(keymap, new));
         return false;
     }
     *old = *new;
@@ -576,9 +577,8 @@ AddPreserve(struct xkb_keymap * xkb,
  * @param report true if a warning is to be printed on.
  */
 static bool
-AddMapEntry(struct xkb_keymap * xkb,
-            KeyTypeInfo * type,
-            struct xkb_kt_map_entry * new, bool clobber, bool report)
+AddMapEntry(struct xkb_keymap *keymap, KeyTypeInfo *type,
+            struct xkb_kt_map_entry *new, bool clobber, bool report)
 {
     struct xkb_kt_map_entry * old;
 
@@ -599,13 +599,13 @@ AddMapEntry(struct xkb_keymap * xkb,
                 ignore = new->level + 1;
             }
             WARN("Multiple map entries for %s in %s\n",
-                  MapEntryTxt(xkb, new), TypeTxt(type));
+                  MapEntryTxt(keymap, new), TypeTxt(type));
             ACTION("Using %d, ignoring %d\n", use, ignore);
         }
         else if (warningLevel > 9)
         {
             WARN("Multiple occurences of map[%s]= %d in %s\n",
-                  MapEntryTxt(xkb, new), new->level + 1, TypeTxt(type));
+                  MapEntryTxt(keymap, new), new->level + 1, TypeTxt(type));
             ACTION("Ignored\n");
             return true;
         }
@@ -629,15 +629,15 @@ AddMapEntry(struct xkb_keymap * xkb,
 }
 
 static bool
-SetMapEntry(KeyTypeInfo * type,
-            struct xkb_keymap * xkb, ExprDef * arrayNdx, ExprDef * value)
+SetMapEntry(KeyTypeInfo *type, struct xkb_keymap *keymap, ExprDef *arrayNdx,
+            ExprDef *value)
 {
     ExprResult rtrn;
     struct xkb_kt_map_entry entry;
 
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(type, "map entry");
-    if (!ExprResolveVModMask(arrayNdx, &rtrn, xkb))
+    if (!ExprResolveVModMask(arrayNdx, &rtrn, keymap))
         return ReportTypeBadType(type, "map entry", "modifier mask");
     entry.mods.real_mods = rtrn.uval & 0xff;      /* modifiers < 512 */
     entry.mods.vmods = (rtrn.uval >> 8) & 0xffff; /* modifiers > 512 */
@@ -648,10 +648,10 @@ SetMapEntry(KeyTypeInfo * type,
         {
             WARN("Map entry for unused modifiers in %s\n", TypeTxt(type));
             ACTION("Using %s instead of ",
-                    XkbcVModMaskText(xkb,
+                    XkbcVModMaskText(keymap,
                                     entry.mods.real_mods & type->mask,
                                     entry.mods.vmods & type->vmask));
-            INFO("%s\n", MapEntryTxt(xkb, &entry));
+            INFO("%s\n", MapEntryTxt(keymap, &entry));
         }
         entry.mods.real_mods &= type->mask;
         entry.mods.vmods &= type->vmask;
@@ -663,19 +663,19 @@ SetMapEntry(KeyTypeInfo * type,
         return false;
     }
     entry.level = rtrn.ival - 1;
-    return AddMapEntry(xkb, type, &entry, true, true);
+    return AddMapEntry(keymap, type, &entry, true, true);
 }
 
 static bool
-SetPreserve(KeyTypeInfo * type,
-            struct xkb_keymap * xkb, ExprDef * arrayNdx, ExprDef * value)
+SetPreserve(KeyTypeInfo *type, struct xkb_keymap *keymap,
+            ExprDef *arrayNdx, ExprDef *value)
 {
     ExprResult rtrn;
     PreserveInfo new;
 
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(type, "preserve entry");
-    if (!ExprResolveVModMask(arrayNdx, &rtrn, xkb))
+    if (!ExprResolveVModMask(arrayNdx, &rtrn, keymap))
         return ReportTypeBadType(type, "preserve entry", "modifier mask");
     new.defs = type->defs;
     new.defs.next = NULL;
@@ -687,18 +687,18 @@ SetPreserve(KeyTypeInfo * type,
         {
             WARN("Preserve for modifiers not used by the %s type\n",
                   TypeTxt(type));
-            ACTION("Index %s converted to ", PreserveIndexTxt(xkb, &new));
+            ACTION("Index %s converted to ", PreserveIndexTxt(keymap, &new));
         }
         new.indexMods &= type->mask;
         new.indexVMods &= type->vmask;
         if (warningLevel > 0)
-            INFO("%s\n", PreserveIndexTxt(xkb, &new));
+            INFO("%s\n", PreserveIndexTxt(keymap, &new));
     }
-    if (!ExprResolveVModMask(value, &rtrn, xkb))
+    if (!ExprResolveVModMask(value, &rtrn, keymap))
     {
         ERROR("Preserve value in a key type is not a modifier mask\n");
         ACTION("Ignoring preserve[%s] in type %s\n",
-                PreserveIndexTxt(xkb, &new), TypeTxt(type));
+                PreserveIndexTxt(keymap, &new), TypeTxt(type));
         return false;
     }
     new.preMods = rtrn.uval & 0xff;
@@ -709,24 +709,23 @@ SetPreserve(KeyTypeInfo * type,
         if (warningLevel > 0)
         {
             WARN("Illegal value for preserve[%s] in type %s\n",
-                  PreserveTxt(xkb, &new), TypeTxt(type));
-            ACTION("Converted %s to ", PreserveIndexTxt(xkb, &new));
+                  PreserveTxt(keymap, &new), TypeTxt(type));
+            ACTION("Converted %s to ", PreserveIndexTxt(keymap, &new));
         }
         new.preMods &= new.indexMods;
         new.preVMods &= new.indexVMods;
         if (warningLevel > 0)
         {
-            INFO("%s\n", PreserveIndexTxt(xkb, &new));
+            INFO("%s\n", PreserveIndexTxt(keymap, &new));
         }
     }
-    return AddPreserve(xkb, type, &new, true, true);
+    return AddPreserve(keymap, type, &new, true, true);
 }
 
 /***====================================================================***/
 
 static bool
-AddLevelName(KeyTypeInfo * type,
-             unsigned level, xkb_atom_t name, bool clobber)
+AddLevelName(KeyTypeInfo *type, unsigned level, xkb_atom_t name, bool clobber)
 {
     if ((type->lvlNames == NULL) || (type->szNames <= level))
     {
@@ -807,10 +806,9 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
  * @param field The field to parse (e.g. modifiers, map, level_name)
  */
 static bool
-SetKeyTypeField(KeyTypeInfo * type,
-                struct xkb_keymap * xkb,
-                char *field,
-                ExprDef * arrayNdx, ExprDef * value, KeyTypesInfo * info)
+SetKeyTypeField(KeyTypeInfo *type, struct xkb_keymap *keymap,
+                char *field, ExprDef *arrayNdx, ExprDef *value,
+                KeyTypesInfo *info)
 {
     ExprResult tmp;
 
@@ -823,7 +821,7 @@ SetKeyTypeField(KeyTypeInfo * type,
             ACTION("Illegal array subscript ignored\n");
         }
         /* get modifier mask for current type */
-        if (!ExprResolveVModMask(value, &tmp, xkb))
+        if (!ExprResolveVModMask(value, &tmp, keymap))
         {
             ERROR("Key type mask field must be a modifier mask\n");
             ACTION("Key type definition ignored\n");
@@ -835,8 +833,8 @@ SetKeyTypeField(KeyTypeInfo * type,
         {
             WARN("Multiple modifier mask definitions for key type %s\n",
                   XkbcAtomText(type->name));
-            ACTION("Using %s, ", TypeMaskTxt(type, xkb));
-            INFO("ignoring %s\n", XkbcVModMaskText(xkb, mods, vmods));
+            ACTION("Using %s, ", TypeMaskTxt(type, keymap));
+            INFO("ignoring %s\n", XkbcVModMaskText(keymap, mods, vmods));
             return false;
         }
         type->mask = mods;
@@ -847,12 +845,12 @@ SetKeyTypeField(KeyTypeInfo * type,
     else if (strcasecmp(field, "map") == 0)
     {
         type->defs.defined |= _KT_Map;
-        return SetMapEntry(type, xkb, arrayNdx, value);
+        return SetMapEntry(type, keymap, arrayNdx, value);
     }
     else if (strcasecmp(field, "preserve") == 0)
     {
         type->defs.defined |= _KT_Preserve;
-        return SetPreserve(type, xkb, arrayNdx, value);
+        return SetPreserve(type, keymap, arrayNdx, value);
     }
     else if ((strcasecmp(field, "levelname") == 0) ||
              (strcasecmp(field, "level_name") == 0))
@@ -866,7 +864,7 @@ SetKeyTypeField(KeyTypeInfo * type,
 }
 
 static bool
-HandleKeyTypeVar(VarDef * stmt, struct xkb_keymap * xkb, KeyTypesInfo * info)
+HandleKeyTypeVar(VarDef *stmt, struct xkb_keymap *keymap, KeyTypesInfo *info)
 {
     ExprResult elem, field;
     ExprDef *arrayNdx;
@@ -874,7 +872,7 @@ HandleKeyTypeVar(VarDef * stmt, struct xkb_keymap * xkb, KeyTypesInfo * info)
     if (!ExprResolveLhs(stmt->name, &elem, &field, &arrayNdx))
         return false;           /* internal error, already reported */
     if (elem.str && (strcasecmp(elem.str, "type") == 0))
-        return SetKeyTypeField(&info->dflt, xkb, field.str, arrayNdx,
+        return SetKeyTypeField(&info->dflt, keymap, field.str, arrayNdx,
                                stmt->value, info);
     if (elem.str != NULL)
     {
@@ -891,8 +889,8 @@ HandleKeyTypeVar(VarDef * stmt, struct xkb_keymap * xkb, KeyTypesInfo * info)
 }
 
 static int
-HandleKeyTypeBody(VarDef * def,
-                  struct xkb_keymap * xkb, KeyTypeInfo * type, KeyTypesInfo * info)
+HandleKeyTypeBody(VarDef *def, struct xkb_keymap *keymap,
+                  KeyTypeInfo *type, KeyTypesInfo *info)
 {
     int ok = 1;
     ExprResult tmp, field;
@@ -902,13 +900,13 @@ HandleKeyTypeBody(VarDef * def,
     {
         if ((def->name) && (def->name->type == ExprFieldRef))
         {
-            ok = HandleKeyTypeVar(def, xkb, info);
+            ok = HandleKeyTypeVar(def, keymap, info);
             continue;
         }
         ok = ExprResolveLhs(def->name, &tmp, &field, &arrayNdx);
         if (ok) {
-            ok = SetKeyTypeField(type, xkb, field.str, arrayNdx, def->value,
-                                 info);
+            ok = SetKeyTypeField(type, keymap, field.str, arrayNdx,
+                                 def->value, info);
             free(field.str);
         }
     }
@@ -920,8 +918,8 @@ HandleKeyTypeBody(VarDef * def,
  *
  */
 static int
-HandleKeyTypeDef(KeyTypeDef * def,
-                 struct xkb_keymap * xkb, unsigned merge, KeyTypesInfo * info)
+HandleKeyTypeDef(KeyTypeDef *def, struct xkb_keymap *keymap,
+                 unsigned merge, KeyTypesInfo *info)
 {
     unsigned int i;
     KeyTypeInfo type;
@@ -945,7 +943,7 @@ HandleKeyTypeDef(KeyTypeDef * def,
     type.preserve = NULL;
 
     /* Parse the actual content. */
-    if (!HandleKeyTypeBody(def->body, xkb, &type, info))
+    if (!HandleKeyTypeBody(def->body, keymap, &type, info))
     {
         info->errorCount++;
         return false;
@@ -960,7 +958,7 @@ HandleKeyTypeDef(KeyTypeDef * def,
         if (((dflt->mods.real_mods & type.mask) == dflt->mods.real_mods) &&
             ((dflt->mods.vmods & type.vmask) == dflt->mods.vmods))
         {
-            AddMapEntry(xkb, &type, dflt, false, false);
+            AddMapEntry(keymap, &type, dflt, false, false);
         }
     }
     if (info->dflt.preserve)
@@ -971,7 +969,7 @@ HandleKeyTypeDef(KeyTypeDef * def,
             if (((dflt->indexMods & type.mask) == dflt->indexMods) &&
                 ((dflt->indexVMods & type.vmask) == dflt->indexVMods))
             {
-                AddPreserve(xkb, &type, dflt, false, false);
+                AddPreserve(keymap, &type, dflt, false, false);
             }
             dflt = (PreserveInfo *) dflt->defs.next;
         }
@@ -984,7 +982,7 @@ HandleKeyTypeDef(KeyTypeDef * def,
         }
     }
     /* Now add the new keytype to the info struct */
-    if (!AddKeyType(xkb, info, &type))
+    if (!AddKeyType(keymap, info, &type))
     {
         info->errorCount++;
         return false;
@@ -1000,8 +998,8 @@ HandleKeyTypeDef(KeyTypeDef * def,
  * @param info Pointer to memory where the outcome will be stored.
  */
 static void
-HandleKeyTypesFile(XkbFile * file,
-                   struct xkb_keymap * xkb, unsigned merge, KeyTypesInfo * info)
+HandleKeyTypesFile(XkbFile *file, struct xkb_keymap *keymap,
+                   unsigned merge, KeyTypesInfo *info)
 {
     ParseCommon *stmt;
 
@@ -1013,20 +1011,20 @@ HandleKeyTypesFile(XkbFile * file,
         switch (stmt->stmtType)
         {
         case StmtInclude:
-            if (!HandleIncludeKeyTypes((IncludeStmt *) stmt, xkb, info,
+            if (!HandleIncludeKeyTypes((IncludeStmt *) stmt, keymap, info,
                                        HandleKeyTypesFile))
                 info->errorCount++;
             break;
         case StmtKeyTypeDef: /* e.g. type "ONE_LEVEL" */
-            if (!HandleKeyTypeDef((KeyTypeDef *) stmt, xkb, merge, info))
+            if (!HandleKeyTypeDef((KeyTypeDef *) stmt, keymap, merge, info))
                 info->errorCount++;
             break;
         case StmtVarDef:
-            if (!HandleKeyTypeVar((VarDef *) stmt, xkb, info))
+            if (!HandleKeyTypeVar((VarDef *) stmt, keymap, info))
                 info->errorCount++;
             break;
         case StmtVModDef: /* virtual_modifiers NumLock, ... */
-            if (!HandleVModDef((VModDef *) stmt, xkb, merge, &info->vmods))
+            if (!HandleVModDef((VModDef *) stmt, keymap, merge, &info->vmods))
                 info->errorCount++;
             break;
         case StmtKeyAliasDef:
@@ -1062,7 +1060,8 @@ HandleKeyTypesFile(XkbFile * file,
 }
 
 static bool
-CopyDefToKeyType(struct xkb_keymap * xkb, struct xkb_key_type * type, KeyTypeInfo * def)
+CopyDefToKeyType(struct xkb_keymap *keymap, struct xkb_key_type *type,
+                 KeyTypeInfo *def)
 {
     unsigned int i;
     PreserveInfo *pre;
@@ -1075,7 +1074,7 @@ CopyDefToKeyType(struct xkb_keymap * xkb, struct xkb_key_type * type, KeyTypeInf
         tmp.mods.real_mods = pre->indexMods;
         tmp.mods.vmods = pre->indexVMods;
         tmp.level = 0;
-        AddMapEntry(xkb, def, &tmp, false, false);
+        AddMapEntry(keymap, def, &tmp, false, false);
         match = FindMatchingMapEntry(def, pre->indexMods, pre->indexVMods);
         if (!match)
         {
@@ -1131,21 +1130,21 @@ CopyDefToKeyType(struct xkb_keymap * xkb, struct xkb_key_type * type, KeyTypeInf
 
     def->nEntries = def->szEntries = 0;
     def->entries = NULL;
-    return XkbcComputeEffectiveMap(xkb, type, NULL);
+    return XkbcComputeEffectiveMap(keymap, type, NULL);
 }
 
 bool
-CompileKeyTypes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
+CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap, unsigned merge)
 {
     unsigned int i;
     struct xkb_key_type *type, *next;
     KeyTypesInfo info;
     KeyTypeInfo *def;
 
-    InitKeyTypesInfo(&info, xkb, NULL);
+    InitKeyTypesInfo(&info, keymap, NULL);
     info.fileID = file->id;
 
-    HandleKeyTypesFile(file, xkb, merge, &info);
+    HandleKeyTypesFile(file, keymap, merge, &info);
 
     if (info.errorCount != 0)
         goto err_info;
@@ -1160,54 +1159,54 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge)
     if ((info.stdPresent & XkbAlphabeticMask) == 0)
         i++;
 
-    if (XkbcAllocClientMap(xkb, XkbKeyTypesMask, i) != Success) {
+    if (XkbcAllocClientMap(keymap, XkbKeyTypesMask, i) != Success) {
         WSGO("Couldn't allocate client map\n");
         goto err_info;
     }
 
-    xkb->map->num_types = i;
+    keymap->map->num_types = i;
 
     if (XkbAllRequiredTypes & (~info.stdPresent)) {
         unsigned missing, keypadVMod;
 
         missing = XkbAllRequiredTypes & (~info.stdPresent);
-        keypadVMod = FindKeypadVMod(xkb);
+        keypadVMod = FindKeypadVMod(keymap);
 
-        if (XkbcInitCanonicalKeyTypes(xkb, missing, keypadVMod) != Success) {
+        if (XkbcInitCanonicalKeyTypes(keymap, missing, keypadVMod) != Success) {
             WSGO("Couldn't initialize canonical key types\n");
             goto err_info;
         }
 
         if (missing & XkbOneLevelMask)
-            xkb->map->types[XkbOneLevelIndex].name =
+            keymap->map->types[XkbOneLevelIndex].name =
                 XkbcAtomGetString(tok_ONE_LEVEL);
         if (missing & XkbTwoLevelMask)
-            xkb->map->types[XkbTwoLevelIndex].name =
+            keymap->map->types[XkbTwoLevelIndex].name =
                 XkbcAtomGetString(tok_TWO_LEVEL);
         if (missing & XkbAlphabeticMask)
-            xkb->map->types[XkbAlphabeticIndex].name =
+            keymap->map->types[XkbAlphabeticIndex].name =
                 XkbcAtomGetString(tok_ALPHABETIC);
         if (missing & XkbKeypadMask)
-            xkb->map->types[XkbKeypadIndex].name =
+            keymap->map->types[XkbKeypadIndex].name =
                 XkbcAtomGetString(tok_KEYPAD);
     }
 
-    next = &xkb->map->types[XkbLastRequiredType + 1];
+    next = &keymap->map->types[XkbLastRequiredType + 1];
     for (i = 0, def = info.types; i < info.nTypes; i++) {
         if (def->name == tok_ONE_LEVEL)
-            type = &xkb->map->types[XkbOneLevelIndex];
+            type = &keymap->map->types[XkbOneLevelIndex];
         else if (def->name == tok_TWO_LEVEL)
-            type = &xkb->map->types[XkbTwoLevelIndex];
+            type = &keymap->map->types[XkbTwoLevelIndex];
         else if (def->name == tok_ALPHABETIC)
-            type = &xkb->map->types[XkbAlphabeticIndex];
+            type = &keymap->map->types[XkbAlphabeticIndex];
         else if (def->name == tok_KEYPAD)
-            type = &xkb->map->types[XkbKeypadIndex];
+            type = &keymap->map->types[XkbKeypadIndex];
         else
             type = next++;
 
         DeleteLevel1MapEntries(def);
 
-        if (!CopyDefToKeyType(xkb, type, def))
+        if (!CopyDefToKeyType(keymap, type, def))
             goto err_info;
 
         def = (KeyTypeInfo *)def->defs.next;

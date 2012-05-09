@@ -215,39 +215,39 @@ AddCommonInfo(CommonInfo * old, CommonInfo * new)
 /**
  * Find the key with the given name and return its keycode in kc_rtrn.
  *
+ * @param keymap The keymap to search in.
  * @param name The 4-letter name of the key as a long.
  * @param kc_rtrn Set to the keycode if the key was found, otherwise 0.
  * @param use_aliases true if the key aliases should be searched too.
  * @param create If true and the key is not found, it is added to the
- *        xkb->names at the first free keycode.
+ *        keymap->names at the first free keycode.
  * @param start_from Keycode to start searching from.
  *
  * @return true if found, false otherwise.
  */
 bool
-FindNamedKey(struct xkb_keymap * xkb,
-             unsigned long name,
-             xkb_keycode_t *kc_rtrn,
-             bool use_aliases, bool create, xkb_keycode_t start_from)
+FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
+             xkb_keycode_t *kc_rtrn, bool use_aliases, bool create,
+             xkb_keycode_t start_from)
 {
     unsigned n;
 
-    if (start_from < xkb->min_key_code)
+    if (start_from < keymap->min_key_code)
     {
-        start_from = xkb->min_key_code;
+        start_from = keymap->min_key_code;
     }
-    else if (start_from > xkb->max_key_code)
+    else if (start_from > keymap->max_key_code)
     {
         return false;
     }
 
     *kc_rtrn = 0;               /* some callers rely on this */
-    if (xkb && xkb->names && xkb->names->keys)
+    if (keymap && keymap->names && keymap->names->keys)
     {
-        for (n = start_from; n <= xkb->max_key_code; n++)
+        for (n = start_from; n <= keymap->max_key_code; n++)
         {
             unsigned long tmp;
-            tmp = KeyNameToLong(xkb->names->keys[n].name);
+            tmp = KeyNameToLong(keymap->names->keys[n].name);
             if (tmp == name)
             {
                 *kc_rtrn = n;
@@ -257,15 +257,16 @@ FindNamedKey(struct xkb_keymap * xkb,
         if (use_aliases)
         {
             unsigned long new_name;
-            if (FindKeyNameForAlias(xkb, name, &new_name))
-                return FindNamedKey(xkb, new_name, kc_rtrn, false, create, 0);
+            if (FindKeyNameForAlias(keymap, name, &new_name))
+                return FindNamedKey(keymap, new_name, kc_rtrn, false,
+                                    create, 0);
         }
     }
     if (create)
     {
-        if ((!xkb->names) || (!xkb->names->keys))
+        if ((!keymap->names) || (!keymap->names->keys))
         {
-            if (XkbcAllocNames(xkb, XkbKeyNamesMask, 0) != Success)
+            if (XkbcAllocNames(keymap, XkbKeyNamesMask, 0) != Success)
             {
                 if (warningLevel > 0)
                 {
@@ -277,13 +278,13 @@ FindNamedKey(struct xkb_keymap * xkb,
             }
         }
         /* Find first unused keycode and store our key here */
-        for (n = xkb->min_key_code; n <= xkb->max_key_code; n++)
+        for (n = keymap->min_key_code; n <= keymap->max_key_code; n++)
         {
-            if (xkb->names->keys[n].name[0] == '\0')
+            if (keymap->names->keys[n].name[0] == '\0')
             {
                 char buf[XkbKeyNameLength + 1];
                 LongToKeyName(name, buf);
-                memcpy(xkb->names->keys[n].name, buf, XkbKeyNameLength);
+                memcpy(keymap->names->keys[n].name, buf, XkbKeyNameLength);
                 *kc_rtrn = n;
                 return true;
             }
@@ -293,19 +294,19 @@ FindNamedKey(struct xkb_keymap * xkb,
 }
 
 bool
-FindKeyNameForAlias(struct xkb_keymap * xkb, unsigned long lname,
+FindKeyNameForAlias(struct xkb_keymap *keymap, unsigned long lname,
                     unsigned long *real_name)
 {
     unsigned int i;
     char name[XkbKeyNameLength + 1];
 
-    if (xkb && xkb->names && xkb->names->key_aliases)
+    if (keymap && keymap->names && keymap->names->key_aliases)
     {
         struct xkb_key_alias * a;
-        a = xkb->names->key_aliases;
+        a = keymap->names->key_aliases;
         LongToKeyName(lname, name);
         name[XkbKeyNameLength] = '\0';
-        for (i = 0; i < xkb->names->num_key_aliases; i++, a++)
+        for (i = 0; i < keymap->names->num_key_aliases; i++, a++)
         {
             if (strncmp(name, a->alias, XkbKeyNameLength) == 0)
             {

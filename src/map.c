@@ -55,12 +55,12 @@
  * Returns the total number of modifiers active in the keymap.
  */
 _X_EXPORT xkb_mod_index_t
-xkb_map_num_mods(struct xkb_keymap *xkb)
+xkb_map_num_mods(struct xkb_keymap *keymap)
 {
     xkb_mod_index_t i;
 
     for (i = 0; i < XkbNumVirtualMods; i++)
-        if (!xkb->names->vmods[i])
+        if (!keymap->names->vmods[i])
             break;
 
     /* We always have all the core modifiers (for now), plus any virtual
@@ -72,9 +72,9 @@ xkb_map_num_mods(struct xkb_keymap *xkb)
  * Return the name for a given modifier.
  */
 _X_EXPORT const char *
-xkb_map_mod_get_name(struct xkb_keymap *xkb, xkb_mod_index_t idx)
+xkb_map_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx)
 {
-    if (idx >= xkb_map_num_mods(xkb))
+    if (idx >= xkb_map_num_mods(keymap))
         return NULL;
 
     /* First try to find a legacy modifier name. */
@@ -100,14 +100,14 @@ xkb_map_mod_get_name(struct xkb_keymap *xkb, xkb_mod_index_t idx)
     }
 
     /* If that fails, try to find a virtual mod name. */
-    return xkb->names->vmods[idx - Mod5MapIndex];
+    return keymap->names->vmods[idx - Mod5MapIndex];
 }
 
 /**
  * Returns the index for a named modifier.
  */
 _X_EXPORT xkb_mod_index_t
-xkb_map_mod_get_index(struct xkb_keymap *xkb, const char *name)
+xkb_map_mod_get_index(struct xkb_keymap *keymap, const char *name)
 {
     xkb_mod_index_t i;
 
@@ -128,8 +128,8 @@ xkb_map_mod_get_index(struct xkb_keymap *xkb, const char *name)
     if (strcasecmp(name, "Mod5") == 0)
         return Mod5MapIndex;
 
-    for (i = 0; i < XkbNumVirtualMods && xkb->names->vmods[i]; i++) {
-        if (strcasecmp(name, xkb->names->vmods[i]) == 0)
+    for (i = 0; i < XkbNumVirtualMods && keymap->names->vmods[i]; i++) {
+        if (strcasecmp(name, keymap->names->vmods[i]) == 0)
             return i + Mod5MapIndex;
     }
 
@@ -140,13 +140,13 @@ xkb_map_mod_get_index(struct xkb_keymap *xkb, const char *name)
  * Return the total number of active groups in the keymap.
  */
 _X_EXPORT xkb_group_index_t
-xkb_map_num_groups(struct xkb_keymap *xkb)
+xkb_map_num_groups(struct xkb_keymap *keymap)
 {
     xkb_group_index_t ret = 0;
     xkb_group_index_t i;
 
     for (i = 0; i < XkbNumKbdGroups; i++)
-        if (xkb->compat->groups[i].mask)
+        if (keymap->compat->groups[i].mask)
             ret++;
 
     return ret;
@@ -156,25 +156,25 @@ xkb_map_num_groups(struct xkb_keymap *xkb)
  * Returns the name for a given group.
  */
 _X_EXPORT const char *
-xkb_map_group_get_name(struct xkb_keymap *xkb, xkb_group_index_t idx)
+xkb_map_group_get_name(struct xkb_keymap *keymap, xkb_group_index_t idx)
 {
-    if (idx >= xkb_map_num_groups(xkb))
+    if (idx >= xkb_map_num_groups(keymap))
         return NULL;
 
-    return xkb->names->groups[idx];
+    return keymap->names->groups[idx];
 }
 
 /**
  * Returns the index for a named group.
  */
 _X_EXPORT xkb_group_index_t
-xkb_map_group_get_index(struct xkb_keymap *xkb, const char *name)
+xkb_map_group_get_index(struct xkb_keymap *keymap, const char *name)
 {
-    xkb_group_index_t num_groups = xkb_map_num_groups(xkb);
+    xkb_group_index_t num_groups = xkb_map_num_groups(keymap);
     xkb_group_index_t i;
 
     for (i = 0; i < num_groups; i++) {
-        if (strcasecmp(xkb->names->groups[i], name) == 0)
+        if (strcasecmp(keymap->names->groups[i], name) == 0)
             return i;
     }
 
@@ -185,24 +185,24 @@ xkb_map_group_get_index(struct xkb_keymap *xkb, const char *name)
  * Returns the number of groups active for a particular key.
  */
 _X_EXPORT xkb_group_index_t
-xkb_key_num_groups(struct xkb_keymap *xkb, xkb_keycode_t key)
+xkb_key_num_groups(struct xkb_keymap *keymap, xkb_keycode_t key)
 {
-    return XkbKeyNumGroups(xkb, key);
+    return XkbKeyNumGroups(keymap, key);
 }
 
 /**
  * Return the total number of active LEDs in the keymap.
  */
 _X_EXPORT xkb_led_index_t
-xkb_map_num_leds(struct xkb_keymap *xkb)
+xkb_map_num_leds(struct xkb_keymap *keymap)
 {
     xkb_led_index_t ret = 0;
     xkb_led_index_t i;
 
     for (i = 0; i < XkbNumIndicators; i++)
-        if (xkb->indicators->maps[i].which_groups ||
-            xkb->indicators->maps[i].which_mods ||
-            xkb->indicators->maps[i].ctrls)
+        if (keymap->indicators->maps[i].which_groups ||
+            keymap->indicators->maps[i].which_mods ||
+            keymap->indicators->maps[i].ctrls)
             ret++;
 
     return ret;
@@ -212,25 +212,25 @@ xkb_map_num_leds(struct xkb_keymap *xkb)
  * Returns the name for a given group.
  */
 _X_EXPORT const char *
-xkb_map_led_get_name(struct xkb_keymap *xkb, xkb_led_index_t idx)
+xkb_map_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx)
 {
-    if (idx >= xkb_map_num_leds(xkb))
+    if (idx >= xkb_map_num_leds(keymap))
         return NULL;
 
-    return xkb->names->indicators[idx];
+    return keymap->names->indicators[idx];
 }
 
 /**
  * Returns the index for a named group.
  */
 _X_EXPORT xkb_group_index_t
-xkb_map_led_get_index(struct xkb_keymap *xkb, const char *name)
+xkb_map_led_get_index(struct xkb_keymap *keymap, const char *name)
 {
-    xkb_led_index_t num_leds = xkb_map_num_leds(xkb);
+    xkb_led_index_t num_leds = xkb_map_num_leds(keymap);
     xkb_led_index_t i;
 
     for (i = 0; i < num_leds; i++) {
-        if (strcasecmp(xkb->names->indicators[i], name) == 0)
+        if (strcasecmp(keymap->names->indicators[i], name) == 0)
             return i;
     }
 
@@ -244,7 +244,8 @@ _X_EXPORT unsigned int
 xkb_key_get_level(struct xkb_state *state, xkb_keycode_t key,
                   unsigned int group)
 {
-    struct xkb_key_type *type = XkbKeyType(state->xkb, key, group);
+    struct xkb_keymap *keymap = state->keymap;
+    struct xkb_key_type *type = XkbKeyType(keymap, key, group);
     unsigned int active_mods = state->mods & type->mods.mask;
     int i;
 
@@ -265,11 +266,12 @@ xkb_key_get_level(struct xkb_state *state, xkb_keycode_t key,
 _X_EXPORT unsigned int
 xkb_key_get_group(struct xkb_state *state, xkb_keycode_t key)
 {
-    unsigned int info = XkbKeyGroupInfo(state->xkb, key);
-    unsigned int num_groups = XkbKeyNumGroups(state->xkb, key);
+    struct xkb_keymap *keymap = state->keymap;
+    unsigned int info = XkbKeyGroupInfo(keymap, key);
+    unsigned int num_groups = XkbKeyNumGroups(keymap, key);
     unsigned int ret = state->group;
 
-    if (ret < XkbKeyNumGroups(state->xkb, key))
+    if (ret < XkbKeyNumGroups(keymap, key))
         return ret;
 
     switch (XkbOutOfRangeGroupAction(info)) {
@@ -294,21 +296,22 @@ xkb_key_get_group(struct xkb_state *state, xkb_keycode_t key)
  * As below, but takes an explicit group/level rather than state.
  */
 unsigned int
-xkb_key_get_syms_by_level(struct xkb_keymap *xkb, xkb_keycode_t key, unsigned int group,
-                          unsigned int level, const xkb_keysym_t **syms_out)
+xkb_key_get_syms_by_level(struct xkb_keymap *keymap, xkb_keycode_t key,
+                          unsigned int group, unsigned int level,
+                          const xkb_keysym_t **syms_out)
 {
     int num_syms;
 
-    if (group >= XkbKeyNumGroups(xkb, key))
+    if (group >= XkbKeyNumGroups(keymap, key))
         goto err;
-    if (level >= XkbKeyGroupWidth(xkb, key, group))
+    if (level >= XkbKeyGroupWidth(keymap, key, group))
         goto err;
 
-    num_syms = XkbKeyNumSyms(xkb, key, group, level);
+    num_syms = XkbKeyNumSyms(keymap, key, group, level);
     if (num_syms == 0)
         goto err;
 
-    *syms_out = XkbKeySymEntry(xkb, key, group, level);
+    *syms_out = XkbKeySymEntry(keymap, key, group, level);
     return num_syms;
 
 err:
@@ -324,11 +327,11 @@ _X_EXPORT unsigned int
 xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
                  const xkb_keysym_t **syms_out)
 {
-    struct xkb_keymap *xkb = state->xkb;
+    struct xkb_keymap *keymap = state->keymap;
     int group;
     int level;
 
-    if (!state || key < xkb->min_key_code || key > xkb->max_key_code)
+    if (!state || key < keymap->min_key_code || key > keymap->max_key_code)
         return -1;
 
     group = xkb_key_get_group(state, key);
@@ -338,7 +341,7 @@ xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
     if (level == -1)
         goto err;
 
-    return xkb_key_get_syms_by_level(xkb, key, group, level, syms_out);
+    return xkb_key_get_syms_by_level(keymap, key, group, level, syms_out);
 
 err:
     *syms_out = NULL;

@@ -47,6 +47,6 @@ extern bool
 MergeAliases(AliasInfo **into, AliasInfo **merge, unsigned how_merge);
 
 extern int
-ApplyAliases(struct xkb_keymap *xkb, AliasInfo **info);
+ApplyAliases(struct xkb_keymap *keymap, AliasInfo **info);
 
 #endif /* ALIAS_H */

@@ -78,20 +78,21 @@ static struct xkb_key_type canonicalTypes[XkbNumRequiredTypes] = {
 };
 
 int
-XkbcInitCanonicalKeyTypes(struct xkb_keymap * xkb, unsigned which, int keypadVMod)
+XkbcInitCanonicalKeyTypes(struct xkb_keymap *keymap, unsigned which,
+                          int keypadVMod)
 {
     struct xkb_client_map * map;
     struct xkb_key_type *from, *to;
     int rtrn;
 
-    if (!xkb)
+    if (!keymap)
         return BadMatch;
 
-    rtrn= XkbcAllocClientMap(xkb, XkbKeyTypesMask, XkbNumRequiredTypes);
+    rtrn = XkbcAllocClientMap(keymap, XkbKeyTypesMask, XkbNumRequiredTypes);
     if (rtrn != Success)
         return rtrn;
 
-    map= xkb->map;
+    map = keymap->map;
     if ((which & XkbAllRequiredTypes) == 0)
         return Success;
 

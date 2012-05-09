@@ -30,7 +30,7 @@ authorization from the authors.
 #include "xkb-priv.h"
 
 extern const char *
-XkbcVModMaskText(struct xkb_keymap * xkb, unsigned modMask, unsigned mask);
+XkbcVModMaskText(struct xkb_keymap *keymap, unsigned modMask, unsigned mask);
 
 extern const char *
 XkbcModIndexText(unsigned ndx);

@@ -68,11 +68,11 @@ typedef struct _ActionInfo
 } ActionInfo;
 
 extern int
-HandleActionDef(ExprDef *def, struct xkb_keymap *xkb,
+HandleActionDef(ExprDef *def, struct xkb_keymap *keymap,
                 struct xkb_any_action *action, ActionInfo *info);
 
 extern int
-SetActionField(struct xkb_keymap *xkb, char *elem, char *field,
+SetActionField(struct xkb_keymap *keymap, char *elem, char *field,
                ExprDef *index, ExprDef *value, ActionInfo **info_rtrn);
 
 extern const LookupEntry ctrlNames[];

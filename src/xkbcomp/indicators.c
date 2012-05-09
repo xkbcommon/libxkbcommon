@@ -191,9 +191,8 @@ static const LookupEntry groupNames[] = {
 };
 
 int
-SetIndicatorMapField(LEDInfo * led,
-                     struct xkb_keymap * xkb,
-                     char *field, ExprDef * arrayNdx, ExprDef * value)
+SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
+                     char *field, ExprDef *arrayNdx, ExprDef *value)
 {
     ExprResult rtrn;
     bool ok;
@@ -204,7 +203,7 @@ SetIndicatorMapField(LEDInfo * led,
     {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(led, field);
-        if (!ExprResolveVModMask(value, &rtrn, xkb))
+        if (!ExprResolveVModMask(value, &rtrn, keymap))
             return ReportIndicatorBadType(led, field, "modifier mask");
         led->real_mods = rtrn.uval & 0xff;
         led->vmods = (rtrn.uval >> 8) & 0xff;
@@ -311,9 +310,8 @@ SetIndicatorMapField(LEDInfo * led,
 }
 
 LEDInfo *
-HandleIndicatorMapDef(IndicatorMapDef * def,
-                      struct xkb_keymap * xkb,
-                      LEDInfo * dflt, LEDInfo * oldLEDs, unsigned merge)
+HandleIndicatorMapDef(IndicatorMapDef *def, struct xkb_keymap *keymap,
+                      LEDInfo *dflt, LEDInfo *oldLEDs, unsigned merge)
 {
     LEDInfo led, *rtrn;
     VarDef *var;
@@ -346,7 +344,7 @@ HandleIndicatorMapDef(IndicatorMapDef * def,
         }
         else
         {
-            ok = SetIndicatorMapField(&led, xkb, field.str, arrayNdx,
+            ok = SetIndicatorMapField(&led, keymap, field.str, arrayNdx,
                                       var->value) && ok;
         }
         free(elem.str);
@@ -361,17 +359,18 @@ HandleIndicatorMapDef(IndicatorMapDef * def,
 }
 
 bool
-CopyIndicatorMapDefs(struct xkb_keymap * xkb, LEDInfo *leds, LEDInfo **unboundRtrn)
+CopyIndicatorMapDefs(struct xkb_keymap *keymap, LEDInfo *leds,
+                     LEDInfo **unboundRtrn)
 {
     LEDInfo *led, *next;
     LEDInfo *unbound, *last;
 
-    if (XkbcAllocNames(xkb, XkbIndicatorNamesMask, 0) != Success)
+    if (XkbcAllocNames(keymap, XkbIndicatorNamesMask, 0) != Success)
     {
         WSGO("Couldn't allocate names\n");
         ACTION("Indicator names may be incorrect\n");
     }
-    if (XkbcAllocIndicatorMaps(xkb) != Success)
+    if (XkbcAllocIndicatorMaps(keymap) != Success)
     {
         WSGO("Can't allocate indicator maps\n");
         ACTION("Indicator map definitions may be lost\n");
@@ -389,7 +388,7 @@ CopyIndicatorMapDefs(struct xkb_keymap * xkb, LEDInfo *leds, LEDInfo **unboundRt
             led->which_groups = XkbIM_UseEffective;
         if ((led->which_mods == 0) && ((led->real_mods) || (led->vmods)))
             led->which_mods = XkbIM_UseEffective;
-        if ((led->indicator == _LED_NotBound) || (!xkb->indicators))
+        if ((led->indicator == _LED_NotBound) || (!keymap->indicators))
         {
             if (unboundRtrn != NULL)
             {
@@ -406,7 +405,7 @@ CopyIndicatorMapDefs(struct xkb_keymap * xkb, LEDInfo *leds, LEDInfo **unboundRt
         else
         {
             struct xkb_indicator_map * im;
-            im = &xkb->indicators->maps[led->indicator - 1];
+            im = &keymap->indicators->maps[led->indicator - 1];
             im->flags = led->flags;
             im->which_groups = led->which_groups;
             im->groups = led->groups;
@@ -415,10 +414,11 @@ CopyIndicatorMapDefs(struct xkb_keymap * xkb, LEDInfo *leds, LEDInfo **unboundRt
             im->mods.real_mods = led->real_mods;
             im->mods.vmods = led->vmods;
             im->ctrls = led->ctrls;
-            if (xkb->names != NULL)
+            if (keymap->names != NULL)
             {
-                free(UNCONSTIFY(xkb->names->indicators[led->indicator - 1]));
-                xkb->names->indicators[led->indicator-1] = XkbcAtomGetString(led->name);
+                free(UNCONSTIFY(keymap->names->indicators[led->indicator - 1]));
+                keymap->names->indicators[led->indicator-1] =
+                    XkbcAtomGetString(led->name);
             }
             free(led);
         }
@@ -431,13 +431,13 @@ CopyIndicatorMapDefs(struct xkb_keymap * xkb, LEDInfo *leds, LEDInfo **unboundRt
 }
 
 bool
-BindIndicators(struct xkb_keymap * xkb, bool force, LEDInfo *unbound,
+BindIndicators(struct xkb_keymap *keymap, bool force, LEDInfo *unbound,
                LEDInfo **unboundRtrn)
 {
     int i;
     LEDInfo *led, *next, *last;
 
-    if (xkb->names != NULL)
+    if (keymap->names != NULL)
     {
         for (led = unbound; led != NULL; led = (LEDInfo *) led->defs.next)
         {
@@ -445,8 +445,8 @@ BindIndicators(struct xkb_keymap * xkb, bool force, LEDInfo *unbound,
             {
                 for (i = 0; i < XkbNumIndicators; i++)
                 {
-                    if (xkb->names->indicators[i] &&
-                        strcmp(xkb->names->indicators[i],
+                    if (keymap->names->indicators[i] &&
+                        strcmp(keymap->names->indicators[i],
                                XkbcAtomText(led->name)) == 0)
                     {
                         led->indicator = i + 1;
@@ -463,9 +463,10 @@ BindIndicators(struct xkb_keymap * xkb, bool force, LEDInfo *unbound,
                 {
                     for (i = 0; i < XkbNumIndicators; i++)
                     {
-                        if (xkb->names->indicators[i] == NULL)
+                        if (keymap->names->indicators[i] == NULL)
                         {
-                            xkb->names->indicators[i] = XkbcAtomGetString(led->name);
+                            keymap->names->indicators[i] =
+                                XkbcAtomGetString(led->name);
                             led->indicator = i + 1;
                             break;
                         }
@@ -503,11 +504,11 @@ BindIndicators(struct xkb_keymap * xkb, bool force, LEDInfo *unbound,
         }
         else
         {
-            if ((xkb->names != NULL) &&
-                (strcmp(xkb->names->indicators[led->indicator - 1],
+            if ((keymap->names != NULL) &&
+                (strcmp(keymap->names->indicators[led->indicator - 1],
                         XkbcAtomText(led->name)) != 0))
             {
-                const char *old = xkb->names->indicators[led->indicator - 1];
+                const char *old = keymap->names->indicators[led->indicator - 1];
                 ERROR("Multiple names bound to indicator %d\n",
                        (unsigned int) led->indicator);
                 ACTION("Using %s, ignoring %s\n", old, XkbcAtomText(led->name));
@@ -529,7 +530,7 @@ BindIndicators(struct xkb_keymap * xkb, bool force, LEDInfo *unbound,
             else
             {
                 struct xkb_indicator_map * map;
-                map = &xkb->indicators->maps[led->indicator - 1];
+                map = &keymap->indicators->maps[led->indicator - 1];
                 map->flags = led->flags;
                 map->which_groups = led->which_groups;
                 map->groups = led->groups;

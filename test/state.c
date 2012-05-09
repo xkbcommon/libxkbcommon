@@ -49,11 +49,11 @@ print_state(struct xkb_state *state)
         return;
     }
 
-    for (group = 0; group < xkb_map_num_groups(state->xkb); group++) {
+    for (group = 0; group < xkb_map_num_groups(state->keymap); group++) {
         if (!xkb_state_group_index_is_active(state, group, XKB_STATE_EFFECTIVE))
             continue;
         fprintf(stderr, "\tgroup %s (%d): %s%s%s%s\n",
-                xkb_map_group_get_name(state->xkb, group),
+                xkb_map_group_get_name(state->keymap, group),
                 group,
                 xkb_state_group_index_is_active(state, group, XKB_STATE_EFFECTIVE) ?
                     "effective " : "",
@@ -65,11 +65,11 @@ print_state(struct xkb_state *state)
                     "locked " : "");
     }
 
-    for (mod = 0; mod < xkb_map_num_mods(state->xkb); mod++) {
+    for (mod = 0; mod < xkb_map_num_mods(state->keymap); mod++) {
         if (!xkb_state_mod_index_is_active(state, mod, XKB_STATE_EFFECTIVE))
             continue;
         fprintf(stderr, "\tmod %s (%d): %s%s%s\n",
-                xkb_map_mod_get_name(state->xkb, mod),
+                xkb_map_mod_get_name(state->keymap, mod),
                 mod,
                 xkb_state_mod_index_is_active(state, mod, XKB_STATE_DEPRESSED) ?
                     "depressed " : "",
@@ -79,19 +79,19 @@ print_state(struct xkb_state *state)
                     "locked " : "");
     }
 
-    for (led = 0; led < xkb_map_num_leds(state->xkb); led++) {
+    for (led = 0; led < xkb_map_num_leds(state->keymap); led++) {
         if (!xkb_state_led_index_is_active(state, led))
             continue;
         fprintf(stderr, "\tled %s (%d): active\n",
-                xkb_map_led_get_name(state->xkb, led),
+                xkb_map_led_get_name(state->keymap, led),
                 led);
     }
 }
 
 static void
-test_update_key(struct xkb_keymap *xkb)
+test_update_key(struct xkb_keymap *keymap)
 {
-    struct xkb_state *state = xkb_state_new(xkb);
+    struct xkb_state *state = xkb_state_new(keymap);
     const xkb_keysym_t *syms;
     int num_syms;
 
@@ -170,9 +170,9 @@ test_update_key(struct xkb_keymap *xkb)
 }
 
 static void
-test_serialisation(struct xkb_keymap *xkb)
+test_serialisation(struct xkb_keymap *keymap)
 {
-    struct xkb_state *state = xkb_state_new(xkb);
+    struct xkb_state *state = xkb_state_new(keymap);
     xkb_mod_mask_t base_mods;
     xkb_mod_mask_t latched_mods;
     xkb_mod_mask_t locked_mods;
@@ -184,11 +184,11 @@ test_serialisation(struct xkb_keymap *xkb)
 
     assert(state);
 
-    caps = xkb_map_mod_get_index(state->xkb, XKB_MOD_NAME_CAPS);
+    caps = xkb_map_mod_get_index(state->keymap, XKB_MOD_NAME_CAPS);
     assert(caps != XKB_MOD_INVALID);
-    shift = xkb_map_mod_get_index(state->xkb, XKB_MOD_NAME_SHIFT);
+    shift = xkb_map_mod_get_index(state->keymap, XKB_MOD_NAME_SHIFT);
     assert(shift != XKB_MOD_INVALID);
-    ctrl = xkb_map_mod_get_index(state->xkb, XKB_MOD_NAME_CTRL);
+    ctrl = xkb_map_mod_get_index(state->keymap, XKB_MOD_NAME_CTRL);
     assert(ctrl != XKB_MOD_INVALID);
 
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
@@ -226,7 +226,7 @@ int
 main(void)
 {
     struct xkb_context *context;
-    struct xkb_keymap *xkb;
+    struct xkb_keymap *keymap;
     struct xkb_rule_names rmlvo = {
         .rules = "evdev",
         .model = "pc104",
@@ -238,12 +238,12 @@ main(void)
     context = xkb_context_new(0);
     assert(context);
 
-    xkb = xkb_map_new_from_names(context, &rmlvo, 0);
-    assert(xkb);
+    keymap = xkb_map_new_from_names(context, &rmlvo, 0);
+    assert(keymap);
 
-    test_update_key(xkb);
-    test_serialisation(xkb);
+    test_update_key(keymap);
+    test_serialisation(keymap);
 
-    xkb_map_unref(xkb);
+    xkb_map_unref(keymap);
     xkb_context_unref(context);
 }

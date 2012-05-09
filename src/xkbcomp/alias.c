@@ -147,7 +147,7 @@ MergeAliases(AliasInfo ** into, AliasInfo ** merge, unsigned how_merge)
 }
 
 int
-ApplyAliases(struct xkb_keymap * xkb, AliasInfo ** info_in)
+ApplyAliases(struct xkb_keymap *keymap, AliasInfo ** info_in)
 {
     int i;
     struct xkb_key_alias *old, *a;
@@ -157,8 +157,8 @@ ApplyAliases(struct xkb_keymap * xkb, AliasInfo ** info_in)
 
     if (*info_in == NULL)
         return true;
-    nOld = (xkb->names ? xkb->names->num_key_aliases : 0);
-    old = (xkb->names ? xkb->names->key_aliases : NULL);
+    nOld = (keymap->names ? keymap->names->num_key_aliases : 0);
+    old = (keymap->names ? keymap->names->key_aliases : NULL);
     for (nNew = 0, info = *info_in; info != NULL;
          info = (AliasInfo *) info->def.next)
     {
@@ -166,7 +166,7 @@ ApplyAliases(struct xkb_keymap * xkb, AliasInfo ** info_in)
         xkb_keycode_t kc;
 
         lname = KeyNameToLong(info->real);
-        if (!FindNamedKey(xkb, lname, &kc, false, CreateKeyNames(xkb), 0))
+        if (!FindNamedKey(keymap, lname, &kc, false, CreateKeyNames(keymap), 0))
         {
             if (warningLevel > 4)
             {
@@ -178,7 +178,7 @@ ApplyAliases(struct xkb_keymap * xkb, AliasInfo ** info_in)
             continue;
         }
         lname = KeyNameToLong(info->alias);
-        if (FindNamedKey(xkb, lname, &kc, false, false, 0))
+        if (FindNamedKey(keymap, lname, &kc, false, false, 0))
         {
             if (warningLevel > 4)
             {
@@ -214,15 +214,15 @@ ApplyAliases(struct xkb_keymap * xkb, AliasInfo ** info_in)
         *info_in = NULL;
         return true;
     }
-    status = XkbcAllocNames(xkb, XkbKeyAliasesMask, nOld + nNew);
-    if (xkb->names)
-        old = xkb->names->key_aliases;
+    status = XkbcAllocNames(keymap, XkbKeyAliasesMask, nOld + nNew);
+    if (keymap->names)
+        old = keymap->names->key_aliases;
     if (status != Success)
     {
         WSGO("Allocation failure in ApplyAliases\n");
         return false;
     }
-    a = xkb->names ? &xkb->names->key_aliases[nOld] : NULL;
+    a = keymap->names ? &keymap->names->key_aliases[nOld] : NULL;
     for (info = *info_in; info != NULL; info = (AliasInfo *) info->def.next)
     {
         if (info->alias[0] != '\0')

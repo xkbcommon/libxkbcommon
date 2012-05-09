@@ -77,10 +77,8 @@ typedef struct _KeyNamesInfo
     AliasInfo *aliases;
 } KeyNamesInfo;
 
-static void HandleKeycodesFile(XkbFile * file,
-                               struct xkb_keymap * xkb,
-                               unsigned merge,
-                               KeyNamesInfo * info);
+static void HandleKeycodesFile(XkbFile *file, struct xkb_keymap *keymap,
+                               unsigned merge, KeyNamesInfo *info);
 
 static int
 ResizeKeyNameArrays(KeyNamesInfo *info, int newMax)
@@ -537,11 +535,12 @@ MergeIncludedKeycodes(KeyNamesInfo * into, KeyNamesInfo * from,
  * Handle the given include statement (e.g. "include "evdev+aliases(qwerty)").
  *
  * @param stmt The include statement from the keymap file.
- * @param xkb Unused for all but the xkb->flags.
+ * @param keymap Unused for all but the keymap->flags.
  * @param info Struct to store the key info in.
  */
 static bool
-HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_keymap * xkb, KeyNamesInfo * info)
+HandleIncludeKeycodes(IncludeStmt *stmt, struct xkb_keymap *keymap,
+                      KeyNamesInfo *info)
 {
     unsigned newMerge;
     XkbFile *rtrn;
@@ -559,16 +558,16 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_keymap * xkb, KeyNamesInfo 
     }
     else if (stmt->file && strcmp(stmt->file, "computed") == 0)
     {
-        xkb->flags |= AutoKeyNames;
+        keymap->flags |= AutoKeyNames;
         info->explicitMin = 0;
         info->explicitMax = XKB_KEYCODE_MAX;
         return (info->errorCount == 0);
     } /* parse file, store returned info in the xkb struct */
-    else if (ProcessIncludeFile(xkb->context, stmt, XkmKeyNamesIndex, &rtrn,
-                                &newMerge))
+    else if (ProcessIncludeFile(keymap->context, stmt, XkmKeyNamesIndex,
+                                &rtrn, &newMerge))
     {
         InitKeyNamesInfo(&included);
-        HandleKeycodesFile(rtrn, xkb, MergeOverride, &included);
+        HandleKeycodesFile(rtrn, keymap, MergeOverride, &included);
         if (stmt->stmt != NULL)
         {
             free(included.name);
@@ -597,11 +596,11 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_keymap * xkb, KeyNamesInfo 
                 MergeIncludedKeycodes(&included, info, next->merge);
                 ClearKeyNamesInfo(info);
             }
-            else if (ProcessIncludeFile(xkb->context, next, XkmKeyNamesIndex,
-                                        &rtrn, &op))
+            else if (ProcessIncludeFile(keymap->context, next,
+                                        XkmKeyNamesIndex, &rtrn, &op))
             {
                 InitKeyNamesInfo(&next_incl);
-                HandleKeycodesFile(rtrn, xkb, MergeOverride, &next_incl);
+                HandleKeycodesFile(rtrn, keymap, MergeOverride, &next_incl);
                 MergeIncludedKeycodes(&included, &next_incl, op);
                 ClearKeyNamesInfo(&next_incl);
                 FreeXKBFile(rtrn);
@@ -629,7 +628,7 @@ HandleIncludeKeycodes(IncludeStmt * stmt, struct xkb_keymap * xkb, KeyNamesInfo 
  * e.g. <ESC> = 9
  */
 static int
-HandleKeycodeDef(KeycodeDef * stmt, unsigned merge, KeyNamesInfo * info)
+HandleKeycodeDef(KeycodeDef *stmt, unsigned merge, KeyNamesInfo *info)
 {
     if ((info->explicitMin != 0 && stmt->value < info->explicitMin) ||
         (info->explicitMax != 0 && stmt->value > info->explicitMax))
@@ -661,7 +660,7 @@ HandleKeycodeDef(KeycodeDef * stmt, unsigned merge, KeyNamesInfo * info)
  * @return 1 on success, 0 otherwise.
  */
 static int
-HandleKeyNameVar(VarDef * stmt, KeyNamesInfo * info)
+HandleKeyNameVar(VarDef *stmt, KeyNamesInfo *info)
 {
     ExprResult tmp, field;
     ExprDef *arrayNdx;
@@ -798,8 +797,8 @@ HandleIndicatorNameDef(IndicatorNameDef *def, KeyNamesInfo *info)
  * @param info Struct to contain the fully parsed key information.
  */
 static void
-HandleKeycodesFile(XkbFile * file,
-                   struct xkb_keymap * xkb, unsigned merge, KeyNamesInfo * info)
+HandleKeycodesFile(XkbFile *file, struct xkb_keymap *keymap,
+                   unsigned merge, KeyNamesInfo *info)
 {
     ParseCommon *stmt;
 
@@ -811,7 +810,7 @@ HandleKeycodesFile(XkbFile * file,
         switch (stmt->stmtType)
         {
         case StmtInclude:    /* e.g. include "evdev+aliases(qwerty)" */
-            if (!HandleIncludeKeycodes((IncludeStmt *) stmt, xkb, info))
+            if (!HandleIncludeKeycodes((IncludeStmt *) stmt, keymap, info))
                 info->errorCount++;
             break;
         case StmtKeycodeDef: /* e.g. <ESC> = 9; */
@@ -819,8 +818,8 @@ HandleKeycodesFile(XkbFile * file,
                 info->errorCount++;
             break;
         case StmtKeyAliasDef: /* e.g. alias <MENU> = <COMP>; */
-            if (!HandleAliasDef((KeyAliasDef *) stmt,
-                                merge, info->fileID, &info->aliases))
+            if (!HandleAliasDef((KeyAliasDef *) stmt, merge, info->fileID,
+                                &info->aliases))
                 info->errorCount++;
             break;
         case StmtVarDef: /* e.g. minimum, maximum */
@@ -829,9 +828,7 @@ HandleKeycodesFile(XkbFile * file,
             break;
         case StmtIndicatorNameDef: /* e.g. indicator 1 = "Caps Lock"; */
             if (!HandleIndicatorNameDef((IndicatorNameDef *) stmt, info))
-            {
                 info->errorCount++;
-            }
             break;
         case StmtInterpDef:
         case StmtVModDef:
@@ -870,13 +867,13 @@ HandleKeycodesFile(XkbFile * file,
  * @return true on success, false otherwise.
  */
 bool
-CompileKeycodes(XkbFile *file, struct xkb_keymap *xkb, unsigned merge)
+CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap, unsigned merge)
 {
     KeyNamesInfo info; /* contains all the info after parsing */
 
     InitKeyNamesInfo(&info);
 
-    HandleKeycodesFile(file, xkb, merge, &info);
+    HandleKeycodesFile(file, keymap, merge, &info);
 
     /* all the keys are now stored in info */
 
@@ -884,20 +881,20 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *xkb, unsigned merge)
         goto err_info;
 
     if (info.explicitMin > 0) /* if "minimum" statement was present */
-        xkb->min_key_code = info.explicitMin;
+        keymap->min_key_code = info.explicitMin;
     else
-        xkb->min_key_code = info.computedMin;
+        keymap->min_key_code = info.computedMin;
 
     if (info.explicitMax > 0) /* if "maximum" statement was present */
-        xkb->max_key_code = info.explicitMax;
+        keymap->max_key_code = info.explicitMax;
     else
-        xkb->max_key_code = info.computedMax;
+        keymap->max_key_code = info.computedMax;
 
-    if (XkbcAllocNames(xkb, XkbKeyNamesMask | XkbIndicatorNamesMask, 0)
+    if (XkbcAllocNames(keymap, XkbKeyNamesMask | XkbIndicatorNamesMask, 0)
         == Success) {
         uint64_t i;
         for (i = info.computedMin; i <= info.computedMax; i++)
-            LongToKeyName(info.names[i], xkb->names->keys[i].name);
+            LongToKeyName(info.names[i], keymap->names->keys[i].name);
     } else {
         WSGO("Cannot create struct xkb_names in CompileKeycodes\n");
         goto err_info;
@@ -905,18 +902,18 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *xkb, unsigned merge)
 
     if (info.leds) {
         IndicatorNameInfo *ii;
-        if (XkbcAllocIndicatorMaps(xkb) != Success) {
+        if (XkbcAllocIndicatorMaps(keymap) != Success) {
             WSGO("Couldn't allocate IndicatorRec in CompileKeycodes\n");
             ACTION("Physical indicators not set\n");
         }
 
         for (ii = info.leds; ii; ii = (IndicatorNameInfo *)ii->defs.next) {
-            free(UNCONSTIFY(xkb->names->indicators[ii->ndx - 1]));
-            xkb->names->indicators[ii->ndx - 1] = XkbcAtomGetString(ii->name);
+            free(UNCONSTIFY(keymap->names->indicators[ii->ndx - 1]));
+            keymap->names->indicators[ii->ndx - 1] = XkbcAtomGetString(ii->name);
         }
     }
 
-    ApplyAliases(xkb, &info.aliases);
+    ApplyAliases(keymap, &info.aliases);
 
     ClearKeyNamesInfo(&info);
     return true;

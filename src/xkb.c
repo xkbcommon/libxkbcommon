@@ -78,7 +78,7 @@ XkbcCanonicaliseComponent(char *name, const char *old)
 
 _X_EXPORT void
 xkb_canonicalise_components(struct xkb_component_names * names,
-                           const struct xkb_component_names * old)
+                            const struct xkb_component_names * old)
 {
     names->keycodes = XkbcCanonicaliseComponent(names->keycodes,
                                                 old ? old->keycodes : NULL);
@@ -91,24 +91,24 @@ xkb_canonicalise_components(struct xkb_component_names * names,
 }
 
 static bool
-VirtualModsToReal(struct xkb_keymap *xkb, unsigned virtual_mask,
+VirtualModsToReal(struct xkb_keymap *keymap, unsigned virtual_mask,
                   unsigned *mask_rtrn)
 {
     int i, bit;
     unsigned mask;
 
-    if (!xkb)
+    if (!keymap)
         return false;
     if (virtual_mask == 0) {
         *mask_rtrn = 0;
         return true;
     }
-    if (!xkb->server)
+    if (!keymap->server)
         return false;
 
     for (i = mask = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1) {
         if (virtual_mask & bit)
-            mask |= xkb->server->vmods[i];
+            mask |= keymap->server->vmods[i];
     }
 
     *mask_rtrn = mask;
@@ -116,18 +116,18 @@ VirtualModsToReal(struct xkb_keymap *xkb, unsigned virtual_mask,
 }
 
 bool
-XkbcComputeEffectiveMap(struct xkb_keymap * xkb, struct xkb_key_type * type,
+XkbcComputeEffectiveMap(struct xkb_keymap *keymap, struct xkb_key_type *type,
                         unsigned char *map_rtrn)
 {
     int i;
     unsigned tmp;
     struct xkb_kt_map_entry * entry = NULL;
 
-    if (!xkb || !type || !xkb->server)
+    if (!keymap || !type || !keymap->server)
         return false;
 
     if (type->mods.vmods != 0) {
-        if (!VirtualModsToReal(xkb, type->mods.vmods, &tmp))
+        if (!VirtualModsToReal(keymap, type->mods.vmods, &tmp))
             return false;
 
         type->mods.mask = tmp | type->mods.real_mods;
@@ -135,7 +135,7 @@ XkbcComputeEffectiveMap(struct xkb_keymap * xkb, struct xkb_key_type * type,
         for (i = 0; i < type->map_count; i++, entry++) {
             tmp = 0;
             if (entry->mods.vmods != 0) {
-                if (!VirtualModsToReal(xkb, entry->mods.vmods, &tmp))
+                if (!VirtualModsToReal(keymap, entry->mods.vmods, &tmp))
                     return false;
                 if (tmp == 0) {
                     entry->active = false;

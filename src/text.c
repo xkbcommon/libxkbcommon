@@ -48,7 +48,7 @@ tbGetBuffer(unsigned int size)
 }
 
 static const char *
-XkbcVModIndexText(struct xkb_keymap * xkb, unsigned ndx)
+XkbcVModIndexText(struct xkb_keymap *keymap, unsigned ndx)
 {
     int len;
     char *rtrn;
@@ -57,8 +57,8 @@ XkbcVModIndexText(struct xkb_keymap * xkb, unsigned ndx)
 
     if (ndx >= XkbNumVirtualMods)
          tmp = "illegal";
-    else if (xkb && xkb->names)
-         tmp = xkb->names->vmods[ndx];
+    else if (keymap && keymap->names)
+         tmp = keymap->names->vmods[ndx];
 
     if (!tmp) {
         snprintf(buf, sizeof(buf) - 1, "%d", ndx);
@@ -76,7 +76,7 @@ XkbcVModIndexText(struct xkb_keymap * xkb, unsigned ndx)
 }
 
 const char *
-XkbcVModMaskText(struct xkb_keymap * xkb, unsigned modMask, unsigned mask)
+XkbcVModMaskText(struct xkb_keymap *keymap, unsigned modMask, unsigned mask)
 {
     int i, bit, len, rem;
     const char *mm = NULL;
@@ -101,7 +101,7 @@ XkbcVModMaskText(struct xkb_keymap * xkb, unsigned modMask, unsigned mask)
 
             len = snprintf(str, rem, "%s%s",
                            (str != buf) ? "+" : "",
-                           XkbcVModIndexText(xkb, i));
+                           XkbcVModIndexText(keymap, i));
             rem -= len;
             str += len;
         }

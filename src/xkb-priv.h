@@ -423,7 +423,7 @@ struct xkb_state {
         int refcnt;
         void *filters;
         int num_filters;
-        struct xkb_keymap *xkb;
+        struct xkb_keymap *keymap;
 };
 
 extern unsigned int
@@ -434,15 +434,15 @@ xkb_key_get_level(struct xkb_state *state, xkb_keycode_t key,
                   unsigned int group);
 
 extern unsigned int
-xkb_key_get_syms_by_level(struct xkb_keymap *xkb, xkb_keycode_t key,
+xkb_key_get_syms_by_level(struct xkb_keymap *keymap, xkb_keycode_t key,
                           unsigned int group, unsigned int level,
                           const xkb_keysym_t **syms_out);
 extern bool
-XkbcComputeEffectiveMap(struct xkb_keymap * xkb, struct xkb_key_type * type,
+XkbcComputeEffectiveMap(struct xkb_keymap *keymap, struct xkb_key_type *type,
                         unsigned char *map_rtrn);
 
 extern int
-XkbcInitCanonicalKeyTypes(struct xkb_keymap * xkb, unsigned which,
+XkbcInitCanonicalKeyTypes(struct xkb_keymap *keymap, unsigned which,
                           int keypadVMod);
 
 extern unsigned

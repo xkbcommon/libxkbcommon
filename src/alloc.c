@@ -27,29 +27,31 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "alloc.h"
 
 int
-XkbcAllocClientMap(struct xkb_keymap * xkb, unsigned which, unsigned nTotalTypes)
+XkbcAllocClientMap(struct xkb_keymap *keymap, unsigned which,
+                   unsigned nTotalTypes)
 {
     struct xkb_client_map * map;
 
-    if (!xkb || ((nTotalTypes > 0) && (nTotalTypes < XkbNumRequiredTypes)))
+    if (!keymap || ((nTotalTypes > 0) && (nTotalTypes < XkbNumRequiredTypes)))
         return BadValue;
 
-    if ((which & XkbKeySymsMask) && !xkb_keymap_keycode_range_is_legal(xkb)) {
+    if ((which & XkbKeySymsMask) &&
+        !xkb_keymap_keycode_range_is_legal(keymap)) {
 #ifdef DEBUG
         fprintf(stderr, "bad keycode (%d,%d) in XkbAllocClientMap\n",
-                xkb->min_key_code, xkb->max_key_code);
+                keymap->min_key_code, keymap->max_key_code);
 #endif
         return BadValue;
     }
 
-    if (!xkb->map) {
+    if (!keymap->map) {
         map = uTypedCalloc(1, struct xkb_client_map);
         if (!map)
             return BadAlloc;
-        xkb->map = map;
+        keymap->map = map;
     }
     else
-        map = xkb->map;
+        map = keymap->map;
 
     if ((which & XkbKeyTypesMask) && (nTotalTypes > 0)) {
         if (!map->types) {
@@ -79,7 +81,7 @@ XkbcAllocClientMap(struct xkb_keymap * xkb, unsigned which, unsigned nTotalTypes
 
     if (which & XkbKeySymsMask) {
         if (!map->key_sym_map) {
-            map->key_sym_map = uTypedCalloc(xkb->max_key_code + 1,
+            map->key_sym_map = uTypedCalloc(keymap->max_key_code + 1,
                                             struct xkb_sym_map);
             if (!map->key_sym_map)
                 return BadAlloc;
@@ -88,7 +90,8 @@ XkbcAllocClientMap(struct xkb_keymap * xkb, unsigned which, unsigned nTotalTypes
 
     if (which & XkbModifierMapMask) {
         if (!map->modmap) {
-            map->modmap = uTypedCalloc(xkb->max_key_code + 1, unsigned char);
+            map->modmap = uTypedCalloc(keymap->max_key_code + 1,
+                                       unsigned char);
             if (!map->modmap)
                 return BadAlloc;
         }
@@ -98,15 +101,16 @@ XkbcAllocClientMap(struct xkb_keymap * xkb, unsigned which, unsigned nTotalTypes
 }
 
 int
-XkbcAllocServerMap(struct xkb_keymap * xkb, unsigned which, unsigned nNewActions)
+XkbcAllocServerMap(struct xkb_keymap *keymap, unsigned which,
+                   unsigned nNewActions)
 {
     unsigned i;
     struct xkb_server_map * map;
 
-    if (!xkb)
+    if (!keymap)
         return BadMatch;
 
-    if (!xkb->server) {
+    if (!keymap->server) {
         map = uTypedCalloc(1, struct xkb_server_map);
         if (!map)
             return BadAlloc;
@@ -114,19 +118,19 @@ XkbcAllocServerMap(struct xkb_keymap * xkb, unsigned which, unsigned nNewActions
         for (i = 0; i < XkbNumVirtualMods; i++)
             map->vmods[i] = XkbNoModifierMask;
 
-        xkb->server = map;
+        keymap->server = map;
     }
     else
-        map = xkb->server;
+        map = keymap->server;
 
     if (!which)
         return Success;
 
-    if (!xkb_keymap_keycode_range_is_legal(xkb))
+    if (!xkb_keymap_keycode_range_is_legal(keymap))
         return BadMatch;
 
     if (!map->explicit) {
-        i = xkb->max_key_code + 1;
+        i = keymap->max_key_code + 1;
         map->explicit = uTypedCalloc(i, unsigned char);
         if (!map->explicit)
             return BadAlloc;
@@ -160,21 +164,21 @@ XkbcAllocServerMap(struct xkb_keymap * xkb, unsigned which, unsigned nNewActions
     }
 
     if (!map->key_acts) {
-        i = xkb->max_key_code + 1;
+        i = keymap->max_key_code + 1;
         map->key_acts = uTypedCalloc(i, unsigned short);
         if (!map->key_acts)
             return BadAlloc;
     }
 
     if (!map->behaviors) {
-        i = xkb->max_key_code + 1;
+        i = keymap->max_key_code + 1;
         map->behaviors = uTypedCalloc(i, struct xkb_behavior);
         if (!map->behaviors)
             return BadAlloc;
     }
 
     if (!map->vmodmap) {
-        i = xkb->max_key_code + 1;
+        i = keymap->max_key_code + 1;
         map->vmodmap = uTypedCalloc(i, uint32_t);
         if (!map->vmodmap)
             return BadAlloc;
@@ -230,62 +234,63 @@ XkbcCopyKeyType(struct xkb_key_type * from, struct xkb_key_type * into)
 }
 
 bool
-XkbcResizeKeySyms(struct xkb_keymap * xkb, xkb_keycode_t key,
+XkbcResizeKeySyms(struct xkb_keymap *keymap, xkb_keycode_t key,
                   unsigned int needed)
 {
-    if (xkb->map->key_sym_map[key].size_syms >= needed)
+    if (keymap->map->key_sym_map[key].size_syms >= needed)
         return true;
 
-    xkb->map->key_sym_map[key].syms =
-        uTypedRecalloc(xkb->map->key_sym_map[key].syms,
-                       xkb->map->key_sym_map[key].size_syms,
+    keymap->map->key_sym_map[key].syms =
+        uTypedRecalloc(keymap->map->key_sym_map[key].syms,
+                       keymap->map->key_sym_map[key].size_syms,
                        needed,
                        xkb_keysym_t);
-    if (!xkb->map->key_sym_map[key].syms) {
-        xkb->map->key_sym_map[key].size_syms = 0;
+    if (!keymap->map->key_sym_map[key].syms) {
+        keymap->map->key_sym_map[key].size_syms = 0;
         return false;
     }
-    xkb->map->key_sym_map[key].size_syms = needed;
+    keymap->map->key_sym_map[key].size_syms = needed;
 
     return true;
 }
 
 union xkb_action *
-XkbcResizeKeyActions(struct xkb_keymap * xkb, xkb_keycode_t key, uint32_t needed)
+XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t key,
+                     uint32_t needed)
 {
     xkb_keycode_t i, nActs;
     union xkb_action *newActs;
 
     if (needed == 0) {
-        xkb->server->key_acts[key] = 0;
+        keymap->server->key_acts[key] = 0;
         return NULL;
     }
 
-    if (XkbKeyHasActions(xkb, key) &&
-        (XkbKeyGroupsWidth(xkb, key) >= needed))
-        return XkbKeyActionsPtr(xkb, key);
+    if (XkbKeyHasActions(keymap, key) &&
+        (XkbKeyGroupsWidth(keymap, key) >= needed))
+        return XkbKeyActionsPtr(keymap, key);
 
-    if (xkb->server->size_acts - xkb->server->num_acts >= (int)needed) {
-        xkb->server->key_acts[key] = xkb->server->num_acts;
-        xkb->server->num_acts += needed;
+    if (keymap->server->size_acts - keymap->server->num_acts >= (int)needed) {
+        keymap->server->key_acts[key] = keymap->server->num_acts;
+        keymap->server->num_acts += needed;
 
-        return &xkb->server->acts[xkb->server->key_acts[key]];
+        return &keymap->server->acts[keymap->server->key_acts[key]];
     }
 
-    xkb->server->size_acts = xkb->server->num_acts + needed + 8;
-    newActs = uTypedCalloc(xkb->server->size_acts, union xkb_action);
+    keymap->server->size_acts = keymap->server->num_acts + needed + 8;
+    newActs = uTypedCalloc(keymap->server->size_acts, union xkb_action);
     if (!newActs)
         return NULL;
     newActs[0].type = XkbSA_NoAction;
     nActs = 1;
 
-    for (i = xkb->min_key_code; i <= xkb->max_key_code; i++) {
+    for (i = keymap->min_key_code; i <= keymap->max_key_code; i++) {
         xkb_keycode_t nKeyActs, nCopy;
 
-        if ((xkb->server->key_acts[i] == 0) && (i != key))
+        if ((keymap->server->key_acts[i] == 0) && (i != key))
             continue;
 
-        nCopy = nKeyActs = XkbKeyNumActions(xkb, i);
+        nCopy = nKeyActs = XkbKeyNumActions(keymap, i);
         if (i == key) {
             nKeyActs= needed;
             if (needed < nCopy)
@@ -293,35 +298,35 @@ XkbcResizeKeyActions(struct xkb_keymap * xkb, xkb_keycode_t key, uint32_t needed
         }
 
         if (nCopy > 0)
-            memcpy(&newActs[nActs], XkbKeyActionsPtr(xkb, i),
+            memcpy(&newActs[nActs], XkbKeyActionsPtr(keymap, i),
                    nCopy * sizeof(union xkb_action));
         if (nCopy < nKeyActs)
             memset(&newActs[nActs + nCopy], 0,
                    (nKeyActs - nCopy) * sizeof(union xkb_action));
 
-        xkb->server->key_acts[i] = nActs;
+        keymap->server->key_acts[i] = nActs;
         nActs += nKeyActs;
     }
 
-    free(xkb->server->acts);
-    xkb->server->acts = newActs;
-    xkb->server->num_acts = nActs;
+    free(keymap->server->acts);
+    keymap->server->acts = newActs;
+    keymap->server->num_acts = nActs;
 
-    return &xkb->server->acts[xkb->server->key_acts[key]];
+    return &keymap->server->acts[keymap->server->key_acts[key]];
 }
 
 void
-XkbcFreeClientMap(struct xkb_keymap * xkb)
+XkbcFreeClientMap(struct xkb_keymap *keymap)
 {
     struct xkb_client_map * map;
     struct xkb_key_type * type;
     xkb_keycode_t key;
     int i;
 
-    if (!xkb || !xkb->map)
+    if (!keymap || !keymap->map)
         return;
 
-    map = xkb->map;
+    map = keymap->map;
 
     for (i = 0, type = map->types; i < map->num_types && type; i++, type++) {
         int j;
@@ -335,7 +340,7 @@ XkbcFreeClientMap(struct xkb_keymap * xkb)
     free(map->types);
 
     if (map->key_sym_map) {
-        for (key = xkb->min_key_code; key < xkb->max_key_code; key++) {
+        for (key = keymap->min_key_code; key < keymap->max_key_code; key++) {
             free(map->key_sym_map[key].sym_index);
             free(map->key_sym_map[key].num_syms);
             free(map->key_sym_map[key].syms);
@@ -344,43 +349,43 @@ XkbcFreeClientMap(struct xkb_keymap * xkb)
     free(map->key_sym_map);
 
     free(map->modmap);
-    free(xkb->map);
-    xkb->map = NULL;
+    free(keymap->map);
+    keymap->map = NULL;
 }
 
 void
-XkbcFreeServerMap(struct xkb_keymap * xkb)
+XkbcFreeServerMap(struct xkb_keymap *keymap)
 {
     struct xkb_server_map * map;
 
-    if (!xkb || !xkb->server)
+    if (keymap || keymap->server)
         return;
 
-    map = xkb->server;
+    map = keymap->server;
 
     free(map->explicit);
     free(map->key_acts);
     free(map->acts);
     free(map->behaviors);
     free(map->vmodmap);
-    free(xkb->server);
-    xkb->server = NULL;
+    free(keymap->server);
+    keymap->server = NULL;
 }
 
 int
-XkbcAllocCompatMap(struct xkb_keymap *xkb, unsigned nSI)
+XkbcAllocCompatMap(struct xkb_keymap *keymap, unsigned nSI)
 {
     struct xkb_compat_map * compat;
     struct xkb_sym_interpret *prev_interpret;
 
-    if (!xkb)
+    if (!keymap)
         return BadMatch;
 
-    if (xkb->compat) {
-        if (xkb->compat->size_si >= nSI)
+    if (keymap->compat) {
+        if (keymap->compat->size_si >= nSI)
             return Success;
 
-        compat = xkb->compat;
+        compat = keymap->compat;
         compat->size_si = nSI;
         if (!compat->sym_interpret)
             compat->num_si = 0;
@@ -412,48 +417,49 @@ XkbcAllocCompatMap(struct xkb_keymap *xkb, unsigned nSI)
     compat->size_si = nSI;
     compat->num_si = 0;
     memset(&compat->groups[0], 0, XkbNumKbdGroups * sizeof(struct xkb_mods));
-    xkb->compat = compat;
+    keymap->compat = compat;
 
     return Success;
 }
 
 
 static void
-XkbcFreeCompatMap(struct xkb_keymap * xkb)
+XkbcFreeCompatMap(struct xkb_keymap *keymap)
 {
     struct xkb_compat_map * compat;
 
-    if (!xkb || !xkb->compat)
+    if (!keymap || !keymap->compat)
         return;
 
-    compat = xkb->compat;
+    compat = keymap->compat;
 
     free(compat->sym_interpret);
     free(compat);
-    xkb->compat = NULL;
+    keymap->compat = NULL;
 }
 
 int
-XkbcAllocNames(struct xkb_keymap * xkb, unsigned which, unsigned nTotalAliases)
+XkbcAllocNames(struct xkb_keymap *keymap, unsigned which,
+               unsigned nTotalAliases)
 {
     struct xkb_names * names;
 
-    if (!xkb)
+    if (!keymap)
         return BadMatch;
 
-    if (!xkb->names) {
-        xkb->names = uTypedCalloc(1, struct xkb_names);
-        if (!xkb->names)
+    if (!keymap->names) {
+        keymap->names = uTypedCalloc(1, struct xkb_names);
+        if (!keymap->names)
             return BadAlloc;
     }
-    names = xkb->names;
+    names = keymap->names;
 
-    if ((which & XkbKTLevelNamesMask) && xkb->map && xkb->map->types) {
+    if ((which & XkbKTLevelNamesMask) && keymap->map && keymap->map->types) {
         int i;
         struct xkb_key_type * type;
 
-        type = xkb->map->types;
-        for (i = 0; i < xkb->map->num_types; i++, type++) {
+        type = keymap->map->types;
+        for (i = 0; i < keymap->map->num_types; i++, type++) {
             if (!type->level_names) {
                 type->level_names = uTypedCalloc(type->num_levels, const char *);
                 if (!type->level_names)
@@ -463,10 +469,11 @@ XkbcAllocNames(struct xkb_keymap * xkb, unsigned which, unsigned nTotalAliases)
     }
 
     if ((which & XkbKeyNamesMask) && !names->keys) {
-        if (!xkb_keymap_keycode_range_is_legal(xkb))
+        if (!xkb_keymap_keycode_range_is_legal(keymap))
             return BadMatch;
 
-        names->keys = uTypedCalloc(xkb->max_key_code + 1, struct xkb_key_name);
+        names->keys = uTypedCalloc(keymap->max_key_code + 1,
+                                   struct xkb_key_name);
         if (!names->keys)
             return BadAlloc;
     }
@@ -498,17 +505,17 @@ XkbcAllocNames(struct xkb_keymap * xkb, unsigned which, unsigned nTotalAliases)
 }
 
 static void
-XkbcFreeNames(struct xkb_keymap * xkb)
+XkbcFreeNames(struct xkb_keymap *keymap)
 {
     struct xkb_names * names;
     struct xkb_client_map * map;
     int i;
 
-    if (!xkb || !xkb->names)
+    if (!keymap || !keymap->names)
         return;
 
-    names = xkb->names;
-    map = xkb->map;
+    names = keymap->names;
+    map = keymap->map;
 
     if (map && map->types) {
         struct xkb_key_type * type = map->types;
@@ -532,48 +539,48 @@ XkbcFreeNames(struct xkb_keymap * xkb)
     free(names->keys);
     free(names->key_aliases);
     free(names);
-    xkb->names = NULL;
+    keymap->names = NULL;
 }
 
 int
-XkbcAllocControls(struct xkb_keymap * xkb)
+XkbcAllocControls(struct xkb_keymap *keymap)
 {
-    if (!xkb)
+    if (!keymap)
         return BadMatch;
 
-    if (!xkb->ctrls) {
-        xkb->ctrls = uTypedCalloc(1, struct xkb_controls);
-        if (!xkb->ctrls)
+    if (!keymap->ctrls) {
+        keymap->ctrls = uTypedCalloc(1, struct xkb_controls);
+        if (!keymap->ctrls)
             return BadAlloc;
     }
 
-    xkb->ctrls->per_key_repeat = uTypedCalloc(xkb->max_key_code << 3,
-                                              unsigned char);
-    if (!xkb->ctrls->per_key_repeat)
+    keymap->ctrls->per_key_repeat = uTypedCalloc(keymap->max_key_code >> 3,
+                                                 unsigned char);
+    if (!keymap->ctrls->per_key_repeat)
         return BadAlloc;
 
     return Success;
 }
 
 static void
-XkbcFreeControls(struct xkb_keymap * xkb)
+XkbcFreeControls(struct xkb_keymap *keymap)
 {
-    if (xkb && xkb->ctrls) {
-        free(xkb->ctrls->per_key_repeat);
-        free(xkb->ctrls);
-        xkb->ctrls = NULL;
+    if (keymap && keymap->ctrls) {
+        free(keymap->ctrls->per_key_repeat);
+        free(keymap->ctrls);
+        keymap->ctrls = NULL;
     }
 }
 
 int
-XkbcAllocIndicatorMaps(struct xkb_keymap * xkb)
+XkbcAllocIndicatorMaps(struct xkb_keymap *keymap)
 {
-    if (!xkb)
+    if (!keymap)
         return BadMatch;
 
-    if (!xkb->indicators) {
-        xkb->indicators = uTypedCalloc(1, struct xkb_indicator);
-        if (!xkb->indicators)
+    if (!keymap->indicators) {
+        keymap->indicators = uTypedCalloc(1, struct xkb_indicator);
+        if (!keymap->indicators)
             return BadAlloc;
     }
 
@@ -581,41 +588,41 @@ XkbcAllocIndicatorMaps(struct xkb_keymap * xkb)
 }
 
 static void
-XkbcFreeIndicatorMaps(struct xkb_keymap * xkb)
+XkbcFreeIndicatorMaps(struct xkb_keymap *keymap)
 {
-    if (xkb) {
-        free(xkb->indicators);
-        xkb->indicators = NULL;
+    if (keymap) {
+        free(keymap->indicators);
+        keymap->indicators = NULL;
     }
 }
 
 struct xkb_keymap *
 XkbcAllocKeyboard(struct xkb_context *context)
 {
-    struct xkb_keymap *xkb;
+    struct xkb_keymap *keymap;
 
-    xkb = uTypedCalloc(1, struct xkb_keymap);
-    if (!xkb)
+    keymap = uTypedCalloc(1, struct xkb_keymap);
+    if (!keymap)
         return NULL;
 
-    xkb->refcnt = 1;
-    xkb->context = xkb_context_ref(context);
+    keymap->refcnt = 1;
+    keymap->context = xkb_context_ref(context);
 
-    return xkb;
+    return keymap;
 }
 
 void
-XkbcFreeKeyboard(struct xkb_keymap * xkb)
+XkbcFreeKeyboard(struct xkb_keymap *keymap)
 {
-    if (!xkb)
+    if (!keymap)
         return;
 
-    XkbcFreeClientMap(xkb);
-    XkbcFreeServerMap(xkb);
-    XkbcFreeCompatMap(xkb);
-    XkbcFreeIndicatorMaps(xkb);
-    XkbcFreeNames(xkb);
-    XkbcFreeControls(xkb);
-    xkb_context_unref(xkb->context);
-    free(xkb);
+    XkbcFreeClientMap(keymap);
+    XkbcFreeServerMap(keymap);
+    XkbcFreeCompatMap(keymap);
+    XkbcFreeIndicatorMaps(keymap);
+    XkbcFreeNames(keymap);
+    XkbcFreeControls(keymap);
+    xkb_context_unref(keymap->context);
+    free(keymap);
 }

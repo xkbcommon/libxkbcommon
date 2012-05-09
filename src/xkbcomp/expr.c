@@ -943,31 +943,27 @@ ExprResolveMaskLookup(ExprDef * expr,
 }
 
 int
-ExprResolveMask(ExprDef * expr,
-                ExprResult * val_rtrn,
+ExprResolveMask(ExprDef *expr, ExprResult *val_rtrn,
                 const LookupEntry * values)
 {
     return ExprResolveMaskLookup(expr, val_rtrn, SimpleLookup, values);
 }
 
 int
-ExprResolveModMask(ExprDef * expr,
-                   ExprResult * val_rtrn)
+ExprResolveModMask(ExprDef *expr, ExprResult *val_rtrn)
 {
     return ExprResolveMaskLookup(expr, val_rtrn, LookupModMask, NULL);
 }
 
 int
-ExprResolveVModMask(ExprDef * expr,
-                    ExprResult * val_rtrn,
-                    struct xkb_keymap *xkb)
+ExprResolveVModMask(ExprDef *expr, ExprResult *val_rtrn,
+                    struct xkb_keymap *keymap)
 {
-    return ExprResolveMaskLookup(expr, val_rtrn, LookupVModMask, xkb);
+    return ExprResolveMaskLookup(expr, val_rtrn, LookupVModMask, keymap);
 }
 
 int
-ExprResolveKeySym(ExprDef * expr,
-                  ExprResult * val_rtrn)
+ExprResolveKeySym(ExprDef *expr, ExprResult *val_rtrn)
 {
     int ok = 0;
     xkb_keysym_t sym;

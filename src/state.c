@@ -79,8 +79,8 @@ xkb_key_get_action(struct xkb_state *state, xkb_keycode_t key)
 {
     int group, level;
 
-    if (!XkbKeyHasActions(state->xkb, key) ||
-        !XkbKeycodeInRange(state->xkb, key)) {
+    if (!XkbKeyHasActions(state->keymap, key) ||
+        !XkbKeycodeInRange(state->keymap, key)) {
         static union xkb_action fake;
         memset(&fake, 0, sizeof(fake));
         fake.type = XkbSA_NoAction;
@@ -90,7 +90,7 @@ xkb_key_get_action(struct xkb_state *state, xkb_keycode_t key)
     group = xkb_key_get_group(state, key);
     level = xkb_key_get_level(state, key, group);
 
-    return XkbKeyActionEntry(state->xkb, key, level, group);
+    return XkbKeyActionEntry(state->keymap, key, level, group);
 }
 
 static struct xkb_filter *
@@ -456,11 +456,11 @@ xkb_filter_apply_all(struct xkb_state *state, xkb_keycode_t key,
 }
 
 _X_EXPORT struct xkb_state *
-xkb_state_new(struct xkb_keymap *xkb)
+xkb_state_new(struct xkb_keymap *keymap)
 {
     struct xkb_state *ret;
 
-    if (!xkb)
+    if (!keymap)
         return NULL;
 
     ret = calloc(sizeof(*ret), 1);
@@ -468,7 +468,7 @@ xkb_state_new(struct xkb_keymap *xkb)
         return NULL;
 
     ret->refcnt = 1;
-    ret->xkb = xkb_map_ref(xkb);
+    ret->keymap = xkb_map_ref(keymap);
 
     return ret;
 }
@@ -488,7 +488,7 @@ xkb_state_unref(struct xkb_state *state)
     if (state->refcnt > 0)
         return;
 
-    xkb_map_unref(state->xkb);
+    xkb_map_unref(state->keymap);
     free(state->filters);
     free(state);
 }
@@ -496,7 +496,7 @@ xkb_state_unref(struct xkb_state *state)
 _X_EXPORT struct xkb_keymap *
 xkb_state_get_map(struct xkb_state *state)
 {
-    return state->xkb;
+    return state->keymap;
 }
 
 /**
@@ -510,7 +510,7 @@ xkb_state_led_update_all(struct xkb_state *state)
     state->leds = 0;
 
     for (led = 0; led < XkbNumIndicators; led++) {
-        struct xkb_indicator_map *map = &state->xkb->indicators->maps[led];
+        struct xkb_indicator_map *map = &state->keymap->indicators->maps[led];
         uint32_t mod_mask = 0;
         uint32_t group_mask = 0;
 
@@ -542,7 +542,7 @@ xkb_state_led_update_all(struct xkb_state *state)
                 state->leds |= (1 << led);
         }
         else if (map->ctrls) {
-            if ((map->ctrls & state->xkb->ctrls->enabled_ctrls))
+            if ((map->ctrls & state->keymap->ctrls->enabled_ctrls))
                 state->leds |= (1 << led);
         }
     }
@@ -597,7 +597,7 @@ xkb_state_update_mask(struct xkb_state *state,
     state->base_mods = 0;
     state->latched_mods = 0;
     state->locked_mods = 0;
-    for (mod = 0; mod < xkb_map_num_mods(state->xkb); mod++) {
+    for (mod = 0; mod < xkb_map_num_mods(state->keymap); mod++) {
         xkb_mod_mask_t idx = (1 << mod);
         if (base_mods & idx)
             state->base_mods |= idx;
@@ -671,7 +671,7 @@ xkb_state_mod_index_is_active(struct xkb_state *state,
 {
     int ret = 0;
 
-    if (idx >= xkb_map_num_mods(state->xkb))
+    if (idx >= xkb_map_num_mods(state->keymap))
         return -1;
 
     if (type & XKB_STATE_DEPRESSED)
@@ -723,7 +723,8 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
     va_start(ap, match);
     while (1) {
         idx = va_arg(ap, xkb_mod_index_t);
-        if (idx == XKB_MOD_INVALID || idx >= xkb_map_num_mods(state->xkb)) {
+        if (idx == XKB_MOD_INVALID ||
+            idx >= xkb_map_num_mods(state->keymap)) {
             ret = -1;
             break;
         }
@@ -745,7 +746,7 @@ _X_EXPORT int
 xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
                              enum xkb_state_component type)
 {
-    xkb_mod_index_t idx = xkb_map_mod_get_index(state->xkb, name);
+    xkb_mod_index_t idx = xkb_map_mod_get_index(state->keymap, name);
 
     if (idx == XKB_MOD_INVALID)
         return -1;
@@ -774,7 +775,7 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
         str = va_arg(ap, const char *);
         if (str == NULL)
             break;
-        idx = xkb_map_mod_get_index(state->xkb, str);
+        idx = xkb_map_mod_get_index(state->keymap, str);
         if (idx == XKB_MOD_INVALID) {
             ret = -1;
             break;
@@ -800,7 +801,7 @@ xkb_state_group_index_is_active(struct xkb_state *state,
 {
     int ret = 0;
 
-    if (idx >= xkb_map_num_groups(state->xkb))
+    if (idx >= xkb_map_num_groups(state->keymap))
         return -1;
 
     if (type & XKB_STATE_DEPRESSED)
@@ -821,7 +822,7 @@ _X_EXPORT int
 xkb_state_group_name_is_active(struct xkb_state *state, const char *name,
                                enum xkb_state_component type)
 {
-    xkb_group_index_t idx = xkb_map_group_get_index(state->xkb, name);
+    xkb_group_index_t idx = xkb_map_group_get_index(state->keymap, name);
 
     if (idx == XKB_GROUP_INVALID)
         return -1;
@@ -835,7 +836,7 @@ xkb_state_group_name_is_active(struct xkb_state *state, const char *name,
 _X_EXPORT int
 xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx)
 {
-    if (idx >= xkb_map_num_leds(state->xkb))
+    if (idx >= xkb_map_num_leds(state->keymap))
         return -1;
 
     return !!(state->leds & (1 << idx));
@@ -847,7 +848,7 @@ xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx)
 _X_EXPORT int
 xkb_state_led_name_is_active(struct xkb_state *state, const char *name)
 {
-    xkb_led_index_t idx = xkb_map_led_get_index(state->xkb, name);
+    xkb_led_index_t idx = xkb_map_led_get_index(state->keymap, name);
 
     if (idx == XKB_LED_INVALID)
         return -1;

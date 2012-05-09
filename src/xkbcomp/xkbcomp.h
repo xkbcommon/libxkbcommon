@@ -254,18 +254,18 @@ extern struct xkb_keymap *
 CompileKeymap(struct xkb_context *context, XkbFile *file);
 
 extern bool
-CompileKeycodes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge);
+CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap, unsigned merge);
 
 extern bool
-CompileKeyTypes(XkbFile *file, struct xkb_keymap * xkb, unsigned merge);
+CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap, unsigned merge);
 
 typedef struct _LEDInfo *LEDInfoPtr;
 
 extern bool
-CompileCompatMap(XkbFile *file, struct xkb_keymap * xkb, unsigned merge,
+CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap, unsigned merge,
                  LEDInfoPtr *unboundLEDs);
 
 extern bool
-CompileSymbols(XkbFile *file, struct xkb_keymap * xkb, unsigned merge);
+CompileSymbols(XkbFile *file, struct xkb_keymap *keymap, unsigned merge);
 
 #endif /* XKBCOMP_H */

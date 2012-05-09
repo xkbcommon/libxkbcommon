@@ -32,7 +32,7 @@
 
 typedef struct _VModInfo
 {
-    struct xkb_keymap *xkb;
+    struct xkb_keymap *keymap;
     unsigned defined;
     unsigned available;
     unsigned newlyDefined;
@@ -40,23 +40,23 @@ typedef struct _VModInfo
 } VModInfo;
 
 extern void
-InitVModInfo(VModInfo *info, struct xkb_keymap *xkb);
+InitVModInfo(VModInfo *info, struct xkb_keymap *keymap);
 
 extern void
-ClearVModInfo(VModInfo *info, struct xkb_keymap *xkb);
+ClearVModInfo(VModInfo *info, struct xkb_keymap *keymap);
 
 extern bool
-HandleVModDef(VModDef *stmt, struct xkb_keymap *xkb, unsigned mergeMode,
+HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, unsigned mergeMode,
               VModInfo *info);
 
 extern bool
-ApplyVModDefs(VModInfo *info, struct xkb_keymap *xkb);
+ApplyVModDefs(VModInfo *info, struct xkb_keymap *keymap);
 
 extern int
-FindKeypadVMod(struct xkb_keymap *xkb);
+FindKeypadVMod(struct xkb_keymap *keymap);
 
 extern bool
-ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *xkb,
+ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
                        ExprResult *value_rtrn, VModInfo *info);
 
 #endif /* VMOD_H */

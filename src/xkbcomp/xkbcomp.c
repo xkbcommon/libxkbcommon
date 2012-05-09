@@ -121,7 +121,7 @@ xkb_map_new_from_names(struct xkb_context *context,
 {
     XkbRF_VarDefsRec defs;
     struct xkb_component_names *names;
-    struct xkb_keymap *xkb;
+    struct xkb_keymap *keymap;
 
     if (!rmlvo || ISEMPTY(rmlvo->rules) || ISEMPTY(rmlvo->layout)) {
         ERROR("rules and layout required to generate XKB keymap\n");
@@ -140,7 +140,7 @@ xkb_map_new_from_names(struct xkb_context *context,
         return NULL;
     }
 
-    xkb = xkb_map_new_from_kccgst(context, names, 0);
+    keymap = xkb_map_new_from_kccgst(context, names, 0);
 
     free(names->keymap);
     free(names->keycodes);
@@ -149,7 +149,7 @@ xkb_map_new_from_names(struct xkb_context *context,
     free(names->symbols);
     free(names);
 
-    return xkb;
+    return keymap;
 }
 
 static XkbFile *
@@ -190,7 +190,7 @@ static struct xkb_keymap *
 compile_keymap(struct xkb_context *context, XkbFile *file)
 {
     XkbFile *mapToUse;
-    struct xkb_keymap * xkb = NULL;
+    struct xkb_keymap *keymap = NULL;
 
     /* Find map to use */
     mapToUse = XkbChooseMap(file, NULL);
@@ -207,14 +207,14 @@ compile_keymap(struct xkb_context *context, XkbFile *file)
         goto err;
     }
 
-    xkb = CompileKeymap(context, mapToUse);
-    if (!xkb)
+    keymap = CompileKeymap(context, mapToUse);
+    if (!keymap)
         goto err;
 
 err:
     FreeXKBFile(file);
     XkbcFreeAllAtoms();
-    return xkb;
+    return keymap;
 }
 
 _X_EXPORT struct xkb_keymap *
@@ -317,17 +317,17 @@ xkb_map_new_from_fd(struct xkb_context *context,
 }
 
 _X_EXPORT struct xkb_keymap *
-xkb_map_ref(struct xkb_keymap *xkb)
+xkb_map_ref(struct xkb_keymap *keymap)
 {
-    xkb->refcnt++;
-    return xkb;
+    keymap->refcnt++;
+    return keymap;
 }
 
 _X_EXPORT void
-xkb_map_unref(struct xkb_keymap *xkb)
+xkb_map_unref(struct xkb_keymap *keymap)
 {
-    if (--xkb->refcnt > 0)
+    if (--keymap->refcnt > 0)
         return;
 
-    XkbcFreeKeyboard(xkb);
+    XkbcFreeKeyboard(keymap);
 }

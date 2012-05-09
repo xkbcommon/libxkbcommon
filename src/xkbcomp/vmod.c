@@ -27,32 +27,32 @@
 #include "vmod.h"
 
 void
-InitVModInfo(VModInfo * info, struct xkb_keymap * xkb)
+InitVModInfo(VModInfo *info, struct xkb_keymap *keymap)
 {
-    ClearVModInfo(info, xkb);
+    ClearVModInfo(info, keymap);
     info->errorCount = 0;
 }
 
 void
-ClearVModInfo(VModInfo * info, struct xkb_keymap * xkb)
+ClearVModInfo(VModInfo *info, struct xkb_keymap *keymap)
 {
     int i;
 
     info->newlyDefined = info->defined = info->available = 0;
 
-    if (XkbcAllocNames(xkb, 0, 0) != Success)
+    if (XkbcAllocNames(keymap, 0, 0) != Success)
         return;
 
-    if (XkbcAllocServerMap(xkb, 0, 0) != Success)
+    if (XkbcAllocServerMap(keymap, 0, 0) != Success)
         return;
 
-    info->xkb = xkb;
-    if (xkb && xkb->names)
+    info->keymap = keymap;
+    if (keymap && keymap->names)
     {
         int bit;
         for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1)
         {
-            if (xkb->names->vmods[i] != NULL)
+            if (keymap->names->vmods[i] != NULL)
                 info->defined |= bit;
         }
     }
@@ -69,16 +69,14 @@ ClearVModInfo(VModInfo * info, struct xkb_keymap * xkb)
  * @param mergeMode Merge strategy (e.g. MergeOverride)
  */
 bool
-HandleVModDef(VModDef * stmt, struct xkb_keymap *xkb, unsigned mergeMode,
-              VModInfo * info)
+HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, unsigned mergeMode,
+              VModInfo *info)
 {
     int i, bit, nextFree;
     ExprResult mod;
-    struct xkb_server_map * srv;
-    struct xkb_names * names;
+    struct xkb_server_map *srv = keymap->server;
+    struct xkb_names *names = keymap->names;
 
-    srv = xkb->server;
-    names = xkb->names;
     for (i = 0, bit = 1, nextFree = -1; i < XkbNumVirtualMods; i++, bit <<= 1)
     {
         if (info->defined & bit)
@@ -144,7 +142,7 @@ HandleVModDef(VModDef * stmt, struct xkb_keymap *xkb, unsigned mergeMode,
 /**
  * Returns the index of the given modifier in the xkb->names->vmods array.
  *
- * @param priv Pointer to the xkb data structure.
+ * @param keymap Pointer to the xkb data structure.
  * @param field The Atom of the modifier's name (e.g. Atom for LAlt)
  * @param type Must be TypeInt, otherwise return false.
  * @param val_rtrn Set to the index of the modifier that matches.
@@ -153,13 +151,13 @@ HandleVModDef(VModDef * stmt, struct xkb_keymap *xkb, unsigned mergeMode,
  * undefined.
  */
 static int
-LookupVModIndex(const struct xkb_keymap *xkb, xkb_atom_t field, unsigned type,
-                ExprResult * val_rtrn)
+LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
+                unsigned type, ExprResult * val_rtrn)
 {
     int i;
     const char *name = XkbcAtomText(field);
 
-    if ((xkb == NULL) || (xkb->names == NULL) || (type != TypeInt))
+    if ((keymap == NULL) || (keymap->names == NULL) || (type != TypeInt))
     {
         return false;
     }
@@ -170,7 +168,8 @@ LookupVModIndex(const struct xkb_keymap *xkb, xkb_atom_t field, unsigned type,
      */
     for (i = 0; i < XkbNumVirtualMods; i++)
     {
-        if (xkb->names->vmods[i] && strcmp(xkb->names->vmods[i], name) == 0)
+        if (keymap->names->vmods[i] &&
+            strcmp(keymap->names->vmods[i], name) == 0)
         {
             val_rtrn->uval = i;
             return true;
@@ -207,13 +206,13 @@ LookupVModMask(const void * priv, xkb_atom_t field, unsigned type,
 }
 
 int
-FindKeypadVMod(struct xkb_keymap * xkb)
+FindKeypadVMod(struct xkb_keymap *keymap)
 {
     xkb_atom_t name;
     ExprResult rtrn;
 
     name = xkb_intern_atom("NumLock");
-    if ((xkb) && LookupVModIndex(xkb, name, TypeInt, &rtrn))
+    if (keymap && LookupVModIndex(keymap, name, TypeInt, &rtrn))
     {
         return rtrn.ival;
     }
@@ -221,12 +220,11 @@ FindKeypadVMod(struct xkb_keymap * xkb)
 }
 
 bool
-ResolveVirtualModifier(ExprDef * def, struct xkb_keymap *xkb,
-                       ExprResult * val_rtrn, VModInfo * info)
+ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
+                       ExprResult *val_rtrn, VModInfo *info)
 {
-    struct xkb_names * names;
+    struct xkb_names *names = keymap->names;
 
-    names = xkb->names;
     if (def->op == ExprIdent)
     {
         int i, bit;

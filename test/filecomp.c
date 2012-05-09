@@ -41,7 +41,7 @@ test_file(const char *path)
 {
     int fd;
     struct xkb_context *context;
-    struct xkb_keymap *xkb;
+    struct xkb_keymap *keymap;
 
     fd = open(path, O_RDONLY);
     assert(fd >= 0);
@@ -51,16 +51,16 @@ test_file(const char *path)
 
     fprintf(stderr, "\nCompiling path: %s\n", path);
 
-    xkb = xkb_map_new_from_fd(context, fd, XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+    keymap = xkb_map_new_from_fd(context, fd, XKB_KEYMAP_FORMAT_TEXT_V1, 0);
     close(fd);
 
-    if (!xkb) {
+    if (!keymap) {
         fprintf(stderr, "Failed to compile keymap\n");
         xkb_context_unref(context);
         return 0;
     }
 
-    xkb_map_unref(xkb);
+    xkb_map_unref(keymap);
     xkb_context_unref(context);
     return 1;
 }
@@ -79,20 +79,21 @@ static int
 test_string(const char *string)
 {
     struct xkb_context *context;
-    struct xkb_keymap *xkb;
+    struct xkb_keymap *keymap;
 
     context = xkb_context_new(0);
     assert(context);
 
     fprintf(stderr, "\nCompiling string\n");
 
-    xkb = xkb_map_new_from_string(context, string, XKB_KEYMAP_FORMAT_TEXT_V1, 0);
-    if (!xkb) {
+    keymap = xkb_map_new_from_string(context, string,
+                                     XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+    if (!keymap) {
         xkb_context_unref(context);
         return 0;
     }
 
-    xkb_map_unref(xkb);
+    xkb_map_unref(keymap);
     xkb_context_unref(context);
     return 1;
 }

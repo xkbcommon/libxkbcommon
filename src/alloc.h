@@ -30,42 +30,47 @@ authorization from the authors.
 #include "xkb-priv.h"
 
 extern int
-XkbcAllocCompatMap(struct xkb_keymap *xkb, unsigned nSI);
+XkbcAllocCompatMap(struct xkb_keymap *keymap, unsigned nSI);
 
 extern int
-XkbcAllocNames(struct xkb_keymap * xkb, unsigned which, unsigned nTotalAliases);
+XkbcAllocNames(struct xkb_keymap *keymap, unsigned which,
+               unsigned nTotalAliases);
 
 extern int
-XkbcAllocControls(struct xkb_keymap *xkb);
+XkbcAllocControls(struct xkb_keymap *keymap);
 
 extern int
-XkbcAllocIndicatorMaps(struct xkb_keymap * xkb);
+XkbcAllocIndicatorMaps(struct xkb_keymap *keymap);
 
 extern struct xkb_keymap *
 XkbcAllocKeyboard(struct xkb_context *context);
 
 extern void
-XkbcFreeKeyboard(struct xkb_keymap * xkb);
+XkbcFreeKeyboard(struct xkb_keymap *keymap);
 
 extern int
-XkbcAllocClientMap(struct xkb_keymap * xkb, unsigned which, unsigned nTotalTypes);
+XkbcAllocClientMap(struct xkb_keymap *keymap, unsigned which,
+                   unsigned nTotalTypes);
 
 extern int
-XkbcAllocServerMap(struct xkb_keymap * xkb, unsigned which, unsigned nNewActions);
+XkbcAllocServerMap(struct xkb_keymap *keymap, unsigned which,
+                   unsigned nNewActions);
 
 extern int
-XkbcCopyKeyType(struct xkb_key_type * from, struct xkb_key_type *into);
+XkbcCopyKeyType(struct xkb_key_type *from, struct xkb_key_type *into);
 
 extern bool
-XkbcResizeKeySyms(struct xkb_keymap * xkb, xkb_keycode_t key, uint32_t needed);
+XkbcResizeKeySyms(struct xkb_keymap *keymap, xkb_keycode_t key,
+                  uint32_t needed);
 
 extern union xkb_action *
-XkbcResizeKeyActions(struct xkb_keymap * xkb, xkb_keycode_t key, uint32_t needed);
+XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t key,
+                     uint32_t needed);
 
 extern void
-XkbcFreeClientMap(struct xkb_keymap * xkb);
+XkbcFreeClientMap(struct xkb_keymap *keymap);
 
 extern void
-XkbcFreeServerMap(struct xkb_keymap * xkb);
+XkbcFreeServerMap(struct xkb_keymap *keymap);
 
 #endif /* ALLOC_H */

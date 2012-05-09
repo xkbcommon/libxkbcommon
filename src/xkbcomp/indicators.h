@@ -61,19 +61,19 @@ extern LEDInfo *
 AddIndicatorMap(LEDInfo *oldLEDs, LEDInfo *newLED);
 
 extern int
-SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *xkb, char *field,
+SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap, char *field,
                      ExprDef *arrayNdx, ExprDef *value);
 
 extern LEDInfo *
-HandleIndicatorMapDef(IndicatorMapDef *stmt, struct xkb_keymap *xkb,
+HandleIndicatorMapDef(IndicatorMapDef *stmt, struct xkb_keymap *keymap,
                       LEDInfo *dflt, LEDInfo *oldLEDs, unsigned mergeMode);
 
 extern bool
-CopyIndicatorMapDefs(struct xkb_keymap *xkb, LEDInfo *leds,
+CopyIndicatorMapDefs(struct xkb_keymap *keymap, LEDInfo *leds,
                      LEDInfo **unboundRtrn);
 
 extern bool
-BindIndicators(struct xkb_keymap *xkb, bool force, LEDInfo *unbound,
+BindIndicators(struct xkb_keymap *keymap, bool force, LEDInfo *unbound,
                LEDInfo **unboundRtrn);
 
 #endif /* INDICATORS_H */

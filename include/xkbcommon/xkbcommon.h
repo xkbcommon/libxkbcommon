@@ -329,13 +329,13 @@ xkb_map_new_from_string(struct xkb_context *context,
  * Takes a new reference on a keymap.
  */
 struct xkb_keymap *
-xkb_map_ref(struct xkb_keymap *xkb);
+xkb_map_ref(struct xkb_keymap *keymap);
 
 /**
  * Releases a reference on a keymap.
  */
 void
-xkb_map_unref(struct xkb_keymap *xkb);
+xkb_map_unref(struct xkb_keymap *keymap);
 
 /** @} */
 
@@ -351,61 +351,61 @@ xkb_map_unref(struct xkb_keymap *xkb);
  * Returns the number of modifiers active in the keymap.
  */
 xkb_mod_index_t
-xkb_map_num_mods(struct xkb_keymap *xkb);
+xkb_map_num_mods(struct xkb_keymap *keymap);
 
 /**
  * Returns the name of the modifier specified by 'idx', or NULL if invalid.
  */
 const char *
-xkb_map_mod_get_name(struct xkb_keymap *xkb, xkb_mod_index_t idx);
+xkb_map_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx);
 
 /**
  * Returns the index of the modifier specified by 'name', or XKB_MOD_INVALID.
  */
 xkb_mod_index_t
-xkb_map_mod_get_index(struct xkb_keymap *xkb, const char *name);
+xkb_map_mod_get_index(struct xkb_keymap *keymap, const char *name);
 
 /**
  * Returns the number of groups active in the keymap.
  */
 xkb_group_index_t
-xkb_map_num_groups(struct xkb_keymap *xkb);
+xkb_map_num_groups(struct xkb_keymap *keymap);
 
 /**
  * Returns the name of the group specified by 'idx', or NULL if invalid.
  */
 const char *
-xkb_map_group_get_name(struct xkb_keymap *xkb, xkb_group_index_t idx);
+xkb_map_group_get_name(struct xkb_keymap *keymap, xkb_group_index_t idx);
 
 /**
  * Returns the index of the group specified by 'name', or XKB_GROUP_INVALID.
  */
 xkb_group_index_t
-xkb_map_group_get_index(struct xkb_keymap *xkb, const char *name);
+xkb_map_group_get_index(struct xkb_keymap *keymap, const char *name);
 
 /**
  * Returns the number of groups active for the specified key.
  */
 xkb_group_index_t
-xkb_key_num_groups(struct xkb_keymap *xkb, xkb_keycode_t key);
+xkb_key_num_groups(struct xkb_keymap *keymap, xkb_keycode_t key);
 
 /**
  * Returns the number of LEDs in the given map.
  */
 xkb_led_index_t
-xkb_map_num_leds(struct xkb_keymap *xkb);
+xkb_map_num_leds(struct xkb_keymap *keymap);
 
 /**
  * Returns the name of the LED specified by 'idx', or NULL if invalid.
  */
 const char *
-xkb_map_led_get_name(struct xkb_keymap *xkb, xkb_led_index_t idx);
+xkb_map_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx);
 
 /**
  * Returns the index of the LED specified by 'name', or XKB_LED_INVALID.
  */
 xkb_led_index_t
-xkb_map_led_get_index(struct xkb_keymap *xkb, const char *name);
+xkb_map_led_get_index(struct xkb_keymap *keymap, const char *name);
 
 /** @} */
 
@@ -422,7 +422,7 @@ xkb_map_led_get_index(struct xkb_keymap *xkb, const char *name);
  * failure.
  */
 struct xkb_state *
-xkb_state_new(struct xkb_keymap *xkb);
+xkb_state_new(struct xkb_keymap *keymap);
 
 /**
  * Takes a new reference on a state object.

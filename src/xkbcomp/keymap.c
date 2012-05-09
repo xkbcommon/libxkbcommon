@@ -41,7 +41,7 @@ CompileKeymap(struct xkb_context *context, XkbFile *file)
     unsigned mainType;
     const char *mainName;
     LEDInfo *unbound = NULL, *next;
-    struct xkb_keymap *xkb = XkbcAllocKeyboard(context);
+    struct xkb_keymap *keymap = XkbcAllocKeyboard(context);
     struct {
         XkbFile *keycodes;
         XkbFile *types;
@@ -49,7 +49,7 @@ CompileKeymap(struct xkb_context *context, XkbFile *file)
         XkbFile *symbols;
     } sections;
 
-    if (!xkb)
+    if (!keymap)
         return NULL;
 
     memset(&sections, 0, sizeof(sections));
@@ -149,43 +149,43 @@ CompileKeymap(struct xkb_context *context, XkbFile *file)
 
     /* compile the sections we have in the file one-by-one, or fail. */
     if (sections.keycodes == NULL ||
-        !CompileKeycodes(sections.keycodes, xkb, MergeOverride))
+        !CompileKeycodes(sections.keycodes, keymap, MergeOverride))
     {
         ERROR("Failed to compile keycodes\n");
         goto err;
     }
     if (sections.types == NULL ||
-        !CompileKeyTypes(sections.types, xkb, MergeOverride))
+        !CompileKeyTypes(sections.types, keymap, MergeOverride))
     {
         ERROR("Failed to compile key types\n");
         goto err;
     }
     if (sections.compat == NULL ||
-        !CompileCompatMap(sections.compat, xkb, MergeOverride, &unbound))
+        !CompileCompatMap(sections.compat, keymap, MergeOverride, &unbound))
     {
         ERROR("Failed to compile compat map\n");
         goto err;
     }
     if (sections.symbols == NULL ||
-        !CompileSymbols(sections.symbols, xkb, MergeOverride))
+        !CompileSymbols(sections.symbols, keymap, MergeOverride))
     {
         ERROR("Failed to compile symbols\n");
         goto err;
     }
 
-    ok = BindIndicators(xkb, true, unbound, NULL);
+    ok = BindIndicators(keymap, true, unbound, NULL);
     if (!ok)
         goto err;
 
-    ok = UpdateModifiersFromCompat(xkb);
+    ok = UpdateModifiersFromCompat(keymap);
     if (!ok)
         goto err;
 
-    return xkb;
+    return keymap;
 
 err:
     ACTION("Failed to compile keymap\n");
-    xkb_map_unref(xkb);
+    xkb_map_unref(keymap);
     while (unbound) {
         next = (LEDInfo *) unbound->defs.next;
         free(unbound);
