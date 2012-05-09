@@ -35,15 +35,6 @@ XkbcAllocClientMap(struct xkb_keymap *keymap, unsigned which,
     if (!keymap || ((nTotalTypes > 0) && (nTotalTypes < XkbNumRequiredTypes)))
         return BadValue;
 
-    if ((which & XkbKeySymsMask) &&
-        !xkb_keymap_keycode_range_is_legal(keymap)) {
-#ifdef DEBUG
-        fprintf(stderr, "bad keycode (%d,%d) in XkbAllocClientMap\n",
-                keymap->min_key_code, keymap->max_key_code);
-#endif
-        return BadValue;
-    }
-
     if (!keymap->map) {
         map = uTypedCalloc(1, struct xkb_client_map);
         if (!map)
@@ -125,9 +116,6 @@ XkbcAllocServerMap(struct xkb_keymap *keymap, unsigned which,
 
     if (!which)
         return Success;
-
-    if (!xkb_keymap_keycode_range_is_legal(keymap))
-        return BadMatch;
 
     if (!map->explicit) {
         i = keymap->max_key_code + 1;
@@ -469,9 +457,6 @@ XkbcAllocNames(struct xkb_keymap *keymap, unsigned which,
     }
 
     if ((which & XkbKeyNamesMask) && !names->keys) {
-        if (!xkb_keymap_keycode_range_is_legal(keymap))
-            return BadMatch;
-
         names->keys = uTypedCalloc(keymap->max_key_code + 1,
                                    struct xkb_key_name);
         if (!names->keys)

@@ -101,12 +101,7 @@ typedef uint32_t xkb_led_index_t;
 
 #define XKB_KEYCODE_MAX                 (0xffffffff - 1)
 #define xkb_keycode_is_legal_ext(kc)    (kc <= XKB_KEYCODE_MAX)
-#define xkb_keycode_is_legal_x11(kc)    (kc <= XKB_KEYCODE_MAX)
-#define xkb_keymap_keycode_range_is_legal(xkb) \
-    (xkb->max_key_code > 0 && \
-     xkb->max_key_code > xkb->min_key_code && \
-     xkb_keycode_is_legal_ext(xkb->min_key_code) && \
-     xkb_keycode_is_legal_ext(xkb->max_key_code))
+#define xkb_keycode_is_legal_x11(kc)    (kc >= 8 && kc <= 255)
 
 /**
  * Names to compile a keymap with, also known as RMLVO.  These names together
