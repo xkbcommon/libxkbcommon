@@ -34,7 +34,7 @@ typedef uint32_t xkb_atom_t;
 #define XKB_ATOM_NONE 0
 
 extern xkb_atom_t
-xkb_intern_atom(const char *string);
+xkb_atom_intern(struct xkb_context *context, const char *string);
 
 extern char *
 XkbcAtomGetString(xkb_atom_t atom);

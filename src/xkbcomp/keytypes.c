@@ -104,10 +104,10 @@ static void
 InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
                  KeyTypesInfo *from)
 {
-    tok_ONE_LEVEL = xkb_intern_atom("ONE_LEVEL");
-    tok_TWO_LEVEL = xkb_intern_atom("TWO_LEVEL");
-    tok_ALPHABETIC = xkb_intern_atom("ALPHABETIC");
-    tok_KEYPAD = xkb_intern_atom("KEYPAD");
+    tok_ONE_LEVEL = xkb_atom_intern(xkb->context, "ONE_LEVEL");
+    tok_TWO_LEVEL = xkb_atom_intern(xkb->context, "TWO_LEVEL");
+    tok_ALPHABETIC = xkb_atom_intern(xkb->context, "ALPHABETIC");
+    tok_KEYPAD = xkb_atom_intern(xkb->context, "KEYPAD");
     info->name = strdup("default");
     info->errorCount = 0;
     info->stdPresent = 0;
@@ -775,7 +775,8 @@ AddLevelName(KeyTypeInfo *type, unsigned level, xkb_atom_t name, bool clobber)
 }
 
 static bool
-SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
+SetLevelName(KeyTypeInfo *type, struct xkb_keymap *xkb, ExprDef *arrayNdx,
+             ExprDef *value)
 {
     ExprResult rtrn;
     unsigned level;
@@ -793,7 +794,7 @@ SetLevelName(KeyTypeInfo * type, ExprDef * arrayNdx, ExprDef * value)
         ACTION("Ignoring illegal level name definition\n");
         return false;
     }
-    level_name = xkb_intern_atom(rtrn.str);
+    level_name = xkb_atom_intern(xkb->context, rtrn.str);
     free(rtrn.str);
     return AddLevelName(type, level, level_name, true);
 }
@@ -856,7 +857,7 @@ SetKeyTypeField(KeyTypeInfo *type, struct xkb_keymap *keymap,
              (strcasecmp(field, "level_name") == 0))
     {
         type->defs.defined |= _KT_LevelNames;
-        return SetLevelName(type, arrayNdx, value);
+        return SetLevelName(type, xkb, arrayNdx, value);
     }
     ERROR("Unknown field %s in key type %s\n", field, TypeTxt(type));
     ACTION("Definition ignored\n");

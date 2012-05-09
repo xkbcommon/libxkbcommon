@@ -108,7 +108,7 @@ XkbcAtomGetString(xkb_atom_t atom)
 }
 
 xkb_atom_t
-xkb_intern_atom(const char *string)
+xkb_atom_intern(struct xkb_context *context, const char *string)
 {
     NodePtr *np;
     NodePtr nd;

@@ -1085,7 +1085,7 @@ ApplyActionFactoryDefaults(union xkb_action * action)
 }
 
 static void
-ActionsInit(void);
+ActionsInit(struct xkb_context *context);
 
 int
 HandleActionDef(ExprDef * def,
@@ -1097,7 +1097,7 @@ HandleActionDef(ExprDef * def,
     unsigned tmp, hndlrType;
 
     if (!actionsInitialized)
-        ActionsInit();
+        ActionsInit(xkb->context);
 
     if (def->op != ExprActionDecl)
     {
@@ -1153,13 +1153,13 @@ HandleActionDef(ExprDef * def,
             if ((arg->op == OpNot) || (arg->op == OpInvert))
             {
                 field = arg->value.child;
-                constFalse.value.str = xkb_intern_atom("false");
+                constFalse.value.str = xkb_atom_intern(xkb->context, "false");
                 value = &constFalse;
             }
             else
             {
                 field = arg;
-                constTrue.value.str = xkb_intern_atom("true");
+                constTrue.value.str = xkb_atom_intern(xkb->context, "true");
                 value = &constTrue;
             }
         }
@@ -1202,7 +1202,7 @@ SetActionField(struct xkb_keymap *keymap,
     ActionInfo *new, *old;
 
     if (!actionsInitialized)
-        ActionsInit();
+        ActionsInit(xkb->context);
 
     new = uTypedAlloc(ActionInfo);
     if (new == NULL)
@@ -1249,7 +1249,7 @@ SetActionField(struct xkb_keymap *keymap,
 /***====================================================================***/
 
 static void
-ActionsInit(void)
+ActionsInit(struct xkb_context *context)
 {
     if (!actionsInitialized)
     {
@@ -1259,12 +1259,12 @@ ActionsInit(void)
         constTrue.common.next = NULL;
         constTrue.op = ExprIdent;
         constTrue.type = TypeBoolean;
-        constTrue.value.str = xkb_intern_atom("true");
+        constTrue.value.str = xkb_atom_intern(context, "true");
         constFalse.common.stmtType = StmtExpr;
         constFalse.common.next = NULL;
         constFalse.op = ExprIdent;
         constFalse.type = TypeBoolean;
-        constFalse.value.str = xkb_intern_atom("false");
+        constFalse.value.str = xkb_atom_intern(context, "false");
         actionsInitialized = 1;
     }
 }

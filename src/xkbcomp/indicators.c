@@ -38,9 +38,9 @@
 /***====================================================================***/
 
 void
-ClearIndicatorMapInfo(LEDInfo * info)
+ClearIndicatorMapInfo(struct xkb_context *context, LEDInfo * info)
 {
-    info->name = xkb_intern_atom("default");
+    info->name = xkb_atom_intern(context, "default");
     info->indicator = _LED_NotBound;
     info->flags = info->which_mods = info->real_mods = 0;
     info->vmods = 0;

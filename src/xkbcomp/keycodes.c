@@ -754,7 +754,8 @@ err_out:
 }
 
 static int
-HandleIndicatorNameDef(IndicatorNameDef *def, KeyNamesInfo *info)
+HandleIndicatorNameDef(IndicatorNameDef *def, struct xkb_keymap *xkb,
+                       KeyNamesInfo *info)
 {
     IndicatorNameInfo ii;
     ExprResult tmp;
@@ -775,7 +776,7 @@ HandleIndicatorNameDef(IndicatorNameDef *def, KeyNamesInfo *info)
         info->errorCount++;
         return ReportBadType("indicator", "name", buf, "string");
     }
-    ii.name = xkb_intern_atom(tmp.str);
+    ii.name = xkb_atom_intern(xkb->context, tmp.str);
     free(tmp.str);
     ii.virtual = def->virtual;
     if (!AddIndicatorName(info, &ii))
@@ -827,7 +828,7 @@ HandleKeycodesFile(XkbFile *file, struct xkb_keymap *keymap,
                 info->errorCount++;
             break;
         case StmtIndicatorNameDef: /* e.g. indicator 1 = "Caps Lock"; */
-            if (!HandleIndicatorNameDef((IndicatorNameDef *) stmt, info))
+            if (!HandleIndicatorNameDef((IndicatorNameDef *) stmt, keymap, info))
                 info->errorCount++;
             break;
         case StmtInterpDef:

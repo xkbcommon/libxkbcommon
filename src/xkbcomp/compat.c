@@ -115,7 +115,7 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap)
     info->dflt.interp.act.type = XkbSA_NoAction;
     for (i = 0; i < sizeof(info->dflt.interp.act.any.data); i++)
         info->dflt.interp.act.any.data[i] = 0;
-    ClearIndicatorMapInfo(&info->ledDflt);
+    ClearIndicatorMapInfo(xkb->context, &info->ledDflt);
     info->ledDflt.defs.fileID = info->fileID;
     info->ledDflt.defs.defined = 0;
     info->ledDflt.defs.merge = MergeOverride;
@@ -140,7 +140,7 @@ ClearCompatInfo(CompatInfo *info, struct xkb_keymap *keymap)
     info->dflt.interp.act.type = XkbSA_NoAction;
     for (i = 0; i < sizeof(info->dflt.interp.act.any.data); i++)
         info->dflt.interp.act.any.data[i] = 0;
-    ClearIndicatorMapInfo(&info->ledDflt);
+    ClearIndicatorMapInfo(xkb->context, &info->ledDflt);
     info->nInterps = 0;
     info->interps = (SymInterpInfo *) ClearCommonInfo(&info->interps->defs);
     memset(&info->groupCompat[0], 0,

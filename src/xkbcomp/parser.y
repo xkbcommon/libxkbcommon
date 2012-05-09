@@ -563,21 +563,21 @@ FieldSpec	:	Ident			{ $$= $1; }
 		;
 
 Element		:	ACTION_TOK		
-			{ $$= xkb_intern_atom("action"); }
+			{ $$= xkb_atom_intern(param->context, "action"); }
 		|	INTERPRET
-			{ $$= xkb_intern_atom("interpret"); }
+			{ $$= xkb_atom_intern(param->context, "interpret"); }
 		|	TYPE
-			{ $$= xkb_intern_atom("type"); }
+			{ $$= xkb_atom_intern(param->context, "type"); }
 		|	KEY
-			{ $$= xkb_intern_atom("key"); }
+			{ $$= xkb_atom_intern(param->context, "key"); }
 		|	GROUP
-			{ $$= xkb_intern_atom("group"); }
+			{ $$= xkb_atom_intern(param->context, "group"); }
 		|	MODIFIER_MAP
-			{$$= xkb_intern_atom("modifier_map");}
+			{$$= xkb_atom_intern(param->context, "modifier_map");}
 		|	INDICATOR
-			{ $$= xkb_intern_atom("indicator"); }
+			{ $$= xkb_atom_intern(param->context, "indicator"); }
 		|	SHAPE	
-			{ $$= xkb_intern_atom("shape"); }
+			{ $$= xkb_atom_intern(param->context, "shape"); }
 		|	ROW	
 			{ $$= XKB_ATOM_NONE; }
 		|	SECTION	
@@ -767,11 +767,22 @@ KeyCode         :       INTEGER         { $$= $1; }
 KeyName		:	KEYNAME		{ $$= $1; }
 		;
 
-Ident		:	IDENT	{ $$= xkb_intern_atom($1); free($1); }
-		|	DEFAULT { $$= xkb_intern_atom("default"); }
+Ident		:	IDENT
+                        {
+                            $$ = xkb_atom_intern(param->context, $1);
+                            free($1);
+                        }
+		|	DEFAULT
+                        {
+                            $$ = xkb_atom_intern(param->context, "default");
+                        }
 		;
 
-String		:	STRING	{ $$= xkb_intern_atom($1); free($1); }
+String		:	STRING
+                        {
+                            $$ = xkb_atom_intern(param->context, $1);
+                            free($1);
+                        }
 		;
 
 OptMapName	:	MapName	{ $$= $1; }

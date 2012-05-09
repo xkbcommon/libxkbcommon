@@ -211,7 +211,7 @@ FindKeypadVMod(struct xkb_keymap *keymap)
     xkb_atom_t name;
     ExprResult rtrn;
 
-    name = xkb_intern_atom("NumLock");
+    name = xkb_intern_atom(keymap->context, "NumLock");
     if (keymap && LookupVModIndex(keymap, name, TypeInt, &rtrn))
     {
         return rtrn.ival;
