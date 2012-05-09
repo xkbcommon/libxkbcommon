@@ -192,23 +192,23 @@ test_serialisation(struct xkb_keymap *keymap)
 
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
-    base_mods = xkb_state_serialise_mods(state, XKB_STATE_DEPRESSED);
+    base_mods = xkb_state_serialize_mods(state, XKB_STATE_DEPRESSED);
     assert(base_mods == 0);
-    latched_mods = xkb_state_serialise_mods(state, XKB_STATE_LATCHED);
+    latched_mods = xkb_state_serialize_mods(state, XKB_STATE_LATCHED);
     assert(latched_mods == 0);
-    locked_mods = xkb_state_serialise_mods(state, XKB_STATE_LOCKED);
+    locked_mods = xkb_state_serialize_mods(state, XKB_STATE_LOCKED);
     assert(locked_mods == (1 << caps));
-    effective_mods = xkb_state_serialise_mods(state, XKB_STATE_EFFECTIVE);
+    effective_mods = xkb_state_serialize_mods(state, XKB_STATE_EFFECTIVE);
     assert(effective_mods == locked_mods);
 
     xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
-    base_mods = xkb_state_serialise_mods(state, XKB_STATE_DEPRESSED);
+    base_mods = xkb_state_serialize_mods(state, XKB_STATE_DEPRESSED);
     assert(base_mods == (1 << shift));
-    latched_mods = xkb_state_serialise_mods(state, XKB_STATE_LATCHED);
+    latched_mods = xkb_state_serialize_mods(state, XKB_STATE_LATCHED);
     assert(latched_mods == 0);
-    locked_mods = xkb_state_serialise_mods(state, XKB_STATE_LOCKED);
+    locked_mods = xkb_state_serialize_mods(state, XKB_STATE_LOCKED);
     assert(locked_mods == (1 << caps));
-    effective_mods = xkb_state_serialise_mods(state, XKB_STATE_EFFECTIVE);
+    effective_mods = xkb_state_serialize_mods(state, XKB_STATE_EFFECTIVE);
     assert(effective_mods == (base_mods | locked_mods));
 
     base_mods |= (1 << ctrl);

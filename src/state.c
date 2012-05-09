@@ -578,7 +578,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
 
 /**
  * Updates the state from a set of explicit masks as gained from
- * xkb_state_serialise_mods and xkb_state_serialise_groups.  As noted in the
+ * xkb_state_serialize_mods and xkb_state_serialize_groups.  As noted in the
  * documentation for these functions in xkbcommon.h, this round-trip is
  * lossy, and should only be used to update a slave state mirroring the
  * master, e.g. in a client/server window system.
@@ -619,7 +619,7 @@ xkb_state_update_mask(struct xkb_state *state,
  * the same disclaimers as in xkb_state_update_mask.
  */
 _X_EXPORT xkb_mod_mask_t
-xkb_state_serialise_mods(struct xkb_state *state,
+xkb_state_serialize_mods(struct xkb_state *state,
                          enum xkb_state_component type)
 {
     xkb_mod_mask_t ret = 0;
@@ -642,7 +642,7 @@ xkb_state_serialise_mods(struct xkb_state *state,
  * in xkb_state_update_mask.
  */
 _X_EXPORT xkb_group_index_t
-xkb_state_serialise_group(struct xkb_state *state,
+xkb_state_serialize_group(struct xkb_state *state,
                           enum xkb_state_component type)
 {
     xkb_group_index_t ret = 0;
@@ -692,7 +692,7 @@ static int
 match_mod_masks(struct xkb_state *state, enum xkb_state_match match,
                 uint32_t wanted)
 {
-    uint32_t active = xkb_state_serialise_mods(state, XKB_STATE_EFFECTIVE);
+    uint32_t active = xkb_state_serialize_mods(state, XKB_STATE_EFFECTIVE);
 
     if (!(match & XKB_STATE_MATCH_NON_EXCLUSIVE) && (active & ~wanted))
         return 0;

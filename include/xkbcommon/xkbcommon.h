@@ -314,7 +314,7 @@ xkb_map_new_from_fd(struct xkb_ctx *ctx,
                     enum xkb_map_compile_flags flags);
 
 /**
- * Creates an XKB keymap from a full text XKB keymap serialised into one
+ * Creates an XKB keymap from a full text XKB keymap serialized into one
  * enormous string.
  */
 struct xkb_keymap *
@@ -505,13 +505,13 @@ enum xkb_state_match {
 /**
  * Updates a state object from a set of explicit masks.  This entrypoint is
  * really only for window systems and the like, where a master process
- * holds an xkb_state, then serialises it over a wire protocol, and clients
- * then use the serialisation to feed in to their own xkb_state.
+ * holds an xkb_state, then serializes it over a wire protocol, and clients
+ * then use the serialization to feed in to their own xkb_state.
  *
  * All parameters must always be passed, or the resulting state may be
  * incoherent.
  *
- * The serialisation is lossy and will not survive round trips; it must only
+ * The serialization is lossy and will not survive round trips; it must only
  * be used to feed slave state objects, and must not be used to update the
  * master state.
  *
@@ -528,7 +528,7 @@ xkb_state_update_mask(struct xkb_state *state,
 
 /**
  * The counterpart to xkb_state_update_mask, to be used on the server side
- * of serialisation.  Returns a xkb_mod_mask_t representing the given
+ * of serialization.  Returns a xkb_mod_mask_t representing the given
  * component(s) of the state.
  *
  * This function should not be used in regular clients; please use the
@@ -537,15 +537,15 @@ xkb_state_update_mask(struct xkb_state *state,
  * Can return NULL on failure.
  */
 xkb_mod_mask_t
-xkb_state_serialise_mods(struct xkb_state *state,
+xkb_state_serialize_mods(struct xkb_state *state,
                          enum xkb_state_component component);
 
 /**
- * The group equivalent of xkb_state_serialise_mods: please see its
+ * The group equivalent of xkb_state_serialize_mods: please see its
  * documentation.
  */
 xkb_group_index_t
-xkb_state_serialise_group(struct xkb_state *state,
+xkb_state_serialize_group(struct xkb_state *state,
                           enum xkb_state_component component);
 
 /**
