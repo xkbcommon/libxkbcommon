@@ -83,6 +83,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <stddef.h>
 #include <stdint.h>
 
+#include <xkbcommon/xkbcommon-names.h>
 #include <xkbcommon/xkbcommon-keysyms.h>
 
 #define XKB_KEY_NoSymbol	     0L	/* special KeySym */
