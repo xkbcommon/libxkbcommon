@@ -390,7 +390,9 @@ void
 xkb_state_unref(struct xkb_state *state);
 
 /**
- * Get the keymap from which the state object was created.
+ * Get the keymap from which the state object was created.  Does not take
+ * a new reference on the map; you must explicitly reference it yourself
+ * if you plan to use it beyond the lifetime of the state.
  */
 struct xkb_keymap *
 xkb_state_get_map(struct xkb_state *state);
