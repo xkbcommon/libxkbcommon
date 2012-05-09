@@ -29,8 +29,6 @@
 #include "xkbpath.h"
 #include "xkbparse.h"
 
-#include <X11/keysym.h>
-
 ParseCommon *
 AppendStmt(ParseCommon * to, ParseCommon * append)
 {
@@ -540,17 +538,17 @@ LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn)
     if ((!str) || (strcasecmp(str, "any") == 0) ||
         (strcasecmp(str, "nosymbol") == 0))
     {
-        *sym_rtrn = XKB_KEYSYM_NO_SYMBOL;
+        *sym_rtrn = XKB_KEY_NoSymbol;
         return 1;
     }
     else if ((strcasecmp(str, "none") == 0) ||
              (strcasecmp(str, "voidsymbol") == 0))
     {
-        *sym_rtrn = XK_VoidSymbol;
+        *sym_rtrn = XKB_KEY_VoidSymbol;
         return 1;
     }
     sym = xkb_string_to_keysym(str);
-    if (sym != XKB_KEYSYM_NO_SYMBOL)
+    if (sym != XKB_KEY_NoSymbol)
     {
         *sym_rtrn = sym;
         return 1;

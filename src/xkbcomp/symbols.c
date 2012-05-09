@@ -30,7 +30,6 @@
 #include "expr.h"
 #include "parseutils.h"
 
-#include <X11/keysym.h>
 #include <stdlib.h>
 
 #include "expr.h"
@@ -1079,7 +1078,7 @@ AddSymbolsToKey(KeyInfo * key,
                      value->value.list.syms[i], longText(key->name), ndx + 1,
                      XkbcAtomText(info->groupNames[ndx]), nSyms);
                 while (--j >= 0)
-                    key->syms[ndx][key->symsMapIndex[ndx][i] + j] = NoSymbol;
+                    key->syms[ndx][key->symsMapIndex[ndx][i] + j] = XKB_KEY_NoSymbol;
                 key->symsMapIndex[ndx][i] = -1;
                 key->symsMapNumEntries[ndx][i] = 0;
                 break;

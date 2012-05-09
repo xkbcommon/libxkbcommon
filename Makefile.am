@@ -93,7 +93,7 @@ makekeys_makekeys_CFLAGS = $(AM_CFLAGS) $(CFLAGS_FOR_BUILD)
 makekeys_makekeys_LDFLAGS = $(AM_LDFLAGS) $(LDFLAGS_FOR_BUILD)
 
 src/ks_tables.h: $(KEYSYMDEFS) $(top_builddir)/makekeys/makekeys$(EXEEXT)
-	$(top_builddir)/makekeys/makekeys $(KEYSYMDEFS) > $@
+	$(top_builddir)/makekeys/makekeys $(top_srcdir)/include/xkbcommon/xkbcommon-keysyms.h > $@
 
 # Tests
 

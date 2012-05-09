@@ -35,7 +35,7 @@ int
 main(void)
 {
     assert(test_string("Undo", 0xFF65));
-    assert(test_string("ThisKeyShouldNotExist", XKB_KEYSYM_NO_SYMBOL));
+    assert(test_string("ThisKeyShouldNotExist", XKB_KEY_NoSymbol));
     assert(test_string("XF86_Switch_VT_5", 0x1008FE05));
     assert(test_string("VoidSymbol", 0xFFFFFF));
     assert(test_string("U4567", 0x1004567));

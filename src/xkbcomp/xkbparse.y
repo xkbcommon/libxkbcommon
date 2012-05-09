@@ -31,7 +31,6 @@
 
 #include "parseutils.h"
 #include "xkbmisc.h"
-#include <X11/keysym.h>
 #include <stdlib.h>
 
 extern int yylex(union YYSTYPE *val, struct YYLTYPE *loc, void *scanner);

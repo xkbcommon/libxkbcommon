@@ -777,8 +777,8 @@ CopyInterps(CompatInfo * info,
     for (si = info->interps; si; si = (SymInterpInfo *) si->defs.next)
     {
         if (((si->interp.match & XkbSI_OpMask) != pred) ||
-            (needSymbol && (si->interp.sym == XKB_KEYSYM_NO_SYMBOL)) ||
-            ((!needSymbol) && (si->interp.sym != XKB_KEYSYM_NO_SYMBOL)))
+            (needSymbol && (si->interp.sym == XKB_KEY_NoSymbol)) ||
+            ((!needSymbol) && (si->interp.sym != XKB_KEY_NoSymbol)))
             continue;
         if (compat->num_si >= compat->size_si)
         {
@@ -892,7 +892,7 @@ UpdateActionMods(struct xkb_keymap *xkb, union xkb_action *act, uint32_t rmodmas
 /**
  * Find an interpretation which applies to this particular level, either by
  * finding an exact match for the symbol and modifier combination, or a
- * generic XKB_KEYSYM_NO_SYMBOL match.
+ * generic XKB_KEY_NoSymbol match.
  */
 static struct xkb_sym_interpret *
 FindInterpForKey(struct xkb_keymap *xkb, xkb_keycode_t key, uint32_t group, uint32_t level)
@@ -912,7 +912,7 @@ FindInterpForKey(struct xkb_keymap *xkb, xkb_keycode_t key, uint32_t group, uint
         bool found;
 
         if ((num_syms > 1 || interp->sym != syms[0]) &&
-            interp->sym != XKB_KEYSYM_NO_SYMBOL)
+            interp->sym != XKB_KEY_NoSymbol)
             continue;
 
         if (level == 0 || !(interp->match & XkbSI_LevelOneOnly))
@@ -941,7 +941,7 @@ FindInterpForKey(struct xkb_keymap *xkb, xkb_keycode_t key, uint32_t group, uint
             break;
         }
 
-        if (found && interp->sym != XKB_KEYSYM_NO_SYMBOL)
+        if (found && interp->sym != XKB_KEY_NoSymbol)
             return interp;
         else if (found && !ret)
             ret = interp;

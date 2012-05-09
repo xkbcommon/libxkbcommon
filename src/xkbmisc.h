@@ -64,7 +64,7 @@ _XkbcKSCheckCase(xkb_keysym_t sym);
 #define XkbcKSIsLower(k) (_XkbcKSCheckCase(k) & _XkbKSLower)
 #define XkbcKSIsUpper(k) (_XkbcKSCheckCase(k) & _XkbKSUpper)
 
-#define XkbKSIsKeypad(k) (((k) >= XK_KP_Space) && ((k) <= XK_KP_Equal))
+#define XkbKSIsKeypad(k) (((k) >= XKB_KEY_KP_Space) && ((k) <= XKB_KEY_KP_Equal))
 
 /***====================================================================***/
 

@@ -85,6 +85,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <xkbcommon/xkbcommon-keysyms.h>
 
+#define XKB_KEY_NoSymbol	     0L	/* special KeySym */
+
 typedef uint32_t xkb_keycode_t;
 typedef uint32_t xkb_keysym_t;
 typedef uint32_t xkb_mod_index_t;
@@ -96,8 +98,6 @@ typedef uint32_t xkb_led_index_t;
 #define XKB_GROUP_INVALID               (0xffffffff)
 #define XKB_KEYCODE_INVALID             (0xffffffff)
 #define XKB_LED_INVALID                 (0xffffffff)
-
-#define XKB_KEYSYM_NO_SYMBOL            0
 
 #define XKB_KEYCODE_MAX                 (0xffffffff - 1)
 #define xkb_keycode_is_legal_ext(kc)    (kc <= XKB_KEYCODE_MAX)

@@ -32,8 +32,8 @@ from The Open Group.
  */
 
 #include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-keysyms.h"
 
-#include <X11/keysymdef.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,40 +62,19 @@ parse_line(const char *buf, char *key, xkb_keysym_t *val, char *prefix)
 {
     int i;
     char alias[128];
-    char *tmp, *tmpa;
 
     /* See if we can catch a straight XK_foo 0x1234-style definition first;
      * the trickery around tmp is to account for prefices. */
     i = sscanf(buf, "#define %127s 0x%"SCNx32, key, val);
-    if (i == 2 && (tmp = strstr(key, "XK_"))) {
-        memcpy(prefix, key, tmp - key);
-        prefix[tmp - key] = '\0';
-        tmp += 3;
-        memmove(key, tmp, strlen(tmp) + 1);
+    if (i == 2 && strncmp(key, "XKB_KEY_", 8) == 0) {
+        prefix[0] = '\0';
+        memmove(key, key + 8, strlen(key + 8) + 1);
         return 1;
     }
 
-    /* Now try to catch alias (XK_foo XK_bar) definitions, and resolve them
-     * immediately: if the target is in the form XF86XK_foo, we need to
-     * canonicalise this to XF86foo before we do the lookup. */
     i = sscanf(buf, "#define %127s %127s", key, alias);
-    if (i == 2 && (tmp = strstr(key, "XK_")) && (tmpa = strstr(alias, "XK_"))) {
-        memcpy(prefix, key, tmp - key);
-        prefix[tmp - key] = '\0';
-        tmp += 3;
-        memmove(key, tmp, strlen(tmp) + 1);
-        memmove(tmpa, tmpa + 3, strlen(tmpa + 3) + 1);
-
-        for (i = ksnum - 1; i >= 0; i--) {
-            if (strcmp(info[i].name, alias) == 0) {
-                *val = info[i].val;
-                return 1;
-            }
-        }
-
-        fprintf(stderr, "can't find matching definition %s for keysym %s%s\n",
-                alias, prefix, key);
-    }
+    if (i == 2)
+	    fprintf(stderr, "can't parse keysym definition: %s", buf);
 
     return 0;
 }
@@ -128,7 +107,7 @@ main(int argc, char *argv[])
             if (!parse_line(buf, key, &val, prefix))
                 continue;
 
-            if (val == XK_VoidSymbol)
+            if (val == XKB_KEY_VoidSymbol)
                 val = 0;
             if (val > 0x1fffffff) {
                 fprintf(stderr, "ignoring illegal keysym (%s, %"PRIx32")\n", key,
@@ -154,9 +133,9 @@ main(int argc, char *argv[])
         fclose(fptr);
     }
 
-    /* Special case XKB_KEYSYM_NO_SYMBOL. */
+    /* Special case XKB_KEY_NoSymbol. */
     info[ksnum].name = strdup("NoSymbol");
-    info[ksnum].val = XKB_KEYSYM_NO_SYMBOL;
+    info[ksnum].val = XKB_KEY_NoSymbol;
     ksnum++;
 
     printf("/* This file is generated from keysymdef.h. */\n");

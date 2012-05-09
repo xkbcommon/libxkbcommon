@@ -28,7 +28,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "xkbmisc.h"
 #include "xkbcommon/xkbcommon.h"
 #include "XKBcommonint.h"
-#include <X11/keysym.h>
 
 #define mapSize(m) (sizeof(m) / sizeof(struct xkb_kt_map_entry))
 static struct xkb_kt_map_entry map2Level[]= {
@@ -192,69 +191,69 @@ _XkbcKSCheckCase(xkb_keysym_t ks)
 
     switch (set) {
     case 0: /* latin 1 */
-        if ((ks >= XK_A && ks <= XK_Z) ||
-            (ks >= XK_Agrave && ks <= XK_THORN && ks != XK_multiply))
+        if ((ks >= XKB_KEY_A && ks <= XKB_KEY_Z) ||
+            (ks >= XKB_KEY_Agrave && ks <= XKB_KEY_THORN && ks != XKB_KEY_multiply))
             rtrn |= _XkbKSUpper;
-        if ((ks >= XK_a && ks <= XK_z) ||
-            (ks >= XK_agrave && ks <= XK_ydiaeresis))
+        if ((ks >= XKB_KEY_a && ks <= XKB_KEY_z) ||
+            (ks >= XKB_KEY_agrave && ks <= XKB_KEY_ydiaeresis))
             rtrn |= _XkbKSLower;
         break;
     case 1: /* latin 2 */
-        if ((ks >= XK_Aogonek && ks <= XK_Zabovedot && ks != XK_breve) ||
-            (ks >= XK_Racute && ks<=XK_Tcedilla))
+        if ((ks >= XKB_KEY_Aogonek && ks <= XKB_KEY_Zabovedot && ks != XKB_KEY_breve) ||
+            (ks >= XKB_KEY_Racute && ks<=XKB_KEY_Tcedilla))
             rtrn |= _XkbKSUpper;
-        if ((ks >= XK_aogonek && ks <= XK_zabovedot && ks != XK_caron) ||
-            (ks >= XK_racute && ks <= XK_tcedilla))
+        if ((ks >= XKB_KEY_aogonek && ks <= XKB_KEY_zabovedot && ks != XKB_KEY_caron) ||
+            (ks >= XKB_KEY_racute && ks <= XKB_KEY_tcedilla))
             rtrn |= _XkbKSLower;
         break;
     case 2: /* latin 3 */
-        if ((ks >= XK_Hstroke && ks <= XK_Jcircumflex) ||
-            (ks >= XK_Cabovedot && ks <= XK_Scircumflex))
+        if ((ks >= XKB_KEY_Hstroke && ks <= XKB_KEY_Jcircumflex) ||
+            (ks >= XKB_KEY_Cabovedot && ks <= XKB_KEY_Scircumflex))
             rtrn |= _XkbKSUpper;
-        if ((ks >= XK_hstroke && ks <= XK_jcircumflex) ||
-            (ks >= XK_cabovedot && ks <= XK_scircumflex))
+        if ((ks >= XKB_KEY_hstroke && ks <= XKB_KEY_jcircumflex) ||
+            (ks >= XKB_KEY_cabovedot && ks <= XKB_KEY_scircumflex))
             rtrn |= _XkbKSLower;
         break;
     case 3: /* latin 4 */
-        if ((ks >= XK_Rcedilla && ks <= XK_Tslash) ||
-            (ks == XK_ENG) ||
-            (ks >= XK_Amacron && ks <= XK_Umacron))
+        if ((ks >= XKB_KEY_Rcedilla && ks <= XKB_KEY_Tslash) ||
+            (ks == XKB_KEY_ENG) ||
+            (ks >= XKB_KEY_Amacron && ks <= XKB_KEY_Umacron))
             rtrn |= _XkbKSUpper;
-        if ((ks >= XK_rcedilla && ks <= XK_tslash) ||
-            (ks == XK_eng) ||
-            (ks >= XK_amacron && ks <= XK_umacron))
+        if ((ks >= XKB_KEY_rcedilla && ks <= XKB_KEY_tslash) ||
+            (ks == XKB_KEY_eng) ||
+            (ks >= XKB_KEY_amacron && ks <= XKB_KEY_umacron))
             rtrn |= _XkbKSLower;
         break;
     case 18: /* latin 8 */
-        if ((ks == XK_Wcircumflex) ||
-            (ks == XK_Ycircumflex) ||
-            (ks == XK_Babovedot) ||
-            (ks == XK_Dabovedot) ||
-            (ks == XK_Fabovedot) ||
-            (ks == XK_Mabovedot) ||
-            (ks == XK_Pabovedot) ||
-            (ks == XK_Sabovedot) ||
-            (ks == XK_Tabovedot) ||
-            (ks == XK_Wdiaeresis) ||
-            (ks == XK_Ygrave))
+        if ((ks == XKB_KEY_Wcircumflex) ||
+            (ks == XKB_KEY_Ycircumflex) ||
+            (ks == XKB_KEY_Babovedot) ||
+            (ks == XKB_KEY_Dabovedot) ||
+            (ks == XKB_KEY_Fabovedot) ||
+            (ks == XKB_KEY_Mabovedot) ||
+            (ks == XKB_KEY_Pabovedot) ||
+            (ks == XKB_KEY_Sabovedot) ||
+            (ks == XKB_KEY_Tabovedot) ||
+            (ks == XKB_KEY_Wdiaeresis) ||
+            (ks == XKB_KEY_Ygrave))
             rtrn |= _XkbKSUpper;
-        if ((ks == XK_wcircumflex) ||
-            (ks == XK_ycircumflex) ||
-            (ks == XK_babovedot) ||
-            (ks == XK_dabovedot) ||
-            (ks == XK_fabovedot) ||
-            (ks == XK_mabovedot) ||
-            (ks == XK_pabovedot) ||
-            (ks == XK_sabovedot) ||
-            (ks == XK_tabovedot) ||
-            (ks == XK_wdiaeresis) ||
-            (ks == XK_ygrave))
+        if ((ks == XKB_KEY_wcircumflex) ||
+            (ks == XKB_KEY_ycircumflex) ||
+            (ks == XKB_KEY_babovedot) ||
+            (ks == XKB_KEY_dabovedot) ||
+            (ks == XKB_KEY_fabovedot) ||
+            (ks == XKB_KEY_mabovedot) ||
+            (ks == XKB_KEY_pabovedot) ||
+            (ks == XKB_KEY_sabovedot) ||
+            (ks == XKB_KEY_tabovedot) ||
+            (ks == XKB_KEY_wdiaeresis) ||
+            (ks == XKB_KEY_ygrave))
             rtrn |= _XkbKSLower;
         break;
     case 19: /* latin 9 */
-        if (ks == XK_OE || ks == XK_Ydiaeresis)
+        if (ks == XKB_KEY_OE || ks == XKB_KEY_Ydiaeresis)
             rtrn |= _XkbKSUpper;
-        if (ks == XK_oe)
+        if (ks == XKB_KEY_oe)
             rtrn |= _XkbKSLower;
         break;
     }

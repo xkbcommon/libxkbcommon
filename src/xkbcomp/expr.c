@@ -985,7 +985,7 @@ ExprResolveKeySym(ExprDef * expr,
         str = XkbcAtomText(expr->value.str);
         if (str) {
             sym = xkb_string_to_keysym(str);
-            if (sym != XKB_KEYSYM_NO_SYMBOL) {
+            if (sym != XKB_KEY_NoSymbol) {
                 val_rtrn->uval = sym;
                 return true;
             }
