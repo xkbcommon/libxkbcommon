@@ -45,8 +45,7 @@
 #define DFLT_LINE_SIZE	128
 
 typedef struct {
-	int	line_num;
-	int	sz_line;
+	size_t	sz_line;
 	int	num_line;
 	char	buf[DFLT_LINE_SIZE];
 	char *	line;
@@ -55,7 +54,6 @@ typedef struct {
 static void
 InitInputLine(InputLine *line)
 {
-    line->line_num= 1;
     line->num_line= 0;
     line->sz_line= DFLT_LINE_SIZE;
     line->line=	line->buf;
@@ -66,7 +64,6 @@ FreeInputLine(InputLine *line)
 {
     if (line->line!=line->buf)
 	free(line->line);
-    line->line_num= 1;
     line->num_line= 0;
     line->sz_line= DFLT_LINE_SIZE;
     line->line= line->buf;
@@ -109,7 +106,6 @@ GetInputLine(FILE *file,InputLine *line,bool checkbang)
 		if (ch=='\n') {
 		    inComment= false;
 		    ch= ' ';
-		    line->line_num++;
 		}
 	    }
 	    if (inComment)
@@ -193,7 +189,7 @@ static	const char * cname[MAX_WORDS] = {
 
 typedef	struct _RemapSpec {
 	int			number;
-	int			num_remap;
+	size_t			num_remap;
 	struct	{
 		int	word;
 		int	index;
@@ -739,6 +735,9 @@ XkbRF_SubstituteVars(char *name, XkbRF_MultiDefsPtr mdefs)
     size_t len;
     int ndx;
 
+    if (!name)
+        return NULL;
+
     orig= name;
     str= strchr(name,'%');
     if (str==NULL)
@@ -846,16 +845,11 @@ XkbcRF_GetComponents(	XkbRF_RulesPtr		rules,
     XkbRF_CheckApplyRules(rules, &mdefs, names, XkbRF_Option);
     XkbRF_ApplyPartialMatches(rules, names);
 
-    if (names->keycodes)
-	names->keycodes= XkbRF_SubstituteVars(names->keycodes, &mdefs);
-    if (names->symbols)
-	names->symbols=	XkbRF_SubstituteVars(names->symbols, &mdefs);
-    if (names->types)
-	names->types= XkbRF_SubstituteVars(names->types, &mdefs);
-    if (names->compat)
-	names->compat= XkbRF_SubstituteVars(names->compat, &mdefs);
-    if (names->keymap)
-	names->keymap= XkbRF_SubstituteVars(names->keymap, &mdefs);
+    names->keycodes = XkbRF_SubstituteVars(names->keycodes, &mdefs);
+    names->symbols = XkbRF_SubstituteVars(names->symbols, &mdefs);
+    names->types = XkbRF_SubstituteVars(names->types, &mdefs);
+    names->compat = XkbRF_SubstituteVars(names->compat, &mdefs);
+    names->keymap = XkbRF_SubstituteVars(names->keymap, &mdefs);
 
     FreeMultiDefs(&mdefs);
     return (names->keycodes && names->symbols && names->types &&
@@ -877,9 +871,6 @@ XkbcRF_AddRule(XkbRF_RulesPtr	rules)
     }
     if (!rules->rules) {
 	rules->sz_rules= rules->num_rules= 0;
-#ifdef DEBUG
-	fprintf(stderr,"Allocation failure in XkbcRF_AddRule\n");
-#endif
 	return NULL;
     }
     memset(&rules->rules[rules->num_rules], 0, sizeof(XkbRF_RuleRec));
@@ -968,12 +959,7 @@ XkbcRF_Free(XkbRF_RulesPtr rules)
     XkbRF_ClearVarDescriptions(&rules->layouts);
     XkbRF_ClearVarDescriptions(&rules->variants);
     XkbRF_ClearVarDescriptions(&rules->options);
-    if (rules->extra) {
-	for (i = 0; i < rules->num_extra; i++) {
-	    XkbRF_ClearVarDescriptions(&rules->extra[i]);
-	}
-	free(rules->extra);
-    }
+
     for (i=0, rule = rules->rules; i < rules->num_rules && rules; i++, rule++) {
         free(rule->model);
         free(rule->layout);

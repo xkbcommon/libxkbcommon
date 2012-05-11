@@ -38,10 +38,6 @@ typedef struct _XkbRF_VarDefs {
     const char *    layout;
     const char *    variant;
     const char *    options;
-    unsigned short  sz_extra;
-    unsigned short  num_extra;
-    char *          extra_names;
-    char **         extra_values;
 } XkbRF_VarDefsRec,*XkbRF_VarDefsPtr;
 
 typedef struct _XkbRF_VarDesc {
@@ -50,8 +46,8 @@ typedef struct _XkbRF_VarDesc {
 } XkbRF_VarDescRec, *XkbRF_VarDescPtr;
 
 typedef struct _XkbRF_DescribeVars {
-    int                 sz_desc;
-    int                 num_desc;
+    size_t              sz_desc;
+    size_t              num_desc;
     XkbRF_VarDescPtr    desc;
 } XkbRF_DescribeVarsRec,*XkbRF_DescribeVarsPtr;
 
@@ -89,14 +85,12 @@ typedef struct _XkbRF_Rules {
     XkbRF_DescribeVarsRec   layouts;
     XkbRF_DescribeVarsRec   variants;
     XkbRF_DescribeVarsRec   options;
-    unsigned short          num_extra;
-    XkbRF_DescribeVarsPtr   extra;
 
-    unsigned short          sz_rules;
-    unsigned short          num_rules;
+    size_t                  sz_rules;
+    size_t                  num_rules;
     XkbRF_RulePtr           rules;
-    unsigned short          sz_groups;
-    unsigned short          num_groups;
+    size_t                  sz_groups;
+    size_t                  num_groups;
     XkbRF_GroupPtr          groups;
 } XkbRF_RulesRec, *XkbRF_RulesPtr;
 
