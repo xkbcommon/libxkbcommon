@@ -44,7 +44,7 @@
  * @return true on success or false otherwise.
  */
 bool
-ProcessIncludeFile(struct xkb_ctx *ctx,
+ProcessIncludeFile(struct xkb_context *ctx,
                    IncludeStmt * stmt,
                    unsigned file_type,
                    XkbFile ** file_rtrn, unsigned *merge_rtrn)

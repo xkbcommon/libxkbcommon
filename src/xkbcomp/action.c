@@ -1085,7 +1085,7 @@ ApplyActionFactoryDefaults(union xkb_action * action)
 }
 
 static void
-ActionsInit(struct xkb_ctx *ctx);
+ActionsInit(struct xkb_context *ctx);
 
 int
 HandleActionDef(ExprDef * def,
@@ -1249,7 +1249,7 @@ SetActionField(struct xkb_keymap *keymap,
 /***====================================================================***/
 
 static void
-ActionsInit(struct xkb_ctx *ctx)
+ActionsInit(struct xkb_context *ctx)
 {
     if (!actionsInitialized)
     {

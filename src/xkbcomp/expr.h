@@ -53,19 +53,19 @@ extern const char *
 exprOpText(unsigned type);
 
 extern bool
-LookupModMask(struct xkb_ctx *ctx, const void *priv, xkb_atom_t field,
+LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
               unsigned type, ExprResult *val_rtrn);
 
 extern bool
-LookupVModMask(struct xkb_ctx *ctx, const void *priv, xkb_atom_t field,
+LookupVModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
                unsigned type, ExprResult *val_rtrn);
 
 extern bool
-LookupModIndex(struct xkb_ctx *ctx, const void *priv, xkb_atom_t field,
+LookupModIndex(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
                unsigned type, ExprResult *val_rtrn);
 
 extern int
-ExprResolveModMask(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveModMask(struct xkb_context *ctx, ExprDef *expr,
                    ExprResult *val_rtrn);
 
 extern int
@@ -73,51 +73,51 @@ ExprResolveVModMask(ExprDef *expr, ExprResult *val_rtrn,
                     struct xkb_keymap *keymap);
 
 extern int
-ExprResolveBoolean(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveBoolean(struct xkb_context *ctx, ExprDef *expr,
                    ExprResult *val_rtrn);
 
 extern int
-ExprResolveKeyCode(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveKeyCode(struct xkb_context *ctx, ExprDef *expr,
                    ExprResult *val_rtrn);
 
 extern int
-ExprResolveInteger(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveInteger(struct xkb_context *ctx, ExprDef *expr,
                    ExprResult *val_rtrn);
 
 extern int
-ExprResolveLevel(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveLevel(struct xkb_context *ctx, ExprDef *expr,
                  ExprResult *val_rtrn);
 
 extern int
-ExprResolveGroup(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveGroup(struct xkb_context *ctx, ExprDef *expr,
                  ExprResult *val_rtrn);
 
 extern int
-ExprResolveButton(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveButton(struct xkb_context *ctx, ExprDef *expr,
                   ExprResult *val_rtrn);
 
 extern int
-ExprResolveFloat(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveFloat(struct xkb_context *ctx, ExprDef *expr,
                  ExprResult *val_rtrn);
 
 extern int
-ExprResolveString(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveString(struct xkb_context *ctx, ExprDef *expr,
                   ExprResult *val_rtrn);
 
 extern int
-ExprResolveKeyName(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveKeyName(struct xkb_context *ctx, ExprDef *expr,
                    ExprResult *val_rtrn);
 
 extern int
-ExprResolveEnum(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveEnum(struct xkb_context *ctx, ExprDef *expr,
                 ExprResult *val_rtrn, const LookupEntry *values);
 
 extern int
-ExprResolveMask(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveMask(struct xkb_context *ctx, ExprDef *expr,
                 ExprResult *val_rtrn, const LookupEntry *values);
 
 extern int
-ExprResolveKeySym(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveKeySym(struct xkb_context *ctx, ExprDef *expr,
                   ExprResult *val_rtrn);
 
 #endif /* EXPR_H */

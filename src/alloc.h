@@ -43,7 +43,7 @@ extern int
 XkbcAllocIndicatorMaps(struct xkb_keymap *keymap);
 
 extern struct xkb_keymap *
-XkbcAllocKeyboard(struct xkb_ctx *ctx);
+XkbcAllocKeyboard(struct xkb_context *ctx);
 
 extern void
 XkbcFreeKeyboard(struct xkb_keymap *keymap);

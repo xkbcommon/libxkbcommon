@@ -28,7 +28,7 @@
 
 /***====================================================================***/
 
-typedef bool (*IdentLookupFunc) (struct xkb_ctx *ctx, const void *priv,
+typedef bool (*IdentLookupFunc) (struct xkb_context *ctx, const void *priv,
                                  xkb_atom_t field, unsigned type,
                                  ExprResult *val_rtrn);
 
@@ -161,7 +161,7 @@ ExprResolveLhs(struct xkb_keymap *keymap, ExprDef *expr,
 }
 
 static bool
-SimpleLookup(struct xkb_ctx *ctx, const void *priv,
+SimpleLookup(struct xkb_context *ctx, const void *priv,
              xkb_atom_t field, unsigned type, ExprResult *val_rtrn)
 {
     const LookupEntry *entry;
@@ -197,14 +197,14 @@ static const LookupEntry modIndexNames[] = {
 };
 
 bool
-LookupModIndex(struct xkb_ctx *ctx, const void *priv, xkb_atom_t field,
+LookupModIndex(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
                unsigned type, ExprResult *val_rtrn)
 {
     return SimpleLookup(ctx, modIndexNames, field, type, val_rtrn);
 }
 
 bool
-LookupModMask(struct xkb_ctx *ctx, const void *priv, xkb_atom_t field,
+LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
               unsigned type, ExprResult *val_rtrn)
 {
     const char *str;
@@ -227,7 +227,7 @@ LookupModMask(struct xkb_ctx *ctx, const void *priv, xkb_atom_t field,
 }
 
 int
-ExprResolveBoolean(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveBoolean(struct xkb_context *ctx, ExprDef *expr,
                    ExprResult *val_rtrn)
 {
     int ok = 0;
@@ -309,7 +309,7 @@ ExprResolveBoolean(struct xkb_ctx *ctx, ExprDef *expr,
 }
 
 int
-ExprResolveFloat(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveFloat(struct xkb_context *ctx, ExprDef *expr,
                  ExprResult *val_rtrn)
 {
     int ok = 0;
@@ -404,7 +404,7 @@ ExprResolveFloat(struct xkb_ctx *ctx, ExprDef *expr,
 }
 
 int
-ExprResolveKeyCode(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveKeyCode(struct xkb_context *ctx, ExprDef *expr,
                    ExprResult *val_rtrn)
 {
     ExprResult leftRtrn, rightRtrn;
@@ -482,7 +482,7 @@ ExprResolveKeyCode(struct xkb_ctx *ctx, ExprDef *expr,
  * Cool.
  */
 static int
-ExprResolveIntegerLookup(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveIntegerLookup(struct xkb_context *ctx, ExprDef *expr,
                          ExprResult *val_rtrn, IdentLookupFunc lookup,
                          const void *lookupPriv)
 {
@@ -590,14 +590,14 @@ ExprResolveIntegerLookup(struct xkb_ctx *ctx, ExprDef *expr,
 }
 
 int
-ExprResolveInteger(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveInteger(struct xkb_context *ctx, ExprDef *expr,
                    ExprResult *val_rtrn)
 {
     return ExprResolveIntegerLookup(ctx, expr, val_rtrn, NULL, NULL);
 }
 
 int
-ExprResolveGroup(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveGroup(struct xkb_context *ctx, ExprDef *expr,
                  ExprResult *val_rtrn)
 {
     int ret;
@@ -628,7 +628,7 @@ ExprResolveGroup(struct xkb_ctx *ctx, ExprDef *expr,
 }
 
 int
-ExprResolveLevel(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveLevel(struct xkb_context *ctx, ExprDef *expr,
                  ExprResult *val_rtrn)
 {
     int ret;
@@ -659,7 +659,7 @@ ExprResolveLevel(struct xkb_ctx *ctx, ExprDef *expr,
 }
 
 int
-ExprResolveButton(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveButton(struct xkb_context *ctx, ExprDef *expr,
                   ExprResult *val_rtrn)
 {
     static const LookupEntry button_names[] = {
@@ -677,7 +677,7 @@ ExprResolveButton(struct xkb_ctx *ctx, ExprDef *expr,
 }
 
 int
-ExprResolveString(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveString(struct xkb_context *ctx, ExprDef *expr,
                   ExprResult *val_rtrn)
 {
     ExprResult leftRtrn, rightRtrn;
@@ -762,7 +762,7 @@ ExprResolveString(struct xkb_ctx *ctx, ExprDef *expr,
 }
 
 int
-ExprResolveKeyName(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveKeyName(struct xkb_context *ctx, ExprDef *expr,
                    ExprResult *val_rtrn)
 {
     const char *bogus = NULL;
@@ -826,7 +826,7 @@ ExprResolveKeyName(struct xkb_ctx *ctx, ExprDef *expr,
 /***====================================================================***/
 
 int
-ExprResolveEnum(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveEnum(struct xkb_context *ctx, ExprDef *expr,
                 ExprResult *val_rtrn, const LookupEntry *values)
 {
     if (expr->op != ExprIdent)
@@ -856,7 +856,7 @@ ExprResolveEnum(struct xkb_ctx *ctx, ExprDef *expr,
 }
 
 static int
-ExprResolveMaskLookup(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveMaskLookup(struct xkb_context *ctx, ExprDef *expr,
                       ExprResult *val_rtrn, IdentLookupFunc lookup,
                       const void *lookupPriv)
 {
@@ -954,14 +954,14 @@ ExprResolveMaskLookup(struct xkb_ctx *ctx, ExprDef *expr,
 }
 
 int
-ExprResolveMask(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveMask(struct xkb_context *ctx, ExprDef *expr,
                 ExprResult *val_rtrn, const LookupEntry *values)
 {
     return ExprResolveMaskLookup(ctx, expr, val_rtrn, SimpleLookup, values);
 }
 
 int
-ExprResolveModMask(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveModMask(struct xkb_context *ctx, ExprDef *expr,
                    ExprResult *val_rtrn)
 {
     return ExprResolveMaskLookup(ctx, expr, val_rtrn, LookupModMask, NULL);
@@ -976,7 +976,7 @@ ExprResolveVModMask(ExprDef *expr, ExprResult *val_rtrn,
 }
 
 int
-ExprResolveKeySym(struct xkb_ctx *ctx, ExprDef *expr,
+ExprResolveKeySym(struct xkb_context *ctx, ExprDef *expr,
                   ExprResult *val_rtrn)
 {
     int ok = 0;

@@ -30,13 +30,13 @@
 int
 main(void)
 {
-    struct xkb_ctx *ctx = xkb_ctx_new(0);
+    struct xkb_context *context = xkb_context_new(0);
 
-    assert(ctx);
+    assert(context);
 
     /* FIXME: Test include path stuff. */
 
-    xkb_ctx_unref(ctx);
+    xkb_context_unref(context);
 
     return 0;
 }

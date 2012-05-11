@@ -361,7 +361,7 @@ struct xkb_controls {
 
 /* Common keyboard description structure */
 struct xkb_keymap {
-    struct xkb_ctx  *ctx;
+    struct xkb_context  *ctx;
 
     unsigned int        refcnt;
     unsigned short      flags;
@@ -434,13 +434,13 @@ typedef uint32_t xkb_atom_t;
 #define XKB_ATOM_NONE 0
 
 xkb_atom_t
-xkb_atom_intern(struct xkb_ctx *ctx, const char *string);
+xkb_atom_intern(struct xkb_context *ctx, const char *string);
 
 char *
-xkb_atom_strdup(struct xkb_ctx *ctx, xkb_atom_t atom);
+xkb_atom_strdup(struct xkb_context *ctx, xkb_atom_t atom);
 
 const char *
-xkb_atom_text(struct xkb_ctx *ctx, xkb_atom_t atom);
+xkb_atom_text(struct xkb_context *ctx, xkb_atom_t atom);
 
 extern unsigned int
 xkb_key_get_group(struct xkb_state *state, xkb_keycode_t key);
@@ -483,12 +483,12 @@ xkb_canonicalise_components(struct xkb_component_names *names,
  * Geometry will be ignored since xkbcommon does not support it in any way.
  */
 struct xkb_keymap *
-xkb_map_new_from_kccgst(struct xkb_ctx *ctx,
+xkb_map_new_from_kccgst(struct xkb_context *ctx,
                         const struct xkb_component_names *kccgst,
                         enum xkb_map_compile_flags flags);
 
 extern int
-xkb_ctx_take_file_id(struct xkb_ctx *ctx);
+xkb_context_take_file_id(struct xkb_context *ctx);
 
 extern bool
 XkbcComputeEffectiveMap(struct xkb_keymap *keymap, struct xkb_key_type *type,

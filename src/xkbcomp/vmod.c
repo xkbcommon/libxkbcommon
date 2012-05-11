@@ -190,7 +190,7 @@ LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
  * undefined.
  */
 bool
-LookupVModMask(struct xkb_ctx *ctx, const void *priv, xkb_atom_t field,
+LookupVModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
                unsigned type, ExprResult *val_rtrn)
 {
     if (LookupModMask(ctx, NULL, field, type, val_rtrn))

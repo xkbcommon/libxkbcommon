@@ -34,7 +34,7 @@ unsigned int warningLevel = 0;
 #define ISEMPTY(str) (!(str) || (strlen(str) == 0))
 
 static XkbFile *
-XkbKeymapFileFromComponents(struct xkb_ctx *ctx,
+XkbKeymapFileFromComponents(struct xkb_context *ctx,
                             const struct xkb_component_names *ktcsg)
 {
     XkbFile *keycodes, *types, *compat, *symbols;
@@ -65,7 +65,7 @@ XkbKeymapFileFromComponents(struct xkb_ctx *ctx,
 }
 
 static struct xkb_component_names *
-XkbComponentsFromRules(struct xkb_ctx *ctx,
+XkbComponentsFromRules(struct xkb_context *ctx,
                        const char *rules,
                        const XkbRF_VarDefsPtr defs)
 {
@@ -79,9 +79,9 @@ XkbComponentsFromRules(struct xkb_ctx *ctx,
     if (!rulesFile) {
         ERROR("could not find \"%s\" rules in XKB path\n", rules);
         ERROR("%d include paths searched:\n",
-              xkb_ctx_num_include_paths(ctx));
-        for (i = 0; i < xkb_ctx_num_include_paths(ctx); i++)
-            ERROR("\t%s\n", xkb_ctx_include_path_get(ctx, i));
+              xkb_context_num_include_paths(ctx));
+        for (i = 0; i < xkb_context_num_include_paths(ctx); i++)
+            ERROR("\t%s\n", xkb_context_include_path_get(ctx, i));
         return NULL;
     }
 
@@ -120,7 +120,7 @@ unwind_file:
 }
 
 _X_EXPORT struct xkb_keymap *
-xkb_map_new_from_names(struct xkb_ctx *ctx,
+xkb_map_new_from_names(struct xkb_context *ctx,
                        const struct xkb_rule_names *rmlvo,
                        enum xkb_map_compile_flags flags)
 {
@@ -192,7 +192,7 @@ XkbChooseMap(XkbFile *file, const char *name)
 }
 
 static struct xkb_keymap *
-compile_keymap(struct xkb_ctx *ctx, XkbFile *file)
+compile_keymap(struct xkb_context *ctx, XkbFile *file)
 {
     XkbFile *mapToUse;
     struct xkb_keymap *keymap = NULL;
@@ -214,7 +214,7 @@ err:
 }
 
 _X_EXPORT struct xkb_keymap *
-xkb_map_new_from_kccgst(struct xkb_ctx *ctx,
+xkb_map_new_from_kccgst(struct xkb_context *ctx,
                         const struct xkb_component_names *kccgst,
                         enum xkb_map_compile_flags flags)
 {
@@ -254,7 +254,7 @@ xkb_map_new_from_kccgst(struct xkb_ctx *ctx,
 }
 
 _X_EXPORT struct xkb_keymap *
-xkb_map_new_from_string(struct xkb_ctx *ctx,
+xkb_map_new_from_string(struct xkb_context *ctx,
                         const char *string,
                         enum xkb_keymap_format format,
                         enum xkb_map_compile_flags flags)
@@ -280,7 +280,7 @@ xkb_map_new_from_string(struct xkb_ctx *ctx,
 }
 
 _X_EXPORT struct xkb_keymap *
-xkb_map_new_from_fd(struct xkb_ctx *ctx,
+xkb_map_new_from_fd(struct xkb_context *ctx,
                     int fd,
                     enum xkb_keymap_format format,
                     enum xkb_map_compile_flags flags)

@@ -118,9 +118,9 @@ struct xkb_rule_names {
 
 /**
  * Opaque context object; may only be created, accessed, manipulated and
- * destroyed through the xkb_ctx_*() API.
+ * destroyed through the xkb_context_*() API.
  */
-struct xkb_ctx;
+struct xkb_context;
 
 /**
  * Opaque keymap object; may only be created, accessed, manipulated and
@@ -153,14 +153,14 @@ xkb_keysym_t
 xkb_keysym_from_name(const char *s);
 
 /**
- * @defgroup ctx XKB contexts
+ * @defgroup context XKB contexts
  * Every keymap compilation request must have an XKB context associated with
  * it.  The context keeps around state such as the include path.
  *
  * @{
  */
 
-enum xkb_ctx_flags {
+enum xkb_context_flags {
     /** Create this context with an empty include path. */
     XKB_CONTEXT_NO_DEFAULT_INCLUDES = 1,
 };
@@ -168,10 +168,10 @@ enum xkb_ctx_flags {
 /**
  * Returns a new XKB context, or NULL on failure.  If successful, the caller
  * holds a reference on the context, and must free it when finished with
- * xkb_ctx_unref().
+ * xkb_context_unref().
  */
-struct xkb_ctx *
-xkb_ctx_new(enum xkb_ctx_flags flags);
+struct xkb_context *
+xkb_context_new(enum xkb_context_flags flags);
 
 /**
  * Appends a new entry to the include path used for keymap compilation.
@@ -179,7 +179,7 @@ xkb_ctx_new(enum xkb_ctx_flags flags);
  * inaccessible.
  */
 int
-xkb_ctx_include_path_append(struct xkb_ctx *ctx, const char *path);
+xkb_context_include_path_append(struct xkb_context *context, const char *path);
 
 /**
  * Appends the default include paths to the context's current include path.
@@ -187,7 +187,7 @@ xkb_ctx_include_path_append(struct xkb_ctx *ctx, const char *path);
  * added.
  */
 int
-xkb_ctx_include_path_append_default(struct xkb_ctx *ctx);
+xkb_context_include_path_append_default(struct xkb_context *context);
 
 /**
  * Removes all entries from the context's include path, and inserts the
@@ -195,37 +195,37 @@ xkb_ctx_include_path_append_default(struct xkb_ctx *ctx);
  * could not be added.
  */
 int
-xkb_ctx_include_path_reset_defaults(struct xkb_ctx *ctx);
+xkb_context_include_path_reset_defaults(struct xkb_context *context);
 
 /**
  * Removes all entries from the context's include path.
  */
 void
-xkb_ctx_include_path_clear(struct xkb_ctx *ctx);
+xkb_context_include_path_clear(struct xkb_context *context);
 
 /**
  * Returns the number of include paths currently active in the context.
  */
 unsigned int
-xkb_ctx_num_include_paths(struct xkb_ctx *ctx);
+xkb_context_num_include_paths(struct xkb_context *context);
 
 /**
  * Returns the include path at the specified index within the context.
  */
 const char *
-xkb_ctx_include_path_get(struct xkb_ctx *ctx, unsigned int index);
+xkb_context_include_path_get(struct xkb_context *context, unsigned int index);
 
 /**
  * Takes a new reference on an XKB context.
  */
-struct xkb_ctx *
-xkb_ctx_ref(struct xkb_ctx *ctx);
+struct xkb_context *
+xkb_context_ref(struct xkb_context *context);
 
 /**
  * Releases a reference on an XKB context, and possibly frees it.
  */
 void
-xkb_ctx_unref(struct xkb_ctx *ctx);
+xkb_context_unref(struct xkb_context *context);
 
 /** @} */
 
@@ -249,7 +249,7 @@ enum xkb_map_compile_flags {
  * keymaps.
  */
 struct xkb_keymap *
-xkb_map_new_from_names(struct xkb_ctx *ctx,
+xkb_map_new_from_names(struct xkb_context *context,
                        const struct xkb_rule_names *names,
                        enum xkb_map_compile_flags flags);
 
@@ -263,7 +263,7 @@ enum xkb_keymap_format {
  * file descriptor.
  */
 struct xkb_keymap *
-xkb_map_new_from_fd(struct xkb_ctx *ctx,
+xkb_map_new_from_fd(struct xkb_context *context,
                     int fd, enum xkb_keymap_format format,
                     enum xkb_map_compile_flags flags);
 
@@ -272,7 +272,7 @@ xkb_map_new_from_fd(struct xkb_ctx *ctx,
  * enormous string.
  */
 struct xkb_keymap *
-xkb_map_new_from_string(struct xkb_ctx *ctx,
+xkb_map_new_from_string(struct xkb_context *context,
                         const char *string,
                         enum xkb_keymap_format format,
                         enum xkb_map_compile_flags flags);

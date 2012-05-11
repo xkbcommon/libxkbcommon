@@ -54,7 +54,7 @@ typedef struct _LEDInfo
 } LEDInfo;
 
 extern void
-ClearIndicatorMapInfo(struct xkb_ctx *ctx, LEDInfo *info);
+ClearIndicatorMapInfo(struct xkb_context *ctx, LEDInfo *info);
 
 
 extern LEDInfo *

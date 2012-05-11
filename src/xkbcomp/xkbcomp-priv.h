@@ -64,7 +64,7 @@ extern int
 ReportBadField(const char *type, const char *field, const char *name);
 
 extern bool
-ProcessIncludeFile(struct xkb_ctx *ctx,
+ProcessIncludeFile(struct xkb_context *ctx,
                    IncludeStmt *stmt, unsigned file_type, XkbFile **file_rtrn,
                    unsigned *merge_rtrn);
 
@@ -84,7 +84,7 @@ extern const char *
 XkbDirectoryForInclude(unsigned type);
 
 extern FILE *
-XkbFindFileInPath(struct xkb_ctx *ctx, const char *name,
+XkbFindFileInPath(struct xkb_context *ctx, const char *name,
                   unsigned type, char **pathRtrn);
 
 extern bool

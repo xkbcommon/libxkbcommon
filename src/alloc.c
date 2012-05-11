@@ -582,7 +582,7 @@ XkbcFreeIndicatorMaps(struct xkb_keymap *keymap)
 }
 
 struct xkb_keymap *
-XkbcAllocKeyboard(struct xkb_ctx *ctx)
+XkbcAllocKeyboard(struct xkb_context *ctx)
 {
     struct xkb_keymap *keymap;
 
@@ -591,7 +591,7 @@ XkbcAllocKeyboard(struct xkb_ctx *ctx)
         return NULL;
 
     keymap->refcnt = 1;
-    keymap->ctx = xkb_ctx_ref(ctx);
+    keymap->ctx = xkb_context_ref(ctx);
 
     return keymap;
 }
@@ -608,6 +608,6 @@ XkbcFreeKeyboard(struct xkb_keymap *keymap)
     XkbcFreeIndicatorMaps(keymap);
     XkbcFreeNames(keymap);
     XkbcFreeControls(keymap);
-    xkb_ctx_unref(keymap->ctx);
+    xkb_context_unref(keymap->ctx);
     free(keymap);
 }

@@ -40,7 +40,7 @@
 /***====================================================================***/
 
 void
-ClearIndicatorMapInfo(struct xkb_ctx *ctx, LEDInfo * info)
+ClearIndicatorMapInfo(struct xkb_context *ctx, LEDInfo * info)
 {
     info->name = xkb_atom_intern(ctx, "default");
     info->indicator = _LED_NotBound;

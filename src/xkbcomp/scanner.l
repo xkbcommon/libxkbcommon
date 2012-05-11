@@ -205,7 +205,7 @@ yyerror(struct YYLTYPE *loc, void *scanner, const char *msg)
 }
 
 bool
-XKBParseString(struct xkb_ctx *ctx, const char *string,
+XKBParseString(struct xkb_context *ctx, const char *string,
                const char *file_name, XkbFile **out)
 {
     int ret;
@@ -241,7 +241,7 @@ XKBParseString(struct xkb_ctx *ctx, const char *string,
 }
 
 bool
-XKBParseFile(struct xkb_ctx *ctx, FILE *file,
+XKBParseFile(struct xkb_context *ctx, FILE *file,
              const char *file_name, XkbFile **out)
 {
     int ret;
