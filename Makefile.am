@@ -91,7 +91,7 @@ BUILT_SOURCES = \
 CLEANFILES = $(BUILT_SOURCES)
 
 src/ks_tables.h: $(KEYSYMDEFS) $(top_builddir)/makekeys/makekeys$(EXEEXT)
-	$(top_builddir)/makekeys/makekeys $(top_srcdir)/include/xkbcommon/xkbcommon-keysyms.h > $@
+	$(AM_V_GEN)$(top_builddir)/makekeys/makekeys $(top_srcdir)/include/xkbcommon/xkbcommon-keysyms.h > $@
 
 $(top_builddir)/makekeys/makekeys$(EXEEXT): $(top_srcdir)/makekeys/makekeys.c
 	$(MAKE) -C makekeys
