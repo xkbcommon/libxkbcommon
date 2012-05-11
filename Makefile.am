@@ -34,7 +34,8 @@ AM_YFLAGS = -d
 xkbcommonincludedir = $(includedir)/xkbcommon
 xkbcommoninclude_HEADERS = \
 	include/xkbcommon/xkbcommon.h \
-	include/xkbcommon/xkbcommon-names.h
+	include/xkbcommon/xkbcommon-names.h \
+	include/xkbcommon/xkbcommon-keysyms.h
 
 lib_LTLIBRARIES = libxkbcommon.la
 libxkbcommon_la_LDFLAGS = -no-undefined
