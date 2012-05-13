@@ -82,6 +82,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include <xkbcommon/xkbcommon-names.h>
 #include <xkbcommon/xkbcommon-keysyms.h>
@@ -260,11 +261,11 @@ enum xkb_keymap_format {
 
 /**
  * Creates an XKB keymap from a full text XKB keymap passed into the
- * file descriptor.
+ * file.
  */
 struct xkb_keymap *
-xkb_map_new_from_fd(struct xkb_context *context,
-                    int fd, enum xkb_keymap_format format,
+xkb_map_new_from_file(struct xkb_context *context,
+                    FILE *file, enum xkb_keymap_format format,
                     enum xkb_map_compile_flags flags);
 
 /**

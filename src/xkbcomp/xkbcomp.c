@@ -283,36 +283,29 @@ xkb_map_new_from_string(struct xkb_context *ctx,
 }
 
 _X_EXPORT struct xkb_keymap *
-xkb_map_new_from_fd(struct xkb_context *ctx,
-                    int fd,
-                    enum xkb_keymap_format format,
-                    enum xkb_map_compile_flags flags)
+xkb_map_new_from_file(struct xkb_context *ctx,
+                      FILE *file,
+                      enum xkb_keymap_format format,
+                      enum xkb_map_compile_flags flags)
 {
-    XkbFile *file;
-    FILE *fptr;
+    XkbFile *xkb_file;
 
     if (format != XKB_KEYMAP_FORMAT_TEXT_V1) {
         ERROR("unsupported keymap format %d\n", format);
         return NULL;
     }
 
-    if (fd < 0) {
+    if (!file) {
         ERROR("no file specified to generate XKB keymap\n");
-	return NULL;
-    }
-
-    fptr = fdopen(fd, "r");
-    if (!fptr) {
-        ERROR("couldn't associate fd with file pointer\n");
         return NULL;
     }
 
-    if (!XKBParseFile(ctx, fptr, "(unknown file)", &file)) {
+    if (!XKBParseFile(ctx, file, "(unknown file)", &xkb_file)) {
         ERROR("failed to parse input xkb file\n");
         return NULL;
     }
 
-    return compile_keymap(ctx, file);
+    return compile_keymap(ctx, xkb_file);
 }
 
 _X_EXPORT struct xkb_keymap *

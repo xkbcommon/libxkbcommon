@@ -25,34 +25,31 @@ authorization from the authors.
 */
 
 #include <assert.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <fcntl.h>
 #include <limits.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 
 #include "xkbcommon/xkbcommon.h"
 
 static int
 test_file(const char *path)
 {
-    int fd;
+    FILE *file;
     struct xkb_context *context;
     struct xkb_keymap *keymap;
 
-    fd = open(path, O_RDONLY);
-    assert(fd >= 0);
+    file = fopen(path, "r");
+    assert(file != NULL);
 
     context = xkb_context_new(0);
     assert(context);
 
     fprintf(stderr, "\nCompiling path: %s\n", path);
 
-    keymap = xkb_map_new_from_fd(context, fd, XKB_KEYMAP_FORMAT_TEXT_V1, 0);
-    close(fd);
+    keymap = xkb_map_new_from_file(context, file,
+                                   XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+    fclose(file);
 
     if (!keymap) {
         fprintf(stderr, "Failed to compile keymap\n");
