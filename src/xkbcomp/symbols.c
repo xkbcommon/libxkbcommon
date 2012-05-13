@@ -78,7 +78,6 @@ typedef struct _KeyInfo
     unsigned repeat;
     struct xkb_behavior behavior;
     unsigned short vmodmap;
-    unsigned long allowNone;
     xkb_atom_t dfltType;
 } KeyInfo;
 
@@ -113,7 +112,6 @@ InitKeyInfo(KeyInfo * info)
     info->behavior.data = 0;
     info->vmodmap = 0;
     info->repeat = RepeatUndefined;
-    info->allowNone = 0;
 }
 
 /**
@@ -149,7 +147,6 @@ FreeKeyInfo(KeyInfo * info)
     info->behavior.data = 0;
     info->vmodmap = 0;
     info->repeat = RepeatUndefined;
-    info->allowNone = 0;
 }
 
 /**
