@@ -346,7 +346,7 @@ XkbcFreeServerMap(struct xkb_keymap *keymap)
 {
     struct xkb_server_map * map;
 
-    if (keymap || keymap->server)
+    if (!keymap || !keymap->server)
         return;
 
     map = keymap->server;
