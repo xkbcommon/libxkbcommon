@@ -187,6 +187,13 @@ static	const char * cname[MAX_WORDS] = {
 	"keycodes", "symbols", "types", "compat", "geometry", "keymap"
 };
 
+typedef struct {
+    const char *model;
+    const char *layout;
+    const char *variant;
+    const char *options;
+} XkbRF_VarDefsRec, *XkbRF_VarDefsPtr;
+
 typedef	struct _RemapSpec {
 	int			number;
 	size_t			num_remap;
@@ -207,6 +214,60 @@ typedef struct {
 	const char *		variant[XkbNumKbdGroups+1];
 	char *			options;
 } XkbRF_MultiDefsRec, *XkbRF_MultiDefsPtr;
+
+typedef struct _XkbRF_VarDesc {
+    char *  name;
+    char *  desc;
+} XkbRF_VarDescRec, *XkbRF_VarDescPtr;
+
+typedef struct _XkbRF_DescribeVars {
+    size_t              sz_desc;
+    size_t              num_desc;
+    XkbRF_VarDescPtr    desc;
+} XkbRF_DescribeVarsRec,*XkbRF_DescribeVarsPtr;
+
+typedef struct _XkbRF_Group {
+    int     number;
+    char *  name;
+    char *  words;
+} XkbRF_GroupRec, *XkbRF_GroupPtr;
+
+#define XkbRF_PendingMatch  (1L<<1)
+#define XkbRF_Option        (1L<<2)
+#define XkbRF_Append        (1L<<3)
+#define XkbRF_Normal        (1L<<4)
+#define XkbRF_Invalid       (1L<<5)
+
+typedef struct _XkbRF_Rule {
+    int         number;
+    int         layout_num;
+    int         variant_num;
+    char *      model;
+    char *      layout;
+    char *      variant;
+    char *      option;
+    /* yields */
+    char *      keycodes;
+    char *      symbols;
+    char *      types;
+    char *      compat;
+    char *      keymap;
+    unsigned    flags;
+} XkbRF_RuleRec,*XkbRF_RulePtr;
+
+typedef struct XkbRF_Rules {
+    XkbRF_DescribeVarsRec   models;
+    XkbRF_DescribeVarsRec   layouts;
+    XkbRF_DescribeVarsRec   variants;
+    XkbRF_DescribeVarsRec   options;
+
+    size_t                  sz_rules;
+    size_t                  num_rules;
+    XkbRF_RulePtr           rules;
+    size_t                  sz_groups;
+    size_t                  num_groups;
+    XkbRF_GroupPtr          groups;
+} XkbRF_RulesRec, *XkbRF_RulesPtr;
 
 #define NDX_BUFF_SIZE	4
 
@@ -491,7 +552,7 @@ squeeze_spaces(char *p1)
 }
 
 static bool
-MakeMultiDefs(XkbRF_MultiDefsPtr mdefs, XkbRF_VarDefsPtr defs)
+MakeMultiDefs(XkbRF_MultiDefsPtr mdefs, const XkbRF_VarDefsPtr defs)
 {
    memset(mdefs, 0, sizeof(XkbRF_MultiDefsRec));
    mdefs->model = defs->model;
@@ -827,10 +888,9 @@ XkbRF_SubstituteVars(char *name, XkbRF_MultiDefsPtr mdefs)
 
 /***====================================================================***/
 
-bool
-XkbcRF_GetComponents(	XkbRF_RulesPtr		rules,
-			XkbRF_VarDefsPtr	defs,
-			struct xkb_component_names *	names)
+static bool
+XkbcRF_GetComponents(struct XkbRF_Rules *rules, const XkbRF_VarDefsPtr defs,
+                     struct xkb_component_names *names)
 {
     XkbRF_MultiDefsRec mdefs;
 
@@ -899,16 +959,19 @@ XkbcRF_AddGroup(XkbRF_RulesPtr	rules)
     return &rules->groups[rules->num_groups++];
 }
 
-bool
-XkbcRF_LoadRules(FILE *file, XkbRF_RulesPtr rules)
+static XkbRF_RulesPtr
+XkbcRF_LoadRules(FILE *file)
 {
 InputLine	line;
 RemapSpec	remap;
 XkbRF_RuleRec	trule,*rule;
 XkbRF_GroupRec  tgroup,*group;
+    XkbRF_RulesPtr rules;
 
-    if (!(rules && file))
-        return false;
+    rules = calloc(1, sizeof(*rules));
+    if (!rules)
+        return NULL;
+
     memset(&remap, 0, sizeof(RemapSpec));
     memset(&tgroup, 0, sizeof(XkbRF_GroupRec));
     InitInputLine(&line);
@@ -929,7 +992,7 @@ XkbRF_GroupRec  tgroup,*group;
 	line.num_line= 0;
     }
     FreeInputLine(&line);
-    return true;
+    return rules;
 }
 
 static void
@@ -946,7 +1009,7 @@ XkbRF_ClearVarDescriptions(XkbRF_DescribeVarsPtr var)
     var->desc= NULL;
 }
 
-void
+static void
 XkbcRF_Free(XkbRF_RulesPtr rules)
 {
     int i;
@@ -980,4 +1043,62 @@ XkbcRF_Free(XkbRF_RulesPtr rules)
     free(rules->groups);
 
     free(rules);
+}
+
+struct xkb_component_names *
+xkb_components_from_rules(struct xkb_context *ctx,
+                          const struct xkb_rule_names *rmlvo)
+{
+    int i;
+    FILE *rulesFile;
+    char *rulesPath;
+    XkbRF_RulesPtr loaded;
+    struct xkb_component_names *names = NULL;
+    XkbRF_VarDefsRec defs = {
+        .model = rmlvo->model,
+        .layout = rmlvo->layout,
+        .variant = rmlvo->variant,
+        .options = rmlvo->options,
+    };
+
+    rulesFile = XkbFindFileInPath(ctx, rmlvo->rules, XkmRulesFile,
+                                  &rulesPath);
+    if (!rulesFile) {
+        ERROR("could not find \"%s\" rules in XKB path\n", rmlvo->rules);
+        ERROR("%d include paths searched:\n",
+              xkb_context_num_include_paths(ctx));
+        for (i = 0; i < xkb_context_num_include_paths(ctx); i++)
+            ERROR("\t%s\n", xkb_context_include_path_get(ctx, i));
+        return NULL;
+    }
+
+    loaded = XkbcRF_LoadRules(rulesFile);
+    if (!loaded) {
+        ERROR("failed to load XKB rules \"%s\"\n", rulesPath);
+        goto unwind_file;
+    }
+
+    names = calloc(1, sizeof(*names));
+    if (!names) {
+        ERROR("failed to allocate XKB components\n");
+        goto unwind_file;
+    }
+
+    if (!XkbcRF_GetComponents(loaded, &defs, names)) {
+        free(names->keymap);
+        free(names->keycodes);
+        free(names->types);
+        free(names->compat);
+        free(names->symbols);
+        free(names);
+        names = NULL;
+        ERROR("no components returned from XKB rules \"%s\"\n", rulesPath);
+    }
+
+unwind_file:
+    XkbcRF_Free(loaded);
+    if (rulesFile)
+        fclose(rulesFile);
+    free(rulesPath);
+    return names;
 }

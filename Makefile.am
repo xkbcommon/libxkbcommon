@@ -59,6 +59,8 @@ libxkbcommon_la_SOURCES = \
 	src/xkbcomp/parseutils.h \
 	src/xkbcomp/path.c \
 	src/xkbcomp/path.h \
+	src/xkbcomp/rules.c \
+	src/xkbcomp/rules.h \
 	src/xkbcomp/scanner.l \
 	src/xkbcomp/symbols.c \
 	src/xkbcomp/vmod.c \
@@ -74,8 +76,6 @@ libxkbcommon_la_SOURCES = \
 	src/keysym.c \
 	src/map.c \
 	src/misc.c \
-	src/rules.c \
-	src/rules.h \
 	src/state.c \
 	src/text.c \
 	src/text.h \

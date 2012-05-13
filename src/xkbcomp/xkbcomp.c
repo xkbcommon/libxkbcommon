@@ -27,7 +27,6 @@ authorization from the authors.
 #include "xkbcomp-priv.h"
 #include "rules.h"
 #include "parseutils.h"
-#include "path.h"
 
 /* Global warning level */
 unsigned int warningLevel = 0;
@@ -65,68 +64,12 @@ XkbKeymapFileFromComponents(struct xkb_context *ctx,
                          &keycodes->common, 0);
 }
 
-static struct xkb_component_names *
-XkbComponentsFromRules(struct xkb_context *ctx,
-                       const char *rules,
-                       const XkbRF_VarDefsPtr defs)
-{
-    FILE *rulesFile = NULL;
-    char *rulesPath = NULL;
-    XkbRF_RulesPtr loaded = NULL;
-    struct xkb_component_names * names = NULL;
-    int i;
-
-    rulesFile = XkbFindFileInPath(ctx, rules, XkmRulesFile, &rulesPath);
-    if (!rulesFile) {
-        ERROR("could not find \"%s\" rules in XKB path\n", rules);
-        ERROR("%d include paths searched:\n",
-              xkb_context_num_include_paths(ctx));
-        for (i = 0; i < xkb_context_num_include_paths(ctx); i++)
-            ERROR("\t%s\n", xkb_context_include_path_get(ctx, i));
-        return NULL;
-    }
-
-    if (!(loaded = uTypedCalloc(1, XkbRF_RulesRec))) {
-        ERROR("failed to allocate XKB rules\n");
-        goto unwind_file;
-    }
-
-    if (!XkbcRF_LoadRules(rulesFile, loaded)) {
-        ERROR("failed to load XKB rules \"%s\"\n", rulesPath);
-        goto unwind_file;
-    }
-
-    if (!(names = uTypedCalloc(1, struct xkb_component_names))) {
-        ERROR("failed to allocate XKB components\n");
-        goto unwind_file;
-    }
-
-    if (!XkbcRF_GetComponents(loaded, defs, names)) {
-        free(names->keymap);
-        free(names->keycodes);
-        free(names->types);
-        free(names->compat);
-        free(names->symbols);
-        free(names);
-        names = NULL;
-        ERROR("no components returned from XKB rules \"%s\"\n", rulesPath);
-    }
-
-unwind_file:
-    XkbcRF_Free(loaded);
-    if (rulesFile)
-        fclose(rulesFile);
-    free(rulesPath);
-    return names;
-}
-
 _X_EXPORT struct xkb_keymap *
 xkb_map_new_from_names(struct xkb_context *ctx,
                        const struct xkb_rule_names *rmlvo,
                        enum xkb_map_compile_flags flags)
 {
-    XkbRF_VarDefsRec defs;
-    struct xkb_component_names *names;
+    struct xkb_component_names *kkctgs;
     struct xkb_keymap *keymap;
 
     if (!rmlvo || ISEMPTY(rmlvo->rules) || ISEMPTY(rmlvo->layout)) {
@@ -134,26 +77,21 @@ xkb_map_new_from_names(struct xkb_context *ctx,
         return NULL;
     }
 
-    defs.model = rmlvo->model;
-    defs.layout = rmlvo->layout;
-    defs.variant = rmlvo->variant;
-    defs.options = rmlvo->options;
-
-    names = XkbComponentsFromRules(ctx, rmlvo->rules, &defs);
-    if (!names) {
+    kkctgs = xkb_components_from_rules(ctx, rmlvo);
+    if (!kkctgs) {
         ERROR("failed to generate XKB components from rules \"%s\"\n",
               rmlvo->rules);
         return NULL;
     }
 
-    keymap = xkb_map_new_from_kccgst(ctx, names, 0);
+    keymap = xkb_map_new_from_kccgst(ctx, kkctgs, 0);
 
-    free(names->keymap);
-    free(names->keycodes);
-    free(names->types);
-    free(names->compat);
-    free(names->symbols);
-    free(names);
+    free(kkctgs->keymap);
+    free(kkctgs->keycodes);
+    free(kkctgs->types);
+    free(kkctgs->compat);
+    free(kkctgs->symbols);
+    free(kkctgs);
 
     return keymap;
 }
