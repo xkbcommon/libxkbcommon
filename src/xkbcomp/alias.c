@@ -214,9 +214,8 @@ ApplyAliases(struct xkb_keymap *keymap, AliasInfo ** info_in)
         *info_in = NULL;
         return true;
     }
+
     status = XkbcAllocNames(keymap, XkbKeyAliasesMask, nOld + nNew);
-    if (keymap->names)
-        old = keymap->names->key_aliases;
     if (status != Success)
     {
         WSGO("Allocation failure in ApplyAliases\n");

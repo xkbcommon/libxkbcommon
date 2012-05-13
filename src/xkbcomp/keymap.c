@@ -68,7 +68,7 @@ CompileKeymap(struct xkb_context *ctx, XkbFile *file)
         return false;
     }
     have = 0;
-    ok = 1;
+
     /* Check for duplicate entries in the input file */
     for (file = (XkbFile *) file->defs; file; file = (XkbFile *) file->common.next)
     {
