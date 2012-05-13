@@ -484,10 +484,14 @@ MergeKeyGroups(SymbolsInfo * info,
         if (into->symsMapNumEntries[group] && (i < into->numLevels[group]))
             toSize = into->symsMapNumEntries[group][i];
 
-        if ((fromSize != 0 && toSize == 0) || clobber)
+        if (fromSize == 0 || fromSize == toSize || clobber)
+        {
+            fromSize += toSize;
+        }
+        else if (toSize == 0)
+        {
             resultSize += fromSize;
-        else
-            resultSize += toSize;
+        }
     }
 
     if (resultSize == 0)
