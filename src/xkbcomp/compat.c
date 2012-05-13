@@ -386,12 +386,13 @@ MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from, unsigned merge)
     }
 }
 
-typedef void (*FileHandler) (XkbFile *rtrn, struct xkb_keymap *keymap,
-                             unsigned merge, CompatInfo *info);
+static void
+HandleCompatMapFile(XkbFile *file, struct xkb_keymap *keymap, unsigned merge,
+                    CompatInfo *info);
 
 static bool
 HandleIncludeCompatMap(IncludeStmt *stmt, struct xkb_keymap *keymap,
-                       CompatInfo *info, FileHandler hndlr)
+                       CompatInfo *info)
 {
     unsigned newMerge;
     XkbFile *rtrn;
@@ -416,7 +417,7 @@ HandleIncludeCompatMap(IncludeStmt *stmt, struct xkb_keymap *keymap,
         included.ledDflt.defs.fileID = rtrn->id;
         included.ledDflt.defs.merge = newMerge;
         included.act = info->act;
-        (*hndlr) (rtrn, keymap, MergeOverride, &included);
+        HandleCompatMapFile(rtrn, keymap, MergeOverride, &included);
         if (stmt->stmt != NULL)
         {
             free(included.name);
@@ -457,7 +458,7 @@ HandleIncludeCompatMap(IncludeStmt *stmt, struct xkb_keymap *keymap,
                 next_incl.ledDflt.defs.fileID = rtrn->id;
                 next_incl.ledDflt.defs.merge = op;
                 next_incl.act = info->act;
-                (*hndlr) (rtrn, keymap, MergeOverride, &next_incl);
+                HandleCompatMapFile(rtrn, keymap, MergeOverride, &next_incl);
                 MergeIncludedCompatMaps(&included, &next_incl, op);
                 if (info->act != NULL)
                         next_incl.act = NULL;
@@ -710,8 +711,7 @@ HandleCompatMapFile(XkbFile *file, struct xkb_keymap *keymap, unsigned merge,
         switch (stmt->stmtType)
         {
         case StmtInclude:
-            if (!HandleIncludeCompatMap((IncludeStmt *) stmt, keymap, info,
-                                        HandleCompatMapFile))
+            if (!HandleIncludeCompatMap((IncludeStmt *) stmt, keymap, info))
                 info->errorCount++;
             break;
         case StmtInterpDef:

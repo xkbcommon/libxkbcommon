@@ -352,12 +352,13 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
     into->stdPresent |= from->stdPresent;
 }
 
-typedef void (*FileHandler) (XkbFile *file, struct xkb_keymap *keymap,
-                             unsigned merge, KeyTypesInfo *included);
+static void
+HandleKeyTypesFile(XkbFile *file, struct xkb_keymap *keymap,
+                   unsigned merge, KeyTypesInfo *info);
 
 static bool
 HandleIncludeKeyTypes(IncludeStmt *stmt, struct xkb_keymap *keymap,
-                      KeyTypesInfo *info, FileHandler hndlr)
+                      KeyTypesInfo *info)
 {
     unsigned newMerge;
     XkbFile *rtrn;
@@ -378,7 +379,7 @@ HandleIncludeKeyTypes(IncludeStmt *stmt, struct xkb_keymap *keymap,
         included.fileID = included.dflt.defs.fileID = rtrn->id;
         included.dflt.defs.merge = newMerge;
 
-        (*hndlr) (rtrn, keymap, newMerge, &included);
+        HandleKeyTypesFile(rtrn, keymap, newMerge, &included);
         if (stmt->stmt != NULL)
         {
             free(included.name);
@@ -412,7 +413,7 @@ HandleIncludeKeyTypes(IncludeStmt *stmt, struct xkb_keymap *keymap,
                 InitKeyTypesInfo(&next_incl, keymap, &included);
                 next_incl.fileID = next_incl.dflt.defs.fileID = rtrn->id;
                 next_incl.dflt.defs.merge = op;
-                (*hndlr) (rtrn, keymap, op, &next_incl);
+                HandleKeyTypesFile(rtrn, keymap, op, &next_incl);
                 MergeIncludedKeyTypes(&included, &next_incl, op, keymap);
                 FreeKeyTypesInfo(&next_incl);
                 FreeXKBFile(rtrn);
@@ -1017,8 +1018,7 @@ HandleKeyTypesFile(XkbFile *file, struct xkb_keymap *keymap,
         switch (stmt->stmtType)
         {
         case StmtInclude:
-            if (!HandleIncludeKeyTypes((IncludeStmt *) stmt, keymap, info,
-                                       HandleKeyTypesFile))
+            if (!HandleIncludeKeyTypes((IncludeStmt *) stmt, keymap, info))
                 info->errorCount++;
             break;
         case StmtKeyTypeDef: /* e.g. type "ONE_LEVEL" */

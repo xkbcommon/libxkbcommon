@@ -869,12 +869,13 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
         into->errorCount++;
 }
 
-typedef void (*FileHandler) (XkbFile *rtrn, struct xkb_keymap *keymap,
-                             unsigned merge, SymbolsInfo *included);
+static void
+HandleSymbolsFile(XkbFile *file, struct xkb_keymap *keymap,
+                  unsigned merge, SymbolsInfo *info);
 
 static bool
 HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
-                     SymbolsInfo *info, FileHandler hndlr)
+                     SymbolsInfo *info)
 {
     unsigned newMerge;
     XkbFile *rtrn;
@@ -902,7 +903,7 @@ HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
         {
             included.explicit_group = info->explicit_group;
         }
-        (*hndlr) (rtrn, keymap, MergeOverride, &included);
+        HandleSymbolsFile(rtrn, keymap, MergeOverride, &included);
         if (stmt->stmt != NULL)
         {
             free(included.name);
@@ -944,7 +945,7 @@ HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
                 {
                     next_incl.explicit_group = info->explicit_group;
                 }
-                (*hndlr) (rtrn, keymap, MergeOverride, &next_incl);
+                HandleSymbolsFile(rtrn, keymap, MergeOverride, &next_incl);
                 MergeIncludedSymbols(&included, &next_incl, op, keymap);
                 FreeSymbolsInfo(&next_incl);
                 FreeXKBFile(rtrn);
@@ -1612,8 +1613,7 @@ HandleSymbolsFile(XkbFile *file, struct xkb_keymap *keymap,
         switch (stmt->stmtType)
         {
         case StmtInclude:
-            if (!HandleIncludeSymbols((IncludeStmt *) stmt, keymap, info,
-                                      HandleSymbolsFile))
+            if (!HandleIncludeSymbols((IncludeStmt *) stmt, keymap, info))
                 info->errorCount++;
             break;
         case StmtSymbolsDef:
