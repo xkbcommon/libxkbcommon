@@ -25,6 +25,7 @@
  ********************************************************/
 
 #include "parseutils.h"
+#include "path.h"
 
 ParseCommon *
 AppendStmt(ParseCommon * to, ParseCommon * append)

@@ -27,6 +27,7 @@ authorization from the authors.
 #include "xkbcomp-priv.h"
 #include "rules.h"
 #include "parseutils.h"
+#include "path.h"
 
 /* Global warning level */
 unsigned int warningLevel = 0;

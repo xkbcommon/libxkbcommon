@@ -28,6 +28,7 @@
 #include <ctype.h>
 
 #include "rules.h"
+#include "path.h"
 
 #ifdef DEBUG
 #define PR_DEBUG(s)		fprintf(stderr,s)

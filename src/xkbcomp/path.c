@@ -27,7 +27,7 @@
 #include <errno.h>
 #include <limits.h>
 
-#include "xkbcomp-priv.h"
+#include "path.h"
 
 /**
  * Extract the first token from an include statement.

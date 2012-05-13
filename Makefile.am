@@ -58,6 +58,7 @@ libxkbcommon_la_SOURCES = \
 	src/xkbcomp/parseutils.c \
 	src/xkbcomp/parseutils.h \
 	src/xkbcomp/path.c \
+	src/xkbcomp/path.h \
 	src/xkbcomp/scanner.l \
 	src/xkbcomp/symbols.c \
 	src/xkbcomp/vmod.c \

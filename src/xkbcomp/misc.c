@@ -25,6 +25,7 @@
  ********************************************************/
 
 #include "xkbcomp-priv.h"
+#include "path.h"
 #include "parseutils.h"
 #include "keycodes.h"
 

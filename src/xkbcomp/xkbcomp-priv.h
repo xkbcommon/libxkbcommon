@@ -80,15 +80,4 @@ FindKeyNameForAlias(struct xkb_keymap *keymap, unsigned long lname,
 extern bool
 UpdateModifiersFromCompat(struct xkb_keymap *keymap);
 
-extern const char *
-XkbDirectoryForInclude(unsigned type);
-
-extern FILE *
-XkbFindFileInPath(struct xkb_context *ctx, const char *name,
-                  unsigned type, char **pathRtrn);
-
-extern bool
-XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
-                   char *nextop_rtrn, char **extra_data);
-
 #endif /* XKBCOMP_PRIV_H */
