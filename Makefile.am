@@ -151,3 +151,19 @@ KEYSYMDEFS = \
 	 $(X11_INCLUDEDIR)/HPkeysym.h
 update-keysyms:
 	sed -e '/XK_Ydiaeresis\s*0x100000ee/d; /#define _/d; s/#define\s*\(\w*\)XK_/#define XKB_KEY_\1/; /\(#ifdef\|#ifndef\|#endif\)/d' $(KEYSYMDEFS) > xkbcommon/xkbcommon-keysyms.h
+
+# Android stuff
+
+Android_build.mk: Makefile $(BUILT_SOURCES)
+	androgenizer \
+	-:PROJECT libxkbcommon \
+	-:REL_TOP $(top_srcdir) -:ABS_TOP $(abs_top_srcdir) \
+	\
+	-:STATIC libxkbcommon \
+	-:TAGS eng debug \
+	-:SOURCES $(filter-out %.l %.y,$(libxkbcommon_la_SOURCES)) $(BUILT_SOURCES) \
+	-:CFLAGS $(DEFS) $(DEFAULT_INCLUDES) $(AM_CPPFLAGS) $(AM_CFLAGS) \
+	-:LDFLAGS $(libxkbcommon_la_LDFLAGS) \
+	\
+	-:PASSTHROUGH 'libxkbcommon-clean: clean-libxkbcommon' \
+	> $@
