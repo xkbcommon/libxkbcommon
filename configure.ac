@@ -120,5 +120,6 @@ AC_SUBST([XKBCONFIGROOT])
 AC_CONFIG_FILES([
     Makefile
     makekeys/Makefile
+    xkbcommon-uninstalled.pc
     xkbcommon.pc])
 AC_OUTPUT
