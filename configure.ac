@@ -62,6 +62,8 @@ if test "x$ac_cv_func_strcasecmp" = xno || \
     AC_MSG_ERROR([C library does not support strcasecmp/strncasecmp])
 fi
 
+AC_CHECK_FUNCS([eaccess euidaccess])
+
 # Build native compiler needed for makekeys
 AC_ARG_VAR([CC_FOR_BUILD], [Build native C compiler program])
 if test "x$CC_FOR_BUILD" = x; then

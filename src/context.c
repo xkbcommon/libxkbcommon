@@ -72,8 +72,14 @@ xkb_context_include_path_append(struct xkb_context *ctx, const char *path)
         return 0;
     if (!S_ISDIR(stat_buf.st_mode))
         return 0;
+
+#if defined(HAVE_EACCESS)
     if (eaccess(path, R_OK | X_OK) != 0)
         return 0;
+#elif defined(HAVE_EUIDACCESS)
+    if (euidaccess(path, R_OK | X_OK) != 0)
+        return 0;
+#endif
 
     ctx->include_paths[ctx->num_include_paths] = strdup(path);
     if (!ctx->include_paths[ctx->num_include_paths])
