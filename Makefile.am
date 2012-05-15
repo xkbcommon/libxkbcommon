@@ -23,7 +23,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/xkbcomp \
 	-I$(top_builddir)/src/xkbcomp \
-	-include $(top_srcdir)/src/config.h
+	-include $(top_builddir)/src/config.h
 
 AM_CFLAGS = \
 	$(BASE_CFLAGS) \
