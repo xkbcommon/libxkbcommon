@@ -30,18 +30,6 @@
 #include "rules.h"
 #include "path.h"
 
-#ifdef DEBUG
-#define PR_DEBUG(s)		fprintf(stderr,s)
-#define PR_DEBUG1(s,a)		fprintf(stderr,s,a)
-#define PR_DEBUG2(s,a,b)	fprintf(stderr,s,a,b)
-#else
-#define PR_DEBUG(s)
-#define PR_DEBUG1(s,a)
-#define PR_DEBUG2(s,a,b)
-#endif
-
-/***====================================================================***/
-
 #define DFLT_LINE_SIZE	128
 
 typedef struct {
@@ -145,8 +133,8 @@ GetInputLine(FILE *file,InputLine *line,bool checkbang)
 		}
 		if (checkbang && ch=='!') {
 		    if (line->num_line!=0) {
-			PR_DEBUG("The '!' legal only at start of line\n");
-			PR_DEBUG("Line containing '!' ignored\n");
+			WARN("The '!' legal only at start of line\n");
+			ACTION("Line containing '!' ignored\n");
 			line->num_line= 0;
 			break;
 		    }
@@ -308,10 +296,7 @@ SetUpRemap(InputLine *line,RemapSpec *remap)
    size_t len;
    int ndx;
    char *strtok_buf;
-#ifdef DEBUG
    bool found;
-#endif
-
 
    l_ndx_present = v_ndx_present = present= 0;
    str= &line->line[1];
@@ -319,9 +304,7 @@ SetUpRemap(InputLine *line,RemapSpec *remap)
    memset(remap, 0, sizeof(RemapSpec));
    remap->number = len;
    while ((tok = strtok_r(str, " ", &strtok_buf)) != NULL) {
-#ifdef DEBUG
 	found= false;
-#endif
 	str= NULL;
 	if (strcmp(tok,"=")==0)
 	    continue;
@@ -334,22 +317,21 @@ SetUpRemap(InputLine *line,RemapSpec *remap)
 			*end != '\0' || ndx == -1)
 		        break;
 		     if (ndx < 1 || ndx > XkbNumKbdGroups) {
-		        PR_DEBUG2("Illegal %s index: %d\n", cname[i], ndx);
-		        PR_DEBUG1("Index must be in range 1..%d\n",
-				   XkbNumKbdGroups);
+		        WARN("Illegal %s index: %d\n", cname[i], ndx);
+		        WARN("Index must be in range 1..%d\n", XkbNumKbdGroups);
 			break;
 		     }
                 } else {
 		    ndx = 0;
                 }
-#ifdef DEBUG
+
 		found= true;
-#endif
+
 		if (present&(1<<i)) {
 		    if ((i == LAYOUT && l_ndx_present&(1<<ndx)) ||
 			(i == VARIANT && v_ndx_present&(1<<ndx)) ) {
-		        PR_DEBUG1("Component \"%s\" listed twice\n",tok);
-		        PR_DEBUG("Second definition ignored\n");
+		        WARN("Component \"%s\" listed twice\n", tok);
+		        ACTION("Second definition ignored\n");
 		        break;
 		    }
 		}
@@ -363,16 +345,17 @@ SetUpRemap(InputLine *line,RemapSpec *remap)
 		break;
 	    }
 	}
-#ifdef DEBUG
+
 	if (!found) {
-	    fprintf(stderr,"Unknown component \"%s\" ignored\n",tok);
+	    WARN("Unknown component \"%s\"\n", tok);
+            ACTION("ignored\n");
 	}
-#endif
    }
    if ((present&PART_MASK)==0) {
-#ifdef DEBUG
 	unsigned mask= PART_MASK;
-	fprintf(stderr,"Mapping needs at least one of ");
+
+        /* FIXME: Use log function instead of fprintf. */
+	WARN("Mapping needs at least one of ");
 	for (i=0; (i<MAX_WORDS); i++) {
 	    if ((1L<<i)&mask) {
 		mask&= ~(1L<<i);
@@ -380,21 +363,21 @@ SetUpRemap(InputLine *line,RemapSpec *remap)
 		else		fprintf(stderr,"or \"%s\"\n",cname[i]);
 	    }
 	}
-	fprintf(stderr,"Illegal mapping ignored\n");
-#endif
+	ACTION("Illegal mapping ignored\n");
+
 	remap->num_remap= 0;
 	return;
    }
    if ((present&COMPONENT_MASK)==0) {
-	PR_DEBUG("Mapping needs at least one component\n");
-	PR_DEBUG("Illegal mapping ignored\n");
+	WARN("Mapping needs at least one component\n");
+	ACTION("Illegal mapping ignored\n");
 	remap->num_remap= 0;
 	return;
    }
    if (((present&COMPONENT_MASK)&(1<<KEYMAP))&&
 				((present&COMPONENT_MASK)!=(1<<KEYMAP))) {
-	PR_DEBUG("Keymap cannot appear with other components\n");
-	PR_DEBUG("Illegal mapping ignored\n");
+	WARN("Keymap cannot appear with other components\n");
+	ACTION("Illegal mapping ignored\n");
 	remap->num_remap= 0;
 	return;
    }
@@ -468,8 +451,8 @@ CheckLine(	InputLine *		line,
     }
 
     if (remap->num_remap==0) {
-	PR_DEBUG("Must have a mapping before first line of data\n");
-	PR_DEBUG("Illegal line of data ignored\n");
+	WARN("Must have a mapping before first line of data\n");
+	ACTION("Illegal line of data ignored\n");
 	return false;
     }
     memset(&tmp, 0, sizeof(FileSpec));
@@ -481,8 +464,8 @@ CheckLine(	InputLine *		line,
 	    continue;
 	}
 	if (nread>remap->num_remap) {
-	    PR_DEBUG("Too many words on a line\n");
-	    PR_DEBUG1("Extra word \"%s\" ignored\n",tok);
+	    WARN("Too many words on a line\n");
+	    ACTION("Extra word \"%s\" ignored\n",tok);
 	    continue;
 	}
 	tmp.name[remap->remap[nread].word]= tok;
@@ -490,8 +473,8 @@ CheckLine(	InputLine *		line,
 	    append = true;
     }
     if (nread<remap->num_remap) {
-	PR_DEBUG1("Too few words on a line: %s\n", line->line);
-	PR_DEBUG("line ignored\n");
+	WARN("Too few words on a line: %s\n", line->line);
+	ACTION("line ignored\n");
 	return false;
     }
 
