@@ -190,50 +190,50 @@ static	const char * cname[MAX_WORDS] = {
 	"keycodes", "symbols", "types", "compat", "geometry", "keymap"
 };
 
-typedef struct {
+struct var_defs {
     const char *model;
     const char *layout;
     const char *variant;
     const char *options;
-} XkbRF_VarDefsRec, *XkbRF_VarDefsPtr;
+};
 
-typedef	struct _RemapSpec {
-	int			number;
-	size_t			num_remap;
-	struct	{
-		int	word;
-		int	index;
-                }		remap[MAX_WORDS];
-} RemapSpec;
+struct remap_spec {
+    int number;
+    size_t num_remap;
+    struct {
+        int word;
+        int index;
+    } remap[MAX_WORDS];
+};
 
-typedef struct _FileSpec {
-	char *			name[MAX_WORDS];
-	struct _FileSpec *	pending;
-} FileSpec;
+struct file_spec {
+    char *name[MAX_WORDS];
+    struct file_spec *pending;
+};
 
-typedef struct {
-	const char *		model;
-	const char *		layout[XkbNumKbdGroups+1];
-	const char *		variant[XkbNumKbdGroups+1];
-	char *			options;
-} XkbRF_MultiDefsRec, *XkbRF_MultiDefsPtr;
+struct multi_defs {
+    const char *model;
+    const char *layout[XkbNumKbdGroups + 1];
+    const char *variant[XkbNumKbdGroups + 1];
+    char *options;
+};
 
-typedef struct _XkbRF_VarDesc {
-    char *  name;
-    char *  desc;
-} XkbRF_VarDescRec, *XkbRF_VarDescPtr;
+struct var_desc {
+    char *name;
+    char *desc;
+};
 
-typedef struct _XkbRF_DescribeVars {
-    size_t              sz_desc;
-    size_t              num_desc;
-    XkbRF_VarDescPtr    desc;
-} XkbRF_DescribeVarsRec,*XkbRF_DescribeVarsPtr;
+struct describe_vars {
+    size_t sz_desc;
+    size_t num_desc;
+    struct var_desc *desc;
+};
 
-typedef struct _XkbRF_Group {
-    int     number;
-    char *  name;
-    char *  words;
-} XkbRF_GroupRec, *XkbRF_GroupPtr;
+struct group {
+    int number;
+    char *name;
+    char *words;
+};
 
 #define XkbRF_PendingMatch  (1L<<1)
 #define XkbRF_Option        (1L<<2)
@@ -241,36 +241,39 @@ typedef struct _XkbRF_Group {
 #define XkbRF_Normal        (1L<<4)
 #define XkbRF_Invalid       (1L<<5)
 
-typedef struct _XkbRF_Rule {
-    int         number;
-    int         layout_num;
-    int         variant_num;
-    char *      model;
-    char *      layout;
-    char *      variant;
-    char *      option;
+struct rule {
+    int number;
+    int layout_num;
+    int variant_num;
+    char *model;
+    char *layout;
+    char *variant;
+    char *option;
+
     /* yields */
-    char *      keycodes;
-    char *      symbols;
-    char *      types;
-    char *      compat;
-    char *      keymap;
-    unsigned    flags;
-} XkbRF_RuleRec,*XkbRF_RulePtr;
 
-typedef struct XkbRF_Rules {
-    XkbRF_DescribeVarsRec   models;
-    XkbRF_DescribeVarsRec   layouts;
-    XkbRF_DescribeVarsRec   variants;
-    XkbRF_DescribeVarsRec   options;
+    char *keycodes;
+    char *symbols;
+    char *types;
+    char *compat;
+    char *keymap;
+    unsigned flags;
+};
 
-    size_t                  sz_rules;
-    size_t                  num_rules;
-    XkbRF_RulePtr           rules;
-    size_t                  sz_groups;
-    size_t                  num_groups;
-    XkbRF_GroupPtr          groups;
-} XkbRF_RulesRec, *XkbRF_RulesPtr;
+struct rules {
+    struct describe_vars models;
+    struct describe_vars layouts;
+    struct describe_vars variants;
+    struct describe_vars options;
+
+    size_t sz_rules;
+    size_t num_rules;
+    struct rule *rules;
+
+    size_t sz_groups;
+    size_t num_groups;
+    struct group *groups;
+};
 
 #define NDX_BUFF_SIZE	4
 
@@ -303,7 +306,7 @@ get_index(char *str, int *ndx)
 }
 
 static void
-SetUpRemap(struct input_line *line,RemapSpec *remap)
+SetUpRemap(struct input_line *line, struct remap_spec *remap)
 {
    char *tok, *str;
    unsigned present, l_ndx_present, v_ndx_present;
@@ -316,7 +319,7 @@ SetUpRemap(struct input_line *line,RemapSpec *remap)
    l_ndx_present = v_ndx_present = present= 0;
    str= &line->line[1];
    len = remap->number;
-   memset(remap, 0, sizeof(RemapSpec));
+   memset(remap, 0, sizeof(*remap));
    remap->number = len;
    while ((tok = strtok_r(str, " ", &strtok_buf)) != NULL) {
 	found= false;
@@ -424,14 +427,12 @@ MatchOneOf(char *wanted,char *vals_defined)
 /***====================================================================***/
 
 static bool
-CheckLine(	struct input_line *	line,
-		RemapSpec *		remap,
-		XkbRF_RulePtr		rule,
-		XkbRF_GroupPtr		group)
+CheckLine(struct input_line *line, struct remap_spec *remap,
+          struct rule *rule, struct group *group)
 {
     char *str, *tok;
     int nread, i;
-    FileSpec tmp;
+    struct file_spec tmp;
     char *strtok_buf;
     bool append = false;
 
@@ -470,7 +471,7 @@ CheckLine(	struct input_line *	line,
 	ACTION("Illegal line of data ignored\n");
 	return false;
     }
-    memset(&tmp, 0, sizeof(FileSpec));
+    memset(&tmp, 0, sizeof(tmp));
     str= line->line;
     for (nread = 0; (tok = strtok_r(str, " ", &strtok_buf)) != NULL; nread++) {
 	str= NULL;
@@ -550,9 +551,9 @@ squeeze_spaces(char *p1)
 }
 
 static bool
-MakeMultiDefs(XkbRF_MultiDefsPtr mdefs, const XkbRF_VarDefsPtr defs)
+MakeMultiDefs(struct multi_defs *mdefs, const struct var_defs *defs)
 {
-   memset(mdefs, 0, sizeof(XkbRF_MultiDefsRec));
+   memset(mdefs, 0, sizeof(*mdefs));
    mdefs->model = defs->model;
    mdefs->options = uDupString(defs->options);
    if (mdefs->options) squeeze_spaces(mdefs->options);
@@ -608,7 +609,7 @@ MakeMultiDefs(XkbRF_MultiDefsPtr mdefs, const XkbRF_VarDefsPtr defs)
 }
 
 static void
-FreeMultiDefs(XkbRF_MultiDefsPtr defs)
+FreeMultiDefs(struct multi_defs *defs)
 {
     free(defs->options);
     free(UNCONSTIFY(defs->layout[1]));
@@ -629,8 +630,7 @@ Apply(char *src, char **dst)
 }
 
 static void
-XkbRF_ApplyRule(	XkbRF_RulePtr 		rule,
-			struct xkb_component_names *	names)
+XkbRF_ApplyRule(struct rule *rule, struct xkb_component_names *names)
 {
     rule->flags&= ~XkbRF_PendingMatch; /* clear the flag because it's applied */
 
@@ -642,13 +642,11 @@ XkbRF_ApplyRule(	XkbRF_RulePtr 		rule,
 }
 
 static bool
-CheckGroup(	XkbRF_RulesPtr          rules,
-		const char * 		group_name,
-		const char * 		name)
+CheckGroup(struct rules *rules, const char *group_name, const char *name)
 {
    int i;
    const char *p;
-   XkbRF_GroupPtr group;
+   struct group *group;
 
    for (i = 0, group = rules->groups; i < rules->num_groups; i++, group++) {
        if (! strcmp(group->name, group_name)) {
@@ -666,10 +664,8 @@ CheckGroup(	XkbRF_RulesPtr          rules,
 }
 
 static int
-XkbRF_CheckApplyRule(	XkbRF_RulePtr 		rule,
-			XkbRF_MultiDefsPtr	mdefs,
-			struct xkb_component_names *	names,
-			XkbRF_RulesPtr          rules)
+XkbRF_CheckApplyRule(struct rule *rule, struct multi_defs *mdefs,
+                     struct xkb_component_names *names, struct rules *rules)
 {
     bool pending = false;
 
@@ -740,10 +736,10 @@ XkbRF_CheckApplyRule(	XkbRF_RulePtr 		rule,
 }
 
 static void
-XkbRF_ClearPartialMatches(XkbRF_RulesPtr rules)
+XkbRF_ClearPartialMatches(struct rules *rules)
 {
     int i;
-    XkbRF_RulePtr rule;
+    struct rule *rule;
 
     for (i=0,rule=rules->rules;i<rules->num_rules;i++,rule++) {
 	rule->flags&= ~XkbRF_PendingMatch;
@@ -751,10 +747,11 @@ XkbRF_ClearPartialMatches(XkbRF_RulesPtr rules)
 }
 
 static void
-XkbRF_ApplyPartialMatches(XkbRF_RulesPtr rules,struct xkb_component_names * names)
+XkbRF_ApplyPartialMatches(struct rules *rules,
+                          struct xkb_component_names *names)
 {
     int i;
-    XkbRF_RulePtr rule;
+    struct rule *rule;
 
     for (rule = rules->rules, i = 0; i < rules->num_rules; i++, rule++) {
 	if ((rule->flags&XkbRF_PendingMatch)==0)
@@ -764,13 +761,11 @@ XkbRF_ApplyPartialMatches(XkbRF_RulesPtr rules,struct xkb_component_names * name
 }
 
 static void
-XkbRF_CheckApplyRules(	XkbRF_RulesPtr 		rules,
-			XkbRF_MultiDefsPtr	mdefs,
-			struct xkb_component_names *	names,
-			unsigned int			flags)
+XkbRF_CheckApplyRules(struct rules *rules, struct multi_defs *mdefs,
+                      struct xkb_component_names *names, unsigned int flags)
 {
     int i;
-    XkbRF_RulePtr rule;
+    struct rule *rule;
     int skip;
 
     for (rule = rules->rules, i=0; i < rules->num_rules; rule++, i++) {
@@ -788,7 +783,7 @@ XkbRF_CheckApplyRules(	XkbRF_RulesPtr 		rules,
 /***====================================================================***/
 
 static char *
-XkbRF_SubstituteVars(char *name, XkbRF_MultiDefsPtr mdefs)
+XkbRF_SubstituteVars(char *name, struct multi_defs *mdefs)
 {
     char *str, *outstr, *orig, *var;
     size_t len;
@@ -887,10 +882,10 @@ XkbRF_SubstituteVars(char *name, XkbRF_MultiDefsPtr mdefs)
 /***====================================================================***/
 
 static bool
-XkbcRF_GetComponents(struct XkbRF_Rules *rules, const XkbRF_VarDefsPtr defs,
+XkbcRF_GetComponents(struct rules *rules, const struct var_defs *defs,
                      struct xkb_component_names *names)
 {
-    XkbRF_MultiDefsRec mdefs;
+    struct multi_defs mdefs;
 
     MakeMultiDefs(&mdefs, defs);
 
@@ -914,76 +909,77 @@ XkbcRF_GetComponents(struct XkbRF_Rules *rules, const XkbRF_VarDefsPtr defs,
 		names->compat) || names->keymap;
 }
 
-static XkbRF_RulePtr
-XkbcRF_AddRule(XkbRF_RulesPtr	rules)
+static struct rule *
+XkbcRF_AddRule(struct rules *rules)
 {
     if (rules->sz_rules<1) {
 	rules->sz_rules= 16;
 	rules->num_rules= 0;
-	rules->rules= uTypedCalloc(rules->sz_rules,XkbRF_RuleRec);
+	rules->rules = calloc(rules->sz_rules, sizeof(*rules->rules));
     }
     else if (rules->num_rules>=rules->sz_rules) {
 	rules->sz_rules*= 2;
-	rules->rules= uTypedRealloc(rules->rules,rules->sz_rules,
-							XkbRF_RuleRec);
+        rules->rules = realloc(rules->rules,
+                               rules->sz_rules * sizeof(*rules->rules));
     }
     if (!rules->rules) {
 	rules->sz_rules= rules->num_rules= 0;
 	return NULL;
     }
-    memset(&rules->rules[rules->num_rules], 0, sizeof(XkbRF_RuleRec));
+    memset(&rules->rules[rules->num_rules], 0, sizeof(*rules->rules));
     return &rules->rules[rules->num_rules++];
 }
 
-static XkbRF_GroupPtr
-XkbcRF_AddGroup(XkbRF_RulesPtr	rules)
+static struct group *
+XkbcRF_AddGroup(struct rules *rules)
 {
     if (rules->sz_groups<1) {
 	rules->sz_groups= 16;
 	rules->num_groups= 0;
-	rules->groups= uTypedCalloc(rules->sz_groups,XkbRF_GroupRec);
+        rules->groups = calloc(rules->sz_groups, sizeof(*rules->groups));
     }
     else if (rules->num_groups >= rules->sz_groups) {
 	rules->sz_groups *= 2;
-	rules->groups= uTypedRealloc(rules->groups,rules->sz_groups,
-                                     XkbRF_GroupRec);
+        rules->groups = realloc(rules->groups,
+                                rules->sz_groups * sizeof(*rules->groups));
     }
     if (!rules->groups) {
 	rules->sz_groups= rules->num_groups= 0;
 	return NULL;
     }
 
-    memset(&rules->groups[rules->num_groups], 0, sizeof(XkbRF_GroupRec));
+    memset(&rules->groups[rules->num_groups], 0, sizeof(*rules->groups));
     return &rules->groups[rules->num_groups++];
 }
 
-static XkbRF_RulesPtr
+static struct rules *
 XkbcRF_LoadRules(FILE *file)
 {
-struct input_line line;
-RemapSpec	remap;
-XkbRF_RuleRec	trule,*rule;
-XkbRF_GroupRec  tgroup,*group;
-    XkbRF_RulesPtr rules;
+    struct input_line line;
+    struct remap_spec remap;
+    struct rule trule, *rule;
+    struct group tgroup, *group;
+    struct rules *rules;
 
     rules = calloc(1, sizeof(*rules));
     if (!rules)
         return NULL;
 
-    memset(&remap, 0, sizeof(RemapSpec));
-    memset(&tgroup, 0, sizeof(XkbRF_GroupRec));
+    memset(&remap, 0, sizeof(remap));
+    memset(&tgroup, 0, sizeof(tgroup));
     input_line_init(&line);
+
     while (input_line_get(file, &line)) {
 	if (CheckLine(&line,&remap,&trule,&tgroup)) {
             if (tgroup.number) {
 	        if ((group= XkbcRF_AddGroup(rules))!=NULL) {
 		    *group= tgroup;
-		    memset(&tgroup, 0, sizeof(XkbRF_GroupRec));
+		    memset(&tgroup, 0, sizeof(tgroup));
 	        }
 	    } else {
 	        if ((rule= XkbcRF_AddRule(rules))!=NULL) {
 		    *rule= trule;
-		    memset(&trule, 0, sizeof(XkbRF_RuleRec));
+		    memset(&trule, 0, sizeof(trule));
 	        }
 	    }
 	}
@@ -994,7 +990,7 @@ XkbRF_GroupRec  tgroup,*group;
 }
 
 static void
-XkbRF_ClearVarDescriptions(XkbRF_DescribeVarsPtr var)
+XkbRF_ClearVarDescriptions(struct describe_vars *var)
 {
     int i;
 
@@ -1008,11 +1004,11 @@ XkbRF_ClearVarDescriptions(XkbRF_DescribeVarsPtr var)
 }
 
 static void
-XkbcRF_Free(XkbRF_RulesPtr rules)
+XkbcRF_Free(struct rules *rules)
 {
     int i;
-    XkbRF_RulePtr rule;
-    XkbRF_GroupPtr group;
+    struct rule *rule;
+    struct group *group;
 
     if (!rules)
 	return;
@@ -1050,9 +1046,9 @@ xkb_components_from_rules(struct xkb_context *ctx,
     int i;
     FILE *rulesFile;
     char *rulesPath;
-    XkbRF_RulesPtr loaded;
+    struct rules *loaded;
     struct xkb_component_names *names = NULL;
-    XkbRF_VarDefsRec defs = {
+    struct var_defs defs = {
         .model = rmlvo->model,
         .layout = rmlvo->layout,
         .variant = rmlvo->variant,
