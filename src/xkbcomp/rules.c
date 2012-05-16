@@ -30,127 +30,142 @@
 #include "rules.h"
 #include "path.h"
 
-#define DFLT_LINE_SIZE	128
+#define DFLT_LINE_SIZE 128
 
-typedef struct {
-	size_t	sz_line;
-	int	num_line;
-	char	buf[DFLT_LINE_SIZE];
-	char *	line;
-} InputLine;
+struct input_line {
+    size_t size;
+    size_t offset;
+    char buf[DFLT_LINE_SIZE];
+    char *line;
+};
 
 static void
-InitInputLine(InputLine *line)
+input_line_init(struct input_line *line)
 {
-    line->num_line= 0;
-    line->sz_line= DFLT_LINE_SIZE;
-    line->line=	line->buf;
+    line->size = DFLT_LINE_SIZE;
+    line->offset = 0;
+    line->line = line->buf;
 }
 
 static void
-FreeInputLine(InputLine *line)
+input_line_deinit(struct input_line *line)
 {
-    if (line->line!=line->buf)
-	free(line->line);
-    line->num_line= 0;
-    line->sz_line= DFLT_LINE_SIZE;
-    line->line= line->buf;
+    if (line->line != line->buf)
+        free(line->line);
+    line->offset = 0;
+    line->size = DFLT_LINE_SIZE;
+    line->line = line->buf;
 }
 
 static int
-InputLineAddChar(InputLine *line,int ch)
+input_line_add_char(struct input_line *line, int ch)
 {
-    if (line->num_line>=line->sz_line) {
-	if (line->line==line->buf) {
-            line->line = malloc(line->sz_line * 2);
-	    memcpy(line->line,line->buf,line->sz_line);
-	}
-	else {
-            line->line = realloc(line->line, line->sz_line * 2);
-	}
-	line->sz_line*= 2;
+    if (line->offset >= line->size) {
+        if (line->line == line->buf) {
+            line->line = malloc(line->size * 2);
+            memcpy(line->line, line->buf, line->size);
+        }
+        else {
+            line->line = realloc(line->line, line->size * 2);
+        }
+
+        line->size *= 2;
     }
-    line->line[line->num_line++]= ch;
+
+    line->line[line->offset++] = ch;
     return ch;
 }
 
-#define	ADD_CHAR(l,c)	((l)->num_line<(l)->sz_line?\
-				(int)((l)->line[(l)->num_line++]= (c)):\
-				InputLineAddChar(l,c))
-
 static bool
-GetInputLine(FILE *file,InputLine *line,bool checkbang)
+input_line_get(FILE *file, struct input_line *line)
 {
-     int ch;
-     bool endOfFile,spacePending,slashPending,inComment;
+    int ch;
+    bool end_of_file = false;
+    bool space_pending;
+    bool slash_pending;
+    bool in_comment;
 
-     endOfFile= false;
-     while ((!endOfFile)&&(line->num_line==0)) {
-	spacePending= slashPending= inComment= false;
-	while (((ch=getc(file))!='\n')&&(ch!=EOF)) {
-	    if (ch=='\\') {
-		if ((ch=getc(file))==EOF)
-		    break;
-		if (ch=='\n') {
-		    inComment= false;
-		    ch= ' ';
-		}
-	    }
-	    if (inComment)
-		continue;
-	    if (ch=='/') {
-		if (slashPending) {
-		    inComment= true;
-		    slashPending= false;
-		}
-		else {
-		    slashPending= true;
-		}
-		continue;
-	    }
-	    else if (slashPending) {
-		if (spacePending) {
-		    ADD_CHAR(line,' ');
-		    spacePending= false;
-		}
-		ADD_CHAR(line,'/');
-		slashPending= false;
-	    }
-	    if (isspace(ch)) {
-		while (isspace(ch)&&(ch!='\n')&&(ch!=EOF)) {
-		    ch= getc(file);
-		}
-		if (ch==EOF)
-		    break;
-		if ((ch!='\n')&&(line->num_line>0))
-		    spacePending= true;
-		ungetc(ch,file);
-	    }
-	    else {
-		if (spacePending) {
-		    ADD_CHAR(line,' ');
-		    spacePending= false;
-		}
-		if (checkbang && ch=='!') {
-		    if (line->num_line!=0) {
-			WARN("The '!' legal only at start of line\n");
-			ACTION("Line containing '!' ignored\n");
-			line->num_line= 0;
-			break;
-		    }
+    while (!end_of_file && line->offset == 0) {
+        space_pending = slash_pending = in_comment = false;
 
-		}
-		ADD_CHAR(line,ch);
-	    }
-	}
-	if (ch==EOF)
-	     endOfFile= true;
-/*	else line->num_line++;*/
-     }
-     if ((line->num_line==0)&&(endOfFile))
-	return false;
-      ADD_CHAR(line,'\0');
-      return true;
+        while ((ch = getc(file)) != '\n' && ch != EOF) {
+            if (ch == '\\') {
+                ch = getc(file);
+
+                if (ch == EOF)
+                    break;
+
+                if (ch == '\n') {
+                    in_comment = false;
+                    ch = ' ';
+                }
+            }
+
+            if (in_comment)
+                continue;
+
+            if (ch == '/') {
+                if (slash_pending) {
+                    in_comment = true;
+                    slash_pending = false;
+                }
+                else {
+                    slash_pending = true;
+                }
+
+                continue;
+            }
+
+            if (slash_pending) {
+                if (space_pending) {
+                    input_line_add_char(line, ' ');
+                    space_pending = false;
+                }
+
+                input_line_add_char(line, '/');
+                slash_pending = false;
+            }
+
+            if (isspace(ch)) {
+                while (isspace(ch) && ch != '\n' && ch != EOF)
+                    ch = getc(file);
+
+                if (ch == EOF)
+                    break;
+
+                if (ch != '\n' && line->offset > 0)
+                    space_pending = true;
+
+                ungetc(ch, file);
+            }
+            else {
+                if (space_pending) {
+                    input_line_add_char(line, ' ');
+                    space_pending = false;
+                }
+
+                if (ch == '!') {
+                    if (line->offset != 0) {
+                        WARN("The '!' is legal only at start of line\n");
+                        ACTION("Line containing '!' ignored\n");
+                        line->offset = 0;
+                        break;
+                    }
+                }
+
+                input_line_add_char(line, ch);
+            }
+        }
+
+        if (ch == EOF)
+            end_of_file = true;
+    }
+
+    if (line->offset == 0 && end_of_file)
+        return false;
+
+    input_line_add_char(line, '\0');
+    return true;
 }
 
 /***====================================================================***/
@@ -288,7 +303,7 @@ get_index(char *str, int *ndx)
 }
 
 static void
-SetUpRemap(InputLine *line,RemapSpec *remap)
+SetUpRemap(struct input_line *line,RemapSpec *remap)
 {
    char *tok, *str;
    unsigned present, l_ndx_present, v_ndx_present;
@@ -409,7 +424,7 @@ MatchOneOf(char *wanted,char *vals_defined)
 /***====================================================================***/
 
 static bool
-CheckLine(	InputLine *		line,
+CheckLine(	struct input_line *	line,
 		RemapSpec *		remap,
 		XkbRF_RulePtr		rule,
 		XkbRF_GroupPtr		group)
@@ -945,7 +960,7 @@ XkbcRF_AddGroup(XkbRF_RulesPtr	rules)
 static XkbRF_RulesPtr
 XkbcRF_LoadRules(FILE *file)
 {
-InputLine	line;
+struct input_line line;
 RemapSpec	remap;
 XkbRF_RuleRec	trule,*rule;
 XkbRF_GroupRec  tgroup,*group;
@@ -957,8 +972,8 @@ XkbRF_GroupRec  tgroup,*group;
 
     memset(&remap, 0, sizeof(RemapSpec));
     memset(&tgroup, 0, sizeof(XkbRF_GroupRec));
-    InitInputLine(&line);
-    while (GetInputLine(file, &line, true)) {
+    input_line_init(&line);
+    while (input_line_get(file, &line)) {
 	if (CheckLine(&line,&remap,&trule,&tgroup)) {
             if (tgroup.number) {
 	        if ((group= XkbcRF_AddGroup(rules))!=NULL) {
@@ -972,9 +987,9 @@ XkbRF_GroupRec  tgroup,*group;
 	        }
 	    }
 	}
-	line.num_line= 0;
+	line.offset = 0;
     }
-    FreeInputLine(&line);
+    input_line_deinit(&line);
     return rules;
 }
 
