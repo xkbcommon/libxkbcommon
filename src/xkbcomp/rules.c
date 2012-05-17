@@ -565,20 +565,6 @@ match_line(struct input_line *line, struct mapping *mapping,
     return false;
 }
 
-static char *
-_Concat(char *str1,char *str2)
-{
-    int len;
-
-    if ((!str1)||(!str2))
-	return str1;
-    len= strlen(str1)+strlen(str2)+1;
-    str1 = uTypedRealloc(str1, len, char);
-    if (str1)
-	strcat(str1,str2);
-    return str1;
-}
-
 static void
 squeeze_spaces(char *p1)
 {
@@ -659,13 +645,21 @@ FreeMultiDefs(struct multi_defs *defs)
 static void
 Apply(char *src, char **dst)
 {
-    if (src) {
-        if (*src == '+' || *src == '!') {
-	    *dst= _Concat(*dst, src);
-        } else {
-            if (*dst == NULL)
-	        *dst= uDupString(src);
-        }
+    int ret;
+    char *tmp;
+
+    if (!src)
+        return;
+
+    if (*src == '+' || *src == '!') {
+        tmp = *dst;
+        ret = asprintf(dst, "%s%s", *dst, src);
+        if (ret < 0)
+            *dst = NULL;
+        free(tmp);
+    }
+    else if (*dst == NULL) {
+        *dst = uDupString(src);
     }
 }
 
