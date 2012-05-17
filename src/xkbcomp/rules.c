@@ -216,6 +216,13 @@ struct var_defs {
     const char *options;
 };
 
+struct multi_defs {
+    const char *model;
+    const char *layout[XkbNumKbdGroups + 1];
+    const char *variant[XkbNumKbdGroups + 1];
+    char *options;
+};
+
 struct mapping {
     /* Sequential id for the mappings. */
     int number;
@@ -225,13 +232,6 @@ struct mapping {
         int word;
         int index;
     } map[MAX_WORDS];
-};
-
-struct multi_defs {
-    const char *model;
-    const char *layout[XkbNumKbdGroups + 1];
-    const char *variant[XkbNumKbdGroups + 1];
-    char *options;
 };
 
 struct var_desc {
@@ -569,75 +569,115 @@ static void
 squeeze_spaces(char *p1)
 {
    char *p2;
+
    for (p2 = p1; *p2; p2++) {
        *p1 = *p2;
-       if (*p1 != ' ') p1++;
+       if (*p1 != ' ')
+           p1++;
    }
+
    *p1 = '\0';
 }
 
+/*
+ * Expand the layout and variant of a var_defs and remove extraneous spaces.
+ * If there's one layout/variant, it is kept in .layout[0]/.variant[0], else
+ * is kept in [1], [2] and so on, and [0] remains empty.
+ * For example, this var_defs:
+ *      .model  = "pc105",
+ *      .layout = "us,il,ru,ca"
+ *      .variant = ",,,multix"
+ *      .options = "grp:alts_toggle,   ctrl:nocaps,  compose:rwin"
+ * Is expanded into this multi_defs:
+ *      .model = "pc105"
+ *      .layout = {NULL, "us", "il", "ru", "ca"},
+ *      .variant = {NULL, "", "", "", "multix"},
+ *      .options = "grp:alts_toggle,ctrl:nocaps,compose:rwin"
+ */
 static bool
-MakeMultiDefs(struct multi_defs *mdefs, const struct var_defs *defs)
+make_multi_defs(struct multi_defs *mdefs, struct var_defs *defs)
 {
-   memset(mdefs, 0, sizeof(*mdefs));
-   mdefs->model = defs->model;
-   mdefs->options = uDupString(defs->options);
-   if (mdefs->options) squeeze_spaces(mdefs->options);
+    char *p;
+    int i;
 
-   if (defs->layout) {
-       if (!strchr(defs->layout, ',')) {
-           mdefs->layout[0] = defs->layout;
-       } else {
-           char *p;
-           int i;
-           p = uDupString(defs->layout);
-           if (p == NULL)
-              return false;
-           squeeze_spaces(p);
-           mdefs->layout[1] = p;
-           for (i = 2; i <= XkbNumKbdGroups; i++) {
-              if ((p = strchr(p, ','))) {
-                 *p++ = '\0';
-                 mdefs->layout[i] = p;
-              } else {
-                 break;
-              }
-           }
-           if (p && (p = strchr(p, ',')))
-              *p = '\0';
-       }
-   }
+    memset(mdefs, 0, sizeof(*mdefs));
 
-   if (defs->variant) {
-       if (!strchr(defs->variant, ',')) {
-           mdefs->variant[0] = defs->variant;
-       } else {
-           char *p;
-           int i;
-           p = uDupString(defs->variant);
-           if (p == NULL)
-              return false;
-           squeeze_spaces(p);
-           mdefs->variant[1] = p;
-           for (i = 2; i <= XkbNumKbdGroups; i++) {
-              if ((p = strchr(p, ','))) {
-                 *p++ = '\0';
-                 mdefs->variant[i] = p;
-              } else {
-                 break;
-              }
-           }
-           if (p && (p = strchr(p, ',')))
-              *p = '\0';
-       }
-   }
-   return true;
+    if (defs->model) {
+        mdefs->model = defs->model;
+    }
+
+    if (defs->options) {
+        mdefs->options = strdup(defs->options);
+        if (mdefs->options == NULL)
+            return false;
+
+        squeeze_spaces(mdefs->options);
+    }
+
+    if (defs->layout) {
+        if (!strchr(defs->layout, ',')) {
+            mdefs->layout[0] = defs->layout;
+        }
+        else {
+            p = strdup(defs->layout);
+            if (p == NULL)
+                return false;
+
+            squeeze_spaces(p);
+            mdefs->layout[1] = p;
+
+            for (i = 2; i <= XkbNumKbdGroups; i++) {
+                if ((p = strchr(p, ','))) {
+                    *p++ = '\0';
+                    mdefs->layout[i] = p;
+                }
+                else {
+                    break;
+                }
+            }
+
+            if (p && (p = strchr(p, ',')))
+                *p = '\0';
+        }
+    }
+
+    if (defs->variant) {
+        if (!strchr(defs->variant, ',')) {
+            mdefs->variant[0] = defs->variant;
+        }
+        else {
+            p = strdup(defs->variant);
+            if (p == NULL)
+                return false;
+
+            squeeze_spaces(p);
+            mdefs->variant[1] = p;
+
+            for (i = 2; i <= XkbNumKbdGroups; i++) {
+                if ((p = strchr(p, ','))) {
+                    *p++ = '\0';
+                    mdefs->variant[i] = p;
+                } else {
+                    break;
+                }
+            }
+
+            if (p && (p = strchr(p, ',')))
+                *p = '\0';
+        }
+    }
+
+    return true;
 }
 
 static void
-FreeMultiDefs(struct multi_defs *defs)
+free_multi_defs(struct multi_defs *defs)
 {
     free(defs->options);
+    /*
+     * See make_multi_defs comment for the hack; the same strdup'd
+     * string is split among the indexes, but the one in [0] is const.
+     */
     free(UNCONSTIFY(defs->layout[1]));
     free(UNCONSTIFY(defs->variant[1]));
 }
@@ -941,12 +981,12 @@ XkbRF_SubstituteVars(char *name, struct multi_defs *mdefs)
 /***====================================================================***/
 
 static bool
-XkbcRF_GetComponents(struct rules *rules, const struct var_defs *defs,
+XkbcRF_GetComponents(struct rules *rules, struct var_defs *defs,
                      struct xkb_component_names *names)
 {
     struct multi_defs mdefs;
 
-    MakeMultiDefs(&mdefs, defs);
+    make_multi_defs(&mdefs, defs);
 
     memset(names, 0, sizeof(struct xkb_component_names));
     XkbRF_ClearPartialMatches(rules);
@@ -963,9 +1003,10 @@ XkbcRF_GetComponents(struct rules *rules, const struct var_defs *defs,
     names->compat = XkbRF_SubstituteVars(names->compat, &mdefs);
     names->keymap = XkbRF_SubstituteVars(names->keymap, &mdefs);
 
-    FreeMultiDefs(&mdefs);
+    free_multi_defs(&mdefs);
+
     return (names->keycodes && names->symbols && names->types &&
-		names->compat) || names->keymap;
+            names->compat) || names->keymap;
 }
 
 static struct rule *
