@@ -170,24 +170,43 @@ input_line_get(FILE *file, struct input_line *line)
 
 /***====================================================================***/
 
-#define	MODEL		0
-#define	LAYOUT		1
-#define	VARIANT		2
-#define	OPTION		3
-#define	KEYCODES	4
-#define SYMBOLS		5
-#define	TYPES		6
-#define	COMPAT		7
-#define	GEOMETRY	8
-#define	KEYMAP		9
-#define	MAX_WORDS	10
+enum {
+    /* "Parts" - the MLVO which rules file maps to components. */
+    MODEL = 0,
+    LAYOUT,
+    VARIANT,
+    OPTION,
 
-#define	PART_MASK	0x000F
-#define	COMPONENT_MASK	0x03F0
+#define PART_MASK \
+    ((1 << MODEL) | (1 << LAYOUT) | (1 << VARIANT) | (1 << OPTION))
 
-static	const char * cname[MAX_WORDS] = {
-	"model", "layout", "variant", "option",
-	"keycodes", "symbols", "types", "compat", "geometry", "keymap"
+    /* Components */
+    KEYCODES,
+    SYMBOLS,
+    TYPES,
+    COMPAT,
+    GEOMETRY,
+    KEYMAP,
+
+#define COMPONENT_MASK \
+    ((1 << KEYCODES) | (1 << SYMBOLS) | (1 << TYPES) | (1 << COMPAT) | \
+     (1 << GEOMETRY) | (1 << KEYMAP))
+
+    MAX_WORDS
+};
+
+static const char *cname[] = {
+    [MODEL] = "model",
+    [LAYOUT] = "layout",
+    [VARIANT] = "variant",
+    [OPTION] = "option",
+
+    [KEYCODES] = "keycodes",
+    [SYMBOLS] = "symbols",
+    [TYPES] = "types",
+    [COMPAT] = "compat",
+    [GEOMETRY] = "geometry",
+    [KEYMAP] = "keymap",
 };
 
 struct var_defs {
@@ -197,13 +216,15 @@ struct var_defs {
     const char *options;
 };
 
-struct remap_spec {
+struct mapping {
+    /* Sequential id for the mappings. */
     int number;
-    size_t num_remap;
+    size_t num_maps;
+
     struct {
         int word;
         int index;
-    } remap[MAX_WORDS];
+    } map[MAX_WORDS];
 };
 
 struct file_spec {
@@ -245,6 +266,7 @@ struct rule {
     int number;
     int layout_num;
     int variant_num;
+
     char *model;
     char *layout;
     char *variant;
@@ -299,101 +321,120 @@ get_index(char *str, int *ndx)
     return str;
 }
 
+/*
+ * Match a mapping line which opens a rule, e.g:
+ * ! model      layout[4]       variant[4]      =       symbols       geometry
+ * Which will be followed by lines such as:
+ *   *          ben             basic           =       +in(ben):4    nec(pc98)
+ * So if the MLVO matches the LHS of some line, we'll get the components
+ * on the RHS.
+ * In this example, we will get for the second and fourth columns:
+ * mapping->map[1] = {.word = LAYOUT, .index = 4}
+ * mapping->map[3] = {.word = SYMBOLS, .index = 0}
+ */
 static void
-SetUpRemap(struct input_line *line, struct remap_spec *remap)
+match_mapping_line(struct input_line *line, struct mapping *mapping)
 {
-   char *tok, *str;
-   unsigned present, l_ndx_present, v_ndx_present;
-   int i;
-   size_t len;
-   int ndx;
-   char *strtok_buf;
-   bool found;
+    char *tok;
+    char *str = &line->line[1];
+    unsigned present = 0, layout_ndx_present = 0, variant_ndx_present = 0;
+    int i, tmp;
+    size_t len;
+    int ndx;
+    char *strtok_buf;
+    bool found;
 
-   l_ndx_present = v_ndx_present = present= 0;
-   str= &line->line[1];
-   len = remap->number;
-   memset(remap, 0, sizeof(*remap));
-   remap->number = len;
-   while ((tok = strtok_r(str, " ", &strtok_buf)) != NULL) {
-	found= false;
-	str= NULL;
-	if (strcmp(tok,"=")==0)
-	    continue;
-	for (i=0;i<MAX_WORDS;i++) {
+    /*
+     * Remember the last sequential mapping id (incremented if the match
+     * is successful).
+     */
+    tmp = mapping->number;
+    memset(mapping, 0, sizeof(*mapping));
+    mapping->number = tmp;
+
+    while ((tok = strtok_r(str, " ", &strtok_buf)) != NULL) {
+        found = false;
+        str = NULL;
+
+        if (strcmp(tok, "=") == 0)
+            continue;
+
+        for (i = 0; i < MAX_WORDS; i++) {
             len = strlen(cname[i]);
-	    if (strncmp(cname[i],tok,len)==0) {
-		if(strlen(tok) > len) {
-		    char *end = get_index(tok+len, &ndx);
-		    if ((i != LAYOUT && i != VARIANT) ||
-			*end != '\0' || ndx == -1)
-		        break;
-		     if (ndx < 1 || ndx > XkbNumKbdGroups) {
-		        WARN("Illegal %s index: %d\n", cname[i], ndx);
-		        WARN("Index must be in range 1..%d\n", XkbNumKbdGroups);
-			break;
-		     }
+
+            if (strncmp(cname[i], tok, len) == 0) {
+                if (strlen(tok) > len) {
+                    char *end = get_index(tok + len, &ndx);
+
+                    if ((i != LAYOUT && i != VARIANT) ||
+                        *end != '\0' || ndx == -1) {
+                        WARN("Illegal %s index: %d\n", cname[i], ndx);
+                        WARN("Can only index layout and variant\n");
+                        break;
+                    }
+
+                    if (ndx < 1 || ndx > XkbNumKbdGroups) {
+                        WARN("Illegal %s index: %d\n", cname[i], ndx);
+                        WARN("Index must be in range 1..%d\n", XkbNumKbdGroups);
+                        break;
+                    }
                 } else {
-		    ndx = 0;
+                    ndx = 0;
                 }
 
-		found= true;
+                found = true;
 
-		if (present&(1<<i)) {
-		    if ((i == LAYOUT && l_ndx_present&(1<<ndx)) ||
-			(i == VARIANT && v_ndx_present&(1<<ndx)) ) {
-		        WARN("Component \"%s\" listed twice\n", tok);
-		        ACTION("Second definition ignored\n");
-		        break;
-		    }
-		}
-		present |= (1<<i);
+                if (present & (1 << i)) {
+                    if ((i == LAYOUT && layout_ndx_present & (1 << ndx)) ||
+                        (i == VARIANT && variant_ndx_present & (1 << ndx))) {
+                        WARN("Component \"%s\" listed twice\n", tok);
+                        ACTION("Second definition ignored\n");
+                        break;
+                    }
+                }
+
+                present |= (1 << i);
                 if (i == LAYOUT)
-                    l_ndx_present |= 1 << ndx;
+                    layout_ndx_present |= 1 << ndx;
                 if (i == VARIANT)
-                    v_ndx_present |= 1 << ndx;
-		remap->remap[remap->num_remap].word= i;
-		remap->remap[remap->num_remap++].index= ndx;
-		break;
-	    }
-	}
+                    variant_ndx_present |= 1 << ndx;
 
-	if (!found) {
-	    WARN("Unknown component \"%s\"\n", tok);
+                mapping->map[mapping->num_maps].word = i;
+                mapping->map[mapping->num_maps].index = ndx;
+                mapping->num_maps++;
+                break;
+            }
+        }
+
+        if (!found) {
+            WARN("Unknown component \"%s\"\n", tok);
             ACTION("ignored\n");
-	}
-   }
-   if ((present&PART_MASK)==0) {
-	unsigned mask= PART_MASK;
+        }
+    }
 
-        /* FIXME: Use log function instead of fprintf. */
-	WARN("Mapping needs at least one of ");
-	for (i=0; (i<MAX_WORDS); i++) {
-	    if ((1L<<i)&mask) {
-		mask&= ~(1L<<i);
-		if (mask)	fprintf(stderr,"\"%s,\" ",cname[i]);
-		else		fprintf(stderr,"or \"%s\"\n",cname[i]);
-	    }
-	}
-	ACTION("Illegal mapping ignored\n");
+    if ((present & PART_MASK) == 0) {
+        WARN("Mapping needs at least one MLVO part\n");
+        ACTION("Illegal mapping ignored\n");
+        mapping->num_maps = 0;
+        return;
+    }
 
-	remap->num_remap= 0;
-	return;
-   }
-   if ((present&COMPONENT_MASK)==0) {
-	WARN("Mapping needs at least one component\n");
-	ACTION("Illegal mapping ignored\n");
-	remap->num_remap= 0;
-	return;
-   }
-   if (((present&COMPONENT_MASK)&(1<<KEYMAP))&&
-				((present&COMPONENT_MASK)!=(1<<KEYMAP))) {
-	WARN("Keymap cannot appear with other components\n");
-	ACTION("Illegal mapping ignored\n");
-	remap->num_remap= 0;
-	return;
-   }
-   remap->number++;
+    if ((present & COMPONENT_MASK) == 0) {
+        WARN("Mapping needs at least one component\n");
+        ACTION("Illegal mapping ignored\n");
+        mapping->num_maps = 0;
+        return;
+    }
+
+    if (((present & COMPONENT_MASK) & (1 << KEYMAP)) &&
+        ((present & COMPONENT_MASK) != (1 << KEYMAP))) {
+        WARN("Keymap cannot appear with other components\n");
+        ACTION("Illegal mapping ignored\n");
+        mapping->num_maps = 0;
+        return;
+    }
+
+    mapping->number++;
 }
 
 static bool
@@ -421,7 +462,7 @@ MatchOneOf(char *wanted,char *vals_defined)
 /***====================================================================***/
 
 static bool
-CheckLine(struct input_line *line, struct remap_spec *remap,
+CheckLine(struct input_line *line, struct mapping *mapping,
           struct rule *rule, struct group *group)
 {
     char *str, *tok;
@@ -455,12 +496,12 @@ CheckLine(struct input_line *line, struct remap_spec *remap,
             group->number = i;
             return true;
         } else {
-	    SetUpRemap(line,remap);
+            match_mapping_line(line, mapping);
 	    return false;
         }
     }
 
-    if (remap->num_remap==0) {
+    if (mapping->num_maps == 0) {
 	WARN("Must have a mapping before first line of data\n");
 	ACTION("Illegal line of data ignored\n");
 	return false;
@@ -473,23 +514,23 @@ CheckLine(struct input_line *line, struct remap_spec *remap,
 	    nread--;
 	    continue;
 	}
-	if (nread>remap->num_remap) {
+	if (nread > mapping->num_maps) {
 	    WARN("Too many words on a line\n");
 	    ACTION("Extra word \"%s\" ignored\n",tok);
 	    continue;
 	}
-	tmp.name[remap->remap[nread].word]= tok;
+	tmp.name[mapping->map[nread].word]= tok;
 	if (*tok == '+' || *tok == '|')
 	    append = true;
     }
-    if (nread<remap->num_remap) {
+    if (nread < mapping->num_maps) {
 	WARN("Too few words on a line: %s\n", line->line);
 	ACTION("line ignored\n");
 	return false;
     }
 
     rule->flags= 0;
-    rule->number = remap->number;
+    rule->number = mapping->number;
     if (tmp.name[OPTION])
 	 rule->flags|= XkbRF_Option;
     else if (append)
@@ -509,11 +550,11 @@ CheckLine(struct input_line *line, struct remap_spec *remap,
 
     rule->layout_num = rule->variant_num = 0;
     for (i = 0; i < nread; i++) {
-        if (remap->remap[i].index) {
-	    if (remap->remap[i].word == LAYOUT)
-	        rule->layout_num = remap->remap[i].index;
-	    if (remap->remap[i].word == VARIANT)
-	        rule->variant_num = remap->remap[i].index;
+        if (mapping->map[i].index) {
+            if (mapping->map[i].word == LAYOUT)
+                rule->layout_num = mapping->map[i].index;
+            if (mapping->map[i].word == VARIANT)
+                rule->variant_num = mapping->map[i].index;
         }
     }
     return true;
@@ -950,7 +991,7 @@ static struct rules *
 XkbcRF_LoadRules(FILE *file)
 {
     struct input_line line;
-    struct remap_spec remap;
+    struct mapping mapping;
     struct rule trule, *rule;
     struct group tgroup, *group;
     struct rules *rules;
@@ -959,12 +1000,12 @@ XkbcRF_LoadRules(FILE *file)
     if (!rules)
         return NULL;
 
-    memset(&remap, 0, sizeof(remap));
+    memset(&mapping, 0, sizeof(mapping));
     memset(&tgroup, 0, sizeof(tgroup));
     input_line_init(&line);
 
     while (input_line_get(file, &line)) {
-	if (CheckLine(&line,&remap,&trule,&tgroup)) {
+	if (CheckLine(&line, &mapping, &trule, &tgroup)) {
             if (tgroup.number) {
 	        if ((group= XkbcRF_AddGroup(rules))!=NULL) {
 		    *group= tgroup;
