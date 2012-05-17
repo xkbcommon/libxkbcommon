@@ -227,11 +227,6 @@ struct mapping {
     } map[MAX_WORDS];
 };
 
-struct file_spec {
-    char *name[MAX_WORDS];
-    struct file_spec *pending;
-};
-
 struct multi_defs {
     const char *model;
     const char *layout[XkbNumKbdGroups + 1];
@@ -256,20 +251,21 @@ struct group {
     char *words;
 };
 
-#define XkbRF_PendingMatch  (1L<<1)
-#define XkbRF_Option        (1L<<2)
-#define XkbRF_Append        (1L<<3)
-#define XkbRF_Normal        (1L<<4)
-#define XkbRF_Invalid       (1L<<5)
+enum rule_flag {
+    RULE_FLAG_PENDING_MATCH = (1L << 1),
+    RULE_FLAG_OPTION        = (1L << 2),
+    RULE_FLAG_APPEND        = (1L << 3),
+    RULE_FLAG_NORMAL        = (1L << 4),
+};
 
 struct rule {
     int number;
-    int layout_num;
-    int variant_num;
 
     char *model;
     char *layout;
+    int layout_num;
     char *variant;
+    int variant_num;
     char *option;
 
     /* yields */
@@ -437,116 +433,110 @@ match_mapping_line(struct input_line *line, struct mapping *mapping)
     mapping->number++;
 }
 
+/*
+ * Match a line such as:
+ * ! $pcmodels = pc101 pc102 pc104 pc105
+ */
 static bool
-MatchOneOf(char *wanted,char *vals_defined)
+match_group_line(struct input_line *line, struct group *group)
 {
-    char *str, *next;
-    int want_len = strlen(wanted);
+    int i;
+    char *name = strchr(line->line, '$');
+    char *words = strchr(name, ' ');
 
-    for (str=vals_defined,next=NULL;str!=NULL;str=next) {
-	int len;
-	next= strchr(str,',');
-	if (next) {
-	    len= next-str;
-	    next++;
-	}
-	else {
-	    len= strlen(str);
-	}
-	if ((len==want_len)&&(strncmp(wanted,str,len)==0))
-	    return true;
+    if (!words)
+        return false;
+
+    *words++ = '\0';
+
+    for (; *words; words++) {
+        if (*words != '=' && *words != ' ')
+            break;
     }
-    return false;
+
+    if (*words == '\0')
+        return false;
+
+    group->name = strdup(name);
+    group->words = strdup(words);
+
+    words = group->words;
+    for (i = 1; *words; words++) {
+        if (*words == ' ') {
+            *words++ = '\0';
+            i++;
+        }
+    }
+    group->number = i;
+
+    return true;
+
 }
 
-/***====================================================================***/
-
+/* Match lines following a mapping (see match_mapping_line comment). */
 static bool
-CheckLine(struct input_line *line, struct mapping *mapping,
-          struct rule *rule, struct group *group)
+match_rule_line(struct input_line *line, struct mapping *mapping,
+                struct rule *rule)
 {
     char *str, *tok;
     int nread, i;
-    struct file_spec tmp;
     char *strtok_buf;
     bool append = false;
-
-    if (line->line[0]=='!') {
-        if (line->line[1] == '$' ||
-            (line->line[1] == ' ' && line->line[2] == '$')) {
-            char *gname = strchr(line->line, '$');
-            char *words = strchr(gname, ' ');
-            if(!words)
-                return false;
-            *words++ = '\0';
-            for (; *words; words++) {
-                if (*words != '=' && *words != ' ')
-                    break;
-            }
-            if (*words == '\0')
-                return false;
-            group->name = uDupString(gname);
-            group->words = uDupString(words);
-            for (i = 1, words = group->words; *words; words++) {
-                 if ( *words == ' ') {
-                     *words++ = '\0';
-                     i++;
-                 }
-            }
-            group->number = i;
-            return true;
-        } else {
-            match_mapping_line(line, mapping);
-	    return false;
-        }
-    }
+    const char *names[MAX_WORDS] = { NULL };
 
     if (mapping->num_maps == 0) {
-	WARN("Must have a mapping before first line of data\n");
-	ACTION("Illegal line of data ignored\n");
-	return false;
+        WARN("Must have a mapping before first line of data\n");
+        ACTION("Illegal line of data ignored\n");
+        return false;
     }
-    memset(&tmp, 0, sizeof(tmp));
-    str= line->line;
+
+    str = line->line;
+
     for (nread = 0; (tok = strtok_r(str, " ", &strtok_buf)) != NULL; nread++) {
-	str= NULL;
-	if (strcmp(tok,"=")==0) {
-	    nread--;
-	    continue;
-	}
-	if (nread > mapping->num_maps) {
-	    WARN("Too many words on a line\n");
-	    ACTION("Extra word \"%s\" ignored\n",tok);
-	    continue;
-	}
-	tmp.name[mapping->map[nread].word]= tok;
-	if (*tok == '+' || *tok == '|')
-	    append = true;
+        str = NULL;
+
+        if (strcmp(tok, "=") == 0) {
+            nread--;
+            continue;
+        }
+
+        if (nread > mapping->num_maps) {
+            WARN("Too many words on a line\n");
+            ACTION("Extra word \"%s\" ignored\n", tok);
+            continue;
+        }
+
+        names[mapping->map[nread].word] = tok;
+        if (*tok == '+' || *tok == '|')
+            append = true;
     }
+
     if (nread < mapping->num_maps) {
-	WARN("Too few words on a line: %s\n", line->line);
-	ACTION("line ignored\n");
-	return false;
+        WARN("Too few words on a line: %s\n", line->line);
+        ACTION("line ignored\n");
+        return false;
     }
 
-    rule->flags= 0;
+    rule->flags = 0;
     rule->number = mapping->number;
-    if (tmp.name[OPTION])
-	 rule->flags|= XkbRF_Option;
-    else if (append)
-	 rule->flags|= XkbRF_Append;
-    else
-	 rule->flags|= XkbRF_Normal;
-    rule->model= uDupString(tmp.name[MODEL]);
-    rule->layout= uDupString(tmp.name[LAYOUT]);
-    rule->variant= uDupString(tmp.name[VARIANT]);
-    rule->option= uDupString(tmp.name[OPTION]);
 
-    rule->keycodes= uDupString(tmp.name[KEYCODES]);
-    rule->symbols= uDupString(tmp.name[SYMBOLS]);
-    rule->types= uDupString(tmp.name[TYPES]);
-    rule->compat= uDupString(tmp.name[COMPAT]);
-    rule->keymap= uDupString(tmp.name[KEYMAP]);
+    if (names[OPTION])
+        rule->flags |= RULE_FLAG_OPTION;
+    else if (append)
+        rule->flags |= RULE_FLAG_APPEND;
+    else
+        rule->flags |= RULE_FLAG_NORMAL;
+
+    rule->model = uDupString(names[MODEL]);
+    rule->layout = uDupString(names[LAYOUT]);
+    rule->variant = uDupString(names[VARIANT]);
+    rule->option = uDupString(names[OPTION]);
+
+    rule->keycodes = uDupString(names[KEYCODES]);
+    rule->symbols = uDupString(names[SYMBOLS]);
+    rule->types = uDupString(names[TYPES]);
+    rule->compat = uDupString(names[COMPAT]);
+    rule->keymap = uDupString(names[KEYMAP]);
 
     rule->layout_num = rule->variant_num = 0;
     for (i = 0; i < nread; i++) {
@@ -557,7 +547,22 @@ CheckLine(struct input_line *line, struct mapping *mapping,
                 rule->variant_num = mapping->map[i].index;
         }
     }
+
     return true;
+}
+
+static bool
+match_line(struct input_line *line, struct mapping *mapping,
+           struct rule *rule, struct group *group)
+{
+    if (line->line[0] != '!')
+        return match_rule_line(line, mapping, rule);
+
+    if (line->line[1] == '$' || (line->line[1] == ' ' && line->line[2] == '$'))
+        return match_group_line(line, group);
+
+    match_mapping_line(line, mapping);
+    return false;
 }
 
 static char *
@@ -667,7 +672,8 @@ Apply(char *src, char **dst)
 static void
 XkbRF_ApplyRule(struct rule *rule, struct xkb_component_names *names)
 {
-    rule->flags&= ~XkbRF_PendingMatch; /* clear the flag because it's applied */
+    /* clear the flag because it's applied */
+    rule->flags &= ~RULE_FLAG_PENDING_MATCH;
 
     Apply(rule->keycodes, &names->keycodes);
     Apply(rule->symbols,  &names->symbols);
@@ -696,6 +702,30 @@ CheckGroup(struct rules *rules, const char *group_name, const char *name)
        }
    }
    return false;
+}
+
+static bool
+MatchOneOf(char *wanted, char *vals_defined)
+{
+    char *str, *next;
+    int want_len = strlen(wanted);
+
+    for (str = vals_defined, next = NULL; str != NULL; str = next) {
+        int len;
+        next = strchr(str, ',');
+        if (next) {
+            len = next-str;
+            next++;
+        }
+        else {
+            len = strlen(str);
+        }
+
+        if (len == want_len && strncmp(wanted, str, len) == 0)
+            return true;
+    }
+
+    return false;
 }
 
 static int
@@ -762,7 +792,7 @@ XkbRF_CheckApplyRule(struct rule *rule, struct multi_defs *mdefs,
 	}
     }
     if (pending) {
-        rule->flags|= XkbRF_PendingMatch;
+        rule->flags |= RULE_FLAG_PENDING_MATCH;
 	return rule->number;
     }
     /* exact match, apply it now */
@@ -777,7 +807,7 @@ XkbRF_ClearPartialMatches(struct rules *rules)
     struct rule *rule;
 
     for (i=0,rule=rules->rules;i<rules->num_rules;i++,rule++) {
-	rule->flags&= ~XkbRF_PendingMatch;
+	rule->flags &= ~RULE_FLAG_PENDING_MATCH;
     }
 }
 
@@ -789,7 +819,7 @@ XkbRF_ApplyPartialMatches(struct rules *rules,
     struct rule *rule;
 
     for (rule = rules->rules, i = 0; i < rules->num_rules; i++, rule++) {
-	if ((rule->flags&XkbRF_PendingMatch)==0)
+	if ((rule->flags & RULE_FLAG_PENDING_MATCH)==0)
 	    continue;
 	XkbRF_ApplyRule(rule,names);
     }
@@ -807,7 +837,7 @@ XkbRF_CheckApplyRules(struct rules *rules, struct multi_defs *mdefs,
 	if ((rule->flags & flags) != flags)
 	    continue;
 	skip = XkbRF_CheckApplyRule(rule, mdefs, names, rules);
-	if (skip && !(flags & XkbRF_Option)) {
+	if (skip && !(flags & RULE_FLAG_OPTION)) {
 	    for ( ;(i < rules->num_rules) && (rule->number == skip);
 		  rule++, i++);
 	    rule--; i--;
@@ -926,11 +956,11 @@ XkbcRF_GetComponents(struct rules *rules, const struct var_defs *defs,
 
     memset(names, 0, sizeof(struct xkb_component_names));
     XkbRF_ClearPartialMatches(rules);
-    XkbRF_CheckApplyRules(rules, &mdefs, names, XkbRF_Normal);
+    XkbRF_CheckApplyRules(rules, &mdefs, names, RULE_FLAG_NORMAL);
     XkbRF_ApplyPartialMatches(rules, names);
-    XkbRF_CheckApplyRules(rules, &mdefs, names, XkbRF_Append);
+    XkbRF_CheckApplyRules(rules, &mdefs, names, RULE_FLAG_APPEND);
     XkbRF_ApplyPartialMatches(rules, names);
-    XkbRF_CheckApplyRules(rules, &mdefs, names, XkbRF_Option);
+    XkbRF_CheckApplyRules(rules, &mdefs, names, RULE_FLAG_OPTION);
     XkbRF_ApplyPartialMatches(rules, names);
 
     names->keycodes = XkbRF_SubstituteVars(names->keycodes, &mdefs);
@@ -1005,7 +1035,7 @@ XkbcRF_LoadRules(FILE *file)
     input_line_init(&line);
 
     while (input_line_get(file, &line)) {
-	if (CheckLine(&line, &mapping, &trule, &tgroup)) {
+        if (match_line(&line, &mapping, &trule, &tgroup)) {
             if (tgroup.number) {
 	        if ((group= XkbcRF_AddGroup(rules))!=NULL) {
 		    *group= tgroup;
