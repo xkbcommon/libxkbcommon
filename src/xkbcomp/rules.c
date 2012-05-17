@@ -275,34 +275,28 @@ struct rules {
     struct group *groups;
 };
 
-#define NDX_BUFF_SIZE	4
-
 /***====================================================================***/
 
-static char*
+/*
+ * Resolve numeric index, such as "[4]" in layout[4]. Missing index
+ * means zero.
+ */
+static char *
 get_index(char *str, int *ndx)
 {
-   char ndx_buf[NDX_BUFF_SIZE];
-   char *end;
+    int empty = 0, consumed = 0, num;
 
-   if (*str != '[') {
-       *ndx = 0;
-       return str;
-   }
-   str++;
-   end = strchr(str, ']');
-   if (end == NULL) {
-       *ndx = -1;
-       return str - 1;
-   }
-   if ( (end - str) >= NDX_BUFF_SIZE) {
-       *ndx = -1;
-       return end + 1;
-   }
-   strncpy(ndx_buf, str, end - str);
-   ndx_buf[end - str] = '\0';
-   *ndx = atoi(ndx_buf);
-   return end + 1;
+    sscanf(str, "[%n%d]%n", &empty, &num, &consumed);
+    if (consumed > 0) {
+        *ndx = num;
+        str += consumed;
+    } else if (empty > 0) {
+        *ndx = -1;
+    } else {
+        *ndx = 0;
+    }
+
+    return str;
 }
 
 static void
