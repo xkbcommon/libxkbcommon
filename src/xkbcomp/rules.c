@@ -745,28 +745,23 @@ CheckGroup(struct rules *rules, const char *group_name, const char *name)
    return false;
 }
 
+/* Match @needle out of @sep-seperated @haystack. */
 static bool
-MatchOneOf(char *wanted, char *vals_defined)
+match_one_of(const char *haystack, const char *needle, char sep)
 {
-    char *str, *next;
-    int want_len = strlen(wanted);
+    const char *s = strstr(haystack, needle);
 
-    for (str = vals_defined, next = NULL; str != NULL; str = next) {
-        int len;
-        next = strchr(str, ',');
-        if (next) {
-            len = next-str;
-            next++;
-        }
-        else {
-            len = strlen(str);
-        }
+    if (s == NULL)
+        return false;
 
-        if (len == want_len && strncmp(wanted, str, len) == 0)
-            return true;
-    }
+    if (s != haystack && *s != sep)
+        return false;
 
-    return false;
+    s += strlen(needle);
+    if (*s != '\0' && *s != sep)
+        return false;
+
+    return true;
 }
 
 static int
@@ -793,7 +788,7 @@ XkbRF_CheckApplyRule(struct rule *rule, struct multi_defs *mdefs,
     if (rule->option != NULL) {
 	if (mdefs->options == NULL)
 	    return 0;
-	if ((!MatchOneOf(rule->option,mdefs->options)))
+        if ((!match_one_of(mdefs->options, rule->option, ',')))
 	    return 0;
     }
 
