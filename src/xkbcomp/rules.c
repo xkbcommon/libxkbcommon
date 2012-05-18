@@ -1087,7 +1087,7 @@ add_group(struct rules *rules)
 }
 
 static struct rules *
-XkbcRF_LoadRules(FILE *file)
+load_rules(FILE *file)
 {
     struct input_line line;
     struct mapping mapping;
@@ -1107,36 +1107,39 @@ XkbcRF_LoadRules(FILE *file)
         if (match_line(&line, &mapping, &trule, &tgroup)) {
             if (tgroup.number) {
                 group = add_group(rules);
-	        if (group != NULL) {
-		    *group= tgroup;
-		    memset(&tgroup, 0, sizeof(tgroup));
-	        }
-	    } else {
+                if (group) {
+                    *group = tgroup;
+                    memset(&tgroup, 0, sizeof(tgroup));
+                }
+            } else {
                 rule = add_rule(rules);
-	        if (rule != NULL) {
-		    *rule= trule;
-		    memset(&trule, 0, sizeof(trule));
-	        }
-	    }
-	}
-	line.offset = 0;
+                if (rule) {
+                    *rule = trule;
+                    memset(&trule, 0, sizeof(trule));
+                }
+            }
+        }
+
+        line.offset = 0;
     }
+
     input_line_deinit(&line);
     return rules;
 }
 
 static void
-static void
-XkbcRF_Free(struct rules *rules)
+free_rules(struct rules *rules)
 {
     int i;
     struct rule *rule;
     struct group *group;
 
     if (!rules)
-	return;
+        return;
 
-    for (i=0, rule = rules->rules; i < rules->num_rules && rules; i++, rule++) {
+    for (i = 0; i < rules->num_rules; i++) {
+        rule = &rules->rules[i];
+
         free(rule->model);
         free(rule->layout);
         free(rule->variant);
@@ -1149,7 +1152,9 @@ XkbcRF_Free(struct rules *rules)
     }
     free(rules->rules);
 
-    for (i=0, group = rules->groups; i < rules->num_groups && group; i++, group++) {
+    for (i = 0; i < rules->num_groups; i++) {
+        group = &rules->groups[i];
+
         free(group->name);
         free(group->words);
     }
@@ -1185,7 +1190,7 @@ xkb_components_from_rules(struct xkb_context *ctx,
         return NULL;
     }
 
-    loaded = XkbcRF_LoadRules(rulesFile);
+    loaded = load_rules(rulesFile);
     if (!loaded) {
         ERROR("failed to load XKB rules \"%s\"\n", rulesPath);
         goto unwind_file;
@@ -1209,7 +1214,7 @@ xkb_components_from_rules(struct xkb_context *ctx,
     }
 
 unwind_file:
-    XkbcRF_Free(loaded);
+    free_rules(loaded);
     if (rulesFile)
         fclose(rulesFile);
     free(rulesPath);
