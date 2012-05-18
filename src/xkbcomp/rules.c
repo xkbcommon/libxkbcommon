@@ -1052,42 +1052,45 @@ get_components(struct rules *rules, struct var_defs *defs,
 }
 
 static struct rule *
-XkbcRF_AddRule(struct rules *rules)
+add_rule(struct rules *rules)
 {
-    if (rules->sz_rules<1) {
-	rules->sz_rules= 16;
-	rules->num_rules= 0;
-	rules->rules = calloc(rules->sz_rules, sizeof(*rules->rules));
+    if (rules->sz_rules < 1) {
+        rules->sz_rules = 16;
+        rules->num_rules = 0;
+        rules->rules = calloc(rules->sz_rules, sizeof(*rules->rules));
     }
-    else if (rules->num_rules>=rules->sz_rules) {
-	rules->sz_rules*= 2;
+    else if (rules->num_rules >= rules->sz_rules) {
+        rules->sz_rules *= 2;
         rules->rules = realloc(rules->rules,
                                rules->sz_rules * sizeof(*rules->rules));
     }
+
     if (!rules->rules) {
-	rules->sz_rules= rules->num_rules= 0;
-	return NULL;
+        rules->sz_rules = rules->num_rules = 0;
+        return NULL;
     }
+
     memset(&rules->rules[rules->num_rules], 0, sizeof(*rules->rules));
     return &rules->rules[rules->num_rules++];
 }
 
 static struct group *
-XkbcRF_AddGroup(struct rules *rules)
+add_group(struct rules *rules)
 {
-    if (rules->sz_groups<1) {
-	rules->sz_groups= 16;
-	rules->num_groups= 0;
+    if (rules->sz_groups < 1) {
+        rules->sz_groups = 16;
+        rules->num_groups = 0;
         rules->groups = calloc(rules->sz_groups, sizeof(*rules->groups));
     }
     else if (rules->num_groups >= rules->sz_groups) {
-	rules->sz_groups *= 2;
+        rules->sz_groups *= 2;
         rules->groups = realloc(rules->groups,
                                 rules->sz_groups * sizeof(*rules->groups));
     }
+
     if (!rules->groups) {
-	rules->sz_groups= rules->num_groups= 0;
-	return NULL;
+        rules->sz_groups = rules->num_groups = 0;
+        return NULL;
     }
 
     memset(&rules->groups[rules->num_groups], 0, sizeof(*rules->groups));
@@ -1114,12 +1117,14 @@ XkbcRF_LoadRules(FILE *file)
     while (input_line_get(file, &line)) {
         if (match_line(&line, &mapping, &trule, &tgroup)) {
             if (tgroup.number) {
-	        if ((group= XkbcRF_AddGroup(rules))!=NULL) {
+                group = add_group(rules);
+	        if (group != NULL) {
 		    *group= tgroup;
 		    memset(&tgroup, 0, sizeof(tgroup));
 	        }
 	    } else {
-	        if ((rule= XkbcRF_AddRule(rules))!=NULL) {
+                rule = add_rule(rules);
+	        if (rule != NULL) {
 		    *rule= trule;
 		    memset(&trule, 0, sizeof(trule));
 	        }
