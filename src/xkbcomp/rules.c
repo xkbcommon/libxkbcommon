@@ -239,12 +239,6 @@ struct var_desc {
     char *desc;
 };
 
-struct describe_vars {
-    size_t sz_desc;
-    size_t num_desc;
-    struct var_desc *desc;
-};
-
 struct group {
     int number;
     char *name;
@@ -279,11 +273,6 @@ struct rule {
 };
 
 struct rules {
-    struct describe_vars models;
-    struct describe_vars layouts;
-    struct describe_vars variants;
-    struct describe_vars options;
-
     size_t sz_rules;
     size_t num_rules;
     struct rule *rules;
@@ -1137,19 +1126,6 @@ XkbcRF_LoadRules(FILE *file)
 }
 
 static void
-XkbRF_ClearVarDescriptions(struct describe_vars *var)
-{
-    int i;
-
-    for (i=0;i<var->num_desc;i++) {
-	free(var->desc[i].name);
-	free(var->desc[i].desc);
-	var->desc[i].name= var->desc[i].desc= NULL;
-    }
-    free(var->desc);
-    var->desc= NULL;
-}
-
 static void
 XkbcRF_Free(struct rules *rules)
 {
@@ -1159,10 +1135,6 @@ XkbcRF_Free(struct rules *rules)
 
     if (!rules)
 	return;
-    XkbRF_ClearVarDescriptions(&rules->models);
-    XkbRF_ClearVarDescriptions(&rules->layouts);
-    XkbRF_ClearVarDescriptions(&rules->variants);
-    XkbRF_ClearVarDescriptions(&rules->options);
 
     for (i=0, rule = rules->rules; i < rules->num_rules && rules; i++, rule++) {
         free(rule->model);
