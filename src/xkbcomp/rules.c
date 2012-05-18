@@ -1168,20 +1168,19 @@ xkb_components_from_rules(struct xkb_context *ctx,
                           const struct xkb_rule_names *rmlvo)
 {
     int i;
-    FILE *rulesFile;
-    char *rulesPath;
-    struct rules *loaded;
-    struct xkb_component_names *names = NULL;
+    FILE *file;
+    char *path;
+    struct rules *rules;
     struct var_defs defs = {
         .model = rmlvo->model,
         .layout = rmlvo->layout,
         .variant = rmlvo->variant,
         .options = rmlvo->options,
     };
+    struct xkb_component_names *kccgst = NULL;
 
-    rulesFile = XkbFindFileInPath(ctx, rmlvo->rules, XkmRulesFile,
-                                  &rulesPath);
-    if (!rulesFile) {
+    file = XkbFindFileInPath(ctx, rmlvo->rules, XkmRulesFile, &path);
+    if (!file) {
         ERROR("could not find \"%s\" rules in XKB path\n", rmlvo->rules);
         ERROR("%d include paths searched:\n",
               xkb_context_num_include_paths(ctx));
@@ -1190,33 +1189,34 @@ xkb_components_from_rules(struct xkb_context *ctx,
         return NULL;
     }
 
-    loaded = load_rules(rulesFile);
-    if (!loaded) {
-        ERROR("failed to load XKB rules \"%s\"\n", rulesPath);
-        goto unwind_file;
+    rules = load_rules(file);
+    if (!rules) {
+        ERROR("failed to load XKB rules \"%s\"\n", path);
+        goto err;
     }
 
-    names = calloc(1, sizeof(*names));
-    if (!names) {
+    kccgst = calloc(1, sizeof(*kccgst));
+    if (!kccgst) {
         ERROR("failed to allocate XKB components\n");
-        goto unwind_file;
+        goto err;
     }
 
-    if (!get_components(loaded, &defs, names)) {
-        free(names->keymap);
-        free(names->keycodes);
-        free(names->types);
-        free(names->compat);
-        free(names->symbols);
-        free(names);
-        names = NULL;
-        ERROR("no components returned from XKB rules \"%s\"\n", rulesPath);
+    if (!get_components(rules, &defs, kccgst)) {
+        free(kccgst->keymap);
+        free(kccgst->keycodes);
+        free(kccgst->types);
+        free(kccgst->compat);
+        free(kccgst->symbols);
+        free(kccgst);
+        kccgst = NULL;
+        ERROR("no components returned from XKB rules \"%s\"\n", path);
+        goto err;
     }
 
-unwind_file:
-    free_rules(loaded);
-    if (rulesFile)
-        fclose(rulesFile);
-    free(rulesPath);
-    return names;
+err:
+    free_rules(rules);
+    if (file)
+        fclose(file);
+    free(path);
+    return kccgst;
 }
