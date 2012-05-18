@@ -1021,35 +1021,34 @@ substitute_vars(char *name, struct multi_defs *mdefs)
 /***====================================================================***/
 
 static bool
-XkbcRF_GetComponents(struct rules *rules, struct var_defs *defs,
-                     struct xkb_component_names *names)
+get_components(struct rules *rules, struct var_defs *defs,
+               struct xkb_component_names *kccgst)
 {
     struct multi_defs mdefs;
 
     make_multi_defs(&mdefs, defs);
 
-    memset(names, 0, sizeof(struct xkb_component_names));
     clear_partial_matches(rules);
 
-    apply_matching_rules(rules, &mdefs, names, RULE_FLAG_NORMAL);
-    apply_partial_matches(rules, names);
+    apply_matching_rules(rules, &mdefs, kccgst, RULE_FLAG_NORMAL);
+    apply_partial_matches(rules, kccgst);
 
-    apply_matching_rules(rules, &mdefs, names, RULE_FLAG_APPEND);
-    apply_partial_matches(rules, names);
+    apply_matching_rules(rules, &mdefs, kccgst, RULE_FLAG_APPEND);
+    apply_partial_matches(rules, kccgst);
 
-    apply_matching_rules(rules, &mdefs, names, RULE_FLAG_OPTION);
-    apply_partial_matches(rules, names);
+    apply_matching_rules(rules, &mdefs, kccgst, RULE_FLAG_OPTION);
+    apply_partial_matches(rules, kccgst);
 
-    names->keycodes = substitute_vars(names->keycodes, &mdefs);
-    names->symbols = substitute_vars(names->symbols, &mdefs);
-    names->types = substitute_vars(names->types, &mdefs);
-    names->compat = substitute_vars(names->compat, &mdefs);
-    names->keymap = substitute_vars(names->keymap, &mdefs);
+    kccgst->keycodes = substitute_vars(kccgst->keycodes, &mdefs);
+    kccgst->symbols = substitute_vars(kccgst->symbols, &mdefs);
+    kccgst->types = substitute_vars(kccgst->types, &mdefs);
+    kccgst->compat = substitute_vars(kccgst->compat, &mdefs);
+    kccgst->keymap = substitute_vars(kccgst->keymap, &mdefs);
 
     free_multi_defs(&mdefs);
 
-    return (names->keycodes && names->symbols && names->types &&
-            names->compat) || names->keymap;
+    return (kccgst->keycodes && kccgst->symbols && kccgst->types &&
+            kccgst->compat) || kccgst->keymap;
 }
 
 static struct rule *
@@ -1221,7 +1220,7 @@ xkb_components_from_rules(struct xkb_context *ctx,
         goto unwind_file;
     }
 
-    if (!XkbcRF_GetComponents(loaded, &defs, names)) {
+    if (!get_components(loaded, &defs, names)) {
         free(names->keymap);
         free(names->keycodes);
         free(names->types);
