@@ -45,6 +45,9 @@ XORG_MACROS_VERSION(1.8)
 XORG_DEFAULT_OPTIONS
 XORG_CHECK_MALLOC_ZERO
 
+# Check for compiler features
+AC_C_INLINE
+
 # Check for programs
 AC_PROG_LEX
 AC_PROG_YACC

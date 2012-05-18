@@ -99,6 +99,12 @@ $(top_builddir)/makekeys/makekeys$(EXEEXT): $(top_srcdir)/makekeys/makekeys.c
 
 # Tests
 
+# Some tests need to use unexported symbols, so we link them against
+# a private copy of libxkbcommon with all symbols exposed.
+noinst_LTLIBRARIES = libxkbcommon-priv.la
+libxkbcommon_priv_la_LDFLAGS = $(libxkbcommon_la_LDFLAGS)
+libxkbcommon_priv_la_SOURCES = $(libxkbcommon_la_SOURCES)
+
 TESTS_ENVIRONMENT =
 
 TESTS = \
@@ -108,8 +114,9 @@ TESTS = \
 	test/rulescomp \
 	test/canonicalise \
 	test/state \
-	test/context
-TESTS_LDADD = libxkbcommon.la
+	test/context \
+	test/rules-file
+TESTS_LDADD = libxkbcommon-priv.la
 
 test_xkey_LDADD = $(TESTS_LDADD)
 test_filecomp_LDADD = $(TESTS_LDADD)
@@ -118,6 +125,8 @@ test_rulescomp_LDADD = $(TESTS_LDADD) -lrt
 test_canonicalise_LDADD = $(TESTS_LDADD)
 test_state_LDADD = $(TESTS_LDADD)
 test_context_LDADD = $(TESTS_LDADD)
+test_rules_file_CFLAGS = $(AM_CFLAGS) -Wno-declaration-after-statement
+test_rules_file_LDADD = $(TESTS_LDADD)
 
 check_PROGRAMS = $(TESTS)
 
