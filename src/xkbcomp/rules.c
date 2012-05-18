@@ -895,99 +895,126 @@ apply_matching_rules(struct rules *rules, struct multi_defs *mdefs,
 /***====================================================================***/
 
 static char *
-XkbRF_SubstituteVars(char *name, struct multi_defs *mdefs)
+substitute_vars(char *name, struct multi_defs *mdefs)
 {
-    char *str, *outstr, *orig, *var;
-    size_t len;
+    char *str, *outstr, *var;
+    char *orig = name;
+    size_t len, extra_len;
+    char pfx, sfx;
     int ndx;
 
     if (!name)
         return NULL;
 
-    orig= name;
-    str= strchr(name,'%');
-    if (str==NULL)
-	return name;
-    len= strlen(name);
-    while (str!=NULL) {
-	char pfx= str[1];
-	int   extra_len= 0;
-	if ((pfx=='+')||(pfx=='|')||(pfx=='_')||(pfx=='-')) {
-	    extra_len= 1;
-	    str++;
-	}
-	else if (pfx=='(') {
-	    extra_len= 2;
-	    str++;
-	}
-	var = str + 1;
-	str = get_index(var + 1, &ndx);
-	if (ndx == -1) {
-	    str = strchr(str,'%');
-	    continue;
-        }
-	if ((*var=='l') && mdefs->layout[ndx] && *mdefs->layout[ndx])
-	    len+= strlen(mdefs->layout[ndx])+extra_len;
-	else if ((*var=='m')&&mdefs->model)
-	    len+= strlen(mdefs->model)+extra_len;
-	else if ((*var=='v') && mdefs->variant[ndx] && *mdefs->variant[ndx])
-	    len+= strlen(mdefs->variant[ndx])+extra_len;
-	if ((pfx=='(')&&(*str==')')) {
-	    str++;
-	}
-	str= strchr(&str[0],'%');
-    }
-    name = malloc(len + 1);
-    str= orig;
-    outstr= name;
-    while (*str!='\0') {
-	if (str[0]=='%') {
-	    char pfx,sfx;
-	    str++;
-	    pfx= str[0];
-	    sfx= '\0';
-	    if ((pfx=='+')||(pfx=='|')||(pfx=='_')||(pfx=='-')) {
-		str++;
-	    }
-	    else if (pfx=='(') {
-		sfx= ')';
-		str++;
-	    }
-	    else pfx= '\0';
+    str = strchr(name, '%');
+    if (str == NULL)
+        return name;
 
-	    var = str;
-	    str = get_index(var + 1, &ndx);
-	    if (ndx == -1) {
-	        continue;
-            }
-	    if ((*var=='l') && mdefs->layout[ndx] && *mdefs->layout[ndx]) {
-		if (pfx) *outstr++= pfx;
-		strcpy(outstr,mdefs->layout[ndx]);
-		outstr+= strlen(mdefs->layout[ndx]);
-		if (sfx) *outstr++= sfx;
-	    }
-	    else if ((*var=='m')&&(mdefs->model)) {
-		if (pfx) *outstr++= pfx;
-		strcpy(outstr,mdefs->model);
-		outstr+= strlen(mdefs->model);
-		if (sfx) *outstr++= sfx;
-	    }
-	    else if ((*var=='v') && mdefs->variant[ndx] && *mdefs->variant[ndx]) {
-		if (pfx) *outstr++= pfx;
-		strcpy(outstr,mdefs->variant[ndx]);
-		outstr+= strlen(mdefs->variant[ndx]);
-		if (sfx) *outstr++= sfx;
-	    }
-	    if ((pfx=='(')&&(*str==')'))
-		str++;
-	}
-	else {
-	    *outstr++= *str++;
-	}
+    len = strlen(name);
+
+    while (str != NULL) {
+        pfx = str[1];
+        extra_len = 0;
+
+        if (pfx == '+' || pfx == '|' || pfx == '_' || pfx == '-') {
+            extra_len = 1;
+            str++;
+        }
+        else if (pfx == '(') {
+            extra_len = 2;
+            str++;
+        }
+
+        var = str + 1;
+        str = get_index(var + 1, &ndx);
+        if (ndx == -1) {
+            str = strchr(str, '%');
+            continue;
+        }
+
+        if (*var == 'l' && mdefs->layout[ndx] && *mdefs->layout[ndx])
+            len += strlen(mdefs->layout[ndx]) + extra_len;
+        else if (*var == 'm' && mdefs->model)
+            len += strlen(mdefs->model) + extra_len;
+        else if (*var == 'v' && mdefs->variant[ndx] && *mdefs->variant[ndx])
+            len += strlen(mdefs->variant[ndx]) + extra_len;
+
+        if (pfx == '(' && *str == ')')
+            str++;
+
+        str = strchr(&str[0], '%');
     }
+
+    name = malloc(len + 1);
+    str = orig;
+    outstr = name;
+
+    while (*str != '\0') {
+        if (str[0] == '%') {
+            str++;
+            pfx = str[0];
+            sfx = '\0';
+
+            if (pfx == '+' || pfx == '|' || pfx == '_' || pfx == '-') {
+                str++;
+            }
+            else if (pfx == '(') {
+                sfx = ')';
+                str++;
+            }
+            else {
+                pfx = '\0';
+            }
+
+            var = str;
+            str = get_index(var + 1, &ndx);
+            if (ndx == -1)
+                continue;
+
+            if (*var == 'l' && mdefs->layout[ndx] && *mdefs->layout[ndx]) {
+                if (pfx)
+                    *outstr++ = pfx;
+
+                strcpy(outstr, mdefs->layout[ndx]);
+                outstr += strlen(mdefs->layout[ndx]);
+
+                if (sfx)
+                    *outstr++ = sfx;
+            }
+            else if (*var == 'm' && mdefs->model) {
+                if (pfx)
+                    *outstr++ = pfx;
+
+                strcpy(outstr, mdefs->model);
+                outstr += strlen(mdefs->model);
+
+                if (sfx)
+                    *outstr++ = sfx;
+            }
+            else if (*var == 'v' && mdefs->variant[ndx] && *mdefs->variant[ndx]) {
+                if (pfx)
+                    *outstr++ = pfx;
+
+                strcpy(outstr, mdefs->variant[ndx]);
+                outstr += strlen(mdefs->variant[ndx]);
+
+                if (sfx)
+                    *outstr++ = sfx;
+            }
+
+            if (pfx == '(' && *str == ')')
+                str++;
+        }
+        else {
+            *outstr++= *str++;
+        }
+    }
+
     *outstr++= '\0';
-    if (orig!=name)
-	free(orig);
+
+    if (orig != name)
+        free(orig);
+
     return name;
 }
 
@@ -1013,11 +1040,11 @@ XkbcRF_GetComponents(struct rules *rules, struct var_defs *defs,
     apply_matching_rules(rules, &mdefs, names, RULE_FLAG_OPTION);
     apply_partial_matches(rules, names);
 
-    names->keycodes = XkbRF_SubstituteVars(names->keycodes, &mdefs);
-    names->symbols = XkbRF_SubstituteVars(names->symbols, &mdefs);
-    names->types = XkbRF_SubstituteVars(names->types, &mdefs);
-    names->compat = XkbRF_SubstituteVars(names->compat, &mdefs);
-    names->keymap = XkbRF_SubstituteVars(names->keymap, &mdefs);
+    names->keycodes = substitute_vars(names->keycodes, &mdefs);
+    names->symbols = substitute_vars(names->symbols, &mdefs);
+    names->types = substitute_vars(names->types, &mdefs);
+    names->compat = substitute_vars(names->compat, &mdefs);
+    names->keymap = substitute_vars(names->keymap, &mdefs);
 
     free_multi_defs(&mdefs);
 
