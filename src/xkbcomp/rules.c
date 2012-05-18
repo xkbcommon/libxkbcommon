@@ -723,25 +723,35 @@ apply_rule(struct rule *rule, struct xkb_component_names *kccgst)
     apply(rule->keymap, &kccgst->keymap);
 }
 
+/*
+ * Match if name is part of the group, e.g. if the following
+ * group is defined:
+ *      ! $qwertz = al cz de hr hu ro si sk
+ * then
+ *      match_group_member(rules, "qwertz", "hr")
+ * will return true.
+ */
 static bool
-CheckGroup(struct rules *rules, const char *group_name, const char *name)
+match_group_member(struct rules *rules, const char *group_name,
+                   const char *name)
 {
    int i;
-   const char *p;
+   const char *word;
    struct group *group;
 
-   for (i = 0, group = rules->groups; i < rules->num_groups; i++, group++) {
-       if (! strcmp(group->name, group_name)) {
+   for (i = 0; i < rules->num_groups; i++)
+       if (strcmp(rules->groups[i].name, group_name) == 0)
            break;
-       }
-   }
+
    if (i == rules->num_groups)
        return false;
-   for (i = 0, p = group->words; i < group->number; i++, p += strlen(p)+1) {
-       if (! strcmp(p, name)) {
+   group = &rules->groups[i];
+
+   word = group->words;
+   for (i = 0; i < group->number; i++, word += strlen(word) + 1)
+       if (strcmp(word, name) == 0)
            return true;
-       }
-   }
+
    return false;
 }
 
@@ -765,74 +775,80 @@ match_one_of(const char *haystack, const char *needle, char sep)
 }
 
 static int
-XkbRF_CheckApplyRule(struct rule *rule, struct multi_defs *mdefs,
-                     struct xkb_component_names *names, struct rules *rules)
+apply_rule_if_matches(struct rules *rules, struct rule *rule,
+                      struct multi_defs *mdefs,
+                      struct xkb_component_names *kccgst)
 {
     bool pending = false;
 
-    if (rule->model != NULL) {
-        if(mdefs->model == NULL)
+    if (rule->model) {
+        if (mdefs->model == NULL)
             return 0;
+
         if (strcmp(rule->model, "*") == 0) {
             pending = true;
-        } else {
-            if (rule->model[0] == '$') {
-               if (!CheckGroup(rules, rule->model, mdefs->model))
-                  return 0;
-            } else {
-	       if (strcmp(rule->model, mdefs->model) != 0)
-	          return 0;
-	    }
-	}
-    }
-    if (rule->option != NULL) {
-	if (mdefs->options == NULL)
-	    return 0;
-        if ((!match_one_of(mdefs->options, rule->option, ',')))
-	    return 0;
+        }
+        else if (rule->model[0] == '$') {
+            if (!match_group_member(rules, rule->model, mdefs->model))
+                return 0;
+        }
+        else if (strcmp(rule->model, mdefs->model) != 0) {
+            return 0;
+        }
     }
 
-    if (rule->layout != NULL) {
-	if(mdefs->layout[rule->layout_num] == NULL ||
-	   *mdefs->layout[rule->layout_num] == '\0')
-	    return 0;
+    if (rule->option) {
+        if (mdefs->options == NULL)
+            return 0;
+
+        if (!match_one_of(mdefs->options, rule->option, ','))
+            return 0;
+    }
+
+    if (rule->layout) {
+        if (mdefs->layout[rule->layout_num] == NULL ||
+            *mdefs->layout[rule->layout_num] == '\0')
+            return 0;
+
         if (strcmp(rule->layout, "*") == 0) {
             pending = true;
-        } else {
-            if (rule->layout[0] == '$') {
-               if (!CheckGroup(rules, rule->layout,
-                               mdefs->layout[rule->layout_num]))
+        }
+        else if (rule->layout[0] == '$') {
+            if (!match_group_member(rules, rule->layout,
+                                    mdefs->layout[rule->layout_num]))
                   return 0;
-	    } else {
-	       if (strcmp(rule->layout, mdefs->layout[rule->layout_num]) != 0)
-	           return 0;
-	    }
-	}
+        }
+        else if (strcmp(rule->layout,
+                        mdefs->layout[rule->layout_num]) != 0) {
+            return 0;
+        }
     }
-    if (rule->variant != NULL) {
-	if (mdefs->variant[rule->variant_num] == NULL ||
-	    *mdefs->variant[rule->variant_num] == '\0')
-	    return 0;
+
+    if (rule->variant) {
+        if (mdefs->variant[rule->variant_num] == NULL ||
+            *mdefs->variant[rule->variant_num] == '\0')
+            return 0;
+
         if (strcmp(rule->variant, "*") == 0) {
             pending = true;
-        } else {
-            if (rule->variant[0] == '$') {
-               if (!CheckGroup(rules, rule->variant,
-                               mdefs->variant[rule->variant_num]))
-                  return 0;
-            } else {
-	       if (strcmp(rule->variant,
-                          mdefs->variant[rule->variant_num]) != 0)
-	           return 0;
-	    }
-	}
+        } else if (rule->variant[0] == '$') {
+            if (!match_group_member(rules, rule->variant,
+                                    mdefs->variant[rule->variant_num]))
+                return 0;
+        }
+        else if (strcmp(rule->variant,
+                        mdefs->variant[rule->variant_num]) != 0) {
+            return 0;
+        }
     }
+
     if (pending) {
         rule->flags |= RULE_FLAG_PENDING_MATCH;
-	return rule->number;
+    } else {
+        /* Exact match, apply it now. */
+        apply_rule(rule, kccgst);
     }
-    /* exact match, apply it now */
-    apply_rule(rule, names);
+
     return rule->number;
 }
 
@@ -872,7 +888,7 @@ XkbRF_CheckApplyRules(struct rules *rules, struct multi_defs *mdefs,
     for (rule = rules->rules, i=0; i < rules->num_rules; rule++, i++) {
 	if ((rule->flags & flags) != flags)
 	    continue;
-	skip = XkbRF_CheckApplyRule(rule, mdefs, names, rules);
+        skip = apply_rule_if_matches(rules, rule, mdefs, names);
 	if (skip && !(flags & RULE_FLAG_OPTION)) {
 	    for ( ;(i < rules->num_rules) && (rule->number == skip);
 		  rule++, i++);
