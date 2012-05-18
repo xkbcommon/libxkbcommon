@@ -209,13 +209,6 @@ static const char *cname[] = {
     [KEYMAP] = "keymap",
 };
 
-struct var_defs {
-    const char *model;
-    const char *layout;
-    const char *variant;
-    const char *options;
-};
-
 struct multi_defs {
     const char *model;
     const char *layout[XkbNumKbdGroups + 1];
@@ -569,10 +562,10 @@ squeeze_spaces(char *p1)
 }
 
 /*
- * Expand the layout and variant of a var_defs and remove extraneous spaces.
- * If there's one layout/variant, it is kept in .layout[0]/.variant[0], else
- * is kept in [1], [2] and so on, and [0] remains empty.
- * For example, this var_defs:
+ * Expand the layout and variant of the rule_names and remove extraneous
+ * spaces. If there's one layout/variant, it is kept in
+ * .layout[0]/.variant[0], else is kept in [1], [2] and so on, and [0]
+ * remains empty. For example, this rule_names:
  *      .model  = "pc105",
  *      .layout = "us,il,ru,ca"
  *      .variant = ",,,multix"
@@ -584,31 +577,31 @@ squeeze_spaces(char *p1)
  *      .options = "grp:alts_toggle,ctrl:nocaps,compose:rwin"
  */
 static bool
-make_multi_defs(struct multi_defs *mdefs, struct var_defs *defs)
+make_multi_defs(struct multi_defs *mdefs, const struct xkb_rule_names *mlvo)
 {
     char *p;
     int i;
 
     memset(mdefs, 0, sizeof(*mdefs));
 
-    if (defs->model) {
-        mdefs->model = defs->model;
+    if (mlvo->model) {
+        mdefs->model = mlvo->model;
     }
 
-    if (defs->options) {
-        mdefs->options = strdup(defs->options);
+    if (mlvo->options) {
+        mdefs->options = strdup(mlvo->options);
         if (mdefs->options == NULL)
             return false;
 
         squeeze_spaces(mdefs->options);
     }
 
-    if (defs->layout) {
-        if (!strchr(defs->layout, ',')) {
-            mdefs->layout[0] = defs->layout;
+    if (mlvo->layout) {
+        if (!strchr(mlvo->layout, ',')) {
+            mdefs->layout[0] = mlvo->layout;
         }
         else {
-            p = strdup(defs->layout);
+            p = strdup(mlvo->layout);
             if (p == NULL)
                 return false;
 
@@ -630,12 +623,12 @@ make_multi_defs(struct multi_defs *mdefs, struct var_defs *defs)
         }
     }
 
-    if (defs->variant) {
-        if (!strchr(defs->variant, ',')) {
-            mdefs->variant[0] = defs->variant;
+    if (mlvo->variant) {
+        if (!strchr(mlvo->variant, ',')) {
+            mdefs->variant[0] = mlvo->variant;
         }
         else {
-            p = strdup(defs->variant);
+            p = strdup(mlvo->variant);
             if (p == NULL)
                 return false;
 
@@ -1010,12 +1003,12 @@ substitute_vars(char *name, struct multi_defs *mdefs)
 /***====================================================================***/
 
 static bool
-get_components(struct rules *rules, struct var_defs *defs,
+get_components(struct rules *rules, const struct xkb_rule_names *mlvo,
                struct xkb_component_names *kccgst)
 {
     struct multi_defs mdefs;
 
-    make_multi_defs(&mdefs, defs);
+    make_multi_defs(&mdefs, mlvo);
 
     clear_partial_matches(rules);
 
@@ -1171,12 +1164,6 @@ xkb_components_from_rules(struct xkb_context *ctx,
     FILE *file;
     char *path;
     struct rules *rules;
-    struct var_defs defs = {
-        .model = rmlvo->model,
-        .layout = rmlvo->layout,
-        .variant = rmlvo->variant,
-        .options = rmlvo->options,
-    };
     struct xkb_component_names *kccgst = NULL;
 
     file = XkbFindFileInPath(ctx, rmlvo->rules, XkmRulesFile, &path);
@@ -1201,7 +1188,7 @@ xkb_components_from_rules(struct xkb_context *ctx,
         goto err;
     }
 
-    if (!get_components(rules, &defs, kccgst)) {
+    if (!get_components(rules, rmlvo, kccgst)) {
         free(kccgst->keymap);
         free(kccgst->keycodes);
         free(kccgst->types);
