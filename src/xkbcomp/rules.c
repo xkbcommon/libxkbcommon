@@ -682,8 +682,9 @@ free_multi_defs(struct multi_defs *defs)
     free(UNCONSTIFY(defs->variant[1]));
 }
 
+/* See apply_rule below. */
 static void
-Apply(char *src, char **dst)
+apply(const char *src, char **dst)
 {
     int ret;
     char *tmp;
@@ -699,21 +700,27 @@ Apply(char *src, char **dst)
         free(tmp);
     }
     else if (*dst == NULL) {
-        *dst = uDupString(src);
+        *dst = strdup(src);
     }
 }
 
+/*
+ * Add the info from the matching rule to the resulting
+ * xkb_component_names. If we already had a match for something
+ * (e.g. keycodes), and the rule is not an appending one (e.g.
+ * +whatever), than we don't override but drop the new one.
+ */
 static void
-XkbRF_ApplyRule(struct rule *rule, struct xkb_component_names *names)
+apply_rule(struct rule *rule, struct xkb_component_names *kccgst)
 {
-    /* clear the flag because it's applied */
+    /* Clear the flag because it's applied. */
     rule->flags &= ~RULE_FLAG_PENDING_MATCH;
 
-    Apply(rule->keycodes, &names->keycodes);
-    Apply(rule->symbols,  &names->symbols);
-    Apply(rule->types,    &names->types);
-    Apply(rule->compat,   &names->compat);
-    Apply(rule->keymap,   &names->keymap);
+    apply(rule->keycodes, &kccgst->keycodes);
+    apply(rule->symbols, &kccgst->symbols);
+    apply(rule->types, &kccgst->types);
+    apply(rule->compat, &kccgst->compat);
+    apply(rule->keymap, &kccgst->keymap);
 }
 
 static bool
@@ -830,7 +837,7 @@ XkbRF_CheckApplyRule(struct rule *rule, struct multi_defs *mdefs,
 	return rule->number;
     }
     /* exact match, apply it now */
-    XkbRF_ApplyRule(rule,names);
+    apply_rule(rule, names);
     return rule->number;
 }
 
@@ -855,7 +862,7 @@ XkbRF_ApplyPartialMatches(struct rules *rules,
     for (rule = rules->rules, i = 0; i < rules->num_rules; i++, rule++) {
 	if ((rule->flags & RULE_FLAG_PENDING_MATCH)==0)
 	    continue;
-	XkbRF_ApplyRule(rule,names);
+        apply_rule(rule, names);
     }
 }
 
