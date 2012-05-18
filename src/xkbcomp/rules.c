@@ -853,47 +853,42 @@ apply_rule_if_matches(struct rules *rules, struct rule *rule,
 }
 
 static void
-XkbRF_ClearPartialMatches(struct rules *rules)
+clear_partial_matches(struct rules *rules)
 {
     int i;
-    struct rule *rule;
 
-    for (i=0,rule=rules->rules;i<rules->num_rules;i++,rule++) {
-	rule->flags &= ~RULE_FLAG_PENDING_MATCH;
-    }
+    for (i = 0; i < rules->num_rules; i++)
+        rules->rules[i].flags &= ~RULE_FLAG_PENDING_MATCH;
 }
 
 static void
-XkbRF_ApplyPartialMatches(struct rules *rules,
-                          struct xkb_component_names *names)
+apply_partial_matches(struct rules *rules, struct xkb_component_names *kccgst)
 {
     int i;
-    struct rule *rule;
 
-    for (rule = rules->rules, i = 0; i < rules->num_rules; i++, rule++) {
-	if ((rule->flags & RULE_FLAG_PENDING_MATCH)==0)
-	    continue;
-        apply_rule(rule, names);
-    }
+    for (i = 0; i < rules->num_rules; i++)
+        if (rules->rules[i].flags & RULE_FLAG_PENDING_MATCH)
+            apply_rule(&rules->rules[i], kccgst);
 }
 
 static void
-XkbRF_CheckApplyRules(struct rules *rules, struct multi_defs *mdefs,
-                      struct xkb_component_names *names, unsigned int flags)
+apply_matching_rules(struct rules *rules, struct multi_defs *mdefs,
+                     struct xkb_component_names *kccgst, unsigned int flags)
 {
     int i;
+    int skip = -1;
     struct rule *rule;
-    int skip;
 
-    for (rule = rules->rules, i=0; i < rules->num_rules; rule++, i++) {
-	if ((rule->flags & flags) != flags)
-	    continue;
-        skip = apply_rule_if_matches(rules, rule, mdefs, names);
-	if (skip && !(flags & RULE_FLAG_OPTION)) {
-	    for ( ;(i < rules->num_rules) && (rule->number == skip);
-		  rule++, i++);
-	    rule--; i--;
-	}
+    for (i = 0; i < rules->num_rules; i++) {
+        rule = &rules->rules[i];
+
+        if ((rule->flags & flags) != flags)
+            continue;
+
+        if ((flags & RULE_FLAG_OPTION) == 0 && rule->number == skip)
+            continue;
+
+        skip = apply_rule_if_matches(rules, rule, mdefs, kccgst);
     }
 }
 
@@ -1007,13 +1002,16 @@ XkbcRF_GetComponents(struct rules *rules, struct var_defs *defs,
     make_multi_defs(&mdefs, defs);
 
     memset(names, 0, sizeof(struct xkb_component_names));
-    XkbRF_ClearPartialMatches(rules);
-    XkbRF_CheckApplyRules(rules, &mdefs, names, RULE_FLAG_NORMAL);
-    XkbRF_ApplyPartialMatches(rules, names);
-    XkbRF_CheckApplyRules(rules, &mdefs, names, RULE_FLAG_APPEND);
-    XkbRF_ApplyPartialMatches(rules, names);
-    XkbRF_CheckApplyRules(rules, &mdefs, names, RULE_FLAG_OPTION);
-    XkbRF_ApplyPartialMatches(rules, names);
+    clear_partial_matches(rules);
+
+    apply_matching_rules(rules, &mdefs, names, RULE_FLAG_NORMAL);
+    apply_partial_matches(rules, names);
+
+    apply_matching_rules(rules, &mdefs, names, RULE_FLAG_APPEND);
+    apply_partial_matches(rules, names);
+
+    apply_matching_rules(rules, &mdefs, names, RULE_FLAG_OPTION);
+    apply_partial_matches(rules, names);
 
     names->keycodes = XkbRF_SubstituteVars(names->keycodes, &mdefs);
     names->symbols = XkbRF_SubstituteVars(names->symbols, &mdefs);
