@@ -26,6 +26,7 @@ authorization from the authors.
 
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 
 #include "xkbcommon/xkbcommon.h"
@@ -112,5 +113,6 @@ int main(int argc, char *argv[])
     assert(!test_rmlvo("base",      "pc105",  "",    "",      ""));
     assert(!test_rmlvo("badrules",  "",       "us",  "",      ""));
 
-    benchmark();
+    if (argc > 1 && strcmp(argv[1], "bench") == 0)
+        benchmark();
 }
