@@ -788,8 +788,7 @@ apply_rule_if_matches(struct rules *rules, struct rule *rule,
     }
 
     if (rule->layout) {
-        if (mdefs->layout[rule->layout_num] == NULL ||
-            *mdefs->layout[rule->layout_num] == '\0')
+        if (mdefs->layout[rule->layout_num] == NULL)
             return 0;
 
         if (strcmp(rule->layout, "*") == 0) {
@@ -807,8 +806,7 @@ apply_rule_if_matches(struct rules *rules, struct rule *rule,
     }
 
     if (rule->variant) {
-        if (mdefs->variant[rule->variant_num] == NULL ||
-            *mdefs->variant[rule->variant_num] == '\0')
+        if (mdefs->variant[rule->variant_num] == NULL)
             return 0;
 
         if (strcmp(rule->variant, "*") == 0) {
