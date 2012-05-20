@@ -44,12 +44,6 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
         return;
     }
 
-    /* Not listed in keysymdef.h for hysterical raisins. */
-    if (ks == XKB_KEY_NoSymbol) {
-        snprintf(buffer, size, "NoSymbol");
-        return;
-    }
-
     /* Try to find it in our hash table. */
     if (ks <= 0x1fffffff) {
         val1 = ks >> 24;

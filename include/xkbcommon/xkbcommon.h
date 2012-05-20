@@ -87,8 +87,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <xkbcommon/xkbcommon-names.h>
 #include <xkbcommon/xkbcommon-keysyms.h>
 
-#define XKB_KEY_NoSymbol	     0L	/* special KeySym */
-
 typedef uint32_t xkb_keycode_t;
 typedef uint32_t xkb_keysym_t;
 typedef uint32_t xkb_mod_index_t;

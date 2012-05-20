@@ -112,6 +112,7 @@ SOFTWARE.
  *
  */
 
+#define XKB_KEY_NoSymbol                    0x000000  /* Special KeySym */
 #define XKB_KEY_VoidSymbol                  0xffffff  /* Void symbol */
 
 /*

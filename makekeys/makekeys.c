@@ -132,11 +132,6 @@ main(int argc, char *argv[])
         fclose(fptr);
     }
 
-    /* Special case XKB_KEY_NoSymbol. */
-    info[ksnum].name = strdup("NoSymbol");
-    info[ksnum].val = XKB_KEY_NoSymbol;
-    ksnum++;
-
     printf("/* This file is generated from keysymdef.h. */\n");
     printf("/* Do not edit. */\n");
     printf("\n");
