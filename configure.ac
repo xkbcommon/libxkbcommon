@@ -85,29 +85,6 @@ fi
 # Obtain protocols headers include directives
 PKG_CHECK_MODULES([X11], [xproto kbproto >= 1.0.4])
 
-# Obtain the path to the X Window System Core Protocol
-AC_MSG_CHECKING([for X11 includedir])
-AC_ARG_VAR([X11_INCLUDEDIR], [Path to X protocol keysym headers])
-if test "x$X11_INCLUDEDIR" = x; then
-    X11_INCLUDEDIR="`$PKG_CONFIG --variable=includex11dir xproto`"
-fi
-if ! test -d "$X11_INCLUDEDIR"; then
-    AC_MSG_ERROR([invalid X11 include path $X11_INCLUDEDIR])
-fi
-AC_MSG_RESULT([$X11_INCLUDEDIR])
-
-AC_MSG_CHECKING([keysym definition files])
-FILES="keysymdef.h XF86keysym.h Sunkeysym.h DECkeysym.h HPkeysym.h"
-for i in $FILES; do
-    if test -f "$X11_INCLUDEDIR/$i"; then
-            KEYSYMDEFS="$KEYSYMDEFS $X11_INCLUDEDIR/$i"
-    else
-            AC_MSG_ERROR([cannot find $i in $X11_INCLUDEDIR])
-    fi
-done
-AC_MSG_RESULT([$KEYSYMDEFS])
-AC_SUBST(KEYSYMDEFS)
-
 # Define a configuration option for the XKB config root
 xkb_base=`$PKG_CONFIG --variable=xkb_base xkeyboard-config`
 if test "x$xkb_base" = x; then

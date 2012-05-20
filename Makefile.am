@@ -98,7 +98,7 @@ src/xkbcomp/parser.c: $(top_builddir)/src/$(am__dirstamp) $(top_builddir)/src/xk
 src/xkbcomp/parser.h: $(top_builddir)/src/$(am__dirstamp) $(top_builddir)/src/xkbcomp/$(am__dirstamp)
 src/xkbcomp/scanner.c: $(top_builddir)/src/$(am__dirstamp) $(top_builddir)/src/xkbcomp/$(am__dirstamp)
 
-src/ks_tables.h: $(KEYSYMDEFS) $(top_builddir)/makekeys/makekeys$(EXEEXT)
+src/ks_tables.h: $(top_builddir)/makekeys/makekeys$(EXEEXT)
 	$(AM_V_GEN)$(top_builddir)/makekeys/makekeys $(top_srcdir)/include/xkbcommon/xkbcommon-keysyms.h > $@
 
 $(top_builddir)/makekeys/makekeys$(EXEEXT): $(top_srcdir)/makekeys/makekeys.c
@@ -148,5 +148,12 @@ EXTRA_DIST = test/data
 # handle a duplicate definition in HPkeysyms.h which kicks in if it's
 # not already defined.
 
+X11_INCLUDEDIR = /usr/include/X11
+KEYSYMDEFS = \
+	 $(X11_INCLUDEDIR)/keysymdef.h \
+	 $(X11_INCLUDEDIR)/XF86keysym.h \
+	 $(X11_INCLUDEDIR)/Sunkeysym.h \
+	 $(X11_INCLUDEDIR)/DECkeysym.h \
+	 $(X11_INCLUDEDIR)/HPkeysym.h
 update-keysyms:
 	sed -e '/XK_Ydiaeresis\s*0x100000ee/d; /#define _/d; s/#define\s*\(\w*\)XK_/#define XKB_KEY_\1/; /\(#ifdef\|#ifndef\|#endif\)/d' $(KEYSYMDEFS) > include/xkbcommon/xkbcommon-keysyms.h
