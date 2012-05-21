@@ -776,13 +776,7 @@ CopyInterps(CompatInfo * info,
             (needSymbol && (si->interp.sym == XKB_KEY_NoSymbol)) ||
             ((!needSymbol) && (si->interp.sym != XKB_KEY_NoSymbol)))
             continue;
-        if (compat->num_si >= compat->size_si)
-        {
-            WSGO("No room to merge symbol interpretations\n");
-            ACTION("Symbol interpretations lost\n");
-            return;
-        }
-        compat->sym_interpret[compat->num_si++] = si->interp;
+        darray_append(compat->sym_interpret, si->interp);
     }
 }
 
@@ -893,16 +887,15 @@ FindInterpForKey(struct xkb_keymap *keymap, xkb_keycode_t key,
                  uint32_t group, uint32_t level)
 {
     struct xkb_sym_interpret *ret = NULL;
+    struct xkb_sym_interpret *interp;
     const xkb_keysym_t *syms;
     int num_syms;
-    int i;
 
     num_syms = xkb_key_get_syms_by_level(keymap, key, group, level, &syms);
     if (num_syms == 0)
         return NULL;
 
-    for (i = 0; i < keymap->compat->num_si; i++) {
-        struct xkb_sym_interpret *interp = &keymap->compat->sym_interpret[i];
+    darray_foreach(interp, keymap->compat->sym_interpret) {
         uint32_t mods;
         bool found;
 

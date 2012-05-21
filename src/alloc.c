@@ -363,49 +363,21 @@ XkbcFreeServerMap(struct xkb_keymap *keymap)
 int
 XkbcAllocCompatMap(struct xkb_keymap *keymap, unsigned nSI)
 {
-    struct xkb_compat_map * compat;
-    struct xkb_sym_interpret *prev_interpret;
-
     if (!keymap)
         return BadMatch;
 
-    if (keymap->compat) {
-        if (keymap->compat->size_si >= nSI)
-            return Success;
-
-        compat = keymap->compat;
-        compat->size_si = nSI;
-        if (!compat->sym_interpret)
-            compat->num_si = 0;
-
-        prev_interpret = compat->sym_interpret;
-        compat->sym_interpret = uTypedRecalloc(compat->sym_interpret,
-                                               compat->num_si, nSI,
-                                               struct xkb_sym_interpret);
-        if (!compat->sym_interpret) {
-            free(prev_interpret);
-            compat->size_si = compat->num_si = 0;
+    if (!keymap->compat) {
+        keymap->compat = calloc(1, sizeof(*keymap->compat));
+        if (!keymap->compat)
             return BadAlloc;
-        }
-
-        return Success;
+        darray_init(keymap->compat->sym_interpret);
     }
 
-    compat = uTypedCalloc(1, struct xkb_compat_map);
-    if (!compat)
-        return BadAlloc;
+    darray_growalloc(keymap->compat->sym_interpret, nSI);
+    darray_resize(keymap->compat->sym_interpret, 0);
 
-    if (nSI > 0) {
-        compat->sym_interpret = uTypedCalloc(nSI, struct xkb_sym_interpret);
-        if (!compat->sym_interpret) {
-            free(compat);
-            return BadAlloc;
-        }
-    }
-    compat->size_si = nSI;
-    compat->num_si = 0;
-    memset(&compat->groups[0], 0, XkbNumKbdGroups * sizeof(struct xkb_mods));
-    keymap->compat = compat;
+    memset(keymap->compat->groups, 0,
+           XkbNumKbdGroups * sizeof(*keymap->compat->groups));
 
     return Success;
 }
@@ -414,15 +386,11 @@ XkbcAllocCompatMap(struct xkb_keymap *keymap, unsigned nSI)
 static void
 XkbcFreeCompatMap(struct xkb_keymap *keymap)
 {
-    struct xkb_compat_map * compat;
-
     if (!keymap || !keymap->compat)
         return;
 
-    compat = keymap->compat;
-
-    free(compat->sym_interpret);
-    free(compat);
+    darray_free(keymap->compat->sym_interpret);
+    free(keymap->compat);
     keymap->compat = NULL;
 }
 

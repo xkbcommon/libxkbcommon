@@ -265,10 +265,8 @@ struct xkb_sym_interpret {
 };
 
 struct xkb_compat_map {
-    struct xkb_sym_interpret *      sym_interpret;
+    darray(struct xkb_sym_interpret) sym_interpret;
     struct xkb_mods              groups[XkbNumKbdGroups];
-    unsigned short           num_si;
-    unsigned short           size_si;
 };
 
 struct xkb_sym_map {
