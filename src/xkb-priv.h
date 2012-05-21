@@ -87,6 +87,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
+#include "darray.h"
 
 /* From XKM.h */
 #define	XkmKeymapFile		22
