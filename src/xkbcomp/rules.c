@@ -266,13 +266,8 @@ struct rule {
 };
 
 struct rules {
-    size_t sz_rules;
-    size_t num_rules;
-    struct rule *rules;
-
-    size_t sz_groups;
-    size_t num_groups;
-    struct group *groups;
+    darray(struct rule) rules;
+    darray(struct group) groups;
 };
 
 /***====================================================================***/
@@ -719,15 +714,17 @@ match_group_member(struct rules *rules, const char *group_name,
 {
    int i;
    const char *word;
-   struct group *group;
+   struct group *iter, *group = NULL;
 
-   for (i = 0; i < rules->num_groups; i++)
-       if (strcmp(rules->groups[i].name, group_name) == 0)
+   darray_foreach(iter, rules->groups) {
+       if (strcmp(iter->name, group_name) == 0) {
+           group = iter;
            break;
+       }
+   }
 
-   if (i == rules->num_groups)
+   if (!group)
        return false;
-   group = &rules->groups[i];
 
    word = group->words;
    for (i = 0; i < group->number; i++, word += strlen(word) + 1)
@@ -835,33 +832,30 @@ apply_rule_if_matches(struct rules *rules, struct rule *rule,
 static void
 clear_partial_matches(struct rules *rules)
 {
-    int i;
+    struct rule *rule;
 
-    for (i = 0; i < rules->num_rules; i++)
-        rules->rules[i].flags &= ~RULE_FLAG_PENDING_MATCH;
+    darray_foreach(rule, rules->rules)
+        rule->flags &= ~RULE_FLAG_PENDING_MATCH;
 }
 
 static void
 apply_partial_matches(struct rules *rules, struct xkb_component_names *kccgst)
 {
-    int i;
+    struct rule *rule;
 
-    for (i = 0; i < rules->num_rules; i++)
-        if (rules->rules[i].flags & RULE_FLAG_PENDING_MATCH)
-            apply_rule(&rules->rules[i], kccgst);
+    darray_foreach(rule, rules->rules)
+        if (rule->flags & RULE_FLAG_PENDING_MATCH)
+            apply_rule(rule, kccgst);
 }
 
 static void
 apply_matching_rules(struct rules *rules, struct multi_defs *mdefs,
                      struct xkb_component_names *kccgst, unsigned int flags)
 {
-    int i;
     int skip = -1;
     struct rule *rule;
 
-    for (i = 0; i < rules->num_rules; i++) {
-        rule = &rules->rules[i];
-
+    darray_foreach(rule, rules->rules) {
         if ((rule->flags & flags) != flags)
             continue;
 
@@ -1031,59 +1025,13 @@ get_components(struct rules *rules, const struct xkb_rule_names *mlvo,
             kccgst->compat) || kccgst->keymap;
 }
 
-static struct rule *
-add_rule(struct rules *rules)
-{
-    if (rules->sz_rules < 1) {
-        rules->sz_rules = 16;
-        rules->num_rules = 0;
-        rules->rules = calloc(rules->sz_rules, sizeof(*rules->rules));
-    }
-    else if (rules->num_rules >= rules->sz_rules) {
-        rules->sz_rules *= 2;
-        rules->rules = realloc(rules->rules,
-                               rules->sz_rules * sizeof(*rules->rules));
-    }
-
-    if (!rules->rules) {
-        rules->sz_rules = rules->num_rules = 0;
-        return NULL;
-    }
-
-    memset(&rules->rules[rules->num_rules], 0, sizeof(*rules->rules));
-    return &rules->rules[rules->num_rules++];
-}
-
-static struct group *
-add_group(struct rules *rules)
-{
-    if (rules->sz_groups < 1) {
-        rules->sz_groups = 16;
-        rules->num_groups = 0;
-        rules->groups = calloc(rules->sz_groups, sizeof(*rules->groups));
-    }
-    else if (rules->num_groups >= rules->sz_groups) {
-        rules->sz_groups *= 2;
-        rules->groups = realloc(rules->groups,
-                                rules->sz_groups * sizeof(*rules->groups));
-    }
-
-    if (!rules->groups) {
-        rules->sz_groups = rules->num_groups = 0;
-        return NULL;
-    }
-
-    memset(&rules->groups[rules->num_groups], 0, sizeof(*rules->groups));
-    return &rules->groups[rules->num_groups++];
-}
-
 static struct rules *
 load_rules(FILE *file)
 {
     struct input_line line;
     struct mapping mapping;
-    struct rule trule, *rule;
-    struct group tgroup, *group;
+    struct rule trule;
+    struct group tgroup;
     struct rules *rules;
 
     rules = calloc(1, sizeof(*rules));
@@ -1097,17 +1045,11 @@ load_rules(FILE *file)
     while (input_line_get(file, &line)) {
         if (match_line(&line, &mapping, &trule, &tgroup)) {
             if (tgroup.number) {
-                group = add_group(rules);
-                if (group) {
-                    *group = tgroup;
-                    memset(&tgroup, 0, sizeof(tgroup));
-                }
+                darray_append(rules->groups, tgroup);
+                memset(&tgroup, 0, sizeof(tgroup));
             } else {
-                rule = add_rule(rules);
-                if (rule) {
-                    *rule = trule;
-                    memset(&trule, 0, sizeof(trule));
-                }
+                darray_append(rules->rules, trule);
+                memset(&trule, 0, sizeof(trule));
             }
         }
 
@@ -1121,16 +1063,13 @@ load_rules(FILE *file)
 static void
 free_rules(struct rules *rules)
 {
-    int i;
     struct rule *rule;
     struct group *group;
 
     if (!rules)
         return;
 
-    for (i = 0; i < rules->num_rules; i++) {
-        rule = &rules->rules[i];
-
+    darray_foreach(rule, rules->rules) {
         free(rule->model);
         free(rule->layout);
         free(rule->variant);
@@ -1141,15 +1080,13 @@ free_rules(struct rules *rules)
         free(rule->compat);
         free(rule->keymap);
     }
-    free(rules->rules);
+    darray_free(rules->rules);
 
-    for (i = 0; i < rules->num_groups; i++) {
-        group = &rules->groups[i];
-
+    darray_foreach(group, rules->groups) {
         free(group->name);
         free(group->words);
     }
-    free(rules->groups);
+    darray_free(rules->groups);
 
     free(rules);
 }
