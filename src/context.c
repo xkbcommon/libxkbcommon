@@ -34,9 +34,7 @@
 struct xkb_context {
     int refcnt;
 
-    char **include_paths;
-    int num_include_paths;
-    int size_include_paths;
+    darray(char *) includes;
 
     /* xkbcomp needs to assign sequential IDs to XkbFile's it creates. */
     int file_id;
@@ -52,20 +50,7 @@ xkb_context_include_path_append(struct xkb_context *ctx, const char *path)
 {
     struct stat stat_buf;
     int err;
-
-    if (ctx->size_include_paths <= ctx->num_include_paths) {
-        int new_size;
-        char **new_paths;
-        new_size = ctx->size_include_paths + 2;
-        new_paths = uTypedRecalloc(ctx->include_paths,
-                                   ctx->size_include_paths,
-                                   new_size,
-                                   char *);
-        if (!new_paths)
-            return 0;
-        ctx->include_paths = new_paths;
-        ctx->size_include_paths = new_size;
-    }
+    char *tmp;
 
     err = stat(path, &stat_buf);
     if (err != 0)
@@ -81,11 +66,11 @@ xkb_context_include_path_append(struct xkb_context *ctx, const char *path)
         return 0;
 #endif
 
-    ctx->include_paths[ctx->num_include_paths] = strdup(path);
-    if (!ctx->include_paths[ctx->num_include_paths])
+    tmp = strdup(path);
+    if (!tmp)
         return 0;
-    ctx->num_include_paths++;
 
+    darray_append(ctx->includes, tmp);
     return 1;
 }
 
@@ -119,15 +104,12 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
 _X_EXPORT void
 xkb_context_include_path_clear(struct xkb_context *ctx)
 {
-    int i;
+    char **path;
 
-    for (i = 0; i < ctx->num_include_paths; i++) {
-        free(ctx->include_paths[i]);
-        ctx->include_paths[i] = NULL;
-    }
-    free(ctx->include_paths);
-    ctx->include_paths = NULL;
-    ctx->num_include_paths = 0;
+    darray_foreach(path, ctx->includes)
+        free(*path);
+
+    darray_free(ctx->includes);
 }
 
 /**
@@ -146,7 +128,7 @@ xkb_context_include_path_reset_defaults(struct xkb_context *ctx)
 _X_EXPORT unsigned int
 xkb_context_num_include_paths(struct xkb_context *ctx)
 {
-    return ctx->num_include_paths;
+    return darray_size(ctx->includes);
 }
 
 /**
@@ -159,7 +141,7 @@ xkb_context_include_path_get(struct xkb_context *ctx, unsigned int idx)
     if (idx >= xkb_context_num_include_paths(ctx))
         return NULL;
 
-    return ctx->include_paths[idx];
+    return darray_item(ctx->includes, idx);
 }
 
 int
