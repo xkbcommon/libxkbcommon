@@ -30,54 +30,8 @@
 #include "rules.h"
 #include "path.h"
 
-#define DFLT_LINE_SIZE 128
-
-struct input_line {
-    size_t size;
-    size_t offset;
-    char buf[DFLT_LINE_SIZE];
-    char *line;
-};
-
-static void
-input_line_init(struct input_line *line)
-{
-    line->size = DFLT_LINE_SIZE;
-    line->offset = 0;
-    line->line = line->buf;
-}
-
-static void
-input_line_deinit(struct input_line *line)
-{
-    if (line->line != line->buf)
-        free(line->line);
-    line->offset = 0;
-    line->size = DFLT_LINE_SIZE;
-    line->line = line->buf;
-}
-
-static int
-input_line_add_char(struct input_line *line, int ch)
-{
-    if (line->offset >= line->size) {
-        if (line->line == line->buf) {
-            line->line = malloc(line->size * 2);
-            memcpy(line->line, line->buf, line->size);
-        }
-        else {
-            line->line = realloc(line->line, line->size * 2);
-        }
-
-        line->size *= 2;
-    }
-
-    line->line[line->offset++] = ch;
-    return ch;
-}
-
 static bool
-input_line_get(FILE *file, struct input_line *line)
+input_line_get(FILE *file, darray_char *line)
 {
     int ch;
     bool end_of_file = false;
@@ -85,7 +39,7 @@ input_line_get(FILE *file, struct input_line *line)
     bool slash_pending;
     bool in_comment;
 
-    while (!end_of_file && line->offset == 0) {
+    while (!end_of_file && darray_empty(*line)) {
         space_pending = slash_pending = in_comment = false;
 
         while ((ch = getc(file)) != '\n' && ch != EOF) {
@@ -118,11 +72,11 @@ input_line_get(FILE *file, struct input_line *line)
 
             if (slash_pending) {
                 if (space_pending) {
-                    input_line_add_char(line, ' ');
+                    darray_append(*line, ' ');
                     space_pending = false;
                 }
 
-                input_line_add_char(line, '/');
+                darray_append(*line, '/');
                 slash_pending = false;
             }
 
@@ -133,27 +87,27 @@ input_line_get(FILE *file, struct input_line *line)
                 if (ch == EOF)
                     break;
 
-                if (ch != '\n' && line->offset > 0)
+                if (ch != '\n' && !darray_empty(*line))
                     space_pending = true;
 
                 ungetc(ch, file);
             }
             else {
                 if (space_pending) {
-                    input_line_add_char(line, ' ');
+                    darray_append(*line, ' ');
                     space_pending = false;
                 }
 
                 if (ch == '!') {
-                    if (line->offset != 0) {
+                    if (!darray_empty(*line)) {
                         WARN("The '!' is legal only at start of line\n");
                         ACTION("Line containing '!' ignored\n");
-                        line->offset = 0;
+                        darray_resize(*line, 0);
                         break;
                     }
                 }
 
-                input_line_add_char(line, ch);
+                darray_append(*line, ch);
             }
         }
 
@@ -161,10 +115,10 @@ input_line_get(FILE *file, struct input_line *line)
             end_of_file = true;
     }
 
-    if (line->offset == 0 && end_of_file)
+    if (darray_empty(*line) && end_of_file)
         return false;
 
-    input_line_add_char(line, '\0');
+    darray_append(*line, '\0');
     return true;
 }
 
@@ -306,10 +260,10 @@ get_index(char *str, int *ndx)
  * mapping->map[3] = {.word = SYMBOLS, .index = 0}
  */
 static void
-match_mapping_line(struct input_line *line, struct mapping *mapping)
+match_mapping_line(darray_char *line, struct mapping *mapping)
 {
     char *tok;
-    char *str = &line->line[1];
+    char *str = &darray_item(*line, 1);
     unsigned present = 0, layout_ndx_present = 0, variant_ndx_present = 0;
     int i, tmp;
     size_t len;
@@ -415,10 +369,10 @@ match_mapping_line(struct input_line *line, struct mapping *mapping)
  * ! $pcmodels = pc101 pc102 pc104 pc105
  */
 static bool
-match_group_line(struct input_line *line, struct group *group)
+match_group_line(darray_char *line, struct group *group)
 {
     int i;
-    char *name = strchr(line->line, '$');
+    char *name = strchr(&darray_item(*line, 0), '$');
     char *words = strchr(name, ' ');
 
     if (!words)
@@ -452,7 +406,7 @@ match_group_line(struct input_line *line, struct group *group)
 
 /* Match lines following a mapping (see match_mapping_line comment). */
 static bool
-match_rule_line(struct input_line *line, struct mapping *mapping,
+match_rule_line(darray_char *line, struct mapping *mapping,
                 struct rule *rule)
 {
     char *str, *tok;
@@ -467,7 +421,7 @@ match_rule_line(struct input_line *line, struct mapping *mapping,
         return false;
     }
 
-    str = line->line;
+    str = &darray_item(*line, 0);
 
     for (nread = 0; (tok = strtok_r(str, " ", &strtok_buf)) != NULL; nread++) {
         str = NULL;
@@ -489,7 +443,7 @@ match_rule_line(struct input_line *line, struct mapping *mapping,
     }
 
     if (nread < mapping->num_maps) {
-        WARN("Too few words on a line: %s\n", line->line);
+        WARN("Too few words on a line: %s\n", &darray_item(*line, 0));
         ACTION("line ignored\n");
         return false;
     }
@@ -529,13 +483,14 @@ match_rule_line(struct input_line *line, struct mapping *mapping,
 }
 
 static bool
-match_line(struct input_line *line, struct mapping *mapping,
+match_line(darray_char *line, struct mapping *mapping,
            struct rule *rule, struct group *group)
 {
-    if (line->line[0] != '!')
+    if (darray_item(*line, 0) != '!')
         return match_rule_line(line, mapping, rule);
 
-    if (line->line[1] == '$' || (line->line[1] == ' ' && line->line[2] == '$'))
+    if (darray_item(*line, 1) == '$' ||
+        (darray_item(*line, 1) == ' ' && darray_item(*line, 2) == '$'))
         return match_group_line(line, group);
 
     match_mapping_line(line, mapping);
@@ -1028,7 +983,7 @@ get_components(struct rules *rules, const struct xkb_rule_names *mlvo,
 static struct rules *
 load_rules(FILE *file)
 {
-    struct input_line line;
+    darray_char line;
     struct mapping mapping;
     struct rule trule;
     struct group tgroup;
@@ -1040,7 +995,7 @@ load_rules(FILE *file)
 
     memset(&mapping, 0, sizeof(mapping));
     memset(&tgroup, 0, sizeof(tgroup));
-    input_line_init(&line);
+    darray_init(line);
 
     while (input_line_get(file, &line)) {
         if (match_line(&line, &mapping, &trule, &tgroup)) {
@@ -1053,10 +1008,10 @@ load_rules(FILE *file)
             }
         }
 
-        line.offset = 0;
+        darray_resize(line, 0);
     }
 
-    input_line_deinit(&line);
+    darray_free(line);
     return rules;
 }
 
