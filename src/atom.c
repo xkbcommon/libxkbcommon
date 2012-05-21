@@ -72,8 +72,6 @@ SOFTWARE.
 
 #include "atom.h"
 
-#define INITIAL_TABLE_SIZE 100
-
 struct atom_node {
     struct atom_node *left, *right;
     uint32_t a;
@@ -82,10 +80,8 @@ struct atom_node {
 };
 
 struct atom_table {
-    xkb_atom_t last_atom;
-    struct atom_node *atom_root;
-    size_t table_length;
-    struct atom_node **node_table;
+    struct atom_node *root;
+    darray(struct atom_node *) table;
 };
 
 struct atom_table *
@@ -97,7 +93,7 @@ atom_table_new(void)
     if (!table)
         return NULL;
 
-    table->last_atom = XKB_ATOM_NONE;
+    darray_append(table->table, NULL);
 
     return table;
 }
@@ -120,19 +116,19 @@ atom_table_free(struct atom_table *table)
     if (!table)
         return;
 
-    free_atom(table->atom_root);
-    free(table->node_table);
+    free_atom(table->root);
+    darray_free(table->table);
     free(table);
 }
 
 const char *
 atom_text(struct atom_table *table, xkb_atom_t atom)
 {
-    if (atom == XKB_ATOM_NONE || atom > table->last_atom ||
-        !table->node_table[atom])
+    if (atom >= darray_size(table->table) ||
+        darray_item(table->table, atom) == NULL)
         return NULL;
 
-    return table->node_table[atom]->string;
+    return darray_item(table->table, atom)->string;
 }
 
 char *
@@ -156,7 +152,7 @@ atom_intern(struct atom_table *table, const char *string)
         return XKB_ATOM_NONE;
 
     len = strlen(string);
-    np = &table->atom_root;
+    np = &table->root;
     for (i = 0; i < (len + 1) / 2; i++) {
         fp = fp * 27 + string[i];
         fp = fp * 27 + string[len - 1 - i];
@@ -191,34 +187,11 @@ atom_intern(struct atom_table *table, const char *string)
     strncpy(nd->string, string, len);
     nd->string[len] = 0;
 
-    if ((table->last_atom + 1) >= table->table_length) {
-        struct atom_node **new_node_table;
-        int new_length;
-
-        if (table->table_length == 0)
-            new_length = INITIAL_TABLE_SIZE;
-        else
-            new_length = table->table_length * 2;
-
-        new_node_table = realloc(table->node_table,
-                                 new_length * sizeof(*new_node_table));
-        if (!new_node_table) {
-            if (nd->string != string)
-                free(nd->string);
-            free(nd);
-            return XKB_ATOM_NONE;
-        }
-        new_node_table[XKB_ATOM_NONE] = NULL;
-
-        table->table_length = new_length;
-        table->node_table = new_node_table;
-    }
-
     *np = nd;
     nd->left = nd->right = NULL;
     nd->fingerprint = fp;
-    nd->a = (++table->last_atom);
-    *(table->node_table + table->last_atom) = nd;
+    nd->a = darray_size(table->table);
+    darray_append(table->table, nd);
 
     return nd->a;
 }
