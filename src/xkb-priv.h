@@ -290,14 +290,11 @@ struct xkb_behavior {
 };
 
 struct xkb_server_map {
-    unsigned short      num_acts;
-    unsigned short      size_acts;
-
     unsigned char *     explicit;
 
-    union xkb_action          *acts;
+    darray(union xkb_action) acts;
+    darray(size_t ) key_acts;           /* acts[key_acts[keycode]] */
     struct xkb_behavior         *behaviors;
-    unsigned short      *key_acts;
     uint32_t            vmods[XkbNumVirtualMods]; /* vmod -> mod mapping */
     uint32_t            *vmodmap; /* key -> vmod mapping */
 };
@@ -398,13 +395,13 @@ struct xkb_keymap {
 #define XkbKeySymEntry(d, k, g, sl) \
     (XkbKeySym(d, k, XkbKeySymOffset(d, k, g, sl)))
 #define XkbKeyHasActions(d, k) \
-    ((d)->server->key_acts[k] != 0)
+    (darray_item((d)->server->key_acts, k) != 0)
 #define XkbKeyNumActions(d, k) \
     (XkbKeyHasActions(d, k) ? \
      (XkbKeyGroupsWidth(d, k) * XkbKeyNumGroups(d, k)) : \
      1)
 #define XkbKeyActionsPtr(d, k) \
-    (&(d)->server->acts[(d)->server->key_acts[k]])
+    (&darray_item((d)->server->acts, darray_item((d)->server->key_acts, k)))
 #define XkbKeyAction(d, k, n) \
     (XkbKeyHasActions(d, k) ? &XkbKeyActionsPtr(d, k)[n] : NULL)
 #define XkbKeyActionEntry(d, k, sl, g) \
