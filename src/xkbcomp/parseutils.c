@@ -385,59 +385,6 @@ ActionCreate(xkb_atom_t name, ExprDef * args)
     return NULL;
 }
 
-static bool
-ResizeKeysymList(ExprDef *list, unsigned int extra)
-{
-    int i;
-
-    if (list->value.list.nSyms + extra > list->value.list.szSyms)
-    {
-        list->value.list.szSyms *= 2;
-        list->value.list.szSyms += extra;
-        if (list->value.list.szSyms == 1)
-            list->value.list.szSyms = 4;
-        list->value.list.syms = uTypedRecalloc(list->value.list.syms,
-                                               list->value.list.nSyms,
-                                               list->value.list.szSyms,
-                                               char *);
-        if (list->value.list.syms == NULL)
-        {
-            FATAL("Couldn't resize list of symbols for append\n");
-            return false;
-        }
-    }
-    if (list->value.list.nLevels >= list->value.list.szLevels)
-    {
-        list->value.list.szLevels *= 2;
-        if (list->value.list.szLevels == 0)
-            list->value.list.szLevels = 4;
-        list->value.list.symsMapIndex =
-            uTypedRecalloc(list->value.list.symsMapIndex,
-                           list->value.list.nLevels,
-                           list->value.list.szLevels,
-                           int);
-        if (list->value.list.symsMapIndex == NULL)
-        {
-            FATAL("Couldn't resize keysym index map for append\n");
-            return false;
-        }
-        list->value.list.symsNumEntries =
-            uTypedRecalloc(list->value.list.symsNumEntries,
-                           list->value.list.nLevels,
-                           list->value.list.szLevels,
-                           unsigned int);
-        if (list->value.list.symsNumEntries == NULL)
-        {
-            FATAL("Couldn't resize num keysym entries for append\n");
-            return false;
-        }
-        for (i = list->value.list.nLevels; i < list->value.list.szLevels; i++)
-            list->value.list.symsMapIndex[i] = -1;
-    }
-
-    return true;
-}
-
 ExprDef *
 CreateKeysymList(char *sym)
 {
@@ -450,25 +397,13 @@ CreateKeysymList(char *sym)
         return NULL;
     }
 
-    def->value.list.nSyms = 0;
-    def->value.list.szSyms = 0;
-    def->value.list.nLevels = 0;
-    def->value.list.szLevels = 0;
-    def->value.list.syms = NULL;
-    def->value.list.symsMapIndex = NULL;
-    def->value.list.symsNumEntries = NULL;
+    darray_init(def->value.list.syms);
+    darray_init(def->value.list.symsMapIndex);
+    darray_init(def->value.list.symsNumEntries);
 
-    if (!ResizeKeysymList(def, 1))
-    {
-        FreeStmt(&def->common);
-        return NULL;
-    }
-
-    def->value.list.syms[0] = sym;
-    def->value.list.symsMapIndex[0] = 0;
-    def->value.list.symsNumEntries[0] = 1;
-    def->value.list.nLevels = 1;
-    def->value.list.nSyms = 1;
+    darray_append(def->value.list.syms, sym);
+    darray_append(def->value.list.symsMapIndex, 0);
+    darray_append(def->value.list.symsNumEntries, 1);
 
     return def;
 }
@@ -476,16 +411,12 @@ CreateKeysymList(char *sym)
 ExprDef *
 CreateMultiKeysymList(ExprDef *list)
 {
-    int i;
+    size_t nLevels = darray_size(list->value.list.symsMapIndex);
 
-    for (i = 1; i < list->value.list.szLevels; i++)
-    {
-        list->value.list.symsMapIndex[i] = -1;
-        list->value.list.symsNumEntries[i] = 0;
-    }
-    list->value.list.symsMapIndex[0] = 0;
-    list->value.list.symsNumEntries[0] = list->value.list.nLevels;
-    list->value.list.nLevels = 1;
+    darray_resize(list->value.list.symsMapIndex, 1);
+    darray_resize(list->value.list.symsNumEntries, 1);
+    darray_item(list->value.list.symsMapIndex, 0) = 0;
+    darray_item(list->value.list.symsNumEntries, 0) = nLevels;
 
     return list;
 }
@@ -493,36 +424,28 @@ CreateMultiKeysymList(ExprDef *list)
 ExprDef *
 AppendKeysymList(ExprDef * list, char *sym)
 {
-    if (!ResizeKeysymList(list, 1))
-        return NULL;
+    size_t nSyms = darray_size(list->value.list.syms);
 
-    list->value.list.symsMapIndex[list->value.list.nLevels] =
-        list->value.list.nSyms;
-    list->value.list.symsNumEntries[list->value.list.nLevels] = 1;
-    list->value.list.syms[list->value.list.nSyms++] = sym;
-    list->value.list.nLevels++;
+    darray_append(list->value.list.symsMapIndex, nSyms);
+    darray_append(list->value.list.symsNumEntries, 1);
+    darray_append(list->value.list.syms, sym);
+
     return list;
 }
 
 ExprDef *
 AppendMultiKeysymList(ExprDef * list, ExprDef * append)
 {
-    int i;
+    size_t nSyms = darray_size(list->value.list.syms);
+    size_t numEntries = darray_size(append->value.list.syms);
 
-    if (!ResizeKeysymList(list, append->value.list.nSyms))
-        return NULL;
+    darray_append(list->value.list.symsMapIndex, nSyms);
+    darray_append(list->value.list.symsNumEntries, numEntries);
+    darray_append_items(list->value.list.syms,
+                        &darray_item(append->value.list.syms, 0),
+                        numEntries);
 
-    list->value.list.symsMapIndex[list->value.list.nLevels] =
-        list->value.list.nSyms;
-    list->value.list.symsNumEntries[list->value.list.nLevels] =
-        append->value.list.nSyms;
-    for (i = 0; i < append->value.list.nSyms; i++) {
-        list->value.list.syms[list->value.list.nSyms++] =
-            append->value.list.syms[i];
-        append->value.list.syms[i] = NULL;
-    }
-    list->value.list.nLevels++;
-
+    darray_resize(append->value.list.syms, 0);
     FreeStmt(&append->common);
 
     return list;
@@ -717,7 +640,7 @@ StmtSetMerge(ParseCommon * stmt, unsigned merge, struct YYLTYPE *loc, void *scan
 static void
 FreeExpr(ExprDef *expr)
 {
-    int i;
+    char **sym;
 
     if (!expr)
         return;
@@ -746,11 +669,11 @@ FreeExpr(ExprDef *expr)
         FreeStmt(&expr->value.array.entry->common);
         break;
     case ExprKeysymList:
-        for (i = 0; i < expr->value.list.nSyms; i++)
-            free(expr->value.list.syms[i]);
-        free(expr->value.list.syms);
-        free(expr->value.list.symsMapIndex);
-        free(expr->value.list.symsNumEntries);
+        darray_foreach(sym, expr->value.list.syms)
+            free(*sym);
+        darray_free(expr->value.list.syms);
+        darray_free(expr->value.list.symsMapIndex);
+        darray_free(expr->value.list.symsNumEntries);
         break;
     default:
         break;

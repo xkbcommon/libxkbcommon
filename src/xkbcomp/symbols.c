@@ -1049,8 +1049,8 @@ AddSymbolsToKey(KeyInfo *key, struct xkb_keymap *keymap,
         ACTION("Ignoring duplicate definition\n");
         return false;
     }
-    nSyms = value->value.list.nSyms;
-    nLevels = value->value.list.nLevels;
+    nSyms = darray_size(value->value.list.syms);
+    nLevels = darray_size(value->value.list.symsMapIndex);
     if (((key->numLevels[ndx] < nSyms) || (key->syms[ndx] == NULL)) &&
         (!ResizeKeyGroup(key, ndx, nLevels, nSyms, false)))
     {
@@ -1061,15 +1061,21 @@ AddSymbolsToKey(KeyInfo *key, struct xkb_keymap *keymap,
     }
     key->symsDefined |= (1 << ndx);
     for (i = 0; i < nLevels; i++) {
-        key->symsMapIndex[ndx][i] = value->value.list.symsMapIndex[i];
-        key->symsMapNumEntries[ndx][i] = value->value.list.symsNumEntries[i];
+        key->symsMapIndex[ndx][i] =
+            darray_item(value->value.list.symsMapIndex, i);
+        key->symsMapNumEntries[ndx][i] =
+            darray_item(value->value.list.symsNumEntries, i);
+
         for (j = 0; j < key->symsMapNumEntries[ndx][i]; j++) {
             if (key->symsMapIndex[ndx][i] + j >= nSyms)
                 abort();
-            if (!LookupKeysym(value->value.list.syms[value->value.list.symsMapIndex[i] + j],
+            if (!LookupKeysym(darray_item(value->value.list.syms,
+                                          darray_item(value->value.list.symsMapIndex, i) + j),
                               &key->syms[ndx][key->symsMapIndex[ndx][i] + j])) {
                 WARN("Could not resolve keysym %s for key %s, group %d (%s), level %d\n",
-                     value->value.list.syms[i], longText(key->name), ndx + 1,
+                     darray_item(value->value.list.syms, i),
+                     longText(key->name),
+                     ndx + 1,
                      xkb_atom_text(keymap->ctx, info->groupNames[ndx]), nSyms);
                 while (--j >= 0)
                     key->syms[ndx][key->symsMapIndex[ndx][i] + j] = XKB_KEY_NoSymbol;
