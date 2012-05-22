@@ -508,7 +508,7 @@ XkbcFreeNames(struct xkb_keymap *keymap)
         for (i = 0; i < map->num_types; i++, type++) {
             int j;
             for (j = 0; j < type->num_levels; j++)
-                free(UNCONSTIFY(type->level_names[i]));
+                free(UNCONSTIFY(type->level_names[j]));
             free(type->level_names);
             type->level_names = NULL;
         }
