@@ -55,8 +55,7 @@ typedef struct _KeyTypeInfo
     unsigned numLevels;
     darray(struct xkb_kt_map_entry) entries;
     PreserveInfo *preserve;
-    unsigned szNames;
-    xkb_atom_t *lvlNames;
+    darray(xkb_atom_t) lvlNames;
 } KeyTypeInfo;
 
 typedef struct _KeyTypesInfo
@@ -121,8 +120,7 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
     info->dflt.groupInfo = false;
     info->dflt.numLevels = 1;
     darray_init(info->dflt.entries);
-    info->dflt.szNames = 0;
-    info->dflt.lvlNames = NULL;
+    darray_init(info->dflt.lvlNames);
     info->dflt.preserve = NULL;
     InitVModInfo(&info->vmods, keymap);
     if (from != NULL)
@@ -134,15 +132,11 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
                           &darray_item(from->dflt.entries, 0),
                           darray_size(from->dflt.entries));
 
-        if (from->dflt.lvlNames)
-        {
-            info->dflt.lvlNames = uTypedCalloc(from->dflt.szNames, xkb_atom_t);
-            if (info->dflt.lvlNames)
-            {
-                unsigned sz = from->dflt.szNames * sizeof(xkb_atom_t);
-                memcpy(info->dflt.lvlNames, from->dflt.lvlNames, sz);
-            }
-        }
+        darray_init(info->dflt.lvlNames);
+        darray_from_items(info->dflt.lvlNames,
+                          &darray_item(from->dflt.lvlNames, 0),
+                          darray_size(from->dflt.lvlNames));
+
         if (from->dflt.preserve)
         {
             PreserveInfo *old, *new, *last;
@@ -170,8 +164,8 @@ FreeKeyTypeInfo(KeyTypeInfo * type)
 {
     darray_free(type->entries);
     darray_init(type->entries);
-    free(type->lvlNames);
-    type->lvlNames = NULL;
+    darray_free(type->lvlNames);
+    darray_init(type->lvlNames);
     if (type->preserve != NULL)
     {
         ClearCommonInfo(&type->preserve->defs);
@@ -288,8 +282,8 @@ AddKeyType(struct xkb_keymap *keymap, KeyTypesInfo *info, KeyTypeInfo *new)
             FreeKeyTypeInfo(old);
             *old = *new;
             darray_init(new->entries);
+            darray_init(new->lvlNames);
             new->preserve = NULL;
-            new->lvlNames = NULL;
             old->defs.next = &next->defs;
             return true;
         }
@@ -309,8 +303,7 @@ AddKeyType(struct xkb_keymap *keymap, KeyTypesInfo *info, KeyTypeInfo *new)
     *old = *new;
     old->defs.next = NULL;
     darray_init(new->entries);
-    new->szNames = 0;
-    new->lvlNames = NULL;
+    darray_init(new->lvlNames);
     new->preserve = NULL;
     return true;
 }
@@ -690,50 +683,36 @@ static bool
 AddLevelName(struct xkb_keymap *keymap, KeyTypeInfo *type,
              unsigned level, xkb_atom_t name, bool clobber)
 {
-    if ((type->lvlNames == NULL) || (type->szNames <= level))
-    {
-        type->lvlNames =
-            uTypedRecalloc(type->lvlNames, type->szNames, level + 1, xkb_atom_t);
-        if (type->lvlNames == NULL)
-        {
-            ERROR("Couldn't allocate level names for type %s\n",
-                   TypeTxt(keymap, type));
-            ACTION("Level names lost\n");
-            type->szNames = 0;
-            return false;
-        }
-        type->szNames = level + 1;
-    }
-    else if (type->lvlNames[level] == name)
-    {
-        if (warningLevel > 9)
-        {
+    if (level >= darray_size(type->lvlNames))
+        darray_resize0(type->lvlNames, level + 1);
+
+    if (darray_item(type->lvlNames, level) == name) {
+        if (warningLevel > 9) {
             WARN("Duplicate names for level %d of key type %s\n",
-                  level + 1, TypeTxt(keymap, type));
+                 level + 1, TypeTxt(keymap, type));
             ACTION("Ignored\n");
         }
         return true;
     }
-    else if (type->lvlNames[level] != XKB_ATOM_NONE)
-    {
-        if (warningLevel > 0)
-        {
+    else if (darray_item(type->lvlNames, level) != XKB_ATOM_NONE) {
+        if (warningLevel > 0) {
             const char *old, *new;
-            old = xkb_atom_text(keymap->ctx, type->lvlNames[level]);
+            old = xkb_atom_text(keymap->ctx,
+                                darray_item(type->lvlNames, level));
             new = xkb_atom_text(keymap->ctx, name);
             WARN("Multiple names for level %d of key type %s\n",
-                  level + 1, TypeTxt(keymap, type));
+                 level + 1, TypeTxt(keymap, type));
             if (clobber)
                 ACTION("Using %s, ignoring %s\n", new, old);
             else
                 ACTION("Using %s, ignoring %s\n", old, new);
         }
+
         if (!clobber)
             return true;
     }
-    if (level >= type->numLevels)
-        type->numLevels = level + 1;
-    type->lvlNames[level] = name;
+
+    darray_item(type->lvlNames, level) = name;
     return true;
 }
 
@@ -902,8 +881,7 @@ HandleKeyTypeDef(KeyTypeDef *def, struct xkb_keymap *keymap,
     type.groupInfo = info->dflt.groupInfo;
     type.numLevels = 1;
     darray_init(type.entries);
-    type.szNames = 0;
-    type.lvlNames = NULL;
+    darray_init(type.lvlNames);
     type.preserve = NULL;
 
     /* Parse the actual content. */
@@ -933,13 +911,16 @@ HandleKeyTypeDef(KeyTypeDef *def, struct xkb_keymap *keymap,
             dflt = (PreserveInfo *) dflt->defs.next;
         }
     }
-    for (i = 0; i < info->dflt.szNames; i++)
-    {
-        if ((i < type.numLevels) && (info->dflt.lvlNames[i] != XKB_ATOM_NONE))
+
+    for (i = 0; i < darray_size(info->dflt.lvlNames); i++) {
+        if (i < type.numLevels &&
+            darray_item(info->dflt.lvlNames, i) != XKB_ATOM_NONE)
         {
-            AddLevelName(keymap, &type, i, info->dflt.lvlNames[i], false);
+            AddLevelName(keymap, &type, i,
+                         darray_item(info->dflt.lvlNames, i), false);
         }
     }
+
     /* Now add the new keytype to the info struct */
     if (!AddKeyType(keymap, info, &type))
     {
@@ -1070,19 +1051,17 @@ CopyDefToKeyType(struct xkb_keymap *keymap, struct xkb_key_type *type,
     else
         type->preserve = NULL;
     type->name = xkb_atom_strdup(keymap->ctx, def->name);
-    if (def->szNames > 0)
-    {
-        type->level_names = uTypedCalloc(def->numLevels, const char *);
+
+    if (!darray_empty(def->lvlNames)) {
+        type->level_names = uTypedCalloc(darray_size(def->lvlNames),
+                                         const char *);
 
         /* assert def->szNames<=def->numLevels */
-        for (i = 0; i < def->szNames; i++)
-        {
-            type->level_names[i] = xkb_atom_strdup(keymap->ctx,
-                                                   def->lvlNames[i]);
-        }
+        for (i = 0; i < darray_size(def->lvlNames); i++)
+            type->level_names[i] =
+                xkb_atom_strdup(keymap->ctx, darray_item(def->lvlNames, i));
     }
-    else
-    {
+    else {
         type->level_names = NULL;
     }
 
