@@ -43,14 +43,8 @@ XkbcAllocClientMap(struct xkb_keymap *keymap, unsigned which,
     if (which & XkbKeyTypesMask)
         darray_growalloc(keymap->map->types, nTotalTypes);
 
-    if (which & XkbKeySymsMask) {
-        if (!keymap->map->key_sym_map) {
-            keymap->map->key_sym_map = uTypedCalloc(keymap->max_key_code + 1,
-                                                    struct xkb_sym_map);
-            if (!keymap->map->key_sym_map)
-                return BadAlloc;
-        }
-    }
+    if (which & XkbKeySymsMask)
+        darray_resize0(keymap->map->key_sym_map, keymap->max_key_code + 1);
 
     if (which & XkbModifierMapMask) {
         if (!keymap->map->modmap) {
@@ -193,20 +187,20 @@ bool
 XkbcResizeKeySyms(struct xkb_keymap *keymap, xkb_keycode_t key,
                   unsigned int needed)
 {
-    if (keymap->map->key_sym_map[key].size_syms >= needed)
+    struct xkb_sym_map *sym_map =
+        &darray_item(keymap->map->key_sym_map, key);
+
+    if (sym_map->size_syms >= needed)
         return true;
 
-    keymap->map->key_sym_map[key].syms =
-        uTypedRecalloc(keymap->map->key_sym_map[key].syms,
-                       keymap->map->key_sym_map[key].size_syms,
-                       needed,
-                       xkb_keysym_t);
-    if (!keymap->map->key_sym_map[key].syms) {
-        keymap->map->key_sym_map[key].size_syms = 0;
+    sym_map->syms = uTypedRecalloc(sym_map->syms, sym_map->size_syms,
+                                   needed, xkb_keysym_t);
+    if (!sym_map->syms) {
+        sym_map->size_syms = 0;
         return false;
     }
-    keymap->map->key_sym_map[key].size_syms = needed;
 
+    sym_map->size_syms = needed;
     return true;
 }
 
@@ -276,7 +270,7 @@ XkbcFreeClientMap(struct xkb_keymap *keymap)
 {
     struct xkb_client_map * map;
     struct xkb_key_type * type;
-    xkb_keycode_t key;
+    struct xkb_sym_map *sym_map;
 
     if (!keymap || !keymap->map)
         return;
@@ -294,14 +288,12 @@ XkbcFreeClientMap(struct xkb_keymap *keymap)
     }
     darray_free(map->types);
 
-    if (map->key_sym_map) {
-        for (key = keymap->min_key_code; key < keymap->max_key_code; key++) {
-            free(map->key_sym_map[key].sym_index);
-            free(map->key_sym_map[key].num_syms);
-            free(map->key_sym_map[key].syms);
-        }
+    darray_foreach(sym_map, map->key_sym_map) {
+        free(sym_map->sym_index);
+        free(sym_map->num_syms);
+        free(sym_map->syms);
     }
-    free(map->key_sym_map);
+    darray_free(map->key_sym_map);
 
     free(map->modmap);
     free(keymap->map);

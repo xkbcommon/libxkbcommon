@@ -280,8 +280,8 @@ struct xkb_sym_map {
 
 struct xkb_client_map {
     darray(struct xkb_key_type) types;
-    struct xkb_sym_map *             key_sym_map;
-    unsigned char           *modmap;
+    darray(struct xkb_sym_map) key_sym_map;
+    unsigned char *modmap;
 };
 
 struct xkb_behavior {
@@ -370,39 +370,52 @@ struct xkb_keymap {
     struct xkb_compat_map *    compat;
 };
 
-#define	XkbNumGroups(g)			((g)&0x0f)
-#define	XkbOutOfRangeGroupInfo(g)	((g)&0xf0)
-#define	XkbOutOfRangeGroupAction(g)	((g)&0xc0)
-#define	XkbOutOfRangeGroupNumber(g)	(((g)&0x30)>>4)
-#define	XkbSetGroupInfo(g,w,n)	(((w)&0xc0)|(((n)&3)<<4)|((g)&0x0f))
-#define	XkbSetNumGroups(g,n)	(((g)&0xf0)|((n)&0x0f))
+#define XkbNumGroups(g)             ((g) & 0x0f)
+#define XkbOutOfRangeGroupInfo(g)   ((g) & 0xf0)
+#define XkbOutOfRangeGroupAction(g) ((g) & 0xc0)
+#define XkbOutOfRangeGroupNumber(g) (((g) & 0x30) >> 4)
+#define XkbSetGroupInfo(g, w, n)    (((w) & 0xc0) | (((n) & 3) << 4) | ((g) & 0x0f))
+#define XkbSetNumGroups(g, n)       (((g) & 0xf0) | ((n) & 0x0f))
 
-#define	XkbKeyGroupInfo(d,k)    ((d)->map->key_sym_map[k].group_info)
-#define	XkbKeyNumGroups(d,k)    (XkbNumGroups((d)->map->key_sym_map[k].group_info))
-#define	XkbKeyGroupWidth(d,k,g) (XkbKeyType(d,k,g)->num_levels)
-#define	XkbKeyGroupsWidth(d,k)  ((d)->map->key_sym_map[k].width)
-#define	XkbKeyTypeIndex(d,k,g)  ((d)->map->key_sym_map[k].kt_index[g&0x3])
-#define	XkbKeyType(d,k,g)	(&darray_item((d)->map->types, XkbKeyTypeIndex(d,k,g)))
-#define	XkbKeyNumSyms(d,k,g,sl) \
-        ((d)->map->key_sym_map[k].num_syms[(g*XkbKeyGroupsWidth(d,k))+sl])
-#define	XkbKeySym(d,k,n)	(&(d)->map->key_sym_map[k].syms[n])
-#define XkbKeySymOffset(d,k,g,sl) \
-        ((d)->map->key_sym_map[k].sym_index[(g*XkbKeyGroupsWidth(d,k))+sl])
-#define	XkbKeySymEntry(d,k,g,sl) \
-	(XkbKeySym(d,k,XkbKeySymOffset(d,k,g,sl)))
-#define	XkbKeyHasActions(d,k)	((d)->server->key_acts[k]!=0)
-#define	XkbKeyNumActions(d,k)	\
-        (XkbKeyHasActions(d,k)?(XkbKeyGroupsWidth(d,k)*XkbKeyNumGroups(d,k)):1)
-#define	XkbKeyActionsPtr(d,k)   (&(d)->server->acts[(d)->server->key_acts[k]])
-#define	XkbKeyAction(d,k,n) \
-	(XkbKeyHasActions(d,k)?&XkbKeyActionsPtr(d,k)[n]:NULL)
-#define	XkbKeyActionEntry(d,k,sl,g) \
-	(XkbKeyHasActions(d,k)?\
-		XkbKeyAction(d,k,((XkbKeyGroupsWidth(d,k)*(g))+(sl))):NULL)
+#define XkbKeyGroupInfo(d, k) \
+    (darray_item((d)->map->key_sym_map, k).group_info)
+#define XkbKeyNumGroups(d, k) \
+    (XkbNumGroups(darray_item((d)->map->key_sym_map, k).group_info))
+#define XkbKeyGroupWidth(d, k, g) \
+    (XkbKeyType(d, k, g)->num_levels)
+#define XkbKeyGroupsWidth(d, k) \
+    (darray_item((d)->map->key_sym_map, k).width)
+#define XkbKeyTypeIndex(d, k, g) \
+    (darray_item((d)->map->key_sym_map, k).kt_index[g & 0x3])
+#define XkbKeyType(d, k, g) \
+    (&darray_item((d)->map->types, XkbKeyTypeIndex(d, k, g)))
+#define XkbKeyNumSyms(d, k, g, sl) \
+    (darray_item((d)->map->key_sym_map, k).num_syms[(g * XkbKeyGroupsWidth(d, k)) + sl])
+#define XkbKeySym(d, k, n) \
+    (&darray_item((d)->map->key_sym_map, k).syms[n])
+#define XkbKeySymOffset(d, k, g, sl) \
+    (darray_item((d)->map->key_sym_map, k).sym_index[(g * XkbKeyGroupsWidth(d, k)) + sl])
+#define XkbKeySymEntry(d, k, g, sl) \
+    (XkbKeySym(d, k, XkbKeySymOffset(d, k, g, sl)))
+#define XkbKeyHasActions(d, k) \
+    ((d)->server->key_acts[k] != 0)
+#define XkbKeyNumActions(d, k) \
+    (XkbKeyHasActions(d, k) ? \
+     (XkbKeyGroupsWidth(d, k) * XkbKeyNumGroups(d, k)) : \
+     1)
+#define XkbKeyActionsPtr(d, k) \
+    (&(d)->server->acts[(d)->server->key_acts[k]])
+#define XkbKeyAction(d, k, n) \
+    (XkbKeyHasActions(d, k) ? &XkbKeyActionsPtr(d, k)[n] : NULL)
+#define XkbKeyActionEntry(d, k, sl, g) \
+    (XkbKeyHasActions(d, k) ? \
+     XkbKeyAction(d, k, ((XkbKeyGroupsWidth(d, k) * (g)) + (sl))) : \
+     NULL)
 
-#define	XkbKeycodeInRange(d,k)	(((k)>=(d)->min_key_code)&&\
-				 ((k)<=(d)->max_key_code))
-#define	XkbNumKeys(d)		((d)->max_key_code-(d)->min_key_code+1)
+#define XkbKeycodeInRange(d, k) \
+    (((k) >= (d)->min_key_code) && ((k) <= (d)->max_key_code))
+#define XkbNumKeys(d) \
+    ((d)->max_key_code - (d)->min_key_code + 1)
 
 struct xkb_state {
 	xkb_group_index_t base_group; /**< depressed */

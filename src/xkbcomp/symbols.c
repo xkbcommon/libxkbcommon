@@ -1929,6 +1929,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
     unsigned types[XkbNumKbdGroups];
     union xkb_action *outActs;
     unsigned int symIndex = 0;
+    struct xkb_sym_map *sym_map;
 
     useAlias = (start_from == 0);
 
@@ -2030,17 +2031,19 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
     }
     else
         outActs = NULL;
+
+    sym_map = &darray_item(keymap->map->key_sym_map, kc);
+
     if (key->defs.defined & _Key_GroupInfo)
         i = key->groupInfo;
     else
-        i = keymap->map->key_sym_map[kc].group_info;
+        i = sym_map->group_info;
 
-    keymap->map->key_sym_map[kc].group_info = XkbSetNumGroups(i, nGroups);
-    keymap->map->key_sym_map[kc].width = width;
-    keymap->map->key_sym_map[kc].sym_index = uTypedCalloc(nGroups * width,
-                                                          int);
-    keymap->map->key_sym_map[kc].num_syms = uTypedCalloc(nGroups * width,
-                                                         unsigned int);
+    sym_map->group_info = XkbSetNumGroups(i, nGroups);
+    sym_map->width = width;
+    sym_map->sym_index = uTypedCalloc(nGroups * width, int);
+    sym_map->num_syms = uTypedCalloc(nGroups * width, unsigned int);
+
     for (i = 0; i < nGroups; i++)
     {
         /* assign kt_index[i] to the index of the type in map->types.
@@ -2051,7 +2054,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
          * FIXME: There should be a better fix for this.
          */
         if (key->numLevels[i])
-            keymap->map->key_sym_map[kc].kt_index[i] = types[i];
+            sym_map->kt_index[i] = types[i];
         if (key->sizeSyms[i] != 0)
         {
             /* fill key to "width" symbols*/
@@ -2059,21 +2062,19 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
             {
                 if (tmp < key->numLevels[i] && key->symsMapNumEntries[i][tmp])
                 {
-                    memcpy(&keymap->map->key_sym_map[kc].syms[symIndex],
+                    memcpy(&sym_map->syms[symIndex],
                            &key->syms[i][key->symsMapIndex[i][tmp]],
                            key->symsMapNumEntries[i][tmp] *
                             sizeof(xkb_keysym_t));
-                    keymap->map->key_sym_map[kc].sym_index[(i * width) + tmp] =
-                        symIndex;
-                    keymap->map->key_sym_map[kc].num_syms[(i * width) + tmp] =
+                    sym_map->sym_index[(i * width) + tmp] = symIndex;
+                    sym_map->num_syms[(i * width) + tmp] =
                         key->symsMapNumEntries[i][tmp];
-                    symIndex +=
-                        keymap->map->key_sym_map[kc].num_syms[(i * width) + tmp];
+                    symIndex += sym_map->num_syms[(i * width) + tmp];
                 }
                 else
                 {
-                    keymap->map->key_sym_map[kc].sym_index[(i * width) + tmp] = -1;
-                    keymap->map->key_sym_map[kc].num_syms[(i * width) + tmp] = 0;
+                    sym_map->sym_index[(i * width) + tmp] = -1;
+                    sym_map->num_syms[(i * width) + tmp] = 0;
                 }
                 if ((outActs != NULL) && (key->acts[i] != NULL))
                 {
