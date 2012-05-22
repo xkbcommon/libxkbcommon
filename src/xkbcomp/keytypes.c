@@ -53,9 +53,7 @@ typedef struct _KeyTypeInfo
     unsigned vmask;
     bool groupInfo;
     unsigned numLevels;
-    unsigned nEntries;
-    unsigned szEntries;
-    struct xkb_kt_map_entry * entries;
+    darray(struct xkb_kt_map_entry) entries;
     PreserveInfo *preserve;
     unsigned szNames;
     xkb_atom_t *lvlNames;
@@ -122,8 +120,7 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
     info->dflt.vmask = 0;
     info->dflt.groupInfo = false;
     info->dflt.numLevels = 1;
-    info->dflt.nEntries = info->dflt.szEntries = 0;
-    info->dflt.entries = NULL;
+    darray_init(info->dflt.entries);
     info->dflt.szNames = 0;
     info->dflt.lvlNames = NULL;
     info->dflt.preserve = NULL;
@@ -131,16 +128,12 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
     if (from != NULL)
     {
         info->dflt = from->dflt;
-        if (from->dflt.entries)
-        {
-            info->dflt.entries = uTypedCalloc(from->dflt.szEntries,
-                                              struct xkb_kt_map_entry);
-            if (info->dflt.entries)
-            {
-                unsigned sz = from->dflt.nEntries * sizeof(struct xkb_kt_map_entry);
-                memcpy(info->dflt.entries, from->dflt.entries, sz);
-            }
-        }
+
+        darray_init(info->dflt.entries);
+        darray_from_items(info->dflt.entries,
+                          &darray_item(from->dflt.entries, 0),
+                          darray_size(from->dflt.entries));
+
         if (from->dflt.lvlNames)
         {
             info->dflt.lvlNames = uTypedCalloc(from->dflt.szNames, xkb_atom_t);
@@ -175,8 +168,8 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
 static void
 FreeKeyTypeInfo(KeyTypeInfo * type)
 {
-    free(type->entries);
-    type->entries = NULL;
+    darray_free(type->entries);
+    darray_init(type->entries);
     free(type->lvlNames);
     type->lvlNames = NULL;
     if (type->preserve != NULL)
@@ -294,8 +287,7 @@ AddKeyType(struct xkb_keymap *keymap, KeyTypesInfo *info, KeyTypeInfo *new)
             }
             FreeKeyTypeInfo(old);
             *old = *new;
-            new->szEntries = new->nEntries = 0;
-            new->entries = NULL;
+            darray_init(new->entries);
             new->preserve = NULL;
             new->lvlNames = NULL;
             old->defs.next = &next->defs;
@@ -316,8 +308,7 @@ AddKeyType(struct xkb_keymap *keymap, KeyTypesInfo *info, KeyTypeInfo *new)
         return false;
     *old = *new;
     old->defs.next = NULL;
-    new->nEntries = new->szEntries = 0;
-    new->entries = NULL;
+    darray_init(new->entries);
     new->szNames = 0;
     new->lvlNames = NULL;
     new->preserve = NULL;
@@ -441,14 +432,12 @@ HandleIncludeKeyTypes(IncludeStmt *stmt, struct xkb_keymap *keymap,
 static struct xkb_kt_map_entry *
 FindMatchingMapEntry(KeyTypeInfo * type, unsigned mask, unsigned vmask)
 {
-    unsigned int i;
-    struct xkb_kt_map_entry * entry;
+    struct xkb_kt_map_entry *entry;
 
-    for (i = 0, entry = type->entries; i < type->nEntries; i++, entry++)
-    {
-        if ((entry->mods.real_mods == mask) && (entry->mods.vmods == vmask))
+    darray_foreach(entry, type->entries)
+        if (entry->mods.real_mods == mask && entry->mods.vmods == vmask)
             return entry;
-    }
+
     return NULL;
 }
 
@@ -457,54 +446,22 @@ DeleteLevel1MapEntries(KeyTypeInfo * type)
 {
     unsigned int i, n;
 
-    for (i = 0; i < type->nEntries; i++)
-    {
-        if (type->entries[i].level == 0)
-        {
-            for (n = i; n < type->nEntries - 1; n++)
-            {
-                type->entries[n] = type->entries[n + 1];
-            }
-            type->nEntries--;
+    /* TODO: Be just a bit more clever here. */
+    for (i = 0; i < darray_size(type->entries); i++) {
+        if (darray_item(type->entries, i).level == 0) {
+            for (n = i; n < darray_size(type->entries) - 1; n++)
+                darray_item(type->entries, n) =
+                    darray_item(type->entries, n + 1);
+            (void)darray_pop(type->entries);
         }
     }
 }
 
-/**
- * Return a pointer to the next free XkbcKTMapEntry, reallocating space if
- * necessary.
- */
 static struct xkb_kt_map_entry *
 NextMapEntry(struct xkb_keymap *keymap, KeyTypeInfo * type)
 {
-    if (type->entries == NULL)
-    {
-        type->entries = uTypedCalloc(2, struct xkb_kt_map_entry);
-        if (type->entries == NULL)
-        {
-            ERROR("Couldn't allocate map entries for %s\n",
-                  TypeTxt(keymap, type));
-            ACTION("Map entries lost\n");
-            return NULL;
-        }
-        type->szEntries = 2;
-        type->nEntries = 0;
-    }
-    else if (type->nEntries >= type->szEntries)
-    {
-        type->szEntries *= 2;
-        type->entries = uTypedRecalloc(type->entries,
-                                       type->nEntries, type->szEntries,
-                                       struct xkb_kt_map_entry);
-        if (type->entries == NULL)
-        {
-            ERROR("Couldn't reallocate map entries for %s\n",
-                  TypeTxt(keymap, type));
-            ACTION("Map entries lost\n");
-            return NULL;
-        }
-    }
-    return &type->entries[type->nEntries++];
+    darray_resize0(type->entries, darray_size(type->entries) + 1);
+    return &darray_item(type->entries, darray_size(type->entries) - 1);
 }
 
 static bool
@@ -930,6 +887,7 @@ HandleKeyTypeDef(KeyTypeDef *def, struct xkb_keymap *keymap,
 {
     unsigned int i;
     KeyTypeInfo type;
+    struct xkb_kt_map_entry *entry;
 
     if (def->merge != MergeDefault)
         merge = def->merge;
@@ -943,8 +901,7 @@ HandleKeyTypeDef(KeyTypeDef *def, struct xkb_keymap *keymap,
     type.vmask = info->dflt.vmask;
     type.groupInfo = info->dflt.groupInfo;
     type.numLevels = 1;
-    type.nEntries = type.szEntries = 0;
-    type.entries = NULL;
+    darray_init(type.entries);
     type.szNames = 0;
     type.lvlNames = NULL;
     type.preserve = NULL;
@@ -958,15 +915,10 @@ HandleKeyTypeDef(KeyTypeDef *def, struct xkb_keymap *keymap,
 
     /* now copy any appropriate map, preserve or level names from the */
     /* default type */
-    for (i = 0; i < info->dflt.nEntries; i++)
-    {
-        struct xkb_kt_map_entry * dflt;
-        dflt = &info->dflt.entries[i];
-        if (((dflt->mods.real_mods & type.mask) == dflt->mods.real_mods) &&
-            ((dflt->mods.vmods & type.vmask) == dflt->mods.vmods))
-        {
-            AddMapEntry(keymap, &type, dflt, false, false);
-        }
+    darray_foreach(entry, info->dflt.entries) {
+        if ((entry->mods.real_mods & type.mask) == entry->mods.real_mods &&
+            (entry->mods.vmods & type.vmask) == entry->mods.vmods)
+            AddMapEntry(keymap, &type, entry, false, false);
     }
     if (info->dflt.preserve)
     {
@@ -1088,16 +1040,15 @@ CopyDefToKeyType(struct xkb_keymap *keymap, struct xkb_key_type *type,
             ACTION("Aborting\n");
             return false;
         }
-        pre->matchingMapIndex = match - def->entries;
+        pre->matchingMapIndex = match - &darray_item(def->entries, 0);
     }
     type->mods.real_mods = def->mask;
     type->mods.vmods = def->vmask;
     type->num_levels = def->numLevels;
-    type->map_count = def->nEntries;
-    type->map = def->entries;
+    memcpy(&type->map, &def->entries, sizeof(def->entries));
     if (def->preserve)
     {
-        type->preserve = uTypedCalloc(type->map_count, struct xkb_mods);
+        type->preserve = uTypedCalloc(darray_size(type->map), struct xkb_mods);
         if (!type->preserve)
         {
             WARN("Couldn't allocate preserve array in CopyDefToKeyType\n");
@@ -1135,8 +1086,7 @@ CopyDefToKeyType(struct xkb_keymap *keymap, struct xkb_key_type *type,
         type->level_names = NULL;
     }
 
-    def->nEntries = def->szEntries = 0;
-    def->entries = NULL;
+    darray_init(def->entries);
     return XkbcComputeEffectiveMap(keymap, type, NULL);
 }
 

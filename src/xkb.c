@@ -119,7 +119,6 @@ bool
 XkbcComputeEffectiveMap(struct xkb_keymap *keymap, struct xkb_key_type *type,
                         unsigned char *map_rtrn)
 {
-    int i;
     unsigned tmp;
     struct xkb_kt_map_entry * entry = NULL;
 
@@ -131,8 +130,7 @@ XkbcComputeEffectiveMap(struct xkb_keymap *keymap, struct xkb_key_type *type,
             return false;
 
         type->mods.mask = tmp | type->mods.real_mods;
-        entry = type->map;
-        for (i = 0; i < type->map_count; i++, entry++) {
+        darray_foreach(entry, type->map) {
             tmp = 0;
             if (entry->mods.vmods != 0) {
                 if (!VirtualModsToReal(keymap, entry->mods.vmods, &tmp))
@@ -152,8 +150,8 @@ XkbcComputeEffectiveMap(struct xkb_keymap *keymap, struct xkb_key_type *type,
     if (map_rtrn) {
         memset(map_rtrn, 0, type->mods.mask + 1);
         if (entry && entry->active)
-            for (i = 0; i < type->map_count; i++)
-                map_rtrn[type->map[i].mods.mask] = type->map[i].level;
+            darray_foreach(entry, type->map)
+                map_rtrn[entry->mods.mask] = entry->level;
     }
 
     return true;

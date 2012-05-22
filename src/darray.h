@@ -39,6 +39,12 @@
  *     darray_init(foo.a);
  *     darray_free(foo.a);
  *
+ *     const struct {
+ *         darray(int) a;
+ *      } foo = {
+ *         .a = darray_lit({1, 2, 3})
+ *      };
+ *
  * Typedefs for darrays of common types:
  *
  *     darray_char, darray_schar, darray_uchar
@@ -115,6 +121,7 @@
 #define darray(type) struct {type *item; size_t size; size_t alloc;}
 
 #define darray_new() {0,0,0}
+#define darray_lit(c_array) {(c_array), sizeof(c_array) / sizeof(*(c_array)), 0}
 #define darray_init(arr) do {(arr).item=0; (arr).size=0; (arr).alloc=0;} while(0)
 #define darray_free(arr) do {free((arr).item);} while(0)
 

@@ -149,38 +149,33 @@ XkbcAllocServerMap(struct xkb_keymap *keymap, unsigned which,
 }
 
 int
-XkbcCopyKeyType(struct xkb_key_type * from, struct xkb_key_type * into)
+XkbcCopyKeyType(const struct xkb_key_type *from, struct xkb_key_type *into)
 {
     int i;
 
     if (!from || !into)
         return BadMatch;
 
-    free(into->map);
-    into->map = NULL;
+    darray_free(into->map);
     free(into->preserve);
-    into->preserve= NULL;
     for (i = 0; i < into->num_levels; i++)
         free(UNCONSTIFY(into->level_names[i]));
     free(into->level_names);
-    into->level_names = NULL;
 
     *into = *from;
 
-    if (from->map && (into->map_count > 0)) {
-        into->map = uTypedCalloc(into->map_count, struct xkb_kt_map_entry);
-        if (!into->map)
-            return BadAlloc;
-        memcpy(into->map, from->map,
-               into->map_count * sizeof(struct xkb_kt_map_entry));
-    }
+    darray_init(into->map);
+    darray_from_items(into->map,
+                      &darray_item(from->map, 0),
+                      darray_size(from->map));
 
-    if (from->preserve && (into->map_count > 0)) {
-        into->preserve = uTypedCalloc(into->map_count, struct xkb_mods);
+    if (from->preserve && !darray_empty(into->map)) {
+        into->preserve = calloc(darray_size(into->map),
+                                sizeof(*into->preserve));
         if (!into->preserve)
             return BadAlloc;
         memcpy(into->preserve, from->preserve,
-               into->map_count * sizeof(struct xkb_mods));
+               darray_size(into->map) * sizeof(*into->preserve));
     }
 
     if (from->level_names && (into->num_levels > 0)) {
@@ -290,7 +285,7 @@ XkbcFreeClientMap(struct xkb_keymap *keymap)
 
     darray_foreach(type, map->types) {
         int j;
-        free(type->map);
+        darray_free(type->map);
         free(type->preserve);
         for (j = 0; j < type->num_levels; j++)
             free(UNCONSTIFY(type->level_names[j]));

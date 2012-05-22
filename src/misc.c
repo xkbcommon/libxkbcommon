@@ -27,51 +27,77 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "xkb-priv.h"
 #include "alloc.h"
 
-#define mapSize(m) (sizeof(m) / sizeof(struct xkb_kt_map_entry))
 static struct xkb_kt_map_entry map2Level[]= {
-    { true, ShiftMask, {1, ShiftMask, 0} }
+    {
+        .active = true,
+        .level = ShiftMask,
+        .mods = {.mask = 1, .vmods = ShiftMask, .real_mods = 0 }
+    }
 };
 
 static struct xkb_kt_map_entry mapAlpha[]= {
-    { true, ShiftMask, { 1, ShiftMask, 0 } },
-    { true, LockMask,  { 0, LockMask,  0 } }
+    {
+        .active = true,
+        .level = ShiftMask,
+        .mods = { .mask = 1, .vmods = ShiftMask, .real_mods = 0 }
+    },
+    {
+        .active = true,
+        .level = LockMask,
+        .mods = { .mask = 0, .vmods = LockMask,  .real_mods = 0 }
+    }
 };
 
 static struct xkb_mods preAlpha[]= {
-    { 0,        0,        0 },
-    { LockMask, LockMask, 0 }
+    { .mask = 0,        .vmods = 0,        .real_mods = 0 },
+    { .mask = LockMask, .vmods = LockMask, .real_mods = 0 }
 };
 
 #define NL_VMOD_MASK 0
-static  struct xkb_kt_map_entry mapKeypad[]= {
-    { true,  ShiftMask, { 1, ShiftMask, 0 } },
-    { false, 0,         { 1, 0, NL_VMOD_MASK } }
+static struct xkb_kt_map_entry mapKeypad[]= {
+    {
+        .active = true,
+        .level = ShiftMask,
+        .mods = { .mask = 1, .vmods = ShiftMask, .real_mods = 0 }
+    },
+    {
+        .active = false,
+        .level = 0,
+        .mods = { .mask = 1, .vmods = 0, .real_mods = NL_VMOD_MASK }
+    }
 };
 
-static struct xkb_key_type canonicalTypes[XkbNumRequiredTypes] = {
-    { { 0, 0, 0 },
-      1,        /* num_levels */
-      0,        /* map_count */
-      NULL, NULL,
-      NULL, NULL
+static const struct xkb_key_type canonicalTypes[XkbNumRequiredTypes] = {
+    {
+        .mods = { .mask = 0, .vmods = 0, .real_mods = 0 },
+        .num_levels = 1,
+        .preserve = NULL,
+        .name = NULL,
+        .level_names = NULL
     },
-    { { ShiftMask, ShiftMask, 0 },
-      2,        /* num_levels */
-      mapSize(map2Level),   /* map_count */
-      map2Level, NULL,
-      NULL,      NULL
+    {
+        .mods = { .mask = ShiftMask, .vmods = ShiftMask, .real_mods = 0 },
+        .num_levels = 2,
+        .map = darray_lit(map2Level),
+        .preserve = NULL,
+        .name = NULL,
+        .level_names = NULL
     },
-    { { ShiftMask|LockMask, ShiftMask|LockMask, 0 },
-      2,        /* num_levels */
-      mapSize(mapAlpha),    /* map_count */
-      mapAlpha, preAlpha,
-      NULL,     NULL
+    {
+        .mods = { .mask = ShiftMask|LockMask, .vmods = ShiftMask|LockMask, .real_mods = 0 },
+        .num_levels = 2,
+        .map = darray_lit(mapAlpha),
+        .preserve = preAlpha,
+        .name = NULL,
+        .level_names = NULL
     },
-    { { ShiftMask, ShiftMask, NL_VMOD_MASK },
-      2,        /* num_levels */
-      mapSize(mapKeypad),   /* map_count */
-      mapKeypad, NULL,
-      NULL,      NULL
+    {
+        .mods = { .mask = ShiftMask, .vmods = ShiftMask, .real_mods = NL_VMOD_MASK },
+        .num_levels = 2,
+        .map = darray_lit(mapKeypad),
+        .preserve = NULL,
+        .name = NULL,
+        .level_names = NULL
     }
 };
 
@@ -80,7 +106,7 @@ XkbcInitCanonicalKeyTypes(struct xkb_keymap *keymap, unsigned which,
                           int keypadVMod)
 {
     struct xkb_client_map * map;
-    struct xkb_key_type *from;
+    const struct xkb_key_type *from;
     int rtrn;
 
     if (!keymap)
@@ -118,17 +144,22 @@ XkbcInitCanonicalKeyTypes(struct xkb_keymap *keymap, unsigned which,
 
         if ((keypadVMod >= 0) && (keypadVMod < XkbNumVirtualMods) &&
             (rtrn == Success)) {
+            struct xkb_kt_map_entry *entry;
             type->mods.vmods = (1 << keypadVMod);
-            type->map[0].active = true;
-            type->map[0].mods.mask = ShiftMask;
-            type->map[0].mods.real_mods = ShiftMask;
-            type->map[0].mods.vmods = 0;
-            type->map[0].level = 1;
-            type->map[1].active = false;
-            type->map[1].mods.mask = 0;
-            type->map[1].mods.real_mods = 0;
-            type->map[1].mods.vmods = (1 << keypadVMod);
-            type->map[1].level = 1;
+
+            entry = &darray_item(type->map, 0);
+            entry->active = true;
+            entry->mods.mask = ShiftMask;
+            entry->mods.real_mods = ShiftMask;
+            entry->mods.vmods = 0;
+            entry->level = 1;
+
+            entry = &darray_item(type->map, 1);
+            entry->active = false;
+            entry->mods.mask = 0;
+            entry->mods.real_mods = 0;
+            entry->mods.vmods = (1 << keypadVMod);
+            entry->level = 1;
         }
     }
 

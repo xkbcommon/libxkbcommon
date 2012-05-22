@@ -248,8 +248,7 @@ struct xkb_kt_map_entry {
 struct xkb_key_type {
     struct xkb_mods             mods;
     uint16_t                num_levels;
-    unsigned char           map_count;
-    struct xkb_kt_map_entry *       map;
+    darray(struct xkb_kt_map_entry) map;
     struct xkb_mods *             preserve;
     const char              *name;
     const char              **level_names;

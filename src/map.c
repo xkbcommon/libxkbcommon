@@ -246,14 +246,15 @@ xkb_key_get_level(struct xkb_state *state, xkb_keycode_t key,
 {
     struct xkb_keymap *keymap = state->keymap;
     struct xkb_key_type *type = XkbKeyType(keymap, key, group);
+    struct xkb_kt_map_entry *entry;
     unsigned int active_mods = state->mods & type->mods.mask;
-    int i;
 
-    for (i = 0; i < type->map_count; i++) {
-        if (!type->map[i].active)
+    darray_foreach(entry, type->map) {
+        if (!entry->active)
             continue;
-        if (type->map[i].mods.mask == active_mods)
-            return type->map[i].level;
+
+        if (entry->mods.mask == active_mods)
+            return entry->level;
     }
 
     return 0;

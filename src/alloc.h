@@ -57,7 +57,7 @@ XkbcAllocServerMap(struct xkb_keymap *keymap, unsigned which,
                    unsigned nNewActions);
 
 extern int
-XkbcCopyKeyType(struct xkb_key_type *from, struct xkb_key_type *into);
+XkbcCopyKeyType(const struct xkb_key_type *from, struct xkb_key_type *into);
 
 extern bool
 XkbcResizeKeySyms(struct xkb_keymap *keymap, xkb_keycode_t key,
