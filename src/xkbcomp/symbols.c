@@ -88,7 +88,7 @@ static void
 InitKeyInfo(KeyInfo * info)
 {
     int i;
-    static char dflt[4] = "*";
+    static const char dflt[4] = "*";
 
     info->defs.defined = 0;
     info->defs.fileID = 0;
