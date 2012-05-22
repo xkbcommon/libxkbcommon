@@ -367,20 +367,19 @@ XkbcFreeCompatMap(struct xkb_keymap *keymap)
 }
 
 int
-XkbcAllocNames(struct xkb_keymap *keymap, unsigned which,
-               unsigned nTotalAliases)
+XkbcAllocNames(struct xkb_keymap *keymap, unsigned which, size_t nTotalAliases)
 {
-    struct xkb_names * names;
-
     if (!keymap)
         return BadMatch;
 
     if (!keymap->names) {
-        keymap->names = uTypedCalloc(1, struct xkb_names);
+        keymap->names = calloc(1, sizeof(*keymap->names));
         if (!keymap->names)
             return BadAlloc;
+
+        darray_init(keymap->names->keys);
+        darray_init(keymap->names->key_aliases);
     }
-    names = keymap->names;
 
     if ((which & XkbKTLevelNamesMask) && keymap->map) {
         struct xkb_key_type * type;
@@ -394,35 +393,11 @@ XkbcAllocNames(struct xkb_keymap *keymap, unsigned which,
         }
     }
 
-    if ((which & XkbKeyNamesMask) && !names->keys) {
-        names->keys = uTypedCalloc(keymap->max_key_code + 1,
-                                   struct xkb_key_name);
-        if (!names->keys)
-            return BadAlloc;
-    }
+    if (which & XkbKeyNamesMask)
+        darray_resize0(keymap->names->keys, keymap->max_key_code + 1);
 
-    if ((which & XkbKeyAliasesMask) && (nTotalAliases > 0)) {
-        if (!names->key_aliases)
-            names->key_aliases = uTypedCalloc(nTotalAliases,
-                                                 struct xkb_key_alias);
-        else if (nTotalAliases > names->num_key_aliases) {
-            struct xkb_key_alias *prev_aliases = names->key_aliases;
-
-            names->key_aliases = uTypedRecalloc(names->key_aliases,
-                                                names->num_key_aliases,
-                                                nTotalAliases,
-                                                struct xkb_key_alias);
-            if (!names->key_aliases)
-                free(prev_aliases);
-        }
-
-        if (!names->key_aliases) {
-            names->num_key_aliases = 0;
-            return BadAlloc;
-        }
-
-        names->num_key_aliases = nTotalAliases;
-    }
+    if (which & XkbKeyAliasesMask)
+        darray_resize0(keymap->names->key_aliases, nTotalAliases);
 
     return Success;
 }
@@ -458,8 +433,8 @@ XkbcFreeNames(struct xkb_keymap *keymap)
     for (i = 0; i < XkbNumKbdGroups; i++)
         free(UNCONSTIFY(names->groups[i]));
 
-    free(names->keys);
-    free(names->key_aliases);
+    darray_free(names->keys);
+    darray_free(names->key_aliases);
     free(names);
     keymap->names = NULL;
 }

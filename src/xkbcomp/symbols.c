@@ -2236,12 +2236,12 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap, unsigned merge)
 
     if (warningLevel > 3) {
         for (i = keymap->min_key_code; i <= keymap->max_key_code; i++) {
-            if (keymap->names->keys[i].name[0] == '\0')
+            if (darray_item(keymap->names->keys, i).name[0] == '\0')
                 continue;
 
             if (XkbKeyNumGroups(keymap, i) < 1) {
                 char buf[5];
-                memcpy(buf, keymap->names->keys[i].name, 4);
+                memcpy(buf, darray_item(keymap->names->keys, i).name, 4);
                 buf[4] = '\0';
                 WARN("No symbols defined for <%s> (keycode %d)\n", buf, i);
             }

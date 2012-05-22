@@ -34,7 +34,7 @@ XkbcAllocCompatMap(struct xkb_keymap *keymap, unsigned nSI);
 
 extern int
 XkbcAllocNames(struct xkb_keymap *keymap, unsigned which,
-               unsigned nTotalAliases);
+               size_t nTotalAliases);
 
 extern int
 XkbcAllocControls(struct xkb_keymap *keymap);

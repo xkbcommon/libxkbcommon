@@ -330,11 +330,9 @@ struct xkb_names {
     const char            *vmods[XkbNumVirtualMods];
     const char            *indicators[XkbNumIndicators];
     const char            *groups[XkbNumKbdGroups];
-    struct xkb_key_name *     keys;
-    struct xkb_key_alias *    key_aliases;
 
-    xkb_keycode_t     num_keys;
-    xkb_keycode_t     num_key_aliases;
+    darray(struct xkb_key_name) keys;
+    darray(struct xkb_key_alias) key_aliases;
 };
 
 struct xkb_controls {

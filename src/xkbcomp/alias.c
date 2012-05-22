@@ -157,8 +157,8 @@ ApplyAliases(struct xkb_keymap *keymap, AliasInfo ** info_in)
 
     if (*info_in == NULL)
         return true;
-    nOld = (keymap->names ? keymap->names->num_key_aliases : 0);
-    old = (keymap->names ? keymap->names->key_aliases : NULL);
+    nOld = (keymap->names ? darray_size(keymap->names->key_aliases) : 0);
+    old = (keymap->names ? &darray_item(keymap->names->key_aliases, 0) : NULL);
     for (nNew = 0, info = *info_in; info != NULL;
          info = (AliasInfo *) info->def.next)
     {
@@ -221,7 +221,7 @@ ApplyAliases(struct xkb_keymap *keymap, AliasInfo ** info_in)
         WSGO("Allocation failure in ApplyAliases\n");
         return false;
     }
-    a = keymap->names ? &keymap->names->key_aliases[nOld] : NULL;
+    a = keymap->names ? &darray_item(keymap->names->key_aliases, nOld) : NULL;
     for (info = *info_in; info != NULL; info = (AliasInfo *) info->def.next)
     {
         if (info->alias[0] != '\0')
