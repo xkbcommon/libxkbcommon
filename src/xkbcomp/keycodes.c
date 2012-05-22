@@ -69,10 +69,9 @@ typedef struct _KeyNamesInfo
     xkb_keycode_t computedMax; /* highest keycode stored */
     xkb_keycode_t explicitMin;
     xkb_keycode_t explicitMax;
-    xkb_keycode_t arraySize;
-    unsigned long *names;
-    unsigned *files;
-    unsigned char *has_alt_forms;
+    darray(unsigned long) names;
+    darray(unsigned int) files;
+    darray(unsigned char) has_alt_forms;
     IndicatorNameInfo *leds;
     AliasInfo *aliases;
 } KeyNamesInfo;
@@ -80,51 +79,15 @@ typedef struct _KeyNamesInfo
 static void HandleKeycodesFile(XkbFile *file, struct xkb_keymap *keymap,
                                unsigned merge, KeyNamesInfo *info);
 
-static int
+static void
 ResizeKeyNameArrays(KeyNamesInfo *info, int newMax)
 {
-    void *tmp;
-    int i;
+    if (newMax < darray_size(info->names))
+        return;
 
-    tmp = uTypedRealloc(info->names, newMax + 1, unsigned long);
-    if (!tmp) {
-        ERROR
-            ("Couldn't reallocate for larger maximum keycode (%d)\n",
-             newMax);
-        ACTION("Maximum key value not changed\n");
-        return 0;
-    }
-    info->names = tmp;
-    for (i = info->arraySize + 1; i <= newMax; i++)
-        info->names[i] = 0;
-
-    tmp = uTypedRealloc(info->files, newMax + 1, unsigned);
-    if (!tmp) {
-        ERROR
-            ("Couldn't reallocate for larger maximum keycode (%d)\n",
-             newMax);
-        ACTION("Maximum key value not changed\n");
-        return 0;
-    }
-    info->files = tmp;
-    for (i = info->arraySize + 1; i <= newMax; i++)
-        info->files[i] = 0;
-
-    tmp = uTypedRealloc(info->has_alt_forms, newMax + 1, unsigned char);
-    if (!tmp) {
-        ERROR
-            ("Couldn't reallocate for larger maximum keycode (%d)\n",
-             newMax);
-        ACTION("Maximum key value not changed\n");
-        return 0;
-    }
-    info->has_alt_forms = tmp;
-    for (i = info->arraySize + 1; i <= newMax; i++)
-        info->has_alt_forms[i] = 0;
-
-    info->arraySize = newMax;
-
-    return 1;
+    darray_resize0(info->names, newMax + 1);
+    darray_resize0(info->files, newMax + 1);
+    darray_resize0(info->has_alt_forms, newMax + 1);
 }
 
 static void
@@ -318,13 +281,12 @@ ClearKeyNamesInfo(KeyNamesInfo * info)
     info->name = NULL;
     info->computedMax = info->explicitMax = info->explicitMin = 0;
     info->computedMin = XKB_KEYCODE_MAX;
-    info->arraySize = 0;
-    free(info->names);
-    info->names = NULL;
-    free(info->files);
-    info->files = NULL;
-    free(info->has_alt_forms);
-    info->has_alt_forms = NULL;
+    darray_free(info->names);
+    darray_init(info->names);
+    darray_free(info->files);
+    darray_init(info->files);
+    darray_free(info->has_alt_forms);
+    darray_init(info->has_alt_forms);
     if (info->leds)
         ClearIndicatorNameInfo(info->leds, info);
     if (info->aliases)
@@ -337,9 +299,9 @@ InitKeyNamesInfo(KeyNamesInfo * info)
     info->name = NULL;
     info->leds = NULL;
     info->aliases = NULL;
-    info->names = NULL;
-    info->files = NULL;
-    info->has_alt_forms = NULL;
+    darray_init(info->names);
+    darray_init(info->files);
+    darray_init(info->has_alt_forms);
     ClearKeyNamesInfo(info);
     info->errorCount = 0;
 }
@@ -350,10 +312,9 @@ FindKeyByLong(KeyNamesInfo * info, unsigned long name)
     uint64_t i;
 
     for (i = info->computedMin; i <= info->computedMax; i++)
-    {
-        if (info->names[i] == name)
+        if (darray_item(info->names, i) == name)
             return i;
-    }
+
     return 0;
 }
 
@@ -370,11 +331,8 @@ AddKeyName(KeyNamesInfo * info,
     xkb_keycode_t old;
     unsigned long lval;
 
-    if (kc > info->arraySize && !ResizeKeyNameArrays(info, kc)) {
-        ERROR("Couldn't resize KeyNames arrays for keycode %d\n", kc);
-        ACTION("Ignoring key %d\n", kc);
-        return false;
-    }
+    ResizeKeyNameArrays(info, kc);
+
     if (kc < info->computedMin)
         info->computedMin = kc;
     if (kc > info->computedMax)
@@ -383,25 +341,23 @@ AddKeyName(KeyNamesInfo * info,
 
     if (reportCollisions)
     {
-        reportCollisions = ((warningLevel > 7) ||
-                            ((warningLevel > 0)
-                             && (fileID == info->files[kc])));
+        reportCollisions = (warningLevel > 7 ||
+                            (warningLevel > 0 &&
+                             fileID == darray_item(info->files, kc)));
     }
 
-    if (info->names[kc] != 0)
+    if (darray_item(info->names, kc) != 0)
     {
         char buf[6];
 
-        LongToKeyName(info->names[kc], buf);
+        LongToKeyName(darray_item(info->names, kc), buf);
         buf[4] = '\0';
-        if (info->names[kc] == lval)
+        if (darray_item(info->names, kc) == lval)
         {
-            if (info->has_alt_forms[kc] || (merge == MergeAltForm))
-            {
-                info->has_alt_forms[kc] = true;
+            if (darray_item(info->has_alt_forms, kc) || (merge == MergeAltForm)) {
+                darray_item(info->has_alt_forms, kc) = true;
             }
-            else if (reportCollisions)
-            {
+            else if (reportCollisions) {
                 WARN("Multiple identical key name definitions\n");
                 ACTION("Later occurences of \"<%s> = %d\" ignored\n",
                         buf, kc);
@@ -424,8 +380,8 @@ AddKeyName(KeyNamesInfo * info,
                 WARN("Multiple names for keycode %d\n", kc);
                 ACTION("Using <%s>, ignoring <%s>\n", name, buf);
             }
-            info->names[kc] = 0;
-            info->files[kc] = 0;
+            darray_item(info->names, kc) = 0;
+            darray_item(info->files, kc) = 0;
         }
     }
     old = FindKeyByLong(info, lval);
@@ -433,9 +389,9 @@ AddKeyName(KeyNamesInfo * info,
     {
         if (merge == MergeOverride)
         {
-            info->names[old] = 0;
-            info->files[old] = 0;
-            info->has_alt_forms[old] = true;
+            darray_item(info->names, old) = 0;
+            darray_item(info->files, old) = 0;
+            darray_item(info->has_alt_forms, old) = true;
             if (reportCollisions)
             {
                 WARN("Key name <%s> assigned to multiple keys\n", name);
@@ -455,12 +411,12 @@ AddKeyName(KeyNamesInfo * info,
         }
         else
         {
-            info->has_alt_forms[old] = true;
+            darray_item(info->has_alt_forms, old) = true;
         }
     }
-    info->names[kc] = lval;
-    info->files[kc] = fileID;
-    info->has_alt_forms[kc] = (merge == MergeAltForm);
+    darray_item(info->names, kc) = lval;
+    darray_item(info->files, kc) = fileID;
+    darray_item(info->has_alt_forms, kc) = (merge == MergeAltForm);
     return true;
 }
 
@@ -483,22 +439,17 @@ MergeIncludedKeycodes(KeyNamesInfo *into, struct xkb_keymap *keymap,
         into->name = from->name;
         from->name = NULL;
     }
-    if (from->computedMax > into->arraySize &&
-        !ResizeKeyNameArrays(into, from->computedMax)) {
-        ERROR("Couldn't resize KeyNames arrays for key %d\n",
-              from->computedMax);
-        ACTION("Ignoring include file %s\n", from->name);
-        into->errorCount += 10;
-        return;
-    }
+
+    ResizeKeyNameArrays(into, from->computedMax);
+
     for (i = from->computedMin; i <= from->computedMax; i++)
     {
         unsigned thisMerge;
-        if (from->names[i] == 0)
+        if (darray_item(from->names, i) == 0)
             continue;
-        LongToKeyName(from->names[i], buf);
+        LongToKeyName(darray_item(from->names, i), buf);
         buf[4] = '\0';
-        if (from->has_alt_forms[i])
+        if (darray_item(from->has_alt_forms, i))
             thisMerge = MergeAltForm;
         else
             thisMerge = merge;
@@ -897,7 +848,7 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap, unsigned merge)
         == Success) {
         uint64_t i;
         for (i = info.computedMin; i <= info.computedMax; i++)
-            LongToKeyName(info.names[i],
+            LongToKeyName(darray_item(info.names, i),
                           darray_item(keymap->names->keys, i).name);
     } else {
         WSGO("Cannot create struct xkb_names in CompileKeycodes\n");
