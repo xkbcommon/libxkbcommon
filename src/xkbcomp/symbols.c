@@ -1696,18 +1696,17 @@ FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym,
 static bool
 FindNamedType(struct xkb_keymap *keymap, xkb_atom_t atom, unsigned *type_rtrn)
 {
-    unsigned n;
+    unsigned n = 0;
     const char *name = xkb_atom_text(keymap->ctx, atom);
+    struct xkb_key_type *type;
 
-    if (keymap && keymap->map && keymap->map->types)
-    {
-        for (n = 0; n < keymap->map->num_types; n++)
-        {
-            if (strcmp(keymap->map->types[n].name, name) == 0)
-            {
+    if (keymap && keymap->map) {
+        darray_foreach(type, keymap->map->types) {
+            if (strcmp(type->name, name) == 0) {
                 *type_rtrn = n;
                 return true;
             }
+            n++;
         }
     }
     return false;
@@ -2005,7 +2004,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
             types[i] = XkbTwoLevelIndex;
         }
         /* if the type specifies fewer levels than the key has, shrink the key */
-        type = &keymap->map->types[types[i]];
+        type = &darray_item(keymap->map->types, types[i]);
         if (type->num_levels < key->numLevels[i])
         {
             if (warningLevel > 0)

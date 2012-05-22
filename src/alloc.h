@@ -50,7 +50,7 @@ XkbcFreeKeyboard(struct xkb_keymap *keymap);
 
 extern int
 XkbcAllocClientMap(struct xkb_keymap *keymap, unsigned which,
-                   unsigned nTotalTypes);
+                   size_t nTotalTypes);
 
 extern int
 XkbcAllocServerMap(struct xkb_keymap *keymap, unsigned which,

@@ -280,9 +280,7 @@ struct xkb_sym_map {
 };
 
 struct xkb_client_map {
-    unsigned char            size_types;
-    unsigned char            num_types;
-    struct xkb_key_type *           types;
+    darray(struct xkb_key_type) types;
     struct xkb_sym_map *             key_sym_map;
     unsigned char           *modmap;
 };
@@ -387,7 +385,7 @@ struct xkb_keymap {
 #define	XkbKeyGroupWidth(d,k,g) (XkbKeyType(d,k,g)->num_levels)
 #define	XkbKeyGroupsWidth(d,k)  ((d)->map->key_sym_map[k].width)
 #define	XkbKeyTypeIndex(d,k,g)  ((d)->map->key_sym_map[k].kt_index[g&0x3])
-#define	XkbKeyType(d,k,g)	(&(d)->map->types[XkbKeyTypeIndex(d,k,g)])
+#define	XkbKeyType(d,k,g)	(&darray_item((d)->map->types, XkbKeyTypeIndex(d,k,g)))
 #define	XkbKeyNumSyms(d,k,g,sl) \
         ((d)->map->key_sym_map[k].num_syms[(g*XkbKeyGroupsWidth(d,k))+sl])
 #define	XkbKeySym(d,k,n)	(&(d)->map->key_sym_map[k].syms[n])

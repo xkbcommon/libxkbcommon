@@ -1171,7 +1171,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap, unsigned merge)
         goto err_info;
     }
 
-    keymap->map->num_types = i;
+    darray_resize0(keymap->map->types, i);
 
     if (XkbAllRequiredTypes & (~info.stdPresent)) {
         unsigned missing, keypadVMod;
@@ -1185,29 +1185,29 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap, unsigned merge)
         }
 
         if (missing & XkbOneLevelMask)
-            keymap->map->types[XkbOneLevelIndex].name =
+            darray_item(keymap->map->types, XkbOneLevelIndex).name =
                 xkb_atom_strdup(keymap->ctx, tok_ONE_LEVEL);
         if (missing & XkbTwoLevelMask)
-            keymap->map->types[XkbTwoLevelIndex].name =
+            darray_item(keymap->map->types, XkbTwoLevelIndex).name =
                 xkb_atom_strdup(keymap->ctx, tok_TWO_LEVEL);
         if (missing & XkbAlphabeticMask)
-            keymap->map->types[XkbAlphabeticIndex].name =
+            darray_item(keymap->map->types, XkbAlphabeticIndex).name =
                 xkb_atom_strdup(keymap->ctx, tok_ALPHABETIC);
         if (missing & XkbKeypadMask)
-            keymap->map->types[XkbKeypadIndex].name =
+            darray_item(keymap->map->types, XkbKeypadIndex).name =
                 xkb_atom_strdup(keymap->ctx, tok_KEYPAD);
     }
 
-    next = &keymap->map->types[XkbLastRequiredType + 1];
+    next = &darray_item(keymap->map->types, XkbLastRequiredType + 1);
     for (i = 0, def = info.types; i < info.nTypes; i++) {
         if (def->name == tok_ONE_LEVEL)
-            type = &keymap->map->types[XkbOneLevelIndex];
+            type = &darray_item(keymap->map->types, XkbOneLevelIndex);
         else if (def->name == tok_TWO_LEVEL)
-            type = &keymap->map->types[XkbTwoLevelIndex];
+            type = &darray_item(keymap->map->types, XkbTwoLevelIndex);
         else if (def->name == tok_ALPHABETIC)
-            type = &keymap->map->types[XkbAlphabeticIndex];
+            type = &darray_item(keymap->map->types, XkbAlphabeticIndex);
         else if (def->name == tok_KEYPAD)
-            type = &keymap->map->types[XkbKeypadIndex];
+            type = &darray_item(keymap->map->types, XkbKeypadIndex);
         else
             type = next++;
 

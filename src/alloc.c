@@ -28,62 +28,35 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 int
 XkbcAllocClientMap(struct xkb_keymap *keymap, unsigned which,
-                   unsigned nTotalTypes)
+                   size_t nTotalTypes)
 {
-    struct xkb_client_map * map;
-
     if (!keymap || ((nTotalTypes > 0) && (nTotalTypes < XkbNumRequiredTypes)))
         return BadValue;
 
     if (!keymap->map) {
-        map = uTypedCalloc(1, struct xkb_client_map);
-        if (!map)
+        keymap->map = calloc(1, sizeof(*keymap->map));
+        if (!keymap->map)
             return BadAlloc;
-        keymap->map = map;
+        darray_init(keymap->map->types);
     }
-    else
-        map = keymap->map;
 
-    if ((which & XkbKeyTypesMask) && (nTotalTypes > 0)) {
-        if (!map->types) {
-            map->types = uTypedCalloc(nTotalTypes, struct xkb_key_type);
-            if (!map->types)
-                return BadAlloc;
-
-            map->num_types = 0;
-            map->size_types = nTotalTypes;
-        }
-        else if (map->size_types < nTotalTypes) {
-            struct xkb_key_type *prev_types = map->types;
-
-            map->types = uTypedRealloc(map->types, nTotalTypes,
-                                          struct xkb_key_type);
-            if (!map->types) {
-                free(prev_types);
-                map->num_types = map->size_types = 0;
-                return BadAlloc;
-            }
-
-            map->size_types = nTotalTypes;
-            memset(&map->types[map->num_types], 0,
-                   (map->size_types - map->num_types) * sizeof(struct xkb_key_type));
-        }
-    }
+    if (which & XkbKeyTypesMask)
+        darray_growalloc(keymap->map->types, nTotalTypes);
 
     if (which & XkbKeySymsMask) {
-        if (!map->key_sym_map) {
-            map->key_sym_map = uTypedCalloc(keymap->max_key_code + 1,
-                                            struct xkb_sym_map);
-            if (!map->key_sym_map)
+        if (!keymap->map->key_sym_map) {
+            keymap->map->key_sym_map = uTypedCalloc(keymap->max_key_code + 1,
+                                                    struct xkb_sym_map);
+            if (!keymap->map->key_sym_map)
                 return BadAlloc;
         }
     }
 
     if (which & XkbModifierMapMask) {
-        if (!map->modmap) {
-            map->modmap = uTypedCalloc(keymap->max_key_code + 1,
-                                       unsigned char);
-            if (!map->modmap)
+        if (!keymap->map->modmap) {
+            keymap->map->modmap = uTypedCalloc(keymap->max_key_code + 1,
+                                               unsigned char);
+            if (!keymap->map->modmap)
                 return BadAlloc;
         }
     }
@@ -309,14 +282,13 @@ XkbcFreeClientMap(struct xkb_keymap *keymap)
     struct xkb_client_map * map;
     struct xkb_key_type * type;
     xkb_keycode_t key;
-    int i;
 
     if (!keymap || !keymap->map)
         return;
 
     map = keymap->map;
 
-    for (i = 0, type = map->types; i < map->num_types && type; i++, type++) {
+    darray_foreach(type, map->types) {
         int j;
         free(type->map);
         free(type->preserve);
@@ -325,7 +297,7 @@ XkbcFreeClientMap(struct xkb_keymap *keymap)
         free(type->level_names);
         free(UNCONSTIFY(type->name));
     }
-    free(map->types);
+    darray_free(map->types);
 
     if (map->key_sym_map) {
         for (key = keymap->min_key_code; key < keymap->max_key_code; key++) {
@@ -410,12 +382,10 @@ XkbcAllocNames(struct xkb_keymap *keymap, unsigned which,
     }
     names = keymap->names;
 
-    if ((which & XkbKTLevelNamesMask) && keymap->map && keymap->map->types) {
-        int i;
+    if ((which & XkbKTLevelNamesMask) && keymap->map) {
         struct xkb_key_type * type;
 
-        type = keymap->map->types;
-        for (i = 0; i < keymap->map->num_types; i++, type++) {
+        darray_foreach(type, keymap->map->types) {
             if (!type->level_names) {
                 type->level_names = uTypedCalloc(type->num_levels, const char *);
                 if (!type->level_names)
@@ -462,6 +432,7 @@ XkbcFreeNames(struct xkb_keymap *keymap)
 {
     struct xkb_names * names;
     struct xkb_client_map * map;
+    struct xkb_key_type *type;
     int i;
 
     if (!keymap || !keymap->names)
@@ -470,10 +441,8 @@ XkbcFreeNames(struct xkb_keymap *keymap)
     names = keymap->names;
     map = keymap->map;
 
-    if (map && map->types) {
-        struct xkb_key_type * type = map->types;
-
-        for (i = 0; i < map->num_types; i++, type++) {
+    if (map) {
+        darray_foreach(type, map->types) {
             int j;
             for (j = 0; j < type->num_levels; j++)
                 free(UNCONSTIFY(type->level_names[j]));

@@ -1025,6 +1025,7 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
 {
     xkb_keycode_t key;
     int i;
+    struct xkb_key_type *type;
 
     /* Find all the interprets for the key and bind them to actions,
      * which will also update the vmodmap. */
@@ -1046,8 +1047,7 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
     }
 
     /* Now update the level masks for all the types to reflect the vmods. */
-    for (i = 0; i < keymap->map->num_types; i++) {
-        struct xkb_key_type *type = &keymap->map->types[i];
+    darray_foreach(type, keymap->map->types) {
         uint32_t mask = 0;
         int j;
         type->mods.mask = type->mods.real_mods;
