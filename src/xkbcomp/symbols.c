@@ -256,8 +256,8 @@ typedef struct _ModMapEntry
     } u;
 } ModMapEntry;
 
-#define	SYMBOLS_INIT_SIZE	110
-#define	SYMBOLS_CHUNK		20
+#define SYMBOLS_INIT_SIZE 110
+
 typedef struct _SymbolsInfo
 {
     char *name;         /* e.g. pc+us+inet(evdev) */
@@ -266,9 +266,7 @@ typedef struct _SymbolsInfo
     unsigned merge;
     unsigned explicit_group;
     unsigned groupInfo;
-    unsigned szKeys;
-    unsigned nKeys;
-    KeyInfo *keys;
+    darray(KeyInfo) keys;
     KeyInfo dflt;
     VModInfo vmods;
     ActionInfo *action;
@@ -289,9 +287,8 @@ InitSymbolsInfo(SymbolsInfo * info, struct xkb_keymap *keymap)
     info->fileID = 0;
     info->merge = MergeOverride;
     info->groupInfo = 0;
-    info->szKeys = SYMBOLS_INIT_SIZE;
-    info->nKeys = 0;
-    info->keys = uTypedCalloc(SYMBOLS_INIT_SIZE, KeyInfo);
+    darray_init(info->keys);
+    darray_growalloc(info->keys, SYMBOLS_INIT_SIZE);
     info->modMap = NULL;
     for (i = 0; i < XkbNumKbdGroups; i++)
         info->groupNames[i] = XKB_ATOM_NONE;
@@ -304,15 +301,12 @@ InitSymbolsInfo(SymbolsInfo * info, struct xkb_keymap *keymap)
 static void
 FreeSymbolsInfo(SymbolsInfo * info)
 {
-    unsigned int i;
+    KeyInfo *key;
 
     free(info->name);
-    if (info->keys)
-    {
-        for (i = 0; i < info->nKeys; i++)
-            FreeKeyInfo(&info->keys[i]);
-        free(info->keys);
-    }
+    darray_foreach(key, info->keys)
+        FreeKeyInfo(key);
+    darray_free(info->keys);
     if (info->modMap)
         ClearCommonInfo(&info->modMap->defs);
     if (info->aliases)
@@ -710,35 +704,21 @@ MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
 static bool
 AddKeySymbols(SymbolsInfo *info, KeyInfo *key, struct xkb_keymap *keymap)
 {
-    unsigned int i;
     unsigned long real_name;
+    KeyInfo *iter, *new;
 
-    for (i = 0; i < info->nKeys; i++)
-    {
-        if (info->keys[i].name == key->name)
-            return MergeKeys(info, keymap, &info->keys[i], key);
-    }
+    darray_foreach(iter, info->keys)
+        if (iter->name == key->name)
+            return MergeKeys(info, keymap, iter, key);
+
     if (FindKeyNameForAlias(keymap, key->name, &real_name))
-    {
-        for (i = 0; i < info->nKeys; i++)
-        {
-            if (info->keys[i].name == real_name)
-                return MergeKeys(info, keymap, &info->keys[i], key);
-        }
-    }
-    if (info->nKeys >= info->szKeys)
-    {
-        info->szKeys += SYMBOLS_CHUNK;
-        info->keys =
-            uTypedRecalloc(info->keys, info->nKeys, info->szKeys, KeyInfo);
-        if (!info->keys)
-        {
-            WSGO("Could not allocate key symbols descriptions\n");
-            ACTION("Some key symbols definitions may be lost\n");
-            return false;
-        }
-    }
-    return CopyKeyInfo(key, &info->keys[info->nKeys++], true);
+        darray_foreach(iter, info->keys)
+            if (iter->name == real_name)
+                return MergeKeys(info, keymap, iter, key);
+
+    darray_resize0(info->keys, darray_size(info->keys) + 1);
+    new = &darray_item(info->keys, darray_size(info->keys) - 1);
+    return CopyKeyInfo(key, new, true);
 }
 
 static bool
@@ -844,13 +824,15 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
                 into->groupNames[i] = from->groupNames[i];
         }
     }
-    for (i = 0, key = from->keys; i < from->nKeys; i++, key++)
-    {
+
+    darray_foreach(key, from->keys) {
         if (merge != MergeDefault)
             key->defs.merge = merge;
+
         if (!AddKeySymbols(into, key, keymap))
             into->errorCount++;
     }
+
     if (from->modMap != NULL)
     {
         ModMapEntry *mm, *next;
@@ -2188,7 +2170,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap, unsigned merge)
 
     HandleSymbolsFile(file, keymap, merge, &info);
 
-    if (info.nKeys == 0)
+    if (darray_empty(info.keys))
         goto err_info;
 
     if (info.errorCount != 0)
@@ -2232,11 +2214,11 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap, unsigned merge)
     }
 
     /* sanitize keys */
-    for (key = info.keys, i = 0; i < info.nKeys; i++, key++)
+    darray_foreach(key, info.keys)
         PrepareKeyDef(key);
 
     /* copy! */
-    for (key = info.keys, i = 0; i < info.nKeys; i++, key++)
+    darray_foreach(key, info.keys)
         if (!CopySymbolsDef(keymap, key, 0))
             info.errorCount++;
 
