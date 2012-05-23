@@ -265,7 +265,6 @@ typedef struct _SymbolsInfo
     unsigned fileID;
     unsigned merge;
     unsigned explicit_group;
-    unsigned groupInfo;
     darray(KeyInfo) keys;
     KeyInfo dflt;
     VModInfo vmods;
@@ -286,7 +285,6 @@ InitSymbolsInfo(SymbolsInfo * info, struct xkb_keymap *keymap)
     info->errorCount = 0;
     info->fileID = 0;
     info->merge = MergeOverride;
-    info->groupInfo = 0;
     darray_init(info->keys);
     darray_growalloc(info->keys, SYMBOLS_INIT_SIZE);
     info->modMap = NULL;
@@ -1357,7 +1355,7 @@ SetGroupName(SymbolsInfo *info, struct xkb_keymap *keymap, ExprDef *arrayNdx,
 static int
 HandleSymbolsVar(VarDef *stmt, struct xkb_keymap *keymap, SymbolsInfo *info)
 {
-    ExprResult elem, field, tmp;
+    ExprResult elem, field;
     ExprDef *arrayNdx;
     bool ret;
 
@@ -1378,59 +1376,31 @@ HandleSymbolsVar(VarDef *stmt, struct xkb_keymap *keymap, SymbolsInfo *info)
              && ((strcasecmp(field.str, "groupswrap") == 0) ||
                  (strcasecmp(field.str, "wrapgroups") == 0)))
     {
-        if (!ExprResolveBoolean(keymap->ctx, stmt->value, &tmp))
-        {
-            ERROR("Illegal setting for global groupsWrap\n");
-            ACTION("Non-boolean value ignored\n");
-            ret = false;
-        }
-        else {
-            if (tmp.uval)
-                info->groupInfo = XkbWrapIntoRange;
-            else
-                info->groupInfo = XkbClampIntoRange;
-            ret = true;
-        }
+        ERROR("Global \"groupswrap\" not supported\n");
+        ACTION("Ignored\n");
+        ret = true;
     }
     else if ((elem.str == NULL)
              && ((strcasecmp(field.str, "groupsclamp") == 0) ||
                  (strcasecmp(field.str, "clampgroups") == 0)))
     {
-        if (!ExprResolveBoolean(keymap->ctx, stmt->value, &tmp))
-        {
-            ERROR("Illegal setting for global groupsClamp\n");
-            ACTION("Non-boolean value ignored\n");
-            return false;
-        }
-        else {
-            if (tmp.uval)
-                info->groupInfo = XkbClampIntoRange;
-            else
-                info->groupInfo = XkbWrapIntoRange;
-            ret = true;
-        }
+        ERROR("Global \"groupsclamp\" not supported\n");
+        ACTION("Ignored\n");
+        ret = true;
     }
     else if ((elem.str == NULL)
              && ((strcasecmp(field.str, "groupsredirect") == 0) ||
                  (strcasecmp(field.str, "redirectgroups") == 0)))
     {
-        if (!ExprResolveGroup(keymap->ctx, stmt->value, &tmp))
-        {
-            ERROR("Illegal group index for global groupsRedirect\n");
-            ACTION("Definition with non-integer group ignored\n");
-            ret = false;
-        }
-        else {
-            info->groupInfo = XkbSetGroupInfo(0, XkbRedirectIntoRange,
-                                              tmp.uval);
-            ret = true;
-        }
+        ERROR("Global \"groupsredirect\" not supported\n");
+        ACTION("Ignored\n");
+        ret = true;
     }
     else if ((elem.str == NULL) && (strcasecmp(field.str, "allownone") == 0))
     {
         ERROR("Radio groups not supported\n");
-        ACTION("Ignoring \"allow none\" specification\n");
-        ret = false;
+        ACTION("Ignoring \"allownone\" specification\n");
+        ret = true;
     }
     else {
         ret = SetActionField(keymap, elem.str, field.str, arrayNdx,
