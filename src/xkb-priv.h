@@ -168,23 +168,23 @@ struct xkb_device_valuator_action {
     uint8_t         device;
     uint8_t         v1_what;
     uint8_t         v1_index;
-    uint8_t         v1_value;
+    int8_t          v1_value;
     uint8_t         v2_what;
     uint8_t         v2_index;
-    uint8_t         v2_value;
+    int8_t          v2_value;
 };
 
 struct xkb_pointer_default_action {
     uint8_t         type;
     uint8_t         flags;
     uint8_t         affect;
-    uint8_t         value;
+    int8_t          value;
 };
 
 struct xkb_switch_screen_action {
     uint8_t         type;
     uint8_t         flags;
-    uint8_t         screen;
+    int8_t          screen;
 };
 
 struct xkb_redirect_key_action {
@@ -199,8 +199,8 @@ struct xkb_redirect_key_action {
 struct xkb_pointer_action {
     uint8_t	type;
     uint8_t	flags;
-    uint16_t	x;
-    uint16_t	y;
+    int16_t	x;
+    int16_t	y;
 };
 
 struct xkb_message_action {
@@ -213,7 +213,7 @@ struct xkb_pointer_button_action {
     uint8_t	type;
     uint8_t	flags;
     uint8_t	count;
-    uint8_t	button;
+    int8_t	button;
 };
 
 union xkb_action {
