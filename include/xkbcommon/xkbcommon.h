@@ -279,6 +279,13 @@ xkb_map_new_from_string(struct xkb_context *context,
                         enum xkb_map_compile_flags flags);
 
 /**
+ * Returns the compiled XKB map as a string which can later be fed back into
+ * xkb_map_new_from_string to return the exact same keymap.
+ */
+char *
+xkb_map_get_as_string(struct xkb_keymap *keymap);
+
+/**
  * Takes a new reference on a keymap.
  */
 struct xkb_keymap *

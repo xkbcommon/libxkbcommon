@@ -74,6 +74,7 @@ libxkbcommon_la_SOURCES = \
 	src/atom.h \
 	src/context.c \
 	src/darray.h \
+	src/keymap-dump.c \
 	src/keysym.c \
 	src/map.c \
 	src/misc.c \
@@ -116,7 +117,8 @@ TESTS = \
 	test/canonicalise \
 	test/state \
 	test/context \
-	test/rules-file
+	test/rules-file \
+	test/dump
 TESTS_LDADD = libxkbcommon-priv.la
 
 test_xkey_LDADD = $(TESTS_LDADD)
@@ -128,6 +130,7 @@ test_state_LDADD = $(TESTS_LDADD)
 test_context_LDADD = $(TESTS_LDADD)
 test_rules_file_CFLAGS = $(AM_CFLAGS) -Wno-declaration-after-statement
 test_rules_file_LDADD = $(TESTS_LDADD)
+test_dump_LDADD = $(TESTS_LDADD)
 
 check_PROGRAMS = $(TESTS)
 

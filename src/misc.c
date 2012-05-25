@@ -243,3 +243,29 @@ _XkbcKSCheckCase(xkb_keysym_t ks)
 
     return rtrn;
 }
+
+xkb_keycode_t
+XkbcFindKeycodeByName(struct xkb_keymap *keymap, const char *name,
+                      bool use_aliases)
+{
+    struct xkb_key_alias *alias;
+    xkb_keycode_t i;
+
+    for (i = keymap->min_key_code; i <= keymap->max_key_code; i++) {
+        if (strncmp(darray_item(keymap->names->keys, i).name, name,
+                    XkbKeyNameLength) == 0)
+            return i;
+    }
+
+    if (!use_aliases)
+        return 0;
+
+
+    for (i = 0; i < darray_size(keymap->names->key_aliases); i++) {
+        alias = &darray_item(keymap->names->key_aliases, i);
+        if (strncmp(name, alias->alias, XkbKeyNameLength) == 0)
+            return XkbcFindKeycodeByName(keymap, alias->real, false);
+    }
+
+    return 0;
+}

@@ -505,6 +505,10 @@ XkbcInitCanonicalKeyTypes(struct xkb_keymap *keymap, unsigned which,
 extern unsigned
 _XkbcKSCheckCase(xkb_keysym_t sym);
 
+extern xkb_keycode_t
+XkbcFindKeycodeByName(struct xkb_keymap *keymap, const char *name,
+                      bool use_aliases);
+
 #define _XkbKSLower (1 << 0)
 #define _XkbKSUpper (1 << 1)
 
