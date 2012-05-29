@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
     fd = open(path, O_RDONLY);
     assert(fd >= 0);
     assert(fstat(fd, &info) == 0);
-    as_string = malloc(info.st_size);
+    as_string = malloc(info.st_size + 1);
     assert(as_string);
 
     remaining = info.st_size;
@@ -66,8 +66,7 @@ int main(int argc, char *argv[])
     }
 
     assert(remaining == 0);
-
-    fprintf(stderr, "trying to parse this:\n%s\n", as_string);
+    as_string[info.st_size] = '\0';
 
     keymap = xkb_map_new_from_string(ctx, as_string,
                                      XKB_KEYMAP_FORMAT_TEXT_V1, 0);
