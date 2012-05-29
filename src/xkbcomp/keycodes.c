@@ -156,14 +156,13 @@ FindIndicatorByName(KeyNamesInfo * info, xkb_atom_t name)
 }
 
 static bool
-AddIndicatorName(KeyNamesInfo *info, struct xkb_keymap *keymap,
+AddIndicatorName(KeyNamesInfo *info, struct xkb_keymap *keymap, unsigned merge,
                  IndicatorNameInfo *new)
 {
     IndicatorNameInfo *old;
     bool replace;
 
-    replace = (new->defs.merge == MergeReplace) ||
-        (new->defs.merge == MergeOverride);
+    replace = (merge == MergeReplace) || (merge == MergeOverride);
     old = FindIndicatorByName(info, new->name);
     if (old)
     {
@@ -463,7 +462,7 @@ MergeIncludedKeycodes(KeyNamesInfo *into, struct xkb_keymap *keymap,
         {
             if (merge != MergeDefault)
                 led->defs.merge = merge;
-            if (!AddIndicatorName(into, keymap, led))
+            if (!AddIndicatorName(into, keymap, led->defs.merge, led))
                 into->errorCount++;
             next = (IndicatorNameInfo *) led->defs.next;
         }
@@ -708,7 +707,7 @@ err_out:
 
 static int
 HandleIndicatorNameDef(IndicatorNameDef *def, struct xkb_keymap *keymap,
-                       KeyNamesInfo *info)
+                       unsigned merge, KeyNamesInfo *info)
 {
     IndicatorNameInfo ii;
     ExprResult tmp;
@@ -732,7 +731,7 @@ HandleIndicatorNameDef(IndicatorNameDef *def, struct xkb_keymap *keymap,
     ii.name = xkb_atom_intern(keymap->ctx, tmp.str);
     free(tmp.str);
     ii.virtual = def->virtual;
-    if (!AddIndicatorName(info, keymap, &ii))
+    if (!AddIndicatorName(info, keymap, merge, &ii))
         return false;
     return true;
 }
@@ -781,7 +780,8 @@ HandleKeycodesFile(XkbFile *file, struct xkb_keymap *keymap,
                 info->errorCount++;
             break;
         case StmtIndicatorNameDef: /* e.g. indicator 1 = "Caps Lock"; */
-            if (!HandleIndicatorNameDef((IndicatorNameDef *) stmt, keymap, info))
+            if (!HandleIndicatorNameDef((IndicatorNameDef *) stmt, keymap,
+                                        merge, info))
                 info->errorCount++;
             break;
         case StmtInterpDef:
