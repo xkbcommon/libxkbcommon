@@ -93,6 +93,8 @@ atom_table_new(void)
     if (!table)
         return NULL;
 
+    darray_init(table->table);
+    darray_growalloc(table->table, 100);
     darray_append(table->table, NULL);
 
     return table;

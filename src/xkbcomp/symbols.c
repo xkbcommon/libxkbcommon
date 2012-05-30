@@ -256,8 +256,6 @@ typedef struct _ModMapEntry
     } u;
 } ModMapEntry;
 
-#define SYMBOLS_INIT_SIZE 110
-
 typedef struct _SymbolsInfo
 {
     char *name;         /* e.g. pc+us+inet(evdev) */
@@ -286,7 +284,7 @@ InitSymbolsInfo(SymbolsInfo * info, struct xkb_keymap *keymap)
     info->fileID = 0;
     info->merge = MergeOverride;
     darray_init(info->keys);
-    darray_growalloc(info->keys, SYMBOLS_INIT_SIZE);
+    darray_growalloc(info->keys, 110);
     info->modMap = NULL;
     for (i = 0; i < XkbNumKbdGroups; i++)
         info->groupNames[i] = XKB_ATOM_NONE;

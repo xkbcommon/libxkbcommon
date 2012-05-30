@@ -280,7 +280,7 @@ typedef darray(unsigned long)  darray_ulong;
 static inline size_t darray_next_alloc(size_t alloc, size_t need)
 {
 	if (alloc == 0)
-		alloc = 1;
+		alloc = 4;
 	while (alloc < need)
 		alloc *= 2;
 	return alloc;

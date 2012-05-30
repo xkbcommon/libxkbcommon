@@ -992,10 +992,13 @@ load_rules(FILE *file)
     rules = calloc(1, sizeof(*rules));
     if (!rules)
         return NULL;
+    darray_init(rules->rules);
+    darray_growalloc(rules->rules, 16);
 
     memset(&mapping, 0, sizeof(mapping));
     memset(&tgroup, 0, sizeof(tgroup));
     darray_init(line);
+    darray_growalloc(line, 128);
 
     while (input_line_get(file, &line)) {
         if (match_line(&line, &mapping, &trule, &tgroup)) {
