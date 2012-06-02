@@ -38,9 +38,9 @@ int main(int argc, char *argv[])
     struct xkb_rule_names names = {
         .rules = "evdev",
         .model = "pc105",
-        .layout = "us",
+        .layout = "gb",
         .variant = NULL,
-        .options = NULL,
+        .options = "terminate:ctrl_alt_bksp",
     };
     char *as_string;
 
