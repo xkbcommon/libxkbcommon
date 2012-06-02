@@ -481,9 +481,6 @@ write_action(struct xkb_keymap *keymap, char **buf, size_t *size,
     if (!suffix)
         suffix = "";
 
-    if (action->any.type == XkbSA_NoAction)
-        return true;
-
     switch (action->any.type) {
     case XkbSA_SetMods:
         if (!type)
