@@ -366,11 +366,18 @@ ResizeKeyGroup(KeyInfo * key, unsigned int group, unsigned int numLevels,
     return true;
 }
 
+enum key_group_selector {
+    NONE = 0,
+    FROM = (1 << 0),
+    TO = (1 << 1),
+};
+
 static bool
 MergeKeyGroups(SymbolsInfo * info,
                KeyInfo * into, KeyInfo * from, unsigned group)
 {
     xkb_keysym_t *resultSyms = NULL;
+    enum key_group_selector using = NONE;
     union xkb_action *resultActs;
     unsigned int resultWidth;
     unsigned int resultSize = 0;
@@ -476,19 +483,33 @@ MergeKeyGroups(SymbolsInfo * info,
         if (fromSize == 0)
         {
             resultSize += toSize;
+            using |= TO;
         }
         else if (toSize == 0 || clobber)
         {
             resultSize += fromSize;
+            using |= FROM;
         }
         else
         {
             resultSize += toSize;
+            using |= TO;
         }
     }
 
     if (resultSize == 0)
         goto out;
+
+    if (using == FROM)
+    {
+        resultSyms = from->syms[group];
+        goto out;
+    }
+    else if (using == TO)
+    {
+        resultSyms = into->syms[group];
+        goto out;
+    }
 
     resultSyms = uTypedCalloc(resultSize, xkb_keysym_t);
     if (!resultSyms)
@@ -500,7 +521,7 @@ MergeKeyGroups(SymbolsInfo * info,
 
     for (i = 0; i < resultWidth; i++)
     {
-        enum { NONE, FROM, TO } use;
+        enum key_group_selector use = NONE;
         unsigned int fromSize = 0;
         unsigned int toSize = 0;
 
@@ -557,9 +578,11 @@ out:
     if (resultActs != from->acts[group])
         free(from->acts[group]);
     into->numLevels[group] = resultWidth;
-    free(into->syms[group]);
+    if (resultSyms != into->syms[group])
+        free(into->syms[group]);
     into->syms[group] = resultSyms;
-    free(from->syms[group]);
+    if (resultSyms != from->syms[group])
+        free(from->syms[group]);
     from->syms[group] = NULL;
     from->sizeSyms[group] = 0;
     into->sizeSyms[group] = resultSize;
@@ -569,7 +592,8 @@ out:
     from->symsMapNumEntries[group] = NULL;
     into->acts[group] = resultActs;
     from->acts[group] = NULL;
-    into->symsDefined |= (1 << group);
+    if (into->syms[group])
+        into->symsDefined |= (1 << group);
     from->symsDefined &= ~(1 << group);
     into->actsDefined |= (1 << group);
     from->actsDefined &= ~(1 << group);
