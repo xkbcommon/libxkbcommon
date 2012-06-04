@@ -93,6 +93,10 @@ BUILT_SOURCES = \
 	src/ks_tables.h
 CLEANFILES = $(BUILT_SOURCES)
 
+src/xkbcomp/parser.c: src/$(am__dirstamp) src/xkbcomp/$(am__dirstamp)
+src/xkbcomp/parser.h: src/$(am__dirstamp) src/xkbcomp/$(am__dirstamp)
+src/xkbcomp/scanner.c: src/$(am__dirstamp) src/xkbcomp/$(am__dirstamp)
+
 src/ks_tables.h: $(KEYSYMDEFS) $(top_builddir)/makekeys/makekeys$(EXEEXT)
 	$(AM_V_GEN)$(top_builddir)/makekeys/makekeys $(top_srcdir)/include/xkbcommon/xkbcommon-keysyms.h > $@
 
