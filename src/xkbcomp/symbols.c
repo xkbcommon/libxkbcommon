@@ -1071,6 +1071,11 @@ AddSymbolsToKey(KeyInfo *key, struct xkb_keymap *keymap,
                 key->symsMapNumEntries[ndx][i] = 0;
                 break;
             }
+            if (key->symsMapNumEntries[ndx][i] == 1 &&
+                key->syms[ndx][key->symsMapIndex[ndx][i] + j] == XKB_KEY_NoSymbol) {
+                key->symsMapIndex[ndx][i] = -1;
+                key->symsMapNumEntries[ndx][i] = 0;
+            }
         }
     }
     for (j = key->numLevels[ndx] - 1;
