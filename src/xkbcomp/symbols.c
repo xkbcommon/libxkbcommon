@@ -475,13 +475,17 @@ MergeKeyGroups(SymbolsInfo * info,
         if (into->symsMapNumEntries[group] && (i < into->numLevels[group]))
             toSize = into->symsMapNumEntries[group][i];
 
-        if (fromSize == 0 || fromSize == toSize || clobber)
+        if (fromSize == 0)
         {
-            fromSize += toSize;
+            resultSize += toSize;
         }
-        else if (toSize == 0)
+        else if (toSize == 0 || clobber)
         {
             resultSize += fromSize;
+        }
+        else
+        {
+            resultSize += toSize;
         }
     }
 
@@ -502,19 +506,21 @@ MergeKeyGroups(SymbolsInfo * info,
         unsigned int fromSize = 0;
         unsigned int toSize = 0;
 
-        if (from->symsMapNumEntries[group] && (i < from->numLevels[group]))
+        if (i < from->numLevels[group])
             fromSize = from->symsMapNumEntries[group][i];
-        if (into->symsMapNumEntries[group] && (i < into->numLevels[group]))
+        if (i < into->numLevels[group])
             toSize = into->symsMapNumEntries[group][i];
 
-        if (!fromSize && !toSize)
+        if (fromSize == 0 && toSize == 0)
         {
             into->symsMapIndex[group][i] = -1;
             into->symsMapNumEntries[group][i] = 0;
             continue;
         }
 
-        if ((fromSize && !toSize) || clobber)
+        if (fromSize == 0)
+            use = TO;
+        else if (toSize == 0 || clobber)
             use = FROM;
         else
             use = TO;
@@ -540,7 +546,7 @@ MergeKeyGroups(SymbolsInfo * info,
         else
         {
             memcpy(&resultSyms[cur_idx],
-                   &into->syms[group][from->symsMapIndex[group][i]],
+                   &into->syms[group][into->symsMapIndex[group][i]],
                    into->symsMapNumEntries[group][i] * sizeof(xkb_keysym_t));
             into->symsMapIndex[group][i] = cur_idx;
         }
@@ -1864,7 +1870,7 @@ PrepareKeyDef(KeyInfo * key)
             identical = false;
             break;
         }
-        if ((key->symsMapIndex[i] != key->symsMapIndex[i]) &&
+        if ((key->symsMapIndex[i] != key->symsMapIndex[0]) &&
             (key->symsMapIndex[i] == NULL || key->symsMapIndex[0] == NULL ||
              memcmp(key->symsMapIndex[i], key->symsMapIndex[0],
                     key->numLevels[0] * sizeof(int))))
@@ -1872,7 +1878,7 @@ PrepareKeyDef(KeyInfo * key)
             identical = false;
             continue;
         }
-        if ((key->symsMapNumEntries[i] != key->symsMapNumEntries[i]) &&
+        if ((key->symsMapNumEntries[i] != key->symsMapNumEntries[0]) &&
             (key->symsMapNumEntries[i] == NULL ||
              key->symsMapNumEntries[0] == NULL ||
              memcmp(key->symsMapNumEntries[i], key->symsMapNumEntries[0],
