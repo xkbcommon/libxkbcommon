@@ -25,9 +25,13 @@ authorization from the authors.
 */
 
 #include <assert.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "xkbcommon/xkbcommon.h"
 
@@ -38,18 +42,41 @@ int main(int argc, char *argv[])
     struct xkb_rule_names names = {
         .rules = "evdev",
         .model = "pc105",
-        .layout = "us",
-        .variant = NULL,
+        .layout = "us,ru,ca,de",
+        .variant = ",,multix,neo",
         .options = NULL,
     };
-    char *as_string;
+    struct stat stat_buf;
+    char *as_string, *expected;
+    const char *srcdir = getenv("srcdir");
+    char *path;
+    int fd;
+
+    assert(srcdir);
+    assert(asprintf(&path, "%s/test/dump.data", srcdir) != -1);
+    fd = open(path, O_RDONLY);
+    assert(fd >= 0);
+    assert(stat(path, &stat_buf) == 0);
+    assert(stat_buf.st_size > 0);
+
+    expected = mmap(NULL, stat_buf.st_size, PROT_READ, MAP_SHARED, fd, 0);
+    assert(expected != MAP_FAILED);
 
     assert(ctx);
     keymap = xkb_map_new_from_names(ctx, &names, 0);
+    assert(keymap);
 
     as_string = xkb_map_get_as_string(keymap);
     assert(as_string);
-    printf("%s\n", as_string);
+
+    if (strcmp(as_string, expected) != 0) {
+        printf("dumped map differs from expected!\n\n");
+        printf("length: got %lu, expected %lu\n",
+               (unsigned long) strlen(as_string),
+               (unsigned long) strlen(expected));
+        printf("result:\n%s\n", as_string);
+        assert(0);
+    }
 
     free(as_string);
     xkb_map_unref(keymap);
