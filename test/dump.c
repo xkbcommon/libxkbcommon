@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
     assert(fd >= 0);
     assert(stat(path, &stat_buf) == 0);
     assert(stat_buf.st_size > 0);
+    free(path);
 
     expected = mmap(NULL, stat_buf.st_size, PROT_READ, MAP_SHARED, fd, 0);
     assert(expected != MAP_FAILED);
