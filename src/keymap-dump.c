@@ -610,6 +610,7 @@ write_action(struct xkb_keymap *keymap, char **buf, size_t *size,
     case XkbSA_RedirectKey:
     case XkbSA_DeviceBtn:
     case XkbSA_LockDeviceBtn:
+    case XkbSA_NoAction:
         /* XXX TODO */
         write_buf(keymap, buf, size, offset, "%sNoAction()%s", prefix, suffix);
         break;
