@@ -8,3 +8,5 @@ xkey
 state
 context
 rules-file
+stringcomp
+dump
