@@ -67,7 +67,7 @@ typedef struct _KeyInfo
      * can have multiple keysyms in each level (that is, each key press
      * can result in multiple keysyms).
      */
-    int *symsMapIndex[XkbNumKbdGroups];
+    darray(int) symsMapIndex[XkbNumKbdGroups];
     /*
      * symsMapNumEntries[group][level] -> How many syms are in
      * syms[group][symsMapIndex[group][level]].
@@ -103,7 +103,7 @@ InitKeyInfo(KeyInfo * info)
         info->numLevels[i] = 0;
         info->types[i] = XKB_ATOM_NONE;
         darray_init(info->syms[i]);
-        info->symsMapIndex[i] = NULL;
+        darray_init(info->symsMapIndex[i]);
         info->symsMapNumEntries[i] = NULL;
         info->acts[i] = NULL;
     }
@@ -133,8 +133,7 @@ FreeKeyInfo(KeyInfo * info)
         info->numLevels[i] = 0;
         info->types[i] = XKB_ATOM_NONE;
         darray_free(info->syms[i]);
-        free(info->symsMapIndex[i]);
-        info->symsMapIndex[i] = NULL;
+        darray_free(info->symsMapIndex[i]);
         free(info->symsMapNumEntries[i]);
         info->symsMapNumEntries[i] = NULL;
         free(info->acts[i]);
@@ -164,7 +163,7 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, bool clearOld)
         for (i = 0; i < XkbNumKbdGroups; i++)
         {
             old->numLevels[i] = 0;
-            old->symsMapIndex[i] = NULL;
+            darray_init(old->symsMapIndex[i]);
             old->symsMapNumEntries[i] = NULL;
             darray_init(old->syms[i]);
             old->acts[i] = NULL;
@@ -179,22 +178,12 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, bool clearOld)
             if (!darray_empty(old->syms[i]))
             {
                 darray_copy(new->syms[i], old->syms[i]);
-                new->symsMapIndex[i] = uTypedCalloc(width, int);
-                if (!new->symsMapIndex[i])
-                {
-                    darray_free(new->syms[i]);
-                    new->numLevels[i] = 0;
-                    new->acts[i] = NULL;
-                    return false;
-                }
-                memcpy(new->symsMapIndex[i], old->symsMapIndex[i],
-                       width * sizeof(int));
+                darray_copy(new->symsMapIndex[i], old->symsMapIndex[i]);
                 new->symsMapNumEntries[i] = uTypedCalloc(width, unsigned int);
                 if (!new->symsMapNumEntries[i])
                 {
                     darray_free(new->syms[i]);
-                    free(new->symsMapIndex[i]);
-                    new->symsMapIndex[i] = NULL;
+                    darray_free(new->symsMapIndex[i]);
                     new->numLevels[i] = 0;
                     new->acts[i] = NULL;
                     return false;
@@ -208,8 +197,7 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, bool clearOld)
                 if (!new->acts[i])
                 {
                     darray_free(new->syms[i]);
-                    free(new->symsMapIndex[i]);
-                    new->symsMapIndex[i] = NULL;
+                    darray_free(new->symsMapIndex[i]);
                     free(new->symsMapNumEntries[i]);
                     new->symsMapNumEntries[i] = NULL;
                     new->numLevels[i] = 0;
@@ -300,15 +288,12 @@ ResizeKeyGroup(KeyInfo * key, unsigned int group, unsigned int numLevels,
     if (darray_size(key->syms[group]) < sizeSyms)
         darray_resize0(key->syms[group], sizeSyms);
 
-    if (!key->symsMapIndex[group] || key->numLevels[group] < numLevels)
+    if (darray_empty(key->symsMapIndex[group]) ||
+        key->numLevels[group] < numLevels)
     {
-        key->symsMapIndex[group] = uTypedRealloc(key->symsMapIndex[group],
-                                                 numLevels,
-                                                 int);
-        if (!key->symsMapIndex[group])
-            return false;
+        darray_resize(key->symsMapIndex[group], numLevels);
         for (i = key->numLevels[group]; i < numLevels; i++)
-            key->symsMapIndex[group][i] = -1;
+            darray_item(key->symsMapIndex[group], i) = -1;
     }
     if (!key->symsMapNumEntries[group] || key->numLevels[group] < numLevels)
     {
@@ -371,15 +356,13 @@ MergeKeyGroups(SymbolsInfo * info,
     {
         resultActs = from->acts[group];
         resultWidth = from->numLevels[group];
-        into->symsMapIndex[group] = uTypedRealloc(into->symsMapIndex[group],
-                                                  from->numLevels[group],
-                                                  int);
+        darray_resize(into->symsMapIndex[group], from->numLevels[group]);
         into->symsMapNumEntries[group] =
             uTypedRecalloc(into->symsMapNumEntries[group],
                            into->numLevels[group],
                            from->numLevels[group],
                            unsigned int);
-        if (!into->symsMapIndex[group] || !into->symsMapNumEntries[group])
+        if (!into->symsMapNumEntries[group])
         {
             WSGO("Could not allocate level indices for key info merge\n");
             ACTION("Group %d of key %s not merged\n", group,
@@ -388,7 +371,7 @@ MergeKeyGroups(SymbolsInfo * info,
             return false;
         }
         for (i = into->numLevels[group]; i < from->numLevels[group]; i++)
-            into->symsMapIndex[group][i] = -1;
+            darray_item(into->symsMapIndex[group], i) = -1;
     }
 
     if ((resultActs == NULL) && (into->acts[group] || from->acts[group]))
@@ -500,7 +483,7 @@ MergeKeyGroups(SymbolsInfo * info,
 
         if (fromSize == 0 && toSize == 0)
         {
-            into->symsMapIndex[group][i] = -1;
+            darray_item(into->symsMapIndex[group], i) = -1;
             into->symsMapNumEntries[group][i] = 0;
             continue;
         }
@@ -524,18 +507,20 @@ MergeKeyGroups(SymbolsInfo * info,
         if (use == FROM)
         {
             memcpy(darray_mem(resultSyms, cur_idx),
-                   darray_mem(from->syms[group], from->symsMapIndex[group][i]),
+                   darray_mem(from->syms[group],
+                              darray_item(from->symsMapIndex[group], i)),
                    from->symsMapNumEntries[group][i] * sizeof(xkb_keysym_t));
-            into->symsMapIndex[group][i] = cur_idx;
+            darray_item(into->symsMapIndex[group], i) = cur_idx;
             into->symsMapNumEntries[group][i] =
                 from->symsMapNumEntries[group][i];
         }
         else
         {
             memcpy(darray_mem(resultSyms, cur_idx),
-                   darray_mem(into->syms[group], into->symsMapIndex[group][i]),
+                   darray_mem(into->syms[group],
+                              darray_item(into->symsMapIndex[group], i)),
                    into->symsMapNumEntries[group][i] * sizeof(xkb_keysym_t));
-            into->symsMapIndex[group][i] = cur_idx;
+            darray_item(into->symsMapIndex[group], i) = cur_idx;
         }
         cur_idx += into->symsMapNumEntries[group][i];
     }
@@ -552,8 +537,7 @@ out:
     if (!darray_same(resultSyms, from->syms[group]))
         darray_free(from->syms[group]);
     darray_init(from->syms[group]);
-    free(from->symsMapIndex[group]);
-    from->symsMapIndex[group] = NULL;
+    darray_free(from->symsMapIndex[group]);
     free(from->symsMapNumEntries[group]);
     from->symsMapNumEntries[group] = NULL;
     into->acts[group] = resultActs;
@@ -605,7 +589,7 @@ MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
                 into->acts[i] = from->acts[i];
                 into->symsDefined |= (1 << i);
                 darray_init(from->syms[i]);
-                from->symsMapIndex[i] = NULL;
+                darray_init(from->symsMapIndex[i]);
                 from->symsMapNumEntries[i] = NULL;
                 from->acts[i] = NULL;
                 from->numLevels[i] = 0;
@@ -1035,18 +1019,19 @@ AddSymbolsToKey(KeyInfo *key, struct xkb_keymap *keymap,
     }
     key->symsDefined |= (1 << ndx);
     for (i = 0; i < nLevels; i++) {
-        key->symsMapIndex[ndx][i] =
+        darray_item(key->symsMapIndex[ndx], i) =
             darray_item(value->value.list.symsMapIndex, i);
         key->symsMapNumEntries[ndx][i] =
             darray_item(value->value.list.symsNumEntries, i);
 
         for (j = 0; j < key->symsMapNumEntries[ndx][i]; j++) {
-            if (key->symsMapIndex[ndx][i] + j >= nSyms)
+            /* FIXME: What's abort() doing here? */
+            if (darray_item(key->symsMapIndex[ndx], i) + j >= nSyms)
                 abort();
             if (!LookupKeysym(darray_item(value->value.list.syms,
                                           darray_item(value->value.list.symsMapIndex, i) + j),
                               &darray_item(key->syms[ndx],
-                                           key->symsMapIndex[ndx][i] + j))) {
+                                           darray_item(key->symsMapIndex[ndx], i) + j))) {
                 WARN("Could not resolve keysym %s for key %s, group %d (%s), level %d\n",
                      darray_item(value->value.list.syms, i),
                      longText(key->name),
@@ -1054,15 +1039,15 @@ AddSymbolsToKey(KeyInfo *key, struct xkb_keymap *keymap,
                      xkb_atom_text(keymap->ctx, info->groupNames[ndx]), nSyms);
                 while (--j >= 0)
                     darray_item(key->syms[ndx],
-                                key->symsMapIndex[ndx][i] + j) = XKB_KEY_NoSymbol;
-                key->symsMapIndex[ndx][i] = -1;
+                                darray_item(key->symsMapIndex[ndx], i) + j) = XKB_KEY_NoSymbol;
+                darray_item(key->symsMapIndex[ndx], i) = -1;
                 key->symsMapNumEntries[ndx][i] = 0;
                 break;
             }
             if (key->symsMapNumEntries[ndx][i] == 1 &&
                 darray_item(key->syms[ndx],
-                            key->symsMapIndex[ndx][i] + j) == XKB_KEY_NoSymbol) {
-                key->symsMapIndex[ndx][i] = -1;
+                            darray_item(key->symsMapIndex[ndx], i) + j) == XKB_KEY_NoSymbol) {
+                darray_item(key->symsMapIndex[ndx], i) = -1;
                 key->symsMapNumEntries[ndx][i] = 0;
             }
         }
@@ -1474,7 +1459,7 @@ SetExplicitGroup(SymbolsInfo *info, KeyInfo *key)
     key->syms[group] = key->syms[0];
     darray_init(key->syms[0]);
     key->symsMapIndex[group] = key->symsMapIndex[0];
-    key->symsMapIndex[0] = NULL;
+    darray_init(key->symsMapIndex[0]);
     key->symsMapNumEntries[group] = key->symsMapNumEntries[0];
     key->symsMapNumEntries[0] = NULL;
     key->acts[group] = key->acts[0];
@@ -1782,20 +1767,12 @@ PrepareKeyDef(KeyInfo * key)
         if ((key->symsDefined & 1) && !darray_empty(key->syms[0]))
         {
             darray_copy(key->syms[i], key->syms[0]);
-            key->symsMapIndex[i] = uTypedCalloc(width, int);
-            if (!key->symsMapIndex[i])
-            {
-                darray_free(key->syms[i]);
-                continue;
-            }
-            memcpy(key->symsMapIndex[i], key->symsMapIndex[0],
-                   width * sizeof(int));
+            darray_copy(key->symsMapIndex[i], key->symsMapIndex[0]);
             key->symsMapNumEntries[i] = uTypedCalloc(width, unsigned int);
             if (!key->symsMapNumEntries[i])
             {
                 darray_free(key->syms[i]);
-                free(key->symsMapIndex[i]);
-                key->symsMapIndex[i] = NULL;
+                darray_free(key->symsMapIndex[i]);
                 continue;
             }
             memcpy(key->symsMapNumEntries[i], key->symsMapNumEntries[0],
@@ -1828,9 +1805,11 @@ PrepareKeyDef(KeyInfo * key)
             identical = false;
             break;
         }
-        if ((key->symsMapIndex[i] != key->symsMapIndex[0]) &&
-            (key->symsMapIndex[i] == NULL || key->symsMapIndex[0] == NULL ||
-             memcmp(key->symsMapIndex[i], key->symsMapIndex[0],
+        if (!darray_same(key->symsMapIndex[i], key->symsMapIndex[0]) &&
+            (darray_empty(key->symsMapIndex[i]) ||
+             darray_empty(key->symsMapIndex[0]) ||
+             memcmp(darray_mem(key->symsMapIndex[i], 0),
+                    darray_mem(key->symsMapIndex[0], 0),
                     key->numLevels[0] * sizeof(int))))
         {
             identical = false;
@@ -1860,8 +1839,7 @@ PrepareKeyDef(KeyInfo * key)
         {
             key->numLevels[i] = 0;
             darray_free(key->syms[i]);
-            free(key->symsMapIndex[i]);
-            key->symsMapIndex[i] = NULL;
+            darray_free(key->symsMapIndex[i]);
             free(key->symsMapNumEntries[i]);
             key->symsMapNumEntries[i] = NULL;
             free(key->acts[i]);
@@ -2026,7 +2004,8 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
                 if (tmp < key->numLevels[i] && key->symsMapNumEntries[i][tmp])
                 {
                     memcpy(&sym_map->syms[symIndex],
-                           darray_mem(key->syms[i], key->symsMapIndex[i][tmp]),
+                           darray_mem(key->syms[i],
+                                      darray_item(key->symsMapIndex[i], tmp)),
                            key->symsMapNumEntries[i][tmp] *
                             sizeof(xkb_keysym_t));
                     sym_map->sym_index[(i * width) + tmp] = symIndex;
