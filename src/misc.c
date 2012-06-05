@@ -261,11 +261,9 @@ XkbcFindKeycodeByName(struct xkb_keymap *keymap, const char *name,
         return 0;
 
 
-    for (i = 0; i < darray_size(keymap->names->key_aliases); i++) {
-        alias = &darray_item(keymap->names->key_aliases, i);
+    darray_foreach(alias, keymap->names->key_aliases)
         if (strncmp(name, alias->alias, XkbKeyNameLength) == 0)
             return XkbcFindKeycodeByName(keymap, alias->real, false);
-    }
 
     return 0;
 }

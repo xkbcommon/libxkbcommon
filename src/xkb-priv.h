@@ -401,7 +401,7 @@ struct xkb_keymap {
      (XkbKeyGroupsWidth(d, k) * XkbKeyNumGroups(d, k)) : \
      1)
 #define XkbKeyActionsPtr(d, k) \
-    (&darray_item((d)->server->acts, darray_item((d)->server->key_acts, k)))
+    (darray_mem((d)->server->acts, darray_item((d)->server->key_acts, k)))
 #define XkbKeyAction(d, k, n) \
     (XkbKeyHasActions(d, k) ? &XkbKeyActionsPtr(d, k)[n] : NULL)
 #define XkbKeyActionEntry(d, k, sl, g) \

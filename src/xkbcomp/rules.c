@@ -263,7 +263,7 @@ static void
 match_mapping_line(darray_char *line, struct mapping *mapping)
 {
     char *tok;
-    char *str = &darray_item(*line, 1);
+    char *str = darray_mem(*line, 1);
     unsigned present = 0, layout_ndx_present = 0, variant_ndx_present = 0;
     int i, tmp;
     size_t len;
@@ -372,7 +372,7 @@ static bool
 match_group_line(darray_char *line, struct group *group)
 {
     int i;
-    char *name = strchr(&darray_item(*line, 0), '$');
+    char *name = strchr(darray_mem(*line, 0), '$');
     char *words = strchr(name, ' ');
 
     if (!words)
@@ -421,7 +421,7 @@ match_rule_line(darray_char *line, struct mapping *mapping,
         return false;
     }
 
-    str = &darray_item(*line, 0);
+    str = darray_mem(*line, 0);
 
     for (nread = 0; (tok = strtok_r(str, " ", &strtok_buf)) != NULL; nread++) {
         str = NULL;
@@ -443,7 +443,7 @@ match_rule_line(darray_char *line, struct mapping *mapping,
     }
 
     if (nread < mapping->num_maps) {
-        WARN("Too few words on a line: %s\n", &darray_item(*line, 0));
+        WARN("Too few words on a line: %s\n", darray_mem(*line, 0));
         ACTION("line ignored\n");
         return false;
     }

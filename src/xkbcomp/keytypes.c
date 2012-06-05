@@ -127,15 +127,8 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
     {
         info->dflt = from->dflt;
 
-        darray_init(info->dflt.entries);
-        darray_from_items(info->dflt.entries,
-                          &darray_item(from->dflt.entries, 0),
-                          darray_size(from->dflt.entries));
-
-        darray_init(info->dflt.lvlNames);
-        darray_from_items(info->dflt.lvlNames,
-                          &darray_item(from->dflt.lvlNames, 0),
-                          darray_size(from->dflt.lvlNames));
+        darray_copy(info->dflt.entries, from->dflt.entries);
+        darray_copy(info->dflt.lvlNames, from->dflt.lvlNames);
 
         if (from->dflt.preserve)
         {
@@ -163,9 +156,7 @@ static void
 FreeKeyTypeInfo(KeyTypeInfo * type)
 {
     darray_free(type->entries);
-    darray_init(type->entries);
     darray_free(type->lvlNames);
-    darray_init(type->lvlNames);
     if (type->preserve != NULL)
     {
         ClearCommonInfo(&type->preserve->defs);

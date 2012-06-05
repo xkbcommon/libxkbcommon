@@ -281,11 +281,8 @@ ClearKeyNamesInfo(KeyNamesInfo * info)
     info->computedMax = info->explicitMax = info->explicitMin = 0;
     info->computedMin = XKB_KEYCODE_MAX;
     darray_free(info->names);
-    darray_init(info->names);
     darray_free(info->files);
-    darray_init(info->files);
     darray_free(info->has_alt_forms);
-    darray_init(info->has_alt_forms);
     if (info->leds)
         ClearIndicatorNameInfo(info->leds, info);
     if (info->aliases)

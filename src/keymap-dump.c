@@ -339,12 +339,10 @@ write_keycodes(struct xkb_keymap *keymap, char **buf, size_t *size,
     }
 
 
-    for (i = 0; i < darray_size(keymap->names->key_aliases); i++) {
-        alias = &darray_item(keymap->names->key_aliases, i);
+    darray_foreach(alias, keymap->names->key_aliases)
         write_buf(keymap, buf, size, offset, "\t\talias %6s = %6s;\n",
                   XkbcKeyNameText(alias->alias),
                   XkbcKeyNameText(alias->real));
-    }
 
     write_buf(keymap, buf, size, offset, "\t};\n\n");
     return true;
@@ -354,14 +352,13 @@ static bool
 write_types(struct xkb_keymap *keymap, char **buf, size_t *size,
             size_t *offset)
 {
-    int i, n;
+    int n;
     struct xkb_key_type *type;
 
     write_buf(keymap, buf, size, offset, "\txkb_types {\n\n");
     write_vmods(keymap, buf, size, offset);
 
-    for (i = 0; i < darray_size(keymap->map->types); i++) {
-        type = &darray_item(keymap->map->types, i);
+    darray_foreach(type, keymap->map->types) {
 	write_buf(keymap, buf, size, offset, "\t\ttype \"%s\" {\n",
 	          type->name);
 	write_buf(keymap, buf, size, offset, "\t\t\tmodifiers= %s;\n",
@@ -643,9 +640,8 @@ write_compat(struct xkb_keymap *keymap, char **buf, size_t *size,
     write_buf(keymap, buf, size, offset, "\t\tinterpret.repeat= false;\n");
     write_buf(keymap, buf, size, offset, "\t\tinterpret.locking= false;\n");
 
-    for (i = 0; i < darray_size(keymap->compat->sym_interpret); i++) {
+    darray_foreach(interp, keymap->compat->sym_interpret) {
         char keysym_name[64];
-        interp = &darray_item(keymap->compat->sym_interpret, i);
 
         if (interp->sym == XKB_KEY_NoSymbol)
             sprintf(keysym_name, "Any");

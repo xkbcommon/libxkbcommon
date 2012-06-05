@@ -442,7 +442,7 @@ AppendMultiKeysymList(ExprDef * list, ExprDef * append)
     darray_append(list->value.list.symsMapIndex, nSyms);
     darray_append(list->value.list.symsNumEntries, numEntries);
     darray_append_items(list->value.list.syms,
-                        &darray_item(append->value.list.syms, 0),
+                        darray_mem(append->value.list.syms, 0),
                         numEntries);
 
     darray_resize(append->value.list.syms, 0);

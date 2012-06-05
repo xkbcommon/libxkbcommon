@@ -130,10 +130,7 @@ XkbcCopyKeyType(const struct xkb_key_type *from, struct xkb_key_type *into)
 
     *into = *from;
 
-    darray_init(into->map);
-    darray_from_items(into->map,
-                      &darray_item(from->map, 0),
-                      darray_size(from->map));
+    darray_copy(into->map, from->map);
 
     if (from->preserve && !darray_empty(into->map)) {
         into->preserve = calloc(darray_size(into->map),
@@ -161,8 +158,7 @@ bool
 XkbcResizeKeySyms(struct xkb_keymap *keymap, xkb_keycode_t key,
                   unsigned int needed)
 {
-    struct xkb_sym_map *sym_map =
-        &darray_item(keymap->map->key_sym_map, key);
+    struct xkb_sym_map *sym_map = &darray_item(keymap->map->key_sym_map, key);
 
     if (sym_map->size_syms >= needed)
         return true;
@@ -212,8 +208,8 @@ XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t key,
      * new space.
      */
     if (old_ndx != 0)
-        memcpy(&darray_item(keymap->server->acts, new_ndx),
-               &darray_item(keymap->server->acts, old_ndx),
+        memcpy(darray_mem(keymap->server->acts, new_ndx),
+               darray_mem(keymap->server->acts, old_ndx),
                old_num_acts * sizeof(union xkb_action));
 
     return XkbKeyActionsPtr(keymap, key);

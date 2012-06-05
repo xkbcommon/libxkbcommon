@@ -58,6 +58,10 @@
  *     size_t darray_alloc(darray(T) arr);
  *     bool   darray_empty(darray(T) arr);
  *
+ *     // Access raw memory, starting from the item in offset.
+ *     // Not safe, be careful, etc.
+ *     T*     darray_mem(darray(T) arr, size_t offset);
+ *
  * Insertion (single item):
  *
  *     void   darray_append(darray(T) arr, T item);
@@ -121,10 +125,11 @@
 #define darray(type) struct {type *item; size_t size; size_t alloc;}
 
 #define darray_new() {0,0,0}
-#define darray_lit(c_array) {(c_array), sizeof(c_array) / sizeof(*(c_array)), 0}
 #define darray_init(arr) do {(arr).item=0; (arr).size=0; (arr).alloc=0;} while(0)
-#define darray_free(arr) do {free((arr).item);} while(0)
+#define darray_free(arr) do {free((arr).item); darray_init(arr);} while(0)
 
+/* Only use for immutable darray - e.g. for static const initialzers. */
+#define darray_lit(c_array) {(c_array), sizeof(c_array) / sizeof(*(c_array)), 0}
 
 /*
  * Typedefs for darrays of common types.  These are useful
@@ -163,6 +168,8 @@ typedef darray(unsigned long)  darray_ulong;
 #define darray_alloc(arr)   ((arr).alloc)
 #define darray_empty(arr)   ((arr).size == 0)
 
+#define darray_mem(arr, offset) ((arr).item + (offset))
+#define darray_same(arr1, arr2) ((arr1).item == (arr2).item)
 
 /*** Insertion (single item) ***/
 
@@ -234,6 +241,7 @@ typedef darray(unsigned long)  darray_ulong;
 
 #define darray_from_items(arr, items, count) do {size_t __count = (count); darray_resize(arr, __count); memcpy((arr).item, items, __count*sizeof(*(arr).item));} while(0)
 #define darray_from_c(arr, c_array) darray_from_items(arr, c_array, sizeof(c_array)/sizeof(*(c_array)))
+#define darray_copy(arr_to, arr_from) darray_from_items(arr_to, (arr_from).item, (arr_from).size)
 
 
 /*** String buffer ***/
