@@ -35,6 +35,7 @@
 
 /* Needed to work with the typechecker. */
 typedef darray(xkb_keysym_t) darray_xkb_keysym_t;
+typedef darray(union xkb_action) darray_xkb_action;
 
 #define	RepeatYes	1
 #define	RepeatNo	0
@@ -74,7 +75,8 @@ typedef struct _KeyInfo
      */
     darray(size_t) symsMapNumEntries[XkbNumKbdGroups];
 
-    union xkb_action *acts[XkbNumKbdGroups];
+    darray_xkb_action acts[XkbNumKbdGroups];
+
     xkb_atom_t types[XkbNumKbdGroups];
     unsigned repeat;
     struct xkb_behavior behavior;
@@ -105,7 +107,7 @@ InitKeyInfo(KeyInfo * info)
         darray_init(info->syms[i]);
         darray_init(info->symsMapIndex[i]);
         darray_init(info->symsMapNumEntries[i]);
-        info->acts[i] = NULL;
+        darray_init(info->acts[i]);
     }
     info->dfltType = XKB_ATOM_NONE;
     info->behavior.type = XkbKB_Default;
@@ -135,8 +137,7 @@ FreeKeyInfo(KeyInfo * info)
         darray_free(info->syms[i]);
         darray_free(info->symsMapIndex[i]);
         darray_free(info->symsMapNumEntries[i]);
-        free(info->acts[i]);
-        info->acts[i] = NULL;
+        darray_free(info->acts[i]);
     }
     info->dfltType = XKB_ATOM_NONE;
     info->behavior.type = XkbKB_Default;
@@ -157,44 +158,25 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, bool clearOld)
 
     *new = *old;
     new->defs.next = NULL;
-    if (clearOld)
-    {
-        for (i = 0; i < XkbNumKbdGroups; i++)
-        {
+
+    if (clearOld) {
+        for (i = 0; i < XkbNumKbdGroups; i++) {
             old->numLevels[i] = 0;
             darray_init(old->symsMapIndex[i]);
             darray_init(old->symsMapNumEntries[i]);
             darray_init(old->syms[i]);
-            old->acts[i] = NULL;
+            darray_init(old->acts[i]);
         }
     }
-    else
-    {
-        unsigned int width;
-        for (i = 0; i < XkbNumKbdGroups; i++)
-        {
-            width = new->numLevels[i];
-
+    else {
+        for (i = 0; i < XkbNumKbdGroups; i++) {
             darray_copy(new->syms[i], old->syms[i]);
             darray_copy(new->symsMapIndex[i], old->symsMapIndex[i]);
             darray_copy(new->symsMapNumEntries[i], old->symsMapNumEntries[i]);
-
-            if (old->acts[i] != NULL)
-            {
-                new->acts[i] = uTypedCalloc(width, union xkb_action);
-                if (!new->acts[i])
-                {
-                    darray_free(new->syms[i]);
-                    darray_free(new->symsMapIndex[i]);
-                    darray_free(new->symsMapNumEntries[i]);
-                    new->numLevels[i] = 0;
-                    return false;
-                }
-                memcpy(new->acts[i], old->acts[i],
-                       width * sizeof(union xkb_action));
-            }
+            darray_copy(new->acts[i], old->acts[i]);
         }
     }
+
     return true;
 }
 
@@ -276,8 +258,7 @@ ResizeKeyGroup(KeyInfo * key, unsigned int group, unsigned int numLevels,
         darray_resize0(key->syms[group], sizeSyms);
 
     if (darray_empty(key->symsMapIndex[group]) ||
-        key->numLevels[group] < numLevels)
-    {
+        key->numLevels[group] < numLevels) {
         darray_resize(key->symsMapIndex[group], numLevels);
         for (i = key->numLevels[group]; i < numLevels; i++)
             darray_item(key->symsMapIndex[group], i) = -1;
@@ -287,19 +268,14 @@ ResizeKeyGroup(KeyInfo * key, unsigned int group, unsigned int numLevels,
         key->numLevels[group] < numLevels)
         darray_resize0(key->symsMapNumEntries[group], numLevels);
 
-    if ((forceActions &&
-         (key->numLevels[group] < numLevels || (key->acts[group] == NULL))) ||
-        (key->numLevels[group] < numLevels && (key->acts[group] != NULL)))
-    {
-        key->acts[group] = uTypedRecalloc(key->acts[group],
-                                          key->numLevels[group],
-                                          numLevels,
-                                          union xkb_action);
-        if (!key->acts[group])
-            return false;
-    }
+    if ((forceActions && (key->numLevels[group] < numLevels ||
+                          darray_empty(key->acts[group]))) ||
+        (key->numLevels[group] < numLevels && !darray_empty(key->acts[group])))
+        darray_resize0(key->acts[group], numLevels);
+
     if (key->numLevels[group] < numLevels)
         key->numLevels[group] = numLevels;
+
     return true;
 }
 
@@ -315,7 +291,7 @@ MergeKeyGroups(SymbolsInfo * info,
 {
     darray_xkb_keysym_t resultSyms;
     enum key_group_selector using = NONE;
-    union xkb_action *resultActs;
+    darray_xkb_action resultActs;
     unsigned int resultWidth;
     unsigned int resultSize = 0;
     int cur_idx = 0;
@@ -347,30 +323,29 @@ MergeKeyGroups(SymbolsInfo * info,
             darray_item(into->symsMapIndex[group], i) = -1;
     }
 
-    if ((resultActs == NULL) && (into->acts[group] || from->acts[group]))
+    if (darray_empty(resultActs) && (!darray_empty(into->acts[group]) ||
+                                     !darray_empty(from->acts[group])))
     {
-        resultActs = uTypedCalloc(resultWidth, union xkb_action);
-        if (!resultActs)
-        {
-            WSGO("Could not allocate actions for group merge\n");
-            ACTION("Group %d of key %s not merged\n", group,
-                    longText(into->name));
-            return false;
-        }
+        darray_resize0(resultActs, resultWidth);
         for (i = 0; i < resultWidth; i++)
         {
-            union xkb_action *fromAct, *toAct;
-            fromAct = (from->acts[group] ? &from->acts[group][i] : NULL);
-            toAct = (into->acts[group] ? &into->acts[group][i] : NULL);
+            union xkb_action *fromAct = NULL, *toAct = NULL;
+
+            if (!darray_empty(from->acts[group]))
+                fromAct = &darray_item(from->acts[group], i);
+
+            if (!darray_empty(into->acts[group]))
+                toAct = &darray_item(into->acts[group], i);
+
             if (((fromAct == NULL) || (fromAct->type == XkbSA_NoAction))
                 && (toAct != NULL))
             {
-                resultActs[i] = *toAct;
+                darray_item(resultActs, i) = *toAct;
             }
             else if (((toAct == NULL) || (toAct->type == XkbSA_NoAction))
                      && (fromAct != NULL))
             {
-                resultActs[i] = *fromAct;
+                darray_item(resultActs, i) = *fromAct;
             }
             else
             {
@@ -395,7 +370,7 @@ MergeKeyGroups(SymbolsInfo * info,
                             XkbcActionTypeText(ignore->type));
                 }
                 if (use)
-                    resultActs[i] = *use;
+                    darray_item(resultActs, i) = *use;
             }
         }
     }
@@ -503,10 +478,10 @@ MergeKeyGroups(SymbolsInfo * info,
     }
 
 out:
-    if (resultActs != into->acts[group])
-        free(into->acts[group]);
-    if (resultActs != from->acts[group])
-        free(from->acts[group]);
+    if (!darray_same(resultActs, into->acts[group]))
+        darray_free(into->acts[group]);
+    if (!darray_same(resultActs, from->acts[group]))
+        darray_free(from->acts[group]);
     into->numLevels[group] = resultWidth;
     if (!darray_same(resultSyms, into->syms[group]))
         darray_free(into->syms[group]);
@@ -517,7 +492,7 @@ out:
     darray_free(from->symsMapIndex[group]);
     darray_free(from->symsMapNumEntries[group]);
     into->acts[group] = resultActs;
-    from->acts[group] = NULL;
+    darray_init(from->acts[group]);
     if (!darray_empty(into->syms[group]))
         into->symsDefined |= (1 << group);
     from->symsDefined &= ~(1 << group);
@@ -542,7 +517,7 @@ MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
             if (into->numLevels[i] != 0)
             {
                 darray_free(into->syms[i]);
-                free(into->acts[i]);
+                darray_free(into->acts[i]);
             }
         }
         *into = *from;
@@ -567,12 +542,12 @@ MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
                 darray_init(from->syms[i]);
                 darray_init(from->symsMapIndex[i]);
                 darray_init(from->symsMapNumEntries[i]);
-                from->acts[i] = NULL;
+                darray_init(from->acts[i]);
                 from->numLevels[i] = 0;
                 from->symsDefined &= ~(1 << i);
                 if (!darray_empty(into->syms[i]))
                     into->defs.defined |= _Key_Syms;
-                if (into->acts[i])
+                if (!darray_empty(into->acts[i]))
                     into->defs.defined |= _Key_Acts;
             }
             else
@@ -581,7 +556,7 @@ MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
                 {
                     if (!darray_empty(into->syms[i]))
                         collide |= _Key_Syms;
-                    if (into->acts[i])
+                    if (!darray_empty(into->acts[i]))
                         collide |= _Key_Acts;
                 }
                 MergeKeyGroups(info, into, from, (unsigned) i);
@@ -1058,7 +1033,7 @@ AddActionsToKey(KeyInfo *key, struct xkb_keymap *keymap, ExprDef *arrayNdx,
                 longText(key->name));
         return false;
     }
-    if (key->acts[ndx] != NULL)
+    if (!darray_empty(key->acts[ndx]))
     {
         WSGO("Actions for key %s, group %d already defined\n",
               longText(key->name), ndx);
@@ -1073,8 +1048,8 @@ AddActionsToKey(KeyInfo *key, struct xkb_keymap *keymap, ExprDef *arrayNdx,
         WSGO("Action list but not actions in AddActionsToKey\n");
         return false;
     }
-    if (((key->numLevels[ndx] < nActs) || (key->acts[ndx] == NULL)) &&
-        (!ResizeKeyGroup(key, ndx, nActs, nActs, true)))
+    if ((key->numLevels[ndx] < nActs || darray_empty(key->acts[ndx])) &&
+        !ResizeKeyGroup(key, ndx, nActs, nActs, true))
     {
         WSGO("Could not resize group %d of key %s\n", ndx,
               longText(key->name));
@@ -1083,7 +1058,7 @@ AddActionsToKey(KeyInfo *key, struct xkb_keymap *keymap, ExprDef *arrayNdx,
     }
     key->actsDefined |= (1 << ndx);
 
-    toAct = (struct xkb_any_action *) key->acts[ndx];
+    toAct = (struct xkb_any_action *) darray_mem(key->acts[ndx], 0);
     act = value->value.child;
     for (i = 0; i < nActs; i++, toAct++)
     {
@@ -1423,8 +1398,7 @@ SetExplicitGroup(SymbolsInfo *info, KeyInfo *key)
         {
             key->numLevels[i] = 0;
             darray_free(key->syms[i]);
-            free(key->acts[i]);
-            key->acts[i] = NULL;
+            darray_free(key->acts[i]);
             key->types[i] = 0;
         }
     }
@@ -1439,7 +1413,7 @@ SetExplicitGroup(SymbolsInfo *info, KeyInfo *key)
     key->symsMapNumEntries[group] = key->symsMapNumEntries[0];
     darray_init(key->symsMapNumEntries[0]);
     key->acts[group] = key->acts[0];
-    key->acts[0] = NULL;
+    darray_init(key->acts[0]);
     key->types[group] = key->types[0];
     key->types[0] = 0;
     return true;
@@ -1731,13 +1705,9 @@ PrepareKeyDef(KeyInfo * key)
             }
             key->typesDefined |= 1 << i;
         }
-        if ((key->actsDefined & 1) && key->acts[0])
+        if ((key->actsDefined & 1) && !darray_empty(key->acts[0]))
         {
-            key->acts[i] = uTypedCalloc(width, union xkb_action);
-            if (key->acts[i] == NULL)
-                continue;
-            memcpy(key->acts[i], key->acts[0],
-                   width * sizeof(union xkb_action));
+            darray_copy(key->acts[i], key->acts[0]);
             key->actsDefined |= 1 << i;
         }
         if ((key->symsDefined & 1) && !darray_empty(key->syms[0]))
@@ -1793,10 +1763,11 @@ PrepareKeyDef(KeyInfo * key)
             identical = false;
             continue;
         }
-        if ((key->acts[i] != key->acts[0]) &&
-            (key->acts[i] == NULL || key->acts[0] == NULL ||
-             memcmp(key->acts[i], key->acts[0],
-                    sizeof(union xkb_action) * key->numLevels[0])))
+        if (!darray_same(key->acts[i], key->acts[0]) &&
+            (darray_empty(key->acts[i]) || darray_empty(key->acts[0]) ||
+             memcmp(darray_mem(key->acts[i], 0),
+                    darray_mem(key->acts[0], 0),
+                    key->numLevels[0] * sizeof(union xkb_action))))
         {
             identical = false;
             break;
@@ -1810,8 +1781,7 @@ PrepareKeyDef(KeyInfo * key)
             darray_free(key->syms[i]);
             darray_free(key->symsMapIndex[i]);
             darray_free(key->symsMapNumEntries[i]);
-            free(key->acts[i]);
-            key->acts[i] = NULL;
+            darray_free(key->acts[i]);
             key->types[i] = 0;
         }
         key->symsDefined &= 1;
@@ -1860,7 +1830,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
             && (((key->symsDefined | key->actsDefined) & (1 << i))
                 || (key->typesDefined) & (1 << i)))
             nGroups = i + 1;
-        if (key->acts[i])
+        if (!darray_empty(key->acts[i]))
             haveActions = true;
         autoType = false;
         /* Assign the type to the key, if it is missing. */
@@ -1986,10 +1956,10 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
                     sym_map->sym_index[(i * width) + tmp] = -1;
                     sym_map->num_syms[(i * width) + tmp] = 0;
                 }
-                if ((outActs != NULL) && (key->acts[i] != NULL))
+                if (outActs != NULL && !darray_empty(key->acts[i]))
                 {
                     if (tmp < key->numLevels[i])
-                        outActs[tmp] = key->acts[i][tmp];
+                        outActs[tmp] = darray_item(key->acts[i], tmp);
                     else
                         outActs[tmp].type = XkbSA_NoAction;
                 }
