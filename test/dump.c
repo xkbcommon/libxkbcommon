@@ -52,8 +52,8 @@ int main(int argc, char *argv[])
     char *path;
     int fd;
 
-    assert(srcdir);
-    assert(asprintf(&path, "%s/test/dump.data", srcdir) != -1);
+    srcdir = srcdir ? srcdir : ".";
+    assert(asprintf(&path, "%s/test/data/dump.data", srcdir) != -1);
     fd = open(path, O_RDONLY);
     assert(fd >= 0);
     assert(stat(path, &stat_buf) == 0);
@@ -72,9 +72,8 @@ int main(int argc, char *argv[])
 
     if (strcmp(as_string, expected) != 0) {
         printf("dumped map differs from expected!\n\n");
-        printf("length: got %lu, expected %lu\n",
-               (unsigned long) strlen(as_string),
-               (unsigned long) strlen(expected));
+        printf("length: got %zu, expected %zu\n",
+               strlen(as_string), strlen(expected));
         printf("result:\n%s\n", as_string);
         assert(0);
     }

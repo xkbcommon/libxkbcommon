@@ -98,8 +98,8 @@ do { \
         /* If it was truncated, embiggen the string and roll from the top. */ \
         if (!do_realloc(buf, size, *offset, _printed)) { \
             fprintf(stderr, \
-                    "xkbcommon: failed to allocate %lu bytes for keymap\n", \
-                    (unsigned long) *size); \
+                    "xkbcommon: failed to allocate %zu bytes for keymap\n", \
+                    *size); \
             free(*buf); \
             *buf = NULL; \
             _ret = false; \
