@@ -1942,7 +1942,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
                 if (tmp < key->numLevels[i] &&
                     darray_item(key->symsMapNumEntries[i], tmp) != 0)
                 {
-                    memcpy(&sym_map->syms[symIndex],
+                    memcpy(darray_mem(sym_map->syms, symIndex),
                            darray_mem(key->syms[i],
                                       darray_item(key->symsMapIndex[i], tmp)),
                            darray_item(key->symsMapNumEntries[i], tmp) * sizeof(xkb_keysym_t));

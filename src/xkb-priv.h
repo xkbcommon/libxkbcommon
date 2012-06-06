@@ -274,8 +274,7 @@ struct xkb_sym_map {
 	unsigned char	 width;
         int              *sym_index; /* per level/group index into 'syms' */
         unsigned int     *num_syms; /* per level/group */
-        xkb_keysym_t     *syms;
-        unsigned int     size_syms; /* size of 'syms' */
+        darray(xkb_keysym_t) syms;
 };
 
 struct xkb_client_map {
@@ -389,7 +388,7 @@ struct xkb_keymap {
 #define XkbKeyNumSyms(d, k, g, sl) \
     (darray_item((d)->map->key_sym_map, k).num_syms[(g * XkbKeyGroupsWidth(d, k)) + sl])
 #define XkbKeySym(d, k, n) \
-    (&darray_item((d)->map->key_sym_map, k).syms[n])
+    (&darray_item(darray_item((d)->map->key_sym_map, k).syms, n))
 #define XkbKeySymOffset(d, k, g, sl) \
     (darray_item((d)->map->key_sym_map, k).sym_index[(g * XkbKeyGroupsWidth(d, k)) + sl])
 #define XkbKeySymEntry(d, k, g, sl) \

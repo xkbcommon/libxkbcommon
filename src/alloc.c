@@ -158,19 +158,7 @@ bool
 XkbcResizeKeySyms(struct xkb_keymap *keymap, xkb_keycode_t key,
                   unsigned int needed)
 {
-    struct xkb_sym_map *sym_map = &darray_item(keymap->map->key_sym_map, key);
-
-    if (sym_map->size_syms >= needed)
-        return true;
-
-    sym_map->syms = uTypedRecalloc(sym_map->syms, sym_map->size_syms,
-                                   needed, xkb_keysym_t);
-    if (!sym_map->syms) {
-        sym_map->size_syms = 0;
-        return false;
-    }
-
-    sym_map->size_syms = needed;
+    darray_resize0(darray_item(keymap->map->key_sym_map, key).syms, needed);
     return true;
 }
 
@@ -241,7 +229,7 @@ XkbcFreeClientMap(struct xkb_keymap *keymap)
     darray_foreach(sym_map, map->key_sym_map) {
         free(sym_map->sym_index);
         free(sym_map->num_syms);
-        free(sym_map->syms);
+        darray_free(sym_map->syms);
     }
     darray_free(map->key_sym_map);
 
