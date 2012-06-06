@@ -74,6 +74,24 @@ struct xkb_filter {
     struct xkb_filter *next;
 };
 
+struct xkb_state {
+    xkb_group_index_t base_group; /**< depressed */
+    xkb_group_index_t latched_group;
+    xkb_group_index_t locked_group;
+    xkb_group_index_t group; /**< effective */
+
+    xkb_mod_mask_t base_mods; /**< depressed */
+    xkb_mod_mask_t latched_mods;
+    xkb_mod_mask_t locked_mods;
+    xkb_mod_mask_t mods; /**< effective */
+
+    uint32_t leds;
+
+    int refcnt;
+    darray(struct xkb_filter) filters;
+    struct xkb_keymap *keymap;
+};
+
 static union xkb_action *
 xkb_key_get_action(struct xkb_state *state, xkb_keycode_t key)
 {
@@ -96,35 +114,24 @@ xkb_key_get_action(struct xkb_state *state, xkb_keycode_t key)
 static struct xkb_filter *
 xkb_filter_new(struct xkb_state *state)
 {
-    int i;
-    int old_size = state->num_filters;
-    struct xkb_filter *filters = state->filters;
+    int old_size = darray_size(state->filters);
+    struct xkb_filter *filter = NULL, *iter;
 
-    for (i = 0; i < state->num_filters; i++) {
-        if (filters[i].func)
+    darray_foreach(iter, state->filters) {
+        if (iter->func)
             continue;
-        filters[i].state = state;
-        filters[i].refcnt = 1;
-        return &filters[i];
+        filter = iter;
+        break;
     }
 
-    if (state->num_filters > 0)
-        state->num_filters *= 2;
-    else
-        state->num_filters = 4;
-    filters = realloc(filters, state->num_filters * sizeof(*filters));
-    if (!filters) { /* WSGO */
-        state->num_filters = old_size;
-        return NULL;
+    if (!filter) {
+        darray_resize0(state->filters, darray_size(state->filters) + 1);
+        filter = &darray_item(state->filters, old_size);
     }
-    state->filters = filters;
-    memset(&filters[old_size], 0,
-           (state->num_filters - old_size) * sizeof(*filters));
 
-    filters[old_size].state = state;
-    filters[old_size].refcnt = 1;
-
-    return &filters[old_size];
+    filter->state = state;
+    filter->refcnt = 1;
+    return filter;
 }
 
 /***====================================================================***/
@@ -412,17 +419,16 @@ static void
 xkb_filter_apply_all(struct xkb_state *state, xkb_keycode_t key,
                      enum xkb_key_direction direction)
 {
-    struct xkb_filter *filters = state->filters;
+    struct xkb_filter *filter;
     union xkb_action *act = NULL;
     int send = 1;
-    int i;
 
     /* First run through all the currently active filters and see if any of
      * them have claimed this event. */
-    for (i = 0; i < state->num_filters; i++) {
-        if (!filters[i].func)
+    darray_foreach(filter, state->filters) {
+        if (!filter->func)
             continue;
-        send &= (*filters[i].func)(&filters[i], key, direction);
+        send &= filter->func(filter, key, direction);
     }
 
     if (!send || direction == XKB_KEY_UP)
@@ -489,7 +495,7 @@ xkb_state_unref(struct xkb_state *state)
         return;
 
     xkb_map_unref(state->keymap);
-    free(state->filters);
+    darray_free(state->filters);
     free(state);
 }
 

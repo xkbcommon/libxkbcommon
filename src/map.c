@@ -244,10 +244,13 @@ _X_EXPORT unsigned int
 xkb_key_get_level(struct xkb_state *state, xkb_keycode_t key,
                   unsigned int group)
 {
-    struct xkb_keymap *keymap = state->keymap;
+    struct xkb_keymap *keymap = xkb_state_get_map(state);
     struct xkb_key_type *type = XkbKeyType(keymap, key, group);
     struct xkb_kt_map_entry *entry;
-    unsigned int active_mods = state->mods & type->mods.mask;
+    unsigned int active_mods;
+
+    active_mods = xkb_state_serialize_mods(state, XKB_STATE_EFFECTIVE);
+    active_mods &= type->mods.mask;
 
     darray_foreach(entry, type->map) {
         if (!entry->active)
@@ -267,10 +270,10 @@ xkb_key_get_level(struct xkb_state *state, xkb_keycode_t key,
 _X_EXPORT unsigned int
 xkb_key_get_group(struct xkb_state *state, xkb_keycode_t key)
 {
-    struct xkb_keymap *keymap = state->keymap;
+    struct xkb_keymap *keymap = xkb_state_get_map(state);
     unsigned int info = XkbKeyGroupInfo(keymap, key);
     unsigned int num_groups = XkbKeyNumGroups(keymap, key);
-    unsigned int ret = state->group;
+    unsigned int ret = xkb_state_serialize_group(state, XKB_STATE_EFFECTIVE);
 
     if (ret < XkbKeyNumGroups(keymap, key))
         return ret;
@@ -328,7 +331,7 @@ _X_EXPORT int
 xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
                  const xkb_keysym_t **syms_out)
 {
-    struct xkb_keymap *keymap = state->keymap;
+    struct xkb_keymap *keymap = xkb_state_get_map(state);
     int group;
     int level;
 

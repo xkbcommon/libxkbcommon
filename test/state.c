@@ -39,20 +39,26 @@
 static void
 print_state(struct xkb_state *state)
 {
+    struct xkb_keymap *keymap;
     xkb_group_index_t group;
     xkb_mod_index_t mod;
     xkb_led_index_t led;
 
-    if (!state->group && !state->mods && !state->leds) {
+    group = xkb_state_serialize_group(state, XKB_STATE_EFFECTIVE);
+    mod = xkb_state_serialize_mods(state, XKB_STATE_EFFECTIVE);
+    /* led = xkb_state_serialize_leds(state, XKB_STATE_EFFECTIVE); */
+    if (!group && !mod /* && !led */) {
         fprintf(stderr, "\tno state\n");
         return;
     }
 
-    for (group = 0; group < xkb_map_num_groups(state->keymap); group++) {
+    keymap = xkb_state_get_map(state);
+
+    for (group = 0; group < xkb_map_num_groups(keymap); group++) {
         if (!xkb_state_group_index_is_active(state, group, XKB_STATE_EFFECTIVE))
             continue;
         fprintf(stderr, "\tgroup %s (%d): %s%s%s%s\n",
-                xkb_map_group_get_name(state->keymap, group),
+                xkb_map_group_get_name(keymap, group),
                 group,
                 xkb_state_group_index_is_active(state, group, XKB_STATE_EFFECTIVE) ?
                     "effective " : "",
@@ -64,11 +70,11 @@ print_state(struct xkb_state *state)
                     "locked " : "");
     }
 
-    for (mod = 0; mod < xkb_map_num_mods(state->keymap); mod++) {
+    for (mod = 0; mod < xkb_map_num_mods(keymap); mod++) {
         if (!xkb_state_mod_index_is_active(state, mod, XKB_STATE_EFFECTIVE))
             continue;
         fprintf(stderr, "\tmod %s (%d): %s%s%s\n",
-                xkb_map_mod_get_name(state->keymap, mod),
+                xkb_map_mod_get_name(keymap, mod),
                 mod,
                 xkb_state_mod_index_is_active(state, mod, XKB_STATE_DEPRESSED) ?
                     "depressed " : "",
@@ -78,11 +84,11 @@ print_state(struct xkb_state *state)
                     "locked " : "");
     }
 
-    for (led = 0; led < xkb_map_num_leds(state->keymap); led++) {
+    for (led = 0; led < xkb_map_num_leds(keymap); led++) {
         if (!xkb_state_led_index_is_active(state, led))
             continue;
         fprintf(stderr, "\tled %s (%d): active\n",
-                xkb_map_led_get_name(state->keymap, led),
+                xkb_map_led_get_name(keymap, led),
                 led);
     }
 }
@@ -183,11 +189,11 @@ test_serialisation(struct xkb_keymap *keymap)
 
     assert(state);
 
-    caps = xkb_map_mod_get_index(state->keymap, XKB_MOD_NAME_CAPS);
+    caps = xkb_map_mod_get_index(keymap, XKB_MOD_NAME_CAPS);
     assert(caps != XKB_MOD_INVALID);
-    shift = xkb_map_mod_get_index(state->keymap, XKB_MOD_NAME_SHIFT);
+    shift = xkb_map_mod_get_index(keymap, XKB_MOD_NAME_SHIFT);
     assert(shift != XKB_MOD_INVALID);
-    ctrl = xkb_map_mod_get_index(state->keymap, XKB_MOD_NAME_CTRL);
+    ctrl = xkb_map_mod_get_index(keymap, XKB_MOD_NAME_CTRL);
     assert(ctrl != XKB_MOD_INVALID);
 
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);

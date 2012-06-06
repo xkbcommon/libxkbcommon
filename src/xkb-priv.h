@@ -411,24 +411,7 @@ struct xkb_keymap {
 #define XkbKeycodeInRange(d, k) \
     (((k) >= (d)->min_key_code) && ((k) <= (d)->max_key_code))
 
-struct xkb_state {
-	xkb_group_index_t base_group; /**< depressed */
-	xkb_group_index_t latched_group;
-	xkb_group_index_t locked_group;
-        xkb_group_index_t group; /**< effective */
-
-	xkb_mod_mask_t base_mods; /**< depressed */
-	xkb_mod_mask_t latched_mods;
-	xkb_mod_mask_t locked_mods;
-	xkb_mod_mask_t mods; /**< effective */
-
-        uint32_t        leds;
-
-        int refcnt;
-        void *filters;
-        int num_filters;
-        struct xkb_keymap *keymap;
-};
+struct xkb_state;
 
 typedef uint32_t xkb_atom_t;
 
