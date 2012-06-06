@@ -32,21 +32,6 @@
 
 #include "utils.h"
 
-void *
-recalloc(void *ptr, size_t old_size, size_t new_size)
-{
-    char *rtrn;
-
-    if (ptr == NULL)
-        return calloc(1, new_size);
-
-    rtrn = realloc(ptr, new_size);
-    if (rtrn && new_size > old_size)
-        memset(&rtrn[old_size], 0, new_size - old_size);
-
-    return rtrn;
-}
-
 static FILE *errorFile = NULL;
 static int outCount = 0;
 static char *preMsg = NULL;

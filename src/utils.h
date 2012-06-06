@@ -35,9 +35,6 @@
 
 #include <X11/Xfuncproto.h>
 
-extern void *
-recalloc(void *ptr, size_t old_size, size_t new_size);
-
 /*
  * We sometimes malloc strings and then expose them as const char*'s. This
  * macro is used when we free these strings in order to avoid -Wcast-qual
@@ -47,8 +44,6 @@ recalloc(void *ptr, size_t old_size, size_t new_size);
 
 #define uTypedAlloc(t)              ((t*)malloc(sizeof(t)))
 #define uTypedCalloc(n, t)          ((t*)calloc((n), sizeof(t)))
-#define uTypedRealloc(pO, n, t)     ((t*)realloc((pO), (n) * sizeof(t)))
-#define uTypedRecalloc(pO, o, n, t) ((t*)recalloc((pO), (o) * sizeof(t), (n) * sizeof(t)))
 
 #define uDupString(s)          ((s) ? strdup(s) : NULL)
 #define uStringText(s)         ((s) == NULL ? "<NullString>" : (s))
