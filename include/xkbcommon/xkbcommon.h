@@ -154,6 +154,25 @@ xkb_keysym_t
 xkb_keysym_from_name(const char *s);
 
 /**
+ * Return the printable representation of the keystring in Unicode/UTF-8.
+ * The buffer passed must be at least 7 bytes long.  The return value
+ * is the number of bytes written to the buffer.  A return value of zero
+ * means that the keysym does not have a known printable Unicode
+ * representation, and a return value of -1 means that the buffer was too
+ * small to contain the return.
+ */
+int
+xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size);
+
+/**
+ * Returns the Unicode/UTF-32 representation of the provided keysym, which is
+ * also compatible with UCS-4.  A return value of zero means the keysym does
+ * not have a known printable Unicode representation.
+*/
+uint32_t
+xkb_keysym_to_utf32(xkb_keysym_t keysym);
+
+/**
  * @defgroup context XKB contexts
  * Every keymap compilation request must have an XKB context associated with
  * it.  The context keeps around state such as the include path.

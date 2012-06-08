@@ -31,6 +31,22 @@ test_keysym(xkb_keysym_t keysym, const char *expected)
     return strcmp(s, expected) == 0;
 }
 
+static int
+test_utf8(xkb_keysym_t keysym, const char *expected)
+{
+    char s[8];
+    int ret;
+
+    ret = xkb_keysym_to_utf8(keysym, s, sizeof(s));
+    if (ret <= 0)
+        return ret;
+
+    fprintf(stderr, "Expected keysym %#x -> %s\n", keysym, expected);
+    fprintf(stderr, "Received keysym %#x -> %s\n\n", keysym, s);
+
+    return strcmp(s, expected) == 0;
+}
+
 int
 main(void)
 {
@@ -45,6 +61,16 @@ main(void)
     assert(test_keysym(0x0, "NoSymbol"));
     assert(test_keysym(0x1008FE20, "XF86Ungrab"));
     assert(test_keysym(0x01001234, "U1234"));
+
+    assert(test_utf8(XKB_KEY_y, "y"));
+    assert(test_utf8(XKB_KEY_u, "u"));
+    assert(test_utf8(XKB_KEY_m, "m"));
+    assert(test_utf8(XKB_KEY_Cyrillic_em, "м"));
+    assert(test_utf8(XKB_KEY_Cyrillic_u, "у"));
+    assert(test_utf8(XKB_KEY_exclam, "!"));
+    assert(test_utf8(XKB_KEY_oslash, "ø"));
+    assert(test_utf8(XKB_KEY_hebrew_aleph, "א"));
+    assert(test_utf8(XKB_KEY_Arabic_sheen, "ش"));
 
     return 0;
 }

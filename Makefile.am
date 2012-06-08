@@ -76,6 +76,7 @@ libxkbcommon_la_SOURCES = \
 	src/darray.h \
 	src/keymap-dump.c \
 	src/keysym.c \
+	src/keysym-utf.c \
 	src/map.c \
 	src/misc.c \
 	src/state.c \
