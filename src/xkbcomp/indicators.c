@@ -418,7 +418,7 @@ CopyIndicatorMapDefs(struct xkb_keymap *keymap, LEDInfo *leds,
             im->ctrls = led->ctrls;
             if (keymap->names != NULL)
             {
-                free(UNCONSTIFY(keymap->names->indicators[led->indicator - 1]));
+                free(keymap->names->indicators[led->indicator - 1]);
                 keymap->names->indicators[led->indicator-1] =
                     xkb_atom_strdup(keymap->ctx, led->name);
             }

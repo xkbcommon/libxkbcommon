@@ -863,7 +863,7 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap, unsigned merge)
         }
 
         for (ii = info.leds; ii; ii = (IndicatorNameInfo *)ii->defs.next) {
-            free(UNCONSTIFY(keymap->names->indicators[ii->ndx - 1]));
+            free(keymap->names->indicators[ii->ndx - 1]);
             keymap->names->indicators[ii->ndx - 1] =
                 xkb_atom_strdup(keymap->ctx, ii->name);
         }

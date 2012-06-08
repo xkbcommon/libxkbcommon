@@ -250,8 +250,8 @@ struct xkb_key_type {
     uint16_t                num_levels;
     darray(struct xkb_kt_map_entry) map;
     struct xkb_mods *             preserve;
-    const char              *name;
-    const char              **level_names;
+    char *name;
+    char **level_names;
 };
 
 struct xkb_sym_interpret {
@@ -323,9 +323,9 @@ struct xkb_key_alias {
 };
 
 struct xkb_names {
-    const char            *vmods[XkbNumVirtualMods];
-    const char            *indicators[XkbNumIndicators];
-    const char            *groups[XkbNumKbdGroups];
+    char *vmods[XkbNumVirtualMods];
+    char *indicators[XkbNumIndicators];
+    char *groups[XkbNumKbdGroups];
 
     darray(struct xkb_key_name) keys;
     darray(struct xkb_key_alias) key_aliases;
@@ -411,8 +411,6 @@ struct xkb_keymap {
 
 #define XkbKeycodeInRange(d, k) \
     (((k) >= (d)->min_key_code) && ((k) <= (d)->max_key_code))
-#define XkbNumKeys(d) \
-    ((d)->max_key_code - (d)->min_key_code + 1)
 
 struct xkb_state {
 	xkb_group_index_t base_group; /**< depressed */

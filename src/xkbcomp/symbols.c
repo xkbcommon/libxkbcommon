@@ -2213,7 +2213,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap, unsigned merge)
 
     for (i = 0; i < XkbNumKbdGroups; i++) {
         if (info.groupNames[i] != XKB_ATOM_NONE) {
-            free(UNCONSTIFY(keymap->names->groups[i]));
+            free(keymap->names->groups[i]);
             keymap->names->groups[i] = xkb_atom_strdup(keymap->ctx,
                                                        info.groupNames[i]);
         }

@@ -1053,8 +1053,8 @@ CopyDefToKeyType(struct xkb_keymap *keymap, struct xkb_key_type *type,
     type->name = xkb_atom_strdup(keymap->ctx, def->name);
 
     if (!darray_empty(def->lvlNames)) {
-        type->level_names = uTypedCalloc(darray_size(def->lvlNames),
-                                         const char *);
+        type->level_names = calloc(darray_size(def->lvlNames),
+                                   sizeof(*type->level_names));
 
         /* assert def->szNames<=def->numLevels */
         for (i = 0; i < darray_size(def->lvlNames); i++)

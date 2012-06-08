@@ -125,7 +125,7 @@ XkbcCopyKeyType(const struct xkb_key_type *from, struct xkb_key_type *into)
     darray_free(into->map);
     free(into->preserve);
     for (i = 0; i < into->num_levels; i++)
-        free(UNCONSTIFY(into->level_names[i]));
+        free(into->level_names[i]);
     free(into->level_names);
 
     *into = *from;
@@ -144,10 +144,12 @@ XkbcCopyKeyType(const struct xkb_key_type *from, struct xkb_key_type *into)
                darray_size(into->map) * sizeof(*into->preserve));
     }
 
-    if (from->level_names && (into->num_levels > 0)) {
-        into->level_names = uTypedCalloc(into->num_levels, const char *);
+    if (from->level_names && into->num_levels > 0) {
+        into->level_names = calloc(into->num_levels,
+                                   sizeof(*into->level_names));
         if (!into->level_names)
             return BadAlloc;
+
         for (i = 0; i < into->num_levels; i++)
             into->level_names[i] = strdup(from->level_names[i]);
     }
@@ -234,9 +236,9 @@ XkbcFreeClientMap(struct xkb_keymap *keymap)
         darray_free(type->map);
         free(type->preserve);
         for (j = 0; j < type->num_levels; j++)
-            free(UNCONSTIFY(type->level_names[j]));
+            free(type->level_names[j]);
         free(type->level_names);
-        free(UNCONSTIFY(type->name));
+        free(type->name);
     }
     darray_free(map->types);
 
@@ -325,7 +327,8 @@ XkbcAllocNames(struct xkb_keymap *keymap, unsigned which, size_t nTotalAliases)
 
         darray_foreach(type, keymap->map->types) {
             if (!type->level_names) {
-                type->level_names = uTypedCalloc(type->num_levels, const char *);
+                type->level_names = calloc(type->num_levels,
+                                           sizeof(*type->level_names));
                 if (!type->level_names)
                     return BadAlloc;
             }
@@ -359,18 +362,18 @@ XkbcFreeNames(struct xkb_keymap *keymap)
         darray_foreach(type, map->types) {
             int j;
             for (j = 0; j < type->num_levels; j++)
-                free(UNCONSTIFY(type->level_names[j]));
+                free(type->level_names[j]);
             free(type->level_names);
             type->level_names = NULL;
         }
     }
 
     for (i = 0; i < XkbNumVirtualMods; i++)
-        free(UNCONSTIFY(names->vmods[i]));
+        free(names->vmods[i]);
     for (i = 0; i < XkbNumIndicators; i++)
-        free(UNCONSTIFY(names->indicators[i]));
+        free(names->indicators[i]);
     for (i = 0; i < XkbNumKbdGroups; i++)
-        free(UNCONSTIFY(names->groups[i]));
+        free(names->groups[i]);
 
     darray_free(names->keys);
     darray_free(names->key_aliases);
