@@ -332,22 +332,22 @@ struct xkb_names {
 };
 
 struct xkb_controls {
-	unsigned char	num_groups;
-	unsigned char	groups_wrap;
-	struct xkb_mods	internal;
-	struct xkb_mods	ignore_lock;
-	unsigned int	enabled_ctrls;
-	unsigned short	repeat_delay;
-	unsigned short	repeat_interval;
-	unsigned short	slow_keys_delay;
-	unsigned short	debounce_delay;
-	unsigned short	ax_options;
-	unsigned short	ax_timeout;
-	unsigned short	axt_opts_mask;
-	unsigned short	axt_opts_values;
-	unsigned int	axt_ctrls_mask;
-	unsigned int	axt_ctrls_values;
-	unsigned char	*per_key_repeat;
+    unsigned char num_groups;
+    /* unsigned char groups_wrap; */
+    /* struct xkb_mods internal; */
+    /* struct xkb_mods ignore_lock; */
+    unsigned int enabled_ctrls;
+    /* unsigned short repeat_delay; */
+    /* unsigned short repeat_interval; */
+    /* unsigned short slow_keys_delay; */
+    /* unsigned short debounce_delay; */
+    /* unsigned short ax_options; */
+    /* unsigned short ax_timeout; */
+    /* unsigned short axt_opts_mask; */
+    /* unsigned short axt_opts_values; */
+    /* unsigned int axt_ctrls_mask; */
+    /* unsigned int axt_ctrls_values; */
+    unsigned char *per_key_repeat;
 };
 
 /* Common keyboard description structure */
