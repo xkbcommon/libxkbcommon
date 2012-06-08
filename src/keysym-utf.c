@@ -39,7 +39,7 @@
 #include "utils.h"
 
 struct codepair {
-    uint16_t keysym;
+    xkb_keysym_t keysym;
     uint16_t ucs;
 } keysymtab[] = {
     { 0x01a1, 0x0104 }, /*                     Aogonek Ą LATIN CAPITAL LETTER A WITH OGONEK */
@@ -829,6 +829,18 @@ struct codepair {
     { 0x20aa, 0x20aa }, /*               NewSheqelSign ₪ NEW SHEQEL SIGN */
     { 0x20ab, 0x20ab }, /*                    DongSign ₫ DONG SIGN */
     { 0x20ac, 0x20ac }, /*                    EuroSign € EURO SIGN */
+
+    { 0xff80, 0x0020 }, /*                    KP_Space   SPACE */
+    { 0xffaa, 0x002a }, /*                 KP_Multiply * ASTERISK */
+    { 0xffab, 0x002b }, /*                     KP_Plus + PLUS SIGN */
+    /* XXX: It's debatable what KP_Separator and KP_Decimal should represent,
+     *      as well as locale-specific.  So just enforce English colonial
+     *      hegemony on the world for the time being. */
+    { 0xffac, 0x002e }, /*                KP_Separator . FULL STOP */
+    { 0xffad, 0x002d }, /*                 KP_Subtract - HYPHEN-MINUS */
+    { 0xffae, 0x002e }, /*                  KP_Decimal . FULL STOP */
+    { 0xffaf, 0x002f }, /*                   KP_Divide / SOLIDUS */
+    { 0xffbd, 0x003d }, /*                    KP_Equal = EQUAL SIGN */
 };
 
 _X_EXPORT uint32_t
@@ -842,6 +854,9 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym)
     if ((keysym >= 0x0020 && keysym <= 0x007e) ||
         (keysym >= 0x00a0 && keysym <= 0x00ff))
         return keysym;
+
+    if (keysym >= 0xffb0 && keysym <= 0xffb9)
+        return keysym - (0xffb0 - 0x0030);
 
     /* also check for directly encoded 24-bit UCS characters */
     if ((keysym & 0xff000000) == 0x01000000)

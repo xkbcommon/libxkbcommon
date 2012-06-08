@@ -72,5 +72,12 @@ main(void)
     assert(test_utf8(XKB_KEY_hebrew_aleph, "א"));
     assert(test_utf8(XKB_KEY_Arabic_sheen, "ش"));
 
+    assert(test_utf8(XKB_KEY_space, " "));
+    assert(test_utf8(XKB_KEY_KP_Space, " "));
+    assert(test_utf8(XKB_KEY_9, "9"));
+    assert(test_utf8(XKB_KEY_KP_9, "9"));
+    assert(test_utf8(XKB_KEY_KP_Multiply, "*"));
+    assert(test_utf8(XKB_KEY_KP_Subtract, "-"));
+
     return 0;
 }
