@@ -253,9 +253,6 @@ xkb_key_get_level(struct xkb_state *state, xkb_keycode_t key,
     active_mods &= type->mods.mask;
 
     darray_foreach(entry, type->map) {
-        if (!entry->active)
-            continue;
-
         if (entry->mods.mask == active_mods)
             return entry->level;
     }
