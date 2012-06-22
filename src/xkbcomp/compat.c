@@ -986,10 +986,8 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, xkb_keycode_t key)
             /* Infer default key behaviours from the base level. */
             if (group == 0 && level == 0) {
                 if (!(keymap->server->explicit[key] & XkbExplicitAutoRepeatMask) &&
-                    (!interp || interp->flags & XkbSI_AutoRepeat)) {
+                    (!interp || interp->flags & XkbSI_AutoRepeat))
                         keymap->ctrls->per_key_repeat[key / 8] |= (1 << (key % 8));
-                    keymap->server->explicit[key] |= XkbExplicitAutoRepeatMask;
-                }
                 if (!(keymap->server->explicit[key] & XkbExplicitBehaviorMask) &&
                     interp && (interp->flags & XkbSI_LockingKey))
                     keymap->server->behaviors[key].type = XkbKB_Lock;
