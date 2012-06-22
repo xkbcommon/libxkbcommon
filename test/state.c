@@ -227,6 +227,18 @@ test_serialisation(struct xkb_keymap *keymap)
     xkb_state_unref(state);
 }
 
+static void
+test_repeat(struct xkb_keymap *keymap)
+{
+    xkb_keycode_t key;
+    fprintf(stderr, "%s\n", xkb_map_get_as_string(keymap));
+    for (key = keymap->min_key_code; key < keymap->max_key_code; key++)
+        if (xkb_key_repeats(keymap, key))
+            fprintf(stderr, "%d repeats!\n", key);
+    assert(!xkb_key_repeats(keymap, KEY_LEFTSHIFT + 8));
+    assert(xkb_key_repeats(keymap, KEY_A + 8));
+}
+
 int
 main(void)
 {
@@ -248,6 +260,7 @@ main(void)
 
     test_update_key(keymap);
     test_serialisation(keymap);
+    test_repeat(keymap);
 
     xkb_map_unref(keymap);
     xkb_context_unref(context);

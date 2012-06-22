@@ -367,6 +367,12 @@ xkb_group_index_t
 xkb_key_num_groups(struct xkb_keymap *keymap, xkb_keycode_t key);
 
 /**
+ * Returns 1 if the key should repeat, or 0 otherwise.
+ */
+int
+xkb_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
+
+/**
  * Returns the number of LEDs in the given map.
  */
 xkb_led_index_t

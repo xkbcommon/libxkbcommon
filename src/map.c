@@ -351,3 +351,12 @@ err:
     *syms_out = NULL;
     return 0;
 }
+
+/**
+ * Simple boolean specifying whether or not the key should repeat.
+ */
+_X_EXPORT int
+xkb_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key)
+{
+    return !!(keymap->ctrls->per_key_repeat[key / 8] & (1 << (key % 8)));
+}
