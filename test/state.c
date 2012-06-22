@@ -230,13 +230,11 @@ test_serialisation(struct xkb_keymap *keymap)
 static void
 test_repeat(struct xkb_keymap *keymap)
 {
-    xkb_keycode_t key;
-    fprintf(stderr, "%s\n", xkb_map_get_as_string(keymap));
-    for (key = keymap->min_key_code; key < keymap->max_key_code; key++)
-        if (xkb_key_repeats(keymap, key))
-            fprintf(stderr, "%d repeats!\n", key);
     assert(!xkb_key_repeats(keymap, KEY_LEFTSHIFT + 8));
     assert(xkb_key_repeats(keymap, KEY_A + 8));
+    assert(xkb_key_repeats(keymap, KEY_8 + 8));
+    assert(xkb_key_repeats(keymap, KEY_DOWN + 8));
+    assert(xkb_key_repeats(keymap, KEY_KBDILLUMDOWN + 8));
 }
 
 int
