@@ -176,7 +176,7 @@ FreeKeyTypesInfo(KeyTypesInfo * info)
         {
             FreeKeyTypeInfo(type);
         }
-        info->types = (KeyTypeInfo *) ClearCommonInfo(&info->types->defs);
+        info->types = ClearCommonInfo(&info->types->defs);
     }
     FreeKeyTypeInfo(&info->dflt);
 }
@@ -191,8 +191,7 @@ NextKeyType(KeyTypesInfo * info)
     {
         memset(type, 0, sizeof(KeyTypeInfo));
         type->defs.fileID = info->fileID;
-        info->types = (KeyTypeInfo *) AddCommonInfo(&info->types->defs,
-                                                    (CommonInfo *) type);
+        info->types = AddCommonInfo(&info->types->defs, &type->defs);
         info->nTypes++;
     }
     return type;
@@ -507,8 +506,7 @@ AddPreserve(struct xkb_keymap *keymap, KeyTypeInfo *type,
     }
     *old = *new;
     old->matchingMapIndex = -1;
-    type->preserve =
-        (PreserveInfo *) AddCommonInfo(&type->preserve->defs, &old->defs);
+    type->preserve = AddCommonInfo(&type->preserve->defs, &old->defs);
     return true;
 }
 

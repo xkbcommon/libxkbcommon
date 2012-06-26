@@ -44,10 +44,10 @@ extern bool
 UseNewField(unsigned field, CommonInfo *oldDefs, CommonInfo *newDefs,
             unsigned *pCollide);
 
-extern char *
+extern void *
 ClearCommonInfo(CommonInfo *cmn);
 
-extern char *
+extern void *
 AddCommonInfo(CommonInfo *old, CommonInfo *new);
 
 extern int

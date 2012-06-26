@@ -106,7 +106,7 @@ HandleAliasDef(KeyAliasDef * def,
     info->def.next = (CommonInfo *) * info_in;
     memcpy(info->alias, def->alias, XkbKeyNameLength);
     memcpy(info->real, def->real, XkbKeyNameLength);
-    *info_in = (AliasInfo *) AddCommonInfo(&(*info_in)->def, &info->def);
+    *info_in = AddCommonInfo(&(*info_in)->def, &info->def);
     return true;
 }
 

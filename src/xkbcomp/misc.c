@@ -178,7 +178,7 @@ UseNewField(unsigned field,
     return useNew;
 }
 
-char *
+void *
 ClearCommonInfo(CommonInfo * cmn)
 {
     if (cmn != NULL)
@@ -193,7 +193,7 @@ ClearCommonInfo(CommonInfo * cmn)
     return NULL;
 }
 
-char *
+void *
 AddCommonInfo(CommonInfo * old, CommonInfo * new)
 {
     CommonInfo *first;
@@ -207,9 +207,9 @@ AddCommonInfo(CommonInfo * old, CommonInfo * new)
     if (old)
     {
         old->next = new;
-        return (char *) first;
+        return first;
     }
-    return (char *) new;
+    return new;
 }
 
 /***====================================================================***/

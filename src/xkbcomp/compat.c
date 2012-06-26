@@ -142,10 +142,10 @@ ClearCompatInfo(CompatInfo *info, struct xkb_keymap *keymap)
         info->dflt.interp.act.any.data[i] = 0;
     ClearIndicatorMapInfo(keymap->ctx, &info->ledDflt);
     info->nInterps = 0;
-    info->interps = (SymInterpInfo *) ClearCommonInfo(&info->interps->defs);
+    info->interps = ClearCommonInfo(&info->interps->defs);
     memset(&info->groupCompat[0], 0,
            XkbNumKbdGroups * sizeof(GroupCompatInfo));
-    info->leds = (LEDInfo *) ClearCommonInfo(&info->leds->defs);
+    info->leds = ClearCommonInfo(&info->leds->defs);
     while (info->act) {
             next = info->act->next;
             free(info->act);
@@ -163,9 +163,7 @@ NextInterp(CompatInfo * info)
     if (si)
     {
         memset(si, 0, sizeof(SymInterpInfo));
-        info->interps =
-            (SymInterpInfo *) AddCommonInfo(&info->interps->defs,
-                                            (CommonInfo *) si);
+        info->interps = AddCommonInfo(&info->interps->defs, &si->defs);
         info->nInterps++;
     }
     return si;
