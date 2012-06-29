@@ -85,6 +85,20 @@ struct xkb_state {
     xkb_mod_mask_t locked_mods;
     xkb_mod_mask_t mods; /**< effective */
 
+    /*
+     * At each event, we accumulate all the needed modifications to the base
+     * modifiers, and apply them at the end. These keep track of this state.
+     */
+    xkb_mod_mask_t set_mods;
+    xkb_mod_mask_t clear_mods;
+    /*
+     * We mustn't clear a base modifier if there's another depressed key
+     * which affects it, e.g. given this sequence
+     * < Left Shift down, Right Shift down, Left Shift Up >
+     * the modifier should still be set. This keeps the count.
+     */
+    int16_t mod_key_count[sizeof(xkb_mod_mask_t) * 8];
+
     uint32_t leds;
 
     int refcnt;
@@ -244,7 +258,7 @@ xkb_filter_mod_set_func(struct xkb_filter *filter, xkb_keycode_t keycode,
         return 0;
     }
 
-    filter->state->base_mods &= ~(filter->action.mods.mask);
+    filter->state->clear_mods = filter->action.mods.mask;
     if (filter->action.mods.flags & XkbSA_ClearLocks)
         filter->state->locked_mods &= ~filter->action.mods.mask;
 
@@ -265,7 +279,7 @@ xkb_filter_mod_set_new(struct xkb_state *state, xkb_keycode_t keycode,
     filter->func = xkb_filter_mod_set_func;
     filter->action = *action;
 
-    filter->state->base_mods |= action->mods.mask;
+    filter->state->set_mods = action->mods.mask;
 
     return 1;
 }
@@ -337,7 +351,7 @@ xkb_filter_mod_latch_func(struct xkb_filter *filter, xkb_keycode_t keycode,
             else {
                 filter->action.type = XkbSA_SetMods;
                 filter->func = xkb_filter_mod_set_func;
-                filter->state->base_mods |= filter->action.mods.mask;
+                filter->state->set_mods = filter->action.mods.mask;
             }
             filter->keycode = keycode;
             filter->state->latched_mods &= ~filter->action.mods.mask;
@@ -367,13 +381,13 @@ xkb_filter_mod_latch_func(struct xkb_filter *filter, xkb_keycode_t keycode,
             if (latch == LATCH_PENDING)
                 filter->state->latched_mods &= ~filter->action.mods.mask;
             else
-                filter->state->base_mods &= ~filter->action.mods.mask;
+                filter->state->clear_mods = filter->action.mods.mask;
             filter->state->locked_mods &= ~filter->action.mods.mask;
             filter->func = NULL;
         }
         else {
             latch = LATCH_PENDING;
-            filter->state->base_mods &= ~filter->action.mods.mask;
+            filter->state->clear_mods = filter->action.mods.mask;
             filter->state->latched_mods |= filter->action.mods.mask;
             /* XXX beep beep! */
         }
@@ -405,7 +419,7 @@ xkb_filter_mod_latch_new(struct xkb_state *state, xkb_keycode_t keycode,
     filter->func = xkb_filter_mod_latch_func;
     filter->action = *action;
 
-    filter->state->base_mods |= action->mods.mask;
+    filter->state->set_mods = action->mods.mask;
 
     return 1;
 }
@@ -578,7 +592,33 @@ _X_EXPORT void
 xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
                      enum xkb_key_direction direction)
 {
+    xkb_mod_index_t i;
+    xkb_mod_mask_t bit;
+
+    state->set_mods = 0;
+    state->clear_mods = 0;
+
     xkb_filter_apply_all(state, key, direction);
+
+    for (i = 0, bit = 1; state->set_mods; i++, bit <<= 1) {
+        if (state->set_mods & bit) {
+            state->mod_key_count[i]++;
+            state->base_mods |= bit;
+            state->set_mods &= ~bit;
+        }
+    }
+
+    for (i = 0, bit = 1; state->clear_mods; i++, bit <<= 1) {
+        if (state->clear_mods & bit) {
+            state->mod_key_count[i]--;
+            if (state->mod_key_count[i] <= 0) {
+                state->base_mods &= ~bit;
+                state->mod_key_count[i] = 0;
+            }
+            state->clear_mods &= ~bit;
+        }
+    }
+
     xkb_state_update_derived(state);
 }
 
