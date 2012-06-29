@@ -112,7 +112,6 @@ enum xkb_file_type {
  * Legacy names for the components of an XKB keymap, also known as KcCGST.
  */
 struct xkb_component_names {
-    char *keymap;
     char *keycodes;
     char *types;
     char *compat;

@@ -59,8 +59,7 @@ XkbKeymapFileFromComponents(struct xkb_context *ctx,
                             (ParseCommon *)inc, 0);
     AppendStmt(&keycodes->common, &symbols->common);
 
-    return CreateXKBFile(ctx, FILE_TYPE_KEYMAP,
-                         ktcsg->keymap ? ktcsg->keymap : strdup(""),
+    return CreateXKBFile(ctx, FILE_TYPE_KEYMAP, strdup(""),
                          &keycodes->common, 0);
 }
 
@@ -86,7 +85,6 @@ xkb_map_new_from_names(struct xkb_context *ctx,
 
     keymap = xkb_map_new_from_kccgst(ctx, kkctgs, 0);
 
-    free(kkctgs->keymap);
     free(kkctgs->keycodes);
     free(kkctgs->types);
     free(kkctgs->compat);

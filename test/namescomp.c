@@ -40,7 +40,6 @@ test_names(const char *keycodes, const char *types,
     struct xkb_context *context;
     struct xkb_keymap *keymap;
     struct xkb_component_names kccgst = {
-        .keymap = NULL,
         .keycodes = strdup(keycodes),
         .types = strdup(types),
         .compat = strdup(compat),

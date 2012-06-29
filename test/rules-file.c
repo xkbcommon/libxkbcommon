@@ -40,7 +40,6 @@ struct test_data {
     const char *options;
 
     /* Expected output */
-    const char *keymap;
     const char *keycodes;
     const char *types;
     const char *compat;
@@ -73,7 +72,7 @@ test_rules(struct xkb_context *ctx, struct test_data *data)
     if (data->should_fail)
         fprintf(stderr, "Expecting: NULL\n");
     else
-        fprintf(stderr, "Expecting: %s\t%s\t%s\t%s\t%s\n", data->keymap,
+        fprintf(stderr, "Expecting: %s\t%s\t%s\t%s\n",
                 data->keycodes, data->types, data->compat, data->symbols);
 
     kccgst = xkb_components_from_rules(ctx, &rmlvo);
@@ -82,16 +81,14 @@ test_rules(struct xkb_context *ctx, struct test_data *data)
         return data->should_fail;
     }
 
-    fprintf(stderr, "Received : %s\t%s\t%s\t%s\t%s\n", kccgst->keymap,
+    fprintf(stderr, "Received : %s\t%s\t%s\t%s\n",
             kccgst->keycodes, kccgst->types, kccgst->compat, kccgst->symbols);
 
-    passed = streq(kccgst->keymap, data->keymap) &&
-             streq(kccgst->keycodes, data->keycodes) &&
+    passed = streq(kccgst->keycodes, data->keycodes) &&
              streq(kccgst->types, data->types) &&
              streq(kccgst->compat, data->compat) &&
              streq(kccgst->symbols, data->symbols);
 
-    free(kccgst->keymap);
     free(kccgst->keycodes);
     free(kccgst->types);
     free(kccgst->compat);

@@ -140,11 +140,10 @@ enum {
     TYPES,
     COMPAT,
     GEOMETRY,
-    KEYMAP,
 
 #define COMPONENT_MASK \
     ((1 << KEYCODES) | (1 << SYMBOLS) | (1 << TYPES) | (1 << COMPAT) | \
-     (1 << GEOMETRY) | (1 << KEYMAP))
+     (1 << GEOMETRY))
 
     MAX_WORDS
 };
@@ -160,7 +159,6 @@ static const char *cname[] = {
     [TYPES] = "types",
     [COMPAT] = "compat",
     [GEOMETRY] = "geometry",
-    [KEYMAP] = "keymap",
 };
 
 struct multi_defs {
@@ -215,7 +213,6 @@ struct rule {
     char *symbols;
     char *types;
     char *compat;
-    char *keymap;
     unsigned flags;
 };
 
@@ -353,14 +350,6 @@ match_mapping_line(darray_char *line, struct mapping *mapping)
         return;
     }
 
-    if (((present & COMPONENT_MASK) & (1 << KEYMAP)) &&
-        ((present & COMPONENT_MASK) != (1 << KEYMAP))) {
-        WARN("Keymap cannot appear with other components\n");
-        ACTION("Illegal mapping ignored\n");
-        mapping->num_maps = 0;
-        return;
-    }
-
     mapping->number++;
 }
 
@@ -467,7 +456,6 @@ match_rule_line(darray_char *line, struct mapping *mapping,
     rule->symbols = uDupString(names[SYMBOLS]);
     rule->types = uDupString(names[TYPES]);
     rule->compat = uDupString(names[COMPAT]);
-    rule->keymap = uDupString(names[KEYMAP]);
 
     rule->layout_num = rule->variant_num = 0;
     for (i = 0; i < nread; i++) {
@@ -652,7 +640,6 @@ apply_rule(struct rule *rule, struct xkb_component_names *kccgst)
     apply(rule->symbols, &kccgst->symbols);
     apply(rule->types, &kccgst->types);
     apply(rule->compat, &kccgst->compat);
-    apply(rule->keymap, &kccgst->keymap);
 }
 
 /*
@@ -972,12 +959,11 @@ get_components(struct rules *rules, const struct xkb_rule_names *mlvo,
     kccgst->symbols = substitute_vars(kccgst->symbols, &mdefs);
     kccgst->types = substitute_vars(kccgst->types, &mdefs);
     kccgst->compat = substitute_vars(kccgst->compat, &mdefs);
-    kccgst->keymap = substitute_vars(kccgst->keymap, &mdefs);
 
     free_multi_defs(&mdefs);
 
-    return (kccgst->keycodes && kccgst->symbols && kccgst->types &&
-            kccgst->compat) || kccgst->keymap;
+    return
+        kccgst->keycodes && kccgst->symbols && kccgst->types && kccgst->compat;
 }
 
 static struct rules *
@@ -1036,7 +1022,6 @@ free_rules(struct rules *rules)
         free(rule->symbols);
         free(rule->types);
         free(rule->compat);
-        free(rule->keymap);
     }
     darray_free(rules->rules);
 
@@ -1082,7 +1067,6 @@ xkb_components_from_rules(struct xkb_context *ctx,
     }
 
     if (!get_components(rules, rmlvo, kccgst)) {
-        free(kccgst->keymap);
         free(kccgst->keycodes);
         free(kccgst->types);
         free(kccgst->compat);
