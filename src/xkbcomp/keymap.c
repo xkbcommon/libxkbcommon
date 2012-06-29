@@ -39,7 +39,6 @@ CompileKeymap(struct xkb_context *ctx, XkbFile *file)
     bool ok;
     enum xkb_file_type mainType;
     const char *mainName;
-    LEDInfo *unbound = NULL, *next;
     struct xkb_keymap *keymap = XkbcAllocKeyboard(ctx);
     struct {
         XkbFile *keycodes;
@@ -144,7 +143,7 @@ CompileKeymap(struct xkb_context *ctx, XkbFile *file)
         goto err;
     }
     if (sections.compat == NULL ||
-        !CompileCompatMap(sections.compat, keymap, MERGE_OVERRIDE, &unbound))
+        !CompileCompatMap(sections.compat, keymap, MERGE_OVERRIDE))
     {
         ERROR("Failed to compile compat map\n");
         goto err;
@@ -156,10 +155,6 @@ CompileKeymap(struct xkb_context *ctx, XkbFile *file)
         goto err;
     }
 
-    ok = BindIndicators(keymap, true, unbound, NULL);
-    if (!ok)
-        goto err;
-
     ok = UpdateModifiersFromCompat(keymap);
     if (!ok)
         goto err;
@@ -169,10 +164,5 @@ CompileKeymap(struct xkb_context *ctx, XkbFile *file)
 err:
     ACTION("Failed to compile keymap\n");
     xkb_map_unref(keymap);
-    while (unbound) {
-        next = (LEDInfo *) unbound->defs.next;
-        free(unbound);
-        unbound = next;
-    }
     return NULL;
 }

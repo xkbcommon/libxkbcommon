@@ -258,11 +258,9 @@ extern bool
 CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
                 enum merge_mode merge);
 
-typedef struct _LEDInfo *LEDInfoPtr;
-
 extern bool
 CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
-                 enum merge_mode merge, LEDInfoPtr *unboundLEDs);
+                 enum merge_mode merge);
 
 extern bool
 CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
