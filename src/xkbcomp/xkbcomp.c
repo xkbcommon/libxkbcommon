@@ -96,61 +96,13 @@ xkb_map_new_from_names(struct xkb_context *ctx,
     return keymap;
 }
 
-static XkbFile *
-XkbChooseMap(XkbFile *file, const char *name)
-{
-    XkbFile *map = file;
-
-    /* map specified? */
-    if (name) {
-        while (map) {
-            if (map->name && strcmp(map->name, name) == 0)
-                break;
-            map = (XkbFile *) map->common.next;
-        }
-
-        if (!map)
-            ERROR("no map named \"%s\" in input file\n", name);
-    }
-    else if (file->common.next) {
-        /* look for map with XkbLC_Default flag. */
-        for (; map; map = (XkbFile *) map->common.next) {
-            if (map->flags & XkbLC_Default)
-                break;
-        }
-
-        if (!map) {
-            map = file;
-            WARN("no map specified, but components have several\n");
-            WARN("using the first defined map, \"%s\"\n",
-                 map->name ? map->name : "");
-        }
-    }
-
-    return map;
-}
-
 static struct xkb_keymap *
 compile_keymap(struct xkb_context *ctx, XkbFile *file)
 {
-    XkbFile *mapToUse;
-    struct xkb_keymap *keymap = NULL;
+    struct xkb_keymap *keymap;
 
-    /* Find map to use */
-    mapToUse = XkbChooseMap(file, NULL);
-    if (!mapToUse)
-        goto err;
+    keymap = CompileKeymap(ctx, file);
 
-    if (mapToUse->type != FILE_TYPE_KEYMAP) {
-        ERROR("file type %d not handled\n", mapToUse->type);
-        goto err;
-    }
-
-    keymap = CompileKeymap(ctx, mapToUse);
-    if (!keymap)
-        goto err;
-
-err:
     FreeXKBFile(file);
     return keymap;
 }
