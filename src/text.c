@@ -186,19 +186,21 @@ XkbcModMaskText(unsigned mask, bool cFormat)
 }
 
 const char *
-XkbcConfigText(unsigned config)
+XkbcFileTypeText(enum xkb_file_type type)
 {
-    switch (config) {
-    case XkmKeymapFile:
+    switch (type) {
+    case FILE_TYPE_KEYMAP:
         return "Keymap";
-    case XkmTypesIndex:
+    case FILE_TYPE_TYPES:
         return "Types";
-    case XkmCompatMapIndex:
+    case FILE_TYPE_COMPAT:
         return "CompatMap";
-    case XkmSymbolsIndex:
+    case FILE_TYPE_SYMBOLS:
         return "Symbols";
-    case XkmKeyNamesIndex:
+    case FILE_TYPE_KEYCODES:
         return "KeyNames";
+    case FILE_TYPE_RULES:
+        return "Rules";
     default:
         return "unknown";
     }

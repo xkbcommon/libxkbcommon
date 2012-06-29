@@ -41,25 +41,25 @@ XkbKeymapFileFromComponents(struct xkb_context *ctx,
     IncludeStmt *inc;
 
     inc = IncludeCreate(ktcsg->keycodes, MergeDefault);
-    keycodes = CreateXKBFile(ctx, XkmKeyNamesIndex, NULL,
+    keycodes = CreateXKBFile(ctx, FILE_TYPE_KEYCODES, NULL,
                              (ParseCommon *)inc, 0);
 
     inc = IncludeCreate(ktcsg->types, MergeDefault);
-    types = CreateXKBFile(ctx, XkmTypesIndex, NULL,
+    types = CreateXKBFile(ctx, FILE_TYPE_TYPES, NULL,
                           (ParseCommon *)inc, 0);
     AppendStmt(&keycodes->common, &types->common);
 
     inc = IncludeCreate(ktcsg->compat, MergeDefault);
-    compat = CreateXKBFile(ctx, XkmCompatMapIndex, NULL,
+    compat = CreateXKBFile(ctx, FILE_TYPE_COMPAT, NULL,
                            (ParseCommon *)inc, 0);
     AppendStmt(&keycodes->common, &compat->common);
 
     inc = IncludeCreate(ktcsg->symbols, MergeDefault);
-    symbols = CreateXKBFile(ctx, XkmSymbolsIndex, NULL,
+    symbols = CreateXKBFile(ctx, FILE_TYPE_SYMBOLS, NULL,
                             (ParseCommon *)inc, 0);
     AppendStmt(&keycodes->common, &symbols->common);
 
-    return CreateXKBFile(ctx, XkmKeymapFile,
+    return CreateXKBFile(ctx, FILE_TYPE_KEYMAP,
                          ktcsg->keymap ? ktcsg->keymap : strdup(""),
                          &keycodes->common, 0);
 }
@@ -141,7 +141,7 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
     if (!mapToUse)
         goto err;
 
-    if (mapToUse->type != XkmKeymapFile) {
+    if (mapToUse->type != FILE_TYPE_KEYMAP) {
         ERROR("file type %d not handled\n", mapToUse->type);
         goto err;
     }

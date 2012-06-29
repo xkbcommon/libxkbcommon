@@ -120,7 +120,7 @@ extern void
 CheckDefaultMap(XkbFile *maps, const char *fileName);
 
 extern XkbFile *
-CreateXKBFile(struct xkb_context *ctx, int type, char *name,
+CreateXKBFile(struct xkb_context *ctx, enum xkb_file_type type, char *name,
               ParseCommon *defs, unsigned flags);
 
 extern bool

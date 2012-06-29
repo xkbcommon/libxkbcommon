@@ -39,7 +39,7 @@ extern const char *
 XkbcModMaskText(unsigned mask, bool cFormat);
 
 extern const char *
-XkbcConfigText(unsigned config);
+XkbcFileTypeText(enum xkb_file_type type);
 
 extern const char *
 XkbcActionTypeText(unsigned type);

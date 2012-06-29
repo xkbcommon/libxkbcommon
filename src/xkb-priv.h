@@ -89,25 +89,24 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "utils.h"
 #include "darray.h"
 
-/* From XKM.h */
-#define	XkmKeymapFile		22
-#define	XkmRulesFile		24
+enum xkb_file_type {
+    /* The top level file which includes the other component files. */
+    FILE_TYPE_KEYMAP    = (1 << 0),
 
-#define	XkmTypesIndex		0
-#define	XkmCompatMapIndex	1
-#define	XkmSymbolsIndex		2
-#define	XkmKeyNamesIndex	4
-#define	XkmGeometryIndex	5
+    /* Component files. */
+    FILE_TYPE_TYPES     = (1 << 1),
+    FILE_TYPE_COMPAT    = (1 << 2),
+    FILE_TYPE_SYMBOLS   = (1 << 3),
+    FILE_TYPE_KEYCODES  = (1 << 4),
+    FILE_TYPE_GEOMETRY  = (1 << 5),
 
-#define	XkmTypesMask		(1<<0)
-#define	XkmCompatMapMask	(1<<1)
-#define	XkmSymbolsMask		(1<<2)
-#define	XkmKeyNamesMask		(1<<4)
-#define XkmGeometryMask         (1<<5)
+    /* This one doesn't mix with the others, but useful here as well. */
+    FILE_TYPE_RULES     = (1 << 6),
+};
 
-#define	XkmKeymapRequired	(XkmCompatMapMask|XkmKeyNamesMask|XkmSymbolsMask|XkmTypesMask)
-#define	XkmKeymapOptional	((XkmTypesMask|XkmGeometryMask)&(~XkmKeymapRequired))
-#define	XkmKeymapLegal		(XkmKeymapRequired|XkmKeymapOptional)
+/* Files needed for a complete keymap. */
+#define REQUIRED_FILE_TYPES (FILE_TYPE_TYPES | FILE_TYPE_COMPAT | FILE_TYPE_SYMBOLS | FILE_TYPE_KEYCODES)
+#define LEGAL_FILE_TYPES    (FILE_TYPE_GEOMETRY | REQUIRED_FILE_TYPES)
 
 /**
  * Legacy names for the components of an XKB keymap, also known as KcCGST.

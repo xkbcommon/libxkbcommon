@@ -798,7 +798,7 @@ HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
         included = *info;
         memset(info, 0, sizeof(SymbolsInfo));
     }
-    else if (ProcessIncludeFile(keymap->ctx, stmt, XkmSymbolsIndex, &rtrn,
+    else if (ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_SYMBOLS, &rtrn,
                                 &newMerge))
     {
         InitSymbolsInfo(&included, keymap);
@@ -840,7 +840,7 @@ HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
                 MergeIncludedSymbols(&included, info, next->merge, keymap);
                 FreeSymbolsInfo(info);
             }
-            else if (ProcessIncludeFile(keymap->ctx, next, XkmSymbolsIndex,
+            else if (ProcessIncludeFile(keymap->ctx, next, FILE_TYPE_SYMBOLS,
                                         &rtrn, &op))
             {
                 InitSymbolsInfo(&next_incl, keymap);

@@ -404,7 +404,7 @@ HandleIncludeCompatMap(IncludeStmt *stmt, struct xkb_keymap *keymap,
         included = *info;
         memset(info, 0, sizeof(CompatInfo));
     }
-    else if (ProcessIncludeFile(keymap->ctx, stmt, XkmCompatMapIndex, &rtrn,
+    else if (ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_COMPAT, &rtrn,
                                 &newMerge))
     {
         InitCompatInfo(&included, keymap);
@@ -445,7 +445,7 @@ HandleIncludeCompatMap(IncludeStmt *stmt, struct xkb_keymap *keymap,
                 MergeIncludedCompatMaps(&included, info, next->merge);
                 ClearCompatInfo(info, keymap);
             }
-            else if (ProcessIncludeFile(keymap->ctx, next, XkmCompatMapIndex,
+            else if (ProcessIncludeFile(keymap->ctx, next, FILE_TYPE_COMPAT,
                                         &rtrn, &op))
             {
                 InitCompatInfo(&next_incl, keymap);

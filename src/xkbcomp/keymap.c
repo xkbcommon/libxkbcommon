@@ -30,14 +30,14 @@
 /**
  * Compile the given file and store the output in xkb.
  * @param file A list of XkbFiles, each denoting one type (e.g.
- * XkmKeyNamesIdx, etc.)
+ * FILE_TYPE_KEYCODES, etc.)
  */
 struct xkb_keymap *
 CompileKeymap(struct xkb_context *ctx, XkbFile *file)
 {
     unsigned have = 0;
     bool ok;
-    unsigned mainType;
+    enum xkb_file_type mainType;
     const char *mainName;
     LEDInfo *unbound = NULL, *next;
     struct xkb_keymap *keymap = XkbcAllocKeyboard(ctx);
@@ -55,55 +55,52 @@ CompileKeymap(struct xkb_context *ctx, XkbFile *file)
     mainName = file->name ? file->name : "(unnamed)";
 
     /*
-     * Other aggregate file types are converted to XkmKeymapFile
+     * Other aggregate file types are converted to FILE_TYPE_KEYMAP
      * in the parser.
      */
-    if (mainType != XkmKeymapFile) {
+    if (mainType != FILE_TYPE_KEYMAP) {
         ERROR("Cannot compile a %s file alone into a keymap\n",
-               XkbcConfigText(mainType));
-        return false;
+              XkbcFileTypeText(mainType));
+        goto err;
     }
 
     /* Check for duplicate entries in the input file */
     for (file = (XkbFile *) file->defs; file; file = (XkbFile *) file->common.next)
     {
-        if ((have & (1 << file->type)) != 0)
-        {
+        if (have & file->type) {
             ERROR("More than one %s section in a %s file\n",
-                   XkbcConfigText(file->type), XkbcConfigText(mainType));
+                   XkbcFileTypeText(file->type), XkbcFileTypeText(mainType));
             ACTION("All sections after the first ignored\n");
             continue;
         }
-        else if ((1 << file->type) & (~XkmKeymapLegal))
-        {
+        else if (!(file->type & LEGAL_FILE_TYPES)) {
             ERROR("Cannot define %s in a %s file\n",
-                   XkbcConfigText(file->type), XkbcConfigText(mainType));
+                   XkbcFileTypeText(file->type), XkbcFileTypeText(mainType));
             continue;
         }
 
-        switch (file->type)
-        {
-        case XkmKeyNamesIndex:
+        switch (file->type) {
+        case FILE_TYPE_KEYCODES:
             sections.keycodes = file;
             break;
-        case XkmTypesIndex:
+        case FILE_TYPE_TYPES:
             sections.types = file;
             break;
-        case XkmSymbolsIndex:
+        case FILE_TYPE_SYMBOLS:
             sections.symbols = file;
             break;
-        case XkmCompatMapIndex:
+        case FILE_TYPE_COMPAT:
             sections.compat = file;
             break;
-        case XkmGeometryIndex:
+        case FILE_TYPE_GEOMETRY:
             continue;
         default:
             WSGO("Unknown file type %d\n", file->type);
             ACTION("Ignored\n");
             continue;
-        case XkmKeymapFile:
+        case FILE_TYPE_KEYMAP:
             WSGO("Illegal %s configuration in a %s file\n",
-                  XkbcConfigText(file->type), XkbcConfigText(mainType));
+                  XkbcFileTypeText(file->type), XkbcFileTypeText(mainType));
             ACTION("Ignored\n");
             continue;
         }
@@ -113,22 +110,23 @@ CompileKeymap(struct xkb_context *ctx, XkbFile *file)
             file->topName = strdup(mainName);
         }
 
-        have |= (1 << file->type);
+        have |= file->type;
     }
 
-    if (XkmKeymapRequired & (~have))
-    {
-        int i, bit;
-        unsigned missing;
-        missing = XkmKeymapRequired & (~have);
-        for (i = 0, bit = 1; missing != 0; i++, bit <<= 1)
-        {
-            if (missing & bit)
-            {
-                ERROR("Required section %s missing from keymap\n", XkbcConfigText(i));
+    if (REQUIRED_FILE_TYPES & (~have)) {
+        enum xkb_file_type bit;
+        enum xkb_file_type missing;
+
+        missing = REQUIRED_FILE_TYPES & (~have);
+
+        for (bit = 1; missing != 0; bit <<= 1) {
+            if (missing & bit) {
+                ERROR("Required section %s missing from keymap\n",
+                      XkbcFileTypeText(bit));
                 missing &= ~bit;
             }
         }
+
         goto err;
     }
 

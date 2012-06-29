@@ -1059,7 +1059,7 @@ xkb_components_from_rules(struct xkb_context *ctx,
     struct rules *rules;
     struct xkb_component_names *kccgst = NULL;
 
-    file = XkbFindFileInPath(ctx, rmlvo->rules, XkmRulesFile, &path);
+    file = XkbFindFileInPath(ctx, rmlvo->rules, FILE_TYPE_RULES, &path);
     if (!file) {
         ERROR("could not find \"%s\" rules in XKB path\n", rmlvo->rules);
         ERROR("%d include paths searched:\n",

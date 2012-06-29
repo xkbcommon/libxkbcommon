@@ -346,7 +346,7 @@ HandleIncludeKeyTypes(IncludeStmt *stmt, struct xkb_keymap *keymap,
         included = *info;
         memset(info, 0, sizeof(KeyTypesInfo));
     }
-    else if (ProcessIncludeFile(keymap->ctx, stmt, XkmTypesIndex, &rtrn,
+    else if (ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_TYPES, &rtrn,
                                 &newMerge))
     {
         InitKeyTypesInfo(&included, keymap, info);
@@ -381,7 +381,7 @@ HandleIncludeKeyTypes(IncludeStmt *stmt, struct xkb_keymap *keymap,
                 MergeIncludedKeyTypes(&included, info, next->merge, keymap);
                 FreeKeyTypesInfo(info);
             }
-            else if (ProcessIncludeFile(keymap->ctx, next, XkmTypesIndex,
+            else if (ProcessIncludeFile(keymap->ctx, next, FILE_TYPE_TYPES,
                                         &rtrn, &op))
             {
                 InitKeyTypesInfo(&next_incl, keymap, &included);

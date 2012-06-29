@@ -113,6 +113,7 @@ extern int yylex(union YYSTYPE *val, struct YYLTYPE *loc, void *scanner);
 	int		 ival;
 	unsigned	 uval;
 	int64_t		 num;
+        enum xkb_file_type file_type;
 	char		*str;
 	xkb_atom_t	sval;
 	ParseCommon	*any;
@@ -134,7 +135,8 @@ extern int yylex(union YYSTYPE *val, struct YYLTYPE *loc, void *scanner);
 %type <num>     INTEGER FLOAT
 %type <str>     IDENT KEYNAME STRING
 %type <ival>	Number Integer Float SignedNumber
-%type <uval>	XkbCompositeType FileType MergeMode OptMergeMode
+%type <uval>	MergeMode OptMergeMode
+%type <file_type> XkbCompositeType FileType
 %type <uval>	DoodadType Flag Flags OptFlags KeyCode
 %type <str>	KeyName MapName OptMapName KeySym
 %type <sval>	FieldSpec Ident Element String
@@ -181,9 +183,9 @@ XkbCompositeMap	:	OptFlags XkbCompositeType OptMapName OBRACE
                         }
 		;
 
-XkbCompositeType:	XKB_KEYMAP	{ $$= XkmKeymapFile; }
-		|	XKB_SEMANTICS	{ $$= XkmKeymapFile; }
-		|	XKB_LAYOUT	{ $$= XkmKeymapFile; }
+XkbCompositeType:	XKB_KEYMAP	{ $$= FILE_TYPE_KEYMAP; }
+		|	XKB_SEMANTICS	{ $$= FILE_TYPE_KEYMAP; }
+		|	XKB_LAYOUT	{ $$= FILE_TYPE_KEYMAP; }
 		;
 
 XkbMapConfigList :	XkbMapConfigList XkbMapConfig
@@ -201,7 +203,7 @@ XkbMapConfig	:	OptFlags FileType OptMapName OBRACE
 			    DeclList
 			CBRACE SEMI
 			{
-                            if ($2 == XkmGeometryIndex)
+                            if ($2 == FILE_TYPE_GEOMETRY)
                             {
                                 free($3);
                                 FreeStmt($5);
@@ -216,7 +218,7 @@ XkbMapConfig	:	OptFlags FileType OptMapName OBRACE
 
 XkbConfig	:	OptFlags FileType OptMapName DeclList
 			{
-                            if ($2 == XkmGeometryIndex)
+                            if ($2 == FILE_TYPE_GEOMETRY)
                             {
                                 free($3);
                                 FreeStmt($4);
@@ -230,11 +232,11 @@ XkbConfig	:	OptFlags FileType OptMapName DeclList
 		;
 
 
-FileType	:	XKB_KEYCODES		{ $$= XkmKeyNamesIndex; }
-		|	XKB_TYPES		{ $$= XkmTypesIndex; }
-		|	XKB_COMPATMAP		{ $$= XkmCompatMapIndex; }
-		|	XKB_SYMBOLS		{ $$= XkmSymbolsIndex; }
-		|	XKB_GEOMETRY		{ $$= XkmGeometryIndex; }
+FileType	:	XKB_KEYCODES		{ $$= FILE_TYPE_KEYCODES; }
+		|	XKB_TYPES		{ $$= FILE_TYPE_TYPES; }
+		|	XKB_COMPATMAP		{ $$= FILE_TYPE_COMPAT; }
+		|	XKB_SYMBOLS		{ $$= FILE_TYPE_SYMBOLS; }
+		|	XKB_GEOMETRY		{ $$= FILE_TYPE_GEOMETRY; }
 		;
 
 OptFlags	:	Flags			{ $$= $1; }

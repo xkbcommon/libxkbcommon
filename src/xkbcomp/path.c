@@ -142,23 +142,23 @@ XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
  * Return the xkb directory based on the type.
  */
 const char *
-XkbDirectoryForInclude(unsigned type)
+XkbDirectoryForInclude(enum xkb_file_type type)
 {
     switch (type)
     {
-    case XkmKeymapFile:
+    case FILE_TYPE_KEYMAP:
         return "keymap";
-    case XkmKeyNamesIndex:
+    case FILE_TYPE_KEYCODES:
         return "keycodes";
-    case XkmTypesIndex:
+    case FILE_TYPE_TYPES:
         return "types";
-    case XkmSymbolsIndex:
+    case FILE_TYPE_SYMBOLS:
         return "symbols";
-    case XkmCompatMapIndex:
+    case FILE_TYPE_COMPAT:
         return "compat";
-    case XkmGeometryIndex:
+    case FILE_TYPE_GEOMETRY:
         return "geometry";
-    case XkmRulesFile:
+    case FILE_TYPE_RULES:
         return "rules";
     default:
         return "";
@@ -171,16 +171,16 @@ XkbDirectoryForInclude(unsigned type)
  * Search for the given file name in the include directories.
  *
  * @param ctx the XKB ctx containing the include paths
- * @param type one of XkbTypesIndex, XkbCompatMapIndex, ..., or
- *             XkmKeymapFile
- * @param pathReturn is set to the full path of the file if found.
+ * @param type one of FILE_TYPE_TYPES, FILE_TYPE_COMPAT, ..., or
+ *             FILE_TYPE_KEYMAP or FILE_TYPE_RULES
+ * @param pathRtrn is set to the full path of the file if found.
  *
  * @return an FD to the file or NULL. If NULL is returned, the value of
  * pathRtrn is undefined.
  */
 FILE *
 XkbFindFileInPath(struct xkb_context *ctx,
-                  const char *name, unsigned type, char **pathRtrn)
+                  const char *name, enum xkb_file_type type, char **pathRtrn)
 {
     size_t i;
     int ret;

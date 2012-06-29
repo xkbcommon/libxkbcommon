@@ -38,7 +38,7 @@
  *
  * @param ctx The ctx containing include paths
  * @param stmt The include statement, specifying the file name to look for.
- * @param file_type Type of file (XkmKeyNamesIdx, etc.)
+ * @param file_type Type of file (FILE_TYPE_KEYCODES, etc.)
  * @param file_rtrn Returns the key map to be used.
  * @param merge_rtrn Always returns stmt->merge.
  *
@@ -47,7 +47,7 @@
 bool
 ProcessIncludeFile(struct xkb_context *ctx,
                    IncludeStmt * stmt,
-                   unsigned file_type,
+                   enum xkb_file_type file_type,
                    XkbFile ** file_rtrn, unsigned *merge_rtrn)
 {
     FILE *file;
@@ -92,7 +92,7 @@ ProcessIncludeFile(struct xkb_context *ctx,
         if (!mapToUse)
         {
             ERROR("No %s named \"%s\" in the include file \"%s\"\n",
-                   XkbcConfigText(file_type), stmt->map, stmt->file);
+                   XkbcFileTypeText(file_type), stmt->map, stmt->file);
             return false;
         }
     }
@@ -105,7 +105,7 @@ ProcessIncludeFile(struct xkb_context *ctx,
     if (mapToUse->type != file_type)
     {
         ERROR("Include file wrong type (expected %s, got %s)\n",
-               XkbcConfigText(file_type), XkbcConfigText(mapToUse->type));
+               XkbcFileTypeText(file_type), XkbcFileTypeText(mapToUse->type));
         ACTION("Include file \"%s\" ignored\n", stmt->file);
         return false;
     }

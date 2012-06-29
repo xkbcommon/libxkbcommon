@@ -606,7 +606,7 @@ EnsureSafeMapName(char *name)
 }
 
 XkbFile *
-CreateXKBFile(struct xkb_context *ctx, int type, char *name,
+CreateXKBFile(struct xkb_context *ctx, enum xkb_file_type type, char *name,
               ParseCommon *defs, unsigned flags)
 {
     XkbFile *file;
@@ -771,15 +771,17 @@ FreeXKBFile(XkbFile *file)
 
         switch (file->type)
         {
-        case XkmKeymapFile:
+        case FILE_TYPE_KEYMAP:
             FreeXKBFile((XkbFile *)file->defs);
             break;
-        case XkmTypesIndex:
-        case XkmCompatMapIndex:
-        case XkmSymbolsIndex:
-        case XkmKeyNamesIndex:
-        case XkmGeometryIndex:
+        case FILE_TYPE_TYPES:
+        case FILE_TYPE_COMPAT:
+        case FILE_TYPE_SYMBOLS:
+        case FILE_TYPE_KEYCODES:
+        case FILE_TYPE_GEOMETRY:
             FreeStmt(file->defs);
+            break;
+        default:
             break;
         }
 
