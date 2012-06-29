@@ -107,7 +107,7 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
     return keymap;
 }
 
-_X_EXPORT struct xkb_keymap *
+struct xkb_keymap *
 xkb_map_new_from_kccgst(struct xkb_context *ctx,
                         const struct xkb_component_names *kccgst,
                         enum xkb_map_compile_flags flags)
