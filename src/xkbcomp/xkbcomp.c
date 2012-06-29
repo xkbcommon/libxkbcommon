@@ -34,7 +34,7 @@ unsigned int warningLevel = 0;
 #define ISEMPTY(str) (!(str) || (strlen(str) == 0))
 
 static XkbFile *
-XkbKeymapFileFromComponents(struct xkb_context *ctx,
+keymap_file_from_components(struct xkb_context *ctx,
                             const struct xkb_component_names *ktcsg)
 {
     XkbFile *keycodes, *types, *compat, *symbols;
@@ -61,37 +61,6 @@ XkbKeymapFileFromComponents(struct xkb_context *ctx,
 
     return CreateXKBFile(ctx, FILE_TYPE_KEYMAP, strdup(""),
                          &keycodes->common, 0);
-}
-
-_X_EXPORT struct xkb_keymap *
-xkb_map_new_from_names(struct xkb_context *ctx,
-                       const struct xkb_rule_names *rmlvo,
-                       enum xkb_map_compile_flags flags)
-{
-    struct xkb_component_names *kkctgs;
-    struct xkb_keymap *keymap;
-
-    if (!rmlvo || ISEMPTY(rmlvo->rules) || ISEMPTY(rmlvo->layout)) {
-        ERROR("rules and layout required to generate XKB keymap\n");
-        return NULL;
-    }
-
-    kkctgs = xkb_components_from_rules(ctx, rmlvo);
-    if (!kkctgs) {
-        ERROR("failed to generate XKB components from rules \"%s\"\n",
-              rmlvo->rules);
-        return NULL;
-    }
-
-    keymap = xkb_map_new_from_kccgst(ctx, kkctgs, 0);
-
-    free(kkctgs->keycodes);
-    free(kkctgs->types);
-    free(kkctgs->compat);
-    free(kkctgs->symbols);
-    free(kkctgs);
-
-    return keymap;
 }
 
 static struct xkb_keymap *
@@ -137,12 +106,44 @@ xkb_map_new_from_kccgst(struct xkb_context *ctx,
         return NULL;
     }
 
-    if (!(file = XkbKeymapFileFromComponents(ctx, kccgst))) {
+    file = keymap_file_from_components(ctx, kccgst);
+    if (!file) {
         ERROR("failed to generate parsed XKB file from components\n");
         return NULL;
     }
 
     return compile_keymap(ctx, file);
+}
+
+_X_EXPORT struct xkb_keymap *
+xkb_map_new_from_names(struct xkb_context *ctx,
+                       const struct xkb_rule_names *rmlvo,
+                       enum xkb_map_compile_flags flags)
+{
+    struct xkb_component_names *kkctgs;
+    struct xkb_keymap *keymap;
+
+    if (!rmlvo || ISEMPTY(rmlvo->rules) || ISEMPTY(rmlvo->layout)) {
+        ERROR("rules and layout required to generate XKB keymap\n");
+        return NULL;
+    }
+
+    kkctgs = xkb_components_from_rules(ctx, rmlvo);
+    if (!kkctgs) {
+        ERROR("failed to generate XKB components from rules \"%s\"\n",
+              rmlvo->rules);
+        return NULL;
+    }
+
+    keymap = xkb_map_new_from_kccgst(ctx, kkctgs, 0);
+
+    free(kkctgs->keycodes);
+    free(kkctgs->types);
+    free(kkctgs->compat);
+    free(kkctgs->symbols);
+    free(kkctgs);
+
+    return keymap;
 }
 
 _X_EXPORT struct xkb_keymap *
