@@ -35,9 +35,8 @@
 struct xkb_keymap *
 CompileKeymap(struct xkb_context *ctx, XkbFile *file)
 {
-    unsigned have;
+    unsigned have = 0;
     bool ok;
-    unsigned required, legal;
     unsigned mainType;
     const char *mainName;
     LEDInfo *unbound = NULL, *next;
@@ -47,27 +46,23 @@ CompileKeymap(struct xkb_context *ctx, XkbFile *file)
         XkbFile *types;
         XkbFile *compat;
         XkbFile *symbols;
-    } sections;
+    } sections = { NULL };
 
     if (!keymap)
         return NULL;
 
-    memset(&sections, 0, sizeof(sections));
     mainType = file->type;
     mainName = file->name ? file->name : "(unnamed)";
-    switch (mainType)
-    {
-    case XkmKeymapFile:
-        required = XkmKeyNamesIndex | XkmTypesIndex | XkmSymbolsIndex |
-                   XkmCompatMapIndex;
-        legal = XkmKeymapLegal;
-        break;
-    default:
-        ERROR("Cannot compile %s alone into an XKM file\n",
+
+    /*
+     * Other aggregate file types are converted to XkmKeymapFile
+     * in the parser.
+     */
+    if (mainType != XkmKeymapFile) {
+        ERROR("Cannot compile a %s file alone into a keymap\n",
                XkbcConfigText(mainType));
         return false;
     }
-    have = 0;
 
     /* Check for duplicate entries in the input file */
     for (file = (XkbFile *) file->defs; file; file = (XkbFile *) file->common.next)
@@ -79,7 +74,7 @@ CompileKeymap(struct xkb_context *ctx, XkbFile *file)
             ACTION("All sections after the first ignored\n");
             continue;
         }
-        else if ((1 << file->type) & (~legal))
+        else if ((1 << file->type) & (~XkmKeymapLegal))
         {
             ERROR("Cannot define %s in a %s file\n",
                    XkbcConfigText(file->type), XkbcConfigText(mainType));
@@ -121,11 +116,11 @@ CompileKeymap(struct xkb_context *ctx, XkbFile *file)
         have |= (1 << file->type);
     }
 
-    if (required & (~have))
+    if (XkmKeymapRequired & (~have))
     {
         int i, bit;
         unsigned missing;
-        missing = required & (~have);
+        missing = XkmKeymapRequired & (~have);
         for (i = 0, bit = 1; missing != 0; i++, bit <<= 1)
         {
             if (missing & bit)
