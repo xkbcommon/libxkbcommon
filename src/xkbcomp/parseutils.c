@@ -242,7 +242,7 @@ KeyTypeCreate(xkb_atom_t name, VarDef * body)
     {
         def->common.stmtType = StmtKeyTypeDef;
         def->common.next = NULL;
-        def->merge = MergeDefault;
+        def->merge = MERGE_DEFAULT;
         def->name = name;
         def->body = body;
     }
@@ -264,7 +264,7 @@ SymbolsCreate(const char *keyName, ExprDef *symbols)
     {
         def->common.stmtType = StmtSymbolsDef;
         def->common.next = NULL;
-        def->merge = MergeDefault;
+        def->merge = MERGE_DEFAULT;
         memset(def->keyName, 0, 5);
         strncpy(def->keyName, keyName, 4);
         def->symbols = symbols;
@@ -287,7 +287,7 @@ GroupCompatCreate(int group, ExprDef * val)
     {
         def->common.stmtType = StmtGroupCompatDef;
         def->common.next = NULL;
-        def->merge = MergeDefault;
+        def->merge = MERGE_DEFAULT;
         def->group = group;
         def->def = val;
     }
@@ -309,7 +309,7 @@ ModMapCreate(uint32_t modifier, ExprDef * keys)
     {
         def->common.stmtType = StmtModMapDef;
         def->common.next = NULL;
-        def->merge = MergeDefault;
+        def->merge = MERGE_DEFAULT;
         def->modifier = modifier;
         def->keys = keys;
     }
@@ -331,7 +331,7 @@ IndicatorMapCreate(xkb_atom_t name, VarDef * body)
     {
         def->common.stmtType = StmtIndicatorMapDef;
         def->common.next = NULL;
-        def->merge = MergeDefault;
+        def->merge = MERGE_DEFAULT;
         def->name = name;
         def->body = body;
     }
@@ -353,7 +353,7 @@ IndicatorNameCreate(int ndx, ExprDef * name, bool virtual)
     {
         def->common.stmtType = StmtIndicatorNameDef;
         def->common.next = NULL;
-        def->merge = MergeDefault;
+        def->merge = MERGE_DEFAULT;
         def->ndx = ndx;
         def->name = name;
         def->virtual = virtual;
@@ -481,7 +481,7 @@ static void
 FreeInclude(IncludeStmt *incl);
 
 IncludeStmt *
-IncludeCreate(char *str, unsigned merge)
+IncludeCreate(char *str, enum merge_mode merge)
 {
     IncludeStmt *incl, *first;
     char *file, *map, *stmt, *tmp, *extra_data;
@@ -529,9 +529,9 @@ IncludeCreate(char *str, unsigned merge)
                 break;
             }
             if (nextop == '|')
-                merge = MergeAugment;
+                merge = MERGE_AUGMENT;
             else
-                merge = MergeOverride;
+                merge = MERGE_OVERRIDE;
         }
         else
         {
@@ -627,12 +627,12 @@ CreateXKBFile(struct xkb_context *ctx, enum xkb_file_type type, char *name,
 }
 
 unsigned
-StmtSetMerge(ParseCommon * stmt, unsigned merge, struct YYLTYPE *loc, void *scanner)
+StmtSetMerge(ParseCommon * stmt, enum merge_mode merge, struct YYLTYPE *loc, void *scanner)
 {
-    if ((merge == MergeAltForm) && (stmt->stmtType != StmtKeycodeDef))
+    if ((merge == MERGE_ALT_FORM) && (stmt->stmtType != StmtKeycodeDef))
     {
         yyerror(loc, scanner, "illegal use of 'alternate' merge mode");
-        merge = MergeDefault;
+        merge = MERGE_DEFAULT;
     }
     return merge;
 }

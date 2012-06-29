@@ -169,7 +169,7 @@ UseNewField(unsigned field,
             {
                 *pCollide |= field;
             }
-            if (newDefs->merge != MergeAugment)
+            if (newDefs->merge != MERGE_AUGMENT)
                 useNew = true;
         }
     }

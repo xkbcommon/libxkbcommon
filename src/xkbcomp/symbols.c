@@ -95,7 +95,7 @@ InitKeyInfo(KeyInfo * info)
 
     info->defs.defined = 0;
     info->defs.fileID = 0;
-    info->defs.merge = MergeOverride;
+    info->defs.merge = MERGE_OVERRIDE;
     info->defs.next = NULL;
     info->name = KeyNameToLong(dflt);
     info->groupInfo = 0;
@@ -126,7 +126,7 @@ FreeKeyInfo(KeyInfo * info)
 
     info->defs.defined = 0;
     info->defs.fileID = 0;
-    info->defs.merge = MergeOverride;
+    info->defs.merge = MERGE_OVERRIDE;
     info->defs.next = NULL;
     info->groupInfo = 0;
     info->typesDefined = info->symsDefined = info->actsDefined = 0;
@@ -199,7 +199,7 @@ typedef struct _SymbolsInfo
     char *name;         /* e.g. pc+us+inet(evdev) */
     int errorCount;
     unsigned fileID;
-    unsigned merge;
+    enum merge_mode merge;
     unsigned explicit_group;
     darray(KeyInfo) keys;
     KeyInfo dflt;
@@ -220,7 +220,7 @@ InitSymbolsInfo(SymbolsInfo * info, struct xkb_keymap *keymap)
     info->explicit_group = 0;
     info->errorCount = 0;
     info->fileID = 0;
-    info->merge = MergeOverride;
+    info->merge = MERGE_OVERRIDE;
     darray_init(info->keys);
     darray_growalloc(info->keys, 110);
     info->modMap = NULL;
@@ -298,7 +298,7 @@ MergeKeyGroups(SymbolsInfo * info,
     int i;
     bool report, clobber;
 
-    clobber = (from->defs.merge != MergeAugment);
+    clobber = (from->defs.merge != MERGE_AUGMENT);
 
     report = (warningLevel > 9) ||
         ((into->defs.fileID == from->defs.fileID) && (warningLevel > 0));
@@ -510,7 +510,7 @@ MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
     unsigned collide = 0;
     bool report;
 
-    if (from->defs.merge == MergeReplace)
+    if (from->defs.merge == MERGE_REPLACE)
     {
         for (i = 0; i < XkbNumKbdGroups; i++)
         {
@@ -569,7 +569,7 @@ MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
             {
                 xkb_atom_t use, ignore;
                 collide |= _Key_Types;
-                if (from->defs.merge != MergeAugment)
+                if (from->defs.merge != MERGE_AUGMENT)
                 {
                     use = from->types[i];
                     ignore = into->types[i];
@@ -586,7 +586,7 @@ MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
                         xkb_atom_text(keymap->ctx, use),
                         xkb_atom_text(keymap->ctx, ignore));
             }
-            if ((from->defs.merge != MergeAugment)
+            if ((from->defs.merge != MERGE_AUGMENT)
                 || (into->types[i] == XKB_ATOM_NONE))
             {
                 into->types[i] = from->types[i];
@@ -623,7 +623,7 @@ MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
         WARN("Symbol map for key %s redefined\n",
               longText(into->name));
         ACTION("Using %s definition for conflicting fields\n",
-                (from->defs.merge == MergeAugment ? "first" : "last"));
+                (from->defs.merge == MERGE_AUGMENT ? "first" : "last"));
     }
     return true;
 }
@@ -654,7 +654,7 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
     ModMapEntry *mm;
     bool clobber;
 
-    clobber = (new->defs.merge != MergeAugment);
+    clobber = (new->defs.merge != MERGE_AUGMENT);
     for (mm = info->modMap; mm != NULL; mm = (ModMapEntry *) mm->defs.next)
     {
         if (new->haveSymbol && mm->haveSymbol
@@ -727,7 +727,7 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
 
 static void
 MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
-                     unsigned merge, struct xkb_keymap *keymap)
+                     enum merge_mode merge, struct xkb_keymap *keymap)
 {
     unsigned int i;
     KeyInfo *key;
@@ -746,14 +746,14 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
     {
         if (from->groupNames[i] != XKB_ATOM_NONE)
         {
-            if ((merge != MergeAugment) ||
+            if ((merge != MERGE_AUGMENT) ||
                 (into->groupNames[i] == XKB_ATOM_NONE))
                 into->groupNames[i] = from->groupNames[i];
         }
     }
 
     darray_foreach(key, from->keys) {
-        if (merge != MergeDefault)
+        if (merge != MERGE_DEFAULT)
             key->defs.merge = merge;
 
         if (!AddKeySymbols(into, key, keymap))
@@ -765,7 +765,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
         ModMapEntry *mm, *next;
         for (mm = from->modMap; mm != NULL; mm = next)
         {
-            if (merge != MergeDefault)
+            if (merge != MERGE_DEFAULT)
                 mm->defs.merge = merge;
             if (!AddModMapEntry(into, mm))
                 into->errorCount++;
@@ -780,7 +780,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
 
 static void
 HandleSymbolsFile(XkbFile *file, struct xkb_keymap *keymap,
-                  unsigned merge, SymbolsInfo *info);
+                  enum merge_mode merge, SymbolsInfo *info);
 
 static bool
 HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
@@ -803,7 +803,7 @@ HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
     {
         InitSymbolsInfo(&included, keymap);
         included.fileID = included.dflt.defs.fileID = rtrn->id;
-        included.merge = included.dflt.defs.merge = MergeOverride;
+        included.merge = included.dflt.defs.merge = MERGE_OVERRIDE;
         if (stmt->modifier)
         {
             included.explicit_group = atoi(stmt->modifier) - 1;
@@ -812,7 +812,7 @@ HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
         {
             included.explicit_group = info->explicit_group;
         }
-        HandleSymbolsFile(rtrn, keymap, MergeOverride, &included);
+        HandleSymbolsFile(rtrn, keymap, MERGE_OVERRIDE, &included);
         if (stmt->stmt != NULL)
         {
             free(included.name);
@@ -845,7 +845,7 @@ HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
             {
                 InitSymbolsInfo(&next_incl, keymap);
                 next_incl.fileID = next_incl.dflt.defs.fileID = rtrn->id;
-                next_incl.merge = next_incl.dflt.defs.merge = MergeOverride;
+                next_incl.merge = next_incl.dflt.defs.merge = MERGE_OVERRIDE;
                 if (next->modifier)
                 {
                     next_incl.explicit_group = atoi(next->modifier) - 1;
@@ -854,7 +854,7 @@ HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
                 {
                     next_incl.explicit_group = info->explicit_group;
                 }
-                HandleSymbolsFile(rtrn, keymap, MergeOverride, &next_incl);
+                HandleSymbolsFile(rtrn, keymap, MERGE_OVERRIDE, &next_incl);
                 MergeIncludedSymbols(&included, &next_incl, op, keymap);
                 FreeSymbolsInfo(&next_incl);
                 FreeXKBFile(rtrn);
@@ -1493,7 +1493,7 @@ HandleModMapDef(ModMapDef *def, struct xkb_keymap *keymap, SymbolsInfo *info)
 
 static void
 HandleSymbolsFile(XkbFile *file, struct xkb_keymap *keymap,
-                  unsigned merge, SymbolsInfo *info)
+                  enum merge_mode merge, SymbolsInfo *info)
 {
     ParseCommon *stmt;
 
@@ -2036,10 +2036,10 @@ CopyModMapDef(struct xkb_keymap *keymap, ModMapEntry *entry)
  *
  * @param file The parsed xkb_symbols section of the xkb file.
  * @param keymap Handle to the keyboard description to store the symbols in.
- * @param merge Merge strategy (e.g. MergeOverride).
+ * @param merge Merge strategy (e.g. MERGE_OVERRIDE).
  */
 bool
-CompileSymbols(XkbFile *file, struct xkb_keymap *keymap, unsigned merge)
+CompileSymbols(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
 {
     unsigned int i;
     SymbolsInfo info;

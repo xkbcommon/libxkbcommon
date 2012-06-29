@@ -37,7 +37,7 @@ typedef struct _AliasInfo
 } AliasInfo;
 
 extern int
-HandleAliasDef(KeyAliasDef *def, unsigned merge, unsigned file_id,
+HandleAliasDef(KeyAliasDef *def, enum merge_mode merge, unsigned file_id,
                AliasInfo **info);
 
 extern void

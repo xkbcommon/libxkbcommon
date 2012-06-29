@@ -43,7 +43,7 @@ HandleCollision(AliasInfo * old, AliasInfo * new)
     else
     {
         char *use, *ignore;
-        if (new->def.merge == MergeAugment)
+        if (new->def.merge == MERGE_AUGMENT)
         {
             use = old->real;
             ignore = new->real;
@@ -70,7 +70,7 @@ HandleCollision(AliasInfo * old, AliasInfo * new)
 
 static void
 InitAliasInfo(AliasInfo * info,
-              unsigned merge, unsigned file_id, char *alias, char *real)
+              enum merge_mode merge, unsigned file_id, char *alias, char *real)
 {
     memset(info, 0, sizeof(AliasInfo));
     info->def.merge = merge;
@@ -81,7 +81,7 @@ InitAliasInfo(AliasInfo * info,
 
 int
 HandleAliasDef(KeyAliasDef * def,
-               unsigned merge, unsigned file_id, AliasInfo ** info_in)
+               enum merge_mode merge, unsigned file_id, AliasInfo ** info_in)
 {
     AliasInfo *info;
 
@@ -134,7 +134,7 @@ MergeAliases(AliasInfo ** into, AliasInfo ** merge, unsigned how_merge)
     memset(&def, 0, sizeof(KeyAliasDef));
     for (tmp = *merge; tmp != NULL; tmp = (AliasInfo *) tmp->def.next)
     {
-        if (how_merge == MergeDefault)
+        if (how_merge == MERGE_DEFAULT)
             def.merge = tmp->def.merge;
         else
             def.merge = how_merge;
@@ -198,7 +198,7 @@ ApplyAliases(struct xkb_keymap *keymap, AliasInfo ** info_in)
                 if (strncmp(a->alias, info->alias, XkbKeyNameLength) == 0)
                 {
                     AliasInfo old_info;
-                    InitAliasInfo(&old_info, MergeAugment, 0, a->alias, a->real);
+                    InitAliasInfo(&old_info, MERGE_AUGMENT, 0, a->alias, a->real);
                     HandleCollision(&old_info, info);
                     memcpy(old_info.real, a->real, XkbKeyNameLength);
                     info->alias[0] = '\0';

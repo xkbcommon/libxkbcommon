@@ -71,7 +71,7 @@ AddIndicatorMap(struct xkb_keymap *keymap, LEDInfo *oldLEDs, LEDInfo *new)
                 old->defs.defined |= new->defs.defined;
                 return oldLEDs;
             }
-            if (new->defs.merge == MergeReplace)
+            if (new->defs.merge == MERGE_REPLACE)
             {
                 CommonInfo *next = old->defs.next;
                 if (((old->defs.fileID == new->defs.fileID)
@@ -132,7 +132,7 @@ AddIndicatorMap(struct xkb_keymap *keymap, LEDInfo *oldLEDs, LEDInfo *new)
                 WARN("Map for indicator %s redefined\n",
                      xkb_atom_text(keymap->ctx, old->name));
                 ACTION("Using %s definition for duplicate fields\n",
-                        (new->defs.merge == MergeAugment ? "first" : "last"));
+                        (new->defs.merge == MERGE_AUGMENT ? "first" : "last"));
             }
             return oldLEDs;
         }
@@ -313,13 +313,13 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
 
 LEDInfo *
 HandleIndicatorMapDef(IndicatorMapDef *def, struct xkb_keymap *keymap,
-                      LEDInfo *dflt, LEDInfo *oldLEDs, unsigned merge)
+                      LEDInfo *dflt, LEDInfo *oldLEDs, enum merge_mode merge)
 {
     LEDInfo led, *rtrn;
     VarDef *var;
     bool ok;
 
-    if (def->merge != MergeDefault)
+    if (def->merge != MERGE_DEFAULT)
         merge = def->merge;
 
     led = *dflt;

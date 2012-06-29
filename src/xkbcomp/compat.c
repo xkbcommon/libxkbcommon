@@ -109,7 +109,7 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap)
     info->act = NULL;
     info->dflt.defs.fileID = info->fileID;
     info->dflt.defs.defined = 0;
-    info->dflt.defs.merge = MergeOverride;
+    info->dflt.defs.merge = MERGE_OVERRIDE;
     info->dflt.interp.flags = 0;
     info->dflt.interp.virtual_mod = XkbNoModifier;
     info->dflt.interp.act.type = XkbSA_NoAction;
@@ -118,7 +118,7 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap)
     ClearIndicatorMapInfo(keymap->ctx, &info->ledDflt);
     info->ledDflt.defs.fileID = info->fileID;
     info->ledDflt.defs.defined = 0;
-    info->ledDflt.defs.merge = MergeOverride;
+    info->ledDflt.defs.merge = MERGE_OVERRIDE;
     memset(&info->groupCompat[0], 0,
            XkbNumKbdGroups * sizeof(GroupCompatInfo));
     info->leds = NULL;
@@ -134,7 +134,7 @@ ClearCompatInfo(CompatInfo *info, struct xkb_keymap *keymap)
     free(info->name);
     info->name = NULL;
     info->dflt.defs.defined = 0;
-    info->dflt.defs.merge = MergeAugment;
+    info->dflt.defs.merge = MERGE_AUGMENT;
     info->dflt.interp.flags = 0;
     info->dflt.interp.virtual_mod = XkbNoModifier;
     info->dflt.interp.act.type = XkbSA_NoAction;
@@ -197,7 +197,7 @@ AddInterp(CompatInfo * info, SymInterpInfo * new)
     old = FindMatchingInterp(info, new);
     if (old != NULL)
     {
-        if (new->defs.merge == MergeReplace)
+        if (new->defs.merge == MERGE_REPLACE)
         {
             SymInterpInfo *next = (SymInterpInfo *) old->defs.next;
             if (((old->defs.fileID == new->defs.fileID)
@@ -242,7 +242,7 @@ AddInterp(CompatInfo * info, SymInterpInfo * new)
         {
             WARN("Multiple interpretations of \"%s\"\n", siText(new, info));
             ACTION("Using %s definition for duplicate fields\n",
-                    (new->defs.merge != MergeAugment ? "last" : "first"));
+                    (new->defs.merge != MERGE_AUGMENT ? "last" : "first"));
         }
         return true;
     }
@@ -258,7 +258,7 @@ static bool
 AddGroupCompat(CompatInfo * info, unsigned group, GroupCompatInfo * newGC)
 {
     GroupCompatInfo *gc;
-    unsigned merge;
+    enum merge_mode merge;
 
     merge = newGC->merge;
     gc = &info->groupCompat[group];
@@ -271,9 +271,9 @@ AddGroupCompat(CompatInfo * info, unsigned group, GroupCompatInfo * newGC)
     {
         WARN("Compat map for group %d redefined\n", group + 1);
         ACTION("Using %s definition\n",
-                (merge == MergeAugment ? "old" : "new"));
+                (merge == MERGE_AUGMENT ? "old" : "new"));
     }
-    if (newGC->defined && (merge != MergeAugment || !gc->defined))
+    if (newGC->defined && (merge != MERGE_AUGMENT || !gc->defined))
         *gc = *newGC;
     return true;
 }
@@ -340,7 +340,7 @@ ResolveStateAndPredicate(ExprDef * expr,
 /***====================================================================***/
 
 static void
-MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from, unsigned merge)
+MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from, enum merge_mode merge)
 {
     SymInterpInfo *si;
     LEDInfo *led, *rtrn, *next;
@@ -359,14 +359,14 @@ MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from, unsigned merge)
     }
     for (si = from->interps; si; si = (SymInterpInfo *) si->defs.next)
     {
-        if (merge != MergeDefault)
+        if (merge != MERGE_DEFAULT)
             si->defs.merge = merge;
         if (!AddInterp(into, si))
             into->errorCount++;
     }
     for (i = 0, gcm = &from->groupCompat[0]; i < XkbNumKbdGroups; i++, gcm++)
     {
-        if (merge != MergeDefault)
+        if (merge != MERGE_DEFAULT)
             gcm->merge = merge;
         if (!AddGroupCompat(into, i, gcm))
             into->errorCount++;
@@ -374,7 +374,7 @@ MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from, unsigned merge)
     for (led = from->leds; led != NULL; led = next)
     {
         next = (LEDInfo *) led->defs.next;
-        if (merge != MergeDefault)
+        if (merge != MERGE_DEFAULT)
             led->defs.merge = merge;
         rtrn = AddIndicatorMap(from->keymap, into->leds, led);
         if (rtrn != NULL)
@@ -385,7 +385,7 @@ MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from, unsigned merge)
 }
 
 static void
-HandleCompatMapFile(XkbFile *file, struct xkb_keymap *keymap, unsigned merge,
+HandleCompatMapFile(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge,
                     CompatInfo *info);
 
 static bool
@@ -415,7 +415,7 @@ HandleIncludeCompatMap(IncludeStmt *stmt, struct xkb_keymap *keymap,
         included.ledDflt.defs.fileID = rtrn->id;
         included.ledDflt.defs.merge = newMerge;
         included.act = info->act;
-        HandleCompatMapFile(rtrn, keymap, MergeOverride, &included);
+        HandleCompatMapFile(rtrn, keymap, MERGE_OVERRIDE, &included);
         if (stmt->stmt != NULL)
         {
             free(included.name);
@@ -456,7 +456,7 @@ HandleIncludeCompatMap(IncludeStmt *stmt, struct xkb_keymap *keymap,
                 next_incl.ledDflt.defs.fileID = rtrn->id;
                 next_incl.ledDflt.defs.merge = op;
                 next_incl.act = info->act;
-                HandleCompatMapFile(rtrn, keymap, MergeOverride, &next_incl);
+                HandleCompatMapFile(rtrn, keymap, MERGE_OVERRIDE, &next_incl);
                 MergeIncludedCompatMaps(&included, &next_incl, op);
                 if (info->act != NULL)
                         next_incl.act = NULL;
@@ -622,7 +622,7 @@ HandleInterpBody(VarDef *def, struct xkb_keymap *keymap, SymInterpInfo *si,
 }
 
 static int
-HandleInterpDef(InterpDef *def, struct xkb_keymap *keymap, unsigned merge,
+HandleInterpDef(InterpDef *def, struct xkb_keymap *keymap, enum merge_mode merge,
                 CompatInfo *info)
 {
     unsigned pred, mods;
@@ -634,7 +634,7 @@ HandleInterpDef(InterpDef *def, struct xkb_keymap *keymap, unsigned merge,
         ACTION("Symbol interpretation ignored\n");
         return false;
     }
-    if (def->merge != MergeDefault)
+    if (def->merge != MERGE_DEFAULT)
         merge = def->merge;
 
     si = info->dflt;
@@ -663,12 +663,12 @@ HandleInterpDef(InterpDef *def, struct xkb_keymap *keymap, unsigned merge,
 
 static int
 HandleGroupCompatDef(GroupCompatDef *def, struct xkb_keymap *keymap,
-                     unsigned merge, CompatInfo *info)
+                     enum merge_mode merge, CompatInfo *info)
 {
     ExprResult val;
     GroupCompatInfo tmp;
 
-    if (def->merge != MergeDefault)
+    if (def->merge != MERGE_DEFAULT)
         merge = def->merge;
     if (!XkbIsLegalGroup(def->group - 1))
     {
@@ -694,13 +694,13 @@ HandleGroupCompatDef(GroupCompatDef *def, struct xkb_keymap *keymap,
 }
 
 static void
-HandleCompatMapFile(XkbFile *file, struct xkb_keymap *keymap, unsigned merge,
+HandleCompatMapFile(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge,
                     CompatInfo *info)
 {
     ParseCommon *stmt;
 
-    if (merge == MergeDefault)
-        merge = MergeAugment;
+    if (merge == MERGE_DEFAULT)
+        merge = MERGE_AUGMENT;
     free(info->name);
     info->name = uDupString(file->name);
     stmt = file->defs;
@@ -779,7 +779,7 @@ CopyInterps(CompatInfo * info,
 }
 
 bool
-CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap, unsigned merge,
+CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge,
                  LEDInfoPtr *unboundLEDs)
 {
     int i;

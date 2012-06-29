@@ -132,25 +132,25 @@ CompileKeymap(struct xkb_context *ctx, XkbFile *file)
 
     /* compile the sections we have in the file one-by-one, or fail. */
     if (sections.keycodes == NULL ||
-        !CompileKeycodes(sections.keycodes, keymap, MergeOverride))
+        !CompileKeycodes(sections.keycodes, keymap, MERGE_OVERRIDE))
     {
         ERROR("Failed to compile keycodes\n");
         goto err;
     }
     if (sections.types == NULL ||
-        !CompileKeyTypes(sections.types, keymap, MergeOverride))
+        !CompileKeyTypes(sections.types, keymap, MERGE_OVERRIDE))
     {
         ERROR("Failed to compile key types\n");
         goto err;
     }
     if (sections.compat == NULL ||
-        !CompileCompatMap(sections.compat, keymap, MergeOverride, &unbound))
+        !CompileCompatMap(sections.compat, keymap, MERGE_OVERRIDE, &unbound))
     {
         ERROR("Failed to compile compat map\n");
         goto err;
     }
     if (sections.symbols == NULL ||
-        !CompileSymbols(sections.symbols, keymap, MergeOverride))
+        !CompileSymbols(sections.symbols, keymap, MERGE_OVERRIDE))
     {
         ERROR("Failed to compile symbols\n");
         goto err;

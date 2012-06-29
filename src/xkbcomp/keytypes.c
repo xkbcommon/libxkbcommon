@@ -112,7 +112,7 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
     info->types = NULL;
     info->dflt.defs.defined = 0;
     info->dflt.defs.fileID = 0;
-    info->dflt.defs.merge = MergeOverride;
+    info->dflt.defs.merge = MERGE_OVERRIDE;
     info->dflt.defs.next = NULL;
     info->dflt.name = XKB_ATOM_NONE;
     info->dflt.mask = 0;
@@ -258,8 +258,8 @@ AddKeyType(struct xkb_keymap *keymap, KeyTypesInfo *info, KeyTypeInfo *new)
     if (old != NULL)
     {
         bool report;
-        if ((new->defs.merge == MergeReplace)
-            || (new->defs.merge == MergeOverride))
+        if ((new->defs.merge == MERGE_REPLACE)
+            || (new->defs.merge == MERGE_OVERRIDE))
         {
             KeyTypeInfo *next = (KeyTypeInfo *) old->defs.next;
             if (((old->defs.fileID == new->defs.fileID)
@@ -302,7 +302,7 @@ AddKeyType(struct xkb_keymap *keymap, KeyTypesInfo *info, KeyTypeInfo *new)
 
 static void
 MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
-                      unsigned merge, struct xkb_keymap *keymap)
+                      enum merge_mode merge, struct xkb_keymap *keymap)
 {
     KeyTypeInfo *type;
 
@@ -318,7 +318,7 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
     }
     for (type = from->types; type; type = (KeyTypeInfo *) type->defs.next)
     {
-        if (merge != MergeDefault)
+        if (merge != MERGE_DEFAULT)
             type->defs.merge = merge;
         if (!AddKeyType(keymap, into, type))
             into->errorCount++;
@@ -328,7 +328,7 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
 
 static void
 HandleKeyTypesFile(XkbFile *file, struct xkb_keymap *keymap,
-                   unsigned merge, KeyTypesInfo *info);
+                   enum merge_mode merge, KeyTypesInfo *info);
 
 static bool
 HandleIncludeKeyTypes(IncludeStmt *stmt, struct xkb_keymap *keymap,
@@ -851,13 +851,13 @@ HandleKeyTypeBody(VarDef *def, struct xkb_keymap *keymap,
  */
 static int
 HandleKeyTypeDef(KeyTypeDef *def, struct xkb_keymap *keymap,
-                 unsigned merge, KeyTypesInfo *info)
+                 enum merge_mode merge, KeyTypesInfo *info)
 {
     unsigned int i;
     KeyTypeInfo type;
     struct xkb_kt_map_entry *entry;
 
-    if (def->merge != MergeDefault)
+    if (def->merge != MERGE_DEFAULT)
         merge = def->merge;
 
     type.defs.defined = 0;
@@ -923,12 +923,12 @@ HandleKeyTypeDef(KeyTypeDef *def, struct xkb_keymap *keymap,
  * Process an xkb_types section.
  *
  * @param file The parsed xkb_types section.
- * @param merge Merge Strategy (e.g. MergeOverride)
+ * @param merge Merge Strategy (e.g. MERGE_OVERRIDE)
  * @param info Pointer to memory where the outcome will be stored.
  */
 static void
 HandleKeyTypesFile(XkbFile *file, struct xkb_keymap *keymap,
-                   unsigned merge, KeyTypesInfo *info)
+                   enum merge_mode merge, KeyTypesInfo *info)
 {
     ParseCommon *stmt;
 
@@ -1059,7 +1059,7 @@ CopyDefToKeyType(struct xkb_keymap *keymap, struct xkb_key_type *type,
 }
 
 bool
-CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap, unsigned merge)
+CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
 {
     unsigned int i;
     struct xkb_key_type *type, *next;

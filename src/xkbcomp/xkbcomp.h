@@ -78,11 +78,13 @@ typedef struct _ParseCommon
 #define	OpInvert	27
 #define	OpUnaryPlus	28
 
-#define	MergeDefault	0
-#define	MergeAugment	1
-#define	MergeOverride	2
-#define	MergeReplace	3
-#define	MergeAltForm	4
+enum merge_mode {
+    MERGE_DEFAULT,
+    MERGE_AUGMENT,
+    MERGE_OVERRIDE,
+    MERGE_REPLACE,
+    MERGE_ALT_FORM,
+};
 
 #define	AutoKeyNames	(1L <<  0)
 #define	CreateKeyNames(x)	((x)->flags&AutoKeyNames)
@@ -92,7 +94,7 @@ extern unsigned warningLevel;
 typedef struct _IncludeStmt
 {
     ParseCommon common;
-    unsigned merge;
+    enum merge_mode merge;
     char *stmt;
     char *file;
     char *map;
@@ -146,7 +148,7 @@ typedef struct _Expr
 typedef struct _VarDef
 {
     ParseCommon common;
-    unsigned merge;
+    enum merge_mode merge;
     ExprDef *name;
     ExprDef *value;
 } VarDef;
@@ -154,7 +156,7 @@ typedef struct _VarDef
 typedef struct _VModDef
 {
     ParseCommon common;
-    unsigned merge;
+    enum merge_mode merge;
     xkb_atom_t name;
     ExprDef *value;
 } VModDef;
@@ -162,7 +164,7 @@ typedef struct _VModDef
 typedef struct _KeycodeDef
 {
     ParseCommon common;
-    unsigned merge;
+    enum merge_mode merge;
     char name[5];
     unsigned long value;
 } KeycodeDef;
@@ -170,7 +172,7 @@ typedef struct _KeycodeDef
 typedef struct _KeyAliasDef
 {
     ParseCommon common;
-    unsigned merge;
+    enum merge_mode merge;
     char alias[5];
     char real[5];
 } KeyAliasDef;
@@ -178,7 +180,7 @@ typedef struct _KeyAliasDef
 typedef struct _KeyTypeDef
 {
     ParseCommon common;
-    unsigned merge;
+    enum merge_mode merge;
     xkb_atom_t name;
     VarDef *body;
 } KeyTypeDef;
@@ -186,7 +188,7 @@ typedef struct _KeyTypeDef
 typedef struct _SymbolsDef
 {
     ParseCommon common;
-    unsigned merge;
+    enum merge_mode merge;
     char keyName[5];
     ExprDef *symbols;
 } SymbolsDef;
@@ -194,7 +196,7 @@ typedef struct _SymbolsDef
 typedef struct _ModMapDef
 {
     ParseCommon common;
-    unsigned merge;
+    enum merge_mode merge;
     xkb_atom_t modifier;
     ExprDef *keys;
 } ModMapDef;
@@ -202,7 +204,7 @@ typedef struct _ModMapDef
 typedef struct _GroupCompatDef
 {
     ParseCommon common;
-    unsigned merge;
+    enum merge_mode merge;
     int group;
     ExprDef *def;
 } GroupCompatDef;
@@ -210,7 +212,7 @@ typedef struct _GroupCompatDef
 typedef struct _InterpDef
 {
     ParseCommon common;
-    unsigned merge;
+    enum merge_mode merge;
     char *sym;
     ExprDef *match;
     VarDef *def;
@@ -219,7 +221,7 @@ typedef struct _InterpDef
 typedef struct _IndicatorNameDef
 {
     ParseCommon common;
-    unsigned merge;
+    enum merge_mode merge;
     int ndx;
     ExprDef *name;
     bool virtual;
@@ -228,7 +230,7 @@ typedef struct _IndicatorNameDef
 typedef struct _IndicatorMapDef
 {
     ParseCommon common;
-    unsigned merge;
+    enum merge_mode merge;
     unsigned type;
     xkb_atom_t name;
     VarDef *body;
@@ -249,18 +251,21 @@ extern struct xkb_keymap *
 CompileKeymap(struct xkb_context *ctx, XkbFile *file);
 
 extern bool
-CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap, unsigned merge);
+CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
+                enum merge_mode merge);
 
 extern bool
-CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap, unsigned merge);
+CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
+                enum merge_mode merge);
 
 typedef struct _LEDInfo *LEDInfoPtr;
 
 extern bool
-CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap, unsigned merge,
-                 LEDInfoPtr *unboundLEDs);
+CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
+                 enum merge_mode merge, LEDInfoPtr *unboundLEDs);
 
 extern bool
-CompileSymbols(XkbFile *file, struct xkb_keymap *keymap, unsigned merge);
+CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
+               enum merge_mode merge);
 
 #endif /* XKBCOMP_H */

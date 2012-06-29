@@ -66,10 +66,10 @@ ClearVModInfo(VModInfo *info, struct xkb_keymap *keymap)
  * XkbServerMap's vmod is set to the given modifier. Otherwise, the vmod is 0.
  *
  * @param stmt The statement specifying the name and (if any the value).
- * @param mergeMode Merge strategy (e.g. MergeOverride)
+ * @param mergeMode Merge strategy (e.g. MERGE_OVERRIDE)
  */
 bool
-HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, unsigned mergeMode,
+HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, enum merge_mode mergeMode,
               VModInfo *info)
 {
     int i, bit, nextFree;
@@ -104,13 +104,13 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, unsigned mergeMode,
                     str1 = xkb_atom_text(keymap->ctx, stmt->name);
                     WARN("Virtual modifier %s multiply defined\n", str1);
                     str1 = XkbcModMaskText(srv->vmods[i], true);
-                    if (mergeMode == MergeOverride)
+                    if (mergeMode == MERGE_OVERRIDE)
                     {
                         str2 = str1;
                         str1 = XkbcModMaskText(mod.uval, true);
                     }
                     ACTION("Using %s, ignoring %s\n", str1, str2);
-                    if (mergeMode == MergeOverride)
+                    if (mergeMode == MERGE_OVERRIDE)
                         srv->vmods[i] = mod.uval;
                     return true;
                 }

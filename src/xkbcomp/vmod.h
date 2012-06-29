@@ -46,7 +46,7 @@ extern void
 ClearVModInfo(VModInfo *info, struct xkb_keymap *keymap);
 
 extern bool
-HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, unsigned mergeMode,
+HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, enum merge_mode mergeMode,
               VModInfo *info);
 
 extern bool

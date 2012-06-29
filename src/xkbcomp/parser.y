@@ -328,10 +328,10 @@ Decl		:	OptMergeMode VarDecl
 			}
 		|	MergeMode STRING
 			{
-			    if ($1==MergeAltForm) {
+			    if ($1==MERGE_ALT_FORM) {
 				yyerror(&@1, scanner,
                                         "cannot use 'alternate' to include other maps");
-				$$= &IncludeCreate($2,MergeDefault)->common;
+				$$= &IncludeCreate($2,MERGE_DEFAULT)->common;
 			    }
 			    else {
 				$$= &IncludeCreate($2,$1)->common;
@@ -589,14 +589,14 @@ Element		:	ACTION_TOK
 		;
 
 OptMergeMode	:	MergeMode		{ $$= $1; }
-		|				{ $$= MergeDefault; }
+		|				{ $$= MERGE_DEFAULT; }
 		;
 
-MergeMode	:	INCLUDE			{ $$= MergeDefault; }
-		|	AUGMENT			{ $$= MergeAugment; }
-		|	OVERRIDE		{ $$= MergeOverride; }
-		|	REPLACE			{ $$= MergeReplace; }
-		|	ALTERNATE		{ $$= MergeAltForm; }
+MergeMode	:	INCLUDE			{ $$= MERGE_DEFAULT; }
+		|	AUGMENT			{ $$= MERGE_AUGMENT; }
+		|	OVERRIDE		{ $$= MERGE_OVERRIDE; }
+		|	REPLACE			{ $$= MERGE_REPLACE; }
+		|	ALTERNATE		{ $$= MERGE_ALT_FORM; }
 		;
 
 OptExprList	:	ExprList			{ $$= $1; }

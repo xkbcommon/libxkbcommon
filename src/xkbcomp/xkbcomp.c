@@ -40,21 +40,21 @@ XkbKeymapFileFromComponents(struct xkb_context *ctx,
     XkbFile *keycodes, *types, *compat, *symbols;
     IncludeStmt *inc;
 
-    inc = IncludeCreate(ktcsg->keycodes, MergeDefault);
+    inc = IncludeCreate(ktcsg->keycodes, MERGE_DEFAULT);
     keycodes = CreateXKBFile(ctx, FILE_TYPE_KEYCODES, NULL,
                              (ParseCommon *)inc, 0);
 
-    inc = IncludeCreate(ktcsg->types, MergeDefault);
+    inc = IncludeCreate(ktcsg->types, MERGE_DEFAULT);
     types = CreateXKBFile(ctx, FILE_TYPE_TYPES, NULL,
                           (ParseCommon *)inc, 0);
     AppendStmt(&keycodes->common, &types->common);
 
-    inc = IncludeCreate(ktcsg->compat, MergeDefault);
+    inc = IncludeCreate(ktcsg->compat, MERGE_DEFAULT);
     compat = CreateXKBFile(ctx, FILE_TYPE_COMPAT, NULL,
                            (ParseCommon *)inc, 0);
     AppendStmt(&keycodes->common, &compat->common);
 
-    inc = IncludeCreate(ktcsg->symbols, MergeDefault);
+    inc = IncludeCreate(ktcsg->symbols, MERGE_DEFAULT);
     symbols = CreateXKBFile(ctx, FILE_TYPE_SYMBOLS, NULL,
                             (ParseCommon *)inc, 0);
     AppendStmt(&keycodes->common, &symbols->common);

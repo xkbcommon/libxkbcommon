@@ -66,7 +66,7 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap, char *field,
 
 extern LEDInfo *
 HandleIndicatorMapDef(IndicatorMapDef *stmt, struct xkb_keymap *keymap,
-                      LEDInfo *dflt, LEDInfo *oldLEDs, unsigned mergeMode);
+                      LEDInfo *dflt, LEDInfo *oldLEDs, enum merge_mode mergeMode);
 
 extern bool
 CopyIndicatorMapDefs(struct xkb_keymap *keymap, LEDInfo *leds,
