@@ -97,11 +97,6 @@ CompileKeymap(struct xkb_context *ctx, XkbFile *file)
             WSGO("Unknown file type %d\n", file->type);
             ACTION("Ignored\n");
             continue;
-        case FILE_TYPE_KEYMAP:
-            WSGO("Illegal %s configuration in a %s file\n",
-                  XkbcFileTypeText(file->type), XkbcFileTypeText(mainType));
-            ACTION("Ignored\n");
-            continue;
         }
 
         if (!file->topName || strcmp(file->topName, mainName) != 0) {
