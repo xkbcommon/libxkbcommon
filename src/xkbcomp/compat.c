@@ -784,7 +784,7 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge
     int i;
     CompatInfo info;
     GroupCompatInfo *gcm;
-    LEDInfo *unbound = NULL, *next;
+    LEDInfo *unbound = NULL;
 
     InitCompatInfo(&info, keymap);
     info.dflt.defs.merge = merge;
@@ -825,15 +825,7 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge
         info.leds = NULL;
     }
 
-    if (!BindIndicators(keymap, unbound)) {
-        while (unbound) {
-            next = (LEDInfo *) unbound->defs.next;
-            free(unbound);
-            unbound = next;
-        }
-
-        goto err_info;
-    }
+    BindIndicators(keymap, unbound);
 
     ClearCompatInfo(&info, keymap);
     return true;
