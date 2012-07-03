@@ -433,7 +433,7 @@ CopyIndicatorMapDefs(struct xkb_keymap *keymap, LEDInfo *leds,
 }
 
 bool
-BindIndicators(struct xkb_keymap *keymap, LEDInfo *unbound, LEDInfo **unboundRtrn)
+BindIndicators(struct xkb_keymap *keymap, LEDInfo *unbound)
 {
     int i;
     LEDInfo *led, *next, *last;
@@ -525,17 +525,12 @@ BindIndicators(struct xkb_keymap *keymap, LEDInfo *unbound, LEDInfo **unboundRtr
             }
         }
     }
-    if (unboundRtrn)
+
+    for (led = unbound; led != NULL; led = next)
     {
-        *unboundRtrn = unbound;
+        next = led ? (LEDInfo *) led->defs.next : NULL;
+        free(led);
     }
-    else
-    {
-        for (led = unbound; led != NULL; led = next)
-        {
-            next = led ? (LEDInfo *) led->defs.next : NULL;
-            free(led);
-        }
-    }
+
     return true;
 }

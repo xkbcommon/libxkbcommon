@@ -73,7 +73,6 @@ CopyIndicatorMapDefs(struct xkb_keymap *keymap, LEDInfo *leds,
                      LEDInfo **unboundRtrn);
 
 extern bool
-BindIndicators(struct xkb_keymap *keymap, LEDInfo *unbound,
-               LEDInfo **unboundRtrn);
+BindIndicators(struct xkb_keymap *keymap, LEDInfo *unbound);
 
 #endif /* INDICATORS_H */
