@@ -360,79 +360,7 @@ HandleIndicatorMapDef(IndicatorMapDef *def, struct xkb_keymap *keymap,
     return NULL;
 }
 
-bool
-CopyIndicatorMapDefs(struct xkb_keymap *keymap, LEDInfo *leds,
-                     LEDInfo **unboundRtrn)
-{
-    LEDInfo *led, *next;
-    LEDInfo *unbound, *last;
-
-    if (XkbcAllocNames(keymap, XkbIndicatorNamesMask, 0) != Success)
-    {
-        WSGO("Couldn't allocate names\n");
-        ACTION("Indicator names may be incorrect\n");
-    }
-    if (XkbcAllocIndicatorMaps(keymap) != Success)
-    {
-        WSGO("Can't allocate indicator maps\n");
-        ACTION("Indicator map definitions may be lost\n");
-        return false;
-    }
-    last = unbound = (unboundRtrn ? *unboundRtrn : NULL);
-    while ((last != NULL) && (last->defs.next != NULL))
-    {
-        last = (LEDInfo *) last->defs.next;
-    }
-    for (led = leds; led != NULL; led = next)
-    {
-        next = (LEDInfo *) led->defs.next;
-        if ((led->groups != 0) && (led->which_groups == 0))
-            led->which_groups = XkbIM_UseEffective;
-        if ((led->which_mods == 0) && ((led->real_mods) || (led->vmods)))
-            led->which_mods = XkbIM_UseEffective;
-        if ((led->indicator == _LED_NotBound) || (!keymap->indicators))
-        {
-            if (unboundRtrn != NULL)
-            {
-                led->defs.next = NULL;
-                if (last != NULL)
-                    last->defs.next = (CommonInfo *) led;
-                else
-                    unbound = led;
-                last = led;
-            }
-            else
-                free(led);
-        }
-        else
-        {
-            struct xkb_indicator_map * im;
-            im = &keymap->indicators->maps[led->indicator - 1];
-            im->flags = led->flags;
-            im->which_groups = led->which_groups;
-            im->groups = led->groups;
-            im->which_mods = led->which_mods;
-            im->mods.mask = led->real_mods;
-            im->mods.real_mods = led->real_mods;
-            im->mods.vmods = led->vmods;
-            im->ctrls = led->ctrls;
-            if (keymap->names != NULL)
-            {
-                free(keymap->names->indicators[led->indicator - 1]);
-                keymap->names->indicators[led->indicator-1] =
-                    xkb_atom_strdup(keymap->ctx, led->name);
-            }
-            free(led);
-        }
-    }
-    if (unboundRtrn != NULL)
-    {
-        *unboundRtrn = unbound;
-    }
-    return true;
-}
-
-void
+static void
 BindIndicators(struct xkb_keymap *keymap, LEDInfo *unbound)
 {
     int i;
@@ -531,4 +459,65 @@ BindIndicators(struct xkb_keymap *keymap, LEDInfo *unbound)
         next = led ? (LEDInfo *) led->defs.next : NULL;
         free(led);
     }
+}
+
+bool
+CopyIndicatorMapDefs(struct xkb_keymap *keymap, LEDInfo *leds)
+{
+    LEDInfo *led, *next;
+    LEDInfo *unbound = NULL, *last = NULL;
+
+    if (XkbcAllocNames(keymap, XkbIndicatorNamesMask, 0) != Success)
+    {
+        WSGO("Couldn't allocate names\n");
+        ACTION("Indicator names may be incorrect\n");
+    }
+    if (XkbcAllocIndicatorMaps(keymap) != Success)
+    {
+        WSGO("Can't allocate indicator maps\n");
+        ACTION("Indicator map definitions may be lost\n");
+        return false;
+    }
+    for (led = leds; led != NULL; led = next)
+    {
+        next = (LEDInfo *) led->defs.next;
+        if ((led->groups != 0) && (led->which_groups == 0))
+            led->which_groups = XkbIM_UseEffective;
+        if ((led->which_mods == 0) && ((led->real_mods) || (led->vmods)))
+            led->which_mods = XkbIM_UseEffective;
+        if ((led->indicator == _LED_NotBound) || (!keymap->indicators))
+        {
+            led->defs.next = NULL;
+            if (last != NULL)
+                last->defs.next = (CommonInfo *) led;
+            else
+                unbound = led;
+            last = led;
+        }
+        else
+        {
+            struct xkb_indicator_map * im;
+            im = &keymap->indicators->maps[led->indicator - 1];
+            im->flags = led->flags;
+            im->which_groups = led->which_groups;
+            im->groups = led->groups;
+            im->which_mods = led->which_mods;
+            im->mods.mask = led->real_mods;
+            im->mods.real_mods = led->real_mods;
+            im->mods.vmods = led->vmods;
+            im->ctrls = led->ctrls;
+            if (keymap->names != NULL)
+            {
+                free(keymap->names->indicators[led->indicator - 1]);
+                keymap->names->indicators[led->indicator-1] =
+                    xkb_atom_strdup(keymap->ctx, led->name);
+            }
+            free(led);
+        }
+    }
+
+    if (unbound)
+        BindIndicators(keymap, unbound);
+
+    return true;
 }

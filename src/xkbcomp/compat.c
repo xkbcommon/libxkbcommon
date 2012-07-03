@@ -784,7 +784,6 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge
     int i;
     CompatInfo info;
     GroupCompatInfo *gcm;
-    LEDInfo *unbound = NULL;
 
     InitCompatInfo(&info, keymap);
     info.dflt.defs.merge = merge;
@@ -820,12 +819,10 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge
     }
 
     if (info.leds != NULL) {
-        if (!CopyIndicatorMapDefs(keymap, info.leds, &unbound))
+        if (!CopyIndicatorMapDefs(keymap, info.leds))
             info.errorCount++;
         info.leds = NULL;
     }
-
-    BindIndicators(keymap, unbound);
 
     ClearCompatInfo(&info, keymap);
     return true;

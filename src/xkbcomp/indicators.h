@@ -69,10 +69,5 @@ HandleIndicatorMapDef(IndicatorMapDef *stmt, struct xkb_keymap *keymap,
                       LEDInfo *dflt, LEDInfo *oldLEDs, enum merge_mode mergeMode);
 
 extern bool
-CopyIndicatorMapDefs(struct xkb_keymap *keymap, LEDInfo *leds,
-                     LEDInfo **unboundRtrn);
-
-extern void
-BindIndicators(struct xkb_keymap *keymap, LEDInfo *unbound);
-
+CopyIndicatorMapDefs(struct xkb_keymap *keymap, LEDInfo *leds);
 #endif /* INDICATORS_H */
