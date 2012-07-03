@@ -433,8 +433,7 @@ CopyIndicatorMapDefs(struct xkb_keymap *keymap, LEDInfo *leds,
 }
 
 bool
-BindIndicators(struct xkb_keymap *keymap, bool force, LEDInfo *unbound,
-               LEDInfo **unboundRtrn)
+BindIndicators(struct xkb_keymap *keymap, LEDInfo *unbound, LEDInfo **unboundRtrn)
 {
     int i;
     LEDInfo *led, *next, *last;
@@ -457,30 +456,27 @@ BindIndicators(struct xkb_keymap *keymap, bool force, LEDInfo *unbound,
                 }
             }
         }
-        if (force)
+        for (led = unbound; led != NULL; led = (LEDInfo *) led->defs.next)
         {
-            for (led = unbound; led != NULL; led = (LEDInfo *) led->defs.next)
+            if (led->indicator == _LED_NotBound)
             {
+                for (i = 0; i < XkbNumIndicators; i++)
+                {
+                    if (keymap->names->indicators[i] == NULL)
+                    {
+                        keymap->names->indicators[i] =
+                            xkb_atom_strdup(keymap->ctx, led->name);
+                        led->indicator = i + 1;
+                        break;
+                    }
+                }
                 if (led->indicator == _LED_NotBound)
                 {
-                    for (i = 0; i < XkbNumIndicators; i++)
-                    {
-                        if (keymap->names->indicators[i] == NULL)
-                        {
-                            keymap->names->indicators[i] =
-                                xkb_atom_strdup(keymap->ctx, led->name);
-                            led->indicator = i + 1;
-                            break;
-                        }
-                    }
-                    if (led->indicator == _LED_NotBound)
-                    {
-                        ERROR("No unnamed indicators found\n");
-                        ACTION
-                            ("Virtual indicator map \"%s\" not bound\n",
-                             xkb_atom_text(keymap->ctx, led->name));
-                        continue;
-                    }
+                    ERROR("No unnamed indicators found\n");
+                    ACTION
+                        ("Virtual indicator map \"%s\" not bound\n",
+                         xkb_atom_text(keymap->ctx, led->name));
+                    continue;
                 }
             }
         }
@@ -490,19 +486,8 @@ BindIndicators(struct xkb_keymap *keymap, bool force, LEDInfo *unbound,
         next = (LEDInfo *) led->defs.next;
         if (led->indicator == _LED_NotBound)
         {
-            if (force)
-            {
-                unbound = next;
-                free(led);
-            }
-            else
-            {
-                if (last)
-                    last->defs.next = &led->defs;
-                else
-                    unbound = led;
-                last = led;
-            }
+            unbound = next;
+            free(led);
         }
         else
         {
@@ -516,19 +501,8 @@ BindIndicators(struct xkb_keymap *keymap, bool force, LEDInfo *unbound,
                 ACTION("Using %s, ignoring %s\n", old,
                        xkb_atom_text(keymap->ctx, led->name));
                 led->indicator = _LED_NotBound;
-                if (force)
-                {
-                    free(led);
-                    unbound = next;
-                }
-                else
-                {
-                    if (last)
-                        last->defs.next = &led->defs;
-                    else
-                        unbound = led;
-                    last = led;
-                }
+                unbound = next;
+                free(led);
             }
             else
             {

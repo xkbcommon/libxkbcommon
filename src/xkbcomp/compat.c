@@ -825,7 +825,7 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge
         info.leds = NULL;
     }
 
-    if (!BindIndicators(keymap, true, unbound, NULL)) {
+    if (!BindIndicators(keymap, unbound, NULL)) {
         while (unbound) {
             next = (LEDInfo *) unbound->defs.next;
             free(unbound);
