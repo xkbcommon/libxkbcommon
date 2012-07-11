@@ -241,7 +241,7 @@ XkbcActionTypeText(unsigned type)
 const char *
 XkbcKeysymText(xkb_keysym_t sym)
 {
-    static char buffer[16];
+    static char buffer[64];
 
     xkb_keysym_get_name(sym, buffer, sizeof buffer);
 

@@ -646,7 +646,7 @@ write_compat(struct xkb_keymap *keymap, char **buf, size_t *size,
         if (interp->sym == XKB_KEY_NoSymbol)
             sprintf(keysym_name, "Any");
         else
-            xkb_keysym_get_name(interp->sym, keysym_name, 64);
+            xkb_keysym_get_name(interp->sym, keysym_name, sizeof(keysym_name));
 
         write_buf(keymap, buf, size, offset, "\t\tinterpret %s+%s(%s) {\n",
                   keysym_name,

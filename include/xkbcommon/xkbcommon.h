@@ -140,12 +140,14 @@ extern "C" {
 /*
  * Returns the name for a keysym as a string; will return unknown Unicode
  * codepoints as "Ua1b2", and other unknown keysyms as "0xabcd1234".
+ * If the buffer passed is too small, the string is truncated; a size of
+ * at least 32 bytes is recommended.
  */
 void
 xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size);
 
 /*
- * See xkb_keysym_to_string comments: this function will accept any string
+ * See xkb_keysym_get_name comments: this function will accept any string
  * from that function.
  */
 xkb_keysym_t

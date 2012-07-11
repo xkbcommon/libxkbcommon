@@ -68,7 +68,7 @@ test_key_seq(struct xkb_keymap *keymap, ...)
 
     const xkb_keysym_t *syms;
     unsigned int nsyms, i;
-    char ksbuf[16];
+    char ksbuf[64];
 
     state = xkb_state_new(keymap);
     assert(state);
