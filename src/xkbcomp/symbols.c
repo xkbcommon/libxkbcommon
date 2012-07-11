@@ -2116,6 +2116,9 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
         goto err_info;
     }
 
+    if (info.name)
+        keymap->names->symbols = strdup(info.name);
+
     /* now copy info into xkb. */
     ApplyAliases(keymap, &info.aliases);
 

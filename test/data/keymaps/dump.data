@@ -1,5 +1,5 @@
 xkb_keymap {
-	xkb_keycodes {
+	xkb_keycodes "evdev+aliases(qwerty)" {
 		minimum = 8;
 		maximum = 255;
 		 <ESC> = 9;
@@ -295,7 +295,7 @@ xkb_keymap {
 		alias <LatM> = <AB07>;
 	};
 
-	xkb_types {
+	xkb_types "complete" {
 
 		virtual_modifiers NumLock,Alt,LevelThree,LAlt,RAlt,RControl,LControl,ScrollLock,LevelFive,AltGr,Meta,Super,Hyper;
 
@@ -592,7 +592,7 @@ xkb_keymap {
 		};
 	};
 
-	xkb_compatibility {
+	xkb_compatibility "complete+caps(caps_lock):4+misc(assign_shift_left_action):4+level5(level5_lock):4" {
 
 		virtual_modifiers NumLock,Alt,LevelThree,LAlt,RAlt,RControl,LControl,ScrollLock,LevelFive,AltGr,Meta,Super,Hyper;
 
@@ -1080,7 +1080,7 @@ xkb_keymap {
 		};
 	};
 
-	xkb_symbols {
+	xkb_symbols "pc+us+ru:2+ca(multix):3+de(neo):4+inet(evdev)" {
 
 		name[group1]="English (US)";
 		name[group2]="Russian";

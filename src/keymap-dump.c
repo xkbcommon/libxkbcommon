@@ -311,7 +311,12 @@ write_keycodes(struct xkb_keymap *keymap, char **buf, size_t *size,
     struct xkb_key_alias *alias;
     int i;
 
-    write_buf(keymap, buf, size, offset, "\txkb_keycodes {\n");
+    if (keymap->names->keycodes)
+        write_buf(keymap, buf, size, offset, "\txkb_keycodes \"%s\" {\n",
+                  keymap->names->keycodes);
+    else
+        write_buf(keymap, buf, size, offset, "\txkb_keycodes {\n");
+
     write_buf(keymap, buf, size, offset, "\t\tminimum = %d;\n",
               keymap->min_key_code);
     write_buf(keymap, buf, size, offset, "\t\tmaximum = %d;\n",
@@ -355,7 +360,12 @@ write_types(struct xkb_keymap *keymap, char **buf, size_t *size,
     int n;
     struct xkb_key_type *type;
 
-    write_buf(keymap, buf, size, offset, "\txkb_types {\n\n");
+    if (keymap->names->keytypes)
+        write_buf(keymap, buf, size, offset, "\txkb_types \"%s\" {\n\n",
+                  keymap->names->keytypes);
+    else
+        write_buf(keymap, buf, size, offset, "\txkb_types {\n\n");
+
     write_vmods(keymap, buf, size, offset);
 
     darray_foreach(type, keymap->map->types) {
@@ -632,7 +642,11 @@ write_compat(struct xkb_keymap *keymap, char **buf, size_t *size,
     int i;
     struct xkb_sym_interpret *interp;
 
-    write_buf(keymap, buf, size, offset, "\txkb_compatibility {\n\n");
+    if (keymap->names->compat)
+        write_buf(keymap, buf, size, offset, "\txkb_compatibility \"%s\" {\n\n",
+                  keymap->names->compat);
+    else
+        write_buf(keymap, buf, size, offset, "\txkb_compatibility {\n\n");
 
     write_vmods(keymap, buf, size, offset);
 
@@ -744,7 +758,11 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
     int group, tmp;
     bool showActions;
 
-    write_buf(keymap, buf, size, offset, "\txkb_symbols {\n\n");
+    if (keymap->names->symbols)
+        write_buf(keymap, buf, size, offset, "\txkb_symbols \"%s\" {\n\n",
+                  keymap->names->symbols);
+    else
+        write_buf(keymap, buf, size, offset, "\txkb_symbols {\n\n");
 
     for (tmp = group = 0; group < XkbNumKbdGroups; group++) {
 	if (!keymap->names->groups[group])

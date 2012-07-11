@@ -320,6 +320,11 @@ struct xkb_key_alias {
 };
 
 struct xkb_names {
+    char *keycodes;
+    char *symbols;
+    char *keytypes;
+    char *compat;
+
     char *vmods[XkbNumVirtualMods];
     char *indicators[XkbNumIndicators];
     char *groups[XkbNumKbdGroups];

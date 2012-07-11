@@ -1074,6 +1074,12 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
     if (info.errorCount != 0)
         goto err_info;
 
+    if (info.name) {
+        if (XkbcAllocNames(keymap, 0, 0) != Success)
+            goto err_info;
+        keymap->names->keytypes = strdup(info.name);
+    }
+
     i = info.nTypes;
     if ((info.stdPresent & XkbOneLevelMask) == 0)
         i++;

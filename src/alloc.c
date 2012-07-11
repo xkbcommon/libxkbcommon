@@ -352,6 +352,11 @@ XkbcFreeNames(struct xkb_keymap *keymap)
         }
     }
 
+    free(names->keycodes);
+    free(names->symbols);
+    free(names->keytypes);
+    free(names->compat);
+
     for (i = 0; i < XkbNumVirtualMods; i++)
         free(names->vmods[i]);
     for (i = 0; i < XkbNumIndicators; i++)

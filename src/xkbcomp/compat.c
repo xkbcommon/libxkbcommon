@@ -799,6 +799,12 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge
         goto err_info;
     }
 
+    if (info.name) {
+        if (XkbcAllocNames(keymap, 0, 0) != Success)
+            goto err_info;
+        keymap->names->compat = strdup(info.name);
+    }
+
     if (info.nInterps > 0) {
         CopyInterps(&info, keymap->compat, true, XkbSI_Exactly);
         CopyInterps(&info, keymap->compat, true, XkbSI_AllOf | XkbSI_NoneOf);

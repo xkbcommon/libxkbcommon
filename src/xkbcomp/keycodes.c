@@ -846,6 +846,8 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
         for (i = info.computedMin; i <= info.computedMax; i++)
             LongToKeyName(darray_item(info.names, i),
                           darray_item(keymap->names->keys, i).name);
+        if (info.name)
+            keymap->names->keycodes = strdup(info.name);
     } else {
         WSGO("Cannot create struct xkb_names in CompileKeycodes\n");
         goto err_info;
