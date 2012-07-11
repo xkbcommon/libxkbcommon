@@ -71,10 +71,11 @@ int main(int argc, char *argv[])
     assert(as_string);
 
     if (strcmp(as_string, expected) != 0) {
-        printf("dumped map differs from expected!\n\n");
-        printf("length: got %zu, expected %zu\n",
-               strlen(as_string), strlen(expected));
-        printf("result:\n%s\n", as_string);
+        fprintf(stderr, "dumped map differs from expected!\n\n");
+        fprintf(stderr, "length: got %zu, expected %zu\n",
+                strlen(as_string), strlen(expected));
+        fprintf(stderr, "result:\n");
+        printf("%s\n", as_string);
         assert(0);
     }
 
