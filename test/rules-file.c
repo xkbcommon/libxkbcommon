@@ -176,6 +176,18 @@ main(void)
     };
     assert(test_rules(ctx, &test6));
 
+    struct test_data test7 = {
+        .rules = "multiple-options",
+
+        .model = "my_model", .layout = "my_layout", .variant = "my_variant",
+        .options = "option3,option1,colon:opt,option11",
+
+        .keycodes = "my_keycodes", .types = "my_types",
+        .compat = "my_compat+some:compat+group(bla)",
+        .symbols = "my_symbols+extra_variant+compose(foo)+keypad(bar)+altwin(menu)",
+    };
+    assert(test_rules(ctx, &test7));
+
     xkb_context_unref(ctx);
     return 0;
 }

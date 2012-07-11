@@ -680,19 +680,16 @@ match_group_member(struct rules *rules, const char *group_name,
 static bool
 match_one_of(const char *haystack, const char *needle, char sep)
 {
-    const char *s = strstr(haystack, needle);
+    const char *s = haystack;
+    const size_t len = strlen(needle);
 
-    if (s == NULL)
-        return false;
+    do {
+        if (strncmp(s, needle, len) == 0 && (s[len] == '\0' || s[len] == sep))
+            return true;
+        s = strchr(s, sep);
+    } while (s++);
 
-    if (s != haystack && *s != sep)
-        return false;
-
-    s += strlen(needle);
-    if (*s != '\0' && *s != sep)
-        return false;
-
-    return true;
+    return false;
 }
 
 static int
