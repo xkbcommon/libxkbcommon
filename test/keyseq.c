@@ -140,17 +140,13 @@ main(void)
         .model = "evdev",
         .layout = "us,il",
         .variant = "",
-        .options = "grp:menu_toggle",
+        .options = "grp:alt_shift_toggle,grp:menu_toggle",
     };
-    char *XXX_remove_me_str;
 
     ctx = xkb_context_new(0);
     assert(ctx);
     keymap = xkb_map_new_from_names(ctx, &names, 0);
     assert(keymap);
-
-    XXX_remove_me_str = xkb_map_get_as_string(keymap);
-    fprintf(stderr, "keymap is:\n%s\n\n", XXX_remove_me_str);
 
     assert(test_key_seq(keymap,
                         KEY_H,  BOTH,  XK_h,  NEXT,
@@ -212,6 +208,18 @@ main(void)
                         KEY_F,        BOTH,  XK_hebrew_kaph,     NEXT,
                         KEY_COMPOSE,  BOTH,  XK_ISO_Next_Group,  NEXT,
                         KEY_O,        BOTH,  XK_o,               FINISH));
+
+    assert(test_key_seq(keymap,
+                        KEY_LEFTSHIFT, DOWN, XK_Shift_L,        NEXT,
+                        KEY_LEFTALT,   DOWN, XK_ISO_Next_Group, NEXT,
+                        KEY_LEFTALT,   UP,   XK_ISO_Next_Group, NEXT,
+                        KEY_LEFTSHIFT, UP,   XK_Shift_L,        FINISH));
+
+    assert(test_key_seq(keymap,
+                        KEY_LEFTALT,   DOWN, XK_Alt_L,          NEXT,
+                        KEY_LEFTSHIFT, DOWN, XK_ISO_Next_Group, NEXT,
+                        KEY_LEFTSHIFT, UP,   XK_ISO_Next_Group, NEXT,
+                        KEY_LEFTALT,   UP,   XK_Alt_L,          FINISH));
 
     /* Locked modifiers. */
     assert(test_key_seq(keymap,
