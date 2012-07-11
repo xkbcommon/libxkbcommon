@@ -411,6 +411,12 @@ MergeKeyGroups(SymbolsInfo * info,
     if (using == FROM)
     {
         resultSyms = from->syms[group];
+        darray_free(into->symsMapNumEntries[group]);
+        darray_free(into->symsMapIndex[group]);
+        into->symsMapNumEntries[group] = from->symsMapNumEntries[group];
+        into->symsMapIndex[group] = from->symsMapIndex[group];
+        darray_init(from->symsMapNumEntries[group]);
+        darray_init(from->symsMapIndex[group]);
         goto out;
     }
     else if (using == TO)
