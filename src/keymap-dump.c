@@ -261,19 +261,19 @@ get_control_mask_text(uint32_t control_mask)
     static char ret[GET_TEXT_BUF_SIZE];
     /* FIXME: Merge with ... something ... in xkbcomp. */
     static const char *ctrl_names[] = {
-        "repeatKeys",
-        "slowKeys",
-        "bounceKeys",
-        "stickyKeys",
-        "mouseKeys",
-        "mouseKeysAccel",
-        "accessXKeys",
-        "accessXTimeout",
-        "accessXFeedback",
-        "audibleBell",
-        "overlay1",
-        "overlay2",
-        "ignoreGroupLock"
+        "RepeatKeys",
+        "SlowKeys",
+        "BounceKeys",
+        "StickyKeys",
+        "MouseKeys",
+        "MouseKeysAccel",
+        "AccessXKeys",
+        "AccessXTimeout",
+        "AccessXFeedback",
+        "AudibleBell",
+        "Overlay1",
+        "Overlay2",
+        "IgnoreGroupLock"
     };
 
     memset(ret, 0, GET_TEXT_BUF_SIZE);
@@ -637,8 +637,8 @@ write_compat(struct xkb_keymap *keymap, char **buf, size_t *size,
     write_vmods(keymap, buf, size, offset);
 
     write_buf(keymap, buf, size, offset, "\t\tinterpret.useModMapMods= AnyLevel;\n");
-    write_buf(keymap, buf, size, offset, "\t\tinterpret.repeat= false;\n");
-    write_buf(keymap, buf, size, offset, "\t\tinterpret.locking= false;\n");
+    write_buf(keymap, buf, size, offset, "\t\tinterpret.repeat= False;\n");
+    write_buf(keymap, buf, size, offset, "\t\tinterpret.locking= False;\n");
 
     darray_foreach(interp, keymap->compat->sym_interpret) {
         char keysym_name[64];
@@ -661,9 +661,9 @@ write_compat(struct xkb_keymap *keymap, char **buf, size_t *size,
 	if (interp->match & XkbSI_LevelOneOnly)
 	    write_buf(keymap, buf, size, offset, "\t\t\tuseModMapMods=level1;\n");
 	if (interp->flags & XkbSI_LockingKey)
-	    write_buf(keymap, buf, size, offset, "\t\t\tlocking= true;\n");
+	    write_buf(keymap, buf, size, offset, "\t\t\tlocking= True;\n");
 	if (interp->flags & XkbSI_AutoRepeat)
-	    write_buf(keymap, buf, size, offset, "\t\t\trepeat= true;\n");
+	    write_buf(keymap, buf, size, offset, "\t\t\trepeat= True;\n");
 
 	write_action(keymap, buf, size, offset, &interp->act,
                      "\t\t\taction= ", ";\n");
@@ -790,7 +790,7 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
                             continue;
                         type = XkbKeyTypeIndex(keymap, key, group);
                         write_buf(keymap, buf, size, offset,
-                                  "\n\t\t\ttype[Group%d]= \"%s\",",
+                                  "\n\t\t\ttype[group%d]= \"%s\",",
                                   group + 1,
                                   darray_item(map->types, type).name);
                     }
