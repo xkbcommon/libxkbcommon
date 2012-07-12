@@ -31,6 +31,7 @@
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-names.h"
 #include "xkb-priv.h"
+#include "test.h"
 
 /* Offset between evdev keycodes (where KEY_ESCAPE is 1), and the evdev XKB
  * keycode set (where ESC is 9). */
@@ -240,20 +241,12 @@ test_repeat(struct xkb_keymap *keymap)
 int
 main(void)
 {
-    struct xkb_context *context;
+    struct xkb_context *context = test_get_context();
     struct xkb_keymap *keymap;
-    struct xkb_rule_names rmlvo = {
-        .rules = "evdev",
-        .model = "pc104",
-        .layout = "us",
-        .variant = NULL,
-        .options = NULL,
-    };
 
-    context = xkb_context_new(0);
     assert(context);
 
-    keymap = xkb_map_new_from_names(context, &rmlvo, 0);
+    keymap = test_compile_rules(context, "evdev", "pc104", "us", NULL, NULL);
     assert(keymap);
 
     test_update_key(keymap);

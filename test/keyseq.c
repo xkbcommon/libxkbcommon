@@ -29,6 +29,7 @@
 #include <X11/keysym.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "test.h"
 
 enum {
     DOWN,
@@ -133,19 +134,12 @@ fail:
 int
 main(void)
 {
-    struct xkb_context *ctx;
+    struct xkb_context *ctx = test_get_context();
     struct xkb_keymap *keymap;
-    const struct xkb_rule_names names = {
-        .rules = "evdev",
-        .model = "evdev",
-        .layout = "us,il",
-        .variant = "",
-        .options = "grp:alt_shift_toggle,grp:menu_toggle",
-    };
 
-    ctx = xkb_context_new(0);
     assert(ctx);
-    keymap = xkb_map_new_from_names(ctx, &names, 0);
+    keymap = test_compile_rules(ctx, "evdev", "evdev", "us,il", NULL,
+                                "grp:alt_shift_toggle,grp:menu_toggle");
     assert(keymap);
 
     assert(test_key_seq(keymap,

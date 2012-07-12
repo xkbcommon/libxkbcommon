@@ -34,53 +34,40 @@ authorization from the authors.
 #include <sys/types.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "test.h"
 
 int main(int argc, char *argv[])
 {
-    struct xkb_context *ctx = xkb_context_new(0);
+    struct xkb_context *ctx = test_get_context();
     struct xkb_keymap *keymap;
-    struct xkb_rule_names names = {
-        .rules = "evdev",
-        .model = "pc105",
-        .layout = "us,ru,ca,de",
-        .variant = ",,multix,neo",
-        .options = NULL,
-    };
-    struct stat stat_buf;
     char *as_string, *expected;
-    const char *srcdir = getenv("srcdir");
-    char *path;
-    int fd;
-
-    srcdir = srcdir ? srcdir : ".";
-    assert(asprintf(&path, "%s/test/data/keymaps/dump.data", srcdir) != -1);
-    fd = open(path, O_RDONLY);
-    assert(fd >= 0);
-    assert(stat(path, &stat_buf) == 0);
-    assert(stat_buf.st_size > 0);
-    free(path);
-
-    expected = mmap(NULL, stat_buf.st_size, PROT_READ, MAP_SHARED, fd, 0);
-    assert(expected != MAP_FAILED);
 
     assert(ctx);
-    keymap = xkb_map_new_from_names(ctx, &names, 0);
+
+    keymap = test_compile_rules(ctx, "evdev", "pc105", "us,ru,ca,de",
+                                ",,multix,neo", NULL);
     assert(keymap);
 
     as_string = xkb_map_get_as_string(keymap);
+    xkb_map_unref(keymap);
     assert(as_string);
+
+    expected = test_read_file("keymaps/dump.data");
+    assert(expected);
 
     if (strcmp(as_string, expected) != 0) {
         fprintf(stderr, "dumped map differs from expected!\n\n");
         fprintf(stderr, "length: got %zu, expected %zu\n",
                 strlen(as_string), strlen(expected));
         fprintf(stderr, "result:\n");
-        printf("%s\n", as_string);
+        fprintf(stderr, "%s\n", as_string);
+        fflush(stderr);
         assert(0);
     }
 
     free(as_string);
-    xkb_map_unref(keymap);
+    free(expected);
+
     xkb_context_unref(ctx);
 
     return 0;

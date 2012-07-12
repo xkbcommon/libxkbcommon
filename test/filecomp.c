@@ -31,82 +31,33 @@ authorization from the authors.
 #include <limits.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "test.h"
 
 static int
-test_file(const char *path)
+test_file(struct xkb_context *ctx, const char *path_rel)
 {
-    FILE *file;
-    struct xkb_context *context;
-    struct xkb_keymap *keymap;
+    struct xkb_keymap *keymap = test_compile_file(ctx, path_rel);
 
-    file = fopen(path, "r");
-    assert(file != NULL);
-
-    context = xkb_context_new(0);
-    assert(context);
-
-    fprintf(stderr, "\nCompiling path: %s\n", path);
-
-    keymap = xkb_map_new_from_file(context, file,
-                                   XKB_KEYMAP_FORMAT_TEXT_V1, 0);
-    fclose(file);
-
-    if (!keymap) {
-        fprintf(stderr, "Failed to compile keymap\n");
-        xkb_context_unref(context);
+    if (!keymap)
         return 0;
-    }
 
     xkb_map_unref(keymap);
-    xkb_context_unref(context);
-    return 1;
-}
-
-static int
-test_file_name(const char *file_name)
-{
-    static char path[PATH_MAX];
-    const char *srcdir = getenv("srcdir");
-
-    snprintf(path, PATH_MAX - 1,
-             "%s/test/data/keymaps/%s", srcdir ? srcdir : ".", file_name);
-    return test_file(path);
-}
-
-static int
-test_string(const char *string)
-{
-    struct xkb_context *context;
-    struct xkb_keymap *keymap;
-
-    context = xkb_context_new(0);
-    assert(context);
-
-    fprintf(stderr, "\nCompiling string\n");
-
-    keymap = xkb_map_new_from_string(context, string, XKB_KEYMAP_FORMAT_TEXT_V1, 0);
-    if (!keymap) {
-        xkb_context_unref(context);
-        return 0;
-    }
-
-    xkb_map_unref(keymap);
-    xkb_context_unref(context);
     return 1;
 }
 
 int
 main(void)
 {
+    struct xkb_context *ctx = test_get_context();
 
-    assert(test_file_name("keymaps/basic.xkb"));
+    assert(test_file(ctx, "keymaps/basic.xkb"));
     /* XXX check we actually get qwertz here ... */
-    assert(test_file_name("keymaps/default.xkb"));
-    assert(test_file_name("keymaps/comprehensive-plus-geom.xkb"));
+    assert(test_file(ctx, "keymaps/default.xkb"));
+    assert(test_file(ctx, "keymaps/comprehensive-plus-geom.xkb"));
 
-    assert(!test_file_name("bad.xkb"));
+    assert(!test_file(ctx, "bad.xkb"));
 
-    assert(!test_string(""));
+    xkb_context_unref(ctx);
 
     return 0;
 }

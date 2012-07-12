@@ -108,9 +108,11 @@ $(top_builddir)/makekeys/makekeys$(EXEEXT): $(top_srcdir)/makekeys/makekeys.c
 
 # Some tests need to use unexported symbols, so we link them against
 # a private copy of libxkbcommon with all symbols exposed.
-noinst_LTLIBRARIES = libxkbcommon-priv.la
-libxkbcommon_priv_la_LDFLAGS = $(libxkbcommon_la_LDFLAGS)
-libxkbcommon_priv_la_SOURCES = $(libxkbcommon_la_SOURCES)
+noinst_LTLIBRARIES = libtest.la
+libtest_la_LDFLAGS = $(libxkbcommon_la_LDFLAGS)
+libtest_la_SOURCES = \
+	$(libxkbcommon_la_SOURCES) \
+	test/common.c
 
 TESTS_ENVIRONMENT =
 
@@ -126,7 +128,7 @@ TESTS = \
 	test/dump \
 	test/stringcomp \
 	test/keyseq
-TESTS_LDADD = libxkbcommon-priv.la
+TESTS_LDADD = libtest.la
 
 test_xkey_LDADD = $(TESTS_LDADD)
 test_filecomp_LDADD = $(TESTS_LDADD)
@@ -143,7 +145,9 @@ test_keyseq_LDADD = $(TESTS_LDADD)
 
 check_PROGRAMS = $(TESTS)
 
-EXTRA_DIST = test/data
+EXTRA_DIST = \
+	test/data \
+	test/test.h
 
 # This sed script strips out lines that start with '#define _' which
 # removes #define _OSF_Keysyms and such.  The XK_Ydiaeresis case is to

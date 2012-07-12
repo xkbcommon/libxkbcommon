@@ -1,5 +1,4 @@
-/*
-Copyright 2009 Dan Nicholson
+/* Copyright 2009 Dan Nicholson
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -34,48 +33,28 @@ authorization from the authors.
 #include <sys/types.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "test.h"
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
-    struct xkb_context *ctx = xkb_context_new(0);
+    struct xkb_context *ctx = test_get_context();
     struct xkb_keymap *keymap;
-    struct stat info;
-    char *as_string, *buf;
-    char *path;
-    const char *srcdir;
-    int fd, count, remaining;
+    char *as_string;
 
     assert(ctx);
 
-    srcdir = getenv("srcdir");
-    assert(srcdir);
-    assert(asprintf(&path, "%s/test/data/keymaps/stringcomp.data", srcdir) > 0);
-    assert(path);
-
-    fd = open(path, O_RDONLY);
-    assert(fd >= 0);
-    assert(fstat(fd, &info) == 0);
-    as_string = malloc(info.st_size + 1);
+    as_string = test_read_file("keymaps/stringcomp.data");
     assert(as_string);
 
-    remaining = info.st_size;
-    buf = as_string;
-    while ((count = read(fd, buf, remaining))) {
-        remaining -= count;
-        buf += count;
-    }
-
-    assert(remaining == 0);
-    as_string[info.st_size] = '\0';
-
-    keymap = xkb_map_new_from_string(ctx, as_string,
-                                     XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+    keymap = test_compile_string(ctx, as_string);
     assert(keymap);
-
-    free(path);
-    close(fd);
     free(as_string);
     xkb_map_unref(keymap);
+
+    keymap = test_compile_string(ctx, "");
+    assert(!keymap);
+
     xkb_context_unref(ctx);
 
     return 0;

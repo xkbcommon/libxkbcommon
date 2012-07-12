@@ -30,64 +30,52 @@ authorization from the authors.
 #include <time.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "test.h"
 
 #define BENCHMARK_ITERATIONS 1000
 
 static int
-do_test_rmlvo(const char *rules, const char *model, const char *layout,
-              const char *variant, const char *options, int silent)
-{
-    struct xkb_context *context;
-    struct xkb_keymap *keymap;
-    struct xkb_rule_names rmlvo = {
-        .rules = rules,
-        .model = model,
-        .layout = layout,
-        .variant = variant,
-        .options = options
-    };
-
-    context = xkb_context_new(0);
-    assert(context);
-
-    if (!silent)
-        fprintf(stderr, "Compiling %s %s %s %s %s\n", rules, model, layout,
-                variant, options);
-
-    keymap = xkb_map_new_from_names(context, &rmlvo, 0);
-    if (!keymap) {
-        xkb_context_unref(context);
-        return 0;
-    }
-
-    xkb_map_unref(keymap);
-    xkb_context_unref(context);
-    return 1;
-}
-
-static int
-test_rmlvo(const char *rules, const char *model, const char *layout,
+test_rmlvo(struct xkb_context *context, const char *rules,
+           const char *model, const char *layout,
            const char *variant, const char *options)
 {
-    return do_test_rmlvo(rules, model, layout, variant, options, 0);
+    struct xkb_keymap *keymap;
+
+    keymap = test_compile_rules(context, rules, model, layout, variant,
+                                options);
+    if (keymap)
+        xkb_map_unref(keymap);
+
+    return keymap != NULL;
 }
 
 static int
-test_rmlvo_silent(const char *rules, const char *model, const char *layout,
+test_rmlvo_silent(struct xkb_context *context, const char *rules,
+                  const char *model, const char *layout,
                   const char *variant, const char *options)
 {
-    return do_test_rmlvo(rules, model, layout, variant, options, 1);
+    struct xkb_keymap *keymap;
+
+    keymap = test_compile_rules(context, rules, model, layout, variant,
+                                options);
+    if (keymap) {
+        fprintf(stderr, "Compiled '%s' '%s' '%s' '%s' '%s'\n",
+                rules, model, layout, variant, options);
+        xkb_map_unref(keymap);
+    }
+
+    return keymap != NULL;
 }
 
 static void
-benchmark(void)
+benchmark(struct xkb_context *context)
 {
     struct timespec start, stop, elapsed;
     int i;
 
     clock_gettime(CLOCK_MONOTONIC, &start);
     for (i = 0; i < BENCHMARK_ITERATIONS; i++)
-        assert(test_rmlvo_silent("base",       "",       "us",  "",      ""));
+        assert(test_rmlvo_silent(context, "base",       "",       "us",  "",      ""));
     clock_gettime(CLOCK_MONOTONIC, &stop);
 
     elapsed.tv_sec = stop.tv_sec - start.tv_sec;
@@ -103,16 +91,22 @@ benchmark(void)
 
 int main(int argc, char *argv[])
 {
-    assert(test_rmlvo("base",       "pc105",  "us,il,ru,ca",  ",,,multix",      "grp:alts_toggle,ctrl:nocaps,compose:rwin"));
-    assert(test_rmlvo("base",       "",       "us",  "",      ""));
-    assert(test_rmlvo("evdev",      "pc105",  "us",  "intl",  ""));
-    assert(test_rmlvo("evdev",      "pc105",  "us",  "intl",  "grp:alts_toggle"));
+    struct xkb_context *ctx = test_get_context();
 
-    assert(!test_rmlvo("",          "",       "",    "",      ""));
-    assert(!test_rmlvo("base",      "",       "",    "",      ""));
-    assert(!test_rmlvo("base",      "pc105",  "",    "",      ""));
-    assert(!test_rmlvo("badrules",  "",       "us",  "",      ""));
+    assert(ctx);
+
+    assert(test_rmlvo(ctx, "base",       "pc105",  "us,il,ru,ca",  ",,,multix",      "grp:alts_toggle,ctrl:nocaps,compose:rwin"));
+    assert(test_rmlvo(ctx, "base",       "",       "us",  "",      ""));
+    assert(test_rmlvo(ctx, "evdev",      "pc105",  "us",  "intl",  ""));
+    assert(test_rmlvo(ctx, "evdev",      "pc105",  "us",  "intl",  "grp:alts_toggle"));
+
+    assert(!test_rmlvo(ctx, "",          "",       "",    "",      ""));
+    assert(!test_rmlvo(ctx, "base",      "",       "",    "",      ""));
+    assert(!test_rmlvo(ctx, "base",      "pc105",  "",    "",      ""));
+    assert(!test_rmlvo(ctx, "badrules",  "",       "us",  "",      ""));
 
     if (argc > 1 && strcmp(argv[1], "bench") == 0)
-        benchmark();
+        benchmark(ctx);
+
+    xkb_context_unref(ctx);
 }

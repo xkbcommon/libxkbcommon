@@ -28,6 +28,7 @@
 
 #include "xkbcommon/xkbcommon.h"
 #include "rules.h"
+#include "test.h"
 
 struct test_data {
     /* Rules file */
@@ -109,7 +110,7 @@ main(void)
     assert(ctx);
 
     assert(asprintf(&path, "%s/test/data", srcdir ? srcdir : ".") > 0);
-    assert(xkb_context_include_path_append(ctx, path));
+    assert(xkb_context_include_path_append(ctx, test_get_path("")));
     free(path);
 
     struct test_data test1 = {
