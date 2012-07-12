@@ -207,6 +207,24 @@ _XkbcKSCheckCase(xkb_keysym_t ks)
             (ks >= XKB_KEY_amacron && ks <= XKB_KEY_umacron))
             rtrn |= _XkbKSLower;
         break;
+    case 6: /* Cyrillic */
+        if ((ks >= XKB_KEY_Serbian_DJE && ks <= XKB_KEY_Serbian_DZE) ||
+            (ks >= XKB_KEY_Cyrillic_YU && ks <= XKB_KEY_Cyrillic_HARDSIGN))
+            rtrn |= _XkbKSUpper;
+        if ((ks >= XKB_KEY_Serbian_dje && ks <= XKB_KEY_Serbian_dze) ||
+            (ks >= XKB_KEY_Cyrillic_yu && ks <= XKB_KEY_Cyrillic_hardsign))
+            rtrn |= _XkbKSLower;
+        break;
+    case 7: /* Greek */
+        if ((ks >= XKB_KEY_Greek_ALPHAaccent &&
+             ks <= XKB_KEY_Greek_OMEGAaccent) ||
+            (ks >= XKB_KEY_Greek_ALPHA && ks <= XKB_KEY_Greek_OMEGA))
+            rtrn |= _XkbKSUpper;
+        if ((ks >= XKB_KEY_Greek_alphaaccent &&
+             ks <= XKB_KEY_Greek_omegaaccent) ||
+            (ks >= XKB_KEY_Greek_alpha && ks <= XKB_KEY_Greek_OMEGA))
+            rtrn |= _XkbKSLower;
+        break;
     case 18: /* latin 8 */
         if ((ks == XKB_KEY_Wcircumflex) ||
             (ks == XKB_KEY_Ycircumflex) ||
