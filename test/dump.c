@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     int fd;
 
     srcdir = srcdir ? srcdir : ".";
-    assert(asprintf(&path, "%s/test/data/dump.data", srcdir) != -1);
+    assert(asprintf(&path, "%s/test/data/keymaps/dump.data", srcdir) != -1);
     fd = open(path, O_RDONLY);
     assert(fd >= 0);
     assert(stat(path, &stat_buf) == 0);

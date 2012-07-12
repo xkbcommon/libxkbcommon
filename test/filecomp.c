@@ -68,7 +68,8 @@ test_file_name(const char *file_name)
     static char path[PATH_MAX];
     const char *srcdir = getenv("srcdir");
 
-    snprintf(path, PATH_MAX - 1, "%s/test/data/%s", srcdir ? srcdir : ".", file_name);
+    snprintf(path, PATH_MAX - 1,
+             "%s/test/data/keymaps/%s", srcdir ? srcdir : ".", file_name);
     return test_file(path);
 }
 
@@ -98,10 +99,10 @@ int
 main(void)
 {
 
-    assert(test_file_name("basic.xkb"));
+    assert(test_file_name("keymaps/basic.xkb"));
     /* XXX check we actually get qwertz here ... */
-    assert(test_file_name("default.xkb"));
-    assert(test_file_name("comprehensive-plus-geom.xkb"));
+    assert(test_file_name("keymaps/default.xkb"));
+    assert(test_file_name("keymaps/comprehensive-plus-geom.xkb"));
 
     assert(!test_file_name("bad.xkb"));
 

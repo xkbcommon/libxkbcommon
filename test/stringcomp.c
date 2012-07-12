@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 
     srcdir = getenv("srcdir");
     assert(srcdir);
-    assert(asprintf(&path, "%s/test/stringcomp.data", srcdir) > 0);
+    assert(asprintf(&path, "%s/test/data/keymaps/stringcomp.data", srcdir) > 0);
     assert(path);
 
     fd = open(path, O_RDONLY);
