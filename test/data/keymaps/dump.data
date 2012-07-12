@@ -1878,10 +1878,10 @@ xkb_keymap {
 		key <I246> {	[        XF86WLAN ] };
 		modifier_map Control { <LCTL> };
 		modifier_map Shift { <LFSH> };
-		modifier_map Lock { <LFSH> };
 		modifier_map Mod5 { <BKSL> };
 		modifier_map Shift { <RTSH> };
 		modifier_map Mod1 { <LALT> };
+		modifier_map Lock { <CAPS> };
 		modifier_map Mod2 { <NMLK> };
 		modifier_map Mod5 { <LVL3> };
 		modifier_map Mod3 { <LSGT> };

@@ -24,6 +24,8 @@
 
  ********************************************************/
 
+#include <limits.h>
+
 #include "xkbcomp-priv.h"
 #include "parseutils.h"
 #include "action.h"
@@ -1557,12 +1559,23 @@ HandleSymbolsFile(XkbFile *file, struct xkb_keymap *keymap,
     }
 }
 
+/**
+ * Given a keysym @sym, find the keycode which generates it
+ * (returned in @kc_rtrn). This is used for example in a modifier
+ * map definition, such as:
+ *      modifier_map Lock           { Caps_Lock };
+ * where we want to add the Lock modifier to the modmap of the key
+ * which matches the keysym Caps_Lock.
+ * Since there can be many keys which generates the keysym, the key
+ * is chosen first by lowest group in which the keysym appears, than
+ * by lowest level and than by lowest key code.
+ */
 static bool
 FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym,
                  xkb_keycode_t *kc_rtrn)
 {
     xkb_keycode_t key;
-    unsigned int group, level;
+    unsigned int group, level, min_group = UINT_MAX, min_level = UINT_MAX;
 
     for (key = keymap->min_key_code; key <= keymap->max_key_code; key++)
     {
@@ -1574,13 +1587,27 @@ FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym,
                 if (XkbKeyNumSyms(keymap, key, group, level) != 1 ||
                     (XkbKeySymEntry(keymap, key, group, level))[0] != sym)
                     continue;
-                *kc_rtrn = key;
-                return true;
+
+                /*
+                 * If the keysym was found in a group or level > 0, we must
+                 * keep looking since we might find a key in which the keysym
+                 * is in a lower group or level.
+                 */
+                if (group < min_group ||
+                    (group == min_group && level < min_level)) {
+                    *kc_rtrn = key;
+                    if (group == 0 && level == 0) {
+                        return true;
+                    } else {
+                        min_group = group;
+                        min_level = level;
+                    }
+                }
             }
         }
     }
 
-    return false;
+    return min_group != UINT_MAX;
 }
 
 /**
