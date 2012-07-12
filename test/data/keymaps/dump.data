@@ -1194,6 +1194,7 @@ xkb_keymap {
 		};
 		key <AD01> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               q,               Q ],
@@ -1203,6 +1204,7 @@ xkb_keymap {
 		};
 		key <AD02> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               w,               W ],
@@ -1212,6 +1214,7 @@ xkb_keymap {
 		};
 		key <AD03> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               e,               E ],
@@ -1221,6 +1224,7 @@ xkb_keymap {
 		};
 		key <AD04> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               r,               R ],
@@ -1230,6 +1234,7 @@ xkb_keymap {
 		};
 		key <AD05> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               t,               T ],
@@ -1239,6 +1244,7 @@ xkb_keymap {
 		};
 		key <AD06> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               y,               Y ],
@@ -1248,6 +1254,7 @@ xkb_keymap {
 		};
 		key <AD07> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               u,               U ],
@@ -1257,6 +1264,7 @@ xkb_keymap {
 		};
 		key <AD08> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               i,               I ],
@@ -1266,6 +1274,7 @@ xkb_keymap {
 		};
 		key <AD09> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               o,               O ],
@@ -1275,6 +1284,7 @@ xkb_keymap {
 		};
 		key <AD10> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               p,               P ],
@@ -1283,6 +1293,7 @@ xkb_keymap {
 			symbols[Group4]= [               q,               Q,       ampersand,            U3d5,          KP_Add,          KP_Add,           U211a,        NoSymbol ]
 		};
 		key <AD11> {
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [     bracketleft,       braceleft ],
@@ -1291,6 +1302,7 @@ xkb_keymap {
 			symbols[Group4]= [          ssharp,           U1e9e,            U17f, Greek_finalsmallsigma,           U2212,        NoSymbol,             jot,        NoSymbol ]
 		};
 		key <AD12> {
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [    bracketright,      braceright ],
@@ -1302,6 +1314,7 @@ xkb_keymap {
 		key <LCTL> {	[       Control_L ] };
 		key <AC01> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               a,               A ],
@@ -1311,6 +1324,7 @@ xkb_keymap {
 		};
 		key <AC02> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               s,               S ],
@@ -1320,6 +1334,7 @@ xkb_keymap {
 		};
 		key <AC03> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               d,               D ],
@@ -1329,6 +1344,7 @@ xkb_keymap {
 		};
 		key <AC04> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               f,               F ],
@@ -1338,6 +1354,7 @@ xkb_keymap {
 		};
 		key <AC05> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               g,               G ],
@@ -1347,6 +1364,7 @@ xkb_keymap {
 		};
 		key <AC06> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               h,               H ],
@@ -1356,6 +1374,7 @@ xkb_keymap {
 		};
 		key <AC07> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               j,               J ],
@@ -1365,6 +1384,7 @@ xkb_keymap {
 		};
 		key <AC08> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               k,               K ],
@@ -1374,6 +1394,7 @@ xkb_keymap {
 		};
 		key <AC09> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               l,               L ],
@@ -1382,6 +1403,7 @@ xkb_keymap {
 			symbols[Group4]= [               t,               T,           minus,       Greek_tau,            KP_6,            KP_6, partialderivative,        NoSymbol ]
 		};
 		key <AC10> {
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [       semicolon,           colon ],
@@ -1390,6 +1412,7 @@ xkb_keymap {
 			symbols[Group4]= [               d,               D,           colon,     Greek_delta,    KP_Separator,           comma,     Greek_DELTA,        NoSymbol ]
 		};
 		key <AC11> {
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [      apostrophe,        quotedbl ],
@@ -1398,6 +1421,7 @@ xkb_keymap {
 			symbols[Group4]= [               y,               Y,              at,   Greek_upsilon,          period,      KP_Decimal,           nabla,        NoSymbol ]
 		};
 		key <TLDE> {
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [           grave,      asciitilde ],
@@ -1422,6 +1446,7 @@ xkb_keymap {
 		};
 		key <AB01> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "FOUR_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               z,               Z ],
@@ -1431,6 +1456,7 @@ xkb_keymap {
 		};
 		key <AB02> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "FOUR_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               x,               X ],
@@ -1440,6 +1466,7 @@ xkb_keymap {
 		};
 		key <AB03> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               c,               C ],
@@ -1449,6 +1476,7 @@ xkb_keymap {
 		};
 		key <AB04> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               v,               V ],
@@ -1458,6 +1486,7 @@ xkb_keymap {
 		};
 		key <AB05> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               b,               B ],
@@ -1467,6 +1496,7 @@ xkb_keymap {
 		};
 		key <AB06> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               n,               N ],
@@ -1476,6 +1506,7 @@ xkb_keymap {
 		};
 		key <AB07> {
 			type[group1]= "ALPHABETIC",
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               m,               M ],
@@ -1484,6 +1515,7 @@ xkb_keymap {
 			symbols[Group4]= [               m,               M,         percent,        Greek_mu,            KP_1,            KP_1,        ifonlyif,        NoSymbol ]
 		};
 		key <AB08> {
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [           comma,            less ],
@@ -1492,6 +1524,7 @@ xkb_keymap {
 			symbols[Group4]= [           comma,          endash,        quotedbl,            U3f1,            KP_2,            KP_2,           U21d2,        NoSymbol ]
 		};
 		key <AB09> {
+			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [          period,         greater ],
@@ -1878,14 +1911,13 @@ xkb_keymap {
 		key <I246> {	[        XF86WLAN ] };
 		modifier_map Control { <LCTL> };
 		modifier_map Shift { <LFSH> };
-		modifier_map Mod5 { <BKSL> };
 		modifier_map Shift { <RTSH> };
 		modifier_map Mod1 { <LALT> };
 		modifier_map Lock { <CAPS> };
 		modifier_map Mod2 { <NMLK> };
 		modifier_map Mod5 { <LVL3> };
-		modifier_map Mod3 { <LSGT> };
 		modifier_map Control { <RCTL> };
+		modifier_map Mod3 { <RCTL> };
 		modifier_map Mod1 { <RALT> };
 		modifier_map Mod4 { <LWIN> };
 		modifier_map Mod4 { <RWIN> };
