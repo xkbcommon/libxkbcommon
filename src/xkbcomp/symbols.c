@@ -1652,6 +1652,10 @@ FindNamedType(struct xkb_keymap *keymap, xkb_atom_t atom, unsigned *type_rtrn)
  * @param typeNameRtrn Set to the Atom of the type name.
  *
  * @returns true if a type could be found, false otherwise.
+ *
+ * FIXME: I need to take the KeyInfo so I can look at symsMapIndex and
+ *        all that fun stuff rather than just assuming there's always one
+ *        symbol per level.
  */
 static bool
 FindAutomaticType(struct xkb_keymap *keymap, int width,
