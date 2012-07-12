@@ -43,8 +43,11 @@ test_rmlvo(struct xkb_context *context, const char *rules,
 
     keymap = test_compile_rules(context, rules, model, layout, variant,
                                 options);
-    if (keymap)
+    if (keymap) {
+        fprintf(stderr, "Compiled '%s' '%s' '%s' '%s' '%s'\n",
+                rules, model, layout, variant, options);
         xkb_map_unref(keymap);
+    }
 
     return keymap != NULL;
 }
@@ -58,11 +61,8 @@ test_rmlvo_silent(struct xkb_context *context, const char *rules,
 
     keymap = test_compile_rules(context, rules, model, layout, variant,
                                 options);
-    if (keymap) {
-        fprintf(stderr, "Compiled '%s' '%s' '%s' '%s' '%s'\n",
-                rules, model, layout, variant, options);
+    if (keymap)
         xkb_map_unref(keymap);
-    }
 
     return keymap != NULL;
 }
@@ -75,7 +75,7 @@ benchmark(struct xkb_context *context)
 
     clock_gettime(CLOCK_MONOTONIC, &start);
     for (i = 0; i < BENCHMARK_ITERATIONS; i++)
-        assert(test_rmlvo_silent(context, "base",       "",       "us",  "",      ""));
+        assert(test_rmlvo_silent(context, "evdev",       "",       "us",  "",      ""));
     clock_gettime(CLOCK_MONOTONIC, &stop);
 
     elapsed.tv_sec = stop.tv_sec - start.tv_sec;
