@@ -877,7 +877,6 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
     if (map && map->modmap) {
 	for (key = keymap->min_key_code; key <= keymap->max_key_code; key++) {
             int mod;
-            char name[5];
 
             if (map->modmap[key] == 0)
                 continue;
@@ -886,12 +885,11 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
                 if (!(map->modmap[key] & (1 << mod)))
                     continue;
 
-                memcpy(name, darray_item(keymap->names->keys, key).name, 4);
-                name[4]= '\0';
-
                 write_buf(keymap, buf, size, offset,
-                          "\t\tmodifier_map %s { <%s> };\n",
-                          get_mod_index_text(mod), name);
+                          "\t\tmodifier_map %s { %s };\n",
+                          get_mod_index_text(mod),
+                          XkbcKeyNameText(darray_item(keymap->names->keys,
+                                                      key).name));
             }
 	}
     }
