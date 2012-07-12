@@ -11,8 +11,8 @@ xkb_symbols "basic" {
     key <AE03> {	[	  3,	numbersign	]	};
     key <AE04> {	[	  4,	dollar		]	};
     key <AE05> {	[	  5,	percent		]	};
-    key <AE06> {	[	  6,	asciicircum	]	};
-    key <AE07> {	[	  7,	ampersand	]	};
+    key <AE06> {	[	  { H, E, L, L, O },	asciicircum	]	};
+    key <AE07> {	[	  { Y, E, S, space, T, H, I, S, space, I, S, space, D, O, G },	ampersand	]	};
     key <AE08> {	[	  8,	asterisk	]	};
     key <AE09> {	[	  9,	parenleft	]	};
     key <AE10> {	[	  0,	parenright	]	};
