@@ -95,8 +95,8 @@ int main(int argc, char *argv[])
 
     assert(ctx);
 
-    assert(test_rmlvo(ctx, "base",       "pc105",  "us,il,ru,ca",  ",,,multix",      "grp:alts_toggle,ctrl:nocaps,compose:rwin"));
-    assert(test_rmlvo(ctx, "base",       "",       "us",  "",      ""));
+    assert(test_rmlvo(ctx, "evdev",       "pc105",  "us,il,ru,ca",  ",,,multix",      "grp:alts_toggle,ctrl:nocaps,compose:rwin"));
+    assert(test_rmlvo(ctx, "evdev",       "",       "us",  "",      ""));
     assert(test_rmlvo(ctx, "evdev",      "pc105",  "us",  "intl",  ""));
     assert(test_rmlvo(ctx, "evdev",      "pc105",  "us",  "intl",  "grp:alts_toggle"));
 

@@ -46,7 +46,8 @@ test_get_path(const char *path_rel)
     const char *srcdir = getenv("srcdir");
 
     snprintf(path, PATH_MAX - 1,
-             "%s/test/data/%s", srcdir ? srcdir : ".", path_rel);
+             "%s/test/data/%s", srcdir ? srcdir : ".",
+             path_rel ? path_rel : "");
 
     return path;
 }
@@ -93,7 +94,14 @@ test_read_file(const char *path_rel)
 struct xkb_context *
 test_get_context(void)
 {
-    return xkb_context_new(0);
+    struct xkb_context *ctx = xkb_context_new(XKB_CONTEXT_NO_DEFAULT_INCLUDES);
+
+    if (!ctx)
+        return NULL;
+
+    xkb_context_include_path_append(ctx, test_get_path(""));
+
+    return ctx;
 }
 
 struct xkb_keymap *

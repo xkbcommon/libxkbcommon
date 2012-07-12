@@ -1,5 +1,5 @@
 xkb_keymap {
-    xkb_keycodes  { include "xfree86+aliases(qwerty)" };
+    xkb_keycodes  { include "evdev+aliases(qwerty)" };
     xkb_types     { include "complete" };
     xkb_compat    { include "complete" };
     xkb_symbols   { include "pc+us" };
@@ -7,7 +7,7 @@ xkb_keymap {
 };
 
 default xkb_keymap {
-    xkb_keycodes  { include "xfree86+aliases(qwertz)" };
+    xkb_keycodes  { include "evdev+aliases(qwertz)" };
     xkb_types     { include "complete" };
     xkb_compat    { include "complete" };
     xkb_symbols   { include "pc+de" };
