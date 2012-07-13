@@ -560,10 +560,6 @@ AddMapEntry(struct xkb_keymap *keymap, KeyTypeInfo *type,
         return false;           /* allocation failure, already reported */
     if (new->level >= type->numLevels)
         type->numLevels = new->level + 1;
-    if (new->mods.vmods == 0)
-        old->active = true;
-    else
-        old->active = false;
     old->mods.mask = new->mods.real_mods;
     old->mods.real_mods = new->mods.real_mods;
     old->mods.vmods = new->mods.vmods;
@@ -1000,12 +996,9 @@ ComputeEffectiveMap(struct xkb_keymap *keymap, struct xkb_key_type *type)
             tmp = 0;
             if (entry->mods.vmods != 0) {
                 tmp = VModsToReal(keymap, entry->mods.vmods);
-                if (tmp == 0) {
-                    entry->active = false;
+                if (tmp == 0)
                     continue;
-                }
             }
-            entry->active = true;
             entry->mods.mask = (entry->mods.real_mods | tmp) & type->mods.mask;
         }
     }

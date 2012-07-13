@@ -29,7 +29,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 static struct xkb_kt_map_entry map2Level[]= {
     {
-        .active = true,
         .level = ShiftMask,
         .mods = {.mask = 1, .vmods = ShiftMask, .real_mods = 0 }
     }
@@ -37,12 +36,10 @@ static struct xkb_kt_map_entry map2Level[]= {
 
 static struct xkb_kt_map_entry mapAlpha[]= {
     {
-        .active = true,
         .level = ShiftMask,
         .mods = { .mask = 1, .vmods = ShiftMask, .real_mods = 0 }
     },
     {
-        .active = true,
         .level = LockMask,
         .mods = { .mask = 0, .vmods = LockMask,  .real_mods = 0 }
     }
@@ -56,12 +53,10 @@ static struct xkb_mods preAlpha[]= {
 #define NL_VMOD_MASK 0
 static struct xkb_kt_map_entry mapKeypad[]= {
     {
-        .active = true,
         .level = ShiftMask,
         .mods = { .mask = 1, .vmods = ShiftMask, .real_mods = 0 }
     },
     {
-        .active = false,
         .level = 0,
         .mods = { .mask = 1, .vmods = 0, .real_mods = NL_VMOD_MASK }
     }
@@ -148,14 +143,12 @@ XkbcInitCanonicalKeyTypes(struct xkb_keymap *keymap, unsigned which,
             type->mods.vmods = (1 << keypadVMod);
 
             entry = &darray_item(type->map, 0);
-            entry->active = true;
             entry->mods.mask = ShiftMask;
             entry->mods.real_mods = ShiftMask;
             entry->mods.vmods = 0;
             entry->level = 1;
 
             entry = &darray_item(type->map, 1);
-            entry->active = false;
             entry->mods.mask = 0;
             entry->mods.real_mods = 0;
             entry->mods.vmods = (1 << keypadVMod);

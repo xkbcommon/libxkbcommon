@@ -238,7 +238,6 @@ struct xkb_mods {
 };
 
 struct xkb_kt_map_entry {
-        int            active;
         uint16_t        level;
         struct xkb_mods     mods;
 };
