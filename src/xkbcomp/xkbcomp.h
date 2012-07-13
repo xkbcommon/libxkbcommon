@@ -246,9 +246,6 @@ typedef struct _XkbFile
     unsigned flags;
 } XkbFile;
 
-extern struct xkb_keymap *
-CompileKeymap(struct xkb_context *ctx, XkbFile *file);
-
 extern bool
 CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
                 enum merge_mode merge);

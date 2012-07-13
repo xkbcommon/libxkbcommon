@@ -51,7 +51,6 @@ libxkbcommon_la_SOURCES = \
 	src/xkbcomp/indicators.h \
 	src/xkbcomp/keycodes.c \
 	src/xkbcomp/keycodes.h \
-	src/xkbcomp/keymap.c \
 	src/xkbcomp/keytypes.c \
 	src/xkbcomp/misc.c \
 	src/xkbcomp/parser.y \

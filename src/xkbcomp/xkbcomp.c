@@ -63,15 +63,137 @@ keymap_file_from_components(struct xkb_context *ctx,
                          &keycodes->common, 0);
 }
 
+/**
+ * Compile the given file and store the output in keymap.
+ * @param file A list of XkbFiles, each denoting one type (e.g.
+ * FILE_TYPE_KEYCODES, etc.)
+ */
 static struct xkb_keymap *
 compile_keymap(struct xkb_context *ctx, XkbFile *file)
 {
-    struct xkb_keymap *keymap;
+    unsigned have = 0;
+    bool ok;
+    enum xkb_file_type main_type;
+    const char *main_name;
+    struct xkb_keymap *keymap = XkbcAllocKeyboard(ctx);
+    struct {
+        XkbFile *keycodes;
+        XkbFile *types;
+        XkbFile *compat;
+        XkbFile *symbols;
+    } sections = { NULL };
 
-    keymap = CompileKeymap(ctx, file);
+    if (!keymap)
+        return NULL;
+
+    main_type = file->type;
+    main_name = file->name ? file->name : "(unnamed)";
+
+    /*
+     * Other aggregate file types are converted to FILE_TYPE_KEYMAP
+     * in the parser.
+     */
+    if (main_type != FILE_TYPE_KEYMAP) {
+        ERROR("Cannot compile a %s file alone into a keymap\n",
+              XkbcFileTypeText(main_type));
+        goto err;
+    }
+
+    /* Check for duplicate entries in the input file */
+    for (file = (XkbFile *)file->defs; file;
+         file = (XkbFile *)file->common.next) {
+        if (have & file->type) {
+            ERROR("More than one %s section in a %s file\n",
+                   XkbcFileTypeText(file->type), XkbcFileTypeText(main_type));
+            ACTION("All sections after the first ignored\n");
+            continue;
+        }
+        else if (!(file->type & LEGAL_FILE_TYPES)) {
+            ERROR("Cannot define %s in a %s file\n",
+                   XkbcFileTypeText(file->type), XkbcFileTypeText(main_type));
+            continue;
+        }
+
+        switch (file->type) {
+        case FILE_TYPE_KEYCODES:
+            sections.keycodes = file;
+            break;
+        case FILE_TYPE_TYPES:
+            sections.types = file;
+            break;
+        case FILE_TYPE_SYMBOLS:
+            sections.symbols = file;
+            break;
+        case FILE_TYPE_COMPAT:
+            sections.compat = file;
+            break;
+        default:
+            continue;
+        }
+
+        if (!file->topName || strcmp(file->topName, main_name) != 0) {
+            free(file->topName);
+            file->topName = strdup(main_name);
+        }
+
+        have |= file->type;
+    }
+
+    if (REQUIRED_FILE_TYPES & (~have)) {
+        enum xkb_file_type bit;
+        enum xkb_file_type missing;
+
+        missing = REQUIRED_FILE_TYPES & (~have);
+
+        for (bit = 1; missing != 0; bit <<= 1) {
+            if (missing & bit) {
+                ERROR("Required section %s missing from keymap\n",
+                      XkbcFileTypeText(bit));
+                missing &= ~bit;
+            }
+        }
+
+        goto err;
+    }
+
+    /* compile the sections we have in the file one-by-one, or fail. */
+    if (sections.keycodes == NULL ||
+        !CompileKeycodes(sections.keycodes, keymap, MERGE_OVERRIDE))
+    {
+        ERROR("Failed to compile keycodes\n");
+        goto err;
+    }
+    if (sections.types == NULL ||
+        !CompileKeyTypes(sections.types, keymap, MERGE_OVERRIDE))
+    {
+        ERROR("Failed to compile key types\n");
+        goto err;
+    }
+    if (sections.compat == NULL ||
+        !CompileCompatMap(sections.compat, keymap, MERGE_OVERRIDE))
+    {
+        ERROR("Failed to compile compat map\n");
+        goto err;
+    }
+    if (sections.symbols == NULL ||
+        !CompileSymbols(sections.symbols, keymap, MERGE_OVERRIDE))
+    {
+        ERROR("Failed to compile symbols\n");
+        goto err;
+    }
+
+    ok = UpdateModifiersFromCompat(keymap);
+    if (!ok)
+        goto err;
 
     FreeXKBFile(file);
     return keymap;
+
+err:
+    ACTION("Failed to compile keymap\n");
+    xkb_map_unref(keymap);
+    FreeXKBFile(file);
+    return NULL;
 }
 
 struct xkb_keymap *
