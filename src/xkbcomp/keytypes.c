@@ -1079,6 +1079,137 @@ CopyDefToKeyType(struct xkb_keymap *keymap, struct xkb_key_type *type,
     return ComputeEffectiveMap(keymap, type);
 }
 
+static struct xkb_kt_map_entry map2Level[]= {
+    {
+        .level = ShiftMask,
+        .mods = {.mask = 1, .vmods = ShiftMask, .real_mods = 0 }
+    }
+};
+
+static struct xkb_kt_map_entry mapAlpha[]= {
+    {
+        .level = ShiftMask,
+        .mods = { .mask = 1, .vmods = ShiftMask, .real_mods = 0 }
+    },
+    {
+        .level = LockMask,
+        .mods = { .mask = 0, .vmods = LockMask,  .real_mods = 0 }
+    }
+};
+
+static struct xkb_mods preAlpha[]= {
+    { .mask = 0,        .vmods = 0,        .real_mods = 0 },
+    { .mask = LockMask, .vmods = LockMask, .real_mods = 0 }
+};
+
+static struct xkb_kt_map_entry mapKeypad[]= {
+    {
+        .level = ShiftMask,
+        .mods = { .mask = 1, .vmods = ShiftMask, .real_mods = 0 }
+    },
+    {
+        .level = 0,
+        .mods = { .mask = 1, .vmods = 0, .real_mods = 0 }
+    }
+};
+
+static const struct xkb_key_type canonicalTypes[XkbNumRequiredTypes] = {
+    {
+        .mods = { .mask = 0, .vmods = 0, .real_mods = 0 },
+        .num_levels = 1,
+        .preserve = NULL,
+        .name = NULL,
+        .level_names = NULL
+    },
+    {
+        .mods = { .mask = ShiftMask, .vmods = ShiftMask, .real_mods = 0 },
+        .num_levels = 2,
+        .map = darray_lit(map2Level),
+        .preserve = NULL,
+        .name = NULL,
+        .level_names = NULL
+    },
+    {
+        .mods = {
+            .mask = ShiftMask|LockMask,
+            .vmods = ShiftMask|LockMask,
+            .real_mods = 0
+        },
+        .num_levels = 2,
+        .map = darray_lit(mapAlpha),
+        .preserve = preAlpha,
+        .name = NULL,
+        .level_names = NULL
+    },
+    {
+        .mods = { .mask = ShiftMask, .vmods = ShiftMask, .real_mods = 0 },
+        .num_levels = 2,
+        .map = darray_lit(mapKeypad),
+        .preserve = NULL,
+        .name = NULL,
+        .level_names = NULL
+    }
+};
+
+static int
+InitCanonicalKeyTypes(struct xkb_keymap *keymap, unsigned which, int keypadVMod)
+{
+    struct xkb_client_map *map;
+    const struct xkb_key_type *from;
+    int rtrn;
+
+    rtrn = XkbcAllocClientMap(keymap, XkbKeyTypesMask, XkbNumRequiredTypes);
+    if (rtrn != Success)
+        return rtrn;
+
+    map = keymap->map;
+    if ((which & XkbAllRequiredTypes) == 0)
+        return Success;
+
+    rtrn = Success;
+    from = canonicalTypes;
+
+    if (which & XkbOneLevelMask)
+        rtrn = XkbcCopyKeyType(&from[XkbOneLevelIndex],
+                               &darray_item(map->types, XkbOneLevelIndex));
+
+    if ((which & XkbTwoLevelMask) && rtrn == Success)
+        rtrn = XkbcCopyKeyType(&from[XkbTwoLevelIndex],
+                               &darray_item(map->types, XkbTwoLevelIndex));
+
+    if ((which & XkbAlphabeticMask) && rtrn == Success)
+        rtrn = XkbcCopyKeyType(&from[XkbAlphabeticIndex],
+                               &darray_item(map->types, XkbAlphabeticIndex));
+
+    if ((which & XkbKeypadMask) && rtrn == Success) {
+        struct xkb_key_type *type;
+
+        rtrn = XkbcCopyKeyType(&from[XkbKeypadIndex],
+                               &darray_item(map->types, XkbKeypadIndex));
+        type = &darray_item(map->types, XkbKeypadIndex);
+
+        if (keypadVMod >= 0 && keypadVMod < XkbNumVirtualMods &&
+            rtrn == Success) {
+            struct xkb_kt_map_entry *entry;
+            type->mods.vmods = (1 << keypadVMod);
+
+            entry = &darray_item(type->map, 0);
+            entry->mods.mask = ShiftMask;
+            entry->mods.real_mods = ShiftMask;
+            entry->mods.vmods = 0;
+            entry->level = 1;
+
+            entry = &darray_item(type->map, 1);
+            entry->mods.mask = 0;
+            entry->mods.real_mods = 0;
+            entry->mods.vmods = (1 << keypadVMod);
+            entry->level = 1;
+        }
+    }
+
+    return Success;
+}
+
 bool
 CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
 {
@@ -1124,7 +1255,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
         missing = XkbAllRequiredTypes & (~info.stdPresent);
         keypadVMod = FindKeypadVMod(keymap);
 
-        if (XkbcInitCanonicalKeyTypes(keymap, missing, keypadVMod) != Success) {
+        if (InitCanonicalKeyTypes(keymap, missing, keypadVMod) != Success) {
             WSGO("Couldn't initialize canonical key types\n");
             goto err_info;
         }

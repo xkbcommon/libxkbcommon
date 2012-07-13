@@ -456,10 +456,6 @@ xkb_map_new_from_kccgst(struct xkb_context *ctx,
 extern int
 xkb_context_take_file_id(struct xkb_context *ctx);
 
-extern int
-XkbcInitCanonicalKeyTypes(struct xkb_keymap *keymap, unsigned which,
-                          int keypadVMod);
-
 extern unsigned
 _XkbcKSCheckCase(xkb_keysym_t sym);
 
