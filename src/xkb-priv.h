@@ -106,7 +106,7 @@ enum xkb_file_type {
 
 /* Files needed for a complete keymap. */
 #define REQUIRED_FILE_TYPES (FILE_TYPE_TYPES | FILE_TYPE_COMPAT | FILE_TYPE_SYMBOLS | FILE_TYPE_KEYCODES)
-#define LEGAL_FILE_TYPES    (FILE_TYPE_GEOMETRY | REQUIRED_FILE_TYPES)
+#define LEGAL_FILE_TYPES    REQUIRED_FILE_TYPES
 
 /**
  * Legacy names for the components of an XKB keymap, also known as KcCGST.

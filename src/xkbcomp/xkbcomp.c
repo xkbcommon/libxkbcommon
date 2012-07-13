@@ -71,31 +71,28 @@ keymap_file_from_components(struct xkb_context *ctx,
 static struct xkb_keymap *
 compile_keymap(struct xkb_context *ctx, XkbFile *file)
 {
-    unsigned have = 0;
     bool ok;
-    enum xkb_file_type main_type;
+    unsigned have = 0;
     const char *main_name;
-    struct xkb_keymap *keymap = XkbcAllocKeyboard(ctx);
-    struct {
-        XkbFile *keycodes;
-        XkbFile *types;
-        XkbFile *compat;
-        XkbFile *symbols;
-    } sections = { NULL };
+    struct xkb_keymap *keymap;
+    XkbFile *keycodes = NULL;
+    XkbFile *types = NULL;
+    XkbFile *compat = NULL;
+    XkbFile *symbols = NULL;
 
+    keymap = XkbcAllocKeyboard(ctx);
     if (!keymap)
-        return NULL;
+        goto err;
 
-    main_type = file->type;
     main_name = file->name ? file->name : "(unnamed)";
 
     /*
      * Other aggregate file types are converted to FILE_TYPE_KEYMAP
      * in the parser.
      */
-    if (main_type != FILE_TYPE_KEYMAP) {
+    if (file->type != FILE_TYPE_KEYMAP) {
         ERROR("Cannot compile a %s file alone into a keymap\n",
-              XkbcFileTypeText(main_type));
+              XkbcFileTypeText(file->type));
         goto err;
     }
 
@@ -103,35 +100,32 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
     for (file = (XkbFile *)file->defs; file;
          file = (XkbFile *)file->common.next) {
         if (have & file->type) {
-            ERROR("More than one %s section in a %s file\n",
-                   XkbcFileTypeText(file->type), XkbcFileTypeText(main_type));
+            ERROR("More than one %s section in a keymap file\n",
+                   XkbcFileTypeText(file->type));
             ACTION("All sections after the first ignored\n");
-            continue;
-        }
-        else if (!(file->type & LEGAL_FILE_TYPES)) {
-            ERROR("Cannot define %s in a %s file\n",
-                   XkbcFileTypeText(file->type), XkbcFileTypeText(main_type));
             continue;
         }
 
         switch (file->type) {
         case FILE_TYPE_KEYCODES:
-            sections.keycodes = file;
+            keycodes = file;
             break;
         case FILE_TYPE_TYPES:
-            sections.types = file;
+            types = file;
             break;
         case FILE_TYPE_SYMBOLS:
-            sections.symbols = file;
+            symbols = file;
             break;
         case FILE_TYPE_COMPAT:
-            sections.compat = file;
+            compat = file;
             break;
         default:
+            ERROR("Cannot define %s in a keymap file\n",
+                   XkbcFileTypeText(file->type));
             continue;
         }
 
-        if (!file->topName || strcmp(file->topName, main_name) != 0) {
+        if (!file->topName) {
             free(file->topName);
             file->topName = strdup(main_name);
         }
@@ -156,28 +150,23 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
         goto err;
     }
 
-    /* compile the sections we have in the file one-by-one, or fail. */
-    if (sections.keycodes == NULL ||
-        !CompileKeycodes(sections.keycodes, keymap, MERGE_OVERRIDE))
-    {
+    ok = CompileKeycodes(keycodes, keymap, MERGE_OVERRIDE);
+    if (!ok) {
         ERROR("Failed to compile keycodes\n");
         goto err;
     }
-    if (sections.types == NULL ||
-        !CompileKeyTypes(sections.types, keymap, MERGE_OVERRIDE))
-    {
+    ok = CompileKeyTypes(types, keymap, MERGE_OVERRIDE);
+    if (!ok) {
         ERROR("Failed to compile key types\n");
         goto err;
     }
-    if (sections.compat == NULL ||
-        !CompileCompatMap(sections.compat, keymap, MERGE_OVERRIDE))
-    {
+    ok = CompileCompatMap(compat, keymap, MERGE_OVERRIDE);
+    if (!ok) {
         ERROR("Failed to compile compat map\n");
         goto err;
     }
-    if (sections.symbols == NULL ||
-        !CompileSymbols(sections.symbols, keymap, MERGE_OVERRIDE))
-    {
+    ok = CompileSymbols(symbols, keymap, MERGE_OVERRIDE);
+    if (!ok) {
         ERROR("Failed to compile symbols\n");
         goto err;
     }
@@ -186,13 +175,11 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
     if (!ok)
         goto err;
 
-    FreeXKBFile(file);
     return keymap;
 
 err:
     ACTION("Failed to compile keymap\n");
     xkb_map_unref(keymap);
-    FreeXKBFile(file);
     return NULL;
 }
 
@@ -202,39 +189,42 @@ xkb_map_new_from_kccgst(struct xkb_context *ctx,
                         enum xkb_map_compile_flags flags)
 {
     XkbFile *file;
+    struct xkb_keymap *keymap;
 
     if (!kccgst) {
-        ERROR("no components specified\n");
+        ERROR("No components specified\n");
         return NULL;
     }
 
     if (ISEMPTY(kccgst->keycodes)) {
-        ERROR("keycodes required to generate XKB keymap\n");
+        ERROR("Keycodes required to generate XKB keymap\n");
         return NULL;
     }
 
     if (ISEMPTY(kccgst->compat)) {
-        ERROR("compat map required to generate XKB keymap\n");
+        ERROR("Compat map required to generate XKB keymap\n");
         return NULL;
     }
 
     if (ISEMPTY(kccgst->types)) {
-        ERROR("types required to generate XKB keymap\n");
+        ERROR("Types required to generate XKB keymap\n");
         return NULL;
     }
 
     if (ISEMPTY(kccgst->symbols)) {
-        ERROR("symbols required to generate XKB keymap\n");
+        ERROR("Symbols required to generate XKB keymap\n");
         return NULL;
     }
 
     file = keymap_file_from_components(ctx, kccgst);
     if (!file) {
-        ERROR("failed to generate parsed XKB file from components\n");
+        ERROR("Failed to generate parsed XKB file from components\n");
         return NULL;
     }
 
-    return compile_keymap(ctx, file);
+    keymap = compile_keymap(ctx, file);
+    FreeXKBFile(file);
+    return keymap;
 }
 
 _X_EXPORT struct xkb_keymap *
@@ -274,7 +264,9 @@ xkb_map_new_from_string(struct xkb_context *ctx,
                         enum xkb_keymap_format format,
                         enum xkb_map_compile_flags flags)
 {
+    bool ok;
     XkbFile *file;
+    struct xkb_keymap *keymap;
 
     if (format != XKB_KEYMAP_FORMAT_TEXT_V1) {
         ERROR("unsupported keymap format %d\n", format);
@@ -282,16 +274,19 @@ xkb_map_new_from_string(struct xkb_context *ctx,
     }
 
     if (!string) {
-        ERROR("no string specified to generate XKB keymap\n");
+        ERROR("No string specified to generate XKB keymap\n");
         return NULL;
     }
 
-    if (!XKBParseString(ctx, string, "input", &file)) {
-        ERROR("failed to parse input xkb file\n");
+    ok = XKBParseString(ctx, string, "input", &file);
+    if (!ok) {
+        ERROR("Failed to parse input xkb file\n");
         return NULL;
     }
 
-    return compile_keymap(ctx, file);
+    keymap = compile_keymap(ctx, file);
+    FreeXKBFile(file);
+    return keymap;
 }
 
 _X_EXPORT struct xkb_keymap *
@@ -300,24 +295,29 @@ xkb_map_new_from_file(struct xkb_context *ctx,
                       enum xkb_keymap_format format,
                       enum xkb_map_compile_flags flags)
 {
+    bool ok;
     XkbFile *xkb_file;
+    struct xkb_keymap *keymap;
 
     if (format != XKB_KEYMAP_FORMAT_TEXT_V1) {
-        ERROR("unsupported keymap format %d\n", format);
+        ERROR("Unsupported keymap format %d\n", format);
         return NULL;
     }
 
     if (!file) {
-        ERROR("no file specified to generate XKB keymap\n");
+        ERROR("No file specified to generate XKB keymap\n");
         return NULL;
     }
 
-    if (!XKBParseFile(ctx, file, "(unknown file)", &xkb_file)) {
-        ERROR("failed to parse input xkb file\n");
+    ok = XKBParseFile(ctx, file, "(unknown file)", &xkb_file);
+    if (!ok) {
+        ERROR("Failed to parse input xkb file\n");
         return NULL;
     }
 
-    return compile_keymap(ctx, xkb_file);
+    keymap = compile_keymap(ctx, xkb_file);
+    FreeXKBFile(xkb_file);
+    return keymap;
 }
 
 _X_EXPORT struct xkb_keymap *
@@ -330,7 +330,7 @@ xkb_map_ref(struct xkb_keymap *keymap)
 _X_EXPORT void
 xkb_map_unref(struct xkb_keymap *keymap)
 {
-    if (--keymap->refcnt > 0)
+    if (!keymap || --keymap->refcnt > 0)
         return;
 
     XkbcFreeKeyboard(keymap);
