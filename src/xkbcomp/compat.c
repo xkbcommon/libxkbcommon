@@ -922,7 +922,7 @@ FindInterpForKey(struct xkb_keymap *keymap, xkb_keycode_t key,
             found = !!(interp->mods & mods);
             break;
         case XkbSI_AllOf:
-            found = ((interp->mods & mods) == mods);
+            found = ((interp->mods & mods) == interp->mods);
             break;
         case XkbSI_Exactly:
             found = (interp->mods == mods);
