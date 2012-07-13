@@ -838,7 +838,7 @@ err_info:
     return false;
 }
 
-static uint32_t
+uint32_t
 VModsToReal(struct xkb_keymap *keymap, uint32_t vmodmask)
 {
     uint32_t ret = 0;

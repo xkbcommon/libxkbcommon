@@ -988,6 +988,34 @@ HandleKeyTypesFile(XkbFile *file, struct xkb_keymap *keymap,
 }
 
 static bool
+ComputeEffectiveMap(struct xkb_keymap *keymap, struct xkb_key_type *type)
+{
+    uint32_t tmp;
+    struct xkb_kt_map_entry *entry = NULL;
+
+    if (type->mods.vmods != 0) {
+        tmp = VModsToReal(keymap, type->mods.vmods);
+        type->mods.mask = tmp | type->mods.real_mods;
+        darray_foreach(entry, type->map) {
+            tmp = 0;
+            if (entry->mods.vmods != 0) {
+                tmp = VModsToReal(keymap, entry->mods.vmods);
+                if (tmp == 0) {
+                    entry->active = false;
+                    continue;
+                }
+            }
+            entry->active = true;
+            entry->mods.mask = (entry->mods.real_mods | tmp) & type->mods.mask;
+        }
+    }
+    else
+        type->mods.mask = type->mods.real_mods;
+
+    return true;
+}
+
+static bool
 CopyDefToKeyType(struct xkb_keymap *keymap, struct xkb_key_type *type,
                  KeyTypeInfo *def)
 {
@@ -1055,7 +1083,7 @@ CopyDefToKeyType(struct xkb_keymap *keymap, struct xkb_key_type *type,
     }
 
     darray_init(def->entries);
-    return XkbcComputeEffectiveMap(keymap, type, NULL);
+    return ComputeEffectiveMap(keymap, type);
 }
 
 bool

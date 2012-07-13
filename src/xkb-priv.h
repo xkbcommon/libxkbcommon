@@ -457,10 +457,6 @@ xkb_map_new_from_kccgst(struct xkb_context *ctx,
 extern int
 xkb_context_take_file_id(struct xkb_context *ctx);
 
-extern bool
-XkbcComputeEffectiveMap(struct xkb_keymap *keymap, struct xkb_key_type *type,
-                        unsigned char *map_rtrn);
-
 extern int
 XkbcInitCanonicalKeyTypes(struct xkb_keymap *keymap, unsigned which,
                           int keypadVMod);

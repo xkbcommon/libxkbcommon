@@ -84,7 +84,6 @@ libxkbcommon_la_SOURCES = \
 	src/text.h \
 	src/utils.c \
 	src/utils.h \
-	src/xkb.c \
 	src/xkb-priv.h
 
 BUILT_SOURCES = \

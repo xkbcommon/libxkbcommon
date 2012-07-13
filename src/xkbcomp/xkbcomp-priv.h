@@ -80,4 +80,7 @@ FindKeyNameForAlias(struct xkb_keymap *keymap, unsigned long lname,
 extern bool
 UpdateModifiersFromCompat(struct xkb_keymap *keymap);
 
+uint32_t
+VModsToReal(struct xkb_keymap *keymap, uint32_t vmodmask);
+
 #endif /* XKBCOMP_PRIV_H */
