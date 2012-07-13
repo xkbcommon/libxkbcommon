@@ -78,7 +78,6 @@ libxkbcommon_la_SOURCES = \
 	src/keysym.c \
 	src/keysym-utf.c \
 	src/map.c \
-	src/misc.c \
 	src/state.c \
 	src/text.c \
 	src/text.h \

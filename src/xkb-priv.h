@@ -456,15 +456,13 @@ xkb_map_new_from_kccgst(struct xkb_context *ctx,
 extern int
 xkb_context_take_file_id(struct xkb_context *ctx);
 
-extern unsigned
-_XkbcKSCheckCase(xkb_keysym_t sym);
+bool
+xkb_keysym_is_lower(xkb_keysym_t keysym);
 
-#define _XkbKSLower (1 << 0)
-#define _XkbKSUpper (1 << 1)
+bool
+xkb_keysym_is_upper(xkb_keysym_t keysym);
 
-#define XkbcKSIsLower(k) (_XkbcKSCheckCase(k) & _XkbKSLower)
-#define XkbcKSIsUpper(k) (_XkbcKSCheckCase(k) & _XkbKSUpper)
-
-#define XkbKSIsKeypad(k) (((k) >= XKB_KEY_KP_Space) && ((k) <= XKB_KEY_KP_Equal))
+bool
+xkb_keysym_is_keypad(xkb_keysym_t keysym);
 
 #endif /* XKB_PRIV_H */

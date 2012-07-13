@@ -158,3 +158,122 @@ xkb_keysym_from_name(const char *s)
 
     return XKB_KEY_NoSymbol;
 }
+
+enum keysym_case {
+    NONE,
+    LOWERCASE,
+    UPPERCASE,
+};
+
+static enum keysym_case
+keysym_get_case(xkb_keysym_t ks)
+{
+    unsigned set = (ks & (~0xff)) >> 8;
+
+    switch (set) {
+    case 0: /* latin 1 */
+        if ((ks >= XKB_KEY_A && ks <= XKB_KEY_Z) ||
+            (ks >= XKB_KEY_Agrave && ks <= XKB_KEY_THORN && ks != XKB_KEY_multiply))
+            return UPPERCASE;
+        if ((ks >= XKB_KEY_a && ks <= XKB_KEY_z) ||
+            (ks >= XKB_KEY_agrave && ks <= XKB_KEY_ydiaeresis))
+            return LOWERCASE;
+        break;
+    case 1: /* latin 2 */
+        if ((ks >= XKB_KEY_Aogonek && ks <= XKB_KEY_Zabovedot && ks != XKB_KEY_breve) ||
+            (ks >= XKB_KEY_Racute && ks<=XKB_KEY_Tcedilla))
+            return UPPERCASE;
+        if ((ks >= XKB_KEY_aogonek && ks <= XKB_KEY_zabovedot && ks != XKB_KEY_caron) ||
+            (ks >= XKB_KEY_racute && ks <= XKB_KEY_tcedilla))
+            return LOWERCASE;
+        break;
+    case 2: /* latin 3 */
+        if ((ks >= XKB_KEY_Hstroke && ks <= XKB_KEY_Jcircumflex) ||
+            (ks >= XKB_KEY_Cabovedot && ks <= XKB_KEY_Scircumflex))
+            return UPPERCASE;
+        if ((ks >= XKB_KEY_hstroke && ks <= XKB_KEY_jcircumflex) ||
+            (ks >= XKB_KEY_cabovedot && ks <= XKB_KEY_scircumflex))
+            return LOWERCASE;
+        break;
+    case 3: /* latin 4 */
+        if ((ks >= XKB_KEY_Rcedilla && ks <= XKB_KEY_Tslash) ||
+            (ks == XKB_KEY_ENG) ||
+            (ks >= XKB_KEY_Amacron && ks <= XKB_KEY_Umacron))
+            return UPPERCASE;
+        if ((ks >= XKB_KEY_rcedilla && ks <= XKB_KEY_tslash) ||
+            (ks == XKB_KEY_eng) ||
+            (ks >= XKB_KEY_amacron && ks <= XKB_KEY_umacron))
+            return LOWERCASE;
+        break;
+    case 6: /* Cyrillic */
+        if ((ks >= XKB_KEY_Serbian_DJE && ks <= XKB_KEY_Serbian_DZE) ||
+            (ks >= XKB_KEY_Cyrillic_YU && ks <= XKB_KEY_Cyrillic_HARDSIGN))
+            return UPPERCASE;
+        if ((ks >= XKB_KEY_Serbian_dje && ks <= XKB_KEY_Serbian_dze) ||
+            (ks >= XKB_KEY_Cyrillic_yu && ks <= XKB_KEY_Cyrillic_hardsign))
+            return LOWERCASE;
+        break;
+    case 7: /* Greek */
+        if ((ks >= XKB_KEY_Greek_ALPHAaccent &&
+             ks <= XKB_KEY_Greek_OMEGAaccent) ||
+            (ks >= XKB_KEY_Greek_ALPHA && ks <= XKB_KEY_Greek_OMEGA))
+            return UPPERCASE;
+        if ((ks >= XKB_KEY_Greek_alphaaccent &&
+             ks <= XKB_KEY_Greek_omegaaccent) ||
+            (ks >= XKB_KEY_Greek_alpha && ks <= XKB_KEY_Greek_OMEGA))
+            return LOWERCASE;
+        break;
+    case 18: /* latin 8 */
+        if ((ks == XKB_KEY_Wcircumflex) ||
+            (ks == XKB_KEY_Ycircumflex) ||
+            (ks == XKB_KEY_Babovedot) ||
+            (ks == XKB_KEY_Dabovedot) ||
+            (ks == XKB_KEY_Fabovedot) ||
+            (ks == XKB_KEY_Mabovedot) ||
+            (ks == XKB_KEY_Pabovedot) ||
+            (ks == XKB_KEY_Sabovedot) ||
+            (ks == XKB_KEY_Tabovedot) ||
+            (ks == XKB_KEY_Wdiaeresis) ||
+            (ks == XKB_KEY_Ygrave))
+            return UPPERCASE;
+        if ((ks == XKB_KEY_wcircumflex) ||
+            (ks == XKB_KEY_ycircumflex) ||
+            (ks == XKB_KEY_babovedot) ||
+            (ks == XKB_KEY_dabovedot) ||
+            (ks == XKB_KEY_fabovedot) ||
+            (ks == XKB_KEY_mabovedot) ||
+            (ks == XKB_KEY_pabovedot) ||
+            (ks == XKB_KEY_sabovedot) ||
+            (ks == XKB_KEY_tabovedot) ||
+            (ks == XKB_KEY_wdiaeresis) ||
+            (ks == XKB_KEY_ygrave))
+            return LOWERCASE;
+        break;
+    case 19: /* latin 9 */
+        if (ks == XKB_KEY_OE || ks == XKB_KEY_Ydiaeresis)
+            return UPPERCASE;
+        if (ks == XKB_KEY_oe)
+            return LOWERCASE;
+        break;
+    }
+
+    return NONE;
+}
+
+bool
+xkb_keysym_is_lower(xkb_keysym_t keysym)
+{
+    return keysym_get_case(keysym) == LOWERCASE;
+}
+
+bool
+xkb_keysym_is_upper(xkb_keysym_t keysym)
+{
+    return keysym_get_case(keysym) == UPPERCASE;
+}
+
+bool
+xkb_keysym_is_keypad(xkb_keysym_t keysym)
+{
+    return keysym >= XKB_KEY_KP_Space && keysym <= XKB_KEY_KP_Equal;
+}

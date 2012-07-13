@@ -1670,11 +1670,13 @@ FindAutomaticType(struct xkb_keymap *keymap, int width,
     }
     else if (width == 2)
     {
-        if (syms && XkbcKSIsLower(syms[0]) && XkbcKSIsUpper(syms[1]))
+        if (syms && xkb_keysym_is_lower(syms[0]) &&
+            xkb_keysym_is_upper(syms[1]))
         {
             *typeNameRtrn = xkb_atom_intern(keymap->ctx, "ALPHABETIC");
         }
-        else if (syms && (XkbKSIsKeypad(syms[0]) || XkbKSIsKeypad(syms[1])))
+        else if (syms && (xkb_keysym_is_keypad(syms[0]) ||
+                          xkb_keysym_is_keypad(syms[1])))
         {
             *typeNameRtrn = xkb_atom_intern(keymap->ctx, "KEYPAD");
             *autoType = true;
@@ -1687,15 +1689,17 @@ FindAutomaticType(struct xkb_keymap *keymap, int width,
     }
     else if (width <= 4)
     {
-        if (syms && XkbcKSIsLower(syms[0]) && XkbcKSIsUpper(syms[1]))
-            if (XkbcKSIsLower(syms[2]) && XkbcKSIsUpper(syms[3]))
+        if (syms && xkb_keysym_is_lower(syms[0]) &&
+            xkb_keysym_is_upper(syms[1]))
+            if (xkb_keysym_is_lower(syms[2]) && xkb_keysym_is_upper(syms[3]))
                 *typeNameRtrn =
                     xkb_atom_intern(keymap->ctx, "FOUR_LEVEL_ALPHABETIC");
             else
                 *typeNameRtrn = xkb_atom_intern(keymap->ctx,
                                                 "FOUR_LEVEL_SEMIALPHABETIC");
 
-        else if (syms && (XkbKSIsKeypad(syms[0]) || XkbKSIsKeypad(syms[1])))
+        else if (syms && (xkb_keysym_is_keypad(syms[0]) ||
+                          xkb_keysym_is_keypad(syms[1])))
             *typeNameRtrn = xkb_atom_intern(keymap->ctx, "FOUR_LEVEL_KEYPAD");
         else
             *typeNameRtrn = xkb_atom_intern(keymap->ctx, "FOUR_LEVEL");
