@@ -323,15 +323,10 @@ write_keycodes(struct xkb_keymap *keymap, char **buf, size_t *size,
               keymap->max_key_code);
 
     for (key = keymap->min_key_code; key <= keymap->max_key_code; key++) {
-        const char *alternate = "";
-
 	if (darray_item(keymap->names->keys, key).name[0] == '\0')
             continue;
-	if (XkbcFindKeycodeByName(keymap,
-                                  darray_item(keymap->names->keys, key).name,
-                                  true) != key)
-	    alternate = "alternate ";
-        write_buf(keymap, buf, size, offset, "\t\t%s%6s = %d;\n", alternate,
+
+        write_buf(keymap, buf, size, offset, "\t\t%6s = %d;\n",
 		  XkbcKeyNameText(darray_item(keymap->names->keys, key).name),
                                   key);
     }
@@ -779,10 +774,6 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
 	bool simple = true;
 
 	if (xkb_key_num_groups(keymap, key) == 0)
-	    continue;
-	if (XkbcFindKeycodeByName(keymap,
-                                  darray_item(keymap->names->keys, key).name,
-                                  true) != key)
 	    continue;
 
 	write_buf(keymap, buf, size, offset, "\t\tkey %6s {",

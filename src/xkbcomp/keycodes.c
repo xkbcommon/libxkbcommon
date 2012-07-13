@@ -71,7 +71,6 @@ typedef struct _KeyNamesInfo
     xkb_keycode_t explicitMax;
     darray(unsigned long) names;
     darray(unsigned int) files;
-    darray(unsigned char) has_alt_forms;
     IndicatorNameInfo *leds;
     AliasInfo *aliases;
 } KeyNamesInfo;
@@ -87,7 +86,6 @@ ResizeKeyNameArrays(KeyNamesInfo *info, int newMax)
 
     darray_resize0(info->names, newMax + 1);
     darray_resize0(info->files, newMax + 1);
-    darray_resize0(info->has_alt_forms, newMax + 1);
 }
 
 static void
@@ -281,7 +279,6 @@ ClearKeyNamesInfo(KeyNamesInfo * info)
     info->computedMin = XKB_KEYCODE_MAX;
     darray_free(info->names);
     darray_free(info->files);
-    darray_free(info->has_alt_forms);
     if (info->leds)
         ClearIndicatorNameInfo(info->leds, info);
     if (info->aliases)
@@ -296,7 +293,6 @@ InitKeyNamesInfo(KeyNamesInfo * info)
     info->aliases = NULL;
     darray_init(info->names);
     darray_init(info->files);
-    darray_init(info->has_alt_forms);
     ClearKeyNamesInfo(info);
     info->errorCount = 0;
 }
@@ -347,16 +343,11 @@ AddKeyName(KeyNamesInfo * info,
 
         LongToKeyName(darray_item(info->names, kc), buf);
         buf[4] = '\0';
-        if (darray_item(info->names, kc) == lval)
+        if (darray_item(info->names, kc) == lval && reportCollisions)
         {
-            if (darray_item(info->has_alt_forms, kc) || (merge == MERGE_ALT_FORM)) {
-                darray_item(info->has_alt_forms, kc) = true;
-            }
-            else if (reportCollisions) {
-                WARN("Multiple identical key name definitions\n");
-                ACTION("Later occurences of \"<%s> = %d\" ignored\n",
-                        buf, kc);
-            }
+            WARN("Multiple identical key name definitions\n");
+            ACTION("Later occurences of \"<%s> = %d\" ignored\n",
+                   buf, kc);
             return true;
         }
         if (merge == MERGE_AUGMENT)
@@ -386,32 +377,24 @@ AddKeyName(KeyNamesInfo * info,
         {
             darray_item(info->names, old) = 0;
             darray_item(info->files, old) = 0;
-            darray_item(info->has_alt_forms, old) = true;
             if (reportCollisions)
             {
                 WARN("Key name <%s> assigned to multiple keys\n", name);
                 ACTION("Using %d, ignoring %d\n", kc, old);
             }
         }
-        else if (merge != MERGE_ALT_FORM)
+        else
         {
             if ((reportCollisions) && (warningLevel > 3))
             {
                 WARN("Key name <%s> assigned to multiple keys\n", name);
                 ACTION("Using %d, ignoring %d\n", old, kc);
-                ACTION
-                    ("Use 'alternate' keyword to assign the same name to multiple keys\n");
             }
             return true;
-        }
-        else
-        {
-            darray_item(info->has_alt_forms, old) = true;
         }
     }
     darray_item(info->names, kc) = lval;
     darray_item(info->files, kc) = fileID;
-    darray_item(info->has_alt_forms, kc) = (merge == MERGE_ALT_FORM);
     return true;
 }
 
@@ -439,16 +422,11 @@ MergeIncludedKeycodes(KeyNamesInfo *into, struct xkb_keymap *keymap,
 
     for (i = from->computedMin; i <= from->computedMax; i++)
     {
-        unsigned thisMerge;
         if (darray_item(from->names, i) == 0)
             continue;
         LongToKeyName(darray_item(from->names, i), buf);
         buf[4] = '\0';
-        if (darray_item(from->has_alt_forms, i))
-            thisMerge = MERGE_ALT_FORM;
-        else
-            thisMerge = merge;
-        if (!AddKeyName(into, i, buf, thisMerge, from->fileID, false))
+        if (!AddKeyName(into, i, buf, merge, from->fileID, false))
             into->errorCount++;
     }
     if (from->leds)

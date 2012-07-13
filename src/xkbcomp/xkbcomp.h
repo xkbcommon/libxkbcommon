@@ -83,7 +83,6 @@ enum merge_mode {
     MERGE_AUGMENT,
     MERGE_OVERRIDE,
     MERGE_REPLACE,
-    MERGE_ALT_FORM,
 };
 
 #define	AutoKeyNames	(1L <<  0)

@@ -113,9 +113,6 @@ LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn);
 extern IncludeStmt *
 IncludeCreate(char *str, enum merge_mode merge);
 
-extern unsigned
-StmtSetMerge(ParseCommon *stmt, enum merge_mode merge, struct YYLTYPE *loc, void *scanner);
-
 extern void
 CheckDefaultMap(XkbFile *maps, const char *fileName);
 

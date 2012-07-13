@@ -264,57 +264,57 @@ DeclList	:	DeclList Decl
 
 Decl		:	OptMergeMode VarDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
+			    $2->merge= $1;
 			    $$= &$2->common;
 			}
 		|	OptMergeMode VModDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
+			    $2->merge= $1;
 			    $$= &$2->common;
 			}
 		|	OptMergeMode InterpretDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
+			    $2->merge= $1;
 			    $$= &$2->common;
 			}
 		|	OptMergeMode KeyNameDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
+			    $2->merge= $1;
 			    $$= &$2->common;
 			}
 		|	OptMergeMode KeyAliasDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
+			    $2->merge= $1;
 			    $$= &$2->common;
 			}
 		|	OptMergeMode KeyTypeDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
+			    $2->merge= $1;
 			    $$= &$2->common;
 			}
 		|	OptMergeMode SymbolsDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
+			    $2->merge= $1;
 			    $$= &$2->common;
 			}
 		|	OptMergeMode ModMapDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
+			    $2->merge= $1;
 			    $$= &$2->common;
 			}
 		|	OptMergeMode GroupCompatDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
+			    $2->merge= $1;
 			    $$= &$2->common;
 			}
 		|	OptMergeMode IndicatorMapDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
+			    $2->merge= $1;
 			    $$= &$2->common;
 			}
 		|	OptMergeMode IndicatorNameDecl
 			{
-			    $2->merge= StmtSetMerge(&$2->common,$1,&@1,scanner);
+			    $2->merge= $1;
 			    $$= &$2->common;
 			}
 		|	OptMergeMode ShapeDecl
@@ -328,14 +328,7 @@ Decl		:	OptMergeMode VarDecl
 			}
 		|	MergeMode STRING
 			{
-			    if ($1==MERGE_ALT_FORM) {
-				yyerror(&@1, scanner,
-                                        "cannot use 'alternate' to include other maps");
-				$$= &IncludeCreate($2,MERGE_DEFAULT)->common;
-			    }
-			    else {
-				$$= &IncludeCreate($2,$1)->common;
-			    }
+                            $$= &IncludeCreate($2,$1)->common;
                             free($2);
                         }
 		;
@@ -596,7 +589,14 @@ MergeMode	:	INCLUDE			{ $$= MERGE_DEFAULT; }
 		|	AUGMENT			{ $$= MERGE_AUGMENT; }
 		|	OVERRIDE		{ $$= MERGE_OVERRIDE; }
 		|	REPLACE			{ $$= MERGE_REPLACE; }
-		|	ALTERNATE		{ $$= MERGE_ALT_FORM; }
+		|	ALTERNATE
+                {
+                    /*
+                     * This used to be MERGE_ALT_FORM. This functionality was
+                     * unused and has been removed.
+                     */
+                    $$ = MERGE_DEFAULT;
+                }
 		;
 
 OptExprList	:	ExprList			{ $$= $1; }

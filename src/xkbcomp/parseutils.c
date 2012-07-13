@@ -626,17 +626,6 @@ CreateXKBFile(struct xkb_context *ctx, enum xkb_file_type type, char *name,
     return file;
 }
 
-unsigned
-StmtSetMerge(ParseCommon * stmt, enum merge_mode merge, struct YYLTYPE *loc, void *scanner)
-{
-    if ((merge == MERGE_ALT_FORM) && (stmt->stmtType != StmtKeycodeDef))
-    {
-        yyerror(loc, scanner, "illegal use of 'alternate' merge mode");
-        merge = MERGE_DEFAULT;
-    }
-    return merge;
-}
-
 static void
 FreeExpr(ExprDef *expr)
 {
