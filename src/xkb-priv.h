@@ -414,8 +414,6 @@ struct xkb_keymap {
 #define XkbKeycodeInRange(d, k) \
     (((k) >= (d)->min_key_code) && ((k) <= (d)->max_key_code))
 
-struct xkb_state;
-
 typedef uint32_t xkb_atom_t;
 
 #define XKB_ATOM_NONE 0
@@ -440,24 +438,6 @@ extern int
 xkb_key_get_syms_by_level(struct xkb_keymap *keymap, xkb_keycode_t key,
                           unsigned int group, unsigned int level,
                           const xkb_keysym_t **syms_out);
-
-/*
- * Canonicalises component names by prepending the relevant component from
- * 'old' to the one in 'names' when the latter has a leading '+' or '|', and
- * by replacing a '%' with the relevant component, e.g.:
- *
- * names        old           output
- * ------------------------------------------
- * +bar         foo           foo+bar
- * |quux        baz           baz|quux
- * foo+%|baz    bar           foo+bar|baz
- *
- * If a component in names needs to be modified, the existing value will be
- * free()d, and a new one allocated with malloc().
- */
-void
-xkb_canonicalise_components(struct xkb_component_names *names,
-                            const struct xkb_component_names *old);
 
 /**
  * Deprecated entrypoint for legacy users who need to be able to compile

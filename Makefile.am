@@ -121,7 +121,6 @@ TESTS = \
 	test/filecomp \
 	test/namescomp \
 	test/rulescomp \
-	test/canonicalise \
 	test/state \
 	test/context \
 	test/rules-file \
@@ -134,7 +133,6 @@ test_xkey_LDADD = $(TESTS_LDADD)
 test_filecomp_LDADD = $(TESTS_LDADD)
 test_namescomp_LDADD = $(TESTS_LDADD)
 test_rulescomp_LDADD = $(TESTS_LDADD) -lrt
-test_canonicalise_LDADD = $(TESTS_LDADD)
 test_state_LDADD = $(TESTS_LDADD)
 test_context_LDADD = $(TESTS_LDADD)
 test_rules_file_CFLAGS = $(AM_CFLAGS) -Wno-declaration-after-statement
