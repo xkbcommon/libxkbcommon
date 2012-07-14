@@ -204,7 +204,7 @@ XkbFindFileInPath(struct xkb_context *ctx,
         if (file == NULL) {
             ERROR("Couldn't open file (%s/%s/%s): %s\n",
                   xkb_context_include_path_get(ctx, i), typeDir, name,
-                  strerror(-errno));
+                  strerror(errno));
             ACTION("Ignored\n");
             continue;
         }
