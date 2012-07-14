@@ -1891,6 +1891,39 @@ CopyModMapDef(struct xkb_keymap *keymap, ModMapEntry *entry)
     return true;
 }
 
+static bool
+InitKeymapForSymbols(struct xkb_keymap *keymap)
+{
+    size_t nKeys = keymap->max_key_code + 1;
+
+    darray_resize0(keymap->key_sym_map, nKeys);
+
+    keymap->modmap = calloc(nKeys, sizeof(*keymap->modmap));
+    if (!keymap->modmap)
+        return false;
+
+    keymap->explicit = calloc(nKeys, sizeof(*keymap->explicit));
+    if (!keymap->explicit)
+        return false;
+
+    darray_resize0(keymap->acts, darray_size(keymap->acts) + 32 + 1);
+    darray_resize0(keymap->key_acts, nKeys);
+
+    keymap->behaviors = calloc(nKeys, sizeof(*keymap->behaviors));
+    if (!keymap->behaviors)
+        return false;
+
+    keymap->vmodmap = calloc(nKeys, sizeof(*keymap->vmodmap));
+    if (!keymap->vmodmap)
+        return false;
+
+    keymap->per_key_repeat = calloc(nKeys / 8, 1);
+    if (!keymap->per_key_repeat)
+        return false;
+
+    return true;
+}
+
 /**
  * Handle the xkb_symbols section of an xkb file.
  *
@@ -1902,7 +1935,9 @@ bool
 CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
                enum merge_mode merge)
 {
-    unsigned int i;
+    int i;
+    bool ok;
+    xkb_keycode_t kc;
     SymbolsInfo info;
     KeyInfo *key;
 
@@ -1917,33 +1952,8 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
     if (info.errorCount != 0)
         goto err_info;
 
-    darray_resize0(keymap->key_sym_map, keymap->max_key_code + 1);
-    keymap->modmap = calloc(keymap->max_key_code + 1,
-                            sizeof(*keymap->modmap));
-    if (!keymap->modmap)
-        goto err_info;
-
-    i = keymap->max_key_code + 1;
-    keymap->explicit = calloc(keymap->max_key_code + 1,
-                              sizeof(*keymap->explicit));
-    if (!keymap->explicit)
-        goto err_info;
-
-    darray_resize0(keymap->acts, darray_size(keymap->acts) + 32 + 1);
-    darray_resize0(keymap->key_acts, keymap->max_key_code + 1);
-
-    keymap->behaviors = calloc(keymap->max_key_code + 1,
-                               sizeof(*keymap->behaviors));
-    if (!keymap->behaviors)
-        goto err_info;
-
-    keymap->vmodmap = calloc(keymap->max_key_code + 1,
-                             sizeof(*keymap->vmodmap));
-    if (!keymap->vmodmap)
-        goto err_info;
-
-    keymap->per_key_repeat = calloc(keymap->max_key_code / 8, 1);
-    if (!keymap->per_key_repeat)
+    ok = InitKeymapForSymbols(keymap);
+    if (!ok)
         goto err_info;
 
     if (info.name)
@@ -1970,15 +1980,15 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
         info.errorCount++;
 
     if (warningLevel > 3) {
-        for (i = keymap->min_key_code; i <= keymap->max_key_code; i++) {
-            if (darray_item(keymap->key_names, i).name[0] == '\0')
+        for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
+            if (darray_item(keymap->key_names, kc).name[0] == '\0')
                 continue;
 
-            if (XkbKeyNumGroups(keymap, i) < 1) {
+            if (XkbKeyNumGroups(keymap, kc) < 1) {
                 char buf[5];
-                memcpy(buf, darray_item(keymap->key_names, i).name, 4);
+                memcpy(buf, darray_item(keymap->key_names, kc).name, 4);
                 buf[4] = '\0';
-                WARN("No symbols defined for <%s> (keycode %d)\n", buf, i);
+                WARN("No symbols defined for <%s> (keycode %d)\n", buf, kc);
             }
         }
     }
