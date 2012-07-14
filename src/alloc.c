@@ -145,80 +145,27 @@ free_sym_maps(struct xkb_keymap *keymap)
     darray_free(keymap->key_sym_map);
 }
 
-int
-XkbcAllocNames(struct xkb_keymap *keymap, unsigned which,
-               size_t nTotalAliases)
-{
-    if (!keymap)
-        return BadMatch;
-
-    if (!keymap->names) {
-        keymap->names = calloc(1, sizeof(*keymap->names));
-        if (!keymap->names)
-            return BadAlloc;
-
-        darray_init(keymap->names->keys);
-        darray_init(keymap->names->key_aliases);
-    }
-
-    if ((which & XkbKTLevelNamesMask) && keymap) {
-        struct xkb_key_type * type;
-
-        darray_foreach(type, keymap->types) {
-            if (!type->level_names) {
-                type->level_names = calloc(type->num_levels,
-                                           sizeof(*type->level_names));
-                if (!type->level_names)
-                    return BadAlloc;
-            }
-        }
-    }
-
-    if (which & XkbKeyNamesMask)
-        darray_resize0(keymap->names->keys, keymap->max_key_code + 1);
-
-    if (which & XkbKeyAliasesMask)
-        darray_resize0(keymap->names->key_aliases, nTotalAliases);
-
-    return Success;
-}
-
 static void
-XkbcFreeNames(struct xkb_keymap *keymap)
+free_names(struct xkb_keymap *keymap)
 {
-    struct xkb_names * names;
-    struct xkb_key_type *type;
     int i;
 
-    if (!keymap || !keymap->names)
-        return;
-
-    names = keymap->names;
-
-    darray_foreach(type, keymap->types) {
-        int j;
-        for (j = 0; j < type->num_levels; j++)
-            free(type->level_names[j]);
-        free(type->level_names);
-        type->level_names = NULL;
-    }
-
-    free(names->keycodes);
-    free(names->symbols);
-    free(names->keytypes);
-    free(names->compat);
-
     for (i = 0; i < XkbNumVirtualMods; i++)
-        free(names->vmods[i]);
-    for (i = 0; i < XkbNumIndicators; i++)
-        free(names->indicators[i]);
-    for (i = 0; i < XkbNumKbdGroups; i++)
-        free(names->groups[i]);
+        free(keymap->vmod_names[i]);
 
-    darray_free(names->keys);
-    darray_free(names->key_aliases);
-    free(names);
-    keymap->names = NULL;
+    for (i = 0; i < XkbNumIndicators; i++)
+        free(keymap->indicator_names[i]);
+
+    for (i = 0; i < XkbNumKbdGroups; i++)
+        free(keymap->group_names[i]);
+
+    darray_free(keymap->key_names);
+    darray_free(keymap->key_aliases);
+
+    free(keymap->keycodes_section_name);
+    free(keymap->symbols_section_name);
+    free(keymap->types_section_name);
+    free(keymap->compat_section_name);
 }
 
 int
@@ -281,7 +228,7 @@ XkbcFreeKeyboard(struct xkb_keymap *keymap)
     free(keymap->behaviors);
     free(keymap->vmodmap);
     darray_free(keymap->sym_interpret);
-    XkbcFreeNames(keymap);
+    free_names(keymap);
     XkbcFreeControls(keymap);
     xkb_context_unref(keymap->ctx);
     free(keymap);

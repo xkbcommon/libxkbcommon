@@ -145,12 +145,11 @@ ApplyAliases(struct xkb_keymap *keymap, AliasInfo ** info_in)
     struct xkb_key_alias *old, *a;
     AliasInfo *info;
     int nNew, nOld;
-    int status;
 
     if (*info_in == NULL)
         return true;
-    nOld = (keymap->names ? darray_size(keymap->names->key_aliases) : 0);
-    old = (keymap->names ? &darray_item(keymap->names->key_aliases, 0) : NULL);
+    nOld = (keymap ? darray_size(keymap->key_aliases) : 0);
+    old = (keymap ? &darray_item(keymap->key_aliases, 0) : NULL);
     for (nNew = 0, info = *info_in; info != NULL;
          info = (AliasInfo *) info->def.next) {
         unsigned long lname;
@@ -200,14 +199,10 @@ ApplyAliases(struct xkb_keymap *keymap, AliasInfo ** info_in)
         return true;
     }
 
-    status = XkbcAllocNames(keymap, XkbKeyAliasesMask, nOld + nNew);
-    if (status != Success) {
-        WSGO("Allocation failure in ApplyAliases\n");
-        return false;
-    }
-    a = keymap->names ? &darray_item(keymap->names->key_aliases, nOld) : NULL;
-    for (info = *info_in; info != NULL; info =
-             (AliasInfo *) info->def.next) {
+    darray_resize0(keymap->key_aliases, nOld + nNew);
+
+    a = keymap ? &darray_item(keymap->key_aliases, nOld) : NULL;
+    for (info = *info_in; info != NULL; info = (AliasInfo *) info->def.next) {
         if (info->alias[0] != '\0') {
             strncpy(a->alias, info->alias, XkbKeyNameLength);
             strncpy(a->real, info->real, XkbKeyNameLength);

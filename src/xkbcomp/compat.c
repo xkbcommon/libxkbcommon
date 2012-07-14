@@ -739,11 +739,8 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
     darray_init(keymap->sym_interpret);
     darray_growalloc(keymap->sym_interpret, info.nInterps);
 
-    if (info.name) {
-        if (XkbcAllocNames(keymap, 0, 0) != Success)
-            goto err_info;
-        keymap->names->compat = strdup(info.name);
-    }
+    if (info.name)
+        keymap->compat_section_name = strdup(info.name);
 
     if (info.nInterps > 0) {
         CopyInterps(&info, keymap, true, XkbSI_Exactly);

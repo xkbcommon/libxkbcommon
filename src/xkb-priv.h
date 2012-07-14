@@ -293,20 +293,6 @@ struct xkb_key_alias {
     char alias[XkbKeyNameLength];
 };
 
-struct xkb_names {
-    char *keycodes;
-    char *symbols;
-    char *keytypes;
-    char *compat;
-
-    char *vmods[XkbNumVirtualMods];
-    char *indicators[XkbNumIndicators];
-    char *groups[XkbNumKbdGroups];
-
-    darray(struct xkb_key_name) keys;
-    darray(struct xkb_key_alias) key_aliases;
-};
-
 struct xkb_controls {
     /* unsigned char groups_wrap; */
     /* struct xkb_mods internal; */
@@ -335,7 +321,11 @@ struct xkb_keymap {
     xkb_keycode_t max_key_code;
 
     struct xkb_controls *      ctrls;
-    struct xkb_names *        names;
+
+    /* key -> key name mapping */
+    darray(struct xkb_key_name) key_names;
+    /* aliases in no particular order */
+    darray(struct xkb_key_alias) key_aliases;
 
     /* key -> explicit flags mapping */
     unsigned char *explicit;
@@ -349,12 +339,14 @@ struct xkb_keymap {
 
     /* key -> mod mapping */
     unsigned char *modmap;
-    /* vmod -> mod mapping */
-    uint32_t vmods[XkbNumVirtualMods];
     /* key -> vmod mapping */
     uint32_t *vmodmap;
+    /* vmod -> mod mapping */
+    uint32_t vmods[XkbNumVirtualMods];
+    char *vmod_names[XkbNumVirtualMods];
 
     struct xkb_mods groups[XkbNumKbdGroups];
+    char *group_names[XkbNumKbdGroups];
 
     /* key -> actions mapping: acts[key_acts[keycode]] */
     darray(union xkb_action) acts;
@@ -364,6 +356,12 @@ struct xkb_keymap {
     struct xkb_behavior *behaviors;
 
     struct xkb_indicator_map indicators[XkbNumIndicators];
+    char *indicator_names[XkbNumIndicators];
+
+    char *keycodes_section_name;
+    char *symbols_section_name;
+    char *types_section_name;
+    char *compat_section_name;
 };
 
 #define XkbNumGroups(g)             ((g) & 0x0f)

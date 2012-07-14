@@ -125,13 +125,13 @@ write_vmods(struct xkb_keymap *keymap, char **buf, size_t *size,
     int i;
 
     for (i = 0; i < XkbNumVirtualMods; i++) {
-        if (!keymap->names->vmods[i])
+        if (!keymap->vmod_names[i])
             continue;
         if (num_vmods == 0)
             write_buf(keymap, buf, size, offset, "\t\tvirtual_modifiers ");
         else
             write_buf(keymap, buf, size, offset, ",");
-        write_buf(keymap, buf, size, offset, "%s", keymap->names->vmods[i]);
+        write_buf(keymap, buf, size, offset, "%s", keymap->vmod_names[i]);
         num_vmods++;
     }
 
@@ -209,10 +209,10 @@ get_mod_mask_text(struct xkb_keymap *keymap, uint8_t real_mods,
             continue;
         if (ret[0] != '\0') {
             strcpy(ret2, ret);
-            append_get_text("%s+%s", ret2, keymap->names->vmods[i]);
+            append_get_text("%s+%s", ret2, keymap->vmod_names[i]);
         }
         else {
-            append_get_text("%s", keymap->names->vmods[i]);
+            append_get_text("%s", keymap->vmod_names[i]);
         }
     }
 
@@ -313,9 +313,9 @@ write_keycodes(struct xkb_keymap *keymap, char **buf, size_t *size,
     struct xkb_key_alias *alias;
     int i;
 
-    if (keymap->names->keycodes)
+    if (keymap->keycodes_section_name)
         write_buf(keymap, buf, size, offset, "\txkb_keycodes \"%s\" {\n",
-                  keymap->names->keycodes);
+                  keymap->keycodes_section_name);
     else
         write_buf(keymap, buf, size, offset, "\txkb_keycodes {\n");
 
@@ -325,25 +325,26 @@ write_keycodes(struct xkb_keymap *keymap, char **buf, size_t *size,
               keymap->max_key_code);
 
     for (key = keymap->min_key_code; key <= keymap->max_key_code; key++) {
-        if (darray_item(keymap->names->keys, key).name[0] == '\0')
+        if (darray_item(keymap->key_names, key).name[0] == '\0')
             continue;
 
         write_buf(keymap, buf, size, offset, "\t\t%6s = %d;\n",
-                  XkbcKeyNameText(darray_item(keymap->names->keys, key).name),
+                  XkbcKeyNameText(darray_item(keymap->key_names, key).name),
                   key);
     }
 
     for (i = 0; i < XkbNumIndicators; i++) {
-        if (!keymap->names->indicators[i])
+        if (!keymap->indicator_names[i])
             continue;
         write_buf(keymap, buf, size, offset, "\t\tindicator %d = \"%s\";\n",
-                  i + 1, keymap->names->indicators[i]);
+                  i + 1, keymap->indicator_names[i]);
     }
 
-    darray_foreach(alias, keymap->names->key_aliases)
-    write_buf(keymap, buf, size, offset, "\t\talias %6s = %6s;\n",
-              XkbcKeyNameText(alias->alias),
-              XkbcKeyNameText(alias->real));
+
+    darray_foreach(alias, keymap->key_aliases)
+        write_buf(keymap, buf, size, offset, "\t\talias %6s = %6s;\n",
+                  XkbcKeyNameText(alias->alias),
+                  XkbcKeyNameText(alias->real));
 
     write_buf(keymap, buf, size, offset, "\t};\n\n");
     return true;
@@ -356,9 +357,9 @@ write_types(struct xkb_keymap *keymap, char **buf, size_t *size,
     int n;
     struct xkb_key_type *type;
 
-    if (keymap->names->keytypes)
+    if (keymap->types_section_name)
         write_buf(keymap, buf, size, offset, "\txkb_types \"%s\" {\n\n",
-                  keymap->names->keytypes);
+                  keymap->types_section_name);
     else
         write_buf(keymap, buf, size, offset, "\txkb_types {\n\n");
 
@@ -412,7 +413,7 @@ write_indicator_map(struct xkb_keymap *keymap, char **buf, size_t *size,
     struct xkb_indicator_map *led = &keymap->indicators[num];
 
     write_buf(keymap, buf, size, offset, "\t\tindicator \"%s\" {\n",
-              keymap->names->indicators[num]);
+              keymap->indicator_names[num]);
 
     if (led->which_groups) {
         if (led->which_groups != XkbIM_UseEffective) {
@@ -665,10 +666,10 @@ write_compat(struct xkb_keymap *keymap, char **buf, size_t *size,
     int i;
     struct xkb_sym_interpret *interp;
 
-    if (keymap->names->compat)
+    if (keymap->compat_section_name)
         write_buf(keymap, buf, size, offset,
                   "\txkb_compatibility \"%s\" {\n\n",
-                  keymap->names->compat);
+                  keymap->compat_section_name);
     else
         write_buf(keymap, buf, size, offset, "\txkb_compatibility {\n\n");
 
@@ -695,7 +696,7 @@ write_compat(struct xkb_keymap *keymap, char **buf, size_t *size,
         if (interp->virtual_mod != XkbNoModifier) {
             write_buf(keymap, buf, size, offset,
                       "\t\t\tvirtualModifier= %s;\n",
-                      keymap->names->vmods[interp->virtual_mod]);
+                      keymap->vmod_names[interp->virtual_mod]);
         }
 
         if (interp->match & XkbSI_LevelOneOnly)
@@ -783,18 +784,18 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
     int group, tmp;
     bool showActions;
 
-    if (keymap->names->symbols)
+    if (keymap->symbols_section_name)
         write_buf(keymap, buf, size, offset, "\txkb_symbols \"%s\" {\n\n",
-                  keymap->names->symbols);
+                  keymap->symbols_section_name);
     else
         write_buf(keymap, buf, size, offset, "\txkb_symbols {\n\n");
 
     for (tmp = group = 0; group < XkbNumKbdGroups; group++) {
-        if (!keymap->names->groups[group])
+        if (!keymap->group_names[group])
             continue;
         write_buf(keymap, buf, size, offset,
                   "\t\tname[group%d]=\"%s\";\n", group + 1,
-                  keymap->names->groups[group]);
+                  keymap->group_names[group]);
         tmp++;
     }
     if (tmp > 0)
@@ -807,7 +808,7 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
             continue;
 
         write_buf(keymap, buf, size, offset, "\t\tkey %6s {",
-                  XkbcKeyNameText(darray_item(keymap->names->keys, key).name));
+                  XkbcKeyNameText(darray_item(keymap->key_names, key).name));
         if (keymap->explicit) {
             if ((keymap->explicit[key] & XkbExplicitKeyTypesMask)) {
                 bool multi_type = false;
@@ -934,7 +935,7 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
                 write_buf(keymap, buf, size, offset,
                           "\t\tmodifier_map %s { %s };\n",
                           get_mod_index_text(mod),
-                          XkbcKeyNameText(darray_item(keymap->names->keys,
+                          XkbcKeyNameText(darray_item(keymap->key_names,
                                                       key).name));
             }
         }

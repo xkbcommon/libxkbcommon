@@ -732,6 +732,7 @@ bool
 CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
                 enum merge_mode merge)
 {
+    xkb_keycode_t i;
     KeyNamesInfo info; /* contains all the info after parsing */
 
     InitKeyNamesInfo(&info, file->id);
@@ -753,26 +754,20 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
     else
         keymap->max_key_code = info.computedMax;
 
-    if (XkbcAllocNames(keymap, XkbKeyNamesMask | XkbIndicatorNamesMask, 0)
-        == Success) {
-        uint64_t i;
-        for (i = info.computedMin; i <= info.computedMax; i++)
-            LongToKeyName(darray_item(info.names, i),
-                          darray_item(keymap->names->keys, i).name);
-        if (info.name)
-            keymap->names->keycodes = strdup(info.name);
-    }
-    else {
-        WSGO("Cannot create struct xkb_names in CompileKeycodes\n");
-        goto err_info;
-    }
+    darray_resize0(keymap->key_names, keymap->max_key_code + 1);
+    for (i = info.computedMin; i <= info.computedMax; i++)
+        LongToKeyName(darray_item(info.names, i),
+                      darray_item(keymap->key_names, i).name);
+
+    if (info.name)
+        keymap->keycodes_section_name = strdup(info.name);
 
     if (info.leds) {
         IndicatorNameInfo *ii;
 
         for (ii = info.leds; ii; ii = (IndicatorNameInfo *) ii->defs.next) {
-            free(keymap->names->indicators[ii->ndx - 1]);
-            keymap->names->indicators[ii->ndx - 1] =
+            free(keymap->indicator_names[ii->ndx - 1]);
+            keymap->indicator_names[ii->ndx - 1] =
                 xkb_atom_strdup(keymap->ctx, ii->name);
         }
     }

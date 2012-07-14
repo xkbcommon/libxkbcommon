@@ -60,7 +60,7 @@ xkb_map_num_mods(struct xkb_keymap *keymap)
     xkb_mod_index_t i;
 
     for (i = 0; i < XkbNumVirtualMods; i++)
-        if (!keymap->names->vmods[i])
+        if (!keymap->vmod_names[i])
             break;
 
     /* We always have all the core modifiers (for now), plus any virtual
@@ -100,7 +100,7 @@ xkb_map_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx)
     }
 
     /* If that fails, try to find a virtual mod name. */
-    return keymap->names->vmods[idx - Mod5MapIndex];
+    return keymap->vmod_names[idx - Mod5MapIndex];
 }
 
 /**
@@ -128,8 +128,8 @@ xkb_map_mod_get_index(struct xkb_keymap *keymap, const char *name)
     if (strcasecmp(name, "Mod5") == 0)
         return Mod5MapIndex;
 
-    for (i = 0; i < XkbNumVirtualMods && keymap->names->vmods[i]; i++) {
-        if (strcasecmp(name, keymap->names->vmods[i]) == 0)
+    for (i = 0; i < XkbNumVirtualMods && keymap->vmod_names[i]; i++) {
+        if (strcasecmp(name, keymap->vmod_names[i]) == 0)
             return i + Mod5MapIndex;
     }
 
@@ -161,7 +161,7 @@ xkb_map_group_get_name(struct xkb_keymap *keymap, xkb_group_index_t idx)
     if (idx >= xkb_map_num_groups(keymap))
         return NULL;
 
-    return keymap->names->groups[idx];
+    return keymap->group_names[idx];
 }
 
 /**
@@ -174,7 +174,7 @@ xkb_map_group_get_index(struct xkb_keymap *keymap, const char *name)
     xkb_group_index_t i;
 
     for (i = 0; i < num_groups; i++) {
-        if (strcasecmp(keymap->names->groups[i], name) == 0)
+        if (strcasecmp(keymap->group_names[i], name) == 0)
             return i;
     }
 
@@ -217,7 +217,7 @@ xkb_map_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx)
     if (idx >= xkb_map_num_leds(keymap))
         return NULL;
 
-    return keymap->names->indicators[idx];
+    return keymap->indicator_names[idx];
 }
 
 /**
@@ -230,7 +230,7 @@ xkb_map_led_get_index(struct xkb_keymap *keymap, const char *name)
     xkb_led_index_t i;
 
     for (i = 0; i < num_leds; i++) {
-        if (strcasecmp(keymap->names->indicators[i], name) == 0)
+        if (strcasecmp(keymap->indicator_names[i], name) == 0)
             return i;
     }
 

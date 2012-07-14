@@ -36,24 +36,17 @@ InitVModInfo(VModInfo *info, struct xkb_keymap *keymap)
 void
 ClearVModInfo(VModInfo *info, struct xkb_keymap *keymap)
 {
-    int i;
+    int i, bit;
 
     info->newlyDefined = info->defined = info->available = 0;
-
-    if (XkbcAllocNames(keymap, 0, 0) != Success)
-        return;
 
     for (i = 0; i < XkbNumVirtualMods; i++)
         keymap->vmods[i] = XkbNoModifierMask;
 
     info->keymap = keymap;
-    if (keymap && keymap->names) {
-        int bit;
-        for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1) {
-            if (keymap->names->vmods[i] != NULL)
-                info->defined |= bit;
-        }
-    }
+    for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1)
+        if (keymap->vmod_names[i])
+            info->defined |= bit;
 }
 
 /***====================================================================***/
@@ -73,13 +66,12 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
 {
     int i, bit, nextFree;
     ExprResult mod;
-    struct xkb_names *names = keymap->names;
 
     for (i = 0, bit = 1, nextFree = -1; i < XkbNumVirtualMods; i++, bit <<=
              1) {
         if (info->defined & bit) {
-            if (names->vmods[i] &&
-                strcmp(names->vmods[i],
+            if (keymap->vmod_names[i] &&
+                strcmp(keymap->vmod_names[i],
                        xkb_atom_text(keymap->ctx, stmt->name)) == 0) { /* already defined */
                 info->available |= bit;
                 if (stmt->value == NULL)
@@ -121,7 +113,7 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
     info->defined |= (1 << nextFree);
     info->newlyDefined |= (1 << nextFree);
     info->available |= (1 << nextFree);
-    names->vmods[nextFree] = xkb_atom_strdup(keymap->ctx, stmt->name);
+    keymap->vmod_names[nextFree] = xkb_atom_strdup(keymap->ctx, stmt->name);
     if (stmt->value == NULL)
         return true;
     if (ExprResolveModMask(keymap->ctx, stmt->value, &mod)) {
@@ -134,7 +126,7 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
 }
 
 /**
- * Returns the index of the given modifier in the keymap->names->vmods array.
+ * Returns the index of the given modifier in the keymap->vmod_names array.
  *
  * @param keymap Pointer to the xkb data structure.
  * @param field The Atom of the modifier's name (e.g. Atom for LAlt)
@@ -151,21 +143,21 @@ LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
     int i;
     const char *name = xkb_atom_text(keymap->ctx, field);
 
-    if ((keymap == NULL) || (keymap->names == NULL) || (type != TypeInt)) {
+    if (type != TypeInt)
         return false;
-    }
+
     /* For each named modifier, get the name and compare it to the one passed
      * in. If we get a match, return the index of the modifier.
      * The order of modifiers is the same as in the virtual_modifiers line in
      * the xkb_types section.
      */
-    for (i = 0; i < XkbNumVirtualMods; i++) {
-        if (keymap->names->vmods[i] &&
-            strcmp(keymap->names->vmods[i], name) == 0) {
+    for (i = 0; i < XkbNumVirtualMods; i++)
+        if (keymap->vmod_names[i] &&
+            strcmp(keymap->vmod_names[i], name) == 0) {
             val_rtrn->uval = i;
             return true;
         }
-    }
+
     return false;
 }
 
@@ -211,14 +203,12 @@ bool
 ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
                        ExprResult *val_rtrn, VModInfo *info)
 {
-    struct xkb_names *names = keymap->names;
-
     if (def->op == ExprIdent) {
         int i, bit;
         const char *name = xkb_atom_text(keymap->ctx, def->value.str);
         for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1) {
-            if ((info->available & bit) && names->vmods[i] &&
-                strcmp(names->vmods[i], name) == 0) {
+            if ((info->available & bit) && keymap->vmod_names[i] &&
+                strcmp(keymap->vmod_names[i], name) == 0) {
                 val_rtrn->uval = i;
                 return true;
             }

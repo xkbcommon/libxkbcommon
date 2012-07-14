@@ -1917,13 +1917,6 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
     if (info.errorCount != 0)
         goto err_info;
 
-    /* alloc memory in the xkb struct */
-    if (XkbcAllocNames(keymap, XkbGroupNamesMask, 0) != Success) {
-        WSGO("Can not allocate names in CompileSymbols\n");
-        ACTION("Symbols not added\n");
-        goto err_info;
-    }
-
     darray_resize0(keymap->key_sym_map, keymap->max_key_code + 1);
     keymap->modmap = calloc(keymap->max_key_code + 1,
                             sizeof(*keymap->modmap));
@@ -1956,16 +1949,16 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
     }
 
     if (info.name)
-        keymap->names->symbols = strdup(info.name);
+        keymap->symbols_section_name = strdup(info.name);
 
     /* now copy info into xkb. */
     ApplyAliases(keymap, &info.aliases);
 
     for (i = 0; i < XkbNumKbdGroups; i++) {
         if (info.groupNames[i] != XKB_ATOM_NONE) {
-            free(keymap->names->groups[i]);
-            keymap->names->groups[i] = xkb_atom_strdup(keymap->ctx,
-                                                       info.groupNames[i]);
+            free(keymap->group_names[i]);
+            keymap->group_names[i] = xkb_atom_strdup(keymap->ctx,
+                                                     info.groupNames[i]);
         }
     }
 
@@ -1980,12 +1973,12 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
 
     if (warningLevel > 3) {
         for (i = keymap->min_key_code; i <= keymap->max_key_code; i++) {
-            if (darray_item(keymap->names->keys, i).name[0] == '\0')
+            if (darray_item(keymap->key_names, i).name[0] == '\0')
                 continue;
 
             if (XkbKeyNumGroups(keymap, i) < 1) {
                 char buf[5];
-                memcpy(buf, darray_item(keymap->names->keys, i).name, 4);
+                memcpy(buf, darray_item(keymap->key_names, i).name, 4);
                 buf[4] = '\0';
                 WARN("No symbols defined for <%s> (keycode %d)\n", buf, i);
             }
