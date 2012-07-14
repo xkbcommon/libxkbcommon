@@ -275,12 +275,6 @@ struct xkb_sym_map {
     darray(xkb_keysym_t) syms;
 };
 
-struct xkb_client_map {
-    darray(struct xkb_key_type) types;
-    darray(struct xkb_sym_map) key_sym_map;
-    unsigned char *modmap;
-};
-
 struct xkb_behavior {
     unsigned char type;
     unsigned char data;
@@ -361,10 +355,13 @@ struct xkb_keymap {
 
     struct xkb_controls *      ctrls;
     struct xkb_server_map *    server;
-    struct xkb_client_map *    map;
     struct xkb_indicator *     indicators;
     struct xkb_names *        names;
     struct xkb_compat_map *    compat;
+
+    darray(struct xkb_key_type) types;
+    darray(struct xkb_sym_map) key_sym_map;
+    unsigned char *modmap;
 };
 
 #define XkbNumGroups(g)             ((g) & 0x0f)
@@ -377,22 +374,22 @@ struct xkb_keymap {
 #define XkbSetNumGroups(g, n)       (((g) & 0xf0) | ((n) & 0x0f))
 
 #define XkbKeyGroupInfo(d, k) \
-    (darray_item((d)->map->key_sym_map, k).group_info)
+    (darray_item((d)->key_sym_map, k).group_info)
 #define XkbKeyNumGroups(d, k) \
-    (XkbNumGroups(darray_item((d)->map->key_sym_map, k).group_info))
+    (XkbNumGroups(darray_item((d)->key_sym_map, k).group_info))
 #define XkbKeyGroupWidth(d, k, g) \
     (XkbKeyType(d, k, g)->num_levels)
 #define XkbKeyGroupsWidth(d, k) \
-    (darray_item((d)->map->key_sym_map, k).width)
+    (darray_item((d)->key_sym_map, k).width)
 #define XkbKeyTypeIndex(d, k, g) \
-    (darray_item((d)->map->key_sym_map, k).kt_index[g & 0x3])
+    (darray_item((d)->key_sym_map, k).kt_index[g & 0x3])
 #define XkbKeyType(d, k, g) \
-    (&darray_item((d)->map->types, XkbKeyTypeIndex(d, k, g)))
+    (&darray_item((d)->types, XkbKeyTypeIndex(d, k, g)))
 #define XkbKeyNumSyms(d, k, g, sl) \
     (darray_item((d)->map->key_sym_map, \
                  k).num_syms[(g * XkbKeyGroupsWidth(d, k)) + sl])
 #define XkbKeySym(d, k, n) \
-    (&darray_item(darray_item((d)->map->key_sym_map, k).syms, n))
+    (&darray_item(darray_item((d)->key_sym_map, k).syms, n))
 #define XkbKeySymOffset(d, k, g, sl) \
     (darray_item((d)->map->key_sym_map, \
                  k).sym_index[(g * XkbKeyGroupsWidth(d, k)) + sl])

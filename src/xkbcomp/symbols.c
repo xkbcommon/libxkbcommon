@@ -1494,8 +1494,8 @@ FindNamedType(struct xkb_keymap *keymap, xkb_atom_t atom, unsigned *type_rtrn)
     const char *name = xkb_atom_text(keymap->ctx, atom);
     struct xkb_key_type *type;
 
-    if (keymap && keymap->map) {
-        darray_foreach(type, keymap->map->types) {
+    if (keymap) {
+        darray_foreach(type, keymap->types) {
             if (strcmp(type->name, name) == 0) {
                 *type_rtrn = n;
                 return true;
@@ -1751,7 +1751,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
             types[i] = XkbTwoLevelIndex;
         }
         /* if the type specifies fewer levels than the key has, shrink the key */
-        type = &darray_item(keymap->map->types, types[i]);
+        type = &darray_item(keymap->types, types[i]);
         if (type->num_levels < key->numLevels[i]) {
             if (warningLevel > 0) {
                 WARN("Type \"%s\" has %d levels, but %s has %d symbols\n",
@@ -1785,7 +1785,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
     else
         outActs = NULL;
 
-    sym_map = &darray_item(keymap->map->key_sym_map, kc);
+    sym_map = &darray_item(keymap->key_sym_map, kc);
 
     if (key->defs.defined & _Key_GroupInfo)
         i = key->groupInfo;
@@ -1887,7 +1887,7 @@ CopyModMapDef(struct xkb_keymap *keymap, ModMapEntry *entry)
         }
         return false;
     }
-    keymap->map->modmap[kc] |= (1 << entry->modifier);
+    keymap->modmap[kc] |= (1 << entry->modifier);
     return true;
 }
 
@@ -1924,12 +1924,11 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
         goto err_info;
     }
 
-    if (XkbcAllocClientMap(keymap, XkbKeySymsMask | XkbModifierMapMask, 0)
-        != Success) {
-        WSGO("Could not allocate client map in CompileSymbols\n");
-        ACTION("Symbols not added\n");
+    darray_resize0(keymap->key_sym_map, keymap->max_key_code + 1);
+    keymap->modmap = calloc(keymap->max_key_code + 1,
+                            sizeof(*keymap->modmap));
+    if (!keymap->modmap)
         goto err_info;
-    }
 
     if (XkbcAllocServerMap(keymap, XkbAllServerInfoMask, 32) != Success) {
         WSGO("Could not allocate server map in CompileSymbols\n");

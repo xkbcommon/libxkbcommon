@@ -1084,15 +1084,11 @@ static int
 InitCanonicalKeyTypes(struct xkb_keymap *keymap, unsigned which,
                       int keypadVMod)
 {
-    struct xkb_client_map *map;
     const struct xkb_key_type *from;
     int rtrn;
 
-    rtrn = XkbcAllocClientMap(keymap, XkbKeyTypesMask, XkbNumRequiredTypes);
-    if (rtrn != Success)
-        return rtrn;
+    darray_growalloc(keymap->types, XkbNumRequiredTypes);
 
-    map = keymap->map;
     if ((which & XkbAllRequiredTypes) == 0)
         return Success;
 
@@ -1101,22 +1097,22 @@ InitCanonicalKeyTypes(struct xkb_keymap *keymap, unsigned which,
 
     if (which & XkbOneLevelMask)
         rtrn = XkbcCopyKeyType(&from[XkbOneLevelIndex],
-                               &darray_item(map->types, XkbOneLevelIndex));
+                               &darray_item(keymap->types, XkbOneLevelIndex));
 
     if ((which & XkbTwoLevelMask) && rtrn == Success)
         rtrn = XkbcCopyKeyType(&from[XkbTwoLevelIndex],
-                               &darray_item(map->types, XkbTwoLevelIndex));
+                               &darray_item(keymap->types, XkbTwoLevelIndex));
 
     if ((which & XkbAlphabeticMask) && rtrn == Success)
         rtrn = XkbcCopyKeyType(&from[XkbAlphabeticIndex],
-                               &darray_item(map->types, XkbAlphabeticIndex));
+                               &darray_item(keymap->types, XkbAlphabeticIndex));
 
     if ((which & XkbKeypadMask) && rtrn == Success) {
         struct xkb_key_type *type;
 
         rtrn = XkbcCopyKeyType(&from[XkbKeypadIndex],
-                               &darray_item(map->types, XkbKeypadIndex));
-        type = &darray_item(map->types, XkbKeypadIndex);
+                               &darray_item(keymap->types, XkbKeypadIndex));
+        type = &darray_item(keymap->types, XkbKeypadIndex);
 
         if (keypadVMod >= 0 && keypadVMod < XkbNumVirtualMods &&
             rtrn == Success) {
@@ -1172,12 +1168,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
     if ((info.stdPresent & XkbAlphabeticMask) == 0)
         i++;
 
-    if (XkbcAllocClientMap(keymap, XkbKeyTypesMask, i) != Success) {
-        WSGO("Couldn't allocate client map\n");
-        goto err_info;
-    }
-
-    darray_resize0(keymap->map->types, i);
+    darray_resize0(keymap->types, i);
 
     if (XkbAllRequiredTypes & (~info.stdPresent)) {
         unsigned missing, keypadVMod;
@@ -1191,29 +1182,29 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
         }
 
         if (missing & XkbOneLevelMask)
-            darray_item(keymap->map->types, XkbOneLevelIndex).name =
+            darray_item(keymap->types, XkbOneLevelIndex).name =
                 xkb_atom_strdup(keymap->ctx, tok_ONE_LEVEL);
         if (missing & XkbTwoLevelMask)
-            darray_item(keymap->map->types, XkbTwoLevelIndex).name =
+            darray_item(keymap->types, XkbTwoLevelIndex).name =
                 xkb_atom_strdup(keymap->ctx, tok_TWO_LEVEL);
         if (missing & XkbAlphabeticMask)
-            darray_item(keymap->map->types, XkbAlphabeticIndex).name =
+            darray_item(keymap->types, XkbAlphabeticIndex).name =
                 xkb_atom_strdup(keymap->ctx, tok_ALPHABETIC);
         if (missing & XkbKeypadMask)
-            darray_item(keymap->map->types, XkbKeypadIndex).name =
+            darray_item(keymap->types, XkbKeypadIndex).name =
                 xkb_atom_strdup(keymap->ctx, tok_KEYPAD);
     }
 
-    next = &darray_item(keymap->map->types, XkbLastRequiredType + 1);
+    next = &darray_item(keymap->types, XkbLastRequiredType + 1);
     for (i = 0, def = info.types; i < info.nTypes; i++) {
         if (def->name == tok_ONE_LEVEL)
-            type = &darray_item(keymap->map->types, XkbOneLevelIndex);
+            type = &darray_item(keymap->types, XkbOneLevelIndex);
         else if (def->name == tok_TWO_LEVEL)
-            type = &darray_item(keymap->map->types, XkbTwoLevelIndex);
+            type = &darray_item(keymap->types, XkbTwoLevelIndex);
         else if (def->name == tok_ALPHABETIC)
-            type = &darray_item(keymap->map->types, XkbAlphabeticIndex);
+            type = &darray_item(keymap->types, XkbAlphabeticIndex);
         else if (def->name == tok_KEYPAD)
-            type = &darray_item(keymap->map->types, XkbKeypadIndex);
+            type = &darray_item(keymap->types, XkbKeypadIndex);
         else
             type = next++;
 

@@ -364,7 +364,7 @@ write_types(struct xkb_keymap *keymap, char **buf, size_t *size,
 
     write_vmods(keymap, buf, size, offset);
 
-    darray_foreach(type, keymap->map->types) {
+    darray_foreach(type, keymap->types) {
         write_buf(keymap, buf, size, offset, "\t\ttype \"%s\" {\n",
                   type->name);
         write_buf(keymap, buf, size, offset, "\t\t\tmodifiers= %s;\n",
@@ -779,7 +779,6 @@ static bool
 write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
               size_t *offset)
 {
-    struct xkb_client_map *map = keymap->map;
     struct xkb_server_map *srv = keymap->server;
     xkb_keycode_t key;
     int group, tmp;
@@ -834,13 +833,13 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
                         write_buf(keymap, buf, size, offset,
                                   "\n\t\t\ttype[group%d]= \"%s\",",
                                   group + 1,
-                                  darray_item(map->types, type).name);
+                                  darray_item(keymap->types, type).name);
                     }
                 }
                 else {
                     write_buf(keymap, buf, size, offset,
                               "\n\t\t\ttype= \"%s\",",
-                              darray_item(map->types, type).name);
+                              darray_item(keymap->types, type).name);
                 }
             }
             if (keymap->ctrls &&
@@ -922,16 +921,16 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
             write_buf(keymap, buf, size, offset, "\n\t\t};\n");
         }
     }
-    if (map && map->modmap) {
+    if (keymap->modmap) {
         for (key = keymap->min_key_code; key <= keymap->max_key_code;
              key++) {
             int mod;
 
-            if (map->modmap[key] == 0)
+            if (keymap->modmap[key] == 0)
                 continue;
 
             for (mod = 0; mod < XkbNumModifiers; mod++) {
-                if (!(map->modmap[key] & (1 << mod)))
+                if (!(keymap->modmap[key] & (1 << mod)))
                     continue;
 
                 write_buf(keymap, buf, size, offset,

@@ -27,38 +27,6 @@
 #include "alloc.h"
 
 int
-XkbcAllocClientMap(struct xkb_keymap *keymap, unsigned which,
-                   size_t nTotalTypes)
-{
-    if (!keymap || ((nTotalTypes > 0) && (nTotalTypes < XkbNumRequiredTypes)))
-        return BadValue;
-
-    if (!keymap->map) {
-        keymap->map = calloc(1, sizeof(*keymap->map));
-        if (!keymap->map)
-            return BadAlloc;
-        darray_init(keymap->map->types);
-    }
-
-    if (which & XkbKeyTypesMask)
-        darray_growalloc(keymap->map->types, nTotalTypes);
-
-    if (which & XkbKeySymsMask)
-        darray_resize0(keymap->map->key_sym_map, keymap->max_key_code + 1);
-
-    if (which & XkbModifierMapMask) {
-        if (!keymap->map->modmap) {
-            keymap->map->modmap = uTypedCalloc(keymap->max_key_code + 1,
-                                               unsigned char);
-            if (!keymap->map->modmap)
-                return BadAlloc;
-        }
-    }
-
-    return Success;
-}
-
-int
 XkbcAllocServerMap(struct xkb_keymap *keymap, unsigned which,
                    unsigned nNewActions)
 {
@@ -158,7 +126,7 @@ bool
 XkbcResizeKeySyms(struct xkb_keymap *keymap, xkb_keycode_t key,
                   unsigned int needed)
 {
-    darray_resize0(darray_item(keymap->map->key_sym_map, key).syms, needed);
+    darray_resize0(darray_item(keymap->key_sym_map, key).syms, needed);
     return true;
 }
 
@@ -203,19 +171,12 @@ XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t key,
     return XkbKeyActionsPtr(keymap, key);
 }
 
-void
-XkbcFreeClientMap(struct xkb_keymap *keymap)
+static void
+free_types(struct xkb_keymap *keymap)
 {
-    struct xkb_client_map * map;
-    struct xkb_key_type * type;
-    struct xkb_sym_map *sym_map;
+    struct xkb_key_type *type;
 
-    if (!keymap || !keymap->map)
-        return;
-
-    map = keymap->map;
-
-    darray_foreach(type, map->types) {
+    darray_foreach(type, keymap->types) {
         int j;
         darray_free(type->map);
         free(type->preserve);
@@ -224,18 +185,20 @@ XkbcFreeClientMap(struct xkb_keymap *keymap)
         free(type->level_names);
         free(type->name);
     }
-    darray_free(map->types);
+    darray_free(keymap->types);
+}
 
-    darray_foreach(sym_map, map->key_sym_map) {
+static void
+free_sym_maps(struct xkb_keymap *keymap)
+{
+    struct xkb_sym_map *sym_map;
+
+    darray_foreach(sym_map, keymap->key_sym_map) {
         free(sym_map->sym_index);
         free(sym_map->num_syms);
         darray_free(sym_map->syms);
     }
-    darray_free(map->key_sym_map);
-
-    free(map->modmap);
-    free(keymap->map);
-    keymap->map = NULL;
+    darray_free(keymap->key_sym_map);
 }
 
 void
@@ -306,10 +269,10 @@ XkbcAllocNames(struct xkb_keymap *keymap, unsigned which,
         darray_init(keymap->names->key_aliases);
     }
 
-    if ((which & XkbKTLevelNamesMask) && keymap->map) {
+    if ((which & XkbKTLevelNamesMask) && keymap) {
         struct xkb_key_type * type;
 
-        darray_foreach(type, keymap->map->types) {
+        darray_foreach(type, keymap->types) {
             if (!type->level_names) {
                 type->level_names = calloc(type->num_levels,
                                            sizeof(*type->level_names));
@@ -332,7 +295,6 @@ static void
 XkbcFreeNames(struct xkb_keymap *keymap)
 {
     struct xkb_names * names;
-    struct xkb_client_map * map;
     struct xkb_key_type *type;
     int i;
 
@@ -340,16 +302,13 @@ XkbcFreeNames(struct xkb_keymap *keymap)
         return;
 
     names = keymap->names;
-    map = keymap->map;
 
-    if (map) {
-        darray_foreach(type, map->types) {
-            int j;
-            for (j = 0; j < type->num_levels; j++)
-                free(type->level_names[j]);
-            free(type->level_names);
-            type->level_names = NULL;
-        }
+    darray_foreach(type, keymap->types) {
+        int j;
+        for (j = 0; j < type->num_levels; j++)
+            free(type->level_names[j]);
+        free(type->level_names);
+        type->level_names = NULL;
     }
 
     free(names->keycodes);
@@ -445,7 +404,9 @@ XkbcFreeKeyboard(struct xkb_keymap *keymap)
     if (!keymap)
         return;
 
-    XkbcFreeClientMap(keymap);
+    free_types(keymap);
+    free_sym_maps(keymap);
+    free(keymap->modmap);
     XkbcFreeServerMap(keymap);
     XkbcFreeCompatMap(keymap);
     XkbcFreeIndicatorMaps(keymap);

@@ -853,7 +853,7 @@ FindInterpForKey(struct xkb_keymap *keymap, xkb_keycode_t key,
             continue;
 
         if (level == 0 || !(interp->match & XkbSI_LevelOneOnly))
-            mods = keymap->map->modmap[key];
+            mods = keymap->modmap[key];
         else
             mods = 0;
 
@@ -994,12 +994,12 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
         for (i = 0; i < XkbNumVirtualMods; i++) {
             if (!(keymap->server->vmodmap[key] & (1 << i)))
                 continue;
-            keymap->server->vmods[i] |= keymap->map->modmap[key];
+            keymap->server->vmods[i] |= keymap->modmap[key];
         }
     }
 
     /* Now update the level masks for all the types to reflect the vmods. */
-    darray_foreach(type, keymap->map->types) {
+    darray_foreach(type, keymap->types) {
         uint32_t mask = 0;
         int j;
         type->mods.mask = type->mods.real_mods;
@@ -1021,7 +1021,7 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
         for (i = 0; i < XkbKeyNumActions(keymap, key); i++) {
             if (acts[i].any.type == XkbSA_NoAction)
                 continue;
-            UpdateActionMods(keymap, &acts[i], keymap->map->modmap[key]);
+            UpdateActionMods(keymap, &acts[i], keymap->modmap[key]);
         }
     }
 
