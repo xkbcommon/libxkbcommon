@@ -2029,9 +2029,6 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
         keymap->server->explicit[kc] |= XkbExplicitAutoRepeatMask;
     }
 
-    if (nGroups > keymap->ctrls->num_groups)
-	keymap->ctrls->num_groups = nGroups;
-
     /* do the same thing for the next key */
     CopySymbolsDef(keymap, key, kc + 1);
     return true;

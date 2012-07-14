@@ -333,7 +333,6 @@ struct xkb_names {
 };
 
 struct xkb_controls {
-    unsigned char num_groups;
     /* unsigned char groups_wrap; */
     /* struct xkb_mods internal; */
     /* struct xkb_mods ignore_lock; */
