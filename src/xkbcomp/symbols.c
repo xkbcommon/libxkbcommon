@@ -1850,9 +1850,9 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
     }
     if (key->repeat != RepeatUndefined) {
         if (key->repeat == RepeatYes)
-            keymap->ctrls->per_key_repeat[kc / 8] |= (1 << (kc % 8));
+            keymap->per_key_repeat[kc / 8] |= (1 << (kc % 8));
         else
-            keymap->ctrls->per_key_repeat[kc / 8] &= ~(1 << (kc % 8));
+            keymap->per_key_repeat[kc / 8] &= ~(1 << (kc % 8));
         keymap->explicit[kc] |= XkbExplicitAutoRepeatMask;
     }
 
@@ -1942,11 +1942,9 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
     if (!keymap->vmodmap)
         goto err_info;
 
-    if (XkbcAllocControls(keymap) != Success) {
-        WSGO("Could not allocate controls in CompileSymbols\n");
-        ACTION("Symbols not added\n");
+    keymap->per_key_repeat = calloc(keymap->max_key_code / 8, 1);
+    if (!keymap->per_key_repeat)
         goto err_info;
-    }
 
     if (info.name)
         keymap->symbols_section_name = strdup(info.name);

@@ -932,8 +932,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, xkb_keycode_t key)
             if (group == 0 && level == 0) {
                 if (!(keymap->explicit[key] & XkbExplicitAutoRepeatMask) &&
                     (!interp || interp->flags & XkbSI_AutoRepeat))
-                    keymap->ctrls->per_key_repeat[key / 8] |=
-                        (1 << (key % 8));
+                    keymap->per_key_repeat[key / 8] |= (1 << (key % 8));
                 if (!(keymap->explicit[key] & XkbExplicitBehaviorMask) &&
                     interp && (interp->flags & XkbSI_LockingKey))
                     keymap->behaviors[key].type = XkbKB_Lock;

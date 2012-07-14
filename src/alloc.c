@@ -168,36 +168,6 @@ free_names(struct xkb_keymap *keymap)
     free(keymap->compat_section_name);
 }
 
-int
-XkbcAllocControls(struct xkb_keymap *keymap)
-{
-    if (!keymap)
-        return BadMatch;
-
-    if (!keymap->ctrls) {
-        keymap->ctrls = uTypedCalloc(1, struct xkb_controls);
-        if (!keymap->ctrls)
-            return BadAlloc;
-    }
-
-    keymap->ctrls->per_key_repeat = uTypedCalloc(keymap->max_key_code >> 3,
-                                                 unsigned char);
-    if (!keymap->ctrls->per_key_repeat)
-        return BadAlloc;
-
-    return Success;
-}
-
-static void
-XkbcFreeControls(struct xkb_keymap *keymap)
-{
-    if (keymap && keymap->ctrls) {
-        free(keymap->ctrls->per_key_repeat);
-        free(keymap->ctrls);
-        keymap->ctrls = NULL;
-    }
-}
-
 struct xkb_keymap *
 XkbcAllocKeyboard(struct xkb_context *ctx)
 {
@@ -229,7 +199,7 @@ XkbcFreeKeyboard(struct xkb_keymap *keymap)
     free(keymap->vmodmap);
     darray_free(keymap->sym_interpret);
     free_names(keymap);
-    XkbcFreeControls(keymap);
+    free(keymap->per_key_repeat);
     xkb_context_unref(keymap->ctx);
     free(keymap);
 }

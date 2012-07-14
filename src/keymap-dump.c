@@ -842,9 +842,8 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
                               darray_item(keymap->types, type).name);
                 }
             }
-            if (keymap->ctrls &&
-                (keymap->explicit[key] & XkbExplicitAutoRepeatMask)) {
-                if (keymap->ctrls->per_key_repeat[key / 8] & (1 << (key % 8)))
+            if (keymap->explicit[key] & XkbExplicitAutoRepeatMask) {
+                if (keymap->per_key_repeat[key / 8] & (1 << (key % 8)))
                     write_buf(keymap, buf, size, offset,
                               "\n\t\t\trepeat= Yes,");
                 else

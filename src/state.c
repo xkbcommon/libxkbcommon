@@ -562,7 +562,7 @@ xkb_state_led_update_all(struct xkb_state *state)
                 state->leds |= (1 << led);
         }
         else if (map->ctrls) {
-            if ((map->ctrls & state->keymap->ctrls->enabled_ctrls))
+            if ((map->ctrls & state->keymap->enabled_ctrls))
                 state->leds |= (1 << led);
         }
     }

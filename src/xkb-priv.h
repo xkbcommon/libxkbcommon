@@ -294,33 +294,32 @@ struct xkb_key_alias {
 };
 
 struct xkb_controls {
-    /* unsigned char groups_wrap; */
-    /* struct xkb_mods internal; */
-    /* struct xkb_mods ignore_lock; */
-    unsigned int enabled_ctrls;
-    /* unsigned short repeat_delay; */
-    /* unsigned short repeat_interval; */
-    /* unsigned short slow_keys_delay; */
-    /* unsigned short debounce_delay; */
-    /* unsigned short ax_options; */
-    /* unsigned short ax_timeout; */
-    /* unsigned short axt_opts_mask; */
-    /* unsigned short axt_opts_values; */
-    /* unsigned int axt_ctrls_mask; */
-    /* unsigned int axt_ctrls_values; */
-    unsigned char *per_key_repeat;
+    unsigned char groups_wrap;
+    struct xkb_mods internal;
+    struct xkb_mods ignore_lock;
+    unsigned short repeat_delay;
+    unsigned short repeat_interval;
+    unsigned short slow_keys_delay;
+    unsigned short debounce_delay;
+    unsigned short ax_options;
+    unsigned short ax_timeout;
+    unsigned short axt_opts_mask;
+    unsigned short axt_opts_values;
+    unsigned int axt_ctrls_mask;
+    unsigned int axt_ctrls_values;
 };
 
 /* Common keyboard description structure */
 struct xkb_keymap {
-    struct xkb_context  *ctx;
+    struct xkb_context *ctx;
 
-    unsigned int refcnt;
-    unsigned short flags;
+    int refcnt;
+    enum xkb_map_compile_flags flags;
+
+    unsigned int enabled_ctrls;
+
     xkb_keycode_t min_key_code;
     xkb_keycode_t max_key_code;
-
-    struct xkb_controls *      ctrls;
 
     /* key -> key name mapping */
     darray(struct xkb_key_name) key_names;
@@ -354,6 +353,9 @@ struct xkb_keymap {
 
     /* key -> behavior mapping */
     struct xkb_behavior *behaviors;
+
+    /* key -> should repeat mapping - one bit per key */
+    unsigned char *per_key_repeat;
 
     struct xkb_indicator_map indicators[XkbNumIndicators];
     char *indicator_names[XkbNumIndicators];

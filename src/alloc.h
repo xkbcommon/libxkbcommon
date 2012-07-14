@@ -29,9 +29,6 @@
 
 #include "xkb-priv.h"
 
-extern int
-XkbcAllocControls(struct xkb_keymap *keymap);
-
 extern struct xkb_keymap *
 XkbcAllocKeyboard(struct xkb_context *ctx);
 
