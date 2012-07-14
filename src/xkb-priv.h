@@ -261,11 +261,6 @@ struct xkb_sym_interpret {
     union xkb_action act;
 };
 
-struct xkb_compat_map {
-    darray(struct xkb_sym_interpret) sym_interpret;
-    struct xkb_mods groups[XkbNumKbdGroups];
-};
-
 struct xkb_sym_map {
     unsigned char kt_index[XkbNumKbdGroups];
     unsigned char group_info;
@@ -346,14 +341,16 @@ struct xkb_keymap {
     struct xkb_controls *      ctrls;
     struct xkb_indicator *     indicators;
     struct xkb_names *        names;
-    struct xkb_compat_map *    compat;
 
     /* key -> explicit flags mapping */
     unsigned char *explicit;
 
     darray(struct xkb_key_type) types;
 
+    /* key -> symbols mapping */
     darray(struct xkb_sym_map) key_sym_map;
+
+    darray(struct xkb_sym_interpret) sym_interpret;
 
     /* key -> mod mapping */
     unsigned char *modmap;
@@ -362,10 +359,13 @@ struct xkb_keymap {
     /* key -> vmod mapping */
     uint32_t *vmodmap;
 
-    /* acts[key_acts[keycode]] */
-    darray(union xkb_action) acts;
-    darray(size_t ) key_acts;
+    struct xkb_mods groups[XkbNumKbdGroups];
 
+    /* key -> actions mapping: acts[key_acts[keycode]] */
+    darray(union xkb_action) acts;
+    darray(size_t) key_acts;
+
+    /* key -> behavior mapping */
     struct xkb_behavior *behaviors;
 };
 

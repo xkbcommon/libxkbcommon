@@ -146,39 +146,6 @@ free_sym_maps(struct xkb_keymap *keymap)
 }
 
 int
-XkbcAllocCompatMap(struct xkb_keymap *keymap, unsigned nSI)
-{
-    if (!keymap)
-        return BadMatch;
-
-    if (!keymap->compat) {
-        keymap->compat = calloc(1, sizeof(*keymap->compat));
-        if (!keymap->compat)
-            return BadAlloc;
-        darray_init(keymap->compat->sym_interpret);
-    }
-
-    darray_growalloc(keymap->compat->sym_interpret, nSI);
-    darray_resize(keymap->compat->sym_interpret, 0);
-
-    memset(keymap->compat->groups, 0,
-           XkbNumKbdGroups * sizeof(*keymap->compat->groups));
-
-    return Success;
-}
-
-static void
-XkbcFreeCompatMap(struct xkb_keymap *keymap)
-{
-    if (!keymap || !keymap->compat)
-        return;
-
-    darray_free(keymap->compat->sym_interpret);
-    free(keymap->compat);
-    keymap->compat = NULL;
-}
-
-int
 XkbcAllocNames(struct xkb_keymap *keymap, unsigned which,
                size_t nTotalAliases)
 {
@@ -337,7 +304,7 @@ XkbcFreeKeyboard(struct xkb_keymap *keymap)
     darray_free(keymap->acts);
     free(keymap->behaviors);
     free(keymap->vmodmap);
-    XkbcFreeCompatMap(keymap);
+    darray_free(keymap->sym_interpret);
     XkbcFreeIndicatorMaps(keymap);
     XkbcFreeNames(keymap);
     XkbcFreeControls(keymap);

@@ -679,7 +679,7 @@ write_compat(struct xkb_keymap *keymap, char **buf, size_t *size,
     write_buf(keymap, buf, size, offset, "\t\tinterpret.repeat= False;\n");
     write_buf(keymap, buf, size, offset, "\t\tinterpret.locking= False;\n");
 
-    darray_foreach(interp, keymap->compat->sym_interpret) {
+    darray_foreach(interp, keymap->sym_interpret) {
         char keysym_name[64];
 
         if (interp->sym == XKB_KEY_NoSymbol)
@@ -714,7 +714,7 @@ write_compat(struct xkb_keymap *keymap, char **buf, size_t *size,
     for (i = 0; i < XkbNumKbdGroups; i++) {
         struct xkb_mods *gc;
 
-        gc = &keymap->compat->groups[i];
+        gc = &keymap->groups[i];
         if (gc->real_mods == 0 && gc->vmods == 0)
             continue;
         write_buf(keymap, buf, size, offset,

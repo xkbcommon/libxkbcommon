@@ -146,7 +146,7 @@ xkb_map_num_groups(struct xkb_keymap *keymap)
     xkb_group_index_t i;
 
     for (i = 0; i < XkbNumKbdGroups; i++)
-        if (keymap->compat->groups[i].mask)
+        if (keymap->groups[i].mask)
             ret++;
 
     return ret;

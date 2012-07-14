@@ -30,9 +30,6 @@
 #include "xkb-priv.h"
 
 extern int
-XkbcAllocCompatMap(struct xkb_keymap *keymap, unsigned nSI);
-
-extern int
 XkbcAllocNames(struct xkb_keymap *keymap, unsigned which,
                size_t nTotalAliases);
 

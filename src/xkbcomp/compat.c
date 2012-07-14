@@ -705,8 +705,8 @@ HandleCompatMapFile(XkbFile *file, struct xkb_keymap *keymap,
 }
 
 static void
-CopyInterps(CompatInfo * info,
-            struct xkb_compat_map * compat, bool needSymbol, unsigned pred)
+CopyInterps(CompatInfo *info, struct xkb_keymap *keymap,
+            bool needSymbol, unsigned pred)
 {
     SymInterpInfo *si;
 
@@ -715,7 +715,7 @@ CopyInterps(CompatInfo * info,
             (needSymbol && (si->interp.sym == XKB_KEY_NoSymbol)) ||
             ((!needSymbol) && (si->interp.sym != XKB_KEY_NoSymbol)))
             continue;
-        darray_append(compat->sym_interpret, si->interp);
+        darray_append(keymap->sym_interpret, si->interp);
     }
 }
 
@@ -736,10 +736,8 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
     if (info.errorCount != 0)
         goto err_info;
 
-    if (XkbcAllocCompatMap(keymap, info.nInterps) != Success) {
-        WSGO("Couldn't allocate compatibility map\n");
-        goto err_info;
-    }
+    darray_init(keymap->sym_interpret);
+    darray_growalloc(keymap->sym_interpret, info.nInterps);
 
     if (info.name) {
         if (XkbcAllocNames(keymap, 0, 0) != Success)
@@ -748,23 +746,22 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
     }
 
     if (info.nInterps > 0) {
-        CopyInterps(&info, keymap->compat, true, XkbSI_Exactly);
-        CopyInterps(&info, keymap->compat, true, XkbSI_AllOf | XkbSI_NoneOf);
-        CopyInterps(&info, keymap->compat, true, XkbSI_AnyOf);
-        CopyInterps(&info, keymap->compat, true, XkbSI_AnyOfOrNone);
-        CopyInterps(&info, keymap->compat, false, XkbSI_Exactly);
-        CopyInterps(&info, keymap->compat, false, XkbSI_AllOf | XkbSI_NoneOf);
-        CopyInterps(&info, keymap->compat, false, XkbSI_AnyOf);
-        CopyInterps(&info, keymap->compat, false, XkbSI_AnyOfOrNone);
+        CopyInterps(&info, keymap, true, XkbSI_Exactly);
+        CopyInterps(&info, keymap, true, XkbSI_AllOf | XkbSI_NoneOf);
+        CopyInterps(&info, keymap, true, XkbSI_AnyOf);
+        CopyInterps(&info, keymap, true, XkbSI_AnyOfOrNone);
+        CopyInterps(&info, keymap, false, XkbSI_Exactly);
+        CopyInterps(&info, keymap, false, XkbSI_AllOf | XkbSI_NoneOf);
+        CopyInterps(&info, keymap, false, XkbSI_AnyOf);
+        CopyInterps(&info, keymap, false, XkbSI_AnyOfOrNone);
     }
 
-    for (i = 0, gcm = &info.groupCompat[0]; i < XkbNumKbdGroups; i++,
-         gcm++) {
-        if ((gcm->file_id != 0) || (gcm->real_mods != 0) ||
-            (gcm->vmods != 0)) {
-            keymap->compat->groups[i].mask = gcm->real_mods;
-            keymap->compat->groups[i].real_mods = gcm->real_mods;
-            keymap->compat->groups[i].vmods = gcm->vmods;
+    for (i = 0, gcm = &info.groupCompat[0]; i < XkbNumKbdGroups;
+         i++, gcm++) {
+        if (gcm->file_id != 0 || gcm->real_mods != 0 || gcm->vmods != 0) {
+            keymap->groups[i].mask = gcm->real_mods;
+            keymap->groups[i].real_mods = gcm->real_mods;
+            keymap->groups[i].vmods = gcm->vmods;
         }
     }
 
@@ -844,7 +841,7 @@ FindInterpForKey(struct xkb_keymap *keymap, xkb_keycode_t key,
     if (num_syms == 0)
         return NULL;
 
-    darray_foreach(interp, keymap->compat->sym_interpret) {
+    darray_foreach(interp, keymap->sym_interpret) {
         uint32_t mods;
         bool found;
 
@@ -1026,7 +1023,7 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
 
     /* Update group modifiers. */
     for (i = 0; i < XkbNumKbdGroups; i++) {
-        struct xkb_mods *group = &keymap->compat->groups[i];
+        struct xkb_mods *group = &keymap->groups[i];
         group->mask = group->real_mods | VModsToReal(keymap, group->vmods);
     }
 
