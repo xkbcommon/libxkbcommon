@@ -48,7 +48,7 @@ typedef struct _KeyTypeInfo
 {
     CommonInfo defs;
     xkb_atom_t name;
-    int fileID;
+    unsigned file_id;
     unsigned mask;
     unsigned vmask;
     bool groupInfo;
@@ -62,7 +62,7 @@ typedef struct _KeyTypesInfo
 {
     char *name;
     int errorCount;
-    int fileID;
+    unsigned file_id;
     unsigned stdPresent;
     unsigned nTypes;
     KeyTypeInfo *types;
@@ -99,7 +99,7 @@ static xkb_atom_t tok_KEYPAD;
 
 static void
 InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
-                 KeyTypesInfo *from)
+                 KeyTypesInfo *from, unsigned file_id)
 {
     tok_ONE_LEVEL = xkb_atom_intern(keymap->ctx, "ONE_LEVEL");
     tok_TWO_LEVEL = xkb_atom_intern(keymap->ctx, "TWO_LEVEL");
@@ -110,8 +110,9 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
     info->stdPresent = 0;
     info->nTypes = 0;
     info->types = NULL;
+    info->file_id = file_id;
     info->dflt.defs.defined = 0;
-    info->dflt.defs.fileID = 0;
+    info->dflt.defs.file_id = file_id;
     info->dflt.defs.merge = MERGE_OVERRIDE;
     info->dflt.defs.next = NULL;
     info->dflt.name = XKB_ATOM_NONE;
@@ -190,7 +191,7 @@ NextKeyType(KeyTypesInfo * info)
     if (type != NULL)
     {
         memset(type, 0, sizeof(KeyTypeInfo));
-        type->defs.fileID = info->fileID;
+        type->defs.file_id = info->file_id;
         info->types = AddCommonInfo(&info->types->defs, &type->defs);
         info->nTypes++;
     }
@@ -262,7 +263,7 @@ AddKeyType(struct xkb_keymap *keymap, KeyTypesInfo *info, KeyTypeInfo *new)
             || (new->defs.merge == MERGE_OVERRIDE))
         {
             KeyTypeInfo *next = (KeyTypeInfo *) old->defs.next;
-            if (((old->defs.fileID == new->defs.fileID)
+            if (((old->defs.file_id == new->defs.file_id)
                  && (warningLevel > 0)) || (warningLevel > 9))
             {
                 WARN("Multiple definitions of the %s key type\n",
@@ -277,7 +278,7 @@ AddKeyType(struct xkb_keymap *keymap, KeyTypesInfo *info, KeyTypeInfo *new)
             old->defs.next = &next->defs;
             return true;
         }
-        report = (old->defs.fileID == new->defs.fileID) && (warningLevel > 0);
+        report = (old->defs.file_id == new->defs.file_id) && (warningLevel > 0);
         if (report)
         {
             WARN("Multiple definitions of the %s key type\n",
@@ -349,8 +350,7 @@ HandleIncludeKeyTypes(IncludeStmt *stmt, struct xkb_keymap *keymap,
     else if (ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_TYPES, &rtrn,
                                 &newMerge))
     {
-        InitKeyTypesInfo(&included, keymap, info);
-        included.fileID = included.dflt.defs.fileID = rtrn->id;
+        InitKeyTypesInfo(&included, keymap, info, rtrn->id);
         included.dflt.defs.merge = newMerge;
 
         HandleKeyTypesFile(rtrn, keymap, newMerge, &included);
@@ -384,8 +384,7 @@ HandleIncludeKeyTypes(IncludeStmt *stmt, struct xkb_keymap *keymap,
             else if (ProcessIncludeFile(keymap->ctx, next, FILE_TYPE_TYPES,
                                         &rtrn, &op))
             {
-                InitKeyTypesInfo(&next_incl, keymap, &included);
-                next_incl.fileID = next_incl.dflt.defs.fileID = rtrn->id;
+                InitKeyTypesInfo(&next_incl, keymap, &included, rtrn->id);
                 next_incl.dflt.defs.merge = op;
                 HandleKeyTypesFile(rtrn, keymap, op, &next_incl);
                 MergeIncludedKeyTypes(&included, &next_incl, op, keymap);
@@ -857,7 +856,7 @@ HandleKeyTypeDef(KeyTypeDef *def, struct xkb_keymap *keymap,
         merge = def->merge;
 
     type.defs.defined = 0;
-    type.defs.fileID = info->fileID;
+    type.defs.file_id = info->file_id;
     type.defs.merge = merge;
     type.defs.next = NULL;
     type.name = def->name;
@@ -1218,8 +1217,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
     KeyTypesInfo info;
     KeyTypeInfo *def;
 
-    InitKeyTypesInfo(&info, keymap, NULL);
-    info.fileID = file->id;
+    InitKeyTypesInfo(&info, keymap, NULL, file->id);
 
     HandleKeyTypesFile(file, keymap, merge, &info);
 

@@ -164,7 +164,7 @@ UseNewField(unsigned field,
     {
         if (newDefs->defined & field)
         {
-            if (((oldDefs->fileID == newDefs->fileID)
+            if (((oldDefs->file_id == newDefs->file_id)
                  && (warningLevel > 0)) || (warningLevel > 9))
             {
                 *pCollide |= field;

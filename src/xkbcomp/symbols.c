@@ -90,13 +90,13 @@ typedef struct _KeyInfo
  * Init the given key info to sane values.
  */
 static void
-InitKeyInfo(KeyInfo * info)
+InitKeyInfo(KeyInfo * info, unsigned file_id)
 {
     int i;
     static const char dflt[4] = "*";
 
     info->defs.defined = 0;
-    info->defs.fileID = 0;
+    info->defs.file_id = file_id;
     info->defs.merge = MERGE_OVERRIDE;
     info->defs.next = NULL;
     info->name = KeyNameToLong(dflt);
@@ -127,7 +127,7 @@ FreeKeyInfo(KeyInfo * info)
     int i;
 
     info->defs.defined = 0;
-    info->defs.fileID = 0;
+    info->defs.file_id = 0;
     info->defs.merge = MERGE_OVERRIDE;
     info->defs.next = NULL;
     info->groupInfo = 0;
@@ -200,7 +200,7 @@ typedef struct _SymbolsInfo
 {
     char *name;         /* e.g. pc+us+inet(evdev) */
     int errorCount;
-    unsigned fileID;
+    unsigned file_id;
     enum merge_mode merge;
     unsigned explicit_group;
     darray(KeyInfo) keys;
@@ -214,21 +214,22 @@ typedef struct _SymbolsInfo
 } SymbolsInfo;
 
 static void
-InitSymbolsInfo(SymbolsInfo * info, struct xkb_keymap *keymap)
+InitSymbolsInfo(SymbolsInfo * info, struct xkb_keymap *keymap,
+                unsigned file_id)
 {
     int i;
 
     info->name = NULL;
     info->explicit_group = 0;
     info->errorCount = 0;
-    info->fileID = 0;
+    info->file_id = file_id;
     info->merge = MERGE_OVERRIDE;
     darray_init(info->keys);
     darray_growalloc(info->keys, 110);
     info->modMap = NULL;
     for (i = 0; i < XkbNumKbdGroups; i++)
         info->groupNames[i] = XKB_ATOM_NONE;
-    InitKeyInfo(&info->dflt);
+    InitKeyInfo(&info->dflt, file_id);
     InitVModInfo(&info->vmods, keymap);
     info->action = NULL;
     info->aliases = NULL;
@@ -303,7 +304,7 @@ MergeKeyGroups(SymbolsInfo * info,
     clobber = (from->defs.merge != MERGE_AUGMENT);
 
     report = (warningLevel > 9) ||
-        ((into->defs.fileID == from->defs.fileID) && (warningLevel > 0));
+        ((into->defs.file_id == from->defs.file_id) && (warningLevel > 0));
 
     darray_init(resultSyms);
 
@@ -533,7 +534,7 @@ MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
         return true;
     }
     report = ((warningLevel > 9) ||
-              ((into->defs.fileID == from->defs.fileID)
+              ((into->defs.file_id == from->defs.file_id)
                && (warningLevel > 0)));
     for (i = 0; i < XkbNumKbdGroups; i++)
     {
@@ -809,8 +810,7 @@ HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
     else if (ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_SYMBOLS, &rtrn,
                                 &newMerge))
     {
-        InitSymbolsInfo(&included, keymap);
-        included.fileID = included.dflt.defs.fileID = rtrn->id;
+        InitSymbolsInfo(&included, keymap, rtrn->id);
         included.merge = included.dflt.defs.merge = MERGE_OVERRIDE;
         if (stmt->modifier)
         {
@@ -851,8 +851,7 @@ HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
             else if (ProcessIncludeFile(keymap->ctx, next, FILE_TYPE_SYMBOLS,
                                         &rtrn, &op))
             {
-                InitSymbolsInfo(&next_incl, keymap);
-                next_incl.fileID = next_incl.dflt.defs.fileID = rtrn->id;
+                InitSymbolsInfo(&next_incl, keymap, rtrn->id);
                 next_incl.merge = next_incl.dflt.defs.merge = MERGE_OVERRIDE;
                 if (next->modifier)
                 {
@@ -1433,7 +1432,7 @@ HandleSymbolsDef(SymbolsDef *stmt, struct xkb_keymap *keymap,
 {
     KeyInfo key;
 
-    InitKeyInfo(&key);
+    InitKeyInfo(&key, info->file_id);
     CopyKeyInfo(&info->dflt, &key, false);
     key.defs.merge = stmt->merge;
     key.name = KeyNameToLong(stmt->keyName);
@@ -2086,8 +2085,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
     SymbolsInfo info;
     KeyInfo *key;
 
-    InitSymbolsInfo(&info, keymap);
-    info.dflt.defs.fileID = file->id;
+    InitSymbolsInfo(&info, keymap, file->id);
     info.dflt.defs.merge = merge;
 
     HandleSymbolsFile(file, keymap, merge, &info);

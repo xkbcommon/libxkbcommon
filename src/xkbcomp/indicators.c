@@ -74,7 +74,7 @@ AddIndicatorMap(struct xkb_keymap *keymap, LEDInfo *oldLEDs, LEDInfo *new)
             if (new->defs.merge == MERGE_REPLACE)
             {
                 CommonInfo *next = old->defs.next;
-                if (((old->defs.fileID == new->defs.fileID)
+                if (((old->defs.file_id == new->defs.file_id)
                      && (warningLevel > 0)) || (warningLevel > 9))
                 {
                     WARN("Map for indicator %s redefined\n",

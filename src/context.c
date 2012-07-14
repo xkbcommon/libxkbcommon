@@ -37,7 +37,7 @@ struct xkb_context {
     darray(char *) includes;
 
     /* xkbcomp needs to assign sequential IDs to XkbFile's it creates. */
-    int file_id;
+    unsigned file_id;
 
     struct atom_table *atom_table;
 };
@@ -144,7 +144,7 @@ xkb_context_include_path_get(struct xkb_context *ctx, unsigned int idx)
     return darray_item(ctx->includes, idx);
 }
 
-int
+unsigned
 xkb_context_take_file_id(struct xkb_context *ctx)
 {
     return ctx->file_id++;

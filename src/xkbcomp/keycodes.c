@@ -63,7 +63,7 @@ typedef struct _KeyNamesInfo
 {
     char *name;     /* e.g. evdev+aliases(qwerty) */
     int errorCount;
-    unsigned fileID;
+    unsigned file_id;
     enum merge_mode merge;
     xkb_keycode_t computedMin; /* lowest keycode stored */
     xkb_keycode_t computedMax; /* highest keycode stored */
@@ -93,7 +93,7 @@ InitIndicatorNameInfo(IndicatorNameInfo * ii, KeyNamesInfo * info)
 {
     ii->defs.defined = 0;
     ii->defs.merge = info->merge;
-    ii->defs.fileID = info->fileID;
+    ii->defs.file_id = info->file_id;
     ii->defs.next = NULL;
     ii->ndx = 0;
     ii->name = XKB_ATOM_NONE;
@@ -163,7 +163,7 @@ AddIndicatorName(KeyNamesInfo *info, struct xkb_keymap *keymap, enum merge_mode 
     old = FindIndicatorByName(info, new->name);
     if (old)
     {
-        if (((old->defs.fileID == new->defs.fileID) && (warningLevel > 0))
+        if (((old->defs.file_id == new->defs.file_id) && (warningLevel > 0))
             || (warningLevel > 9))
         {
             WARN("Multiple indicators named %s\n",
@@ -216,7 +216,7 @@ AddIndicatorName(KeyNamesInfo *info, struct xkb_keymap *keymap, enum merge_mode 
     old = FindIndicatorByIndex(info, new->ndx);
     if (old)
     {
-        if (((old->defs.fileID == new->defs.fileID) && (warningLevel > 0))
+        if (((old->defs.file_id == new->defs.file_id) && (warningLevel > 0))
             || (warningLevel > 9))
         {
             WARN("Multiple names for indicator %d\n", new->ndx);
@@ -286,11 +286,12 @@ ClearKeyNamesInfo(KeyNamesInfo * info)
 }
 
 static void
-InitKeyNamesInfo(KeyNamesInfo * info)
+InitKeyNamesInfo(KeyNamesInfo * info, unsigned file_id)
 {
     info->name = NULL;
     info->leds = NULL;
     info->aliases = NULL;
+    info->file_id = file_id;
     darray_init(info->names);
     darray_init(info->files);
     ClearKeyNamesInfo(info);
@@ -316,8 +317,8 @@ FindKeyByLong(KeyNamesInfo * info, unsigned long name)
  */
 static bool
 AddKeyName(KeyNamesInfo * info,
-           xkb_keycode_t kc,
-           char *name, enum merge_mode merge, unsigned fileID, bool reportCollisions)
+           xkb_keycode_t kc, char *name, enum merge_mode merge,
+           unsigned file_id, bool reportCollisions)
 {
     xkb_keycode_t old;
     unsigned long lval;
@@ -334,7 +335,7 @@ AddKeyName(KeyNamesInfo * info,
     {
         reportCollisions = (warningLevel > 7 ||
                             (warningLevel > 0 &&
-                             fileID == darray_item(info->files, kc)));
+                             file_id == darray_item(info->files, kc)));
     }
 
     if (darray_item(info->names, kc) != 0)
@@ -394,7 +395,7 @@ AddKeyName(KeyNamesInfo * info,
         }
     }
     darray_item(info->names, kc) = lval;
-    darray_item(info->files, kc) = fileID;
+    darray_item(info->files, kc) = file_id;
     return true;
 }
 
@@ -426,7 +427,7 @@ MergeIncludedKeycodes(KeyNamesInfo *into, struct xkb_keymap *keymap,
             continue;
         LongToKeyName(darray_item(from->names, i), buf);
         buf[4] = '\0';
-        if (!AddKeyName(into, i, buf, merge, from->fileID, false))
+        if (!AddKeyName(into, i, buf, merge, from->file_id, false))
             into->errorCount++;
     }
     if (from->leds)
@@ -492,7 +493,7 @@ HandleIncludeKeycodes(IncludeStmt *stmt, struct xkb_keymap *keymap,
     else if (ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_KEYCODES, &rtrn,
                                 &newMerge))
     {
-        InitKeyNamesInfo(&included);
+        InitKeyNamesInfo(&included, rtrn->id);
         HandleKeycodesFile(rtrn, keymap, MERGE_OVERRIDE, &included);
         if (stmt->stmt != NULL)
         {
@@ -525,7 +526,7 @@ HandleIncludeKeycodes(IncludeStmt *stmt, struct xkb_keymap *keymap,
             else if (ProcessIncludeFile(keymap->ctx, next, FILE_TYPE_KEYCODES,
                                         &rtrn, &op))
             {
-                InitKeyNamesInfo(&next_incl);
+                InitKeyNamesInfo(&next_incl, rtrn->id);
                 HandleKeycodesFile(rtrn, keymap, MERGE_OVERRIDE, &next_incl);
                 MergeIncludedKeycodes(&included, keymap, &next_incl, op);
                 ClearKeyNamesInfo(&next_incl);
@@ -572,7 +573,7 @@ HandleKeycodeDef(KeycodeDef *stmt, enum merge_mode merge, KeyNamesInfo *info)
         else
             merge = stmt->merge;
     }
-    return AddKeyName(info, stmt->value, stmt->name, merge, info->fileID,
+    return AddKeyName(info, stmt->value, stmt->name, merge, info->file_id,
                       true);
 }
 
@@ -745,7 +746,7 @@ HandleKeycodesFile(XkbFile *file, struct xkb_keymap *keymap,
                 info->errorCount++;
             break;
         case StmtKeyAliasDef: /* e.g. alias <MENU> = <COMP>; */
-            if (!HandleAliasDef((KeyAliasDef *) stmt, merge, info->fileID,
+            if (!HandleAliasDef((KeyAliasDef *) stmt, merge, info->file_id,
                                 &info->aliases))
                 info->errorCount++;
             break;
@@ -799,7 +800,7 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
 {
     KeyNamesInfo info; /* contains all the info after parsing */
 
-    InitKeyNamesInfo(&info);
+    InitKeyNamesInfo(&info, file->id);
 
     HandleKeycodesFile(file, keymap, merge, &info);
 

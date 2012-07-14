@@ -32,7 +32,7 @@ HandleCollision(AliasInfo * old, AliasInfo * new)
 {
     if (strncmp(new->real, old->real, XkbKeyNameLength) == 0)
     {
-        if (((new->def.fileID == old->def.fileID) && (warningLevel > 0)) ||
+        if (((new->def.file_id == old->def.file_id) && (warningLevel > 0)) ||
             (warningLevel > 9))
         {
             WARN("Alias of %s for %s declared more than once\n",
@@ -53,7 +53,7 @@ HandleCollision(AliasInfo * old, AliasInfo * new)
             use = new->real;
             ignore = old->real;
         }
-        if (((old->def.fileID == new->def.fileID) && (warningLevel > 0)) ||
+        if (((old->def.file_id == new->def.file_id) && (warningLevel > 0)) ||
             (warningLevel > 9))
         {
             WARN("Multiple definitions for alias %s\n",
@@ -64,7 +64,7 @@ HandleCollision(AliasInfo * old, AliasInfo * new)
         if (use != old->real)
             memcpy(old->real, use, XkbKeyNameLength);
     }
-    old->def.fileID = new->def.fileID;
+    old->def.file_id = new->def.file_id;
     old->def.merge = new->def.merge;
 }
 
@@ -74,7 +74,7 @@ InitAliasInfo(AliasInfo * info,
 {
     memset(info, 0, sizeof(AliasInfo));
     info->def.merge = merge;
-    info->def.fileID = file_id;
+    info->def.file_id = file_id;
     strncpy(info->alias, alias, XkbKeyNameLength);
     strncpy(info->real, real, XkbKeyNameLength);
 }
@@ -101,7 +101,7 @@ HandleAliasDef(KeyAliasDef * def,
         WSGO("Allocation failure in HandleAliasDef\n");
         return false;
     }
-    info->def.fileID = file_id;
+    info->def.file_id = file_id;
     info->def.merge = merge;
     info->def.next = (CommonInfo *) * info_in;
     memcpy(info->alias, def->alias, XkbKeyNameLength);
@@ -140,7 +140,7 @@ MergeAliases(AliasInfo ** into, AliasInfo ** merge, unsigned how_merge)
             def.merge = how_merge;
         memcpy(def.alias, tmp->alias, XkbKeyNameLength);
         memcpy(def.real, tmp->real, XkbKeyNameLength);
-        if (!HandleAliasDef(&def, def.merge, tmp->def.fileID, into))
+        if (!HandleAliasDef(&def, def.merge, tmp->def.file_id, into))
             return false;
     }
     return true;

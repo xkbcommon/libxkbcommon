@@ -35,7 +35,7 @@
 typedef struct _CommonInfo
 {
     unsigned short defined;
-    unsigned char fileID;
+    unsigned file_id;
     unsigned char merge;
     struct _CommonInfo *next;
 } CommonInfo;

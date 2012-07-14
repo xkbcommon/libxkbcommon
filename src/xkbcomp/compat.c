@@ -44,7 +44,7 @@ typedef struct _SymInterpInfo
 
 typedef struct _GroupCompatInfo
 {
-    unsigned char fileID;
+    unsigned file_id;
     unsigned char merge;
     bool defined;
     unsigned char real_mods;
@@ -54,7 +54,7 @@ typedef struct _GroupCompatInfo
 typedef struct _CompatInfo
 {
     char *name;
-    unsigned fileID;
+    unsigned file_id;
     int errorCount;
     int nInterps;
     SymInterpInfo *interps;
@@ -96,18 +96,18 @@ siText(SymInterpInfo * si, CompatInfo * info)
 }
 
 static void
-InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap)
+InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id)
 {
     unsigned int i;
 
     info->keymap = keymap;
     info->name = NULL;
-    info->fileID = 0;
+    info->file_id = file_id;
     info->errorCount = 0;
     info->nInterps = 0;
     info->interps = NULL;
     info->act = NULL;
-    info->dflt.defs.fileID = info->fileID;
+    info->dflt.defs.file_id = file_id;
     info->dflt.defs.defined = 0;
     info->dflt.defs.merge = MERGE_OVERRIDE;
     info->dflt.interp.flags = 0;
@@ -116,7 +116,7 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap)
     for (i = 0; i < sizeof(info->dflt.interp.act.any.data); i++)
         info->dflt.interp.act.any.data[i] = 0;
     ClearIndicatorMapInfo(keymap->ctx, &info->ledDflt);
-    info->ledDflt.defs.fileID = info->fileID;
+    info->ledDflt.defs.file_id = file_id;
     info->ledDflt.defs.defined = 0;
     info->ledDflt.defs.merge = MERGE_OVERRIDE;
     memset(&info->groupCompat[0], 0,
@@ -200,7 +200,7 @@ AddInterp(CompatInfo * info, SymInterpInfo * new)
         if (new->defs.merge == MERGE_REPLACE)
         {
             SymInterpInfo *next = (SymInterpInfo *) old->defs.next;
-            if (((old->defs.fileID == new->defs.fileID)
+            if (((old->defs.file_id == new->defs.file_id)
                  && (warningLevel > 0)) || (warningLevel > 9))
             {
                 WARN("Multiple definitions for \"%s\"\n", siText(new, info));
@@ -266,7 +266,7 @@ AddGroupCompat(CompatInfo * info, unsigned group, GroupCompatInfo * newGC)
     {
         return true;
     }
-    if (((gc->fileID == newGC->fileID) && (warningLevel > 0))
+    if (((gc->file_id == newGC->file_id) && (warningLevel > 0))
         || (warningLevel > 9))
     {
         WARN("Compat map for group %d redefined\n", group + 1);
@@ -407,12 +407,9 @@ HandleIncludeCompatMap(IncludeStmt *stmt, struct xkb_keymap *keymap,
     else if (ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_COMPAT, &rtrn,
                                 &newMerge))
     {
-        InitCompatInfo(&included, keymap);
-        included.fileID = rtrn->id;
+        InitCompatInfo(&included, keymap, rtrn->id);
         included.dflt = info->dflt;
-        included.dflt.defs.fileID = rtrn->id;
         included.dflt.defs.merge = newMerge;
-        included.ledDflt.defs.fileID = rtrn->id;
         included.ledDflt.defs.merge = newMerge;
         included.act = info->act;
         HandleCompatMapFile(rtrn, keymap, MERGE_OVERRIDE, &included);
@@ -448,12 +445,12 @@ HandleIncludeCompatMap(IncludeStmt *stmt, struct xkb_keymap *keymap,
             else if (ProcessIncludeFile(keymap->ctx, next, FILE_TYPE_COMPAT,
                                         &rtrn, &op))
             {
-                InitCompatInfo(&next_incl, keymap);
-                next_incl.fileID = rtrn->id;
+                InitCompatInfo(&next_incl, keymap, rtrn->id);
+                next_incl.file_id = rtrn->id;
                 next_incl.dflt = info->dflt;
-                next_incl.dflt.defs.fileID = rtrn->id;
+                next_incl.dflt.defs.file_id = rtrn->id;
                 next_incl.dflt.defs.merge = op;
-                next_incl.ledDflt.defs.fileID = rtrn->id;
+                next_incl.ledDflt.defs.file_id = rtrn->id;
                 next_incl.ledDflt.defs.merge = op;
                 next_incl.act = info->act;
                 HandleCompatMapFile(rtrn, keymap, MERGE_OVERRIDE, &next_incl);
@@ -678,7 +675,7 @@ HandleGroupCompatDef(GroupCompatDef *def, struct xkb_keymap *keymap,
                 def->group);
         return false;
     }
-    tmp.fileID = info->fileID;
+    tmp.file_id = info->file_id;
     tmp.merge = merge;
     if (!ExprResolveVModMask(def->def, &val, keymap))
     {
@@ -785,7 +782,7 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge
     CompatInfo info;
     GroupCompatInfo *gcm;
 
-    InitCompatInfo(&info, keymap);
+    InitCompatInfo(&info, keymap, file->id);
     info.dflt.defs.merge = merge;
     info.ledDflt.defs.merge = merge;
 
@@ -817,7 +814,7 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge
     }
 
     for (i = 0, gcm = &info.groupCompat[0]; i < XkbNumKbdGroups; i++, gcm++) {
-        if ((gcm->fileID != 0) || (gcm->real_mods != 0) || (gcm->vmods != 0)) {
+        if ((gcm->file_id != 0) || (gcm->real_mods != 0) || (gcm->vmods != 0)) {
             keymap->compat->groups[i].mask = gcm->real_mods;
             keymap->compat->groups[i].real_mods = gcm->real_mods;
             keymap->compat->groups[i].vmods = gcm->vmods;

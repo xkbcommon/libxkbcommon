@@ -453,7 +453,7 @@ xkb_map_new_from_kccgst(struct xkb_context *ctx,
                         const struct xkb_component_names *kccgst,
                         enum xkb_map_compile_flags flags);
 
-extern int
+extern unsigned
 xkb_context_take_file_id(struct xkb_context *ctx);
 
 bool
