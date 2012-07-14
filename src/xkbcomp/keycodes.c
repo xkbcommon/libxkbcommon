@@ -769,10 +769,6 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
 
     if (info.leds) {
         IndicatorNameInfo *ii;
-        if (XkbcAllocIndicatorMaps(keymap) != Success) {
-            WSGO("Couldn't allocate IndicatorRec in CompileKeycodes\n");
-            ACTION("Physical indicators not set\n");
-        }
 
         for (ii = info.leds; ii; ii = (IndicatorNameInfo *) ii->defs.next) {
             free(keymap->names->indicators[ii->ndx - 1]);

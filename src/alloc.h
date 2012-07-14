@@ -36,9 +36,6 @@ XkbcAllocNames(struct xkb_keymap *keymap, unsigned which,
 extern int
 XkbcAllocControls(struct xkb_keymap *keymap);
 
-extern int
-XkbcAllocIndicatorMaps(struct xkb_keymap *keymap);
-
 extern struct xkb_keymap *
 XkbcAllocKeyboard(struct xkb_context *ctx);
 

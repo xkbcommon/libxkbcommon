@@ -409,7 +409,7 @@ static bool
 write_indicator_map(struct xkb_keymap *keymap, char **buf, size_t *size,
                     size_t *offset, int num)
 {
-    struct xkb_indicator_map *led = &keymap->indicators->maps[num];
+    struct xkb_indicator_map *led = &keymap->indicators[num];
 
     write_buf(keymap, buf, size, offset, "\t\tindicator \"%s\" {\n",
               keymap->names->indicators[num]);
@@ -723,7 +723,7 @@ write_compat(struct xkb_keymap *keymap, char **buf, size_t *size,
     }
 
     for (i = 0; i < XkbNumIndicators; i++) {
-        struct xkb_indicator_map *map = &keymap->indicators->maps[i];
+        struct xkb_indicator_map *map = &keymap->indicators[i];
         if (map->flags == 0 && map->which_groups == 0 &&
             map->groups == 0 && map->which_mods == 0 &&
             map->mods.real_mods == 0 && map->mods.vmods == 0 &&

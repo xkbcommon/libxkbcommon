@@ -1029,7 +1029,7 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
 
     /* Update vmod -> indicator maps. */
     for (i = 0; i < XkbNumIndicators; i++) {
-        struct xkb_mods *led = &keymap->indicators->maps[i].mods;
+        struct xkb_mods *led = &keymap->indicators[i].mods;
         led->mask = led->real_mods | VModsToReal(keymap, led->vmods);
     }
 

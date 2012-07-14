@@ -200,9 +200,9 @@ xkb_map_num_leds(struct xkb_keymap *keymap)
     xkb_led_index_t i;
 
     for (i = 0; i < XkbNumIndicators; i++)
-        if (keymap->indicators->maps[i].which_groups ||
-            keymap->indicators->maps[i].which_mods ||
-            keymap->indicators->maps[i].ctrls)
+        if (keymap->indicators[i].which_groups ||
+            keymap->indicators[i].which_mods ||
+            keymap->indicators[i].ctrls)
             ret++;
 
     return ret;

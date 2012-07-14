@@ -284,10 +284,6 @@ struct xkb_indicator_map {
     unsigned int ctrls;
 };
 
-struct xkb_indicator {
-    struct xkb_indicator_map maps[XkbNumIndicators];
-};
-
 struct xkb_key_name {
     char name[XkbKeyNameLength];
 };
@@ -339,7 +335,6 @@ struct xkb_keymap {
     xkb_keycode_t max_key_code;
 
     struct xkb_controls *      ctrls;
-    struct xkb_indicator *     indicators;
     struct xkb_names *        names;
 
     /* key -> explicit flags mapping */
@@ -367,6 +362,8 @@ struct xkb_keymap {
 
     /* key -> behavior mapping */
     struct xkb_behavior *behaviors;
+
+    struct xkb_indicator_map indicators[XkbNumIndicators];
 };
 
 #define XkbNumGroups(g)             ((g) & 0x0f)

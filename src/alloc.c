@@ -251,30 +251,6 @@ XkbcFreeControls(struct xkb_keymap *keymap)
     }
 }
 
-int
-XkbcAllocIndicatorMaps(struct xkb_keymap *keymap)
-{
-    if (!keymap)
-        return BadMatch;
-
-    if (!keymap->indicators) {
-        keymap->indicators = uTypedCalloc(1, struct xkb_indicator);
-        if (!keymap->indicators)
-            return BadAlloc;
-    }
-
-    return Success;
-}
-
-static void
-XkbcFreeIndicatorMaps(struct xkb_keymap *keymap)
-{
-    if (keymap) {
-        free(keymap->indicators);
-        keymap->indicators = NULL;
-    }
-}
-
 struct xkb_keymap *
 XkbcAllocKeyboard(struct xkb_context *ctx)
 {
@@ -305,7 +281,6 @@ XkbcFreeKeyboard(struct xkb_keymap *keymap)
     free(keymap->behaviors);
     free(keymap->vmodmap);
     darray_free(keymap->sym_interpret);
-    XkbcFreeIndicatorMaps(keymap);
     XkbcFreeNames(keymap);
     XkbcFreeControls(keymap);
     xkb_context_unref(keymap->ctx);

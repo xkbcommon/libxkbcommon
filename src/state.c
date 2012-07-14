@@ -530,7 +530,7 @@ xkb_state_led_update_all(struct xkb_state *state)
     state->leds = 0;
 
     for (led = 0; led < XkbNumIndicators; led++) {
-        struct xkb_indicator_map *map = &state->keymap->indicators->maps[led];
+        struct xkb_indicator_map *map = &state->keymap->indicators[led];
         uint32_t mod_mask = 0;
         uint32_t group_mask = 0;
 

@@ -393,7 +393,7 @@ BindIndicators(struct xkb_keymap *keymap, LEDInfo *unbound)
             }
             else {
                 struct xkb_indicator_map * map;
-                map = &keymap->indicators->maps[led->indicator - 1];
+                map = &keymap->indicators[led->indicator - 1];
                 map->flags = led->flags;
                 map->which_groups = led->which_groups;
                 map->groups = led->groups;
@@ -428,11 +428,7 @@ CopyIndicatorMapDefs(struct xkb_keymap *keymap, LEDInfo *leds)
         WSGO("Couldn't allocate names\n");
         ACTION("Indicator names may be incorrect\n");
     }
-    if (XkbcAllocIndicatorMaps(keymap) != Success) {
-        WSGO("Can't allocate indicator maps\n");
-        ACTION("Indicator map definitions may be lost\n");
-        return false;
-    }
+
     for (led = leds; led != NULL; led = next) {
         next = (LEDInfo *) led->defs.next;
         if ((led->groups != 0) && (led->which_groups == 0))
@@ -449,7 +445,7 @@ CopyIndicatorMapDefs(struct xkb_keymap *keymap, LEDInfo *leds)
         }
         else {
             struct xkb_indicator_map * im;
-            im = &keymap->indicators->maps[led->indicator - 1];
+            im = &keymap->indicators[led->indicator - 1];
             im->flags = led->flags;
             im->which_groups = led->which_groups;
             im->groups = led->groups;
