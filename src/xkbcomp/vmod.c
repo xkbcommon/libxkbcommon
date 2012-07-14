@@ -43,8 +43,8 @@ ClearVModInfo(VModInfo *info, struct xkb_keymap *keymap)
     if (XkbcAllocNames(keymap, 0, 0) != Success)
         return;
 
-    if (XkbcAllocServerMap(keymap, 0, 0) != Success)
-        return;
+    for (i = 0; i < XkbNumVirtualMods; i++)
+        keymap->vmods[i] = XkbNoModifierMask;
 
     info->keymap = keymap;
     if (keymap && keymap->names) {
@@ -73,7 +73,6 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
 {
     int i, bit, nextFree;
     ExprResult mod;
-    struct xkb_server_map *srv = keymap->server;
     struct xkb_names *names = keymap->names;
 
     for (i = 0, bit = 1, nextFree = -1; i < XkbNumVirtualMods; i++, bit <<=
@@ -94,19 +93,19 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
                         ACTION("Declaration of %s ignored\n", str1);
                         return false;
                     }
-                    if (mod.uval == srv->vmods[i])
+                    if (mod.uval == keymap->vmods[i])
                         return true;
 
                     str1 = xkb_atom_text(keymap->ctx, stmt->name);
                     WARN("Virtual modifier %s multiply defined\n", str1);
-                    str1 = XkbcModMaskText(srv->vmods[i], true);
+                    str1 = XkbcModMaskText(keymap->vmods[i], true);
                     if (mergeMode == MERGE_OVERRIDE) {
                         str2 = str1;
                         str1 = XkbcModMaskText(mod.uval, true);
                     }
                     ACTION("Using %s, ignoring %s\n", str1, str2);
                     if (mergeMode == MERGE_OVERRIDE)
-                        srv->vmods[i] = mod.uval;
+                        keymap->vmods[i] = mod.uval;
                     return true;
                 }
             }
@@ -126,7 +125,7 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
     if (stmt->value == NULL)
         return true;
     if (ExprResolveModMask(keymap->ctx, stmt->value, &mod)) {
-        srv->vmods[nextFree] = mod.uval;
+        keymap->vmods[nextFree] = mod.uval;
         return true;
     }
     ACTION("Declaration of %s ignored\n",

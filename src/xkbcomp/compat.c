@@ -794,7 +794,7 @@ VModsToReal(struct xkb_keymap *keymap, uint32_t vmodmask)
     for (i = 0; i < XkbNumVirtualMods; i++) {
         if (!(vmodmask & (1 << i)))
             continue;
-        ret |= keymap->server->vmods[i];
+        ret |= keymap->vmods[i];
     }
 
     return ret;
@@ -902,7 +902,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, xkb_keycode_t key)
     int i;
 
     /* If we've been told not to bind interps to this key, then don't. */
-    if (keymap->server->explicit[key] & XkbExplicitInterpretMask)
+    if (keymap->explicit[key] & XkbExplicitInterpretMask)
         return true;
 
     for (i = 0; i < INTERP_SIZE; i++)
@@ -936,14 +936,13 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, xkb_keycode_t key)
 
             /* Infer default key behaviours from the base level. */
             if (group == 0 && level == 0) {
-                if (!(keymap->server->explicit[key] &
-                      XkbExplicitAutoRepeatMask) &&
+                if (!(keymap->explicit[key] & XkbExplicitAutoRepeatMask) &&
                     (!interp || interp->flags & XkbSI_AutoRepeat))
-                    keymap->ctrls->per_key_repeat[key / 8] |= (1 << (key % 8));
-                if (!(keymap->server->explicit[key] &
-                      XkbExplicitBehaviorMask) &&
+                    keymap->ctrls->per_key_repeat[key / 8] |=
+                        (1 << (key % 8));
+                if (!(keymap->explicit[key] & XkbExplicitBehaviorMask) &&
                     interp && (interp->flags & XkbSI_LockingKey))
-                    keymap->server->behaviors[key].type = XkbKB_Lock;
+                    keymap->behaviors[key].type = XkbKB_Lock;
             }
 
             if (!interp)
@@ -958,8 +957,8 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, xkb_keycode_t key)
         }
     }
 
-    if (!(keymap->server->explicit[key] & XkbExplicitVModMapMask))
-        keymap->server->vmodmap[key] = vmodmask;
+    if (!(keymap->explicit[key] & XkbExplicitVModMapMask))
+        keymap->vmodmap[key] = vmodmask;
 
     return true;
 #undef INTERP_SIZE
@@ -985,16 +984,16 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
         if (!ApplyInterpsToKey(keymap, key))
             return false;
 
-    /* Update keymap->server->vmods, the virtual -> real mod mapping. */
+    /* Update keymap->vmods, the virtual -> real mod mapping. */
     for (i = 0; i < XkbNumVirtualMods; i++)
-        keymap->server->vmods[i] = 0;
+        keymap->vmods[i] = 0;
     for (key = keymap->min_key_code; key <= keymap->max_key_code; key++) {
-        if (!keymap->server->vmodmap[key])
+        if (!keymap->vmodmap[key])
             continue;
         for (i = 0; i < XkbNumVirtualMods; i++) {
-            if (!(keymap->server->vmodmap[key] & (1 << i)))
+            if (!(keymap->vmodmap[key] & (1 << i)))
                 continue;
-            keymap->server->vmods[i] |= keymap->modmap[key];
+            keymap->vmods[i] |= keymap->modmap[key];
         }
     }
 
@@ -1007,7 +1006,7 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
         for (j = 0; j < XkbNumVirtualMods; j++) {
             if (!(type->mods.vmods & (1 << j)))
                 continue;
-            mask |= keymap->server->vmods[j];
+            mask |= keymap->vmods[j];
         }
 
         darray_foreach(entry, type->map)

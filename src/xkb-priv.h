@@ -280,16 +280,6 @@ struct xkb_behavior {
     unsigned char data;
 };
 
-struct xkb_server_map {
-    unsigned char *     explicit;
-
-    darray(union xkb_action) acts;
-    darray(size_t) key_acts;            /* acts[key_acts[keycode]] */
-    struct xkb_behavior         *behaviors;
-    uint32_t vmods[XkbNumVirtualMods];            /* vmod -> mod mapping */
-    uint32_t            *vmodmap; /* key -> vmod mapping */
-};
-
 struct xkb_indicator_map {
     unsigned char flags;
     unsigned char which_groups;
@@ -354,14 +344,29 @@ struct xkb_keymap {
     xkb_keycode_t max_key_code;
 
     struct xkb_controls *      ctrls;
-    struct xkb_server_map *    server;
     struct xkb_indicator *     indicators;
     struct xkb_names *        names;
     struct xkb_compat_map *    compat;
 
+    /* key -> explicit flags mapping */
+    unsigned char *explicit;
+
     darray(struct xkb_key_type) types;
+
     darray(struct xkb_sym_map) key_sym_map;
+
+    /* key -> mod mapping */
     unsigned char *modmap;
+    /* vmod -> mod mapping */
+    uint32_t vmods[XkbNumVirtualMods];
+    /* key -> vmod mapping */
+    uint32_t *vmodmap;
+
+    /* acts[key_acts[keycode]] */
+    darray(union xkb_action) acts;
+    darray(size_t ) key_acts;
+
+    struct xkb_behavior *behaviors;
 };
 
 #define XkbNumGroups(g)             ((g) & 0x0f)
@@ -396,13 +401,13 @@ struct xkb_keymap {
 #define XkbKeySymEntry(d, k, g, sl) \
     (XkbKeySym(d, k, XkbKeySymOffset(d, k, g, sl)))
 #define XkbKeyHasActions(d, k) \
-    (darray_item((d)->server->key_acts, k) != 0)
+    (darray_item((d)->key_acts, k) != 0)
 #define XkbKeyNumActions(d, k) \
     (XkbKeyHasActions(d, k) ? \
      (XkbKeyGroupsWidth(d, k) * XkbKeyNumGroups(d, k)) : \
      1)
 #define XkbKeyActionsPtr(d, k) \
-    (darray_mem((d)->server->acts, darray_item((d)->server->key_acts, k)))
+    (darray_mem((d)->acts, darray_item((d)->key_acts, k)))
 #define XkbKeyAction(d, k, n) \
     (XkbKeyHasActions(d, k) ? &XkbKeyActionsPtr(d, k)[n] : NULL)
 #define XkbKeyActionEntry(d, k, sl, g) \

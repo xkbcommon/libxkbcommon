@@ -49,10 +49,6 @@ extern void
 XkbcFreeKeyboard(struct xkb_keymap *keymap);
 
 extern int
-XkbcAllocServerMap(struct xkb_keymap *keymap, unsigned which,
-                   unsigned nNewActions);
-
-extern int
 XkbcCopyKeyType(const struct xkb_key_type *from, struct xkb_key_type *into);
 
 extern bool
@@ -62,8 +58,5 @@ XkbcResizeKeySyms(struct xkb_keymap *keymap, xkb_keycode_t key,
 extern union xkb_action *
 XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t key,
                      uint32_t needed);
-
-extern void
-XkbcFreeServerMap(struct xkb_keymap *keymap);
 
 #endif /* ALLOC_H */

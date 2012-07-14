@@ -779,7 +779,6 @@ static bool
 write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
               size_t *offset)
 {
-    struct xkb_server_map *srv = keymap->server;
     xkb_keycode_t key;
     int group, tmp;
     bool showActions;
@@ -809,8 +808,8 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
 
         write_buf(keymap, buf, size, offset, "\t\tkey %6s {",
                   XkbcKeyNameText(darray_item(keymap->names->keys, key).name));
-        if (srv->explicit) {
-            if ((srv->explicit[key] & XkbExplicitKeyTypesMask)) {
+        if (keymap->explicit) {
+            if ((keymap->explicit[key] & XkbExplicitKeyTypesMask)) {
                 bool multi_type = false;
                 int type = XkbKeyTypeIndex(keymap, key, 0);
 
@@ -827,7 +826,7 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
                     for (group = 0;
                          group < xkb_key_num_groups(keymap, key);
                          group++) {
-                        if (!(srv->explicit[key] & (1 << group)))
+                        if (!(keymap->explicit[key] & (1 << group)))
                             continue;
                         type = XkbKeyTypeIndex(keymap, key, group);
                         write_buf(keymap, buf, size, offset,
@@ -843,7 +842,7 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
                 }
             }
             if (keymap->ctrls &&
-                (srv->explicit[key] & XkbExplicitAutoRepeatMask)) {
+                (keymap->explicit[key] & XkbExplicitAutoRepeatMask)) {
                 if (keymap->ctrls->per_key_repeat[key / 8] & (1 << (key % 8)))
                     write_buf(keymap, buf, size, offset,
                               "\n\t\t\trepeat= Yes,");
@@ -852,12 +851,11 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
                               "\n\t\t\trepeat= No,");
                 simple = false;
             }
-            if (keymap->server->vmodmap[key] &&
-                (srv->explicit[key] & XkbExplicitVModMapMask)) {
+            if (keymap->vmodmap[key] &&
+                (keymap->explicit[key] & XkbExplicitVModMapMask)) {
                 write_buf(keymap, buf, size, offset,
                           "\n\t\t\tvirtualMods= %s,",
-                          get_mod_mask_text(keymap, 0,
-                                            keymap->server->vmodmap[key]));
+                          get_mod_mask_text(keymap, 0, keymap->vmodmap[key]));
             }
         }
 
@@ -874,8 +872,8 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
             break;
         }
 
-        if (srv->explicit == NULL ||
-            (srv->explicit[key] & XkbExplicitInterpretMask))
+        if (keymap->explicit == NULL ||
+            (keymap->explicit[key] & XkbExplicitInterpretMask))
             showActions = XkbKeyHasActions(keymap, key);
         else
             showActions = false;

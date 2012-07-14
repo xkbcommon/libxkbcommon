@@ -1739,7 +1739,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
         }
         if (FindNamedType(keymap, key->types[i], &types[i])) {
             if (!autoType || key->numLevels[i] > 2)
-                keymap->server->explicit[kc] |= (1 << i);
+                keymap->explicit[kc] |= (1 << i);
         }
         else {
             if (warningLevel >= 3) {
@@ -1780,7 +1780,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
                  longText(key->name), kc);
             return false;
         }
-        keymap->server->explicit[kc] |= XkbExplicitInterpretMask;
+        keymap->explicit[kc] |= XkbExplicitInterpretMask;
     }
     else
         outActs = NULL;
@@ -1840,20 +1840,20 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *key, int start_from)
         break;
 
     default:
-        keymap->server->behaviors[kc] = key->behavior;
-        keymap->server->explicit[kc] |= XkbExplicitBehaviorMask;
+        keymap->behaviors[kc] = key->behavior;
+        keymap->explicit[kc] |= XkbExplicitBehaviorMask;
         break;
     }
     if (key->defs.defined & _Key_VModMap) {
-        keymap->server->vmodmap[kc] = key->vmodmap;
-        keymap->server->explicit[kc] |= XkbExplicitVModMapMask;
+        keymap->vmodmap[kc] = key->vmodmap;
+        keymap->explicit[kc] |= XkbExplicitVModMapMask;
     }
     if (key->repeat != RepeatUndefined) {
         if (key->repeat == RepeatYes)
             keymap->ctrls->per_key_repeat[kc / 8] |= (1 << (kc % 8));
         else
             keymap->ctrls->per_key_repeat[kc / 8] &= ~(1 << (kc % 8));
-        keymap->server->explicit[kc] |= XkbExplicitAutoRepeatMask;
+        keymap->explicit[kc] |= XkbExplicitAutoRepeatMask;
     }
 
     /* do the same thing for the next key */
@@ -1930,11 +1930,24 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
     if (!keymap->modmap)
         goto err_info;
 
-    if (XkbcAllocServerMap(keymap, XkbAllServerInfoMask, 32) != Success) {
-        WSGO("Could not allocate server map in CompileSymbols\n");
-        ACTION("Symbols not added\n");
+    i = keymap->max_key_code + 1;
+    keymap->explicit = calloc(keymap->max_key_code + 1,
+                              sizeof(*keymap->explicit));
+    if (!keymap->explicit)
         goto err_info;
-    }
+
+    darray_resize0(keymap->acts, darray_size(keymap->acts) + 32 + 1);
+    darray_resize0(keymap->key_acts, keymap->max_key_code + 1);
+
+    keymap->behaviors = calloc(keymap->max_key_code + 1,
+                               sizeof(*keymap->behaviors));
+    if (!keymap->behaviors)
+        goto err_info;
+
+    keymap->vmodmap = calloc(keymap->max_key_code + 1,
+                             sizeof(*keymap->vmodmap));
+    if (!keymap->vmodmap)
+        goto err_info;
 
     if (XkbcAllocControls(keymap) != Success) {
         WSGO("Could not allocate controls in CompileSymbols\n");

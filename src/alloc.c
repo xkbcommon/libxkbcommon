@@ -27,62 +27,6 @@
 #include "alloc.h"
 
 int
-XkbcAllocServerMap(struct xkb_keymap *keymap, unsigned which,
-                   unsigned nNewActions)
-{
-    unsigned i;
-    struct xkb_server_map * map;
-
-    if (!keymap)
-        return BadMatch;
-
-    if (!keymap->server) {
-        map = uTypedCalloc(1, struct xkb_server_map);
-        if (!map)
-            return BadAlloc;
-
-        for (i = 0; i < XkbNumVirtualMods; i++)
-            map->vmods[i] = XkbNoModifierMask;
-
-        keymap->server = map;
-    }
-    else
-        map = keymap->server;
-
-    if (!which)
-        return Success;
-
-    if (!map->explicit) {
-        i = keymap->max_key_code + 1;
-        map->explicit = uTypedCalloc(i, unsigned char);
-        if (!map->explicit)
-            return BadAlloc;
-    }
-
-    if (nNewActions < 1)
-        nNewActions = 1;
-
-    darray_resize0(map->acts, darray_size(map->acts) + nNewActions + 1);
-    darray_resize0(map->key_acts, keymap->max_key_code + 1);
-
-    if (!map->behaviors) {
-        i = keymap->max_key_code + 1;
-        map->behaviors = uTypedCalloc(i, struct xkb_behavior);
-        if (!map->behaviors)
-            return BadAlloc;
-    }
-
-    if (!map->vmodmap) {
-        i = keymap->max_key_code + 1;
-        map->vmodmap = uTypedCalloc(i, uint32_t);
-        if (!map->vmodmap)
-            return BadAlloc;
-    }
-
-    return Success;
-}
-
-int
 XkbcCopyKeyType(const struct xkb_key_type *from, struct xkb_key_type *into)
 {
     int i;
@@ -137,7 +81,7 @@ XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t key,
     size_t old_ndx, old_num_acts, new_ndx;
 
     if (needed == 0) {
-        darray_item(keymap->server->key_acts, key) = 0;
+        darray_item(keymap->key_acts, key) = 0;
         return NULL;
     }
 
@@ -152,20 +96,20 @@ XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t key,
      * space for the key at the end, and leave the old space alone.
      */
 
-    old_ndx = darray_item(keymap->server->key_acts, key);
+    old_ndx = darray_item(keymap->key_acts, key);
     old_num_acts = XkbKeyNumActions(keymap, key);
-    new_ndx = darray_size(keymap->server->acts);
+    new_ndx = darray_size(keymap->acts);
 
-    darray_resize0(keymap->server->acts, new_ndx + needed);
-    darray_item(keymap->server->key_acts, key) = new_ndx;
+    darray_resize0(keymap->acts, new_ndx + needed);
+    darray_item(keymap->key_acts, key) = new_ndx;
 
     /*
      * The key was already in the array, copy the old actions to the
      * new space.
      */
     if (old_ndx != 0)
-        memcpy(darray_mem(keymap->server->acts, new_ndx),
-               darray_mem(keymap->server->acts, old_ndx),
+        memcpy(darray_mem(keymap->acts, new_ndx),
+               darray_mem(keymap->acts, old_ndx),
                old_num_acts * sizeof(union xkb_action));
 
     return XkbKeyActionsPtr(keymap, key);
@@ -199,25 +143,6 @@ free_sym_maps(struct xkb_keymap *keymap)
         darray_free(sym_map->syms);
     }
     darray_free(keymap->key_sym_map);
-}
-
-void
-XkbcFreeServerMap(struct xkb_keymap *keymap)
-{
-    struct xkb_server_map * map;
-
-    if (!keymap || !keymap->server)
-        return;
-
-    map = keymap->server;
-
-    free(map->explicit);
-    darray_free(map->key_acts);
-    darray_free(map->acts);
-    free(map->behaviors);
-    free(map->vmodmap);
-    free(keymap->server);
-    keymap->server = NULL;
 }
 
 int
@@ -407,7 +332,11 @@ XkbcFreeKeyboard(struct xkb_keymap *keymap)
     free_types(keymap);
     free_sym_maps(keymap);
     free(keymap->modmap);
-    XkbcFreeServerMap(keymap);
+    free(keymap->explicit);
+    darray_free(keymap->key_acts);
+    darray_free(keymap->acts);
+    free(keymap->behaviors);
+    free(keymap->vmodmap);
     XkbcFreeCompatMap(keymap);
     XkbcFreeIndicatorMaps(keymap);
     XkbcFreeNames(keymap);
