@@ -118,7 +118,8 @@ ClearAliases(AliasInfo ** info_in)
 }
 
 bool
-MergeAliases(AliasInfo ** into, AliasInfo ** merge, unsigned how_merge)
+MergeAliases(AliasInfo ** into, AliasInfo ** merge,
+             enum merge_mode how_merge)
 {
     AliasInfo *tmp;
     KeyAliasDef def;

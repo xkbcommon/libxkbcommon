@@ -44,7 +44,7 @@ extern void
 ClearAliases(AliasInfo **info);
 
 extern bool
-MergeAliases(AliasInfo **into, AliasInfo **merge, unsigned how_merge);
+MergeAliases(AliasInfo **into, AliasInfo **merge, enum merge_mode how_merge);
 
 extern int
 ApplyAliases(struct xkb_keymap *keymap, AliasInfo **info);

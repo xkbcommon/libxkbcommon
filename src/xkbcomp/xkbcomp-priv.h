@@ -36,7 +36,7 @@ typedef struct _CommonInfo
 {
     unsigned short defined;
     unsigned file_id;
-    unsigned char merge;
+    enum merge_mode merge;
     struct _CommonInfo *next;
 } CommonInfo;
 
@@ -66,7 +66,7 @@ ReportBadField(const char *type, const char *field, const char *name);
 extern bool
 ProcessIncludeFile(struct xkb_context *ctx,
                    IncludeStmt *stmt, enum xkb_file_type file_type,
-                   XkbFile **file_rtrn, unsigned *merge_rtrn);
+                   XkbFile **file_rtrn, enum merge_mode *merge_rtrn);
 
 extern bool
 FindNamedKey(struct xkb_keymap *keymap, unsigned long name,

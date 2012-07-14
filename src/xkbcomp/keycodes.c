@@ -469,7 +469,7 @@ static bool
 HandleIncludeKeycodes(IncludeStmt *stmt, struct xkb_keymap *keymap,
                       KeyNamesInfo *info)
 {
-    unsigned newMerge;
+    enum merge_mode newMerge;
     XkbFile *rtrn;
     KeyNamesInfo included;
     bool haveSelf;

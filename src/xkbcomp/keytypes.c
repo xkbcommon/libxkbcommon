@@ -335,7 +335,7 @@ static bool
 HandleIncludeKeyTypes(IncludeStmt *stmt, struct xkb_keymap *keymap,
                       KeyTypesInfo *info)
 {
-    unsigned newMerge;
+    enum merge_mode newMerge;
     XkbFile *rtrn;
     KeyTypesInfo included;
     bool haveSelf;

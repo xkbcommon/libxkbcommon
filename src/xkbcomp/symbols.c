@@ -795,7 +795,7 @@ static bool
 HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
                      SymbolsInfo *info)
 {
-    unsigned newMerge;
+    enum merge_mode newMerge;
     XkbFile *rtrn;
     SymbolsInfo included;
     bool haveSelf;

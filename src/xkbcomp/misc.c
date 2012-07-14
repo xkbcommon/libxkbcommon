@@ -48,7 +48,7 @@ bool
 ProcessIncludeFile(struct xkb_context *ctx,
                    IncludeStmt * stmt,
                    enum xkb_file_type file_type,
-                   XkbFile ** file_rtrn, unsigned *merge_rtrn)
+                   XkbFile ** file_rtrn, enum merge_mode *merge_rtrn)
 {
     FILE *file;
     XkbFile *rtrn, *mapToUse, *next;

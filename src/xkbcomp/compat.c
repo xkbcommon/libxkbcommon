@@ -45,7 +45,7 @@ typedef struct _SymInterpInfo
 typedef struct _GroupCompatInfo
 {
     unsigned file_id;
-    unsigned char merge;
+    enum merge_mode merge;
     bool defined;
     unsigned char real_mods;
     xkb_atom_t vmods;
@@ -392,7 +392,7 @@ static bool
 HandleIncludeCompatMap(IncludeStmt *stmt, struct xkb_keymap *keymap,
                        CompatInfo *info)
 {
-    unsigned newMerge;
+    enum merge_mode newMerge;
     XkbFile *rtrn;
     CompatInfo included;
     bool haveSelf;

@@ -116,6 +116,7 @@ extern int yylex(union YYSTYPE *val, struct YYLTYPE *loc, void *scanner);
         enum xkb_file_type file_type;
 	char		*str;
 	xkb_atom_t	sval;
+        enum merge_mode merge;
 	ParseCommon	*any;
 	ExprDef		*expr;
 	VarDef		*var;
@@ -135,7 +136,7 @@ extern int yylex(union YYSTYPE *val, struct YYLTYPE *loc, void *scanner);
 %type <num>     INTEGER FLOAT
 %type <str>     IDENT KEYNAME STRING
 %type <ival>	Number Integer Float SignedNumber
-%type <uval>	MergeMode OptMergeMode
+%type <merge>	MergeMode OptMergeMode
 %type <file_type> XkbCompositeType FileType
 %type <uval>	DoodadType Flag Flags OptFlags KeyCode
 %type <str>	KeyName MapName OptMapName KeySym
