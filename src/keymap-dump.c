@@ -310,6 +310,7 @@ write_keycodes(struct xkb_keymap *keymap, char **buf, size_t *size,
                size_t *offset)
 {
     xkb_keycode_t kc;
+    struct xkb_key *key;
     struct xkb_key_alias *alias;
     int i;
 
@@ -325,12 +326,12 @@ write_keycodes(struct xkb_keymap *keymap, char **buf, size_t *size,
               keymap->max_key_code);
 
     for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
-        if (darray_item(keymap->key_names, kc).name[0] == '\0')
+        key = XkbKey(keymap, kc);
+        if (key->name.name[0] == '\0')
             continue;
 
         write_buf(keymap, buf, size, offset, "\t\t%6s = %d;\n",
-                  XkbcKeyNameText(darray_item(keymap->key_names, kc).name),
-                  kc);
+                  XkbcKeyNameText(key->name.name), kc);
     }
 
     for (i = 0; i < XkbNumIndicators; i++) {
@@ -780,6 +781,7 @@ static bool
 write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
               size_t *offset)
 {
+    struct xkb_key *key;
     xkb_keycode_t kc;
     int group, tmp;
     bool showActions;
@@ -803,60 +805,61 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
 
     for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
         bool simple = true;
+        key = XkbKey(keymap, kc);
 
         if (xkb_key_num_groups(keymap, kc) == 0)
             continue;
 
         write_buf(keymap, buf, size, offset, "\t\tkey %6s {",
-                  XkbcKeyNameText(darray_item(keymap->key_names, kc).name));
-        if (keymap->explicit) {
-            if ((keymap->explicit[kc] & XkbExplicitKeyTypesMask)) {
-                bool multi_type = false;
-                int type = XkbKeyTypeIndex(keymap, kc, 0);
+                  XkbcKeyNameText(key->name.name));
 
-                simple = false;
+        if (key->explicit & XkbExplicitKeyTypesMask) {
+            bool multi_type = false;
+            int type = XkbKeyTypeIndex(keymap, kc, 0);
 
-                for (group = 0; group < xkb_key_num_groups(keymap, kc);
+            simple = false;
+
+            for (group = 0; group < xkb_key_num_groups(keymap, kc);
+                 group++) {
+                if (XkbKeyTypeIndex(keymap, kc, group) != type) {
+                    multi_type = true;
+                    break;
+                }
+            }
+
+            if (multi_type) {
+                for (group = 0;
+                     group < xkb_key_num_groups(keymap, kc);
                      group++) {
-                    if (XkbKeyTypeIndex(keymap, kc, group) != type) {
-                        multi_type = true;
-                        break;
-                    }
-                }
-                if (multi_type) {
-                    for (group = 0;
-                         group < xkb_key_num_groups(keymap, kc);
-                         group++) {
-                        if (!(keymap->explicit[kc] & (1 << group)))
-                            continue;
-                        type = XkbKeyTypeIndex(keymap, kc, group);
-                        write_buf(keymap, buf, size, offset,
-                                  "\n\t\t\ttype[group%d]= \"%s\",",
-                                  group + 1,
-                                  darray_item(keymap->types, type).name);
-                    }
-                }
-                else {
+                    if (!(key->explicit & (1 << group)))
+                        continue;
+                    type = XkbKeyTypeIndex(keymap, kc, group);
                     write_buf(keymap, buf, size, offset,
-                              "\n\t\t\ttype= \"%s\",",
+                              "\n\t\t\ttype[group%d]= \"%s\",",
+                              group + 1,
                               darray_item(keymap->types, type).name);
                 }
             }
-            if (keymap->explicit[kc] & XkbExplicitAutoRepeatMask) {
-                if (keymap->per_key_repeat[kc / 8] & (1 << (kc % 8)))
-                    write_buf(keymap, buf, size, offset,
-                              "\n\t\t\trepeat= Yes,");
-                else
-                    write_buf(keymap, buf, size, offset,
-                              "\n\t\t\trepeat= No,");
-                simple = false;
-            }
-            if (keymap->vmodmap[kc] &&
-                (keymap->explicit[kc] & XkbExplicitVModMapMask)) {
+            else {
                 write_buf(keymap, buf, size, offset,
-                          "\n\t\t\tvirtualMods= %s,",
-                          get_mod_mask_text(keymap, 0, keymap->vmodmap[kc]));
+                          "\n\t\t\ttype= \"%s\",",
+                          darray_item(keymap->types, type).name);
             }
+        }
+
+        if (key->explicit & XkbExplicitAutoRepeatMask) {
+            if (key->repeats)
+                write_buf(keymap, buf, size, offset,
+                          "\n\t\t\trepeat= Yes,");
+            else
+                write_buf(keymap, buf, size, offset,
+                          "\n\t\t\trepeat= No,");
+            simple = false;
+        }
+
+        if (key->vmodmap && (key->explicit & XkbExplicitVModMapMask)) {
+            write_buf(keymap, buf, size, offset, "\n\t\t\tvirtualMods= %s,",
+                      get_mod_mask_text(keymap, 0, key->vmodmap));
         }
 
         switch (XkbOutOfRangeGroupAction(XkbKeyGroupInfo(keymap, kc))) {
@@ -872,8 +875,7 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
             break;
         }
 
-        if (keymap->explicit == NULL ||
-            (keymap->explicit[kc] & XkbExplicitInterpretMask))
+        if (key->explicit & XkbExplicitInterpretMask)
             showActions = XkbKeyHasActions(keymap, kc);
         else
             showActions = false;
@@ -918,23 +920,22 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
             write_buf(keymap, buf, size, offset, "\n\t\t};\n");
         }
     }
-    if (keymap->modmap) {
-        for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
-            int mod;
 
-            if (keymap->modmap[kc] == 0)
+    for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
+        int mod;
+        key = XkbKey(keymap, kc);
+
+        if (key->modmap == 0)
+            continue;
+
+        for (mod = 0; mod < XkbNumModifiers; mod++) {
+            if (!(key->modmap & (1 << mod)))
                 continue;
 
-            for (mod = 0; mod < XkbNumModifiers; mod++) {
-                if (!(keymap->modmap[kc] & (1 << mod)))
-                    continue;
-
-                write_buf(keymap, buf, size, offset,
-                          "\t\tmodifier_map %s { %s };\n",
-                          get_mod_index_text(mod),
-                          XkbcKeyNameText(darray_item(keymap->key_names,
-                                                      kc).name));
-            }
+            write_buf(keymap, buf, size, offset,
+                      "\t\tmodifier_map %s { %s };\n",
+                      get_mod_index_text(mod),
+                      XkbcKeyNameText(key->name.name));
         }
     }
 

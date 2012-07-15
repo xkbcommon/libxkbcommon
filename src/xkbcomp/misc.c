@@ -217,7 +217,8 @@ FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
              xkb_keycode_t *kc_rtrn, bool use_aliases, bool create,
              xkb_keycode_t start_from)
 {
-    unsigned n;
+    xkb_keycode_t kc;
+    struct xkb_key *key;
 
     if (start_from < keymap->min_key_code)
         start_from = keymap->min_key_code;
@@ -226,34 +227,36 @@ FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
 
     *kc_rtrn = 0;               /* some callers rely on this */
 
-    if (!darray_empty(keymap->key_names)) {
-        for (n = start_from; n <= keymap->max_key_code; n++) {
-            unsigned long tmp;
-            tmp = KeyNameToLong(darray_item(keymap->key_names, n).name);
-            if (tmp == name) {
-                *kc_rtrn = n;
-                return true;
-            }
-        }
-        if (use_aliases) {
-            unsigned long new_name;
-            if (FindKeyNameForAlias(keymap, name, &new_name))
-                return FindNamedKey(keymap, new_name, kc_rtrn, false,
-                                    create, 0);
+    for (kc = start_from; kc <= keymap->max_key_code; kc++) {
+        unsigned long tmp;
+        key = XkbKey(keymap, kc);
+
+        tmp = KeyNameToLong(key->name.name);
+        if (tmp == name) {
+            *kc_rtrn = kc;
+            return true;
         }
     }
 
+    if (use_aliases) {
+        unsigned long new_name;
+        if (FindKeyNameForAlias(keymap, name, &new_name))
+            return FindNamedKey(keymap, new_name, kc_rtrn, false,
+                                create, 0);
+    }
+
     if (create) {
-        darray_resize0(keymap->key_names, keymap->max_key_code + 1);
+        darray_resize0(keymap->keys, keymap->max_key_code + 1);
 
         /* Find first unused keycode and store our key here */
-        for (n = keymap->min_key_code; n <= keymap->max_key_code; n++) {
-            if (darray_item(keymap->key_names, n).name[0] == '\0') {
+        for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
+            key = XkbKey(keymap, kc);
+
+            if (key->name.name[0] == '\0') {
                 char buf[XkbKeyNameLength + 1];
                 LongToKeyName(name, buf);
-                memcpy(darray_item(keymap->key_names, n).name, buf,
-                       XkbKeyNameLength);
-                *kc_rtrn = n;
+                memcpy(key->name.name, buf, XkbKeyNameLength);
+                *kc_rtrn = kc;
                 return true;
             }
         }

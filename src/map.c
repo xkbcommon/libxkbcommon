@@ -357,5 +357,7 @@ err:
 _X_EXPORT int
 xkb_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
-    return !!(keymap->per_key_repeat[kc / 8] & (1 << (kc % 8)));
+    if (!XkbKeycodeInRange(keymap, kc))
+        return 0;
+    return XkbKey(keymap, kc)->repeats;
 }

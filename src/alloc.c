@@ -70,7 +70,7 @@ bool
 XkbcResizeKeySyms(struct xkb_keymap *keymap, xkb_keycode_t kc,
                   unsigned int needed)
 {
-    darray_resize0(darray_item(keymap->key_sym_map, kc).syms, needed);
+    darray_resize0(XkbKey(keymap, kc)->sym_map.syms, needed);
     return true;
 }
 
@@ -80,8 +80,10 @@ XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t kc,
 {
     size_t old_ndx, old_num_acts, new_ndx;
 
+    key = XkbKey(keymap, kc);
+
     if (needed == 0) {
-        darray_item(keymap->key_acts, kc) = 0;
+        key->acts_index = 0;
         return NULL;
     }
 
@@ -96,12 +98,12 @@ XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t kc,
      * space for the key at the end, and leave the old space alone.
      */
 
-    old_ndx = darray_item(keymap->key_acts, kc);
+    old_ndx = key->acts_index;
     old_num_acts = XkbKeyNumActions(keymap, kc);
     new_ndx = darray_size(keymap->acts);
 
     darray_resize0(keymap->acts, new_ndx + needed);
-    darray_item(keymap->key_acts, kc) = new_ndx;
+    key->acts_index = new_ndx;
 
     /*
      * The key was already in the array, copy the old actions to the
@@ -135,14 +137,13 @@ free_types(struct xkb_keymap *keymap)
 static void
 free_sym_maps(struct xkb_keymap *keymap)
 {
-    struct xkb_sym_map *sym_map;
+    struct xkb_key *key;
 
-    darray_foreach(sym_map, keymap->key_sym_map) {
-        free(sym_map->sym_index);
-        free(sym_map->num_syms);
-        darray_free(sym_map->syms);
+    darray_foreach(key, keymap->keys) {
+        free(key->sym_map.sym_index);
+        free(key->sym_map.num_syms);
+        darray_free(key->sym_map.syms);
     }
-    darray_free(keymap->key_sym_map);
 }
 
 static void
@@ -159,7 +160,6 @@ free_names(struct xkb_keymap *keymap)
     for (i = 0; i < XkbNumKbdGroups; i++)
         free(keymap->group_names[i]);
 
-    darray_free(keymap->key_names);
     darray_free(keymap->key_aliases);
 
     free(keymap->keycodes_section_name);
@@ -191,15 +191,10 @@ XkbcFreeKeyboard(struct xkb_keymap *keymap)
 
     free_types(keymap);
     free_sym_maps(keymap);
-    free(keymap->modmap);
-    free(keymap->explicit);
-    darray_free(keymap->key_acts);
     darray_free(keymap->acts);
-    free(keymap->behaviors);
-    free(keymap->vmodmap);
     darray_free(keymap->sym_interpret);
     free_names(keymap);
-    free(keymap->per_key_repeat);
+    darray_free(keymap->keys);
     xkb_context_unref(keymap->ctx);
     free(keymap);
 }

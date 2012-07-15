@@ -1693,6 +1693,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *keyi, int start_from)
 {
     unsigned int i;
     xkb_keycode_t kc;
+    struct xkb_key *key;
     unsigned int sizeSyms = 0;
     unsigned width, tmp, nGroups;
     struct xkb_key_type * type;
@@ -1713,6 +1714,8 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *keyi, int start_from)
         }
         return false;
     }
+
+    key = XkbKey(keymap, kc);
 
     haveActions = false;
     for (i = width = nGroups = 0; i < XkbNumKbdGroups; i++) {
@@ -1742,7 +1745,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *keyi, int start_from)
         }
         if (FindNamedType(keymap, keyi->types[i], &types[i])) {
             if (!autoType || keyi->numLevels[i] > 2)
-                keymap->explicit[kc] |= (1 << i);
+                key->explicit |= (1 << i);
         }
         else {
             if (warningLevel >= 3) {
@@ -1783,12 +1786,12 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *keyi, int start_from)
                  longText(keyi->name), kc);
             return false;
         }
-        keymap->explicit[kc] |= XkbExplicitInterpretMask;
+        key->explicit |= XkbExplicitInterpretMask;
     }
     else
         outActs = NULL;
 
-    sym_map = &darray_item(keymap->key_sym_map, kc);
+    sym_map = &key->sym_map;
 
     if (keyi->defs.defined & _Key_GroupInfo)
         i = keyi->groupInfo;
@@ -1843,20 +1846,17 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *keyi, int start_from)
         break;
 
     default:
-        keymap->behaviors[kc] = keyi->behavior;
-        keymap->explicit[kc] |= XkbExplicitBehaviorMask;
+        key->behavior = keyi->behavior;
+        key->explicit |= XkbExplicitBehaviorMask;
         break;
     }
     if (keyi->defs.defined & _Key_VModMap) {
-        keymap->vmodmap[kc] = keyi->vmodmap;
-        keymap->explicit[kc] |= XkbExplicitVModMapMask;
+        key->vmodmap = keyi->vmodmap;
+        key->explicit |= XkbExplicitVModMapMask;
     }
     if (keyi->repeat != RepeatUndefined) {
-        if (keyi->repeat == RepeatYes)
-            keymap->per_key_repeat[kc / 8] |= (1 << (kc % 8));
-        else
-            keymap->per_key_repeat[kc / 8] &= ~(1 << (kc % 8));
-        keymap->explicit[kc] |= XkbExplicitAutoRepeatMask;
+        key->repeats = keyi->repeat == RepeatYes;
+        key->explicit |= XkbExplicitAutoRepeatMask;
     }
 
     /* do the same thing for the next key */
@@ -1890,7 +1890,8 @@ CopyModMapDef(struct xkb_keymap *keymap, ModMapEntry *entry)
         }
         return false;
     }
-    keymap->modmap[kc] |= (1 << entry->modifier);
+
+    XkbKey(keymap, kc)->modmap |= (1 << entry->modifier);
     return true;
 }
 
@@ -1899,30 +1900,9 @@ InitKeymapForSymbols(struct xkb_keymap *keymap)
 {
     size_t nKeys = keymap->max_key_code + 1;
 
-    darray_resize0(keymap->key_sym_map, nKeys);
-
-    keymap->modmap = calloc(nKeys, sizeof(*keymap->modmap));
-    if (!keymap->modmap)
-        return false;
-
-    keymap->explicit = calloc(nKeys, sizeof(*keymap->explicit));
-    if (!keymap->explicit)
-        return false;
+    darray_resize0(keymap->keys, nKeys);
 
     darray_resize0(keymap->acts, darray_size(keymap->acts) + 32 + 1);
-    darray_resize0(keymap->key_acts, nKeys);
-
-    keymap->behaviors = calloc(nKeys, sizeof(*keymap->behaviors));
-    if (!keymap->behaviors)
-        return false;
-
-    keymap->vmodmap = calloc(nKeys, sizeof(*keymap->vmodmap));
-    if (!keymap->vmodmap)
-        return false;
-
-    keymap->per_key_repeat = calloc(nKeys / 8, 1);
-    if (!keymap->per_key_repeat)
-        return false;
 
     return true;
 }
@@ -1941,6 +1921,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
     int i;
     bool ok;
     xkb_keycode_t kc;
+    struct xkb_key *key;
     SymbolsInfo info;
     KeyInfo *keyi;
 
@@ -1984,15 +1965,13 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
 
     if (warningLevel > 3) {
         for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
-            if (darray_item(keymap->key_names, kc).name[0] == '\0')
+            key = XkbKey(keymap, kc);
+            if (key->name.name[0] == '\0')
                 continue;
 
-            if (XkbKeyNumGroups(keymap, kc) < 1) {
-                char buf[5];
-                memcpy(buf, darray_item(keymap->key_names, kc).name, 4);
-                buf[4] = '\0';
-                WARN("No symbols defined for <%s> (keycode %d)\n", buf, kc);
-            }
+            if (XkbKeyNumGroups(keymap, kc) < 1)
+                WARN("No symbols defined for <%.4s> (keycode %d)\n",
+                     key->name.name, kc);
         }
     }
 
