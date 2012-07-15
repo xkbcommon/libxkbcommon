@@ -247,10 +247,14 @@ xkb_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
                   unsigned int group)
 {
     struct xkb_keymap *keymap = xkb_state_get_map(state);
-    struct xkb_key_type *type = XkbKeyType(keymap, kc, group);
+    struct xkb_key_type *type;
     struct xkb_kt_map_entry *entry;
     unsigned int active_mods;
 
+    if (!XkbKeycodeInRange(keymap, kc))
+        return 0;
+
+    type = XkbKeyType(keymap, kc, group);
     active_mods = xkb_state_serialize_mods(state, XKB_STATE_EFFECTIVE);
     active_mods &= type->mods.mask;
 
@@ -271,7 +275,11 @@ xkb_key_get_group(struct xkb_state *state, xkb_keycode_t kc)
 {
     struct xkb_keymap *keymap = xkb_state_get_map(state);
     unsigned int ret = xkb_state_serialize_group(state, XKB_STATE_EFFECTIVE);
-    struct xkb_key *key = XkbKey(keymap, kc);
+    struct xkb_key *key;
+
+    if (!XkbKeycodeInRange(keymap, kc))
+        return 0;
+    key = XkbKey(keymap, kc);
 
     if (ret < key->num_groups)
         return ret;
@@ -336,7 +344,7 @@ xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t kc,
     int group;
     int level;
 
-    if (!state || kc < keymap->min_key_code || kc > keymap->max_key_code)
+    if (!state || !XkbKeycodeInRange(keymap, kc))
         return -1;
 
     group = xkb_key_get_group(state, kc);
