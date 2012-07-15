@@ -33,7 +33,7 @@ typedef union _ExprResult {
     char *str;
     int ival;
     unsigned uval;
-    struct xkb_key_name keyName;
+    char name[XkbKeyNameLength];
 } ExprResult;
 
 extern int

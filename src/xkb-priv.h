@@ -284,10 +284,6 @@ struct xkb_indicator_map {
     unsigned int ctrls;
 };
 
-struct xkb_key_name {
-    char name[XkbKeyNameLength];
-};
-
 struct xkb_key_alias {
     char real[XkbKeyNameLength];
     char alias[XkbKeyNameLength];
@@ -310,7 +306,7 @@ struct xkb_controls {
 };
 
 struct xkb_key {
-    struct xkb_key_name name;
+    char name[XkbKeyNameLength];
     unsigned char explicit;
     struct xkb_sym_map sym_map;
     unsigned char modmap;

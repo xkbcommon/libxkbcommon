@@ -779,7 +779,7 @@ ExprResolveKeyName(struct xkb_context *ctx, ExprDef *expr,
                   exprTypeText(expr->type));
             return false;
         }
-        memcpy(val_rtrn->keyName.name, expr->value.keyName, XkbKeyNameLength);
+        memcpy(val_rtrn->name, expr->value.keyName, XkbKeyNameLength);
         return true;
 
     case ExprIdent:

@@ -231,7 +231,7 @@ FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
         unsigned long tmp;
         key = XkbKey(keymap, kc);
 
-        tmp = KeyNameToLong(key->name.name);
+        tmp = KeyNameToLong(key->name);
         if (tmp == name) {
             *kc_rtrn = kc;
             return true;
@@ -252,10 +252,10 @@ FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
         for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
             key = XkbKey(keymap, kc);
 
-            if (key->name.name[0] == '\0') {
+            if (key->name[0] == '\0') {
                 char buf[XkbKeyNameLength + 1];
                 LongToKeyName(name, buf);
-                memcpy(key->name.name, buf, XkbKeyNameLength);
+                memcpy(key->name, buf, XkbKeyNameLength);
                 *kc_rtrn = kc;
                 return true;
             }

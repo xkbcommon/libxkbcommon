@@ -1966,12 +1966,12 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
     if (warningLevel > 3) {
         for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
             key = XkbKey(keymap, kc);
-            if (key->name.name[0] == '\0')
+            if (key->name[0] == '\0')
                 continue;
 
             if (XkbKeyNumGroups(keymap, kc) < 1)
                 WARN("No symbols defined for <%.4s> (keycode %d)\n",
-                     key->name.name, kc);
+                     key->name, kc);
         }
     }
 

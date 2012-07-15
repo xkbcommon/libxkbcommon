@@ -812,11 +812,11 @@ HandleRedirectKey(struct xkb_keymap *keymap, struct xkb_any_action *action,
     case F_Keycode:
         if (!ExprResolveKeyName(keymap->ctx, value, &rtrn))
             return ReportMismatch(action->type, field, "key name");
-        tmp = KeyNameToLong(rtrn.keyName.name);
+        tmp = KeyNameToLong(rtrn.name);
         if (!FindNamedKey(keymap, tmp, &kc, true, CreateKeyNames(keymap),
                           0)) {
             return ReportNotFound(action->type, field, "Key",
-                                  XkbcKeyNameText(rtrn.keyName.name));
+                                  XkbcKeyNameText(rtrn.name));
         }
         act->new_kc = kc;
         return true;

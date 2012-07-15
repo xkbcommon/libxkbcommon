@@ -757,7 +757,7 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
     darray_resize0(keymap->keys, keymap->max_key_code + 1);
     for (kc = info.computedMin; kc <= info.computedMax; kc++)
         LongToKeyName(darray_item(info.names, kc),
-                      XkbKey(keymap, kc)->name.name);
+                      XkbKey(keymap, kc)->name);
 
     if (info.name)
         keymap->keycodes_section_name = strdup(info.name);

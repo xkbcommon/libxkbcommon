@@ -327,11 +327,11 @@ write_keycodes(struct xkb_keymap *keymap, char **buf, size_t *size,
 
     for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
         key = XkbKey(keymap, kc);
-        if (key->name.name[0] == '\0')
+        if (key->name[0] == '\0')
             continue;
 
         write_buf(keymap, buf, size, offset, "\t\t%6s = %d;\n",
-                  XkbcKeyNameText(key->name.name), kc);
+                  XkbcKeyNameText(key->name), kc);
     }
 
     for (i = 0; i < XkbNumIndicators; i++) {
@@ -811,7 +811,7 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
             continue;
 
         write_buf(keymap, buf, size, offset, "\t\tkey %6s {",
-                  XkbcKeyNameText(key->name.name));
+                  XkbcKeyNameText(key->name));
 
         if (key->explicit & XkbExplicitKeyTypesMask) {
             bool multi_type = false;
@@ -935,7 +935,7 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
             write_buf(keymap, buf, size, offset,
                       "\t\tmodifier_map %s { %s };\n",
                       get_mod_index_text(mod),
-                      XkbcKeyNameText(key->name.name));
+                      XkbcKeyNameText(key->name));
         }
     }
 
