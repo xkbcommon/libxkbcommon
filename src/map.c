@@ -277,7 +277,7 @@ xkb_key_get_group(struct xkb_state *state, xkb_keycode_t key)
 
     switch (XkbOutOfRangeGroupAction(info)) {
     case XkbRedirectIntoRange:
-        ret = XkbOutOfRangeGroupInfo(info);
+        ret = XkbOutOfRangeGroupNumber(info);
         if (ret >= num_groups)
             ret = 0;
         break;
