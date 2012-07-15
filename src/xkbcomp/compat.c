@@ -905,7 +905,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
     for (i = 0; i < INTERP_SIZE; i++)
         interps[i] = NULL;
 
-    for (group = 0; group < XkbKeyNumGroups(keymap, kc); group++) {
+    for (group = 0; group < key->num_groups; group++) {
         for (level = 0; level < XkbKeyGroupWidth(keymap, kc, group);
              level++) {
             i = (group * width) + level;
@@ -918,12 +918,12 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
     }
 
     if (num_acts)
-        num_acts = XkbKeyNumGroups(keymap, kc) * width;
+        num_acts = key->num_groups * width;
     acts = XkbcResizeKeyActions(keymap, kc, num_acts);
     if (num_acts && !acts)
         return false;
 
-    for (group = 0; group < XkbKeyNumGroups(keymap, kc); group++) {
+    for (group = 0; group < key->num_groups; group++) {
         for (level = 0; level < XkbKeyGroupWidth(keymap, kc, group);
              level++) {
             struct xkb_sym_interpret *interp;

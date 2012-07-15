@@ -187,7 +187,9 @@ xkb_map_group_get_index(struct xkb_keymap *keymap, const char *name)
 _X_EXPORT xkb_group_index_t
 xkb_key_num_groups(struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
-    return XkbKeyNumGroups(keymap, kc);
+    if (XkbKeycodeInRange(keymap, kc))
+        return XkbKey(keymap, kc)->num_groups;
+    return 0;
 }
 
 /**
@@ -268,27 +270,26 @@ _X_EXPORT unsigned int
 xkb_key_get_group(struct xkb_state *state, xkb_keycode_t kc)
 {
     struct xkb_keymap *keymap = xkb_state_get_map(state);
-    unsigned int info = XkbKeyGroupInfo(keymap, kc);
-    unsigned int num_groups = XkbKeyNumGroups(keymap, kc);
     unsigned int ret = xkb_state_serialize_group(state, XKB_STATE_EFFECTIVE);
+    struct xkb_key *key = XkbKey(keymap, kc);
 
-    if (ret < XkbKeyNumGroups(keymap, kc))
+    if (ret < key->num_groups)
         return ret;
 
-    switch (XkbOutOfRangeGroupAction(info)) {
+    switch (key->out_of_range_group_action) {
     case XkbRedirectIntoRange:
-        ret = XkbOutOfRangeGroupNumber(info);
-        if (ret >= num_groups)
+        ret = key->out_of_range_group_number;
+        if (ret >= key->num_groups)
             ret = 0;
         break;
 
     case XkbClampIntoRange:
-        ret = num_groups - 1;
+        ret = key->num_groups - 1;
         break;
 
     case XkbWrapIntoRange:
     default:
-        ret %= num_groups;
+        ret %= key->num_groups;
         break;
     }
 
@@ -304,8 +305,9 @@ xkb_key_get_syms_by_level(struct xkb_keymap *keymap, xkb_keycode_t kc,
                           const xkb_keysym_t **syms_out)
 {
     int num_syms;
+    struct xkb_key *key = XkbKey(keymap, kc);
 
-    if (group >= XkbKeyNumGroups(keymap, kc))
+    if (group >= key->num_groups)
         goto err;
     if (level >= XkbKeyGroupWidth(keymap, kc, group))
         goto err;

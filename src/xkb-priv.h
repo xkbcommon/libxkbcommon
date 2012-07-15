@@ -312,8 +312,13 @@ struct xkb_key {
     size_t acts_index;
 
     unsigned char kt_index[XkbNumKbdGroups];
-    unsigned char group_info;
+
+    unsigned int num_groups;
+    /* How many levels the largest group has. */
     unsigned char width;
+
+    uint8_t out_of_range_group_action;
+    uint8_t out_of_range_group_number;
 
     /* per level/group index into 'syms' */
     int *sym_index;
@@ -365,59 +370,6 @@ static inline struct xkb_key *
 XkbKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
     return &darray_item(keymap->keys, kc);
-}
-
-static inline unsigned char
-XkbNumGroups(unsigned char group_info)
-{
-    return group_info & 0x0f;
-}
-
-static inline unsigned char
-XkbOutOfRangeGroupInfo(unsigned char group_info)
-{
-    return group_info & 0xf0;
-}
-
-static inline unsigned char
-XkbOutOfRangeGroupAction(unsigned char group_info)
-{
-    return group_info & 0xc0;
-}
-
-static inline unsigned char
-XkbOutOfRangeGroupNumber(unsigned char group_info)
-{
-    return (group_info & 0x30) >> 4;
-}
-
-static inline unsigned char
-XkbSetGroupInfo(unsigned char group_info,
-                unsigned char out_of_range_group_action,
-                unsigned char out_of_range_group_number)
-{
-    return
-        (out_of_range_group_action & 0xc0) |
-        ((out_of_range_group_number & 3) << 4) |
-        (XkbNumGroups(group_info));
-}
-
-static inline unsigned char
-XkbSetNumGroups(unsigned char group_info, unsigned char num_groups)
-{
-    return (group_info & 0xf0) | (num_groups & 0x0f);
-}
-
-static inline unsigned char
-XkbKeyGroupInfo(struct xkb_keymap *keymap, xkb_keycode_t kc)
-{
-    return XkbKey(keymap, kc)->group_info;
-}
-
-static inline unsigned char
-XkbKeyNumGroups(struct xkb_keymap *keymap, xkb_keycode_t kc)
-{
-    return XkbNumGroups(XkbKeyGroupInfo(keymap, kc));
 }
 
 static inline unsigned char
@@ -484,8 +436,9 @@ XkbKeyHasActions(struct xkb_keymap *keymap, xkb_keycode_t kc)
 static inline unsigned char
 XkbKeyNumActions(struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
+    struct xkb_key *key = XkbKey(keymap, kc);
     if (XkbKeyHasActions(keymap, kc))
-        return XkbKeyGroupsWidth(keymap, kc) * XkbKeyNumGroups(keymap, kc);
+        return key->width * key->num_groups;
     return 1;
 }
 

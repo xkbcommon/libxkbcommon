@@ -55,7 +55,6 @@ typedef darray (union xkb_action) darray_xkb_action;
 typedef struct _KeyInfo {
     CommonInfo defs;
     unsigned long name; /* the 4 chars of the key name, as long */
-    unsigned char groupInfo;
     unsigned char typesDefined;
     unsigned char symsDefined;
     unsigned char actsDefined;
@@ -83,6 +82,9 @@ typedef struct _KeyInfo {
     struct xkb_behavior behavior;
     unsigned short vmodmap;
     xkb_atom_t dfltType;
+
+    uint8_t out_of_range_group_action;
+    uint8_t out_of_range_group_number;
 } KeyInfo;
 
 /**
@@ -99,7 +101,6 @@ InitKeyInfo(KeyInfo *keyi, unsigned file_id)
     keyi->defs.merge = MERGE_OVERRIDE;
     keyi->defs.next = NULL;
     keyi->name = KeyNameToLong(dflt);
-    keyi->groupInfo = 0;
     keyi->typesDefined = keyi->symsDefined = keyi->actsDefined = 0;
 
     for (i = 0; i < XkbNumKbdGroups; i++) {
@@ -116,35 +117,21 @@ InitKeyInfo(KeyInfo *keyi, unsigned file_id)
     keyi->behavior.data = 0;
     keyi->vmodmap = 0;
     keyi->repeat = RepeatUndefined;
+    keyi->out_of_range_group_action = 0;
+    keyi->out_of_range_group_number = 0;
 }
 
-/**
- * Free memory associated with this key keyi and reset to sane values.
- */
 static void
 FreeKeyInfo(KeyInfo *keyi)
 {
     int i;
 
-    keyi->defs.defined = 0;
-    keyi->defs.file_id = 0;
-    keyi->defs.merge = MERGE_OVERRIDE;
-    keyi->defs.next = NULL;
-    keyi->groupkeyi = 0;
-    keyi->typesDefined = keyi->symsDefined = keyi->actsDefined = 0;
     for (i = 0; i < XkbNumKbdGroups; i++) {
-        keyi->numLevels[i] = 0;
-        keyi->types[i] = XKB_ATOM_NONE;
         darray_free(keyi->syms[i]);
         darray_free(keyi->symsMapIndex[i]);
         darray_free(keyi->symsMapNumEntries[i]);
         darray_free(keyi->acts[i]);
     }
-    keyi->dfltType = XKB_ATOM_NONE;
-    keyi->behavior.type = XkbKB_Default;
-    keyi->behavior.data = 0;
-    keyi->vmodmap = 0;
-    keyi->repeat = RepeatUndefined;
 }
 
 /**
@@ -237,8 +224,9 @@ FreeSymbolsInfo(SymbolsInfo * info)
     KeyInfo *keyi;
 
     free(info->name);
-    darray_foreach(keyi, info->keys)
+    darray_foreach(keyi, info->keys) {
         FreeKeyInfo(keyi);
+    }
     darray_free(info->keys);
     if (info->modMap)
         ClearCommonInfo(&info->modMap->defs);
@@ -583,7 +571,8 @@ MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
         into->defs.defined |= _Key_Type_Dflt;
     }
     if (UseNewField(_Key_GroupInfo, &into->defs, &from->defs, &collide)) {
-        into->groupInfo = from->groupInfo;
+        into->out_of_range_group_action = from->out_of_range_group_action;
+        into->out_of_range_group_number = from->out_of_range_group_number;
         into->defs.defined |= _Key_GroupInfo;
     }
     if (collide) {
@@ -1114,9 +1103,9 @@ SetSymbolsField(KeyInfo *keyi, struct xkb_keymap *keymap, char *field,
             return false;
         }
         if (tmp.uval)
-            keyi->groupInfo = XkbWrapIntoRange;
+            keyi->out_of_range_group_action = XkbWrapIntoRange;
         else
-            keyi->groupInfo = XkbClampIntoRange;
+            keyi->out_of_range_group_action = XkbClampIntoRange;
         keyi->defs.defined |= _Key_GroupInfo;
     }
     else if ((strcasecmp(field, "groupsclamp") == 0) ||
@@ -1129,9 +1118,9 @@ SetSymbolsField(KeyInfo *keyi, struct xkb_keymap *keymap, char *field,
             return false;
         }
         if (tmp.uval)
-            keyi->groupInfo = XkbClampIntoRange;
+            keyi->out_of_range_group_action = XkbClampIntoRange;
         else
-            keyi->groupInfo = XkbWrapIntoRange;
+            keyi->out_of_range_group_action = XkbWrapIntoRange;
         keyi->defs.defined |= _Key_GroupInfo;
     }
     else if ((strcasecmp(field, "groupsredirect") == 0) ||
@@ -1142,8 +1131,8 @@ SetSymbolsField(KeyInfo *keyi, struct xkb_keymap *keymap, char *field,
             ACTION("Definition with non-integer group ignored\n");
             return false;
         }
-        keyi->groupInfo =
-            XkbSetGroupInfo(0, XkbRedirectIntoRange, tmp.uval - 1);
+        keyi->out_of_range_group_action = XkbRedirectIntoRange;
+        keyi->out_of_range_group_number = tmp.uval - 1;
         keyi->defs.defined |= _Key_GroupInfo;
     }
     else {
@@ -1448,10 +1437,13 @@ FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym,
                  xkb_keycode_t *kc_rtrn)
 {
     xkb_keycode_t kc;
+    struct xkb_key *key;
     unsigned int group, level, min_group = UINT_MAX, min_level = UINT_MAX;
 
     for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
-        for (group = 0; group < XkbKeyNumGroups(keymap, kc); group++) {
+        key = XkbKey(keymap, kc);
+
+        for (group = 0; group < key->num_groups; group++) {
             for (level = 0; level < XkbKeyGroupWidth(keymap, kc, group);
                  level++) {
                 if (XkbKeyNumSyms(keymap, kc, group, level) != 1 ||
@@ -1787,15 +1779,14 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *keyi, int start_from)
     else
         outActs = NULL;
 
-    if (keyi->defs.defined & _Key_GroupInfo)
-        i = keyi->groupInfo;
-    else
-        i = key->group_info;
-
-    key->group_info = XkbSetNumGroups(i, nGroups);
+    key->num_groups = nGroups;
+    if (keyi->defs.defined & _Key_GroupInfo) {
+        key->out_of_range_group_number = keyi->out_of_range_group_number;
+        key->out_of_range_group_action = keyi->out_of_range_group_action;
+    }
     key->width = width;
-    key->sym_index = uTypedCalloc(nGroups * width, int);
-    key->num_syms = uTypedCalloc(nGroups * width, unsigned int);
+    key->sym_index = calloc(nGroups * width, sizeof(*key->sym_index));
+    key->num_syms = calloc(nGroups * width, sizeof(*key->num_syms));
 
     for (i = 0; i < nGroups; i++) {
         /* assign kt_index[i] to the index of the type in map->types.
@@ -1963,7 +1954,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
             if (key->name[0] == '\0')
                 continue;
 
-            if (XkbKeyNumGroups(keymap, kc) < 1)
+            if (key->num_groups < 1)
                 WARN("No symbols defined for <%.4s> (keycode %d)\n",
                      key->name, kc);
         }

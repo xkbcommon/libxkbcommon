@@ -862,7 +862,7 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
                       get_mod_mask_text(keymap, 0, key->vmodmap));
         }
 
-        switch (XkbOutOfRangeGroupAction(XkbKeyGroupInfo(keymap, kc))) {
+        switch (key->out_of_range_group_action) {
         case XkbClampIntoRange:
             write_buf(keymap, buf, size, offset, "\n\t\t\tgroupsClamp,");
             break;
@@ -870,8 +870,7 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
         case XkbRedirectIntoRange:
             write_buf(keymap, buf, size, offset,
                       "\n\t\t\tgroupsRedirect= Group%d,",
-                      XkbOutOfRangeGroupNumber(XkbKeyGroupInfo(keymap,
-                                                               kc)) + 1);
+                      key->out_of_range_group_number + 1);
             break;
         }
 
