@@ -246,8 +246,6 @@ FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
     }
 
     if (create) {
-        darray_resize0(keymap->keys, keymap->max_key_code + 1);
-
         /* Find first unused keycode and store our key here */
         for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
             key = XkbKey(keymap, kc);

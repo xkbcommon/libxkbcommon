@@ -1880,18 +1880,6 @@ CopyModMapDef(struct xkb_keymap *keymap, ModMapEntry *entry)
     return true;
 }
 
-static bool
-InitKeymapForSymbols(struct xkb_keymap *keymap)
-{
-    size_t nKeys = keymap->max_key_code + 1;
-
-    darray_resize0(keymap->keys, nKeys);
-
-    darray_resize0(keymap->acts, darray_size(keymap->acts) + 32 + 1);
-
-    return true;
-}
-
 /**
  * Handle the xkb_symbols section of an xkb file.
  *
@@ -1904,7 +1892,6 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
                enum merge_mode merge)
 {
     int i;
-    bool ok;
     xkb_keycode_t kc;
     struct xkb_key *key;
     SymbolsInfo info;
@@ -1921,9 +1908,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
     if (info.errorCount != 0)
         goto err_info;
 
-    ok = InitKeymapForSymbols(keymap);
-    if (!ok)
-        goto err_info;
+    darray_resize0(keymap->acts, darray_size(keymap->acts) + 32 + 1);
 
     if (info.name)
         keymap->symbols_section_name = strdup(info.name);
