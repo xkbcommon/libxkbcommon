@@ -913,7 +913,7 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
                                      NULL, NULL);
                     }
                     write_buf(keymap, buf, size, offset, " ]");
-                    acts += XkbKeyGroupsWidth(keymap, kc);
+                    acts += key->width;
                 }
             }
             write_buf(keymap, buf, size, offset, "\n\t\t};\n");

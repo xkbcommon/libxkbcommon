@@ -892,7 +892,6 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
     uint32_t vmodmask = 0;
     int num_acts = 0;
     int group, level;
-    int width = XkbKeyGroupsWidth(keymap, kc);
     struct xkb_key *key;
     int i;
 
@@ -908,7 +907,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
     for (group = 0; group < key->num_groups; group++) {
         for (level = 0; level < XkbKeyGroupWidth(keymap, kc, group);
              level++) {
-            i = (group * width) + level;
+            i = (group * key->width) + level;
             if (i >= INTERP_SIZE) /* XXX FIXME */
                 return false;
             interps[i] = FindInterpForKey(keymap, kc, group, level);
@@ -918,7 +917,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
     }
 
     if (num_acts)
-        num_acts = key->num_groups * width;
+        num_acts = key->num_groups * key->width;
     acts = XkbcResizeKeyActions(keymap, kc, num_acts);
     if (num_acts && !acts)
         return false;
@@ -928,7 +927,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
              level++) {
             struct xkb_sym_interpret *interp;
 
-            i = (group * width) + level;
+            i = (group * key->width) + level;
             interp = interps[i];
 
             /* Infer default key behaviours from the base level. */

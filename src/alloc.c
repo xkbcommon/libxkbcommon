@@ -70,6 +70,7 @@ union xkb_action *
 XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t kc,
                      uint32_t needed)
 {
+    struct xkb_key *key;
     size_t old_ndx, old_num_acts, new_ndx;
 
     key = XkbKey(keymap, kc);
@@ -79,8 +80,9 @@ XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t kc,
         return NULL;
     }
 
-    if (XkbKeyHasActions(keymap, kc) &&
-        XkbKeyGroupsWidth(keymap, kc) >= needed)
+    key = XkbKey(keymap, kc);
+
+    if (XkbKeyHasActions(keymap, kc) && key->width >= needed)
         return XkbKeyActionsPtr(keymap, kc);
 
     /*
