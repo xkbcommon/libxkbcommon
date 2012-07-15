@@ -63,7 +63,7 @@ test_key_seq(struct xkb_keymap *keymap, ...)
     struct xkb_state *state;
 
     va_list ap;
-    xkb_keycode_t keycode;
+    xkb_keycode_t kc;
     int op;
     xkb_keysym_t keysym;
 
@@ -77,16 +77,16 @@ test_key_seq(struct xkb_keymap *keymap, ...)
     va_start(ap, keymap);
 
     for (;;) {
-        keycode = va_arg(ap, int) + EVDEV_OFFSET;
+        kc = va_arg(ap, int) + EVDEV_OFFSET;
         op = va_arg(ap, int);
 
-        nsyms = xkb_key_get_syms(state, keycode, &syms);
-        fprintf(stderr, "got %d syms for key 0x%x: [", nsyms, keycode);
+        nsyms = xkb_key_get_syms(state, kc, &syms);
+        fprintf(stderr, "got %d syms for key 0x%x: [", nsyms, kc);
 
         if (op == DOWN || op == BOTH)
-            xkb_state_update_key(state, keycode, XKB_KEY_DOWN);
+            xkb_state_update_key(state, kc, XKB_KEY_DOWN);
         if (op == UP || op == BOTH)
-            xkb_state_update_key(state, keycode, XKB_KEY_UP);
+            xkb_state_update_key(state, kc, XKB_KEY_UP);
 
         for (i = 0; i < nsyms; i++) {
             keysym = va_arg(ap, int);

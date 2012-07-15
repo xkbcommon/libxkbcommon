@@ -818,7 +818,7 @@ HandleRedirectKey(struct xkb_keymap *keymap, struct xkb_any_action *action,
             return ReportNotFound(action->type, field, "Key",
                                   XkbcKeyNameText(rtrn.keyName.name));
         }
-        act->new_key = kc;
+        act->new_kc = kc;
         return true;
 
     case F_ModsToClear:

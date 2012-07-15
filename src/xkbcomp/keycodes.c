@@ -732,7 +732,7 @@ bool
 CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
                 enum merge_mode merge)
 {
-    xkb_keycode_t i;
+    xkb_keycode_t kc;
     KeyNamesInfo info; /* contains all the info after parsing */
 
     InitKeyNamesInfo(&info, file->id);
@@ -755,9 +755,9 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
         keymap->max_key_code = info.computedMax;
 
     darray_resize0(keymap->key_names, keymap->max_key_code + 1);
-    for (i = info.computedMin; i <= info.computedMax; i++)
-        LongToKeyName(darray_item(info.names, i),
-                      darray_item(keymap->key_names, i).name);
+    for (kc = info.computedMin; kc <= info.computedMax; kc++)
+        LongToKeyName(darray_item(info.names, kc),
+                      darray_item(keymap->key_names, kc).name);
 
     if (info.name)
         keymap->keycodes_section_name = strdup(info.name);

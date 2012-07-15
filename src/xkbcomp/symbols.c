@@ -1445,15 +1445,15 @@ static bool
 FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym,
                  xkb_keycode_t *kc_rtrn)
 {
-    xkb_keycode_t key;
+    xkb_keycode_t kc;
     unsigned int group, level, min_group = UINT_MAX, min_level = UINT_MAX;
 
-    for (key = keymap->min_key_code; key <= keymap->max_key_code; key++) {
-        for (group = 0; group < XkbKeyNumGroups(keymap, key); group++) {
-            for (level = 0; level < XkbKeyGroupWidth(keymap, key, group);
+    for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
+        for (group = 0; group < XkbKeyNumGroups(keymap, kc); group++) {
+            for (level = 0; level < XkbKeyGroupWidth(keymap, kc, group);
                  level++) {
-                if (XkbKeyNumSyms(keymap, key, group, level) != 1 ||
-                    (XkbKeySymEntry(keymap, key, group, level))[0] != sym)
+                if (XkbKeyNumSyms(keymap, kc, group, level) != 1 ||
+                    (XkbKeySymEntry(keymap, kc, group, level))[0] != sym)
                     continue;
 
                 /*
@@ -1463,7 +1463,7 @@ FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym,
                  */
                 if (group < min_group ||
                     (group == min_group && level < min_level)) {
-                    *kc_rtrn = key;
+                    *kc_rtrn = kc;
                     if (group == 0 && level == 0) {
                         return true;
                     }

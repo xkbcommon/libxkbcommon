@@ -188,7 +188,7 @@ struct xkb_switch_screen_action {
 
 struct xkb_redirect_key_action {
     uint8_t type;
-    xkb_keycode_t new_key;
+    xkb_keycode_t new_kc;
     uint8_t mods_mask;
     uint8_t mods;
     uint16_t vmods_mask;
@@ -526,14 +526,14 @@ const char *
 xkb_atom_text(struct xkb_context *ctx, xkb_atom_t atom);
 
 extern unsigned int
-xkb_key_get_group(struct xkb_state *state, xkb_keycode_t key);
+xkb_key_get_group(struct xkb_state *state, xkb_keycode_t kc);
 
 extern unsigned int
-xkb_key_get_level(struct xkb_state *state, xkb_keycode_t key,
+xkb_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
                   unsigned int group);
 
 extern int
-xkb_key_get_syms_by_level(struct xkb_keymap *keymap, xkb_keycode_t key,
+xkb_key_get_syms_by_level(struct xkb_keymap *keymap, xkb_keycode_t kc,
                           unsigned int group, unsigned int level,
                           const xkb_keysym_t **syms_out);
 

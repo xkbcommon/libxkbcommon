@@ -39,11 +39,11 @@ extern int
 XkbcCopyKeyType(const struct xkb_key_type *from, struct xkb_key_type *into);
 
 extern bool
-XkbcResizeKeySyms(struct xkb_keymap *keymap, xkb_keycode_t key,
+XkbcResizeKeySyms(struct xkb_keymap *keymap, xkb_keycode_t kc,
                   uint32_t needed);
 
 extern union xkb_action *
-XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t key,
+XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t kc,
                      uint32_t needed);
 
 #endif /* ALLOC_H */

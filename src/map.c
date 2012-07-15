@@ -185,9 +185,9 @@ xkb_map_group_get_index(struct xkb_keymap *keymap, const char *name)
  * Returns the number of groups active for a particular key.
  */
 _X_EXPORT xkb_group_index_t
-xkb_key_num_groups(struct xkb_keymap *keymap, xkb_keycode_t key)
+xkb_key_num_groups(struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
-    return XkbKeyNumGroups(keymap, key);
+    return XkbKeyNumGroups(keymap, kc);
 }
 
 /**
@@ -241,11 +241,11 @@ xkb_map_led_get_index(struct xkb_keymap *keymap, const char *name)
  * Returns the level to use for the given key and state, or -1 if invalid.
  */
 _X_EXPORT unsigned int
-xkb_key_get_level(struct xkb_state *state, xkb_keycode_t key,
+xkb_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
                   unsigned int group)
 {
     struct xkb_keymap *keymap = xkb_state_get_map(state);
-    struct xkb_key_type *type = XkbKeyType(keymap, key, group);
+    struct xkb_key_type *type = XkbKeyType(keymap, kc, group);
     struct xkb_kt_map_entry *entry;
     unsigned int active_mods;
 
@@ -265,14 +265,14 @@ xkb_key_get_level(struct xkb_state *state, xkb_keycode_t key,
  * wrapping/clamping/etc into account.
  */
 _X_EXPORT unsigned int
-xkb_key_get_group(struct xkb_state *state, xkb_keycode_t key)
+xkb_key_get_group(struct xkb_state *state, xkb_keycode_t kc)
 {
     struct xkb_keymap *keymap = xkb_state_get_map(state);
-    unsigned int info = XkbKeyGroupInfo(keymap, key);
-    unsigned int num_groups = XkbKeyNumGroups(keymap, key);
+    unsigned int info = XkbKeyGroupInfo(keymap, kc);
+    unsigned int num_groups = XkbKeyNumGroups(keymap, kc);
     unsigned int ret = xkb_state_serialize_group(state, XKB_STATE_EFFECTIVE);
 
-    if (ret < XkbKeyNumGroups(keymap, key))
+    if (ret < XkbKeyNumGroups(keymap, kc))
         return ret;
 
     switch (XkbOutOfRangeGroupAction(info)) {
@@ -299,22 +299,22 @@ xkb_key_get_group(struct xkb_state *state, xkb_keycode_t key)
  * As below, but takes an explicit group/level rather than state.
  */
 int
-xkb_key_get_syms_by_level(struct xkb_keymap *keymap, xkb_keycode_t key,
+xkb_key_get_syms_by_level(struct xkb_keymap *keymap, xkb_keycode_t kc,
                           unsigned int group, unsigned int level,
                           const xkb_keysym_t **syms_out)
 {
     int num_syms;
 
-    if (group >= XkbKeyNumGroups(keymap, key))
+    if (group >= XkbKeyNumGroups(keymap, kc))
         goto err;
-    if (level >= XkbKeyGroupWidth(keymap, key, group))
+    if (level >= XkbKeyGroupWidth(keymap, kc, group))
         goto err;
 
-    num_syms = XkbKeyNumSyms(keymap, key, group, level);
+    num_syms = XkbKeyNumSyms(keymap, kc, group, level);
     if (num_syms == 0)
         goto err;
 
-    *syms_out = XkbKeySymEntry(keymap, key, group, level);
+    *syms_out = XkbKeySymEntry(keymap, kc, group, level);
     return num_syms;
 
 err:
@@ -327,24 +327,24 @@ err:
  * number of symbols pointed to in syms_out.
  */
 _X_EXPORT int
-xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
+xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t kc,
                  const xkb_keysym_t **syms_out)
 {
     struct xkb_keymap *keymap = xkb_state_get_map(state);
     int group;
     int level;
 
-    if (!state || key < keymap->min_key_code || key > keymap->max_key_code)
+    if (!state || kc < keymap->min_key_code || kc > keymap->max_key_code)
         return -1;
 
-    group = xkb_key_get_group(state, key);
+    group = xkb_key_get_group(state, kc);
     if (group == -1)
         goto err;
-    level = xkb_key_get_level(state, key, group);
+    level = xkb_key_get_level(state, kc, group);
     if (level == -1)
         goto err;
 
-    return xkb_key_get_syms_by_level(keymap, key, group, level, syms_out);
+    return xkb_key_get_syms_by_level(keymap, kc, group, level, syms_out);
 
 err:
     *syms_out = NULL;
@@ -355,7 +355,7 @@ err:
  * Simple boolean specifying whether or not the key should repeat.
  */
 _X_EXPORT int
-xkb_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key)
+xkb_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
-    return !!(keymap->per_key_repeat[key / 8] & (1 << (key % 8)));
+    return !!(keymap->per_key_repeat[kc / 8] & (1 << (kc % 8)));
 }

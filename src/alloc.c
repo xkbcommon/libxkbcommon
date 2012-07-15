@@ -67,27 +67,27 @@ XkbcCopyKeyType(const struct xkb_key_type *from, struct xkb_key_type *into)
 }
 
 bool
-XkbcResizeKeySyms(struct xkb_keymap *keymap, xkb_keycode_t key,
+XkbcResizeKeySyms(struct xkb_keymap *keymap, xkb_keycode_t kc,
                   unsigned int needed)
 {
-    darray_resize0(darray_item(keymap->key_sym_map, key).syms, needed);
+    darray_resize0(darray_item(keymap->key_sym_map, kc).syms, needed);
     return true;
 }
 
 union xkb_action *
-XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t key,
+XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t kc,
                      uint32_t needed)
 {
     size_t old_ndx, old_num_acts, new_ndx;
 
     if (needed == 0) {
-        darray_item(keymap->key_acts, key) = 0;
+        darray_item(keymap->key_acts, kc) = 0;
         return NULL;
     }
 
-    if (XkbKeyHasActions(keymap, key) &&
-        XkbKeyGroupsWidth(keymap, key) >= needed)
-        return XkbKeyActionsPtr(keymap, key);
+    if (XkbKeyHasActions(keymap, kc) &&
+        XkbKeyGroupsWidth(keymap, kc) >= needed)
+        return XkbKeyActionsPtr(keymap, kc);
 
     /*
      * The key may already be in the array, but without enough space.
@@ -96,12 +96,12 @@ XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t key,
      * space for the key at the end, and leave the old space alone.
      */
 
-    old_ndx = darray_item(keymap->key_acts, key);
-    old_num_acts = XkbKeyNumActions(keymap, key);
+    old_ndx = darray_item(keymap->key_acts, kc);
+    old_num_acts = XkbKeyNumActions(keymap, kc);
     new_ndx = darray_size(keymap->acts);
 
     darray_resize0(keymap->acts, new_ndx + needed);
-    darray_item(keymap->key_acts, key) = new_ndx;
+    darray_item(keymap->key_acts, kc) = new_ndx;
 
     /*
      * The key was already in the array, copy the old actions to the
@@ -112,7 +112,7 @@ XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t key,
                darray_mem(keymap->acts, old_ndx),
                old_num_acts * sizeof(union xkb_action));
 
-    return XkbKeyActionsPtr(keymap, key);
+    return XkbKeyActionsPtr(keymap, kc);
 }
 
 static void

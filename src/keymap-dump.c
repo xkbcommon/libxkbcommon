@@ -309,7 +309,7 @@ static bool
 write_keycodes(struct xkb_keymap *keymap, char **buf, size_t *size,
                size_t *offset)
 {
-    xkb_keycode_t key;
+    xkb_keycode_t kc;
     struct xkb_key_alias *alias;
     int i;
 
@@ -324,13 +324,13 @@ write_keycodes(struct xkb_keymap *keymap, char **buf, size_t *size,
     write_buf(keymap, buf, size, offset, "\t\tmaximum = %d;\n",
               keymap->max_key_code);
 
-    for (key = keymap->min_key_code; key <= keymap->max_key_code; key++) {
-        if (darray_item(keymap->key_names, key).name[0] == '\0')
+    for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
+        if (darray_item(keymap->key_names, kc).name[0] == '\0')
             continue;
 
         write_buf(keymap, buf, size, offset, "\t\t%6s = %d;\n",
-                  XkbcKeyNameText(darray_item(keymap->key_names, key).name),
-                  key);
+                  XkbcKeyNameText(darray_item(keymap->key_names, kc).name),
+                  kc);
     }
 
     for (i = 0; i < XkbNumIndicators; i++) {
@@ -740,17 +740,17 @@ write_compat(struct xkb_keymap *keymap, char **buf, size_t *size,
 
 static bool
 write_keysyms(struct xkb_keymap *keymap, char **buf, size_t *size,
-              size_t *offset, xkb_keycode_t key, unsigned int group)
+              size_t *offset, xkb_keycode_t kc, unsigned int group)
 {
     const xkb_keysym_t *syms;
     int num_syms, level;
 #define OUT_BUF_LEN 128
     char out_buf[OUT_BUF_LEN];
 
-    for (level = 0; level < XkbKeyGroupWidth(keymap, key, group); level++) {
+    for (level = 0; level < XkbKeyGroupWidth(keymap, kc, group); level++) {
         if (level != 0)
             write_buf(keymap, buf, size, offset, ", ");
-        num_syms = xkb_key_get_syms_by_level(keymap, key, group, level,
+        num_syms = xkb_key_get_syms_by_level(keymap, kc, group, level,
                                              &syms);
         if (num_syms == 0) {
             write_buf(keymap, buf, size, offset, "%15s", "NoSymbol");
@@ -780,7 +780,7 @@ static bool
 write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
               size_t *offset)
 {
-    xkb_keycode_t key;
+    xkb_keycode_t kc;
     int group, tmp;
     bool showActions;
 
@@ -801,35 +801,35 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
     if (tmp > 0)
         write_buf(keymap, buf, size, offset, "\n");
 
-    for (key = keymap->min_key_code; key <= keymap->max_key_code; key++) {
+    for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
         bool simple = true;
 
-        if (xkb_key_num_groups(keymap, key) == 0)
+        if (xkb_key_num_groups(keymap, kc) == 0)
             continue;
 
         write_buf(keymap, buf, size, offset, "\t\tkey %6s {",
-                  XkbcKeyNameText(darray_item(keymap->key_names, key).name));
+                  XkbcKeyNameText(darray_item(keymap->key_names, kc).name));
         if (keymap->explicit) {
-            if ((keymap->explicit[key] & XkbExplicitKeyTypesMask)) {
+            if ((keymap->explicit[kc] & XkbExplicitKeyTypesMask)) {
                 bool multi_type = false;
-                int type = XkbKeyTypeIndex(keymap, key, 0);
+                int type = XkbKeyTypeIndex(keymap, kc, 0);
 
                 simple = false;
 
-                for (group = 0; group < xkb_key_num_groups(keymap, key);
+                for (group = 0; group < xkb_key_num_groups(keymap, kc);
                      group++) {
-                    if (XkbKeyTypeIndex(keymap, key, group) != type) {
+                    if (XkbKeyTypeIndex(keymap, kc, group) != type) {
                         multi_type = true;
                         break;
                     }
                 }
                 if (multi_type) {
                     for (group = 0;
-                         group < xkb_key_num_groups(keymap, key);
+                         group < xkb_key_num_groups(keymap, kc);
                          group++) {
-                        if (!(keymap->explicit[key] & (1 << group)))
+                        if (!(keymap->explicit[kc] & (1 << group)))
                             continue;
-                        type = XkbKeyTypeIndex(keymap, key, group);
+                        type = XkbKeyTypeIndex(keymap, kc, group);
                         write_buf(keymap, buf, size, offset,
                                   "\n\t\t\ttype[group%d]= \"%s\",",
                                   group + 1,
@@ -842,8 +842,8 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
                               darray_item(keymap->types, type).name);
                 }
             }
-            if (keymap->explicit[key] & XkbExplicitAutoRepeatMask) {
-                if (keymap->per_key_repeat[key / 8] & (1 << (key % 8)))
+            if (keymap->explicit[kc] & XkbExplicitAutoRepeatMask) {
+                if (keymap->per_key_repeat[kc / 8] & (1 << (kc % 8)))
                     write_buf(keymap, buf, size, offset,
                               "\n\t\t\trepeat= Yes,");
                 else
@@ -851,15 +851,15 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
                               "\n\t\t\trepeat= No,");
                 simple = false;
             }
-            if (keymap->vmodmap[key] &&
-                (keymap->explicit[key] & XkbExplicitVModMapMask)) {
+            if (keymap->vmodmap[kc] &&
+                (keymap->explicit[kc] & XkbExplicitVModMapMask)) {
                 write_buf(keymap, buf, size, offset,
                           "\n\t\t\tvirtualMods= %s,",
-                          get_mod_mask_text(keymap, 0, keymap->vmodmap[key]));
+                          get_mod_mask_text(keymap, 0, keymap->vmodmap[kc]));
             }
         }
 
-        switch (XkbOutOfRangeGroupAction(XkbKeyGroupInfo(keymap, key))) {
+        switch (XkbOutOfRangeGroupAction(XkbKeyGroupInfo(keymap, kc))) {
         case XkbClampIntoRange:
             write_buf(keymap, buf, size, offset, "\n\t\t\tgroupsClamp,");
             break;
@@ -868,22 +868,22 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
             write_buf(keymap, buf, size, offset,
                       "\n\t\t\tgroupsRedirect= Group%d,",
                       XkbOutOfRangeGroupNumber(XkbKeyGroupInfo(keymap,
-                                                               key)) + 1);
+                                                               kc)) + 1);
             break;
         }
 
         if (keymap->explicit == NULL ||
-            (keymap->explicit[key] & XkbExplicitInterpretMask))
-            showActions = XkbKeyHasActions(keymap, key);
+            (keymap->explicit[kc] & XkbExplicitInterpretMask))
+            showActions = XkbKeyHasActions(keymap, kc);
         else
             showActions = false;
 
-        if (xkb_key_num_groups(keymap, key) > 1 || showActions)
+        if (xkb_key_num_groups(keymap, kc) > 1 || showActions)
             simple = false;
 
         if (simple) {
             write_buf(keymap, buf, size, offset, "\t[ ");
-            if (!write_keysyms(keymap, buf, size, offset, key, 0))
+            if (!write_keysyms(keymap, buf, size, offset, kc, 0))
                 return false;
             write_buf(keymap, buf, size, offset, " ] };\n");
         }
@@ -891,21 +891,20 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
             union xkb_action *acts;
             int level;
 
-            acts = XkbKeyActionsPtr(keymap, key);
-            for (group = 0; group < xkb_key_num_groups(keymap, key);
-                 group++) {
+            acts = XkbKeyActionsPtr(keymap, kc);
+            for (group = 0; group < xkb_key_num_groups(keymap, kc); group++) {
                 if (group != 0)
                     write_buf(keymap, buf, size, offset, ",");
                 write_buf(keymap, buf, size, offset,
                           "\n\t\t\tsymbols[Group%d]= [ ", group + 1);
-                if (!write_keysyms(keymap, buf, size, offset, key, group))
+                if (!write_keysyms(keymap, buf, size, offset, kc, group))
                     return false;
                 write_buf(keymap, buf, size, offset, " ]");
                 if (showActions) {
                     write_buf(keymap, buf, size, offset,
                               ",\n\t\t\tactions[Group%d]= [ ", group + 1);
                     for (level = 0;
-                         level < XkbKeyGroupWidth(keymap, key, group);
+                         level < XkbKeyGroupWidth(keymap, kc, group);
                          level++) {
                         if (level != 0)
                             write_buf(keymap, buf, size, offset, ", ");
@@ -913,29 +912,28 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
                                      NULL, NULL);
                     }
                     write_buf(keymap, buf, size, offset, " ]");
-                    acts += XkbKeyGroupsWidth(keymap, key);
+                    acts += XkbKeyGroupsWidth(keymap, kc);
                 }
             }
             write_buf(keymap, buf, size, offset, "\n\t\t};\n");
         }
     }
     if (keymap->modmap) {
-        for (key = keymap->min_key_code; key <= keymap->max_key_code;
-             key++) {
+        for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
             int mod;
 
-            if (keymap->modmap[key] == 0)
+            if (keymap->modmap[kc] == 0)
                 continue;
 
             for (mod = 0; mod < XkbNumModifiers; mod++) {
-                if (!(keymap->modmap[key] & (1 << mod)))
+                if (!(keymap->modmap[kc] & (1 << mod)))
                     continue;
 
                 write_buf(keymap, buf, size, offset,
                           "\t\tmodifier_map %s { %s };\n",
                           get_mod_index_text(mod),
                           XkbcKeyNameText(darray_item(keymap->key_names,
-                                                      key).name));
+                                                      kc).name));
             }
         }
     }
