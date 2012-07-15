@@ -66,14 +66,6 @@ XkbcCopyKeyType(const struct xkb_key_type *from, struct xkb_key_type *into)
     return Success;
 }
 
-bool
-XkbcResizeKeySyms(struct xkb_keymap *keymap, xkb_keycode_t kc,
-                  unsigned int needed)
-{
-    darray_resize0(XkbKey(keymap, kc)->sym_map.syms, needed);
-    return true;
-}
-
 union xkb_action *
 XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t kc,
                      uint32_t needed)
@@ -135,15 +127,17 @@ free_types(struct xkb_keymap *keymap)
 }
 
 static void
-free_sym_maps(struct xkb_keymap *keymap)
+free_keys(struct xkb_keymap *keymap)
 {
     struct xkb_key *key;
 
     darray_foreach(key, keymap->keys) {
-        free(key->sym_map.sym_index);
-        free(key->sym_map.num_syms);
-        darray_free(key->sym_map.syms);
+        free(key->sym_index);
+        free(key->num_syms);
+        darray_free(key->syms);
     }
+
+    darray_free(keymap->keys);
 }
 
 static void
@@ -190,11 +184,10 @@ XkbcFreeKeyboard(struct xkb_keymap *keymap)
         return;
 
     free_types(keymap);
-    free_sym_maps(keymap);
     darray_free(keymap->acts);
     darray_free(keymap->sym_interpret);
     free_names(keymap);
-    darray_free(keymap->keys);
+    free_keys(keymap);
     xkb_context_unref(keymap->ctx);
     free(keymap);
 }

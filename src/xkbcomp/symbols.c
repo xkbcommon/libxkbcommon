@@ -1701,7 +1701,6 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *keyi, int start_from)
     unsigned types[XkbNumKbdGroups];
     union xkb_action *outActs;
     unsigned int symIndex = 0;
-    struct xkb_sym_map *sym_map;
 
     useAlias = (start_from == 0);
 
@@ -1774,11 +1773,8 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *keyi, int start_from)
         sizeSyms += darray_size(keyi->syms[i]);
     }
 
-    if (!XkbcResizeKeySyms(keymap, kc, sizeSyms)) {
-        WSGO("Could not enlarge symbols for %s (keycode %d)\n",
-             longText(keyi->name), kc);
-        return false;
-    }
+    darray_resize0(key->syms, sizeSyms);
+
     if (haveActions) {
         outActs = XkbcResizeKeyActions(keymap, kc, width * nGroups);
         if (outActs == NULL) {
@@ -1791,17 +1787,15 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *keyi, int start_from)
     else
         outActs = NULL;
 
-    sym_map = &key->sym_map;
-
     if (keyi->defs.defined & _Key_GroupInfo)
         i = keyi->groupInfo;
     else
-        i = sym_map->group_info;
+        i = key->group_info;
 
-    sym_map->group_info = XkbSetNumGroups(i, nGroups);
-    sym_map->width = width;
-    sym_map->sym_index = uTypedCalloc(nGroups * width, int);
-    sym_map->num_syms = uTypedCalloc(nGroups * width, unsigned int);
+    key->group_info = XkbSetNumGroups(i, nGroups);
+    key->width = width;
+    key->sym_index = uTypedCalloc(nGroups * width, int);
+    key->num_syms = uTypedCalloc(nGroups * width, unsigned int);
 
     for (i = 0; i < nGroups; i++) {
         /* assign kt_index[i] to the index of the type in map->types.
@@ -1812,25 +1806,25 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *keyi, int start_from)
          * FIXME: There should be a better fix for this.
          */
         if (keyi->numLevels[i])
-            sym_map->kt_index[i] = types[i];
+            key->kt_index[i] = types[i];
         if (!darray_empty(keyi->syms[i])) {
             /* fill key to "width" symbols*/
             for (tmp = 0; tmp < width; tmp++) {
                 if (tmp < keyi->numLevels[i] &&
                     darray_item(keyi->symsMapNumEntries[i], tmp) != 0) {
-                    memcpy(darray_mem(sym_map->syms, symIndex),
+                    memcpy(darray_mem(key->syms, symIndex),
                            darray_mem(keyi->syms[i],
                                       darray_item(keyi->symsMapIndex[i], tmp)),
                            darray_item(keyi->symsMapNumEntries[i],
                                        tmp) * sizeof(xkb_keysym_t));
-                    sym_map->sym_index[(i * width) + tmp] = symIndex;
-                    sym_map->num_syms[(i * width) + tmp] =
+                    key->sym_index[(i * width) + tmp] = symIndex;
+                    key->num_syms[(i * width) + tmp] =
                         darray_item(keyi->symsMapNumEntries[i], tmp);
-                    symIndex += sym_map->num_syms[(i * width) + tmp];
+                    symIndex += key->num_syms[(i * width) + tmp];
                 }
                 else {
-                    sym_map->sym_index[(i * width) + tmp] = -1;
-                    sym_map->num_syms[(i * width) + tmp] = 0;
+                    key->sym_index[(i * width) + tmp] = -1;
+                    key->num_syms[(i * width) + tmp] = 0;
                 }
                 if (outActs != NULL && !darray_empty(keyi->acts[i])) {
                     if (tmp < keyi->numLevels[i])

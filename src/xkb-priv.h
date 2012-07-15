@@ -261,15 +261,6 @@ struct xkb_sym_interpret {
     union xkb_action act;
 };
 
-struct xkb_sym_map {
-    unsigned char kt_index[XkbNumKbdGroups];
-    unsigned char group_info;
-    unsigned char width;
-    int              *sym_index;     /* per level/group index into 'syms' */
-    unsigned int     *num_syms;     /* per level/group */
-    darray(xkb_keysym_t) syms;
-};
-
 struct xkb_behavior {
     unsigned char type;
     unsigned char data;
@@ -307,14 +298,28 @@ struct xkb_controls {
 
 struct xkb_key {
     char name[XkbKeyNameLength];
+
     unsigned char explicit;
-    struct xkb_sym_map sym_map;
+
     unsigned char modmap;
     uint32_t vmodmap;
+
     struct xkb_behavior behavior;
+
     bool repeats;
+
     /* Index into keymap->acts */
     size_t acts_index;
+
+    unsigned char kt_index[XkbNumKbdGroups];
+    unsigned char group_info;
+    unsigned char width;
+
+    /* per level/group index into 'syms' */
+    int *sym_index;
+    /* per level/group */
+    unsigned int *num_syms;
+    darray(xkb_keysym_t) syms;
 };
 
 /* Common keyboard description structure */
@@ -406,7 +411,7 @@ XkbSetNumGroups(unsigned char group_info, unsigned char num_groups)
 static inline unsigned char
 XkbKeyGroupInfo(struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
-    return XkbKey(keymap, kc)->sym_map.group_info;
+    return XkbKey(keymap, kc)->group_info;
 }
 
 static inline unsigned char
@@ -419,7 +424,7 @@ static inline unsigned char
 XkbKeyTypeIndex(struct xkb_keymap *keymap, xkb_keycode_t kc,
                 unsigned int group)
 {
-    return XkbKey(keymap, kc)->sym_map.kt_index[group & 0x3];
+    return XkbKey(keymap, kc)->kt_index[group & 0x3];
 }
 
 static inline struct xkb_key_type *
@@ -438,7 +443,7 @@ XkbKeyGroupWidth(struct xkb_keymap *keymap, xkb_keycode_t kc,
 static inline unsigned char
 XkbKeyGroupsWidth(struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
-    return XkbKey(keymap, kc)->sym_map.width;
+    return XkbKey(keymap, kc)->width;
 }
 
 static inline unsigned int
@@ -446,13 +451,13 @@ XkbKeyNumSyms(struct xkb_keymap *keymap, xkb_keycode_t kc,
               unsigned int group, unsigned int level)
 {
     unsigned char width = XkbKeyGroupsWidth(keymap, kc);
-    return XkbKey(keymap, kc)->sym_map.num_syms[group * width + level];
+    return XkbKey(keymap, kc)->num_syms[group * width + level];
 }
 
 static inline xkb_keysym_t *
 XkbKeySym(struct xkb_keymap *keymap, xkb_keycode_t kc, int ndx)
 {
-    return &darray_item(XkbKey(keymap, kc)->sym_map.syms, ndx);
+    return &darray_item(XkbKey(keymap, kc)->syms, ndx);
 }
 
 static inline int
@@ -460,7 +465,7 @@ XkbKeySymOffset(struct xkb_keymap *keymap, xkb_keycode_t kc,
                 unsigned group, unsigned int level)
 {
     unsigned char width = XkbKeyGroupsWidth(keymap, kc);
-    return XkbKey(keymap, kc)->sym_map.sym_index[group * width + level];
+    return XkbKey(keymap, kc)->sym_index[group * width + level];
 }
 
 static inline xkb_keysym_t *
