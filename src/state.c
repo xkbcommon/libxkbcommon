@@ -109,7 +109,7 @@ struct xkb_state {
 static union xkb_action *
 xkb_key_get_action(struct xkb_state *state, xkb_keycode_t key)
 {
-    int group, level;
+    unsigned int group, level;
 
     if (!XkbKeyHasActions(state->keymap, key) ||
         !XkbKeycodeInRange(state->keymap, key)) {
@@ -122,7 +122,7 @@ xkb_key_get_action(struct xkb_state *state, xkb_keycode_t key)
     group = xkb_key_get_group(state, key);
     level = xkb_key_get_level(state, key, group);
 
-    return XkbKeyActionEntry(state->keymap, key, level, group);
+    return XkbKeyActionEntry(state->keymap, key, group, level);
 }
 
 static struct xkb_filter *

@@ -366,54 +366,151 @@ struct xkb_keymap {
     char *compat_section_name;
 };
 
-#define XkbNumGroups(g)             ((g) & 0x0f)
-#define XkbOutOfRangeGroupInfo(g)   ((g) & 0xf0)
-#define XkbOutOfRangeGroupAction(g) ((g) & 0xc0)
-#define XkbOutOfRangeGroupNumber(g) (((g) & 0x30) >> 4)
-#define XkbSetGroupInfo(g, w, \
-                        n)          (((w) & \
-                                      0xc0) | (((n) & 3) << 4) | ((g) & 0x0f))
-#define XkbSetNumGroups(g, n)       (((g) & 0xf0) | ((n) & 0x0f))
+static inline unsigned char
+XkbNumGroups(unsigned char group_info)
+{
+    return group_info & 0x0f;
+}
 
-#define XkbKeyGroupInfo(d, k) \
-    (darray_item((d)->key_sym_map, k).group_info)
-#define XkbKeyNumGroups(d, k) \
-    (XkbNumGroups(darray_item((d)->key_sym_map, k).group_info))
-#define XkbKeyGroupWidth(d, k, g) \
-    (XkbKeyType(d, k, g)->num_levels)
-#define XkbKeyGroupsWidth(d, k) \
-    (darray_item((d)->key_sym_map, k).width)
-#define XkbKeyTypeIndex(d, k, g) \
-    (darray_item((d)->key_sym_map, k).kt_index[g & 0x3])
-#define XkbKeyType(d, k, g) \
-    (&darray_item((d)->types, XkbKeyTypeIndex(d, k, g)))
-#define XkbKeyNumSyms(d, k, g, sl) \
-    (darray_item((d)->map->key_sym_map, \
-                 k).num_syms[(g * XkbKeyGroupsWidth(d, k)) + sl])
-#define XkbKeySym(d, k, n) \
-    (&darray_item(darray_item((d)->key_sym_map, k).syms, n))
-#define XkbKeySymOffset(d, k, g, sl) \
-    (darray_item((d)->map->key_sym_map, \
-                 k).sym_index[(g * XkbKeyGroupsWidth(d, k)) + sl])
-#define XkbKeySymEntry(d, k, g, sl) \
-    (XkbKeySym(d, k, XkbKeySymOffset(d, k, g, sl)))
-#define XkbKeyHasActions(d, k) \
-    (darray_item((d)->key_acts, k) != 0)
-#define XkbKeyNumActions(d, k) \
-    (XkbKeyHasActions(d, k) ? \
-     (XkbKeyGroupsWidth(d, k) * XkbKeyNumGroups(d, k)) : \
-     1)
-#define XkbKeyActionsPtr(d, k) \
-    (darray_mem((d)->acts, darray_item((d)->key_acts, k)))
-#define XkbKeyAction(d, k, n) \
-    (XkbKeyHasActions(d, k) ? &XkbKeyActionsPtr(d, k)[n] : NULL)
-#define XkbKeyActionEntry(d, k, sl, g) \
-    (XkbKeyHasActions(d, k) ? \
-     XkbKeyAction(d, k, ((XkbKeyGroupsWidth(d, k) * (g)) + (sl))) : \
-     NULL)
+static inline unsigned char
+XkbOutOfRangeGroupInfo(unsigned char group_info)
+{
+    return group_info & 0xf0;
+}
 
-#define XkbKeycodeInRange(d, k) \
-    (((k) >= (d)->min_key_code) && ((k) <= (d)->max_key_code))
+static inline unsigned char
+XkbOutOfRangeGroupAction(unsigned char group_info)
+{
+    return group_info & 0xc0;
+}
+
+static inline unsigned char
+XkbOutOfRangeGroupNumber(unsigned char group_info)
+{
+    return (group_info & 0x30) >> 4;
+}
+
+static inline unsigned char
+XkbSetGroupInfo(unsigned char group_info,
+                unsigned char out_of_range_group_action,
+                unsigned char out_of_range_group_number)
+{
+    return
+        (out_of_range_group_action & 0xc0) |
+        ((out_of_range_group_number & 3) << 4) |
+        (XkbNumGroups(group_info));
+}
+
+static inline unsigned char
+XkbSetNumGroups(unsigned char group_info, unsigned char num_groups)
+{
+    return (group_info & 0xf0) | (num_groups & 0x0f);
+}
+
+static inline unsigned char
+XkbKeyGroupInfo(struct xkb_keymap *keymap, xkb_keycode_t kc)
+{
+    return darray_item(keymap->key_sym_map, kc).group_info;
+}
+
+static inline unsigned char
+XkbKeyNumGroups(struct xkb_keymap *keymap, xkb_keycode_t kc)
+{
+    return XkbNumGroups(XkbKeyGroupInfo(keymap, kc));
+}
+
+static inline unsigned char
+XkbKeyTypeIndex(struct xkb_keymap *keymap, xkb_keycode_t kc,
+                unsigned int group)
+{
+    return darray_item(keymap->key_sym_map, kc).kt_index[group & 0x3];
+}
+
+static inline struct xkb_key_type *
+XkbKeyType(struct xkb_keymap *keymap, xkb_keycode_t kc, unsigned int group)
+{
+    return &darray_item(keymap->types, XkbKeyTypeIndex(keymap, kc, group));
+}
+
+static inline uint16_t
+XkbKeyGroupWidth(struct xkb_keymap *keymap, xkb_keycode_t kc,
+                 unsigned int group)
+{
+    return XkbKeyType(keymap, kc, group)->num_levels;
+}
+
+static inline unsigned char
+XkbKeyGroupsWidth(struct xkb_keymap *keymap, xkb_keycode_t kc)
+{
+    return darray_item(keymap->key_sym_map, kc).width;
+}
+
+static inline unsigned int
+XkbKeyNumSyms(struct xkb_keymap *keymap, xkb_keycode_t kc,
+              unsigned int group, unsigned int level)
+{
+    unsigned char width = XkbKeyGroupsWidth(keymap, kc);
+    return darray_item(keymap->key_sym_map,
+                       kc).num_syms[group * width + level];
+}
+
+static inline xkb_keysym_t *
+XkbKeySym(struct xkb_keymap *keymap, xkb_keycode_t kc, int ndx)
+{
+    return &darray_item(darray_item(keymap->key_sym_map, kc).syms, ndx);
+}
+
+static inline int
+XkbKeySymOffset(struct xkb_keymap *keymap, xkb_keycode_t kc,
+                unsigned group, unsigned int level)
+{
+    unsigned char width = XkbKeyGroupsWidth(keymap, kc);
+    return darray_item(keymap->key_sym_map,
+                       kc).sym_index[group * width + level];
+}
+
+static inline xkb_keysym_t *
+XkbKeySymEntry(struct xkb_keymap *keymap, xkb_keycode_t kc,
+               unsigned group, unsigned int level)
+{
+    return XkbKeySym(keymap, kc, XkbKeySymOffset(keymap, kc, group, level));
+}
+
+static inline bool
+XkbKeyHasActions(struct xkb_keymap *keymap, xkb_keycode_t kc)
+{
+    return darray_item(keymap->key_acts, kc) != 0;
+}
+
+static inline unsigned char
+XkbKeyNumActions(struct xkb_keymap *keymap, xkb_keycode_t kc)
+{
+    if (XkbKeyHasActions(keymap, kc))
+        return XkbKeyGroupsWidth(keymap, kc) * XkbKeyNumGroups(keymap, kc);
+    return 1;
+}
+
+static inline union xkb_action *
+XkbKeyActionsPtr(struct xkb_keymap *keymap, xkb_keycode_t kc)
+{
+    return darray_mem(keymap->acts, darray_item(keymap->key_acts, kc));
+}
+
+static inline union xkb_action *
+XkbKeyActionEntry(struct xkb_keymap *keymap, xkb_keycode_t kc,
+                  unsigned int group, unsigned int level)
+{
+    unsigned char width = XkbKeyGroupsWidth(keymap, kc);
+    if (XkbKeyHasActions(keymap, kc))
+        return &XkbKeyActionsPtr(keymap, kc)[width * group + level];
+    return NULL;
+}
+
+static inline bool
+XkbKeycodeInRange(struct xkb_keymap *keymap, xkb_keycode_t kc)
+{
+    return kc >= keymap->min_key_code && kc <= keymap->max_key_code;
+}
 
 typedef uint32_t xkb_atom_t;
 
