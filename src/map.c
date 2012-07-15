@@ -254,7 +254,7 @@ xkb_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
     if (!XkbKeycodeInRange(keymap, kc))
         return 0;
 
-    type = XkbKeyType(keymap, kc, group);
+    type = XkbKeyType(keymap, XkbKey(keymap, kc), group);
     active_mods = xkb_state_serialize_mods(state, XKB_STATE_EFFECTIVE);
     active_mods &= type->mods.mask;
 
@@ -308,23 +308,22 @@ xkb_key_get_group(struct xkb_state *state, xkb_keycode_t kc)
  * As below, but takes an explicit group/level rather than state.
  */
 int
-xkb_key_get_syms_by_level(struct xkb_keymap *keymap, xkb_keycode_t kc,
+xkb_key_get_syms_by_level(struct xkb_keymap *keymap, struct xkb_key *key,
                           unsigned int group, unsigned int level,
                           const xkb_keysym_t **syms_out)
 {
     int num_syms;
-    struct xkb_key *key = XkbKey(keymap, kc);
 
     if (group >= key->num_groups)
         goto err;
-    if (level >= XkbKeyGroupWidth(keymap, kc, group))
+    if (level >= XkbKeyGroupWidth(keymap, key, group))
         goto err;
 
-    num_syms = XkbKeyNumSyms(keymap, kc, group, level);
+    num_syms = XkbKeyNumSyms(key, group, level);
     if (num_syms == 0)
         goto err;
 
-    *syms_out = XkbKeySymEntry(keymap, kc, group, level);
+    *syms_out = XkbKeySymEntry(key, group, level);
     return num_syms;
 
 err:
@@ -341,20 +340,23 @@ xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t kc,
                  const xkb_keysym_t **syms_out)
 {
     struct xkb_keymap *keymap = xkb_state_get_map(state);
-    int group;
-    int level;
+    struct xkb_key *key;
+    int group, level;
 
     if (!state || !XkbKeycodeInRange(keymap, kc))
         return -1;
 
+    key = XkbKey(keymap, kc);
+
     group = xkb_key_get_group(state, kc);
     if (group == -1)
         goto err;
+
     level = xkb_key_get_level(state, kc, group);
     if (level == -1)
         goto err;
 
-    return xkb_key_get_syms_by_level(keymap, kc, group, level, syms_out);
+    return xkb_key_get_syms_by_level(keymap, key, group, level, syms_out);
 
 err:
     *syms_out = NULL;

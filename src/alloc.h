@@ -39,7 +39,7 @@ extern int
 XkbcCopyKeyType(const struct xkb_key_type *from, struct xkb_key_type *into);
 
 extern union xkb_action *
-XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t kc,
+XkbcResizeKeyActions(struct xkb_keymap *keymap, struct xkb_key *key,
                      uint32_t needed);
 
 #endif /* ALLOC_H */

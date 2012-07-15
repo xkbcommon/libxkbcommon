@@ -826,7 +826,7 @@ UpdateActionMods(struct xkb_keymap *keymap, union xkb_action *act,
  * generic XKB_KEY_NoSymbol match.
  */
 static struct xkb_sym_interpret *
-FindInterpForKey(struct xkb_keymap *keymap, xkb_keycode_t kc,
+FindInterpForKey(struct xkb_keymap *keymap, struct xkb_key *key,
                  uint32_t group, uint32_t level)
 {
     struct xkb_sym_interpret *ret = NULL;
@@ -834,7 +834,7 @@ FindInterpForKey(struct xkb_keymap *keymap, xkb_keycode_t kc,
     const xkb_keysym_t *syms;
     int num_syms;
 
-    num_syms = xkb_key_get_syms_by_level(keymap, kc, group, level, &syms);
+    num_syms = xkb_key_get_syms_by_level(keymap, key, group, level, &syms);
     if (num_syms == 0)
         return NULL;
 
@@ -847,7 +847,7 @@ FindInterpForKey(struct xkb_keymap *keymap, xkb_keycode_t kc,
             continue;
 
         if (level == 0 || !(interp->match & XkbSI_LevelOneOnly))
-            mods = XkbKey(keymap, kc)->modmap;
+            mods = key->modmap;
         else
             mods = 0;
 
@@ -884,7 +884,7 @@ FindInterpForKey(struct xkb_keymap *keymap, xkb_keycode_t kc,
 /**
  */
 static bool
-ApplyInterpsToKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
+ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
 {
 #define INTERP_SIZE (8 * 4)
     struct xkb_sym_interpret *interps[INTERP_SIZE];
@@ -892,10 +892,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
     uint32_t vmodmask = 0;
     int num_acts = 0;
     int group, level;
-    struct xkb_key *key;
     int i;
-
-    key = XkbKey(keymap, kc);
 
     /* If we've been told not to bind interps to this key, then don't. */
     if (key->explicit & XkbExplicitInterpretMask)
@@ -905,12 +902,12 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
         interps[i] = NULL;
 
     for (group = 0; group < key->num_groups; group++) {
-        for (level = 0; level < XkbKeyGroupWidth(keymap, kc, group);
+        for (level = 0; level < XkbKeyGroupWidth(keymap, key, group);
              level++) {
             i = (group * key->width) + level;
             if (i >= INTERP_SIZE) /* XXX FIXME */
                 return false;
-            interps[i] = FindInterpForKey(keymap, kc, group, level);
+            interps[i] = FindInterpForKey(keymap, key, group, level);
             if (interps[i])
                 num_acts++;
         }
@@ -918,12 +915,12 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
 
     if (num_acts)
         num_acts = key->num_groups * key->width;
-    acts = XkbcResizeKeyActions(keymap, kc, num_acts);
+    acts = XkbcResizeKeyActions(keymap, key, num_acts);
     if (num_acts && !acts)
         return false;
 
     for (group = 0; group < key->num_groups; group++) {
-        for (level = 0; level < XkbKeyGroupWidth(keymap, kc, group);
+        for (level = 0; level < XkbKeyGroupWidth(keymap, key, group);
              level++) {
             struct xkb_sym_interpret *interp;
 
@@ -968,7 +965,6 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
 bool
 UpdateModifiersFromCompat(struct xkb_keymap *keymap)
 {
-    xkb_keycode_t kc;
     struct xkb_key *key;
     int i;
     struct xkb_key_type *type;
@@ -976,17 +972,17 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
 
     /* Find all the interprets for the key and bind them to actions,
      * which will also update the vmodmap. */
-    for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++)
-        if (!ApplyInterpsToKey(keymap, kc))
+    xkb_foreach_key(key, keymap)
+        if (!ApplyInterpsToKey(keymap, key))
             return false;
 
     /* Update keymap->vmods, the virtual -> real mod mapping. */
     for (i = 0; i < XkbNumVirtualMods; i++)
         keymap->vmods[i] = 0;
-    for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
-        key = XkbKey(keymap, kc);
+    xkb_foreach_key(key, keymap) {
         if (!key->vmodmap)
             continue;
+
         for (i = 0; i < XkbNumVirtualMods; i++) {
             if (!(key->vmodmap & (1 << i)))
                 continue;
@@ -1012,10 +1008,9 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
     }
 
     /* Update action modifiers. */
-    for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
-        union xkb_action *acts = XkbKeyActionsPtr(keymap, kc);
-        key = XkbKey(keymap, kc);
-        for (i = 0; i < XkbKeyNumActions(keymap, kc); i++) {
+    xkb_foreach_key(key, keymap) {
+        union xkb_action *acts = XkbKeyActionsPtr(keymap, key);
+        for (i = 0; i < XkbKeyNumActions(key); i++) {
             if (acts[i].any.type == XkbSA_NoAction)
                 continue;
             UpdateActionMods(keymap, &acts[i], key->modmap);

@@ -309,7 +309,6 @@ static bool
 write_keycodes(struct xkb_keymap *keymap, char **buf, size_t *size,
                size_t *offset)
 {
-    xkb_keycode_t kc;
     struct xkb_key *key;
     struct xkb_key_alias *alias;
     int i;
@@ -325,13 +324,12 @@ write_keycodes(struct xkb_keymap *keymap, char **buf, size_t *size,
     write_buf(keymap, buf, size, offset, "\t\tmaximum = %d;\n",
               keymap->max_key_code);
 
-    for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
-        key = XkbKey(keymap, kc);
+    xkb_foreach_key(key, keymap) {
         if (key->name[0] == '\0')
             continue;
 
         write_buf(keymap, buf, size, offset, "\t\t%6s = %d;\n",
-                  XkbcKeyNameText(key->name), kc);
+                  XkbcKeyNameText(key->name), XkbKeyGetKeycode(keymap, key));
     }
 
     for (i = 0; i < XkbNumIndicators; i++) {
@@ -741,17 +739,17 @@ write_compat(struct xkb_keymap *keymap, char **buf, size_t *size,
 
 static bool
 write_keysyms(struct xkb_keymap *keymap, char **buf, size_t *size,
-              size_t *offset, xkb_keycode_t kc, unsigned int group)
+              size_t *offset, struct xkb_key *key, unsigned int group)
 {
     const xkb_keysym_t *syms;
     int num_syms, level;
 #define OUT_BUF_LEN 128
     char out_buf[OUT_BUF_LEN];
 
-    for (level = 0; level < XkbKeyGroupWidth(keymap, kc, group); level++) {
+    for (level = 0; level < XkbKeyGroupWidth(keymap, key, group); level++) {
         if (level != 0)
             write_buf(keymap, buf, size, offset, ", ");
-        num_syms = xkb_key_get_syms_by_level(keymap, kc, group, level,
+        num_syms = xkb_key_get_syms_by_level(keymap, key, group, level,
                                              &syms);
         if (num_syms == 0) {
             write_buf(keymap, buf, size, offset, "%15s", "NoSymbol");
@@ -782,7 +780,6 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
               size_t *offset)
 {
     struct xkb_key *key;
-    xkb_keycode_t kc;
     int group, tmp;
     bool showActions;
 
@@ -803,11 +800,10 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
     if (tmp > 0)
         write_buf(keymap, buf, size, offset, "\n");
 
-    for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
+    xkb_foreach_key(key, keymap) {
         bool simple = true;
-        key = XkbKey(keymap, kc);
 
-        if (xkb_key_num_groups(keymap, kc) == 0)
+        if (key->num_groups == 0)
             continue;
 
         write_buf(keymap, buf, size, offset, "\t\tkey %6s {",
@@ -815,25 +811,22 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
 
         if (key->explicit & XkbExplicitKeyTypesMask) {
             bool multi_type = false;
-            int type = XkbKeyTypeIndex(keymap, kc, 0);
+            int type = XkbKeyTypeIndex(key, 0);
 
             simple = false;
 
-            for (group = 0; group < xkb_key_num_groups(keymap, kc);
-                 group++) {
-                if (XkbKeyTypeIndex(keymap, kc, group) != type) {
+            for (group = 0; group < key->num_groups; group++) {
+                if (XkbKeyTypeIndex(key, group) != type) {
                     multi_type = true;
                     break;
                 }
             }
 
             if (multi_type) {
-                for (group = 0;
-                     group < xkb_key_num_groups(keymap, kc);
-                     group++) {
+                for (group = 0; group < key->num_groups; group++) {
                     if (!(key->explicit & (1 << group)))
                         continue;
-                    type = XkbKeyTypeIndex(keymap, kc, group);
+                    type = XkbKeyTypeIndex(key, group);
                     write_buf(keymap, buf, size, offset,
                               "\n\t\t\ttype[group%d]= \"%s\",",
                               group + 1,
@@ -875,16 +868,16 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
         }
 
         if (key->explicit & XkbExplicitInterpretMask)
-            showActions = XkbKeyHasActions(keymap, kc);
+            showActions = XkbKeyHasActions(key);
         else
             showActions = false;
 
-        if (xkb_key_num_groups(keymap, kc) > 1 || showActions)
+        if (key->num_groups > 1 || showActions)
             simple = false;
 
         if (simple) {
             write_buf(keymap, buf, size, offset, "\t[ ");
-            if (!write_keysyms(keymap, buf, size, offset, kc, 0))
+            if (!write_keysyms(keymap, buf, size, offset, key, 0))
                 return false;
             write_buf(keymap, buf, size, offset, " ] };\n");
         }
@@ -892,20 +885,20 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
             union xkb_action *acts;
             int level;
 
-            acts = XkbKeyActionsPtr(keymap, kc);
-            for (group = 0; group < xkb_key_num_groups(keymap, kc); group++) {
+            acts = XkbKeyActionsPtr(keymap, key);
+            for (group = 0; group < key->num_groups; group++) {
                 if (group != 0)
                     write_buf(keymap, buf, size, offset, ",");
                 write_buf(keymap, buf, size, offset,
                           "\n\t\t\tsymbols[Group%d]= [ ", group + 1);
-                if (!write_keysyms(keymap, buf, size, offset, kc, group))
+                if (!write_keysyms(keymap, buf, size, offset, key, group))
                     return false;
                 write_buf(keymap, buf, size, offset, " ]");
                 if (showActions) {
                     write_buf(keymap, buf, size, offset,
                               ",\n\t\t\tactions[Group%d]= [ ", group + 1);
                     for (level = 0;
-                         level < XkbKeyGroupWidth(keymap, kc, group);
+                         level < XkbKeyGroupWidth(keymap, key, group);
                          level++) {
                         if (level != 0)
                             write_buf(keymap, buf, size, offset, ", ");
@@ -920,9 +913,8 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
         }
     }
 
-    for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
+    xkb_foreach_key(key, keymap) {
         int mod;
-        key = XkbKey(keymap, kc);
 
         if (key->modmap == 0)
             continue;

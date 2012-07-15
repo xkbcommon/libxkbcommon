@@ -142,22 +142,21 @@ int
 ApplyAliases(struct xkb_keymap *keymap, AliasInfo ** info_in)
 {
     int i;
+    struct xkb_key *key;
     struct xkb_key_alias *old, *a;
     AliasInfo *info;
     int nNew, nOld;
 
-    if (*info_in == NULL)
-        return true;
-    nOld = (keymap ? darray_size(keymap->key_aliases) : 0);
-    old = (keymap ? &darray_item(keymap->key_aliases, 0) : NULL);
-    for (nNew = 0, info = *info_in; info != NULL;
-         info = (AliasInfo *) info->def.next) {
+    nOld = darray_size(keymap->key_aliases);
+    old = &darray_item(keymap->key_aliases, 0);
+
+    for (nNew = 0, info = *info_in; info;
+         info = (AliasInfo *)info->def.next) {
         unsigned long lname;
-        xkb_keycode_t kc;
 
         lname = KeyNameToLong(info->real);
-        if (!FindNamedKey(keymap, lname, &kc, false, CreateKeyNames(keymap),
-                          0)) {
+        key = FindNamedKey(keymap, lname, false, CreateKeyNames(keymap), 0);
+        if (!key) {
             if (warningLevel > 4) {
                 WARN("Attempt to alias %s to non-existent key %s\n",
                      XkbcKeyNameText(info->alias), XkbcKeyNameText(info->real));
@@ -166,8 +165,10 @@ ApplyAliases(struct xkb_keymap *keymap, AliasInfo ** info_in)
             info->alias[0] = '\0';
             continue;
         }
+
         lname = KeyNameToLong(info->alias);
-        if (FindNamedKey(keymap, lname, &kc, false, false, 0)) {
+        key = FindNamedKey(keymap, lname, false, false, 0);
+        if (key) {
             if (warningLevel > 4) {
                 WARN("Attempt to create alias with the name of a real key\n");
                 ACTION("Alias \"%s = %s\" ignored\n",
@@ -177,44 +178,42 @@ ApplyAliases(struct xkb_keymap *keymap, AliasInfo ** info_in)
             info->alias[0] = '\0';
             continue;
         }
+
         nNew++;
-        if (old) {
-            for (i = 0, a = old; i < nOld; i++, a++) {
-                if (strncmp(a->alias, info->alias, XkbKeyNameLength) == 0) {
-                    AliasInfo old_info;
-                    InitAliasInfo(&old_info, MERGE_AUGMENT, 0, a->alias,
-                                  a->real);
-                    HandleCollision(&old_info, info);
-                    memcpy(old_info.real, a->real, XkbKeyNameLength);
-                    info->alias[0] = '\0';
-                    nNew--;
-                    break;
-                }
-            }
+
+        if (!old)
+            continue;
+
+        for (i = 0, a = old; i < nOld; i++, a++) {
+            AliasInfo old_info;
+
+            if (strncmp(a->alias, info->alias, XkbKeyNameLength) != 0)
+                continue;
+
+            InitAliasInfo(&old_info, MERGE_AUGMENT, 0, a->alias, a->real);
+            HandleCollision(&old_info, info);
+            memcpy(old_info.real, a->real, XkbKeyNameLength);
+            info->alias[0] = '\0';
+            nNew--;
+            break;
         }
     }
-    if (nNew == 0) {
-        ClearCommonInfo(&(*info_in)->def);
-        *info_in = NULL;
-        return true;
-    }
+
+    if (nNew == 0)
+        goto out;
 
     darray_resize0(keymap->key_aliases, nOld + nNew);
 
-    a = keymap ? &darray_item(keymap->key_aliases, nOld) : NULL;
-    for (info = *info_in; info != NULL; info = (AliasInfo *) info->def.next) {
+    a = &darray_item(keymap->key_aliases, nOld);
+    for (info = *info_in; info; info = (AliasInfo *)info->def.next) {
         if (info->alias[0] != '\0') {
             strncpy(a->alias, info->alias, XkbKeyNameLength);
             strncpy(a->real, info->real, XkbKeyNameLength);
             a++;
         }
     }
-#ifdef DEBUG
-    if ((a - old) != (nOld + nNew)) {
-        WSGO("Expected %d aliases total but created %d\n", nOld + nNew,
-             a - old);
-    }
-#endif
+
+out:
     ClearCommonInfo(&(*info_in)->def);
     *info_in = NULL;
     return true;

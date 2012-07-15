@@ -340,6 +340,9 @@ darray_next_alloc(size_t alloc, size_t need)
 #define darray_foreach(i, arr) \
     for ((i) = &(arr).item[0]; (i) < &(arr).item[(arr).size]; (i)++)
 
+#define darray_foreach_from(i, arr, from) \
+	for ((i) = &(arr).item[from]; (i) < &(arr).item[(arr).size]; (i)++)
+
 /*
  * darray_foreach_reverse(T *&i, darray(T) arr) {...}
  *

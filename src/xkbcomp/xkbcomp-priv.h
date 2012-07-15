@@ -67,10 +67,9 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
                    enum xkb_file_type file_type, XkbFile **file_rtrn,
                    enum merge_mode *merge_rtrn);
 
-extern bool
+struct xkb_key *
 FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
-             xkb_keycode_t *kc_rtrn, bool use_aliases, bool create,
-             xkb_keycode_t start_from);
+             bool use_aliases, bool create, xkb_keycode_t start_from);
 
 extern bool
 FindKeyNameForAlias(struct xkb_keymap *keymap, unsigned long lname,

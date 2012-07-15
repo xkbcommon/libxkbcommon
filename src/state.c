@@ -110,9 +110,12 @@ static union xkb_action *
 xkb_key_get_action(struct xkb_state *state, xkb_keycode_t kc)
 {
     unsigned int group, level;
+    struct xkb_key *key = NULL;
 
-    if (!XkbKeyHasActions(state->keymap, kc) ||
-        !XkbKeycodeInRange(state->keymap, kc)) {
+    if (XkbKeycodeInRange(state->keymap, kc))
+        key = XkbKey(state->keymap, kc);
+
+    if (!key || !XkbKeyHasActions(key)) {
         static union xkb_action fake;
         memset(&fake, 0, sizeof(fake));
         fake.type = XkbSA_NoAction;
@@ -122,7 +125,7 @@ xkb_key_get_action(struct xkb_state *state, xkb_keycode_t kc)
     group = xkb_key_get_group(state, kc);
     level = xkb_key_get_level(state, kc, group);
 
-    return XkbKeyActionEntry(state->keymap, kc, group, level);
+    return XkbKeyActionEntry(state->keymap, key, group, level);
 }
 
 static struct xkb_filter *

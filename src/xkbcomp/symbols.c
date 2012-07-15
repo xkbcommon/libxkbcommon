@@ -1422,9 +1422,8 @@ HandleSymbolsFile(XkbFile *file, struct xkb_keymap *keymap,
 }
 
 /**
- * Given a keysym @sym, find the keycode which generates it
- * (returned in @kc_rtrn). This is used for example in a modifier
- * map definition, such as:
+ * Given a keysym @sym, return a key which generates it, or NULL.
+ * This is used for example in a modifier map definition, such as:
  *      modifier_map Lock           { Caps_Lock };
  * where we want to add the Lock modifier to the modmap of the key
  * which matches the keysym Caps_Lock.
@@ -1432,22 +1431,18 @@ HandleSymbolsFile(XkbFile *file, struct xkb_keymap *keymap,
  * is chosen first by lowest group in which the keysym appears, than
  * by lowest level and than by lowest key code.
  */
-static bool
-FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym,
-                 xkb_keycode_t *kc_rtrn)
+static struct xkb_key *
+FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym)
 {
-    xkb_keycode_t kc;
-    struct xkb_key *key;
+    struct xkb_key *key, *ret = NULL;
     unsigned int group, level, min_group = UINT_MAX, min_level = UINT_MAX;
 
-    for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
-        key = XkbKey(keymap, kc);
-
+    xkb_foreach_key(key, keymap) {
         for (group = 0; group < key->num_groups; group++) {
-            for (level = 0; level < XkbKeyGroupWidth(keymap, kc, group);
+            for (level = 0; level < XkbKeyGroupWidth(keymap, key, group);
                  level++) {
-                if (XkbKeyNumSyms(keymap, kc, group, level) != 1 ||
-                    (XkbKeySymEntry(keymap, kc, group, level))[0] != sym)
+                if (XkbKeyNumSyms(key, group, level) != 1 ||
+                    (XkbKeySymEntry(key, group, level))[0] != sym)
                     continue;
 
                 /*
@@ -1457,9 +1452,9 @@ FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym,
                  */
                 if (group < min_group ||
                     (group == min_group && level < min_level)) {
-                    *kc_rtrn = kc;
+                    ret = key;
                     if (group == 0 && level == 0) {
-                        return true;
+                        return ret;
                     }
                     else {
                         min_group = group;
@@ -1470,7 +1465,7 @@ FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym,
         }
     }
 
-    return min_group != UINT_MAX;
+    return ret;
 }
 
 /**
@@ -1696,17 +1691,16 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *keyi, int start_from)
 
     useAlias = (start_from == 0);
 
-    /* get the keycode for the key. */
-    if (!FindNamedKey(keymap, keyi->name, &kc, useAlias,
-                      CreateKeyNames(keymap), start_from)) {
-        if ((start_from == 0) && (warningLevel >= 5)) {
+    key = FindNamedKey(keymap, keyi->name, useAlias,
+                       CreateKeyNames(keymap), start_from);
+    if (!key) {
+        if (start_from == 0 && warningLevel >= 5) {
             WARN("Key %s not found in keycodes\n", longText(keyi->name));
             ACTION("Symbols ignored\n");
         }
         return false;
     }
-
-    key = XkbKey(keymap, kc);
+    kc = XkbKeyGetKeycode(keymap, key);
 
     haveActions = false;
     for (i = width = nGroups = 0; i < XkbNumKbdGroups; i++) {
@@ -1768,7 +1762,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *keyi, int start_from)
     darray_resize0(key->syms, sizeSyms);
 
     if (haveActions) {
-        outActs = XkbcResizeKeyActions(keymap, kc, width * nGroups);
+        outActs = XkbcResizeKeyActions(keymap, key, width * nGroups);
         if (outActs == NULL) {
             WSGO("Could not enlarge actions for %s (key %d)\n",
                  longText(keyi->name), kc);
@@ -1852,31 +1846,35 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *keyi, int start_from)
 static bool
 CopyModMapDef(struct xkb_keymap *keymap, ModMapEntry *entry)
 {
-    xkb_keycode_t kc;
+    struct xkb_key *key;
 
-    if (!entry->haveSymbol &&
-        !FindNamedKey(keymap, entry->u.keyName, &kc, true,
-                      CreateKeyNames(keymap), 0)) {
-        if (warningLevel >= 5) {
-            WARN("Key %s not found in keycodes\n",
-                 longText(entry->u.keyName));
-            ACTION("Modifier map entry for %s not updated\n",
-                   XkbcModIndexText(entry->modifier));
+    if (!entry->haveSymbol) {
+        key = FindNamedKey(keymap, entry->u.keyName, true,
+                           CreateKeyNames(keymap), 0);
+        if (!key) {
+            if (warningLevel >= 5) {
+                WARN("Key %s not found in keycodes\n",
+                     longText(entry->u.keyName));
+                ACTION("Modifier map entry for %s not updated\n",
+                       XkbcModIndexText(entry->modifier));
+            }
+            return false;
         }
-        return false;
     }
-    else if (entry->haveSymbol &&
-             !FindKeyForSymbol(keymap, entry->u.keySym, &kc)) {
-        if (warningLevel > 5) {
-            WARN("Key \"%s\" not found in symbol map\n",
-                 XkbcKeysymText(entry->u.keySym));
-            ACTION("Modifier map entry for %s not updated\n",
-                   XkbcModIndexText(entry->modifier));
+    else {
+        key = FindKeyForSymbol(keymap, entry->u.keySym);
+        if (!key) {
+            if (warningLevel > 5) {
+                WARN("Key \"%s\" not found in symbol map\n",
+                     XkbcKeysymText(entry->u.keySym));
+                ACTION("Modifier map entry for %s not updated\n",
+                       XkbcModIndexText(entry->modifier));
+            }
+            return false;
         }
-        return false;
     }
 
-    XkbKey(keymap, kc)->modmap |= (1 << entry->modifier);
+    key->modmap |= (1 << entry->modifier);
     return true;
 }
 
@@ -1892,7 +1890,6 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
                enum merge_mode merge)
 {
     int i;
-    xkb_keycode_t kc;
     struct xkb_key *key;
     SymbolsInfo info;
     KeyInfo *keyi;
@@ -1934,14 +1931,13 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
             info.errorCount++;
 
     if (warningLevel > 3) {
-        for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
-            key = XkbKey(keymap, kc);
+        xkb_foreach_key(key, keymap) {
             if (key->name[0] == '\0')
                 continue;
 
             if (key->num_groups < 1)
                 WARN("No symbols defined for <%.4s> (keycode %d)\n",
-                     key->name, kc);
+                     key->name, XkbKeyGetKeycode(keymap, key));
         }
     }
 

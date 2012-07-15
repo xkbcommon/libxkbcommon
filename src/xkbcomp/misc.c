@@ -200,66 +200,51 @@ AddCommonInfo(CommonInfo * old, CommonInfo * new)
 /***====================================================================***/
 
 /**
- * Find the key with the given name and return its keycode in kc_rtrn.
+ * Find the key with the given name.
  *
  * @param keymap The keymap to search in.
  * @param name The 4-letter name of the key as a long.
- * @param kc_rtrn Set to the keycode if the key was found, otherwise 0.
  * @param use_aliases true if the key aliases should be searched too.
  * @param create If true and the key is not found, it is added to the
  *        keymap->names at the first free keycode.
  * @param start_from Keycode to start searching from.
  *
- * @return true if found, false otherwise.
+ * @return the key if it is found, NULL otherwise.
  */
-bool
+struct xkb_key *
 FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
-             xkb_keycode_t *kc_rtrn, bool use_aliases, bool create,
-             xkb_keycode_t start_from)
+             bool use_aliases, bool create, xkb_keycode_t start_from)
 {
-    xkb_keycode_t kc;
     struct xkb_key *key;
 
     if (start_from < keymap->min_key_code)
         start_from = keymap->min_key_code;
     else if (start_from > keymap->max_key_code)
-        return false;
+        return NULL;
 
-    *kc_rtrn = 0;               /* some callers rely on this */
-
-    for (kc = start_from; kc <= keymap->max_key_code; kc++) {
-        unsigned long tmp;
-        key = XkbKey(keymap, kc);
-
-        tmp = KeyNameToLong(key->name);
-        if (tmp == name) {
-            *kc_rtrn = kc;
-            return true;
-        }
-    }
+    xkb_foreach_key_from(key, keymap, start_from)
+        if (KeyNameToLong(key->name) == name)
+            return key;
 
     if (use_aliases) {
         unsigned long new_name;
         if (FindKeyNameForAlias(keymap, name, &new_name))
-            return FindNamedKey(keymap, new_name, kc_rtrn, false,
-                                create, 0);
+            return FindNamedKey(keymap, new_name, false, create, 0);
     }
 
     if (create) {
-        /* Find first unused keycode and store our key here */
-        for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++) {
-            key = XkbKey(keymap, kc);
-
+        /* Find first unused key and store our key here */
+        xkb_foreach_key(key, keymap) {
             if (key->name[0] == '\0') {
                 char buf[XkbKeyNameLength + 1];
                 LongToKeyName(name, buf);
                 memcpy(key->name, buf, XkbKeyNameLength);
-                *kc_rtrn = kc;
-                return true;
+                return key;
             }
         }
     }
-    return false;
+
+    return NULL;
 }
 
 bool

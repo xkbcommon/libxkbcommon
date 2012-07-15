@@ -67,23 +67,18 @@ XkbcCopyKeyType(const struct xkb_key_type *from, struct xkb_key_type *into)
 }
 
 union xkb_action *
-XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t kc,
+XkbcResizeKeyActions(struct xkb_keymap *keymap, struct xkb_key *key,
                      uint32_t needed)
 {
-    struct xkb_key *key;
     size_t old_ndx, old_num_acts, new_ndx;
-
-    key = XkbKey(keymap, kc);
 
     if (needed == 0) {
         key->acts_index = 0;
         return NULL;
     }
 
-    key = XkbKey(keymap, kc);
-
-    if (XkbKeyHasActions(keymap, kc) && key->width >= needed)
-        return XkbKeyActionsPtr(keymap, kc);
+    if (XkbKeyHasActions(key) && key->width >= needed)
+        return XkbKeyActionsPtr(keymap, key);
 
     /*
      * The key may already be in the array, but without enough space.
@@ -93,7 +88,7 @@ XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t kc,
      */
 
     old_ndx = key->acts_index;
-    old_num_acts = XkbKeyNumActions(keymap, kc);
+    old_num_acts = XkbKeyNumActions(key);
     new_ndx = darray_size(keymap->acts);
 
     darray_resize0(keymap->acts, new_ndx + needed);
@@ -108,7 +103,7 @@ XkbcResizeKeyActions(struct xkb_keymap *keymap, xkb_keycode_t kc,
                darray_mem(keymap->acts, old_ndx),
                old_num_acts * sizeof(union xkb_action));
 
-    return XkbKeyActionsPtr(keymap, kc);
+    return XkbKeyActionsPtr(keymap, key);
 }
 
 static void
