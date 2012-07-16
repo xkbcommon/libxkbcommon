@@ -45,8 +45,6 @@ libxkbcommon_la_SOURCES = \
 	src/xkbcomp/compat.c \
 	src/xkbcomp/expr.c \
 	src/xkbcomp/expr.h \
-	src/xkbcomp/indicators.c \
-	src/xkbcomp/indicators.h \
 	src/xkbcomp/keycodes.c \
 	src/xkbcomp/keytypes.c \
 	src/xkbcomp/misc.c \
