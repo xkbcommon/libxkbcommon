@@ -128,6 +128,26 @@ UseNewField(unsigned field,
     return useNew;
 }
 
+bool
+use_new_field(unsigned field, short old_defined, unsigned old_file_id,
+              short new_defined, unsigned new_file_id,
+              enum merge_mode new_merge, unsigned *collide)
+{
+    if (!(old_defined & field))
+        return true;
+
+    if (new_defined & field) {
+        if ((old_file_id == new_file_id && warningLevel > 0) || warningLevel > 9)
+            *collide |= field;
+
+        if (new_merge != MERGE_AUGMENT)
+            return true;
+    }
+
+    return false;
+}
+
+
 void *
 ClearCommonInfo(CommonInfo * cmn)
 {
