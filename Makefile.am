@@ -42,8 +42,6 @@ libxkbcommon_la_LDFLAGS = -no-undefined
 libxkbcommon_la_SOURCES = \
 	src/xkbcomp/action.c \
 	src/xkbcomp/action.h \
-	src/xkbcomp/alias.c \
-	src/xkbcomp/alias.h \
 	src/xkbcomp/compat.c \
 	src/xkbcomp/expr.c \
 	src/xkbcomp/expr.h \
