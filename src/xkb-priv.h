@@ -88,6 +88,7 @@
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
 #include "darray.h"
+#include "list.h"
 
 enum xkb_file_type {
     /* The top level file which includes the other component files. */
