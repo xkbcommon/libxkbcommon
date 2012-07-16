@@ -52,7 +52,10 @@ typedef darray (union xkb_action) darray_xkb_action;
 #define _Key_VModMap    (1 << 7)
 
 typedef struct _KeyInfo {
-    CommonInfo defs;
+    unsigned short defined;
+    unsigned file_id;
+    enum merge_mode merge;
+
     unsigned long name; /* the 4 chars of the key name, as long */
     unsigned char typesDefined;
     unsigned char symsDefined;
@@ -95,10 +98,9 @@ InitKeyInfo(KeyInfo *keyi, unsigned file_id)
     int i;
     static const char dflt[4] = "*";
 
-    keyi->defs.defined = 0;
-    keyi->defs.file_id = file_id;
-    keyi->defs.merge = MERGE_OVERRIDE;
-    keyi->defs.next = NULL;
+    keyi->defined = 0;
+    keyi->file_id = file_id;
+    keyi->merge = MERGE_OVERRIDE;
     keyi->name = KeyNameToLong(dflt);
     keyi->typesDefined = keyi->symsDefined = keyi->actsDefined = 0;
 
@@ -144,7 +146,6 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, bool clearOld)
     int i;
 
     *new = *old;
-    new->defs.next = NULL;
 
     if (clearOld) {
         for (i = 0; i < XkbNumKbdGroups; i++) {
@@ -282,10 +283,10 @@ MergeKeyGroups(SymbolsInfo * info,
     int i;
     bool report, clobber;
 
-    clobber = (from->defs.merge != MERGE_AUGMENT);
+    clobber = (from->merge != MERGE_AUGMENT);
 
     report = (warningLevel > 9) ||
-             ((into->defs.file_id == from->defs.file_id) && (warningLevel > 0));
+             (into->file_id == from->file_id && warningLevel > 0);
 
     darray_init(resultSyms);
 
@@ -474,6 +475,25 @@ out:
 }
 
 static bool
+use_new_field(unsigned field, short old_defined, unsigned old_file_id,
+              short new_defined, unsigned new_file_id, enum merge_mode new_merge,
+              unsigned *collide)
+{
+    if (!(old_defined & field))
+        return true;
+
+    if (new_defined & field) {
+        if ((old_file_id == new_file_id && warningLevel > 0) || warningLevel > 9)
+            *collide |= field;
+
+        if (new_merge != MERGE_AUGMENT)
+            return true;
+    }
+
+    return false;
+}
+
+static bool
 MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
           KeyInfo *into, KeyInfo *from)
 {
@@ -481,7 +501,7 @@ MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
     unsigned collide = 0;
     bool report;
 
-    if (from->defs.merge == MERGE_REPLACE) {
+    if (from->merge == MERGE_REPLACE) {
         for (i = 0; i < XkbNumKbdGroups; i++) {
             if (into->numLevels[i] != 0) {
                 darray_free(into->syms[i]);
@@ -493,7 +513,7 @@ MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
         return true;
     }
     report = ((warningLevel > 9) ||
-              ((into->defs.file_id == from->defs.file_id)
+              ((into->file_id == from->file_id)
                && (warningLevel > 0)));
     for (i = 0; i < XkbNumKbdGroups; i++) {
         if (from->numLevels[i] > 0) {
@@ -511,9 +531,9 @@ MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
                 from->numLevels[i] = 0;
                 from->symsDefined &= ~(1 << i);
                 if (!darray_empty(into->syms[i]))
-                    into->defs.defined |= _Key_Syms;
+                    into->defined |= _Key_Syms;
                 if (!darray_empty(into->acts[i]))
-                    into->defs.defined |= _Key_Acts;
+                    into->defined |= _Key_Acts;
             }
             else {
                 if (report) {
@@ -530,7 +550,7 @@ MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
                 (into->types[i] != from->types[i])) {
                 xkb_atom_t use, ignore;
                 collide |= _Key_Types;
-                if (from->defs.merge != MERGE_AUGMENT) {
+                if (from->merge != MERGE_AUGMENT) {
                     use = from->types[i];
                     ignore = into->types[i];
                 }
@@ -545,38 +565,43 @@ MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
                        xkb_atom_text(keymap->ctx, use),
                        xkb_atom_text(keymap->ctx, ignore));
             }
-            if ((from->defs.merge != MERGE_AUGMENT)
-                || (into->types[i] == XKB_ATOM_NONE)) {
+            if (from->merge != MERGE_AUGMENT ||
+                into->types[i] == XKB_ATOM_NONE) {
                 into->types[i] = from->types[i];
             }
         }
     }
-    if (UseNewField(_Key_Behavior, &into->defs, &from->defs, &collide)) {
+    if (use_new_field(_Key_Behavior, into->defined, into->file_id,
+                      from->defined, from->file_id, from->merge, &collide)) {
         into->behavior = from->behavior;
-        into->defs.defined |= _Key_Behavior;
+        into->defined |= _Key_Behavior;
     }
-    if (UseNewField(_Key_VModMap, &into->defs, &from->defs, &collide)) {
+    if (use_new_field(_Key_VModMap, into->defined, into->file_id,
+                      from->defined, from->file_id, from->merge, &collide)) {
         into->vmodmap = from->vmodmap;
-        into->defs.defined |= _Key_VModMap;
+        into->defined |= _Key_VModMap;
     }
-    if (UseNewField(_Key_Repeat, &into->defs, &from->defs, &collide)) {
+    if (use_new_field(_Key_Repeat, into->defined, into->file_id,
+                      from->defined, from->file_id, from->merge, &collide)) {
         into->repeat = from->repeat;
-        into->defs.defined |= _Key_Repeat;
+        into->defined |= _Key_Repeat;
     }
-    if (UseNewField(_Key_Type_Dflt, &into->defs, &from->defs, &collide)) {
+    if (use_new_field(_Key_Type_Dflt, into->defined, into->file_id,
+                      from->defined, from->file_id, from->merge, &collide)) {
         into->dfltType = from->dfltType;
-        into->defs.defined |= _Key_Type_Dflt;
+        into->defined |= _Key_Type_Dflt;
     }
-    if (UseNewField(_Key_GroupInfo, &into->defs, &from->defs, &collide)) {
+    if (use_new_field(_Key_GroupInfo, into->defined, into->file_id,
+                      from->defined, from->file_id, from->merge, &collide)) {
         into->out_of_range_group_action = from->out_of_range_group_action;
         into->out_of_range_group_number = from->out_of_range_group_number;
-        into->defs.defined |= _Key_GroupInfo;
+        into->defined |= _Key_GroupInfo;
     }
     if (collide) {
         WARN("Symbol map for key %s redefined\n",
              longText(into->name));
         ACTION("Using %s definition for conflicting fields\n",
-               (from->defs.merge == MERGE_AUGMENT ? "first" : "last"));
+               (from->merge == MERGE_AUGMENT ? "first" : "last"));
     }
     return true;
 }
@@ -695,7 +720,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
 
     darray_foreach(keyi, from->keys) {
         if (merge != MERGE_DEFAULT)
-            keyi->defs.merge = merge;
+            keyi->merge = merge;
 
         if (!AddKeySymbols(into, keyi, keymap))
             into->errorCount++;
@@ -734,13 +759,11 @@ HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
     else if (ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_SYMBOLS, &rtrn,
                                 &newMerge)) {
         InitSymbolsInfo(&included, keymap, rtrn->id);
-        included.merge = included.dflt.defs.merge = MERGE_OVERRIDE;
-        if (stmt->modifier) {
+        included.merge = included.dflt.merge = MERGE_OVERRIDE;
+        if (stmt->modifier)
             included.explicit_group = atoi(stmt->modifier) - 1;
-        }
-        else {
+        else
             included.explicit_group = info->explicit_group;
-        }
         HandleSymbolsFile(rtrn, keymap, MERGE_OVERRIDE, &included);
         if (stmt->stmt != NULL) {
             free(included.name);
@@ -767,13 +790,11 @@ HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
             else if (ProcessIncludeFile(keymap->ctx, next, FILE_TYPE_SYMBOLS,
                                         &rtrn, &op)) {
                 InitSymbolsInfo(&next_incl, keymap, rtrn->id);
-                next_incl.merge = next_incl.dflt.defs.merge = MERGE_OVERRIDE;
-                if (next->modifier) {
+                next_incl.merge = next_incl.dflt.merge = MERGE_OVERRIDE;
+                if (next->modifier)
                     next_incl.explicit_group = atoi(next->modifier) - 1;
-                }
-                else {
+                else
                     next_incl.explicit_group = info->explicit_group;
-                }
                 HandleSymbolsFile(rtrn, keymap, MERGE_OVERRIDE, &next_incl);
                 MergeIncludedSymbols(&included, &next_incl, op, keymap);
                 FreeSymbolsInfo(&next_incl);
@@ -1017,7 +1038,7 @@ SetSymbolsField(KeyInfo *keyi, struct xkb_keymap *keymap, char *field,
         }
         if (arrayNdx == NULL) {
             keyi->dfltType = xkb_atom_intern(keymap->ctx, tmp.str);
-            keyi->defs.defined |= _Key_Type_Dflt;
+            keyi->defined |= _Key_Type_Dflt;
         }
         else if (!ExprResolveGroup(keymap->ctx, arrayNdx, &ndx)) {
             ERROR("Illegal group index for type of key %s\n",
@@ -1042,7 +1063,7 @@ SetSymbolsField(KeyInfo *keyi, struct xkb_keymap *keymap, char *field,
         ok = ExprResolveVModMask(value, &tmp, keymap);
         if (ok) {
             keyi->vmodmap = (tmp.uval >> 8);
-            keyi->defs.defined |= _Key_VModMap;
+            keyi->defined |= _Key_VModMap;
         }
         else {
             ERROR("Expected a virtual modifier mask, found %s\n",
@@ -1057,7 +1078,7 @@ SetSymbolsField(KeyInfo *keyi, struct xkb_keymap *keymap, char *field,
         ok = ExprResolveEnum(keymap->ctx, value, &tmp, lockingEntries);
         if (ok)
             keyi->behavior.type = tmp.uval;
-        keyi->defs.defined |= _Key_Behavior;
+        keyi->defined |= _Key_Behavior;
     }
     else if ((strcasecmp(field, "radiogroup") == 0) ||
              (strcasecmp(field, "permanentradiogroup") == 0) ||
@@ -1084,7 +1105,7 @@ SetSymbolsField(KeyInfo *keyi, struct xkb_keymap *keymap, char *field,
             return false;
         }
         keyi->repeat = tmp.uval;
-        keyi->defs.defined |= _Key_Repeat;
+        keyi->defined |= _Key_Repeat;
     }
     else if ((strcasecmp(field, "groupswrap") == 0) ||
              (strcasecmp(field, "wrapgroups") == 0)) {
@@ -1099,7 +1120,7 @@ SetSymbolsField(KeyInfo *keyi, struct xkb_keymap *keymap, char *field,
             keyi->out_of_range_group_action = XkbWrapIntoRange;
         else
             keyi->out_of_range_group_action = XkbClampIntoRange;
-        keyi->defs.defined |= _Key_GroupInfo;
+        keyi->defined |= _Key_GroupInfo;
     }
     else if ((strcasecmp(field, "groupsclamp") == 0) ||
              (strcasecmp(field, "clampgroups") == 0)) {
@@ -1114,7 +1135,7 @@ SetSymbolsField(KeyInfo *keyi, struct xkb_keymap *keymap, char *field,
             keyi->out_of_range_group_action = XkbClampIntoRange;
         else
             keyi->out_of_range_group_action = XkbWrapIntoRange;
-        keyi->defs.defined |= _Key_GroupInfo;
+        keyi->defined |= _Key_GroupInfo;
     }
     else if ((strcasecmp(field, "groupsredirect") == 0) ||
              (strcasecmp(field, "redirectgroups") == 0)) {
@@ -1126,7 +1147,7 @@ SetSymbolsField(KeyInfo *keyi, struct xkb_keymap *keymap, char *field,
         }
         keyi->out_of_range_group_action = XkbRedirectIntoRange;
         keyi->out_of_range_group_number = tmp.uval - 1;
-        keyi->defs.defined |= _Key_GroupInfo;
+        keyi->defined |= _Key_GroupInfo;
     }
     else {
         ERROR("Unknown field %s in a symbol interpretation\n", field);
@@ -1300,7 +1321,7 @@ HandleSymbolsDef(SymbolsDef *stmt, struct xkb_keymap *keymap,
 
     InitKeyInfo(&keyi, info->file_id);
     CopyKeyInfo(&info->dflt, &keyi, false);
-    keyi.defs.merge = stmt->merge;
+    keyi.merge = stmt->merge;
     keyi.name = KeyNameToLong(stmt->keyName);
     if (!HandleSymbolsBody((VarDef *) stmt->symbols, keymap, &keyi, info)) {
         info->errorCount++;
@@ -1767,7 +1788,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *keyi, int start_from)
         outActs = NULL;
 
     key->num_groups = nGroups;
-    if (keyi->defs.defined & _Key_GroupInfo) {
+    if (keyi->defined & _Key_GroupInfo) {
         key->out_of_range_group_number = keyi->out_of_range_group_number;
         key->out_of_range_group_action = keyi->out_of_range_group_action;
     }
@@ -1822,7 +1843,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *keyi, int start_from)
         key->explicit |= XkbExplicitBehaviorMask;
         break;
     }
-    if (keyi->defs.defined & _Key_VModMap) {
+    if (keyi->defined & _Key_VModMap) {
         key->vmodmap = keyi->vmodmap;
         key->explicit |= XkbExplicitVModMapMask;
     }
@@ -1889,7 +1910,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
     ModMapEntry *mm;
 
     InitSymbolsInfo(&info, keymap, file->id);
-    info.dflt.defs.merge = merge;
+    info.dflt.merge = merge;
 
     HandleSymbolsFile(file, keymap, merge, &info);
 
