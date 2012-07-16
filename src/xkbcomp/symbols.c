@@ -170,7 +170,8 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, bool clearOld)
 /***====================================================================***/
 
 typedef struct _ModMapEntry {
-    CommonInfo defs;
+    struct list entry;
+    enum merge_mode merge;
     bool haveSymbol;
     int modifier;
     union {
@@ -191,7 +192,7 @@ typedef struct _SymbolsInfo {
     ActionInfo *action;
     xkb_atom_t groupNames[XkbNumKbdGroups];
 
-    ModMapEntry *modMap;
+    struct list modMaps;
 } SymbolsInfo;
 
 static void
@@ -207,7 +208,7 @@ InitSymbolsInfo(SymbolsInfo * info, struct xkb_keymap *keymap,
     info->merge = MERGE_OVERRIDE;
     darray_init(info->keys);
     darray_growalloc(info->keys, 110);
-    info->modMap = NULL;
+    list_init(&info->modMaps);
     for (i = 0; i < XkbNumKbdGroups; i++)
         info->groupNames[i] = XKB_ATOM_NONE;
     InitKeyInfo(&info->dflt, file_id);
@@ -219,14 +220,15 @@ static void
 FreeSymbolsInfo(SymbolsInfo * info)
 {
     KeyInfo *keyi;
+    ModMapEntry *mm, *next;
 
     free(info->name);
     darray_foreach(keyi, info->keys) {
         FreeKeyInfo(keyi);
     }
     darray_free(info->keys);
-    if (info->modMap)
-        ClearCommonInfo(&info->modMap->defs);
+    list_foreach_safe(mm, next, &info->modMaps, entry)
+        free(mm);
     memset(info, 0, sizeof(SymbolsInfo));
 }
 
@@ -605,8 +607,8 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
     ModMapEntry *mm;
     bool clobber;
 
-    clobber = (new->defs.merge != MERGE_AUGMENT);
-    for (mm = info->modMap; mm != NULL; mm = (ModMapEntry *) mm->defs.next) {
+    clobber = (new->merge != MERGE_AUGMENT);
+    list_foreach(mm, &info->modMaps, entry) {
         if (new->haveSymbol && mm->haveSymbol
             && (new->u.keySym == mm->u.keySym)) {
             unsigned use, ignore;
@@ -651,16 +653,17 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
             return true;
         }
     }
-    mm = uTypedAlloc(ModMapEntry);
-    if (mm == NULL) {
+
+    mm = malloc(sizeof(*mm));
+    if (!mm) {
         WSGO("Could not allocate modifier map entry\n");
         ACTION("Modifier map for %s will be incomplete\n",
                XkbcModIndexText(new->modifier));
         return false;
     }
+
     *mm = *new;
-    mm->defs.next = &info->modMap->defs;
-    info->modMap = mm;
+    list_add(&mm->entry, &info->modMaps);
     return true;
 }
 
@@ -672,6 +675,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
 {
     unsigned int i;
     KeyInfo *keyi;
+    ModMapEntry *mm, *next;
 
     if (from->errorCount > 0) {
         into->errorCount += from->errorCount;
@@ -697,18 +701,14 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
             into->errorCount++;
     }
 
-    if (from->modMap != NULL) {
-        ModMapEntry *mm, *next;
-        for (mm = from->modMap; mm != NULL; mm = next) {
-            if (merge != MERGE_DEFAULT)
-                mm->defs.merge = merge;
-            if (!AddModMapEntry(into, mm))
-                into->errorCount++;
-            next = (ModMapEntry *) mm->defs.next;
-            free(mm);
-        }
-        from->modMap = NULL;
+    list_foreach_safe(mm, next, &from->modMaps, entry) {
+        if (merge != MERGE_DEFAULT)
+            mm->merge = merge;
+        if (!AddModMapEntry(into, mm))
+            into->errorCount++;
+        free(mm);
     }
+    list_init(&from->modMaps);
 }
 
 static void
@@ -1886,6 +1886,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
     struct xkb_key *key;
     SymbolsInfo info;
     KeyInfo *keyi;
+    ModMapEntry *mm;
 
     InitSymbolsInfo(&info, keymap, file->id);
     info.dflt.defs.merge = merge;
@@ -1931,14 +1932,9 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
         }
     }
 
-    if (info.modMap) {
-        ModMapEntry *mm, *next;
-        for (mm = info.modMap; mm != NULL; mm = next) {
-            if (!CopyModMapDef(keymap, mm))
-                info.errorCount++;
-            next = (ModMapEntry *) mm->defs.next;
-        }
-    }
+    list_foreach(mm, &info.modMaps, entry)
+        if (!CopyModMapDef(keymap, mm))
+            info.errorCount++;
 
     FreeSymbolsInfo(&info);
     return true;
