@@ -45,7 +45,11 @@ typedef struct _SymInterpInfo {
 #define _SI_LevelOneOnly (1 << 4)
 
 typedef struct _LEDInfo {
-    CommonInfo defs;
+    unsigned short defined;
+    unsigned file_id;
+    enum merge_mode merge;
+    struct list entry;
+
     xkb_atom_t name;
     unsigned char indicator;
     unsigned char flags;
@@ -84,7 +88,7 @@ typedef struct _CompatInfo {
     SymInterpInfo dflt;
     LEDInfo ledDflt;
     GroupCompatInfo groupCompat[XkbNumKbdGroups];
-    LEDInfo *leds;
+    struct list leds;
     VModInfo vmods;
     ActionInfo *act;
     struct xkb_keymap *keymap;
@@ -169,12 +173,12 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id)
     for (i = 0; i < sizeof(info->dflt.interp.act.any.data); i++)
         info->dflt.interp.act.any.data[i] = 0;
     ClearIndicatorMapInfo(keymap->ctx, &info->ledDflt);
-    info->ledDflt.defs.file_id = file_id;
-    info->ledDflt.defs.defined = 0;
-    info->ledDflt.defs.merge = MERGE_OVERRIDE;
+    info->ledDflt.file_id = file_id;
+    info->ledDflt.defined = 0;
+    info->ledDflt.merge = MERGE_OVERRIDE;
     memset(&info->groupCompat[0], 0,
            XkbNumKbdGroups * sizeof(GroupCompatInfo));
-    info->leds = NULL;
+    list_init(&info->leds);
     InitVModInfo(&info->vmods, keymap);
 }
 
@@ -184,6 +188,7 @@ ClearCompatInfo(CompatInfo *info, struct xkb_keymap *keymap)
     unsigned int i;
     ActionInfo *next_act;
     SymInterpInfo *si, *next_si;
+    LEDInfo *led, *next_led;
 
     free(info->name);
     info->name = NULL;
@@ -200,7 +205,8 @@ ClearCompatInfo(CompatInfo *info, struct xkb_keymap *keymap)
         free(si);
     memset(&info->groupCompat[0], 0,
            XkbNumKbdGroups * sizeof(GroupCompatInfo));
-    info->leds = ClearCommonInfo(&info->leds->defs);
+    list_foreach_safe(led, next_led, &info->leds, entry)
+        free(led);
     while (info->act) {
         next_act = info->act->next;
         free(info->act);
@@ -384,14 +390,13 @@ ResolveStateAndPredicate(ExprDef * expr,
 
 /***====================================================================***/
 
-static LEDInfo *
-AddIndicatorMap(struct xkb_keymap *keymap, LEDInfo *oldLEDs, LEDInfo *new)
+static bool
+AddIndicatorMap(struct xkb_keymap *keymap, CompatInfo *info, LEDInfo *new)
 {
-    LEDInfo *old, *last;
+    LEDInfo *old;
     unsigned collide;
 
-    last = NULL;
-    for (old = oldLEDs; old != NULL; old = (LEDInfo *) old->defs.next) {
+    list_foreach(old, &info->leds, entry) {
         if (old->name == new->name) {
             if ((old->real_mods == new->real_mods) &&
                 (old->vmods == new->vmods) &&
@@ -399,89 +404,97 @@ AddIndicatorMap(struct xkb_keymap *keymap, LEDInfo *oldLEDs, LEDInfo *new)
                 (old->ctrls == new->ctrls) &&
                 (old->which_mods == new->which_mods) &&
                 (old->which_groups == new->which_groups)) {
-                old->defs.defined |= new->defs.defined;
-                return oldLEDs;
+                old->defined |= new->defined;
+                return true;
             }
 
-            if (new->defs.merge == MERGE_REPLACE) {
-                CommonInfo *next = old->defs.next;
-                if (((old->defs.file_id == new->defs.file_id)
+            if (new->merge == MERGE_REPLACE) {
+                struct list entry = old->entry;
+                if (((old->file_id == new->file_id)
                      && (warningLevel > 0)) || (warningLevel > 9)) {
                     WARN("Map for indicator %s redefined\n",
                           xkb_atom_text(keymap->ctx, old->name));
                     ACTION("Earlier definition ignored\n");
                 }
                 *old = *new;
-                old->defs.next = next;
-                return oldLEDs;
+                old->entry = entry;
+                return true;
             }
 
             collide = 0;
-            if (UseNewField(_LED_Index, &old->defs, &new->defs, &collide)) {
+            if (use_new_field(_LED_Index, old->defined, old->file_id,
+                              new->defined, new->file_id, new->merge,
+                              &collide)) {
                 old->indicator = new->indicator;
-                old->defs.defined |= _LED_Index;
+                old->defined |= _LED_Index;
             }
-            if (UseNewField(_LED_Mods, &old->defs, &new->defs, &collide)) {
+            if (use_new_field(_LED_Mods, old->defined, old->file_id,
+                              new->defined, new->file_id, new->merge,
+                              &collide)) {
                 old->which_mods = new->which_mods;
                 old->real_mods = new->real_mods;
                 old->vmods = new->vmods;
-                old->defs.defined |= _LED_Mods;
+                old->defined |= _LED_Mods;
             }
-            if (UseNewField(_LED_Groups, &old->defs, &new->defs, &collide)) {
+            if (use_new_field(_LED_Groups, old->defined, old->file_id,
+                              new->defined, new->file_id, new->merge,
+                              &collide)) {
                 old->which_groups = new->which_groups;
                 old->groups = new->groups;
-                old->defs.defined |= _LED_Groups;
+                old->defined |= _LED_Groups;
             }
-            if (UseNewField(_LED_Ctrls, &old->defs, &new->defs, &collide)) {
+            if (use_new_field(_LED_Ctrls, old->defined, old->file_id,
+                              new->defined, new->file_id, new->merge,
+                              &collide)) {
                 old->ctrls = new->ctrls;
-                old->defs.defined |= _LED_Ctrls;
+                old->defined |= _LED_Ctrls;
             }
-            if (UseNewField(_LED_Explicit, &old->defs, &new->defs, &collide)) {
+            if (use_new_field(_LED_Explicit, old->defined, old->file_id,
+                              new->defined, new->file_id, new->merge,
+                              &collide)) {
                 old->flags &= ~XkbIM_NoExplicit;
                 old->flags |= (new->flags & XkbIM_NoExplicit);
-                old->defs.defined |= _LED_Explicit;
+                old->defined |= _LED_Explicit;
             }
-            if (UseNewField(_LED_Automatic, &old->defs, &new->defs, &collide)) {
+            if (use_new_field(_LED_Automatic, old->defined, old->file_id,
+                              new->defined, new->file_id, new->merge,
+                              &collide)) {
                 old->flags &= ~XkbIM_NoAutomatic;
                 old->flags |= (new->flags & XkbIM_NoAutomatic);
-                old->defs.defined |= _LED_Automatic;
+                old->defined |= _LED_Automatic;
             }
-            if (UseNewField(_LED_DrivesKbd, &old->defs, &new->defs, &collide)) {
+            if (use_new_field(_LED_DrivesKbd, old->defined, old->file_id,
+                              new->defined, new->file_id, new->merge,
+                              &collide)) {
                 old->flags &= ~XkbIM_LEDDrivesKB;
                 old->flags |= (new->flags & XkbIM_LEDDrivesKB);
-                old->defs.defined |= _LED_DrivesKbd;
+                old->defined |= _LED_DrivesKbd;
             }
 
             if (collide) {
                 WARN("Map for indicator %s redefined\n",
                      xkb_atom_text(keymap->ctx, old->name));
                 ACTION("Using %s definition for duplicate fields\n",
-                        (new->defs.merge == MERGE_AUGMENT ? "first" : "last"));
+                        (new->merge == MERGE_AUGMENT ? "first" : "last"));
             }
 
-            return oldLEDs;
+            return true;
         }
-
-        if (old->defs.next == NULL)
-            last = old;
     }
 
     /* new definition */
-    old = uTypedAlloc(LEDInfo);
+    old = malloc(sizeof(*old));
     if (!old) {
         WSGO("Couldn't allocate indicator map\n");
         ACTION("Map for indicator %s not compiled\n",
-                xkb_atom_text(keymap->ctx, new->name));
-        return NULL;
-    }
-    *old = *new;
-    old->defs.next = NULL;
-    if (last) {
-        last->defs.next = &old->defs;
-        return oldLEDs;
+               xkb_atom_text(keymap->ctx, new->name));
+        return false;
     }
 
-    return old;
+    *old = *new;
+    list_append(&old->entry, &info->leds);
+
+    return true;
 }
 
 static void
@@ -489,7 +502,7 @@ MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from,
                         enum merge_mode merge)
 {
     SymInterpInfo *si;
-    LEDInfo *led, *rtrn, *next;
+    LEDInfo *led, *next_led;
     GroupCompatInfo *gcm;
     xkb_group_index_t i;
 
@@ -516,14 +529,10 @@ MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from,
         if (!AddGroupCompat(into, i, gcm))
             into->errorCount++;
     }
-    for (led = from->leds; led != NULL; led = next) {
-        next = (LEDInfo *) led->defs.next;
-        if (merge != MERGE_DEFAULT)
-            led->defs.merge = merge;
-        rtrn = AddIndicatorMap(from->keymap, into->leds, led);
-        if (rtrn != NULL)
-            into->leds = rtrn;
-        else
+
+    list_foreach_safe(led, next_led, &from->leds, entry) {
+        led->merge = (merge == MERGE_DEFAULT ? led->merge : merge);
+        if (!AddIndicatorMap(from->keymap, into, led))
             into->errorCount++;
     }
 }
@@ -553,7 +562,7 @@ HandleIncludeCompatMap(IncludeStmt *stmt, struct xkb_keymap *keymap,
         InitCompatInfo(&included, keymap, rtrn->id);
         included.dflt = info->dflt;
         included.dflt.merge = newMerge;
-        included.ledDflt.defs.merge = newMerge;
+        included.ledDflt.merge = newMerge;
         included.act = info->act;
         HandleCompatMapFile(rtrn, keymap, MERGE_OVERRIDE, &included);
         if (stmt->stmt != NULL) {
@@ -587,8 +596,8 @@ HandleIncludeCompatMap(IncludeStmt *stmt, struct xkb_keymap *keymap,
                 next_incl.dflt = info->dflt;
                 next_incl.dflt.file_id = rtrn->id;
                 next_incl.dflt.merge = op;
-                next_incl.ledDflt.defs.file_id = rtrn->id;
-                next_incl.ledDflt.defs.merge = op;
+                next_incl.ledDflt.file_id = rtrn->id;
+                next_incl.ledDflt.merge = op;
                 next_incl.act = info->act;
                 HandleCompatMapFile(rtrn, keymap, MERGE_OVERRIDE, &next_incl);
                 MergeIncludedCompatMaps(&included, &next_incl, op);
@@ -745,7 +754,7 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
 
         led->real_mods = rtrn.uval & 0xff;
         led->vmods = (rtrn.uval >> 8) & 0xff;
-        led->defs.defined |= _LED_Mods;
+        led->defined |= _LED_Mods;
     }
     else if (strcasecmp(field, "groups") == 0) {
         if (arrayNdx != NULL)
@@ -755,7 +764,7 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
             return ReportIndicatorBadType(keymap, led, field, "group mask");
 
         led->groups = rtrn.uval;
-        led->defs.defined |= _LED_Groups;
+        led->defined |= _LED_Groups;
     }
     else if (strcasecmp(field, "controls") == 0 ||
              strcasecmp(field, "ctrls") == 0) {
@@ -767,7 +776,7 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
                                           "controls mask");
 
         led->ctrls = rtrn.uval;
-        led->defs.defined |= _LED_Ctrls;
+        led->defined |= _LED_Ctrls;
     }
     else if (strcasecmp(field, "allowexplicit") == 0) {
         if (arrayNdx != NULL)
@@ -780,7 +789,7 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
             led->flags &= ~XkbIM_NoExplicit;
         else
             led->flags |= XkbIM_NoExplicit;
-        led->defs.defined |= _LED_Explicit;
+        led->defined |= _LED_Explicit;
     }
     else if (strcasecmp(field, "whichmodstate") == 0 ||
              strcasecmp(field, "whichmodifierstate") == 0) {
@@ -819,7 +828,7 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
             led->flags |= XkbIM_LEDDrivesKB;
         else
             led->flags &= ~XkbIM_LEDDrivesKB;
-        led->defs.defined |= _LED_DrivesKbd;
+        led->defined |= _LED_DrivesKbd;
     }
     else if (strcasecmp(field, "index") == 0) {
         if (arrayNdx != NULL)
@@ -838,7 +847,7 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
         }
 
         led->indicator = rtrn.uval;
-        led->defs.defined |= _LED_Index;
+        led->defined |= _LED_Index;
     }
     else {
         ERROR("Unknown field %s in map for %s indicator\n", field,
@@ -962,19 +971,19 @@ HandleGroupCompatDef(GroupCompatDef *def, struct xkb_keymap *keymap,
     return AddGroupCompat(info, def->group - 1, &tmp);
 }
 
-static LEDInfo *
+static bool
 HandleIndicatorMapDef(IndicatorMapDef *def, struct xkb_keymap *keymap,
-                      LEDInfo *dflt, LEDInfo *oldLEDs, enum merge_mode merge)
+                      enum merge_mode merge, CompatInfo *info)
 {
-    LEDInfo led, *rtrn;
+    LEDInfo led;
     VarDef *var;
     bool ok;
 
     if (def->merge != MERGE_DEFAULT)
         merge = def->merge;
 
-    led = *dflt;
-    led.defs.merge = merge;
+    led = info->ledDflt;
+    led.merge = merge;
     led.name = def->name;
 
     ok = true;
@@ -1000,12 +1009,10 @@ HandleIndicatorMapDef(IndicatorMapDef *def, struct xkb_keymap *keymap,
         free(field.str);
     }
 
-    if (ok) {
-        rtrn = AddIndicatorMap(keymap, oldLEDs, &led);
-        return rtrn;
-    }
+    if (ok)
+        return AddIndicatorMap(keymap, info, &led);
 
-    return NULL;
+    return false;
 }
 
 static void
@@ -1014,7 +1021,6 @@ HandleCompatMapFile(XkbFile *file, struct xkb_keymap *keymap,
                     CompatInfo *info)
 {
     ParseCommon *stmt;
-    LEDInfo *leds;
 
     if (merge == MERGE_DEFAULT)
         merge = MERGE_AUGMENT;
@@ -1038,13 +1044,10 @@ HandleCompatMapFile(XkbFile *file, struct xkb_keymap *keymap,
                 info->errorCount++;
             break;
         case StmtIndicatorMapDef:
-            leds = HandleIndicatorMapDef((IndicatorMapDef *) stmt, keymap,
-                                         &info->ledDflt, info->leds, merge);
-            if (leds != NULL)
-                info->leds = leds;
-            else
+            if (!HandleIndicatorMapDef((IndicatorMapDef *) stmt, keymap,
+                                       merge, info))
                 info->errorCount++;
-        break;
+            break;
         case StmtVarDef:
             if (!HandleInterpVar((VarDef *) stmt, keymap, info))
                 info->errorCount++;
@@ -1091,12 +1094,13 @@ CopyInterps(CompatInfo *info, struct xkb_keymap *keymap,
 }
 
 static void
-BindIndicators(struct xkb_keymap *keymap, LEDInfo *unbound)
+BindIndicators(struct xkb_keymap *keymap, struct list *unbound_leds)
 {
     int i;
-    LEDInfo *led, *next, *last;
+    LEDInfo *led, *next_led;
+    struct xkb_indicator_map *map;
 
-    for (led = unbound; led != NULL; led = (LEDInfo *) led->defs.next) {
+    list_foreach(led, unbound_leds, entry) {
         if (led->indicator == _LED_NotBound) {
             for (i = 0; i < XkbNumIndicators; i++) {
                 if (keymap->indicator_names[i] &&
@@ -1109,7 +1113,7 @@ BindIndicators(struct xkb_keymap *keymap, LEDInfo *unbound)
         }
     }
 
-    for (led = unbound; led != NULL; led = (LEDInfo *) led->defs.next) {
+    list_foreach(led, unbound_leds, entry) {
         if (led->indicator == _LED_NotBound) {
             for (i = 0; i < XkbNumIndicators; i++) {
                 if (keymap->indicator_names[i] == NULL) {
@@ -1129,95 +1133,75 @@ BindIndicators(struct xkb_keymap *keymap, LEDInfo *unbound)
         }
     }
 
-    for (last = NULL, led = unbound; led != NULL; led = next) {
-        next = (LEDInfo *) led->defs.next;
+    list_foreach_safe(led, next_led, unbound_leds, entry) {
         if (led->indicator == _LED_NotBound) {
-            unbound = next;
             free(led);
+            continue;
         }
-        else {
-            if (strcmp(keymap->indicator_names[led->indicator - 1],
-                       xkb_atom_text(keymap->ctx, led->name)) != 0) {
-                const char *old = keymap->indicator_names[led->indicator - 1];
-                ERROR("Multiple names bound to indicator %d\n",
-                       (unsigned int) led->indicator);
-                ACTION("Using %s, ignoring %s\n", old,
-                       xkb_atom_text(keymap->ctx, led->name));
-                led->indicator = _LED_NotBound;
-                unbound = next;
-                free(led);
-            }
-            else {
-                struct xkb_indicator_map * map;
-                map = &keymap->indicators[led->indicator - 1];
-                map->flags = led->flags;
-                map->which_groups = led->which_groups;
-                map->groups = led->groups;
-                map->which_mods = led->which_mods;
-                map->mods.mask = led->real_mods;
-                map->mods.real_mods = led->real_mods;
-                map->mods.vmods = led->vmods;
-                map->ctrls = led->ctrls;
-                if (last)
-                    last->defs.next = &next->defs;
-                else
-                    unbound = next;
-                led->defs.next = NULL;
-                free(led);
-            }
-        }
-    }
 
-    for (led = unbound; led != NULL; led = next) {
-        next = led ? (LEDInfo *) led->defs.next : NULL;
+        if (strcmp(keymap->indicator_names[led->indicator - 1],
+                   xkb_atom_text(keymap->ctx, led->name)) != 0) {
+            const char *old = keymap->indicator_names[led->indicator - 1];
+            ERROR("Multiple names bound to indicator %d\n", led->indicator);
+            ACTION("Using %s, ignoring %s\n", old,
+                   xkb_atom_text(keymap->ctx, led->name));
+            free(led);
+            continue;
+        }
+
+        map = &keymap->indicators[led->indicator - 1];
+        map->flags = led->flags;
+        map->which_groups = led->which_groups;
+        map->groups = led->groups;
+        map->which_mods = led->which_mods;
+        map->mods.mask = led->real_mods;
+        map->mods.real_mods = led->real_mods;
+        map->mods.vmods = led->vmods;
+        map->ctrls = led->ctrls;
         free(led);
     }
+
+    list_init(unbound_leds);
 }
 
 static bool
-CopyIndicatorMapDefs(struct xkb_keymap *keymap, LEDInfo *leds)
+CopyIndicatorMapDefs(struct xkb_keymap *keymap, CompatInfo *info)
 {
-    LEDInfo *led, *next;
-    LEDInfo *unbound = NULL, *last = NULL;
+    LEDInfo *led, *next_led;
+    struct list unbound_leds;
+    struct xkb_indicator_map *im;
 
-    for (led = leds; led != NULL; led = next) {
-        next = (LEDInfo *) led->defs.next;
+    list_init(&unbound_leds);
 
+    list_foreach_safe(led, next_led, &info->leds, entry) {
         if (led->groups != 0 && led->which_groups == 0)
             led->which_groups = XkbIM_UseEffective;
 
         if (led->which_mods == 0 && (led->real_mods || led->vmods))
             led->which_mods = XkbIM_UseEffective;
 
-        if (led->indicator == _LED_NotBound || !keymap->indicators) {
-            led->defs.next = NULL;
-            if (last != NULL)
-                last->defs.next = (CommonInfo *) led;
-            else
-                unbound = led;
-            last = led;
+        if (led->indicator == _LED_NotBound) {
+            list_append(&led->entry, &unbound_leds);
+            continue;
         }
-        else
-        {
-            struct xkb_indicator_map *im;
-            im = &keymap->indicators[led->indicator - 1];
-            im->flags = led->flags;
-            im->which_groups = led->which_groups;
-            im->groups = led->groups;
-            im->which_mods = led->which_mods;
-            im->mods.mask = led->real_mods;
-            im->mods.real_mods = led->real_mods;
-            im->mods.vmods = led->vmods;
-            im->ctrls = led->ctrls;
-            free(keymap->indicator_names[led->indicator - 1]);
-            keymap->indicator_names[led->indicator-1] =
-                xkb_atom_strdup(keymap->ctx, led->name);
-            free(led);
-        }
-    }
 
-    if (unbound)
-        BindIndicators(keymap, unbound);
+        im = &keymap->indicators[led->indicator - 1];
+        im->flags = led->flags;
+        im->which_groups = led->which_groups;
+        im->groups = led->groups;
+        im->which_mods = led->which_mods;
+        im->mods.mask = led->real_mods;
+        im->mods.real_mods = led->real_mods;
+        im->mods.vmods = led->vmods;
+        im->ctrls = led->ctrls;
+        free(keymap->indicator_names[led->indicator - 1]);
+        keymap->indicator_names[led->indicator - 1] =
+            xkb_atom_strdup(keymap->ctx, led->name);
+        free(led);
+    }
+    list_init(&info->leds);
+
+    BindIndicators(keymap, &unbound_leds);
 
     return true;
 }
@@ -1232,7 +1216,7 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
 
     InitCompatInfo(&info, keymap, file->id);
     info.dflt.merge = merge;
-    info.ledDflt.defs.merge = merge;
+    info.ledDflt.merge = merge;
 
     HandleCompatMapFile(file, keymap, merge, &info);
 
@@ -1265,11 +1249,8 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
         }
     }
 
-    if (info.leds != NULL) {
-        if (!CopyIndicatorMapDefs(keymap, info.leds))
-            info.errorCount++;
-        info.leds = NULL;
-    }
+    if (!CopyIndicatorMapDefs(keymap, &info))
+        info.errorCount++;
 
     ClearCompatInfo(&info, keymap);
     return true;
