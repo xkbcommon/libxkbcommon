@@ -60,7 +60,10 @@ typedef struct _AliasInfo {
 } AliasInfo;
 
 typedef struct _IndicatorNameInfo {
-    CommonInfo defs;
+    enum merge_mode merge;
+    unsigned file_id;
+    struct list entry;
+
     int ndx;
     xkb_atom_t name;
     bool virtual;
@@ -77,7 +80,7 @@ typedef struct _KeyNamesInfo {
     xkb_keycode_t explicitMax;
     darray(unsigned long) names;
     darray(unsigned int) files;
-    IndicatorNameInfo *leds;
+    struct list leds;
     struct list aliases;
 } KeyNamesInfo;
 
@@ -110,22 +113,11 @@ InitAliasInfo(AliasInfo *info, enum merge_mode merge, unsigned file_id,
 static void
 InitIndicatorNameInfo(IndicatorNameInfo * ii, KeyNamesInfo * info)
 {
-    ii->defs.defined = 0;
-    ii->defs.merge = info->merge;
-    ii->defs.file_id = info->file_id;
-    ii->defs.next = NULL;
+    ii->merge = info->merge;
+    ii->file_id = info->file_id;
     ii->ndx = 0;
     ii->name = XKB_ATOM_NONE;
     ii->virtual = false;
-}
-
-static void
-ClearIndicatorNameInfo(IndicatorNameInfo * ii, KeyNamesInfo * info)
-{
-    if (ii == info->leds) {
-        ClearCommonInfo(&ii->defs);
-        info->leds = NULL;
-    }
 }
 
 static IndicatorNameInfo *
@@ -133,11 +125,13 @@ NextIndicatorName(KeyNamesInfo * info)
 {
     IndicatorNameInfo *ii;
 
-    ii = uTypedAlloc(IndicatorNameInfo);
-    if (ii) {
-        InitIndicatorNameInfo(ii, info);
-        info->leds = AddCommonInfo(&info->leds->defs, &ii->defs);
-    }
+    ii = malloc(sizeof(*ii));
+    if (!ii)
+        return NULL;
+
+    InitIndicatorNameInfo(ii, info);
+    list_append(&ii->entry, &info->leds);
+
     return ii;
 }
 
@@ -146,11 +140,10 @@ FindIndicatorByIndex(KeyNamesInfo * info, int ndx)
 {
     IndicatorNameInfo *old;
 
-    for (old = info->leds; old != NULL;
-         old = (IndicatorNameInfo *) old->defs.next) {
+    list_foreach(old, &info->leds, entry)
         if (old->ndx == ndx)
             return old;
-    }
+
     return NULL;
 }
 
@@ -159,11 +152,10 @@ FindIndicatorByName(KeyNamesInfo * info, xkb_atom_t name)
 {
     IndicatorNameInfo *old;
 
-    for (old = info->leds; old != NULL;
-         old = (IndicatorNameInfo *) old->defs.next) {
+    list_foreach(old, &info->leds, entry)
         if (old->name == name)
             return old;
-    }
+
     return NULL;
 }
 
@@ -176,10 +168,11 @@ AddIndicatorName(KeyNamesInfo *info, struct xkb_keymap *keymap,
     bool replace;
 
     replace = (merge == MERGE_REPLACE) || (merge == MERGE_OVERRIDE);
+
     old = FindIndicatorByName(info, new->name);
     if (old) {
-        if (((old->defs.file_id == new->defs.file_id) && (warningLevel > 0))
-            || (warningLevel > 9)) {
+        if ((old->file_id == new->file_id && warningLevel > 0) ||
+            warningLevel > 9) {
             WARN("Multiple indicators named %s\n",
                  xkb_atom_text(keymap->ctx, new->name));
             if (old->ndx == new->ndx) {
@@ -201,28 +194,18 @@ AddIndicatorName(KeyNamesInfo *info, struct xkb_keymap *keymap,
                 else
                     ACTION("Using %d, ignoring %d\n", old->ndx, new->ndx);
             }
+
             if (replace) {
-                if (info->leds == old)
-                    info->leds = (IndicatorNameInfo *) old->defs.next;
-                else {
-                    IndicatorNameInfo *tmp;
-                    tmp = info->leds;
-                    for (; tmp != NULL;
-                         tmp = (IndicatorNameInfo *) tmp->defs.next) {
-                        if (tmp->defs.next == (CommonInfo *) old) {
-                            tmp->defs.next = old->defs.next;
-                            break;
-                        }
-                    }
-                }
+                list_del(&old->entry);
                 free(old);
             }
         }
     }
+
     old = FindIndicatorByIndex(info, new->ndx);
     if (old) {
-        if (((old->defs.file_id == new->defs.file_id) && (warningLevel > 0))
-            || (warningLevel > 9)) {
+        if ((old->file_id == new->file_id && warningLevel > 0) ||
+            warningLevel > 9) {
             WARN("Multiple names for indicator %d\n", new->ndx);
             if ((old->name == new->name) && (old->virtual == new->virtual))
                 ACTION("Identical definitions ignored\n");
@@ -273,6 +256,7 @@ static void
 ClearKeyNamesInfo(KeyNamesInfo * info)
 {
     AliasInfo *alias, *next_alias;
+    IndicatorNameInfo *ii, *next_ii;
 
     free(info->name);
     info->name = NULL;
@@ -280,17 +264,18 @@ ClearKeyNamesInfo(KeyNamesInfo * info)
     info->computedMin = XKB_KEYCODE_MAX;
     darray_free(info->names);
     darray_free(info->files);
-    if (info->leds)
-        ClearIndicatorNameInfo(info->leds, info);
+    list_foreach_safe(ii, next_ii, &info->leds, entry)
+        free(ii);
     list_foreach_safe(alias, next_alias, &info->aliases, entry)
         free(alias);
+    list_init(&info->aliases);
 }
 
 static void
 InitKeyNamesInfo(KeyNamesInfo * info, unsigned file_id)
 {
     info->name = NULL;
-    info->leds = NULL;
+    list_init(&info->leds);
     list_init(&info->aliases);
     info->file_id = file_id;
     darray_init(info->names);
@@ -429,6 +414,7 @@ MergeIncludedKeycodes(KeyNamesInfo *into, struct xkb_keymap *keymap,
 {
     uint64_t i;
     char buf[5];
+    IndicatorNameInfo *led;
 
     if (from->errorCount > 0) {
         into->errorCount += from->errorCount;
@@ -449,15 +435,11 @@ MergeIncludedKeycodes(KeyNamesInfo *into, struct xkb_keymap *keymap,
         if (!AddKeyName(into, i, buf, merge, from->file_id, false))
             into->errorCount++;
     }
-    if (from->leds) {
-        IndicatorNameInfo *led, *next;
-        for (led = from->leds; led != NULL; led = next) {
-            if (merge != MERGE_DEFAULT)
-                led->defs.merge = merge;
-            if (!AddIndicatorName(into, keymap, led->defs.merge, led))
-                into->errorCount++;
-            next = (IndicatorNameInfo *) led->defs.next;
-        }
+
+    list_foreach(led, &from->leds, entry) {
+        led->merge = (merge == MERGE_DEFAULT ? led->merge : merge);
+        if (!AddIndicatorName(into, keymap, led->merge, led))
+            into->errorCount++;
     }
 
     if (!MergeAliases(into, from, merge))
@@ -940,6 +922,7 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
 {
     xkb_keycode_t kc;
     KeyNamesInfo info; /* contains all the info after parsing */
+    IndicatorNameInfo *ii;
 
     InitKeyNamesInfo(&info, file->id);
 
@@ -968,14 +951,10 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
     if (info.name)
         keymap->keycodes_section_name = strdup(info.name);
 
-    if (info.leds) {
-        IndicatorNameInfo *ii;
-
-        for (ii = info.leds; ii; ii = (IndicatorNameInfo *) ii->defs.next) {
-            free(keymap->indicator_names[ii->ndx - 1]);
-            keymap->indicator_names[ii->ndx - 1] =
-                xkb_atom_strdup(keymap->ctx, ii->name);
-        }
+    list_foreach(ii, &info.leds, entry) {
+        free(keymap->indicator_names[ii->ndx - 1]);
+        keymap->indicator_names[ii->ndx - 1] =
+            xkb_atom_strdup(keymap->ctx, ii->name);
     }
 
     ApplyAliases(keymap, &info);
