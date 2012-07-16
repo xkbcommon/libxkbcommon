@@ -29,7 +29,6 @@
 #include "xkbcomp-priv.h"
 #include "parseutils.h"
 #include "action.h"
-#include "alias.h"
 #include "keycodes.h"
 #include "vmod.h"
 
@@ -193,7 +192,6 @@ typedef struct _SymbolsInfo {
     xkb_atom_t groupNames[XkbNumKbdGroups];
 
     ModMapEntry *modMap;
-    AliasInfo *aliases;
 } SymbolsInfo;
 
 static void
@@ -215,7 +213,6 @@ InitSymbolsInfo(SymbolsInfo * info, struct xkb_keymap *keymap,
     InitKeyInfo(&info->dflt, file_id);
     InitVModInfo(&info->vmods, keymap);
     info->action = NULL;
-    info->aliases = NULL;
 }
 
 static void
@@ -230,8 +227,6 @@ FreeSymbolsInfo(SymbolsInfo * info)
     darray_free(info->keys);
     if (info->modMap)
         ClearCommonInfo(&info->modMap->defs);
-    if (info->aliases)
-        ClearAliases(&info->aliases);
     memset(info, 0, sizeof(SymbolsInfo));
 }
 
@@ -714,8 +709,6 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
         }
         from->modMap = NULL;
     }
-    if (!MergeAliases(&into->aliases, &from->aliases, merge))
-        into->errorCount++;
 }
 
 static void
@@ -1909,9 +1902,6 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
 
     if (info.name)
         keymap->symbols_section_name = strdup(info.name);
-
-    /* now copy info into xkb. */
-    ApplyAliases(keymap, &info.aliases);
 
     for (i = 0; i < XkbNumKbdGroups; i++) {
         if (info.groupNames[i] != XKB_ATOM_NONE) {
