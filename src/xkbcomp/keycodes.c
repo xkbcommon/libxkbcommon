@@ -24,31 +24,9 @@
  *
  ********************************************************/
 
-#include "keycodes.h"
+#include "xkbcomp-priv.h"
 #include "expr.h"
 #include "parseutils.h"
-
-const char *
-longText(unsigned long val)
-{
-    char buf[4];
-
-    LongToKeyName(val, buf);
-    return XkbcKeyNameText(buf);
-}
-
-/***====================================================================***/
-
-void
-LongToKeyName(unsigned long val, char *name)
-{
-    name[0] = ((val >> 24) & 0xff);
-    name[1] = ((val >> 16) & 0xff);
-    name[2] = ((val >> 8) & 0xff);
-    name[3] = (val & 0xff);
-}
-
-/***====================================================================***/
 
 typedef struct _AliasInfo {
     enum merge_mode merge;

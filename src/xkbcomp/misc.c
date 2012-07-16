@@ -27,7 +27,6 @@
 #include "xkbcomp-priv.h"
 #include "path.h"
 #include "parseutils.h"
-#include "keycodes.h"
 
 /***====================================================================***/
 
@@ -106,43 +105,6 @@ ProcessIncludeFile(struct xkb_context *ctx,
     *merge_rtrn = stmt->merge;
     return true;
 }
-
-/***====================================================================***/
-
-int
-ReportNotArray(const char *type, const char *field, const char *name)
-{
-    ERROR("The %s %s field is not an array\n", type, field);
-    ACTION("Ignoring illegal assignment in %s\n", name);
-    return false;
-}
-
-int
-ReportShouldBeArray(const char *type, const char *field, const char *name)
-{
-    ERROR("Missing subscript for %s %s\n", type, field);
-    ACTION("Ignoring illegal assignment in %s\n", name);
-    return false;
-}
-
-int
-ReportBadType(const char *type, const char *field,
-              const char *name, const char *wanted)
-{
-    ERROR("The %s %s field must be a %s\n", type, field, wanted);
-    ACTION("Ignoring illegal assignment in %s\n", name);
-    return false;
-}
-
-int
-ReportBadField(const char *type, const char *field, const char *name)
-{
-    ERROR("Unknown %s field %s in %s\n", type, field, name);
-    ACTION("Ignoring assignment to unknown field in %s\n", name);
-    return false;
-}
-
-/***====================================================================***/
 
 bool
 UseNewField(unsigned field,

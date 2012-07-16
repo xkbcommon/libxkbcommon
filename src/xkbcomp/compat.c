@@ -64,15 +64,6 @@ typedef struct _CompatInfo {
     struct xkb_keymap *keymap;
 } CompatInfo;
 
-/***====================================================================***/
-
-#define ReportSINotArray(si, f, i) \
-    ReportNotArray("symbol interpretation", (f), siText((si), (i)))
-#define ReportSIBadType(si, f, w, i) \
-    ReportBadType("symbol interpretation", (f), siText((si), (i)), (w))
-
-/***====================================================================***/
-
 static const char *
 siText(SymInterpInfo * si, CompatInfo * info)
 {
@@ -88,6 +79,20 @@ siText(SymInterpInfo * si, CompatInfo * info)
                  XkbcModMaskText(si->interp.mods, false));
     }
     return buf;
+}
+
+static inline bool
+ReportSINotArray(SymInterpInfo *si, const char *field, CompatInfo *info)
+{
+    return ReportNotArray("symbol interpretation", field, siText(si, info));
+}
+
+static inline bool
+ReportSIBadType(SymInterpInfo *si, const char *field, const char *wanted,
+                CompatInfo *info)
+{
+    return ReportBadType("symbol interpretation", field, siText(si, info),
+                         wanted);
 }
 
 static void

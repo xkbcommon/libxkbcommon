@@ -49,19 +49,6 @@ ClearCommonInfo(CommonInfo *cmn);
 extern void *
 AddCommonInfo(CommonInfo * old, CommonInfo * new);
 
-extern int
-ReportNotArray(const char *type, const char *field, const char *name);
-
-extern int
-ReportShouldBeArray(const char *type, const char *field, const char *name);
-
-extern int
-ReportBadType(const char *type, const char *field, const char *name,
-              const char *wanted);
-
-extern int
-ReportBadField(const char *type, const char *field, const char *name);
-
 extern bool
 ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
                    enum xkb_file_type file_type, XkbFile **file_rtrn,
@@ -80,5 +67,57 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap);
 
 uint32_t
 VModsToReal(struct xkb_keymap *keymap, uint32_t vmodmask);
+
+static inline unsigned long
+KeyNameToLong(const char *name)
+{
+    return
+        (((unsigned long)name[0]) << 24) |
+        (((unsigned long)name[1]) << 16) |
+        (((unsigned long)name[2]) << 8)  |
+        (((unsigned long)name[3]) << 0);
+}
+
+static inline void
+LongToKeyName(unsigned long val, char *name)
+{
+    name[0] = ((val >> 24) & 0xff);
+    name[1] = ((val >> 16) & 0xff);
+    name[2] = ((val >> 8) & 0xff);
+    name[3] = ((val >> 0) & 0xff);
+}
+
+static inline bool
+ReportNotArray(const char *type, const char *field, const char *name)
+{
+    ERROR("The %s %s field is not an array\n", type, field);
+    ACTION("Ignoring illegal assignment in %s\n", name);
+    return false;
+}
+
+static inline bool
+ReportShouldBeArray(const char *type, const char *field, const char *name)
+{
+    ERROR("Missing subscript for %s %s\n", type, field);
+    ACTION("Ignoring illegal assignment in %s\n", name);
+    return false;
+}
+
+static inline bool
+ReportBadType(const char *type, const char *field,
+              const char *name, const char *wanted)
+{
+    ERROR("The %s %s field must be a %s\n", type, field, wanted);
+    ACTION("Ignoring illegal assignment in %s\n", name);
+    return false;
+}
+
+static inline bool
+ReportBadField(const char *type, const char *field, const char *name)
+{
+    ERROR("Unknown %s field %s in %s\n", type, field, name);
+    ACTION("Ignoring assignment to unknown field in %s\n", name);
+    return false;
+}
 
 #endif /* XKBCOMP_PRIV_H */

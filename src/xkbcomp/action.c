@@ -25,7 +25,6 @@
  ********************************************************/
 
 #include "action.h"
-#include "keycodes.h"
 
 static bool actionsInitialized;
 static ExprDef constTrue;
@@ -166,7 +165,7 @@ fieldText(unsigned field)
 
 /***====================================================================***/
 
-static bool
+static inline bool
 ReportMismatch(unsigned action, unsigned field, const char *type)
 {
     ERROR("Value of %s field must be of type %s\n", fieldText(field), type);
@@ -174,7 +173,7 @@ ReportMismatch(unsigned action, unsigned field, const char *type)
     return false;
 }
 
-static bool
+static inline bool
 ReportIllegal(unsigned action, unsigned field)
 {
     ERROR("Field %s is not defined for an action of type %s\n",
@@ -183,7 +182,7 @@ ReportIllegal(unsigned action, unsigned field)
     return false;
 }
 
-static bool
+static inline bool
 ReportActionNotArray(unsigned action, unsigned field)
 {
     ERROR("The %s field in the %s action is not an array\n",
@@ -192,7 +191,7 @@ ReportActionNotArray(unsigned action, unsigned field)
     return false;
 }
 
-static bool
+static inline bool
 ReportNotFound(unsigned action, unsigned field, const char *what,
                const char *bad)
 {

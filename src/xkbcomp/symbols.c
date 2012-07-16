@@ -29,14 +29,13 @@
 #include "xkbcomp-priv.h"
 #include "parseutils.h"
 #include "action.h"
-#include "keycodes.h"
 #include "vmod.h"
 
 /***====================================================================***/
 
 /* Needed to work with the typechecker. */
-typedef darray (xkb_keysym_t) darray_xkb_keysym_t;
-typedef darray (union xkb_action) darray_xkb_action;
+typedef darray(xkb_keysym_t) darray_xkb_keysym_t;
+typedef darray(union xkb_action) darray_xkb_action;
 
 #define RepeatYes       1
 #define RepeatNo        0
@@ -50,6 +49,15 @@ typedef darray (union xkb_action) darray_xkb_action;
 #define _Key_Types      (1 << 5)
 #define _Key_GroupInfo  (1 << 6)
 #define _Key_VModMap    (1 << 7)
+
+static inline const char *
+longText(unsigned long val)
+{
+    char buf[4];
+
+    LongToKeyName(val, buf);
+    return XkbcKeyNameText(buf);
+}
 
 typedef struct _KeyInfo {
     unsigned short defined;

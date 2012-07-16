@@ -73,23 +73,49 @@ static xkb_atom_t tok_KEYPAD;
 
 /***====================================================================***/
 
-#define ReportTypeShouldBeArray(keymap, t, f) \
-    ReportShouldBeArray("key type", (f), TypeTxt((keymap), (t)))
-#define ReportTypeBadType(keymap, t, f, w) \
-    ReportBadType("key type", (f), TypeTxt((keymap), (t)), (w))
+static inline const char *
+MapEntryTxt(struct xkb_keymap *keymap, struct xkb_kt_map_entry *entry)
+{
+    return XkbcVModMaskText(keymap, entry->mods.real_mods, entry->mods.vmods);
+}
 
-/***====================================================================***/
+static inline const char *
+PreserveIndexTxt(struct xkb_keymap *keymap, PreserveInfo *pi)
+{
+    return XkbcVModMaskText(keymap, pi->indexMods, pi->indexVMods);
+}
 
-#define MapEntryTxt(x, e) \
-    XkbcVModMaskText((x), (e)->mods.real_mods, (e)->mods.vmods)
-#define PreserveIndexTxt(x, p) \
-    XkbcVModMaskText((x), (p)->indexMods, (p)->indexVMods)
-#define PreserveTxt(x, p) \
-    XkbcVModMaskText((x), (p)->preMods, (p)->preVMods)
-#define TypeTxt(keymap, t) \
-    xkb_atom_text((keymap)->ctx, (t)->name)
-#define TypeMaskTxt(t, x) \
-    XkbcVModMaskText((x), (t)->mask, (t)->vmask)
+static inline const char *
+PreserveTxt(struct xkb_keymap *keymap, PreserveInfo *pi)
+{
+    return XkbcVModMaskText(keymap, pi->preMods, pi->preVMods);
+}
+
+static inline const char *
+TypeTxt(struct xkb_keymap *keymap, KeyTypeInfo *type)
+{
+    return xkb_atom_text(keymap->ctx, type->name);
+}
+
+static inline const char *
+TypeMaskTxt(struct xkb_keymap *keymap, KeyTypeInfo *type)
+{
+    return XkbcVModMaskText(keymap, type->mask, type->vmask);
+}
+
+static inline bool
+ReportTypeShouldBeArray(struct xkb_keymap *keymap, KeyTypeInfo *type,
+                        const char *field)
+{
+    return ReportShouldBeArray("key type", field, TypeTxt(keymap, type));
+}
+
+static inline bool
+ReportTypeBadType(struct xkb_keymap *keymap, KeyTypeInfo *type,
+                  const char *field, const char *wanted)
+{
+    return ReportBadType("key type", field, TypeTxt(keymap, type), wanted);
+}
 
 /***====================================================================***/
 
@@ -707,7 +733,7 @@ SetKeyTypeField(KeyTypeInfo *type, struct xkb_keymap *keymap,
         if (type->defs.defined & _KT_Mask) {
             WARN("Multiple modifier mask definitions for key type %s\n",
                  xkb_atom_text(keymap->ctx, type->name));
-            ACTION("Using %s, ", TypeMaskTxt(type, keymap));
+            ACTION("Using %s, ", TypeMaskTxt(keymap, type));
             INFO("ignoring %s\n", XkbcVModMaskText(keymap, mods, vmods));
             return false;
         }

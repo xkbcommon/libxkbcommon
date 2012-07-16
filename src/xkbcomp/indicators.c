@@ -30,12 +30,21 @@
 
 /***====================================================================***/
 
-#define ReportIndicatorBadType(keymap, l, f, w)                            \
-    ReportBadType("indicator map", (f),                                 \
-                  xkb_atom_text((keymap)->ctx, (l)->name), (w))
-#define ReportIndicatorNotArray(keymap, l, f)                              \
-    ReportNotArray("indicator map", (f),                                \
-                   xkb_atom_text((keymap)->ctx, (l)->name))
+static inline bool
+ReportIndicatorBadType(struct xkb_keymap *keymap, LEDInfo *led,
+                       const char *field, const char *wanted)
+{
+    return ReportBadType("indicator map", field,
+                         xkb_atom_text(keymap->ctx, led->name), wanted);
+}
+
+static inline bool
+ReportIndicatorNotArray(struct xkb_keymap *keymap, LEDInfo *led,
+                        const char *field)
+{
+    return ReportNotArray("indicator map", field,
+                          xkb_atom_text(keymap->ctx, led->name));
+}
 
 /***====================================================================***/
 
