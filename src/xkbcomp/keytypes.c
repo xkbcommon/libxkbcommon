@@ -49,7 +49,6 @@ typedef struct _KeyTypeInfo {
     unsigned file_id;
     unsigned mask;
     unsigned vmask;
-    bool groupInfo;
     unsigned numLevels;
     darray(struct xkb_kt_map_entry) entries;
     PreserveInfo *preserve;
@@ -115,7 +114,6 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
     info->dflt.name = XKB_ATOM_NONE;
     info->dflt.mask = 0;
     info->dflt.vmask = 0;
-    info->dflt.groupInfo = false;
     info->dflt.numLevels = 1;
     darray_init(info->dflt.entries);
     darray_init(info->dflt.lvlNames);
@@ -804,7 +802,6 @@ HandleKeyTypeDef(KeyTypeDef *def, struct xkb_keymap *keymap,
     type.name = def->name;
     type.mask = info->dflt.mask;
     type.vmask = info->dflt.vmask;
-    type.groupInfo = info->dflt.groupInfo;
     type.numLevels = 1;
     darray_init(type.entries);
     darray_init(type.lvlNames);
