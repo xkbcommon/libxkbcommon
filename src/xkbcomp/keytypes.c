@@ -44,9 +44,12 @@ typedef struct _PreserveInfo {
 #define _KT_LevelNames (1 << 4)
 
 typedef struct _KeyTypeInfo {
-    CommonInfo defs;
-    xkb_atom_t name;
+    unsigned short defined;
     unsigned file_id;
+    enum merge_mode merge;
+    struct list entry;
+
+    xkb_atom_t name;
     unsigned mask;
     unsigned vmask;
     unsigned numLevels;
@@ -61,7 +64,7 @@ typedef struct _KeyTypesInfo {
     unsigned file_id;
     unsigned stdPresent;
     unsigned nTypes;
-    KeyTypeInfo *types;
+    struct list types;
     KeyTypeInfo dflt;
     VModInfo vmods;
 
@@ -133,12 +136,11 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
     info->errorCount = 0;
     info->stdPresent = 0;
     info->nTypes = 0;
-    info->types = NULL;
+    list_init(&info->types);
     info->file_id = file_id;
-    info->dflt.defs.defined = 0;
-    info->dflt.defs.file_id = file_id;
-    info->dflt.defs.merge = MERGE_OVERRIDE;
-    info->dflt.defs.next = NULL;
+    info->dflt.defined = 0;
+    info->dflt.file_id = file_id;
+    info->dflt.merge = MERGE_OVERRIDE;
     info->dflt.name = XKB_ATOM_NONE;
     info->dflt.mask = 0;
     info->dflt.vmask = 0;
@@ -181,15 +183,12 @@ FreeKeyTypeInfo(KeyTypeInfo * type)
 static void
 FreeKeyTypesInfo(KeyTypesInfo * info)
 {
+    KeyTypeInfo *type, *next_type;
     free(info->name);
     info->name = NULL;
-    if (info->types) {
-        KeyTypeInfo *type;
-        for (type = info->types; type; type =
-                 (KeyTypeInfo *) type->defs.next) {
-            FreeKeyTypeInfo(type);
-        }
-        info->types = ClearCommonInfo(&info->types->defs);
+    list_foreach_safe(type, next_type, &info->types, entry) {
+        FreeKeyTypeInfo(type);
+        free(type);
     }
     FreeKeyTypeInfo(&info->dflt);
 }
@@ -199,14 +198,15 @@ NextKeyType(KeyTypesInfo * info)
 {
     KeyTypeInfo *type;
 
-    type = uTypedAlloc(KeyTypeInfo);
-    if (type != NULL) {
-        memset(type, 0, sizeof(KeyTypeInfo));
-        list_init(&type->preserves);
-        type->defs.file_id = info->file_id;
-        info->types = AddCommonInfo(&info->types->defs, &type->defs);
-        info->nTypes++;
-    }
+    type = calloc(1, sizeof(*type));
+    if (!type)
+        return NULL;
+
+    list_init(&type->preserves);
+    type->file_id = info->file_id;
+
+    list_append(&type->entry, &info->types);
+    info->nTypes++;
     return type;
 }
 
@@ -215,10 +215,10 @@ FindMatchingKeyType(KeyTypesInfo * info, KeyTypeInfo * new)
 {
     KeyTypeInfo *old;
 
-    for (old = info->types; old; old = (KeyTypeInfo *) old->defs.next) {
+    list_foreach(old, &info->types, entry)
         if (old->name == new->name)
             return old;
-    }
+
     return NULL;
 }
 
@@ -234,7 +234,7 @@ static bool
 AddKeyType(struct xkb_keymap *keymap, KeyTypesInfo *info, KeyTypeInfo *new)
 {
     KeyTypeInfo *old;
-    struct list entry;
+    struct list type_entry, preserves_entry;
 
     if (new->name == info->tok_ONE_LEVEL) {
         if (new->numLevels > 1)
@@ -264,43 +264,44 @@ AddKeyType(struct xkb_keymap *keymap, KeyTypesInfo *info, KeyTypeInfo *new)
     }
 
     old = FindMatchingKeyType(info, new);
-    if (old != NULL) {
-        bool report;
-        if ((new->defs.merge == MERGE_REPLACE)
-            || (new->defs.merge == MERGE_OVERRIDE)) {
-            KeyTypeInfo *next = (KeyTypeInfo *) old->defs.next;
-            if (((old->defs.file_id == new->defs.file_id)
-                 && (warningLevel > 0)) || (warningLevel > 9)) {
+    if (old) {
+        if (new->merge == MERGE_REPLACE || new->merge == MERGE_OVERRIDE) {
+            if ((old->file_id == new->file_id && warningLevel > 0) ||
+                warningLevel > 9) {
                 WARN("Multiple definitions of the %s key type\n",
                      xkb_atom_text(keymap->ctx, new->name));
                 ACTION("Earlier definition ignored\n");
             }
+
+            type_entry = old->entry;
             FreeKeyTypeInfo(old);
             *old = *new;
+            old->entry = type_entry;
             darray_init(new->entries);
             darray_init(new->lvlNames);
             list_init(&new->preserves);
-            old->defs.next = &next->defs;
             return true;
         }
-        report = (old->defs.file_id == new->defs.file_id) &&
-                 (warningLevel > 0);
-        if (report) {
+
+        if (old->file_id == new->file_id && warningLevel > 0) {
             WARN("Multiple definitions of the %s key type\n",
                  xkb_atom_text(keymap->ctx, new->name));
             ACTION("Later definition ignored\n");
         }
+
         FreeKeyTypeInfo(new);
         return true;
     }
+
     old = NextKeyType(info);
     if (old == NULL)
         return false;
     list_replace(&new->preserves, &old->preserves);
-    entry = old->preserves;
+    type_entry = old->entry;
+    preserves_entry = old->preserves;
     *old = *new;
-    old->preserves = entry;
-    old->defs.next = NULL;
+    old->preserves = preserves_entry;
+    old->entry = type_entry;
     darray_init(new->entries);
     darray_init(new->lvlNames);
     list_init(&new->preserves);
@@ -313,22 +314,24 @@ static void
 MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
                       enum merge_mode merge, struct xkb_keymap *keymap)
 {
-    KeyTypeInfo *type;
+    KeyTypeInfo *type, *next_type;
 
     if (from->errorCount > 0) {
         into->errorCount += from->errorCount;
         return;
     }
+
     if (into->name == NULL) {
         into->name = from->name;
         from->name = NULL;
     }
-    for (type = from->types; type; type = (KeyTypeInfo *) type->defs.next) {
-        if (merge != MERGE_DEFAULT)
-            type->defs.merge = merge;
+
+    list_foreach_safe(type, next_type, &from->types, entry) {
+        type->merge = (merge == MERGE_DEFAULT ? type->merge : merge);
         if (!AddKeyType(keymap, into, type))
             into->errorCount++;
     }
+
     into->stdPresent |= from->stdPresent;
 }
 
@@ -361,7 +364,7 @@ HandleIncludeKeyTypes(IncludeStmt *stmt, struct xkb_keymap *keymap,
         }
 
         InitKeyTypesInfo(&next_incl, keymap, &included, rtrn->id);
-        next_incl.dflt.defs.merge = merge;
+        next_incl.dflt.merge = merge;
 
         HandleKeyTypesFile(rtrn, keymap, merge, &next_incl);
 
@@ -696,7 +699,7 @@ SetKeyTypeField(KeyTypeInfo *type, struct xkb_keymap *keymap,
         }
         mods = tmp.uval & 0xff; /* core mods */
         vmods = (tmp.uval >> 8) & 0xffff; /* xkb virtual mods */
-        if (type->defs.defined & _KT_Mask) {
+        if (type->defined & _KT_Mask) {
             WARN("Multiple modifier mask definitions for key type %s\n",
                  xkb_atom_text(keymap->ctx, type->name));
             ACTION("Using %s, ", TypeMaskTxt(keymap, type));
@@ -705,20 +708,20 @@ SetKeyTypeField(KeyTypeInfo *type, struct xkb_keymap *keymap,
         }
         type->mask = mods;
         type->vmask = vmods;
-        type->defs.defined |= _KT_Mask;
+        type->defined |= _KT_Mask;
         return true;
     }
     else if (strcasecmp(field, "map") == 0) {
-        type->defs.defined |= _KT_Map;
+        type->defined |= _KT_Map;
         return SetMapEntry(type, keymap, arrayNdx, value);
     }
     else if (strcasecmp(field, "preserve") == 0) {
-        type->defs.defined |= _KT_Preserve;
+        type->defined |= _KT_Preserve;
         return SetPreserve(type, keymap, arrayNdx, value);
     }
     else if ((strcasecmp(field, "levelname") == 0) ||
              (strcasecmp(field, "level_name") == 0)) {
-        type->defs.defined |= _KT_LevelNames;
+        type->defined |= _KT_LevelNames;
         return SetLevelName(type, keymap, arrayNdx, value);
     }
     ERROR("Unknown field %s in key type %s\n", field, TypeTxt(keymap, type));
@@ -788,10 +791,9 @@ HandleKeyTypeDef(KeyTypeDef *def, struct xkb_keymap *keymap,
     if (def->merge != MERGE_DEFAULT)
         merge = def->merge;
 
-    type.defs.defined = 0;
-    type.defs.file_id = info->file_id;
-    type.defs.merge = merge;
-    type.defs.next = NULL;
+    type.defined = 0;
+    type.file_id = info->file_id;
+    type.merge = merge;
     type.name = def->name;
     type.mask = info->dflt.mask;
     type.vmask = info->dflt.vmask;
@@ -1176,7 +1178,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
     }
 
     next = &darray_item(keymap->types, XkbLastRequiredType + 1);
-    for (i = 0, def = info.types; i < info.nTypes; i++) {
+    list_foreach(def, &info.types, entry) {
         if (def->name == info.tok_ONE_LEVEL)
             type = &darray_item(keymap->types, XkbOneLevelIndex);
         else if (def->name == info.tok_TWO_LEVEL)
@@ -1192,8 +1194,6 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
 
         if (!CopyDefToKeyType(keymap, type, def))
             goto err_info;
-
-        def = (KeyTypeInfo *) def->defs.next;
     }
 
     FreeKeyTypesInfo(&info);
