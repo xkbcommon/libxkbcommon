@@ -29,7 +29,7 @@
 #include "vmod.h"
 
 typedef struct _PreserveInfo {
-    CommonInfo defs;
+    struct list entry;
     short matchingMapIndex;
     unsigned char indexMods;
     unsigned char preMods;
@@ -51,7 +51,7 @@ typedef struct _KeyTypeInfo {
     unsigned vmask;
     unsigned numLevels;
     darray(struct xkb_kt_map_entry) entries;
-    PreserveInfo *preserve;
+    struct list preserves;
     darray(xkb_atom_t) lvlNames;
 } KeyTypeInfo;
 
@@ -123,6 +123,8 @@ static void
 InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
                  KeyTypesInfo *from, unsigned file_id)
 {
+    PreserveInfo *old, *new;
+
     info->tok_ONE_LEVEL = xkb_atom_intern(keymap->ctx, "ONE_LEVEL");
     info->tok_TWO_LEVEL = xkb_atom_intern(keymap->ctx, "TWO_LEVEL");
     info->tok_ALPHABETIC = xkb_atom_intern(keymap->ctx, "ALPHABETIC");
@@ -143,43 +145,37 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
     info->dflt.numLevels = 1;
     darray_init(info->dflt.entries);
     darray_init(info->dflt.lvlNames);
-    info->dflt.preserve = NULL;
+    list_init(&info->dflt.preserves);
     InitVModInfo(&info->vmods, keymap);
-    if (from != NULL) {
-        info->dflt = from->dflt;
 
-        darray_copy(info->dflt.entries, from->dflt.entries);
-        darray_copy(info->dflt.lvlNames, from->dflt.lvlNames);
+    if (!from)
+        return;
 
-        if (from->dflt.preserve) {
-            PreserveInfo *old, *new, *last;
-            last = NULL;
-            old = from->dflt.preserve;
-            for (; old; old = (PreserveInfo *) old->defs.next) {
-                new = uTypedAlloc(PreserveInfo);
-                if (!new)
-                    return;
-                *new = *old;
-                new->defs.next = NULL;
-                if (last)
-                    last->defs.next = (CommonInfo *) new;
-                else
-                    info->dflt.preserve = new;
-                last = new;
-            }
-        }
+    info->dflt = from->dflt;
+
+    darray_copy(info->dflt.entries, from->dflt.entries);
+    darray_copy(info->dflt.lvlNames, from->dflt.lvlNames);
+
+    list_init(&info->dflt.preserves);
+    list_foreach(old, &from->dflt.preserves, entry) {
+        new = malloc(sizeof(*new));
+        if (!new)
+            return;
+
+        *new = *old;
+        list_append(&new->entry, &info->dflt.preserves);
     }
 }
 
 static void
 FreeKeyTypeInfo(KeyTypeInfo * type)
 {
+    PreserveInfo *pi, *next_pi;
     darray_free(type->entries);
     darray_free(type->lvlNames);
-    if (type->preserve != NULL) {
-        ClearCommonInfo(&type->preserve->defs);
-        type->preserve = NULL;
-    }
+    list_foreach_safe(pi, next_pi, &type->preserves, entry)
+        free(pi);
+    list_init(&type->preserves);
 }
 
 static void
@@ -206,6 +202,7 @@ NextKeyType(KeyTypesInfo * info)
     type = uTypedAlloc(KeyTypeInfo);
     if (type != NULL) {
         memset(type, 0, sizeof(KeyTypeInfo));
+        list_init(&type->preserves);
         type->defs.file_id = info->file_id;
         info->types = AddCommonInfo(&info->types->defs, &type->defs);
         info->nTypes++;
@@ -237,6 +234,7 @@ static bool
 AddKeyType(struct xkb_keymap *keymap, KeyTypesInfo *info, KeyTypeInfo *new)
 {
     KeyTypeInfo *old;
+    struct list entry;
 
     if (new->name == info->tok_ONE_LEVEL) {
         if (new->numLevels > 1)
@@ -281,7 +279,7 @@ AddKeyType(struct xkb_keymap *keymap, KeyTypesInfo *info, KeyTypeInfo *new)
             *old = *new;
             darray_init(new->entries);
             darray_init(new->lvlNames);
-            new->preserve = NULL;
+            list_init(&new->preserves);
             old->defs.next = &next->defs;
             return true;
         }
@@ -298,11 +296,14 @@ AddKeyType(struct xkb_keymap *keymap, KeyTypesInfo *info, KeyTypeInfo *new)
     old = NextKeyType(info);
     if (old == NULL)
         return false;
+    list_replace(&new->preserves, &old->preserves);
+    entry = old->preserves;
     *old = *new;
+    old->preserves = entry;
     old->defs.next = NULL;
     darray_init(new->entries);
     darray_init(new->lvlNames);
-    new->preserve = NULL;
+    list_init(&new->preserves);
     return true;
 }
 
@@ -447,16 +448,12 @@ AddPreserve(struct xkb_keymap *keymap, KeyTypeInfo *type,
 {
     PreserveInfo *old;
 
-    old = type->preserve;
-    while (old != NULL)
-    {
-        if ((old->indexMods != new->indexMods) ||
-            (old->indexVMods != new->indexVMods)) {
-            old = (PreserveInfo *) old->defs.next;
+    list_foreach(old, &type->preserves, entry) {
+        if (old->indexMods != new->indexMods ||
+            old->indexVMods != new->indexVMods)
             continue;
-        }
-        if ((old->preMods == new->preMods)
-            && (old->preVMods == new->preVMods)) {
+
+        if (old->preMods == new->preMods && old->preVMods == new->preVMods) {
             if (warningLevel > 9) {
                 WARN("Identical definitions for preserve[%s] in %s\n",
                      PreserveIndexTxt(keymap, old), TypeTxt(keymap, type));
@@ -464,37 +461,36 @@ AddPreserve(struct xkb_keymap *keymap, KeyTypeInfo *type,
             }
             return true;
         }
-        if (report && (warningLevel > 0)) {
+
+        if (report && warningLevel > 0) {
             const char *str;
             WARN("Multiple definitions for preserve[%s] in %s\n",
                  PreserveIndexTxt(keymap, old), TypeTxt(keymap, type));
-
-            if (clobber)
-                str = PreserveTxt(keymap, new);
-            else
-                str = PreserveTxt(keymap, old);
+            str = PreserveTxt(keymap, clobber ? new : old);
             ACTION("Using %s, ", str);
-            if (clobber)
-                str = PreserveTxt(keymap, old);
-            else
-                str = PreserveTxt(keymap, new);
+            str = PreserveTxt(keymap, clobber ? old : new);
             INFO("ignoring %s\n", str);
         }
+
         if (clobber) {
             old->preMods = new->preMods;
             old->preVMods = new->preVMods;
         }
+
         return true;
     }
-    old = uTypedAlloc(PreserveInfo);
+
+    old = malloc(sizeof(*old));
     if (!old) {
         WSGO("Couldn't allocate preserve in %s\n", TypeTxt(keymap, type));
         ACTION("Preserve[%s] lost\n", PreserveIndexTxt(keymap, new));
         return false;
     }
+
     *old = *new;
     old->matchingMapIndex = -1;
-    type->preserve = AddCommonInfo(&type->preserve->defs, &old->defs);
+    list_append(&old->entry, &type->preserves);
+
     return true;
 }
 
@@ -599,8 +595,6 @@ SetPreserve(KeyTypeInfo *type, struct xkb_keymap *keymap,
     if (!ExprResolveVModMask(arrayNdx, &rtrn, keymap))
         return ReportTypeBadType(keymap, type, "preserve entry",
                                  "modifier mask");
-    new.defs = type->defs;
-    new.defs.next = NULL;
     new.indexMods = rtrn.uval & 0xff;
     new.indexVMods = (rtrn.uval >> 8) & 0xffff;
     if ((new.indexMods & (~type->mask)) ||
@@ -817,6 +811,7 @@ HandleKeyTypeDef(KeyTypeDef *def, struct xkb_keymap *keymap,
     unsigned int i;
     KeyTypeInfo type;
     struct xkb_kt_map_entry *entry;
+    PreserveInfo *pi, *pi_next;
 
     if (def->merge != MERGE_DEFAULT)
         merge = def->merge;
@@ -831,7 +826,7 @@ HandleKeyTypeDef(KeyTypeDef *def, struct xkb_keymap *keymap,
     type.numLevels = 1;
     darray_init(type.entries);
     darray_init(type.lvlNames);
-    type.preserve = NULL;
+    list_init(&type.preserves);
 
     /* Parse the actual content. */
     if (!HandleKeyTypeBody(def->body, keymap, &type, info)) {
@@ -846,16 +841,11 @@ HandleKeyTypeDef(KeyTypeDef *def, struct xkb_keymap *keymap,
             (entry->mods.vmods & type.vmask) == entry->mods.vmods)
             AddMapEntry(keymap, &type, entry, false, false);
     }
-    if (info->dflt.preserve) {
-        PreserveInfo *dflt = info->dflt.preserve;
-        while (dflt)
-        {
-            if (((dflt->indexMods & type.mask) == dflt->indexMods) &&
-                ((dflt->indexVMods & type.vmask) == dflt->indexVMods)) {
-                AddPreserve(keymap, &type, dflt, false, false);
-            }
-            dflt = (PreserveInfo *) dflt->defs.next;
-        }
+
+    list_foreach_safe(pi, pi_next, &info->dflt.preserves, entry) {
+        if ((pi->indexMods & type.mask) == pi->indexMods &&
+            (pi->indexVMods & type.vmask) == pi->indexVMods)
+            AddPreserve(keymap, &type, pi, false, false);
     }
 
     for (i = 0; i < darray_size(info->dflt.lvlNames); i++) {
@@ -973,8 +963,7 @@ CopyDefToKeyType(struct xkb_keymap *keymap, struct xkb_key_type *type,
     unsigned int i;
     PreserveInfo *pre;
 
-    for (pre = def->preserve; pre != NULL;
-         pre = (PreserveInfo *) pre->defs.next) {
+    list_foreach(pre, &def->preserves, entry) {
         struct xkb_kt_map_entry * match;
         struct xkb_kt_map_entry tmp;
         tmp.mods.real_mods = pre->indexMods;
@@ -993,7 +982,7 @@ CopyDefToKeyType(struct xkb_keymap *keymap, struct xkb_key_type *type,
     type->mods.vmods = def->vmask;
     type->num_levels = def->numLevels;
     memcpy(&type->map, &def->entries, sizeof(def->entries));
-    if (def->preserve) {
+    if (!list_empty(&def->preserves)) {
         type->preserve = uTypedCalloc(darray_size(type->map), struct xkb_mods);
         if (!type->preserve) {
             WARN("Couldn't allocate preserve array in CopyDefToKeyType\n");
@@ -1001,8 +990,7 @@ CopyDefToKeyType(struct xkb_keymap *keymap, struct xkb_key_type *type,
                    xkb_atom_text(keymap->ctx, def->name));
         }
         else {
-            pre = def->preserve;
-            for (; pre != NULL; pre = (PreserveInfo *) pre->defs.next) {
+            list_foreach(pre, &def->preserves, entry) {
                 int ndx = pre->matchingMapIndex;
                 type->preserve[ndx].mask = pre->preMods;
                 type->preserve[ndx].real_mods = pre->preMods;
