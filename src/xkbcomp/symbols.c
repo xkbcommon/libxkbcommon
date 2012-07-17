@@ -560,28 +560,28 @@ MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
             }
         }
     }
-    if (use_new_field(_Key_Behavior, into->defined, into->file_id,
-                      from->defined, from->file_id, from->merge, &collide)) {
+    if (UseNewField(_Key_Behavior, into->defined, into->file_id,
+                    from->defined, from->file_id, from->merge, &collide)) {
         into->behavior = from->behavior;
         into->defined |= _Key_Behavior;
     }
-    if (use_new_field(_Key_VModMap, into->defined, into->file_id,
-                      from->defined, from->file_id, from->merge, &collide)) {
+    if (UseNewField(_Key_VModMap, into->defined, into->file_id,
+                    from->defined, from->file_id, from->merge, &collide)) {
         into->vmodmap = from->vmodmap;
         into->defined |= _Key_VModMap;
     }
-    if (use_new_field(_Key_Repeat, into->defined, into->file_id,
-                      from->defined, from->file_id, from->merge, &collide)) {
+    if (UseNewField(_Key_Repeat, into->defined, into->file_id,
+                    from->defined, from->file_id, from->merge, &collide)) {
         into->repeat = from->repeat;
         into->defined |= _Key_Repeat;
     }
-    if (use_new_field(_Key_Type_Dflt, into->defined, into->file_id,
-                      from->defined, from->file_id, from->merge, &collide)) {
+    if (UseNewField(_Key_Type_Dflt, into->defined, into->file_id,
+                    from->defined, from->file_id, from->merge, &collide)) {
         into->dfltType = from->dfltType;
         into->defined |= _Key_Type_Dflt;
     }
-    if (use_new_field(_Key_GroupInfo, into->defined, into->file_id,
-                      from->defined, from->file_id, from->merge, &collide)) {
+    if (UseNewField(_Key_GroupInfo, into->defined, into->file_id,
+                    from->defined, from->file_id, from->merge, &collide)) {
         into->out_of_range_group_action = from->out_of_range_group_action;
         into->out_of_range_group_number = from->out_of_range_group_number;
         into->defined |= _Key_GroupInfo;

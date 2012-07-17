@@ -266,29 +266,29 @@ AddInterp(CompatInfo * info, SymInterpInfo * new)
             return true;
         }
 
-        if (use_new_field(_SI_VirtualMod, old->defined, old->file_id,
+        if (UseNewField(_SI_VirtualMod, old->defined, old->file_id,
                           new->defined, new->file_id, new->merge, &collide)) {
             old->interp.virtual_mod = new->interp.virtual_mod;
             old->defined |= _SI_VirtualMod;
         }
-        if (use_new_field(_SI_Action, old->defined, old->file_id, new->defined,
+        if (UseNewField(_SI_Action, old->defined, old->file_id, new->defined,
                           new->file_id, new->merge, &collide)) {
             old->interp.act = new->interp.act;
             old->defined |= _SI_Action;
         }
-        if (use_new_field(_SI_AutoRepeat, old->defined, old->file_id,
+        if (UseNewField(_SI_AutoRepeat, old->defined, old->file_id,
                           new->defined, new->file_id, new->merge, &collide)) {
             old->interp.flags &= ~XkbSI_AutoRepeat;
             old->interp.flags |= (new->interp.flags & XkbSI_AutoRepeat);
             old->defined |= _SI_AutoRepeat;
         }
-        if (use_new_field(_SI_LockingKey, old->defined, old->file_id,
+        if (UseNewField(_SI_LockingKey, old->defined, old->file_id,
                           new->defined, new->file_id, new->merge, &collide)) {
             old->interp.flags &= ~XkbSI_LockingKey;
             old->interp.flags |= (new->interp.flags & XkbSI_LockingKey);
             old->defined |= _SI_LockingKey;
         }
-        if (use_new_field(_SI_LevelOneOnly, old->defined, old->file_id,
+        if (UseNewField(_SI_LevelOneOnly, old->defined, old->file_id,
                           new->defined, new->file_id, new->merge, &collide)) {
             old->interp.match &= ~XkbSI_LevelOneOnly;
             old->interp.match |= (new->interp.match & XkbSI_LevelOneOnly);
@@ -422,50 +422,43 @@ AddIndicatorMap(struct xkb_keymap *keymap, CompatInfo *info, LEDInfo *new)
             }
 
             collide = 0;
-            if (use_new_field(_LED_Index, old->defined, old->file_id,
-                              new->defined, new->file_id, new->merge,
-                              &collide)) {
+            if (UseNewField(_LED_Index, old->defined, old->file_id,
+                            new->defined, new->file_id, new->merge, &collide)) {
                 old->indicator = new->indicator;
                 old->defined |= _LED_Index;
             }
-            if (use_new_field(_LED_Mods, old->defined, old->file_id,
-                              new->defined, new->file_id, new->merge,
-                              &collide)) {
+            if (UseNewField(_LED_Mods, old->defined, old->file_id,
+                            new->defined, new->file_id, new->merge, &collide)) {
                 old->which_mods = new->which_mods;
                 old->real_mods = new->real_mods;
                 old->vmods = new->vmods;
                 old->defined |= _LED_Mods;
             }
-            if (use_new_field(_LED_Groups, old->defined, old->file_id,
-                              new->defined, new->file_id, new->merge,
-                              &collide)) {
+            if (UseNewField(_LED_Groups, old->defined, old->file_id,
+                            new->defined, new->file_id, new->merge, &collide)) {
                 old->which_groups = new->which_groups;
                 old->groups = new->groups;
                 old->defined |= _LED_Groups;
             }
-            if (use_new_field(_LED_Ctrls, old->defined, old->file_id,
-                              new->defined, new->file_id, new->merge,
-                              &collide)) {
+            if (UseNewField(_LED_Ctrls, old->defined, old->file_id,
+                            new->defined, new->file_id, new->merge, &collide)) {
                 old->ctrls = new->ctrls;
                 old->defined |= _LED_Ctrls;
             }
-            if (use_new_field(_LED_Explicit, old->defined, old->file_id,
-                              new->defined, new->file_id, new->merge,
-                              &collide)) {
+            if (UseNewField(_LED_Explicit, old->defined, old->file_id,
+                            new->defined, new->file_id, new->merge, &collide)) {
                 old->flags &= ~XkbIM_NoExplicit;
                 old->flags |= (new->flags & XkbIM_NoExplicit);
                 old->defined |= _LED_Explicit;
             }
-            if (use_new_field(_LED_Automatic, old->defined, old->file_id,
-                              new->defined, new->file_id, new->merge,
-                              &collide)) {
+            if (UseNewField(_LED_Automatic, old->defined, old->file_id,
+                            new->defined, new->file_id, new->merge, &collide)) {
                 old->flags &= ~XkbIM_NoAutomatic;
                 old->flags |= (new->flags & XkbIM_NoAutomatic);
                 old->defined |= _LED_Automatic;
             }
-            if (use_new_field(_LED_DrivesKbd, old->defined, old->file_id,
-                              new->defined, new->file_id, new->merge,
-                              &collide)) {
+            if (UseNewField(_LED_DrivesKbd, old->defined, old->file_id,
+                            new->defined, new->file_id, new->merge, &collide)) {
                 old->flags &= ~XkbIM_LEDDrivesKB;
                 old->flags |= (new->flags & XkbIM_LEDDrivesKB);
                 old->defined |= _LED_DrivesKbd;

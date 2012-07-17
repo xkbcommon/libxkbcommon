@@ -32,27 +32,10 @@
 #include "text.h"
 #include "utils.h"
 
-typedef struct _CommonInfo {
-    unsigned short defined;
-    unsigned file_id;
-    enum merge_mode merge;
-    struct _CommonInfo *next;
-} CommonInfo;
-
-extern bool
-UseNewField(unsigned field, CommonInfo *oldDefs, CommonInfo *newDefs,
-            unsigned *pCollide);
-
 bool
-use_new_field(unsigned field, short old_defined, unsigned old_file_id,
-              short new_defined, unsigned new_file_id,
-              enum merge_mode new_merge, unsigned *collide);
-
-extern void *
-ClearCommonInfo(CommonInfo *cmn);
-
-extern void *
-AddCommonInfo(CommonInfo * old, CommonInfo * new);
+UseNewField(unsigned field, short old_defined, unsigned old_file_id,
+            short new_defined, unsigned new_file_id,
+            enum merge_mode new_merge, unsigned *collide);
 
 extern bool
 ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,

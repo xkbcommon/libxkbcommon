@@ -107,37 +107,16 @@ ProcessIncludeFile(struct xkb_context *ctx,
 }
 
 bool
-UseNewField(unsigned field,
-            CommonInfo * oldDefs, CommonInfo * newDefs, unsigned *pCollide)
-{
-    bool useNew;
-
-    useNew = false;
-    if (oldDefs->defined & field) {
-        if (newDefs->defined & field) {
-            if (((oldDefs->file_id == newDefs->file_id)
-                 && (warningLevel > 0)) || (warningLevel > 9)) {
-                *pCollide |= field;
-            }
-            if (newDefs->merge != MERGE_AUGMENT)
-                useNew = true;
-        }
-    }
-    else if (newDefs->defined & field)
-        useNew = true;
-    return useNew;
-}
-
-bool
-use_new_field(unsigned field, short old_defined, unsigned old_file_id,
-              short new_defined, unsigned new_file_id,
-              enum merge_mode new_merge, unsigned *collide)
+UseNewField(unsigned field, short old_defined, unsigned old_file_id,
+            short new_defined, unsigned new_file_id,
+            enum merge_mode new_merge, unsigned *collide)
 {
     if (!(old_defined & field))
         return true;
 
     if (new_defined & field) {
-        if ((old_file_id == new_file_id && warningLevel > 0) || warningLevel > 9)
+        if ((old_file_id == new_file_id && warningLevel > 0) ||
+            warningLevel > 9)
             *collide |= field;
 
         if (new_merge != MERGE_AUGMENT)
@@ -146,40 +125,6 @@ use_new_field(unsigned field, short old_defined, unsigned old_file_id,
 
     return false;
 }
-
-
-void *
-ClearCommonInfo(CommonInfo * cmn)
-{
-    if (cmn != NULL) {
-        CommonInfo *this, *next;
-        for (this = cmn; this != NULL; this = next) {
-            next = this->next;
-            free(this);
-        }
-    }
-    return NULL;
-}
-
-void *
-AddCommonInfo(CommonInfo * old, CommonInfo * new)
-{
-    CommonInfo *first;
-
-    first = old;
-    while (old && old->next)
-    {
-        old = old->next;
-    }
-    new->next = NULL;
-    if (old) {
-        old->next = new;
-        return first;
-    }
-    return new;
-}
-
-/***====================================================================***/
 
 /**
  * Find the key with the given name.
