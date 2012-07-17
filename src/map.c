@@ -242,7 +242,7 @@ xkb_map_led_get_index(struct xkb_keymap *keymap, const char *name)
 /**
  * Returns the level to use for the given key and state, or -1 if invalid.
  */
-_X_EXPORT unsigned int
+unsigned int
 xkb_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
                   unsigned int group)
 {
@@ -270,7 +270,7 @@ xkb_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
  * Returns the group to use for the given key and state, taking
  * wrapping/clamping/etc into account.
  */
-_X_EXPORT unsigned int
+unsigned int
 xkb_key_get_group(struct xkb_state *state, xkb_keycode_t kc)
 {
     struct xkb_keymap *keymap = xkb_state_get_map(state);
