@@ -1,28 +1,28 @@
 /*
-Copyright 2009  Dan Nicholson
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-Except as contained in this notice, the names of the authors or their
-institutions shall not be used in advertising or otherwise to promote the
-sale, use or other dealings in this Software without prior written
-authorization from the authors.
-*/
+ * Copyright 2009  Dan Nicholson
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Except as contained in this notice, the names of the authors or their
+ * institutions shall not be used in advertising or otherwise to promote the
+ * sale, use or other dealings in this Software without prior written
+ * authorization from the authors.
+ */
 
 #include "xkbcomp-priv.h"
 #include "rules.h"
@@ -42,21 +42,21 @@ keymap_file_from_components(struct xkb_context *ctx,
 
     inc = IncludeCreate(ktcsg->keycodes, MERGE_DEFAULT);
     keycodes = CreateXKBFile(ctx, FILE_TYPE_KEYCODES, NULL,
-                             (ParseCommon *)inc, 0);
+                             (ParseCommon *) inc, 0);
 
     inc = IncludeCreate(ktcsg->types, MERGE_DEFAULT);
     types = CreateXKBFile(ctx, FILE_TYPE_TYPES, NULL,
-                          (ParseCommon *)inc, 0);
+                          (ParseCommon *) inc, 0);
     AppendStmt(&keycodes->common, &types->common);
 
     inc = IncludeCreate(ktcsg->compat, MERGE_DEFAULT);
     compat = CreateXKBFile(ctx, FILE_TYPE_COMPAT, NULL,
-                           (ParseCommon *)inc, 0);
+                           (ParseCommon *) inc, 0);
     AppendStmt(&keycodes->common, &compat->common);
 
     inc = IncludeCreate(ktcsg->symbols, MERGE_DEFAULT);
     symbols = CreateXKBFile(ctx, FILE_TYPE_SYMBOLS, NULL,
-                            (ParseCommon *)inc, 0);
+                            (ParseCommon *) inc, 0);
     AppendStmt(&keycodes->common, &symbols->common);
 
     return CreateXKBFile(ctx, FILE_TYPE_KEYMAP, strdup(""),
@@ -97,11 +97,11 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
     }
 
     /* Check for duplicate entries in the input file */
-    for (file = (XkbFile *)file->defs; file;
-         file = (XkbFile *)file->common.next) {
+    for (file = (XkbFile *) file->defs; file;
+         file = (XkbFile *) file->common.next) {
         if (have & file->type) {
             ERROR("More than one %s section in a keymap file\n",
-                   XkbcFileTypeText(file->type));
+                  XkbcFileTypeText(file->type));
             ACTION("All sections after the first ignored\n");
             continue;
         }
@@ -110,18 +110,22 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
         case FILE_TYPE_KEYCODES:
             keycodes = file;
             break;
+
         case FILE_TYPE_TYPES:
             types = file;
             break;
+
         case FILE_TYPE_SYMBOLS:
             symbols = file;
             break;
+
         case FILE_TYPE_COMPAT:
             compat = file;
             break;
+
         default:
             ERROR("Cannot define %s in a keymap file\n",
-                   XkbcFileTypeText(file->type));
+                  XkbcFileTypeText(file->type));
             continue;
         }
 

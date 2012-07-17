@@ -1,30 +1,30 @@
 /*
-
-Copyright 1990, 1998  The Open Group
-
-Permission to use, copy, modify, distribute, and sell this software and its
-documentation for any purpose is hereby granted without fee, provided that
-the above copyright notice appear in all copies and that both that
-copyright notice and this permission notice appear in supporting
-documentation.
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-
-Except as contained in this notice, the name of The Open Group shall
-not be used in advertising or otherwise to promote the sale, use or
-other dealings in this Software without prior written authorization
-from The Open Group.
-
-*/
+ *
+ * Copyright 1990, 1998  The Open Group
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation.
+ *
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Except as contained in this notice, the name of The Open Group shall
+ * not be used in advertising or otherwise to promote the sale, use or
+ * other dealings in this Software without prior written authorization
+ * from The Open Group.
+ *
+ */
 
 /*
  * Constructs hash tables for xkb_keysym_to_string and
@@ -48,7 +48,7 @@ static struct info {
 } info[KTNUM];
 
 #define MIN_REHASH 15
-#define MATCHES 10
+#define MATCHES    10
 
 static char tab[KTNUM];
 static unsigned short offsets[KTNUM];
@@ -64,7 +64,7 @@ parse_line(const char *buf, char *key, xkb_keysym_t *val, char *prefix)
 
     /* See if we can catch a straight XK_foo 0x1234-style definition first;
      * the trickery around tmp is to account for prefices. */
-    i = sscanf(buf, "#define %127s 0x%"SCNx32, key, val);
+    i = sscanf(buf, "#define %127s 0x%" SCNx32, key, val);
     if (i == 2 && strncmp(key, "XKB_KEY_", 8) == 0) {
         prefix[0] = '\0';
         memmove(key, key + 8, strlen(key + 8) + 1);
@@ -73,7 +73,7 @@ parse_line(const char *buf, char *key, xkb_keysym_t *val, char *prefix)
 
     i = sscanf(buf, "#define %127s %127s", key, alias);
     if (i == 2)
-	    fprintf(stderr, "can't parse keysym definition: %s", buf);
+        fprintf(stderr, "can't parse keysym definition: %s", buf);
 
     return 0;
 }
@@ -109,7 +109,8 @@ main(int argc, char *argv[])
             if (val == XKB_KEY_VoidSymbol)
                 val = 0;
             if (val > 0x1fffffff) {
-                fprintf(stderr, "ignoring illegal keysym (%s, %"PRIx32")\n", key,
+                fprintf(stderr, "ignoring illegal keysym (%s, %" PRIx32 ")\n",
+                        key,
                         val);
                 continue;
             }
@@ -140,7 +141,7 @@ main(int argc, char *argv[])
     num_found = 0;
     for (z = ksnum; z < KTNUM; z++) {
         max_rehash = 0;
-        for (name = tab, i = z; --i >= 0;)
+        for (name = tab, i = z; --i >= 0; )
             *name++ = 0;
         for (i = 0; i < ksnum; i++) {
             name = info[i].name;
@@ -168,7 +169,7 @@ main(int argc, char *argv[])
             if (num_found >= MATCHES)
                 break;
         }
-next1:  ;
+next1:;
     }
 
     z = best_z;
@@ -196,13 +197,13 @@ next1:  ;
         offsets[j] = k;
         indexes[i] = k;
         val = info[i].val;
-        printf("0x%.2"PRIx32", 0x%.2"PRIx32", 0x%.2"PRIx32", "
-               "0x%.2"PRIx32", 0x%.2"PRIx32", 0x%.2"PRIx32", ",
+        printf("0x%.2" PRIx32 ", 0x%.2" PRIx32 ", 0x%.2" PRIx32 ", "
+               "0x%.2" PRIx32 ", 0x%.2" PRIx32 ", 0x%.2" PRIx32 ", ",
                (sig >> 8) & 0xff, sig & 0xff, (val >> 24) & 0xff,
                (val >> 16) & 0xff, (val >> 8) & 0xff, val & 0xff);
         for (name = info[i].name, k += 7; (c = *name++); k++)
             printf("'%c',", c);
-        printf((i == (ksnum-1)) ? "0\n" : "0,\n");
+        printf((i == (ksnum - 1)) ? "0\n" : "0,\n");
     }
     printf("};\n");
     printf("\n");
@@ -210,7 +211,7 @@ next1:  ;
     printf("#define KMAXHASH %d\n", best_max_rehash + 1);
     printf("\n");
     printf("static const unsigned short hashString[KTABLESIZE] = {\n");
-    for (i = 0; i < z;) {
+    for (i = 0; i < z; ) {
         printf("0x%.4x", offsets[i]);
         i++;
         if (i == z)
@@ -224,7 +225,7 @@ next1:  ;
     num_found = 0;
     for (z = ksnum; z < KTNUM; z++) {
         max_rehash = 0;
-        for (name = tab, i = z; --i >= 0;)
+        for (name = tab, i = z; --i >= 0; )
             *name++ = 0;
         for (i = 0; i < ksnum; i++) {
             val = info[i].val;
@@ -242,7 +243,7 @@ next1:  ;
             values[j] = val;
             if (k > max_rehash)
                 max_rehash = k;
-skip1:  ;
+skip1:;
         }
         if (max_rehash < MIN_REHASH) {
             if (max_rehash < best_max_rehash) {
@@ -253,7 +254,7 @@ skip1:  ;
             if (num_found >= MATCHES)
                 break;
         }
-next2:  ;
+next2:;
     }
 
     z = best_z;
@@ -262,7 +263,7 @@ next2:  ;
                 "Try increasing KTNUM in makekeys.c\n");
         exit(1);
     }
-    for (i = z; --i >= 0;)
+    for (i = z; --i >= 0; )
         offsets[i] = 0;
     for (i = 0; i < ksnum; i++) {
         val = info[i].val;
@@ -276,14 +277,14 @@ next2:  ;
         }
         offsets[j] = indexes[i] + 2;
         values[j] = val;
-skip2:  ;
+skip2:;
     }
     printf("\n");
     printf("#define VTABLESIZE %d\n", z);
     printf("#define VMAXHASH %d\n", best_max_rehash + 1);
     printf("\n");
     printf("static const unsigned short hashKeysym[VTABLESIZE] = {\n");
-    for (i = 0; i < z;) {
+    for (i = 0; i < z; ) {
         printf("0x%.4x", offsets[i]);
         i++;
         if (i == z)

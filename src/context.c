@@ -107,7 +107,7 @@ xkb_context_include_path_clear(struct xkb_context *ctx)
     char **path;
 
     darray_foreach(path, ctx->includes)
-        free(*path);
+    free(*path);
 
     darray_free(ctx->includes);
 }

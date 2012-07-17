@@ -1,55 +1,55 @@
 /*
-Copyright 1985, 1987, 1990, 1998  The Open Group
-Copyright 2008  Dan Nicholson
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-Except as contained in this notice, the names of the authors or their
-institutions shall not be used in advertising or otherwise to promote the
-sale, use or other dealings in this Software without prior written
-authorization from the authors.
-*/
+ * Copyright 1985, 1987, 1990, 1998  The Open Group
+ * Copyright 2008  Dan Nicholson
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Except as contained in this notice, the names of the authors or their
+ * institutions shall not be used in advertising or otherwise to promote the
+ * sale, use or other dealings in this Software without prior written
+ * authorization from the authors.
+ */
 
 /************************************************************
-Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
-
-Permission to use, copy, modify, and distribute this
-software and its documentation for any purpose and without
-fee is hereby granted, provided that the above copyright
-notice appear in all copies and that both that copyright
-notice and this permission notice appear in supporting
-documentation, and that the name of Silicon Graphics not be
-used in advertising or publicity pertaining to distribution
-of the software without specific prior written permission.
-Silicon Graphics makes no representation about the suitability
-of this software for any purpose. It is provided "as is"
-without any express or implied warranty.
-
-SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
-SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
-GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
-DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
-DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
-OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
-THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-********************************************************/
+ * Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software and its documentation for any purpose and without
+ * fee is hereby granted, provided that the above copyright
+ * notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting
+ * documentation, and that the name of Silicon Graphics not be
+ * used in advertising or publicity pertaining to distribution
+ * of the software without specific prior written permission.
+ * Silicon Graphics makes no representation about the suitability
+ * of this software for any purpose. It is provided "as is"
+ * without any express or implied warranty.
+ *
+ * SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
+ * GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
+ * THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ ********************************************************/
 
 /*
  * Copyright © 2009 Daniel Stone
@@ -76,7 +76,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Author: Daniel Stone <daniel@fooishbar.org>
  */
 
-
 #ifndef _XKBCOMMON_H_
 #define _XKBCOMMON_H_
 
@@ -94,14 +93,14 @@ typedef uint32_t xkb_mod_mask_t;
 typedef uint32_t xkb_group_index_t;
 typedef uint32_t xkb_led_index_t;
 
-#define XKB_MOD_INVALID                 (0xffffffff)
-#define XKB_GROUP_INVALID               (0xffffffff)
-#define XKB_KEYCODE_INVALID             (0xffffffff)
-#define XKB_LED_INVALID                 (0xffffffff)
+#define XKB_MOD_INVALID     (0xffffffff)
+#define XKB_GROUP_INVALID   (0xffffffff)
+#define XKB_KEYCODE_INVALID (0xffffffff)
+#define XKB_LED_INVALID     (0xffffffff)
 
-#define XKB_KEYCODE_MAX                 (0xffffffff - 1)
-#define xkb_keycode_is_legal_ext(kc)    (kc <= XKB_KEYCODE_MAX)
-#define xkb_keycode_is_legal_x11(kc)    (kc >= 8 && kc <= 255)
+#define XKB_KEYCODE_MAX     (0xffffffff - 1)
+#define xkb_keycode_is_legal_ext(kc) (kc <= XKB_KEYCODE_MAX)
+#define xkb_keycode_is_legal_x11(kc) (kc >= 8 && kc <= 255)
 
 /**
  * Names to compile a keymap with, also known as RMLVO.  These names together
@@ -168,7 +167,7 @@ xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size);
  * Returns the Unicode/UTF-32 representation of the provided keysym, which is
  * also compatible with UCS-4.  A return value of zero means the keysym does
  * not have a known printable Unicode representation.
-*/
+ */
 uint32_t
 xkb_keysym_to_utf32(xkb_keysym_t keysym);
 
@@ -283,17 +282,16 @@ enum xkb_keymap_format {
  * file.
  */
 struct xkb_keymap *
-xkb_map_new_from_file(struct xkb_context *context,
-                    FILE *file, enum xkb_keymap_format format,
-                    enum xkb_map_compile_flags flags);
+xkb_map_new_from_file(struct xkb_context *context, FILE *file,
+                      enum xkb_keymap_format format,
+                      enum xkb_map_compile_flags flags);
 
 /**
  * Creates an XKB keymap from a full text XKB keymap serialized into one
  * enormous string.
  */
 struct xkb_keymap *
-xkb_map_new_from_string(struct xkb_context *context,
-                        const char *string,
+xkb_map_new_from_string(struct xkb_context *context, const char *string,
                         enum xkb_keymap_format format,
                         enum xkb_map_compile_flags flags);
 
@@ -507,10 +505,8 @@ enum xkb_state_match {
  * Please do not use this unless you fit the description above.
  */
 void
-xkb_state_update_mask(struct xkb_state *state,
-                      xkb_mod_mask_t base_mods,
-                      xkb_mod_mask_t latched_mods,
-                      xkb_mod_mask_t locked_mods,
+xkb_state_update_mask(struct xkb_state *state, xkb_mod_mask_t base_mods,
+                      xkb_mod_mask_t latched_mods, xkb_mod_mask_t locked_mods,
                       xkb_group_index_t base_group,
                       xkb_group_index_t latched_group,
                       xkb_group_index_t locked_group);
@@ -594,7 +590,8 @@ xkb_state_group_name_is_active(struct xkb_state *state, const char *name,
  * exist in the current map.
  */
 int
-xkb_state_group_index_is_active(struct xkb_state *state, xkb_group_index_t idx,
+xkb_state_group_index_is_active(struct xkb_state *state,
+                                xkb_group_index_t idx,
                                 enum xkb_state_component type);
 
 /**

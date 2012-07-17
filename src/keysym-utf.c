@@ -877,8 +877,6 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym)
     return 0;
 }
 
-
-
 /*
  * Copyright © 2012 Intel Corporation
  *
@@ -914,19 +912,24 @@ utf32_to_utf8(uint32_t unichar, char *buffer)
         buffer[0] = unichar;
         buffer[1] = '\0';
         return 2;
-    } else if (unichar <= 0x07FF) {
+    }
+    else if (unichar <= 0x07FF) {
         length = 2;
         head = 0xc0;
-    } else if (unichar <= 0xffff) {
+    }
+    else if (unichar <= 0xffff) {
         length = 3;
         head = 0xe0;
-    } else if (unichar <= 0x1fffff) {
+    }
+    else if (unichar <= 0x1fffff) {
         length = 4;
         head = 0xf0;
-    } else if (unichar <= 0x3ffffff) {
+    }
+    else if (unichar <= 0x3ffffff) {
         length = 5;
         head = 0xf8;
-    } else {
+    }
+    else {
         length = 6;
         head = 0xfc;
     }

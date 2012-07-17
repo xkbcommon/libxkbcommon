@@ -1,27 +1,27 @@
 /************************************************************
- Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
-
- Permission to use, copy, modify, and distribute this
- software and its documentation for any purpose and without
- fee is hereby granted, provided that the above copyright
- notice appear in all copies and that both that copyright
- notice and this permission notice appear in supporting
- documentation, and that the name of Silicon Graphics not be
- used in advertising or publicity pertaining to distribution
- of the software without specific prior written permission.
- Silicon Graphics makes no representation about the suitability
- of this software for any purpose. It is provided "as is"
- without any express or implied warranty.
-
- SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
- SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
- GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
- DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
- THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
+ * Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software and its documentation for any purpose and without
+ * fee is hereby granted, provided that the above copyright
+ * notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting
+ * documentation, and that the name of Silicon Graphics not be
+ * used in advertising or publicity pertaining to distribution
+ * of the software without specific prior written permission.
+ * Silicon Graphics makes no representation about the suitability
+ * of this software for any purpose. It is provided "as is"
+ * without any express or implied warranty.
+ *
+ * SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
+ * GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
+ * THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
  ********************************************************/
 
 #include "keycodes.h"
@@ -51,16 +51,14 @@ LongToKeyName(unsigned long val, char *name)
 
 /***====================================================================***/
 
-typedef struct _IndicatorNameInfo
-{
+typedef struct _IndicatorNameInfo {
     CommonInfo defs;
     int ndx;
     xkb_atom_t name;
     bool virtual;
 } IndicatorNameInfo;
 
-typedef struct _KeyNamesInfo
-{
+typedef struct _KeyNamesInfo {
     char *name;     /* e.g. evdev+aliases(qwerty) */
     int errorCount;
     unsigned file_id;
@@ -75,8 +73,10 @@ typedef struct _KeyNamesInfo
     AliasInfo *aliases;
 } KeyNamesInfo;
 
-static void HandleKeycodesFile(XkbFile *file, struct xkb_keymap *keymap,
-                               enum merge_mode merge, KeyNamesInfo *info);
+static void
+HandleKeycodesFile(XkbFile *file, struct xkb_keymap *keymap,
+                   enum merge_mode merge,
+                   KeyNamesInfo *info);
 
 static void
 ResizeKeyNameArrays(KeyNamesInfo *info, int newMax)
@@ -103,8 +103,7 @@ InitIndicatorNameInfo(IndicatorNameInfo * ii, KeyNamesInfo * info)
 static void
 ClearIndicatorNameInfo(IndicatorNameInfo * ii, KeyNamesInfo * info)
 {
-    if (ii == info->leds)
-    {
+    if (ii == info->leds) {
         ClearCommonInfo(&ii->defs);
         info->leds = NULL;
     }
@@ -116,8 +115,7 @@ NextIndicatorName(KeyNamesInfo * info)
     IndicatorNameInfo *ii;
 
     ii = uTypedAlloc(IndicatorNameInfo);
-    if (ii)
-    {
+    if (ii) {
         InitIndicatorNameInfo(ii, info);
         info->leds = AddCommonInfo(&info->leds->defs, &ii->defs);
     }
@@ -130,8 +128,7 @@ FindIndicatorByIndex(KeyNamesInfo * info, int ndx)
     IndicatorNameInfo *old;
 
     for (old = info->leds; old != NULL;
-         old = (IndicatorNameInfo *) old->defs.next)
-    {
+         old = (IndicatorNameInfo *) old->defs.next) {
         if (old->ndx == ndx)
             return old;
     }
@@ -144,8 +141,7 @@ FindIndicatorByName(KeyNamesInfo * info, xkb_atom_t name)
     IndicatorNameInfo *old;
 
     for (old = info->leds; old != NULL;
-         old = (IndicatorNameInfo *) old->defs.next)
-    {
+         old = (IndicatorNameInfo *) old->defs.next) {
         if (old->name == name)
             return old;
     }
@@ -153,7 +149,8 @@ FindIndicatorByName(KeyNamesInfo * info, xkb_atom_t name)
 }
 
 static bool
-AddIndicatorName(KeyNamesInfo *info, struct xkb_keymap *keymap, enum merge_mode merge,
+AddIndicatorName(KeyNamesInfo *info, struct xkb_keymap *keymap,
+                 enum merge_mode merge,
                  IndicatorNameInfo *new)
 {
     IndicatorNameInfo *old;
@@ -161,49 +158,39 @@ AddIndicatorName(KeyNamesInfo *info, struct xkb_keymap *keymap, enum merge_mode 
 
     replace = (merge == MERGE_REPLACE) || (merge == MERGE_OVERRIDE);
     old = FindIndicatorByName(info, new->name);
-    if (old)
-    {
+    if (old) {
         if (((old->defs.file_id == new->defs.file_id) && (warningLevel > 0))
-            || (warningLevel > 9))
-        {
+            || (warningLevel > 9)) {
             WARN("Multiple indicators named %s\n",
                  xkb_atom_text(keymap->ctx, new->name));
-            if (old->ndx == new->ndx)
-            {
-                if (old->virtual != new->virtual)
-                {
+            if (old->ndx == new->ndx) {
+                if (old->virtual != new->virtual) {
                     if (replace)
                         old->virtual = new->virtual;
                     ACTION("Using %s instead of %s\n",
                            (old->virtual ? "virtual" : "real"),
                            (old->virtual ? "real" : "virtual"));
                 }
-                else
-                {
+                else {
                     ACTION("Identical definitions ignored\n");
                 }
                 return true;
             }
-            else
-            {
+            else {
                 if (replace)
                     ACTION("Ignoring %d, using %d\n", old->ndx, new->ndx);
                 else
                     ACTION("Using %d, ignoring %d\n", old->ndx, new->ndx);
             }
-            if (replace)
-            {
+            if (replace) {
                 if (info->leds == old)
                     info->leds = (IndicatorNameInfo *) old->defs.next;
-                else
-                {
+                else {
                     IndicatorNameInfo *tmp;
                     tmp = info->leds;
                     for (; tmp != NULL;
-                         tmp = (IndicatorNameInfo *) tmp->defs.next)
-                    {
-                        if (tmp->defs.next == (CommonInfo *) old)
-                        {
+                         tmp = (IndicatorNameInfo *) tmp->defs.next) {
+                        if (tmp->defs.next == (CommonInfo *) old) {
                             tmp->defs.next = old->defs.next;
                             break;
                         }
@@ -214,16 +201,13 @@ AddIndicatorName(KeyNamesInfo *info, struct xkb_keymap *keymap, enum merge_mode 
         }
     }
     old = FindIndicatorByIndex(info, new->ndx);
-    if (old)
-    {
+    if (old) {
         if (((old->defs.file_id == new->defs.file_id) && (warningLevel > 0))
-            || (warningLevel > 9))
-        {
+            || (warningLevel > 9)) {
             WARN("Multiple names for indicator %d\n", new->ndx);
             if ((old->name == new->name) && (old->virtual == new->virtual))
                 ACTION("Identical definitions ignored\n");
-            else
-            {
+            else {
                 const char *oldType, *newType;
                 xkb_atom_t using, ignoring;
                 if (old->virtual)
@@ -234,23 +218,20 @@ AddIndicatorName(KeyNamesInfo *info, struct xkb_keymap *keymap, enum merge_mode 
                     newType = "virtual indicator";
                 else
                     newType = "real indicator";
-                if (replace)
-                {
+                if (replace) {
                     using = new->name;
                     ignoring = old->name;
                 }
-                else
-                {
+                else {
                     using = old->name;
                     ignoring = new->name;
                 }
                 ACTION("Using %s %s, ignoring %s %s\n",
-                        oldType, xkb_atom_text(keymap->ctx, using),
-                        newType, xkb_atom_text(keymap->ctx, ignoring));
+                       oldType, xkb_atom_text(keymap->ctx, using),
+                       newType, xkb_atom_text(keymap->ctx, ignoring));
             }
         }
-        if (replace)
-        {
+        if (replace) {
             old->name = new->name;
             old->virtual = new->virtual;
         }
@@ -258,8 +239,7 @@ AddIndicatorName(KeyNamesInfo *info, struct xkb_keymap *keymap, enum merge_mode 
     }
     old = new;
     new = NextIndicatorName(info);
-    if (!new)
-    {
+    if (!new) {
         WSGO("Couldn't allocate name for indicator %d\n", old->ndx);
         ACTION("Ignored\n");
         return false;
@@ -331,39 +311,32 @@ AddKeyName(KeyNamesInfo * info,
         info->computedMax = kc;
     lval = KeyNameToLong(name);
 
-    if (reportCollisions)
-    {
+    if (reportCollisions) {
         reportCollisions = (warningLevel > 7 ||
                             (warningLevel > 0 &&
                              file_id == darray_item(info->files, kc)));
     }
 
-    if (darray_item(info->names, kc) != 0)
-    {
+    if (darray_item(info->names, kc) != 0) {
         char buf[6];
 
         LongToKeyName(darray_item(info->names, kc), buf);
         buf[4] = '\0';
-        if (darray_item(info->names, kc) == lval && reportCollisions)
-        {
+        if (darray_item(info->names, kc) == lval && reportCollisions) {
             WARN("Multiple identical key name definitions\n");
             ACTION("Later occurences of \"<%s> = %d\" ignored\n",
                    buf, kc);
             return true;
         }
-        if (merge == MERGE_AUGMENT)
-        {
-            if (reportCollisions)
-            {
+        if (merge == MERGE_AUGMENT) {
+            if (reportCollisions) {
                 WARN("Multiple names for keycode %d\n", kc);
                 ACTION("Using <%s>, ignoring <%s>\n", buf, name);
             }
             return true;
         }
-        else
-        {
-            if (reportCollisions)
-            {
+        else {
+            if (reportCollisions) {
                 WARN("Multiple names for keycode %d\n", kc);
                 ACTION("Using <%s>, ignoring <%s>\n", name, buf);
             }
@@ -372,22 +345,17 @@ AddKeyName(KeyNamesInfo * info,
         }
     }
     old = FindKeyByLong(info, lval);
-    if ((old != 0) && (old != kc))
-    {
-        if (merge == MERGE_OVERRIDE)
-        {
+    if ((old != 0) && (old != kc)) {
+        if (merge == MERGE_OVERRIDE) {
             darray_item(info->names, old) = 0;
             darray_item(info->files, old) = 0;
-            if (reportCollisions)
-            {
+            if (reportCollisions) {
                 WARN("Key name <%s> assigned to multiple keys\n", name);
                 ACTION("Using %d, ignoring %d\n", kc, old);
             }
         }
-        else
-        {
-            if ((reportCollisions) && (warningLevel > 3))
-            {
+        else {
+            if ((reportCollisions) && (warningLevel > 3)) {
                 WARN("Key name <%s> assigned to multiple keys\n", name);
                 ACTION("Using %d, ignoring %d\n", old, kc);
             }
@@ -408,21 +376,18 @@ MergeIncludedKeycodes(KeyNamesInfo *into, struct xkb_keymap *keymap,
     uint64_t i;
     char buf[5];
 
-    if (from->errorCount > 0)
-    {
+    if (from->errorCount > 0) {
         into->errorCount += from->errorCount;
         return;
     }
-    if (into->name == NULL)
-    {
+    if (into->name == NULL) {
         into->name = from->name;
         from->name = NULL;
     }
 
     ResizeKeyNameArrays(into, from->computedMax);
 
-    for (i = from->computedMin; i <= from->computedMax; i++)
-    {
+    for (i = from->computedMin; i <= from->computedMax; i++) {
         if (darray_item(from->names, i) == 0)
             continue;
         LongToKeyName(darray_item(from->names, i), buf);
@@ -430,11 +395,9 @@ MergeIncludedKeycodes(KeyNamesInfo *into, struct xkb_keymap *keymap,
         if (!AddKeyName(into, i, buf, merge, from->file_id, false))
             into->errorCount++;
     }
-    if (from->leds)
-    {
+    if (from->leds) {
         IndicatorNameInfo *led, *next;
-        for (led = from->leds; led != NULL; led = next)
-        {
+        for (led = from->leds; led != NULL; led = next) {
             if (merge != MERGE_DEFAULT)
                 led->defs.merge = merge;
             if (!AddIndicatorName(into, keymap, led->defs.merge, led))
@@ -444,14 +407,12 @@ MergeIncludedKeycodes(KeyNamesInfo *into, struct xkb_keymap *keymap,
     }
     if (!MergeAliases(&into->aliases, &from->aliases, merge))
         into->errorCount++;
-    if (from->explicitMin != 0)
-    {
+    if (from->explicitMin != 0) {
         if ((into->explicitMin == 0)
             || (into->explicitMin > from->explicitMin))
             into->explicitMin = from->explicitMin;
     }
-    if (from->explicitMax > 0)
-    {
+    if (from->explicitMax > 0) {
         if ((into->explicitMax == 0)
             || (into->explicitMax < from->explicitMax))
             into->explicitMax = from->explicitMax;
@@ -477,63 +438,53 @@ HandleIncludeKeycodes(IncludeStmt *stmt, struct xkb_keymap *keymap,
     memset(&included, 0, sizeof(included));
 
     haveSelf = false;
-    if ((stmt->file == NULL) && (stmt->map == NULL))
-    {
+    if ((stmt->file == NULL) && (stmt->map == NULL)) {
         haveSelf = true;
         included = *info;
         memset(info, 0, sizeof(KeyNamesInfo));
     }
-    else if (stmt->file && strcmp(stmt->file, "computed") == 0)
-    {
+    else if (stmt->file && strcmp(stmt->file, "computed") == 0) {
         keymap->flags |= AutoKeyNames;
         info->explicitMin = 0;
         info->explicitMax = XKB_KEYCODE_MAX;
         return (info->errorCount == 0);
     } /* parse file, store returned info in the xkb struct */
     else if (ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_KEYCODES, &rtrn,
-                                &newMerge))
-    {
+                                &newMerge)) {
         InitKeyNamesInfo(&included, rtrn->id);
         HandleKeycodesFile(rtrn, keymap, MERGE_OVERRIDE, &included);
-        if (stmt->stmt != NULL)
-        {
+        if (stmt->stmt != NULL) {
             free(included.name);
             included.name = stmt->stmt;
             stmt->stmt = NULL;
         }
         FreeXKBFile(rtrn);
     }
-    else
-    {
+    else {
         info->errorCount += 10; /* XXX: why 10?? */
         return false;
     }
     /* Do we have more than one include statement? */
-    if ((stmt->next != NULL) && (included.errorCount < 1))
-    {
+    if ((stmt->next != NULL) && (included.errorCount < 1)) {
         IncludeStmt *next;
         unsigned op;
         KeyNamesInfo next_incl;
 
-        for (next = stmt->next; next != NULL; next = next->next)
-        {
-            if ((next->file == NULL) && (next->map == NULL))
-            {
+        for (next = stmt->next; next != NULL; next = next->next) {
+            if ((next->file == NULL) && (next->map == NULL)) {
                 haveSelf = true;
                 MergeIncludedKeycodes(&included, keymap, info, next->merge);
                 ClearKeyNamesInfo(info);
             }
             else if (ProcessIncludeFile(keymap->ctx, next, FILE_TYPE_KEYCODES,
-                                        &rtrn, &op))
-            {
+                                        &rtrn, &op)) {
                 InitKeyNamesInfo(&next_incl, rtrn->id);
                 HandleKeycodesFile(rtrn, keymap, MERGE_OVERRIDE, &next_incl);
                 MergeIncludedKeycodes(&included, keymap, &next_incl, op);
                 ClearKeyNamesInfo(&next_incl);
                 FreeXKBFile(rtrn);
             }
-            else
-            {
+            else {
                 info->errorCount += 10; /* XXX: Why 10?? */
                 ClearKeyNamesInfo(&included);
                 return false;
@@ -542,8 +493,7 @@ HandleIncludeKeycodes(IncludeStmt *stmt, struct xkb_keymap *keymap,
     }
     if (haveSelf)
         *info = included;
-    else
-    {
+    else {
         MergeIncludedKeycodes(info, keymap, &included, newMerge);
         ClearKeyNamesInfo(&included);
     }
@@ -558,16 +508,14 @@ static int
 HandleKeycodeDef(KeycodeDef *stmt, enum merge_mode merge, KeyNamesInfo *info)
 {
     if ((info->explicitMin != 0 && stmt->value < info->explicitMin) ||
-        (info->explicitMax != 0 && stmt->value > info->explicitMax))
-    {
+        (info->explicitMax != 0 && stmt->value > info->explicitMax)) {
         ERROR("Illegal keycode %lu for name <%s>\n", stmt->value, stmt->name);
         ACTION("Must be in the range %d-%d inclusive\n",
-                info->explicitMin,
-                info->explicitMax ? info->explicitMax : XKB_KEYCODE_MAX);
+               info->explicitMin,
+               info->explicitMax ? info->explicitMax : XKB_KEYCODE_MAX);
         return 0;
     }
-    if (stmt->merge != MERGE_DEFAULT)
-    {
+    if (stmt->merge != MERGE_DEFAULT) {
         if (stmt->merge == MERGE_REPLACE)
             merge = MERGE_OVERRIDE;
         else
@@ -577,8 +525,8 @@ HandleKeycodeDef(KeycodeDef *stmt, enum merge_mode merge, KeyNamesInfo *info)
                       true);
 }
 
-#define	MIN_KEYCODE_DEF		0
-#define	MAX_KEYCODE_DEF		1
+#define MIN_KEYCODE_DEF 0
+#define MAX_KEYCODE_DEF 1
 
 /**
  * Handle the minimum/maximum statement of the xkb file.
@@ -596,8 +544,7 @@ HandleKeyNameVar(VarDef *stmt, struct xkb_keymap *keymap, KeyNamesInfo *info)
     if (ExprResolveLhs(keymap, stmt->name, &tmp, &field, &arrayNdx) == 0)
         return 0;               /* internal error, already reported */
 
-    if (tmp.str != NULL)
-    {
+    if (tmp.str != NULL) {
         ERROR("Unknown element %s encountered\n", tmp.str);
         ACTION("Default for field %s ignored\n", field.str);
         goto err_out;
@@ -606,66 +553,56 @@ HandleKeyNameVar(VarDef *stmt, struct xkb_keymap *keymap, KeyNamesInfo *info)
         which = MIN_KEYCODE_DEF;
     else if (strcasecmp(field.str, "maximum") == 0)
         which = MAX_KEYCODE_DEF;
-    else
-    {
+    else {
         ERROR("Unknown field encountered\n");
         ACTION("Assigment to field %s ignored\n", field.str);
         goto err_out;
     }
-    if (arrayNdx != NULL)
-    {
+    if (arrayNdx != NULL) {
         ERROR("The %s setting is not an array\n", field.str);
         ACTION("Illegal array reference ignored\n");
         goto err_out;
     }
 
-    if (ExprResolveKeyCode(keymap->ctx, stmt->value, &tmp) == 0)
-    {
+    if (ExprResolveKeyCode(keymap->ctx, stmt->value, &tmp) == 0) {
         ACTION("Assignment to field %s ignored\n", field.str);
         goto err_out;
     }
-    if (tmp.uval > XKB_KEYCODE_MAX)
-    {
+    if (tmp.uval > XKB_KEYCODE_MAX) {
         ERROR
             ("Illegal keycode %d (must be in the range %d-%d inclusive)\n",
-             tmp.uval, 0, XKB_KEYCODE_MAX);
+            tmp.uval, 0, XKB_KEYCODE_MAX);
         ACTION("Value of \"%s\" not changed\n", field.str);
         goto err_out;
     }
-    if (which == MIN_KEYCODE_DEF)
-    {
-        if ((info->explicitMax > 0) && (info->explicitMax < tmp.uval))
-        {
+    if (which == MIN_KEYCODE_DEF) {
+        if ((info->explicitMax > 0) && (info->explicitMax < tmp.uval)) {
             ERROR
                 ("Minimum key code (%d) must be <= maximum key code (%d)\n",
-                 tmp.uval, info->explicitMax);
+                tmp.uval, info->explicitMax);
             ACTION("Minimum key code value not changed\n");
             goto err_out;
         }
-        if ((info->computedMax > 0) && (info->computedMin < tmp.uval))
-        {
+        if ((info->computedMax > 0) && (info->computedMin < tmp.uval)) {
             ERROR
                 ("Minimum key code (%d) must be <= lowest defined key (%d)\n",
-                 tmp.uval, info->computedMin);
+                tmp.uval, info->computedMin);
             ACTION("Minimum key code value not changed\n");
             goto err_out;
         }
         info->explicitMin = tmp.uval;
     }
-    if (which == MAX_KEYCODE_DEF)
-    {
-        if ((info->explicitMin > 0) && (info->explicitMin > tmp.uval))
-        {
+    if (which == MAX_KEYCODE_DEF) {
+        if ((info->explicitMin > 0) && (info->explicitMin > tmp.uval)) {
             ERROR("Maximum code (%d) must be >= minimum key code (%d)\n",
-                   tmp.uval, info->explicitMin);
+                  tmp.uval, info->explicitMin);
             ACTION("Maximum code value not changed\n");
             goto err_out;
         }
-        if ((info->computedMax > 0) && (info->computedMax > tmp.uval))
-        {
+        if ((info->computedMax > 0) && (info->computedMax > tmp.uval)) {
             ERROR
                 ("Maximum code (%d) must be >= highest defined key (%d)\n",
-                 tmp.uval, info->computedMax);
+                tmp.uval, info->computedMax);
             ACTION("Maximum code value not changed\n");
             goto err_out;
         }
@@ -687,8 +624,7 @@ HandleIndicatorNameDef(IndicatorNameDef *def, struct xkb_keymap *keymap,
     IndicatorNameInfo ii;
     ExprResult tmp;
 
-    if ((def->ndx < 1) || (def->ndx > XkbNumIndicators))
-    {
+    if ((def->ndx < 1) || (def->ndx > XkbNumIndicators)) {
         info->errorCount++;
         ERROR("Name specified for illegal indicator index %d\n", def->ndx);
         ACTION("Ignored\n");
@@ -696,8 +632,7 @@ HandleIndicatorNameDef(IndicatorNameDef *def, struct xkb_keymap *keymap,
     }
     InitIndicatorNameInfo(&ii, info);
     ii.ndx = def->ndx;
-    if (!ExprResolveString(keymap->ctx, def->name, &tmp))
-    {
+    if (!ExprResolveString(keymap->ctx, def->name, &tmp)) {
         char buf[20];
         snprintf(buf, sizeof(buf), "%d", def->ndx);
         info->errorCount++;
@@ -735,8 +670,7 @@ HandleKeycodesFile(XkbFile *file, struct xkb_keymap *keymap,
     stmt = file->defs;
     while (stmt)
     {
-        switch (stmt->stmtType)
-        {
+        switch (stmt->stmtType) {
         case StmtInclude:    /* e.g. include "evdev+aliases(qwerty)" */
             if (!HandleIncludeKeycodes((IncludeStmt *) stmt, keymap, info))
                 info->errorCount++;
@@ -763,19 +697,18 @@ HandleKeycodesFile(XkbFile *file, struct xkb_keymap *keymap,
         case StmtVModDef:
             ERROR("Keycode files may define key and indicator names only\n");
             ACTION("Ignoring definition of %s\n",
-                    ((stmt->stmtType ==
-                      StmtInterpDef) ? "a symbol interpretation" :
-                     "virtual modifiers"));
+                   ((stmt->stmtType ==
+                     StmtInterpDef) ? "a symbol interpretation" :
+                    "virtual modifiers"));
             info->errorCount++;
             break;
         default:
             WSGO("Unexpected statement type %d in HandleKeycodesFile\n",
-                  stmt->stmtType);
+                 stmt->stmtType);
             break;
         }
         stmt = stmt->next;
-        if (info->errorCount > 10)
-        {
+        if (info->errorCount > 10) {
 #ifdef NOISY
             ERROR("Too many errors\n");
 #endif
@@ -796,7 +729,8 @@ HandleKeycodesFile(XkbFile *file, struct xkb_keymap *keymap,
  * @return true on success, false otherwise.
  */
 bool
-CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
+CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
+                enum merge_mode merge)
 {
     KeyNamesInfo info; /* contains all the info after parsing */
 
@@ -827,7 +761,8 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
                           darray_item(keymap->names->keys, i).name);
         if (info.name)
             keymap->names->keycodes = strdup(info.name);
-    } else {
+    }
+    else {
         WSGO("Cannot create struct xkb_names in CompileKeycodes\n");
         goto err_info;
     }
@@ -839,7 +774,7 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
             ACTION("Physical indicators not set\n");
         }
 
-        for (ii = info.leds; ii; ii = (IndicatorNameInfo *)ii->defs.next) {
+        for (ii = info.leds; ii; ii = (IndicatorNameInfo *) ii->defs.next) {
             free(keymap->names->indicators[ii->ndx - 1]);
             keymap->names->indicators[ii->ndx - 1] =
                 xkb_atom_strdup(keymap->ctx, ii->name);

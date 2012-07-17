@@ -1,27 +1,27 @@
 /************************************************************
- Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
-
- Permission to use, copy, modify, and distribute this
- software and its documentation for any purpose and without
- fee is hereby granted, provided that the above copyright
- notice appear in all copies and that both that copyright
- notice and this permission notice appear in supporting
- documentation, and that the name of Silicon Graphics not be
- used in advertising or publicity pertaining to distribution
- of the software without specific prior written permission.
- Silicon Graphics makes no representation about the suitability
- of this software for any purpose. It is provided "as is"
- without any express or implied warranty.
-
- SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
- SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
- GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
- DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
- THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
+ * Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software and its documentation for any purpose and without
+ * fee is hereby granted, provided that the above copyright
+ * notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting
+ * documentation, and that the name of Silicon Graphics not be
+ * used in advertising or publicity pertaining to distribution
+ * of the software without specific prior written permission.
+ * Silicon Graphics makes no representation about the suitability
+ * of this software for any purpose. It is provided "as is"
+ * without any express or implied warranty.
+ *
+ * SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
+ * GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
+ * THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
  ********************************************************/
 
 #include "text.h"
@@ -56,9 +56,9 @@ XkbcVModIndexText(struct xkb_keymap *keymap, unsigned ndx)
     char buf[20];
 
     if (ndx >= XkbNumVirtualMods)
-         tmp = "illegal";
+        tmp = "illegal";
     else if (keymap && keymap->names)
-         tmp = keymap->names->vmods[ndx];
+        tmp = keymap->names->vmods[ndx];
 
     if (!tmp) {
         snprintf(buf, sizeof(buf) - 1, "%d", ndx);
@@ -90,12 +90,12 @@ XkbcVModMaskText(struct xkb_keymap *keymap, unsigned modMask, unsigned mask)
         mm = XkbcModMaskText(modMask, false);
 
     str = buf;
-    buf[0]= '\0';
+    buf[0] = '\0';
     rem = BUFFER_SIZE;
 
     if (mask) {
-        for (i = 0, bit = 1; i < XkbNumVirtualMods && rem > 1; i++, bit <<= 1)
-        {
+        for (i = 0, bit = 1; i < XkbNumVirtualMods && rem > 1; i++, bit <<=
+                 1) {
             if (!(mask & bit))
                 continue;
 
@@ -206,7 +206,7 @@ XkbcFileTypeText(enum xkb_file_type type)
     }
 }
 
-static const char *actionTypeNames[XkbSA_NumActions]= {
+static const char *actionTypeNames[XkbSA_NumActions] = {
     "NoAction",         /* XkbSA_NoAction */
     "SetMods",          /* XkbSA_SetMods */
     "LatchMods",        /* XkbSA_LatchMods */

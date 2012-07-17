@@ -1,27 +1,27 @@
 /************************************************************
- Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
-
- Permission to use, copy, modify, and distribute this
- software and its documentation for any purpose and without
- fee is hereby granted, provided that the above copyright
- notice appear in all copies and that both that copyright
- notice and this permission notice appear in supporting
- documentation, and that the name of Silicon Graphics not be
- used in advertising or publicity pertaining to distribution
- of the software without specific prior written permission.
- Silicon Graphics makes no representation about the suitability
- of this software for any purpose. It is provided "as is"
- without any express or implied warranty.
-
- SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
- SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
- GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
- DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
- THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
+ * Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software and its documentation for any purpose and without
+ * fee is hereby granted, provided that the above copyright
+ * notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting
+ * documentation, and that the name of Silicon Graphics not be
+ * used in advertising or publicity pertaining to distribution
+ * of the software without specific prior written permission.
+ * Silicon Graphics makes no representation about the suitability
+ * of this software for any purpose. It is provided "as is"
+ * without any express or implied warranty.
+ *
+ * SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
+ * GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
+ * THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
  ********************************************************/
 
 #include "parseutils.h"
@@ -38,8 +38,7 @@ AppendStmt(ParseCommon * to, ParseCommon * append)
     {
         to = to->next;
     }
-    if (to)
-    {
+    if (to) {
         to->next = append;
         return start;
     }
@@ -51,15 +50,13 @@ ExprCreate(unsigned op, unsigned type)
 {
     ExprDef *expr;
     expr = uTypedAlloc(ExprDef);
-    if (expr)
-    {
+    if (expr) {
         expr->common.stmtType = StmtExpr;
         expr->common.next = NULL;
         expr->op = op;
         expr->type = type;
     }
-    else
-    {
+    else {
         FATAL("Couldn't allocate expression in parser\n");
         /* NOTREACHED */
     }
@@ -71,16 +68,14 @@ ExprCreateUnary(unsigned op, unsigned type, ExprDef * child)
 {
     ExprDef *expr;
     expr = uTypedAlloc(ExprDef);
-    if (expr)
-    {
+    if (expr) {
         expr->common.stmtType = StmtExpr;
         expr->common.next = NULL;
         expr->op = op;
         expr->type = type;
         expr->value.child = child;
     }
-    else
-    {
+    else {
         FATAL("Couldn't allocate expression in parser\n");
         /* NOTREACHED */
     }
@@ -92,8 +87,7 @@ ExprCreateBinary(unsigned op, ExprDef * left, ExprDef * right)
 {
     ExprDef *expr;
     expr = uTypedAlloc(ExprDef);
-    if (expr)
-    {
+    if (expr) {
         expr->common.stmtType = StmtExpr;
         expr->common.next = NULL;
         expr->op = op;
@@ -106,8 +100,7 @@ ExprCreateBinary(unsigned op, ExprDef * left, ExprDef * right)
         expr->value.binary.left = left;
         expr->value.binary.right = right;
     }
-    else
-    {
+    else {
         FATAL("Couldn't allocate expression in parser\n");
         /* NOTREACHED */
     }
@@ -120,16 +113,14 @@ KeycodeCreate(const char *name, unsigned long value)
     KeycodeDef *def;
 
     def = uTypedAlloc(KeycodeDef);
-    if (def)
-    {
+    if (def) {
         def->common.stmtType = StmtKeycodeDef;
         def->common.next = NULL;
         strncpy(def->name, name, XkbKeyNameLength);
         def->name[XkbKeyNameLength] = '\0';
         def->value = value;
     }
-    else
-    {
+    else {
         FATAL("Couldn't allocate key name definition in parser\n");
         /* NOTREACHED */
     }
@@ -142,8 +133,7 @@ KeyAliasCreate(const char *alias, const char *real)
     KeyAliasDef *def;
 
     def = uTypedAlloc(KeyAliasDef);
-    if (def)
-    {
+    if (def) {
         def->common.stmtType = StmtKeyAliasDef;
         def->common.next = NULL;
         strncpy(def->alias, alias, XkbKeyNameLength);
@@ -151,8 +141,7 @@ KeyAliasCreate(const char *alias, const char *real)
         strncpy(def->real, real, XkbKeyNameLength);
         def->real[XkbKeyNameLength] = '\0';
     }
-    else
-    {
+    else {
         FATAL("Couldn't allocate key alias definition in parser\n");
         /* NOTREACHED */
     }
@@ -164,15 +153,13 @@ VModCreate(xkb_atom_t name, ExprDef * value)
 {
     VModDef *def;
     def = uTypedAlloc(VModDef);
-    if (def)
-    {
+    if (def) {
         def->common.stmtType = StmtVModDef;
         def->common.next = NULL;
         def->name = name;
         def->value = value;
     }
-    else
-    {
+    else {
         FATAL("Couldn't allocate variable definition in parser\n");
         /* NOTREACHED */
     }
@@ -184,15 +171,13 @@ VarCreate(ExprDef * name, ExprDef * value)
 {
     VarDef *def;
     def = uTypedAlloc(VarDef);
-    if (def)
-    {
+    if (def) {
         def->common.stmtType = StmtVarDef;
         def->common.next = NULL;
         def->name = name;
         def->value = value;
     }
-    else
-    {
+    else {
         FATAL("Couldn't allocate variable definition in parser\n");
         /* NOTREACHED */
     }
@@ -217,15 +202,13 @@ InterpCreate(char *sym, ExprDef * match)
     InterpDef *def;
 
     def = uTypedAlloc(InterpDef);
-    if (def)
-    {
+    if (def) {
         def->common.stmtType = StmtInterpDef;
         def->common.next = NULL;
         def->sym = sym;
         def->match = match;
     }
-    else
-    {
+    else {
         FATAL("Couldn't allocate interp definition in parser\n");
         /* NOTREACHED */
     }
@@ -238,16 +221,14 @@ KeyTypeCreate(xkb_atom_t name, VarDef * body)
     KeyTypeDef *def;
 
     def = uTypedAlloc(KeyTypeDef);
-    if (def)
-    {
+    if (def) {
         def->common.stmtType = StmtKeyTypeDef;
         def->common.next = NULL;
         def->merge = MERGE_DEFAULT;
         def->name = name;
         def->body = body;
     }
-    else
-    {
+    else {
         FATAL("Couldn't allocate key type definition in parser\n");
         /* NOTREACHED */
     }
@@ -260,8 +241,7 @@ SymbolsCreate(const char *keyName, ExprDef *symbols)
     SymbolsDef *def;
 
     def = uTypedAlloc(SymbolsDef);
-    if (def)
-    {
+    if (def) {
         def->common.stmtType = StmtSymbolsDef;
         def->common.next = NULL;
         def->merge = MERGE_DEFAULT;
@@ -269,8 +249,7 @@ SymbolsCreate(const char *keyName, ExprDef *symbols)
         strncpy(def->keyName, keyName, 4);
         def->symbols = symbols;
     }
-    else
-    {
+    else {
         FATAL("Couldn't allocate symbols definition in parser\n");
         /* NOTREACHED */
     }
@@ -283,16 +262,14 @@ GroupCompatCreate(int group, ExprDef * val)
     GroupCompatDef *def;
 
     def = uTypedAlloc(GroupCompatDef);
-    if (def)
-    {
+    if (def) {
         def->common.stmtType = StmtGroupCompatDef;
         def->common.next = NULL;
         def->merge = MERGE_DEFAULT;
         def->group = group;
         def->def = val;
     }
-    else
-    {
+    else {
         FATAL("Couldn't allocate group compat definition in parser\n");
         /* NOTREACHED */
     }
@@ -305,16 +282,14 @@ ModMapCreate(uint32_t modifier, ExprDef * keys)
     ModMapDef *def;
 
     def = uTypedAlloc(ModMapDef);
-    if (def)
-    {
+    if (def) {
         def->common.stmtType = StmtModMapDef;
         def->common.next = NULL;
         def->merge = MERGE_DEFAULT;
         def->modifier = modifier;
         def->keys = keys;
     }
-    else
-    {
+    else {
         FATAL("Couldn't allocate mod mask definition in parser\n");
         /* NOTREACHED */
     }
@@ -327,16 +302,14 @@ IndicatorMapCreate(xkb_atom_t name, VarDef * body)
     IndicatorMapDef *def;
 
     def = uTypedAlloc(IndicatorMapDef);
-    if (def)
-    {
+    if (def) {
         def->common.stmtType = StmtIndicatorMapDef;
         def->common.next = NULL;
         def->merge = MERGE_DEFAULT;
         def->name = name;
         def->body = body;
     }
-    else
-    {
+    else {
         FATAL("Couldn't allocate indicator map definition in parser\n");
         /* NOTREACHED */
     }
@@ -349,8 +322,7 @@ IndicatorNameCreate(int ndx, ExprDef * name, bool virtual)
     IndicatorNameDef *def;
 
     def = uTypedAlloc(IndicatorNameDef);
-    if (def)
-    {
+    if (def) {
         def->common.stmtType = StmtIndicatorNameDef;
         def->common.next = NULL;
         def->merge = MERGE_DEFAULT;
@@ -358,8 +330,7 @@ IndicatorNameCreate(int ndx, ExprDef * name, bool virtual)
         def->name = name;
         def->virtual = virtual;
     }
-    else
-    {
+    else {
         FATAL("Couldn't allocate indicator index definition in parser\n");
         /* NOTREACHED */
     }
@@ -372,8 +343,7 @@ ActionCreate(xkb_atom_t name, ExprDef * args)
     ExprDef *act;
 
     act = uTypedAlloc(ExprDef);
-    if (act)
-    {
+    if (act) {
         act->common.stmtType = StmtExpr;
         act->common.next = NULL;
         act->op = ExprActionDecl;
@@ -391,8 +361,7 @@ CreateKeysymList(char *sym)
     ExprDef *def;
 
     def = ExprCreate(ExprKeysymList, TypeSymbols);
-    if (!def)
-    {
+    if (!def) {
         FATAL("Couldn't allocate expression for keysym list in parser\n");
         return NULL;
     }
@@ -457,20 +426,17 @@ LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn)
     xkb_keysym_t sym;
 
     if ((!str) || (strcasecmp(str, "any") == 0) ||
-        (strcasecmp(str, "nosymbol") == 0))
-    {
+        (strcasecmp(str, "nosymbol") == 0)) {
         *sym_rtrn = XKB_KEY_NoSymbol;
         return 1;
     }
     else if ((strcasecmp(str, "none") == 0) ||
-             (strcasecmp(str, "voidsymbol") == 0))
-    {
+             (strcasecmp(str, "voidsymbol") == 0)) {
         *sym_rtrn = XKB_KEY_VoidSymbol;
         return 1;
     }
     sym = xkb_keysym_from_name(str);
-    if (sym != XKB_KEY_NoSymbol)
-    {
+    if (sym != XKB_KEY_NoSymbol) {
         *sym_rtrn = sym;
         return 1;
     }
@@ -495,23 +461,19 @@ IncludeCreate(char *str, enum merge_mode merge)
     stmt = uDupString(str);
     while ((tmp) && (*tmp))
     {
-        if (XkbParseIncludeMap(&tmp, &file, &map, &nextop, &extra_data))
-        {
-            if ((file == NULL) && (map == NULL))
-            {
+        if (XkbParseIncludeMap(&tmp, &file, &map, &nextop, &extra_data)) {
+            if ((file == NULL) && (map == NULL)) {
                 if (haveSelf)
                     goto BAIL;
                 haveSelf = true;
             }
             if (first == NULL)
                 first = incl = uTypedAlloc(IncludeStmt);
-            else
-            {
+            else {
                 incl->next = uTypedAlloc(IncludeStmt);
                 incl = incl->next;
             }
-            if (incl)
-            {
+            if (incl) {
                 incl->common.stmtType = StmtInclude;
                 incl->common.next = NULL;
                 incl->merge = merge;
@@ -522,8 +484,7 @@ IncludeCreate(char *str, enum merge_mode merge)
                 incl->path = NULL;
                 incl->next = NULL;
             }
-            else
-            {
+            else {
                 WSGO("Allocation failure in IncludeCreate\n");
                 ACTION("Using only part of the include\n");
                 break;
@@ -533,8 +494,7 @@ IncludeCreate(char *str, enum merge_mode merge)
             else
                 merge = MERGE_OVERRIDE;
         }
-        else
-        {
+        else {
             goto BAIL;
         }
     }
@@ -559,21 +519,17 @@ CheckDefaultMap(XkbFile * maps, const char *fileName)
 
     dflt = NULL;
     for (tmp = maps, dflt = NULL; tmp != NULL;
-         tmp = (XkbFile *) tmp->common.next)
-    {
-        if (tmp->flags & XkbLC_Default)
-        {
+         tmp = (XkbFile *) tmp->common.next) {
+        if (tmp->flags & XkbLC_Default) {
             if (dflt == NULL)
                 dflt = tmp;
-            else
-            {
-                if (warningLevel > 2)
-                {
+            else {
+                if (warningLevel > 2) {
                     WARN("Multiple default components in %s\n",
-                          (fileName ? fileName : "(unknown)"));
+                         (fileName ? fileName : "(unknown)"));
                     ACTION("Using %s, ignoring %s\n",
-                            (dflt->name ? dflt->name : "(first)"),
-                            (tmp->name ? tmp->name : "(subsequent)"));
+                           (dflt->name ? dflt->name : "(first)"),
+                           (tmp->name ? tmp->name : "(subsequent)"));
                 }
                 tmp->flags &= (~XkbLC_Default);
             }
@@ -598,9 +554,9 @@ EnsureSafeMapName(char *name)
     if (!name)
         return;
 
-    while (*name!='\0') {
+    while (*name != '\0') {
         if ((componentSpecLegal[(*name) / 8] & (1 << ((*name) % 8))) == 0)
-            *name= '_';
+            *name = '_';
         name++;
     }
 }
@@ -612,8 +568,7 @@ CreateXKBFile(struct xkb_context *ctx, enum xkb_file_type type, char *name,
     XkbFile *file;
 
     file = uTypedAlloc(XkbFile);
-    if (file)
-    {
+    if (file) {
         EnsureSafeMapName(name);
         memset(file, 0, sizeof(XkbFile));
         file->type = type;
@@ -634,8 +589,7 @@ FreeExpr(ExprDef *expr)
     if (!expr)
         return;
 
-    switch (expr->op)
-    {
+    switch (expr->op) {
     case ExprActionList:
     case OpNegate:
     case OpUnaryPlus:
@@ -643,6 +597,7 @@ FreeExpr(ExprDef *expr)
     case OpInvert:
         FreeStmt(&expr->value.child->common);
         break;
+
     case OpDivide:
     case OpAdd:
     case OpSubtract:
@@ -651,19 +606,23 @@ FreeExpr(ExprDef *expr)
         FreeStmt(&expr->value.binary.left->common);
         FreeStmt(&expr->value.binary.right->common);
         break;
+
     case ExprActionDecl:
         FreeStmt(&expr->value.action.args->common);
         break;
+
     case ExprArrayRef:
         FreeStmt(&expr->value.array.entry->common);
         break;
+
     case ExprKeysymList:
         darray_foreach(sym, expr->value.list.syms)
-            free(*sym);
+        free(*sym);
         darray_free(expr->value.list.syms);
         darray_free(expr->value.list.symsMapIndex);
         darray_free(expr->value.list.symsNumEntries);
         break;
+
     default:
         break;
     }
@@ -700,10 +659,9 @@ FreeStmt(ParseCommon *stmt)
         next = stmt->next;
         u.any = stmt;
 
-        switch (stmt->stmtType)
-        {
+        switch (stmt->stmtType) {
         case StmtInclude:
-            FreeInclude((IncludeStmt *)stmt);
+            FreeInclude((IncludeStmt *) stmt);
             /* stmt is already free'd here. */
             stmt = NULL;
             break;
@@ -756,13 +714,13 @@ FreeXKBFile(XkbFile *file)
 
     while (file)
     {
-        next = (XkbFile *)file->common.next;
+        next = (XkbFile *) file->common.next;
 
-        switch (file->type)
-        {
+        switch (file->type) {
         case FILE_TYPE_KEYMAP:
-            FreeXKBFile((XkbFile *)file->defs);
+            FreeXKBFile((XkbFile *) file->defs);
             break;
+
         case FILE_TYPE_TYPES:
         case FILE_TYPE_COMPAT:
         case FILE_TYPE_SYMBOLS:
@@ -770,6 +728,7 @@ FreeXKBFile(XkbFile *file)
         case FILE_TYPE_GEOMETRY:
             FreeStmt(file->defs);
             break;
+
         default:
             break;
         }

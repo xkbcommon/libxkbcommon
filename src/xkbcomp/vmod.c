@@ -1,27 +1,27 @@
 /************************************************************
- Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
-
- Permission to use, copy, modify, and distribute this
- software and its documentation for any purpose and without
- fee is hereby granted, provided that the above copyright
- notice appear in all copies and that both that copyright
- notice and this permission notice appear in supporting
- documentation, and that the name of Silicon Graphics not be
- used in advertising or publicity pertaining to distribution
- of the software without specific prior written permission.
- Silicon Graphics makes no representation about the suitability
- of this software for any purpose. It is provided "as is"
- without any express or implied warranty.
-
- SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
- SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
- GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
- DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
- THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
+ * Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software and its documentation for any purpose and without
+ * fee is hereby granted, provided that the above copyright
+ * notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting
+ * documentation, and that the name of Silicon Graphics not be
+ * used in advertising or publicity pertaining to distribution
+ * of the software without specific prior written permission.
+ * Silicon Graphics makes no representation about the suitability
+ * of this software for any purpose. It is provided "as is"
+ * without any express or implied warranty.
+ *
+ * SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
+ * GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
+ * THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
  ********************************************************/
 
 #include "vmod.h"
@@ -47,11 +47,9 @@ ClearVModInfo(VModInfo *info, struct xkb_keymap *keymap)
         return;
 
     info->keymap = keymap;
-    if (keymap && keymap->names)
-    {
+    if (keymap && keymap->names) {
         int bit;
-        for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1)
-        {
+        for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1) {
             if (keymap->names->vmods[i] != NULL)
                 info->defined |= bit;
         }
@@ -69,7 +67,8 @@ ClearVModInfo(VModInfo *info, struct xkb_keymap *keymap)
  * @param mergeMode Merge strategy (e.g. MERGE_OVERRIDE)
  */
 bool
-HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, enum merge_mode mergeMode,
+HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
+              enum merge_mode mergeMode,
               VModInfo *info)
 {
     int i, bit, nextFree;
@@ -77,23 +76,20 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, enum merge_mode mergeMod
     struct xkb_server_map *srv = keymap->server;
     struct xkb_names *names = keymap->names;
 
-    for (i = 0, bit = 1, nextFree = -1; i < XkbNumVirtualMods; i++, bit <<= 1)
-    {
-        if (info->defined & bit)
-        {
+    for (i = 0, bit = 1, nextFree = -1; i < XkbNumVirtualMods; i++, bit <<=
+             1) {
+        if (info->defined & bit) {
             if (names->vmods[i] &&
                 strcmp(names->vmods[i],
-                       xkb_atom_text(keymap->ctx, stmt->name)) == 0)
-            {                   /* already defined */
+                       xkb_atom_text(keymap->ctx, stmt->name)) == 0) { /* already defined */
                 info->available |= bit;
                 if (stmt->value == NULL)
                     return true;
-                else
-                {
+                else {
                     const char *str1;
                     const char *str2 = "";
-                    if (!ExprResolveModMask(keymap->ctx, stmt->value, &mod))
-                    {
+                    if (!ExprResolveModMask(keymap->ctx, stmt->value,
+                                            &mod)) {
                         str1 = xkb_atom_text(keymap->ctx, stmt->name);
                         ACTION("Declaration of %s ignored\n", str1);
                         return false;
@@ -104,8 +100,7 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, enum merge_mode mergeMod
                     str1 = xkb_atom_text(keymap->ctx, stmt->name);
                     WARN("Virtual modifier %s multiply defined\n", str1);
                     str1 = XkbcModMaskText(srv->vmods[i], true);
-                    if (mergeMode == MERGE_OVERRIDE)
-                    {
+                    if (mergeMode == MERGE_OVERRIDE) {
                         str2 = str1;
                         str1 = XkbcModMaskText(mod.uval, true);
                     }
@@ -119,10 +114,9 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, enum merge_mode mergeMod
         else if (nextFree < 0)
             nextFree = i;
     }
-    if (nextFree < 0)
-    {
+    if (nextFree < 0) {
         ERROR("Too many virtual modifiers defined (maximum %d)\n",
-               XkbNumVirtualMods);
+              XkbNumVirtualMods);
         return false;
     }
     info->defined |= (1 << nextFree);
@@ -131,12 +125,12 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, enum merge_mode mergeMod
     names->vmods[nextFree] = xkb_atom_strdup(keymap->ctx, stmt->name);
     if (stmt->value == NULL)
         return true;
-    if (ExprResolveModMask(keymap->ctx, stmt->value, &mod))
-    {
+    if (ExprResolveModMask(keymap->ctx, stmt->value, &mod)) {
         srv->vmods[nextFree] = mod.uval;
         return true;
     }
-    ACTION("Declaration of %s ignored\n", xkb_atom_text(keymap->ctx, stmt->name));
+    ACTION("Declaration of %s ignored\n",
+           xkb_atom_text(keymap->ctx, stmt->name));
     return false;
 }
 
@@ -158,8 +152,7 @@ LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
     int i;
     const char *name = xkb_atom_text(keymap->ctx, field);
 
-    if ((keymap == NULL) || (keymap->names == NULL) || (type != TypeInt))
-    {
+    if ((keymap == NULL) || (keymap->names == NULL) || (type != TypeInt)) {
         return false;
     }
     /* For each named modifier, get the name and compare it to the one passed
@@ -167,11 +160,9 @@ LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
      * The order of modifiers is the same as in the virtual_modifiers line in
      * the xkb_types section.
      */
-    for (i = 0; i < XkbNumVirtualMods; i++)
-    {
+    for (i = 0; i < XkbNumVirtualMods; i++) {
         if (keymap->names->vmods[i] &&
-            strcmp(keymap->names->vmods[i], name) == 0)
-        {
+            strcmp(keymap->names->vmods[i], name) == 0) {
             val_rtrn->uval = i;
             return true;
         }
@@ -193,12 +184,10 @@ bool
 LookupVModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
                unsigned type, ExprResult *val_rtrn)
 {
-    if (LookupModMask(ctx, NULL, field, type, val_rtrn))
-    {
+    if (LookupModMask(ctx, NULL, field, type, val_rtrn)) {
         return true;
     }
-    else if (LookupVModIndex(priv, field, type, val_rtrn))
-    {
+    else if (LookupVModIndex(priv, field, type, val_rtrn)) {
         unsigned ndx = val_rtrn->uval;
         val_rtrn->uval = (1 << (XkbNumModifiers + ndx));
         return true;
@@ -213,8 +202,7 @@ FindKeypadVMod(struct xkb_keymap *keymap)
     ExprResult rtrn;
 
     name = xkb_atom_intern(keymap->ctx, "NumLock");
-    if ((keymap) && LookupVModIndex(keymap, name, TypeInt, &rtrn))
-    {
+    if ((keymap) && LookupVModIndex(keymap, name, TypeInt, &rtrn)) {
         return rtrn.ival;
     }
     return -1;
@@ -226,26 +214,22 @@ ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
 {
     struct xkb_names *names = keymap->names;
 
-    if (def->op == ExprIdent)
-    {
+    if (def->op == ExprIdent) {
         int i, bit;
         const char *name = xkb_atom_text(keymap->ctx, def->value.str);
-        for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1)
-        {
+        for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1) {
             if ((info->available & bit) && names->vmods[i] &&
-                strcmp(names->vmods[i], name) == 0)
-            {
+                strcmp(names->vmods[i], name) == 0) {
                 val_rtrn->uval = i;
                 return true;
             }
         }
     }
-    if (ExprResolveInteger(keymap->ctx, def, val_rtrn))
-    {
+    if (ExprResolveInteger(keymap->ctx, def, val_rtrn)) {
         if (val_rtrn->uval < XkbNumVirtualMods)
             return true;
         ERROR("Illegal virtual modifier %d (must be 0..%d inclusive)\n",
-               val_rtrn->uval, XkbNumVirtualMods - 1);
+              val_rtrn->uval, XkbNumVirtualMods - 1);
     }
     return false;
 }

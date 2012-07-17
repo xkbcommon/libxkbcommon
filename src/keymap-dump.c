@@ -1,27 +1,27 @@
 /************************************************************
- Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
-
- Permission to use, copy, modify, and distribute this
- software and its documentation for any purpose and without
- fee is hereby granted, provided that the above copyright
- notice appear in all copies and that both that copyright
- notice and this permission notice appear in supporting
- documentation, and that the name of Silicon Graphics not be
- used in advertising or publicity pertaining to distribution
- of the software without specific prior written permission.
- Silicon Graphics makes no representation about the suitability
- of this software for any purpose. It is provided "as is"
- without any express or implied warranty.
-
- SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
- SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
- GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
- DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
- THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
+ * Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software and its documentation for any purpose and without
+ * fee is hereby granted, provided that the above copyright
+ * notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting
+ * documentation, and that the name of Silicon Graphics not be
+ * used in advertising or publicity pertaining to distribution
+ * of the software without specific prior written permission.
+ * Silicon Graphics makes no representation about the suitability
+ * of this software for any purpose. It is provided "as is"
+ * without any express or implied warranty.
+ *
+ * SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
+ * GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
+ * THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
  ********************************************************/
 
 /*
@@ -58,11 +58,11 @@
 #include "xkb-priv.h"
 #include "text.h"
 
-#define	VMOD_HIDE_VALUE	0
-#define	VMOD_SHOW_VALUE	1
-#define	VMOD_COMMENT_VALUE 2
+#define VMOD_HIDE_VALUE    0
+#define VMOD_SHOW_VALUE    1
+#define VMOD_COMMENT_VALUE 2
 
-#define BUF_CHUNK_SIZE 4096
+#define BUF_CHUNK_SIZE     4096
 
 static bool
 do_realloc(char **buf, size_t *size, size_t offset, size_t at_least)
@@ -86,45 +86,46 @@ do_realloc(char **buf, size_t *size, size_t offset, size_t at_least)
 /* This whole thing should be a function, but you can't call vsnprintf
  * multiple times. */
 #define check_write_buf(keymap, buf, size, offset, ...) \
-do { \
-    size_t _printed; \
-    bool _ret = true; \
+    do { \
+        size_t _printed; \
+        bool _ret = true; \
     \
-    /* Concatenate the strings, and check whether or not the output was \
-     * truncated. */ \
-    while ((_printed = snprintf(*buf + *offset, *size - *offset, \
-                                __VA_ARGS__)) >= \
-           (*size - *offset)) {\
-        /* If it was truncated, embiggen the string and roll from the top. */ \
-        if (!do_realloc(buf, size, *offset, _printed)) { \
-            fprintf(stderr, \
-                    "xkbcommon: failed to allocate %zu bytes for keymap\n", \
-                    *size); \
-            free(*buf); \
-            *buf = NULL; \
-            _ret = false; \
-            break; \
+        /* Concatenate the strings, and check whether or not the output was \
+         * truncated. */                                                                           \
+        while ((_printed = snprintf(*buf + *offset, *size - *offset, \
+                                    __VA_ARGS__)) >= \
+               (*size - *offset)) { \
+            /* If it was truncated, embiggen the string and roll from the top. */ \
+            if (!do_realloc(buf, size, *offset, _printed)) { \
+                fprintf(stderr, \
+                        "xkbcommon: couldn't allocate %zu bytes for keymap\n", \
+                        *size); \
+                free(*buf); \
+                *buf = NULL; \
+                _ret = false; \
+                break; \
+            } \
         } \
-    } \
-    if (_ret == true) \
-        *offset += _printed; \
-} while (0)
+        if (_ret == true) \
+            *offset += _printed; \
+    } while (0)
 
 #define write_buf(keymap, buf, size, offset, ...) \
-do { \
-    check_write_buf(keymap, buf, size, offset, __VA_ARGS__); \
-    if (*buf == NULL) \
-        return false; \
-} while (0)
+    do { \
+        check_write_buf(keymap, buf, size, offset, __VA_ARGS__); \
+        if (*buf == NULL) \
+            return false; \
+    } while (0)
 
 static bool
-write_vmods(struct xkb_keymap *keymap, char **buf, size_t *size, size_t *offset)
+write_vmods(struct xkb_keymap *keymap, char **buf, size_t *size,
+            size_t *offset)
 {
     int num_vmods = 0;
     int i;
 
     for (i = 0; i < XkbNumVirtualMods; i++) {
-	if (!keymap->names->vmods[i])
+        if (!keymap->names->vmods[i])
             continue;
         if (num_vmods == 0)
             write_buf(keymap, buf, size, offset, "\t\tvirtual_modifiers ");
@@ -135,7 +136,7 @@ write_vmods(struct xkb_keymap *keymap, char **buf, size_t *size, size_t *offset)
     }
 
     if (num_vmods > 0)
-	write_buf(keymap, buf, size, offset, ";\n\n");
+        write_buf(keymap, buf, size, offset, ";\n\n");
 
     return true;
 }
@@ -143,10 +144,10 @@ write_vmods(struct xkb_keymap *keymap, char **buf, size_t *size, size_t *offset)
 #define GET_TEXT_BUF_SIZE 512
 
 #define append_get_text(...) do { \
-    int _size = snprintf(ret, GET_TEXT_BUF_SIZE, __VA_ARGS__); \
-    if (_size >= GET_TEXT_BUF_SIZE) \
-        return NULL; \
-} while(0)
+        int _size = snprintf(ret, GET_TEXT_BUF_SIZE, __VA_ARGS__); \
+        if (_size >= GET_TEXT_BUF_SIZE) \
+            return NULL; \
+} while (0)
 
 /* FIXME: Merge with src/xkbcomp/expr.c::modIndexNames. */
 static const char *core_mod_names[] = {
@@ -167,7 +168,8 @@ get_mod_index_text(uint8_t real_mod)
 }
 
 static char *
-get_mod_mask_text(struct xkb_keymap *keymap, uint8_t real_mods, uint32_t vmods)
+get_mod_mask_text(struct xkb_keymap *keymap, uint8_t real_mods,
+                  uint32_t vmods)
 {
     static char ret[GET_TEXT_BUF_SIZE], ret2[GET_TEXT_BUF_SIZE];
     int i;
@@ -323,26 +325,25 @@ write_keycodes(struct xkb_keymap *keymap, char **buf, size_t *size,
               keymap->max_key_code);
 
     for (key = keymap->min_key_code; key <= keymap->max_key_code; key++) {
-	if (darray_item(keymap->names->keys, key).name[0] == '\0')
+        if (darray_item(keymap->names->keys, key).name[0] == '\0')
             continue;
 
         write_buf(keymap, buf, size, offset, "\t\t%6s = %d;\n",
-		  XkbcKeyNameText(darray_item(keymap->names->keys, key).name),
-                                  key);
+                  XkbcKeyNameText(darray_item(keymap->names->keys, key).name),
+                  key);
     }
 
     for (i = 0; i < XkbNumIndicators; i++) {
         if (!keymap->names->indicators[i])
             continue;
-	write_buf(keymap, buf, size, offset, "\t\tindicator %d = \"%s\";\n",
+        write_buf(keymap, buf, size, offset, "\t\tindicator %d = \"%s\";\n",
                   i + 1, keymap->names->indicators[i]);
     }
 
-
     darray_foreach(alias, keymap->names->key_aliases)
-        write_buf(keymap, buf, size, offset, "\t\talias %6s = %6s;\n",
-                  XkbcKeyNameText(alias->alias),
-                  XkbcKeyNameText(alias->real));
+    write_buf(keymap, buf, size, offset, "\t\talias %6s = %6s;\n",
+              XkbcKeyNameText(alias->alias),
+              XkbcKeyNameText(alias->real));
 
     write_buf(keymap, buf, size, offset, "\t};\n\n");
     return true;
@@ -364,19 +365,19 @@ write_types(struct xkb_keymap *keymap, char **buf, size_t *size,
     write_vmods(keymap, buf, size, offset);
 
     darray_foreach(type, keymap->map->types) {
-	write_buf(keymap, buf, size, offset, "\t\ttype \"%s\" {\n",
-	          type->name);
-	write_buf(keymap, buf, size, offset, "\t\t\tmodifiers= %s;\n",
-	          get_mod_mask_text(keymap, type->mods.real_mods,
+        write_buf(keymap, buf, size, offset, "\t\ttype \"%s\" {\n",
+                  type->name);
+        write_buf(keymap, buf, size, offset, "\t\t\tmodifiers= %s;\n",
+                  get_mod_mask_text(keymap, type->mods.real_mods,
                                     type->mods.vmods));
 
-	for (n = 0; n < darray_size(type->map); n++) {
+        for (n = 0; n < darray_size(type->map); n++) {
             struct xkb_kt_map_entry *entry = &darray_item(type->map, n);
             char *str;
 
             str = get_mod_mask_text(keymap, entry->mods.real_mods,
                                     entry->mods.vmods);
-	    write_buf(keymap, buf, size, offset, "\t\t\tmap[%s]= Level%d;\n",
+            write_buf(keymap, buf, size, offset, "\t\t\tmap[%s]= Level%d;\n",
                       str, entry->level + 1);
 
             if (!type->preserve || (!type->preserve[n].real_mods &&
@@ -386,18 +387,18 @@ write_types(struct xkb_keymap *keymap, char **buf, size_t *size,
             write_buf(keymap, buf, size, offset, "%s;\n",
                       get_mod_mask_text(keymap, type->preserve[n].real_mods,
                                         type->preserve[n].vmods));
-	}
+        }
 
-	if (type->level_names) {
-	    for (n = 0; n < type->num_levels; n++) {
-		if (!type->level_names[n])
-		    continue;
-		write_buf(keymap, buf, size, offset,
+        if (type->level_names) {
+            for (n = 0; n < type->num_levels; n++) {
+                if (!type->level_names[n])
+                    continue;
+                write_buf(keymap, buf, size, offset,
                           "\t\t\tlevel_name[Level%d]= \"%s\";\n", n + 1,
                           type->level_names[n]);
-	    }
-	}
-	write_buf(keymap, buf, size, offset, "\t\t};\n");
+            }
+        }
+        write_buf(keymap, buf, size, offset, "\t\t};\n");
     }
 
     write_buf(keymap, buf, size, offset, "\t};\n\n");
@@ -414,27 +415,29 @@ write_indicator_map(struct xkb_keymap *keymap, char **buf, size_t *size,
               keymap->names->indicators[num]);
 
     if (led->which_groups) {
-	if (led->which_groups != XkbIM_UseEffective) {
-	    write_buf(keymap, buf, size, offset, "\t\t\twhichGroupState= %s;\n",
-		      get_indicator_state_text(led->which_groups));
-	}
-	write_buf(keymap, buf, size, offset, "\t\t\tgroups= 0x%02x;\n",
+        if (led->which_groups != XkbIM_UseEffective) {
+            write_buf(keymap, buf, size, offset,
+                      "\t\t\twhichGroupState= %s;\n",
+                      get_indicator_state_text(
+                          led->which_groups));
+        }
+        write_buf(keymap, buf, size, offset, "\t\t\tgroups= 0x%02x;\n",
                   led->groups);
     }
 
     if (led->which_mods) {
-	if (led->which_mods != XkbIM_UseEffective) {
-	    write_buf(keymap, buf, size, offset, "\t\t\twhichModState= %s;\n",
+        if (led->which_mods != XkbIM_UseEffective) {
+            write_buf(keymap, buf, size, offset, "\t\t\twhichModState= %s;\n",
                       get_indicator_state_text(led->which_mods));
-	}
-	write_buf(keymap, buf, size, offset, "\t\t\tmodifiers= %s;\n",
+        }
+        write_buf(keymap, buf, size, offset, "\t\t\tmodifiers= %s;\n",
                   get_mod_mask_text(keymap, led->mods.real_mods,
-                  led->mods.vmods));
+                                    led->mods.vmods));
     }
 
     if (led->ctrls) {
-	write_buf(keymap, buf, size, offset, "\t\t\tcontrols= %s;\n",
-		  get_control_mask_text(led->ctrls));
+        write_buf(keymap, buf, size, offset, "\t\t\tcontrols= %s;\n",
+                  get_control_mask_text(led->ctrls));
     }
 
     write_buf(keymap, buf, size, offset, "\t\t};\n");
@@ -447,24 +450,29 @@ get_interp_match_text(uint8_t type)
     static char ret[16];
 
     switch (type & XkbSI_OpMask) {
-        case XkbSI_NoneOf:
-            sprintf(ret, "NoneOf");
-            break;
-        case XkbSI_AnyOfOrNone:
-            sprintf(ret, "AnyOfOrNone");
-            break;
-        case XkbSI_AnyOf:
-            sprintf(ret, "AnyOf");
-            break;
-        case XkbSI_AllOf:
-            sprintf(ret, "AllOf");
-            break;
-        case XkbSI_Exactly:
-            sprintf(ret, "Exactly");
-            break;
-        default:
-            sprintf(ret, "0x%x", type & XkbSI_OpMask);
-            break;
+    case XkbSI_NoneOf:
+        sprintf(ret, "NoneOf");
+        break;
+
+    case XkbSI_AnyOfOrNone:
+        sprintf(ret, "AnyOfOrNone");
+        break;
+
+    case XkbSI_AnyOf:
+        sprintf(ret, "AnyOf");
+        break;
+
+    case XkbSI_AllOf:
+        sprintf(ret, "AllOf");
+        break;
+
+    case XkbSI_Exactly:
+        sprintf(ret, "Exactly");
+        break;
+
+    default:
+        sprintf(ret, "0x%x", type & XkbSI_OpMask);
+        break;
     }
 
     return ret;
@@ -501,11 +509,14 @@ write_action(struct xkb_keymap *keymap, char **buf, size_t *size,
         write_buf(keymap, buf, size, offset, "%s%s(modifiers=%s%s%s)%s",
                   prefix, type, args,
                   (action->any.type != XkbSA_LockGroup &&
-                   action->mods.flags & XkbSA_ClearLocks) ? ",clearLocks" : "",
+                   (action->mods.flags & XkbSA_ClearLocks)) ?
+                   ",clearLocks" : "",
                   (action->any.type != XkbSA_LockGroup &&
-                   action->mods.flags & XkbSA_LatchToLock) ? ",latchToLock" : "",
+                   (action->mods.flags & XkbSA_LatchToLock)) ?
+                   ",latchToLock" : "",
                   suffix);
         break;
+
     case XkbSA_SetGroup:
         if (!type)
             type = "SetGroup";
@@ -515,21 +526,27 @@ write_action(struct xkb_keymap *keymap, char **buf, size_t *size,
     case XkbSA_LockGroup:
         if (!type)
             type = "LockGroup";
-        write_buf(keymap, buf, size, offset, "%s%s(group=%s%d%s%s)%s",
-                  prefix, type,
-                  (!(action->group.flags & XkbSA_GroupAbsolute) &&
-                   action->group.group > 0) ? "+" : "",
-                  (action->group.flags & XkbSA_GroupAbsolute) ?
-                   action->group.group + 1 : action->group.group,
-                  (action->any.type != XkbSA_LockGroup &&
-                   action->group.flags & XkbSA_ClearLocks) ? ",clearLocks" : "",
-                  (action->any.type != XkbSA_LockGroup &&
-                   action->group.flags & XkbSA_LatchToLock) ? ",latchToLock" : "",
+        write_buf(
+            keymap, buf, size, offset, "%s%s(group=%s%d%s%s)%s",
+            prefix, type,
+            (!(action->group.flags & XkbSA_GroupAbsolute) &&
+             action->group.group > 0) ? "+" : "",
+            (action->group.flags & XkbSA_GroupAbsolute) ?
+             action->group.group + 1 : action->group.group,
+            (action->any.type != XkbSA_LockGroup &&
+             (action->group.flags & XkbSA_ClearLocks)) ?
+             ",clearLocks" : "",
+            (action->any.type != XkbSA_LockGroup &&
+             (action->group.flags & XkbSA_LatchToLock)) ?
+             ",latchToLock" : "",
+            suffix);
+        break;
+
+    case XkbSA_Terminate:
+        write_buf(keymap, buf, size, offset, "%sTerminate()%s", prefix,
                   suffix);
         break;
-    case XkbSA_Terminate:
-        write_buf(keymap, buf, size, offset, "%sTerminate()%s", prefix, suffix);
-        break;
+
     case XkbSA_MovePtr:
         write_buf(keymap, buf, size, offset, "%sMovePtr(x=%s%d,y=%s%d%s)%s",
                   prefix,
@@ -542,22 +559,27 @@ write_action(struct xkb_keymap *keymap, char **buf, size_t *size,
                   (action->ptr.flags & XkbSA_NoAcceleration) ? ",!accel" : "",
                   suffix);
         break;
+
     case XkbSA_PtrBtn:
         if (!type)
             type = "PtrBtn";
     case XkbSA_LockPtrBtn:
         if (!type) {
             type = "LockPtrBtn";
-            switch (action->btn.flags & (XkbSA_LockNoUnlock | XkbSA_LockNoLock)) {
+            switch (action->btn.flags &
+                    (XkbSA_LockNoUnlock | XkbSA_LockNoLock)) {
             case XkbSA_LockNoUnlock:
                 args = ",affect=lock";
                 break;
+
             case XkbSA_LockNoLock:
                 args = ",affect=unlock";
                 break;
+
             case XkbSA_LockNoLock | XkbSA_LockNoUnlock:
                 args = ",affect=neither";
                 break;
+
             default:
                 args = ",affect=both";
                 break;
@@ -578,6 +600,7 @@ write_action(struct xkb_keymap *keymap, char **buf, size_t *size,
             write_buf(keymap, buf, size, offset, "%s", args);
         write_buf(keymap, buf, size, offset, ")%s", suffix);
         break;
+
     case XkbSA_SetPtrDflt:
         write_buf(keymap, buf, size, offset, "%sSetPtrDflt(", prefix);
         if (action->dflt.affect == XkbSA_AffectDfltBtn)
@@ -587,6 +610,7 @@ write_action(struct xkb_keymap *keymap, char **buf, size_t *size,
                       action->dflt.value);
         write_buf(keymap, buf, size, offset, ")%s", suffix);
         break;
+
     case XkbSA_SwitchScreen:
         write_buf(keymap, buf, size, offset,
                   "%sSwitchScreen(screen=%s%d,%ssame)%s", prefix,
@@ -596,6 +620,7 @@ write_action(struct xkb_keymap *keymap, char **buf, size_t *size,
                   (action->screen.flags & XkbSA_SwitchApplication) ? "!" : "",
                   suffix);
         break;
+
     /* Deprecated actions below here */
     case XkbSA_SetControls:
         if (!type)
@@ -607,6 +632,7 @@ write_action(struct xkb_keymap *keymap, char **buf, size_t *size,
                   prefix, type, get_control_mask_text(action->ctrls.ctrls),
                   suffix);
         break;
+
     case XkbSA_ISOLock:
     case XkbSA_ActionMessage:
     case XkbSA_RedirectKey:
@@ -616,6 +642,7 @@ write_action(struct xkb_keymap *keymap, char **buf, size_t *size,
         /* XXX TODO */
         write_buf(keymap, buf, size, offset, "%sNoAction()%s", prefix, suffix);
         break;
+
     case XkbSA_XFree86Private:
     default:
         write_buf(keymap, buf, size, offset,
@@ -623,7 +650,8 @@ write_action(struct xkb_keymap *keymap, char **buf, size_t *size,
                   prefix, action->any.type, action->any.data[0],
                   action->any.data[1], action->any.data[2],
                   action->any.data[3], action->any.data[4],
-                  action->any.data[5], action->any.data[6], suffix);
+                  action->any.data[5], action->any.data[6],
+                  suffix);
         break;
     }
 
@@ -638,14 +666,16 @@ write_compat(struct xkb_keymap *keymap, char **buf, size_t *size,
     struct xkb_sym_interpret *interp;
 
     if (keymap->names->compat)
-        write_buf(keymap, buf, size, offset, "\txkb_compatibility \"%s\" {\n\n",
+        write_buf(keymap, buf, size, offset,
+                  "\txkb_compatibility \"%s\" {\n\n",
                   keymap->names->compat);
     else
         write_buf(keymap, buf, size, offset, "\txkb_compatibility {\n\n");
 
     write_vmods(keymap, buf, size, offset);
 
-    write_buf(keymap, buf, size, offset, "\t\tinterpret.useModMapMods= AnyLevel;\n");
+    write_buf(keymap, buf, size, offset,
+              "\t\tinterpret.useModMapMods= AnyLevel;\n");
     write_buf(keymap, buf, size, offset, "\t\tinterpret.repeat= False;\n");
     write_buf(keymap, buf, size, offset, "\t\tinterpret.locking= False;\n");
 
@@ -659,39 +689,41 @@ write_compat(struct xkb_keymap *keymap, char **buf, size_t *size,
 
         write_buf(keymap, buf, size, offset, "\t\tinterpret %s+%s(%s) {\n",
                   keysym_name,
-		  get_interp_match_text(interp->match),
-		  get_mod_mask_text(keymap, interp->mods, 0));
+                  get_interp_match_text(interp->match),
+                  get_mod_mask_text(keymap, interp->mods, 0));
 
-	if (interp->virtual_mod != XkbNoModifier) {
-	    write_buf(keymap, buf, size, offset, "\t\t\tvirtualModifier= %s;\n",
+        if (interp->virtual_mod != XkbNoModifier) {
+            write_buf(keymap, buf, size, offset,
+                      "\t\t\tvirtualModifier= %s;\n",
                       keymap->names->vmods[interp->virtual_mod]);
-	}
+        }
 
-	if (interp->match & XkbSI_LevelOneOnly)
-	    write_buf(keymap, buf, size, offset, "\t\t\tuseModMapMods=level1;\n");
-	if (interp->flags & XkbSI_LockingKey)
-	    write_buf(keymap, buf, size, offset, "\t\t\tlocking= True;\n");
-	if (interp->flags & XkbSI_AutoRepeat)
-	    write_buf(keymap, buf, size, offset, "\t\t\trepeat= True;\n");
+        if (interp->match & XkbSI_LevelOneOnly)
+            write_buf(keymap, buf, size, offset,
+                      "\t\t\tuseModMapMods=level1;\n");
+        if (interp->flags & XkbSI_LockingKey)
+            write_buf(keymap, buf, size, offset, "\t\t\tlocking= True;\n");
+        if (interp->flags & XkbSI_AutoRepeat)
+            write_buf(keymap, buf, size, offset, "\t\t\trepeat= True;\n");
 
-	write_action(keymap, buf, size, offset, &interp->act,
+        write_action(keymap, buf, size, offset, &interp->act,
                      "\t\t\taction= ", ";\n");
-	write_buf(keymap, buf, size, offset, "\t\t};\n");
+        write_buf(keymap, buf, size, offset, "\t\t};\n");
     }
 
     for (i = 0; i < XkbNumKbdGroups; i++) {
-	struct xkb_mods	*gc;
+        struct xkb_mods *gc;
 
-	gc = &keymap->compat->groups[i];
-	if (gc->real_mods == 0 && gc->vmods ==0)
-	    continue;
-	write_buf(keymap, buf, size, offset,
+        gc = &keymap->compat->groups[i];
+        if (gc->real_mods == 0 && gc->vmods == 0)
+            continue;
+        write_buf(keymap, buf, size, offset,
                   "\t\tgroup %d = %s;\n", i + 1,
                   get_mod_mask_text(keymap, gc->real_mods, gc->vmods));
     }
 
     for (i = 0; i < XkbNumIndicators; i++) {
-	struct xkb_indicator_map *map = &keymap->indicators->maps[i];
+        struct xkb_indicator_map *map = &keymap->indicators->maps[i];
         if (map->flags == 0 && map->which_groups == 0 &&
             map->groups == 0 && map->which_mods == 0 &&
             map->mods.real_mods == 0 && map->mods.vmods == 0 &&
@@ -760,32 +792,33 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
         write_buf(keymap, buf, size, offset, "\txkb_symbols {\n\n");
 
     for (tmp = group = 0; group < XkbNumKbdGroups; group++) {
-	if (!keymap->names->groups[group])
+        if (!keymap->names->groups[group])
             continue;
         write_buf(keymap, buf, size, offset,
                   "\t\tname[group%d]=\"%s\";\n", group + 1,
                   keymap->names->groups[group]);
-	tmp++;
+        tmp++;
     }
     if (tmp > 0)
-	write_buf(keymap, buf, size, offset, "\n");
+        write_buf(keymap, buf, size, offset, "\n");
 
     for (key = keymap->min_key_code; key <= keymap->max_key_code; key++) {
-	bool simple = true;
+        bool simple = true;
 
-	if (xkb_key_num_groups(keymap, key) == 0)
-	    continue;
+        if (xkb_key_num_groups(keymap, key) == 0)
+            continue;
 
-	write_buf(keymap, buf, size, offset, "\t\tkey %6s {",
-		  XkbcKeyNameText(darray_item(keymap->names->keys, key).name));
-	if (srv->explicit) {
+        write_buf(keymap, buf, size, offset, "\t\tkey %6s {",
+                  XkbcKeyNameText(darray_item(keymap->names->keys, key).name));
+        if (srv->explicit) {
             if ((srv->explicit[key] & XkbExplicitKeyTypesMask)) {
                 bool multi_type = false;
                 int type = XkbKeyTypeIndex(keymap, key, 0);
 
                 simple = false;
 
-                for (group = 0; group < xkb_key_num_groups(keymap, key); group++) {
+                for (group = 0; group < xkb_key_num_groups(keymap, key);
+                     group++) {
                     if (XkbKeyTypeIndex(keymap, key, group) != type) {
                         multi_type = true;
                         break;
@@ -810,81 +843,88 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
                               darray_item(map->types, type).name);
                 }
             }
-	    if (keymap->ctrls && (srv->explicit[key] & XkbExplicitAutoRepeatMask)) {
-		if (keymap->ctrls->per_key_repeat[key / 8] & (1 << (key % 8)))
-		     write_buf(keymap, buf, size, offset,
-                               "\n\t\t\trepeat= Yes,");
-		else
+            if (keymap->ctrls &&
+                (srv->explicit[key] & XkbExplicitAutoRepeatMask)) {
+                if (keymap->ctrls->per_key_repeat[key / 8] & (1 << (key % 8)))
+                    write_buf(keymap, buf, size, offset,
+                              "\n\t\t\trepeat= Yes,");
+                else
                     write_buf(keymap, buf, size, offset,
                               "\n\t\t\trepeat= No,");
-		simple = false;
-	    }
-	    if (keymap->server->vmodmap[key] &&
-		(srv->explicit[key] & XkbExplicitVModMapMask)) {
-		write_buf(keymap, buf, size, offset, "\n\t\t\tvirtualMods= %s,",
-                          get_mod_mask_text(keymap, 0, keymap->server->vmodmap[key]));
-	    }
-	}
+                simple = false;
+            }
+            if (keymap->server->vmodmap[key] &&
+                (srv->explicit[key] & XkbExplicitVModMapMask)) {
+                write_buf(keymap, buf, size, offset,
+                          "\n\t\t\tvirtualMods= %s,",
+                          get_mod_mask_text(keymap, 0,
+                                            keymap->server->vmodmap[key]));
+            }
+        }
 
-	switch (XkbOutOfRangeGroupAction(XkbKeyGroupInfo(keymap, key))) {
-	    case XkbClampIntoRange:
-		write_buf(keymap, buf, size, offset, "\n\t\t\tgroupsClamp,");
-		break;
-	    case XkbRedirectIntoRange:
-		write_buf(keymap, buf, size, offset,
-                          "\n\t\t\tgroupsRedirect= Group%d,",
-			  XkbOutOfRangeGroupNumber(XkbKeyGroupInfo(keymap, key)) + 1);
-		break;
-	}
+        switch (XkbOutOfRangeGroupAction(XkbKeyGroupInfo(keymap, key))) {
+        case XkbClampIntoRange:
+            write_buf(keymap, buf, size, offset, "\n\t\t\tgroupsClamp,");
+            break;
 
-	if (srv->explicit == NULL ||
+        case XkbRedirectIntoRange:
+            write_buf(keymap, buf, size, offset,
+                      "\n\t\t\tgroupsRedirect= Group%d,",
+                      XkbOutOfRangeGroupNumber(XkbKeyGroupInfo(keymap,
+                                                               key)) + 1);
+            break;
+        }
+
+        if (srv->explicit == NULL ||
             (srv->explicit[key] & XkbExplicitInterpretMask))
-	    showActions = XkbKeyHasActions(keymap, key);
-	else
+            showActions = XkbKeyHasActions(keymap, key);
+        else
             showActions = false;
 
-	if (xkb_key_num_groups(keymap, key) > 1 || showActions)
-	    simple = false;
+        if (xkb_key_num_groups(keymap, key) > 1 || showActions)
+            simple = false;
 
-	if (simple) {
-	    write_buf(keymap, buf, size, offset, "\t[ ");
+        if (simple) {
+            write_buf(keymap, buf, size, offset, "\t[ ");
             if (!write_keysyms(keymap, buf, size, offset, key, 0))
                 return false;
             write_buf(keymap, buf, size, offset, " ] };\n");
-	}
-	else {
-	    union xkb_action *acts;
-	    int level;
+        }
+        else {
+            union xkb_action *acts;
+            int level;
 
-	    acts = XkbKeyActionsPtr(keymap, key);
-	    for (group = 0; group < xkb_key_num_groups(keymap, key); group++) {
-		if (group != 0)
-		    write_buf(keymap, buf, size, offset, ",");
-		write_buf(keymap, buf, size, offset,
+            acts = XkbKeyActionsPtr(keymap, key);
+            for (group = 0; group < xkb_key_num_groups(keymap, key);
+                 group++) {
+                if (group != 0)
+                    write_buf(keymap, buf, size, offset, ",");
+                write_buf(keymap, buf, size, offset,
                           "\n\t\t\tsymbols[Group%d]= [ ", group + 1);
                 if (!write_keysyms(keymap, buf, size, offset, key, group))
                     return false;
-		write_buf(keymap, buf, size, offset, " ]");
-		if (showActions) {
-		    write_buf(keymap, buf, size, offset,
+                write_buf(keymap, buf, size, offset, " ]");
+                if (showActions) {
+                    write_buf(keymap, buf, size, offset,
                               ",\n\t\t\tactions[Group%d]= [ ", group + 1);
-		    for (level = 0;
+                    for (level = 0;
                          level < XkbKeyGroupWidth(keymap, key, group);
                          level++) {
-			if (level != 0)
-			    write_buf(keymap, buf, size, offset, ", ");
-			write_action(keymap, buf, size, offset, &acts[level],
+                        if (level != 0)
+                            write_buf(keymap, buf, size, offset, ", ");
+                        write_action(keymap, buf, size, offset, &acts[level],
                                      NULL, NULL);
-		    }
-		    write_buf(keymap, buf, size, offset, " ]");
-		    acts += XkbKeyGroupsWidth(keymap, key);
-		}
-	    }
-	    write_buf(keymap, buf, size, offset, "\n\t\t};\n");
-	}
+                    }
+                    write_buf(keymap, buf, size, offset, " ]");
+                    acts += XkbKeyGroupsWidth(keymap, key);
+                }
+            }
+            write_buf(keymap, buf, size, offset, "\n\t\t};\n");
+        }
     }
     if (map && map->modmap) {
-	for (key = keymap->min_key_code; key <= keymap->max_key_code; key++) {
+        for (key = keymap->min_key_code; key <= keymap->max_key_code;
+             key++) {
             int mod;
 
             if (map->modmap[key] == 0)
@@ -900,7 +940,7 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
                           XkbcKeyNameText(darray_item(keymap->names->keys,
                                                       key).name));
             }
-	}
+        }
     }
 
     write_buf(keymap, buf, size, offset, "\t};\n\n");

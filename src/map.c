@@ -281,9 +281,11 @@ xkb_key_get_group(struct xkb_state *state, xkb_keycode_t key)
         if (ret >= num_groups)
             ret = 0;
         break;
+
     case XkbClampIntoRange:
         ret = num_groups - 1;
         break;
+
     case XkbWrapIntoRange:
     default:
         ret %= num_groups;

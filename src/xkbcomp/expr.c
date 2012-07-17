@@ -1,36 +1,36 @@
 /************************************************************
- Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
-
- Permission to use, copy, modify, and distribute this
- software and its documentation for any purpose and without
- fee is hereby granted, provided that the above copyright
- notice appear in all copies and that both that copyright
- notice and this permission notice appear in supporting
- documentation, and that the name of Silicon Graphics not be
- used in advertising or publicity pertaining to distribution
- of the software without specific prior written permission.
- Silicon Graphics makes no representation about the suitability
- of this software for any purpose. It is provided "as is"
- without any express or implied warranty.
-
- SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
- SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
- GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
- DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
- THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
+ * Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software and its documentation for any purpose and without
+ * fee is hereby granted, provided that the above copyright
+ * notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting
+ * documentation, and that the name of Silicon Graphics not be
+ * used in advertising or publicity pertaining to distribution
+ * of the software without specific prior written permission.
+ * Silicon Graphics makes no representation about the suitability
+ * of this software for any purpose. It is provided "as is"
+ * without any express or implied warranty.
+ *
+ * SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
+ * GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
+ * THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
  ********************************************************/
 
 #include "expr.h"
 
 /***====================================================================***/
 
-typedef bool (*IdentLookupFunc) (struct xkb_context *ctx, const void *priv,
-                                 xkb_atom_t field, unsigned type,
-                                 ExprResult *val_rtrn);
+typedef bool (*IdentLookupFunc)(struct xkb_context *ctx, const void *priv,
+                                xkb_atom_t field, unsigned type,
+                                ExprResult *val_rtrn);
 
 /***====================================================================***/
 
@@ -39,8 +39,7 @@ exprOpText(unsigned type)
 {
     static char buf[32];
 
-    switch (type)
-    {
+    switch (type) {
     case ExprValue:
         strcpy(buf, "literal");
         break;
@@ -101,8 +100,7 @@ exprTypeText(unsigned type)
 {
     static char buf[20];
 
-    switch (type)
-    {
+    switch (type) {
     case TypeUnknown:
         strcpy(buf, "unknown");
         break;
@@ -133,8 +131,7 @@ ExprResolveLhs(struct xkb_keymap *keymap, ExprDef *expr,
                ExprResult *elem_rtrn, ExprResult *field_rtrn,
                ExprDef **index_rtrn)
 {
-    switch (expr->op)
-    {
+    switch (expr->op) {
     case ExprIdent:
         elem_rtrn->str = NULL;
         field_rtrn->str = xkb_atom_strdup(keymap->ctx,
@@ -168,32 +165,30 @@ SimpleLookup(struct xkb_context *ctx, const void *priv,
     const char *str;
 
     if ((priv == NULL) || (field == XKB_ATOM_NONE) || (type != TypeInt))
-    {
         return false;
-    }
+
     str = xkb_atom_text(ctx, field);
-    for (entry = priv; (entry != NULL) && (entry->name != NULL); entry++)
-    {
-        if (strcasecmp(str, entry->name) == 0)
-        {
+    for (entry = priv; (entry != NULL) && (entry->name != NULL); entry++) {
+        if (strcasecmp(str, entry->name) == 0) {
             val_rtrn->uval = entry->result;
             return true;
         }
     }
+
     return false;
 }
 
 static const LookupEntry modIndexNames[] = {
-    {"shift", ShiftMapIndex},
-    {"control", ControlMapIndex},
-    {"lock", LockMapIndex},
-    {"mod1", Mod1MapIndex},
-    {"mod2", Mod2MapIndex},
-    {"mod3", Mod3MapIndex},
-    {"mod4", Mod4MapIndex},
-    {"mod5", Mod5MapIndex},
-    {"none", XkbNoModifier},
-    {NULL, 0}
+    { "shift", ShiftMapIndex },
+    { "control", ControlMapIndex },
+    { "lock", LockMapIndex },
+    { "mod1", Mod1MapIndex },
+    { "mod2", Mod2MapIndex },
+    { "mod3", Mod3MapIndex },
+    { "mod4", Mod4MapIndex },
+    { "mod5", Mod5MapIndex },
+    { "none", XkbNoModifier },
+    { NULL, 0 }
 };
 
 bool
@@ -233,33 +228,29 @@ ExprResolveBoolean(struct xkb_context *ctx, ExprDef *expr,
     int ok = 0;
     const char *bogus = NULL;
 
-    switch (expr->op)
-    {
+    switch (expr->op) {
     case ExprValue:
-        if (expr->type != TypeBoolean)
-        {
+        if (expr->type != TypeBoolean) {
             ERROR
                 ("Found constant of type %s where boolean was expected\n",
-                 exprTypeText(expr->type));
+                exprTypeText(expr->type));
             return false;
         }
         val_rtrn->ival = expr->value.ival;
         return true;
+
     case ExprIdent:
         bogus = xkb_atom_text(ctx, expr->value.str);
-        if (bogus)
-        {
+        if (bogus) {
             if ((strcasecmp(bogus, "true") == 0) ||
                 (strcasecmp(bogus, "yes") == 0) ||
-                (strcasecmp(bogus, "on") == 0))
-            {
+                (strcasecmp(bogus, "on") == 0)) {
                 val_rtrn->uval = 1;
                 return true;
             }
             else if ((strcasecmp(bogus, "false") == 0) ||
                      (strcasecmp(bogus, "no") == 0) ||
-                     (strcasecmp(bogus, "off") == 0))
-            {
+                     (strcasecmp(bogus, "off") == 0)) {
                 val_rtrn->uval = 0;
                 return true;
             }
@@ -267,11 +258,13 @@ ExprResolveBoolean(struct xkb_context *ctx, ExprDef *expr,
         ERROR("Identifier \"%s\" of type int is unknown\n",
               xkb_atom_text(ctx, expr->value.str));
         return false;
+
     case ExprFieldRef:
         ERROR("Default \"%s.%s\" of type boolean is unknown\n",
               xkb_atom_text(ctx, expr->value.field.element),
               xkb_atom_text(ctx, expr->value.field.field));
         return false;
+
     case OpInvert:
     case OpNot:
         ok = ExprResolveBoolean(ctx, expr, val_rtrn);
@@ -298,9 +291,11 @@ ExprResolveBoolean(struct xkb_context *ctx, ExprDef *expr,
             bogus = "Negation";
         ERROR("%s of boolean values not permitted\n", bogus);
         break;
+
     case OpUnaryPlus:
         ERROR("Unary \"+\" operator not permitted for boolean values\n");
         break;
+
     default:
         WSGO("Unknown operator %d in ResolveBoolean\n", expr->op);
         break;
@@ -316,38 +311,37 @@ ExprResolveFloat(struct xkb_context *ctx, ExprDef *expr,
     ExprResult leftRtrn, rightRtrn;
     ExprDef *left, *right;
 
-    switch (expr->op)
-    {
+    switch (expr->op) {
     case ExprValue:
-        if (expr->type == TypeString)
-        {
+        if (expr->type == TypeString) {
             const char *str;
             str = xkb_atom_text(ctx, expr->value.str);
-            if ((str != NULL) && (strlen(str) == 1))
-            {
+            if ((str != NULL) && (strlen(str) == 1)) {
                 val_rtrn->uval = str[0] * XkbGeomPtsPerMM;
                 return true;
             }
         }
-        if (expr->type != TypeInt)
-        {
+        if (expr->type != TypeInt) {
             ERROR("Found constant of type %s, expected a number\n",
-                   exprTypeText(expr->type));
+                  exprTypeText(expr->type));
             return false;
         }
         val_rtrn->ival = expr->value.ival;
         if (expr->type == TypeInt)
             val_rtrn->ival *= XkbGeomPtsPerMM;
         return true;
+
     case ExprIdent:
         ERROR("Numeric identifier \"%s\" unknown\n",
               xkb_atom_text(ctx, expr->value.str));
         return ok;
+
     case ExprFieldRef:
         ERROR("Numeric default \"%s.%s\" unknown\n",
               xkb_atom_text(ctx, expr->value.field.element),
               xkb_atom_text(ctx, expr->value.field.field));
         return false;
+
     case OpAdd:
     case OpSubtract:
     case OpMultiply:
@@ -355,19 +349,20 @@ ExprResolveFloat(struct xkb_context *ctx, ExprDef *expr,
         left = expr->value.binary.left;
         right = expr->value.binary.right;
         if (ExprResolveFloat(ctx, left, &leftRtrn) &&
-            ExprResolveFloat(ctx, right, &rightRtrn))
-        {
-            switch (expr->op)
-            {
+            ExprResolveFloat(ctx, right, &rightRtrn)) {
+            switch (expr->op) {
             case OpAdd:
                 val_rtrn->ival = leftRtrn.ival + rightRtrn.ival;
                 break;
+
             case OpSubtract:
                 val_rtrn->ival = leftRtrn.ival - rightRtrn.ival;
                 break;
+
             case OpMultiply:
                 val_rtrn->ival = leftRtrn.ival * rightRtrn.ival;
                 break;
+
             case OpDivide:
                 val_rtrn->ival = leftRtrn.ival / rightRtrn.ival;
                 break;
@@ -375,17 +370,19 @@ ExprResolveFloat(struct xkb_context *ctx, ExprDef *expr,
             return true;
         }
         return false;
+
     case OpAssign:
         WSGO("Assignment operator not implemented yet\n");
         break;
+
     case OpNot:
         ERROR("The ! operator cannot be applied to a number\n");
         return false;
+
     case OpInvert:
     case OpNegate:
         left = expr->value.child;
-        if (ExprResolveFloat(ctx, left, &leftRtrn))
-        {
+        if (ExprResolveFloat(ctx, left, &leftRtrn)) {
             if (expr->op == OpNegate)
                 val_rtrn->ival = -leftRtrn.ival;
             else
@@ -393,9 +390,11 @@ ExprResolveFloat(struct xkb_context *ctx, ExprDef *expr,
             return true;
         }
         return false;
+
     case OpUnaryPlus:
         left = expr->value.child;
         return ExprResolveFloat(ctx, left, val_rtrn);
+
     default:
         WSGO("Unknown operator %d in ResolveFloat\n", expr->op);
         break;
@@ -410,18 +409,17 @@ ExprResolveKeyCode(struct xkb_context *ctx, ExprDef *expr,
     ExprResult leftRtrn, rightRtrn;
     ExprDef *left, *right;
 
-    switch (expr->op)
-    {
+    switch (expr->op) {
     case ExprValue:
-        if (expr->type != TypeInt)
-        {
+        if (expr->type != TypeInt) {
             ERROR
                 ("Found constant of type %s where an int was expected\n",
-                 exprTypeText(expr->type));
+                exprTypeText(expr->type));
             return false;
         }
         val_rtrn->uval = expr->value.uval;
         return true;
+
     case OpAdd:
     case OpSubtract:
     case OpMultiply:
@@ -429,10 +427,8 @@ ExprResolveKeyCode(struct xkb_context *ctx, ExprDef *expr,
         left = expr->value.binary.left;
         right = expr->value.binary.right;
         if (ExprResolveKeyCode(ctx, left, &leftRtrn) &&
-            ExprResolveKeyCode(ctx, right, &rightRtrn))
-        {
-            switch (expr->op)
-            {
+            ExprResolveKeyCode(ctx, right, &rightRtrn)) {
+            switch (expr->op) {
             case OpAdd:
                 val_rtrn->uval = leftRtrn.uval + rightRtrn.uval;
                 break;
@@ -449,17 +445,19 @@ ExprResolveKeyCode(struct xkb_context *ctx, ExprDef *expr,
             return true;
         }
         return false;
+
     case OpNegate:
         left = expr->value.child;
-        if (ExprResolveKeyCode(ctx, left, &leftRtrn))
-        {
+        if (ExprResolveKeyCode(ctx, left, &leftRtrn)) {
             val_rtrn->uval = ~leftRtrn.uval;
             return true;
         }
         return false;
+
     case OpUnaryPlus:
         left = expr->value.child;
         return ExprResolveKeyCode(ctx, left, val_rtrn);
+
     default:
         WSGO("Unknown operator %d in ResolveKeyCode\n", expr->op);
         break;
@@ -490,16 +488,13 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, ExprDef *expr,
     ExprResult leftRtrn, rightRtrn;
     ExprDef *left, *right;
 
-    switch (expr->op)
-    {
+    switch (expr->op) {
     case ExprValue:
-        if (expr->type == TypeString)
-        {
+        if (expr->type == TypeString) {
             const char *str;
             str = xkb_atom_text(ctx, expr->value.str);
             if (str != NULL)
-                switch (strlen(str))
-                {
+                switch (strlen(str)) {
                 case 0:
                     val_rtrn->uval = 0;
                     return true;
@@ -510,39 +505,41 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, ExprDef *expr,
                     break;
                 }
         }
-        if (expr->type != TypeInt)
-        {
+        if (expr->type != TypeInt) {
             ERROR
                 ("Found constant of type %s where an int was expected\n",
-                 exprTypeText(expr->type));
+                exprTypeText(expr->type));
             return false;
         }
         val_rtrn->ival = expr->value.ival;
         return true;
+
     case ExprIdent:
         if (lookup)
             ok = lookup(ctx, lookupPriv, expr->value.str,
                         TypeInt, val_rtrn);
         if (!ok)
             ERROR("Identifier \"%s\" of type int is unknown\n",
-                   xkb_atom_text(ctx, expr->value.str));
+                  xkb_atom_text(ctx, expr->value.str));
         return ok;
+
     case ExprFieldRef:
         ERROR("Default \"%s.%s\" of type int is unknown\n",
               xkb_atom_text(ctx, expr->value.field.element),
               xkb_atom_text(ctx, expr->value.field.field));
         return false;
+
     case OpAdd:
     case OpSubtract:
     case OpMultiply:
     case OpDivide:
         left = expr->value.binary.left;
         right = expr->value.binary.right;
-        if (ExprResolveIntegerLookup(ctx, left, &leftRtrn, lookup, lookupPriv) &&
-            ExprResolveIntegerLookup(ctx, right, &rightRtrn, lookup, lookupPriv))
-        {
-            switch (expr->op)
-            {
+        if (ExprResolveIntegerLookup(ctx, left, &leftRtrn, lookup,
+                                     lookupPriv) &&
+            ExprResolveIntegerLookup(ctx, right, &rightRtrn, lookup,
+                                     lookupPriv)) {
+            switch (expr->op) {
             case OpAdd:
                 val_rtrn->ival = leftRtrn.ival + rightRtrn.ival;
                 break;
@@ -559,18 +556,20 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, ExprDef *expr,
             return true;
         }
         return false;
+
     case OpAssign:
         WSGO("Assignment operator not implemented yet\n");
         break;
+
     case OpNot:
         ERROR("The ! operator cannot be applied to an integer\n");
         return false;
+
     case OpInvert:
     case OpNegate:
         left = expr->value.child;
         if (ExprResolveIntegerLookup(ctx, left, &leftRtrn, lookup,
-                                     lookupPriv))
-        {
+                                     lookupPriv)) {
             if (expr->op == OpNegate)
                 val_rtrn->ival = -leftRtrn.ival;
             else
@@ -578,10 +577,12 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, ExprDef *expr,
             return true;
         }
         return false;
+
     case OpUnaryPlus:
         left = expr->value.child;
         return ExprResolveIntegerLookup(ctx, left, val_rtrn, lookup,
                                         lookupPriv);
+
     default:
         WSGO("Unknown operator %d in ResolveInteger\n", expr->op);
         break;
@@ -685,34 +686,34 @@ ExprResolveString(struct xkb_context *ctx, ExprDef *expr,
     ExprDef *right;
     const char *bogus = NULL;
 
-    switch (expr->op)
-    {
+    switch (expr->op) {
     case ExprValue:
-        if (expr->type != TypeString)
-        {
+        if (expr->type != TypeString) {
             ERROR("Found constant of type %s, expected a string\n",
-                   exprTypeText(expr->type));
+                  exprTypeText(expr->type));
             return false;
         }
         val_rtrn->str = xkb_atom_strdup(ctx, expr->value.str);
         if (val_rtrn->str == NULL)
             val_rtrn->str = strdup("");
         return true;
+
     case ExprIdent:
         ERROR("Identifier \"%s\" of type string not found\n",
               xkb_atom_text(ctx, expr->value.str));
         return false;
+
     case ExprFieldRef:
         ERROR("Default \"%s.%s\" of type string not found\n",
               xkb_atom_text(ctx, expr->value.field.element),
               xkb_atom_text(ctx, expr->value.field.field));
         return false;
+
     case OpAdd:
         left = expr->value.binary.left;
         right = expr->value.binary.right;
         if (ExprResolveString(ctx, left, &leftRtrn) &&
-            ExprResolveString(ctx, right, &rightRtrn))
-        {
+            ExprResolveString(ctx, right, &rightRtrn)) {
             int len;
             char *new;
             len = strlen(leftRtrn.str) + strlen(rightRtrn.str) + 1;
@@ -728,6 +729,7 @@ ExprResolveString(struct xkb_context *ctx, ExprDef *expr,
             free(rightRtrn.str);
         }
         return false;
+
     case OpSubtract:
         if (bogus == NULL)
             bogus = "Subtraction";
@@ -748,12 +750,15 @@ ExprResolveString(struct xkb_context *ctx, ExprDef *expr,
             bogus = "Bitwise complement";
         ERROR("%s of string values not permitted\n", bogus);
         return false;
+
     case OpNot:
         ERROR("The ! operator cannot be applied to a string\n");
         return false;
+
     case OpUnaryPlus:
         ERROR("The + operator cannot be applied to a string\n");
         return false;
+
     default:
         WSGO("Unknown operator %d in ResolveString\n", expr->op);
         break;
@@ -767,26 +772,27 @@ ExprResolveKeyName(struct xkb_context *ctx, ExprDef *expr,
 {
     const char *bogus = NULL;
 
-    switch (expr->op)
-    {
+    switch (expr->op) {
     case ExprValue:
-        if (expr->type != TypeKeyName)
-        {
+        if (expr->type != TypeKeyName) {
             ERROR("Found constant of type %s, expected a key name\n",
-                   exprTypeText(expr->type));
+                  exprTypeText(expr->type));
             return false;
         }
         memcpy(val_rtrn->keyName.name, expr->value.keyName, XkbKeyNameLength);
         return true;
+
     case ExprIdent:
         ERROR("Identifier \"%s\" of type string not found\n",
               xkb_atom_text(ctx, expr->value.str));
         return false;
+
     case ExprFieldRef:
         ERROR("Default \"%s.%s\" of type key name not found\n",
               xkb_atom_text(ctx, expr->value.field.element),
               xkb_atom_text(ctx, expr->value.field.field));
         return false;
+
     case OpAdd:
         if (bogus == NULL)
             bogus = "Addition";
@@ -810,12 +816,15 @@ ExprResolveKeyName(struct xkb_context *ctx, ExprDef *expr,
             bogus = "Bitwise complement";
         ERROR("%s of key name values not permitted\n", bogus);
         return false;
+
     case OpNot:
         ERROR("The ! operator cannot be applied to a key name\n");
         return false;
+
     case OpUnaryPlus:
         ERROR("The + operator cannot be applied to a key name\n");
         return false;
+
     default:
         WSGO("Unknown operator %d in ResolveKeyName\n", expr->op);
         break;
@@ -829,17 +838,15 @@ int
 ExprResolveEnum(struct xkb_context *ctx, ExprDef *expr,
                 ExprResult *val_rtrn, const LookupEntry *values)
 {
-    if (expr->op != ExprIdent)
-    {
+    if (expr->op != ExprIdent) {
         ERROR("Found a %s where an enumerated value was expected\n",
-               exprOpText(expr->op));
+              exprOpText(expr->op));
         return false;
     }
-    if (!SimpleLookup(ctx, values, expr->value.str, TypeInt, val_rtrn))
-    {
+    if (!SimpleLookup(ctx, values, expr->value.str, TypeInt, val_rtrn)) {
         int nOut = 0;
         ERROR("Illegal identifier %s (expected one of: ",
-               xkb_atom_text(ctx, expr->value.str));
+              xkb_atom_text(ctx, expr->value.str));
         while (values && values->name)
         {
             if (nOut != 0)
@@ -865,48 +872,51 @@ ExprResolveMaskLookup(struct xkb_context *ctx, ExprDef *expr,
     ExprDef *left, *right;
     const char *bogus = NULL;
 
-    switch (expr->op)
-    {
+    switch (expr->op) {
     case ExprValue:
-        if (expr->type != TypeInt)
-        {
+        if (expr->type != TypeInt) {
             ERROR
                 ("Found constant of type %s where a mask was expected\n",
-                 exprTypeText(expr->type));
+                exprTypeText(expr->type));
             return false;
         }
         val_rtrn->ival = expr->value.ival;
         return true;
+
     case ExprIdent:
         ok = lookup(ctx, lookupPriv, expr->value.str, TypeInt, val_rtrn);
         if (!ok)
             ERROR("Identifier \"%s\" of type int is unknown\n",
-                   xkb_atom_text(ctx, expr->value.str));
+                  xkb_atom_text(ctx, expr->value.str));
         return ok;
+
     case ExprFieldRef:
         ERROR("Default \"%s.%s\" of type int is unknown\n",
               xkb_atom_text(ctx, expr->value.field.element),
               xkb_atom_text(ctx, expr->value.field.field));
         return false;
+
     case ExprArrayRef:
         bogus = "array reference";
+
     case ExprActionDecl:
         if (bogus == NULL)
             bogus = "function use";
         ERROR("Unexpected %s in mask expression\n", bogus);
         ACTION("Expression ignored\n");
         return false;
+
     case OpAdd:
     case OpSubtract:
     case OpMultiply:
     case OpDivide:
         left = expr->value.binary.left;
         right = expr->value.binary.right;
-        if (ExprResolveMaskLookup(ctx, left, &leftRtrn, lookup, lookupPriv) &&
-            ExprResolveMaskLookup(ctx, right, &rightRtrn, lookup, lookupPriv))
-        {
-            switch (expr->op)
-            {
+        if (ExprResolveMaskLookup(ctx, left, &leftRtrn, lookup,
+                                  lookupPriv) &&
+            ExprResolveMaskLookup(ctx, right, &rightRtrn, lookup,
+                                  lookupPriv)) {
+            switch (expr->op) {
             case OpAdd:
                 val_rtrn->ival = leftRtrn.ival | rightRtrn.ival;
                 break;
@@ -916,36 +926,38 @@ ExprResolveMaskLookup(struct xkb_context *ctx, ExprDef *expr,
             case OpMultiply:
             case OpDivide:
                 ERROR("Cannot %s masks\n",
-                       expr->op == OpDivide ? "divide" : "multiply");
+                      expr->op == OpDivide ? "divide" : "multiply");
                 ACTION("Illegal operation ignored\n");
                 return false;
             }
             return true;
         }
         return false;
+
     case OpAssign:
         WSGO("Assignment operator not implemented yet\n");
         break;
+
     case OpInvert:
         left = expr->value.child;
         if (ExprResolveIntegerLookup(ctx, left, &leftRtrn, lookup,
-                                     lookupPriv))
-        {
+                                     lookupPriv)) {
             val_rtrn->ival = ~leftRtrn.ival;
             return true;
         }
         return false;
+
     case OpUnaryPlus:
     case OpNegate:
     case OpNot:
         left = expr->value.child;
         if (ExprResolveIntegerLookup(ctx, left, &leftRtrn, lookup,
-                                     lookupPriv))
-        {
+                                     lookupPriv)) {
             ERROR("The %s operator cannot be used with a mask\n",
-                   (expr->op == OpNegate ? "-" : "!"));
+                  (expr->op == OpNegate ? "-" : "!"));
         }
         return false;
+
     default:
         WSGO("Unknown operator %d in ResolveMask\n", expr->op);
         break;
@@ -982,8 +994,7 @@ ExprResolveKeySym(struct xkb_context *ctx, ExprDef *expr,
     int ok = 0;
     xkb_keysym_t sym;
 
-    if (expr->op == ExprIdent)
-    {
+    if (expr->op == ExprIdent) {
         const char *str;
         str = xkb_atom_text(ctx, expr->value.str);
         if (str) {

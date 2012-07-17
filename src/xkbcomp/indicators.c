@@ -1,27 +1,27 @@
 /************************************************************
- Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
-
- Permission to use, copy, modify, and distribute this
- software and its documentation for any purpose and without
- fee is hereby granted, provided that the above copyright
- notice appear in all copies and that both that copyright
- notice and this permission notice appear in supporting
- documentation, and that the name of Silicon Graphics not be
- used in advertising or publicity pertaining to distribution
- of the software without specific prior written permission.
- Silicon Graphics makes no representation about the suitability
- of this software for any purpose. It is provided "as is"
- without any express or implied warranty.
-
- SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
- SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
- GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
- DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
- THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
+ * Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software and its documentation for any purpose and without
+ * fee is hereby granted, provided that the above copyright
+ * notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting
+ * documentation, and that the name of Silicon Graphics not be
+ * used in advertising or publicity pertaining to distribution
+ * of the software without specific prior written permission.
+ * Silicon Graphics makes no representation about the suitability
+ * of this software for any purpose. It is provided "as is"
+ * without any express or implied warranty.
+ *
+ * SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
+ * GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
+ * THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
  ********************************************************/
 
 #include "indicators.h"
@@ -57,28 +57,23 @@ AddIndicatorMap(struct xkb_keymap *keymap, LEDInfo *oldLEDs, LEDInfo *new)
     unsigned collide;
 
     last = NULL;
-    for (old = oldLEDs; old != NULL; old = (LEDInfo *) old->defs.next)
-    {
-        if (old->name == new->name)
-        {
+    for (old = oldLEDs; old != NULL; old = (LEDInfo *) old->defs.next) {
+        if (old->name == new->name) {
             if ((old->real_mods == new->real_mods) &&
                 (old->vmods == new->vmods) &&
                 (old->groups == new->groups) &&
                 (old->ctrls == new->ctrls) &&
                 (old->which_mods == new->which_mods) &&
-                (old->which_groups == new->which_groups))
-            {
+                (old->which_groups == new->which_groups)) {
                 old->defs.defined |= new->defs.defined;
                 return oldLEDs;
             }
-            if (new->defs.merge == MERGE_REPLACE)
-            {
+            if (new->defs.merge == MERGE_REPLACE) {
                 CommonInfo *next = old->defs.next;
                 if (((old->defs.file_id == new->defs.file_id)
-                     && (warningLevel > 0)) || (warningLevel > 9))
-                {
+                     && (warningLevel > 0)) || (warningLevel > 9)) {
                     WARN("Map for indicator %s redefined\n",
-                          xkb_atom_text(keymap->ctx, old->name));
+                         xkb_atom_text(keymap->ctx, old->name));
                     ACTION("Earlier definition ignored\n");
                 }
                 *old = *new;
@@ -86,53 +81,48 @@ AddIndicatorMap(struct xkb_keymap *keymap, LEDInfo *oldLEDs, LEDInfo *new)
                 return oldLEDs;
             }
             collide = 0;
-            if (UseNewField(_LED_Index, &old->defs, &new->defs, &collide))
-            {
+            if (UseNewField(_LED_Index, &old->defs, &new->defs, &collide)) {
                 old->indicator = new->indicator;
                 old->defs.defined |= _LED_Index;
             }
-            if (UseNewField(_LED_Mods, &old->defs, &new->defs, &collide))
-            {
+            if (UseNewField(_LED_Mods, &old->defs, &new->defs, &collide)) {
                 old->which_mods = new->which_mods;
                 old->real_mods = new->real_mods;
                 old->vmods = new->vmods;
                 old->defs.defined |= _LED_Mods;
             }
-            if (UseNewField(_LED_Groups, &old->defs, &new->defs, &collide))
-            {
+            if (UseNewField(_LED_Groups, &old->defs, &new->defs, &collide)) {
                 old->which_groups = new->which_groups;
                 old->groups = new->groups;
                 old->defs.defined |= _LED_Groups;
             }
-            if (UseNewField(_LED_Ctrls, &old->defs, &new->defs, &collide))
-            {
+            if (UseNewField(_LED_Ctrls, &old->defs, &new->defs, &collide)) {
                 old->ctrls = new->ctrls;
                 old->defs.defined |= _LED_Ctrls;
             }
-            if (UseNewField(_LED_Explicit, &old->defs, &new->defs, &collide))
-            {
+            if (UseNewField(_LED_Explicit, &old->defs, &new->defs,
+                            &collide)) {
                 old->flags &= ~XkbIM_NoExplicit;
                 old->flags |= (new->flags & XkbIM_NoExplicit);
                 old->defs.defined |= _LED_Explicit;
             }
-            if (UseNewField(_LED_Automatic, &old->defs, &new->defs, &collide))
-            {
+            if (UseNewField(_LED_Automatic, &old->defs, &new->defs,
+                            &collide)) {
                 old->flags &= ~XkbIM_NoAutomatic;
                 old->flags |= (new->flags & XkbIM_NoAutomatic);
                 old->defs.defined |= _LED_Automatic;
             }
-            if (UseNewField(_LED_DrivesKbd, &old->defs, &new->defs, &collide))
-            {
+            if (UseNewField(_LED_DrivesKbd, &old->defs, &new->defs,
+                            &collide)) {
                 old->flags &= ~XkbIM_LEDDrivesKB;
                 old->flags |= (new->flags & XkbIM_LEDDrivesKB);
                 old->defs.defined |= _LED_DrivesKbd;
             }
-            if (collide)
-            {
+            if (collide) {
                 WARN("Map for indicator %s redefined\n",
                      xkb_atom_text(keymap->ctx, old->name));
                 ACTION("Using %s definition for duplicate fields\n",
-                        (new->defs.merge == MERGE_AUGMENT ? "first" : "last"));
+                       (new->defs.merge == MERGE_AUGMENT ? "first" : "last"));
             }
             return oldLEDs;
         }
@@ -141,17 +131,15 @@ AddIndicatorMap(struct xkb_keymap *keymap, LEDInfo *oldLEDs, LEDInfo *new)
     }
     /* new definition */
     old = uTypedAlloc(LEDInfo);
-    if (!old)
-    {
+    if (!old) {
         WSGO("Couldn't allocate indicator map\n");
         ACTION("Map for indicator %s not compiled\n",
-                xkb_atom_text(keymap->ctx, new->name));
+               xkb_atom_text(keymap->ctx, new->name));
         return NULL;
     }
     *old = *new;
     old->defs.next = NULL;
-    if (last)
-    {
+    if (last) {
         last->defs.next = &old->defs;
         return oldLEDs;
     }
@@ -159,37 +147,37 @@ AddIndicatorMap(struct xkb_keymap *keymap, LEDInfo *oldLEDs, LEDInfo *new)
 }
 
 static const LookupEntry modComponentNames[] = {
-    {"base", XkbIM_UseBase},
-    {"latched", XkbIM_UseLatched},
-    {"locked", XkbIM_UseLocked},
-    {"effective", XkbIM_UseEffective},
-    {"compat", XkbIM_UseCompat},
-    {"any", XkbIM_UseAnyMods},
-    {"none", 0},
-    {NULL, 0}
+    { "base", XkbIM_UseBase },
+    { "latched", XkbIM_UseLatched },
+    { "locked", XkbIM_UseLocked },
+    { "effective", XkbIM_UseEffective },
+    { "compat", XkbIM_UseCompat },
+    { "any", XkbIM_UseAnyMods },
+    { "none", 0 },
+    { NULL, 0 }
 };
 static const LookupEntry groupComponentNames[] = {
-    {"base", XkbIM_UseBase},
-    {"latched", XkbIM_UseLatched},
-    {"locked", XkbIM_UseLocked},
-    {"effective", XkbIM_UseEffective},
-    {"any", XkbIM_UseAnyGroup},
-    {"none", 0},
-    {NULL, 0}
+    { "base", XkbIM_UseBase },
+    { "latched", XkbIM_UseLatched },
+    { "locked", XkbIM_UseLocked },
+    { "effective", XkbIM_UseEffective },
+    { "any", XkbIM_UseAnyGroup },
+    { "none", 0 },
+    { NULL, 0 }
 };
 
 static const LookupEntry groupNames[] = {
-    {"group1", 0x01},
-    {"group2", 0x02},
-    {"group3", 0x04},
-    {"group4", 0x08},
-    {"group5", 0x10},
-    {"group6", 0x20},
-    {"group7", 0x40},
-    {"group8", 0x80},
-    {"none", 0x00},
-    {"all", 0xff},
-    {NULL, 0}
+    { "group1", 0x01 },
+    { "group2", 0x02 },
+    { "group3", 0x04 },
+    { "group4", 0x08 },
+    { "group5", 0x10 },
+    { "group6", 0x20 },
+    { "group7", 0x40 },
+    { "group8", 0x80 },
+    { "none", 0x00 },
+    { "all", 0xff },
+    { NULL, 0 }
 };
 
 int
@@ -201,8 +189,7 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
 
     ok = true;
     if ((strcasecmp(field, "modifiers") == 0) ||
-        (strcasecmp(field, "mods") == 0))
-    {
+        (strcasecmp(field, "mods") == 0)) {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(keymap, led, field);
         if (!ExprResolveVModMask(value, &rtrn, keymap))
@@ -211,8 +198,7 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
         led->vmods = (rtrn.uval >> 8) & 0xff;
         led->defs.defined |= _LED_Mods;
     }
-    else if (strcasecmp(field, "groups") == 0)
-    {
+    else if (strcasecmp(field, "groups") == 0) {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(keymap, led, field);
         if (!ExprResolveMask(keymap->ctx, value, &rtrn, groupNames))
@@ -221,8 +207,7 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
         led->defs.defined |= _LED_Groups;
     }
     else if ((strcasecmp(field, "controls") == 0) ||
-             (strcasecmp(field, "ctrls") == 0))
-    {
+             (strcasecmp(field, "ctrls") == 0)) {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(keymap, led, field);
         if (!ExprResolveMask(keymap->ctx, value, &rtrn, ctrlNames))
@@ -231,8 +216,7 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
         led->ctrls = rtrn.uval;
         led->defs.defined |= _LED_Ctrls;
     }
-    else if (strcasecmp(field, "allowexplicit") == 0)
-    {
+    else if (strcasecmp(field, "allowexplicit") == 0) {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(keymap, led, field);
         if (!ExprResolveBoolean(keymap->ctx, value, &rtrn))
@@ -244,23 +228,20 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
         led->defs.defined |= _LED_Explicit;
     }
     else if ((strcasecmp(field, "whichmodstate") == 0) ||
-             (strcasecmp(field, "whichmodifierstate") == 0))
-    {
+             (strcasecmp(field, "whichmodifierstate") == 0)) {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(keymap, led, field);
-        if (!ExprResolveMask(keymap->ctx, value, &rtrn, modComponentNames))
-        {
+        if (!ExprResolveMask(keymap->ctx, value, &rtrn, modComponentNames)) {
             return ReportIndicatorBadType(keymap, led, field,
                                           "mask of modifier state components");
         }
         led->which_mods = rtrn.uval;
     }
-    else if (strcasecmp(field, "whichgroupstate") == 0)
-    {
+    else if (strcasecmp(field, "whichgroupstate") == 0) {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(keymap, led, field);
-        if (!ExprResolveMask(keymap->ctx, value, &rtrn, groupComponentNames))
-        {
+        if (!ExprResolveMask(keymap->ctx, value, &rtrn,
+                             groupComponentNames)) {
             return ReportIndicatorBadType(keymap, led, field,
                                           "mask of group state components");
         }
@@ -271,8 +252,7 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
              (strcasecmp(field, "leddriveskbd") == 0) ||
              (strcasecmp(field, "leddriveskeyboard") == 0) ||
              (strcasecmp(field, "indicatordriveskbd") == 0) ||
-             (strcasecmp(field, "indicatordriveskeyboard") == 0))
-    {
+             (strcasecmp(field, "indicatordriveskeyboard") == 0)) {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(keymap, led, field);
         if (!ExprResolveBoolean(keymap->ctx, value, &rtrn))
@@ -283,28 +263,25 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
             led->flags &= ~XkbIM_LEDDrivesKB;
         led->defs.defined |= _LED_DrivesKbd;
     }
-    else if (strcasecmp(field, "index") == 0)
-    {
+    else if (strcasecmp(field, "index") == 0) {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(keymap, led, field);
         if (!ExprResolveInteger(keymap->ctx, value, &rtrn))
             return ReportIndicatorBadType(keymap, led, field,
                                           "indicator index");
-        if ((rtrn.uval < 1) || (rtrn.uval > 32))
-        {
+        if ((rtrn.uval < 1) || (rtrn.uval > 32)) {
             ERROR("Illegal indicator index %d (range 1..%d)\n",
-                   rtrn.uval, XkbNumIndicators);
+                  rtrn.uval, XkbNumIndicators);
             ACTION("Index definition for %s indicator ignored\n",
-                    xkb_atom_text(keymap->ctx, led->name));
+                   xkb_atom_text(keymap->ctx, led->name));
             return false;
         }
         led->indicator = rtrn.uval;
         led->defs.defined |= _LED_Index;
     }
-    else
-    {
+    else {
         ERROR("Unknown field %s in map for %s indicator\n", field,
-               xkb_atom_text(keymap->ctx, led->name));
+              xkb_atom_text(keymap->ctx, led->name));
         ACTION("Definition ignored\n");
         ok = false;
     }
@@ -327,33 +304,28 @@ HandleIndicatorMapDef(IndicatorMapDef *def, struct xkb_keymap *keymap,
     led.name = def->name;
 
     ok = true;
-    for (var = def->body; var != NULL; var = (VarDef *) var->common.next)
-    {
+    for (var = def->body; var != NULL; var = (VarDef *) var->common.next) {
         ExprResult elem, field;
         ExprDef *arrayNdx;
-        if (!ExprResolveLhs(keymap, var->name, &elem, &field, &arrayNdx))
-        {
+        if (!ExprResolveLhs(keymap, var->name, &elem, &field, &arrayNdx)) {
             ok = false;
             continue;
         }
-        if (elem.str != NULL)
-        {
+        if (elem.str != NULL) {
             ERROR
                 ("Cannot set defaults for \"%s\" element in indicator map\n",
-                 elem.str);
+                elem.str);
             ACTION("Assignment to %s.%s ignored\n", elem.str, field.str);
             ok = false;
         }
-        else
-        {
+        else {
             ok = SetIndicatorMapField(&led, keymap, field.str, arrayNdx,
                                       var->value) && ok;
         }
         free(elem.str);
         free(field.str);
     }
-    if (ok)
-    {
+    if (ok) {
         rtrn = AddIndicatorMap(keymap, oldLEDs, &led);
         return rtrn;
     }
@@ -366,74 +338,60 @@ BindIndicators(struct xkb_keymap *keymap, LEDInfo *unbound)
     int i;
     LEDInfo *led, *next, *last;
 
-    if (keymap->names != NULL)
-    {
-        for (led = unbound; led != NULL; led = (LEDInfo *) led->defs.next)
-        {
-            if (led->indicator == _LED_NotBound)
-            {
-                for (i = 0; i < XkbNumIndicators; i++)
-                {
+    if (keymap->names != NULL) {
+        for (led = unbound; led != NULL; led = (LEDInfo *) led->defs.next) {
+            if (led->indicator == _LED_NotBound) {
+                for (i = 0; i < XkbNumIndicators; i++) {
                     if (keymap->names->indicators[i] &&
                         strcmp(keymap->names->indicators[i],
-                               xkb_atom_text(keymap->ctx, led->name)) == 0)
-                    {
+                               xkb_atom_text(keymap->ctx, led->name)) == 0) {
                         led->indicator = i + 1;
                         break;
                     }
                 }
             }
         }
-        for (led = unbound; led != NULL; led = (LEDInfo *) led->defs.next)
-        {
-            if (led->indicator == _LED_NotBound)
-            {
-                for (i = 0; i < XkbNumIndicators; i++)
-                {
-                    if (keymap->names->indicators[i] == NULL)
-                    {
+        for (led = unbound; led != NULL; led = (LEDInfo *) led->defs.next) {
+            if (led->indicator == _LED_NotBound) {
+                for (i = 0; i < XkbNumIndicators; i++) {
+                    if (keymap->names->indicators[i] == NULL) {
                         keymap->names->indicators[i] =
                             xkb_atom_strdup(keymap->ctx, led->name);
                         led->indicator = i + 1;
                         break;
                     }
                 }
-                if (led->indicator == _LED_NotBound)
-                {
+                if (led->indicator == _LED_NotBound) {
                     ERROR("No unnamed indicators found\n");
                     ACTION
                         ("Virtual indicator map \"%s\" not bound\n",
-                         xkb_atom_text(keymap->ctx, led->name));
+                        xkb_atom_text(keymap->ctx, led->name));
                     continue;
                 }
             }
         }
     }
-    for (last = NULL, led = unbound; led != NULL; led = next)
-    {
+    for (last = NULL, led = unbound; led != NULL; led = next) {
         next = (LEDInfo *) led->defs.next;
-        if (led->indicator == _LED_NotBound)
-        {
+        if (led->indicator == _LED_NotBound) {
             unbound = next;
             free(led);
         }
-        else
-        {
+        else {
             if ((keymap->names != NULL) &&
                 (strcmp(keymap->names->indicators[led->indicator - 1],
-                        xkb_atom_text(keymap->ctx, led->name)) != 0))
-            {
-                const char *old = keymap->names->indicators[led->indicator - 1];
+                        xkb_atom_text(keymap->ctx, led->name)) != 0)) {
+                const char *old =
+                    keymap->names->indicators[led->indicator - 1];
                 ERROR("Multiple names bound to indicator %d\n",
-                       (unsigned int) led->indicator);
+                      (unsigned int) led->indicator);
                 ACTION("Using %s, ignoring %s\n", old,
                        xkb_atom_text(keymap->ctx, led->name));
                 led->indicator = _LED_NotBound;
                 unbound = next;
                 free(led);
             }
-            else
-            {
+            else {
                 struct xkb_indicator_map * map;
                 map = &keymap->indicators->maps[led->indicator - 1];
                 map->flags = led->flags;
@@ -454,8 +412,7 @@ BindIndicators(struct xkb_keymap *keymap, LEDInfo *unbound)
         }
     }
 
-    for (led = unbound; led != NULL; led = next)
-    {
+    for (led = unbound; led != NULL; led = next) {
         next = led ? (LEDInfo *) led->defs.next : NULL;
         free(led);
     }
@@ -467,26 +424,22 @@ CopyIndicatorMapDefs(struct xkb_keymap *keymap, LEDInfo *leds)
     LEDInfo *led, *next;
     LEDInfo *unbound = NULL, *last = NULL;
 
-    if (XkbcAllocNames(keymap, XkbIndicatorNamesMask, 0) != Success)
-    {
+    if (XkbcAllocNames(keymap, XkbIndicatorNamesMask, 0) != Success) {
         WSGO("Couldn't allocate names\n");
         ACTION("Indicator names may be incorrect\n");
     }
-    if (XkbcAllocIndicatorMaps(keymap) != Success)
-    {
+    if (XkbcAllocIndicatorMaps(keymap) != Success) {
         WSGO("Can't allocate indicator maps\n");
         ACTION("Indicator map definitions may be lost\n");
         return false;
     }
-    for (led = leds; led != NULL; led = next)
-    {
+    for (led = leds; led != NULL; led = next) {
         next = (LEDInfo *) led->defs.next;
         if ((led->groups != 0) && (led->which_groups == 0))
             led->which_groups = XkbIM_UseEffective;
         if ((led->which_mods == 0) && ((led->real_mods) || (led->vmods)))
             led->which_mods = XkbIM_UseEffective;
-        if ((led->indicator == _LED_NotBound) || (!keymap->indicators))
-        {
+        if ((led->indicator == _LED_NotBound) || (!keymap->indicators)) {
             led->defs.next = NULL;
             if (last != NULL)
                 last->defs.next = (CommonInfo *) led;
@@ -494,8 +447,7 @@ CopyIndicatorMapDefs(struct xkb_keymap *keymap, LEDInfo *leds)
                 unbound = led;
             last = led;
         }
-        else
-        {
+        else {
             struct xkb_indicator_map * im;
             im = &keymap->indicators->maps[led->indicator - 1];
             im->flags = led->flags;
@@ -506,10 +458,9 @@ CopyIndicatorMapDefs(struct xkb_keymap *keymap, LEDInfo *leds)
             im->mods.real_mods = led->real_mods;
             im->mods.vmods = led->vmods;
             im->ctrls = led->ctrls;
-            if (keymap->names != NULL)
-            {
+            if (keymap->names != NULL) {
                 free(keymap->names->indicators[led->indicator - 1]);
-                keymap->names->indicators[led->indicator-1] =
+                keymap->names->indicators[led->indicator - 1] =
                     xkb_atom_strdup(keymap->ctx, led->name);
             }
             free(led);

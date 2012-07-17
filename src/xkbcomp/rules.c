@@ -1,27 +1,27 @@
 /************************************************************
- Copyright (c) 1996 by Silicon Graphics Computer Systems, Inc.
-
- Permission to use, copy, modify, and distribute this
- software and its documentation for any purpose and without
- fee is hereby granted, provided that the above copyright
- notice appear in all copies and that both that copyright
- notice and this permission notice appear in supporting
- documentation, and that the name of Silicon Graphics not be
- used in advertising or publicity pertaining to distribution
- of the software without specific prior written permission.
- Silicon Graphics makes no representation about the suitability
- of this software for any purpose. It is provided "as is"
- without any express or implied warranty.
-
- SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
- SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
- GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
- DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
- THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
+ * Copyright (c) 1996 by Silicon Graphics Computer Systems, Inc.
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software and its documentation for any purpose and without
+ * fee is hereby granted, provided that the above copyright
+ * notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting
+ * documentation, and that the name of Silicon Graphics not be
+ * used in advertising or publicity pertaining to distribution
+ * of the software without specific prior written permission.
+ * Silicon Graphics makes no representation about the suitability
+ * of this software for any purpose. It is provided "as is"
+ * without any express or implied warranty.
+ *
+ * SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
+ * GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
+ * THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
  ********************************************************/
 
 #include <stdio.h>
@@ -192,9 +192,9 @@ struct group {
 
 enum rule_flag {
     RULE_FLAG_PENDING_MATCH = (1L << 1),
-    RULE_FLAG_OPTION        = (1L << 2),
-    RULE_FLAG_APPEND        = (1L << 3),
-    RULE_FLAG_NORMAL        = (1L << 4),
+    RULE_FLAG_OPTION = (1L << 2),
+    RULE_FLAG_APPEND = (1L << 3),
+    RULE_FLAG_NORMAL = (1L << 4),
 };
 
 struct rule {
@@ -236,9 +236,11 @@ get_index(char *str, int *ndx)
     if (consumed > 0) {
         *ndx = num;
         str += consumed;
-    } else if (empty > 0) {
+    }
+    else if (empty > 0) {
         *ndx = -1;
-    } else {
+    }
+    else {
         *ndx = 0;
     }
 
@@ -299,10 +301,12 @@ match_mapping_line(darray_char *line, struct mapping *mapping)
 
                     if (ndx < 1 || ndx > XkbNumKbdGroups) {
                         WARN("Illegal %s index: %d\n", cname[i], ndx);
-                        WARN("Index must be in range 1..%d\n", XkbNumKbdGroups);
+                        WARN("Index must be in range 1..%d\n",
+                             XkbNumKbdGroups);
                         break;
                     }
-                } else {
+                }
+                else {
                     ndx = 0;
                 }
 
@@ -412,7 +416,8 @@ match_rule_line(darray_char *line, struct mapping *mapping,
 
     str = darray_mem(*line, 0);
 
-    for (nread = 0; (tok = strtok_r(str, " ", &strtok_buf)) != NULL; nread++) {
+    for (nread = 0; (tok = strtok_r(str, " ", &strtok_buf)) != NULL;
+         nread++) {
         str = NULL;
 
         if (strcmp(tok, "=") == 0) {
@@ -488,15 +493,15 @@ match_line(darray_char *line, struct mapping *mapping,
 static void
 squeeze_spaces(char *p1)
 {
-   char *p2;
+    char *p2;
 
-   for (p2 = p1; *p2; p2++) {
-       *p1 = *p2;
-       if (*p1 != ' ')
-           p1++;
-   }
+    for (p2 = p1; *p2; p2++) {
+        *p1 = *p2;
+        if (*p1 != ' ')
+            p1++;
+    }
 
-   *p1 = '\0';
+    *p1 = '\0';
 }
 
 /*
@@ -577,7 +582,8 @@ make_multi_defs(struct multi_defs *mdefs, const struct xkb_rule_names *mlvo)
                 if ((p = strchr(p, ','))) {
                     *p++ = '\0';
                     mdefs->variant[i] = p;
-                } else {
+                }
+                else {
                     break;
                 }
             }
@@ -654,26 +660,26 @@ static bool
 match_group_member(struct rules *rules, const char *group_name,
                    const char *name)
 {
-   int i;
-   const char *word;
-   struct group *iter, *group = NULL;
+    int i;
+    const char *word;
+    struct group *iter, *group = NULL;
 
-   darray_foreach(iter, rules->groups) {
-       if (strcmp(iter->name, group_name) == 0) {
-           group = iter;
-           break;
-       }
-   }
+    darray_foreach(iter, rules->groups) {
+        if (strcmp(iter->name, group_name) == 0) {
+            group = iter;
+            break;
+        }
+    }
 
-   if (!group)
-       return false;
+    if (!group)
+        return false;
 
-   word = group->words;
-   for (i = 0; i < group->number; i++, word += strlen(word) + 1)
-       if (strcmp(word, name) == 0)
-           return true;
+    word = group->words;
+    for (i = 0; i < group->number; i++, word += strlen(word) + 1)
+        if (strcmp(word, name) == 0)
+            return true;
 
-   return false;
+    return false;
 }
 
 /* Match @needle out of @sep-seperated @haystack. */
@@ -733,7 +739,7 @@ apply_rule_if_matches(struct rules *rules, struct rule *rule,
         else if (rule->layout[0] == '$') {
             if (!match_group_member(rules, rule->layout,
                                     mdefs->layout[rule->layout_num]))
-                  return 0;
+                return 0;
         }
         else if (strcmp(rule->layout,
                         mdefs->layout[rule->layout_num]) != 0) {
@@ -747,7 +753,8 @@ apply_rule_if_matches(struct rules *rules, struct rule *rule,
 
         if (strcmp(rule->variant, "*") == 0) {
             pending = true;
-        } else if (rule->variant[0] == '$') {
+        }
+        else if (rule->variant[0] == '$') {
             if (!match_group_member(rules, rule->variant,
                                     mdefs->variant[rule->variant_num]))
                 return 0;
@@ -760,7 +767,8 @@ apply_rule_if_matches(struct rules *rules, struct rule *rule,
 
     if (pending) {
         rule->flags |= RULE_FLAG_PENDING_MATCH;
-    } else {
+    }
+    else {
         /* Exact match, apply it now. */
         apply_rule(rule, kccgst);
     }
@@ -774,7 +782,7 @@ clear_partial_matches(struct rules *rules)
     struct rule *rule;
 
     darray_foreach(rule, rules->rules)
-        rule->flags &= ~RULE_FLAG_PENDING_MATCH;
+    rule->flags &= ~RULE_FLAG_PENDING_MATCH;
 }
 
 static void
@@ -783,8 +791,8 @@ apply_partial_matches(struct rules *rules, struct xkb_component_names *kccgst)
     struct rule *rule;
 
     darray_foreach(rule, rules->rules)
-        if (rule->flags & RULE_FLAG_PENDING_MATCH)
-            apply_rule(rule, kccgst);
+    if (rule->flags & RULE_FLAG_PENDING_MATCH)
+        apply_rule(rule, kccgst);
 }
 
 static void
@@ -904,7 +912,8 @@ substitute_vars(char *name, struct multi_defs *mdefs)
                 if (sfx)
                     *outstr++ = sfx;
             }
-            else if (*var == 'v' && mdefs->variant[ndx] && *mdefs->variant[ndx]) {
+            else if (*var == 'v' && mdefs->variant[ndx] &&
+                     *mdefs->variant[ndx]) {
                 if (pfx)
                     *outstr++ = pfx;
 
@@ -919,11 +928,11 @@ substitute_vars(char *name, struct multi_defs *mdefs)
                 str++;
         }
         else {
-            *outstr++= *str++;
+            *outstr++ = *str++;
         }
     }
 
-    *outstr++= '\0';
+    *outstr++ = '\0';
 
     if (orig != name)
         free(orig);
@@ -959,8 +968,8 @@ get_components(struct rules *rules, const struct xkb_rule_names *mlvo,
 
     free_multi_defs(&mdefs);
 
-    return
-        kccgst->keycodes && kccgst->symbols && kccgst->types && kccgst->compat;
+    return kccgst->keycodes && kccgst->symbols && kccgst->types &&
+           kccgst->compat;
 }
 
 static struct rules *
@@ -988,7 +997,8 @@ load_rules(FILE *file)
             if (tgroup.number) {
                 darray_append(rules->groups, tgroup);
                 memset(&tgroup, 0, sizeof(tgroup));
-            } else {
+            }
+            else {
                 darray_append(rules->rules, trule);
                 memset(&trule, 0, sizeof(trule));
             }

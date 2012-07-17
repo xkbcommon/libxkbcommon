@@ -1,27 +1,27 @@
 /************************************************************
- Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
-
- Permission to use, copy, modify, and distribute this
- software and its documentation for any purpose and without
- fee is hereby granted, provided that the above copyright
- notice appear in all copies and that both that copyright
- notice and this permission notice appear in supporting
- documentation, and that the name of Silicon Graphics not be
- used in advertising or publicity pertaining to distribution
- of the software without specific prior written permission.
- Silicon Graphics makes no representation about the suitability
- of this software for any purpose. It is provided "as is"
- without any express or implied warranty.
-
- SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
- SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
- GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
- DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
- THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
+ * Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software and its documentation for any purpose and without
+ * fee is hereby granted, provided that the above copyright
+ * notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting
+ * documentation, and that the name of Silicon Graphics not be
+ * used in advertising or publicity pertaining to distribution
+ * of the software without specific prior written permission.
+ * Silicon Graphics makes no representation about the suitability
+ * of this software for any purpose. It is provided "as is"
+ * without any express or implied warranty.
+ *
+ * SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
+ * GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
+ * THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
  ********************************************************/
 
 #include <errno.h>
@@ -62,63 +62,52 @@ XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
     char *tmp, *str, *next;
 
     str = *str_inout;
-    if ((*str == '+') || (*str == '|'))
-    {
+    if ((*str == '+') || (*str == '|')) {
         *file_rtrn = *map_rtrn = NULL;
         *nextop_rtrn = *str;
         next = str + 1;
     }
-    else if (*str == '%')
-    {
+    else if (*str == '%') {
         *file_rtrn = *map_rtrn = NULL;
         *nextop_rtrn = str[1];
         next = str + 2;
     }
-    else
-    {
+    else {
         /* search for tokens inside the string */
         next = strpbrk(str, "|+");
-        if (next)
-        {
+        if (next) {
             /* set nextop_rtrn to \0, next to next character */
             *nextop_rtrn = *next;
             *next++ = '\0';
         }
-        else
-        {
+        else {
             *nextop_rtrn = '\0';
             next = NULL;
         }
         /* search for :, store result in extra_data */
         tmp = strchr(str, ':');
-        if (tmp != NULL)
-        {
+        if (tmp != NULL) {
             *tmp++ = '\0';
             *extra_data = uDupString(tmp);
         }
-        else
-        {
+        else {
             *extra_data = NULL;
         }
         tmp = strchr(str, '(');
-        if (tmp == NULL)
-        {
+        if (tmp == NULL) {
             *file_rtrn = uDupString(str);
             *map_rtrn = NULL;
         }
-        else if (str[0] == '(')
-        {
+        else if (str[0] == '(') {
             free(*extra_data);
             return false;
         }
-        else
-        {
+        else {
             *tmp++ = '\0';
             *file_rtrn = uDupString(str);
             str = tmp;
             tmp = strchr(str, ')');
-            if ((tmp == NULL) || (tmp[1] != '\0'))
-            {
+            if ((tmp == NULL) || (tmp[1] != '\0')) {
                 free(*file_rtrn);
                 free(*extra_data);
                 return false;
@@ -144,22 +133,28 @@ XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
 const char *
 XkbDirectoryForInclude(enum xkb_file_type type)
 {
-    switch (type)
-    {
+    switch (type) {
     case FILE_TYPE_KEYMAP:
         return "keymap";
+
     case FILE_TYPE_KEYCODES:
         return "keycodes";
+
     case FILE_TYPE_TYPES:
         return "types";
+
     case FILE_TYPE_SYMBOLS:
         return "symbols";
+
     case FILE_TYPE_COMPAT:
         return "compat";
+
     case FILE_TYPE_GEOMETRY:
         return "geometry";
+
     case FILE_TYPE_RULES:
         return "rules";
+
     default:
         return "";
     }
@@ -189,12 +184,10 @@ XkbFindFileInPath(struct xkb_context *ctx,
     const char *typeDir;
 
     typeDir = XkbDirectoryForInclude(type);
-    for (i = 0; i < xkb_context_num_include_paths(ctx); i++)
-    {
+    for (i = 0; i < xkb_context_num_include_paths(ctx); i++) {
         ret = snprintf(buf, sizeof(buf), "%s/%s/%s",
                        xkb_context_include_path_get(ctx, i), typeDir, name);
-        if (ret >= (ssize_t)sizeof(buf))
-        {
+        if (ret >= (ssize_t) sizeof(buf)) {
             ERROR("File name (%s/%s/%s) too long\n",
                   xkb_context_include_path_get(ctx, i), typeDir, name);
             ACTION("Ignored\n");

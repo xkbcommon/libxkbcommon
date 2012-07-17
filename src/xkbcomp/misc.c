@@ -1,27 +1,27 @@
 /************************************************************
- Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
-
- Permission to use, copy, modify, and distribute this
- software and its documentation for any purpose and without
- fee is hereby granted, provided that the above copyright
- notice appear in all copies and that both that copyright
- notice and this permission notice appear in supporting
- documentation, and that the name of Silicon Graphics not be
- used in advertising or publicity pertaining to distribution
- of the software without specific prior written permission.
- Silicon Graphics makes no representation about the suitability
- of this software for any purpose. It is provided "as is"
- without any express or implied warranty.
-
- SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
- SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
- GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
- DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
- THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
+ * Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software and its documentation for any purpose and without
+ * fee is hereby granted, provided that the above copyright
+ * notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting
+ * documentation, and that the name of Silicon Graphics not be
+ * used in advertising or publicity pertaining to distribution
+ * of the software without specific prior written permission.
+ * Silicon Graphics makes no representation about the suitability
+ * of this software for any purpose. It is provided "as is"
+ * without any express or implied warranty.
+ *
+ * SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
+ * GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
+ * THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
  ********************************************************/
 
 #include "xkbcomp-priv.h"
@@ -54,16 +54,13 @@ ProcessIncludeFile(struct xkb_context *ctx,
     XkbFile *rtrn, *mapToUse, *next;
 
     file = XkbFindFileInPath(ctx, stmt->file, file_type, &stmt->path);
-    if (file == NULL)
-    {
+    if (file == NULL) {
         ERROR("Can't find file \"%s\" for %s include\n", stmt->file,
-                XkbDirectoryForInclude(file_type));
+              XkbDirectoryForInclude(file_type));
         return false;
     }
 
-
-    if (!XKBParseFile(ctx, file, stmt->file, &rtrn))
-    {
+    if (!XKBParseFile(ctx, file, stmt->file, &rtrn)) {
         ERROR("Error interpreting include file \"%s\"\n", stmt->file);
         fclose(file);
         return false;
@@ -71,41 +68,35 @@ ProcessIncludeFile(struct xkb_context *ctx,
     fclose(file);
 
     mapToUse = rtrn;
-    if (stmt->map != NULL)
-    {
+    if (stmt->map != NULL) {
         while (mapToUse)
         {
-            next = (XkbFile *)mapToUse->common.next;
+            next = (XkbFile *) mapToUse->common.next;
             mapToUse->common.next = NULL;
             if (strcmp(mapToUse->name, stmt->map) == 0 &&
-                mapToUse->type == file_type)
-            {
-                    FreeXKBFile(next);
-                    break;
+                mapToUse->type == file_type) {
+                FreeXKBFile(next);
+                break;
             }
-            else
-            {
+            else {
                 FreeXKBFile(mapToUse);
             }
             mapToUse = next;
         }
-        if (!mapToUse)
-        {
+        if (!mapToUse) {
             ERROR("No %s named \"%s\" in the include file \"%s\"\n",
-                   XkbcFileTypeText(file_type), stmt->map, stmt->file);
+                  XkbcFileTypeText(file_type), stmt->map, stmt->file);
             return false;
         }
     }
-    else if ((rtrn->common.next != NULL) && (warningLevel > 5))
-    {
+    else if ((rtrn->common.next != NULL) && (warningLevel > 5)) {
         WARN("No map in include statement, but \"%s\" contains several\n",
-              stmt->file);
+             stmt->file);
         ACTION("Using first defined map, \"%s\"\n", rtrn->name);
     }
-    if (mapToUse->type != file_type)
-    {
+    if (mapToUse->type != file_type) {
         ERROR("Include file wrong type (expected %s, got %s)\n",
-               XkbcFileTypeText(file_type), XkbcFileTypeText(mapToUse->type));
+              XkbcFileTypeText(file_type), XkbcFileTypeText(mapToUse->type));
         ACTION("Include file \"%s\" ignored\n", stmt->file);
         return false;
     }
@@ -160,13 +151,10 @@ UseNewField(unsigned field,
     bool useNew;
 
     useNew = false;
-    if (oldDefs->defined & field)
-    {
-        if (newDefs->defined & field)
-        {
+    if (oldDefs->defined & field) {
+        if (newDefs->defined & field) {
             if (((oldDefs->file_id == newDefs->file_id)
-                 && (warningLevel > 0)) || (warningLevel > 9))
-            {
+                 && (warningLevel > 0)) || (warningLevel > 9)) {
                 *pCollide |= field;
             }
             if (newDefs->merge != MERGE_AUGMENT)
@@ -181,11 +169,9 @@ UseNewField(unsigned field,
 void *
 ClearCommonInfo(CommonInfo * cmn)
 {
-    if (cmn != NULL)
-    {
+    if (cmn != NULL) {
         CommonInfo *this, *next;
-        for (this = cmn; this != NULL; this = next)
-        {
+        for (this = cmn; this != NULL; this = next) {
             next = this->next;
             free(this);
         }
@@ -204,8 +190,7 @@ AddCommonInfo(CommonInfo * old, CommonInfo * new)
         old = old->next;
     }
     new->next = NULL;
-    if (old)
-    {
+    if (old) {
         old->next = new;
         return first;
     }
@@ -234,56 +219,44 @@ FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
 {
     unsigned n;
 
-    if (start_from < keymap->min_key_code)
-    {
+    if (start_from < keymap->min_key_code) {
         start_from = keymap->min_key_code;
     }
-    else if (start_from > keymap->max_key_code)
-    {
+    else if (start_from > keymap->max_key_code) {
         return false;
     }
 
     *kc_rtrn = 0;               /* some callers rely on this */
-    if (keymap && keymap->names && !darray_empty(keymap->names->keys))
-    {
-        for (n = start_from; n <= keymap->max_key_code; n++)
-        {
+    if (keymap && keymap->names && !darray_empty(keymap->names->keys)) {
+        for (n = start_from; n <= keymap->max_key_code; n++) {
             unsigned long tmp;
             tmp = KeyNameToLong(darray_item(keymap->names->keys, n).name);
-            if (tmp == name)
-            {
+            if (tmp == name) {
                 *kc_rtrn = n;
                 return true;
             }
         }
-        if (use_aliases)
-        {
+        if (use_aliases) {
             unsigned long new_name;
             if (FindKeyNameForAlias(keymap, name, &new_name))
                 return FindNamedKey(keymap, new_name, kc_rtrn, false,
                                     create, 0);
         }
     }
-    if (create)
-    {
-        if ((!keymap->names) || darray_empty(keymap->names->keys))
-        {
-            if (XkbcAllocNames(keymap, XkbKeyNamesMask, 0) != Success)
-            {
-                if (warningLevel > 0)
-                {
+    if (create) {
+        if ((!keymap->names) || darray_empty(keymap->names->keys)) {
+            if (XkbcAllocNames(keymap, XkbKeyNamesMask, 0) != Success) {
+                if (warningLevel > 0) {
                     WARN("Couldn't allocate key names in FindNamedKey\n");
                     ACTION("Key \"%s\" not automatically created\n",
-                            longText(name));
+                           longText(name));
                 }
                 return false;
             }
         }
         /* Find first unused keycode and store our key here */
-        for (n = keymap->min_key_code; n <= keymap->max_key_code; n++)
-        {
-            if (darray_item(keymap->names->keys, n).name[0] == '\0')
-            {
+        for (n = keymap->min_key_code; n <= keymap->max_key_code; n++) {
+            if (darray_item(keymap->names->keys, n).name[0] == '\0') {
                 char buf[XkbKeyNameLength + 1];
                 LongToKeyName(name, buf);
                 memcpy(darray_item(keymap->names->keys, n).name, buf,

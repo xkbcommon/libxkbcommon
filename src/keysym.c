@@ -1,29 +1,29 @@
 /*
-Copyright 1985, 1987, 1990, 1998  The Open Group
-Copyright 2008  Dan Nicholson
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-Except as contained in this notice, the names of the authors or their
-institutions shall not be used in advertising or otherwise to promote the
-sale, use or other dealings in this Software without prior written
-authorization from the authors.
-*/
+ * Copyright 1985, 1987, 1990, 1998  The Open Group
+ * Copyright 2008  Dan Nicholson
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Except as contained in this notice, the names of the authors or their
+ * institutions shall not be used in advertising or otherwise to promote the
+ * sale, use or other dealings in this Software without prior written
+ * authorization from the authors.
+ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -59,9 +59,9 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
 
             if ((entry[0] == val1) && (entry[1] == val2) &&
                 (entry[2] == val3) && (entry[3] == val4)) {
-		snprintf(buffer, size, "%s", entry + 4);
-		return;
-	    }
+                snprintf(buffer, size, "%s", entry + 4);
+                return;
+            }
 
             if (!--n)
                 break;
@@ -73,11 +73,11 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
     }
 
     if (ks >= 0x01000100 && ks <= 0x0110ffff)
-	/* Unnamed Unicode codepoint. */
+        /* Unnamed Unicode codepoint. */
         snprintf(buffer, size, "U%lx", ks & 0xffffffUL);
     else
-	/* Unnamed, non-Unicode, symbol (shouldn't generally happen). */
-	snprintf(buffer, size, "0x%08x", ks);
+        /* Unnamed, non-Unicode, symbol (shouldn't generally happen). */
+        snprintf(buffer, size, "0x%08x", ks);
 }
 
 _X_EXPORT xkb_keysym_t
@@ -104,10 +104,9 @@ xkb_keysym_from_name(const char *s)
         entry = &_XkeyTable[idx];
 
         if ((entry[0] == sig1) && (entry[1] == sig2) &&
-            !strcmp(s, (const char *)entry + 6))
-        {
+            !strcmp(s, (const char *) entry + 6)) {
             val = (entry[2] << 24) | (entry[3] << 16) |
-                  (entry[4] << 8)  | entry[5];
+                  (entry[4] << 8) | entry[5];
             if (!val)
                 val = XKB_KEY_VoidSymbol;
             return val;
@@ -173,20 +172,25 @@ keysym_get_case(xkb_keysym_t ks)
     switch (set) {
     case 0: /* latin 1 */
         if ((ks >= XKB_KEY_A && ks <= XKB_KEY_Z) ||
-            (ks >= XKB_KEY_Agrave && ks <= XKB_KEY_THORN && ks != XKB_KEY_multiply))
+            (ks >= XKB_KEY_Agrave && ks <= XKB_KEY_THORN && ks !=
+             XKB_KEY_multiply))
             return UPPERCASE;
         if ((ks >= XKB_KEY_a && ks <= XKB_KEY_z) ||
             (ks >= XKB_KEY_agrave && ks <= XKB_KEY_ydiaeresis))
             return LOWERCASE;
         break;
+
     case 1: /* latin 2 */
-        if ((ks >= XKB_KEY_Aogonek && ks <= XKB_KEY_Zabovedot && ks != XKB_KEY_breve) ||
-            (ks >= XKB_KEY_Racute && ks<=XKB_KEY_Tcedilla))
+        if ((ks >= XKB_KEY_Aogonek && ks <= XKB_KEY_Zabovedot && ks !=
+             XKB_KEY_breve) ||
+            (ks >= XKB_KEY_Racute && ks <= XKB_KEY_Tcedilla))
             return UPPERCASE;
-        if ((ks >= XKB_KEY_aogonek && ks <= XKB_KEY_zabovedot && ks != XKB_KEY_caron) ||
+        if ((ks >= XKB_KEY_aogonek && ks <= XKB_KEY_zabovedot && ks !=
+             XKB_KEY_caron) ||
             (ks >= XKB_KEY_racute && ks <= XKB_KEY_tcedilla))
             return LOWERCASE;
         break;
+
     case 2: /* latin 3 */
         if ((ks >= XKB_KEY_Hstroke && ks <= XKB_KEY_Jcircumflex) ||
             (ks >= XKB_KEY_Cabovedot && ks <= XKB_KEY_Scircumflex))
@@ -195,6 +199,7 @@ keysym_get_case(xkb_keysym_t ks)
             (ks >= XKB_KEY_cabovedot && ks <= XKB_KEY_scircumflex))
             return LOWERCASE;
         break;
+
     case 3: /* latin 4 */
         if ((ks >= XKB_KEY_Rcedilla && ks <= XKB_KEY_Tslash) ||
             (ks == XKB_KEY_ENG) ||
@@ -205,6 +210,7 @@ keysym_get_case(xkb_keysym_t ks)
             (ks >= XKB_KEY_amacron && ks <= XKB_KEY_umacron))
             return LOWERCASE;
         break;
+
     case 6: /* Cyrillic */
         if ((ks >= XKB_KEY_Serbian_DJE && ks <= XKB_KEY_Serbian_DZE) ||
             (ks >= XKB_KEY_Cyrillic_YU && ks <= XKB_KEY_Cyrillic_HARDSIGN))
@@ -213,6 +219,7 @@ keysym_get_case(xkb_keysym_t ks)
             (ks >= XKB_KEY_Cyrillic_yu && ks <= XKB_KEY_Cyrillic_hardsign))
             return LOWERCASE;
         break;
+
     case 7: /* Greek */
         if ((ks >= XKB_KEY_Greek_ALPHAaccent &&
              ks <= XKB_KEY_Greek_OMEGAaccent) ||
@@ -223,6 +230,7 @@ keysym_get_case(xkb_keysym_t ks)
             (ks >= XKB_KEY_Greek_alpha && ks <= XKB_KEY_Greek_OMEGA))
             return LOWERCASE;
         break;
+
     case 18: /* latin 8 */
         if ((ks == XKB_KEY_Wcircumflex) ||
             (ks == XKB_KEY_Ycircumflex) ||
@@ -249,6 +257,7 @@ keysym_get_case(xkb_keysym_t ks)
             (ks == XKB_KEY_ygrave))
             return LOWERCASE;
         break;
+
     case 19: /* latin 9 */
         if (ks == XKB_KEY_OE || ks == XKB_KEY_Ydiaeresis)
             return UPPERCASE;
