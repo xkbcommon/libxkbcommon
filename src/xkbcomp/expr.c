@@ -620,7 +620,7 @@ ExprResolveGroup(struct xkb_context *ctx, ExprDef *expr,
         return ret;
 
     if (val_rtrn->uval == 0 || val_rtrn->uval > XkbNumKbdGroups) {
-        ERROR("Group index %d is out of range (1..%d)\n",
+        ERROR("Group index %u is out of range (1..%d)\n",
               val_rtrn->uval, XkbNumKbdGroups);
         return false;
     }

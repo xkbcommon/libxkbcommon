@@ -53,7 +53,7 @@ typedef struct _LEDInfo {
     unsigned char real_mods;
     unsigned short vmods;
     unsigned char which_groups;
-    unsigned char groups;
+    uint32_t groups;
     unsigned int ctrls;
 } LEDInfo;
 
@@ -308,25 +308,24 @@ AddInterp(CompatInfo * info, SymInterpInfo * new)
 }
 
 static bool
-AddGroupCompat(CompatInfo * info, unsigned group, GroupCompatInfo * newGC)
+AddGroupCompat(CompatInfo *info, xkb_group_index_t group, GroupCompatInfo *new)
 {
     GroupCompatInfo *gc;
-    enum merge_mode merge;
 
-    merge = newGC->merge;
     gc = &info->groupCompat[group];
-    if (((gc->real_mods == newGC->real_mods) &&
-         (gc->vmods == newGC->vmods))) {
+    if (gc->real_mods == new->real_mods && gc->vmods == new->vmods)
         return true;
-    }
-    if (((gc->file_id == newGC->file_id) && (warningLevel > 0))
-        || (warningLevel > 9)) {
-        WARN("Compat map for group %d redefined\n", group + 1);
+
+    if ((gc->file_id == new->file_id && warningLevel > 0) ||
+        warningLevel > 9) {
+        WARN("Compat map for group %u redefined\n", group + 1);
         ACTION("Using %s definition\n",
-               (merge == MERGE_AUGMENT ? "old" : "new"));
+               (new->merge == MERGE_AUGMENT ? "old" : "new"));
     }
-    if (newGC->defined && (merge != MERGE_AUGMENT || !gc->defined))
-        *gc = *newGC;
+
+    if (new->defined && (new->merge != MERGE_AUGMENT || !gc->defined))
+        *gc = *new;
+
     return true;
 }
 
@@ -492,7 +491,7 @@ MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from,
     SymInterpInfo *si;
     LEDInfo *led, *rtrn, *next;
     GroupCompatInfo *gcm;
-    int i;
+    xkb_group_index_t i;
 
     if (from->errorCount > 0) {
         into->errorCount += from->errorCount;
@@ -943,18 +942,17 @@ HandleGroupCompatDef(GroupCompatDef *def, struct xkb_keymap *keymap,
 
     if (def->merge != MERGE_DEFAULT)
         merge = def->merge;
-    if (!XkbIsLegalGroup(def->group - 1)) {
-        ERROR("Keyboard group must be in the range 1..%d\n",
-              XkbNumKbdGroups + 1);
-        ACTION("Compatibility map for illegal group %d ignored\n",
-               def->group);
+    if (def->group < 1 || def->group > XkbNumKbdGroups) {
+        ERROR("Keyboard group must be in the range 1..%u\n",
+               XkbNumKbdGroups);
+        ACTION("Compatibility map for illegal group %u ignored\n", def->group);
         return false;
     }
     tmp.file_id = info->file_id;
     tmp.merge = merge;
     if (!ExprResolveVModMask(def->def, &val, keymap)) {
         ERROR("Expected a modifier mask in group compatibility definition\n");
-        ACTION("Ignoring illegal compatibility map for group %d\n",
+        ACTION("Ignoring illegal compatibility map for group %u\n",
                def->group);
         return false;
     }
@@ -1228,7 +1226,7 @@ bool
 CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
                  enum merge_mode merge)
 {
-    int i;
+    xkb_group_index_t i;
     CompatInfo info;
     GroupCompatInfo *gcm;
 
@@ -1332,7 +1330,7 @@ UpdateActionMods(struct xkb_keymap *keymap, union xkb_action *act,
  */
 static struct xkb_sym_interpret *
 FindInterpForKey(struct xkb_keymap *keymap, struct xkb_key *key,
-                 uint32_t group, uint32_t level)
+                 xkb_group_index_t group, uint32_t level)
 {
     struct xkb_sym_interpret *ret = NULL;
     struct xkb_sym_interpret *interp;
@@ -1396,7 +1394,8 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
     union xkb_action *acts;
     uint32_t vmodmask = 0;
     int num_acts = 0;
-    int group, level;
+    xkb_group_index_t group;
+    int level;
     int i;
 
     /* If we've been told not to bind interps to this key, then don't. */

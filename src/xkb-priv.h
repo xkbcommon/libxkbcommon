@@ -136,7 +136,7 @@ struct xkb_mod_action {
 struct xkb_group_action {
     uint8_t type;
     uint8_t flags;
-    int16_t group;
+    int32_t group;
 };
 
 struct xkb_iso_action {
@@ -144,7 +144,7 @@ struct xkb_iso_action {
     uint8_t flags;
     uint8_t mask;
     uint8_t real_mods;
-    uint8_t group;
+    int32_t group;
     uint8_t affect;
     uint16_t vmods;
 };
@@ -270,7 +270,7 @@ struct xkb_behavior {
 struct xkb_indicator_map {
     unsigned char flags;
     unsigned char which_groups;
-    unsigned char groups;
+    uint32_t groups;
     unsigned char which_mods;
     struct xkb_mods mods;
     unsigned int ctrls;
@@ -314,12 +314,12 @@ struct xkb_key {
 
     unsigned char kt_index[XkbNumKbdGroups];
 
-    unsigned int num_groups;
+    xkb_group_index_t num_groups;
     /* How many levels the largest group has. */
     unsigned char width;
 
     uint8_t out_of_range_group_action;
-    uint8_t out_of_range_group_number;
+    xkb_group_index_t out_of_range_group_number;
 
     /* per level/group index into 'syms' */
     int *sym_index;
@@ -387,26 +387,27 @@ XkbKeyGetKeycode(struct xkb_keymap *keymap, struct xkb_key *key)
     xkb_foreach_key_from(iter, keymap, keymap->min_key_code)
 
 static inline unsigned char
-XkbKeyTypeIndex(struct xkb_key *key, unsigned int group)
+XkbKeyTypeIndex(struct xkb_key *key, xkb_group_index_t group)
 {
     return key->kt_index[group & 0x3];
 }
 
 static inline struct xkb_key_type *
-XkbKeyType(struct xkb_keymap *keymap, struct xkb_key *key, unsigned int group)
+XkbKeyType(struct xkb_keymap *keymap, struct xkb_key *key,
+           xkb_group_index_t group)
 {
     return &darray_item(keymap->types, XkbKeyTypeIndex(key, group));
 }
 
 static inline uint16_t
 XkbKeyGroupWidth(struct xkb_keymap *keymap, struct xkb_key *key,
-                 unsigned int group)
+                 xkb_group_index_t group)
 {
     return XkbKeyType(keymap, key, group)->num_levels;
 }
 
 static inline unsigned int
-XkbKeyNumSyms(struct xkb_key *key, unsigned int group, unsigned int level)
+XkbKeyNumSyms(struct xkb_key *key, xkb_group_index_t group, unsigned int level)
 {
     return key->num_syms[group * key->width + level];
 }
@@ -418,13 +419,14 @@ XkbKeySym(struct xkb_key *key, int ndx)
 }
 
 static inline int
-XkbKeySymOffset(struct xkb_key *key, unsigned group, unsigned int level)
+XkbKeySymOffset(struct xkb_key *key, xkb_group_index_t group,
+                unsigned int level)
 {
     return key->sym_index[group * key->width + level];
 }
 
 static inline xkb_keysym_t *
-XkbKeySymEntry(struct xkb_key *key, unsigned group, unsigned int level)
+XkbKeySymEntry(struct xkb_key *key, xkb_group_index_t group, unsigned int level)
 {
     return XkbKeySym(key, XkbKeySymOffset(key, group, level));
 }
@@ -435,7 +437,7 @@ XkbKeyHasActions(struct xkb_key *key)
     return key->acts_index != 0;
 }
 
-static inline unsigned char
+static inline unsigned int
 XkbKeyNumActions(struct xkb_key *key)
 {
     if (XkbKeyHasActions(key))
@@ -451,7 +453,7 @@ XkbKeyActionsPtr(struct xkb_keymap *keymap, struct xkb_key *key)
 
 static inline union xkb_action *
 XkbKeyActionEntry(struct xkb_keymap *keymap, struct xkb_key *key,
-                  unsigned int group, unsigned int level)
+                  xkb_group_index_t group, unsigned int level)
 {
     if (XkbKeyHasActions(key))
         return &XkbKeyActionsPtr(keymap, key)[key->width * group + level];
@@ -482,11 +484,11 @@ xkb_key_get_group(struct xkb_state *state, xkb_keycode_t kc);
 
 extern unsigned int
 xkb_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
-                  unsigned int group);
+                  xkb_group_index_t group);
 
 extern int
 xkb_key_get_syms_by_level(struct xkb_keymap *keymap, struct xkb_key *key,
-                          unsigned int group, unsigned int level,
+                          xkb_group_index_t group, unsigned int level,
                           const xkb_keysym_t **syms_out);
 
 /**

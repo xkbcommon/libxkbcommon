@@ -739,7 +739,7 @@ write_compat(struct xkb_keymap *keymap, char **buf, size_t *size,
 
 static bool
 write_keysyms(struct xkb_keymap *keymap, char **buf, size_t *size,
-              size_t *offset, struct xkb_key *key, unsigned int group)
+              size_t *offset, struct xkb_key *key, xkb_group_index_t group)
 {
     const xkb_keysym_t *syms;
     int num_syms, level;
@@ -780,7 +780,7 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
               size_t *offset)
 {
     struct xkb_key *key;
-    int group, tmp;
+    xkb_group_index_t group, tmp;
     bool showActions;
 
     if (keymap->symbols_section_name)
@@ -828,7 +828,7 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
                         continue;
                     type = XkbKeyTypeIndex(key, group);
                     write_buf(keymap, buf, size, offset,
-                              "\n\t\t\ttype[group%d]= \"%s\",",
+                              "\n\t\t\ttype[group%u]= \"%s\",",
                               group + 1,
                               darray_item(keymap->types, type).name);
                 }
@@ -862,7 +862,7 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
 
         case XkbRedirectIntoRange:
             write_buf(keymap, buf, size, offset,
-                      "\n\t\t\tgroupsRedirect= Group%d,",
+                      "\n\t\t\tgroupsRedirect= Group%u,",
                       key->out_of_range_group_number + 1);
             break;
         }
@@ -890,13 +890,13 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
                 if (group != 0)
                     write_buf(keymap, buf, size, offset, ",");
                 write_buf(keymap, buf, size, offset,
-                          "\n\t\t\tsymbols[Group%d]= [ ", group + 1);
+                          "\n\t\t\tsymbols[Group%u]= [ ", group + 1);
                 if (!write_keysyms(keymap, buf, size, offset, key, group))
                     return false;
                 write_buf(keymap, buf, size, offset, " ]");
                 if (showActions) {
                     write_buf(keymap, buf, size, offset,
-                              ",\n\t\t\tactions[Group%d]= [ ", group + 1);
+                              ",\n\t\t\tactions[Group%u]= [ ", group + 1);
                     for (level = 0;
                          level < XkbKeyGroupWidth(keymap, key, group);
                          level++) {

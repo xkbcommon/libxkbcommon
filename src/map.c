@@ -244,7 +244,7 @@ xkb_map_led_get_index(struct xkb_keymap *keymap, const char *name)
  */
 unsigned int
 xkb_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
-                  unsigned int group)
+                  xkb_group_index_t group)
 {
     struct xkb_keymap *keymap = xkb_state_get_map(state);
     struct xkb_key_type *type;
@@ -270,11 +270,12 @@ xkb_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
  * Returns the group to use for the given key and state, taking
  * wrapping/clamping/etc into account.
  */
-unsigned int
+xkb_group_index_t
 xkb_key_get_group(struct xkb_state *state, xkb_keycode_t kc)
 {
     struct xkb_keymap *keymap = xkb_state_get_map(state);
-    unsigned int ret = xkb_state_serialize_group(state, XKB_STATE_EFFECTIVE);
+    xkb_group_index_t ret = xkb_state_serialize_group(state,
+                                                      XKB_STATE_EFFECTIVE);
     struct xkb_key *key;
 
     if (!XkbKeycodeInRange(keymap, kc))
@@ -309,7 +310,7 @@ xkb_key_get_group(struct xkb_state *state, xkb_keycode_t kc)
  */
 int
 xkb_key_get_syms_by_level(struct xkb_keymap *keymap, struct xkb_key *key,
-                          unsigned int group, unsigned int level,
+                          xkb_group_index_t group, unsigned int level,
                           const xkb_keysym_t **syms_out)
 {
     int num_syms;
@@ -341,7 +342,8 @@ xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t kc,
 {
     struct xkb_keymap *keymap = xkb_state_get_map(state);
     struct xkb_key *key;
-    int group, level;
+    xkb_group_index_t group;
+    unsigned int level;
 
     if (!state || !XkbKeycodeInRange(keymap, kc))
         return -1;

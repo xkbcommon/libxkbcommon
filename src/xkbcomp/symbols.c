@@ -94,7 +94,7 @@ typedef struct _KeyInfo {
     xkb_atom_t dfltType;
 
     uint8_t out_of_range_group_action;
-    uint8_t out_of_range_group_number;
+    xkb_group_index_t out_of_range_group_number;
 } KeyInfo;
 
 /**
@@ -103,7 +103,7 @@ typedef struct _KeyInfo {
 static void
 InitKeyInfo(KeyInfo *keyi, unsigned file_id)
 {
-    int i;
+    xkb_group_index_t i;
     static const char dflt[4] = "*";
 
     keyi->defined = 0;
@@ -133,7 +133,7 @@ InitKeyInfo(KeyInfo *keyi, unsigned file_id)
 static void
 FreeKeyInfo(KeyInfo *keyi)
 {
-    int i;
+    xkb_group_index_t i;
 
     for (i = 0; i < XkbNumKbdGroups; i++) {
         darray_free(keyi->syms[i]);
@@ -151,7 +151,7 @@ FreeKeyInfo(KeyInfo *keyi)
 static bool
 CopyKeyInfo(KeyInfo * old, KeyInfo * new, bool clearOld)
 {
-    int i;
+    xkb_group_index_t i;
 
     *new = *old;
 
@@ -194,7 +194,7 @@ typedef struct _SymbolsInfo {
     int errorCount;
     unsigned file_id;
     enum merge_mode merge;
-    unsigned explicit_group;
+    xkb_group_index_t explicit_group;
     darray(KeyInfo) keys;
     KeyInfo dflt;
     VModInfo vmods;
@@ -208,7 +208,7 @@ static void
 InitSymbolsInfo(SymbolsInfo * info, struct xkb_keymap *keymap,
                 unsigned file_id)
 {
-    int i;
+    xkb_group_index_t i;
 
     info->name = NULL;
     info->explicit_group = 0;
@@ -242,7 +242,7 @@ FreeSymbolsInfo(SymbolsInfo * info)
 }
 
 static bool
-ResizeKeyGroup(KeyInfo *keyi, unsigned int group, unsigned int numLevels,
+ResizeKeyGroup(KeyInfo *keyi, xkb_group_index_t group, unsigned int numLevels,
                unsigned sizeSyms, bool forceActions)
 {
     int i;
@@ -280,7 +280,7 @@ enum key_group_selector {
 
 static bool
 MergeKeyGroups(SymbolsInfo * info,
-               KeyInfo * into, KeyInfo * from, unsigned group)
+               KeyInfo * into, KeyInfo * from, xkb_group_index_t group)
 {
     darray_xkb_keysym_t resultSyms;
     enum key_group_selector using = NONE;
@@ -346,7 +346,7 @@ MergeKeyGroups(SymbolsInfo * info,
                 }
                 if (report) {
                     WARN
-                        ("Multiple actions for level %d/group %d on key %s\n",
+                        ("Multiple actions for level %d/group %u on key %s\n",
                         i + 1, group + 1, longText(into->name));
                     ACTION("Using %s, ignoring %s\n",
                            XkbcActionTypeText(use->type),
@@ -429,7 +429,7 @@ MergeKeyGroups(SymbolsInfo * info,
             use = TO;
 
         if (toSize && fromSize && report) {
-            INFO("Multiple symbols for group %d, level %d on key %s\n",
+            INFO("Multiple symbols for group %u, level %d on key %s\n",
                  group + 1, i + 1, longText(into->name));
             ACTION("Using %s, ignoring %s\n",
                    (use == FROM ? "from" : "to"),
@@ -486,7 +486,7 @@ static bool
 MergeKeys(SymbolsInfo *info, struct xkb_keymap *keymap,
           KeyInfo *into, KeyInfo *from)
 {
-    int i;
+    xkb_group_index_t i;
     unsigned collide = 0;
     bool report;
 
@@ -813,7 +813,7 @@ HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
 
 static bool
 GetGroupIndex(KeyInfo *keyi, struct xkb_keymap *keymap,
-              ExprDef * arrayNdx, unsigned what, unsigned *ndx_rtrn)
+              ExprDef *arrayNdx, unsigned what, xkb_group_index_t *ndx_rtrn)
 {
     const char *name;
     ExprResult tmp;
@@ -824,7 +824,7 @@ GetGroupIndex(KeyInfo *keyi, struct xkb_keymap *keymap,
         name = "actions";
 
     if (arrayNdx == NULL) {
-        int i;
+        xkb_group_index_t i;
         unsigned defined;
         if (what == SYMBOLS)
             defined = keyi->symsDefined;
@@ -837,7 +837,7 @@ GetGroupIndex(KeyInfo *keyi, struct xkb_keymap *keymap,
                 return true;
             }
         }
-        ERROR("Too many groups of %s for key %s (max %d)\n", name,
+        ERROR("Too many groups of %s for key %s (max %u)\n", name,
               longText(keyi->name), XkbNumKbdGroups + 1);
         ACTION("Ignoring %s defined for extra groups\n", name);
         return false;
@@ -856,9 +856,9 @@ static bool
 AddSymbolsToKey(KeyInfo *keyi, struct xkb_keymap *keymap,
                 ExprDef *arrayNdx, ExprDef *value, SymbolsInfo *info)
 {
-    unsigned ndx, nSyms, nLevels;
-    unsigned int i;
-    long j;
+    xkb_group_index_t ndx;
+    size_t nSyms, nLevels;
+    size_t i, j;
 
     if (!GetGroupIndex(keyi, keymap, arrayNdx, SYMBOLS, &ndx))
         return false;
@@ -868,13 +868,13 @@ AddSymbolsToKey(KeyInfo *keyi, struct xkb_keymap *keymap,
     }
     if (value->op != ExprKeysymList) {
         ERROR("Expected a list of symbols, found %s\n", exprOpText(value->op));
-        ACTION("Ignoring symbols for group %d of %s\n", ndx + 1,
+        ACTION("Ignoring symbols for group %u of %s\n", ndx + 1,
                longText(keyi->name));
         return false;
     }
     if (!darray_empty(keyi->syms[ndx])) {
-        ERROR("Symbols for key %s, group %d already defined\n",
-               longText(keyi->name), ndx + 1);
+        ERROR("Symbols for key %s, group %u already defined\n",
+              longText(keyi->name), ndx + 1);
         ACTION("Ignoring duplicate definition\n");
         return false;
     }
@@ -882,7 +882,7 @@ AddSymbolsToKey(KeyInfo *keyi, struct xkb_keymap *keymap,
     nLevels = darray_size(value->value.list.symsMapIndex);
     if ((keyi->numLevels[ndx] < nSyms || darray_empty(keyi->syms[ndx])) &&
         (!ResizeKeyGroup(keyi, ndx, nLevels, nSyms, false))) {
-        WSGO("Could not resize group %d of key %s to contain %d levels\n",
+        WSGO("Could not resize group %u of key %s to contain %zu levels\n",
              ndx + 1, longText(keyi->name), nSyms);
         ACTION("Symbols lost\n");
         return false;
@@ -905,7 +905,7 @@ AddSymbolsToKey(KeyInfo *keyi, struct xkb_keymap *keymap,
                                            darray_item(keyi->symsMapIndex[ndx],
                                                        i) + j))) {
                 WARN(
-                    "Could not resolve keysym %s for key %s, group %d (%s), level %d\n",
+                    "Could not resolve keysym %s for key %s, group %u (%s), level %zu\n",
                     darray_item(value->value.list.syms, i),
                     longText(keyi->name),
                     ndx + 1,
@@ -937,8 +937,9 @@ static bool
 AddActionsToKey(KeyInfo *keyi, struct xkb_keymap *keymap, ExprDef *arrayNdx,
                 ExprDef *value, SymbolsInfo *info)
 {
-    unsigned int i;
-    unsigned ndx, nActs;
+    size_t i;
+    xkb_group_index_t ndx;
+    size_t nActs;
     ExprDef *act;
     struct xkb_any_action *toAct;
 
@@ -951,13 +952,13 @@ AddActionsToKey(KeyInfo *keyi, struct xkb_keymap *keymap, ExprDef *arrayNdx,
     }
     if (value->op != ExprActionList) {
         WSGO("Bad expression type (%d) for action list value\n", value->op);
-        ACTION("Ignoring actions for group %d of %s\n", ndx,
+        ACTION("Ignoring actions for group %u of %s\n", ndx,
                longText(keyi->name));
         return false;
     }
     if (!darray_empty(keyi->acts[ndx])) {
-        WSGO("Actions for key %s, group %d already defined\n",
-             longText(keyi->name), ndx);
+        WSGO("Actions for key %s, group %u already defined\n",
+              longText(keyi->name), ndx);
         return false;
     }
     for (nActs = 0, act = value->value.child; act != NULL; nActs++) {
@@ -969,7 +970,7 @@ AddActionsToKey(KeyInfo *keyi, struct xkb_keymap *keymap, ExprDef *arrayNdx,
     }
     if ((keyi->numLevels[ndx] < nActs || darray_empty(keyi->acts[ndx])) &&
         !ResizeKeyGroup(keyi, ndx, nActs, nActs, true)) {
-        WSGO("Could not resize group %d of key %s\n", ndx,
+        WSGO("Could not resize group %u of key %s\n", ndx,
               longText(keyi->name));
         ACTION("Actions lost\n");
         return false;
@@ -982,7 +983,7 @@ AddActionsToKey(KeyInfo *keyi, struct xkb_keymap *keymap, ExprDef *arrayNdx,
         if (!HandleActionDef(act, keymap, toAct, info->action)) {
             ERROR("Illegal action definition for %s\n",
                   longText(keyi->name));
-            ACTION("Action for group %d/level %d ignored\n", ndx + 1, i + 1);
+            ACTION("Action for group %u/level %zu ignored\n", ndx + 1, i + 1);
         }
         act = (ExprDef *) act->common.next;
     }
@@ -1267,13 +1268,13 @@ HandleSymbolsBody(VarDef *def, struct xkb_keymap *keymap, KeyInfo *keyi,
 static bool
 SetExplicitGroup(SymbolsInfo *info, KeyInfo *keyi)
 {
-    unsigned group = info->explicit_group;
+    xkb_group_index_t group = info->explicit_group;
 
     if (group == 0)
         return true;
 
     if ((keyi->typesDefined | keyi->symsDefined | keyi->actsDefined) & ~1) {
-        int i;
+        xkb_group_index_t i;
         WARN("For the map %s an explicit group specified\n", info->name);
         WARN("but key %s has more than one group defined\n",
              longText(keyi->name));
@@ -1438,7 +1439,8 @@ static struct xkb_key *
 FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym)
 {
     struct xkb_key *key, *ret = NULL;
-    unsigned int group, level, min_group = UINT_MAX, min_level = UINT_MAX;
+    xkb_group_index_t group, min_group = UINT_MAX;
+    unsigned int level, min_level = UINT_MAX;
 
     xkb_foreach_key(key, keymap) {
         for (group = 0; group < key->num_groups; group++) {
@@ -1570,7 +1572,8 @@ FindAutomaticType(struct xkb_keymap *keymap, int width,
 static void
 PrepareKeyDef(KeyInfo *keyi)
 {
-    int i, j, width, defined, lastGroup;
+    xkb_group_index_t i, lastGroup;
+    int j, width, defined;
     bool identical;
 
     defined = keyi->symsDefined | keyi->actsDefined | keyi->typesDefined;
@@ -1679,13 +1682,14 @@ PrepareKeyDef(KeyInfo *keyi)
  * This function recurses.
  */
 static bool
-CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *keyi, int start_from)
+CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *keyi,
+               xkb_keycode_t start_from)
 {
-    unsigned int i;
     xkb_keycode_t kc;
     struct xkb_key *key;
-    unsigned int sizeSyms = 0;
-    unsigned width, tmp, nGroups;
+    size_t sizeSyms = 0;
+    xkb_group_index_t i, nGroups;
+    unsigned width, tmp;
     struct xkb_key_type * type;
     bool haveActions, autoType, useAlias;
     unsigned types[XkbNumKbdGroups];
@@ -1706,7 +1710,8 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *keyi, int start_from)
     kc = XkbKeyGetKeycode(keymap, key);
 
     haveActions = false;
-    for (i = width = nGroups = 0; i < XkbNumKbdGroups; i++) {
+    width = 0;
+    for (i = nGroups = 0; i < XkbNumKbdGroups; i++) {
         if (((i + 1) > nGroups)
             && (((keyi->symsDefined | keyi->actsDefined) & (1 << i))
                 || (keyi->typesDefined) & (1 << i)))
@@ -1724,7 +1729,7 @@ CopySymbolsDef(struct xkb_keymap *keymap, KeyInfo *keyi, int start_from)
             else {
                 if (warningLevel >= 5) {
                     WARN("No automatic type for %d symbols\n",
-                          (unsigned int) keyi->numLevels[i]);
+                          keyi->numLevels[i]);
                     ACTION("Using %s for the %s key (keycode %d)\n",
                             xkb_atom_text(keymap->ctx, keyi->types[i]),
                             longText(keyi->name), kc);
@@ -1892,7 +1897,7 @@ bool
 CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
                enum merge_mode merge)
 {
-    int i;
+    xkb_group_index_t i;
     struct xkb_key *key;
     SymbolsInfo info;
     KeyInfo *keyi;

@@ -109,7 +109,8 @@ struct xkb_state {
 static union xkb_action *
 xkb_key_get_action(struct xkb_state *state, xkb_keycode_t kc)
 {
-    unsigned int group, level;
+    xkb_group_index_t group;
+    unsigned int level;
     struct xkb_key *key = NULL;
 
     if (XkbKeycodeInRange(state->keymap, kc))
