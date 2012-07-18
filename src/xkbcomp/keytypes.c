@@ -344,64 +344,49 @@ HandleIncludeKeyTypes(IncludeStmt *stmt, struct xkb_keymap *keymap,
     enum merge_mode newMerge;
     XkbFile *rtrn;
     KeyTypesInfo included;
-    bool haveSelf;
 
-    haveSelf = false;
-    if ((stmt->file == NULL) && (stmt->map == NULL)) {
-        haveSelf = true;
-        included = *info;
-        memset(info, 0, sizeof(KeyTypesInfo));
-    }
-    else if (ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_TYPES, &rtrn,
-                                &newMerge)) {
-        InitKeyTypesInfo(&included, keymap, info, rtrn->id);
-        included.dflt.defs.merge = newMerge;
-
-        HandleKeyTypesFile(rtrn, keymap, newMerge, &included);
-        if (stmt->stmt != NULL) {
-            free(included.name);
-            included.name = stmt->stmt;
-            stmt->stmt = NULL;
-        }
-        FreeXKBFile(rtrn);
-    }
-    else {
+    if (!ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_TYPES, &rtrn,
+                            &newMerge)) {
         info->errorCount += 10;
         return false;
     }
+
+    InitKeyTypesInfo(&included, keymap, info, rtrn->id);
+    included.dflt.defs.merge = newMerge;
+
+    HandleKeyTypesFile(rtrn, keymap, newMerge, &included);
+    if (stmt->stmt) {
+        free(included.name);
+        included.name = stmt->stmt;
+        stmt->stmt = NULL;
+    }
+    FreeXKBFile(rtrn);
+
     if ((stmt->next != NULL) && (included.errorCount < 1)) {
         IncludeStmt *next;
         unsigned op;
         KeyTypesInfo next_incl;
 
-        for (next = stmt->next; next != NULL; next = next->next) {
-            if ((next->file == NULL) && (next->map == NULL)) {
-                haveSelf = true;
-                MergeIncludedKeyTypes(&included, info, next->merge, keymap);
-                FreeKeyTypesInfo(info);
-            }
-            else if (ProcessIncludeFile(keymap->ctx, next, FILE_TYPE_TYPES,
-                                        &rtrn, &op)) {
-                InitKeyTypesInfo(&next_incl, keymap, &included, rtrn->id);
-                next_incl.dflt.defs.merge = op;
-                HandleKeyTypesFile(rtrn, keymap, op, &next_incl);
-                MergeIncludedKeyTypes(&included, &next_incl, op, keymap);
-                FreeKeyTypesInfo(&next_incl);
-                FreeXKBFile(rtrn);
-            }
-            else {
+        for (next = stmt->next; next; next = next->next) {
+            if (!ProcessIncludeFile(keymap->ctx, next, FILE_TYPE_TYPES,
+                                    &rtrn, &op)) {
                 info->errorCount += 10;
                 FreeKeyTypesInfo(&included);
                 return false;
             }
+
+            InitKeyTypesInfo(&next_incl, keymap, &included, rtrn->id);
+            next_incl.dflt.defs.merge = op;
+            HandleKeyTypesFile(rtrn, keymap, op, &next_incl);
+            MergeIncludedKeyTypes(&included, &next_incl, op, keymap);
+            FreeKeyTypesInfo(&next_incl);
+            FreeXKBFile(rtrn);
         }
     }
-    if (haveSelf)
-        *info = included;
-    else {
-        MergeIncludedKeyTypes(info, &included, newMerge, keymap);
-        FreeKeyTypesInfo(&included);
-    }
+
+    MergeIncludedKeyTypes(info, &included, newMerge, keymap);
+    FreeKeyTypesInfo(&included);
+
     return (info->errorCount == 0);
 }
 

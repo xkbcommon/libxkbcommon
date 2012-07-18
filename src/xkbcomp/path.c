@@ -62,66 +62,59 @@ XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
     char *tmp, *str, *next;
 
     str = *str_inout;
-    if ((*str == '+') || (*str == '|')) {
-        *file_rtrn = *map_rtrn = NULL;
-        *nextop_rtrn = *str;
-        next = str + 1;
-    }
-    else if (*str == '%') {
-        *file_rtrn = *map_rtrn = NULL;
-        *nextop_rtrn = str[1];
-        next = str + 2;
+
+    /* search for tokens inside the string */
+    next = strpbrk(str, "|+");
+    if (next) {
+        /* set nextop_rtrn to \0, next to next character */
+        *nextop_rtrn = *next;
+        *next++ = '\0';
     }
     else {
-        /* search for tokens inside the string */
-        next = strpbrk(str, "|+");
-        if (next) {
-            /* set nextop_rtrn to \0, next to next character */
-            *nextop_rtrn = *next;
-            *next++ = '\0';
-        }
-        else {
-            *nextop_rtrn = '\0';
-            next = NULL;
-        }
-        /* search for :, store result in extra_data */
-        tmp = strchr(str, ':');
-        if (tmp != NULL) {
-            *tmp++ = '\0';
-            *extra_data = uDupString(tmp);
-        }
-        else {
-            *extra_data = NULL;
-        }
-        tmp = strchr(str, '(');
-        if (tmp == NULL) {
-            *file_rtrn = uDupString(str);
-            *map_rtrn = NULL;
-        }
-        else if (str[0] == '(') {
+        *nextop_rtrn = '\0';
+        next = NULL;
+    }
+
+    /* search for :, store result in extra_data */
+    tmp = strchr(str, ':');
+    if (tmp != NULL) {
+        *tmp++ = '\0';
+        *extra_data = uDupString(tmp);
+    }
+    else {
+        *extra_data = NULL;
+    }
+
+    tmp = strchr(str, '(');
+    if (tmp == NULL) {
+        *file_rtrn = uDupString(str);
+        *map_rtrn = NULL;
+    }
+    else if (str[0] == '(') {
+        free(*extra_data);
+        return false;
+    }
+    else {
+        *tmp++ = '\0';
+        *file_rtrn = uDupString(str);
+        str = tmp;
+        tmp = strchr(str, ')');
+        if ((tmp == NULL) || (tmp[1] != '\0')) {
+            free(*file_rtrn);
             free(*extra_data);
             return false;
         }
-        else {
-            *tmp++ = '\0';
-            *file_rtrn = uDupString(str);
-            str = tmp;
-            tmp = strchr(str, ')');
-            if ((tmp == NULL) || (tmp[1] != '\0')) {
-                free(*file_rtrn);
-                free(*extra_data);
-                return false;
-            }
-            *tmp++ = '\0';
-            *map_rtrn = uDupString(str);
-        }
+        *tmp++ = '\0';
+        *map_rtrn = uDupString(str);
     }
+
     if (*nextop_rtrn == '\0')
         *str_inout = NULL;
     else if ((*nextop_rtrn == '|') || (*nextop_rtrn == '+'))
         *str_inout = next;
     else
         return false;
+
     return true;
 }
 

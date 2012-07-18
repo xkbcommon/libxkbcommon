@@ -737,74 +737,59 @@ HandleIncludeSymbols(IncludeStmt *stmt, struct xkb_keymap *keymap,
     enum merge_mode newMerge;
     XkbFile *rtrn;
     SymbolsInfo included;
-    bool haveSelf;
 
-    haveSelf = false;
-    if ((stmt->file == NULL) && (stmt->map == NULL)) {
-        haveSelf = true;
-        included = *info;
-        memset(info, 0, sizeof(SymbolsInfo));
-    }
-    else if (ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_SYMBOLS, &rtrn,
-                                &newMerge)) {
-        InitSymbolsInfo(&included, keymap, rtrn->id);
-        included.merge = included.dflt.merge = MERGE_OVERRIDE;
-        if (stmt->modifier)
-            included.explicit_group = atoi(stmt->modifier) - 1;
-        else
-            included.explicit_group = info->explicit_group;
-        HandleSymbolsFile(rtrn, keymap, MERGE_OVERRIDE, &included);
-        if (stmt->stmt != NULL) {
-            free(included.name);
-            included.name = stmt->stmt;
-            stmt->stmt = NULL;
-        }
-        FreeXKBFile(rtrn);
-    }
-    else {
+    if (!ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_SYMBOLS, &rtrn,
+                            &newMerge)) {
         info->errorCount += 10;
         return false;
     }
-    if ((stmt->next != NULL) && (included.errorCount < 1)) {
+
+    InitSymbolsInfo(&included, keymap, rtrn->id);
+    included.merge = included.dflt.merge = MERGE_OVERRIDE;
+    if (stmt->modifier)
+        included.explicit_group = atoi(stmt->modifier) - 1;
+    else
+        included.explicit_group = info->explicit_group;
+    HandleSymbolsFile(rtrn, keymap, MERGE_OVERRIDE, &included);
+    if (stmt->stmt) {
+        free(included.name);
+        included.name = stmt->stmt;
+        stmt->stmt = NULL;
+    }
+    FreeXKBFile(rtrn);
+
+    if (stmt->next && included.errorCount < 1) {
         IncludeStmt *next;
         unsigned op;
         SymbolsInfo next_incl;
 
-        for (next = stmt->next; next != NULL; next = next->next) {
-            if ((next->file == NULL) && (next->map == NULL)) {
-                haveSelf = true;
-                MergeIncludedSymbols(&included, info, next->merge, keymap);
-                FreeSymbolsInfo(info);
-            }
-            else if (ProcessIncludeFile(keymap->ctx, next, FILE_TYPE_SYMBOLS,
-                                        &rtrn, &op)) {
-                InitSymbolsInfo(&next_incl, keymap, rtrn->id);
-                next_incl.merge = next_incl.dflt.merge = MERGE_OVERRIDE;
-                if (next->modifier)
-                    next_incl.explicit_group = atoi(next->modifier) - 1;
-                else
-                    next_incl.explicit_group = info->explicit_group;
-                HandleSymbolsFile(rtrn, keymap, MERGE_OVERRIDE, &next_incl);
-                MergeIncludedSymbols(&included, &next_incl, op, keymap);
-                FreeSymbolsInfo(&next_incl);
-                FreeXKBFile(rtrn);
-            }
-            else {
+        for (next = stmt->next; next; next = next->next) {
+            if (!ProcessIncludeFile(keymap->ctx, next, FILE_TYPE_SYMBOLS,
+                                    &rtrn, &op)) {
                 info->errorCount += 10;
                 FreeSymbolsInfo(&included);
                 return false;
             }
+
+            InitSymbolsInfo(&next_incl, keymap, rtrn->id);
+            next_incl.merge = next_incl.dflt.merge = MERGE_OVERRIDE;
+            if (next->modifier)
+                next_incl.explicit_group = atoi(next->modifier) - 1;
+            else
+                next_incl.explicit_group = info->explicit_group;
+            HandleSymbolsFile(rtrn, keymap, MERGE_OVERRIDE, &next_incl);
+            MergeIncludedSymbols(&included, &next_incl, op, keymap);
+            FreeSymbolsInfo(&next_incl);
+            FreeXKBFile(rtrn);
         }
     }
     else if (stmt->next) {
         info->errorCount += included.errorCount;
     }
-    if (haveSelf)
-        *info = included;
-    else {
-        MergeIncludedSymbols(info, &included, newMerge, keymap);
-        FreeSymbolsInfo(&included);
-    }
+
+    MergeIncludedSymbols(info, &included, newMerge, keymap);
+    FreeSymbolsInfo(&included);
+
     return (info->errorCount == 0);
 }
 

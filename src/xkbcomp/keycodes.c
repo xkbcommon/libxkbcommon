@@ -448,70 +448,54 @@ HandleIncludeKeycodes(IncludeStmt *stmt, struct xkb_keymap *keymap,
     enum merge_mode newMerge;
     XkbFile *rtrn;
     KeyNamesInfo included;
-    bool haveSelf;
 
-    memset(&included, 0, sizeof(included));
-
-    haveSelf = false;
-    if ((stmt->file == NULL) && (stmt->map == NULL)) {
-        haveSelf = true;
-        included = *info;
-        memset(info, 0, sizeof(KeyNamesInfo));
-    }
-    else if (stmt->file && strcmp(stmt->file, "computed") == 0) {
+    /* XXX: What's that? */
+    if (stmt->file && strcmp(stmt->file, "computed") == 0) {
         keymap->flags |= AutoKeyNames;
         info->explicitMin = 0;
         info->explicitMax = XKB_KEYCODE_MAX;
         return (info->errorCount == 0);
-    } /* parse file, store returned info in the xkb struct */
-    else if (ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_KEYCODES, &rtrn,
-                                &newMerge)) {
-        InitKeyNamesInfo(&included, rtrn->id);
-        HandleKeycodesFile(rtrn, keymap, MERGE_OVERRIDE, &included);
-        if (stmt->stmt != NULL) {
-            free(included.name);
-            included.name = stmt->stmt;
-            stmt->stmt = NULL;
-        }
-        FreeXKBFile(rtrn);
     }
-    else {
-        info->errorCount += 10; /* XXX: why 10?? */
+
+    if (!ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_KEYCODES, &rtrn,
+                            &newMerge)) {
+        info->errorCount += 10;
         return false;
     }
-    /* Do we have more than one include statement? */
-    if ((stmt->next != NULL) && (included.errorCount < 1)) {
+
+    InitKeyNamesInfo(&included, rtrn->id);
+    HandleKeycodesFile(rtrn, keymap, MERGE_OVERRIDE, &included);
+    if (stmt->stmt) {
+        free(included.name);
+        included.name = stmt->stmt;
+        stmt->stmt = NULL;
+    }
+    FreeXKBFile(rtrn);
+
+    if (stmt->next && included.errorCount < 1) {
         IncludeStmt *next;
         unsigned op;
         KeyNamesInfo next_incl;
 
         for (next = stmt->next; next != NULL; next = next->next) {
-            if ((next->file == NULL) && (next->map == NULL)) {
-                haveSelf = true;
-                MergeIncludedKeycodes(&included, keymap, info, next->merge);
-                ClearKeyNamesInfo(info);
-            }
-            else if (ProcessIncludeFile(keymap->ctx, next, FILE_TYPE_KEYCODES,
-                                        &rtrn, &op)) {
-                InitKeyNamesInfo(&next_incl, rtrn->id);
-                HandleKeycodesFile(rtrn, keymap, MERGE_OVERRIDE, &next_incl);
-                MergeIncludedKeycodes(&included, keymap, &next_incl, op);
-                ClearKeyNamesInfo(&next_incl);
-                FreeXKBFile(rtrn);
-            }
-            else {
-                info->errorCount += 10; /* XXX: Why 10?? */
+            if (!ProcessIncludeFile(keymap->ctx, next, FILE_TYPE_KEYCODES,
+                                    &rtrn, &op)) {
+                info->errorCount += 10;
                 ClearKeyNamesInfo(&included);
                 return false;
             }
+
+            InitKeyNamesInfo(&next_incl, rtrn->id);
+            HandleKeycodesFile(rtrn, keymap, MERGE_OVERRIDE, &next_incl);
+            MergeIncludedKeycodes(&included, keymap, &next_incl, op);
+            ClearKeyNamesInfo(&next_incl);
+            FreeXKBFile(rtrn);
         }
     }
-    if (haveSelf)
-        *info = included;
-    else {
-        MergeIncludedKeycodes(info, keymap, &included, newMerge);
-        ClearKeyNamesInfo(&included);
-    }
+
+    MergeIncludedKeycodes(info, keymap, &included, newMerge);
+    ClearKeyNamesInfo(&included);
+
     return (info->errorCount == 0);
 }
 

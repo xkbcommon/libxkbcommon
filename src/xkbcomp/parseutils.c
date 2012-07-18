@@ -452,59 +452,53 @@ IncludeCreate(char *str, enum merge_mode merge)
     IncludeStmt *incl, *first;
     char *file, *map, *stmt, *tmp, *extra_data;
     char nextop;
-    bool haveSelf;
 
-    haveSelf = false;
     incl = first = NULL;
     file = map = NULL;
     tmp = str;
     stmt = uDupString(str);
-    while ((tmp) && (*tmp))
+    while (tmp && *tmp)
     {
-        if (XkbParseIncludeMap(&tmp, &file, &map, &nextop, &extra_data)) {
-            if ((file == NULL) && (map == NULL)) {
-                if (haveSelf)
-                    goto BAIL;
-                haveSelf = true;
-            }
-            if (first == NULL)
-                first = incl = uTypedAlloc(IncludeStmt);
-            else {
-                incl->next = uTypedAlloc(IncludeStmt);
-                incl = incl->next;
-            }
-            if (incl) {
-                incl->common.stmtType = StmtInclude;
-                incl->common.next = NULL;
-                incl->merge = merge;
-                incl->stmt = NULL;
-                incl->file = file;
-                incl->map = map;
-                incl->modifier = extra_data;
-                incl->path = NULL;
-                incl->next = NULL;
-            }
-            else {
-                WSGO("Allocation failure in IncludeCreate\n");
-                ACTION("Using only part of the include\n");
-                break;
-            }
-            if (nextop == '|')
-                merge = MERGE_AUGMENT;
-            else
-                merge = MERGE_OVERRIDE;
+        if (!XkbParseIncludeMap(&tmp, &file, &map, &nextop, &extra_data))
+            goto err;
+
+        if (first == NULL) {
+            first = incl = uTypedAlloc(IncludeStmt);
+        } else {
+            incl->next = uTypedAlloc(IncludeStmt);
+            incl = incl->next;
         }
-        else {
-            goto BAIL;
+
+        if (!incl) {
+            WSGO("Allocation failure in IncludeCreate\n");
+            ACTION("Using only part of the include\n");
+            break;
         }
+
+        incl->common.stmtType = StmtInclude;
+        incl->common.next = NULL;
+        incl->merge = merge;
+        incl->stmt = NULL;
+        incl->file = file;
+        incl->map = map;
+        incl->modifier = extra_data;
+        incl->path = NULL;
+        incl->next = NULL;
+
+        if (nextop == '|')
+            merge = MERGE_AUGMENT;
+        else
+            merge = MERGE_OVERRIDE;
     }
+
     if (first)
         first->stmt = stmt;
     else
         free(stmt);
+
     return first;
 
-BAIL:
+err:
     ERROR("Illegal include statement \"%s\"\n", stmt);
     ACTION("Ignored\n");
     FreeInclude(first);
