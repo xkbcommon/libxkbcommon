@@ -445,9 +445,9 @@ static bool
 HandleIncludeKeycodes(IncludeStmt *stmt, struct xkb_keymap *keymap,
                       KeyNamesInfo *info)
 {
-    enum merge_mode newMerge;
+    enum merge_mode merge = MERGE_DEFAULT;
     XkbFile *rtrn;
-    KeyNamesInfo included;
+    KeyNamesInfo included, next_incl;
 
     /* XXX: What's that? */
     if (stmt->file && strcmp(stmt->file, "computed") == 0) {
@@ -457,43 +457,32 @@ HandleIncludeKeycodes(IncludeStmt *stmt, struct xkb_keymap *keymap,
         return (info->errorCount == 0);
     }
 
-    if (!ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_KEYCODES, &rtrn,
-                            &newMerge)) {
-        info->errorCount += 10;
-        return false;
-    }
-
-    InitKeyNamesInfo(&included, rtrn->id);
-    HandleKeycodesFile(rtrn, keymap, MERGE_OVERRIDE, &included);
+    InitKeyNamesInfo(&included, info->file_id);
     if (stmt->stmt) {
         free(included.name);
         included.name = stmt->stmt;
         stmt->stmt = NULL;
     }
-    FreeXKBFile(rtrn);
 
-    if (stmt->next && included.errorCount < 1) {
-        IncludeStmt *next;
-        unsigned op;
-        KeyNamesInfo next_incl;
-
-        for (next = stmt->next; next != NULL; next = next->next) {
-            if (!ProcessIncludeFile(keymap->ctx, next, FILE_TYPE_KEYCODES,
-                                    &rtrn, &op)) {
-                info->errorCount += 10;
-                ClearKeyNamesInfo(&included);
-                return false;
-            }
-
-            InitKeyNamesInfo(&next_incl, rtrn->id);
-            HandleKeycodesFile(rtrn, keymap, MERGE_OVERRIDE, &next_incl);
-            MergeIncludedKeycodes(&included, keymap, &next_incl, op);
-            ClearKeyNamesInfo(&next_incl);
-            FreeXKBFile(rtrn);
+    for (; stmt; stmt = stmt->next) {
+        if (!ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_KEYCODES,
+                                &rtrn, &merge)) {
+            info->errorCount += 10;
+            ClearKeyNamesInfo(&included);
+            return false;
         }
+
+        InitKeyNamesInfo(&next_incl, rtrn->id);
+
+        HandleKeycodesFile(rtrn, keymap, MERGE_OVERRIDE, &next_incl);
+
+        MergeIncludedKeycodes(&included, keymap, &next_incl, merge);
+
+        ClearKeyNamesInfo(&next_incl);
+        FreeXKBFile(rtrn);
     }
 
-    MergeIncludedKeycodes(info, keymap, &included, newMerge);
+    MergeIncludedKeycodes(info, keymap, &included, merge);
     ClearKeyNamesInfo(&included);
 
     return (info->errorCount == 0);

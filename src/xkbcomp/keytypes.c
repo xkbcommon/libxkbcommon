@@ -341,50 +341,37 @@ static bool
 HandleIncludeKeyTypes(IncludeStmt *stmt, struct xkb_keymap *keymap,
                       KeyTypesInfo *info)
 {
-    enum merge_mode newMerge;
+    enum merge_mode merge = MERGE_DEFAULT;
     XkbFile *rtrn;
-    KeyTypesInfo included;
+    KeyTypesInfo included, next_incl;
 
-    if (!ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_TYPES, &rtrn,
-                            &newMerge)) {
-        info->errorCount += 10;
-        return false;
-    }
-
-    InitKeyTypesInfo(&included, keymap, info, rtrn->id);
-    included.dflt.defs.merge = newMerge;
-
-    HandleKeyTypesFile(rtrn, keymap, newMerge, &included);
+    InitKeyTypesInfo(&included, keymap, info, info->file_id);
     if (stmt->stmt) {
         free(included.name);
         included.name = stmt->stmt;
         stmt->stmt = NULL;
     }
-    FreeXKBFile(rtrn);
 
-    if ((stmt->next != NULL) && (included.errorCount < 1)) {
-        IncludeStmt *next;
-        unsigned op;
-        KeyTypesInfo next_incl;
-
-        for (next = stmt->next; next; next = next->next) {
-            if (!ProcessIncludeFile(keymap->ctx, next, FILE_TYPE_TYPES,
-                                    &rtrn, &op)) {
-                info->errorCount += 10;
-                FreeKeyTypesInfo(&included);
-                return false;
-            }
-
-            InitKeyTypesInfo(&next_incl, keymap, &included, rtrn->id);
-            next_incl.dflt.defs.merge = op;
-            HandleKeyTypesFile(rtrn, keymap, op, &next_incl);
-            MergeIncludedKeyTypes(&included, &next_incl, op, keymap);
-            FreeKeyTypesInfo(&next_incl);
-            FreeXKBFile(rtrn);
+    for (; stmt; stmt = stmt->next) {
+        if (!ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_TYPES,
+                                &rtrn, &merge)) {
+            info->errorCount += 10;
+            FreeKeyTypesInfo(&included);
+            return false;
         }
+
+        InitKeyTypesInfo(&next_incl, keymap, &included, rtrn->id);
+        next_incl.dflt.defs.merge = merge;
+
+        HandleKeyTypesFile(rtrn, keymap, merge, &next_incl);
+
+        MergeIncludedKeyTypes(&included, &next_incl, merge, keymap);
+
+        FreeKeyTypesInfo(&next_incl);
+        FreeXKBFile(rtrn);
     }
 
-    MergeIncludedKeyTypes(info, &included, newMerge, keymap);
+    MergeIncludedKeyTypes(info, &included, merge, keymap);
     FreeKeyTypesInfo(&included);
 
     return (info->errorCount == 0);

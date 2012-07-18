@@ -546,61 +546,45 @@ static bool
 HandleIncludeCompatMap(IncludeStmt *stmt, struct xkb_keymap *keymap,
                        CompatInfo *info)
 {
-    enum merge_mode newMerge;
+    enum merge_mode merge = MERGE_DEFAULT;
     XkbFile *rtrn;
-    CompatInfo included;
+    CompatInfo included, next_incl;
 
-    if (!ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_COMPAT, &rtrn,
-                            &newMerge)) {
-        info->errorCount += 10;
-        return false;
-    }
-
-    InitCompatInfo(&included, keymap, rtrn->id);
-    included.dflt = info->dflt;
-    included.dflt.merge = newMerge;
-    included.ledDflt.merge = newMerge;
-    included.act = info->act;
-    HandleCompatMapFile(rtrn, keymap, MERGE_OVERRIDE, &included);
+    InitCompatInfo(&included, keymap, info->file_id);
     if (stmt->stmt) {
         free(included.name);
         included.name = stmt->stmt;
         stmt->stmt = NULL;
     }
-    if (info->act)
-        included.act = NULL;
-    FreeXKBFile(rtrn);
 
-    if (stmt->next && included.errorCount < 1) {
-        IncludeStmt *next;
-        unsigned op;
-        CompatInfo next_incl;
-
-        for (next = stmt->next; next; next = next->next) {
-            if (!ProcessIncludeFile(keymap->ctx, next, FILE_TYPE_COMPAT,
-                                    &rtrn, &op)) {
-                info->errorCount += 10;
-                return false;
-            }
-
-            InitCompatInfo(&next_incl, keymap, rtrn->id);
-            next_incl.file_id = rtrn->id;
-            next_incl.dflt = info->dflt;
-            next_incl.dflt.file_id = rtrn->id;
-            next_incl.dflt.merge = op;
-            next_incl.ledDflt.file_id = rtrn->id;
-            next_incl.ledDflt.merge = op;
-            next_incl.act = info->act;
-            HandleCompatMapFile(rtrn, keymap, MERGE_OVERRIDE, &next_incl);
-            MergeIncludedCompatMaps(&included, &next_incl, op);
-            if (info->act != NULL)
-                next_incl.act = NULL;
-            ClearCompatInfo(&next_incl, keymap);
-            FreeXKBFile(rtrn);
+    for (; stmt; stmt = stmt->next) {
+        if (!ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_COMPAT,
+                                &rtrn, &merge)) {
+            info->errorCount += 10;
+            ClearCompatInfo(&included, keymap);
+            return false;
         }
+
+        InitCompatInfo(&next_incl, keymap, rtrn->id);
+        next_incl.file_id = rtrn->id;
+        next_incl.dflt = info->dflt;
+        next_incl.dflt.file_id = rtrn->id;
+        next_incl.dflt.merge = merge;
+        next_incl.ledDflt.file_id = rtrn->id;
+        next_incl.ledDflt.merge = merge;
+        next_incl.act = info->act;
+
+        HandleCompatMapFile(rtrn, keymap, MERGE_OVERRIDE, &next_incl);
+
+        MergeIncludedCompatMaps(&included, &next_incl, merge);
+        if (info->act)
+            next_incl.act = NULL;
+
+        ClearCompatInfo(&next_incl, keymap);
+        FreeXKBFile(rtrn);
     }
 
-    MergeIncludedCompatMaps(info, &included, newMerge);
+    MergeIncludedCompatMaps(info, &included, merge);
     ClearCompatInfo(&included, keymap);
 
     return (info->errorCount == 0);
