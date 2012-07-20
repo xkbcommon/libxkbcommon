@@ -60,12 +60,9 @@ typedef struct _KeyNamesInfo {
     darray(unsigned int) files;
     struct list leds;
     struct list aliases;
-} KeyNamesInfo;
 
-static void
-HandleKeycodesFile(XkbFile *file, struct xkb_keymap *keymap,
-                   enum merge_mode merge,
-                   KeyNamesInfo *info);
+    struct xkb_keymap *keymap;
+} KeyNamesInfo;
 
 static void
 ResizeKeyNameArrays(KeyNamesInfo *info, int newMax)
@@ -138,8 +135,7 @@ FindIndicatorByName(KeyNamesInfo * info, xkb_atom_t name)
 }
 
 static bool
-AddIndicatorName(KeyNamesInfo *info, struct xkb_keymap *keymap,
-                 enum merge_mode merge,
+AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
                  IndicatorNameInfo *new)
 {
     IndicatorNameInfo *old;
@@ -152,7 +148,7 @@ AddIndicatorName(KeyNamesInfo *info, struct xkb_keymap *keymap,
         if ((old->file_id == new->file_id && warningLevel > 0) ||
             warningLevel > 9) {
             WARN("Multiple indicators named %s\n",
-                 xkb_atom_text(keymap->ctx, new->name));
+                 xkb_atom_text(info->keymap->ctx, new->name));
             if (old->ndx == new->ndx) {
                 if (old->virtual != new->virtual) {
                     if (replace)
@@ -207,8 +203,8 @@ AddIndicatorName(KeyNamesInfo *info, struct xkb_keymap *keymap,
                     ignoring = new->name;
                 }
                 ACTION("Using %s %s, ignoring %s %s\n",
-                       oldType, xkb_atom_text(keymap->ctx, using),
-                       newType, xkb_atom_text(keymap->ctx, ignoring));
+                       oldType, xkb_atom_text(info->keymap->ctx, using),
+                       newType, xkb_atom_text(info->keymap->ctx, ignoring));
             }
         }
         if (replace) {
@@ -250,7 +246,8 @@ ClearKeyNamesInfo(KeyNamesInfo * info)
 }
 
 static void
-InitKeyNamesInfo(KeyNamesInfo * info, unsigned file_id)
+InitKeyNamesInfo(KeyNamesInfo *info, struct xkb_keymap *keymap,
+                 unsigned file_id)
 {
     info->name = NULL;
     list_init(&info->leds);
@@ -260,6 +257,7 @@ InitKeyNamesInfo(KeyNamesInfo * info, unsigned file_id)
     darray_init(info->files);
     ClearKeyNamesInfo(info);
     info->errorCount = 0;
+    info->keymap = keymap;
 }
 
 static int
@@ -354,8 +352,8 @@ AddKeyName(KeyNamesInfo * info,
 /***====================================================================***/
 
 static int
-HandleAliasDef(KeyAliasDef *def, enum merge_mode merge, unsigned file_id,
-               KeyNamesInfo *info);
+HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge,
+               unsigned file_id);
 
 static bool
 MergeAliases(KeyNamesInfo *into, KeyNamesInfo *from, enum merge_mode merge)
@@ -379,7 +377,7 @@ MergeAliases(KeyNamesInfo *into, KeyNamesInfo *from, enum merge_mode merge)
         memcpy(def.alias, alias->alias, XkbKeyNameLength);
         memcpy(def.real, alias->real, XkbKeyNameLength);
 
-        if (!HandleAliasDef(&def, def.merge, alias->file_id, into))
+        if (!HandleAliasDef(into, &def, def.merge, alias->file_id))
             return false;
     }
 
@@ -387,8 +385,8 @@ MergeAliases(KeyNamesInfo *into, KeyNamesInfo *from, enum merge_mode merge)
 }
 
 static void
-MergeIncludedKeycodes(KeyNamesInfo *into, struct xkb_keymap *keymap,
-                      KeyNamesInfo *from, enum merge_mode merge)
+MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
+                      enum merge_mode merge)
 {
     uint64_t i;
     char buf[5];
@@ -416,7 +414,7 @@ MergeIncludedKeycodes(KeyNamesInfo *into, struct xkb_keymap *keymap,
 
     list_foreach(led, &from->leds, entry) {
         led->merge = (merge == MERGE_DEFAULT ? led->merge : merge);
-        if (!AddIndicatorName(into, keymap, led->merge, led))
+        if (!AddIndicatorName(into, led->merge, led))
             into->errorCount++;
     }
 
@@ -434,16 +432,17 @@ MergeIncludedKeycodes(KeyNamesInfo *into, struct xkb_keymap *keymap,
     }
 }
 
+static void
+HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge);
+
 /**
  * Handle the given include statement (e.g. "include "evdev+aliases(qwerty)").
  *
- * @param stmt The include statement from the keymap file.
- * @param keymap Unused for all but the keymap->flags.
  * @param info Struct to store the key info in.
+ * @param stmt The include statement from the keymap file.
  */
 static bool
-HandleIncludeKeycodes(IncludeStmt *stmt, struct xkb_keymap *keymap,
-                      KeyNamesInfo *info)
+HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *stmt)
 {
     enum merge_mode merge = MERGE_DEFAULT;
     XkbFile *rtrn;
@@ -451,13 +450,13 @@ HandleIncludeKeycodes(IncludeStmt *stmt, struct xkb_keymap *keymap,
 
     /* XXX: What's that? */
     if (stmt->file && strcmp(stmt->file, "computed") == 0) {
-        keymap->flags |= AutoKeyNames;
+        info->keymap->flags |= AutoKeyNames;
         info->explicitMin = 0;
         info->explicitMax = XKB_KEYCODE_MAX;
         return (info->errorCount == 0);
     }
 
-    InitKeyNamesInfo(&included, info->file_id);
+    InitKeyNamesInfo(&included, info->keymap, info->file_id);
     if (stmt->stmt) {
         free(included.name);
         included.name = stmt->stmt;
@@ -465,24 +464,24 @@ HandleIncludeKeycodes(IncludeStmt *stmt, struct xkb_keymap *keymap,
     }
 
     for (; stmt; stmt = stmt->next) {
-        if (!ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_KEYCODES,
+        if (!ProcessIncludeFile(info->keymap->ctx, stmt, FILE_TYPE_KEYCODES,
                                 &rtrn, &merge)) {
             info->errorCount += 10;
             ClearKeyNamesInfo(&included);
             return false;
         }
 
-        InitKeyNamesInfo(&next_incl, rtrn->id);
+        InitKeyNamesInfo(&next_incl, info->keymap, rtrn->id);
 
-        HandleKeycodesFile(rtrn, keymap, MERGE_OVERRIDE, &next_incl);
+        HandleKeycodesFile(&next_incl, rtrn, MERGE_OVERRIDE);
 
-        MergeIncludedKeycodes(&included, keymap, &next_incl, merge);
+        MergeIncludedKeycodes(&included, &next_incl, merge);
 
         ClearKeyNamesInfo(&next_incl);
         FreeXKBFile(rtrn);
     }
 
-    MergeIncludedKeycodes(info, keymap, &included, merge);
+    MergeIncludedKeycodes(info, &included, merge);
     ClearKeyNamesInfo(&included);
 
     return (info->errorCount == 0);
@@ -493,7 +492,7 @@ HandleIncludeKeycodes(IncludeStmt *stmt, struct xkb_keymap *keymap,
  * e.g. <ESC> = 9
  */
 static int
-HandleKeycodeDef(KeycodeDef *stmt, enum merge_mode merge, KeyNamesInfo *info)
+HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt, enum merge_mode merge)
 {
     if ((info->explicitMin != 0 && stmt->value < info->explicitMin) ||
         (info->explicitMax != 0 && stmt->value > info->explicitMax)) {
@@ -514,7 +513,7 @@ HandleKeycodeDef(KeycodeDef *stmt, enum merge_mode merge, KeyNamesInfo *info)
 }
 
 static void
-HandleAliasCollision(AliasInfo *old, AliasInfo *new)
+HandleAliasCollision(KeyNamesInfo *info, AliasInfo *old, AliasInfo *new)
 {
     if (strncmp(new->real, old->real, XkbKeyNameLength) == 0) {
         if ((new->file_id == old->file_id && warningLevel > 0) ||
@@ -553,8 +552,8 @@ HandleAliasCollision(AliasInfo *old, AliasInfo *new)
 }
 
 static int
-HandleAliasDef(KeyAliasDef *def, enum merge_mode merge, unsigned file_id,
-               KeyNamesInfo *info)
+HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge,
+               unsigned file_id)
 {
     AliasInfo *alias;
 
@@ -562,7 +561,7 @@ HandleAliasDef(KeyAliasDef *def, enum merge_mode merge, unsigned file_id,
         if (strncmp(alias->alias, def->alias, XkbKeyNameLength) == 0) {
             AliasInfo new;
             InitAliasInfo(&new, merge, file_id, def->alias, def->real);
-            HandleAliasCollision(alias, &new);
+            HandleAliasCollision(info, alias, &new);
             return true;
         }
     }
@@ -592,13 +591,14 @@ HandleAliasDef(KeyAliasDef *def, enum merge_mode merge, unsigned file_id,
  * @return 1 on success, 0 otherwise.
  */
 static int
-HandleKeyNameVar(VarDef *stmt, struct xkb_keymap *keymap, KeyNamesInfo *info)
+HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
 {
     ExprResult tmp, field;
     ExprDef *arrayNdx;
     int which;
 
-    if (ExprResolveLhs(keymap, stmt->name, &tmp, &field, &arrayNdx) == 0)
+    if (ExprResolveLhs(info->keymap, stmt->name, &tmp, &field,
+                       &arrayNdx) == 0)
         return 0;               /* internal error, already reported */
 
     if (tmp.str != NULL) {
@@ -621,7 +621,7 @@ HandleKeyNameVar(VarDef *stmt, struct xkb_keymap *keymap, KeyNamesInfo *info)
         goto err_out;
     }
 
-    if (ExprResolveKeyCode(keymap->ctx, stmt->value, &tmp) == 0) {
+    if (ExprResolveKeyCode(info->keymap->ctx, stmt->value, &tmp) == 0) {
         ACTION("Assignment to field %s ignored\n", field.str);
         goto err_out;
     }
@@ -675,8 +675,8 @@ err_out:
 }
 
 static int
-HandleIndicatorNameDef(IndicatorNameDef *def, struct xkb_keymap *keymap,
-                       enum merge_mode merge, KeyNamesInfo *info)
+HandleIndicatorNameDef(KeyNamesInfo *info, IndicatorNameDef *def,
+                       enum merge_mode merge)
 {
     IndicatorNameInfo ii;
     ExprResult tmp;
@@ -689,16 +689,16 @@ HandleIndicatorNameDef(IndicatorNameDef *def, struct xkb_keymap *keymap,
     }
     InitIndicatorNameInfo(&ii, info);
     ii.ndx = def->ndx;
-    if (!ExprResolveString(keymap->ctx, def->name, &tmp)) {
+    if (!ExprResolveString(info->keymap->ctx, def->name, &tmp)) {
         char buf[20];
         snprintf(buf, sizeof(buf), "%d", def->ndx);
         info->errorCount++;
         return ReportBadType("indicator", "name", buf, "string");
     }
-    ii.name = xkb_atom_intern(keymap->ctx, tmp.str);
+    ii.name = xkb_atom_intern(info->keymap->ctx, tmp.str);
     free(tmp.str);
     ii.virtual = def->virtual;
-    if (!AddIndicatorName(info, keymap, merge, &ii))
+    if (!AddIndicatorName(info, merge, &ii))
         return false;
     return true;
 }
@@ -711,14 +711,12 @@ HandleIndicatorNameDef(IndicatorNameDef *def, struct xkb_keymap *keymap,
  * semi-recursive (it calls HandleIncludeKeycodes, which may call
  * HandleKeycodesFile again).
  *
- * @param file The input file (parsed xkb_keycodes section)
- * @param xkb Necessary to pass down, may have flags changed.
- * @param merge Merge strategy (MERGE_OVERRIDE, etc.)
  * @param info Struct to contain the fully parsed key information.
+ * @param file The input file (parsed xkb_keycodes section)
+ * @param merge Merge strategy (MERGE_OVERRIDE, etc.)
  */
 static void
-HandleKeycodesFile(XkbFile *file, struct xkb_keymap *keymap,
-                   enum merge_mode merge, KeyNamesInfo *info)
+HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
 {
     ParseCommon *stmt;
 
@@ -729,25 +727,25 @@ HandleKeycodesFile(XkbFile *file, struct xkb_keymap *keymap,
     {
         switch (stmt->stmtType) {
         case StmtInclude:    /* e.g. include "evdev+aliases(qwerty)" */
-            if (!HandleIncludeKeycodes((IncludeStmt *) stmt, keymap, info))
+            if (!HandleIncludeKeycodes(info, (IncludeStmt *) stmt))
                 info->errorCount++;
             break;
         case StmtKeycodeDef: /* e.g. <ESC> = 9; */
-            if (!HandleKeycodeDef((KeycodeDef *) stmt, merge, info))
+            if (!HandleKeycodeDef(info, (KeycodeDef *) stmt, merge))
                 info->errorCount++;
             break;
         case StmtKeyAliasDef: /* e.g. alias <MENU> = <COMP>; */
-            if (!HandleAliasDef((KeyAliasDef *) stmt, merge, info->file_id,
-                                info))
+            if (!HandleAliasDef(info, (KeyAliasDef *) stmt, merge,
+                                info->file_id))
                 info->errorCount++;
             break;
         case StmtVarDef: /* e.g. minimum, maximum */
-            if (!HandleKeyNameVar((VarDef *) stmt, keymap, info))
+            if (!HandleKeyNameVar(info, (VarDef *) stmt))
                 info->errorCount++;
             break;
         case StmtIndicatorNameDef: /* e.g. indicator 1 = "Caps Lock"; */
-            if (!HandleIndicatorNameDef((IndicatorNameDef *) stmt, keymap,
-                                        merge, info))
+            if (!HandleIndicatorNameDef(info, (IndicatorNameDef *) stmt,
+                                        merge))
                 info->errorCount++;
             break;
         case StmtInterpDef:
@@ -776,13 +774,14 @@ HandleKeycodesFile(XkbFile *file, struct xkb_keymap *keymap,
 }
 
 static int
-ApplyAliases(struct xkb_keymap *keymap, KeyNamesInfo *info)
+ApplyAliases(KeyNamesInfo *info)
 {
     int i;
     struct xkb_key *key;
     struct xkb_key_alias *old, *a;
     AliasInfo *alias, *next;
     int nNew = 0, nOld;
+    struct xkb_keymap *keymap = info->keymap;
 
     nOld = darray_size(keymap->key_aliases);
     old = &darray_item(keymap->key_aliases, 0);
@@ -828,7 +827,7 @@ ApplyAliases(struct xkb_keymap *keymap, KeyNamesInfo *info)
                 continue;
 
             InitAliasInfo(&old_alias, MERGE_AUGMENT, 0, a->alias, a->real);
-            HandleAliasCollision(&old_alias, alias);
+            HandleAliasCollision(info, &old_alias, alias);
             memcpy(old_alias.real, a->real, XkbKeyNameLength);
             alias->alias[0] = '\0';
             nNew--;
@@ -875,9 +874,9 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
     KeyNamesInfo info; /* contains all the info after parsing */
     IndicatorNameInfo *ii;
 
-    InitKeyNamesInfo(&info, file->id);
+    InitKeyNamesInfo(&info, keymap, file->id);
 
-    HandleKeycodesFile(file, keymap, merge, &info);
+    HandleKeycodesFile(&info, file, merge);
 
     /* all the keys are now stored in info */
 
@@ -908,7 +907,7 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
             xkb_atom_strdup(keymap->ctx, ii->name);
     }
 
-    ApplyAliases(keymap, &info);
+    ApplyAliases(&info);
 
     ClearKeyNamesInfo(&info);
     return true;
