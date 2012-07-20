@@ -32,11 +32,6 @@
 #include "text.h"
 #include "utils.h"
 
-bool
-UseNewField(unsigned field, short old_defined, unsigned old_file_id,
-            short new_defined, unsigned new_file_id,
-            enum merge_mode new_merge, unsigned *collide);
-
 extern bool
 ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
                    enum xkb_file_type file_type, XkbFile **file_rtrn,
