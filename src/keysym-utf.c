@@ -843,7 +843,7 @@ struct codepair {
     { 0xffbd, 0x003d }, /*                    KP_Equal = EQUAL SIGN */
 };
 
-_X_EXPORT uint32_t
+XKB_EXPORT uint32_t
 xkb_keysym_to_utf32(xkb_keysym_t keysym)
 {
     int min = 0;
@@ -943,7 +943,7 @@ utf32_to_utf8(uint32_t unichar, char *buffer)
     return length + 1;
 }
 
-_X_EXPORT int
+XKB_EXPORT int
 xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size)
 {
     uint32_t codepoint;

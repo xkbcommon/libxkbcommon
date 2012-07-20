@@ -45,7 +45,7 @@ struct xkb_context {
 /**
  * Append one directory to the context's include path.
  */
-_X_EXPORT int
+XKB_EXPORT int
 xkb_context_include_path_append(struct xkb_context *ctx, const char *path)
 {
     struct stat stat_buf;
@@ -77,7 +77,7 @@ xkb_context_include_path_append(struct xkb_context *ctx, const char *path)
 /**
  * Append the default include directories to the context.
  */
-_X_EXPORT int
+XKB_EXPORT int
 xkb_context_include_path_append_default(struct xkb_context *ctx)
 {
     const char *home;
@@ -101,7 +101,7 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
 /**
  * Remove all entries in the context's include path.
  */
-_X_EXPORT void
+XKB_EXPORT void
 xkb_context_include_path_clear(struct xkb_context *ctx)
 {
     char **path;
@@ -115,7 +115,7 @@ xkb_context_include_path_clear(struct xkb_context *ctx)
 /**
  * xkb_context_include_path_clear() + xkb_context_include_path_append_default()
  */
-_X_EXPORT int
+XKB_EXPORT int
 xkb_context_include_path_reset_defaults(struct xkb_context *ctx)
 {
     xkb_context_include_path_clear(ctx);
@@ -125,7 +125,7 @@ xkb_context_include_path_reset_defaults(struct xkb_context *ctx)
 /**
  * Returns the number of entries in the context's include path.
  */
-_X_EXPORT unsigned int
+XKB_EXPORT unsigned int
 xkb_context_num_include_paths(struct xkb_context *ctx)
 {
     return darray_size(ctx->includes);
@@ -135,7 +135,7 @@ xkb_context_num_include_paths(struct xkb_context *ctx)
  * Returns the given entry in the context's include path, or NULL if an
  * invalid index is passed.
  */
-_X_EXPORT const char *
+XKB_EXPORT const char *
 xkb_context_include_path_get(struct xkb_context *ctx, unsigned int idx)
 {
     if (idx >= xkb_context_num_include_paths(ctx))
@@ -153,7 +153,7 @@ xkb_context_take_file_id(struct xkb_context *ctx)
 /**
  * Take a new reference on the context.
  */
-_X_EXPORT struct xkb_context *
+XKB_EXPORT struct xkb_context *
 xkb_context_ref(struct xkb_context *ctx)
 {
     ctx->refcnt++;
@@ -164,7 +164,7 @@ xkb_context_ref(struct xkb_context *ctx)
  * Drop an existing reference on the context, and free it if the refcnt is
  * now 0.
  */
-_X_EXPORT void
+XKB_EXPORT void
 xkb_context_unref(struct xkb_context *ctx)
 {
     if (--ctx->refcnt > 0)
@@ -178,7 +178,7 @@ xkb_context_unref(struct xkb_context *ctx)
 /**
  * Create a new context.
  */
-_X_EXPORT struct xkb_context *
+XKB_EXPORT struct xkb_context *
 xkb_context_new(enum xkb_context_flags flags)
 {
     struct xkb_context *ctx = calloc(1, sizeof(*ctx));

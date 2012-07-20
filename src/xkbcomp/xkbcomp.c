@@ -231,7 +231,7 @@ xkb_map_new_from_kccgst(struct xkb_context *ctx,
     return keymap;
 }
 
-_X_EXPORT struct xkb_keymap *
+XKB_EXPORT struct xkb_keymap *
 xkb_map_new_from_names(struct xkb_context *ctx,
                        const struct xkb_rule_names *rmlvo,
                        enum xkb_map_compile_flags flags)
@@ -262,7 +262,7 @@ xkb_map_new_from_names(struct xkb_context *ctx,
     return keymap;
 }
 
-_X_EXPORT struct xkb_keymap *
+XKB_EXPORT struct xkb_keymap *
 xkb_map_new_from_string(struct xkb_context *ctx,
                         const char *string,
                         enum xkb_keymap_format format,
@@ -293,7 +293,7 @@ xkb_map_new_from_string(struct xkb_context *ctx,
     return keymap;
 }
 
-_X_EXPORT struct xkb_keymap *
+XKB_EXPORT struct xkb_keymap *
 xkb_map_new_from_file(struct xkb_context *ctx,
                       FILE *file,
                       enum xkb_keymap_format format,
@@ -324,14 +324,14 @@ xkb_map_new_from_file(struct xkb_context *ctx,
     return keymap;
 }
 
-_X_EXPORT struct xkb_keymap *
+XKB_EXPORT struct xkb_keymap *
 xkb_map_ref(struct xkb_keymap *keymap)
 {
     keymap->refcnt++;
     return keymap;
 }
 
-_X_EXPORT void
+XKB_EXPORT void
 xkb_map_unref(struct xkb_keymap *keymap)
 {
     if (!keymap || --keymap->refcnt > 0)

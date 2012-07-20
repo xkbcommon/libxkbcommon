@@ -934,7 +934,7 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
     return true;
 }
 
-_X_EXPORT char *
+XKB_EXPORT char *
 xkb_map_get_as_string(struct xkb_keymap *keymap)
 {
     char *ret = NULL;

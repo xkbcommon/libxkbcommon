@@ -32,7 +32,7 @@
 #include "xkb-priv.h"
 #include "ks_tables.h"
 
-_X_EXPORT void
+XKB_EXPORT void
 xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
 {
     int i, n, h, idx;
@@ -80,7 +80,7 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
         snprintf(buffer, size, "0x%08x", ks);
 }
 
-_X_EXPORT xkb_keysym_t
+XKB_EXPORT xkb_keysym_t
 xkb_keysym_from_name(const char *s)
 {
     int i, n, h, c, idx;
