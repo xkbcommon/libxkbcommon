@@ -25,14 +25,24 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <ctype.h>
+#include <errno.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <syslog.h>
 
 #include "xkb-priv.h"
 #include "atom.h"
 
 struct xkb_context {
     int refcnt;
+
+    ATTR_PRINTF(3, 0) void (*log_fn)(struct xkb_context *ctx, int priority,
+                                     const char *fmt, va_list args);
+    int log_priority;
+    int log_verbosity;
+    void *user_data;
 
     darray(char *) includes;
 
@@ -175,18 +185,97 @@ xkb_context_unref(struct xkb_context *ctx)
     free(ctx);
 }
 
+static const char *
+priority_to_prefix(int priority)
+{
+    switch (priority) {
+    case LOG_DEBUG:
+        return "Debug:";
+    case LOG_INFO:
+        return "Info:";
+    case LOG_WARNING:
+        return "Warning:";
+    case LOG_ERR:
+        return "Error:";
+    case LOG_CRIT:
+    case LOG_ALERT:
+    case LOG_EMERG:
+        return "Internal error:";
+    default:
+        return "";
+    }
+}
+
+ATTR_PRINTF(3, 0) static void
+default_log_fn(struct xkb_context *ctx, int priority,
+               const char *fmt, va_list args)
+{
+    const char *prefix = priority_to_prefix(priority);
+
+    if (prefix)
+        fprintf(stderr, "%-15s", prefix);
+    vfprintf(stderr, fmt, args);
+}
+
+static int
+log_priority(const char *priority) {
+    char *endptr;
+    int prio;
+
+    errno = 0;
+    prio = strtol(priority, &endptr, 10);
+    if (errno == 0 && (endptr[0] == '\0' || isspace(endptr[0])))
+        return prio;
+    if (strncasecmp(priority, "err", 3) == 0)
+        return LOG_ERR;
+    if (strncasecmp(priority, "warn", 4) == 0)
+        return LOG_WARNING;
+    if (strncasecmp(priority, "info", 4) == 0)
+        return LOG_INFO;
+    if (strncasecmp(priority, "debug", 5) == 0)
+        return LOG_DEBUG;
+
+    return LOG_ERR;
+}
+
+static int
+log_verbosity(const char *verbosity) {
+    char *endptr;
+    int v;
+
+    errno = 0;
+    v = strtol(verbosity, &endptr, 10);
+    if (errno == 0)
+        return v;
+
+    return 0;
+}
+
 /**
  * Create a new context.
  */
 XKB_EXPORT struct xkb_context *
 xkb_context_new(enum xkb_context_flags flags)
 {
+    const char *env;
     struct xkb_context *ctx = calloc(1, sizeof(*ctx));
 
     if (!ctx)
         return NULL;
 
     ctx->refcnt = 1;
+    ctx->log_fn = default_log_fn;
+    ctx->log_priority = LOG_ERR;
+    ctx->log_verbosity = 0;
+
+    /* Environment overwrites defaults. */
+    env = getenv("XKB_LOG");
+    if (env)
+        xkb_set_log_priority(ctx, log_priority(env));
+
+    env = getenv("XKB_VERBOSITY");
+    if (env)
+        xkb_set_log_verbosity(ctx, log_verbosity(env));
 
     if (!(flags & XKB_CONTEXT_NO_DEFAULT_INCLUDES) &&
         !xkb_context_include_path_append_default(ctx)) {
@@ -219,4 +308,64 @@ const char *
 xkb_atom_text(struct xkb_context *ctx, xkb_atom_t atom)
 {
     return atom_text(ctx->atom_table, atom);
+}
+
+void
+xkb_log(struct xkb_context *ctx, int priority, const char *fmt, ...)
+{
+    va_list args;
+
+    va_start(args, fmt);
+    /* NOTE: This test will be removed in a few commits. */
+    if (ctx)
+        ctx->log_fn(ctx, priority, fmt, args);
+    else
+        default_log_fn(ctx, priority, fmt, args);
+    va_end(args);
+}
+
+XKB_EXPORT void
+xkb_set_log_fn(struct xkb_context *ctx,
+               void (*log_fn)(struct xkb_context *ctx, int priority,
+                              const char *fmt, va_list args))
+{
+    ctx->log_fn = log_fn;
+}
+
+XKB_EXPORT int
+xkb_get_log_priority(struct xkb_context *ctx)
+{
+    return ctx->log_priority;
+}
+
+XKB_EXPORT void
+xkb_set_log_priority(struct xkb_context *ctx, int priority)
+{
+    ctx->log_priority = priority;
+}
+
+XKB_EXPORT int
+xkb_get_log_verbosity(struct xkb_context *ctx)
+{
+    return ctx->log_verbosity;
+}
+
+XKB_EXPORT void
+xkb_set_log_verbosity(struct xkb_context *ctx, int verbosity)
+{
+    ctx->log_verbosity = verbosity;
+}
+
+XKB_EXPORT void *
+xkb_get_user_data(struct xkb_context *ctx)
+{
+    if (ctx)
+        return ctx->user_data;
+    return NULL;
+}
+
+XKB_EXPORT void
+xkb_set_user_data(struct xkb_context *ctx, void *user_data)
+{
+    ctx->user_data = user_data;
 }

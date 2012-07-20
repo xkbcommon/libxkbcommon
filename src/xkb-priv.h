@@ -82,6 +82,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <strings.h>
+#include <syslog.h>
 #include <X11/extensions/XKB.h>
 #include <X11/X.h>
 
@@ -517,5 +518,34 @@ xkb_keysym_is_upper(xkb_keysym_t keysym);
 
 bool
 xkb_keysym_is_keypad(xkb_keysym_t keysym);
+
+ATTR_PRINTF(3, 4) void
+xkb_log(struct xkb_context *ctx, int priority, const char *fmt, ...);
+
+#define xkb_log_cond(ctx, prio, ...) \
+    do { \
+        if (xkb_get_log_priority(ctx) >= (prio)) \
+            xkb_log((ctx), (prio), __VA_ARGS__); \
+    } while (0)
+
+#define xkb_log_cond_lvl(ctx, prio, lvl, ...) \
+    do { \
+        if (xkb_get_log_verbosity(ctx) >= (lvl)) \
+            xkb_log_cond((ctx), (prio), __VA_ARGS__); \
+    } while (0)
+
+/*
+ * The format is not part of the argument list in order to avoid the
+ * "ISO C99 requires rest arguments to be used" warning when only the
+ * format is supplied without arguments. Not supplying it would still
+ * result in an error, though.
+ */
+#define log_dbg(ctx, ...) xkb_log_cond((ctx), LOG_DEBUG, __VA_ARGS__)
+#define log_info(ctx, ...) xkb_log_cond((ctx), LOG_INFO, __VA_ARGS__)
+#define log_warn(ctx, ...) xkb_log_cond((ctx), LOG_WARNING, __VA_ARGS__)
+#define log_err(ctx, ...) xkb_log_cond((ctx), LOG_ERR, __VA_ARGS__)
+#define log_wsgo(ctx, ...) xkb_log_cond((ctx), LOG_CRIT, __VA_ARGS__)
+#define log_lvl(ctx, lvl, ...) \
+    xkb_log_cond_lvl((ctx), LOG_WARNING, (lvl), __VA_ARGS__)
 
 #endif /* XKB_PRIV_H */

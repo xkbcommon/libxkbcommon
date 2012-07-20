@@ -29,10 +29,6 @@
 
 /***====================================================================***/
 
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 /*
  * We sometimes malloc strings and then expose them as const char*'s. This
  * macro is used when we free these strings in order to avoid -Wcast-qual
@@ -73,33 +69,10 @@
 #define ATTR_MALLOC
 #endif
 
-extern bool
-uSetErrorFile(char *name);
-
-#define INFO uInformation
-
-ATTR_PRINTF(1, 2) void
-uInformation(const char *s, ...);
-
-#define ACTION uAction
-
-ATTR_PRINTF(1, 2) void
-uAction(const char *s, ...);
-
-#define WARN uWarning
-
-ATTR_PRINTF(1, 2) void
-uWarning(const char *s, ...);
-
-#define ERROR uError
-
-ATTR_PRINTF(1, 2) void
-uError(const char *s, ...);
-
-/* WSGO stands for "Weird Stuff Going On" (wtf???) */
-#define WSGO uInternalError
-
-ATTR_PRINTF(1, 2) void
-uInternalError(const char *s, ...);
+#define INFO(...) xkb_log(NULL, LOG_INFO, __VA_ARGS__)
+#define WARN(...) xkb_log(NULL, LOG_WARNING, __VA_ARGS__)
+#define ERROR(...) xkb_log(NULL, LOG_ERR, __VA_ARGS__)
+#define WSGO(...) xkb_log(NULL, LOG_CRIT, __VA_ARGS__)
+#define ACTION(...) xkb_log(NULL, -1, __VA_ARGS__)
 
 #endif /* UTILS_H */

@@ -249,6 +249,77 @@ xkb_context_unref(struct xkb_context *context);
 /** @} */
 
 /**
+ * @defgroup logging Logging handling
+ * These functions allow you to manipulate how logging from this library
+ * will be handled.
+ *
+ * @{
+ */
+
+/**
+ * Sets the function to be called for logging messages, instead of the
+ * default logger which writes to stderr.
+ **/
+void
+xkb_set_log_fn(struct xkb_context *context,
+               void (*log_fn)(struct xkb_context *context, int priority,
+                              const char *format, va_list args));
+/**
+ * Sets the current logging priority. The value controls which messages
+ * are logged.
+ *
+ * The value should be one of LOG_ERR, LOG_WARNING, LOG_DEBUG, etc., see
+ * syslog(3) or syslog.h.  The default priority is LOG_ERR.
+ * The environment variable XKB_LOG, if set, overrides the default value
+ * and may be specified as a priority number or name.
+ */
+void
+xkb_set_log_priority(struct xkb_context *context, int priority);
+
+/**
+ * Returns the current logging priority.
+ */
+int
+xkb_get_log_priority(struct xkb_context *context);
+
+/**
+ * Sets the current logging verbosity, a value from 0 to 10.
+ *
+ * The library can generate a number of warnings which are not helpful to
+ * ordinary users of the library.  The verbosity may be increased if more
+ * information is desired (e.g. when developing a keymap).  Defaults to 0.
+ * The environment variable XKB_VERBOSITY, if set, overrdies the default
+ * value.
+ *
+ * Note that most verbose messages are of priority LOG_WARNING or lower.
+ */
+void
+xkb_set_log_verbosity(struct xkb_context *ctx, int verbosity);
+
+/**
+ * Returns the current logging verbosity.
+ */
+int
+xkb_get_log_verbosity(struct xkb_context *ctx);
+
+/**
+ * Retrieves stored data pointer from the context.  This might be useful
+ * to access from callbacks like a custom logging function.
+ *
+ * If context is NULL, returns NULL.
+ **/
+void *
+xkb_get_user_data(struct xkb_context *context);
+
+/**
+ * Store custom user data in the context.
+ */
+void
+xkb_set_user_data(struct xkb_context *context, void *user_data);
+
+/** @} */
+
+/**
  * @defgroup map Keymap management
  * These utility functions allow you to create and deallocate XKB keymaps.
  *
