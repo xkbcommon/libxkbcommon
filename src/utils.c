@@ -134,31 +134,6 @@ uError(const char *s, ...)
 /***====================================================================***/
 
 void
-uFatalError(const char *s, ...)
-{
-    va_list args;
-
-    if (!errorFile)
-        errorFile = stderr;
-
-    if ((outCount == 0) && (preMsg != NULL))
-        fprintf(errorFile, "%s\n", preMsg);
-    if (prefix != NULL)
-        fprintf(errorFile, "%s", prefix);
-    fprintf(errorFile, "Fatal Error:      ");
-    va_start(args, s);
-    vfprintf(errorFile, s, args);
-    va_end(args);
-    fprintf(errorFile, "                  Exiting\n");
-    fflush(errorFile);
-    outCount++;
-    exit(1);
-    /* NOTREACHED */
-}
-
-/***====================================================================***/
-
-void
 uInternalError(const char *s, ...)
 {
     va_list args;

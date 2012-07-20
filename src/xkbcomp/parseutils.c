@@ -27,6 +27,17 @@
 #include "parseutils.h"
 #include "path.h"
 
+ATTR_MALLOC static void *
+malloc_or_die(size_t size)
+{
+    void *p = malloc(size);
+    if (!p) {
+        fprintf(stderr, "Out of memory\n");
+        exit(1);
+    }
+    return p;
+}
+
 ParseCommon *
 AppendStmt(ParseCommon * to, ParseCommon * append)
 {
@@ -50,9 +61,7 @@ ExprCreate(unsigned op, unsigned type)
 {
     ExprDef *expr;
 
-    expr = malloc(sizeof(*expr));
-    if (!expr)
-        FATAL("Couldn't allocate expression in parser\n");
+    expr = malloc_or_die(sizeof(*expr));
 
     expr->common.stmtType = StmtExpr;
     expr->common.next = NULL;
@@ -65,9 +74,7 @@ ExprDef *
 ExprCreateUnary(unsigned op, unsigned type, ExprDef * child)
 {
     ExprDef *expr;
-    expr = malloc(sizeof(*expr));
-    if (!expr)
-        FATAL("Couldn't allocate expression in parser\n");
+    expr = malloc_or_die(sizeof(*expr));
 
     expr->common.stmtType = StmtExpr;
     expr->common.next = NULL;
@@ -82,9 +89,7 @@ ExprCreateBinary(unsigned op, ExprDef * left, ExprDef * right)
 {
     ExprDef *expr;
 
-    expr = malloc(sizeof(*expr));
-    if (!expr)
-        FATAL("Couldn't allocate expression in parser\n");
+    expr = malloc_or_die(sizeof(*expr));
 
     expr->common.stmtType = StmtExpr;
     expr->common.next = NULL;
@@ -105,9 +110,7 @@ KeycodeCreate(const char *name, unsigned long value)
 {
     KeycodeDef *def;
 
-    def = malloc(sizeof(*def));
-    if (!def)
-        FATAL("Couldn't allocate key name definition in parser\n");
+    def = malloc_or_die(sizeof(*def));
 
     def->common.stmtType = StmtKeycodeDef;
     def->common.next = NULL;
@@ -122,9 +125,7 @@ KeyAliasCreate(const char *alias, const char *real)
 {
     KeyAliasDef *def;
 
-    def = malloc(sizeof(*def));
-    if (!def)
-        FATAL("Couldn't allocate key alias definition in parser\n");
+    def = malloc_or_die(sizeof(*def));
 
     def->common.stmtType = StmtKeyAliasDef;
     def->common.next = NULL;
@@ -140,9 +141,7 @@ VModCreate(xkb_atom_t name, ExprDef * value)
 {
     VModDef *def;
 
-    def = malloc(sizeof(*def));
-    if (!def)
-        FATAL("Couldn't allocate variable definition in parser\n");
+    def = malloc_or_die(sizeof(*def));
 
     def->common.stmtType = StmtVModDef;
     def->common.next = NULL;
@@ -155,9 +154,7 @@ VarDef *
 VarCreate(ExprDef * name, ExprDef * value)
 {
     VarDef *def;
-    def = malloc(sizeof(*def));
-    if (!def)
-        FATAL("Couldn't allocate variable definition in parser\n");
+    def = malloc_or_die(sizeof(*def));
 
     def->common.stmtType = StmtVarDef;
     def->common.next = NULL;
@@ -183,9 +180,7 @@ InterpCreate(char *sym, ExprDef * match)
 {
     InterpDef *def;
 
-    def = malloc(sizeof(*def));
-    if (!def)
-        FATAL("Couldn't allocate interp definition in parser\n");
+    def = malloc_or_die(sizeof(*def));
 
     def->common.stmtType = StmtInterpDef;
     def->common.next = NULL;
@@ -199,9 +194,7 @@ KeyTypeCreate(xkb_atom_t name, VarDef * body)
 {
     KeyTypeDef *def;
 
-    def = malloc(sizeof(*def));
-    if (!def)
-        FATAL("Couldn't allocate key type definition in parser\n");
+    def = malloc_or_die(sizeof(*def));
 
     def->common.stmtType = StmtKeyTypeDef;
     def->common.next = NULL;
@@ -216,9 +209,7 @@ SymbolsCreate(const char *keyName, ExprDef *symbols)
 {
     SymbolsDef *def;
 
-    def = malloc(sizeof(*def));
-    if (!def)
-        FATAL("Couldn't allocate symbols definition in parser\n");
+    def = malloc_or_die(sizeof(*def));
 
     def->common.stmtType = StmtSymbolsDef;
     def->common.next = NULL;
@@ -234,9 +225,7 @@ GroupCompatCreate(int group, ExprDef * val)
 {
     GroupCompatDef *def;
 
-    def = malloc(sizeof(*def));
-    if (!def)
-        FATAL("Couldn't allocate group compat definition in parser\n");
+    def = malloc_or_die(sizeof(*def));
 
     def->common.stmtType = StmtGroupCompatDef;
     def->common.next = NULL;
@@ -251,9 +240,7 @@ ModMapCreate(uint32_t modifier, ExprDef * keys)
 {
     ModMapDef *def;
 
-    def = malloc(sizeof(*def));
-    if (!def)
-        FATAL("Couldn't allocate mod mask definition in parser\n");
+    def = malloc_or_die(sizeof(*def));
 
     def->common.stmtType = StmtModMapDef;
     def->common.next = NULL;
@@ -268,9 +255,7 @@ IndicatorMapCreate(xkb_atom_t name, VarDef * body)
 {
     IndicatorMapDef *def;
 
-    def = malloc(sizeof(*def));
-    if (!def)
-        FATAL("Couldn't allocate indicator map definition in parser\n");
+    def = malloc_or_die(sizeof(*def));
 
     def->common.stmtType = StmtIndicatorMapDef;
     def->common.next = NULL;
@@ -285,9 +270,7 @@ IndicatorNameCreate(int ndx, ExprDef * name, bool virtual)
 {
     IndicatorNameDef *def;
 
-    def = malloc(sizeof(*def));
-    if (!def)
-        FATAL("Couldn't allocate indicator index definition in parser\n");
+    def = malloc_or_die(sizeof(*def));
 
     def->common.stmtType = StmtIndicatorNameDef;
     def->common.next = NULL;
@@ -303,9 +286,7 @@ ActionCreate(xkb_atom_t name, ExprDef * args)
 {
     ExprDef *act;
 
-    act = malloc(sizeof(*act));
-    if (!act)
-        FATAL("Couldn't allocate ActionDef in parser\n");
+    act = malloc_or_die(sizeof(*act));
 
     act->common.stmtType = StmtExpr;
     act->common.next = NULL;
@@ -321,10 +302,6 @@ CreateKeysymList(char *sym)
     ExprDef *def;
 
     def = ExprCreate(ExprKeysymList, TypeSymbols);
-    if (!def) {
-        FATAL("Couldn't allocate expression for keysym list in parser\n");
-        return NULL;
-    }
 
     darray_init(def->value.list.syms);
     darray_init(def->value.list.symsMapIndex);

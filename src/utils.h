@@ -67,6 +67,12 @@
 # define ATTR_NORETURN
 #endif /* GNUC  */
 
+#if (defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 296)
+#define ATTR_MALLOC  __attribute__((__malloc__))
+#else
+#define ATTR_MALLOC
+#endif
+
 extern bool
 uSetErrorFile(char *name);
 
@@ -89,11 +95,6 @@ uWarning(const char *s, ...);
 
 ATTR_PRINTF(1, 2) void
 uError(const char *s, ...);
-
-#define FATAL uFatalError
-
-ATTR_PRINTF(1, 2) ATTR_NORETURN void
-uFatalError(const char *s, ...);
 
 /* WSGO stands for "Weird Stuff Going On" (wtf???) */
 #define WSGO uInternalError
