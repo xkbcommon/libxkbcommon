@@ -140,33 +140,37 @@ AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
 {
     IndicatorNameInfo *old;
     bool replace;
+    int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
 
     replace = (merge == MERGE_REPLACE) || (merge == MERGE_OVERRIDE);
 
     old = FindIndicatorByName(info, new->name);
     if (old) {
-        if ((old->file_id == new->file_id && warningLevel > 0) ||
-            warningLevel > 9) {
-            WARN("Multiple indicators named %s\n",
-                 xkb_atom_text(info->keymap->ctx, new->name));
+        if ((old->file_id == new->file_id && verbosity > 0) ||
+            verbosity > 9) {
             if (old->ndx == new->ndx) {
                 if (old->virtual != new->virtual) {
                     if (replace)
                         old->virtual = new->virtual;
-                    ACTION("Using %s instead of %s\n",
-                           (old->virtual ? "virtual" : "real"),
-                           (old->virtual ? "real" : "virtual"));
+                    log_warn(info->keymap->ctx, "Multiple indicators named %s; "
+                             "Using %s instead of %s\n",
+                             xkb_atom_text(info->keymap->ctx, new->name),
+                             (old->virtual ? "virtual" : "real"),
+                             (old->virtual ? "real" : "virtual"));
                 }
                 else {
-                    ACTION("Identical definitions ignored\n");
+                    log_warn(info->keymap->ctx, "Multiple indicators named %s; "
+                             "Identical definitions ignored\n",
+                             xkb_atom_text(info->keymap->ctx, new->name));
                 }
                 return true;
             }
             else {
-                if (replace)
-                    ACTION("Ignoring %d, using %d\n", old->ndx, new->ndx);
-                else
-                    ACTION("Using %d, ignoring %d\n", old->ndx, new->ndx);
+                log_warn(info->keymap->ctx, "Multiple indicators named %s; "
+                         "Using %d, ignoring %d\n",
+                         xkb_atom_text(info->keymap->ctx, new->name),
+                         (replace ? old->ndx : new->ndx),
+                         (replace ? new->ndx : old->ndx));
             }
 
             if (replace) {
@@ -178,12 +182,13 @@ AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
 
     old = FindIndicatorByIndex(info, new->ndx);
     if (old) {
-        if ((old->file_id == new->file_id && warningLevel > 0) ||
-            warningLevel > 9) {
-            WARN("Multiple names for indicator %d\n", new->ndx);
-            if ((old->name == new->name) && (old->virtual == new->virtual))
-                ACTION("Identical definitions ignored\n");
-            else {
+        if ((old->file_id == new->file_id && verbosity > 0) ||
+            verbosity > 9) {
+            if (old->name == new->name && old->virtual == new->virtual) {
+                log_warn(info->keymap->ctx,
+                         "Multiple names for indicator %d; "
+                         "Identical definitions ignored\n", new->ndx);
+            } else {
                 const char *oldType, *newType;
                 xkb_atom_t using, ignoring;
                 if (old->virtual)
@@ -202,9 +207,12 @@ AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
                     using = old->name;
                     ignoring = new->name;
                 }
-                ACTION("Using %s %s, ignoring %s %s\n",
-                       oldType, xkb_atom_text(info->keymap->ctx, using),
-                       newType, xkb_atom_text(info->keymap->ctx, ignoring));
+                log_warn(info->keymap->ctx,
+                         "Multiple names for indicator %d; "
+                         "Using %s %s, ignoring %s %s\n",
+                         new->ndx,
+                         oldType, xkb_atom_text(info->keymap->ctx, using),
+                         newType, xkb_atom_text(info->keymap->ctx, ignoring));
             }
         }
         if (replace) {
@@ -216,8 +224,9 @@ AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
     old = new;
     new = NextIndicatorName(info);
     if (!new) {
-        WSGO("Couldn't allocate name for indicator %d\n", old->ndx);
-        ACTION("Ignored\n");
+        log_wsgo(info->keymap->ctx,
+                 "Couldn't allocate name for indicator %d; Ignored\n",
+                 old->ndx);
         return false;
     }
     new->name = old->name;
@@ -284,6 +293,7 @@ AddKeyName(KeyNamesInfo * info,
 {
     xkb_keycode_t old;
     unsigned long lval;
+    int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
 
     ResizeKeyNameArrays(info, kc);
 
@@ -293,11 +303,10 @@ AddKeyName(KeyNamesInfo * info,
         info->computedMax = kc;
     lval = KeyNameToLong(name);
 
-    if (reportCollisions) {
-        reportCollisions = (warningLevel > 7 ||
-                            (warningLevel > 0 &&
+    if (reportCollisions)
+        reportCollisions = (verbosity > 7 ||
+                            (verbosity > 0 &&
                              file_id == darray_item(info->files, kc)));
-    }
 
     if (darray_item(info->names, kc) != 0) {
         char buf[6];
@@ -305,42 +314,44 @@ AddKeyName(KeyNamesInfo * info,
         LongToKeyName(darray_item(info->names, kc), buf);
         buf[4] = '\0';
         if (darray_item(info->names, kc) == lval && reportCollisions) {
-            WARN("Multiple identical key name definitions\n");
-            ACTION("Later occurences of \"<%s> = %d\" ignored\n",
-                   buf, kc);
+            log_warn(info->keymap->ctx,
+                     "Multiple identical key name definitions; "
+                     "Later occurences of \"<%s> = %d\" ignored\n", buf, kc);
             return true;
         }
+
         if (merge == MERGE_AUGMENT) {
-            if (reportCollisions) {
-                WARN("Multiple names for keycode %d\n", kc);
-                ACTION("Using <%s>, ignoring <%s>\n", buf, name);
-            }
+            if (reportCollisions)
+                log_warn(info->keymap->ctx,
+                         "Multiple names for keycode %d; "
+                         "Using <%s>, ignoring <%s>\n", kc, buf, name);
             return true;
         }
         else {
-            if (reportCollisions) {
-                WARN("Multiple names for keycode %d\n", kc);
-                ACTION("Using <%s>, ignoring <%s>\n", name, buf);
-            }
+            if (reportCollisions)
+                log_warn(info->keymap->ctx,
+                         "Multiple names for keycode %d; "
+                         "Using <%s>, ignoring <%s>\n", kc, name, buf);
             darray_item(info->names, kc) = 0;
             darray_item(info->files, kc) = 0;
         }
     }
+
     old = FindKeyByLong(info, lval);
     if ((old != 0) && (old != kc)) {
         if (merge == MERGE_OVERRIDE) {
             darray_item(info->names, old) = 0;
             darray_item(info->files, old) = 0;
-            if (reportCollisions) {
-                WARN("Key name <%s> assigned to multiple keys\n", name);
-                ACTION("Using %d, ignoring %d\n", kc, old);
-            }
+            if (reportCollisions)
+                log_warn(info->keymap->ctx,
+                         "Key name <%s> assigned to multiple keys; "
+                         "Using %d, ignoring %d\n", name, kc, old);
         }
         else {
-            if ((reportCollisions) && (warningLevel > 3)) {
-                WARN("Key name <%s> assigned to multiple keys\n", name);
-                ACTION("Using %d, ignoring %d\n", old, kc);
-            }
+            if (reportCollisions && verbosity > 3)
+                log_warn(info->keymap->ctx,
+                         "Key name <%s> assigned to multiple keys; "
+                         "Using %d, ignoring %d\n", name, old, kc);
             return true;
         }
     }
@@ -496,10 +507,11 @@ HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt, enum merge_mode merge)
 {
     if ((info->explicitMin != 0 && stmt->value < info->explicitMin) ||
         (info->explicitMax != 0 && stmt->value > info->explicitMax)) {
-        ERROR("Illegal keycode %lu for name <%s>\n", stmt->value, stmt->name);
-        ACTION("Must be in the range %d-%d inclusive\n",
-               info->explicitMin,
-               info->explicitMax ? info->explicitMax : XKB_KEYCODE_MAX);
+        log_err(info->keymap->ctx,
+                "Illegal keycode %lu for name <%s>; "
+                "Must be in the range %d-%d inclusive\n",
+                stmt->value, stmt->name, info->explicitMin,
+                info->explicitMax ? info->explicitMax : XKB_KEYCODE_MAX);
         return 0;
     }
     if (stmt->merge != MERGE_DEFAULT) {
@@ -515,13 +527,14 @@ HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt, enum merge_mode merge)
 static void
 HandleAliasCollision(KeyNamesInfo *info, AliasInfo *old, AliasInfo *new)
 {
+    int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
+
     if (strncmp(new->real, old->real, XkbKeyNameLength) == 0) {
-        if ((new->file_id == old->file_id && warningLevel > 0) ||
-            warningLevel > 9) {
-            WARN("Alias of %s for %s declared more than once\n",
-                  XkbcKeyNameText(new->alias), XkbcKeyNameText(new->real));
-            ACTION("First definition ignored\n");
-        }
+        if ((new->file_id == old->file_id && verbosity > 0) || verbosity > 9)
+            log_warn(info->keymap->ctx,
+                     "Alias of %s for %s declared more than once; "
+                     "First definition ignored\n",
+                     XkbcKeyNameText(new->alias), XkbcKeyNameText(new->real));
     }
     else {
         char *use, *ignore;
@@ -535,13 +548,12 @@ HandleAliasCollision(KeyNamesInfo *info, AliasInfo *old, AliasInfo *new)
             ignore = old->real;
         }
 
-        if ((old->file_id == new->file_id && warningLevel > 0) ||
-            warningLevel > 9) {
-            WARN("Multiple definitions for alias %s\n",
-                 XkbcKeyNameText(old->alias));
-            ACTION("Using %s, ignoring %s\n",
-                   XkbcKeyNameText(use), XkbcKeyNameText(ignore));
-        }
+        if ((old->file_id == new->file_id && verbosity > 0) || verbosity > 9)
+            log_warn(info->keymap->ctx,
+                     "Multiple definitions for alias %s; "
+                     "Using %s, ignoring %s\n",
+                     XkbcKeyNameText(old->alias), XkbcKeyNameText(use),
+                     XkbcKeyNameText(ignore));
 
         if (use != old->real)
             memcpy(old->real, use, XkbKeyNameLength);
@@ -568,7 +580,7 @@ HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge,
 
     alias = calloc(1, sizeof(*alias));
     if (!alias) {
-        WSGO("Allocation failure in HandleAliasDef\n");
+        log_wsgo(info->keymap->ctx, "Allocation failure in HandleAliasDef\n");
         return false;
     }
 
@@ -602,65 +614,76 @@ HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
         return 0;               /* internal error, already reported */
 
     if (tmp.str != NULL) {
-        ERROR("Unknown element %s encountered\n", tmp.str);
-        ACTION("Default for field %s ignored\n", field.str);
+        log_err(info->keymap->ctx,
+                "Unknown element %s encountered; "
+                "Default for field %s ignored\n", tmp.str, field.str);
         goto err_out;
     }
+
     if (strcasecmp(field.str, "minimum") == 0)
         which = MIN_KEYCODE_DEF;
     else if (strcasecmp(field.str, "maximum") == 0)
         which = MAX_KEYCODE_DEF;
     else {
-        ERROR("Unknown field encountered\n");
-        ACTION("Assigment to field %s ignored\n", field.str);
+        log_err(info->keymap->ctx,
+                "Unknown field encountered; "
+                "Assigment to field %s ignored\n", field.str);
         goto err_out;
     }
+
     if (arrayNdx != NULL) {
-        ERROR("The %s setting is not an array\n", field.str);
-        ACTION("Illegal array reference ignored\n");
+        log_err(info->keymap->ctx,
+                "The %s setting is not an array; "
+                "Illegal array reference ignored\n", field.str);
         goto err_out;
     }
 
     if (ExprResolveKeyCode(info->keymap->ctx, stmt->value, &tmp) == 0) {
-        ACTION("Assignment to field %s ignored\n", field.str);
+        log_err(info->keymap->ctx,
+                "Illegal keycode encountered; "
+                "Assignment to field %s ignored\n", field.str);
         goto err_out;
     }
+
     if (tmp.uval > XKB_KEYCODE_MAX) {
-        ERROR
-            ("Illegal keycode %d (must be in the range %d-%d inclusive)\n",
-            tmp.uval, 0, XKB_KEYCODE_MAX);
-        ACTION("Value of \"%s\" not changed\n", field.str);
+        log_err(info->keymap->ctx,
+                "Illegal keycode %d (must be in the range %d-%d inclusive); "
+                "Value of \"%s\" not changed\n",
+                tmp.uval, 0, XKB_KEYCODE_MAX, field.str);
         goto err_out;
     }
+
     if (which == MIN_KEYCODE_DEF) {
         if ((info->explicitMax > 0) && (info->explicitMax < tmp.uval)) {
-            ERROR
-                ("Minimum key code (%d) must be <= maximum key code (%d)\n",
-                tmp.uval, info->explicitMax);
-            ACTION("Minimum key code value not changed\n");
+            log_err(info->keymap->ctx,
+                    "Minimum key code (%d) must be <= maximum key code (%d); "
+                    "Minimum key code value not changed\n",
+                    tmp.uval, info->explicitMax);
             goto err_out;
         }
         if ((info->computedMax > 0) && (info->computedMin < tmp.uval)) {
-            ERROR
-                ("Minimum key code (%d) must be <= lowest defined key (%d)\n",
-                tmp.uval, info->computedMin);
-            ACTION("Minimum key code value not changed\n");
+            log_err(info->keymap->ctx,
+                    "Minimum key code (%d) must be <= lowest defined key (%d); "
+                    "Minimum key code value not changed\n",
+                    tmp.uval, info->computedMin);
             goto err_out;
         }
         info->explicitMin = tmp.uval;
     }
+
     if (which == MAX_KEYCODE_DEF) {
         if ((info->explicitMin > 0) && (info->explicitMin > tmp.uval)) {
-            ERROR("Maximum code (%d) must be >= minimum key code (%d)\n",
-                  tmp.uval, info->explicitMin);
-            ACTION("Maximum code value not changed\n");
+            log_err(info->keymap->ctx,
+                    "Maximum code (%d) must be >= minimum key code (%d); "
+                    "Maximum code value not changed\n",
+                    tmp.uval, info->explicitMin);
             goto err_out;
         }
         if ((info->computedMax > 0) && (info->computedMax > tmp.uval)) {
-            ERROR
-                ("Maximum code (%d) must be >= highest defined key (%d)\n",
-                tmp.uval, info->computedMax);
-            ACTION("Maximum code value not changed\n");
+            log_err(info->keymap->ctx,
+                    "Maximum code (%d) must be >= highest defined key (%d); "
+                    "Maximum code value not changed\n",
+                    tmp.uval, info->computedMax);
             goto err_out;
         }
         info->explicitMax = tmp.uval;
@@ -683,8 +706,9 @@ HandleIndicatorNameDef(KeyNamesInfo *info, IndicatorNameDef *def,
 
     if ((def->ndx < 1) || (def->ndx > XkbNumIndicators)) {
         info->errorCount++;
-        ERROR("Name specified for illegal indicator index %d\n", def->ndx);
-        ACTION("Ignored\n");
+        log_err(info->keymap->ctx,
+                "Name specified for illegal indicator index %d\n; Ignored\n",
+                def->ndx);
         return false;
     }
     InitIndicatorNameInfo(&ii, info);
@@ -750,24 +774,23 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
             break;
         case StmtInterpDef:
         case StmtVModDef:
-            ERROR("Keycode files may define key and indicator names only\n");
-            ACTION("Ignoring definition of %s\n",
-                   ((stmt->stmtType ==
-                     StmtInterpDef) ? "a symbol interpretation" :
-                    "virtual modifiers"));
+            log_err(info->keymap->ctx,
+                    "Keycode files may define key and indicator names only; "
+                    "Ignoring definition of %s\n",
+                    (stmt->stmtType == StmtInterpDef ?
+                     "a symbol interpretation" : "virtual modifiers"));
             info->errorCount++;
             break;
         default:
-            WSGO("Unexpected statement type %d in HandleKeycodesFile\n",
-                 stmt->stmtType);
+            log_wsgo(info->keymap->ctx,
+                     "Unexpected statement type %d in HandleKeycodesFile\n",
+                     stmt->stmtType);
             break;
         }
         stmt = stmt->next;
         if (info->errorCount > 10) {
-#ifdef NOISY
-            ERROR("Too many errors\n");
-#endif
-            ACTION("Abandoning keycodes file \"%s\"\n", file->topName);
+            log_err(info->keymap->ctx, "Abandoning keycodes file \"%s\"\n",
+                    file->topName);
             break;
         }
     }
@@ -792,12 +815,11 @@ ApplyAliases(KeyNamesInfo *info)
         lname = KeyNameToLong(alias->real);
         key = FindNamedKey(keymap, lname, false, CreateKeyNames(keymap), 0);
         if (!key) {
-            if (warningLevel > 4) {
-                WARN("Attempt to alias %s to non-existent key %s\n",
-                     XkbcKeyNameText(alias->alias),
-                     XkbcKeyNameText(alias->real));
-                ACTION("Ignored\n");
-            }
+            log_lvl(info->keymap->ctx, 5,
+                    "Attempt to alias %s to non-existent key %s; "
+                    "Ignored\n",
+                    XkbcKeyNameText(alias->alias),
+                    XkbcKeyNameText(alias->real));
             alias->alias[0] = '\0';
             continue;
         }
@@ -805,12 +827,11 @@ ApplyAliases(KeyNamesInfo *info)
         lname = KeyNameToLong(alias->alias);
         key = FindNamedKey(keymap, lname, false, false, 0);
         if (key) {
-            if (warningLevel > 4) {
-                WARN("Attempt to create alias with the name of a real key\n");
-                ACTION("Alias \"%s = %s\" ignored\n",
-                       XkbcKeyNameText(alias->alias),
-                       XkbcKeyNameText(alias->real));
-            }
+            log_lvl(info->keymap->ctx, 5,
+                    "Attempt to create alias with the name of a real key; "
+                    "Alias \"%s = %s\" ignored\n",
+                    XkbcKeyNameText(alias->alias),
+                    XkbcKeyNameText(alias->real));
             alias->alias[0] = '\0';
             continue;
         }
