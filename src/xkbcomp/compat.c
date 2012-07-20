@@ -112,33 +112,33 @@ siText(SymInterpInfo * si, CompatInfo * info)
 }
 
 static inline bool
-ReportSINotArray(SymInterpInfo *si, const char *field, CompatInfo *info)
+ReportSINotArray(CompatInfo *info, SymInterpInfo *si, const char *field)
 {
     return ReportNotArray("symbol interpretation", field, siText(si, info));
 }
 
 static inline bool
-ReportSIBadType(SymInterpInfo *si, const char *field, const char *wanted,
-                CompatInfo *info)
+ReportSIBadType(CompatInfo *info, SymInterpInfo *si, const char *field,
+                const char *wanted)
 {
     return ReportBadType("symbol interpretation", field, siText(si, info),
                          wanted);
 }
 
 static inline bool
-ReportIndicatorBadType(struct xkb_keymap *keymap, LEDInfo *led,
+ReportIndicatorBadType(CompatInfo *info, LEDInfo *led,
                        const char *field, const char *wanted)
 {
     return ReportBadType("indicator map", field,
-                         xkb_atom_text(keymap->ctx, led->name), wanted);
+                         xkb_atom_text(info->keymap->ctx, led->name), wanted);
 }
 
 static inline bool
-ReportIndicatorNotArray(struct xkb_keymap *keymap, LEDInfo *led,
+ReportIndicatorNotArray(CompatInfo *info, LEDInfo *led,
                         const char *field)
 {
     return ReportNotArray("indicator map", field,
-                          xkb_atom_text(keymap->ctx, led->name));
+                          xkb_atom_text(info->keymap->ctx, led->name));
 }
 
 static void
@@ -183,12 +183,13 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id)
 }
 
 static void
-ClearCompatInfo(CompatInfo *info, struct xkb_keymap *keymap)
+ClearCompatInfo(CompatInfo *info)
 {
     unsigned int i;
     ActionInfo *next_act;
     SymInterpInfo *si, *next_si;
     LEDInfo *led, *next_led;
+    struct xkb_keymap *keymap = info->keymap;
 
     free(info->name);
     info->name = NULL;
@@ -212,6 +213,7 @@ ClearCompatInfo(CompatInfo *info, struct xkb_keymap *keymap)
         free(info->act);
         info->act = next_act;
     }
+    info->keymap = NULL;
     ClearVModInfo(&info->vmods, keymap);
 }
 
@@ -391,10 +393,11 @@ ResolveStateAndPredicate(ExprDef * expr,
 /***====================================================================***/
 
 static bool
-AddIndicatorMap(struct xkb_keymap *keymap, CompatInfo *info, LEDInfo *new)
+AddIndicatorMap(CompatInfo *info, LEDInfo *new)
 {
     LEDInfo *old;
     unsigned collide;
+    struct xkb_context *ctx = info->keymap->ctx;
 
     list_foreach(old, &info->leds, entry) {
         if (old->name == new->name) {
@@ -413,7 +416,7 @@ AddIndicatorMap(struct xkb_keymap *keymap, CompatInfo *info, LEDInfo *new)
                 if (((old->file_id == new->file_id)
                      && (warningLevel > 0)) || (warningLevel > 9)) {
                     WARN("Map for indicator %s redefined\n",
-                          xkb_atom_text(keymap->ctx, old->name));
+                          xkb_atom_text(ctx, old->name));
                     ACTION("Earlier definition ignored\n");
                 }
                 *old = *new;
@@ -466,7 +469,7 @@ AddIndicatorMap(struct xkb_keymap *keymap, CompatInfo *info, LEDInfo *new)
 
             if (collide) {
                 WARN("Map for indicator %s redefined\n",
-                     xkb_atom_text(keymap->ctx, old->name));
+                     xkb_atom_text(ctx, old->name));
                 ACTION("Using %s definition for duplicate fields\n",
                         (new->merge == MERGE_AUGMENT ? "first" : "last"));
             }
@@ -480,7 +483,7 @@ AddIndicatorMap(struct xkb_keymap *keymap, CompatInfo *info, LEDInfo *new)
     if (!old) {
         WSGO("Couldn't allocate indicator map\n");
         ACTION("Map for indicator %s not compiled\n",
-               xkb_atom_text(keymap->ctx, new->name));
+               xkb_atom_text(ctx, new->name));
         return false;
     }
 
@@ -525,25 +528,22 @@ MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from,
 
     list_foreach_safe(led, next_led, &from->leds, entry) {
         led->merge = (merge == MERGE_DEFAULT ? led->merge : merge);
-        if (!AddIndicatorMap(from->keymap, into, led))
+        if (!AddIndicatorMap(into, led))
             into->errorCount++;
     }
 }
 
 static void
-HandleCompatMapFile(XkbFile *file, struct xkb_keymap *keymap,
-                    enum merge_mode merge,
-                    CompatInfo *info);
+HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge);
 
 static bool
-HandleIncludeCompatMap(IncludeStmt *stmt, struct xkb_keymap *keymap,
-                       CompatInfo *info)
+HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *stmt)
 {
     enum merge_mode merge = MERGE_DEFAULT;
     XkbFile *rtrn;
     CompatInfo included, next_incl;
 
-    InitCompatInfo(&included, keymap, info->file_id);
+    InitCompatInfo(&included, info->keymap, info->file_id);
     if (stmt->stmt) {
         free(included.name);
         included.name = stmt->stmt;
@@ -551,14 +551,14 @@ HandleIncludeCompatMap(IncludeStmt *stmt, struct xkb_keymap *keymap,
     }
 
     for (; stmt; stmt = stmt->next) {
-        if (!ProcessIncludeFile(keymap->ctx, stmt, FILE_TYPE_COMPAT,
+        if (!ProcessIncludeFile(info->keymap->ctx, stmt, FILE_TYPE_COMPAT,
                                 &rtrn, &merge)) {
             info->errorCount += 10;
-            ClearCompatInfo(&included, keymap);
+            ClearCompatInfo(&included);
             return false;
         }
 
-        InitCompatInfo(&next_incl, keymap, rtrn->id);
+        InitCompatInfo(&next_incl, info->keymap, rtrn->id);
         next_incl.file_id = rtrn->id;
         next_incl.dflt = info->dflt;
         next_incl.dflt.file_id = rtrn->id;
@@ -567,18 +567,18 @@ HandleIncludeCompatMap(IncludeStmt *stmt, struct xkb_keymap *keymap,
         next_incl.ledDflt.merge = merge;
         next_incl.act = info->act;
 
-        HandleCompatMapFile(rtrn, keymap, MERGE_OVERRIDE, &next_incl);
+        HandleCompatMapFile(&next_incl, rtrn, MERGE_OVERRIDE);
 
         MergeIncludedCompatMaps(&included, &next_incl, merge);
         if (info->act)
             next_incl.act = NULL;
 
-        ClearCompatInfo(&next_incl, keymap);
+        ClearCompatInfo(&next_incl);
         FreeXKBFile(rtrn);
     }
 
     MergeIncludedCompatMaps(info, &included, merge);
-    ClearCompatInfo(&included, keymap);
+    ClearCompatInfo(&included);
 
     return (info->errorCount == 0);
 }
@@ -592,34 +592,36 @@ static const LookupEntry useModMapValues[] = {
 };
 
 static int
-SetInterpField(SymInterpInfo *si, struct xkb_keymap *keymap, char *field,
-               ExprDef *arrayNdx, ExprDef *value, CompatInfo *info)
+SetInterpField(CompatInfo *info, SymInterpInfo *si, char *field,
+               ExprDef *arrayNdx, ExprDef *value)
 {
     int ok = 1;
     ExprResult tmp;
+    struct xkb_keymap *keymap = info->keymap;
 
     if (strcasecmp(field, "action") == 0) {
         if (arrayNdx != NULL)
-            return ReportSINotArray(si, field, info);
-        ok = HandleActionDef(value, keymap, &si->interp.act.any, info->act);
+            return ReportSINotArray(info, si, field);
+        ok = HandleActionDef(value, keymap, &si->interp.act.any,
+                             info->act);
         if (ok)
             si->defined |= _SI_Action;
     }
     else if ((strcasecmp(field, "virtualmodifier") == 0) ||
              (strcasecmp(field, "virtualmod") == 0)) {
         if (arrayNdx != NULL)
-            return ReportSINotArray(si, field, info);
+            return ReportSINotArray(info, si, field);
         ok = ResolveVirtualModifier(value, keymap, &tmp, &info->vmods);
         if (ok) {
             si->interp.virtual_mod = tmp.uval;
             si->defined |= _SI_VirtualMod;
         }
         else
-            return ReportSIBadType(si, field, "virtual modifier", info);
+            return ReportSIBadType(info, si, field, "virtual modifier");
     }
     else if (strcasecmp(field, "repeat") == 0) {
         if (arrayNdx != NULL)
-            return ReportSINotArray(si, field, info);
+            return ReportSINotArray(info, si, field);
         ok = ExprResolveBoolean(keymap->ctx, value, &tmp);
         if (ok) {
             if (tmp.uval)
@@ -629,11 +631,11 @@ SetInterpField(SymInterpInfo *si, struct xkb_keymap *keymap, char *field,
             si->defined |= _SI_AutoRepeat;
         }
         else
-            return ReportSIBadType(si, field, "boolean", info);
+            return ReportSIBadType(info, si, field, "boolean");
     }
     else if (strcasecmp(field, "locking") == 0) {
         if (arrayNdx != NULL)
-            return ReportSINotArray(si, field, info);
+            return ReportSINotArray(info, si, field);
         ok = ExprResolveBoolean(keymap->ctx, value, &tmp);
         if (ok) {
             if (tmp.uval)
@@ -643,12 +645,12 @@ SetInterpField(SymInterpInfo *si, struct xkb_keymap *keymap, char *field,
             si->defined |= _SI_LockingKey;
         }
         else
-            return ReportSIBadType(si, field, "boolean", info);
+            return ReportSIBadType(info, si, field, "boolean");
     }
     else if ((strcasecmp(field, "usemodmap") == 0) ||
              (strcasecmp(field, "usemodmapmods") == 0)) {
         if (arrayNdx != NULL)
-            return ReportSINotArray(si, field, info);
+            return ReportSINotArray(info, si, field);
         ok = ExprResolveEnum(keymap->ctx, value, &tmp, useModMapValues);
         if (ok) {
             if (tmp.uval)
@@ -658,7 +660,7 @@ SetInterpField(SymInterpInfo *si, struct xkb_keymap *keymap, char *field,
             si->defined |= _SI_LevelOneOnly;
         }
         else
-            return ReportSIBadType(si, field, "level specification", info);
+            return ReportSIBadType(info, si, field, "level specification");
     }
     else {
         ok = ReportBadField("symbol interpretation", field, siText(si, info));
@@ -701,18 +703,19 @@ static const LookupEntry groupNames[] = {
 };
 
 static int
-SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
+SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
                      char *field, ExprDef *arrayNdx, ExprDef *value)
 {
     ExprResult rtrn;
     bool ok = true;
+    struct xkb_keymap *keymap = info->keymap;
 
     if (strcasecmp(field, "modifiers") == 0 || strcasecmp(field, "mods") == 0) {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(keymap, led, field);
+            return ReportIndicatorNotArray(info, led, field);
 
         if (!ExprResolveVModMask(value, &rtrn, keymap))
-            return ReportIndicatorBadType(keymap, led, field, "modifier mask");
+            return ReportIndicatorBadType(info, led, field, "modifier mask");
 
         led->real_mods = rtrn.uval & 0xff;
         led->vmods = (rtrn.uval >> 8) & 0xff;
@@ -720,10 +723,10 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
     }
     else if (strcasecmp(field, "groups") == 0) {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(keymap, led, field);
+            return ReportIndicatorNotArray(info, led, field);
 
         if (!ExprResolveMask(keymap->ctx, value, &rtrn, groupNames))
-            return ReportIndicatorBadType(keymap, led, field, "group mask");
+            return ReportIndicatorBadType(info, led, field, "group mask");
 
         led->groups = rtrn.uval;
         led->defined |= _LED_Groups;
@@ -731,10 +734,10 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
     else if (strcasecmp(field, "controls") == 0 ||
              strcasecmp(field, "ctrls") == 0) {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(keymap, led, field);
+            return ReportIndicatorNotArray(info, led, field);
 
         if (!ExprResolveMask(keymap->ctx, value, &rtrn, ctrlNames))
-            return ReportIndicatorBadType(keymap, led, field,
+            return ReportIndicatorBadType(info, led, field,
                                           "controls mask");
 
         led->ctrls = rtrn.uval;
@@ -742,10 +745,10 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
     }
     else if (strcasecmp(field, "allowexplicit") == 0) {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(keymap, led, field);
+            return ReportIndicatorNotArray(info, led, field);
 
         if (!ExprResolveBoolean(keymap->ctx, value, &rtrn))
-            return ReportIndicatorBadType(keymap, led, field, "boolean");
+            return ReportIndicatorBadType(info, led, field, "boolean");
 
         if (rtrn.uval)
             led->flags &= ~XkbIM_NoExplicit;
@@ -756,20 +759,20 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
     else if (strcasecmp(field, "whichmodstate") == 0 ||
              strcasecmp(field, "whichmodifierstate") == 0) {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(keymap, led, field);
+            return ReportIndicatorNotArray(info, led, field);
 
         if (!ExprResolveMask(keymap->ctx, value, &rtrn, modComponentNames))
-            return ReportIndicatorBadType(keymap, led, field,
+            return ReportIndicatorBadType(info, led, field,
                                           "mask of modifier state components");
 
         led->which_mods = rtrn.uval;
     }
     else if (strcasecmp(field, "whichgroupstate") == 0) {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(keymap, led, field);
+            return ReportIndicatorNotArray(info, led, field);
 
         if (!ExprResolveMask(keymap->ctx, value, &rtrn, groupComponentNames))
-            return ReportIndicatorBadType(keymap, led, field,
+            return ReportIndicatorBadType(info, led, field,
                                           "mask of group state components");
 
         led->which_groups = rtrn.uval;
@@ -781,10 +784,10 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
              strcasecmp(field, "indicatordriveskbd") == 0 ||
              strcasecmp(field, "indicatordriveskeyboard") == 0) {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(keymap, led, field);
+            return ReportIndicatorNotArray(info, led, field);
 
         if (!ExprResolveBoolean(keymap->ctx, value, &rtrn))
-            return ReportIndicatorBadType(keymap, led, field, "boolean");
+            return ReportIndicatorBadType(info, led, field, "boolean");
 
         if (rtrn.uval)
             led->flags |= XkbIM_LEDDrivesKB;
@@ -794,10 +797,10 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
     }
     else if (strcasecmp(field, "index") == 0) {
         if (arrayNdx != NULL)
-            return ReportIndicatorNotArray(keymap, led, field);
+            return ReportIndicatorNotArray(info, led, field);
 
         if (!ExprResolveInteger(keymap->ctx, value, &rtrn))
-            return ReportIndicatorBadType(keymap, led, field,
+            return ReportIndicatorBadType(info, led, field,
                                           "indicator index");
 
         if (rtrn.uval < 1 || rtrn.uval > 32) {
@@ -822,31 +825,29 @@ SetIndicatorMapField(LEDInfo *led, struct xkb_keymap *keymap,
 }
 
 static int
-HandleInterpVar(VarDef * stmt, struct xkb_keymap *keymap, CompatInfo * info)
+HandleInterpVar(CompatInfo *info, VarDef *stmt)
 {
     ExprResult elem, field;
     ExprDef *ndx;
     int ret;
 
-    if (ExprResolveLhs(keymap, stmt->name, &elem, &field, &ndx) == 0)
+    if (ExprResolveLhs(info->keymap, stmt->name, &elem, &field, &ndx) == 0)
         ret = 0;               /* internal error, already reported */
     else if (elem.str && (strcasecmp(elem.str, "interpret") == 0))
-        ret = SetInterpField(&info->dflt, keymap, field.str, ndx, stmt->value,
-                             info);
+        ret = SetInterpField(info, &info->dflt, field.str, ndx, stmt->value);
     else if (elem.str && (strcasecmp(elem.str, "indicator") == 0))
-        ret = SetIndicatorMapField(&info->ledDflt, keymap, field.str, ndx,
+        ret = SetIndicatorMapField(info, &info->ledDflt, field.str, ndx,
                                    stmt->value);
     else
-        ret = SetActionField(keymap, elem.str, field.str, ndx, stmt->value,
-                             &info->act);
+        ret = SetActionField(info->keymap, elem.str, field.str, ndx,
+                             stmt->value, &info->act);
     free(elem.str);
     free(field.str);
     return ret;
 }
 
 static int
-HandleInterpBody(VarDef *def, struct xkb_keymap *keymap, SymInterpInfo *si,
-                 CompatInfo *info)
+HandleInterpBody(CompatInfo *info, VarDef *def, SymInterpInfo *si)
 {
     int ok = 1;
     ExprResult tmp, field;
@@ -854,13 +855,12 @@ HandleInterpBody(VarDef *def, struct xkb_keymap *keymap, SymInterpInfo *si,
 
     for (; def != NULL; def = (VarDef *) def->common.next) {
         if ((def->name) && (def->name->type == ExprFieldRef)) {
-            ok = HandleInterpVar(def, keymap, info);
+            ok = HandleInterpVar(info, def);
             continue;
         }
-        ok = ExprResolveLhs(keymap, def->name, &tmp, &field, &arrayNdx);
+        ok = ExprResolveLhs(info->keymap, def->name, &tmp, &field, &arrayNdx);
         if (ok) {
-            ok = SetInterpField(si, keymap, field.str, arrayNdx, def->value,
-                                info);
+            ok = SetInterpField(info, si, field.str, arrayNdx, def->value);
             free(field.str);
         }
     }
@@ -868,9 +868,7 @@ HandleInterpBody(VarDef *def, struct xkb_keymap *keymap, SymInterpInfo *si,
 }
 
 static int
-HandleInterpDef(InterpDef *def, struct xkb_keymap *keymap,
-                enum merge_mode merge,
-                CompatInfo *info)
+HandleInterpDef(CompatInfo *info, InterpDef *def, enum merge_mode merge)
 {
     unsigned pred, mods;
     SymInterpInfo si;
@@ -892,7 +890,7 @@ HandleInterpDef(InterpDef *def, struct xkb_keymap *keymap,
     }
     si.interp.match = pred & XkbSI_OpMask;
     si.interp.mods = mods;
-    if (!HandleInterpBody(def->def, keymap, &si, info)) {
+    if (!HandleInterpBody(info, def->def, &si)) {
         info->errorCount++;
         return false;
     }
@@ -905,8 +903,8 @@ HandleInterpDef(InterpDef *def, struct xkb_keymap *keymap,
 }
 
 static int
-HandleGroupCompatDef(GroupCompatDef *def, struct xkb_keymap *keymap,
-                     enum merge_mode merge, CompatInfo *info)
+HandleGroupCompatDef(CompatInfo *info, GroupCompatDef *def,
+                     enum merge_mode merge)
 {
     ExprResult val;
     GroupCompatInfo tmp;
@@ -921,7 +919,7 @@ HandleGroupCompatDef(GroupCompatDef *def, struct xkb_keymap *keymap,
     }
     tmp.file_id = info->file_id;
     tmp.merge = merge;
-    if (!ExprResolveVModMask(def->def, &val, keymap)) {
+    if (!ExprResolveVModMask(def->def, &val, info->keymap)) {
         ERROR("Expected a modifier mask in group compatibility definition\n");
         ACTION("Ignoring illegal compatibility map for group %u\n",
                def->group);
@@ -934,8 +932,8 @@ HandleGroupCompatDef(GroupCompatDef *def, struct xkb_keymap *keymap,
 }
 
 static bool
-HandleIndicatorMapDef(IndicatorMapDef *def, struct xkb_keymap *keymap,
-                      enum merge_mode merge, CompatInfo *info)
+HandleIndicatorMapDef(CompatInfo *info, IndicatorMapDef *def,
+                      enum merge_mode merge)
 {
     LEDInfo led;
     VarDef *var;
@@ -952,7 +950,8 @@ HandleIndicatorMapDef(IndicatorMapDef *def, struct xkb_keymap *keymap,
     for (var = def->body; var != NULL; var = (VarDef *) var->common.next) {
         ExprResult elem, field;
         ExprDef *arrayNdx;
-        if (!ExprResolveLhs(keymap, var->name, &elem, &field, &arrayNdx)) {
+        if (!ExprResolveLhs(info->keymap, var->name, &elem, &field,
+                            &arrayNdx)) {
             ok = false;
             continue;
         }
@@ -964,7 +963,7 @@ HandleIndicatorMapDef(IndicatorMapDef *def, struct xkb_keymap *keymap,
             ok = false;
         }
         else {
-            ok = SetIndicatorMapField(&led, keymap, field.str, arrayNdx,
+            ok = SetIndicatorMapField(info, &led, field.str, arrayNdx,
                                       var->value) && ok;
         }
         free(elem.str);
@@ -972,15 +971,13 @@ HandleIndicatorMapDef(IndicatorMapDef *def, struct xkb_keymap *keymap,
     }
 
     if (ok)
-        return AddIndicatorMap(keymap, info, &led);
+        return AddIndicatorMap(info, &led);
 
     return false;
 }
 
 static void
-HandleCompatMapFile(XkbFile *file, struct xkb_keymap *keymap,
-                    enum merge_mode merge,
-                    CompatInfo *info)
+HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
 {
     ParseCommon *stmt;
 
@@ -993,29 +990,28 @@ HandleCompatMapFile(XkbFile *file, struct xkb_keymap *keymap,
     {
         switch (stmt->stmtType) {
         case StmtInclude:
-            if (!HandleIncludeCompatMap((IncludeStmt *) stmt, keymap, info))
+            if (!HandleIncludeCompatMap(info, (IncludeStmt *) stmt))
                 info->errorCount++;
             break;
         case StmtInterpDef:
-            if (!HandleInterpDef((InterpDef *) stmt, keymap, merge, info))
+            if (!HandleInterpDef(info, (InterpDef *) stmt, merge))
                 info->errorCount++;
             break;
         case StmtGroupCompatDef:
-            if (!HandleGroupCompatDef
-                    ((GroupCompatDef *) stmt, keymap, merge, info))
+            if (!HandleGroupCompatDef(info, (GroupCompatDef *) stmt, merge))
                 info->errorCount++;
             break;
         case StmtIndicatorMapDef:
-            if (!HandleIndicatorMapDef((IndicatorMapDef *) stmt, keymap,
-                                       merge, info))
+            if (!HandleIndicatorMapDef(info, (IndicatorMapDef *) stmt, merge))
                 info->errorCount++;
             break;
         case StmtVarDef:
-            if (!HandleInterpVar((VarDef *) stmt, keymap, info))
+            if (!HandleInterpVar(info, (VarDef *) stmt))
                 info->errorCount++;
             break;
         case StmtVModDef:
-            if (!HandleVModDef((VModDef *) stmt, keymap, merge, &info->vmods))
+            if (!HandleVModDef((VModDef *) stmt, info->keymap, merge,
+                               &info->vmods))
                 info->errorCount++;
             break;
         case StmtKeycodeDef:
@@ -1030,9 +1026,6 @@ HandleCompatMapFile(XkbFile *file, struct xkb_keymap *keymap,
         }
         stmt = stmt->next;
         if (info->errorCount > 10) {
-#ifdef NOISY
-            ERROR("Too many errors\n");
-#endif
             ACTION("Abandoning compatibility map \"%s\"\n", file->topName);
             break;
         }
@@ -1040,8 +1033,7 @@ HandleCompatMapFile(XkbFile *file, struct xkb_keymap *keymap,
 }
 
 static void
-CopyInterps(CompatInfo *info, struct xkb_keymap *keymap,
-            bool needSymbol, unsigned pred)
+CopyInterps(CompatInfo *info, bool needSymbol, unsigned pred)
 {
     SymInterpInfo *si;
 
@@ -1051,16 +1043,17 @@ CopyInterps(CompatInfo *info, struct xkb_keymap *keymap,
             (!needSymbol && si->interp.sym != XKB_KEY_NoSymbol))
             continue;
 
-        darray_append(keymap->sym_interpret, si->interp);
+        darray_append(info->keymap->sym_interpret, si->interp);
     }
 }
 
 static void
-BindIndicators(struct xkb_keymap *keymap, struct list *unbound_leds)
+BindIndicators(CompatInfo *info, struct list *unbound_leds)
 {
     int i;
     LEDInfo *led, *next_led;
     struct xkb_indicator_map *map;
+    struct xkb_keymap *keymap = info->keymap;
 
     list_foreach(led, unbound_leds, entry) {
         if (led->indicator == _LED_NotBound) {
@@ -1127,11 +1120,12 @@ BindIndicators(struct xkb_keymap *keymap, struct list *unbound_leds)
 }
 
 static bool
-CopyIndicatorMapDefs(struct xkb_keymap *keymap, CompatInfo *info)
+CopyIndicatorMapDefs(CompatInfo *info)
 {
     LEDInfo *led, *next_led;
     struct list unbound_leds;
     struct xkb_indicator_map *im;
+    struct xkb_keymap *keymap = info->keymap;
 
     list_init(&unbound_leds);
 
@@ -1163,7 +1157,7 @@ CopyIndicatorMapDefs(struct xkb_keymap *keymap, CompatInfo *info)
     }
     list_init(&info->leds);
 
-    BindIndicators(keymap, &unbound_leds);
+    BindIndicators(info, &unbound_leds);
 
     return true;
 }
@@ -1180,7 +1174,7 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
     info.dflt.merge = merge;
     info.ledDflt.merge = merge;
 
-    HandleCompatMapFile(file, keymap, merge, &info);
+    HandleCompatMapFile(&info, file, merge);
 
     if (info.errorCount != 0)
         goto err_info;
@@ -1192,14 +1186,14 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
         keymap->compat_section_name = strdup(info.name);
 
     if (info.nInterps > 0) {
-        CopyInterps(&info, keymap, true, XkbSI_Exactly);
-        CopyInterps(&info, keymap, true, XkbSI_AllOf | XkbSI_NoneOf);
-        CopyInterps(&info, keymap, true, XkbSI_AnyOf);
-        CopyInterps(&info, keymap, true, XkbSI_AnyOfOrNone);
-        CopyInterps(&info, keymap, false, XkbSI_Exactly);
-        CopyInterps(&info, keymap, false, XkbSI_AllOf | XkbSI_NoneOf);
-        CopyInterps(&info, keymap, false, XkbSI_AnyOf);
-        CopyInterps(&info, keymap, false, XkbSI_AnyOfOrNone);
+        CopyInterps(&info, true, XkbSI_Exactly);
+        CopyInterps(&info, true, XkbSI_AllOf | XkbSI_NoneOf);
+        CopyInterps(&info, true, XkbSI_AnyOf);
+        CopyInterps(&info, true, XkbSI_AnyOfOrNone);
+        CopyInterps(&info, false, XkbSI_Exactly);
+        CopyInterps(&info, false, XkbSI_AllOf | XkbSI_NoneOf);
+        CopyInterps(&info, false, XkbSI_AnyOf);
+        CopyInterps(&info, false, XkbSI_AnyOfOrNone);
     }
 
     for (i = 0, gcm = &info.groupCompat[0]; i < XkbNumKbdGroups;
@@ -1211,14 +1205,14 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
         }
     }
 
-    if (!CopyIndicatorMapDefs(keymap, &info))
+    if (!CopyIndicatorMapDefs(&info))
         info.errorCount++;
 
-    ClearCompatInfo(&info, keymap);
+    ClearCompatInfo(&info);
     return true;
 
 err_info:
-    ClearCompatInfo(&info, keymap);
+    ClearCompatInfo(&info);
     return false;
 }
 
@@ -1377,7 +1371,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
             /* Infer default key behaviours from the base level. */
             if (group == 0 && level == 0) {
                 if (!(key->explicit & XkbExplicitAutoRepeatMask) &&
-                    (!interp || interp->flags & XkbSI_AutoRepeat))
+                    (!interp || (interp->flags & XkbSI_AutoRepeat)))
                     key->repeats = true;
                 if (!(key->explicit & XkbExplicitBehaviorMask) &&
                     interp && (interp->flags & XkbSI_LockingKey))
