@@ -824,7 +824,8 @@ AddSymbolsToKey(KeyInfo *keyi, struct xkb_keymap *keymap,
 {
     xkb_group_index_t ndx;
     size_t nSyms, nLevels;
-    size_t i, j;
+    size_t i;
+    int j;
 
     if (!GetGroupIndex(keyi, keymap, arrayNdx, SYMBOLS, &ndx))
         return false;
@@ -1544,7 +1545,7 @@ PrepareKeyDef(KeyInfo *keyi)
 
     defined = keyi->symsDefined | keyi->actsDefined | keyi->typesDefined;
     /* get highest group number */
-    for (i = XkbNumKbdGroups - 1; i >= 0; i--) {
+    for (i = XkbNumKbdGroups - 1; i > 0; i--) {
         if (defined & (1 << i))
             break;
     }

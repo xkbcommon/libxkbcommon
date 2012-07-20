@@ -28,6 +28,8 @@
 #include "xkbcomp-priv.h"
 #include "parseutils.h"
 
+#pragma GCC diagnostic ignored "-Wredundant-decls"
+
 extern int yylex(union YYSTYPE *val, struct YYLTYPE *loc, void *scanner);
 
 #define scanner param->scanner

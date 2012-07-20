@@ -30,13 +30,14 @@
 #include <stdio.h>
 
 #include "xkbcomp-priv.h"
-#include "parser.h"
 
 struct parser_param {
     struct xkb_context *ctx;
     void *scanner;
     XkbFile *rtrn;
 };
+
+#include "parser.h"
 
 struct scanner_extra {
     char *scanFile;

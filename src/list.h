@@ -293,7 +293,7 @@ list_replace(struct list *old, struct list *new)
 
 #define __container_of(ptr, sample, member)				\
     (void *)((char *)(ptr)						\
-	     - ((char *)&(sample)->member - (char *)(sample)))
+	     - offsetof(__typeof(*sample), member))
 /**
  * Loop through the list given by head and set pos to struct in the list.
  *

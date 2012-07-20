@@ -30,6 +30,9 @@
 #include "xkbcomp-priv.h"
 #include "parseutils.h"
 
+#pragma GCC diagnostic ignored "-Wredundant-decls"
+#pragma GCC diagnostic ignored "-Wmissing-noreturn"
+
 extern int yyparse(struct parser_param *param);
 
 #define YY_USER_ACTION {                \
