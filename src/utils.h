@@ -42,9 +42,6 @@
  */
 #define UNCONSTIFY(const_ptr)  ((void *) (uintptr_t) (const_ptr))
 
-#define uTypedAlloc(t)         ((t *) malloc(sizeof(t)))
-#define uTypedCalloc(n, t)     ((t *) calloc((n), sizeof(t)))
-
 #define uDupString(s)          ((s) ? strdup(s) : NULL)
 #define uStringText(s)         ((s) == NULL ? "<NullString>" : (s))
 #define uStrCasePrefix(s1, s2) (strncasecmp((s1), (s2), strlen(s1)) == 0)

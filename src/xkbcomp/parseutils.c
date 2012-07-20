@@ -49,17 +49,15 @@ ExprDef *
 ExprCreate(unsigned op, unsigned type)
 {
     ExprDef *expr;
-    expr = uTypedAlloc(ExprDef);
-    if (expr) {
-        expr->common.stmtType = StmtExpr;
-        expr->common.next = NULL;
-        expr->op = op;
-        expr->type = type;
-    }
-    else {
+
+    expr = malloc(sizeof(*expr));
+    if (!expr)
         FATAL("Couldn't allocate expression in parser\n");
-        /* NOTREACHED */
-    }
+
+    expr->common.stmtType = StmtExpr;
+    expr->common.next = NULL;
+    expr->op = op;
+    expr->type = type;
     return expr;
 }
 
@@ -67,18 +65,15 @@ ExprDef *
 ExprCreateUnary(unsigned op, unsigned type, ExprDef * child)
 {
     ExprDef *expr;
-    expr = uTypedAlloc(ExprDef);
-    if (expr) {
-        expr->common.stmtType = StmtExpr;
-        expr->common.next = NULL;
-        expr->op = op;
-        expr->type = type;
-        expr->value.child = child;
-    }
-    else {
+    expr = malloc(sizeof(*expr));
+    if (!expr)
         FATAL("Couldn't allocate expression in parser\n");
-        /* NOTREACHED */
-    }
+
+    expr->common.stmtType = StmtExpr;
+    expr->common.next = NULL;
+    expr->op = op;
+    expr->type = type;
+    expr->value.child = child;
     return expr;
 }
 
@@ -86,24 +81,22 @@ ExprDef *
 ExprCreateBinary(unsigned op, ExprDef * left, ExprDef * right)
 {
     ExprDef *expr;
-    expr = uTypedAlloc(ExprDef);
-    if (expr) {
-        expr->common.stmtType = StmtExpr;
-        expr->common.next = NULL;
-        expr->op = op;
-        if ((op == OpAssign) || (left->type == TypeUnknown))
-            expr->type = right->type;
-        else if ((left->type == right->type) || (right->type == TypeUnknown))
-            expr->type = left->type;
-        else
-            expr->type = TypeUnknown;
-        expr->value.binary.left = left;
-        expr->value.binary.right = right;
-    }
-    else {
+
+    expr = malloc(sizeof(*expr));
+    if (!expr)
         FATAL("Couldn't allocate expression in parser\n");
-        /* NOTREACHED */
-    }
+
+    expr->common.stmtType = StmtExpr;
+    expr->common.next = NULL;
+    expr->op = op;
+    if ((op == OpAssign) || (left->type == TypeUnknown))
+        expr->type = right->type;
+    else if ((left->type == right->type) || (right->type == TypeUnknown))
+        expr->type = left->type;
+    else
+        expr->type = TypeUnknown;
+    expr->value.binary.left = left;
+    expr->value.binary.right = right;
     return expr;
 }
 
@@ -112,18 +105,15 @@ KeycodeCreate(const char *name, unsigned long value)
 {
     KeycodeDef *def;
 
-    def = uTypedAlloc(KeycodeDef);
-    if (def) {
-        def->common.stmtType = StmtKeycodeDef;
-        def->common.next = NULL;
-        strncpy(def->name, name, XkbKeyNameLength);
-        def->name[XkbKeyNameLength] = '\0';
-        def->value = value;
-    }
-    else {
+    def = malloc(sizeof(*def));
+    if (!def)
         FATAL("Couldn't allocate key name definition in parser\n");
-        /* NOTREACHED */
-    }
+
+    def->common.stmtType = StmtKeycodeDef;
+    def->common.next = NULL;
+    strncpy(def->name, name, XkbKeyNameLength);
+    def->name[XkbKeyNameLength] = '\0';
+    def->value = value;
     return def;
 }
 
@@ -132,19 +122,16 @@ KeyAliasCreate(const char *alias, const char *real)
 {
     KeyAliasDef *def;
 
-    def = uTypedAlloc(KeyAliasDef);
-    if (def) {
-        def->common.stmtType = StmtKeyAliasDef;
-        def->common.next = NULL;
-        strncpy(def->alias, alias, XkbKeyNameLength);
-        def->alias[XkbKeyNameLength] = '\0';
-        strncpy(def->real, real, XkbKeyNameLength);
-        def->real[XkbKeyNameLength] = '\0';
-    }
-    else {
+    def = malloc(sizeof(*def));
+    if (!def)
         FATAL("Couldn't allocate key alias definition in parser\n");
-        /* NOTREACHED */
-    }
+
+    def->common.stmtType = StmtKeyAliasDef;
+    def->common.next = NULL;
+    strncpy(def->alias, alias, XkbKeyNameLength);
+    def->alias[XkbKeyNameLength] = '\0';
+    strncpy(def->real, real, XkbKeyNameLength);
+    def->real[XkbKeyNameLength] = '\0';
     return def;
 }
 
@@ -152,17 +139,15 @@ VModDef *
 VModCreate(xkb_atom_t name, ExprDef * value)
 {
     VModDef *def;
-    def = uTypedAlloc(VModDef);
-    if (def) {
-        def->common.stmtType = StmtVModDef;
-        def->common.next = NULL;
-        def->name = name;
-        def->value = value;
-    }
-    else {
+
+    def = malloc(sizeof(*def));
+    if (!def)
         FATAL("Couldn't allocate variable definition in parser\n");
-        /* NOTREACHED */
-    }
+
+    def->common.stmtType = StmtVModDef;
+    def->common.next = NULL;
+    def->name = name;
+    def->value = value;
     return def;
 }
 
@@ -170,17 +155,14 @@ VarDef *
 VarCreate(ExprDef * name, ExprDef * value)
 {
     VarDef *def;
-    def = uTypedAlloc(VarDef);
-    if (def) {
-        def->common.stmtType = StmtVarDef;
-        def->common.next = NULL;
-        def->name = name;
-        def->value = value;
-    }
-    else {
+    def = malloc(sizeof(*def));
+    if (!def)
         FATAL("Couldn't allocate variable definition in parser\n");
-        /* NOTREACHED */
-    }
+
+    def->common.stmtType = StmtVarDef;
+    def->common.next = NULL;
+    def->name = name;
+    def->value = value;
     return def;
 }
 
@@ -201,17 +183,14 @@ InterpCreate(char *sym, ExprDef * match)
 {
     InterpDef *def;
 
-    def = uTypedAlloc(InterpDef);
-    if (def) {
-        def->common.stmtType = StmtInterpDef;
-        def->common.next = NULL;
-        def->sym = sym;
-        def->match = match;
-    }
-    else {
+    def = malloc(sizeof(*def));
+    if (!def)
         FATAL("Couldn't allocate interp definition in parser\n");
-        /* NOTREACHED */
-    }
+
+    def->common.stmtType = StmtInterpDef;
+    def->common.next = NULL;
+    def->sym = sym;
+    def->match = match;
     return def;
 }
 
@@ -220,18 +199,15 @@ KeyTypeCreate(xkb_atom_t name, VarDef * body)
 {
     KeyTypeDef *def;
 
-    def = uTypedAlloc(KeyTypeDef);
-    if (def) {
-        def->common.stmtType = StmtKeyTypeDef;
-        def->common.next = NULL;
-        def->merge = MERGE_DEFAULT;
-        def->name = name;
-        def->body = body;
-    }
-    else {
+    def = malloc(sizeof(*def));
+    if (!def)
         FATAL("Couldn't allocate key type definition in parser\n");
-        /* NOTREACHED */
-    }
+
+    def->common.stmtType = StmtKeyTypeDef;
+    def->common.next = NULL;
+    def->merge = MERGE_DEFAULT;
+    def->name = name;
+    def->body = body;
     return def;
 }
 
@@ -240,19 +216,16 @@ SymbolsCreate(const char *keyName, ExprDef *symbols)
 {
     SymbolsDef *def;
 
-    def = uTypedAlloc(SymbolsDef);
-    if (def) {
-        def->common.stmtType = StmtSymbolsDef;
-        def->common.next = NULL;
-        def->merge = MERGE_DEFAULT;
-        memset(def->keyName, 0, 5);
-        strncpy(def->keyName, keyName, 4);
-        def->symbols = symbols;
-    }
-    else {
+    def = malloc(sizeof(*def));
+    if (!def)
         FATAL("Couldn't allocate symbols definition in parser\n");
-        /* NOTREACHED */
-    }
+
+    def->common.stmtType = StmtSymbolsDef;
+    def->common.next = NULL;
+    def->merge = MERGE_DEFAULT;
+    memset(def->keyName, 0, 5);
+    strncpy(def->keyName, keyName, 4);
+    def->symbols = symbols;
     return def;
 }
 
@@ -261,18 +234,15 @@ GroupCompatCreate(int group, ExprDef * val)
 {
     GroupCompatDef *def;
 
-    def = uTypedAlloc(GroupCompatDef);
-    if (def) {
-        def->common.stmtType = StmtGroupCompatDef;
-        def->common.next = NULL;
-        def->merge = MERGE_DEFAULT;
-        def->group = group;
-        def->def = val;
-    }
-    else {
+    def = malloc(sizeof(*def));
+    if (!def)
         FATAL("Couldn't allocate group compat definition in parser\n");
-        /* NOTREACHED */
-    }
+
+    def->common.stmtType = StmtGroupCompatDef;
+    def->common.next = NULL;
+    def->merge = MERGE_DEFAULT;
+    def->group = group;
+    def->def = val;
     return def;
 }
 
@@ -281,18 +251,15 @@ ModMapCreate(uint32_t modifier, ExprDef * keys)
 {
     ModMapDef *def;
 
-    def = uTypedAlloc(ModMapDef);
-    if (def) {
-        def->common.stmtType = StmtModMapDef;
-        def->common.next = NULL;
-        def->merge = MERGE_DEFAULT;
-        def->modifier = modifier;
-        def->keys = keys;
-    }
-    else {
+    def = malloc(sizeof(*def));
+    if (!def)
         FATAL("Couldn't allocate mod mask definition in parser\n");
-        /* NOTREACHED */
-    }
+
+    def->common.stmtType = StmtModMapDef;
+    def->common.next = NULL;
+    def->merge = MERGE_DEFAULT;
+    def->modifier = modifier;
+    def->keys = keys;
     return def;
 }
 
@@ -301,18 +268,15 @@ IndicatorMapCreate(xkb_atom_t name, VarDef * body)
 {
     IndicatorMapDef *def;
 
-    def = uTypedAlloc(IndicatorMapDef);
-    if (def) {
-        def->common.stmtType = StmtIndicatorMapDef;
-        def->common.next = NULL;
-        def->merge = MERGE_DEFAULT;
-        def->name = name;
-        def->body = body;
-    }
-    else {
+    def = malloc(sizeof(*def));
+    if (!def)
         FATAL("Couldn't allocate indicator map definition in parser\n");
-        /* NOTREACHED */
-    }
+
+    def->common.stmtType = StmtIndicatorMapDef;
+    def->common.next = NULL;
+    def->merge = MERGE_DEFAULT;
+    def->name = name;
+    def->body = body;
     return def;
 }
 
@@ -321,19 +285,16 @@ IndicatorNameCreate(int ndx, ExprDef * name, bool virtual)
 {
     IndicatorNameDef *def;
 
-    def = uTypedAlloc(IndicatorNameDef);
-    if (def) {
-        def->common.stmtType = StmtIndicatorNameDef;
-        def->common.next = NULL;
-        def->merge = MERGE_DEFAULT;
-        def->ndx = ndx;
-        def->name = name;
-        def->virtual = virtual;
-    }
-    else {
+    def = malloc(sizeof(*def));
+    if (!def)
         FATAL("Couldn't allocate indicator index definition in parser\n");
-        /* NOTREACHED */
-    }
+
+    def->common.stmtType = StmtIndicatorNameDef;
+    def->common.next = NULL;
+    def->merge = MERGE_DEFAULT;
+    def->ndx = ndx;
+    def->name = name;
+    def->virtual = virtual;
     return def;
 }
 
@@ -342,17 +303,16 @@ ActionCreate(xkb_atom_t name, ExprDef * args)
 {
     ExprDef *act;
 
-    act = uTypedAlloc(ExprDef);
-    if (act) {
-        act->common.stmtType = StmtExpr;
-        act->common.next = NULL;
-        act->op = ExprActionDecl;
-        act->value.action.name = name;
-        act->value.action.args = args;
-        return act;
-    }
-    FATAL("Couldn't allocate ActionDef in parser\n");
-    return NULL;
+    act = malloc(sizeof(*act));
+    if (!act)
+        FATAL("Couldn't allocate ActionDef in parser\n");
+
+    act->common.stmtType = StmtExpr;
+    act->common.next = NULL;
+    act->op = ExprActionDecl;
+    act->value.action.name = name;
+    act->value.action.args = args;
+    return act;
 }
 
 ExprDef *
@@ -463,9 +423,9 @@ IncludeCreate(char *str, enum merge_mode merge)
             goto err;
 
         if (first == NULL) {
-            first = incl = uTypedAlloc(IncludeStmt);
+            first = incl = malloc(sizeof(*first));
         } else {
-            incl->next = uTypedAlloc(IncludeStmt);
+            incl->next = malloc(sizeof(*first));
             incl = incl->next;
         }
 
@@ -561,17 +521,17 @@ CreateXKBFile(struct xkb_context *ctx, enum xkb_file_type type, char *name,
 {
     XkbFile *file;
 
-    file = uTypedAlloc(XkbFile);
-    if (file) {
-        EnsureSafeMapName(name);
-        memset(file, 0, sizeof(XkbFile));
-        file->type = type;
-        file->topName = uDupString(name);
-        file->name = name;
-        file->defs = defs;
-        file->id = xkb_context_take_file_id(ctx);
-        file->flags = flags;
-    }
+    file = calloc(1, sizeof(*file));
+    if (!file)
+        return NULL;
+
+    EnsureSafeMapName(name);
+    file->type = type;
+    file->topName = name ? strdup(name) : NULL;
+    file->name = name;
+    file->defs = defs;
+    file->id = xkb_context_take_file_id(ctx);
+    file->flags = flags;
     return file;
 }
 

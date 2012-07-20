@@ -957,7 +957,8 @@ CopyDefToKeyType(struct xkb_keymap *keymap, struct xkb_key_type *type,
     type->num_levels = def->numLevels;
     memcpy(&type->map, &def->entries, sizeof(def->entries));
     if (!list_empty(&def->preserves)) {
-        type->preserve = uTypedCalloc(darray_size(type->map), struct xkb_mods);
+        type->preserve = calloc(darray_size(type->map),
+                                sizeof(*type->preserve));
         if (!type->preserve) {
             WARN("Couldn't allocate preserve array in CopyDefToKeyType\n");
             ACTION("Preserve setting for type %s lost\n",

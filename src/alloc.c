@@ -164,7 +164,7 @@ XkbcAllocKeyboard(struct xkb_context *ctx)
 {
     struct xkb_keymap *keymap;
 
-    keymap = uTypedCalloc(1, struct xkb_keymap);
+    keymap = calloc(1, sizeof(*keymap));
     if (!keymap)
         return NULL;
 

@@ -1131,11 +1131,12 @@ SetActionField(struct xkb_keymap *keymap,
     if (!actionsInitialized)
         ActionsInit(keymap->ctx);
 
-    new = uTypedAlloc(ActionInfo);
-    if (new == NULL) {
+    new = malloc(sizeof(*new));
+    if (!new) {
         WSGO("Couldn't allocate space for action default\n");
         return false;
     }
+
     if (strcasecmp(elem, "action") == 0)
         new->action = XkbSA_NoAction;
     else {
