@@ -757,7 +757,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(info, led, field);
 
-        if (!ExprResolveVModMask(value, &rtrn, keymap))
+        if (!ExprResolveVModMask(keymap, value, &rtrn))
             return ReportIndicatorBadType(info, led, field, "modifier mask");
 
         led->real_mods = rtrn.uval & 0xff;
@@ -968,7 +968,7 @@ HandleGroupCompatDef(CompatInfo *info, GroupCompatDef *def,
     }
     tmp.file_id = info->file_id;
     tmp.merge = merge;
-    if (!ExprResolveVModMask(def->def, &val, info->keymap)) {
+    if (!ExprResolveVModMask(info->keymap, def->def, &val)) {
         log_err(info->keymap->ctx,
                 "Expected a modifier mask in group compatibility definition; "
                 "Ignoring illegal compatibility map for group %u\n",

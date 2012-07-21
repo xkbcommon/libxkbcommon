@@ -1059,7 +1059,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, char *field,
     else if ((strcasecmp(field, "vmods") == 0) ||
              (strcasecmp(field, "virtualmods") == 0) ||
              (strcasecmp(field, "virtualmodifiers") == 0)) {
-        ok = ExprResolveVModMask(value, &tmp, info->keymap);
+        ok = ExprResolveVModMask(info->keymap, value, &tmp);
         if (ok) {
             keyi->vmodmap = (tmp.uval >> 8);
             keyi->defined |= _Key_VModMap;

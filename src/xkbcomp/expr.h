@@ -69,8 +69,8 @@ ExprResolveModMask(struct xkb_context *ctx, ExprDef *expr,
                    ExprResult *val_rtrn);
 
 extern int
-ExprResolveVModMask(ExprDef *expr, ExprResult *val_rtrn,
-                    struct xkb_keymap *keymap);
+ExprResolveVModMask(struct xkb_keymap *keymap, ExprDef *expr,
+                    ExprResult *val_rtrn);
 
 extern int
 ExprResolveBoolean(struct xkb_context *ctx, ExprDef *expr,

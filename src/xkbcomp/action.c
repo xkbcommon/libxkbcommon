@@ -255,7 +255,7 @@ CheckModifierField(struct xkb_keymap *keymap, unsigned action, ExprDef *value,
             return true;
         }
     }
-    if (!ExprResolveVModMask(value, &rtrn, keymap))
+    if (!ExprResolveVModMask(keymap, value, &rtrn))
         return ReportMismatch(keymap, action, F_Modifiers, "modifier mask");
     *mods_rtrn = rtrn.uval;
     *flags_inout &= ~XkbSA_UseModMapMods;

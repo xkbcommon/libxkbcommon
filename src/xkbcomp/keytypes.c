@@ -535,7 +535,7 @@ SetMapEntry(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(info, type, "map entry");
 
-    if (!ExprResolveVModMask(arrayNdx, &rtrn, info->keymap))
+    if (!ExprResolveVModMask(info->keymap, arrayNdx, &rtrn))
         return ReportTypeBadType(info, type, "map entry", "modifier mask");
 
     entry.mods.real_mods = rtrn.uval & 0xff;      /* modifiers < 512 */
@@ -576,7 +576,7 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(info, type, "preserve entry");
 
-    if (!ExprResolveVModMask(arrayNdx, &rtrn, info->keymap))
+    if (!ExprResolveVModMask(info->keymap, arrayNdx, &rtrn))
         return ReportTypeBadType(info, type, "preserve entry",
                                  "modifier mask");
 
@@ -597,7 +597,7 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
                 PreserveIndexTxt(info, &new));
     }
 
-    if (!ExprResolveVModMask(value, &rtrn, info->keymap)) {
+    if (!ExprResolveVModMask(info->keymap, value, &rtrn)) {
         log_err(info->keymap->ctx,
                 "Preserve value in a key type is not a modifier mask; "
                 "Ignoring preserve[%s] in type %s\n",
@@ -707,7 +707,7 @@ SetKeyTypeField(KeyTypesInfo *info, KeyTypeInfo *type,
                      "The modifiers field of a key type is not an array; "
                      "Illegal array subscript ignored\n");
         /* get modifier mask for current type */
-        if (!ExprResolveVModMask(value, &tmp, info->keymap)) {
+        if (!ExprResolveVModMask(info->keymap, value, &tmp)) {
             log_err(info->keymap->ctx,
                     "Key type mask field must be a modifier mask; "
                     "Key type definition ignored\n");
