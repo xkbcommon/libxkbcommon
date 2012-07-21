@@ -31,7 +31,7 @@
 #include "path.h"
 
 static bool
-input_line_get(FILE *file, darray_char *line)
+input_line_get(struct xkb_context *ctx, FILE *file, darray_char *line)
 {
     int ch;
     bool end_of_file = false;
@@ -100,8 +100,9 @@ input_line_get(FILE *file, darray_char *line)
 
                 if (ch == '!') {
                     if (!darray_empty(*line)) {
-                        WARN("The '!' is legal only at start of line\n");
-                        ACTION("Line containing '!' ignored\n");
+                        log_warn(ctx,
+                                 "The '!' is legal only at start of line; "
+                                 "Line containing '!' ignored\n");
                         darray_resize(*line, 0);
                         break;
                     }
@@ -259,7 +260,8 @@ get_index(char *str, int *ndx)
  * mapping->map[3] = {.word = SYMBOLS, .index = 0}
  */
 static void
-match_mapping_line(darray_char *line, struct mapping *mapping)
+match_mapping_line(struct xkb_context *ctx, darray_char *line,
+                   struct mapping *mapping)
 {
     char *tok;
     char *str = darray_mem(*line, 1);
@@ -294,15 +296,17 @@ match_mapping_line(darray_char *line, struct mapping *mapping)
 
                     if ((i != LAYOUT && i != VARIANT) ||
                         *end != '\0' || ndx == -1) {
-                        WARN("Illegal %s index: %d\n", cname[i], ndx);
-                        WARN("Can only index layout and variant\n");
+                        log_warn(ctx,
+                                 "Illegal %s index: %d\n", cname[i], ndx);
+                        log_warn(ctx, "Can only index layout and variant\n");
                         break;
                     }
 
                     if (ndx < 1 || ndx > XkbNumKbdGroups) {
-                        WARN("Illegal %s index: %d\n", cname[i], ndx);
-                        WARN("Index must be in range 1..%d\n",
-                             XkbNumKbdGroups);
+                        log_warn(ctx, "Illegal %s index: %d\n",
+                                 cname[i], ndx);
+                        log_warn(ctx, "Index must be in range 1..%d\n",
+                                 XkbNumKbdGroups);
                         break;
                     }
                 }
@@ -315,8 +319,9 @@ match_mapping_line(darray_char *line, struct mapping *mapping)
                 if (present & (1 << i)) {
                     if ((i == LAYOUT && layout_ndx_present & (1 << ndx)) ||
                         (i == VARIANT && variant_ndx_present & (1 << ndx))) {
-                        WARN("Component \"%s\" listed twice\n", tok);
-                        ACTION("Second definition ignored\n");
+                        log_warn(ctx,
+                                 "Component \"%s\" listed twice; "
+                                 "Second definition ignored\n", tok);
                         break;
                     }
                 }
@@ -334,22 +339,22 @@ match_mapping_line(darray_char *line, struct mapping *mapping)
             }
         }
 
-        if (!found) {
-            WARN("Unknown component \"%s\"\n", tok);
-            ACTION("ignored\n");
-        }
+        if (!found)
+            log_warn(ctx, "Unknown component \"%s\"; Ignored\n", tok);
     }
 
     if ((present & PART_MASK) == 0) {
-        WARN("Mapping needs at least one MLVO part\n");
-        ACTION("Illegal mapping ignored\n");
+        log_warn(ctx,
+                 "Mapping needs at least one MLVO part; "
+                 "Illegal mapping ignored\n");
         mapping->num_maps = 0;
         return;
     }
 
     if ((present & COMPONENT_MASK) == 0) {
-        WARN("Mapping needs at least one component\n");
-        ACTION("Illegal mapping ignored\n");
+        log_warn(ctx,
+                 "Mapping needs at least one component; "
+                 "Illegal mapping ignored\n");
         mapping->num_maps = 0;
         return;
     }
@@ -399,8 +404,8 @@ match_group_line(darray_char *line, struct group *group)
 
 /* Match lines following a mapping (see match_mapping_line comment). */
 static bool
-match_rule_line(darray_char *line, struct mapping *mapping,
-                struct rule *rule)
+match_rule_line(struct xkb_context *ctx, darray_char *line,
+                struct mapping *mapping, struct rule *rule)
 {
     char *str, *tok;
     int nread, i;
@@ -409,8 +414,9 @@ match_rule_line(darray_char *line, struct mapping *mapping,
     const char *names[MAX_WORDS] = { NULL };
 
     if (mapping->num_maps == 0) {
-        WARN("Must have a mapping before first line of data\n");
-        ACTION("Illegal line of data ignored\n");
+        log_warn(ctx,
+                 "Must have a mapping before first line of data; "
+                 "Illegal line of data ignored\n");
         return false;
     }
 
@@ -426,8 +432,9 @@ match_rule_line(darray_char *line, struct mapping *mapping,
         }
 
         if (nread > mapping->num_maps) {
-            WARN("Too many words on a line\n");
-            ACTION("Extra word \"%s\" ignored\n", tok);
+            log_warn(ctx,
+                     "Too many words on a line; "
+                     "Extra word \"%s\" ignored\n", tok);
             continue;
         }
 
@@ -437,8 +444,8 @@ match_rule_line(darray_char *line, struct mapping *mapping,
     }
 
     if (nread < mapping->num_maps) {
-        WARN("Too few words on a line: %s\n", darray_mem(*line, 0));
-        ACTION("line ignored\n");
+        log_warn(ctx, "Too few words on a line: %s; Line ignored\n",
+                 darray_mem(*line, 0));
         return false;
     }
 
@@ -476,17 +483,18 @@ match_rule_line(darray_char *line, struct mapping *mapping,
 }
 
 static bool
-match_line(darray_char *line, struct mapping *mapping,
-           struct rule *rule, struct group *group)
+match_line(struct xkb_context *ctx, darray_char *line,
+           struct mapping *mapping, struct rule *rule,
+           struct group *group)
 {
     if (darray_item(*line, 0) != '!')
-        return match_rule_line(line, mapping, rule);
+        return match_rule_line(ctx, line, mapping, rule);
 
     if (darray_item(*line, 1) == '$' ||
         (darray_item(*line, 1) == ' ' && darray_item(*line, 2) == '$'))
         return match_group_line(line, group);
 
-    match_mapping_line(line, mapping);
+    match_mapping_line(ctx, line, mapping);
     return false;
 }
 
@@ -782,7 +790,7 @@ clear_partial_matches(struct rules *rules)
     struct rule *rule;
 
     darray_foreach(rule, rules->rules)
-    rule->flags &= ~RULE_FLAG_PENDING_MATCH;
+        rule->flags &= ~RULE_FLAG_PENDING_MATCH;
 }
 
 static void
@@ -791,8 +799,8 @@ apply_partial_matches(struct rules *rules, struct xkb_component_names *kccgst)
     struct rule *rule;
 
     darray_foreach(rule, rules->rules)
-    if (rule->flags & RULE_FLAG_PENDING_MATCH)
-        apply_rule(rule, kccgst);
+        if (rule->flags & RULE_FLAG_PENDING_MATCH)
+            apply_rule(rule, kccgst);
 }
 
 static void
@@ -973,7 +981,7 @@ get_components(struct rules *rules, const struct xkb_rule_names *mlvo,
 }
 
 static struct rules *
-load_rules(FILE *file)
+load_rules(struct xkb_context *ctx, FILE *file)
 {
     darray_char line;
     struct mapping mapping;
@@ -992,8 +1000,8 @@ load_rules(FILE *file)
     darray_init(line);
     darray_growalloc(line, 128);
 
-    while (input_line_get(file, &line)) {
-        if (match_line(&line, &mapping, &trule, &tgroup)) {
+    while (input_line_get(ctx, file, &line)) {
+        if (match_line(ctx, &line, &mapping, &trule, &tgroup)) {
             if (tgroup.number) {
                 darray_append(rules->groups, tgroup);
                 memset(&tgroup, 0, sizeof(tgroup));
@@ -1053,23 +1061,24 @@ xkb_components_from_rules(struct xkb_context *ctx,
 
     file = XkbFindFileInPath(ctx, rmlvo->rules, FILE_TYPE_RULES, &path);
     if (!file) {
-        ERROR("could not find \"%s\" rules in XKB path\n", rmlvo->rules);
-        ERROR("%d include paths searched:\n",
-              xkb_context_num_include_paths(ctx));
+        log_err(ctx, "could not find \"%s\" rules in XKB path\n",
+                rmlvo->rules);
+        log_err(ctx, "%d include paths searched:\n",
+                xkb_context_num_include_paths(ctx));
         for (i = 0; i < xkb_context_num_include_paths(ctx); i++)
-            ERROR("\t%s\n", xkb_context_include_path_get(ctx, i));
+            log_err(ctx, "\t%s\n", xkb_context_include_path_get(ctx, i));
         return NULL;
     }
 
-    rules = load_rules(file);
+    rules = load_rules(ctx, file);
     if (!rules) {
-        ERROR("failed to load XKB rules \"%s\"\n", path);
+        log_err(ctx, "failed to load XKB rules \"%s\"\n", path);
         goto err;
     }
 
     kccgst = calloc(1, sizeof(*kccgst));
     if (!kccgst) {
-        ERROR("failed to allocate XKB components\n");
+        log_err(ctx, "failed to allocate XKB components\n");
         goto err;
     }
 
@@ -1080,7 +1089,7 @@ xkb_components_from_rules(struct xkb_context *ctx,
         free(kccgst->symbols);
         free(kccgst);
         kccgst = NULL;
-        ERROR("no components returned from XKB rules \"%s\"\n", path);
+        log_err(ctx, "no components returned from XKB rules \"%s\"\n", path);
         goto err;
     }
 
