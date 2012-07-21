@@ -717,7 +717,8 @@ HandleIndicatorNameDef(KeyNamesInfo *info, IndicatorNameDef *def,
         char buf[20];
         snprintf(buf, sizeof(buf), "%d", def->ndx);
         info->errorCount++;
-        return ReportBadType("indicator", "name", buf, "string");
+        return ReportBadType(info->keymap, "indicator", "name", buf,
+                             "string");
     }
     ii.name = xkb_atom_intern(info->keymap->ctx, tmp.str);
     free(tmp.str);

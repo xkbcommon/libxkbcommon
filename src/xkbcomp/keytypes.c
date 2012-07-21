@@ -112,14 +112,16 @@ static inline bool
 ReportTypeShouldBeArray(KeyTypesInfo *info, KeyTypeInfo *type,
                         const char *field)
 {
-    return ReportShouldBeArray("key type", field, TypeTxt(info, type));
+    return ReportShouldBeArray(info->keymap, "key type", field,
+                               TypeTxt(info, type));
 }
 
 static inline bool
 ReportTypeBadType(KeyTypesInfo *info, KeyTypeInfo *type,
                   const char *field, const char *wanted)
 {
-    return ReportBadType("key type", field, TypeTxt(info, type), wanted);
+    return ReportBadType(info->keymap, "key type", field, TypeTxt(info, type),
+                         wanted);
 }
 
 static inline bool

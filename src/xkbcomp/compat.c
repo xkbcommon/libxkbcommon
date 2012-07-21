@@ -114,30 +114,32 @@ siText(SymInterpInfo * si, CompatInfo * info)
 static inline bool
 ReportSINotArray(CompatInfo *info, SymInterpInfo *si, const char *field)
 {
-    return ReportNotArray("symbol interpretation", field, siText(si, info));
+    return ReportNotArray(info->keymap, "symbol interpretation", field,
+                          siText(si, info));
 }
 
 static inline bool
 ReportSIBadType(CompatInfo *info, SymInterpInfo *si, const char *field,
                 const char *wanted)
 {
-    return ReportBadType("symbol interpretation", field, siText(si, info),
-                         wanted);
+    return ReportBadType(info->keymap, "symbol interpretation", field,
+                         siText(si, info), wanted);
 }
 
 static inline bool
 ReportIndicatorBadType(CompatInfo *info, LEDInfo *led,
                        const char *field, const char *wanted)
 {
-    return ReportBadType("indicator map", field,
-                         xkb_atom_text(info->keymap->ctx, led->name), wanted);
+    return ReportBadType(info->keymap, "indicator map", field,
+                         xkb_atom_text(info->keymap->ctx, led->name),
+                         wanted);
 }
 
 static inline bool
 ReportIndicatorNotArray(CompatInfo *info, LEDInfo *led,
                         const char *field)
 {
-    return ReportNotArray("indicator map", field,
+    return ReportNotArray(info->keymap, "indicator map", field,
                           xkb_atom_text(info->keymap->ctx, led->name));
 }
 
@@ -706,7 +708,8 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, char *field,
             return ReportSIBadType(info, si, field, "level specification");
     }
     else {
-        ok = ReportBadField("symbol interpretation", field, siText(si, info));
+        ok = ReportBadField(keymap, "symbol interpretation", field,
+                            siText(si, info));
     }
     return ok;
 }

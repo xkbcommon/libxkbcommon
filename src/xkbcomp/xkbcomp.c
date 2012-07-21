@@ -91,8 +91,8 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
      * in the parser.
      */
     if (file->type != FILE_TYPE_KEYMAP) {
-        ERROR("Cannot compile a %s file alone into a keymap\n",
-              XkbcFileTypeText(file->type));
+        log_err(ctx, "Cannot compile a %s file alone into a keymap\n",
+                XkbcFileTypeText(file->type));
         goto err;
     }
 
@@ -100,9 +100,10 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
     for (file = (XkbFile *) file->defs; file;
          file = (XkbFile *) file->common.next) {
         if (have & file->type) {
-            ERROR("More than one %s section in a keymap file\n",
-                  XkbcFileTypeText(file->type));
-            ACTION("All sections after the first ignored\n");
+            log_err(ctx,
+                    "More than one %s section in a keymap file; "
+                    "All sections after the first ignored\n",
+                    XkbcFileTypeText(file->type));
             continue;
         }
 
@@ -124,8 +125,8 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
             break;
 
         default:
-            ERROR("Cannot define %s in a keymap file\n",
-                  XkbcFileTypeText(file->type));
+            log_err(ctx, "Cannot define %s in a keymap file\n",
+                    XkbcFileTypeText(file->type));
             continue;
         }
 
@@ -145,8 +146,8 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
 
         for (bit = 1; missing != 0; bit <<= 1) {
             if (missing & bit) {
-                ERROR("Required section %s missing from keymap\n",
-                      XkbcFileTypeText(bit));
+                log_err(ctx, "Required section %s missing from keymap\n",
+                        XkbcFileTypeText(bit));
                 missing &= ~bit;
             }
         }
@@ -156,22 +157,22 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
 
     ok = CompileKeycodes(keycodes, keymap, MERGE_OVERRIDE);
     if (!ok) {
-        ERROR("Failed to compile keycodes\n");
+        log_err(ctx, "Failed to compile keycodes\n");
         goto err;
     }
     ok = CompileKeyTypes(types, keymap, MERGE_OVERRIDE);
     if (!ok) {
-        ERROR("Failed to compile key types\n");
+        log_err(ctx, "Failed to compile key types\n");
         goto err;
     }
     ok = CompileCompatMap(compat, keymap, MERGE_OVERRIDE);
     if (!ok) {
-        ERROR("Failed to compile compat map\n");
+        log_err(ctx, "Failed to compile compat map\n");
         goto err;
     }
     ok = CompileSymbols(symbols, keymap, MERGE_OVERRIDE);
     if (!ok) {
-        ERROR("Failed to compile symbols\n");
+        log_err(ctx, "Failed to compile symbols\n");
         goto err;
     }
 
@@ -182,7 +183,7 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
     return keymap;
 
 err:
-    ACTION("Failed to compile keymap\n");
+    log_err(ctx, "Failed to compile keymap\n");
     xkb_map_unref(keymap);
     return NULL;
 }
@@ -196,33 +197,33 @@ xkb_map_new_from_kccgst(struct xkb_context *ctx,
     struct xkb_keymap *keymap;
 
     if (!kccgst) {
-        ERROR("No components specified\n");
+        log_err(ctx, "No components specified\n");
         return NULL;
     }
 
     if (ISEMPTY(kccgst->keycodes)) {
-        ERROR("Keycodes required to generate XKB keymap\n");
+        log_err(ctx, "Keycodes required to generate XKB keymap\n");
         return NULL;
     }
 
     if (ISEMPTY(kccgst->compat)) {
-        ERROR("Compat map required to generate XKB keymap\n");
+        log_err(ctx, "Compat map required to generate XKB keymap\n");
         return NULL;
     }
 
     if (ISEMPTY(kccgst->types)) {
-        ERROR("Types required to generate XKB keymap\n");
+        log_err(ctx, "Types required to generate XKB keymap\n");
         return NULL;
     }
 
     if (ISEMPTY(kccgst->symbols)) {
-        ERROR("Symbols required to generate XKB keymap\n");
+        log_err(ctx, "Symbols required to generate XKB keymap\n");
         return NULL;
     }
 
     file = keymap_file_from_components(ctx, kccgst);
     if (!file) {
-        ERROR("Failed to generate parsed XKB file from components\n");
+        log_err(ctx, "Failed to generate parsed XKB file from components\n");
         return NULL;
     }
 
@@ -240,14 +241,14 @@ xkb_map_new_from_names(struct xkb_context *ctx,
     struct xkb_keymap *keymap;
 
     if (!rmlvo || ISEMPTY(rmlvo->rules) || ISEMPTY(rmlvo->layout)) {
-        ERROR("rules and layout required to generate XKB keymap\n");
+        log_err(ctx, "rules and layout required to generate XKB keymap\n");
         return NULL;
     }
 
     kkctgs = xkb_components_from_rules(ctx, rmlvo);
     if (!kkctgs) {
-        ERROR("failed to generate XKB components from rules \"%s\"\n",
-              rmlvo->rules);
+        log_err(ctx, "failed to generate XKB components from rules \"%s\"\n",
+                rmlvo->rules);
         return NULL;
     }
 
@@ -273,18 +274,18 @@ xkb_map_new_from_string(struct xkb_context *ctx,
     struct xkb_keymap *keymap;
 
     if (format != XKB_KEYMAP_FORMAT_TEXT_V1) {
-        ERROR("unsupported keymap format %d\n", format);
+        log_err(ctx, "unsupported keymap format %d\n", format);
         return NULL;
     }
 
     if (!string) {
-        ERROR("No string specified to generate XKB keymap\n");
+        log_err(ctx, "No string specified to generate XKB keymap\n");
         return NULL;
     }
 
     ok = XKBParseString(ctx, string, "input", &file);
     if (!ok) {
-        ERROR("Failed to parse input xkb file\n");
+        log_err(ctx, "Failed to parse input xkb file\n");
         return NULL;
     }
 
@@ -304,18 +305,18 @@ xkb_map_new_from_file(struct xkb_context *ctx,
     struct xkb_keymap *keymap;
 
     if (format != XKB_KEYMAP_FORMAT_TEXT_V1) {
-        ERROR("Unsupported keymap format %d\n", format);
+        log_err(ctx, "Unsupported keymap format %d\n", format);
         return NULL;
     }
 
     if (!file) {
-        ERROR("No file specified to generate XKB keymap\n");
+        log_err(ctx, "No file specified to generate XKB keymap\n");
         return NULL;
     }
 
     ok = XKBParseFile(ctx, file, "(unknown file)", &xkb_file);
     if (!ok) {
-        ERROR("Failed to parse input xkb file\n");
+        log_err(ctx, "Failed to parse input xkb file\n");
         return NULL;
     }
 

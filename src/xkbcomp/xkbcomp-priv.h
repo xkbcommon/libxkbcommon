@@ -71,35 +71,46 @@ LongToKeyName(unsigned long val, char *name)
 }
 
 static inline bool
-ReportNotArray(const char *type, const char *field, const char *name)
+ReportNotArray(struct xkb_keymap *keymap, const char *type, const char *field,
+               const char *name)
 {
-    ERROR("The %s %s field is not an array\n", type, field);
-    ACTION("Ignoring illegal assignment in %s\n", name);
+    log_err(keymap->ctx,
+            "The %s %s field is not an array; "
+            "Ignoring illegal assignment in %s\n",
+            type, field, name);
     return false;
 }
 
 static inline bool
-ReportShouldBeArray(const char *type, const char *field, const char *name)
+ReportShouldBeArray(struct xkb_keymap *keymap, const char *type,
+                    const char *field, const char *name)
 {
-    ERROR("Missing subscript for %s %s\n", type, field);
-    ACTION("Ignoring illegal assignment in %s\n", name);
+    log_err(keymap->ctx,
+            "Missing subscript for %s %s; "
+            "Ignoring illegal assignment in %s\n",
+            type, field, name);
     return false;
 }
 
 static inline bool
-ReportBadType(const char *type, const char *field,
+ReportBadType(struct xkb_keymap *keymap, const char *type, const char *field,
               const char *name, const char *wanted)
 {
-    ERROR("The %s %s field must be a %s\n", type, field, wanted);
-    ACTION("Ignoring illegal assignment in %s\n", name);
+    log_err(keymap->ctx,
+            "The %s %s field must be a %s; "
+            "Ignoring illegal assignment in %s\n",
+            type, field, wanted, name);
     return false;
 }
 
 static inline bool
-ReportBadField(const char *type, const char *field, const char *name)
+ReportBadField(struct xkb_keymap *keymap, const char *type, const char *field,
+               const char *name)
 {
-    ERROR("Unknown %s field %s in %s\n", type, field, name);
-    ACTION("Ignoring assignment to unknown field in %s\n", name);
+    log_err(keymap->ctx,
+            "Unknown %s field %s in %s; "
+            "Ignoring assignment to unknown field in %s\n",
+            type, field, name, name);
     return false;
 }
 
