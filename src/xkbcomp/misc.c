@@ -28,8 +28,6 @@
 #include "path.h"
 #include "parseutils.h"
 
-/***====================================================================***/
-
 /**
  * Open the file given in the include statement and parse it's content.
  * If the statement defines a specific map to use, this map is returned in
@@ -54,13 +52,13 @@ ProcessIncludeFile(struct xkb_context *ctx,
 
     file = XkbFindFileInPath(ctx, stmt->file, file_type, &stmt->path);
     if (file == NULL) {
-        ERROR("Can't find file \"%s\" for %s include\n", stmt->file,
-              XkbDirectoryForInclude(file_type));
+        log_err(ctx, "Can't find file \"%s\" for %s include\n", stmt->file,
+                XkbDirectoryForInclude(file_type));
         return false;
     }
 
     if (!XKBParseFile(ctx, file, stmt->file, &rtrn)) {
-        ERROR("Error interpreting include file \"%s\"\n", stmt->file);
+        log_err(ctx, "Error interpreting include file \"%s\"\n", stmt->file);
         fclose(file);
         return false;
     }
@@ -83,20 +81,23 @@ ProcessIncludeFile(struct xkb_context *ctx,
             mapToUse = next;
         }
         if (!mapToUse) {
-            ERROR("No %s named \"%s\" in the include file \"%s\"\n",
-                  XkbcFileTypeText(file_type), stmt->map, stmt->file);
+            log_err(ctx, "No %s named \"%s\" in the include file \"%s\"\n",
+                    XkbcFileTypeText(file_type), stmt->map, stmt->file);
             return false;
         }
     }
-    else if ((rtrn->common.next != NULL) && (warningLevel > 5)) {
-        WARN("No map in include statement, but \"%s\" contains several\n",
-             stmt->file);
-        ACTION("Using first defined map, \"%s\"\n", rtrn->name);
+    else if (rtrn->common.next) {
+        log_lvl(ctx, 5,
+                "No map in include statement, but \"%s\" contains several; "
+                "Using first defined map, \"%s\"\n",
+                stmt->file, rtrn->name);
     }
     if (mapToUse->type != file_type) {
-        ERROR("Include file wrong type (expected %s, got %s)\n",
-              XkbcFileTypeText(file_type), XkbcFileTypeText(mapToUse->type));
-        ACTION("Include file \"%s\" ignored\n", stmt->file);
+        log_err(ctx,
+                "Include file wrong type (expected %s, got %s); "
+                "Include file \"%s\" ignored\n",
+                XkbcFileTypeText(file_type),
+                XkbcFileTypeText(mapToUse->type), stmt->file);
         return false;
     }
     /* FIXME: we have to check recursive includes here (or somewhere) */
