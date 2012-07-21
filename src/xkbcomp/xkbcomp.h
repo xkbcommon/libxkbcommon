@@ -87,8 +87,6 @@ enum merge_mode {
 #define AutoKeyNames (1L << 0)
 #define CreateKeyNames(x) ((x)->flags & AutoKeyNames)
 
-extern unsigned warningLevel;
-
 typedef struct _IncludeStmt {
     ParseCommon common;
     enum merge_mode merge;

@@ -68,10 +68,4 @@
 #define ATTR_MALLOC
 #endif
 
-#define INFO(...) xkb_log(NULL, LOG_INFO, __VA_ARGS__)
-#define WARN(...) xkb_log(NULL, LOG_WARNING, __VA_ARGS__)
-#define ERROR(...) xkb_log(NULL, LOG_ERR, __VA_ARGS__)
-#define WSGO(...) xkb_log(NULL, LOG_CRIT, __VA_ARGS__)
-#define ACTION(...) xkb_log(NULL, -1, __VA_ARGS__)
-
 #endif /* UTILS_H */

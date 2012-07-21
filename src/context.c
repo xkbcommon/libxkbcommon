@@ -202,7 +202,7 @@ priority_to_prefix(int priority)
     case LOG_EMERG:
         return "Internal error:";
     default:
-        return "";
+        return NULL;
     }
 }
 
@@ -316,11 +316,7 @@ xkb_log(struct xkb_context *ctx, int priority, const char *fmt, ...)
     va_list args;
 
     va_start(args, fmt);
-    /* NOTE: This test will be removed in a few commits. */
-    if (ctx)
-        ctx->log_fn(ctx, priority, fmt, args);
-    else
-        default_log_fn(ctx, priority, fmt, args);
+    ctx->log_fn(ctx, priority, fmt, args);
     va_end(args);
 }
 

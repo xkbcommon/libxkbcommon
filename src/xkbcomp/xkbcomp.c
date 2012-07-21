@@ -28,9 +28,6 @@
 #include "rules.h"
 #include "parseutils.h"
 
-/* Global warning level */
-unsigned int warningLevel = 0;
-
 #define ISEMPTY(str) (!(str) || (strlen(str) == 0))
 
 static XkbFile *
