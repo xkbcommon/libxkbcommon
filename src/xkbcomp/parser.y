@@ -32,6 +32,12 @@
 
 extern int yylex(union YYSTYPE *val, struct YYLTYPE *loc, void *scanner);
 
+static void
+yyerror(struct YYLTYPE *loc, struct parser_param *param, const char *msg)
+{
+    scanner_error(loc, param->scanner, msg);
+}
+
 #define scanner param->scanner
 %}
 
@@ -331,7 +337,7 @@ Decl		:	OptMergeMode VarDecl
 			}
 		|	MergeMode STRING
 			{
-                            $$= &IncludeCreate($2,$1)->common;
+                            $$= &IncludeCreate(param->ctx, $2, $1)->common;
                             free($2);
                         }
 		;

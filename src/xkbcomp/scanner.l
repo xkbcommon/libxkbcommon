@@ -35,6 +35,10 @@
 
 extern int yyparse(struct parser_param *param);
 
+static void
+scanner_error_extra(struct YYLTYPE *loc, struct scanner_extra *extra,
+                    const char *msg);
+
 #define YY_USER_ACTION {                \
         yylloc->first_line = yylineno;  \
         yylloc->last_line = yylineno;   \
@@ -85,7 +89,8 @@ extern int yyparse(struct parser_param *param);
 			(void) sscanf( yytext + 1, "%o", &result );
 
 			if (result > 0xff) {
-			    fprintf(stderr, "Illegal octal escape %s\n", yytext);
+                            scanner_error_extra(yylloc, yyextra,
+                                                "Illegal octal escape");
 			    return ERROR_TOK;
 			}
 
@@ -93,7 +98,8 @@ extern int yyparse(struct parser_param *param);
 		    }
 
 <S_STR,S_KEY>\\[0-9]+ {
-			fprintf(stderr, "Illegal octal escape %s\n", yytext);
+                        scanner_error_extra(yylloc, yyextra,
+                                            "Illegal octal escape");
 			return ERROR_TOK;
 		    }
 
@@ -194,17 +200,23 @@ alternate_group		return ALTERNATE_GROUP;
 
 %%
 
+static void
+scanner_error_extra(struct YYLTYPE *loc, struct scanner_extra *extra,
+                    const char *msg)
+{
+    log_err(extra->ctx, "%s: line %d of %s\n", msg,
+            loc->first_line,
+            extra->scanFile ? extra->scanFile : "(unknown)");
+
+    log_err(extra->ctx, "last scanned symbol was: %s\n",
+            extra->scanBuf);
+}
+
 void
-yyerror(struct YYLTYPE *loc, void *scanner, const char *msg)
+scanner_error(struct YYLTYPE *loc, void *scanner, const char *msg)
 {
     struct scanner_extra *extra = yyget_extra(scanner);
-
-    if (warningLevel > 0) {
-        fprintf(stderr, "%s: line %d of %s\n", msg, loc->first_line,
-                extra->scanFile ? extra->scanFile : "(unknown)");
-        if (warningLevel > 3)
-            fprintf(stderr, "last scanned symbol is: %s\n", extra->scanBuf);
-    }
+    scanner_error_extra(loc, extra, msg);
 }
 
 bool
@@ -226,6 +238,8 @@ XKBParseString(struct xkb_context *ctx, const char *string,
     if (ret != 0)
         return false;
 
+    extra.ctx = ctx;
+
     extra.scanFile = strdup(file_name);
     if (!extra.scanFile)
         return false;
@@ -238,7 +252,7 @@ XKBParseString(struct xkb_context *ctx, const char *string,
     if (ret != 0)
         return false;
 
-    CheckDefaultMap(param.rtrn, file_name);
+    CheckDefaultMap(param.ctx, param.rtrn, file_name);
     *out = param.rtrn;
     return true;
 }
@@ -261,6 +275,8 @@ XKBParseFile(struct xkb_context *ctx, FILE *file,
     if (ret != 0)
         return false;
 
+    extra.ctx = ctx;
+
     extra.scanFile = strdup(file_name);
     if (!extra.scanFile)
         return false;
@@ -272,7 +288,7 @@ XKBParseFile(struct xkb_context *ctx, FILE *file,
     if (ret != 0)
         return false;
 
-    CheckDefaultMap(param.rtrn, file_name);
+    CheckDefaultMap(param.ctx, param.rtrn, file_name);
     *out = param.rtrn;
     return true;
 }

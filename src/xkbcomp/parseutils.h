@@ -40,6 +40,7 @@ struct parser_param {
 #include "parser.h"
 
 struct scanner_extra {
+    struct xkb_context *ctx;
     char *scanFile;
     char scanBuf[1024];
     char *s;
@@ -112,10 +113,10 @@ extern int
 LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn);
 
 extern IncludeStmt *
-IncludeCreate(char *str, enum merge_mode merge);
+IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge);
 
 extern void
-CheckDefaultMap(XkbFile *maps, const char *fileName);
+CheckDefaultMap(struct xkb_context *ctx, XkbFile *maps, const char *fileName);
 
 extern XkbFile *
 CreateXKBFile(struct xkb_context *ctx, enum xkb_file_type type, char *name,
@@ -137,7 +138,7 @@ FreeXKBFile(XkbFile *file);
 extern void
 FreeStmt(ParseCommon *stmt);
 
-extern void
-yyerror(struct YYLTYPE *loc, void *scanner, const char *msg);
+void
+scanner_error(struct YYLTYPE *loc, void *scanner, const char *msg);
 
 #endif /* PARSEUTILS_H */

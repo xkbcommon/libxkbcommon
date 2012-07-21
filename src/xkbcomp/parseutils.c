@@ -384,7 +384,7 @@ static void
 FreeInclude(IncludeStmt *incl);
 
 IncludeStmt *
-IncludeCreate(char *str, enum merge_mode merge)
+IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge)
 {
     IncludeStmt *incl, *first;
     char *file, *map, *stmt, *tmp, *extra_data;
@@ -407,8 +407,9 @@ IncludeCreate(char *str, enum merge_mode merge)
         }
 
         if (!incl) {
-            WSGO("Allocation failure in IncludeCreate\n");
-            ACTION("Using only part of the include\n");
+            log_wsgo(ctx,
+                     "Allocation failure in IncludeCreate; "
+                     "Using only part of the include\n");
             break;
         }
 
@@ -436,35 +437,33 @@ IncludeCreate(char *str, enum merge_mode merge)
     return first;
 
 err:
-    ERROR("Illegal include statement \"%s\"\n", stmt);
-    ACTION("Ignored\n");
+    log_err(ctx, "Illegal include statement \"%s\"; Ignored\n", stmt);
     FreeInclude(first);
     free(stmt);
     return NULL;
 }
 
 void
-CheckDefaultMap(XkbFile * maps, const char *fileName)
+CheckDefaultMap(struct xkb_context *ctx, XkbFile *maps, const char *fileName)
 {
-    XkbFile *dflt, *tmp;
+    XkbFile *dflt = NULL, *tmp;
 
-    dflt = NULL;
-    for (tmp = maps, dflt = NULL; tmp != NULL;
-         tmp = (XkbFile *) tmp->common.next) {
-        if (tmp->flags & XkbLC_Default) {
-            if (dflt == NULL)
-                dflt = tmp;
-            else {
-                if (warningLevel > 2) {
-                    WARN("Multiple default components in %s\n",
-                         (fileName ? fileName : "(unknown)"));
-                    ACTION("Using %s, ignoring %s\n",
-                           (dflt->name ? dflt->name : "(first)"),
-                           (tmp->name ? tmp->name : "(subsequent)"));
-                }
-                tmp->flags &= (~XkbLC_Default);
-            }
+    for (tmp = maps; tmp; tmp = (XkbFile *) tmp->common.next) {
+        if (!(tmp->flags & XkbLC_Default))
+            continue;
+        if (!dflt) {
+            dflt = tmp;
+            continue;
         }
+
+        log_lvl(ctx, 3,
+                "Multiple default components in %s; "
+                "Using %s, ignoring %s\n",
+                (fileName ? fileName : "(unknown)"),
+                (dflt->name ? dflt->name : "(first)"),
+                (tmp->name ? tmp->name : "(subsequent)"));
+
+        tmp->flags &= (~XkbLC_Default);
     }
 }
 
@@ -548,7 +547,7 @@ FreeExpr(ExprDef *expr)
 
     case ExprKeysymList:
         darray_foreach(sym, expr->value.list.syms)
-        free(*sym);
+            free(*sym);
         darray_free(expr->value.list.syms);
         darray_free(expr->value.list.symsMapIndex);
         darray_free(expr->value.list.symsNumEntries);
