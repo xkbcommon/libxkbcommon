@@ -181,17 +181,15 @@ XkbFindFileInPath(struct xkb_context *ctx,
         ret = snprintf(buf, sizeof(buf), "%s/%s/%s",
                        xkb_context_include_path_get(ctx, i), typeDir, name);
         if (ret >= (ssize_t) sizeof(buf)) {
-            ERROR("File name (%s/%s/%s) too long\n",
-                  xkb_context_include_path_get(ctx, i), typeDir, name);
-            ACTION("Ignored\n");
+            log_err(ctx, "File name (%s/%s/%s) too long\n",
+                    xkb_context_include_path_get(ctx, i), typeDir, name);
             continue;
         }
         file = fopen(buf, "r");
         if (file == NULL) {
-            ERROR("Couldn't open file (%s/%s/%s): %s\n",
-                  xkb_context_include_path_get(ctx, i), typeDir, name,
-                  strerror(errno));
-            ACTION("Ignored\n");
+            log_err(ctx, "Couldn't open file (%s/%s/%s): %s\n",
+                    xkb_context_include_path_get(ctx, i), typeDir, name,
+                    strerror(errno));
             continue;
         }
         break;
