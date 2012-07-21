@@ -43,7 +43,6 @@ ClearVModInfo(VModInfo *info, struct xkb_keymap *keymap)
     for (i = 0; i < XkbNumVirtualMods; i++)
         keymap->vmods[i] = XkbNoModifierMask;
 
-    info->keymap = keymap;
     for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1)
         if (keymap->vmod_names[i])
             info->defined |= bit;
@@ -69,45 +68,53 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
 
     for (i = 0, bit = 1, nextFree = -1; i < XkbNumVirtualMods; i++, bit <<=
              1) {
-        if (info->defined & bit) {
-            if (keymap->vmod_names[i] &&
-                strcmp(keymap->vmod_names[i],
-                       xkb_atom_text(keymap->ctx, stmt->name)) == 0) { /* already defined */
-                info->available |= bit;
-                if (stmt->value == NULL)
-                    return true;
-                else {
-                    const char *str1;
-                    const char *str2 = "";
-                    if (!ExprResolveModMask(keymap->ctx, stmt->value,
-                                            &mod)) {
-                        str1 = xkb_atom_text(keymap->ctx, stmt->name);
-                        ACTION("Declaration of %s ignored\n", str1);
-                        return false;
-                    }
-                    if (mod.uval == keymap->vmods[i])
-                        return true;
+        if (!(info->defined & bit)) {
+            if (nextFree < 0)
+                nextFree = i;
+            continue;
+        }
 
-                    str1 = xkb_atom_text(keymap->ctx, stmt->name);
-                    WARN("Virtual modifier %s multiply defined\n", str1);
-                    str1 = XkbcModMaskText(keymap->vmods[i], true);
-                    if (mergeMode == MERGE_OVERRIDE) {
-                        str2 = str1;
-                        str1 = XkbcModMaskText(mod.uval, true);
-                    }
-                    ACTION("Using %s, ignoring %s\n", str1, str2);
-                    if (mergeMode == MERGE_OVERRIDE)
-                        keymap->vmods[i] = mod.uval;
-                    return true;
+        if (keymap->vmod_names[i] &&
+            strcmp(keymap->vmod_names[i],
+                   xkb_atom_text(keymap->ctx, stmt->name)) == 0) { /* already defined */
+            info->available |= bit;
+            if (stmt->value == NULL)
+                return true;
+            else {
+                const char *str1;
+                const char *str2 = "";
+
+                if (!ExprResolveModMask(keymap->ctx, stmt->value,
+                                        &mod)) {
+                    log_err(keymap->ctx, "Declaration of %s ignored\n",
+                            xkb_atom_text(keymap->ctx, stmt->name));
+                    return false;
                 }
+
+                if (mod.uval == keymap->vmods[i])
+                    return true;
+
+                str1 = XkbcModMaskText(keymap->vmods[i], true);
+                if (mergeMode == MERGE_OVERRIDE) {
+                    str2 = str1;
+                    str1 = XkbcModMaskText(mod.uval, true);
+                }
+                log_warn(keymap->ctx,
+                         "Virtual modifier %s multiply defined; "
+                         "Using %s, ignoring %s\n",
+                         xkb_atom_text(keymap->ctx, stmt->name), str1, str2);
+
+                if (mergeMode == MERGE_OVERRIDE)
+                    keymap->vmods[i] = mod.uval;
+                return true;
             }
         }
-        else if (nextFree < 0)
-            nextFree = i;
     }
+
     if (nextFree < 0) {
-        ERROR("Too many virtual modifiers defined (maximum %d)\n",
-              XkbNumVirtualMods);
+        log_err(keymap->ctx,
+                "Too many virtual modifiers defined (maximum %d)\n",
+                XkbNumVirtualMods);
         return false;
     }
     info->defined |= (1 << nextFree);
@@ -120,8 +127,8 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
         keymap->vmods[nextFree] = mod.uval;
         return true;
     }
-    ACTION("Declaration of %s ignored\n",
-           xkb_atom_text(keymap->ctx, stmt->name));
+    log_err(keymap->ctx, "Declaration of %s ignored\n",
+            xkb_atom_text(keymap->ctx, stmt->name));
     return false;
 }
 
@@ -217,8 +224,9 @@ ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
     if (ExprResolveInteger(keymap->ctx, def, val_rtrn)) {
         if (val_rtrn->uval < XkbNumVirtualMods)
             return true;
-        ERROR("Illegal virtual modifier %d (must be 0..%d inclusive)\n",
-              val_rtrn->uval, XkbNumVirtualMods - 1);
+        log_err(keymap->ctx,
+                "Illegal virtual modifier %d (must be 0..%d inclusive)\n",
+                val_rtrn->uval, XkbNumVirtualMods - 1);
     }
     return false;
 }

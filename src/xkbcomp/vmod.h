@@ -31,7 +31,6 @@
 #include "expr.h"
 
 typedef struct _VModInfo {
-    struct xkb_keymap *keymap;
     unsigned defined;
     unsigned available;
     unsigned newlyDefined;
