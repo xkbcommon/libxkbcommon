@@ -1,5 +1,4 @@
-AM_CPPFLAGS = -I$(top_srcdir)/include
-AM_CFLAGS = $(X11_CFLAGS) $(CWARNFLAGS)
+AM_CFLAGS = $(BASE_CFLAGS)
 
 # need to use build-native compiler
 

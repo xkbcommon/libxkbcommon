@@ -1,5 +1,5 @@
 libdir=@abs_top_builddir@/.libs
-includedir=@abs_top_srcdir@/include
+includedir=@abs_top_srcdir@
 
 Name: xkbcommon
 Description: XKB API common to servers and clients (uninstalled)

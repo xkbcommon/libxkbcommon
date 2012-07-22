@@ -19,7 +19,6 @@ dist-hook: ChangeLog INSTALL
 
 AM_CPPFLAGS = \
 	-DDFLT_XKB_CONFIG_ROOT='"$(XKBCONFIGROOT)"' \
-	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/xkbcomp \
 	-I$(top_builddir)/src/xkbcomp \
@@ -33,9 +32,9 @@ AM_YFLAGS = -d
 
 xkbcommonincludedir = $(includedir)/xkbcommon
 xkbcommoninclude_HEADERS = \
-	include/xkbcommon/xkbcommon.h \
-	include/xkbcommon/xkbcommon-names.h \
-	include/xkbcommon/xkbcommon-keysyms.h
+	xkbcommon/xkbcommon.h \
+	xkbcommon/xkbcommon-names.h \
+	xkbcommon/xkbcommon-keysyms.h
 
 lib_LTLIBRARIES = libxkbcommon.la
 libxkbcommon_la_LDFLAGS = -no-undefined
@@ -92,7 +91,7 @@ src/xkbcomp/parser.h: $(top_builddir)/src/$(am__dirstamp) $(top_builddir)/src/xk
 src/xkbcomp/scanner.c: $(top_builddir)/src/$(am__dirstamp) $(top_builddir)/src/xkbcomp/$(am__dirstamp)
 
 src/ks_tables.h: $(top_builddir)/makekeys/makekeys$(EXEEXT)
-	$(AM_V_GEN)$(top_builddir)/makekeys/makekeys $(top_srcdir)/include/xkbcommon/xkbcommon-keysyms.h > $@
+	$(AM_V_GEN)$(top_builddir)/makekeys/makekeys $(top_srcdir)/xkbcommon/xkbcommon-keysyms.h > $@
 
 $(top_builddir)/makekeys/makekeys$(EXEEXT): $(top_srcdir)/makekeys/makekeys.c
 	$(MAKE) -C makekeys
@@ -153,4 +152,4 @@ KEYSYMDEFS = \
 	 $(X11_INCLUDEDIR)/DECkeysym.h \
 	 $(X11_INCLUDEDIR)/HPkeysym.h
 update-keysyms:
-	sed -e '/XK_Ydiaeresis\s*0x100000ee/d; /#define _/d; s/#define\s*\(\w*\)XK_/#define XKB_KEY_\1/; /\(#ifdef\|#ifndef\|#endif\)/d' $(KEYSYMDEFS) > include/xkbcommon/xkbcommon-keysyms.h
+	sed -e '/XK_Ydiaeresis\s*0x100000ee/d; /#define _/d; s/#define\s*\(\w*\)XK_/#define XKB_KEY_\1/; /\(#ifdef\|#ifndef\|#endif\)/d' $(KEYSYMDEFS) > xkbcommon/xkbcommon-keysyms.h
