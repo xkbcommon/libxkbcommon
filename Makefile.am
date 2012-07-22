@@ -117,7 +117,8 @@ TESTS = \
 	test/rules-file \
 	test/dump \
 	test/stringcomp \
-	test/keyseq
+	test/keyseq \
+	test/log
 TESTS_LDADD = libtest.la
 
 test_xkey_LDADD = $(TESTS_LDADD)
@@ -131,6 +132,7 @@ test_rules_file_LDADD = $(TESTS_LDADD)
 test_dump_LDADD = $(TESTS_LDADD)
 test_stringcomp_LDADD = $(TESTS_LDADD)
 test_keyseq_LDADD = $(TESTS_LDADD)
+test_log_LDADD = $(TESTS_LDADD)
 
 check_PROGRAMS = $(TESTS)
 
