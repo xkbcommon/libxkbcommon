@@ -243,12 +243,14 @@ ClearKeyNamesInfo(KeyNamesInfo * info)
 
     free(info->name);
     info->name = NULL;
+    info->merge = MERGE_DEFAULT;
     info->computedMax = info->explicitMax = info->explicitMin = 0;
     info->computedMin = XKB_KEYCODE_MAX;
     darray_free(info->names);
     darray_free(info->files);
     list_foreach_safe(ii, next_ii, &info->leds, entry)
         free(ii);
+    list_init(&info->leds);
     list_foreach_safe(alias, next_alias, &info->aliases, entry)
         free(alias);
     list_init(&info->aliases);
@@ -259,6 +261,7 @@ InitKeyNamesInfo(KeyNamesInfo *info, struct xkb_keymap *keymap,
                  unsigned file_id)
 {
     info->name = NULL;
+    info->merge = MERGE_DEFAULT;
     list_init(&info->leds);
     list_init(&info->aliases);
     info->file_id = file_id;
