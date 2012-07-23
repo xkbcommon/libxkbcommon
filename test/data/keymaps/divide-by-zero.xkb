@@ -1,0 +1,17 @@
+xkb_keymap {
+	xkb_keycodes {
+		 <ESC> = 1 / 0;
+	};
+
+	xkb_types {
+		virtual_modifiers NumLock;
+	};
+
+	xkb_compatibility {
+		virtual_modifiers NumLock;
+	};
+
+	xkb_symbols {
+		key <HYPR> {	[        NoSymbol,         Hyper_L ] };
+	};
+};

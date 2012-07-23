@@ -55,6 +55,7 @@ main(void)
     assert(test_file(ctx, "keymaps/default.xkb"));
     assert(test_file(ctx, "keymaps/comprehensive-plus-geom.xkb"));
 
+    assert(!test_file(ctx, "keymaps/divide-by-zero.xkb"));
     assert(!test_file(ctx, "bad.xkb"));
 
     xkb_context_unref(ctx);

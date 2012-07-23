@@ -337,6 +337,11 @@ ExprResolveKeyCode(struct xkb_context *ctx, ExprDef *expr,
                 val_rtrn->uval = leftRtrn.uval * rightRtrn.uval;
                 break;
             case OpDivide:
+                if (rightRtrn.uval == 0) {
+                    log_err(ctx, "Cannot divide by zero: %d / %d\n",
+                            leftRtrn.uval, rightRtrn.uval);
+                    return false;
+                }
                 val_rtrn->uval = leftRtrn.uval / rightRtrn.uval;
                 break;
             }
@@ -448,6 +453,11 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, ExprDef *expr,
                 val_rtrn->ival = leftRtrn.ival * rightRtrn.ival;
                 break;
             case OpDivide:
+                if (rightRtrn.ival == 0) {
+                    log_err(ctx, "Cannot divide by zero: %d / %d\n",
+                            leftRtrn.ival, rightRtrn.ival);
+                    return false;
+                }
                 val_rtrn->ival = leftRtrn.ival / rightRtrn.ival;
                 break;
             }
