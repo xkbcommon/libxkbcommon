@@ -41,6 +41,7 @@ XkbcCopyKeyType(const struct xkb_key_type *from, struct xkb_key_type *into)
     free(into->level_names);
 
     *into = *from;
+    darray_init(into->map);
 
     darray_copy(into->map, from->map);
 

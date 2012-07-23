@@ -1055,14 +1055,14 @@ static struct xkb_kt_map_entry mapKeypad[] = {
 };
 
 static const struct xkb_key_type canonicalTypes[XkbNumRequiredTypes] = {
-    {
+    [XkbOneLevelIndex] = {
         .mods = { .mask = 0, .vmods = 0, .real_mods = 0 },
         .num_levels = 1,
         .preserve = NULL,
         .name = NULL,
         .level_names = NULL
     },
-    {
+    [XkbTwoLevelIndex] = {
         .mods = { .mask = ShiftMask, .vmods = ShiftMask, .real_mods = 0 },
         .num_levels = 2,
         .map = darray_lit(map2Level),
@@ -1070,7 +1070,7 @@ static const struct xkb_key_type canonicalTypes[XkbNumRequiredTypes] = {
         .name = NULL,
         .level_names = NULL
     },
-    {
+    [XkbAlphabeticIndex] = {
         .mods = {
             .mask = ShiftMask | LockMask,
             .vmods = ShiftMask | LockMask,
@@ -1082,7 +1082,7 @@ static const struct xkb_key_type canonicalTypes[XkbNumRequiredTypes] = {
         .name = NULL,
         .level_names = NULL
     },
-    {
+    [XkbKeypadIndex] = {
         .mods = { .mask = ShiftMask, .vmods = ShiftMask, .real_mods = 0 },
         .num_levels = 2,
         .map = darray_lit(mapKeypad),
