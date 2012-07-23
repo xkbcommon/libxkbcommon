@@ -84,9 +84,8 @@ bool
 ExprResolveGroup(struct xkb_context *ctx, ExprDef *expr,
                  xkb_group_index_t *group_rtrn);
 
-extern int
-ExprResolveButton(struct xkb_context *ctx, ExprDef *expr,
-                  ExprResult *val_rtrn);
+bool
+ExprResolveButton(struct xkb_context *ctx, ExprDef *expr, int *btn_rtrn);
 
 bool
 ExprResolveString(struct xkb_context *ctx, ExprDef *expr,

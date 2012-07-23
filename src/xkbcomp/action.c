@@ -486,18 +486,23 @@ HandlePtrBtn(struct xkb_keymap *keymap, struct xkb_any_action *action,
 
     act = (struct xkb_pointer_button_action *) action;
     if (field == F_Button) {
-        if (array_ndx != NULL)
+        int btn;
+
+        if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
-        if (!ExprResolveButton(keymap->ctx, value, &rtrn))
+
+        if (!ExprResolveButton(keymap->ctx, value, &btn))
             return ReportMismatch(keymap, action->type, field,
                                   "integer (range 1..5)");
-        if ((rtrn.ival < 0) || (rtrn.ival > 5)) {
+
+        if (btn < 0 || btn > 5) {
             log_err(keymap->ctx,
                     "Button must specify default or be in the range 1..5; "
-                    "Illegal button value %d ignored\n", rtrn.ival);
+                    "Illegal button value %d ignored\n", btn);
             return false;
         }
-        act->button = rtrn.ival;
+
+        act->button = btn;
         return true;
     }
     else if ((action->type == XkbSA_LockPtrBtn) && (field == F_Affect)) {
@@ -511,17 +516,23 @@ HandlePtrBtn(struct xkb_keymap *keymap, struct xkb_any_action *action,
         return true;
     }
     else if (field == F_Count) {
-        if (array_ndx != NULL)
+        int btn;
+
+        if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
-        if (!ExprResolveButton(keymap->ctx, value, &rtrn))
+
+        /* XXX: Should this actually be ResolveButton? */
+        if (!ExprResolveButton(keymap->ctx, value, &btn))
             return ReportMismatch(keymap, action->type, field, "integer");
-        if ((rtrn.ival < 0) || (rtrn.ival > 255)) {
+
+        if (btn < 0 || btn > 255) {
             log_err(keymap->ctx,
                     "The count field must have a value in the range 0..255; "
                     "Illegal count %d ignored\n", rtrn.ival);
             return false;
         }
-        act->count = rtrn.ival;
+
+        act->count = btn;
         return true;
     }
     return ReportIllegal(keymap, action->type, field);
@@ -552,37 +563,42 @@ HandleSetPtrDflt(struct xkb_keymap *keymap, struct xkb_any_action *action,
         return true;
     }
     else if ((field == F_Button) || (field == F_Value)) {
-        ExprDef *btn;
-        if (array_ndx != NULL)
+        ExprDef *button;
+        int btn;
+
+        if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
+
         if (value->op == EXPR_NEGATE || value->op == EXPR_UNARY_PLUS) {
             act->flags &= ~XkbSA_DfltBtnAbsolute;
-            btn = value->value.child;
+            button = value->value.child;
         }
         else {
             act->flags |= XkbSA_DfltBtnAbsolute;
-            btn = value;
+            button = value;
         }
 
-        if (!ExprResolveButton(keymap->ctx, btn, &rtrn))
+        if (!ExprResolveButton(keymap->ctx, button, &btn))
             return ReportMismatch(keymap, action->type, field,
                                   "integer (range 1..5)");
-        if ((rtrn.ival < 0) || (rtrn.ival > 5)) {
+
+        if (btn < 0 || btn > 5) {
             log_err(keymap->ctx,
                     "New default button value must be in the range 1..5; "
                     "Illegal default button value %d ignored\n", rtrn.ival);
             return false;
         }
-        if (rtrn.ival == 0) {
+        if (btn == 0) {
             log_err(keymap->ctx,
                     "Cannot set default pointer button to \"default\"; "
                     "Illegal default button setting ignored\n");
             return false;
         }
 
-        act->value = (value->op == EXPR_NEGATE ? -rtrn.ival : rtrn.ival);
+        act->value = (value->op == EXPR_NEGATE ? -btn: btn);
         return true;
     }
+
     return ReportIllegal(keymap, action->type, field);
 }
 
@@ -924,17 +940,23 @@ HandleDeviceBtn(struct xkb_keymap *keymap, struct xkb_any_action *action,
         return true;
     }
     else if (field == F_Count) {
-        if (array_ndx != NULL)
+        int btn;
+
+        if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
-        if (!ExprResolveButton(keymap->ctx, value, &rtrn))
+
+        /* XXX: Should this actually be ResolveButton? */
+        if (!ExprResolveButton(keymap->ctx, value, &btn))
             return ReportMismatch(keymap, action->type, field, "integer");
-        if ((rtrn.ival < 0) || (rtrn.ival > 255)) {
+
+        if (btn < 0 || btn > 255) {
             log_err(keymap->ctx,
                     "The count field must have a value in the range 0..255; "
                     "Illegal count %d ignored\n", rtrn.ival);
             return false;
         }
-        act->count = rtrn.ival;
+
+        act->count = btn;
         return true;
     }
     else if (field == F_Device) {

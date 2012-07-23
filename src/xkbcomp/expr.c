@@ -561,10 +561,11 @@ ExprResolveLevel(struct xkb_context *ctx, ExprDef *expr,
     return true;
 }
 
-int
-ExprResolveButton(struct xkb_context *ctx, ExprDef *expr,
-                  ExprResult *val_rtrn)
+bool
+ExprResolveButton(struct xkb_context *ctx, ExprDef *expr, int *btn_rtrn)
 {
+    bool ok;
+    ExprResult result;
     static const LookupEntry button_names[] = {
         { "button1", 1 },
         { "button2", 2 },
@@ -575,8 +576,11 @@ ExprResolveButton(struct xkb_context *ctx, ExprDef *expr,
         { NULL, 0 }
     };
 
-    return ExprResolveIntegerLookup(ctx, expr, val_rtrn, SimpleLookup,
-                                    button_names);
+    ok = ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
+                                  button_names);
+    if (ok)
+        *btn_rtrn = result.ival;
+    return ok;
 }
 
 bool
