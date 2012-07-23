@@ -1108,7 +1108,7 @@ HandleActionDef(ExprDef * def,
     for (arg = def->value.action.args; arg != NULL;
          arg = (ExprDef *) arg->common.next) {
         ExprDef *field, *value, *arrayRtrn;
-        ExprResult elemRtrn, fieldRtrn;
+        const char *elemRtrn, *fieldRtrn;
         unsigned fieldNdx;
 
         if (arg->op == EXPR_ASSIGN) {
@@ -1127,22 +1127,23 @@ HandleActionDef(ExprDef * def,
                 value = &constTrue;
             }
         }
-        if (!ExprResolveLhs(keymap, field, &elemRtrn, &fieldRtrn, &arrayRtrn))
+        if (!ExprResolveLhs(keymap->ctx, field, &elemRtrn, &fieldRtrn,
+                            &arrayRtrn))
             return false;       /* internal error -- already reported */
 
-        if (elemRtrn.str != NULL) {
+        if (elemRtrn != NULL) {
             log_err(keymap->ctx,
                     "Cannot change defaults in an action definition; "
                     "Ignoring attempt to change %s.%s\n",
-                    elemRtrn.str, fieldRtrn.str);
+                    elemRtrn, fieldRtrn);
             return false;
         }
-        if (!stringToField(fieldRtrn.str, &fieldNdx)) {
-            log_err(keymap->ctx, "Unknown field name %s\n", fieldRtrn.str);
+        if (!stringToField(fieldRtrn, &fieldNdx)) {
+            log_err(keymap->ctx, "Unknown field name %s\n", fieldRtrn);
             return false;
         }
-        if (!(*handleAction[hndlrType])(keymap, action, fieldNdx, arrayRtrn,
-                                        value))
+        if (!handleAction[hndlrType](keymap, action, fieldNdx, arrayRtrn,
+                                     value))
             return false;
     }
     return true;

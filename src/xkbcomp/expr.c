@@ -122,33 +122,30 @@ exprValueTypeText(enum expr_value_type type)
     return buf;
 }
 
-int
-ExprResolveLhs(struct xkb_keymap *keymap, ExprDef *expr,
-               ExprResult *elem_rtrn, ExprResult *field_rtrn,
-               ExprDef **index_rtrn)
+bool
+ExprResolveLhs(struct xkb_context *ctx, ExprDef *expr, const char **elem_rtrn,
+               const char **field_rtrn, ExprDef **index_rtrn)
 {
-    struct xkb_context *ctx = keymap->ctx;
-
     switch (expr->op) {
     case EXPR_IDENT:
-        elem_rtrn->str = NULL;
-        field_rtrn->str = xkb_atom_text(ctx, expr->value.str);
+        *elem_rtrn = NULL;
+        *field_rtrn = xkb_atom_text(ctx, expr->value.str);
         *index_rtrn = NULL;
         return true;
     case EXPR_FIELD_REF:
-        elem_rtrn->str = xkb_atom_text(ctx, expr->value.field.element);
-        field_rtrn->str = xkb_atom_text(ctx, expr->value.field.field);
+        *elem_rtrn = xkb_atom_text(ctx, expr->value.field.element);
+        *field_rtrn = xkb_atom_text(ctx, expr->value.field.field);
         *index_rtrn = NULL;
         return true;
     case EXPR_ARRAY_REF:
-        elem_rtrn->str = xkb_atom_text(ctx, expr->value.array.element);
-        field_rtrn->str = xkb_atom_text(ctx, expr->value.array.field);
+        *elem_rtrn = xkb_atom_text(ctx, expr->value.array.element);
+        *field_rtrn = xkb_atom_text(ctx, expr->value.array.field);
         *index_rtrn = expr->value.array.entry;
         return true;
     default:
         break;
     }
-    log_wsgo(keymap->ctx, "Unexpected operator %d in ResolveLhs\n", expr->op);
+    log_wsgo(ctx, "Unexpected operator %d in ResolveLhs\n", expr->op);
     return false;
 }
 

@@ -1193,47 +1193,47 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
 static int
 HandleSymbolsVar(SymbolsInfo *info, VarDef *stmt)
 {
-    ExprResult elem, field;
+    const char *elem, *field;
     ExprDef *arrayNdx;
     bool ret;
 
-    if (ExprResolveLhs(info->keymap, stmt->name, &elem, &field,
+    if (ExprResolveLhs(info->keymap->ctx, stmt->name, &elem, &field,
                        &arrayNdx) == 0)
         return 0;               /* internal error, already reported */
-    if (elem.str && istreq(elem.str, "key")) {
-        ret = SetSymbolsField(info, &info->dflt, field.str, arrayNdx,
+    if (elem && istreq(elem, "key")) {
+        ret = SetSymbolsField(info, &info->dflt, field, arrayNdx,
                               stmt->value);
     }
-    else if (!elem.str && (istreq(field.str, "name") ||
-                           istreq(field.str, "groupname"))) {
+    else if (!elem && (istreq(field, "name") ||
+                       istreq(field, "groupname"))) {
         ret = SetGroupName(info, arrayNdx, stmt->value);
     }
-    else if (!elem.str && (istreq(field.str, "groupswrap") ||
-                           istreq(field.str, "wrapgroups"))) {
+    else if (!elem && (istreq(field, "groupswrap") ||
+                       istreq(field, "wrapgroups"))) {
         log_err(info->keymap->ctx,
                 "Global \"groupswrap\" not supported; Ignored\n");
         ret = true;
     }
-    else if (!elem.str && (istreq(field.str, "groupsclamp") ||
-                           istreq(field.str, "clampgroups"))) {
+    else if (!elem && (istreq(field, "groupsclamp") ||
+                       istreq(field, "clampgroups"))) {
         log_err(info->keymap->ctx,
                 "Global \"groupsclamp\" not supported; Ignored\n");
         ret = true;
     }
-    else if (!elem.str && (istreq(field.str, "groupsredirect") ||
-                           istreq(field.str, "redirectgroups"))) {
+    else if (!elem && (istreq(field, "groupsredirect") ||
+                       istreq(field, "redirectgroups"))) {
         log_err(info->keymap->ctx,
                 "Global \"groupsredirect\" not supported; Ignored\n");
         ret = true;
     }
-    else if (!elem.str && istreq(field.str, "allownone")) {
+    else if (!elem && istreq(field, "allownone")) {
         log_err(info->keymap->ctx,
                 "Radio groups not supported; "
                 "Ignoring \"allownone\" specification\n");
         ret = true;
     }
     else {
-        ret = SetActionField(info->keymap, elem.str, field.str, arrayNdx,
+        ret = SetActionField(info->keymap, elem, field, arrayNdx,
                              stmt->value, &info->action);
     }
 
@@ -1244,7 +1244,7 @@ static bool
 HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
 {
     bool ok = true;
-    ExprResult tmp, field;
+    const char *elem, *field;
     ExprDef *arrayNdx;
 
     for (; def; def = (VarDef *) def->common.next) {
@@ -1255,19 +1255,18 @@ HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
 
         if (!def->name) {
             if (!def->value || def->value->op == EXPR_KEYSYM_LIST)
-                field.str = "symbols";
+                field = "symbols";
             else
-                field.str = "actions";
+                field = "actions";
             arrayNdx = NULL;
         }
         else {
-            ok = ExprResolveLhs(info->keymap, def->name, &tmp, &field,
+            ok = ExprResolveLhs(info->keymap->ctx, def->name, &elem, &field,
                                 &arrayNdx);
         }
 
         if (ok)
-            ok = SetSymbolsField(info, keyi, field.str, arrayNdx,
-                                 def->value);
+            ok = SetSymbolsField(info, keyi, field, arrayNdx, def->value);
     }
 
     return ok;

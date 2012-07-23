@@ -874,20 +874,20 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
 static int
 HandleInterpVar(CompatInfo *info, VarDef *stmt)
 {
-    ExprResult elem, field;
+    const char *elem, *field;
     ExprDef *ndx;
     int ret;
 
-    if (ExprResolveLhs(info->keymap, stmt->name, &elem, &field, &ndx) == 0)
+    if (!ExprResolveLhs(info->keymap->ctx, stmt->name, &elem, &field, &ndx))
         ret = 0;               /* internal error, already reported */
-    else if (elem.str && istreq(elem.str, "interpret"))
-        ret = SetInterpField(info, &info->dflt, field.str, ndx, stmt->value);
-    else if (elem.str && istreq(elem.str, "indicator"))
-        ret = SetIndicatorMapField(info, &info->ledDflt, field.str, ndx,
+    else if (elem && istreq(elem, "interpret"))
+        ret = SetInterpField(info, &info->dflt, field, ndx, stmt->value);
+    else if (elem && istreq(elem, "indicator"))
+        ret = SetIndicatorMapField(info, &info->ledDflt, field, ndx,
                                    stmt->value);
     else
-        ret = SetActionField(info->keymap, elem.str, field.str, ndx,
-                             stmt->value, &info->act);
+        ret = SetActionField(info->keymap, elem, field, ndx, stmt->value,
+                             &info->act);
     return ret;
 }
 
@@ -895,7 +895,7 @@ static int
 HandleInterpBody(CompatInfo *info, VarDef *def, SymInterpInfo *si)
 {
     int ok = 1;
-    ExprResult tmp, field;
+    const char *elem, *field;
     ExprDef *arrayNdx;
 
     for (; def != NULL; def = (VarDef *) def->common.next) {
@@ -903,9 +903,10 @@ HandleInterpBody(CompatInfo *info, VarDef *def, SymInterpInfo *si)
             ok = HandleInterpVar(info, def);
             continue;
         }
-        ok = ExprResolveLhs(info->keymap, def->name, &tmp, &field, &arrayNdx);
+        ok = ExprResolveLhs(info->keymap->ctx, def->name, &elem, &field,
+                            &arrayNdx);
         if (ok) {
-            ok = SetInterpField(info, si, field.str, arrayNdx, def->value);
+            ok = SetInterpField(info, si, field, arrayNdx, def->value);
         }
     }
     return ok;
@@ -997,23 +998,22 @@ HandleIndicatorMapDef(CompatInfo *info, IndicatorMapDef *def,
 
     ok = true;
     for (var = def->body; var != NULL; var = (VarDef *) var->common.next) {
-        ExprResult elem, field;
+        const char *elem, *field;
         ExprDef *arrayNdx;
-        if (!ExprResolveLhs(info->keymap, var->name, &elem, &field,
+        if (!ExprResolveLhs(info->keymap->ctx, var->name, &elem, &field,
                             &arrayNdx)) {
             ok = false;
             continue;
         }
 
-        if (elem.str != NULL) {
+        if (elem) {
             log_err(info->keymap->ctx,
                     "Cannot set defaults for \"%s\" element in indicator map; "
-                    "Assignment to %s.%s ignored\n",
-                    elem.str, elem.str, field.str);
+                    "Assignment to %s.%s ignored\n", elem, elem, field);
             ok = false;
         }
         else {
-            ok = SetIndicatorMapField(info, &led, field.str, arrayNdx,
+            ok = SetIndicatorMapField(info, &led, field, arrayNdx,
                                       var->value) && ok;
         }
     }

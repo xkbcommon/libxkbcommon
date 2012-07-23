@@ -608,43 +608,44 @@ HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge,
 static int
 HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
 {
-    ExprResult tmp, field;
+    const char *elem, *field;
+    ExprResult tmp;
     ExprDef *arrayNdx;
     int which;
 
-    if (ExprResolveLhs(info->keymap, stmt->name, &tmp, &field,
+    if (ExprResolveLhs(info->keymap->ctx, stmt->name, &elem, &field,
                        &arrayNdx) == 0)
         return 0;               /* internal error, already reported */
 
-    if (tmp.str != NULL) {
+    if (elem) {
         log_err(info->keymap->ctx,
                 "Unknown element %s encountered; "
-                "Default for field %s ignored\n", tmp.str, field.str);
+                "Default for field %s ignored\n", elem, field);
         goto err_out;
     }
 
-    if (istreq(field.str, "minimum"))
+    if (istreq(field, "minimum"))
         which = MIN_KEYCODE_DEF;
-    else if (istreq(field.str, "maximum"))
+    else if (istreq(field, "maximum"))
         which = MAX_KEYCODE_DEF;
     else {
         log_err(info->keymap->ctx,
                 "Unknown field encountered; "
-                "Assigment to field %s ignored\n", field.str);
+                "Assigment to field %s ignored\n", field);
         goto err_out;
     }
 
     if (arrayNdx != NULL) {
         log_err(info->keymap->ctx,
                 "The %s setting is not an array; "
-                "Illegal array reference ignored\n", field.str);
+                "Illegal array reference ignored\n", field);
         goto err_out;
     }
 
     if (ExprResolveKeyCode(info->keymap->ctx, stmt->value, &tmp) == 0) {
         log_err(info->keymap->ctx,
                 "Illegal keycode encountered; "
-                "Assignment to field %s ignored\n", field.str);
+                "Assignment to field %s ignored\n", field);
         goto err_out;
     }
 
@@ -652,7 +653,7 @@ HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
         log_err(info->keymap->ctx,
                 "Illegal keycode %d (must be in the range %d-%d inclusive); "
                 "Value of \"%s\" not changed\n",
-                tmp.uval, 0, XKB_KEYCODE_MAX, field.str);
+                tmp.uval, 0, XKB_KEYCODE_MAX, field);
         goto err_out;
     }
 

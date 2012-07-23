@@ -33,13 +33,7 @@ typedef union _ExprResult {
     const char *str;
     int ival;
     unsigned uval;
-    char name[XkbKeyNameLength];
 } ExprResult;
-
-extern int
-ExprResolveLhs(struct xkb_keymap *keymap, ExprDef *expr,
-               ExprResult *elem_rtrn, ExprResult *field_rtrn,
-               ExprDef **index_rtrn);
 
 typedef struct _LookupEntry {
     const char *name;
@@ -48,6 +42,10 @@ typedef struct _LookupEntry {
 
 extern const char *
 exprOpText(enum expr_op_type op);
+
+bool
+ExprResolveLhs(struct xkb_context *ctx, ExprDef *expr, const char **elem_rtrn,
+               const char **field_rtrn, ExprDef **index_rtrn);
 
 extern bool
 LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,

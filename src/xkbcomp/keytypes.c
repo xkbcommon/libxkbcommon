@@ -753,24 +753,27 @@ SetKeyTypeField(KeyTypesInfo *info, KeyTypeInfo *type,
 static bool
 HandleKeyTypeVar(KeyTypesInfo *info, VarDef *stmt)
 {
-    ExprResult elem, field;
+    const char *elem, *field;
     ExprDef *arrayNdx;
 
-    if (!ExprResolveLhs(info->keymap, stmt->name, &elem, &field, &arrayNdx))
+    if (!ExprResolveLhs(info->keymap->ctx, stmt->name, &elem, &field,
+                        &arrayNdx))
         return false;           /* internal error, already reported */
-    if (elem.str && istreq(elem.str, "type"))
-        return SetKeyTypeField(info, &info->dflt, field.str, arrayNdx,
+
+    if (elem && istreq(elem, "type"))
+        return SetKeyTypeField(info, &info->dflt, field, arrayNdx,
                                stmt->value);
-    if (elem.str != NULL) {
+
+    if (elem) {
         log_err(info->keymap->ctx,
                 "Default for unknown element %s; "
-                "Value for field %s ignored\n",
-                field.str, elem.str);
+                "Value for field %s ignored\n", field, elem);
     }
-    else if (field.str != NULL) {
+    else if (field) {
         log_err(info->keymap->ctx,
-                "Default defined for unknown field %s; Ignored\n", field.str);
+                "Default defined for unknown field %s; Ignored\n", field);
     }
+
     return false;
 }
 
@@ -778,7 +781,7 @@ static int
 HandleKeyTypeBody(KeyTypesInfo *info, VarDef *def, KeyTypeInfo *type)
 {
     int ok = 1;
-    ExprResult tmp, field;
+    const char *elem, *field;
     ExprDef *arrayNdx;
 
     for (; def; def = (VarDef *) def->common.next) {
@@ -786,12 +789,14 @@ HandleKeyTypeBody(KeyTypesInfo *info, VarDef *def, KeyTypeInfo *type)
             ok = HandleKeyTypeVar(info, def);
             continue;
         }
-        ok = ExprResolveLhs(info->keymap, def->name, &tmp, &field, &arrayNdx);
+        ok = ExprResolveLhs(info->keymap->ctx, def->name, &elem, &field,
+                            &arrayNdx);
         if (ok) {
-            ok = SetKeyTypeField(info, type, field.str, arrayNdx,
+            ok = SetKeyTypeField(info, type, field, arrayNdx,
                                  def->value);
         }
     }
+
     return ok;
 }
 
