@@ -103,8 +103,8 @@ extern int
 ExprResolveMask(struct xkb_context *ctx, ExprDef *expr, ExprResult *val_rtrn,
                 const LookupEntry *values);
 
-extern int
+bool
 ExprResolveKeySym(struct xkb_context *ctx, ExprDef *expr,
-                  ExprResult *val_rtrn);
+                  xkb_keysym_t *sym_rtrn);
 
 #endif /* EXPR_H */

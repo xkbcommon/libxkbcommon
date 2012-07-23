@@ -820,26 +820,24 @@ ExprResolveVModMask(struct xkb_keymap *keymap, ExprDef *expr,
                                  keymap);
 }
 
-int
+bool
 ExprResolveKeySym(struct xkb_context *ctx, ExprDef *expr,
-                  ExprResult *val_rtrn)
+                  xkb_keysym_t *sym_rtrn)
 {
-    int ok = 0;
-    xkb_keysym_t sym;
+    bool ok = false;
+    ExprResult result;
 
     if (expr->op == EXPR_IDENT) {
         const char *str;
         str = xkb_atom_text(ctx, expr->value.str);
-        if (str) {
-            sym = xkb_keysym_from_name(str);
-            if (sym != XKB_KEY_NoSymbol) {
-                val_rtrn->uval = sym;
-                return true;
-            }
-        }
+        *sym_rtrn = xkb_keysym_from_name(str);
+        if (*sym_rtrn != XKB_KEY_NoSymbol)
+            return true;
     }
-    ok = ExprResolveInteger(ctx, expr, val_rtrn);
-    if ((ok) && (val_rtrn->uval < 10))
-        val_rtrn->uval += '0';
+
+    ok = ExprResolveInteger(ctx, expr, &result);
+    if (ok && result.uval < 10)
+        *sym_rtrn = result.uval + '0';
+
     return ok;
 }

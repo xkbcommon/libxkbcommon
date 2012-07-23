@@ -1370,13 +1370,15 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
     ok = true;
     tmp.modifier = rtrn.uval;
     for (key = def->keys; key != NULL; key = (ExprDef *) key->common.next) {
+        xkb_keysym_t sym;
+
         if (key->op == EXPR_VALUE && key->value_type == EXPR_TYPE_KEYNAME) {
             tmp.haveSymbol = false;
             tmp.u.keyName = KeyNameToLong(key->value.keyName);
         }
-        else if (ExprResolveKeySym(ctx, key, &rtrn)) {
+        else if (ExprResolveKeySym(ctx, key, &sym)) {
             tmp.haveSymbol = true;
-            tmp.u.keySym = rtrn.uval;
+            tmp.u.keySym = sym;
         }
         else {
             log_err(info->keymap->ctx,
