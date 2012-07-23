@@ -1110,32 +1110,40 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     }
     else if (istreq(field, "groupswrap") ||
              istreq(field, "wrapgroups")) {
-        if (!ExprResolveBoolean(ctx, value, &tmp)) {
+        bool set;
+
+        if (!ExprResolveBoolean(ctx, value, &set)) {
             log_err(info->keymap->ctx,
                     "Illegal groupsWrap setting for %s; "
                     "Non-boolean value ignored\n",
                     longText(keyi->name));
             return false;
         }
-        if (tmp.uval)
+
+        if (set)
             keyi->out_of_range_group_action = XkbWrapIntoRange;
         else
             keyi->out_of_range_group_action = XkbClampIntoRange;
+
         keyi->defined |= _Key_GroupInfo;
     }
     else if (istreq(field, "groupsclamp") ||
              istreq(field, "clampgroups")) {
-        if (!ExprResolveBoolean(ctx, value, &tmp)) {
+        bool set;
+
+        if (!ExprResolveBoolean(ctx, value, &set)) {
             log_err(info->keymap->ctx,
                     "Illegal groupsClamp setting for %s; "
                     "Non-boolean value ignored\n",
                     longText(keyi->name));
             return false;
         }
-        if (tmp.uval)
+
+        if (set)
             keyi->out_of_range_group_action = XkbClampIntoRange;
         else
             keyi->out_of_range_group_action = XkbWrapIntoRange;
+
         keyi->defined |= _Key_GroupInfo;
     }
     else if (istreq(field, "groupsredirect") ||

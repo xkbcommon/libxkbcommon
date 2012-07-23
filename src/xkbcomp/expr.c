@@ -214,11 +214,10 @@ LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
     return ret;
 }
 
-int
-ExprResolveBoolean(struct xkb_context *ctx, ExprDef *expr,
-                   ExprResult *val_rtrn)
+bool
+ExprResolveBoolean(struct xkb_context *ctx, ExprDef *expr, bool *set_rtrn)
 {
-    int ok = 0;
+    bool ok = false;
     const char *ident;
 
     switch (expr->op) {
@@ -229,7 +228,7 @@ ExprResolveBoolean(struct xkb_context *ctx, ExprDef *expr,
                     exprValueTypeText(expr->value_type));
             return false;
         }
-        val_rtrn->ival = expr->value.ival;
+        *set_rtrn = !!expr->value.ival;
         return true;
 
     case EXPR_IDENT:
@@ -238,13 +237,13 @@ ExprResolveBoolean(struct xkb_context *ctx, ExprDef *expr,
             if (istreq(ident, "true") ||
                 istreq(ident, "yes") ||
                 istreq(ident, "on")) {
-                val_rtrn->uval = 1;
+                *set_rtrn = true;
                 return true;
             }
             else if (istreq(ident, "false") ||
                      istreq(ident, "no") ||
                      istreq(ident, "off")) {
-                val_rtrn->uval = 0;
+                *set_rtrn = false;
                 return true;
             }
         }
@@ -260,9 +259,9 @@ ExprResolveBoolean(struct xkb_context *ctx, ExprDef *expr,
 
     case EXPR_INVERT:
     case EXPR_NOT:
-        ok = ExprResolveBoolean(ctx, expr, val_rtrn);
+        ok = ExprResolveBoolean(ctx, expr, set_rtrn);
         if (ok)
-            val_rtrn->uval = !val_rtrn->uval;
+            *set_rtrn = !*set_rtrn;
         return ok;
     case EXPR_ADD:
     case EXPR_SUBTRACT:
@@ -279,6 +278,7 @@ ExprResolveBoolean(struct xkb_context *ctx, ExprDef *expr,
         log_wsgo(ctx, "Unknown operator %d in ResolveBoolean\n", expr->op);
         break;
     }
+
     return false;
 }
 

@@ -221,7 +221,7 @@ CheckLatchLockFlags(struct xkb_keymap *keymap, unsigned action,
                     unsigned field, ExprDef * value, unsigned *flags_inout)
 {
     unsigned tmp;
-    ExprResult result;
+    bool result;
 
     if (field == F_ClearLocks)
         tmp = XkbSA_ClearLocks;
@@ -229,12 +229,15 @@ CheckLatchLockFlags(struct xkb_keymap *keymap, unsigned action,
         tmp = XkbSA_LatchToLock;
     else
         return false;           /* WSGO! */
+
     if (!ExprResolveBoolean(keymap->ctx, value, &result))
         return ReportMismatch(keymap, action, field, "boolean");
-    if (result.uval)
+
+    if (result)
         *flags_inout |= tmp;
     else
         *flags_inout &= ~tmp;
+
     return true;
 }
 
@@ -453,13 +456,17 @@ HandleMovePtr(struct xkb_keymap *keymap, struct xkb_any_action *action,
         return true;
     }
     else if (field == F_Accel) {
-        if (!ExprResolveBoolean(keymap->ctx, value, &rtrn))
+        bool set;
+
+        if (!ExprResolveBoolean(keymap->ctx, value, &set))
             return ReportMismatch(keymap, action->type, field, "boolean");
-        if (rtrn.uval)
+
+        if (set)
             act->flags &= ~XkbSA_NoAcceleration;
         else
             act->flags |= XkbSA_NoAcceleration;
     }
+
     return ReportIllegal(keymap, action->type, field);
 }
 
@@ -678,16 +685,22 @@ HandleSwitchScreen(struct xkb_keymap *keymap, struct xkb_any_action *action,
         return true;
     }
     else if (field == F_Same) {
-        if (array_ndx != NULL)
+        bool set;
+
+        if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
-        if (!ExprResolveBoolean(keymap->ctx, value, &rtrn))
+
+        if (!ExprResolveBoolean(keymap->ctx, value, &set))
             return ReportMismatch(keymap, action->type, field, "boolean");
-        if (rtrn.uval)
+
+        if (set)
             act->flags &= ~XkbSA_SwitchApplication;
         else
             act->flags |= XkbSA_SwitchApplication;
+
         return true;
     }
+
     return ReportIllegal(keymap, action->type, field);
 }
 
@@ -750,6 +763,7 @@ HandleActionMessage(struct xkb_keymap *keymap, struct xkb_any_action *action,
 {
     ExprResult rtrn;
     const char *str;
+    bool set;
     struct xkb_message_action *act;
 
     act = (struct xkb_message_action *) action;
@@ -766,14 +780,17 @@ HandleActionMessage(struct xkb_keymap *keymap, struct xkb_any_action *action,
         return true;
 
     case F_GenKeyEvent:
-        if (array_ndx != NULL)
+        if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
-        if (!ExprResolveBoolean(keymap->ctx, value, &rtrn))
+
+        if (!ExprResolveBoolean(keymap->ctx, value, &set))
             return ReportMismatch(keymap, action->type, field, "boolean");
-        if (rtrn.uval)
+
+        if (set)
             act->flags |= XkbSA_MessageGenKeyEvent;
         else
             act->flags &= ~XkbSA_MessageGenKeyEvent;
+
         return true;
 
     case F_Data:

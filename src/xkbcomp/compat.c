@@ -665,32 +665,36 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
             return ReportSIBadType(info, si, field, "virtual modifier");
     }
     else if (istreq(field, "repeat")) {
-        if (arrayNdx != NULL)
+        bool set;
+
+        if (arrayNdx)
             return ReportSINotArray(info, si, field);
-        ok = ExprResolveBoolean(keymap->ctx, value, &tmp);
-        if (ok) {
-            if (tmp.uval)
-                si->interp.flags |= XkbSI_AutoRepeat;
-            else
-                si->interp.flags &= ~XkbSI_AutoRepeat;
-            si->defined |= _SI_AutoRepeat;
-        }
-        else
+
+        if (!ExprResolveBoolean(keymap->ctx, value, &set))
             return ReportSIBadType(info, si, field, "boolean");
+
+        if (set)
+            si->interp.flags |= XkbSI_AutoRepeat;
+        else
+            si->interp.flags &= ~XkbSI_AutoRepeat;
+
+        si->defined |= _SI_AutoRepeat;
     }
     else if (istreq(field, "locking")) {
-        if (arrayNdx != NULL)
+        bool set;
+
+        if (arrayNdx)
             return ReportSINotArray(info, si, field);
-        ok = ExprResolveBoolean(keymap->ctx, value, &tmp);
-        if (ok) {
-            if (tmp.uval)
-                si->interp.flags |= XkbSI_LockingKey;
-            else
-                si->interp.flags &= ~XkbSI_LockingKey;
-            si->defined |= _SI_LockingKey;
-        }
-        else
+
+        if (!ExprResolveBoolean(keymap->ctx, value, &set))
             return ReportSIBadType(info, si, field, "boolean");
+
+        if (set)
+            si->interp.flags |= XkbSI_LockingKey;
+        else
+            si->interp.flags &= ~XkbSI_LockingKey;
+
+        si->defined |= _SI_LockingKey;
     }
     else if (istreq(field, "usemodmap") ||
              istreq(field, "usemodmapmods")) {
@@ -789,16 +793,19 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
         led->defined |= _LED_Ctrls;
     }
     else if (istreq(field, "allowexplicit")) {
-        if (arrayNdx != NULL)
+        bool set;
+
+        if (arrayNdx)
             return ReportIndicatorNotArray(info, led, field);
 
-        if (!ExprResolveBoolean(keymap->ctx, value, &rtrn))
+        if (!ExprResolveBoolean(keymap->ctx, value, &set))
             return ReportIndicatorBadType(info, led, field, "boolean");
 
-        if (rtrn.uval)
+        if (set)
             led->flags &= ~XkbIM_NoExplicit;
         else
             led->flags |= XkbIM_NoExplicit;
+
         led->defined |= _LED_Explicit;
     }
     else if (istreq(field, "whichmodstate") ||
@@ -828,16 +835,19 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
              istreq(field, "leddriveskeyboard") ||
              istreq(field, "indicatordriveskbd") ||
              istreq(field, "indicatordriveskeyboard")) {
-        if (arrayNdx != NULL)
+        bool set;
+
+        if (arrayNdx)
             return ReportIndicatorNotArray(info, led, field);
 
-        if (!ExprResolveBoolean(keymap->ctx, value, &rtrn))
+        if (!ExprResolveBoolean(keymap->ctx, value, &set))
             return ReportIndicatorBadType(info, led, field, "boolean");
 
-        if (rtrn.uval)
+        if (set)
             led->flags |= XkbIM_LEDDrivesKB;
         else
             led->flags &= ~XkbIM_LEDDrivesKB;
+
         led->defined |= _LED_DrivesKbd;
     }
     else if (istreq(field, "index")) {
