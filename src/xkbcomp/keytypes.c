@@ -685,7 +685,6 @@ SetLevelName(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
         return false;
     }
     level_name = xkb_atom_intern(ctx, rtrn.str);
-    free(rtrn.str);
     return AddLevelName(info, type, level, level_name, true);
 }
 
@@ -698,7 +697,7 @@ SetLevelName(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
  */
 static bool
 SetKeyTypeField(KeyTypesInfo *info, KeyTypeInfo *type,
-                char *field, ExprDef *arrayNdx, ExprDef *value)
+                const char *field, ExprDef *arrayNdx, ExprDef *value)
 {
     ExprResult tmp;
 
@@ -792,7 +791,6 @@ HandleKeyTypeBody(KeyTypesInfo *info, VarDef *def, KeyTypeInfo *type)
         if (ok) {
             ok = SetKeyTypeField(info, type, field.str, arrayNdx,
                                  def->value);
-            free(field.str);
         }
     }
     return ok;
@@ -1001,7 +999,7 @@ CopyDefToKeyType(KeyTypesInfo *info, KeyTypeInfo *def,
     }
     else
         type->preserve = NULL;
-    type->name = xkb_atom_strdup(keymap->ctx, def->name);
+    type->name = xkb_atom_text(keymap->ctx, def->name);
 
     if (!darray_empty(def->lvlNames)) {
         type->level_names = calloc(darray_size(def->lvlNames),
@@ -1010,7 +1008,7 @@ CopyDefToKeyType(KeyTypesInfo *info, KeyTypeInfo *def,
         /* assert def->szNames<=def->numLevels */
         for (i = 0; i < darray_size(def->lvlNames); i++)
             type->level_names[i] =
-                xkb_atom_strdup(keymap->ctx, darray_item(def->lvlNames, i));
+                xkb_atom_text(keymap->ctx, darray_item(def->lvlNames, i));
     }
     else {
         type->level_names = NULL;
@@ -1193,16 +1191,16 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
 
         if (missing & XkbOneLevelMask)
             darray_item(keymap->types, XkbOneLevelIndex).name =
-                xkb_atom_strdup(keymap->ctx, info.tok_ONE_LEVEL);
+                xkb_atom_text(keymap->ctx, info.tok_ONE_LEVEL);
         if (missing & XkbTwoLevelMask)
             darray_item(keymap->types, XkbTwoLevelIndex).name =
-                xkb_atom_strdup(keymap->ctx, info.tok_TWO_LEVEL);
+                xkb_atom_text(keymap->ctx, info.tok_TWO_LEVEL);
         if (missing & XkbAlphabeticMask)
             darray_item(keymap->types, XkbAlphabeticIndex).name =
-                xkb_atom_strdup(keymap->ctx, info.tok_ALPHABETIC);
+                xkb_atom_text(keymap->ctx, info.tok_ALPHABETIC);
         if (missing & XkbKeypadMask)
             darray_item(keymap->types, XkbKeypadIndex).name =
-                xkb_atom_strdup(keymap->ctx, info.tok_KEYPAD);
+                xkb_atom_text(keymap->ctx, info.tok_KEYPAD);
     }
 
     next = &darray_item(keymap->types, XkbLastRequiredType + 1);

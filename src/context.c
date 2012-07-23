@@ -295,7 +295,13 @@ xkb_context_new(enum xkb_context_flags flags)
 xkb_atom_t
 xkb_atom_intern(struct xkb_context *ctx, const char *string)
 {
-    return atom_intern(ctx->atom_table, string);
+    return atom_intern(ctx->atom_table, string, false);
+}
+
+xkb_atom_t
+xkb_atom_steal(struct xkb_context *ctx, char *string)
+{
+    return atom_intern(ctx->atom_table, string, true);
 }
 
 char *

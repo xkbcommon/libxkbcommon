@@ -980,7 +980,6 @@ HandlePrivate(struct xkb_keymap *keymap, struct xkb_any_action *action,
                 }
                 strncpy((char *) action->data, rtrn.str, sizeof action->data);
             }
-            free(rtrn.str);
             return true;
         }
         else {
@@ -1133,18 +1132,12 @@ HandleActionDef(ExprDef * def,
                     "Cannot change defaults in an action definition; "
                     "Ignoring attempt to change %s.%s\n",
                     elemRtrn.str, fieldRtrn.str);
-            free(elemRtrn.str);
-            free(fieldRtrn.str);
             return false;
         }
         if (!stringToField(fieldRtrn.str, &fieldNdx)) {
             log_err(keymap->ctx, "Unknown field name %s\n", fieldRtrn.str);
-            free(elemRtrn.str);
-            free(fieldRtrn.str);
             return false;
         }
-        free(elemRtrn.str);
-        free(fieldRtrn.str);
         if (!(*handleAction[hndlrType])(keymap, action, fieldNdx, arrayRtrn,
                                         value))
             return false;
@@ -1155,7 +1148,7 @@ HandleActionDef(ExprDef * def,
 /***====================================================================***/
 
 int
-SetActionField(struct xkb_keymap *keymap, char *elem, char *field,
+SetActionField(struct xkb_keymap *keymap, const char *elem, const char *field,
                ExprDef *array_ndx, ExprDef *value, ActionInfo **info_rtrn)
 {
     ActionInfo *new, *old;

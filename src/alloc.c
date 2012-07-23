@@ -36,8 +36,6 @@ XkbcCopyKeyType(const struct xkb_key_type *from, struct xkb_key_type *into)
 
     darray_free(into->map);
     free(into->preserve);
-    for (i = 0; i < into->num_levels; i++)
-        free(into->level_names[i]);
     free(into->level_names);
 
     *into = *from;
@@ -113,13 +111,9 @@ free_types(struct xkb_keymap *keymap)
     struct xkb_key_type *type;
 
     darray_foreach(type, keymap->types) {
-        int j;
         darray_free(type->map);
         free(type->preserve);
-        for (j = 0; j < type->num_levels; j++)
-            free(type->level_names[j]);
         free(type->level_names);
-        free(type->name);
     }
     darray_free(keymap->types);
 }
@@ -136,28 +130,6 @@ free_keys(struct xkb_keymap *keymap)
     }
 
     darray_free(keymap->keys);
-}
-
-static void
-free_names(struct xkb_keymap *keymap)
-{
-    int i;
-
-    for (i = 0; i < XkbNumVirtualMods; i++)
-        free(keymap->vmod_names[i]);
-
-    for (i = 0; i < XkbNumIndicators; i++)
-        free(keymap->indicator_names[i]);
-
-    for (i = 0; i < XkbNumKbdGroups; i++)
-        free(keymap->group_names[i]);
-
-    darray_free(keymap->key_aliases);
-
-    free(keymap->keycodes_section_name);
-    free(keymap->symbols_section_name);
-    free(keymap->types_section_name);
-    free(keymap->compat_section_name);
 }
 
 struct xkb_keymap *
@@ -184,7 +156,11 @@ XkbcFreeKeyboard(struct xkb_keymap *keymap)
     free_types(keymap);
     darray_free(keymap->acts);
     darray_free(keymap->sym_interpret);
-    free_names(keymap);
+    darray_free(keymap->key_aliases);
+    free(keymap->keycodes_section_name);
+    free(keymap->symbols_section_name);
+    free(keymap->types_section_name);
+    free(keymap->compat_section_name);
     free_keys(keymap);
     xkb_context_unref(keymap->ctx);
     free(keymap);

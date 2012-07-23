@@ -692,11 +692,9 @@ HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
         info->explicitMax = tmp.uval;
     }
 
-    free(field.str);
     return 1;
 
 err_out:
-    free(field.str);
     return 0;
 }
 
@@ -724,11 +722,9 @@ HandleIndicatorNameDef(KeyNamesInfo *info, IndicatorNameDef *def,
                              "string");
     }
     ii.name = xkb_atom_intern(info->keymap->ctx, tmp.str);
-    free(tmp.str);
     ii.virtual = def->virtual;
-    if (!AddIndicatorName(info, merge, &ii))
-        return false;
-    return true;
+
+    return AddIndicatorName(info, merge, &ii);
 }
 
 /**
@@ -927,9 +923,8 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
         keymap->keycodes_section_name = strdup(info.name);
 
     list_foreach(ii, &info.leds, entry) {
-        free(keymap->indicator_names[ii->ndx - 1]);
         keymap->indicator_names[ii->ndx - 1] =
-            xkb_atom_strdup(keymap->ctx, ii->name);
+            xkb_atom_text(keymap->ctx, ii->name);
     }
 
     ApplyAliases(&info);

@@ -82,7 +82,7 @@ exprOpText(unsigned type)
         strcpy(buf, "bitwise inversion");
         break;
     case OpUnaryPlus:
-        strcpy(buf, "plus sign");
+        strcpy(buf, "unary plus");
         break;
     default:
         snprintf(buf, sizeof(buf), "illegal(%d)", type);
@@ -127,25 +127,22 @@ ExprResolveLhs(struct xkb_keymap *keymap, ExprDef *expr,
                ExprResult *elem_rtrn, ExprResult *field_rtrn,
                ExprDef **index_rtrn)
 {
+    struct xkb_context *ctx = keymap->ctx;
+
     switch (expr->op) {
     case ExprIdent:
         elem_rtrn->str = NULL;
-        field_rtrn->str = xkb_atom_strdup(keymap->ctx,
-                                          expr->value.str);
+        field_rtrn->str = xkb_atom_text(ctx, expr->value.str);
         *index_rtrn = NULL;
         return true;
     case ExprFieldRef:
-        elem_rtrn->str = xkb_atom_strdup(keymap->ctx,
-                                         expr->value.field.element);
-        field_rtrn->str = xkb_atom_strdup(keymap->ctx,
-                                          expr->value.field.field);
+        elem_rtrn->str = xkb_atom_text(ctx, expr->value.field.element);
+        field_rtrn->str = xkb_atom_text(ctx, expr->value.field.field);
         *index_rtrn = NULL;
         return true;
     case ExprArrayRef:
-        elem_rtrn->str = xkb_atom_strdup(keymap->ctx,
-                                         expr->value.array.element);
-        field_rtrn->str = xkb_atom_strdup(keymap->ctx,
-                                          expr->value.array.field);
+        elem_rtrn->str = xkb_atom_text(ctx, expr->value.array.element);
+        field_rtrn->str = xkb_atom_text(ctx, expr->value.array.field);
         *index_rtrn = expr->value.array.entry;
         return true;
     }
@@ -268,29 +265,14 @@ ExprResolveBoolean(struct xkb_context *ctx, ExprDef *expr,
             val_rtrn->uval = !val_rtrn->uval;
         return ok;
     case OpAdd:
-        if (bogus == NULL)
-            bogus = "Addition";
     case OpSubtract:
-        if (bogus == NULL)
-            bogus = "Subtraction";
     case OpMultiply:
-        if (bogus == NULL)
-            bogus = "Multiplication";
     case OpDivide:
-        if (bogus == NULL)
-            bogus = "Division";
     case OpAssign:
-        if (bogus == NULL)
-            bogus = "Assignment";
     case OpNegate:
-        if (bogus == NULL)
-            bogus = "Negation";
-        log_err(ctx, "%s of boolean values not permitted\n", bogus);
-        break;
-
     case OpUnaryPlus:
-        log_err(ctx,
-                "Unary \"+\" operator not permitted for boolean values\n");
+        log_err(ctx, "%s of boolean values not permitted\n",
+                exprOpText(expr->op));
         break;
 
     default:
@@ -589,11 +571,6 @@ int
 ExprResolveString(struct xkb_context *ctx, ExprDef *expr,
                   ExprResult *val_rtrn)
 {
-    ExprResult leftRtrn, rightRtrn;
-    ExprDef *left;
-    ExprDef *right;
-    const char *bogus = NULL;
-
     switch (expr->op) {
     case ExprValue:
         if (expr->type != TypeString) {
@@ -601,9 +578,7 @@ ExprResolveString(struct xkb_context *ctx, ExprDef *expr,
                     exprTypeText(expr->type));
             return false;
         }
-        val_rtrn->str = xkb_atom_strdup(ctx, expr->value.str);
-        if (val_rtrn->str == NULL)
-            val_rtrn->str = strdup("");
+        val_rtrn->str = xkb_atom_text(ctx, expr->value.str);
         return true;
 
     case ExprIdent:
@@ -618,53 +593,15 @@ ExprResolveString(struct xkb_context *ctx, ExprDef *expr,
         return false;
 
     case OpAdd:
-        left = expr->value.binary.left;
-        right = expr->value.binary.right;
-        if (ExprResolveString(ctx, left, &leftRtrn) &&
-            ExprResolveString(ctx, right, &rightRtrn)) {
-            int len;
-            char *new;
-            len = strlen(leftRtrn.str) + strlen(rightRtrn.str) + 1;
-            new = malloc(len);
-            if (new) {
-                sprintf(new, "%s%s", leftRtrn.str, rightRtrn.str);
-                free(leftRtrn.str);
-                free(rightRtrn.str);
-                val_rtrn->str = new;
-                return true;
-            }
-            free(leftRtrn.str);
-            free(rightRtrn.str);
-        }
-        return false;
-
     case OpSubtract:
-        if (bogus == NULL)
-            bogus = "Subtraction";
     case OpMultiply:
-        if (bogus == NULL)
-            bogus = "Multiplication";
     case OpDivide:
-        if (bogus == NULL)
-            bogus = "Division";
     case OpAssign:
-        if (bogus == NULL)
-            bogus = "Assignment";
     case OpNegate:
-        if (bogus == NULL)
-            bogus = "Negation";
     case OpInvert:
-        if (bogus == NULL)
-            bogus = "Bitwise complement";
-        log_err(ctx, "%s of string values not permitted\n", bogus);
-        return false;
-
     case OpNot:
-        log_err(ctx, "The ! operator cannot be applied to a string\n");
-        return false;
-
     case OpUnaryPlus:
-        log_err(ctx, "The + operator cannot be applied to a string\n");
+        log_err(ctx, "%s of strings not permitted\n", exprOpText(expr->op));
         return false;
 
     default:
@@ -678,8 +615,6 @@ int
 ExprResolveKeyName(struct xkb_context *ctx, ExprDef *expr,
                    ExprResult *val_rtrn)
 {
-    const char *bogus = NULL;
-
     switch (expr->op) {
     case ExprValue:
         if (expr->type != TypeKeyName) {
@@ -702,35 +637,16 @@ ExprResolveKeyName(struct xkb_context *ctx, ExprDef *expr,
         return false;
 
     case OpAdd:
-        if (bogus == NULL)
-            bogus = "Addition";
     case OpSubtract:
-        if (bogus == NULL)
-            bogus = "Subtraction";
     case OpMultiply:
-        if (bogus == NULL)
-            bogus = "Multiplication";
     case OpDivide:
-        if (bogus == NULL)
-            bogus = "Division";
     case OpAssign:
-        if (bogus == NULL)
-            bogus = "Assignment";
     case OpNegate:
-        if (bogus == NULL)
-            bogus = "Negation";
     case OpInvert:
-        if (bogus == NULL)
-            bogus = "Bitwise complement";
-        log_err(ctx, "%s of key name values not permitted\n", bogus);
-        return false;
-
     case OpNot:
-        log_err(ctx, "The ! operator cannot be applied to a key name\n");
-        return false;
-
     case OpUnaryPlus:
-        log_err(ctx, "The + operator cannot be applied to a key name\n");
+        log_err(ctx, "%s of key name values not permitted\n",
+                exprOpText(expr->op));
         return false;
 
     default:

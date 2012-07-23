@@ -1021,7 +1021,7 @@ static const LookupEntry repeatEntries[] = {
 };
 
 static bool
-SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, char *field,
+SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
                 ExprDef *arrayNdx, ExprDef *value)
 {
     bool ok = true;
@@ -1043,14 +1043,12 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, char *field,
                     "Illegal group index for type of key %s; "
                     "Definition with non-integer array index ignored\n",
                     longText(keyi->name));
-            free(tmp.str);
             return false;
         }
         else {
             keyi->types[ndx.uval - 1] = xkb_atom_intern(ctx, tmp.str);
             keyi->typesDefined |= (1 << (ndx.uval - 1));
         }
-        free(tmp.str);
     }
     else if (strcasecmp(field, "symbols") == 0)
         return AddSymbolsToKey(info, keyi, arrayNdx, value);
@@ -1192,7 +1190,6 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
 
     info->groupNames[tmp.uval - 1 + info->explicit_group] =
         xkb_atom_intern(info->keymap->ctx, name.str);
-    free(name.str);
 
     return true;
 }
@@ -1249,8 +1246,6 @@ HandleSymbolsVar(SymbolsInfo *info, VarDef *stmt)
                              stmt->value, &info->action);
     }
 
-    free(elem.str);
-    free(field.str);
     return ret;
 }
 
@@ -1266,25 +1261,24 @@ HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
             ok = HandleSymbolsVar(info, def);
             continue;
         }
-        else {
-            if (def->name == NULL) {
-                if ((def->value == NULL)
-                    || (def->value->op == ExprKeysymList))
-                    field.str = strdup("symbols");
-                else
-                    field.str = strdup("actions");
-                arrayNdx = NULL;
-            }
-            else {
-                ok = ExprResolveLhs(info->keymap, def->name, &tmp, &field,
-                                    &arrayNdx);
-            }
-            if (ok)
-                ok = SetSymbolsField(info, keyi, field.str, arrayNdx,
-                                     def->value);
-            free(field.str);
+
+        if (!def->name) {
+            if (!def->value || (def->value->op == ExprKeysymList))
+                field.str = "symbols";
+            else
+                field.str = "actions";
+            arrayNdx = NULL;
         }
+        else {
+            ok = ExprResolveLhs(info->keymap, def->name, &tmp, &field,
+                                &arrayNdx);
+        }
+
+        if (ok)
+            ok = SetSymbolsField(info, keyi, field.str, arrayNdx,
+                                 def->value);
     }
+
     return ok;
 }
 
@@ -1949,9 +1943,8 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
 
     for (i = 0; i < XkbNumKbdGroups; i++) {
         if (info.groupNames[i] != XKB_ATOM_NONE) {
-            free(keymap->group_names[i]);
-            keymap->group_names[i] = xkb_atom_strdup(keymap->ctx,
-                                                     info.groupNames[i]);
+            keymap->group_names[i] = xkb_atom_text(keymap->ctx,
+                                                   info.groupNames[i]);
         }
     }
 

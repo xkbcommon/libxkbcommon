@@ -140,8 +140,14 @@ atom_strdup(struct atom_table *table, xkb_atom_t atom)
     return ret ? strdup(ret) : NULL;
 }
 
+/*
+ * If steal is true, we do not strdup @string; therefore it must be
+ * dynamically allocated, not be free'd by the caller and not be used
+ * afterwards. Use to avoid some redundant allocations.
+ */
 xkb_atom_t
-atom_intern(struct atom_table *table, const char *string)
+atom_intern(struct atom_table *table, const char *string,
+            bool steal)
 {
     struct atom_node **np;
     struct atom_node *nd;
@@ -168,12 +174,17 @@ atom_intern(struct atom_table *table, const char *string)
         else {
             /* now start testing the strings */
             comp = strncmp(string, (*np)->string, len);
-            if ((comp < 0) || ((comp == 0) && (len < strlen((*np)->string))))
+            if (comp < 0 || (comp == 0 && len < strlen((*np)->string))) {
                 np = &((*np)->left);
-            else if (comp > 0)
+            }
+            else if (comp > 0) {
                 np = &((*np)->right);
-            else
+            }
+            else {
+                if (steal)
+                    free(UNCONSTIFY(string));
                 return (*np)->a;
+            }
         }
     }
 
@@ -181,13 +192,16 @@ atom_intern(struct atom_table *table, const char *string)
     if (!nd)
         return XKB_ATOM_NONE;
 
-    nd->string = malloc(len + 1);
-    if (!nd->string) {
-        free(nd);
-        return XKB_ATOM_NONE;
+    if (steal) {
+        nd->string = UNCONSTIFY(string);
     }
-    strncpy(nd->string, string, len);
-    nd->string[len] = 0;
+    else {
+        nd->string = strdup(string);
+        if (!nd->string) {
+            free(nd);
+            return XKB_ATOM_NONE;
+        }
+    }
 
     *np = nd;
     nd->left = nd->right = NULL;

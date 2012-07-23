@@ -780,8 +780,7 @@ KeyName		:	KEYNAME		{ $$= $1; }
 
 Ident		:	IDENT
                         {
-                            $$ = xkb_atom_intern(param->ctx, $1);
-                            free($1);
+                            $$ = xkb_atom_steal(param->ctx, $1);
                         }
 		|	DEFAULT
                         {
@@ -791,8 +790,7 @@ Ident		:	IDENT
 
 String		:	STRING
                         {
-                            $$ = xkb_atom_intern(param->ctx, $1);
-                            free($1);
+                            $$ = xkb_atom_steal(param->ctx, $1);
                         }
 		;
 

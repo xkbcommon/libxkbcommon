@@ -249,9 +249,9 @@ struct xkb_key_type {
     struct xkb_mods mods;
     uint16_t num_levels;
     darray(struct xkb_kt_map_entry) map;
-    struct xkb_mods *             preserve;
-    char *name;
-    char **level_names;
+    struct xkb_mods *preserve;
+    const char *name;
+    const char **level_names;
 };
 
 struct xkb_sym_interpret {
@@ -352,15 +352,15 @@ struct xkb_keymap {
 
     /* vmod -> mod mapping */
     uint32_t vmods[XkbNumVirtualMods];
-    char *vmod_names[XkbNumVirtualMods];
+    const char *vmod_names[XkbNumVirtualMods];
 
     struct xkb_mods groups[XkbNumKbdGroups];
-    char *group_names[XkbNumKbdGroups];
+    const char *group_names[XkbNumKbdGroups];
 
     darray(union xkb_action) acts;
 
     struct xkb_indicator_map indicators[XkbNumIndicators];
-    char *indicator_names[XkbNumIndicators];
+    const char *indicator_names[XkbNumIndicators];
 
     char *keycodes_section_name;
     char *symbols_section_name;
@@ -473,6 +473,15 @@ typedef uint32_t xkb_atom_t;
 
 xkb_atom_t
 xkb_atom_intern(struct xkb_context *ctx, const char *string);
+
+/**
+ * If @string is dynamically allocated, free'd immediately after
+ * being interned, and not used afterwards, use this function
+ * instead of xkb_atom_intern to avoid some unnecessary allocations.
+ * The caller should not use or free the passed in string afterwards.
+ */
+xkb_atom_t
+xkb_atom_steal(struct xkb_context *ctx, char *string);
 
 char *
 xkb_atom_strdup(struct xkb_context *ctx, xkb_atom_t atom);

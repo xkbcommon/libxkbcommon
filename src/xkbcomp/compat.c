@@ -637,7 +637,7 @@ static const LookupEntry useModMapValues[] = {
 };
 
 static int
-SetInterpField(CompatInfo *info, SymInterpInfo *si, char *field,
+SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
                ExprDef *arrayNdx, ExprDef *value)
 {
     int ok = 1;
@@ -750,7 +750,7 @@ static const LookupEntry groupNames[] = {
 
 static int
 SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
-                     char *field, ExprDef *arrayNdx, ExprDef *value)
+                     const char *field, ExprDef *arrayNdx, ExprDef *value)
 {
     ExprResult rtrn;
     bool ok = true;
@@ -889,8 +889,6 @@ HandleInterpVar(CompatInfo *info, VarDef *stmt)
     else
         ret = SetActionField(info->keymap, elem.str, field.str, ndx,
                              stmt->value, &info->act);
-    free(elem.str);
-    free(field.str);
     return ret;
 }
 
@@ -909,7 +907,6 @@ HandleInterpBody(CompatInfo *info, VarDef *def, SymInterpInfo *si)
         ok = ExprResolveLhs(info->keymap, def->name, &tmp, &field, &arrayNdx);
         if (ok) {
             ok = SetInterpField(info, si, field.str, arrayNdx, def->value);
-            free(field.str);
         }
     }
     return ok;
@@ -1020,8 +1017,6 @@ HandleIndicatorMapDef(CompatInfo *info, IndicatorMapDef *def,
             ok = SetIndicatorMapField(info, &led, field.str, arrayNdx,
                                       var->value) && ok;
         }
-        free(elem.str);
-        free(field.str);
     }
 
     if (ok)
@@ -1130,7 +1125,7 @@ BindIndicators(CompatInfo *info, struct list *unbound_leds)
             for (i = 0; i < XkbNumIndicators; i++) {
                 if (keymap->indicator_names[i] == NULL) {
                     keymap->indicator_names[i] =
-                        xkb_atom_strdup(keymap->ctx, led->name);
+                        xkb_atom_text(keymap->ctx, led->name);
                     led->indicator = i + 1;
                     break;
                 }
@@ -1210,9 +1205,8 @@ CopyIndicatorMapDefs(CompatInfo *info)
         im->mods.real_mods = led->real_mods;
         im->mods.vmods = led->vmods;
         im->ctrls = led->ctrls;
-        free(keymap->indicator_names[led->indicator - 1]);
         keymap->indicator_names[led->indicator - 1] =
-            xkb_atom_strdup(keymap->ctx, led->name);
+            xkb_atom_text(keymap->ctx, led->name);
         free(led);
     }
     list_init(&info->leds);

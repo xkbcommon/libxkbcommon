@@ -72,7 +72,7 @@ HandleActionDef(ExprDef *def, struct xkb_keymap *keymap,
                 ActionInfo *info);
 
 extern int
-SetActionField(struct xkb_keymap *keymap, char *elem, char *field,
+SetActionField(struct xkb_keymap *keymap, const char *elem, const char *field,
                ExprDef *index, ExprDef *value,
                ActionInfo **info_rtrn);
 

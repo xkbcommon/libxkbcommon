@@ -30,7 +30,7 @@
 #include "xkbcomp-priv.h"
 
 typedef union _ExprResult {
-    char *str;
+    const char *str;
     int ival;
     unsigned uval;
     char name[XkbKeyNameLength];
