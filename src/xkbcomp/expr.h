@@ -95,9 +95,6 @@ ExprResolveButton(struct xkb_context *ctx, ExprDef *expr,
                   ExprResult *val_rtrn);
 
 extern int
-ExprResolveFloat(struct xkb_context *ctx, ExprDef *expr, ExprResult *val_rtrn);
-
-extern int
 ExprResolveString(struct xkb_context *ctx, ExprDef *expr,
                   ExprResult *val_rtrn);
 
