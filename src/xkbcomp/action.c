@@ -824,12 +824,12 @@ static bool
 HandleRedirectKey(struct xkb_keymap *keymap, struct xkb_any_action *action,
                   unsigned field, ExprDef *array_ndx, ExprDef *value)
 {
-    ExprResult rtrn;
     struct xkb_key *key;
     struct xkb_redirect_key_action *act;
     unsigned t1;
     xkb_mod_mask_t t2;
     unsigned long tmp;
+    char key_name[XkbKeyNameLength];
 
     if (array_ndx != NULL)
         return ReportActionNotArray(keymap, action->type, field);
@@ -837,14 +837,14 @@ HandleRedirectKey(struct xkb_keymap *keymap, struct xkb_any_action *action,
     act = (struct xkb_redirect_key_action *) action;
     switch (field) {
     case F_Keycode:
-        if (!ExprResolveKeyName(keymap->ctx, value, &rtrn))
+        if (!ExprResolveKeyName(keymap->ctx, value, key_name))
             return ReportMismatch(keymap, action->type, field, "key name");
 
-        tmp = KeyNameToLong(rtrn.name);
+        tmp = KeyNameToLong(key_name);
         key = FindNamedKey(keymap, tmp, true, CreateKeyNames(keymap), 0);
         if (!key)
             return ReportNotFound(keymap, action->type, field, "Key",
-                                  KeyNameText(rtrn.name));
+                                  KeyNameText(key_name));
         act->new_kc = XkbKeyGetKeycode(keymap, key);
         return true;
 

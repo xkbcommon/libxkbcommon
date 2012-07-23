@@ -95,9 +95,9 @@ extern int
 ExprResolveString(struct xkb_context *ctx, ExprDef *expr,
                   ExprResult *val_rtrn);
 
-extern int
+bool
 ExprResolveKeyName(struct xkb_context *ctx, ExprDef *expr,
-                   ExprResult *val_rtrn);
+                   char name[XkbKeyNameLength]);
 
 extern int
 ExprResolveEnum(struct xkb_context *ctx, ExprDef *expr, ExprResult *val_rtrn,

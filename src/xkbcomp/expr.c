@@ -619,9 +619,9 @@ ExprResolveString(struct xkb_context *ctx, ExprDef *expr,
     return false;
 }
 
-int
+bool
 ExprResolveKeyName(struct xkb_context *ctx, ExprDef *expr,
-                   ExprResult *val_rtrn)
+                   char name[XkbKeyNameLength])
 {
     switch (expr->op) {
     case EXPR_VALUE:
@@ -630,7 +630,7 @@ ExprResolveKeyName(struct xkb_context *ctx, ExprDef *expr,
                     exprValueTypeText(expr->value_type));
             return false;
         }
-        memcpy(val_rtrn->name, expr->value.keyName, XkbKeyNameLength);
+        memcpy(name, expr->value.keyName, XkbKeyNameLength);
         return true;
 
     case EXPR_IDENT:
