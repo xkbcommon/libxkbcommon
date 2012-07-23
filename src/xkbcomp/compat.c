@@ -1410,7 +1410,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
 
     if (num_acts)
         num_acts = key->num_groups * key->width;
-    acts = XkbcResizeKeyActions(keymap, key, num_acts);
+    acts = ResizeKeyActions(keymap, key, num_acts);
     if (num_acts && !acts)
         return false;
 

@@ -60,6 +60,21 @@ keymap_file_from_components(struct xkb_context *ctx,
                          &keycodes->common, 0);
 }
 
+static struct xkb_keymap *
+new_keymap(struct xkb_context *ctx)
+{
+    struct xkb_keymap *keymap;
+
+    keymap = calloc(1, sizeof(*keymap));
+    if (!keymap)
+        return NULL;
+
+    keymap->refcnt = 1;
+    keymap->ctx = xkb_context_ref(ctx);
+
+    return keymap;
+}
+
 /**
  * Compile the given file and store the output in keymap.
  * @param file A list of XkbFiles, each denoting one type (e.g.
@@ -77,7 +92,7 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
     XkbFile *compat = NULL;
     XkbFile *symbols = NULL;
 
-    keymap = XkbcAllocKeyboard(ctx);
+    keymap = new_keymap(ctx);
     if (!keymap)
         goto err;
 
@@ -332,8 +347,38 @@ xkb_map_ref(struct xkb_keymap *keymap)
 XKB_EXPORT void
 xkb_map_unref(struct xkb_keymap *keymap)
 {
+    struct xkb_key_type *type;
+    struct xkb_key *key;
+
     if (!keymap || --keymap->refcnt > 0)
         return;
 
-    XkbcFreeKeyboard(keymap);
+    darray_foreach(type, keymap->types) {
+        darray_free(type->map);
+        free(type->preserve);
+        free(type->level_names);
+    }
+    darray_free(keymap->types);
+
+    darray_foreach(key, keymap->keys) {
+        free(key->sym_index);
+        free(key->num_syms);
+        darray_free(key->syms);
+    }
+    darray_free(keymap->keys);
+
+    darray_free(keymap->acts);
+
+    darray_free(keymap->sym_interpret);
+
+    darray_free(keymap->key_aliases);
+
+    free(keymap->keycodes_section_name);
+    free(keymap->symbols_section_name);
+    free(keymap->types_section_name);
+    free(keymap->compat_section_name);
+
+    xkb_context_unref(keymap->ctx);
+
+    free(keymap);
 }

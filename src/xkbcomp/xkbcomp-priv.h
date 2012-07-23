@@ -28,7 +28,6 @@
 #define XKBCOMP_PRIV_H
 
 #include "xkbcomp.h"
-#include "alloc.h"
 #include "text.h"
 #include "utils.h"
 

@@ -61,8 +61,6 @@ libxkbcommon_la_SOURCES = \
 	src/xkbcomp/xkbcomp.c \
 	src/xkbcomp/xkbcomp.h \
 	src/xkbcomp/xkbcomp-priv.h \
-	src/alloc.c \
-	src/alloc.h \
 	src/atom.c \
 	src/atom.h \
 	src/context.c \

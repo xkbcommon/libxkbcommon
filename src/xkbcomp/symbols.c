@@ -1792,7 +1792,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
     darray_resize0(key->syms, sizeSyms);
 
     if (haveActions) {
-        outActs = XkbcResizeKeyActions(keymap, key, width * nGroups);
+        outActs = ResizeKeyActions(keymap, key, width * nGroups);
         if (outActs == NULL) {
             log_wsgo(info->keymap->ctx,
                      "Could not enlarge actions for %s (key %d)\n",

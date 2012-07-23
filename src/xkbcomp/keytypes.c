@@ -1091,6 +1091,42 @@ static const struct xkb_key_type canonicalTypes[XkbNumRequiredTypes] = {
 };
 
 static int
+CopyKeyType(const struct xkb_key_type *from, struct xkb_key_type *into)
+{
+    int i;
+
+    darray_free(into->map);
+    free(into->preserve);
+    free(into->level_names);
+
+    *into = *from;
+    darray_init(into->map);
+
+    darray_copy(into->map, from->map);
+
+    if (from->preserve && !darray_empty(into->map)) {
+        into->preserve = calloc(darray_size(into->map),
+                                sizeof(*into->preserve));
+        if (!into->preserve)
+            return BadAlloc;
+        memcpy(into->preserve, from->preserve,
+               darray_size(into->map) * sizeof(*into->preserve));
+    }
+
+    if (from->level_names && into->num_levels > 0) {
+        into->level_names = calloc(into->num_levels,
+                                   sizeof(*into->level_names));
+        if (!into->level_names)
+            return BadAlloc;
+
+        for (i = 0; i < into->num_levels; i++)
+            into->level_names[i] = strdup(from->level_names[i]);
+    }
+
+    return Success;
+}
+
+static int
 InitCanonicalKeyTypes(struct xkb_keymap *keymap, unsigned which,
                       int keypadVMod)
 {
@@ -1106,22 +1142,22 @@ InitCanonicalKeyTypes(struct xkb_keymap *keymap, unsigned which,
     from = canonicalTypes;
 
     if (which & XkbOneLevelMask)
-        rtrn = XkbcCopyKeyType(&from[XkbOneLevelIndex],
-                               &darray_item(keymap->types, XkbOneLevelIndex));
+        rtrn = CopyKeyType(&from[XkbOneLevelIndex],
+                           &darray_item(keymap->types, XkbOneLevelIndex));
 
     if ((which & XkbTwoLevelMask) && rtrn == Success)
-        rtrn = XkbcCopyKeyType(&from[XkbTwoLevelIndex],
-                               &darray_item(keymap->types, XkbTwoLevelIndex));
+        rtrn = CopyKeyType(&from[XkbTwoLevelIndex],
+                           &darray_item(keymap->types, XkbTwoLevelIndex));
 
     if ((which & XkbAlphabeticMask) && rtrn == Success)
-        rtrn = XkbcCopyKeyType(&from[XkbAlphabeticIndex],
-                               &darray_item(keymap->types, XkbAlphabeticIndex));
+        rtrn = CopyKeyType(&from[XkbAlphabeticIndex],
+                           &darray_item(keymap->types, XkbAlphabeticIndex));
 
     if ((which & XkbKeypadMask) && rtrn == Success) {
         struct xkb_key_type *type;
 
-        rtrn = XkbcCopyKeyType(&from[XkbKeypadIndex],
-                               &darray_item(keymap->types, XkbKeypadIndex));
+        rtrn = CopyKeyType(&from[XkbKeypadIndex],
+                           &darray_item(keymap->types, XkbKeypadIndex));
         type = &darray_item(keymap->types, XkbKeypadIndex);
 
         if (keypadVMod >= 0 && keypadVMod < XkbNumVirtualMods &&
