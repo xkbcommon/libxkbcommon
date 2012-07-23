@@ -749,6 +749,7 @@ HandleActionMessage(struct xkb_keymap *keymap, struct xkb_any_action *action,
                     unsigned field, ExprDef *array_ndx, ExprDef *value)
 {
     ExprResult rtrn;
+    const char *str;
     struct xkb_message_action *act;
 
     act = (struct xkb_message_action *) action;
@@ -777,17 +778,19 @@ HandleActionMessage(struct xkb_keymap *keymap, struct xkb_any_action *action,
 
     case F_Data:
         if (array_ndx == NULL) {
-            if (!ExprResolveString(keymap->ctx, value, &rtrn))
+            int len;
+
+            if (!ExprResolveString(keymap->ctx, value, &str))
                 return ReportMismatch(keymap, action->type, field, "string");
-            else {
-                int len = strlen(rtrn.str);
-                if ((len < 1) || (len > 6)) {
-                    log_warn(keymap->ctx,
-                             "An action message can hold only 6 bytes; "
-                             "Extra %d bytes ignored\n", len - 6);
-                }
-                strncpy((char *) act->message, rtrn.str, 6);
+
+            len = strlen(str);
+            if (len < 1 || len > 6) {
+                log_warn(keymap->ctx,
+                         "An action message can hold only 6 bytes; "
+                         "Extra %d bytes ignored\n", len - 6);
             }
+
+            strncpy((char *) act->message, str, 6);
             return true;
         }
         else {
@@ -971,18 +974,21 @@ HandlePrivate(struct xkb_keymap *keymap, struct xkb_any_action *action,
 
     case F_Data:
         if (array_ndx == NULL) {
-            if (!ExprResolveString(keymap->ctx, value, &rtrn))
+            const char *str;
+            int len;
+
+            if (!ExprResolveString(keymap->ctx, value, &str))
                 return ReportMismatch(keymap, action->type, field, "string");
-            else {
-                int len = strlen(rtrn.str);
-                if ((len < 1) || (len > 7)) {
-                    log_warn(keymap->ctx,
-                             "A private action has 7 data bytes; "
-                             "Extra %d bytes ignored\n", len - 6);
-                    return false;
-                }
-                strncpy((char *) action->data, rtrn.str, sizeof action->data);
+
+            len = strlen(str);
+            if (len < 1 || len > 7) {
+                log_warn(keymap->ctx,
+                         "A private action has 7 data bytes; "
+                         "Extra %d bytes ignored\n", len - 6);
+                return false;
             }
+
+            strncpy((char *) action->data, str, sizeof(action->data));
             return true;
         }
         else {

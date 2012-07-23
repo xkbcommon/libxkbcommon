@@ -1028,12 +1028,15 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
 
     if (istreq(field, "type")) {
         ExprResult ndx;
-        if (!ExprResolveString(ctx, value, &tmp))
+        const char *str;
+
+        if (!ExprResolveString(ctx, value, &str))
             log_lvl(info->keymap->ctx, 1,
                     "The type field of a key symbol map must be a string; "
                     "Ignoring illegal type definition\n");
+
         if (arrayNdx == NULL) {
-            keyi->dfltType = xkb_atom_intern(ctx, tmp.str);
+            keyi->dfltType = xkb_atom_intern(ctx, str);
             keyi->defined |= _Key_Type_Dflt;
         }
         else if (!ExprResolveGroup(ctx, arrayNdx, &ndx)) {
@@ -1044,7 +1047,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             return false;
         }
         else {
-            keyi->types[ndx.uval - 1] = xkb_atom_intern(ctx, tmp.str);
+            keyi->types[ndx.uval - 1] = xkb_atom_intern(ctx, str);
             keyi->typesDefined |= (1 << (ndx.uval - 1));
         }
     }
@@ -1161,7 +1164,8 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
 static int
 SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
 {
-    ExprResult tmp, name;
+    ExprResult tmp;
+    const char *name;
 
     if (!arrayNdx) {
         log_lvl(info->keymap->ctx, 1,
@@ -1185,7 +1189,7 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
     }
 
     info->groupNames[tmp.uval - 1 + info->explicit_group] =
-        xkb_atom_intern(info->keymap->ctx, name.str);
+        xkb_atom_intern(info->keymap->ctx, name);
 
     return true;
 }

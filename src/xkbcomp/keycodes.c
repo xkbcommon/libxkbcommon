@@ -704,25 +704,28 @@ HandleIndicatorNameDef(KeyNamesInfo *info, IndicatorNameDef *def,
                        enum merge_mode merge)
 {
     IndicatorNameInfo ii;
-    ExprResult tmp;
+    const char *str;
 
-    if ((def->ndx < 1) || (def->ndx > XkbNumIndicators)) {
+    if (def->ndx < 1 || def->ndx > XkbNumIndicators) {
         info->errorCount++;
         log_err(info->keymap->ctx,
                 "Name specified for illegal indicator index %d\n; Ignored\n",
                 def->ndx);
         return false;
     }
+
     InitIndicatorNameInfo(&ii, info);
     ii.ndx = def->ndx;
-    if (!ExprResolveString(info->keymap->ctx, def->name, &tmp)) {
+
+    if (!ExprResolveString(info->keymap->ctx, def->name, &str)) {
         char buf[20];
         snprintf(buf, sizeof(buf), "%d", def->ndx);
         info->errorCount++;
         return ReportBadType(info->keymap, "indicator", "name", buf,
                              "string");
     }
-    ii.name = xkb_atom_intern(info->keymap->ctx, tmp.str);
+
+    ii.name = xkb_atom_intern(info->keymap->ctx, str);
     ii.virtual = def->virtual;
 
     return AddIndicatorName(info, merge, &ii);

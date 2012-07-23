@@ -572,9 +572,9 @@ ExprResolveButton(struct xkb_context *ctx, ExprDef *expr,
                                     button_names);
 }
 
-int
+bool
 ExprResolveString(struct xkb_context *ctx, ExprDef *expr,
-                  ExprResult *val_rtrn)
+                  const char **val_rtrn)
 {
     switch (expr->op) {
     case EXPR_VALUE:
@@ -583,7 +583,8 @@ ExprResolveString(struct xkb_context *ctx, ExprDef *expr,
                     exprValueTypeText(expr->value_type));
             return false;
         }
-        val_rtrn->str = xkb_atom_text(ctx, expr->value.str);
+
+        *val_rtrn = xkb_atom_text(ctx, expr->value.str);
         return true;
 
     case EXPR_IDENT:

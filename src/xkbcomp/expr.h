@@ -30,7 +30,6 @@
 #include "xkbcomp-priv.h"
 
 typedef union _ExprResult {
-    const char *str;
     int ival;
     unsigned uval;
 } ExprResult;
@@ -89,9 +88,9 @@ extern int
 ExprResolveButton(struct xkb_context *ctx, ExprDef *expr,
                   ExprResult *val_rtrn);
 
-extern int
+bool
 ExprResolveString(struct xkb_context *ctx, ExprDef *expr,
-                  ExprResult *val_rtrn);
+                  const char **val_rtrn);
 
 bool
 ExprResolveKeyName(struct xkb_context *ctx, ExprDef *expr,
