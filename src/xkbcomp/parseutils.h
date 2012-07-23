@@ -58,11 +58,11 @@ ExprCreateUnary(unsigned op, unsigned type, ExprDef *child);
 extern ExprDef *
 ExprCreateBinary(unsigned op, ExprDef *left, ExprDef *right);
 
-extern KeycodeDef *
-KeycodeCreate(const char *name, unsigned long value);
+KeycodeDef *
+KeycodeCreate(char keyName[XkbKeyNameLength], unsigned long value);
 
 extern KeyAliasDef *
-KeyAliasCreate(const char *alias, const char *real);
+KeyAliasCreate(char keyName[XkbKeyNameLength], char real[XkbKeyNameLength]);
 
 extern VModDef *
 VModCreate(xkb_atom_t name, ExprDef *value);
@@ -80,7 +80,7 @@ extern KeyTypeDef *
 KeyTypeCreate(xkb_atom_t name, VarDef *body);
 
 extern SymbolsDef *
-SymbolsCreate(const char *keyName, ExprDef *symbols);
+SymbolsCreate(char keyName[XkbKeyNameLength], ExprDef *symbols);
 
 extern GroupCompatDef *
 GroupCompatCreate(int group, ExprDef *def);

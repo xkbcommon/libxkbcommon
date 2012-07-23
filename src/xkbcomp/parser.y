@@ -123,6 +123,7 @@ yyerror(struct YYLTYPE *loc, struct parser_param *param, const char *msg)
 	int64_t		 num;
         enum xkb_file_type file_type;
 	char		*str;
+        char            keyName[XkbKeyNameLength];
 	xkb_atom_t	sval;
         enum merge_mode merge;
 	ParseCommon	*any;
@@ -136,18 +137,19 @@ yyerror(struct YYLTYPE *loc, struct parser_param *param, const char *msg)
 	GroupCompatDef	*groupCompat;
 	IndicatorMapDef	*ledMap;
 	IndicatorNameDef *ledName;
-	KeycodeDef	*keyName;
+	KeycodeDef	*keyCode;
 	KeyAliasDef	*keyAlias;
         void            *geom;
 	XkbFile		*file;
 }
 %type <num>     INTEGER FLOAT
-%type <str>     IDENT KEYNAME STRING
+%type <str>     IDENT STRING
+%type <keyName> KEYNAME KeyName
 %type <ival>	Number Integer Float SignedNumber
 %type <merge>	MergeMode OptMergeMode
 %type <file_type> XkbCompositeType FileType
 %type <uval>	DoodadType Flag Flags OptFlags KeyCode
-%type <str>	KeyName MapName OptMapName KeySym
+%type <str>	MapName OptMapName KeySym
 %type <sval>	FieldSpec Ident Element String
 %type <any>	DeclList Decl
 %type <expr>	OptExprList ExprList Expr Term Lhs Terminal ArrayInit KeySyms
@@ -161,7 +163,7 @@ yyerror(struct YYLTYPE *loc, struct parser_param *param, const char *msg)
 %type <groupCompat> GroupCompatDecl
 %type <ledMap>	IndicatorMapDecl
 %type <ledName>	IndicatorNameDecl
-%type <keyName>	KeyNameDecl
+%type <keyCode>	KeyNameDecl
 %type <keyAlias> KeyAliasDecl
 %type <geom>	ShapeDecl SectionDecl SectionBody SectionBodyItem RowBody RowBodyItem
 %type <geom>    Keys Key OverlayDecl OverlayKeyList OverlayKey OutlineList OutlineInList
@@ -352,21 +354,13 @@ VarDecl		:	Lhs EQUALS Expr SEMI
 
 KeyNameDecl	:	KeyName EQUALS KeyCode SEMI
                         {
-			    KeycodeDef *def;
-
-			    def= KeycodeCreate($1,$3);
-			    free($1);
-			    $$= def;
-			}
+                            $$ = KeycodeCreate($1, $3);
+                        }
 		;
 
 KeyAliasDecl	:	ALIAS KeyName EQUALS KeyName SEMI
 			{
-			    KeyAliasDef	*def;
-			    def= KeyAliasCreate($2,$4);
-			    free($2);
-			    free($4);
-			    $$= def;
+			    $$= KeyAliasCreate($2,$4);
 			}
 		;
 
@@ -416,7 +410,7 @@ KeyTypeDecl	:	TYPE String OBRACE
 SymbolsDecl	:	KEY KeyName OBRACE
 			    SymbolsBody
 			CBRACE SEMI
-			{ $$= SymbolsCreate($2,(ExprDef *)$4); free($2); }
+			{ $$= SymbolsCreate($2,(ExprDef *)$4); }
 		;
 
 SymbolsBody	:	SymbolsBody COMMA SymbolsVarDecl
@@ -509,7 +503,7 @@ Keys		:	Keys COMMA Key
 		;
 
 Key		:	KeyName
-			{ free($1); $$= NULL; }
+			{ $$= NULL; }
 		|	OBRACE ExprList CBRACE
 			{ FreeStmt(&$2->common); $$= NULL; }
 		;
@@ -525,7 +519,7 @@ OverlayKeyList	:	OverlayKeyList COMMA OverlayKey
 		;
 
 OverlayKey	:	KeyName EQUALS KeyName
-			{ free($1); free($3); $$= NULL; }
+			{ $$= NULL; }
 		;
 
 OutlineList	:	OutlineList COMMA OutlineInList
@@ -717,9 +711,7 @@ Terminal	:	String
 			{
 			    ExprDef *expr;
 			    expr= ExprCreate(ExprValue,TypeKeyName);
-			    memset(expr->value.keyName,0,5);
 			    strncpy(expr->value.keyName,$1,4);
-			    free($1);
 			    $$= expr;
 			}
 		;
@@ -775,7 +767,7 @@ Integer		:	INTEGER		{ $$= $1; }
 KeyCode         :       INTEGER         { $$= $1; }
                 ;
 
-KeyName		:	KEYNAME		{ $$= $1; }
+KeyName		:	KEYNAME		{ strncpy($$, $1, XkbKeyNameLength); }
 		;
 
 Ident		:	IDENT

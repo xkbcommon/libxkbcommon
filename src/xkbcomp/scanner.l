@@ -76,11 +76,18 @@ scanner_error_extra(struct YYLTYPE *loc, struct scanner_extra *extra,
 			return STRING;
 		    }
 <S_KEY>\> {
-			BEGIN(INITIAL);
-			*yyextra->s = '\0';
-			yylval->str = strdup(yyextra->scanBuf);
-			return KEYNAME;
-		    }
+                        BEGIN(INITIAL);
+
+                        *yyextra->s = '\0';
+                        if (yyextra->s - yyextra->scanBuf > XkbKeyNameLength) {
+                            scanner_error_extra(yylloc, yyextra,
+                                                "Key name too long");
+                            return ERROR_TOK;
+                        }
+
+                        strncpy(yylval->keyName, yyextra->scanBuf, XkbKeyNameLength);
+                        return KEYNAME;
+                    }
 
 <S_STR,S_KEY>\\[0-7]{1,3} {
 			/* octal escape sequence */
