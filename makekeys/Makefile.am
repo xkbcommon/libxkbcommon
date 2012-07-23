@@ -1,4 +1,4 @@
-AM_CFLAGS = $(BASE_CFLAGS)
+AM_CFLAGS = $(BASE_CFLAGS) -I$(top_srcdir)
 
 # need to use build-native compiler
 
