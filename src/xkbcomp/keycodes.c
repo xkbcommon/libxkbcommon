@@ -609,19 +609,19 @@ static int
 HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
 {
     const char *elem, *field;
-    ExprResult tmp;
+    xkb_keycode_t kc;
     ExprDef *arrayNdx;
     int which;
 
-    if (ExprResolveLhs(info->keymap->ctx, stmt->name, &elem, &field,
-                       &arrayNdx) == 0)
-        return 0;               /* internal error, already reported */
+    if (!ExprResolveLhs(info->keymap->ctx, stmt->name, &elem, &field,
+                        &arrayNdx))
+        return false;               /* internal error, already reported */
 
     if (elem) {
         log_err(info->keymap->ctx,
                 "Unknown element %s encountered; "
                 "Default for field %s ignored\n", elem, field);
-        goto err_out;
+        return false;
     }
 
     if (istreq(field, "minimum"))
@@ -632,71 +632,72 @@ HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
         log_err(info->keymap->ctx,
                 "Unknown field encountered; "
                 "Assigment to field %s ignored\n", field);
-        goto err_out;
+        return false;
     }
 
     if (arrayNdx != NULL) {
         log_err(info->keymap->ctx,
                 "The %s setting is not an array; "
                 "Illegal array reference ignored\n", field);
-        goto err_out;
+        return false;
     }
 
-    if (ExprResolveKeyCode(info->keymap->ctx, stmt->value, &tmp) == 0) {
+    if (ExprResolveKeyCode(info->keymap->ctx, stmt->value, &kc) == 0) {
         log_err(info->keymap->ctx,
                 "Illegal keycode encountered; "
                 "Assignment to field %s ignored\n", field);
-        goto err_out;
+        return false;
     }
 
-    if (tmp.uval > XKB_KEYCODE_MAX) {
+    if (kc > XKB_KEYCODE_MAX) {
         log_err(info->keymap->ctx,
                 "Illegal keycode %d (must be in the range %d-%d inclusive); "
                 "Value of \"%s\" not changed\n",
-                tmp.uval, 0, XKB_KEYCODE_MAX, field);
-        goto err_out;
+                kc, 0, XKB_KEYCODE_MAX, field);
+        return false;
     }
 
     if (which == MIN_KEYCODE_DEF) {
-        if ((info->explicitMax > 0) && (info->explicitMax < tmp.uval)) {
+        if (info->explicitMax > 0 && info->explicitMax < kc) {
             log_err(info->keymap->ctx,
                     "Minimum key code (%d) must be <= maximum key code (%d); "
                     "Minimum key code value not changed\n",
-                    tmp.uval, info->explicitMax);
-            goto err_out;
+                    kc, info->explicitMax);
+            return false;
         }
-        if ((info->computedMax > 0) && (info->computedMin < tmp.uval)) {
+
+        if (info->computedMax > 0 && info->computedMin < kc) {
             log_err(info->keymap->ctx,
                     "Minimum key code (%d) must be <= lowest defined key (%d); "
                     "Minimum key code value not changed\n",
-                    tmp.uval, info->computedMin);
-            goto err_out;
+                    kc, info->computedMin);
+            return false;
         }
-        info->explicitMin = tmp.uval;
+
+        info->explicitMin = kc;
     }
 
     if (which == MAX_KEYCODE_DEF) {
-        if ((info->explicitMin > 0) && (info->explicitMin > tmp.uval)) {
+        if (info->explicitMin > 0 && info->explicitMin > kc) {
             log_err(info->keymap->ctx,
                     "Maximum code (%d) must be >= minimum key code (%d); "
                     "Maximum code value not changed\n",
-                    tmp.uval, info->explicitMin);
-            goto err_out;
+                    kc, info->explicitMin);
+            return false;
         }
-        if ((info->computedMax > 0) && (info->computedMax > tmp.uval)) {
+
+        if (info->computedMax > 0 && info->computedMax > kc) {
             log_err(info->keymap->ctx,
                     "Maximum code (%d) must be >= highest defined key (%d); "
                     "Maximum code value not changed\n",
-                    tmp.uval, info->computedMax);
-            goto err_out;
+                    kc, info->computedMax);
+            return false;
         }
-        info->explicitMax = tmp.uval;
+
+        info->explicitMax = kc;
     }
 
-    return 1;
-
-err_out:
-    return 0;
+    return true;
 }
 
 static int

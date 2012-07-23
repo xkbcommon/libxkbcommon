@@ -282,11 +282,10 @@ ExprResolveBoolean(struct xkb_context *ctx, ExprDef *expr, bool *set_rtrn)
     return false;
 }
 
-int
-ExprResolveKeyCode(struct xkb_context *ctx, ExprDef *expr,
-                   ExprResult *val_rtrn)
+bool
+ExprResolveKeyCode(struct xkb_context *ctx, ExprDef *expr, xkb_keycode_t *kc)
 {
-    ExprResult leftRtrn, rightRtrn;
+    xkb_keycode_t leftRtrn, rightRtrn;
     ExprDef *left, *right;
 
     switch (expr->op) {
@@ -297,7 +296,8 @@ ExprResolveKeyCode(struct xkb_context *ctx, ExprDef *expr,
                     exprValueTypeText(expr->value_type));
             return false;
         }
-        val_rtrn->uval = expr->value.uval;
+
+        *kc = expr->value.uval;
         return true;
 
     case EXPR_ADD:
@@ -306,27 +306,29 @@ ExprResolveKeyCode(struct xkb_context *ctx, ExprDef *expr,
     case EXPR_DIVIDE:
         left = expr->value.binary.left;
         right = expr->value.binary.right;
+
         if (!ExprResolveKeyCode(ctx, left, &leftRtrn) ||
             !ExprResolveKeyCode(ctx, right, &rightRtrn))
             return false;
 
         switch (expr->op) {
         case EXPR_ADD:
-            val_rtrn->uval = leftRtrn.uval + rightRtrn.uval;
+            *kc = leftRtrn + rightRtrn;
             break;
         case EXPR_SUBTRACT:
-            val_rtrn->uval = leftRtrn.uval - rightRtrn.uval;
+            *kc = leftRtrn - rightRtrn;
             break;
         case EXPR_MULTIPLY:
-            val_rtrn->uval = leftRtrn.uval * rightRtrn.uval;
+            *kc = leftRtrn * rightRtrn;
             break;
         case EXPR_DIVIDE:
-            if (rightRtrn.uval == 0) {
+            if (rightRtrn == 0) {
                 log_err(ctx, "Cannot divide by zero: %d / %d\n",
-                        leftRtrn.uval, rightRtrn.uval);
+                        leftRtrn, rightRtrn);
                 return false;
             }
-            val_rtrn->uval = leftRtrn.uval / rightRtrn.uval;
+
+            *kc = leftRtrn / rightRtrn;
             break;
         default:
             break;
@@ -336,20 +338,21 @@ ExprResolveKeyCode(struct xkb_context *ctx, ExprDef *expr,
 
     case EXPR_NEGATE:
         left = expr->value.child;
-        if (ExprResolveKeyCode(ctx, left, &leftRtrn)) {
-            val_rtrn->uval = ~leftRtrn.uval;
-            return true;
-        }
-        return false;
+        if (!ExprResolveKeyCode(ctx, left, &leftRtrn))
+            return false;
+
+        *kc = ~leftRtrn;
+        return true;
 
     case EXPR_UNARY_PLUS:
         left = expr->value.child;
-        return ExprResolveKeyCode(ctx, left, val_rtrn);
+        return ExprResolveKeyCode(ctx, left, kc);
 
     default:
         log_wsgo(ctx, "Unknown operator %d in ResolveKeyCode\n", expr->op);
         break;
     }
+
     return false;
 }
 
