@@ -338,7 +338,6 @@ CheckGroupField(struct xkb_keymap *keymap, unsigned action,
                 xkb_group_index_t *grp_rtrn)
 {
     ExprDef *spec;
-    ExprResult rtrn;
 
     if (value->op == EXPR_NEGATE || value->op == EXPR_UNARY_PLUS) {
         *flags_inout &= ~XkbSA_GroupAbsolute;
@@ -349,15 +348,15 @@ CheckGroupField(struct xkb_keymap *keymap, unsigned action,
         spec = value;
     }
 
-    if (!ExprResolveGroup(keymap->ctx, spec, &rtrn))
+    if (!ExprResolveGroup(keymap->ctx, spec, grp_rtrn))
         return ReportMismatch(keymap, action, F_Group,
                               "integer (range 1..8)");
+
     if (value->op == EXPR_NEGATE)
-        *grp_rtrn = -rtrn.ival;
-    else if (value->op == EXPR_UNARY_PLUS)
-        *grp_rtrn = rtrn.ival;
-    else
-        *grp_rtrn = rtrn.ival - 1;
+        *grp_rtrn = -*grp_rtrn;
+    else if (value->op != EXPR_UNARY_PLUS)
+        (*grp_rtrn)--;
+
     return true;
 }
 

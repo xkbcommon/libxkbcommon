@@ -803,7 +803,6 @@ GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
               unsigned what, xkb_group_index_t *ndx_rtrn)
 {
     const char *name;
-    ExprResult tmp;
 
     if (what == SYMBOLS)
         name = "symbols";
@@ -824,20 +823,23 @@ GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
                 return true;
             }
         }
+
         log_err(info->keymap->ctx,
                 "Too many groups of %s for key %s (max %u); "
                 "Ignoring %s defined for extra groups\n",
                 name, longText(keyi->name), XkbNumKbdGroups + 1, name);
         return false;
     }
-    if (!ExprResolveGroup(info->keymap->ctx, arrayNdx, &tmp)) {
+
+    if (!ExprResolveGroup(info->keymap->ctx, arrayNdx, ndx_rtrn)) {
         log_err(info->keymap->ctx,
                 "Illegal group index for %s of key %s\n"
                 "Definition with non-integer array index ignored\n",
                 name, longText(keyi->name));
         return false;
     }
-    *ndx_rtrn = tmp.uval - 1;
+
+    (*ndx_rtrn)--;
     return true;
 }
 
@@ -1027,7 +1029,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     struct xkb_context *ctx = info->keymap->ctx;
 
     if (istreq(field, "type")) {
-        ExprResult ndx;
+        xkb_group_index_t ndx;
         const char *str;
 
         if (!ExprResolveString(ctx, value, &str))
@@ -1047,8 +1049,9 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             return false;
         }
         else {
-            keyi->types[ndx.uval - 1] = xkb_atom_intern(ctx, str);
-            keyi->typesDefined |= (1 << (ndx.uval - 1));
+            ndx--;
+            keyi->types[ndx] = xkb_atom_intern(ctx, str);
+            keyi->typesDefined |= (1 << ndx);
         }
     }
     else if (istreq(field, "symbols"))
@@ -1148,15 +1151,18 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     }
     else if (istreq(field, "groupsredirect") ||
              istreq(field, "redirectgroups")) {
-        if (!ExprResolveGroup(ctx, value, &tmp)) {
+        xkb_group_index_t grp;
+
+        if (!ExprResolveGroup(ctx, value, &grp)) {
             log_err(info->keymap->ctx,
                     "Illegal group index for redirect of key %s; "
                     "Definition with non-integer group ignored\n",
                     longText(keyi->name));
             return false;
         }
+
         keyi->out_of_range_group_action = XkbRedirectIntoRange;
-        keyi->out_of_range_group_number = tmp.uval - 1;
+        keyi->out_of_range_group_number = grp - 1;
         keyi->defined |= _Key_GroupInfo;
     }
     else {
@@ -1172,7 +1178,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
 static int
 SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
 {
-    ExprResult tmp;
+    xkb_group_index_t grp;
     const char *name;
 
     if (!arrayNdx) {
@@ -1182,7 +1188,7 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
         return false;
     }
 
-    if (!ExprResolveGroup(info->keymap->ctx, arrayNdx, &tmp)) {
+    if (!ExprResolveGroup(info->keymap->ctx, arrayNdx, &grp)) {
         log_err(info->keymap->ctx,
                 "Illegal index in group name definition; "
                 "Definition with non-integer array index ignored\n");
@@ -1192,11 +1198,11 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
     if (!ExprResolveString(info->keymap->ctx, value, &name)) {
         log_err(info->keymap->ctx,
                 "Group name must be a string; "
-                "Illegal name for group %d ignored\n", tmp.uval);
+                "Illegal name for group %d ignored\n", grp);
         return false;
     }
 
-    info->groupNames[tmp.uval - 1 + info->explicit_group] =
+    info->groupNames[grp - 1 + info->explicit_group] =
         xkb_atom_intern(info->keymap->ctx, name);
 
     return true;

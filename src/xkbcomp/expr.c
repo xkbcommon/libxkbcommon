@@ -492,11 +492,12 @@ ExprResolveInteger(struct xkb_context *ctx, ExprDef *expr,
     return ExprResolveIntegerLookup(ctx, expr, val_rtrn, NULL, NULL);
 }
 
-int
+bool
 ExprResolveGroup(struct xkb_context *ctx, ExprDef *expr,
-                 ExprResult *val_rtrn)
+                 xkb_group_index_t *group_rtrn)
 {
-    int ret;
+    bool ok;
+    ExprResult result;
     static const LookupEntry group_names[] = {
         { "group1", 1 },
         { "group2", 2 },
@@ -509,17 +510,18 @@ ExprResolveGroup(struct xkb_context *ctx, ExprDef *expr,
         { NULL, 0 }
     };
 
-    ret = ExprResolveIntegerLookup(ctx, expr, val_rtrn, SimpleLookup,
-                                   group_names);
-    if (ret == false)
-        return ret;
+    ok = ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
+                                  group_names);
+    if (!ok)
+        return false;
 
-    if (val_rtrn->uval == 0 || val_rtrn->uval > XkbNumKbdGroups) {
+    if (result.uval == 0 || result.uval > XkbNumKbdGroups) {
         log_err(ctx, "Group index %u is out of range (1..%d)\n",
-                val_rtrn->uval, XkbNumKbdGroups);
+                result.uval, XkbNumKbdGroups);
         return false;
     }
 
+    *group_rtrn = result.uval;
     return true;
 }
 

@@ -80,8 +80,9 @@ ExprResolveInteger(struct xkb_context *ctx, ExprDef *expr,
 extern int
 ExprResolveLevel(struct xkb_context *ctx, ExprDef *expr, ExprResult *val_rtrn);
 
-extern int
-ExprResolveGroup(struct xkb_context *ctx, ExprDef *expr, ExprResult *val_rtrn);
+bool
+ExprResolveGroup(struct xkb_context *ctx, ExprDef *expr,
+                 xkb_group_index_t *group_rtrn);
 
 extern int
 ExprResolveButton(struct xkb_context *ctx, ExprDef *expr,
