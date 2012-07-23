@@ -76,8 +76,9 @@ extern int
 ExprResolveInteger(struct xkb_context *ctx, ExprDef *expr,
                    ExprResult *val_rtrn);
 
-extern int
-ExprResolveLevel(struct xkb_context *ctx, ExprDef *expr, ExprResult *val_rtrn);
+bool
+ExprResolveLevel(struct xkb_context *ctx, ExprDef *expr,
+                 unsigned int *level_rtrn);
 
 bool
 ExprResolveGroup(struct xkb_context *ctx, ExprDef *expr,

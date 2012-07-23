@@ -528,11 +528,12 @@ ExprResolveGroup(struct xkb_context *ctx, ExprDef *expr,
     return true;
 }
 
-int
+bool
 ExprResolveLevel(struct xkb_context *ctx, ExprDef *expr,
-                 ExprResult *val_rtrn)
+                 unsigned int *level_rtrn)
 {
-    int ret;
+    bool ok;
+    ExprResult result;
     static const LookupEntry level_names[] = {
         { "level1", 1 },
         { "level2", 2 },
@@ -545,17 +546,18 @@ ExprResolveLevel(struct xkb_context *ctx, ExprDef *expr,
         { NULL, 0 }
     };
 
-    ret = ExprResolveIntegerLookup(ctx, expr, val_rtrn, SimpleLookup,
-                                   level_names);
-    if (ret == false)
-        return ret;
+    ok = ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
+                                  level_names);
+    if (!ok)
+        return false;
 
-    if (val_rtrn->ival < 1 || val_rtrn->ival > XkbMaxShiftLevel) {
+    if (result.uval < 1 || result.uval > XkbMaxShiftLevel) {
         log_err(ctx, "Shift level %d is out of range (1..%d)\n",
-                val_rtrn->ival, XkbMaxShiftLevel);
+                result.uval, XkbMaxShiftLevel);
         return false;
     }
 
+    *level_rtrn = result.uval;
     return true;
 }
 
