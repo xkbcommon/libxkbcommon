@@ -52,8 +52,6 @@
 #define StmtIndicatorMapDef  12
 #define StmtIndicatorNameDef 13
 
-#define FileSymInterp        100
-
 typedef struct _ParseCommon {
     unsigned stmtType;
     struct _ParseCommon *next;
