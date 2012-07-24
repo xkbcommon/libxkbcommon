@@ -94,9 +94,9 @@ bool
 ExprResolveKeyName(struct xkb_context *ctx, ExprDef *expr,
                    char name[XkbKeyNameLength]);
 
-extern int
-ExprResolveEnum(struct xkb_context *ctx, ExprDef *expr, ExprResult *val_rtrn,
-                const LookupEntry *values);
+bool
+ExprResolveEnum(struct xkb_context *ctx, ExprDef *expr,
+                unsigned int *val_rtrn, const LookupEntry *values);
 
 bool
 ExprResolveMask(struct xkb_context *ctx, ExprDef *expr,

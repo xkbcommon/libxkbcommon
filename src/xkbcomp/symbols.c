@@ -1025,7 +1025,6 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
                 ExprDef *arrayNdx, ExprDef *value)
 {
     bool ok = true;
-    ExprResult tmp;
     struct xkb_context *ctx = info->keymap->ctx;
 
     if (istreq(field, "type")) {
@@ -1078,9 +1077,11 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     else if (istreq(field, "locking") ||
              istreq(field, "lock") ||
              istreq(field, "locks")) {
-        ok = ExprResolveEnum(ctx, value, &tmp, lockingEntries);
+        unsigned int val;
+
+        ok = ExprResolveEnum(ctx, value, &val, lockingEntries);
         if (ok)
-            keyi->behavior.type = tmp.uval;
+            keyi->behavior.type = val;
         keyi->defined |= _Key_Behavior;
     }
     else if (istreq(field, "radiogroup") ||
@@ -1102,7 +1103,9 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     else if (istreq(field, "repeating") ||
              istreq(field, "repeats") ||
              istreq(field, "repeat")) {
-        ok = ExprResolveEnum(ctx, value, &tmp, repeatEntries);
+        unsigned int val;
+
+        ok = ExprResolveEnum(ctx, value, &val, repeatEntries);
         if (!ok) {
             log_err(info->keymap->ctx,
                     "Illegal repeat setting for %s; "
@@ -1110,7 +1113,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
                     longText(keyi->name));
             return false;
         }
-        keyi->repeat = tmp.uval;
+        keyi->repeat = val;
         keyi->defined |= _Key_Repeat;
     }
     else if (istreq(field, "groupswrap") ||

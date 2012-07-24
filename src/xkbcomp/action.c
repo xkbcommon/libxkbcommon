@@ -508,13 +508,17 @@ HandlePtrBtn(struct xkb_keymap *keymap, struct xkb_any_action *action,
         return true;
     }
     else if ((action->type == XkbSA_LockPtrBtn) && (field == F_Affect)) {
-        if (array_ndx != NULL)
+        unsigned int val;
+
+        if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
-        if (!ExprResolveEnum(keymap->ctx, value, &rtrn, lockWhich))
+
+        if (!ExprResolveEnum(keymap->ctx, value, &val, lockWhich))
             return ReportMismatch(keymap, action->type, field,
                                   "lock or unlock");
+
         act->flags &= ~(XkbSA_LockNoLock | XkbSA_LockNoUnlock);
-        act->flags |= rtrn.ival;
+        act->flags |= val;
         return true;
     }
     else if (field == F_Count) {
@@ -556,12 +560,15 @@ HandleSetPtrDflt(struct xkb_keymap *keymap, struct xkb_any_action *action,
 
     act = (struct xkb_pointer_default_action *) action;
     if (field == F_Affect) {
-        if (array_ndx != NULL)
+        unsigned int val;
+
+        if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
-        if (!ExprResolveEnum(keymap->ctx, value, &rtrn, ptrDflts))
+
+        if (!ExprResolveEnum(keymap->ctx, value, &val, ptrDflts))
             return ReportMismatch(keymap, action->type, field,
                                   "pointer component");
-        act->affect = rtrn.uval;
+        act->affect = val;
         return true;
     }
     else if ((field == F_Button) || (field == F_Value)) {
@@ -955,14 +962,18 @@ HandleDeviceBtn(struct xkb_keymap *keymap, struct xkb_any_action *action,
         act->button = val;
         return true;
     }
-    else if ((action->type == XkbSA_LockDeviceBtn) && (field == F_Affect)) {
-        if (array_ndx != NULL)
+    else if (action->type == XkbSA_LockDeviceBtn && field == F_Affect) {
+        unsigned int val;
+
+        if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
-        if (!ExprResolveEnum(keymap->ctx, value, &rtrn, lockWhich))
+
+        if (!ExprResolveEnum(keymap->ctx, value, &val, lockWhich))
             return ReportMismatch(keymap, action->type, field,
                                   "lock or unlock");
+
         act->flags &= ~(XkbSA_LockNoLock | XkbSA_LockNoUnlock);
-        act->flags |= rtrn.ival;
+        act->flags |= val;
         return true;
     }
     else if (field == F_Count) {

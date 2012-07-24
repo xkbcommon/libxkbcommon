@@ -634,29 +634,28 @@ static int
 SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
                ExprDef *arrayNdx, ExprDef *value)
 {
-    int ok = 1;
-    ExprResult tmp;
     struct xkb_keymap *keymap = info->keymap;
+    ExprResult tmp;
 
     if (istreq(field, "action")) {
-        if (arrayNdx != NULL)
+        if (arrayNdx)
             return ReportSINotArray(info, si, field);
-        ok = HandleActionDef(value, keymap, &si->interp.act.any,
-                             info->act);
-        if (ok)
-            si->defined |= _SI_Action;
+
+        if (!HandleActionDef(value, keymap, &si->interp.act.any, info->act))
+            return false;
+
+        si->defined |= _SI_Action;
     }
     else if (istreq(field, "virtualmodifier") ||
              istreq(field, "virtualmod")) {
-        if (arrayNdx != NULL)
+        if (arrayNdx)
             return ReportSINotArray(info, si, field);
-        ok = ResolveVirtualModifier(value, keymap, &tmp, &info->vmods);
-        if (ok) {
-            si->interp.virtual_mod = tmp.uval;
-            si->defined |= _SI_VirtualMod;
-        }
-        else
+
+        if (!ResolveVirtualModifier(value, keymap, &tmp, &info->vmods))
             return ReportSIBadType(info, si, field, "virtual modifier");
+
+        si->interp.virtual_mod = tmp.uval;
+        si->defined |= _SI_VirtualMod;
     }
     else if (istreq(field, "repeat")) {
         bool set;
@@ -692,24 +691,27 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
     }
     else if (istreq(field, "usemodmap") ||
              istreq(field, "usemodmapmods")) {
-        if (arrayNdx != NULL)
+        unsigned int val;
+
+        if (arrayNdx)
             return ReportSINotArray(info, si, field);
-        ok = ExprResolveEnum(keymap->ctx, value, &tmp, useModMapValues);
-        if (ok) {
-            if (tmp.uval)
-                si->interp.match |= XkbSI_LevelOneOnly;
-            else
-                si->interp.match &= ~XkbSI_LevelOneOnly;
-            si->defined |= _SI_LevelOneOnly;
-        }
-        else
+
+        if (!ExprResolveEnum(keymap->ctx, value, &val, useModMapValues))
             return ReportSIBadType(info, si, field, "level specification");
+
+        if (val)
+            si->interp.match |= XkbSI_LevelOneOnly;
+        else
+            si->interp.match &= ~XkbSI_LevelOneOnly;
+
+        si->defined |= _SI_LevelOneOnly;
     }
     else {
-        ok = ReportBadField(keymap, "symbol interpretation", field,
-                            siText(si, info));
+        return ReportBadField(keymap, "symbol interpretation", field,
+                              siText(si, info));
     }
-    return ok;
+
+    return true;
 }
 
 static const LookupEntry modComponentNames[] = {

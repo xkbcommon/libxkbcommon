@@ -677,19 +677,19 @@ ExprResolveKeyName(struct xkb_context *ctx, ExprDef *expr,
     return false;
 }
 
-/***====================================================================***/
-
-int
+bool
 ExprResolveEnum(struct xkb_context *ctx, ExprDef *expr,
-                ExprResult *val_rtrn, const LookupEntry *values)
+                unsigned int *val_rtrn, const LookupEntry *values)
 {
+    ExprResult result;
+
     if (expr->op != EXPR_IDENT) {
         log_err(ctx, "Found a %s where an enumerated value was expected\n",
                 exprOpText(expr->op));
         return false;
     }
-    if (!SimpleLookup(ctx, values, expr->value.str, EXPR_TYPE_INT,
-                      val_rtrn)) {
+
+    if (!SimpleLookup(ctx, values, expr->value.str, EXPR_TYPE_INT, &result)) {
         int nOut = 0;
         log_err(ctx, "Illegal identifier %s (expected one of: ",
                 xkb_atom_text(ctx, expr->value.str));
@@ -705,6 +705,8 @@ ExprResolveEnum(struct xkb_context *ctx, ExprDef *expr,
         log_info(ctx, ")\n");
         return false;
     }
+
+    *val_rtrn = result.uval;
     return true;
 }
 
