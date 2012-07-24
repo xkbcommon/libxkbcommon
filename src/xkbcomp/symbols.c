@@ -56,7 +56,7 @@ longText(unsigned long val)
     char buf[4];
 
     LongToKeyName(val, buf);
-    return XkbcKeyNameText(buf);
+    return KeyNameText(buf);
 }
 
 typedef struct _KeyInfo {
@@ -353,8 +353,8 @@ MergeKeyGroups(SymbolsInfo * info,
                              "Multiple actions for level %d/group %u on key %s; "
                              "Using %s, ignoring %s\n",
                              i + 1, group + 1, longText(into->name),
-                             XkbcActionTypeText(use->type),
-                             XkbcActionTypeText(ignore->type));
+                             ActionTypeText(use->type),
+                             ActionTypeText(ignore->type));
                 if (use)
                     darray_item(resultActs, i) = *use;
             }
@@ -662,9 +662,8 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
                 log_err(info->keymap->ctx,
                         "%s added to symbol map for multiple modifiers; "
                         "Using %s, ignoring %s.\n",
-                        XkbcKeysymText(new->u.keySym),
-                        XkbcModIndexText(use),
-                        XkbcModIndexText(ignore));
+                        KeysymText(new->u.keySym), ModIndexText(use),
+                        ModIndexText(ignore));
                 mm->modifier = use;
             }
             return true;
@@ -684,9 +683,8 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
                 log_err(info->keymap->ctx,
                         "Key %s added to map for multiple modifiers; "
                         "Using %s, ignoring %s.\n",
-                        longText(new->u.keyName),
-                        XkbcModIndexText(use),
-                        XkbcModIndexText(ignore));
+                        longText(new->u.keyName), ModIndexText(use),
+                        ModIndexText(ignore));
                 mm->modifier = use;
             }
             return true;
@@ -698,7 +696,7 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
         log_wsgo(info->keymap->ctx,
                  "Could not allocate modifier map entry; "
                  "Modifier map for %s will be incomplete\n",
-                 XkbcModIndexText(new->modifier));
+                 ModIndexText(new->modifier));
         return false;
     }
 
@@ -1380,7 +1378,7 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
             log_err(info->keymap->ctx,
                     "Modmap entries may contain only key names or keysyms; "
                     "Illegal definition for %s modifier ignored\n",
-                    XkbcModIndexText(tmp.modifier));
+                    ModIndexText(tmp.modifier));
             continue;
         }
 
@@ -1888,7 +1886,7 @@ CopyModMapDef(SymbolsInfo *info, ModMapEntry *entry)
                     "Key %s not found in keycodes; "
                     "Modifier map entry for %s not updated\n",
                     longText(entry->u.keyName),
-                    XkbcModIndexText(entry->modifier));
+                    ModIndexText(entry->modifier));
             return false;
         }
     }
@@ -1898,8 +1896,8 @@ CopyModMapDef(SymbolsInfo *info, ModMapEntry *entry)
             log_lvl(info->keymap->ctx, 5,
                     "Key \"%s\" not found in symbol map; "
                     "Modifier map entry for %s not updated\n",
-                    XkbcKeysymText(entry->u.keySym),
-                    XkbcModIndexText(entry->modifier));
+                    KeysymText(entry->u.keySym),
+                    ModIndexText(entry->modifier));
             return false;
         }
     }

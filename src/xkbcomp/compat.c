@@ -104,9 +104,9 @@ siText(SymInterpInfo * si, CompatInfo * info)
     }
     else {
         snprintf(buf, sizeof(buf), "%s+%s(%s)",
-                 XkbcKeysymText(si->interp.sym),
-                 XkbcSIMatchText(si->interp.match),
-                 XkbcModMaskText(si->interp.mods, false));
+                 KeysymText(si->interp.sym),
+                 SIMatchText(si->interp.match),
+                 ModMaskText(si->interp.mods, false));
     }
     return buf;
 }

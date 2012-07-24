@@ -329,7 +329,7 @@ write_keycodes(struct xkb_keymap *keymap, char **buf, size_t *size,
             continue;
 
         write_buf(keymap, buf, size, offset, "\t\t%6s = %d;\n",
-                  XkbcKeyNameText(key->name), XkbKeyGetKeycode(keymap, key));
+                  KeyNameText(key->name), XkbKeyGetKeycode(keymap, key));
     }
 
     for (i = 0; i < XkbNumIndicators; i++) {
@@ -342,8 +342,8 @@ write_keycodes(struct xkb_keymap *keymap, char **buf, size_t *size,
 
     darray_foreach(alias, keymap->key_aliases)
         write_buf(keymap, buf, size, offset, "\t\talias %6s = %6s;\n",
-                  XkbcKeyNameText(alias->alias),
-                  XkbcKeyNameText(alias->real));
+                  KeyNameText(alias->alias),
+                  KeyNameText(alias->real));
 
     write_buf(keymap, buf, size, offset, "\t};\n\n");
     return true;
@@ -807,7 +807,7 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
             continue;
 
         write_buf(keymap, buf, size, offset, "\t\tkey %6s {",
-                  XkbcKeyNameText(key->name));
+                  KeyNameText(key->name));
 
         if (key->explicit & XkbExplicitKeyTypesMask) {
             bool multi_type = false;
@@ -926,7 +926,7 @@ write_symbols(struct xkb_keymap *keymap, char **buf, size_t *size,
             write_buf(keymap, buf, size, offset,
                       "\t\tmodifier_map %s { %s };\n",
                       get_mod_index_text(mod),
-                      XkbcKeyNameText(key->name));
+                      KeyNameText(key->name));
         }
     }
 

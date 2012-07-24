@@ -104,7 +104,7 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
      */
     if (file->type != FILE_TYPE_KEYMAP) {
         log_err(ctx, "Cannot compile a %s file alone into a keymap\n",
-                XkbcFileTypeText(file->type));
+                FileTypeText(file->type));
         goto err;
     }
 
@@ -115,7 +115,7 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
             log_err(ctx,
                     "More than one %s section in a keymap file; "
                     "All sections after the first ignored\n",
-                    XkbcFileTypeText(file->type));
+                    FileTypeText(file->type));
             continue;
         }
 
@@ -138,7 +138,7 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
 
         default:
             log_err(ctx, "Cannot define %s in a keymap file\n",
-                    XkbcFileTypeText(file->type));
+                    FileTypeText(file->type));
             continue;
         }
 
@@ -159,7 +159,7 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
         for (bit = 1; missing != 0; bit <<= 1) {
             if (missing & bit) {
                 log_err(ctx, "Required section %s missing from keymap\n",
-                        XkbcFileTypeText(bit));
+                        FileTypeText(bit));
                 missing &= ~bit;
             }
         }

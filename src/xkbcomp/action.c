@@ -172,7 +172,7 @@ ReportMismatch(struct xkb_keymap *keymap, unsigned action, unsigned field,
     log_err(keymap->ctx,
             "Value of %s field must be of type %s; "
             "Action %s definition ignored\n",
-            fieldText(field), type, XkbcActionTypeText(action));
+            fieldText(field), type, ActionTypeText(action));
     return false;
 }
 
@@ -182,7 +182,7 @@ ReportIllegal(struct xkb_keymap *keymap, unsigned action, unsigned field)
     log_err(keymap->ctx,
             "Field %s is not defined for an action of type %s; "
             "Action definition ignored\n",
-            fieldText(field), XkbcActionTypeText(action));
+            fieldText(field), ActionTypeText(action));
     return false;
 }
 
@@ -193,7 +193,7 @@ ReportActionNotArray(struct xkb_keymap *keymap, unsigned action,
     log_err(keymap->ctx,
             "The %s field in the %s action is not an array; "
             "Action definition ignored\n",
-            fieldText(field), XkbcActionTypeText(action));
+            fieldText(field), ActionTypeText(action));
     return false;
 }
 
@@ -204,7 +204,7 @@ ReportNotFound(struct xkb_keymap *keymap, unsigned action, unsigned field,
     log_err(keymap->ctx,
             "%s named %s not found; "
             "Ignoring the %s field of an %s action\n",
-            what, bad, fieldText(field), XkbcActionTypeText(action));
+            what, bad, fieldText(field), ActionTypeText(action));
     return false;
 }
 
@@ -847,7 +847,7 @@ HandleRedirectKey(struct xkb_keymap *keymap, struct xkb_any_action *action,
         key = FindNamedKey(keymap, tmp, true, CreateKeyNames(keymap), 0);
         if (!key)
             return ReportNotFound(keymap, action->type, field, "Key",
-                                  XkbcKeyNameText(rtrn.name));
+                                  KeyNameText(rtrn.name));
         act->new_kc = XkbKeyGetKeycode(keymap, key);
         return true;
 

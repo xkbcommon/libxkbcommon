@@ -82,7 +82,7 @@ ProcessIncludeFile(struct xkb_context *ctx,
         }
         if (!mapToUse) {
             log_err(ctx, "No %s named \"%s\" in the include file \"%s\"\n",
-                    XkbcFileTypeText(file_type), stmt->map, stmt->file);
+                    FileTypeText(file_type), stmt->map, stmt->file);
             return false;
         }
     }
@@ -96,8 +96,8 @@ ProcessIncludeFile(struct xkb_context *ctx,
         log_err(ctx,
                 "Include file wrong type (expected %s, got %s); "
                 "Include file \"%s\" ignored\n",
-                XkbcFileTypeText(file_type),
-                XkbcFileTypeText(mapToUse->type), stmt->file);
+                FileTypeText(file_type), FileTypeText(mapToUse->type),
+                stmt->file);
         return false;
     }
     /* FIXME: we have to check recursive includes here (or somewhere) */

@@ -537,7 +537,7 @@ HandleAliasCollision(KeyNamesInfo *info, AliasInfo *old, AliasInfo *new)
             log_warn(info->keymap->ctx,
                      "Alias of %s for %s declared more than once; "
                      "First definition ignored\n",
-                     XkbcKeyNameText(new->alias), XkbcKeyNameText(new->real));
+                     KeyNameText(new->alias), KeyNameText(new->real));
     }
     else {
         char *use, *ignore;
@@ -555,8 +555,8 @@ HandleAliasCollision(KeyNamesInfo *info, AliasInfo *old, AliasInfo *new)
             log_warn(info->keymap->ctx,
                      "Multiple definitions for alias %s; "
                      "Using %s, ignoring %s\n",
-                     XkbcKeyNameText(old->alias), XkbcKeyNameText(use),
-                     XkbcKeyNameText(ignore));
+                     KeyNameText(old->alias), KeyNameText(use),
+                     KeyNameText(ignore));
 
         if (use != old->real)
             memcpy(old->real, use, XkbKeyNameLength);
@@ -816,10 +816,8 @@ ApplyAliases(KeyNamesInfo *info)
         key = FindNamedKey(keymap, lname, false, CreateKeyNames(keymap), 0);
         if (!key) {
             log_lvl(info->keymap->ctx, 5,
-                    "Attempt to alias %s to non-existent key %s; "
-                    "Ignored\n",
-                    XkbcKeyNameText(alias->alias),
-                    XkbcKeyNameText(alias->real));
+                    "Attempt to alias %s to non-existent key %s; Ignored\n",
+                    KeyNameText(alias->alias), KeyNameText(alias->real));
             alias->alias[0] = '\0';
             continue;
         }
@@ -830,8 +828,7 @@ ApplyAliases(KeyNamesInfo *info)
             log_lvl(info->keymap->ctx, 5,
                     "Attempt to create alias with the name of a real key; "
                     "Alias \"%s = %s\" ignored\n",
-                    XkbcKeyNameText(alias->alias),
-                    XkbcKeyNameText(alias->real));
+                    KeyNameText(alias->alias), KeyNameText(alias->real));
             alias->alias[0] = '\0';
             continue;
         }

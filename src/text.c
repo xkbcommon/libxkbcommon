@@ -27,28 +27,28 @@
 #include "text.h"
 
 #define BUFFER_SIZE 1024
-static char textBuffer[BUFFER_SIZE];
-static unsigned int tbNext = 0;
 
 static char *
-tbGetBuffer(unsigned int size)
+GetBuffer(size_t size)
 {
+    static char buffer[BUFFER_SIZE];
+    static size_t next;
     char *rtrn;
 
     if (size >= BUFFER_SIZE)
         return NULL;
 
-    if ((BUFFER_SIZE - tbNext) <= size)
-        tbNext = 0;
+    if (BUFFER_SIZE - next <= size)
+        next = 0;
 
-    rtrn = &textBuffer[tbNext];
-    tbNext += size;
+    rtrn = &buffer[next];
+    next += size;
 
     return rtrn;
 }
 
 static const char *
-XkbcVModIndexText(struct xkb_keymap *keymap, xkb_mod_index_t ndx)
+VModIndexText(struct xkb_keymap *keymap, xkb_mod_index_t ndx)
 {
     int len;
     char *rtrn;
@@ -69,15 +69,15 @@ XkbcVModIndexText(struct xkb_keymap *keymap, xkb_mod_index_t ndx)
     if (len >= BUFFER_SIZE)
         len = BUFFER_SIZE - 1;
 
-    rtrn = tbGetBuffer(len);
+    rtrn = GetBuffer(len);
     strncpy(rtrn, tmp, len);
 
     return rtrn;
 }
 
 const char *
-XkbcVModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t modMask,
-                 xkb_mod_mask_t mask)
+VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t modMask,
+             xkb_mod_mask_t mask)
 {
     xkb_mod_index_t i;
     xkb_mod_mask_t bit;
@@ -90,7 +90,7 @@ XkbcVModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t modMask,
         return "none";
 
     if (modMask != 0)
-        mm = XkbcModMaskText(modMask, false);
+        mm = ModMaskText(modMask, false);
 
     str = buf;
     buf[0] = '\0';
@@ -104,7 +104,7 @@ XkbcVModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t modMask,
 
             len = snprintf(str, rem, "%s%s",
                            (str != buf) ? "+" : "",
-                           XkbcVModIndexText(keymap, i));
+                           VModIndexText(keymap, i));
             rem -= len;
             str += len;
         }
@@ -119,7 +119,7 @@ XkbcVModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t modMask,
     if (len >= BUFFER_SIZE)
         len = BUFFER_SIZE - 1;
 
-    rtrn = tbGetBuffer(len + 1);
+    rtrn = GetBuffer(len + 1);
     rtrn[0] = '\0';
 
     snprintf(rtrn, len + 1, "%s%s%s", (mm ? mm : ""),
@@ -140,7 +140,7 @@ static const char *modNames[XkbNumModifiers] = {
 };
 
 const char *
-XkbcModIndexText(xkb_mod_index_t ndx)
+ModIndexText(xkb_mod_index_t ndx)
 {
     char *buf;
 
@@ -149,14 +149,14 @@ XkbcModIndexText(xkb_mod_index_t ndx)
     else if (ndx == XkbNoModifier)
         return "none";
 
-    buf = tbGetBuffer(32);
+    buf = GetBuffer(32);
     snprintf(buf, 32, "ILLEGAL_%02x", ndx);
 
     return buf;
 }
 
 const char *
-XkbcModMaskText(xkb_mod_mask_t mask, bool cFormat)
+ModMaskText(xkb_mod_mask_t mask, bool cFormat)
 {
     int i, rem;
     xkb_mod_index_t bit;
@@ -169,7 +169,7 @@ XkbcModMaskText(xkb_mod_mask_t mask, bool cFormat)
         return (cFormat ? "0" : "none");
 
     rem = 64;
-    buf = tbGetBuffer(rem);
+    buf = GetBuffer(rem);
     str = buf;
     buf[0] = '\0';
     for (i = 0, bit = 1; i < XkbNumModifiers && rem > 1; i++, bit <<= 1) {
@@ -190,7 +190,7 @@ XkbcModMaskText(xkb_mod_mask_t mask, bool cFormat)
 }
 
 const char *
-XkbcFileTypeText(enum xkb_file_type type)
+FileTypeText(enum xkb_file_type type)
 {
     switch (type) {
     case FILE_TYPE_KEYMAP:
@@ -235,7 +235,7 @@ static const char *actionTypeNames[XkbSA_NumActions] = {
 };
 
 const char *
-XkbcActionTypeText(unsigned type)
+ActionTypeText(unsigned type)
 {
     if (type <= XkbSA_LastAction)
         return actionTypeNames[type];
@@ -243,7 +243,7 @@ XkbcActionTypeText(unsigned type)
 }
 
 const char *
-XkbcKeysymText(xkb_keysym_t sym)
+KeysymText(xkb_keysym_t sym)
 {
     static char buffer[64];
 
@@ -253,12 +253,12 @@ XkbcKeysymText(xkb_keysym_t sym)
 }
 
 const char *
-XkbcKeyNameText(char *name)
+KeyNameText(char *name)
 {
     char *buf;
     int len;
 
-    buf = tbGetBuffer(7);
+    buf = GetBuffer(7);
     buf[0] = '<';
     strncpy(&buf[1], name, 4);
     buf[5] = '\0';
@@ -278,7 +278,7 @@ static const char *siMatchText[5] = {
 };
 
 const char *
-XkbcSIMatchText(unsigned type)
+SIMatchText(unsigned type)
 {
     char *buf;
 
@@ -294,7 +294,7 @@ XkbcSIMatchText(unsigned type)
     case XkbSI_Exactly:
         return siMatchText[4];
     default:
-        buf = tbGetBuffer(40);
+        buf = GetBuffer(40);
         snprintf(buf, 40, "0x%x", type & XkbSI_OpMask);
         return buf;
     }

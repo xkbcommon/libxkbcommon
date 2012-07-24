@@ -102,10 +102,10 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
         if (mod.uval == keymap->vmods[i])
             return true;
 
-        str1 = XkbcModMaskText(keymap->vmods[i], true);
+        str1 = ModMaskText(keymap->vmods[i], true);
         if (mergeMode == MERGE_OVERRIDE) {
             str2 = str1;
-            str1 = XkbcModMaskText(mod.uval, true);
+            str1 = ModMaskText(mod.uval, true);
         }
 
         log_warn(keymap->ctx,

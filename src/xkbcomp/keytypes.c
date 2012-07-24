@@ -80,20 +80,20 @@ typedef struct _KeyTypesInfo {
 static inline const char *
 MapEntryTxt(KeyTypesInfo *info, struct xkb_kt_map_entry *entry)
 {
-    return XkbcVModMaskText(info->keymap, entry->mods.real_mods,
-                            entry->mods.vmods);
+    return VModMaskText(info->keymap, entry->mods.real_mods,
+                        entry->mods.vmods);
 }
 
 static inline const char *
 PreserveIndexTxt(KeyTypesInfo *info, PreserveInfo *pi)
 {
-    return XkbcVModMaskText(info->keymap, pi->indexMods, pi->indexVMods);
+    return VModMaskText(info->keymap, pi->indexMods, pi->indexVMods);
 }
 
 static inline const char *
 PreserveTxt(KeyTypesInfo *info, PreserveInfo *pi)
 {
-    return XkbcVModMaskText(info->keymap, pi->preMods, pi->preVMods);
+    return VModMaskText(info->keymap, pi->preMods, pi->preVMods);
 }
 
 static inline const char *
@@ -105,7 +105,7 @@ TypeTxt(KeyTypesInfo *info, KeyTypeInfo *type)
 static inline const char *
 TypeMaskTxt(KeyTypesInfo *info, KeyTypeInfo *type)
 {
-    return XkbcVModMaskText(info->keymap, type->mask, type->vmask);
+    return VModMaskText(info->keymap, type->mask, type->vmask);
 }
 
 static inline bool
@@ -549,9 +549,9 @@ SetMapEntry(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
                 "Map entry for unused modifiers in %s; "
                 "Using %s instead of %s\n",
                 TypeTxt(info, type),
-                XkbcVModMaskText(info->keymap,
-                                 entry.mods.real_mods & type->mask,
-                                 entry.mods.vmods & type->vmask),
+                VModMaskText(info->keymap,
+                             entry.mods.real_mods & type->mask,
+                             entry.mods.vmods & type->vmask),
                 MapEntryTxt(info, &entry));
         entry.mods.real_mods &= type->mask;
         entry.mods.vmods &= type->vmask;
@@ -722,7 +722,7 @@ SetKeyTypeField(KeyTypesInfo *info, KeyTypeInfo *type,
                      "Using %s, ignoring %s\n",
                      xkb_atom_text(info->keymap->ctx, type->name),
                      TypeMaskTxt(info, type),
-                     XkbcVModMaskText(info->keymap, mods, vmods));
+                     VModMaskText(info->keymap, mods, vmods));
             return false;
         }
         type->mask = mods;

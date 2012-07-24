@@ -30,28 +30,28 @@
 #include "xkb-priv.h"
 
 const char *
-XkbcVModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t modMask,
-                 xkb_mod_mask_t mask);
+VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t modMask,
+             xkb_mod_mask_t mask);
 
 const char *
-XkbcModIndexText(xkb_mod_index_t ndx);
+ModIndexText(xkb_mod_index_t ndx);
 
 const char *
-XkbcModMaskText(xkb_mod_mask_t mask, bool cFormat);
+ModMaskText(xkb_mod_mask_t mask, bool cFormat);
 
-extern const char *
-XkbcFileTypeText(enum xkb_file_type type);
+const char *
+FileTypeText(enum xkb_file_type type);
 
-extern const char *
-XkbcActionTypeText(unsigned type);
+const char *
+ActionTypeText(unsigned type);
 
-extern const char *
-XkbcKeysymText(xkb_keysym_t sym);
+const char *
+KeysymText(xkb_keysym_t sym);
 
-extern const char *
-XkbcKeyNameText(char *name);
+const char *
+KeyNameText(char *name);
 
-extern const char *
-XkbcSIMatchText(unsigned type);
+const char *
+SIMatchText(unsigned type);
 
 #endif /* TEXT_H */
