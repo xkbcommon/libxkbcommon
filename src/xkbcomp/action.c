@@ -245,7 +245,6 @@ static bool
 CheckModifierField(struct xkb_keymap *keymap, unsigned action, ExprDef *value,
                    unsigned *flags_inout, xkb_mod_mask_t *mods_rtrn)
 {
-    ExprResult rtrn;
     if (value->op == EXPR_IDENT) {
         const char *valStr;
         valStr = xkb_atom_text(keymap->ctx, value->value.str);
@@ -258,10 +257,9 @@ CheckModifierField(struct xkb_keymap *keymap, unsigned action, ExprDef *value,
         }
     }
 
-    if (!ExprResolveVModMask(keymap, value, &rtrn))
+    if (!ExprResolveVModMask(keymap, value, mods_rtrn))
         return ReportMismatch(keymap, action, F_Modifiers, "modifier mask");
 
-    *mods_rtrn = (xkb_mod_mask_t) rtrn.ival;
     *flags_inout &= ~XkbSA_UseModMapMods;
     return true;
 }
@@ -624,46 +622,53 @@ static bool
 HandleISOLock(struct xkb_keymap *keymap, struct xkb_any_action *action,
               unsigned field, ExprDef *array_ndx, ExprDef *value)
 {
-    ExprResult rtrn;
     struct xkb_iso_action *act;
-    unsigned flags;
-    xkb_mod_mask_t mods;
-    xkb_group_index_t group;
 
     act = (struct xkb_iso_action *) action;
-    switch (field) {
-    case F_Modifiers:
-        if (array_ndx != NULL)
-            return ReportActionNotArray(keymap, action->type, field);
-        flags = act->flags;
-        if (CheckModifierField(keymap, action->type, value, &flags, &mods)) {
-            act->flags = flags & (~XkbSA_ISODfltIsGroup);
-            act->real_mods = mods & 0xff;
-            act->vmods = (mods >> 8) & 0xff;
-            return true;
-        }
-        return false;
+    if (field == F_Modifiers) {
+        unsigned flags;
+        xkb_mod_mask_t mods;
 
-    case F_Group:
-        if (array_ndx != NULL)
+        if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
-        flags = act->flags;
-        if (CheckGroupField(keymap, action->type, value, &flags, &group)) {
-            act->flags = flags | XkbSA_ISODfltIsGroup;
-            act->group = group;
-            return true;
-        }
-        return false;
 
-    case F_Affect:
-        if (array_ndx != NULL)
-            return ReportActionNotArray(keymap, action->type, field);
-        if (!ExprResolveMask(keymap->ctx, value, &rtrn, isoNames))
-            return ReportMismatch(keymap, action->type, field,
-                                  "keyboard component");
-        act->affect = (~rtrn.uval) & XkbSA_ISOAffectMask;
+        flags = act->flags;
+        if (!CheckModifierField(keymap, action->type, value, &flags, &mods))
+            return false;
+
+        act->flags = flags & (~XkbSA_ISODfltIsGroup);
+        act->real_mods = mods & 0xff;
+        act->vmods = (mods >> 8) & 0xff;
         return true;
     }
+    else if (field == F_Group) {
+        xkb_group_index_t group;
+        unsigned flags;
+
+        if (array_ndx)
+            return ReportActionNotArray(keymap, action->type, field);
+
+        flags = act->flags;
+        if (!CheckGroupField(keymap, action->type, value, &flags, &group))
+            return false;
+
+        act->flags = flags | XkbSA_ISODfltIsGroup;
+        act->group = group;
+        return true;
+    } else if (F_Affect) {
+        xkb_mod_mask_t mask;
+
+        if (array_ndx)
+            return ReportActionNotArray(keymap, action->type, field);
+
+        if (!ExprResolveMask(keymap->ctx, value, &mask, isoNames))
+            return ReportMismatch(keymap, action->type, field,
+                                  "keyboard component");
+
+        act->affect = (~mask) & XkbSA_ISOAffectMask;
+        return true;
+    }
+
     return ReportIllegal(keymap, action->type, field);
 }
 
@@ -752,19 +757,23 @@ HandleSetLockControls(struct xkb_keymap *keymap,
                       unsigned field, ExprDef *array_ndx,
                       ExprDef *value)
 {
-    ExprResult rtrn;
     struct xkb_controls_action *act;
 
     act = (struct xkb_controls_action *) action;
     if (field == F_Controls) {
-        if (array_ndx != NULL)
+        unsigned int mask;
+
+        if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
-        if (!ExprResolveMask(keymap->ctx, value, &rtrn, ctrlNames))
+
+        if (!ExprResolveMask(keymap->ctx, value, &mask, ctrlNames))
             return ReportMismatch(keymap, action->type, field,
                                   "controls mask");
-        act->ctrls = rtrn.uval;
+
+        act->ctrls = mask;
         return true;
     }
+
     return ReportIllegal(keymap, action->type, field);
 }
 
@@ -782,25 +791,27 @@ static bool
 HandleActionMessage(struct xkb_keymap *keymap, struct xkb_any_action *action,
                     unsigned field, ExprDef *array_ndx, ExprDef *value)
 {
-    ExprResult rtrn;
-    const char *str;
-    bool set;
     struct xkb_message_action *act;
 
     act = (struct xkb_message_action *) action;
-    switch (field) {
-    case F_Report:
-        if (array_ndx != NULL)
+    if (field == F_Report) {
+        unsigned int mask;
+
+        if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
-        if (!ExprResolveMask(keymap->ctx, value, &rtrn, evNames))
+
+        if (!ExprResolveMask(keymap->ctx, value, &mask, evNames))
             return ReportMismatch(keymap, action->type, field,
                                   "key event mask");
-        act->flags &= ~(XkbSA_MessageOnPress | XkbSA_MessageOnRelease);
-        act->flags =
-            rtrn.uval & (XkbSA_MessageOnPress | XkbSA_MessageOnRelease);
-        return true;
 
-    case F_GenKeyEvent:
+        /* FIXME: Something seems wrong here... */
+        act->flags &= ~(XkbSA_MessageOnPress | XkbSA_MessageOnRelease);
+        act->flags = mask & (XkbSA_MessageOnPress | XkbSA_MessageOnRelease);
+        return true;
+    }
+    else if (field == F_GenKeyEvent) {
+        bool set;
+
         if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
 
@@ -813,54 +824,52 @@ HandleActionMessage(struct xkb_keymap *keymap, struct xkb_any_action *action,
             act->flags &= ~XkbSA_MessageGenKeyEvent;
 
         return true;
+    }
+    else if (field == F_Data && !array_ndx) {
+        const char *str;
+        int len;
 
-    case F_Data:
-        if (array_ndx == NULL) {
-            int len;
+        if (!ExprResolveString(keymap->ctx, value, &str))
+            return ReportMismatch(keymap, action->type, field, "string");
 
-            if (!ExprResolveString(keymap->ctx, value, &str))
-                return ReportMismatch(keymap, action->type, field, "string");
-
-            len = strlen(str);
-            if (len < 1 || len > 6) {
-                log_warn(keymap->ctx,
-                         "An action message can hold only 6 bytes; "
-                         "Extra %d bytes ignored\n", len - 6);
-            }
-
-            strncpy((char *) act->message, str, 6);
-            return true;
-        }
-        else {
-            int ndx, datum;
-
-            if (!ExprResolveInteger(keymap->ctx, array_ndx, &ndx)) {
-                log_err(keymap->ctx,
-                        "Array subscript must be integer; "
-                        "Illegal subscript ignored\n");
-                return false;
-            }
-
-            if (ndx < 0 || ndx > 5) {
-                log_err(keymap->ctx,
-                        "An action message is at most 6 bytes long; "
-                        "Attempt to use data[%d] ignored\n", ndx);
-                return false;
-            }
-
-            if (!ExprResolveInteger(keymap->ctx, value, &datum))
-                return ReportMismatch(keymap, action->type, field, "integer");
-
-            if (datum < 0 || datum > 255) {
-                log_err(keymap->ctx,
-                        "Message data must be in the range 0..255; "
-                        "Illegal datum %d ignored\n", datum);
-                return false;
-            }
-
-            act->message[ndx] = (uint8_t) datum;
+        len = strlen(str);
+        if (len < 1 || len > 6) {
+            log_warn(keymap->ctx,
+                     "An action message can hold only 6 bytes; "
+                     "Extra %d bytes ignored\n", len - 6);
         }
 
+        strncpy((char *) act->message, str, 6);
+        return true;
+    }
+    else if (field == F_Data && array_ndx) {
+        int ndx, datum;
+
+        if (!ExprResolveInteger(keymap->ctx, array_ndx, &ndx)) {
+            log_err(keymap->ctx,
+                    "Array subscript must be integer; "
+                    "Illegal subscript ignored\n");
+            return false;
+        }
+
+        if (ndx < 0 || ndx > 5) {
+            log_err(keymap->ctx,
+                    "An action message is at most 6 bytes long; "
+                    "Attempt to use data[%d] ignored\n", ndx);
+            return false;
+        }
+
+        if (!ExprResolveInteger(keymap->ctx, value, &datum))
+            return ReportMismatch(keymap, action->type, field, "integer");
+
+        if (datum < 0 || datum > 255) {
+            log_err(keymap->ctx,
+                    "Message data must be in the range 0..255; "
+                    "Illegal datum %d ignored\n", datum);
+            return false;
+        }
+
+        act->message[ndx] = (uint8_t) datum;
         return true;
     }
 

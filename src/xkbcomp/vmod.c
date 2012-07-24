@@ -66,7 +66,7 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
     xkb_mod_index_t i;
     int nextFree;
     xkb_mod_mask_t bit;
-    ExprResult mod;
+    xkb_mod_mask_t mask;
 
     nextFree = -1;
     for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1) {
@@ -92,19 +92,19 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
         if (!stmt->value)
             return true;
 
-        if (!ExprResolveModMask(keymap->ctx, stmt->value, &mod)) {
+        if (!ExprResolveModMask(keymap->ctx, stmt->value, &mask)) {
             log_err(keymap->ctx, "Declaration of %s ignored\n",
                     xkb_atom_text(keymap->ctx, stmt->name));
             return false;
         }
 
-        if (mod.uval == keymap->vmods[i])
+        if (mask == keymap->vmods[i])
             return true;
 
         str1 = ModMaskText(keymap->vmods[i], true);
         if (mergeMode == MERGE_OVERRIDE) {
             str2 = str1;
-            str1 = ModMaskText(mod.uval, true);
+            str1 = ModMaskText(mask, true);
         }
 
         log_warn(keymap->ctx,
@@ -113,7 +113,7 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
                  xkb_atom_text(keymap->ctx, stmt->name), str1, str2);
 
         if (mergeMode == MERGE_OVERRIDE)
-            keymap->vmods[i] = mod.uval;
+            keymap->vmods[i] = mask;
 
         return true;
     }
@@ -134,13 +134,13 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
     if (!stmt->value)
         return true;
 
-    if (!ExprResolveModMask(keymap->ctx, stmt->value, &mod)) {
+    if (!ExprResolveModMask(keymap->ctx, stmt->value, &mask)) {
         log_err(keymap->ctx, "Declaration of %s ignored\n",
                 xkb_atom_text(keymap->ctx, stmt->name));
         return false;
     }
 
-    keymap->vmods[nextFree] = mod.uval;
+    keymap->vmods[nextFree] = mask;
     return true;
 }
 

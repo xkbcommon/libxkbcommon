@@ -813,26 +813,44 @@ ExprResolveMaskLookup(struct xkb_context *ctx, ExprDef *expr,
     return false;
 }
 
-int
+bool
 ExprResolveMask(struct xkb_context *ctx, ExprDef *expr,
-                ExprResult *val_rtrn, const LookupEntry *values)
+                unsigned int *mask_rtrn, const LookupEntry *values)
 {
-    return ExprResolveMaskLookup(ctx, expr, val_rtrn, SimpleLookup, values);
+    ExprResult result;
+    bool ok;
+
+    ok = ExprResolveMaskLookup(ctx, expr, &result, SimpleLookup, values);
+    if (ok)
+        *mask_rtrn = (unsigned int) result.ival;
+    return ok;
 }
 
-int
+bool
 ExprResolveModMask(struct xkb_context *ctx, ExprDef *expr,
-                   ExprResult *val_rtrn)
+                   xkb_mod_mask_t *mask_rtrn)
 {
-    return ExprResolveMaskLookup(ctx, expr, val_rtrn, LookupModMask, NULL);
+    ExprResult result;
+    bool ok;
+
+    ok = ExprResolveMaskLookup(ctx, expr, &result, LookupModMask, NULL);
+    if (ok)
+        *mask_rtrn = (xkb_mod_mask_t) result.ival;
+    return ok;
 }
 
-int
+bool
 ExprResolveVModMask(struct xkb_keymap *keymap, ExprDef *expr,
-                    ExprResult *val_rtrn)
+                    xkb_mod_mask_t *mask_rtrn)
 {
-    return ExprResolveMaskLookup(keymap->ctx, expr, val_rtrn, LookupVModMask,
-                                 keymap);
+    ExprResult result;
+    bool ok;
+
+    ok = ExprResolveMaskLookup(keymap->ctx, expr, &result, LookupVModMask,
+                               keymap);
+    if (ok)
+        *mask_rtrn = (xkb_mod_mask_t) result.ival;
+    return ok;
 }
 
 bool

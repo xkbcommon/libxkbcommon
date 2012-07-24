@@ -366,10 +366,8 @@ AddGroupCompat(CompatInfo *info, xkb_group_index_t group, GroupCompatInfo *new)
 static bool
 ResolveStateAndPredicate(ExprDef * expr,
                          unsigned *pred_rtrn,
-                         unsigned *mods_rtrn, CompatInfo * info)
+                         xkb_mod_mask_t *mods_rtrn, CompatInfo * info)
 {
-    ExprResult result;
-
     if (expr == NULL) {
         *pred_rtrn = XkbSI_AnyOfOrNone;
         *mods_rtrn = ~0;
@@ -407,11 +405,7 @@ ResolveStateAndPredicate(ExprDef * expr,
         }
     }
 
-    if (ExprResolveModMask(info->keymap->ctx, expr, &result)) {
-        *mods_rtrn = result.uval;
-        return true;
-    }
-    return false;
+    return ExprResolveModMask(info->keymap->ctx, expr, mods_rtrn);
 }
 
 /***====================================================================***/
@@ -761,35 +755,41 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
     struct xkb_keymap *keymap = info->keymap;
 
     if (istreq(field, "modifiers") || istreq(field, "mods")) {
-        if (arrayNdx != NULL)
+        xkb_mod_mask_t mask;
+
+        if (arrayNdx)
             return ReportIndicatorNotArray(info, led, field);
 
-        if (!ExprResolveVModMask(keymap, value, &rtrn))
+        if (!ExprResolveVModMask(keymap, value, &mask))
             return ReportIndicatorBadType(info, led, field, "modifier mask");
 
-        led->real_mods = rtrn.uval & 0xff;
-        led->vmods = (rtrn.uval >> 8) & 0xff;
+        led->real_mods = mask & 0xff;
+        led->vmods = (mask >> 8) & 0xff;
         led->defined |= _LED_Mods;
     }
     else if (istreq(field, "groups")) {
-        if (arrayNdx != NULL)
+        unsigned int mask;
+
+        if (arrayNdx)
             return ReportIndicatorNotArray(info, led, field);
 
-        if (!ExprResolveMask(keymap->ctx, value, &rtrn, groupNames))
+        if (!ExprResolveMask(keymap->ctx, value, &mask, groupNames))
             return ReportIndicatorBadType(info, led, field, "group mask");
 
-        led->groups = rtrn.uval;
+        led->groups = mask;
         led->defined |= _LED_Groups;
     }
     else if (istreq(field, "controls") || istreq(field, "ctrls")) {
-        if (arrayNdx != NULL)
+        unsigned int mask;
+
+        if (arrayNdx)
             return ReportIndicatorNotArray(info, led, field);
 
-        if (!ExprResolveMask(keymap->ctx, value, &rtrn, ctrlNames))
+        if (!ExprResolveMask(keymap->ctx, value, &mask, ctrlNames))
             return ReportIndicatorBadType(info, led, field,
                                           "controls mask");
 
-        led->ctrls = rtrn.uval;
+        led->ctrls = mask;
         led->defined |= _LED_Ctrls;
     }
     else if (istreq(field, "allowexplicit")) {
@@ -810,24 +810,28 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
     }
     else if (istreq(field, "whichmodstate") ||
              istreq(field, "whichmodifierstate")) {
-        if (arrayNdx != NULL)
+        unsigned int mask;
+
+        if (arrayNdx)
             return ReportIndicatorNotArray(info, led, field);
 
-        if (!ExprResolveMask(keymap->ctx, value, &rtrn, modComponentNames))
+        if (!ExprResolveMask(keymap->ctx, value, &mask, modComponentNames))
             return ReportIndicatorBadType(info, led, field,
                                           "mask of modifier state components");
 
-        led->which_mods = rtrn.uval;
+        led->which_mods = mask;
     }
     else if (istreq(field, "whichgroupstate")) {
-        if (arrayNdx != NULL)
+        unsigned mask;
+
+        if (arrayNdx)
             return ReportIndicatorNotArray(info, led, field);
 
-        if (!ExprResolveMask(keymap->ctx, value, &rtrn, groupComponentNames))
+        if (!ExprResolveMask(keymap->ctx, value, &mask, groupComponentNames))
             return ReportIndicatorBadType(info, led, field,
                                           "mask of group state components");
 
-        led->which_groups = rtrn.uval;
+        led->which_groups = mask;
     }
     else if (istreq(field, "driveskbd") ||
              istreq(field, "driveskeyboard") ||
@@ -966,11 +970,11 @@ static int
 HandleGroupCompatDef(CompatInfo *info, GroupCompatDef *def,
                      enum merge_mode merge)
 {
-    ExprResult val;
+    xkb_mod_mask_t mask;
     GroupCompatInfo tmp;
 
-    if (def->merge != MERGE_DEFAULT)
-        merge = def->merge;
+    merge = (def->merge == MERGE_DEFAULT ? merge : def->merge);
+
     if (def->group < 1 || def->group > XkbNumKbdGroups) {
         log_err(info->keymap->ctx,
                 "Keyboard group must be in the range 1..%u; "
@@ -978,17 +982,20 @@ HandleGroupCompatDef(CompatInfo *info, GroupCompatDef *def,
                 XkbNumKbdGroups, def->group);
         return false;
     }
+
     tmp.file_id = info->file_id;
     tmp.merge = merge;
-    if (!ExprResolveVModMask(info->keymap, def->def, &val)) {
+
+    if (!ExprResolveVModMask(info->keymap, def->def, &mask)) {
         log_err(info->keymap->ctx,
                 "Expected a modifier mask in group compatibility definition; "
                 "Ignoring illegal compatibility map for group %u\n",
                 def->group);
         return false;
     }
-    tmp.real_mods = val.uval & 0xff;
-    tmp.vmods = (val.uval >> 8) & 0xffff;
+
+    tmp.real_mods = mask & 0xff;
+    tmp.vmods = (mask >> 8) & 0xffff;
     tmp.defined = true;
     return AddGroupCompat(info, def->group - 1, &tmp);
 }

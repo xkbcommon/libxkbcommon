@@ -1061,9 +1061,11 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     else if (istreq(field, "vmods") ||
              istreq(field, "virtualmods") ||
              istreq(field, "virtualmodifiers")) {
-        ok = ExprResolveVModMask(info->keymap, value, &tmp);
+        xkb_mod_mask_t mask;
+
+        ok = ExprResolveVModMask(info->keymap, value, &mask);
         if (ok) {
-            keyi->vmodmap = (tmp.uval >> 8);
+            keyi->vmodmap = (mask >> 8);
             keyi->defined |= _Key_VModMap;
         }
         else {

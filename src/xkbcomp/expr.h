@@ -58,13 +58,13 @@ extern bool
 LookupModIndex(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
                enum expr_value_type type, ExprResult *val_rtrn);
 
-extern int
+bool
 ExprResolveModMask(struct xkb_context *ctx, ExprDef *expr,
-                   ExprResult *val_rtrn);
+                   xkb_mod_mask_t *mask_rtrn);
 
-extern int
+bool
 ExprResolveVModMask(struct xkb_keymap *keymap, ExprDef *expr,
-                    ExprResult *val_rtrn);
+                    xkb_mod_mask_t *mask_rtrn);
 
 bool
 ExprResolveBoolean(struct xkb_context *ctx, ExprDef *expr, bool *set_rtrn);
@@ -98,9 +98,9 @@ extern int
 ExprResolveEnum(struct xkb_context *ctx, ExprDef *expr, ExprResult *val_rtrn,
                 const LookupEntry *values);
 
-extern int
-ExprResolveMask(struct xkb_context *ctx, ExprDef *expr, ExprResult *val_rtrn,
-                const LookupEntry *values);
+bool
+ExprResolveMask(struct xkb_context *ctx, ExprDef *expr,
+                unsigned int *mask_rtrn, const LookupEntry *values);
 
 bool
 ExprResolveKeySym(struct xkb_context *ctx, ExprDef *expr,

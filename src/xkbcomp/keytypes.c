@@ -531,21 +531,21 @@ static bool
 SetMapEntry(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
             ExprDef *value)
 {
-    ExprResult rtrn;
     unsigned int level;
     struct xkb_kt_map_entry entry;
+    xkb_mod_mask_t mask;
 
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(info, type, "map entry");
 
-    if (!ExprResolveVModMask(info->keymap, arrayNdx, &rtrn))
+    if (!ExprResolveVModMask(info->keymap, arrayNdx, &mask))
         return ReportTypeBadType(info, type, "map entry", "modifier mask");
 
-    entry.mods.real_mods = rtrn.uval & 0xff;      /* modifiers < 512 */
-    entry.mods.vmods = (rtrn.uval >> 8) & 0xffff; /* modifiers > 512 */
+    entry.mods.real_mods = mask & 0xff;      /* modifiers < 512 */
+    entry.mods.vmods = (mask >> 8) & 0xffff; /* modifiers > 512 */
 
     if ((entry.mods.real_mods & (~type->mask)) ||
-        ((entry.mods.vmods & (~type->vmask)) != 0)) {
+        (entry.mods.vmods & (~type->vmask))) {
         log_lvl(info->keymap->ctx, 1,
                 "Map entry for unused modifiers in %s; "
                 "Using %s instead of %s\n",
@@ -574,18 +574,18 @@ static bool
 SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
             ExprDef *value)
 {
-    ExprResult rtrn;
+    xkb_mod_mask_t mask;
     PreserveInfo new;
 
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(info, type, "preserve entry");
 
-    if (!ExprResolveVModMask(info->keymap, arrayNdx, &rtrn))
+    if (!ExprResolveVModMask(info->keymap, arrayNdx, &mask))
         return ReportTypeBadType(info, type, "preserve entry",
                                  "modifier mask");
 
-    new.indexMods = rtrn.uval & 0xff;
-    new.indexVMods = (rtrn.uval >> 8) & 0xffff;
+    new.indexMods = mask & 0xff;
+    new.indexVMods = (mask >> 8) & 0xffff;
 
     if ((new.indexMods & (~type->mask)) ||
         (new.indexVMods & (~type->vmask))) {
@@ -601,7 +601,7 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
                 PreserveIndexTxt(info, &new));
     }
 
-    if (!ExprResolveVModMask(info->keymap, value, &rtrn)) {
+    if (!ExprResolveVModMask(info->keymap, value, &mask)) {
         log_err(info->keymap->ctx,
                 "Preserve value in a key type is not a modifier mask; "
                 "Ignoring preserve[%s] in type %s\n",
@@ -609,8 +609,8 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
         return false;
     }
 
-    new.preMods = rtrn.uval & 0xff;
-    new.preVMods = (rtrn.uval >> 16) & 0xffff;
+    new.preMods = mask & 0xff;
+    new.preVMods = (mask >> 16) & 0xffff;
 
     if ((new.preMods & (~new.indexMods)) ||
         (new.preVMods & (~new.indexVMods))) {
@@ -705,23 +705,24 @@ static bool
 SetKeyTypeField(KeyTypesInfo *info, KeyTypeInfo *type,
                 const char *field, ExprDef *arrayNdx, ExprDef *value)
 {
-    ExprResult tmp;
-
     if (istreq(field, "modifiers")) {
-        unsigned mods, vmods;
-        if (arrayNdx != NULL)
+        xkb_mod_mask_t mask, mods, vmods;
+
+        if (arrayNdx)
             log_warn(info->keymap->ctx,
                      "The modifiers field of a key type is not an array; "
                      "Illegal array subscript ignored\n");
+
         /* get modifier mask for current type */
-        if (!ExprResolveVModMask(info->keymap, value, &tmp)) {
+        if (!ExprResolveVModMask(info->keymap, value, &mask)) {
             log_err(info->keymap->ctx,
                     "Key type mask field must be a modifier mask; "
                     "Key type definition ignored\n");
             return false;
         }
-        mods = tmp.uval & 0xff; /* core mods */
-        vmods = (tmp.uval >> 8) & 0xffff; /* xkb virtual mods */
+
+        mods = mask & 0xff; /* core mods */
+        vmods = (mask >> 8) & 0xffff; /* xkb virtual mods */
         if (type->defined & _KT_Mask) {
             log_warn(info->keymap->ctx,
                      "Multiple modifier mask definitions for key type %s; "
