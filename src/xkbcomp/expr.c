@@ -162,7 +162,7 @@ SimpleLookup(struct xkb_context *ctx, const void *priv,
 
     str = xkb_atom_text(ctx, field);
     for (entry = priv; (entry != NULL) && (entry->name != NULL); entry++) {
-        if (strcasecmp(str, entry->name) == 0) {
+        if (istreq(str, entry->name)) {
             val_rtrn->uval = entry->result;
             return true;
         }
@@ -203,9 +203,9 @@ LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
     str = xkb_atom_text(ctx, field);
     if (str == NULL)
         return false;
-    if (strcasecmp(str, "all") == 0)
+    if (istreq(str, "all"))
         val_rtrn->uval = 0xff;
-    else if (strcasecmp(str, "none") == 0)
+    else if (istreq(str, "none"))
         val_rtrn->uval = 0;
     else if (LookupModIndex(ctx, priv, field, type, val_rtrn))
         val_rtrn->uval = (1 << val_rtrn->uval);
@@ -219,7 +219,7 @@ ExprResolveBoolean(struct xkb_context *ctx, ExprDef *expr,
                    ExprResult *val_rtrn)
 {
     int ok = 0;
-    const char *bogus = NULL;
+    const char *ident;
 
     switch (expr->op) {
     case ExprValue:
@@ -233,22 +233,22 @@ ExprResolveBoolean(struct xkb_context *ctx, ExprDef *expr,
         return true;
 
     case ExprIdent:
-        bogus = xkb_atom_text(ctx, expr->value.str);
-        if (bogus) {
-            if ((strcasecmp(bogus, "true") == 0) ||
-                (strcasecmp(bogus, "yes") == 0) ||
-                (strcasecmp(bogus, "on") == 0)) {
+        ident = xkb_atom_text(ctx, expr->value.str);
+        if (ident) {
+            if (istreq(ident, "true") ||
+                istreq(ident, "yes") ||
+                istreq(ident, "on")) {
                 val_rtrn->uval = 1;
                 return true;
             }
-            else if ((strcasecmp(bogus, "false") == 0) ||
-                     (strcasecmp(bogus, "no") == 0) ||
-                     (strcasecmp(bogus, "off") == 0)) {
+            else if (istreq(ident, "false") ||
+                     istreq(ident, "no") ||
+                     istreq(ident, "off")) {
                 val_rtrn->uval = 0;
                 return true;
             }
         }
-        log_err(ctx, "Identifier \"%s\" of type int is unknown\n",
+        log_err(ctx, "Identifier \"%s\" of type boolean is unknown\n",
                 xkb_atom_text(ctx, expr->value.str));
         return false;
 

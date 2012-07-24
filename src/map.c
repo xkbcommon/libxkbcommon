@@ -111,25 +111,25 @@ xkb_map_mod_get_index(struct xkb_keymap *keymap, const char *name)
 {
     xkb_mod_index_t i;
 
-    if (strcasecmp(name, "Shift") == 0)
+    if (istreq(name, "Shift"))
         return ShiftMapIndex;
-    if (strcasecmp(name, "Control") == 0)
+    if (istreq(name, "Control"))
         return ControlMapIndex;
-    if (strcasecmp(name, "Caps Lock") == 0)
+    if (istreq(name, "Caps Lock"))
         return LockMapIndex;
-    if (strcasecmp(name, "Mod1") == 0)
+    if (istreq(name, "Mod1"))
         return Mod1MapIndex;
-    if (strcasecmp(name, "Mod2") == 0)
+    if (istreq(name, "Mod2"))
         return Mod2MapIndex;
-    if (strcasecmp(name, "Mod3") == 0)
+    if (istreq(name, "Mod3"))
         return Mod3MapIndex;
-    if (strcasecmp(name, "Mod4") == 0)
+    if (istreq(name, "Mod4"))
         return Mod4MapIndex;
-    if (strcasecmp(name, "Mod5") == 0)
+    if (istreq(name, "Mod5"))
         return Mod5MapIndex;
 
     for (i = 0; i < XkbNumVirtualMods && keymap->vmod_names[i]; i++) {
-        if (strcasecmp(name, keymap->vmod_names[i]) == 0)
+        if (istreq(name, keymap->vmod_names[i]))
             return i + Mod5MapIndex;
     }
 
@@ -173,10 +173,9 @@ xkb_map_group_get_index(struct xkb_keymap *keymap, const char *name)
     xkb_group_index_t num_groups = xkb_map_num_groups(keymap);
     xkb_group_index_t i;
 
-    for (i = 0; i < num_groups; i++) {
-        if (strcasecmp(keymap->group_names[i], name) == 0)
+    for (i = 0; i < num_groups; i++)
+        if (istreq(keymap->group_names[i], name))
             return i;
-    }
 
     return XKB_GROUP_INVALID;
 }
@@ -231,10 +230,9 @@ xkb_map_led_get_index(struct xkb_keymap *keymap, const char *name)
     xkb_led_index_t num_leds = xkb_map_num_leds(keymap);
     xkb_led_index_t i;
 
-    for (i = 0; i < num_leds; i++) {
-        if (strcasecmp(keymap->indicator_names[i], name) == 0)
+    for (i = 0; i < num_leds; i++)
+        if (istreq(keymap->indicator_names[i], name))
             return i;
-    }
 
     return XKB_LED_INVALID;
 }

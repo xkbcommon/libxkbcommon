@@ -106,14 +106,14 @@ main(void)
 
     printf("%s", log_string.item);
 
-    assert(strcmp(log_string.item,
-                  "warning: first warning: 87\n"
-                  "error: first error: 115415\n"
-                  "warning: first verbose 5\n"
-                  "warning: second warning: 87\n"
-                  "debug: second debug: hello world\n"
-                  "info: second info\n"
-                  "error: second error: 115415\n") == 0);
+    assert(streq(log_string.item,
+                 "warning: first warning: 87\n"
+                 "error: first error: 115415\n"
+                 "warning: first verbose 5\n"
+                 "warning: second warning: 87\n"
+                 "debug: second debug: hello world\n"
+                 "info: second info\n"
+                 "error: second error: 115415\n"));
 
     xkb_context_unref(ctx);
     darray_free(log_string);

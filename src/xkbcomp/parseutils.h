@@ -109,7 +109,7 @@ AppendMultiKeysymList(ExprDef *list, ExprDef *append);
 extern ExprDef *
 AppendKeysymList(ExprDef *list, char *sym);
 
-extern int
+bool
 LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn);
 
 extern IncludeStmt *

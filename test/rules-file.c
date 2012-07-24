@@ -50,14 +50,6 @@ struct test_data {
     bool should_fail;
 };
 
-static inline bool
-streq(const char *s1, const char *s2)
-{
-    if (s1 == NULL || s2 == NULL)
-        return s1 == s2;
-    return strcmp(s1, s2) == 0;
-}
-
 static bool
 test_rules(struct xkb_context *ctx, struct test_data *data)
 {

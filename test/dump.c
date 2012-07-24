@@ -56,7 +56,7 @@ main(int argc, char *argv[])
     expected = test_read_file("keymaps/dump.data");
     assert(expected);
 
-    if (strcmp(as_string, expected) != 0) {
+    if (!streq(as_string, expected)) {
         fprintf(stderr, "dumped map differs from expected!\n\n");
         fprintf(stderr, "length: got %zu, expected %zu\n",
                 strlen(as_string), strlen(expected));

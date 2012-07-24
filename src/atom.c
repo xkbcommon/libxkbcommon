@@ -136,8 +136,7 @@ atom_text(struct atom_table *table, xkb_atom_t atom)
 char *
 atom_strdup(struct atom_table *table, xkb_atom_t atom)
 {
-    const char *ret = atom_text(table, atom);
-    return ret ? strdup(ret) : NULL;
+    return strdup_safe(atom_text(table, atom));
 }
 
 /*

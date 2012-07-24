@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "xkbcommon/xkbcommon.h"
+#include "test.h"
 
 static int
 test_string(const char *string, xkb_keysym_t expected)
@@ -28,7 +28,7 @@ test_keysym(xkb_keysym_t keysym, const char *expected)
     fprintf(stderr, "Expected keysym %#x -> %s\n", keysym, expected);
     fprintf(stderr, "Received keysym %#x -> %s\n\n", keysym, s);
 
-    return strcmp(s, expected) == 0;
+    return streq(s, expected);
 }
 
 static int
@@ -44,7 +44,7 @@ test_utf8(xkb_keysym_t keysym, const char *expected)
     fprintf(stderr, "Expected keysym %#x -> %s\n", keysym, expected);
     fprintf(stderr, "Received keysym %#x -> %s\n\n", keysym, s);
 
-    return strcmp(s, expected) == 0;
+    return streq(s, expected);
 }
 
 int

@@ -104,7 +104,7 @@ xkb_keysym_from_name(const char *s)
         entry = &_XkeyTable[idx];
 
         if ((entry[0] == sig1) && (entry[1] == sig2) &&
-            !strcmp(s, (const char *) entry + 6)) {
+            streq(s, (const char *) entry + 6)) {
             val = (entry[2] << 24) | (entry[3] << 16) |
                   (entry[4] << 8) | entry[5];
             if (!val)

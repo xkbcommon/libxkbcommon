@@ -463,7 +463,7 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *stmt)
     KeyNamesInfo included, next_incl;
 
     /* XXX: What's that? */
-    if (stmt->file && strcmp(stmt->file, "computed") == 0) {
+    if (stmt->file && streq(stmt->file, "computed")) {
         info->keymap->flags |= AutoKeyNames;
         info->explicitMin = 0;
         info->explicitMax = XKB_KEYCODE_MAX;
@@ -623,9 +623,9 @@ HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
         goto err_out;
     }
 
-    if (strcasecmp(field.str, "minimum") == 0)
+    if (istreq(field.str, "minimum"))
         which = MIN_KEYCODE_DEF;
-    else if (strcasecmp(field.str, "maximum") == 0)
+    else if (istreq(field.str, "maximum"))
         which = MAX_KEYCODE_DEF;
     else {
         log_err(info->keymap->ctx,
@@ -745,7 +745,7 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
     ParseCommon *stmt;
 
     free(info->name);
-    info->name = uDupString(file->name);
+    info->name = strdup_safe(file->name);
     stmt = file->defs;
     while (stmt)
     {

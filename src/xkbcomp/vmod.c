@@ -83,10 +83,9 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
         if (!keymap->vmod_names[i])
             continue;
 
-        if (strcmp(keymap->vmod_names[i],
-                   xkb_atom_text(keymap->ctx, stmt->name)) != 0)
+        if (!streq(keymap->vmod_names[i],
+                   xkb_atom_text(keymap->ctx, stmt->name)))
             continue;
-
 
         info->available |= bit;
 
@@ -171,12 +170,12 @@ LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
      * The order of modifiers is the same as in the virtual_modifiers line in
      * the xkb_types section.
      */
-    for (i = 0; i < XkbNumVirtualMods; i++)
-        if (keymap->vmod_names[i] &&
-            strcmp(keymap->vmod_names[i], name) == 0) {
+    for (i = 0; i < XkbNumVirtualMods; i++) {
+        if (keymap->vmod_names[i] && streq(keymap->vmod_names[i], name)) {
             val_rtrn->uval = i;
             return true;
         }
+    }
 
     return false;
 }
@@ -230,7 +229,7 @@ ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
 
         for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1) {
             if ((info->available & bit) && keymap->vmod_names[i] &&
-                strcmp(keymap->vmod_names[i], name) == 0) {
+                streq(keymap->vmod_names[i], name)) {
                 val_rtrn->uval = i;
                 return true;
             }

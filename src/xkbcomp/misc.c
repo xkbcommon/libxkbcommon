@@ -70,7 +70,7 @@ ProcessIncludeFile(struct xkb_context *ctx,
         {
             next = (XkbFile *) mapToUse->common.next;
             mapToUse->common.next = NULL;
-            if (strcmp(mapToUse->name, stmt->map) == 0 &&
+            if (streq(mapToUse->name, stmt->map) &&
                 mapToUse->type == file_type) {
                 FreeXKBFile(next);
                 break;

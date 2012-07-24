@@ -356,26 +356,27 @@ AppendMultiKeysymList(ExprDef * list, ExprDef * append)
     return list;
 }
 
-int
+bool
 LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn)
 {
     xkb_keysym_t sym;
 
-    if ((!str) || (strcasecmp(str, "any") == 0) ||
-        (strcasecmp(str, "nosymbol") == 0)) {
+    if (!str || istreq(str, "any") || istreq(str, "nosymbol")) {
         *sym_rtrn = XKB_KEY_NoSymbol;
         return 1;
     }
-    else if ((strcasecmp(str, "none") == 0) ||
-             (strcasecmp(str, "voidsymbol") == 0)) {
+
+    if (istreq(str, "none") || istreq(str, "voidsymbol")) {
         *sym_rtrn = XKB_KEY_VoidSymbol;
         return 1;
     }
+
     sym = xkb_keysym_from_name(str);
     if (sym != XKB_KEY_NoSymbol) {
         *sym_rtrn = sym;
         return 1;
     }
+
     return 0;
 }
 
@@ -392,7 +393,7 @@ IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge)
     incl = first = NULL;
     file = map = NULL;
     tmp = str;
-    stmt = uDupString(str);
+    stmt = strdup_safe(str);
     while (tmp && *tmp)
     {
         if (!XkbParseIncludeMap(&tmp, &file, &map, &nextop, &extra_data))
@@ -502,7 +503,7 @@ CreateXKBFile(struct xkb_context *ctx, enum xkb_file_type type, char *name,
 
     EnsureSafeMapName(name);
     file->type = type;
-    file->topName = name ? strdup(name) : NULL;
+    file->topName = strdup_safe(name);
     file->name = name;
     file->defs = defs;
     file->id = xkb_context_take_file_id(ctx);

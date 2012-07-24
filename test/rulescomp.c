@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
     assert(!test_rmlvo(ctx, "base",      "pc105",  "",    "",      ""));
     assert(!test_rmlvo(ctx, "badrules",  "",       "us",  "",      ""));
 
-    if (argc > 1 && strcmp(argv[1], "bench") == 0)
+    if (argc > 1 && streq(argv[1], "bench"))
         benchmark(ctx);
 
     xkb_context_unref(ctx);

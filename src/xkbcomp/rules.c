@@ -284,7 +284,7 @@ match_mapping_line(struct xkb_context *ctx, darray_char *line,
         found = false;
         str = NULL;
 
-        if (strcmp(tok, "=") == 0)
+        if (streq(tok, "="))
             continue;
 
         for (i = 0; i < MAX_WORDS; i++) {
@@ -426,7 +426,7 @@ match_rule_line(struct xkb_context *ctx, darray_char *line,
          nread++) {
         str = NULL;
 
-        if (strcmp(tok, "=") == 0) {
+        if (streq(tok, "=")) {
             nread--;
             continue;
         }
@@ -459,15 +459,15 @@ match_rule_line(struct xkb_context *ctx, darray_char *line,
     else
         rule->flags |= RULE_FLAG_NORMAL;
 
-    rule->model = uDupString(names[MODEL]);
-    rule->layout = uDupString(names[LAYOUT]);
-    rule->variant = uDupString(names[VARIANT]);
-    rule->option = uDupString(names[OPTION]);
+    rule->model = strdup_safe(names[MODEL]);
+    rule->layout = strdup_safe(names[LAYOUT]);
+    rule->variant = strdup_safe(names[VARIANT]);
+    rule->option = strdup_safe(names[OPTION]);
 
-    rule->keycodes = uDupString(names[KEYCODES]);
-    rule->symbols = uDupString(names[SYMBOLS]);
-    rule->types = uDupString(names[TYPES]);
-    rule->compat = uDupString(names[COMPAT]);
+    rule->keycodes = strdup_safe(names[KEYCODES]);
+    rule->symbols = strdup_safe(names[SYMBOLS]);
+    rule->types = strdup_safe(names[TYPES]);
+    rule->compat = strdup_safe(names[COMPAT]);
 
     rule->layout_num = rule->variant_num = 0;
     for (i = 0; i < nread; i++) {
@@ -673,7 +673,7 @@ match_group_member(struct rules *rules, const char *group_name,
     struct group *iter, *group = NULL;
 
     darray_foreach(iter, rules->groups) {
-        if (strcmp(iter->name, group_name) == 0) {
+        if (streq(iter->name, group_name)) {
             group = iter;
             break;
         }
@@ -684,7 +684,7 @@ match_group_member(struct rules *rules, const char *group_name,
 
     word = group->words;
     for (i = 0; i < group->number; i++, word += strlen(word) + 1)
-        if (strcmp(word, name) == 0)
+        if (streq(word, name))
             return true;
 
     return false;
@@ -717,14 +717,14 @@ apply_rule_if_matches(struct rules *rules, struct rule *rule,
         if (mdefs->model == NULL)
             return 0;
 
-        if (strcmp(rule->model, "*") == 0) {
+        if (streq(rule->model, "*")) {
             pending = true;
         }
         else if (rule->model[0] == '$') {
             if (!match_group_member(rules, rule->model, mdefs->model))
                 return 0;
         }
-        else if (strcmp(rule->model, mdefs->model) != 0) {
+        else if (!streq(rule->model, mdefs->model)) {
             return 0;
         }
     }
@@ -741,7 +741,7 @@ apply_rule_if_matches(struct rules *rules, struct rule *rule,
         if (mdefs->layout[rule->layout_num] == NULL)
             return 0;
 
-        if (strcmp(rule->layout, "*") == 0) {
+        if (streq(rule->layout, "*")) {
             pending = true;
         }
         else if (rule->layout[0] == '$') {
@@ -749,8 +749,7 @@ apply_rule_if_matches(struct rules *rules, struct rule *rule,
                                     mdefs->layout[rule->layout_num]))
                 return 0;
         }
-        else if (strcmp(rule->layout,
-                        mdefs->layout[rule->layout_num]) != 0) {
+        else if (!streq(rule->layout, mdefs->layout[rule->layout_num])) {
             return 0;
         }
     }
@@ -759,7 +758,7 @@ apply_rule_if_matches(struct rules *rules, struct rule *rule,
         if (mdefs->variant[rule->variant_num] == NULL)
             return 0;
 
-        if (strcmp(rule->variant, "*") == 0) {
+        if (streq(rule->variant, "*")) {
             pending = true;
         }
         else if (rule->variant[0] == '$') {
@@ -767,8 +766,7 @@ apply_rule_if_matches(struct rules *rules, struct rule *rule,
                                     mdefs->variant[rule->variant_num]))
                 return 0;
         }
-        else if (strcmp(rule->variant,
-                        mdefs->variant[rule->variant_num]) != 0) {
+        else if (!streq(rule->variant, mdefs->variant[rule->variant_num])) {
             return 0;
         }
     }

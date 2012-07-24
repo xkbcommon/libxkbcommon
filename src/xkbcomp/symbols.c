@@ -1026,7 +1026,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     ExprResult tmp;
     struct xkb_context *ctx = info->keymap->ctx;
 
-    if (strcasecmp(field, "type") == 0) {
+    if (istreq(field, "type")) {
         ExprResult ndx;
         if (!ExprResolveString(ctx, value, &tmp))
             log_lvl(info->keymap->ctx, 1,
@@ -1048,13 +1048,13 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             keyi->typesDefined |= (1 << (ndx.uval - 1));
         }
     }
-    else if (strcasecmp(field, "symbols") == 0)
+    else if (istreq(field, "symbols"))
         return AddSymbolsToKey(info, keyi, arrayNdx, value);
-    else if (strcasecmp(field, "actions") == 0)
+    else if (istreq(field, "actions"))
         return AddActionsToKey(info, keyi, arrayNdx, value);
-    else if ((strcasecmp(field, "vmods") == 0) ||
-             (strcasecmp(field, "virtualmods") == 0) ||
-             (strcasecmp(field, "virtualmodifiers") == 0)) {
+    else if (istreq(field, "vmods") ||
+             istreq(field, "virtualmods") ||
+             istreq(field, "virtualmodifiers")) {
         ok = ExprResolveVModMask(info->keymap, value, &tmp);
         if (ok) {
             keyi->vmodmap = (tmp.uval >> 8);
@@ -1067,33 +1067,33 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
                     exprOpText(value->op), longText(keyi->name));
         }
     }
-    else if ((strcasecmp(field, "locking") == 0) ||
-             (strcasecmp(field, "lock") == 0) ||
-             (strcasecmp(field, "locks") == 0)) {
+    else if (istreq(field, "locking") ||
+             istreq(field, "lock") ||
+             istreq(field, "locks")) {
         ok = ExprResolveEnum(ctx, value, &tmp, lockingEntries);
         if (ok)
             keyi->behavior.type = tmp.uval;
         keyi->defined |= _Key_Behavior;
     }
-    else if ((strcasecmp(field, "radiogroup") == 0) ||
-             (strcasecmp(field, "permanentradiogroup") == 0) ||
-             (strcasecmp(field, "allownone") == 0)) {
+    else if (istreq(field, "radiogroup") ||
+             istreq(field, "permanentradiogroup") ||
+             istreq(field, "allownone")) {
         log_err(info->keymap->ctx,
                 "Radio groups not supported; "
                 "Ignoring radio group specification for key %s\n",
                 longText(keyi->name));
         return false;
     }
-    else if (uStrCasePrefix("overlay", field) ||
-             uStrCasePrefix("permanentoverlay", field)) {
+    else if (istreq_prefix("overlay", field) ||
+             istreq_prefix("permanentoverlay", field)) {
         log_err(info->keymap->ctx,
                 "Overlays not supported; "
                 "Ignoring overlay specification for key %s\n",
                 longText(keyi->name));
     }
-    else if ((strcasecmp(field, "repeating") == 0) ||
-             (strcasecmp(field, "repeats") == 0) ||
-             (strcasecmp(field, "repeat") == 0)) {
+    else if (istreq(field, "repeating") ||
+             istreq(field, "repeats") ||
+             istreq(field, "repeat")) {
         ok = ExprResolveEnum(ctx, value, &tmp, repeatEntries);
         if (!ok) {
             log_err(info->keymap->ctx,
@@ -1105,10 +1105,9 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         keyi->repeat = tmp.uval;
         keyi->defined |= _Key_Repeat;
     }
-    else if ((strcasecmp(field, "groupswrap") == 0) ||
-             (strcasecmp(field, "wrapgroups") == 0)) {
-        ok = ExprResolveBoolean(ctx, value, &tmp);
-        if (!ok) {
+    else if (istreq(field, "groupswrap") ||
+             istreq(field, "wrapgroups")) {
+        if (!ExprResolveBoolean(ctx, value, &tmp)) {
             log_err(info->keymap->ctx,
                     "Illegal groupsWrap setting for %s; "
                     "Non-boolean value ignored\n",
@@ -1121,10 +1120,9 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             keyi->out_of_range_group_action = XkbClampIntoRange;
         keyi->defined |= _Key_GroupInfo;
     }
-    else if ((strcasecmp(field, "groupsclamp") == 0) ||
-             (strcasecmp(field, "clampgroups") == 0)) {
-        ok = ExprResolveBoolean(ctx, value, &tmp);
-        if (!ok) {
+    else if (istreq(field, "groupsclamp") ||
+             istreq(field, "clampgroups")) {
+        if (!ExprResolveBoolean(ctx, value, &tmp)) {
             log_err(info->keymap->ctx,
                     "Illegal groupsClamp setting for %s; "
                     "Non-boolean value ignored\n",
@@ -1137,8 +1135,8 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             keyi->out_of_range_group_action = XkbWrapIntoRange;
         keyi->defined |= _Key_GroupInfo;
     }
-    else if ((strcasecmp(field, "groupsredirect") == 0) ||
-             (strcasecmp(field, "redirectgroups") == 0)) {
+    else if (istreq(field, "groupsredirect") ||
+             istreq(field, "redirectgroups")) {
         if (!ExprResolveGroup(ctx, value, &tmp)) {
             log_err(info->keymap->ctx,
                     "Illegal group index for redirect of key %s; "
@@ -1202,38 +1200,33 @@ HandleSymbolsVar(SymbolsInfo *info, VarDef *stmt)
     if (ExprResolveLhs(info->keymap, stmt->name, &elem, &field,
                        &arrayNdx) == 0)
         return 0;               /* internal error, already reported */
-    if (elem.str && (strcasecmp(elem.str, "key") == 0)) {
+    if (elem.str && istreq(elem.str, "key")) {
         ret = SetSymbolsField(info, &info->dflt, field.str, arrayNdx,
                               stmt->value);
     }
-    else if ((elem.str == NULL) && ((strcasecmp(field.str, "name") == 0) ||
-                                    (strcasecmp(field.str, "groupname") ==
-                                     0))) {
+    else if (!elem.str && (istreq(field.str, "name") ||
+                           istreq(field.str, "groupname"))) {
         ret = SetGroupName(info, arrayNdx, stmt->value);
     }
-    else if ((elem.str == NULL)
-             && ((strcasecmp(field.str, "groupswrap") == 0) ||
-                 (strcasecmp(field.str, "wrapgroups") == 0))) {
+    else if (!elem.str && (istreq(field.str, "groupswrap") ||
+                           istreq(field.str, "wrapgroups"))) {
         log_err(info->keymap->ctx,
                 "Global \"groupswrap\" not supported; Ignored\n");
         ret = true;
     }
-    else if ((elem.str == NULL)
-             && ((strcasecmp(field.str, "groupsclamp") == 0) ||
-                 (strcasecmp(field.str, "clampgroups") == 0))) {
+    else if (!elem.str && (istreq(field.str, "groupsclamp") ||
+                           istreq(field.str, "clampgroups"))) {
         log_err(info->keymap->ctx,
                 "Global \"groupsclamp\" not supported; Ignored\n");
         ret = true;
     }
-    else if ((elem.str == NULL)
-             && ((strcasecmp(field.str, "groupsredirect") == 0) ||
-                 (strcasecmp(field.str, "redirectgroups") == 0))) {
+    else if (!elem.str && (istreq(field.str, "groupsredirect") ||
+                           istreq(field.str, "redirectgroups"))) {
         log_err(info->keymap->ctx,
                 "Global \"groupsredirect\" not supported; Ignored\n");
         ret = true;
     }
-    else if ((elem.str == NULL) &&
-             (strcasecmp(field.str, "allownone") == 0)) {
+    else if (!elem.str && istreq(field.str, "allownone")) {
         log_err(info->keymap->ctx,
                 "Radio groups not supported; "
                 "Ignoring \"allownone\" specification\n");
@@ -1393,7 +1386,7 @@ HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge)
     ParseCommon *stmt;
 
     free(info->name);
-    info->name = uDupString(file->name);
+    info->name = strdup_safe(file->name);
     stmt = file->defs;
     while (stmt)
     {
@@ -1511,7 +1504,7 @@ FindNamedType(struct xkb_keymap *keymap, xkb_atom_t atom, unsigned *type_rtrn)
 
     if (keymap) {
         darray_foreach(type, keymap->types) {
-            if (strcmp(type->name, name) == 0) {
+            if (streq(type->name, name)) {
                 *type_rtrn = n;
                 return true;
             }

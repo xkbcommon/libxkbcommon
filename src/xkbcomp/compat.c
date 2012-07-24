@@ -380,15 +380,15 @@ ResolveStateAndPredicate(ExprDef * expr,
     if (expr->op == ExprActionDecl) {
         const char *pred_txt = xkb_atom_text(info->keymap->ctx,
                                              expr->value.action.name);
-        if (strcasecmp(pred_txt, "noneof") == 0)
+        if (istreq(pred_txt, "noneof"))
             *pred_rtrn = XkbSI_NoneOf;
-        else if (strcasecmp(pred_txt, "anyofornone") == 0)
+        else if (istreq(pred_txt, "anyofornone"))
             *pred_rtrn = XkbSI_AnyOfOrNone;
-        else if (strcasecmp(pred_txt, "anyof") == 0)
+        else if (istreq(pred_txt, "anyof"))
             *pred_rtrn = XkbSI_AnyOf;
-        else if (strcasecmp(pred_txt, "allof") == 0)
+        else if (istreq(pred_txt, "allof"))
             *pred_rtrn = XkbSI_AllOf;
-        else if (strcasecmp(pred_txt, "exactly") == 0)
+        else if (istreq(pred_txt, "exactly"))
             *pred_rtrn = XkbSI_Exactly;
         else {
             log_err(info->keymap->ctx,
@@ -400,7 +400,7 @@ ResolveStateAndPredicate(ExprDef * expr,
     else if (expr->op == ExprIdent) {
         const char *pred_txt = xkb_atom_text(info->keymap->ctx,
                                              expr->value.str);
-        if ((pred_txt) && (strcasecmp(pred_txt, "any") == 0)) {
+        if (pred_txt && istreq(pred_txt, "any")) {
             *pred_rtrn = XkbSI_AnyOf;
             *mods_rtrn = 0xff;
             return true;
@@ -644,7 +644,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
     ExprResult tmp;
     struct xkb_keymap *keymap = info->keymap;
 
-    if (strcasecmp(field, "action") == 0) {
+    if (istreq(field, "action")) {
         if (arrayNdx != NULL)
             return ReportSINotArray(info, si, field);
         ok = HandleActionDef(value, keymap, &si->interp.act.any,
@@ -652,8 +652,8 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         if (ok)
             si->defined |= _SI_Action;
     }
-    else if ((strcasecmp(field, "virtualmodifier") == 0) ||
-             (strcasecmp(field, "virtualmod") == 0)) {
+    else if (istreq(field, "virtualmodifier") ||
+             istreq(field, "virtualmod")) {
         if (arrayNdx != NULL)
             return ReportSINotArray(info, si, field);
         ok = ResolveVirtualModifier(value, keymap, &tmp, &info->vmods);
@@ -664,7 +664,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         else
             return ReportSIBadType(info, si, field, "virtual modifier");
     }
-    else if (strcasecmp(field, "repeat") == 0) {
+    else if (istreq(field, "repeat")) {
         if (arrayNdx != NULL)
             return ReportSINotArray(info, si, field);
         ok = ExprResolveBoolean(keymap->ctx, value, &tmp);
@@ -678,7 +678,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         else
             return ReportSIBadType(info, si, field, "boolean");
     }
-    else if (strcasecmp(field, "locking") == 0) {
+    else if (istreq(field, "locking")) {
         if (arrayNdx != NULL)
             return ReportSINotArray(info, si, field);
         ok = ExprResolveBoolean(keymap->ctx, value, &tmp);
@@ -692,8 +692,8 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         else
             return ReportSIBadType(info, si, field, "boolean");
     }
-    else if ((strcasecmp(field, "usemodmap") == 0) ||
-             (strcasecmp(field, "usemodmapmods") == 0)) {
+    else if (istreq(field, "usemodmap") ||
+             istreq(field, "usemodmapmods")) {
         if (arrayNdx != NULL)
             return ReportSINotArray(info, si, field);
         ok = ExprResolveEnum(keymap->ctx, value, &tmp, useModMapValues);
@@ -756,7 +756,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
     bool ok = true;
     struct xkb_keymap *keymap = info->keymap;
 
-    if (strcasecmp(field, "modifiers") == 0 || strcasecmp(field, "mods") == 0) {
+    if (istreq(field, "modifiers") || istreq(field, "mods")) {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(info, led, field);
 
@@ -767,7 +767,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
         led->vmods = (rtrn.uval >> 8) & 0xff;
         led->defined |= _LED_Mods;
     }
-    else if (strcasecmp(field, "groups") == 0) {
+    else if (istreq(field, "groups")) {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(info, led, field);
 
@@ -777,8 +777,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
         led->groups = rtrn.uval;
         led->defined |= _LED_Groups;
     }
-    else if (strcasecmp(field, "controls") == 0 ||
-             strcasecmp(field, "ctrls") == 0) {
+    else if (istreq(field, "controls") || istreq(field, "ctrls")) {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(info, led, field);
 
@@ -789,7 +788,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
         led->ctrls = rtrn.uval;
         led->defined |= _LED_Ctrls;
     }
-    else if (strcasecmp(field, "allowexplicit") == 0) {
+    else if (istreq(field, "allowexplicit")) {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(info, led, field);
 
@@ -802,8 +801,8 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
             led->flags |= XkbIM_NoExplicit;
         led->defined |= _LED_Explicit;
     }
-    else if (strcasecmp(field, "whichmodstate") == 0 ||
-             strcasecmp(field, "whichmodifierstate") == 0) {
+    else if (istreq(field, "whichmodstate") ||
+             istreq(field, "whichmodifierstate")) {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(info, led, field);
 
@@ -813,7 +812,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
 
         led->which_mods = rtrn.uval;
     }
-    else if (strcasecmp(field, "whichgroupstate") == 0) {
+    else if (istreq(field, "whichgroupstate")) {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(info, led, field);
 
@@ -823,12 +822,12 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
 
         led->which_groups = rtrn.uval;
     }
-    else if (strcasecmp(field, "driveskbd") == 0 ||
-             strcasecmp(field, "driveskeyboard") == 0 ||
-             strcasecmp(field, "leddriveskbd") == 0 ||
-             strcasecmp(field, "leddriveskeyboard") == 0 ||
-             strcasecmp(field, "indicatordriveskbd") == 0 ||
-             strcasecmp(field, "indicatordriveskeyboard") == 0) {
+    else if (istreq(field, "driveskbd") ||
+             istreq(field, "driveskeyboard") ||
+             istreq(field, "leddriveskbd") ||
+             istreq(field, "leddriveskeyboard") ||
+             istreq(field, "indicatordriveskbd") ||
+             istreq(field, "indicatordriveskeyboard")) {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(info, led, field);
 
@@ -841,7 +840,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
             led->flags &= ~XkbIM_LEDDrivesKB;
         led->defined |= _LED_DrivesKbd;
     }
-    else if (strcasecmp(field, "index") == 0) {
+    else if (istreq(field, "index")) {
         if (arrayNdx != NULL)
             return ReportIndicatorNotArray(info, led, field);
 
@@ -881,9 +880,9 @@ HandleInterpVar(CompatInfo *info, VarDef *stmt)
 
     if (ExprResolveLhs(info->keymap, stmt->name, &elem, &field, &ndx) == 0)
         ret = 0;               /* internal error, already reported */
-    else if (elem.str && (strcasecmp(elem.str, "interpret") == 0))
+    else if (elem.str && istreq(elem.str, "interpret"))
         ret = SetInterpField(info, &info->dflt, field.str, ndx, stmt->value);
-    else if (elem.str && (strcasecmp(elem.str, "indicator") == 0))
+    else if (elem.str && istreq(elem.str, "indicator"))
         ret = SetIndicatorMapField(info, &info->ledDflt, field.str, ndx,
                                    stmt->value);
     else
@@ -1033,7 +1032,7 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
     if (merge == MERGE_DEFAULT)
         merge = MERGE_AUGMENT;
     free(info->name);
-    info->name = uDupString(file->name);
+    info->name = strdup_safe(file->name);
     stmt = file->defs;
     while (stmt)
     {
@@ -1111,8 +1110,8 @@ BindIndicators(CompatInfo *info, struct list *unbound_leds)
         if (led->indicator == _LED_NotBound) {
             for (i = 0; i < XkbNumIndicators; i++) {
                 if (keymap->indicator_names[i] &&
-                    strcmp(keymap->indicator_names[i],
-                           xkb_atom_text(keymap->ctx, led->name)) == 0) {
+                    streq(keymap->indicator_names[i],
+                          xkb_atom_text(keymap->ctx, led->name))) {
                     led->indicator = i + 1;
                     break;
                 }
@@ -1147,8 +1146,8 @@ BindIndicators(CompatInfo *info, struct list *unbound_leds)
             continue;
         }
 
-        if (strcmp(keymap->indicator_names[led->indicator - 1],
-                   xkb_atom_text(keymap->ctx, led->name)) != 0) {
+        if (!streq(keymap->indicator_names[led->indicator - 1],
+                   xkb_atom_text(keymap->ctx, led->name))) {
             const char *old = keymap->indicator_names[led->indicator - 1];
             log_err(info->keymap->ctx,
                     "Multiple names bound to indicator %d; "

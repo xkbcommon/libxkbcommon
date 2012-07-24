@@ -701,7 +701,7 @@ SetKeyTypeField(KeyTypesInfo *info, KeyTypeInfo *type,
 {
     ExprResult tmp;
 
-    if (strcasecmp(field, "modifiers") == 0) {
+    if (istreq(field, "modifiers")) {
         unsigned mods, vmods;
         if (arrayNdx != NULL)
             log_warn(info->keymap->ctx,
@@ -730,16 +730,15 @@ SetKeyTypeField(KeyTypesInfo *info, KeyTypeInfo *type,
         type->defined |= _KT_Mask;
         return true;
     }
-    else if (strcasecmp(field, "map") == 0) {
+    else if (istreq(field, "map")) {
         type->defined |= _KT_Map;
         return SetMapEntry(info, type, arrayNdx, value);
     }
-    else if (strcasecmp(field, "preserve") == 0) {
+    else if (istreq(field, "preserve")) {
         type->defined |= _KT_Preserve;
         return SetPreserve(info, type, arrayNdx, value);
     }
-    else if ((strcasecmp(field, "levelname") == 0) ||
-             (strcasecmp(field, "level_name") == 0)) {
+    else if (istreq(field, "levelname") || istreq(field, "level_name")) {
         type->defined |= _KT_LevelNames;
         return SetLevelName(info, type, arrayNdx, value);
     }
@@ -759,7 +758,7 @@ HandleKeyTypeVar(KeyTypesInfo *info, VarDef *stmt)
 
     if (!ExprResolveLhs(info->keymap, stmt->name, &elem, &field, &arrayNdx))
         return false;           /* internal error, already reported */
-    if (elem.str && (strcasecmp(elem.str, "type") == 0))
+    if (elem.str && istreq(elem.str, "type"))
         return SetKeyTypeField(info, &info->dflt, field.str, arrayNdx,
                                stmt->value);
     if (elem.str != NULL) {
@@ -871,7 +870,7 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
     ParseCommon *stmt;
 
     free(info->name);
-    info->name = uDupString(file->name);
+    info->name = strdup_safe(file->name);
     stmt = file->defs;
     while (stmt)
     {

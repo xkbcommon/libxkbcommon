@@ -27,7 +27,8 @@
  * software without specific, written prior permission.
  \*/
 
-/***====================================================================***/
+#include <stdbool.h>
+#include <string.h>
 
 /*
  * We sometimes malloc strings and then expose them as const char*'s. This
@@ -36,8 +37,29 @@
  */
 #define UNCONSTIFY(const_ptr)  ((void *) (uintptr_t) (const_ptr))
 
-#define uDupString(s)          ((s) ? strdup(s) : NULL)
-#define uStrCasePrefix(s1, s2) (strncasecmp((s1), (s2), strlen(s1)) == 0)
+static inline bool
+streq(const char *s1, const char *s2)
+{
+    return strcmp(s1, s2) == 0;
+}
+
+static inline bool
+istreq(const char *s1, const char *s2)
+{
+    return strcasecmp(s1, s2) == 0;
+}
+
+static inline bool
+istreq_prefix(const char *s1, const char *s2)
+{
+    return strncasecmp(s1, s2, strlen(s1)) == 0;
+}
+
+static inline char *
+strdup_safe(const char *s)
+{
+    return s ? strdup(s) : NULL;
+}
 
 /* Compiler Attributes */
 

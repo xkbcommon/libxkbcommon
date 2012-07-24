@@ -124,7 +124,7 @@ stringToValue(const LookupEntry tab[], const char *string,
         return false;
 
     for (entry = tab; entry->name != NULL; entry++) {
-        if (strcasecmp(entry->name, string) == 0) {
+        if (istreq(entry->name, string)) {
             *value_rtrn = entry->result;
             return true;
         }
@@ -247,8 +247,8 @@ CheckModifierField(struct xkb_keymap *keymap, unsigned action, ExprDef *value,
     if (value->op == ExprIdent) {
         const char *valStr;
         valStr = xkb_atom_text(keymap->ctx, value->value.str);
-        if (valStr && ((strcasecmp(valStr, "usemodmapmods") == 0) ||
-                       (strcasecmp(valStr, "modmapmods") == 0))) {
+        if (valStr && (istreq(valStr, "usemodmapmods") ||
+                       istreq(valStr, "modmapmods"))) {
 
             *mods_rtrn = 0;
             *flags_inout |= XkbSA_UseModMapMods;
@@ -1168,7 +1168,7 @@ SetActionField(struct xkb_keymap *keymap, const char *elem, const char *field,
         return false;
     }
 
-    if (strcasecmp(elem, "action") == 0)
+    if (istreq(elem, "action"))
         new->action = XkbSA_NoAction;
     else {
         if (!stringToAction(elem, &new->action)) {

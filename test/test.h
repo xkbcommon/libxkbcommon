@@ -24,6 +24,7 @@
  */
 
 #include "xkbcommon/xkbcommon.h"
+#include "utils.h"
 
 const char *
 test_get_path(const char *path_rel);
