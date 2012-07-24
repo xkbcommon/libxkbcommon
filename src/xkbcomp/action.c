@@ -427,7 +427,6 @@ static bool
 HandleMovePtr(struct xkb_keymap *keymap, struct xkb_any_action *action,
               unsigned field, ExprDef *array_ndx, ExprDef *value)
 {
-    ExprResult rtrn;
     struct xkb_pointer_action *act;
     bool absolute;
 
@@ -435,23 +434,28 @@ HandleMovePtr(struct xkb_keymap *keymap, struct xkb_any_action *action,
     if ((array_ndx != NULL) && ((field == F_X) || (field == F_Y)))
         return ReportActionNotArray(keymap, action->type, field);
 
-    if ((field == F_X) || (field == F_Y)) {
+    if (field == F_X || field == F_Y) {
+        int val;
+
         if (value->op == EXPR_NEGATE || value->op == EXPR_UNARY_PLUS)
             absolute = false;
         else
             absolute = true;
-        if (!ExprResolveInteger(keymap->ctx, value, &rtrn))
+
+        if (!ExprResolveInteger(keymap->ctx, value, &val))
             return ReportMismatch(keymap, action->type, field, "integer");
+
         if (field == F_X) {
             if (absolute)
                 act->flags |= XkbSA_MoveAbsoluteX;
-            act->x = rtrn.ival;
+            act->x = val;
         }
         else {
             if (absolute)
                 act->flags |= XkbSA_MoveAbsoluteY;
-            act->y = rtrn.ival;
+            act->y = val;
         }
+
         return true;
     }
     else if (field == F_Accel) {
@@ -673,8 +677,11 @@ HandleSwitchScreen(struct xkb_keymap *keymap, struct xkb_any_action *action,
     act = (struct xkb_switch_screen_action *) action;
     if (field == F_Screen) {
         ExprDef *scrn;
-        if (array_ndx != NULL)
+        int val;
+
+        if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
+
         if (value->op == EXPR_NEGATE || value->op == EXPR_UNARY_PLUS) {
             act->flags &= ~XkbSA_SwitchAbsolute;
             scrn = value->value.child;
@@ -684,19 +691,18 @@ HandleSwitchScreen(struct xkb_keymap *keymap, struct xkb_any_action *action,
             scrn = value;
         }
 
-        if (!ExprResolveInteger(keymap->ctx, scrn, &rtrn))
+        if (!ExprResolveInteger(keymap->ctx, scrn, &val))
             return ReportMismatch(keymap, action->type, field,
                                   "integer (0..255)");
-        if ((rtrn.ival < 0) || (rtrn.ival > 255)) {
+
+        if (val < 0 || val > 255) {
             log_err(keymap->ctx,
                     "Screen index must be in the range 1..255; "
                     "Illegal screen value %d ignored\n", rtrn.ival);
             return false;
         }
-        if (value->op == EXPR_NEGATE)
-            act->screen = -rtrn.ival;
-        else
-            act->screen = rtrn.ival;
+
+        act->screen = (value->op == EXPR_NEGATE ? -val : val);
         return true;
     }
     else if (field == F_Same) {
@@ -826,32 +832,38 @@ HandleActionMessage(struct xkb_keymap *keymap, struct xkb_any_action *action,
             return true;
         }
         else {
-            unsigned ndx;
-            if (!ExprResolveInteger(keymap->ctx, array_ndx, &rtrn)) {
+            int ndx, datum;
+
+            if (!ExprResolveInteger(keymap->ctx, array_ndx, &ndx)) {
                 log_err(keymap->ctx,
                         "Array subscript must be integer; "
                         "Illegal subscript ignored\n");
                 return false;
             }
-            ndx = rtrn.uval;
-            if (ndx > 5) {
+
+            if (ndx < 0 || ndx > 5) {
                 log_err(keymap->ctx,
                         "An action message is at most 6 bytes long; "
                         "Attempt to use data[%d] ignored\n", ndx);
                 return false;
             }
-            if (!ExprResolveInteger(keymap->ctx, value, &rtrn))
+
+            if (!ExprResolveInteger(keymap->ctx, value, &datum))
                 return ReportMismatch(keymap, action->type, field, "integer");
-            if ((rtrn.ival < 0) || (rtrn.ival > 255)) {
+
+            if (datum < 0 || datum > 255) {
                 log_err(keymap->ctx,
                         "Message data must be in the range 0..255; "
-                        "Illegal datum %d ignored\n", rtrn.ival);
+                        "Illegal datum %d ignored\n", datum);
                 return false;
             }
-            act->message[ndx] = rtrn.uval;
+
+            act->message[ndx] = (uint8_t) datum;
         }
+
         return true;
     }
+
     return ReportIllegal(keymap, action->type, field);
 }
 
@@ -915,18 +927,23 @@ HandleDeviceBtn(struct xkb_keymap *keymap, struct xkb_any_action *action,
 
     act = (struct xkb_device_button_action *) action;
     if (field == F_Button) {
-        if (array_ndx != NULL)
+        int val;
+
+        if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
-        if (!ExprResolveInteger(keymap->ctx, value, &rtrn))
+
+        if (!ExprResolveInteger(keymap->ctx, value, &val))
             return ReportMismatch(keymap, action->type, field,
                                   "integer (range 1..255)");
-        if ((rtrn.ival < 0) || (rtrn.ival > 255)) {
+
+        if (val < 0 || val > 255) {
             log_err(keymap->ctx,
                     "Button must specify default or be in the range 1..255; "
-                    "Illegal button value %d ignored\n", rtrn.ival);
+                    "Illegal button value %d ignored\n", val);
             return false;
         }
-        act->button = rtrn.ival;
+
+        act->button = val;
         return true;
     }
     else if ((action->type == XkbSA_LockDeviceBtn) && (field == F_Affect)) {
@@ -960,20 +977,26 @@ HandleDeviceBtn(struct xkb_keymap *keymap, struct xkb_any_action *action,
         return true;
     }
     else if (field == F_Device) {
-        if (array_ndx != NULL)
+        int val;
+
+        if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
-        if (!ExprResolveInteger(keymap->ctx, value, &rtrn))
+
+        if (!ExprResolveInteger(keymap->ctx, value, &val))
             return ReportMismatch(keymap, action->type, field,
                                   "integer (range 1..255)");
-        if ((rtrn.ival < 0) || (rtrn.ival > 255)) {
+
+        if (val < 0 || val > 255) {
             log_err(keymap->ctx,
                     "Device must specify default or be in the range 1..255; "
-                    "Illegal device value %d ignored\n", rtrn.ival);
+                    "Illegal device value %d ignored\n", val);
             return false;
         }
-        act->device = rtrn.ival;
+
+        act->device = val;
         return true;
     }
+
     return ReportIllegal(keymap, action->type, field);
 }
 
@@ -995,22 +1018,23 @@ static bool
 HandlePrivate(struct xkb_keymap *keymap, struct xkb_any_action *action,
               unsigned field, ExprDef *array_ndx, ExprDef *value)
 {
-    ExprResult rtrn;
+    if (field == F_Type) {
+        int type;
 
-    switch (field) {
-    case F_Type:
-        if (!ExprResolveInteger(keymap->ctx, value, &rtrn))
+        if (!ExprResolveInteger(keymap->ctx, value, &type))
             return ReportMismatch(keymap, PrivateAction, field, "integer");
-        if ((rtrn.ival < 0) || (rtrn.ival > 255)) {
+
+        if (type < 0 || type > 255) {
             log_err(keymap->ctx,
                     "Private action type must be in the range 0..255; "
-                    "Illegal type %d ignored\n", rtrn.ival);
+                    "Illegal type %d ignored\n", type);
             return false;
         }
-        action->type = rtrn.uval;
-        return true;
 
-    case F_Data:
+        action->type = (uint8_t) type;
+        return true;
+    }
+    else if (field == F_Data) {
         if (array_ndx == NULL) {
             const char *str;
             int len;
@@ -1030,32 +1054,38 @@ HandlePrivate(struct xkb_keymap *keymap, struct xkb_any_action *action,
             return true;
         }
         else {
-            unsigned ndx;
-            if (!ExprResolveInteger(keymap->ctx, array_ndx, &rtrn)) {
+            int ndx, datum;
+
+            if (!ExprResolveInteger(keymap->ctx, array_ndx, &ndx)) {
                 log_err(keymap->ctx,
                         "Array subscript must be integer; "
                         "Illegal subscript ignored\n");
                 return false;
             }
-            ndx = rtrn.uval;
-            if (ndx >= sizeof action->data) {
+
+            if (ndx < 0 || ndx >= sizeof(action->data)) {
                 log_err(keymap->ctx,
-                        "The data for a private action is 18 bytes long; "
-                        "Attempt to use data[%d] ignored\n", ndx);
+                        "The data for a private action is %zu bytes long; "
+                        "Attempt to use data[%d] ignored\n",
+                        sizeof(action->data), ndx);
                 return false;
             }
-            if (!ExprResolveInteger(keymap->ctx, value, &rtrn))
+
+            if (!ExprResolveInteger(keymap->ctx, value, &datum))
                 return ReportMismatch(keymap, action->type, field, "integer");
-            if ((rtrn.ival < 0) || (rtrn.ival > 255)) {
+
+            if (datum < 0 || datum > 255) {
                 log_err(keymap->ctx,
                         "All data for a private action must be 0..255; "
-                        "Illegal datum %d ignored\n", rtrn.ival);
+                        "Illegal datum %d ignored\n", datum);
                 return false;
             }
-            action->data[ndx] = rtrn.uval;
+
+            action->data[ndx] = (uint8_t) datum;
             return true;
         }
     }
+
     return ReportIllegal(keymap, PrivateAction, field);
 }
 

@@ -851,14 +851,16 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
         led->defined |= _LED_DrivesKbd;
     }
     else if (istreq(field, "index")) {
-        if (arrayNdx != NULL)
+        int ndx;
+
+        if (arrayNdx)
             return ReportIndicatorNotArray(info, led, field);
 
-        if (!ExprResolveInteger(keymap->ctx, value, &rtrn))
+        if (!ExprResolveInteger(keymap->ctx, value, &ndx))
             return ReportIndicatorBadType(info, led, field,
                                           "indicator index");
 
-        if (rtrn.uval < 1 || rtrn.uval > 32) {
+        if (ndx < 1 || ndx > 32) {
             log_err(info->keymap->ctx,
                     "Illegal indicator index %d (range 1..%d); "
                     "Index definition for %s indicator ignored\n",
@@ -867,7 +869,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
             return false;
         }
 
-        led->indicator = rtrn.uval;
+        led->indicator = (unsigned char) ndx;
         led->defined |= _LED_Index;
     }
     else {

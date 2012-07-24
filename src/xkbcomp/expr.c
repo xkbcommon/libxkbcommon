@@ -488,11 +488,15 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, ExprDef *expr,
     return false;
 }
 
-int
-ExprResolveInteger(struct xkb_context *ctx, ExprDef *expr,
-                   ExprResult *val_rtrn)
+bool
+ExprResolveInteger(struct xkb_context *ctx, ExprDef *expr, int *val_rtrn)
 {
-    return ExprResolveIntegerLookup(ctx, expr, val_rtrn, NULL, NULL);
+    ExprResult result;
+    bool ok;
+    ok = ExprResolveIntegerLookup(ctx, expr, &result, NULL, NULL);
+    if (ok)
+        *val_rtrn = result.ival;
+    return ok;
 }
 
 bool
@@ -835,8 +839,7 @@ bool
 ExprResolveKeySym(struct xkb_context *ctx, ExprDef *expr,
                   xkb_keysym_t *sym_rtrn)
 {
-    bool ok = false;
-    ExprResult result;
+    int val;
 
     if (expr->op == EXPR_IDENT) {
         const char *str;
@@ -846,9 +849,12 @@ ExprResolveKeySym(struct xkb_context *ctx, ExprDef *expr,
             return true;
     }
 
-    ok = ExprResolveInteger(ctx, expr, &result);
-    if (ok && result.uval < 10)
-        *sym_rtrn = result.uval + '0';
+    if (!ExprResolveInteger(ctx, expr, &val))
+        return false;
 
-    return ok;
+    if (val < 0 || val >= 10)
+        return false;
+
+    *sym_rtrn = ((xkb_keysym_t) val) + '0';
+    return true;
 }

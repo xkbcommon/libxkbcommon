@@ -222,6 +222,8 @@ bool
 ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
                        ExprResult *val_rtrn, VModInfo *info)
 {
+    int val;
+
     if (def->op == EXPR_IDENT) {
         xkb_mod_index_t i;
         xkb_mod_mask_t bit;
@@ -235,12 +237,17 @@ ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
             }
         }
     }
-    if (ExprResolveInteger(keymap->ctx, def, val_rtrn)) {
-        if (val_rtrn->uval < XkbNumVirtualMods)
-            return true;
+
+    if (!ExprResolveInteger(keymap->ctx, def, &val))
+        return false;
+
+    if (val < 0 || val >= XkbNumVirtualMods) {
         log_err(keymap->ctx,
                 "Illegal virtual modifier %d (must be 0..%d inclusive)\n",
-                val_rtrn->uval, XkbNumVirtualMods - 1);
+                val, XkbNumVirtualMods - 1);
+        return false;
     }
-    return false;
+
+    val_rtrn->uval = (unsigned int) val;
+    return true;
 }

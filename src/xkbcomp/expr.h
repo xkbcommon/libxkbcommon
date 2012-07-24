@@ -72,9 +72,8 @@ ExprResolveBoolean(struct xkb_context *ctx, ExprDef *expr, bool *set_rtrn);
 bool
 ExprResolveKeyCode(struct xkb_context *ctx, ExprDef *expr, xkb_keycode_t *kc);
 
-extern int
-ExprResolveInteger(struct xkb_context *ctx, ExprDef *expr,
-                   ExprResult *val_rtrn);
+bool
+ExprResolveInteger(struct xkb_context *ctx, ExprDef *expr, int *val_rtrn);
 
 bool
 ExprResolveLevel(struct xkb_context *ctx, ExprDef *expr,
