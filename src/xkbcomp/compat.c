@@ -55,7 +55,7 @@ typedef struct _LEDInfo {
     unsigned char flags;
     unsigned char which_mods;
     unsigned char real_mods;
-    unsigned short vmods;
+    xkb_mod_mask_t vmods;
     unsigned char which_groups;
     uint32_t groups;
     unsigned int ctrls;
@@ -1270,11 +1270,11 @@ err_info:
     return false;
 }
 
-uint32_t
-VModsToReal(struct xkb_keymap *keymap, uint32_t vmodmask)
+xkb_mod_mask_t
+VModsToReal(struct xkb_keymap *keymap, xkb_mod_mask_t vmodmask)
 {
-    uint32_t ret = 0;
-    int i;
+    xkb_mod_mask_t ret = 0;
+    xkb_mod_index_t i;
 
     if (!vmodmask)
         return 0;
@@ -1290,7 +1290,7 @@ VModsToReal(struct xkb_keymap *keymap, uint32_t vmodmask)
 
 static void
 UpdateActionMods(struct xkb_keymap *keymap, union xkb_action *act,
-                 uint32_t rmodmask)
+                 xkb_mod_mask_t rmodmask)
 {
     switch (act->type) {
     case XkbSA_SetMods:
@@ -1383,7 +1383,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
 #define INTERP_SIZE (8 * 4)
     struct xkb_sym_interpret *interps[INTERP_SIZE];
     union xkb_action *acts;
-    uint32_t vmodmask = 0;
+    xkb_mod_mask_t vmodmask = 0;
     int num_acts = 0;
     xkb_group_index_t group;
     int level;
@@ -1460,8 +1460,11 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
 bool
 UpdateModifiersFromCompat(struct xkb_keymap *keymap)
 {
-    struct xkb_key *key;
+    xkb_mod_index_t vmod;
+    xkb_group_index_t grp;
+    xkb_led_index_t led;
     int i;
+    struct xkb_key *key;
     struct xkb_key_type *type;
     struct xkb_kt_map_entry *entry;
 
@@ -1472,34 +1475,36 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
             return false;
 
     /* Update keymap->vmods, the virtual -> real mod mapping. */
-    for (i = 0; i < XkbNumVirtualMods; i++)
-        keymap->vmods[i] = 0;
+    for (vmod = 0; vmod < XkbNumVirtualMods; vmod++)
+        keymap->vmods[vmod] = 0;
+
     xkb_foreach_key(key, keymap) {
         if (!key->vmodmap)
             continue;
 
-        for (i = 0; i < XkbNumVirtualMods; i++) {
-            if (!(key->vmodmap & (1 << i)))
+        for (vmod = 0; vmod < XkbNumVirtualMods; vmod++) {
+            if (!(key->vmodmap & (1 << vmod)))
                 continue;
-            keymap->vmods[i] |= key->modmap;
+            keymap->vmods[vmod] |= key->modmap;
         }
     }
 
     /* Now update the level masks for all the types to reflect the vmods. */
     darray_foreach(type, keymap->types) {
-        uint32_t mask = 0;
-        int j;
+        xkb_mod_mask_t mask = 0;
         type->mods.mask = type->mods.real_mods;
         type->mods.mask |= VModsToReal(keymap, type->mods.vmods);
-        for (j = 0; j < XkbNumVirtualMods; j++) {
-            if (!(type->mods.vmods & (1 << j)))
+
+        /* FIXME: We compute the mask with doing anything with it? */
+        for (vmod = 0; vmod < XkbNumVirtualMods; vmod++) {
+            if (!(type->mods.vmods & (1 << vmod)))
                 continue;
-            mask |= keymap->vmods[j];
+            mask |= keymap->vmods[vmod];
         }
 
         darray_foreach(entry, type->map)
-        entry->mods.mask = entry->mods.real_mods |
-                           VModsToReal(keymap, entry->mods.vmods);
+            entry->mods.mask = entry->mods.real_mods |
+                               VModsToReal(keymap, entry->mods.vmods);
     }
 
     /* Update action modifiers. */
@@ -1513,15 +1518,15 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
     }
 
     /* Update group modifiers. */
-    for (i = 0; i < XkbNumKbdGroups; i++) {
-        struct xkb_mods *group = &keymap->groups[i];
+    for (grp = 0; grp < XkbNumKbdGroups; grp++) {
+        struct xkb_mods *group = &keymap->groups[grp];
         group->mask = group->real_mods | VModsToReal(keymap, group->vmods);
     }
 
     /* Update vmod -> indicator maps. */
-    for (i = 0; i < XkbNumIndicators; i++) {
-        struct xkb_mods *led = &keymap->indicators[i].mods;
-        led->mask = led->real_mods | VModsToReal(keymap, led->vmods);
+    for (led = 0; led < XkbNumIndicators; led++) {
+        struct xkb_mods *mods = &keymap->indicators[led].mods;
+        mods->mask = mods->real_mods | VModsToReal(keymap, mods->vmods);
     }
 
     return true;

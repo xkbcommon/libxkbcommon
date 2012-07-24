@@ -235,8 +235,8 @@ union xkb_action {
 };
 
 struct xkb_mods {
-    uint32_t mask;              /* effective mods */
-    uint32_t vmods;
+    xkb_mod_mask_t mask;              /* effective mods */
+    xkb_mod_mask_t vmods;
     uint8_t real_mods;
 };
 
@@ -259,7 +259,7 @@ struct xkb_sym_interpret {
     unsigned char flags;
     unsigned char match;
     uint8_t mods;
-    uint32_t virtual_mod;
+    xkb_mod_index_t virtual_mod;
     union xkb_action act;
 };
 
@@ -304,7 +304,7 @@ struct xkb_key {
     unsigned char explicit;
 
     unsigned char modmap;
-    uint32_t vmodmap;
+    xkb_mod_mask_t vmodmap;
 
     struct xkb_behavior behavior;
 
@@ -351,7 +351,7 @@ struct xkb_keymap {
     darray(struct xkb_sym_interpret) sym_interpret;
 
     /* vmod -> mod mapping */
-    uint32_t vmods[XkbNumVirtualMods];
+    xkb_mod_index_t vmods[XkbNumVirtualMods];
     const char *vmod_names[XkbNumVirtualMods];
 
     struct xkb_mods groups[XkbNumKbdGroups];
@@ -489,7 +489,7 @@ xkb_atom_strdup(struct xkb_context *ctx, xkb_atom_t atom);
 const char *
 xkb_atom_text(struct xkb_context *ctx, xkb_atom_t atom);
 
-extern unsigned int
+xkb_group_index_t
 xkb_key_get_group(struct xkb_state *state, xkb_keycode_t kc);
 
 extern unsigned int

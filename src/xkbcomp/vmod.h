@@ -31,9 +31,9 @@
 #include "expr.h"
 
 typedef struct _VModInfo {
-    unsigned defined;
-    unsigned available;
-    unsigned newlyDefined;
+    xkb_mod_mask_t defined;
+    xkb_mod_mask_t available;
+    xkb_mod_mask_t newlyDefined;
     int errorCount;
 } VModInfo;
 

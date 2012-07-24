@@ -48,7 +48,7 @@ tbGetBuffer(unsigned int size)
 }
 
 static const char *
-XkbcVModIndexText(struct xkb_keymap *keymap, unsigned ndx)
+XkbcVModIndexText(struct xkb_keymap *keymap, xkb_mod_index_t ndx)
 {
     int len;
     char *rtrn;
@@ -76,14 +76,17 @@ XkbcVModIndexText(struct xkb_keymap *keymap, unsigned ndx)
 }
 
 const char *
-XkbcVModMaskText(struct xkb_keymap *keymap, unsigned modMask, unsigned mask)
+XkbcVModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t modMask,
+                 xkb_mod_mask_t mask)
 {
-    int i, bit, len, rem;
+    xkb_mod_index_t i;
+    xkb_mod_mask_t bit;
+    int len, rem;
     const char *mm = NULL;
     char *rtrn, *str;
     char buf[BUFFER_SIZE];
 
-    if ((modMask == 0) && (mask == 0))
+    if (modMask == 0 && mask == 0)
         return "none";
 
     if (modMask != 0)
@@ -111,16 +114,16 @@ XkbcVModMaskText(struct xkb_keymap *keymap, unsigned modMask, unsigned mask)
     else
         str = NULL;
 
-    len = ((str) ? strlen(str) : 0) + ((mm) ? strlen(mm) : 0) +
-          ((str && mm) ? 1 : 0);
+    len = (str ? strlen(str) : 0) + (mm ? strlen(mm) : 0) +
+          (str && mm ? 1 : 0);
     if (len >= BUFFER_SIZE)
         len = BUFFER_SIZE - 1;
 
     rtrn = tbGetBuffer(len + 1);
     rtrn[0] = '\0';
 
-    snprintf(rtrn, len + 1, "%s%s%s", (mm) ? mm : "",
-             (mm && str) ? "+" : "", (str) ? str : "");
+    snprintf(rtrn, len + 1, "%s%s%s", (mm ? mm : ""),
+             (mm && str ? "+" : ""), (str ? str : ""));
 
     return rtrn;
 }
@@ -137,7 +140,7 @@ static const char *modNames[XkbNumModifiers] = {
 };
 
 const char *
-XkbcModIndexText(unsigned ndx)
+XkbcModIndexText(xkb_mod_index_t ndx)
 {
     char *buf;
 
@@ -153,9 +156,10 @@ XkbcModIndexText(unsigned ndx)
 }
 
 const char *
-XkbcModMaskText(unsigned mask, bool cFormat)
+XkbcModMaskText(xkb_mod_mask_t mask, bool cFormat)
 {
-    int i, rem, bit;
+    int i, rem;
+    xkb_mod_index_t bit;
     char *str, *buf;
 
     if ((mask & 0xff) == 0xff)

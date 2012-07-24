@@ -29,7 +29,6 @@
 
 #include "xkbcomp.h"
 #include "text.h"
-#include "utils.h"
 
 extern bool
 ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
@@ -47,8 +46,8 @@ FindKeyNameForAlias(struct xkb_keymap *keymap, unsigned long lname,
 extern bool
 UpdateModifiersFromCompat(struct xkb_keymap *keymap);
 
-uint32_t
-VModsToReal(struct xkb_keymap *keymap, uint32_t vmodmask);
+xkb_mod_mask_t
+VModsToReal(struct xkb_keymap *keymap, xkb_mod_mask_t vmodmask);
 
 static inline unsigned long
 KeyNameToLong(const char *name)

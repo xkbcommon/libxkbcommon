@@ -50,8 +50,8 @@ typedef struct _KeyTypeInfo {
     struct list entry;
 
     xkb_atom_t name;
-    unsigned mask;
-    unsigned vmask;
+    xkb_mod_mask_t mask;
+    xkb_mod_mask_t vmask;
     unsigned numLevels;
     darray(struct xkb_kt_map_entry) entries;
     struct list preserves;

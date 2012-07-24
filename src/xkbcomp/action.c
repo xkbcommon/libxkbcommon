@@ -240,7 +240,7 @@ CheckLatchLockFlags(struct xkb_keymap *keymap, unsigned action,
 
 static bool
 CheckModifierField(struct xkb_keymap *keymap, unsigned action, ExprDef *value,
-                   unsigned *flags_inout, unsigned *mods_rtrn)
+                   unsigned *flags_inout, xkb_mod_mask_t *mods_rtrn)
 {
     ExprResult rtrn;
 
@@ -255,9 +255,11 @@ CheckModifierField(struct xkb_keymap *keymap, unsigned action, ExprDef *value,
             return true;
         }
     }
+
     if (!ExprResolveVModMask(keymap, value, &rtrn))
         return ReportMismatch(keymap, action, F_Modifiers, "modifier mask");
-    *mods_rtrn = rtrn.uval;
+
+    *mods_rtrn = (xkb_mod_mask_t) rtrn.ival;
     *flags_inout &= ~XkbSA_UseModMapMods;
     return true;
 }
@@ -268,7 +270,8 @@ HandleSetLatchMods(struct xkb_keymap *keymap, struct xkb_any_action *action,
 {
     struct xkb_mod_action *act;
     unsigned rtrn;
-    unsigned t1, t2;
+    unsigned t1;
+    xkb_mod_mask_t t2;
 
     act = (struct xkb_mod_action *) action;
     if (array_ndx != NULL) {
@@ -307,7 +310,8 @@ HandleLockMods(struct xkb_keymap *keymap, struct xkb_any_action *action,
                unsigned field, ExprDef *array_ndx, ExprDef *value)
 {
     struct xkb_mod_action *act;
-    unsigned t1, t2;
+    unsigned t1;
+    xkb_mod_mask_t t2;
 
     act = (struct xkb_mod_action *) action;
     if ((array_ndx != NULL) && (field == F_Modifiers))
@@ -599,7 +603,8 @@ HandleISOLock(struct xkb_keymap *keymap, struct xkb_any_action *action,
 {
     ExprResult rtrn;
     struct xkb_iso_action *act;
-    unsigned flags, mods;
+    unsigned flags;
+    xkb_mod_mask_t mods;
     xkb_group_index_t group;
 
     act = (struct xkb_iso_action *) action;
@@ -825,7 +830,8 @@ HandleRedirectKey(struct xkb_keymap *keymap, struct xkb_any_action *action,
     ExprResult rtrn;
     struct xkb_key *key;
     struct xkb_redirect_key_action *act;
-    unsigned t1, t2;
+    unsigned t1;
+    xkb_mod_mask_t t2;
     unsigned long tmp;
 
     if (array_ndx != NULL)

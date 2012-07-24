@@ -29,14 +29,15 @@
 
 #include "xkb-priv.h"
 
-extern const char *
-XkbcVModMaskText(struct xkb_keymap *keymap, unsigned modMask, unsigned mask);
+const char *
+XkbcVModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t modMask,
+                 xkb_mod_mask_t mask);
 
-extern const char *
-XkbcModIndexText(unsigned ndx);
+const char *
+XkbcModIndexText(xkb_mod_index_t ndx);
 
-extern const char *
-XkbcModMaskText(unsigned mask, bool cFormat);
+const char *
+XkbcModMaskText(xkb_mod_mask_t mask, bool cFormat);
 
 extern const char *
 XkbcFileTypeText(enum xkb_file_type type);
