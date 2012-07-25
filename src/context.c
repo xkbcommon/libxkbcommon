@@ -93,19 +93,20 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
     const char *home;
     char *user_path;
     int err;
+    int ret = 0;
 
-    (void) xkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_ROOT);
+    ret |= xkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_ROOT);
 
     home = getenv("HOME");
     if (!home)
-        return 1;
+        return ret;
     err = asprintf(&user_path, "%s/.xkb", home);
     if (err <= 0)
-        return 1;
-    (void) xkb_context_include_path_append(ctx, user_path);
+        return ret;
+    ret |= xkb_context_include_path_append(ctx, user_path);
     free(user_path);
 
-    return 1;
+    return ret;
 }
 
 /**
@@ -279,6 +280,8 @@ xkb_context_new(enum xkb_context_flags flags)
 
     if (!(flags & XKB_CONTEXT_NO_DEFAULT_INCLUDES) &&
         !xkb_context_include_path_append_default(ctx)) {
+        log_err(ctx, "failed to add default include path %s\n",
+                DFLT_XKB_CONFIG_ROOT);
         xkb_context_unref(ctx);
         return NULL;
     }
