@@ -26,11 +26,12 @@
 #include <assert.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "test.h"
 
 int
 main(void)
 {
-    struct xkb_context *context = xkb_context_new(0);
+    struct xkb_context *context = test_get_context();
 
     assert(context);
 
