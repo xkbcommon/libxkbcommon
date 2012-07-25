@@ -66,15 +66,15 @@ scanner_error_extra(struct YYLTYPE *loc, struct scanner_extra *extra,
 "//"[^\n]*
 "#"[^\n]*
 
-\"			yyextra->s = yyextra->scanBuf; BEGIN(S_STR);
-\<			yyextra->s = yyextra->scanBuf; BEGIN(S_KEY);
+\"                      yyextra->s = yyextra->scanBuf; BEGIN(S_STR);
+\<                      yyextra->s = yyextra->scanBuf; BEGIN(S_KEY);
 
 <S_STR>\" {
-			BEGIN(INITIAL);
-			*yyextra->s = '\0';
-			yylval->str = strdup(yyextra->scanBuf);
-			return STRING;
-		    }
+                        BEGIN(INITIAL);
+                        *yyextra->s = '\0';
+                        yylval->str = strdup(yyextra->scanBuf);
+                        return STRING;
+                    }
 <S_KEY>\> {
                         BEGIN(INITIAL);
 
@@ -90,120 +90,120 @@ scanner_error_extra(struct YYLTYPE *loc, struct scanner_extra *extra,
                     }
 
 <S_STR,S_KEY>\\[0-7]{1,3} {
-			/* octal escape sequence */
-			unsigned int result;
+                        /* octal escape sequence */
+                        unsigned int result;
 
-			(void) sscanf( yytext + 1, "%o", &result );
+                        (void) sscanf( yytext + 1, "%o", &result );
 
-			if (result > 0xff) {
+                        if (result > 0xff) {
                             scanner_error_extra(yylloc, yyextra,
                                                 "Illegal octal escape");
-			    return ERROR_TOK;
-			}
+                            return ERROR_TOK;
+                        }
 
-			APPEND_S(result);
-		    }
+                        APPEND_S(result);
+                    }
 
 <S_STR,S_KEY>\\[0-9]+ {
                         scanner_error_extra(yylloc, yyextra,
                                             "Illegal octal escape");
-			return ERROR_TOK;
-		    }
+                        return ERROR_TOK;
+                    }
 
-<S_STR,S_KEY>\\n	APPEND_S('\n');
-<S_STR,S_KEY>\\t	APPEND_S('\t');
-<S_STR,S_KEY>\\r	APPEND_S('\r');
-<S_STR,S_KEY>\\b	APPEND_S('\b');
-<S_STR,S_KEY>\\f	APPEND_S('\f');
-<S_STR,S_KEY>\\v	APPEND_S('\v');
-<S_STR,S_KEY>\\e	APPEND_S('\033');
+<S_STR,S_KEY>\\n        APPEND_S('\n');
+<S_STR,S_KEY>\\t        APPEND_S('\t');
+<S_STR,S_KEY>\\r        APPEND_S('\r');
+<S_STR,S_KEY>\\b        APPEND_S('\b');
+<S_STR,S_KEY>\\f        APPEND_S('\f');
+<S_STR,S_KEY>\\v        APPEND_S('\v');
+<S_STR,S_KEY>\\e        APPEND_S('\033');
 
-<S_STR,S_KEY>.		APPEND_S(yytext[0]);
+<S_STR,S_KEY>.          APPEND_S(yytext[0]);
 
-xkb_keymap		return XKB_KEYMAP;
-xkb_keycodes		return XKB_KEYCODES;
-xkb_types		return XKB_TYPES;
-xkb_symbols		return XKB_SYMBOLS;
-xkb_compat		return XKB_COMPATMAP;
-xkb_compat_map		return XKB_COMPATMAP;
-xkb_compatibility	return XKB_COMPATMAP;
-xkb_compatibility_map	return XKB_COMPATMAP;
-xkb_geometry		return XKB_GEOMETRY;
-xkb_semantics		return XKB_SEMANTICS;
-xkb_layout		return XKB_LAYOUT;
-include			return INCLUDE;
-override		return OVERRIDE;
-augment			return AUGMENT;
-replace			return REPLACE;
-alternate		return ALTERNATE;
-partial			return PARTIAL;
-default			return DEFAULT;
-hidden			return HIDDEN;
-virtual_modifiers	return VIRTUAL_MODS;
-type			return TYPE;
-interpret		return INTERPRET;
-action			return ACTION_TOK;
-key			return KEY;
-alias			return ALIAS;
-group			return GROUP;
-modmap			return MODIFIER_MAP;
-mod_map			return MODIFIER_MAP;
-modifier_map		return MODIFIER_MAP;
-indicator		return INDICATOR;
-shape			return SHAPE;
-row			return ROW;
-keys			return KEYS;
-section			return SECTION;
-overlay			return OVERLAY;
-text			return TEXT;
-outline			return OUTLINE;
-solid			return SOLID;
-logo			return LOGO;
-virtual			return VIRTUAL;
-alphanumeric_keys	return ALPHANUMERIC_KEYS;
-modifier_keys		return MODIFIER_KEYS;
-keypad_keys		return KEYPAD_KEYS;
-function_keys		return FUNCTION_KEYS;
-alternate_group		return ALTERNATE_GROUP;
+xkb_keymap              return XKB_KEYMAP;
+xkb_keycodes            return XKB_KEYCODES;
+xkb_types               return XKB_TYPES;
+xkb_symbols             return XKB_SYMBOLS;
+xkb_compat              return XKB_COMPATMAP;
+xkb_compat_map          return XKB_COMPATMAP;
+xkb_compatibility       return XKB_COMPATMAP;
+xkb_compatibility_map   return XKB_COMPATMAP;
+xkb_geometry            return XKB_GEOMETRY;
+xkb_semantics           return XKB_SEMANTICS;
+xkb_layout              return XKB_LAYOUT;
+include                 return INCLUDE;
+override                return OVERRIDE;
+augment                 return AUGMENT;
+replace                 return REPLACE;
+alternate               return ALTERNATE;
+partial                 return PARTIAL;
+default                 return DEFAULT;
+hidden                  return HIDDEN;
+virtual_modifiers       return VIRTUAL_MODS;
+type                    return TYPE;
+interpret               return INTERPRET;
+action                  return ACTION_TOK;
+key                     return KEY;
+alias                   return ALIAS;
+group                   return GROUP;
+modmap                  return MODIFIER_MAP;
+mod_map                 return MODIFIER_MAP;
+modifier_map            return MODIFIER_MAP;
+indicator               return INDICATOR;
+shape                   return SHAPE;
+row                     return ROW;
+keys                    return KEYS;
+section                 return SECTION;
+overlay                 return OVERLAY;
+text                    return TEXT;
+outline                 return OUTLINE;
+solid                   return SOLID;
+logo                    return LOGO;
+virtual                 return VIRTUAL;
+alphanumeric_keys       return ALPHANUMERIC_KEYS;
+modifier_keys           return MODIFIER_KEYS;
+keypad_keys             return KEYPAD_KEYS;
+function_keys           return FUNCTION_KEYS;
+alternate_group         return ALTERNATE_GROUP;
 
-[a-zA-Z_][a-zA-Z_0-9]*	yylval->str = strdup(yytext); return IDENT;
+[a-zA-Z_][a-zA-Z_0-9]*  yylval->str = strdup(yytext); return IDENT;
 
-0x[a-fA-F0-9]+		|
-[0-9]+			{
-			    char *end;
-			    yylval->num = strtoul(yytext, &end, 0);
+0x[a-fA-F0-9]+          |
+[0-9]+                  {
+                            char *end;
+                            yylval->num = strtoul(yytext, &end, 0);
 
-			    return INTEGER;
-			}
+                            return INTEGER;
+                        }
 [0-9]+\.[0-9]+ {
-			    char *end;
-			    yylval->num = strtod(yytext, &end) * XkbGeomPtsPerMM;
+                            char *end;
+                            yylval->num = strtod(yytext, &end) * XkbGeomPtsPerMM;
 
-			    return FLOAT;
-			}
+                            return FLOAT;
+                        }
 
-"="			return EQUALS;
-"+"			return PLUS;
-"-"			return MINUS;
-"/"			return DIVIDE;
-"*"			return TIMES;
-"{"			return OBRACE;
-"}"			return CBRACE;
-"("			return OPAREN;
-")"			return CPAREN;
-"["			return OBRACKET;
-"]"			return CBRACKET;
-"."			return DOT;
-","			return COMMA;
-";"			return SEMI;
-"!"			return EXCLAM;
-"~"			return INVERT;
+"="                     return EQUALS;
+"+"                     return PLUS;
+"-"                     return MINUS;
+"/"                     return DIVIDE;
+"*"                     return TIMES;
+"{"                     return OBRACE;
+"}"                     return CBRACE;
+"("                     return OPAREN;
+")"                     return CPAREN;
+"["                     return OBRACKET;
+"]"                     return CBRACKET;
+"."                     return DOT;
+","                     return COMMA;
+";"                     return SEMI;
+"!"                     return EXCLAM;
+"~"                     return INVERT;
 
-[ \t\r\n\v]+		
+[ \t\r\n\v]+
 
-<<EOF>>			return END_OF_FILE;
+<<EOF>>                 return END_OF_FILE;
 
-.			return ERROR_TOK;
+.                       return ERROR_TOK;
 
 %%
 
