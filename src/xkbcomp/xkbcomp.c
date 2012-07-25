@@ -102,24 +102,24 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
      * Other aggregate file types are converted to FILE_TYPE_KEYMAP
      * in the parser.
      */
-    if (file->type != FILE_TYPE_KEYMAP) {
+    if (file->file_type != FILE_TYPE_KEYMAP) {
         log_err(ctx, "Cannot compile a %s file alone into a keymap\n",
-                FileTypeText(file->type));
+                FileTypeText(file->file_type));
         goto err;
     }
 
     /* Check for duplicate entries in the input file */
     for (file = (XkbFile *) file->defs; file;
          file = (XkbFile *) file->common.next) {
-        if (have & file->type) {
+        if (have & file->file_type) {
             log_err(ctx,
                     "More than one %s section in a keymap file; "
                     "All sections after the first ignored\n",
-                    FileTypeText(file->type));
+                    FileTypeText(file->file_type));
             continue;
         }
 
-        switch (file->type) {
+        switch (file->file_type) {
         case FILE_TYPE_KEYCODES:
             keycodes = file;
             break;
@@ -138,7 +138,7 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
 
         default:
             log_err(ctx, "Cannot define %s in a keymap file\n",
-                    FileTypeText(file->type));
+                    FileTypeText(file->file_type));
             continue;
         }
 
@@ -147,7 +147,7 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
             file->topName = strdup(main_name);
         }
 
-        have |= file->type;
+        have |= file->file_type;
     }
 
     if (REQUIRED_FILE_TYPES & (~have)) {

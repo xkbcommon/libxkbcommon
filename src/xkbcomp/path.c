@@ -167,8 +167,8 @@ XkbDirectoryForInclude(enum xkb_file_type type)
  * pathRtrn is undefined.
  */
 FILE *
-XkbFindFileInPath(struct xkb_context *ctx,
-                  const char *name, enum xkb_file_type type, char **pathRtrn)
+XkbFindFileInPath(struct xkb_context *ctx, const char *name,
+                  enum xkb_file_type type, char **pathRtrn)
 {
     size_t i;
     int ret;

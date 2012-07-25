@@ -57,49 +57,51 @@ AppendStmt(ParseCommon * to, ParseCommon * append)
 }
 
 ExprDef *
-ExprCreate(unsigned op, unsigned type)
+ExprCreate(enum expr_op_type op, enum expr_value_type type)
 {
     ExprDef *expr;
 
     expr = malloc_or_die(sizeof(*expr));
 
-    expr->common.stmtType = StmtExpr;
+    expr->common.type = STMT_EXPR;
     expr->common.next = NULL;
     expr->op = op;
-    expr->type = type;
+    expr->value_type = type;
     return expr;
 }
 
 ExprDef *
-ExprCreateUnary(unsigned op, unsigned type, ExprDef * child)
+ExprCreateUnary(enum expr_op_type op, enum expr_value_type type,
+                ExprDef *child)
 {
     ExprDef *expr;
     expr = malloc_or_die(sizeof(*expr));
 
-    expr->common.stmtType = StmtExpr;
+    expr->common.type = STMT_EXPR;
     expr->common.next = NULL;
     expr->op = op;
-    expr->type = type;
+    expr->value_type = type;
     expr->value.child = child;
     return expr;
 }
 
 ExprDef *
-ExprCreateBinary(unsigned op, ExprDef * left, ExprDef * right)
+ExprCreateBinary(enum expr_op_type op, ExprDef *left, ExprDef *right)
 {
     ExprDef *expr;
 
     expr = malloc_or_die(sizeof(*expr));
 
-    expr->common.stmtType = StmtExpr;
+    expr->common.type = STMT_EXPR;
     expr->common.next = NULL;
     expr->op = op;
-    if ((op == OpAssign) || (left->type == TypeUnknown))
-        expr->type = right->type;
-    else if ((left->type == right->type) || (right->type == TypeUnknown))
-        expr->type = left->type;
+    if (op == EXPR_ASSIGN || left->value_type == EXPR_TYPE_UNKNOWN)
+        expr->value_type = right->value_type;
+    else if (left->value_type == right->value_type ||
+             right->value_type == EXPR_TYPE_UNKNOWN)
+        expr->value_type = left->value_type;
     else
-        expr->type = TypeUnknown;
+        expr->value_type = EXPR_TYPE_UNKNOWN;
     expr->value.binary.left = left;
     expr->value.binary.right = right;
     return expr;
@@ -112,7 +114,7 @@ KeycodeCreate(char keyName[XkbKeyNameLength], unsigned long value)
 
     def = malloc_or_die(sizeof(*def));
 
-    def->common.stmtType = StmtKeycodeDef;
+    def->common.type = STMT_KEYCODE;
     def->common.next = NULL;
     strncpy(def->name, keyName, XkbKeyNameLength);
     def->name[XkbKeyNameLength] = '\0';
@@ -127,7 +129,7 @@ KeyAliasCreate(char alias[XkbKeyNameLength], char real[XkbKeyNameLength])
 
     def = malloc_or_die(sizeof(*def));
 
-    def->common.stmtType = StmtKeyAliasDef;
+    def->common.type = STMT_ALIAS;
     def->common.next = NULL;
     strncpy(def->alias, alias, XkbKeyNameLength);
     def->alias[XkbKeyNameLength] = '\0';
@@ -143,7 +145,7 @@ VModCreate(xkb_atom_t name, ExprDef * value)
 
     def = malloc_or_die(sizeof(*def));
 
-    def->common.stmtType = StmtVModDef;
+    def->common.type = STMT_VMOD;
     def->common.next = NULL;
     def->name = name;
     def->value = value;
@@ -156,7 +158,7 @@ VarCreate(ExprDef * name, ExprDef * value)
     VarDef *def;
     def = malloc_or_die(sizeof(*def));
 
-    def->common.stmtType = StmtVarDef;
+    def->common.type = STMT_VAR;
     def->common.next = NULL;
     def->name = name;
     def->value = value;
@@ -168,9 +170,9 @@ BoolVarCreate(xkb_atom_t nameToken, unsigned set)
 {
     ExprDef *name, *value;
 
-    name = ExprCreate(ExprIdent, TypeUnknown);
+    name = ExprCreate(EXPR_IDENT, EXPR_TYPE_UNKNOWN);
     name->value.str = nameToken;
-    value = ExprCreate(ExprValue, TypeBoolean);
+    value = ExprCreate(EXPR_VALUE, EXPR_TYPE_BOOLEAN);
     value->value.uval = set;
     return VarCreate(name, value);
 }
@@ -182,7 +184,7 @@ InterpCreate(char *sym, ExprDef * match)
 
     def = malloc_or_die(sizeof(*def));
 
-    def->common.stmtType = StmtInterpDef;
+    def->common.type = STMT_INTERP;
     def->common.next = NULL;
     def->sym = sym;
     def->match = match;
@@ -196,7 +198,7 @@ KeyTypeCreate(xkb_atom_t name, VarDef * body)
 
     def = malloc_or_die(sizeof(*def));
 
-    def->common.stmtType = StmtKeyTypeDef;
+    def->common.type = STMT_TYPE;
     def->common.next = NULL;
     def->merge = MERGE_DEFAULT;
     def->name = name;
@@ -211,7 +213,7 @@ SymbolsCreate(char keyName[XkbKeyNameLength], ExprDef *symbols)
 
     def = malloc_or_die(sizeof(*def));
 
-    def->common.stmtType = StmtSymbolsDef;
+    def->common.type = STMT_SYMBOLS;
     def->common.next = NULL;
     def->merge = MERGE_DEFAULT;
     strncpy(def->keyName, keyName, XkbKeyNameLength);
@@ -226,7 +228,7 @@ GroupCompatCreate(int group, ExprDef * val)
 
     def = malloc_or_die(sizeof(*def));
 
-    def->common.stmtType = StmtGroupCompatDef;
+    def->common.type = STMT_GROUP_COMPAT;
     def->common.next = NULL;
     def->merge = MERGE_DEFAULT;
     def->group = group;
@@ -241,7 +243,7 @@ ModMapCreate(uint32_t modifier, ExprDef * keys)
 
     def = malloc_or_die(sizeof(*def));
 
-    def->common.stmtType = StmtModMapDef;
+    def->common.type = STMT_MODMAP;
     def->common.next = NULL;
     def->merge = MERGE_DEFAULT;
     def->modifier = modifier;
@@ -256,7 +258,7 @@ IndicatorMapCreate(xkb_atom_t name, VarDef * body)
 
     def = malloc_or_die(sizeof(*def));
 
-    def->common.stmtType = StmtIndicatorMapDef;
+    def->common.type = STMT_INDICATOR_MAP;
     def->common.next = NULL;
     def->merge = MERGE_DEFAULT;
     def->name = name;
@@ -271,7 +273,7 @@ IndicatorNameCreate(int ndx, ExprDef * name, bool virtual)
 
     def = malloc_or_die(sizeof(*def));
 
-    def->common.stmtType = StmtIndicatorNameDef;
+    def->common.type = STMT_INDICATOR_NAME;
     def->common.next = NULL;
     def->merge = MERGE_DEFAULT;
     def->ndx = ndx;
@@ -287,9 +289,9 @@ ActionCreate(xkb_atom_t name, ExprDef * args)
 
     act = malloc_or_die(sizeof(*act));
 
-    act->common.stmtType = StmtExpr;
+    act->common.type = STMT_EXPR;
     act->common.next = NULL;
-    act->op = ExprActionDecl;
+    act->op = EXPR_ACTION_DECL;
     act->value.action.name = name;
     act->value.action.args = args;
     return act;
@@ -300,7 +302,7 @@ CreateKeysymList(char *sym)
 {
     ExprDef *def;
 
-    def = ExprCreate(ExprKeysymList, TypeSymbols);
+    def = ExprCreate(EXPR_KEYSYM_LIST, EXPR_TYPE_SYMBOLS);
 
     darray_init(def->value.list.syms);
     darray_init(def->value.list.symsMapIndex);
@@ -402,8 +404,8 @@ IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge)
         if (first == NULL) {
             first = incl = malloc(sizeof(*first));
         } else {
-            incl->next = malloc(sizeof(*first));
-            incl = incl->next;
+            incl->next_incl = malloc(sizeof(*first));
+            incl = incl->next_incl;
         }
 
         if (!incl) {
@@ -413,7 +415,7 @@ IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge)
             break;
         }
 
-        incl->common.stmtType = StmtInclude;
+        incl->common.type = STMT_INCLUDE;
         incl->common.next = NULL;
         incl->merge = merge;
         incl->stmt = NULL;
@@ -421,7 +423,7 @@ IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge)
         incl->map = map;
         incl->modifier = extra_data;
         incl->path = NULL;
-        incl->next = NULL;
+        incl->next_incl = NULL;
 
         if (nextop == '|')
             merge = MERGE_AUGMENT;
@@ -502,7 +504,7 @@ CreateXKBFile(struct xkb_context *ctx, enum xkb_file_type type, char *name,
         return NULL;
 
     EnsureSafeMapName(name);
-    file->type = type;
+    file->file_type = type;
     file->topName = strdup_safe(name);
     file->name = name;
     file->defs = defs;
@@ -520,32 +522,32 @@ FreeExpr(ExprDef *expr)
         return;
 
     switch (expr->op) {
-    case ExprActionList:
-    case OpNegate:
-    case OpUnaryPlus:
-    case OpNot:
-    case OpInvert:
+    case EXPR_ACTION_LIST:
+    case EXPR_NEGATE:
+    case EXPR_UNARY_PLUS:
+    case EXPR_NOT:
+    case EXPR_INVERT:
         FreeStmt(&expr->value.child->common);
         break;
 
-    case OpDivide:
-    case OpAdd:
-    case OpSubtract:
-    case OpMultiply:
-    case OpAssign:
+    case EXPR_DIVIDE:
+    case EXPR_ADD:
+    case EXPR_SUBTRACT:
+    case EXPR_MULTIPLY:
+    case EXPR_ASSIGN:
         FreeStmt(&expr->value.binary.left->common);
         FreeStmt(&expr->value.binary.right->common);
         break;
 
-    case ExprActionDecl:
+    case EXPR_ACTION_DECL:
         FreeStmt(&expr->value.action.args->common);
         break;
 
-    case ExprArrayRef:
+    case EXPR_ARRAY_REF:
         FreeStmt(&expr->value.array.entry->common);
         break;
 
-    case ExprKeysymList:
+    case EXPR_KEYSYM_LIST:
         darray_foreach(sym, expr->value.list.syms)
             free(*sym);
         darray_free(expr->value.list.syms);
@@ -565,7 +567,7 @@ FreeInclude(IncludeStmt *incl)
 
     while (incl)
     {
-        next = incl->next;
+        next = incl->next_incl;
 
         free(incl->file);
         free(incl->map);
@@ -589,43 +591,43 @@ FreeStmt(ParseCommon *stmt)
         next = stmt->next;
         u.any = stmt;
 
-        switch (stmt->stmtType) {
-        case StmtInclude:
+        switch (stmt->type) {
+        case STMT_INCLUDE:
             FreeInclude((IncludeStmt *) stmt);
             /* stmt is already free'd here. */
             stmt = NULL;
             break;
-        case StmtExpr:
+        case STMT_EXPR:
             FreeExpr(u.expr);
             break;
-        case StmtVarDef:
+        case STMT_VAR:
             FreeStmt(&u.var->name->common);
             FreeStmt(&u.var->value->common);
             break;
-        case StmtKeyTypeDef:
+        case STMT_TYPE:
             FreeStmt(&u.keyType->body->common);
             break;
-        case StmtInterpDef:
+        case STMT_INTERP:
             free(u.interp->sym);
             FreeStmt(&u.interp->match->common);
             FreeStmt(&u.interp->def->common);
             break;
-        case StmtVModDef:
+        case STMT_VMOD:
             FreeStmt(&u.vmod->value->common);
             break;
-        case StmtSymbolsDef:
+        case STMT_SYMBOLS:
             FreeStmt(&u.syms->symbols->common);
             break;
-        case StmtModMapDef:
+        case STMT_MODMAP:
             FreeStmt(&u.modMask->keys->common);
             break;
-        case StmtGroupCompatDef:
+        case STMT_GROUP_COMPAT:
             FreeStmt(&u.groupCompat->def->common);
             break;
-        case StmtIndicatorMapDef:
+        case STMT_INDICATOR_MAP:
             FreeStmt(&u.ledMap->body->common);
             break;
-        case StmtIndicatorNameDef:
+        case STMT_INDICATOR_NAME:
             FreeStmt(&u.ledName->name->common);
             break;
         default:
@@ -646,7 +648,7 @@ FreeXKBFile(XkbFile *file)
     {
         next = (XkbFile *) file->common.next;
 
-        switch (file->type) {
+        switch (file->file_type) {
         case FILE_TYPE_KEYMAP:
             FreeXKBFile((XkbFile *) file->defs);
             break;

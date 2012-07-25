@@ -477,7 +477,7 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *stmt)
         stmt->stmt = NULL;
     }
 
-    for (; stmt; stmt = stmt->next) {
+    for (; stmt; stmt = stmt->next_incl) {
         if (!ProcessIncludeFile(info->keymap->ctx, stmt, FILE_TYPE_KEYCODES,
                                 &rtrn, &merge)) {
             info->errorCount += 10;
@@ -749,42 +749,42 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
     stmt = file->defs;
     while (stmt)
     {
-        switch (stmt->stmtType) {
-        case StmtInclude:    /* e.g. include "evdev+aliases(qwerty)" */
+        switch (stmt->type) {
+        case STMT_INCLUDE:    /* e.g. include "evdev+aliases(qwerty)" */
             if (!HandleIncludeKeycodes(info, (IncludeStmt *) stmt))
                 info->errorCount++;
             break;
-        case StmtKeycodeDef: /* e.g. <ESC> = 9; */
+        case STMT_KEYCODE: /* e.g. <ESC> = 9; */
             if (!HandleKeycodeDef(info, (KeycodeDef *) stmt, merge))
                 info->errorCount++;
             break;
-        case StmtKeyAliasDef: /* e.g. alias <MENU> = <COMP>; */
+        case STMT_ALIAS: /* e.g. alias <MENU> = <COMP>; */
             if (!HandleAliasDef(info, (KeyAliasDef *) stmt, merge,
                                 info->file_id))
                 info->errorCount++;
             break;
-        case StmtVarDef: /* e.g. minimum, maximum */
+        case STMT_VAR: /* e.g. minimum, maximum */
             if (!HandleKeyNameVar(info, (VarDef *) stmt))
                 info->errorCount++;
             break;
-        case StmtIndicatorNameDef: /* e.g. indicator 1 = "Caps Lock"; */
+        case STMT_INDICATOR_NAME: /* e.g. indicator 1 = "Caps Lock"; */
             if (!HandleIndicatorNameDef(info, (IndicatorNameDef *) stmt,
                                         merge))
                 info->errorCount++;
             break;
-        case StmtInterpDef:
-        case StmtVModDef:
+        case STMT_INTERP:
+        case STMT_VMOD:
             log_err(info->keymap->ctx,
                     "Keycode files may define key and indicator names only; "
                     "Ignoring definition of %s\n",
-                    (stmt->stmtType == StmtInterpDef ?
+                    (stmt->type == STMT_INTERP ?
                      "a symbol interpretation" : "virtual modifiers"));
             info->errorCount++;
             break;
         default:
             log_wsgo(info->keymap->ctx,
                      "Unexpected statement type %d in HandleKeycodesFile\n",
-                     stmt->stmtType);
+                     stmt->type);
             break;
         }
         stmt = stmt->next;

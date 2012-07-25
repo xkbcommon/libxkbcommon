@@ -243,8 +243,7 @@ CheckModifierField(struct xkb_keymap *keymap, unsigned action, ExprDef *value,
                    unsigned *flags_inout, xkb_mod_mask_t *mods_rtrn)
 {
     ExprResult rtrn;
-
-    if (value->op == ExprIdent) {
+    if (value->op == EXPR_IDENT) {
         const char *valStr;
         valStr = xkb_atom_text(keymap->ctx, value->value.str);
         if (valStr && (istreq(valStr, "usemodmapmods") ||
@@ -338,7 +337,7 @@ CheckGroupField(struct xkb_keymap *keymap, unsigned action,
     ExprDef *spec;
     ExprResult rtrn;
 
-    if ((value->op == OpNegate) || (value->op == OpUnaryPlus)) {
+    if (value->op == EXPR_NEGATE || value->op == EXPR_UNARY_PLUS) {
         *flags_inout &= ~XkbSA_GroupAbsolute;
         spec = value->value.child;
     }
@@ -350,9 +349,9 @@ CheckGroupField(struct xkb_keymap *keymap, unsigned action,
     if (!ExprResolveGroup(keymap->ctx, spec, &rtrn))
         return ReportMismatch(keymap, action, F_Group,
                               "integer (range 1..8)");
-    if (value->op == OpNegate)
+    if (value->op == EXPR_NEGATE)
         *grp_rtrn = -rtrn.ival;
-    else if (value->op == OpUnaryPlus)
+    else if (value->op == EXPR_UNARY_PLUS)
         *grp_rtrn = rtrn.ival;
     else
         *grp_rtrn = rtrn.ival - 1;
@@ -435,7 +434,7 @@ HandleMovePtr(struct xkb_keymap *keymap, struct xkb_any_action *action,
         return ReportActionNotArray(keymap, action->type, field);
 
     if ((field == F_X) || (field == F_Y)) {
-        if ((value->op == OpNegate) || (value->op == OpUnaryPlus))
+        if (value->op == EXPR_NEGATE || value->op == EXPR_UNARY_PLUS)
             absolute = false;
         else
             absolute = true;
@@ -550,7 +549,7 @@ HandleSetPtrDflt(struct xkb_keymap *keymap, struct xkb_any_action *action,
         ExprDef *btn;
         if (array_ndx != NULL)
             return ReportActionNotArray(keymap, action->type, field);
-        if ((value->op == OpNegate) || (value->op == OpUnaryPlus)) {
+        if (value->op == EXPR_NEGATE || value->op == EXPR_UNARY_PLUS) {
             act->flags &= ~XkbSA_DfltBtnAbsolute;
             btn = value->value.child;
         }
@@ -574,10 +573,8 @@ HandleSetPtrDflt(struct xkb_keymap *keymap, struct xkb_any_action *action,
                     "Illegal default button setting ignored\n");
             return false;
         }
-        if (value->op == OpNegate)
-            act->value = -rtrn.ival;
-        else
-            act->value = rtrn.ival;
+
+        act->value = (value->op == EXPR_NEGATE ? -rtrn.ival : rtrn.ival);
         return true;
     }
     return ReportIllegal(keymap, action->type, field);
@@ -656,7 +653,7 @@ HandleSwitchScreen(struct xkb_keymap *keymap, struct xkb_any_action *action,
         ExprDef *scrn;
         if (array_ndx != NULL)
             return ReportActionNotArray(keymap, action->type, field);
-        if ((value->op == OpNegate) || (value->op == OpUnaryPlus)) {
+        if (value->op == EXPR_NEGATE || value->op == EXPR_UNARY_PLUS) {
             act->flags &= ~XkbSA_SwitchAbsolute;
             scrn = value->value.child;
         }
@@ -674,7 +671,7 @@ HandleSwitchScreen(struct xkb_keymap *keymap, struct xkb_any_action *action,
                     "Illegal screen value %d ignored\n", rtrn.ival);
             return false;
         }
-        if (value->op == OpNegate)
+        if (value->op == EXPR_NEGATE)
             act->screen = -rtrn.ival;
         else
             act->screen = rtrn.ival;
@@ -1077,7 +1074,7 @@ HandleActionDef(ExprDef * def,
     if (!actionsInitialized)
         ActionsInit(keymap->ctx);
 
-    if (def->op != ExprActionDecl) {
+    if (def->op != EXPR_ACTION_DECL) {
         log_err(keymap->ctx, "Expected an action definition, found %s\n",
                 exprOpText(def->op));
         return false;
@@ -1114,12 +1111,12 @@ HandleActionDef(ExprDef * def,
         ExprResult elemRtrn, fieldRtrn;
         unsigned fieldNdx;
 
-        if (arg->op == OpAssign) {
+        if (arg->op == EXPR_ASSIGN) {
             field = arg->value.binary.left;
             value = arg->value.binary.right;
         }
         else {
-            if ((arg->op == OpNot) || (arg->op == OpInvert)) {
+            if (arg->op == EXPR_NOT || arg->op == EXPR_INVERT) {
                 field = arg->value.child;
                 constFalse.value.str = xkb_atom_intern(keymap->ctx, "false");
                 value = &constFalse;
@@ -1209,15 +1206,15 @@ ActionsInit(struct xkb_context *ctx)
     if (!actionsInitialized) {
         memset(&constTrue, 0, sizeof(constTrue));
         memset(&constFalse, 0, sizeof(constFalse));
-        constTrue.common.stmtType = StmtExpr;
+        constTrue.common.type = STMT_EXPR;
         constTrue.common.next = NULL;
-        constTrue.op = ExprIdent;
-        constTrue.type = TypeBoolean;
+        constTrue.op = EXPR_IDENT;
+        constTrue.value_type = EXPR_TYPE_BOOLEAN;
         constTrue.value.str = xkb_atom_intern(ctx, "true");
-        constFalse.common.stmtType = StmtExpr;
+        constFalse.common.type = STMT_EXPR;
         constFalse.common.next = NULL;
-        constFalse.op = ExprIdent;
-        constFalse.type = TypeBoolean;
+        constFalse.op = EXPR_IDENT;
+        constFalse.value_type = EXPR_TYPE_BOOLEAN;
         constFalse.value.str = xkb_atom_intern(ctx, "false");
         actionsInitialized = 1;
     }

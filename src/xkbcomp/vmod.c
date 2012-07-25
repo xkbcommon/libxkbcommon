@@ -149,7 +149,7 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
  *
  * @param keymap Pointer to the xkb data structure.
  * @param field The Atom of the modifier's name (e.g. Atom for LAlt)
- * @param type Must be TypeInt, otherwise return false.
+ * @param type Must be EXPR_TYPE_INT, otherwise return false.
  * @param val_rtrn Set to the index of the modifier that matches.
  *
  * @return true on success, false otherwise. If false is returned, val_rtrn is
@@ -157,12 +157,12 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
  */
 static int
 LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
-                unsigned type, ExprResult * val_rtrn)
+                enum expr_value_type type, ExprResult * val_rtrn)
 {
     xkb_mod_index_t i;
     const char *name = xkb_atom_text(keymap->ctx, field);
 
-    if (type != TypeInt)
+    if (type != EXPR_TYPE_INT)
         return false;
 
     /* For each named modifier, get the name and compare it to the one passed
@@ -192,7 +192,7 @@ LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
  */
 bool
 LookupVModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-               unsigned type, ExprResult *val_rtrn)
+               enum expr_value_type type, ExprResult *val_rtrn)
 {
     if (LookupModMask(ctx, NULL, field, type, val_rtrn)) {
         return true;
@@ -212,7 +212,7 @@ FindKeypadVMod(struct xkb_keymap *keymap)
     ExprResult rtrn;
 
     name = xkb_atom_intern(keymap->ctx, "NumLock");
-    if ((keymap) && LookupVModIndex(keymap, name, TypeInt, &rtrn)) {
+    if ((keymap) && LookupVModIndex(keymap, name, EXPR_TYPE_INT, &rtrn)) {
         return rtrn.ival;
     }
     return -1;
@@ -222,7 +222,7 @@ bool
 ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
                        ExprResult *val_rtrn, VModInfo *info)
 {
-    if (def->op == ExprIdent) {
+    if (def->op == EXPR_IDENT) {
         xkb_mod_index_t i;
         xkb_mod_mask_t bit;
         const char *name = xkb_atom_text(keymap->ctx, def->value.str);

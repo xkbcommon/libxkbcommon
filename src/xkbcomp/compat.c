@@ -377,7 +377,7 @@ ResolveStateAndPredicate(ExprDef * expr,
     }
 
     *pred_rtrn = XkbSI_Exactly;
-    if (expr->op == ExprActionDecl) {
+    if (expr->op == EXPR_ACTION_DECL) {
         const char *pred_txt = xkb_atom_text(info->keymap->ctx,
                                              expr->value.action.name);
         if (istreq(pred_txt, "noneof"))
@@ -397,7 +397,7 @@ ResolveStateAndPredicate(ExprDef * expr,
         }
         expr = expr->value.action.args;
     }
-    else if (expr->op == ExprIdent) {
+    else if (expr->op == EXPR_IDENT) {
         const char *pred_txt = xkb_atom_text(info->keymap->ctx,
                                              expr->value.str);
         if (pred_txt && istreq(pred_txt, "any")) {
@@ -595,7 +595,7 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *stmt)
         stmt->stmt = NULL;
     }
 
-    for (; stmt; stmt = stmt->next) {
+    for (; stmt; stmt = stmt->next_incl) {
         if (!ProcessIncludeFile(info->keymap->ctx, stmt, FILE_TYPE_COMPAT,
                                 &rtrn, &merge)) {
             info->errorCount += 10;
@@ -899,7 +899,7 @@ HandleInterpBody(CompatInfo *info, VarDef *def, SymInterpInfo *si)
     ExprDef *arrayNdx;
 
     for (; def != NULL; def = (VarDef *) def->common.next) {
-        if ((def->name) && (def->name->op == ExprFieldRef)) {
+        if (def->name && def->name->op == EXPR_FIELD_REF) {
             ok = HandleInterpVar(info, def);
             continue;
         }
@@ -1036,33 +1036,33 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
     stmt = file->defs;
     while (stmt)
     {
-        switch (stmt->stmtType) {
-        case StmtInclude:
+        switch (stmt->type) {
+        case STMT_INCLUDE:
             if (!HandleIncludeCompatMap(info, (IncludeStmt *) stmt))
                 info->errorCount++;
             break;
-        case StmtInterpDef:
+        case STMT_INTERP:
             if (!HandleInterpDef(info, (InterpDef *) stmt, merge))
                 info->errorCount++;
             break;
-        case StmtGroupCompatDef:
+        case STMT_GROUP_COMPAT:
             if (!HandleGroupCompatDef(info, (GroupCompatDef *) stmt, merge))
                 info->errorCount++;
             break;
-        case StmtIndicatorMapDef:
+        case STMT_INDICATOR_MAP:
             if (!HandleIndicatorMapDef(info, (IndicatorMapDef *) stmt, merge))
                 info->errorCount++;
             break;
-        case StmtVarDef:
+        case STMT_VAR:
             if (!HandleInterpVar(info, (VarDef *) stmt))
                 info->errorCount++;
             break;
-        case StmtVModDef:
+        case STMT_VMOD:
             if (!HandleVModDef((VModDef *) stmt, info->keymap, merge,
                                &info->vmods))
                 info->errorCount++;
             break;
-        case StmtKeycodeDef:
+        case STMT_KEYCODE:
             log_err(info->keymap->ctx,
                     "Interpretation files may not include other types; "
                     "Ignoring definition of key name\n");
@@ -1071,7 +1071,7 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
         default:
             log_wsgo(info->keymap->ctx,
                      "Unexpected statement type %d in HandleCompatMapFile\n",
-                     stmt->stmtType);
+                     stmt->type);
             break;
         }
         stmt = stmt->next;

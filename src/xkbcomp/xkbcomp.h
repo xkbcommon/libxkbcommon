@@ -29,51 +29,51 @@
 
 #include "xkb-priv.h"
 
-#define TypeUnknown          0
-#define TypeBoolean          1
-#define TypeInt              2
-#define TypeString           4
-#define TypeAction           5
-#define TypeKeyName          6
-#define TypeSymbols          7
+enum stmt_type {
+    STMT_UNKNOWN = 0,
+    STMT_INCLUDE,
+    STMT_KEYCODE,
+    STMT_ALIAS,
+    STMT_EXPR,
+    STMT_VAR,
+    STMT_TYPE,
+    STMT_INTERP,
+    STMT_VMOD,
+    STMT_SYMBOLS,
+    STMT_MODMAP,
+    STMT_GROUP_COMPAT,
+    STMT_INDICATOR_MAP,
+    STMT_INDICATOR_NAME,
+};
 
-#define StmtUnknown          0
-#define StmtInclude          1
-#define StmtKeycodeDef       2
-#define StmtKeyAliasDef      3
-#define StmtExpr             4
-#define StmtVarDef           5
-#define StmtKeyTypeDef       6
-#define StmtInterpDef        7
-#define StmtVModDef          8
-#define StmtSymbolsDef       9
-#define StmtModMapDef        10
-#define StmtGroupCompatDef   11
-#define StmtIndicatorMapDef  12
-#define StmtIndicatorNameDef 13
+enum expr_value_type {
+    EXPR_TYPE_UNKNOWN = 0,
+    EXPR_TYPE_BOOLEAN,
+    EXPR_TYPE_INT,
+    EXPR_TYPE_STRING,
+    EXPR_TYPE_ACTION,
+    EXPR_TYPE_KEYNAME,
+    EXPR_TYPE_SYMBOLS,
+};
 
-typedef struct _ParseCommon {
-    unsigned stmtType;
-    struct _ParseCommon *next;
-} ParseCommon;
-
-#define ExprValue      0
-#define ExprIdent      1
-#define ExprActionDecl 2
-#define ExprFieldRef   3
-#define ExprArrayRef   4
-#define ExprKeysymList 5
-#define ExprActionList 6
-
-#define OpAdd          20
-#define OpSubtract     21
-#define OpMultiply     22
-#define OpDivide       23
-#define OpAssign       24
-#define OpNot          25
-#define OpNegate       26
-#define OpInvert       27
-#define OpUnaryPlus    28
+enum expr_op_type {
+    EXPR_VALUE = 0,
+    EXPR_IDENT,
+    EXPR_ACTION_DECL,
+    EXPR_FIELD_REF,
+    EXPR_ARRAY_REF,
+    EXPR_KEYSYM_LIST,
+    EXPR_ACTION_LIST,
+    EXPR_ADD,
+    EXPR_SUBTRACT,
+    EXPR_MULTIPLY,
+    EXPR_DIVIDE,
+    EXPR_ASSIGN,
+    EXPR_NOT,
+    EXPR_NEGATE,
+    EXPR_INVERT,
+    EXPR_UNARY_PLUS,
+};
 
 enum merge_mode {
     MERGE_DEFAULT,
@@ -82,8 +82,10 @@ enum merge_mode {
     MERGE_REPLACE,
 };
 
-#define AutoKeyNames (1L << 0)
-#define CreateKeyNames(x) ((x)->flags & AutoKeyNames)
+typedef struct _ParseCommon {
+    enum stmt_type type;
+    struct _ParseCommon *next;
+} ParseCommon;
 
 typedef struct _IncludeStmt {
     ParseCommon common;
@@ -93,13 +95,13 @@ typedef struct _IncludeStmt {
     char *map;
     char *modifier;
     char *path;
-    struct _IncludeStmt *next;
+    struct _IncludeStmt *next_incl;
 } IncludeStmt;
 
 typedef struct _Expr {
     ParseCommon common;
-    unsigned op;
-    unsigned type;
+    enum expr_op_type op;
+    enum expr_value_type value_type;
     union {
         struct {
             struct _Expr *left;
@@ -206,14 +208,13 @@ typedef struct _IndicatorNameDef {
 typedef struct _IndicatorMapDef {
     ParseCommon common;
     enum merge_mode merge;
-    unsigned type;
     xkb_atom_t name;
     VarDef *body;
 } IndicatorMapDef;
 
 typedef struct _XkbFile {
     ParseCommon common;
-    enum xkb_file_type type;
+    enum xkb_file_type file_type;
     char *topName;
     char *name;
     ParseCommon *defs;
@@ -236,5 +237,8 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
 extern bool
 CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
                enum merge_mode merge);
+
+#define AutoKeyNames (1L << 0)
+#define CreateKeyNames(x) ((x)->flags & AutoKeyNames)
 
 #endif /* XKBCOMP_H */

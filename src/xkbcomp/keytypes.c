@@ -361,7 +361,7 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *stmt)
         stmt->stmt = NULL;
     }
 
-    for (; stmt; stmt = stmt->next) {
+    for (; stmt; stmt = stmt->next_incl) {
         if (!ProcessIncludeFile(info->keymap->ctx, stmt, FILE_TYPE_TYPES,
                                 &rtrn, &merge)) {
             info->errorCount += 10;
@@ -781,8 +781,8 @@ HandleKeyTypeBody(KeyTypesInfo *info, VarDef *def, KeyTypeInfo *type)
     ExprResult tmp, field;
     ExprDef *arrayNdx;
 
-    for (; def != NULL; def = (VarDef *) def->common.next) {
-        if ((def->name) && (def->name->op == ExprFieldRef)) {
+    for (; def; def = (VarDef *) def->common.next) {
+        if (def->name && def->name->op == EXPR_FIELD_REF) {
             ok = HandleKeyTypeVar(info, def);
             continue;
         }
@@ -874,37 +874,37 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
     stmt = file->defs;
     while (stmt)
     {
-        switch (stmt->stmtType) {
-        case StmtInclude:
+        switch (stmt->type) {
+        case STMT_INCLUDE:
             if (!HandleIncludeKeyTypes(info, (IncludeStmt *) stmt))
                 info->errorCount++;
             break;
-        case StmtKeyTypeDef: /* e.g. type "ONE_LEVEL" */
+        case STMT_TYPE: /* e.g. type "ONE_LEVEL" */
             if (!HandleKeyTypeDef(info, (KeyTypeDef *) stmt, merge))
                 info->errorCount++;
             break;
-        case StmtVarDef:
+        case STMT_VAR:
             if (!HandleKeyTypeVar(info, (VarDef *) stmt))
                 info->errorCount++;
             break;
-        case StmtVModDef: /* virtual_modifiers NumLock, ... */
+        case STMT_VMOD: /* virtual_modifiers NumLock, ... */
             if (!HandleVModDef((VModDef *) stmt, info->keymap, merge,
                                &info->vmods))
                 info->errorCount++;
             break;
-        case StmtKeyAliasDef:
+        case STMT_ALIAS:
             log_err(info->keymap->ctx,
                     "Key type files may not include other declarations; "
                     "Ignoring definition of key alias\n");
             info->errorCount++;
             break;
-        case StmtKeycodeDef:
+        case STMT_KEYCODE:
             log_err(info->keymap->ctx,
                     "Key type files may not include other declarations; "
                     "Ignoring definition of key name\n");
             info->errorCount++;
             break;
-        case StmtInterpDef:
+        case STMT_INTERP:
             log_err(info->keymap->ctx,
                     "Key type files may not include other declarations; "
                     "Ignoring definition of symbol interpretation\n");
@@ -913,7 +913,7 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
         default:
             log_wsgo(info->keymap->ctx,
                      "Unexpected statement type %d in HandleKeyTypesFile\n",
-                     stmt->stmtType);
+                     stmt->type);
             break;
         }
         stmt = stmt->next;

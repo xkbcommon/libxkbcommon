@@ -71,7 +71,7 @@ ProcessIncludeFile(struct xkb_context *ctx,
             next = (XkbFile *) mapToUse->common.next;
             mapToUse->common.next = NULL;
             if (streq(mapToUse->name, stmt->map) &&
-                mapToUse->type == file_type) {
+                mapToUse->file_type == file_type) {
                 FreeXKBFile(next);
                 break;
             }
@@ -92,11 +92,11 @@ ProcessIncludeFile(struct xkb_context *ctx,
                 "Using first defined map, \"%s\"\n",
                 stmt->file, rtrn->name);
     }
-    if (mapToUse->type != file_type) {
+    if (mapToUse->file_type != file_type) {
         log_err(ctx,
                 "Include file wrong type (expected %s, got %s); "
                 "Include file \"%s\" ignored\n",
-                FileTypeText(file_type), FileTypeText(mapToUse->type),
+                FileTypeText(file_type), FileTypeText(mapToUse->file_type),
                 stmt->file);
         return false;
     }

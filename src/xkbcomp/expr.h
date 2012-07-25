@@ -47,22 +47,19 @@ typedef struct _LookupEntry {
 } LookupEntry;
 
 extern const char *
-exprOpText(unsigned type);
+exprOpText(enum expr_op_type op);
 
 extern bool
 LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-              unsigned type,
-              ExprResult *val_rtrn);
+              enum expr_value_type type, ExprResult *val_rtrn);
 
 extern bool
 LookupVModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-               unsigned type,
-               ExprResult *val_rtrn);
+               enum expr_value_type type, ExprResult *val_rtrn);
 
 extern bool
 LookupModIndex(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-               unsigned type,
-               ExprResult *val_rtrn);
+               enum expr_value_type type, ExprResult *val_rtrn);
 
 extern int
 ExprResolveModMask(struct xkb_context *ctx, ExprDef *expr,

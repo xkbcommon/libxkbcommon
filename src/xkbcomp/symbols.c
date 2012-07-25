@@ -766,7 +766,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *stmt)
         stmt->stmt = NULL;
     }
 
-    for (; stmt; stmt = stmt->next) {
+    for (; stmt; stmt = stmt->next_incl) {
         if (!ProcessIncludeFile(info->keymap->ctx, stmt, FILE_TYPE_SYMBOLS,
                                 &rtrn, &merge)) {
             info->errorCount += 10;
@@ -856,7 +856,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         keyi->symsDefined |= (1 << ndx);
         return true;
     }
-    if (value->op != ExprKeysymList) {
+    if (value->op != EXPR_KEYSYM_LIST) {
         log_err(info->keymap->ctx,
                 "Expected a list of symbols, found %s; "
                 "Ignoring symbols for group %u of %s\n",
@@ -946,7 +946,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         return true;
     }
 
-    if (value->op != ExprActionList) {
+    if (value->op != EXPR_ACTION_LIST) {
         log_wsgo(info->keymap->ctx,
                  "Bad expression type (%d) for action list value; "
                  "Ignoring actions for group %u of %s\n",
@@ -1247,14 +1247,14 @@ HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
     ExprResult tmp, field;
     ExprDef *arrayNdx;
 
-    for (; def != NULL; def = (VarDef *) def->common.next) {
-        if ((def->name) && (def->name->type == ExprFieldRef)) {
+    for (; def; def = (VarDef *) def->common.next) {
+        if (def->name && def->name->op == EXPR_FIELD_REF) {
             ok = HandleSymbolsVar(info, def);
             continue;
         }
 
         if (!def->name) {
-            if (!def->value || (def->value->op == ExprKeysymList))
+            if (!def->value || def->value->op == EXPR_KEYSYM_LIST)
                 field.str = "symbols";
             else
                 field.str = "actions";
@@ -1349,7 +1349,7 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
     bool ok;
     struct xkb_context *ctx = info->keymap->ctx;
 
-    if (!LookupModIndex(ctx, NULL, def->modifier, TypeInt, &rtrn)) {
+    if (!LookupModIndex(ctx, NULL, def->modifier, EXPR_TYPE_INT, &rtrn)) {
         log_err(info->keymap->ctx,
                 "Illegal modifier map definition; "
                 "Ignoring map for non-modifier \"%s\"\n",
@@ -1359,7 +1359,7 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
     ok = true;
     tmp.modifier = rtrn.uval;
     for (key = def->keys; key != NULL; key = (ExprDef *) key->common.next) {
-        if ((key->op == ExprValue) && (key->type == TypeKeyName)) {
+        if (key->op == EXPR_VALUE && key->value_type == EXPR_TYPE_KEYNAME) {
             tmp.haveSymbol = false;
             tmp.u.keyName = KeyNameToLong(key->value.keyName);
         }
@@ -1390,44 +1390,44 @@ HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge)
     stmt = file->defs;
     while (stmt)
     {
-        switch (stmt->stmtType) {
-        case StmtInclude:
+        switch (stmt->type) {
+        case STMT_INCLUDE:
             if (!HandleIncludeSymbols(info, (IncludeStmt *) stmt))
                 info->errorCount++;
             break;
-        case StmtSymbolsDef:
+        case STMT_SYMBOLS:
             if (!HandleSymbolsDef(info, (SymbolsDef *) stmt))
                 info->errorCount++;
             break;
-        case StmtVarDef:
+        case STMT_VAR:
             if (!HandleSymbolsVar(info, (VarDef *) stmt))
                 info->errorCount++;
             break;
-        case StmtVModDef:
+        case STMT_VMOD:
             if (!HandleVModDef((VModDef *) stmt, info->keymap, merge,
                                &info->vmods))
                 info->errorCount++;
             break;
-        case StmtInterpDef:
+        case STMT_INTERP:
             log_err(info->keymap->ctx,
                     "Interpretation files may not include other types; "
                     "Ignoring definition of symbol interpretation\n");
             info->errorCount++;
             break;
-        case StmtKeycodeDef:
+        case STMT_KEYCODE:
             log_err(info->keymap->ctx,
                     "Interpretation files may not include other types; "
                     "Ignoring definition of key name\n");
             info->errorCount++;
             break;
-        case StmtModMapDef:
+        case STMT_MODMAP:
             if (!HandleModMapDef(info, (ModMapDef *) stmt))
                 info->errorCount++;
             break;
         default:
             log_wsgo(info->keymap->ctx,
                      "Unexpected statement type %d in HandleSymbolsFile\n",
-                     stmt->stmtType);
+                     stmt->type);
             break;
         }
         stmt = stmt->next;

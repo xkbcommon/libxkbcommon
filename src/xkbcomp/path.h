@@ -37,10 +37,10 @@ XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
                    char **extra_data);
 
 const char *
-XkbDirectoryForInclude(unsigned type);
+XkbDirectoryForInclude(enum xkb_file_type type);
 
 FILE *
-XkbFindFileInPath(struct xkb_context *ctx, const char *name, unsigned type,
-                  char **pathRtrn);
+XkbFindFileInPath(struct xkb_context *ctx, const char *name,
+                  enum xkb_file_type type, char **pathRtrn);
 
 #endif /* XKBCOMP_PATH_H */

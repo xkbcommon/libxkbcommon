@@ -435,7 +435,7 @@ SymbolsVarDecl	:	Lhs EQUALS Expr
 ArrayInit	:	OBRACKET OptKeySymList CBRACKET
 			{ $$= $2; }
 		|	OBRACKET ActionList CBRACKET
-			{ $$= ExprCreateUnary(ExprActionList,TypeAction,$2); }
+			{ $$= ExprCreateUnary(EXPR_ACTION_LIST, EXPR_TYPE_ACTION, $2); }
 		;
 
 GroupCompatDecl	:	GROUP Integer EQUALS Expr SEMI
@@ -613,27 +613,27 @@ ExprList	:	ExprList COMMA Expr
 		;
 
 Expr		:	Expr DIVIDE Expr
-			{ $$= ExprCreateBinary(OpDivide,$1,$3); }
+			{ $$= ExprCreateBinary(EXPR_DIVIDE,$1,$3); }
 		|	Expr PLUS Expr
-			{ $$= ExprCreateBinary(OpAdd,$1,$3); }
+			{ $$= ExprCreateBinary(EXPR_ADD,$1,$3); }
 		|	Expr MINUS Expr
-			{ $$= ExprCreateBinary(OpSubtract,$1,$3); }
+			{ $$= ExprCreateBinary(EXPR_SUBTRACT,$1,$3); }
 		|	Expr TIMES Expr
-			{ $$= ExprCreateBinary(OpMultiply,$1,$3); }
+			{ $$= ExprCreateBinary(EXPR_MULTIPLY,$1,$3); }
 		|	Lhs EQUALS Expr
-			{ $$= ExprCreateBinary(OpAssign,$1,$3); }
+			{ $$= ExprCreateBinary(EXPR_ASSIGN,$1,$3); }
 		|	Term
 			{ $$= $1; }
 		;
 
 Term		:	MINUS Term
-			{ $$= ExprCreateUnary(OpNegate,$2->type,$2); }
+			{ $$= ExprCreateUnary(EXPR_NEGATE,$2->value_type,$2); }
 		|	PLUS Term
-			{ $$= ExprCreateUnary(OpUnaryPlus,$2->type,$2); }
+			{ $$= ExprCreateUnary(EXPR_UNARY_PLUS,$2->value_type,$2); }
 		|	EXCLAM Term
-			{ $$= ExprCreateUnary(OpNot,TypeBoolean,$2); }
+			{ $$= ExprCreateUnary(EXPR_NOT,EXPR_TYPE_BOOLEAN,$2); }
 		|	INVERT Term
-			{ $$= ExprCreateUnary(OpInvert,$2->type,$2); }
+			{ $$= ExprCreateUnary(EXPR_INVERT,$2->value_type,$2); }
 		|	Lhs
 			{ $$= $1;  }
 		|	FieldSpec OPAREN OptExprList CPAREN %prec OPAREN
@@ -657,14 +657,14 @@ Action		:	FieldSpec OPAREN OptExprList CPAREN
 Lhs		:	FieldSpec
 			{
 			    ExprDef *expr;
-                            expr= ExprCreate(ExprIdent,TypeUnknown);
+                            expr= ExprCreate(EXPR_IDENT, EXPR_TYPE_UNKNOWN);
                             expr->value.str= $1;
                             $$= expr;
 			}
 		|	FieldSpec DOT FieldSpec
                         {
                             ExprDef *expr;
-                            expr= ExprCreate(ExprFieldRef,TypeUnknown);
+                            expr= ExprCreate(EXPR_FIELD_REF,EXPR_TYPE_UNKNOWN);
                             expr->value.field.element= $1;
                             expr->value.field.field= $3;
                             $$= expr;
@@ -672,7 +672,7 @@ Lhs		:	FieldSpec
 		|	FieldSpec OBRACKET Expr CBRACKET
 			{
 			    ExprDef *expr;
-			    expr= ExprCreate(ExprArrayRef,TypeUnknown);
+			    expr= ExprCreate(EXPR_ARRAY_REF,EXPR_TYPE_UNKNOWN);
 			    expr->value.array.element= XKB_ATOM_NONE;
 			    expr->value.array.field= $1;
 			    expr->value.array.entry= $3;
@@ -681,7 +681,7 @@ Lhs		:	FieldSpec
 		|	FieldSpec DOT FieldSpec OBRACKET Expr CBRACKET
 			{
 			    ExprDef *expr;
-			    expr= ExprCreate(ExprArrayRef,TypeUnknown);
+			    expr= ExprCreate(EXPR_ARRAY_REF,EXPR_TYPE_UNKNOWN);
 			    expr->value.array.element= $1;
 			    expr->value.array.field= $3;
 			    expr->value.array.entry= $5;
@@ -692,14 +692,14 @@ Lhs		:	FieldSpec
 Terminal	:	String
 			{
 			    ExprDef *expr;
-                            expr= ExprCreate(ExprValue,TypeString);
+                            expr= ExprCreate(EXPR_VALUE,EXPR_TYPE_STRING);
                             expr->value.str= $1;
                             $$= expr;
 			}
 		|	Integer
 			{
 			    ExprDef *expr;
-                            expr= ExprCreate(ExprValue,TypeInt);
+                            expr= ExprCreate(EXPR_VALUE,EXPR_TYPE_INT);
                             expr->value.ival= $1;
                             $$= expr;
 			}
@@ -710,7 +710,7 @@ Terminal	:	String
 		|	KeyName
 			{
 			    ExprDef *expr;
-			    expr= ExprCreate(ExprValue,TypeKeyName);
+			    expr= ExprCreate(EXPR_VALUE,EXPR_TYPE_KEYNAME);
 			    strncpy(expr->value.keyName,$1,4);
 			    $$= expr;
 			}
