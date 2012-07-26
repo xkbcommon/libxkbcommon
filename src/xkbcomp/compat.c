@@ -899,7 +899,7 @@ HandleInterpBody(CompatInfo *info, VarDef *def, SymInterpInfo *si)
     ExprDef *arrayNdx;
 
     for (; def != NULL; def = (VarDef *) def->common.next) {
-        if ((def->name) && (def->name->type == ExprFieldRef)) {
+        if ((def->name) && (def->name->op == ExprFieldRef)) {
             ok = HandleInterpVar(info, def);
             continue;
         }

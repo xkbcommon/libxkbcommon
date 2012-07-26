@@ -782,7 +782,7 @@ HandleKeyTypeBody(KeyTypesInfo *info, VarDef *def, KeyTypeInfo *type)
     ExprDef *arrayNdx;
 
     for (; def != NULL; def = (VarDef *) def->common.next) {
-        if ((def->name) && (def->name->type == ExprFieldRef)) {
+        if ((def->name) && (def->name->op == ExprFieldRef)) {
             ok = HandleKeyTypeVar(info, def);
             continue;
         }
