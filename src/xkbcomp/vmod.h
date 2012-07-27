@@ -51,12 +51,11 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
 extern bool
 ApplyVModDefs(VModInfo *info, struct xkb_keymap *keymap);
 
-extern int
+xkb_mod_index_t
 FindKeypadVMod(struct xkb_keymap *keymap);
 
-extern bool
+bool
 ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
-                       ExprResult *value_rtrn,
-                       VModInfo *info);
+                       xkb_mod_index_t *ndx_rtrn, VModInfo *info);
 
 #endif /* VMOD_H */

@@ -155,9 +155,9 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
  * @return true on success, false otherwise. If false is returned, val_rtrn is
  * undefined.
  */
-static int
+static bool
 LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
-                enum expr_value_type type, ExprResult * val_rtrn)
+                enum expr_value_type type, xkb_mod_index_t *val_rtrn)
 {
     xkb_mod_index_t i;
     const char *name = xkb_atom_text(keymap->ctx, field);
@@ -172,7 +172,7 @@ LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
      */
     for (i = 0; i < XkbNumVirtualMods; i++) {
         if (keymap->vmod_names[i] && streq(keymap->vmod_names[i], name)) {
-            val_rtrn->uval = i;
+            *val_rtrn = i;
             return true;
         }
     }
@@ -192,35 +192,37 @@ LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
  */
 bool
 LookupVModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-               enum expr_value_type type, ExprResult *val_rtrn)
+               enum expr_value_type type, xkb_mod_mask_t *val_rtrn)
 {
+    xkb_mod_index_t ndx;
+
     if (LookupModMask(ctx, NULL, field, type, val_rtrn)) {
         return true;
     }
-    else if (LookupVModIndex(priv, field, type, val_rtrn)) {
-        unsigned ndx = val_rtrn->uval;
-        val_rtrn->uval = (1 << (XkbNumModifiers + ndx));
+    else if (LookupVModIndex(priv, field, type, &ndx)) {
+        *val_rtrn = (1 << (XkbNumModifiers + ndx));
         return true;
     }
+
     return false;
 }
 
-int
+xkb_mod_index_t
 FindKeypadVMod(struct xkb_keymap *keymap)
 {
     xkb_atom_t name;
-    ExprResult rtrn;
+    xkb_mod_index_t ndx;
 
     name = xkb_atom_intern(keymap->ctx, "NumLock");
-    if ((keymap) && LookupVModIndex(keymap, name, EXPR_TYPE_INT, &rtrn)) {
-        return rtrn.ival;
-    }
+    if (LookupVModIndex(keymap, name, EXPR_TYPE_INT, &ndx))
+        return ndx;
+
     return -1;
 }
 
 bool
 ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
-                       ExprResult *val_rtrn, VModInfo *info)
+                       xkb_mod_index_t *ndx_rtrn, VModInfo *info)
 {
     int val;
 
@@ -232,7 +234,7 @@ ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
         for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1) {
             if ((info->available & bit) && keymap->vmod_names[i] &&
                 streq(keymap->vmod_names[i], name)) {
-                val_rtrn->uval = i;
+                *ndx_rtrn = i;
                 return true;
             }
         }
@@ -248,6 +250,6 @@ ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
         return false;
     }
 
-    val_rtrn->uval = (unsigned int) val;
+    *ndx_rtrn = (xkb_mod_index_t) val;
     return true;
 }

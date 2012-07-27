@@ -635,7 +635,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
                ExprDef *arrayNdx, ExprDef *value)
 {
     struct xkb_keymap *keymap = info->keymap;
-    ExprResult tmp;
+    xkb_mod_index_t ndx;
 
     if (istreq(field, "action")) {
         if (arrayNdx)
@@ -651,10 +651,10 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         if (arrayNdx)
             return ReportSINotArray(info, si, field);
 
-        if (!ResolveVirtualModifier(value, keymap, &tmp, &info->vmods))
+        if (!ResolveVirtualModifier(value, keymap, &ndx, &info->vmods))
             return ReportSIBadType(info, si, field, "virtual modifier");
 
-        si->interp.virtual_mod = tmp.uval;
+        si->interp.virtual_mod = ndx;
         si->defined |= _SI_VirtualMod;
     }
     else if (istreq(field, "repeat")) {
@@ -752,7 +752,6 @@ static int
 SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
                      const char *field, ExprDef *arrayNdx, ExprDef *value)
 {
-    ExprResult rtrn;
     bool ok = true;
     struct xkb_keymap *keymap = info->keymap;
 
@@ -870,7 +869,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
             log_err(info->keymap->ctx,
                     "Illegal indicator index %d (range 1..%d); "
                     "Index definition for %s indicator ignored\n",
-                    rtrn.uval, XkbNumIndicators,
+                    ndx, XkbNumIndicators,
                     xkb_atom_text(keymap->ctx, led->name));
             return false;
         }

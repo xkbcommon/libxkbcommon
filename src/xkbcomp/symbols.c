@@ -1367,19 +1367,21 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
 {
     ExprDef *key;
     ModMapEntry tmp;
-    ExprResult rtrn;
+    xkb_mod_index_t ndx;
     bool ok;
     struct xkb_context *ctx = info->keymap->ctx;
 
-    if (!LookupModIndex(ctx, NULL, def->modifier, EXPR_TYPE_INT, &rtrn)) {
+    if (!LookupModIndex(ctx, NULL, def->modifier, EXPR_TYPE_INT, &ndx)) {
         log_err(info->keymap->ctx,
                 "Illegal modifier map definition; "
                 "Ignoring map for non-modifier \"%s\"\n",
                 xkb_atom_text(ctx, def->modifier));
         return false;
     }
+
     ok = true;
-    tmp.modifier = rtrn.uval;
+    tmp.modifier = ndx;
+
     for (key = def->keys; key != NULL; key = (ExprDef *) key->common.next) {
         xkb_keysym_t sym;
 

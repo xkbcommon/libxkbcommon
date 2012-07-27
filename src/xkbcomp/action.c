@@ -116,16 +116,16 @@ static const LookupEntry fieldStrings[] = {
 
 static bool
 stringToValue(const LookupEntry tab[], const char *string,
-              unsigned *value_rtrn)
+              unsigned int *value_rtrn)
 {
     const LookupEntry *entry;
 
     if (!string)
         return false;
 
-    for (entry = tab; entry->name != NULL; entry++) {
+    for (entry = tab; entry->name; entry++) {
         if (istreq(entry->name, string)) {
-            *value_rtrn = entry->result;
+            *value_rtrn = entry->value;
             return true;
         }
     }
@@ -134,12 +134,12 @@ stringToValue(const LookupEntry tab[], const char *string,
 }
 
 static const char *
-valueToString(const LookupEntry tab[], unsigned value)
+valueToString(const LookupEntry tab[], unsigned int value)
 {
     const LookupEntry *entry;
 
-    for (entry = tab; entry->name != NULL; entry++)
-        if (entry->result == value)
+    for (entry = tab; entry->name; entry++)
+        if (entry->value == value)
             return entry->name;
 
     return "unknown";
@@ -483,7 +483,6 @@ static bool
 HandlePtrBtn(struct xkb_keymap *keymap, struct xkb_any_action *action,
              unsigned field, ExprDef *array_ndx, ExprDef *value)
 {
-    ExprResult rtrn;
     struct xkb_pointer_button_action *act;
 
     act = (struct xkb_pointer_button_action *) action;
@@ -534,7 +533,7 @@ HandlePtrBtn(struct xkb_keymap *keymap, struct xkb_any_action *action,
         if (btn < 0 || btn > 255) {
             log_err(keymap->ctx,
                     "The count field must have a value in the range 0..255; "
-                    "Illegal count %d ignored\n", rtrn.ival);
+                    "Illegal count %d ignored\n", btn);
             return false;
         }
 
@@ -555,7 +554,6 @@ static bool
 HandleSetPtrDflt(struct xkb_keymap *keymap, struct xkb_any_action *action,
                  unsigned field, ExprDef *array_ndx, ExprDef *value)
 {
-    ExprResult rtrn;
     struct xkb_pointer_default_action *act;
 
     act = (struct xkb_pointer_default_action *) action;
@@ -594,7 +592,7 @@ HandleSetPtrDflt(struct xkb_keymap *keymap, struct xkb_any_action *action,
         if (btn < 0 || btn > 5) {
             log_err(keymap->ctx,
                     "New default button value must be in the range 1..5; "
-                    "Illegal default button value %d ignored\n", rtrn.ival);
+                    "Illegal default button value %d ignored\n", btn);
             return false;
         }
         if (btn == 0) {
@@ -683,7 +681,6 @@ static bool
 HandleSwitchScreen(struct xkb_keymap *keymap, struct xkb_any_action *action,
                    unsigned field, ExprDef *array_ndx, ExprDef *value)
 {
-    ExprResult rtrn;
     struct xkb_switch_screen_action *act;
 
     act = (struct xkb_switch_screen_action *) action;
@@ -710,7 +707,7 @@ HandleSwitchScreen(struct xkb_keymap *keymap, struct xkb_any_action *action,
         if (val < 0 || val > 255) {
             log_err(keymap->ctx,
                     "Screen index must be in the range 1..255; "
-                    "Illegal screen value %d ignored\n", rtrn.ival);
+                    "Illegal screen value %d ignored\n", val);
             return false;
         }
 
@@ -938,7 +935,6 @@ static bool
 HandleDeviceBtn(struct xkb_keymap *keymap, struct xkb_any_action *action,
                 unsigned field, ExprDef *array_ndx, ExprDef *value)
 {
-    ExprResult rtrn;
     struct xkb_device_button_action *act;
 
     act = (struct xkb_device_button_action *) action;
@@ -989,7 +985,7 @@ HandleDeviceBtn(struct xkb_keymap *keymap, struct xkb_any_action *action,
         if (btn < 0 || btn > 255) {
             log_err(keymap->ctx,
                     "The count field must have a value in the range 0..255; "
-                    "Illegal count %d ignored\n", rtrn.ival);
+                    "Illegal count %d ignored\n", btn);
             return false;
         }
 

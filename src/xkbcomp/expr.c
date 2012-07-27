@@ -28,7 +28,7 @@
 
 typedef bool (*IdentLookupFunc)(struct xkb_context *ctx, const void *priv,
                                 xkb_atom_t field, enum expr_value_type type,
-                                ExprResult *val_rtrn);
+                                unsigned int *val_rtrn);
 
 const char *
 exprOpText(enum expr_op_type op)
@@ -150,9 +150,8 @@ ExprResolveLhs(struct xkb_context *ctx, ExprDef *expr, const char **elem_rtrn,
 }
 
 static bool
-SimpleLookup(struct xkb_context *ctx, const void *priv,
-             xkb_atom_t field, enum expr_value_type type,
-             ExprResult *val_rtrn)
+SimpleLookup(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
+             enum expr_value_type type, unsigned int *val_rtrn)
 {
     const LookupEntry *entry;
     const char *str;
@@ -163,7 +162,7 @@ SimpleLookup(struct xkb_context *ctx, const void *priv,
     str = xkb_atom_text(ctx, field);
     for (entry = priv; entry && entry->name; entry++) {
         if (istreq(str, entry->name)) {
-            val_rtrn->uval = entry->result;
+            *val_rtrn = entry->value;
             return true;
         }
     }
@@ -186,32 +185,33 @@ static const LookupEntry modIndexNames[] = {
 
 bool
 LookupModIndex(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-               enum expr_value_type type, ExprResult *val_rtrn)
+               enum expr_value_type type, xkb_mod_index_t *val_rtrn)
 {
     return SimpleLookup(ctx, modIndexNames, field, type, val_rtrn);
 }
 
 bool
 LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-              enum expr_value_type type, ExprResult *val_rtrn)
+              enum expr_value_type type, xkb_mod_mask_t *val_rtrn)
 {
     const char *str;
-    bool ret = true;
+    xkb_mod_index_t ndx;
 
     if (type != EXPR_TYPE_INT)
         return false;
+
     str = xkb_atom_text(ctx, field);
-    if (str == NULL)
-        return false;
+
     if (istreq(str, "all"))
-        val_rtrn->uval = 0xff;
+        *val_rtrn  = 0xff;
     else if (istreq(str, "none"))
-        val_rtrn->uval = 0;
-    else if (LookupModIndex(ctx, priv, field, type, val_rtrn))
-        val_rtrn->uval = (1 << val_rtrn->uval);
+        *val_rtrn = 0;
+    else if (LookupModIndex(ctx, priv, field, type, &ndx))
+        *val_rtrn = (1 << ndx);
     else
-        ret = false;
-    return ret;
+        return false;
+
+    return true;
 }
 
 bool
@@ -366,13 +366,14 @@ ExprResolveKeyCode(struct xkb_context *ctx, ExprDef *expr, xkb_keycode_t *kc)
  *
  * Cool.
  */
-static int
+static bool
 ExprResolveIntegerLookup(struct xkb_context *ctx, ExprDef *expr,
-                         ExprResult *val_rtrn, IdentLookupFunc lookup,
+                         int *val_rtrn, IdentLookupFunc lookup,
                          const void *lookupPriv)
 {
-    int ok = 0;
-    ExprResult leftRtrn, rightRtrn;
+    bool ok = false;
+    int l, r;
+    unsigned u;
     ExprDef *left, *right;
 
     switch (expr->op) {
@@ -383,16 +384,20 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, ExprDef *expr,
                     exprValueTypeText(expr->value_type));
             return false;
         }
-        val_rtrn->ival = expr->value.ival;
+
+        *val_rtrn = expr->value.ival;
         return true;
 
     case EXPR_IDENT:
         if (lookup)
-            ok = lookup(ctx, lookupPriv, expr->value.str,
-                        EXPR_TYPE_INT, val_rtrn);
+            ok = lookup(ctx, lookupPriv, expr->value.str, EXPR_TYPE_INT, &u);
+
         if (!ok)
             log_err(ctx, "Identifier \"%s\" of type int is unknown\n",
                     xkb_atom_text(ctx, expr->value.str));
+        else
+            *val_rtrn = (int) u;
+
         return ok;
 
     case EXPR_FIELD_REF:
@@ -407,34 +412,32 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, ExprDef *expr,
     case EXPR_DIVIDE:
         left = expr->value.binary.left;
         right = expr->value.binary.right;
-        if (ExprResolveIntegerLookup(ctx, left, &leftRtrn, lookup,
-                                     lookupPriv) &&
-            ExprResolveIntegerLookup(ctx, right, &rightRtrn, lookup,
-                                     lookupPriv)) {
-            switch (expr->op) {
-            case EXPR_ADD:
-                val_rtrn->ival = leftRtrn.ival + rightRtrn.ival;
-                break;
-            case EXPR_SUBTRACT:
-                val_rtrn->ival = leftRtrn.ival - rightRtrn.ival;
-                break;
-            case EXPR_MULTIPLY:
-                val_rtrn->ival = leftRtrn.ival * rightRtrn.ival;
-                break;
-            case EXPR_DIVIDE:
-                if (rightRtrn.ival == 0) {
-                    log_err(ctx, "Cannot divide by zero: %d / %d\n",
-                            leftRtrn.ival, rightRtrn.ival);
-                    return false;
-                }
-                val_rtrn->ival = leftRtrn.ival / rightRtrn.ival;
-                break;
-            default:
-                break;
+        if (!ExprResolveIntegerLookup(ctx, left, &l, lookup, lookupPriv) ||
+            !ExprResolveIntegerLookup(ctx, right, &r, lookup, lookupPriv))
+            return false;
+
+        switch (expr->op) {
+        case EXPR_ADD:
+            *val_rtrn = l + r;
+            break;
+        case EXPR_SUBTRACT:
+            *val_rtrn = l - r;
+            break;
+        case EXPR_MULTIPLY:
+            *val_rtrn = l * r;
+            break;
+        case EXPR_DIVIDE:
+            if (r == 0) {
+                log_err(ctx, "Cannot divide by zero: %d / %d\n", l, r);
+                return false;
             }
-            return true;
+            *val_rtrn = l / r;
+            break;
+        default:
+            break;
         }
-        return false;
+
+        return true;
 
     case EXPR_ASSIGN:
         log_wsgo(ctx, "Assignment operator not implemented yet\n");
@@ -447,15 +450,11 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, ExprDef *expr,
     case EXPR_INVERT:
     case EXPR_NEGATE:
         left = expr->value.child;
-        if (ExprResolveIntegerLookup(ctx, left, &leftRtrn, lookup,
-                                     lookupPriv)) {
-            if (expr->op == EXPR_NEGATE)
-                val_rtrn->ival = -leftRtrn.ival;
-            else
-                val_rtrn->ival = ~leftRtrn.ival;
-            return true;
-        }
-        return false;
+        if (!ExprResolveIntegerLookup(ctx, left, &l, lookup, lookupPriv))
+            return false;
+
+        *val_rtrn = (expr->op == EXPR_NEGATE ? -l : ~l);
+        return true;
 
     case EXPR_UNARY_PLUS:
         left = expr->value.child;
@@ -466,18 +465,14 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, ExprDef *expr,
         log_wsgo(ctx, "Unknown operator %d in ResolveInteger\n", expr->op);
         break;
     }
+
     return false;
 }
 
 bool
 ExprResolveInteger(struct xkb_context *ctx, ExprDef *expr, int *val_rtrn)
 {
-    ExprResult result;
-    bool ok;
-    ok = ExprResolveIntegerLookup(ctx, expr, &result, NULL, NULL);
-    if (ok)
-        *val_rtrn = result.ival;
-    return ok;
+    return ExprResolveIntegerLookup(ctx, expr, val_rtrn, NULL, NULL);
 }
 
 bool
@@ -485,7 +480,7 @@ ExprResolveGroup(struct xkb_context *ctx, ExprDef *expr,
                  xkb_group_index_t *group_rtrn)
 {
     bool ok;
-    ExprResult result;
+    int result;
     static const LookupEntry group_names[] = {
         { "group1", 1 },
         { "group2", 2 },
@@ -503,13 +498,13 @@ ExprResolveGroup(struct xkb_context *ctx, ExprDef *expr,
     if (!ok)
         return false;
 
-    if (result.uval == 0 || result.uval > XkbNumKbdGroups) {
+    if (result <= 0 || result > XkbNumKbdGroups) {
         log_err(ctx, "Group index %u is out of range (1..%d)\n",
-                result.uval, XkbNumKbdGroups);
+                result, XkbNumKbdGroups);
         return false;
     }
 
-    *group_rtrn = result.uval;
+    *group_rtrn = (xkb_group_index_t) result;
     return true;
 }
 
@@ -518,7 +513,7 @@ ExprResolveLevel(struct xkb_context *ctx, ExprDef *expr,
                  unsigned int *level_rtrn)
 {
     bool ok;
-    ExprResult result;
+    int result;
     static const LookupEntry level_names[] = {
         { "level1", 1 },
         { "level2", 2 },
@@ -536,21 +531,20 @@ ExprResolveLevel(struct xkb_context *ctx, ExprDef *expr,
     if (!ok)
         return false;
 
-    if (result.uval < 1 || result.uval > XkbMaxShiftLevel) {
+    if (result < 1 || result > XkbMaxShiftLevel) {
         log_err(ctx, "Shift level %d is out of range (1..%d)\n",
-                result.uval, XkbMaxShiftLevel);
+                result, XkbMaxShiftLevel);
         return false;
     }
 
-    *level_rtrn = result.uval;
+    *level_rtrn = (unsigned int) result;
     return true;
 }
 
 bool
 ExprResolveButton(struct xkb_context *ctx, ExprDef *expr, int *btn_rtrn)
 {
-    bool ok;
-    ExprResult result;
+    int result;
     static const LookupEntry button_names[] = {
         { "button1", 1 },
         { "button2", 2 },
@@ -561,11 +555,12 @@ ExprResolveButton(struct xkb_context *ctx, ExprDef *expr, int *btn_rtrn)
         { NULL, 0 }
     };
 
-    ok = ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
-                                  button_names);
-    if (ok)
-        *btn_rtrn = result.ival;
-    return ok;
+    if (!ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
+                                  button_names))
+        return false;
+
+    *btn_rtrn = result;
+    return true;
 }
 
 bool
@@ -662,42 +657,35 @@ bool
 ExprResolveEnum(struct xkb_context *ctx, ExprDef *expr,
                 unsigned int *val_rtrn, const LookupEntry *values)
 {
-    ExprResult result;
-
     if (expr->op != EXPR_IDENT) {
         log_err(ctx, "Found a %s where an enumerated value was expected\n",
                 exprOpText(expr->op));
         return false;
     }
 
-    if (!SimpleLookup(ctx, values, expr->value.str, EXPR_TYPE_INT, &result)) {
-        int nOut = 0;
-        log_err(ctx, "Illegal identifier %s (expected one of: ",
+    if (!SimpleLookup(ctx, values, expr->value.str, EXPR_TYPE_INT,
+                      val_rtrn)) {
+        log_err(ctx, "Illegal identifier %s; expected one of:\n",
                 xkb_atom_text(ctx, expr->value.str));
         while (values && values->name)
         {
-            if (nOut != 0)
-                log_info(ctx, ", %s", values->name);
-            else
-                log_info(ctx, "%s", values->name);
+            log_err(ctx, "\t%s\n", values->name);
             values++;
-            nOut++;
         }
-        log_info(ctx, ")\n");
         return false;
     }
 
-    *val_rtrn = result.uval;
     return true;
 }
 
-static int
+static bool
 ExprResolveMaskLookup(struct xkb_context *ctx, ExprDef *expr,
-                      ExprResult *val_rtrn, IdentLookupFunc lookup,
+                      unsigned int *val_rtrn, IdentLookupFunc lookup,
                       const void *lookupPriv)
 {
-    int ok = 0;
-    ExprResult leftRtrn, rightRtrn;
+    bool ok = 0;
+    unsigned int l, r;
+    int v;
     ExprDef *left, *right;
     const char *bogus = NULL;
 
@@ -709,11 +697,12 @@ ExprResolveMaskLookup(struct xkb_context *ctx, ExprDef *expr,
                     exprValueTypeText(expr->value_type));
             return false;
         }
-        val_rtrn->ival = expr->value.ival;
+        *val_rtrn = (unsigned int) expr->value.ival;
         return true;
 
     case EXPR_IDENT:
-        ok = lookup(ctx, lookupPriv, expr->value.str, EXPR_TYPE_INT, val_rtrn);
+        ok = lookup(ctx, lookupPriv, expr->value.str, EXPR_TYPE_INT,
+                    val_rtrn);
         if (!ok)
             log_err(ctx, "Identifier \"%s\" of type int is unknown\n",
                     xkb_atom_text(ctx, expr->value.str));
@@ -742,28 +731,27 @@ ExprResolveMaskLookup(struct xkb_context *ctx, ExprDef *expr,
     case EXPR_DIVIDE:
         left = expr->value.binary.left;
         right = expr->value.binary.right;
-        if (ExprResolveMaskLookup(ctx, left, &leftRtrn, lookup,
-                                  lookupPriv) &&
-            ExprResolveMaskLookup(ctx, right, &rightRtrn, lookup,
-                                  lookupPriv)) {
-            switch (expr->op) {
-            case EXPR_ADD:
-                val_rtrn->ival = leftRtrn.ival | rightRtrn.ival;
-                break;
-            case EXPR_SUBTRACT:
-                val_rtrn->ival = leftRtrn.ival & (~rightRtrn.ival);
-                break;
-            case EXPR_MULTIPLY:
-            case EXPR_DIVIDE:
-                log_err(ctx, "Cannot %s masks; Illegal operation ignored\n",
-                        (expr->op == EXPR_DIVIDE ? "divide" : "multiply"));
-                return false;
-            default:
-                break;
-            }
-            return true;
+        if (!ExprResolveMaskLookup(ctx, left, &l, lookup, lookupPriv) ||
+            !ExprResolveMaskLookup(ctx, right, &r, lookup, lookupPriv))
+            return false;
+
+        switch (expr->op) {
+        case EXPR_ADD:
+            *val_rtrn = l | r;
+            break;
+        case EXPR_SUBTRACT:
+            *val_rtrn = l & (~r);
+            break;
+        case EXPR_MULTIPLY:
+        case EXPR_DIVIDE:
+            log_err(ctx, "Cannot %s masks; Illegal operation ignored\n",
+                    (expr->op == EXPR_DIVIDE ? "divide" : "multiply"));
+            return false;
+        default:
+            break;
         }
-        return false;
+
+        return true;
 
     case EXPR_ASSIGN:
         log_wsgo(ctx, "Assignment operator not implemented yet\n");
@@ -771,28 +759,26 @@ ExprResolveMaskLookup(struct xkb_context *ctx, ExprDef *expr,
 
     case EXPR_INVERT:
         left = expr->value.child;
-        if (ExprResolveIntegerLookup(ctx, left, &leftRtrn, lookup,
-                                     lookupPriv)) {
-            val_rtrn->ival = ~leftRtrn.ival;
-            return true;
-        }
-        return false;
+        if (!ExprResolveIntegerLookup(ctx, left, &v, lookup, lookupPriv))
+            return false;
+
+        *val_rtrn = ~v;
+        return true;
 
     case EXPR_UNARY_PLUS:
     case EXPR_NEGATE:
     case EXPR_NOT:
         left = expr->value.child;
-        if (ExprResolveIntegerLookup(ctx, left, &leftRtrn, lookup,
-                                     lookupPriv)) {
+        if (!ExprResolveIntegerLookup(ctx, left, &v, lookup, lookupPriv))
             log_err(ctx, "The %s operator cannot be used with a mask\n",
                     (expr->op == EXPR_NEGATE ? "-" : "!"));
-        }
         return false;
 
     default:
         log_wsgo(ctx, "Unknown operator %d in ResolveMask\n", expr->op);
         break;
     }
+
     return false;
 }
 
@@ -800,40 +786,22 @@ bool
 ExprResolveMask(struct xkb_context *ctx, ExprDef *expr,
                 unsigned int *mask_rtrn, const LookupEntry *values)
 {
-    ExprResult result;
-    bool ok;
-
-    ok = ExprResolveMaskLookup(ctx, expr, &result, SimpleLookup, values);
-    if (ok)
-        *mask_rtrn = (unsigned int) result.ival;
-    return ok;
+    return ExprResolveMaskLookup(ctx, expr, mask_rtrn, SimpleLookup, values);
 }
 
 bool
 ExprResolveModMask(struct xkb_context *ctx, ExprDef *expr,
                    xkb_mod_mask_t *mask_rtrn)
 {
-    ExprResult result;
-    bool ok;
-
-    ok = ExprResolveMaskLookup(ctx, expr, &result, LookupModMask, NULL);
-    if (ok)
-        *mask_rtrn = (xkb_mod_mask_t) result.ival;
-    return ok;
+    return ExprResolveMaskLookup(ctx, expr, mask_rtrn, LookupModMask, NULL);
 }
 
 bool
 ExprResolveVModMask(struct xkb_keymap *keymap, ExprDef *expr,
                     xkb_mod_mask_t *mask_rtrn)
 {
-    ExprResult result;
-    bool ok;
-
-    ok = ExprResolveMaskLookup(keymap->ctx, expr, &result, LookupVModMask,
-                               keymap);
-    if (ok)
-        *mask_rtrn = (xkb_mod_mask_t) result.ival;
-    return ok;
+    return ExprResolveMaskLookup(keymap->ctx, expr, mask_rtrn, LookupVModMask,
+                                 keymap);
 }
 
 bool

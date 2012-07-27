@@ -29,14 +29,9 @@
 
 #include "xkbcomp-priv.h"
 
-typedef union _ExprResult {
-    int ival;
-    unsigned uval;
-} ExprResult;
-
 typedef struct _LookupEntry {
     const char *name;
-    unsigned result;
+    unsigned int value;
 } LookupEntry;
 
 extern const char *
@@ -46,17 +41,17 @@ bool
 ExprResolveLhs(struct xkb_context *ctx, ExprDef *expr, const char **elem_rtrn,
                const char **field_rtrn, ExprDef **index_rtrn);
 
-extern bool
+bool
 LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-              enum expr_value_type type, ExprResult *val_rtrn);
+              enum expr_value_type type, xkb_mod_mask_t *val_rtrn);
 
-extern bool
+bool
 LookupVModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-               enum expr_value_type type, ExprResult *val_rtrn);
+               enum expr_value_type type, xkb_mod_mask_t *val_rtrn);
 
-extern bool
+bool
 LookupModIndex(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-               enum expr_value_type type, ExprResult *val_rtrn);
+               enum expr_value_type type, xkb_mod_index_t *val_rtrn);
 
 bool
 ExprResolveModMask(struct xkb_context *ctx, ExprDef *expr,
