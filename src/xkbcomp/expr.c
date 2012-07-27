@@ -359,11 +359,7 @@ ExprResolveKeyCode(struct xkb_context *ctx, ExprDef *expr, xkb_keycode_t *kc)
 /**
  * This function returns ... something.  It's a bit of a guess, really.
  *
- * If a string is given in value ctx, its first character will be
- * returned in uval.  If an integer is given in value ctx, it will be
- * returned in ival.  If a float is given in value ctx, it will be
- * returned as millimetres (rather than points) in ival.
- *
+ * If an integer is given in value ctx, it will be returned in ival.
  * If an ident or field reference is given, the lookup function (if given)
  * will be called.  At the moment, only SimpleLookup use this, and they both
  * return the results in uval.  And don't support field references.
@@ -381,21 +377,6 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, ExprDef *expr,
 
     switch (expr->op) {
     case EXPR_VALUE:
-        if (expr->value_type == EXPR_TYPE_STRING) {
-            const char *str;
-            str = xkb_atom_text(ctx, expr->value.str);
-            if (str != NULL)
-                switch (strlen(str)) {
-                case 0:
-                    val_rtrn->uval = 0;
-                    return true;
-                case 1:
-                    val_rtrn->uval = str[0];
-                    return true;
-                default:
-                    break;
-                }
-        }
         if (expr->value_type != EXPR_TYPE_INT) {
             log_err(ctx,
                     "Found constant of type %s where an int was expected\n",
