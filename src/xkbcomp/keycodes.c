@@ -28,6 +28,94 @@
 #include "expr.h"
 #include "parseutils.h"
 
+/*
+ * The xkb_keycodes section
+ * ========================
+ *
+ * This is the simplest section type, and is the first one to be
+ * compiled. The purpose of this is mostly to map between the
+ * hardware/evdev scancodes and xkb keycodes. Each key is given a name
+ * of up to 4 letters, by which it can be referred to later, e.g. in the
+ * symbols section.
+ *
+ * Minimum/Maximum keycode
+ * -----------------------
+ * Statements of the form:
+ *      minimum = 8;
+ *      maximum = 255;
+ *
+ * The file may explicitly declare the minimum and/or maximum keycode
+ * contained therein (traditionally 8-255, inherited from old xfree86
+ * keycodes). If these are stated explicitly, they are enforced. If
+ * they are not stated, they are computed automatically.
+ *
+ * Keycode statements
+ * ------------------
+ * Statements of the form:
+ *      <TLDE> = 49;
+ *      <AE01> = 10;
+ *
+ * The above would let 49 and 10 be valid keycodes in the keymap, and
+ * assign them the names TLDE and AE01 respectively. The format <WXYZ> is
+ * always used to refer to a key by name.
+ *
+ * [ The naming convention <AE01> just denoted the position of the key
+ * in the main alphanumric section of the keyboard, with the top left key
+ * (usually "~") acting as origin. <AE01> is the key in the first row
+ * second column (which is usually "1"). ]
+ *
+ * In the common case this just maps to the evdev scancodes from
+ * /usr/include/linux/input.h, e.g. the following definitions:
+ *      #define KEY_GRAVE            41
+ *      #define KEY_1                2
+ * Similar definitions appear in the xf86-input-keyboard driver. Note
+ * that in all current keymaps there's a constant offset of 8 (for
+ * historical reasons).
+ *
+ * If there's a conflict, like the same name given to different keycodes,
+ * or same keycode given different names, it is resolved according to the
+ * merge mode which applies to the definitions.
+ *
+ * The reason for the 4 characters limit is that the name is sometimes
+ * converted to an unsigned long (in a direct mapping), instead of a char
+ * array (see KeyNameToLong, LongToKeyName).
+ *
+ * Alias statements
+ * ----------------
+ * Statements of the form:
+ *      alias <MENU> = <COMP>;
+ *
+ * Allows to refer to a previously defined key (here <COMP>) by another
+ * name (here <MENU>). Conflicts are handled similarly.
+ *
+ * Indicator name statements
+ * -------------------------
+ * Statements of the form:
+ *      indicator 1 = "Caps Lock";
+ *      indicator 2 = "Num Lock";
+ *      indicator 3 = "Scroll Lock";
+ *
+ * Assigns a name the indicator (i.e. keyboard LED) with the given index.
+ * The amount of possible indicators is predetermined (XkbNumIndicators).
+ * The indicator may be referred by this name later in the compat section
+ * and by the user.
+ *
+ * Effect on the keymap
+ * --------------------
+ * After all of keycodes sections have been compiled, the following members
+ * of struct xkb_keymap are finalized:
+ *      xkb_keycode_t min_key_code;
+ *      xkb_keycode_t max_key_code;
+ *      darray(struct xkb_key_alias) key_aliases;
+ *      const char *indicator_names[XkbNumIndicators];
+ *      char *keycodes_section_name;
+ * Further, the array of keys:
+ *      darray(struct xkb_key) keys;
+ * had been resized to its final size (i.e. all of the xkb_key objects are
+ * referable by their keycode). However the objects themselves do not
+ * contain any useful information besides the key name at this point.
+ */
+
 typedef struct _AliasInfo {
     enum merge_mode merge;
     unsigned file_id;
