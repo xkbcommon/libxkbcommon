@@ -51,7 +51,7 @@ typedef struct _LEDInfo {
     struct list entry;
 
     xkb_atom_t name;
-    unsigned char indicator;
+    xkb_led_index_t indicator;
     unsigned char flags;
     unsigned char which_mods;
     unsigned char real_mods;
@@ -68,8 +68,6 @@ typedef struct _LEDInfo {
 #define _LED_Explicit   (1 << 4)
 #define _LED_Automatic  (1 << 5)
 #define _LED_DrivesKbd  (1 << 6)
-
-#define _LED_NotBound   255
 
 typedef struct _GroupCompatInfo {
     unsigned file_id;
@@ -147,7 +145,7 @@ static void
 ClearIndicatorMapInfo(struct xkb_context *ctx, LEDInfo * info)
 {
     info->name = xkb_atom_intern(ctx, "default");
-    info->indicator = _LED_NotBound;
+    info->indicator = XKB_LED_INVALID;
     info->flags = info->which_mods = info->real_mods = 0;
     info->vmods = 0;
     info->which_groups = info->groups = 0;
@@ -874,7 +872,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
             return false;
         }
 
-        led->indicator = (unsigned char) ndx;
+        led->indicator = (xkb_led_index_t) ndx;
         led->defined |= _LED_Index;
     }
     else {
@@ -1121,13 +1119,13 @@ CopyInterps(CompatInfo *info, bool needSymbol, unsigned pred)
 static void
 BindIndicators(CompatInfo *info, struct list *unbound_leds)
 {
-    int i;
+    xkb_led_index_t i;
     LEDInfo *led, *next_led;
     struct xkb_indicator_map *map;
     struct xkb_keymap *keymap = info->keymap;
 
     list_foreach(led, unbound_leds, entry) {
-        if (led->indicator == _LED_NotBound) {
+        if (led->indicator == XKB_LED_INVALID) {
             for (i = 0; i < XkbNumIndicators; i++) {
                 if (keymap->indicator_names[i] &&
                     streq(keymap->indicator_names[i],
@@ -1140,7 +1138,7 @@ BindIndicators(CompatInfo *info, struct list *unbound_leds)
     }
 
     list_foreach(led, unbound_leds, entry) {
-        if (led->indicator == _LED_NotBound) {
+        if (led->indicator == XKB_LED_INVALID) {
             for (i = 0; i < XkbNumIndicators; i++) {
                 if (keymap->indicator_names[i] == NULL) {
                     keymap->indicator_names[i] =
@@ -1150,7 +1148,7 @@ BindIndicators(CompatInfo *info, struct list *unbound_leds)
                 }
             }
 
-            if (led->indicator == _LED_NotBound) {
+            if (led->indicator == XKB_LED_INVALID) {
                 log_err(info->keymap->ctx,
                         "No unnamed indicators found; "
                         "Virtual indicator map \"%s\" not bound\n",
@@ -1161,7 +1159,7 @@ BindIndicators(CompatInfo *info, struct list *unbound_leds)
     }
 
     list_foreach_safe(led, next_led, unbound_leds, entry) {
-        if (led->indicator == _LED_NotBound) {
+        if (led->indicator == XKB_LED_INVALID) {
             free(led);
             continue;
         }
@@ -1210,7 +1208,7 @@ CopyIndicatorMapDefs(CompatInfo *info)
         if (led->which_mods == 0 && (led->real_mods || led->vmods))
             led->which_mods = XkbIM_UseEffective;
 
-        if (led->indicator == _LED_NotBound) {
+        if (led->indicator == XKB_LED_INVALID) {
             list_append(&led->entry, &unbound_leds);
             continue;
         }

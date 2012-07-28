@@ -42,7 +42,7 @@ typedef struct _IndicatorNameInfo {
     unsigned file_id;
     struct list entry;
 
-    int ndx;
+    xkb_led_index_t ndx;
     xkb_atom_t name;
     bool virtual;
 } IndicatorNameInfo;
@@ -111,7 +111,7 @@ NextIndicatorName(KeyNamesInfo * info)
 }
 
 static IndicatorNameInfo *
-FindIndicatorByIndex(KeyNamesInfo * info, int ndx)
+FindIndicatorByIndex(KeyNamesInfo * info, xkb_led_index_t ndx)
 {
     IndicatorNameInfo *old;
 
@@ -716,7 +716,7 @@ HandleIndicatorNameDef(KeyNamesInfo *info, IndicatorNameDef *def,
     }
 
     InitIndicatorNameInfo(&ii, info);
-    ii.ndx = def->ndx;
+    ii.ndx = (xkb_led_index_t) def->ndx;
 
     if (!ExprResolveString(info->keymap->ctx, def->name, &str)) {
         char buf[20];
