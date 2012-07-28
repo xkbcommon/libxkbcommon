@@ -52,15 +52,6 @@ enum key_field {
     KEY_FIELD_VMODMAP   = (1 << 7),
 };
 
-static inline const char *
-longText(unsigned long val)
-{
-    char buf[4];
-
-    LongToKeyName(val, buf);
-    return KeyNameText(buf);
-}
-
 typedef struct _KeyInfo {
     enum key_field defined;
     unsigned file_id;
@@ -355,7 +346,7 @@ MergeKeyGroups(SymbolsInfo * info,
                     log_warn(info->keymap->ctx,
                              "Multiple actions for level %d/group %u on key %s; "
                              "Using %s, ignoring %s\n",
-                             i + 1, group + 1, longText(into->name),
+                             i + 1, group + 1, LongKeyNameText(into->name),
                              ActionTypeText(use->type),
                              ActionTypeText(ignore->type));
                 if (use)
@@ -438,7 +429,7 @@ MergeKeyGroups(SymbolsInfo * info,
             log_info(info->keymap->ctx,
                      "Multiple symbols for group %u, level %d on key %s; "
                      "Using %s, ignoring %s\n",
-                     group + 1, i + 1, longText(into->name),
+                     group + 1, i + 1, LongKeyNameText(into->name),
                      (use == FROM ? "from" : "to"),
                      (use == FROM ? "to" : "from"));
         }
@@ -578,7 +569,7 @@ MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from)
                 log_warn(info->keymap->ctx,
                          "Multiple definitions for group %d type of key %s; "
                          "Using %s, ignoring %s\n",
-                         i, longText(into->name),
+                         i, LongKeyNameText(into->name),
                          xkb_atom_text(info->keymap->ctx, use),
                          xkb_atom_text(info->keymap->ctx, ignore));
             }
@@ -616,7 +607,7 @@ MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from)
         log_warn(info->keymap->ctx,
                  "Symbol map for key %s redefined; "
                  "Using %s definition for conflicting fields\n",
-                 longText(into->name),
+                 LongKeyNameText(into->name),
                  (from->merge == MERGE_AUGMENT ? "first" : "last"));
 
     return true;
@@ -686,7 +677,7 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
                 log_err(info->keymap->ctx,
                         "Key %s added to map for multiple modifiers; "
                         "Using %s, ignoring %s.\n",
-                        longText(new->u.keyName), ModIndexText(use),
+                        LongKeyNameText(new->u.keyName), ModIndexText(use),
                         ModIndexText(ignore));
                 mm->modifier = use;
             }
@@ -830,7 +821,7 @@ GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         log_err(info->keymap->ctx,
                 "Too many groups of %s for key %s (max %u); "
                 "Ignoring %s defined for extra groups\n",
-                name, longText(keyi->name), XkbNumKbdGroups + 1, name);
+                name, LongKeyNameText(keyi->name), XkbNumKbdGroups + 1, name);
         return false;
     }
 
@@ -838,7 +829,7 @@ GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         log_err(info->keymap->ctx,
                 "Illegal group index for %s of key %s\n"
                 "Definition with non-integer array index ignored\n",
-                name, longText(keyi->name));
+                name, LongKeyNameText(keyi->name));
         return false;
     }
 
@@ -866,14 +857,14 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         log_err(info->keymap->ctx,
                 "Expected a list of symbols, found %s; "
                 "Ignoring symbols for group %u of %s\n",
-                exprOpText(value->op), ndx + 1, longText(keyi->name));
+                exprOpText(value->op), ndx + 1, LongKeyNameText(keyi->name));
         return false;
     }
     if (!darray_empty(keyi->syms[ndx])) {
         log_err(info->keymap->ctx,
                 "Symbols for key %s, group %u already defined; "
                 "Ignoring duplicate definition\n",
-                longText(keyi->name), ndx + 1);
+                LongKeyNameText(keyi->name), ndx + 1);
         return false;
     }
     nSyms = darray_size(value->value.list.syms);
@@ -883,7 +874,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         log_wsgo(info->keymap->ctx,
                  "Could not resize group %u of key %s to contain %zu levels; "
                  "Symbols lost\n",
-                 ndx + 1, longText(keyi->name), nSyms);
+                 ndx + 1, LongKeyNameText(keyi->name), nSyms);
         return false;
     }
     keyi->symsDefined |= (1 << ndx);
@@ -906,7 +897,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
                 log_warn(info->keymap->ctx,
                          "Could not resolve keysym %s for key %s, group %u (%s), level %zu\n",
                          darray_item(value->value.list.syms, i),
-                         longText(keyi->name),
+                         LongKeyNameText(keyi->name),
                          ndx + 1,
                          xkb_atom_text(info->keymap->ctx,
                                        info->groupNames[ndx]),
@@ -956,14 +947,14 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         log_wsgo(info->keymap->ctx,
                  "Bad expression type (%d) for action list value; "
                  "Ignoring actions for group %u of %s\n",
-                 value->op, ndx, longText(keyi->name));
+                 value->op, ndx, LongKeyNameText(keyi->name));
         return false;
     }
 
     if (!darray_empty(keyi->acts[ndx])) {
         log_wsgo(info->keymap->ctx,
                  "Actions for key %s, group %u already defined\n",
-                 longText(keyi->name), ndx);
+                 LongKeyNameText(keyi->name), ndx);
         return false;
     }
 
@@ -982,7 +973,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         log_wsgo(info->keymap->ctx,
                  "Could not resize group %u of key %s; "
                  "Actions lost\n",
-                 ndx, longText(keyi->name));
+                 ndx, LongKeyNameText(keyi->name));
         return false;
     }
     keyi->actsDefined |= (1 << ndx);
@@ -994,7 +985,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
             log_err(info->keymap->ctx,
                     "Illegal action definition for %s; "
                     "Action for group %u/level %zu ignored\n",
-                    longText(keyi->name), ndx + 1, i + 1);
+                    LongKeyNameText(keyi->name), ndx + 1, i + 1);
         }
         act = (ExprDef *) act->common.next;
     }
@@ -1048,7 +1039,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             log_err(info->keymap->ctx,
                     "Illegal group index for type of key %s; "
                     "Definition with non-integer array index ignored\n",
-                    longText(keyi->name));
+                    LongKeyNameText(keyi->name));
             return false;
         }
         else {
@@ -1075,7 +1066,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             log_err(info->keymap->ctx,
                     "Expected a virtual modifier mask, found %s; "
                     "Ignoring virtual modifiers definition for key %s\n",
-                    exprOpText(value->op), longText(keyi->name));
+                    exprOpText(value->op), LongKeyNameText(keyi->name));
         }
     }
     else if (istreq(field, "locking") ||
@@ -1094,7 +1085,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         log_err(info->keymap->ctx,
                 "Radio groups not supported; "
                 "Ignoring radio group specification for key %s\n",
-                longText(keyi->name));
+                LongKeyNameText(keyi->name));
         return false;
     }
     else if (istreq_prefix("overlay", field) ||
@@ -1102,7 +1093,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         log_err(info->keymap->ctx,
                 "Overlays not supported; "
                 "Ignoring overlay specification for key %s\n",
-                longText(keyi->name));
+                LongKeyNameText(keyi->name));
     }
     else if (istreq(field, "repeating") ||
              istreq(field, "repeats") ||
@@ -1114,7 +1105,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             log_err(info->keymap->ctx,
                     "Illegal repeat setting for %s; "
                     "Non-boolean repeat setting ignored\n",
-                    longText(keyi->name));
+                    LongKeyNameText(keyi->name));
             return false;
         }
         keyi->repeat = val;
@@ -1128,7 +1119,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             log_err(info->keymap->ctx,
                     "Illegal groupsWrap setting for %s; "
                     "Non-boolean value ignored\n",
-                    longText(keyi->name));
+                    LongKeyNameText(keyi->name));
             return false;
         }
 
@@ -1147,7 +1138,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             log_err(info->keymap->ctx,
                     "Illegal groupsClamp setting for %s; "
                     "Non-boolean value ignored\n",
-                    longText(keyi->name));
+                    LongKeyNameText(keyi->name));
             return false;
         }
 
@@ -1166,7 +1157,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             log_err(info->keymap->ctx,
                     "Illegal group index for redirect of key %s; "
                     "Definition with non-integer group ignored\n",
-                    longText(keyi->name));
+                    LongKeyNameText(keyi->name));
             return false;
         }
 
@@ -1310,12 +1301,10 @@ SetExplicitGroup(SymbolsInfo *info, KeyInfo *keyi)
     if ((keyi->typesDefined | keyi->symsDefined | keyi->actsDefined) & ~1) {
         xkb_group_index_t i;
         log_warn(info->keymap->ctx,
-                 "For the map %s an explicit group specified\n",
-                 info->name);
-        log_warn(info->keymap->ctx,
+                 "For the map %s an explicit group specified, "
                  "but key %s has more than one group defined; "
                  "All groups except first one will be ignored\n",
-                 longText(keyi->name));
+                 info->name, LongKeyNameText(keyi->name));
         for (i = 1; i < XkbNumKbdGroups; i++) {
             keyi->numLevels[i] = 0;
             darray_free(keyi->syms[i]);
@@ -1738,7 +1727,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
         if (start_from == 0)
             log_lvl(info->keymap->ctx, 5,
                     "Key %s not found in keycodes; Symbols ignored\n",
-                    longText(keyi->name));
+                    LongKeyNameText(keyi->name));
         return false;
     }
     kc = XkbKeyGetKeycode(keymap, key);
@@ -1766,7 +1755,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
                         "Using %s for the %s key (keycode %d)\n",
                         keyi->numLevels[i],
                         xkb_atom_text(keymap->ctx, keyi->types[i]),
-                        longText(keyi->name), kc);
+                        LongKeyNameText(keyi->name), kc);
         }
         if (FindNamedType(keymap, keyi->types[i], &types[i])) {
             if (!autoType || keyi->numLevels[i] > 2)
@@ -1777,7 +1766,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
                     "Type \"%s\" is not defined; "
                     "Using TWO_LEVEL for the %s key (keycode %d)\n",
                     xkb_atom_text(keymap->ctx, keyi->types[i]),
-                    longText(keyi->name), kc);
+                    LongKeyNameText(keyi->name), kc);
             types[i] = XkbTwoLevelIndex;
         }
 
@@ -1788,7 +1777,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
                     "Type \"%s\" has %d levels, but %s has %d symbols; "
                     "Ignoring extra symbols\n",
                     type->name, type->num_levels,
-                    longText(keyi->name),
+                    LongKeyNameText(keyi->name),
                     keyi->numLevels[i]);
             keyi->numLevels[i] = type->num_levels;
         }
@@ -1806,7 +1795,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
         if (outActs == NULL) {
             log_wsgo(info->keymap->ctx,
                      "Could not enlarge actions for %s (key %d)\n",
-                     longText(keyi->name), kc);
+                     LongKeyNameText(keyi->name), kc);
             return false;
         }
         key->explicit |= XkbExplicitInterpretMask;
@@ -1897,7 +1886,7 @@ CopyModMapDef(SymbolsInfo *info, ModMapEntry *entry)
             log_lvl(info->keymap->ctx, 5,
                     "Key %s not found in keycodes; "
                     "Modifier map entry for %s not updated\n",
-                    longText(entry->u.keyName),
+                    LongKeyNameText(entry->u.keyName),
                     ModIndexText(entry->modifier));
             return false;
         }
@@ -1974,8 +1963,9 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
 
             if (key->num_groups < 1)
                 log_warn(info.keymap->ctx,
-                         "No symbols defined for <%.4s> (keycode %d)\n",
-                         key->name, XkbKeyGetKeycode(keymap, key));
+                         "No symbols defined for %s (keycode %d)\n",
+                         KeyNameText(key->name),
+                         XkbKeyGetKeycode(keymap, key));
         }
     }
 

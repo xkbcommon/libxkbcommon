@@ -144,9 +144,7 @@ FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
         /* Find first unused key and store our key here */
         xkb_foreach_key(key, keymap) {
             if (key->name[0] == '\0') {
-                char buf[XkbKeyNameLength + 1];
-                LongToKeyName(name, buf);
-                memcpy(key->name, buf, XkbKeyNameLength);
+                LongToKeyName(name, key->name);
                 return key;
             }
         }
@@ -159,11 +157,10 @@ bool
 FindKeyNameForAlias(struct xkb_keymap *keymap, unsigned long lname,
                     unsigned long *real_name)
 {
-    char name[XkbKeyNameLength + 1];
+    char name[XkbKeyNameLength];
     struct xkb_key_alias *a;
 
     LongToKeyName(lname, name);
-    name[XkbKeyNameLength] = '\0';
     darray_foreach(a, keymap->key_aliases) {
         if (strncmp(name, a->alias, XkbKeyNameLength) == 0) {
             *real_name = KeyNameToLong(a->real);

@@ -117,7 +117,6 @@ KeycodeCreate(char keyName[XkbKeyNameLength], unsigned long value)
     def->common.type = STMT_KEYCODE;
     def->common.next = NULL;
     strncpy(def->name, keyName, XkbKeyNameLength);
-    def->name[XkbKeyNameLength] = '\0';
     def->value = value;
     return def;
 }
@@ -132,9 +131,7 @@ KeyAliasCreate(char alias[XkbKeyNameLength], char real[XkbKeyNameLength])
     def->common.type = STMT_ALIAS;
     def->common.next = NULL;
     strncpy(def->alias, alias, XkbKeyNameLength);
-    def->alias[XkbKeyNameLength] = '\0';
     strncpy(def->real, real, XkbKeyNameLength);
-    def->real[XkbKeyNameLength] = '\0';
     return def;
 }
 

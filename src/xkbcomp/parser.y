@@ -681,7 +681,7 @@ Terminal        :       String
                         {
                             ExprDef *expr;
                             expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_KEYNAME);
-                            strncpy(expr->value.keyName, $1, 4);
+                            strncpy(expr->value.keyName, $1, XkbKeyNameLength);
                             $$ = expr;
                         }
                 ;

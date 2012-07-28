@@ -619,7 +619,7 @@ ExprResolveKeyName(struct xkb_context *ctx, const ExprDef *expr,
                     exprValueTypeText(expr->value_type));
             return false;
         }
-        memcpy(name, expr->value.keyName, XkbKeyNameLength);
+        strncpy(name, expr->value.keyName, XkbKeyNameLength);
         return true;
 
     case EXPR_IDENT:

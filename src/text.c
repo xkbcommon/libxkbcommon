@@ -276,7 +276,7 @@ KeysymText(xkb_keysym_t sym)
 }
 
 const char *
-KeyNameText(char *name)
+KeyNameText(const char name[XkbKeyNameLength])
 {
     char *buf;
     int len;

@@ -53,7 +53,7 @@ const char *
 StmtTypeToString(enum stmt_type type);
 
 static inline unsigned long
-KeyNameToLong(const char *name)
+KeyNameToLong(const char name[XkbKeyNameLength])
 {
     return
         (((unsigned long)name[0]) << 24) |
@@ -63,12 +63,20 @@ KeyNameToLong(const char *name)
 }
 
 static inline void
-LongToKeyName(unsigned long val, char *name)
+LongToKeyName(unsigned long val, char name[XkbKeyNameLength])
 {
     name[0] = ((val >> 24) & 0xff);
     name[1] = ((val >> 16) & 0xff);
     name[2] = ((val >> 8) & 0xff);
     name[3] = ((val >> 0) & 0xff);
+}
+
+static inline const char *
+LongKeyNameText(unsigned long val)
+{
+    char buf[XkbKeyNameLength];
+    LongToKeyName(val, buf);
+    return KeyNameText(buf);
 }
 
 static inline bool
