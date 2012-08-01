@@ -64,8 +64,8 @@ xkb_map_num_mods(struct xkb_keymap *keymap)
             break;
 
     /* We always have all the core modifiers (for now), plus any virtual
-     * modifiers we may have defined, and then shift to one-based indexing. */
-    return i + Mod5MapIndex + 1;
+     * modifiers we may have defined. */
+    return i + XkbNumModifiers;
 }
 
 /**
@@ -100,7 +100,7 @@ xkb_map_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx)
     }
 
     /* If that fails, try to find a virtual mod name. */
-    return keymap->vmod_names[idx - Mod5MapIndex];
+    return keymap->vmod_names[idx - XkbNumModifiers];
 }
 
 /**
@@ -130,7 +130,7 @@ xkb_map_mod_get_index(struct xkb_keymap *keymap, const char *name)
 
     for (i = 0; i < XkbNumVirtualMods && keymap->vmod_names[i]; i++) {
         if (istreq(name, keymap->vmod_names[i]))
-            return i + Mod5MapIndex;
+            return i + XkbNumModifiers;
     }
 
     return XKB_GROUP_INVALID;
