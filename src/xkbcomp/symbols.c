@@ -37,18 +37,22 @@
 typedef darray(xkb_keysym_t) darray_xkb_keysym_t;
 typedef darray(union xkb_action) darray_xkb_action;
 
-#define RepeatYes       1
-#define RepeatNo        0
-#define RepeatUndefined ~((unsigned) 0)
+enum key_repeat {
+    KEY_REPEAT_YES = 1,
+    KEY_REPEAT_NO = 0,
+    KEY_REPEAT_UNDEFINED = -1
+};
 
-#define _Key_Syms       (1 << 0)
-#define _Key_Acts       (1 << 1)
-#define _Key_Repeat     (1 << 2)
-#define _Key_Behavior   (1 << 3)
-#define _Key_Type_Dflt  (1 << 4)
-#define _Key_Types      (1 << 5)
-#define _Key_GroupInfo  (1 << 6)
-#define _Key_VModMap    (1 << 7)
+enum key_field {
+    KEY_FIELD_SYMS      = (1 << 0),
+    KEY_FIELD_ACTS      = (1 << 1),
+    KEY_FIELD_REPEAT    = (1 << 2),
+    KEY_FIELD_BEHAVIOR  = (1 << 3),
+    KEY_FIELD_TYPE_DFLT = (1 << 4),
+    KEY_FIELD_TYPES     = (1 << 5),
+    KEY_FIELD_GROUPINFO = (1 << 6),
+    KEY_FIELD_VMODMAP   = (1 << 7),
+};
 
 static inline const char *
 longText(unsigned long val)
@@ -60,7 +64,7 @@ longText(unsigned long val)
 }
 
 typedef struct _KeyInfo {
-    unsigned short defined;
+    enum key_field defined;
     unsigned file_id;
     enum merge_mode merge;
 
@@ -88,7 +92,7 @@ typedef struct _KeyInfo {
     darray_xkb_action acts[XkbNumKbdGroups];
 
     xkb_atom_t types[XkbNumKbdGroups];
-    unsigned repeat;
+    enum key_repeat repeat;
     struct xkb_behavior behavior;
     unsigned short vmodmap;
     xkb_atom_t dfltType;
@@ -125,7 +129,7 @@ InitKeyInfo(KeyInfo *keyi, unsigned file_id)
     keyi->behavior.type = XkbKB_Default;
     keyi->behavior.data = 0;
     keyi->vmodmap = 0;
-    keyi->repeat = RepeatUndefined;
+    keyi->repeat = KEY_REPEAT_UNDEFINED;
     keyi->out_of_range_group_action = 0;
     keyi->out_of_range_group_number = 0;
 }
@@ -487,8 +491,8 @@ out:
 }
 
 static bool
-UseNewKeyField(unsigned field, KeyInfo *old, KeyInfo *new, int verbosity,
-               unsigned *collide)
+UseNewKeyField(enum key_field field, KeyInfo *old, KeyInfo *new,
+               int verbosity, enum key_field *collide)
 {
     if (!(old->defined & field))
         return true;
@@ -509,7 +513,7 @@ static bool
 MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from)
 {
     xkb_group_index_t i;
-    unsigned collide = 0;
+    enum key_field collide = 0;
     bool report;
     int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
 
@@ -544,16 +548,16 @@ MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from)
                 from->numLevels[i] = 0;
                 from->symsDefined &= ~(1 << i);
                 if (!darray_empty(into->syms[i]))
-                    into->defined |= _Key_Syms;
+                    into->defined |= KEY_FIELD_SYMS;
                 if (!darray_empty(into->acts[i]))
-                    into->defined |= _Key_Acts;
+                    into->defined |= KEY_FIELD_ACTS;
             }
             else {
                 if (report) {
                     if (!darray_empty(into->syms[i]))
-                        collide |= _Key_Syms;
+                        collide |= KEY_FIELD_SYMS;
                     if (!darray_empty(into->acts[i]))
-                        collide |= _Key_Acts;
+                        collide |= KEY_FIELD_ACTS;
                 }
                 MergeKeyGroups(info, into, from, (unsigned) i);
             }
@@ -562,7 +566,7 @@ MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from)
             if ((into->types[i] != XKB_ATOM_NONE) && report &&
                 (into->types[i] != from->types[i])) {
                 xkb_atom_t use, ignore;
-                collide |= _Key_Types;
+                collide |= KEY_FIELD_TYPES;
                 if (from->merge != MERGE_AUGMENT) {
                     use = from->types[i];
                     ignore = into->types[i];
@@ -587,26 +591,26 @@ MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from)
         }
     }
 
-    if (UseNewKeyField(_Key_Behavior, into, from, verbosity, &collide)) {
+    if (UseNewKeyField(KEY_FIELD_BEHAVIOR, into, from, verbosity, &collide)) {
         into->behavior = from->behavior;
-        into->defined |= _Key_Behavior;
+        into->defined |= KEY_FIELD_BEHAVIOR;
     }
-    if (UseNewKeyField(_Key_VModMap, into, from, verbosity, &collide)) {
+    if (UseNewKeyField(KEY_FIELD_VMODMAP, into, from, verbosity, &collide)) {
         into->vmodmap = from->vmodmap;
-        into->defined |= _Key_VModMap;
+        into->defined |= KEY_FIELD_VMODMAP;
     }
-    if (UseNewKeyField(_Key_Repeat, into, from, verbosity, &collide)) {
+    if (UseNewKeyField(KEY_FIELD_REPEAT, into, from, verbosity, &collide)) {
         into->repeat = from->repeat;
-        into->defined |= _Key_Repeat;
+        into->defined |= KEY_FIELD_REPEAT;
     }
-    if (UseNewKeyField(_Key_Type_Dflt, into, from, verbosity, &collide)) {
+    if (UseNewKeyField(KEY_FIELD_TYPE_DFLT, into, from, verbosity, &collide)) {
         into->dfltType = from->dfltType;
-        into->defined |= _Key_Type_Dflt;
+        into->defined |= KEY_FIELD_TYPE_DFLT;
     }
-    if (UseNewKeyField(_Key_GroupInfo, into, from, verbosity, &collide)) {
+    if (UseNewKeyField(KEY_FIELD_GROUPINFO, into, from, verbosity, &collide)) {
         into->out_of_range_group_action = from->out_of_range_group_action;
         into->out_of_range_group_number = from->out_of_range_group_number;
-        into->defined |= _Key_GroupInfo;
+        into->defined |= KEY_FIELD_GROUPINFO;
     }
 
     if (collide)
@@ -1010,13 +1014,13 @@ static const LookupEntry lockingEntries[] = {
 };
 
 static const LookupEntry repeatEntries[] = {
-    { "true", RepeatYes },
-    { "yes", RepeatYes },
-    { "on", RepeatYes },
-    { "false", RepeatNo },
-    { "no", RepeatNo },
-    { "off", RepeatNo },
-    { "default", RepeatUndefined },
+    { "true", KEY_REPEAT_YES },
+    { "yes", KEY_REPEAT_YES },
+    { "on", KEY_REPEAT_YES },
+    { "false", KEY_REPEAT_NO },
+    { "no", KEY_REPEAT_NO },
+    { "off", KEY_REPEAT_NO },
+    { "default", KEY_REPEAT_UNDEFINED },
     { NULL, 0 }
 };
 
@@ -1038,7 +1042,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
 
         if (arrayNdx == NULL) {
             keyi->dfltType = xkb_atom_intern(ctx, str);
-            keyi->defined |= _Key_Type_Dflt;
+            keyi->defined |= KEY_FIELD_TYPE_DFLT;
         }
         else if (!ExprResolveGroup(ctx, arrayNdx, &ndx)) {
             log_err(info->keymap->ctx,
@@ -1065,7 +1069,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         ok = ExprResolveVModMask(info->keymap, value, &mask);
         if (ok) {
             keyi->vmodmap = (mask >> 8);
-            keyi->defined |= _Key_VModMap;
+            keyi->defined |= KEY_FIELD_VMODMAP;
         }
         else {
             log_err(info->keymap->ctx,
@@ -1082,7 +1086,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         ok = ExprResolveEnum(ctx, value, &val, lockingEntries);
         if (ok)
             keyi->behavior.type = val;
-        keyi->defined |= _Key_Behavior;
+        keyi->defined |= KEY_FIELD_BEHAVIOR;
     }
     else if (istreq(field, "radiogroup") ||
              istreq(field, "permanentradiogroup") ||
@@ -1114,7 +1118,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             return false;
         }
         keyi->repeat = val;
-        keyi->defined |= _Key_Repeat;
+        keyi->defined |= KEY_FIELD_REPEAT;
     }
     else if (istreq(field, "groupswrap") ||
              istreq(field, "wrapgroups")) {
@@ -1133,7 +1137,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         else
             keyi->out_of_range_group_action = XkbClampIntoRange;
 
-        keyi->defined |= _Key_GroupInfo;
+        keyi->defined |= KEY_FIELD_GROUPINFO;
     }
     else if (istreq(field, "groupsclamp") ||
              istreq(field, "clampgroups")) {
@@ -1152,7 +1156,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         else
             keyi->out_of_range_group_action = XkbWrapIntoRange;
 
-        keyi->defined |= _Key_GroupInfo;
+        keyi->defined |= KEY_FIELD_GROUPINFO;
     }
     else if (istreq(field, "groupsredirect") ||
              istreq(field, "redirectgroups")) {
@@ -1168,7 +1172,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
 
         keyi->out_of_range_group_action = XkbRedirectIntoRange;
         keyi->out_of_range_group_number = grp - 1;
-        keyi->defined |= _Key_GroupInfo;
+        keyi->defined |= KEY_FIELD_GROUPINFO;
     }
     else {
         log_err(info->keymap->ctx,
@@ -1810,7 +1814,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
         outActs = NULL;
 
     key->num_groups = nGroups;
-    if (keyi->defined & _Key_GroupInfo) {
+    if (keyi->defined & KEY_FIELD_GROUPINFO) {
         key->out_of_range_group_number = keyi->out_of_range_group_number;
         key->out_of_range_group_action = keyi->out_of_range_group_action;
     }
@@ -1865,12 +1869,12 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
         key->explicit |= XkbExplicitBehaviorMask;
         break;
     }
-    if (keyi->defined & _Key_VModMap) {
+    if (keyi->defined & KEY_FIELD_VMODMAP) {
         key->vmodmap = keyi->vmodmap;
         key->explicit |= XkbExplicitVModMapMask;
     }
-    if (keyi->repeat != RepeatUndefined) {
-        key->repeats = keyi->repeat == RepeatYes;
+    if (keyi->repeat != KEY_REPEAT_UNDEFINED) {
+        key->repeats = (keyi->repeat == KEY_REPEAT_YES);
         key->explicit |= XkbExplicitAutoRepeatMask;
     }
 

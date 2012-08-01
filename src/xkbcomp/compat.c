@@ -29,8 +29,16 @@
 #include "action.h"
 #include "vmod.h"
 
+enum si_field {
+    SI_FIELD_VIRTUAL_MOD    = (1 << 0),
+    SI_FIELD_ACTION         = (1 << 1),
+    SI_FIELD_AUTO_REPEAT    = (1 << 2),
+    SI_FIELD_LOCKING_KEY    = (1 << 3),
+    SI_FIELD_LEVEL_ONE_ONLY = (1 << 4),
+};
+
 typedef struct _SymInterpInfo {
-    unsigned short defined;
+    enum si_field defined;
     unsigned file_id;
     enum merge_mode merge;
     struct list entry;
@@ -38,14 +46,18 @@ typedef struct _SymInterpInfo {
     struct xkb_sym_interpret interp;
 } SymInterpInfo;
 
-#define _SI_VirtualMod   (1 << 0)
-#define _SI_Action       (1 << 1)
-#define _SI_AutoRepeat   (1 << 2)
-#define _SI_LockingKey   (1 << 3)
-#define _SI_LevelOneOnly (1 << 4)
+enum led_field {
+    LED_FIELD_INDEX      = (1 << 0),
+    LED_FIELD_MODS       = (1 << 1),
+    LED_FIELD_GROUPS     = (1 << 2),
+    LED_FIELD_CTRLS      = (1 << 3),
+    LED_FIELD_EXPLICIT   = (1 << 4),
+    LED_FIELD_AUTOMATIC  = (1 << 5),
+    LED_FIELD_DRIVES_KBD = (1 << 6),
+};
 
 typedef struct _LEDInfo {
-    unsigned short defined;
+    enum led_field defined;
     unsigned file_id;
     enum merge_mode merge;
     struct list entry;
@@ -60,14 +72,6 @@ typedef struct _LEDInfo {
     uint32_t groups;
     unsigned int ctrls;
 } LEDInfo;
-
-#define _LED_Index      (1 << 0)
-#define _LED_Mods       (1 << 1)
-#define _LED_Groups     (1 << 2)
-#define _LED_Ctrls      (1 << 3)
-#define _LED_Explicit   (1 << 4)
-#define _LED_Automatic  (1 << 5)
-#define _LED_DrivesKbd  (1 << 6)
 
 typedef struct _GroupCompatInfo {
     unsigned file_id;
@@ -247,8 +251,8 @@ FindMatchingInterp(CompatInfo * info, SymInterpInfo * new)
 }
 
 static bool
-UseNewInterpField(unsigned field, SymInterpInfo *old, SymInterpInfo *new,
-                  int verbosity, unsigned *collide)
+UseNewInterpField(enum si_field field, SymInterpInfo *old, SymInterpInfo *new,
+                  int verbosity, enum si_field *collide)
 {
     if (!(old->defined & field))
         return true;
@@ -267,7 +271,7 @@ UseNewInterpField(unsigned field, SymInterpInfo *old, SymInterpInfo *new,
 static bool
 AddInterp(CompatInfo * info, SymInterpInfo * new)
 {
-    unsigned collide;
+    enum si_field collide;
     SymInterpInfo *old;
     struct list entry;
     int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
@@ -288,33 +292,33 @@ AddInterp(CompatInfo * info, SymInterpInfo * new)
             return true;
         }
 
-        if (UseNewInterpField(_SI_VirtualMod, old, new, verbosity,
+        if (UseNewInterpField(SI_FIELD_VIRTUAL_MOD, old, new, verbosity,
                               &collide)) {
             old->interp.virtual_mod = new->interp.virtual_mod;
-            old->defined |= _SI_VirtualMod;
+            old->defined |= SI_FIELD_VIRTUAL_MOD;
         }
-        if (UseNewInterpField(_SI_Action, old, new, verbosity,
+        if (UseNewInterpField(SI_FIELD_ACTION, old, new, verbosity,
                               &collide)) {
             old->interp.act = new->interp.act;
-            old->defined |= _SI_Action;
+            old->defined |= SI_FIELD_ACTION;
         }
-        if (UseNewInterpField(_SI_AutoRepeat, old, new, verbosity,
+        if (UseNewInterpField(SI_FIELD_AUTO_REPEAT, old, new, verbosity,
                               &collide)) {
             old->interp.flags &= ~XkbSI_AutoRepeat;
             old->interp.flags |= (new->interp.flags & XkbSI_AutoRepeat);
-            old->defined |= _SI_AutoRepeat;
+            old->defined |= SI_FIELD_AUTO_REPEAT;
         }
-        if (UseNewInterpField(_SI_LockingKey, old, new, verbosity,
+        if (UseNewInterpField(SI_FIELD_LOCKING_KEY, old, new, verbosity,
                               &collide)) {
             old->interp.flags &= ~XkbSI_LockingKey;
             old->interp.flags |= (new->interp.flags & XkbSI_LockingKey);
-            old->defined |= _SI_LockingKey;
+            old->defined |= SI_FIELD_LOCKING_KEY;
         }
-        if (UseNewInterpField(_SI_LevelOneOnly, old, new, verbosity,
+        if (UseNewInterpField(SI_FIELD_LEVEL_ONE_ONLY, old, new, verbosity,
                               &collide)) {
             old->interp.match &= ~XkbSI_LevelOneOnly;
             old->interp.match |= (new->interp.match & XkbSI_LevelOneOnly);
-            old->defined |= _SI_LevelOneOnly;
+            old->defined |= SI_FIELD_LEVEL_ONE_ONLY;
         }
 
         if (collide) {
@@ -409,8 +413,8 @@ ResolveStateAndPredicate(ExprDef * expr,
 /***====================================================================***/
 
 static bool
-UseNewLEDField(unsigned field, LEDInfo *old, LEDInfo *new,
-               int verbosity, unsigned *collide)
+UseNewLEDField(enum led_field field, LEDInfo *old, LEDInfo *new,
+               int verbosity, enum led_field *collide)
 {
     if (!(old->defined & field))
         return true;
@@ -430,7 +434,7 @@ static bool
 AddIndicatorMap(CompatInfo *info, LEDInfo *new)
 {
     LEDInfo *old;
-    unsigned collide;
+    enum led_field collide;
     struct xkb_context *ctx = info->keymap->ctx;
     int verbosity = xkb_get_log_verbosity(ctx);
 
@@ -460,46 +464,46 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
             }
 
             collide = 0;
-            if (UseNewLEDField(_LED_Index, old, new, verbosity,
+            if (UseNewLEDField(LED_FIELD_INDEX, old, new, verbosity,
                                &collide)) {
                 old->indicator = new->indicator;
-                old->defined |= _LED_Index;
+                old->defined |= LED_FIELD_INDEX;
             }
-            if (UseNewLEDField(_LED_Mods, old, new, verbosity,
+            if (UseNewLEDField(LED_FIELD_MODS, old, new, verbosity,
                                &collide)) {
                 old->which_mods = new->which_mods;
                 old->real_mods = new->real_mods;
                 old->vmods = new->vmods;
-                old->defined |= _LED_Mods;
+                old->defined |= LED_FIELD_MODS;
             }
-            if (UseNewLEDField(_LED_Groups, old, new, verbosity,
+            if (UseNewLEDField(LED_FIELD_GROUPS, old, new, verbosity,
                                &collide)) {
                 old->which_groups = new->which_groups;
                 old->groups = new->groups;
-                old->defined |= _LED_Groups;
+                old->defined |= LED_FIELD_GROUPS;
             }
-            if (UseNewLEDField(_LED_Ctrls, old, new, verbosity,
+            if (UseNewLEDField(LED_FIELD_CTRLS, old, new, verbosity,
                                &collide)) {
                 old->ctrls = new->ctrls;
-                old->defined |= _LED_Ctrls;
+                old->defined |= LED_FIELD_CTRLS;
             }
-            if (UseNewLEDField(_LED_Explicit, old, new, verbosity,
+            if (UseNewLEDField(LED_FIELD_EXPLICIT, old, new, verbosity,
                                &collide)) {
                 old->flags &= ~XkbIM_NoExplicit;
                 old->flags |= (new->flags & XkbIM_NoExplicit);
-                old->defined |= _LED_Explicit;
+                old->defined |= LED_FIELD_EXPLICIT;
             }
-            if (UseNewLEDField(_LED_Automatic, old, new, verbosity,
+            if (UseNewLEDField(LED_FIELD_AUTOMATIC, old, new, verbosity,
                                &collide)) {
                 old->flags &= ~XkbIM_NoAutomatic;
                 old->flags |= (new->flags & XkbIM_NoAutomatic);
-                old->defined |= _LED_Automatic;
+                old->defined |= LED_FIELD_AUTOMATIC;
             }
-            if (UseNewLEDField(_LED_DrivesKbd, old, new, verbosity,
+            if (UseNewLEDField(LED_FIELD_DRIVES_KBD, old, new, verbosity,
                                &collide)) {
                 old->flags &= ~XkbIM_LEDDrivesKB;
                 old->flags |= (new->flags & XkbIM_LEDDrivesKB);
-                old->defined |= _LED_DrivesKbd;
+                old->defined |= LED_FIELD_DRIVES_KBD;
             }
 
             if (collide) {
@@ -642,7 +646,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         if (!HandleActionDef(value, keymap, &si->interp.act.any, info->act))
             return false;
 
-        si->defined |= _SI_Action;
+        si->defined |= SI_FIELD_ACTION;
     }
     else if (istreq(field, "virtualmodifier") ||
              istreq(field, "virtualmod")) {
@@ -653,7 +657,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
             return ReportSIBadType(info, si, field, "virtual modifier");
 
         si->interp.virtual_mod = ndx;
-        si->defined |= _SI_VirtualMod;
+        si->defined |= SI_FIELD_VIRTUAL_MOD;
     }
     else if (istreq(field, "repeat")) {
         bool set;
@@ -669,7 +673,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         else
             si->interp.flags &= ~XkbSI_AutoRepeat;
 
-        si->defined |= _SI_AutoRepeat;
+        si->defined |= SI_FIELD_AUTO_REPEAT;
     }
     else if (istreq(field, "locking")) {
         bool set;
@@ -685,7 +689,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         else
             si->interp.flags &= ~XkbSI_LockingKey;
 
-        si->defined |= _SI_LockingKey;
+        si->defined |= SI_FIELD_LOCKING_KEY;
     }
     else if (istreq(field, "usemodmap") ||
              istreq(field, "usemodmapmods")) {
@@ -702,7 +706,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         else
             si->interp.match &= ~XkbSI_LevelOneOnly;
 
-        si->defined |= _SI_LevelOneOnly;
+        si->defined |= SI_FIELD_LEVEL_ONE_ONLY;
     }
     else {
         return ReportBadField(keymap, "symbol interpretation", field,
@@ -764,7 +768,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
 
         led->real_mods = mask & 0xff;
         led->vmods = (mask >> 8) & 0xff;
-        led->defined |= _LED_Mods;
+        led->defined |= LED_FIELD_MODS;
     }
     else if (istreq(field, "groups")) {
         unsigned int mask;
@@ -776,7 +780,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
             return ReportIndicatorBadType(info, led, field, "group mask");
 
         led->groups = mask;
-        led->defined |= _LED_Groups;
+        led->defined |= LED_FIELD_GROUPS;
     }
     else if (istreq(field, "controls") || istreq(field, "ctrls")) {
         unsigned int mask;
@@ -789,7 +793,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
                                           "controls mask");
 
         led->ctrls = mask;
-        led->defined |= _LED_Ctrls;
+        led->defined |= LED_FIELD_CTRLS;
     }
     else if (istreq(field, "allowexplicit")) {
         bool set;
@@ -805,7 +809,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
         else
             led->flags |= XkbIM_NoExplicit;
 
-        led->defined |= _LED_Explicit;
+        led->defined |= LED_FIELD_EXPLICIT;
     }
     else if (istreq(field, "whichmodstate") ||
              istreq(field, "whichmodifierstate")) {
@@ -851,7 +855,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
         else
             led->flags &= ~XkbIM_LEDDrivesKB;
 
-        led->defined |= _LED_DrivesKbd;
+        led->defined |= LED_FIELD_DRIVES_KBD;
     }
     else if (istreq(field, "index")) {
         int ndx;
@@ -873,7 +877,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
         }
 
         led->indicator = (xkb_led_index_t) ndx;
-        led->defined |= _LED_Index;
+        led->defined |= LED_FIELD_INDEX;
     }
     else {
         log_err(info->keymap->ctx,

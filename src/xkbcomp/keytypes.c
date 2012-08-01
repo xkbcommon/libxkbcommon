@@ -37,14 +37,15 @@ typedef struct _PreserveInfo {
     unsigned short preVMods;
 } PreserveInfo;
 
-#define _KT_Name       (1 << 0)
-#define _KT_Mask       (1 << 1)
-#define _KT_Map        (1 << 2)
-#define _KT_Preserve   (1 << 3)
-#define _KT_LevelNames (1 << 4)
+enum type_field {
+    TYPE_FIELD_MASK       = (1 << 0),
+    TYPE_FIELD_MAP        = (1 << 1),
+    TYPE_FIELD_PRESERVE   = (1 << 2),
+    TYPE_FIELD_LEVEL_NAME = (1 << 3),
+};
 
 typedef struct _KeyTypeInfo {
-    unsigned short defined;
+    enum type_field defined;
     unsigned file_id;
     enum merge_mode merge;
     struct list entry;
@@ -723,7 +724,7 @@ SetKeyTypeField(KeyTypesInfo *info, KeyTypeInfo *type,
 
         mods = mask & 0xff; /* core mods */
         vmods = (mask >> 8) & 0xffff; /* xkb virtual mods */
-        if (type->defined & _KT_Mask) {
+        if (type->defined & TYPE_FIELD_MASK) {
             log_warn(info->keymap->ctx,
                      "Multiple modifier mask definitions for key type %s; "
                      "Using %s, ignoring %s\n",
@@ -734,19 +735,19 @@ SetKeyTypeField(KeyTypesInfo *info, KeyTypeInfo *type,
         }
         type->mask = mods;
         type->vmask = vmods;
-        type->defined |= _KT_Mask;
+        type->defined |= TYPE_FIELD_MASK;
         return true;
     }
     else if (istreq(field, "map")) {
-        type->defined |= _KT_Map;
+        type->defined |= TYPE_FIELD_MAP;
         return SetMapEntry(info, type, arrayNdx, value);
     }
     else if (istreq(field, "preserve")) {
-        type->defined |= _KT_Preserve;
+        type->defined |= TYPE_FIELD_PRESERVE;
         return SetPreserve(info, type, arrayNdx, value);
     }
     else if (istreq(field, "levelname") || istreq(field, "level_name")) {
-        type->defined |= _KT_LevelNames;
+        type->defined |= TYPE_FIELD_LEVEL_NAME;
         return SetLevelName(info, type, arrayNdx, value);
     }
 
