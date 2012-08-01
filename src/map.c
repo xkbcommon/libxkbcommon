@@ -50,6 +50,7 @@
  * ********************************************************/
 
 #include "xkb-priv.h"
+#include "text.h"
 
 /**
  * Returns the total number of modifiers active in the keymap.
@@ -74,33 +75,18 @@ xkb_map_num_mods(struct xkb_keymap *keymap)
 XKB_EXPORT const char *
 xkb_map_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx)
 {
+    const char *name;
+
     if (idx >= xkb_map_num_mods(keymap))
         return NULL;
 
-    /* First try to find a legacy modifier name. */
-    switch (idx) {
-    case ShiftMapIndex:
-        return "Shift";
-    case ControlMapIndex:
-        return "Control";
-    case LockMapIndex:
-        return "Caps Lock";
-    case Mod1MapIndex:
-        return "Mod1";
-    case Mod2MapIndex:
-        return "Mod2";
-    case Mod3MapIndex:
-        return "Mod3";
-    case Mod4MapIndex:
-        return "Mod4";
-    case Mod5MapIndex:
-        return "Mod5";
-    default:
-        break;
-    }
+    /* First try to find a legacy modifier name.  If that fails, try to
+     * find a virtual mod name. */
+    name = ModIndexToName(idx);
+    if (!name)
+        name = keymap->vmod_names[idx - XkbNumModifiers];
 
-    /* If that fails, try to find a virtual mod name. */
-    return keymap->vmod_names[idx - XkbNumModifiers];
+    return name;
 }
 
 /**
@@ -111,22 +97,9 @@ xkb_map_mod_get_index(struct xkb_keymap *keymap, const char *name)
 {
     xkb_mod_index_t i;
 
-    if (istreq(name, "Shift"))
-        return ShiftMapIndex;
-    if (istreq(name, "Control"))
-        return ControlMapIndex;
-    if (istreq(name, "Caps Lock"))
-        return LockMapIndex;
-    if (istreq(name, "Mod1"))
-        return Mod1MapIndex;
-    if (istreq(name, "Mod2"))
-        return Mod2MapIndex;
-    if (istreq(name, "Mod3"))
-        return Mod3MapIndex;
-    if (istreq(name, "Mod4"))
-        return Mod4MapIndex;
-    if (istreq(name, "Mod5"))
-        return Mod5MapIndex;
+    i = ModNameToIndex(name);
+    if (i != XKB_MOD_INVALID)
+        return i;
 
     for (i = 0; i < XkbNumVirtualMods && keymap->vmod_names[i]; i++) {
         if (istreq(name, keymap->vmod_names[i]))

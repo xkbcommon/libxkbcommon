@@ -33,6 +33,12 @@ const char *
 VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t modMask,
              xkb_mod_mask_t mask);
 
+xkb_mod_index_t
+ModNameToIndex(const char *name);
+
+const char *
+ModIndexToName(xkb_mod_index_t ndx);
+
 const char *
 ModIndexText(xkb_mod_index_t ndx);
 

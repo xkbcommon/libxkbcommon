@@ -129,24 +129,47 @@ VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t modMask,
 }
 
 static const char *modNames[XkbNumModifiers] = {
-    "Shift",
-    "Lock",
-    "Control",
-    "Mod1",
-    "Mod2",
-    "Mod3",
-    "Mod4",
-    "Mod5"
+    [ShiftMapIndex]   = "Shift",
+    [LockMapIndex]    = "Lock",
+    [ControlMapIndex] = "Control",
+    [Mod1MapIndex]    = "Mod1",
+    [Mod2MapIndex]    = "Mod2",
+    [Mod3MapIndex]    = "Mod3",
+    [Mod4MapIndex]    = "Mod4",
+    [Mod5MapIndex]    = "Mod5",
 };
+
+xkb_mod_index_t
+ModNameToIndex(const char *name)
+{
+    xkb_mod_index_t i;
+
+    for (i = 0; i < XkbNumModifiers; i++)
+        if (istreq(name, modNames[i]))
+            return i;
+
+    return XKB_MOD_INVALID;
+}
+
+const char *
+ModIndexToName(xkb_mod_index_t ndx)
+{
+    if (ndx < XkbNumModifiers)
+        return modNames[ndx];
+    return NULL;
+}
 
 const char *
 ModIndexText(xkb_mod_index_t ndx)
 {
+    const char *name;
     char *buf;
 
-    if (ndx < XkbNumModifiers)
-        return modNames[ndx];
-    else if (ndx == XkbNoModifier)
+    name = ModIndexToName(ndx);
+    if (name)
+        return name;
+
+    if (ndx == XkbNoModifier)
         return "none";
 
     buf = GetBuffer(32);

@@ -160,24 +160,6 @@ write_vmods(struct xkb_keymap *keymap, struct buf *buf)
             return NULL; \
 } while (0)
 
-/* FIXME: Merge with src/xkbcomp/expr.c::modIndexNames. */
-static const char *core_mod_names[] = {
-    "Shift",
-    "Lock",
-    "Control",
-    "Mod1",
-    "Mod2",
-    "Mod3",
-    "Mod4",
-    "Mod5",
-};
-
-static const char *
-get_mod_index_text(uint8_t real_mod)
-{
-    return core_mod_names[real_mod];
-}
-
 static char *
 get_mod_mask_text(struct xkb_keymap *keymap, uint8_t real_mods,
                   uint32_t vmods)
@@ -204,10 +186,10 @@ get_mod_mask_text(struct xkb_keymap *keymap, uint8_t real_mods,
                 continue;
             if (ret[0] != '\0') {
                 strcpy(ret2, ret);
-                append_get_text("%s+%s", ret2, core_mod_names[i]);
+                append_get_text("%s+%s", ret2, ModIndexToName(i));
             }
             else {
-                append_get_text("%s", core_mod_names[i]);
+                append_get_text("%s", ModIndexToName(i));
             }
         }
     }
@@ -848,7 +830,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
                 continue;
 
             write_buf(buf, "\t\tmodifier_map %s { %s };\n",
-                      get_mod_index_text(mod), KeyNameText(key->name));
+                      ModIndexToName(mod), KeyNameText(key->name));
         }
     }
 
