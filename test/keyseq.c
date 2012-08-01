@@ -26,7 +26,6 @@
 #include <stdio.h>
 
 #include <linux/input.h>
-#include <X11/keysym.h>
 
 #include "xkbcommon/xkbcommon.h"
 #include "test.h"
@@ -53,7 +52,7 @@ enum {
  *   + A sequence of keysyms that should result from this keypress.
  *
  * The vararg format is:
- * <KEY_*>  <DOWN | UP | BOTH>  <XK_* (zero or more)>  <NEXT | FINISH>
+ * <KEY_*>  <DOWN | UP | BOTH>  <XKB_KEY_* (zero or more)>  <NEXT | FINISH>
  *
  * See below for examples.
  */
@@ -143,135 +142,135 @@ main(void)
     assert(keymap);
 
     assert(test_key_seq(keymap,
-                        KEY_H,  BOTH,  XK_h,  NEXT,
-                        KEY_E,  BOTH,  XK_e,  NEXT,
-                        KEY_L,  BOTH,  XK_l,  NEXT,
-                        KEY_L,  BOTH,  XK_l,  NEXT,
-                        KEY_O,  BOTH,  XK_o,  FINISH));
+                        KEY_H,  BOTH,  XKB_KEY_h,  NEXT,
+                        KEY_E,  BOTH,  XKB_KEY_e,  NEXT,
+                        KEY_L,  BOTH,  XKB_KEY_l,  NEXT,
+                        KEY_L,  BOTH,  XKB_KEY_l,  NEXT,
+                        KEY_O,  BOTH,  XKB_KEY_o,  FINISH));
 
     assert(test_key_seq(keymap,
-                        KEY_H,          BOTH,  XK_h,        NEXT,
-                        KEY_LEFTSHIFT,  DOWN,  XK_Shift_L,  NEXT,
-                        KEY_E,          BOTH,  XK_E,        NEXT,
-                        KEY_L,          BOTH,  XK_L,        NEXT,
-                        KEY_LEFTSHIFT,  UP,    XK_Shift_L,  NEXT,
-                        KEY_L,          BOTH,  XK_l,        NEXT,
-                        KEY_O,          BOTH,  XK_o,        FINISH));
+                        KEY_H,          BOTH,  XKB_KEY_h,        NEXT,
+                        KEY_LEFTSHIFT,  DOWN,  XKB_KEY_Shift_L,  NEXT,
+                        KEY_E,          BOTH,  XKB_KEY_E,        NEXT,
+                        KEY_L,          BOTH,  XKB_KEY_L,        NEXT,
+                        KEY_LEFTSHIFT,  UP,    XKB_KEY_Shift_L,  NEXT,
+                        KEY_L,          BOTH,  XKB_KEY_l,        NEXT,
+                        KEY_O,          BOTH,  XKB_KEY_o,        FINISH));
 
     /* Base modifier cleared on key release... */
     assert(test_key_seq(keymap,
-                        KEY_H,          BOTH,  XK_h,        NEXT,
-                        KEY_LEFTSHIFT,  DOWN,  XK_Shift_L,  NEXT,
-                        KEY_E,          BOTH,  XK_E,        NEXT,
-                        KEY_L,          BOTH,  XK_L,        NEXT,
-                        KEY_LEFTSHIFT,  DOWN,  XK_Shift_L,  NEXT,
-                        KEY_L,          BOTH,  XK_L,        NEXT,
-                        KEY_O,          BOTH,  XK_O,        FINISH));
+                        KEY_H,          BOTH,  XKB_KEY_h,        NEXT,
+                        KEY_LEFTSHIFT,  DOWN,  XKB_KEY_Shift_L,  NEXT,
+                        KEY_E,          BOTH,  XKB_KEY_E,        NEXT,
+                        KEY_L,          BOTH,  XKB_KEY_L,        NEXT,
+                        KEY_LEFTSHIFT,  DOWN,  XKB_KEY_Shift_L,  NEXT,
+                        KEY_L,          BOTH,  XKB_KEY_L,        NEXT,
+                        KEY_O,          BOTH,  XKB_KEY_O,        FINISH));
 
     /* ... But only by the keycode that set it. */
     assert(test_key_seq(keymap,
-                        KEY_H,           BOTH,  XK_h,        NEXT,
-                        KEY_LEFTSHIFT,   DOWN,  XK_Shift_L,  NEXT,
-                        KEY_E,           BOTH,  XK_E,        NEXT,
-                        KEY_L,           BOTH,  XK_L,        NEXT,
-                        KEY_RIGHTSHIFT,  UP,    XK_Shift_R,  NEXT,
-                        KEY_L,           BOTH,  XK_L,        NEXT,
-                        KEY_O,           BOTH,  XK_O,        FINISH));
+                        KEY_H,           BOTH,  XKB_KEY_h,        NEXT,
+                        KEY_LEFTSHIFT,   DOWN,  XKB_KEY_Shift_L,  NEXT,
+                        KEY_E,           BOTH,  XKB_KEY_E,        NEXT,
+                        KEY_L,           BOTH,  XKB_KEY_L,        NEXT,
+                        KEY_RIGHTSHIFT,  UP,    XKB_KEY_Shift_R,  NEXT,
+                        KEY_L,           BOTH,  XKB_KEY_L,        NEXT,
+                        KEY_O,           BOTH,  XKB_KEY_O,        FINISH));
 
     /*
      * A base modifier should only be cleared when no other key affecting
      * the modifier is down.
      */
     assert(test_key_seq(keymap,
-                        KEY_H,           BOTH,  XK_h,        NEXT,
-                        KEY_LEFTSHIFT,   DOWN,  XK_Shift_L,  NEXT,
-                        KEY_E,           BOTH,  XK_E,        NEXT,
-                        KEY_RIGHTSHIFT,  DOWN,  XK_Shift_R,  NEXT,
-                        KEY_L,           BOTH,  XK_L,        NEXT,
-                        KEY_RIGHTSHIFT,  UP,    XK_Shift_R,  NEXT,
-                        KEY_L,           BOTH,  XK_L,        NEXT,
-                        KEY_LEFTSHIFT,   UP,    XK_Shift_L,  NEXT,
-                        KEY_O,           BOTH,  XK_o,        FINISH));
+                        KEY_H,           BOTH,  XKB_KEY_h,        NEXT,
+                        KEY_LEFTSHIFT,   DOWN,  XKB_KEY_Shift_L,  NEXT,
+                        KEY_E,           BOTH,  XKB_KEY_E,        NEXT,
+                        KEY_RIGHTSHIFT,  DOWN,  XKB_KEY_Shift_R,  NEXT,
+                        KEY_L,           BOTH,  XKB_KEY_L,        NEXT,
+                        KEY_RIGHTSHIFT,  UP,    XKB_KEY_Shift_R,  NEXT,
+                        KEY_L,           BOTH,  XKB_KEY_L,        NEXT,
+                        KEY_LEFTSHIFT,   UP,    XKB_KEY_Shift_L,  NEXT,
+                        KEY_O,           BOTH,  XKB_KEY_o,        FINISH));
 
     /* Group switching / locking. */
     assert(test_key_seq(keymap,
-                        KEY_H,        BOTH,  XK_h,               NEXT,
-                        KEY_E,        BOTH,  XK_e,               NEXT,
-                        KEY_COMPOSE,  BOTH,  XK_ISO_Next_Group,  NEXT,
-                        KEY_K,        BOTH,  XK_hebrew_lamed,    NEXT,
-                        KEY_F,        BOTH,  XK_hebrew_kaph,     NEXT,
-                        KEY_COMPOSE,  BOTH,  XK_ISO_Next_Group,  NEXT,
-                        KEY_O,        BOTH,  XK_o,               FINISH));
+                        KEY_H,        BOTH,  XKB_KEY_h,               NEXT,
+                        KEY_E,        BOTH,  XKB_KEY_e,               NEXT,
+                        KEY_COMPOSE,  BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,
+                        KEY_K,        BOTH,  XKB_KEY_hebrew_lamed,    NEXT,
+                        KEY_F,        BOTH,  XKB_KEY_hebrew_kaph,     NEXT,
+                        KEY_COMPOSE,  BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,
+                        KEY_O,        BOTH,  XKB_KEY_o,               FINISH));
 
     assert(test_key_seq(keymap,
-                        KEY_LEFTSHIFT, DOWN, XK_Shift_L,        NEXT,
-                        KEY_LEFTALT,   DOWN, XK_ISO_Next_Group, NEXT,
-                        KEY_LEFTALT,   UP,   XK_ISO_Next_Group, NEXT,
-                        KEY_LEFTSHIFT, UP,   XK_Shift_L,        FINISH));
+                        KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L,        NEXT,
+                        KEY_LEFTALT,   DOWN, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_LEFTALT,   UP,   XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_LEFTSHIFT, UP,   XKB_KEY_Shift_L,        FINISH));
 
     assert(test_key_seq(keymap,
-                        KEY_LEFTALT,   DOWN, XK_Alt_L,          NEXT,
-                        KEY_LEFTSHIFT, DOWN, XK_ISO_Next_Group, NEXT,
-                        KEY_LEFTSHIFT, UP,   XK_ISO_Next_Group, NEXT,
-                        KEY_LEFTALT,   UP,   XK_Alt_L,          FINISH));
+                        KEY_LEFTALT,   DOWN, XKB_KEY_Alt_L,          NEXT,
+                        KEY_LEFTSHIFT, DOWN, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_LEFTSHIFT, UP,   XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_LEFTALT,   UP,   XKB_KEY_Alt_L,          FINISH));
 
     /* Locked modifiers. */
     assert(test_key_seq(keymap,
-                        KEY_CAPSLOCK,  BOTH,  XK_Caps_Lock,  NEXT,
-                        KEY_H,         BOTH,  XK_H,          NEXT,
-                        KEY_E,         BOTH,  XK_E,          NEXT,
-                        KEY_L,         BOTH,  XK_L,          NEXT,
-                        KEY_L,         BOTH,  XK_L,          NEXT,
-                        KEY_O,         BOTH,  XK_O,          FINISH));
+                        KEY_CAPSLOCK,  BOTH,  XKB_KEY_Caps_Lock,  NEXT,
+                        KEY_H,         BOTH,  XKB_KEY_H,          NEXT,
+                        KEY_E,         BOTH,  XKB_KEY_E,          NEXT,
+                        KEY_L,         BOTH,  XKB_KEY_L,          NEXT,
+                        KEY_L,         BOTH,  XKB_KEY_L,          NEXT,
+                        KEY_O,         BOTH,  XKB_KEY_O,          FINISH));
 
     assert(test_key_seq(keymap,
-                        KEY_H,         BOTH,  XK_h,          NEXT,
-                        KEY_E,         BOTH,  XK_e,          NEXT,
-                        KEY_CAPSLOCK,  BOTH,  XK_Caps_Lock,  NEXT,
-                        KEY_L,         BOTH,  XK_L,          NEXT,
-                        KEY_L,         BOTH,  XK_L,          NEXT,
-                        KEY_CAPSLOCK,  BOTH,  XK_Caps_Lock,  NEXT,
-                        KEY_O,         BOTH,  XK_o,          FINISH));
+                        KEY_H,         BOTH,  XKB_KEY_h,          NEXT,
+                        KEY_E,         BOTH,  XKB_KEY_e,          NEXT,
+                        KEY_CAPSLOCK,  BOTH,  XKB_KEY_Caps_Lock,  NEXT,
+                        KEY_L,         BOTH,  XKB_KEY_L,          NEXT,
+                        KEY_L,         BOTH,  XKB_KEY_L,          NEXT,
+                        KEY_CAPSLOCK,  BOTH,  XKB_KEY_Caps_Lock,  NEXT,
+                        KEY_O,         BOTH,  XKB_KEY_o,          FINISH));
 
     assert(test_key_seq(keymap,
-                        KEY_H,         BOTH,  XK_h,          NEXT,
-                        KEY_CAPSLOCK,  DOWN,  XK_Caps_Lock,  NEXT,
-                        KEY_E,         BOTH,  XK_E,          NEXT,
-                        KEY_L,         BOTH,  XK_L,          NEXT,
-                        KEY_L,         BOTH,  XK_L,          NEXT,
-                        KEY_CAPSLOCK,  UP,    XK_Caps_Lock,  NEXT,
-                        KEY_O,         BOTH,  XK_O,          FINISH));
+                        KEY_H,         BOTH,  XKB_KEY_h,          NEXT,
+                        KEY_CAPSLOCK,  DOWN,  XKB_KEY_Caps_Lock,  NEXT,
+                        KEY_E,         BOTH,  XKB_KEY_E,          NEXT,
+                        KEY_L,         BOTH,  XKB_KEY_L,          NEXT,
+                        KEY_L,         BOTH,  XKB_KEY_L,          NEXT,
+                        KEY_CAPSLOCK,  UP,    XKB_KEY_Caps_Lock,  NEXT,
+                        KEY_O,         BOTH,  XKB_KEY_O,          FINISH));
 
     assert(test_key_seq(keymap,
-                        KEY_H,         BOTH,  XK_h,          NEXT,
-                        KEY_E,         BOTH,  XK_e,          NEXT,
-                        KEY_CAPSLOCK,  UP,    XK_Caps_Lock,  NEXT,
-                        KEY_L,         BOTH,  XK_l,          NEXT,
-                        KEY_L,         BOTH,  XK_l,          NEXT,
-                        KEY_O,         BOTH,  XK_o,          FINISH));
+                        KEY_H,         BOTH,  XKB_KEY_h,          NEXT,
+                        KEY_E,         BOTH,  XKB_KEY_e,          NEXT,
+                        KEY_CAPSLOCK,  UP,    XKB_KEY_Caps_Lock,  NEXT,
+                        KEY_L,         BOTH,  XKB_KEY_l,          NEXT,
+                        KEY_L,         BOTH,  XKB_KEY_l,          NEXT,
+                        KEY_O,         BOTH,  XKB_KEY_o,          FINISH));
 
     /*
      * A key release affecting a locked modifier should clear it
      * regardless of the key press.
      */
     /* assert(test_key_seq(keymap, */
-    /*                     KEY_H,         BOTH,  XK_h,          NEXT, */
-    /*                     KEY_CAPSLOCK,  DOWN,  XK_Caps_Lock,  NEXT, */
-    /*                     KEY_E,         BOTH,  XK_E,          NEXT, */
-    /*                     KEY_L,         BOTH,  XK_L,          NEXT, */
-    /*                     KEY_CAPSLOCK,  UP,    XK_Caps_Lock,  NEXT, */
-    /*                     KEY_L,         BOTH,  XK_L,          NEXT, */
-    /*                     KEY_CAPSLOCK,  UP,    XK_Caps_Lock,  NEXT, */
-    /*                     KEY_O,         BOTH,  XK_o,          FINISH)); */
+    /*                     KEY_H,         BOTH,  XKB_KEY_h,          NEXT, */
+    /*                     KEY_CAPSLOCK,  DOWN,  XKB_KEY_Caps_Lock,  NEXT, */
+    /*                     KEY_E,         BOTH,  XKB_KEY_E,          NEXT, */
+    /*                     KEY_L,         BOTH,  XKB_KEY_L,          NEXT, */
+    /*                     KEY_CAPSLOCK,  UP,    XKB_KEY_Caps_Lock,  NEXT, */
+    /*                     KEY_L,         BOTH,  XKB_KEY_L,          NEXT, */
+    /*                     KEY_CAPSLOCK,  UP,    XKB_KEY_Caps_Lock,  NEXT, */
+    /*                     KEY_O,         BOTH,  XKB_KEY_o,          FINISH)); */
 
     /* Simple Num Lock sanity check. */
     assert(test_key_seq(keymap,
-                        KEY_KP1,      BOTH,  XK_KP_End,    NEXT,
-                        KEY_NUMLOCK,  BOTH,  XK_Num_Lock,  NEXT,
-                        KEY_KP1,      BOTH,  XK_KP_1,      NEXT,
-                        KEY_KP2,      BOTH,  XK_KP_2,      NEXT,
-                        KEY_NUMLOCK,  BOTH,  XK_Num_Lock,  NEXT,
-                        KEY_KP2,      BOTH,  XK_KP_Down,   FINISH));
+                        KEY_KP1,      BOTH,  XKB_KEY_KP_End,    NEXT,
+                        KEY_NUMLOCK,  BOTH,  XKB_KEY_Num_Lock,  NEXT,
+                        KEY_KP1,      BOTH,  XKB_KEY_KP_1,      NEXT,
+                        KEY_KP2,      BOTH,  XKB_KEY_KP_2,      NEXT,
+                        KEY_NUMLOCK,  BOTH,  XKB_KEY_Num_Lock,  NEXT,
+                        KEY_KP2,      BOTH,  XKB_KEY_KP_Down,   FINISH));
 
     xkb_map_unref(keymap);
     xkb_context_unref(ctx);
