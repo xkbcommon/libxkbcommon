@@ -879,56 +879,38 @@ HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def, enum merge_mode merge)
 static void
 HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
 {
+    bool ok;
     ParseCommon *stmt;
 
     free(info->name);
     info->name = strdup_safe(file->name);
-    stmt = file->defs;
-    while (stmt)
-    {
+
+    for (stmt = file->defs; stmt; stmt = stmt->next) {
         switch (stmt->type) {
         case STMT_INCLUDE:
-            if (!HandleIncludeKeyTypes(info, (IncludeStmt *) stmt))
-                info->errorCount++;
+            ok = HandleIncludeKeyTypes(info, (IncludeStmt *) stmt);
             break;
         case STMT_TYPE: /* e.g. type "ONE_LEVEL" */
-            if (!HandleKeyTypeDef(info, (KeyTypeDef *) stmt, merge))
-                info->errorCount++;
+            ok = HandleKeyTypeDef(info, (KeyTypeDef *) stmt, merge);
             break;
         case STMT_VAR:
-            if (!HandleKeyTypeVar(info, (VarDef *) stmt))
-                info->errorCount++;
+            ok = HandleKeyTypeVar(info, (VarDef *) stmt);
             break;
         case STMT_VMOD: /* virtual_modifiers NumLock, ... */
-            if (!HandleVModDef((VModDef *) stmt, info->keymap, merge,
-                               &info->vmods))
-                info->errorCount++;
-            break;
-        case STMT_ALIAS:
-            log_err(info->keymap->ctx,
-                    "Key type files may not include other declarations; "
-                    "Ignoring definition of key alias\n");
-            info->errorCount++;
-            break;
-        case STMT_KEYCODE:
-            log_err(info->keymap->ctx,
-                    "Key type files may not include other declarations; "
-                    "Ignoring definition of key name\n");
-            info->errorCount++;
-            break;
-        case STMT_INTERP:
-            log_err(info->keymap->ctx,
-                    "Key type files may not include other declarations; "
-                    "Ignoring definition of symbol interpretation\n");
-            info->errorCount++;
+            ok = HandleVModDef((VModDef *) stmt, info->keymap, merge,
+                               &info->vmods);
             break;
         default:
-            log_wsgo(info->keymap->ctx,
-                     "Unexpected statement type %d in HandleKeyTypesFile\n",
-                     stmt->type);
+            log_err(info->keymap->ctx,
+                    "Key type files may not include other declarations; "
+                    "Ignoring %s\n", StmtTypeToString(stmt->type));
+            ok = false;
             break;
         }
-        stmt = stmt->next;
+
+        if (!ok)
+            info->errorCount++;
+
         if (info->errorCount > 10) {
             log_err(info->keymap->ctx,
                     "Abandoning keytypes file \"%s\"\n", file->topName);

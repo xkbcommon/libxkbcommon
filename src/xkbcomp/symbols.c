@@ -1409,54 +1409,42 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
 static void
 HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge)
 {
+    bool ok;
     ParseCommon *stmt;
 
     free(info->name);
     info->name = strdup_safe(file->name);
+
     stmt = file->defs;
-    while (stmt)
-    {
+    for (stmt = file->defs; stmt; stmt = stmt->next) {
         switch (stmt->type) {
         case STMT_INCLUDE:
-            if (!HandleIncludeSymbols(info, (IncludeStmt *) stmt))
-                info->errorCount++;
+            ok = HandleIncludeSymbols(info, (IncludeStmt *) stmt);
             break;
         case STMT_SYMBOLS:
-            if (!HandleSymbolsDef(info, (SymbolsDef *) stmt))
-                info->errorCount++;
+            ok = HandleSymbolsDef(info, (SymbolsDef *) stmt);
             break;
         case STMT_VAR:
-            if (!HandleSymbolsVar(info, (VarDef *) stmt))
-                info->errorCount++;
+            ok = HandleSymbolsVar(info, (VarDef *) stmt);
             break;
         case STMT_VMOD:
-            if (!HandleVModDef((VModDef *) stmt, info->keymap, merge,
-                               &info->vmods))
-                info->errorCount++;
-            break;
-        case STMT_INTERP:
-            log_err(info->keymap->ctx,
-                    "Interpretation files may not include other types; "
-                    "Ignoring definition of symbol interpretation\n");
-            info->errorCount++;
-            break;
-        case STMT_KEYCODE:
-            log_err(info->keymap->ctx,
-                    "Interpretation files may not include other types; "
-                    "Ignoring definition of key name\n");
-            info->errorCount++;
+            ok = HandleVModDef((VModDef *) stmt, info->keymap, merge,
+                               &info->vmods);
             break;
         case STMT_MODMAP:
-            if (!HandleModMapDef(info, (ModMapDef *) stmt))
-                info->errorCount++;
+            ok = HandleModMapDef(info, (ModMapDef *) stmt);
             break;
         default:
-            log_wsgo(info->keymap->ctx,
-                     "Unexpected statement type %d in HandleSymbolsFile\n",
-                     stmt->type);
+            log_err(info->keymap->ctx,
+                    "Interpretation files may not include other types; "
+                    "Ignoring %s\n", StmtTypeToString(stmt->type));
+            ok = false;
             break;
         }
-        stmt = stmt->next;
+
+        if (!ok)
+            info->errorCount++;
+
         if (info->errorCount > 10) {
             log_err(info->keymap->ctx, "Abandoning symbols file \"%s\"\n",
                     file->topName);

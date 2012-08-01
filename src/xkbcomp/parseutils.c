@@ -671,3 +671,28 @@ FreeXKBFile(XkbFile *file)
         file = next;
     }
 }
+
+const char *stmt_type_strings[_STMT_NUM_VALUES] = {
+    [STMT_UNKNOWN] = "unknown statement",
+    [STMT_INCLUDE] = "include statement",
+    [STMT_KEYCODE] = "key name definition",
+    [STMT_ALIAS] = "key alias definition",
+    [STMT_EXPR] = "expression",
+    [STMT_VAR] = "variable definition",
+    [STMT_TYPE] = "key type definition",
+    [STMT_INTERP] = "symbol interpretation definition",
+    [STMT_VMOD] = "virtual modifiers definition",
+    [STMT_SYMBOLS] = "key symbols definition",
+    [STMT_MODMAP] = "modifier map declaration",
+    [STMT_GROUP_COMPAT] = "group declaration",
+    [STMT_INDICATOR_MAP] = "indicator map declaration",
+    [STMT_INDICATOR_NAME] = "indicator name declaration",
+};
+
+const char *
+StmtTypeToString(enum stmt_type type)
+{
+    if (type >= _STMT_NUM_VALUES)
+        type = STMT_UNKNOWN;
+    return stmt_type_strings[type];
+}

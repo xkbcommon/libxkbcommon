@@ -1045,54 +1045,46 @@ HandleIndicatorMapDef(CompatInfo *info, IndicatorMapDef *def,
 static void
 HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
 {
+    bool ok;
     ParseCommon *stmt;
 
-    if (merge == MERGE_DEFAULT)
-        merge = MERGE_AUGMENT;
+    merge = (merge == MERGE_DEFAULT ? MERGE_AUGMENT : merge);
+
     free(info->name);
     info->name = strdup_safe(file->name);
-    stmt = file->defs;
-    while (stmt)
-    {
+
+    for (stmt = file->defs; stmt; stmt = stmt->next) {
         switch (stmt->type) {
         case STMT_INCLUDE:
-            if (!HandleIncludeCompatMap(info, (IncludeStmt *) stmt))
-                info->errorCount++;
+            ok = HandleIncludeCompatMap(info, (IncludeStmt *) stmt);
             break;
         case STMT_INTERP:
-            if (!HandleInterpDef(info, (InterpDef *) stmt, merge))
-                info->errorCount++;
+            ok = HandleInterpDef(info, (InterpDef *) stmt, merge);
             break;
         case STMT_GROUP_COMPAT:
-            if (!HandleGroupCompatDef(info, (GroupCompatDef *) stmt, merge))
-                info->errorCount++;
+            ok = HandleGroupCompatDef(info, (GroupCompatDef *) stmt, merge);
             break;
         case STMT_INDICATOR_MAP:
-            if (!HandleIndicatorMapDef(info, (IndicatorMapDef *) stmt, merge))
-                info->errorCount++;
+            ok = HandleIndicatorMapDef(info, (IndicatorMapDef *) stmt, merge);
             break;
         case STMT_VAR:
-            if (!HandleInterpVar(info, (VarDef *) stmt))
-                info->errorCount++;
+            ok = HandleInterpVar(info, (VarDef *) stmt);
             break;
         case STMT_VMOD:
-            if (!HandleVModDef((VModDef *) stmt, info->keymap, merge,
-                               &info->vmods))
-                info->errorCount++;
-            break;
-        case STMT_KEYCODE:
-            log_err(info->keymap->ctx,
-                    "Interpretation files may not include other types; "
-                    "Ignoring definition of key name\n");
-            info->errorCount++;
+            ok = HandleVModDef((VModDef *) stmt, info->keymap, merge,
+                               &info->vmods);
             break;
         default:
-            log_wsgo(info->keymap->ctx,
-                     "Unexpected statement type %d in HandleCompatMapFile\n",
-                     stmt->type);
+            log_err(info->keymap->ctx,
+                    "Interpretation files may not include other types; "
+                    "Ignoring %s\n", StmtTypeToString(stmt->type));
+            ok = false;
             break;
         }
-        stmt = stmt->next;
+
+        if (!ok)
+            info->errorCount++;
+
         if (info->errorCount > 10) {
             log_err(info->keymap->ctx,
                     "Abandoning compatibility map \"%s\"\n", file->topName);

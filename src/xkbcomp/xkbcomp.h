@@ -44,6 +44,7 @@ enum stmt_type {
     STMT_GROUP_COMPAT,
     STMT_INDICATOR_MAP,
     STMT_INDICATOR_NAME,
+    _STMT_NUM_VALUES
 };
 
 enum expr_value_type {
