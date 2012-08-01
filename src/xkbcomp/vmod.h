@@ -33,8 +33,6 @@
 typedef struct _VModInfo {
     xkb_mod_mask_t defined;
     xkb_mod_mask_t available;
-    xkb_mod_mask_t newlyDefined;
-    int errorCount;
 } VModInfo;
 
 extern void
@@ -45,11 +43,7 @@ ClearVModInfo(VModInfo *info, struct xkb_keymap *keymap);
 
 extern bool
 HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
-              enum merge_mode mergeMode,
-              VModInfo *info);
-
-extern bool
-ApplyVModDefs(VModInfo *info, struct xkb_keymap *keymap);
+              enum merge_mode mergeMode, VModInfo *info);
 
 xkb_mod_index_t
 FindKeypadVMod(struct xkb_keymap *keymap);

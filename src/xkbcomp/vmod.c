@@ -30,7 +30,6 @@ void
 InitVModInfo(VModInfo *info, struct xkb_keymap *keymap)
 {
     ClearVModInfo(info, keymap);
-    info->errorCount = 0;
 }
 
 void
@@ -39,7 +38,7 @@ ClearVModInfo(VModInfo *info, struct xkb_keymap *keymap)
     xkb_mod_index_t i;
     xkb_mod_mask_t bit;
 
-    info->newlyDefined = info->defined = info->available = 0;
+    info->defined = info->available = 0;
 
     for (i = 0; i < XkbNumVirtualMods; i++)
         keymap->vmods[i] = XkbNoModifierMask;
@@ -126,7 +125,6 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
     }
 
     info->defined |= (1 << nextFree);
-    info->newlyDefined |= (1 << nextFree);
     info->available |= (1 << nextFree);
 
     keymap->vmod_names[nextFree] = xkb_atom_text(keymap->ctx, stmt->name);
