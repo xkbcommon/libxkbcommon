@@ -133,7 +133,7 @@ xkb_map_mod_get_index(struct xkb_keymap *keymap, const char *name)
             return i + XkbNumModifiers;
     }
 
-    return XKB_GROUP_INVALID;
+    return XKB_MOD_INVALID;
 }
 
 /**
