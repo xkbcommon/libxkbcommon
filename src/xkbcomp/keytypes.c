@@ -159,17 +159,11 @@ typedef struct _KeyTypesInfo {
     char *name;
     int errorCount;
     unsigned file_id;
-    unsigned stdPresent;
     unsigned nTypes;
     struct list types;
     KeyTypeInfo dflt;
     VModInfo vmods;
     struct xkb_keymap *keymap;
-
-    xkb_atom_t tok_ONE_LEVEL;
-    xkb_atom_t tok_TWO_LEVEL;
-    xkb_atom_t tok_ALPHABETIC;
-    xkb_atom_t tok_KEYPAD;
 } KeyTypesInfo;
 
 /***====================================================================***/
@@ -239,20 +233,15 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
 {
     PreserveInfo *old, *new;
 
-    info->tok_ONE_LEVEL = xkb_atom_intern(keymap->ctx, "ONE_LEVEL");
-    info->tok_TWO_LEVEL = xkb_atom_intern(keymap->ctx, "TWO_LEVEL");
-    info->tok_ALPHABETIC = xkb_atom_intern(keymap->ctx, "ALPHABETIC");
-    info->tok_KEYPAD = xkb_atom_intern(keymap->ctx, "KEYPAD");
     info->name = strdup("default");
     info->errorCount = 0;
-    info->stdPresent = 0;
     info->nTypes = 0;
     list_init(&info->types);
     info->file_id = file_id;
     info->dflt.defined = 0;
     info->dflt.file_id = file_id;
     info->dflt.merge = MERGE_OVERRIDE;
-    info->dflt.name = XKB_ATOM_NONE;
+    info->dflt.name = xkb_atom_intern(keymap->ctx, "DEFAULT");
     info->dflt.mask = 0;
     info->dflt.vmask = 0;
     info->dflt.numLevels = 1;
@@ -341,33 +330,6 @@ AddKeyType(KeyTypesInfo *info, KeyTypeInfo *new)
     struct list type_entry, preserves_entry;
     int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
 
-    if (new->name == info->tok_ONE_LEVEL) {
-        if (new->numLevels > 1)
-            return ReportTypeBadWidth(info, "ONE_LEVEL", new->numLevels, 1);
-        info->stdPresent |= XkbOneLevelMask;
-    }
-    else if (new->name == info->tok_TWO_LEVEL) {
-        if (new->numLevels > 2)
-            return ReportTypeBadWidth(info, "TWO_LEVEL", new->numLevels, 2);
-        else if (new->numLevels < 2)
-            new->numLevels = 2;
-        info->stdPresent |= XkbTwoLevelMask;
-    }
-    else if (new->name == info->tok_ALPHABETIC) {
-        if (new->numLevels > 2)
-            return ReportTypeBadWidth(info, "ALPHABETIC", new->numLevels, 2);
-        else if (new->numLevels < 2)
-            new->numLevels = 2;
-        info->stdPresent |= XkbAlphabeticMask;
-    }
-    else if (new->name == info->tok_KEYPAD) {
-        if (new->numLevels > 2)
-            return ReportTypeBadWidth(info, "KEYPAD", new->numLevels, 2);
-        else if (new->numLevels < 2)
-            new->numLevels = 2;
-        info->stdPresent |= XkbKeypadMask;
-    }
-
     old = FindMatchingKeyType(info, new);
     if (old) {
         if (new->merge == MERGE_REPLACE || new->merge == MERGE_OVERRIDE) {
@@ -437,8 +399,6 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
         if (!AddKeyType(into, type))
             into->errorCount++;
     }
-
-    into->stdPresent |= from->stdPresent;
 }
 
 static void
@@ -1104,176 +1064,12 @@ CopyDefToKeyType(KeyTypesInfo *info, KeyTypeInfo *def,
     return ComputeEffectiveMap(keymap, type);
 }
 
-static struct xkb_kt_map_entry map2Level[] = {
-    {
-        .level = ShiftMask,
-        .mods = { .mask = 1, .vmods = ShiftMask, .real_mods = 0 }
-    }
-};
-
-static struct xkb_kt_map_entry mapAlpha[] = {
-    {
-        .level = ShiftMask,
-        .mods = { .mask = 1, .vmods = ShiftMask, .real_mods = 0 }
-    },
-    {
-        .level = LockMask,
-        .mods = { .mask = 0, .vmods = LockMask, .real_mods = 0 }
-    }
-};
-
-static struct xkb_mods preAlpha[] = {
-    { .mask = 0, .vmods = 0, .real_mods = 0 },
-    { .mask = LockMask, .vmods = LockMask, .real_mods = 0 }
-};
-
-static struct xkb_kt_map_entry mapKeypad[] = {
-    {
-        .level = ShiftMask,
-        .mods = { .mask = 1, .vmods = ShiftMask, .real_mods = 0 }
-    },
-    {
-        .level = 0,
-        .mods = { .mask = 1, .vmods = 0, .real_mods = 0 }
-    }
-};
-
-static const struct xkb_key_type canonicalTypes[XkbNumRequiredTypes] = {
-    [XkbOneLevelIndex] = {
-        .mods = { .mask = 0, .vmods = 0, .real_mods = 0 },
-        .num_levels = 1,
-        .preserve = NULL,
-        .name = NULL,
-        .level_names = NULL
-    },
-    [XkbTwoLevelIndex] = {
-        .mods = { .mask = ShiftMask, .vmods = ShiftMask, .real_mods = 0 },
-        .num_levels = 2,
-        .map = darray_lit(map2Level),
-        .preserve = NULL,
-        .name = NULL,
-        .level_names = NULL
-    },
-    [XkbAlphabeticIndex] = {
-        .mods = {
-            .mask = ShiftMask | LockMask,
-            .vmods = ShiftMask | LockMask,
-            .real_mods = 0
-        },
-        .num_levels = 2,
-        .map = darray_lit(mapAlpha),
-        .preserve = preAlpha,
-        .name = NULL,
-        .level_names = NULL
-    },
-    [XkbKeypadIndex] = {
-        .mods = { .mask = ShiftMask, .vmods = ShiftMask, .real_mods = 0 },
-        .num_levels = 2,
-        .map = darray_lit(mapKeypad),
-        .preserve = NULL,
-        .name = NULL,
-        .level_names = NULL
-    }
-};
-
-static int
-CopyKeyType(const struct xkb_key_type *from, struct xkb_key_type *into)
-{
-    int i;
-
-    darray_free(into->map);
-    free(into->preserve);
-    free(into->level_names);
-
-    *into = *from;
-    darray_init(into->map);
-
-    darray_copy(into->map, from->map);
-
-    if (from->preserve && !darray_empty(into->map)) {
-        into->preserve = calloc(darray_size(into->map),
-                                sizeof(*into->preserve));
-        if (!into->preserve)
-            return BadAlloc;
-        memcpy(into->preserve, from->preserve,
-               darray_size(into->map) * sizeof(*into->preserve));
-    }
-
-    if (from->level_names && into->num_levels > 0) {
-        into->level_names = calloc(into->num_levels,
-                                   sizeof(*into->level_names));
-        if (!into->level_names)
-            return BadAlloc;
-
-        for (i = 0; i < into->num_levels; i++)
-            into->level_names[i] = strdup(from->level_names[i]);
-    }
-
-    return Success;
-}
-
-static int
-InitCanonicalKeyTypes(struct xkb_keymap *keymap, unsigned which,
-                      int keypadVMod)
-{
-    const struct xkb_key_type *from;
-    int rtrn;
-
-    darray_growalloc(keymap->types, XkbNumRequiredTypes);
-
-    if ((which & XkbAllRequiredTypes) == 0)
-        return Success;
-
-    rtrn = Success;
-    from = canonicalTypes;
-
-    if (which & XkbOneLevelMask)
-        rtrn = CopyKeyType(&from[XkbOneLevelIndex],
-                           &darray_item(keymap->types, XkbOneLevelIndex));
-
-    if ((which & XkbTwoLevelMask) && rtrn == Success)
-        rtrn = CopyKeyType(&from[XkbTwoLevelIndex],
-                           &darray_item(keymap->types, XkbTwoLevelIndex));
-
-    if ((which & XkbAlphabeticMask) && rtrn == Success)
-        rtrn = CopyKeyType(&from[XkbAlphabeticIndex],
-                           &darray_item(keymap->types, XkbAlphabeticIndex));
-
-    if ((which & XkbKeypadMask) && rtrn == Success) {
-        struct xkb_key_type *type;
-
-        rtrn = CopyKeyType(&from[XkbKeypadIndex],
-                           &darray_item(keymap->types, XkbKeypadIndex));
-        type = &darray_item(keymap->types, XkbKeypadIndex);
-
-        if (keypadVMod >= 0 && keypadVMod < XkbNumVirtualMods &&
-            rtrn == Success) {
-            struct xkb_kt_map_entry *entry;
-            type->mods.vmods = (1 << keypadVMod);
-
-            entry = &darray_item(type->map, 0);
-            entry->mods.mask = ShiftMask;
-            entry->mods.real_mods = ShiftMask;
-            entry->mods.vmods = 0;
-            entry->level = 1;
-
-            entry = &darray_item(type->map, 1);
-            entry->mods.mask = 0;
-            entry->mods.real_mods = 0;
-            entry->mods.vmods = (1 << keypadVMod);
-            entry->level = 1;
-        }
-    }
-
-    return Success;
-}
-
 bool
 CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
                 enum merge_mode merge)
 {
     unsigned int i;
-    struct xkb_key_type *type, *next;
+    struct xkb_key_type *type;
     KeyTypesInfo info;
     KeyTypeInfo *def;
 
@@ -1287,60 +1083,24 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
     if (info.name)
         keymap->types_section_name = strdup(info.name);
 
-    i = info.nTypes;
-    if ((info.stdPresent & XkbOneLevelMask) == 0)
-        i++;
-    if ((info.stdPresent & XkbTwoLevelMask) == 0)
-        i++;
-    if ((info.stdPresent & XkbKeypadMask) == 0)
-        i++;
-    if ((info.stdPresent & XkbAlphabeticMask) == 0)
-        i++;
+    darray_resize0(keymap->types, info.nTypes ? info.nTypes : 1);
 
-    darray_resize0(keymap->types, i);
-
-    if (XkbAllRequiredTypes & (~info.stdPresent)) {
-        unsigned missing, keypadVMod;
-
-        missing = XkbAllRequiredTypes & (~info.stdPresent);
-        keypadVMod = FindKeypadVMod(keymap);
-
-        if (InitCanonicalKeyTypes(keymap, missing, keypadVMod) != Success) {
-            log_wsgo(info.keymap->ctx,
-                     "Couldn't initialize canonical key types\n");
-            goto err_info;
-        }
-
-        if (missing & XkbOneLevelMask)
-            darray_item(keymap->types, XkbOneLevelIndex).name =
-                xkb_atom_text(keymap->ctx, info.tok_ONE_LEVEL);
-        if (missing & XkbTwoLevelMask)
-            darray_item(keymap->types, XkbTwoLevelIndex).name =
-                xkb_atom_text(keymap->ctx, info.tok_TWO_LEVEL);
-        if (missing & XkbAlphabeticMask)
-            darray_item(keymap->types, XkbAlphabeticIndex).name =
-                xkb_atom_text(keymap->ctx, info.tok_ALPHABETIC);
-        if (missing & XkbKeypadMask)
-            darray_item(keymap->types, XkbKeypadIndex).name =
-                xkb_atom_text(keymap->ctx, info.tok_KEYPAD);
-    }
-
-    next = &darray_item(keymap->types, XkbLastRequiredType + 1);
+    i = 0;
     list_foreach(def, &info.types, entry) {
-        if (def->name == info.tok_ONE_LEVEL)
-            type = &darray_item(keymap->types, XkbOneLevelIndex);
-        else if (def->name == info.tok_TWO_LEVEL)
-            type = &darray_item(keymap->types, XkbTwoLevelIndex);
-        else if (def->name == info.tok_ALPHABETIC)
-            type = &darray_item(keymap->types, XkbAlphabeticIndex);
-        else if (def->name == info.tok_KEYPAD)
-            type = &darray_item(keymap->types, XkbKeypadIndex);
-        else
-            type = next++;
+        type = &darray_item(keymap->types, i++);
 
         DeleteLevel1MapEntries(def);
 
         if (!CopyDefToKeyType(&info, def, type))
+            goto err_info;
+    }
+
+    /*
+     * If no types were specified, the default unnamed one-level type is
+     * used for all keys.
+     */
+    if (i == 0) {
+        if (!CopyDefToKeyType(&info, &info.dflt, &darray_item(keymap->types, 0)))
             goto err_info;
     }
 

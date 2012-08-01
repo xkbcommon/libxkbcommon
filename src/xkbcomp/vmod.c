@@ -205,19 +205,6 @@ LookupVModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
     return false;
 }
 
-xkb_mod_index_t
-FindKeypadVMod(struct xkb_keymap *keymap)
-{
-    xkb_atom_t name;
-    xkb_mod_index_t ndx;
-
-    name = xkb_atom_intern(keymap->ctx, "NumLock");
-    if (LookupVModIndex(keymap, name, EXPR_TYPE_INT, &ndx))
-        return ndx;
-
-    return -1;
-}
-
 bool
 ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
                        xkb_mod_index_t *ndx_rtrn, VModInfo *info)

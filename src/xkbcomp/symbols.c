@@ -1488,15 +1488,14 @@ FindNamedType(struct xkb_keymap *keymap, xkb_atom_t atom, unsigned *type_rtrn)
     const char *name = xkb_atom_text(keymap->ctx, atom);
     struct xkb_key_type *type;
 
-    if (keymap) {
-        darray_foreach(type, keymap->types) {
-            if (streq(type->name, name)) {
-                *type_rtrn = n;
-                return true;
-            }
-            n++;
+    darray_foreach(type, keymap->types) {
+        if (streq(type->name, name)) {
+            *type_rtrn = n;
+            return true;
         }
+        n++;
     }
+
     return false;
 }
 
@@ -1743,10 +1742,14 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
         else {
             log_lvl(info->keymap->ctx, 3,
                     "Type \"%s\" is not defined; "
-                    "Using TWO_LEVEL for the %s key (keycode %d)\n",
+                    "Using default type for the %s key (keycode %d)\n",
                     xkb_atom_text(keymap->ctx, keyi->types[i]),
                     LongKeyNameText(keyi->name), kc);
-            types[i] = XkbTwoLevelIndex;
+            /*
+             * Index 0 is guaranteed to contain something, usually
+             * ONE_LEVEL or at least some default one-level type.
+             */
+            types[i] = 0;
         }
 
         /* if the type specifies fewer levels than the key has, shrink the key */

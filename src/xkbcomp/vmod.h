@@ -45,9 +45,6 @@ extern bool
 HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
               enum merge_mode mergeMode, VModInfo *info);
 
-xkb_mod_index_t
-FindKeypadVMod(struct xkb_keymap *keymap);
-
 bool
 ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
                        xkb_mod_index_t *ndx_rtrn, VModInfo *info);

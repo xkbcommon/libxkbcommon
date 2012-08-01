@@ -316,13 +316,6 @@ xkb_keymap {
 			level_name[Level1]= "Base";
 			level_name[Level2]= "Caps";
 		};
-		type "KEYPAD" {
-			modifiers= Shift+NumLock;
-			map[Shift]= Level2;
-			map[NumLock]= Level2;
-			level_name[Level1]= "Base";
-			level_name[Level2]= "Number";
-		};
 		type "SHIFT+ALT" {
 			modifiers= Shift+Alt;
 			map[Shift+Alt]= Level2;
@@ -576,6 +569,13 @@ xkb_keymap {
 			level_name[Level3]= "Alt Base";
 			level_name[Level4]= "Shift Alt";
 			level_name[Level5]= "Lock";
+		};
+		type "KEYPAD" {
+			modifiers= Shift+NumLock;
+			map[Shift]= Level2;
+			map[NumLock]= Level2;
+			level_name[Level1]= "Base";
+			level_name[Level2]= "Number";
 		};
 		type "FOUR_LEVEL_KEYPAD" {
 			modifiers= Shift+NumLock+LevelThree;
