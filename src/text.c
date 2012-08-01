@@ -128,15 +128,22 @@ VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t modMask,
     return rtrn;
 }
 
+/*
+ * IMPORTATNT
+ * The indices used for the legacy core modifiers is derived from
+ * the order of the names in this table. It matches the values
+ * ShiftMapIndex, LockMapIndex, etc. from X11/X.h. Take note before
+ * changing.
+ */
 static const char *modNames[XkbNumModifiers] = {
-    [ShiftMapIndex]   = "Shift",
-    [LockMapIndex]    = "Lock",
-    [ControlMapIndex] = "Control",
-    [Mod1MapIndex]    = "Mod1",
-    [Mod2MapIndex]    = "Mod2",
-    [Mod3MapIndex]    = "Mod3",
-    [Mod4MapIndex]    = "Mod4",
-    [Mod5MapIndex]    = "Mod5",
+    "Shift",
+    "Lock",
+    "Control",
+    "Mod1",
+    "Mod2",
+    "Mod3",
+    "Mod4",
+    "Mod5",
 };
 
 xkb_mod_index_t

@@ -84,7 +84,6 @@
 #include <strings.h>
 #include <syslog.h>
 #include <X11/extensions/XKB.h>
-#include <X11/X.h>
 
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"

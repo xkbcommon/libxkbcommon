@@ -83,7 +83,7 @@ if test "x$GCC" = xyes ; then
 fi
 
 # Obtain protocols headers include directives
-PKG_CHECK_MODULES([X11], [xproto kbproto >= 1.0.4])
+PKG_CHECK_MODULES([X11], [kbproto >= 1.0.4])
 
 # Define a configuration option for the XKB config root
 xkb_base=`$PKG_CONFIG --variable=xkb_base xkeyboard-config`

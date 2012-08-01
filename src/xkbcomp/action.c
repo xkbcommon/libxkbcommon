@@ -1166,7 +1166,7 @@ ApplyActionFactoryDefaults(union xkb_action * action)
         action->dflt.value = 1;
     }
     else if (action->type == XkbSA_ISOLock) {
-        action->iso.real_mods = LockMask;
+        action->iso.real_mods = ModNameToIndex(XKB_MOD_NAME_CAPS);
     }
 }
 
