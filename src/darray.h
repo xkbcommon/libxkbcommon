@@ -25,7 +25,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "config.h"
 
 /*
  * SYNOPSIS
@@ -38,12 +37,6 @@
  *     struct {darray(int) a;} foo;
  *     darray_init(foo.a);
  *     darray_free(foo.a);
- *
- *     const struct {
- *         darray(int) a;
- *      } foo = {
- *         .a = darray_lit({1, 2, 3})
- *      };
  *
  * Typedefs for darrays of common types:
  *
@@ -76,10 +69,6 @@
  *     void   darray_appends(darray(T) arr, [T item, [...]]);
  *     void   darray_prepends(darray(T) arr, [T item, [...]]);
  *
- *     // Same functionality as above, but does not require typeof.
- *     void   darray_appends_t(darray(T) arr, #T, [T item, [...]]);
- *     void   darray_prepends_t(darray(T) arr, #T, [T item, [...]]);
- *
  * Removal:
  *
  *     T      darray_pop(darray(T) arr | darray_size(arr) != 0);
@@ -109,8 +98,6 @@
  *     void   darray_realloc(darray(T) arr, size_t newAlloc);
  *     void   darray_growalloc(darray(T) arr, size_t newAlloc);
  *
- *     void   darray_make_room(darray(T) arr, size_t room);
- *
  * Traversal:
  *
  *     darray_foreach(T *&i, darray(T) arr) {...}
@@ -122,16 +109,17 @@
 
 /*** Life cycle ***/
 
-#define darray(type)     struct { type *item; size_t size; size_t alloc; }
+#define darray(type) struct { type *item; size_t size; size_t alloc; }
 
-#define darray_new()     { 0, 0, 0 }
-#define darray_init(arr) do { (arr).item = 0; (arr).size = 0; (arr).alloc = 0; \
+#define darray_new() { 0, 0, 0 }
+
+#define darray_init(arr) do { \
+    (arr).item = 0; (arr).size = 0; (arr).alloc = 0; \
 } while (0)
-#define darray_free(arr) do { free((arr).item); darray_init(arr); } while (0)
 
-/* Only use for immutable darray - e.g. for static const initialzers. */
-#define darray_lit(c_array) { (c_array), sizeof(c_array) / sizeof(*(c_array)), \
-                              0 }
+#define darray_free(arr) do { \
+    free((arr).item); darray_init(arr); \
+} while (0)
 
 /*
  * Typedefs for darrays of common types.  These are useful
@@ -175,150 +163,145 @@ typedef darray (unsigned long)  darray_ulong;
 /*** Insertion (single item) ***/
 
 #define darray_append(arr, ...)  do { \
-        darray_resize(arr, (arr).size + 1); \
-        (arr).item[(arr).size - 1] = (__VA_ARGS__); \
+    darray_resize(arr, (arr).size + 1); \
+    (arr).item[(arr).size - 1] = (__VA_ARGS__); \
 } while (0)
+
 #define darray_prepend(arr, ...) do { \
-        darray_resize(arr, (arr).size + 1); \
-        memmove((arr).item + 1, (arr).item, \
-                ((arr).size - 1) * sizeof(*(arr).item)); \
-        (arr).item[0] = (__VA_ARGS__); \
+    darray_resize(arr, (arr).size + 1); \
+    memmove((arr).item + 1, (arr).item, \
+            ((arr).size - 1) * sizeof(*(arr).item)); \
+    (arr).item[0] = (__VA_ARGS__); \
 } while (0)
-#define darray_push(arr, ...)    darray_append(arr, __VA_ARGS__)
+
+#define darray_push(arr, ...) darray_append(arr, __VA_ARGS__)
 
 /*** Insertion (multiple items) ***/
 
-#define darray_append_items(arr, items, count)                do { \
-        size_t __count = (count), __oldSize = (arr).size; \
-        darray_resize(arr, __oldSize + __count); \
-        memcpy((arr).item + __oldSize, items, __count * sizeof(*(arr).item)); \
+#define darray_append_items(arr, items, count) do { \
+    size_t __count = (count), __oldSize = (arr).size; \
+    darray_resize(arr, __oldSize + __count); \
+    memcpy((arr).item + __oldSize, items, __count * sizeof(*(arr).item)); \
 } while (0)
 
-#define darray_prepend_items(arr, items, count)               do { \
-        size_t __count = (count), __oldSize = (arr).size; \
-        darray_resize(arr, __count + __oldSize); \
-        memmove((arr).item + __count, (arr).item, __oldSize * \
-                sizeof(*(arr).item)); \
-        memcpy((arr).item, items, __count * sizeof(*(arr).item)); \
+#define darray_prepend_items(arr, items, count) do { \
+    size_t __count = (count), __oldSize = (arr).size; \
+    darray_resize(arr, __count + __oldSize); \
+    memmove((arr).item + __count, (arr).item, \
+            __oldSize * sizeof(*(arr).item)); \
+    memcpy((arr).item, items, __count * sizeof(*(arr).item)); \
 } while (0)
 
-#define darray_append_items_nullterminate(arr, items, count)  do { \
-        size_t __count = (count), __oldSize = (arr).size; \
-        darray_resize(arr, __oldSize + __count + 1); \
-        memcpy((arr).item + __oldSize, items, __count * sizeof(*(arr).item)); \
-        (arr).item[--(arr).size] = 0; \
+#define darray_append_items_nullterminate(arr, items, count) do { \
+    size_t __count = (count), __oldSize = (arr).size; \
+    darray_resize(arr, __oldSize + __count + 1); \
+    memcpy((arr).item + __oldSize, items, __count * sizeof(*(arr).item)); \
+    (arr).item[--(arr).size] = 0; \
 } while (0)
 
 #define darray_prepend_items_nullterminate(arr, items, count) do { \
-        size_t __count = (count), __oldSize = (arr).size; \
-        darray_resize(arr, __count + __oldSize + 1); \
-        memmove((arr).item + __count, (arr).item, __oldSize * \
-                sizeof(*(arr).item)); \
-        memcpy((arr).item, items, __count * sizeof(*(arr).item)); \
-        (arr).item[--(arr).size] = 0; \
+    size_t __count = (count), __oldSize = (arr).size; \
+    darray_resize(arr, __count + __oldSize + 1); \
+    memmove((arr).item + __count, (arr).item, \
+            __oldSize * sizeof(*(arr).item)); \
+    memcpy((arr).item, items, __count * sizeof(*(arr).item)); \
+    (arr).item[--(arr).size] = 0; \
 } while (0)
-
-#if HAVE_TYPEOF
-#define darray_appends(arr, ...)  darray_appends_t(arr, typeof((*(arr).item)), \
-                                                   __VA_ARGS__)
-#define darray_prepends(arr, ...) darray_prepends_t(arr, typeof((*(arr).item)), \
-                                                    __VA_ARGS__)
-#endif
 
 #define darray_appends_t(arr, type, ...)  do { \
-        type __src[] = { __VA_ARGS__ }; \
-        darray_append_items(arr, __src, sizeof(__src) / sizeof(*__src)); \
+    type __src[] = { __VA_ARGS__ }; \
+    darray_append_items(arr, __src, sizeof(__src) / sizeof(*__src)); \
 } while (0)
+
 #define darray_prepends_t(arr, type, ...) do { \
-        type __src[] = { __VA_ARGS__ }; \
-        darray_prepend_items(arr, __src, sizeof(__src) / sizeof(*__src)); \
+    type __src[] = { __VA_ARGS__ }; \
+    darray_prepend_items(arr, __src, sizeof(__src) / sizeof(*__src)); \
 } while (0)
+
+#define darray_appends(arr, ...) \
+    darray_appends_t(arr, typeof((*(arr).item)), __VA_ARGS__)
+
+#define darray_prepends(arr, ...) \
+    darray_prepends_t(arr, typeof((*(arr).item)), __VA_ARGS__)
 
 /*** Removal ***/
 
 /* Warning: Do not call darray_pop on an empty darray. */
-#define darray_pop(arr)       ((arr).item[--(arr).size])
+#define darray_pop(arr) ((arr).item[--(arr).size])
 #define darray_pop_check(arr) ((arr).size ? darray_pop(arr) : NULL)
 
 /*** Replacement ***/
 
-#define darray_from_items(arr, items, count) do { size_t __count = (count); \
-                                                  darray_resize(arr, __count); \
-                                                  memcpy((arr).item, items, \
-                                                         __count \
-                                                         * sizeof(*(arr).item)); \
+#define darray_from_items(arr, items, count) do { \
+    size_t __count = (count); \
+    darray_resize(arr, __count); \
+    memcpy((arr).item, items, __count * sizeof(*(arr).item)); \
 } while (0)
-#define darray_from_c(arr, c_array)          darray_from_items( \
-        arr, c_array, sizeof(c_array) / sizeof(*(c_array)))
-#define darray_copy(arr_to, arr_from)        darray_from_items( \
-        arr_to, \
-        (arr_from). \
-        item, (arr_from).size)
+
+#define darray_from_c(arr, c_array) \
+    darray_from_items(arr, c_array, sizeof(c_array) / sizeof(*(c_array)))
+
+#define darray_copy(arr_to, arr_from) \
+    darray_from_items((arr_to), (arr_from).item, (arr_from).size)
 
 /*** String buffer ***/
 
-#define darray_append_string(arr, str)        do { const char *__str = (str); \
-                                                   darray_append_items( \
-                                                       arr, __str, \
-                                                       strlen(__str) + 1); \
-                                                   (arr).size--; \
+#define darray_append_string(arr, str) do { \
+    const char *__str = (str); \
+    darray_append_items(arr, __str, strlen(__str) + 1); \
+    (arr).size--; \
 } while (0)
-#define darray_append_lit(arr, stringLiteral) do { darray_append_items( \
-                                                       arr, stringLiteral, \
-                                                       sizeof(stringLiteral)); \
-                                                   (arr).size--; } while (0)
 
-#define darray_prepend_string(arr, str)       do { \
-        const char *__str = (str); \
-        darray_prepend_items_nullterminate(arr, __str, strlen(__str)); \
+#define darray_append_lit(arr, stringLiteral) do { \
+    darray_append_items(arr, stringLiteral, sizeof(stringLiteral)); \
+    (arr).size--; \
 } while (0)
+
+#define darray_prepend_string(arr, str) do { \
+    const char *__str = (str); \
+    darray_prepend_items_nullterminate(arr, __str, strlen(__str)); \
+} while (0)
+
 #define darray_prepend_lit(arr, stringLiteral) \
     darray_prepend_items_nullterminate(arr, stringLiteral, \
                                        sizeof(stringLiteral) - 1)
 
-#define darray_from_string(arr, str)        do { const char *__str = (str); \
-                                                 darray_from_items( \
-                                                     arr, __str, strlen( \
-                                                         __str) + 1); \
-                                                 (arr).size--; \
+#define darray_from_string(arr, str) do { \
+    const char *__str = (str); \
+    darray_from_items(arr, __str, strlen(__str) + 1); \
+    (arr).size--; \
 } while (0)
-#define darray_from_lit(arr, stringLiteral) do { darray_from_items( \
-                                                     arr, stringLiteral, \
-                                                     sizeof(stringLiteral)); \
-                                                 (arr).size--; } while (0)
+
+#define darray_from_lit(arr, stringLiteral) do { \
+    darray_from_items(arr, stringLiteral, sizeof(stringLiteral)); \
+    (arr).size--; \
+} while (0)
 
 /*** Size management ***/
 
-#define darray_resize(arr, newSize)   darray_growalloc(arr, (arr).size = \
-                                                           (newSize))
-#define darray_resize0(arr, newSize)  do { \
-        size_t __oldSize = (arr).size, __newSize = (newSize); \
-        (arr).size = __newSize; \
-        if (__newSize > __oldSize) { \
-            darray_growalloc(arr, __newSize); \
-            memset(&(arr).item[__oldSize], 0, \
-                   (__newSize - __oldSize) * sizeof(*(arr).item)); \
-        } \
+#define darray_resize(arr, newSize) \
+    darray_growalloc(arr, (arr).size = (newSize))
+
+#define darray_resize0(arr, newSize) do { \
+    size_t __oldSize = (arr).size, __newSize = (newSize); \
+    (arr).size = __newSize; \
+    if (__newSize > __oldSize) { \
+        darray_growalloc(arr, __newSize); \
+        memset(&(arr).item[__oldSize], 0, \
+               (__newSize - __oldSize) * sizeof(*(arr).item)); \
+    } \
 } while (0)
 
 #define darray_realloc(arr, newAlloc) do { \
-        (arr).item = \
-            realloc((arr).item, ((arr).alloc = (newAlloc)) * \
-                    sizeof(*(arr).item)); \
-} while (0)
-#define darray_growalloc(arr, need)   do { \
-        size_t __need = (need); \
-        if (__need > (arr).alloc) \
-            darray_realloc(arr, darray_next_alloc((arr).alloc, __need)); \
+    (arr).item = realloc((arr).item, \
+                         ((arr).alloc = (newAlloc)) * sizeof(*(arr).item)); \
 } while (0)
 
-#if HAVE_STATEMENT_EXPR == 1
-#define darray_make_room(arr, \
-                         room) ({ size_t newAlloc = (arr).size + (room); \
-                                  if ((arr).alloc < \
-                                      newAlloc) darray_realloc(arr, newAlloc); \
-                                  (arr).item + (arr).size; })
-#endif
+#define darray_growalloc(arr, need)   do { \
+    size_t __need = (need); \
+    if (__need > (arr).alloc) \
+    darray_realloc(arr, darray_next_alloc((arr).alloc, __need)); \
+} while (0)
 
 static inline size_t
 darray_next_alloc(size_t alloc, size_t need)
@@ -341,7 +324,7 @@ darray_next_alloc(size_t alloc, size_t need)
     for ((i) = &(arr).item[0]; (i) < &(arr).item[(arr).size]; (i)++)
 
 #define darray_foreach_from(i, arr, from) \
-	for ((i) = &(arr).item[from]; (i) < &(arr).item[(arr).size]; (i)++)
+    for ((i) = &(arr).item[from]; (i) < &(arr).item[(arr).size]; (i)++)
 
 /*
  * darray_foreach_reverse(T *&i, darray(T) arr) {...}
