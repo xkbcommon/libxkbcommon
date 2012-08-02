@@ -157,7 +157,7 @@ filter_device_name(const struct dirent *ent)
 }
 
 static struct keyboard *
-get_keyboards(struct xkb_keymap *xkb)
+get_keyboards(struct xkb_keymap *keymap)
 {
     int ret, i, nents;
     struct dirent **ents;
@@ -170,7 +170,7 @@ get_keyboards(struct xkb_keymap *xkb)
     }
 
     for (i = 0; i < nents; i++) {
-        ret = keyboard_new(ents[i], xkb, &kbd);
+        ret = keyboard_new(ents[i], keymap, &kbd);
         if (ret) {
             if (ret == -EACCES) {
                 fprintf(stderr, "Couldn't open /dev/input/%s: %s. "
@@ -217,7 +217,7 @@ static void
 print_keycode(struct keyboard *kbd, xkb_keycode_t keycode)
 {
     unsigned int i;
-    struct xkb_keymap *xkb;
+    struct xkb_keymap *keymap;
     struct xkb_state *state;
 
     const xkb_keysym_t *syms;
@@ -229,7 +229,7 @@ print_keycode(struct keyboard *kbd, xkb_keycode_t keycode)
     xkb_led_index_t led;
 
     state = kbd->state;
-    xkb = xkb_state_get_map(state);
+    keymap = xkb_state_get_map(state);
 
     nsyms = xkb_key_get_syms(state, keycode, &syms);
 
@@ -257,26 +257,26 @@ print_keycode(struct keyboard *kbd, xkb_keycode_t keycode)
 #endif
 
     printf("groups [ ");
-    for (group = 0; group < xkb_map_num_groups(xkb); group++) {
+    for (group = 0; group < xkb_map_num_groups(keymap); group++) {
         if (!xkb_state_group_index_is_active(state, group, XKB_STATE_EFFECTIVE))
             continue;
-        printf("%s (%d) ", xkb_map_group_get_name(xkb, group), group);
+        printf("%s (%d) ", xkb_map_group_get_name(keymap, group), group);
     }
     printf("] ");
 
     printf("mods [ ");
-    for (mod = 0; mod < xkb_map_num_mods(xkb); mod++) {
+    for (mod = 0; mod < xkb_map_num_mods(keymap); mod++) {
         if (!xkb_state_mod_index_is_active(state, mod, XKB_STATE_EFFECTIVE))
             continue;
-        printf("%s ", xkb_map_mod_get_name(xkb, mod));
+        printf("%s ", xkb_map_mod_get_name(keymap, mod));
     }
     printf("] ");
 
     printf("leds [ ");
-    for (led = 0; led < xkb_map_num_leds(xkb); led++) {
+    for (led = 0; led < xkb_map_num_leds(keymap); led++) {
         if (!xkb_state_led_index_is_active(state, led))
             continue;
-        printf("%s ", xkb_map_led_get_name(xkb, led));
+        printf("%s ", xkb_map_led_get_name(keymap, led));
     }
     printf("] ");
 
@@ -409,8 +409,8 @@ main(int argc, char *argv[])
     int ret;
     int opt;
     struct keyboard *kbds;
-    struct xkb_context *context;
-    struct xkb_keymap *xkb;
+    struct xkb_context *ctx;
+    struct xkb_keymap *keymap;
     struct xkb_rule_names names = {
         .rules = "evdev",
         .model = "evdev",
@@ -418,11 +418,13 @@ main(int argc, char *argv[])
         .variant = "",
         .options = "",
     };
+    const char *keymap_path = NULL;
+    FILE *file;
     struct sigaction act;
 
     setlocale(LC_ALL, "");
 
-    while ((opt = getopt(argc, argv, "r:m:l:v:o:")) != -1) {
+    while ((opt = getopt(argc, argv, "r:m:l:v:o:k:")) != -1) {
         switch (opt) {
         case 'r':
             names.rules = optarg;
@@ -439,29 +441,45 @@ main(int argc, char *argv[])
         case 'o':
             names.options = optarg;
             break;
+        case 'k':
+            keymap_path = optarg;
+            break;
         case '?':
             fprintf(stderr, "Usage: %s [-r <rules>] [-m <model>] "
                     "[-l <layout>] [-v <variant>] [-o <options>]\n",
+                    argv[0]);
+            fprintf(stderr, "   or: %s -k <path to keymap file>\n",
                     argv[0]);
             exit(EX_USAGE);
         }
     }
 
-    context = xkb_context_new(0);
-    if (!context) {
+    ctx = xkb_context_new(0);
+    if (!ctx) {
         ret = -1;
         fprintf(stderr, "Couldn't create xkb context\n");
         goto err_out;
     }
 
-    xkb = xkb_map_new_from_names(context, &names, 0);
-    if (!xkb) {
+    if (keymap_path) {
+        file = fopen(keymap_path, "r");
+        if (!file) {
+            fprintf(stderr, "Couldn't open file %s: %s\n",
+                    keymap_path, strerror(errno));
+            goto err_ctx;
+        }
+        keymap = xkb_map_new_from_file(ctx, file,
+                                       XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+    } else {
+        keymap = xkb_map_new_from_names(ctx, &names, 0);
+    }
+    if (!keymap) {
         ret = -1;
         fprintf(stderr, "Couldn't create xkb keymap\n");
         goto err_ctx;
     }
 
-    kbds = get_keyboards(xkb);
+    kbds = get_keyboards(keymap);
     if (!kbds) {
         ret = -1;
         goto err_xkb;
@@ -485,9 +503,9 @@ err_stty:
     system("stty echo");
     free_keyboards(kbds);
 err_xkb:
-    xkb_map_unref(xkb);
+    xkb_map_unref(keymap);
 err_ctx:
-    xkb_context_unref(context);
+    xkb_context_unref(ctx);
 err_out:
     exit(ret == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 }
