@@ -449,40 +449,6 @@ write_indicator_map(struct xkb_keymap *keymap, struct buf *buf, int num)
     return true;
 }
 
-static char *
-get_interp_match_text(uint8_t type)
-{
-    static char ret[16];
-
-    switch (type & XkbSI_OpMask) {
-    case XkbSI_NoneOf:
-        sprintf(ret, "NoneOf");
-        break;
-
-    case XkbSI_AnyOfOrNone:
-        sprintf(ret, "AnyOfOrNone");
-        break;
-
-    case XkbSI_AnyOf:
-        sprintf(ret, "AnyOf");
-        break;
-
-    case XkbSI_AllOf:
-        sprintf(ret, "AllOf");
-        break;
-
-    case XkbSI_Exactly:
-        sprintf(ret, "Exactly");
-        break;
-
-    default:
-        sprintf(ret, "0x%x", type & XkbSI_OpMask);
-        break;
-    }
-
-    return ret;
-}
-
 static bool
 write_action(struct xkb_keymap *keymap, struct buf *buf,
              union xkb_action *action, const char *prefix, const char *suffix)
@@ -687,7 +653,7 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
 
         write_buf(buf, "\t\tinterpret %s+%s(%s) {\n",
                   keysym_name,
-                  get_interp_match_text(interp->match),
+                  SIMatchText(interp->match),
                   get_mod_mask_text(keymap, interp->mods, 0));
 
         if (interp->virtual_mod != XkbNoModifier) {
