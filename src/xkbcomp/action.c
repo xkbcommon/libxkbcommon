@@ -26,9 +26,19 @@
 
 #include "action.h"
 
-static bool actionsInitialized;
-static ExprDef constTrue;
-static ExprDef constFalse;
+static const ExprDef constTrue = {
+    .common = { .type = STMT_EXPR, .next = NULL },
+    .op = EXPR_VALUE,
+    .value_type = EXPR_TYPE_BOOLEAN,
+    .value = { .ival = 1 },
+};
+
+static const ExprDef constFalse = {
+    .common = { .type = STMT_EXPR, .next = NULL },
+    .op = EXPR_VALUE,
+    .value_type = EXPR_TYPE_BOOLEAN,
+    .value = { .ival = 0 },
+};
 
 /***====================================================================***/
 
@@ -1160,9 +1170,6 @@ ApplyActionFactoryDefaults(union xkb_action * action)
     }
 }
 
-static void
-ActionsInit(struct xkb_context *ctx);
-
 int
 HandleActionDef(ExprDef * def,
                 struct xkb_keymap *keymap,
@@ -1171,9 +1178,6 @@ HandleActionDef(ExprDef * def,
     ExprDef *arg;
     const char *str;
     unsigned tmp, hndlrType;
-
-    if (!actionsInitialized)
-        ActionsInit(keymap->ctx);
 
     if (def->op != EXPR_ACTION_DECL) {
         log_err(keymap->ctx, "Expected an action definition, found %s\n",
@@ -1220,12 +1224,10 @@ HandleActionDef(ExprDef * def,
         else {
             if (arg->op == EXPR_NOT || arg->op == EXPR_INVERT) {
                 field = arg->value.child;
-                constFalse.value.str = xkb_atom_intern(keymap->ctx, "false");
                 value = &constFalse;
             }
             else {
                 field = arg;
-                constTrue.value.str = xkb_atom_intern(keymap->ctx, "true");
                 value = &constTrue;
             }
         }
@@ -1258,9 +1260,6 @@ SetActionField(struct xkb_keymap *keymap, const char *elem, const char *field,
                ExprDef *array_ndx, ExprDef *value, ActionInfo **info_rtrn)
 {
     ActionInfo *new, *old;
-
-    if (!actionsInitialized)
-        ActionsInit(keymap->ctx);
 
     new = malloc(sizeof(*new));
     if (!new) {
@@ -1302,26 +1301,6 @@ SetActionField(struct xkb_keymap *keymap, const char *elem, const char *field,
 }
 
 /***====================================================================***/
-
-static void
-ActionsInit(struct xkb_context *ctx)
-{
-    if (!actionsInitialized) {
-        memset(&constTrue, 0, sizeof(constTrue));
-        memset(&constFalse, 0, sizeof(constFalse));
-        constTrue.common.type = STMT_EXPR;
-        constTrue.common.next = NULL;
-        constTrue.op = EXPR_IDENT;
-        constTrue.value_type = EXPR_TYPE_BOOLEAN;
-        constTrue.value.str = xkb_atom_intern(ctx, "true");
-        constFalse.common.type = STMT_EXPR;
-        constFalse.common.next = NULL;
-        constFalse.op = EXPR_IDENT;
-        constFalse.value_type = EXPR_TYPE_BOOLEAN;
-        constFalse.value.str = xkb_atom_intern(ctx, "false");
-        actionsInitialized = 1;
-    }
-}
 
 union xkb_action *
 ResizeKeyActions(struct xkb_keymap *keymap, struct xkb_key *key,
