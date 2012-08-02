@@ -38,8 +38,9 @@ extern const char *
 exprOpText(enum expr_op_type op);
 
 bool
-ExprResolveLhs(struct xkb_context *ctx, ExprDef *expr, const char **elem_rtrn,
-               const char **field_rtrn, ExprDef **index_rtrn);
+ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
+               const char **elem_rtrn, const char **field_rtrn,
+               ExprDef **index_rtrn);
 
 bool
 LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
@@ -54,51 +55,55 @@ LookupModIndex(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
                enum expr_value_type type, xkb_mod_index_t *val_rtrn);
 
 bool
-ExprResolveModMask(struct xkb_context *ctx, ExprDef *expr,
+ExprResolveModMask(struct xkb_context *ctx, const ExprDef *expr,
                    xkb_mod_mask_t *mask_rtrn);
 
 bool
-ExprResolveVModMask(struct xkb_keymap *keymap, ExprDef *expr,
+ExprResolveVModMask(struct xkb_keymap *keymap, const ExprDef *expr,
                     xkb_mod_mask_t *mask_rtrn);
 
 bool
-ExprResolveBoolean(struct xkb_context *ctx, ExprDef *expr, bool *set_rtrn);
+ExprResolveBoolean(struct xkb_context *ctx, const ExprDef *expr,
+                   bool *set_rtrn);
 
 bool
-ExprResolveKeyCode(struct xkb_context *ctx, ExprDef *expr, xkb_keycode_t *kc);
+ExprResolveKeyCode(struct xkb_context *ctx, const ExprDef *expr,
+                   xkb_keycode_t *kc);
 
 bool
-ExprResolveInteger(struct xkb_context *ctx, ExprDef *expr, int *val_rtrn);
+ExprResolveInteger(struct xkb_context *ctx, const ExprDef *expr,
+                   int *val_rtrn);
 
 bool
-ExprResolveLevel(struct xkb_context *ctx, ExprDef *expr,
+ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
                  unsigned int *level_rtrn);
 
 bool
-ExprResolveGroup(struct xkb_context *ctx, ExprDef *expr,
+ExprResolveGroup(struct xkb_context *ctx, const ExprDef *expr,
                  xkb_group_index_t *group_rtrn);
 
 bool
-ExprResolveButton(struct xkb_context *ctx, ExprDef *expr, int *btn_rtrn);
+ExprResolveButton(struct xkb_context *ctx, const ExprDef *expr,
+                  int *btn_rtrn);
 
 bool
-ExprResolveString(struct xkb_context *ctx, ExprDef *expr,
+ExprResolveString(struct xkb_context *ctx, const ExprDef *expr,
                   const char **val_rtrn);
 
 bool
-ExprResolveKeyName(struct xkb_context *ctx, ExprDef *expr,
+ExprResolveKeyName(struct xkb_context *ctx, const ExprDef *expr,
                    char name[XkbKeyNameLength]);
 
 bool
-ExprResolveEnum(struct xkb_context *ctx, ExprDef *expr,
+ExprResolveEnum(struct xkb_context *ctx, const ExprDef *expr,
                 unsigned int *val_rtrn, const LookupEntry *values);
 
 bool
-ExprResolveMask(struct xkb_context *ctx, ExprDef *expr,
+ExprResolveMask(struct xkb_context *ctx, const ExprDef *expr,
                 unsigned int *mask_rtrn, const LookupEntry *values);
 
 bool
-ExprResolveKeySym(struct xkb_context *ctx, ExprDef *expr,
+ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
                   xkb_keysym_t *sym_rtrn);
 
 #endif /* EXPR_H */
