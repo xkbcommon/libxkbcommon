@@ -453,7 +453,7 @@ static bool
 write_action(struct xkb_keymap *keymap, struct buf *buf,
              union xkb_action *action, const char *prefix, const char *suffix)
 {
-    const char *type = NULL;
+    const char *type;
     const char *args = NULL;
 
     if (!prefix)
@@ -461,23 +461,18 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
     if (!suffix)
         suffix = "";
 
+    type = ActionTypeText(action->any.type);
+
     switch (action->any.type) {
     case XkbSA_SetMods:
-        if (!type)
-            type = "SetMods";
     case XkbSA_LatchMods:
-        if (!type)
-            type = "LatchMods";
     case XkbSA_LockMods:
-        if (!type)
-            type = "LockMods";
         if (action->mods.flags & XkbSA_UseModMapMods)
             args = "modMapMods";
         else
             args = get_mod_mask_text(keymap, action->mods.real_mods,
                                      action->mods.vmods);
-        write_buf(buf, "%s%s(modifiers=%s%s%s)%s",
-                  prefix, type, args,
+        write_buf(buf, "%s%s(modifiers=%s%s%s)%s", prefix, type, args,
                   (action->any.type != XkbSA_LockGroup &&
                    (action->mods.flags & XkbSA_ClearLocks)) ?
                    ",clearLocks" : "",
@@ -488,16 +483,9 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         break;
 
     case XkbSA_SetGroup:
-        if (!type)
-            type = "SetGroup";
     case XkbSA_LatchGroup:
-        if (!type)
-            type = "LatchGroup";
     case XkbSA_LockGroup:
-        if (!type)
-            type = "LockGroup";
-        write_buf(buf, "%s%s(group=%s%d%s%s)%s",
-                  prefix, type,
+        write_buf(buf, "%s%s(group=%s%d%s%s)%s", prefix, type,
                   (!(action->group.flags & XkbSA_GroupAbsolute) &&
                    action->group.group > 0) ? "+" : "",
                   (action->group.flags & XkbSA_GroupAbsolute) ?
@@ -512,13 +500,11 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         break;
 
     case XkbSA_Terminate:
-        write_buf(buf, "%sTerminate()%s", prefix,
-                  suffix);
+        write_buf(buf, "%s%s()%s", prefix, type, suffix);
         break;
 
     case XkbSA_MovePtr:
-        write_buf(buf, "%sMovePtr(x=%s%d,y=%s%d%s)%s",
-                  prefix,
+        write_buf(buf, "%s%s(x=%s%d,y=%s%d%s)%s", prefix, type,
                   (!(action->ptr.flags & XkbSA_MoveAbsoluteX) &&
                    action->ptr.x >= 0) ? "+" : "",
                   action->ptr.x,
@@ -529,34 +515,25 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
                   suffix);
         break;
 
-    case XkbSA_PtrBtn:
-        if (!type)
-            type = "PtrBtn";
     case XkbSA_LockPtrBtn:
-        if (!type) {
-            type = "LockPtrBtn";
-            switch (action->btn.flags &
-                    (XkbSA_LockNoUnlock | XkbSA_LockNoLock)) {
-            case XkbSA_LockNoUnlock:
-                args = ",affect=lock";
-                break;
+        switch (action->btn.flags & (XkbSA_LockNoUnlock | XkbSA_LockNoLock)) {
+        case XkbSA_LockNoUnlock:
+            args = ",affect=lock";
+            break;
 
-            case XkbSA_LockNoLock:
-                args = ",affect=unlock";
-                break;
+        case XkbSA_LockNoLock:
+            args = ",affect=unlock";
+            break;
 
-            case XkbSA_LockNoLock | XkbSA_LockNoUnlock:
-                args = ",affect=neither";
-                break;
+        case XkbSA_LockNoLock | XkbSA_LockNoUnlock:
+            args = ",affect=neither";
+            break;
 
-            default:
-                args = ",affect=both";
-                break;
-            }
+        default:
+            args = ",affect=both";
+            break;
         }
-        else {
-            args = NULL;
-        }
+    case XkbSA_PtrBtn:
         write_buf(buf, "%s%s(button=", prefix, type);
         if (action->btn.button > 0 && action->btn.button <= 5)
             write_buf(buf, "%d", action->btn.button);
@@ -570,7 +547,7 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         break;
 
     case XkbSA_SetPtrDflt:
-        write_buf(buf, "%sSetPtrDflt(", prefix);
+        write_buf(buf, "%s%s(", prefix, type);
         if (action->dflt.affect == XkbSA_AffectDfltBtn)
             write_buf(buf, "affect=button,button=%s%d",
                       (!(action->dflt.flags & XkbSA_DfltBtnAbsolute) &&
@@ -580,7 +557,7 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         break;
 
     case XkbSA_SwitchScreen:
-        write_buf(buf, "%sSwitchScreen(screen=%s%d,%ssame)%s", prefix,
+        write_buf(buf, "%s%s(screen=%s%d,%ssame)%s", prefix, type,
                   (!(action->screen.flags & XkbSA_SwitchAbsolute) &&
                    action->screen.screen >= 0) ? "+" : "",
                   action->screen.screen,
@@ -590,14 +567,9 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
 
     /* Deprecated actions below here */
     case XkbSA_SetControls:
-        if (!type)
-            type = "SetControls";
     case XkbSA_LockControls:
-        if (!type)
-            type = "LockControls";
-        write_buf(buf, "%s%s(controls=%s)%s",
-                  prefix, type, get_control_mask_text(action->ctrls.ctrls),
-                  suffix);
+        write_buf(buf, "%s%s(controls=%s)%s", prefix, type,
+                  get_control_mask_text(action->ctrls.ctrls), suffix);
         break;
 
     case XkbSA_ISOLock:
@@ -613,8 +585,8 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
     case XkbSA_XFree86Private:
     default:
         write_buf(buf,
-                  "%sPrivate(type=0x%02x,data[0]=0x%02x,data[1]=0x%02x,data[2]=0x%02x,data[3]=0x%02x,data[4]=0x%02x,data[5]=0x%02x,data[6]=0x%02x)%s",
-                  prefix, action->any.type, action->any.data[0],
+                  "%s%s(type=0x%02x,data[0]=0x%02x,data[1]=0x%02x,data[2]=0x%02x,data[3]=0x%02x,data[4]=0x%02x,data[5]=0x%02x,data[6]=0x%02x)%s",
+                  prefix, type, action->any.type, action->any.data[0],
                   action->any.data[1], action->any.data[2],
                   action->any.data[3], action->any.data[4],
                   action->any.data[5], action->any.data[6],

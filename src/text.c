@@ -211,27 +211,27 @@ FileTypeText(enum xkb_file_type type)
 }
 
 static const char *actionTypeNames[XkbSA_NumActions] = {
-    "NoAction",         /* XkbSA_NoAction */
-    "SetMods",          /* XkbSA_SetMods */
-    "LatchMods",        /* XkbSA_LatchMods */
-    "LockMods",         /* XkbSA_LockMods */
-    "SetGroup",         /* XkbSA_SetGroup */
-    "LatchGroup",       /* XkbSA_LatchGroup */
-    "LockGroup",        /* XkbSA_LockGroup */
-    "MovePtr",          /* XkbSA_MovePtr */
-    "PtrBtn",           /* XkbSA_PtrBtn */
-    "LockPtrBtn",       /* XkbSA_LockPtrBtn */
-    "SetPtrDflt",       /* XkbSA_SetPtrDflt */
-    "ISOLock",          /* XkbSA_ISOLock */
-    "Terminate",        /* XkbSA_Terminate */
-    "SwitchScreen",     /* XkbSA_SwitchScreen */
-    "SetControls",      /* XkbSA_SetControls */
-    "LockControls",     /* XkbSA_LockControls */
-    "ActionMessage",    /* XkbSA_ActionMessage */
-    "RedirectKey",      /* XkbSA_RedirectKey */
-    "DeviceBtn",        /* XkbSA_DeviceBtn */
-    "LockDeviceBtn",    /* XkbSA_LockDeviceBtn */
-    "DeviceValuator"    /* XkbSA_DeviceValuator */
+    [XkbSA_NoAction]       = "NoAction",
+    [XkbSA_SetMods]        = "SetMods",
+    [XkbSA_LatchMods]      = "LatchMods",
+    [XkbSA_LockMods]       = "LockMods",
+    [XkbSA_SetGroup]       = "SetGroup",
+    [XkbSA_LatchGroup]     = "LatchGroup",
+    [XkbSA_LockGroup]      = "LockGroup",
+    [XkbSA_MovePtr]        = "MovePtr",
+    [XkbSA_PtrBtn]         = "PtrBtn",
+    [XkbSA_LockPtrBtn]     = "LockPtrBtn",
+    [XkbSA_SetPtrDflt]     = "SetPtrDflt",
+    [XkbSA_ISOLock]        = "ISOLock",
+    [XkbSA_Terminate]      = "Terminate",
+    [XkbSA_SwitchScreen]   = "SwitchScreen",
+    [XkbSA_SetControls]    = "SetControls",
+    [XkbSA_LockControls]   = "LockControls",
+    [XkbSA_ActionMessage]  = "ActionMessage",
+    [XkbSA_RedirectKey]    = "RedirectKey",
+    [XkbSA_DeviceBtn]      = "DeviceBtn",
+    [XkbSA_LockDeviceBtn]  = "LockDeviceBtn",
+    [XkbSA_DeviceValuator] = "DeviceValuator"
 };
 
 const char *
