@@ -415,15 +415,12 @@ main(int argc, char *argv[])
     struct keyboard *kbds;
     struct xkb_context *ctx;
     struct xkb_keymap *keymap;
-    struct xkb_rule_names names = {
-        .rules = "evdev",
-        .model = "evdev",
-        .layout = "us",
-        .variant = "",
-        .options = "",
-    };
+    const char *rules = NULL;
+    const char *model = NULL;
+    const char *layout = NULL;
+    const char *variant = NULL;
+    const char *options = NULL;
     const char *keymap_path = NULL;
-    FILE *file;
     struct sigaction act;
 
     setlocale(LC_ALL, "");
@@ -431,19 +428,19 @@ main(int argc, char *argv[])
     while ((opt = getopt(argc, argv, "r:m:l:v:o:k:")) != -1) {
         switch (opt) {
         case 'r':
-            names.rules = optarg;
+            rules = optarg;
             break;
         case 'm':
-            names.model = optarg;
+            model = optarg;
             break;
         case 'l':
-            names.layout = optarg;
+            layout = optarg;
             break;
         case 'v':
-            names.variant = optarg;
+            variant = optarg;
             break;
         case 'o':
-            names.options = optarg;
+            options = optarg;
             break;
         case 'k':
             keymap_path = optarg;
@@ -465,20 +462,11 @@ main(int argc, char *argv[])
         goto err_out;
     }
 
-    if (keymap_path) {
-        file = fopen(keymap_path, "r");
-        if (!file) {
-            fprintf(stderr, "Couldn't open file %s: %s\n",
-                    keymap_path, strerror(errno));
-            ret = -1;
-            goto err_ctx;
-        }
-        keymap = xkb_map_new_from_file(ctx, file,
-                                       XKB_KEYMAP_FORMAT_TEXT_V1, 0);
-    }
-    else {
-        keymap = xkb_map_new_from_names(ctx, &names, 0);
-    }
+    if (keymap_path)
+        keymap = test_compile_file(ctx, keymap_path);
+    else
+        keymap = test_compile_rules(ctx, rules, model, layout, variant,
+                                    options);
     if (!keymap) {
         ret = -1;
         fprintf(stderr, "Couldn't create xkb keymap\n");
