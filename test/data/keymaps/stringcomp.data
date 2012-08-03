@@ -597,8 +597,8 @@ xkb_keymap {
 		virtual_modifiers NumLock,Alt,LevelThree,LAlt,RAlt,RControl,LControl,ScrollLock,LevelFive,AltGr,Meta,Super,Hyper;
 
 		interpret.useModMapMods= AnyLevel;
-		interpret.repeat= false;
-		interpret.locking= false;
+		interpret.repeat= False;
+		interpret.locking= False;
 		interpret ISO_Level2_Latch+Exactly(Shift) {
 			useModMapMods=level1;
 			action= LatchMods(modifiers=Shift,clearLocks,latchToLock);
@@ -611,7 +611,7 @@ xkb_keymap {
 			action= LockMods(modifiers=NumLock);
 		};
 		interpret ISO_Lock+AnyOf(all) {
-                        action= NoAction();
+			action= NoAction();
 		};
 		interpret ISO_Level3_Shift+AnyOf(all) {
 			virtualModifier= LevelThree;
@@ -713,151 +713,151 @@ xkb_keymap {
 			action= LockGroup(group=2);
 		};
 		interpret KP_1+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=-1,y=+1);
 		};
 		interpret KP_End+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=-1,y=+1);
 		};
 		interpret KP_2+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=+0,y=+1);
 		};
 		interpret KP_Down+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=+0,y=+1);
 		};
 		interpret KP_3+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=+1,y=+1);
 		};
 		interpret KP_Next+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=+1,y=+1);
 		};
 		interpret KP_4+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=-1,y=+0);
 		};
 		interpret KP_Left+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=-1,y=+0);
 		};
 		interpret KP_6+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=+1,y=+0);
 		};
 		interpret KP_Right+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=+1,y=+0);
 		};
 		interpret KP_7+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=-1,y=-1);
 		};
 		interpret KP_Home+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=-1,y=-1);
 		};
 		interpret KP_8+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=+0,y=-1);
 		};
 		interpret KP_Up+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=+0,y=-1);
 		};
 		interpret KP_9+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=+1,y=-1);
 		};
 		interpret KP_Prior+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=+1,y=-1);
 		};
 		interpret KP_5+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= PtrBtn(button=default);
 		};
 		interpret KP_Begin+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= PtrBtn(button=default);
 		};
 		interpret KP_F2+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SetPtrDflt(affect=button,button=1);
 		};
 		interpret KP_Divide+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SetPtrDflt(affect=button,button=1);
 		};
 		interpret KP_F3+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SetPtrDflt(affect=button,button=2);
 		};
 		interpret KP_Multiply+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SetPtrDflt(affect=button,button=2);
 		};
 		interpret KP_F4+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SetPtrDflt(affect=button,button=3);
 		};
 		interpret KP_Subtract+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SetPtrDflt(affect=button,button=3);
 		};
 		interpret KP_Separator+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= PtrBtn(button=default,count=2);
 		};
 		interpret KP_Add+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= PtrBtn(button=default,count=2);
 		};
 		interpret KP_0+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= LockPtrBtn(button=default,affect=lock);
 		};
 		interpret KP_Insert+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= LockPtrBtn(button=default,affect=lock);
 		};
 		interpret KP_Decimal+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= LockPtrBtn(button=default,affect=unlock);
 		};
 		interpret KP_Delete+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= LockPtrBtn(button=default,affect=unlock);
 		};
 		interpret F25+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SetPtrDflt(affect=button,button=1);
 		};
 		interpret F26+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SetPtrDflt(affect=button,button=2);
 		};
 		interpret F27+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=-1,y=-1);
 		};
 		interpret F29+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=+1,y=-1);
 		};
 		interpret F31+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= PtrBtn(button=default);
 		};
 		interpret F33+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=-1,y=+1);
 		};
 		interpret F35+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= MovePtr(x=+1,y=+1);
 		};
 		interpret Pointer_Button_Dflt+AnyOfOrNone(all) {
@@ -897,10 +897,10 @@ xkb_keymap {
 			action= LockPtrBtn(button=3,affect=both);
 		};
 		interpret Pointer_EnableKeys+AnyOfOrNone(all) {
-			action= LockControls(controls=mouseKeys);
+			action= LockControls(controls=MouseKeys);
 		};
 		interpret Pointer_Accelerate+AnyOfOrNone(all) {
-			action= LockControls(controls=mouseKeysAccel);
+			action= LockControls(controls=MouseKeysAccel);
 		};
 		interpret Pointer_DfltBtnNext+AnyOfOrNone(all) {
 			action= SetPtrDflt(affect=button,button=+1);
@@ -909,28 +909,28 @@ xkb_keymap {
 			action= SetPtrDflt(affect=button,button=-1);
 		};
 		interpret AccessX_Enable+AnyOfOrNone(all) {
-			action= LockControls(controls=accessXKeys);
+			action= LockControls(controls=AccessXKeys);
 		};
 		interpret AccessX_Feedback_Enable+AnyOfOrNone(all) {
-			action= LockControls(controls=accessXFeedback);
+			action= LockControls(controls=AccessXFeedback);
 		};
 		interpret RepeatKeys_Enable+AnyOfOrNone(all) {
-			action= LockControls(controls=repeatKeys);
+			action= LockControls(controls=RepeatKeys);
 		};
 		interpret SlowKeys_Enable+AnyOfOrNone(all) {
-			action= LockControls(controls=slowKeys);
+			action= LockControls(controls=SlowKeys);
 		};
 		interpret BounceKeys_Enable+AnyOfOrNone(all) {
-			action= LockControls(controls=bounceKeys);
+			action= LockControls(controls=BounceKeys);
 		};
 		interpret StickyKeys_Enable+AnyOfOrNone(all) {
-			action= LockControls(controls=stickyKeys);
+			action= LockControls(controls=StickyKeys);
 		};
 		interpret MouseKeys_Enable+AnyOfOrNone(all) {
-			action= LockControls(controls=mouseKeys);
+			action= LockControls(controls=MouseKeys);
 		};
 		interpret MouseKeys_Accel_Enable+AnyOfOrNone(all) {
-			action= LockControls(controls=mouseKeysAccel);
+			action= LockControls(controls=MouseKeysAccel);
 		};
 		interpret Overlay1_Enable+AnyOfOrNone(all) {
 			action= LockControls(controls=none);
@@ -939,7 +939,7 @@ xkb_keymap {
 			action= LockControls(controls=none);
 		};
 		interpret AudibleBell_Enable+AnyOfOrNone(all) {
-			action= LockControls(controls=audibleBell);
+			action= LockControls(controls=AudibleBell);
 		};
 		interpret Terminate_Server+AnyOfOrNone(all) {
 			action= Terminate();
@@ -972,67 +972,67 @@ xkb_keymap {
 			action= SetMods(modifiers=Shift,clearLocks);
 		};
 		interpret XF86Switch_VT_1+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SwitchScreen(screen=1,!same);
 		};
 		interpret XF86Switch_VT_2+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SwitchScreen(screen=2,!same);
 		};
 		interpret XF86Switch_VT_3+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SwitchScreen(screen=3,!same);
 		};
 		interpret XF86Switch_VT_4+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SwitchScreen(screen=4,!same);
 		};
 		interpret XF86Switch_VT_5+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SwitchScreen(screen=5,!same);
 		};
 		interpret XF86Switch_VT_6+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SwitchScreen(screen=6,!same);
 		};
 		interpret XF86Switch_VT_7+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SwitchScreen(screen=7,!same);
 		};
 		interpret XF86Switch_VT_8+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SwitchScreen(screen=8,!same);
 		};
 		interpret XF86Switch_VT_9+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SwitchScreen(screen=9,!same);
 		};
 		interpret XF86Switch_VT_10+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SwitchScreen(screen=10,!same);
 		};
 		interpret XF86Switch_VT_11+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SwitchScreen(screen=11,!same);
 		};
 		interpret XF86Switch_VT_12+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= SwitchScreen(screen=12,!same);
 		};
 		interpret XF86LogGrabInfo+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= Private(type=0x86,data[0]=0x50,data[1]=0x72,data[2]=0x47,data[3]=0x72,data[4]=0x62,data[5]=0x73,data[6]=0x00);
 		};
 		interpret XF86LogWindowTree+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= Private(type=0x86,data[0]=0x50,data[1]=0x72,data[2]=0x57,data[3]=0x69,data[4]=0x6e,data[5]=0x73,data[6]=0x00);
 		};
 		interpret XF86Next_VMode+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= Private(type=0x86,data[0]=0x2b,data[1]=0x56,data[2]=0x4d,data[3]=0x6f,data[4]=0x64,data[5]=0x65,data[6]=0x00);
 		};
 		interpret XF86Prev_VMode+AnyOfOrNone(all) {
-			repeat= true;
+			repeat= True;
 			action= Private(type=0x86,data[0]=0x2d,data[1]=0x56,data[2]=0x4d,data[3]=0x6f,data[4]=0x64,data[5]=0x65,data[6]=0x00);
 		};
 		interpret ISO_Level5_Shift+AnyOfOrNone(all) {
@@ -1076,7 +1076,7 @@ xkb_keymap {
 			groups= 0xfe;
 		};
 		indicator "Mouse Keys" {
-			controls= mouseKeys;
+			controls= MouseKeys;
 		};
 	};
 
@@ -1183,7 +1183,7 @@ xkb_keymap {
 		key <AC11> {	[      apostrophe,        quotedbl ] };
 		key <TLDE> {	[           grave,      asciitilde ] };
 		key <LFSH> {	[         Shift_L ] };
-		key <BKSL> {	[        NoSymbol,        NoSymbol ] };
+		key <BKSL> {	[       backslash,             bar ] };
 		key <AB01> {
 			type= "ALPHABETIC",
 			symbols[Group1]= [               z,               Z ]
