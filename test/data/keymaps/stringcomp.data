@@ -379,7 +379,6 @@ xkb_keymap {
 		};
 		type "LOCAL_EIGHT_LEVEL" {
 			modifiers= Shift+Lock+Control+LevelThree;
-			map[Shift+Lock]= Level1;
 			map[Shift]= Level2;
 			map[Lock]= Level2;
 			map[LevelThree]= Level3;
@@ -525,7 +524,6 @@ xkb_keymap {
 		};
 		type "FOUR_LEVEL_MIXED_KEYPAD" {
 			modifiers= Shift+NumLock+LevelThree;
-			map[Shift+NumLock]= Level1;
 			map[NumLock]= Level2;
 			map[Shift]= Level2;
 			map[LevelThree]= Level3;
