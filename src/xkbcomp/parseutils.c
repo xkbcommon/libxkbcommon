@@ -419,7 +419,6 @@ IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge)
         incl->file = file;
         incl->map = map;
         incl->modifier = extra_data;
-        incl->path = NULL;
         incl->next_incl = NULL;
 
         if (nextop == '|')
@@ -569,7 +568,6 @@ FreeInclude(IncludeStmt *incl)
         free(incl->file);
         free(incl->map);
         free(incl->modifier);
-        free(incl->path);
         free(incl->stmt);
 
         free(incl);

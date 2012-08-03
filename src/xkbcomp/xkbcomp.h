@@ -95,7 +95,6 @@ typedef struct _IncludeStmt {
     char *file;
     char *map;
     char *modifier;
-    char *path;
     struct _IncludeStmt *next_incl;
 } IncludeStmt;
 

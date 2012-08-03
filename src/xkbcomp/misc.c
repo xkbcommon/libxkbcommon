@@ -50,7 +50,7 @@ ProcessIncludeFile(struct xkb_context *ctx,
     FILE *file;
     XkbFile *rtrn, *mapToUse, *next;
 
-    file = XkbFindFileInPath(ctx, stmt->file, file_type, &stmt->path);
+    file = XkbFindFileInPath(ctx, stmt->file, file_type, NULL);
     if (file == NULL) {
         log_err(ctx, "Can't find file \"%s\" for %s include\n", stmt->file,
                 XkbDirectoryForInclude(file_type));
