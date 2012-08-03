@@ -40,8 +40,11 @@ keymap_file_from_names(struct xkb_context *ctx,
 
     kkctgs = xkb_components_from_rules(ctx, rmlvo);
     if (!kkctgs) {
-        log_err(ctx, "failed to generate XKB components from rules \"%s\"\n",
-                rmlvo->rules);
+        log_err(ctx,
+                "couldn't look up rules '%s', model '%s', layout '%s', "
+                "variant '%s', options '%s'\n",
+                rmlvo->rules, rmlvo->model, rmlvo->layout, rmlvo->variant,
+                rmlvo->options);
         return NULL;
     }
 
