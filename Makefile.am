@@ -106,7 +106,7 @@ libtest_la_SOURCES = \
 TESTS_ENVIRONMENT =
 
 TESTS = \
-	test/xkey \
+	test/keysym \
 	test/filecomp \
 	test/rulescomp \
 	test/state \
@@ -118,7 +118,7 @@ TESTS = \
 	test/log
 TESTS_LDADD = libtest.la
 
-test_xkey_LDADD = $(TESTS_LDADD)
+test_keysym_LDADD = $(TESTS_LDADD)
 test_filecomp_LDADD = $(TESTS_LDADD)
 test_rulescomp_LDADD = $(TESTS_LDADD) -lrt
 test_state_LDADD = $(TESTS_LDADD)
