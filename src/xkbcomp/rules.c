@@ -1051,9 +1051,9 @@ struct xkb_component_names *
 xkb_components_from_rules(struct xkb_context *ctx,
                           const struct xkb_rule_names *rmlvo)
 {
-    int i;
     FILE *file;
     char *path;
+    char **include;
     struct rules *rules;
     struct xkb_component_names *kccgst = NULL;
 
@@ -1061,10 +1061,14 @@ xkb_components_from_rules(struct xkb_context *ctx,
     if (!file) {
         log_err(ctx, "could not find \"%s\" rules in XKB path\n",
                 rmlvo->rules);
-        log_err(ctx, "%d include paths searched:\n",
-                xkb_context_num_include_paths(ctx));
-        for (i = 0; i < xkb_context_num_include_paths(ctx); i++)
-            log_err(ctx, "\t%s\n", xkb_context_include_path_get(ctx, i));
+        log_err(ctx, "%zu include paths searched:\n",
+                darray_size(ctx->includes));
+        darray_foreach(include, ctx->includes)
+            log_err(ctx, "\t%s\n", *include);
+        log_err(ctx, "%zu include paths could not be added:\n",
+                darray_size(ctx->failed_includes));
+        darray_foreach(include, ctx->failed_includes)
+            log_err(ctx, "\t%s\n", *include);
         return NULL;
     }
 
