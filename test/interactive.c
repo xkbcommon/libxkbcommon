@@ -39,6 +39,7 @@
 #include <linux/input.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "test.h"
 
 struct keyboard {
     char *path;
@@ -457,7 +458,7 @@ main(int argc, char *argv[])
         }
     }
 
-    ctx = xkb_context_new(0);
+    ctx = test_get_context();
     if (!ctx) {
         ret = -1;
         fprintf(stderr, "Couldn't create xkb context\n");
