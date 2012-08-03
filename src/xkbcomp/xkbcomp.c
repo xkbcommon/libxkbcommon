@@ -246,21 +246,24 @@ xkb_map_new_from_kccgst(struct xkb_context *ctx,
 
 XKB_EXPORT struct xkb_keymap *
 xkb_map_new_from_names(struct xkb_context *ctx,
-                       const struct xkb_rule_names *rmlvo,
+                       const struct xkb_rule_names *rmlvo_in,
                        enum xkb_map_compile_flags flags)
 {
     struct xkb_component_names *kkctgs;
     struct xkb_keymap *keymap;
+    struct xkb_rule_names rmlvo = *rmlvo_in;
 
-    if (!rmlvo || ISEMPTY(rmlvo->rules) || ISEMPTY(rmlvo->layout)) {
-        log_err(ctx, "rules and layout required to generate XKB keymap\n");
-        return NULL;
-    }
+    if (ISEMPTY(rmlvo.rules))
+        rmlvo.rules = DEFAULT_XKB_RULES;
+    if (ISEMPTY(rmlvo.model))
+        rmlvo.model = DEFAULT_XKB_MODEL;
+    if (ISEMPTY(rmlvo.layout))
+        rmlvo.layout = DEFAULT_XKB_LAYOUT;
 
-    kkctgs = xkb_components_from_rules(ctx, rmlvo);
+    kkctgs = xkb_components_from_rules(ctx, &rmlvo);
     if (!kkctgs) {
         log_err(ctx, "failed to generate XKB components from rules \"%s\"\n",
-                rmlvo->rules);
+                rmlvo.rules);
         return NULL;
     }
 

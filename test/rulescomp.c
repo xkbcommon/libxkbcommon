@@ -100,7 +100,6 @@ int main(int argc, char *argv[])
     assert(test_rmlvo(ctx, "evdev",      "pc105",  "us",  "intl",  ""));
     assert(test_rmlvo(ctx, "evdev",      "pc105",  "us",  "intl",  "grp:alts_toggle"));
 
-    assert(!test_rmlvo(ctx, "",          "",       "",    "",      ""));
     assert(!test_rmlvo(ctx, "base",      "",       "",    "",      ""));
     assert(!test_rmlvo(ctx, "base",      "pc105",  "",    "",      ""));
     assert(!test_rmlvo(ctx, "badrules",  "",       "us",  "",      ""));

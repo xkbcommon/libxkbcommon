@@ -97,6 +97,29 @@ AC_ARG_WITH([xkb_config_root],
     [XKBCONFIGROOT="$xkb_base"])
 AC_SUBST([XKBCONFIGROOT])
 
+AC_ARG_WITH([default_rules],
+    [AS_HELP_STRING([--with-default-rules=<path>],
+        [Default XKB ruleset (default: evdev)])],
+    [DEFAULT_XKB_RULES="$withval"],
+    [DEFAULT_XKB_RULES="evdev"])
+AC_DEFINE_UNQUOTED([DEFAULT_XKB_RULES], ["$DEFAULT_XKB_RULES"],
+                   [Default XKB ruleset])
+
+AC_ARG_WITH([default_model],
+    [AS_HELP_STRING([--with-default-model=<path>],
+        [Default XKB model (default: pc105)])],
+    [DEFAULT_XKB_MODEL="$withval"],
+    [DEFAULT_XKB_MODEL="pc105"])
+AC_DEFINE_UNQUOTED([DEFAULT_XKB_MODEL], ["$DEFAULT_XKB_MODEL"],
+                   [Default XKB model])
+
+AC_ARG_WITH([default_layout],
+    [AS_HELP_STRING([--with-default-layout=<path>],
+        [Default XKB layout (default: us)])],
+    [DEFAULT_XKB_LAYOUT="$withval"],
+    [DEFAULT_XKB_LAYOUT="us"])
+AC_DEFINE_UNQUOTED([DEFAULT_XKB_LAYOUT], ["$DEFAULT_XKB_LAYOUT"],
+                   [Default XKB layout])
 
 AC_CONFIG_FILES([
     Makefile
