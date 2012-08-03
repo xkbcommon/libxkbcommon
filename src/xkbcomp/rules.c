@@ -26,28 +26,33 @@
 
 #include <stdio.h>
 #include <ctype.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "rules.h"
 #include "path.h"
 
-static bool
-input_line_get(struct xkb_context *ctx, FILE *file, darray_char *line)
+static const char *
+input_line_get(struct xkb_context *ctx, const char *buf, const char *end,
+               darray_char *line)
 {
     int ch;
-    bool end_of_file = false;
     bool space_pending;
     bool slash_pending;
     bool in_comment;
 
-    while (!end_of_file && darray_empty(*line)) {
+    while (buf < end && darray_empty(*line)) {
         space_pending = slash_pending = in_comment = false;
 
-        while ((ch = getc(file)) != '\n' && ch != EOF) {
+        while (buf < end && (ch = *buf++) != '\n') {
             if (ch == '\\') {
-                ch = getc(file);
-
-                if (ch == EOF)
+                buf++;
+                if (buf >= end)
                     break;
+                ch = *buf;
 
                 if (ch == '\n') {
                     in_comment = false;
@@ -81,16 +86,16 @@ input_line_get(struct xkb_context *ctx, FILE *file, darray_char *line)
             }
 
             if (isspace(ch)) {
-                while (isspace(ch) && ch != '\n' && ch != EOF)
-                    ch = getc(file);
+                while (buf < end && isspace(ch) && ch != '\n')
+                    ch = *buf++;
 
-                if (ch == EOF)
+                if (buf >= end)
                     break;
 
                 if (ch != '\n' && !darray_empty(*line))
                     space_pending = true;
 
-                ungetc(ch, file);
+                buf--;
             }
             else {
                 if (space_pending) {
@@ -111,16 +116,13 @@ input_line_get(struct xkb_context *ctx, FILE *file, darray_char *line)
                 darray_append(*line, ch);
             }
         }
-
-        if (ch == EOF)
-            end_of_file = true;
     }
 
-    if (darray_empty(*line) && end_of_file)
-        return false;
+    if (darray_empty(*line) && buf >= end)
+        return NULL;
 
     darray_append(*line, '\0');
-    return true;
+    return buf;
 }
 
 /***====================================================================***/
@@ -986,6 +988,22 @@ load_rules(struct xkb_context *ctx, FILE *file)
     struct rule trule;
     struct group tgroup;
     struct rules *rules;
+    struct stat stat_buf;
+    const char *buf, *end;
+    char *orig;
+    int fd = fileno(file);
+
+    if (fstat(fd, &stat_buf) != 0) {
+        log_err(ctx, "couldn't stat rules file\n");
+        return NULL;
+    }
+
+    orig = mmap(NULL, stat_buf.st_size, PROT_READ, MAP_SHARED, fd, 0);
+    if (!orig) {
+        log_err(ctx, "couldn't mmap rules file (%zu bytes)\n",
+                stat_buf.st_size);
+        return NULL;
+    }
 
     rules = calloc(1, sizeof(*rules));
     if (!rules)
@@ -998,7 +1016,9 @@ load_rules(struct xkb_context *ctx, FILE *file)
     darray_init(line);
     darray_growalloc(line, 128);
 
-    while (input_line_get(ctx, file, &line)) {
+    buf = orig;
+    end = orig + stat_buf.st_size;
+    while ((buf = input_line_get(ctx, buf, end, &line))) {
         if (match_line(ctx, &line, &mapping, &trule, &tgroup)) {
             if (tgroup.number) {
                 darray_append(rules->groups, tgroup);
@@ -1012,6 +1032,8 @@ load_rules(struct xkb_context *ctx, FILE *file)
 
         darray_resize(line, 0);
     }
+
+    munmap(orig, stat_buf.st_size);
 
     darray_free(line);
     return rules;
@@ -1051,11 +1073,11 @@ struct xkb_component_names *
 xkb_components_from_rules(struct xkb_context *ctx,
                           const struct xkb_rule_names *rmlvo)
 {
+    struct rules *rules;
+    struct xkb_component_names *kccgst = NULL;
     FILE *file;
     char *path;
     char **include;
-    struct rules *rules;
-    struct xkb_component_names *kccgst = NULL;
 
     file = XkbFindFileInPath(ctx, rmlvo->rules, FILE_TYPE_RULES, &path);
     if (!file) {
