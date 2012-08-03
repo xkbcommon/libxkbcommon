@@ -110,6 +110,24 @@ enum xkb_file_type {
     FILE_TYPE_RULES = (1 << 6),
 };
 
+struct xkb_context {
+    int refcnt;
+
+    ATTR_PRINTF(3, 0) void (*log_fn)(struct xkb_context *ctx, int priority,
+                                     const char *fmt, va_list args);
+    int log_priority;
+    int log_verbosity;
+    void *user_data;
+
+    darray(char *) includes;
+    darray(char *) failed_includes;
+
+    /* xkbcomp needs to assign sequential IDs to XkbFile's it creates. */
+    unsigned file_id;
+
+    struct atom_table *atom_table;
+};
+
 /* Files needed for a complete keymap. */
 #define REQUIRED_FILE_TYPES (FILE_TYPE_TYPES | FILE_TYPE_COMPAT | \
                              FILE_TYPE_SYMBOLS | FILE_TYPE_KEYCODES)

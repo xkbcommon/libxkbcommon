@@ -35,24 +35,6 @@
 #include "xkb-priv.h"
 #include "atom.h"
 
-struct xkb_context {
-    int refcnt;
-
-    ATTR_PRINTF(3, 0) void (*log_fn)(struct xkb_context *ctx, int priority,
-                                     const char *fmt, va_list args);
-    int log_priority;
-    int log_verbosity;
-    void *user_data;
-
-    darray(char *) includes;
-    darray(char *) failed_includes;
-
-    /* xkbcomp needs to assign sequential IDs to XkbFile's it creates. */
-    unsigned file_id;
-
-    struct atom_table *atom_table;
-};
-
 /**
  * Append one directory to the context's include path.
  */
