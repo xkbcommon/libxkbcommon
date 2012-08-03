@@ -29,8 +29,6 @@
 #include <linux/input.h>
 
 #include "xkbcommon/xkbcommon.h"
-#include "xkbcommon/xkbcommon-names.h"
-#include "xkb-priv.h"
 #include "test.h"
 
 /* Offset between evdev keycodes (where KEY_ESCAPE is 1), and the evdev XKB

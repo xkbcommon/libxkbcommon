@@ -25,10 +25,8 @@
  */
 
 #include <assert.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include <limits.h>
+#include <stdlib.h>
 
 #include "xkbcommon/xkbcommon.h"
 #include "test.h"
