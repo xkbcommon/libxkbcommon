@@ -470,11 +470,13 @@ main(int argc, char *argv[])
         if (!file) {
             fprintf(stderr, "Couldn't open file %s: %s\n",
                     keymap_path, strerror(errno));
+            ret = -1;
             goto err_ctx;
         }
         keymap = xkb_map_new_from_file(ctx, file,
                                        XKB_KEYMAP_FORMAT_TEXT_V1, 0);
-    } else {
+    }
+    else {
         keymap = xkb_map_new_from_names(ctx, &names, 0);
     }
     if (!keymap) {
@@ -499,9 +501,8 @@ main(int argc, char *argv[])
     system("stty -echo");
 
     ret = loop(kbds);
-    if (ret) {
+    if (ret)
         goto err_stty;
-    }
 
 err_stty:
     system("stty echo");
