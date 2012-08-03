@@ -1500,17 +1500,9 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
 
     /* Now update the level masks for all the types to reflect the vmods. */
     for (i = 0; i < keymap->num_types; i++) {
-        xkb_mod_mask_t mask = 0;
         type = &keymap->types[i];
         type->mods.mask = type->mods.real_mods;
         type->mods.mask |= VModsToReal(keymap, type->mods.vmods);
-
-        /* FIXME: We compute the mask with doing anything with it? */
-        for (vmod = 0; vmod < XkbNumVirtualMods; vmod++) {
-            if (!(type->mods.vmods & (1 << vmod)))
-                continue;
-            mask |= keymap->vmods[vmod];
-        }
 
         for (j = 0; j < type->num_entries; j++) {
             type->map[j].mods.mask = 0;
