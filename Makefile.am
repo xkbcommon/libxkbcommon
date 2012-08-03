@@ -112,7 +112,6 @@ TESTS = \
 	test/state \
 	test/context \
 	test/rules-file \
-	test/dump \
 	test/stringcomp \
 	test/keyseq \
 	test/log
@@ -125,7 +124,6 @@ test_state_LDADD = $(TESTS_LDADD)
 test_context_LDADD = $(TESTS_LDADD)
 test_rules_file_CFLAGS = $(AM_CFLAGS) -Wno-declaration-after-statement
 test_rules_file_LDADD = $(TESTS_LDADD)
-test_dump_LDADD = $(TESTS_LDADD)
 test_stringcomp_LDADD = $(TESTS_LDADD)
 test_keyseq_LDADD = $(TESTS_LDADD)
 test_log_LDADD = $(TESTS_LDADD)
