@@ -498,21 +498,6 @@ xkb_key_get_syms_by_level(struct xkb_keymap *keymap, struct xkb_key *key,
                           xkb_group_index_t group, xkb_level_index_t level,
                           const xkb_keysym_t **syms_out);
 
-/**
- * Deprecated entrypoint for legacy users who need to be able to compile
- * XKB keymaps by KcCGST (Keycodes + Compat + Geometry + Symbols + Types)
- * names.
- *
- * You should not use this unless you are the X server.  This entrypoint
- * may well disappear in future releases.  Please, please, don't use it.
- *
- * Geometry will be ignored since xkbcommon does not support it in any way.
- */
-struct xkb_keymap *
-xkb_map_new_from_kccgst(struct xkb_context *ctx,
-                        const struct xkb_component_names *kccgst,
-                        enum xkb_map_compile_flags flags);
-
 extern unsigned
 xkb_context_take_file_id(struct xkb_context *ctx);
 

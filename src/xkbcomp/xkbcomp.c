@@ -200,58 +200,15 @@ err:
     return NULL;
 }
 
-struct xkb_keymap *
-xkb_map_new_from_kccgst(struct xkb_context *ctx,
-                        const struct xkb_component_names *kccgst,
-                        enum xkb_map_compile_flags flags)
-{
-    XkbFile *file;
-    struct xkb_keymap *keymap;
-
-    if (!kccgst) {
-        log_err(ctx, "No components specified\n");
-        return NULL;
-    }
-
-    if (ISEMPTY(kccgst->keycodes)) {
-        log_err(ctx, "Keycodes required to generate XKB keymap\n");
-        return NULL;
-    }
-
-    if (ISEMPTY(kccgst->compat)) {
-        log_err(ctx, "Compat map required to generate XKB keymap\n");
-        return NULL;
-    }
-
-    if (ISEMPTY(kccgst->types)) {
-        log_err(ctx, "Types required to generate XKB keymap\n");
-        return NULL;
-    }
-
-    if (ISEMPTY(kccgst->symbols)) {
-        log_err(ctx, "Symbols required to generate XKB keymap\n");
-        return NULL;
-    }
-
-    file = keymap_file_from_components(ctx, kccgst);
-    if (!file) {
-        log_err(ctx, "Failed to generate parsed XKB file from components\n");
-        return NULL;
-    }
-
-    keymap = compile_keymap(ctx, file);
-    FreeXKBFile(file);
-    return keymap;
-}
-
 XKB_EXPORT struct xkb_keymap *
 xkb_map_new_from_names(struct xkb_context *ctx,
                        const struct xkb_rule_names *rmlvo_in,
                        enum xkb_map_compile_flags flags)
 {
     struct xkb_component_names *kkctgs;
-    struct xkb_keymap *keymap;
+    struct xkb_keymap *keymap = NULL;
     struct xkb_rule_names rmlvo = *rmlvo_in;
+    XkbFile *file;
 
     if (ISEMPTY(rmlvo.rules))
         rmlvo.rules = DEFAULT_XKB_RULES;
@@ -267,8 +224,16 @@ xkb_map_new_from_names(struct xkb_context *ctx,
         return NULL;
     }
 
-    keymap = xkb_map_new_from_kccgst(ctx, kkctgs, 0);
+    file = keymap_file_from_components(ctx, kkctgs);
+    if (!file) {
+        log_err(ctx, "Failed to generate parsed XKB file from components\n");
+        goto out;
+    }
 
+    keymap = compile_keymap(ctx, file);
+    FreeXKBFile(file);
+
+out:
     free(kkctgs->keycodes);
     free(kkctgs->types);
     free(kkctgs->compat);

@@ -108,7 +108,6 @@ TESTS_ENVIRONMENT =
 TESTS = \
 	test/xkey \
 	test/filecomp \
-	test/namescomp \
 	test/rulescomp \
 	test/state \
 	test/context \
@@ -121,7 +120,6 @@ TESTS_LDADD = libtest.la
 
 test_xkey_LDADD = $(TESTS_LDADD)
 test_filecomp_LDADD = $(TESTS_LDADD)
-test_namescomp_LDADD = $(TESTS_LDADD)
 test_rulescomp_LDADD = $(TESTS_LDADD) -lrt
 test_state_LDADD = $(TESTS_LDADD)
 test_context_LDADD = $(TESTS_LDADD)
