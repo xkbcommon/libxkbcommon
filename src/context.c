@@ -45,6 +45,7 @@ struct xkb_context {
     void *user_data;
 
     darray(char *) includes;
+    darray(char *) failed_includes;
 
     /* xkbcomp needs to assign sequential IDs to XkbFile's it creates. */
     unsigned file_id;
@@ -62,26 +63,30 @@ xkb_context_include_path_append(struct xkb_context *ctx, const char *path)
     int err;
     char *tmp;
 
+    tmp = strdup(path);
+    if (!tmp)
+        goto err;
+
     err = stat(path, &stat_buf);
     if (err != 0)
-        return 0;
+        goto err;
     if (!S_ISDIR(stat_buf.st_mode))
-        return 0;
+        goto err;
 
 #if defined(HAVE_EACCESS)
     if (eaccess(path, R_OK | X_OK) != 0)
-        return 0;
+        goto err;
 #elif defined(HAVE_EUIDACCESS)
     if (euidaccess(path, R_OK | X_OK) != 0)
-        return 0;
+        goto err;
 #endif
-
-    tmp = strdup(path);
-    if (!tmp)
-        return 0;
 
     darray_append(ctx->includes, tmp);
     return 1;
+
+err:
+    darray_append(ctx->failed_includes, tmp);
+    return 0;
 }
 
 /**
@@ -118,9 +123,12 @@ xkb_context_include_path_clear(struct xkb_context *ctx)
     char **path;
 
     darray_foreach(path, ctx->includes)
-    free(*path);
-
+        free(*path);
     darray_free(ctx->includes);
+
+    darray_foreach(path, ctx->failed_includes)
+        free(*path);
+    darray_free(ctx->failed_includes);
 }
 
 /**
