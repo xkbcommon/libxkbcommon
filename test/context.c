@@ -35,7 +35,9 @@ main(void)
 
     assert(context);
 
-    /* FIXME: Test include path stuff. */
+    assert(xkb_context_num_include_paths(context) == 1);
+    assert(!xkb_context_include_path_append(context, "¡NONSENSE!"));
+    assert(xkb_context_num_include_paths(context) == 1);
 
     xkb_context_unref(context);
 
