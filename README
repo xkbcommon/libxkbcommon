@@ -79,6 +79,9 @@ Notable removals:
       + completely unused in current keymaps, never fully implemented
     - overlays
       + almost completely unused in current keymaps
+    - key behaviors
+      + used to implement radio groups and overlays, and to deal with things
+        like keys that physically lock; unused in current keymaps
     - indicator behaviours such as LED-controls-key
       + the only supported LED behaviour is key-controls-LED; again this
         was never really used in current keymaps

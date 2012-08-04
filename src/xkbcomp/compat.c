@@ -1440,9 +1440,6 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
                 if (!(key->explicit & XkbExplicitAutoRepeatMask) &&
                     (!interp || (interp->flags & XkbSI_AutoRepeat)))
                     key->repeats = true;
-                if (!(key->explicit & XkbExplicitBehaviorMask) &&
-                    interp && (interp->flags & XkbSI_LockingKey))
-                    key->behavior.type = XkbKB_Lock;
             }
 
             if (!interp)

@@ -45,11 +45,10 @@ enum key_field {
     KEY_FIELD_SYMS      = (1 << 0),
     KEY_FIELD_ACTS      = (1 << 1),
     KEY_FIELD_REPEAT    = (1 << 2),
-    KEY_FIELD_BEHAVIOR  = (1 << 3),
-    KEY_FIELD_TYPE_DFLT = (1 << 4),
-    KEY_FIELD_TYPES     = (1 << 5),
-    KEY_FIELD_GROUPINFO = (1 << 6),
-    KEY_FIELD_VMODMAP   = (1 << 7),
+    KEY_FIELD_TYPE_DFLT = (1 << 3),
+    KEY_FIELD_TYPES     = (1 << 4),
+    KEY_FIELD_GROUPINFO = (1 << 5),
+    KEY_FIELD_VMODMAP   = (1 << 6),
 };
 
 typedef struct _KeyInfo {
@@ -82,7 +81,6 @@ typedef struct _KeyInfo {
 
     xkb_atom_t types[XkbNumKbdGroups];
     enum key_repeat repeat;
-    struct xkb_behavior behavior;
     unsigned short vmodmap;
     xkb_atom_t dfltType;
 
@@ -115,8 +113,6 @@ InitKeyInfo(KeyInfo *keyi, unsigned file_id)
     }
 
     keyi->dfltType = XKB_ATOM_NONE;
-    keyi->behavior.type = XkbKB_Default;
-    keyi->behavior.data = 0;
     keyi->vmodmap = 0;
     keyi->repeat = KEY_REPEAT_UNDEFINED;
     keyi->out_of_range_group_action = 0;
@@ -581,10 +577,6 @@ MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from)
         }
     }
 
-    if (UseNewKeyField(KEY_FIELD_BEHAVIOR, into, from, verbosity, &collide)) {
-        into->behavior = from->behavior;
-        into->defined |= KEY_FIELD_BEHAVIOR;
-    }
     if (UseNewKeyField(KEY_FIELD_VMODMAP, into, from, verbosity, &collide)) {
         into->vmodmap = from->vmodmap;
         into->defined |= KEY_FIELD_VMODMAP;
@@ -993,17 +985,6 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     return true;
 }
 
-static const LookupEntry lockingEntries[] = {
-    { "true", XkbKB_Lock },
-    { "yes", XkbKB_Lock },
-    { "on", XkbKB_Lock },
-    { "false", XkbKB_Default },
-    { "no", XkbKB_Default },
-    { "off", XkbKB_Default },
-    { "permanent", XkbKB_Lock | XkbKB_Permanent },
-    { NULL, 0 }
-};
-
 static const LookupEntry repeatEntries[] = {
     { "true", KEY_REPEAT_YES },
     { "yes", KEY_REPEAT_YES },
@@ -1072,12 +1053,10 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     else if (istreq(field, "locking") ||
              istreq(field, "lock") ||
              istreq(field, "locks")) {
-        unsigned int val;
-
-        ok = ExprResolveEnum(ctx, value, &val, lockingEntries);
-        if (ok)
-            keyi->behavior.type = val;
-        keyi->defined |= KEY_FIELD_BEHAVIOR;
+        log_err(info->keymap->ctx,
+                "Key behaviors not supported; "
+                "Ignoring locking specification for key %s\n",
+                LongKeyNameText(keyi->name));
     }
     else if (istreq(field, "radiogroup") ||
              istreq(field, "permanentradiogroup") ||
@@ -1086,7 +1065,6 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
                 "Radio groups not supported; "
                 "Ignoring radio group specification for key %s\n",
                 LongKeyNameText(keyi->name));
-        return false;
     }
     else if (istreq_prefix("overlay", field) ||
              istreq_prefix("permanentoverlay", field)) {
@@ -1172,6 +1150,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
                 field);
         ok = false;
     }
+
     return ok;
 }
 
@@ -1850,19 +1829,12 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
             }
         }
     }
-    switch (keyi->behavior.type & XkbKB_OpMask) {
-    case XkbKB_Default:
-        break;
 
-    default:
-        key->behavior = keyi->behavior;
-        key->explicit |= XkbExplicitBehaviorMask;
-        break;
-    }
     if (keyi->defined & KEY_FIELD_VMODMAP) {
         key->vmodmap = keyi->vmodmap;
         key->explicit |= XkbExplicitVModMapMask;
     }
+
     if (keyi->repeat != KEY_REPEAT_UNDEFINED) {
         key->repeats = (keyi->repeat == KEY_REPEAT_YES);
         key->explicit |= XkbExplicitAutoRepeatMask;

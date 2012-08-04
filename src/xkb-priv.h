@@ -265,11 +265,6 @@ struct xkb_sym_interpret {
     union xkb_action act;
 };
 
-struct xkb_behavior {
-    unsigned char type;
-    unsigned char data;
-};
-
 struct xkb_indicator_map {
     unsigned char flags;
     unsigned char which_groups;
@@ -307,8 +302,6 @@ struct xkb_key {
 
     unsigned char modmap;
     xkb_mod_mask_t vmodmap;
-
-    struct xkb_behavior behavior;
 
     bool repeats;
 
