@@ -532,7 +532,6 @@ static bool
 SetMapEntry(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
             ExprDef *value)
 {
-    unsigned int level;
     struct xkb_kt_map_entry entry;
     xkb_mod_mask_t mask;
 
@@ -559,15 +558,13 @@ SetMapEntry(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
         entry.mods.vmods &= type->vmask;
     }
 
-    if (!ExprResolveLevel(info->keymap->ctx, value, &level)) {
+    if (!ExprResolveLevel(info->keymap->ctx, value, &entry.level)) {
         log_err(info->keymap->ctx,
                 "Level specifications in a key type must be integer; "
                 "Ignoring malformed level specification\n");
         return false;
     }
 
-    /* level is always >= 1 */
-    entry.level = level - 1;
     return AddMapEntry(info, type, &entry, true, true);
 }
 
@@ -680,7 +677,6 @@ SetLevelName(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
 
     if (!ExprResolveLevel(ctx, arrayNdx, &level))
         return ReportTypeBadType(info, type, "level name", "integer");
-    level--;
 
     if (!ExprResolveString(ctx, value, &str)) {
         log_err(info->keymap->ctx,

@@ -536,7 +536,8 @@ ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
         return false;
     }
 
-    *level_rtrn = (unsigned int) result;
+    /* Level is zero-indexed from now on. */
+    *level_rtrn = (unsigned int) (result - 1);
     return true;
 }
 
