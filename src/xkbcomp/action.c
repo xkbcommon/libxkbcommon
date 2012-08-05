@@ -310,7 +310,7 @@ HandleSetLatchMods(struct xkb_keymap *keymap, struct xkb_any_action *action,
         if (CheckModifierField(keymap, action->type, value, &t1, &t2)) {
             act->flags = t1;
             act->real_mods = act->mask = (t2 & 0xff);
-            act->vmods = (t2 >> 8) & 0xffff;
+            act->vmods = (t2 >> XkbNumModifiers) & 0xffff;
             return true;
         }
         return false;
@@ -335,7 +335,7 @@ HandleLockMods(struct xkb_keymap *keymap, struct xkb_any_action *action,
         if (CheckModifierField(keymap, action->type, value, &t1, &t2)) {
             act->flags = t1;
             act->real_mods = act->mask = (t2 & 0xff);
-            act->vmods = (t2 >> 8) & 0xffff;
+            act->vmods = (t2 >> XkbNumModifiers) & 0xffff;
             return true;
         }
         return false;
@@ -659,7 +659,7 @@ HandleISOLock(struct xkb_keymap *keymap, struct xkb_any_action *action,
 
         act->flags = flags & (~XkbSA_ISODfltIsGroup);
         act->real_mods = mods & 0xff;
-        act->vmods = (mods >> 8) & 0xff;
+        act->vmods = (mods >> XkbNumModifiers) & 0xffff;
         return true;
     }
     else if (field == F_Group) {
@@ -937,7 +937,7 @@ HandleRedirectKey(struct xkb_keymap *keymap, struct xkb_any_action *action,
             else
                 act->mods &= ~(t2 & 0xff);
 
-            t2 = (t2 >> 8) & 0xffff;
+            t2 = (t2 >> XkbNumModifiers) & 0xffff;
             act->vmods_mask |= t2;
             if (field == F_Modifiers)
                 act->vmods |= t2;

@@ -767,7 +767,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
             return ReportIndicatorBadType(info, led, field, "modifier mask");
 
         led->real_mods = mask & 0xff;
-        led->vmods = (mask >> 8) & 0xff;
+        led->vmods = (mask >> XkbNumModifiers) & 0xffff;
         led->defined |= LED_FIELD_MODS;
     }
     else if (istreq(field, "groups")) {
@@ -998,7 +998,7 @@ HandleGroupCompatDef(CompatInfo *info, GroupCompatDef *def,
     }
 
     tmp.real_mods = mask & 0xff;
-    tmp.vmods = (mask >> 8) & 0xffff;
+    tmp.vmods = (mask >> XkbNumModifiers) & 0xffff;
     tmp.defined = true;
     return AddGroupCompat(info, def->group - 1, &tmp);
 }

@@ -81,7 +81,7 @@ typedef struct _KeyInfo {
 
     xkb_atom_t types[XkbNumKbdGroups];
     enum key_repeat repeat;
-    unsigned short vmodmap;
+    xkb_mod_mask_t vmodmap;
     xkb_atom_t dfltType;
 
     uint8_t out_of_range_group_action;
@@ -1040,7 +1040,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
 
         ok = ExprResolveVModMask(info->keymap, value, &mask);
         if (ok) {
-            keyi->vmodmap = (mask >> 8);
+            keyi->vmodmap = (mask >> XkbNumModifiers) & 0xffff;
             keyi->defined |= KEY_FIELD_VMODMAP;
         }
         else {

@@ -466,7 +466,7 @@ SetModifiers(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
     }
 
     mods = mask & 0xff; /* core mods */
-    vmods = (mask >> 8) & 0xffff; /* xkb virtual mods */
+    vmods = (mask >> XkbNumModifiers) & 0xffff; /* xkb virtual mods */
 
     if (type->defined & TYPE_FIELD_MASK) {
         log_warn(info->keymap->ctx,
@@ -644,8 +644,8 @@ SetMapEntry(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
     if (!ExprResolveVModMask(info->keymap, arrayNdx, &mask))
         return ReportTypeBadType(info, type, "map entry", "modifier mask");
 
-    entry.mods.real_mods = mask & 0xff;      /* modifiers < 512 */
-    entry.mods.vmods = (mask >> 8) & 0xffff; /* modifiers > 512 */
+    entry.mods.real_mods = mask & 0xff;
+    entry.mods.vmods = (mask >> XkbNumModifiers) & 0xffff;
 
     if ((entry.mods.real_mods & (~type->mask)) ||
         (entry.mods.vmods & (~type->vmask))) {
@@ -686,7 +686,7 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
                                  "modifier mask");
 
     new.indexMods = mask & 0xff;
-    new.indexVMods = (mask >> 8) & 0xffff;
+    new.indexVMods = (mask >> XkbNumModifiers) & 0xffff;
 
     if ((new.indexMods & (~type->mask)) ||
         (new.indexVMods & (~type->vmask))) {
@@ -711,7 +711,7 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
     }
 
     new.preMods = mask & 0xff;
-    new.preVMods = (mask >> 16) & 0xffff;
+    new.preVMods = (mask >> XkbNumModifiers) & 0xffff;
 
     if ((new.preMods & (~new.indexMods)) ||
         (new.preVMods & (~new.indexVMods))) {
