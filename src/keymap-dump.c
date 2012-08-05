@@ -657,7 +657,8 @@ write_keysyms(struct xkb_keymap *keymap, struct buf *buf,
               struct xkb_key *key, xkb_group_index_t group)
 {
     const xkb_keysym_t *syms;
-    int num_syms, level;
+    int num_syms;
+    xkb_level_index_t level;
 #define OUT_BUF_LEN 128
     char out_buf[OUT_BUF_LEN];
 

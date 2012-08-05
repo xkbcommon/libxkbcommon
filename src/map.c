@@ -213,14 +213,14 @@ xkb_map_led_get_index(struct xkb_keymap *keymap, const char *name)
 /**
  * Returns the level to use for the given key and state, or -1 if invalid.
  */
-unsigned int
+xkb_level_index_t
 xkb_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
                   xkb_group_index_t group)
 {
     struct xkb_keymap *keymap = xkb_state_get_map(state);
     struct xkb_key_type *type;
     struct xkb_kt_map_entry *entry;
-    unsigned int active_mods;
+    xkb_mod_mask_t active_mods;
 
     if (!XkbKeycodeInRange(keymap, kc))
         return 0;
@@ -281,7 +281,7 @@ xkb_key_get_group(struct xkb_state *state, xkb_keycode_t kc)
  */
 int
 xkb_key_get_syms_by_level(struct xkb_keymap *keymap, struct xkb_key *key,
-                          xkb_group_index_t group, unsigned int level,
+                          xkb_group_index_t group, xkb_level_index_t level,
                           const xkb_keysym_t **syms_out)
 {
     int num_syms;
@@ -314,7 +314,7 @@ xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t kc,
     struct xkb_keymap *keymap = xkb_state_get_map(state);
     struct xkb_key *key;
     xkb_group_index_t group;
-    unsigned int level;
+    xkb_level_index_t level;
 
     if (!state || !XkbKeycodeInRange(keymap, kc))
         return -1;

@@ -91,6 +91,8 @@
 #include "darray.h"
 #include "list.h"
 
+typedef uint16_t xkb_level_index_t;
+
 enum xkb_file_type {
     /* The top level file which includes the other component files. */
     FILE_TYPE_KEYMAP = (1 << 0),
@@ -241,13 +243,13 @@ struct xkb_mods {
 };
 
 struct xkb_kt_map_entry {
-    uint16_t level;
+    xkb_level_index_t level;
     struct xkb_mods mods;
 };
 
 struct xkb_key_type {
     struct xkb_mods mods;
-    uint16_t num_levels;
+    xkb_level_index_t num_levels;
     darray(struct xkb_kt_map_entry) map;
     struct xkb_mods *preserve;
     const char *name;
@@ -317,7 +319,7 @@ struct xkb_key {
 
     xkb_group_index_t num_groups;
     /* How many levels the largest group has. */
-    unsigned char width;
+    xkb_level_index_t width;
 
     uint8_t out_of_range_group_action;
     xkb_group_index_t out_of_range_group_number;
@@ -400,7 +402,7 @@ XkbKeyType(struct xkb_keymap *keymap, struct xkb_key *key,
     return &darray_item(keymap->types, XkbKeyTypeIndex(key, group));
 }
 
-static inline uint16_t
+static inline xkb_level_index_t
 XkbKeyGroupWidth(struct xkb_keymap *keymap, struct xkb_key *key,
                  xkb_group_index_t group)
 {
@@ -408,7 +410,8 @@ XkbKeyGroupWidth(struct xkb_keymap *keymap, struct xkb_key *key,
 }
 
 static inline unsigned int
-XkbKeyNumSyms(struct xkb_key *key, xkb_group_index_t group, unsigned int level)
+XkbKeyNumSyms(struct xkb_key *key, xkb_group_index_t group,
+              xkb_level_index_t level)
 {
     return key->num_syms[group * key->width + level];
 }
@@ -421,13 +424,14 @@ XkbKeySym(struct xkb_key *key, int ndx)
 
 static inline int
 XkbKeySymOffset(struct xkb_key *key, xkb_group_index_t group,
-                unsigned int level)
+                xkb_level_index_t level)
 {
     return key->sym_index[group * key->width + level];
 }
 
 static inline xkb_keysym_t *
-XkbKeySymEntry(struct xkb_key *key, xkb_group_index_t group, unsigned int level)
+XkbKeySymEntry(struct xkb_key *key, xkb_group_index_t group,
+               xkb_level_index_t level)
 {
     return XkbKeySym(key, XkbKeySymOffset(key, group, level));
 }
@@ -454,7 +458,7 @@ XkbKeyActionsPtr(struct xkb_keymap *keymap, struct xkb_key *key)
 
 static inline union xkb_action *
 XkbKeyActionEntry(struct xkb_keymap *keymap, struct xkb_key *key,
-                  xkb_group_index_t group, unsigned int level)
+                  xkb_group_index_t group, xkb_level_index_t level)
 {
     if (XkbKeyHasActions(key))
         return &XkbKeyActionsPtr(keymap, key)[key->width * group + level];
@@ -492,13 +496,13 @@ xkb_atom_text(struct xkb_context *ctx, xkb_atom_t atom);
 xkb_group_index_t
 xkb_key_get_group(struct xkb_state *state, xkb_keycode_t kc);
 
-extern unsigned int
+xkb_level_index_t
 xkb_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
                   xkb_group_index_t group);
 
 extern int
 xkb_key_get_syms_by_level(struct xkb_keymap *keymap, struct xkb_key *key,
-                          xkb_group_index_t group, unsigned int level,
+                          xkb_group_index_t group, xkb_level_index_t level,
                           const xkb_keysym_t **syms_out);
 
 /**

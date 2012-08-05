@@ -1334,7 +1334,7 @@ UpdateActionMods(struct xkb_keymap *keymap, union xkb_action *act,
  */
 static struct xkb_sym_interpret *
 FindInterpForKey(struct xkb_keymap *keymap, struct xkb_key *key,
-                 xkb_group_index_t group, uint32_t level)
+                 xkb_group_index_t group, xkb_level_index_t level)
 {
     struct xkb_sym_interpret *ret = NULL;
     struct xkb_sym_interpret *interp;
@@ -1399,8 +1399,8 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
     xkb_mod_mask_t vmodmask = 0;
     int num_acts = 0;
     xkb_group_index_t group;
-    int level;
-    int i;
+    xkb_level_index_t level;
+    unsigned int i;
 
     /* If we've been told not to bind interps to this key, then don't. */
     if (key->explicit & XkbExplicitInterpretMask)

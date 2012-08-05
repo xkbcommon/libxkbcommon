@@ -24,8 +24,6 @@
  *
  ********************************************************/
 
-#include <limits.h>
-
 #include "xkbcomp-priv.h"
 #include "parseutils.h"
 #include "action.h"
@@ -72,7 +70,7 @@ typedef struct _KeyInfo {
     unsigned char typesDefined;
     unsigned char symsDefined;
     unsigned char actsDefined;
-    unsigned int numLevels[XkbNumKbdGroups];
+    xkb_level_index_t numLevels[XkbNumKbdGroups];
 
     /* syms[group] -> Single array for all the keysyms in the group. */
     darray_xkb_keysym_t syms[XkbNumKbdGroups];
@@ -249,10 +247,11 @@ FreeSymbolsInfo(SymbolsInfo * info)
 }
 
 static bool
-ResizeKeyGroup(KeyInfo *keyi, xkb_group_index_t group, unsigned int numLevels,
-               unsigned sizeSyms, bool forceActions)
+ResizeKeyGroup(KeyInfo *keyi, xkb_group_index_t group,
+               xkb_level_index_t numLevels, unsigned sizeSyms,
+               bool forceActions)
 {
-    int i;
+    xkb_level_index_t i;
 
     if (darray_size(keyi->syms[group]) < sizeSyms)
         darray_resize0(keyi->syms[group], sizeSyms);
@@ -292,10 +291,10 @@ MergeKeyGroups(SymbolsInfo * info,
     darray_xkb_keysym_t resultSyms;
     enum key_group_selector using = NONE;
     darray_xkb_action resultActs;
-    unsigned int resultWidth;
+    xkb_level_index_t resultWidth;
     unsigned int resultSize = 0;
     int cur_idx = 0;
-    int i;
+    xkb_level_index_t i;
     bool report, clobber;
     int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
 
@@ -852,8 +851,9 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
                 ExprDef *value)
 {
     xkb_group_index_t ndx;
-    size_t nSyms, nLevels;
-    size_t i;
+    size_t nSyms;
+    xkb_level_index_t nLevels;
+    xkb_level_index_t i;
     int j;
 
     if (!GetGroupIndex(info, keyi, arrayNdx, SYMBOLS, &ndx))
@@ -1471,8 +1471,8 @@ static struct xkb_key *
 FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym)
 {
     struct xkb_key *key, *ret = NULL;
-    xkb_group_index_t group, min_group = UINT_MAX;
-    unsigned int level, min_level = UINT_MAX;
+    xkb_group_index_t group, min_group = UINT32_MAX;
+    xkb_level_index_t level, min_level = UINT16_MAX;
 
     xkb_foreach_key(key, keymap) {
         for (group = 0; group < key->num_groups; group++) {
@@ -1553,7 +1553,7 @@ FindNamedType(struct xkb_keymap *keymap, xkb_atom_t atom, unsigned *type_rtrn)
  *        symbol per level.
  */
 static bool
-FindAutomaticType(struct xkb_keymap *keymap, int width,
+FindAutomaticType(struct xkb_keymap *keymap, xkb_level_index_t width,
                   const xkb_keysym_t *syms, xkb_atom_t *typeNameRtrn,
                   bool *autoType)
 {
@@ -1605,7 +1605,8 @@ static void
 PrepareKeyDef(KeyInfo *keyi)
 {
     xkb_group_index_t i, lastGroup;
-    int j, width, defined;
+    unsigned int defined;
+    xkb_level_index_t j, width;
     bool identical;
 
     defined = keyi->symsDefined | keyi->actsDefined | keyi->typesDefined;
@@ -1722,7 +1723,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
     struct xkb_key *key;
     size_t sizeSyms = 0;
     xkb_group_index_t i, nGroups;
-    unsigned width, tmp;
+    xkb_level_index_t width, tmp;
     struct xkb_key_type * type;
     bool haveActions, autoType, useAlias;
     unsigned types[XkbNumKbdGroups];

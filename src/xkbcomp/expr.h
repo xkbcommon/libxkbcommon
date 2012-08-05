@@ -76,7 +76,7 @@ ExprResolveInteger(struct xkb_context *ctx, const ExprDef *expr,
 
 bool
 ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
-                 unsigned int *level_rtrn);
+                 xkb_level_index_t *level_rtrn);
 
 bool
 ExprResolveGroup(struct xkb_context *ctx, const ExprDef *expr,

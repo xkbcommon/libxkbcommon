@@ -53,7 +53,7 @@ typedef struct _KeyTypeInfo {
     xkb_atom_t name;
     xkb_mod_mask_t mask;
     xkb_mod_mask_t vmask;
-    unsigned numLevels;
+    xkb_level_index_t numLevels;
     darray(struct xkb_kt_map_entry) entries;
     struct list preserves;
     darray(xkb_atom_t) lvlNames;
@@ -491,7 +491,7 @@ AddMapEntry(KeyTypesInfo *info, KeyTypeInfo *type,
     if ((old = FindMatchingMapEntry(type, new->mods.real_mods,
                                     new->mods.vmods))) {
         if (report && (old->level != new->level)) {
-            unsigned use, ignore;
+            xkb_level_index_t use, ignore;
             if (clobber) {
                 use = new->level + 1;
                 ignore = old->level + 1;
@@ -634,7 +634,7 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
 
 static bool
 AddLevelName(KeyTypesInfo *info, KeyTypeInfo *type,
-             unsigned level, xkb_atom_t name, bool clobber)
+             xkb_level_index_t level, xkb_atom_t name, bool clobber)
 {
     if (level >= darray_size(type->lvlNames))
         darray_resize0(type->lvlNames, level + 1);
@@ -670,7 +670,7 @@ static bool
 SetLevelName(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
              ExprDef *value)
 {
-    unsigned level;
+    xkb_level_index_t level;
     xkb_atom_t level_name;
     struct xkb_context *ctx = info->keymap->ctx;
     const char *str;
