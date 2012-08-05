@@ -126,11 +126,11 @@
 
 typedef struct _PreserveInfo {
     struct list entry;
-    short matchingMapIndex;
-    unsigned char indexMods;
-    unsigned char preMods;
-    unsigned short indexVMods;
-    unsigned short preVMods;
+    int matchingMapIndex;
+    xkb_mod_mask_t indexMods;
+    xkb_mod_mask_t preMods;
+    xkb_mod_mask_t indexVMods;
+    xkb_mod_mask_t preVMods;
 } PreserveInfo;
 
 enum type_field {
@@ -149,17 +149,17 @@ typedef struct _KeyTypeInfo {
     xkb_atom_t name;
     xkb_mod_mask_t mask;
     xkb_mod_mask_t vmask;
-    xkb_level_index_t numLevels;
+    xkb_level_index_t num_levels;
     darray(struct xkb_kt_map_entry) entries;
     struct list preserves;
-    darray(xkb_atom_t) lvlNames;
+    darray(xkb_atom_t) level_names;
 } KeyTypeInfo;
 
 typedef struct _KeyTypesInfo {
     char *name;
     int errorCount;
     unsigned file_id;
-    unsigned nTypes;
+    unsigned num_types;
     struct list types;
     KeyTypeInfo dflt;
     VModInfo vmods;
@@ -235,7 +235,7 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
 
     info->name = strdup("default");
     info->errorCount = 0;
-    info->nTypes = 0;
+    info->num_types = 0;
     list_init(&info->types);
     info->file_id = file_id;
     info->dflt.defined = 0;
@@ -244,9 +244,9 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
     info->dflt.name = xkb_atom_intern(keymap->ctx, "DEFAULT");
     info->dflt.mask = 0;
     info->dflt.vmask = 0;
-    info->dflt.numLevels = 1;
+    info->dflt.num_levels = 1;
     darray_init(info->dflt.entries);
-    darray_init(info->dflt.lvlNames);
+    darray_init(info->dflt.level_names);
     list_init(&info->dflt.preserves);
     InitVModInfo(&info->vmods, keymap);
     info->keymap = keymap;
@@ -257,7 +257,7 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
     info->dflt = from->dflt;
 
     darray_copy(info->dflt.entries, from->dflt.entries);
-    darray_copy(info->dflt.lvlNames, from->dflt.lvlNames);
+    darray_copy(info->dflt.level_names, from->dflt.level_names);
 
     list_init(&info->dflt.preserves);
     list_foreach(old, &from->dflt.preserves, entry) {
@@ -275,7 +275,7 @@ FreeKeyTypeInfo(KeyTypeInfo * type)
 {
     PreserveInfo *pi, *next_pi;
     darray_free(type->entries);
-    darray_free(type->lvlNames);
+    darray_free(type->level_names);
     list_foreach_safe(pi, next_pi, &type->preserves, entry)
         free(pi);
     list_init(&type->preserves);
@@ -307,17 +307,17 @@ NextKeyType(KeyTypesInfo * info)
     type->file_id = info->file_id;
 
     list_append(&type->entry, &info->types);
-    info->nTypes++;
+    info->num_types++;
     return type;
 }
 
 static KeyTypeInfo *
-FindMatchingKeyType(KeyTypesInfo * info, KeyTypeInfo * new)
+FindMatchingKeyType(KeyTypesInfo *info, xkb_atom_t name)
 {
     KeyTypeInfo *old;
 
     list_foreach(old, &info->types, entry)
-        if (old->name == new->name)
+        if (old->name == name)
             return old;
 
     return NULL;
@@ -330,7 +330,7 @@ AddKeyType(KeyTypesInfo *info, KeyTypeInfo *new)
     struct list type_entry, preserves_entry;
     int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
 
-    old = FindMatchingKeyType(info, new);
+    old = FindMatchingKeyType(info, new->name);
     if (old) {
         if (new->merge == MERGE_REPLACE || new->merge == MERGE_OVERRIDE) {
             if ((old->file_id == new->file_id && verbosity > 0) ||
@@ -346,7 +346,7 @@ AddKeyType(KeyTypesInfo *info, KeyTypeInfo *new)
             *old = *new;
             old->entry = type_entry;
             darray_init(new->entries);
-            darray_init(new->lvlNames);
+            darray_init(new->level_names);
             list_init(&new->preserves);
             return true;
         }
@@ -362,8 +362,9 @@ AddKeyType(KeyTypesInfo *info, KeyTypeInfo *new)
     }
 
     old = NextKeyType(info);
-    if (old == NULL)
+    if (!old)
         return false;
+
     list_replace(&new->preserves, &old->preserves);
     type_entry = old->entry;
     preserves_entry = old->preserves;
@@ -371,7 +372,7 @@ AddKeyType(KeyTypesInfo *info, KeyTypeInfo *new)
     old->preserves = preserves_entry;
     old->entry = type_entry;
     darray_init(new->entries);
-    darray_init(new->lvlNames);
+    darray_init(new->level_names);
     list_init(&new->preserves);
     return true;
 }
@@ -441,6 +442,45 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *stmt)
     FreeKeyTypesInfo(&included);
 
     return (info->errorCount == 0);
+}
+
+/***====================================================================***/
+
+static bool
+SetModifiers(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
+             ExprDef *value)
+{
+    xkb_mod_mask_t mask, mods, vmods;
+
+    if (arrayNdx)
+        log_warn(info->keymap->ctx,
+                 "The modifiers field of a key type is not an array; "
+                 "Illegal array subscript ignored\n");
+
+    /* get modifier mask for current type */
+    if (!ExprResolveVModMask(info->keymap, value, &mask)) {
+        log_err(info->keymap->ctx,
+                "Key type mask field must be a modifier mask; "
+                "Key type definition ignored\n");
+        return false;
+    }
+
+    mods = mask & 0xff; /* core mods */
+    vmods = (mask >> 8) & 0xffff; /* xkb virtual mods */
+
+    if (type->defined & TYPE_FIELD_MASK) {
+        log_warn(info->keymap->ctx,
+                 "Multiple modifier mask definitions for key type %s; "
+                 "Using %s, ignoring %s\n",
+                 xkb_atom_text(info->keymap->ctx, type->name),
+                 TypeMaskTxt(info, type),
+                 VModMaskText(info->keymap, mods, vmods));
+        return false;
+    }
+
+    type->mask = mods;
+    type->vmask = vmods;
+    return true;
 }
 
 /***====================================================================***/
@@ -544,10 +584,11 @@ AddMapEntry(KeyTypesInfo *info, KeyTypeInfo *type,
 {
     struct xkb_kt_map_entry * old;
 
-    if ((old = FindMatchingMapEntry(type, new->mods.real_mods,
-                                    new->mods.vmods))) {
-        if (report && (old->level != new->level)) {
+    old = FindMatchingMapEntry(type, new->mods.real_mods, new->mods.vmods);
+    if (old) {
+        if (report && old->level != new->level) {
             xkb_level_index_t use, ignore;
+
             if (clobber) {
                 use = new->level + 1;
                 ignore = old->level + 1;
@@ -556,6 +597,7 @@ AddMapEntry(KeyTypesInfo *info, KeyTypeInfo *type,
                 use = old->level + 1;
                 ignore = new->level + 1;
             }
+
             log_warn(info->keymap->ctx,
                      "Multiple map entries for %s in %s; "
                      "Using %d, ignoring %d\n",
@@ -569,14 +611,19 @@ AddMapEntry(KeyTypesInfo *info, KeyTypeInfo *type,
                     TypeTxt(info, type));
             return true;
         }
+
         if (clobber)
             old->level = new->level;
+
         return true;
     }
-    if ((old = NextMapEntry(info, type)) == NULL)
-        return false;           /* allocation failure, already reported */
-    if (new->level >= type->numLevels)
-        type->numLevels = new->level + 1;
+
+    old = NextMapEntry(info, type);
+    if (!old)
+        return false;
+
+    if (new->level >= type->num_levels)
+        type->num_levels = new->level + 1;
     old->mods.mask = new->mods.real_mods;
     old->mods.real_mods = new->mods.real_mods;
     old->mods.vmods = new->mods.vmods;
@@ -689,33 +736,40 @@ static bool
 AddLevelName(KeyTypesInfo *info, KeyTypeInfo *type,
              xkb_level_index_t level, xkb_atom_t name, bool clobber)
 {
-    if (level >= darray_size(type->lvlNames))
-        darray_resize0(type->lvlNames, level + 1);
+    /* New name. */
+    if (level >= darray_size(type->level_names)) {
+        darray_resize0(type->level_names, level + 1);
+        goto finish;
+    }
 
-    if (darray_item(type->lvlNames, level) == name) {
+    /* Same level, same name. */
+    if (darray_item(type->level_names, level) == name) {
         log_lvl(info->keymap->ctx, 10,
                 "Duplicate names for level %d of key type %s; Ignored\n",
                 level + 1, TypeTxt(info, type));
         return true;
     }
-    else if (darray_item(type->lvlNames, level) != XKB_ATOM_NONE) {
-        if (xkb_get_log_verbosity(info->keymap->ctx) > 0) {
-            const char *old, *new;
-            old = xkb_atom_text(info->keymap->ctx,
-                                darray_item(type->lvlNames, level));
-            new = xkb_atom_text(info->keymap->ctx, name);
-            log_lvl(info->keymap->ctx, 1,
-                    "Multiple names for level %d of key type %s; "
-                    "Using %s, ignoring %s\n",
-                    level + 1, TypeTxt(info, type),
-                    (clobber ? new : old), (clobber ? old : new));
-        }
+
+    /* Same level, different name. */
+    if (darray_item(type->level_names, level) != XKB_ATOM_NONE) {
+        const char *old, *new;
+        old = xkb_atom_text(info->keymap->ctx,
+                            darray_item(type->level_names, level));
+        new = xkb_atom_text(info->keymap->ctx, name);
+        log_lvl(info->keymap->ctx, 1,
+                "Multiple names for level %d of key type %s; "
+                "Using %s, ignoring %s\n",
+                level + 1, TypeTxt(info, type),
+                (clobber ? new : old), (clobber ? old : new));
 
         if (!clobber)
             return true;
     }
 
-    darray_item(type->lvlNames, level) = name;
+    /* XXX: What about different level, same name? */
+
+finish:
+    darray_item(type->level_names, level) = name;
     return true;
 }
 
@@ -758,56 +812,32 @@ static bool
 SetKeyTypeField(KeyTypesInfo *info, KeyTypeInfo *type,
                 const char *field, ExprDef *arrayNdx, ExprDef *value)
 {
+    bool ok = false;
+    enum type_field type_field = 0;
+
     if (istreq(field, "modifiers")) {
-        xkb_mod_mask_t mask, mods, vmods;
-
-        if (arrayNdx)
-            log_warn(info->keymap->ctx,
-                     "The modifiers field of a key type is not an array; "
-                     "Illegal array subscript ignored\n");
-
-        /* get modifier mask for current type */
-        if (!ExprResolveVModMask(info->keymap, value, &mask)) {
-            log_err(info->keymap->ctx,
-                    "Key type mask field must be a modifier mask; "
-                    "Key type definition ignored\n");
-            return false;
-        }
-
-        mods = mask & 0xff; /* core mods */
-        vmods = (mask >> 8) & 0xffff; /* xkb virtual mods */
-        if (type->defined & TYPE_FIELD_MASK) {
-            log_warn(info->keymap->ctx,
-                     "Multiple modifier mask definitions for key type %s; "
-                     "Using %s, ignoring %s\n",
-                     xkb_atom_text(info->keymap->ctx, type->name),
-                     TypeMaskTxt(info, type),
-                     VModMaskText(info->keymap, mods, vmods));
-            return false;
-        }
-        type->mask = mods;
-        type->vmask = vmods;
-        type->defined |= TYPE_FIELD_MASK;
-        return true;
+        type_field = TYPE_FIELD_MASK;
+        ok = SetModifiers(info, type, arrayNdx, value);
     }
     else if (istreq(field, "map")) {
-        type->defined |= TYPE_FIELD_MAP;
-        return SetMapEntry(info, type, arrayNdx, value);
+        type_field = TYPE_FIELD_MAP;
+        ok = SetMapEntry(info, type, arrayNdx, value);
     }
     else if (istreq(field, "preserve")) {
-        type->defined |= TYPE_FIELD_PRESERVE;
-        return SetPreserve(info, type, arrayNdx, value);
+        type_field = TYPE_FIELD_PRESERVE;
+        ok = SetPreserve(info, type, arrayNdx, value);
     }
     else if (istreq(field, "levelname") || istreq(field, "level_name")) {
-        type->defined |= TYPE_FIELD_LEVEL_NAME;
-        return SetLevelName(info, type, arrayNdx, value);
+        type_field = TYPE_FIELD_LEVEL_NAME;
+        ok = SetLevelName(info, type, arrayNdx, value);
+    } else {
+        log_err(info->keymap->ctx,
+                "Unknown field %s in key type %s; Definition ignored\n",
+                field, TypeTxt(info, type));
     }
 
-    log_err(info->keymap->ctx,
-            "Unknown field %s in key type %s; Definition ignored\n",
-            field, TypeTxt(info, type));
-
-    return false;
+    type->defined |= type_field;
+    return ok;
 }
 
 static bool
@@ -837,10 +867,10 @@ HandleKeyTypeVar(KeyTypesInfo *info, VarDef *stmt)
     return false;
 }
 
-static int
+static bool
 HandleKeyTypeBody(KeyTypesInfo *info, VarDef *def, KeyTypeInfo *type)
 {
-    int ok = 1;
+    bool ok = true;
     const char *elem, *field;
     ExprDef *arrayNdx;
 
@@ -849,12 +879,13 @@ HandleKeyTypeBody(KeyTypesInfo *info, VarDef *def, KeyTypeInfo *type)
             ok = HandleKeyTypeVar(info, def);
             continue;
         }
+
         ok = ExprResolveLhs(info->keymap->ctx, def->name, &elem, &field,
                             &arrayNdx);
-        if (ok) {
-            ok = SetKeyTypeField(info, type, field, arrayNdx,
-                                 def->value);
-        }
+        if (!ok)
+            continue;
+
+        ok = SetKeyTypeField(info, type, field, arrayNdx, def->value);
     }
 
     return ok;
@@ -864,13 +895,14 @@ HandleKeyTypeBody(KeyTypesInfo *info, VarDef *def, KeyTypeInfo *type)
  * Process a type "XYZ" { } specification in the xkb_types section.
  *
  */
-static int
+static bool
 HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def, enum merge_mode merge)
 {
     unsigned int i;
     KeyTypeInfo type;
     struct xkb_kt_map_entry *entry;
     PreserveInfo *pi, *pi_next;
+    xkb_atom_t *name;
 
     if (def->merge != MERGE_DEFAULT)
         merge = def->merge;
@@ -881,9 +913,9 @@ HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def, enum merge_mode merge)
     type.name = def->name;
     type.mask = info->dflt.mask;
     type.vmask = info->dflt.vmask;
-    type.numLevels = 1;
+    type.num_levels = 1;
     darray_init(type.entries);
-    darray_init(type.lvlNames);
+    darray_init(type.level_names);
     list_init(&type.preserves);
 
     /* Parse the actual content. */
@@ -906,12 +938,11 @@ HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def, enum merge_mode merge)
             AddPreserve(info, &type, pi, false, false);
     }
 
-    for (i = 0; i < darray_size(info->dflt.lvlNames); i++) {
-        if (i < type.numLevels &&
-            darray_item(info->dflt.lvlNames, i) != XKB_ATOM_NONE) {
-            AddLevelName(info, &type, i,
-                         darray_item(info->dflt.lvlNames, i), false);
-        }
+    i = 0;
+    darray_foreach(name, info->dflt.level_names) {
+        if (i < type.num_levels && *name != XKB_ATOM_NONE)
+            AddLevelName(info, &type, i, *name, false);
+        i++;
     }
 
     /* Now add the new keytype to the info struct */
@@ -919,6 +950,7 @@ HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def, enum merge_mode merge)
         info->errorCount++;
         return false;
     }
+
     return true;
 }
 
@@ -1007,30 +1039,35 @@ CopyDefToKeyType(KeyTypesInfo *info, KeyTypeInfo *def,
     struct xkb_keymap *keymap = info->keymap;
 
     list_foreach(pre, &def->preserves, entry) {
-        struct xkb_kt_map_entry * match;
+        struct xkb_kt_map_entry *match;
         struct xkb_kt_map_entry tmp;
+
         tmp.mods.real_mods = pre->indexMods;
         tmp.mods.vmods = pre->indexVMods;
         tmp.level = 0;
-        AddMapEntry(info, def, &tmp, false, false);
+        (void) AddMapEntry(info, def, &tmp, false, false);
+
         match = FindMatchingMapEntry(def, pre->indexMods, pre->indexVMods);
         if (!match) {
             log_wsgo(info->keymap->ctx,
                      "Couldn't find matching entry for preserve; Aborting\n");
             return false;
         }
+
         pre->matchingMapIndex = match - &darray_item(def->entries, 0);
     }
+
     type->mods.real_mods = def->mask;
     type->mods.vmods = def->vmask;
-    type->num_levels = def->numLevels;
+    type->num_levels = def->num_levels;
     memcpy(&type->map, &def->entries, sizeof(def->entries));
+
     if (!list_empty(&def->preserves)) {
         type->preserve = calloc(darray_size(type->map),
                                 sizeof(*type->preserve));
         if (!type->preserve) {
             log_warn(info->keymap->ctx,
-                     "Couldn't allocate preserve array in CopyDefToKeyType; "
+                     "Couldn't allocate preserve array; "
                      "Preserve setting for type %s lost\n",
                      xkb_atom_text(keymap->ctx, def->name));
         }
@@ -1043,18 +1080,28 @@ CopyDefToKeyType(KeyTypesInfo *info, KeyTypeInfo *def,
             }
         }
     }
-    else
+    else {
         type->preserve = NULL;
+    }
+
     type->name = xkb_atom_text(keymap->ctx, def->name);
 
-    if (!darray_empty(def->lvlNames)) {
-        type->level_names = calloc(darray_size(def->lvlNames),
+    if (!darray_empty(def->level_names)) {
+        type->level_names = calloc(darray_size(def->level_names),
                                    sizeof(*type->level_names));
+        if (!type->level_names) {
+            log_warn(info->keymap->ctx,
+                     "Couldn't allocate level names array; "
+                     "Level name settings for type %s lost\n",
+                     xkb_atom_text(keymap->ctx, def->name));
+        } else {
+            xkb_atom_t *name;
 
-        /* assert def->szNames<=def->numLevels */
-        for (i = 0; i < darray_size(def->lvlNames); i++)
-            type->level_names[i] =
-                xkb_atom_text(keymap->ctx, darray_item(def->lvlNames, i));
+            /* assert def->szNames<=def->num_levels */
+            i = 0;
+            darray_foreach(name, def->level_names)
+                type->level_names[i++] = xkb_atom_text(keymap->ctx, *name);
+        }
     }
     else {
         type->level_names = NULL;
@@ -1083,7 +1130,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
     if (info.name)
         keymap->types_section_name = strdup(info.name);
 
-    darray_resize0(keymap->types, info.nTypes ? info.nTypes : 1);
+    darray_resize0(keymap->types, info.num_types ? info.num_types : 1);
 
     i = 0;
     list_foreach(def, &info.types, entry) {
