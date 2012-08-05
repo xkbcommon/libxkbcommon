@@ -217,17 +217,17 @@ FileTypeText(enum xkb_file_type type)
 {
     switch (type) {
     case FILE_TYPE_KEYMAP:
-        return "Keymap";
+        return "xkb_keymap";
     case FILE_TYPE_TYPES:
-        return "Types";
+        return "xkb_types";
     case FILE_TYPE_COMPAT:
-        return "CompatMap";
+        return "xkb_compatability";
     case FILE_TYPE_SYMBOLS:
-        return "Symbols";
+        return "xkb_symbols";
     case FILE_TYPE_KEYCODES:
-        return "KeyNames";
+        return "xkb_keycodes";
     case FILE_TYPE_RULES:
-        return "Rules";
+        return "rules";
     default:
         return "unknown";
     }
