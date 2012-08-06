@@ -244,13 +244,13 @@ struct xkb_mods {
 struct xkb_kt_map_entry {
     xkb_level_index_t level;
     struct xkb_mods mods;
+    struct xkb_mods preserve;
 };
 
 struct xkb_key_type {
     struct xkb_mods mods;
     xkb_level_index_t num_levels;
     darray(struct xkb_kt_map_entry) map;
-    struct xkb_mods *preserve;
     const char *name;
     const char **level_names;
 };

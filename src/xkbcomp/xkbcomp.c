@@ -355,7 +355,6 @@ xkb_map_unref(struct xkb_keymap *keymap)
 
     darray_foreach(type, keymap->types) {
         darray_free(type->map);
-        free(type->preserve);
         free(type->level_names);
     }
     darray_free(keymap->types);

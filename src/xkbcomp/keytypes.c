@@ -126,7 +126,6 @@
 
 typedef struct _PreserveInfo {
     struct list entry;
-    int matchingMapIndex;
     xkb_mod_mask_t indexMods;
     xkb_mod_mask_t preMods;
     xkb_mod_mask_t indexVMods;
@@ -564,7 +563,6 @@ AddPreserve(KeyTypesInfo *info, KeyTypeInfo *type,
     }
 
     *old = *new;
-    old->matchingMapIndex = -1;
     list_append(&old->entry, &type->preserves);
 
     return true;
@@ -1054,35 +1052,15 @@ CopyDefToKeyType(KeyTypesInfo *info, KeyTypeInfo *def,
             return false;
         }
 
-        pre->matchingMapIndex = match - &darray_item(def->entries, 0);
+        match->preserve.mask = pre->preMods;
+        match->preserve.real_mods = pre->preMods;
+        match->preserve.vmods = pre->preVMods;
     }
 
     type->mods.real_mods = def->mask;
     type->mods.vmods = def->vmask;
     type->num_levels = def->num_levels;
     memcpy(&type->map, &def->entries, sizeof(def->entries));
-
-    if (!list_empty(&def->preserves)) {
-        type->preserve = calloc(darray_size(type->map),
-                                sizeof(*type->preserve));
-        if (!type->preserve) {
-            log_warn(info->keymap->ctx,
-                     "Couldn't allocate preserve array; "
-                     "Preserve setting for type %s lost\n",
-                     xkb_atom_text(keymap->ctx, def->name));
-        }
-        else {
-            list_foreach(pre, &def->preserves, entry) {
-                int ndx = pre->matchingMapIndex;
-                type->preserve[ndx].mask = pre->preMods;
-                type->preserve[ndx].real_mods = pre->preMods;
-                type->preserve[ndx].vmods = pre->preVMods;
-            }
-        }
-    }
-    else {
-        type->preserve = NULL;
-    }
 
     type->name = xkb_atom_text(keymap->ctx, def->name);
 

@@ -346,6 +346,7 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
 {
     int n;
     struct xkb_key_type *type;
+    struct xkb_kt_map_entry *entry;
 
     if (keymap->types_section_name)
         write_buf(buf, "\txkb_types \"%s\" {\n\n",
@@ -362,8 +363,7 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
                   get_mod_mask_text(keymap, type->mods.real_mods,
                                     type->mods.vmods));
 
-        for (n = 0; n < darray_size(type->map); n++) {
-            struct xkb_kt_map_entry *entry = &darray_item(type->map, n);
+        darray_foreach(entry, type->map) {
             char *str;
 
             str = get_mod_mask_text(keymap, entry->mods.real_mods,
@@ -371,13 +371,13 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
             write_buf(buf, "\t\t\tmap[%s]= Level%d;\n",
                       str, entry->level + 1);
 
-            if (!type->preserve || (!type->preserve[n].real_mods &&
-                                    !type->preserve[n].vmods))
+            if (!entry->preserve.real_mods && !entry->preserve.vmods)
                 continue;
+
             write_buf(buf, "\t\t\tpreserve[%s]= ", str);
             write_buf(buf, "%s;\n",
-                      get_mod_mask_text(keymap, type->preserve[n].real_mods,
-                                        type->preserve[n].vmods));
+                      get_mod_mask_text(keymap, entry->preserve.real_mods,
+                                        entry->preserve.vmods));
         }
 
         if (type->level_names) {
