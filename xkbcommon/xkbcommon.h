@@ -635,6 +635,16 @@ xkb_state_mod_index_is_active(struct xkb_state *state, xkb_mod_index_t idx,
                               enum xkb_state_component type);
 
 /**
+ * Returns 1 if the modifier specified by 'idx' is used in the
+ * translation of the keycode 'key' to the key symbols obtained by
+ * pressing it (as in xkb_key_get_syms), given the current state.
+ * Returns 0 otherwise.
+ */
+int
+xkb_key_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t key,
+                              xkb_mod_index_t idx);
+
+/**
  * Returns 1 if the modifiers specified by the varargs (treated as
  * xkb_mod_index_t, terminated with XKB_MOD_INVALID) are active in the manner
  * specified by 'match' and 'type', 0 otherwise, or -1 if the modifier does not

@@ -268,7 +268,10 @@ print_keycode(struct keyboard *kbd, xkb_keycode_t keycode)
     for (mod = 0; mod < xkb_map_num_mods(keymap); mod++) {
         if (!xkb_state_mod_index_is_active(state, mod, XKB_STATE_EFFECTIVE))
             continue;
-        printf("%s ", xkb_map_mod_get_name(keymap, mod));
+        if (xkb_key_mod_index_is_consumed(state, keycode, mod))
+            printf("-%s ", xkb_map_mod_get_name(keymap, mod));
+        else
+            printf("%s ", xkb_map_mod_get_name(keymap, mod));
     }
     printf("] ");
 

@@ -345,3 +345,47 @@ xkb_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t kc)
         return 0;
     return XkbKey(keymap, kc)->repeats;
 }
+
+/**
+ * Tests to see if a modifier is used up by our translation of a
+ * keycode to keysyms, taking note of the current modifier state and
+ * the appropriate key type's preserve information, if any. This allows
+ * the user to mask out the modifier in later processing of the
+ * modifiers, e.g. when implementing hot keys or accelerators.
+ *
+ * See also, for example:
+ * - XkbTranslateKeyCode(3), mod_rtrn retrun value, from libX11.
+ * - gdk_keymap_translate_keyboard_state, consumed_modifiers return value,
+ *   from gtk+.
+ */
+XKB_EXPORT int
+xkb_key_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t kc,
+                              xkb_mod_index_t idx)
+{
+    struct xkb_keymap *keymap = xkb_state_get_map(state);
+    xkb_group_index_t group;
+    struct xkb_key_type *type;
+    unsigned int i;
+    struct xkb_kt_map_entry *entry;
+    xkb_mod_mask_t active_mods;
+
+    if (!XkbKeycodeInRange(keymap, kc))
+        return 0;
+
+    group = xkb_key_get_group(state, kc);
+    type = XkbKeyType(keymap, XkbKey(keymap, kc), group);
+    active_mods = xkb_state_serialize_mods(state, XKB_STATE_EFFECTIVE);
+    active_mods &= type->mods.mask;
+
+    for (i = 0; i < type->num_entries; i++) {
+        if (type->map[i].mods.mask == active_mods) {
+            entry = &type->map[i];
+            break;
+        }
+    }
+
+    if (!entry)
+        return 0;
+
+    return !!((type->mods.mask & (~entry->preserve.mask)) & (1 << idx));
+}
