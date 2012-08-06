@@ -257,8 +257,8 @@ xkb_context_unref(struct xkb_context *context);
  */
 
 /**
- * Sets the function to be called for logging messages, instead of the
- * default logger which writes to stderr.
+ * Sets the function to be called for logging messages.
+ * Passing NULL restores the default function, which logs to stderr.
  **/
 void
 xkb_set_log_fn(struct xkb_context *context,

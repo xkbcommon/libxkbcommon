@@ -334,7 +334,7 @@ xkb_set_log_fn(struct xkb_context *ctx,
                void (*log_fn)(struct xkb_context *ctx, int priority,
                               const char *fmt, va_list args))
 {
-    ctx->log_fn = log_fn;
+    ctx->log_fn = (log_fn ? log_fn : default_log_fn);
 }
 
 XKB_EXPORT int
