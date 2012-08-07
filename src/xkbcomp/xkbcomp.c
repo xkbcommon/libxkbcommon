@@ -354,7 +354,7 @@ xkb_map_unref(struct xkb_keymap *keymap)
         return;
 
     for (i = 0; i < keymap->num_types; i++) {
-        darray_free(keymap->types[i].map);
+        free(keymap->types[i].map);
         free(keymap->types[i].level_names);
     }
     free(keymap->types);

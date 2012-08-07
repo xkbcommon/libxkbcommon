@@ -219,7 +219,7 @@ xkb_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
 {
     struct xkb_keymap *keymap = xkb_state_get_map(state);
     struct xkb_key_type *type;
-    struct xkb_kt_map_entry *entry;
+    unsigned int i;
     xkb_mod_mask_t active_mods;
 
     if (!XkbKeycodeInRange(keymap, kc))
@@ -229,10 +229,9 @@ xkb_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
     active_mods = xkb_state_serialize_mods(state, XKB_STATE_EFFECTIVE);
     active_mods &= type->mods.mask;
 
-    darray_foreach(entry, type->map) {
-        if (entry->mods.mask == active_mods)
-            return entry->level;
-    }
+    for (i = 0; i < type->num_entries; i++)
+        if (type->map[i].mods.mask == active_mods)
+            return type->map[i].level;
 
     return 0;
 }

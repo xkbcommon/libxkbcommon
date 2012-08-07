@@ -344,7 +344,7 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
 static bool
 write_types(struct xkb_keymap *keymap, struct buf *buf)
 {
-    unsigned int i;
+    unsigned int i, j;
     xkb_level_index_t n;
     struct xkb_key_type *type;
     struct xkb_kt_map_entry *entry;
@@ -366,8 +366,9 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
                   get_mod_mask_text(keymap, type->mods.real_mods,
                                     type->mods.vmods));
 
-        darray_foreach(entry, type->map) {
+        for (j = 0; j < type->num_entries; j++) {
             char *str;
+            entry = &type->map[j];
 
             /*
              * Printing level 1 entries is redundant, it's the default,

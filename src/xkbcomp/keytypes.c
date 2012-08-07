@@ -989,25 +989,31 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
 static bool
 ComputeEffectiveMap(struct xkb_keymap *keymap, struct xkb_key_type *type)
 {
-    uint32_t tmp;
+    unsigned int i;
+    xkb_mod_mask_t tmp;
     struct xkb_kt_map_entry *entry = NULL;
 
     if (type->mods.vmods != 0) {
         tmp = VModsToReal(keymap, type->mods.vmods);
         type->mods.mask = tmp | type->mods.real_mods;
-        darray_foreach(entry, type->map) {
+
+        for (i = 0; i < type->num_entries; i++) {
+            entry = &type->map[i];
             tmp = 0;
+
             if (entry->mods.vmods != 0) {
                 tmp = VModsToReal(keymap, entry->mods.vmods);
                 if (tmp == 0)
                     continue;
             }
+
             entry->mods.mask =
                 (entry->mods.real_mods | tmp) & type->mods.mask;
         }
     }
-    else
+    else {
         type->mods.mask = type->mods.real_mods;
+    }
 
     return true;
 }
@@ -1044,7 +1050,9 @@ CopyDefToKeyType(KeyTypesInfo *info, KeyTypeInfo *def,
     type->mods.real_mods = def->mask;
     type->mods.vmods = def->vmask;
     type->num_levels = def->num_levels;
-    memcpy(&type->map, &def->entries, sizeof(def->entries));
+    type->map = darray_mem(def->entries, 0);
+    type->num_entries = darray_size(def->entries);
+    darray_init(def->entries);
 
     type->name = xkb_atom_text(keymap->ctx, def->name);
 
@@ -1069,7 +1077,6 @@ CopyDefToKeyType(KeyTypesInfo *info, KeyTypeInfo *def,
         type->level_names = NULL;
     }
 
-    darray_init(def->entries);
     return ComputeEffectiveMap(keymap, type);
 }
 

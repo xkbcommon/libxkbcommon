@@ -1473,10 +1473,9 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
     xkb_mod_index_t vmod;
     xkb_group_index_t grp;
     xkb_led_index_t led;
-    unsigned int i;
+    unsigned int i, j;
     struct xkb_key *key;
     struct xkb_key_type *type;
-    struct xkb_kt_map_entry *entry;
 
     /* Find all the interprets for the key and bind them to actions,
      * which will also update the vmodmap. */
@@ -1513,9 +1512,12 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
             mask |= keymap->vmods[vmod];
         }
 
-        darray_foreach(entry, type->map)
-            entry->mods.mask = entry->mods.real_mods |
-                               VModsToReal(keymap, entry->mods.vmods);
+        for (j = 0; j < type->num_entries; j++) {
+            type->map[j].mods.mask = 0;
+            type->map[j].mods.mask |= type->map[j].mods.real_mods;
+            type->map[j].mods.mask |= VModsToReal(keymap,
+                                                  type->map[j].mods.vmods);
+        }
     }
 
     /* Update action modifiers. */

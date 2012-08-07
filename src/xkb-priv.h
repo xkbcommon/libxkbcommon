@@ -250,7 +250,8 @@ struct xkb_kt_map_entry {
 struct xkb_key_type {
     struct xkb_mods mods;
     xkb_level_index_t num_levels;
-    darray(struct xkb_kt_map_entry) map;
+    struct xkb_kt_map_entry *map;
+    unsigned int num_entries;
     const char *name;
     const char **level_names;
 };
