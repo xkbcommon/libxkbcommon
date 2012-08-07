@@ -366,6 +366,13 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
         darray_foreach(entry, type->map) {
             char *str;
 
+            /*
+             * Printing level 1 entries is redundant, it's the default,
+             * unless there's preserve info.
+             */
+            if (entry->level == 0 && entry->preserve.mask == 0)
+                continue;
+
             str = get_mod_mask_text(keymap, entry->mods.real_mods,
                                     entry->mods.vmods);
             write_buf(buf, "\t\t\tmap[%s]= Level%d;\n",

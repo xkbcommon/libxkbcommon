@@ -496,22 +496,6 @@ FindMatchingMapEntry(KeyTypeInfo * type, unsigned mask, unsigned vmask)
     return NULL;
 }
 
-static void
-DeleteLevel1MapEntries(KeyTypeInfo * type)
-{
-    unsigned int i, n;
-
-    /* TODO: Be just a bit more clever here. */
-    for (i = 0; i < darray_size(type->entries); i++) {
-        if (darray_item(type->entries, i).level == 0) {
-            for (n = i; n < darray_size(type->entries) - 1; n++)
-                darray_item(type->entries, n) =
-                    darray_item(type->entries, n + 1);
-            (void) darray_pop(type->entries);
-        }
-    }
-}
-
 static struct xkb_kt_map_entry *
 NextMapEntry(KeyTypesInfo *info, KeyTypeInfo * type)
 {
@@ -1113,8 +1097,6 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
     i = 0;
     list_foreach(def, &info.types, entry) {
         type = &darray_item(keymap->types, i++);
-
-        DeleteLevel1MapEntries(def);
 
         if (!CopyDefToKeyType(&info, def, type))
             goto err_info;
