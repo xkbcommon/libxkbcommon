@@ -361,7 +361,7 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
         type = &keymap->types[i];
 
         write_buf(buf, "\t\ttype \"%s\" {\n",
-                  type->name);
+                  xkb_atom_text(keymap->ctx, type->name));
         write_buf(buf, "\t\t\tmodifiers= %s;\n",
                   get_mod_mask_text(keymap, type->mods.real_mods,
                                     type->mods.vmods));
@@ -396,7 +396,7 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
                 if (!type->level_names[n])
                     continue;
                 write_buf(buf, "\t\t\tlevel_name[Level%d]= \"%s\";\n", n + 1,
-                          type->level_names[n]);
+                          xkb_atom_text(keymap->ctx, type->level_names[n]));
             }
         }
         write_buf(buf, "\t\t};\n");
@@ -753,12 +753,15 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
                         continue;
                     type = XkbKeyTypeIndex(key, group);
                     write_buf(buf, "\n\t\t\ttype[group%u]= \"%s\",",
-                              group + 1, keymap->types[type].name);
+                              group + 1,
+                              xkb_atom_text(keymap->ctx,
+                                            keymap->types[type].name));
                 }
             }
             else {
                 write_buf(buf, "\n\t\t\ttype= \"%s\",",
-                          keymap->types[type].name);
+                          xkb_atom_text(keymap->ctx,
+                                        keymap->types[type].name));
             }
         }
 

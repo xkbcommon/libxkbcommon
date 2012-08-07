@@ -1476,20 +1476,19 @@ FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym)
 /**
  * Find the given name in the keymap->map->types and return its index.
  *
- * @param atom The atom to search for.
+ * @param name The name to search for.
  * @param type_rtrn Set to the index of the name if found.
  *
  * @return true if found, false otherwise.
  */
 static bool
-FindNamedType(struct xkb_keymap *keymap, xkb_atom_t atom, unsigned *type_rtrn)
+FindNamedType(struct xkb_keymap *keymap, xkb_atom_t name, unsigned *type_rtrn)
 {
-    unsigned n = 0;
-    const char *name = xkb_atom_text(keymap->ctx, atom);
+    unsigned int i;
 
-    for (n = 0; n < keymap->num_types; n++) {
-        if (streq(keymap->types[n].name, name)) {
-            *type_rtrn = n;
+    for (i = 0; i < keymap->num_types; i++) {
+        if (keymap->types[i].name == name) {
+            *type_rtrn = i;
             return true;
         }
     }
@@ -1756,7 +1755,8 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
             log_lvl(info->keymap->ctx, 1,
                     "Type \"%s\" has %d levels, but %s has %d symbols; "
                     "Ignoring extra symbols\n",
-                    type->name, type->num_levels,
+                    xkb_atom_text(keymap->ctx, type->name),
+                    type->num_levels,
                     LongKeyNameText(keyi->name),
                     keyi->numLevels[i]);
             keyi->numLevels[i] = type->num_levels;

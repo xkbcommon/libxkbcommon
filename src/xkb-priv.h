@@ -91,6 +91,9 @@
 #include "list.h"
 
 typedef uint16_t xkb_level_index_t;
+typedef uint32_t xkb_atom_t;
+
+#define XKB_ATOM_NONE 0
 
 enum xkb_file_type {
     /* The top level file which includes the other component files. */
@@ -252,8 +255,8 @@ struct xkb_key_type {
     xkb_level_index_t num_levels;
     struct xkb_kt_map_entry *map;
     unsigned int num_entries;
-    const char *name;
-    const char **level_names;
+    xkb_atom_t name;
+    xkb_atom_t *level_names;
 };
 
 struct xkb_sym_interpret {
@@ -464,10 +467,6 @@ XkbKeycodeInRange(struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
     return kc >= keymap->min_key_code && kc <= keymap->max_key_code;
 }
-
-typedef uint32_t xkb_atom_t;
-
-#define XKB_ATOM_NONE 0
 
 xkb_atom_t
 xkb_atom_intern(struct xkb_context *ctx, const char *string);

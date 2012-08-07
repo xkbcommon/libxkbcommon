@@ -1022,7 +1022,6 @@ static bool
 CopyDefToKeyType(KeyTypesInfo *info, KeyTypeInfo *def,
                  struct xkb_key_type *type)
 {
-    unsigned int i;
     PreserveInfo *pre;
     struct xkb_keymap *keymap = info->keymap;
 
@@ -1053,29 +1052,9 @@ CopyDefToKeyType(KeyTypesInfo *info, KeyTypeInfo *def,
     type->map = darray_mem(def->entries, 0);
     type->num_entries = darray_size(def->entries);
     darray_init(def->entries);
-
-    type->name = xkb_atom_text(keymap->ctx, def->name);
-
-    if (!darray_empty(def->level_names)) {
-        type->level_names = calloc(darray_size(def->level_names),
-                                   sizeof(*type->level_names));
-        if (!type->level_names) {
-            log_warn(info->keymap->ctx,
-                     "Couldn't allocate level names array; "
-                     "Level name settings for type %s lost\n",
-                     xkb_atom_text(keymap->ctx, def->name));
-        } else {
-            xkb_atom_t *name;
-
-            /* assert def->szNames<=def->num_levels */
-            i = 0;
-            darray_foreach(name, def->level_names)
-                type->level_names[i++] = xkb_atom_text(keymap->ctx, *name);
-        }
-    }
-    else {
-        type->level_names = NULL;
-    }
+    type->name = def->name;
+    type->level_names = darray_mem(def->level_names, 0);
+    darray_init(def->level_names);
 
     return ComputeEffectiveMap(keymap, type);
 }
