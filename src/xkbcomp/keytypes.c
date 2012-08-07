@@ -160,7 +160,6 @@ typedef struct _KeyTypesInfo {
     unsigned file_id;
     unsigned num_types;
     struct list types;
-    KeyTypeInfo dflt;
     VModInfo vmods;
     struct xkb_keymap *keymap;
 } KeyTypesInfo;
@@ -228,45 +227,15 @@ ReportTypeBadWidth(KeyTypesInfo *info, const char *type, int has, int needs)
 
 static void
 InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
-                 KeyTypesInfo *from, unsigned file_id)
+                 unsigned file_id)
 {
-    PreserveInfo *old, *new;
-
     info->name = strdup("default");
     info->errorCount = 0;
     info->num_types = 0;
     list_init(&info->types);
     info->file_id = file_id;
-    info->dflt.defined = 0;
-    info->dflt.file_id = file_id;
-    info->dflt.merge = MERGE_OVERRIDE;
-    info->dflt.name = xkb_atom_intern(keymap->ctx, "DEFAULT");
-    info->dflt.mask = 0;
-    info->dflt.vmask = 0;
-    info->dflt.num_levels = 1;
-    darray_init(info->dflt.entries);
-    darray_init(info->dflt.level_names);
-    list_init(&info->dflt.preserves);
     InitVModInfo(&info->vmods, keymap);
     info->keymap = keymap;
-
-    if (!from)
-        return;
-
-    info->dflt = from->dflt;
-
-    darray_copy(info->dflt.entries, from->dflt.entries);
-    darray_copy(info->dflt.level_names, from->dflt.level_names);
-
-    list_init(&info->dflt.preserves);
-    list_foreach(old, &from->dflt.preserves, entry) {
-        new = malloc(sizeof(*new));
-        if (!new)
-            return;
-
-        *new = *old;
-        list_append(&new->entry, &info->dflt.preserves);
-    }
 }
 
 static void
@@ -290,7 +259,6 @@ FreeKeyTypesInfo(KeyTypesInfo * info)
         FreeKeyTypeInfo(type);
         free(type);
     }
-    FreeKeyTypeInfo(&info->dflt);
 }
 
 static KeyTypeInfo *
@@ -411,7 +379,7 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *stmt)
     XkbFile *rtrn;
     KeyTypesInfo included, next_incl;
 
-    InitKeyTypesInfo(&included, info->keymap, info, info->file_id);
+    InitKeyTypesInfo(&included, info->keymap, info->file_id);
     if (stmt->stmt) {
         free(included.name);
         included.name = stmt->stmt;
@@ -426,8 +394,7 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *stmt)
             return false;
         }
 
-        InitKeyTypesInfo(&next_incl, info->keymap, &included, rtrn->id);
-        next_incl.dflt.merge = merge;
+        InitKeyTypesInfo(&next_incl, info->keymap, rtrn->id);
 
         HandleKeyTypesFile(&next_incl, rtrn, merge);
 
@@ -823,33 +790,6 @@ SetKeyTypeField(KeyTypesInfo *info, KeyTypeInfo *type,
 }
 
 static bool
-HandleKeyTypeVar(KeyTypesInfo *info, VarDef *stmt)
-{
-    const char *elem, *field;
-    ExprDef *arrayNdx;
-
-    if (!ExprResolveLhs(info->keymap->ctx, stmt->name, &elem, &field,
-                        &arrayNdx))
-        return false;           /* internal error, already reported */
-
-    if (elem && istreq(elem, "type"))
-        return SetKeyTypeField(info, &info->dflt, field, arrayNdx,
-                               stmt->value);
-
-    if (elem) {
-        log_err(info->keymap->ctx,
-                "Default for unknown element %s; "
-                "Value for field %s ignored\n", field, elem);
-    }
-    else if (field) {
-        log_err(info->keymap->ctx,
-                "Default defined for unknown field %s; Ignored\n", field);
-    }
-
-    return false;
-}
-
-static bool
 HandleKeyTypeBody(KeyTypesInfo *info, VarDef *def, KeyTypeInfo *type)
 {
     bool ok = true;
@@ -857,15 +797,17 @@ HandleKeyTypeBody(KeyTypesInfo *info, VarDef *def, KeyTypeInfo *type)
     ExprDef *arrayNdx;
 
     for (; def; def = (VarDef *) def->common.next) {
-        if (def->name && def->name->op == EXPR_FIELD_REF) {
-            ok = HandleKeyTypeVar(info, def);
-            continue;
-        }
-
         ok = ExprResolveLhs(info->keymap->ctx, def->name, &elem, &field,
                             &arrayNdx);
         if (!ok)
             continue;
+
+        if (elem && istreq(elem, "type")) {
+            log_err(info->keymap->ctx,
+                    "Support for changing the default type has been removed; "
+                    "Statement ignored\n");
+            continue;
+        }
 
         ok = SetKeyTypeField(info, type, field, arrayNdx, def->value);
     }
@@ -880,51 +822,22 @@ HandleKeyTypeBody(KeyTypesInfo *info, VarDef *def, KeyTypeInfo *type)
 static bool
 HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def, enum merge_mode merge)
 {
-    unsigned int i;
-    KeyTypeInfo type;
-    struct xkb_kt_map_entry *entry;
-    PreserveInfo *pi, *pi_next;
-    xkb_atom_t *name;
-
-    if (def->merge != MERGE_DEFAULT)
-        merge = def->merge;
-
-    type.defined = 0;
-    type.file_id = info->file_id;
-    type.merge = merge;
-    type.name = def->name;
-    type.mask = info->dflt.mask;
-    type.vmask = info->dflt.vmask;
-    type.num_levels = 1;
-    darray_init(type.entries);
-    darray_init(type.level_names);
+    KeyTypeInfo type = {
+        .defined = 0,
+        .file_id = info->file_id,
+        .merge = (def->merge == MERGE_DEFAULT ? merge : def->merge),
+        .name = def->name,
+        .mask = 0, .vmask = 0,
+        .num_levels = 0,
+        .entries = darray_new(),
+        .level_names = darray_new(),
+    };
     list_init(&type.preserves);
 
     /* Parse the actual content. */
     if (!HandleKeyTypeBody(info, def->body, &type)) {
         info->errorCount++;
         return false;
-    }
-
-    /* now copy any appropriate map, preserve or level names from the */
-    /* default type */
-    darray_foreach(entry, info->dflt.entries) {
-        if ((entry->mods.real_mods & type.mask) == entry->mods.real_mods &&
-            (entry->mods.vmods & type.vmask) == entry->mods.vmods)
-            AddMapEntry(info, &type, entry, false, false);
-    }
-
-    list_foreach_safe(pi, pi_next, &info->dflt.preserves, entry) {
-        if ((pi->indexMods & type.mask) == pi->indexMods &&
-            (pi->indexVMods & type.vmask) == pi->indexVMods)
-            AddPreserve(info, &type, pi, false, false);
-    }
-
-    i = 0;
-    darray_foreach(name, info->dflt.level_names) {
-        if (i < type.num_levels && *name != XKB_ATOM_NONE)
-            AddLevelName(info, &type, i, *name, false);
-        i++;
     }
 
     /* Now add the new keytype to the info struct */
@@ -961,7 +874,9 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleKeyTypeDef(info, (KeyTypeDef *) stmt, merge);
             break;
         case STMT_VAR:
-            ok = HandleKeyTypeVar(info, (VarDef *) stmt);
+            log_err(info->keymap->ctx,
+                    "Support for changing the default type has been removed; "
+                    "Statement ignored\n");
             break;
         case STMT_VMOD: /* virtual_modifiers NumLock, ... */
             ok = HandleVModDef((VModDef *) stmt, info->keymap, merge,
@@ -1068,7 +983,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
     KeyTypesInfo info;
     KeyTypeInfo *def;
 
-    InitKeyTypesInfo(&info, keymap, NULL, file->id);
+    InitKeyTypesInfo(&info, keymap, file->id);
 
     HandleKeyTypesFile(&info, file, merge);
 
@@ -1085,11 +1000,20 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
     keymap->num_types = num_types;
 
     /*
-     * If no types were specified, the default unnamed one-level type is
+     * If no types were specified, a default unnamed one-level type is
      * used for all keys.
      */
     if (info.num_types == 0) {
-        if (!CopyDefToKeyType(&info, &info.dflt, &keymap->types[0]))
+        KeyTypeInfo dflt = {
+            .name = xkb_atom_intern(keymap->ctx, "default"),
+            .mask = 0, .vmask = 0,
+            .num_levels = 1,
+            .entries = darray_new(),
+            .level_names = darray_new(),
+        };
+        list_init(&dflt.preserves);
+
+        if (!CopyDefToKeyType(&info, &dflt, &keymap->types[0]))
             goto err_info;
     } else {
         i = 0;
