@@ -340,7 +340,8 @@ struct xkb_keymap {
     /* aliases in no particular order */
     darray(struct xkb_key_alias) key_aliases;
 
-    darray(struct xkb_key_type) types;
+    struct xkb_key_type *types;
+    unsigned int num_types;
 
     darray(struct xkb_sym_interpret) sym_interpret;
 
@@ -391,7 +392,7 @@ static inline struct xkb_key_type *
 XkbKeyType(struct xkb_keymap *keymap, struct xkb_key *key,
            xkb_group_index_t group)
 {
-    return &darray_item(keymap->types, XkbKeyTypeIndex(key, group));
+    return &keymap->types[XkbKeyTypeIndex(key, group)];
 }
 
 static inline xkb_level_index_t

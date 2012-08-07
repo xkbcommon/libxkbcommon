@@ -1078,7 +1078,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
                 enum merge_mode merge)
 {
     unsigned int i;
-    struct xkb_key_type *type;
+    unsigned int num_types;
     KeyTypesInfo info;
     KeyTypeInfo *def;
 
@@ -1092,23 +1092,24 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
     if (info.name)
         keymap->types_section_name = strdup(info.name);
 
-    darray_resize0(keymap->types, info.num_types ? info.num_types : 1);
-
-    i = 0;
-    list_foreach(def, &info.types, entry) {
-        type = &darray_item(keymap->types, i++);
-
-        if (!CopyDefToKeyType(&info, def, type))
-            goto err_info;
-    }
+    num_types = info.num_types ? info.num_types : 1;
+    keymap->types = calloc(num_types, sizeof(*keymap->types));
+    if (!keymap->types)
+        goto err_info;
+    keymap->num_types = num_types;
 
     /*
      * If no types were specified, the default unnamed one-level type is
      * used for all keys.
      */
-    if (i == 0) {
-        if (!CopyDefToKeyType(&info, &info.dflt, &darray_item(keymap->types, 0)))
+    if (info.num_types == 0) {
+        if (!CopyDefToKeyType(&info, &info.dflt, &keymap->types[0]))
             goto err_info;
+    } else {
+        i = 0;
+        list_foreach(def, &info.types, entry)
+            if (!CopyDefToKeyType(&info, def, &keymap->types[i++]))
+                goto err_info;
     }
 
     FreeKeyTypesInfo(&info);

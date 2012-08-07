@@ -1486,14 +1486,12 @@ FindNamedType(struct xkb_keymap *keymap, xkb_atom_t atom, unsigned *type_rtrn)
 {
     unsigned n = 0;
     const char *name = xkb_atom_text(keymap->ctx, atom);
-    struct xkb_key_type *type;
 
-    darray_foreach(type, keymap->types) {
-        if (streq(type->name, name)) {
+    for (n = 0; n < keymap->num_types; n++) {
+        if (streq(keymap->types[n].name, name)) {
             *type_rtrn = n;
             return true;
         }
-        n++;
     }
 
     return false;
@@ -1753,7 +1751,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
         }
 
         /* if the type specifies fewer levels than the key has, shrink the key */
-        type = &darray_item(keymap->types, types[i]);
+        type = &keymap->types[types[i]];
         if (type->num_levels < keyi->numLevels[i]) {
             log_lvl(info->keymap->ctx, 1,
                     "Type \"%s\" has %d levels, but %s has %d symbols; "

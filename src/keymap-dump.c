@@ -344,7 +344,8 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
 static bool
 write_types(struct xkb_keymap *keymap, struct buf *buf)
 {
-    int n;
+    unsigned int i;
+    xkb_level_index_t n;
     struct xkb_key_type *type;
     struct xkb_kt_map_entry *entry;
 
@@ -356,7 +357,9 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
 
     write_vmods(keymap, buf);
 
-    darray_foreach(type, keymap->types) {
+    for (i = 0; i < keymap->num_types; i++) {
+        type = &keymap->types[i];
+
         write_buf(buf, "\t\ttype \"%s\" {\n",
                   type->name);
         write_buf(buf, "\t\t\tmodifiers= %s;\n",
@@ -749,13 +752,12 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
                         continue;
                     type = XkbKeyTypeIndex(key, group);
                     write_buf(buf, "\n\t\t\ttype[group%u]= \"%s\",",
-                              group + 1,
-                              darray_item(keymap->types, type).name);
+                              group + 1, keymap->types[type].name);
                 }
             }
             else {
                 write_buf(buf, "\n\t\t\ttype= \"%s\",",
-                          darray_item(keymap->types, type).name);
+                          keymap->types[type].name);
             }
         }
 

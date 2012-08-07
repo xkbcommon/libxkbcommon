@@ -1473,7 +1473,7 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
     xkb_mod_index_t vmod;
     xkb_group_index_t grp;
     xkb_led_index_t led;
-    int i;
+    unsigned int i;
     struct xkb_key *key;
     struct xkb_key_type *type;
     struct xkb_kt_map_entry *entry;
@@ -1500,8 +1500,9 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
     }
 
     /* Now update the level masks for all the types to reflect the vmods. */
-    darray_foreach(type, keymap->types) {
+    for (i = 0; i < keymap->num_types; i++) {
         xkb_mod_mask_t mask = 0;
+        type = &keymap->types[i];
         type->mods.mask = type->mods.real_mods;
         type->mods.mask |= VModsToReal(keymap, type->mods.vmods);
 

@@ -347,17 +347,17 @@ xkb_map_ref(struct xkb_keymap *keymap)
 XKB_EXPORT void
 xkb_map_unref(struct xkb_keymap *keymap)
 {
-    struct xkb_key_type *type;
+    unsigned int i;
     struct xkb_key *key;
 
     if (!keymap || --keymap->refcnt > 0)
         return;
 
-    darray_foreach(type, keymap->types) {
-        darray_free(type->map);
-        free(type->level_names);
+    for (i = 0; i < keymap->num_types; i++) {
+        darray_free(keymap->types[i].map);
+        free(keymap->types[i].level_names);
     }
-    darray_free(keymap->types);
+    free(keymap->types);
 
     darray_foreach(key, keymap->keys) {
         free(key->sym_index);
