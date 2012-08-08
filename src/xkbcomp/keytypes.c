@@ -828,7 +828,7 @@ HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def, enum merge_mode merge)
         .merge = (def->merge == MERGE_DEFAULT ? merge : def->merge),
         .name = def->name,
         .mask = 0, .vmask = 0,
-        .num_levels = 0,
+        .num_levels = 1,
         .entries = darray_new(),
         .level_names = darray_new(),
     };
