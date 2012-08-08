@@ -311,8 +311,7 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
         write_buf(buf, "\t\ttype \"%s\" {\n",
                   xkb_atom_text(keymap->ctx, type->name));
         write_buf(buf, "\t\t\tmodifiers= %s;\n",
-                  VModMaskText(keymap, type->mods.real_mods,
-                               type->mods.vmods));
+                  VModMaskText(keymap, type->mods.mods));
 
         for (j = 0; j < type->num_entries; j++) {
             const char *str;
@@ -322,21 +321,18 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
              * Printing level 1 entries is redundant, it's the default,
              * unless there's preserve info.
              */
-            if (entry->level == 0 && entry->preserve.mask == 0)
+            if (entry->level == 0 && entry->preserve.mods == 0)
                 continue;
 
-            str = VModMaskText(keymap, entry->mods.real_mods,
-                               entry->mods.vmods);
+            str = VModMaskText(keymap, entry->mods.mods);
             write_buf(buf, "\t\t\tmap[%s]= Level%d;\n",
                       str, entry->level + 1);
 
-            if (!entry->preserve.real_mods && !entry->preserve.vmods)
+            if (entry->preserve.mods == 0)
                 continue;
 
             write_buf(buf, "\t\t\tpreserve[%s]= ", str);
-            write_buf(buf, "%s;\n",
-                      VModMaskText(keymap, entry->preserve.real_mods,
-                                   entry->preserve.vmods));
+            write_buf(buf, "%s;\n", VModMaskText(keymap, entry->preserve.mods));
         }
 
         if (type->level_names) {
@@ -377,8 +373,7 @@ write_indicator_map(struct xkb_keymap *keymap, struct buf *buf, int num)
                       get_indicator_state_text(led->which_mods));
         }
         write_buf(buf, "\t\t\tmodifiers= %s;\n",
-                  VModMaskText(keymap, led->mods.real_mods,
-                               led->mods.vmods));
+                  VModMaskText(keymap, led->mods.mods));
     }
 
     if (led->ctrls) {
@@ -411,8 +406,7 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         if (action->mods.flags & XkbSA_UseModMapMods)
             args = "modMapMods";
         else
-            args = VModMaskText(keymap, action->mods.real_mods,
-                                action->mods.vmods);
+            args = VModMaskText(keymap, action->mods.mods.mods);
         write_buf(buf, "%s%s(modifiers=%s%s%s)%s", prefix, type, args,
                   (action->any.type != XkbSA_LockGroup &&
                    (action->mods.flags & XkbSA_ClearLocks)) ?
@@ -567,7 +561,7 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
         write_buf(buf, "\t\tinterpret %s+%s(%s) {\n",
                   keysym_name,
                   SIMatchText(interp->match),
-                  VModMaskText(keymap, interp->mods, 0));
+                  VModMaskText(keymap, interp->mods));
 
         if (interp->virtual_mod != XkbNoModifier) {
             write_buf(buf, "\t\t\tvirtualModifier= %s;\n",
@@ -590,18 +584,17 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
         struct xkb_mods *gc;
 
         gc = &keymap->groups[i];
-        if (gc->real_mods == 0 && gc->vmods == 0)
+        if (gc->mods == 0)
             continue;
         write_buf(buf, "\t\tgroup %d = %s;\n", i + 1,
-                  VModMaskText(keymap, gc->real_mods, gc->vmods));
+                  VModMaskText(keymap, gc->mods));
     }
 
     for (i = 0; i < XkbNumIndicators; i++) {
         struct xkb_indicator_map *map = &keymap->indicators[i];
         if (map->flags == 0 && map->which_groups == 0 &&
             map->groups == 0 && map->which_mods == 0 &&
-            map->mods.real_mods == 0 && map->mods.vmods == 0 &&
-            map->ctrls == 0)
+            map->mods.mods == 0 && map->ctrls == 0)
             continue;
         write_indicator_map(keymap, buf, i);
     }
@@ -722,8 +715,9 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
         }
 
         if (key->vmodmap && (key->explicit & XkbExplicitVModMapMask)) {
+            /* XXX: vmodmap cmask? */
             write_buf(buf, "\n\t\t\tvirtualMods= %s,",
-                      VModMaskText(keymap, 0, key->vmodmap));
+                      VModMaskText(keymap, key->vmodmap << XkbNumModifiers));
         }
 
         switch (key->out_of_range_group_action) {

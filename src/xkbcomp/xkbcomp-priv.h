@@ -46,9 +46,6 @@ FindKeyNameForAlias(struct xkb_keymap *keymap, unsigned long lname,
 extern bool
 UpdateModifiersFromCompat(struct xkb_keymap *keymap);
 
-xkb_mod_mask_t
-VModsToReal(struct xkb_keymap *keymap, xkb_mod_mask_t vmodmask);
-
 const char *
 StmtTypeToString(enum stmt_type type);
 

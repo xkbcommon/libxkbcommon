@@ -66,8 +66,7 @@ typedef struct _LEDInfo {
     xkb_led_index_t indicator;
     unsigned char flags;
     unsigned char which_mods;
-    unsigned char real_mods;
-    xkb_mod_mask_t vmods;
+    xkb_mod_mask_t mods;
     unsigned char which_groups;
     uint32_t groups;
     unsigned int ctrls;
@@ -77,8 +76,7 @@ typedef struct _GroupCompatInfo {
     unsigned file_id;
     enum merge_mode merge;
     bool defined;
-    unsigned char real_mods;
-    xkb_atom_t vmods;
+    xkb_mod_mask_t mods;
 } GroupCompatInfo;
 
 typedef struct _CompatInfo {
@@ -108,7 +106,7 @@ siText(SymInterpInfo * si, CompatInfo * info)
         snprintf(buf, sizeof(buf), "%s+%s(%s)",
                  KeysymText(si->interp.sym),
                  SIMatchText(si->interp.match),
-                 ModMaskText(si->interp.mods, false));
+                 ModMaskText(si->interp.mods));
     }
     return buf;
 }
@@ -150,8 +148,9 @@ ClearIndicatorMapInfo(struct xkb_context *ctx, LEDInfo * info)
 {
     info->name = xkb_atom_intern(ctx, "default");
     info->indicator = XKB_LED_INVALID;
-    info->flags = info->which_mods = info->real_mods = 0;
-    info->vmods = 0;
+    info->flags = 0;
+    info->which_mods = 0;
+    info->mods = 0;
     info->which_groups = info->groups = 0;
     info->ctrls = 0;
 }
@@ -348,7 +347,7 @@ AddGroupCompat(CompatInfo *info, xkb_group_index_t group, GroupCompatInfo *new)
     int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
 
     gc = &info->groupCompat[group];
-    if (gc->real_mods == new->real_mods && gc->vmods == new->vmods)
+    if (gc->mods == new->mods)
         return true;
 
     if ((gc->file_id == new->file_id && verbosity > 0) || verbosity > 9)
@@ -440,8 +439,7 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
 
     list_foreach(old, &info->leds, entry) {
         if (old->name == new->name) {
-            if ((old->real_mods == new->real_mods) &&
-                (old->vmods == new->vmods) &&
+            if ((old->mods == new->mods) &&
                 (old->groups == new->groups) &&
                 (old->ctrls == new->ctrls) &&
                 (old->which_mods == new->which_mods) &&
@@ -472,8 +470,7 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
             if (UseNewLEDField(LED_FIELD_MODS, old, new, verbosity,
                                &collide)) {
                 old->which_mods = new->which_mods;
-                old->real_mods = new->real_mods;
-                old->vmods = new->vmods;
+                old->mods = new->mods;
                 old->defined |= LED_FIELD_MODS;
             }
             if (UseNewLEDField(LED_FIELD_GROUPS, old, new, verbosity,
@@ -758,16 +755,12 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
     struct xkb_keymap *keymap = info->keymap;
 
     if (istreq(field, "modifiers") || istreq(field, "mods")) {
-        xkb_mod_mask_t mask;
-
         if (arrayNdx)
             return ReportIndicatorNotArray(info, led, field);
 
-        if (!ExprResolveVModMask(keymap, value, &mask))
+        if (!ExprResolveVModMask(keymap, value, &led->mods))
             return ReportIndicatorBadType(info, led, field, "modifier mask");
 
-        led->real_mods = mask & 0xff;
-        led->vmods = (mask >> XkbNumModifiers) & 0xffff;
         led->defined |= LED_FIELD_MODS;
     }
     else if (istreq(field, "groups")) {
@@ -973,7 +966,6 @@ static int
 HandleGroupCompatDef(CompatInfo *info, GroupCompatDef *def,
                      enum merge_mode merge)
 {
-    xkb_mod_mask_t mask;
     GroupCompatInfo tmp;
 
     merge = (def->merge == MERGE_DEFAULT ? merge : def->merge);
@@ -989,7 +981,7 @@ HandleGroupCompatDef(CompatInfo *info, GroupCompatDef *def,
     tmp.file_id = info->file_id;
     tmp.merge = merge;
 
-    if (!ExprResolveVModMask(info->keymap, def->def, &mask)) {
+    if (!ExprResolveVModMask(info->keymap, def->def, &tmp.mods)) {
         log_err(info->keymap->ctx,
                 "Expected a modifier mask in group compatibility definition; "
                 "Ignoring illegal compatibility map for group %u\n",
@@ -997,8 +989,6 @@ HandleGroupCompatDef(CompatInfo *info, GroupCompatDef *def,
         return false;
     }
 
-    tmp.real_mods = mask & 0xff;
-    tmp.vmods = (mask >> XkbNumModifiers) & 0xffff;
     tmp.defined = true;
     return AddGroupCompat(info, def->group - 1, &tmp);
 }
@@ -1177,9 +1167,7 @@ BindIndicators(CompatInfo *info, struct list *unbound_leds)
         map->which_groups = led->which_groups;
         map->groups = led->groups;
         map->which_mods = led->which_mods;
-        map->mods.mask = led->real_mods;
-        map->mods.real_mods = led->real_mods;
-        map->mods.vmods = led->vmods;
+        map->mods.mods = led->mods;
         map->ctrls = led->ctrls;
         free(led);
     }
@@ -1201,7 +1189,7 @@ CopyIndicatorMapDefs(CompatInfo *info)
         if (led->groups != 0 && led->which_groups == 0)
             led->which_groups = XkbIM_UseEffective;
 
-        if (led->which_mods == 0 && (led->real_mods || led->vmods))
+        if (led->which_mods == 0 && led->mods)
             led->which_mods = XkbIM_UseEffective;
 
         if (led->indicator == XKB_LED_INVALID) {
@@ -1214,9 +1202,7 @@ CopyIndicatorMapDefs(CompatInfo *info)
         im->which_groups = led->which_groups;
         im->groups = led->groups;
         im->which_mods = led->which_mods;
-        im->mods.mask = led->real_mods;
-        im->mods.real_mods = led->real_mods;
-        im->mods.vmods = led->vmods;
+        im->mods.mods = led->mods;
         im->ctrls = led->ctrls;
         keymap->indicator_names[led->indicator - 1] =
             xkb_atom_text(keymap->ctx, led->name);
@@ -1265,11 +1251,8 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
 
     for (i = 0, gcm = &info.groupCompat[0]; i < XkbNumKbdGroups;
          i++, gcm++) {
-        if (gcm->file_id != 0 || gcm->real_mods != 0 || gcm->vmods != 0) {
-            keymap->groups[i].mask = gcm->real_mods;
-            keymap->groups[i].real_mods = gcm->real_mods;
-            keymap->groups[i].vmods = gcm->vmods;
-        }
+        if (gcm->file_id != 0 || gcm->mods != 0)
+            keymap->groups[i].mods = gcm->mods;
     }
 
     if (!CopyIndicatorMapDefs(&info))
@@ -1283,48 +1266,52 @@ err_info:
     return false;
 }
 
-xkb_mod_mask_t
-VModsToReal(struct xkb_keymap *keymap, xkb_mod_mask_t vmodmask)
+static void
+ComputeEffectiveMask(struct xkb_keymap *keymap, struct xkb_mods *mods)
 {
-    xkb_mod_mask_t ret = 0;
     xkb_mod_index_t i;
+    xkb_mod_mask_t vmask = mods->mods >> XkbNumModifiers;
 
-    if (!vmodmask)
-        return 0;
+    /* The effective mask is only real mods for now. */
+    mods->mask = mods->mods & 0xff;
 
     for (i = 0; i < XkbNumVirtualMods; i++) {
-        if (!(vmodmask & (1 << i)))
+        if (!(vmask & (1 << i)))
             continue;
-        ret |= keymap->vmods[i];
+        mods->mask |= keymap->vmods[i];
     }
-
-    return ret;
 }
 
 static void
 UpdateActionMods(struct xkb_keymap *keymap, union xkb_action *act,
                  xkb_mod_mask_t rmodmask)
 {
+    unsigned int flags;
+    struct xkb_mods *mods;
+
     switch (act->type) {
     case XkbSA_SetMods:
     case XkbSA_LatchMods:
     case XkbSA_LockMods:
-        if (act->mods.flags & XkbSA_UseModMapMods)
-            act->mods.real_mods = rmodmask;
-        act->mods.mask = act->mods.real_mods;
-        act->mods.mask |= VModsToReal(keymap, act->mods.vmods);
+        flags = act->mods.flags;
+        mods = &act->mods.mods;
         break;
 
     case XkbSA_ISOLock:
-        if (act->iso.flags & XkbSA_UseModMapMods)
-            act->iso.real_mods = rmodmask;
-        act->iso.mask = act->iso.real_mods;
-        act->iso.mask |= VModsToReal(keymap, act->iso.vmods);
+        flags = act->iso.flags;
+        mods = &act->iso.mods;
         break;
 
     default:
-        break;
+        return;
     }
+
+    if (flags & XkbSA_UseModMapMods) {
+        /* XXX: what's that. */
+        mods->mods &= 0xff;
+        mods->mods |= rmodmask;
+    }
+    ComputeEffectiveMask(keymap, mods);
 }
 
 /**
@@ -1475,7 +1462,6 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
     xkb_led_index_t led;
     unsigned int i, j;
     struct xkb_key *key;
-    struct xkb_key_type *type;
 
     /* Find all the interprets for the key and bind them to actions,
      * which will also update the vmodmap. */
@@ -1500,42 +1486,28 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
 
     /* Now update the level masks for all the types to reflect the vmods. */
     for (i = 0; i < keymap->num_types; i++) {
-        type = &keymap->types[i];
-        type->mods.mask = type->mods.real_mods;
-        type->mods.mask |= VModsToReal(keymap, type->mods.vmods);
+        ComputeEffectiveMask(keymap, &keymap->types[i].mods);
 
-        for (j = 0; j < type->num_entries; j++) {
-            struct xkb_kt_map_entry *entry = &type->map[j];
-
-            entry->mods.mask = entry->mods.real_mods;
-            entry->mods.mask |= VModsToReal(keymap, entry->mods.vmods);
-
-            entry->preserve.mask = entry->preserve.real_mods;
-            entry->preserve.mask |= VModsToReal(keymap, entry->preserve.vmods);
+        for (j = 0; j < keymap->types[i].num_entries; j++) {
+            ComputeEffectiveMask(keymap, &keymap->types[i].map[j].mods);
+            ComputeEffectiveMask(keymap, &keymap->types[i].map[j].preserve);
         }
     }
 
     /* Update action modifiers. */
     xkb_foreach_key(key, keymap) {
         union xkb_action *acts = XkbKeyActionsPtr(keymap, key);
-        for (i = 0; i < XkbKeyNumActions(key); i++) {
-            if (acts[i].any.type == XkbSA_NoAction)
-                continue;
+        for (i = 0; i < XkbKeyNumActions(key); i++)
             UpdateActionMods(keymap, &acts[i], key->modmap);
-        }
     }
 
     /* Update group modifiers. */
-    for (grp = 0; grp < XkbNumKbdGroups; grp++) {
-        struct xkb_mods *group = &keymap->groups[grp];
-        group->mask = group->real_mods | VModsToReal(keymap, group->vmods);
-    }
+    for (grp = 0; grp < XkbNumKbdGroups; grp++)
+        ComputeEffectiveMask(keymap, &keymap->groups[grp]);
 
     /* Update vmod -> indicator maps. */
-    for (led = 0; led < XkbNumIndicators; led++) {
-        struct xkb_mods *mods = &keymap->indicators[led].mods;
-        mods->mask = mods->real_mods | VModsToReal(keymap, mods->vmods);
-    }
+    for (led = 0; led < XkbNumIndicators; led++)
+        ComputeEffectiveMask(keymap, &keymap->indicators[led].mods);
 
     return true;
 }

@@ -262,9 +262,9 @@ xkb_filter_mod_set_func(struct xkb_filter *filter, xkb_keycode_t kc,
         return 0;
     }
 
-    filter->state->clear_mods = filter->action.mods.mask;
+    filter->state->clear_mods = filter->action.mods.mods.mask;
     if (filter->action.mods.flags & XkbSA_ClearLocks)
-        filter->state->locked_mods &= ~filter->action.mods.mask;
+        filter->state->locked_mods &= ~filter->action.mods.mods.mask;
 
     filter->func = NULL;
 
@@ -283,7 +283,7 @@ xkb_filter_mod_set_new(struct xkb_state *state, xkb_keycode_t kc,
     filter->func = xkb_filter_mod_set_func;
     filter->action = *action;
 
-    filter->state->set_mods = action->mods.mask;
+    filter->state->set_mods = action->mods.mods.mask;
 
     return 1;
 }
@@ -319,8 +319,8 @@ xkb_filter_mod_lock_new(struct xkb_state *state, xkb_keycode_t kc,
     filter->kc = kc;
     filter->func = xkb_filter_mod_lock_func;
     filter->action = *action;
-    filter->priv = state->locked_mods & action->mods.mask;
-    state->locked_mods |= action->mods.mask;
+    filter->priv = state->locked_mods & action->mods.mods.mask;
+    state->locked_mods |= action->mods.mods.mask;
 
     return 1;
 }
@@ -345,27 +345,27 @@ xkb_filter_mod_latch_func(struct xkb_filter *filter, xkb_keycode_t kc,
         union xkb_action *action = xkb_key_get_action(filter->state, kc);
         if (action->type == XkbSA_LatchMods &&
             action->mods.flags == filter->action.mods.flags &&
-            action->mods.mask == filter->action.mods.mask) {
+            action->mods.mods.mask == filter->action.mods.mods.mask) {
             filter->action = *action;
             if (filter->action.mods.flags & XkbSA_LatchToLock) {
                 filter->action.type = XkbSA_LockMods;
                 filter->func = xkb_filter_mod_lock_func;
-                filter->state->locked_mods |= filter->action.mods.mask;
+                filter->state->locked_mods |= filter->action.mods.mods.mask;
             }
             else {
                 filter->action.type = XkbSA_SetMods;
                 filter->func = xkb_filter_mod_set_func;
-                filter->state->set_mods = filter->action.mods.mask;
+                filter->state->set_mods = filter->action.mods.mods.mask;
             }
             filter->kc = kc;
-            filter->state->latched_mods &= ~filter->action.mods.mask;
+            filter->state->latched_mods &= ~filter->action.mods.mods.mask;
             /* XXX beep beep! */
             return 0;
         }
         else if (((1 << action->type) & XkbSA_BreakLatch)) {
             /* XXX: This may be totally broken, we might need to break the
              *      latch in the next run after this press? */
-            filter->state->latched_mods &= ~filter->action.mods.mask;
+            filter->state->latched_mods &= ~filter->action.mods.mods.mask;
             filter->func = NULL;
             return 1;
         }
@@ -378,21 +378,21 @@ xkb_filter_mod_latch_func(struct xkb_filter *filter, xkb_keycode_t kc,
          * latched. */
         if (latch == NO_LATCH ||
             ((filter->action.mods.flags & XkbSA_ClearLocks) &&
-             (filter->state->locked_mods & filter->action.mods.mask) ==
-             filter->action.mods.mask)) {
+             (filter->state->locked_mods & filter->action.mods.mods.mask) ==
+             filter->action.mods.mods.mask)) {
             /* XXX: We might be a bit overenthusiastic about clearing
              *      mods other filters have set here? */
             if (latch == LATCH_PENDING)
-                filter->state->latched_mods &= ~filter->action.mods.mask;
+                filter->state->latched_mods &= ~filter->action.mods.mods.mask;
             else
-                filter->state->clear_mods = filter->action.mods.mask;
-            filter->state->locked_mods &= ~filter->action.mods.mask;
+                filter->state->clear_mods = filter->action.mods.mods.mask;
+            filter->state->locked_mods &= ~filter->action.mods.mods.mask;
             filter->func = NULL;
         }
         else {
             latch = LATCH_PENDING;
-            filter->state->clear_mods = filter->action.mods.mask;
-            filter->state->latched_mods |= filter->action.mods.mask;
+            filter->state->clear_mods = filter->action.mods.mods.mask;
+            filter->state->latched_mods |= filter->action.mods.mods.mask;
             /* XXX beep beep! */
         }
     }
@@ -423,7 +423,7 @@ xkb_filter_mod_latch_new(struct xkb_state *state, xkb_keycode_t kc,
     filter->func = xkb_filter_mod_latch_func;
     filter->action = *action;
 
-    filter->state->set_mods = action->mods.mask;
+    filter->state->set_mods = action->mods.mods.mask;
 
     return 1;
 }

@@ -142,6 +142,11 @@ struct xkb_component_names {
     char *symbols;
 };
 
+struct xkb_mods {
+    xkb_mod_mask_t mods;       /* original real+virtual mods in definition */
+    xkb_mod_mask_t mask;       /* computed effective mask */
+};
+
 struct xkb_any_action {
     uint8_t type;
     uint8_t data[7];
@@ -150,9 +155,7 @@ struct xkb_any_action {
 struct xkb_mod_action {
     uint8_t type;
     uint8_t flags;
-    uint8_t mask;
-    uint8_t real_mods;
-    uint16_t vmods;
+    struct xkb_mods mods;
 };
 
 struct xkb_group_action {
@@ -164,11 +167,9 @@ struct xkb_group_action {
 struct xkb_iso_action {
     uint8_t type;
     uint8_t flags;
-    uint8_t mask;
-    uint8_t real_mods;
+    struct xkb_mods mods;
     int32_t group;
     uint8_t affect;
-    uint16_t vmods;
 };
 
 struct xkb_controls_action {
@@ -253,12 +254,6 @@ union xkb_action {
     struct xkb_pointer_button_action btn;  /* XXX delete for DeviceBtn */
     struct xkb_message_action msg;         /* XXX just delete */
     unsigned char type;
-};
-
-struct xkb_mods {
-    xkb_mod_mask_t mask;              /* effective mods */
-    xkb_mod_mask_t vmods;
-    uint8_t real_mods;
 };
 
 struct xkb_kt_map_entry {

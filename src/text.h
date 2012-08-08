@@ -30,8 +30,7 @@
 #include "xkb-priv.h"
 
 const char *
-VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t modMask,
-             xkb_mod_mask_t mask);
+VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t cmask);
 
 xkb_mod_index_t
 ModNameToIndex(const char *name);
@@ -43,7 +42,7 @@ const char *
 ModIndexText(xkb_mod_index_t ndx);
 
 const char *
-ModMaskText(xkb_mod_mask_t mask, bool cFormat);
+ModMaskText(xkb_mod_mask_t mask);
 
 const char *
 FileTypeText(enum xkb_file_type type);

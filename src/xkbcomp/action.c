@@ -309,8 +309,7 @@ HandleSetLatchMods(struct xkb_keymap *keymap, struct xkb_any_action *action,
         t1 = act->flags;
         if (CheckModifierField(keymap, action->type, value, &t1, &t2)) {
             act->flags = t1;
-            act->real_mods = act->mask = (t2 & 0xff);
-            act->vmods = (t2 >> XkbNumModifiers) & 0xffff;
+            act->mods.mods = t2;
             return true;
         }
         return false;
@@ -334,8 +333,7 @@ HandleLockMods(struct xkb_keymap *keymap, struct xkb_any_action *action,
         t1 = act->flags;
         if (CheckModifierField(keymap, action->type, value, &t1, &t2)) {
             act->flags = t1;
-            act->real_mods = act->mask = (t2 & 0xff);
-            act->vmods = (t2 >> XkbNumModifiers) & 0xffff;
+            act->mods.mods = t2;
             return true;
         }
         return false;
@@ -658,8 +656,7 @@ HandleISOLock(struct xkb_keymap *keymap, struct xkb_any_action *action,
             return false;
 
         act->flags = flags & (~XkbSA_ISODfltIsGroup);
-        act->real_mods = mods & 0xff;
-        act->vmods = (mods >> XkbNumModifiers) & 0xffff;
+        act->mods.mods = mods;
         return true;
     }
     else if (field == F_Group) {
@@ -1166,7 +1163,7 @@ ApplyActionFactoryDefaults(union xkb_action * action)
         action->dflt.value = 1;
     }
     else if (action->type == XkbSA_ISOLock) {
-        action->iso.real_mods = ModNameToIndex(XKB_MOD_NAME_CAPS);
+        action->iso.mods.mods = (1 << ModNameToIndex(XKB_MOD_NAME_CAPS));
     }
 }
 

@@ -47,6 +47,10 @@ GetBuffer(size_t size)
     return rtrn;
 }
 
+/*
+ * Get a vmod name's text, where the vmod index is zero based
+ * (0..XkbNumVirtualMods-1).
+ */
 static const char *
 VModIndexText(struct xkb_keymap *keymap, xkb_mod_index_t ndx)
 {
@@ -75,31 +79,35 @@ VModIndexText(struct xkb_keymap *keymap, xkb_mod_index_t ndx)
     return rtrn;
 }
 
+/* Get a mod mask's text, where the mask is in rmods+vmods format. */
 const char *
-VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t modMask,
-             xkb_mod_mask_t mask)
+VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t cmask)
 {
     xkb_mod_index_t i;
     xkb_mod_mask_t bit;
+    xkb_mod_mask_t rmask, vmask;
     int len, rem;
     const char *mm = NULL;
     char *rtrn, *str;
     char buf[BUFFER_SIZE];
 
-    if (modMask == 0 && mask == 0)
+    rmask = cmask & 0xff;
+    vmask = cmask >> XkbNumModifiers;
+
+    if (rmask == 0 && vmask == 0)
         return "none";
 
-    if (modMask != 0)
-        mm = ModMaskText(modMask, false);
+    if (rmask != 0)
+        mm = ModMaskText(rmask);
 
     str = buf;
     buf[0] = '\0';
     rem = BUFFER_SIZE;
 
-    if (mask) {
+    if (vmask != 0) {
         for (i = 0, bit = 1; i < XkbNumVirtualMods && rem > 1; i++, bit <<=
                  1) {
-            if (!(mask & bit))
+            if (!(vmask & bit))
                 continue;
 
             len = snprintf(str, rem, "%s%s",
@@ -185,18 +193,19 @@ ModIndexText(xkb_mod_index_t ndx)
     return buf;
 }
 
+/* Gets the text for the real modifiers only. */
 const char *
-ModMaskText(xkb_mod_mask_t mask, bool cFormat)
+ModMaskText(xkb_mod_mask_t mask)
 {
     int i, rem;
     xkb_mod_index_t bit;
     char *str, *buf;
 
     if ((mask & 0xff) == 0xff)
-        return (cFormat ? "0xff" : "all");
+        return "all";
 
     if ((mask & 0xff) == 0)
-        return (cFormat ? "0" : "none");
+        return "none";
 
     rem = 64;
     buf = GetBuffer(rem);
@@ -208,10 +217,8 @@ ModMaskText(xkb_mod_mask_t mask, bool cFormat)
         if (!(mask & bit))
             continue;
 
-        len = snprintf(str, rem, "%s%s%s",
-                       (str != buf) ? (cFormat ? "|" : "+") : "",
-                       modNames[i],
-                       cFormat ? "Mask" : "");
+        len = snprintf(str, rem, "%s%s",
+                       (str != buf ?  "+" : ""), modNames[i]);
         rem -= len;
         str += len;
     }

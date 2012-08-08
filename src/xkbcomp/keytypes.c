@@ -138,8 +138,7 @@ typedef struct _KeyTypeInfo {
     struct list entry;
 
     xkb_atom_t name;
-    xkb_mod_mask_t mask;
-    xkb_mod_mask_t vmask;
+    xkb_mod_mask_t mods;
     xkb_level_index_t num_levels;
     darray(struct xkb_kt_map_entry) entries;
     darray(xkb_atom_t) level_names;
@@ -160,8 +159,7 @@ typedef struct _KeyTypesInfo {
 static inline const char *
 MapEntryTxt(KeyTypesInfo *info, struct xkb_kt_map_entry *entry)
 {
-    return VModMaskText(info->keymap, entry->mods.real_mods,
-                        entry->mods.vmods);
+    return VModMaskText(info->keymap, entry->mods.mods);
 }
 
 static inline const char *
@@ -173,7 +171,7 @@ TypeTxt(KeyTypesInfo *info, KeyTypeInfo *type)
 static inline const char *
 TypeMaskTxt(KeyTypesInfo *info, KeyTypeInfo *type)
 {
-    return VModMaskText(info->keymap, type->mask, type->vmask);
+    return VModMaskText(info->keymap, type->mods);
 }
 
 static inline bool
@@ -385,7 +383,7 @@ static bool
 SetModifiers(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
              ExprDef *value)
 {
-    xkb_mod_mask_t mask, mods, vmods;
+    xkb_mod_mask_t mods;
 
     if (arrayNdx)
         log_warn(info->keymap->ctx,
@@ -393,15 +391,12 @@ SetModifiers(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
                  "Illegal array subscript ignored\n");
 
     /* get modifier mask for current type */
-    if (!ExprResolveVModMask(info->keymap, value, &mask)) {
+    if (!ExprResolveVModMask(info->keymap, value, &mods)) {
         log_err(info->keymap->ctx,
                 "Key type mask field must be a modifier mask; "
                 "Key type definition ignored\n");
         return false;
     }
-
-    mods = mask & 0xff; /* core mods */
-    vmods = (mask >> XkbNumModifiers) & 0xffff; /* xkb virtual mods */
 
     if (type->defined & TYPE_FIELD_MASK) {
         log_warn(info->keymap->ctx,
@@ -409,24 +404,23 @@ SetModifiers(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
                  "Using %s, ignoring %s\n",
                  xkb_atom_text(info->keymap->ctx, type->name),
                  TypeMaskTxt(info, type),
-                 VModMaskText(info->keymap, mods, vmods));
+                 VModMaskText(info->keymap, mods));
         return false;
     }
 
-    type->mask = mods;
-    type->vmask = vmods;
+    type->mods = mods;
     return true;
 }
 
 /***====================================================================***/
 
 static struct xkb_kt_map_entry *
-FindMatchingMapEntry(KeyTypeInfo * type, unsigned mask, unsigned vmask)
+FindMatchingMapEntry(KeyTypeInfo *type, xkb_mod_mask_t mods)
 {
     struct xkb_kt_map_entry *entry;
 
     darray_foreach(entry, type->entries)
-        if (entry->mods.real_mods == mask && entry->mods.vmods == vmask)
+        if (entry->mods.mods == mods)
             return entry;
 
     return NULL;
@@ -446,7 +440,7 @@ AddMapEntry(KeyTypesInfo *info, KeyTypeInfo *type,
 {
     struct xkb_kt_map_entry * old;
 
-    old = FindMatchingMapEntry(type, new->mods.real_mods, new->mods.vmods);
+    old = FindMatchingMapEntry(type, new->mods.mods);
     if (old) {
         if (report && old->level != new->level) {
             log_warn(info->keymap->ctx,
@@ -485,29 +479,21 @@ SetMapEntry(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
             ExprDef *value)
 {
     struct xkb_kt_map_entry entry;
-    xkb_mod_mask_t mask;
 
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(info, type, "map entry");
 
-    if (!ExprResolveVModMask(info->keymap, arrayNdx, &mask))
+    if (!ExprResolveVModMask(info->keymap, arrayNdx, &entry.mods.mods))
         return ReportTypeBadType(info, type, "map entry", "modifier mask");
 
-    entry.mods.real_mods = mask & 0xff;
-    entry.mods.vmods = (mask >> XkbNumModifiers) & 0xffff;
-
-    if ((entry.mods.real_mods & (~type->mask)) ||
-        (entry.mods.vmods & (~type->vmask))) {
+    if (entry.mods.mods & (~type->mods)) {
         log_lvl(info->keymap->ctx, 1,
                 "Map entry for unused modifiers in %s; "
                 "Using %s instead of %s\n",
                 TypeTxt(info, type),
-                VModMaskText(info->keymap,
-                             entry.mods.real_mods & type->mask,
-                             entry.mods.vmods & type->vmask),
+                VModMaskText(info->keymap, entry.mods.mods & type->mods),
                 MapEntryTxt(info, &entry));
-        entry.mods.real_mods &= type->mask;
-        entry.mods.vmods &= type->vmask;
+        entry.mods.mods &= type->mods;
     }
 
     if (!ExprResolveLevel(info->keymap->ctx, value, &entry.level)) {
@@ -517,8 +503,7 @@ SetMapEntry(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
         return false;
     }
 
-    entry.preserve.real_mods = 0;
-    entry.preserve.vmods = 0;
+    entry.preserve.mods = 0;
 
     return AddMapEntry(info, type, &entry, true, true);
 }
@@ -527,38 +512,27 @@ SetMapEntry(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
 
 static bool
 AddPreserve(KeyTypesInfo *info, KeyTypeInfo *type,
-            xkb_mod_mask_t rmods, xkb_mod_mask_t vmods,
-            xkb_mod_mask_t preserve_rmods, xkb_mod_mask_t preserve_vmods)
+            xkb_mod_mask_t mods, xkb_mod_mask_t preserve_mods)
 {
     struct xkb_kt_map_entry *entry;
-    struct xkb_mods mods = {
-        .real_mods = rmods,
-        .vmods = vmods,
-    };
-    struct xkb_mods preserve = {
-        .real_mods = preserve_rmods,
-        .vmods = preserve_vmods,
-    };
     struct xkb_kt_map_entry new;
 
     darray_foreach(entry, type->entries) {
-        if (entry->mods.real_mods != mods.real_mods ||
-            entry->mods.vmods != mods.vmods)
+        if (entry->mods.mods != mods)
             continue;
 
         /* Map exists without previous preserve (or "None"); override. */
-        if (entry->preserve.real_mods == 0 && entry->preserve.vmods == 0) {
-            entry->preserve = preserve;
+        if (entry->preserve.mods == 0) {
+            entry->preserve.mods = preserve_mods;
             return true;
         }
 
         /* Map exists with same preserve; do nothing. */
-        if (entry->preserve.real_mods == preserve.real_mods &&
-            entry->preserve.vmods == preserve.vmods) {
+        if (entry->preserve.mods == preserve_mods) {
             log_lvl(info->keymap->ctx, 10,
                     "Identical definitions for preserve[%s] in %s; "
                     "Ignored\n",
-                    VModMaskText(info->keymap, rmods, vmods),
+                    VModMaskText(info->keymap, mods),
                     TypeTxt(info, type));
             return true;
         }
@@ -567,16 +541,12 @@ AddPreserve(KeyTypesInfo *info, KeyTypeInfo *type,
         log_lvl(info->keymap->ctx, 1,
                 "Multiple definitions for preserve[%s] in %s; "
                 "Using %s, ignoring %s\n",
-                VModMaskText(info->keymap, mods.real_mods, mods.vmods),
+                VModMaskText(info->keymap, mods),
                 TypeTxt(info, type),
-                VModMaskText(info->keymap,
-                             preserve.real_mods,
-                             preserve.vmods),
-                VModMaskText(info->keymap,
-                             entry->preserve.real_mods,
-                             entry->preserve.vmods));
+                VModMaskText(info->keymap, preserve_mods),
+                VModMaskText(info->keymap, entry->preserve.mods));
 
-        entry->preserve = preserve;
+        entry->preserve.mods = preserve_mods;
         return true;
     }
 
@@ -586,8 +556,8 @@ AddPreserve(KeyTypesInfo *info, KeyTypeInfo *type,
      * may be overriden later with an explicit map[] statement.
      */
     new.level = 0;
-    new.mods = mods;
-    new.preserve = preserve;
+    new.mods.mods = mods;
+    new.preserve.mods = preserve_mods;
     darray_append(type->entries, new);
     return true;
 }
@@ -596,26 +566,21 @@ static bool
 SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
             ExprDef *value)
 {
-    xkb_mod_mask_t mask;
-    xkb_mod_mask_t rmods, vmods, preserve_rmods, preserve_vmods;
+    xkb_mod_mask_t mods, preserve_mods;
 
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(info, type, "preserve entry");
 
-    if (!ExprResolveVModMask(info->keymap, arrayNdx, &mask))
+    if (!ExprResolveVModMask(info->keymap, arrayNdx, &mods))
         return ReportTypeBadType(info, type, "preserve entry",
                                  "modifier mask");
 
-    rmods = mask & 0xff;
-    vmods = (mask >> XkbNumModifiers) & 0xffff;
-
-    if ((rmods & (~type->mask)) || (vmods & (~type->vmask))) {
+    if (mods & ~type->mods) {
         const char *before, *after;
 
-        before = VModMaskText(info->keymap, rmods, vmods);
-        rmods &= type->mask;
-        vmods &= type->vmask;
-        after = VModMaskText(info->keymap, rmods, vmods);
+        before = VModMaskText(info->keymap, mods);
+        mods &= type->mods;
+        after = VModMaskText(info->keymap, mods);
 
         log_lvl(info->keymap->ctx, 1,
                 "Preserve for modifiers not used by the %s type; "
@@ -623,35 +588,30 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
                 TypeTxt(info, type), before, after);
     }
 
-    if (!ExprResolveVModMask(info->keymap, value, &mask)) {
+    if (!ExprResolveVModMask(info->keymap, value, &preserve_mods)) {
         log_err(info->keymap->ctx,
                 "Preserve value in a key type is not a modifier mask; "
                 "Ignoring preserve[%s] in type %s\n",
-                VModMaskText(info->keymap, rmods, vmods),
+                VModMaskText(info->keymap, mods),
                 TypeTxt(info, type));
         return false;
     }
 
-    preserve_rmods = mask & 0xff;
-    preserve_vmods = (mask >> XkbNumModifiers) & 0xffff;
-
-    if ((preserve_rmods & ~rmods) || (preserve_vmods & ~vmods)) {
+    if (preserve_mods & ~mods) {
         const char *before, *after;
 
-        before = VModMaskText(info->keymap, preserve_rmods, preserve_vmods);
-        preserve_rmods &= rmods;
-        preserve_vmods &= vmods;
-        after = VModMaskText(info->keymap, preserve_rmods, preserve_vmods);
+        before = VModMaskText(info->keymap, preserve_mods);
+        preserve_mods &= mods;
+        after = VModMaskText(info->keymap, preserve_mods);
 
         log_lvl(info->keymap->ctx, 1,
                 "Illegal value for preserve[%s] in type %s; "
                 "Converted %s to %s\n",
-                VModMaskText(info->keymap, rmods, vmods),
+                VModMaskText(info->keymap, mods),
                 TypeTxt(info, type), before, after);
     }
 
-    return AddPreserve(info, type, rmods, vmods,
-                       preserve_rmods, preserve_vmods);
+    return AddPreserve(info, type, mods, preserve_mods);
 }
 
 /***====================================================================***/
@@ -802,7 +762,7 @@ HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def, enum merge_mode merge)
         .file_id = info->file_id,
         .merge = (def->merge == MERGE_DEFAULT ? merge : def->merge),
         .name = def->name,
-        .mask = 0, .vmask = 0,
+        .mods = 0,
         .num_levels = 1,
         .entries = darray_new(),
         .level_names = darray_new(),
@@ -880,8 +840,7 @@ static bool
 CopyDefToKeyType(KeyTypesInfo *info, KeyTypeInfo *def,
                  struct xkb_key_type *type)
 {
-    type->mods.real_mods = def->mask;
-    type->mods.vmods = def->vmask;
+    type->mods.mods = def->mods;
     type->num_levels = def->num_levels;
     type->map = darray_mem(def->entries, 0);
     type->num_entries = darray_size(def->entries);
@@ -925,7 +884,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
     if (info.num_types == 0) {
         KeyTypeInfo dflt = {
             .name = xkb_atom_intern(keymap->ctx, "default"),
-            .mask = 0, .vmask = 0,
+            .mods = 0,
             .num_levels = 1,
             .entries = darray_new(),
             .level_names = darray_new(),

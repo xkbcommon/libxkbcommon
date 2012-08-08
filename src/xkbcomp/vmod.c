@@ -100,10 +100,10 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
         if (mask == keymap->vmods[i])
             return true;
 
-        str1 = ModMaskText(keymap->vmods[i], true);
+        str1 = ModMaskText(keymap->vmods[i]);
         if (mergeMode == MERGE_OVERRIDE) {
             str2 = str1;
-            str1 = ModMaskText(mask, true);
+            str1 = ModMaskText(mask);
         }
 
         log_warn(keymap->ctx,
