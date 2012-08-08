@@ -346,6 +346,24 @@ xkb_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t kc)
     return XkbKey(keymap, kc)->repeats;
 }
 
+static struct xkb_kt_map_entry *
+get_entry_for_key_state(struct xkb_state *state, struct xkb_key_type *type,
+                        xkb_keycode_t kc)
+{
+    xkb_mod_mask_t active_mods;
+    unsigned int i;
+
+    active_mods = xkb_state_serialize_mods(state, XKB_STATE_EFFECTIVE);
+    active_mods &= type->mods.mask;
+
+    for (i = 0; i < type->num_entries; i++) {
+        if (type->map[i].mods.mask == active_mods)
+            return &type->map[i];
+    }
+
+    return NULL;
+}
+
 /**
  * Tests to see if a modifier is used up by our translation of a
  * keycode to keysyms, taking note of the current modifier state and
@@ -363,29 +381,47 @@ xkb_key_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t kc,
                               xkb_mod_index_t idx)
 {
     struct xkb_keymap *keymap = xkb_state_get_map(state);
-    xkb_group_index_t group;
     struct xkb_key_type *type;
-    unsigned int i;
-    struct xkb_kt_map_entry *entry = NULL;
-    xkb_mod_mask_t active_mods;
+    struct xkb_kt_map_entry *entry;
+    xkb_group_index_t group;
 
     if (!XkbKeycodeInRange(keymap, kc))
         return 0;
 
     group = xkb_key_get_group(state, kc);
     type = XkbKeyType(keymap, XkbKey(keymap, kc), group);
-    active_mods = xkb_state_serialize_mods(state, XKB_STATE_EFFECTIVE);
-    active_mods &= type->mods.mask;
-
-    for (i = 0; i < type->num_entries; i++) {
-        if (type->map[i].mods.mask == active_mods) {
-            entry = &type->map[i];
-            break;
-        }
-    }
-
+    entry = get_entry_for_key_state(state, type, kc);
     if (!entry)
         return 0;
 
     return !!((type->mods.mask & (~entry->preserve.mask)) & (1 << idx));
+}
+
+/**
+ * Calculates which modifiers should be consumed during key processing,
+ * and returns the mask with all these modifiers removed.  e.g. if
+ * given a state of Alt and Shift active for a two-level alphabetic
+ * key containing plus and equal on the first and second level
+ * respectively, will return a mask of only Alt, as Shift has been
+ * consumed by the type handling.
+ */
+XKB_EXPORT xkb_mod_mask_t
+xkb_key_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t kc,
+                                 xkb_mod_mask_t mask)
+{
+    struct xkb_keymap *keymap = xkb_state_get_map(state);
+    struct xkb_key_type *type;
+    struct xkb_kt_map_entry *entry;
+    xkb_group_index_t group;
+
+    if (!XkbKeycodeInRange(keymap, kc))
+        return 0;
+
+    group = xkb_key_get_group(state, kc);
+    type = XkbKeyType(keymap, XkbKey(keymap, kc), group);
+    entry = get_entry_for_key_state(state, type, kc);
+    if (!entry)
+        return 0;
+
+    return mask & ~(type->mods.mask & ~entry->preserve.mask);
 }

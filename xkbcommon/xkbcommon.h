@@ -657,6 +657,15 @@ xkb_key_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t key,
                               xkb_mod_index_t idx);
 
 /**
+ * Takes the given modifier mask, and removes all modifiers which are
+ * marked as 'consumed' (see xkb_key_mod_index_is_consumed definition)
+ * for that particular key.
+ */
+xkb_mod_mask_t
+xkb_key_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t key,
+                                 xkb_mod_mask_t mask);
+
+/**
  * Returns 1 if the modifiers specified by the varargs (treated as
  * xkb_mod_index_t, terminated with XKB_MOD_INVALID) are active in the manner
  * specified by 'match' and 'type', 0 otherwise, or -1 if the modifier does not

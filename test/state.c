@@ -236,6 +236,36 @@ test_repeat(struct xkb_keymap *keymap)
     assert(xkb_key_repeats(keymap, KEY_KBDILLUMDOWN + 8));
 }
 
+static void
+test_consume(struct xkb_keymap *keymap)
+{
+    struct xkb_state *state = xkb_state_new(keymap);
+    xkb_mod_index_t alt, shift;
+    xkb_mod_mask_t mask;
+
+    assert(state);
+
+    alt = xkb_map_mod_get_index(keymap, XKB_MOD_NAME_ALT);
+    assert(alt != XKB_MOD_INVALID);
+    shift = xkb_map_mod_get_index(keymap, XKB_MOD_NAME_SHIFT);
+    assert(shift != XKB_MOD_INVALID);
+
+    xkb_state_update_key(state, KEY_LEFTALT + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_EQUAL + EVDEV_OFFSET, XKB_KEY_DOWN);
+
+    fprintf(stderr, "dumping state for Alt-Shift-+\n");
+    print_state(state);
+
+    mask = xkb_state_serialize_mods(state, XKB_STATE_EFFECTIVE);
+    assert(mask == ((1 << alt) | (1 << shift)));
+    mask = xkb_key_mod_mask_remove_consumed(state, KEY_EQUAL + EVDEV_OFFSET,
+                                            mask);
+    assert(mask == (1 << alt));
+
+    xkb_state_unref(state);
+}
+
 int
 main(void)
 {
@@ -250,6 +280,7 @@ main(void)
     test_update_key(keymap);
     test_serialisation(keymap);
     test_repeat(keymap);
+    test_consume(keymap);
 
     xkb_map_unref(keymap);
     xkb_context_unref(context);
