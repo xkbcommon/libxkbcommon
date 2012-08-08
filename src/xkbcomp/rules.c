@@ -1001,7 +1001,7 @@ load_rules(struct xkb_context *ctx, FILE *file)
     orig = mmap(NULL, stat_buf.st_size, PROT_READ, MAP_SHARED, fd, 0);
     if (!orig) {
         log_err(ctx, "couldn't mmap rules file (%zu bytes)\n",
-                stat_buf.st_size);
+                (size_t) stat_buf.st_size);
         return NULL;
     }
 
