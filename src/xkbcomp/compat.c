@@ -1505,10 +1505,13 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
         type->mods.mask |= VModsToReal(keymap, type->mods.vmods);
 
         for (j = 0; j < type->num_entries; j++) {
-            type->map[j].mods.mask = 0;
-            type->map[j].mods.mask |= type->map[j].mods.real_mods;
-            type->map[j].mods.mask |= VModsToReal(keymap,
-                                                  type->map[j].mods.vmods);
+            struct xkb_kt_map_entry *entry = &type->map[j];
+
+            entry->mods.mask = entry->mods.real_mods;
+            entry->mods.mask |= VModsToReal(keymap, entry->mods.vmods);
+
+            entry->preserve.mask = entry->preserve.real_mods;
+            entry->preserve.mask |= VModsToReal(keymap, entry->preserve.vmods);
         }
     }
 

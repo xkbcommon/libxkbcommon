@@ -877,28 +877,6 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
 }
 
 static bool
-ComputeEffectiveMap(struct xkb_keymap *keymap, struct xkb_key_type *type)
-{
-    unsigned int i;
-    struct xkb_kt_map_entry *entry;
-
-    type->mods.mask = type->mods.real_mods;
-    type->mods.mask |= VModsToReal(keymap, type->mods.vmods);
-
-    for (i = 0; i < type->num_entries; i++) {
-        entry = &type->map[i];
-
-        entry->mods.mask = entry->mods.real_mods;
-        entry->mods.mask |= VModsToReal(keymap, entry->mods.vmods);
-
-        entry->preserve.mask = entry->preserve.real_mods;
-        entry->preserve.mask |= VModsToReal(keymap, entry->preserve.vmods);
-    }
-
-    return true;
-}
-
-static bool
 CopyDefToKeyType(KeyTypesInfo *info, KeyTypeInfo *def,
                  struct xkb_key_type *type)
 {
@@ -912,7 +890,7 @@ CopyDefToKeyType(KeyTypesInfo *info, KeyTypeInfo *def,
     type->level_names = darray_mem(def->level_names, 0);
     darray_init(def->level_names);
 
-    return ComputeEffectiveMap(info->keymap, type);
+    return true;
 }
 
 bool
