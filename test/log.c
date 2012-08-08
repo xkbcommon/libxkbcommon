@@ -76,7 +76,7 @@ main(void)
     ret = setenv("XKB_LOG", "warn", 1);
     ret = setenv("XKB_VERBOSITY", "5", 1);
     assert(ret == 0);
-    ctx = test_get_context();
+    ctx = xkb_context_new(0);
     assert(ctx);
 
     darray_init(log_string);
