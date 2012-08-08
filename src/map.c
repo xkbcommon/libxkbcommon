@@ -366,7 +366,7 @@ xkb_key_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t kc,
     xkb_group_index_t group;
     struct xkb_key_type *type;
     unsigned int i;
-    struct xkb_kt_map_entry *entry;
+    struct xkb_kt_map_entry *entry = NULL;
     xkb_mod_mask_t active_mods;
 
     if (!XkbKeycodeInRange(keymap, kc))

@@ -877,6 +877,7 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
             log_err(info->keymap->ctx,
                     "Support for changing the default type has been removed; "
                     "Statement ignored\n");
+            ok = true;
             break;
         case STMT_VMOD: /* virtual_modifiers NumLock, ... */
             ok = HandleVModDef((VModDef *) stmt, info->keymap, merge,
