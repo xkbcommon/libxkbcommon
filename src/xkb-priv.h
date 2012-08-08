@@ -367,7 +367,7 @@ struct xkb_keymap {
     darray(struct xkb_sym_interpret) sym_interpret;
 
     /* vmod -> mod mapping */
-    xkb_mod_index_t vmods[XkbNumVirtualMods];
+    xkb_mod_mask_t vmods[XkbNumVirtualMods];
     const char *vmod_names[XkbNumVirtualMods];
 
     struct xkb_mods groups[XkbNumKbdGroups];
