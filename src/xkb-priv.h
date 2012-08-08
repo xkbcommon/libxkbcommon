@@ -82,7 +82,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include <strings.h>
-#include <syslog.h>
 #include <X11/extensions/XKB.h>
 
 #include "xkbcommon/xkbcommon.h"
@@ -115,7 +114,7 @@ struct xkb_context {
 
     ATTR_PRINTF(3, 0) void (*log_fn)(struct xkb_context *ctx, int priority,
                                      const char *fmt, va_list args);
-    int log_priority;
+    enum xkb_log_level log_priority;
     int log_verbosity;
     void *user_data;
 
@@ -549,12 +548,17 @@ xkb_log(struct xkb_context *ctx, int priority, const char *fmt, ...);
  * format is supplied without arguments. Not supplying it would still
  * result in an error, though.
  */
-#define log_dbg(ctx, ...) xkb_log_cond((ctx), LOG_DEBUG, __VA_ARGS__)
-#define log_info(ctx, ...) xkb_log_cond((ctx), LOG_INFO, __VA_ARGS__)
-#define log_warn(ctx, ...) xkb_log_cond((ctx), LOG_WARNING, __VA_ARGS__)
-#define log_err(ctx, ...) xkb_log_cond((ctx), LOG_ERR, __VA_ARGS__)
-#define log_wsgo(ctx, ...) xkb_log_cond((ctx), LOG_CRIT, __VA_ARGS__)
+#define log_dbg(ctx, ...) \
+    xkb_log_cond((ctx), XKB_LOG_LEVEL_DEBUG, __VA_ARGS__)
+#define log_info(ctx, ...) \
+    xkb_log_cond((ctx), XKB_LOG_LEVEL_INFO, __VA_ARGS__)
+#define log_warn(ctx, ...) \
+    xkb_log_cond((ctx), XKB_LOG_LEVEL_WARNING, __VA_ARGS__)
+#define log_err(ctx, ...) \
+    xkb_log_cond((ctx), XKB_LOG_LEVEL_ERROR, __VA_ARGS__)
+#define log_wsgo(ctx, ...) \
+    xkb_log_cond((ctx), XKB_LOG_LEVEL_CRITICAL, __VA_ARGS__)
 #define log_lvl(ctx, lvl, ...) \
-    xkb_log_cond_lvl((ctx), LOG_WARNING, (lvl), __VA_ARGS__)
+    xkb_log_cond_lvl((ctx), XKB_LOG_LEVEL_WARNING, (lvl), __VA_ARGS__)
 
 #endif /* XKB_PRIV_H */

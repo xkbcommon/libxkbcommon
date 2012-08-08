@@ -70,12 +70,20 @@ static void
 benchmark(struct xkb_context *context)
 {
     struct timespec start, stop, elapsed;
+    enum xkb_log_level old_prio = xkb_get_log_priority(context);
+    int old_verb = xkb_get_log_verbosity(context);
     int i;
+
+    xkb_set_log_priority(context, XKB_LOG_LEVEL_CRITICAL);
+    xkb_set_log_verbosity(context, 0);
 
     clock_gettime(CLOCK_MONOTONIC, &start);
     for (i = 0; i < BENCHMARK_ITERATIONS; i++)
         assert(test_rmlvo_silent(context, "evdev",       "",       "us",  "",      ""));
     clock_gettime(CLOCK_MONOTONIC, &stop);
+
+    xkb_set_log_priority(context, old_prio);
+    xkb_set_log_verbosity(context, old_verb);
 
     elapsed.tv_sec = stop.tv_sec - start.tv_sec;
     elapsed.tv_nsec = stop.tv_nsec - start.tv_nsec;

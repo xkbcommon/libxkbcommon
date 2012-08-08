@@ -256,6 +256,19 @@ xkb_context_unref(struct xkb_context *context);
  * @{
  */
 
+enum xkb_log_level {
+    /** Log critical internal errors only */
+    XKB_LOG_LEVEL_CRITICAL = 0,
+    /** Log all errors */
+    XKB_LOG_LEVEL_ERROR = 1,
+    /** Log warnings and errors */
+    XKB_LOG_LEVEL_WARNING = 2,
+    /** Log information, warnings, and errors */
+    XKB_LOG_LEVEL_INFO = 3,
+    /** Log all the things */
+    XKB_LOG_LEVEL_DEBUG = 4,
+};
+
 /**
  * Sets the function to be called for logging messages.
  * Passing NULL restores the default function, which logs to stderr.
@@ -266,20 +279,18 @@ xkb_set_log_fn(struct xkb_context *context,
                               const char *format, va_list args));
 /**
  * Sets the current logging priority. The value controls which messages
- * are logged.
+ * are logged.  The default priority is LOG_ERR.
  *
- * The value should be one of LOG_ERR, LOG_WARNING, LOG_DEBUG, etc., see
- * syslog(3) or syslog.h.  The default priority is LOG_ERR.
  * The environment variable XKB_LOG, if set, overrides the default value
  * and may be specified as a priority number or name.
  */
 void
-xkb_set_log_priority(struct xkb_context *context, int priority);
+xkb_set_log_priority(struct xkb_context *context, enum xkb_log_level priority);
 
 /**
  * Returns the current logging priority.
  */
-int
+enum xkb_log_level
 xkb_get_log_priority(struct xkb_context *context);
 
 /**
@@ -291,7 +302,8 @@ xkb_get_log_priority(struct xkb_context *context);
  * The environment variable XKB_VERBOSITY, if set, overrdies the default
  * value.
  *
- * Note that most verbose messages are of priority LOG_WARNING or lower.
+ * Note that most verbose messages are of priority XKB_LOG_LEVEL_WARNING
+ * or lower.
  */
 void
 xkb_set_log_verbosity(struct xkb_context *ctx, int verbosity);

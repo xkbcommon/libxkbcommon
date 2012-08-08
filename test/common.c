@@ -35,7 +35,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/syslog.h>
 
 #include "xkbcommon/xkbcommon.h"
 #include "test.h"
@@ -102,7 +101,7 @@ test_get_context(void)
 
     xkb_context_include_path_append(ctx, test_get_path(""));
 
-    xkb_set_log_priority(ctx, LOG_DEBUG);
+    xkb_set_log_priority(ctx, XKB_LOG_LEVEL_DEBUG);
     xkb_set_log_verbosity(ctx, 101);
 
     return ctx;

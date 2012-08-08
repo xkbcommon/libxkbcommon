@@ -25,7 +25,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <syslog.h>
 
 #include "test.h"
 #include "xkb-priv.h"
@@ -36,13 +35,13 @@ static const char *
 priority_to_string(int priority)
 {
     switch (priority) {
-    case LOG_ERR:
+    case XKB_LOG_LEVEL_ERROR:
         return "error";
-    case LOG_WARNING:
+    case XKB_LOG_LEVEL_WARNING:
         return "warning";
-    case LOG_INFO:
+    case XKB_LOG_LEVEL_INFO:
         return "info";
-    case LOG_DEBUG:
+    case XKB_LOG_LEVEL_DEBUG:
         return "debug";
     }
 
@@ -89,7 +88,7 @@ main(void)
     log_err(ctx, "first error: %lu\n", 115415UL);
     log_lvl(ctx, 5, "first verbose 5\n");
 
-    xkb_set_log_priority(ctx, LOG_DEBUG);
+    xkb_set_log_priority(ctx, XKB_LOG_LEVEL_DEBUG);
     log_warn(ctx, "second warning: %d\n", 87);
     log_dbg(ctx, "second debug: %s %s\n", "hello", "world");
     log_info(ctx, "second info\n");
@@ -97,7 +96,7 @@ main(void)
     log_lvl(ctx, 6, "second verbose 6\n");
 
     xkb_set_log_verbosity(ctx, 0);
-    xkb_set_log_priority(ctx, -1);
+    xkb_set_log_priority(ctx, XKB_LOG_LEVEL_CRITICAL);
     log_warn(ctx, "third warning: %d\n", 87);
     log_dbg(ctx, "third debug: %s %s\n", "hello", "world");
     log_info(ctx, "third info\n");

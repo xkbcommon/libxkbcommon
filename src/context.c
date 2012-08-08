@@ -30,7 +30,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <syslog.h>
 
 #include "xkb-priv.h"
 #include "atom.h"
@@ -180,18 +179,16 @@ static const char *
 priority_to_prefix(int priority)
 {
     switch (priority) {
-    case LOG_DEBUG:
+    case XKB_LOG_LEVEL_DEBUG:
         return "Debug:";
-    case LOG_INFO:
+    case XKB_LOG_LEVEL_INFO:
         return "Info:";
-    case LOG_WARNING:
+    case XKB_LOG_LEVEL_WARNING:
         return "Warning:";
-    case LOG_ERR:
+    case XKB_LOG_LEVEL_ERROR:
         return "Error:";
-    case LOG_CRIT:
-    case LOG_ALERT:
-    case LOG_EMERG:
-        return "Internal error:";
+    case XKB_LOG_LEVEL_CRITICAL:
+        return "Internal error (critical):";
     default:
         return NULL;
     }
@@ -218,15 +215,15 @@ log_priority(const char *priority) {
     if (errno == 0 && (endptr[0] == '\0' || isspace(endptr[0])))
         return prio;
     if (strncasecmp(priority, "err", 3) == 0)
-        return LOG_ERR;
+        return XKB_LOG_LEVEL_ERROR;
     if (strncasecmp(priority, "warn", 4) == 0)
-        return LOG_WARNING;
+        return XKB_LOG_LEVEL_WARNING;
     if (strncasecmp(priority, "info", 4) == 0)
-        return LOG_INFO;
+        return XKB_LOG_LEVEL_INFO;
     if (strncasecmp(priority, "debug", 5) == 0)
-        return LOG_DEBUG;
+        return XKB_LOG_LEVEL_DEBUG;
 
-    return LOG_ERR;
+    return XKB_LOG_LEVEL_ERROR;
 }
 
 static int
@@ -256,7 +253,7 @@ xkb_context_new(enum xkb_context_flags flags)
 
     ctx->refcnt = 1;
     ctx->log_fn = default_log_fn;
-    ctx->log_priority = LOG_ERR;
+    ctx->log_priority = XKB_LOG_LEVEL_ERROR;
     ctx->log_verbosity = 0;
 
     /* Environment overwrites defaults. */
@@ -327,14 +324,14 @@ xkb_set_log_fn(struct xkb_context *ctx,
     ctx->log_fn = (log_fn ? log_fn : default_log_fn);
 }
 
-XKB_EXPORT int
+XKB_EXPORT enum xkb_log_level
 xkb_get_log_priority(struct xkb_context *ctx)
 {
     return ctx->log_priority;
 }
 
 XKB_EXPORT void
-xkb_set_log_priority(struct xkb_context *ctx, int priority)
+xkb_set_log_priority(struct xkb_context *ctx, enum xkb_log_level priority)
 {
     ctx->log_priority = priority;
 }
