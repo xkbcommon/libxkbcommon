@@ -1926,7 +1926,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
                 continue;
 
             if (key->num_groups < 1)
-                log_warn(info.keymap->ctx,
+                log_info(info.keymap->ctx,
                          "No symbols defined for %s (keycode %d)\n",
                          KeyNameText(key->name),
                          XkbKeyGetKeycode(keymap, key));
