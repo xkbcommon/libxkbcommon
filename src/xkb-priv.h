@@ -323,7 +323,7 @@ struct xkb_key {
 
     union xkb_action *actions;
 
-    unsigned char kt_index[XkbNumKbdGroups];
+    unsigned kt_index[XkbNumKbdGroups];
 
     xkb_group_index_t num_groups;
     /* How many levels the largest group has. */
@@ -396,17 +396,11 @@ XkbKeyGetKeycode(struct xkb_keymap *keymap, struct xkb_key *key)
 #define xkb_foreach_key(iter, keymap) \
     xkb_foreach_key_from(iter, keymap, keymap->min_key_code)
 
-static inline unsigned char
-XkbKeyTypeIndex(struct xkb_key *key, xkb_group_index_t group)
-{
-    return key->kt_index[group & 0x3];
-}
-
 static inline struct xkb_key_type *
 XkbKeyType(struct xkb_keymap *keymap, struct xkb_key *key,
            xkb_group_index_t group)
 {
-    return &keymap->types[XkbKeyTypeIndex(key, group)];
+    return &keymap->types[key->kt_index[group]];
 }
 
 static inline xkb_level_index_t

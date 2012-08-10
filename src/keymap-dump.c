@@ -677,12 +677,12 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
 
         if (key->explicit & XkbExplicitKeyTypesMask) {
             bool multi_type = false;
-            int type = XkbKeyTypeIndex(key, 0);
+            struct xkb_key_type *type = XkbKeyType(keymap, key, 0);
 
             simple = false;
 
-            for (group = 0; group < key->num_groups; group++) {
-                if (XkbKeyTypeIndex(key, group) != type) {
+            for (group = 1; group < key->num_groups; group++) {
+                if (XkbKeyType(keymap, key, group) != type) {
                     multi_type = true;
                     break;
                 }
@@ -692,17 +692,15 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
                 for (group = 0; group < key->num_groups; group++) {
                     if (!(key->explicit & (1 << group)))
                         continue;
-                    type = XkbKeyTypeIndex(key, group);
+                    type = XkbKeyType(keymap, key, group);
                     write_buf(buf, "\n\t\t\ttype[group%u]= \"%s\",",
                               group + 1,
-                              xkb_atom_text(keymap->ctx,
-                                            keymap->types[type].name));
+                              xkb_atom_text(keymap->ctx, type->name));
                 }
             }
             else {
                 write_buf(buf, "\n\t\t\ttype= \"%s\",",
-                          xkb_atom_text(keymap->ctx,
-                                        keymap->types[type].name));
+                          xkb_atom_text(keymap->ctx, type->name));
             }
         }
 
