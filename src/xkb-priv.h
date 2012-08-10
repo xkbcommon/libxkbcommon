@@ -89,10 +89,11 @@
 #include "darray.h"
 #include "list.h"
 
-typedef uint16_t xkb_level_index_t;
+typedef uint32_t xkb_level_index_t;
 typedef uint32_t xkb_atom_t;
 
 #define XKB_ATOM_NONE 0
+#define XKB_LEVEL_INVALID 0xffffffff
 
 enum xkb_file_type {
     /* The top level file which includes the other component files. */

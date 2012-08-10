@@ -122,7 +122,12 @@ xkb_key_get_action(struct xkb_state *state, xkb_keycode_t kc)
         return &fake;
 
     group = xkb_key_get_group(state, kc);
+    if (group == XKB_GROUP_INVALID)
+        return &fake;
+
     level = xkb_key_get_level(state, kc, group);
+    if (level == XKB_LEVEL_INVALID)
+        return &fake;
 
     return XkbKeyActionEntry(state->keymap, key, group, level);
 }

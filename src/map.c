@@ -211,7 +211,8 @@ xkb_map_led_get_index(struct xkb_keymap *keymap, const char *name)
 }
 
 /**
- * Returns the level to use for the given key and state, or -1 if invalid.
+ * Returns the level to use for the given key and state, or
+ * XKB_LEVEL_INVALID.
  */
 xkb_level_index_t
 xkb_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
@@ -223,7 +224,7 @@ xkb_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
     xkb_mod_mask_t active_mods;
 
     if (!XkbKeycodeInRange(keymap, kc))
-        return 0;
+        return XKB_LEVEL_INVALID;
 
     type = XkbKeyType(keymap, XkbKey(keymap, kc), group);
     active_mods = xkb_state_serialize_mods(state, XKB_STATE_EFFECTIVE);
@@ -233,12 +234,13 @@ xkb_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
         if (type->map[i].mods.mask == active_mods)
             return type->map[i].level;
 
+    /* If we don't find an explicit match the default is 0. */
     return 0;
 }
 
 /**
  * Returns the group to use for the given key and state, taking
- * wrapping/clamping/etc into account.
+ * wrapping/clamping/etc into account, or XKB_GROUP_INVALID.
  */
 xkb_group_index_t
 xkb_key_get_group(struct xkb_state *state, xkb_keycode_t kc)
@@ -249,8 +251,11 @@ xkb_key_get_group(struct xkb_state *state, xkb_keycode_t kc)
     struct xkb_key *key;
 
     if (!XkbKeycodeInRange(keymap, kc))
-        return 0;
+        return XKB_GROUP_INVALID;
+
     key = XkbKey(keymap, kc);
+    if (key->num_groups == 0)
+        return XKB_GROUP_INVALID;
 
     if (ret < key->num_groups)
         return ret;
@@ -321,11 +326,11 @@ xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t kc,
     key = XkbKey(keymap, kc);
 
     group = xkb_key_get_group(state, kc);
-    if (group == -1)
+    if (group == XKB_GROUP_INVALID)
         goto err;
 
     level = xkb_key_get_level(state, kc, group);
-    if (level == -1)
+    if (level == XKB_LEVEL_INVALID)
         goto err;
 
     return xkb_key_get_syms_by_level(keymap, key, group, level, syms_out);
@@ -389,6 +394,9 @@ xkb_key_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t kc,
         return 0;
 
     group = xkb_key_get_group(state, kc);
+    if (group == XKB_GROUP_INVALID)
+        return 0;
+
     type = XkbKeyType(keymap, XkbKey(keymap, kc), group);
     entry = get_entry_for_key_state(state, type, kc);
     if (!entry)
@@ -415,13 +423,16 @@ xkb_key_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t kc,
     xkb_group_index_t group;
 
     if (!XkbKeycodeInRange(keymap, kc))
-        return 0;
+        return mask;
 
     group = xkb_key_get_group(state, kc);
+    if (group == XKB_GROUP_INVALID)
+        return mask;
+
     type = XkbKeyType(keymap, XkbKey(keymap, kc), group);
     entry = get_entry_for_key_state(state, type, kc);
     if (!entry)
-        return 0;
+        return mask;
 
     return mask & ~(type->mods.mask & ~entry->preserve.mask);
 }
