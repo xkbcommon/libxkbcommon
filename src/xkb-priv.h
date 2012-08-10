@@ -418,23 +418,11 @@ XkbKeyNumSyms(struct xkb_key *key, xkb_group_index_t group,
 }
 
 static inline xkb_keysym_t *
-XkbKeySym(struct xkb_key *key, int ndx)
-{
-    return &darray_item(key->syms, ndx);
-}
-
-static inline int
-XkbKeySymOffset(struct xkb_key *key, xkb_group_index_t group,
-                xkb_level_index_t level)
-{
-    return key->sym_index[group * key->width + level];
-}
-
-static inline xkb_keysym_t *
 XkbKeySymEntry(struct xkb_key *key, xkb_group_index_t group,
                xkb_level_index_t level)
 {
-    return XkbKeySym(key, XkbKeySymOffset(key, group, level));
+    return &darray_item(key->syms,
+                        key->sym_index[group * key->width + level]);
 }
 
 static inline union xkb_action *
