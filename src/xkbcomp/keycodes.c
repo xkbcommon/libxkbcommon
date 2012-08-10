@@ -1004,3 +1004,55 @@ err_info:
     ClearKeyNamesInfo(&info);
     return false;
 }
+
+/**
+ * Find the key with the given name.
+ *
+ * @param keymap The keymap to search in.
+ * @param name The 4-letter name of the key as a long.
+ * @param use_aliases true if the key aliases should be searched too.
+ * @param start_from Keycode to start searching from.
+ *
+ * @return the key if it is found, NULL otherwise.
+ */
+struct xkb_key *
+FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
+             bool use_aliases, xkb_keycode_t start_from)
+{
+    struct xkb_key *key;
+
+    if (start_from < keymap->min_key_code)
+        start_from = keymap->min_key_code;
+    else if (start_from > keymap->max_key_code)
+        return NULL;
+
+    xkb_foreach_key_from(key, keymap, start_from)
+        if (KeyNameToLong(key->name) == name)
+            return key;
+
+    if (use_aliases) {
+        unsigned long new_name;
+        if (FindKeyNameForAlias(keymap, name, &new_name))
+            return FindNamedKey(keymap, new_name, false, 0);
+    }
+
+    return NULL;
+}
+
+bool
+FindKeyNameForAlias(struct xkb_keymap *keymap, unsigned long lname,
+                    unsigned long *real_name)
+{
+    char name[XkbKeyNameLength];
+    struct xkb_key_alias *a;
+
+    LongToKeyName(lname, name);
+    darray_foreach(a, keymap->key_aliases) {
+        if (strncmp(name, a->alias, XkbKeyNameLength) == 0) {
+            *real_name = KeyNameToLong(a->real);
+            return true;
+        }
+    }
+
+    return false;
+}

@@ -28,6 +28,7 @@
 #include <limits.h>
 
 #include "path.h"
+#include "parseutils.h"
 
 /**
  * Extract the first token from an include statement.
@@ -198,4 +199,83 @@ XkbFindFileInPath(struct xkb_context *ctx, const char *name,
     if ((file != NULL) && (pathRtrn != NULL))
         *pathRtrn = strdup(buf);
     return file;
+}
+
+/**
+ * Open the file given in the include statement and parse it's content.
+ * If the statement defines a specific map to use, this map is returned in
+ * file_rtrn. Otherwise, the default map is returned.
+ *
+ * @param ctx The ctx containing include paths
+ * @param stmt The include statement, specifying the file name to look for.
+ * @param file_type Type of file (FILE_TYPE_KEYCODES, etc.)
+ * @param file_rtrn Returns the key map to be used.
+ * @param merge_rtrn Always returns stmt->merge.
+ *
+ * @return true on success or false otherwise.
+ */
+bool
+ProcessIncludeFile(struct xkb_context *ctx,
+                   IncludeStmt * stmt,
+                   enum xkb_file_type file_type,
+                   XkbFile ** file_rtrn, enum merge_mode *merge_rtrn)
+{
+    FILE *file;
+    XkbFile *rtrn, *mapToUse, *next;
+
+    file = XkbFindFileInPath(ctx, stmt->file, file_type, NULL);
+    if (file == NULL) {
+        log_err(ctx, "Can't find file \"%s\" for %s include\n", stmt->file,
+                XkbDirectoryForInclude(file_type));
+        return false;
+    }
+
+    if (!XKBParseFile(ctx, file, stmt->file, &rtrn)) {
+        log_err(ctx, "Error interpreting include file \"%s\"\n", stmt->file);
+        fclose(file);
+        return false;
+    }
+    fclose(file);
+
+    mapToUse = rtrn;
+    if (stmt->map != NULL) {
+        while (mapToUse)
+        {
+            next = (XkbFile *) mapToUse->common.next;
+            mapToUse->common.next = NULL;
+            if (streq(mapToUse->name, stmt->map) &&
+                mapToUse->file_type == file_type) {
+                FreeXKBFile(next);
+                break;
+            }
+            else {
+                FreeXKBFile(mapToUse);
+            }
+            mapToUse = next;
+        }
+        if (!mapToUse) {
+            log_err(ctx, "No %s named \"%s\" in the include file \"%s\"\n",
+                    FileTypeText(file_type), stmt->map, stmt->file);
+            return false;
+        }
+    }
+    else if (rtrn->common.next) {
+        log_lvl(ctx, 5,
+                "No map in include statement, but \"%s\" contains several; "
+                "Using first defined map, \"%s\"\n",
+                stmt->file, rtrn->name);
+    }
+    if (mapToUse->file_type != file_type) {
+        log_err(ctx,
+                "Include file wrong type (expected %s, got %s); "
+                "Include file \"%s\" ignored\n",
+                FileTypeText(file_type), FileTypeText(mapToUse->file_type),
+                stmt->file);
+        return false;
+    }
+    /* FIXME: we have to check recursive includes here (or somewhere) */
+
+    *file_rtrn = mapToUse;
+    *merge_rtrn = stmt->merge;
+    return true;
 }
