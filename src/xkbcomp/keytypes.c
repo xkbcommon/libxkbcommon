@@ -186,8 +186,8 @@ static inline bool
 ReportTypeBadType(KeyTypesInfo *info, KeyTypeInfo *type,
                   const char *field, const char *wanted)
 {
-    return ReportBadType(info->keymap, "key type", field, TypeTxt(info, type),
-                         wanted);
+    return ReportBadType(info->keymap->ctx, "key type", field,
+                         TypeTxt(info, type), wanted);
 }
 
 static inline bool

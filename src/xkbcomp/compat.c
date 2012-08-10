@@ -122,7 +122,7 @@ static inline bool
 ReportSIBadType(CompatInfo *info, SymInterpInfo *si, const char *field,
                 const char *wanted)
 {
-    return ReportBadType(info->keymap, "symbol interpretation", field,
+    return ReportBadType(info->keymap->ctx, "symbol interpretation", field,
                          siText(si, info), wanted);
 }
 
@@ -130,7 +130,7 @@ static inline bool
 ReportIndicatorBadType(CompatInfo *info, LEDInfo *led,
                        const char *field, const char *wanted)
 {
-    return ReportBadType(info->keymap, "indicator map", field,
+    return ReportBadType(info->keymap->ctx, "indicator map", field,
                          xkb_atom_text(info->keymap->ctx, led->name),
                          wanted);
 }

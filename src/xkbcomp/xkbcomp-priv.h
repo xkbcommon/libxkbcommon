@@ -99,11 +99,10 @@ ReportShouldBeArray(struct xkb_keymap *keymap, const char *type,
 }
 
 static inline bool
-ReportBadType(struct xkb_keymap *keymap, const char *type, const char *field,
+ReportBadType(struct xkb_context *ctx, const char *type, const char *field,
               const char *name, const char *wanted)
 {
-    log_err(keymap->ctx,
-            "The %s %s field must be a %s; "
+    log_err(ctx, "The %s %s field must be a %s; "
             "Ignoring illegal assignment in %s\n",
             type, field, wanted, name);
     return false;
