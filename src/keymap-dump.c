@@ -732,7 +732,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
         }
 
         if (key->explicit & XkbExplicitInterpretMask)
-            showActions = XkbKeyHasActions(key);
+            showActions = (key->actions != NULL);
         else
             showActions = false;
 
@@ -746,10 +746,8 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
             write_buf(buf, " ] };\n");
         }
         else {
-            union xkb_action *acts;
-            int level;
+            xkb_level_index_t level;
 
-            acts = XkbKeyActionsPtr(keymap, key);
             for (group = 0; group < key->num_groups; group++) {
                 if (group != 0)
                     write_buf(buf, ",");
@@ -765,10 +763,11 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
                          level++) {
                         if (level != 0)
                             write_buf(buf, ", ");
-                        write_action(keymap, buf, &acts[level], NULL, NULL);
+                        write_action(keymap, buf,
+                                     XkbKeyActionEntry(key, group, level),
+                                     NULL, NULL);
                     }
                     write_buf(buf, " ]");
-                    acts += key->width;
                 }
             }
             write_buf(buf, "\n\t\t};\n");

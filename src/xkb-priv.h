@@ -321,8 +321,7 @@ struct xkb_key {
 
     bool repeats;
 
-    /* Index into keymap->acts */
-    size_t acts_index;
+    union xkb_action *actions;
 
     unsigned char kt_index[XkbNumKbdGroups];
 
@@ -368,8 +367,6 @@ struct xkb_keymap {
 
     struct xkb_mods groups[XkbNumKbdGroups];
     const char *group_names[XkbNumKbdGroups];
-
-    darray(union xkb_action) acts;
 
     struct xkb_indicator_map indicators[XkbNumIndicators];
     const char *indicator_names[XkbNumIndicators];
@@ -446,33 +443,11 @@ XkbKeySymEntry(struct xkb_key *key, xkb_group_index_t group,
     return XkbKeySym(key, XkbKeySymOffset(key, group, level));
 }
 
-static inline bool
-XkbKeyHasActions(struct xkb_key *key)
-{
-    return key->acts_index != 0;
-}
-
-static inline unsigned int
-XkbKeyNumActions(struct xkb_key *key)
-{
-    if (XkbKeyHasActions(key))
-        return key->width * key->num_groups;
-    return 1;
-}
-
 static inline union xkb_action *
-XkbKeyActionsPtr(struct xkb_keymap *keymap, struct xkb_key *key)
+XkbKeyActionEntry(struct xkb_key *key, xkb_group_index_t group,
+                  xkb_level_index_t level)
 {
-    return darray_mem(keymap->acts, key->acts_index);
-}
-
-static inline union xkb_action *
-XkbKeyActionEntry(struct xkb_keymap *keymap, struct xkb_key *key,
-                  xkb_group_index_t group, xkb_level_index_t level)
-{
-    if (XkbKeyHasActions(key))
-        return &XkbKeyActionsPtr(keymap, key)[key->width * group + level];
-    return NULL;
+    return &key->actions[key->width * group + level];
 }
 
 static inline bool

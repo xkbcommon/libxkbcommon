@@ -118,7 +118,7 @@ xkb_key_get_action(struct xkb_state *state, xkb_keycode_t kc)
     if (XkbKeycodeInRange(state->keymap, kc))
         key = XkbKey(state->keymap, kc);
 
-    if (!key || !XkbKeyHasActions(key))
+    if (!key || !key->actions)
         return &fake;
 
     group = xkb_key_get_group(state, kc);
@@ -129,7 +129,7 @@ xkb_key_get_action(struct xkb_state *state, xkb_keycode_t kc)
     if (level == XKB_LEVEL_INVALID)
         return &fake;
 
-    return XkbKeyActionEntry(state->keymap, key, group, level);
+    return XkbKeyActionEntry(key, group, level);
 }
 
 static struct xkb_filter *

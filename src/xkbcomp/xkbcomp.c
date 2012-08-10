@@ -333,10 +333,9 @@ xkb_map_unref(struct xkb_keymap *keymap)
         free(key->sym_index);
         free(key->num_syms);
         darray_free(key->syms);
+        free(key->actions);
     }
     darray_free(keymap->keys);
-
-    darray_free(keymap->acts);
 
     darray_free(keymap->sym_interpret);
 

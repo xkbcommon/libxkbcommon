@@ -1382,7 +1382,6 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
 {
 #define INTERP_SIZE (8 * 4)
     struct xkb_sym_interpret *interps[INTERP_SIZE];
-    union xkb_action *acts;
     xkb_mod_mask_t vmodmask = 0;
     int num_acts = 0;
     xkb_group_index_t group;
@@ -1408,11 +1407,12 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
         }
     }
 
-    if (num_acts)
-        num_acts = key->num_groups * key->width;
-    acts = ResizeKeyActions(keymap, key, num_acts);
-    if (num_acts && !acts)
-        return false;
+    if (num_acts && !key->actions) {
+        key->actions = calloc(key->num_groups * key->width,
+                              sizeof(*key->actions));
+        if (!key->actions)
+            return false;
+    }
 
     for (group = 0; group < key->num_groups; group++) {
         for (level = 0; level < XkbKeyGroupWidth(keymap, key, group);
@@ -1437,7 +1437,8 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
                 if (interp->virtual_mod != XkbNoModifier)
                     vmodmask |= (1 << interp->virtual_mod);
             }
-            acts[i] = interp->act;
+
+            key->actions[i] = interp->act;
         }
     }
 
@@ -1496,9 +1497,11 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
 
     /* Update action modifiers. */
     xkb_foreach_key(key, keymap) {
-        union xkb_action *acts = XkbKeyActionsPtr(keymap, key);
-        for (i = 0; i < XkbKeyNumActions(key); i++)
-            UpdateActionMods(keymap, &acts[i], key->modmap);
+        if (!key->actions)
+            continue;
+
+        for (i = 0; i < key->num_groups * key->width; i++)
+            UpdateActionMods(keymap, &key->actions[i], key->modmap);
     }
 
     /* Update group modifiers. */

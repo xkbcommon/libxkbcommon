@@ -76,10 +76,6 @@ SetActionField(struct xkb_keymap *keymap, const char *elem, const char *field,
                ExprDef *index, ExprDef *value,
                ActionInfo **info_rtrn);
 
-union xkb_action *
-ResizeKeyActions(struct xkb_keymap *keymap, struct xkb_key *key,
-                 uint32_t needed);
-
 extern const LookupEntry ctrlNames[];
 
 #endif /* ACTION_H */

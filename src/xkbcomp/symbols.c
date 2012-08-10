@@ -1691,7 +1691,6 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
     struct xkb_key_type * type;
     bool haveActions, autoType, useAlias;
     unsigned types[XkbNumKbdGroups];
-    union xkb_action *outActs;
     unsigned int symIndex = 0;
 
     useAlias = (start_from == 0);
@@ -1769,27 +1768,23 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
 
     darray_resize0(key->syms, sizeSyms);
 
+    key->num_groups = nGroups;
+
+    key->width = width;
+
+    key->sym_index = calloc(nGroups * width, sizeof(*key->sym_index));
+
+    key->num_syms = calloc(nGroups * width, sizeof(*key->num_syms));
+
     if (haveActions) {
-        outActs = ResizeKeyActions(keymap, key, width * nGroups);
-        if (outActs == NULL) {
-            log_wsgo(info->keymap->ctx,
-                     "Could not enlarge actions for %s (key %d)\n",
-                     LongKeyNameText(keyi->name), kc);
-            return false;
-        }
+        key->actions = calloc(nGroups * width, sizeof(*key->actions));
         key->explicit |= XkbExplicitInterpretMask;
     }
-    else
-        outActs = NULL;
 
-    key->num_groups = nGroups;
     if (keyi->defined & KEY_FIELD_GROUPINFO) {
         key->out_of_range_group_number = keyi->out_of_range_group_number;
         key->out_of_range_group_action = keyi->out_of_range_group_action;
     }
-    key->width = width;
-    key->sym_index = calloc(nGroups * width, sizeof(*key->sym_index));
-    key->num_syms = calloc(nGroups * width, sizeof(*key->num_syms));
 
     for (i = 0; i < nGroups; i++) {
         /* assign kt_index[i] to the index of the type in map->types.
@@ -1820,11 +1815,11 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
                     key->sym_index[(i * width) + tmp] = -1;
                     key->num_syms[(i * width) + tmp] = 0;
                 }
-                if (outActs != NULL && !darray_empty(keyi->acts[i])) {
+                if (key->actions && !darray_empty(keyi->acts[i])) {
                     if (tmp < keyi->numLevels[i])
-                        outActs[tmp] = darray_item(keyi->acts[i], tmp);
+                        key->actions[tmp] = darray_item(keyi->acts[i], tmp);
                     else
-                        outActs[tmp].type = XkbSA_NoAction;
+                        key->actions[tmp].type = XkbSA_NoAction;
                 }
             }
         }
@@ -1905,8 +1900,6 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
 
     if (info.errorCount != 0)
         goto err_info;
-
-    darray_resize0(keymap->acts, darray_size(keymap->acts) + 32 + 1);
 
     if (info.name)
         keymap->symbols_section_name = strdup(info.name);
