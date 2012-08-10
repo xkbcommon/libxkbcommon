@@ -917,7 +917,7 @@ HandleRedirectKey(struct xkb_keymap *keymap, struct xkb_any_action *action,
             return ReportMismatch(keymap, action->type, field, "key name");
 
         tmp = KeyNameToLong(key_name);
-        key = FindNamedKey(keymap, tmp, true, CreateKeyNames(keymap), 0);
+        key = FindNamedKey(keymap, tmp, true, 0);
         if (!key)
             return ReportNotFound(keymap, action->type, field, "Key",
                                   KeyNameText(key_name));

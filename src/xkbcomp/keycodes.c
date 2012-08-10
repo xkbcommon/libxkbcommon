@@ -547,14 +547,6 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *stmt)
     XkbFile *rtrn;
     KeyNamesInfo included, next_incl;
 
-    /* XXX: What's that? */
-    if (stmt->file && streq(stmt->file, "computed")) {
-        info->keymap->flags |= AutoKeyNames;
-        info->explicitMin = 0;
-        info->explicitMax = XKB_KEYCODE_MAX;
-        return (info->errorCount == 0);
-    }
-
     InitKeyNamesInfo(&included, info->keymap, info->file_id);
     if (stmt->stmt) {
         free(included.name);
@@ -893,8 +885,7 @@ ApplyAliases(KeyNamesInfo *info)
     old = &darray_item(keymap->key_aliases, 0);
 
     list_foreach(alias, &info->aliases, entry) {
-        key = FindNamedKey(keymap, alias->real, false,
-                           CreateKeyNames(keymap), 0);
+        key = FindNamedKey(keymap, alias->real, false, 0);
         if (!key) {
             log_lvl(info->keymap->ctx, 5,
                     "Attempt to alias %s to non-existent key %s; Ignored\n",
@@ -904,7 +895,7 @@ ApplyAliases(KeyNamesInfo *info)
             continue;
         }
 
-        key = FindNamedKey(keymap, alias->alias, false, false, 0);
+        key = FindNamedKey(keymap, alias->alias, false, 0);
         if (key) {
             log_lvl(info->keymap->ctx, 5,
                     "Attempt to create alias with the name of a real key; "

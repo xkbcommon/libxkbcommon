@@ -1696,8 +1696,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
 
     useAlias = (start_from == 0);
 
-    key = FindNamedKey(keymap, keyi->name, useAlias,
-                       CreateKeyNames(keymap), start_from);
+    key = FindNamedKey(keymap, keyi->name, useAlias, start_from);
     if (!key) {
         if (start_from == 0)
             log_lvl(info->keymap->ctx, 5,
@@ -1853,8 +1852,7 @@ CopyModMapDef(SymbolsInfo *info, ModMapEntry *entry)
     struct xkb_keymap *keymap = info->keymap;
 
     if (!entry->haveSymbol) {
-        key = FindNamedKey(keymap, entry->u.keyName, true,
-                           CreateKeyNames(keymap), 0);
+        key = FindNamedKey(keymap, entry->u.keyName, true, 0);
         if (!key) {
             log_lvl(info->keymap->ctx, 5,
                     "Key %s not found in keycodes; "

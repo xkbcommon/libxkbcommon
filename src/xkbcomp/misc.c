@@ -113,15 +113,13 @@ ProcessIncludeFile(struct xkb_context *ctx,
  * @param keymap The keymap to search in.
  * @param name The 4-letter name of the key as a long.
  * @param use_aliases true if the key aliases should be searched too.
- * @param create If true and the key is not found, it is added to the
- *        keymap->names at the first free keycode.
  * @param start_from Keycode to start searching from.
  *
  * @return the key if it is found, NULL otherwise.
  */
 struct xkb_key *
 FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
-             bool use_aliases, bool create, xkb_keycode_t start_from)
+             bool use_aliases, xkb_keycode_t start_from)
 {
     struct xkb_key *key;
 
@@ -137,17 +135,7 @@ FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
     if (use_aliases) {
         unsigned long new_name;
         if (FindKeyNameForAlias(keymap, name, &new_name))
-            return FindNamedKey(keymap, new_name, false, create, 0);
-    }
-
-    if (create) {
-        /* Find first unused key and store our key here */
-        xkb_foreach_key(key, keymap) {
-            if (key->name[0] == '\0') {
-                LongToKeyName(name, key->name);
-                return key;
-            }
-        }
+            return FindNamedKey(keymap, new_name, false, 0);
     }
 
     return NULL;

@@ -238,7 +238,4 @@ extern bool
 CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
                enum merge_mode merge);
 
-#define AutoKeyNames (1L << 0)
-#define CreateKeyNames(x) ((x)->flags & AutoKeyNames)
-
 #endif /* XKBCOMP_H */
