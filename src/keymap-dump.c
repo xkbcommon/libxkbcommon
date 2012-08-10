@@ -397,9 +397,9 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
     if (!suffix)
         suffix = "";
 
-    type = ActionTypeText(action->any.type);
+    type = ActionTypeText(action->type);
 
-    switch (action->any.type) {
+    switch (action->type) {
     case XkbSA_SetMods:
     case XkbSA_LatchMods:
     case XkbSA_LockMods:
@@ -408,10 +408,10 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         else
             args = VModMaskText(keymap, action->mods.mods.mods);
         write_buf(buf, "%s%s(modifiers=%s%s%s)%s", prefix, type, args,
-                  (action->any.type != XkbSA_LockGroup &&
+                  (action->type != XkbSA_LockGroup &&
                    (action->mods.flags & XkbSA_ClearLocks)) ?
                    ",clearLocks" : "",
-                  (action->any.type != XkbSA_LockGroup &&
+                  (action->type != XkbSA_LockGroup &&
                    (action->mods.flags & XkbSA_LatchToLock)) ?
                    ",latchToLock" : "",
                   suffix);
@@ -425,10 +425,10 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
                    action->group.group > 0) ? "+" : "",
                   (action->group.flags & XkbSA_GroupAbsolute) ?
                   action->group.group + 1 : action->group.group,
-                  (action->any.type != XkbSA_LockGroup &&
+                  (action->type != XkbSA_LockGroup &&
                    (action->group.flags & XkbSA_ClearLocks)) ?
                   ",clearLocks" : "",
-                  (action->any.type != XkbSA_LockGroup &&
+                  (action->type != XkbSA_LockGroup &&
                    (action->group.flags & XkbSA_LatchToLock)) ?
                   ",latchToLock" : "",
                   suffix);
@@ -521,10 +521,10 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
     default:
         write_buf(buf,
                   "%s%s(type=0x%02x,data[0]=0x%02x,data[1]=0x%02x,data[2]=0x%02x,data[3]=0x%02x,data[4]=0x%02x,data[5]=0x%02x,data[6]=0x%02x)%s",
-                  prefix, type, action->any.type, action->any.data[0],
-                  action->any.data[1], action->any.data[2],
-                  action->any.data[3], action->any.data[4],
-                  action->any.data[5], action->any.data[6],
+                  prefix, type, action->type, action->priv.data[0],
+                  action->priv.data[1], action->priv.data[2],
+                  action->priv.data[3], action->priv.data[4],
+                  action->priv.data[5], action->priv.data[6],
                   suffix);
         break;
     }

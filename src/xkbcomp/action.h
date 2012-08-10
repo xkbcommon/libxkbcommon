@@ -68,7 +68,7 @@ typedef struct _ActionInfo {
 
 extern int
 HandleActionDef(ExprDef *def, struct xkb_keymap *keymap,
-                struct xkb_any_action *action,
+                union xkb_action *action,
                 ActionInfo *info);
 
 extern int

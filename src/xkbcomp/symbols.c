@@ -925,7 +925,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     xkb_group_index_t ndx;
     size_t nActs;
     ExprDef *act;
-    struct xkb_any_action *toAct;
+    union xkb_action *toAct;
 
     if (!GetGroupIndex(info, keyi, arrayNdx, ACTIONS, &ndx))
         return false;
@@ -970,7 +970,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     }
     keyi->actsDefined |= (1 << ndx);
 
-    toAct = (struct xkb_any_action *) darray_mem(keyi->acts[ndx], 0);
+    toAct = darray_mem(keyi->acts[ndx], 0);
     act = value->value.child;
     for (i = 0; i < nActs; i++, toAct++) {
         if (!HandleActionDef(act, info->keymap, toAct, info->action)) {

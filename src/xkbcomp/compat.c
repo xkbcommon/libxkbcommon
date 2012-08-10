@@ -158,8 +158,6 @@ ClearIndicatorMapInfo(struct xkb_context *ctx, LEDInfo * info)
 static void
 InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id)
 {
-    unsigned int i;
-
     info->keymap = keymap;
     info->name = NULL;
     info->file_id = file_id;
@@ -172,9 +170,8 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id)
     info->dflt.merge = MERGE_OVERRIDE;
     info->dflt.interp.flags = 0;
     info->dflt.interp.virtual_mod = XkbNoModifier;
+    memset(&info->dflt.interp.act, 0, sizeof(info->dflt.interp.act));
     info->dflt.interp.act.type = XkbSA_NoAction;
-    for (i = 0; i < sizeof(info->dflt.interp.act.any.data); i++)
-        info->dflt.interp.act.any.data[i] = 0;
     ClearIndicatorMapInfo(keymap->ctx, &info->ledDflt);
     info->ledDflt.file_id = file_id;
     info->ledDflt.defined = 0;
@@ -188,7 +185,6 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id)
 static void
 ClearCompatInfo(CompatInfo *info)
 {
-    unsigned int i;
     ActionInfo *next_act;
     SymInterpInfo *si, *next_si;
     LEDInfo *led, *next_led;
@@ -200,9 +196,8 @@ ClearCompatInfo(CompatInfo *info)
     info->dflt.merge = MERGE_AUGMENT;
     info->dflt.interp.flags = 0;
     info->dflt.interp.virtual_mod = XkbNoModifier;
+    memset(&info->dflt.interp.act, 0, sizeof(info->dflt.interp.act));
     info->dflt.interp.act.type = XkbSA_NoAction;
-    for (i = 0; i < sizeof(info->dflt.interp.act.any.data); i++)
-        info->dflt.interp.act.any.data[i] = 0;
     ClearIndicatorMapInfo(keymap->ctx, &info->ledDflt);
     info->nInterps = 0;
     list_foreach_safe(si, next_si, &info->interps, entry)
@@ -640,7 +635,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         if (arrayNdx)
             return ReportSINotArray(info, si, field);
 
-        if (!HandleActionDef(value, keymap, &si->interp.act.any, info->act))
+        if (!HandleActionDef(value, keymap, &si->interp.act, info->act))
             return false;
 
         si->defined |= SI_FIELD_ACTION;

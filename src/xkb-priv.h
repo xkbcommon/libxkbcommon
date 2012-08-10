@@ -148,11 +148,6 @@ struct xkb_mods {
     xkb_mod_mask_t mask;       /* computed effective mask */
 };
 
-struct xkb_any_action {
-    uint8_t type;
-    uint8_t data[7];
-};
-
 struct xkb_mod_action {
     uint8_t type;
     uint8_t flags;
@@ -240,8 +235,12 @@ struct xkb_pointer_button_action {
     int8_t button;
 };
 
+struct xkb_private_action {
+    uint8_t type;
+    uint8_t data[7];
+};
+
 union xkb_action {
-    struct xkb_any_action any;
     struct xkb_mod_action mods;
     struct xkb_group_action group;
     struct xkb_iso_action iso;
@@ -254,6 +253,7 @@ union xkb_action {
     struct xkb_pointer_action ptr;         /* XXX delete for DeviceValuator */
     struct xkb_pointer_button_action btn;  /* XXX delete for DeviceBtn */
     struct xkb_message_action msg;         /* XXX just delete */
+    struct xkb_private_action priv;
     unsigned char type;
 };
 
