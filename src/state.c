@@ -106,7 +106,9 @@ struct xkb_state {
     struct xkb_keymap *keymap;
 };
 
-static union xkb_action *
+static const union xkb_action fake = { .type = XkbSA_NoAction };
+
+static const union xkb_action *
 xkb_key_get_action(struct xkb_state *state, xkb_keycode_t kc)
 {
     xkb_group_index_t group;
@@ -116,12 +118,8 @@ xkb_key_get_action(struct xkb_state *state, xkb_keycode_t kc)
     if (XkbKeycodeInRange(state->keymap, kc))
         key = XkbKey(state->keymap, kc);
 
-    if (!key || !XkbKeyHasActions(key)) {
-        static union xkb_action fake;
-        memset(&fake, 0, sizeof(fake));
-        fake.type = XkbSA_NoAction;
+    if (!key || !XkbKeyHasActions(key))
         return &fake;
-    }
 
     group = xkb_key_get_group(state, kc);
     level = xkb_key_get_level(state, kc, group);
@@ -185,7 +183,7 @@ xkb_filter_group_set_func(struct xkb_filter *filter, xkb_keycode_t kc,
 
 static int
 xkb_filter_group_set_new(struct xkb_state *state, xkb_keycode_t kc,
-                         union xkb_action *action)
+                         const union xkb_action *action)
 {
     struct xkb_filter *filter = xkb_filter_new(state);
 
@@ -226,7 +224,7 @@ xkb_filter_group_lock_func(struct xkb_filter *filter, xkb_keycode_t kc,
 
 static int
 xkb_filter_group_lock_new(struct xkb_state *state, xkb_keycode_t kc,
-                          union xkb_action *action)
+                          const union xkb_action *action)
 {
     struct xkb_filter *filter = xkb_filter_new(state);
 
@@ -273,7 +271,7 @@ xkb_filter_mod_set_func(struct xkb_filter *filter, xkb_keycode_t kc,
 
 static int
 xkb_filter_mod_set_new(struct xkb_state *state, xkb_keycode_t kc,
-                       union xkb_action *action)
+                       const union xkb_action *action)
 {
     struct xkb_filter *filter = xkb_filter_new(state);
 
@@ -309,7 +307,7 @@ xkb_filter_mod_lock_func(struct xkb_filter *filter, xkb_keycode_t kc,
 
 static int
 xkb_filter_mod_lock_new(struct xkb_state *state, xkb_keycode_t kc,
-                        union xkb_action *action)
+                        const union xkb_action *action)
 {
     struct xkb_filter *filter = xkb_filter_new(state);
 
@@ -342,7 +340,7 @@ xkb_filter_mod_latch_func(struct xkb_filter *filter, xkb_keycode_t kc,
          * keypress, then either break the latch if any random key is pressed,
          * or promote it to a lock or plain base set if it's the same
          * modifier. */
-        union xkb_action *action = xkb_key_get_action(filter->state, kc);
+        const union xkb_action *action = xkb_key_get_action(filter->state, kc);
         if (action->type == XkbSA_LatchMods &&
             action->mods.flags == filter->action.mods.flags &&
             action->mods.mods.mask == filter->action.mods.mods.mask) {
@@ -411,7 +409,7 @@ xkb_filter_mod_latch_func(struct xkb_filter *filter, xkb_keycode_t kc,
 
 static int
 xkb_filter_mod_latch_new(struct xkb_state *state, xkb_keycode_t kc,
-                         union xkb_action *action)
+                         const union xkb_action *action)
 {
     struct xkb_filter *filter = xkb_filter_new(state);
     enum xkb_key_latch_state latch = LATCH_KEY_DOWN;
@@ -438,7 +436,7 @@ xkb_filter_apply_all(struct xkb_state *state, xkb_keycode_t kc,
                      enum xkb_key_direction direction)
 {
     struct xkb_filter *filter;
-    union xkb_action *act = NULL;
+    const union xkb_action *act = NULL;
     int send = 1;
 
     /* First run through all the currently active filters and see if any of
