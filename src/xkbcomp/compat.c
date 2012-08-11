@@ -187,7 +187,6 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id)
 static void
 ClearCompatInfo(CompatInfo *info)
 {
-    ActionInfo *next_act;
     SymInterpInfo *si, *next_si;
     LEDInfo *led, *next_led;
     struct xkb_keymap *keymap = info->keymap;
@@ -208,11 +207,8 @@ ClearCompatInfo(CompatInfo *info)
            XkbNumKbdGroups * sizeof(GroupCompatInfo));
     list_foreach_safe(led, next_led, &info->leds, entry)
         free(led);
-    while (info->act) {
-        next_act = info->act->next;
-        free(info->act);
-        info->act = next_act;
-    }
+    FreeActionInfo(info->act);
+    info->act = NULL;
     info->keymap = NULL;
     ClearVModInfo(&info->vmods, keymap);
 }
