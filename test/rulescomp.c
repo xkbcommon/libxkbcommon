@@ -79,7 +79,7 @@ benchmark(struct xkb_context *context)
 
     clock_gettime(CLOCK_MONOTONIC, &start);
     for (i = 0; i < BENCHMARK_ITERATIONS; i++)
-        assert(test_rmlvo_silent(context, "evdev",       "",       "us",  "",      ""));
+        assert(test_rmlvo_silent(context, "evdev", "evdev", "us", "", ""));
     clock_gettime(CLOCK_MONOTONIC, &stop);
 
     xkb_set_log_priority(context, old_prio);
@@ -102,17 +102,20 @@ int main(int argc, char *argv[])
 
     assert(ctx);
 
-    assert(test_rmlvo(ctx, "evdev",       "pc105",  "us,il,ru,ca",  ",,,multix",      "grp:alts_toggle,ctrl:nocaps,compose:rwin"));
-    assert(test_rmlvo(ctx, "evdev",       "",       "us",  "",      ""));
-    assert(test_rmlvo(ctx, "evdev",      "pc105",  "us",  "intl",  ""));
-    assert(test_rmlvo(ctx, "evdev",      "pc105",  "us",  "intl",  "grp:alts_toggle"));
-
-    assert(!test_rmlvo(ctx, "base",      "",       "",    "",      ""));
-    assert(!test_rmlvo(ctx, "base",      "pc105",  "",    "",      ""));
-    assert(!test_rmlvo(ctx, "badrules",  "",       "us",  "",      ""));
-
-    if (argc > 1 && streq(argv[1], "bench"))
+    if (argc > 1 && streq(argv[1], "bench")) {
         benchmark(ctx);
+        return 0;
+    }
+
+    assert(test_rmlvo(ctx, "evdev", "pc105", "us,il,ru,ca", ",,,multix", "grp:alts_toggle,ctrl:nocaps,compose:rwin"));
+    assert(test_rmlvo(ctx, "base",  "pc105", "us,in", "", ""));
+    assert(test_rmlvo(ctx, "evdev", "pc105", "us", "intl", ""));
+    assert(test_rmlvo(ctx, "evdev", "evdev", "us", "intl", "grp:alts_toggle"));
+
+    assert(test_rmlvo(ctx, "", "", "", "", ""));
+    assert(test_rmlvo(ctx, NULL, NULL, NULL, NULL, NULL));
+
+    assert(!test_rmlvo(ctx, "does-not-exist", "", "", "", ""));
 
     xkb_context_unref(ctx);
 }
