@@ -28,8 +28,6 @@
 #include "rules.h"
 #include "parseutils.h"
 
-#define ISEMPTY(str) (!(str) || (strlen(str) == 0))
-
 static XkbFile *
 keymap_file_from_names(struct xkb_context *ctx,
                        const struct xkb_rule_names *rmlvo)
@@ -226,11 +224,11 @@ xkb_map_new_from_names(struct xkb_context *ctx,
     struct xkb_rule_names rmlvo = *rmlvo_in;
     XkbFile *file;
 
-    if (ISEMPTY(rmlvo.rules))
+    if (isempty(rmlvo.rules))
         rmlvo.rules = DEFAULT_XKB_RULES;
-    if (ISEMPTY(rmlvo.model))
+    if (isempty(rmlvo.model))
         rmlvo.model = DEFAULT_XKB_MODEL;
-    if (ISEMPTY(rmlvo.layout))
+    if (isempty(rmlvo.layout))
         rmlvo.layout = DEFAULT_XKB_LAYOUT;
 
     file = keymap_file_from_names(ctx, &rmlvo);

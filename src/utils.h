@@ -61,6 +61,12 @@ strdup_safe(const char *s)
     return s ? strdup(s) : NULL;
 }
 
+static inline bool
+isempty(const char *s)
+{
+    return s == NULL || s[0] == '\0';
+}
+
 /* Compiler Attributes */
 
 #if defined(__GNUC__) && (__GNUC__ >= 4) && !defined(__CYGWIN__)
