@@ -24,122 +24,81 @@
  *
  ********************************************************/
 
-#ifndef PARSEUTILS_H
-#define PARSEUTILS_H
+#ifndef XKBCOMP_AST_BUILD_H
+#define XKBCOMP_AST_BUILD_H
 
-#include <stdio.h>
-
-#include "xkbcomp-priv.h"
-
-struct parser_param {
-    struct xkb_context *ctx;
-    void *scanner;
-    XkbFile *rtrn;
-};
-
-#include "parser.h"
-
-struct scanner_extra {
-    struct xkb_context *ctx;
-    char *scanFile;
-    char scanBuf[1024];
-    char *s;
-};
-
-extern ParseCommon *
+ParseCommon *
 AppendStmt(ParseCommon *to, ParseCommon *append);
 
-extern ExprDef *
+ExprDef *
 ExprCreate(enum expr_op_type op, enum expr_value_type type);
 
-extern ExprDef *
+ExprDef *
 ExprCreateUnary(enum expr_op_type op, enum expr_value_type type,
                 ExprDef *child);
 
-extern ExprDef *
+ExprDef *
 ExprCreateBinary(enum expr_op_type op, ExprDef *left, ExprDef *right);
 
 KeycodeDef *
 KeycodeCreate(char keyName[XkbKeyNameLength], unsigned long value);
 
-extern KeyAliasDef *
+KeyAliasDef *
 KeyAliasCreate(char keyName[XkbKeyNameLength], char real[XkbKeyNameLength]);
 
-extern VModDef *
+VModDef *
 VModCreate(xkb_atom_t name, ExprDef *value);
 
-extern VarDef *
+VarDef *
 VarCreate(ExprDef *name, ExprDef *value);
 
-extern VarDef *
+VarDef *
 BoolVarCreate(xkb_atom_t nameToken, unsigned set);
 
-extern InterpDef *
+InterpDef *
 InterpCreate(char *sym, ExprDef *match);
 
-extern KeyTypeDef *
+KeyTypeDef *
 KeyTypeCreate(xkb_atom_t name, VarDef *body);
 
-extern SymbolsDef *
+SymbolsDef *
 SymbolsCreate(char keyName[XkbKeyNameLength], ExprDef *symbols);
 
-extern GroupCompatDef *
+GroupCompatDef *
 GroupCompatCreate(int group, ExprDef *def);
 
-extern ModMapDef *
+ModMapDef *
 ModMapCreate(uint32_t modifier, ExprDef *keys);
 
-extern IndicatorMapDef *
+IndicatorMapDef *
 IndicatorMapCreate(xkb_atom_t name, VarDef *body);
 
-extern IndicatorNameDef *
+IndicatorNameDef *
 IndicatorNameCreate(int ndx, ExprDef *name, bool virtual);
 
-extern ExprDef *
+ExprDef *
 ActionCreate(xkb_atom_t name, ExprDef *args);
 
-extern ExprDef *
+ExprDef *
 CreateMultiKeysymList(ExprDef *list);
 
-extern ExprDef *
+ExprDef *
 CreateKeysymList(char *sym);
 
-extern ExprDef *
+ExprDef *
 AppendMultiKeysymList(ExprDef *list, ExprDef *append);
 
-extern ExprDef *
+ExprDef *
 AppendKeysymList(ExprDef *list, char *sym);
 
-bool
-LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn);
-
-extern IncludeStmt *
+IncludeStmt *
 IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge);
 
-extern void
-CheckDefaultMap(struct xkb_context *ctx, XkbFile *maps, const char *fileName);
-
-extern XkbFile *
-CreateXKBFile(struct xkb_context *ctx, enum xkb_file_type type, char *name,
-              ParseCommon *defs,
-              unsigned flags);
-
-extern bool
-XKBParseFile(struct xkb_context *ctx, FILE *file, const char *file_name,
-             XkbFile **out);
-
-extern bool
-XKBParseString(struct xkb_context *context, const char *string,
-               const char *file_name,
-               XkbFile **out);
-
-extern void
-FreeXKBFile(XkbFile *file);
-
-extern void
-FreeStmt(ParseCommon *stmt);
+XkbFile *
+XkbFileCreate(struct xkb_context *ctx, enum xkb_file_type type, char *name,
+              ParseCommon *defs, unsigned flags);
 
 void
-scanner_error(struct YYLTYPE *loc, void *scanner, const char *msg);
+FreeStmt(ParseCommon *stmt);
 
-#endif /* PARSEUTILS_H */
+#endif

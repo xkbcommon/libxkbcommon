@@ -24,17 +24,15 @@
  *
  ********************************************************/
 
-#ifndef EXPR_H
-#define EXPR_H 1
-
-#include "xkbcomp-priv.h"
+#ifndef XKBCOMP_EXPR_H
+#define XKBCOMP_EXPR_H
 
 typedef struct _LookupEntry {
     const char *name;
     unsigned int value;
 } LookupEntry;
 
-extern const char *
+const char *
 exprOpText(enum expr_op_type op);
 
 bool
@@ -106,4 +104,4 @@ bool
 ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
                   xkb_keysym_t *sym_rtrn);
 
-#endif /* EXPR_H */
+#endif

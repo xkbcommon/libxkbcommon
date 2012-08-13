@@ -24,10 +24,8 @@
  *
  ********************************************************/
 
-#ifndef XKBCOMP_H
-#define XKBCOMP_H 1
-
-#include "xkb-priv.h"
+#ifndef XKBCOMP_AST_H
+#define XKBCOMP_AST_H
 
 enum stmt_type {
     STMT_UNKNOWN = 0,
@@ -222,20 +220,4 @@ typedef struct _XkbFile {
     unsigned flags;
 } XkbFile;
 
-extern bool
-CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
-                enum merge_mode merge);
-
-extern bool
-CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
-                enum merge_mode merge);
-
-extern bool
-CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
-                 enum merge_mode merge);
-
-extern bool
-CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
-               enum merge_mode merge);
-
-#endif /* XKBCOMP_H */
+#endif

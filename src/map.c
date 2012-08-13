@@ -52,6 +52,59 @@
 #include "xkb-priv.h"
 #include "text.h"
 
+struct xkb_keymap *
+xkb_map_new(struct xkb_context *ctx)
+{
+    struct xkb_keymap *keymap;
+
+    keymap = calloc(1, sizeof(*keymap));
+    if (!keymap)
+        return NULL;
+
+    keymap->refcnt = 1;
+    keymap->ctx = xkb_context_ref(ctx);
+
+    return keymap;
+}
+
+XKB_EXPORT struct xkb_keymap *
+xkb_map_ref(struct xkb_keymap *keymap)
+{
+    keymap->refcnt++;
+    return keymap;
+}
+
+XKB_EXPORT void
+xkb_map_unref(struct xkb_keymap *keymap)
+{
+    unsigned int i;
+    struct xkb_key *key;
+
+    if (!keymap || --keymap->refcnt > 0)
+        return;
+
+    for (i = 0; i < keymap->num_types; i++) {
+        free(keymap->types[i].map);
+        free(keymap->types[i].level_names);
+    }
+    free(keymap->types);
+    darray_foreach(key, keymap->keys) {
+        free(key->sym_index);
+        free(key->num_syms);
+        darray_free(key->syms);
+        free(key->actions);
+    }
+    darray_free(keymap->keys);
+    darray_free(keymap->sym_interpret);
+    darray_free(keymap->key_aliases);
+    free(keymap->keycodes_section_name);
+    free(keymap->symbols_section_name);
+    free(keymap->types_section_name);
+    free(keymap->compat_section_name);
+    xkb_context_unref(keymap->ctx);
+    free(keymap);
+}
+
 /**
  * Returns the total number of modifiers active in the keymap.
  */

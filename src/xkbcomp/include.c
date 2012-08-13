@@ -26,9 +26,11 @@
 
 #include <errno.h>
 #include <limits.h>
+#include <stdio.h>
 
-#include "path.h"
-#include "parseutils.h"
+#include "xkbcomp-priv.h"
+#include "text.h"
+#include "include.h"
 
 /**
  * Extract the first token from an include statement.
@@ -57,8 +59,8 @@
  *
  */
 bool
-XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
-                   char *nextop_rtrn, char **extra_data)
+ParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
+                char *nextop_rtrn, char **extra_data)
 {
     char *tmp, *str, *next;
 
@@ -124,8 +126,8 @@ XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
 /**
  * Return the xkb directory based on the type.
  */
-const char *
-XkbDirectoryForInclude(enum xkb_file_type type)
+static const char *
+DirectoryForInclude(enum xkb_file_type type)
 {
     switch (type) {
     case FILE_TYPE_KEYMAP:
@@ -168,7 +170,7 @@ XkbDirectoryForInclude(enum xkb_file_type type)
  * pathRtrn is undefined.
  */
 FILE *
-XkbFindFileInPath(struct xkb_context *ctx, const char *name,
+FindFileInXkbPath(struct xkb_context *ctx, const char *name,
                   enum xkb_file_type type, char **pathRtrn)
 {
     size_t i;
@@ -177,7 +179,7 @@ XkbFindFileInPath(struct xkb_context *ctx, const char *name,
     char buf[PATH_MAX];
     const char *typeDir;
 
-    typeDir = XkbDirectoryForInclude(type);
+    typeDir = DirectoryForInclude(type);
     for (i = 0; i < xkb_context_num_include_paths(ctx); i++) {
         ret = snprintf(buf, sizeof(buf), "%s/%s/%s",
                        xkb_context_include_path_get(ctx, i), typeDir, name);
@@ -223,14 +225,14 @@ ProcessIncludeFile(struct xkb_context *ctx,
     FILE *file;
     XkbFile *rtrn, *mapToUse, *next;
 
-    file = XkbFindFileInPath(ctx, stmt->file, file_type, NULL);
+    file = FindFileInXkbPath(ctx, stmt->file, file_type, NULL);
     if (file == NULL) {
         log_err(ctx, "Can't find file \"%s\" for %s include\n", stmt->file,
-                XkbDirectoryForInclude(file_type));
+                DirectoryForInclude(file_type));
         return false;
     }
 
-    if (!XKBParseFile(ctx, file, stmt->file, &rtrn)) {
+    if (!XkbParseFile(ctx, file, stmt->file, &rtrn)) {
         log_err(ctx, "Error interpreting include file \"%s\"\n", stmt->file);
         fclose(file);
         return false;
@@ -245,11 +247,11 @@ ProcessIncludeFile(struct xkb_context *ctx,
             mapToUse->common.next = NULL;
             if (streq(mapToUse->name, stmt->map) &&
                 mapToUse->file_type == file_type) {
-                FreeXKBFile(next);
+                FreeXkbFile(next);
                 break;
             }
             else {
-                FreeXKBFile(mapToUse);
+                FreeXkbFile(mapToUse);
             }
             mapToUse = next;
         }

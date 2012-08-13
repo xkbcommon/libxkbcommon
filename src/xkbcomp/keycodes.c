@@ -25,8 +25,10 @@
  ********************************************************/
 
 #include "xkbcomp-priv.h"
+#include "text.h"
 #include "expr.h"
-#include "parseutils.h"
+#include "keycodes.h"
+#include "include.h"
 
 /*
  * The xkb_keycodes section
@@ -563,7 +565,7 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *stmt)
         MergeIncludedKeycodes(&included, &next_incl, merge);
 
         ClearKeyNamesInfo(&next_incl);
-        FreeXKBFile(rtrn);
+        FreeXkbFile(rtrn);
     }
 
     MergeIncludedKeycodes(info, &included, merge);

@@ -25,15 +25,17 @@
  ********************************************************/
 
 %{
-#include <stdio.h>
-
 #include "xkbcomp-priv.h"
-#include "parseutils.h"
+#include "parser-priv.h"
 
-#pragma GCC diagnostic ignored "-Wredundant-decls"
 #pragma GCC diagnostic ignored "-Wmissing-noreturn"
 
-extern int yyparse(struct parser_param *param);
+struct scanner_extra {
+    struct xkb_context *ctx;
+    char *scanFile;
+    char scanBuf[1024];
+    char *s;
+};
 
 static void
 scanner_error_extra(struct YYLTYPE *loc, struct scanner_extra *extra,
@@ -226,8 +228,33 @@ scanner_error(struct YYLTYPE *loc, void *scanner, const char *msg)
     scanner_error_extra(loc, extra, msg);
 }
 
+static void
+CheckDefaultMap(struct xkb_context *ctx, XkbFile *maps, const char *fileName)
+{
+    XkbFile *dflt = NULL, *tmp;
+
+    for (tmp = maps; tmp; tmp = (XkbFile *) tmp->common.next) {
+        if (!(tmp->flags & XkbLC_Default))
+            continue;
+
+        if (!dflt) {
+            dflt = tmp;
+            continue;
+        }
+
+        log_lvl(ctx, 3,
+                "Multiple default components in %s; "
+                "Using %s, ignoring %s\n",
+                (fileName ? fileName : "(unknown)"),
+                (dflt->name ? dflt->name : "(first)"),
+                (tmp->name ? tmp->name : "(subsequent)"));
+
+        tmp->flags &= (~XkbLC_Default);
+    }
+}
+
 bool
-XKBParseString(struct xkb_context *ctx, const char *string,
+XkbParseString(struct xkb_context *ctx, const char *string,
                const char *file_name, XkbFile **out)
 {
     int ret;
@@ -265,7 +292,7 @@ XKBParseString(struct xkb_context *ctx, const char *string,
 }
 
 bool
-XKBParseFile(struct xkb_context *ctx, FILE *file,
+XkbParseFile(struct xkb_context *ctx, FILE *file,
              const char *file_name, XkbFile **out)
 {
     int ret;

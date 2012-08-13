@@ -24,26 +24,20 @@
  *
  ********************************************************/
 
-#ifndef XKBCOMP_VMOD_H
-#define XKBCOMP_VMOD_H
-
-typedef struct _VModInfo {
-    xkb_mod_mask_t defined;
-    xkb_mod_mask_t available;
-} VModInfo;
-
-void
-InitVModInfo(VModInfo *info, struct xkb_keymap *keymap);
-
-void
-ClearVModInfo(VModInfo *info, struct xkb_keymap *keymap);
+#ifndef XKBCOMP_INCLUDE_H
+#define XKBCOMP_INCLUDE_H
 
 bool
-HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
-              enum merge_mode mergeMode, VModInfo *info);
+ParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
+                char *nextop_rtrn, char **extra_data);
+
+FILE *
+FindFileInXkbPath(struct xkb_context *ctx, const char *name,
+                  enum xkb_file_type type, char **pathRtrn);
 
 bool
-ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
-                       xkb_mod_index_t *ndx_rtrn, VModInfo *info);
+ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
+                   enum xkb_file_type file_type, XkbFile **file_rtrn,
+                   enum merge_mode *merge_rtrn);
 
 #endif

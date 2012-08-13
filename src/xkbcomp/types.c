@@ -25,8 +25,10 @@
  ********************************************************/
 
 #include "xkbcomp-priv.h"
-#include "parseutils.h"
+#include "text.h"
 #include "vmod.h"
+#include "expr.h"
+#include "include.h"
 
 /*
  * The xkb_types section
@@ -368,7 +370,7 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *stmt)
         MergeIncludedKeyTypes(&included, &next_incl, merge);
 
         FreeKeyTypesInfo(&next_incl);
-        FreeXKBFile(rtrn);
+        FreeXkbFile(rtrn);
     }
 
     MergeIncludedKeyTypes(info, &included, merge);

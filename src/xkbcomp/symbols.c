@@ -25,11 +25,12 @@
  ********************************************************/
 
 #include "xkbcomp-priv.h"
-#include "parseutils.h"
+#include "text.h"
+#include "expr.h"
 #include "action.h"
 #include "vmod.h"
-
-/***====================================================================***/
+#include "keycodes.h"
+#include "include.h"
 
 /* Needed to work with the typechecker. */
 typedef darray(xkb_keysym_t) darray_xkb_keysym_t;
@@ -772,7 +773,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *stmt)
         MergeIncludedSymbols(&included, &next_incl, merge);
 
         FreeSymbolsInfo(&next_incl);
-        FreeXKBFile(rtrn);
+        FreeXkbFile(rtrn);
     }
 
     MergeIncludedSymbols(info, &included, merge);
@@ -827,6 +828,30 @@ GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
     (*ndx_rtrn)--;
     return true;
+}
+
+bool
+LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn)
+{
+    xkb_keysym_t sym;
+
+    if (!str || istreq(str, "any") || istreq(str, "nosymbol")) {
+        *sym_rtrn = XKB_KEY_NoSymbol;
+        return 1;
+    }
+
+    if (istreq(str, "none") || istreq(str, "voidsymbol")) {
+        *sym_rtrn = XKB_KEY_VoidSymbol;
+        return 1;
+    }
+
+    sym = xkb_keysym_from_name(str);
+    if (sym != XKB_KEY_NoSymbol) {
+        *sym_rtrn = sym;
+        return 1;
+    }
+
+    return 0;
 }
 
 static bool

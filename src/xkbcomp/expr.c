@@ -24,6 +24,8 @@
  *
  ********************************************************/
 
+#include "xkbcomp-priv.h"
+#include "text.h"
 #include "expr.h"
 
 typedef bool (*IdentLookupFunc)(struct xkb_context *ctx, const void *priv,

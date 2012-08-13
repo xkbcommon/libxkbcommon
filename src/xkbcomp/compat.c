@@ -25,9 +25,11 @@
  ********************************************************/
 
 #include "xkbcomp-priv.h"
-#include "parseutils.h"
+#include "text.h"
+#include "expr.h"
 #include "action.h"
 #include "vmod.h"
+#include "include.h"
 
 enum si_field {
     SI_FIELD_VIRTUAL_MOD    = (1 << 0),
@@ -607,7 +609,7 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *stmt)
             next_incl.act = NULL;
 
         ClearCompatInfo(&next_incl);
-        FreeXKBFile(rtrn);
+        FreeXkbFile(rtrn);
     }
 
     MergeIncludedCompatMaps(info, &included, merge);

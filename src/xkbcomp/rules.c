@@ -32,8 +32,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include "xkbcomp-priv.h"
 #include "rules.h"
-#include "path.h"
+#include "include.h"
 
 static const char *
 input_line_get(struct xkb_context *ctx, const char *buf, const char *end,
@@ -1089,7 +1090,7 @@ xkb_components_from_rules(struct xkb_context *ctx,
     char *path;
     char **include;
 
-    file = XkbFindFileInPath(ctx, rmlvo->rules, FILE_TYPE_RULES, &path);
+    file = FindFileInXkbPath(ctx, rmlvo->rules, FILE_TYPE_RULES, &path);
     if (!file) {
         log_err(ctx, "Could not find \"%s\" rules in XKB path\n",
                 rmlvo->rules);

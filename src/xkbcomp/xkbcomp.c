@@ -25,68 +25,8 @@
  */
 
 #include "xkbcomp-priv.h"
+#include "text.h"
 #include "rules.h"
-#include "parseutils.h"
-
-static XkbFile *
-keymap_file_from_names(struct xkb_context *ctx,
-                       const struct xkb_rule_names *rmlvo)
-{
-    struct xkb_component_names kkctgs;
-    XkbFile *keycodes, *types, *compat, *symbols;
-    IncludeStmt *inc;
-
-    if (!xkb_components_from_rules(ctx, rmlvo, &kkctgs)) {
-        log_err(ctx,
-                "Couldn't look up rules '%s', model '%s', layout '%s', "
-                "variant '%s', options '%s'\n",
-                rmlvo->rules, rmlvo->model, rmlvo->layout, rmlvo->variant,
-                rmlvo->options);
-        return NULL;
-    }
-
-    inc = IncludeCreate(ctx, kkctgs.keycodes, MERGE_DEFAULT);
-    keycodes = CreateXKBFile(ctx, FILE_TYPE_KEYCODES, NULL,
-                             (ParseCommon *) inc, 0);
-
-    inc = IncludeCreate(ctx, kkctgs.types, MERGE_DEFAULT);
-    types = CreateXKBFile(ctx, FILE_TYPE_TYPES, NULL,
-                          (ParseCommon *) inc, 0);
-    AppendStmt(&keycodes->common, &types->common);
-
-    inc = IncludeCreate(ctx, kkctgs.compat, MERGE_DEFAULT);
-    compat = CreateXKBFile(ctx, FILE_TYPE_COMPAT, NULL,
-                           (ParseCommon *) inc, 0);
-    AppendStmt(&keycodes->common, &compat->common);
-
-    inc = IncludeCreate(ctx, kkctgs.symbols, MERGE_DEFAULT);
-    symbols = CreateXKBFile(ctx, FILE_TYPE_SYMBOLS, NULL,
-                            (ParseCommon *) inc, 0);
-    AppendStmt(&keycodes->common, &symbols->common);
-
-    free(kkctgs.keycodes);
-    free(kkctgs.types);
-    free(kkctgs.compat);
-    free(kkctgs.symbols);
-
-    return CreateXKBFile(ctx, FILE_TYPE_KEYMAP, strdup(""),
-                         &keycodes->common, 0);
-}
-
-static struct xkb_keymap *
-new_keymap(struct xkb_context *ctx)
-{
-    struct xkb_keymap *keymap;
-
-    keymap = calloc(1, sizeof(*keymap));
-    if (!keymap)
-        return NULL;
-
-    keymap->refcnt = 1;
-    keymap->ctx = xkb_context_ref(ctx);
-
-    return keymap;
-}
 
 /**
  * Compile the given file and store the output in keymap.
@@ -105,7 +45,7 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
     XkbFile *compat = NULL;
     XkbFile *symbols = NULL;
 
-    keymap = new_keymap(ctx);
+    keymap = xkb_map_new(ctx);
     if (!keymap)
         goto err;
 
@@ -218,6 +158,8 @@ xkb_map_new_from_names(struct xkb_context *ctx,
                        const struct xkb_rule_names *rmlvo_in,
                        enum xkb_map_compile_flags flags)
 {
+    bool ok;
+    struct xkb_component_names kccgst;
     struct xkb_rule_names rmlvo = *rmlvo_in;
     XkbFile *file;
     struct xkb_keymap *keymap;
@@ -229,7 +171,23 @@ xkb_map_new_from_names(struct xkb_context *ctx,
     if (isempty(rmlvo.layout))
         rmlvo.layout = DEFAULT_XKB_LAYOUT;
 
-    file = keymap_file_from_names(ctx, &rmlvo);
+    ok = xkb_components_from_rules(ctx, &rmlvo, &kccgst);
+    if (!ok) {
+        log_err(ctx,
+                "Couldn't look up rules '%s', model '%s', layout '%s', "
+                "variant '%s', options '%s'\n",
+                rmlvo.rules, rmlvo.model, rmlvo.layout, rmlvo.variant,
+                rmlvo.options);
+        return NULL;
+    }
+
+    file = XkbFileFromComponents(ctx, &kccgst);
+
+    free(kccgst.keycodes);
+    free(kccgst.types);
+    free(kccgst.compat);
+    free(kccgst.symbols);
+
     if (!file) {
         log_err(ctx,
                 "Failed to generate parsed XKB file from components\n");
@@ -237,7 +195,7 @@ xkb_map_new_from_names(struct xkb_context *ctx,
     }
 
     keymap = compile_keymap(ctx, file);
-    FreeXKBFile(file);
+    FreeXkbFile(file);
     return keymap;
 }
 
@@ -261,14 +219,14 @@ xkb_map_new_from_string(struct xkb_context *ctx,
         return NULL;
     }
 
-    ok = XKBParseString(ctx, string, "input", &file);
+    ok = XkbParseString(ctx, string, "input", &file);
     if (!ok) {
         log_err(ctx, "Failed to parse input xkb file\n");
         return NULL;
     }
 
     keymap = compile_keymap(ctx, file);
-    FreeXKBFile(file);
+    FreeXkbFile(file);
     return keymap;
 }
 
@@ -292,57 +250,13 @@ xkb_map_new_from_file(struct xkb_context *ctx,
         return NULL;
     }
 
-    ok = XKBParseFile(ctx, file, "(unknown file)", &xkb_file);
+    ok = XkbParseFile(ctx, file, "(unknown file)", &xkb_file);
     if (!ok) {
         log_err(ctx, "Failed to parse input xkb file\n");
         return NULL;
     }
 
     keymap = compile_keymap(ctx, xkb_file);
-    FreeXKBFile(xkb_file);
+    FreeXkbFile(xkb_file);
     return keymap;
-}
-
-XKB_EXPORT struct xkb_keymap *
-xkb_map_ref(struct xkb_keymap *keymap)
-{
-    keymap->refcnt++;
-    return keymap;
-}
-
-XKB_EXPORT void
-xkb_map_unref(struct xkb_keymap *keymap)
-{
-    unsigned int i;
-    struct xkb_key *key;
-
-    if (!keymap || --keymap->refcnt > 0)
-        return;
-
-    for (i = 0; i < keymap->num_types; i++) {
-        free(keymap->types[i].map);
-        free(keymap->types[i].level_names);
-    }
-    free(keymap->types);
-
-    darray_foreach(key, keymap->keys) {
-        free(key->sym_index);
-        free(key->num_syms);
-        darray_free(key->syms);
-        free(key->actions);
-    }
-    darray_free(keymap->keys);
-
-    darray_free(keymap->sym_interpret);
-
-    darray_free(keymap->key_aliases);
-
-    free(keymap->keycodes_section_name);
-    free(keymap->symbols_section_name);
-    free(keymap->types_section_name);
-    free(keymap->compat_section_name);
-
-    xkb_context_unref(keymap->ctx);
-
-    free(keymap);
 }

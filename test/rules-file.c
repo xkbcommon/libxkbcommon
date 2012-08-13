@@ -26,9 +26,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "xkbcommon/xkbcommon.h"
-#include "rules.h"
 #include "test.h"
+#include "xkb-priv.h"
+#include "rules.h"
 
 struct test_data {
     /* Rules file */

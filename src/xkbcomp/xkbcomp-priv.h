@@ -27,54 +27,50 @@
 #ifndef XKBCOMP_PRIV_H
 #define XKBCOMP_PRIV_H
 
-#include "xkbcomp.h"
-#include "text.h"
+#include "xkb-priv.h"
+#include "ast.h"
 
-extern bool
-ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
-                   enum xkb_file_type file_type, XkbFile **file_rtrn,
-                   enum merge_mode *merge_rtrn);
+bool
+XkbParseFile(struct xkb_context *ctx, FILE *file, const char *file_name,
+             XkbFile **out);
 
-struct xkb_key *
-FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
-             bool use_aliases, xkb_keycode_t start_from);
+bool
+XkbParseString(struct xkb_context *context, const char *string,
+               const char *file_name, XkbFile **out);
 
-extern bool
-FindKeyNameForAlias(struct xkb_keymap *keymap, unsigned long lname,
-                    unsigned long *real_name);
+void
+FreeXkbFile(XkbFile *file);
 
-extern bool
+XkbFile *
+XkbFileFromComponents(struct xkb_context *ctx,
+                      struct xkb_component_names *kkctgs);
+
+bool
+CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
+                enum merge_mode merge);
+
+bool
+CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
+                enum merge_mode merge);
+
+bool
+CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
+                 enum merge_mode merge);
+
+bool
+CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
+               enum merge_mode merge);
+
+bool
 UpdateModifiersFromCompat(struct xkb_keymap *keymap);
+
+bool
+LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn);
 
 const char *
 StmtTypeToString(enum stmt_type type);
 
-static inline unsigned long
-KeyNameToLong(const char name[XkbKeyNameLength])
-{
-    return
-        (((unsigned long)name[0]) << 24) |
-        (((unsigned long)name[1]) << 16) |
-        (((unsigned long)name[2]) << 8)  |
-        (((unsigned long)name[3]) << 0);
-}
-
-static inline void
-LongToKeyName(unsigned long val, char name[XkbKeyNameLength])
-{
-    name[0] = ((val >> 24) & 0xff);
-    name[1] = ((val >> 16) & 0xff);
-    name[2] = ((val >> 8) & 0xff);
-    name[3] = ((val >> 0) & 0xff);
-}
-
-static inline const char *
-LongKeyNameText(unsigned long val)
-{
-    char buf[XkbKeyNameLength];
-    LongToKeyName(val, buf);
-    return KeyNameText(buf);
-}
+/***====================================================================***/
 
 static inline bool
 ReportNotArray(struct xkb_keymap *keymap, const char *type, const char *field,
@@ -119,4 +115,4 @@ ReportBadField(struct xkb_keymap *keymap, const char *type, const char *field,
     return false;
 }
 
-#endif /* XKBCOMP_PRIV_H */
+#endif

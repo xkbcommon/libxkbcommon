@@ -24,11 +24,8 @@
  *
  ********************************************************/
 
-#ifndef ACTION_H
-#define ACTION_H 1
-
-#include "xkbcomp-priv.h"
-#include "expr.h"
+#ifndef XKBCOMP_ACTION_H
+#define XKBCOMP_ACTION_H
 
 #define F_ClearLocks  0
 #define F_LatchToLock 1
@@ -66,16 +63,14 @@ typedef struct _ActionInfo {
     struct _ActionInfo *next;
 } ActionInfo;
 
-extern int
+int
 HandleActionDef(ExprDef *def, struct xkb_keymap *keymap,
-                union xkb_action *action,
-                ActionInfo *info);
+                union xkb_action *action, ActionInfo *info);
 
-extern int
+int
 SetActionField(struct xkb_keymap *keymap, const char *elem, const char *field,
-               ExprDef *index, ExprDef *value,
-               ActionInfo **info_rtrn);
+               ExprDef *index, ExprDef *value, ActionInfo **info_rtrn);
 
 extern const LookupEntry ctrlNames[];
 
-#endif /* ACTION_H */
+#endif

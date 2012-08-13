@@ -41,24 +41,26 @@ libxkbcommon_la_LDFLAGS = -no-undefined
 libxkbcommon_la_SOURCES = \
 	src/xkbcomp/action.c \
 	src/xkbcomp/action.h \
+	src/xkbcomp/ast.h \
+	src/xkbcomp/ast-build.c \
+	src/xkbcomp/ast-build.h \
 	src/xkbcomp/compat.c \
 	src/xkbcomp/expr.c \
 	src/xkbcomp/expr.h \
+	src/xkbcomp/include.c \
+	src/xkbcomp/include.h \
 	src/xkbcomp/keycodes.c \
-	src/xkbcomp/keytypes.c \
+	src/xkbcomp/keycodes.h \
 	src/xkbcomp/parser.y \
-	src/xkbcomp/parseutils.c \
-	src/xkbcomp/parseutils.h \
-	src/xkbcomp/path.c \
-	src/xkbcomp/path.h \
+	src/xkbcomp/parser-priv.h \
 	src/xkbcomp/rules.c \
 	src/xkbcomp/rules.h \
 	src/xkbcomp/scanner.l \
 	src/xkbcomp/symbols.c \
+	src/xkbcomp/types.c \
 	src/xkbcomp/vmod.c \
 	src/xkbcomp/vmod.h \
 	src/xkbcomp/xkbcomp.c \
-	src/xkbcomp/xkbcomp.h \
 	src/xkbcomp/xkbcomp-priv.h \
 	src/atom.c \
 	src/atom.h \

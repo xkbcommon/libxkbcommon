@@ -26,11 +26,8 @@
 
 %{
 #include "xkbcomp-priv.h"
-#include "parseutils.h"
-
-#pragma GCC diagnostic ignored "-Wredundant-decls"
-
-extern int yylex(union YYSTYPE *val, struct YYLTYPE *loc, void *scanner);
+#include "ast-build.h"
+#include "parser-priv.h"
 
 static void
 yyerror(struct YYLTYPE *loc, struct parser_param *param, const char *msg)
@@ -193,7 +190,7 @@ XkbCompMapList  :       XkbCompMapList XkbCompositeMap
 XkbCompositeMap :       OptFlags XkbCompositeType OptMapName OBRACE
                             XkbMapConfigList
                         CBRACE SEMI
-                        { $$ = CreateXKBFile(param->ctx, $2, $3, &$5->common, $1); }
+                        { $$ = XkbFileCreate(param->ctx, $2, $3, &$5->common, $1); }
                 ;
 
 XkbCompositeType:       XKB_KEYMAP      { $$ = FILE_TYPE_KEYMAP; }
@@ -222,7 +219,7 @@ XkbMapConfig    :       OptFlags FileType OptMapName OBRACE
                                 $$ = NULL;
                             }
                             else {
-                                $$ = CreateXKBFile(param->ctx, $2, $3, $5, $1);
+                                $$ = XkbFileCreate(param->ctx, $2, $3, $5, $1);
                             }
                         }
                 ;
@@ -235,7 +232,7 @@ XkbConfig       :       OptFlags FileType OptMapName DeclList
                                 $$ = NULL;
                             }
                             else {
-                                $$ = CreateXKBFile(param->ctx, $2, $3, $4, $1);
+                                $$ = XkbFileCreate(param->ctx, $2, $3, $4, $1);
                             }
                         }
                 ;

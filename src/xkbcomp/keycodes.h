@@ -24,26 +24,42 @@
  *
  ********************************************************/
 
-#ifndef XKBCOMP_VMOD_H
-#define XKBCOMP_VMOD_H
+#ifndef XKBCOMP_KEYCODES_H
+#define XKBCOMP_KEYCODES_H
 
-typedef struct _VModInfo {
-    xkb_mod_mask_t defined;
-    xkb_mod_mask_t available;
-} VModInfo;
+static inline unsigned long
+KeyNameToLong(const char name[XkbKeyNameLength])
+{
+    return
+        (((unsigned long)name[0]) << 24) |
+        (((unsigned long)name[1]) << 16) |
+        (((unsigned long)name[2]) << 8)  |
+        (((unsigned long)name[3]) << 0);
+}
 
-void
-InitVModInfo(VModInfo *info, struct xkb_keymap *keymap);
+static inline void
+LongToKeyName(unsigned long val, char name[XkbKeyNameLength])
+{
+    name[0] = ((val >> 24) & 0xff);
+    name[1] = ((val >> 16) & 0xff);
+    name[2] = ((val >> 8) & 0xff);
+    name[3] = ((val >> 0) & 0xff);
+}
 
-void
-ClearVModInfo(VModInfo *info, struct xkb_keymap *keymap);
+static inline const char *
+LongKeyNameText(unsigned long val)
+{
+    char buf[XkbKeyNameLength];
+    LongToKeyName(val, buf);
+    return KeyNameText(buf);
+}
+
+struct xkb_key *
+FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
+             bool use_aliases, xkb_keycode_t start_from);
 
 bool
-HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
-              enum merge_mode mergeMode, VModInfo *info);
-
-bool
-ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
-                       xkb_mod_index_t *ndx_rtrn, VModInfo *info);
+FindKeyNameForAlias(struct xkb_keymap *keymap, unsigned long lname,
+                    unsigned long *real_name);
 
 #endif

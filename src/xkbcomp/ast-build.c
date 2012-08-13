@@ -24,8 +24,10 @@
  *
  ********************************************************/
 
-#include "parseutils.h"
-#include "path.h"
+#include "xkbcomp-priv.h"
+#include "ast-build.h"
+#include "parser-priv.h"
+#include "include.h"
 
 ATTR_MALLOC static void *
 malloc_or_die(size_t size)
@@ -355,30 +357,6 @@ AppendMultiKeysymList(ExprDef * list, ExprDef * append)
     return list;
 }
 
-bool
-LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn)
-{
-    xkb_keysym_t sym;
-
-    if (!str || istreq(str, "any") || istreq(str, "nosymbol")) {
-        *sym_rtrn = XKB_KEY_NoSymbol;
-        return 1;
-    }
-
-    if (istreq(str, "none") || istreq(str, "voidsymbol")) {
-        *sym_rtrn = XKB_KEY_VoidSymbol;
-        return 1;
-    }
-
-    sym = xkb_keysym_from_name(str);
-    if (sym != XKB_KEY_NoSymbol) {
-        *sym_rtrn = sym;
-        return 1;
-    }
-
-    return 0;
-}
-
 static void
 FreeInclude(IncludeStmt *incl);
 
@@ -395,7 +373,7 @@ IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge)
     stmt = strdup_safe(str);
     while (tmp && *tmp)
     {
-        if (!XkbParseIncludeMap(&tmp, &file, &map, &nextop, &extra_data))
+        if (!ParseIncludeMap(&tmp, &file, &map, &nextop, &extra_data))
             goto err;
 
         if (first == NULL) {
@@ -441,30 +419,6 @@ err:
     return NULL;
 }
 
-void
-CheckDefaultMap(struct xkb_context *ctx, XkbFile *maps, const char *fileName)
-{
-    XkbFile *dflt = NULL, *tmp;
-
-    for (tmp = maps; tmp; tmp = (XkbFile *) tmp->common.next) {
-        if (!(tmp->flags & XkbLC_Default))
-            continue;
-        if (!dflt) {
-            dflt = tmp;
-            continue;
-        }
-
-        log_lvl(ctx, 3,
-                "Multiple default components in %s; "
-                "Using %s, ignoring %s\n",
-                (fileName ? fileName : "(unknown)"),
-                (dflt->name ? dflt->name : "(first)"),
-                (tmp->name ? tmp->name : "(subsequent)"));
-
-        tmp->flags &= (~XkbLC_Default);
-    }
-}
-
 /*
  * All latin-1 alphanumerics, plus parens, slash, minus, underscore and
  * wildcards.
@@ -490,7 +444,7 @@ EnsureSafeMapName(char *name)
 }
 
 XkbFile *
-CreateXKBFile(struct xkb_context *ctx, enum xkb_file_type type, char *name,
+XkbFileCreate(struct xkb_context *ctx, enum xkb_file_type type, char *name,
               ParseCommon *defs, unsigned flags)
 {
     XkbFile *file;
@@ -507,6 +461,36 @@ CreateXKBFile(struct xkb_context *ctx, enum xkb_file_type type, char *name,
     file->id = xkb_context_take_file_id(ctx);
     file->flags = flags;
     return file;
+}
+
+XkbFile *
+XkbFileFromComponents(struct xkb_context *ctx,
+                      struct xkb_component_names *kkctgs)
+{
+    IncludeStmt *inc;
+    XkbFile *keycodes, *types, *compat, *symbols;
+
+    inc = IncludeCreate(ctx, kkctgs->keycodes, MERGE_DEFAULT);
+    keycodes = XkbFileCreate(ctx, FILE_TYPE_KEYCODES, NULL,
+                             (ParseCommon *) inc, 0);
+
+    inc = IncludeCreate(ctx, kkctgs->types, MERGE_DEFAULT);
+    types = XkbFileCreate(ctx, FILE_TYPE_TYPES, NULL,
+                          (ParseCommon *) inc, 0);
+    AppendStmt(&keycodes->common, &types->common);
+
+    inc = IncludeCreate(ctx, kkctgs->compat, MERGE_DEFAULT);
+    compat = XkbFileCreate(ctx, FILE_TYPE_COMPAT, NULL,
+                           (ParseCommon *) inc, 0);
+    AppendStmt(&keycodes->common, &compat->common);
+
+    inc = IncludeCreate(ctx, kkctgs->symbols, MERGE_DEFAULT);
+    symbols = XkbFileCreate(ctx, FILE_TYPE_SYMBOLS, NULL,
+                            (ParseCommon *) inc, 0);
+    AppendStmt(&keycodes->common, &symbols->common);
+
+    return XkbFileCreate(ctx, FILE_TYPE_KEYMAP, strdup(""),
+                         &keycodes->common, 0);
 }
 
 static void
@@ -635,7 +619,7 @@ FreeStmt(ParseCommon *stmt)
 }
 
 void
-FreeXKBFile(XkbFile *file)
+FreeXkbFile(XkbFile *file)
 {
     XkbFile *next;
 
@@ -645,7 +629,7 @@ FreeXKBFile(XkbFile *file)
 
         switch (file->file_type) {
         case FILE_TYPE_KEYMAP:
-            FreeXKBFile((XkbFile *) file->defs);
+            FreeXkbFile((XkbFile *) file->defs);
             break;
 
         case FILE_TYPE_TYPES:

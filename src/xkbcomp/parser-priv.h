@@ -24,23 +24,25 @@
  *
  ********************************************************/
 
-#ifndef XKBCOMP_PATH_H
-#define XKBCOMP_PATH_H
+#ifndef XKBCOMP_PARSER_PRIV_H
+#define XKBCOMP_PARSER_PRIV_H
 
-#include <stdio.h>
+#pragma GCC diagnostic ignored "-Wredundant-decls"
 
-#include "xkbcomp-priv.h"
+struct scanner_extra;
 
-bool
-XkbParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
-                   char *nextop_rtrn,
-                   char **extra_data);
+struct parser_param {
+    struct xkb_context *ctx;
+    void *scanner;
+    XkbFile *rtrn;
+};
 
-const char *
-XkbDirectoryForInclude(enum xkb_file_type type);
+#include "parser.h"
 
-FILE *
-XkbFindFileInPath(struct xkb_context *ctx, const char *name,
-                  enum xkb_file_type type, char **pathRtrn);
+void
+scanner_error(YYLTYPE *loc, void *scanner, const char *msg);
 
-#endif /* XKBCOMP_PATH_H */
+int
+yylex(YYSTYPE *val, YYLTYPE *loc, void *scanner);
+
+#endif
