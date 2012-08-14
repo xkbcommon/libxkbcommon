@@ -201,19 +201,17 @@ typedef struct _CompatInfo {
 } CompatInfo;
 
 static const char *
-siText(SymInterpInfo * si, CompatInfo * info)
+siText(SymInterpInfo *si, CompatInfo *info)
 {
     static char buf[128];
 
-    if (si == &info->dflt) {
-        snprintf(buf, sizeof(buf), "default");
-    }
-    else {
-        snprintf(buf, sizeof(buf), "%s+%s(%s)",
-                 KeysymText(si->interp.sym),
-                 SIMatchText(si->interp.match),
-                 ModMaskText(si->interp.mods));
-    }
+    if (si == &info->dflt)
+        return "default";
+
+    snprintf(buf, sizeof(buf), "%s+%s(%s)",
+             KeysymText(si->interp.sym),
+             SIMatchText(si->interp.match),
+             ModMaskText(si->interp.mods));
     return buf;
 }
 
@@ -250,7 +248,7 @@ ReportIndicatorNotArray(CompatInfo *info, LEDInfo *led,
 }
 
 static void
-ClearIndicatorMapInfo(struct xkb_context *ctx, LEDInfo * info)
+ClearIndicatorMapInfo(struct xkb_context *ctx, LEDInfo *info)
 {
     info->name = xkb_atom_intern(ctx, "default");
     info->indicator = XKB_LED_INVALID;
@@ -318,7 +316,7 @@ ClearCompatInfo(CompatInfo *info)
 }
 
 static SymInterpInfo *
-NextInterp(CompatInfo * info)
+NextInterp(CompatInfo *info)
 {
     SymInterpInfo *si;
 
@@ -333,7 +331,7 @@ NextInterp(CompatInfo * info)
 }
 
 static SymInterpInfo *
-FindMatchingInterp(CompatInfo * info, SymInterpInfo * new)
+FindMatchingInterp(CompatInfo *info, SymInterpInfo *new)
 {
     SymInterpInfo *old;
 
@@ -365,7 +363,7 @@ UseNewInterpField(enum si_field field, SymInterpInfo *old, SymInterpInfo *new,
 }
 
 static bool
-AddInterp(CompatInfo * info, SymInterpInfo * new)
+AddInterp(CompatInfo *info, SymInterpInfo *new)
 {
     enum si_field collide;
     SymInterpInfo *old;
@@ -429,7 +427,8 @@ AddInterp(CompatInfo * info, SymInterpInfo * new)
     }
 
     old = new;
-    if ((new = NextInterp(info)) == NULL)
+    new = NextInterp(info);
+    if (!new)
         return false;
     entry = new->entry;
     *new = *old;
@@ -462,9 +461,8 @@ AddGroupCompat(CompatInfo *info, xkb_group_index_t group, GroupCompatInfo *new)
 /***====================================================================***/
 
 static bool
-ResolveStateAndPredicate(ExprDef * expr,
-                         unsigned *pred_rtrn,
-                         xkb_mod_mask_t *mods_rtrn, CompatInfo * info)
+ResolveStateAndPredicate(ExprDef *expr, unsigned *pred_rtrn,
+                         xkb_mod_mask_t *mods_rtrn, CompatInfo *info)
 {
     if (expr == NULL) {
         *pred_rtrn = XkbSI_AnyOfOrNone;
@@ -535,84 +533,84 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
     int verbosity = xkb_get_log_verbosity(ctx);
 
     list_foreach(old, &info->leds, entry) {
-        if (old->name == new->name) {
-            if ((old->mods == new->mods) &&
-                (old->groups == new->groups) &&
-                (old->ctrls == new->ctrls) &&
-                (old->which_mods == new->which_mods) &&
-                (old->which_groups == new->which_groups)) {
-                old->defined |= new->defined;
-                return true;
-            }
+        if (old->name != new->name)
+            continue;
 
-            if (new->merge == MERGE_REPLACE) {
-                struct list entry = old->entry;
-                if ((old->file_id == new->file_id && verbosity > 0) ||
-                    verbosity > 9)
-                    log_warn(info->keymap->ctx,
-                             "Map for indicator %s redefined; "
-                             "Earlier definition ignored\n",
-                             xkb_atom_text(ctx, old->name));
-                *old = *new;
-                old->entry = entry;
-                return true;
-            }
-
-            collide = 0;
-            if (UseNewLEDField(LED_FIELD_INDEX, old, new, verbosity,
-                               &collide)) {
-                old->indicator = new->indicator;
-                old->defined |= LED_FIELD_INDEX;
-            }
-            if (UseNewLEDField(LED_FIELD_MODS, old, new, verbosity,
-                               &collide)) {
-                old->which_mods = new->which_mods;
-                old->mods = new->mods;
-                old->defined |= LED_FIELD_MODS;
-            }
-            if (UseNewLEDField(LED_FIELD_GROUPS, old, new, verbosity,
-                               &collide)) {
-                old->which_groups = new->which_groups;
-                old->groups = new->groups;
-                old->defined |= LED_FIELD_GROUPS;
-            }
-            if (UseNewLEDField(LED_FIELD_CTRLS, old, new, verbosity,
-                               &collide)) {
-                old->ctrls = new->ctrls;
-                old->defined |= LED_FIELD_CTRLS;
-            }
-            if (UseNewLEDField(LED_FIELD_EXPLICIT, old, new, verbosity,
-                               &collide)) {
-                old->flags &= ~XkbIM_NoExplicit;
-                old->flags |= (new->flags & XkbIM_NoExplicit);
-                old->defined |= LED_FIELD_EXPLICIT;
-            }
-            if (UseNewLEDField(LED_FIELD_AUTOMATIC, old, new, verbosity,
-                               &collide)) {
-                old->flags &= ~XkbIM_NoAutomatic;
-                old->flags |= (new->flags & XkbIM_NoAutomatic);
-                old->defined |= LED_FIELD_AUTOMATIC;
-            }
-            if (UseNewLEDField(LED_FIELD_DRIVES_KBD, old, new, verbosity,
-                               &collide)) {
-                old->flags &= ~XkbIM_LEDDrivesKB;
-                old->flags |= (new->flags & XkbIM_LEDDrivesKB);
-                old->defined |= LED_FIELD_DRIVES_KBD;
-            }
-
-            if (collide) {
-                log_warn(info->keymap->ctx,
-                         "Map for indicator %s redefined; "
-                         "Using %s definition for duplicate fields\n",
-                         xkb_atom_text(ctx, old->name),
-                         (new->merge == MERGE_AUGMENT ? "first" : "last"));
-            }
-
+        if (old->mods == new->mods &&
+            old->groups == new->groups &&
+            old->ctrls == new->ctrls &&
+            old->which_mods == new->which_mods &&
+            old->which_groups == new->which_groups) {
+            old->defined |= new->defined;
             return true;
         }
+
+        if (new->merge == MERGE_REPLACE) {
+            struct list entry = old->entry;
+            if ((old->file_id == new->file_id && verbosity > 0) ||
+                verbosity > 9)
+                log_warn(info->keymap->ctx,
+                         "Map for indicator %s redefined; "
+                         "Earlier definition ignored\n",
+                         xkb_atom_text(ctx, old->name));
+            *old = *new;
+            old->entry = entry;
+            return true;
+        }
+
+        collide = 0;
+        if (UseNewLEDField(LED_FIELD_INDEX, old, new, verbosity,
+                           &collide)) {
+            old->indicator = new->indicator;
+            old->defined |= LED_FIELD_INDEX;
+        }
+        if (UseNewLEDField(LED_FIELD_MODS, old, new, verbosity,
+                           &collide)) {
+            old->which_mods = new->which_mods;
+            old->mods = new->mods;
+            old->defined |= LED_FIELD_MODS;
+        }
+        if (UseNewLEDField(LED_FIELD_GROUPS, old, new, verbosity,
+                           &collide)) {
+            old->which_groups = new->which_groups;
+            old->groups = new->groups;
+            old->defined |= LED_FIELD_GROUPS;
+        }
+        if (UseNewLEDField(LED_FIELD_CTRLS, old, new, verbosity,
+                           &collide)) {
+            old->ctrls = new->ctrls;
+            old->defined |= LED_FIELD_CTRLS;
+        }
+        if (UseNewLEDField(LED_FIELD_EXPLICIT, old, new, verbosity,
+                           &collide)) {
+            old->flags &= ~XkbIM_NoExplicit;
+            old->flags |= (new->flags & XkbIM_NoExplicit);
+            old->defined |= LED_FIELD_EXPLICIT;
+        }
+        if (UseNewLEDField(LED_FIELD_AUTOMATIC, old, new, verbosity,
+                           &collide)) {
+            old->flags &= ~XkbIM_NoAutomatic;
+            old->flags |= (new->flags & XkbIM_NoAutomatic);
+            old->defined |= LED_FIELD_AUTOMATIC;
+        }
+        if (UseNewLEDField(LED_FIELD_DRIVES_KBD, old, new, verbosity,
+                           &collide)) {
+            old->flags &= ~XkbIM_LEDDrivesKB;
+            old->flags |= (new->flags & XkbIM_LEDDrivesKB);
+            old->defined |= LED_FIELD_DRIVES_KBD;
+        }
+
+        if (collide) {
+            log_warn(info->keymap->ctx,
+                     "Map for indicator %s redefined; "
+                     "Using %s definition for duplicate fields\n",
+                     xkb_atom_text(ctx, old->name),
+                     (new->merge == MERGE_AUGMENT ? "first" : "last"));
+        }
+
+        return true;
     }
 
-    /* new definition */
     old = malloc(sizeof(*old));
     if (!old) {
         log_wsgo(info->keymap->ctx,
@@ -629,10 +627,10 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
 }
 
 static void
-MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from,
+MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
                         enum merge_mode merge)
 {
-    SymInterpInfo *si;
+    SymInterpInfo *si, *next_si;
     LEDInfo *led, *next_led;
     GroupCompatInfo *gcm;
     xkb_group_index_t i;
@@ -641,22 +639,21 @@ MergeIncludedCompatMaps(CompatInfo * into, CompatInfo * from,
         into->errorCount += from->errorCount;
         return;
     }
+
     if (into->name == NULL) {
         into->name = from->name;
         from->name = NULL;
     }
 
-    list_foreach(si, &from->interps, entry) {
-        if (merge != MERGE_DEFAULT)
-            si->merge = merge;
+    list_foreach_safe(si, next_si, &from->interps, entry) {
+        si->merge = (merge == MERGE_DEFAULT ? si->merge : merge);
         if (!AddInterp(into, si))
             into->errorCount++;
     }
 
-    for (i = 0, gcm = &from->groupCompat[0]; i < XkbNumKbdGroups;
-         i++, gcm++) {
-        if (merge != MERGE_DEFAULT)
-            gcm->merge = merge;
+    for (i = 0; i < XkbNumKbdGroups; i++) {
+        gcm = &from->groupCompat[i];
+        gcm->merge = (merge == MERGE_DEFAULT ? gcm->merge : merge);
         if (!AddGroupCompat(into, i, gcm))
             into->errorCount++;
     }
@@ -726,7 +723,7 @@ static const LookupEntry useModMapValues[] = {
     { NULL, 0 }
 };
 
-static int
+static bool
 SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
                ExprDef *arrayNdx, ExprDef *value)
 {
@@ -820,6 +817,7 @@ static const LookupEntry modComponentNames[] = {
     {"none", 0},
     {NULL, 0}
 };
+
 static const LookupEntry groupComponentNames[] = {
     {"base", XkbIM_UseBase},
     {"latched", XkbIM_UseLatched},
@@ -844,7 +842,7 @@ static const LookupEntry groupNames[] = {
     {NULL, 0}
 };
 
-static int
+static bool
 SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
                      const char *field, ExprDef *arrayNdx, ExprDef *value)
 {
@@ -957,7 +955,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
             return ReportIndicatorBadType(info, led, field,
                                           "indicator index");
 
-        if (ndx < 1 || ndx > 32) {
+        if (ndx < 1 || ndx > XkbNumIndicators) {
             log_err(info->keymap->ctx,
                     "Illegal indicator index %d (range 1..%d); "
                     "Index definition for %s indicator ignored\n",
@@ -980,15 +978,15 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
     return ok;
 }
 
-static int
+static bool
 HandleInterpVar(CompatInfo *info, VarDef *stmt)
 {
     const char *elem, *field;
     ExprDef *ndx;
-    int ret;
+    bool ret;
 
     if (!ExprResolveLhs(info->keymap->ctx, stmt->name, &elem, &field, &ndx))
-        ret = 0;               /* internal error, already reported */
+        ret = false;
     else if (elem && istreq(elem, "interpret"))
         ret = SetInterpField(info, &info->dflt, field, ndx, stmt->value);
     else if (elem && istreq(elem, "indicator"))
@@ -1000,28 +998,31 @@ HandleInterpVar(CompatInfo *info, VarDef *stmt)
     return ret;
 }
 
-static int
+static bool
 HandleInterpBody(CompatInfo *info, VarDef *def, SymInterpInfo *si)
 {
-    int ok = 1;
+    bool ok = true;
     const char *elem, *field;
     ExprDef *arrayNdx;
 
-    for (; def != NULL; def = (VarDef *) def->common.next) {
+    for (; def; def = (VarDef *) def->common.next) {
         if (def->name && def->name->op == EXPR_FIELD_REF) {
             ok = HandleInterpVar(info, def);
             continue;
         }
+
         ok = ExprResolveLhs(info->keymap->ctx, def->name, &elem, &field,
                             &arrayNdx);
-        if (ok) {
-            ok = SetInterpField(info, si, field, arrayNdx, def->value);
-        }
+        if (!ok)
+            continue;
+
+        ok = SetInterpField(info, si, field, arrayNdx, def->value);
     }
+
     return ok;
 }
 
-static int
+static bool
 HandleInterpDef(CompatInfo *info, InterpDef *def, enum merge_mode merge)
 {
     unsigned pred, mods;
@@ -1033,11 +1034,11 @@ HandleInterpDef(CompatInfo *info, InterpDef *def, enum merge_mode merge)
                 "Symbol interpretation ignored\n");
         return false;
     }
-    if (def->merge != MERGE_DEFAULT)
-        merge = def->merge;
 
     si = info->dflt;
-    si.merge = merge;
+
+    si.merge = merge = (def->merge == MERGE_DEFAULT ? merge : def->merge);
+
     if (!LookupKeysym(def->sym, &si.interp.sym)) {
         log_err(info->keymap->ctx,
                 "Could not resolve keysym %s; "
@@ -1045,8 +1046,11 @@ HandleInterpDef(CompatInfo *info, InterpDef *def, enum merge_mode merge)
                 def->sym);
         return false;
     }
+
     si.interp.match = pred & XkbSI_OpMask;
+
     si.interp.mods = mods;
+
     if (!HandleInterpBody(info, def->def, &si)) {
         info->errorCount++;
         return false;
@@ -1056,10 +1060,11 @@ HandleInterpDef(CompatInfo *info, InterpDef *def, enum merge_mode merge)
         info->errorCount++;
         return false;
     }
+
     return true;
 }
 
-static int
+static bool
 HandleGroupCompatDef(CompatInfo *info, GroupCompatDef *def,
                      enum merge_mode merge)
 {
@@ -1329,13 +1334,12 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
     if (info.errorCount != 0)
         goto err_info;
 
-    darray_init(keymap->sym_interpret);
-    darray_growalloc(keymap->sym_interpret, info.nInterps);
-
     if (info.name)
         keymap->compat_section_name = strdup(info.name);
 
+    darray_init(keymap->sym_interpret);
     if (info.nInterps > 0) {
+        darray_growalloc(keymap->sym_interpret, info.nInterps);
         CopyInterps(&info, true, XkbSI_Exactly);
         CopyInterps(&info, true, XkbSI_AllOf | XkbSI_NoneOf);
         CopyInterps(&info, true, XkbSI_AnyOf);
@@ -1346,8 +1350,8 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
         CopyInterps(&info, false, XkbSI_AnyOfOrNone);
     }
 
-    for (i = 0, gcm = &info.groupCompat[0]; i < XkbNumKbdGroups;
-         i++, gcm++) {
+    for (i = 0; i < XkbNumKbdGroups; i++) {
+        gcm = &info.groupCompat[i];
         if (gcm->file_id != 0 || gcm->mods != 0)
             keymap->groups[i].mods = gcm->mods;
     }
@@ -1472,8 +1476,6 @@ FindInterpForKey(struct xkb_keymap *keymap, struct xkb_key *key,
     return ret;
 }
 
-/**
- */
 static bool
 ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
 {

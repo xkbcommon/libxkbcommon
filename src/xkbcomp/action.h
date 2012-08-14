@@ -32,11 +32,11 @@ typedef struct _ActionInfo ActionInfo;
 void
 FreeActionInfo(ActionInfo *info);
 
-int
+bool
 HandleActionDef(ExprDef *def, struct xkb_keymap *keymap,
                 union xkb_action *action, ActionInfo *info);
 
-int
+bool
 SetActionField(struct xkb_keymap *keymap, const char *elem, const char *field,
                ExprDef *index, ExprDef *value, ActionInfo **info_rtrn);
 

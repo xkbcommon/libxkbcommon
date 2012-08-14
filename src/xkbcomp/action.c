@@ -1237,7 +1237,7 @@ ApplyActionFactoryDefaults(union xkb_action * action)
     }
 }
 
-int
+bool
 HandleActionDef(ExprDef * def,
                 struct xkb_keymap *keymap,
                 union xkb_action *action, ActionInfo *info)
@@ -1322,7 +1322,7 @@ HandleActionDef(ExprDef * def,
 
 /***====================================================================***/
 
-int
+bool
 SetActionField(struct xkb_keymap *keymap, const char *elem, const char *field,
                ExprDef *array_ndx, ExprDef *value, ActionInfo **info_rtrn)
 {
