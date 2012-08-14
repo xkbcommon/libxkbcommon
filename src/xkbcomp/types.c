@@ -124,6 +124,15 @@
  *
  * Can appear in the xkb_types, xkb_compat, xkb_symbols sections.
  * TODO
+ *
+ * Effect on keymap
+ * ----------------
+ * After all of the xkb_types sections have been compiled, the following
+ * members of struct xkb_keymap are finalized:
+ *      struct xkb_key_type *types;
+ *      unsigned int num_types;
+ *      char *types_section_name;
+ * TODO: virtual modifiers.
  */
 
 enum type_field {

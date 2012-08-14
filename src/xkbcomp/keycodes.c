@@ -104,8 +104,8 @@
  *
  * Effect on the keymap
  * --------------------
- * After all of keycodes sections have been compiled, the following members
- * of struct xkb_keymap are finalized:
+ * After all of the xkb_keycodes sections have been compiled, the
+ * following members of struct xkb_keymap are finalized:
  *      xkb_keycode_t min_key_code;
  *      xkb_keycode_t max_key_code;
  *      darray(struct xkb_key_alias) key_aliases;
