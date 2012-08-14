@@ -31,6 +31,110 @@
 #include "vmod.h"
 #include "include.h"
 
+/*
+ * The xkb_compat section
+ * =====================
+ * This section is the third to be processesed, after xkb_keycodes and
+ * xkb_types.
+ *
+ * Interpret statements
+ * --------------------
+ * Statements of the form:
+ *      interpret Num_Lock+Any { ... }
+ *
+ * The body of the statment may include statements of the following
+ * forms:
+ *
+ * - action statement:
+ *      action = LockMods(modifiers=NumLock);
+ *
+ * - virtual modifier statement:
+ *      virtualModifier = NumLock;
+ *
+ * - repeat statement:
+ *      repeat = True;
+ *
+ * - useModMapMods statement:
+ *      useModMapMods = level1;
+ *
+ * Indicator map statements
+ * ------------------------
+ * Statements of the form:
+ *      indicator "Shift Lock" { ... }
+ *
+ *   This statement specifies the behavior and binding of the indicator
+ *   with the given name ("Shift Lock" above). The name should have been
+ *   declared previously in the xkb_keycodes section (see Indicator name
+ *   statement), and given an index there. If it wasn't, it is created
+ *   with the next free index.
+ *   The body of the statement describes the conditions of the keyboard
+ *   state which will cause the indicator to be lit. It may include the
+ *   following statements:
+ *
+ * - modifiers statment:
+ *      modifiers = ScrollLock;
+ *
+ *   If the given modifiers are in the required state (see below), the
+ *   led is lit.
+ *
+ * - whichModifierState statment:
+ *      whichModState = Latched + Locked;
+ *
+ *   Can be any combination of:
+ *      base, latched, locked, effective
+ *      any (i.e. all of the above)
+ *      none (i.e. none of the above)
+ *      compat (this is legal, but unused)
+ *   This will cause the respective portion of the modifer state (see
+ *   struct xkb_state) to be matched against the modifiers given in the
+ *   "modifiers" statement.
+ *
+ *   Here's a simple example:
+ *      indicator "Num Lock" {
+ *          modifiers = NumLock;
+ *          whichModState = Locked;
+ *      };
+ *   Whenever the NumLock modifier is locked, the Num Lock indicator
+ *   will light up.
+ *
+ * - groups statment:
+ *      groups = All - group1;
+ *
+ *   If the given groups are in the required state (see below), the led
+ *   is lit.
+ *
+ * - whichGroupState statment:
+ *      whichGroupState = Effective;
+ *
+ *   Can be any combination of:
+ *      base, latched, locked, effective
+ *      any (i.e. all of the above)
+ *      none (i.e. none of the above)
+ *   This will cause the respective portion of the group state (see
+ *   struct xkb_state) to be matched against the groups given in the
+ *   "groups" statement.
+ *
+ *   Note: the above conditions are disjunctive, i.e. if any of them are
+ *   satisfied the led is lit.
+ *
+ * Virtual modifier statements
+ * ---------------------------
+ * Statements of the form:
+ *     virtual_modifiers LControl;
+ *
+ * Can appear in the xkb_types, xkb_compat, xkb_symbols sections.
+ * TODO
+ *
+ * Effect on keymap
+ * ----------------
+ * After all of the xkb_compat sections have been compiled, the following
+ * members of struct xkb_keymap are finalized:
+ *      darray(struct xkb_sym_interpret) sym_interpret;
+ *      struct xkb_indicator_map indicators[XkbNumIndicators];
+ *      char *compat_section_name;
+ * TODO: virtual modifiers.
+ */
+
 enum si_field {
     SI_FIELD_VIRTUAL_MOD    = (1 << 0),
     SI_FIELD_ACTION         = (1 << 1),
