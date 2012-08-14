@@ -32,44 +32,42 @@ static XkbFile *
 keymap_file_from_names(struct xkb_context *ctx,
                        const struct xkb_rule_names *rmlvo)
 {
-    struct xkb_component_names *kkctgs;
+    struct xkb_component_names kkctgs;
     XkbFile *keycodes, *types, *compat, *symbols;
     IncludeStmt *inc;
 
-    kkctgs = xkb_components_from_rules(ctx, rmlvo);
-    if (!kkctgs) {
+    if (!xkb_components_from_rules(ctx, rmlvo, &kkctgs)) {
         log_err(ctx,
-                "couldn't look up rules '%s', model '%s', layout '%s', "
+                "Couldn't look up rules '%s', model '%s', layout '%s', "
                 "variant '%s', options '%s'\n",
                 rmlvo->rules, rmlvo->model, rmlvo->layout, rmlvo->variant,
                 rmlvo->options);
         return NULL;
     }
 
-    inc = IncludeCreate(ctx, kkctgs->keycodes, MERGE_DEFAULT);
+    inc = IncludeCreate(ctx, kkctgs.keycodes, MERGE_DEFAULT);
     keycodes = CreateXKBFile(ctx, FILE_TYPE_KEYCODES, NULL,
                              (ParseCommon *) inc, 0);
 
-    inc = IncludeCreate(ctx, kkctgs->types, MERGE_DEFAULT);
+    inc = IncludeCreate(ctx, kkctgs.types, MERGE_DEFAULT);
     types = CreateXKBFile(ctx, FILE_TYPE_TYPES, NULL,
                           (ParseCommon *) inc, 0);
     AppendStmt(&keycodes->common, &types->common);
 
-    inc = IncludeCreate(ctx, kkctgs->compat, MERGE_DEFAULT);
+    inc = IncludeCreate(ctx, kkctgs.compat, MERGE_DEFAULT);
     compat = CreateXKBFile(ctx, FILE_TYPE_COMPAT, NULL,
                            (ParseCommon *) inc, 0);
     AppendStmt(&keycodes->common, &compat->common);
 
-    inc = IncludeCreate(ctx, kkctgs->symbols, MERGE_DEFAULT);
+    inc = IncludeCreate(ctx, kkctgs.symbols, MERGE_DEFAULT);
     symbols = CreateXKBFile(ctx, FILE_TYPE_SYMBOLS, NULL,
                             (ParseCommon *) inc, 0);
     AppendStmt(&keycodes->common, &symbols->common);
 
-    free(kkctgs->keycodes);
-    free(kkctgs->types);
-    free(kkctgs->compat);
-    free(kkctgs->symbols);
-    free(kkctgs);
+    free(kkctgs.keycodes);
+    free(kkctgs.types);
+    free(kkctgs.compat);
+    free(kkctgs.symbols);
 
     return CreateXKBFile(ctx, FILE_TYPE_KEYMAP, strdup(""),
                          &keycodes->common, 0);
@@ -220,9 +218,9 @@ xkb_map_new_from_names(struct xkb_context *ctx,
                        const struct xkb_rule_names *rmlvo_in,
                        enum xkb_map_compile_flags flags)
 {
-    struct xkb_keymap *keymap = NULL;
     struct xkb_rule_names rmlvo = *rmlvo_in;
     XkbFile *file;
+    struct xkb_keymap *keymap;
 
     if (isempty(rmlvo.rules))
         rmlvo.rules = DEFAULT_XKB_RULES;
@@ -233,13 +231,13 @@ xkb_map_new_from_names(struct xkb_context *ctx,
 
     file = keymap_file_from_names(ctx, &rmlvo);
     if (!file) {
-        log_err(ctx, "Failed to generate parsed XKB file from components\n");
+        log_err(ctx,
+                "Failed to generate parsed XKB file from components\n");
         return NULL;
     }
 
     keymap = compile_keymap(ctx, file);
     FreeXKBFile(file);
-
     return keymap;
 }
 
@@ -254,7 +252,7 @@ xkb_map_new_from_string(struct xkb_context *ctx,
     struct xkb_keymap *keymap;
 
     if (format != XKB_KEYMAP_FORMAT_TEXT_V1) {
-        log_err(ctx, "unsupported keymap format %d\n", format);
+        log_err(ctx, "Unsupported keymap format %d\n", format);
         return NULL;
     }
 

@@ -57,36 +57,34 @@ test_rules(struct xkb_context *ctx, struct test_data *data)
     const struct xkb_rule_names rmlvo = {
         data->rules, data->model, data->layout, data->variant, data->options
     };
-    struct xkb_component_names *kccgst;
+    struct xkb_component_names kccgst;
 
     fprintf(stderr, "\n\nChecking : %s\t%s\t%s\t%s\t%s\n", data->rules,
             data->model, data->layout, data->variant, data->options);
 
     if (data->should_fail)
-        fprintf(stderr, "Expecting: NULL\n");
+        fprintf(stderr, "Expecting: FAILURE\n");
     else
         fprintf(stderr, "Expecting: %s\t%s\t%s\t%s\n",
                 data->keycodes, data->types, data->compat, data->symbols);
 
-    kccgst = xkb_components_from_rules(ctx, &rmlvo);
-    if (!kccgst) {
-        fprintf(stderr, "Received: NULL\n");
+    if (!xkb_components_from_rules(ctx, &rmlvo, &kccgst)) {
+        fprintf(stderr, "Received : FAILURE\n");
         return data->should_fail;
     }
 
     fprintf(stderr, "Received : %s\t%s\t%s\t%s\n",
-            kccgst->keycodes, kccgst->types, kccgst->compat, kccgst->symbols);
+            kccgst.keycodes, kccgst.types, kccgst.compat, kccgst.symbols);
 
-    passed = streq(kccgst->keycodes, data->keycodes) &&
-             streq(kccgst->types, data->types) &&
-             streq(kccgst->compat, data->compat) &&
-             streq(kccgst->symbols, data->symbols);
+    passed = streq(kccgst.keycodes, data->keycodes) &&
+             streq(kccgst.types, data->types) &&
+             streq(kccgst.compat, data->compat) &&
+             streq(kccgst.symbols, data->symbols);
 
-    free(kccgst->keycodes);
-    free(kccgst->types);
-    free(kccgst->compat);
-    free(kccgst->symbols);
-    free(kccgst);
+    free(kccgst.keycodes);
+    free(kccgst.types);
+    free(kccgst.compat);
+    free(kccgst.symbols);
 
     return passed;
 }

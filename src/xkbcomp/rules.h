@@ -29,8 +29,9 @@
 
 #include "xkbcomp-priv.h"
 
-struct xkb_component_names *
+bool
 xkb_components_from_rules(struct xkb_context *ctx,
-                          const struct xkb_rule_names *rmlvo);
+                          const struct xkb_rule_names *rmlvo,
+                          struct xkb_component_names *out);
 
 #endif /* RULES_H */

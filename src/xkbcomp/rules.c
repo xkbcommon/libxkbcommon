@@ -956,6 +956,8 @@ get_components(struct rules *rules, const struct xkb_rule_names *mlvo,
 {
     struct multi_defs mdefs;
 
+    memset(kccgst, 0, sizeof(*kccgst));
+
     make_multi_defs(&mdefs, mlvo);
 
     clear_partial_matches(rules);
@@ -976,8 +978,15 @@ get_components(struct rules *rules, const struct xkb_rule_names *mlvo,
 
     free_multi_defs(&mdefs);
 
-    return kccgst->keycodes && kccgst->symbols && kccgst->types &&
-           kccgst->compat;
+    if (!kccgst->keycodes || !kccgst->symbols || !kccgst->types ||
+        !kccgst->compat) {
+        free(kccgst->keycodes);
+        free(kccgst->symbols);
+        free(kccgst->types);
+        free(kccgst->compat);
+        return false;
+    }
+    return true;
 }
 
 static struct rules *
@@ -1069,19 +1078,20 @@ free_rules(struct rules *rules)
     free(rules);
 }
 
-struct xkb_component_names *
+bool
 xkb_components_from_rules(struct xkb_context *ctx,
-                          const struct xkb_rule_names *rmlvo)
+                          const struct xkb_rule_names *rmlvo,
+                          struct xkb_component_names *out)
 {
+    bool ret = false;
     struct rules *rules;
-    struct xkb_component_names *kccgst = NULL;
     FILE *file;
     char *path;
     char **include;
 
     file = XkbFindFileInPath(ctx, rmlvo->rules, FILE_TYPE_RULES, &path);
     if (!file) {
-        log_err(ctx, "could not find \"%s\" rules in XKB path\n",
+        log_err(ctx, "Could not find \"%s\" rules in XKB path\n",
                 rmlvo->rules);
         log_err(ctx, "%zu include paths searched:\n",
                 darray_size(ctx->includes));
@@ -1091,36 +1101,26 @@ xkb_components_from_rules(struct xkb_context *ctx,
                 darray_size(ctx->failed_includes));
         darray_foreach(include, ctx->failed_includes)
             log_err(ctx, "\t%s\n", *include);
-        return NULL;
+        return false;
     }
 
     rules = load_rules(ctx, file);
     if (!rules) {
-        log_err(ctx, "failed to load XKB rules \"%s\"\n", path);
-        goto err;
+        log_err(ctx, "Failed to load XKB rules \"%s\"\n", path);
+        goto err_file;
     }
 
-    kccgst = calloc(1, sizeof(*kccgst));
-    if (!kccgst) {
-        log_err(ctx, "failed to allocate XKB components\n");
-        goto err;
+    if (!get_components(rules, rmlvo, out)) {
+        log_err(ctx, "No components returned from XKB rules \"%s\"\n", path);
+        goto err_rules;
     }
 
-    if (!get_components(rules, rmlvo, kccgst)) {
-        free(kccgst->keycodes);
-        free(kccgst->types);
-        free(kccgst->compat);
-        free(kccgst->symbols);
-        free(kccgst);
-        kccgst = NULL;
-        log_err(ctx, "no components returned from XKB rules \"%s\"\n", path);
-        goto err;
-    }
+    ret = true;
 
-err:
+err_rules:
     free_rules(rules);
-    if (file)
-        fclose(file);
+err_file:
     free(path);
-    return kccgst;
+    fclose(file);
+    return ret;
 }
