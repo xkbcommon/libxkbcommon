@@ -55,10 +55,8 @@ ClearVModInfo(VModInfo *info, struct xkb_keymap *keymap)
 
 /**
  * Handle one entry in the virtualModifiers line (e.g. NumLock).
- * If the entry is e.g. NumLock=Mod1, stmt->value is not NULL, and the
- * XkbServerMap's vmod is set to the given modifier. Otherwise, the vmod is 0.
  *
- * @param stmt The statement specifying the name and (if any the value).
+ * @param stmt The statement specifying the name
  * @param mergeMode Merge strategy (e.g. MERGE_OVERRIDE)
  */
 bool
@@ -68,13 +66,14 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
     xkb_mod_index_t i;
     int nextFree;
     xkb_mod_mask_t bit;
-    xkb_mod_mask_t mask;
+
+    if (stmt->value)
+        log_err(keymap->ctx,
+                "Support for setting a value in a virtual_modifiers statement has been removed; "
+                "Value ignored\n");
 
     nextFree = -1;
     for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1) {
-        const char *str1;
-        const char *str2 = "";
-
         if (!(info->defined & bit)) {
             if (nextFree < 0)
                 nextFree = i;
@@ -90,33 +89,6 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
             continue;
 
         info->available |= bit;
-
-        if (!stmt->value)
-            return true;
-
-        if (!ExprResolveModMask(keymap->ctx, stmt->value, &mask)) {
-            log_err(keymap->ctx, "Declaration of %s ignored\n",
-                    xkb_atom_text(keymap->ctx, stmt->name));
-            return false;
-        }
-
-        if (mask == keymap->vmods[i])
-            return true;
-
-        str1 = ModMaskText(keymap->vmods[i]);
-        if (mergeMode == MERGE_OVERRIDE) {
-            str2 = str1;
-            str1 = ModMaskText(mask);
-        }
-
-        log_warn(keymap->ctx,
-                 "Virtual modifier %s defined multiple times; "
-                 "Using %s, ignoring %s\n",
-                 xkb_atom_text(keymap->ctx, stmt->name), str1, str2);
-
-        if (mergeMode == MERGE_OVERRIDE)
-            keymap->vmods[i] = mask;
-
         return true;
     }
 
@@ -131,17 +103,6 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
     info->available |= (1 << nextFree);
 
     keymap->vmod_names[nextFree] = xkb_atom_text(keymap->ctx, stmt->name);
-
-    if (!stmt->value)
-        return true;
-
-    if (!ExprResolveModMask(keymap->ctx, stmt->value, &mask)) {
-        log_err(keymap->ctx, "Declaration of %s ignored\n",
-                xkb_atom_text(keymap->ctx, stmt->name));
-        return false;
-    }
-
-    keymap->vmods[nextFree] = mask;
     return true;
 }
 
