@@ -548,7 +548,6 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
 
     write_buf(buf, "\t\tinterpret.useModMapMods= AnyLevel;\n");
     write_buf(buf, "\t\tinterpret.repeat= False;\n");
-    write_buf(buf, "\t\tinterpret.locking= False;\n");
 
     darray_foreach(interp, keymap->sym_interpret) {
         char keysym_name[64];
@@ -571,8 +570,6 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
         if (interp->match & XkbSI_LevelOneOnly)
             write_buf(buf,
                       "\t\t\tuseModMapMods=level1;\n");
-        if (interp->flags & XkbSI_LockingKey)
-            write_buf(buf, "\t\t\tlocking= True;\n");
         if (interp->flags & XkbSI_AutoRepeat)
             write_buf(buf, "\t\t\trepeat= True;\n");
 

@@ -139,8 +139,7 @@ enum si_field {
     SI_FIELD_VIRTUAL_MOD    = (1 << 0),
     SI_FIELD_ACTION         = (1 << 1),
     SI_FIELD_AUTO_REPEAT    = (1 << 2),
-    SI_FIELD_LOCKING_KEY    = (1 << 3),
-    SI_FIELD_LEVEL_ONE_ONLY = (1 << 4),
+    SI_FIELD_LEVEL_ONE_ONLY = (1 << 3),
 };
 
 typedef struct _SymInterpInfo {
@@ -401,12 +400,6 @@ AddInterp(CompatInfo *info, SymInterpInfo *new)
             old->interp.flags &= ~XkbSI_AutoRepeat;
             old->interp.flags |= (new->interp.flags & XkbSI_AutoRepeat);
             old->defined |= SI_FIELD_AUTO_REPEAT;
-        }
-        if (UseNewInterpField(SI_FIELD_LOCKING_KEY, old, new, verbosity,
-                              &collide)) {
-            old->interp.flags &= ~XkbSI_LockingKey;
-            old->interp.flags |= (new->interp.flags & XkbSI_LockingKey);
-            old->defined |= SI_FIELD_LOCKING_KEY;
         }
         if (UseNewInterpField(SI_FIELD_LEVEL_ONE_ONLY, old, new, verbosity,
                               &collide)) {
@@ -767,20 +760,9 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         si->defined |= SI_FIELD_AUTO_REPEAT;
     }
     else if (istreq(field, "locking")) {
-        bool set;
-
-        if (arrayNdx)
-            return ReportSINotArray(info, si, field);
-
-        if (!ExprResolveBoolean(keymap->ctx, value, &set))
-            return ReportSIBadType(info, si, field, "boolean");
-
-        if (set)
-            si->interp.flags |= XkbSI_LockingKey;
-        else
-            si->interp.flags &= ~XkbSI_LockingKey;
-
-        si->defined |= SI_FIELD_LOCKING_KEY;
+        log_dbg(info->keymap->ctx,
+                "The \"locking\" field in symbol interpretation is unsupported; "
+                "Ignored\n");
     }
     else if (istreq(field, "usemodmap") ||
              istreq(field, "usemodmapmods")) {

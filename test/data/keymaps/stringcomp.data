@@ -596,7 +596,6 @@ xkb_keymap {
 
 		interpret.useModMapMods= AnyLevel;
 		interpret.repeat= False;
-		interpret.locking= False;
 		interpret ISO_Level2_Latch+Exactly(Shift) {
 			useModMapMods=level1;
 			action= LatchMods(modifiers=Shift,clearLocks,latchToLock);
