@@ -831,7 +831,7 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
         default:
             log_err(info->keymap->ctx,
                     "Key type files may not include other declarations; "
-                    "Ignoring %s\n", StmtTypeToString(stmt->type));
+                    "Ignoring %s\n", stmt_type_to_string(stmt->type));
             ok = false;
             break;
         }

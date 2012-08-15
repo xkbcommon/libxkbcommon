@@ -42,6 +42,7 @@ enum stmt_type {
     STMT_GROUP_COMPAT,
     STMT_INDICATOR_MAP,
     STMT_INDICATOR_NAME,
+
     _STMT_NUM_VALUES
 };
 
@@ -53,10 +54,12 @@ enum expr_value_type {
     EXPR_TYPE_ACTION,
     EXPR_TYPE_KEYNAME,
     EXPR_TYPE_SYMBOLS,
+
+    _EXPR_TYPE_NUM_VALUES
 };
 
 enum expr_op_type {
-    EXPR_VALUE = 0,
+    EXPR_VALUE,
     EXPR_IDENT,
     EXPR_ACTION_DECL,
     EXPR_FIELD_REF,
@@ -72,6 +75,8 @@ enum expr_op_type {
     EXPR_NEGATE,
     EXPR_INVERT,
     EXPR_UNARY_PLUS,
+
+    _EXPR_NUM_VALUES
 };
 
 enum merge_mode {
@@ -80,6 +85,15 @@ enum merge_mode {
     MERGE_OVERRIDE,
     MERGE_REPLACE,
 };
+
+const char *
+stmt_type_to_string(enum stmt_type type);
+
+const char *
+expr_op_type_to_string(enum expr_op_type type);
+
+const char *
+expr_value_type_to_string(enum expr_value_type type);
 
 typedef struct _ParseCommon {
     enum stmt_type type;

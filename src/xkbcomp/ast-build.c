@@ -651,7 +651,7 @@ FreeXkbFile(XkbFile *file)
     }
 }
 
-const char *stmt_type_strings[_STMT_NUM_VALUES] = {
+static const char *stmt_type_strings[_STMT_NUM_VALUES] = {
     [STMT_UNKNOWN] = "unknown statement",
     [STMT_INCLUDE] = "include statement",
     [STMT_KEYCODE] = "key name definition",
@@ -669,9 +669,54 @@ const char *stmt_type_strings[_STMT_NUM_VALUES] = {
 };
 
 const char *
-StmtTypeToString(enum stmt_type type)
+stmt_type_to_string(enum stmt_type type)
 {
     if (type >= _STMT_NUM_VALUES)
-        type = STMT_UNKNOWN;
+        return NULL;
     return stmt_type_strings[type];
+}
+
+static const char *expr_op_type_strings[_EXPR_NUM_VALUES] = {
+    [EXPR_VALUE] = "literal",
+    [EXPR_IDENT] = "identifier",
+    [EXPR_ACTION_DECL] = "action declaration",
+    [EXPR_FIELD_REF] = "field reference",
+    [EXPR_ARRAY_REF] = "array reference",
+    [EXPR_KEYSYM_LIST] = "list of keysyms",
+    [EXPR_ACTION_LIST] = "list of actions",
+    [EXPR_ADD] = "addition",
+    [EXPR_SUBTRACT] = "subtraction",
+    [EXPR_MULTIPLY] = "multiplication",
+    [EXPR_DIVIDE] = "division",
+    [EXPR_ASSIGN] = "assignment",
+    [EXPR_NOT] = "logical negation",
+    [EXPR_NEGATE] = "arithmetic negation",
+    [EXPR_INVERT] = "bitwise inversion",
+    [EXPR_UNARY_PLUS] = "unary plus",
+};
+
+const char *
+expr_op_type_to_string(enum expr_op_type type)
+{
+    if (type >= _EXPR_NUM_VALUES)
+        return NULL;
+    return expr_op_type_strings[type];
+}
+
+static const char *expr_value_type_strings[_EXPR_TYPE_NUM_VALUES] = {
+    [EXPR_TYPE_UNKNOWN] = "unknown",
+    [EXPR_TYPE_BOOLEAN] = "boolean",
+    [EXPR_TYPE_INT] = "int",
+    [EXPR_TYPE_STRING] = "string",
+    [EXPR_TYPE_ACTION] = "action",
+    [EXPR_TYPE_KEYNAME] = "keyname",
+    [EXPR_TYPE_SYMBOLS] = "symbols",
+};
+
+const char *
+expr_value_type_to_string(enum expr_value_type type)
+{
+    if (type >= _EXPR_TYPE_NUM_VALUES)
+        return NULL;
+    return expr_value_type_strings[type];
 }

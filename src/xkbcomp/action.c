@@ -1248,7 +1248,7 @@ HandleActionDef(ExprDef * def,
 
     if (def->op != EXPR_ACTION_DECL) {
         log_err(keymap->ctx, "Expected an action definition, found %s\n",
-                exprOpText(def->op));
+                expr_op_type_to_string(def->op));
         return false;
     }
     str = xkb_atom_text(keymap->ctx, def->value.action.name);

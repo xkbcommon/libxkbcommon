@@ -844,7 +844,7 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
         default:
             log_err(info->ctx,
                     "Keycode files may define key and indicator names only; "
-                    "Ignoring %s\n", StmtTypeToString(stmt->type));
+                    "Ignoring %s\n", stmt_type_to_string(stmt->type));
             ok = false;
             break;
         }

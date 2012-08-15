@@ -32,9 +32,6 @@ typedef struct _LookupEntry {
     unsigned int value;
 } LookupEntry;
 
-const char *
-exprOpText(enum expr_op_type op);
-
 bool
 ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
                const char **elem_rtrn, const char **field_rtrn,

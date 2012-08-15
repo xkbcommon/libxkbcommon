@@ -32,98 +32,6 @@ typedef bool (*IdentLookupFunc)(struct xkb_context *ctx, const void *priv,
                                 xkb_atom_t field, enum expr_value_type type,
                                 unsigned int *val_rtrn);
 
-const char *
-exprOpText(enum expr_op_type op)
-{
-    static char buf[32];
-
-    switch (op) {
-    case EXPR_VALUE:
-        strcpy(buf, "literal");
-        break;
-    case EXPR_IDENT:
-        strcpy(buf, "identifier");
-        break;
-    case EXPR_ACTION_DECL:
-        strcpy(buf, "action declaration");
-        break;
-    case EXPR_FIELD_REF:
-        strcpy(buf, "field reference");
-        break;
-    case EXPR_ARRAY_REF:
-        strcpy(buf, "array reference");
-        break;
-    case EXPR_KEYSYM_LIST:
-        strcpy(buf, "list of keysyms");
-        break;
-    case EXPR_ACTION_LIST:
-        strcpy(buf, "list of actions");
-        break;
-    case EXPR_ADD:
-        strcpy(buf, "addition");
-        break;
-    case EXPR_SUBTRACT:
-        strcpy(buf, "subtraction");
-        break;
-    case EXPR_MULTIPLY:
-        strcpy(buf, "multiplication");
-        break;
-    case EXPR_DIVIDE:
-        strcpy(buf, "division");
-        break;
-    case EXPR_ASSIGN:
-        strcpy(buf, "assignment");
-        break;
-    case EXPR_NOT:
-        strcpy(buf, "logical not");
-        break;
-    case EXPR_NEGATE:
-        strcpy(buf, "arithmetic negation");
-        break;
-    case EXPR_INVERT:
-        strcpy(buf, "bitwise inversion");
-        break;
-    case EXPR_UNARY_PLUS:
-        strcpy(buf, "unary plus");
-        break;
-    default:
-        snprintf(buf, sizeof(buf), "illegal(%d)", op);
-        break;
-    }
-    return buf;
-}
-
-static const char *
-exprValueTypeText(enum expr_value_type type)
-{
-    static char buf[20];
-
-    switch (type) {
-    case EXPR_TYPE_UNKNOWN:
-        strcpy(buf, "unknown");
-        break;
-    case EXPR_TYPE_BOOLEAN:
-        strcpy(buf, "boolean");
-        break;
-    case EXPR_TYPE_INT:
-        strcpy(buf, "int");
-        break;
-    case EXPR_TYPE_STRING:
-        strcpy(buf, "string");
-        break;
-    case EXPR_TYPE_ACTION:
-        strcpy(buf, "action");
-        break;
-    case EXPR_TYPE_KEYNAME:
-        strcpy(buf, "keyname");
-        break;
-    default:
-        snprintf(buf, sizeof(buf), "illegal(%d)", type);
-        break;
-    }
-    return buf;
-}
-
 bool
 ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
                const char **elem_rtrn, const char **field_rtrn,
@@ -224,7 +132,7 @@ ExprResolveBoolean(struct xkb_context *ctx, const ExprDef *expr,
         if (expr->value_type != EXPR_TYPE_BOOLEAN) {
             log_err(ctx,
                     "Found constant of type %s where boolean was expected\n",
-                    exprValueTypeText(expr->value_type));
+                    expr_value_type_to_string(expr->value_type));
             return false;
         }
         *set_rtrn = !!expr->value.ival;
@@ -270,7 +178,7 @@ ExprResolveBoolean(struct xkb_context *ctx, const ExprDef *expr,
     case EXPR_NEGATE:
     case EXPR_UNARY_PLUS:
         log_err(ctx, "%s of boolean values not permitted\n",
-                exprOpText(expr->op));
+                expr_op_type_to_string(expr->op));
         break;
 
     default:
@@ -293,7 +201,7 @@ ExprResolveKeyCode(struct xkb_context *ctx, const ExprDef *expr,
         if (expr->value_type != EXPR_TYPE_INT) {
             log_err(ctx,
                     "Found constant of type %s where an int was expected\n",
-                    exprValueTypeText(expr->value_type));
+                    expr_value_type_to_string(expr->value_type));
             return false;
         }
 
@@ -381,7 +289,7 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, const ExprDef *expr,
         if (expr->value_type != EXPR_TYPE_INT) {
             log_err(ctx,
                     "Found constant of type %s where an int was expected\n",
-                    exprValueTypeText(expr->value_type));
+                    expr_value_type_to_string(expr->value_type));
             return false;
         }
 
@@ -573,7 +481,7 @@ ExprResolveString(struct xkb_context *ctx, const ExprDef *expr,
     case EXPR_VALUE:
         if (expr->value_type != EXPR_TYPE_STRING) {
             log_err(ctx, "Found constant of type %s, expected a string\n",
-                    exprValueTypeText(expr->value_type));
+                    expr_value_type_to_string(expr->value_type));
             return false;
         }
 
@@ -600,7 +508,8 @@ ExprResolveString(struct xkb_context *ctx, const ExprDef *expr,
     case EXPR_INVERT:
     case EXPR_NOT:
     case EXPR_UNARY_PLUS:
-        log_err(ctx, "%s of strings not permitted\n", exprOpText(expr->op));
+        log_err(ctx, "%s of strings not permitted\n",
+                expr_op_type_to_string(expr->op));
         return false;
 
     default:
@@ -618,7 +527,7 @@ ExprResolveKeyName(struct xkb_context *ctx, const ExprDef *expr,
     case EXPR_VALUE:
         if (expr->value_type != EXPR_TYPE_KEYNAME) {
             log_err(ctx, "Found constant of type %s, expected a key name\n",
-                    exprValueTypeText(expr->value_type));
+                    expr_value_type_to_string(expr->value_type));
             return false;
         }
         strncpy(name, expr->value.keyName, XkbKeyNameLength);
@@ -645,7 +554,7 @@ ExprResolveKeyName(struct xkb_context *ctx, const ExprDef *expr,
     case EXPR_NOT:
     case EXPR_UNARY_PLUS:
         log_err(ctx, "%s of key name values not permitted\n",
-                exprOpText(expr->op));
+                expr_op_type_to_string(expr->op));
         return false;
 
     default:
@@ -661,7 +570,7 @@ ExprResolveEnum(struct xkb_context *ctx, const ExprDef *expr,
 {
     if (expr->op != EXPR_IDENT) {
         log_err(ctx, "Found a %s where an enumerated value was expected\n",
-                exprOpText(expr->op));
+                expr_op_type_to_string(expr->op));
         return false;
     }
 
@@ -696,7 +605,7 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
         if (expr->value_type != EXPR_TYPE_INT) {
             log_err(ctx,
                     "Found constant of type %s where a mask was expected\n",
-                    exprValueTypeText(expr->value_type));
+                    expr_value_type_to_string(expr->value_type));
             return false;
         }
         *val_rtrn = (unsigned int) expr->value.ival;

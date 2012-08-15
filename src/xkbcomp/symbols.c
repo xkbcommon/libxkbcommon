@@ -874,7 +874,8 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         log_err(info->keymap->ctx,
                 "Expected a list of symbols, found %s; "
                 "Ignoring symbols for group %u of %s\n",
-                exprOpText(value->op), ndx + 1, LongKeyNameText(keyi->name));
+                expr_op_type_to_string(value->op), ndx + 1,
+                LongKeyNameText(keyi->name));
         return false;
     }
     if (!darray_empty(keyi->syms[ndx])) {
@@ -1072,7 +1073,8 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             log_err(info->keymap->ctx,
                     "Expected a virtual modifier mask, found %s; "
                     "Ignoring virtual modifiers definition for key %s\n",
-                    exprOpText(value->op), LongKeyNameText(keyi->name));
+                    expr_op_type_to_string(value->op),
+                    LongKeyNameText(keyi->name));
         }
     }
     else if (istreq(field, "locking") ||
@@ -1434,7 +1436,7 @@ HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge)
         default:
             log_err(info->keymap->ctx,
                     "Interpretation files may not include other types; "
-                    "Ignoring %s\n", StmtTypeToString(stmt->type));
+                    "Ignoring %s\n", stmt_type_to_string(stmt->type));
             ok = false;
             break;
         }

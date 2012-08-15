@@ -67,9 +67,6 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap);
 bool
 LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn);
 
-const char *
-StmtTypeToString(enum stmt_type type);
-
 /***====================================================================***/
 
 static inline bool
