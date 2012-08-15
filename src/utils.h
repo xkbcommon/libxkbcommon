@@ -44,6 +44,14 @@ streq(const char *s1, const char *s2)
 }
 
 static inline bool
+streq_not_null(const char *s1, const char *s2)
+{
+    if (!s1 || !s2)
+        return false;
+    return streq(s1, s2);
+}
+
+static inline bool
 istreq(const char *s1, const char *s2)
 {
     return strcasecmp(s1, s2) == 0;

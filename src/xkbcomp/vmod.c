@@ -173,32 +173,29 @@ bool
 ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
                        xkb_mod_index_t *ndx_rtrn, VModInfo *info)
 {
-    int val;
+    xkb_mod_index_t i;
+    const char *name;
 
-    if (def->op == EXPR_IDENT) {
-        xkb_mod_index_t i;
-        xkb_mod_mask_t bit;
-        const char *name = xkb_atom_text(keymap->ctx, def->value.str);
+    if (def->op != EXPR_IDENT) {
+        log_err(keymap->ctx,
+                "Cannot resolve virtual modifier: "
+                "found %s where a virtual modifier name was expected\n",
+                expr_op_type_to_string(def->op));
+        return false;
+    }
 
-        for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1) {
-            if ((info->available & bit) && keymap->vmod_names[i] &&
-                streq(keymap->vmod_names[i], name)) {
-                *ndx_rtrn = i;
-                return true;
-            }
+    name = xkb_atom_text(keymap->ctx, def->value.str);
+
+    for (i = 0; i < XkbNumVirtualMods; i++) {
+        if ((info->available & (1 << i)) &&
+            streq_not_null(keymap->vmod_names[i], name)) {
+            *ndx_rtrn = i;
+            return true;
         }
     }
 
-    if (!ExprResolveInteger(keymap->ctx, def, &val))
-        return false;
-
-    if (val < 0 || val >= XkbNumVirtualMods) {
-        log_err(keymap->ctx,
-                "Illegal virtual modifier %d (must be 0..%d inclusive)\n",
-                val, XkbNumVirtualMods - 1);
-        return false;
-    }
-
-    *ndx_rtrn = (xkb_mod_index_t) val;
-    return true;
+    log_err(keymap->ctx,
+            "Cannot resolve virtual modifier: "
+            "\"%s\" was not previously declared\n", name);
+    return false;
 }
