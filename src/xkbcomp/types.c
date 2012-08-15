@@ -847,7 +847,7 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
     }
 }
 
-static bool
+static void
 CopyDefToKeyType(KeyTypesInfo *info, KeyTypeInfo *def,
                  struct xkb_key_type *type)
 {
@@ -859,40 +859,27 @@ CopyDefToKeyType(KeyTypesInfo *info, KeyTypeInfo *def,
     type->name = def->name;
     type->level_names = darray_mem(def->level_names, 0);
     darray_init(def->level_names);
-
-    return true;
 }
 
-bool
-CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
-                enum merge_mode merge)
+static bool
+CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
 {
     unsigned int i;
     unsigned int num_types;
-    KeyTypesInfo info;
     KeyTypeInfo *def;
 
-    InitKeyTypesInfo(&info, keymap, file->id);
-
-    HandleKeyTypesFile(&info, file, merge);
-
-    if (info.errorCount != 0)
-        goto err_info;
-
-    if (info.name)
-        keymap->types_section_name = strdup(info.name);
-
-    num_types = info.num_types ? info.num_types : 1;
+    num_types = info->num_types ? info->num_types : 1;
     keymap->types = calloc(num_types, sizeof(*keymap->types));
     if (!keymap->types)
-        goto err_info;
+        return false;
+
     keymap->num_types = num_types;
 
     /*
      * If no types were specified, a default unnamed one-level type is
      * used for all keys.
      */
-    if (info.num_types == 0) {
+    if (info->num_types == 0) {
         KeyTypeInfo dflt = {
             .name = xkb_atom_intern(keymap->ctx, "default"),
             .mods = 0,
@@ -901,14 +888,32 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
             .level_names = darray_new(),
         };
 
-        if (!CopyDefToKeyType(&info, &dflt, &keymap->types[0]))
-            goto err_info;
+        CopyDefToKeyType(info, &dflt, &keymap->types[0]);
     } else {
         i = 0;
-        list_foreach(def, &info.types, entry)
-            if (!CopyDefToKeyType(&info, def, &keymap->types[i++]))
-                goto err_info;
+        list_foreach(def, &info->types, entry)
+            CopyDefToKeyType(info, def, &keymap->types[i++]);
     }
+
+    keymap->types_section_name = strdup_safe(info->name);
+
+    return true;
+}
+
+bool
+CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
+                enum merge_mode merge)
+{
+    KeyTypesInfo info;
+
+    InitKeyTypesInfo(&info, keymap, file->id);
+
+    HandleKeyTypesFile(&info, file, merge);
+    if (info.errorCount != 0)
+        goto err_info;
+
+    if (!CopyKeyTypesToKeymap(keymap, &info))
+        goto err_info;
 
     FreeKeyTypesInfo(&info);
     return true;

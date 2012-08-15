@@ -1006,7 +1006,7 @@ CopyInterps(CompatInfo *info, bool needSymbol, unsigned pred)
     }
 }
 
-static bool
+static void
 CopyIndicatorMapDefs(CompatInfo *info)
 {
     LEDInfo *led;
@@ -1066,6 +1066,25 @@ CopyIndicatorMapDefs(CompatInfo *info)
         im->mods.mods = led->mods;
         im->ctrls = led->ctrls;
     }
+}
+
+static bool
+CopyCompatToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
+{
+    keymap->compat_section_name = strdup_safe(info->name);
+
+    if (!darray_empty(info->interps)) {
+        CopyInterps(info, true, XkbSI_Exactly);
+        CopyInterps(info, true, XkbSI_AllOf | XkbSI_NoneOf);
+        CopyInterps(info, true, XkbSI_AnyOf);
+        CopyInterps(info, true, XkbSI_AnyOfOrNone);
+        CopyInterps(info, false, XkbSI_Exactly);
+        CopyInterps(info, false, XkbSI_AllOf | XkbSI_NoneOf);
+        CopyInterps(info, false, XkbSI_AnyOf);
+        CopyInterps(info, false, XkbSI_AnyOfOrNone);
+    }
+
+    CopyIndicatorMapDefs(info);
 
     return true;
 }
@@ -1081,26 +1100,11 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
     info.ledDflt.merge = merge;
 
     HandleCompatMapFile(&info, file, merge);
-
     if (info.errorCount != 0)
         goto err_info;
 
-    if (info.name)
-        keymap->compat_section_name = strdup(info.name);
-
-    if (!darray_empty(info.interps)) {
-        CopyInterps(&info, true, XkbSI_Exactly);
-        CopyInterps(&info, true, XkbSI_AllOf | XkbSI_NoneOf);
-        CopyInterps(&info, true, XkbSI_AnyOf);
-        CopyInterps(&info, true, XkbSI_AnyOfOrNone);
-        CopyInterps(&info, false, XkbSI_Exactly);
-        CopyInterps(&info, false, XkbSI_AllOf | XkbSI_NoneOf);
-        CopyInterps(&info, false, XkbSI_AnyOf);
-        CopyInterps(&info, false, XkbSI_AnyOfOrNone);
-    }
-
-    if (!CopyIndicatorMapDefs(&info))
-        info.errorCount++;
+    if (!CopyCompatToKeymap(keymap, &info))
+        goto err_info;
 
     ClearCompatInfo(&info);
     return true;

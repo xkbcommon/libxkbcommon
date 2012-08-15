@@ -860,7 +860,7 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
     }
 }
 
-static int
+static void
 ApplyAliases(KeyNamesInfo *info, struct xkb_keymap *keymap)
 {
     int i;
@@ -932,6 +932,37 @@ out:
     list_foreach_safe(alias, next, &info->aliases, entry)
         free(alias);
     list_init(&info->aliases);
+}
+
+static bool
+CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
+{
+    xkb_keycode_t kc;
+    IndicatorNameInfo *ii;
+
+    if (info->explicitMin > 0)
+        keymap->min_key_code = info->explicitMin;
+    else
+        keymap->min_key_code = info->computedMin;
+
+    if (info->explicitMax > 0)
+        keymap->max_key_code = info->explicitMax;
+    else
+        keymap->max_key_code = info->computedMax;
+
+    darray_resize0(keymap->keys, keymap->max_key_code + 1);
+    for (kc = info->computedMin; kc <= info->computedMax; kc++)
+        LongToKeyName(darray_item(info->names, kc),
+                      XkbKey(keymap, kc)->name);
+
+    keymap->keycodes_section_name = strdup_safe(info->name);
+
+    list_foreach(ii, &info->leds, entry)
+        keymap->indicator_names[ii->ndx - 1] =
+            xkb_atom_text(keymap->ctx, ii->name);
+
+    ApplyAliases(info, keymap);
+
     return true;
 }
 
@@ -949,41 +980,16 @@ bool
 CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
                 enum merge_mode merge)
 {
-    xkb_keycode_t kc;
-    KeyNamesInfo info; /* contains all the info after parsing */
-    IndicatorNameInfo *ii;
+    KeyNamesInfo info;
 
     InitKeyNamesInfo(&info, keymap->ctx, file->id);
 
     HandleKeycodesFile(&info, file, merge);
-
-    /* all the keys are now stored in info */
-
     if (info.errorCount != 0)
         goto err_info;
 
-    if (info.explicitMin > 0) /* if "minimum" statement was present */
-        keymap->min_key_code = info.explicitMin;
-    else
-        keymap->min_key_code = info.computedMin;
-
-    if (info.explicitMax > 0) /* if "maximum" statement was present */
-        keymap->max_key_code = info.explicitMax;
-    else
-        keymap->max_key_code = info.computedMax;
-
-    darray_resize0(keymap->keys, keymap->max_key_code + 1);
-    for (kc = info.computedMin; kc <= info.computedMax; kc++)
-        LongToKeyName(darray_item(info.names, kc),
-                      XkbKey(keymap, kc)->name);
-
-    keymap->keycodes_section_name = strdup_safe(info.name);
-
-    list_foreach(ii, &info.leds, entry)
-        keymap->indicator_names[ii->ndx - 1] =
-            xkb_atom_text(keymap->ctx, ii->name);
-
-    ApplyAliases(&info, keymap);
+    if (!CopyKeyNamesToKeymap(keymap, &info))
+        goto err_info;
 
     ClearKeyNamesInfo(&info);
     return true;
