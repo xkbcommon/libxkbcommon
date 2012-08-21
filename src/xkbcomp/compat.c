@@ -130,7 +130,7 @@
  * After all of the xkb_compat sections have been compiled, the following
  * members of struct xkb_keymap are finalized:
  *      darray(struct xkb_sym_interpret) sym_interpret;
- *      struct xkb_indicator_map indicators[XkbNumIndicators];
+ *      struct xkb_indicator_map indicators[XKB_NUM_INDICATORS];
  *      char *compat_section_name;
  * TODO: virtual modifiers.
  */
@@ -947,27 +947,27 @@ CopyIndicatorMapDefs(CompatInfo *info)
          * Find the indicator with the given name, if it was already
          * declared in keycodes.
          */
-        for (i = 0; i < XkbNumIndicators; i++)
+        for (i = 0; i < XKB_NUM_INDICATORS; i++)
             if (keymap->indicators[i].name == led->im.name)
                 break;
 
         /* Not previously declared; create it with next free index. */
-        if (i >= XkbNumIndicators) {
+        if (i >= XKB_NUM_INDICATORS) {
             log_dbg(keymap->ctx,
                     "Indicator name \"%s\" was not declared in the keycodes section; "
                     "Adding new indicator\n",
                     xkb_atom_text(keymap->ctx, led->im.name));
 
-            for (i = 0; i < XkbNumIndicators; i++)
+            for (i = 0; i < XKB_NUM_INDICATORS; i++)
                 if (keymap->indicators[i].name == XKB_ATOM_NONE)
                     break;
 
             /* Not place to put it; ignore. */
-            if (i >= XkbNumIndicators) {
+            if (i >= XKB_NUM_INDICATORS) {
                 log_err(keymap->ctx,
                         "Too many indicators (maximum is %d); "
                         "Indicator name \"%s\" ignored\n",
-                        XkbNumIndicators,
+                        XKB_NUM_INDICATORS,
                         xkb_atom_text(keymap->ctx, led->im.name));
                 continue;
             }

@@ -246,7 +246,7 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     }
 
     /* Update vmod -> indicator maps. */
-    for (led = 0; led < XkbNumIndicators; led++)
+    for (led = 0; led < XKB_NUM_INDICATORS; led++)
         ComputeEffectiveMask(keymap, &keymap->indicators[led].mods);
 
     /* Find maximum number of groups out of all keys in the keymap. */

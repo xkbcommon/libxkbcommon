@@ -96,7 +96,10 @@ typedef uint32_t xkb_atom_t;
 #define XKB_LEVEL_INVALID 0xffffffff
 
 #define XKB_KEY_NAME_LENGTH 4
+
+/* These should all be dynamic. */
 #define XKB_NUM_GROUPS 4
+#define XKB_NUM_INDICATORS 32
 
 struct xkb_context {
     int refcnt;
@@ -356,7 +359,7 @@ struct xkb_keymap {
     xkb_group_index_t num_groups;
     xkb_atom_t group_names[XKB_NUM_GROUPS];
 
-    struct xkb_indicator_map indicators[XkbNumIndicators];
+    struct xkb_indicator_map indicators[XKB_NUM_INDICATORS];
 
     char *keycodes_section_name;
     char *symbols_section_name;

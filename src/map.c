@@ -232,7 +232,7 @@ xkb_map_num_leds(struct xkb_keymap *keymap)
     xkb_led_index_t ret = 0;
     xkb_led_index_t i;
 
-    for (i = 0; i < XkbNumIndicators; i++)
+    for (i = 0; i < XKB_NUM_INDICATORS; i++)
         if (keymap->indicators[i].which_groups ||
             keymap->indicators[i].which_mods ||
             keymap->indicators[i].ctrls)

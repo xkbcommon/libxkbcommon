@@ -256,7 +256,7 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
                   KeyNameText(key->name), XkbKeyGetKeycode(keymap, key));
     }
 
-    for (i = 0; i < XkbNumIndicators; i++) {
+    for (i = 0; i < XKB_NUM_INDICATORS; i++) {
         if (keymap->indicators[i].name == XKB_ATOM_NONE)
             continue;
         write_buf(buf, "\t\tindicator %d = \"%s\";\n", i + 1,
@@ -561,7 +561,7 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
         write_buf(buf, "\t\t};\n");
     }
 
-    for (i = 0; i < XkbNumIndicators; i++) {
+    for (i = 0; i < XKB_NUM_INDICATORS; i++) {
         struct xkb_indicator_map *map = &keymap->indicators[i];
         if (map->which_groups == 0 && map->groups == 0 &&
             map->which_mods == 0 && map->mods.mods == 0 &&

@@ -98,7 +98,7 @@
  *      indicator 3 = "Scroll Lock";
  *
  * Assigns a name the indicator (i.e. keyboard LED) with the given index.
- * The amount of possible indicators is predetermined (XkbNumIndicators).
+ * The amount of possible indicators is predetermined (XKB_NUM_INDICATORS).
  * The indicator may be referred by this name later in the compat section
  * and by the user.
  *
@@ -111,7 +111,7 @@
  *      darray(struct xkb_key_alias) key_aliases;
  *      char *keycodes_section_name;
  * The 'name' field of indicators declared in xkb_keycodes:
- *      struct xkb_indicator_map indicators[XkbNumIndicators];
+ *      struct xkb_indicator_map indicators[XKB_NUM_INDICATORS];
  * Further, the array of keys:
  *      darray(struct xkb_key) keys;
  * had been resized to its final size (i.e. all of the xkb_key objects are
@@ -146,7 +146,7 @@ typedef struct _KeyNamesInfo {
     xkb_keycode_t explicitMax;
     darray(unsigned long) names;
     darray(unsigned int) files;
-    IndicatorNameInfo indicator_names[XkbNumIndicators];
+    IndicatorNameInfo indicator_names[XKB_NUM_INDICATORS];
     darray(AliasInfo) aliases;
 
     struct xkb_context *ctx;
@@ -179,7 +179,7 @@ FindIndicatorByName(KeyNamesInfo *info, xkb_atom_t name,
 {
     xkb_led_index_t idx;
 
-    for (idx = 0; idx < XkbNumIndicators; idx++) {
+    for (idx = 0; idx < XKB_NUM_INDICATORS; idx++) {
         if (info->indicator_names[idx].name == name) {
             *idx_out = idx;
             return &info->indicator_names[idx];
@@ -438,7 +438,7 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
             into->errorCount++;
     }
 
-    for (idx = 0; idx < XkbNumIndicators; idx++) {
+    for (idx = 0; idx < XKB_NUM_INDICATORS; idx++) {
         IndicatorNameInfo *led = &from->indicator_names[idx];
         if (led->name == XKB_ATOM_NONE)
             continue;
@@ -676,7 +676,7 @@ HandleIndicatorNameDef(KeyNamesInfo *info, IndicatorNameDef *def,
     IndicatorNameInfo ii;
     xkb_atom_t name;
 
-    if (def->ndx < 1 || def->ndx > XkbNumIndicators) {
+    if (def->ndx < 1 || def->ndx > XKB_NUM_INDICATORS) {
         info->errorCount++;
         log_err(info->ctx,
                 "Name specified for illegal indicator index %d\n; Ignored\n",
@@ -822,7 +822,7 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 
     keymap->keycodes_section_name = strdup_safe(info->name);
 
-    for (idx = 0; idx < XkbNumIndicators; idx++) {
+    for (idx = 0; idx < XKB_NUM_INDICATORS; idx++) {
         IndicatorNameInfo *led = &info->indicator_names[idx];
         if (led->name == XKB_ATOM_NONE)
             continue;
