@@ -627,7 +627,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
     else
         write_buf(buf, "\txkb_symbols {\n\n");
 
-    for (tmp = group = 0; group < XkbNumKbdGroups; group++) {
+    for (tmp = group = 0; group < XKB_NUM_GROUPS; group++) {
         if (!keymap->group_names[group])
             continue;
         write_buf(buf,

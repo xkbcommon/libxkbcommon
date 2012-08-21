@@ -86,7 +86,7 @@
  *
  * Mapping      ::= { Mlvo } "=" { Kccgst } "\n"
  * Mlvo         ::= "model" | "option" | ("layout" | "variant") [ Index ]
- * Index        ::= "[" 1..XkbNumKbdGroups "]"
+ * Index        ::= "[" 1..XKB_NUM_GROUPS "]"
  * Kccgst       ::= "keycodes" | "symbols" | "types" | "compat" | "geometry"
  *
  * Rule         ::= { MlvoValue } "=" { KccgstValue } "\n"
@@ -538,7 +538,7 @@ extract_group_index(const char *s, size_t max_len, xkb_group_index_t *out)
         return -1;
     if (s[0] != '[' || !isdigit(s[1]) || s[2] != ']')
         return -1;
-    if (s[1] - '0' < 1 || s[1] - '0' > XkbNumKbdGroups)
+    if (s[1] - '0' < 1 || s[1] - '0' > XKB_NUM_GROUPS)
         return -1;
     /* To zero-based index. */
     *out = s[1] - '0' - 1;

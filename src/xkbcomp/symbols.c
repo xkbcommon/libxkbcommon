@@ -61,26 +61,26 @@ typedef struct _KeyInfo {
     unsigned char typesDefined;
     unsigned char symsDefined;
     unsigned char actsDefined;
-    xkb_level_index_t numLevels[XkbNumKbdGroups];
+    xkb_level_index_t numLevels[XKB_NUM_GROUPS];
 
     /* syms[group] -> Single array for all the keysyms in the group. */
-    darray_xkb_keysym_t syms[XkbNumKbdGroups];
+    darray_xkb_keysym_t syms[XKB_NUM_GROUPS];
     /*
      * symsMapIndex[group][level] -> The index from which the syms for
      * the level begin in the syms[group] array. Remember each keycode
      * can have multiple keysyms in each level (that is, each key press
      * can result in multiple keysyms).
      */
-    darray(int) symsMapIndex[XkbNumKbdGroups];
+    darray(int) symsMapIndex[XKB_NUM_GROUPS];
     /*
      * symsMapNumEntries[group][level] -> How many syms are in
      * syms[group][symsMapIndex[group][level]].
      */
-    darray(size_t) symsMapNumEntries[XkbNumKbdGroups];
+    darray(size_t) symsMapNumEntries[XKB_NUM_GROUPS];
 
-    darray_xkb_action acts[XkbNumKbdGroups];
+    darray_xkb_action acts[XKB_NUM_GROUPS];
 
-    xkb_atom_t types[XkbNumKbdGroups];
+    xkb_atom_t types[XKB_NUM_GROUPS];
     enum key_repeat repeat;
     xkb_mod_mask_t vmodmap;
     xkb_atom_t dfltType;
@@ -104,7 +104,7 @@ InitKeyInfo(KeyInfo *keyi, unsigned file_id)
     keyi->name = KeyNameToLong(dflt);
     keyi->typesDefined = keyi->symsDefined = keyi->actsDefined = 0;
 
-    for (i = 0; i < XkbNumKbdGroups; i++) {
+    for (i = 0; i < XKB_NUM_GROUPS; i++) {
         keyi->numLevels[i] = 0;
         keyi->types[i] = XKB_ATOM_NONE;
         darray_init(keyi->syms[i]);
@@ -125,7 +125,7 @@ ClearKeyInfo(KeyInfo *keyi)
 {
     xkb_group_index_t i;
 
-    for (i = 0; i < XkbNumKbdGroups; i++) {
+    for (i = 0; i < XKB_NUM_GROUPS; i++) {
         darray_free(keyi->syms[i]);
         darray_free(keyi->symsMapIndex[i]);
         darray_free(keyi->symsMapNumEntries[i]);
@@ -146,7 +146,7 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, bool clearOld)
     *new = *old;
 
     if (clearOld) {
-        for (i = 0; i < XkbNumKbdGroups; i++) {
+        for (i = 0; i < XKB_NUM_GROUPS; i++) {
             old->numLevels[i] = 0;
             darray_init(old->symsMapIndex[i]);
             darray_init(old->symsMapNumEntries[i]);
@@ -155,7 +155,7 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, bool clearOld)
         }
     }
     else {
-        for (i = 0; i < XkbNumKbdGroups; i++) {
+        for (i = 0; i < XKB_NUM_GROUPS; i++) {
             darray_copy(new->syms[i], old->syms[i]);
             darray_copy(new->symsMapIndex[i], old->symsMapIndex[i]);
             darray_copy(new->symsMapNumEntries[i], old->symsMapNumEntries[i]);
@@ -189,7 +189,7 @@ typedef struct _SymbolsInfo {
     KeyInfo dflt;
     VModInfo vmods;
     ActionsInfo *actions;
-    xkb_atom_t groupNames[XkbNumKbdGroups];
+    xkb_atom_t groupNames[XKB_NUM_GROUPS];
 
     struct list modMaps;
 
@@ -210,7 +210,7 @@ InitSymbolsInfo(SymbolsInfo *info, struct xkb_keymap *keymap,
     darray_init(info->keys);
     darray_growalloc(info->keys, 110);
     list_init(&info->modMaps);
-    for (i = 0; i < XkbNumKbdGroups; i++)
+    for (i = 0; i < XKB_NUM_GROUPS; i++)
         info->groupNames[i] = XKB_ATOM_NONE;
     InitKeyInfo(&info->dflt, file_id);
     InitVModInfo(&info->vmods, keymap);
@@ -504,7 +504,7 @@ MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from)
     int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
 
     if (from->merge == MERGE_REPLACE) {
-        for (i = 0; i < XkbNumKbdGroups; i++) {
+        for (i = 0; i < XKB_NUM_GROUPS; i++) {
             if (into->numLevels[i] != 0) {
                 darray_free(into->syms[i]);
                 darray_free(into->acts[i]);
@@ -518,7 +518,7 @@ MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from)
     report = (verbosity > 9 ||
               (into->file_id == from->file_id && verbosity > 0));
 
-    for (i = 0; i < XkbNumKbdGroups; i++) {
+    for (i = 0; i < XKB_NUM_GROUPS; i++) {
         if (from->numLevels[i] > 0) {
             if (into->numLevels[i] == 0) {
                 into->numLevels[i] = from->numLevels[i];
@@ -709,7 +709,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
         into->name = from->name;
         from->name = NULL;
     }
-    for (i = 0; i < XkbNumKbdGroups; i++) {
+    for (i = 0; i < XKB_NUM_GROUPS; i++) {
         if (from->groupNames[i] != XKB_ATOM_NONE) {
             if ((merge != MERGE_AUGMENT) ||
                 (into->groupNames[i] == XKB_ATOM_NONE))
@@ -803,7 +803,7 @@ GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         else
             defined = keyi->actsDefined;
 
-        for (i = 0; i < XkbNumKbdGroups; i++) {
+        for (i = 0; i < XKB_NUM_GROUPS; i++) {
             if ((defined & (1 << i)) == 0) {
                 *ndx_rtrn = i;
                 return true;
@@ -813,7 +813,7 @@ GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         log_err(info->keymap->ctx,
                 "Too many groups of %s for key %s (max %u); "
                 "Ignoring %s defined for extra groups\n",
-                name, LongKeyNameText(keyi->name), XkbNumKbdGroups + 1, name);
+                name, LongKeyNameText(keyi->name), XKB_NUM_GROUPS + 1, name);
         return false;
     }
 
@@ -1308,7 +1308,7 @@ SetExplicitGroup(SymbolsInfo *info, KeyInfo *keyi)
                  "but key %s has more than one group defined; "
                  "All groups except first one will be ignored\n",
                  info->name, LongKeyNameText(keyi->name));
-        for (i = 1; i < XkbNumKbdGroups; i++) {
+        for (i = 1; i < XKB_NUM_GROUPS; i++) {
             keyi->numLevels[i] = 0;
             darray_free(keyi->syms[i]);
             darray_free(keyi->acts[i]);
@@ -1599,7 +1599,7 @@ PrepareKeyDef(KeyInfo *keyi)
 
     defined = keyi->symsDefined | keyi->actsDefined | keyi->typesDefined;
     /* get highest group number */
-    for (i = XkbNumKbdGroups - 1; i > 0; i--) {
+    for (i = XKB_NUM_GROUPS - 1; i > 0; i--) {
         if (defined & (1 << i))
             break;
     }
@@ -1714,7 +1714,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
     xkb_level_index_t width, tmp;
     struct xkb_key_type * type;
     bool haveActions, autoType, useAlias;
-    unsigned types[XkbNumKbdGroups];
+    unsigned types[XKB_NUM_GROUPS];
     unsigned int symIndex = 0;
 
     useAlias = (start_from == 0);
@@ -1731,7 +1731,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
 
     haveActions = false;
     width = 0;
-    for (i = nGroups = 0; i < XkbNumKbdGroups; i++) {
+    for (i = nGroups = 0; i < XKB_NUM_GROUPS; i++) {
         if (((i + 1) > nGroups)
             && (((keyi->symsDefined | keyi->actsDefined) & (1 << i))
                 || (keyi->typesDefined) & (1 << i)))
@@ -1933,7 +1933,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
     if (info.name)
         keymap->symbols_section_name = strdup(info.name);
 
-    for (i = 0; i < XkbNumKbdGroups; i++)
+    for (i = 0; i < XKB_NUM_GROUPS; i++)
         if (info.groupNames[i] != XKB_ATOM_NONE)
             keymap->group_names[i] = info.groupNames[i];
 

@@ -396,9 +396,9 @@ ExprResolveGroup(struct xkb_context *ctx, const ExprDef *expr,
     if (!ok)
         return false;
 
-    if (result <= 0 || result > XkbNumKbdGroups) {
+    if (result <= 0 || result > XKB_NUM_GROUPS) {
         log_err(ctx, "Group index %u is out of range (1..%d)\n",
-                result, XkbNumKbdGroups);
+                result, XKB_NUM_GROUPS);
         return false;
     }
 

@@ -96,6 +96,7 @@ typedef uint32_t xkb_atom_t;
 #define XKB_LEVEL_INVALID 0xffffffff
 
 #define XKB_KEY_NAME_LENGTH 4
+#define XKB_NUM_GROUPS 4
 
 struct xkb_context {
     int refcnt;
@@ -309,7 +310,7 @@ struct xkb_key {
 
     union xkb_action *actions;
 
-    unsigned kt_index[XkbNumKbdGroups];
+    unsigned kt_index[XKB_NUM_GROUPS];
 
     xkb_group_index_t num_groups;
     /* How many levels the largest group has. */
@@ -353,7 +354,7 @@ struct xkb_keymap {
 
     /* Number of groups in the key with the most groups. */
     xkb_group_index_t num_groups;
-    xkb_atom_t group_names[XkbNumKbdGroups];
+    xkb_atom_t group_names[XKB_NUM_GROUPS];
 
     struct xkb_indicator_map indicators[XkbNumIndicators];
 
