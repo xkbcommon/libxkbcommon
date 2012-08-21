@@ -91,9 +91,6 @@ NewActionsInfo(void)
     info->actions[XkbSA_SetPtrDflt].dflt.flags = 0;
     info->actions[XkbSA_SetPtrDflt].dflt.value = 1;
 
-    info->actions[XkbSA_ISOLock].iso.mods.mods =
-        (1 << ModNameToIndex(XKB_MOD_NAME_CAPS));
-
     return info;
 }
 
@@ -210,7 +207,7 @@ HandleNoAction(struct xkb_keymap *keymap, union xkb_action *action,
                const ExprDef *value)
 
 {
-    return ReportIllegal(keymap, action->type, field);
+    return true;
 }
 
 static bool
@@ -628,73 +625,6 @@ HandleSetPtrDflt(struct xkb_keymap *keymap, union xkb_action *action,
     return ReportIllegal(keymap, action->type, field);
 }
 
-static const LookupEntry isoNames[] = {
-    { "mods", XkbSA_ISONoAffectMods },
-    { "modifiers", XkbSA_ISONoAffectMods },
-    { "group", XkbSA_ISONoAffectGroup },
-    { "groups", XkbSA_ISONoAffectGroup },
-    { "ptr", XkbSA_ISONoAffectPtr },
-    { "pointer", XkbSA_ISONoAffectPtr },
-    { "ctrls", XkbSA_ISONoAffectCtrls },
-    { "controls", XkbSA_ISONoAffectCtrls },
-    { "all", ~((unsigned) 0) },
-    { "none", 0 },
-    { NULL, 0 },
-};
-
-static bool
-HandleISOLock(struct xkb_keymap *keymap, union xkb_action *action,
-              enum action_field field, const ExprDef *array_ndx,
-              const ExprDef *value)
-{
-    struct xkb_iso_action *act = &action->iso;
-
-    if (field == ACTION_FIELD_MODIFIERS) {
-        unsigned flags;
-        xkb_mod_mask_t mods;
-
-        if (array_ndx)
-            return ReportActionNotArray(keymap, action->type, field);
-
-        flags = act->flags;
-        if (!CheckModifierField(keymap, action->type, value, &flags, &mods))
-            return false;
-
-        act->flags = flags & (~XkbSA_ISODfltIsGroup);
-        act->mods.mods = mods;
-        return true;
-    }
-    else if (field == ACTION_FIELD_GROUP) {
-        xkb_group_index_t group;
-        unsigned flags;
-
-        if (array_ndx)
-            return ReportActionNotArray(keymap, action->type, field);
-
-        flags = act->flags;
-        if (!CheckGroupField(keymap, action->type, value, &flags, &group))
-            return false;
-
-        act->flags = flags | XkbSA_ISODfltIsGroup;
-        act->group = group;
-        return true;
-    } else if (ACTION_FIELD_AFFECT) {
-        xkb_mod_mask_t mask;
-
-        if (array_ndx)
-            return ReportActionNotArray(keymap, action->type, field);
-
-        if (!ExprResolveMask(keymap->ctx, value, &mask, isoNames))
-            return ReportMismatch(keymap, action->type, field,
-                                  "keyboard component");
-
-        act->affect = (~mask) & XkbSA_ISOAffectMask;
-        return true;
-    }
-
-    return ReportIllegal(keymap, action->type, field);
-}
-
 static bool
 HandleSwitchScreen(struct xkb_keymap *keymap, union xkb_action *action,
                    enum action_field field, const ExprDef *array_ndx,
@@ -774,260 +704,6 @@ HandleSetLockControls(struct xkb_keymap *keymap, union xkb_action *action,
     }
 
     return ReportIllegal(keymap, action->type, field);
-}
-
-static const LookupEntry evNames[] = {
-    { "press", XkbSA_MessageOnPress },
-    { "keypress", XkbSA_MessageOnPress },
-    { "release", XkbSA_MessageOnRelease },
-    { "keyrelease", XkbSA_MessageOnRelease },
-    { "all", XkbSA_MessageOnPress | XkbSA_MessageOnRelease },
-    { "none", 0 },
-    { NULL, 0 }
-};
-
-static bool
-HandleActionMessage(struct xkb_keymap *keymap, union xkb_action *action,
-                    enum action_field field, const ExprDef *array_ndx,
-                    const ExprDef *value)
-{
-    struct xkb_message_action *act = &action->msg;
-
-    if (field == ACTION_FIELD_REPORT) {
-        unsigned int mask;
-
-        if (array_ndx)
-            return ReportActionNotArray(keymap, action->type, field);
-
-        if (!ExprResolveMask(keymap->ctx, value, &mask, evNames))
-            return ReportMismatch(keymap, action->type, field,
-                                  "key event mask");
-
-        /* FIXME: Something seems wrong here... */
-        act->flags &= ~(XkbSA_MessageOnPress | XkbSA_MessageOnRelease);
-        act->flags = mask & (XkbSA_MessageOnPress | XkbSA_MessageOnRelease);
-        return true;
-    }
-    else if (field == ACTION_FIELD_GEN_KEY_EVENT) {
-        bool set;
-
-        if (array_ndx)
-            return ReportActionNotArray(keymap, action->type, field);
-
-        if (!ExprResolveBoolean(keymap->ctx, value, &set))
-            return ReportMismatch(keymap, action->type, field, "boolean");
-
-        if (set)
-            act->flags |= XkbSA_MessageGenKeyEvent;
-        else
-            act->flags &= ~XkbSA_MessageGenKeyEvent;
-
-        return true;
-    }
-    else if (field == ACTION_FIELD_DATA && !array_ndx) {
-        xkb_atom_t val;
-        const char *str;
-        int len;
-
-        if (!ExprResolveString(keymap->ctx, value, &val))
-            return ReportMismatch(keymap, action->type, field, "string");
-
-        str = xkb_atom_text(keymap->ctx, val);
-        len = strlen(str);
-        if (len < 1 || len > 6) {
-            log_warn(keymap->ctx,
-                     "An action message can hold only 6 bytes; "
-                     "Extra %d bytes ignored\n", len - 6);
-        }
-
-        strncpy((char *) act->message, str, 6);
-        return true;
-    }
-    else if (field == ACTION_FIELD_DATA && array_ndx) {
-        int ndx, datum;
-
-        if (!ExprResolveInteger(keymap->ctx, array_ndx, &ndx)) {
-            log_err(keymap->ctx,
-                    "Array subscript must be integer; "
-                    "Illegal subscript ignored\n");
-            return false;
-        }
-
-        if (ndx < 0 || ndx > 5) {
-            log_err(keymap->ctx,
-                    "An action message is at most 6 bytes long; "
-                    "Attempt to use data[%d] ignored\n", ndx);
-            return false;
-        }
-
-        if (!ExprResolveInteger(keymap->ctx, value, &datum))
-            return ReportMismatch(keymap, action->type, field, "integer");
-
-        if (datum < 0 || datum > 255) {
-            log_err(keymap->ctx,
-                    "Message data must be in the range 0..255; "
-                    "Illegal datum %d ignored\n", datum);
-            return false;
-        }
-
-        act->message[ndx] = (uint8_t) datum;
-        return true;
-    }
-
-    return ReportIllegal(keymap, action->type, field);
-}
-
-static bool
-HandleRedirectKey(struct xkb_keymap *keymap, union xkb_action *action,
-                  enum action_field field, const ExprDef *array_ndx,
-                  const ExprDef *value)
-{
-    struct xkb_key *key;
-    struct xkb_redirect_key_action *act = &action->redirect;
-    unsigned t1;
-    xkb_mod_mask_t t2;
-    unsigned long tmp;
-    char key_name[XKB_KEY_NAME_LENGTH];
-
-    if (array_ndx != NULL)
-        return ReportActionNotArray(keymap, action->type, field);
-
-    switch (field) {
-    case ACTION_FIELD_KEYCODE:
-        if (!ExprResolveKeyName(keymap->ctx, value, key_name))
-            return ReportMismatch(keymap, action->type, field, "key name");
-
-        tmp = KeyNameToLong(key_name);
-        key = FindNamedKey(keymap, tmp, true, 0);
-        if (!key)
-            return ReportNotFound(keymap, action->type, field, "Key",
-                                  KeyNameText(key_name));
-        act->new_kc = XkbKeyGetKeycode(keymap, key);
-        return true;
-
-    case ACTION_FIELD_MODS_TO_CLEAR:
-    case ACTION_FIELD_MODIFIERS:
-        t1 = 0;
-        if (CheckModifierField(keymap, action->type, value, &t1, &t2)) {
-            act->mods_mask |= (t2 & 0xff);
-            if (field == ACTION_FIELD_MODIFIERS)
-                act->mods |= (t2 & 0xff);
-            else
-                act->mods &= ~(t2 & 0xff);
-
-            t2 = (t2 >> XKB_NUM_CORE_MODS) & 0xffff;
-            act->vmods_mask |= t2;
-            if (field == ACTION_FIELD_MODIFIERS)
-                act->vmods |= t2;
-            else
-                act->vmods &= ~t2;
-            return true;
-        }
-        return true;
-
-    default:
-        break;
-    }
-
-    return ReportIllegal(keymap, action->type, field);
-}
-
-static bool
-HandleDeviceBtn(struct xkb_keymap *keymap, union xkb_action *action,
-                enum action_field field, const ExprDef *array_ndx,
-                const ExprDef *value)
-{
-    struct xkb_device_button_action *act = &action->devbtn;
-
-    if (field == ACTION_FIELD_BUTTON) {
-        int val;
-
-        if (array_ndx)
-            return ReportActionNotArray(keymap, action->type, field);
-
-        if (!ExprResolveInteger(keymap->ctx, value, &val))
-            return ReportMismatch(keymap, action->type, field,
-                                  "integer (range 1..255)");
-
-        if (val < 0 || val > 255) {
-            log_err(keymap->ctx,
-                    "Button must specify default or be in the range 1..255; "
-                    "Illegal button value %d ignored\n", val);
-            return false;
-        }
-
-        act->button = val;
-        return true;
-    }
-    else if (action->type == XkbSA_LockDeviceBtn &&
-             field == ACTION_FIELD_AFFECT) {
-        unsigned int val;
-
-        if (array_ndx)
-            return ReportActionNotArray(keymap, action->type, field);
-
-        if (!ExprResolveEnum(keymap->ctx, value, &val, lockWhich))
-            return ReportMismatch(keymap, action->type, field,
-                                  "lock or unlock");
-
-        act->flags &= ~(XkbSA_LockNoLock | XkbSA_LockNoUnlock);
-        act->flags |= val;
-        return true;
-    }
-    else if (field == ACTION_FIELD_COUNT) {
-        int btn;
-
-        if (array_ndx)
-            return ReportActionNotArray(keymap, action->type, field);
-
-        /* XXX: Should this actually be ResolveButton? */
-        if (!ExprResolveButton(keymap->ctx, value, &btn))
-            return ReportMismatch(keymap, action->type, field, "integer");
-
-        if (btn < 0 || btn > 255) {
-            log_err(keymap->ctx,
-                    "The count field must have a value in the range 0..255; "
-                    "Illegal count %d ignored\n", btn);
-            return false;
-        }
-
-        act->count = btn;
-        return true;
-    }
-    else if (field == ACTION_FIELD_DEVICE) {
-        int val;
-
-        if (array_ndx)
-            return ReportActionNotArray(keymap, action->type, field);
-
-        if (!ExprResolveInteger(keymap->ctx, value, &val))
-            return ReportMismatch(keymap, action->type, field,
-                                  "integer (range 1..255)");
-
-        if (val < 0 || val > 255) {
-            log_err(keymap->ctx,
-                    "Device must specify default or be in the range 1..255; "
-                    "Illegal device value %d ignored\n", val);
-            return false;
-        }
-
-        act->device = val;
-        return true;
-    }
-
-    return ReportIllegal(keymap, action->type, field);
-}
-
-static bool
-HandleDeviceValuator(struct xkb_keymap *keymap, union xkb_action *action,
-                     enum action_field field, const ExprDef *array_ndx,
-                     const ExprDef *value)
-{
-    struct xkb_device_valuator_action *act = &action->devval;
-    (void) act;
-
-    /*  XXX - Not yet implemented */
-    return false;
 }
 
 static bool
@@ -1128,16 +804,10 @@ static const actionHandler handleAction[XkbSA_NumActions + 1] = {
     [XkbSA_PtrBtn] = HandlePtrBtn,
     [XkbSA_LockPtrBtn] = HandlePtrBtn,
     [XkbSA_SetPtrDflt] = HandleSetPtrDflt,
-    [XkbSA_ISOLock] = HandleISOLock,
     [XkbSA_Terminate] = HandleNoAction,
     [XkbSA_SwitchScreen] = HandleSwitchScreen,
     [XkbSA_SetControls] = HandleSetLockControls,
     [XkbSA_LockControls] = HandleSetLockControls,
-    [XkbSA_ActionMessage] = HandleActionMessage,
-    [XkbSA_RedirectKey] = HandleRedirectKey,
-    [XkbSA_DeviceBtn] = HandleDeviceBtn,
-    [XkbSA_LockDeviceBtn] = HandleDeviceBtn,
-    [XkbSA_DeviceValuator] = HandleDeviceValuator,
     [PrivateAction] = HandlePrivate,
 };
 

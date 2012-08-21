@@ -149,37 +149,10 @@ struct xkb_group_action {
     int32_t group;
 };
 
-struct xkb_iso_action {
-    uint8_t type;
-    uint8_t flags;
-    struct xkb_mods mods;
-    int32_t group;
-    uint8_t affect;
-};
-
 struct xkb_controls_action {
     uint8_t type;
     uint8_t flags;
     uint32_t ctrls;
-};
-
-struct xkb_device_button_action {
-    uint8_t type;
-    uint8_t flags;
-    uint8_t count;
-    uint8_t button;
-    uint8_t device;
-};
-
-struct xkb_device_valuator_action {
-    uint8_t type;
-    uint8_t device;
-    uint8_t v1_what;
-    uint8_t v1_index;
-    int8_t v1_value;
-    uint8_t v2_what;
-    uint8_t v2_index;
-    int8_t v2_value;
 };
 
 struct xkb_pointer_default_action {
@@ -211,12 +184,6 @@ struct xkb_pointer_action {
     int16_t y;
 };
 
-struct xkb_message_action {
-    uint8_t type;
-    uint8_t flags;
-    uint8_t message[6];
-};
-
 struct xkb_pointer_button_action {
     uint8_t type;
     uint8_t flags;
@@ -235,16 +202,12 @@ struct xkb_private_action {
 union xkb_action {
     struct xkb_mod_action mods;
     struct xkb_group_action group;
-    struct xkb_iso_action iso;
     struct xkb_controls_action ctrls;
-    struct xkb_device_button_action devbtn;
-    struct xkb_device_valuator_action devval;
     struct xkb_pointer_default_action dflt;
     struct xkb_switch_screen_action screen;
     struct xkb_redirect_key_action redirect;    /* XXX wholly unnecessary? */
-    struct xkb_pointer_action ptr;         /* XXX delete for DeviceValuator */
-    struct xkb_pointer_button_action btn;  /* XXX delete for DeviceBtn */
-    struct xkb_message_action msg;         /* XXX just delete */
+    struct xkb_pointer_action ptr;
+    struct xkb_pointer_button_action btn;
     struct xkb_private_action priv;
     unsigned char type;
 };

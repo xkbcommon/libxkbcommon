@@ -491,11 +491,6 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
                   get_control_mask_text(action->ctrls.ctrls), suffix);
         break;
 
-    case XkbSA_ISOLock:
-    case XkbSA_ActionMessage:
-    case XkbSA_RedirectKey:
-    case XkbSA_DeviceBtn:
-    case XkbSA_LockDeviceBtn:
     case XkbSA_NoAction:
         /* XXX TODO */
         write_buf(buf, "%sNoAction()%s", prefix, suffix);

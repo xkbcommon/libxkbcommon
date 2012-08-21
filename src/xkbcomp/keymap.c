@@ -57,11 +57,6 @@ UpdateActionMods(struct xkb_keymap *keymap, union xkb_action *act,
         mods = &act->mods.mods;
         break;
 
-    case XkbSA_ISOLock:
-        flags = act->iso.flags;
-        mods = &act->iso.mods;
-        break;
-
     default:
         return;
     }
