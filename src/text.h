@@ -74,7 +74,7 @@ const char *
 KeysymText(xkb_keysym_t sym);
 
 const char *
-KeyNameText(const char name[XkbKeyNameLength]);
+KeyNameText(const char name[XKB_KEY_NAME_LENGTH]);
 
 const char *
 SIMatchText(unsigned type);

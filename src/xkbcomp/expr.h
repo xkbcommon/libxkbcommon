@@ -82,7 +82,7 @@ ExprResolveString(struct xkb_context *ctx, const ExprDef *expr,
 
 bool
 ExprResolveKeyName(struct xkb_context *ctx, const ExprDef *expr,
-                   char name[XkbKeyNameLength]);
+                   char name[XKB_KEY_NAME_LENGTH]);
 
 bool
 ExprResolveEnum(struct xkb_context *ctx, const ExprDef *expr,

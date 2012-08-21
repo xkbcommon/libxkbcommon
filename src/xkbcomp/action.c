@@ -887,7 +887,7 @@ HandleRedirectKey(struct xkb_keymap *keymap, union xkb_action *action,
     unsigned t1;
     xkb_mod_mask_t t2;
     unsigned long tmp;
-    char key_name[XkbKeyNameLength];
+    char key_name[XKB_KEY_NAME_LENGTH];
 
     if (array_ndx != NULL)
         return ReportActionNotArray(keymap, action->type, field);

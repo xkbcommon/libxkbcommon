@@ -95,6 +95,8 @@ typedef uint32_t xkb_atom_t;
 #define XKB_ATOM_NONE 0
 #define XKB_LEVEL_INVALID 0xffffffff
 
+#define XKB_KEY_NAME_LENGTH 4
+
 struct xkb_context {
     int refcnt;
 
@@ -275,8 +277,8 @@ struct xkb_indicator_map {
 };
 
 struct xkb_key_alias {
-    char real[XkbKeyNameLength];
-    char alias[XkbKeyNameLength];
+    char real[XKB_KEY_NAME_LENGTH];
+    char alias[XKB_KEY_NAME_LENGTH];
 };
 
 struct xkb_controls {
@@ -296,7 +298,7 @@ struct xkb_controls {
 };
 
 struct xkb_key {
-    char name[XkbKeyNameLength];
+    char name[XKB_KEY_NAME_LENGTH];
 
     unsigned char explicit;
 

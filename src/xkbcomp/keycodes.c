@@ -164,7 +164,7 @@ ResizeKeyNameArrays(KeyNamesInfo *info, int newMax)
 
 static void
 InitAliasInfo(AliasInfo *info, enum merge_mode merge, unsigned file_id,
-              char alias[XkbKeyNameLength], char real[XkbKeyNameLength])
+              char alias[XKB_KEY_NAME_LENGTH], char real[XKB_KEY_NAME_LENGTH])
 {
     memset(info, 0, sizeof(*info));
     info->merge = merge;
@@ -886,12 +886,12 @@ bool
 FindKeyNameForAlias(struct xkb_keymap *keymap, unsigned long lname,
                     unsigned long *real_name)
 {
-    char name[XkbKeyNameLength];
+    char name[XKB_KEY_NAME_LENGTH];
     struct xkb_key_alias *a;
 
     LongToKeyName(lname, name);
     darray_foreach(a, keymap->key_aliases) {
-        if (strncmp(name, a->alias, XkbKeyNameLength) == 0) {
+        if (strncmp(name, a->alias, XKB_KEY_NAME_LENGTH) == 0) {
             *real_name = KeyNameToLong(a->real);
             return true;
         }

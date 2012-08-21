@@ -81,13 +81,13 @@ scanner_error_extra(struct YYLTYPE *loc, struct scanner_extra *extra,
                         BEGIN(INITIAL);
 
                         *yyextra->s = '\0';
-                        if (yyextra->s - yyextra->scanBuf > XkbKeyNameLength) {
+                        if (yyextra->s - yyextra->scanBuf > XKB_KEY_NAME_LENGTH) {
                             scanner_error_extra(yylloc, yyextra,
                                                 "Key name too long");
                             return ERROR_TOK;
                         }
 
-                        strncpy(yylval->keyName, yyextra->scanBuf, XkbKeyNameLength);
+                        strncpy(yylval->keyName, yyextra->scanBuf, XKB_KEY_NAME_LENGTH);
                         return KEYNAME;
                     }
 

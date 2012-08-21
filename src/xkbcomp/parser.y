@@ -122,7 +122,7 @@ yyerror(struct YYLTYPE *loc, struct parser_param *param, const char *msg)
         int64_t          num;
         enum xkb_file_type file_type;
         char            *str;
-        char            keyName[XkbKeyNameLength];
+        char            keyName[XKB_KEY_NAME_LENGTH];
         xkb_atom_t      sval;
         enum merge_mode merge;
         ParseCommon     *any;
@@ -678,7 +678,7 @@ Terminal        :       String
                         {
                             ExprDef *expr;
                             expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_KEYNAME);
-                            strncpy(expr->value.keyName, $1, XkbKeyNameLength);
+                            strncpy(expr->value.keyName, $1, XKB_KEY_NAME_LENGTH);
                             $$ = expr;
                         }
                 ;
@@ -734,7 +734,7 @@ Integer         :       INTEGER { $$ = $1; }
 KeyCode         :       INTEGER { $$ = $1; }
                 ;
 
-KeyName         :       KEYNAME { strncpy($$, $1, XkbKeyNameLength); }
+KeyName         :       KEYNAME { strncpy($$, $1, XKB_KEY_NAME_LENGTH); }
                 ;
 
 Ident           :       IDENT   { $$ = xkb_atom_steal(param->ctx, $1); }

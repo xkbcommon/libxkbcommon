@@ -490,7 +490,7 @@ ExprResolveString(struct xkb_context *ctx, const ExprDef *expr,
 
 bool
 ExprResolveKeyName(struct xkb_context *ctx, const ExprDef *expr,
-                   char name[XkbKeyNameLength])
+                   char name[XKB_KEY_NAME_LENGTH])
 {
     switch (expr->op) {
     case EXPR_VALUE:
@@ -499,7 +499,7 @@ ExprResolveKeyName(struct xkb_context *ctx, const ExprDef *expr,
                     expr_value_type_to_string(expr->value_type));
             return false;
         }
-        strncpy(name, expr->value.keyName, XkbKeyNameLength);
+        strncpy(name, expr->value.keyName, XKB_KEY_NAME_LENGTH);
         return true;
 
     case EXPR_IDENT:

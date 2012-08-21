@@ -28,7 +28,7 @@
 #define XKBCOMP_KEYCODES_H
 
 static inline unsigned long
-KeyNameToLong(const char name[XkbKeyNameLength])
+KeyNameToLong(const char name[XKB_KEY_NAME_LENGTH])
 {
     return
         (((unsigned long)name[0]) << 24) |
@@ -38,7 +38,7 @@ KeyNameToLong(const char name[XkbKeyNameLength])
 }
 
 static inline void
-LongToKeyName(unsigned long val, char name[XkbKeyNameLength])
+LongToKeyName(unsigned long val, char name[XKB_KEY_NAME_LENGTH])
 {
     name[0] = ((val >> 24) & 0xff);
     name[1] = ((val >> 16) & 0xff);
@@ -49,7 +49,7 @@ LongToKeyName(unsigned long val, char name[XkbKeyNameLength])
 static inline const char *
 LongKeyNameText(unsigned long val)
 {
-    char buf[XkbKeyNameLength];
+    char buf[XKB_KEY_NAME_LENGTH];
     LongToKeyName(val, buf);
     return KeyNameText(buf);
 }

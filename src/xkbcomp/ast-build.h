@@ -41,10 +41,10 @@ ExprDef *
 ExprCreateBinary(enum expr_op_type op, ExprDef *left, ExprDef *right);
 
 KeycodeDef *
-KeycodeCreate(char keyName[XkbKeyNameLength], unsigned long value);
+KeycodeCreate(char keyName[XKB_KEY_NAME_LENGTH], unsigned long value);
 
 KeyAliasDef *
-KeyAliasCreate(char keyName[XkbKeyNameLength], char real[XkbKeyNameLength]);
+KeyAliasCreate(char keyName[XKB_KEY_NAME_LENGTH], char real[XKB_KEY_NAME_LENGTH]);
 
 VModDef *
 VModCreate(xkb_atom_t name, ExprDef *value);
@@ -62,7 +62,7 @@ KeyTypeDef *
 KeyTypeCreate(xkb_atom_t name, VarDef *body);
 
 SymbolsDef *
-SymbolsCreate(char keyName[XkbKeyNameLength], ExprDef *symbols);
+SymbolsCreate(char keyName[XKB_KEY_NAME_LENGTH], ExprDef *symbols);
 
 GroupCompatDef *
 GroupCompatCreate(int group, ExprDef *def);
