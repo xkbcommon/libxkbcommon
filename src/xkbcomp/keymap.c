@@ -30,12 +30,12 @@ static void
 ComputeEffectiveMask(struct xkb_keymap *keymap, struct xkb_mods *mods)
 {
     xkb_mod_index_t i;
-    xkb_mod_mask_t vmask = mods->mods >> XkbNumModifiers;
+    xkb_mod_mask_t vmask = mods->mods >> XKB_NUM_CORE_MODS;
 
     /* The effective mask is only real mods for now. */
     mods->mask = mods->mods & 0xff;
 
-    for (i = 0; i < XkbNumVirtualMods; i++) {
+    for (i = 0; i < XKB_NUM_VIRTUAL_MODS; i++) {
         if (!(vmask & (1 << i)))
             continue;
         mods->mask |= keymap->vmods[i];
@@ -212,14 +212,14 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
             return false;
 
     /* Update keymap->vmods, the virtual -> real mod mapping. */
-    for (vmod = 0; vmod < XkbNumVirtualMods; vmod++)
+    for (vmod = 0; vmod < XKB_NUM_VIRTUAL_MODS; vmod++)
         keymap->vmods[vmod] = 0;
 
     xkb_foreach_key(key, keymap) {
         if (!key->vmodmap)
             continue;
 
-        for (vmod = 0; vmod < XkbNumVirtualMods; vmod++) {
+        for (vmod = 0; vmod < XKB_NUM_VIRTUAL_MODS; vmod++) {
             if (!(key->vmodmap & (1 << vmod)))
                 continue;
             keymap->vmods[vmod] |= key->modmap;

@@ -915,7 +915,7 @@ HandleRedirectKey(struct xkb_keymap *keymap, union xkb_action *action,
             else
                 act->mods &= ~(t2 & 0xff);
 
-            t2 = (t2 >> XkbNumModifiers) & 0xffff;
+            t2 = (t2 >> XKB_NUM_CORE_MODS) & 0xffff;
             act->vmods_mask |= t2;
             if (field == ACTION_FIELD_MODIFIERS)
                 act->vmods |= t2;

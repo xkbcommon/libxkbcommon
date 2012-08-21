@@ -100,6 +100,8 @@ typedef uint32_t xkb_atom_t;
 /* These should all be dynamic. */
 #define XKB_NUM_GROUPS 4
 #define XKB_NUM_INDICATORS 32
+#define XKB_NUM_VIRTUAL_MODS 16
+#define XKB_NUM_CORE_MODS 8
 
 struct xkb_context {
     int refcnt;
@@ -352,8 +354,8 @@ struct xkb_keymap {
     darray(struct xkb_sym_interpret) sym_interpret;
 
     /* vmod -> mod mapping */
-    xkb_mod_mask_t vmods[XkbNumVirtualMods];
-    xkb_atom_t vmod_names[XkbNumVirtualMods];
+    xkb_mod_mask_t vmods[XKB_NUM_VIRTUAL_MODS];
+    xkb_atom_t vmod_names[XKB_NUM_VIRTUAL_MODS];
 
     /* Number of groups in the key with the most groups. */
     xkb_group_index_t num_groups;

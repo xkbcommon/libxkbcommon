@@ -231,7 +231,7 @@ GetBuffer(size_t size)
 
 /*
  * Get a vmod name's text, where the vmod index is zero based
- * (0..XkbNumVirtualMods-1).
+ * (0..XKB_NUM_VIRTUAL_MODS-1).
  */
 static const char *
 VModIndexText(struct xkb_keymap *keymap, xkb_mod_index_t ndx)
@@ -241,7 +241,7 @@ VModIndexText(struct xkb_keymap *keymap, xkb_mod_index_t ndx)
     const char *tmp = NULL;
     char buf[20];
 
-    if (ndx >= XkbNumVirtualMods)
+    if (ndx >= XKB_NUM_VIRTUAL_MODS)
          tmp = "illegal";
     else
          tmp = xkb_atom_text(keymap->ctx, keymap->vmod_names[ndx]);
@@ -274,7 +274,7 @@ VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t cmask)
     char buf[BUFFER_SIZE];
 
     rmask = cmask & 0xff;
-    vmask = cmask >> XkbNumModifiers;
+    vmask = cmask >> XKB_NUM_CORE_MODS;
 
     if (rmask == 0 && vmask == 0)
         return "none";
@@ -287,7 +287,7 @@ VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t cmask)
     rem = BUFFER_SIZE;
 
     if (vmask != 0) {
-        for (i = 0, bit = 1; i < XkbNumVirtualMods && rem > 1; i++, bit <<=
+        for (i = 0, bit = 1; i < XKB_NUM_VIRTUAL_MODS && rem > 1; i++, bit <<=
                  1) {
             if (!(vmask & bit))
                 continue;
@@ -325,7 +325,7 @@ VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t cmask)
  * ShiftMapIndex, LockMapIndex, etc. from X11/X.h. Take note before
  * changing.
  */
-static const char *modNames[XkbNumModifiers] = {
+static const char *modNames[XKB_NUM_CORE_MODS] = {
     "Shift",
     "Lock",
     "Control",
@@ -341,7 +341,7 @@ ModNameToIndex(const char *name)
 {
     xkb_mod_index_t i;
 
-    for (i = 0; i < XkbNumModifiers; i++)
+    for (i = 0; i < XKB_NUM_CORE_MODS; i++)
         if (istreq(name, modNames[i]))
             return i;
 
@@ -351,7 +351,7 @@ ModNameToIndex(const char *name)
 const char *
 ModIndexToName(xkb_mod_index_t ndx)
 {
-    if (ndx < XkbNumModifiers)
+    if (ndx < XKB_NUM_CORE_MODS)
         return modNames[ndx];
     return NULL;
 }
@@ -393,7 +393,7 @@ ModMaskText(xkb_mod_mask_t mask)
     buf = GetBuffer(rem);
     str = buf;
     buf[0] = '\0';
-    for (i = 0, bit = 1; i < XkbNumModifiers && rem > 1; i++, bit <<= 1) {
+    for (i = 0, bit = 1; i < XKB_NUM_CORE_MODS && rem > 1; i++, bit <<= 1) {
         int len;
 
         if (!(mask & bit))

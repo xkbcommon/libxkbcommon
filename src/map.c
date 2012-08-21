@@ -113,13 +113,13 @@ xkb_map_num_mods(struct xkb_keymap *keymap)
 {
     xkb_mod_index_t i;
 
-    for (i = 0; i < XkbNumVirtualMods; i++)
+    for (i = 0; i < XKB_NUM_VIRTUAL_MODS; i++)
         if (!keymap->vmod_names[i])
             break;
 
     /* We always have all the core modifiers (for now), plus any virtual
      * modifiers we may have defined. */
-    return i + XkbNumModifiers;
+    return i + XKB_NUM_CORE_MODS;
 }
 
 /**
@@ -138,7 +138,7 @@ xkb_map_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx)
     name = ModIndexToName(idx);
     if (!name)
         name = xkb_atom_text(keymap->ctx,
-                             keymap->vmod_names[idx - XkbNumModifiers]);
+                             keymap->vmod_names[idx - XKB_NUM_CORE_MODS]);
 
     return name;
 }
@@ -160,11 +160,11 @@ xkb_map_mod_get_index(struct xkb_keymap *keymap, const char *name)
     if (atom == XKB_ATOM_NONE)
         return XKB_MOD_INVALID;
 
-    for (i = 0; i < XkbNumVirtualMods; i++) {
+    for (i = 0; i < XKB_NUM_VIRTUAL_MODS; i++) {
         if (keymap->vmod_names[i] == XKB_ATOM_NONE)
             break;
         if (keymap->vmod_names[i] == atom)
-            return i + XkbNumModifiers;
+            return i + XKB_NUM_CORE_MODS;
     }
 
     return XKB_MOD_INVALID;

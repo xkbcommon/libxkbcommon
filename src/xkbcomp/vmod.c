@@ -36,7 +36,7 @@ InitVModInfo(VModInfo *info, struct xkb_keymap *keymap)
 
     info->defined = info->available = 0;
 
-    for (i = 0; i < XkbNumVirtualMods; i++)
+    for (i = 0; i < XKB_NUM_VIRTUAL_MODS; i++)
         if (keymap->vmod_names[i])
             info->defined |= (1 << i);
 }
@@ -61,7 +61,7 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
                 "Value ignored\n");
 
     nextFree = -1;
-    for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1) {
+    for (i = 0, bit = 1; i < XKB_NUM_VIRTUAL_MODS; i++, bit <<= 1) {
         if (!(info->defined & bit)) {
             if (nextFree < 0)
                 nextFree = i;
@@ -82,7 +82,7 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
     if (nextFree < 0) {
         log_err(keymap->ctx,
                 "Too many virtual modifiers defined (maximum %d)\n",
-                XkbNumVirtualMods);
+                XKB_NUM_VIRTUAL_MODS);
         return false;
     }
 
@@ -102,7 +102,7 @@ LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
     if (type != EXPR_TYPE_INT)
         return false;
 
-    for (i = 0; i < XkbNumVirtualMods; i++) {
+    for (i = 0; i < XKB_NUM_VIRTUAL_MODS; i++) {
         if (keymap->vmod_names[i] == field) {
             *val_rtrn = i;
             return true;
@@ -122,7 +122,7 @@ LookupVModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
         return true;
     }
     else if (LookupVModIndex(priv, field, type, &ndx)) {
-        *val_rtrn = (1 << (XkbNumModifiers + ndx));
+        *val_rtrn = (1 << (XKB_NUM_CORE_MODS + ndx));
         return true;
     }
 
@@ -144,7 +144,7 @@ ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
         return false;
     }
 
-    for (i = 0; i < XkbNumVirtualMods; i++) {
+    for (i = 0; i < XKB_NUM_VIRTUAL_MODS; i++) {
         if ((info->available & (1 << i)) && keymap->vmod_names[i] == name) {
             *ndx_rtrn = i;
             return true;

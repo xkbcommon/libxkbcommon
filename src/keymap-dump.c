@@ -135,7 +135,7 @@ write_vmods(struct xkb_keymap *keymap, struct buf *buf)
     int num_vmods = 0;
     int i;
 
-    for (i = 0; i < XkbNumVirtualMods; i++) {
+    for (i = 0; i < XKB_NUM_VIRTUAL_MODS; i++) {
         if (!keymap->vmod_names[i])
             continue;
         if (num_vmods == 0)
@@ -686,7 +686,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
         if (key->vmodmap && (key->explicit & XkbExplicitVModMapMask)) {
             /* XXX: vmodmap cmask? */
             write_buf(buf, "\n\t\t\tvirtualMods= %s,",
-                      VModMaskText(keymap, key->vmodmap << XkbNumModifiers));
+                      VModMaskText(keymap, key->vmodmap << XKB_NUM_CORE_MODS));
         }
 
         switch (key->out_of_range_group_action) {
@@ -749,7 +749,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
         if (key->modmap == 0)
             continue;
 
-        for (mod = 0; mod < XkbNumModifiers; mod++) {
+        for (mod = 0; mod < XKB_NUM_CORE_MODS; mod++) {
             if (!(key->modmap & (1 << mod)))
                 continue;
 
