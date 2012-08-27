@@ -152,12 +152,11 @@ typedef struct _SymInterpInfo {
 } SymInterpInfo;
 
 enum led_field {
-    LED_FIELD_INDEX      = (1 << 0),
-    LED_FIELD_MODS       = (1 << 1),
-    LED_FIELD_GROUPS     = (1 << 2),
-    LED_FIELD_CTRLS      = (1 << 3),
-    LED_FIELD_EXPLICIT   = (1 << 4),
-    LED_FIELD_DRIVES_KBD = (1 << 5),
+    LED_FIELD_MODS       = (1 << 0),
+    LED_FIELD_GROUPS     = (1 << 1),
+    LED_FIELD_CTRLS      = (1 << 2),
+    LED_FIELD_EXPLICIT   = (1 << 3),
+    LED_FIELD_DRIVES_KBD = (1 << 4),
 };
 
 typedef struct _LEDInfo {
@@ -551,11 +550,6 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
         }
 
         collide = 0;
-        if (UseNewLEDField(LED_FIELD_INDEX, old, new, verbosity,
-                           &collide)) {
-            old->indicator = new->indicator;
-            old->defined |= LED_FIELD_INDEX;
-        }
         if (UseNewLEDField(LED_FIELD_MODS, old, new, verbosity,
                            &collide)) {
             old->which_mods = new->which_mods;
@@ -921,26 +915,10 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
         led->defined |= LED_FIELD_DRIVES_KBD;
     }
     else if (istreq(field, "index")) {
-        int ndx;
-
-        if (arrayNdx)
-            return ReportIndicatorNotArray(info, led, field);
-
-        if (!ExprResolveInteger(keymap->ctx, value, &ndx))
-            return ReportIndicatorBadType(info, led, field,
-                                          "indicator index");
-
-        if (ndx < 1 || ndx > XkbNumIndicators) {
-            log_err(info->keymap->ctx,
-                    "Illegal indicator index %d (range 1..%d); "
-                    "Index definition for %s indicator ignored\n",
-                    ndx, XkbNumIndicators,
-                    xkb_atom_text(keymap->ctx, led->name));
-            return false;
-        }
-
-        led->indicator = (xkb_led_index_t) ndx;
-        led->defined |= LED_FIELD_INDEX;
+        /* Users should see this, it might cause unexpected behavior. */
+        log_err(info->keymap->ctx,
+                "The \"index\" field in indicator statements is unsupported; "
+                "Ignored\n");
     }
     else {
         log_err(info->keymap->ctx,
