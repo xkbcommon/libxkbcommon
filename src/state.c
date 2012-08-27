@@ -557,13 +557,13 @@ xkb_state_led_update_all(struct xkb_state *state)
                 state->leds |= (1 << led);
         }
         else if (map->which_groups) {
-            if (map->which_mods & XkbIM_UseBase)
+            if (map->which_groups & XkbIM_UseBase)
                 group_mask |= (1 << state->base_group);
-            if (map->which_mods & XkbIM_UseLatched)
+            if (map->which_groups & XkbIM_UseLatched)
                 group_mask |= (1 << state->latched_group);
-            if (map->which_mods & XkbIM_UseLocked)
+            if (map->which_groups & XkbIM_UseLocked)
                 group_mask |= (1 << state->locked_group);
-            if (map->which_mods & XkbIM_UseEffective)
+            if (map->which_groups & XkbIM_UseEffective)
                 group_mask |= (1 << state->group);
             if ((map->groups & group_mask))
                 state->leds |= (1 << led);
