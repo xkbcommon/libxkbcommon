@@ -123,37 +123,25 @@ ParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
 
 /***====================================================================***/
 
+static const char *xkb_file_type_include_dirs[_FILE_TYPE_NUM_ENTRIES] = {
+    [FILE_TYPE_KEYCODES] = "keycodes",
+    [FILE_TYPE_TYPES] = "types",
+    [FILE_TYPE_COMPAT] = "compat",
+    [FILE_TYPE_SYMBOLS] = "symbols",
+    [FILE_TYPE_GEOMETRY] = "geometry",
+    [FILE_TYPE_KEYMAP] = "keymap",
+    [FILE_TYPE_RULES] = "rules",
+};
+
 /**
  * Return the xkb directory based on the type.
  */
 static const char *
 DirectoryForInclude(enum xkb_file_type type)
 {
-    switch (type) {
-    case FILE_TYPE_KEYMAP:
-        return "keymap";
-
-    case FILE_TYPE_KEYCODES:
-        return "keycodes";
-
-    case FILE_TYPE_TYPES:
-        return "types";
-
-    case FILE_TYPE_SYMBOLS:
-        return "symbols";
-
-    case FILE_TYPE_COMPAT:
-        return "compat";
-
-    case FILE_TYPE_GEOMETRY:
-        return "geometry";
-
-    case FILE_TYPE_RULES:
-        return "rules";
-
-    default:
+    if (type >= _FILE_TYPE_NUM_ENTRIES)
         return "";
-    }
+    return xkb_file_type_include_dirs[type];
 }
 
 /***====================================================================***/

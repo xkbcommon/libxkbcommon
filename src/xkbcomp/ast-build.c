@@ -489,7 +489,7 @@ XkbFileFromComponents(struct xkb_context *ctx,
                             (ParseCommon *) inc, 0);
     AppendStmt(&keycodes->common, &symbols->common);
 
-    return XkbFileCreate(ctx, FILE_TYPE_KEYMAP, strdup(""),
+    return XkbFileCreate(ctx, FILE_TYPE_KEYMAP, NULL,
                          &keycodes->common, 0);
 }
 

@@ -28,22 +28,25 @@
 #include "text.h"
 #include "rules.h"
 
-/**
- * Compile the given file and store the output in keymap.
- * @param file A list of XkbFiles, each denoting one type (e.g.
- * FILE_TYPE_KEYCODES, etc.)
- */
+typedef bool (*compile_file_fn)(XkbFile *file,
+                                struct xkb_keymap *keymap,
+                                enum merge_mode merge);
+
+static const compile_file_fn compile_file_fns[LAST_KEYMAP_FILE_TYPE + 1] = {
+    [FILE_TYPE_KEYCODES] = CompileKeycodes,
+    [FILE_TYPE_TYPES] = CompileKeyTypes,
+    [FILE_TYPE_COMPAT] = CompileCompatMap,
+    [FILE_TYPE_SYMBOLS] = CompileSymbols,
+};
+
 static struct xkb_keymap *
-compile_keymap(struct xkb_context *ctx, XkbFile *file)
+compile_keymap_file(struct xkb_context *ctx, XkbFile *file)
 {
     bool ok;
-    unsigned have = 0;
     const char *main_name;
     struct xkb_keymap *keymap;
-    XkbFile *keycodes = NULL;
-    XkbFile *types = NULL;
-    XkbFile *compat = NULL;
-    XkbFile *symbols = NULL;
+    XkbFile *files[LAST_KEYMAP_FILE_TYPE + 1] = { NULL };
+    enum xkb_file_type type;
 
     keymap = xkb_map_new(ctx);
     if (!keymap)
@@ -51,46 +54,26 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
 
     main_name = file->name ? file->name : "(unnamed)";
 
-    /*
-     * Other aggregate file types are converted to FILE_TYPE_KEYMAP
-     * in the parser.
-     */
     if (file->file_type != FILE_TYPE_KEYMAP) {
         log_err(ctx, "Cannot compile a %s file alone into a keymap\n",
                 FileTypeText(file->file_type));
         goto err;
     }
 
-    /* Check for duplicate entries in the input file */
+    /* Collect section files and check for duplicates. */
     for (file = (XkbFile *) file->defs; file;
          file = (XkbFile *) file->common.next) {
-        if (have & file->file_type) {
-            log_err(ctx,
-                    "More than one %s section in a keymap file; "
-                    "All sections after the first ignored\n",
+        if (file->file_type < FIRST_KEYMAP_FILE_TYPE ||
+            file->file_type > LAST_KEYMAP_FILE_TYPE) {
+            log_err(ctx, "Cannot define %s in a keymap file\n",
                     FileTypeText(file->file_type));
             continue;
         }
 
-        switch (file->file_type) {
-        case FILE_TYPE_KEYCODES:
-            keycodes = file;
-            break;
-
-        case FILE_TYPE_TYPES:
-            types = file;
-            break;
-
-        case FILE_TYPE_SYMBOLS:
-            symbols = file;
-            break;
-
-        case FILE_TYPE_COMPAT:
-            compat = file;
-            break;
-
-        default:
-            log_err(ctx, "Cannot define %s in a keymap file\n",
+        if (files[file->file_type]) {
+            log_err(ctx,
+                    "More than one %s section in keymap file; "
+                    "All sections after the first ignored\n",
                     FileTypeText(file->file_type));
             continue;
         }
@@ -100,45 +83,37 @@ compile_keymap(struct xkb_context *ctx, XkbFile *file)
             file->topName = strdup(main_name);
         }
 
-        have |= file->file_type;
+        files[file->file_type] = file;
     }
 
-    if (REQUIRED_FILE_TYPES & (~have)) {
-        enum xkb_file_type bit;
-        enum xkb_file_type missing;
-
-        missing = REQUIRED_FILE_TYPES & (~have);
-
-        for (bit = 1; missing != 0; bit <<= 1) {
-            if (missing & bit) {
-                log_err(ctx, "Required section %s missing from keymap\n",
-                        FileTypeText(bit));
-                missing &= ~bit;
-            }
+    /*
+     * Check that all required section were provided.
+     * Report everything before failing.
+     */
+    ok = true;
+    for (type = FIRST_KEYMAP_FILE_TYPE;
+         type <= LAST_KEYMAP_FILE_TYPE;
+         type++) {
+        if (files[type] == NULL) {
+            log_err(ctx, "Required section %s missing from keymap\n",
+                    FileTypeText(type));
+            ok = false;
         }
+    }
+    if (!ok)
+        goto err;
 
-        goto err;
-    }
-
-    ok = CompileKeycodes(keycodes, keymap, MERGE_OVERRIDE);
-    if (!ok) {
-        log_err(ctx, "Failed to compile keycodes\n");
-        goto err;
-    }
-    ok = CompileKeyTypes(types, keymap, MERGE_OVERRIDE);
-    if (!ok) {
-        log_err(ctx, "Failed to compile key types\n");
-        goto err;
-    }
-    ok = CompileCompatMap(compat, keymap, MERGE_OVERRIDE);
-    if (!ok) {
-        log_err(ctx, "Failed to compile compat map\n");
-        goto err;
-    }
-    ok = CompileSymbols(symbols, keymap, MERGE_OVERRIDE);
-    if (!ok) {
-        log_err(ctx, "Failed to compile symbols\n");
-        goto err;
+    /* Compile sections. */
+    for (type = FIRST_KEYMAP_FILE_TYPE;
+         type <= LAST_KEYMAP_FILE_TYPE;
+         type++) {
+        log_dbg(ctx, "Compiling %s \"%s\"\n",
+                FileTypeText(type), files[type]->topName);
+        ok = compile_file_fns[type](files[type], keymap, MERGE_OVERRIDE);
+        if (!ok) {
+            log_err(ctx, "Failed to compile %s\n", FileTypeText(type));
+            goto err;
+        }
     }
 
     ok = UpdateModifiersFromCompat(keymap);
@@ -194,7 +169,7 @@ xkb_map_new_from_names(struct xkb_context *ctx,
         return NULL;
     }
 
-    keymap = compile_keymap(ctx, file);
+    keymap = compile_keymap_file(ctx, file);
     FreeXkbFile(file);
     return keymap;
 }
@@ -225,7 +200,7 @@ xkb_map_new_from_string(struct xkb_context *ctx,
         return NULL;
     }
 
-    keymap = compile_keymap(ctx, file);
+    keymap = compile_keymap_file(ctx, file);
     FreeXkbFile(file);
     return keymap;
 }
@@ -256,7 +231,7 @@ xkb_map_new_from_file(struct xkb_context *ctx,
         return NULL;
     }
 
-    keymap = compile_keymap(ctx, xkb_file);
+    keymap = compile_keymap_file(ctx, xkb_file);
     FreeXkbFile(xkb_file);
     return keymap;
 }

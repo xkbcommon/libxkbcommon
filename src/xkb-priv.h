@@ -96,18 +96,25 @@ typedef uint32_t xkb_atom_t;
 #define XKB_LEVEL_INVALID 0xffffffff
 
 enum xkb_file_type {
-    /* The top level file which includes the other component files. */
-    FILE_TYPE_KEYMAP = (1 << 0),
+    /* Component files, by order of compilation. */
+    FILE_TYPE_KEYCODES = 0,
+    FILE_TYPE_TYPES = 1,
+    FILE_TYPE_COMPAT = 2,
+    FILE_TYPE_SYMBOLS = 3,
+    /* Geometry is not compiled any more. */
+    FILE_TYPE_GEOMETRY = 4,
 
-    /* Component files. */
-    FILE_TYPE_TYPES = (1 << 1),
-    FILE_TYPE_COMPAT = (1 << 2),
-    FILE_TYPE_SYMBOLS = (1 << 3),
-    FILE_TYPE_KEYCODES = (1 << 4),
-    FILE_TYPE_GEOMETRY = (1 << 5),
+    /* A top level file which includes the above files. */
+    FILE_TYPE_KEYMAP,
+
+/* File types which must be found in a keymap file. */
+#define FIRST_KEYMAP_FILE_TYPE FILE_TYPE_KEYCODES
+#define LAST_KEYMAP_FILE_TYPE  FILE_TYPE_SYMBOLS
 
     /* This one doesn't mix with the others, but useful here as well. */
-    FILE_TYPE_RULES = (1 << 6),
+    FILE_TYPE_RULES,
+
+    _FILE_TYPE_NUM_ENTRIES
 };
 
 struct xkb_context {
@@ -127,11 +134,6 @@ struct xkb_context {
 
     struct atom_table *atom_table;
 };
-
-/* Files needed for a complete keymap. */
-#define REQUIRED_FILE_TYPES (FILE_TYPE_TYPES | FILE_TYPE_COMPAT | \
-                             FILE_TYPE_SYMBOLS | FILE_TYPE_KEYCODES)
-#define LEGAL_FILE_TYPES    REQUIRED_FILE_TYPES
 
 /**
  * Legacy names for the components of an XKB keymap, also known as KcCGST.
