@@ -146,7 +146,6 @@ typedef struct _SymInterpInfo {
     enum si_field defined;
     unsigned file_id;
     enum merge_mode merge;
-    struct list entry;
 
     struct xkb_sym_interpret interp;
 } SymInterpInfo;
@@ -174,9 +173,8 @@ typedef struct _CompatInfo {
     char *name;
     unsigned file_id;
     int errorCount;
-    int nInterps;
-    struct list interps;
     SymInterpInfo dflt;
+    darray(SymInterpInfo) interps;
     LEDInfo ledDflt;
     darray(LEDInfo) leds;
     VModInfo vmods;
@@ -248,8 +246,7 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id)
     info->name = NULL;
     info->file_id = file_id;
     info->errorCount = 0;
-    info->nInterps = 0;
-    list_init(&info->interps);
+    darray_init(info->interps);
     info->act = NULL;
     info->dflt.file_id = file_id;
     info->dflt.defined = 0;
@@ -269,7 +266,6 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id)
 static void
 ClearCompatInfo(CompatInfo *info)
 {
-    SymInterpInfo *si, *next_si;
     struct xkb_keymap *keymap = info->keymap;
 
     free(info->name);
@@ -281,9 +277,7 @@ ClearCompatInfo(CompatInfo *info)
     memset(&info->dflt.interp.act, 0, sizeof(info->dflt.interp.act));
     info->dflt.interp.act.type = XkbSA_NoAction;
     ClearIndicatorMapInfo(keymap->ctx, &info->ledDflt);
-    info->nInterps = 0;
-    list_foreach_safe(si, next_si, &info->interps, entry)
-        free(si);
+    darray_free(info->interps);
     darray_free(info->leds);
     FreeActionInfo(info->act);
     info->act = NULL;
@@ -292,26 +286,11 @@ ClearCompatInfo(CompatInfo *info)
 }
 
 static SymInterpInfo *
-NextInterp(CompatInfo *info)
-{
-    SymInterpInfo *si;
-
-    si = calloc(1, sizeof(*si));
-    if (!si)
-        return NULL;
-
-    list_append(&si->entry, &info->interps);
-    info->nInterps++;
-
-    return si;
-}
-
-static SymInterpInfo *
 FindMatchingInterp(CompatInfo *info, SymInterpInfo *new)
 {
     SymInterpInfo *old;
 
-    list_foreach(old, &info->interps, entry)
+    darray_foreach(old, info->interps)
         if (old->interp.sym == new->interp.sym &&
             old->interp.mods == new->interp.mods &&
             old->interp.match == new->interp.match)
@@ -343,14 +322,12 @@ AddInterp(CompatInfo *info, SymInterpInfo *new)
 {
     enum si_field collide;
     SymInterpInfo *old;
-    struct list entry;
     int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
 
     collide = 0;
     old = FindMatchingInterp(info, new);
     if (old != NULL) {
         if (new->merge == MERGE_REPLACE) {
-            entry = old->entry;
             if ((old->file_id == new->file_id && verbosity > 0) ||
                 verbosity > 9)
                 log_warn(info->keymap->ctx,
@@ -358,7 +335,6 @@ AddInterp(CompatInfo *info, SymInterpInfo *new)
                          "Earlier interpretation ignored\n",
                          siText(new, info));
             *old = *new;
-            old->entry = entry;
             return true;
         }
 
@@ -396,13 +372,7 @@ AddInterp(CompatInfo *info, SymInterpInfo *new)
         return true;
     }
 
-    old = new;
-    new = NextInterp(info);
-    if (!new)
-        return false;
-    entry = new->entry;
-    *new = *old;
-    new->entry = entry;
+    darray_append(info->interps, *new);
     return true;
 }
 
@@ -543,7 +513,7 @@ static void
 MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
                         enum merge_mode merge)
 {
-    SymInterpInfo *si, *next_si;
+    SymInterpInfo *si;
     LEDInfo *led;
 
     if (from->errorCount > 0) {
@@ -556,7 +526,7 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
         from->name = NULL;
     }
 
-    list_foreach_safe(si, next_si, &from->interps, entry) {
+    darray_foreach(si, from->interps) {
         si->merge = (merge == MERGE_DEFAULT ? si->merge : merge);
         if (!AddInterp(into, si))
             into->errorCount++;
@@ -1021,7 +991,7 @@ CopyInterps(CompatInfo *info, bool needSymbol, unsigned pred)
 {
     SymInterpInfo *si;
 
-    list_foreach(si, &info->interps, entry) {
+    darray_foreach(si, info->interps) {
         if (((si->interp.match & XkbSI_OpMask) != pred) ||
             (needSymbol && si->interp.sym == XKB_KEY_NoSymbol) ||
             (!needSymbol && si->interp.sym != XKB_KEY_NoSymbol))
@@ -1113,9 +1083,7 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
     if (info.name)
         keymap->compat_section_name = strdup(info.name);
 
-    darray_init(keymap->sym_interpret);
-    if (info.nInterps > 0) {
-        darray_growalloc(keymap->sym_interpret, info.nInterps);
+    if (!darray_empty(info.interps)) {
         CopyInterps(&info, true, XkbSI_Exactly);
         CopyInterps(&info, true, XkbSI_AllOf | XkbSI_NoneOf);
         CopyInterps(&info, true, XkbSI_AnyOf);
