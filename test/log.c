@@ -32,9 +32,11 @@
 #pragma GCC diagnostic ignored "-Wmissing-format-attribute"
 
 static const char *
-priority_to_string(int priority)
+log_level_to_string(enum xkb_log_level level)
 {
-    switch (priority) {
+    switch (level) {
+    case XKB_LOG_LEVEL_CRITICAL:
+        return "critical";
     case XKB_LOG_LEVEL_ERROR:
         return "error";
     case XKB_LOG_LEVEL_WARNING:
@@ -49,7 +51,8 @@ priority_to_string(int priority)
 }
 
 ATTR_PRINTF(3, 0) static void
-log_fn(struct xkb_context *ctx, int priority, const char *fmt, va_list args)
+log_fn(struct xkb_context *ctx, enum xkb_log_level level,
+       const char *fmt, va_list args)
 {
     char *s;
     int size;
@@ -59,7 +62,7 @@ log_fn(struct xkb_context *ctx, int priority, const char *fmt, va_list args)
     size = vasprintf(&s, fmt, args);
     assert(size != -1);
 
-    darray_append_string(*ls, priority_to_string(priority));
+    darray_append_string(*ls, log_level_to_string(level));
     darray_append_lit(*ls, ": ");
     darray_append_string(*ls, s);
     free(s);
@@ -73,6 +76,7 @@ main(void)
     int ret;
 
     ret = setenv("XKB_LOG", "warn", 1);
+    assert(ret == 0);
     ret = setenv("XKB_VERBOSITY", "5", 1);
     assert(ret == 0);
     ctx = xkb_context_new(0);
@@ -86,22 +90,22 @@ main(void)
     log_info(ctx, "first info\n");
     log_dbg(ctx, "first debug: %s\n", "hello");
     log_err(ctx, "first error: %lu\n", 115415UL);
-    log_lvl(ctx, 5, "first verbose 5\n");
+    log_vrb(ctx, 5, "first verbose 5\n");
 
-    xkb_set_log_priority(ctx, XKB_LOG_LEVEL_DEBUG);
+    xkb_set_log_level(ctx, XKB_LOG_LEVEL_DEBUG);
     log_warn(ctx, "second warning: %d\n", 87);
     log_dbg(ctx, "second debug: %s %s\n", "hello", "world");
     log_info(ctx, "second info\n");
     log_err(ctx, "second error: %lu\n", 115415UL);
-    log_lvl(ctx, 6, "second verbose 6\n");
+    log_vrb(ctx, 6, "second verbose 6\n");
 
     xkb_set_log_verbosity(ctx, 0);
-    xkb_set_log_priority(ctx, XKB_LOG_LEVEL_CRITICAL);
+    xkb_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
     log_warn(ctx, "third warning: %d\n", 87);
     log_dbg(ctx, "third debug: %s %s\n", "hello", "world");
     log_info(ctx, "third info\n");
     log_err(ctx, "third error: %lu\n", 115415UL);
-    log_lvl(ctx, 0, "third verbose 0\n");
+    log_vrb(ctx, 0, "third verbose 0\n");
 
     printf("%s", log_string.item);
 

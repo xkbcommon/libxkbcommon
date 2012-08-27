@@ -101,7 +101,7 @@ test_get_context(void)
 
     xkb_context_include_path_append(ctx, test_get_path(""));
 
-    xkb_set_log_priority(ctx, XKB_LOG_LEVEL_DEBUG);
+    xkb_set_log_level(ctx, XKB_LOG_LEVEL_DEBUG);
     xkb_set_log_verbosity(ctx, 101);
 
     return ctx;

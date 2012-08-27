@@ -755,7 +755,7 @@ ApplyAliases(KeyNamesInfo *info, struct xkb_keymap *keymap)
         /* Check that ->real is a key. */
         key = FindNamedKey(keymap, alias->real, false, 0);
         if (!key) {
-            log_lvl(info->ctx, 5,
+            log_vrb(info->ctx, 5,
                     "Attempt to alias %s to non-existent key %s; Ignored\n",
                     LongKeyNameText(alias->alias),
                     LongKeyNameText(alias->real));
@@ -765,7 +765,7 @@ ApplyAliases(KeyNamesInfo *info, struct xkb_keymap *keymap)
         /* Check that ->alias is not a key. */
         key = FindNamedKey(keymap, alias->alias, false, 0);
         if (key) {
-            log_lvl(info->ctx, 5,
+            log_vrb(info->ctx, 5,
                     "Attempt to create alias with the name of a real key; "
                     "Alias \"%s = %s\" ignored\n",
                     LongKeyNameText(alias->alias),

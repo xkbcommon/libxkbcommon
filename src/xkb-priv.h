@@ -98,9 +98,10 @@ typedef uint32_t xkb_atom_t;
 struct xkb_context {
     int refcnt;
 
-    ATTR_PRINTF(3, 0) void (*log_fn)(struct xkb_context *ctx, int priority,
+    ATTR_PRINTF(3, 0) void (*log_fn)(struct xkb_context *ctx,
+                                     enum xkb_log_level level,
                                      const char *fmt, va_list args);
-    enum xkb_log_level log_priority;
+    enum xkb_log_level log_level;
     int log_verbosity;
     void *user_data;
 
@@ -464,19 +465,18 @@ bool
 xkb_keysym_is_keypad(xkb_keysym_t keysym);
 
 ATTR_PRINTF(3, 4) void
-xkb_log(struct xkb_context *ctx, int priority, const char *fmt, ...);
+xkb_log(struct xkb_context *ctx, enum xkb_log_level level,
+        const char *fmt, ...);
 
-#define xkb_log_cond(ctx, prio, ...) \
-    do { \
-        if (xkb_get_log_priority(ctx) >= (prio)) \
-            xkb_log((ctx), (prio), __VA_ARGS__); \
-    } while (0)
+#define xkb_log_cond_level(ctx, level, ...) do { \
+    if (xkb_get_log_level(ctx) >= (level)) \
+    xkb_log((ctx), (level), __VA_ARGS__); \
+} while (0)
 
-#define xkb_log_cond_lvl(ctx, prio, lvl, ...) \
-    do { \
-        if (xkb_get_log_verbosity(ctx) >= (lvl)) \
-            xkb_log_cond((ctx), (prio), __VA_ARGS__); \
-    } while (0)
+#define xkb_log_cond_verbosity(ctx, level, vrb, ...) do { \
+    if (xkb_get_log_verbosity(ctx) >= (vrb)) \
+    xkb_log_cond_level((ctx), (level), __VA_ARGS__); \
+} while (0)
 
 /*
  * The format is not part of the argument list in order to avoid the
@@ -485,16 +485,16 @@ xkb_log(struct xkb_context *ctx, int priority, const char *fmt, ...);
  * result in an error, though.
  */
 #define log_dbg(ctx, ...) \
-    xkb_log_cond((ctx), XKB_LOG_LEVEL_DEBUG, __VA_ARGS__)
+    xkb_log_cond_level((ctx), XKB_LOG_LEVEL_DEBUG, __VA_ARGS__)
 #define log_info(ctx, ...) \
-    xkb_log_cond((ctx), XKB_LOG_LEVEL_INFO, __VA_ARGS__)
+    xkb_log_cond_level((ctx), XKB_LOG_LEVEL_INFO, __VA_ARGS__)
 #define log_warn(ctx, ...) \
-    xkb_log_cond((ctx), XKB_LOG_LEVEL_WARNING, __VA_ARGS__)
+    xkb_log_cond_level((ctx), XKB_LOG_LEVEL_WARNING, __VA_ARGS__)
 #define log_err(ctx, ...) \
-    xkb_log_cond((ctx), XKB_LOG_LEVEL_ERROR, __VA_ARGS__)
+    xkb_log_cond_level((ctx), XKB_LOG_LEVEL_ERROR, __VA_ARGS__)
 #define log_wsgo(ctx, ...) \
-    xkb_log_cond((ctx), XKB_LOG_LEVEL_CRITICAL, __VA_ARGS__)
-#define log_lvl(ctx, lvl, ...) \
-    xkb_log_cond_lvl((ctx), XKB_LOG_LEVEL_WARNING, (lvl), __VA_ARGS__)
+    xkb_log_cond_level((ctx), XKB_LOG_LEVEL_CRITICAL, __VA_ARGS__)
+#define log_vrb(ctx, vrb, ...) \
+    xkb_log_cond_verbosity((ctx), XKB_LOG_LEVEL_WARNING, (vrb), __VA_ARGS__)
 
 #endif /* XKB_PRIV_H */

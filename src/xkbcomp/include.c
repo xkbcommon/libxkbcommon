@@ -250,7 +250,7 @@ ProcessIncludeFile(struct xkb_context *ctx,
         }
     }
     else if (rtrn->common.next) {
-        log_lvl(ctx, 5,
+        log_vrb(ctx, 5,
                 "No map in include statement, but \"%s\" contains several; "
                 "Using first defined map, \"%s\"\n",
                 stmt->file, rtrn->name);

@@ -276,7 +276,7 @@ AddKeyType(KeyTypesInfo *info, KeyTypeInfo *new)
         }
 
         if (old->file_id == new->file_id)
-            log_lvl(info->keymap->ctx, 4,
+            log_vrb(info->keymap->ctx, 4,
                     "Multiple definitions of the %s key type; "
                     "Later definition ignored\n",
                     xkb_atom_text(info->keymap->ctx, new->name));
@@ -422,7 +422,7 @@ AddMapEntry(KeyTypesInfo *info, KeyTypeInfo *type,
                      (clobber ? old->level : new->level) + 1);
         }
         else {
-            log_lvl(info->keymap->ctx, 10,
+            log_vrb(info->keymap->ctx, 10,
                     "Multiple occurences of map[%s]= %d in %s; Ignored\n",
                     MapEntryTxt(info, new), new->level + 1,
                     TypeTxt(info, type));
@@ -458,7 +458,7 @@ SetMapEntry(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
         return ReportTypeBadType(info, type, "map entry", "modifier mask");
 
     if (entry.mods.mods & (~type->mods)) {
-        log_lvl(info->keymap->ctx, 1,
+        log_vrb(info->keymap->ctx, 1,
                 "Map entry for unused modifiers in %s; "
                 "Using %s instead of %s\n",
                 TypeTxt(info, type),
@@ -500,7 +500,7 @@ AddPreserve(KeyTypesInfo *info, KeyTypeInfo *type,
 
         /* Map exists with same preserve; do nothing. */
         if (entry->preserve.mods == preserve_mods) {
-            log_lvl(info->keymap->ctx, 10,
+            log_vrb(info->keymap->ctx, 10,
                     "Identical definitions for preserve[%s] in %s; "
                     "Ignored\n",
                     VModMaskText(info->keymap, mods),
@@ -509,7 +509,7 @@ AddPreserve(KeyTypesInfo *info, KeyTypeInfo *type,
         }
 
         /* Map exists with different preserve; latter wins. */
-        log_lvl(info->keymap->ctx, 1,
+        log_vrb(info->keymap->ctx, 1,
                 "Multiple definitions for preserve[%s] in %s; "
                 "Using %s, ignoring %s\n",
                 VModMaskText(info->keymap, mods),
@@ -553,7 +553,7 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
         mods &= type->mods;
         after = VModMaskText(info->keymap, mods);
 
-        log_lvl(info->keymap->ctx, 1,
+        log_vrb(info->keymap->ctx, 1,
                 "Preserve for modifiers not used by the %s type; "
                 "Index %s converted to %s\n",
                 TypeTxt(info, type), before, after);
@@ -575,7 +575,7 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
         preserve_mods &= mods;
         after = VModMaskText(info->keymap, preserve_mods);
 
-        log_lvl(info->keymap->ctx, 1,
+        log_vrb(info->keymap->ctx, 1,
                 "Illegal value for preserve[%s] in type %s; "
                 "Converted %s to %s\n",
                 VModMaskText(info->keymap, mods),
@@ -599,7 +599,7 @@ AddLevelName(KeyTypesInfo *info, KeyTypeInfo *type,
 
     /* Same level, same name. */
     if (darray_item(type->level_names, level) == name) {
-        log_lvl(info->keymap->ctx, 10,
+        log_vrb(info->keymap->ctx, 10,
                 "Duplicate names for level %d of key type %s; Ignored\n",
                 level + 1, TypeTxt(info, type));
         return true;
@@ -611,7 +611,7 @@ AddLevelName(KeyTypesInfo *info, KeyTypeInfo *type,
         old = xkb_atom_text(info->keymap->ctx,
                             darray_item(type->level_names, level));
         new = xkb_atom_text(info->keymap->ctx, name);
-        log_lvl(info->keymap->ctx, 1,
+        log_vrb(info->keymap->ctx, 1,
                 "Multiple names for level %d of key type %s; "
                 "Using %s, ignoring %s\n",
                 level + 1, TypeTxt(info, type),

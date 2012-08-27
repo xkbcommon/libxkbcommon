@@ -242,7 +242,7 @@ CheckDefaultMap(struct xkb_context *ctx, XkbFile *maps, const char *fileName)
             continue;
         }
 
-        log_lvl(ctx, 3,
+        log_vrb(ctx, 3,
                 "Multiple default components in %s; "
                 "Using %s, ignoring %s\n",
                 (fileName ? fileName : "(unknown)"),

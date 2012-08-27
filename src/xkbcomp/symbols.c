@@ -1033,7 +1033,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         const char *str;
 
         if (!ExprResolveString(ctx, value, &str))
-            log_lvl(info->keymap->ctx, 1,
+            log_vrb(info->keymap->ctx, 1,
                     "The type field of a key symbol map must be a string; "
                     "Ignoring illegal type definition\n");
 
@@ -1187,7 +1187,7 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
     const char *name;
 
     if (!arrayNdx) {
-        log_lvl(info->keymap->ctx, 1,
+        log_vrb(info->keymap->ctx, 1,
                 "You must specify an index when specifying a group name; "
                 "Group name definition without array subscript ignored\n");
         return false;
@@ -1724,7 +1724,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
     key = FindNamedKey(keymap, keyi->name, useAlias, start_from);
     if (!key) {
         if (start_from == 0)
-            log_lvl(info->keymap->ctx, 5,
+            log_vrb(info->keymap->ctx, 5,
                     "Key %s not found in keycodes; Symbols ignored\n",
                     LongKeyNameText(keyi->name));
         return false;
@@ -1749,7 +1749,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
                                        darray_mem(keyi->syms[i], 0),
                                        &keyi->types[i], &autoType)) { }
             else
-                log_lvl(info->keymap->ctx, 5,
+                log_vrb(info->keymap->ctx, 5,
                         "No automatic type for %d symbols; "
                         "Using %s for the %s key (keycode %d)\n",
                         keyi->numLevels[i],
@@ -1761,7 +1761,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
                 key->explicit |= (1 << i);
         }
         else {
-            log_lvl(info->keymap->ctx, 3,
+            log_vrb(info->keymap->ctx, 3,
                     "Type \"%s\" is not defined; "
                     "Using default type for the %s key (keycode %d)\n",
                     xkb_atom_text(keymap->ctx, keyi->types[i]),
@@ -1776,7 +1776,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
         /* if the type specifies fewer levels than the key has, shrink the key */
         type = &keymap->types[types[i]];
         if (type->num_levels < keyi->numLevels[i]) {
-            log_lvl(info->keymap->ctx, 1,
+            log_vrb(info->keymap->ctx, 1,
                     "Type \"%s\" has %d levels, but %s has %d symbols; "
                     "Ignoring extra symbols\n",
                     xkb_atom_text(keymap->ctx, type->name),
@@ -1875,7 +1875,7 @@ CopyModMapDef(SymbolsInfo *info, ModMapEntry *entry)
     if (!entry->haveSymbol) {
         key = FindNamedKey(keymap, entry->u.keyName, true, 0);
         if (!key) {
-            log_lvl(info->keymap->ctx, 5,
+            log_vrb(info->keymap->ctx, 5,
                     "Key %s not found in keycodes; "
                     "Modifier map entry for %s not updated\n",
                     LongKeyNameText(entry->u.keyName),
@@ -1886,7 +1886,7 @@ CopyModMapDef(SymbolsInfo *info, ModMapEntry *entry)
     else {
         key = FindKeyForSymbol(keymap, entry->u.keySym);
         if (!key) {
-            log_lvl(info->keymap->ctx, 5,
+            log_vrb(info->keymap->ctx, 5,
                     "Key \"%s\" not found in symbol map; "
                     "Modifier map entry for %s not updated\n",
                     KeysymText(entry->u.keySym),

@@ -258,15 +258,15 @@ xkb_context_unref(struct xkb_context *context);
 
 enum xkb_log_level {
     /** Log critical internal errors only */
-    XKB_LOG_LEVEL_CRITICAL = 0,
+    XKB_LOG_LEVEL_CRITICAL = 10,
     /** Log all errors */
-    XKB_LOG_LEVEL_ERROR = 1,
+    XKB_LOG_LEVEL_ERROR = 20,
     /** Log warnings and errors */
-    XKB_LOG_LEVEL_WARNING = 2,
+    XKB_LOG_LEVEL_WARNING = 30,
     /** Log information, warnings, and errors */
-    XKB_LOG_LEVEL_INFO = 3,
+    XKB_LOG_LEVEL_INFO = 40,
     /** Log all the things */
-    XKB_LOG_LEVEL_DEBUG = 4,
+    XKB_LOG_LEVEL_DEBUG = 50,
 };
 
 /**
@@ -275,23 +275,24 @@ enum xkb_log_level {
  **/
 void
 xkb_set_log_fn(struct xkb_context *context,
-               void (*log_fn)(struct xkb_context *context, int priority,
+               void (*log_fn)(struct xkb_context *context,
+                              enum xkb_log_level level,
                               const char *format, va_list args));
 /**
- * Sets the current logging priority. The value controls which messages
- * are logged.  The default priority is LOG_ERR.
+ * Sets the current logging level.  The value controls which messages
+ * are logged.  The default level is XKB_LOG_LEVEL_ERROR.
  *
  * The environment variable XKB_LOG, if set, overrides the default value
- * and may be specified as a priority number or name.
+ * and may be specified as a level number or name.
  */
 void
-xkb_set_log_priority(struct xkb_context *context, enum xkb_log_level priority);
+xkb_set_log_level(struct xkb_context *context, enum xkb_log_level level);
 
 /**
- * Returns the current logging priority.
+ * Returns the current logging level.
  */
 enum xkb_log_level
-xkb_get_log_priority(struct xkb_context *context);
+xkb_get_log_level(struct xkb_context *context);
 
 /**
  * Sets the current logging verbosity, a value from 0 to 10.
@@ -302,7 +303,7 @@ xkb_get_log_priority(struct xkb_context *context);
  * The environment variable XKB_VERBOSITY, if set, overrdies the default
  * value.
  *
- * Note that most verbose messages are of priority XKB_LOG_LEVEL_WARNING
+ * Note that most verbose messages are of level XKB_LOG_LEVEL_WARNING
  * or lower.
  */
 void

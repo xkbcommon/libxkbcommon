@@ -176,9 +176,9 @@ xkb_context_unref(struct xkb_context *ctx)
 }
 
 static const char *
-priority_to_prefix(int priority)
+log_level_to_prefix(enum xkb_log_level level)
 {
-    switch (priority) {
+    switch (level) {
     case XKB_LOG_LEVEL_DEBUG:
         return "Debug:";
     case XKB_LOG_LEVEL_INFO:
@@ -188,39 +188,41 @@ priority_to_prefix(int priority)
     case XKB_LOG_LEVEL_ERROR:
         return "Error:";
     case XKB_LOG_LEVEL_CRITICAL:
-        return "Internal error (critical):";
+        return "Critical:";
     default:
         return NULL;
     }
 }
 
 ATTR_PRINTF(3, 0) static void
-default_log_fn(struct xkb_context *ctx, int priority,
+default_log_fn(struct xkb_context *ctx, enum xkb_log_level level,
                const char *fmt, va_list args)
 {
-    const char *prefix = priority_to_prefix(priority);
+    const char *prefix = log_level_to_prefix(level);
 
     if (prefix)
         fprintf(stderr, "%-10s", prefix);
     vfprintf(stderr, fmt, args);
 }
 
-static int
-log_priority(const char *priority) {
+static enum xkb_log_level
+log_level(const char *level) {
     char *endptr;
-    int prio;
+    enum xkb_log_level lvl;
 
     errno = 0;
-    prio = strtol(priority, &endptr, 10);
+    lvl = strtol(level, &endptr, 10);
     if (errno == 0 && (endptr[0] == '\0' || isspace(endptr[0])))
-        return prio;
-    if (strncasecmp(priority, "err", 3) == 0)
+        return lvl;
+    if (istreq_prefix("crit", level))
+        return XKB_LOG_LEVEL_CRITICAL;
+    if (istreq_prefix("err", level))
         return XKB_LOG_LEVEL_ERROR;
-    if (strncasecmp(priority, "warn", 4) == 0)
+    if (istreq_prefix("warn", level))
         return XKB_LOG_LEVEL_WARNING;
-    if (strncasecmp(priority, "info", 4) == 0)
+    if (istreq_prefix("info", level))
         return XKB_LOG_LEVEL_INFO;
-    if (strncasecmp(priority, "debug", 5) == 0)
+    if (istreq_prefix("debug", level) || istreq_prefix("dbg", level))
         return XKB_LOG_LEVEL_DEBUG;
 
     return XKB_LOG_LEVEL_ERROR;
@@ -253,13 +255,13 @@ xkb_context_new(enum xkb_context_flags flags)
 
     ctx->refcnt = 1;
     ctx->log_fn = default_log_fn;
-    ctx->log_priority = XKB_LOG_LEVEL_ERROR;
+    ctx->log_level = XKB_LOG_LEVEL_ERROR;
     ctx->log_verbosity = 0;
 
     /* Environment overwrites defaults. */
     env = getenv("XKB_LOG");
     if (env)
-        xkb_set_log_priority(ctx, log_priority(env));
+        xkb_set_log_level(ctx, log_level(env));
 
     env = getenv("XKB_VERBOSITY");
     if (env)
@@ -307,33 +309,35 @@ xkb_atom_text(struct xkb_context *ctx, xkb_atom_t atom)
 }
 
 void
-xkb_log(struct xkb_context *ctx, int priority, const char *fmt, ...)
+xkb_log(struct xkb_context *ctx, enum xkb_log_level level,
+        const char *fmt, ...)
 {
     va_list args;
 
     va_start(args, fmt);
-    ctx->log_fn(ctx, priority, fmt, args);
+    ctx->log_fn(ctx, level, fmt, args);
     va_end(args);
 }
 
 XKB_EXPORT void
 xkb_set_log_fn(struct xkb_context *ctx,
-               void (*log_fn)(struct xkb_context *ctx, int priority,
+               void (*log_fn)(struct xkb_context *ctx,
+                              enum xkb_log_level level,
                               const char *fmt, va_list args))
 {
     ctx->log_fn = (log_fn ? log_fn : default_log_fn);
 }
 
 XKB_EXPORT enum xkb_log_level
-xkb_get_log_priority(struct xkb_context *ctx)
+xkb_get_log_level(struct xkb_context *ctx)
 {
-    return ctx->log_priority;
+    return ctx->log_level;
 }
 
 XKB_EXPORT void
-xkb_set_log_priority(struct xkb_context *ctx, enum xkb_log_level priority)
+xkb_set_log_level(struct xkb_context *ctx, enum xkb_log_level level)
 {
-    ctx->log_priority = priority;
+    ctx->log_level = level;
 }
 
 XKB_EXPORT int
