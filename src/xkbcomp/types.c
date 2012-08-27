@@ -437,14 +437,6 @@ FindMatchingMapEntry(KeyTypeInfo *type, xkb_mod_mask_t mods)
     return NULL;
 }
 
-/**
- * Add a new KTMapEntry to the given key type. If an entry with the same mods
- * already exists, the level is updated (if clobber is TRUE). Otherwise, a new
- * entry is created.
- *
- * @param clobber Overwrite existing entry.
- * @param report true if a warning is to be printed on.
- */
 static bool
 AddMapEntry(KeyTypesInfo *info, KeyTypeInfo *type,
             struct xkb_kt_map_entry *new, bool clobber, bool report)
@@ -698,11 +690,6 @@ SetLevelName(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
 
 /***====================================================================***/
 
-/**
- * Parses the fields in a type "..." { } description.
- *
- * @param field The field to parse (e.g. modifiers, map, level_name)
- */
 static bool
 SetKeyTypeField(KeyTypesInfo *info, KeyTypeInfo *type,
                 const char *field, ExprDef *arrayNdx, ExprDef *value)
@@ -761,10 +748,6 @@ HandleKeyTypeBody(KeyTypesInfo *info, VarDef *def, KeyTypeInfo *type)
     return ok;
 }
 
-/**
- * Process a type "XYZ" { } specification in the xkb_types section.
- *
- */
 static bool
 HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def, enum merge_mode merge)
 {
@@ -779,13 +762,11 @@ HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def, enum merge_mode merge)
         .level_names = darray_new(),
     };
 
-    /* Parse the actual content. */
     if (!HandleKeyTypeBody(info, def->body, &type)) {
         info->errorCount++;
         return false;
     }
 
-    /* Now add the new keytype to the info struct */
     if (!AddKeyType(info, &type)) {
         info->errorCount++;
         return false;
@@ -794,13 +775,6 @@ HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def, enum merge_mode merge)
     return true;
 }
 
-/**
- * Process an xkb_types section.
- *
- * @param file The parsed xkb_types section.
- * @param merge Merge Strategy (e.g. MERGE_OVERRIDE)
- * @param info Pointer to memory where the outcome will be stored.
- */
 static void
 HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
 {
