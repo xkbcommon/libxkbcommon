@@ -577,16 +577,6 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
         write_buf(buf, "\t\t};\n");
     }
 
-    for (i = 0; i < XkbNumKbdGroups; i++) {
-        struct xkb_mods *gc;
-
-        gc = &keymap->groups[i];
-        if (gc->mods == 0)
-            continue;
-        write_buf(buf, "\t\tgroup %d = %s;\n", i + 1,
-                  VModMaskText(keymap, gc->mods));
-    }
-
     for (i = 0; i < XkbNumIndicators; i++) {
         struct xkb_indicator_map *map = &keymap->indicators[i];
         if (map->flags == 0 && map->which_groups == 0 &&

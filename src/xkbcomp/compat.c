@@ -173,13 +173,6 @@ typedef struct _LEDInfo {
     unsigned int ctrls;
 } LEDInfo;
 
-typedef struct _GroupCompatInfo {
-    unsigned file_id;
-    enum merge_mode merge;
-    bool defined;
-    xkb_mod_mask_t mods;
-} GroupCompatInfo;
-
 typedef struct _CompatInfo {
     char *name;
     unsigned file_id;
@@ -188,7 +181,6 @@ typedef struct _CompatInfo {
     struct list interps;
     SymInterpInfo dflt;
     LEDInfo ledDflt;
-    GroupCompatInfo groupCompat[XkbNumKbdGroups];
     darray(LEDInfo) leds;
     VModInfo vmods;
     ActionInfo *act;
@@ -274,8 +266,6 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id)
     info->ledDflt.file_id = file_id;
     info->ledDflt.defined = 0;
     info->ledDflt.merge = MERGE_OVERRIDE;
-    memset(&info->groupCompat[0], 0,
-           XkbNumKbdGroups * sizeof(GroupCompatInfo));
     darray_init(info->leds);
     InitVModInfo(&info->vmods, keymap);
 }
@@ -298,8 +288,6 @@ ClearCompatInfo(CompatInfo *info)
     info->nInterps = 0;
     list_foreach_safe(si, next_si, &info->interps, entry)
         free(si);
-    memset(&info->groupCompat[0], 0,
-           XkbNumKbdGroups * sizeof(GroupCompatInfo));
     darray_free(info->leds);
     FreeActionInfo(info->act);
     info->act = NULL;
@@ -422,27 +410,6 @@ AddInterp(CompatInfo *info, SymInterpInfo *new)
     return true;
 }
 
-static bool
-AddGroupCompat(CompatInfo *info, xkb_group_index_t group, GroupCompatInfo *new)
-{
-    GroupCompatInfo *gc;
-    int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
-
-    gc = &info->groupCompat[group];
-    if (gc->mods == new->mods)
-        return true;
-
-    if ((gc->file_id == new->file_id && verbosity > 0) || verbosity > 9)
-        log_warn(info->keymap->ctx,
-                 "Compat map for group %u redefined; "
-                 "Using %s definition\n",
-                 group + 1, (new->merge == MERGE_AUGMENT ? "old" : "new"));
-
-    if (new->defined && (new->merge != MERGE_AUGMENT || !gc->defined))
-        *gc = *new;
-
-    return true;
-}
 
 /***====================================================================***/
 
@@ -594,8 +561,6 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
 {
     SymInterpInfo *si, *next_si;
     LEDInfo *led;
-    GroupCompatInfo *gcm;
-    xkb_group_index_t i;
 
     if (from->errorCount > 0) {
         into->errorCount += from->errorCount;
@@ -610,13 +575,6 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
     list_foreach_safe(si, next_si, &from->interps, entry) {
         si->merge = (merge == MERGE_DEFAULT ? si->merge : merge);
         if (!AddInterp(into, si))
-            into->errorCount++;
-    }
-
-    for (i = 0; i < XkbNumKbdGroups; i++) {
-        gcm = &from->groupCompat[i];
-        gcm->merge = (merge == MERGE_DEFAULT ? gcm->merge : merge);
-        if (!AddGroupCompat(into, i, gcm))
             into->errorCount++;
     }
 
@@ -1000,37 +958,6 @@ HandleInterpDef(CompatInfo *info, InterpDef *def, enum merge_mode merge)
 }
 
 static bool
-HandleGroupCompatDef(CompatInfo *info, GroupCompatDef *def,
-                     enum merge_mode merge)
-{
-    GroupCompatInfo tmp;
-
-    merge = (def->merge == MERGE_DEFAULT ? merge : def->merge);
-
-    if (def->group < 1 || def->group > XkbNumKbdGroups) {
-        log_err(info->keymap->ctx,
-                "Keyboard group must be in the range 1..%u; "
-                "Compatibility map for illegal group %u ignored\n",
-                XkbNumKbdGroups, def->group);
-        return false;
-    }
-
-    tmp.file_id = info->file_id;
-    tmp.merge = merge;
-
-    if (!ExprResolveVModMask(info->keymap, def->def, &tmp.mods)) {
-        log_err(info->keymap->ctx,
-                "Expected a modifier mask in group compatibility definition; "
-                "Ignoring illegal compatibility map for group %u\n",
-                def->group);
-        return false;
-    }
-
-    tmp.defined = true;
-    return AddGroupCompat(info, def->group - 1, &tmp);
-}
-
-static bool
 HandleIndicatorMapDef(CompatInfo *info, IndicatorMapDef *def,
                       enum merge_mode merge)
 {
@@ -1093,7 +1020,10 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleInterpDef(info, (InterpDef *) stmt, merge);
             break;
         case STMT_GROUP_COMPAT:
-            ok = HandleGroupCompatDef(info, (GroupCompatDef *) stmt, merge);
+            log_dbg(info->keymap->ctx,
+                    "The \"group\" statement in compat is unsupported; "
+                    "Ignored\n");
+            ok = true;
             break;
         case STMT_INDICATOR_MAP:
             ok = HandleIndicatorMapDef(info, (IndicatorMapDef *) stmt, merge);
@@ -1208,9 +1138,7 @@ bool
 CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
                  enum merge_mode merge)
 {
-    xkb_group_index_t i;
     CompatInfo info;
-    GroupCompatInfo *gcm;
 
     InitCompatInfo(&info, keymap, file->id);
     info.dflt.merge = merge;
@@ -1235,12 +1163,6 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
         CopyInterps(&info, false, XkbSI_AllOf | XkbSI_NoneOf);
         CopyInterps(&info, false, XkbSI_AnyOf);
         CopyInterps(&info, false, XkbSI_AnyOfOrNone);
-    }
-
-    for (i = 0; i < XkbNumKbdGroups; i++) {
-        gcm = &info.groupCompat[i];
-        if (gcm->file_id != 0 || gcm->mods != 0)
-            keymap->groups[i].mods = gcm->mods;
     }
 
     if (!CopyIndicatorMapDefs(&info))
@@ -1445,7 +1367,6 @@ bool
 UpdateModifiersFromCompat(struct xkb_keymap *keymap)
 {
     xkb_mod_index_t vmod;
-    xkb_group_index_t grp;
     xkb_led_index_t led;
     unsigned int i, j;
     struct xkb_key *key;
@@ -1490,13 +1411,13 @@ UpdateModifiersFromCompat(struct xkb_keymap *keymap)
             UpdateActionMods(keymap, &key->actions[i], key->modmap);
     }
 
-    /* Update group modifiers. */
-    for (grp = 0; grp < XkbNumKbdGroups; grp++)
-        ComputeEffectiveMask(keymap, &keymap->groups[grp]);
-
     /* Update vmod -> indicator maps. */
     for (led = 0; led < XkbNumIndicators; led++)
         ComputeEffectiveMask(keymap, &keymap->indicators[led].mods);
+
+    /* Find maximum number of groups out of all keys in the keymap. */
+    xkb_foreach_key(key, keymap)
+        keymap->num_groups = MAX(keymap->num_groups, key->num_groups);
 
     return true;
 }

@@ -67,6 +67,9 @@ isempty(const char *s)
     return s == NULL || s[0] == '\0';
 }
 
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 /* Compiler Attributes */
 
 #if defined(__GNUC__) && (__GNUC__ >= 4) && !defined(__CYGWIN__)

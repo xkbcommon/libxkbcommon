@@ -1050,9 +1050,6 @@ xkb_keymap {
 		interpret Any+AnyOf(all) {
 			action= SetMods(modifiers=modMapMods,clearLocks);
 		};
-		group 2 = AltGr;
-		group 3 = AltGr;
-		group 4 = AltGr;
 		indicator "Caps Lock" {
 			whichModState= locked;
 			modifiers= Lock;

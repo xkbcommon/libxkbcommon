@@ -365,7 +365,8 @@ struct xkb_keymap {
     xkb_mod_mask_t vmods[XkbNumVirtualMods];
     const char *vmod_names[XkbNumVirtualMods];
 
-    struct xkb_mods groups[XkbNumKbdGroups];
+    /* Number of groups in the key with the most groups. */
+    xkb_group_index_t num_groups;
     const char *group_names[XkbNumKbdGroups];
 
     struct xkb_indicator_map indicators[XkbNumIndicators];

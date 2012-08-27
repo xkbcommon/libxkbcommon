@@ -168,14 +168,7 @@ xkb_map_mod_get_index(struct xkb_keymap *keymap, const char *name)
 XKB_EXPORT xkb_group_index_t
 xkb_map_num_groups(struct xkb_keymap *keymap)
 {
-    xkb_group_index_t ret = 0;
-    xkb_group_index_t i;
-
-    for (i = 0; i < XkbNumKbdGroups; i++)
-        if (keymap->groups[i].mask)
-            ret++;
-
-    return ret;
+    return keymap->num_groups;
 }
 
 /**
