@@ -1585,7 +1585,7 @@ FindAutomaticType(struct xkb_keymap *keymap, xkb_level_index_t width,
             *typeNameRtrn = xkb_atom_intern(keymap->ctx, "FOUR_LEVEL");
         /* XXX: why not set autoType here? */
     }
-    return ((width >= 0) && (width <= 4));
+    return width <= 4;
 }
 
 /**
