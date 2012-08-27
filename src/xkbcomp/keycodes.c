@@ -462,12 +462,6 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
 static void
 HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge);
 
-/**
- * Handle the given include statement (e.g. "include "evdev+aliases(qwerty)").
- *
- * @param info Struct to store the key info in.
- * @param stmt The include statement from the keymap file.
- */
 static bool
 HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *stmt)
 {
@@ -506,10 +500,6 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *stmt)
     return (info->errorCount == 0);
 }
 
-/**
- * Parse the given statement and store the output in the info struct.
- * e.g. <ESC> = 9
- */
 static int
 HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt, enum merge_mode merge)
 {
@@ -587,12 +577,6 @@ HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge,
 #define MIN_KEYCODE_DEF 0
 #define MAX_KEYCODE_DEF 1
 
-/**
- * Handle the minimum/maximum statement of the xkb file.
- * Sets explicitMin/Max of the info struct.
- *
- * @return 1 on success, 0 otherwise.
- */
 static int
 HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
 {
@@ -601,9 +585,8 @@ HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
     ExprDef *arrayNdx;
     int which;
 
-    if (!ExprResolveLhs(info->ctx, stmt->name, &elem, &field,
-                        &arrayNdx))
-        return false;               /* internal error, already reported */
+    if (!ExprResolveLhs(info->ctx, stmt->name, &elem, &field, &arrayNdx))
+        return false;
 
     if (elem) {
         log_err(info->ctx, "Unknown element %s encountered; "
@@ -714,18 +697,6 @@ HandleIndicatorNameDef(KeyNamesInfo *info, IndicatorNameDef *def,
     return AddIndicatorName(info, merge, &ii, def->ndx - 1);
 }
 
-/**
- * Handle the xkb_keycodes section of a xkb file.
- * All information about parsed keys is stored in the info struct.
- *
- * Such a section may have include statements, in which case this function is
- * semi-recursive (it calls HandleIncludeKeycodes, which may call
- * HandleKeycodesFile again).
- *
- * @param info Struct to contain the fully parsed key information.
- * @param file The input file (parsed xkb_keycodes section)
- * @param merge Merge strategy (MERGE_OVERRIDE, etc.)
- */
 static void
 HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
 {
@@ -737,20 +708,20 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
 
     for (stmt = file->defs; stmt; stmt = stmt->next) {
         switch (stmt->type) {
-        case STMT_INCLUDE:    /* e.g. include "evdev+aliases(qwerty)" */
+        case STMT_INCLUDE:
             ok = HandleIncludeKeycodes(info, (IncludeStmt *) stmt);
             break;
-        case STMT_KEYCODE: /* e.g. <ESC> = 9; */
+        case STMT_KEYCODE:
             ok = HandleKeycodeDef(info, (KeycodeDef *) stmt, merge);
             break;
-        case STMT_ALIAS: /* e.g. alias <MENU> = <COMP>; */
+        case STMT_ALIAS:
             ok = HandleAliasDef(info, (KeyAliasDef *) stmt, merge,
                                 info->file_id);
             break;
-        case STMT_VAR: /* e.g. minimum, maximum */
+        case STMT_VAR:
             ok = HandleKeyNameVar(info, (VarDef *) stmt);
             break;
-        case STMT_INDICATOR_NAME: /* e.g. indicator 1 = "Caps Lock"; */
+        case STMT_INDICATOR_NAME:
             ok = HandleIndicatorNameDef(info, (IndicatorNameDef *) stmt,
                                         merge);
             break;
@@ -864,16 +835,6 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
     return true;
 }
 
-/**
- * Compile the xkb_keycodes section, parse it's output, return the results.
- *
- * @param file The parsed XKB file (may have include statements requiring
- * further parsing)
- * @param result The effective keycodes, as gathered from the file.
- * @param merge Merge strategy.
- *
- * @return true on success, false otherwise.
- */
 bool
 CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
                 enum merge_mode merge)
@@ -897,16 +858,6 @@ err_info:
     return false;
 }
 
-/**
- * Find the key with the given name.
- *
- * @param keymap The keymap to search in.
- * @param name The 4-letter name of the key as a long.
- * @param use_aliases true if the key aliases should be searched too.
- * @param start_from Keycode to start searching from.
- *
- * @return the key if it is found, NULL otherwise.
- */
 struct xkb_key *
 FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
              bool use_aliases, xkb_keycode_t start_from)
