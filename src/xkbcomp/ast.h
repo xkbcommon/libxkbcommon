@@ -27,6 +27,28 @@
 #ifndef XKBCOMP_AST_H
 #define XKBCOMP_AST_H
 
+enum xkb_file_type {
+    /* Component files, by order of compilation. */
+    FILE_TYPE_KEYCODES = 0,
+    FILE_TYPE_TYPES = 1,
+    FILE_TYPE_COMPAT = 2,
+    FILE_TYPE_SYMBOLS = 3,
+    /* Geometry is not compiled any more. */
+    FILE_TYPE_GEOMETRY = 4,
+
+    /* A top level file which includes the above files. */
+    FILE_TYPE_KEYMAP,
+
+/* File types which must be found in a keymap file. */
+#define FIRST_KEYMAP_FILE_TYPE FILE_TYPE_KEYCODES
+#define LAST_KEYMAP_FILE_TYPE  FILE_TYPE_SYMBOLS
+
+    /* This one doesn't mix with the others, but useful here as well. */
+    FILE_TYPE_RULES,
+
+    _FILE_TYPE_NUM_ENTRIES
+};
+
 enum stmt_type {
     STMT_UNKNOWN = 0,
     STMT_INCLUDE,
@@ -85,6 +107,9 @@ enum merge_mode {
     MERGE_OVERRIDE,
     MERGE_REPLACE,
 };
+
+const char *
+xkb_file_type_to_string(enum xkb_file_type type);
 
 const char *
 stmt_type_to_string(enum stmt_type type);

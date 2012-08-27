@@ -45,9 +45,6 @@ const char *
 ModMaskText(xkb_mod_mask_t mask);
 
 const char *
-FileTypeText(enum xkb_file_type type);
-
-const char *
 ActionTypeText(unsigned type);
 
 const char *

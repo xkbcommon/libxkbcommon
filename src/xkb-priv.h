@@ -95,28 +95,6 @@ typedef uint32_t xkb_atom_t;
 #define XKB_ATOM_NONE 0
 #define XKB_LEVEL_INVALID 0xffffffff
 
-enum xkb_file_type {
-    /* Component files, by order of compilation. */
-    FILE_TYPE_KEYCODES = 0,
-    FILE_TYPE_TYPES = 1,
-    FILE_TYPE_COMPAT = 2,
-    FILE_TYPE_SYMBOLS = 3,
-    /* Geometry is not compiled any more. */
-    FILE_TYPE_GEOMETRY = 4,
-
-    /* A top level file which includes the above files. */
-    FILE_TYPE_KEYMAP,
-
-/* File types which must be found in a keymap file. */
-#define FIRST_KEYMAP_FILE_TYPE FILE_TYPE_KEYCODES
-#define LAST_KEYMAP_FILE_TYPE  FILE_TYPE_SYMBOLS
-
-    /* This one doesn't mix with the others, but useful here as well. */
-    FILE_TYPE_RULES,
-
-    _FILE_TYPE_NUM_ENTRIES
-};
-
 struct xkb_context {
     int refcnt;
 

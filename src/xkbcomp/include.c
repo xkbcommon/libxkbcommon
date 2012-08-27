@@ -29,7 +29,6 @@
 #include <stdio.h>
 
 #include "xkbcomp-priv.h"
-#include "text.h"
 #include "include.h"
 
 /**
@@ -245,7 +244,8 @@ ProcessIncludeFile(struct xkb_context *ctx,
         }
         if (!mapToUse) {
             log_err(ctx, "No %s named \"%s\" in the include file \"%s\"\n",
-                    FileTypeText(file_type), stmt->map, stmt->file);
+                    xkb_file_type_to_string(file_type), stmt->map,
+                    stmt->file);
             return false;
         }
     }
@@ -259,8 +259,8 @@ ProcessIncludeFile(struct xkb_context *ctx,
         log_err(ctx,
                 "Include file wrong type (expected %s, got %s); "
                 "Include file \"%s\" ignored\n",
-                FileTypeText(file_type), FileTypeText(mapToUse->file_type),
-                stmt->file);
+                xkb_file_type_to_string(file_type),
+                xkb_file_type_to_string(mapToUse->file_type), stmt->file);
         return false;
     }
     /* FIXME: we have to check recursive includes here (or somewhere) */

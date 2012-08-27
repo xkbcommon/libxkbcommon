@@ -25,7 +25,6 @@
  */
 
 #include "xkbcomp-priv.h"
-#include "text.h"
 #include "rules.h"
 
 typedef bool (*compile_file_fn)(XkbFile *file,
@@ -56,7 +55,7 @@ compile_keymap_file(struct xkb_context *ctx, XkbFile *file)
 
     if (file->file_type != FILE_TYPE_KEYMAP) {
         log_err(ctx, "Cannot compile a %s file alone into a keymap\n",
-                FileTypeText(file->file_type));
+                xkb_file_type_to_string(file->file_type));
         goto err;
     }
 
@@ -66,7 +65,7 @@ compile_keymap_file(struct xkb_context *ctx, XkbFile *file)
         if (file->file_type < FIRST_KEYMAP_FILE_TYPE ||
             file->file_type > LAST_KEYMAP_FILE_TYPE) {
             log_err(ctx, "Cannot define %s in a keymap file\n",
-                    FileTypeText(file->file_type));
+                    xkb_file_type_to_string(file->file_type));
             continue;
         }
 
@@ -74,7 +73,7 @@ compile_keymap_file(struct xkb_context *ctx, XkbFile *file)
             log_err(ctx,
                     "More than one %s section in keymap file; "
                     "All sections after the first ignored\n",
-                    FileTypeText(file->file_type));
+                    xkb_file_type_to_string(file->file_type));
             continue;
         }
 
@@ -96,7 +95,7 @@ compile_keymap_file(struct xkb_context *ctx, XkbFile *file)
          type++) {
         if (files[type] == NULL) {
             log_err(ctx, "Required section %s missing from keymap\n",
-                    FileTypeText(type));
+                    xkb_file_type_to_string(type));
             ok = false;
         }
     }
@@ -108,10 +107,11 @@ compile_keymap_file(struct xkb_context *ctx, XkbFile *file)
          type <= LAST_KEYMAP_FILE_TYPE;
          type++) {
         log_dbg(ctx, "Compiling %s \"%s\"\n",
-                FileTypeText(type), files[type]->topName);
+                xkb_file_type_to_string(type), files[type]->topName);
         ok = compile_file_fns[type](files[type], keymap, MERGE_OVERRIDE);
         if (!ok) {
-            log_err(ctx, "Failed to compile %s\n", FileTypeText(type));
+            log_err(ctx, "Failed to compile %s\n",
+                    xkb_file_type_to_string(type));
             goto err;
         }
     }

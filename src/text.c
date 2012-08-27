@@ -226,23 +226,6 @@ ModMaskText(xkb_mod_mask_t mask)
     return buf;
 }
 
-static const char *xkb_file_type_strings[_FILE_TYPE_NUM_ENTRIES] = {
-    [FILE_TYPE_KEYMAP]   = "xkb_keymap",
-    [FILE_TYPE_TYPES]    = "xkb_types",
-    [FILE_TYPE_COMPAT]   = "xkb_compatibility",
-    [FILE_TYPE_SYMBOLS]  = "xkb_symbols",
-    [FILE_TYPE_KEYCODES] = "xkb_keycodes",
-    [FILE_TYPE_RULES]    = "rules",
-};
-
-const char *
-FileTypeText(enum xkb_file_type type)
-{
-    if (type > _FILE_TYPE_NUM_ENTRIES)
-        return "unknown";
-    return xkb_file_type_strings[type];
-}
-
 static const char *actionTypeNames[XkbSA_NumActions] = {
     [XkbSA_NoAction]       = "NoAction",
     [XkbSA_SetMods]        = "SetMods",
