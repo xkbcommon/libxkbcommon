@@ -538,13 +538,13 @@ xkb_state_led_update_all(struct xkb_state *state)
 
     for (led = 0; led < XkbNumIndicators; led++) {
         struct xkb_indicator_map *map = &state->keymap->indicators[led];
-        uint32_t mod_mask = 0;
+        xkb_mod_mask_t mod_mask = 0;
         uint32_t group_mask = 0;
 
         if (!map->which_mods && !map->which_groups && !map->ctrls)
             continue;
 
-        if (map->which_mods) {
+        if (map->which_mods & XkbIM_UseAnyMods) {
             if (map->which_mods & XkbIM_UseBase)
                 mod_mask |= state->base_mods;
             if (map->which_mods & XkbIM_UseLatched)
@@ -556,7 +556,7 @@ xkb_state_led_update_all(struct xkb_state *state)
             if ((map->mods.mask & mod_mask))
                 state->leds |= (1 << led);
         }
-        else if (map->which_groups) {
+        if (map->which_groups & XkbIM_UseAnyGroup) {
             if (map->which_groups & XkbIM_UseBase)
                 group_mask |= (1 << state->base_group);
             if (map->which_groups & XkbIM_UseLatched)
@@ -568,7 +568,7 @@ xkb_state_led_update_all(struct xkb_state *state)
             if ((map->groups & group_mask))
                 state->leds |= (1 << led);
         }
-        else if (map->ctrls) {
+        if (map->ctrls) {
             if ((map->ctrls & state->keymap->enabled_ctrls))
                 state->leds |= (1 << led);
         }
