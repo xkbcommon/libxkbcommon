@@ -157,8 +157,7 @@ enum led_field {
     LED_FIELD_GROUPS     = (1 << 2),
     LED_FIELD_CTRLS      = (1 << 3),
     LED_FIELD_EXPLICIT   = (1 << 4),
-    LED_FIELD_AUTOMATIC  = (1 << 5),
-    LED_FIELD_DRIVES_KBD = (1 << 6),
+    LED_FIELD_DRIVES_KBD = (1 << 5),
 };
 
 typedef struct _LEDInfo {
@@ -579,12 +578,6 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
             old->flags &= ~XkbIM_NoExplicit;
             old->flags |= (new->flags & XkbIM_NoExplicit);
             old->defined |= LED_FIELD_EXPLICIT;
-        }
-        if (UseNewLEDField(LED_FIELD_AUTOMATIC, old, new, verbosity,
-                           &collide)) {
-            old->flags &= ~XkbIM_NoAutomatic;
-            old->flags |= (new->flags & XkbIM_NoAutomatic);
-            old->defined |= LED_FIELD_AUTOMATIC;
         }
         if (UseNewLEDField(LED_FIELD_DRIVES_KBD, old, new, verbosity,
                            &collide)) {
