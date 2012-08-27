@@ -163,10 +163,8 @@ typedef struct _LEDInfo {
     enum led_field defined;
     unsigned file_id;
     enum merge_mode merge;
-    struct list entry;
 
     xkb_atom_t name;
-    xkb_led_index_t indicator;
     unsigned char flags;
     unsigned char which_mods;
     xkb_mod_mask_t mods;
@@ -191,7 +189,7 @@ typedef struct _CompatInfo {
     SymInterpInfo dflt;
     LEDInfo ledDflt;
     GroupCompatInfo groupCompat[XkbNumKbdGroups];
-    struct list leds;
+    darray(LEDInfo) leds;
     VModInfo vmods;
     ActionInfo *act;
     struct xkb_keymap *keymap;
@@ -248,7 +246,6 @@ static void
 ClearIndicatorMapInfo(struct xkb_context *ctx, LEDInfo *info)
 {
     info->name = xkb_atom_intern(ctx, "default");
-    info->indicator = XKB_LED_INVALID;
     info->flags = 0;
     info->which_mods = 0;
     info->mods = 0;
@@ -279,7 +276,7 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id)
     info->ledDflt.merge = MERGE_OVERRIDE;
     memset(&info->groupCompat[0], 0,
            XkbNumKbdGroups * sizeof(GroupCompatInfo));
-    list_init(&info->leds);
+    darray_init(info->leds);
     InitVModInfo(&info->vmods, keymap);
 }
 
@@ -287,7 +284,6 @@ static void
 ClearCompatInfo(CompatInfo *info)
 {
     SymInterpInfo *si, *next_si;
-    LEDInfo *led, *next_led;
     struct xkb_keymap *keymap = info->keymap;
 
     free(info->name);
@@ -304,8 +300,7 @@ ClearCompatInfo(CompatInfo *info)
         free(si);
     memset(&info->groupCompat[0], 0,
            XkbNumKbdGroups * sizeof(GroupCompatInfo));
-    list_foreach_safe(led, next_led, &info->leds, entry)
-        free(led);
+    darray_free(info->leds);
     FreeActionInfo(info->act);
     info->act = NULL;
     info->keymap = NULL;
@@ -523,7 +518,7 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
     struct xkb_context *ctx = info->keymap->ctx;
     int verbosity = xkb_get_log_verbosity(ctx);
 
-    list_foreach(old, &info->leds, entry) {
+    darray_foreach(old, info->leds) {
         if (old->name != new->name)
             continue;
 
@@ -537,7 +532,6 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
         }
 
         if (new->merge == MERGE_REPLACE) {
-            struct list entry = old->entry;
             if ((old->file_id == new->file_id && verbosity > 0) ||
                 verbosity > 9)
                 log_warn(info->keymap->ctx,
@@ -545,7 +539,6 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
                          "Earlier definition ignored\n",
                          xkb_atom_text(ctx, old->name));
             *old = *new;
-            old->entry = entry;
             return true;
         }
 
@@ -591,18 +584,7 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
         return true;
     }
 
-    old = malloc(sizeof(*old));
-    if (!old) {
-        log_wsgo(info->keymap->ctx,
-                 "Couldn't allocate indicator map; "
-                 "Map for indicator %s not compiled\n",
-                 xkb_atom_text(ctx, new->name));
-        return false;
-    }
-
-    *old = *new;
-    list_append(&old->entry, &info->leds);
-
+    darray_append(info->leds, *new);
     return true;
 }
 
@@ -611,7 +593,7 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
                         enum merge_mode merge)
 {
     SymInterpInfo *si, *next_si;
-    LEDInfo *led, *next_led;
+    LEDInfo *led;
     GroupCompatInfo *gcm;
     xkb_group_index_t i;
 
@@ -638,7 +620,7 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
             into->errorCount++;
     }
 
-    list_foreach_safe(led, next_led, &from->leds, entry) {
+    darray_foreach(led, from->leds) {
         led->merge = (merge == MERGE_DEFAULT ? led->merge : merge);
         if (!AddIndicatorMap(into, led))
             into->errorCount++;
@@ -1157,115 +1139,67 @@ CopyInterps(CompatInfo *info, bool needSymbol, unsigned pred)
     }
 }
 
-static void
-BindIndicators(CompatInfo *info, struct list *unbound_leds)
-{
-    xkb_led_index_t i;
-    LEDInfo *led, *next_led;
-    struct xkb_indicator_map *map;
-    struct xkb_keymap *keymap = info->keymap;
-
-    list_foreach(led, unbound_leds, entry) {
-        if (led->indicator == XKB_LED_INVALID) {
-            for (i = 0; i < XkbNumIndicators; i++) {
-                if (keymap->indicator_names[i] &&
-                    streq(keymap->indicator_names[i],
-                          xkb_atom_text(keymap->ctx, led->name))) {
-                    led->indicator = i + 1;
-                    break;
-                }
-            }
-        }
-    }
-
-    list_foreach(led, unbound_leds, entry) {
-        if (led->indicator == XKB_LED_INVALID) {
-            for (i = 0; i < XkbNumIndicators; i++) {
-                if (keymap->indicator_names[i] == NULL) {
-                    keymap->indicator_names[i] =
-                        xkb_atom_text(keymap->ctx, led->name);
-                    led->indicator = i + 1;
-                    break;
-                }
-            }
-
-            if (led->indicator == XKB_LED_INVALID) {
-                log_err(info->keymap->ctx,
-                        "No unnamed indicators found; "
-                        "Virtual indicator map \"%s\" not bound\n",
-                        xkb_atom_text(keymap->ctx, led->name));
-                continue;
-            }
-        }
-    }
-
-    list_foreach_safe(led, next_led, unbound_leds, entry) {
-        if (led->indicator == XKB_LED_INVALID) {
-            free(led);
-            continue;
-        }
-
-        if (!streq(keymap->indicator_names[led->indicator - 1],
-                   xkb_atom_text(keymap->ctx, led->name))) {
-            const char *old = keymap->indicator_names[led->indicator - 1];
-            log_err(info->keymap->ctx,
-                    "Multiple names bound to indicator %d; "
-                    "Using %s, ignoring %s\n",
-                    led->indicator, old,
-                    xkb_atom_text(keymap->ctx, led->name));
-            free(led);
-            continue;
-        }
-
-        map = &keymap->indicators[led->indicator - 1];
-        map->flags = led->flags;
-        map->which_groups = led->which_groups;
-        map->groups = led->groups;
-        map->which_mods = led->which_mods;
-        map->mods.mods = led->mods;
-        map->ctrls = led->ctrls;
-        free(led);
-    }
-
-    list_init(unbound_leds);
-}
-
 static bool
 CopyIndicatorMapDefs(CompatInfo *info)
 {
-    LEDInfo *led, *next_led;
-    struct list unbound_leds;
+    LEDInfo *led;
     struct xkb_indicator_map *im;
+    xkb_led_index_t i;
     struct xkb_keymap *keymap = info->keymap;
 
-    list_init(&unbound_leds);
+    darray_foreach(led, info->leds) {
+        const char *name = xkb_atom_text(keymap->ctx, led->name);
 
-    list_foreach_safe(led, next_led, &info->leds, entry) {
-        if (led->groups != 0 && led->which_groups == 0)
-            led->which_groups = XkbIM_UseEffective;
-
-        if (led->which_mods == 0 && led->mods)
-            led->which_mods = XkbIM_UseEffective;
-
-        if (led->indicator == XKB_LED_INVALID) {
-            list_append(&led->entry, &unbound_leds);
-            continue;
+        /*
+         * Find the indicator with the given name, if it was already
+         * declared in keycodes.
+         */
+        im = NULL;
+        for (i = 0; i < XkbNumIndicators; i++) {
+            if (streq_not_null(keymap->indicator_names[i], name)) {
+                im = &keymap->indicators[i];
+                break;
+            }
         }
 
-        im = &keymap->indicators[led->indicator - 1];
+        /* Not previously declared; create it with next free index. */
+        if (!im) {
+            log_dbg(keymap->ctx,
+                    "Indicator name \"%s\" was not declared in the keycodes section; "
+                    "Adding new indicator\n", name);
+
+            for (i = 0; i < XkbNumIndicators; i++) {
+                if (keymap->indicator_names[i])
+                    continue;
+
+                keymap->indicator_names[i] = name;
+                im = &keymap->indicators[i];
+                break;
+            }
+
+            /* Not place to put the it; ignore. */
+            if (!im) {
+                log_err(keymap->ctx,
+                        "Too many indicators (maximum is %d); "
+                        "Indicator name \"%s\" ignored\n",
+                        XkbNumIndicators, name);
+                continue;
+            }
+        }
+
         im->flags = led->flags;
-        im->which_groups = led->which_groups;
+        if (led->groups != 0 && led->which_groups == 0)
+            im->which_groups = XkbIM_UseEffective;
+        else
+            im->which_groups = led->which_groups;
         im->groups = led->groups;
-        im->which_mods = led->which_mods;
+        if (led->mods != 0 && led->which_mods == 0)
+            im->which_mods = XkbIM_UseEffective;
+        else
+            im->which_mods = led->which_mods;
         im->mods.mods = led->mods;
         im->ctrls = led->ctrls;
-        keymap->indicator_names[led->indicator - 1] =
-            xkb_atom_text(keymap->ctx, led->name);
-        free(led);
     }
-    list_init(&info->leds);
-
-    BindIndicators(info, &unbound_leds);
 
     return true;
 }
