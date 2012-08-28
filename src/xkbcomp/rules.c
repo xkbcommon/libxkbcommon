@@ -412,6 +412,7 @@ struct matcher {
     /* Input.*/
     struct rule_names rmlvo;
     struct location loc;
+    union lvalue val;
     struct scanner scanner;
     darray(struct group) groups;
     /* Current mapping. */
@@ -999,179 +1000,153 @@ matcher_rule_apply_if_matches(struct matcher *m)
         m->mapping.skip = true;
 }
 
-enum rules_state {
-    STATE_INITIAL = 0,
-    STATE_BANG,
-    STATE_GROUP_NAME,
-    STATE_GROUP_ELEMENT,
-    STATE_MAPPING_MLVO,
-    STATE_MAPPING_KCCGST,
-    STATE_RULE_MLVO_FIRST,
-    STATE_RULE_MLVO,
-    STATE_RULE_KCCGST,
-};
+static enum rules_token
+gettok(struct matcher *m)
+{
+    return lex(&m->scanner, &m->val, &m->loc);
+}
 
 static bool
 matcher_match(struct matcher *m, const char *string, size_t len,
               const char *file_name, struct xkb_component_names *out)
 {
     enum rules_token tok;
-    enum rules_state state = STATE_INITIAL;
-    union lvalue val;
 
     if (!m)
         return false;
 
     scanner_init(&m->scanner, m->ctx, string, len, file_name);
-    memset(&val, 0, sizeof(val));
 
-    while ((tok = lex(&m->scanner, &val, &m->loc)) != TOK_END_OF_FILE)
-    {
-        if (tok == TOK_ERROR)
-            goto error;
-
-        switch (state) {
-        case STATE_INITIAL:
-            switch (tok) {
-            case TOK_BANG:
-                state = STATE_BANG;
-                break;
-            case TOK_END_OF_LINE:
-                state = STATE_INITIAL;
-                break;
-            default:
-                goto state_error;
-            }
-            break;
-
-        case STATE_BANG:
-            switch (tok) {
-            case TOK_GROUP_NAME:
-                matcher_group_start_new(m, val.string);
-                state = STATE_GROUP_NAME;
-                break;
-            case TOK_IDENTIFIER:
-                matcher_mapping_start_new(m);
-                matcher_mapping_set_mlvo(m, val.string);
-                state = STATE_MAPPING_MLVO;
-                break;
-            default:
-                goto state_error;
-            }
-            break;
-
-        case STATE_GROUP_NAME:
-            switch (tok) {
-            case TOK_EQUALS:
-                state = STATE_GROUP_ELEMENT;
-                break;
-            default:
-                goto state_error;
-            }
-            break;
-
-        case STATE_GROUP_ELEMENT:
-            switch (tok) {
-            case TOK_IDENTIFIER:
-                matcher_group_add_element(m, val.string);
-                state = STATE_GROUP_ELEMENT;
-                break;
-            case TOK_END_OF_LINE:
-                state = STATE_INITIAL;
-                break;
-            default:
-                goto state_error;
-            }
-            break;
-
-        case STATE_MAPPING_MLVO:
-            switch (tok) {
-            case TOK_IDENTIFIER:
-                if (!m->mapping.skip)
-                    matcher_mapping_set_mlvo(m, val.string);
-                state = STATE_MAPPING_MLVO;
-                break;
-            case TOK_EQUALS:
-                state = STATE_MAPPING_KCCGST;
-                break;
-            default:
-                goto state_error;
-            }
-            break;
-
-        case STATE_MAPPING_KCCGST:
-            switch (tok) {
-            case TOK_IDENTIFIER:
-                if (!m->mapping.skip)
-                    matcher_mapping_set_kccgst(m, val.string);
-                state = STATE_MAPPING_KCCGST;
-                break;
-            case TOK_END_OF_LINE:
-                if (!m->mapping.skip)
-                    matcher_mapping_verify(m);
-                state = STATE_RULE_MLVO_FIRST;
-                break;
-            default:
-                goto state_error;
-            }
-            break;
-
-        case STATE_RULE_MLVO_FIRST:
-            if (tok == TOK_BANG) {
-                state = STATE_BANG;
-                break;
-            } else if (tok == TOK_END_OF_LINE) {
-                state = STATE_INITIAL;
-                break;
-            }
-            matcher_rule_start_new(m);
-            /* fallthrough */
-        case STATE_RULE_MLVO:
-            switch (tok) {
-            case TOK_IDENTIFIER:
-                if (!m->rule.skip)
-                    matcher_rule_set_mlvo(m, val.string);
-                state = STATE_RULE_MLVO;
-                break;
-            case TOK_STAR:
-                if (!m->rule.skip)
-                    matcher_rule_set_mlvo_wildcard(m);
-                state = STATE_RULE_MLVO;
-                break;
-            case TOK_GROUP_NAME:
-                if (!m->rule.skip)
-                    matcher_rule_set_mlvo_group(m, val.string);
-                state = STATE_RULE_MLVO;
-                break;
-            case TOK_EQUALS:
-                state = STATE_RULE_KCCGST;
-                break;
-            default:
-                goto state_error;
-            }
-            break;
-
-        case STATE_RULE_KCCGST:
-            switch (tok) {
-            case TOK_IDENTIFIER:
-                if (!m->rule.skip)
-                    matcher_rule_set_kccgst(m, val.string);
-                state = STATE_RULE_KCCGST;
-                break;
-            case TOK_END_OF_LINE:
-                if (!m->rule.skip)
-                    matcher_rule_verify(m);
-                if (!m->rule.skip)
-                    matcher_rule_apply_if_matches(m);
-                state = STATE_RULE_MLVO_FIRST;
-                break;
-            default:
-                goto state_error;
-            }
-            break;
-        }
+initial:
+    switch (tok = gettok(m)) {
+    case TOK_BANG:
+        goto bang;
+    case TOK_END_OF_LINE:
+        goto initial;
+    case TOK_END_OF_FILE:
+        goto finish;
+    default:
+        goto unexpected;
     }
 
+bang:
+    switch (tok = gettok(m)) {
+    case TOK_GROUP_NAME:
+        matcher_group_start_new(m, m->val.string);
+        goto group_name;
+    case TOK_IDENTIFIER:
+        matcher_mapping_start_new(m);
+        matcher_mapping_set_mlvo(m, m->val.string);
+        goto mapping_mlvo;
+    default:
+        goto unexpected;
+    }
+
+group_name:
+    switch (tok = gettok(m)) {
+    case TOK_EQUALS:
+        goto group_element;
+    default:
+        goto unexpected;
+    }
+
+group_element:
+    switch (tok = gettok(m)) {
+    case TOK_IDENTIFIER:
+        matcher_group_add_element(m, m->val.string);
+        goto group_element;
+    case TOK_END_OF_LINE:
+        goto initial;
+    default:
+        goto unexpected;
+    }
+
+mapping_mlvo:
+    switch (tok = gettok(m)) {
+    case TOK_IDENTIFIER:
+        if (!m->mapping.skip)
+            matcher_mapping_set_mlvo(m, m->val.string);
+        goto mapping_mlvo;
+    case TOK_EQUALS:
+        goto mapping_kccgst;
+    default:
+        goto unexpected;
+    }
+
+mapping_kccgst:
+    switch (tok = gettok(m)) {
+    case TOK_IDENTIFIER:
+        if (!m->mapping.skip)
+            matcher_mapping_set_kccgst(m, m->val.string);
+        goto mapping_kccgst;
+    case TOK_END_OF_LINE:
+        if (!m->mapping.skip)
+            matcher_mapping_verify(m);
+        goto rule_mlvo_first;
+    default:
+        goto unexpected;
+    }
+
+rule_mlvo_first:
+    switch (tok = gettok(m)) {
+    case TOK_BANG:
+        goto bang;
+    case TOK_END_OF_LINE:
+        goto rule_mlvo_first;
+    case TOK_END_OF_FILE:
+        goto finish;
+    default:
+        matcher_rule_start_new(m);
+        goto rule_mlvo_no_tok;
+    }
+
+rule_mlvo:
+    tok = gettok(m);
+rule_mlvo_no_tok:
+    switch (tok) {
+    case TOK_IDENTIFIER:
+        if (!m->rule.skip)
+            matcher_rule_set_mlvo(m, m->val.string);
+        goto rule_mlvo;
+    case TOK_STAR:
+        if (!m->rule.skip)
+            matcher_rule_set_mlvo_wildcard(m);
+        goto rule_mlvo;
+    case TOK_GROUP_NAME:
+        if (!m->rule.skip)
+            matcher_rule_set_mlvo_group(m, m->val.string);
+        goto rule_mlvo;
+    case TOK_EQUALS:
+        goto rule_kccgst;
+    default:
+        goto unexpected;
+    }
+
+rule_kccgst:
+    switch (tok = gettok(m)) {
+    case TOK_IDENTIFIER:
+        if (!m->rule.skip)
+            matcher_rule_set_kccgst(m, m->val.string);
+        goto rule_kccgst;
+    case TOK_END_OF_LINE:
+        if (!m->rule.skip)
+            matcher_rule_verify(m);
+        if (!m->rule.skip)
+            matcher_rule_apply_if_matches(m);
+        goto rule_mlvo_first;
+    default:
+        goto unexpected;
+    }
+
+unexpected:
+    switch (tok) {
+    case TOK_ERROR:
+        goto error;
+    default:
+        goto state_error;
+    }
+
+finish:
     if (darray_empty(m->kccgst[KCCGST_KEYCODES]) ||
         darray_empty(m->kccgst[KCCGST_TYPES]) ||
         darray_empty(m->kccgst[KCCGST_COMPAT]) ||
