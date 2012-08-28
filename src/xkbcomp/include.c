@@ -250,11 +250,19 @@ ProcessIncludeFile(struct xkb_context *ctx,
         }
     }
     else if (rtrn->common.next) {
-        log_vrb(ctx, 5,
-                "No map in include statement, but \"%s\" contains several; "
-                "Using first defined map, \"%s\"\n",
-                stmt->file, rtrn->name);
+        for (; mapToUse; mapToUse = (XkbFile *) mapToUse->common.next)
+            if (mapToUse->flags & XkbLC_Default)
+                break;
+
+        if (!mapToUse) {
+            mapToUse = rtrn;
+            log_vrb(ctx, 5,
+                    "No map in include statement, but \"%s\" contains several; "
+                    "Using first defined map, \"%s\"\n",
+                    stmt->file, rtrn->name);
+        }
     }
+
     if (mapToUse->file_type != file_type) {
         log_err(ctx,
                 "Include file wrong type (expected %s, got %s); "
@@ -263,6 +271,7 @@ ProcessIncludeFile(struct xkb_context *ctx,
                 xkb_file_type_to_string(mapToUse->file_type), stmt->file);
         return false;
     }
+
     /* FIXME: we have to check recursive includes here (or somewhere) */
 
     *file_rtrn = mapToUse;
