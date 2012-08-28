@@ -43,9 +43,6 @@ ClearVModInfo(VModInfo *info, struct xkb_keymap *keymap)
 
     info->defined = info->available = 0;
 
-    for (i = 0; i < XkbNumVirtualMods; i++)
-        keymap->vmods[i] = XkbNoModifierMask;
-
     for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1)
         if (keymap->vmod_names[i])
             info->defined |= bit;
