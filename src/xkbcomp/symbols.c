@@ -121,7 +121,7 @@ InitKeyInfo(KeyInfo *keyi, unsigned file_id)
 }
 
 static void
-FreeKeyInfo(KeyInfo *keyi)
+ClearKeyInfo(KeyInfo *keyi)
 {
     xkb_group_index_t i;
 
@@ -219,15 +219,14 @@ InitSymbolsInfo(SymbolsInfo * info, struct xkb_keymap *keymap,
 }
 
 static void
-FreeSymbolsInfo(SymbolsInfo * info)
+ClearSymbolsInfo(SymbolsInfo * info)
 {
     KeyInfo *keyi;
     ModMapEntry *mm, *next;
 
     free(info->name);
-    darray_foreach(keyi, info->keys) {
-        FreeKeyInfo(keyi);
-    }
+    darray_foreach(keyi, info->keys)
+        ClearKeyInfo(keyi);
     darray_free(info->keys);
     list_foreach_safe(mm, next, &info->modMaps, entry)
         free(mm);
@@ -757,7 +756,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *stmt)
         if (!ProcessIncludeFile(info->keymap->ctx, stmt, FILE_TYPE_SYMBOLS,
                                 &rtrn, &merge)) {
             info->errorCount += 10;
-            FreeSymbolsInfo(&included);
+            ClearSymbolsInfo(&included);
             return false;
         }
 
@@ -772,12 +771,12 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *stmt)
 
         MergeIncludedSymbols(&included, &next_incl, merge);
 
-        FreeSymbolsInfo(&next_incl);
+        ClearSymbolsInfo(&next_incl);
         FreeXkbFile(rtrn);
     }
 
     MergeIncludedSymbols(info, &included, merge);
-    FreeSymbolsInfo(&included);
+    ClearSymbolsInfo(&included);
 
     return (info->errorCount == 0);
 }
@@ -1964,10 +1963,10 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
         if (!CopyModMapDef(&info, mm))
             info.errorCount++;
 
-    FreeSymbolsInfo(&info);
+    ClearSymbolsInfo(&info);
     return true;
 
 err_info:
-    FreeSymbolsInfo(&info);
+    ClearSymbolsInfo(&info);
     return false;
 }
