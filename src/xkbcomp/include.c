@@ -32,29 +32,45 @@
 #include "include.h"
 
 /**
- * Extract the first token from an include statement.
- * @param str_inout Input statement, modified in-place. Can be passed in
+ * Parse an include statement. Each call returns a file name, along with
+ * (possibly) a specific map in the file, an explicit group designator, and
+ * the separator from the next file, used to determine the merge mode.
+ *
+ * @param str_inout Input statement, modified in-place. Should be passed in
  * repeatedly. If str_inout is NULL, the parsing has completed.
- * @param file_rtrn Set to the include file to be used.
- * @param map_rtrn Set to whatever comes after ), if any.
- * @param nextop_rtrn Set to the next operation in the complete statement.
- * @param extra_data Set to the string between ( and ), if any.
  *
- * @return true if parsing was succcessful, false for an illegal string.
+ * @param file_rtrn Set to the name of the include file to be used. Combined
+ * with an enum xkb_file_type, this determines which file to look for in the
+ * include path.
  *
- * Example: "evdev+aliases(qwerty)"
- *      str_inout = aliases(qwerty)
- *      nextop_retrn = +
- *      extra_data = NULL
- *      file_rtrn = evdev
+ * @param map_rtrn Set to the string between '(' and ')', if any. This will
+ * result in the compilation of a specific named map within the file (e.g.
+ * xkb_symbols "basic" { ... }) , as opposed to the default map of the file.
+ *
+ * @param nextop_rtrn Set to the next operation in the complete statement,
+ * which is '\0' if it's the last file or '+' or '|' if there are more.
+ * Separating the files with '+' sets the merge mode to MERGE_MODE_OVERRIDE,
+ * while '|' sets the merge mode to MERGE_MODE_AUGMENT.
+ *
+ * @param extra_data Set to the string after ':', if any. Currently the
+ * extra data is only used for setting an explicit group index for a symbols
+ * file.
+ *
+ * @return true if parsing was successful, false for an illegal string.
+ *
+ * Example: "evdev+aliases(qwerty):2"
+ *      str_inout = "aliases(qwerty):2"
+ *      file_rtrn = "evdev"
  *      map_rtrn = NULL
- *
- * 2nd run with "aliases(qwerty)"
- *      str_inout = NULL
- *      file_rtrn = aliases
- *      map_rtrn = qwerty
+ *      nextop_retrn = "+"
  *      extra_data = NULL
+ *
+ * 2nd run with "aliases(qwerty):2"
+ *      str_inout = NULL
+ *      file_rtrn = "aliases"
+ *      map_rtrn = "qwerty"
  *      nextop_retrn = ""
+ *      extra_data = "2"
  *
  */
 bool
@@ -65,19 +81,27 @@ ParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
 
     str = *str_inout;
 
-    /* search for tokens inside the string */
+    /*
+     * Find the position in the string where the next file is included,
+     * if there is more than one left in the statement.
+     */
     next = strpbrk(str, "|+");
     if (next) {
-        /* set nextop_rtrn to \0, next to next character */
+        /* Got more files, this function will be called again. */
         *nextop_rtrn = *next;
+        /* Separate the string, for strchr etc. to work on this file only. */
         *next++ = '\0';
     }
     else {
+        /* This is the last file in this statement, won't be called again. */
         *nextop_rtrn = '\0';
         next = NULL;
     }
 
-    /* search for :, store result in extra_data */
+    /*
+     * Search for the explicit group designator, if any. If it's there,
+     * it goes after the file name and map.
+     */
     tmp = strchr(str, ':');
     if (tmp != NULL) {
         *tmp++ = '\0';
@@ -87,21 +111,25 @@ ParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
         *extra_data = NULL;
     }
 
+    /* Look for a map, if any. */
     tmp = strchr(str, '(');
     if (tmp == NULL) {
+        /* No map. */
         *file_rtrn = strdup(str);
         *map_rtrn = NULL;
     }
     else if (str[0] == '(') {
+        /* Map without file - invalid. */
         free(*extra_data);
         return false;
     }
     else {
+        /* Got a map; separate the file and the map for the strdup's. */
         *tmp++ = '\0';
         *file_rtrn = strdup(str);
         str = tmp;
         tmp = strchr(str, ')');
-        if ((tmp == NULL) || (tmp[1] != '\0')) {
+        if (tmp == NULL || tmp[1] != '\0') {
             free(*file_rtrn);
             free(*extra_data);
             return false;
@@ -110,9 +138,10 @@ ParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
         *map_rtrn = strdup(str);
     }
 
+    /* Set up the next file for the next call, if any. */
     if (*nextop_rtrn == '\0')
         *str_inout = NULL;
-    else if ((*nextop_rtrn == '|') || (*nextop_rtrn == '+'))
+    else if (*nextop_rtrn == '|' || *nextop_rtrn == '+')
         *str_inout = next;
     else
         return false;
