@@ -282,7 +282,7 @@ ClearCompatInfo(CompatInfo *info)
     FreeActionInfo(info->act);
     info->act = NULL;
     info->keymap = NULL;
-    ClearVModInfo(&info->vmods, keymap);
+    ClearVModInfo(&info->vmods);
 }
 
 static SymInterpInfo *

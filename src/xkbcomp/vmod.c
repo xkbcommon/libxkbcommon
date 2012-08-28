@@ -25,27 +25,25 @@
  ********************************************************/
 
 #include "xkbcomp-priv.h"
-#include "text.h"
 #include "expr.h"
 #include "vmod.h"
 
 void
 InitVModInfo(VModInfo *info, struct xkb_keymap *keymap)
 {
-    ClearVModInfo(info, keymap);
-}
-
-void
-ClearVModInfo(VModInfo *info, struct xkb_keymap *keymap)
-{
-    xkb_mod_index_t i;
-    xkb_mod_mask_t bit;
+    xkb_group_index_t i;
 
     info->defined = info->available = 0;
 
-    for (i = 0, bit = 1; i < XkbNumVirtualMods; i++, bit <<= 1)
+    for (i = 0; i < XkbNumVirtualMods; i++)
         if (keymap->vmod_names[i])
-            info->defined |= bit;
+            info->defined |= (1 << i);
+}
+
+void
+ClearVModInfo(VModInfo *info)
+{
+    info->defined = info->available = 0;
 }
 
 /***====================================================================***/

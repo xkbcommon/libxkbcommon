@@ -36,7 +36,7 @@ void
 InitVModInfo(VModInfo *info, struct xkb_keymap *keymap);
 
 void
-ClearVModInfo(VModInfo *info, struct xkb_keymap *keymap);
+ClearVModInfo(VModInfo *info);
 
 bool
 HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
