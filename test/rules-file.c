@@ -25,10 +25,13 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "test.h"
 #include "xkb-priv.h"
 #include "rules.h"
+
+#define BENCHMARK_ITERATIONS 20000
 
 struct test_data {
     /* Rules file */
@@ -89,19 +92,57 @@ test_rules(struct xkb_context *ctx, struct test_data *data)
     return passed;
 }
 
+static void
+benchmark(struct xkb_context *ctx)
+{
+    struct timespec start, stop, elapsed;
+    enum xkb_log_level old_level = xkb_get_log_level(ctx);
+    int old_verb = xkb_get_log_verbosity(ctx);
+    int i;
+    struct xkb_rule_names rmlvo = {
+        "evdev", "pc105", "us,il", ",", "ctrl:nocaps,grp:menu_toggle",
+    };
+    struct xkb_component_names kccgst;
+
+    xkb_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
+    xkb_set_log_verbosity(ctx, 0);
+
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    for (i = 0; i < BENCHMARK_ITERATIONS; i++) {
+        assert(xkb_components_from_rules(ctx, &rmlvo, &kccgst));
+        free(kccgst.keycodes);
+        free(kccgst.types);
+        free(kccgst.compat);
+        free(kccgst.symbols);
+    }
+    clock_gettime(CLOCK_MONOTONIC, &stop);
+
+    xkb_set_log_level(ctx, old_level);
+    xkb_set_log_verbosity(ctx, old_verb);
+
+    elapsed.tv_sec = stop.tv_sec - start.tv_sec;
+    elapsed.tv_nsec = stop.tv_nsec - start.tv_nsec;
+    if (elapsed.tv_nsec < 0) {
+        elapsed.tv_nsec += 1000000000;
+        elapsed.tv_sec--;
+    }
+
+    fprintf(stderr, "processed %d times in %ld.%09lds\n",
+            BENCHMARK_ITERATIONS, elapsed.tv_sec, elapsed.tv_nsec);
+}
+
 int
-main(void)
+main(int argc, char *argv[])
 {
     struct xkb_context *ctx;
-    const char *srcdir = getenv("srcdir");
-    char *path;
 
-    ctx = xkb_context_new(XKB_CONTEXT_NO_DEFAULT_INCLUDES);
+    ctx = test_get_context();
     assert(ctx);
 
-    assert(asprintf(&path, "%s/test/data", srcdir ? srcdir : ".") > 0);
-    assert(xkb_context_include_path_append(ctx, test_get_path("")));
-    free(path);
+    if (argc > 1 && streq(argv[1], "bench")) {
+        benchmark(ctx);
+        return 0;
+    }
 
     struct test_data test1 = {
         .rules = "simple",
