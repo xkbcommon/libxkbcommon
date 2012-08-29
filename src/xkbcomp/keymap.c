@@ -138,47 +138,20 @@ FindInterpForKey(struct xkb_keymap *keymap, struct xkb_key *key,
 static bool
 ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
 {
-#define INTERP_SIZE (8 * 4)
-    struct xkb_sym_interpret *interps[INTERP_SIZE];
     xkb_mod_mask_t vmodmask = 0;
-    int num_acts = 0;
     xkb_group_index_t group;
-    xkb_level_index_t level;
-    unsigned int i;
+    xkb_level_index_t width, level;
 
     /* If we've been told not to bind interps to this key, then don't. */
     if (key->explicit & XkbExplicitInterpretMask)
         return true;
 
-    for (i = 0; i < INTERP_SIZE; i++)
-        interps[i] = NULL;
-
     for (group = 0; group < key->num_groups; group++) {
-        for (level = 0; level < XkbKeyGroupWidth(keymap, key, group);
-             level++) {
-            i = (group * key->width) + level;
-            if (i >= INTERP_SIZE) /* XXX FIXME */
-                return false;
-            interps[i] = FindInterpForKey(keymap, key, group, level);
-            if (interps[i])
-                num_acts++;
-        }
-    }
-
-    if (num_acts && !key->actions) {
-        key->actions = calloc(key->num_groups * key->width,
-                              sizeof(*key->actions));
-        if (!key->actions)
-            return false;
-    }
-
-    for (group = 0; group < key->num_groups; group++) {
-        for (level = 0; level < XkbKeyGroupWidth(keymap, key, group);
-             level++) {
+        width = XkbKeyGroupWidth(keymap, key, group);
+        for (level = 0; level < width; level++) {
             struct xkb_sym_interpret *interp;
 
-            i = (group * key->width) + level;
-            interp = interps[i];
+            interp = FindInterpForKey(keymap, key, group, level);
 
             /* Infer default key behaviours from the base level. */
             if (group == 0 && level == 0) {
@@ -196,7 +169,16 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
                     vmodmask |= (1 << interp->virtual_mod);
             }
 
-            key->actions[i] = interp->act;
+            if (interp->act.type != XkbSA_NoAction) {
+                if (!key->actions) {
+                    key->actions = calloc(key->num_groups * key->width,
+                                          sizeof(*key->actions));
+                    if (!key->actions)
+                        return false;
+                }
+
+                *XkbKeyActionEntry(key, group, level) = interp->act;
+            }
         }
     }
 
@@ -204,7 +186,6 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
         key->vmodmap = vmodmask;
 
     return true;
-#undef INTERP_SIZE
 }
 
 /**
