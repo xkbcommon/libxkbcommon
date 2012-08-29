@@ -629,7 +629,7 @@ apply(const char *src, char **dst)
     if (!src)
         return;
 
-    if (*src == '+' || *src == '!') {
+    if (*src == '+' || *src == '|') {
         tmp = *dst;
         ret = asprintf(dst, "%s%s", *dst, src);
         if (ret < 0)

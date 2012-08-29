@@ -18,4 +18,4 @@
   *             = default_compat
 
 ! option        = compat
-  my_option     = +some:compat
+  my_option     = |some:compat

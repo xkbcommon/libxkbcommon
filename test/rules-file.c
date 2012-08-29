@@ -110,7 +110,7 @@ main(void)
         .options = "my_option",
 
         .keycodes = "my_keycodes", .types = "my_types",
-        .compat = "my_compat+some:compat",
+        .compat = "my_compat|some:compat",
         .symbols = "my_symbols+extra_variant",
     };
     assert(test_rules(ctx, &test1));
