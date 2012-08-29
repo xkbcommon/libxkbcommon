@@ -72,6 +72,12 @@ xkb_map_new_from_names(struct xkb_context *ctx,
     if (isempty(rmlvo.layout))
         rmlvo.layout = DEFAULT_XKB_LAYOUT;
 
+    log_dbg(ctx,
+            "Compiling from RMLVO: rules '%s', model '%s', layout '%s', "
+            "variant '%s', options '%s'\n",
+            rmlvo.rules, rmlvo.model, rmlvo.layout, rmlvo.variant,
+            rmlvo.options);
+
     ok = xkb_components_from_rules(ctx, &rmlvo, &kccgst);
     if (!ok) {
         log_err(ctx,
@@ -81,6 +87,11 @@ xkb_map_new_from_names(struct xkb_context *ctx,
                 rmlvo.options);
         return NULL;
     }
+
+    log_dbg(ctx,
+            "Compiling from KcCGST: keycodes '%s', types '%s', "
+            "compat '%s', symbols '%s'\n",
+            kccgst.keycodes, kccgst.types, kccgst.compat, kccgst.symbols);
 
     file = XkbFileFromComponents(ctx, &kccgst);
 
