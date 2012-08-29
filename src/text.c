@@ -184,7 +184,7 @@ ModIndexText(xkb_mod_index_t ndx)
     if (name)
         return name;
 
-    if (ndx == XkbNoModifier)
+    if (ndx == XKB_MOD_INVALID)
         return "none";
 
     buf = GetBuffer(32);

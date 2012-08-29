@@ -253,7 +253,7 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id,
     info->dflt.defined = 0;
     info->dflt.merge = MERGE_OVERRIDE;
     info->dflt.interp.flags = 0;
-    info->dflt.interp.virtual_mod = XkbNoModifier;
+    info->dflt.interp.virtual_mod = XKB_MOD_INVALID;
     memset(&info->dflt.interp.act, 0, sizeof(info->dflt.interp.act));
     info->dflt.interp.act.type = XkbSA_NoAction;
     ClearIndicatorMapInfo(keymap->ctx, &info->ledDflt);
@@ -274,7 +274,7 @@ ClearCompatInfo(CompatInfo *info)
     info->dflt.defined = 0;
     info->dflt.merge = MERGE_AUGMENT;
     info->dflt.interp.flags = 0;
-    info->dflt.interp.virtual_mod = XkbNoModifier;
+    info->dflt.interp.virtual_mod = XKB_MOD_INVALID;
     memset(&info->dflt.interp.act, 0, sizeof(info->dflt.interp.act));
     info->dflt.interp.act.type = XkbSA_NoAction;
     ClearIndicatorMapInfo(keymap->ctx, &info->ledDflt);

@@ -562,7 +562,7 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
                   SIMatchText(interp->match),
                   VModMaskText(keymap, interp->mods));
 
-        if (interp->virtual_mod != XkbNoModifier) {
+        if (interp->virtual_mod != XKB_MOD_INVALID) {
             write_buf(buf, "\t\t\tvirtualModifier= %s;\n",
                       keymap->vmod_names[interp->virtual_mod]);
         }

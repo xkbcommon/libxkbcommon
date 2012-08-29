@@ -168,7 +168,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
 
             if ((group == 0 && level == 0) ||
                 !(interp->match & XkbSI_LevelOneOnly)) {
-                if (interp->virtual_mod != XkbNoModifier)
+                if (interp->virtual_mod != XKB_MOD_INVALID)
                     vmodmask |= (1 << interp->virtual_mod);
             }
 

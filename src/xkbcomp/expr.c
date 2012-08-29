@@ -88,7 +88,7 @@ LookupModIndex(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
     const char *name = xkb_atom_text(ctx, field);
 
     if (istreq(name, "none")) {
-        *val_rtrn = XkbNoModifier;
+        *val_rtrn = XKB_MOD_INVALID;
         return true;
     }
 
