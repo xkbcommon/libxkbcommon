@@ -132,10 +132,12 @@ test_stringcomp_LDADD = $(TESTS_LDADD)
 test_keyseq_LDADD = $(TESTS_LDADD)
 test_log_LDADD = $(TESTS_LDADD)
 test_interactive_LDADD = $(TESTS_LDADD)
+test_rmlvo_to_kccgst_LDADD = $(TESTS_LDADD)
 
 check_PROGRAMS = \
 	$(TESTS) \
-	test/interactive
+	test/interactive \
+	test/rmlvo-to-kccgst
 
 EXTRA_DIST = \
 	test/data \
