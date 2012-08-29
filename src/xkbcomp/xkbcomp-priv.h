@@ -62,7 +62,8 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
                enum merge_mode merge);
 
 bool
-UpdateModifiersFromCompat(struct xkb_keymap *keymap);
+CompileKeymap(XkbFile *file, struct xkb_keymap *keymap,
+              enum merge_mode merge);
 
 bool
 LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn);
