@@ -75,16 +75,18 @@ xkb_map_new_from_names(struct xkb_context *ctx,
     log_dbg(ctx,
             "Compiling from RMLVO: rules '%s', model '%s', layout '%s', "
             "variant '%s', options '%s'\n",
-            rmlvo.rules, rmlvo.model, rmlvo.layout, rmlvo.variant,
-            rmlvo.options);
+            strnull(rmlvo.rules), strnull(rmlvo.model),
+            strnull(rmlvo.layout), strnull(rmlvo.variant),
+            strnull(rmlvo.options));
 
     ok = xkb_components_from_rules(ctx, &rmlvo, &kccgst);
     if (!ok) {
         log_err(ctx,
                 "Couldn't look up rules '%s', model '%s', layout '%s', "
                 "variant '%s', options '%s'\n",
-                rmlvo.rules, rmlvo.model, rmlvo.layout, rmlvo.variant,
-                rmlvo.options);
+                strnull(rmlvo.rules), strnull(rmlvo.model),
+                strnull(rmlvo.layout), strnull(rmlvo.variant),
+                strnull(rmlvo.options));
         return NULL;
     }
 

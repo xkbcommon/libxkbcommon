@@ -44,7 +44,8 @@ test_rmlvo(struct xkb_context *context, const char *rules,
                                 options);
     if (keymap) {
         fprintf(stderr, "Compiled '%s' '%s' '%s' '%s' '%s'\n",
-                rules, model, layout, variant, options);
+                strnull(rules), strnull(model), strnull(layout),
+                strnull(variant), strnull(options));
         xkb_map_unref(keymap);
     }
 

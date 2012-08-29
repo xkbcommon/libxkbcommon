@@ -75,6 +75,12 @@ isempty(const char *s)
     return s == NULL || s[0] == '\0';
 }
 
+static inline const char *
+strnull(const char *s)
+{
+    return s ? s : "(null)";
+}
+
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
