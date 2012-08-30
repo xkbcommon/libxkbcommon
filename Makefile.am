@@ -105,7 +105,9 @@ libtest_la_SOURCES = \
 	$(libxkbcommon_la_SOURCES) \
 	test/common.c
 
-TESTS_ENVIRONMENT =
+AM_TESTS_ENVIRONMENT = \
+	XKB_LOG=debug; export XKB_LOG; \
+	XKB_VERBOSITY=10; export XKB_VERBOSITY;
 
 TESTS = \
 	test/keysym \
