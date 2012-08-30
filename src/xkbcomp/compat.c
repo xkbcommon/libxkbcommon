@@ -155,7 +155,6 @@ enum led_field {
     LED_FIELD_MODS       = (1 << 0),
     LED_FIELD_GROUPS     = (1 << 1),
     LED_FIELD_CTRLS      = (1 << 2),
-    LED_FIELD_EXPLICIT   = (1 << 3),
 };
 
 typedef struct _LEDInfo {
@@ -526,12 +525,6 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
             old->ctrls = new->ctrls;
             old->defined |= LED_FIELD_CTRLS;
         }
-        if (UseNewLEDField(LED_FIELD_EXPLICIT, old, new, verbosity,
-                           &collide)) {
-            old->flags &= ~XkbIM_NoExplicit;
-            old->flags |= (new->flags & XkbIM_NoExplicit);
-            old->defined |= LED_FIELD_EXPLICIT;
-        }
 
         if (collide) {
             log_warn(info->keymap->ctx,
@@ -786,20 +779,9 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
         led->defined |= LED_FIELD_CTRLS;
     }
     else if (istreq(field, "allowexplicit")) {
-        bool set;
-
-        if (arrayNdx)
-            return ReportIndicatorNotArray(info, led, field);
-
-        if (!ExprResolveBoolean(keymap->ctx, value, &set))
-            return ReportIndicatorBadType(info, led, field, "boolean");
-
-        if (set)
-            led->flags &= ~XkbIM_NoExplicit;
-        else
-            led->flags |= XkbIM_NoExplicit;
-
-        led->defined |= LED_FIELD_EXPLICIT;
+        log_dbg(info->keymap->ctx,
+                "The \"allowExplicit\" field in indicator statements is unsupported; "
+                "Ignored\n");
     }
     else if (istreq(field, "whichmodstate") ||
              istreq(field, "whichmodifierstate")) {
