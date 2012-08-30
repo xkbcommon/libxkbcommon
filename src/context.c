@@ -201,7 +201,7 @@ default_log_fn(struct xkb_context *ctx, int priority,
     const char *prefix = priority_to_prefix(priority);
 
     if (prefix)
-        fprintf(stderr, "%-15s", prefix);
+        fprintf(stderr, "%-10s", prefix);
     vfprintf(stderr, fmt, args);
 }
 

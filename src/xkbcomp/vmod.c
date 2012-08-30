@@ -46,14 +46,6 @@ ClearVModInfo(VModInfo *info)
     info->defined = info->available = 0;
 }
 
-/***====================================================================***/
-
-/**
- * Handle one entry in the virtualModifiers line (e.g. NumLock).
- *
- * @param stmt The statement specifying the name
- * @param mergeMode Merge strategy (e.g. MERGE_OVERRIDE)
- */
 bool
 HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
               enum merge_mode mergeMode, VModInfo *info)
@@ -75,7 +67,7 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
             continue;
         }
 
-        /* already defined */
+        /* Already defined. */
         if (!keymap->vmod_names[i])
             continue;
 
@@ -101,17 +93,6 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
     return true;
 }
 
-/**
- * Returns the index of the given modifier in the keymap->vmod_names array.
- *
- * @param keymap Pointer to the xkb data structure.
- * @param field The Atom of the modifier's name (e.g. Atom for LAlt)
- * @param type Must be EXPR_TYPE_INT, otherwise return false.
- * @param val_rtrn Set to the index of the modifier that matches.
- *
- * @return true on success, false otherwise. If false is returned, val_rtrn is
- * undefined.
- */
 static bool
 LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
                 enum expr_value_type type, xkb_mod_index_t *val_rtrn)
@@ -122,11 +103,6 @@ LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
     if (type != EXPR_TYPE_INT)
         return false;
 
-    /* For each named modifier, get the name and compare it to the one passed
-     * in. If we get a match, return the index of the modifier.
-     * The order of modifiers is the same as in the virtual_modifiers line in
-     * the xkb_types section.
-     */
     for (i = 0; i < XkbNumVirtualMods; i++) {
         if (keymap->vmod_names[i] && streq(keymap->vmod_names[i], name)) {
             *val_rtrn = i;
@@ -137,16 +113,6 @@ LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
     return false;
 }
 
-/**
- * Get the mask for the given (virtual or core) modifier and set
- * val_rtrn.uval to the mask value.
- *
- * @param priv Pointer to xkb data structure.
- * @param val_rtrn Member uval is set to the mask returned.
- *
- * @return true on success, false otherwise. If false is returned, val_rtrn is
- * undefined.
- */
 bool
 LookupVModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
                enum expr_value_type type, xkb_mod_mask_t *val_rtrn)
