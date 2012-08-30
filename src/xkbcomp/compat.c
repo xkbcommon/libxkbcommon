@@ -156,7 +156,6 @@ enum led_field {
     LED_FIELD_GROUPS     = (1 << 1),
     LED_FIELD_CTRLS      = (1 << 2),
     LED_FIELD_EXPLICIT   = (1 << 3),
-    LED_FIELD_DRIVES_KBD = (1 << 4),
 };
 
 typedef struct _LEDInfo {
@@ -533,12 +532,6 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
             old->flags |= (new->flags & XkbIM_NoExplicit);
             old->defined |= LED_FIELD_EXPLICIT;
         }
-        if (UseNewLEDField(LED_FIELD_DRIVES_KBD, old, new, verbosity,
-                           &collide)) {
-            old->flags &= ~XkbIM_LEDDrivesKB;
-            old->flags |= (new->flags & XkbIM_LEDDrivesKB);
-            old->defined |= LED_FIELD_DRIVES_KBD;
-        }
 
         if (collide) {
             log_warn(info->keymap->ctx,
@@ -839,20 +832,9 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
              istreq(field, "leddriveskeyboard") ||
              istreq(field, "indicatordriveskbd") ||
              istreq(field, "indicatordriveskeyboard")) {
-        bool set;
-
-        if (arrayNdx)
-            return ReportIndicatorNotArray(info, led, field);
-
-        if (!ExprResolveBoolean(keymap->ctx, value, &set))
-            return ReportIndicatorBadType(info, led, field, "boolean");
-
-        if (set)
-            led->flags |= XkbIM_LEDDrivesKB;
-        else
-            led->flags &= ~XkbIM_LEDDrivesKB;
-
-        led->defined |= LED_FIELD_DRIVES_KBD;
+        log_dbg(info->keymap->ctx,
+                "The \"%s\" field in indicator statements is unsupported; "
+                "Ignored\n", field);
     }
     else if (istreq(field, "index")) {
         /* Users should see this, it might cause unexpected behavior. */
