@@ -541,9 +541,6 @@ xkb_state_led_update_all(struct xkb_state *state)
         xkb_mod_mask_t mod_mask = 0;
         uint32_t group_mask = 0;
 
-        if (!map->which_mods && !map->which_groups && !map->ctrls)
-            continue;
-
         if (map->which_mods & XkbIM_UseAnyMods) {
             if (map->which_mods & XkbIM_UseBase)
                 mod_mask |= state->base_mods;
