@@ -107,4 +107,10 @@ isempty(const char *s)
 #define ATTR_MALLOC
 #endif
 
+#if defined(__GNUC__) && (__GNUC__ >= 4)
+# define ATTR_NULL_SENTINEL __attribute__((__sentinel__))
+#else
+# define ATTR_NULL_SENTINEL
+#endif /* GNUC >= 4 */
+
 #endif /* UTILS_H */

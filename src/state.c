@@ -735,7 +735,7 @@ xkb_state_mod_index_is_active(struct xkb_state *state,
     if (type & XKB_STATE_LOCKED)
         ret |= (state->locked_mods & (1 << idx));
 
-    return ret;
+    return !!ret;
 }
 
 /**
@@ -773,12 +773,14 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
     xkb_mod_index_t idx = 0;
     uint32_t wanted = 0;
     int ret = 0;
+    xkb_mod_index_t num_mods = xkb_map_num_mods(state->keymap);
 
     va_start(ap, match);
     while (1) {
         idx = va_arg(ap, xkb_mod_index_t);
-        if (idx == XKB_MOD_INVALID ||
-            idx >= xkb_map_num_mods(state->keymap)) {
+        if (idx == XKB_MOD_INVALID)
+            break;
+        if (idx >= num_mods) {
             ret = -1;
             break;
         }
@@ -812,7 +814,7 @@ xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
  * Returns 1 if the modifiers are active with the specified type(s), 0 if
  * not, or -1 if any of the modifiers are invalid.
  */
-XKB_EXPORT int
+XKB_EXPORT ATTR_NULL_SENTINEL int
 xkb_state_mod_names_are_active(struct xkb_state *state,
                                enum xkb_state_component type,
                                enum xkb_state_match match,

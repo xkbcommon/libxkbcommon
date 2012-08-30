@@ -626,10 +626,10 @@ xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
                              enum xkb_state_component type);
 
 /**
- * Returns 1 if the modifiers specified by the varargs (treated as
- * NULL-terminated pointers to strings) are active in the manner
- * specified by 'match', 0 otherwise, or -1 if any of the modifiers
- * do not exist in the map.
+ * Returns 1 if the modifiers specified by the varargs (NULL-terminated
+ * strings, with a NULL sentinel) are active in the manner specified by
+ * 'match', 0 otherwise, or -1 if any of the modifiers do not exist in
+ * the map.
  */
 int
 xkb_state_mod_names_are_active(struct xkb_state *state,
@@ -645,6 +645,18 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
 int
 xkb_state_mod_index_is_active(struct xkb_state *state, xkb_mod_index_t idx,
                               enum xkb_state_component type);
+
+/**
+ * Returns 1 if the modifiers specified by the varargs (of type
+ * xkb_mod_index_t, with a XKB_MOD_INVALID sentinel) are active in the
+ * manner specified by 'match' and 'type', 0 otherwise, or -1 if any of
+ * the modifiers do not exist in the map.
+ */
+int
+xkb_state_mod_indices_are_active(struct xkb_state *state,
+                                 enum xkb_state_component type,
+                                 enum xkb_state_match match,
+                                 ...);
 
 /**
  * Returns 1 if the modifier specified by 'idx' is used in the
@@ -664,18 +676,6 @@ xkb_key_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t key,
 xkb_mod_mask_t
 xkb_key_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t key,
                                  xkb_mod_mask_t mask);
-
-/**
- * Returns 1 if the modifiers specified by the varargs (treated as
- * xkb_mod_index_t, terminated with XKB_MOD_INVALID) are active in the manner
- * specified by 'match' and 'type', 0 otherwise, or -1 if the modifier does not
- * exist in the current map.
- */
-int
-xkb_state_mod_indices_are_active(struct xkb_state *state,
-                                 enum xkb_state_component type,
-                                 enum xkb_state_match match,
-                                 ...);
 
 /**
  * Returns 1 if the group specified by 'name' is active in the manner
