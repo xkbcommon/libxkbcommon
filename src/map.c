@@ -205,9 +205,10 @@ xkb_map_group_get_index(struct xkb_keymap *keymap, const char *name)
 XKB_EXPORT xkb_group_index_t
 xkb_key_num_groups(struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
-    if (XkbKeycodeInRange(keymap, kc))
-        return XkbKey(keymap, kc)->num_groups;
-    return 0;
+    if (!XkbKeycodeInRange(keymap, kc))
+        return 0;
+
+    return XkbKey(keymap, kc)->num_groups;
 }
 
 /**
@@ -290,12 +291,8 @@ xkb_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
 {
     struct xkb_kt_map_entry *entry;
 
-    if (!XkbKeycodeInRange(xkb_state_get_map(state), kc))
-        return XKB_LEVEL_INVALID;
-
-    entry = get_entry_for_key_state(state, kc);
-
     /* If we don't find an explicit match the default is 0. */
+    entry = get_entry_for_key_state(state, kc);
     if (!entry)
         return 0;
 
@@ -310,12 +307,9 @@ xkb_group_index_t
 xkb_key_get_group(struct xkb_state *state, xkb_keycode_t kc)
 {
     struct xkb_keymap *keymap = xkb_state_get_map(state);
+    struct xkb_key *key;
     xkb_group_index_t ret = xkb_state_serialize_group(state,
                                                       XKB_STATE_EFFECTIVE);
-    struct xkb_key *key;
-
-    if (!XkbKeycodeInRange(keymap, kc))
-        return XKB_GROUP_INVALID;
 
     key = XkbKey(keymap, kc);
     if (key->num_groups == 0)
@@ -384,7 +378,7 @@ xkb_key_get_syms(struct xkb_state *state, xkb_keycode_t kc,
     xkb_group_index_t group;
     xkb_level_index_t level;
 
-    if (!state || !XkbKeycodeInRange(keymap, kc))
+    if (!XkbKeycodeInRange(keymap, kc))
         return -1;
 
     key = XkbKey(keymap, kc);
@@ -412,6 +406,7 @@ xkb_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
     if (!XkbKeycodeInRange(keymap, kc))
         return 0;
+
     return XkbKey(keymap, kc)->repeats;
 }
 

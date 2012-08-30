@@ -113,12 +113,11 @@ xkb_key_get_action(struct xkb_state *state, xkb_keycode_t kc)
 {
     xkb_group_index_t group;
     xkb_level_index_t level;
-    struct xkb_key *key = NULL;
+    struct xkb_key *key;
 
-    if (XkbKeycodeInRange(state->keymap, kc))
-        key = XkbKey(state->keymap, kc);
+    key = XkbKey(state->keymap, kc);
 
-    if (!key || !key->actions)
+    if (!key->actions)
         return &fake;
 
     group = xkb_key_get_group(state, kc);
@@ -487,9 +486,6 @@ xkb_state_new(struct xkb_keymap *keymap)
 {
     struct xkb_state *ret;
 
-    if (!keymap)
-        return NULL;
-
     ret = calloc(sizeof(*ret), 1);
     if (!ret)
         return NULL;
@@ -510,9 +506,7 @@ xkb_state_ref(struct xkb_state *state)
 XKB_EXPORT void
 xkb_state_unref(struct xkb_state *state)
 {
-    state->refcnt--;
-    assert(state->refcnt >= 0);
-    if (state->refcnt > 0)
+    if (--state->refcnt > 0)
         return;
 
     xkb_map_unref(state->keymap);
@@ -599,6 +593,9 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
 {
     xkb_mod_index_t i;
     xkb_mod_mask_t bit;
+
+    if (!XkbKeycodeInRange(state->keymap, kc))
+        return;
 
     state->set_mods = 0;
     state->clear_mods = 0;
