@@ -643,19 +643,22 @@ xkb_state_update_mask(struct xkb_state *state,
                       xkb_group_index_t latched_group,
                       xkb_group_index_t locked_group)
 {
-    xkb_mod_mask_t mod;
+    xkb_mod_index_t num_mods;
+    xkb_mod_index_t idx;
 
     state->base_mods = 0;
     state->latched_mods = 0;
     state->locked_mods = 0;
-    for (mod = 0; mod < xkb_map_num_mods(state->keymap); mod++) {
-        xkb_mod_mask_t idx = (1 << mod);
-        if (base_mods & idx)
-            state->base_mods |= idx;
-        if (latched_mods & idx)
-            state->latched_mods |= idx;
-        if (locked_mods & idx)
-            state->locked_mods |= idx;
+    num_mods = xkb_map_num_mods(state->keymap);
+
+    for (idx = 0; idx < num_mods; idx++) {
+        xkb_mod_mask_t mod = (1 << idx);
+        if (base_mods & mod)
+            state->base_mods |= mod;
+        if (latched_mods & mod)
+            state->latched_mods |= mod;
+        if (locked_mods & mod)
+            state->locked_mods |= mod;
     }
 
     state->base_group = base_group;
