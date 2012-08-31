@@ -71,8 +71,7 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
         if (!keymap->vmod_names[i])
             continue;
 
-        if (!streq(keymap->vmod_names[i],
-                   xkb_atom_text(keymap->ctx, stmt->name)))
+        if (keymap->vmod_names[i] != stmt->name)
             continue;
 
         info->available |= bit;
@@ -89,7 +88,7 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
     info->defined |= (1 << nextFree);
     info->available |= (1 << nextFree);
 
-    keymap->vmod_names[nextFree] = xkb_atom_text(keymap->ctx, stmt->name);
+    keymap->vmod_names[nextFree] = stmt->name;
     return true;
 }
 
@@ -98,13 +97,12 @@ LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
                 enum expr_value_type type, xkb_mod_index_t *val_rtrn)
 {
     xkb_mod_index_t i;
-    const char *name = xkb_atom_text(keymap->ctx, field);
 
     if (type != EXPR_TYPE_INT)
         return false;
 
     for (i = 0; i < XkbNumVirtualMods; i++) {
-        if (keymap->vmod_names[i] && streq(keymap->vmod_names[i], name)) {
+        if (keymap->vmod_names[i] == field) {
             *val_rtrn = i;
             return true;
         }
@@ -135,7 +133,7 @@ ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
                        xkb_mod_index_t *ndx_rtrn, VModInfo *info)
 {
     xkb_mod_index_t i;
-    const char *name;
+    xkb_atom_t name = def->value.str;
 
     if (def->op != EXPR_IDENT) {
         log_err(keymap->ctx,
@@ -145,11 +143,8 @@ ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
         return false;
     }
 
-    name = xkb_atom_text(keymap->ctx, def->value.str);
-
     for (i = 0; i < XkbNumVirtualMods; i++) {
-        if ((info->available & (1 << i)) &&
-            streq_not_null(keymap->vmod_names[i], name)) {
+        if ((info->available & (1 << i)) && keymap->vmod_names[i] == name) {
             *ndx_rtrn = i;
             return true;
         }
@@ -157,6 +152,7 @@ ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
 
     log_err(keymap->ctx,
             "Cannot resolve virtual modifier: "
-            "\"%s\" was not previously declared\n", name);
+            "\"%s\" was not previously declared\n",
+            xkb_atom_text(keymap->ctx, name));
     return false;
 }

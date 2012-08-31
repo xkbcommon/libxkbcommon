@@ -343,14 +343,14 @@ struct xkb_keymap {
 
     /* vmod -> mod mapping */
     xkb_mod_mask_t vmods[XkbNumVirtualMods];
-    const char *vmod_names[XkbNumVirtualMods];
+    xkb_atom_t vmod_names[XkbNumVirtualMods];
 
     /* Number of groups in the key with the most groups. */
     xkb_group_index_t num_groups;
-    const char *group_names[XkbNumKbdGroups];
+    xkb_atom_t group_names[XkbNumKbdGroups];
 
     struct xkb_indicator_map indicators[XkbNumIndicators];
-    const char *indicator_names[XkbNumIndicators];
+    xkb_atom_t indicator_names[XkbNumIndicators];
 
     char *keycodes_section_name;
     char *symbols_section_name;

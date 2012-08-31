@@ -1933,12 +1933,9 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
     if (info.name)
         keymap->symbols_section_name = strdup(info.name);
 
-    for (i = 0; i < XkbNumKbdGroups; i++) {
-        if (info.groupNames[i] != XKB_ATOM_NONE) {
-            keymap->group_names[i] = xkb_atom_text(keymap->ctx,
-                                                   info.groupNames[i]);
-        }
-    }
+    for (i = 0; i < XkbNumKbdGroups; i++)
+        if (info.groupNames[i] != XKB_ATOM_NONE)
+            keymap->group_names[i] = info.groupNames[i];
 
     /* sanitize keys */
     darray_foreach(keyi, info.keys)

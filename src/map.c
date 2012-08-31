@@ -137,7 +137,8 @@ xkb_map_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx)
      * find a virtual mod name. */
     name = ModIndexToName(idx);
     if (!name)
-        name = keymap->vmod_names[idx - XkbNumModifiers];
+        name = xkb_atom_text(keymap->ctx,
+                             keymap->vmod_names[idx - XkbNumModifiers]);
 
     return name;
 }
@@ -149,13 +150,20 @@ XKB_EXPORT xkb_mod_index_t
 xkb_map_mod_get_index(struct xkb_keymap *keymap, const char *name)
 {
     xkb_mod_index_t i;
+    xkb_atom_t atom;
 
     i = ModNameToIndex(name);
     if (i != XKB_MOD_INVALID)
         return i;
 
-    for (i = 0; i < XkbNumVirtualMods && keymap->vmod_names[i]; i++) {
-        if (istreq(name, keymap->vmod_names[i]))
+    atom = xkb_atom_lookup(keymap->ctx, name);
+    if (atom == XKB_ATOM_NONE)
+        return XKB_MOD_INVALID;
+
+    for (i = 0; i < XkbNumVirtualMods; i++) {
+        if (keymap->vmod_names[i] == XKB_ATOM_NONE)
+            break;
+        if (keymap->vmod_names[i] == atom)
             return i + XkbNumModifiers;
     }
 
@@ -180,7 +188,7 @@ xkb_map_group_get_name(struct xkb_keymap *keymap, xkb_group_index_t idx)
     if (idx >= xkb_map_num_groups(keymap))
         return NULL;
 
-    return keymap->group_names[idx];
+    return xkb_atom_text(keymap->ctx, keymap->group_names[idx]);
 }
 
 /**
@@ -190,10 +198,14 @@ XKB_EXPORT xkb_group_index_t
 xkb_map_group_get_index(struct xkb_keymap *keymap, const char *name)
 {
     xkb_group_index_t num_groups = xkb_map_num_groups(keymap);
+    xkb_atom_t atom = xkb_atom_lookup(keymap->ctx, name);
     xkb_group_index_t i;
 
+    if (atom == XKB_ATOM_NONE)
+        return XKB_GROUP_INVALID;
+
     for (i = 0; i < num_groups; i++)
-        if (istreq(keymap->group_names[i], name))
+        if (keymap->group_names[i] == atom)
             return i;
 
     return XKB_GROUP_INVALID;
@@ -238,7 +250,7 @@ xkb_map_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx)
     if (idx >= xkb_map_num_leds(keymap))
         return NULL;
 
-    return keymap->indicator_names[idx];
+    return xkb_atom_text(keymap->ctx, keymap->indicator_names[idx]);
 }
 
 /**
@@ -248,10 +260,14 @@ XKB_EXPORT xkb_group_index_t
 xkb_map_led_get_index(struct xkb_keymap *keymap, const char *name)
 {
     xkb_led_index_t num_leds = xkb_map_num_leds(keymap);
+    xkb_atom_t atom = xkb_atom_lookup(keymap->ctx, name);
     xkb_led_index_t i;
 
+    if (atom == XKB_ATOM_NONE)
+        return XKB_LED_INVALID;
+
     for (i = 0; i < num_leds; i++)
-        if (istreq(keymap->indicator_names[i], name))
+        if (keymap->indicator_names[i] == atom)
             return i;
 
     return XKB_LED_INVALID;

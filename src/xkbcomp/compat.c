@@ -1012,15 +1012,13 @@ CopyIndicatorMapDefs(CompatInfo *info)
     struct xkb_keymap *keymap = info->keymap;
 
     darray_foreach(led, info->leds) {
-        const char *name = xkb_atom_text(keymap->ctx, led->name);
-
         /*
          * Find the indicator with the given name, if it was already
          * declared in keycodes.
          */
         im = NULL;
         for (i = 0; i < XkbNumIndicators; i++) {
-            if (streq_not_null(keymap->indicator_names[i], name)) {
+            if (keymap->indicator_names[i] == led->name) {
                 im = &keymap->indicators[i];
                 break;
             }
@@ -1030,13 +1028,14 @@ CopyIndicatorMapDefs(CompatInfo *info)
         if (!im) {
             log_dbg(keymap->ctx,
                     "Indicator name \"%s\" was not declared in the keycodes section; "
-                    "Adding new indicator\n", name);
+                    "Adding new indicator\n",
+                    xkb_atom_text(keymap->ctx, led->name));
 
             for (i = 0; i < XkbNumIndicators; i++) {
-                if (keymap->indicator_names[i])
+                if (keymap->indicator_names[i] != XKB_ATOM_NONE)
                     continue;
 
-                keymap->indicator_names[i] = name;
+                keymap->indicator_names[i] = led->name;
                 im = &keymap->indicators[i];
                 break;
             }
@@ -1046,7 +1045,8 @@ CopyIndicatorMapDefs(CompatInfo *info)
                 log_err(keymap->ctx,
                         "Too many indicators (maximum is %d); "
                         "Indicator name \"%s\" ignored\n",
-                        XkbNumIndicators, name);
+                        XkbNumIndicators,
+                        xkb_atom_text(keymap->ctx, led->name));
                 continue;
             }
         }

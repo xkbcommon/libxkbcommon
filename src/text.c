@@ -62,7 +62,7 @@ VModIndexText(struct xkb_keymap *keymap, xkb_mod_index_t ndx)
     if (ndx >= XkbNumVirtualMods)
          tmp = "illegal";
     else
-         tmp = keymap->vmod_names[ndx];
+         tmp = xkb_atom_text(keymap->ctx, keymap->vmod_names[ndx]);
 
     if (!tmp) {
         snprintf(buf, sizeof(buf) - 1, "%d", ndx);

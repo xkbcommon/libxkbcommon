@@ -826,8 +826,7 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
         if (led->name == XKB_ATOM_NONE)
             continue;
 
-        keymap->indicator_names[idx] =
-            xkb_atom_text(keymap->ctx, led->name);
+        keymap->indicator_names[idx] = led->name;
     }
 
     ApplyAliases(info, keymap);

@@ -142,7 +142,8 @@ write_vmods(struct xkb_keymap *keymap, struct buf *buf)
             write_buf(buf, "\t\tvirtual_modifiers ");
         else
             write_buf(buf, ",");
-        write_buf(buf, "%s", keymap->vmod_names[i]);
+        write_buf(buf, "%s",
+                  xkb_atom_text(keymap->ctx, keymap->vmod_names[i]));
         num_vmods++;
     }
 
@@ -275,8 +276,8 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
     for (i = 0; i < XkbNumIndicators; i++) {
         if (!keymap->indicator_names[i])
             continue;
-        write_buf(buf, "\t\tindicator %d = \"%s\";\n",
-                  i + 1, keymap->indicator_names[i]);
+        write_buf(buf, "\t\tindicator %d = \"%s\";\n", i + 1,
+                  xkb_atom_text(keymap->ctx, keymap->indicator_names[i]));
     }
 
 
@@ -356,7 +357,7 @@ write_indicator_map(struct xkb_keymap *keymap, struct buf *buf, int num)
     struct xkb_indicator_map *led = &keymap->indicators[num];
 
     write_buf(buf, "\t\tindicator \"%s\" {\n",
-              keymap->indicator_names[num]);
+              xkb_atom_text(keymap->ctx, keymap->indicator_names[num]));
 
     if (led->which_groups) {
         if (led->which_groups != XkbIM_UseEffective) {
@@ -564,7 +565,8 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
 
         if (interp->virtual_mod != XKB_MOD_INVALID) {
             write_buf(buf, "\t\t\tvirtualModifier= %s;\n",
-                      keymap->vmod_names[interp->virtual_mod]);
+                      xkb_atom_text(keymap->ctx,
+                                    keymap->vmod_names[interp->virtual_mod]));
         }
 
         if (interp->match & XkbSI_LevelOneOnly)
@@ -648,7 +650,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
             continue;
         write_buf(buf,
                   "\t\tname[group%d]=\"%s\";\n", group + 1,
-                  keymap->group_names[group]);
+                  xkb_atom_text(keymap->ctx, keymap->group_names[group]));
         tmp++;
     }
     if (tmp > 0)
