@@ -134,7 +134,6 @@ typedef struct _IndicatorNameInfo {
 
     xkb_led_index_t ndx;
     xkb_atom_t name;
-    bool virtual;
 } IndicatorNameInfo;
 
 typedef struct _KeyNamesInfo {
@@ -183,7 +182,6 @@ InitIndicatorNameInfo(IndicatorNameInfo * ii, KeyNamesInfo * info)
     ii->file_id = info->file_id;
     ii->ndx = 0;
     ii->name = XKB_ATOM_NONE;
-    ii->virtual = false;
 }
 
 static IndicatorNameInfo *
@@ -230,86 +228,66 @@ AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
                  IndicatorNameInfo *new)
 {
     IndicatorNameInfo *old;
-    bool replace;
+    bool replace, report;
     int verbosity = xkb_get_log_verbosity(info->ctx);
 
     replace = (merge == MERGE_REPLACE) || (merge == MERGE_OVERRIDE);
 
     old = FindIndicatorByName(info, new->name);
     if (old) {
-        if ((old->file_id == new->file_id && verbosity > 0) ||
-            verbosity > 9) {
-            if (old->ndx == new->ndx) {
-                if (old->virtual != new->virtual) {
-                    if (replace)
-                        old->virtual = new->virtual;
-                    log_warn(info->ctx, "Multiple indicators named %s; "
-                             "Using %s instead of %s\n",
-                             xkb_atom_text(info->ctx, new->name),
-                             (old->virtual ? "virtual" : "real"),
-                             (old->virtual ? "real" : "virtual"));
-                }
-                else {
-                    log_warn(info->ctx, "Multiple indicators named %s; "
-                             "Identical definitions ignored\n",
-                             xkb_atom_text(info->ctx, new->name));
-                }
-                return true;
-            }
-            else {
-                log_warn(info->ctx, "Multiple indicators named %s; "
-                         "Using %d, ignoring %d\n",
-                         xkb_atom_text(info->ctx, new->name),
-                         (replace ? old->ndx : new->ndx),
-                         (replace ? new->ndx : old->ndx));
-            }
+        report = ((old->file_id == new->file_id && verbosity > 0) ||
+                  verbosity > 9);
 
-            if (replace) {
-                list_del(&old->entry);
-                free(old);
-            }
+        if (old->ndx == new->ndx) {
+            if (report)
+                log_warn(info->ctx, "Multiple indicators named %s; "
+                         "Identical definitions ignored\n",
+                         xkb_atom_text(info->ctx, new->name));
+            return true;
+        }
+
+        if (report)
+            log_warn(info->ctx, "Multiple indicators named %s; "
+                     "Using %d, ignoring %d\n",
+                     xkb_atom_text(info->ctx, new->name),
+                     (replace ? old->ndx : new->ndx),
+                     (replace ? new->ndx : old->ndx));
+
+        if (replace) {
+            list_del(&old->entry);
+            free(old);
         }
     }
 
     old = FindIndicatorByIndex(info, new->ndx);
     if (old) {
-        if ((old->file_id == new->file_id && verbosity > 0) ||
-            verbosity > 9) {
-            if (old->name == new->name && old->virtual == new->virtual) {
+        report = ((old->file_id == new->file_id && verbosity > 0) ||
+                  verbosity > 9);
+
+        if (old->name == new->name) {
+            if (report)
                 log_warn(info->ctx, "Multiple names for indicator %d; "
                          "Identical definitions ignored\n", new->ndx);
-            } else {
-                const char *oldType, *newType;
-                xkb_atom_t using, ignoring;
-                if (old->virtual)
-                    oldType = "virtual indicator";
-                else
-                    oldType = "real indicator";
-                if (new->virtual)
-                    newType = "virtual indicator";
-                else
-                    newType = "real indicator";
-                if (replace) {
-                    using = new->name;
-                    ignoring = old->name;
-                }
-                else {
-                    using = old->name;
-                    ignoring = new->name;
-                }
+        }
+        else if (replace) {
+            if (report)
                 log_warn(info->ctx, "Multiple names for indicator %d; "
-                         "Using %s %s, ignoring %s %s\n",
-                         new->ndx,
-                         oldType, xkb_atom_text(info->ctx, using),
-                         newType, xkb_atom_text(info->ctx, ignoring));
-            }
-        }
-        if (replace) {
+                         "Using %s, ignoring %s\n", new->ndx,
+                         xkb_atom_text(info->ctx, new->name),
+                         xkb_atom_text(info->ctx, old->name));
             old->name = new->name;
-            old->virtual = new->virtual;
         }
+        else {
+            if (report)
+                log_warn(info->ctx, "Multiple names for indicator %d; "
+                         "Using %s, ignoring %s\n", new->ndx,
+                         xkb_atom_text(info->ctx, old->name),
+                         xkb_atom_text(info->ctx, new->name));
+        }
+
         return true;
     }
+
     old = new;
     new = NextIndicatorName(info);
     if (!new) {
@@ -320,7 +298,6 @@ AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
     }
     new->name = old->name;
     new->ndx = old->ndx;
-    new->virtual = old->virtual;
     return true;
 }
 
@@ -796,7 +773,6 @@ HandleIndicatorNameDef(KeyNamesInfo *info, IndicatorNameDef *def,
 
     ii.ndx = (xkb_led_index_t) def->ndx;
     ii.name = xkb_atom_intern(info->ctx, str);
-    ii.virtual = def->virtual;
 
     return AddIndicatorName(info, merge, &ii);
 }
