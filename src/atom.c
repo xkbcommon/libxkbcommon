@@ -74,7 +74,7 @@
 
 struct atom_node {
     struct atom_node *left, *right;
-    uint32_t a;
+    xkb_atom_t atom;
     unsigned int fingerprint;
     char *string;
 };
@@ -182,7 +182,7 @@ atom_intern(struct atom_table *table, const char *string,
             else {
                 if (steal)
                     free(UNCONSTIFY(string));
-                return (*np)->a;
+                return (*np)->atom;
             }
         }
     }
@@ -205,8 +205,8 @@ atom_intern(struct atom_table *table, const char *string,
     *np = nd;
     nd->left = nd->right = NULL;
     nd->fingerprint = fp;
-    nd->a = darray_size(table->table);
+    nd->atom = darray_size(table->table);
     darray_append(table->table, nd);
 
-    return nd->a;
+    return nd->atom;
 }
