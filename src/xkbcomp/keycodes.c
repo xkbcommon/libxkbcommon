@@ -673,7 +673,7 @@ HandleIndicatorNameDef(KeyNamesInfo *info, IndicatorNameDef *def,
                        enum merge_mode merge)
 {
     IndicatorNameInfo ii;
-    const char *str;
+    xkb_atom_t name;
 
     if (def->ndx < 1 || def->ndx > XkbNumIndicators) {
         info->errorCount++;
@@ -683,7 +683,7 @@ HandleIndicatorNameDef(KeyNamesInfo *info, IndicatorNameDef *def,
         return false;
     }
 
-    if (!ExprResolveString(info->ctx, def->name, &str)) {
+    if (!ExprResolveString(info->ctx, def->name, &name)) {
         char buf[20];
         snprintf(buf, sizeof(buf), "%d", def->ndx);
         info->errorCount++;
@@ -693,7 +693,7 @@ HandleIndicatorNameDef(KeyNamesInfo *info, IndicatorNameDef *def,
 
     ii.merge = info->merge;
     ii.file_id = info->file_id;
-    ii.name = xkb_atom_intern(info->ctx, str);
+    ii.name = name;
     return AddIndicatorName(info, merge, &ii, def->ndx - 1);
 }
 

@@ -83,7 +83,7 @@ ExprResolveButton(struct xkb_context *ctx, const ExprDef *expr,
 
 bool
 ExprResolveString(struct xkb_context *ctx, const ExprDef *expr,
-                  const char **val_rtrn);
+                  xkb_atom_t *val_rtrn);
 
 bool
 ExprResolveKeyName(struct xkb_context *ctx, const ExprDef *expr,

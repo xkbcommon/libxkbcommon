@@ -635,7 +635,6 @@ SetLevelName(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
     xkb_level_index_t level;
     xkb_atom_t level_name;
     struct xkb_context *ctx = info->keymap->ctx;
-    const char *str;
 
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(info, type, "level name");
@@ -643,15 +642,13 @@ SetLevelName(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
     if (!ExprResolveLevel(ctx, arrayNdx, &level))
         return ReportTypeBadType(info, type, "level name", "integer");
 
-    if (!ExprResolveString(ctx, value, &str)) {
+    if (!ExprResolveString(ctx, value, &level_name)) {
         log_err(info->keymap->ctx,
                 "Non-string name for level %d in key type %s; "
                 "Ignoring illegal level name definition\n",
                 level + 1, xkb_atom_text(ctx, type->name));
         return false;
     }
-
-    level_name = xkb_atom_intern(ctx, str);
 
     return AddLevelName(info, type, level, level_name, true);
 }

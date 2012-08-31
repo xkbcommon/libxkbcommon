@@ -924,12 +924,14 @@ HandleActionMessage(struct xkb_keymap *keymap, union xkb_action *action,
         return true;
     }
     else if (field == ACTION_FIELD_DATA && !array_ndx) {
+        xkb_atom_t val;
         const char *str;
         int len;
 
-        if (!ExprResolveString(keymap->ctx, value, &str))
+        if (!ExprResolveString(keymap->ctx, value, &val))
             return ReportMismatch(keymap, action->type, field, "string");
 
+        str = xkb_atom_text(keymap->ctx, val);
         len = strlen(str);
         if (len < 1 || len > 6) {
             log_warn(keymap->ctx,
@@ -1152,12 +1154,14 @@ HandlePrivate(struct xkb_keymap *keymap, union xkb_action *action,
     }
     else if (field == ACTION_FIELD_DATA) {
         if (array_ndx == NULL) {
+            xkb_atom_t val;
             const char *str;
             int len;
 
-            if (!ExprResolveString(keymap->ctx, value, &str))
+            if (!ExprResolveString(keymap->ctx, value, &val))
                 return ReportMismatch(keymap, action->type, field, "string");
 
+            str = xkb_atom_text(keymap->ctx, val);
             len = strlen(str);
             if (len < 1 || len > 7) {
                 log_warn(keymap->ctx,

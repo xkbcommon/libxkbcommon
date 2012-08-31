@@ -1030,19 +1030,19 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
 
     if (istreq(field, "type")) {
         xkb_group_index_t ndx;
-        const char *str;
+        xkb_atom_t val;
 
-        if (!ExprResolveString(ctx, value, &str))
-            log_vrb(info->keymap->ctx, 1,
+        if (!ExprResolveString(ctx, value, &val))
+            log_vrb(ctx, 1,
                     "The type field of a key symbol map must be a string; "
                     "Ignoring illegal type definition\n");
 
         if (arrayNdx == NULL) {
-            keyi->dfltType = xkb_atom_intern(ctx, str);
+            keyi->dfltType = val;
             keyi->defined |= KEY_FIELD_TYPE_DFLT;
         }
         else if (!ExprResolveGroup(ctx, arrayNdx, &ndx)) {
-            log_err(info->keymap->ctx,
+            log_err(ctx,
                     "Illegal group index for type of key %s; "
                     "Definition with non-integer array index ignored\n",
                     LongKeyNameText(keyi->name));
@@ -1050,7 +1050,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         }
         else {
             ndx--;
-            keyi->types[ndx] = xkb_atom_intern(ctx, str);
+            keyi->types[ndx] = val;
             keyi->typesDefined |= (1 << ndx);
         }
     }
@@ -1184,7 +1184,7 @@ static int
 SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
 {
     xkb_group_index_t grp;
-    const char *name;
+    xkb_atom_t name;
 
     if (!arrayNdx) {
         log_vrb(info->keymap->ctx, 1,
@@ -1207,9 +1207,7 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
         return false;
     }
 
-    info->groupNames[grp - 1 + info->explicit_group] =
-        xkb_atom_intern(info->keymap->ctx, name);
-
+    info->groupNames[grp - 1 + info->explicit_group] = name;
     return true;
 }
 
