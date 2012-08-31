@@ -121,7 +121,6 @@
 typedef struct _AliasInfo {
     enum merge_mode merge;
     unsigned file_id;
-    struct list entry;
 
     unsigned long alias;
     unsigned long real;
@@ -147,7 +146,7 @@ typedef struct _KeyNamesInfo {
     darray(unsigned long) names;
     darray(unsigned int) files;
     IndicatorNameInfo indicator_names[XkbNumIndicators];
-    struct list aliases;
+    darray(AliasInfo) aliases;
 
     struct xkb_context *ctx;
 } KeyNamesInfo;
@@ -264,8 +263,6 @@ AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
 static void
 ClearKeyNamesInfo(KeyNamesInfo * info)
 {
-    AliasInfo *alias, *next_alias;
-
     free(info->name);
     info->name = NULL;
     info->merge = MERGE_DEFAULT;
@@ -274,9 +271,7 @@ ClearKeyNamesInfo(KeyNamesInfo * info)
     darray_free(info->names);
     darray_free(info->files);
     memset(info->indicator_names, 0, sizeof(info->indicator_names));
-    list_foreach_safe(alias, next_alias, &info->aliases, entry)
-        free(alias);
-    list_init(&info->aliases);
+    darray_free(info->aliases);
 }
 
 static void
@@ -285,7 +280,7 @@ InitKeyNamesInfo(KeyNamesInfo *info, struct xkb_context *ctx,
 {
     info->name = NULL;
     info->merge = MERGE_DEFAULT;
-    list_init(&info->aliases);
+    darray_init(info->aliases);
     info->file_id = file_id;
     darray_init(info->names);
     darray_init(info->files);
@@ -388,21 +383,21 @@ HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge,
 static bool
 MergeAliases(KeyNamesInfo *into, KeyNamesInfo *from, enum merge_mode merge)
 {
-    AliasInfo *alias, *next;
+    AliasInfo *alias;
     KeyAliasDef def;
 
-    if (list_empty(&from->aliases))
+    if (darray_empty(from->aliases))
         return true;
 
-    if (list_empty(&into->aliases)) {
-        list_replace(&from->aliases, &into->aliases);
-        list_init(&from->aliases);
+    if (darray_empty(into->aliases)) {
+        into->aliases = from->aliases;
+        darray_init(from->aliases);
         return true;
     }
 
     memset(&def, 0, sizeof(def));
 
-    list_foreach_safe(alias, next, &from->aliases, entry) {
+    darray_foreach(alias, from->aliases) {
         def.merge = (merge == MERGE_DEFAULT) ? alias->merge : merge;
         LongToKeyName(alias->alias, def.alias);
         LongToKeyName(alias->real, def.real);
@@ -542,9 +537,11 @@ static void
 HandleAliasCollision(KeyNamesInfo *info, AliasInfo *old, AliasInfo *new)
 {
     int verbosity = xkb_get_log_verbosity(info->ctx);
+    bool report = ((new->file_id == old->file_id && verbosity > 0) ||
+                   verbosity > 9);
 
     if (new->real == old->real) {
-        if ((new->file_id == old->file_id && verbosity > 0) || verbosity > 9)
+        if (report)
             log_warn(info->ctx, "Alias of %s for %s declared more than once; "
                      "First definition ignored\n",
                      LongKeyNameText(new->alias), LongKeyNameText(new->real));
@@ -552,23 +549,16 @@ HandleAliasCollision(KeyNamesInfo *info, AliasInfo *old, AliasInfo *new)
     else {
         unsigned long use, ignore;
 
-        if (new->merge == MERGE_AUGMENT) {
-            use = old->real;
-            ignore = new->real;
-        }
-        else {
-            use = new->real;
-            ignore = old->real;
-        }
+        use = (new->merge == MERGE_AUGMENT ? old->real : new->real);
+        ignore = (new->merge == MERGE_AUGMENT ? new->real : old->real);
 
-        if ((old->file_id == new->file_id && verbosity > 0) || verbosity > 9)
+        if (report)
             log_warn(info->ctx, "Multiple definitions for alias %s; "
                      "Using %s, ignoring %s\n",
                      LongKeyNameText(old->alias), LongKeyNameText(use),
                      LongKeyNameText(ignore));
 
-        if (use != old->real)
-            old->real = use;
+        old->real = use;
     }
 
     old->file_id = new->file_id;
@@ -579,29 +569,18 @@ static int
 HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge,
                unsigned file_id)
 {
-    AliasInfo *alias;
+    AliasInfo *alias, new;
 
-    list_foreach(alias, &info->aliases, entry) {
+    darray_foreach(alias, info->aliases) {
         if (alias->alias == KeyNameToLong(def->alias)) {
-            AliasInfo new;
             InitAliasInfo(&new, merge, file_id, def->alias, def->real);
             HandleAliasCollision(info, alias, &new);
             return true;
         }
     }
 
-    alias = calloc(1, sizeof(*alias));
-    if (!alias) {
-        log_wsgo(info->ctx, "Allocation failure in HandleAliasDef\n");
-        return false;
-    }
-
-    alias->file_id = file_id;
-    alias->merge = merge;
-    alias->alias = KeyNameToLong(def->alias);
-    alias->real = KeyNameToLong(def->real);
-    list_append(&alias->entry, &info->aliases);
-
+    InitAliasInfo(&new, merge, file_id, def->alias, def->real);
+    darray_append(info->aliases, new);
     return true;
 }
 
@@ -797,26 +776,22 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
 static void
 ApplyAliases(KeyNamesInfo *info, struct xkb_keymap *keymap)
 {
-    int i;
     struct xkb_key *key;
-    struct xkb_key_alias *old, *a;
-    AliasInfo *alias, *next;
-    int nNew = 0, nOld;
+    struct xkb_key_alias *a, new;
+    AliasInfo *alias;
 
-    nOld = darray_size(keymap->key_aliases);
-    old = &darray_item(keymap->key_aliases, 0);
-
-    list_foreach(alias, &info->aliases, entry) {
+    darray_foreach(alias, info->aliases) {
+        /* Check that ->real is a key. */
         key = FindNamedKey(keymap, alias->real, false, 0);
         if (!key) {
             log_lvl(info->ctx, 5,
                     "Attempt to alias %s to non-existent key %s; Ignored\n",
                     LongKeyNameText(alias->alias),
                     LongKeyNameText(alias->real));
-            alias->alias = 0;
             continue;
         }
 
+        /* Check that ->alias is not a key. */
         key = FindNamedKey(keymap, alias->alias, false, 0);
         if (key) {
             log_lvl(info->ctx, 5,
@@ -824,48 +799,32 @@ ApplyAliases(KeyNamesInfo *info, struct xkb_keymap *keymap)
                     "Alias \"%s = %s\" ignored\n",
                     LongKeyNameText(alias->alias),
                     LongKeyNameText(alias->real));
-            alias->alias = 0;
             continue;
         }
 
-        nNew++;
-
-        if (!old)
-            continue;
-
-        for (i = 0, a = old; i < nOld; i++, a++) {
+        /* Check that ->alias in not already an alias, and if so handle it. */
+        darray_foreach(a, keymap->key_aliases) {
             AliasInfo old_alias;
 
-            if (KeyNameToLong(a->alias) == alias->alias)
+            if (KeyNameToLong(a->alias) != alias->alias)
                 continue;
 
             InitAliasInfo(&old_alias, MERGE_AUGMENT, 0, a->alias, a->real);
             HandleAliasCollision(info, &old_alias, alias);
-            old_alias.real = KeyNameToLong(a->real);
+            LongToKeyName(old_alias.alias, a->alias);
+            LongToKeyName(old_alias.real, a->real);
             alias->alias = 0;
-            nNew--;
-            break;
         }
+        if (alias->alias == 0)
+            continue;
+
+        /* Add the alias. */
+        LongToKeyName(alias->alias, new.alias);
+        LongToKeyName(alias->real, new.real);
+        darray_append(keymap->key_aliases, new);
     }
 
-    if (nNew == 0)
-        goto out;
-
-    darray_resize0(keymap->key_aliases, nOld + nNew);
-
-    a = &darray_item(keymap->key_aliases, nOld);
-    list_foreach(alias, &info->aliases, entry) {
-        if (alias->alias != 0) {
-            LongToKeyName(alias->alias, a->alias);
-            LongToKeyName(alias->real, a->real);
-            a++;
-        }
-    }
-
-out:
-    list_foreach_safe(alias, next, &info->aliases, entry)
-        free(alias);
-    list_init(&info->aliases);
+    darray_free(info->aliases);
 }
 
 static bool
