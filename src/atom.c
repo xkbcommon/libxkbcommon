@@ -139,6 +139,52 @@ atom_strdup(struct atom_table *table, xkb_atom_t atom)
     return strdup_safe(atom_text(table, atom));
 }
 
+static bool
+find_node_pointer(struct atom_table *table, const char *string,
+                  struct atom_node ***np_out, unsigned int *fingerprint_out)
+{
+    struct atom_node **np;
+    unsigned i;
+    int comp;
+    unsigned int fp = 0;
+    size_t len;
+    bool found = false;
+
+    len = strlen(string);
+    np = &table->root;
+    for (i = 0; i < (len + 1) / 2; i++) {
+        fp = fp * 27 + string[i];
+        fp = fp * 27 + string[len - 1 - i];
+    }
+
+    while (*np) {
+        if (fp < (*np)->fingerprint) {
+            np = &((*np)->left);
+        }
+        else if (fp > (*np)->fingerprint) {
+            np = &((*np)->right);
+        }
+        else {
+            /* now start testing the strings */
+            comp = strncmp(string, (*np)->string, len);
+            if (comp < 0 || (comp == 0 && len < strlen((*np)->string))) {
+                np = &((*np)->left);
+            }
+            else if (comp > 0) {
+                np = &((*np)->right);
+            }
+            else {
+                found = true;
+                break;
+            }
+        }
+    }
+
+    *fingerprint_out = fp;
+    *np_out = np;
+    return found;
+}
+
 /*
  * If steal is true, we do not strdup @string; therefore it must be
  * dynamically allocated, not be free'd by the caller and not be used
@@ -150,41 +196,15 @@ atom_intern(struct atom_table *table, const char *string,
 {
     struct atom_node **np;
     struct atom_node *nd;
-    unsigned i;
-    int comp;
-    unsigned int fp = 0;
-    size_t len;
+    unsigned int fp;
 
     if (!string)
         return XKB_ATOM_NONE;
 
-    len = strlen(string);
-    np = &table->root;
-    for (i = 0; i < (len + 1) / 2; i++) {
-        fp = fp * 27 + string[i];
-        fp = fp * 27 + string[len - 1 - i];
-    }
-
-    while (*np) {
-        if (fp < (*np)->fingerprint)
-            np = &((*np)->left);
-        else if (fp > (*np)->fingerprint)
-            np = &((*np)->right);
-        else {
-            /* now start testing the strings */
-            comp = strncmp(string, (*np)->string, len);
-            if (comp < 0 || (comp == 0 && len < strlen((*np)->string))) {
-                np = &((*np)->left);
-            }
-            else if (comp > 0) {
-                np = &((*np)->right);
-            }
-            else {
-                if (steal)
-                    free(UNCONSTIFY(string));
-                return (*np)->atom;
-            }
-        }
+    if (find_node_pointer(table, string, &np, &fp)) {
+        if (steal)
+            free(UNCONSTIFY(string));
+        return (*np)->atom;
     }
 
     nd = malloc(sizeof(*nd));
