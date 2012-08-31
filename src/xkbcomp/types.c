@@ -216,7 +216,7 @@ static void
 InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
                  unsigned file_id)
 {
-    info->name = strdup("default");
+    info->name = NULL;
     info->errorCount = 0;
     darray_init(info->types);
     info->file_id = file_id;
