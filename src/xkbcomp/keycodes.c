@@ -130,9 +130,7 @@ typedef struct _AliasInfo {
 typedef struct _IndicatorNameInfo {
     enum merge_mode merge;
     unsigned file_id;
-    struct list entry;
 
-    xkb_led_index_t ndx;
     xkb_atom_t name;
 } IndicatorNameInfo;
 
@@ -148,7 +146,7 @@ typedef struct _KeyNamesInfo {
     xkb_keycode_t explicitMax;
     darray(unsigned long) names;
     darray(unsigned int) files;
-    struct list leds;
+    IndicatorNameInfo indicator_names[XkbNumIndicators];
     struct list aliases;
 
     struct xkb_context *ctx;
@@ -175,70 +173,39 @@ InitAliasInfo(AliasInfo *info, enum merge_mode merge, unsigned file_id,
     info->real = KeyNameToLong(real);
 }
 
-static void
-InitIndicatorNameInfo(IndicatorNameInfo * ii, KeyNamesInfo * info)
-{
-    ii->merge = info->merge;
-    ii->file_id = info->file_id;
-    ii->ndx = 0;
-    ii->name = XKB_ATOM_NONE;
-}
-
 static IndicatorNameInfo *
-NextIndicatorName(KeyNamesInfo * info)
+FindIndicatorByName(KeyNamesInfo *info, xkb_atom_t name,
+                    xkb_led_index_t *idx_out)
 {
-    IndicatorNameInfo *ii;
+    xkb_led_index_t idx;
 
-    ii = malloc(sizeof(*ii));
-    if (!ii)
-        return NULL;
-
-    InitIndicatorNameInfo(ii, info);
-    list_append(&ii->entry, &info->leds);
-
-    return ii;
-}
-
-static IndicatorNameInfo *
-FindIndicatorByIndex(KeyNamesInfo * info, xkb_led_index_t ndx)
-{
-    IndicatorNameInfo *old;
-
-    list_foreach(old, &info->leds, entry)
-        if (old->ndx == ndx)
-            return old;
-
-    return NULL;
-}
-
-static IndicatorNameInfo *
-FindIndicatorByName(KeyNamesInfo * info, xkb_atom_t name)
-{
-    IndicatorNameInfo *old;
-
-    list_foreach(old, &info->leds, entry)
-        if (old->name == name)
-            return old;
+    for (idx = 0; idx < XkbNumIndicators; idx++) {
+        if (info->indicator_names[idx].name == name) {
+            *idx_out = idx;
+            return &info->indicator_names[idx];
+        }
+    }
 
     return NULL;
 }
 
 static bool
 AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
-                 IndicatorNameInfo *new)
+                 IndicatorNameInfo *new, xkb_led_index_t new_idx)
 {
+    xkb_led_index_t old_idx;
     IndicatorNameInfo *old;
     bool replace, report;
     int verbosity = xkb_get_log_verbosity(info->ctx);
 
     replace = (merge == MERGE_REPLACE) || (merge == MERGE_OVERRIDE);
 
-    old = FindIndicatorByName(info, new->name);
+    old = FindIndicatorByName(info, new->name, &old_idx);
     if (old) {
         report = ((old->file_id == new->file_id && verbosity > 0) ||
                   verbosity > 9);
 
-        if (old->ndx == new->ndx) {
+        if (old_idx == new_idx) {
             if (report)
                 log_warn(info->ctx, "Multiple indicators named %s; "
                          "Identical definitions ignored\n",
@@ -250,29 +217,31 @@ AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
             log_warn(info->ctx, "Multiple indicators named %s; "
                      "Using %d, ignoring %d\n",
                      xkb_atom_text(info->ctx, new->name),
-                     (replace ? old->ndx : new->ndx),
-                     (replace ? new->ndx : old->ndx));
+                     (replace ? old_idx + 1 : new_idx + 1),
+                     (replace ? new_idx + 1 : old_idx + 1));
 
-        if (replace) {
-            list_del(&old->entry);
-            free(old);
-        }
+        /*
+         * XXX: If in the next check we ignore new, than we will have
+         * deleted this old for nothing!
+         */
+        if (replace)
+            memset(old, 0, sizeof(*old));
     }
 
-    old = FindIndicatorByIndex(info, new->ndx);
-    if (old) {
+    old = &info->indicator_names[new_idx];
+    if (old->name != XKB_ATOM_NONE) {
         report = ((old->file_id == new->file_id && verbosity > 0) ||
                   verbosity > 9);
 
         if (old->name == new->name) {
             if (report)
                 log_warn(info->ctx, "Multiple names for indicator %d; "
-                         "Identical definitions ignored\n", new->ndx);
+                         "Identical definitions ignored\n", new_idx + 1);
         }
         else if (replace) {
             if (report)
                 log_warn(info->ctx, "Multiple names for indicator %d; "
-                         "Using %s, ignoring %s\n", new->ndx,
+                         "Using %s, ignoring %s\n", new_idx + 1,
                          xkb_atom_text(info->ctx, new->name),
                          xkb_atom_text(info->ctx, old->name));
             old->name = new->name;
@@ -280,7 +249,7 @@ AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
         else {
             if (report)
                 log_warn(info->ctx, "Multiple names for indicator %d; "
-                         "Using %s, ignoring %s\n", new->ndx,
+                         "Using %s, ignoring %s\n", new_idx + 1,
                          xkb_atom_text(info->ctx, old->name),
                          xkb_atom_text(info->ctx, new->name));
         }
@@ -288,16 +257,7 @@ AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
         return true;
     }
 
-    old = new;
-    new = NextIndicatorName(info);
-    if (!new) {
-        log_wsgo(info->ctx,
-                 "Couldn't allocate name for indicator %d; Ignored\n",
-                 old->ndx);
-        return false;
-    }
-    new->name = old->name;
-    new->ndx = old->ndx;
+    info->indicator_names[new_idx] = *new;
     return true;
 }
 
@@ -305,7 +265,6 @@ static void
 ClearKeyNamesInfo(KeyNamesInfo * info)
 {
     AliasInfo *alias, *next_alias;
-    IndicatorNameInfo *ii, *next_ii;
 
     free(info->name);
     info->name = NULL;
@@ -314,9 +273,7 @@ ClearKeyNamesInfo(KeyNamesInfo * info)
     info->computedMin = XKB_KEYCODE_MAX;
     darray_free(info->names);
     darray_free(info->files);
-    list_foreach_safe(ii, next_ii, &info->leds, entry)
-        free(ii);
-    list_init(&info->leds);
+    memset(info->indicator_names, 0, sizeof(info->indicator_names));
     list_foreach_safe(alias, next_alias, &info->aliases, entry)
         free(alias);
     list_init(&info->aliases);
@@ -328,7 +285,6 @@ InitKeyNamesInfo(KeyNamesInfo *info, struct xkb_context *ctx,
 {
     info->name = NULL;
     info->merge = MERGE_DEFAULT;
-    list_init(&info->leds);
     list_init(&info->aliases);
     info->file_id = file_id;
     darray_init(info->names);
@@ -463,7 +419,7 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
                       enum merge_mode merge)
 {
     xkb_keycode_t i;
-    IndicatorNameInfo *led;
+    xkb_led_index_t idx;
 
     if (from->errorCount > 0) {
         into->errorCount += from->errorCount;
@@ -486,9 +442,13 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
             into->errorCount++;
     }
 
-    list_foreach(led, &from->leds, entry) {
+    for (idx = 0; idx < XkbNumIndicators; idx++) {
+        IndicatorNameInfo *led = &from->indicator_names[idx];
+        if (led->name == XKB_ATOM_NONE)
+            continue;
+
         led->merge = (merge == MERGE_DEFAULT ? led->merge : merge);
-        if (!AddIndicatorName(into, led->merge, led))
+        if (!AddIndicatorName(into, led->merge, led, idx))
             into->errorCount++;
     }
 
@@ -761,8 +721,6 @@ HandleIndicatorNameDef(KeyNamesInfo *info, IndicatorNameDef *def,
         return false;
     }
 
-    InitIndicatorNameInfo(&ii, info);
-
     if (!ExprResolveString(info->ctx, def->name, &str)) {
         char buf[20];
         snprintf(buf, sizeof(buf), "%d", def->ndx);
@@ -771,10 +729,10 @@ HandleIndicatorNameDef(KeyNamesInfo *info, IndicatorNameDef *def,
                              "string");
     }
 
-    ii.ndx = (xkb_led_index_t) def->ndx;
+    ii.merge = info->merge;
+    ii.file_id = info->file_id;
     ii.name = xkb_atom_intern(info->ctx, str);
-
-    return AddIndicatorName(info, merge, &ii);
+    return AddIndicatorName(info, merge, &ii, def->ndx - 1);
 }
 
 /**
@@ -914,7 +872,7 @@ static bool
 CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 {
     xkb_keycode_t kc;
-    IndicatorNameInfo *ii;
+    xkb_led_index_t idx;
 
     if (info->explicitMin > 0)
         keymap->min_key_code = info->explicitMin;
@@ -933,9 +891,14 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 
     keymap->keycodes_section_name = strdup_safe(info->name);
 
-    list_foreach(ii, &info->leds, entry)
-        keymap->indicator_names[ii->ndx - 1] =
-            xkb_atom_text(keymap->ctx, ii->name);
+    for (idx = 0; idx < XkbNumIndicators; idx++) {
+        IndicatorNameInfo *led = &info->indicator_names[idx];
+        if (led->name == XKB_ATOM_NONE)
+            continue;
+
+        keymap->indicator_names[idx] =
+            xkb_atom_text(keymap->ctx, led->name);
+    }
 
     ApplyAliases(info, keymap);
 
