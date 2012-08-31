@@ -146,7 +146,6 @@ typedef struct _KeyTypeInfo {
     enum type_field defined;
     unsigned file_id;
     enum merge_mode merge;
-    struct list entry;
 
     xkb_atom_t name;
     xkb_mod_mask_t mods;
@@ -159,8 +158,8 @@ typedef struct _KeyTypesInfo {
     char *name;
     int errorCount;
     unsigned file_id;
-    unsigned num_types;
-    struct list types;
+
+    darray(KeyTypeInfo) types;
     VModInfo vmods;
     struct xkb_keymap *keymap;
 } KeyTypesInfo;
@@ -219,15 +218,14 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
 {
     info->name = strdup("default");
     info->errorCount = 0;
-    info->num_types = 0;
-    list_init(&info->types);
+    darray_init(info->types);
     info->file_id = file_id;
     InitVModInfo(&info->vmods, keymap);
     info->keymap = keymap;
 }
 
 static void
-FreeKeyTypeInfo(KeyTypeInfo * type)
+ClearKeyTypeInfo(KeyTypeInfo *type)
 {
     darray_free(type->entries);
     darray_free(type->level_names);
@@ -236,29 +234,9 @@ FreeKeyTypeInfo(KeyTypeInfo * type)
 static void
 FreeKeyTypesInfo(KeyTypesInfo * info)
 {
-    KeyTypeInfo *type, *next_type;
     free(info->name);
     info->name = NULL;
-    list_foreach_safe(type, next_type, &info->types, entry) {
-        FreeKeyTypeInfo(type);
-        free(type);
-    }
-}
-
-static KeyTypeInfo *
-NextKeyType(KeyTypesInfo * info)
-{
-    KeyTypeInfo *type;
-
-    type = calloc(1, sizeof(*type));
-    if (!type)
-        return NULL;
-
-    type->file_id = info->file_id;
-
-    list_append(&type->entry, &info->types);
-    info->num_types++;
-    return type;
+    darray_free(info->types);
 }
 
 static KeyTypeInfo *
@@ -266,7 +244,7 @@ FindMatchingKeyType(KeyTypesInfo *info, xkb_atom_t name)
 {
     KeyTypeInfo *old;
 
-    list_foreach(old, &info->types, entry)
+    darray_foreach(old, info->types)
         if (old->name == name)
             return old;
 
@@ -277,7 +255,6 @@ static bool
 AddKeyType(KeyTypesInfo *info, KeyTypeInfo *new)
 {
     KeyTypeInfo *old;
-    struct list entry;
     int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
 
     old = FindMatchingKeyType(info, new->name);
@@ -291,10 +268,8 @@ AddKeyType(KeyTypesInfo *info, KeyTypeInfo *new)
                          xkb_atom_text(info->keymap->ctx, new->name));
             }
 
-            entry = old->entry;
-            FreeKeyTypeInfo(old);
+            ClearKeyTypeInfo(old);
             *old = *new;
-            old->entry = entry;
             darray_init(new->entries);
             darray_init(new->level_names);
             return true;
@@ -306,19 +281,12 @@ AddKeyType(KeyTypesInfo *info, KeyTypeInfo *new)
                     "Later definition ignored\n",
                     xkb_atom_text(info->keymap->ctx, new->name));
 
-        FreeKeyTypeInfo(new);
+        ClearKeyTypeInfo(new);
         return true;
     }
 
-    old = NextKeyType(info);
-    if (!old)
-        return false;
-
-    entry = old->entry;
-    *old = *new;
-    old->entry = entry;
-    darray_init(new->entries);
-    darray_init(new->level_names);
+    new->file_id = info->file_id;
+    darray_append(info->types, *new);
     return true;
 }
 
@@ -328,7 +296,7 @@ static void
 MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
                       enum merge_mode merge)
 {
-    KeyTypeInfo *type, *next_type;
+    KeyTypeInfo *type;
 
     if (from->errorCount > 0) {
         into->errorCount += from->errorCount;
@@ -340,7 +308,7 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
         from->name = NULL;
     }
 
-    list_foreach_safe(type, next_type, &from->types, entry) {
+    darray_foreach(type, from->types) {
         type->merge = (merge == MERGE_DEFAULT ? type->merge : merge);
         if (!AddKeyType(into, type))
             into->errorCount++;
@@ -822,8 +790,7 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
 }
 
 static void
-CopyDefToKeyType(KeyTypesInfo *info, KeyTypeInfo *def,
-                 struct xkb_key_type *type)
+CopyDefToKeyType(KeyTypeInfo *def, struct xkb_key_type *type)
 {
     type->mods.mods = def->mods;
     type->num_levels = def->num_levels;
@@ -840,9 +807,8 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
 {
     unsigned int i;
     unsigned int num_types;
-    KeyTypeInfo *def;
 
-    num_types = info->num_types ? info->num_types : 1;
+    num_types = darray_size(info->types) ? darray_size(info->types) : 1;
     keymap->types = calloc(num_types, sizeof(*keymap->types));
     if (!keymap->types)
         return false;
@@ -853,7 +819,7 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
      * If no types were specified, a default unnamed one-level type is
      * used for all keys.
      */
-    if (info->num_types == 0) {
+    if (darray_empty(info->types)) {
         KeyTypeInfo dflt = {
             .name = xkb_atom_intern(keymap->ctx, "default"),
             .mods = 0,
@@ -862,11 +828,10 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
             .level_names = darray_new(),
         };
 
-        CopyDefToKeyType(info, &dflt, &keymap->types[0]);
+        CopyDefToKeyType(&dflt, &keymap->types[0]);
     } else {
-        i = 0;
-        list_foreach(def, &info->types, entry)
-            CopyDefToKeyType(info, def, &keymap->types[i++]);
+        for (i = 0; i < num_types; i++)
+            CopyDefToKeyType(&darray_item(info->types, i), &keymap->types[i]);
     }
 
     keymap->types_section_name = strdup_safe(info->name);
