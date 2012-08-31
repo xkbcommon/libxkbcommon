@@ -185,6 +185,21 @@ find_node_pointer(struct atom_table *table, const char *string,
     return found;
 }
 
+xkb_atom_t
+atom_lookup(struct atom_table *table, const char *string)
+{
+    struct atom_node **np;
+    unsigned int fp;
+
+    if (!string)
+        return XKB_ATOM_NONE;
+
+    if (!find_node_pointer(table, string, &np, &fp))
+        return XKB_ATOM_NONE;
+
+    return (*np)->atom;
+}
+
 /*
  * If steal is true, we do not strdup @string; therefore it must be
  * dynamically allocated, not be free'd by the caller and not be used

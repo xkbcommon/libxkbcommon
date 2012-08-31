@@ -422,6 +422,13 @@ XkbKeycodeInRange(struct xkb_keymap *keymap, xkb_keycode_t kc)
 struct xkb_keymap *
 xkb_map_new(struct xkb_context *ctx);
 
+/*
+ * Returns XKB_ATOM_NONE if @string was not previously interned,
+ * otherwise returns the atom.
+ */
+xkb_atom_t
+xkb_atom_lookup(struct xkb_context *ctx, const char *string);
+
 xkb_atom_t
 xkb_atom_intern(struct xkb_context *ctx, const char *string);
 
