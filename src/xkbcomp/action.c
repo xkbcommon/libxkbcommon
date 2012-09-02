@@ -72,23 +72,37 @@ enum action_field {
     ACTION_FIELD_MODS_TO_CLEAR,
 };
 
-struct _ActionInfo {
-    unsigned action;
-    enum action_field field;
-    ExprDef *array_ndx;
-    ExprDef *value;
-    struct _ActionInfo *next;
-};
+ActionsInfo *
+NewActionsInfo(void)
+{
+    unsigned type;
+    ActionsInfo *info;
+
+    info = calloc(1, sizeof(*info));
+    if (!info)
+        return NULL;
+
+    /* This includes PrivateAction. */
+    for (type = 0; type < XkbSA_NumActions + 1; type++)
+        info->actions[type].type = type;
+
+    /* Apply some "factory defaults". */
+
+    /* Increment default button. */
+    info->actions[XkbSA_SetPtrDflt].dflt.affect = XkbSA_AffectDfltBtn;
+    info->actions[XkbSA_SetPtrDflt].dflt.flags = 0;
+    info->actions[XkbSA_SetPtrDflt].dflt.value = 1;
+
+    info->actions[XkbSA_ISOLock].iso.mods.mods =
+        (1 << ModNameToIndex(XKB_MOD_NAME_CAPS));
+
+    return info;
+}
 
 void
-FreeActionInfo(ActionInfo *info)
+FreeActionsInfo(ActionsInfo *info)
 {
-    ActionInfo *next;
-    while (info) {
-        next = info->next;
-        free(info);
-        info = next;
-    }
+    free(info);
 }
 
 static const LookupEntry actionStrings[] = {
@@ -1224,23 +1238,9 @@ static const actionHandler handleAction[XkbSA_NumActions + 1] = {
 
 /***====================================================================***/
 
-static void
-ApplyActionFactoryDefaults(union xkb_action *action)
-{
-    if (action->type == XkbSA_SetPtrDflt) {
-        /* Increment default button. */
-        action->dflt.affect = XkbSA_AffectDfltBtn;
-        action->dflt.flags = 0;
-        action->dflt.value = 1;
-    }
-    else if (action->type == XkbSA_ISOLock) {
-        action->iso.mods.mods = (1 << ModNameToIndex(XKB_MOD_NAME_CAPS));
-    }
-}
-
 bool
 HandleActionDef(ExprDef *def, struct xkb_keymap *keymap,
-                union xkb_action *action, ActionInfo *info)
+                union xkb_action *action, ActionsInfo *info)
 {
     ExprDef *arg;
     const char *str;
@@ -1258,27 +1258,12 @@ HandleActionDef(ExprDef *def, struct xkb_keymap *keymap,
         return false;
     }
 
-    action->type = hndlrType;
-
     /*
-     * Go through all of the ActionInfo's which change the default values
-     * for this action->type and apply them to this action, e.g. if the
-     * action is latchMods, and a statement such as this:
+     * Get the default values for this action type, as modified by
+     * statements such as:
      *     latchMods.clearLocks = True;
-     * appears in the section before, then we apply it.
      */
-    if (action->type != XkbSA_NoAction) {
-        ApplyActionFactoryDefaults(action);
-
-        for (; info; info = info->next) {
-            if (info->action != hndlrType)
-                continue;
-
-            if (!handleAction[hndlrType](keymap, action, info->field,
-                                         info->array_ndx, info->value))
-                return false;
-        }
-    }
+    *action = info->actions[hndlrType];
 
     /*
      * Now change the action properties as specified for this
@@ -1330,48 +1315,29 @@ HandleActionDef(ExprDef *def, struct xkb_keymap *keymap,
     return true;
 }
 
+
 bool
 SetActionField(struct xkb_keymap *keymap, const char *elem, const char *field,
-               ExprDef *array_ndx, ExprDef *value, ActionInfo **info_rtrn)
+               ExprDef *array_ndx, ExprDef *value, ActionsInfo *info)
 {
-    ActionInfo *new, *old;
+    unsigned action;
+    enum action_field action_field;
 
-    new = malloc(sizeof(*new));
-    if (!new) {
-        log_wsgo(keymap->ctx, "Couldn't allocate space for action default\n");
-        goto err;
-    }
+    if (!stringToAction(elem, &action))
+        return false;
 
-    if (!stringToAction(elem, &new->action))
-        goto err;
-
-    if (new->action == XkbSA_NoAction) {
+    if (action == XkbSA_NoAction) {
         log_err(keymap->ctx,
                 "\"%s\" is not a valid field in a NoAction action\n",
                 field);
-        goto err;
+        return false;
     }
 
-    if (!stringToField(field, &new->field)) {
+    if (!stringToField(field, &action_field)) {
         log_err(keymap->ctx, "\"%s\" is not a legal field name\n", field);
-        goto err;
+        return false;
     }
 
-    new->array_ndx = array_ndx;
-    new->value = value;
-
-    new->next = NULL;
-    old = *info_rtrn;
-    while (old && old->next)
-        old = old->next;
-    if (!old)
-        *info_rtrn = new;
-    else
-        old->next = new;
-
-    return true;
-
-err:
-    free(new);
-    return false;
+    return handleAction[action](keymap, &info->actions[action],
+                                action_field, array_ndx, value);
 }

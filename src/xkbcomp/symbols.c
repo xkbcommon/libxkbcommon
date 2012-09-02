@@ -188,7 +188,7 @@ typedef struct _SymbolsInfo {
     darray(KeyInfo) keys;
     KeyInfo dflt;
     VModInfo vmods;
-    ActionInfo *action;
+    ActionsInfo *actions;
     xkb_atom_t groupNames[XkbNumKbdGroups];
 
     struct list modMaps;
@@ -197,8 +197,8 @@ typedef struct _SymbolsInfo {
 } SymbolsInfo;
 
 static void
-InitSymbolsInfo(SymbolsInfo * info, struct xkb_keymap *keymap,
-                unsigned file_id)
+InitSymbolsInfo(SymbolsInfo *info, struct xkb_keymap *keymap,
+                unsigned file_id, ActionsInfo *actions)
 {
     xkb_group_index_t i;
 
@@ -214,7 +214,7 @@ InitSymbolsInfo(SymbolsInfo * info, struct xkb_keymap *keymap,
         info->groupNames[i] = XKB_ATOM_NONE;
     InitKeyInfo(&info->dflt, file_id);
     InitVModInfo(&info->vmods, keymap);
-    info->action = NULL;
+    info->actions = actions;
     info->keymap = keymap;
 }
 
@@ -745,7 +745,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *stmt)
     XkbFile *rtrn;
     SymbolsInfo included, next_incl;
 
-    InitSymbolsInfo(&included, info->keymap, info->file_id);
+    InitSymbolsInfo(&included, info->keymap, info->file_id, info->actions);
     if (stmt->stmt) {
         free(included.name);
         included.name = stmt->stmt;
@@ -760,7 +760,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *stmt)
             return false;
         }
 
-        InitSymbolsInfo(&next_incl, info->keymap, rtrn->id);
+        InitSymbolsInfo(&next_incl, info->keymap, rtrn->id, info->actions);
         next_incl.merge = next_incl.dflt.merge = MERGE_OVERRIDE;
         if (stmt->modifier)
             next_incl.explicit_group = atoi(stmt->modifier) - 1;
@@ -998,7 +998,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     toAct = darray_mem(keyi->acts[ndx], 0);
     act = value->value.child;
     for (i = 0; i < nActs; i++, toAct++) {
-        if (!HandleActionDef(act, info->keymap, toAct, info->action)) {
+        if (!HandleActionDef(act, info->keymap, toAct, info->actions)) {
             log_err(info->keymap->ctx,
                     "Illegal action definition for %s; "
                     "Action for group %u/level %zu ignored\n",
@@ -1256,8 +1256,8 @@ HandleSymbolsVar(SymbolsInfo *info, VarDef *stmt)
         ret = true;
     }
     else {
-        ret = SetActionField(info->keymap, elem, field, arrayNdx,
-                             stmt->value, &info->action);
+        ret = SetActionField(info->keymap, elem, field, arrayNdx, stmt->value,
+                             info->actions);
     }
 
     return ret;
@@ -1913,10 +1913,15 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
     xkb_group_index_t i;
     struct xkb_key *key;
     SymbolsInfo info;
+    ActionsInfo *actions;
     KeyInfo *keyi;
     ModMapEntry *mm;
 
-    InitSymbolsInfo(&info, keymap, file->id);
+    actions = NewActionsInfo();
+    if (!actions)
+        return false;
+
+    InitSymbolsInfo(&info, keymap, file->id, actions);
     info.dflt.merge = merge;
 
     HandleSymbolsFile(&info, file, merge);
@@ -1964,9 +1969,11 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
             info.errorCount++;
 
     ClearSymbolsInfo(&info);
+    FreeActionsInfo(actions);
     return true;
 
 err_info:
+    FreeActionsInfo(actions);
     ClearSymbolsInfo(&info);
     return false;
 }

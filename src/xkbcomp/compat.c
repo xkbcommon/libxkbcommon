@@ -178,7 +178,7 @@ typedef struct _CompatInfo {
     LEDInfo ledDflt;
     darray(LEDInfo) leds;
     VModInfo vmods;
-    ActionInfo *act;
+    ActionsInfo *actions;
     struct xkb_keymap *keymap;
 } CompatInfo;
 
@@ -240,14 +240,15 @@ ClearIndicatorMapInfo(struct xkb_context *ctx, LEDInfo *info)
 }
 
 static void
-InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id)
+InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id,
+               ActionsInfo *actions)
 {
     info->keymap = keymap;
     info->name = NULL;
     info->file_id = file_id;
     info->errorCount = 0;
     darray_init(info->interps);
-    info->act = NULL;
+    info->actions = actions;
     info->dflt.file_id = file_id;
     info->dflt.defined = 0;
     info->dflt.merge = MERGE_OVERRIDE;
@@ -279,8 +280,7 @@ ClearCompatInfo(CompatInfo *info)
     ClearIndicatorMapInfo(keymap->ctx, &info->ledDflt);
     darray_free(info->interps);
     darray_free(info->leds);
-    FreeActionInfo(info->act);
-    info->act = NULL;
+    info->actions = NULL;
     info->keymap = NULL;
     ClearVModInfo(&info->vmods);
 }
@@ -551,7 +551,7 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *stmt)
     XkbFile *rtrn;
     CompatInfo included, next_incl;
 
-    InitCompatInfo(&included, info->keymap, info->file_id);
+    InitCompatInfo(&included, info->keymap, info->file_id, info->actions);
     if (stmt->stmt) {
         free(included.name);
         included.name = stmt->stmt;
@@ -566,20 +566,17 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *stmt)
             return false;
         }
 
-        InitCompatInfo(&next_incl, info->keymap, rtrn->id);
+        InitCompatInfo(&next_incl, info->keymap, rtrn->id, info->actions);
         next_incl.file_id = rtrn->id;
         next_incl.dflt = info->dflt;
         next_incl.dflt.file_id = rtrn->id;
         next_incl.dflt.merge = merge;
         next_incl.ledDflt.file_id = rtrn->id;
         next_incl.ledDflt.merge = merge;
-        next_incl.act = info->act;
 
         HandleCompatMapFile(&next_incl, rtrn, MERGE_OVERRIDE);
 
         MergeIncludedCompatMaps(&included, &next_incl, merge);
-        if (info->act)
-            next_incl.act = NULL;
 
         ClearCompatInfo(&next_incl);
         FreeXkbFile(rtrn);
@@ -610,7 +607,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         if (arrayNdx)
             return ReportSINotArray(info, si, field);
 
-        if (!HandleActionDef(value, keymap, &si->interp.act, info->act))
+        if (!HandleActionDef(value, keymap, &si->interp.act, info->actions))
             return false;
 
         si->defined |= SI_FIELD_ACTION;
@@ -821,7 +818,7 @@ HandleGlobalVar(CompatInfo *info, VarDef *stmt)
                                    stmt->value);
     else
         ret = SetActionField(info->keymap, elem, field, ndx, stmt->value,
-                             &info->act);
+                             info->actions);
     return ret;
 }
 
@@ -1095,8 +1092,13 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
                  enum merge_mode merge)
 {
     CompatInfo info;
+    ActionsInfo *actions;
 
-    InitCompatInfo(&info, keymap, file->id);
+    actions = NewActionsInfo();
+    if (!actions)
+        return false;
+
+    InitCompatInfo(&info, keymap, file->id, actions);
     info.dflt.merge = merge;
     info.ledDflt.merge = merge;
 
@@ -1108,9 +1110,11 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
         goto err_info;
 
     ClearCompatInfo(&info);
+    FreeActionsInfo(actions);
     return true;
 
 err_info:
     ClearCompatInfo(&info);
+    FreeActionsInfo(actions);
     return false;
 }

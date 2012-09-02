@@ -27,18 +27,28 @@
 #ifndef XKBCOMP_ACTION_H
 #define XKBCOMP_ACTION_H
 
-typedef struct _ActionInfo ActionInfo;
+/*
+ * This struct contains the default values which every new action
+ * (e.g. in an interpret statement) starts off with. It can be
+ * modified within the files (see calls to SetActionField).
+ */
+typedef struct {
+    union xkb_action actions[XkbSA_NumActions + 1];
+} ActionsInfo;
+
+ActionsInfo *
+NewActionsInfo(void);
 
 void
-FreeActionInfo(ActionInfo *info);
+FreeActionsInfo(ActionsInfo *info);
 
 bool
 HandleActionDef(ExprDef *def, struct xkb_keymap *keymap,
-                union xkb_action *action, ActionInfo *info);
+                union xkb_action *action, ActionsInfo *info);
 
 bool
 SetActionField(struct xkb_keymap *keymap, const char *elem, const char *field,
-               ExprDef *index, ExprDef *value, ActionInfo **info_rtrn);
+               ExprDef *array_ndx, ExprDef *value, ActionsInfo *info);
 
 extern const LookupEntry ctrlNames[];
 
