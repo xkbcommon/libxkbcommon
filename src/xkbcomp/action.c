@@ -30,8 +30,6 @@
 #include "action.h"
 #include "keycodes.h"
 
-#define PrivateAction (XkbSA_LastAction + 1)
-
 static const ExprDef constTrue = {
     .common = { .type = STMT_EXPR, .next = NULL },
     .op = EXPR_VALUE,
@@ -105,51 +103,6 @@ FreeActionsInfo(ActionsInfo *info)
     free(info);
 }
 
-static const LookupEntry actionStrings[] = {
-    { "noaction",          XkbSA_NoAction       },
-    { "setmods",           XkbSA_SetMods        },
-    { "latchmods",         XkbSA_LatchMods      },
-    { "lockmods",          XkbSA_LockMods       },
-    { "setgroup",          XkbSA_SetGroup       },
-    { "latchgroup",        XkbSA_LatchGroup     },
-    { "lockgroup",         XkbSA_LockGroup      },
-    { "moveptr",           XkbSA_MovePtr        },
-    { "movepointer",       XkbSA_MovePtr        },
-    { "ptrbtn",            XkbSA_PtrBtn         },
-    { "pointerbutton",     XkbSA_PtrBtn         },
-    { "lockptrbtn",        XkbSA_LockPtrBtn     },
-    { "lockpointerbutton", XkbSA_LockPtrBtn     },
-    { "lockptrbutton",     XkbSA_LockPtrBtn     },
-    { "lockpointerbtn",    XkbSA_LockPtrBtn     },
-    { "setptrdflt",        XkbSA_SetPtrDflt     },
-    { "setpointerdefault", XkbSA_SetPtrDflt     },
-    { "isolock",           XkbSA_ISOLock        },
-    { "terminate",         XkbSA_Terminate      },
-    { "terminateserver",   XkbSA_Terminate      },
-    { "switchscreen",      XkbSA_SwitchScreen   },
-    { "setcontrols",       XkbSA_SetControls    },
-    { "lockcontrols",      XkbSA_LockControls   },
-    { "actionmessage",     XkbSA_ActionMessage  },
-    { "messageaction",     XkbSA_ActionMessage  },
-    { "message",           XkbSA_ActionMessage  },
-    { "redirect",          XkbSA_RedirectKey    },
-    { "redirectkey",       XkbSA_RedirectKey    },
-    { "devbtn",            XkbSA_DeviceBtn      },
-    { "devicebtn",         XkbSA_DeviceBtn      },
-    { "devbutton",         XkbSA_DeviceBtn      },
-    { "devicebutton",      XkbSA_DeviceBtn      },
-    { "lockdevbtn",        XkbSA_LockDeviceBtn  },
-    { "lockdevicebtn",     XkbSA_LockDeviceBtn  },
-    { "lockdevbutton",     XkbSA_LockDeviceBtn  },
-    { "lockdevicebutton",  XkbSA_LockDeviceBtn  },
-    { "devval",            XkbSA_DeviceValuator },
-    { "deviceval",         XkbSA_DeviceValuator },
-    { "devvaluator",       XkbSA_DeviceValuator },
-    { "devicevaluator",    XkbSA_DeviceValuator },
-    { "private",           PrivateAction        },
-    { NULL,                0                    }
-};
-
 static const LookupEntry fieldStrings[] = {
     { "clearLocks",       ACTION_FIELD_CLEAR_LOCKS   },
     { "latchToLock",      ACTION_FIELD_LATCH_TO_LOCK },
@@ -188,52 +141,21 @@ static const LookupEntry fieldStrings[] = {
 };
 
 static bool
-stringToValue(const LookupEntry tab[], const char *string,
-              unsigned int *value_rtrn)
-{
-    const LookupEntry *entry;
-
-    if (!string)
-        return false;
-
-    for (entry = tab; entry->name; entry++) {
-        if (istreq(entry->name, string)) {
-            *value_rtrn = entry->value;
-            return true;
-        }
-    }
-
-    return false;
-}
-
-static const char *
-valueToString(const LookupEntry tab[], unsigned int value)
-{
-    const LookupEntry *entry;
-
-    for (entry = tab; entry->name; entry++)
-        if (entry->value == value)
-            return entry->name;
-
-    return "unknown";
-}
-
-static bool
 stringToAction(const char *str, unsigned *type_rtrn)
 {
-    return stringToValue(actionStrings, str, type_rtrn);
+    return LookupString(actionTypeNames, str, type_rtrn);
 }
 
 static bool
 stringToField(const char *str, enum action_field *field_rtrn)
 {
-    return stringToValue(fieldStrings, str, field_rtrn);
+    return LookupString(fieldStrings, str, field_rtrn);
 }
 
 static const char *
 fieldText(enum action_field field)
 {
-    return valueToString(fieldStrings, field);
+    return LookupValue(fieldStrings, field);
 }
 
 /***====================================================================***/
@@ -830,27 +752,6 @@ HandleSwitchScreen(struct xkb_keymap *keymap, union xkb_action *action,
     return ReportIllegal(keymap, action->type, field);
 }
 
-const LookupEntry ctrlNames[] = {
-    { "repeatkeys", XkbRepeatKeysMask },
-    { "repeat", XkbRepeatKeysMask },
-    { "autorepeat", XkbRepeatKeysMask },
-    { "slowkeys", XkbSlowKeysMask },
-    { "bouncekeys", XkbBounceKeysMask },
-    { "stickykeys", XkbStickyKeysMask },
-    { "mousekeys", XkbMouseKeysMask },
-    { "mousekeysaccel", XkbMouseKeysAccelMask },
-    { "accessxkeys", XkbAccessXKeysMask },
-    { "accessxtimeout", XkbAccessXTimeoutMask },
-    { "accessxfeedback", XkbAccessXFeedbackMask },
-    { "audiblebell", XkbAudibleBellMask },
-    { "ignoregrouplock", XkbIgnoreGroupLockMask },
-    { "all", XkbAllBooleanCtrlsMask },
-    { "overlay1", 0 },
-    { "overlay2", 0 },
-    { "none", 0 },
-    { NULL, 0 }
-};
-
 static bool
 HandleSetLockControls(struct xkb_keymap *keymap, union xkb_action *action,
                       enum action_field field, const ExprDef *array_ndx,
@@ -864,7 +765,7 @@ HandleSetLockControls(struct xkb_keymap *keymap, union xkb_action *action,
         if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
 
-        if (!ExprResolveMask(keymap->ctx, value, &mask, ctrlNames))
+        if (!ExprResolveMask(keymap->ctx, value, &mask, ctrlMaskNames))
             return ReportMismatch(keymap, action->type, field,
                                   "controls mask");
 

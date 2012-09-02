@@ -166,14 +166,6 @@ get_indicator_state_text(uint8_t which)
 {
     int i;
     static char ret[GET_TEXT_BUF_SIZE];
-    /* FIXME: Merge with ... something ... in xkbcomp? */
-    static const char *state_names[] = {
-        "base",
-        "latched",
-        "locked",
-        "effective",
-        "compat"
-    };
 
     memset(ret, 0, GET_TEXT_BUF_SIZE);
 
@@ -185,14 +177,18 @@ get_indicator_state_text(uint8_t which)
     }
 
     for (i = 0; which != 0; i++) {
+        const char *name;
+
         if (!(which & (1 << i)))
             continue;
+
         which &= ~(1 << i);
+        name = LookupValue(modComponentMaskNames, (1 << i));
 
         if (ret[0] != '\0')
-            append_get_text("%s+%s", ret, state_names[i]);
+            append_get_text("%s+%s", ret, name);
         else
-            append_get_text("%s", state_names[i]);
+            append_get_text("%s", name);
     }
 
     return ret;
@@ -203,22 +199,7 @@ get_control_mask_text(uint32_t control_mask)
 {
     int i;
     static char ret[GET_TEXT_BUF_SIZE];
-    /* FIXME: Merge with ... something ... in xkbcomp. */
-    static const char *ctrl_names[] = {
-        "RepeatKeys",
-        "SlowKeys",
-        "BounceKeys",
-        "StickyKeys",
-        "MouseKeys",
-        "MouseKeysAccel",
-        "AccessXKeys",
-        "AccessXTimeout",
-        "AccessXFeedback",
-        "AudibleBell",
-        "Overlay1",
-        "Overlay2",
-        "IgnoreGroupLock"
-    };
+    const char *control_name;
 
     memset(ret, 0, GET_TEXT_BUF_SIZE);
 
@@ -236,12 +217,14 @@ get_control_mask_text(uint32_t control_mask)
     for (i = 0; control_mask; i++) {
         if (!(control_mask & (1 << i)))
             continue;
+
         control_mask &= ~(1 << i);
+        control_name = LookupValue(ctrlMaskNames, (1 << i));
 
         if (ret[0] != '\0')
-            append_get_text("%s+%s", ret, ctrl_names[i]);
+            append_get_text("%s+%s", ret, control_name);
         else
-            append_get_text("%s", ctrl_names[i]);
+            append_get_text("%s", control_name);
     }
 
     return ret;
@@ -518,7 +501,6 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         write_buf(buf, "%sNoAction()%s", prefix, suffix);
         break;
 
-    case XkbSA_XFree86Private:
     default:
         write_buf(buf,
                   "%s%s(type=0x%02x,data[0]=0x%02x,data[1]=0x%02x,data[2]=0x%02x,data[3]=0x%02x,data[4]=0x%02x,data[5]=0x%02x,data[6]=0x%02x)%s",

@@ -394,17 +394,7 @@ ResolveStateAndPredicate(ExprDef *expr, unsigned *pred_rtrn,
     if (expr->op == EXPR_ACTION_DECL) {
         const char *pred_txt = xkb_atom_text(info->keymap->ctx,
                                              expr->value.action.name);
-        if (istreq(pred_txt, "noneof"))
-            *pred_rtrn = XkbSI_NoneOf;
-        else if (istreq(pred_txt, "anyofornone"))
-            *pred_rtrn = XkbSI_AnyOfOrNone;
-        else if (istreq(pred_txt, "anyof"))
-            *pred_rtrn = XkbSI_AnyOf;
-        else if (istreq(pred_txt, "allof"))
-            *pred_rtrn = XkbSI_AllOf;
-        else if (istreq(pred_txt, "exactly"))
-            *pred_rtrn = XkbSI_Exactly;
-        else {
+        if (!LookupString(symInterpretMatchMaskNames, pred_txt, pred_rtrn)) {
             log_err(info->keymap->ctx,
                     "Illegal modifier predicate \"%s\"; Ignored\n", pred_txt);
             return false;
@@ -588,14 +578,6 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *stmt)
     return (info->errorCount == 0);
 }
 
-static const LookupEntry useModMapValues[] = {
-    { "levelone", 1 },
-    { "level1", 1 },
-    { "anylevel", 0 },
-    { "any", 0 },
-    { NULL, 0 }
-};
-
 static bool
 SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
                ExprDef *arrayNdx, ExprDef *value)
@@ -651,7 +633,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         if (arrayNdx)
             return ReportSINotArray(info, si, field);
 
-        if (!ExprResolveEnum(keymap->ctx, value, &val, useModMapValues))
+        if (!ExprResolveEnum(keymap->ctx, value, &val, useModMapValueNames))
             return ReportSIBadType(info, si, field, "level specification");
 
         if (val)
@@ -668,41 +650,6 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
 
     return true;
 }
-
-static const LookupEntry modComponentNames[] = {
-    {"base", XkbIM_UseBase},
-    {"latched", XkbIM_UseLatched},
-    {"locked", XkbIM_UseLocked},
-    {"effective", XkbIM_UseEffective},
-    {"compat", XkbIM_UseCompat},
-    {"any", XkbIM_UseAnyMods},
-    {"none", 0},
-    {NULL, 0}
-};
-
-static const LookupEntry groupComponentNames[] = {
-    {"base", XkbIM_UseBase},
-    {"latched", XkbIM_UseLatched},
-    {"locked", XkbIM_UseLocked},
-    {"effective", XkbIM_UseEffective},
-    {"any", XkbIM_UseAnyGroup},
-    {"none", 0},
-    {NULL, 0}
-};
-
-static const LookupEntry groupNames[] = {
-    {"group1", 0x01},
-    {"group2", 0x02},
-    {"group3", 0x04},
-    {"group4", 0x08},
-    {"group5", 0x10},
-    {"group6", 0x20},
-    {"group7", 0x40},
-    {"group8", 0x80},
-    {"none", 0x00},
-    {"all", 0xff},
-    {NULL, 0}
-};
 
 static bool
 SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
@@ -726,7 +673,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
         if (arrayNdx)
             return ReportIndicatorNotArray(info, led, field);
 
-        if (!ExprResolveMask(keymap->ctx, value, &mask, groupNames))
+        if (!ExprResolveMask(keymap->ctx, value, &mask, groupMaskNames))
             return ReportIndicatorBadType(info, led, field, "group mask");
 
         led->groups = mask;
@@ -738,7 +685,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
         if (arrayNdx)
             return ReportIndicatorNotArray(info, led, field);
 
-        if (!ExprResolveMask(keymap->ctx, value, &mask, ctrlNames))
+        if (!ExprResolveMask(keymap->ctx, value, &mask, ctrlMaskNames))
             return ReportIndicatorBadType(info, led, field,
                                           "controls mask");
 
@@ -757,7 +704,8 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
         if (arrayNdx)
             return ReportIndicatorNotArray(info, led, field);
 
-        if (!ExprResolveMask(keymap->ctx, value, &mask, modComponentNames))
+        if (!ExprResolveMask(keymap->ctx, value, &mask,
+                             modComponentMaskNames))
             return ReportIndicatorBadType(info, led, field,
                                           "mask of modifier state components");
 
@@ -769,7 +717,8 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
         if (arrayNdx)
             return ReportIndicatorNotArray(info, led, field);
 
-        if (!ExprResolveMask(keymap->ctx, value, &mask, groupComponentNames))
+        if (!ExprResolveMask(keymap->ctx, value, &mask,
+                             groupComponentMaskNames))
             return ReportIndicatorBadType(info, led, field,
                                           "mask of group state components");
 

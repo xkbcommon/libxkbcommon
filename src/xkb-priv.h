@@ -216,6 +216,9 @@ struct xkb_pointer_button_action {
     int8_t button;
 };
 
+/* Instead of non-sequential XkbSA_XFree86Private. */
+#define PrivateAction (XkbSA_LastAction + 1)
+
 struct xkb_private_action {
     uint8_t type;
     uint8_t data[7];

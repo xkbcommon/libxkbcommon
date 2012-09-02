@@ -390,20 +390,9 @@ ExprResolveGroup(struct xkb_context *ctx, const ExprDef *expr,
 {
     bool ok;
     int result;
-    static const LookupEntry group_names[] = {
-        { "group1", 1 },
-        { "group2", 2 },
-        { "group3", 3 },
-        { "group4", 4 },
-        { "group5", 5 },
-        { "group6", 6 },
-        { "group7", 7 },
-        { "group8", 8 },
-        { NULL, 0 }
-    };
 
     ok = ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
-                                  group_names);
+                                  groupNames);
     if (!ok)
         return false;
 
@@ -423,20 +412,9 @@ ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
 {
     bool ok;
     int result;
-    static const LookupEntry level_names[] = {
-        { "level1", 1 },
-        { "level2", 2 },
-        { "level3", 3 },
-        { "level4", 4 },
-        { "level5", 5 },
-        { "level6", 6 },
-        { "level7", 7 },
-        { "level8", 8 },
-        { NULL, 0 }
-    };
 
     ok = ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
-                                  level_names);
+                                  levelNames);
     if (!ok)
         return false;
 
@@ -455,18 +433,9 @@ bool
 ExprResolveButton(struct xkb_context *ctx, const ExprDef *expr, int *btn_rtrn)
 {
     int result;
-    static const LookupEntry button_names[] = {
-        { "button1", 1 },
-        { "button2", 2 },
-        { "button3", 3 },
-        { "button4", 4 },
-        { "button5", 5 },
-        { "default", 0 },
-        { NULL, 0 }
-    };
 
     if (!ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
-                                  button_names))
+                                  buttonNames))
         return false;
 
     *btn_rtrn = result;

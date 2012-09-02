@@ -25,6 +25,7 @@
  ********************************************************/
 
 #include "xkbcomp-priv.h"
+#include "text.h"
 #include "expr.h"
 #include "vmod.h"
 

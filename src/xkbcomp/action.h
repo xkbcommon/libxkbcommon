@@ -50,6 +50,4 @@ bool
 SetActionField(struct xkb_keymap *keymap, const char *elem, const char *field,
                ExprDef *array_ndx, ExprDef *value, ActionsInfo *info);
 
-extern const LookupEntry ctrlNames[];
-
 #endif

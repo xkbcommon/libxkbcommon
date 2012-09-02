@@ -27,11 +27,6 @@
 #ifndef XKBCOMP_EXPR_H
 #define XKBCOMP_EXPR_H
 
-typedef struct _LookupEntry {
-    const char *name;
-    unsigned int value;
-} LookupEntry;
-
 bool
 ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
                const char **elem_rtrn, const char **field_rtrn,

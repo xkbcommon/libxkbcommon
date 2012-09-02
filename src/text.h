@@ -29,6 +29,29 @@
 
 #include "xkb-priv.h"
 
+typedef struct {
+    const char *name;
+    unsigned int value;
+} LookupEntry;
+
+bool
+LookupString(const LookupEntry tab[], const char *string,
+              unsigned int *value_rtrn);
+
+const char *
+LookupValue(const LookupEntry tab[], unsigned int value);
+
+extern const LookupEntry ctrlMaskNames[];
+extern const LookupEntry modComponentMaskNames[];
+extern const LookupEntry groupComponentMaskNames[];
+extern const LookupEntry groupMaskNames[];
+extern const LookupEntry groupNames[];
+extern const LookupEntry levelNames[];
+extern const LookupEntry buttonNames[];
+extern const LookupEntry useModMapValueNames[];
+extern const LookupEntry actionTypeNames[];
+extern const LookupEntry symInterpretMatchMaskNames[];
+
 const char *
 VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t cmask);
 

@@ -26,6 +26,188 @@
 
 #include "text.h"
 
+bool
+LookupString(const LookupEntry tab[], const char *string,
+              unsigned int *value_rtrn)
+{
+    const LookupEntry *entry;
+
+    if (!string)
+        return false;
+
+    for (entry = tab; entry->name; entry++) {
+        if (istreq(entry->name, string)) {
+            *value_rtrn = entry->value;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+const char *
+LookupValue(const LookupEntry tab[], unsigned int value)
+{
+    const LookupEntry *entry;
+
+    for (entry = tab; entry->name; entry++)
+        if (entry->value == value)
+            return entry->name;
+
+    return NULL;
+}
+
+const LookupEntry ctrlMaskNames[] = {
+    { "RepeatKeys", XkbRepeatKeysMask },
+    { "Repeat", XkbRepeatKeysMask },
+    { "AutoRepeat", XkbRepeatKeysMask },
+    { "SlowKeys", XkbSlowKeysMask },
+    { "BounceKeys", XkbBounceKeysMask },
+    { "StickyKeys", XkbStickyKeysMask },
+    { "MouseKeys", XkbMouseKeysMask },
+    { "MouseKeysAccel", XkbMouseKeysAccelMask },
+    { "AccessXKeys", XkbAccessXKeysMask },
+    { "AccessXTimeout", XkbAccessXTimeoutMask },
+    { "AccessXFeedback", XkbAccessXFeedbackMask },
+    { "AudibleBell", XkbAudibleBellMask },
+    { "IgnoreGroupLock", XkbIgnoreGroupLockMask },
+    { "all", XkbAllBooleanCtrlsMask },
+    { "none", 0 },
+    { "Overlay1", 0 },
+    { "Overlay2", 0 },
+    { NULL, 0 }
+};
+
+const LookupEntry modComponentMaskNames[] = {
+    {"base", XkbIM_UseBase},
+    {"latched", XkbIM_UseLatched},
+    {"locked", XkbIM_UseLocked},
+    {"effective", XkbIM_UseEffective},
+    {"compat", XkbIM_UseCompat},
+    {"any", XkbIM_UseAnyMods},
+    {"none", 0},
+    {NULL, 0}
+};
+
+const LookupEntry groupComponentMaskNames[] = {
+    {"base", XkbIM_UseBase},
+    {"latched", XkbIM_UseLatched},
+    {"locked", XkbIM_UseLocked},
+    {"effective", XkbIM_UseEffective},
+    {"any", XkbIM_UseAnyGroup},
+    {"none", 0},
+    {NULL, 0}
+};
+
+const LookupEntry groupMaskNames[] = {
+    {"group1", 0x01},
+    {"group2", 0x02},
+    {"group3", 0x04},
+    {"group4", 0x08},
+    {"group5", 0x10},
+    {"group6", 0x20},
+    {"group7", 0x40},
+    {"group8", 0x80},
+    {"none", 0x00},
+    {"all", 0xff},
+    {NULL, 0}
+};
+
+const LookupEntry groupNames[] = {
+    {"group1", 1},
+    {"group2", 2},
+    {"group3", 3},
+    {"group4", 4},
+    {"group5", 5},
+    {"group6", 6},
+    {"group7", 7},
+    {"group8", 8},
+    {NULL, 0}
+};
+
+const LookupEntry levelNames[] = {
+    { "level1", 1 },
+    { "level2", 2 },
+    { "level3", 3 },
+    { "level4", 4 },
+    { "level5", 5 },
+    { "level6", 6 },
+    { "level7", 7 },
+    { "level8", 8 },
+    { NULL, 0 }
+};
+
+const LookupEntry buttonNames[] = {
+    { "button1", 1 },
+    { "button2", 2 },
+    { "button3", 3 },
+    { "button4", 4 },
+    { "button5", 5 },
+    { "default", 0 },
+    { NULL, 0 }
+};
+
+const LookupEntry useModMapValueNames[] = {
+    { "levelone", 1 },
+    { "level1", 1 },
+    { "anylevel", 0 },
+    { "any", 0 },
+    { NULL, 0 }
+};
+
+const LookupEntry actionTypeNames[] = {
+    { "NoAction", XkbSA_NoAction },
+    { "SetMods", XkbSA_SetMods },
+    { "LatchMods", XkbSA_LatchMods },
+    { "LockMods", XkbSA_LockMods },
+    { "SetGroup", XkbSA_SetGroup },
+    { "LatchGroup", XkbSA_LatchGroup },
+    { "LockGroup", XkbSA_LockGroup },
+    { "MovePtr", XkbSA_MovePtr },
+    { "MovePointer", XkbSA_MovePtr },
+    { "PtrBtn", XkbSA_PtrBtn },
+    { "PointerButton", XkbSA_PtrBtn },
+    { "LockPtrBtn", XkbSA_LockPtrBtn },
+    { "LockPtrButton", XkbSA_LockPtrBtn },
+    { "LockPointerButton", XkbSA_LockPtrBtn },
+    { "LockPointerBtn", XkbSA_LockPtrBtn },
+    { "SetPtrDflt", XkbSA_SetPtrDflt },
+    { "SetPointerDefault", XkbSA_SetPtrDflt },
+    { "ISOLock", XkbSA_ISOLock },
+    { "Terminate", XkbSA_Terminate },
+    { "TerminateServer", XkbSA_Terminate },
+    { "SwitchScreen", XkbSA_SwitchScreen },
+    { "SetControls", XkbSA_SetControls },
+    { "LockControls", XkbSA_LockControls },
+    { "ActionMessage", XkbSA_ActionMessage },
+    { "MessageAction", XkbSA_ActionMessage },
+    { "Message", XkbSA_ActionMessage },
+    { "RedirectKey", XkbSA_RedirectKey },
+    { "Redirect", XkbSA_RedirectKey },
+    { "DeviceBtn", XkbSA_DeviceBtn },
+    { "DevBtn", XkbSA_DeviceBtn },
+    { "DevButton", XkbSA_DeviceBtn },
+    { "DeviceButton", XkbSA_DeviceBtn },
+    { "LockDeviceBtn", XkbSA_LockDeviceBtn },
+    { "LockDevBtn", XkbSA_LockDeviceBtn },
+    { "LockDevButton", XkbSA_LockDeviceBtn },
+    { "LockDeviceButton", XkbSA_LockDeviceBtn },
+    { "DeviceValuator", XkbSA_DeviceValuator },
+    { "DevVal", XkbSA_DeviceValuator },
+    { "DeviceVal", XkbSA_DeviceValuator },
+    { "DevValuator", XkbSA_DeviceValuator },
+    { "Private", PrivateAction },
+    { NULL, 0 },
+};
+
+const LookupEntry symInterpretMatchMaskNames[] = {
+    { "NoneOf", XkbSI_NoneOf },
+    { "AnyOfOrNone", XkbSI_AnyOfOrNone },
+    { "AnyOf", XkbSI_AnyOf },
+    { "AllOf", XkbSI_AllOf },
+    { "Exactly", XkbSI_Exactly },
+};
+
 #define BUFFER_SIZE 1024
 
 static char *
@@ -226,36 +408,11 @@ ModMaskText(xkb_mod_mask_t mask)
     return buf;
 }
 
-static const char *actionTypeNames[XkbSA_NumActions] = {
-    [XkbSA_NoAction]       = "NoAction",
-    [XkbSA_SetMods]        = "SetMods",
-    [XkbSA_LatchMods]      = "LatchMods",
-    [XkbSA_LockMods]       = "LockMods",
-    [XkbSA_SetGroup]       = "SetGroup",
-    [XkbSA_LatchGroup]     = "LatchGroup",
-    [XkbSA_LockGroup]      = "LockGroup",
-    [XkbSA_MovePtr]        = "MovePtr",
-    [XkbSA_PtrBtn]         = "PtrBtn",
-    [XkbSA_LockPtrBtn]     = "LockPtrBtn",
-    [XkbSA_SetPtrDflt]     = "SetPtrDflt",
-    [XkbSA_ISOLock]        = "ISOLock",
-    [XkbSA_Terminate]      = "Terminate",
-    [XkbSA_SwitchScreen]   = "SwitchScreen",
-    [XkbSA_SetControls]    = "SetControls",
-    [XkbSA_LockControls]   = "LockControls",
-    [XkbSA_ActionMessage]  = "ActionMessage",
-    [XkbSA_RedirectKey]    = "RedirectKey",
-    [XkbSA_DeviceBtn]      = "DeviceBtn",
-    [XkbSA_LockDeviceBtn]  = "LockDeviceBtn",
-    [XkbSA_DeviceValuator] = "DeviceValuator"
-};
-
 const char *
 ActionTypeText(unsigned type)
 {
-    if (type <= XkbSA_LastAction)
-        return actionTypeNames[type];
-    return "Private";
+    const char *name = LookupValue(actionTypeNames, type);
+    return name ? name : "Private";
 }
 
 const char *
@@ -285,33 +442,19 @@ KeyNameText(const char name[XkbKeyNameLength])
     return buf;
 }
 
-static const char *siMatchText[5] = {
-    "NoneOf",       /* XkbSI_NoneOf */
-    "AnyOfOrNone",  /* XkbSI_AnyOfOrNone */
-    "AnyOf",        /* XkbSI_AnyOf */
-    "AllOf",        /* XkbSI_AllOf */
-    "Exactly"       /* XkbSI_Exactly */
-};
-
 const char *
 SIMatchText(unsigned type)
 {
+    const char *name;
     char *buf;
 
-    switch (type & XkbSI_OpMask) {
-    case XkbSI_NoneOf:
-        return siMatchText[0];
-    case XkbSI_AnyOfOrNone:
-        return siMatchText[1];
-    case XkbSI_AnyOf:
-        return siMatchText[2];
-    case XkbSI_AllOf:
-        return siMatchText[3];
-    case XkbSI_Exactly:
-        return siMatchText[4];
-    default:
-        buf = GetBuffer(40);
-        snprintf(buf, 40, "0x%x", type & XkbSI_OpMask);
-        return buf;
-    }
+    type &= XkbSI_OpMask;
+
+    name = LookupValue(symInterpretMatchMaskNames, type);
+    if (name)
+        return name;
+
+    buf = GetBuffer(40);
+    snprintf(buf, 40, "0x%x", type & XkbSI_OpMask);
+    return buf;
 }
