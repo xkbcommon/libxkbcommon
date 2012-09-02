@@ -804,7 +804,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
 }
 
 static bool
-HandleInterpVar(CompatInfo *info, VarDef *stmt)
+HandleGlobalVar(CompatInfo *info, VarDef *stmt)
 {
     const char *elem, *field;
     ExprDef *ndx;
@@ -832,7 +832,10 @@ HandleInterpBody(CompatInfo *info, VarDef *def, SymInterpInfo *si)
 
     for (; def; def = (VarDef *) def->common.next) {
         if (def->name && def->name->op == EXPR_FIELD_REF) {
-            ok = HandleInterpVar(info, def);
+            log_err(info->keymap->ctx,
+                    "Cannot set a global default value from within an interpret statement; "
+                    "Move statements to the global file scope\n");
+            ok = false;
             continue;
         }
 
@@ -961,7 +964,7 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleIndicatorMapDef(info, (IndicatorMapDef *) stmt, merge);
             break;
         case STMT_VAR:
-            ok = HandleInterpVar(info, (VarDef *) stmt);
+            ok = HandleGlobalVar(info, (VarDef *) stmt);
             break;
         case STMT_VMOD:
             ok = HandleVModDef((VModDef *) stmt, info->keymap, merge,
