@@ -301,13 +301,13 @@ FindMatchingInterp(CompatInfo *info, SymInterpInfo *new)
 
 static bool
 UseNewInterpField(enum si_field field, SymInterpInfo *old, SymInterpInfo *new,
-                  int verbosity, enum si_field *collide)
+                  bool report, enum si_field *collide)
 {
     if (!(old->defined & field))
         return true;
 
     if (new->defined & field) {
-        if ((old->file_id == new->file_id && verbosity > 0) || verbosity > 9)
+        if (report)
             *collide |= field;
 
         if (new->merge != MERGE_AUGMENT)
@@ -320,16 +320,17 @@ UseNewInterpField(enum si_field field, SymInterpInfo *old, SymInterpInfo *new,
 static bool
 AddInterp(CompatInfo *info, SymInterpInfo *new)
 {
-    enum si_field collide;
+    enum si_field collide = 0;
     SymInterpInfo *old;
-    int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
 
-    collide = 0;
     old = FindMatchingInterp(info, new);
-    if (old != NULL) {
+    if (old) {
+        int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
+        bool report = ((old->file_id == new->file_id && verbosity > 0) ||
+                       verbosity > 9);
+
         if (new->merge == MERGE_REPLACE) {
-            if ((old->file_id == new->file_id && verbosity > 0) ||
-                verbosity > 9)
+            if (report)
                 log_warn(info->keymap->ctx,
                          "Multiple definitions for \"%s\"; "
                          "Earlier interpretation ignored\n",
@@ -338,23 +339,23 @@ AddInterp(CompatInfo *info, SymInterpInfo *new)
             return true;
         }
 
-        if (UseNewInterpField(SI_FIELD_VIRTUAL_MOD, old, new, verbosity,
+        if (UseNewInterpField(SI_FIELD_VIRTUAL_MOD, old, new, report,
                               &collide)) {
             old->interp.virtual_mod = new->interp.virtual_mod;
             old->defined |= SI_FIELD_VIRTUAL_MOD;
         }
-        if (UseNewInterpField(SI_FIELD_ACTION, old, new, verbosity,
+        if (UseNewInterpField(SI_FIELD_ACTION, old, new, report,
                               &collide)) {
             old->interp.act = new->interp.act;
             old->defined |= SI_FIELD_ACTION;
         }
-        if (UseNewInterpField(SI_FIELD_AUTO_REPEAT, old, new, verbosity,
+        if (UseNewInterpField(SI_FIELD_AUTO_REPEAT, old, new, report,
                               &collide)) {
             old->interp.flags &= ~XkbSI_AutoRepeat;
             old->interp.flags |= (new->interp.flags & XkbSI_AutoRepeat);
             old->defined |= SI_FIELD_AUTO_REPEAT;
         }
-        if (UseNewInterpField(SI_FIELD_LEVEL_ONE_ONLY, old, new, verbosity,
+        if (UseNewInterpField(SI_FIELD_LEVEL_ONE_ONLY, old, new, report,
                               &collide)) {
             old->interp.match &= ~XkbSI_LevelOneOnly;
             old->interp.match |= (new->interp.match & XkbSI_LevelOneOnly);
@@ -427,13 +428,13 @@ ResolveStateAndPredicate(ExprDef *expr, unsigned *pred_rtrn,
 
 static bool
 UseNewLEDField(enum led_field field, LEDInfo *old, LEDInfo *new,
-               int verbosity, enum led_field *collide)
+               bool report, enum led_field *collide)
 {
     if (!(old->defined & field))
         return true;
 
     if (new->defined & field) {
-        if ((old->file_id == new->file_id && verbosity > 0) || verbosity > 9)
+        if (report)
             *collide |= field;
 
         if (new->merge != MERGE_AUGMENT)
@@ -452,6 +453,8 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
     int verbosity = xkb_get_log_verbosity(ctx);
 
     darray_foreach(old, info->leds) {
+        bool report;
+
         if (old->name != new->name)
             continue;
 
@@ -464,9 +467,11 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
             return true;
         }
 
+        report = ((old->file_id == new->file_id && verbosity > 0) ||
+                  verbosity > 9);
+
         if (new->merge == MERGE_REPLACE) {
-            if ((old->file_id == new->file_id && verbosity > 0) ||
-                verbosity > 9)
+            if (report)
                 log_warn(info->keymap->ctx,
                          "Map for indicator %s redefined; "
                          "Earlier definition ignored\n",
@@ -476,20 +481,17 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
         }
 
         collide = 0;
-        if (UseNewLEDField(LED_FIELD_MODS, old, new, verbosity,
-                           &collide)) {
+        if (UseNewLEDField(LED_FIELD_MODS, old, new, report, &collide)) {
             old->which_mods = new->which_mods;
             old->mods = new->mods;
             old->defined |= LED_FIELD_MODS;
         }
-        if (UseNewLEDField(LED_FIELD_GROUPS, old, new, verbosity,
-                           &collide)) {
+        if (UseNewLEDField(LED_FIELD_GROUPS, old, new, report, &collide)) {
             old->which_groups = new->which_groups;
             old->groups = new->groups;
             old->defined |= LED_FIELD_GROUPS;
         }
-        if (UseNewLEDField(LED_FIELD_CTRLS, old, new, verbosity,
-                           &collide)) {
+        if (UseNewLEDField(LED_FIELD_CTRLS, old, new, report, &collide)) {
             old->ctrls = new->ctrls;
             old->defined |= LED_FIELD_CTRLS;
         }
