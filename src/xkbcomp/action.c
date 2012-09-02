@@ -1271,7 +1271,7 @@ HandleActionDef(ExprDef *def, struct xkb_keymap *keymap,
         ApplyActionFactoryDefaults(action);
 
         for (; info; info = info->next) {
-            if (info->action != XkbSA_NoAction && info->action != hndlrType)
+            if (info->action != hndlrType)
                 continue;
 
             if (!handleAction[hndlrType](keymap, action, info->field,
@@ -1342,19 +1342,14 @@ SetActionField(struct xkb_keymap *keymap, const char *elem, const char *field,
         goto err;
     }
 
-    if (istreq(elem, "action")) {
-        new->action = XkbSA_NoAction;
-    }
-    else {
-        if (!stringToAction(elem, &new->action))
-            goto err;
+    if (!stringToAction(elem, &new->action))
+        goto err;
 
-        if (new->action == XkbSA_NoAction) {
-            log_err(keymap->ctx,
-                    "\"%s\" is not a valid field in a NoAction action\n",
-                    field);
-            goto err;
-        }
+    if (new->action == XkbSA_NoAction) {
+        log_err(keymap->ctx,
+                "\"%s\" is not a valid field in a NoAction action\n",
+                field);
+        goto err;
     }
 
     if (!stringToField(field, &new->field)) {
