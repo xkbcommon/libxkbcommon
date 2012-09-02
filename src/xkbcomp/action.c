@@ -1326,13 +1326,6 @@ SetActionField(struct xkb_keymap *keymap, const char *elem, const char *field,
     if (!stringToAction(elem, &action))
         return false;
 
-    if (action == XkbSA_NoAction) {
-        log_err(keymap->ctx,
-                "\"%s\" is not a valid field in a NoAction action\n",
-                field);
-        return false;
-    }
-
     if (!stringToField(field, &action_field)) {
         log_err(keymap->ctx, "\"%s\" is not a legal field name\n", field);
         return false;
