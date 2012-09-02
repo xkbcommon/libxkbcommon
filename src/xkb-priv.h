@@ -282,7 +282,6 @@ struct xkb_sym_interpret {
 };
 
 struct xkb_indicator_map {
-    unsigned char flags;
     unsigned char which_groups;
     uint32_t groups;
     unsigned char which_mods;

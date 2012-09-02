@@ -579,9 +579,9 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
 
     for (i = 0; i < XkbNumIndicators; i++) {
         struct xkb_indicator_map *map = &keymap->indicators[i];
-        if (map->flags == 0 && map->which_groups == 0 &&
-            map->groups == 0 && map->which_mods == 0 &&
-            map->mods.mods == 0 && map->ctrls == 0)
+        if (map->which_groups == 0 && map->groups == 0 &&
+            map->which_mods == 0 && map->mods.mods == 0 &&
+            map->ctrls == 0)
             continue;
         write_indicator_map(keymap, buf, i);
     }

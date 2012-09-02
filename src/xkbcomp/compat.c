@@ -163,7 +163,6 @@ typedef struct _LEDInfo {
     enum merge_mode merge;
 
     xkb_atom_t name;
-    unsigned char flags;
     unsigned char which_mods;
     xkb_mod_mask_t mods;
     unsigned char which_groups;
@@ -236,7 +235,6 @@ static void
 ClearIndicatorMapInfo(struct xkb_context *ctx, LEDInfo *info)
 {
     info->name = xkb_atom_intern(ctx, "default");
-    info->flags = 0;
     info->which_mods = 0;
     info->mods = 0;
     info->which_groups = info->groups = 0;
@@ -1081,7 +1079,6 @@ CopyIndicatorMapDefs(CompatInfo *info)
             }
         }
 
-        im->flags = led->flags;
         if (led->groups != 0 && led->which_groups == 0)
             im->which_groups = XkbIM_UseEffective;
         else
