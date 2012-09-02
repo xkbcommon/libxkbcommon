@@ -1225,9 +1225,10 @@ static const actionHandler handleAction[XkbSA_NumActions + 1] = {
 /***====================================================================***/
 
 static void
-ApplyActionFactoryDefaults(union xkb_action * action)
+ApplyActionFactoryDefaults(union xkb_action *action)
 {
-    if (action->type == XkbSA_SetPtrDflt) { /* increment default button */
+    if (action->type == XkbSA_SetPtrDflt) {
+        /* Increment default button. */
         action->dflt.affect = XkbSA_AffectDfltBtn;
         action->dflt.flags = 0;
         action->dflt.value = 1;
@@ -1238,45 +1239,52 @@ ApplyActionFactoryDefaults(union xkb_action * action)
 }
 
 bool
-HandleActionDef(ExprDef * def,
-                struct xkb_keymap *keymap,
+HandleActionDef(ExprDef *def, struct xkb_keymap *keymap,
                 union xkb_action *action, ActionInfo *info)
 {
     ExprDef *arg;
     const char *str;
-    unsigned tmp, hndlrType;
+    unsigned hndlrType;
 
     if (def->op != EXPR_ACTION_DECL) {
         log_err(keymap->ctx, "Expected an action definition, found %s\n",
                 expr_op_type_to_string(def->op));
         return false;
     }
+
     str = xkb_atom_text(keymap->ctx, def->value.action.name);
-    if (!str) {
-        log_wsgo(keymap->ctx, "Missing name in action definition!!\n");
-        return false;
-    }
-    if (!stringToAction(str, &tmp)) {
+    if (!stringToAction(str, &hndlrType)) {
         log_err(keymap->ctx, "Unknown action %s\n", str);
         return false;
     }
-    action->type = hndlrType = tmp;
+
+    action->type = hndlrType;
+
+    /*
+     * Go through all of the ActionInfo's which change the default values
+     * for this action->type and apply them to this action, e.g. if the
+     * action is latchMods, and a statement such as this:
+     *     latchMods.clearLocks = True;
+     * appears in the section before, then we apply it.
+     */
     if (action->type != XkbSA_NoAction) {
-        ApplyActionFactoryDefaults((union xkb_action *) action);
-        while (info)
-        {
-            if ((info->action == XkbSA_NoAction)
-                || (info->action == hndlrType)) {
-                if (!(*handleAction[hndlrType])(keymap, action,
-                                                info->field,
-                                                info->array_ndx,
-                                                info->value)) {
-                    return false;
-                }
-            }
-            info = info->next;
+        ApplyActionFactoryDefaults(action);
+
+        for (; info; info = info->next) {
+            if (info->action != XkbSA_NoAction && info->action != hndlrType)
+                continue;
+
+            if (!handleAction[hndlrType](keymap, action, info->field,
+                                         info->array_ndx, info->value))
+                return false;
         }
     }
+
+    /*
+     * Now change the action properties as specified for this
+     * particular instance, e.g. "modifiers" and "clearLocks" in:
+     *     SetMods(modifiers=Alt,clearLocks);
+     */
     for (arg = def->value.action.args; arg != NULL;
          arg = (ExprDef *) arg->common.next) {
         const ExprDef *value;
@@ -1288,39 +1296,39 @@ HandleActionDef(ExprDef * def,
             field = arg->value.binary.left;
             value = arg->value.binary.right;
         }
-        else {
-            if (arg->op == EXPR_NOT || arg->op == EXPR_INVERT) {
-                field = arg->value.child;
-                value = &constFalse;
-            }
-            else {
-                field = arg;
-                value = &constTrue;
-            }
+        else if (arg->op == EXPR_NOT || arg->op == EXPR_INVERT) {
+            field = arg->value.child;
+            value = &constFalse;
         }
+        else {
+            field = arg;
+            value = &constTrue;
+        }
+
         if (!ExprResolveLhs(keymap->ctx, field, &elemRtrn, &fieldRtrn,
                             &arrayRtrn))
-            return false;       /* internal error -- already reported */
+            return false;
 
-        if (elemRtrn != NULL) {
+        if (elemRtrn) {
             log_err(keymap->ctx,
                     "Cannot change defaults in an action definition; "
                     "Ignoring attempt to change %s.%s\n",
                     elemRtrn, fieldRtrn);
             return false;
         }
+
         if (!stringToField(fieldRtrn, &fieldNdx)) {
             log_err(keymap->ctx, "Unknown field name %s\n", fieldRtrn);
             return false;
         }
+
         if (!handleAction[hndlrType](keymap, action, fieldNdx, arrayRtrn,
                                      value))
             return false;
     }
+
     return true;
 }
-
-/***====================================================================***/
 
 bool
 SetActionField(struct xkb_keymap *keymap, const char *elem, const char *field,
@@ -1331,38 +1339,44 @@ SetActionField(struct xkb_keymap *keymap, const char *elem, const char *field,
     new = malloc(sizeof(*new));
     if (!new) {
         log_wsgo(keymap->ctx, "Couldn't allocate space for action default\n");
-        return false;
+        goto err;
     }
 
-    if (istreq(elem, "action"))
+    if (istreq(elem, "action")) {
         new->action = XkbSA_NoAction;
+    }
     else {
-        if (!stringToAction(elem, &new->action)) {
-            free(new);
-            return false;
-        }
+        if (!stringToAction(elem, &new->action))
+            goto err;
+
         if (new->action == XkbSA_NoAction) {
             log_err(keymap->ctx,
                     "\"%s\" is not a valid field in a NoAction action\n",
                     field);
-            free(new);
-            return false;
+            goto err;
         }
     }
+
     if (!stringToField(field, &new->field)) {
         log_err(keymap->ctx, "\"%s\" is not a legal field name\n", field);
-        free(new);
-        return false;
+        goto err;
     }
+
     new->array_ndx = array_ndx;
     new->value = value;
+
     new->next = NULL;
     old = *info_rtrn;
-    while ((old) && (old->next))
+    while (old && old->next)
         old = old->next;
-    if (old == NULL)
+    if (!old)
         *info_rtrn = new;
     else
         old->next = new;
+
     return true;
+
+err:
+    free(new);
+    return false;
 }
