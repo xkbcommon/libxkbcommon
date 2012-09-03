@@ -83,7 +83,6 @@ static struct xkb_sym_interpret *
 FindInterpForKey(struct xkb_keymap *keymap, struct xkb_key *key,
                  xkb_group_index_t group, xkb_level_index_t level)
 {
-    struct xkb_sym_interpret *ret = NULL;
     struct xkb_sym_interpret *interp;
     const xkb_keysym_t *syms;
     int num_syms;
@@ -92,6 +91,12 @@ FindInterpForKey(struct xkb_keymap *keymap, struct xkb_key *key,
     if (num_syms == 0)
         return NULL;
 
+    /*
+     * There may be multiple matchings interprets; we should always return
+     * the most specific. Here we rely on compat.c to set up the
+     * sym_interpret array from the most specific to the least specific,
+     * such that when we find a match we return immediately.
+     */
     darray_foreach(interp, keymap->sym_interpret) {
         uint32_t mods;
         bool found;
@@ -126,13 +131,11 @@ FindInterpForKey(struct xkb_keymap *keymap, struct xkb_key *key,
             break;
         }
 
-        if (found && interp->sym != XKB_KEY_NoSymbol)
+        if (found)
             return interp;
-        else if (found && !ret)
-            ret = interp;
     }
 
-    return ret;
+    return NULL;
 }
 
 static bool

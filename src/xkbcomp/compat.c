@@ -1074,6 +1074,7 @@ CopyCompatToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
     keymap->compat_section_name = strdup_safe(info->name);
 
     if (!darray_empty(info->interps)) {
+        /* Most specific to least specific. */
         CopyInterps(info, true, XkbSI_Exactly);
         CopyInterps(info, true, XkbSI_AllOf | XkbSI_NoneOf);
         CopyInterps(info, true, XkbSI_AnyOf);
