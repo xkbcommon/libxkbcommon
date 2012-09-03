@@ -138,7 +138,7 @@ static const LookupEntry actionStrings[] = {
     { "devicebtn",         XkbSA_DeviceBtn      },
     { "devbutton",         XkbSA_DeviceBtn      },
     { "devicebutton",      XkbSA_DeviceBtn      },
-    { "lockdevbtn",        XkbSA_DeviceBtn      },
+    { "lockdevbtn",        XkbSA_LockDeviceBtn  },
     { "lockdevicebtn",     XkbSA_LockDeviceBtn  },
     { "lockdevbutton",     XkbSA_LockDeviceBtn  },
     { "lockdevicebutton",  XkbSA_LockDeviceBtn  },
