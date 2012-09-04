@@ -161,12 +161,7 @@ typedef struct _LEDInfo {
     unsigned file_id;
     enum merge_mode merge;
 
-    xkb_atom_t name;
-    unsigned char which_mods;
-    xkb_mod_mask_t mods;
-    unsigned char which_groups;
-    uint32_t groups;
-    unsigned int ctrls;
+    struct xkb_indicator_map im;
 } LEDInfo;
 
 typedef struct _CompatInfo {
@@ -217,7 +212,7 @@ ReportIndicatorBadType(CompatInfo *info, LEDInfo *led,
                        const char *field, const char *wanted)
 {
     return ReportBadType(info->keymap->ctx, "indicator map", field,
-                         xkb_atom_text(info->keymap->ctx, led->name),
+                         xkb_atom_text(info->keymap->ctx, led->im.name),
                          wanted);
 }
 
@@ -226,17 +221,7 @@ ReportIndicatorNotArray(CompatInfo *info, LEDInfo *led,
                         const char *field)
 {
     return ReportNotArray(info->keymap, "indicator map", field,
-                          xkb_atom_text(info->keymap->ctx, led->name));
-}
-
-static void
-ClearIndicatorMapInfo(struct xkb_context *ctx, LEDInfo *info)
-{
-    info->name = xkb_atom_intern(ctx, "default");
-    info->which_mods = 0;
-    info->mods = 0;
-    info->which_groups = info->groups = 0;
-    info->ctrls = 0;
+                          xkb_atom_text(info->keymap->ctx, led->im.name));
 }
 
 static void
@@ -256,9 +241,8 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id,
     info->dflt.interp.virtual_mod = XKB_MOD_INVALID;
     memset(&info->dflt.interp.act, 0, sizeof(info->dflt.interp.act));
     info->dflt.interp.act.type = XkbSA_NoAction;
-    ClearIndicatorMapInfo(keymap->ctx, &info->ledDflt);
+    memset(&info->ledDflt, 0, sizeof(info->ledDflt));
     info->ledDflt.file_id = file_id;
-    info->ledDflt.defined = 0;
     info->ledDflt.merge = MERGE_OVERRIDE;
     darray_init(info->leds);
     InitVModInfo(&info->vmods, keymap);
@@ -267,8 +251,6 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id,
 static void
 ClearCompatInfo(CompatInfo *info)
 {
-    struct xkb_keymap *keymap = info->keymap;
-
     free(info->name);
     info->name = NULL;
     info->dflt.defined = 0;
@@ -277,7 +259,7 @@ ClearCompatInfo(CompatInfo *info)
     info->dflt.interp.virtual_mod = XKB_MOD_INVALID;
     memset(&info->dflt.interp.act, 0, sizeof(info->dflt.interp.act));
     info->dflt.interp.act.type = XkbSA_NoAction;
-    ClearIndicatorMapInfo(keymap->ctx, &info->ledDflt);
+    memset(&info->ledDflt, 0, sizeof(info->ledDflt));
     darray_free(info->interps);
     darray_free(info->leds);
     info->actions = NULL;
@@ -445,14 +427,14 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
     darray_foreach(old, info->leds) {
         bool report;
 
-        if (old->name != new->name)
+        if (old->im.name != new->im.name)
             continue;
 
-        if (old->mods == new->mods &&
-            old->groups == new->groups &&
-            old->ctrls == new->ctrls &&
-            old->which_mods == new->which_mods &&
-            old->which_groups == new->which_groups) {
+        if (old->im.mods.mods == new->im.mods.mods &&
+            old->im.groups == new->im.groups &&
+            old->im.ctrls == new->im.ctrls &&
+            old->im.which_mods == new->im.which_mods &&
+            old->im.which_groups == new->im.which_groups) {
             old->defined |= new->defined;
             return true;
         }
@@ -465,24 +447,24 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
                 log_warn(info->keymap->ctx,
                          "Map for indicator %s redefined; "
                          "Earlier definition ignored\n",
-                         xkb_atom_text(ctx, old->name));
+                         xkb_atom_text(ctx, old->im.name));
             *old = *new;
             return true;
         }
 
         collide = 0;
         if (UseNewLEDField(LED_FIELD_MODS, old, new, report, &collide)) {
-            old->which_mods = new->which_mods;
-            old->mods = new->mods;
+            old->im.which_mods = new->im.which_mods;
+            old->im.mods = new->im.mods;
             old->defined |= LED_FIELD_MODS;
         }
         if (UseNewLEDField(LED_FIELD_GROUPS, old, new, report, &collide)) {
-            old->which_groups = new->which_groups;
-            old->groups = new->groups;
+            old->im.which_groups = new->im.which_groups;
+            old->im.groups = new->im.groups;
             old->defined |= LED_FIELD_GROUPS;
         }
         if (UseNewLEDField(LED_FIELD_CTRLS, old, new, report, &collide)) {
-            old->ctrls = new->ctrls;
+            old->im.ctrls = new->im.ctrls;
             old->defined |= LED_FIELD_CTRLS;
         }
 
@@ -490,7 +472,7 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
             log_warn(info->keymap->ctx,
                      "Map for indicator %s redefined; "
                      "Using %s definition for duplicate fields\n",
-                     xkb_atom_text(ctx, old->name),
+                     xkb_atom_text(ctx, old->im.name),
                      (new->merge == MERGE_AUGMENT ? "first" : "last"));
         }
 
@@ -662,7 +644,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
         if (arrayNdx)
             return ReportIndicatorNotArray(info, led, field);
 
-        if (!ExprResolveVModMask(keymap, value, &led->mods))
+        if (!ExprResolveVModMask(keymap, value, &led->im.mods.mods))
             return ReportIndicatorBadType(info, led, field, "modifier mask");
 
         led->defined |= LED_FIELD_MODS;
@@ -676,7 +658,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
         if (!ExprResolveMask(keymap->ctx, value, &mask, groupMaskNames))
             return ReportIndicatorBadType(info, led, field, "group mask");
 
-        led->groups = mask;
+        led->im.groups = mask;
         led->defined |= LED_FIELD_GROUPS;
     }
     else if (istreq(field, "controls") || istreq(field, "ctrls")) {
@@ -689,7 +671,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
             return ReportIndicatorBadType(info, led, field,
                                           "controls mask");
 
-        led->ctrls = mask;
+        led->im.ctrls = mask;
         led->defined |= LED_FIELD_CTRLS;
     }
     else if (istreq(field, "allowexplicit")) {
@@ -709,7 +691,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
             return ReportIndicatorBadType(info, led, field,
                                           "mask of modifier state components");
 
-        led->which_mods = mask;
+        led->im.which_mods = mask;
     }
     else if (istreq(field, "whichgroupstate")) {
         unsigned mask;
@@ -722,7 +704,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
             return ReportIndicatorBadType(info, led, field,
                                           "mask of group state components");
 
-        led->which_groups = mask;
+        led->im.which_groups = mask;
     }
     else if (istreq(field, "driveskbd") ||
              istreq(field, "driveskeyboard") ||
@@ -744,7 +726,7 @@ SetIndicatorMapField(CompatInfo *info, LEDInfo *led,
         log_err(info->keymap->ctx,
                 "Unknown field %s in map for %s indicator; "
                 "Definition ignored\n",
-                field, xkb_atom_text(keymap->ctx, led->name));
+                field, xkb_atom_text(keymap->ctx, led->im.name));
         ok = false;
     }
 
@@ -853,7 +835,7 @@ HandleIndicatorMapDef(CompatInfo *info, IndicatorMapDef *def,
 
     led = info->ledDflt;
     led.merge = merge;
-    led.name = def->name;
+    led.im.name = def->name;
 
     ok = true;
     for (var = def->body; var != NULL; var = (VarDef *) var->common.next) {
@@ -956,8 +938,8 @@ static void
 CopyIndicatorMapDefs(CompatInfo *info)
 {
     LEDInfo *led;
-    struct xkb_indicator_map *im;
     xkb_led_index_t i;
+    struct xkb_indicator_map *im;
     struct xkb_keymap *keymap = info->keymap;
 
     darray_foreach(led, info->leds) {
@@ -965,52 +947,38 @@ CopyIndicatorMapDefs(CompatInfo *info)
          * Find the indicator with the given name, if it was already
          * declared in keycodes.
          */
-        im = NULL;
-        for (i = 0; i < XkbNumIndicators; i++) {
-            if (keymap->indicators[i].name == led->name) {
-                im = &keymap->indicators[i];
+        for (i = 0; i < XkbNumIndicators; i++)
+            if (keymap->indicators[i].name == led->im.name)
                 break;
-            }
-        }
 
         /* Not previously declared; create it with next free index. */
-        if (!im) {
+        if (i >= XkbNumIndicators) {
             log_dbg(keymap->ctx,
                     "Indicator name \"%s\" was not declared in the keycodes section; "
                     "Adding new indicator\n",
-                    xkb_atom_text(keymap->ctx, led->name));
+                    xkb_atom_text(keymap->ctx, led->im.name));
 
-            for (i = 0; i < XkbNumIndicators; i++) {
-                if (keymap->indicators[i].name != XKB_ATOM_NONE)
-                    continue;
+            for (i = 0; i < XkbNumIndicators; i++)
+                if (keymap->indicators[i].name == XKB_ATOM_NONE)
+                    break;
 
-                keymap->indicators[i].name = led->name;
-                im = &keymap->indicators[i];
-                break;
-            }
-
-            /* Not place to put the it; ignore. */
-            if (!im) {
+            /* Not place to put it; ignore. */
+            if (i >= XkbNumIndicators) {
                 log_err(keymap->ctx,
                         "Too many indicators (maximum is %d); "
                         "Indicator name \"%s\" ignored\n",
                         XkbNumIndicators,
-                        xkb_atom_text(keymap->ctx, led->name));
+                        xkb_atom_text(keymap->ctx, led->im.name));
                 continue;
             }
         }
 
-        if (led->groups != 0 && led->which_groups == 0)
+        im = &keymap->indicators[i];
+        *im  = led->im;
+        if (im->groups != 0 && im->which_groups == 0)
             im->which_groups = XkbIM_UseEffective;
-        else
-            im->which_groups = led->which_groups;
-        im->groups = led->groups;
-        if (led->mods != 0 && led->which_mods == 0)
+        if (im->mods.mods != 0 && im->which_mods == 0)
             im->which_mods = XkbIM_UseEffective;
-        else
-            im->which_mods = led->which_mods;
-        im->mods.mods = led->mods;
-        im->ctrls = led->ctrls;
     }
 }
 
