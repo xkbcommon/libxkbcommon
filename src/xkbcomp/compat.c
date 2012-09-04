@@ -967,7 +967,7 @@ CopyIndicatorMapDefs(CompatInfo *info)
          */
         im = NULL;
         for (i = 0; i < XkbNumIndicators; i++) {
-            if (keymap->indicator_names[i] == led->name) {
+            if (keymap->indicators[i].name == led->name) {
                 im = &keymap->indicators[i];
                 break;
             }
@@ -981,10 +981,10 @@ CopyIndicatorMapDefs(CompatInfo *info)
                     xkb_atom_text(keymap->ctx, led->name));
 
             for (i = 0; i < XkbNumIndicators; i++) {
-                if (keymap->indicator_names[i] != XKB_ATOM_NONE)
+                if (keymap->indicators[i].name != XKB_ATOM_NONE)
                     continue;
 
-                keymap->indicator_names[i] = led->name;
+                keymap->indicators[i].name = led->name;
                 im = &keymap->indicators[i];
                 break;
             }

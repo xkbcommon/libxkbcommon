@@ -257,10 +257,10 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
     }
 
     for (i = 0; i < XkbNumIndicators; i++) {
-        if (!keymap->indicator_names[i])
+        if (keymap->indicators[i].name == XKB_ATOM_NONE)
             continue;
         write_buf(buf, "\t\tindicator %d = \"%s\";\n", i + 1,
-                  xkb_atom_text(keymap->ctx, keymap->indicator_names[i]));
+                  xkb_atom_text(keymap->ctx, keymap->indicators[i].name));
     }
 
 
@@ -340,7 +340,7 @@ write_indicator_map(struct xkb_keymap *keymap, struct buf *buf, int num)
     struct xkb_indicator_map *led = &keymap->indicators[num];
 
     write_buf(buf, "\t\tindicator \"%s\" {\n",
-              xkb_atom_text(keymap->ctx, keymap->indicator_names[num]));
+              xkb_atom_text(keymap->ctx, keymap->indicators[num].name));
 
     if (led->which_groups) {
         if (led->which_groups != XkbIM_UseEffective) {

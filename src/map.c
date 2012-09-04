@@ -250,7 +250,7 @@ xkb_map_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx)
     if (idx >= xkb_map_num_leds(keymap))
         return NULL;
 
-    return xkb_atom_text(keymap->ctx, keymap->indicator_names[idx]);
+    return xkb_atom_text(keymap->ctx, keymap->indicators[idx].name);
 }
 
 /**
@@ -267,7 +267,7 @@ xkb_map_led_get_index(struct xkb_keymap *keymap, const char *name)
         return XKB_LED_INVALID;
 
     for (i = 0; i < num_leds; i++)
-        if (keymap->indicator_names[i] == atom)
+        if (keymap->indicators[i].name == atom)
             return i;
 
     return XKB_LED_INVALID;

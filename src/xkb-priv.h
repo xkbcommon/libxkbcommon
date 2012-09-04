@@ -266,6 +266,7 @@ struct xkb_sym_interpret {
 };
 
 struct xkb_indicator_map {
+    xkb_atom_t name;
     unsigned char which_groups;
     uint32_t groups;
     unsigned char which_mods;
@@ -353,7 +354,6 @@ struct xkb_keymap {
     xkb_atom_t group_names[XkbNumKbdGroups];
 
     struct xkb_indicator_map indicators[XkbNumIndicators];
-    xkb_atom_t indicator_names[XkbNumIndicators];
 
     char *keycodes_section_name;
     char *symbols_section_name;

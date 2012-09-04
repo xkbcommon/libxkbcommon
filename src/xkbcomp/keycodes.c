@@ -109,8 +109,9 @@
  *      xkb_keycode_t min_key_code;
  *      xkb_keycode_t max_key_code;
  *      darray(struct xkb_key_alias) key_aliases;
- *      const char *indicator_names[XkbNumIndicators];
  *      char *keycodes_section_name;
+ * The 'name' field of indicators declared in xkb_keycodes:
+ *      struct xkb_indicator_map indicators[XkbNumIndicators];
  * Further, the array of keys:
  *      darray(struct xkb_key) keys;
  * had been resized to its final size (i.e. all of the xkb_key objects are
@@ -826,7 +827,7 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
         if (led->name == XKB_ATOM_NONE)
             continue;
 
-        keymap->indicator_names[idx] = led->name;
+        keymap->indicators[idx].name = led->name;
     }
 
     ApplyAliases(info, keymap);
