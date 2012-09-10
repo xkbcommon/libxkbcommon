@@ -169,8 +169,6 @@ get_indicator_state_text(uint8_t which)
 
     memset(ret, 0, GET_TEXT_BUF_SIZE);
 
-    which &= XkbIM_UseAnyMods;
-
     if (which == 0) {
         strcpy(ret, "0");
         return NULL;
@@ -343,7 +341,7 @@ write_indicator_map(struct xkb_keymap *keymap, struct buf *buf, int num)
               xkb_atom_text(keymap->ctx, keymap->indicators[num].name));
 
     if (led->which_groups) {
-        if (led->which_groups != XkbIM_UseEffective) {
+        if (led->which_groups != XKB_STATE_EFFECTIVE) {
             write_buf(buf, "\t\t\twhichGroupState= %s;\n",
                       get_indicator_state_text(led->which_groups));
         }
@@ -352,7 +350,7 @@ write_indicator_map(struct xkb_keymap *keymap, struct buf *buf, int num)
     }
 
     if (led->which_mods) {
-        if (led->which_mods != XkbIM_UseEffective) {
+        if (led->which_mods != XKB_STATE_EFFECTIVE) {
             write_buf(buf, "\t\t\twhichModState= %s;\n",
                       get_indicator_state_text(led->which_mods));
         }

@@ -256,9 +256,9 @@ struct xkb_sym_interpret {
 
 struct xkb_indicator_map {
     xkb_atom_t name;
-    unsigned char which_groups;
+    enum xkb_state_component which_groups;
     uint32_t groups;
-    unsigned char which_mods;
+    enum xkb_state_component which_mods;
     struct xkb_mods mods;
     unsigned int ctrls;
 };

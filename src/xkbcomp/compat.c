@@ -976,9 +976,9 @@ CopyIndicatorMapDefs(CompatInfo *info)
         im = &keymap->indicators[i];
         *im  = led->im;
         if (im->groups != 0 && im->which_groups == 0)
-            im->which_groups = XkbIM_UseEffective;
+            im->which_groups = XKB_STATE_EFFECTIVE;
         if (im->mods.mods != 0 && im->which_mods == 0)
-            im->which_mods = XkbIM_UseEffective;
+            im->which_mods = XKB_STATE_EFFECTIVE;
     }
 }
 

@@ -555,30 +555,24 @@ xkb_state_led_update_all(struct xkb_state *state)
         xkb_mod_mask_t mod_mask = 0;
         uint32_t group_mask = 0;
 
-        if (map->which_mods & XkbIM_UseAnyMods) {
-            if (map->which_mods & XkbIM_UseBase)
-                mod_mask |= state->base_mods;
-            if (map->which_mods & XkbIM_UseLatched)
-                mod_mask |= state->latched_mods;
-            if (map->which_mods & XkbIM_UseLocked)
-                mod_mask |= state->locked_mods;
-            if (map->which_mods & XkbIM_UseEffective)
-                mod_mask |= state->mods;
-            if ((map->mods.mask & mod_mask))
-                state->leds |= (1 << led);
-        }
-        if (map->which_groups & XkbIM_UseAnyGroup) {
-            if (map->which_groups & XkbIM_UseBase)
-                group_mask |= (1 << state->base_group);
-            if (map->which_groups & XkbIM_UseLatched)
-                group_mask |= (1 << state->latched_group);
-            if (map->which_groups & XkbIM_UseLocked)
-                group_mask |= (1 << state->locked_group);
-            if (map->which_groups & XkbIM_UseEffective)
-                group_mask |= (1 << state->group);
-            if ((map->groups & group_mask))
-                state->leds |= (1 << led);
-        }
+        if (map->which_mods & XKB_STATE_DEPRESSED)
+            mod_mask |= state->base_mods;
+        if (map->which_mods & XKB_STATE_LATCHED)
+            mod_mask |= state->latched_mods;
+        if (map->which_mods & XKB_STATE_LOCKED)
+            mod_mask |= state->locked_mods;
+        if ((map->mods.mask & mod_mask))
+            state->leds |= (1 << led);
+
+        if (map->which_groups & XKB_STATE_DEPRESSED)
+            group_mask |= (1 << state->base_group);
+        if (map->which_groups & XKB_STATE_LATCHED)
+            group_mask |= (1 << state->latched_group);
+        if (map->which_groups & XKB_STATE_LOCKED)
+            group_mask |= (1 << state->locked_group);
+        if ((map->groups & group_mask))
+            state->leds |= (1 << led);
+
         if (map->ctrls) {
             if ((map->ctrls & state->keymap->enabled_ctrls))
                 state->leds |= (1 << led);

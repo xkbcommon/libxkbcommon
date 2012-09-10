@@ -79,22 +79,22 @@ const LookupEntry ctrlMaskNames[] = {
 };
 
 const LookupEntry modComponentMaskNames[] = {
-    {"base", XkbIM_UseBase},
-    {"latched", XkbIM_UseLatched},
-    {"locked", XkbIM_UseLocked},
-    {"effective", XkbIM_UseEffective},
-    {"compat", XkbIM_UseCompat},
-    {"any", XkbIM_UseAnyMods},
+    {"base", XKB_STATE_DEPRESSED},
+    {"latched", XKB_STATE_LATCHED},
+    {"locked", XKB_STATE_LOCKED},
+    {"effective", XKB_STATE_EFFECTIVE},
+    {"compat", XKB_STATE_EFFECTIVE},
+    {"any", XKB_STATE_EFFECTIVE},
     {"none", 0},
     {NULL, 0}
 };
 
 const LookupEntry groupComponentMaskNames[] = {
-    {"base", XkbIM_UseBase},
-    {"latched", XkbIM_UseLatched},
-    {"locked", XkbIM_UseLocked},
-    {"effective", XkbIM_UseEffective},
-    {"any", XkbIM_UseAnyGroup},
+    {"base", XKB_STATE_DEPRESSED},
+    {"latched", XKB_STATE_LATCHED},
+    {"locked", XKB_STATE_LOCKED},
+    {"effective", XKB_STATE_EFFECTIVE},
+    {"any", XKB_STATE_EFFECTIVE},
     {"none", 0},
     {NULL, 0}
 };
