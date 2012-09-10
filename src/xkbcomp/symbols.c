@@ -94,7 +94,7 @@ typedef struct {
      * symsMapNumEntries[level] -> How many syms are in
      * syms[symsMapIndex[level]].
      */
-    darray(size_t) symsMapNumEntries;
+    darray(unsigned int) symsMapNumEntries;
     darray(union xkb_action) acts;
     xkb_atom_t type;
 } GroupInfo;
@@ -296,7 +296,7 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
     GroupInfo result;
     unsigned int resultSize = 0;
     enum key_group_selector using = NONE;
-    size_t cur_idx = 0;
+    unsigned int cur_idx = 0;
     xkb_level_index_t i;
 
     /* First find the type of the merged group. */
@@ -838,7 +838,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 {
     xkb_group_index_t ndx;
     GroupInfo *groupi;
-    size_t nSyms;
+    unsigned int nSyms;
     xkb_level_index_t nLevels;
     xkb_level_index_t i;
     int j;
@@ -938,10 +938,10 @@ static bool
 AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
                 ExprDef *value)
 {
-    size_t i;
+    unsigned int i;
     xkb_group_index_t ndx;
     GroupInfo *groupi;
-    size_t nActs;
+    unsigned int nActs;
     ExprDef *act;
     union xkb_action *toAct;
 
@@ -998,7 +998,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         if (!HandleActionDef(act, info->keymap, toAct, info->actions)) {
             log_err(info->keymap->ctx,
                     "Illegal action definition for %s; "
-                    "Action for group %u/level %zu ignored\n",
+                    "Action for group %u/level %u ignored\n",
                     LongKeyNameText(keyi->name), ndx + 1, i + 1);
         }
         act = (ExprDef *) act->common.next;
@@ -1656,7 +1656,7 @@ PrepareKeyDef(KeyInfo *keyi)
              darray_empty(group0->symsMapNumEntries) ||
              memcmp(darray_mem(groupi->symsMapNumEntries, 0),
                     darray_mem(group0->symsMapNumEntries, 0),
-                    group0->numLevels * sizeof(size_t)))) {
+                    group0->numLevels * sizeof(unsigned int)))) {
             identical = false;
             continue;
         }
@@ -1687,7 +1687,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
     struct xkb_keymap *keymap = info->keymap;
     xkb_keycode_t kc;
     struct xkb_key *key;
-    size_t sizeSyms = 0;
+    unsigned int sizeSyms = 0;
     xkb_group_index_t i, nGroups;
     xkb_level_index_t width, tmp;
     struct xkb_key_type * type;
