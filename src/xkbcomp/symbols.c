@@ -196,7 +196,6 @@ CopyKeyInfo(KeyInfo * old, KeyInfo * new, bool clearOld)
 /***====================================================================***/
 
 typedef struct _ModMapEntry {
-    struct list entry;
     enum merge_mode merge;
     bool haveSymbol;
     int modifier;
@@ -217,8 +216,7 @@ typedef struct _SymbolsInfo {
     VModInfo vmods;
     ActionsInfo *actions;
     xkb_atom_t groupNames[XKB_NUM_GROUPS];
-
-    struct list modMaps;
+    darray(ModMapEntry) modMaps;
 
     struct xkb_keymap *keymap;
 } SymbolsInfo;
@@ -236,7 +234,7 @@ InitSymbolsInfo(SymbolsInfo *info, struct xkb_keymap *keymap,
     info->merge = MERGE_OVERRIDE;
     darray_init(info->keys);
     darray_growalloc(info->keys, 110);
-    list_init(&info->modMaps);
+    darray_init(info->modMaps);
     for (i = 0; i < XKB_NUM_GROUPS; i++)
         info->groupNames[i] = XKB_ATOM_NONE;
     InitKeyInfo(&info->dflt, file_id);
@@ -249,14 +247,12 @@ static void
 ClearSymbolsInfo(SymbolsInfo * info)
 {
     KeyInfo *keyi;
-    ModMapEntry *mm, *next;
 
     free(info->name);
     darray_foreach(keyi, info->keys)
         ClearKeyInfo(keyi);
     darray_free(info->keys);
-    list_foreach_safe(mm, next, &info->modMaps, entry)
-        free(mm);
+    darray_free(info->modMaps);
     memset(info, 0, sizeof(SymbolsInfo));
 }
 
@@ -659,7 +655,7 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
     bool clobber;
 
     clobber = (new->merge != MERGE_AUGMENT);
-    list_foreach(mm, &info->modMaps, entry) {
+    darray_foreach(mm, info->modMaps) {
         if (new->haveSymbol && mm->haveSymbol
             && (new->u.keySym == mm->u.keySym)) {
             unsigned use, ignore;
@@ -704,17 +700,7 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
         }
     }
 
-    mm = malloc(sizeof(*mm));
-    if (!mm) {
-        log_wsgo(info->keymap->ctx,
-                 "Could not allocate modifier map entry; "
-                 "Modifier map for %s will be incomplete\n",
-                 ModIndexText(new->modifier));
-        return false;
-    }
-
-    *mm = *new;
-    list_add(&mm->entry, &info->modMaps);
+    darray_append(info->modMaps, *new);
     return true;
 }
 
@@ -726,7 +712,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
 {
     unsigned int i;
     KeyInfo *keyi;
-    ModMapEntry *mm, *next;
+    ModMapEntry *mm;
 
     if (from->errorCount > 0) {
         into->errorCount += from->errorCount;
@@ -745,21 +731,16 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
     }
 
     darray_foreach(keyi, from->keys) {
-        if (merge != MERGE_DEFAULT)
-            keyi->merge = merge;
-
+        merge = (merge == MERGE_DEFAULT ? keyi->merge : merge);
         if (!AddKeySymbols(into, keyi))
             into->errorCount++;
     }
 
-    list_foreach_safe(mm, next, &from->modMaps, entry) {
-        if (merge != MERGE_DEFAULT)
-            mm->merge = merge;
+    darray_foreach(mm, from->modMaps) {
+        mm->merge = (merge == MERGE_DEFAULT ? mm->merge : merge);
         if (!AddModMapEntry(into, mm))
             into->errorCount++;
-        free(mm);
     }
-    list_init(&from->modMaps);
 }
 
 static void
@@ -1984,7 +1965,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
         }
     }
 
-    list_foreach(mm, &info.modMaps, entry)
+    darray_foreach(mm, info.modMaps)
         if (!CopyModMapDef(&info, mm))
             info.errorCount++;
 

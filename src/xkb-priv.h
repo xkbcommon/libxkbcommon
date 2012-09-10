@@ -88,7 +88,6 @@
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
 #include "darray.h"
-#include "list.h"
 
 typedef uint32_t xkb_level_index_t;
 typedef uint32_t xkb_atom_t;
