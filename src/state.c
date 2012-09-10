@@ -72,7 +72,6 @@ struct xkb_filter {
     int (*func)(struct xkb_filter *filter, xkb_keycode_t kc,
                 enum xkb_key_direction direction);
     int refcnt;
-    struct xkb_filter *next;
 };
 
 struct xkb_state {
