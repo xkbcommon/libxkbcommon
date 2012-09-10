@@ -87,7 +87,6 @@ NewActionsInfo(void)
     /* Apply some "factory defaults". */
 
     /* Increment default button. */
-    info->actions[ACTION_TYPE_PTR_DEFAULT].dflt.affect = XkbSA_AffectDfltBtn;
     info->actions[ACTION_TYPE_PTR_DEFAULT].dflt.flags = 0;
     info->actions[ACTION_TYPE_PTR_DEFAULT].dflt.value = 1;
 
@@ -558,9 +557,9 @@ HandlePtrBtn(struct xkb_keymap *keymap, union xkb_action *action,
 }
 
 static const LookupEntry ptrDflts[] = {
-    { "dfltbtn", XkbSA_AffectDfltBtn },
-    { "defaultbutton", XkbSA_AffectDfltBtn },
-    { "button", XkbSA_AffectDfltBtn },
+    { "dfltbtn", 1 },
+    { "defaultbutton", 1 },
+    { "button", 1 },
     { NULL, 0 }
 };
 
@@ -580,7 +579,6 @@ HandleSetPtrDflt(struct xkb_keymap *keymap, union xkb_action *action,
         if (!ExprResolveEnum(keymap->ctx, value, &val, ptrDflts))
             return ReportMismatch(keymap, action->type, field,
                                   "pointer component");
-        act->affect = val;
         return true;
     }
     else if (field == ACTION_FIELD_BUTTON || field == ACTION_FIELD_VALUE) {

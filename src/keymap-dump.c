@@ -466,11 +466,10 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
 
     case ACTION_TYPE_PTR_DEFAULT:
         write_buf(buf, "%s%s(", prefix, type);
-        if (action->dflt.affect == XkbSA_AffectDfltBtn)
-            write_buf(buf, "affect=button,button=%s%d",
-                      (!(action->dflt.flags & ACTION_ABSOLUTE_SWITCH) &&
-                       action->dflt.value >= 0) ? "+" : "",
-                      action->dflt.value);
+        write_buf(buf, "affect=button,button=%s%d",
+                  (!(action->dflt.flags & ACTION_ABSOLUTE_SWITCH) &&
+                   action->dflt.value >= 0) ? "+" : "",
+                  action->dflt.value);
         write_buf(buf, ")%s", suffix);
         break;
 

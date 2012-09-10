@@ -192,7 +192,6 @@ struct xkb_controls_action {
 struct xkb_pointer_default_action {
     enum xkb_action_type type;
     enum xkb_action_flags flags;
-    uint8_t affect;
     int8_t value;
 };
 
