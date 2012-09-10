@@ -50,9 +50,9 @@ UpdateActionMods(struct xkb_keymap *keymap, union xkb_action *act,
     struct xkb_mods *mods;
 
     switch (act->type) {
-    case XkbSA_SetMods:
-    case XkbSA_LatchMods:
-    case XkbSA_LockMods:
+    case ACTION_TYPE_MOD_SET:
+    case ACTION_TYPE_MOD_LATCH:
+    case ACTION_TYPE_MOD_LOCK:
         flags = act->mods.flags;
         mods = &act->mods.mods;
         break;
@@ -167,7 +167,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
                     vmodmask |= (1 << interp->virtual_mod);
             }
 
-            if (interp->act.type != XkbSA_NoAction) {
+            if (interp->act.type != ACTION_TYPE_NONE) {
                 if (!key->actions) {
                     key->actions = calloc(key->num_groups * key->width,
                                           sizeof(*key->actions));

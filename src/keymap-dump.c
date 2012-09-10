@@ -384,45 +384,45 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
     type = ActionTypeText(action->type);
 
     switch (action->type) {
-    case XkbSA_SetMods:
-    case XkbSA_LatchMods:
-    case XkbSA_LockMods:
+    case ACTION_TYPE_MOD_SET:
+    case ACTION_TYPE_MOD_LATCH:
+    case ACTION_TYPE_MOD_LOCK:
         if (action->mods.flags & XkbSA_UseModMapMods)
             args = "modMapMods";
         else
             args = VModMaskText(keymap, action->mods.mods.mods);
         write_buf(buf, "%s%s(modifiers=%s%s%s)%s", prefix, type, args,
-                  (action->type != XkbSA_LockGroup &&
+                  (action->type != ACTION_TYPE_MOD_LOCK &&
                    (action->mods.flags & XkbSA_ClearLocks)) ?
                    ",clearLocks" : "",
-                  (action->type != XkbSA_LockGroup &&
+                  (action->type != ACTION_TYPE_MOD_LOCK &&
                    (action->mods.flags & XkbSA_LatchToLock)) ?
                    ",latchToLock" : "",
                   suffix);
         break;
 
-    case XkbSA_SetGroup:
-    case XkbSA_LatchGroup:
-    case XkbSA_LockGroup:
+    case ACTION_TYPE_GROUP_SET:
+    case ACTION_TYPE_GROUP_LATCH:
+    case ACTION_TYPE_GROUP_LOCK:
         write_buf(buf, "%s%s(group=%s%d%s%s)%s", prefix, type,
                   (!(action->group.flags & XkbSA_GroupAbsolute) &&
                    action->group.group > 0) ? "+" : "",
                   (action->group.flags & XkbSA_GroupAbsolute) ?
                   action->group.group + 1 : action->group.group,
-                  (action->type != XkbSA_LockGroup &&
+                  (action->type != ACTION_TYPE_GROUP_LOCK &&
                    (action->group.flags & XkbSA_ClearLocks)) ?
                   ",clearLocks" : "",
-                  (action->type != XkbSA_LockGroup &&
+                  (action->type != ACTION_TYPE_GROUP_LOCK &&
                    (action->group.flags & XkbSA_LatchToLock)) ?
                   ",latchToLock" : "",
                   suffix);
         break;
 
-    case XkbSA_Terminate:
+    case ACTION_TYPE_TERMINATE:
         write_buf(buf, "%s%s()%s", prefix, type, suffix);
         break;
 
-    case XkbSA_MovePtr:
+    case ACTION_TYPE_PTR_MOVE:
         write_buf(buf, "%s%s(x=%s%d,y=%s%d%s)%s", prefix, type,
                   (!(action->ptr.flags & XkbSA_MoveAbsoluteX) &&
                    action->ptr.x >= 0) ? "+" : "",
@@ -434,7 +434,7 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
                   suffix);
         break;
 
-    case XkbSA_LockPtrBtn:
+    case ACTION_TYPE_PTR_LOCK:
         switch (action->btn.flags & (XkbSA_LockNoUnlock | XkbSA_LockNoLock)) {
         case XkbSA_LockNoUnlock:
             args = ",affect=lock";
@@ -452,7 +452,7 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
             args = ",affect=both";
             break;
         }
-    case XkbSA_PtrBtn:
+    case ACTION_TYPE_PTR_BUTTON:
         write_buf(buf, "%s%s(button=", prefix, type);
         if (action->btn.button > 0 && action->btn.button <= 5)
             write_buf(buf, "%d", action->btn.button);
@@ -465,7 +465,7 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         write_buf(buf, ")%s", suffix);
         break;
 
-    case XkbSA_SetPtrDflt:
+    case ACTION_TYPE_PTR_DEFAULT:
         write_buf(buf, "%s%s(", prefix, type);
         if (action->dflt.affect == XkbSA_AffectDfltBtn)
             write_buf(buf, "affect=button,button=%s%d",
@@ -475,7 +475,7 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         write_buf(buf, ")%s", suffix);
         break;
 
-    case XkbSA_SwitchScreen:
+    case ACTION_TYPE_SWITCH_VT:
         write_buf(buf, "%s%s(screen=%s%d,%ssame)%s", prefix, type,
                   (!(action->screen.flags & XkbSA_SwitchAbsolute) &&
                    action->screen.screen >= 0) ? "+" : "",
@@ -484,15 +484,13 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
                   suffix);
         break;
 
-    /* Deprecated actions below here */
-    case XkbSA_SetControls:
-    case XkbSA_LockControls:
+    case ACTION_TYPE_CTRL_SET:
+    case ACTION_TYPE_CTRL_LOCK:
         write_buf(buf, "%s%s(controls=%s)%s", prefix, type,
                   get_control_mask_text(action->ctrls.ctrls), suffix);
         break;
 
-    case XkbSA_NoAction:
-        /* XXX TODO */
+    case ACTION_TYPE_NONE:
         write_buf(buf, "%sNoAction()%s", prefix, suffix);
         break;
 

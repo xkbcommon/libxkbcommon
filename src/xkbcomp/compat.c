@@ -240,7 +240,7 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id,
     info->dflt.interp.flags = 0;
     info->dflt.interp.virtual_mod = XKB_MOD_INVALID;
     memset(&info->dflt.interp.act, 0, sizeof(info->dflt.interp.act));
-    info->dflt.interp.act.type = XkbSA_NoAction;
+    info->dflt.interp.act.type = ACTION_TYPE_NONE;
     memset(&info->ledDflt, 0, sizeof(info->ledDflt));
     info->ledDflt.file_id = file_id;
     info->ledDflt.merge = MERGE_OVERRIDE;
@@ -258,7 +258,7 @@ ClearCompatInfo(CompatInfo *info)
     info->dflt.interp.flags = 0;
     info->dflt.interp.virtual_mod = XKB_MOD_INVALID;
     memset(&info->dflt.interp.act, 0, sizeof(info->dflt.interp.act));
-    info->dflt.interp.act.type = XkbSA_NoAction;
+    info->dflt.interp.act.type = ACTION_TYPE_NONE;
     memset(&info->ledDflt, 0, sizeof(info->ledDflt));
     darray_free(info->interps);
     darray_free(info->leds);

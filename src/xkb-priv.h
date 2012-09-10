@@ -132,44 +132,65 @@ struct xkb_component_names {
     char *symbols;
 };
 
+enum xkb_action_type {
+    ACTION_TYPE_NONE = 0,
+    ACTION_TYPE_MOD_SET,
+    ACTION_TYPE_MOD_LATCH,
+    ACTION_TYPE_MOD_LOCK,
+    ACTION_TYPE_GROUP_SET,
+    ACTION_TYPE_GROUP_LATCH,
+    ACTION_TYPE_GROUP_LOCK,
+    ACTION_TYPE_PTR_MOVE,
+    ACTION_TYPE_PTR_BUTTON,
+    ACTION_TYPE_PTR_LOCK,
+    ACTION_TYPE_PTR_DEFAULT,
+    ACTION_TYPE_TERMINATE,
+    ACTION_TYPE_SWITCH_VT,
+    ACTION_TYPE_CTRL_SET,
+    ACTION_TYPE_CTRL_LOCK,
+    ACTION_TYPE_KEY_REDIRECT,
+    ACTION_TYPE_PRIVATE,
+    ACTION_TYPE_LAST
+};
+
 struct xkb_mods {
     xkb_mod_mask_t mods;       /* original real+virtual mods in definition */
     xkb_mod_mask_t mask;       /* computed effective mask */
 };
 
 struct xkb_mod_action {
-    uint8_t type;
+    enum xkb_action_type type;
     uint8_t flags;
     struct xkb_mods mods;
 };
 
 struct xkb_group_action {
-    uint8_t type;
+    enum xkb_action_type type;
     uint8_t flags;
     int32_t group;
 };
 
 struct xkb_controls_action {
-    uint8_t type;
+    enum xkb_action_type type;
     uint8_t flags;
     uint32_t ctrls;
 };
 
 struct xkb_pointer_default_action {
-    uint8_t type;
+    enum xkb_action_type type;
     uint8_t flags;
     uint8_t affect;
     int8_t value;
 };
 
 struct xkb_switch_screen_action {
-    uint8_t type;
+    enum xkb_action_type type;
     uint8_t flags;
     int8_t screen;
 };
 
 struct xkb_redirect_key_action {
-    uint8_t type;
+    enum xkb_action_type type;
     xkb_keycode_t new_kc;
     uint8_t mods_mask;
     uint8_t mods;
@@ -178,28 +199,26 @@ struct xkb_redirect_key_action {
 };
 
 struct xkb_pointer_action {
-    uint8_t type;
+    enum xkb_action_type type;
     uint8_t flags;
     int16_t x;
     int16_t y;
 };
 
 struct xkb_pointer_button_action {
-    uint8_t type;
+    enum xkb_action_type type;
     uint8_t flags;
     uint8_t count;
     int8_t button;
 };
 
-/* Instead of non-sequential XkbSA_XFree86Private. */
-#define PrivateAction (XkbSA_LastAction + 1)
-
 struct xkb_private_action {
-    uint8_t type;
+    enum xkb_action_type type;
     uint8_t data[7];
 };
 
 union xkb_action {
+    enum xkb_action_type type;
     struct xkb_mod_action mods;
     struct xkb_group_action group;
     struct xkb_controls_action ctrls;
@@ -209,7 +228,6 @@ union xkb_action {
     struct xkb_pointer_action ptr;
     struct xkb_pointer_button_action btn;
     struct xkb_private_action priv;
-    unsigned char type;
 };
 
 struct xkb_kt_map_entry {

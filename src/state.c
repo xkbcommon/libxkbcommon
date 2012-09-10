@@ -106,7 +106,7 @@ struct xkb_state {
     struct xkb_keymap *keymap;
 };
 
-static const union xkb_action fake = { .type = XkbSA_NoAction };
+static const union xkb_action fake = { .type = ACTION_TYPE_NONE };
 
 static const union xkb_action *
 xkb_key_get_action(struct xkb_state *state, xkb_keycode_t kc)
@@ -333,6 +333,24 @@ enum xkb_key_latch_state {
     LATCH_PENDING,
 };
 
+static bool
+xkb_action_breaks_latch(const union xkb_action *action)
+{
+    switch (action->type) {
+    case ACTION_TYPE_NONE:
+    case ACTION_TYPE_PTR_BUTTON:
+    case ACTION_TYPE_PTR_LOCK:
+    case ACTION_TYPE_CTRL_SET:
+    case ACTION_TYPE_CTRL_LOCK:
+    case ACTION_TYPE_KEY_REDIRECT:
+    case ACTION_TYPE_SWITCH_VT:
+    case ACTION_TYPE_TERMINATE:
+        return true;
+    default:
+        return false;
+    }
+}
+
 static int
 xkb_filter_mod_latch_func(struct xkb_filter *filter, xkb_keycode_t kc,
                           enum xkb_key_direction direction)
@@ -345,17 +363,17 @@ xkb_filter_mod_latch_func(struct xkb_filter *filter, xkb_keycode_t kc,
          * or promote it to a lock or plain base set if it's the same
          * modifier. */
         const union xkb_action *action = xkb_key_get_action(filter->state, kc);
-        if (action->type == XkbSA_LatchMods &&
+        if (action->type == ACTION_TYPE_MOD_LATCH &&
             action->mods.flags == filter->action.mods.flags &&
             action->mods.mods.mask == filter->action.mods.mods.mask) {
             filter->action = *action;
             if (filter->action.mods.flags & XkbSA_LatchToLock) {
-                filter->action.type = XkbSA_LockMods;
+                filter->action.type = ACTION_TYPE_MOD_LOCK;
                 filter->func = xkb_filter_mod_lock_func;
                 filter->state->locked_mods |= filter->action.mods.mods.mask;
             }
             else {
-                filter->action.type = XkbSA_SetMods;
+                filter->action.type = ACTION_TYPE_MOD_SET;
                 filter->func = xkb_filter_mod_set_func;
                 filter->state->set_mods = filter->action.mods.mods.mask;
             }
@@ -364,7 +382,7 @@ xkb_filter_mod_latch_func(struct xkb_filter *filter, xkb_keycode_t kc,
             /* XXX beep beep! */
             return 0;
         }
-        else if (((1 << action->type) & XkbSA_BreakLatch)) {
+        else if (xkb_action_breaks_latch(action)) {
             /* XXX: This may be totally broken, we might need to break the
              *      latch in the next run after this press? */
             filter->state->latched_mods &= ~filter->action.mods.mods.mask;
@@ -456,25 +474,27 @@ xkb_filter_apply_all(struct xkb_state *state, xkb_keycode_t kc,
 
     act = xkb_key_get_action(state, kc);
     switch (act->type) {
-    case XkbSA_SetMods:
+    case ACTION_TYPE_MOD_SET:
         send = xkb_filter_mod_set_new(state, kc, act);
         break;
-    case XkbSA_LatchMods:
+    case ACTION_TYPE_MOD_LATCH:
         send = xkb_filter_mod_latch_new(state, kc, act);
         break;
-    case XkbSA_LockMods:
+    case ACTION_TYPE_MOD_LOCK:
         send = xkb_filter_mod_lock_new(state, kc, act);
         break;
-    case XkbSA_SetGroup:
+    case ACTION_TYPE_GROUP_SET:
         send = xkb_filter_group_set_new(state, kc, act);
         break;
 #if 0
-    case XkbSA_LatchGroup:
+    case ACTION_TYPE_GROUP_LATCH:
         send = xkb_filter_mod_latch_new(state, key, act);
         break;
 #endif
-    case XkbSA_LockGroup:
+    case ACTION_TYPE_GROUP_LOCK:
         send = xkb_filter_group_lock_new(state, kc, act);
+        break;
+    default:
         break;
     }
 

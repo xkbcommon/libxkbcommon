@@ -81,15 +81,15 @@ NewActionsInfo(void)
         return NULL;
 
     /* This includes PrivateAction. */
-    for (type = 0; type < XkbSA_NumActions + 1; type++)
+    for (type = 0; type < ACTION_TYPE_LAST; type++)
         info->actions[type].type = type;
 
     /* Apply some "factory defaults". */
 
     /* Increment default button. */
-    info->actions[XkbSA_SetPtrDflt].dflt.affect = XkbSA_AffectDfltBtn;
-    info->actions[XkbSA_SetPtrDflt].dflt.flags = 0;
-    info->actions[XkbSA_SetPtrDflt].dflt.value = 1;
+    info->actions[ACTION_TYPE_PTR_DEFAULT].dflt.affect = XkbSA_AffectDfltBtn;
+    info->actions[ACTION_TYPE_PTR_DEFAULT].dflt.flags = 0;
+    info->actions[ACTION_TYPE_PTR_DEFAULT].dflt.value = 1;
 
     return info;
 }
@@ -158,7 +158,7 @@ fieldText(enum action_field field)
 /***====================================================================***/
 
 static inline bool
-ReportMismatch(struct xkb_keymap *keymap, unsigned action,
+ReportMismatch(struct xkb_keymap *keymap, enum xkb_action_type action,
                enum action_field field, const char *type)
 {
     log_err(keymap->ctx,
@@ -169,7 +169,7 @@ ReportMismatch(struct xkb_keymap *keymap, unsigned action,
 }
 
 static inline bool
-ReportIllegal(struct xkb_keymap *keymap, unsigned action,
+ReportIllegal(struct xkb_keymap *keymap, enum xkb_action_type action,
               enum action_field field)
 {
     log_err(keymap->ctx,
@@ -180,7 +180,7 @@ ReportIllegal(struct xkb_keymap *keymap, unsigned action,
 }
 
 static inline bool
-ReportActionNotArray(struct xkb_keymap *keymap, unsigned action,
+ReportActionNotArray(struct xkb_keymap *keymap, enum xkb_action_type action,
                      enum action_field field)
 {
     log_err(keymap->ctx,
@@ -191,7 +191,7 @@ ReportActionNotArray(struct xkb_keymap *keymap, unsigned action,
 }
 
 static inline bool
-ReportNotFound(struct xkb_keymap *keymap, unsigned action,
+ReportNotFound(struct xkb_keymap *keymap, enum xkb_action_type action,
                enum action_field field, const char *what, const char *bad)
 {
     log_err(keymap->ctx,
@@ -211,7 +211,7 @@ HandleNoAction(struct xkb_keymap *keymap, union xkb_action *action,
 }
 
 static bool
-CheckLatchLockFlags(struct xkb_keymap *keymap, unsigned action,
+CheckLatchLockFlags(struct xkb_keymap *keymap, enum xkb_action_type action,
                     enum action_field field, const ExprDef * value,
                     unsigned *flags_inout)
 {
@@ -237,7 +237,7 @@ CheckLatchLockFlags(struct xkb_keymap *keymap, unsigned action,
 }
 
 static bool
-CheckModifierField(struct xkb_keymap *keymap, unsigned action,
+CheckModifierField(struct xkb_keymap *keymap, enum xkb_action_type action,
                    const ExprDef *value, unsigned *flags_inout,
                    xkb_mod_mask_t *mods_rtrn)
 {
@@ -521,7 +521,7 @@ HandlePtrBtn(struct xkb_keymap *keymap, union xkb_action *action,
         act->button = btn;
         return true;
     }
-    else if (action->type == XkbSA_LockPtrBtn &&
+    else if (action->type == ACTION_TYPE_PTR_LOCK &&
              field == ACTION_FIELD_AFFECT) {
         unsigned int val;
 
@@ -717,7 +717,7 @@ HandlePrivate(struct xkb_keymap *keymap, union xkb_action *action,
         int type;
 
         if (!ExprResolveInteger(keymap->ctx, value, &type))
-            return ReportMismatch(keymap, PrivateAction, field, "integer");
+            return ReportMismatch(keymap, ACTION_TYPE_PRIVATE, field, "integer");
 
         if (type < 0 || type > 255) {
             log_err(keymap->ctx,
@@ -783,7 +783,7 @@ HandlePrivate(struct xkb_keymap *keymap, union xkb_action *action,
         }
     }
 
-    return ReportIllegal(keymap, PrivateAction, field);
+    return ReportIllegal(keymap, ACTION_TYPE_NONE, field);
 }
 
 typedef bool (*actionHandler)(struct xkb_keymap *keymap,
@@ -792,23 +792,23 @@ typedef bool (*actionHandler)(struct xkb_keymap *keymap,
                               const ExprDef *array_ndx,
                               const ExprDef *value);
 
-static const actionHandler handleAction[XkbSA_NumActions + 1] = {
-    [XkbSA_NoAction] = HandleNoAction,
-    [XkbSA_SetMods] = HandleSetLatchMods,
-    [XkbSA_LatchMods] = HandleSetLatchMods,
-    [XkbSA_LockMods] = HandleLockMods,
-    [XkbSA_SetGroup] = HandleSetLatchGroup,
-    [XkbSA_LatchGroup] = HandleSetLatchGroup,
-    [XkbSA_LockGroup] = HandleLockGroup,
-    [XkbSA_MovePtr] = HandleMovePtr,
-    [XkbSA_PtrBtn] = HandlePtrBtn,
-    [XkbSA_LockPtrBtn] = HandlePtrBtn,
-    [XkbSA_SetPtrDflt] = HandleSetPtrDflt,
-    [XkbSA_Terminate] = HandleNoAction,
-    [XkbSA_SwitchScreen] = HandleSwitchScreen,
-    [XkbSA_SetControls] = HandleSetLockControls,
-    [XkbSA_LockControls] = HandleSetLockControls,
-    [PrivateAction] = HandlePrivate,
+static const actionHandler handleAction[ACTION_TYPE_LAST] = {
+    [ACTION_TYPE_NONE] = HandleNoAction,
+    [ACTION_TYPE_MOD_SET] = HandleSetLatchMods,
+    [ACTION_TYPE_MOD_LATCH] = HandleSetLatchMods,
+    [ACTION_TYPE_MOD_LOCK] = HandleLockMods,
+    [ACTION_TYPE_GROUP_SET] = HandleSetLatchGroup,
+    [ACTION_TYPE_GROUP_LATCH] = HandleSetLatchGroup,
+    [ACTION_TYPE_GROUP_LOCK] = HandleLockGroup,
+    [ACTION_TYPE_PTR_MOVE] = HandleMovePtr,
+    [ACTION_TYPE_PTR_BUTTON] = HandlePtrBtn,
+    [ACTION_TYPE_PTR_LOCK] = HandlePtrBtn,
+    [ACTION_TYPE_PTR_DEFAULT] = HandleSetPtrDflt,
+    [ACTION_TYPE_TERMINATE] = HandleNoAction,
+    [ACTION_TYPE_SWITCH_VT] = HandleSwitchScreen,
+    [ACTION_TYPE_CTRL_SET] = HandleSetLockControls,
+    [ACTION_TYPE_CTRL_LOCK] = HandleSetLockControls,
+    [ACTION_TYPE_PRIVATE] = HandlePrivate,
 };
 
 /***====================================================================***/

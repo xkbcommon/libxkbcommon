@@ -320,11 +320,11 @@ MergeKeyGroups(SymbolsInfo * info,
             if (!darray_empty(into->acts[group]))
                 toAct = &darray_item(into->acts[group], i);
 
-            if (((fromAct == NULL) || (fromAct->type == XkbSA_NoAction))
+            if (((fromAct == NULL) || (fromAct->type == ACTION_TYPE_NONE))
                 && (toAct != NULL)) {
                 darray_item(resultActs, i) = *toAct;
             }
-            else if (((toAct == NULL) || (toAct->type == XkbSA_NoAction))
+            else if (((toAct == NULL) || (toAct->type == ACTION_TYPE_NONE))
                      && (fromAct != NULL)) {
                 darray_item(resultActs, i) = *fromAct;
             }
@@ -1843,7 +1843,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
                     if (tmp < keyi->numLevels[i])
                         key->actions[tmp] = darray_item(keyi->acts[i], tmp);
                     else
-                        key->actions[tmp].type = XkbSA_NoAction;
+                        key->actions[tmp].type = ACTION_TYPE_NONE;
                 }
             }
         }

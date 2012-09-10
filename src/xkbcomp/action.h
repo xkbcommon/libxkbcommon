@@ -33,7 +33,7 @@
  * modified within the files (see calls to SetActionField).
  */
 typedef struct {
-    union xkb_action actions[XkbSA_NumActions + 1];
+    union xkb_action actions[ACTION_TYPE_LAST];
 } ActionsInfo;
 
 ActionsInfo *
