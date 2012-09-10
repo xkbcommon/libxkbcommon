@@ -385,16 +385,16 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
     case ACTION_TYPE_MOD_SET:
     case ACTION_TYPE_MOD_LATCH:
     case ACTION_TYPE_MOD_LOCK:
-        if (action->mods.flags & XkbSA_UseModMapMods)
+        if (action->mods.flags & ACTION_MODS_LOOKUP_MODMAP)
             args = "modMapMods";
         else
             args = VModMaskText(keymap, action->mods.mods.mods);
         write_buf(buf, "%s%s(modifiers=%s%s%s)%s", prefix, type, args,
                   (action->type != ACTION_TYPE_MOD_LOCK &&
-                   (action->mods.flags & XkbSA_ClearLocks)) ?
+                   (action->mods.flags & ACTION_LOCK_CLEAR)) ?
                    ",clearLocks" : "",
                   (action->type != ACTION_TYPE_MOD_LOCK &&
-                   (action->mods.flags & XkbSA_LatchToLock)) ?
+                   (action->mods.flags & ACTION_LATCH_TO_LOCK)) ?
                    ",latchToLock" : "",
                   suffix);
         break;
@@ -403,15 +403,15 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
     case ACTION_TYPE_GROUP_LATCH:
     case ACTION_TYPE_GROUP_LOCK:
         write_buf(buf, "%s%s(group=%s%d%s%s)%s", prefix, type,
-                  (!(action->group.flags & XkbSA_GroupAbsolute) &&
+                  (!(action->group.flags & ACTION_ABSOLUTE_SWITCH) &&
                    action->group.group > 0) ? "+" : "",
-                  (action->group.flags & XkbSA_GroupAbsolute) ?
+                  (action->group.flags & ACTION_ABSOLUTE_SWITCH) ?
                   action->group.group + 1 : action->group.group,
                   (action->type != ACTION_TYPE_GROUP_LOCK &&
-                   (action->group.flags & XkbSA_ClearLocks)) ?
+                   (action->group.flags & ACTION_LOCK_CLEAR)) ?
                   ",clearLocks" : "",
                   (action->type != ACTION_TYPE_GROUP_LOCK &&
-                   (action->group.flags & XkbSA_LatchToLock)) ?
+                   (action->group.flags & ACTION_LATCH_TO_LOCK)) ?
                   ",latchToLock" : "",
                   suffix);
         break;
@@ -422,27 +422,28 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
 
     case ACTION_TYPE_PTR_MOVE:
         write_buf(buf, "%s%s(x=%s%d,y=%s%d%s)%s", prefix, type,
-                  (!(action->ptr.flags & XkbSA_MoveAbsoluteX) &&
+                  (!(action->ptr.flags & ACTION_ABSOLUTE_X) &&
                    action->ptr.x >= 0) ? "+" : "",
                   action->ptr.x,
-                  (!(action->ptr.flags & XkbSA_MoveAbsoluteY) &&
+                  (!(action->ptr.flags & ACTION_ABSOLUTE_Y) &&
                    action->ptr.y >= 0) ? "+" : "",
                   action->ptr.y,
-                  (action->ptr.flags & XkbSA_NoAcceleration) ? ",!accel" : "",
+                  (action->ptr.flags & ACTION_NO_ACCEL) ? ",!accel" : "",
                   suffix);
         break;
 
     case ACTION_TYPE_PTR_LOCK:
-        switch (action->btn.flags & (XkbSA_LockNoUnlock | XkbSA_LockNoLock)) {
-        case XkbSA_LockNoUnlock:
+        switch (action->btn.flags &
+                 (ACTION_LOCK_NO_LOCK | ACTION_LOCK_NO_UNLOCK)) {
+        case ACTION_LOCK_NO_UNLOCK:
             args = ",affect=lock";
             break;
 
-        case XkbSA_LockNoLock:
+        case ACTION_LOCK_NO_LOCK:
             args = ",affect=unlock";
             break;
 
-        case XkbSA_LockNoLock | XkbSA_LockNoUnlock:
+        case ACTION_LOCK_NO_LOCK | ACTION_LOCK_NO_UNLOCK:
             args = ",affect=neither";
             break;
 
@@ -467,7 +468,7 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         write_buf(buf, "%s%s(", prefix, type);
         if (action->dflt.affect == XkbSA_AffectDfltBtn)
             write_buf(buf, "affect=button,button=%s%d",
-                      (!(action->dflt.flags & XkbSA_DfltBtnAbsolute) &&
+                      (!(action->dflt.flags & ACTION_ABSOLUTE_SWITCH) &&
                        action->dflt.value >= 0) ? "+" : "",
                       action->dflt.value);
         write_buf(buf, ")%s", suffix);
@@ -475,10 +476,10 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
 
     case ACTION_TYPE_SWITCH_VT:
         write_buf(buf, "%s%s(screen=%s%d,%ssame)%s", prefix, type,
-                  (!(action->screen.flags & XkbSA_SwitchAbsolute) &&
+                  (!(action->screen.flags & ACTION_ABSOLUTE_SWITCH) &&
                    action->screen.screen >= 0) ? "+" : "",
                   action->screen.screen,
-                  (action->screen.flags & XkbSA_SwitchApplication) ? "!" : "",
+                  (action->screen.flags & ACTION_SAME_SCREEN) ? "!" : "",
                   suffix);
         break;
 

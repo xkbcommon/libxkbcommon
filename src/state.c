@@ -161,7 +161,7 @@ xkb_filter_group_set_func(struct xkb_filter *filter, xkb_keycode_t kc,
                           enum xkb_key_direction direction)
 {
     if (kc != filter->kc) {
-        filter->action.group.flags &= ~XkbSA_ClearLocks;
+        filter->action.group.flags &= ~ACTION_LOCK_CLEAR;
         return 1;
     }
 
@@ -173,11 +173,11 @@ xkb_filter_group_set_func(struct xkb_filter *filter, xkb_keycode_t kc,
         return 0;
     }
 
-    if (filter->action.group.flags & XkbSA_GroupAbsolute)
+    if (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH)
         filter->state->base_group = filter->action.group.group;
     else
         filter->state->base_group = -filter->action.group.group;
-    if (filter->action.group.flags & XkbSA_ClearLocks)
+    if (filter->action.group.flags & ACTION_LOCK_CLEAR)
         filter->state->locked_group = 0;
 
     filter->func = NULL;
@@ -197,7 +197,7 @@ xkb_filter_group_set_new(struct xkb_state *state, xkb_keycode_t kc,
     filter->func = xkb_filter_group_set_func;
     filter->action = *action;
 
-    if (action->group.flags & XkbSA_GroupAbsolute) {
+    if (action->group.flags & ACTION_ABSOLUTE_SWITCH) {
         filter->action.group.group = filter->state->base_group;
         filter->state->base_group = action->group.group;
     }
@@ -239,7 +239,7 @@ xkb_filter_group_lock_new(struct xkb_state *state, xkb_keycode_t kc,
     filter->func = xkb_filter_group_lock_func;
     filter->action = *action;
 
-    if (action->group.flags & XkbSA_GroupAbsolute)
+    if (action->group.flags & ACTION_ABSOLUTE_SWITCH)
         filter->state->locked_group = action->group.group;
     else
         filter->state->locked_group += action->group.group;
@@ -252,7 +252,7 @@ xkb_filter_mod_set_func(struct xkb_filter *filter, xkb_keycode_t kc,
                         enum xkb_key_direction direction)
 {
     if (kc != filter->kc) {
-        filter->action.mods.flags &= ~XkbSA_ClearLocks;
+        filter->action.mods.flags &= ~ACTION_LOCK_CLEAR;
         return 1;
     }
 
@@ -265,7 +265,7 @@ xkb_filter_mod_set_func(struct xkb_filter *filter, xkb_keycode_t kc,
     }
 
     filter->state->clear_mods = filter->action.mods.mods.mask;
-    if (filter->action.mods.flags & XkbSA_ClearLocks)
+    if (filter->action.mods.flags & ACTION_LOCK_CLEAR)
         filter->state->locked_mods &= ~filter->action.mods.mods.mask;
 
     filter->func = NULL;
@@ -367,7 +367,7 @@ xkb_filter_mod_latch_func(struct xkb_filter *filter, xkb_keycode_t kc,
             action->mods.flags == filter->action.mods.flags &&
             action->mods.mods.mask == filter->action.mods.mods.mask) {
             filter->action = *action;
-            if (filter->action.mods.flags & XkbSA_LatchToLock) {
+            if (filter->action.mods.flags & ACTION_LATCH_TO_LOCK) {
                 filter->action.type = ACTION_TYPE_MOD_LOCK;
                 filter->func = xkb_filter_mod_lock_func;
                 filter->state->locked_mods |= filter->action.mods.mods.mask;
@@ -397,7 +397,7 @@ xkb_filter_mod_latch_func(struct xkb_filter *filter, xkb_keycode_t kc,
          * stage, so set PENDING and move our modifier from base to
          * latched. */
         if (latch == NO_LATCH ||
-            ((filter->action.mods.flags & XkbSA_ClearLocks) &&
+            ((filter->action.mods.flags & ACTION_LOCK_CLEAR) &&
              (filter->state->locked_mods & filter->action.mods.mods.mask) ==
              filter->action.mods.mods.mask)) {
             /* XXX: We might be a bit overenthusiastic about clearing

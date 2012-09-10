@@ -153,6 +153,19 @@ enum xkb_action_type {
     ACTION_TYPE_LAST
 };
 
+enum xkb_action_flags {
+    ACTION_LOCK_CLEAR = (1 << 0),
+    ACTION_LATCH_TO_LOCK = (1 << 1),
+    ACTION_LOCK_NO_LOCK = (1 << 2),
+    ACTION_LOCK_NO_UNLOCK = (1 << 3),
+    ACTION_MODS_LOOKUP_MODMAP = (1 << 4),
+    ACTION_ABSOLUTE_SWITCH = (1 << 5),
+    ACTION_ABSOLUTE_X = (1 << 6),
+    ACTION_ABSOLUTE_Y = (1 << 7),
+    ACTION_NO_ACCEL = (1 << 8),
+    ACTION_SAME_SCREEN = (1 << 9),
+};
+
 struct xkb_mods {
     xkb_mod_mask_t mods;       /* original real+virtual mods in definition */
     xkb_mod_mask_t mask;       /* computed effective mask */
@@ -160,37 +173,38 @@ struct xkb_mods {
 
 struct xkb_mod_action {
     enum xkb_action_type type;
-    uint8_t flags;
+    enum xkb_action_flags flags;
     struct xkb_mods mods;
 };
 
 struct xkb_group_action {
     enum xkb_action_type type;
-    uint8_t flags;
+    enum xkb_action_flags flags;
     int32_t group;
 };
 
 struct xkb_controls_action {
     enum xkb_action_type type;
-    uint8_t flags;
+    enum xkb_action_flags flags;
     uint32_t ctrls;
 };
 
 struct xkb_pointer_default_action {
     enum xkb_action_type type;
-    uint8_t flags;
+    enum xkb_action_flags flags;
     uint8_t affect;
     int8_t value;
 };
 
 struct xkb_switch_screen_action {
     enum xkb_action_type type;
-    uint8_t flags;
+    enum xkb_action_flags flags;
     int8_t screen;
 };
 
 struct xkb_redirect_key_action {
     enum xkb_action_type type;
+    enum xkb_action_flags flags;
     xkb_keycode_t new_kc;
     uint8_t mods_mask;
     uint8_t mods;
@@ -200,20 +214,21 @@ struct xkb_redirect_key_action {
 
 struct xkb_pointer_action {
     enum xkb_action_type type;
-    uint8_t flags;
+    enum xkb_action_flags flags;
     int16_t x;
     int16_t y;
 };
 
 struct xkb_pointer_button_action {
     enum xkb_action_type type;
-    uint8_t flags;
+    enum xkb_action_flags flags;
     uint8_t count;
     int8_t button;
 };
 
 struct xkb_private_action {
     enum xkb_action_type type;
+    enum xkb_action_flags flags;
     uint8_t data[7];
 };
 

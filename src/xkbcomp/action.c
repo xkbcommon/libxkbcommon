@@ -213,15 +213,15 @@ HandleNoAction(struct xkb_keymap *keymap, union xkb_action *action,
 static bool
 CheckLatchLockFlags(struct xkb_keymap *keymap, enum xkb_action_type action,
                     enum action_field field, const ExprDef * value,
-                    unsigned *flags_inout)
+                    enum xkb_action_flags *flags_inout)
 {
-    unsigned tmp;
+    enum xkb_action_flags tmp;
     bool result;
 
     if (field == ACTION_FIELD_CLEAR_LOCKS)
-        tmp = XkbSA_ClearLocks;
+        tmp = ACTION_LOCK_CLEAR;
     else if (field == ACTION_FIELD_LATCH_TO_LOCK)
-        tmp = XkbSA_LatchToLock;
+        tmp = ACTION_LATCH_TO_LOCK;
     else
         return false;           /* WSGO! */
 
@@ -238,7 +238,7 @@ CheckLatchLockFlags(struct xkb_keymap *keymap, enum xkb_action_type action,
 
 static bool
 CheckModifierField(struct xkb_keymap *keymap, enum xkb_action_type action,
-                   const ExprDef *value, unsigned *flags_inout,
+                   const ExprDef *value, enum xkb_action_flags *flags_inout,
                    xkb_mod_mask_t *mods_rtrn)
 {
     if (value->op == EXPR_IDENT) {
@@ -248,7 +248,7 @@ CheckModifierField(struct xkb_keymap *keymap, enum xkb_action_type action,
                        istreq(valStr, "modmapmods"))) {
 
             *mods_rtrn = 0;
-            *flags_inout |= XkbSA_UseModMapMods;
+            *flags_inout |= ACTION_MODS_LOOKUP_MODMAP;
             return true;
         }
     }
@@ -257,7 +257,7 @@ CheckModifierField(struct xkb_keymap *keymap, enum xkb_action_type action,
         return ReportMismatch(keymap, action,
                               ACTION_FIELD_MODIFIERS, "modifier mask");
 
-    *flags_inout &= ~XkbSA_UseModMapMods;
+    *flags_inout &= ~ACTION_MODS_LOOKUP_MODMAP;
     return true;
 }
 
@@ -267,8 +267,7 @@ HandleSetLatchMods(struct xkb_keymap *keymap, union xkb_action *action,
                    const ExprDef *value)
 {
     struct xkb_mod_action *act = &action->mods;
-    unsigned rtrn;
-    unsigned t1;
+    enum xkb_action_flags rtrn, t1;
     xkb_mod_mask_t t2;
 
     if (array_ndx != NULL) {
@@ -314,7 +313,7 @@ HandleLockMods(struct xkb_keymap *keymap, union xkb_action *action,
                const ExprDef *value)
 {
     struct xkb_mod_action *act = &action->mods;
-    unsigned t1;
+    enum xkb_action_flags t1;
     xkb_mod_mask_t t2;
 
     if (array_ndx && field == ACTION_FIELD_MODIFIERS)
@@ -339,17 +338,17 @@ HandleLockMods(struct xkb_keymap *keymap, union xkb_action *action,
 
 static bool
 CheckGroupField(struct xkb_keymap *keymap, unsigned action,
-                const ExprDef *value, unsigned *flags_inout,
+                const ExprDef *value, enum xkb_action_flags *flags_inout,
                 xkb_group_index_t *grp_rtrn)
 {
     const ExprDef *spec;
 
     if (value->op == EXPR_NEGATE || value->op == EXPR_UNARY_PLUS) {
-        *flags_inout &= ~XkbSA_GroupAbsolute;
+        *flags_inout &= ~ACTION_ABSOLUTE_SWITCH;
         spec = value->value.child;
     }
     else {
-        *flags_inout |= XkbSA_GroupAbsolute;
+        *flags_inout |= ACTION_ABSOLUTE_SWITCH;
         spec = value;
     }
 
@@ -371,8 +370,7 @@ HandleSetLatchGroup(struct xkb_keymap *keymap, union xkb_action *action,
                     const ExprDef *value)
 {
     struct xkb_group_action *act = &action->group;
-    unsigned rtrn;
-    unsigned t1;
+    enum xkb_action_flags rtrn, t1;
     xkb_group_index_t t2;
 
     if (array_ndx != NULL) {
@@ -419,7 +417,7 @@ HandleLockGroup(struct xkb_keymap *keymap, union xkb_action *action,
                 const ExprDef *value)
 {
     struct xkb_group_action *act = &action->group;
-    unsigned t1;
+    enum xkb_action_flags t1;
     xkb_group_index_t t2;
 
     if ((array_ndx != NULL) && (field == ACTION_FIELD_GROUP))
@@ -460,12 +458,12 @@ HandleMovePtr(struct xkb_keymap *keymap, union xkb_action *action,
 
         if (field == ACTION_FIELD_X) {
             if (absolute)
-                act->flags |= XkbSA_MoveAbsoluteX;
+                act->flags |= ACTION_ABSOLUTE_X;
             act->x = val;
         }
         else {
             if (absolute)
-                act->flags |= XkbSA_MoveAbsoluteY;
+                act->flags |= ACTION_ABSOLUTE_Y;
             act->y = val;
         }
 
@@ -478,9 +476,9 @@ HandleMovePtr(struct xkb_keymap *keymap, union xkb_action *action,
             return ReportMismatch(keymap, action->type, field, "boolean");
 
         if (set)
-            act->flags &= ~XkbSA_NoAcceleration;
+            act->flags &= ~ACTION_NO_ACCEL;
         else
-            act->flags |= XkbSA_NoAcceleration;
+            act->flags |= ACTION_NO_ACCEL;
     }
 
     return ReportIllegal(keymap, action->type, field);
@@ -488,9 +486,9 @@ HandleMovePtr(struct xkb_keymap *keymap, union xkb_action *action,
 
 static const LookupEntry lockWhich[] = {
     { "both", 0 },
-    { "lock", XkbSA_LockNoUnlock },
-    { "neither", (XkbSA_LockNoLock | XkbSA_LockNoUnlock) },
-    { "unlock", XkbSA_LockNoLock },
+    { "lock", ACTION_LOCK_NO_UNLOCK },
+    { "neither", (ACTION_LOCK_NO_LOCK | ACTION_LOCK_NO_UNLOCK) },
+    { "unlock", ACTION_LOCK_NO_LOCK },
     { NULL, 0 }
 };
 
@@ -523,7 +521,7 @@ HandlePtrBtn(struct xkb_keymap *keymap, union xkb_action *action,
     }
     else if (action->type == ACTION_TYPE_PTR_LOCK &&
              field == ACTION_FIELD_AFFECT) {
-        unsigned int val;
+        enum xkb_action_flags val;
 
         if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
@@ -532,7 +530,7 @@ HandlePtrBtn(struct xkb_keymap *keymap, union xkb_action *action,
             return ReportMismatch(keymap, action->type, field,
                                   "lock or unlock");
 
-        act->flags &= ~(XkbSA_LockNoLock | XkbSA_LockNoUnlock);
+        act->flags &= ~(ACTION_LOCK_NO_LOCK | ACTION_LOCK_NO_UNLOCK);
         act->flags |= val;
         return true;
     }
@@ -593,11 +591,11 @@ HandleSetPtrDflt(struct xkb_keymap *keymap, union xkb_action *action,
             return ReportActionNotArray(keymap, action->type, field);
 
         if (value->op == EXPR_NEGATE || value->op == EXPR_UNARY_PLUS) {
-            act->flags &= ~XkbSA_DfltBtnAbsolute;
+            act->flags &= ~ACTION_ABSOLUTE_SWITCH;
             button = value->value.child;
         }
         else {
-            act->flags |= XkbSA_DfltBtnAbsolute;
+            act->flags |= ACTION_ABSOLUTE_SWITCH;
             button = value;
         }
 
@@ -640,11 +638,11 @@ HandleSwitchScreen(struct xkb_keymap *keymap, union xkb_action *action,
             return ReportActionNotArray(keymap, action->type, field);
 
         if (value->op == EXPR_NEGATE || value->op == EXPR_UNARY_PLUS) {
-            act->flags &= ~XkbSA_SwitchAbsolute;
+            act->flags &= ~ACTION_ABSOLUTE_SWITCH;
             scrn = value->value.child;
         }
         else {
-            act->flags |= XkbSA_SwitchAbsolute;
+            act->flags |= ACTION_ABSOLUTE_SWITCH;
             scrn = value;
         }
 
@@ -672,9 +670,9 @@ HandleSwitchScreen(struct xkb_keymap *keymap, union xkb_action *action,
             return ReportMismatch(keymap, action->type, field, "boolean");
 
         if (set)
-            act->flags &= ~XkbSA_SwitchApplication;
+            act->flags &= ~ACTION_SAME_SCREEN;
         else
-            act->flags |= XkbSA_SwitchApplication;
+            act->flags |= ACTION_SAME_SCREEN;
 
         return true;
     }

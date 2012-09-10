@@ -61,7 +61,7 @@ UpdateActionMods(struct xkb_keymap *keymap, union xkb_action *act,
         return;
     }
 
-    if (flags & XkbSA_UseModMapMods) {
+    if (flags & ACTION_MODS_LOOKUP_MODMAP) {
         /* XXX: what's that. */
         mods->mods &= 0xff;
         mods->mods |= rmodmask;
