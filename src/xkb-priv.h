@@ -298,6 +298,13 @@ struct xkb_controls {
     unsigned int axt_ctrls_values;
 };
 
+/* Such an awkward name.  Oh well. */
+enum xkb_range_exceed_type {
+    RANGE_SATURATE,
+    RANGE_WRAP,
+    RANGE_REDIRECT,
+};
+
 struct xkb_key {
     char name[XKB_KEY_NAME_LENGTH];
 
@@ -316,7 +323,7 @@ struct xkb_key {
     /* How many levels the largest group has. */
     xkb_level_index_t width;
 
-    uint8_t out_of_range_group_action;
+    enum xkb_range_exceed_type out_of_range_group_action;
     xkb_group_index_t out_of_range_group_number;
 
     /* per level/group index into 'syms' */

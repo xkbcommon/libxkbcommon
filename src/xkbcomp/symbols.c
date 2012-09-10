@@ -85,7 +85,7 @@ typedef struct _KeyInfo {
     xkb_mod_mask_t vmodmap;
     xkb_atom_t dfltType;
 
-    uint8_t out_of_range_group_action;
+    enum xkb_range_exceed_type out_of_range_group_action;
     xkb_group_index_t out_of_range_group_number;
 } KeyInfo;
 
@@ -116,7 +116,7 @@ InitKeyInfo(KeyInfo *keyi, unsigned file_id)
     keyi->dfltType = XKB_ATOM_NONE;
     keyi->vmodmap = 0;
     keyi->repeat = KEY_REPEAT_UNDEFINED;
-    keyi->out_of_range_group_action = 0;
+    keyi->out_of_range_group_action = RANGE_WRAP;
     keyi->out_of_range_group_number = 0;
 }
 
@@ -1128,9 +1128,9 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         }
 
         if (set)
-            keyi->out_of_range_group_action = XkbWrapIntoRange;
+            keyi->out_of_range_group_action = RANGE_WRAP;
         else
-            keyi->out_of_range_group_action = XkbClampIntoRange;
+            keyi->out_of_range_group_action = RANGE_SATURATE;
 
         keyi->defined |= KEY_FIELD_GROUPINFO;
     }
@@ -1147,9 +1147,9 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         }
 
         if (set)
-            keyi->out_of_range_group_action = XkbClampIntoRange;
+            keyi->out_of_range_group_action = RANGE_SATURATE;
         else
-            keyi->out_of_range_group_action = XkbWrapIntoRange;
+            keyi->out_of_range_group_action = RANGE_WRAP;
 
         keyi->defined |= KEY_FIELD_GROUPINFO;
     }
@@ -1165,7 +1165,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             return false;
         }
 
-        keyi->out_of_range_group_action = XkbRedirectIntoRange;
+        keyi->out_of_range_group_action = RANGE_REDIRECT;
         keyi->out_of_range_group_number = grp - 1;
         keyi->defined |= KEY_FIELD_GROUPINFO;
     }
@@ -1805,10 +1805,8 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
         key->explicit |= XkbExplicitInterpretMask;
     }
 
-    if (keyi->defined & KEY_FIELD_GROUPINFO) {
-        key->out_of_range_group_number = keyi->out_of_range_group_number;
-        key->out_of_range_group_action = keyi->out_of_range_group_action;
-    }
+    key->out_of_range_group_number = keyi->out_of_range_group_number;
+    key->out_of_range_group_action = keyi->out_of_range_group_action;
 
     for (i = 0; i < nGroups; i++) {
         /* assign kt_index[i] to the index of the type in map->types.

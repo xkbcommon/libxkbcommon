@@ -681,13 +681,16 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
         }
 
         switch (key->out_of_range_group_action) {
-        case XkbClampIntoRange:
+        case RANGE_SATURATE:
             write_buf(buf, "\n\t\t\tgroupsClamp,");
             break;
 
-        case XkbRedirectIntoRange:
+        case RANGE_REDIRECT:
             write_buf(buf, "\n\t\t\tgroupsRedirect= Group%u,",
                       key->out_of_range_group_number + 1);
+            break;
+
+        default:
             break;
         }
 

@@ -335,17 +335,17 @@ xkb_key_get_group(struct xkb_state *state, xkb_keycode_t kc)
         return ret;
 
     switch (key->out_of_range_group_action) {
-    case XkbRedirectIntoRange:
+    case RANGE_REDIRECT:
         ret = key->out_of_range_group_number;
         if (ret >= key->num_groups)
             ret = 0;
         break;
 
-    case XkbClampIntoRange:
+    case RANGE_SATURATE:
         ret = key->num_groups - 1;
         break;
 
-    case XkbWrapIntoRange:
+    case RANGE_WRAP:
     default:
         ret %= key->num_groups;
         break;
