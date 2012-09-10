@@ -125,6 +125,7 @@ yyerror(struct YYLTYPE *loc, struct parser_param *param, const char *msg)
         char            keyName[XKB_KEY_NAME_LENGTH];
         xkb_atom_t      sval;
         enum merge_mode merge;
+        enum xkb_map_flags mapFlags;
         ParseCommon     *any;
         ExprDef         *expr;
         VarDef          *var;
@@ -148,7 +149,8 @@ yyerror(struct YYLTYPE *loc, struct parser_param *param, const char *msg)
 %type <ival>    Number Integer Float SignedNumber
 %type <merge>   MergeMode OptMergeMode
 %type <file_type> XkbCompositeType FileType
-%type <uval>    DoodadType Flag Flags OptFlags KeyCode
+%type <uval>    DoodadType
+%type <mapFlags> Flag Flags OptFlags KeyCode
 %type <str>     MapName OptMapName KeySym
 %type <sval>    FieldSpec Ident Element String
 %type <any>     DeclList Decl
@@ -253,14 +255,14 @@ Flags           :       Flags Flag              { $$ = ($1 | $2); }
                 |       Flag                    { $$ = $1; }
                 ;
 
-Flag            :       PARTIAL                 { $$ = XkbLC_Partial; }
-                |       DEFAULT                 { $$ = XkbLC_Default; }
-                |       HIDDEN                  { $$ = XkbLC_Hidden; }
-                |       ALPHANUMERIC_KEYS       { $$ = XkbLC_AlphanumericKeys; }
-                |       MODIFIER_KEYS           { $$ = XkbLC_ModifierKeys; }
-                |       KEYPAD_KEYS             { $$ = XkbLC_KeypadKeys; }
-                |       FUNCTION_KEYS           { $$ = XkbLC_FunctionKeys; }
-                |       ALTERNATE_GROUP         { $$ = XkbLC_AlternateGroup; }
+Flag            :       PARTIAL                 { $$ = MAP_IS_PARTIAL; }
+                |       DEFAULT                 { $$ = MAP_IS_DEFAULT; }
+                |       HIDDEN                  { $$ = MAP_IS_HIDDEN; }
+                |       ALPHANUMERIC_KEYS       { $$ = MAP_HAS_ALPHANUMERIC; }
+                |       MODIFIER_KEYS           { $$ = MAP_HAS_MODIFIER; }
+                |       KEYPAD_KEYS             { $$ = MAP_HAS_KEYPAD; }
+                |       FUNCTION_KEYS           { $$ = MAP_HAS_FN; }
+                |       ALTERNATE_GROUP         { $$ = MAP_IS_ALTGR; }
                 ;
 
 DeclList        :       DeclList Decl

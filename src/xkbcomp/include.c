@@ -280,7 +280,7 @@ ProcessIncludeFile(struct xkb_context *ctx,
     }
     else if (rtrn->common.next) {
         for (; mapToUse; mapToUse = (XkbFile *) mapToUse->common.next)
-            if (mapToUse->flags & XkbLC_Default)
+            if (mapToUse->flags & MAP_IS_DEFAULT)
                 break;
 
         if (!mapToUse) {

@@ -445,7 +445,7 @@ EnsureSafeMapName(char *name)
 
 XkbFile *
 XkbFileCreate(struct xkb_context *ctx, enum xkb_file_type type, char *name,
-              ParseCommon *defs, unsigned flags)
+              ParseCommon *defs, enum xkb_map_flags flags)
 {
     XkbFile *file;
 

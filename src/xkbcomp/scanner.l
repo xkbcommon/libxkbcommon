@@ -234,7 +234,7 @@ CheckDefaultMap(struct xkb_context *ctx, XkbFile *maps, const char *fileName)
     XkbFile *dflt = NULL, *tmp;
 
     for (tmp = maps; tmp; tmp = (XkbFile *) tmp->common.next) {
-        if (!(tmp->flags & XkbLC_Default))
+        if (!(tmp->flags & MAP_IS_DEFAULT))
             continue;
 
         if (!dflt) {
@@ -249,7 +249,7 @@ CheckDefaultMap(struct xkb_context *ctx, XkbFile *maps, const char *fileName)
                 (dflt->name ? dflt->name : "(first)"),
                 (tmp->name ? tmp->name : "(subsequent)"));
 
-        tmp->flags &= (~XkbLC_Default);
+        tmp->flags &= (~MAP_IS_DEFAULT);
     }
 }
 

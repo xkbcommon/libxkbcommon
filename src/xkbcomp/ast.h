@@ -249,6 +249,17 @@ typedef struct _IndicatorMapDef {
     VarDef *body;
 } IndicatorMapDef;
 
+enum xkb_map_flags {
+    MAP_IS_DEFAULT = (1 << 0),
+    MAP_IS_PARTIAL = (1 << 1),
+    MAP_IS_HIDDEN = (1 << 2),
+    MAP_HAS_ALPHANUMERIC = (1 << 3),
+    MAP_HAS_MODIFIER = (1 << 4),
+    MAP_HAS_KEYPAD = (1 << 5),
+    MAP_HAS_FN = (1 << 6),
+    MAP_IS_ALTGR = (1 << 7),
+};
+
 typedef struct _XkbFile {
     ParseCommon common;
     enum xkb_file_type file_type;
@@ -256,7 +267,7 @@ typedef struct _XkbFile {
     char *name;
     ParseCommon *defs;
     int id;
-    unsigned flags;
+    enum xkb_map_flags flags;
 } XkbFile;
 
 #endif
