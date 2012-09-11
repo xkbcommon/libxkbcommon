@@ -299,6 +299,52 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
     size_t cur_idx = 0;
     xkb_level_index_t i;
 
+    /* First find the type of the merged group. */
+    if (into->type != from->type && from->type != XKB_ATOM_NONE) {
+        if (into->type == XKB_ATOM_NONE) {
+            into->type = from->type;
+        }
+        else {
+            xkb_atom_t use, ignore;
+
+            use = (clobber ? from->type : into->type);
+            ignore = (clobber ? into->type : from->type);
+
+            if (report)
+                log_warn(info->keymap->ctx,
+                         "Multiple definitions for group %d type of key %s; "
+                         "Using %s, ignoring %s\n",
+                         group + 1, LongKeyNameText(key_name),
+                         xkb_atom_text(info->keymap->ctx, use),
+                         xkb_atom_text(info->keymap->ctx, ignore));
+
+            into->type = use;
+        }
+
+        into->defined |= GROUP_FIELD_TYPE;
+    }
+
+    /* Now look at the levels. */
+
+    /* Easy case: @from is empty. Just stick with @into. */
+    if (from->numLevels == 0) {
+        InitGroupInfo(from);
+        return true;
+    }
+
+    /* Easy case: @into is empty. Just copy @from as-is. */
+    if (into->numLevels == 0) {
+        from->type = into->type;
+        *into = *from;
+        InitGroupInfo(from);
+        return true;
+    }
+
+    /*
+     * Hard case: need to start merging levels. The aim is to avoid
+     * copying/allocating where possible.
+     */
+
     InitGroupInfo(&result);
 
     if (into->numLevels >= from->numLevels) {
@@ -525,57 +571,9 @@ MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from)
               (into->file_id == from->file_id && verbosity > 0));
 
     /* Start looking into the key groups. */
-    for (i = 0; i < XKB_NUM_GROUPS; i++) {
-        GroupInfo *into_group = &into->groups[i];
-        GroupInfo *from_group = &from->groups[i];
-
-        /* Has any interesting symbols/actions? */
-        if (from_group->numLevels > 0) {
-            if (into_group->numLevels == 0) {
-                /* Easy case: the group in @into is empty. Just copy. */
-
-                into_group->numLevels = from_group->numLevels;
-                into_group->syms = from_group->syms;
-                into_group->symsMapIndex = from_group->symsMapIndex;
-                into_group->symsMapNumEntries = from_group->symsMapNumEntries;
-                into_group->acts = from_group->acts;
-                into_group->defined |= (from_group->defined &
-                                        (GROUP_FIELD_SYMS | GROUP_FIELD_ACTS));
-
-                from_group->numLevels = 0;
-                darray_init(from_group->syms);
-                darray_init(from_group->symsMapIndex);
-                darray_init(from_group->symsMapNumEntries);
-                darray_init(from_group->acts);
-                from_group->defined &= ~(GROUP_FIELD_SYMS | GROUP_FIELD_ACTS);
-            }
-            else {
-                /* Hard case; both groups are non-empty. Merge. */
-                MergeGroups(info, into_group, from_group, clobber,
-                            report, i, into->name);
-            }
-        }
-
-        if (from_group->type != XKB_ATOM_NONE) {
-            if (into_group->type != XKB_ATOM_NONE && report &&
-                into_group->type != from_group->type) {
-                xkb_atom_t use, ignore;
-
-                use = (clobber ? from_group->type : into_group->type);
-                ignore = (clobber ? into_group->type : from_group->type);
-
-                log_warn(info->keymap->ctx,
-                         "Multiple definitions for group %d type of key %s; "
-                         "Using %s, ignoring %s\n",
-                         i + 1, LongKeyNameText(into->name),
-                         xkb_atom_text(info->keymap->ctx, use),
-                         xkb_atom_text(info->keymap->ctx, ignore));
-            }
-
-            if (clobber || into_group->type == XKB_ATOM_NONE)
-                into_group->type = from_group->type;
-        }
-    }
+    for (i = 0; i < XKB_NUM_GROUPS; i++)
+        MergeGroups(info, &into->groups[i], &from->groups[i], clobber,
+                    report, i, into->name);
 
     if (UseNewKeyField(KEY_FIELD_VMODMAP, into->defined, from->defined,
                        clobber, report, &collide)) {
