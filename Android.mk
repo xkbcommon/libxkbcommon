@@ -22,11 +22,6 @@ $(LIBXKBCOMMON_CONFIGURE_TARGET): $(CONFIGURE_DEPENDENCIES)
 		./configure --host=arm-linux-androideabi \
 		--prefix /system \
 		--with-xkb-config-root=/system/usr/share/xkb
-	rm -f $(LIBXKBCOMMON_BUILT_MAKEFILES)
-	@for file in $(LIBXKBCOMMON_BUILT_MAKEFILES); do \
-		echo "make -C $$(dirname $$file) $$(basename $$file)" ; \
-		make -C $$(dirname $$file) $$(basename $$file) ; \
-	done
 
 $(LIBXKBCOMMON_BUILT_MAKEFILES): $(LIBXKBCOMMON_CONFIGURE_TARGET)
 	make -C $(dir $@) $(notdir $@)
