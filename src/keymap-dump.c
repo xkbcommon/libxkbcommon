@@ -543,7 +543,7 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
         if (interp->match & MATCH_LEVEL_ONE_ONLY)
             write_buf(buf,
                       "\t\t\tuseModMapMods=level1;\n");
-        if (interp->flags & XkbSI_AutoRepeat)
+        if (interp->repeat)
             write_buf(buf, "\t\t\trepeat= True;\n");
 
         write_action(keymap, buf, &interp->act, "\t\t\taction= ", ";\n");

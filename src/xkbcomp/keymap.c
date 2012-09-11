@@ -154,7 +154,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
             /* Infer default key behaviours from the base level. */
             if (group == 0 && level == 0) {
                 if (!(key->explicit & XkbExplicitAutoRepeatMask) &&
-                    (!interp || (interp->flags & XkbSI_AutoRepeat)))
+                    (!interp || interp->repeat))
                     key->repeats = true;
             }
 

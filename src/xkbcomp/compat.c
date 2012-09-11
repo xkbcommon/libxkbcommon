@@ -237,7 +237,7 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id,
     info->dflt.file_id = file_id;
     info->dflt.defined = 0;
     info->dflt.merge = MERGE_OVERRIDE;
-    info->dflt.interp.flags = 0;
+    info->dflt.interp.repeat = false;
     info->dflt.interp.virtual_mod = XKB_MOD_INVALID;
     memset(&info->dflt.interp.act, 0, sizeof(info->dflt.interp.act));
     info->dflt.interp.act.type = ACTION_TYPE_NONE;
@@ -255,7 +255,7 @@ ClearCompatInfo(CompatInfo *info)
     info->name = NULL;
     info->dflt.defined = 0;
     info->dflt.merge = MERGE_AUGMENT;
-    info->dflt.interp.flags = 0;
+    info->dflt.interp.repeat = false;
     info->dflt.interp.virtual_mod = XKB_MOD_INVALID;
     memset(&info->dflt.interp.act, 0, sizeof(info->dflt.interp.act));
     info->dflt.interp.act.type = ACTION_TYPE_NONE;
@@ -333,8 +333,7 @@ AddInterp(CompatInfo *info, SymInterpInfo *new)
         }
         if (UseNewInterpField(SI_FIELD_AUTO_REPEAT, old, new, report,
                               &collide)) {
-            old->interp.flags &= ~XkbSI_AutoRepeat;
-            old->interp.flags |= (new->interp.flags & XkbSI_AutoRepeat);
+            old->interp.repeat = new->interp.repeat;
             old->defined |= SI_FIELD_AUTO_REPEAT;
         }
         if (UseNewInterpField(SI_FIELD_LEVEL_ONE_ONLY, old, new, report,
@@ -596,10 +595,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         if (!ExprResolveBoolean(keymap->ctx, value, &set))
             return ReportSIBadType(info, si, field, "boolean");
 
-        if (set)
-            si->interp.flags |= XkbSI_AutoRepeat;
-        else
-            si->interp.flags &= ~XkbSI_AutoRepeat;
+        si->interp.repeat = set;
 
         si->defined |= SI_FIELD_AUTO_REPEAT;
     }

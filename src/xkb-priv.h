@@ -292,7 +292,7 @@ struct xkb_key_type {
 
 struct xkb_sym_interpret {
     xkb_keysym_t sym;
-    unsigned char flags;
+    bool repeat;
     enum xkb_match_operation match;
     uint8_t mods;
     xkb_mod_index_t virtual_mod;
