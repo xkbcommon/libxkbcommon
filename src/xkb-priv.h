@@ -82,7 +82,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include <strings.h>
-#include <X11/extensions/XKB.h>
 
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"

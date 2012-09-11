@@ -82,9 +82,6 @@ if test "x$GCC" = xyes ; then
     CFLAGS="$CFLAGS -fvisibility=hidden"
 fi
 
-# Obtain protocols headers include directives
-PKG_CHECK_MODULES([X11], [kbproto >= 1.0.4])
-
 # Define a configuration option for the XKB config root
 xkb_base=`$PKG_CONFIG --variable=xkb_base xkeyboard-config`
 if test "x$xkb_base" = x; then
