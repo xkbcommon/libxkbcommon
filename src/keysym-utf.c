@@ -38,7 +38,7 @@
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
 
-struct codepair {
+const struct codepair {
     xkb_keysym_t keysym;
     uint16_t ucs;
 } keysymtab[] = {
