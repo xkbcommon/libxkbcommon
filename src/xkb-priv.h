@@ -166,6 +166,25 @@ enum xkb_action_flags {
     ACTION_SAME_SCREEN = (1 << 9),
 };
 
+enum xkb_action_controls {
+    CONTROL_REPEAT = (1 << 0),
+    CONTROL_SLOW = (1 << 1),
+    CONTROL_DEBOUNCE = (1 << 2),
+    CONTROL_STICKY = (1 << 3),
+    CONTROL_MOUSEKEYS = (1 << 4),
+    CONTROL_MOUSEKEYS_ACCEL = (1 << 5),
+    CONTROL_AX = (1 << 6),
+    CONTROL_AX_TIMEOUT = (1 << 7),
+    CONTROL_AX_FEEDBACK = (1 << 8),
+    CONTROL_BELL = (1 << 9),
+    CONTROL_IGNORE_GROUP_LOCK = (1 << 10),
+    CONTROL_ALL = \
+        (CONTROL_REPEAT | CONTROL_SLOW | CONTROL_DEBOUNCE | CONTROL_STICKY | \
+         CONTROL_MOUSEKEYS | CONTROL_MOUSEKEYS_ACCEL | CONTROL_AX | \
+         CONTROL_AX_TIMEOUT | CONTROL_AX_FEEDBACK | CONTROL_BELL | \
+         CONTROL_IGNORE_GROUP_LOCK)
+};
+
 struct xkb_mods {
     xkb_mod_mask_t mods;       /* original real+virtual mods in definition */
     xkb_mod_mask_t mask;       /* computed effective mask */
@@ -186,7 +205,7 @@ struct xkb_group_action {
 struct xkb_controls_action {
     enum xkb_action_type type;
     enum xkb_action_flags flags;
-    uint32_t ctrls;
+    enum xkb_action_controls ctrls;
 };
 
 struct xkb_pointer_default_action {
@@ -274,7 +293,7 @@ struct xkb_indicator_map {
     uint32_t groups;
     enum xkb_state_component which_mods;
     struct xkb_mods mods;
-    unsigned int ctrls;
+    enum xkb_action_controls ctrls;
 };
 
 struct xkb_key_alias {

@@ -193,7 +193,7 @@ get_indicator_state_text(uint8_t which)
 }
 
 static char *
-get_control_mask_text(uint32_t control_mask)
+get_control_mask_text(enum xkb_action_controls control_mask)
 {
     int i;
     static char ret[GET_TEXT_BUF_SIZE];
@@ -201,13 +201,11 @@ get_control_mask_text(uint32_t control_mask)
 
     memset(ret, 0, GET_TEXT_BUF_SIZE);
 
-    control_mask &= XkbAllBooleanCtrlsMask;
-
     if (control_mask == 0) {
         strcpy(ret, "none");
         return ret;
     }
-    else if (control_mask == XkbAllBooleanCtrlsMask) {
+    else if (control_mask == CONTROL_ALL) {
         strcpy(ret, "all");
         return ret;
     }
