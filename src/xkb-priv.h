@@ -185,6 +185,18 @@ enum xkb_action_controls {
          CONTROL_IGNORE_GROUP_LOCK)
 };
 
+enum xkb_match_operation {
+    MATCH_NONE = 0,
+    MATCH_ANY_OR_NONE = 1,
+    MATCH_ANY = 2,
+    MATCH_ALL = 3,
+    MATCH_EXACTLY = 4,
+    MATCH_OP_MASK = \
+        (MATCH_NONE | MATCH_ANY_OR_NONE | MATCH_ANY | MATCH_ALL | \
+         MATCH_EXACTLY),
+    MATCH_LEVEL_ONE_ONLY = (1 << 7),
+};
+
 struct xkb_mods {
     xkb_mod_mask_t mods;       /* original real+virtual mods in definition */
     xkb_mod_mask_t mask;       /* computed effective mask */
@@ -281,7 +293,7 @@ struct xkb_key_type {
 struct xkb_sym_interpret {
     xkb_keysym_t sym;
     unsigned char flags;
-    unsigned char match;
+    enum xkb_match_operation match;
     uint8_t mods;
     xkb_mod_index_t virtual_mod;
     union xkb_action act;

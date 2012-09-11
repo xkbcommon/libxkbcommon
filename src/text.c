@@ -202,11 +202,11 @@ const LookupEntry actionTypeNames[] = {
 };
 
 const LookupEntry symInterpretMatchMaskNames[] = {
-    { "NoneOf", XkbSI_NoneOf },
-    { "AnyOfOrNone", XkbSI_AnyOfOrNone },
-    { "AnyOf", XkbSI_AnyOf },
-    { "AllOf", XkbSI_AllOf },
-    { "Exactly", XkbSI_Exactly },
+    { "NoneOf", MATCH_NONE },
+    { "AnyOfOrNone", MATCH_ANY_OR_NONE },
+    { "AnyOf", MATCH_ANY },
+    { "AllOf", MATCH_ALL },
+    { "Exactly", MATCH_EXACTLY },
 };
 
 #define BUFFER_SIZE 1024
@@ -444,18 +444,18 @@ KeyNameText(const char name[XKB_KEY_NAME_LENGTH])
 }
 
 const char *
-SIMatchText(unsigned type)
+SIMatchText(enum xkb_match_operation type)
 {
     const char *name;
     char *buf;
 
-    type &= XkbSI_OpMask;
+    type &= MATCH_OP_MASK;
 
     name = LookupValue(symInterpretMatchMaskNames, type);
     if (name)
         return name;
 
     buf = GetBuffer(40);
-    snprintf(buf, 40, "0x%x", type & XkbSI_OpMask);
+    snprintf(buf, 40, "0x%x", type);
     return buf;
 }

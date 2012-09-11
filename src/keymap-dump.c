@@ -540,7 +540,7 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
                                     keymap->vmod_names[interp->virtual_mod]));
         }
 
-        if (interp->match & XkbSI_LevelOneOnly)
+        if (interp->match & MATCH_LEVEL_ONE_ONLY)
             write_buf(buf,
                       "\t\t\tuseModMapMods=level1;\n");
         if (interp->flags & XkbSI_AutoRepeat)

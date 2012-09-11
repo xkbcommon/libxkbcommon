@@ -100,25 +100,25 @@ FindInterpForKey(struct xkb_keymap *keymap, struct xkb_key *key,
             interp->sym != XKB_KEY_NoSymbol)
             continue;
 
-        if (level == 0 || !(interp->match & XkbSI_LevelOneOnly))
+        if (level == 0 || !(interp->match & MATCH_LEVEL_ONE_ONLY))
             mods = key->modmap;
         else
             mods = 0;
 
-        switch (interp->match & XkbSI_OpMask) {
-        case XkbSI_NoneOf:
+        switch (interp->match & MATCH_OP_MASK) {
+        case MATCH_NONE:
             found = !(interp->mods & mods);
             break;
-        case XkbSI_AnyOfOrNone:
+        case MATCH_ANY_OR_NONE:
             found = (!mods || (interp->mods & mods));
             break;
-        case XkbSI_AnyOf:
+        case MATCH_ANY:
             found = !!(interp->mods & mods);
             break;
-        case XkbSI_AllOf:
+        case MATCH_ALL:
             found = ((interp->mods & mods) == interp->mods);
             break;
-        case XkbSI_Exactly:
+        case MATCH_EXACTLY:
             found = (interp->mods == mods);
             break;
         default:
@@ -162,7 +162,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
                 continue;
 
             if ((group == 0 && level == 0) ||
-                !(interp->match & XkbSI_LevelOneOnly)) {
+                !(interp->match & MATCH_LEVEL_ONE_ONLY)) {
                 if (interp->virtual_mod != XKB_MOD_INVALID)
                     vmodmask |= (1 << interp->virtual_mod);
             }

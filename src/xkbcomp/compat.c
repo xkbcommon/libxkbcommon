@@ -339,8 +339,8 @@ AddInterp(CompatInfo *info, SymInterpInfo *new)
         }
         if (UseNewInterpField(SI_FIELD_LEVEL_ONE_ONLY, old, new, report,
                               &collide)) {
-            old->interp.match &= ~XkbSI_LevelOneOnly;
-            old->interp.match |= (new->interp.match & XkbSI_LevelOneOnly);
+            old->interp.match &= ~MATCH_LEVEL_ONE_ONLY;
+            old->interp.match |= (new->interp.match & MATCH_LEVEL_ONE_ONLY);
             old->defined |= SI_FIELD_LEVEL_ONE_ONLY;
         }
 
@@ -363,16 +363,16 @@ AddInterp(CompatInfo *info, SymInterpInfo *new)
 /***====================================================================***/
 
 static bool
-ResolveStateAndPredicate(ExprDef *expr, unsigned *pred_rtrn,
+ResolveStateAndPredicate(ExprDef *expr, enum xkb_match_operation *pred_rtrn,
                          xkb_mod_mask_t *mods_rtrn, CompatInfo *info)
 {
     if (expr == NULL) {
-        *pred_rtrn = XkbSI_AnyOfOrNone;
+        *pred_rtrn = MATCH_ANY_OR_NONE;
         *mods_rtrn = ~0;
         return true;
     }
 
-    *pred_rtrn = XkbSI_Exactly;
+    *pred_rtrn = MATCH_EXACTLY;
     if (expr->op == EXPR_ACTION_DECL) {
         const char *pred_txt = xkb_atom_text(info->keymap->ctx,
                                              expr->value.action.name);
@@ -387,7 +387,7 @@ ResolveStateAndPredicate(ExprDef *expr, unsigned *pred_rtrn,
         const char *pred_txt = xkb_atom_text(info->keymap->ctx,
                                              expr->value.str);
         if (pred_txt && istreq(pred_txt, "any")) {
-            *pred_rtrn = XkbSI_AnyOf;
+            *pred_rtrn = MATCH_ANY;
             *mods_rtrn = 0xff;
             return true;
         }
@@ -619,9 +619,9 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
             return ReportSIBadType(info, si, field, "level specification");
 
         if (val)
-            si->interp.match |= XkbSI_LevelOneOnly;
+            si->interp.match |= MATCH_LEVEL_ONE_ONLY;
         else
-            si->interp.match &= ~XkbSI_LevelOneOnly;
+            si->interp.match &= ~MATCH_LEVEL_ONE_ONLY;
 
         si->defined |= SI_FIELD_LEVEL_ONE_ONLY;
     }
@@ -805,7 +805,7 @@ HandleInterpDef(CompatInfo *info, InterpDef *def, enum merge_mode merge)
         return false;
     }
 
-    si.interp.match = pred & XkbSI_OpMask;
+    si.interp.match = pred & MATCH_OP_MASK;
 
     si.interp.mods = mods;
 
@@ -920,12 +920,12 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
 }
 
 static void
-CopyInterps(CompatInfo *info, bool needSymbol, unsigned pred)
+CopyInterps(CompatInfo *info, bool needSymbol, enum xkb_match_operation pred)
 {
     SymInterpInfo *si;
 
     darray_foreach(si, info->interps) {
-        if (((si->interp.match & XkbSI_OpMask) != pred) ||
+        if (((si->interp.match & MATCH_OP_MASK) != pred) ||
             (needSymbol && si->interp.sym == XKB_KEY_NoSymbol) ||
             (!needSymbol && si->interp.sym != XKB_KEY_NoSymbol))
             continue;
@@ -989,14 +989,14 @@ CopyCompatToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
 
     if (!darray_empty(info->interps)) {
         /* Most specific to least specific. */
-        CopyInterps(info, true, XkbSI_Exactly);
-        CopyInterps(info, true, XkbSI_AllOf | XkbSI_NoneOf);
-        CopyInterps(info, true, XkbSI_AnyOf);
-        CopyInterps(info, true, XkbSI_AnyOfOrNone);
-        CopyInterps(info, false, XkbSI_Exactly);
-        CopyInterps(info, false, XkbSI_AllOf | XkbSI_NoneOf);
-        CopyInterps(info, false, XkbSI_AnyOf);
-        CopyInterps(info, false, XkbSI_AnyOfOrNone);
+        CopyInterps(info, true, MATCH_EXACTLY);
+        CopyInterps(info, true, MATCH_ALL);
+        CopyInterps(info, true, MATCH_ANY);
+        CopyInterps(info, true, MATCH_ANY_OR_NONE);
+        CopyInterps(info, false, MATCH_EXACTLY);
+        CopyInterps(info, false, MATCH_ALL);
+        CopyInterps(info, false, MATCH_ANY);
+        CopyInterps(info, false, MATCH_ANY_OR_NONE);
     }
 
     CopyIndicatorMapDefs(info);
