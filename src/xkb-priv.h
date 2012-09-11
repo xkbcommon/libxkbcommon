@@ -336,10 +336,17 @@ enum xkb_range_exceed_type {
     RANGE_REDIRECT,
 };
 
+enum xkb_explicit_components {
+    EXPLICIT_INTERP = (1 << 0),
+    EXPLICIT_VMODMAP = (1 << 1),
+    EXPLICIT_REPEAT = (1 << 2),
+};
+
 struct xkb_key {
     char name[XKB_KEY_NAME_LENGTH];
 
-    unsigned char explicit;
+    enum xkb_explicit_components explicit;
+    xkb_group_mask_t explicit_groups;
 
     unsigned char modmap;
     xkb_mod_mask_t vmodmap;

@@ -91,6 +91,7 @@ typedef uint32_t xkb_keysym_t;
 typedef uint32_t xkb_mod_index_t;
 typedef uint32_t xkb_mod_mask_t;
 typedef uint32_t xkb_group_index_t;
+typedef uint32_t xkb_group_mask_t;
 typedef uint32_t xkb_led_index_t;
 
 #define XKB_MOD_INVALID     (0xffffffff)

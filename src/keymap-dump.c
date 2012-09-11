@@ -635,7 +635,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
 
         write_buf(buf, "\t\tkey %6s {", KeyNameText(key->name));
 
-        if (key->explicit & XkbExplicitKeyTypesMask) {
+        if (key->explicit_groups) {
             bool multi_type = false;
             struct xkb_key_type *type = XkbKeyType(keymap, key, 0);
 
@@ -650,7 +650,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
 
             if (multi_type) {
                 for (group = 0; group < key->num_groups; group++) {
-                    if (!(key->explicit & (1 << group)))
+                    if (!(key->explicit_groups & (1 << group)))
                         continue;
                     type = XkbKeyType(keymap, key, group);
                     write_buf(buf, "\n\t\t\ttype[group%u]= \"%s\",",
@@ -664,7 +664,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
             }
         }
 
-        if (key->explicit & XkbExplicitAutoRepeatMask) {
+        if (key->explicit & EXPLICIT_REPEAT) {
             if (key->repeats)
                 write_buf(buf, "\n\t\t\trepeat= Yes,");
             else
@@ -672,7 +672,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
             simple = false;
         }
 
-        if (key->vmodmap && (key->explicit & XkbExplicitVModMapMask)) {
+        if (key->vmodmap && (key->explicit & EXPLICIT_VMODMAP)) {
             /* XXX: vmodmap cmask? */
             write_buf(buf, "\n\t\t\tvirtualMods= %s,",
                       VModMaskText(keymap, key->vmodmap << XKB_NUM_CORE_MODS));
@@ -692,7 +692,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
             break;
         }
 
-        if (key->explicit & XkbExplicitInterpretMask)
+        if (key->explicit & EXPLICIT_INTERP)
             showActions = (key->actions != NULL);
         else
             showActions = false;

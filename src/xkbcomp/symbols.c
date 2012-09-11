@@ -1756,7 +1756,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
         }
         if (FindNamedType(keymap, keyi->types[i], &types[i])) {
             if (!autoType || keyi->numLevels[i] > 2)
-                key->explicit |= (1 << i);
+                key->explicit_groups |= (1 << i);
         }
         else {
             log_vrb(info->keymap->ctx, 3,
@@ -1802,7 +1802,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
 
     if (haveActions) {
         key->actions = calloc(nGroups * width, sizeof(*key->actions));
-        key->explicit |= XkbExplicitInterpretMask;
+        key->explicit |= EXPLICIT_INTERP;
     }
 
     key->out_of_range_group_number = keyi->out_of_range_group_number;
@@ -1849,12 +1849,12 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
 
     if (keyi->defined & KEY_FIELD_VMODMAP) {
         key->vmodmap = keyi->vmodmap;
-        key->explicit |= XkbExplicitVModMapMask;
+        key->explicit |= EXPLICIT_VMODMAP;
     }
 
     if (keyi->repeat != KEY_REPEAT_UNDEFINED) {
         key->repeats = (keyi->repeat == KEY_REPEAT_YES);
-        key->explicit |= XkbExplicitAutoRepeatMask;
+        key->explicit |= EXPLICIT_REPEAT;
     }
 
     /* do the same thing for the next key */
