@@ -1770,14 +1770,10 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
         sizeSyms += darray_size(groupi->syms);
     }
 
-    darray_resize0(key->syms, sizeSyms);
-
+    key->syms = calloc(sizeSyms, sizeof(*key->syms));
     key->num_groups = nGroups;
-
     key->width = width;
-
     key->sym_index = calloc(nGroups * width, sizeof(*key->sym_index));
-
     key->num_syms = calloc(nGroups * width, sizeof(*key->num_syms));
 
     if (haveActions) {
@@ -1806,7 +1802,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
             for (tmp = 0; tmp < width; tmp++) {
                 if (tmp < groupi->numLevels &&
                     darray_item(groupi->symsMapNumEntries, tmp) != 0) {
-                    memcpy(darray_mem(key->syms, symIndex),
+                    memcpy(&key->syms[symIndex],
                            darray_mem(groupi->syms,
                                       darray_item(groupi->symsMapIndex, tmp)),
                            darray_item(groupi->symsMapNumEntries, tmp) * sizeof(xkb_keysym_t));

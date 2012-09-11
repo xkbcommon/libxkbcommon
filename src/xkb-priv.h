@@ -368,7 +368,7 @@ struct xkb_key {
     int *sym_index;
     /* per level/group */
     unsigned int *num_syms;
-    darray(xkb_keysym_t) syms;
+    xkb_keysym_t *syms;
 };
 
 /* Common keyboard description structure */
@@ -453,8 +453,7 @@ static inline xkb_keysym_t *
 XkbKeySymEntry(struct xkb_key *key, xkb_group_index_t group,
                xkb_level_index_t level)
 {
-    return &darray_item(key->syms,
-                        key->sym_index[group * key->width + level]);
+    return &key->syms[key->sym_index[group * key->width + level]];
 }
 
 static inline union xkb_action *
