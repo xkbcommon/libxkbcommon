@@ -179,7 +179,7 @@ alternate_group         return ALTERNATE_GROUP;
                         }
 [0-9]+\.[0-9]+ {
                             char *end;
-                            yylval->num = strtod(yytext, &end) * XkbGeomPtsPerMM;
+                            yylval->num = strtod(yytext, &end);
 
                             return FLOAT;
                         }

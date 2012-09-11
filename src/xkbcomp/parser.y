@@ -724,7 +724,7 @@ SignedNumber    :       MINUS Number    { $$ = -$2; }
                 ;
 
 Number          :       FLOAT   { $$ = $1; }
-                |       INTEGER { $$ = $1 * XkbGeomPtsPerMM; }
+                |       INTEGER { $$ = $1; }
                 ;
 
 Float           :       FLOAT   { $$ = 0; }
