@@ -1,5 +1,4 @@
 LOCAL_PATH:= $(call my-dir)
-
 include $(CLEAR_VARS)
 
 LIBXKBCOMMON_TOP := $(LOCAL_PATH)
@@ -7,7 +6,9 @@ LIBXKBCOMMON_TOP := $(LOCAL_PATH)
 LIBXKBCOMMON_BUILT_MAKEFILES := \
 	$(LIBXKBCOMMON_TOP)/Android_build.mk
 
-libxkbcommon-configure:
+LIBXKBCOMMON_CONFIGURE_TARGET := $(LIBXKBCOMMON_TOP)/Makefile
+
+$(LIBXKBCOMMON_CONFIGURE_TARGET): $(CONFIGURE_DEPENDENCIES)
 	cd $(LIBXKBCOMMON_TOP) && autoreconf -fiv
 	cd $(LIBXKBCOMMON_TOP) && \
 		CC="$(CONFIGURE_CC)" \
@@ -27,6 +28,11 @@ libxkbcommon-configure:
 		make -C $$(dirname $$file) $$(basename $$file) ; \
 	done
 
+$(LIBXKBCOMMON_BUILT_MAKEFILES): $(LIBXKBCOMMON_CONFIGURE_TARGET)
+	make -C $(dir $@) $(notdir $@)
+
+.PHONY: libxkbcommon-reset libxkbcommon-clean
+
 libxkbcommon-reset:
 	cd $(LIBXKBCOMMON_TOP) && \
 	git clean -qdxf && \
@@ -34,12 +40,10 @@ libxkbcommon-reset:
 
 libxkbcommon-clean:
 
-.PHONY: libxkbcommon-configure libxkbcommon-clean libxkbcommon-reset
+contrib-reset: libxkbcommon-reset
+contrib-clean: libxkbcommon-clean
 
-CONFIGURE_TARGETS += libxkbcommon-configure
-CONFIGURE_RESET_TARGETS += libxkbcommon-reset
-AGGREGATE_CLEAN_TARGETS += libxkbcommon-clean
-CONFIGURE_PKG_CONFIG_LIBDIR := $(CONFIGURE_PKG_CONFIG_LIBDIR):$(LIBXKBCOMMON_TOP)
+CONFIGURE_PKG_CONFIG_LIBDIR := $(CONFIGURE_PKG_CONFIG_LIBDIR):$(abspath $(LIBXKBCOMMON_TOP))
 
--include $(LIBXKBCOMMON_BUILT_MAKEFILES)
+include $(LIBXKBCOMMON_BUILT_MAKEFILES)
 
