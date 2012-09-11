@@ -81,10 +81,6 @@ ExprResolveString(struct xkb_context *ctx, const ExprDef *expr,
                   xkb_atom_t *val_rtrn);
 
 bool
-ExprResolveKeyName(struct xkb_context *ctx, const ExprDef *expr,
-                   char name[XKB_KEY_NAME_LENGTH]);
-
-bool
 ExprResolveEnum(struct xkb_context *ctx, const ExprDef *expr,
                 unsigned int *val_rtrn, const LookupEntry *values);
 

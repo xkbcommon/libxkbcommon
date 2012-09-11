@@ -488,51 +488,6 @@ ExprResolveString(struct xkb_context *ctx, const ExprDef *expr,
 }
 
 bool
-ExprResolveKeyName(struct xkb_context *ctx, const ExprDef *expr,
-                   char name[XKB_KEY_NAME_LENGTH])
-{
-    switch (expr->op) {
-    case EXPR_VALUE:
-        if (expr->value_type != EXPR_TYPE_KEYNAME) {
-            log_err(ctx, "Found constant of type %s, expected a key name\n",
-                    expr_value_type_to_string(expr->value_type));
-            return false;
-        }
-        strncpy(name, expr->value.keyName, XKB_KEY_NAME_LENGTH);
-        return true;
-
-    case EXPR_IDENT:
-        log_err(ctx, "Identifier \"%s\" of type string not found\n",
-                xkb_atom_text(ctx, expr->value.str));
-        return false;
-
-    case EXPR_FIELD_REF:
-        log_err(ctx, "Default \"%s.%s\" of type key name not found\n",
-                xkb_atom_text(ctx, expr->value.field.element),
-                xkb_atom_text(ctx, expr->value.field.field));
-        return false;
-
-    case EXPR_ADD:
-    case EXPR_SUBTRACT:
-    case EXPR_MULTIPLY:
-    case EXPR_DIVIDE:
-    case EXPR_ASSIGN:
-    case EXPR_NEGATE:
-    case EXPR_INVERT:
-    case EXPR_NOT:
-    case EXPR_UNARY_PLUS:
-        log_err(ctx, "%s of key name values not permitted\n",
-                expr_op_type_to_string(expr->op));
-        return false;
-
-    default:
-        log_wsgo(ctx, "Unknown operator %d in ResolveKeyName\n", expr->op);
-        break;
-    }
-    return false;
-}
-
-bool
 ExprResolveEnum(struct xkb_context *ctx, const ExprDef *expr,
                 unsigned int *val_rtrn, const LookupEntry *values)
 {
