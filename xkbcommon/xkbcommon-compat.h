@@ -26,4 +26,58 @@
 #ifndef _XKBCOMMON_COMPAT_H
 #define _XKBCOMMON_COMPAT_H
 
+/**
+ * Renamed keymap API.
+ */
+#define xkb_group_index_t xkb_layout_index_t
+#define xkb_group_mask_t xkb_layout_mask_t
+#define xkb_map_compile_flags xkb_keymap_compile_flags
+#define XKB_GROUP_INVALID XKB_LAYOUT_INVALID
+
+#define xkb_map_new_from_names(context, names, flags) \
+        xkb_keymap_new_from_names(context, names, flags)
+#define xkb_map_new_from_file(context, file, format, flags) \
+        xkb_keymap_new_from_file(context, file, format, flags)
+#define xkb_map_new_from_string(context, string, format, flags) \
+        xkb_keymap_new_from_string(context, string, format, flags)
+#define xkb_map_get_as_string(keymap) xkb_keymap_get_as_string(keymap)
+#define xkb_map_ref(keymap) xkb_keymap_ref(keymap)
+#define xkb_map_unref(keymap) xkb_keymap_unref(keymap)
+
+#define xkb_map_num_mods(keymap) xkb_keymap_num_mods(keymap)
+#define xkb_map_mod_get_name(keymap, idx) xkb_keymap_mod_get_name(keymap, idx)
+#define xkb_map_mod_get_index(keymap, str) xkb_keymap_mod_get_index(keymap, str)
+#define xkb_key_mod_index_is_consumed(state, key, mod) \
+        xkb_state_mod_index_is_consumed(state, key, mod)
+#define xkb_key_mod_mask_remove_consumed(state, key, modmask) \
+        xkb_state_mod_mask_remove_consumed(state, key, modmask)
+
+#define xkb_map_num_groups(keymap) xkb_keymap_num_layouts(keymap)
+#define xkb_key_num_groups(keymap, key) \
+        xkb_keymap_num_layouts_for_key(keymap, key)
+#define xkb_map_group_get_name(keymap, idx) \
+        xkb_keymap_layout_get_name(keymap, idx)
+#define xkb_map_group_get_index(keymap, str) \
+        xkb_keymap_layout_get_index(keymap, str)
+
+#define xkb_map_num_leds(keymap) xkb_keymap_num_leds(keymap)
+#define xkb_map_led_get_name(keymap, idx) xkb_keymap_led_get_name(keymap, idx)
+#define xkb_map_led_get_index(keymap, str) \
+        xkb_keymap_led_get_index(keymap, str)
+
+#define xkb_key_repeats(keymap, key) xkb_keymap_key_repeats(keymap, key)
+
+#define xkb_key_get_syms(state, key, syms_out) \
+        xkb_state_key_get_syms(state, key, syms_out)
+
+#define xkb_state_group_name_is_active(state, name, type) \
+        xkb_state_layout_name_is_active(state, name, type)
+#define xkb_state_group_index_is_active(state, idx, type) \
+        xkb_state_layout_index_is_active(state, idx, type)
+
+#define xkb_state_serialize_group(state, component) \
+        xkb_state_serialize_layout(state, component)
+
+#define xkb_state_get_map(state) xkb_state_get_keymap(state)
+
 #endif

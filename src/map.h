@@ -311,7 +311,7 @@ struct xkb_key {
     char name[XKB_KEY_NAME_LENGTH];
 
     enum xkb_explicit_components explicit;
-    xkb_group_mask_t explicit_groups;
+    xkb_layout_mask_t explicit_groups;
 
     unsigned char modmap;
     xkb_mod_mask_t vmodmap;
@@ -322,12 +322,12 @@ struct xkb_key {
 
     unsigned kt_index[XKB_NUM_GROUPS];
 
-    xkb_group_index_t num_groups;
+    xkb_layout_index_t num_groups;
     /* How many levels the largest group has. */
     xkb_level_index_t width;
 
     enum xkb_range_exceed_type out_of_range_group_action;
-    xkb_group_index_t out_of_range_group_number;
+    xkb_layout_index_t out_of_range_group_number;
 
     /* per level/group index into 'syms' */
     int *sym_index;
@@ -341,7 +341,7 @@ struct xkb_keymap {
     struct xkb_context *ctx;
 
     int refcnt;
-    enum xkb_map_compile_flags flags;
+    enum xkb_keymap_compile_flags flags;
 
     unsigned int enabled_ctrls;
 
@@ -363,7 +363,7 @@ struct xkb_keymap {
     xkb_atom_t vmod_names[XKB_NUM_VIRTUAL_MODS];
 
     /* Number of groups in the key with the most groups. */
-    xkb_group_index_t num_groups;
+    xkb_layout_index_t num_groups;
     xkb_atom_t group_names[XKB_NUM_GROUPS];
 
     struct xkb_indicator_map indicators[XKB_NUM_INDICATORS];
@@ -394,53 +394,53 @@ XkbKeyGetKeycode(struct xkb_keymap *keymap, const struct xkb_key *key)
 
 static inline struct xkb_key_type *
 XkbKeyType(struct xkb_keymap *keymap, const struct xkb_key *key,
-           xkb_group_index_t group)
+           xkb_layout_index_t layout)
 {
-    return &keymap->types[key->kt_index[group]];
+    return &keymap->types[key->kt_index[layout]];
 }
 
 static inline xkb_level_index_t
 XkbKeyGroupWidth(struct xkb_keymap *keymap, const struct xkb_key *key,
-                 xkb_group_index_t group)
+                 xkb_layout_index_t layout)
 {
-    return XkbKeyType(keymap, key, group)->num_levels;
+    return XkbKeyType(keymap, key, layout)->num_levels;
 }
 
 static inline unsigned int
-XkbKeyNumSyms(const struct xkb_key *key, xkb_group_index_t group,
+XkbKeyNumSyms(const struct xkb_key *key, xkb_layout_index_t layout,
               xkb_level_index_t level)
 {
-    return key->num_syms[group * key->width + level];
+    return key->num_syms[layout * key->width + level];
 }
 
 static inline const xkb_keysym_t *
-XkbKeySymEntry(const struct xkb_key *key, xkb_group_index_t group,
+XkbKeySymEntry(const struct xkb_key *key, xkb_layout_index_t layout,
                xkb_level_index_t level)
 {
-    return &key->syms[key->sym_index[group * key->width + level]];
+    return &key->syms[key->sym_index[layout * key->width + level]];
 }
 
 static inline const union xkb_action *
-XkbKeyActionEntry(const struct xkb_key *key, xkb_group_index_t group,
+XkbKeyActionEntry(const struct xkb_key *key, xkb_layout_index_t layout,
                   xkb_level_index_t level)
 {
-    return &key->actions[key->width * group + level];
+    return &key->actions[key->width * layout + level];
 }
 
 struct xkb_keymap *
 xkb_map_new(struct xkb_context *ctx);
 
-xkb_group_index_t
+xkb_layout_index_t
 xkb_key_get_group(struct xkb_state *state, const struct xkb_key *key);
 
 xkb_level_index_t
 xkb_key_get_level(struct xkb_state *state, const struct xkb_key *key,
-                  xkb_group_index_t group);
+                  xkb_layout_index_t layout);
 
 int
 xkb_key_get_syms_by_level(struct xkb_keymap *keymap,
                           const struct xkb_key *key,
-                          xkb_group_index_t group, xkb_level_index_t level,
+                          xkb_layout_index_t layout, xkb_level_index_t level,
                           const xkb_keysym_t **syms_out);
 
 #endif
