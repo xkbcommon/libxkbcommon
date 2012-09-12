@@ -33,8 +33,9 @@ AM_YFLAGS = -d
 xkbcommonincludedir = $(includedir)/xkbcommon
 xkbcommoninclude_HEADERS = \
 	xkbcommon/xkbcommon.h \
-	xkbcommon/xkbcommon-names.h \
-	xkbcommon/xkbcommon-keysyms.h
+	xkbcommon/xkbcommon-compat.h \
+	xkbcommon/xkbcommon-keysyms.h \
+	xkbcommon/xkbcommon-names.h
 
 lib_LTLIBRARIES = libxkbcommon.la
 libxkbcommon_la_LDFLAGS = -no-undefined
@@ -67,6 +68,7 @@ libxkbcommon_la_SOURCES = \
 	src/atom.h \
 	src/context.c \
 	src/context.h \
+	src/compat.c \
 	src/darray.h \
 	src/keymap-dump.c \
 	src/keysym.c \
