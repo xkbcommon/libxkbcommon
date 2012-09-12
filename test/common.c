@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 Dan Nicholson
- * Copyright © 2012 Daniel Stone
- * Copyright © 2012 Ran Benita
+ * Copyright © 2009 Dan Nicholson <dbn.lists@gmail.com>
+ * Copyright © 2012 Intel Corporation
+ * Copyright © 2012 Ran Benita <ran234@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -24,6 +24,10 @@
  * institutions shall not be used in advertising or otherwise to promote the
  * sale, use or other dealings in this Software without prior written
  * authorization from the authors.
+ *
+ * Author: Dan Nicholson <dbn.lists@gmail.com>
+ *         Daniel Stone <daniel@fooishbar.org>
+ *         Ran Benita <ran234@gmail.com>
  */
 
 #include <assert.h>

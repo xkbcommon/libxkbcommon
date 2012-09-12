@@ -1,6 +1,5 @@
 /*
  * Copyright 1985, 1987, 1990, 1998  The Open Group
- * Copyright 2008  Dan Nicholson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -52,7 +51,9 @@
  ********************************************************/
 
 /*
+ * Copyright © 2009 Dan Nicholson
  * Copyright © 2012 Intel Corporation
+ * Copyright © 2012 Ran Benita
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -74,6 +75,7 @@
  * DEALINGS IN THE SOFTWARE.
  *
  * Author: Daniel Stone <daniel@fooishbar.org>
+ *         Dan Nicholson <dbn.lists@gmail.com>
  */
 
 #ifndef XKB_PRIV_H
