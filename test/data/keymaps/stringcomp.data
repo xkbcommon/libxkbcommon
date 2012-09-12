@@ -1125,7 +1125,7 @@ xkb_keymap {
 		key <AE06> {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
-			symbols[Group1]= [ {               H,               E,               L,               L,               O },     asciicircum ],
+			symbols[Group1]= [ { H, E, L, L, O },     asciicircum ],
 			symbols[Group2]= [               6,           colon ],
 			symbols[Group3]= [               6,        question,         notsign,        NoSymbol,   threequarters,     fiveeighths,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               6,          dollar,            cent,           U26a5,        sterling,        NoSymbol,           U2225,        NoSymbol ]
@@ -1133,7 +1133,7 @@ xkb_keymap {
 		key <AE07> {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
-			symbols[Group1]= [ {               Y,               E,               S,           space,               T,               H,               I,               S,           space,               I,               S,           space,               D,               O,               G },       ampersand ],
+			symbols[Group1]= [ { Y, E, S, space, T, H, I, S, space, I, S, space, D, O, G },       ampersand ],
 			symbols[Group2]= [               7,        question ],
 			symbols[Group3]= [               7,       ampersand,       braceleft,        NoSymbol,        NoSymbol,    seveneighths,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               7,        EuroSign,             yen,            U3f0,        currency,        NoSymbol,      rightarrow,        NoSymbol ]

@@ -593,7 +593,7 @@ write_keysyms(struct xkb_keymap *keymap, struct buf *buf,
                 if (s != 0)
                     write_buf(buf, ", ");
                 xkb_keysym_get_name(syms[s], out_buf, OUT_BUF_LEN);
-                write_buf(buf, "%15s", out_buf);
+                write_buf(buf, "%s", out_buf);
             }
             write_buf(buf, " }");
         }
