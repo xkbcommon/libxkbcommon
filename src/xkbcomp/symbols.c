@@ -152,28 +152,6 @@ ClearKeyInfo(KeyInfo *keyi)
         ClearGroupInfo(&keyi->groups[i]);
 }
 
-static bool
-CopyKeyInfo(KeyInfo * old, KeyInfo * new, bool clearOld)
-{
-    xkb_group_index_t i;
-
-    *new = *old;
-
-    if (clearOld) {
-        for (i = 0; i < XKB_NUM_GROUPS; i++) {
-            InitGroupInfo(&old->groups[i]);
-        }
-    }
-    else {
-        for (i = 0; i < XKB_NUM_GROUPS; i++) {
-            darray_copy(new->groups[i].syms, old->groups[i].syms);
-            darray_copy(new->groups[i].levels, old->groups[i].levels);
-        }
-    }
-
-    return true;
-}
-
 /***====================================================================***/
 
 typedef struct _ModMapEntry {
@@ -491,7 +469,7 @@ static bool
 AddKeySymbols(SymbolsInfo *info, KeyInfo *keyi)
 {
     unsigned long real_name;
-    KeyInfo *iter, *new;
+    KeyInfo *iter;
 
     /*
      * Don't keep aliases in the keys array; this guarantees that
@@ -506,9 +484,9 @@ AddKeySymbols(SymbolsInfo *info, KeyInfo *keyi)
         if (iter->name == keyi->name)
             return MergeKeys(info, iter, keyi);
 
-    darray_resize0(info->keys, darray_size(info->keys) + 1);
-    new = &darray_item(info->keys, darray_size(info->keys) - 1);
-    return CopyKeyInfo(keyi, new, true);
+    darray_append(info->keys, *keyi);
+    InitKeyInfo(keyi, info->file_id);
+    return true;
 }
 
 static bool
@@ -1180,11 +1158,16 @@ static int
 HandleSymbolsDef(SymbolsInfo *info, SymbolsDef *stmt)
 {
     KeyInfo keyi;
+    xkb_group_index_t i;
 
-    InitKeyInfo(&keyi, info->file_id);
-    CopyKeyInfo(&info->dflt, &keyi, false);
+    keyi = info->dflt;
+    for (i = 0; i < XKB_NUM_GROUPS; i++) {
+        darray_copy(keyi.groups[i].syms, info->dflt.groups[i].syms);
+        darray_copy(keyi.groups[i].levels, info->dflt.groups[i].levels);
+    }
     keyi.merge = stmt->merge;
     keyi.name = KeyNameToLong(stmt->keyName);
+
     if (!HandleSymbolsBody(info, (VarDef *) stmt->symbols, &keyi)) {
         info->errorCount++;
         return false;
@@ -1199,6 +1182,7 @@ HandleSymbolsDef(SymbolsInfo *info, SymbolsDef *stmt)
         info->errorCount++;
         return false;
     }
+
     return true;
 }
 
