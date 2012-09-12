@@ -1682,23 +1682,52 @@ CopyModMapDef(SymbolsInfo *info, ModMapEntry *entry)
     return true;
 }
 
-/**
- * Handle the xkb_symbols section of an xkb file.
- *
- * @param file The parsed xkb_symbols section of the xkb file.
- * @param keymap Handle to the keyboard description to store the symbols in.
- * @param merge Merge strategy (e.g. MERGE_OVERRIDE).
- */
+static bool
+CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
+{
+    KeyInfo *keyi;
+    ModMapEntry *mm;
+    xkb_group_index_t i;
+    struct xkb_key *key;
+
+    keymap->symbols_section_name = strdup_safe(info->name);
+
+    for (i = 0; i < XKB_NUM_GROUPS; i++)
+        if (info->groupNames[i] != XKB_ATOM_NONE)
+            keymap->group_names[i] = info->groupNames[i];
+
+    darray_foreach(keyi, info->keys) {
+        PrepareKeyDef(keyi);
+        if (!CopySymbolsDef(info, keyi))
+            info->errorCount++;
+    }
+
+    if (xkb_get_log_verbosity(keymap->ctx) > 3) {
+        xkb_foreach_key(key, keymap) {
+            if (key->name[0] == '\0')
+                continue;
+
+            if (key->num_groups < 1)
+                log_info(keymap->ctx,
+                         "No symbols defined for %s\n",
+                         KeyNameText(key->name));
+        }
+    }
+
+    darray_foreach(mm, info->modMaps)
+        if (!CopyModMapDef(info, mm))
+            info->errorCount++;
+
+    /* XXX: If we don't ignore errorCount, things break. */
+    return true;
+}
+
 bool
 CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
                enum merge_mode merge)
 {
-    xkb_group_index_t i;
-    struct xkb_key *key;
     SymbolsInfo info;
     ActionsInfo *actions;
-    KeyInfo *keyi;
-    ModMapEntry *mm;
 
     actions = NewActionsInfo();
     if (!actions)
@@ -1715,37 +1744,8 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
     if (info.errorCount != 0)
         goto err_info;
 
-    if (info.name)
-        keymap->symbols_section_name = strdup(info.name);
-
-    for (i = 0; i < XKB_NUM_GROUPS; i++)
-        if (info.groupNames[i] != XKB_ATOM_NONE)
-            keymap->group_names[i] = info.groupNames[i];
-
-    /* sanitize keys */
-    darray_foreach(keyi, info.keys)
-        PrepareKeyDef(keyi);
-
-    /* copy! */
-    darray_foreach(keyi, info.keys)
-        if (!CopySymbolsDef(&info, keyi))
-            info.errorCount++;
-
-    if (xkb_get_log_verbosity(keymap->ctx) > 3) {
-        xkb_foreach_key(key, keymap) {
-            if (key->name[0] == '\0')
-                continue;
-
-            if (key->num_groups < 1)
-                log_info(info.keymap->ctx,
-                         "No symbols defined for %s\n",
-                         KeyNameText(key->name));
-        }
-    }
-
-    darray_foreach(mm, info.modMaps)
-        if (!CopyModMapDef(&info, mm))
-            info.errorCount++;
+    if (!CopySymbolsToKeymap(keymap, &info))
+        goto err_info;
 
     ClearSymbolsInfo(&info);
     FreeActionsInfo(actions);
