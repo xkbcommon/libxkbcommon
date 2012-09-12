@@ -1494,7 +1494,6 @@ static bool
 CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
 {
     struct xkb_keymap *keymap = info->keymap;
-    xkb_keycode_t kc;
     struct xkb_key *key;
     unsigned int sizeSyms = 0;
     xkb_group_index_t i, nGroups;
@@ -1511,7 +1510,6 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
                 LongKeyNameText(keyi->name));
         return false;
     }
-    kc = XkbKeyGetKeycode(keymap, key);
 
     haveActions = false;
     width = 0;
@@ -1543,10 +1541,10 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
             else
                 log_vrb(info->keymap->ctx, 5,
                         "No automatic type for %d levels; "
-                        "Using %s for the %s key (keycode %d)\n",
+                        "Using %s for the %s key\n",
                         darray_size(groupi->levels),
                         xkb_atom_text(keymap->ctx, groupi->type),
-                        LongKeyNameText(keyi->name), kc);
+                        LongKeyNameText(keyi->name));
         }
 
         if (FindNamedType(keymap, groupi->type, &types[i])) {
@@ -1556,9 +1554,9 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
         else {
             log_vrb(info->keymap->ctx, 3,
                     "Type \"%s\" is not defined; "
-                    "Using default type for the %s key (keycode %d)\n",
+                    "Using default type for the %s key\n",
                     xkb_atom_text(keymap->ctx, groupi->type),
-                    LongKeyNameText(keyi->name), kc);
+                    LongKeyNameText(keyi->name));
             /*
              * Index 0 is guaranteed to contain something, usually
              * ONE_LEVEL or at least some default one-level type.
@@ -1740,9 +1738,8 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
 
             if (key->num_groups < 1)
                 log_info(info.keymap->ctx,
-                         "No symbols defined for %s (keycode %d)\n",
-                         KeyNameText(key->name),
-                         XkbKeyGetKeycode(keymap, key));
+                         "No symbols defined for %s\n",
+                         KeyNameText(key->name));
         }
     }
 
