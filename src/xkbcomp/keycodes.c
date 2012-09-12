@@ -754,7 +754,7 @@ ApplyAliases(KeyNamesInfo *info, struct xkb_keymap *keymap)
 
     darray_foreach(alias, info->aliases) {
         /* Check that ->real is a key. */
-        key = FindNamedKey(keymap, alias->real, false, 0);
+        key = FindNamedKey(keymap, alias->real, false);
         if (!key) {
             log_vrb(info->ctx, 5,
                     "Attempt to alias %s to non-existent key %s; Ignored\n",
@@ -764,7 +764,7 @@ ApplyAliases(KeyNamesInfo *info, struct xkb_keymap *keymap)
         }
 
         /* Check that ->alias is not a key. */
-        key = FindNamedKey(keymap, alias->alias, false, 0);
+        key = FindNamedKey(keymap, alias->alias, false);
         if (key) {
             log_vrb(info->ctx, 5,
                     "Attempt to create alias with the name of a real key; "
@@ -859,24 +859,18 @@ err_info:
 }
 
 struct xkb_key *
-FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
-             bool use_aliases, xkb_keycode_t start_from)
+FindNamedKey(struct xkb_keymap *keymap, unsigned long name, bool use_aliases)
 {
     struct xkb_key *key;
 
-    if (start_from < keymap->min_key_code)
-        start_from = keymap->min_key_code;
-    else if (start_from > keymap->max_key_code)
-        return NULL;
-
-    xkb_foreach_key_from(key, keymap, start_from)
+    xkb_foreach_key(key, keymap)
         if (KeyNameToLong(key->name) == name)
             return key;
 
     if (use_aliases) {
         unsigned long new_name;
         if (FindKeyNameForAlias(keymap, name, &new_name))
-            return FindNamedKey(keymap, new_name, false, 0);
+            return FindNamedKey(keymap, new_name, false);
     }
 
     return NULL;

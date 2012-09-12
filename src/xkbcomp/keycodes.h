@@ -56,7 +56,7 @@ LongKeyNameText(unsigned long val)
 
 struct xkb_key *
 FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
-             bool use_aliases, xkb_keycode_t start_from);
+             bool use_aliases);
 
 bool
 FindKeyNameForAlias(struct xkb_keymap *keymap, unsigned long lname,

@@ -1490,14 +1490,8 @@ PrepareKeyDef(KeyInfo *keyi)
             ClearGroupInfo(&keyi->groups[i]);
 }
 
-/**
- * Copy the KeyInfo into the keyboard description.
- *
- * This function recurses.
- */
 static bool
-CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
-               xkb_keycode_t start_from)
+CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
 {
     struct xkb_keymap *keymap = info->keymap;
     xkb_keycode_t kc;
@@ -1506,18 +1500,15 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
     xkb_group_index_t i, nGroups;
     xkb_level_index_t width, tmp;
     struct xkb_key_type * type;
-    bool haveActions, autoType, useAlias;
+    bool haveActions, autoType;
     unsigned types[XKB_NUM_GROUPS];
     unsigned int symIndex = 0;
 
-    useAlias = (start_from == 0);
-
-    key = FindNamedKey(keymap, keyi->name, useAlias, start_from);
+    key = FindNamedKey(keymap, keyi->name, true);
     if (!key) {
-        if (start_from == 0)
-            log_vrb(info->keymap->ctx, 5,
-                    "Key %s not found in keycodes; Symbols ignored\n",
-                    LongKeyNameText(keyi->name));
+        log_vrb(info->keymap->ctx, 5,
+                "Key %s not found in keycodes; Symbols ignored\n",
+                LongKeyNameText(keyi->name));
         return false;
     }
     kc = XkbKeyGetKeycode(keymap, key);
@@ -1657,8 +1648,6 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi,
         key->explicit |= EXPLICIT_REPEAT;
     }
 
-    /* do the same thing for the next key */
-    CopySymbolsDef(info, keyi, kc + 1);
     return true;
 }
 
@@ -1669,7 +1658,7 @@ CopyModMapDef(SymbolsInfo *info, ModMapEntry *entry)
     struct xkb_keymap *keymap = info->keymap;
 
     if (!entry->haveSymbol) {
-        key = FindNamedKey(keymap, entry->u.keyName, true, 0);
+        key = FindNamedKey(keymap, entry->u.keyName, true);
         if (!key) {
             log_vrb(info->keymap->ctx, 5,
                     "Key %s not found in keycodes; "
@@ -1741,7 +1730,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
 
     /* copy! */
     darray_foreach(keyi, info.keys)
-        if (!CopySymbolsDef(&info, keyi, 0))
+        if (!CopySymbolsDef(&info, keyi))
             info.errorCount++;
 
     if (xkb_get_log_verbosity(keymap->ctx) > 3) {

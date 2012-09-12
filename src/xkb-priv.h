@@ -422,11 +422,8 @@ XkbKeyGetKeycode(struct xkb_keymap *keymap, struct xkb_key *key)
     return (xkb_keycode_t)(key - keymap->keys.item);
 }
 
-#define xkb_foreach_key_from(iter, keymap, from) \
-    darray_foreach_from(iter, keymap->keys, from)
-
 #define xkb_foreach_key(iter, keymap) \
-    xkb_foreach_key_from(iter, keymap, keymap->min_key_code)
+    darray_foreach(iter, keymap->keys)
 
 static inline struct xkb_key_type *
 XkbKeyType(struct xkb_keymap *keymap, struct xkb_key *key,
