@@ -493,14 +493,18 @@ AddKeySymbols(SymbolsInfo *info, KeyInfo *keyi)
     unsigned long real_name;
     KeyInfo *iter, *new;
 
+    /*
+     * Don't keep aliases in the keys array; this guarantees that
+     * searching for keys to merge with by straight comparison (see the
+     * following loop) is enough, and we won't get multiple KeyInfo's
+     * for the same key because of aliases.
+     */
+    if (FindKeyNameForAlias(info->keymap, keyi->name, &real_name))
+        keyi->name = real_name;
+
     darray_foreach(iter, info->keys)
         if (iter->name == keyi->name)
             return MergeKeys(info, iter, keyi);
-
-    if (FindKeyNameForAlias(info->keymap, keyi->name, &real_name))
-        darray_foreach(iter, info->keys)
-            if (iter->name == real_name)
-                return MergeKeys(info, iter, keyi);
 
     darray_resize0(info->keys, darray_size(info->keys) + 1);
     new = &darray_item(info->keys, darray_size(info->keys) - 1);
@@ -1499,11 +1503,14 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
     xkb_group_index_t i, nGroups;
     xkb_level_index_t width, tmp;
     struct xkb_key_type * type;
-    bool haveActions, autoType;
-    unsigned types[XKB_NUM_GROUPS];
+    bool haveActions;
     unsigned int symIndex = 0;
 
-    key = FindNamedKey(keymap, keyi->name, true);
+    /*
+     * The name is guaranteed to be real and not an alias (see
+     * AddKeySymbols), so 'false' is safe here.
+     */
+    key = FindNamedKey(keymap, keyi->name, false);
     if (!key) {
         log_vrb(info->keymap->ctx, 5,
                 "Key %s not found in keycodes; Symbols ignored\n",
@@ -1515,11 +1522,10 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
     width = 0;
     for (i = nGroups = 0; i < XKB_NUM_GROUPS; i++) {
         GroupInfo *groupi = &keyi->groups[i];
+        bool autoType = false;
 
         if (i + 1 > nGroups && groupi->defined)
             nGroups = i + 1;
-
-        autoType = false;
 
         if (!haveActions) {
             LevelInfo *leveli;
@@ -1547,7 +1553,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
                         LongKeyNameText(keyi->name));
         }
 
-        if (FindNamedType(keymap, groupi->type, &types[i])) {
+        if (FindNamedType(keymap, groupi->type, &key->kt_index[i])) {
             if (!autoType || darray_size(groupi->levels) > 2)
                 key->explicit_groups |= (1 << i);
         }
@@ -1561,11 +1567,11 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
              * Index 0 is guaranteed to contain something, usually
              * ONE_LEVEL or at least some default one-level type.
              */
-            types[i] = 0;
+            key->kt_index[i] = 0;
         }
 
         /* if the type specifies fewer levels than the key has, shrink the key */
-        type = &keymap->types[types[i]];
+        type = &keymap->types[key->kt_index[i]];
         if (type->num_levels < darray_size(groupi->levels)) {
             log_vrb(info->keymap->ctx, 1,
                     "Type \"%s\" has %d levels, but %s has %d levels; "
@@ -1597,16 +1603,6 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
 
     for (i = 0; i < nGroups; i++) {
         GroupInfo *groupi = &keyi->groups[i];
-
-        /* assign kt_index[i] to the index of the type in map->types.
-         * kt_index[i] may have been set by a previous run (if we have two
-         * layouts specified). Let's not overwrite it with the ONE_LEVEL
-         * default group if we dont even have keys for this group anyway.
-         *
-         * FIXME: There should be a better fix for this.
-         */
-        if (!darray_empty(groupi->levels))
-            key->kt_index[i] = types[i];
 
         if (!darray_empty(groupi->syms)) {
             /* fill key to "width" symbols*/

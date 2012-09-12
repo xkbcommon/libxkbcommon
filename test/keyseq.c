@@ -137,7 +137,8 @@ main(void)
     struct xkb_keymap *keymap;
 
     assert(ctx);
-    keymap = test_compile_rules(ctx, "evdev", "evdev", "us,il", NULL,
+    keymap = test_compile_rules(ctx, "evdev", "evdev",
+                                "us,il,ru", ",,phonetic",
                                 "grp:alt_shift_toggle,grp:menu_toggle");
     assert(keymap);
 
@@ -199,6 +200,7 @@ main(void)
                         KEY_COMPOSE,  BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,
                         KEY_K,        BOTH,  XKB_KEY_hebrew_lamed,    NEXT,
                         KEY_F,        BOTH,  XKB_KEY_hebrew_kaph,     NEXT,
+                        KEY_COMPOSE,  BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,
                         KEY_COMPOSE,  BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,
                         KEY_O,        BOTH,  XKB_KEY_o,               FINISH));
 
@@ -271,6 +273,25 @@ main(void)
                         KEY_KP2,      BOTH,  XKB_KEY_KP_2,      NEXT,
                         KEY_NUMLOCK,  BOTH,  XKB_KEY_Num_Lock,  NEXT,
                         KEY_KP2,      BOTH,  XKB_KEY_KP_Down,   FINISH));
+
+    /* Test that the aliases in the ru(phonetic) symbols map work. */
+    assert(test_key_seq(keymap,
+                        KEY_COMPOSE,     BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,
+                        KEY_COMPOSE,     BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,
+                        KEY_1,           BOTH,  XKB_KEY_1,               NEXT,
+                        KEY_Q,           BOTH,  XKB_KEY_Cyrillic_ya,     NEXT,
+                        KEY_LEFTSHIFT,   DOWN,  XKB_KEY_Shift_L,         NEXT,
+                        KEY_1,           BOTH,  XKB_KEY_exclam,          NEXT,
+                        KEY_Q,           BOTH,  XKB_KEY_Cyrillic_YA,     NEXT,
+                        KEY_LEFTSHIFT,   UP,    XKB_KEY_Shift_L,         NEXT,
+                        KEY_V,           BOTH,  XKB_KEY_Cyrillic_zhe,    NEXT,
+                        KEY_CAPSLOCK,    BOTH,  XKB_KEY_Caps_Lock,       NEXT,
+                        KEY_1,           BOTH,  XKB_KEY_1,               NEXT,
+                        KEY_V,           BOTH,  XKB_KEY_Cyrillic_ZHE,    NEXT,
+                        KEY_RIGHTSHIFT,  DOWN,  XKB_KEY_Shift_R,         NEXT,
+                        KEY_V,           BOTH,  XKB_KEY_Cyrillic_zhe,    NEXT,
+                        KEY_RIGHTSHIFT,  UP,    XKB_KEY_Shift_R,         NEXT,
+                        KEY_V,           BOTH,  XKB_KEY_Cyrillic_ZHE,    FINISH));
 
     xkb_map_unref(keymap);
     xkb_context_unref(ctx);
