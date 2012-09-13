@@ -138,7 +138,7 @@ main(void)
 
     assert(ctx);
     keymap = test_compile_rules(ctx, "evdev", "evdev",
-                                "us,il,ru", ",,phonetic",
+                                "us,il,ru,de", ",,phonetic,neo",
                                 "grp:alt_shift_toggle,grp:menu_toggle");
     assert(keymap);
 
@@ -200,6 +200,7 @@ main(void)
                         KEY_COMPOSE,  BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,
                         KEY_K,        BOTH,  XKB_KEY_hebrew_lamed,    NEXT,
                         KEY_F,        BOTH,  XKB_KEY_hebrew_kaph,     NEXT,
+                        KEY_COMPOSE,  BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,
                         KEY_COMPOSE,  BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,
                         KEY_COMPOSE,  BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,
                         KEY_O,        BOTH,  XKB_KEY_o,               FINISH));
@@ -292,6 +293,79 @@ main(void)
                         KEY_V,           BOTH,  XKB_KEY_Cyrillic_zhe,    NEXT,
                         KEY_RIGHTSHIFT,  UP,    XKB_KEY_Shift_R,         NEXT,
                         KEY_V,           BOTH,  XKB_KEY_Cyrillic_ZHE,    FINISH));
+
+#define KS(name) xkb_keysym_from_name(name)
+
+    /* Test that levels (1-5) in de(neo) symbols map work. */
+    assert(test_key_seq(keymap,
+                        /* Switch to the group. */
+                        KEY_COMPOSE,     BOTH,  XKB_KEY_ISO_Next_Group,    NEXT,
+                        KEY_COMPOSE,     BOTH,  XKB_KEY_ISO_Next_Group,    NEXT,
+                        KEY_COMPOSE,     BOTH,  XKB_KEY_ISO_Next_Group,    NEXT,
+
+                        /* Level 1. */
+                        KEY_1,           BOTH,  XKB_KEY_1,                 NEXT,
+                        KEY_Q,           BOTH,  XKB_KEY_x,                 NEXT,
+                        KEY_KP7,         BOTH,  XKB_KEY_KP_7,              NEXT,
+                        KEY_ESC,         BOTH,  XKB_KEY_Escape,            NEXT,
+
+                        /* Level 2 with Shift. */
+                        KEY_LEFTSHIFT,   DOWN,  XKB_KEY_Shift_L,           NEXT,
+                        KEY_1,           BOTH,  XKB_KEY_degree,            NEXT,
+                        KEY_Q,           BOTH,  XKB_KEY_X,                 NEXT,
+                        KEY_KP7,         BOTH,  KS("U2714"),               NEXT,
+                        KEY_ESC,         BOTH,  XKB_KEY_Escape,            NEXT,
+                        /*
+                         * XXX: de(neo) uses shift(both_capslock) which causes
+                         * the interesting result in the next line. Since it's
+                         * a key release, it doesn't actually lock the modifier,
+                         * and applications by-and-large ignore the keysym on
+                         * release(?). Is this a problem?
+                         */
+                        KEY_LEFTSHIFT,   UP,    XKB_KEY_Caps_Lock,         NEXT,
+
+                        /* Level 2 with the Lock modifier. */
+                        KEY_LEFTSHIFT,   DOWN,  XKB_KEY_Shift_L,           NEXT,
+                        KEY_RIGHTSHIFT,  BOTH,  XKB_KEY_Caps_Lock,         NEXT,
+                        KEY_LEFTSHIFT,   UP,    XKB_KEY_Caps_Lock,         NEXT,
+                        KEY_6,           BOTH,  XKB_KEY_6,                 NEXT,
+                        KEY_H,           BOTH,  XKB_KEY_S,                 NEXT,
+                        KEY_KP3,         BOTH,  XKB_KEY_KP_3,              NEXT,
+                        KEY_ESC,         BOTH,  XKB_KEY_Escape,            NEXT,
+                        KEY_LEFTSHIFT,   DOWN,  XKB_KEY_Shift_L,           NEXT,
+                        KEY_RIGHTSHIFT,  BOTH,  XKB_KEY_Caps_Lock,         NEXT,
+                        KEY_LEFTSHIFT,   UP,    XKB_KEY_Caps_Lock,         NEXT,
+
+                        /* Level 3. */
+                        KEY_CAPSLOCK,    DOWN,  XKB_KEY_ISO_Level3_Shift,  NEXT,
+                        KEY_6,           BOTH,  XKB_KEY_cent,              NEXT,
+                        KEY_Q,           BOTH,  XKB_KEY_ellipsis,          NEXT,
+                        KEY_KP7,         BOTH,  KS("U2195"),               NEXT,
+                        KEY_ESC,         BOTH,  XKB_KEY_Escape,            NEXT,
+                        KEY_CAPSLOCK,    UP,    XKB_KEY_ISO_Level3_Shift,  NEXT,
+
+                        /* Level 4. */
+                        KEY_CAPSLOCK,    DOWN,  XKB_KEY_ISO_Level3_Shift,  NEXT,
+                        KEY_LEFTSHIFT,   DOWN,  XKB_KEY_Shift_L,           NEXT,
+                        KEY_5,           BOTH,  XKB_KEY_malesymbol,        NEXT,
+                        KEY_E,           BOTH,  XKB_KEY_Greek_lambda,      NEXT,
+                        KEY_SPACE,       BOTH,  XKB_KEY_nobreakspace,      NEXT,
+                        KEY_KP8,         BOTH,  XKB_KEY_intersection,      NEXT,
+                        KEY_ESC,         BOTH,  XKB_KEY_Escape,            NEXT,
+                        KEY_LEFTSHIFT,   UP,    XKB_KEY_Caps_Lock,         NEXT,
+                        KEY_CAPSLOCK,    UP,    XKB_KEY_ISO_Level3_Shift,  NEXT,
+
+                        /* Level 5. */
+                        KEY_RIGHTALT,    DOWN,  XKB_KEY_ISO_Level5_Shift,  NEXT,
+                        /*
+                         * XXX: This doesn't work, but gives level1 keysyms.
+                         * This does work when when de(neo) is the first layout
+                         * (before us,il etc.). It's like that in the X server
+                         * as well. Investigate.
+                         */
+                        KEY_RIGHTALT,    UP,    XKB_KEY_ISO_Level5_Shift,  NEXT,
+
+                        KEY_V,           BOTH,  XKB_KEY_p,               FINISH));
 
     xkb_map_unref(keymap);
     xkb_context_unref(ctx);
