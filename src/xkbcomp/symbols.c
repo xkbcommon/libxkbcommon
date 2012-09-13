@@ -1361,27 +1361,27 @@ FindNamedType(struct xkb_keymap *keymap, xkb_atom_t name, unsigned *type_rtrn)
  *        symbol per level.
  */
 static bool
-FindAutomaticType(struct xkb_keymap *keymap, xkb_level_index_t width,
+FindAutomaticType(struct xkb_context *ctx, xkb_level_index_t width,
                   const xkb_keysym_t *syms, xkb_atom_t *typeNameRtrn,
                   bool *autoType)
 {
     *autoType = false;
     if ((width == 1) || (width == 0)) {
-        *typeNameRtrn = xkb_atom_intern(keymap->ctx, "ONE_LEVEL");
+        *typeNameRtrn = xkb_atom_intern(ctx, "ONE_LEVEL");
         *autoType = true;
     }
     else if (width == 2) {
         if (syms && xkb_keysym_is_lower(syms[0]) &&
             xkb_keysym_is_upper(syms[1])) {
-            *typeNameRtrn = xkb_atom_intern(keymap->ctx, "ALPHABETIC");
+            *typeNameRtrn = xkb_atom_intern(ctx, "ALPHABETIC");
         }
         else if (syms && (xkb_keysym_is_keypad(syms[0]) ||
                           xkb_keysym_is_keypad(syms[1]))) {
-            *typeNameRtrn = xkb_atom_intern(keymap->ctx, "KEYPAD");
+            *typeNameRtrn = xkb_atom_intern(ctx, "KEYPAD");
             *autoType = true;
         }
         else {
-            *typeNameRtrn = xkb_atom_intern(keymap->ctx, "TWO_LEVEL");
+            *typeNameRtrn = xkb_atom_intern(ctx, "TWO_LEVEL");
             *autoType = true;
         }
     }
@@ -1390,16 +1390,16 @@ FindAutomaticType(struct xkb_keymap *keymap, xkb_level_index_t width,
             xkb_keysym_is_upper(syms[1]))
             if (xkb_keysym_is_lower(syms[2]) && xkb_keysym_is_upper(syms[3]))
                 *typeNameRtrn =
-                    xkb_atom_intern(keymap->ctx, "FOUR_LEVEL_ALPHABETIC");
+                    xkb_atom_intern(ctx, "FOUR_LEVEL_ALPHABETIC");
             else
-                *typeNameRtrn = xkb_atom_intern(keymap->ctx,
+                *typeNameRtrn = xkb_atom_intern(ctx,
                                                 "FOUR_LEVEL_SEMIALPHABETIC");
 
         else if (syms && (xkb_keysym_is_keypad(syms[0]) ||
                           xkb_keysym_is_keypad(syms[1])))
-            *typeNameRtrn = xkb_atom_intern(keymap->ctx, "FOUR_LEVEL_KEYPAD");
+            *typeNameRtrn = xkb_atom_intern(ctx, "FOUR_LEVEL_KEYPAD");
         else
-            *typeNameRtrn = xkb_atom_intern(keymap->ctx, "FOUR_LEVEL");
+            *typeNameRtrn = xkb_atom_intern(ctx, "FOUR_LEVEL");
         /* XXX: why not set autoType here? */
     }
     return width <= 4;
@@ -1525,7 +1525,8 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
         if (groupi->type == XKB_ATOM_NONE) {
             if (keyi->dfltType != XKB_ATOM_NONE)
                 groupi->type = keyi->dfltType;
-            else if (FindAutomaticType(keymap, darray_size(groupi->levels),
+            else if (FindAutomaticType(keymap->ctx,
+                                       darray_size(groupi->levels),
                                        darray_mem(groupi->syms, 0),
                                        &groupi->type, &autoType)) { }
             else
