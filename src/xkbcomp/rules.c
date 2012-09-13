@@ -1229,9 +1229,9 @@ xkb_components_from_rules(struct xkb_context *ctx,
     }
 
     string = mmap(NULL, stat_buf.st_size, PROT_READ, MAP_SHARED, fd, 0);
-    if (!string) {
-        log_err(ctx, "Couldn't mmap rules file (%zu bytes)\n",
-                (size_t) stat_buf.st_size);
+    if (string == MAP_FAILED) {
+        log_err(ctx, "Couldn't mmap rules file (%lld bytes)\n",
+                (long long) stat_buf.st_size);
         goto err_file;
     }
 
