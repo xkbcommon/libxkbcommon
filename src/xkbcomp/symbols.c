@@ -60,9 +60,9 @@
 #include "include.h"
 
 enum key_repeat {
+    KEY_REPEAT_UNDEFINED = 0,
     KEY_REPEAT_YES = 1,
-    KEY_REPEAT_NO = 0,
-    KEY_REPEAT_UNDEFINED = -1
+    KEY_REPEAT_NO = 2,
 };
 
 enum group_field {
@@ -121,33 +121,24 @@ ClearGroupInfo(GroupInfo *groupi)
 {
     darray_free(groupi->syms);
     darray_free(groupi->levels);
-    InitGroupInfo(groupi);
 }
 
 static void
 InitKeyInfo(KeyInfo *keyi, unsigned file_id)
 {
-    xkb_group_index_t i;
-    static const char dflt[4] = "*";
+    static const char dflt_key_name[XKB_KEY_NAME_LENGTH] = "*";
 
-    keyi->defined = 0;
+    memset(keyi, 0, sizeof(*keyi));
     keyi->file_id = file_id;
     keyi->merge = MERGE_OVERRIDE;
-    keyi->name = KeyNameToLong(dflt);
-    for (i = 0; i < XKB_NUM_GROUPS; i++)
-        InitGroupInfo(&keyi->groups[i]);
-    keyi->dfltType = XKB_ATOM_NONE;
-    keyi->vmodmap = 0;
-    keyi->repeat = KEY_REPEAT_UNDEFINED;
+    keyi->name = KeyNameToLong(dflt_key_name);
     keyi->out_of_range_group_action = RANGE_WRAP;
-    keyi->out_of_range_group_number = 0;
 }
 
 static void
 ClearKeyInfo(KeyInfo *keyi)
 {
     xkb_group_index_t i;
-
     for (i = 0; i < XKB_NUM_GROUPS; i++)
         ClearGroupInfo(&keyi->groups[i]);
 }
@@ -184,35 +175,25 @@ static void
 InitSymbolsInfo(SymbolsInfo *info, struct xkb_keymap *keymap,
                 unsigned file_id, ActionsInfo *actions)
 {
-    xkb_group_index_t i;
-
-    info->name = NULL;
-    info->explicit_group = 0;
-    info->errorCount = 0;
+    memset(info, 0, sizeof(*info));
+    info->keymap = keymap;
     info->file_id = file_id;
     info->merge = MERGE_OVERRIDE;
-    darray_init(info->keys);
     darray_growalloc(info->keys, 110);
-    darray_init(info->modMaps);
-    for (i = 0; i < XKB_NUM_GROUPS; i++)
-        info->groupNames[i] = XKB_ATOM_NONE;
     InitKeyInfo(&info->dflt, file_id);
     InitVModInfo(&info->vmods, keymap);
     info->actions = actions;
-    info->keymap = keymap;
 }
 
 static void
 ClearSymbolsInfo(SymbolsInfo * info)
 {
     KeyInfo *keyi;
-
     free(info->name);
     darray_foreach(keyi, info->keys)
         ClearKeyInfo(keyi);
     darray_free(info->keys);
     darray_free(info->modMaps);
-    memset(info, 0, sizeof(SymbolsInfo));
 }
 
 static bool
@@ -462,6 +443,7 @@ MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from)
                  (clobber ? "first" : "last"));
 
     ClearKeyInfo(from);
+    InitKeyInfo(from, info->file_id);
     return true;
 }
 

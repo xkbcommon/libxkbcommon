@@ -262,16 +262,11 @@ AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
 }
 
 static void
-ClearKeyNamesInfo(KeyNamesInfo * info)
+ClearKeyNamesInfo(KeyNamesInfo *info)
 {
     free(info->name);
-    info->name = NULL;
-    info->merge = MERGE_DEFAULT;
-    info->computedMax = info->explicitMax = info->explicitMin = 0;
-    info->computedMin = XKB_KEYCODE_MAX;
     darray_free(info->names);
     darray_free(info->files);
-    memset(info->indicator_names, 0, sizeof(info->indicator_names));
     darray_free(info->aliases);
 }
 
@@ -279,15 +274,11 @@ static void
 InitKeyNamesInfo(KeyNamesInfo *info, struct xkb_context *ctx,
                  unsigned file_id)
 {
-    info->name = NULL;
-    info->merge = MERGE_DEFAULT;
-    darray_init(info->aliases);
-    info->file_id = file_id;
-    darray_init(info->names);
-    darray_init(info->files);
-    ClearKeyNamesInfo(info);
-    info->errorCount = 0;
+    memset(info, 0, sizeof(*info));
     info->ctx = ctx;
+    info->merge = MERGE_DEFAULT;
+    info->file_id = file_id;
+    info->computedMin = XKB_KEYCODE_MAX;
 }
 
 static int

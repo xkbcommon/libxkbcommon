@@ -34,17 +34,10 @@ InitVModInfo(VModInfo *info, struct xkb_keymap *keymap)
 {
     xkb_group_index_t i;
 
-    info->defined = info->available = 0;
-
+    memset(info, 0, sizeof(*info));
     for (i = 0; i < XKB_NUM_VIRTUAL_MODS; i++)
         if (keymap->vmod_names[i])
             info->defined |= (1 << i);
-}
-
-void
-ClearVModInfo(VModInfo *info)
-{
-    info->defined = info->available = 0;
 }
 
 bool

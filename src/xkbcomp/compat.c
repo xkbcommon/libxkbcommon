@@ -251,23 +251,15 @@ static void
 InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id,
                ActionsInfo *actions)
 {
+    memset(info, 0, sizeof(*info));
     info->keymap = keymap;
-    info->name = NULL;
     info->file_id = file_id;
-    info->errorCount = 0;
-    darray_init(info->interps);
     info->actions = actions;
     info->dflt.file_id = file_id;
-    info->dflt.defined = 0;
     info->dflt.merge = MERGE_OVERRIDE;
-    info->dflt.interp.repeat = false;
     info->dflt.interp.virtual_mod = XKB_MOD_INVALID;
-    memset(&info->dflt.interp.act, 0, sizeof(info->dflt.interp.act));
-    info->dflt.interp.act.type = ACTION_TYPE_NONE;
-    memset(&info->ledDflt, 0, sizeof(info->ledDflt));
     info->ledDflt.file_id = file_id;
     info->ledDflt.merge = MERGE_OVERRIDE;
-    darray_init(info->leds);
     InitVModInfo(&info->vmods, keymap);
 }
 
@@ -275,19 +267,8 @@ static void
 ClearCompatInfo(CompatInfo *info)
 {
     free(info->name);
-    info->name = NULL;
-    info->dflt.defined = 0;
-    info->dflt.merge = MERGE_AUGMENT;
-    info->dflt.interp.repeat = false;
-    info->dflt.interp.virtual_mod = XKB_MOD_INVALID;
-    memset(&info->dflt.interp.act, 0, sizeof(info->dflt.interp.act));
-    info->dflt.interp.act.type = ACTION_TYPE_NONE;
-    memset(&info->ledDflt, 0, sizeof(info->ledDflt));
     darray_free(info->interps);
     darray_free(info->leds);
-    info->actions = NULL;
-    info->keymap = NULL;
-    ClearVModInfo(&info->vmods);
 }
 
 static SymInterpInfo *

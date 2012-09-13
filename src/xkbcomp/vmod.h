@@ -35,9 +35,6 @@ typedef struct _VModInfo {
 void
 InitVModInfo(VModInfo *info, struct xkb_keymap *keymap);
 
-void
-ClearVModInfo(VModInfo *info);
-
 bool
 HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
               enum merge_mode mergeMode, VModInfo *info);

@@ -216,12 +216,10 @@ static void
 InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
                  unsigned file_id)
 {
-    info->name = NULL;
-    info->errorCount = 0;
-    darray_init(info->types);
+    memset(info, 0, sizeof(*info));
+    info->keymap = keymap;
     info->file_id = file_id;
     InitVModInfo(&info->vmods, keymap);
-    info->keymap = keymap;
 }
 
 static void
@@ -232,10 +230,9 @@ ClearKeyTypeInfo(KeyTypeInfo *type)
 }
 
 static void
-FreeKeyTypesInfo(KeyTypesInfo * info)
+ClearKeyTypesInfo(KeyTypesInfo *info)
 {
     free(info->name);
-    info->name = NULL;
     darray_free(info->types);
 }
 
@@ -336,7 +333,7 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *stmt)
         if (!ProcessIncludeFile(info->keymap->ctx, stmt, FILE_TYPE_TYPES,
                                 &rtrn, &merge)) {
             info->errorCount += 10;
-            FreeKeyTypesInfo(&included);
+            ClearKeyTypesInfo(&included);
             return false;
         }
 
@@ -346,12 +343,12 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *stmt)
 
         MergeIncludedKeyTypes(&included, &next_incl, merge);
 
-        FreeKeyTypesInfo(&next_incl);
+        ClearKeyTypesInfo(&next_incl);
         FreeXkbFile(rtrn);
     }
 
     MergeIncludedKeyTypes(info, &included, merge);
-    FreeKeyTypesInfo(&included);
+    ClearKeyTypesInfo(&included);
 
     return (info->errorCount == 0);
 }
@@ -851,10 +848,10 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
     if (!CopyKeyTypesToKeymap(keymap, &info))
         goto err_info;
 
-    FreeKeyTypesInfo(&info);
+    ClearKeyTypesInfo(&info);
     return true;
 
 err_info:
-    FreeKeyTypesInfo(&info);
+    ClearKeyTypesInfo(&info);
     return false;
 }
