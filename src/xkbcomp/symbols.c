@@ -1611,7 +1611,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
 
                 if (key->actions && leveli &&
                     leveli->act.type != ACTION_TYPE_NONE)
-                    key->actions[tmp] = leveli->act;
+                    key->actions[i * width + tmp] = leveli->act;
             }
         }
     }
