@@ -1483,12 +1483,10 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
 {
     struct xkb_keymap *keymap = info->keymap;
     struct xkb_key *key;
-    unsigned int sizeSyms = 0;
-    xkb_group_index_t i, nGroups;
-    xkb_level_index_t width, tmp;
-    struct xkb_key_type * type;
+    xkb_group_index_t i;
     bool haveActions;
-    unsigned int symIndex = 0;
+    unsigned int sizeSyms;
+    unsigned int symIndex;
 
     /*
      * The name is guaranteed to be real and not an alias (see
@@ -1502,26 +1500,39 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
         return false;
     }
 
+    /*
+     * Find the range of groups we need. (There shouldn't be any gaps,
+     * see PrepareKeyDef).
+     */
+    key->num_groups = 0;
+    for (i = 0; i < XKB_NUM_GROUPS; i++)
+        if (keyi->groups[i].defined)
+            key->num_groups = i + 1;
+
+    /* See if we need to allocate an actions array. */
     haveActions = false;
-    width = 0;
-    for (i = nGroups = 0; i < XKB_NUM_GROUPS; i++) {
+    for (i = 0; i < key->num_groups; i++) {
+        LevelInfo *leveli;
+        darray_foreach(leveli, keyi->groups[i].levels) {
+            if (leveli->act.type != ACTION_TYPE_NONE) {
+                haveActions = true;
+                goto out_of_loops;
+            }
+        }
+    }
+out_of_loops:
+
+    /*
+     * Find and assign the groups' types in the keymap. Also find the
+     * key width according to the largest type.
+     */
+    key->width = 0;
+    for (i = 0; i < key->num_groups; i++) {
+        struct xkb_key_type *type;
         GroupInfo *groupi = &keyi->groups[i];
         bool autoType = false;
 
-        if (i + 1 > nGroups && groupi->defined)
-            nGroups = i + 1;
-
-        if (!haveActions) {
-            LevelInfo *leveli;
-            darray_foreach(leveli, groupi->levels) {
-                if (leveli->act.type != ACTION_TYPE_NONE) {
-                    haveActions = true;
-                    break;
-                }
-            }
-        }
-
-        /* Assign the type to the key, if it is missing. */
+        /* Find the type of the group, if it is missing. */
         if (groupi->type == XKB_ATOM_NONE) {
             if (keyi->dfltType != XKB_ATOM_NONE)
                 groupi->type = keyi->dfltType;
@@ -1538,6 +1549,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
                         LongKeyNameText(keyi->name));
         }
 
+        /* Find the type in the keymap, if it was defined in xkb_types. */
         if (FindNamedType(keymap, groupi->type, &key->kt_index[i])) {
             if (!autoType || darray_size(groupi->levels) > 2)
                 key->explicit_groups |= (1 << i);
@@ -1555,7 +1567,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
             key->kt_index[i] = 0;
         }
 
-        /* if the type specifies fewer levels than the key has, shrink the key */
+        /* If the type specifies fewer levels than the key has, shrink the key. */
         type = &keymap->types[key->kt_index[i]];
         if (type->num_levels < darray_size(groupi->levels)) {
             log_vrb(info->keymap->ctx, 1,
@@ -1568,55 +1580,35 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
             darray_resize(groupi->levels, type->num_levels);
         }
 
-        width = MAX(width, type->num_levels);
-        sizeSyms += darray_size(groupi->syms);
+        /*
+         * Why type->num_levels and not darray_size(groupi->levels)?
+         * Because the type may have more levels, and each group must
+         * have at least as many levels as its type. Because the
+         * key->syms array is indexed by (group * width + level), we
+         * must take the largest one.
+         * Maybe we can change it to save some space.
+         */
+        key->width = MAX(key->width, type->num_levels);
     }
 
+    /* Find the size of the syms array. */
+    sizeSyms = 0;
+    for (i = 0; i < key->num_groups; i++)
+        sizeSyms += darray_size(keyi->groups[i].syms);
+
+    /* Initialize the xkb_key, now that we know the sizes. */
     key->syms = calloc(sizeSyms, sizeof(*key->syms));
-    key->num_groups = nGroups;
-    key->width = width;
-    key->sym_index = calloc(nGroups * width, sizeof(*key->sym_index));
-    key->num_syms = calloc(nGroups * width, sizeof(*key->num_syms));
-
-    if (haveActions) {
-        key->actions = calloc(nGroups * width, sizeof(*key->actions));
-        key->explicit |= EXPLICIT_INTERP;
-    }
-
+    key->sym_index = calloc(key->num_groups * key->width,
+                            sizeof(*key->sym_index));
+    key->num_syms = calloc(key->num_groups * key->width,
+                           sizeof(*key->num_syms));
     key->out_of_range_group_number = keyi->out_of_range_group_number;
     key->out_of_range_group_action = keyi->out_of_range_group_action;
-
-    for (i = 0; i < nGroups; i++) {
-        GroupInfo *groupi = &keyi->groups[i];
-
-        if (!darray_empty(groupi->syms)) {
-            /* fill key to "width" symbols*/
-            for (tmp = 0; tmp < width; tmp++) {
-                LevelInfo *leveli = NULL;
-
-                if (tmp < darray_size(groupi->levels))
-                    leveli = &darray_item(groupi->levels, tmp);
-
-                if (leveli && leveli->num_syms != 0) {
-                    memcpy(&key->syms[symIndex],
-                           &darray_item(groupi->syms, leveli->sym_index),
-                           leveli->num_syms * sizeof(*key->syms));
-                    key->sym_index[(i * width) + tmp] = symIndex;
-                    key->num_syms[(i * width) + tmp] = leveli->num_syms;
-                    symIndex += key->num_syms[(i * width) + tmp];
-                }
-                else {
-                    key->sym_index[(i * width) + tmp] = 0;
-                    key->num_syms[(i * width) + tmp] = 0;
-                }
-
-                if (key->actions && leveli &&
-                    leveli->act.type != ACTION_TYPE_NONE)
-                    key->actions[i * width + tmp] = leveli->act;
-            }
-        }
+    if (haveActions) {
+        key->actions = calloc(key->num_groups * key->width,
+                              sizeof(*key->actions));
+        key->explicit |= EXPLICIT_INTERP;
     }
-
     if (keyi->defined & KEY_FIELD_VMODMAP) {
         key->vmodmap = keyi->vmodmap;
         key->explicit |= EXPLICIT_VMODMAP;
@@ -1625,6 +1617,31 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
     if (keyi->repeat != KEY_REPEAT_UNDEFINED) {
         key->repeats = (keyi->repeat == KEY_REPEAT_YES);
         key->explicit |= EXPLICIT_REPEAT;
+    }
+
+    /* Copy keysyms and actions. */
+    symIndex = 0;
+    for (i = 0; i < key->num_groups; i++) {
+        GroupInfo *groupi = &keyi->groups[i];
+        xkb_level_index_t j;
+
+        /* We rely on calloc having zeroized the arrays up to key->width. */
+        for (j = 0; j < darray_size(groupi->levels); j++) {
+            LevelInfo *leveli = &darray_item(groupi->levels, j);
+
+            if (leveli->act.type != ACTION_TYPE_NONE)
+                key->actions[i * key->width + j] = leveli->act;
+
+            if (leveli->num_syms <= 0)
+                continue;
+
+            memcpy(&key->syms[symIndex],
+                   &darray_item(groupi->syms, leveli->sym_index),
+                   leveli->num_syms * sizeof(*key->syms));
+            key->sym_index[i * key->width + j] = symIndex;
+            key->num_syms[i * key->width + j] = leveli->num_syms;
+            symIndex += key->num_syms[i * key->width + j];
+        }
     }
 
     return true;
