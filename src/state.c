@@ -182,25 +182,17 @@ xkb_filter_group_set_func(struct xkb_state *state,
     return 1;
 }
 
-static int
-xkb_filter_group_set_new(struct xkb_state *state,
-                         struct xkb_filter *filter,
-                         const struct xkb_key *key,
-                         const union xkb_action *action)
+static void
+xkb_filter_group_set_new(struct xkb_state *state, struct xkb_filter *filter)
 {
-    filter->key = key;
-    filter->func = xkb_filter_group_set_func;
-    filter->action = *action;
-
-    if (action->group.flags & ACTION_ABSOLUTE_SWITCH) {
+    if (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH) {
+        xkb_group_index_t tmp = filter->action.group.group;
         filter->action.group.group = state->base_group;
-        state->base_group = action->group.group;
+        state->base_group = tmp;
     }
     else {
-        state->base_group += action->group.group;
+        state->base_group += filter->action.group.group;
     }
-
-    return 1;
 }
 
 static int
@@ -223,22 +215,13 @@ xkb_filter_group_lock_func(struct xkb_state *state,
     return 1;
 }
 
-static int
-xkb_filter_group_lock_new(struct xkb_state *state,
-                          struct xkb_filter *filter,
-                          const struct xkb_key *key,
-                          const union xkb_action *action)
+static void
+xkb_filter_group_lock_new(struct xkb_state *state, struct xkb_filter *filter)
 {
-    filter->key = key;
-    filter->func = xkb_filter_group_lock_func;
-    filter->action = *action;
-
-    if (action->group.flags & ACTION_ABSOLUTE_SWITCH)
-        state->locked_group = action->group.group;
+    if (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH)
+        state->locked_group = filter->action.group.group;
     else
-        state->locked_group += action->group.group;
-
-    return 1;
+        state->locked_group += filter->action.group.group;
 }
 
 static int
@@ -268,19 +251,10 @@ xkb_filter_mod_set_func(struct xkb_state *state,
     return 1;
 }
 
-static int
-xkb_filter_mod_set_new(struct xkb_state *state,
-                       struct xkb_filter *filter,
-                       const struct xkb_key *key,
-                       const union xkb_action *action)
+static void
+xkb_filter_mod_set_new(struct xkb_state *state, struct xkb_filter *filter)
 {
-    filter->key = key;
-    filter->func = xkb_filter_mod_set_func;
-    filter->action = *action;
-
-    state->set_mods = action->mods.mods.mask;
-
-    return 1;
+    state->set_mods = filter->action.mods.mods.mask;
 }
 
 static int
@@ -305,20 +279,11 @@ xkb_filter_mod_lock_func(struct xkb_state *state,
     return 1;
 }
 
-static int
-xkb_filter_mod_lock_new(struct xkb_state *state,
-                        struct xkb_filter *filter,
-                        const struct xkb_key *key,
-                        const union xkb_action *action)
+static void
+xkb_filter_mod_lock_new(struct xkb_state *state, struct xkb_filter *filter)
 {
-    filter->key = key;
-    filter->func = xkb_filter_mod_lock_func;
-    filter->action = *action;
-    filter->priv = state->locked_mods & action->mods.mods.mask;
-
-    state->locked_mods |= action->mods.mods.mask;
-
-    return 1;
+    filter->priv = state->locked_mods & filter->action.mods.mods.mask;
+    state->locked_mods |= filter->action.mods.mods.mask;
 }
 
 enum xkb_key_latch_state {
@@ -425,36 +390,28 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
     return 1;
 }
 
-static int
-xkb_filter_mod_latch_new(struct xkb_state *state,
-                         struct xkb_filter *filter,
-                         const struct xkb_key *key,
-                         const union xkb_action *action)
+static void
+xkb_filter_mod_latch_new(struct xkb_state *state, struct xkb_filter *filter)
 {
-    enum xkb_key_latch_state latch = LATCH_KEY_DOWN;
-
-    filter->key = key;
-    filter->priv = latch;
-    filter->func = xkb_filter_mod_latch_func;
-    filter->action = *action;
-
-    state->set_mods = action->mods.mods.mask;
-
-    return 1;
+    filter->priv = LATCH_KEY_DOWN;
+    state->set_mods = filter->action.mods.mods.mask;
 }
 
-typedef int (*filter_action_new_func_t)(struct xkb_state *state,
-                                        struct xkb_filter *filter,
-                                        const struct xkb_key *key,
-                                        const union xkb_action *action);
-
-static const filter_action_new_func_t
-filter_action_new_funcs[_ACTION_TYPE_NUM_ENTRIES] = {
-    [ACTION_TYPE_MOD_SET] = xkb_filter_mod_set_new,
-    [ACTION_TYPE_MOD_LATCH] = xkb_filter_mod_latch_new,
-    [ACTION_TYPE_MOD_LOCK] = xkb_filter_mod_lock_new,
-    [ACTION_TYPE_GROUP_SET] = xkb_filter_group_set_new,
-    [ACTION_TYPE_GROUP_LOCK] = xkb_filter_group_lock_new,
+static const struct {
+    void (*new)(struct xkb_state *state, struct xkb_filter *filter);
+    int (*func)(struct xkb_state *state, struct xkb_filter *filter,
+                const struct xkb_key *key, enum xkb_key_direction direction);
+} filter_action_funcs[_ACTION_TYPE_NUM_ENTRIES] = {
+    [ACTION_TYPE_MOD_SET]    = { xkb_filter_mod_set_new,
+                                 xkb_filter_mod_set_func },
+    [ACTION_TYPE_MOD_LATCH]  = { xkb_filter_mod_latch_new,
+                                 xkb_filter_mod_latch_func },
+    [ACTION_TYPE_MOD_LOCK]   = { xkb_filter_mod_lock_new,
+                                 xkb_filter_mod_lock_func },
+    [ACTION_TYPE_GROUP_SET]  = { xkb_filter_group_set_new,
+                                 xkb_filter_group_set_func },
+    [ACTION_TYPE_GROUP_LOCK] = { xkb_filter_group_lock_new,
+                                 xkb_filter_group_lock_func },
 };
 
 /**
@@ -468,7 +425,7 @@ xkb_filter_apply_all(struct xkb_state *state,
                      enum xkb_key_direction direction)
 {
     struct xkb_filter *filter;
-    const union xkb_action *act = NULL;
+    const union xkb_action *action;
     int send = 1;
 
     /* First run through all the currently active filters and see if any of
@@ -482,16 +439,18 @@ xkb_filter_apply_all(struct xkb_state *state,
     if (!send || direction == XKB_KEY_UP)
         return;
 
-    act = xkb_key_get_action(state, key);
-    if (filter_action_new_funcs[act->type]) {
-        filter = xkb_filter_new(state);
-        if (!filter)
-            goto err;
-        send = filter_action_new_funcs[act->type](state, filter, key, act);
-    }
+    action = xkb_key_get_action(state, key);
+    if (!filter_action_funcs[action->type].new)
+        return;
 
-err:
-    return;
+    filter = xkb_filter_new(state);
+    if (!filter)
+        return; /* WSGO */
+
+    filter->key = key;
+    filter->func = filter_action_funcs[action->type].func;
+    filter->action = *action;
+    filter_action_funcs[action->type].new(state, filter);
 }
 
 XKB_EXPORT struct xkb_state *
