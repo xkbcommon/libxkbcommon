@@ -129,8 +129,8 @@ typedef struct _KeyNamesInfo {
     unsigned file_id;
     enum merge_mode merge;
 
-    xkb_keycode_t computedMin; /* lowest keycode stored */
-    xkb_keycode_t computedMax; /* highest keycode stored */
+    xkb_keycode_t min_key_code;
+    xkb_keycode_t max_key_code;
     darray(unsigned long) names;
     darray(unsigned int) files;
     IndicatorNameInfo indicator_names[XKB_NUM_INDICATORS];
@@ -265,7 +265,7 @@ InitKeyNamesInfo(KeyNamesInfo *info, struct xkb_context *ctx,
     info->ctx = ctx;
     info->merge = MERGE_DEFAULT;
     info->file_id = file_id;
-    info->computedMin = XKB_KEYCODE_MAX;
+    info->min_key_code = XKB_KEYCODE_MAX;
 }
 
 static int
@@ -273,7 +273,7 @@ FindKeyByLong(KeyNamesInfo * info, unsigned long name)
 {
     xkb_keycode_t i;
 
-    for (i = info->computedMin; i <= info->computedMax; i++)
+    for (i = info->min_key_code; i <= info->max_key_code; i++)
         if (darray_item(info->names, i) == name)
             return i;
 
@@ -294,10 +294,8 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, unsigned long name,
 
     ResizeKeyNameArrays(info, kc);
 
-    if (kc < info->computedMin)
-        info->computedMin = kc;
-    if (kc > info->computedMax)
-        info->computedMax = kc;
+    info->min_key_code = MIN(info->min_key_code, kc);
+    info->max_key_code = MAX(info->max_key_code, kc);
 
     if (reportCollisions)
         reportCollisions = (verbosity > 7 ||
@@ -405,9 +403,9 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
         from->name = NULL;
     }
 
-    ResizeKeyNameArrays(into, from->computedMax);
+    ResizeKeyNameArrays(into, from->max_key_code);
 
-    for (i = from->computedMin; i <= from->computedMax; i++) {
+    for (i = from->min_key_code; i <= from->max_key_code; i++) {
         unsigned long name = darray_item(from->names, i);
         if (name == 0)
             continue;
@@ -697,11 +695,11 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
     xkb_keycode_t kc;
     xkb_led_index_t idx;
 
-    keymap->min_key_code = info->computedMin;
-    keymap->max_key_code = info->computedMax;
+    keymap->min_key_code = info->min_key_code;
+    keymap->max_key_code = info->max_key_code;
 
     darray_resize0(keymap->keys, keymap->max_key_code + 1);
-    for (kc = info->computedMin; kc <= info->computedMax; kc++)
+    for (kc = info->min_key_code; kc <= info->max_key_code; kc++)
         LongToKeyName(darray_item(info->names, kc),
                       darray_item(keymap->keys, kc).name);
 
