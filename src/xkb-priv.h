@@ -150,7 +150,7 @@ enum xkb_action_type {
     ACTION_TYPE_CTRL_LOCK,
     ACTION_TYPE_KEY_REDIRECT,
     ACTION_TYPE_PRIVATE,
-    ACTION_TYPE_LAST
+    _ACTION_TYPE_NUM_ENTRIES
 };
 
 enum xkb_action_flags {

@@ -107,8 +107,7 @@ NewActionsInfo(void)
     if (!info)
         return NULL;
 
-    /* This includes PrivateAction. */
-    for (type = 0; type < ACTION_TYPE_LAST; type++)
+    for (type = 0; type < _ACTION_TYPE_NUM_ENTRIES; type++)
         info->actions[type].type = type;
 
     /* Apply some "factory defaults". */
@@ -815,7 +814,7 @@ typedef bool (*actionHandler)(struct xkb_keymap *keymap,
                               const ExprDef *array_ndx,
                               const ExprDef *value);
 
-static const actionHandler handleAction[ACTION_TYPE_LAST] = {
+static const actionHandler handleAction[_ACTION_TYPE_NUM_ENTRIES] = {
     [ACTION_TYPE_NONE] = HandleNoAction,
     [ACTION_TYPE_MOD_SET] = HandleSetLatchMods,
     [ACTION_TYPE_MOD_LATCH] = HandleSetLatchMods,
