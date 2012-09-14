@@ -40,17 +40,6 @@
  * of up to 4 letters, by which it can be referred to later, e.g. in the
  * symbols section.
  *
- * Minimum/Maximum keycode
- * -----------------------
- * Statements of the form:
- *      minimum = 8;
- *      maximum = 255;
- *
- * The file may explicitly declare the minimum and/or maximum keycode
- * contained therein (traditionally 8-255, inherited from old xfree86
- * keycodes). If these are stated explicitly, they are enforced. If
- * they are not stated, they are computed automatically.
- *
  * Keycode statements
  * ------------------
  * Statements of the form:
@@ -142,8 +131,6 @@ typedef struct _KeyNamesInfo {
 
     xkb_keycode_t computedMin; /* lowest keycode stored */
     xkb_keycode_t computedMax; /* highest keycode stored */
-    xkb_keycode_t explicitMin;
-    xkb_keycode_t explicitMax;
     darray(unsigned long) names;
     darray(unsigned int) files;
     IndicatorNameInfo indicator_names[XKB_NUM_INDICATORS];
@@ -441,14 +428,6 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
 
     if (!MergeAliases(into, from, merge))
         into->errorCount++;
-
-    if (from->explicitMin != 0)
-        if (into->explicitMin == 0 || into->explicitMin > from->explicitMin)
-            into->explicitMin = from->explicitMin;
-
-    if (from->explicitMax > 0)
-        if (into->explicitMax == 0 || into->explicitMax < from->explicitMax)
-            into->explicitMax = from->explicitMax;
 }
 
 static void
@@ -495,15 +474,6 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *stmt)
 static int
 HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt, enum merge_mode merge)
 {
-    if ((info->explicitMin != 0 && stmt->value < info->explicitMin) ||
-        (info->explicitMax != 0 && stmt->value > info->explicitMax)) {
-        log_err(info->ctx, "Illegal keycode %lu for name %s; "
-                "Must be in the range %d-%d inclusive\n",
-                stmt->value, KeyNameText(stmt->name), info->explicitMin,
-                info->explicitMax ? info->explicitMax : XKB_KEYCODE_MAX);
-        return 0;
-    }
-
     if (stmt->merge != MERGE_DEFAULT) {
         if (stmt->merge == MERGE_REPLACE)
             merge = MERGE_OVERRIDE;
@@ -566,16 +536,11 @@ HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge,
     return true;
 }
 
-#define MIN_KEYCODE_DEF 0
-#define MAX_KEYCODE_DEF 1
-
 static int
 HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
 {
     const char *elem, *field;
-    xkb_keycode_t kc;
     ExprDef *arrayNdx;
-    int which;
 
     if (!ExprResolveLhs(info->ctx, stmt->name, &elem, &field, &arrayNdx))
         return false;
@@ -586,77 +551,13 @@ HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
         return false;
     }
 
-    if (istreq(field, "minimum")) {
-        which = MIN_KEYCODE_DEF;
-    }
-    else if (istreq(field, "maximum")) {
-        which = MAX_KEYCODE_DEF;
-    }
-    else {
+    if (!istreq(field, "minimum") && !istreq(field, "maximum")) {
         log_err(info->ctx, "Unknown field encountered; "
                 "Assigment to field %s ignored\n", field);
         return false;
     }
 
-    if (arrayNdx != NULL) {
-        log_err(info->ctx, "The %s setting is not an array; "
-                "Illegal array reference ignored\n", field);
-        return false;
-    }
-
-    if (!ExprResolveKeyCode(info->ctx, stmt->value, &kc)) {
-        log_err(info->ctx, "Illegal keycode encountered; "
-                "Assignment to field %s ignored\n", field);
-        return false;
-    }
-
-    if (kc > XKB_KEYCODE_MAX) {
-        log_err(info->ctx,
-                "Illegal keycode %d (must be in the range %d-%d inclusive); "
-                "Value of \"%s\" not changed\n",
-                kc, 0, XKB_KEYCODE_MAX, field);
-        return false;
-    }
-
-    if (which == MIN_KEYCODE_DEF) {
-        if (info->explicitMax > 0 && info->explicitMax < kc) {
-            log_err(info->ctx,
-                    "Minimum key code (%d) must be <= maximum key code (%d); "
-                    "Minimum key code value not changed\n",
-                    kc, info->explicitMax);
-            return false;
-        }
-
-        if (info->computedMax > 0 && info->computedMin < kc) {
-            log_err(info->ctx,
-                    "Minimum key code (%d) must be <= lowest defined key (%d); "
-                    "Minimum key code value not changed\n",
-                    kc, info->computedMin);
-            return false;
-        }
-
-        info->explicitMin = kc;
-    }
-    else if (which == MAX_KEYCODE_DEF) {
-        if (info->explicitMin > 0 && info->explicitMin > kc) {
-            log_err(info->ctx,
-                    "Maximum code (%d) must be >= minimum key code (%d); "
-                    "Maximum code value not changed\n",
-                    kc, info->explicitMin);
-            return false;
-        }
-
-        if (info->computedMax > 0 && info->computedMax > kc) {
-            log_err(info->ctx,
-                    "Maximum code (%d) must be >= highest defined key (%d); "
-                    "Maximum code value not changed\n",
-                    kc, info->computedMax);
-            return false;
-        }
-
-        info->explicitMax = kc;
-    }
-
+    /* We ignore explicit min/max statements, we always use computed. */
     return true;
 }
 
@@ -796,15 +697,8 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
     xkb_keycode_t kc;
     xkb_led_index_t idx;
 
-    if (info->explicitMin > 0)
-        keymap->min_key_code = info->explicitMin;
-    else
-        keymap->min_key_code = info->computedMin;
-
-    if (info->explicitMax > 0)
-        keymap->max_key_code = info->explicitMax;
-    else
-        keymap->max_key_code = info->computedMax;
+    keymap->min_key_code = info->computedMin;
+    keymap->max_key_code = info->computedMax;
 
     darray_resize0(keymap->keys, keymap->max_key_code + 1);
     for (kc = info->computedMin; kc <= info->computedMax; kc++)

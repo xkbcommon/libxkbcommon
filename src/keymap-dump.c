@@ -239,11 +239,6 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
     else
         write_buf(buf, "\txkb_keycodes {\n");
 
-    write_buf(buf, "\t\tminimum = %d;\n",
-              keymap->min_key_code);
-    write_buf(buf, "\t\tmaximum = %d;\n",
-              keymap->max_key_code);
-
     xkb_foreach_key(key, keymap) {
         if (key->name[0] == '\0')
             continue;
