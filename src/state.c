@@ -457,6 +457,19 @@ xkb_filter_mod_latch_new(struct xkb_state *state,
     return 1;
 }
 
+typedef int (*filter_action_new_func_t)(struct xkb_state *state,
+                                        const struct xkb_key *key,
+                                        const union xkb_action *action);
+
+static const filter_action_new_func_t
+filter_action_new_funcs[_ACTION_TYPE_NUM_ENTRIES] = {
+    [ACTION_TYPE_MOD_SET] = xkb_filter_mod_set_new,
+    [ACTION_TYPE_MOD_LATCH] = xkb_filter_mod_latch_new,
+    [ACTION_TYPE_MOD_LOCK] = xkb_filter_mod_lock_new,
+    [ACTION_TYPE_GROUP_SET] = xkb_filter_group_set_new,
+    [ACTION_TYPE_GROUP_LOCK] = xkb_filter_group_lock_new,
+};
+
 /**
  * Applies any relevant filters to the key, first from the list of filters
  * that are currently active, then if no filter has claimed the key, possibly
@@ -483,32 +496,8 @@ xkb_filter_apply_all(struct xkb_state *state,
         return;
 
     act = xkb_key_get_action(state, key);
-    switch (act->type) {
-    case ACTION_TYPE_MOD_SET:
-        send = xkb_filter_mod_set_new(state, key, act);
-        break;
-    case ACTION_TYPE_MOD_LATCH:
-        send = xkb_filter_mod_latch_new(state, key, act);
-        break;
-    case ACTION_TYPE_MOD_LOCK:
-        send = xkb_filter_mod_lock_new(state, key, act);
-        break;
-    case ACTION_TYPE_GROUP_SET:
-        send = xkb_filter_group_set_new(state, key, act);
-        break;
-#if 0
-    case ACTION_TYPE_GROUP_LATCH:
-        send = xkb_filter_mod_latch_new(state, key, act);
-        break;
-#endif
-    case ACTION_TYPE_GROUP_LOCK:
-        send = xkb_filter_group_lock_new(state, key, act);
-        break;
-    default:
-        break;
-    }
-
-    return;
+    if (filter_action_new_funcs[act->type])
+        send = filter_action_new_funcs[act->type](state, key, act);
 }
 
 XKB_EXPORT struct xkb_state *
