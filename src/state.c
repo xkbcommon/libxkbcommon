@@ -184,13 +184,10 @@ xkb_filter_group_set_func(struct xkb_state *state,
 
 static int
 xkb_filter_group_set_new(struct xkb_state *state,
+                         struct xkb_filter *filter,
                          const struct xkb_key *key,
                          const union xkb_action *action)
 {
-    struct xkb_filter *filter = xkb_filter_new(state);
-    if (!filter)
-        return -1;
-
     filter->key = key;
     filter->func = xkb_filter_group_set_func;
     filter->action = *action;
@@ -228,13 +225,10 @@ xkb_filter_group_lock_func(struct xkb_state *state,
 
 static int
 xkb_filter_group_lock_new(struct xkb_state *state,
+                          struct xkb_filter *filter,
                           const struct xkb_key *key,
                           const union xkb_action *action)
 {
-    struct xkb_filter *filter = xkb_filter_new(state);
-    if (!filter)
-        return -1;
-
     filter->key = key;
     filter->func = xkb_filter_group_lock_func;
     filter->action = *action;
@@ -276,13 +270,10 @@ xkb_filter_mod_set_func(struct xkb_state *state,
 
 static int
 xkb_filter_mod_set_new(struct xkb_state *state,
+                       struct xkb_filter *filter,
                        const struct xkb_key *key,
                        const union xkb_action *action)
 {
-    struct xkb_filter *filter = xkb_filter_new(state);
-    if (!filter)
-        return -1;
-
     filter->key = key;
     filter->func = xkb_filter_mod_set_func;
     filter->action = *action;
@@ -316,13 +307,10 @@ xkb_filter_mod_lock_func(struct xkb_state *state,
 
 static int
 xkb_filter_mod_lock_new(struct xkb_state *state,
+                        struct xkb_filter *filter,
                         const struct xkb_key *key,
                         const union xkb_action *action)
 {
-    struct xkb_filter *filter = xkb_filter_new(state);
-    if (!filter)
-        return -1;
-
     filter->key = key;
     filter->func = xkb_filter_mod_lock_func;
     filter->action = *action;
@@ -439,13 +427,11 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
 
 static int
 xkb_filter_mod_latch_new(struct xkb_state *state,
+                         struct xkb_filter *filter,
                          const struct xkb_key *key,
                          const union xkb_action *action)
 {
     enum xkb_key_latch_state latch = LATCH_KEY_DOWN;
-    struct xkb_filter *filter = xkb_filter_new(state);
-    if (!filter)
-        return -1;
 
     filter->key = key;
     filter->priv = latch;
@@ -458,6 +444,7 @@ xkb_filter_mod_latch_new(struct xkb_state *state,
 }
 
 typedef int (*filter_action_new_func_t)(struct xkb_state *state,
+                                        struct xkb_filter *filter,
                                         const struct xkb_key *key,
                                         const union xkb_action *action);
 
@@ -496,8 +483,15 @@ xkb_filter_apply_all(struct xkb_state *state,
         return;
 
     act = xkb_key_get_action(state, key);
-    if (filter_action_new_funcs[act->type])
-        send = filter_action_new_funcs[act->type](state, key, act);
+    if (filter_action_new_funcs[act->type]) {
+        filter = xkb_filter_new(state);
+        if (!filter)
+            goto err;
+        send = filter_action_new_funcs[act->type](state, filter, key, act);
+    }
+
+err:
+    return;
 }
 
 XKB_EXPORT struct xkb_state *
