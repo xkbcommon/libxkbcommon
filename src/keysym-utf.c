@@ -38,10 +38,12 @@
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
 
-const struct codepair {
+struct codepair {
     xkb_keysym_t keysym;
     uint16_t ucs;
-} keysymtab[] = {
+};
+
+const struct codepair keysymtab[] = {
     { 0x01a1, 0x0104 }, /*                     Aogonek Ą LATIN CAPITAL LETTER A WITH OGONEK */
     { 0x01a2, 0x02d8 }, /*                       breve ˘ BREVE */
     { 0x01a3, 0x0141 }, /*                     Lstroke Ł LATIN CAPITAL LETTER L WITH STROKE */
@@ -829,7 +831,9 @@ const struct codepair {
     { 0x20aa, 0x20aa }, /*               NewSheqelSign ₪ NEW SHEQEL SIGN */
     { 0x20ab, 0x20ab }, /*                    DongSign ₫ DONG SIGN */
     { 0x20ac, 0x20ac }, /*                    EuroSign € EURO SIGN */
+};
 
+const struct codepair keysymtab_kp[] = {
     { 0xff80, 0x0020 }, /*                    KP_Space   SPACE */
     { 0xffaa, 0x002a }, /*                 KP_Multiply * ASTERISK */
     { 0xffab, 0x002b }, /*                     KP_Plus + PLUS SIGN */
@@ -843,12 +847,38 @@ const struct codepair {
     { 0xffbd, 0x003d }, /*                    KP_Equal = EQUAL SIGN */
 };
 
+/* binary search with range check */
+static uint32_t
+bin_search(const struct codepair *table, size_t length, xkb_keysym_t keysym)
+{
+    int min = 0;
+    int max = length;
+    int mid;
+
+    if (keysym < table[0].keysym  || keysym > table[length].keysym)
+        return 0;
+
+    /* binary search in table */
+    while (max >= min) {
+        mid = (min + max) / 2;
+        if (table[mid].keysym < keysym)
+            min = mid + 1;
+        else if (table[mid].keysym > keysym)
+            max = mid - 1;
+        else /* found it */
+            return table[mid].ucs;
+    }
+
+    /* no matching Unicode value found in table */
+    return 0;
+}
+
+#define N_ELEMENTS(x) sizeof(x) / sizeof(x[0])
+
 XKB_EXPORT uint32_t
 xkb_keysym_to_utf32(xkb_keysym_t keysym)
 {
-    int min = 0;
-    int max = sizeof(keysymtab) / sizeof(struct codepair) - 1;
-    int mid;
+    uint32_t retval = 0;
 
     /* first check for Latin-1 characters (1:1 mapping) */
     if ((keysym >= 0x0020 && keysym <= 0x007e) ||
@@ -862,19 +892,14 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym)
     if ((keysym & 0xff000000) == 0x01000000)
         return keysym & 0x00ffffff;
 
-    /* binary search in table */
-    while (max >= min) {
-        mid = (min + max) / 2;
-        if (keysymtab[mid].keysym < keysym)
-            min = mid + 1;
-        else if (keysymtab[mid].keysym > keysym)
-            max = mid - 1;
-        else /* found it */
-            return keysymtab[mid].ucs;
-    }
+    /* search smaller keypad table */
+    retval = bin_search(keysymtab_kp, N_ELEMENTS(keysymtab_kp) - 1, keysym);
 
-    /* no matching Unicode value found */
-    return 0;
+    /* search main table */
+    if (!retval)
+        retval = bin_search(keysymtab, N_ELEMENTS(keysymtab) - 1, keysym);
+
+    return retval;
 }
 
 /*
