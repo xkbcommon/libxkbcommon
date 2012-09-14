@@ -171,10 +171,8 @@ xkb_filter_group_set_func(struct xkb_state *state,
         return 0;
     }
 
-    if (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH)
-        state->base_group = filter->action.group.group;
-    else
-        state->base_group = -filter->action.group.group;
+    state->base_group = filter->priv;
+
     if (filter->action.group.flags & ACTION_LOCK_CLEAR)
         state->locked_group = 0;
 
@@ -185,14 +183,11 @@ xkb_filter_group_set_func(struct xkb_state *state,
 static void
 xkb_filter_group_set_new(struct xkb_state *state, struct xkb_filter *filter)
 {
-    if (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH) {
-        xkb_group_index_t tmp = filter->action.group.group;
-        filter->action.group.group = state->base_group;
-        state->base_group = tmp;
-    }
-    else {
+    filter->priv = state->base_group;
+    if (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH)
+        state->base_group = filter->action.group.group;
+    else
         state->base_group += filter->action.group.group;
-    }
 }
 
 static int
