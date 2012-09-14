@@ -65,11 +65,11 @@
 #include "xkb-priv.h"
 
 struct xkb_filter {
-    struct xkb_state *state;
     union xkb_action action;
     const struct xkb_key *key;
     uint32_t priv;
-    int (*func)(struct xkb_filter *filter,
+    int (*func)(struct xkb_state *state,
+                struct xkb_filter *filter,
                 const struct xkb_key *key,
                 enum xkb_key_direction direction);
     int refcnt;
@@ -146,7 +146,6 @@ xkb_filter_new(struct xkb_state *state)
         filter = &darray_item(state->filters, darray_size(state->filters) -1);
     }
 
-    filter->state = state;
     filter->refcnt = 1;
     return filter;
 }
@@ -154,7 +153,8 @@ xkb_filter_new(struct xkb_state *state)
 /***====================================================================***/
 
 static int
-xkb_filter_group_set_func(struct xkb_filter *filter,
+xkb_filter_group_set_func(struct xkb_state *state,
+                          struct xkb_filter *filter,
                           const struct xkb_key *key,
                           enum xkb_key_direction direction)
 {
@@ -172,14 +172,13 @@ xkb_filter_group_set_func(struct xkb_filter *filter,
     }
 
     if (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH)
-        filter->state->base_group = filter->action.group.group;
+        state->base_group = filter->action.group.group;
     else
-        filter->state->base_group = -filter->action.group.group;
+        state->base_group = -filter->action.group.group;
     if (filter->action.group.flags & ACTION_LOCK_CLEAR)
-        filter->state->locked_group = 0;
+        state->locked_group = 0;
 
     filter->func = NULL;
-
     return 1;
 }
 
@@ -197,18 +196,19 @@ xkb_filter_group_set_new(struct xkb_state *state,
     filter->action = *action;
 
     if (action->group.flags & ACTION_ABSOLUTE_SWITCH) {
-        filter->action.group.group = filter->state->base_group;
-        filter->state->base_group = action->group.group;
+        filter->action.group.group = state->base_group;
+        state->base_group = action->group.group;
     }
     else {
-        filter->state->base_group += action->group.group;
+        state->base_group += action->group.group;
     }
 
     return 1;
 }
 
 static int
-xkb_filter_group_lock_func(struct xkb_filter *filter,
+xkb_filter_group_lock_func(struct xkb_state *state,
+                           struct xkb_filter *filter,
                            const struct xkb_key *key,
                            enum xkb_key_direction direction)
 {
@@ -240,15 +240,16 @@ xkb_filter_group_lock_new(struct xkb_state *state,
     filter->action = *action;
 
     if (action->group.flags & ACTION_ABSOLUTE_SWITCH)
-        filter->state->locked_group = action->group.group;
+        state->locked_group = action->group.group;
     else
-        filter->state->locked_group += action->group.group;
+        state->locked_group += action->group.group;
 
     return 1;
 }
 
 static int
-xkb_filter_mod_set_func(struct xkb_filter *filter,
+xkb_filter_mod_set_func(struct xkb_state *state,
+                        struct xkb_filter *filter,
                         const struct xkb_key *key,
                         enum xkb_key_direction direction)
 {
@@ -265,9 +266,9 @@ xkb_filter_mod_set_func(struct xkb_filter *filter,
         return 0;
     }
 
-    filter->state->clear_mods = filter->action.mods.mods.mask;
+    state->clear_mods = filter->action.mods.mods.mask;
     if (filter->action.mods.flags & ACTION_LOCK_CLEAR)
-        filter->state->locked_mods &= ~filter->action.mods.mods.mask;
+        state->locked_mods &= ~filter->action.mods.mods.mask;
 
     filter->func = NULL;
     return 1;
@@ -286,13 +287,14 @@ xkb_filter_mod_set_new(struct xkb_state *state,
     filter->func = xkb_filter_mod_set_func;
     filter->action = *action;
 
-    filter->state->set_mods = action->mods.mods.mask;
+    state->set_mods = action->mods.mods.mask;
 
     return 1;
 }
 
 static int
-xkb_filter_mod_lock_func(struct xkb_filter *filter,
+xkb_filter_mod_lock_func(struct xkb_state *state,
+                         struct xkb_filter *filter,
                          const struct xkb_key *key,
                          enum xkb_key_direction direction)
 {
@@ -306,7 +308,7 @@ xkb_filter_mod_lock_func(struct xkb_filter *filter,
     if (--filter->refcnt > 0)
         return 0;
 
-    filter->state->locked_mods &= ~filter->priv;
+    state->locked_mods &= ~filter->priv;
 
     filter->func = NULL;
     return 1;
@@ -326,7 +328,7 @@ xkb_filter_mod_lock_new(struct xkb_state *state,
     filter->action = *action;
     filter->priv = state->locked_mods & action->mods.mods.mask;
 
-    filter->state->locked_mods |= action->mods.mods.mask;
+    state->locked_mods |= action->mods.mods.mask;
 
     return 1;
 }
@@ -356,7 +358,8 @@ xkb_action_breaks_latch(const union xkb_action *action)
 }
 
 static int
-xkb_filter_mod_latch_func(struct xkb_filter *filter,
+xkb_filter_mod_latch_func(struct xkb_state *state,
+                          struct xkb_filter *filter,
                           const struct xkb_key *key,
                           enum xkb_key_direction direction)
 {
@@ -367,7 +370,7 @@ xkb_filter_mod_latch_func(struct xkb_filter *filter,
          * keypress, then either break the latch if any random key is pressed,
          * or promote it to a lock or plain base set if it's the same
          * modifier. */
-        const union xkb_action *action = xkb_key_get_action(filter->state, key);
+        const union xkb_action *action = xkb_key_get_action(state, key);
         if (action->type == ACTION_TYPE_MOD_LATCH &&
             action->mods.flags == filter->action.mods.flags &&
             action->mods.mods.mask == filter->action.mods.mods.mask) {
@@ -375,22 +378,22 @@ xkb_filter_mod_latch_func(struct xkb_filter *filter,
             if (filter->action.mods.flags & ACTION_LATCH_TO_LOCK) {
                 filter->action.type = ACTION_TYPE_MOD_LOCK;
                 filter->func = xkb_filter_mod_lock_func;
-                filter->state->locked_mods |= filter->action.mods.mods.mask;
+                state->locked_mods |= filter->action.mods.mods.mask;
             }
             else {
                 filter->action.type = ACTION_TYPE_MOD_SET;
                 filter->func = xkb_filter_mod_set_func;
-                filter->state->set_mods = filter->action.mods.mods.mask;
+                state->set_mods = filter->action.mods.mods.mask;
             }
             filter->key = key;
-            filter->state->latched_mods &= ~filter->action.mods.mods.mask;
+            state->latched_mods &= ~filter->action.mods.mods.mask;
             /* XXX beep beep! */
             return 0;
         }
         else if (xkb_action_breaks_latch(action)) {
             /* XXX: This may be totally broken, we might need to break the
              *      latch in the next run after this press? */
-            filter->state->latched_mods &= ~filter->action.mods.mods.mask;
+            state->latched_mods &= ~filter->action.mods.mods.mask;
             filter->func = NULL;
             return 1;
         }
@@ -403,21 +406,21 @@ xkb_filter_mod_latch_func(struct xkb_filter *filter,
          * latched. */
         if (latch == NO_LATCH ||
             ((filter->action.mods.flags & ACTION_LOCK_CLEAR) &&
-             (filter->state->locked_mods & filter->action.mods.mods.mask) ==
+             (state->locked_mods & filter->action.mods.mods.mask) ==
              filter->action.mods.mods.mask)) {
             /* XXX: We might be a bit overenthusiastic about clearing
              *      mods other filters have set here? */
             if (latch == LATCH_PENDING)
-                filter->state->latched_mods &= ~filter->action.mods.mods.mask;
+                state->latched_mods &= ~filter->action.mods.mods.mask;
             else
-                filter->state->clear_mods = filter->action.mods.mods.mask;
-            filter->state->locked_mods &= ~filter->action.mods.mods.mask;
+                state->clear_mods = filter->action.mods.mods.mask;
+            state->locked_mods &= ~filter->action.mods.mods.mask;
             filter->func = NULL;
         }
         else {
             latch = LATCH_PENDING;
-            filter->state->clear_mods = filter->action.mods.mods.mask;
-            filter->state->latched_mods |= filter->action.mods.mods.mask;
+            state->clear_mods = filter->action.mods.mods.mask;
+            state->latched_mods |= filter->action.mods.mods.mask;
             /* XXX beep beep! */
         }
     }
@@ -449,7 +452,7 @@ xkb_filter_mod_latch_new(struct xkb_state *state,
     filter->func = xkb_filter_mod_latch_func;
     filter->action = *action;
 
-    filter->state->set_mods = action->mods.mods.mask;
+    state->set_mods = action->mods.mods.mask;
 
     return 1;
 }
@@ -473,7 +476,7 @@ xkb_filter_apply_all(struct xkb_state *state,
     darray_foreach(filter, state->filters) {
         if (!filter->func)
             continue;
-        send &= filter->func(filter, key, direction);
+        send &= filter->func(state, filter, key, direction);
     }
 
     if (!send || direction == XKB_KEY_UP)
