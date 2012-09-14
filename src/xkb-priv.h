@@ -412,6 +412,8 @@ struct xkb_keymap {
 static inline struct xkb_key *
 XkbKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
+    if (kc < keymap->min_key_code || kc > keymap->max_key_code)
+        return NULL;
     return &darray_item(keymap->keys, kc);
 }
 
@@ -460,12 +462,6 @@ XkbKeyActionEntry(struct xkb_key *key, xkb_group_index_t group,
     return &key->actions[key->width * group + level];
 }
 
-static inline bool
-XkbKeycodeInRange(struct xkb_keymap *keymap, xkb_keycode_t kc)
-{
-    return kc >= keymap->min_key_code && kc <= keymap->max_key_code;
-}
-
 struct xkb_keymap *
 xkb_map_new(struct xkb_context *ctx);
 
@@ -495,10 +491,10 @@ const char *
 xkb_atom_text(struct xkb_context *ctx, xkb_atom_t atom);
 
 xkb_group_index_t
-xkb_key_get_group(struct xkb_state *state, xkb_keycode_t kc);
+xkb_key_get_group(struct xkb_state *state, struct xkb_key *key);
 
 xkb_level_index_t
-xkb_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
+xkb_key_get_level(struct xkb_state *state, struct xkb_key *key,
                   xkb_group_index_t group);
 
 extern int
