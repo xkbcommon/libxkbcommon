@@ -179,7 +179,6 @@ InitSymbolsInfo(SymbolsInfo *info, struct xkb_keymap *keymap,
     info->keymap = keymap;
     info->file_id = file_id;
     info->merge = MERGE_OVERRIDE;
-    darray_growalloc(info->keys, 110);
     InitKeyInfo(&info->dflt, file_id);
     InitVModInfo(&info->vmods, keymap);
     info->actions = actions;
