@@ -178,7 +178,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
                         return false;
                 }
 
-                *XkbKeyActionEntry(key, group, level) = interp->act;
+                key->actions[group * key->width + level] = interp->act;
             }
         }
     }

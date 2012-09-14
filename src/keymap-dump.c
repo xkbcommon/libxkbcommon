@@ -367,7 +367,8 @@ write_indicator_map(struct xkb_keymap *keymap, struct buf *buf, int num)
 
 static bool
 write_action(struct xkb_keymap *keymap, struct buf *buf,
-             union xkb_action *action, const char *prefix, const char *suffix)
+             const union xkb_action *action,
+             const char *prefix, const char *suffix)
 {
     const char *type;
     const char *args = NULL;
