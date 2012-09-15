@@ -51,9 +51,9 @@
  * always used to refer to a key by name.
  *
  * [ The naming convention <AE01> just denoted the position of the key
- * in the main alphanumric section of the keyboard, with the top left key
- * (usually "~") acting as origin. <AE01> is the key in the first row
- * second column (which is usually "1"). ]
+ * in the main alphanumric section of the keyboard, with the two letters
+ * specifying the row and the two digits specifying the column, from
+ * the bottom left.]
  *
  * In the common case this just maps to the evdev scancodes from
  * /usr/include/linux/input.h, e.g. the following definitions:
@@ -116,6 +116,11 @@ typedef struct _AliasInfo {
     unsigned long real;
 } AliasInfo;
 
+typedef struct {
+    unsigned int file_id;
+    unsigned long name;
+} KeyNameInfo;
+
 typedef struct _IndicatorNameInfo {
     enum merge_mode merge;
     unsigned file_id;
@@ -131,23 +136,12 @@ typedef struct _KeyNamesInfo {
 
     xkb_keycode_t min_key_code;
     xkb_keycode_t max_key_code;
-    darray(unsigned long) names;
-    darray(unsigned int) files;
+    darray(KeyNameInfo) key_names;
     IndicatorNameInfo indicator_names[XKB_NUM_INDICATORS];
     darray(AliasInfo) aliases;
 
     struct xkb_context *ctx;
 } KeyNamesInfo;
-
-static void
-ResizeKeyNameArrays(KeyNamesInfo *info, int newMax)
-{
-    if (newMax < darray_size(info->names))
-        return;
-
-    darray_resize0(info->names, newMax + 1);
-    darray_resize0(info->files, newMax + 1);
-}
 
 static void
 InitAliasInfo(AliasInfo *info, enum merge_mode merge, unsigned file_id,
@@ -252,8 +246,7 @@ static void
 ClearKeyNamesInfo(KeyNamesInfo *info)
 {
     free(info->name);
-    darray_free(info->names);
-    darray_free(info->files);
+    darray_free(info->key_names);
     darray_free(info->aliases);
 }
 
@@ -268,86 +261,89 @@ InitKeyNamesInfo(KeyNamesInfo *info, struct xkb_context *ctx,
     info->min_key_code = XKB_KEYCODE_MAX;
 }
 
-static int
+static xkb_keycode_t
 FindKeyByLong(KeyNamesInfo * info, unsigned long name)
 {
     xkb_keycode_t i;
 
     for (i = info->min_key_code; i <= info->max_key_code; i++)
-        if (darray_item(info->names, i) == name)
+        if (darray_item(info->key_names, i).name == name)
             return i;
 
-    return 0;
+    return XKB_KEYCODE_INVALID;
 }
 
-/**
- * Store the name of the key as a long in the info struct under the given
- * keycode. If the same keys is referred to twice, print a warning.
- * Note that the key's name is stored as a long, the keycode is the index.
- */
 static bool
 AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, unsigned long name,
-           enum merge_mode merge, unsigned file_id, bool reportCollisions)
+           enum merge_mode merge, unsigned file_id, bool report)
 {
+    KeyNameInfo *namei;
     xkb_keycode_t old;
     int verbosity = xkb_get_log_verbosity(info->ctx);
 
-    ResizeKeyNameArrays(info, kc);
+    if (kc >= darray_size(info->key_names))
+        darray_resize0(info->key_names, kc + 1);
 
     info->min_key_code = MIN(info->min_key_code, kc);
     info->max_key_code = MAX(info->max_key_code, kc);
 
-    if (reportCollisions)
-        reportCollisions = (verbosity > 7 ||
-                            (verbosity > 0 &&
-                             file_id == darray_item(info->files, kc)));
+    namei = &darray_item(info->key_names, kc);
 
-    if (darray_item(info->names, kc) != 0) {
-        const char *lname = LongKeyNameText(darray_item(info->names, kc));
+    report = report && ((verbosity > 0 && file_id == namei->file_id) ||
+                        verbosity > 7);
+
+    if (namei->name != 0) {
+        const char *lname = LongKeyNameText(namei->name);
         const char *kname = LongKeyNameText(name);
 
-        if (darray_item(info->names, kc) == name && reportCollisions) {
-            log_warn(info->ctx, "Multiple identical key name definitions; "
-                     "Later occurences of \"%s = %d\" ignored\n", lname, kc);
+        if (namei->name == name) {
+            if (report)
+                log_warn(info->ctx,
+                         "Multiple identical key name definitions; "
+                         "Later occurences of \"%s = %d\" ignored\n",
+                         lname, kc);
             return true;
         }
-
-        if (merge == MERGE_AUGMENT) {
-            if (reportCollisions)
-                log_warn(info->ctx, "Multiple names for keycode %d; "
+        else if (merge == MERGE_AUGMENT) {
+            if (report)
+                log_warn(info->ctx,
+                         "Multiple names for keycode %d; "
                          "Using %s, ignoring %s\n", kc, lname, kname);
             return true;
         }
         else {
-            if (reportCollisions)
-                log_warn(info->ctx, "Multiple names for keycode %d; "
+            if (report)
+                log_warn(info->ctx,
+                         "Multiple names for keycode %d; "
                          "Using %s, ignoring %s\n", kc, kname, lname);
-            darray_item(info->names, kc) = 0;
-            darray_item(info->files, kc) = 0;
+            namei->name = 0;
+            namei->file_id = 0;
         }
     }
 
     old = FindKeyByLong(info, name);
-    if (old != 0 && old != kc) {
+    if (old != XKB_KEYCODE_INVALID && old != kc) {
         const char *kname = LongKeyNameText(name);
 
         if (merge == MERGE_OVERRIDE) {
-            darray_item(info->names, old) = 0;
-            darray_item(info->files, old) = 0;
-            if (reportCollisions)
-                log_warn(info->ctx, "Key name %s assigned to multiple keys; "
+            darray_item(info->key_names, old).name = 0;
+            darray_item(info->key_names, old).file_id = 0;
+            if (report)
+                log_warn(info->ctx,
+                         "Key name %s assigned to multiple keys; "
                          "Using %d, ignoring %d\n", kname, kc, old);
         }
         else {
-            if (reportCollisions && verbosity > 3)
-                log_warn(info->ctx, "Key name %s assigned to multiple keys; "
-                         "Using %d, ignoring %d\n", kname, old, kc);
+            if (report)
+                log_vrb(info->ctx, 3,
+                        "Key name %s assigned to multiple keys; "
+                        "Using %d, ignoring %d\n", kname, old, kc);
             return true;
         }
     }
 
-    darray_item(info->names, kc) = name;
-    darray_item(info->files, kc) = file_id;
+    namei->name = name;
+    namei->file_id = file_id;
     return true;
 }
 
@@ -403,10 +399,11 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
         from->name = NULL;
     }
 
-    ResizeKeyNameArrays(into, from->max_key_code);
+    if (darray_size(into->key_names) < darray_size(from->key_names))
+        darray_resize0(into->key_names, darray_size(from->key_names));
 
     for (i = from->min_key_code; i <= from->max_key_code; i++) {
-        unsigned long name = darray_item(from->names, i);
+        unsigned long name = darray_item(from->key_names, i).name;
         if (name == 0)
             continue;
 
@@ -700,7 +697,7 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 
     darray_resize0(keymap->keys, keymap->max_key_code + 1);
     for (kc = info->min_key_code; kc <= info->max_key_code; kc++)
-        LongToKeyName(darray_item(info->names, kc),
+        LongToKeyName(darray_item(info->key_names, kc).name,
                       darray_item(keymap->keys, kc).name);
 
     keymap->keycodes_section_name = strdup_safe(info->name);
