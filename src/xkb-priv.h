@@ -506,6 +506,13 @@ xkb_key_get_syms_by_level(struct xkb_keymap *keymap,
 extern unsigned
 xkb_context_take_file_id(struct xkb_context *ctx);
 
+unsigned int
+xkb_context_num_failed_include_paths(struct xkb_context *ctx);
+
+const char *
+xkb_context_failed_include_path_get(struct xkb_context *ctx,
+                                    unsigned int idx);
+
 bool
 xkb_keysym_is_lower(xkb_keysym_t keysym);
 

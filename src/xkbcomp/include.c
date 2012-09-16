@@ -212,32 +212,55 @@ FILE *
 FindFileInXkbPath(struct xkb_context *ctx, const char *name,
                   enum xkb_file_type type, char **pathRtrn)
 {
-    size_t i;
-    int ret;
+    unsigned int i;
     FILE *file = NULL;
     char buf[PATH_MAX];
     const char *typeDir;
 
     typeDir = DirectoryForInclude(type);
+
     for (i = 0; i < xkb_context_num_include_paths(ctx); i++) {
-        ret = snprintf(buf, sizeof(buf), "%s/%s/%s",
-                       xkb_context_include_path_get(ctx, i), typeDir, name);
+        int ret = snprintf(buf, sizeof(buf), "%s/%s/%s",
+                           xkb_context_include_path_get(ctx, i),
+                           typeDir, name);
         if (ret >= (ssize_t) sizeof(buf)) {
             log_err(ctx, "File name (%s/%s/%s) too long\n",
                     xkb_context_include_path_get(ctx, i), typeDir, name);
             continue;
         }
+
         file = fopen(buf, "r");
-        if (file == NULL) {
-            log_err(ctx, "Couldn't open file (%s/%s/%s): %s\n",
-                    xkb_context_include_path_get(ctx, i), typeDir, name,
-                    strerror(errno));
-            continue;
-        }
-        break;
+        if (file)
+            break;
     }
 
-    if ((file != NULL) && (pathRtrn != NULL))
+    if (!file) {
+        log_err(ctx, "Couldn't find file \"%s/%s\" in include paths\n",
+                typeDir, name);
+
+        if (xkb_context_num_failed_include_paths(ctx) > 0) {
+            log_err(ctx, "%d include paths searched:\n",
+                    xkb_context_num_include_paths(ctx));
+            for (i = 0; i < xkb_context_num_include_paths(ctx); i++)
+                log_err(ctx, "\t%s\n",
+                        xkb_context_include_path_get(ctx, i));
+        }
+        else {
+            log_err(ctx, "There are no include paths to search\n");
+        }
+
+        if (xkb_context_num_failed_include_paths(ctx) > 0) {
+            log_err(ctx, "%d include paths could not be added:\n",
+                    xkb_context_num_failed_include_paths(ctx));
+            for (i = 0; i < xkb_context_num_failed_include_paths(ctx); i++)
+                log_err(ctx, "\t%s\n",
+                        xkb_context_failed_include_path_get(ctx, i));
+        }
+
+        return NULL;
+    }
+
+    if (pathRtrn)
         *pathRtrn = strdup(buf);
     return file;
 }
@@ -265,11 +288,8 @@ ProcessIncludeFile(struct xkb_context *ctx,
     XkbFile *rtrn, *mapToUse, *next;
 
     file = FindFileInXkbPath(ctx, stmt->file, file_type, NULL);
-    if (file == NULL) {
-        log_err(ctx, "Can't find file \"%s\" for %s include\n", stmt->file,
-                DirectoryForInclude(file_type));
+    if (!file)
         return false;
-    }
 
     if (!XkbParseFile(ctx, file, stmt->file, &rtrn)) {
         log_err(ctx, "Error interpreting include file \"%s\"\n", stmt->file);

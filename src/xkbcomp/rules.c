@@ -1200,26 +1200,14 @@ xkb_components_from_rules(struct xkb_context *ctx,
     bool ret = false;
     FILE *file;
     char *path;
-    char **include;
     int fd;
     struct stat stat_buf;
     char *string;
     struct matcher *matcher;
 
     file = FindFileInXkbPath(ctx, rmlvo->rules, FILE_TYPE_RULES, &path);
-    if (!file) {
-        log_err(ctx, "Could not find \"%s\" rules in XKB path\n",
-                rmlvo->rules);
-        log_err(ctx, "%zu include paths searched:\n",
-                darray_size(ctx->includes));
-        darray_foreach(include, ctx->includes)
-            log_err(ctx, "\t%s\n", *include);
-        log_err(ctx, "%zu include paths could not be added:\n",
-                darray_size(ctx->failed_includes));
-        darray_foreach(include, ctx->failed_includes)
-            log_err(ctx, "\t%s\n", *include);
+    if (!file)
         goto err_out;
-    }
 
     fd = fileno(file);
 

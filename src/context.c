@@ -132,6 +132,12 @@ xkb_context_num_include_paths(struct xkb_context *ctx)
     return darray_size(ctx->includes);
 }
 
+unsigned int
+xkb_context_num_failed_include_paths(struct xkb_context *ctx)
+{
+    return darray_size(ctx->failed_includes);
+}
+
 /**
  * Returns the given entry in the context's include path, or NULL if an
  * invalid index is passed.
@@ -143,6 +149,16 @@ xkb_context_include_path_get(struct xkb_context *ctx, unsigned int idx)
         return NULL;
 
     return darray_item(ctx->includes, idx);
+}
+
+const char *
+xkb_context_failed_include_path_get(struct xkb_context *ctx,
+                                    unsigned int idx)
+{
+    if (idx >= xkb_context_num_failed_include_paths(ctx))
+        return NULL;
+
+    return darray_item(ctx->failed_includes, idx);
 }
 
 unsigned
