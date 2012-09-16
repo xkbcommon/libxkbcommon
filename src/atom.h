@@ -24,7 +24,9 @@
 #ifndef ATOM_H
 #define ATOM_H
 
-#include "xkb-priv.h"
+typedef uint32_t xkb_atom_t;
+
+#define XKB_ATOM_NONE 0
 
 struct atom_table;
 

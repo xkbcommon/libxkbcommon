@@ -47,12 +47,10 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
-#include "xkb-priv.h"
+#include "xkbcommon/xkbcommon.h"
+#include "utils.h"
 #include "ks_tables.h"
+#include "keysym.h"
 
 XKB_EXPORT void
 xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)

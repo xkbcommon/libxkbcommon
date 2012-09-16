@@ -34,7 +34,7 @@
  * This software is in the public domain. Share and enjoy!
  *
  */
-#include <stdint.h>
+
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
 

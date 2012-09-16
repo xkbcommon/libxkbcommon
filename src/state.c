@@ -59,10 +59,7 @@
  *   - messages (very unlikely)
  */
 
-#include <assert.h>
-#include <stdarg.h>
-
-#include "xkb-priv.h"
+#include "map.h"
 
 struct xkb_filter {
     union xkb_action action;

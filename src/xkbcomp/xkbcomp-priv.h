@@ -27,8 +27,15 @@
 #ifndef XKBCOMP_PRIV_H
 #define XKBCOMP_PRIV_H
 
-#include "xkb-priv.h"
+#include "map.h"
 #include "ast.h"
+
+struct xkb_component_names {
+    char *keycodes;
+    char *types;
+    char *compat;
+    char *symbols;
+};
 
 bool
 XkbParseFile(struct xkb_context *ctx, FILE *file, const char *file_name,

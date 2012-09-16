@@ -70,6 +70,7 @@
  *
  ********************************************************/
 
+#include "utils.h"
 #include "atom.h"
 
 struct atom_node {

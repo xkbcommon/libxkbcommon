@@ -58,6 +58,7 @@
 #include "vmod.h"
 #include "keycodes.h"
 #include "include.h"
+#include "keysym.h"
 
 enum key_repeat {
     KEY_REPEAT_UNDEFINED = 0,

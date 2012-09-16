@@ -28,9 +28,6 @@
 #include <limits.h>
 #include <locale.h>
 #include <signal.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
 #include <unistd.h>
@@ -38,7 +35,6 @@
 #include <sys/epoll.h>
 #include <linux/input.h>
 
-#include "xkbcommon/xkbcommon.h"
 #include "test.h"
 
 struct keyboard {

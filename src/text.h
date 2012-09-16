@@ -24,8 +24,6 @@
 #ifndef TEXT_H
 #define TEXT_H
 
-#include "xkb-priv.h"
-
 typedef struct {
     const char *name;
     unsigned int value;

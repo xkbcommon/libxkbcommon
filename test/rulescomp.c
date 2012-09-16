@@ -21,11 +21,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include <assert.h>
-#include <stdio.h>
 #include <time.h>
 
-#include "xkbcommon/xkbcommon.h"
 #include "test.h"
 
 #define BENCHMARK_ITERATIONS 1000

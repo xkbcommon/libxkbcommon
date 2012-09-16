@@ -21,13 +21,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include <assert.h>
-#include <stdarg.h>
-#include <stdio.h>
-
 #include <linux/input.h>
 
-#include "xkbcommon/xkbcommon.h"
 #include "test.h"
 
 enum {

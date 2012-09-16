@@ -21,11 +21,6 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "xkbcommon/xkbcommon.h"
 #include "test.h"
 
 static int

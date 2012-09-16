@@ -50,7 +50,7 @@
  *
  * ********************************************************/
 
-#include "xkb-priv.h"
+#include "map.h"
 #include "text.h"
 
 struct xkb_keymap *

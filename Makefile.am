@@ -66,17 +66,19 @@ libxkbcommon_la_SOURCES = \
 	src/atom.c \
 	src/atom.h \
 	src/context.c \
+	src/context.h \
 	src/darray.h \
 	src/keymap-dump.c \
 	src/keysym.c \
+	src/keysym.h \
 	src/keysym-utf.c \
 	src/list.h \
 	src/map.c \
+	src/map.h \
 	src/state.c \
 	src/text.c \
 	src/text.h \
-	src/utils.h \
-	src/xkb-priv.h
+	src/utils.h
 
 BUILT_SOURCES = \
 	src/xkbcomp/parser.c \

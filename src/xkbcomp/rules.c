@@ -47,8 +47,6 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include <stdarg.h>
-#include <stdio.h>
 #include <ctype.h>
 #include <fcntl.h>
 #include <unistd.h>

@@ -24,7 +24,7 @@
 #include <unistd.h>
 
 #include "test.h"
-#include "xkb-priv.h"
+#include "xkbcomp-priv.h"
 #include "rules.h"
 
 int

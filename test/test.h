@@ -23,6 +23,8 @@
  * Author: Daniel Stone <daniel@fooishbar.org>
  */
 
+#include <assert.h>
+
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
 

@@ -80,7 +80,6 @@
 #ifndef _XKBCOMMON_H_
 #define _XKBCOMMON_H_
 
-#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>

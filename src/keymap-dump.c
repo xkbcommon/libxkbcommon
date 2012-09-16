@@ -49,12 +49,7 @@
  * Author: Daniel Stone <daniel@fooishbar.org>
  */
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <stdlib.h>
-
-#include "xkb-priv.h"
+#include "map.h"
 #include "text.h"
 
 #define VMOD_HIDE_VALUE    0

@@ -24,8 +24,12 @@
 #ifndef UTILS_H
 #define UTILS_H 1
 
+#include <inttypes.h>
 #include <stdbool.h>
 #include <string.h>
+#include <strings.h>
+
+#include "darray.h"
 
 /*
  * We sometimes malloc strings and then expose them as const char*'s. This

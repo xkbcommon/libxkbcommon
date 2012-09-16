@@ -30,17 +30,12 @@
  *         Ran Benita <ran234@gmail.com>
  */
 
-#include <assert.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <limits.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "xkbcommon/xkbcommon.h"
 #include "test.h"
 
 const char *

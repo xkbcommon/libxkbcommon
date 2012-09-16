@@ -21,13 +21,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include <assert.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "test.h"
-#include "xkb-priv.h"
+#include "context.h"
 
 #pragma GCC diagnostic ignored "-Wmissing-format-attribute"
 

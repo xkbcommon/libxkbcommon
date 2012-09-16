@@ -21,14 +21,10 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include <assert.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
 #include <time.h>
 
 #include "test.h"
-#include "xkb-priv.h"
+#include "xkbcomp-priv.h"
 #include "rules.h"
 
 #define BENCHMARK_ITERATIONS 20000

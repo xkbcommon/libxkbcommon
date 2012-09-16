@@ -78,21 +78,15 @@
  *         Dan Nicholson <dbn.lists@gmail.com>
  */
 
-#ifndef XKB_PRIV_H
-#define XKB_PRIV_H
-
-#include <stdbool.h>
-#include <string.h>
-#include <strings.h>
+#ifndef MAP_H
+#define MAP_H
 
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
-#include "darray.h"
+#include "context.h"
 
 typedef uint32_t xkb_level_index_t;
-typedef uint32_t xkb_atom_t;
 
-#define XKB_ATOM_NONE 0
 #define XKB_LEVEL_INVALID 0xffffffff
 
 #define XKB_KEY_NAME_LENGTH 4
@@ -102,35 +96,6 @@ typedef uint32_t xkb_atom_t;
 #define XKB_NUM_INDICATORS 32
 #define XKB_NUM_VIRTUAL_MODS 16
 #define XKB_NUM_CORE_MODS 8
-
-struct xkb_context {
-    int refcnt;
-
-    ATTR_PRINTF(3, 0) void (*log_fn)(struct xkb_context *ctx,
-                                     enum xkb_log_level level,
-                                     const char *fmt, va_list args);
-    enum xkb_log_level log_level;
-    int log_verbosity;
-    void *user_data;
-
-    darray(char *) includes;
-    darray(char *) failed_includes;
-
-    /* xkbcomp needs to assign sequential IDs to XkbFile's it creates. */
-    unsigned file_id;
-
-    struct atom_table *atom_table;
-};
-
-/**
- * Legacy names for the components of an XKB keymap, also known as KcCGST.
- */
-struct xkb_component_names {
-    char *keycodes;
-    char *types;
-    char *compat;
-    char *symbols;
-};
 
 enum xkb_action_type {
     ACTION_TYPE_NONE = 0,
@@ -465,31 +430,6 @@ XkbKeyActionEntry(const struct xkb_key *key, xkb_group_index_t group,
 struct xkb_keymap *
 xkb_map_new(struct xkb_context *ctx);
 
-/*
- * Returns XKB_ATOM_NONE if @string was not previously interned,
- * otherwise returns the atom.
- */
-xkb_atom_t
-xkb_atom_lookup(struct xkb_context *ctx, const char *string);
-
-xkb_atom_t
-xkb_atom_intern(struct xkb_context *ctx, const char *string);
-
-/**
- * If @string is dynamically allocated, free'd immediately after
- * being interned, and not used afterwards, use this function
- * instead of xkb_atom_intern to avoid some unnecessary allocations.
- * The caller should not use or free the passed in string afterwards.
- */
-xkb_atom_t
-xkb_atom_steal(struct xkb_context *ctx, char *string);
-
-char *
-xkb_atom_strdup(struct xkb_context *ctx, xkb_atom_t atom);
-
-const char *
-xkb_atom_text(struct xkb_context *ctx, xkb_atom_t atom);
-
 xkb_group_index_t
 xkb_key_get_group(struct xkb_state *state, const struct xkb_key *key);
 
@@ -497,62 +437,10 @@ xkb_level_index_t
 xkb_key_get_level(struct xkb_state *state, const struct xkb_key *key,
                   xkb_group_index_t group);
 
-extern int
+int
 xkb_key_get_syms_by_level(struct xkb_keymap *keymap,
                           const struct xkb_key *key,
                           xkb_group_index_t group, xkb_level_index_t level,
                           const xkb_keysym_t **syms_out);
 
-extern unsigned
-xkb_context_take_file_id(struct xkb_context *ctx);
-
-unsigned int
-xkb_context_num_failed_include_paths(struct xkb_context *ctx);
-
-const char *
-xkb_context_failed_include_path_get(struct xkb_context *ctx,
-                                    unsigned int idx);
-
-bool
-xkb_keysym_is_lower(xkb_keysym_t keysym);
-
-bool
-xkb_keysym_is_upper(xkb_keysym_t keysym);
-
-bool
-xkb_keysym_is_keypad(xkb_keysym_t keysym);
-
-ATTR_PRINTF(3, 4) void
-xkb_log(struct xkb_context *ctx, enum xkb_log_level level,
-        const char *fmt, ...);
-
-#define xkb_log_cond_level(ctx, level, ...) do { \
-    if (xkb_get_log_level(ctx) >= (level)) \
-    xkb_log((ctx), (level), __VA_ARGS__); \
-} while (0)
-
-#define xkb_log_cond_verbosity(ctx, level, vrb, ...) do { \
-    if (xkb_get_log_verbosity(ctx) >= (vrb)) \
-    xkb_log_cond_level((ctx), (level), __VA_ARGS__); \
-} while (0)
-
-/*
- * The format is not part of the argument list in order to avoid the
- * "ISO C99 requires rest arguments to be used" warning when only the
- * format is supplied without arguments. Not supplying it would still
- * result in an error, though.
- */
-#define log_dbg(ctx, ...) \
-    xkb_log_cond_level((ctx), XKB_LOG_LEVEL_DEBUG, __VA_ARGS__)
-#define log_info(ctx, ...) \
-    xkb_log_cond_level((ctx), XKB_LOG_LEVEL_INFO, __VA_ARGS__)
-#define log_warn(ctx, ...) \
-    xkb_log_cond_level((ctx), XKB_LOG_LEVEL_WARNING, __VA_ARGS__)
-#define log_err(ctx, ...) \
-    xkb_log_cond_level((ctx), XKB_LOG_LEVEL_ERROR, __VA_ARGS__)
-#define log_wsgo(ctx, ...) \
-    xkb_log_cond_level((ctx), XKB_LOG_LEVEL_CRITICAL, __VA_ARGS__)
-#define log_vrb(ctx, vrb, ...) \
-    xkb_log_cond_verbosity((ctx), XKB_LOG_LEVEL_WARNING, (vrb), __VA_ARGS__)
-
-#endif /* XKB_PRIV_H */
+#endif
