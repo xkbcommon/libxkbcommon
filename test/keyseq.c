@@ -27,6 +27,7 @@
 
 enum {
     DOWN,
+    REPEAT,
     UP,
     BOTH,
     NEXT,
@@ -43,7 +44,7 @@ enum {
  * - Each line in the test is made up of:
  *   + A keycode, given as a KEY_* from linux/input.h.
  *   + A direction - DOWN for press, UP for release, BOTH for
- *     immediate press + release.
+ *     immediate press + release, REPEAT to just get the syms.
  *   + A sequence of keysyms that should result from this keypress.
  *
  * The vararg format is:
@@ -144,6 +145,7 @@ main(void)
                         KEY_L,  BOTH,  XKB_KEY_l,  NEXT,
                         KEY_O,  BOTH,  XKB_KEY_o,  FINISH));
 
+    /* Simple shifted level. */
     assert(test_key_seq(keymap,
                         KEY_H,          BOTH,  XKB_KEY_h,        NEXT,
                         KEY_LEFTSHIFT,  DOWN,  XKB_KEY_Shift_L,  NEXT,
@@ -152,6 +154,20 @@ main(void)
                         KEY_LEFTSHIFT,  UP,    XKB_KEY_Shift_L,  NEXT,
                         KEY_L,          BOTH,  XKB_KEY_l,        NEXT,
                         KEY_O,          BOTH,  XKB_KEY_o,        FINISH));
+
+    /* Key repeat shifted and unshifted in the middle. */
+    assert(test_key_seq(keymap,
+                        KEY_H,           DOWN,    XKB_KEY_h,        NEXT,
+                        KEY_H,           REPEAT,  XKB_KEY_h,        NEXT,
+                        KEY_H,           REPEAT,  XKB_KEY_h,        NEXT,
+                        KEY_LEFTSHIFT,   DOWN,    XKB_KEY_Shift_L,  NEXT,
+                        KEY_H,           REPEAT,  XKB_KEY_H,        NEXT,
+                        KEY_H,           REPEAT,  XKB_KEY_H,        NEXT,
+                        KEY_LEFTSHIFT,   UP,      XKB_KEY_Shift_L,  NEXT,
+                        KEY_H,           REPEAT,  XKB_KEY_h,        NEXT,
+                        KEY_H,           REPEAT,  XKB_KEY_h,        NEXT,
+                        KEY_H,           UP,      XKB_KEY_h,        NEXT,
+                        KEY_H,           BOTH,    XKB_KEY_h,        FINISH));
 
     /* Base modifier cleared on key release... */
     assert(test_key_seq(keymap,
