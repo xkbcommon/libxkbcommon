@@ -593,10 +593,19 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *stmt)
 
         InitSymbolsInfo(&next_incl, info->keymap, rtrn->id, info->actions);
         next_incl.merge = next_incl.dflt.merge = MERGE_OVERRIDE;
-        if (stmt->modifier)
+        if (stmt->modifier) {
             next_incl.explicit_group = atoi(stmt->modifier) - 1;
-        else
+            if (next_incl.explicit_group >= XKB_NUM_GROUPS) {
+                log_err(info->keymap->ctx,
+                        "Cannot set explicit group to %d - must be between 1..%d; "
+                        "Ignoring group number\n",
+                        next_incl.explicit_group + 1, XKB_NUM_GROUPS);
+                next_incl.explicit_group = info->explicit_group;
+            }
+        }
+        else {
             next_incl.explicit_group = info->explicit_group;
+        }
 
         HandleSymbolsFile(&next_incl, rtrn, MERGE_OVERRIDE);
 

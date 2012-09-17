@@ -107,6 +107,9 @@ int main(int argc, char *argv[])
     assert(test_rmlvo(ctx, "evdev", "pc105", "us", "intl", ""));
     assert(test_rmlvo(ctx, "evdev", "evdev", "us", "intl", "grp:alts_toggle"));
 
+    /* 20 is not a legal group; make sure this is handled gracefully. */
+    assert(test_rmlvo(ctx, "evdev", "", "us:20", "", ""));
+
     assert(test_rmlvo(ctx, "", "", "", "", ""));
     assert(test_rmlvo(ctx, NULL, NULL, NULL, NULL, NULL));
 
