@@ -1535,7 +1535,7 @@ out_of_loops:
                 log_vrb(info->keymap->ctx, 5,
                         "No automatic type for %d levels; "
                         "Using %s for the %s key\n",
-                        darray_size(groupi->levels),
+                        (int) darray_size(groupi->levels),
                         xkb_atom_text(keymap->ctx, groupi->type),
                         LongKeyNameText(keyi->name));
         }
@@ -1567,7 +1567,7 @@ out_of_loops:
                     xkb_atom_text(keymap->ctx, type->name),
                     type->num_levels,
                     LongKeyNameText(keyi->name),
-                    darray_size(groupi->levels));
+                    (int) darray_size(groupi->levels));
             darray_resize(groupi->levels, type->num_levels);
         }
 

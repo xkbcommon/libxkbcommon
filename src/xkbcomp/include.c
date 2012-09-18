@@ -238,7 +238,7 @@ FindFileInXkbPath(struct xkb_context *ctx, const char *name,
         log_err(ctx, "Couldn't find file \"%s/%s\" in include paths\n",
                 typeDir, name);
 
-        if (xkb_context_num_failed_include_paths(ctx) > 0) {
+        if (xkb_context_num_include_paths(ctx) > 0) {
             log_err(ctx, "%d include paths searched:\n",
                     xkb_context_num_include_paths(ctx));
             for (i = 0; i < xkb_context_num_include_paths(ctx); i++)
