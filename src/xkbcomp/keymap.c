@@ -47,29 +47,19 @@ ComputeEffectiveMask(struct xkb_keymap *keymap, struct xkb_mods *mods)
 
 static void
 UpdateActionMods(struct xkb_keymap *keymap, union xkb_action *act,
-                 xkb_mod_mask_t rmodmask)
+                 xkb_mod_mask_t modmap)
 {
-    unsigned int flags;
-    struct xkb_mods *mods;
-
     switch (act->type) {
     case ACTION_TYPE_MOD_SET:
     case ACTION_TYPE_MOD_LATCH:
     case ACTION_TYPE_MOD_LOCK:
-        flags = act->mods.flags;
-        mods = &act->mods.mods;
+        if (act->mods.flags & ACTION_MODS_LOOKUP_MODMAP)
+            act->mods.mods.mods = modmap;
+        ComputeEffectiveMask(keymap, &act->mods.mods);
         break;
-
     default:
-        return;
+        break;
     }
-
-    if (flags & ACTION_MODS_LOOKUP_MODMAP) {
-        /* XXX: what's that. */
-        mods->mods &= 0xff;
-        mods->mods |= rmodmask;
-    }
-    ComputeEffectiveMask(keymap, mods);
 }
 
 /**
