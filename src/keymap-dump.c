@@ -568,8 +568,8 @@ write_keysyms(struct xkb_keymap *keymap, struct buf *buf,
     for (level = 0; level < XkbKeyGroupWidth(keymap, key, group); level++) {
         if (level != 0)
             write_buf(buf, ", ");
-        num_syms = xkb_key_get_syms_by_level(keymap, key, group, level,
-                                             &syms);
+        num_syms = xkb_keymap_key_get_syms_by_level(keymap, key->keycode,
+                                                    group, level, &syms);
         if (num_syms == 0) {
             write_buf(buf, "%15s", "NoSymbol");
         }

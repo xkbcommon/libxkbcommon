@@ -226,6 +226,20 @@ xkb_keymap_num_layouts_for_key(struct xkb_keymap *keymap, xkb_keycode_t kc)
 }
 
 /**
+ * Returns the number of levels active for a particular key and layout.
+ */
+XKB_EXPORT xkb_level_index_t
+xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t kc,
+                              xkb_layout_index_t layout)
+{
+    const struct xkb_key *key = XkbKey(keymap, kc);
+    if (!key)
+        return 0;
+
+    return XkbKeyGroupWidth(keymap, key, layout);
+}
+
+/**
  * Return the total number of active LEDs in the keymap.
  */
 XKB_EXPORT xkb_led_index_t
@@ -299,13 +313,15 @@ get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
  * XKB_LEVEL_INVALID.
  */
 xkb_level_index_t
-xkb_key_get_level(struct xkb_state *state, const struct xkb_key *key,
-                  xkb_group_index_t group)
+xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
+                        xkb_layout_index_t layout)
 {
+    struct xkb_keymap *keymap = xkb_state_get_keymap(state);
+    const struct xkb_key *key = XkbKey(keymap, kc);
     struct xkb_kt_map_entry *entry;
 
     /* If we don't find an explicit match the default is 0. */
-    entry = get_entry_for_key_state(state, key, group);
+    entry = get_entry_for_key_state(state, key, layout);
     if (!entry)
         return 0;
 
@@ -313,17 +329,19 @@ xkb_key_get_level(struct xkb_state *state, const struct xkb_key *key,
 }
 
 /**
- * Returns the group to use for the given key and state, taking
- * wrapping/clamping/etc into account, or XKB_GROUP_INVALID.
+ * Returns the layout to use for the given key and state, taking
+ * wrapping/clamping/etc into account, or XKB_LAYOUT_INVALID.
  */
-xkb_group_index_t
-xkb_key_get_group(struct xkb_state *state, const struct xkb_key *key)
+XKB_EXPORT xkb_layout_index_t
+xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t kc)
 {
-    xkb_group_index_t ret = xkb_state_serialize_group(state,
-                                                      XKB_STATE_EFFECTIVE);
+    struct xkb_keymap *keymap = xkb_state_get_keymap(state);
+    const struct xkb_key *key = XkbKey(keymap, kc);
+    xkb_layout_index_t ret =
+        xkb_state_serialize_layout(state, XKB_STATE_EFFECTIVE);
 
     if (key->num_groups == 0)
-        return XKB_GROUP_INVALID;
+        return XKB_LAYOUT_INVALID;
 
     if (ret < key->num_groups)
         return ret;
@@ -349,26 +367,28 @@ xkb_key_get_group(struct xkb_state *state, const struct xkb_key *key)
 }
 
 /**
- * As below, but takes an explicit group/level rather than state.
+ * As below, but takes an explicit layout/level rather than state.
  */
-int
-xkb_key_get_syms_by_level(struct xkb_keymap *keymap,
-                          const struct xkb_key *key,
-                          xkb_group_index_t group, xkb_level_index_t level,
-                          const xkb_keysym_t **syms_out)
+XKB_EXPORT int
+xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
+                                 xkb_keycode_t kc,
+                                 xkb_layout_index_t layout,
+                                 xkb_level_index_t level,
+                                 const xkb_keysym_t **syms_out)
 {
+    const struct xkb_key *key = XkbKey(keymap, kc);
     int num_syms;
 
-    if (group >= key->num_groups)
+    if (layout >= key->num_groups)
         goto err;
-    if (level >= XkbKeyGroupWidth(keymap, key, group))
+    if (level >= XkbKeyGroupWidth(keymap, key, layout))
         goto err;
 
-    num_syms = XkbKeyNumSyms(key, group, level);
+    num_syms = XkbKeyNumSyms(key, layout, level);
     if (num_syms == 0)
         goto err;
 
-    *syms_out = XkbKeySymEntry(key, group, level);
+    *syms_out = XkbKeySymEntry(key, layout, level);
     return num_syms;
 
 err:
@@ -385,21 +405,22 @@ xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t kc,
                        const xkb_keysym_t **syms_out)
 {
     struct xkb_keymap *keymap = xkb_state_get_map(state);
-    xkb_group_index_t group;
+    xkb_layout_index_t layout;
     xkb_level_index_t level;
     const struct xkb_key *key = XkbKey(keymap, kc);
     if (!key)
         return -1;
 
-    group = xkb_key_get_group(state, key);
-    if (group == XKB_GROUP_INVALID)
+    layout = xkb_state_key_get_layout(state, kc);
+    if (layout == XKB_LAYOUT_INVALID)
         goto err;
 
-    level = xkb_key_get_level(state, key, group);
+    level = xkb_state_key_get_level(state, kc, layout);
     if (level == XKB_LEVEL_INVALID)
         goto err;
 
-    return xkb_key_get_syms_by_level(keymap, key, group, level, syms_out);
+    return xkb_keymap_key_get_syms_by_level(keymap, kc, layout, level,
+                                            syms_out);
 
 err:
     *syms_out = NULL;
@@ -425,7 +446,7 @@ key_get_consumed(struct xkb_state *state, const struct xkb_key *key)
     struct xkb_kt_map_entry *entry;
     xkb_group_index_t group;
 
-    group = xkb_key_get_group(state, key);
+    group = xkb_state_key_get_layout(state, key->keycode);
     if (group == XKB_GROUP_INVALID)
         return 0;
 

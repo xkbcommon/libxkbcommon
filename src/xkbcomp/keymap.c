@@ -75,7 +75,8 @@ FindInterpForKey(struct xkb_keymap *keymap, struct xkb_key *key,
     const xkb_keysym_t *syms;
     int num_syms;
 
-    num_syms = xkb_key_get_syms_by_level(keymap, key, group, level, &syms);
+    num_syms = xkb_keymap_key_get_syms_by_level(keymap, key->keycode, group,
+                                                level, &syms);
     if (num_syms == 0)
         return NULL;
 

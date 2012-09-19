@@ -109,21 +109,21 @@ static const union xkb_action fake = { .type = ACTION_TYPE_NONE };
 static const union xkb_action *
 xkb_key_get_action(struct xkb_state *state, const struct xkb_key *key)
 {
-    xkb_group_index_t group;
+    xkb_layout_index_t layout;
     xkb_level_index_t level;
 
     if (!key->actions)
         return &fake;
 
-    group = xkb_key_get_group(state, key);
-    if (group == XKB_GROUP_INVALID)
+    layout = xkb_state_key_get_layout(state, key->keycode);
+    if (layout == XKB_LAYOUT_INVALID)
         return &fake;
 
-    level = xkb_key_get_level(state, key, group);
+    level = xkb_state_key_get_level(state, key->keycode, layout);
     if (level == XKB_LEVEL_INVALID)
         return &fake;
 
-    return XkbKeyActionEntry(key, group, level);
+    return XkbKeyActionEntry(key, layout, level);
 }
 
 static struct xkb_filter *

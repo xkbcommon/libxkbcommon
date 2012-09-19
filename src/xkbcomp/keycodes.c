@@ -696,9 +696,12 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
     keymap->max_key_code = info->max_key_code;
 
     darray_resize0(keymap->keys, keymap->max_key_code + 1);
-    for (kc = info->min_key_code; kc <= info->max_key_code; kc++)
+    for (kc = info->min_key_code; kc <= info->max_key_code; kc++) {
+        struct xkb_key *key = &darray_item(keymap->keys, kc);
+        key->keycode = kc;
         LongToKeyName(darray_item(info->key_names, kc).name,
-                      darray_item(keymap->keys, kc).name);
+                      key->name);
+    }
 
     keymap->keycodes_section_name = strdup_safe(info->name);
 

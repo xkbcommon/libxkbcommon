@@ -85,10 +85,6 @@
 #include "utils.h"
 #include "context.h"
 
-typedef uint32_t xkb_level_index_t;
-
-#define XKB_LEVEL_INVALID 0xffffffff
-
 #define XKB_KEY_NAME_LENGTH 4
 
 /* These should all be dynamic. */
@@ -308,6 +304,7 @@ enum xkb_explicit_components {
 };
 
 struct xkb_key {
+    xkb_keycode_t keycode;
     char name[XKB_KEY_NAME_LENGTH];
 
     enum xkb_explicit_components explicit;
@@ -429,18 +426,5 @@ XkbKeyActionEntry(const struct xkb_key *key, xkb_layout_index_t layout,
 
 struct xkb_keymap *
 xkb_map_new(struct xkb_context *ctx);
-
-xkb_layout_index_t
-xkb_key_get_group(struct xkb_state *state, const struct xkb_key *key);
-
-xkb_level_index_t
-xkb_key_get_level(struct xkb_state *state, const struct xkb_key *key,
-                  xkb_layout_index_t layout);
-
-int
-xkb_key_get_syms_by_level(struct xkb_keymap *keymap,
-                          const struct xkb_key *key,
-                          xkb_layout_index_t layout, xkb_level_index_t level,
-                          const xkb_keysym_t **syms_out);
 
 #endif

@@ -93,12 +93,14 @@ typedef uint32_t xkb_mod_index_t;
 typedef uint32_t xkb_mod_mask_t;
 typedef uint32_t xkb_layout_index_t;
 typedef uint32_t xkb_layout_mask_t;
+typedef uint32_t xkb_level_index_t;
 typedef uint32_t xkb_led_index_t;
 typedef uint32_t xkb_led_mask_t;
 
 #define XKB_MOD_INVALID     (0xffffffff)
 #define XKB_LAYOUT_INVALID  (0xffffffff)
 #define XKB_KEYCODE_INVALID (0xffffffff)
+#define XKB_LEVEL_INVALID   (0xffffffff)
 #define XKB_LED_INVALID     (0xffffffff)
 
 #define XKB_KEYCODE_MAX     (0xffffffff - 1)
@@ -454,6 +456,13 @@ xkb_layout_index_t
 xkb_keymap_num_layouts_for_key(struct xkb_keymap *keymap, xkb_keycode_t key);
 
 /**
+ * Returns the number of levels active for the specified key and layout.
+ */
+xkb_level_index_t
+xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t key,
+                              xkb_layout_index_t layout);
+
+/**
  * Returns 1 if the key should repeat, or 0 otherwise.
  */
 int
@@ -537,6 +546,36 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
 int
 xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
                        const xkb_keysym_t **syms_out);
+
+/**
+ * Returns the layout number that would be active for a particular key with
+ * the given state.
+ */
+xkb_layout_index_t
+xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t key);
+
+/**
+ * Returns the level number that would be active for a particular key with
+ * the given state and layout number, usually obtained from
+ * xkb_state_key_get_layout.
+ */
+xkb_level_index_t
+xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t key,
+                        xkb_layout_index_t layout);
+
+/**
+ * Gives the symbols obtained from pressing a particular key with the given
+ * layout and level.  *syms_out will be set to point to an array of keysyms,
+ * with the return value being the number of symbols in *syms_out.  If the
+ * return value is 0, *syms_out will be set to NULL, as there are no symbols
+ * produced by this event.
+ */
+int
+xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
+                                 xkb_keycode_t key,
+                                 xkb_layout_index_t layout,
+                                 xkb_level_index_t level,
+                                 const xkb_keysym_t **syms_out);
 
 /**
  * Modifier and group types for state objects.  This enum is bitmaskable,
