@@ -11,3 +11,4 @@ keyseq
 log
 interactive
 rmlvo-to-kccgst
+print-compiled-keymap
