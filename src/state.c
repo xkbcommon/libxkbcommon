@@ -265,7 +265,9 @@ xkb_filter_mod_lock_func(struct xkb_state *state,
     if (--filter->refcnt > 0)
         return 0;
 
-    state->locked_mods &= ~filter->priv;
+    state->clear_mods |= filter->action.mods.mods.mask;
+    if (!(filter->action.mods.flags & ACTION_LOCK_NO_UNLOCK))
+        state->locked_mods &= ~filter->priv;
 
     filter->func = NULL;
     return 1;
@@ -275,7 +277,9 @@ static void
 xkb_filter_mod_lock_new(struct xkb_state *state, struct xkb_filter *filter)
 {
     filter->priv = state->locked_mods & filter->action.mods.mods.mask;
-    state->locked_mods |= filter->action.mods.mods.mask;
+    state->set_mods |= filter->action.mods.mods.mask;
+    if (!(filter->action.mods.flags & ACTION_LOCK_NO_LOCK))
+        state->locked_mods |= filter->action.mods.mods.mask;
 }
 
 enum xkb_key_latch_state {
