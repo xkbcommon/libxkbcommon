@@ -28,6 +28,7 @@ AM_CFLAGS = \
 	$(BASE_CFLAGS) \
 	$(XMALLOC_ZERO_CFLAGS)
 
+AM_LFLAGS = -o lex.yy.c
 AM_YFLAGS = -d
 
 xkbcommonincludedir = $(includedir)/xkbcommon

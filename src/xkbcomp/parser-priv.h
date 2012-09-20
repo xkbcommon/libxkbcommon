@@ -43,6 +43,6 @@ void
 scanner_error(YYLTYPE *loc, void *scanner, const char *msg);
 
 int
-yylex(YYSTYPE *val, YYLTYPE *loc, void *scanner);
+_xkbcommon_lex(YYSTYPE *val, YYLTYPE *loc, void *scanner);
 
 #endif

@@ -53,6 +53,7 @@ scanner_error_extra(struct YYLTYPE *loc, struct scanner_extra *extra,
 } while (0)
 %}
 
+%option prefix="_xkbcommon_"
 %option reentrant
 %option extra-type="struct scanner_extra *"
 %option bison-bridge bison-locations
@@ -279,9 +280,9 @@ XkbParseString(struct xkb_context *ctx, const char *string,
         return false;
 
     state = yy_scan_string(string, param.scanner);
-    ret = yyparse(&param);
+    ret = _xkbcommon_parse(&param);
     yy_delete_buffer(state, param.scanner);
-    yylex_destroy(param.scanner);
+    _xkbcommon_lex_destroy(param.scanner);
     free(extra.scanFile);
     if (ret != 0)
         return false;
@@ -315,9 +316,9 @@ XkbParseFile(struct xkb_context *ctx, FILE *file,
     if (!extra.scanFile)
         return false;
 
-    yyset_in(file, param.scanner);
-    ret = yyparse(&param);
-    yylex_destroy(param.scanner);
+    _xkbcommon_set_in(file, param.scanner);
+    ret = _xkbcommon_parse(&param);
+    _xkbcommon_lex_destroy(param.scanner);
     free(extra.scanFile);
     if (ret != 0)
         return false;

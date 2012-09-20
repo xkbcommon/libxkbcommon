@@ -30,7 +30,7 @@
 #include "parser-priv.h"
 
 static void
-yyerror(struct YYLTYPE *loc, struct parser_param *param, const char *msg)
+_xkbcommon_error(struct YYLTYPE *loc, struct parser_param *param, const char *msg)
 {
     scanner_error(loc, param->scanner, msg);
 }
@@ -38,6 +38,7 @@ yyerror(struct YYLTYPE *loc, struct parser_param *param, const char *msg)
 #define scanner param->scanner
 %}
 
+%name-prefix    "_xkbcommon_"
 %define         api.pure
 %locations
 %lex-param      { void *scanner }
