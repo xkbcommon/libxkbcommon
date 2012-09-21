@@ -1398,7 +1398,7 @@ FindAutomaticType(struct xkb_context *ctx, xkb_level_index_t width,
 
 /**
  * Ensure the given KeyInfo is in a coherent state, i.e. no gaps between the
- * groups, and reduce to one group if all groups are identical anyway.
+ * groups.
  */
 static void
 PrepareKeyDef(KeyInfo *keyi)
@@ -1431,36 +1431,6 @@ PrepareKeyDef(KeyInfo *keyi)
         darray_copy(groupi->levels, group0->levels);
         groupi->defined = group0->defined;
     }
-
-    /* If all groups are completely identical remove them all */
-    /* exept the first one. */
-    /* XXX: This code needs testing... or removal. */
-    for (i = 1; i <= lastGroup; i++) {
-        GroupInfo *groupi = &keyi->groups[i];
-
-        if (groupi->type != group0->type)
-            break;
-
-        if (!darray_same(groupi->levels, group0->levels) &&
-            (darray_empty(groupi->levels) || darray_empty(group0->levels) ||
-             darray_size(groupi->levels) != darray_size(group0->levels) ||
-             memcmp(darray_mem(groupi->levels, 0),
-                    darray_mem(group0->levels, 0),
-                    darray_size(group0->levels) * sizeof(LevelInfo))))
-            break;
-
-        if (!darray_same(groupi->syms, group0->syms) &&
-            (darray_empty(groupi->syms) || darray_empty(group0->syms) ||
-             darray_size(groupi->syms) != darray_size(group0->syms) ||
-             memcmp(darray_mem(groupi->syms, 0),
-                    darray_mem(group0->syms, 0),
-                    darray_size(group0->syms) * sizeof(xkb_keysym_t))))
-            break;
-    }
-
-    if (i > lastGroup)
-        for (i = 1; i <= lastGroup; i++)
-            ClearGroupInfo(&keyi->groups[i]);
 }
 
 static bool
