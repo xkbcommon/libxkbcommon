@@ -794,6 +794,9 @@ xkb_state_mod_index_is_active(struct xkb_state *state,
     if (idx >= xkb_keymap_num_mods(state->keymap))
         return -1;
 
+    if (type & XKB_STATE_EFFECTIVE)
+        return !!(state->mods & (1 << idx));
+
     if (type & XKB_STATE_DEPRESSED)
         ret |= (state->base_mods & (1 << idx));
     if (type & XKB_STATE_LATCHED)
@@ -925,6 +928,10 @@ xkb_state_layout_index_is_active(struct xkb_state *state,
 
     if (idx >= xkb_keymap_num_layouts(state->keymap))
         return -1;
+
+    /* Can only have one effective group. */
+    if (type & XKB_STATE_EFFECTIVE)
+        return state->group == idx;
 
     if (type & XKB_STATE_DEPRESSED)
         ret |= (state->base_group == idx);
