@@ -78,9 +78,7 @@ if test "x$CC_FOR_BUILD" = x; then
     fi
 fi
 
-if test "x$GCC" = xyes ; then
-    CFLAGS="$CFLAGS -fvisibility=hidden"
-fi
+XORG_TESTSET_CFLAG([CFLAGS], [-fvisibility=hidden])
 
 # Define a configuration option for the XKB config root
 xkb_base=`$PKG_CONFIG --variable=xkb_base xkeyboard-config`
