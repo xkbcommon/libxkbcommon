@@ -219,6 +219,7 @@ XKB_EXPORT xkb_layout_index_t
 xkb_keymap_num_layouts_for_key(struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
     const struct xkb_key *key = XkbKey(keymap, kc);
+
     if (!key)
         return 0;
 
@@ -233,6 +234,7 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t kc,
                               xkb_layout_index_t layout)
 {
     const struct xkb_key *key = XkbKey(keymap, kc);
+
     if (!key)
         return 0;
 
@@ -302,6 +304,8 @@ xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
     const struct xkb_key *key = XkbKey(keymap, kc);
     int num_syms;
 
+    if (!key)
+        goto err;
     if (layout >= key->num_groups)
         goto err;
     if (level >= XkbKeyGroupWidth(keymap, key, layout))
@@ -326,6 +330,7 @@ XKB_EXPORT int
 xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
     const struct xkb_key *key = XkbKey(keymap, kc);
+
     if (!key)
         return 0;
 

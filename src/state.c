@@ -149,11 +149,11 @@ xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
 XKB_EXPORT xkb_layout_index_t
 xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t kc)
 {
-    const struct xkb_key *key = XkbKey(state->keymap, kc);
     xkb_layout_index_t ret =
         xkb_state_serialize_layout(state, XKB_STATE_EFFECTIVE);
+    const struct xkb_key *key = XkbKey(state->keymap, kc);
 
-    if (key->num_groups == 0)
+    if (!key || key->num_groups == 0)
         return XKB_LAYOUT_INVALID;
 
     if (ret < key->num_groups)
@@ -631,6 +631,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
     xkb_mod_index_t i;
     xkb_mod_mask_t bit;
     const struct xkb_key *key = XkbKey(state->keymap, kc);
+
     if (!key)
         return;
 
@@ -713,6 +714,7 @@ xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t kc,
     xkb_layout_index_t layout;
     xkb_level_index_t level;
     const struct xkb_key *key = XkbKey(state->keymap, kc);
+
     if (!key)
         return -1;
 
@@ -1010,6 +1012,7 @@ xkb_state_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t kc,
                                 xkb_mod_index_t idx)
 {
     const struct xkb_key *key = XkbKey(state->keymap, kc);
+
     if (!key)
         return 0;
 
@@ -1029,6 +1032,7 @@ xkb_state_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t kc,
                                    xkb_mod_mask_t mask)
 {
     const struct xkb_key *key = XkbKey(state->keymap, kc);
+
     if (!key)
         return 0;
 
