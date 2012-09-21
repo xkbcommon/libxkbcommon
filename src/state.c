@@ -128,12 +128,15 @@ get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
  * Returns the level to use for the given key and state, or
  * XKB_LEVEL_INVALID.
  */
-xkb_level_index_t
+XKB_EXPORT xkb_level_index_t
 xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
                         xkb_layout_index_t layout)
 {
     const struct xkb_key *key = XkbKey(state->keymap, kc);
     struct xkb_kt_map_entry *entry;
+
+    if (!key || layout >= key->num_groups)
+        return XKB_LEVEL_INVALID;
 
     /* If we don't find an explicit match the default is 0. */
     entry = get_entry_for_key_state(state, key, layout);
