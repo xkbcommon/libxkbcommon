@@ -131,7 +131,7 @@ xkb_keymap_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx)
 {
     const char *name;
 
-    if (idx >= xkb_map_num_mods(keymap))
+    if (idx >= xkb_keymap_num_mods(keymap))
         return NULL;
 
     /* First try to find a legacy modifier name.  If that fails, try to
@@ -203,13 +203,13 @@ xkb_keymap_layout_get_index(struct xkb_keymap *keymap, const char *name)
     xkb_layout_index_t i;
 
     if (atom == XKB_ATOM_NONE)
-        return XKB_GROUP_INVALID;
+        return XKB_LAYOUT_INVALID;
 
     for (i = 0; i < num_groups; i++)
         if (keymap->group_names[i] == atom)
             return i;
 
-    return XKB_GROUP_INVALID;
+    return XKB_LAYOUT_INVALID;
 }
 
 /**
@@ -263,7 +263,7 @@ xkb_keymap_num_leds(struct xkb_keymap *keymap)
 XKB_EXPORT const char *
 xkb_keymap_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx)
 {
-    if (idx >= xkb_map_num_leds(keymap))
+    if (idx >= xkb_keymap_num_leds(keymap))
         return NULL;
 
     return xkb_atom_text(keymap->ctx, keymap->indicators[idx].name);
@@ -272,10 +272,10 @@ xkb_keymap_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx)
 /**
  * Returns the index for a named group.
  */
-XKB_EXPORT xkb_group_index_t
+XKB_EXPORT xkb_layout_index_t
 xkb_keymap_led_get_index(struct xkb_keymap *keymap, const char *name)
 {
-    xkb_led_index_t num_leds = xkb_map_num_leds(keymap);
+    xkb_led_index_t num_leds = xkb_keymap_num_leds(keymap);
     xkb_atom_t atom = xkb_atom_lookup(keymap->ctx, name);
     xkb_led_index_t i;
 
@@ -291,13 +291,13 @@ xkb_keymap_led_get_index(struct xkb_keymap *keymap, const char *name)
 
 static struct xkb_kt_map_entry *
 get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
-                        xkb_group_index_t group)
+                        xkb_layout_index_t group)
 {
     struct xkb_key_type *type;
     xkb_mod_mask_t active_mods;
     unsigned int i;
 
-    type = XkbKeyType(xkb_state_get_map(state), key, group);
+    type = XkbKeyType(xkb_state_get_keymap(state), key, group);
     active_mods = xkb_state_serialize_mods(state, XKB_STATE_EFFECTIVE);
     active_mods &= type->mods.mask;
 
@@ -404,7 +404,7 @@ XKB_EXPORT int
 xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t kc,
                        const xkb_keysym_t **syms_out)
 {
-    struct xkb_keymap *keymap = xkb_state_get_map(state);
+    struct xkb_keymap *keymap = xkb_state_get_keymap(state);
     xkb_layout_index_t layout;
     xkb_level_index_t level;
     const struct xkb_key *key = XkbKey(keymap, kc);
@@ -444,10 +444,10 @@ static xkb_mod_mask_t
 key_get_consumed(struct xkb_state *state, const struct xkb_key *key)
 {
     struct xkb_kt_map_entry *entry;
-    xkb_group_index_t group;
+    xkb_layout_index_t group;
 
     group = xkb_state_key_get_layout(state, key->keycode);
-    if (group == XKB_GROUP_INVALID)
+    if (group == XKB_LAYOUT_INVALID)
         return 0;
 
     entry = get_entry_for_key_state(state, key, group);
@@ -473,7 +473,7 @@ XKB_EXPORT int
 xkb_state_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t kc,
                                 xkb_mod_index_t idx)
 {
-    const struct xkb_key *key = XkbKey(xkb_state_get_map(state), kc);
+    const struct xkb_key *key = XkbKey(xkb_state_get_keymap(state), kc);
     if (!key)
         return 0;
 
@@ -492,7 +492,7 @@ XKB_EXPORT xkb_mod_mask_t
 xkb_state_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t kc,
                                    xkb_mod_mask_t mask)
 {
-    const struct xkb_key *key = XkbKey(xkb_state_get_map(state), kc);
+    const struct xkb_key *key = XkbKey(xkb_state_get_keymap(state), kc);
     if (!key)
         return 0;
 

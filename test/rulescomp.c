@@ -40,7 +40,7 @@ test_rmlvo(struct xkb_context *context, const char *rules,
         fprintf(stderr, "Compiled '%s' '%s' '%s' '%s' '%s'\n",
                 strnull(rules), strnull(model), strnull(layout),
                 strnull(variant), strnull(options));
-        xkb_map_unref(keymap);
+        xkb_keymap_unref(keymap);
     }
 
     return keymap != NULL;
@@ -56,7 +56,7 @@ test_rmlvo_silent(struct xkb_context *context, const char *rules,
     keymap = test_compile_rules(context, rules, model, layout, variant,
                                 options);
     if (keymap)
-        xkb_map_unref(keymap);
+        xkb_keymap_unref(keymap);
 
     return keymap != NULL;
 }

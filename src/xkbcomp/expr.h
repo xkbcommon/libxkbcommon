@@ -70,7 +70,7 @@ ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
 
 bool
 ExprResolveGroup(struct xkb_context *ctx, const ExprDef *expr,
-                 xkb_group_index_t *group_rtrn);
+                 xkb_layout_index_t *group_rtrn);
 
 bool
 ExprResolveButton(struct xkb_context *ctx, const ExprDef *expr,

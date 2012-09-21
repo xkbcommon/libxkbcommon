@@ -73,10 +73,10 @@ struct xkb_filter {
 };
 
 struct xkb_state {
-    xkb_group_index_t base_group; /**< depressed */
-    xkb_group_index_t latched_group;
-    xkb_group_index_t locked_group;
-    xkb_group_index_t group; /**< effective */
+    xkb_layout_index_t base_group; /**< depressed */
+    xkb_layout_index_t latched_group;
+    xkb_layout_index_t locked_group;
+    xkb_layout_index_t group; /**< effective */
 
     xkb_mod_mask_t base_mods; /**< depressed */
     xkb_mod_mask_t latched_mods;
@@ -459,7 +459,7 @@ xkb_state_new(struct xkb_keymap *keymap)
         return NULL;
 
     ret->refcnt = 1;
-    ret->keymap = xkb_map_ref(keymap);
+    ret->keymap = xkb_keymap_ref(keymap);
 
     return ret;
 }
@@ -477,13 +477,13 @@ xkb_state_unref(struct xkb_state *state)
     if (--state->refcnt > 0)
         return;
 
-    xkb_map_unref(state->keymap);
+    xkb_keymap_unref(state->keymap);
     darray_free(state->filters);
     free(state);
 }
 
 XKB_EXPORT struct xkb_keymap *
-xkb_state_get_map(struct xkb_state *state)
+xkb_state_get_keymap(struct xkb_state *state)
 {
     return state->keymap;
 }
@@ -598,9 +598,9 @@ xkb_state_update_mask(struct xkb_state *state,
                       xkb_mod_mask_t base_mods,
                       xkb_mod_mask_t latched_mods,
                       xkb_mod_mask_t locked_mods,
-                      xkb_group_index_t base_group,
-                      xkb_group_index_t latched_group,
-                      xkb_group_index_t locked_group)
+                      xkb_layout_index_t base_group,
+                      xkb_layout_index_t latched_group,
+                      xkb_layout_index_t locked_group)
 {
     xkb_mod_index_t num_mods;
     xkb_mod_index_t idx;
@@ -608,7 +608,7 @@ xkb_state_update_mask(struct xkb_state *state,
     state->base_mods = 0;
     state->latched_mods = 0;
     state->locked_mods = 0;
-    num_mods = xkb_map_num_mods(state->keymap);
+    num_mods = xkb_keymap_num_mods(state->keymap);
 
     for (idx = 0; idx < num_mods; idx++) {
         xkb_mod_mask_t mod = (1 << idx);
@@ -654,11 +654,11 @@ xkb_state_serialize_mods(struct xkb_state *state,
  * Serialises the requested group state, with all the same disclaimers as
  * in xkb_state_update_mask.
  */
-XKB_EXPORT xkb_group_index_t
-xkb_state_serialize_group(struct xkb_state *state,
-                          enum xkb_state_component type)
+XKB_EXPORT xkb_layout_index_t
+xkb_state_serialize_layout(struct xkb_state *state,
+                           enum xkb_state_component type)
 {
-    xkb_group_index_t ret = 0;
+    xkb_layout_index_t ret = 0;
 
     if (type == XKB_STATE_EFFECTIVE)
         return state->group;
@@ -684,7 +684,7 @@ xkb_state_mod_index_is_active(struct xkb_state *state,
 {
     int ret = 0;
 
-    if (idx >= xkb_map_num_mods(state->keymap))
+    if (idx >= xkb_keymap_num_mods(state->keymap))
         return -1;
 
     if (type & XKB_STATE_DEPRESSED)
@@ -732,7 +732,7 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
     xkb_mod_index_t idx = 0;
     uint32_t wanted = 0;
     int ret = 0;
-    xkb_mod_index_t num_mods = xkb_map_num_mods(state->keymap);
+    xkb_mod_index_t num_mods = xkb_keymap_num_mods(state->keymap);
 
     va_start(ap, match);
     while (1) {
@@ -761,7 +761,7 @@ XKB_EXPORT int
 xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
                              enum xkb_state_component type)
 {
-    xkb_mod_index_t idx = xkb_map_mod_get_index(state->keymap, name);
+    xkb_mod_index_t idx = xkb_keymap_mod_get_index(state->keymap, name);
 
     if (idx == XKB_MOD_INVALID)
         return -1;
@@ -790,7 +790,7 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
         str = va_arg(ap, const char *);
         if (str == NULL)
             break;
-        idx = xkb_map_mod_get_index(state->keymap, str);
+        idx = xkb_keymap_mod_get_index(state->keymap, str);
         if (idx == XKB_MOD_INVALID) {
             ret = -1;
             break;
@@ -810,13 +810,13 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
  * not, or -1 if the group is invalid.
  */
 XKB_EXPORT int
-xkb_state_group_index_is_active(struct xkb_state *state,
-                                xkb_group_index_t idx,
+xkb_state_layout_index_is_active(struct xkb_state *state,
+                                xkb_layout_index_t idx,
                                 enum xkb_state_component type)
 {
     int ret = 0;
 
-    if (idx >= xkb_map_num_groups(state->keymap))
+    if (idx >= xkb_keymap_num_layouts(state->keymap))
         return -1;
 
     if (type & XKB_STATE_DEPRESSED)
@@ -834,15 +834,15 @@ xkb_state_group_index_is_active(struct xkb_state *state,
  * not, or -1 if the modifier is invalid.
  */
 XKB_EXPORT int
-xkb_state_group_name_is_active(struct xkb_state *state, const char *name,
-                               enum xkb_state_component type)
+xkb_state_layout_name_is_active(struct xkb_state *state, const char *name,
+                                enum xkb_state_component type)
 {
-    xkb_group_index_t idx = xkb_map_group_get_index(state->keymap, name);
+    xkb_layout_index_t idx = xkb_keymap_layout_get_index(state->keymap, name);
 
-    if (idx == XKB_GROUP_INVALID)
+    if (idx == XKB_LAYOUT_INVALID)
         return -1;
 
-    return xkb_state_group_index_is_active(state, idx, type);
+    return xkb_state_layout_index_is_active(state, idx, type);
 }
 
 /**
@@ -851,7 +851,7 @@ xkb_state_group_name_is_active(struct xkb_state *state, const char *name,
 XKB_EXPORT int
 xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx)
 {
-    if (idx >= xkb_map_num_leds(state->keymap))
+    if (idx >= xkb_keymap_num_leds(state->keymap))
         return -1;
 
     return !!(state->leds & (1 << idx));
@@ -863,7 +863,7 @@ xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx)
 XKB_EXPORT int
 xkb_state_led_name_is_active(struct xkb_state *state, const char *name)
 {
-    xkb_led_index_t idx = xkb_map_led_get_index(state->keymap, name);
+    xkb_led_index_t idx = xkb_keymap_led_get_index(state->keymap, name);
 
     if (idx == XKB_LED_INVALID)
         return -1;

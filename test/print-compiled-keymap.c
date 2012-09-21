@@ -87,7 +87,7 @@ main(int argc, char *argv[])
         goto err_ctx;
     }
 
-    dump = xkb_map_get_as_string(keymap);
+    dump = xkb_keymap_get_as_string(keymap);
     if (!dump) {
         fprintf(stderr, "Couldn't get the keymap string\n");
         goto err_map;
@@ -98,7 +98,7 @@ main(int argc, char *argv[])
     ret = EXIT_SUCCESS;
     free(dump);
 err_map:
-    xkb_map_unref(keymap);
+    xkb_keymap_unref(keymap);
 err_ctx:
     xkb_context_unref(ctx);
 err_out:

@@ -31,7 +31,7 @@ test_file(struct xkb_context *ctx, const char *path_rel)
     if (!keymap)
         return 0;
 
-    xkb_map_unref(keymap);
+    xkb_keymap_unref(keymap);
     return 1;
 }
 

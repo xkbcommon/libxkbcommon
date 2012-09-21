@@ -25,7 +25,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "xkbcommon/xkbcommon.h"
 #include "test.h"
 
 #define DATA_PATH "keymaps/stringcomp.data"
@@ -48,7 +47,7 @@ main(int argc, char *argv[])
     keymap = test_compile_string(ctx, original);
     assert(keymap);
 
-    dump = xkb_map_get_as_string(keymap);
+    dump = xkb_keymap_get_as_string(keymap);
     assert(dump);
 
     if (!streq(original, dump)) {
@@ -66,7 +65,7 @@ main(int argc, char *argv[])
 
     free(original);
     free(dump);
-    xkb_map_unref(keymap);
+    xkb_keymap_unref(keymap);
 
     /* Make sure we can't (falsely claim to) compile an empty string. */
     keymap = test_compile_string(ctx, "");

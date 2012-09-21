@@ -32,7 +32,7 @@
 void
 InitVModInfo(VModInfo *info, struct xkb_keymap *keymap)
 {
-    xkb_group_index_t i;
+    xkb_layout_index_t i;
 
     memset(info, 0, sizeof(*info));
     for (i = 0; i < XKB_NUM_VIRTUAL_MODS; i++)

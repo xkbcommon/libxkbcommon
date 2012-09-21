@@ -108,7 +108,7 @@ typedef struct _KeyInfo {
     xkb_atom_t dfltType;
 
     enum xkb_range_exceed_type out_of_range_group_action;
-    xkb_group_index_t out_of_range_group_number;
+    xkb_layout_index_t out_of_range_group_number;
 } KeyInfo;
 
 static void
@@ -139,7 +139,7 @@ InitKeyInfo(KeyInfo *keyi, unsigned file_id)
 static void
 ClearKeyInfo(KeyInfo *keyi)
 {
-    xkb_group_index_t i;
+    xkb_layout_index_t i;
     for (i = 0; i < XKB_NUM_GROUPS; i++)
         ClearGroupInfo(&keyi->groups[i]);
 }
@@ -161,7 +161,7 @@ typedef struct _SymbolsInfo {
     int errorCount;
     unsigned file_id;
     enum merge_mode merge;
-    xkb_group_index_t explicit_group;
+    xkb_layout_index_t explicit_group;
     darray(KeyInfo) keys;
     KeyInfo dflt;
     VModInfo vmods;
@@ -198,7 +198,7 @@ ClearSymbolsInfo(SymbolsInfo * info)
 
 static bool
 MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
-            bool report, xkb_group_index_t group, unsigned long key_name)
+            bool report, xkb_layout_index_t group, unsigned long key_name)
 {
     xkb_level_index_t i, numLevels;
     enum { INTO = (1 << 0), FROM = (1 << 1) } using;
@@ -393,7 +393,7 @@ UseNewKeyField(enum key_field field, enum key_field old, enum key_field new,
 static bool
 MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from)
 {
-    xkb_group_index_t i;
+    xkb_layout_index_t i;
     enum key_field collide = 0;
     bool clobber, report;
     int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
@@ -626,12 +626,12 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *stmt)
 
 static bool
 GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
-              unsigned what, xkb_group_index_t *ndx_rtrn)
+              unsigned what, xkb_layout_index_t *ndx_rtrn)
 {
     const char *name = (what == SYMBOLS ? "symbols" : "actions");
 
     if (arrayNdx == NULL) {
-        xkb_group_index_t i;
+        xkb_layout_index_t i;
         enum group_field field = (what == SYMBOLS ?
                                   GROUP_FIELD_SYMS : GROUP_FIELD_ACTS);
 
@@ -689,7 +689,7 @@ static bool
 AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
                 ExprDef *value)
 {
-    xkb_group_index_t ndx;
+    xkb_layout_index_t ndx;
     GroupInfo *groupi;
     unsigned int nSyms;
     xkb_level_index_t nLevels;
@@ -779,7 +779,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
                 ExprDef *value)
 {
     unsigned int i;
-    xkb_group_index_t ndx;
+    xkb_layout_index_t ndx;
     GroupInfo *groupi;
     unsigned int nActs;
     ExprDef *act;
@@ -854,7 +854,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     struct xkb_context *ctx = info->keymap->ctx;
 
     if (istreq(field, "type")) {
-        xkb_group_index_t ndx;
+        xkb_layout_index_t ndx;
         xkb_atom_t val;
 
         if (!ExprResolveString(ctx, value, &val))
@@ -980,7 +980,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     }
     else if (istreq(field, "groupsredirect") ||
              istreq(field, "redirectgroups")) {
-        xkb_group_index_t grp;
+        xkb_layout_index_t grp;
 
         if (!ExprResolveGroup(ctx, value, &grp)) {
             log_err(info->keymap->ctx,
@@ -1008,7 +1008,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
 static int
 SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
 {
-    xkb_group_index_t grp;
+    xkb_layout_index_t grp;
     xkb_atom_t name;
 
     if (!arrayNdx) {
@@ -1121,7 +1121,7 @@ HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
 static bool
 SetExplicitGroup(SymbolsInfo *info, KeyInfo *keyi)
 {
-    xkb_group_index_t i;
+    xkb_layout_index_t i;
 
     if (info->explicit_group == 0)
         return true;
@@ -1149,7 +1149,7 @@ static int
 HandleSymbolsDef(SymbolsInfo *info, SymbolsDef *stmt)
 {
     KeyInfo keyi;
-    xkb_group_index_t i;
+    xkb_layout_index_t i;
 
     keyi = info->dflt;
     for (i = 0; i < XKB_NUM_GROUPS; i++) {
@@ -1282,7 +1282,7 @@ static struct xkb_key *
 FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym)
 {
     struct xkb_key *key, *ret = NULL;
-    xkb_group_index_t group, min_group = UINT32_MAX;
+    xkb_layout_index_t group, min_group = UINT32_MAX;
     xkb_level_index_t level, min_level = UINT16_MAX;
 
     xkb_foreach_key(key, keymap) {
@@ -1403,7 +1403,7 @@ FindAutomaticType(struct xkb_context *ctx, xkb_level_index_t width,
 static void
 PrepareKeyDef(KeyInfo *keyi)
 {
-    xkb_group_index_t i, lastGroup;
+    xkb_layout_index_t i, lastGroup;
     const GroupInfo *group0;
     bool identical;
 
@@ -1474,7 +1474,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
 {
     struct xkb_keymap *keymap = info->keymap;
     struct xkb_key *key;
-    xkb_group_index_t i;
+    xkb_layout_index_t i;
     bool haveActions;
     unsigned int sizeSyms;
     unsigned int symIndex;
@@ -1676,7 +1676,7 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
 {
     KeyInfo *keyi;
     ModMapEntry *mm;
-    xkb_group_index_t i;
+    xkb_layout_index_t i;
     struct xkb_key *key;
 
     keymap->symbols_section_name = strdup_safe(info->name);

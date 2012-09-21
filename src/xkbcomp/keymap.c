@@ -69,7 +69,7 @@ UpdateActionMods(struct xkb_keymap *keymap, union xkb_action *act,
  */
 static struct xkb_sym_interpret *
 FindInterpForKey(struct xkb_keymap *keymap, struct xkb_key *key,
-                 xkb_group_index_t group, xkb_level_index_t level)
+                 xkb_layout_index_t group, xkb_level_index_t level)
 {
     struct xkb_sym_interpret *interp;
     const xkb_keysym_t *syms;
@@ -131,7 +131,7 @@ static bool
 ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
 {
     xkb_mod_mask_t vmodmask = 0;
-    xkb_group_index_t group;
+    xkb_layout_index_t group;
     xkb_level_index_t width, level;
 
     /* If we've been told not to bind interps to this key, then don't. */

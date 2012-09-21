@@ -221,14 +221,14 @@ print_keycode(struct keyboard *kbd, xkb_keycode_t keycode)
     unsigned int nsyms;
     char s[16];
     uint32_t unicode;
-    xkb_group_index_t group;
+    xkb_layout_index_t group;
     xkb_mod_index_t mod;
     xkb_led_index_t led;
 
     state = kbd->state;
-    keymap = xkb_state_get_map(state);
+    keymap = xkb_state_get_keymap(state);
 
-    nsyms = xkb_key_get_syms(state, keycode, &syms);
+    nsyms = xkb_state_key_get_syms(state, keycode, &syms);
 
     if (nsyms <= 0)
         return;
@@ -254,29 +254,29 @@ print_keycode(struct keyboard *kbd, xkb_keycode_t keycode)
 #endif
 
     printf("groups [ ");
-    for (group = 0; group < xkb_map_num_groups(keymap); group++) {
-        if (!xkb_state_group_index_is_active(state, group, XKB_STATE_EFFECTIVE))
+    for (group = 0; group < xkb_keymap_num_layouts(keymap); group++) {
+        if (!xkb_state_layout_index_is_active(state, group, XKB_STATE_EFFECTIVE))
             continue;
-        printf("%s (%d) ", xkb_map_group_get_name(keymap, group), group);
+        printf("%s (%d) ", xkb_keymap_layout_get_name(keymap, group), group);
     }
     printf("] ");
 
     printf("mods [ ");
-    for (mod = 0; mod < xkb_map_num_mods(keymap); mod++) {
+    for (mod = 0; mod < xkb_keymap_num_mods(keymap); mod++) {
         if (!xkb_state_mod_index_is_active(state, mod, XKB_STATE_EFFECTIVE))
             continue;
-        if (xkb_key_mod_index_is_consumed(state, keycode, mod))
-            printf("-%s ", xkb_map_mod_get_name(keymap, mod));
+        if (xkb_state_mod_index_is_consumed(state, keycode, mod))
+            printf("-%s ", xkb_keymap_mod_get_name(keymap, mod));
         else
-            printf("%s ", xkb_map_mod_get_name(keymap, mod));
+            printf("%s ", xkb_keymap_mod_get_name(keymap, mod));
     }
     printf("] ");
 
     printf("leds [ ");
-    for (led = 0; led < xkb_map_num_leds(keymap); led++) {
+    for (led = 0; led < xkb_keymap_num_leds(keymap); led++) {
         if (!xkb_state_led_index_is_active(state, led))
             continue;
-        printf("%s ", xkb_map_led_get_name(keymap, led));
+        printf("%s ", xkb_keymap_led_get_name(keymap, led));
     }
     printf("] ");
 
@@ -302,9 +302,9 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
         return;
 
     keycode = EVDEV_OFFSET + code;
-    keymap = xkb_state_get_map(kbd->state);
+    keymap = xkb_state_get_keymap(kbd->state);
 
-    if (value == KEY_STATE_REPEAT && !xkb_key_repeats(keymap, keycode))
+    if (value == KEY_STATE_REPEAT && !xkb_keymap_key_repeats(keymap, keycode))
         return;
 
     if (value != KEY_STATE_RELEASE)
@@ -492,7 +492,7 @@ err_stty:
     system("stty echo");
     free_keyboards(kbds);
 err_xkb:
-    xkb_map_unref(keymap);
+    xkb_keymap_unref(keymap);
 err_ctx:
     xkb_context_unref(ctx);
 err_out:

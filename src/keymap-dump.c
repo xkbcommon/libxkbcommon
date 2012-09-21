@@ -557,7 +557,7 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
 
 static bool
 write_keysyms(struct xkb_keymap *keymap, struct buf *buf,
-              struct xkb_key *key, xkb_group_index_t group)
+              struct xkb_key *key, xkb_layout_index_t group)
 {
     const xkb_keysym_t *syms;
     int num_syms;
@@ -598,7 +598,7 @@ static bool
 write_symbols(struct xkb_keymap *keymap, struct buf *buf)
 {
     struct xkb_key *key;
-    xkb_group_index_t group, tmp;
+    xkb_layout_index_t group, tmp;
     bool showActions;
 
     if (keymap->symbols_section_name)
@@ -746,7 +746,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
 }
 
 XKB_EXPORT char *
-xkb_map_get_as_string(struct xkb_keymap *keymap)
+xkb_keymap_get_as_string(struct xkb_keymap *keymap)
 {
     bool ok;
     struct buf buf = { NULL, 0, 0 };

@@ -386,7 +386,7 @@ ExprResolveInteger(struct xkb_context *ctx, const ExprDef *expr,
 
 bool
 ExprResolveGroup(struct xkb_context *ctx, const ExprDef *expr,
-                 xkb_group_index_t *group_rtrn)
+                 xkb_layout_index_t *group_rtrn)
 {
     bool ok;
     int result;
@@ -402,7 +402,7 @@ ExprResolveGroup(struct xkb_context *ctx, const ExprDef *expr,
         return false;
     }
 
-    *group_rtrn = (xkb_group_index_t) result;
+    *group_rtrn = (xkb_layout_index_t) result;
     return true;
 }
 

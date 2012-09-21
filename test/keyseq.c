@@ -75,7 +75,7 @@ test_key_seq(struct xkb_keymap *keymap, ...)
         kc = va_arg(ap, int) + EVDEV_OFFSET;
         op = va_arg(ap, int);
 
-        nsyms = xkb_key_get_syms(state, kc, &syms);
+        nsyms = xkb_state_key_get_syms(state, kc, &syms);
         fprintf(stderr, "got %d syms for key 0x%x: [", nsyms, kc);
 
         if (op == DOWN || op == BOTH)
@@ -378,7 +378,7 @@ main(void)
 
                         KEY_V,           BOTH,  XKB_KEY_p,               FINISH));
 
-    xkb_map_unref(keymap);
+    xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
     return 0;
 }

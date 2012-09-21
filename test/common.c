@@ -117,8 +117,8 @@ test_compile_file(struct xkb_context *context, const char *path_rel)
     }
     assert(file != NULL);
 
-    keymap = xkb_map_new_from_file(context, file,
-                                   XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+    keymap = xkb_keymap_new_from_file(context, file,
+                                      XKB_KEYMAP_FORMAT_TEXT_V1, 0);
     fclose(file);
 
     if (!keymap) {
@@ -136,8 +136,8 @@ test_compile_string(struct xkb_context *context, const char *string)
 {
     struct xkb_keymap *keymap;
 
-    keymap = xkb_map_new_from_string(context, string,
-                                     XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+    keymap = xkb_keymap_new_from_string(context, string,
+                                        XKB_KEYMAP_FORMAT_TEXT_V1, 0);
     if (!keymap) {
         fprintf(stderr, "Failed to compile string\n");
         return NULL;
@@ -160,7 +160,7 @@ test_compile_rules(struct xkb_context *context, const char *rules,
         .options = options
     };
 
-    keymap = xkb_map_new_from_names(context, &rmlvo, 0);
+    keymap = xkb_keymap_new_from_names(context, &rmlvo, 0);
     if (!keymap) {
         fprintf(stderr,
                 "Failed to compile RMLVO: '%s', '%s', '%s', '%s', '%s'\n",

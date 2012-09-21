@@ -53,14 +53,14 @@ compile_keymap_file(struct xkb_context *ctx, XkbFile *file)
     return keymap;
 
 err:
-    xkb_map_unref(keymap);
+    xkb_keymap_unref(keymap);
     return NULL;
 }
 
 XKB_EXPORT struct xkb_keymap *
-xkb_map_new_from_names(struct xkb_context *ctx,
-                       const struct xkb_rule_names *rmlvo_in,
-                       enum xkb_map_compile_flags flags)
+xkb_keymap_new_from_names(struct xkb_context *ctx,
+                          const struct xkb_rule_names *rmlvo_in,
+                          enum xkb_keymap_compile_flags flags)
 {
     bool ok;
     struct xkb_component_names kccgst;
@@ -117,10 +117,10 @@ xkb_map_new_from_names(struct xkb_context *ctx,
 }
 
 XKB_EXPORT struct xkb_keymap *
-xkb_map_new_from_string(struct xkb_context *ctx,
-                        const char *string,
-                        enum xkb_keymap_format format,
-                        enum xkb_map_compile_flags flags)
+xkb_keymap_new_from_string(struct xkb_context *ctx,
+                           const char *string,
+                           enum xkb_keymap_format format,
+                           enum xkb_keymap_compile_flags flags)
 {
     bool ok;
     XkbFile *file;
@@ -148,10 +148,10 @@ xkb_map_new_from_string(struct xkb_context *ctx,
 }
 
 XKB_EXPORT struct xkb_keymap *
-xkb_map_new_from_file(struct xkb_context *ctx,
-                      FILE *file,
-                      enum xkb_keymap_format format,
-                      enum xkb_map_compile_flags flags)
+xkb_keymap_new_from_file(struct xkb_context *ctx,
+                         FILE *file,
+                         enum xkb_keymap_format format,
+                         enum xkb_keymap_compile_flags flags)
 {
     bool ok;
     XkbFile *xkb_file;

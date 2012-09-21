@@ -364,7 +364,7 @@ HandleLockMods(struct xkb_keymap *keymap, union xkb_action *action,
 static bool
 CheckGroupField(struct xkb_keymap *keymap, unsigned action,
                 const ExprDef *value, enum xkb_action_flags *flags_inout,
-                xkb_group_index_t *grp_rtrn)
+                xkb_layout_index_t *grp_rtrn)
 {
     const ExprDef *spec;
 
@@ -396,7 +396,7 @@ HandleSetLatchGroup(struct xkb_keymap *keymap, union xkb_action *action,
 {
     struct xkb_group_action *act = &action->group;
     enum xkb_action_flags rtrn, t1;
-    xkb_group_index_t t2;
+    xkb_layout_index_t t2;
 
     if (array_ndx != NULL) {
         switch (field) {
@@ -443,7 +443,7 @@ HandleLockGroup(struct xkb_keymap *keymap, union xkb_action *action,
 {
     struct xkb_group_action *act = &action->group;
     enum xkb_action_flags t1;
-    xkb_group_index_t t2;
+    xkb_layout_index_t t2;
 
     if ((array_ndx != NULL) && (field == ACTION_FIELD_GROUP))
         return ReportActionNotArray(keymap, action->type, field);

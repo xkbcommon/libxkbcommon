@@ -25,6 +25,8 @@
 
 #include <assert.h>
 
+ /* Don't use compat names in internal code. */
+#define _XKBCOMMON_COMPAT_H
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
 
