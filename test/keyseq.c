@@ -379,6 +379,46 @@ main(void)
                         KEY_V,           BOTH,  XKB_KEY_p,               FINISH));
 
     xkb_keymap_unref(keymap);
+    assert(ctx);
+    keymap = test_compile_rules(ctx, "evdev", "", "us,il,ru", "",
+                                "grp:alt_shift_toggle_bidir,grp:menu_toggle");
+    assert(keymap);
+
+    assert(test_key_seq(keymap,
+                        KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L,        NEXT,
+                        KEY_LEFTALT,   DOWN, XKB_KEY_ISO_Prev_Group, NEXT,
+                        KEY_LEFTALT,   UP,   XKB_KEY_ISO_Prev_Group, NEXT,
+                        KEY_LEFTSHIFT, UP,   XKB_KEY_Shift_L,        FINISH));
+
+    assert(test_key_seq(keymap,
+                        KEY_LEFTALT,   DOWN, XKB_KEY_Alt_L,          NEXT,
+                        KEY_LEFTSHIFT, DOWN, XKB_KEY_ISO_Prev_Group, NEXT,
+                        KEY_LEFTSHIFT, UP,   XKB_KEY_ISO_Prev_Group, NEXT,
+                        KEY_LEFTALT,   UP,   XKB_KEY_Alt_L,          FINISH));
+
+    /* Check backwards (negative) group switching and wrapping. */
+    assert(test_key_seq(keymap,
+                        KEY_H,         BOTH, XKB_KEY_h,              NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,     NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_H,         BOTH, XKB_KEY_Cyrillic_er,    NEXT,
+                        KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L,        NEXT,
+                        KEY_LEFTALT,   BOTH, XKB_KEY_ISO_Prev_Group, NEXT,
+                        KEY_LEFTSHIFT, UP,   XKB_KEY_Shift_L,        NEXT,
+                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,     NEXT,
+                        KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L,        NEXT,
+                        KEY_LEFTALT,   BOTH, XKB_KEY_ISO_Prev_Group, NEXT,
+                        KEY_LEFTSHIFT, UP,   XKB_KEY_Shift_L,        NEXT,
+                        KEY_H,         BOTH, XKB_KEY_h,              NEXT,
+                        KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L,        NEXT,
+                        KEY_LEFTALT,   BOTH, XKB_KEY_ISO_Prev_Group, NEXT,
+                        KEY_LEFTSHIFT, UP,   XKB_KEY_Shift_L,        NEXT,
+                        KEY_H,         BOTH, XKB_KEY_Cyrillic_er,    NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_H,         BOTH, XKB_KEY_h,              FINISH));
+
+    xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
     return 0;
 }

@@ -73,9 +73,10 @@ struct xkb_filter {
 };
 
 struct xkb_state {
-    xkb_layout_index_t base_group; /**< depressed */
-    xkb_layout_index_t latched_group;
-    xkb_layout_index_t locked_group;
+    /* These may be negative, because of -1 group actions. */
+    int32_t base_group; /**< depressed */
+    int32_t latched_group;
+    int32_t locked_group;
     xkb_layout_index_t group; /**< effective */
 
     xkb_mod_mask_t base_mods; /**< depressed */
@@ -143,7 +144,7 @@ xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
 }
 
 static xkb_layout_index_t
-wrap_group_into_range(xkb_layout_index_t group,
+wrap_group_into_range(int32_t group,
                       xkb_layout_index_t num_groups,
                       enum xkb_range_exceed_type out_of_range_group_action,
                       xkb_layout_index_t out_of_range_group_number)
@@ -161,11 +162,21 @@ wrap_group_into_range(xkb_layout_index_t group,
         return out_of_range_group_number;
 
     case RANGE_SATURATE:
-        return num_groups - 1;
+        if (group < 0)
+            return 0;
+        else
+            return num_groups - 1;
 
     case RANGE_WRAP:
     default:
-        return group % num_groups;
+        /*
+         * C99 says a negative dividend in a modulo operation always
+         * gives a negative result.
+         */
+        if (group < 0)
+            return ((int) num_groups + (group % (int) num_groups));
+        else
+            return group % num_groups;
     }
 }
 
@@ -619,12 +630,23 @@ xkb_state_led_update_all(struct xkb_state *state)
 static void
 xkb_state_update_derived(struct xkb_state *state)
 {
-    state->mods =
-        (state->base_mods | state->latched_mods | state->locked_mods);
-    /* FIXME: Clamp/wrap locked_group */
-    state->group = state->locked_group + state->base_group +
-                   state->latched_group;
-    /* FIXME: Clamp/wrap effective group */
+    xkb_layout_index_t num_groups = xkb_keymap_num_layouts(state->keymap);
+
+    state->mods = (state->base_mods |
+                   state->latched_mods |
+                   state->locked_mods);
+
+    /* TODO: Use groups_wrap control instead of always RANGE_WRAP. */
+
+    state->locked_group = wrap_group_into_range(state->locked_group,
+                                                num_groups,
+                                                RANGE_WRAP, 0);
+
+    state->group = wrap_group_into_range(state->base_group +
+                                         state->latched_group +
+                                         state->locked_group,
+                                         num_groups,
+                                         RANGE_WRAP, 0);
 
     xkb_state_led_update_all(state);
 }
