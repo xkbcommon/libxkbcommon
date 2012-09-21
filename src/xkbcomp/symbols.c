@@ -1396,48 +1396,12 @@ FindAutomaticType(struct xkb_context *ctx, xkb_level_index_t width,
     return width <= 4;
 }
 
-/**
- * Ensure the given KeyInfo is in a coherent state, i.e. no gaps between the
- * groups.
- */
-static void
-PrepareKeyDef(KeyInfo *keyi)
-{
-    xkb_layout_index_t i, lastGroup;
-    const GroupInfo *group0;
-
-    /* get highest group number */
-    lastGroup = 0;
-    for (i = 1; i < XKB_NUM_GROUPS; i++)
-        if (keyi->groups[i].defined)
-            lastGroup = i;
-
-    if (lastGroup == 0)
-        return;
-
-    group0 = &keyi->groups[0];
-
-    /* If there are empty groups between non-empty ones fill them with data */
-    /* from the first group. */
-    /* We can make a wrong assumption here. But leaving gaps is worse. */
-    for (i = 1; i < lastGroup; i++) {
-        GroupInfo *groupi = &keyi->groups[i];
-
-        if (groupi->defined)
-            continue;
-
-        groupi->type = group0->type;
-        darray_copy(groupi->syms, group0->syms);
-        darray_copy(groupi->levels, group0->levels);
-        groupi->defined = group0->defined;
-    }
-}
-
 static bool
 CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
 {
     struct xkb_keymap *keymap = info->keymap;
     struct xkb_key *key;
+    const GroupInfo *group0;
     xkb_layout_index_t i;
     bool haveActions;
     unsigned int sizeSyms;
@@ -1455,14 +1419,32 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
         return false;
     }
 
-    /*
-     * Find the range of groups we need. (There shouldn't be any gaps,
-     * see PrepareKeyDef).
-     */
+    /* Find the range of groups we need. */
     key->num_groups = 0;
     for (i = 0; i < XKB_NUM_GROUPS; i++)
         if (keyi->groups[i].defined)
             key->num_groups = i + 1;
+
+    if (key->num_groups <= 0)
+        return false; /* WSGO */
+
+    /*
+     * If there are empty groups between non-empty ones, fill them with data
+     * from the first group.
+     * We can make a wrong assumption here. But leaving gaps is worse.
+     */
+    group0 = &keyi->groups[0];
+    for (i = 1; i < key->num_groups - 1; i++) {
+        GroupInfo *groupi = &keyi->groups[i];
+
+        if (groupi->defined)
+            continue;
+
+        groupi->type = group0->type;
+        darray_copy(groupi->syms, group0->syms);
+        darray_copy(groupi->levels, group0->levels);
+        groupi->defined = group0->defined;
+    }
 
     /* See if we need to allocate an actions array. */
     haveActions = false;
@@ -1649,11 +1631,9 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
         if (info->groupNames[i] != XKB_ATOM_NONE)
             keymap->group_names[i] = info->groupNames[i];
 
-    darray_foreach(keyi, info->keys) {
-        PrepareKeyDef(keyi);
+    darray_foreach(keyi, info->keys)
         if (!CopySymbolsDef(info, keyi))
             info->errorCount++;
-    }
 
     if (xkb_get_log_verbosity(keymap->ctx) > 3) {
         xkb_foreach_key(key, keymap) {
