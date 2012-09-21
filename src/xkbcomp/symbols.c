@@ -1037,7 +1037,7 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
 }
 
 static int
-HandleSymbolsVar(SymbolsInfo *info, VarDef *stmt)
+HandleGlobalVar(SymbolsInfo *info, VarDef *stmt)
 {
     const char *elem, *field;
     ExprDef *arrayNdx;
@@ -1095,7 +1095,9 @@ HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
 
     for (; def; def = (VarDef *) def->common.next) {
         if (def->name && def->name->op == EXPR_FIELD_REF) {
-            ok = HandleSymbolsVar(info, def);
+            log_err(info->keymap->ctx,
+                    "Cannot set a global default value from within a key statement; "
+                    "Move statements to the global file scope\n");
             continue;
         }
 
@@ -1240,7 +1242,7 @@ HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleSymbolsDef(info, (SymbolsDef *) stmt);
             break;
         case STMT_VAR:
-            ok = HandleSymbolsVar(info, (VarDef *) stmt);
+            ok = HandleGlobalVar(info, (VarDef *) stmt);
             break;
         case STMT_VMOD:
             ok = HandleVModDef((VModDef *) stmt, info->keymap, merge,
