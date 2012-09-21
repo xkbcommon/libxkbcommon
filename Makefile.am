@@ -110,7 +110,8 @@ libtest_la_SOURCES = \
 
 AM_TESTS_ENVIRONMENT = \
 	XKB_LOG=debug; export XKB_LOG; \
-	XKB_VERBOSITY=10; export XKB_VERBOSITY;
+	XKB_VERBOSITY=10; export XKB_VERBOSITY; \
+	$(XORG_MALLOC_DEBUG_ENV)
 
 TESTS = \
 	test/keysym \
