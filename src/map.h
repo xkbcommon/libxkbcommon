@@ -428,6 +428,6 @@ XkbKeyActionEntry(const struct xkb_key *key, xkb_layout_index_t layout,
 }
 
 struct xkb_keymap *
-xkb_map_new(struct xkb_context *ctx);
+xkb_keymap_new(struct xkb_context *ctx);
 
 #endif

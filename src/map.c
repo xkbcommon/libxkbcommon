@@ -54,7 +54,7 @@
 #include "text.h"
 
 struct xkb_keymap *
-xkb_map_new(struct xkb_context *ctx)
+xkb_keymap_new(struct xkb_context *ctx)
 {
     struct xkb_keymap *keymap;
 

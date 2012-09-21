@@ -35,7 +35,7 @@ compile_keymap_file(struct xkb_context *ctx, XkbFile *file)
 {
     struct xkb_keymap *keymap;
 
-    keymap = xkb_map_new(ctx);
+    keymap = xkb_keymap_new(ctx);
     if (!keymap)
         goto err;
 
