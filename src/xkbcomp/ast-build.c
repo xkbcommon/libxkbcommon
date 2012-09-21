@@ -403,6 +403,19 @@ IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge)
         if (!ParseIncludeMap(&tmp, &file, &map, &nextop, &extra_data))
             goto err;
 
+        /*
+         * Given an RMLVO (here layout) like 'us,,fr', the rules parser
+         * will give out something like 'pc+us+:2+fr:3+inet(evdev)'.
+         * We should just skip the ':2' in this case and leave it to the
+         * appropriate section to deal with the empty group.
+         */
+        if (isempty(file)) {
+            free(file);
+            free(map);
+            free(extra_data);
+            continue;
+        }
+
         if (first == NULL) {
             first = incl = malloc(sizeof(*first));
         } else {

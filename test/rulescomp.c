@@ -110,6 +110,9 @@ int main(int argc, char *argv[])
     /* 20 is not a legal group; make sure this is handled gracefully. */
     assert(test_rmlvo(ctx, "evdev", "", "us:20", "", ""));
 
+    /* Don't choke on missing values in RMLVO. Should just skip them. */
+    assert(test_rmlvo(ctx, "evdev", "", "us,,ca", "", ""));
+
     assert(test_rmlvo(ctx, "", "", "", "", ""));
     assert(test_rmlvo(ctx, NULL, NULL, NULL, NULL, NULL));
 
