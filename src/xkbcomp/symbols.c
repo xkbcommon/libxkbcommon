@@ -101,7 +101,7 @@ typedef struct _KeyInfo {
 
     unsigned long name; /* the 4 chars of the key name, as long */
 
-    GroupInfo groups[XKB_NUM_GROUPS];
+    darray(GroupInfo) groups;
 
     enum key_repeat repeat;
     xkb_mod_mask_t vmodmap;
@@ -139,9 +139,10 @@ InitKeyInfo(KeyInfo *keyi, unsigned file_id)
 static void
 ClearKeyInfo(KeyInfo *keyi)
 {
-    xkb_layout_index_t i;
-    for (i = 0; i < XKB_NUM_GROUPS; i++)
-        ClearGroupInfo(&keyi->groups[i]);
+    GroupInfo *groupi;
+    darray_foreach(groupi, keyi->groups)
+        ClearGroupInfo(groupi);
+    darray_free(keyi->groups);
 }
 
 /***====================================================================***/
@@ -395,6 +396,7 @@ static bool
 MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from)
 {
     xkb_layout_index_t i;
+    xkb_layout_index_t groups_in_both;
     enum key_field collide = 0;
     bool clobber, report;
     int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
@@ -410,9 +412,18 @@ MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from)
     report = (verbosity > 9 ||
               (into->file_id == from->file_id && verbosity > 0));
 
-    for (i = 0; i < XKB_NUM_GROUPS; i++)
-        MergeGroups(info, &into->groups[i], &from->groups[i], clobber,
-                    report, i, into->name);
+    groups_in_both = MIN(darray_size(into->groups),
+                         darray_size(from->groups));
+    for (i = 0; i < groups_in_both; i++)
+        MergeGroups(info,
+                    &darray_item(into->groups, i),
+                    &darray_item(from->groups, i),
+                    clobber, report, i, into->name);
+    /* If @from has extra groups, just move them to @into. */
+    for (i = groups_in_both; i < darray_size(from->groups); i++) {
+        darray_append(into->groups, darray_item(from->groups, i));
+        InitGroupInfo(&darray_item(from->groups, i));
+    }
 
     if (UseNewKeyField(KEY_FIELD_VMODMAP, into->defined, from->defined,
                        clobber, report, &collide)) {
@@ -633,21 +644,28 @@ GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
     if (arrayNdx == NULL) {
         xkb_layout_index_t i;
+        GroupInfo *groupi;
         enum group_field field = (what == SYMBOLS ?
                                   GROUP_FIELD_SYMS : GROUP_FIELD_ACTS);
 
-        for (i = 0; i < XKB_NUM_GROUPS; i++) {
-            if (!(keyi->groups[i].defined & field)) {
+        darray_enumerate(i, groupi, keyi->groups) {
+            if (!(groupi->defined & field)) {
                 *ndx_rtrn = i;
                 return true;
             }
         }
 
-        log_err(info->keymap->ctx,
-                "Too many groups of %s for key %s (max %u); "
-                "Ignoring %s defined for extra groups\n",
-                name, LongKeyNameText(keyi->name), XKB_NUM_GROUPS + 1, name);
-        return false;
+        if (i >= XKB_NUM_GROUPS) {
+            log_err(info->keymap->ctx,
+                    "Too many groups of %s for key %s (max %u); "
+                    "Ignoring %s defined for extra groups\n",
+                    name, LongKeyNameText(keyi->name), XKB_NUM_GROUPS + 1, name);
+            return false;
+        }
+
+        darray_resize0(keyi->groups, darray_size(keyi->groups) + 1);
+        *ndx_rtrn = darray_size(keyi->groups) - 1;
+        return true;
     }
 
     if (!ExprResolveGroup(info->keymap->ctx, arrayNdx, ndx_rtrn)) {
@@ -659,6 +677,9 @@ GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     }
 
     (*ndx_rtrn)--;
+    if (*ndx_rtrn >= darray_size(keyi->groups))
+        darray_resize0(keyi->groups, *ndx_rtrn + 1);
+
     return true;
 }
 
@@ -700,7 +721,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     if (!GetGroupIndex(info, keyi, arrayNdx, SYMBOLS, &ndx))
         return false;
 
-    groupi = &keyi->groups[ndx];
+    groupi = &darray_item(keyi->groups, ndx);
 
     if (value == NULL) {
         groupi->defined |= GROUP_FIELD_SYMS;
@@ -789,7 +810,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     if (!GetGroupIndex(info, keyi, arrayNdx, ACTIONS, &ndx))
         return false;
 
-    groupi = &keyi->groups[ndx];
+    groupi = &darray_item(keyi->groups, ndx);
 
     if (value == NULL) {
         groupi->defined |= GROUP_FIELD_ACTS;
@@ -876,8 +897,10 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         }
         else {
             ndx--;
-            keyi->groups[ndx].type = val;
-            keyi->groups[ndx].defined |= GROUP_FIELD_TYPE;
+            if (ndx >= darray_size(keyi->groups))
+                darray_resize0(keyi->groups, ndx + 1);
+            darray_item(keyi->groups, ndx).type = val;
+            darray_item(keyi->groups, ndx).defined |= GROUP_FIELD_TYPE;
         }
     }
     else if (istreq(field, "symbols"))
@@ -1125,26 +1148,30 @@ static bool
 SetExplicitGroup(SymbolsInfo *info, KeyInfo *keyi)
 {
     xkb_layout_index_t i;
+    GroupInfo *groupi;
+    bool warn = false;
 
     if (info->explicit_group == 0)
         return true;
 
-    for (i = 1; i < XKB_NUM_GROUPS; i++) {
-        if (keyi->groups[i].defined) {
-            log_warn(info->keymap->ctx,
-                     "For the map %s an explicit group specified, "
-                     "but key %s has more than one group defined; "
-                     "All groups except first one will be ignored\n",
-                     info->name, LongKeyNameText(keyi->name));
-            break;
+    darray_enumerate_from(i, groupi, keyi->groups, 1) {
+        if (groupi->defined) {
+            warn = true;
+            ClearGroupInfo(groupi);
         }
     }
-    if (i < XKB_NUM_GROUPS)
-        for (i = 1; i < XKB_NUM_GROUPS; i++)
-            ClearGroupInfo(&keyi->groups[i]);
 
-    keyi->groups[info->explicit_group] = keyi->groups[0];
-    InitGroupInfo(&keyi->groups[0]);
+    if (warn)
+        log_warn(info->keymap->ctx,
+                 "For the map %s an explicit group specified, "
+                 "but key %s has more than one group defined; "
+                 "All groups except first one will be ignored\n",
+                 info->name, LongKeyNameText(keyi->name));
+
+    darray_resize0(keyi->groups, info->explicit_group + 1);
+    darray_item(keyi->groups, info->explicit_group) =
+        darray_item(keyi->groups, 0);
+    InitGroupInfo(&darray_item(keyi->groups, 0));
     return true;
 }
 
@@ -1155,9 +1182,15 @@ HandleSymbolsDef(SymbolsInfo *info, SymbolsDef *stmt)
     xkb_layout_index_t i;
 
     keyi = info->dflt;
-    for (i = 0; i < XKB_NUM_GROUPS; i++) {
-        darray_copy(keyi.groups[i].syms, info->dflt.groups[i].syms);
-        darray_copy(keyi.groups[i].levels, info->dflt.groups[i].levels);
+    darray_init(keyi.groups);
+    darray_copy(keyi.groups, info->dflt.groups);
+    for (i = 0; i < darray_size(keyi.groups); i++) {
+        darray_init(darray_item(keyi.groups, i).syms);
+        darray_copy(darray_item(keyi.groups, i).syms,
+                    darray_item(info->dflt.groups, i).syms);
+        darray_init(darray_item(keyi.groups, i).levels);
+        darray_copy(darray_item(keyi.groups, i).levels,
+                    darray_item(info->dflt.groups, i).levels);
     }
     keyi.merge = stmt->merge;
     keyi.name = KeyNameToLong(stmt->keyName);
@@ -1404,6 +1437,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
 {
     struct xkb_keymap *keymap = info->keymap;
     struct xkb_key *key;
+    GroupInfo *groupi;
     const GroupInfo *group0;
     xkb_layout_index_t i;
     bool haveActions;
@@ -1424,22 +1458,22 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
 
     /* Find the range of groups we need. */
     key->num_groups = 0;
-    for (i = 0; i < XKB_NUM_GROUPS; i++)
-        if (keyi->groups[i].defined)
+    darray_enumerate(i, groupi, keyi->groups)
+        if (groupi->defined)
             key->num_groups = i + 1;
 
     if (key->num_groups <= 0)
         return false; /* WSGO */
+
+    darray_resize(keyi->groups, key->num_groups);
 
     /*
      * If there are empty groups between non-empty ones, fill them with data
      * from the first group.
      * We can make a wrong assumption here. But leaving gaps is worse.
      */
-    group0 = &keyi->groups[0];
-    for (i = 1; i < key->num_groups - 1; i++) {
-        GroupInfo *groupi = &keyi->groups[i];
-
+    group0 = &darray_item(keyi->groups, 0);
+    darray_foreach_from(groupi, keyi->groups, 1) {
         if (groupi->defined)
             continue;
 
@@ -1451,9 +1485,9 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
 
     /* See if we need to allocate an actions array. */
     haveActions = false;
-    for (i = 0; i < key->num_groups; i++) {
+    darray_foreach(groupi, keyi->groups) {
         LevelInfo *leveli;
-        darray_foreach(leveli, keyi->groups[i].levels) {
+        darray_foreach(leveli, groupi->levels) {
             if (leveli->act.type != ACTION_TYPE_NONE) {
                 haveActions = true;
                 goto out_of_loops;
@@ -1467,9 +1501,8 @@ out_of_loops:
      * key width according to the largest type.
      */
     key->width = 0;
-    for (i = 0; i < key->num_groups; i++) {
+    darray_enumerate(i, groupi, keyi->groups) {
         struct xkb_key_type *type;
-        GroupInfo *groupi = &keyi->groups[i];
         bool autoType = false;
 
         /* Find the type of the group, if it is missing. */
@@ -1533,8 +1566,8 @@ out_of_loops:
 
     /* Find the size of the syms array. */
     sizeSyms = 0;
-    for (i = 0; i < key->num_groups; i++)
-        sizeSyms += darray_size(keyi->groups[i].syms);
+    darray_foreach(groupi, keyi->groups)
+        sizeSyms += darray_size(groupi->syms);
 
     /* Initialize the xkb_key, now that we know the sizes. */
     key->syms = calloc(sizeSyms, sizeof(*key->syms));
@@ -1561,14 +1594,12 @@ out_of_loops:
 
     /* Copy keysyms and actions. */
     symIndex = 0;
-    for (i = 0; i < key->num_groups; i++) {
-        GroupInfo *groupi = &keyi->groups[i];
+    darray_enumerate(i, groupi, keyi->groups) {
         xkb_level_index_t j;
+        LevelInfo *leveli;
 
         /* We rely on calloc having zeroized the arrays up to key->width. */
-        for (j = 0; j < darray_size(groupi->levels); j++) {
-            LevelInfo *leveli = &darray_item(groupi->levels, j);
-
+        darray_enumerate(j, leveli, groupi->levels) {
             if (leveli->act.type != ACTION_TYPE_NONE)
                 key->actions[i * key->width + j] = leveli->act;
 
