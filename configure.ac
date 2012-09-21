@@ -43,7 +43,6 @@ m4_ifndef([XORG_MACROS_VERSION],
 	  [m4_fatal([must install xorg-macros 1.8 or later before running autoconf/autogen])])
 XORG_MACROS_VERSION(1.8)
 XORG_DEFAULT_OPTIONS
-XORG_CHECK_MALLOC_ZERO
 
 # Check for compiler features
 AC_C_INLINE

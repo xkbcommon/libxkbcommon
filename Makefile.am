@@ -24,9 +24,7 @@ AM_CPPFLAGS = \
 	-I$(top_builddir)/src/xkbcomp \
 	-include $(top_builddir)/src/config.h
 
-AM_CFLAGS = \
-	$(BASE_CFLAGS) \
-	$(XMALLOC_ZERO_CFLAGS)
+AM_CFLAGS = $(BASE_CFLAGS)
 
 AM_LFLAGS = -o lex.yy.c
 AM_YFLAGS = -d
