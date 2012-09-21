@@ -59,7 +59,7 @@
  *   - messages (very unlikely)
  */
 
-#include "map.h"
+#include "keymap.h"
 
 struct xkb_filter {
     union xkb_action action;

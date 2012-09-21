@@ -24,7 +24,7 @@
  *
  ********************************************************/
 
-#include "map.h"
+#include "keymap.h"
 #include "text.h"
 
 bool

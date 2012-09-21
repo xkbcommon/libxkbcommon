@@ -27,7 +27,7 @@
 #ifndef XKBCOMP_PRIV_H
 #define XKBCOMP_PRIV_H
 
-#include "map.h"
+#include "keymap.h"
 #include "ast.h"
 
 struct xkb_component_names {

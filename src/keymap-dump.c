@@ -49,7 +49,7 @@
  * Author: Daniel Stone <daniel@fooishbar.org>
  */
 
-#include "map.h"
+#include "keymap.h"
 #include "text.h"
 
 #define VMOD_HIDE_VALUE    0
