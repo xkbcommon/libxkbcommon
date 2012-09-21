@@ -1405,13 +1405,12 @@ PrepareKeyDef(KeyInfo *keyi)
 {
     xkb_layout_index_t i, lastGroup;
     const GroupInfo *group0;
-    bool identical;
 
     /* get highest group number */
-    for (i = XKB_NUM_GROUPS - 1; i > 0; i--)
+    lastGroup = 0;
+    for (i = 1; i < XKB_NUM_GROUPS; i++)
         if (keyi->groups[i].defined)
-            break;
-    lastGroup = i;
+            lastGroup = i;
 
     if (lastGroup == 0)
         return;
@@ -1421,7 +1420,7 @@ PrepareKeyDef(KeyInfo *keyi)
     /* If there are empty groups between non-empty ones fill them with data */
     /* from the first group. */
     /* We can make a wrong assumption here. But leaving gaps is worse. */
-    for (i = lastGroup; i > 0; i--) {
+    for (i = 1; i < lastGroup; i++) {
         GroupInfo *groupi = &keyi->groups[i];
 
         if (groupi->defined)
@@ -1436,36 +1435,31 @@ PrepareKeyDef(KeyInfo *keyi)
     /* If all groups are completely identical remove them all */
     /* exept the first one. */
     /* XXX: This code needs testing... or removal. */
-    identical = true;
-    for (i = lastGroup; i > 0; i--) {
+    for (i = 1; i <= lastGroup; i++) {
         GroupInfo *groupi = &keyi->groups[i];
 
-        if (groupi->type != group0->type) {
-            identical = false;
+        if (groupi->type != group0->type)
             break;
-        }
+
         if (!darray_same(groupi->levels, group0->levels) &&
             (darray_empty(groupi->levels) || darray_empty(group0->levels) ||
              darray_size(groupi->levels) != darray_size(group0->levels) ||
              memcmp(darray_mem(groupi->levels, 0),
                     darray_mem(group0->levels, 0),
-                    darray_size(group0->levels) * sizeof(LevelInfo)))) {
-            identical = false;
+                    darray_size(group0->levels) * sizeof(LevelInfo))))
             break;
-        }
+
         if (!darray_same(groupi->syms, group0->syms) &&
             (darray_empty(groupi->syms) || darray_empty(group0->syms) ||
              darray_size(groupi->syms) != darray_size(group0->syms) ||
              memcmp(darray_mem(groupi->syms, 0),
                     darray_mem(group0->syms, 0),
-                    darray_size(group0->syms) * sizeof(xkb_keysym_t)))) {
-            identical = false;
+                    darray_size(group0->syms) * sizeof(xkb_keysym_t))))
             break;
-        }
     }
 
-    if (identical)
-        for (i = lastGroup; i > 0; i--)
+    if (i > lastGroup)
+        for (i = 1; i <= lastGroup; i++)
             ClearGroupInfo(&keyi->groups[i]);
 }
 
