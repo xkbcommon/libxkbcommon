@@ -142,6 +142,33 @@ xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
     return entry->level;
 }
 
+static xkb_layout_index_t
+wrap_group_into_range(xkb_layout_index_t group,
+                      xkb_layout_index_t num_groups,
+                      enum xkb_range_exceed_type out_of_range_group_action,
+                      xkb_layout_index_t out_of_range_group_number)
+{
+    if (num_groups == 0)
+        return XKB_LAYOUT_INVALID;
+
+    if (group < num_groups)
+        return group;
+
+    switch (out_of_range_group_action) {
+    case RANGE_REDIRECT:
+        if (out_of_range_group_number >= num_groups)
+            return 0;
+        return out_of_range_group_number;
+
+    case RANGE_SATURATE:
+        return num_groups - 1;
+
+    case RANGE_WRAP:
+    default:
+        return group % num_groups;
+    }
+}
+
 /**
  * Returns the layout to use for the given key and state, taking
  * wrapping/clamping/etc into account, or XKB_LAYOUT_INVALID.
@@ -149,34 +176,16 @@ xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
 XKB_EXPORT xkb_layout_index_t
 xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t kc)
 {
-    xkb_layout_index_t ret =
+    xkb_layout_index_t group =
         xkb_state_serialize_layout(state, XKB_STATE_EFFECTIVE);
     const struct xkb_key *key = XkbKey(state->keymap, kc);
 
-    if (!key || key->num_groups == 0)
+    if (!key)
         return XKB_LAYOUT_INVALID;
 
-    if (ret < key->num_groups)
-        return ret;
-
-    switch (key->out_of_range_group_action) {
-    case RANGE_REDIRECT:
-        ret = key->out_of_range_group_number;
-        if (ret >= key->num_groups)
-            ret = 0;
-        break;
-
-    case RANGE_SATURATE:
-        ret = key->num_groups - 1;
-        break;
-
-    case RANGE_WRAP:
-    default:
-        ret %= key->num_groups;
-        break;
-    }
-
-    return ret;
+    return wrap_group_into_range(group, key->num_groups,
+                                 key->out_of_range_group_action,
+                                 key->out_of_range_group_number);
 }
 
 static const union xkb_action fake = { .type = ACTION_TYPE_NONE };
