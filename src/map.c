@@ -289,83 +289,6 @@ xkb_keymap_led_get_index(struct xkb_keymap *keymap, const char *name)
     return XKB_LED_INVALID;
 }
 
-static struct xkb_kt_map_entry *
-get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
-                        xkb_layout_index_t group)
-{
-    struct xkb_key_type *type;
-    xkb_mod_mask_t active_mods;
-    unsigned int i;
-
-    type = XkbKeyType(xkb_state_get_keymap(state), key, group);
-    active_mods = xkb_state_serialize_mods(state, XKB_STATE_EFFECTIVE);
-    active_mods &= type->mods.mask;
-
-    for (i = 0; i < type->num_entries; i++)
-        if (type->map[i].mods.mask == active_mods)
-            return &type->map[i];
-
-    return NULL;
-}
-
-/**
- * Returns the level to use for the given key and state, or
- * XKB_LEVEL_INVALID.
- */
-xkb_level_index_t
-xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
-                        xkb_layout_index_t layout)
-{
-    struct xkb_keymap *keymap = xkb_state_get_keymap(state);
-    const struct xkb_key *key = XkbKey(keymap, kc);
-    struct xkb_kt_map_entry *entry;
-
-    /* If we don't find an explicit match the default is 0. */
-    entry = get_entry_for_key_state(state, key, layout);
-    if (!entry)
-        return 0;
-
-    return entry->level;
-}
-
-/**
- * Returns the layout to use for the given key and state, taking
- * wrapping/clamping/etc into account, or XKB_LAYOUT_INVALID.
- */
-XKB_EXPORT xkb_layout_index_t
-xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t kc)
-{
-    struct xkb_keymap *keymap = xkb_state_get_keymap(state);
-    const struct xkb_key *key = XkbKey(keymap, kc);
-    xkb_layout_index_t ret =
-        xkb_state_serialize_layout(state, XKB_STATE_EFFECTIVE);
-
-    if (key->num_groups == 0)
-        return XKB_LAYOUT_INVALID;
-
-    if (ret < key->num_groups)
-        return ret;
-
-    switch (key->out_of_range_group_action) {
-    case RANGE_REDIRECT:
-        ret = key->out_of_range_group_number;
-        if (ret >= key->num_groups)
-            ret = 0;
-        break;
-
-    case RANGE_SATURATE:
-        ret = key->num_groups - 1;
-        break;
-
-    case RANGE_WRAP:
-    default:
-        ret %= key->num_groups;
-        break;
-    }
-
-    return ret;
-}
-
 /**
  * As below, but takes an explicit layout/level rather than state.
  */
@@ -397,37 +320,6 @@ err:
 }
 
 /**
- * Provides the symbols to use for the given key and state.  Returns the
- * number of symbols pointed to in syms_out.
- */
-XKB_EXPORT int
-xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t kc,
-                       const xkb_keysym_t **syms_out)
-{
-    struct xkb_keymap *keymap = xkb_state_get_keymap(state);
-    xkb_layout_index_t layout;
-    xkb_level_index_t level;
-    const struct xkb_key *key = XkbKey(keymap, kc);
-    if (!key)
-        return -1;
-
-    layout = xkb_state_key_get_layout(state, kc);
-    if (layout == XKB_LAYOUT_INVALID)
-        goto err;
-
-    level = xkb_state_key_get_level(state, kc, layout);
-    if (level == XKB_LEVEL_INVALID)
-        goto err;
-
-    return xkb_keymap_key_get_syms_by_level(keymap, kc, layout, level,
-                                            syms_out);
-
-err:
-    *syms_out = NULL;
-    return 0;
-}
-
-/**
  * Simple boolean specifying whether or not the key should repeat.
  */
 XKB_EXPORT int
@@ -438,63 +330,4 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t kc)
         return 0;
 
     return key->repeats;
-}
-
-static xkb_mod_mask_t
-key_get_consumed(struct xkb_state *state, const struct xkb_key *key)
-{
-    struct xkb_kt_map_entry *entry;
-    xkb_layout_index_t group;
-
-    group = xkb_state_key_get_layout(state, key->keycode);
-    if (group == XKB_LAYOUT_INVALID)
-        return 0;
-
-    entry = get_entry_for_key_state(state, key, group);
-    if (!entry)
-        return 0;
-
-    return entry->mods.mask & ~entry->preserve.mask;
-}
-
-/**
- * Tests to see if a modifier is used up by our translation of a
- * keycode to keysyms, taking note of the current modifier state and
- * the appropriate key type's preserve information, if any. This allows
- * the user to mask out the modifier in later processing of the
- * modifiers, e.g. when implementing hot keys or accelerators.
- *
- * See also, for example:
- * - XkbTranslateKeyCode(3), mod_rtrn retrun value, from libX11.
- * - gdk_keymap_translate_keyboard_state, consumed_modifiers return value,
- *   from gtk+.
- */
-XKB_EXPORT int
-xkb_state_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t kc,
-                                xkb_mod_index_t idx)
-{
-    const struct xkb_key *key = XkbKey(xkb_state_get_keymap(state), kc);
-    if (!key)
-        return 0;
-
-    return !!((1 << idx) & key_get_consumed(state, key));
-}
-
-/**
- * Calculates which modifiers should be consumed during key processing,
- * and returns the mask with all these modifiers removed.  e.g. if
- * given a state of Alt and Shift active for a two-level alphabetic
- * key containing plus and equal on the first and second level
- * respectively, will return a mask of only Alt, as Shift has been
- * consumed by the type handling.
- */
-XKB_EXPORT xkb_mod_mask_t
-xkb_state_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t kc,
-                                   xkb_mod_mask_t mask)
-{
-    const struct xkb_key *key = XkbKey(xkb_state_get_keymap(state), kc);
-    if (!key)
-        return 0;
-
-    return mask & ~key_get_consumed(state, key);
 }
