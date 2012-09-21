@@ -194,6 +194,7 @@ ClearSymbolsInfo(SymbolsInfo * info)
         ClearKeyInfo(keyi);
     darray_free(info->keys);
     darray_free(info->modMaps);
+    ClearKeyInfo(&info->dflt);
 }
 
 static bool
