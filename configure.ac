@@ -21,7 +21,7 @@ dnl
 dnl Process this file with autoconf to create configure.
 
 # Initialize Autoconf
-AC_PREREQ([2.60])
+AC_PREREQ([2.62])
 AC_INIT([libxkbcommon], [0.1.0],
     [https://bugs.freedesktop.org/enter_bug.cgi?product=libxkbcommon])
 AC_CONFIG_SRCDIR([Makefile.am])
@@ -44,12 +44,15 @@ m4_ifndef([XORG_MACROS_VERSION],
 XORG_MACROS_VERSION(1.8)
 XORG_DEFAULT_OPTIONS
 XORG_MEMORY_CHECK_FLAGS
+XORG_ENABLE_DOCS
+XORG_WITH_DOXYGEN
 
 # Check for compiler features
 AC_C_INLINE
 AC_C_TYPEOF
 
 # Check for programs
+AC_PROG_MKDIR_P
 AC_PROG_LEX
 AC_PROG_YACC
 AC_PATH_PROG([YACC_INST], $YACC)
@@ -120,5 +123,7 @@ AC_CONFIG_FILES([
     Makefile
     makekeys/Makefile
     xkbcommon-uninstalled.pc
-    xkbcommon.pc])
+    xkbcommon.pc
+    doc/Doxyfile
+])
 AC_OUTPUT
