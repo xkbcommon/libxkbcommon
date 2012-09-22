@@ -399,7 +399,7 @@ MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from)
     xkb_layout_index_t groups_in_both;
     enum key_field collide = 0;
     bool clobber, report;
-    int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
+    int verbosity = xkb_context_get_log_verbosity(info->keymap->ctx);
 
     if (from->merge == MERGE_REPLACE) {
         ClearKeyInfo(into);
@@ -1669,7 +1669,7 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
         if (!CopySymbolsDef(info, keyi))
             info->errorCount++;
 
-    if (xkb_get_log_verbosity(keymap->ctx) > 3) {
+    if (xkb_context_get_log_verbosity(keymap->ctx) > 3) {
         xkb_foreach_key(key, keymap) {
             if (key->name[0] == '\0')
                 continue;

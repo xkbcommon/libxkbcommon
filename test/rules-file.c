@@ -92,16 +92,16 @@ static void
 benchmark(struct xkb_context *ctx)
 {
     struct timespec start, stop, elapsed;
-    enum xkb_log_level old_level = xkb_get_log_level(ctx);
-    int old_verb = xkb_get_log_verbosity(ctx);
+    enum xkb_log_level old_level = xkb_context_get_log_level(ctx);
+    int old_verb = xkb_context_get_log_verbosity(ctx);
     int i;
     struct xkb_rule_names rmlvo = {
         "evdev", "pc105", "us,il", ",", "ctrl:nocaps,grp:menu_toggle",
     };
     struct xkb_component_names kccgst;
 
-    xkb_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
-    xkb_set_log_verbosity(ctx, 0);
+    xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
+    xkb_context_set_log_verbosity(ctx, 0);
 
     clock_gettime(CLOCK_MONOTONIC, &start);
     for (i = 0; i < BENCHMARK_ITERATIONS; i++) {
@@ -113,8 +113,8 @@ benchmark(struct xkb_context *ctx)
     }
     clock_gettime(CLOCK_MONOTONIC, &stop);
 
-    xkb_set_log_level(ctx, old_level);
-    xkb_set_log_verbosity(ctx, old_verb);
+    xkb_context_set_log_level(ctx, old_level);
+    xkb_context_set_log_verbosity(ctx, old_verb);
 
     elapsed.tv_sec = stop.tv_sec - start.tv_sec;
     elapsed.tv_nsec = stop.tv_nsec - start.tv_nsec;

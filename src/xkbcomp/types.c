@@ -252,7 +252,7 @@ static bool
 AddKeyType(KeyTypesInfo *info, KeyTypeInfo *new)
 {
     KeyTypeInfo *old;
-    int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
+    int verbosity = xkb_context_get_log_verbosity(info->keymap->ctx);
 
     old = FindMatchingKeyType(info, new->name);
     if (old) {

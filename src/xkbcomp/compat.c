@@ -311,7 +311,7 @@ AddInterp(CompatInfo *info, SymInterpInfo *new)
 
     old = FindMatchingInterp(info, new);
     if (old) {
-        int verbosity = xkb_get_log_verbosity(info->keymap->ctx);
+        int verbosity = xkb_context_get_log_verbosity(info->keymap->ctx);
         bool report = ((old->file_id == new->file_id && verbosity > 0) ||
                        verbosity > 9);
 
@@ -425,7 +425,7 @@ AddIndicatorMap(CompatInfo *info, LEDInfo *new)
     LEDInfo *old;
     enum led_field collide;
     struct xkb_context *ctx = info->keymap->ctx;
-    int verbosity = xkb_get_log_verbosity(ctx);
+    int verbosity = xkb_context_get_log_verbosity(ctx);
 
     darray_foreach(old, info->leds) {
         bool report;

@@ -279,10 +279,10 @@ enum xkb_log_level {
  * Passing NULL restores the default function, which logs to stderr.
  **/
 void
-xkb_set_log_fn(struct xkb_context *context,
-               void (*log_fn)(struct xkb_context *context,
-                              enum xkb_log_level level,
-                              const char *format, va_list args));
+xkb_context_set_log_fn(struct xkb_context *context,
+                       void (*log_fn)(struct xkb_context *context,
+                                      enum xkb_log_level level,
+                                      const char *format, va_list args));
 /**
  * Sets the current logging level.  The value controls which messages
  * are logged.  The default level is XKB_LOG_LEVEL_ERROR.
@@ -291,13 +291,14 @@ xkb_set_log_fn(struct xkb_context *context,
  * and may be specified as a level number or name.
  */
 void
-xkb_set_log_level(struct xkb_context *context, enum xkb_log_level level);
+xkb_context_set_log_level(struct xkb_context *context,
+                          enum xkb_log_level level);
 
 /**
  * Returns the current logging level.
  */
 enum xkb_log_level
-xkb_get_log_level(struct xkb_context *context);
+xkb_context_get_log_level(struct xkb_context *context);
 
 /**
  * Sets the current logging verbosity, a value from 0 to 10.
@@ -312,13 +313,13 @@ xkb_get_log_level(struct xkb_context *context);
  * or lower.
  */
 void
-xkb_set_log_verbosity(struct xkb_context *ctx, int verbosity);
+xkb_context_set_log_verbosity(struct xkb_context *ctx, int verbosity);
 
 /**
  * Returns the current logging verbosity.
  */
 int
-xkb_get_log_verbosity(struct xkb_context *ctx);
+xkb_context_get_log_verbosity(struct xkb_context *ctx);
 
 /**
  * Retrieves stored data pointer from the context.  This might be useful
@@ -327,13 +328,13 @@ xkb_get_log_verbosity(struct xkb_context *ctx);
  * If context is NULL, returns NULL.
  **/
 void *
-xkb_get_user_data(struct xkb_context *context);
+xkb_context_get_user_data(struct xkb_context *context);
 
 /**
  * Store custom user data in the context.
  */
 void
-xkb_set_user_data(struct xkb_context *context, void *user_data);
+xkb_context_set_user_data(struct xkb_context *context, void *user_data);
 
 /** @} */
 

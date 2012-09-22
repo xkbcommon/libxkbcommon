@@ -68,12 +68,12 @@ xkb_log(struct xkb_context *ctx, enum xkb_log_level level,
         const char *fmt, ...);
 
 #define xkb_log_cond_level(ctx, level, ...) do { \
-    if (xkb_get_log_level(ctx) >= (level)) \
+    if (xkb_context_get_log_level(ctx) >= (level)) \
     xkb_log((ctx), (level), __VA_ARGS__); \
 } while (0)
 
 #define xkb_log_cond_verbosity(ctx, level, vrb, ...) do { \
-    if (xkb_get_log_verbosity(ctx) >= (vrb)) \
+    if (xkb_context_get_log_verbosity(ctx) >= (vrb)) \
     xkb_log_cond_level((ctx), (level), __VA_ARGS__); \
 } while (0)
 

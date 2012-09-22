@@ -51,7 +51,7 @@ log_fn(struct xkb_context *ctx, enum xkb_log_level level,
 {
     char *s;
     int size;
-    darray_char *ls = xkb_get_user_data(ctx);
+    darray_char *ls = xkb_context_get_user_data(ctx);
     assert(ls);
 
     size = vasprintf(&s, fmt, args);
@@ -78,8 +78,8 @@ main(void)
     assert(ctx);
 
     darray_init(log_string);
-    xkb_set_user_data(ctx, &log_string);
-    xkb_set_log_fn(ctx, log_fn);
+    xkb_context_set_user_data(ctx, &log_string);
+    xkb_context_set_log_fn(ctx, log_fn);
 
     log_warn(ctx, "first warning: %d\n", 87);
     log_info(ctx, "first info\n");
@@ -87,15 +87,15 @@ main(void)
     log_err(ctx, "first error: %lu\n", 115415UL);
     log_vrb(ctx, 5, "first verbose 5\n");
 
-    xkb_set_log_level(ctx, XKB_LOG_LEVEL_DEBUG);
+    xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_DEBUG);
     log_warn(ctx, "second warning: %d\n", 87);
     log_dbg(ctx, "second debug: %s %s\n", "hello", "world");
     log_info(ctx, "second info\n");
     log_err(ctx, "second error: %lu\n", 115415UL);
     log_vrb(ctx, 6, "second verbose 6\n");
 
-    xkb_set_log_verbosity(ctx, 0);
-    xkb_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
+    xkb_context_set_log_verbosity(ctx, 0);
+    xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
     log_warn(ctx, "third warning: %d\n", 87);
     log_dbg(ctx, "third debug: %s %s\n", "hello", "world");
     log_info(ctx, "third info\n");

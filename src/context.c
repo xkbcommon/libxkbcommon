@@ -296,11 +296,11 @@ xkb_context_new(enum xkb_context_flags flags)
     /* Environment overwrites defaults. */
     env = getenv("XKB_LOG");
     if (env)
-        xkb_set_log_level(ctx, log_level(env));
+        xkb_context_set_log_level(ctx, log_level(env));
 
     env = getenv("XKB_VERBOSITY");
     if (env)
-        xkb_set_log_verbosity(ctx, log_verbosity(env));
+        xkb_context_set_log_verbosity(ctx, log_verbosity(env));
 
     if (!(flags & XKB_CONTEXT_NO_DEFAULT_INCLUDES) &&
         !xkb_context_include_path_append_default(ctx)) {
@@ -361,40 +361,40 @@ xkb_log(struct xkb_context *ctx, enum xkb_log_level level,
 }
 
 XKB_EXPORT void
-xkb_set_log_fn(struct xkb_context *ctx,
-               void (*log_fn)(struct xkb_context *ctx,
-                              enum xkb_log_level level,
-                              const char *fmt, va_list args))
+xkb_context_set_log_fn(struct xkb_context *ctx,
+                       void (*log_fn)(struct xkb_context *ctx,
+                                      enum xkb_log_level level,
+                                      const char *fmt, va_list args))
 {
     ctx->log_fn = (log_fn ? log_fn : default_log_fn);
 }
 
 XKB_EXPORT enum xkb_log_level
-xkb_get_log_level(struct xkb_context *ctx)
+xkb_context_get_log_level(struct xkb_context *ctx)
 {
     return ctx->log_level;
 }
 
 XKB_EXPORT void
-xkb_set_log_level(struct xkb_context *ctx, enum xkb_log_level level)
+xkb_context_set_log_level(struct xkb_context *ctx, enum xkb_log_level level)
 {
     ctx->log_level = level;
 }
 
 XKB_EXPORT int
-xkb_get_log_verbosity(struct xkb_context *ctx)
+xkb_context_get_log_verbosity(struct xkb_context *ctx)
 {
     return ctx->log_verbosity;
 }
 
 XKB_EXPORT void
-xkb_set_log_verbosity(struct xkb_context *ctx, int verbosity)
+xkb_context_set_log_verbosity(struct xkb_context *ctx, int verbosity)
 {
     ctx->log_verbosity = verbosity;
 }
 
 XKB_EXPORT void *
-xkb_get_user_data(struct xkb_context *ctx)
+xkb_context_get_user_data(struct xkb_context *ctx)
 {
     if (ctx)
         return ctx->user_data;
@@ -402,7 +402,7 @@ xkb_get_user_data(struct xkb_context *ctx)
 }
 
 XKB_EXPORT void
-xkb_set_user_data(struct xkb_context *ctx, void *user_data)
+xkb_context_set_user_data(struct xkb_context *ctx, void *user_data)
 {
     ctx->user_data = user_data;
 }

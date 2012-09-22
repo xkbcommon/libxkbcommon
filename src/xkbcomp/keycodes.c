@@ -177,7 +177,7 @@ AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
     xkb_led_index_t old_idx;
     IndicatorNameInfo *old;
     bool replace, report;
-    int verbosity = xkb_get_log_verbosity(info->ctx);
+    int verbosity = xkb_context_get_log_verbosity(info->ctx);
 
     replace = (merge == MERGE_REPLACE) || (merge == MERGE_OVERRIDE);
 
@@ -279,7 +279,7 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, unsigned long name,
 {
     KeyNameInfo *namei;
     xkb_keycode_t old;
-    int verbosity = xkb_get_log_verbosity(info->ctx);
+    int verbosity = xkb_context_get_log_verbosity(info->ctx);
 
     if (kc >= darray_size(info->key_names))
         darray_resize0(info->key_names, kc + 1);
@@ -483,7 +483,7 @@ HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt, enum merge_mode merge)
 static void
 HandleAliasCollision(KeyNamesInfo *info, AliasInfo *old, AliasInfo *new)
 {
-    int verbosity = xkb_get_log_verbosity(info->ctx);
+    int verbosity = xkb_context_get_log_verbosity(info->ctx);
     bool report = ((new->file_id == old->file_id && verbosity > 0) ||
                    verbosity > 9);
 
