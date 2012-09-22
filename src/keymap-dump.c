@@ -239,7 +239,7 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
             continue;
 
         write_buf(buf, "\t\t%6s = %d;\n",
-                  KeyNameText(key->name), XkbKeyGetKeycode(keymap, key));
+                  KeyNameText(key->name), key->keycode);
     }
 
     for (i = 0; i < XKB_NUM_INDICATORS; i++) {

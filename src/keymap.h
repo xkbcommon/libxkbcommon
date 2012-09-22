@@ -382,13 +382,6 @@ XkbKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
     return &darray_item(keymap->keys, kc);
 }
 
-static inline xkb_keycode_t
-XkbKeyGetKeycode(struct xkb_keymap *keymap, const struct xkb_key *key)
-{
-    /* Hack to avoid having to keep the keycode inside the xkb_key. */
-    return (xkb_keycode_t)(key - keymap->keys.item);
-}
-
 #define xkb_foreach_key(iter, keymap) \
     darray_foreach(iter, keymap->keys)
 
