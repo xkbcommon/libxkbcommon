@@ -26,6 +26,11 @@
 #ifndef _XKBCOMMON_NAMES_H
 #define _XKBCOMMON_NAMES_H
 
+/**
+ * @file
+ * @brief Predefined names for common modifiers and LEDs.
+ */
+
 #define XKB_MOD_NAME_SHIFT      "Shift"
 #define XKB_MOD_NAME_CAPS       "Lock"
 #define XKB_MOD_NAME_CTRL       "Control"
