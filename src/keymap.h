@@ -320,7 +320,7 @@ struct xkb_key {
 
     union xkb_action *actions;
 
-    unsigned kt_index[XKB_NUM_GROUPS];
+    unsigned *kt_index;
 
     xkb_layout_index_t num_groups;
     /* How many levels the largest group has. */

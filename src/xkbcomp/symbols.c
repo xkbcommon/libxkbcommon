@@ -1500,6 +1500,7 @@ out_of_loops:
      * Find and assign the groups' types in the keymap. Also find the
      * key width according to the largest type.
      */
+    key->kt_index = calloc(key->num_groups, sizeof(*key->kt_index));
     key->width = 0;
     darray_enumerate(i, groupi, keyi->groups) {
         struct xkb_key_type *type;

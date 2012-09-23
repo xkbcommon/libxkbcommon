@@ -99,6 +99,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
         free(key->num_syms);
         free(key->syms);
         free(key->actions);
+        free(key->kt_index);
     }
     darray_free(keymap->keys);
     darray_free(keymap->sym_interpret);
