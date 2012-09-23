@@ -90,8 +90,22 @@
 
 #define XKB_KEY_NAME_LENGTH 4
 
-/* These should all be dynamic. */
+/* This limit is artificially enforced, we do not depend on it any where.
+ * The reason it's still here is that the rules file format does not
+ * support multiple groups very well, and the rules shipped with
+ * xkeyboard-config (see rules/evdev) depend on this limit extensively.
+ * So just lifting this limit would cause problems for people who will use
+ * more than 4 layouts.
+ * TODO: Fix the group index syntax in the rules format, preferably in a
+ *       backwards compatible way.
+ *       See e.g. https://bugs.freedesktop.org/show_bug.cgi?id=14372
+ * Note: A limit on the number of groups we *do* depend on is imposed by
+ * the size of the xkb_layout_mask_t type (32). This is more than enough
+ * though.
+ */
 #define XKB_NUM_GROUPS 4
+
+/* These should all be dynamic. */
 #define XKB_NUM_INDICATORS 32
 #define XKB_NUM_VIRTUAL_MODS 16
 #define XKB_NUM_CORE_MODS 8
