@@ -104,6 +104,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
     darray_free(keymap->keys);
     darray_free(keymap->sym_interpret);
     darray_free(keymap->key_aliases);
+    darray_free(keymap->group_names);
     free(keymap->keycodes_section_name);
     free(keymap->symbols_section_name);
     free(keymap->types_section_name);
@@ -192,10 +193,11 @@ xkb_keymap_num_layouts(struct xkb_keymap *keymap)
 XKB_EXPORT const char *
 xkb_keymap_layout_get_name(struct xkb_keymap *keymap, xkb_layout_index_t idx)
 {
-    if (idx >= xkb_keymap_num_layouts(keymap))
+    if (idx >= xkb_keymap_num_layouts(keymap) ||
+        idx >= darray_size(keymap->group_names))
         return NULL;
 
-    return xkb_atom_text(keymap->ctx, keymap->group_names[idx]);
+    return xkb_atom_text(keymap->ctx, darray_item(keymap->group_names, idx));
 }
 
 /**
@@ -204,15 +206,15 @@ xkb_keymap_layout_get_name(struct xkb_keymap *keymap, xkb_layout_index_t idx)
 XKB_EXPORT xkb_layout_index_t
 xkb_keymap_layout_get_index(struct xkb_keymap *keymap, const char *name)
 {
-    xkb_layout_index_t num_groups = xkb_keymap_num_layouts(keymap);
     xkb_atom_t atom = xkb_atom_lookup(keymap->ctx, name);
+    xkb_atom_t *group_name;
     xkb_layout_index_t i;
 
     if (atom == XKB_ATOM_NONE)
         return XKB_LAYOUT_INVALID;
 
-    for (i = 0; i < num_groups; i++)
-        if (keymap->group_names[i] == atom)
+    darray_enumerate(i, group_name, keymap->group_names)
+        if (*group_name == atom)
             return i;
 
     return XKB_LAYOUT_INVALID;

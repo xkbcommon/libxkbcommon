@@ -336,6 +336,8 @@ struct xkb_key {
     xkb_keysym_t *syms;
 };
 
+typedef darray(xkb_atom_t) darray_xkb_atom_t;
+
 /* Common keyboard description structure */
 struct xkb_keymap {
     struct xkb_context *ctx;
@@ -365,7 +367,7 @@ struct xkb_keymap {
 
     /* Number of groups in the key with the most groups. */
     xkb_layout_index_t num_groups;
-    xkb_atom_t group_names[XKB_NUM_GROUPS];
+    darray_xkb_atom_t group_names;
 
     struct xkb_indicator_map indicators[XKB_NUM_INDICATORS];
 

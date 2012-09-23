@@ -167,7 +167,7 @@ typedef struct _SymbolsInfo {
     KeyInfo dflt;
     VModInfo vmods;
     ActionsInfo *actions;
-    xkb_atom_t group_names[XKB_NUM_GROUPS];
+    darray_xkb_atom_t group_names;
     darray(ModMapEntry) modMaps;
 
     struct xkb_keymap *keymap;
@@ -195,6 +195,7 @@ ClearSymbolsInfo(SymbolsInfo * info)
     darray_foreach(keyi, info->keys)
         ClearKeyInfo(keyi);
     darray_free(info->keys);
+    darray_free(info->group_names);
     darray_free(info->modMaps);
     ClearKeyInfo(&info->dflt);
 }
@@ -549,22 +550,33 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
     unsigned int i;
     KeyInfo *keyi;
     ModMapEntry *mm;
+    xkb_atom_t *group_name;
+    xkb_layout_index_t group_names_in_both;
 
     if (from->errorCount > 0) {
         into->errorCount += from->errorCount;
         return;
     }
+
     if (into->name == NULL) {
         into->name = from->name;
         from->name = NULL;
     }
-    for (i = 0; i < XKB_NUM_GROUPS; i++) {
-        if (from->group_names[i] != XKB_ATOM_NONE) {
-            if ((merge != MERGE_AUGMENT) ||
-                (into->group_names[i] == XKB_ATOM_NONE))
-                into->group_names[i] = from->group_names[i];
-        }
+
+    group_names_in_both = MIN(darray_size(into->group_names),
+                              darray_size(from->group_names));
+    for (i = 0; i < group_names_in_both; i++) {
+        if (!darray_item(from->group_names, i))
+            continue;
+
+        if (merge == MERGE_AUGMENT && darray_item(into->group_names, i))
+            continue;
+
+        darray_item(into->group_names, i) = darray_item(from->group_names, i);
     }
+    /* If @from has more, get them as well. */
+    darray_foreach_from(group_name, from->group_names, group_names_in_both)
+        darray_append(into->group_names, *group_name);
 
     darray_foreach(keyi, from->keys) {
         merge = (merge == MERGE_DEFAULT ? keyi->merge : merge);
@@ -768,14 +780,20 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
                                           leveli->sym_index + j),
                               &darray_item(groupi->syms,
                                            leveli->sym_index + j))) {
+                const char *group_name = "unnamed";
+
+                if (ndx < darray_size(info->group_names) &&
+                    darray_item(info->group_names, ndx))
+                    group_name = xkb_atom_text(info->keymap->ctx,
+                                               darray_item(info->group_names,
+                                                           ndx));
+
                 log_warn(info->keymap->ctx,
                          "Could not resolve keysym %s for key %s, group %u (%s), level %u\n",
                          darray_item(value->value.list.syms, i),
                          LongKeyNameText(keyi->name),
-                         ndx + 1,
-                         xkb_atom_text(info->keymap->ctx,
-                                       info->group_names[ndx]),
-                         nSyms);
+                         ndx + 1, group_name, nSyms);
+
                 leveli->sym_index = 0;
                 leveli->num_syms = 0;
                 break;
@@ -1033,7 +1051,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
 static int
 SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
 {
-    xkb_layout_index_t grp;
+    xkb_layout_index_t grp, grp_to_use;
     xkb_atom_t name;
 
     if (!arrayNdx) {
@@ -1057,18 +1075,26 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
         return false;
     }
 
-    if (info->explicit_group == XKB_LAYOUT_INVALID)
-        info->group_names[grp - 1] = name;
-    else if (grp - 1 == 0)
-        info->group_names[info->explicit_group] = name;
-    else
+    grp_to_use = XKB_LAYOUT_INVALID;
+    if (info->explicit_group == XKB_LAYOUT_INVALID) {
+        grp_to_use = grp - 1;
+    }
+    else if (grp - 1 == 0) {
+        grp_to_use = info->explicit_group;
+    }
+    else {
         log_warn(info->keymap->ctx,
                  "An explicit group was specified for the '%s' map, "
                  "but it provides a name for a group other than Group1 (%d); "
                  "Ignoring group name '%s'\n",
                  info->name, grp,
                  xkb_atom_text(info->keymap->ctx, name));
+        return false;
+    }
 
+    if (grp_to_use >= darray_size(info->group_names))
+        darray_resize0(info->group_names, grp_to_use + 1);
+    darray_item(info->group_names, grp_to_use) = name;
     return true;
 }
 
@@ -1672,14 +1698,12 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
 {
     KeyInfo *keyi;
     ModMapEntry *mm;
-    xkb_layout_index_t i;
     struct xkb_key *key;
 
     keymap->symbols_section_name = strdup_safe(info->name);
 
-    for (i = 0; i < XKB_NUM_GROUPS; i++)
-        if (info->group_names[i] != XKB_ATOM_NONE)
-            keymap->group_names[i] = info->group_names[i];
+    keymap->group_names = info->group_names;
+    darray_init(info->group_names);
 
     darray_foreach(keyi, info->keys)
         if (!CopySymbolsDef(info, keyi))
