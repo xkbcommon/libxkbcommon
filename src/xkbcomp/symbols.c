@@ -167,7 +167,7 @@ typedef struct _SymbolsInfo {
     KeyInfo dflt;
     VModInfo vmods;
     ActionsInfo *actions;
-    xkb_atom_t groupNames[XKB_NUM_GROUPS];
+    xkb_atom_t group_names[XKB_NUM_GROUPS];
     darray(ModMapEntry) modMaps;
 
     struct xkb_keymap *keymap;
@@ -558,10 +558,10 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
         from->name = NULL;
     }
     for (i = 0; i < XKB_NUM_GROUPS; i++) {
-        if (from->groupNames[i] != XKB_ATOM_NONE) {
+        if (from->group_names[i] != XKB_ATOM_NONE) {
             if ((merge != MERGE_AUGMENT) ||
-                (into->groupNames[i] == XKB_ATOM_NONE))
-                into->groupNames[i] = from->groupNames[i];
+                (into->group_names[i] == XKB_ATOM_NONE))
+                into->group_names[i] = from->group_names[i];
         }
     }
 
@@ -773,7 +773,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
                          LongKeyNameText(keyi->name),
                          ndx + 1,
                          xkb_atom_text(info->keymap->ctx,
-                                       info->groupNames[ndx]),
+                                       info->group_names[ndx]),
                          nSyms);
                 leveli->sym_index = 0;
                 leveli->num_syms = 0;
@@ -1056,7 +1056,7 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
         return false;
     }
 
-    info->groupNames[grp - 1 + info->explicit_group] = name;
+    info->group_names[grp - 1 + info->explicit_group] = name;
     return true;
 }
 
@@ -1663,8 +1663,8 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
     keymap->symbols_section_name = strdup_safe(info->name);
 
     for (i = 0; i < XKB_NUM_GROUPS; i++)
-        if (info->groupNames[i] != XKB_ATOM_NONE)
-            keymap->group_names[i] = info->groupNames[i];
+        if (info->group_names[i] != XKB_ATOM_NONE)
+            keymap->group_names[i] = info->group_names[i];
 
     darray_foreach(keyi, info->keys)
         if (!CopySymbolsDef(info, keyi))
