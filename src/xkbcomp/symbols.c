@@ -184,6 +184,7 @@ InitSymbolsInfo(SymbolsInfo *info, struct xkb_keymap *keymap,
     InitKeyInfo(&info->dflt, file_id);
     InitVModInfo(&info->vmods, keymap);
     info->actions = actions;
+    info->explicit_group = XKB_LAYOUT_INVALID;
 }
 
 static void
@@ -1056,7 +1057,18 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
         return false;
     }
 
-    info->group_names[grp - 1 + info->explicit_group] = name;
+    if (info->explicit_group == XKB_LAYOUT_INVALID)
+        info->group_names[grp - 1] = name;
+    else if (grp - 1 == 0)
+        info->group_names[info->explicit_group] = name;
+    else
+        log_warn(info->keymap->ctx,
+                 "An explicit group was specified for the '%s' map, "
+                 "but it provides a name for a group other than Group1 (%d); "
+                 "Ignoring group name '%s'\n",
+                 info->name, grp,
+                 xkb_atom_text(info->keymap->ctx, name));
+
     return true;
 }
 
@@ -1151,7 +1163,7 @@ SetExplicitGroup(SymbolsInfo *info, KeyInfo *keyi)
     GroupInfo *groupi;
     bool warn = false;
 
-    if (info->explicit_group == 0)
+    if (info->explicit_group == XKB_LAYOUT_INVALID)
         return true;
 
     darray_enumerate_from(i, groupi, keyi->groups, 1) {
@@ -1169,9 +1181,12 @@ SetExplicitGroup(SymbolsInfo *info, KeyInfo *keyi)
                  info->name, LongKeyNameText(keyi->name));
 
     darray_resize0(keyi->groups, info->explicit_group + 1);
-    darray_item(keyi->groups, info->explicit_group) =
-        darray_item(keyi->groups, 0);
-    InitGroupInfo(&darray_item(keyi->groups, 0));
+    if (info->explicit_group > 0) {
+        darray_item(keyi->groups, info->explicit_group) =
+            darray_item(keyi->groups, 0);
+        InitGroupInfo(&darray_item(keyi->groups, 0));
+    }
+
     return true;
 }
 
