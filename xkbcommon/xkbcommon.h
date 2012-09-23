@@ -204,6 +204,12 @@ struct xkb_rule_names {
  *
  * @warning If the buffer passed is too small, the string is truncated
  * (though still NUL-terminated); a size of at least 32 bytes is recommended.
+ *
+ * @returns The number of bytes in the name, excluding the NUL byte, if
+ * keysym is valid.  Otherwise, -1 is returned.
+ *
+ * @remark You may check if truncation has occured by comparing the return
+ * value with the length of buffer, similarly to the snprintf(3) function.
  */
 int
 xkb_keysym_get_name(xkb_keysym_t keysym, char *buffer, size_t size);

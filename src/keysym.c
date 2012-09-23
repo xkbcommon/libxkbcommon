@@ -52,7 +52,7 @@
 #include "ks_tables.h"
 #include "keysym.h"
 
-XKB_EXPORT void
+XKB_EXPORT int
 xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
 {
     int i, n, h, idx;
@@ -61,7 +61,7 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
 
     if ((ks & ((unsigned long) ~0x1fffffff)) != 0) {
         snprintf(buffer, size, "Invalid");
-        return;
+        return -1;
     }
 
     /* Try to find it in our hash table. */
@@ -79,8 +79,7 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
 
             if ((entry[0] == val1) && (entry[1] == val2) &&
                 (entry[2] == val3) && (entry[3] == val4)) {
-                snprintf(buffer, size, "%s", entry + 4);
-                return;
+                return snprintf(buffer, size, "%s", entry + 4);
             }
 
             if (!--n)
@@ -94,10 +93,10 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
 
     if (ks >= 0x01000100 && ks <= 0x0110ffff)
         /* Unnamed Unicode codepoint. */
-        snprintf(buffer, size, "U%lx", ks & 0xffffffUL);
-    else
-        /* Unnamed, non-Unicode, symbol (shouldn't generally happen). */
-        snprintf(buffer, size, "0x%08x", ks);
+        return snprintf(buffer, size, "U%lx", ks & 0xffffffUL);
+
+    /* Unnamed, non-Unicode, symbol (shouldn't generally happen). */
+    return snprintf(buffer, size, "0x%08x", ks);
 }
 
 XKB_EXPORT xkb_keysym_t
