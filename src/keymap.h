@@ -360,7 +360,7 @@ struct xkb_keymap {
     enum xkb_keymap_compile_flags flags;
     enum xkb_keymap_format format;
 
-    unsigned int enabled_ctrls;
+    enum xkb_action_controls enabled_ctrls;
 
     xkb_keycode_t min_key_code;
     xkb_keycode_t max_key_code;
