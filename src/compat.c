@@ -60,7 +60,7 @@ xkb_map_new_from_string(struct xkb_context *context, const char *string,
 XKB_EXPORT char *
 xkb_map_get_as_string(struct xkb_keymap *keymap)
 {
-    return xkb_keymap_get_as_string(keymap);
+    return xkb_keymap_get_as_string(keymap, XKB_KEYMAP_FORMAT_TEXT_V1);
 }
 
 XKB_EXPORT struct xkb_keymap *

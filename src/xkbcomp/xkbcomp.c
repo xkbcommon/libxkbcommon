@@ -31,11 +31,13 @@
 #include "rules.h"
 
 static struct xkb_keymap *
-compile_keymap_file(struct xkb_context *ctx, XkbFile *file)
+compile_keymap_file(struct xkb_context *ctx, XkbFile *file,
+                    enum xkb_keymap_format format,
+                    enum xkb_keymap_compile_flags flags)
 {
     struct xkb_keymap *keymap;
 
-    keymap = xkb_keymap_new(ctx);
+    keymap = xkb_keymap_new(ctx, format, flags);
     if (!keymap)
         goto err;
 
@@ -111,7 +113,7 @@ xkb_keymap_new_from_names(struct xkb_context *ctx,
         return NULL;
     }
 
-    keymap = compile_keymap_file(ctx, file);
+    keymap = compile_keymap_file(ctx, file, XKB_KEYMAP_FORMAT_TEXT_V1, flags);
     FreeXkbFile(file);
     return keymap;
 }
@@ -142,7 +144,7 @@ xkb_keymap_new_from_string(struct xkb_context *ctx,
         return NULL;
     }
 
-    keymap = compile_keymap_file(ctx, file);
+    keymap = compile_keymap_file(ctx, file, format, flags);
     FreeXkbFile(file);
     return keymap;
 }
@@ -173,7 +175,7 @@ xkb_keymap_new_from_file(struct xkb_context *ctx,
         return NULL;
     }
 
-    keymap = compile_keymap_file(ctx, xkb_file);
+    keymap = compile_keymap_file(ctx, xkb_file, format, flags);
     FreeXkbFile(xkb_file);
     return keymap;
 }

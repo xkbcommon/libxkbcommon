@@ -342,6 +342,7 @@ struct xkb_keymap {
 
     int refcnt;
     enum xkb_keymap_compile_flags flags;
+    enum xkb_keymap_format format;
 
     unsigned int enabled_ctrls;
 
@@ -421,6 +422,8 @@ XkbKeyActionEntry(const struct xkb_key *key, xkb_layout_index_t layout,
 }
 
 struct xkb_keymap *
-xkb_keymap_new(struct xkb_context *ctx);
+xkb_keymap_new(struct xkb_context *ctx,
+               enum xkb_keymap_format format,
+               enum xkb_keymap_compile_flags);
 
 #endif

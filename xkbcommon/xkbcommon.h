@@ -558,11 +558,18 @@ xkb_keymap_ref(struct xkb_keymap *keymap);
 void
 xkb_keymap_unref(struct xkb_keymap *keymap);
 
+/* See xkb_keymap_get_as_string(). */
+#define XKB_KEYMAP_USE_ORIGINAL_FORMAT ((enum xkb_keymap_format) -1)
+
 /**
  * @brief Get the compiled keymap as a string.
  *
- * @returns The compiled keymap as a NUL-terminated string, or NULL if
- * unsuccessful.
+ * @param keymap The keymap to get as a string.
+ * @param format The keymap format to use for the string.  You can pass
+ * in the special value XKB_KEYMAP_USE_ORIGINAL_FORMAT to use the format
+ * from which the keymap was originally created.
+ *
+ * @returns The keymap as a NUL-terminated string, or NULL if unsuccessful.
  *
  * The returned string may be fed back into xkb_map_new_from_string() to get
  * the exact same keymap (possibly in another process, etc.).
@@ -571,7 +578,8 @@ xkb_keymap_unref(struct xkb_keymap *keymap);
  * by the caller.
  */
 char *
-xkb_keymap_get_as_string(struct xkb_keymap *keymap);
+xkb_keymap_get_as_string(struct xkb_keymap *keymap,
+                         enum xkb_keymap_format format);
 
 /** @} */
 

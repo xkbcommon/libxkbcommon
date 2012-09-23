@@ -87,7 +87,7 @@ main(int argc, char *argv[])
         goto err_ctx;
     }
 
-    dump = xkb_keymap_get_as_string(keymap);
+    dump = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_FORMAT_TEXT_V1);
     if (!dump) {
         fprintf(stderr, "Couldn't get the keymap string\n");
         goto err_map;

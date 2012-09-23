@@ -40,7 +40,8 @@
         xkb_keymap_new_from_file(context, file, format, flags)
 #define xkb_map_new_from_string(context, string, format, flags) \
         xkb_keymap_new_from_string(context, string, format, flags)
-#define xkb_map_get_as_string(keymap) xkb_keymap_get_as_string(keymap)
+#define xkb_map_get_as_string(keymap) \
+        xkb_keymap_get_as_string(keymap, XKB_KEYMAP_FORMAT_TEXT_V1)
 #define xkb_map_ref(keymap) xkb_keymap_ref(keymap)
 #define xkb_map_unref(keymap) xkb_keymap_unref(keymap)
 

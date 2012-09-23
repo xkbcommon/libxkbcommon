@@ -47,7 +47,7 @@ main(int argc, char *argv[])
     keymap = test_compile_string(ctx, original);
     assert(keymap);
 
-    dump = xkb_keymap_get_as_string(keymap);
+    dump = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
     assert(dump);
 
     if (!streq(original, dump)) {

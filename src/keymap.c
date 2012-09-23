@@ -54,7 +54,9 @@
 #include "text.h"
 
 struct xkb_keymap *
-xkb_keymap_new(struct xkb_context *ctx)
+xkb_keymap_new(struct xkb_context *ctx,
+               enum xkb_keymap_format format,
+               enum xkb_keymap_compile_flags flags)
 {
     struct xkb_keymap *keymap;
 
@@ -64,6 +66,9 @@ xkb_keymap_new(struct xkb_context *ctx)
 
     keymap->refcnt = 1;
     keymap->ctx = xkb_context_ref(ctx);
+
+    keymap->format = format;
+    keymap->flags = flags;
 
     return keymap;
 }

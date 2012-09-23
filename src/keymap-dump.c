@@ -746,10 +746,21 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
 }
 
 XKB_EXPORT char *
-xkb_keymap_get_as_string(struct xkb_keymap *keymap)
+xkb_keymap_get_as_string(struct xkb_keymap *keymap,
+                         enum xkb_keymap_format format)
 {
     bool ok;
     struct buf buf = { NULL, 0, 0 };
+
+    if (format == XKB_KEYMAP_USE_ORIGINAL_FORMAT)
+        format = keymap->format;
+
+    if (format != XKB_KEYMAP_FORMAT_TEXT_V1) {
+        log_err(keymap->ctx,
+                "Trying to get a keymap as a string in an unsupported format (%d)\n",
+                format);
+        return NULL;
+    }
 
     ok = (check_write_buf(&buf, "xkb_keymap {\n") &&
           write_keycodes(keymap, &buf) &&
