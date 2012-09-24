@@ -808,10 +808,6 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         }
     }
 
-    for (j = darray_size(groupi->levels) - 1;
-         j >= 0 && darray_item(groupi->levels, j).num_syms == 0; j--)
-        (void) darray_pop(groupi->levels);
-
     return true;
 }
 
