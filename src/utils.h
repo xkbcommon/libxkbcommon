@@ -82,6 +82,15 @@ strnull(const char *s)
     return s ? s : "(null)";
 }
 
+static inline void *
+memdup(const void *mem, size_t nmemb, size_t size)
+{
+    void *p = malloc(nmemb * size);
+    if (p)
+        memcpy(p, mem, nmemb * size);
+    return p;
+}
+
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MIN3(a, b, c) MIN(MIN((a), (b)), (c))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))

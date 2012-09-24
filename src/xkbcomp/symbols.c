@@ -81,15 +81,15 @@ enum key_field {
 
 typedef struct {
     unsigned int num_syms;
-    unsigned int sym_index;
+    union {
+        xkb_keysym_t sym;       /* num_syms == 1 */
+        xkb_keysym_t *syms;     /* num_syms > 1  */
+    } u;
     union xkb_action act;
 } LevelInfo;
 
-typedef darray(xkb_keysym_t) darray_xkb_keysym_t;
-
 typedef struct {
     enum group_field defined;
-    darray_xkb_keysym_t syms;
     darray(LevelInfo) levels;
     xkb_atom_t type;
 } GroupInfo;
@@ -120,8 +120,27 @@ InitGroupInfo(GroupInfo *groupi)
 static void
 ClearGroupInfo(GroupInfo *groupi)
 {
-    darray_free(groupi->syms);
+    LevelInfo *leveli;
+    darray_foreach(leveli, groupi->levels)
+        if (leveli->num_syms > 1)
+            free(leveli->u.syms);
     darray_free(groupi->levels);
+}
+
+static void
+CopyGroupInfo(GroupInfo *to, const GroupInfo *from)
+{
+    xkb_level_index_t j;
+    to->defined = from->defined;
+    to->type = from->type;
+    darray_init(to->levels);
+    darray_copy(to->levels, from->levels);
+    for (j = 0; j < darray_size(to->levels); j++)
+        if (darray_item(from->levels, j).num_syms > 1)
+            darray_item(to->levels, j).u.syms =
+                memdup(darray_item(from->levels, j).u.syms,
+                       darray_item(from->levels, j).num_syms,
+                       sizeof(xkb_keysym_t));
 }
 
 static void
@@ -204,8 +223,7 @@ static bool
 MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
             bool report, xkb_layout_index_t group, unsigned long key_name)
 {
-    xkb_level_index_t i, numLevels;
-    enum { INTO = (1 << 0), FROM = (1 << 1) } using;
+    xkb_level_index_t i, levels_in_both;
 
     /* First find the type of the merged group. */
     if (into->type != from->type) {
@@ -245,32 +263,21 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
         return true;
     }
 
-    /* First we merge the actions and ensure @into has all the levels. */
-    numLevels = MAX(darray_size(into->levels), darray_size(from->levels));
-    for (i = 0; i < numLevels; i++) {
-        union xkb_action *intoAct, *fromAct;
+    /* Merge the actions and syms. */
+    levels_in_both = MIN(darray_size(into->levels), darray_size(from->levels));
+    for (i = 0; i < levels_in_both; i++) {
+        LevelInfo *intoLevel = &darray_item(into->levels, i);
+        LevelInfo *fromLevel = &darray_item(from->levels, i);
 
-        if (i >= darray_size(from->levels))
-            continue;
-
-        if (i >= darray_size(into->levels)) {
-            darray_append(into->levels, darray_item(from->levels, i));
-            darray_item(into->levels, i).num_syms = 0;
-            darray_item(into->levels, i).sym_index = 0;
-            continue;
+        if (fromLevel->act.type == ACTION_TYPE_NONE) {
         }
-
-        intoAct = &darray_item(into->levels, i).act;
-        fromAct = &darray_item(from->levels, i).act;
-
-        if (fromAct->type == ACTION_TYPE_NONE) {
-        }
-        else if (intoAct->type == ACTION_TYPE_NONE) {
-            *intoAct = *fromAct;
+        else if (intoLevel->act.type == ACTION_TYPE_NONE) {
+            intoLevel->act = fromLevel->act;
         }
         else {
-            union xkb_action *use = (clobber ? fromAct : intoAct);
-            union xkb_action *ignore = (clobber ? intoAct : fromAct);
+            union xkb_action *use, *ignore;
+            use = (clobber ? &fromLevel->act : &intoLevel->act);
+            ignore = (clobber ? &intoLevel->act : &fromLevel->act);
 
             if (report)
                 log_warn(info->keymap->ctx,
@@ -280,96 +287,44 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
                          ActionTypeText(use->type),
                          ActionTypeText(ignore->type));
 
-            *intoAct = *use;
+            intoLevel->act = *use;
         }
-    }
-    into->defined |= (from->defined & GROUP_FIELD_ACTS);
 
-    /* Then merge the keysyms. */
-
-    /*
-     * We want to avoid copying and allocating if not necessary. So
-     * here we do a pre-scan of the levels to check if we'll only use
-     * @into's or @from's keysyms, and if so we'll just assign them.
-     * However if one level uses @into's and another uses @from's, we
-     * will need to construct a new syms array.
-     */
-    using = 0;
-    for (i = 0; i < numLevels; i++) {
-        unsigned int intoSize, fromSize;
-
-        intoSize = darray_item(into->levels, i).num_syms;
-        if (i < darray_size(from->levels))
-            fromSize = darray_item(from->levels, i).num_syms;
-        else
-            fromSize = 0;
-
-        if (intoSize == 0 && fromSize == 0)
-            using |= 0;
-        else if (intoSize == 0)
-            using |= FROM;
-        else if (fromSize == 0)
-            using |= INTO;
-        else
-            using |= (clobber ? FROM : INTO);
-    }
-
-    if (using == 0 || using == INTO) {
-    }
-    else if (using == FROM) {
-        darray_free(into->syms);
-        into->syms = from->syms;
-        darray_init(from->syms);
-        for (i = 0; i < darray_size(from->levels); i++) {
-            darray_item(into->levels, i).num_syms =
-                darray_item(from->levels, i).num_syms;
-            darray_item(into->levels, i).sym_index =
-                darray_item(from->levels, i).sym_index;
+        if (fromLevel->num_syms == 0) {
         }
-    }
-    else {
-        darray_xkb_keysym_t syms = darray_new();
-
-        for (i = 0; i < numLevels; i++) {
-            unsigned int intoSize, fromSize;
-
-            intoSize = darray_item(into->levels, i).num_syms;
-            if (i < darray_size(from->levels))
-                fromSize = darray_item(from->levels, i).num_syms;
+        else if (intoLevel->num_syms == 0) {
+            intoLevel->num_syms = fromLevel->num_syms;
+            if (fromLevel->num_syms > 1)
+                intoLevel->u.syms = fromLevel->u.syms;
             else
-                fromSize = 0;
-
-            /* Empty level. */
-            if (intoSize == 0 && fromSize == 0)
-                continue;
-
-            if (intoSize != 0 && fromSize != 0 && report)
-                log_info(info->keymap->ctx,
-                         "Multiple symbols for group %u, level %d on key %s; "
+                intoLevel->u.sym = fromLevel->u.sym;
+            fromLevel->num_syms = 0;
+        }
+        else {
+            if (report)
+                log_warn(info->keymap->ctx,
+                         "Multiple symbols for level %d/group %u on key %s; "
                          "Using %s, ignoring %s\n",
-                         group + 1, i + 1, LongKeyNameText(key_name),
+                         i + 1, group + 1, LongKeyNameText(key_name),
                          (clobber ? "from" : "to"),
                          (clobber ? "to" : "from"));
 
-            if (intoSize == 0 || (fromSize != 0 && clobber)) {
-                unsigned sym_index = darray_item(from->levels, i).sym_index;
-                darray_item(into->levels, i).sym_index = darray_size(syms);
-                darray_item(into->levels, i).num_syms = fromSize;
-                darray_append_items(syms, &darray_item(from->syms, sym_index),
-                                    fromSize);
-            }
-            else
-            {
-                unsigned sym_index = darray_item(into->levels, i).sym_index;
-                darray_item(into->levels, i).sym_index = darray_size(syms);
-                darray_item(into->levels, i).num_syms = intoSize;
-                darray_append_items(syms, &darray_item(into->syms, sym_index),
-                                    intoSize);
+            if (clobber) {
+                intoLevel->num_syms = fromLevel->num_syms;
+                if (fromLevel->num_syms > 1)
+                    intoLevel->u.syms = fromLevel->u.syms;
+                else
+                    intoLevel->u.sym = fromLevel->u.sym;
+                fromLevel->num_syms = 0;
             }
         }
-        darray_free(into->syms);
-        into->syms = syms;
     }
+    /* If @from has extra levels, get them as well. */
+    for (i = levels_in_both; i < darray_size(from->levels); i++) {
+        darray_append(into->levels, darray_item(from->levels, i));
+        darray_item(from->levels, i).num_syms = 0;
+    }
+    into->defined |= (from->defined & GROUP_FIELD_ACTS);
     into->defined |= (from->defined & GROUP_FIELD_SYMS);
 
     return true;
@@ -392,7 +347,6 @@ UseNewKeyField(enum key_field field, enum key_field old, enum key_field new,
 
     return false;
 }
-
 
 static bool
 MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from)
@@ -726,7 +680,6 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 {
     xkb_layout_index_t ndx;
     GroupInfo *groupi;
-    unsigned int nSyms;
     xkb_level_index_t nLevels;
     xkb_level_index_t i;
     int j;
@@ -758,28 +711,27 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         return false;
     }
 
-    nSyms = darray_size(value->value.list.syms);
     nLevels = darray_size(value->value.list.symsMapIndex);
-
-    if (darray_size(groupi->syms) < nSyms)
-        darray_resize0(groupi->syms, nSyms);
-
     if (darray_size(groupi->levels) < nLevels)
         darray_resize0(groupi->levels, nLevels);
 
     groupi->defined |= GROUP_FIELD_SYMS;
 
     for (i = 0; i < nLevels; i++) {
+        unsigned int sym_index;
         LevelInfo *leveli = &darray_item(groupi->levels, i);
 
-        leveli->sym_index = darray_item(value->value.list.symsMapIndex, i);
+        sym_index = darray_item(value->value.list.symsMapIndex, i);
         leveli->num_syms = darray_item(value->value.list.symsNumEntries, i);
+        if (leveli->num_syms > 1)
+            leveli->u.syms = calloc(leveli->num_syms, sizeof(*leveli->u.syms));
 
         for (j = 0; j < leveli->num_syms; j++) {
-            if (!LookupKeysym(darray_item(value->value.list.syms,
-                                          leveli->sym_index + j),
-                              &darray_item(groupi->syms,
-                                           leveli->sym_index + j))) {
+            char *sym_name = darray_item(value->value.list.syms,
+                                         sym_index + j);
+            xkb_keysym_t keysym;
+
+            if (!LookupKeysym(sym_name, &keysym)) {
                 const char *group_name = "unnamed";
 
                 if (ndx < darray_size(info->group_names) &&
@@ -790,20 +742,23 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
                 log_warn(info->keymap->ctx,
                          "Could not resolve keysym %s for key %s, group %u (%s), level %u\n",
-                         darray_item(value->value.list.syms, i),
-                         LongKeyNameText(keyi->name),
-                         ndx + 1, group_name, nSyms);
+                         sym_name, LongKeyNameText(keyi->name), ndx + 1,
+                         group_name, i);
 
-                leveli->sym_index = 0;
+                if (leveli->num_syms > 1)
+                    free(leveli->u.syms);
                 leveli->num_syms = 0;
                 break;
             }
 
-            if (leveli->num_syms == 1 &&
-                darray_item(groupi->syms,
-                            leveli->sym_index + j) == XKB_KEY_NoSymbol) {
-                leveli->sym_index = 0;
-                leveli->num_syms = 0;
+            if (leveli->num_syms == 1) {
+                if (keysym == XKB_KEY_NoSymbol)
+                    leveli->num_syms = 0;
+                else
+                    leveli->u.sym = keysym;
+            }
+            else if (leveli->num_syms > 1) {
+                leveli->u.syms[j] = keysym;
             }
         }
     }
@@ -1192,6 +1147,7 @@ SetExplicitGroup(SymbolsInfo *info, KeyInfo *keyi)
         if (groupi->defined) {
             warn = true;
             ClearGroupInfo(groupi);
+            InitGroupInfo(groupi);
         }
     }
 
@@ -1221,14 +1177,9 @@ HandleSymbolsDef(SymbolsInfo *info, SymbolsDef *stmt)
     keyi = info->dflt;
     darray_init(keyi.groups);
     darray_copy(keyi.groups, info->dflt.groups);
-    for (i = 0; i < darray_size(keyi.groups); i++) {
-        darray_init(darray_item(keyi.groups, i).syms);
-        darray_copy(darray_item(keyi.groups, i).syms,
-                    darray_item(info->dflt.groups, i).syms);
-        darray_init(darray_item(keyi.groups, i).levels);
-        darray_copy(darray_item(keyi.groups, i).levels,
-                    darray_item(info->dflt.groups, i).levels);
-    }
+    for (i = 0; i < darray_size(keyi.groups); i++)
+        CopyGroupInfo(&darray_item(keyi.groups, i),
+                      &darray_item(info->dflt.groups, i));
     keyi.merge = stmt->merge;
     keyi.name = KeyNameToLong(stmt->keyName);
 
@@ -1404,43 +1355,46 @@ FindNamedType(struct xkb_keymap *keymap, xkb_atom_t name, unsigned *type_rtrn)
     return false;
 }
 
-/**
- * Assign a type to the given sym and return the Atom for the type assigned.
+/*
+ * Find an appropriate type for a group and return its name.
  *
  * Simple recipe:
  * - ONE_LEVEL for width 0/1
- * - ALPHABETIC for 2 shift levels, with lower/upercase
+ * - ALPHABETIC for 2 shift levels, with lower/upercase keysyms
  * - KEYPAD for keypad keys.
  * - TWO_LEVEL for other 2 shift level keys.
  * and the same for four level keys.
  *
- * @param width Number of sysms in syms.
- * @param syms The keysyms for the given key (must be size width).
- * @param typeNameRtrn Set to the Atom of the type name.
- *
- * @returns true if a type could be found, false otherwise.
- *
- * FIXME: I need to take the KeyInfo so I can look at symsMapIndex and
- *        all that fun stuff rather than just assuming there's always one
- *        symbol per level.
+ * FIXME: Decide how to handle multiple-syms-per-level, and do it.
  */
 static bool
-FindAutomaticType(struct xkb_context *ctx, xkb_level_index_t width,
-                  const xkb_keysym_t *syms, xkb_atom_t *typeNameRtrn,
-                  bool *autoType)
+FindAutomaticType(struct xkb_context *ctx, GroupInfo *groupi,
+                  xkb_atom_t *typeNameRtrn, bool *autoType)
 {
+    xkb_level_index_t width = darray_size(groupi->levels);
+
     *autoType = false;
-    if ((width == 1) || (width == 0)) {
+
+#define GET_SYM(level) \
+    (darray_item(groupi->levels, level).num_syms == 0 ? \
+        XKB_KEY_NoSymbol : \
+     darray_item(groupi->levels, level).num_syms == 1 ? \
+        darray_item(groupi->levels, level).u.sym : \
+     /* num_syms > 1 */ \
+        darray_item(groupi->levels, level).u.syms[0])
+
+    if (width == 1 || width == 0) {
         *typeNameRtrn = xkb_atom_intern(ctx, "ONE_LEVEL");
         *autoType = true;
     }
     else if (width == 2) {
-        if (syms && xkb_keysym_is_lower(syms[0]) &&
-            xkb_keysym_is_upper(syms[1])) {
+        xkb_keysym_t sym0 = GET_SYM(0);
+        xkb_keysym_t sym1 = GET_SYM(1);
+
+        if (xkb_keysym_is_lower(sym0) && xkb_keysym_is_upper(sym1)) {
             *typeNameRtrn = xkb_atom_intern(ctx, "ALPHABETIC");
         }
-        else if (syms && (xkb_keysym_is_keypad(syms[0]) ||
-                          xkb_keysym_is_keypad(syms[1]))) {
+        else if (xkb_keysym_is_keypad(sym0) || xkb_keysym_is_keypad(sym1)) {
             *typeNameRtrn = xkb_atom_intern(ctx, "KEYPAD");
             *autoType = true;
         }
@@ -1450,18 +1404,20 @@ FindAutomaticType(struct xkb_context *ctx, xkb_level_index_t width,
         }
     }
     else if (width <= 4) {
-        if (syms && xkb_keysym_is_lower(syms[0]) &&
-            xkb_keysym_is_upper(syms[1]))
-            if (width == 4 && xkb_keysym_is_lower(syms[2]) &&
-                xkb_keysym_is_upper(syms[3]))
+        xkb_keysym_t sym0 = GET_SYM(0);
+        xkb_keysym_t sym1 = GET_SYM(1);
+        xkb_keysym_t sym2 = GET_SYM(2);
+        xkb_keysym_t sym3 = (width == 4 ? GET_SYM(3) : XKB_KEY_NoSymbol);
+
+        if (xkb_keysym_is_lower(sym0) && xkb_keysym_is_upper(sym1))
+            if (xkb_keysym_is_lower(sym2) && xkb_keysym_is_upper(sym3))
                 *typeNameRtrn =
                     xkb_atom_intern(ctx, "FOUR_LEVEL_ALPHABETIC");
             else
                 *typeNameRtrn = xkb_atom_intern(ctx,
                                                 "FOUR_LEVEL_SEMIALPHABETIC");
 
-        else if (syms && (xkb_keysym_is_keypad(syms[0]) ||
-                          xkb_keysym_is_keypad(syms[1])))
+        else if (xkb_keysym_is_keypad(sym0) || xkb_keysym_is_keypad(sym1))
             *typeNameRtrn = xkb_atom_intern(ctx, "FOUR_LEVEL_KEYPAD");
         else
             *typeNameRtrn = xkb_atom_intern(ctx, "FOUR_LEVEL");
@@ -1515,10 +1471,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
         if (groupi->defined)
             continue;
 
-        groupi->type = group0->type;
-        darray_copy(groupi->syms, group0->syms);
-        darray_copy(groupi->levels, group0->levels);
-        groupi->defined = group0->defined;
+        CopyGroupInfo(groupi, group0);
     }
 
     /* See if we need to allocate an actions array. */
@@ -1548,9 +1501,7 @@ out_of_loops:
         if (groupi->type == XKB_ATOM_NONE) {
             if (keyi->dfltType != XKB_ATOM_NONE)
                 groupi->type = keyi->dfltType;
-            else if (FindAutomaticType(keymap->ctx,
-                                       darray_size(groupi->levels),
-                                       darray_mem(groupi->syms, 0),
+            else if (FindAutomaticType(keymap->ctx, groupi,
                                        &groupi->type, &autoType)) { }
             else
                 log_vrb(info->keymap->ctx, 5,
@@ -1605,8 +1556,11 @@ out_of_loops:
 
     /* Find the size of the syms array. */
     sizeSyms = 0;
-    darray_foreach(groupi, keyi->groups)
-        sizeSyms += darray_size(groupi->syms);
+    darray_foreach(groupi, keyi->groups) {
+        LevelInfo *leveli;
+        darray_foreach(leveli, groupi->levels)
+            sizeSyms += leveli->num_syms;
+    }
 
     /* Initialize the xkb_key, now that we know the sizes. */
     key->syms = calloc(sizeSyms, sizeof(*key->syms));
@@ -1645,9 +1599,11 @@ out_of_loops:
             if (leveli->num_syms <= 0)
                 continue;
 
-            memcpy(&key->syms[symIndex],
-                   &darray_item(groupi->syms, leveli->sym_index),
-                   leveli->num_syms * sizeof(*key->syms));
+            if (leveli->num_syms == 1)
+                key->syms[symIndex] = leveli->u.sym;
+            else
+                memcpy(&key->syms[symIndex], leveli->u.syms,
+                       leveli->num_syms * sizeof(*key->syms));
             key->sym_index[i * key->width + j] = symIndex;
             key->num_syms[i * key->width + j] = leveli->num_syms;
             symIndex += key->num_syms[i * key->width + j];
