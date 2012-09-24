@@ -1452,7 +1452,8 @@ FindAutomaticType(struct xkb_context *ctx, xkb_level_index_t width,
     else if (width <= 4) {
         if (syms && xkb_keysym_is_lower(syms[0]) &&
             xkb_keysym_is_upper(syms[1]))
-            if (xkb_keysym_is_lower(syms[2]) && xkb_keysym_is_upper(syms[3]))
+            if (width == 4 && xkb_keysym_is_lower(syms[2]) &&
+                xkb_keysym_is_upper(syms[3]))
                 *typeNameRtrn =
                     xkb_atom_intern(ctx, "FOUR_LEVEL_ALPHABETIC");
             else
