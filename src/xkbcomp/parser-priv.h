@@ -45,4 +45,7 @@ scanner_error(YYLTYPE *loc, void *scanner, const char *msg);
 int
 _xkbcommon_lex(YYSTYPE *val, YYLTYPE *loc, void *scanner);
 
+int
+_xkbcommon_parse(struct parser_param *param);
+
 #endif
