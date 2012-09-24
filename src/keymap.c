@@ -83,25 +83,27 @@ xkb_keymap_ref(struct xkb_keymap *keymap)
 XKB_EXPORT void
 xkb_keymap_unref(struct xkb_keymap *keymap)
 {
-    unsigned int i;
+    unsigned int i, j;
     struct xkb_key *key;
 
     if (!keymap || --keymap->refcnt > 0)
         return;
 
+    darray_foreach(key, keymap->keys) {
+        for (i = 0; i < key->num_groups; i++) {
+            for (j = 0; j < XkbKeyGroupWidth(keymap, key, i); j++)
+                if (key->groups[i].levels[j].num_syms > 1)
+                    free(key->groups[i].levels[j].u.syms);
+            free(key->groups[i].levels);
+        }
+        free(key->groups);
+    }
+    darray_free(keymap->keys);
     for (i = 0; i < keymap->num_types; i++) {
         free(keymap->types[i].map);
         free(keymap->types[i].level_names);
     }
     free(keymap->types);
-    darray_foreach(key, keymap->keys) {
-        free(key->sym_index);
-        free(key->num_syms);
-        free(key->syms);
-        free(key->actions);
-        free(key->kt_index);
-    }
-    darray_free(keymap->keys);
     darray_free(keymap->sym_interpret);
     darray_free(keymap->key_aliases);
     darray_free(keymap->group_names);

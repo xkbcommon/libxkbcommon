@@ -161,16 +161,8 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
                     vmodmask |= (1 << interp->virtual_mod);
             }
 
-            if (interp->act.type != ACTION_TYPE_NONE) {
-                if (!key->actions) {
-                    key->actions = calloc(key->num_groups * key->width,
-                                          sizeof(*key->actions));
-                    if (!key->actions)
-                        return false;
-                }
-
-                key->actions[group * key->width + level] = interp->act;
-            }
+            if (interp->act.type != ACTION_TYPE_NONE)
+                key->groups[group].levels[level].action = interp->act;
         }
     }
 
@@ -226,13 +218,11 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     }
 
     /* Update action modifiers. */
-    xkb_foreach_key(key, keymap) {
-        if (!key->actions)
-            continue;
-
-        for (i = 0; i < key->num_groups * key->width; i++)
-            UpdateActionMods(keymap, &key->actions[i], key->modmap);
-    }
+    xkb_foreach_key(key, keymap)
+        for (i = 0; i < key->num_groups; i++)
+            for (j = 0; j < XkbKeyGroupWidth(keymap, key, i); j++)
+                UpdateActionMods(keymap, &key->groups[i].levels[j].action,
+                                 key->modmap);
 
     /* Update vmod -> indicator maps. */
     for (led = 0; led < XKB_NUM_INDICATORS; led++)

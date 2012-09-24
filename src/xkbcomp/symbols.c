@@ -80,17 +80,8 @@ enum key_field {
 };
 
 typedef struct {
-    unsigned int num_syms;
-    union {
-        xkb_keysym_t sym;       /* num_syms == 1 */
-        xkb_keysym_t *syms;     /* num_syms > 1  */
-    } u;
-    union xkb_action act;
-} LevelInfo;
-
-typedef struct {
     enum group_field defined;
-    darray(LevelInfo) levels;
+    darray(struct xkb_level) levels;
     xkb_atom_t type;
 } GroupInfo;
 
@@ -112,6 +103,13 @@ typedef struct _KeyInfo {
 } KeyInfo;
 
 static void
+ClearLevelInfo(struct xkb_level *leveli)
+{
+    if (leveli->num_syms > 1)
+        free(leveli->u.syms);
+}
+
+static void
 InitGroupInfo(GroupInfo *groupi)
 {
     memset(groupi, 0, sizeof(*groupi));
@@ -120,10 +118,9 @@ InitGroupInfo(GroupInfo *groupi)
 static void
 ClearGroupInfo(GroupInfo *groupi)
 {
-    LevelInfo *leveli;
+    struct xkb_level *leveli;
     darray_foreach(leveli, groupi->levels)
-        if (leveli->num_syms > 1)
-            free(leveli->u.syms);
+        ClearLevelInfo(leveli);
     darray_free(groupi->levels);
 }
 
@@ -266,18 +263,18 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
     /* Merge the actions and syms. */
     levels_in_both = MIN(darray_size(into->levels), darray_size(from->levels));
     for (i = 0; i < levels_in_both; i++) {
-        LevelInfo *intoLevel = &darray_item(into->levels, i);
-        LevelInfo *fromLevel = &darray_item(from->levels, i);
+        struct xkb_level *intoLevel = &darray_item(into->levels, i);
+        struct xkb_level *fromLevel = &darray_item(from->levels, i);
 
-        if (fromLevel->act.type == ACTION_TYPE_NONE) {
+        if (fromLevel->action.type == ACTION_TYPE_NONE) {
         }
-        else if (intoLevel->act.type == ACTION_TYPE_NONE) {
-            intoLevel->act = fromLevel->act;
+        else if (intoLevel->action.type == ACTION_TYPE_NONE) {
+            intoLevel->action = fromLevel->action;
         }
         else {
             union xkb_action *use, *ignore;
-            use = (clobber ? &fromLevel->act : &intoLevel->act);
-            ignore = (clobber ? &intoLevel->act : &fromLevel->act);
+            use = (clobber ? &fromLevel->action : &intoLevel->action);
+            ignore = (clobber ? &intoLevel->action : &fromLevel->action);
 
             if (report)
                 log_warn(info->keymap->ctx,
@@ -287,7 +284,7 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
                          ActionTypeText(use->type),
                          ActionTypeText(ignore->type));
 
-            intoLevel->act = *use;
+            intoLevel->action = *use;
         }
 
         if (fromLevel->num_syms == 0) {
@@ -310,6 +307,7 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
                          (clobber ? "to" : "from"));
 
             if (clobber) {
+                ClearLevelInfo(intoLevel);
                 intoLevel->num_syms = fromLevel->num_syms;
                 if (fromLevel->num_syms > 1)
                     intoLevel->u.syms = fromLevel->u.syms;
@@ -719,7 +717,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
     for (i = 0; i < nLevels; i++) {
         unsigned int sym_index;
-        LevelInfo *leveli = &darray_item(groupi->levels, i);
+        struct xkb_level *leveli = &darray_item(groupi->levels, i);
 
         sym_index = darray_item(value->value.list.symsMapIndex, i);
         leveli->num_syms = darray_item(value->value.list.symsNumEntries, i);
@@ -745,8 +743,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
                          sym_name, LongKeyNameText(keyi->name), ndx + 1,
                          group_name, i);
 
-                if (leveli->num_syms > 1)
-                    free(leveli->u.syms);
+                ClearLevelInfo(leveli);
                 leveli->num_syms = 0;
                 break;
             }
@@ -813,7 +810,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
     act = value->value.child;
     for (i = 0; i < nActs; i++) {
-        toAct = &darray_item(groupi->levels, i).act;
+        toAct = &darray_item(groupi->levels, i).action;
 
         if (!HandleActionDef(act, info->keymap, toAct, info->actions))
             log_err(info->keymap->ctx,
@@ -1434,9 +1431,6 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
     GroupInfo *groupi;
     const GroupInfo *group0;
     xkb_layout_index_t i;
-    bool haveActions;
-    unsigned int sizeSyms;
-    unsigned int symIndex;
 
     /*
      * The name is guaranteed to be real and not an alias (see
@@ -1474,27 +1468,12 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
         CopyGroupInfo(groupi, group0);
     }
 
-    /* See if we need to allocate an actions array. */
-    haveActions = false;
-    darray_foreach(groupi, keyi->groups) {
-        LevelInfo *leveli;
-        darray_foreach(leveli, groupi->levels) {
-            if (leveli->act.type != ACTION_TYPE_NONE) {
-                haveActions = true;
-                goto out_of_loops;
-            }
-        }
-    }
-out_of_loops:
+    key->groups = calloc(key->num_groups, sizeof(*key->groups));
 
-    /*
-     * Find and assign the groups' types in the keymap. Also find the
-     * key width according to the largest type.
-     */
-    key->kt_index = calloc(key->num_groups, sizeof(*key->kt_index));
-    key->width = 0;
+    /* * Find and assign the groups' types in the keymap. */
     darray_enumerate(i, groupi, keyi->groups) {
         struct xkb_key_type *type;
+        struct xkb_group *group = &key->groups[i];
         bool autoType = false;
 
         /* Find the type of the group, if it is missing. */
@@ -1513,9 +1492,9 @@ out_of_loops:
         }
 
         /* Find the type in the keymap, if it was defined in xkb_types. */
-        if (FindNamedType(keymap, groupi->type, &key->kt_index[i])) {
+        if (FindNamedType(keymap, groupi->type, &group->type_index)) {
             if (!autoType || darray_size(groupi->levels) > 2)
-                key->explicit_groups |= (1 << i);
+                key->groups[i].explicit_type = true;
         }
         else {
             log_vrb(info->keymap->ctx, 3,
@@ -1527,12 +1506,14 @@ out_of_loops:
              * Index 0 is guaranteed to contain something, usually
              * ONE_LEVEL or at least some default one-level type.
              */
-            key->kt_index[i] = 0;
+            group->type_index = 0;
         }
 
-        /* If the type specifies fewer levels than the key has, shrink the key. */
-        type = &keymap->types[key->kt_index[i]];
+        /* Always have as many levels as the type specifies. */
+        type = &keymap->types[group->type_index];
         if (type->num_levels < darray_size(groupi->levels)) {
+            struct xkb_level *leveli;
+
             log_vrb(info->keymap->ctx, 1,
                     "Type \"%s\" has %d levels, but %s has %d levels; "
                     "Ignoring extra symbols\n",
@@ -1540,41 +1521,22 @@ out_of_loops:
                     type->num_levels,
                     LongKeyNameText(keyi->name),
                     (int) darray_size(groupi->levels));
-            darray_resize(groupi->levels, type->num_levels);
+
+            darray_foreach_from(leveli, groupi->levels, type->num_levels)
+                ClearLevelInfo(leveli);
         }
-
-        /*
-         * Why type->num_levels and not darray_size(groupi->levels)?
-         * Because the type may have more levels, and each group must
-         * have at least as many levels as its type. Because the
-         * key->syms array is indexed by (group * width + level), we
-         * must take the largest one.
-         * Maybe we can change it to save some space.
-         */
-        key->width = MAX(key->width, type->num_levels);
+        darray_resize0(groupi->levels, type->num_levels);
     }
 
-    /* Find the size of the syms array. */
-    sizeSyms = 0;
-    darray_foreach(groupi, keyi->groups) {
-        LevelInfo *leveli;
-        darray_foreach(leveli, groupi->levels)
-            sizeSyms += leveli->num_syms;
+    /* Copy levels. */
+    darray_enumerate(i, groupi, keyi->groups) {
+        key->groups[i].levels = darray_mem(groupi->levels, 0);
+        darray_init(groupi->levels);
     }
 
-    /* Initialize the xkb_key, now that we know the sizes. */
-    key->syms = calloc(sizeSyms, sizeof(*key->syms));
-    key->sym_index = calloc(key->num_groups * key->width,
-                            sizeof(*key->sym_index));
-    key->num_syms = calloc(key->num_groups * key->width,
-                           sizeof(*key->num_syms));
     key->out_of_range_group_number = keyi->out_of_range_group_number;
     key->out_of_range_group_action = keyi->out_of_range_group_action;
-    if (haveActions) {
-        key->actions = calloc(key->num_groups * key->width,
-                              sizeof(*key->actions));
-        key->explicit |= EXPLICIT_INTERP;
-    }
+
     if (keyi->defined & KEY_FIELD_VMODMAP) {
         key->vmodmap = keyi->vmodmap;
         key->explicit |= EXPLICIT_VMODMAP;
@@ -1585,28 +1547,10 @@ out_of_loops:
         key->explicit |= EXPLICIT_REPEAT;
     }
 
-    /* Copy keysyms and actions. */
-    symIndex = 0;
-    darray_enumerate(i, groupi, keyi->groups) {
-        xkb_level_index_t j;
-        LevelInfo *leveli;
-
-        /* We rely on calloc having zeroized the arrays up to key->width. */
-        darray_enumerate(j, leveli, groupi->levels) {
-            if (leveli->act.type != ACTION_TYPE_NONE)
-                key->actions[i * key->width + j] = leveli->act;
-
-            if (leveli->num_syms <= 0)
-                continue;
-
-            if (leveli->num_syms == 1)
-                key->syms[symIndex] = leveli->u.sym;
-            else
-                memcpy(&key->syms[symIndex], leveli->u.syms,
-                       leveli->num_syms * sizeof(*key->syms));
-            key->sym_index[i * key->width + j] = symIndex;
-            key->num_syms[i * key->width + j] = leveli->num_syms;
-            symIndex += key->num_syms[i * key->width + j];
+    darray_foreach(groupi, keyi->groups) {
+        if (groupi->defined & GROUP_FIELD_ACTS) {
+            key->explicit |= EXPLICIT_INTERP;
+            break;
         }
     }
 

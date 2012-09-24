@@ -320,34 +320,38 @@ enum xkb_explicit_components {
     EXPLICIT_REPEAT = (1 << 2),
 };
 
+struct xkb_level {
+    union xkb_action action;
+    unsigned int num_syms;
+    union {
+        xkb_keysym_t sym;       /* num_syms == 1 */
+        xkb_keysym_t *syms;     /* num_syms > 1  */
+    } u;
+};
+
+struct xkb_group {
+    bool explicit_type;
+    unsigned type_index;
+    /* Use XkbKeyGroupWidth for the number of levels. */
+    struct xkb_level *levels;
+};
+
 struct xkb_key {
     xkb_keycode_t keycode;
     char name[XKB_KEY_NAME_LENGTH];
 
     enum xkb_explicit_components explicit;
-    xkb_layout_mask_t explicit_groups;
 
     unsigned char modmap;
     xkb_mod_mask_t vmodmap;
 
     bool repeats;
 
-    union xkb_action *actions;
-
-    unsigned *kt_index;
-
-    xkb_layout_index_t num_groups;
-    /* How many levels the largest group has. */
-    xkb_level_index_t width;
-
     enum xkb_range_exceed_type out_of_range_group_action;
     xkb_layout_index_t out_of_range_group_number;
 
-    /* per level/group index into 'syms' */
-    int *sym_index;
-    /* per level/group */
-    unsigned int *num_syms;
-    xkb_keysym_t *syms;
+    xkb_layout_index_t num_groups;
+    struct xkb_group *groups;
 };
 
 typedef darray(xkb_atom_t) darray_xkb_atom_t;
@@ -406,7 +410,7 @@ static inline struct xkb_key_type *
 XkbKeyType(struct xkb_keymap *keymap, const struct xkb_key *key,
            xkb_layout_index_t layout)
 {
-    return &keymap->types[key->kt_index[layout]];
+    return &keymap->types[key->groups[layout].type_index];
 }
 
 static inline xkb_level_index_t
@@ -420,21 +424,24 @@ static inline unsigned int
 XkbKeyNumSyms(const struct xkb_key *key, xkb_layout_index_t layout,
               xkb_level_index_t level)
 {
-    return key->num_syms[layout * key->width + level];
+    return key->groups[layout].levels[level].num_syms;
 }
 
 static inline const xkb_keysym_t *
 XkbKeySymEntry(const struct xkb_key *key, xkb_layout_index_t layout,
                xkb_level_index_t level)
 {
-    return &key->syms[key->sym_index[layout * key->width + level]];
+    if (XkbKeyNumSyms(key, layout, level) <= 1)
+        return &key->groups[layout].levels[level].u.sym;
+    else
+        return key->groups[layout].levels[level].u.syms;
 }
 
 static inline const union xkb_action *
 XkbKeyActionEntry(const struct xkb_key *key, xkb_layout_index_t layout,
                   xkb_level_index_t level)
 {
-    return &key->actions[key->width * layout + level];
+    return &key->groups[layout].levels[level].action;
 }
 
 struct xkb_keymap *

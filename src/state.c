@@ -210,9 +210,6 @@ xkb_key_get_action(struct xkb_state *state, const struct xkb_key *key)
     xkb_layout_index_t layout;
     xkb_level_index_t level;
 
-    if (!key->actions)
-        return &fake;
-
     layout = xkb_state_key_get_layout(state, key->keycode);
     if (layout == XKB_LAYOUT_INVALID)
         return &fake;

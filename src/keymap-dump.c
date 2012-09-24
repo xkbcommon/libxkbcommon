@@ -622,29 +622,32 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
 
     xkb_foreach_key(key, keymap) {
         bool simple = true;
+        bool explicit_types = false;
+        bool multi_type = false;
 
         if (key->num_groups == 0)
             continue;
 
         write_buf(buf, "\t\tkey %6s {", KeyNameText(key->name));
 
-        if (key->explicit_groups) {
-            bool multi_type = false;
+        for (group = 0; group < key->num_groups; group++) {
+            if (key->groups[group].explicit_type)
+                explicit_types = true;
+
+            if (group != 0 &&
+                XkbKeyType(keymap, key, group) != XkbKeyType(keymap, key, 0))
+                multi_type = true;
+        }
+
+        if (explicit_types) {
             struct xkb_key_type *type = XkbKeyType(keymap, key, 0);
-
             simple = false;
-
-            for (group = 1; group < key->num_groups; group++) {
-                if (XkbKeyType(keymap, key, group) != type) {
-                    multi_type = true;
-                    break;
-                }
-            }
 
             if (multi_type) {
                 for (group = 0; group < key->num_groups; group++) {
-                    if (!(key->explicit_groups & (1 << group)))
+                    if (!key->groups[group].explicit_type)
                         continue;
+
                     type = XkbKeyType(keymap, key, group);
                     write_buf(buf, "\n\t\t\ttype[group%u]= \"%s\",",
                               group + 1,
@@ -685,10 +688,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
             break;
         }
 
-        if (key->explicit & EXPLICIT_INTERP)
-            showActions = (key->actions != NULL);
-        else
-            showActions = false;
+        showActions = !!(key->explicit & EXPLICIT_INTERP);
 
         if (key->num_groups > 1 || showActions)
             simple = false;
