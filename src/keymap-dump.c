@@ -717,7 +717,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
                         if (level != 0)
                             write_buf(buf, ", ");
                         write_action(keymap, buf,
-                                     XkbKeyActionEntry(key, group, level),
+                                     &key->groups[group].levels[level].action,
                                      NULL, NULL);
                     }
                     write_buf(buf, " ]");

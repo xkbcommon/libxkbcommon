@@ -321,11 +321,15 @@ xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
     if (level >= XkbKeyGroupWidth(key, layout))
         goto err;
 
-    num_syms = XkbKeyNumSyms(key, layout, level);
+    num_syms = key->groups[layout].levels[level].num_syms;
     if (num_syms == 0)
         goto err;
 
-    *syms_out = XkbKeySymEntry(key, layout, level);
+    if (num_syms == 1)
+        *syms_out = &key->groups[layout].levels[level].u.sym;
+    else
+        *syms_out = key->groups[layout].levels[level].u.syms;
+
     return num_syms;
 
 err:

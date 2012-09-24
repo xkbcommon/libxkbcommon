@@ -1308,10 +1308,9 @@ FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym)
 
     xkb_foreach_key(key, keymap) {
         for (group = 0; group < key->num_groups; group++) {
-            for (level = 0; level < XkbKeyGroupWidth(key, group);
-                 level++) {
-                if (XkbKeyNumSyms(key, group, level) != 1 ||
-                    (XkbKeySymEntry(key, group, level))[0] != sym)
+            for (level = 0; level < XkbKeyGroupWidth(key, group); level++) {
+                if (key->groups[group].levels[level].num_syms != 1 ||
+                    key->groups[group].levels[level].u.sym != sym)
                     continue;
 
                 /*

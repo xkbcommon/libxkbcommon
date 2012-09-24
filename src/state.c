@@ -218,7 +218,7 @@ xkb_key_get_action(struct xkb_state *state, const struct xkb_key *key)
     if (level == XKB_LEVEL_INVALID)
         return &fake;
 
-    return XkbKeyActionEntry(key, layout, level);
+    return &key->groups[layout].levels[level].action;
 }
 
 static struct xkb_filter *

@@ -413,30 +413,6 @@ XkbKeyGroupWidth(const struct xkb_key *key, xkb_layout_index_t layout)
     return key->groups[layout].type->num_levels;
 }
 
-static inline unsigned int
-XkbKeyNumSyms(const struct xkb_key *key, xkb_layout_index_t layout,
-              xkb_level_index_t level)
-{
-    return key->groups[layout].levels[level].num_syms;
-}
-
-static inline const xkb_keysym_t *
-XkbKeySymEntry(const struct xkb_key *key, xkb_layout_index_t layout,
-               xkb_level_index_t level)
-{
-    if (XkbKeyNumSyms(key, layout, level) <= 1)
-        return &key->groups[layout].levels[level].u.sym;
-    else
-        return key->groups[layout].levels[level].u.syms;
-}
-
-static inline const union xkb_action *
-XkbKeyActionEntry(const struct xkb_key *key, xkb_layout_index_t layout,
-                  xkb_level_index_t level)
-{
-    return &key->groups[layout].levels[level].action;
-}
-
 struct xkb_keymap *
 xkb_keymap_new(struct xkb_context *ctx,
                enum xkb_keymap_format format,
