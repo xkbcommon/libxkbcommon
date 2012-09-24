@@ -105,15 +105,15 @@ struct xkb_state {
     struct xkb_keymap *keymap;
 };
 
-static struct xkb_kt_map_entry *
+static const struct xkb_kt_map_entry *
 get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
                         xkb_layout_index_t group)
 {
-    struct xkb_key_type *type;
+    const struct xkb_key_type *type;
     xkb_mod_mask_t active_mods;
     unsigned int i;
 
-    type = XkbKeyType(state->keymap, key, group);
+    type = key->groups[group].type;
     active_mods = xkb_state_serialize_mods(state, XKB_STATE_EFFECTIVE);
     active_mods &= type->mods.mask;
 
@@ -133,7 +133,7 @@ xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
                         xkb_layout_index_t layout)
 {
     const struct xkb_key *key = XkbKey(state->keymap, kc);
-    struct xkb_kt_map_entry *entry;
+    const struct xkb_kt_map_entry *entry;
 
     if (!key || layout >= key->num_groups)
         return XKB_LEVEL_INVALID;
@@ -1019,7 +1019,7 @@ xkb_state_led_name_is_active(struct xkb_state *state, const char *name)
 static xkb_mod_mask_t
 key_get_consumed(struct xkb_state *state, const struct xkb_key *key)
 {
-    struct xkb_kt_map_entry *entry;
+    const struct xkb_kt_map_entry *entry;
     xkb_layout_index_t group;
 
     group = xkb_state_key_get_layout(state, key->keycode);

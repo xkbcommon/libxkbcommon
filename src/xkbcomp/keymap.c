@@ -139,7 +139,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
         return true;
 
     for (group = 0; group < key->num_groups; group++) {
-        width = XkbKeyGroupWidth(keymap, key, group);
+        width = XkbKeyGroupWidth(key, group);
         for (level = 0; level < width; level++) {
             struct xkb_sym_interpret *interp;
 
@@ -220,7 +220,7 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     /* Update action modifiers. */
     xkb_foreach_key(key, keymap)
         for (i = 0; i < key->num_groups; i++)
-            for (j = 0; j < XkbKeyGroupWidth(keymap, key, i); j++)
+            for (j = 0; j < XkbKeyGroupWidth(key, i); j++)
                 UpdateActionMods(keymap, &key->groups[i].levels[j].action,
                                  key->modmap);
 

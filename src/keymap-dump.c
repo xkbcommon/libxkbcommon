@@ -565,7 +565,7 @@ write_keysyms(struct xkb_keymap *keymap, struct buf *buf,
 #define OUT_BUF_LEN 128
     char out_buf[OUT_BUF_LEN];
 
-    for (level = 0; level < XkbKeyGroupWidth(keymap, key, group); level++) {
+    for (level = 0; level < XkbKeyGroupWidth(key, group); level++) {
         if (level != 0)
             write_buf(buf, ", ");
         num_syms = xkb_keymap_key_get_syms_by_level(keymap, key->keycode,
@@ -634,13 +634,12 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
             if (key->groups[group].explicit_type)
                 explicit_types = true;
 
-            if (group != 0 &&
-                XkbKeyType(keymap, key, group) != XkbKeyType(keymap, key, 0))
+            if (group != 0 && key->groups[group].type != key->groups[0].type)
                 multi_type = true;
         }
 
         if (explicit_types) {
-            struct xkb_key_type *type = XkbKeyType(keymap, key, 0);
+            const struct xkb_key_type *type;
             simple = false;
 
             if (multi_type) {
@@ -648,13 +647,14 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
                     if (!key->groups[group].explicit_type)
                         continue;
 
-                    type = XkbKeyType(keymap, key, group);
+                    type = key->groups[group].type;
                     write_buf(buf, "\n\t\t\ttype[group%u]= \"%s\",",
                               group + 1,
                               xkb_atom_text(keymap->ctx, type->name));
                 }
             }
             else {
+                type = key->groups[0].type;
                 write_buf(buf, "\n\t\t\ttype= \"%s\",",
                           xkb_atom_text(keymap->ctx, type->name));
             }
@@ -713,8 +713,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
                     write_buf(buf, ",\n\t\t\tactions[Group%u]= [ ",
                               group + 1);
                     for (level = 0;
-                         level < XkbKeyGroupWidth(keymap, key, group);
-                         level++) {
+                         level < XkbKeyGroupWidth(key, group); level++) {
                         if (level != 0)
                             write_buf(buf, ", ");
                         write_action(keymap, buf,

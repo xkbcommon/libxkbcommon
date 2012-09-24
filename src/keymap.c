@@ -91,7 +91,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
 
     darray_foreach(key, keymap->keys) {
         for (i = 0; i < key->num_groups; i++) {
-            for (j = 0; j < XkbKeyGroupWidth(keymap, key, i); j++)
+            for (j = 0; j < XkbKeyGroupWidth(key, i); j++)
                 if (key->groups[i].levels[j].num_syms > 1)
                     free(key->groups[i].levels[j].u.syms);
             free(key->groups[i].levels);
@@ -248,7 +248,7 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t kc,
     if (!key)
         return 0;
 
-    return XkbKeyGroupWidth(keymap, key, layout);
+    return XkbKeyGroupWidth(key, layout);
 }
 
 /**
@@ -318,7 +318,7 @@ xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
         goto err;
     if (layout >= key->num_groups)
         goto err;
-    if (level >= XkbKeyGroupWidth(keymap, key, layout))
+    if (level >= XkbKeyGroupWidth(key, layout))
         goto err;
 
     num_syms = XkbKeyNumSyms(key, layout, level);

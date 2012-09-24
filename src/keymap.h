@@ -331,7 +331,8 @@ struct xkb_level {
 
 struct xkb_group {
     bool explicit_type;
-    unsigned type_index;
+    /* Points to a type in keymap->types. */
+    const struct xkb_key_type *type;
     /* Use XkbKeyGroupWidth for the number of levels. */
     struct xkb_level *levels;
 };
@@ -406,18 +407,10 @@ XkbKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
 #define xkb_foreach_key(iter, keymap) \
     darray_foreach(iter, keymap->keys)
 
-static inline struct xkb_key_type *
-XkbKeyType(struct xkb_keymap *keymap, const struct xkb_key *key,
-           xkb_layout_index_t layout)
-{
-    return &keymap->types[key->groups[layout].type_index];
-}
-
 static inline xkb_level_index_t
-XkbKeyGroupWidth(struct xkb_keymap *keymap, const struct xkb_key *key,
-                 xkb_layout_index_t layout)
+XkbKeyGroupWidth(const struct xkb_key *key, xkb_layout_index_t layout)
 {
-    return XkbKeyType(keymap, key, layout)->num_levels;
+    return key->groups[layout].type->num_levels;
 }
 
 static inline unsigned int
