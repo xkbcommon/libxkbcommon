@@ -1348,13 +1348,11 @@ FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym)
  *
  * FIXME: Decide how to handle multiple-syms-per-level, and do it.
  */
-static bool
-FindAutomaticType(struct xkb_context *ctx, GroupInfo *groupi,
-                  xkb_atom_t *typeNameRtrn, bool *autoType)
+static xkb_atom_t
+FindAutomaticType(struct xkb_context *ctx, GroupInfo *groupi)
 {
+    xkb_keysym_t sym0, sym1, sym2, sym3;
     xkb_level_index_t width = darray_size(groupi->levels);
-
-    *autoType = false;
 
 #define GET_SYM(level) \
     (darray_item(groupi->levels, level).num_syms == 0 ? \
@@ -1364,63 +1362,63 @@ FindAutomaticType(struct xkb_context *ctx, GroupInfo *groupi,
      /* num_syms > 1 */ \
         darray_item(groupi->levels, level).u.syms[0])
 
-    if (width == 1 || width == 0) {
-        *typeNameRtrn = xkb_atom_intern(ctx, "ONE_LEVEL");
-        *autoType = true;
-    }
-    else if (width == 2) {
-        xkb_keysym_t sym0 = GET_SYM(0);
-        xkb_keysym_t sym1 = GET_SYM(1);
+    if (width == 1 || width <= 0)
+        return xkb_atom_intern(ctx, "ONE_LEVEL");
 
-        if (xkb_keysym_is_lower(sym0) && xkb_keysym_is_upper(sym1)) {
-            *typeNameRtrn = xkb_atom_intern(ctx, "ALPHABETIC");
-        }
-        else if (xkb_keysym_is_keypad(sym0) || xkb_keysym_is_keypad(sym1)) {
-            *typeNameRtrn = xkb_atom_intern(ctx, "KEYPAD");
-            *autoType = true;
-        }
-        else {
-            *typeNameRtrn = xkb_atom_intern(ctx, "TWO_LEVEL");
-            *autoType = true;
-        }
-    }
-    else if (width <= 4) {
-        xkb_keysym_t sym0 = GET_SYM(0);
-        xkb_keysym_t sym1 = GET_SYM(1);
-        xkb_keysym_t sym2 = GET_SYM(2);
-        xkb_keysym_t sym3 = (width == 4 ? GET_SYM(3) : XKB_KEY_NoSymbol);
+    sym0 = GET_SYM(0);
+    sym1 = GET_SYM(1);
 
+    if (width == 2) {
         if (xkb_keysym_is_lower(sym0) && xkb_keysym_is_upper(sym1))
-            if (xkb_keysym_is_lower(sym2) && xkb_keysym_is_upper(sym3))
-                *typeNameRtrn =
-                    xkb_atom_intern(ctx, "FOUR_LEVEL_ALPHABETIC");
-            else
-                *typeNameRtrn = xkb_atom_intern(ctx,
-                                                "FOUR_LEVEL_SEMIALPHABETIC");
+            return xkb_atom_intern(ctx, "ALPHABETIC");
 
-        else if (xkb_keysym_is_keypad(sym0) || xkb_keysym_is_keypad(sym1))
-            *typeNameRtrn = xkb_atom_intern(ctx, "FOUR_LEVEL_KEYPAD");
-        else
-            *typeNameRtrn = xkb_atom_intern(ctx, "FOUR_LEVEL");
-        /* XXX: why not set autoType here? */
+        if (xkb_keysym_is_keypad(sym0) || xkb_keysym_is_keypad(sym1))
+            return xkb_atom_intern(ctx, "KEYPAD");
+
+        return xkb_atom_intern(ctx, "TWO_LEVEL");
     }
-    return width <= 4;
+
+    if (width <= 4) {
+        if (xkb_keysym_is_lower(sym0) && xkb_keysym_is_upper(sym1)) {
+            sym2 = GET_SYM(2);
+            sym3 = (width == 4 ? GET_SYM(3) : XKB_KEY_NoSymbol);
+
+            if (xkb_keysym_is_lower(sym2) && xkb_keysym_is_upper(sym3))
+                return xkb_atom_intern(ctx, "FOUR_LEVEL_ALPHABETIC");
+
+            return xkb_atom_intern(ctx, "FOUR_LEVEL_SEMIALPHABETIC");
+        }
+
+        if (xkb_keysym_is_keypad(sym0) || xkb_keysym_is_keypad(sym1))
+            return xkb_atom_intern(ctx, "FOUR_LEVEL_KEYPAD");
+
+        return xkb_atom_intern(ctx, "FOUR_LEVEL");
+    }
+
+    return XKB_ATOM_NONE;
+
+#undef GET_SYM
 }
 
 static const struct xkb_key_type *
 FindTypeForGroup(struct xkb_keymap *keymap, KeyInfo *keyi,
                  xkb_layout_index_t group, bool *explicit_type)
 {
-    bool autoType = false;
     unsigned int i;
     GroupInfo *groupi = &darray_item(keyi->groups, group);
     xkb_atom_t type_name = groupi->type;
 
+    *explicit_type = true;
+
     if (type_name == XKB_ATOM_NONE) {
-        if (keyi->dfltType != XKB_ATOM_NONE)
+        if (keyi->dfltType != XKB_ATOM_NONE) {
             type_name  = keyi->dfltType;
-        else
-            FindAutomaticType(keymap->ctx, groupi, &type_name, &autoType);
+        }
+        else {
+            type_name = FindAutomaticType(keymap->ctx, groupi);
+            if (type_name != XKB_ATOM_NONE)
+                *explicit_type = false;
+        }
     }
 
     if (type_name == XKB_ATOM_NONE) {
@@ -1445,8 +1443,6 @@ FindTypeForGroup(struct xkb_keymap *keymap, KeyInfo *keyi,
         goto use_default;
     }
 
-    /* XXX: What's with the magic 2 here? */
-    *explicit_type = !autoType || darray_size(groupi->levels) > 2;
     return &keymap->types[i];
 
 use_default:
@@ -1454,7 +1450,6 @@ use_default:
      * Index 0 is guaranteed to contain something, usually
      * ONE_LEVEL or at least some default one-level type.
      */
-    *explicit_type = false;
     return &keymap->types[0];
 }
 
