@@ -1336,22 +1336,6 @@ FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym)
     return ret;
 }
 
-static bool
-FindNamedType(struct xkb_keymap *keymap, xkb_atom_t name,
-              const struct xkb_key_type **type_rtrn)
-{
-    unsigned int i;
-
-    for (i = 0; i < keymap->num_types; i++) {
-        if (keymap->types[i].name == name) {
-            *type_rtrn = &keymap->types[i];
-            return true;
-        }
-    }
-
-    return false;
-}
-
 /*
  * Find an appropriate type for a group and return its name.
  *
@@ -1423,6 +1407,57 @@ FindAutomaticType(struct xkb_context *ctx, GroupInfo *groupi,
     return width <= 4;
 }
 
+static const struct xkb_key_type *
+FindTypeForGroup(struct xkb_keymap *keymap, KeyInfo *keyi,
+                 xkb_layout_index_t group, bool *explicit_type)
+{
+    bool autoType = false;
+    unsigned int i;
+    GroupInfo *groupi = &darray_item(keyi->groups, group);
+    xkb_atom_t type_name = groupi->type;
+
+    if (type_name == XKB_ATOM_NONE) {
+        if (keyi->dfltType != XKB_ATOM_NONE)
+            type_name  = keyi->dfltType;
+        else
+            FindAutomaticType(keymap->ctx, groupi, &type_name, &autoType);
+    }
+
+    if (type_name == XKB_ATOM_NONE) {
+        log_warn(keymap->ctx,
+                 "Couldn't find an automatic type for key '%s' group %d with %d levels; "
+                 "Using the default type\n",
+                 LongKeyNameText(keyi->name), group + 1,
+                 darray_size(groupi->levels));
+        goto use_default;
+    }
+
+    for (i = 0; i < keymap->num_types; i++)
+        if (keymap->types[i].name == type_name)
+            break;
+
+    if (i >= keymap->num_types) {
+        log_warn(keymap->ctx,
+                 "The type \"%s\" for key '%s' group %d was not previously defined; "
+                 "Using the default type\n",
+                 xkb_atom_text(keymap->ctx, type_name),
+                 LongKeyNameText(keyi->name), group + 1);
+        goto use_default;
+    }
+
+    /* XXX: What's with the magic 2 here? */
+    *explicit_type = !autoType || darray_size(groupi->levels) > 2;
+    return &keymap->types[i];
+
+use_default:
+    /*
+     * Index 0 is guaranteed to contain something, usually
+     * ONE_LEVEL or at least some default one-level type.
+     */
+    *explicit_type = false;
+    return &keymap->types[0];
+}
+
 static bool
 CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
 {
@@ -1470,62 +1505,31 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
 
     key->groups = calloc(key->num_groups, sizeof(*key->groups));
 
-    /* * Find and assign the groups' types in the keymap. */
+    /* Find and assign the groups' types in the keymap. */
     darray_enumerate(i, groupi, keyi->groups) {
-        struct xkb_group *group = &key->groups[i];
-        bool autoType = false;
+        const struct xkb_key_type *type;
+        bool explicit_type;
 
-        /* Find the type of the group, if it is missing. */
-        if (groupi->type == XKB_ATOM_NONE) {
-            if (keyi->dfltType != XKB_ATOM_NONE)
-                groupi->type = keyi->dfltType;
-            else if (FindAutomaticType(keymap->ctx, groupi,
-                                       &groupi->type, &autoType)) { }
-            else
-                log_vrb(info->keymap->ctx, 5,
-                        "No automatic type for %d levels; "
-                        "Using %s for the %s key\n",
-                        (int) darray_size(groupi->levels),
-                        xkb_atom_text(keymap->ctx, groupi->type),
-                        LongKeyNameText(keyi->name));
-        }
-
-        /* Find the type in the keymap, if it was defined in xkb_types. */
-        if (FindNamedType(keymap, groupi->type, &group->type)) {
-            if (!autoType || darray_size(groupi->levels) > 2)
-                key->groups[i].explicit_type = true;
-        }
-        /* Not found, use a default. */
-        else {
-            log_vrb(info->keymap->ctx, 3,
-                    "Type \"%s\" is not defined; "
-                    "Using default type for the %s key\n",
-                    xkb_atom_text(keymap->ctx, groupi->type),
-                    LongKeyNameText(keyi->name));
-            /*
-             * Index 0 is guaranteed to contain something, usually
-             * ONE_LEVEL or at least some default one-level type.
-             */
-            group->type = &keymap->types[0];
-        }
+        type = FindTypeForGroup(keymap, keyi, i, &explicit_type);
 
         /* Always have as many levels as the type specifies. */
-        if (group->type->num_levels < darray_size(groupi->levels)) {
+        if (type->num_levels < darray_size(groupi->levels)) {
             struct xkb_level *leveli;
 
             log_vrb(info->keymap->ctx, 1,
                     "Type \"%s\" has %d levels, but %s has %d levels; "
                     "Ignoring extra symbols\n",
-                    xkb_atom_text(keymap->ctx, group->type->name),
-                    group->type->num_levels,
+                    xkb_atom_text(keymap->ctx, type->name), type->num_levels,
                     LongKeyNameText(keyi->name),
                     (int) darray_size(groupi->levels));
 
-            darray_foreach_from(leveli, groupi->levels,
-                                group->type->num_levels)
+            darray_foreach_from(leveli, groupi->levels, type->num_levels)
                 ClearLevelInfo(leveli);
         }
-        darray_resize0(groupi->levels, group->type->num_levels);
+        darray_resize0(groupi->levels, type->num_levels);
+
+        key->groups[i].explicit_type = explicit_type;
+        key->groups[i].type = type;
     }
 
     /* Copy levels. */
