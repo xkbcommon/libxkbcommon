@@ -1423,10 +1423,10 @@ FindTypeForGroup(struct xkb_keymap *keymap, KeyInfo *keyi,
 
     if (type_name == XKB_ATOM_NONE) {
         log_warn(keymap->ctx,
-                 "Couldn't find an automatic type for key '%s' group %d with %d levels; "
+                 "Couldn't find an automatic type for key '%s' group %d with %lu levels; "
                  "Using the default type\n",
                  LongKeyNameText(keyi->name), group + 1,
-                 darray_size(groupi->levels));
+                 (unsigned long) darray_size(groupi->levels));
         goto use_default;
     }
 
