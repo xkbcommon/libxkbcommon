@@ -725,6 +725,13 @@ xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
                        const xkb_keysym_t **syms_out);
 
 /**
+ * As with xkb_state_key_get_syms, but either returns exactly keysym, or
+ * XKB_KEY_NoSymbol if there are either zero or more than one symbols.
+ */
+xkb_keysym_t
+xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t key);
+
+/**
  * Returns the layout number that would be active for a particular key with
  * the given state.
  */

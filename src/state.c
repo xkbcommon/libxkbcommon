@@ -766,6 +766,22 @@ err:
 }
 
 /**
+ * Provides either exactly one symbol, or XKB_KEY_NoSymbol.
+ */
+XKB_EXPORT xkb_keysym_t
+xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t kc)
+{
+    xkb_keysym_t *syms;
+    int num_syms;
+
+    num_syms = xkb_state_key_get_syms(state, kc, &syms);
+    if (num_syms != 1)
+        return XKB_KEY_NoSymbol;
+
+    return syms[0];
+}
+
+/**
  * Serialises the requested modifier state into an xkb_mod_mask_t, with all
  * the same disclaimers as in xkb_state_update_mask.
  */

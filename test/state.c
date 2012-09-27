@@ -96,6 +96,7 @@ test_update_key(struct xkb_keymap *keymap)
 {
     struct xkb_state *state = xkb_state_new(keymap);
     const xkb_keysym_t *syms;
+    xkb_keysym_t one_sym;
     int num_syms;
 
     assert(state);
@@ -173,6 +174,20 @@ test_update_key(struct xkb_keymap *keymap)
     assert(!xkb_state_led_name_is_active(state, XKB_LED_NAME_CAPS) > 0);
     num_syms = xkb_state_key_get_syms(state, KEY_Q + EVDEV_OFFSET, &syms);
     assert(num_syms == 1 && syms[0] == XKB_KEY_q);
+
+    /* Multiple symbols */
+    num_syms = xkb_state_key_get_syms(state, KEY_6 + EVDEV_OFFSET, &syms);
+    assert(num_syms == 5 &&
+           syms[0] == XKB_KEY_H && syms[1] == XKB_KEY_E &&
+           syms[2] == XKB_KEY_L && syms[3] == XKB_KEY_L &&
+           syms[4] == XKB_KEY_O);
+    one_sym = xkb_state_key_get_one_sym(state, KEY_6 + EVDEV_OFFSET);
+    assert(one_sym == XKB_KEY_NoSymbol);
+    xkb_state_update_key(state, KEY_6 + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_6 + EVDEV_OFFSET, XKB_KEY_UP);
+
+    one_sym = xkb_state_key_get_one_sym(state, KEY_5 + EVDEV_OFFSET);
+    assert(one_sym == XKB_KEY_5);
 
     xkb_state_unref(state);
 }
