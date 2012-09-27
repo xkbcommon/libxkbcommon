@@ -771,7 +771,7 @@ err:
 XKB_EXPORT xkb_keysym_t
 xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t kc)
 {
-    xkb_keysym_t *syms;
+    const xkb_keysym_t *syms;
     int num_syms;
 
     num_syms = xkb_state_key_get_syms(state, kc, &syms);
