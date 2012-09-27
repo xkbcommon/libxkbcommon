@@ -44,7 +44,8 @@ struct keyboard {
     struct keyboard *next;
 };
 
-bool terminate;
+static bool terminate;
+static int evdev_offset = 8;
 
 #define NLONGS(n) (((n) + LONG_BIT - 1) / LONG_BIT)
 
@@ -290,8 +291,6 @@ enum {
     KEY_STATE_REPEAT = 2,
 };
 
-#define EVDEV_OFFSET 8
-
 static void
 process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
 {
@@ -301,7 +300,7 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
     if (type != EV_KEY)
         return;
 
-    keycode = EVDEV_OFFSET + code;
+    keycode = evdev_offset + code;
     keymap = xkb_state_get_keymap(kbd->state);
 
     if (value == KEY_STATE_REPEAT && !xkb_keymap_key_repeats(keymap, keycode))
@@ -421,7 +420,7 @@ main(int argc, char *argv[])
 
     setlocale(LC_ALL, "");
 
-    while ((opt = getopt(argc, argv, "r:m:l:v:o:k:")) != -1) {
+    while ((opt = getopt(argc, argv, "r:m:l:v:o:k:n:")) != -1) {
         switch (opt) {
         case 'r':
             rules = optarg;
@@ -441,12 +440,21 @@ main(int argc, char *argv[])
         case 'k':
             keymap_path = optarg;
             break;
+        case 'n':
+            errno = 0;
+            evdev_offset = strtol(optarg, NULL, 10);
+            if (errno) {
+                fprintf(stderr, "error: -n option expects a number\n");
+                exit(EXIT_FAILURE);
+            }
+            break;
         case '?':
             fprintf(stderr, "Usage: %s [-r <rules>] [-m <model>] "
                     "[-l <layout>] [-v <variant>] [-o <options>]\n",
                     argv[0]);
             fprintf(stderr, "   or: %s -k <path to keymap file>\n",
                     argv[0]);
+            fprintf(stderr, "For both: -n <evdev keycode offset>\n");
             exit(EX_USAGE);
         }
     }
