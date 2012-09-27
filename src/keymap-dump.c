@@ -238,7 +238,7 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
         if (key->name == XKB_ATOM_NONE)
             continue;
 
-        write_buf(buf, "\t\t%6s = %d;\n",
+        write_buf(buf, "\t\t%-20s = %d;\n",
                   KeyNameText(keymap->ctx, key->name), key->keycode);
     }
 
@@ -251,7 +251,7 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
 
 
     darray_foreach(alias, keymap->key_aliases)
-        write_buf(buf, "\t\talias %6s = %s;\n",
+        write_buf(buf, "\t\talias %-14s = %s;\n",
                   KeyNameText(keymap->ctx, alias->alias),
                   KeyNameText(keymap->ctx, alias->real));
 
@@ -628,7 +628,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
         if (key->num_groups == 0)
             continue;
 
-        write_buf(buf, "\t\tkey %6s {", KeyNameText(keymap->ctx, key->name));
+        write_buf(buf, "\t\tkey %-20s {", KeyNameText(keymap->ctx, key->name));
 
         for (group = 0; group < key->num_groups; group++) {
             if (key->groups[group].explicit_type)

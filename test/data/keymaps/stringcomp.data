@@ -1,249 +1,249 @@
 xkb_keymap {
 	xkb_keycodes "evdev_aliases(qwerty)" {
-		 <ESC> = 9;
-		<AE01> = 10;
-		<AE02> = 11;
-		<AE03> = 12;
-		<AE04> = 13;
-		<AE05> = 14;
-		<AE06> = 15;
-		<AE07> = 16;
-		<AE08> = 17;
-		<AE09> = 18;
-		<AE10> = 19;
-		<AE11> = 20;
-		<AE12> = 21;
-		<BKSP> = 22;
-		 <TAB> = 23;
-		<AD01> = 24;
-		<AD02> = 25;
-		<AD03> = 26;
-		<AD04> = 27;
-		<AD05> = 28;
-		<AD06> = 29;
-		<AD07> = 30;
-		<AD08> = 31;
-		<AD09> = 32;
-		<AD10> = 33;
-		<AD11> = 34;
-		<AD12> = 35;
-		<RTRN> = 36;
-		<LCTL> = 37;
-		<AC01> = 38;
-		<AC02> = 39;
-		<AC03> = 40;
-		<AC04> = 41;
-		<AC05> = 42;
-		<AC06> = 43;
-		<AC07> = 44;
-		<AC08> = 45;
-		<AC09> = 46;
-		<AC10> = 47;
-		<AC11> = 48;
-		<TLDE> = 49;
-		<LFSH> = 50;
-		<BKSL> = 51;
-		<AB01> = 52;
-		<AB02> = 53;
-		<AB03> = 54;
-		<AB04> = 55;
-		<AB05> = 56;
-		<AB06> = 57;
-		<AB07> = 58;
-		<AB08> = 59;
-		<AB09> = 60;
-		<AB10> = 61;
-		<RTSH> = 62;
-		<KPMU> = 63;
-		<LALT> = 64;
-		<SPCE> = 65;
-		<CAPS> = 66;
-		<FK01> = 67;
-		<FK02> = 68;
-		<FK03> = 69;
-		<FK04> = 70;
-		<FK05> = 71;
-		<FK06> = 72;
-		<FK07> = 73;
-		<FK08> = 74;
-		<FK09> = 75;
-		<FK10> = 76;
-		<NMLK> = 77;
-		<SCLK> = 78;
-		 <KP7> = 79;
-		 <KP8> = 80;
-		 <KP9> = 81;
-		<KPSU> = 82;
-		 <KP4> = 83;
-		 <KP5> = 84;
-		 <KP6> = 85;
-		<KPAD> = 86;
-		 <KP1> = 87;
-		 <KP2> = 88;
-		 <KP3> = 89;
-		 <KP0> = 90;
-		<KPDL> = 91;
-		<LVL3> = 92;
-		<LSGT> = 94;
-		<FK11> = 95;
-		<FK12> = 96;
-		<AB11> = 97;
-		<KATA> = 98;
-		<HIRA> = 99;
-		<HENK> = 100;
-		<HKTG> = 101;
-		<MUHE> = 102;
-		<JPCM> = 103;
-		<KPEN> = 104;
-		<RCTL> = 105;
-		<KPDV> = 106;
-		<PRSC> = 107;
-		<RALT> = 108;
-		<LNFD> = 109;
-		<HOME> = 110;
-		  <UP> = 111;
-		<PGUP> = 112;
-		<LEFT> = 113;
-		<RGHT> = 114;
-		 <END> = 115;
-		<DOWN> = 116;
-		<PGDN> = 117;
-		 <INS> = 118;
-		<DELE> = 119;
-		<I120> = 120;
-		<MUTE> = 121;
-		<VOL-> = 122;
-		<VOL+> = 123;
-		<POWR> = 124;
-		<KPEQ> = 125;
-		<I126> = 126;
-		<PAUS> = 127;
-		<I128> = 128;
-		<I129> = 129;
-		<HNGL> = 130;
-		<HJCV> = 131;
-		<AE13> = 132;
-		<LWIN> = 133;
-		<RWIN> = 134;
-		<COMP> = 135;
-		<STOP> = 136;
-		<AGAI> = 137;
-		<PROP> = 138;
-		<UNDO> = 139;
-		<FRNT> = 140;
-		<COPY> = 141;
-		<OPEN> = 142;
-		<PAST> = 143;
-		<FIND> = 144;
-		 <CUT> = 145;
-		<HELP> = 146;
-		<I147> = 147;
-		<I148> = 148;
-		<I149> = 149;
-		<I150> = 150;
-		<I151> = 151;
-		<I152> = 152;
-		<I153> = 153;
-		<I154> = 154;
-		<I155> = 155;
-		<I156> = 156;
-		<I157> = 157;
-		<I158> = 158;
-		<I159> = 159;
-		<I160> = 160;
-		<I161> = 161;
-		<I162> = 162;
-		<I163> = 163;
-		<I164> = 164;
-		<I165> = 165;
-		<I166> = 166;
-		<I167> = 167;
-		<I168> = 168;
-		<I169> = 169;
-		<I170> = 170;
-		<I171> = 171;
-		<I172> = 172;
-		<I173> = 173;
-		<I174> = 174;
-		<I175> = 175;
-		<I176> = 176;
-		<I177> = 177;
-		<I178> = 178;
-		<I179> = 179;
-		<I180> = 180;
-		<I181> = 181;
-		<I182> = 182;
-		<I183> = 183;
-		<I184> = 184;
-		<I185> = 185;
-		<I186> = 186;
-		<I187> = 187;
-		<I188> = 188;
-		<I189> = 189;
-		<I190> = 190;
-		<FK13> = 191;
-		<FK14> = 192;
-		<FK15> = 193;
-		<FK16> = 194;
-		<FK17> = 195;
-		<FK18> = 196;
-		<FK19> = 197;
-		<FK20> = 198;
-		<FK21> = 199;
-		<FK22> = 200;
-		<FK23> = 201;
-		<FK24> = 202;
-		<MDSW> = 203;
-		 <ALT> = 204;
-		<META> = 205;
-		<SUPR> = 206;
-		<HYPR> = 207;
-		<I208> = 208;
-		<I209> = 209;
-		<I210> = 210;
-		<I211> = 211;
-		<I212> = 212;
-		<I213> = 213;
-		<I214> = 214;
-		<I215> = 215;
-		<I216> = 216;
-		<I217> = 217;
-		<I218> = 218;
-		<I219> = 219;
-		<I220> = 220;
-		<I221> = 221;
-		<I222> = 222;
-		<I223> = 223;
-		<I224> = 224;
-		<I225> = 225;
-		<I226> = 226;
-		<I227> = 227;
-		<I228> = 228;
-		<I229> = 229;
-		<I230> = 230;
-		<I231> = 231;
-		<I232> = 232;
-		<I233> = 233;
-		<I234> = 234;
-		<I235> = 235;
-		<I236> = 236;
-		<I237> = 237;
-		<I238> = 238;
-		<I239> = 239;
-		<I240> = 240;
-		<I241> = 241;
-		<I242> = 242;
-		<I243> = 243;
-		<I244> = 244;
-		<I245> = 245;
-		<I246> = 246;
-		<I247> = 247;
-		<I248> = 248;
-		<I249> = 249;
-		<I250> = 250;
-		<I251> = 251;
-		<I252> = 252;
-		<I253> = 253;
+		<ESC>                = 9;
+		<AE01>               = 10;
+		<AE02>               = 11;
+		<AE03>               = 12;
+		<AE04>               = 13;
+		<AE05>               = 14;
+		<AE06>               = 15;
+		<AE07>               = 16;
+		<AE08>               = 17;
+		<AE09>               = 18;
+		<AE10>               = 19;
+		<AE11>               = 20;
+		<AE12>               = 21;
+		<BKSP>               = 22;
+		<TAB>                = 23;
+		<AD01>               = 24;
+		<AD02>               = 25;
+		<AD03>               = 26;
+		<AD04>               = 27;
+		<AD05>               = 28;
+		<AD06>               = 29;
+		<AD07>               = 30;
+		<AD08>               = 31;
+		<AD09>               = 32;
+		<AD10>               = 33;
+		<AD11>               = 34;
+		<AD12>               = 35;
+		<RTRN>               = 36;
+		<LCTL>               = 37;
+		<AC01>               = 38;
+		<AC02>               = 39;
+		<AC03>               = 40;
+		<AC04>               = 41;
+		<AC05>               = 42;
+		<AC06>               = 43;
+		<AC07>               = 44;
+		<AC08>               = 45;
+		<AC09>               = 46;
+		<AC10>               = 47;
+		<AC11>               = 48;
+		<TLDE>               = 49;
+		<LFSH>               = 50;
+		<BKSL>               = 51;
+		<AB01>               = 52;
+		<AB02>               = 53;
+		<AB03>               = 54;
+		<AB04>               = 55;
+		<AB05>               = 56;
+		<AB06>               = 57;
+		<AB07>               = 58;
+		<AB08>               = 59;
+		<AB09>               = 60;
+		<AB10>               = 61;
+		<RTSH>               = 62;
+		<KPMU>               = 63;
+		<LALT>               = 64;
+		<SPCE>               = 65;
+		<CAPS>               = 66;
+		<FK01>               = 67;
+		<FK02>               = 68;
+		<FK03>               = 69;
+		<FK04>               = 70;
+		<FK05>               = 71;
+		<FK06>               = 72;
+		<FK07>               = 73;
+		<FK08>               = 74;
+		<FK09>               = 75;
+		<FK10>               = 76;
+		<NMLK>               = 77;
+		<SCLK>               = 78;
+		<KP7>                = 79;
+		<KP8>                = 80;
+		<KP9>                = 81;
+		<KPSU>               = 82;
+		<KP4>                = 83;
+		<KP5>                = 84;
+		<KP6>                = 85;
+		<KPAD>               = 86;
+		<KP1>                = 87;
+		<KP2>                = 88;
+		<KP3>                = 89;
+		<KP0>                = 90;
+		<KPDL>               = 91;
+		<LVL3>               = 92;
+		<LSGT>               = 94;
+		<FK11>               = 95;
+		<FK12>               = 96;
+		<AB11>               = 97;
+		<KATA>               = 98;
+		<HIRA>               = 99;
+		<HENK>               = 100;
+		<HKTG>               = 101;
+		<MUHE>               = 102;
+		<JPCM>               = 103;
+		<KPEN>               = 104;
+		<RCTL>               = 105;
+		<KPDV>               = 106;
+		<PRSC>               = 107;
+		<RALT>               = 108;
+		<LNFD>               = 109;
+		<HOME>               = 110;
+		<UP>                 = 111;
+		<PGUP>               = 112;
+		<LEFT>               = 113;
+		<RGHT>               = 114;
+		<END>                = 115;
+		<DOWN>               = 116;
+		<PGDN>               = 117;
+		<INS>                = 118;
+		<DELE>               = 119;
+		<I120>               = 120;
+		<MUTE>               = 121;
+		<VOL->               = 122;
+		<VOL+>               = 123;
+		<POWR>               = 124;
+		<KPEQ>               = 125;
+		<I126>               = 126;
+		<PAUS>               = 127;
+		<I128>               = 128;
+		<I129>               = 129;
+		<HNGL>               = 130;
+		<HJCV>               = 131;
+		<AE13>               = 132;
+		<LWIN>               = 133;
+		<RWIN>               = 134;
+		<COMP>               = 135;
+		<STOP>               = 136;
+		<AGAI>               = 137;
+		<PROP>               = 138;
+		<UNDO>               = 139;
+		<FRNT>               = 140;
+		<COPY>               = 141;
+		<OPEN>               = 142;
+		<PAST>               = 143;
+		<FIND>               = 144;
+		<CUT>                = 145;
+		<HELP>               = 146;
+		<I147>               = 147;
+		<I148>               = 148;
+		<I149>               = 149;
+		<I150>               = 150;
+		<I151>               = 151;
+		<I152>               = 152;
+		<I153>               = 153;
+		<I154>               = 154;
+		<I155>               = 155;
+		<I156>               = 156;
+		<I157>               = 157;
+		<I158>               = 158;
+		<I159>               = 159;
+		<I160>               = 160;
+		<I161>               = 161;
+		<I162>               = 162;
+		<I163>               = 163;
+		<I164>               = 164;
+		<I165>               = 165;
+		<I166>               = 166;
+		<I167>               = 167;
+		<I168>               = 168;
+		<I169>               = 169;
+		<I170>               = 170;
+		<I171>               = 171;
+		<I172>               = 172;
+		<I173>               = 173;
+		<I174>               = 174;
+		<I175>               = 175;
+		<I176>               = 176;
+		<I177>               = 177;
+		<I178>               = 178;
+		<I179>               = 179;
+		<I180>               = 180;
+		<I181>               = 181;
+		<I182>               = 182;
+		<I183>               = 183;
+		<I184>               = 184;
+		<I185>               = 185;
+		<I186>               = 186;
+		<I187>               = 187;
+		<I188>               = 188;
+		<I189>               = 189;
+		<I190>               = 190;
+		<FK13>               = 191;
+		<FK14>               = 192;
+		<FK15>               = 193;
+		<FK16>               = 194;
+		<FK17>               = 195;
+		<FK18>               = 196;
+		<FK19>               = 197;
+		<FK20>               = 198;
+		<FK21>               = 199;
+		<FK22>               = 200;
+		<FK23>               = 201;
+		<FK24>               = 202;
+		<MDSW>               = 203;
+		<ALT>                = 204;
+		<META>               = 205;
+		<SUPR>               = 206;
+		<HYPR>               = 207;
+		<I208>               = 208;
+		<I209>               = 209;
+		<I210>               = 210;
+		<I211>               = 211;
+		<I212>               = 212;
+		<I213>               = 213;
+		<I214>               = 214;
+		<I215>               = 215;
+		<I216>               = 216;
+		<I217>               = 217;
+		<I218>               = 218;
+		<I219>               = 219;
+		<I220>               = 220;
+		<I221>               = 221;
+		<I222>               = 222;
+		<I223>               = 223;
+		<I224>               = 224;
+		<I225>               = 225;
+		<I226>               = 226;
+		<I227>               = 227;
+		<I228>               = 228;
+		<I229>               = 229;
+		<I230>               = 230;
+		<I231>               = 231;
+		<I232>               = 232;
+		<I233>               = 233;
+		<I234>               = 234;
+		<I235>               = 235;
+		<I236>               = 236;
+		<I237>               = 237;
+		<I238>               = 238;
+		<I239>               = 239;
+		<I240>               = 240;
+		<I241>               = 241;
+		<I242>               = 242;
+		<I243>               = 243;
+		<I244>               = 244;
+		<I245>               = 245;
+		<I246>               = 246;
+		<I247>               = 247;
+		<I248>               = 248;
+		<I249>               = 249;
+		<I250>               = 250;
+		<I251>               = 251;
+		<I252>               = 252;
+		<I253>               = 253;
 		indicator 1 = "Caps Lock";
 		indicator 2 = "Num Lock";
 		indicator 3 = "Scroll Lock";
@@ -258,39 +258,39 @@ xkb_keymap {
 		indicator 12 = "Shift Lock";
 		indicator 13 = "Group 2";
 		indicator 14 = "Mouse Keys";
-		alias <AC12> = <BKSL>;
-		alias <MENU> = <COMP>;
-		alias <HZTG> = <TLDE>;
-		alias <LMTA> = <LWIN>;
-		alias <RMTA> = <RWIN>;
-		alias <ALGR> = <RALT>;
-		alias <KPPT> = <I129>;
-		alias <LatQ> = <AD01>;
-		alias <LatW> = <AD02>;
-		alias <LatE> = <AD03>;
-		alias <LatR> = <AD04>;
-		alias <LatT> = <AD05>;
-		alias <LatY> = <AD06>;
-		alias <LatU> = <AD07>;
-		alias <LatI> = <AD08>;
-		alias <LatO> = <AD09>;
-		alias <LatP> = <AD10>;
-		alias <LatA> = <AC01>;
-		alias <LatS> = <AC02>;
-		alias <LatD> = <AC03>;
-		alias <LatF> = <AC04>;
-		alias <LatG> = <AC05>;
-		alias <LatH> = <AC06>;
-		alias <LatJ> = <AC07>;
-		alias <LatK> = <AC08>;
-		alias <LatL> = <AC09>;
-		alias <LatZ> = <AB01>;
-		alias <LatX> = <AB02>;
-		alias <LatC> = <AB03>;
-		alias <LatV> = <AB04>;
-		alias <LatB> = <AB05>;
-		alias <LatN> = <AB06>;
-		alias <LatM> = <AB07>;
+		alias <AC12>         = <BKSL>;
+		alias <MENU>         = <COMP>;
+		alias <HZTG>         = <TLDE>;
+		alias <LMTA>         = <LWIN>;
+		alias <RMTA>         = <RWIN>;
+		alias <ALGR>         = <RALT>;
+		alias <KPPT>         = <I129>;
+		alias <LatQ>         = <AD01>;
+		alias <LatW>         = <AD02>;
+		alias <LatE>         = <AD03>;
+		alias <LatR>         = <AD04>;
+		alias <LatT>         = <AD05>;
+		alias <LatY>         = <AD06>;
+		alias <LatU>         = <AD07>;
+		alias <LatI>         = <AD08>;
+		alias <LatO>         = <AD09>;
+		alias <LatP>         = <AD10>;
+		alias <LatA>         = <AC01>;
+		alias <LatS>         = <AC02>;
+		alias <LatD>         = <AC03>;
+		alias <LatF>         = <AC04>;
+		alias <LatG>         = <AC05>;
+		alias <LatH>         = <AC06>;
+		alias <LatJ>         = <AC07>;
+		alias <LatK>         = <AC08>;
+		alias <LatL>         = <AC09>;
+		alias <LatZ>         = <AB01>;
+		alias <LatX>         = <AB02>;
+		alias <LatC>         = <AB03>;
+		alias <LatV>         = <AB04>;
+		alias <LatB>         = <AB05>;
+		alias <LatN>         = <AB06>;
+		alias <LatM>         = <AB07>;
 	};
 
 	xkb_types "complete" {
@@ -1079,8 +1079,8 @@ xkb_keymap {
 		name[group3]="Canadian Multilingual";
 		name[group4]="German (Neo 2)";
 
-		key  <ESC> {	[          Escape ] };
-		key <AE01> {
+		key <ESC>                {	[          Escape ] };
+		key <AE01>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [               1,          exclam ],
@@ -1088,7 +1088,7 @@ xkb_keymap {
 			symbols[Group3]= [               1,          exclam,       plusminus,        NoSymbol,     onesuperior,      exclamdown,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               1,          degree,     onesuperior,    onesubscript,     ordfeminine,        NoSymbol,         notsign,        NoSymbol ]
 		};
-		key <AE02> {
+		key <AE02>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [               2,              at ],
@@ -1096,7 +1096,7 @@ xkb_keymap {
 			symbols[Group3]= [               2,              at,              at,        NoSymbol,     twosuperior,        NoSymbol,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               2,         section,     twosuperior,    twosubscript,       masculine,        NoSymbol,       logicalor,        NoSymbol ]
 		};
-		key <AE03> {
+		key <AE03>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [               3,      numbersign ],
@@ -1104,7 +1104,7 @@ xkb_keymap {
 			symbols[Group3]= [               3,      numbersign,        sterling,        NoSymbol,   threesuperior,        sterling,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               3,           U2113,   threesuperior,  threesubscript,      numerosign,        NoSymbol,      logicaland,        NoSymbol ]
 		};
-		key <AE04> {
+		key <AE04>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [               4,          dollar ],
@@ -1112,7 +1112,7 @@ xkb_keymap {
 			symbols[Group3]= [               4,          dollar,            cent,        NoSymbol,      onequarter,        currency,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               4,  guillemotright,           U203a,    femalesymbol,        NoSymbol,        NoSymbol,           U22a5,        NoSymbol ]
 		};
-		key <AE05> {
+		key <AE05>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [               5,         percent ],
@@ -1120,7 +1120,7 @@ xkb_keymap {
 			symbols[Group3]= [               5,         percent,        currency,        NoSymbol,         onehalf,    threeeighths,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               5,   guillemotleft,           U2039,      malesymbol,  periodcentered,        NoSymbol,           U2221,        NoSymbol ]
 		};
-		key <AE06> {
+		key <AE06>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [ { H, E, L, L, O },     asciicircum ],
@@ -1128,7 +1128,7 @@ xkb_keymap {
 			symbols[Group3]= [               6,        question,         notsign,        NoSymbol,   threequarters,     fiveeighths,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               6,          dollar,            cent,           U26a5,        sterling,        NoSymbol,           U2225,        NoSymbol ]
 		};
-		key <AE07> {
+		key <AE07>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [ { Y, E, S, space, T, H, I, S, space, I, S, space, D, O, G },       ampersand ],
@@ -1136,7 +1136,7 @@ xkb_keymap {
 			symbols[Group3]= [               7,       ampersand,       braceleft,        NoSymbol,        NoSymbol,    seveneighths,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               7,        EuroSign,             yen,            U3f0,        currency,        NoSymbol,      rightarrow,        NoSymbol ]
 		};
-		key <AE08> {
+		key <AE08>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [               8,        asterisk ],
@@ -1144,7 +1144,7 @@ xkb_keymap {
 			symbols[Group3]= [               8,        asterisk,      braceright,        NoSymbol,        NoSymbol,       trademark,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               8, doublelowquotemark, singlelowquotemark,           U27e8,             Tab,    ISO_Left_Tab,           U221e,        NoSymbol ]
 		};
-		key <AE09> {
+		key <AE09>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [               9,       parenleft ],
@@ -1152,7 +1152,7 @@ xkb_keymap {
 			symbols[Group3]= [               9,       parenleft,     bracketleft,        NoSymbol,        NoSymbol,       plusminus,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               9, leftdoublequotemark, leftsinglequotemark,           U27e9,       KP_Divide,       KP_Divide,       variation,        NoSymbol ]
 		};
-		key <AE10> {
+		key <AE10>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [               0,      parenright ],
@@ -1160,7 +1160,7 @@ xkb_keymap {
 			symbols[Group3]= [               0,      parenright,    bracketright,        NoSymbol,        NoSymbol,        NoSymbol,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               0, rightdoublequotemark, rightsinglequotemark,   zerosubscript,     KP_Multiply,     KP_Multiply,        emptyset,        NoSymbol ]
 		};
-		key <AE11> {
+		key <AE11>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [           minus,      underscore ],
@@ -1168,7 +1168,7 @@ xkb_keymap {
 			symbols[Group3]= [           minus,      underscore,         onehalf,        NoSymbol,        NoSymbol,    questiondown,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [           minus,          emdash,        NoSymbol,           U2011,     KP_Subtract,     KP_Subtract,          hyphen,        NoSymbol ]
 		};
-		key <AE12> {
+		key <AE12>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [           equal,            plus ],
@@ -1176,15 +1176,15 @@ xkb_keymap {
 			symbols[Group3]= [           equal,            plus,         notsign,        NoSymbol,    dead_cedilla,     dead_ogonek,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [      dead_grave,    dead_cedilla,  dead_abovering, dead_abovereversedcomma,  dead_diaeresis,        NoSymbol,     dead_macron,        NoSymbol ]
 		};
-		key <BKSP> {	[       BackSpace,       BackSpace ] };
-		key  <TAB> {
+		key <BKSP>               {	[       BackSpace,       BackSpace ] };
+		key <TAB>                {
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [             Tab,    ISO_Left_Tab ],
 			symbols[Group2]= [             Tab,    ISO_Left_Tab ],
 			symbols[Group3]= [             Tab,    ISO_Left_Tab ],
 			symbols[Group4]= [             Tab,    ISO_Left_Tab,       Multi_key, ISO_Level5_Lock,        NoSymbol,        NoSymbol,        NoSymbol, ISO_Level5_Lock ]
 		};
-		key <AD01> {
+		key <AD01>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1194,7 +1194,7 @@ xkb_keymap {
 			symbols[Group3]= [               q,               Q,        NoSymbol,        NoSymbol,        NoSymbol,     Greek_OMEGA,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               x,               X,        ellipsis,        Greek_xi,           Prior,           Prior,        Greek_XI,        NoSymbol ]
 		};
-		key <AD02> {
+		key <AD02>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1204,7 +1204,7 @@ xkb_keymap {
 			symbols[Group3]= [               w,               W,        NoSymbol,        NoSymbol,         lstroke,         Lstroke,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               v,               V,      underscore,        NoSymbol,       BackSpace,       BackSpace,         radical,        NoSymbol ]
 		};
-		key <AD03> {
+		key <AD03>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1214,7 +1214,7 @@ xkb_keymap {
 			symbols[Group3]= [               e,               E,        NoSymbol,        NoSymbol,              oe,              OE,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               l,               L,     bracketleft,     Greek_lamda,              Up,              Up,     Greek_LAMDA,        NoSymbol ]
 		};
-		key <AD04> {
+		key <AD04>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1224,7 +1224,7 @@ xkb_keymap {
 			symbols[Group3]= [               r,               R,        NoSymbol,        NoSymbol,       paragraph,      registered,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               c,               C,    bracketright,       Greek_chi,          Delete,          Delete,           U2102,        NoSymbol ]
 		};
-		key <AD05> {
+		key <AD05>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1234,7 +1234,7 @@ xkb_keymap {
 			symbols[Group3]= [               t,               T,        NoSymbol,        NoSymbol,          tslash,          Tslash,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               w,               W,     asciicircum,     Greek_omega,            Next,            Next,     Greek_OMEGA,        NoSymbol ]
 		};
-		key <AD06> {
+		key <AD06>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1244,7 +1244,7 @@ xkb_keymap {
 			symbols[Group3]= [               y,               Y,        NoSymbol,        NoSymbol,       leftarrow,             yen,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               k,               K,          exclam,     Greek_kappa,      exclamdown,        NoSymbol,        multiply,        NoSymbol ]
 		};
-		key <AD07> {
+		key <AD07>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1254,7 +1254,7 @@ xkb_keymap {
 			symbols[Group3]= [               u,               U,        NoSymbol,        NoSymbol,       downarrow,         uparrow,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               h,               H,            less,       Greek_psi,            KP_7,            KP_7,       Greek_PSI,        NoSymbol ]
 		};
-		key <AD08> {
+		key <AD08>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1264,7 +1264,7 @@ xkb_keymap {
 			symbols[Group3]= [               i,               I,        NoSymbol,        NoSymbol,      rightarrow,        idotless,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               g,               G,         greater,     Greek_gamma,            KP_8,            KP_8,     Greek_GAMMA,        NoSymbol ]
 		};
-		key <AD09> {
+		key <AD09>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1274,7 +1274,7 @@ xkb_keymap {
 			symbols[Group3]= [               o,               O,         section,        NoSymbol,          oslash,          Oslash,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               f,               F,           equal,       Greek_phi,            KP_9,            KP_9,       Greek_PHI,        NoSymbol ]
 		};
-		key <AD10> {
+		key <AD10>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1284,7 +1284,7 @@ xkb_keymap {
 			symbols[Group3]= [               p,               P,       paragraph,        NoSymbol,           thorn,           THORN,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               q,               Q,       ampersand,            U3d5,          KP_Add,          KP_Add,           U211a,        NoSymbol ]
 		};
-		key <AD11> {
+		key <AD11>               {
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1293,7 +1293,7 @@ xkb_keymap {
 			symbols[Group3]= [ dead_circumflex,  dead_diaeresis,      dead_grave,        NoSymbol,        NoSymbol,  dead_abovering,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [          ssharp,           U1e9e,            U17f, Greek_finalsmallsigma,           U2212,        NoSymbol,             jot,        NoSymbol ]
 		};
-		key <AD12> {
+		key <AD12>               {
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
@@ -1302,9 +1302,9 @@ xkb_keymap {
 			symbols[Group3]= [        ccedilla,        Ccedilla,      asciitilde,        NoSymbol,      dead_tilde,     dead_macron,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [      dead_acute,      dead_tilde,     dead_stroke, dead_abovecomma, dead_doubleacute,        NoSymbol,      dead_breve,        NoSymbol ]
 		};
-		key <RTRN> {	[          Return ] };
-		key <LCTL> {	[       Control_L ] };
-		key <AC01> {
+		key <RTRN>               {	[          Return ] };
+		key <LCTL>               {	[       Control_L ] };
+		key <AC01>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1314,7 +1314,7 @@ xkb_keymap {
 			symbols[Group3]= [               a,               A,        NoSymbol,        NoSymbol,              ae,              AE,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               u,               U,       backslash,        NoSymbol,            Home,            Home,      includedin,        NoSymbol ]
 		};
-		key <AC02> {
+		key <AC02>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1324,7 +1324,7 @@ xkb_keymap {
 			symbols[Group3]= [               s,               S,        NoSymbol,        NoSymbol,          ssharp,         section,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               i,               I,           slash,      Greek_iota,            Left,            Left,        integral,        NoSymbol ]
 		};
-		key <AC03> {
+		key <AC03>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1334,7 +1334,7 @@ xkb_keymap {
 			symbols[Group3]= [               d,               D,        NoSymbol,        NoSymbol,             eth,             ETH,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               a,               A,       braceleft,     Greek_alpha,            Down,            Down,           U2200,        NoSymbol ]
 		};
-		key <AC04> {
+		key <AC04>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1344,7 +1344,7 @@ xkb_keymap {
 			symbols[Group3]= [               f,               F,        NoSymbol,        NoSymbol,        NoSymbol,     ordfeminine,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               e,               E,      braceright,   Greek_epsilon,           Right,           Right,           U2203,        NoSymbol ]
 		};
-		key <AC05> {
+		key <AC05>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1354,7 +1354,7 @@ xkb_keymap {
 			symbols[Group3]= [               g,               G,        NoSymbol,        NoSymbol,             eng,             ENG,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               o,               O,        asterisk,   Greek_omicron,             End,             End,       elementof,        NoSymbol ]
 		};
-		key <AC06> {
+		key <AC06>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1364,7 +1364,7 @@ xkb_keymap {
 			symbols[Group3]= [               h,               H,        NoSymbol,        NoSymbol,         hstroke,         Hstroke,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               s,               S,        question,     Greek_sigma,    questiondown,        NoSymbol,     Greek_SIGMA,        NoSymbol ]
 		};
-		key <AC07> {
+		key <AC07>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1374,7 +1374,7 @@ xkb_keymap {
 			symbols[Group3]= [               j,               J,        NoSymbol,        NoSymbol,            U133,            U132,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               n,               N,       parenleft,        Greek_nu,            KP_4,            KP_4,           U2115,        NoSymbol ]
 		};
-		key <AC08> {
+		key <AC08>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1384,7 +1384,7 @@ xkb_keymap {
 			symbols[Group3]= [               k,               K,        NoSymbol,        NoSymbol,             kra,        NoSymbol,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               r,               R,      parenright,       Greek_rho,            KP_5,            KP_5,           U211d,        NoSymbol ]
 		};
-		key <AC09> {
+		key <AC09>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1394,7 +1394,7 @@ xkb_keymap {
 			symbols[Group3]= [               l,               L,        NoSymbol,        NoSymbol,            U140,            U13f,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               t,               T,           minus,       Greek_tau,            KP_6,            KP_6, partialderivative,        NoSymbol ]
 		};
-		key <AC10> {
+		key <AC10>               {
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1403,7 +1403,7 @@ xkb_keymap {
 			symbols[Group3]= [       semicolon,           colon,          degree,        NoSymbol,      dead_acute, dead_doubleacute,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               d,               D,           colon,     Greek_delta,    KP_Separator,           comma,     Greek_DELTA,        NoSymbol ]
 		};
-		key <AC11> {
+		key <AC11>               {
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1412,7 +1412,7 @@ xkb_keymap {
 			symbols[Group3]= [          egrave,          Egrave,       braceleft,        NoSymbol,        NoSymbol,      dead_caron,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               y,               Y,              at,   Greek_upsilon,          period,      KP_Decimal,           nabla,        NoSymbol ]
 		};
-		key <TLDE> {
+		key <TLDE>               {
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
@@ -1421,14 +1421,14 @@ xkb_keymap {
 			symbols[Group3]= [           slash,       backslash,             bar,        NoSymbol,        NoSymbol,          hyphen,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [ dead_circumflex,      dead_caron,           U21bb,            U2de,   dead_abovedot, Pointer_EnableKeys,   dead_belowdot,        NoSymbol ]
 		};
-		key <LFSH> {
+		key <LFSH>               {
 			type[group4]= "TWO_LEVEL",
 			symbols[Group1]= [         Shift_L ],
 			symbols[Group2]= [         Shift_L ],
 			symbols[Group3]= [         Shift_L ],
 			symbols[Group4]= [         Shift_L,       Caps_Lock ]
 		};
-		key <BKSL> {
+		key <BKSL>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "ONE_LEVEL",
 			symbols[Group1]= [       backslash,             bar ],
@@ -1436,7 +1436,7 @@ xkb_keymap {
 			symbols[Group3]= [          agrave,          Agrave,      braceright,        NoSymbol,        NoSymbol,      dead_breve,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [ ISO_Level3_Shift ]
 		};
-		key <AB01> {
+		key <AB01>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "FOUR_LEVEL_SEMIALPHABETIC",
@@ -1446,7 +1446,7 @@ xkb_keymap {
 			symbols[Group3]= [               z,               Z,   guillemotleft,        NoSymbol ],
 			symbols[Group4]= [      udiaeresis,      Udiaeresis,      numbersign,        NoSymbol,          Escape,          Escape,           union,        NoSymbol ]
 		};
-		key <AB02> {
+		key <AB02>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "FOUR_LEVEL_SEMIALPHABETIC",
@@ -1456,7 +1456,7 @@ xkb_keymap {
 			symbols[Group3]= [               x,               X,  guillemotright,        NoSymbol ],
 			symbols[Group4]= [      odiaeresis,      Odiaeresis,          dollar,            U3f5,             Tab,             Tab,    intersection,        NoSymbol ]
 		};
-		key <AB03> {
+		key <AB03>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1466,7 +1466,7 @@ xkb_keymap {
 			symbols[Group3]= [               c,               C,        NoSymbol,        NoSymbol,            cent,       copyright,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [      adiaeresis,      Adiaeresis,             bar,       Greek_eta,          Insert,          Insert,           U2135,        NoSymbol ]
 		};
-		key <AB04> {
+		key <AB04>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1476,7 +1476,7 @@ xkb_keymap {
 			symbols[Group3]= [               v,               V,        NoSymbol,        NoSymbol, leftdoublequotemark, leftsinglequotemark,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               p,               P,      asciitilde,        Greek_pi,          Return,          Return,        Greek_PI,        NoSymbol ]
 		};
-		key <AB05> {
+		key <AB05>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1486,7 +1486,7 @@ xkb_keymap {
 			symbols[Group3]= [               b,               B,        NoSymbol,        NoSymbol, rightdoublequotemark, rightsinglequotemark,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               z,               Z,           grave,      Greek_zeta,            Undo,            Undo,           U2124,        NoSymbol ]
 		};
-		key <AB06> {
+		key <AB06>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1496,7 +1496,7 @@ xkb_keymap {
 			symbols[Group3]= [               n,               N,        NoSymbol,        NoSymbol,            U149,           U266a,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               b,               B,            plus,      Greek_beta,           colon,        NoSymbol,           U21d0,        NoSymbol ]
 		};
-		key <AB07> {
+		key <AB07>               {
 			type[group1]= "ALPHABETIC",
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1506,7 +1506,7 @@ xkb_keymap {
 			symbols[Group3]= [               m,               M,              mu,        NoSymbol,              mu,       masculine,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               m,               M,         percent,        Greek_mu,            KP_1,            KP_1,        ifonlyif,        NoSymbol ]
 		};
-		key <AB08> {
+		key <AB08>               {
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
@@ -1515,7 +1515,7 @@ xkb_keymap {
 			symbols[Group3]= [           comma,      apostrophe,            less,        NoSymbol,  Greek_horizbar,        multiply,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [           comma,          endash,        quotedbl,            U3f1,            KP_2,            KP_2,           U21d2,        NoSymbol ]
 		};
-		key <AB09> {
+		key <AB09>               {
 			type[group2]= "ALPHABETIC",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL",
@@ -1524,7 +1524,7 @@ xkb_keymap {
 			symbols[Group3]= [          period,        quotedbl,         greater,        NoSymbol,  periodcentered,        division,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [          period, enfilledcircbullet,      apostrophe,            U3d1,            KP_3,            KP_3,           U21a6,        NoSymbol ]
 		};
-		key <AB10> {
+		key <AB10>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [           slash,        question ],
@@ -1532,14 +1532,14 @@ xkb_keymap {
 			symbols[Group3]= [          eacute,          Eacute,      dead_acute,        NoSymbol,        NoSymbol,   dead_abovedot,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               j,               J,       semicolon,     Greek_theta,       semicolon,        NoSymbol,     Greek_THETA,        NoSymbol ]
 		};
-		key <RTSH> {
+		key <RTSH>               {
 			type[group4]= "TWO_LEVEL",
 			symbols[Group1]= [         Shift_R ],
 			symbols[Group2]= [         Shift_R ],
 			symbols[Group3]= [         Shift_R ],
 			symbols[Group4]= [         Shift_R,       Caps_Lock ]
 		};
-		key <KPMU> {
+		key <KPMU>               {
 			type[group1]= "CTRL+ALT",
 			type[group2]= "CTRL+ALT",
 			type[group3]= "CTRL+ALT",
@@ -1549,8 +1549,8 @@ xkb_keymap {
 			symbols[Group3]= [     KP_Multiply,     KP_Multiply,     KP_Multiply,     KP_Multiply,   XF86ClearGrab ],
 			symbols[Group4]= [     KP_Multiply,     KP_Multiply,           U2219,           U2299,        multiply,        NoSymbol,           U2297,        NoSymbol ]
 		};
-		key <LALT> {	[           Alt_L,          Meta_L ] };
-		key <SPCE> {
+		key <LALT>               {	[           Alt_L,          Meta_L ] };
+		key <SPCE>               {
 			type[group3]= "FOUR_LEVEL",
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [           space ],
@@ -1558,83 +1558,83 @@ xkb_keymap {
 			symbols[Group3]= [           space,           space,    nobreakspace,        NoSymbol ],
 			symbols[Group4]= [           space,           space,           space,    nobreakspace,            KP_0,            KP_0,           U202f,        NoSymbol ]
 		};
-		key <CAPS> {
+		key <CAPS>               {
 			type= "ONE_LEVEL",
 			symbols[Group1]= [       Caps_Lock ],
 			symbols[Group2]= [       Caps_Lock ],
 			symbols[Group3]= [       Caps_Lock ],
 			symbols[Group4]= [ ISO_Level3_Shift ]
 		};
-		key <FK01> {
+		key <FK01>               {
 			type= "CTRL+ALT",
 			symbols[Group1]= [              F1,              F1,              F1,              F1, XF86Switch_VT_1 ]
 		};
-		key <FK02> {
+		key <FK02>               {
 			type= "CTRL+ALT",
 			symbols[Group1]= [              F2,              F2,              F2,              F2, XF86Switch_VT_2 ]
 		};
-		key <FK03> {
+		key <FK03>               {
 			type= "CTRL+ALT",
 			symbols[Group1]= [              F3,              F3,              F3,              F3, XF86Switch_VT_3 ]
 		};
-		key <FK04> {
+		key <FK04>               {
 			type= "CTRL+ALT",
 			symbols[Group1]= [              F4,              F4,              F4,              F4, XF86Switch_VT_4 ]
 		};
-		key <FK05> {
+		key <FK05>               {
 			type= "CTRL+ALT",
 			symbols[Group1]= [              F5,              F5,              F5,              F5, XF86Switch_VT_5 ]
 		};
-		key <FK06> {
+		key <FK06>               {
 			type= "CTRL+ALT",
 			symbols[Group1]= [              F6,              F6,              F6,              F6, XF86Switch_VT_6 ]
 		};
-		key <FK07> {
+		key <FK07>               {
 			type= "CTRL+ALT",
 			symbols[Group1]= [              F7,              F7,              F7,              F7, XF86Switch_VT_7 ]
 		};
-		key <FK08> {
+		key <FK08>               {
 			type= "CTRL+ALT",
 			symbols[Group1]= [              F8,              F8,              F8,              F8, XF86Switch_VT_8 ]
 		};
-		key <FK09> {
+		key <FK09>               {
 			type= "CTRL+ALT",
 			symbols[Group1]= [              F9,              F9,              F9,              F9, XF86Switch_VT_9 ]
 		};
-		key <FK10> {
+		key <FK10>               {
 			type= "CTRL+ALT",
 			symbols[Group1]= [             F10,             F10,             F10,             F10, XF86Switch_VT_10 ]
 		};
-		key <NMLK> {
+		key <NMLK>               {
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [        Num_Lock ],
 			symbols[Group2]= [        Num_Lock ],
 			symbols[Group3]= [        Num_Lock ],
 			symbols[Group4]= [             Tab,    ISO_Left_Tab,           equal,        approxeq,        notequal, Pointer_EnableKeys,       identical,        NoSymbol ]
 		};
-		key <SCLK> {	[     Scroll_Lock ] };
-		key  <KP7> {
+		key <SCLK>               {	[     Scroll_Lock ] };
+		key <KP7>                {
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [         KP_Home,            KP_7 ],
 			symbols[Group2]= [         KP_Home,            KP_7 ],
 			symbols[Group3]= [         KP_Home,            KP_7 ],
 			symbols[Group4]= [            KP_7,           U2714,           U2195,           U226a,         KP_Home,         KP_Home,         upstile,        NoSymbol ]
 		};
-		key  <KP8> {
+		key <KP8>                {
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [           KP_Up,            KP_8 ],
 			symbols[Group2]= [           KP_Up,            KP_8 ],
 			symbols[Group3]= [           KP_Up,            KP_8 ],
 			symbols[Group4]= [            KP_8,           U2718,         uparrow,    intersection,           KP_Up,           KP_Up,           U22c2,        NoSymbol ]
 		};
-		key  <KP9> {
+		key <KP9>                {
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [        KP_Prior,            KP_9 ],
 			symbols[Group2]= [        KP_Prior,            KP_9 ],
 			symbols[Group3]= [        KP_Prior,            KP_9 ],
 			symbols[Group4]= [            KP_9,          dagger,           U20d7,           U226b,        KP_Prior,        KP_Prior,           U2309,        NoSymbol ]
 		};
-		key <KPSU> {
+		key <KPSU>               {
 			type[group1]= "CTRL+ALT",
 			type[group2]= "CTRL+ALT",
 			type[group3]= "CTRL+ALT",
@@ -1644,28 +1644,28 @@ xkb_keymap {
 			symbols[Group3]= [     KP_Subtract,     KP_Subtract,     KP_Subtract,     KP_Subtract,  XF86Prev_VMode ],
 			symbols[Group4]= [     KP_Subtract,     KP_Subtract,           U2212,           U2296,           U2216,        NoSymbol,           U2238,        NoSymbol ]
 		};
-		key  <KP4> {
+		key <KP4>                {
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [         KP_Left,            KP_4 ],
 			symbols[Group2]= [         KP_Left,            KP_4 ],
 			symbols[Group3]= [         KP_Left,            KP_4 ],
 			symbols[Group4]= [            KP_4,            club,       leftarrow,      includedin,         KP_Left,         KP_Left,           U2286,        NoSymbol ]
 		};
-		key  <KP5> {
+		key <KP5>                {
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [        KP_Begin,            KP_5 ],
 			symbols[Group2]= [        KP_Begin,            KP_5 ],
 			symbols[Group3]= [        KP_Begin,            KP_5 ],
 			symbols[Group4]= [            KP_5,        EuroSign,           colon,           U22b6,        KP_Begin,        KP_Begin,           U22b7,        NoSymbol ]
 		};
-		key  <KP6> {
+		key <KP6>                {
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [        KP_Right,            KP_6 ],
 			symbols[Group2]= [        KP_Right,            KP_6 ],
 			symbols[Group3]= [        KP_Right,            KP_6 ],
 			symbols[Group4]= [            KP_6,           U2023,      rightarrow,        includes,        KP_Right,        KP_Right,           U2287,        NoSymbol ]
 		};
-		key <KPAD> {
+		key <KPAD>               {
 			type[group1]= "CTRL+ALT",
 			type[group2]= "CTRL+ALT",
 			type[group3]= "CTRL+ALT",
@@ -1675,35 +1675,35 @@ xkb_keymap {
 			symbols[Group3]= [          KP_Add,          KP_Add,          KP_Add,          KP_Add,  XF86Next_VMode ],
 			symbols[Group4]= [          KP_Add,          KP_Add,       plusminus,           U2295,           U2213,        NoSymbol,           U2214,        NoSymbol ]
 		};
-		key  <KP1> {
+		key <KP1>                {
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [          KP_End,            KP_1 ],
 			symbols[Group2]= [          KP_End,            KP_1 ],
 			symbols[Group3]= [          KP_End,            KP_1 ],
 			symbols[Group4]= [            KP_1,         diamond,           U2194,   lessthanequal,          KP_End,          KP_End,       downstile,        NoSymbol ]
 		};
-		key  <KP2> {
+		key <KP2>                {
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [         KP_Down,            KP_2 ],
 			symbols[Group2]= [         KP_Down,            KP_2 ],
 			symbols[Group3]= [         KP_Down,            KP_2 ],
 			symbols[Group4]= [            KP_2,           heart,       downarrow,           union,         KP_Down,         KP_Down,           U22c3,        NoSymbol ]
 		};
-		key  <KP3> {
+		key <KP3>                {
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [         KP_Next,            KP_3 ],
 			symbols[Group2]= [         KP_Next,            KP_3 ],
 			symbols[Group3]= [         KP_Next,            KP_3 ],
 			symbols[Group4]= [            KP_3,           U2660,           U21cc, greaterthanequal,         KP_Next,         KP_Next,           U230b,        NoSymbol ]
 		};
-		key  <KP0> {
+		key <KP0>                {
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [       KP_Insert,            KP_0 ],
 			symbols[Group2]= [       KP_Insert,            KP_0 ],
 			symbols[Group3]= [       KP_Insert,            KP_0 ],
 			symbols[Group4]= [            KP_0,           U2423,         percent,           U2030,       KP_Insert,       KP_Insert,           U25a1,        NoSymbol ]
 		};
-		key <KPDL> {
+		key <KPDL>               {
 			type[group2]= "KEYPAD",
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [       KP_Delete,      KP_Decimal ],
@@ -1711,8 +1711,8 @@ xkb_keymap {
 			symbols[Group3]= [       KP_Delete,      KP_Decimal ],
 			symbols[Group4]= [    KP_Separator,          period,           comma,         minutes,       KP_Delete,       KP_Delete,         seconds,        NoSymbol ]
 		};
-		key <LVL3> {	[ ISO_Level3_Shift ] };
-		key <LSGT> {
+		key <LVL3>               {	[ ISO_Level3_Shift ] };
+		key <LSGT>               {
 			type[group1]= "FOUR_LEVEL",
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			type[group4]= "ONE_LEVEL",
@@ -1721,33 +1721,33 @@ xkb_keymap {
 			symbols[Group3]= [          ugrave,          Ugrave,          degree,        NoSymbol,        NoSymbol,       brokenbar,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [ ISO_Level5_Shift ]
 		};
-		key <FK11> {
+		key <FK11>               {
 			type= "CTRL+ALT",
 			symbols[Group1]= [             F11,             F11,             F11,             F11, XF86Switch_VT_11 ]
 		};
-		key <FK12> {
+		key <FK12>               {
 			type= "CTRL+ALT",
 			symbols[Group1]= [             F12,             F12,             F12,             F12, XF86Switch_VT_12 ]
 		};
-		key <KATA> {	[        Katakana ] };
-		key <HIRA> {	[        Hiragana ] };
-		key <HENK> {	[     Henkan_Mode ] };
-		key <HKTG> {	[ Hiragana_Katakana ] };
-		key <MUHE> {	[        Muhenkan ] };
-		key <KPEN> {
+		key <KATA>               {	[        Katakana ] };
+		key <HIRA>               {	[        Hiragana ] };
+		key <HENK>               {	[     Henkan_Mode ] };
+		key <HKTG>               {	[ Hiragana_Katakana ] };
+		key <MUHE>               {	[        Muhenkan ] };
+		key <KPEN>               {
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [        KP_Enter ],
 			symbols[Group2]= [        KP_Enter ],
 			symbols[Group3]= [        KP_Enter ],
 			symbols[Group4]= [        KP_Enter,        KP_Enter,        KP_Enter,        KP_Enter,        KP_Enter,        KP_Enter,        KP_Enter,        NoSymbol ]
 		};
-		key <RCTL> {
+		key <RCTL>               {
 			type= "ONE_LEVEL",
 			symbols[Group1]= [       Control_R ],
 			symbols[Group2]= [       Control_R ],
 			symbols[Group3]= [ ISO_Level5_Shift ]
 		};
-		key <KPDV> {
+		key <KPDV>               {
 			type[group1]= "CTRL+ALT",
 			type[group2]= "CTRL+ALT",
 			type[group3]= "CTRL+ALT",
@@ -1757,11 +1757,11 @@ xkb_keymap {
 			symbols[Group3]= [       KP_Divide,       KP_Divide,       KP_Divide,       KP_Divide,      XF86Ungrab ],
 			symbols[Group4]= [       KP_Divide,       KP_Divide,        division,           U2300,           U2215,        NoSymbol,           U2223,        NoSymbol ]
 		};
-		key <PRSC> {
+		key <PRSC>               {
 			type= "PC_ALT_LEVEL2",
 			symbols[Group1]= [           Print,         Sys_Req ]
 		};
-		key <RALT> {
+		key <RALT>               {
 			type[group1]= "TWO_LEVEL",
 			type[group2]= "TWO_LEVEL",
 			type[group3]= "ONE_LEVEL",
@@ -1771,136 +1771,136 @@ xkb_keymap {
 			symbols[Group3]= [ ISO_Level3_Shift ],
 			symbols[Group4]= [ ISO_Level5_Shift ]
 		};
-		key <LNFD> {	[        Linefeed ] };
-		key <HOME> {	[            Home ] };
-		key   <UP> {	[              Up ] };
-		key <PGUP> {	[           Prior ] };
-		key <LEFT> {	[            Left ] };
-		key <RGHT> {	[           Right ] };
-		key  <END> {	[             End ] };
-		key <DOWN> {	[            Down ] };
-		key <PGDN> {	[            Next ] };
-		key  <INS> {	[          Insert ] };
-		key <DELE> {	[          Delete ] };
-		key <MUTE> {	[   XF86AudioMute ] };
-		key <VOL-> {	[ XF86AudioLowerVolume ] };
-		key <VOL+> {	[ XF86AudioRaiseVolume ] };
-		key <POWR> {	[    XF86PowerOff ] };
-		key <KPEQ> {
+		key <LNFD>               {	[        Linefeed ] };
+		key <HOME>               {	[            Home ] };
+		key <UP>                 {	[              Up ] };
+		key <PGUP>               {	[           Prior ] };
+		key <LEFT>               {	[            Left ] };
+		key <RGHT>               {	[           Right ] };
+		key <END>                {	[             End ] };
+		key <DOWN>               {	[            Down ] };
+		key <PGDN>               {	[            Next ] };
+		key <INS>                {	[          Insert ] };
+		key <DELE>               {	[          Delete ] };
+		key <MUTE>               {	[   XF86AudioMute ] };
+		key <VOL->               {	[ XF86AudioLowerVolume ] };
+		key <VOL+>               {	[ XF86AudioRaiseVolume ] };
+		key <POWR>               {	[    XF86PowerOff ] };
+		key <KPEQ>               {
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [        KP_Equal ],
 			symbols[Group2]= [        KP_Equal ],
 			symbols[Group3]= [        KP_Equal ],
 			symbols[Group4]= [        KP_Equal,        NoSymbol,        NoSymbol,        NoSymbol,        NoSymbol,        NoSymbol,        NoSymbol,        NoSymbol ]
 		};
-		key <I126> {	[       plusminus ] };
-		key <PAUS> {
+		key <I126>               {	[       plusminus ] };
+		key <PAUS>               {
 			type= "PC_CONTROL_LEVEL2",
 			symbols[Group1]= [           Pause,           Break ]
 		};
-		key <I128> {	[     XF86LaunchA ] };
-		key <I129> {	[      KP_Decimal,      KP_Decimal ] };
-		key <HNGL> {	[          Hangul ] };
-		key <HJCV> {	[    Hangul_Hanja ] };
-		key <LWIN> {	[         Super_L ] };
-		key <RWIN> {	[         Super_R ] };
-		key <COMP> {	[            Menu ] };
-		key <STOP> {	[          Cancel ] };
-		key <AGAI> {	[            Redo ] };
-		key <PROP> {	[        SunProps ] };
-		key <UNDO> {	[            Undo ] };
-		key <FRNT> {	[        SunFront ] };
-		key <COPY> {	[        XF86Copy ] };
-		key <OPEN> {	[         SunOpen ] };
-		key <PAST> {	[       XF86Paste ] };
-		key <FIND> {	[            Find ] };
-		key  <CUT> {	[         XF86Cut ] };
-		key <HELP> {	[            Help ] };
-		key <I147> {	[      XF86MenuKB ] };
-		key <I148> {	[  XF86Calculator ] };
-		key <I150> {	[       XF86Sleep ] };
-		key <I151> {	[      XF86WakeUp ] };
-		key <I152> {	[    XF86Explorer ] };
-		key <I153> {	[        XF86Send ] };
-		key <I155> {	[        XF86Xfer ] };
-		key <I156> {	[     XF86Launch1 ] };
-		key <I157> {	[     XF86Launch2 ] };
-		key <I158> {	[         XF86WWW ] };
-		key <I159> {	[         XF86DOS ] };
-		key <I160> {	[ XF86ScreenSaver ] };
-		key <I162> {	[ XF86RotateWindows ] };
-		key <I163> {	[        XF86Mail ] };
-		key <I164> {	[   XF86Favorites ] };
-		key <I165> {	[  XF86MyComputer ] };
-		key <I166> {	[        XF86Back ] };
-		key <I167> {	[     XF86Forward ] };
-		key <I169> {	[       XF86Eject ] };
-		key <I170> {	[       XF86Eject,       XF86Eject ] };
-		key <I171> {	[   XF86AudioNext ] };
-		key <I172> {	[   XF86AudioPlay,  XF86AudioPause ] };
-		key <I173> {	[   XF86AudioPrev ] };
-		key <I174> {	[   XF86AudioStop,       XF86Eject ] };
-		key <I175> {	[ XF86AudioRecord ] };
-		key <I176> {	[ XF86AudioRewind ] };
-		key <I177> {	[       XF86Phone ] };
-		key <I179> {	[       XF86Tools ] };
-		key <I180> {	[    XF86HomePage ] };
-		key <I181> {	[      XF86Reload ] };
-		key <I182> {	[       XF86Close ] };
-		key <I185> {	[    XF86ScrollUp ] };
-		key <I186> {	[  XF86ScrollDown ] };
-		key <I187> {	[       parenleft ] };
-		key <I188> {	[      parenright ] };
-		key <I189> {	[         XF86New ] };
-		key <I190> {	[            Redo ] };
-		key <FK13> {	[       XF86Tools ] };
-		key <FK14> {	[     XF86Launch5 ] };
-		key <FK15> {	[     XF86Launch6 ] };
-		key <FK16> {	[     XF86Launch7 ] };
-		key <FK17> {	[     XF86Launch8 ] };
-		key <FK18> {	[     XF86Launch9 ] };
-		key <FK21> {	[ XF86TouchpadToggle ] };
-		key <FK22> {	[  XF86TouchpadOn ] };
-		key <FK23> {	[ XF86TouchpadOff ] };
-		key <MDSW> {	[     Mode_switch ] };
-		key  <ALT> {	[        NoSymbol,           Alt_L ] };
-		key <META> {	[        NoSymbol,          Meta_L ] };
-		key <SUPR> {	[        NoSymbol,         Super_L ] };
-		key <HYPR> {	[        NoSymbol,         Hyper_L ] };
-		key <I208> {	[   XF86AudioPlay ] };
-		key <I209> {	[  XF86AudioPause ] };
-		key <I210> {	[     XF86Launch3 ] };
-		key <I211> {	[     XF86Launch4 ] };
-		key <I212> {	[     XF86LaunchB ] };
-		key <I213> {	[     XF86Suspend ] };
-		key <I214> {	[       XF86Close ] };
-		key <I215> {	[   XF86AudioPlay ] };
-		key <I216> {	[ XF86AudioForward ] };
-		key <I218> {	[           Print ] };
-		key <I220> {	[      XF86WebCam ] };
-		key <I223> {	[        XF86Mail ] };
-		key <I224> {	[   XF86Messenger ] };
-		key <I225> {	[      XF86Search ] };
-		key <I226> {	[          XF86Go ] };
-		key <I227> {	[     XF86Finance ] };
-		key <I228> {	[        XF86Game ] };
-		key <I229> {	[        XF86Shop ] };
-		key <I231> {	[          Cancel ] };
-		key <I232> {	[ XF86MonBrightnessDown ] };
-		key <I233> {	[ XF86MonBrightnessUp ] };
-		key <I234> {	[  XF86AudioMedia ] };
-		key <I235> {	[     XF86Display ] };
-		key <I236> {	[ XF86KbdLightOnOff ] };
-		key <I237> {	[ XF86KbdBrightnessDown ] };
-		key <I238> {	[ XF86KbdBrightnessUp ] };
-		key <I239> {	[        XF86Send ] };
-		key <I240> {	[       XF86Reply ] };
-		key <I241> {	[ XF86MailForward ] };
-		key <I242> {	[        XF86Save ] };
-		key <I243> {	[   XF86Documents ] };
-		key <I244> {	[     XF86Battery ] };
-		key <I245> {	[   XF86Bluetooth ] };
-		key <I246> {	[        XF86WLAN ] };
+		key <I128>               {	[     XF86LaunchA ] };
+		key <I129>               {	[      KP_Decimal,      KP_Decimal ] };
+		key <HNGL>               {	[          Hangul ] };
+		key <HJCV>               {	[    Hangul_Hanja ] };
+		key <LWIN>               {	[         Super_L ] };
+		key <RWIN>               {	[         Super_R ] };
+		key <COMP>               {	[            Menu ] };
+		key <STOP>               {	[          Cancel ] };
+		key <AGAI>               {	[            Redo ] };
+		key <PROP>               {	[        SunProps ] };
+		key <UNDO>               {	[            Undo ] };
+		key <FRNT>               {	[        SunFront ] };
+		key <COPY>               {	[        XF86Copy ] };
+		key <OPEN>               {	[         SunOpen ] };
+		key <PAST>               {	[       XF86Paste ] };
+		key <FIND>               {	[            Find ] };
+		key <CUT>                {	[         XF86Cut ] };
+		key <HELP>               {	[            Help ] };
+		key <I147>               {	[      XF86MenuKB ] };
+		key <I148>               {	[  XF86Calculator ] };
+		key <I150>               {	[       XF86Sleep ] };
+		key <I151>               {	[      XF86WakeUp ] };
+		key <I152>               {	[    XF86Explorer ] };
+		key <I153>               {	[        XF86Send ] };
+		key <I155>               {	[        XF86Xfer ] };
+		key <I156>               {	[     XF86Launch1 ] };
+		key <I157>               {	[     XF86Launch2 ] };
+		key <I158>               {	[         XF86WWW ] };
+		key <I159>               {	[         XF86DOS ] };
+		key <I160>               {	[ XF86ScreenSaver ] };
+		key <I162>               {	[ XF86RotateWindows ] };
+		key <I163>               {	[        XF86Mail ] };
+		key <I164>               {	[   XF86Favorites ] };
+		key <I165>               {	[  XF86MyComputer ] };
+		key <I166>               {	[        XF86Back ] };
+		key <I167>               {	[     XF86Forward ] };
+		key <I169>               {	[       XF86Eject ] };
+		key <I170>               {	[       XF86Eject,       XF86Eject ] };
+		key <I171>               {	[   XF86AudioNext ] };
+		key <I172>               {	[   XF86AudioPlay,  XF86AudioPause ] };
+		key <I173>               {	[   XF86AudioPrev ] };
+		key <I174>               {	[   XF86AudioStop,       XF86Eject ] };
+		key <I175>               {	[ XF86AudioRecord ] };
+		key <I176>               {	[ XF86AudioRewind ] };
+		key <I177>               {	[       XF86Phone ] };
+		key <I179>               {	[       XF86Tools ] };
+		key <I180>               {	[    XF86HomePage ] };
+		key <I181>               {	[      XF86Reload ] };
+		key <I182>               {	[       XF86Close ] };
+		key <I185>               {	[    XF86ScrollUp ] };
+		key <I186>               {	[  XF86ScrollDown ] };
+		key <I187>               {	[       parenleft ] };
+		key <I188>               {	[      parenright ] };
+		key <I189>               {	[         XF86New ] };
+		key <I190>               {	[            Redo ] };
+		key <FK13>               {	[       XF86Tools ] };
+		key <FK14>               {	[     XF86Launch5 ] };
+		key <FK15>               {	[     XF86Launch6 ] };
+		key <FK16>               {	[     XF86Launch7 ] };
+		key <FK17>               {	[     XF86Launch8 ] };
+		key <FK18>               {	[     XF86Launch9 ] };
+		key <FK21>               {	[ XF86TouchpadToggle ] };
+		key <FK22>               {	[  XF86TouchpadOn ] };
+		key <FK23>               {	[ XF86TouchpadOff ] };
+		key <MDSW>               {	[     Mode_switch ] };
+		key <ALT>                {	[        NoSymbol,           Alt_L ] };
+		key <META>               {	[        NoSymbol,          Meta_L ] };
+		key <SUPR>               {	[        NoSymbol,         Super_L ] };
+		key <HYPR>               {	[        NoSymbol,         Hyper_L ] };
+		key <I208>               {	[   XF86AudioPlay ] };
+		key <I209>               {	[  XF86AudioPause ] };
+		key <I210>               {	[     XF86Launch3 ] };
+		key <I211>               {	[     XF86Launch4 ] };
+		key <I212>               {	[     XF86LaunchB ] };
+		key <I213>               {	[     XF86Suspend ] };
+		key <I214>               {	[       XF86Close ] };
+		key <I215>               {	[   XF86AudioPlay ] };
+		key <I216>               {	[ XF86AudioForward ] };
+		key <I218>               {	[           Print ] };
+		key <I220>               {	[      XF86WebCam ] };
+		key <I223>               {	[        XF86Mail ] };
+		key <I224>               {	[   XF86Messenger ] };
+		key <I225>               {	[      XF86Search ] };
+		key <I226>               {	[          XF86Go ] };
+		key <I227>               {	[     XF86Finance ] };
+		key <I228>               {	[        XF86Game ] };
+		key <I229>               {	[        XF86Shop ] };
+		key <I231>               {	[          Cancel ] };
+		key <I232>               {	[ XF86MonBrightnessDown ] };
+		key <I233>               {	[ XF86MonBrightnessUp ] };
+		key <I234>               {	[  XF86AudioMedia ] };
+		key <I235>               {	[     XF86Display ] };
+		key <I236>               {	[ XF86KbdLightOnOff ] };
+		key <I237>               {	[ XF86KbdBrightnessDown ] };
+		key <I238>               {	[ XF86KbdBrightnessUp ] };
+		key <I239>               {	[        XF86Send ] };
+		key <I240>               {	[       XF86Reply ] };
+		key <I241>               {	[ XF86MailForward ] };
+		key <I242>               {	[        XF86Save ] };
+		key <I243>               {	[   XF86Documents ] };
+		key <I244>               {	[     XF86Battery ] };
+		key <I245>               {	[   XF86Bluetooth ] };
+		key <I246>               {	[        XF86WLAN ] };
 		modifier_map Control { <LCTL> };
 		modifier_map Shift { <LFSH> };
 		modifier_map Shift { <RTSH> };
