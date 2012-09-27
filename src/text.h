@@ -69,7 +69,7 @@ const char *
 KeysymText(xkb_keysym_t sym);
 
 const char *
-KeyNameText(const char name[XKB_KEY_NAME_LENGTH]);
+KeyNameText(struct xkb_context *ctx, xkb_atom_t name);
 
 const char *
 SIMatchText(unsigned type);

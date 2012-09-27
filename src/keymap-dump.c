@@ -235,11 +235,11 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
         write_buf(buf, "\txkb_keycodes {\n");
 
     xkb_foreach_key(key, keymap) {
-        if (key->name[0] == '\0')
+        if (key->name == XKB_ATOM_NONE)
             continue;
 
         write_buf(buf, "\t\t%6s = %d;\n",
-                  KeyNameText(key->name), key->keycode);
+                  KeyNameText(keymap->ctx, key->name), key->keycode);
     }
 
     for (i = 0; i < XKB_NUM_INDICATORS; i++) {
@@ -251,9 +251,9 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
 
 
     darray_foreach(alias, keymap->key_aliases)
-        write_buf(buf, "\t\talias %6s = %6s;\n",
-                  KeyNameText(alias->alias),
-                  KeyNameText(alias->real));
+        write_buf(buf, "\t\talias %6s = %s;\n",
+                  KeyNameText(keymap->ctx, alias->alias),
+                  KeyNameText(keymap->ctx, alias->real));
 
     write_buf(buf, "\t};\n\n");
     return true;
@@ -628,7 +628,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
         if (key->num_groups == 0)
             continue;
 
-        write_buf(buf, "\t\tkey %6s {", KeyNameText(key->name));
+        write_buf(buf, "\t\tkey %6s {", KeyNameText(keymap->ctx, key->name));
 
         for (group = 0; group < key->num_groups; group++) {
             if (key->groups[group].explicit_type)
@@ -738,7 +738,8 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
                 continue;
 
             write_buf(buf, "\t\tmodifier_map %s { %s };\n",
-                      ModIndexToName(mod), KeyNameText(key->name));
+                      ModIndexToName(mod),
+                      KeyNameText(keymap->ctx, key->name));
         }
     }
 

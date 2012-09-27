@@ -27,39 +27,11 @@
 #ifndef XKBCOMP_KEYCODES_H
 #define XKBCOMP_KEYCODES_H
 
-static inline unsigned long
-KeyNameToLong(const char name[XKB_KEY_NAME_LENGTH])
-{
-    return
-        (((unsigned long)name[0]) << 24) |
-        (((unsigned long)name[1]) << 16) |
-        (((unsigned long)name[2]) << 8)  |
-        (((unsigned long)name[3]) << 0);
-}
-
-static inline void
-LongToKeyName(unsigned long val, char name[XKB_KEY_NAME_LENGTH])
-{
-    name[0] = ((val >> 24) & 0xff);
-    name[1] = ((val >> 16) & 0xff);
-    name[2] = ((val >> 8) & 0xff);
-    name[3] = ((val >> 0) & 0xff);
-}
-
-static inline const char *
-LongKeyNameText(unsigned long val)
-{
-    char buf[XKB_KEY_NAME_LENGTH];
-    LongToKeyName(val, buf);
-    return KeyNameText(buf);
-}
-
 struct xkb_key *
-FindNamedKey(struct xkb_keymap *keymap, unsigned long name,
-             bool use_aliases);
+FindNamedKey(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases);
 
 bool
-FindKeyNameForAlias(struct xkb_keymap *keymap, unsigned long lname,
-                    unsigned long *real_name);
+FindKeyNameForAlias(struct xkb_keymap *keymap, xkb_atom_t name,
+                    xkb_atom_t *real_name);
 
 #endif

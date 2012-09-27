@@ -189,7 +189,7 @@ typedef struct _Expr {
         xkb_atom_t str;
         unsigned uval;
         int ival;
-        char keyName[XKB_KEY_NAME_LENGTH];
+        xkb_atom_t keyName;
     } value;
 } ExprDef;
 
@@ -210,15 +210,15 @@ typedef struct _VModDef {
 typedef struct _KeycodeDef {
     ParseCommon common;
     enum merge_mode merge;
-    char name[XKB_KEY_NAME_LENGTH];
+    xkb_atom_t name;
     unsigned long value;
 } KeycodeDef;
 
 typedef struct _KeyAliasDef {
     ParseCommon common;
     enum merge_mode merge;
-    char alias[XKB_KEY_NAME_LENGTH];
-    char real[XKB_KEY_NAME_LENGTH];
+    xkb_atom_t alias;
+    xkb_atom_t real;
 } KeyAliasDef;
 
 typedef struct _KeyTypeDef {
@@ -231,7 +231,7 @@ typedef struct _KeyTypeDef {
 typedef struct _SymbolsDef {
     ParseCommon common;
     enum merge_mode merge;
-    char keyName[XKB_KEY_NAME_LENGTH];
+    xkb_atom_t keyName;
     ExprDef *symbols;
 } SymbolsDef;
 

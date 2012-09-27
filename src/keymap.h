@@ -88,8 +88,6 @@
 #include "utils.h"
 #include "context.h"
 
-#define XKB_KEY_NAME_LENGTH 4
-
 /* This limit is artificially enforced, we do not depend on it any where.
  * The reason it's still here is that the rules file format does not
  * support multiple groups very well, and the rules shipped with
@@ -287,8 +285,8 @@ struct xkb_indicator_map {
 };
 
 struct xkb_key_alias {
-    char real[XKB_KEY_NAME_LENGTH];
-    char alias[XKB_KEY_NAME_LENGTH];
+    xkb_atom_t real;
+    xkb_atom_t alias;
 };
 
 struct xkb_controls {
@@ -339,7 +337,7 @@ struct xkb_group {
 
 struct xkb_key {
     xkb_keycode_t keycode;
-    char name[XKB_KEY_NAME_LENGTH];
+    xkb_atom_t name;
 
     enum xkb_explicit_components explicit;
 

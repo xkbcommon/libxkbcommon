@@ -428,19 +428,12 @@ KeysymText(xkb_keysym_t sym)
 }
 
 const char *
-KeyNameText(const char name[XKB_KEY_NAME_LENGTH])
+KeyNameText(struct xkb_context *ctx, xkb_atom_t name)
 {
-    char *buf;
-    int len;
-
-    buf = GetBuffer(7);
-    buf[0] = '<';
-    strncpy(&buf[1], name, 4);
-    buf[5] = '\0';
-    len = strlen(buf);
-    buf[len++] = '>';
-    buf[len] = '\0';
-
+    const char *sname = xkb_atom_text(ctx, name);
+    size_t len = strlen(sname) + 3;
+    char *buf = GetBuffer(len);
+    snprintf(buf, len, "<%s>", sname);
     return buf;
 }
 

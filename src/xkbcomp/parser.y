@@ -123,7 +123,6 @@ _xkbcommon_error(struct YYLTYPE *loc, struct parser_param *param, const char *ms
         int64_t          num;
         enum xkb_file_type file_type;
         char            *str;
-        char            keyName[XKB_KEY_NAME_LENGTH];
         xkb_atom_t      sval;
         enum merge_mode merge;
         enum xkb_map_flags mapFlags;
@@ -146,7 +145,7 @@ _xkbcommon_error(struct YYLTYPE *loc, struct parser_param *param, const char *ms
 
 %type <num>     INTEGER FLOAT
 %type <str>     IDENT STRING
-%type <keyName> KEYNAME KeyName
+%type <sval>    KEYNAME
 %type <ival>    Number Integer Float SignedNumber
 %type <merge>   MergeMode OptMergeMode
 %type <file_type> XkbCompositeType FileType
@@ -344,11 +343,11 @@ VarDecl         :       Lhs EQUALS Expr SEMI
                         { $$ = BoolVarCreate($2, 0); }
                 ;
 
-KeyNameDecl     :       KeyName EQUALS KeyCode SEMI
+KeyNameDecl     :       KEYNAME EQUALS KeyCode SEMI
                         { $$ = KeycodeCreate($1, $3); }
                 ;
 
-KeyAliasDecl    :       ALIAS KeyName EQUALS KeyName SEMI
+KeyAliasDecl    :       ALIAS KEYNAME EQUALS KEYNAME SEMI
                         { $$ = KeyAliasCreate($2, $4); }
                 ;
 
@@ -392,7 +391,7 @@ KeyTypeDecl     :       TYPE String OBRACE
                         { $$ = KeyTypeCreate($2, $4); }
                 ;
 
-SymbolsDecl     :       KEY KeyName OBRACE
+SymbolsDecl     :       KEY KEYNAME OBRACE
                             SymbolsBody
                         CBRACE SEMI
                         { $$ = SymbolsCreate($2, (ExprDef *)$4); }
@@ -475,7 +474,7 @@ Keys            :       Keys COMMA Key          { $$ = NULL; }
                 |       Key                     { $$ = NULL; }
                 ;
 
-Key             :       KeyName
+Key             :       KEYNAME
                         { $$ = NULL; }
                 |       OBRACE ExprList CBRACE
                         { FreeStmt(&$2->common); $$ = NULL; }
@@ -489,7 +488,7 @@ OverlayKeyList  :       OverlayKeyList COMMA OverlayKey { $$ = NULL; }
                 |       OverlayKey                      { $$ = NULL; }
                 ;
 
-OverlayKey      :       KeyName EQUALS KeyName          { $$ = NULL; }
+OverlayKey      :       KEYNAME EQUALS KEYNAME          { $$ = NULL; }
                 ;
 
 OutlineList     :       OutlineList COMMA OutlineInList
@@ -677,11 +676,11 @@ Terminal        :       String
                         {
                             $$ = NULL;
                         }
-                |       KeyName
+                |       KEYNAME
                         {
                             ExprDef *expr;
                             expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_KEYNAME);
-                            strncpy(expr->value.keyName, $1, XKB_KEY_NAME_LENGTH);
+                            expr->value.keyName = $1;
                             $$ = expr;
                         }
                 ;
@@ -735,9 +734,6 @@ Integer         :       INTEGER { $$ = $1; }
                 ;
 
 KeyCode         :       INTEGER { $$ = $1; }
-                ;
-
-KeyName         :       KEYNAME { strncpy($$, $1, XKB_KEY_NAME_LENGTH); }
                 ;
 
 Ident           :       IDENT   { $$ = xkb_atom_steal(param->ctx, $1); }

@@ -37,8 +37,7 @@
  * This is the simplest section type, and is the first one to be
  * compiled. The purpose of this is mostly to map between the
  * hardware/evdev scancodes and xkb keycodes. Each key is given a name
- * of up to 4 letters, by which it can be referred to later, e.g. in the
- * symbols section.
+ * by which it can be referred to later, e.g. in the symbols section.
  *
  * Keycode statements
  * ------------------
@@ -66,10 +65,6 @@
  * If there's a conflict, like the same name given to different keycodes,
  * or same keycode given different names, it is resolved according to the
  * merge mode which applies to the definitions.
- *
- * The reason for the 4 characters limit is that the name is sometimes
- * converted to an unsigned long (in a direct mapping), instead of a char
- * array (see KeyNameToLong, LongToKeyName).
  *
  * Alias statements
  * ----------------
@@ -112,13 +107,13 @@ typedef struct _AliasInfo {
     enum merge_mode merge;
     unsigned file_id;
 
-    unsigned long alias;
-    unsigned long real;
+    xkb_atom_t alias;
+    xkb_atom_t real;
 } AliasInfo;
 
 typedef struct {
     unsigned int file_id;
-    unsigned long name;
+    xkb_atom_t name;
 } KeyNameInfo;
 
 typedef struct _IndicatorNameInfo {
@@ -145,13 +140,13 @@ typedef struct _KeyNamesInfo {
 
 static void
 InitAliasInfo(AliasInfo *info, enum merge_mode merge, unsigned file_id,
-              char alias[XKB_KEY_NAME_LENGTH], char real[XKB_KEY_NAME_LENGTH])
+              xkb_atom_t alias, xkb_atom_t real)
 {
     memset(info, 0, sizeof(*info));
     info->merge = merge;
     info->file_id = file_id;
-    info->alias = KeyNameToLong(alias);
-    info->real = KeyNameToLong(real);
+    info->alias = alias;
+    info->real = real;
 }
 
 static IndicatorNameInfo *
@@ -262,7 +257,7 @@ InitKeyNamesInfo(KeyNamesInfo *info, struct xkb_context *ctx,
 }
 
 static xkb_keycode_t
-FindKeyByLong(KeyNamesInfo * info, unsigned long name)
+FindKeyByName(KeyNamesInfo * info, xkb_atom_t name)
 {
     xkb_keycode_t i;
 
@@ -274,7 +269,7 @@ FindKeyByLong(KeyNamesInfo * info, unsigned long name)
 }
 
 static bool
-AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, unsigned long name,
+AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
            enum merge_mode merge, unsigned file_id, bool report)
 {
     KeyNameInfo *namei;
@@ -293,8 +288,8 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, unsigned long name,
                         verbosity > 7);
 
     if (namei->name != 0) {
-        const char *lname = LongKeyNameText(namei->name);
-        const char *kname = LongKeyNameText(name);
+        const char *lname = KeyNameText(info->ctx, namei->name);
+        const char *kname = KeyNameText(info->ctx, name);
 
         if (namei->name == name) {
             if (report)
@@ -321,9 +316,9 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, unsigned long name,
         }
     }
 
-    old = FindKeyByLong(info, name);
+    old = FindKeyByName(info, name);
     if (old != XKB_KEYCODE_INVALID && old != kc) {
-        const char *kname = LongKeyNameText(name);
+        const char *kname = KeyNameText(info->ctx, name);
 
         if (merge == MERGE_OVERRIDE) {
             darray_item(info->key_names, old).name = 0;
@@ -372,8 +367,8 @@ MergeAliases(KeyNamesInfo *into, KeyNamesInfo *from, enum merge_mode merge)
 
     darray_foreach(alias, from->aliases) {
         def.merge = (merge == MERGE_DEFAULT) ? alias->merge : merge;
-        LongToKeyName(alias->alias, def.alias);
-        LongToKeyName(alias->real, def.real);
+        def.alias = alias->alias;
+        def.real = alias->real;
 
         if (!HandleAliasDef(into, &def, def.merge, alias->file_id))
             return false;
@@ -403,8 +398,8 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
         darray_resize0(into->key_names, darray_size(from->key_names));
 
     for (i = from->min_key_code; i <= from->max_key_code; i++) {
-        unsigned long name = darray_item(from->key_names, i).name;
-        if (name == 0)
+        xkb_atom_t name = darray_item(from->key_names, i).name;
+        if (name == XKB_ATOM_NONE)
             continue;
 
         if (!AddKeyName(into, i, name, merge, from->file_id, false))
@@ -476,7 +471,7 @@ HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt, enum merge_mode merge)
             merge = stmt->merge;
     }
 
-    return AddKeyName(info, stmt->value, KeyNameToLong(stmt->name), merge,
+    return AddKeyName(info, stmt->value, stmt->name, merge,
                       info->file_id, true);
 }
 
@@ -491,10 +486,11 @@ HandleAliasCollision(KeyNamesInfo *info, AliasInfo *old, AliasInfo *new)
         if (report)
             log_warn(info->ctx, "Alias of %s for %s declared more than once; "
                      "First definition ignored\n",
-                     LongKeyNameText(new->alias), LongKeyNameText(new->real));
+                     KeyNameText(info->ctx, new->alias),
+                     KeyNameText(info->ctx, new->real));
     }
     else {
-        unsigned long use, ignore;
+        xkb_atom_t use, ignore;
 
         use = (new->merge == MERGE_AUGMENT ? old->real : new->real);
         ignore = (new->merge == MERGE_AUGMENT ? new->real : old->real);
@@ -502,8 +498,9 @@ HandleAliasCollision(KeyNamesInfo *info, AliasInfo *old, AliasInfo *new)
         if (report)
             log_warn(info->ctx, "Multiple definitions for alias %s; "
                      "Using %s, ignoring %s\n",
-                     LongKeyNameText(old->alias), LongKeyNameText(use),
-                     LongKeyNameText(ignore));
+                     KeyNameText(info->ctx, old->alias),
+                     KeyNameText(info->ctx, use),
+                     KeyNameText(info->ctx, ignore));
 
         old->real = use;
     }
@@ -519,7 +516,7 @@ HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge,
     AliasInfo *alias, new;
 
     darray_foreach(alias, info->aliases) {
-        if (alias->alias == KeyNameToLong(def->alias)) {
+        if (alias->alias == def->alias) {
             InitAliasInfo(&new, merge, file_id, def->alias, def->real);
             HandleAliasCollision(info, alias, &new);
             return true;
@@ -645,8 +642,8 @@ ApplyAliases(KeyNamesInfo *info, struct xkb_keymap *keymap)
         if (!key) {
             log_vrb(info->ctx, 5,
                     "Attempt to alias %s to non-existent key %s; Ignored\n",
-                    LongKeyNameText(alias->alias),
-                    LongKeyNameText(alias->real));
+                    KeyNameText(info->ctx, alias->alias),
+                    KeyNameText(info->ctx, alias->real));
             continue;
         }
 
@@ -656,8 +653,8 @@ ApplyAliases(KeyNamesInfo *info, struct xkb_keymap *keymap)
             log_vrb(info->ctx, 5,
                     "Attempt to create alias with the name of a real key; "
                     "Alias \"%s = %s\" ignored\n",
-                    LongKeyNameText(alias->alias),
-                    LongKeyNameText(alias->real));
+                    KeyNameText(info->ctx, alias->alias),
+                    KeyNameText(info->ctx, alias->real));
             continue;
         }
 
@@ -665,21 +662,21 @@ ApplyAliases(KeyNamesInfo *info, struct xkb_keymap *keymap)
         darray_foreach(a, keymap->key_aliases) {
             AliasInfo old_alias;
 
-            if (KeyNameToLong(a->alias) != alias->alias)
+            if (a->alias != alias->alias)
                 continue;
 
             InitAliasInfo(&old_alias, MERGE_AUGMENT, 0, a->alias, a->real);
             HandleAliasCollision(info, &old_alias, alias);
-            LongToKeyName(old_alias.alias, a->alias);
-            LongToKeyName(old_alias.real, a->real);
+            a->alias = old_alias.alias;
+            a->real = old_alias.real;
             alias->alias = 0;
         }
         if (alias->alias == 0)
             continue;
 
         /* Add the alias. */
-        LongToKeyName(alias->alias, new.alias);
-        LongToKeyName(alias->real, new.real);
+        new.alias = alias->alias;
+        new.real = alias->real;
         darray_append(keymap->key_aliases, new);
     }
 
@@ -699,8 +696,7 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
     for (kc = info->min_key_code; kc <= info->max_key_code; kc++) {
         struct xkb_key *key = &darray_item(keymap->keys, kc);
         key->keycode = kc;
-        LongToKeyName(darray_item(info->key_names, kc).name,
-                      key->name);
+        key->name = darray_item(info->key_names, kc).name;
     }
 
     keymap->keycodes_section_name = strdup_safe(info->name);
@@ -742,16 +738,16 @@ err_info:
 }
 
 struct xkb_key *
-FindNamedKey(struct xkb_keymap *keymap, unsigned long name, bool use_aliases)
+FindNamedKey(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases)
 {
     struct xkb_key *key;
 
     xkb_foreach_key(key, keymap)
-        if (KeyNameToLong(key->name) == name)
+        if (key->name == name)
             return key;
 
     if (use_aliases) {
-        unsigned long new_name;
+        xkb_atom_t new_name;
         if (FindKeyNameForAlias(keymap, name, &new_name))
             return FindNamedKey(keymap, new_name, false);
     }
@@ -760,16 +756,14 @@ FindNamedKey(struct xkb_keymap *keymap, unsigned long name, bool use_aliases)
 }
 
 bool
-FindKeyNameForAlias(struct xkb_keymap *keymap, unsigned long lname,
-                    unsigned long *real_name)
+FindKeyNameForAlias(struct xkb_keymap *keymap, xkb_atom_t name,
+                    xkb_atom_t *real_name)
 {
-    char name[XKB_KEY_NAME_LENGTH];
     struct xkb_key_alias *a;
 
-    LongToKeyName(lname, name);
     darray_foreach(a, keymap->key_aliases) {
-        if (strncmp(name, a->alias, XKB_KEY_NAME_LENGTH) == 0) {
-            *real_name = KeyNameToLong(a->real);
+        if (name == a->alias) {
+            *real_name = a->real;
             return true;
         }
     }

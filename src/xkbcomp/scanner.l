@@ -62,7 +62,7 @@ scanner_error_extra(struct YYLTYPE *loc, struct scanner_extra *extra,
 %option never-interactive
 %option case-insensitive
 
-%x S_STR S_KEY
+%x S_STR
 
 %%
 
@@ -70,7 +70,6 @@ scanner_error_extra(struct YYLTYPE *loc, struct scanner_extra *extra,
 "#"[^\n]*
 
 \"                      yyextra->s = yyextra->scanBuf; BEGIN(S_STR);
-\<                      yyextra->s = yyextra->scanBuf; BEGIN(S_KEY);
 
 <S_STR>\" {
                         BEGIN(INITIAL);
@@ -78,21 +77,8 @@ scanner_error_extra(struct YYLTYPE *loc, struct scanner_extra *extra,
                         yylval->str = strdup(yyextra->scanBuf);
                         return STRING;
                     }
-<S_KEY>\> {
-                        BEGIN(INITIAL);
 
-                        *yyextra->s = '\0';
-                        if (yyextra->s - yyextra->scanBuf > XKB_KEY_NAME_LENGTH) {
-                            scanner_error_extra(yylloc, yyextra,
-                                                "Key name too long");
-                            return ERROR_TOK;
-                        }
-
-                        strncpy(yylval->keyName, yyextra->scanBuf, XKB_KEY_NAME_LENGTH);
-                        return KEYNAME;
-                    }
-
-<S_STR,S_KEY>\\[0-7]{1,3} {
+<S_STR>\\[0-7]{1,3} {
                         /* octal escape sequence */
                         unsigned int result;
 
@@ -107,21 +93,29 @@ scanner_error_extra(struct YYLTYPE *loc, struct scanner_extra *extra,
                         APPEND_S(result);
                     }
 
-<S_STR,S_KEY>\\[0-9]+ {
+<S_STR>\\[0-9]+ {
                         scanner_error_extra(yylloc, yyextra,
                                             "Illegal octal escape");
                         return ERROR_TOK;
                     }
 
-<S_STR,S_KEY>\\n        APPEND_S('\n');
-<S_STR,S_KEY>\\t        APPEND_S('\t');
-<S_STR,S_KEY>\\r        APPEND_S('\r');
-<S_STR,S_KEY>\\b        APPEND_S('\b');
-<S_STR,S_KEY>\\f        APPEND_S('\f');
-<S_STR,S_KEY>\\v        APPEND_S('\v');
-<S_STR,S_KEY>\\e        APPEND_S('\033');
+<S_STR>\\n              APPEND_S('\n');
+<S_STR>\\t              APPEND_S('\t');
+<S_STR>\\r              APPEND_S('\r');
+<S_STR>\\b              APPEND_S('\b');
+<S_STR>\\f              APPEND_S('\f');
+<S_STR>\\v              APPEND_S('\v');
+<S_STR>\\e              APPEND_S('\033');
 
-<S_STR,S_KEY>.          APPEND_S(yytext[0]);
+<S_STR>.                APPEND_S(yytext[0]);
+
+\<[a-zA-Z0-9_+-]+\> {
+                        /* We don't want the brackets. */
+                        yytext[yyleng - 1] = '\0';
+                        yytext++;
+                        yylval->sval = xkb_atom_intern(yyextra->ctx, yytext);
+                        return KEYNAME;
+                    }
 
 xkb_keymap              return XKB_KEYMAP;
 xkb_keycodes            return XKB_KEYCODES;

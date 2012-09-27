@@ -137,7 +137,7 @@ ExprCreateBinary(enum expr_op_type op, ExprDef *left, ExprDef *right)
 }
 
 KeycodeDef *
-KeycodeCreate(char keyName[XKB_KEY_NAME_LENGTH], unsigned long value)
+KeycodeCreate(xkb_atom_t name, unsigned long value)
 {
     KeycodeDef *def;
 
@@ -145,13 +145,13 @@ KeycodeCreate(char keyName[XKB_KEY_NAME_LENGTH], unsigned long value)
 
     def->common.type = STMT_KEYCODE;
     def->common.next = NULL;
-    strncpy(def->name, keyName, XKB_KEY_NAME_LENGTH);
+    def->name = name;
     def->value = value;
     return def;
 }
 
 KeyAliasDef *
-KeyAliasCreate(char alias[XKB_KEY_NAME_LENGTH], char real[XKB_KEY_NAME_LENGTH])
+KeyAliasCreate(xkb_atom_t alias, xkb_atom_t real)
 {
     KeyAliasDef *def;
 
@@ -159,8 +159,8 @@ KeyAliasCreate(char alias[XKB_KEY_NAME_LENGTH], char real[XKB_KEY_NAME_LENGTH])
 
     def->common.type = STMT_ALIAS;
     def->common.next = NULL;
-    strncpy(def->alias, alias, XKB_KEY_NAME_LENGTH);
-    strncpy(def->real, real, XKB_KEY_NAME_LENGTH);
+    def->alias = alias;
+    def->real = real;
     return def;
 }
 
@@ -233,7 +233,7 @@ KeyTypeCreate(xkb_atom_t name, VarDef * body)
 }
 
 SymbolsDef *
-SymbolsCreate(char keyName[XKB_KEY_NAME_LENGTH], ExprDef *symbols)
+SymbolsCreate(xkb_atom_t keyName, ExprDef *symbols)
 {
     SymbolsDef *def;
 
@@ -242,7 +242,7 @@ SymbolsCreate(char keyName[XKB_KEY_NAME_LENGTH], ExprDef *symbols)
     def->common.type = STMT_SYMBOLS;
     def->common.next = NULL;
     def->merge = MERGE_DEFAULT;
-    strncpy(def->keyName, keyName, XKB_KEY_NAME_LENGTH);
+    def->keyName = keyName;
     def->symbols = symbols;
     return def;
 }
