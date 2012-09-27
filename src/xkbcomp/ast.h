@@ -211,7 +211,7 @@ typedef struct _KeycodeDef {
     ParseCommon common;
     enum merge_mode merge;
     xkb_atom_t name;
-    unsigned long value;
+    int64_t value;
 } KeycodeDef;
 
 typedef struct _KeyAliasDef {

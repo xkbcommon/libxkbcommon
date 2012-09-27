@@ -137,7 +137,7 @@ ExprCreateBinary(enum expr_op_type op, ExprDef *left, ExprDef *right)
 }
 
 KeycodeDef *
-KeycodeCreate(xkb_atom_t name, unsigned long value)
+KeycodeCreate(xkb_atom_t name, int64_t value)
 {
     KeycodeDef *def;
 

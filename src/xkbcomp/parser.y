@@ -146,11 +146,12 @@ _xkbcommon_error(struct YYLTYPE *loc, struct parser_param *param, const char *ms
 %type <num>     INTEGER FLOAT
 %type <str>     IDENT STRING
 %type <sval>    KEYNAME
+%type <num>     KeyCode
 %type <ival>    Number Integer Float SignedNumber
 %type <merge>   MergeMode OptMergeMode
 %type <file_type> XkbCompositeType FileType
 %type <uval>    DoodadType
-%type <mapFlags> Flag Flags OptFlags KeyCode
+%type <mapFlags> Flag Flags OptFlags
 %type <str>     MapName OptMapName KeySym
 %type <sval>    FieldSpec Ident Element String
 %type <any>     DeclList Decl
