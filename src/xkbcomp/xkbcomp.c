@@ -124,7 +124,6 @@ xkb_keymap_new_from_string(struct xkb_context *ctx,
                            enum xkb_keymap_format format,
                            enum xkb_keymap_compile_flags flags)
 {
-    bool ok;
     XkbFile *file;
     struct xkb_keymap *keymap;
 
@@ -138,8 +137,8 @@ xkb_keymap_new_from_string(struct xkb_context *ctx,
         return NULL;
     }
 
-    ok = XkbParseString(ctx, string, "input", &file);
-    if (!ok) {
+    file = XkbParseString(ctx, string, "input");
+    if (!file) {
         log_err(ctx, "Failed to parse input xkb file\n");
         return NULL;
     }
@@ -155,7 +154,6 @@ xkb_keymap_new_from_file(struct xkb_context *ctx,
                          enum xkb_keymap_format format,
                          enum xkb_keymap_compile_flags flags)
 {
-    bool ok;
     XkbFile *xkb_file;
     struct xkb_keymap *keymap;
 
@@ -169,8 +167,8 @@ xkb_keymap_new_from_file(struct xkb_context *ctx,
         return NULL;
     }
 
-    ok = XkbParseFile(ctx, file, "(unknown file)", &xkb_file);
-    if (!ok) {
+    xkb_file = XkbParseFile(ctx, file, "(unknown file)");
+    if (!xkb_file) {
         log_err(ctx, "Failed to parse input xkb file\n");
         return NULL;
     }

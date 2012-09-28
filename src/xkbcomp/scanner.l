@@ -245,76 +245,86 @@ CheckDefaultMap(struct xkb_context *ctx, XkbFile *maps, const char *fileName)
     }
 }
 
-bool
-XkbParseString(struct xkb_context *ctx, const char *string,
-               const char *file_name, XkbFile **out)
+static XkbFile *
+parse(struct xkb_context *ctx, yyscan_t scanner)
 {
-    int ret;
     struct parser_param param;
-    struct scanner_extra extra;
-    YY_BUFFER_STATE state;
 
-    if (string == NULL)
-        return false;
-
+    param.scanner = scanner;
     param.ctx = ctx;
 
-    memset(&extra, 0, sizeof(extra));
-    ret = yylex_init_extra(&extra, &param.scanner);
-    if (ret != 0)
+    if (_xkbcommon_parse(&param) != 0)
+        return NULL;
+
+    CheckDefaultMap(param.ctx, param.rtrn, yyget_extra(scanner)->scanFile);
+    return param.rtrn;
+}
+
+static bool
+init_scanner(yyscan_t *scanner, struct scanner_extra *extra,
+             struct xkb_context *ctx, const char *file_name)
+{
+    memset(extra, 0, sizeof(*extra));
+
+    if (yylex_init_extra(extra, scanner) != 0)
         return false;
 
-    extra.ctx = ctx;
+    extra->ctx = ctx;
 
-    extra.scanFile = strdup(file_name);
-    if (!extra.scanFile)
+    extra->scanFile = strdup(file_name);
+    if (!extra->scanFile)
         return false;
 
-    state = yy_scan_string(string, param.scanner);
-    ret = _xkbcommon_parse(&param);
-    yy_delete_buffer(state, param.scanner);
-    _xkbcommon_lex_destroy(param.scanner);
-    free(extra.scanFile);
-    if (ret != 0)
-        return false;
-
-    CheckDefaultMap(param.ctx, param.rtrn, file_name);
-    *out = param.rtrn;
     return true;
 }
 
-bool
-XkbParseFile(struct xkb_context *ctx, FILE *file,
-             const char *file_name, XkbFile **out)
+static void
+clear_scanner(yyscan_t scanner, struct scanner_extra *extra)
 {
-    int ret;
-    struct parser_param param;
+    free(extra->scanFile);
+    yylex_destroy(scanner);
+}
+
+XkbFile *
+XkbParseString(struct xkb_context *ctx, const char *string,
+               const char *file_name)
+{
+    yyscan_t scanner;
     struct scanner_extra extra;
+    YY_BUFFER_STATE state;
+    XkbFile *xkb_file;
 
-    if (!file)
-        return false;
+    if (!init_scanner(&scanner, &extra, ctx, file_name))
+        return NULL;
 
-    param.ctx = ctx;
+    state = yy_scan_string(string, scanner);
 
-    memset(&extra, 0, sizeof(extra));
-    ret = yylex_init_extra(&extra, &param.scanner);
-    if (ret != 0)
-        return false;
+    xkb_file = parse(ctx, scanner);
 
-    extra.ctx = ctx;
+    yy_delete_buffer(state, scanner);
+    clear_scanner(scanner, &extra);
 
-    extra.scanFile = strdup(file_name);
-    if (!extra.scanFile)
-        return false;
+    return xkb_file;
+}
 
-    _xkbcommon_set_in(file, param.scanner);
-    ret = _xkbcommon_parse(&param);
-    _xkbcommon_lex_destroy(param.scanner);
-    free(extra.scanFile);
-    if (ret != 0)
-        return false;
+XkbFile *
+XkbParseFile(struct xkb_context *ctx, FILE *file, const char *file_name)
+{
+    yyscan_t scanner;
+    struct scanner_extra extra;
+    YY_BUFFER_STATE state;
+    XkbFile *xkb_file;
 
-    CheckDefaultMap(param.ctx, param.rtrn, file_name);
-    *out = param.rtrn;
-    return true;
+    if (!init_scanner(&scanner, &extra, ctx, file_name))
+        return NULL;
+
+    state = yy_create_buffer(file, YY_BUF_SIZE, scanner);
+    yy_switch_to_buffer(state, scanner);
+
+    xkb_file = parse(ctx, scanner);
+
+    yy_delete_buffer(state, scanner);
+    clear_scanner(scanner, &extra);
+
+    return xkb_file;
 }

@@ -291,7 +291,8 @@ ProcessIncludeFile(struct xkb_context *ctx,
     if (!file)
         return false;
 
-    if (!XkbParseFile(ctx, file, stmt->file, &rtrn)) {
+    rtrn = XkbParseFile(ctx, file, stmt->file);
+    if (!rtrn) {
         log_err(ctx, "Error interpreting include file \"%s\"\n", stmt->file);
         fclose(file);
         return false;

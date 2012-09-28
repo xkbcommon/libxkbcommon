@@ -37,13 +37,12 @@ struct xkb_component_names {
     char *symbols;
 };
 
-bool
-XkbParseFile(struct xkb_context *ctx, FILE *file, const char *file_name,
-             XkbFile **out);
+XkbFile *
+XkbParseFile(struct xkb_context *ctx, FILE *file, const char *file_name);
 
-bool
-XkbParseString(struct xkb_context *context, const char *string,
-               const char *file_name, XkbFile **out);
+XkbFile *
+XkbParseString(struct xkb_context *ctx, const char *string,
+               const char *file_name);
 
 void
 FreeXkbFile(XkbFile *file);
