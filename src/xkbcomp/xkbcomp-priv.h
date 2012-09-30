@@ -38,7 +38,8 @@ struct xkb_component_names {
 };
 
 XkbFile *
-XkbParseFile(struct xkb_context *ctx, FILE *file, const char *file_name);
+XkbParseFile(struct xkb_context *ctx, FILE *file,
+             const char *file_name, const char *map);
 
 XkbFile *
 XkbParseString(struct xkb_context *ctx, const char *string,

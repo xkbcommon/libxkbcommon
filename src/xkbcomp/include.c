@@ -285,69 +285,37 @@ ProcessIncludeFile(struct xkb_context *ctx,
                    XkbFile ** file_rtrn, enum merge_mode *merge_rtrn)
 {
     FILE *file;
-    XkbFile *rtrn, *mapToUse, *next;
+    XkbFile *xkb_file;
 
     file = FindFileInXkbPath(ctx, stmt->file, file_type, NULL);
     if (!file)
         return false;
 
-    rtrn = XkbParseFile(ctx, file, stmt->file);
-    if (!rtrn) {
-        log_err(ctx, "Error interpreting include file \"%s\"\n", stmt->file);
+    xkb_file = XkbParseFile(ctx, file, stmt->file, stmt->map);
+    if (!xkb_file) {
+        if (stmt->map)
+            log_err(ctx, "Couldn't process include statement for '%s(%s)'\n",
+                    stmt->file, stmt->map);
+        else
+            log_err(ctx, "Couldn't process include statement for '%s'\n",
+                    stmt->file);
         fclose(file);
         return false;
     }
     fclose(file);
 
-    mapToUse = rtrn;
-    if (stmt->map != NULL) {
-        while (mapToUse)
-        {
-            next = (XkbFile *) mapToUse->common.next;
-            mapToUse->common.next = NULL;
-            if (streq(mapToUse->name, stmt->map) &&
-                mapToUse->file_type == file_type) {
-                FreeXkbFile(next);
-                break;
-            }
-            else {
-                FreeXkbFile(mapToUse);
-            }
-            mapToUse = next;
-        }
-        if (!mapToUse) {
-            log_err(ctx, "No %s named \"%s\" in the include file \"%s\"\n",
-                    xkb_file_type_to_string(file_type), stmt->map,
-                    stmt->file);
-            return false;
-        }
-    }
-    else if (rtrn->common.next) {
-        for (; mapToUse; mapToUse = (XkbFile *) mapToUse->common.next)
-            if (mapToUse->flags & MAP_IS_DEFAULT)
-                break;
-
-        if (!mapToUse) {
-            mapToUse = rtrn;
-            log_vrb(ctx, 5,
-                    "No map in include statement, but \"%s\" contains several; "
-                    "Using first defined map, \"%s\"\n",
-                    stmt->file, rtrn->name);
-        }
-    }
-
-    if (mapToUse->file_type != file_type) {
+    if (xkb_file->file_type != file_type) {
         log_err(ctx,
                 "Include file wrong type (expected %s, got %s); "
                 "Include file \"%s\" ignored\n",
                 xkb_file_type_to_string(file_type),
-                xkb_file_type_to_string(mapToUse->file_type), stmt->file);
+                xkb_file_type_to_string(xkb_file->file_type), stmt->file);
         return false;
     }
 
     /* FIXME: we have to check recursive includes here (or somewhere) */
 
-    *file_rtrn = mapToUse;
+    *file_rtrn = xkb_file;
     *merge_rtrn = stmt->merge;
     return true;
 }

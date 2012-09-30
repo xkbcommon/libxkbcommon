@@ -29,6 +29,8 @@
 #include "parser-priv.h"
 
 #pragma GCC diagnostic ignored "-Wmissing-noreturn"
+#pragma GCC diagnostic ignored "-Wredundant-decls"
+#pragma GCC diagnostic push
 
 struct scanner_extra {
     struct xkb_context *ctx;
@@ -204,6 +206,8 @@ alternate_group         return ALTERNATE_GROUP;
 
 %%
 
+#pragma GCC diagnostic pop
+
 static void
 scanner_error_extra(struct YYLTYPE *loc, struct scanner_extra *extra,
                     const char *msg)
@@ -218,46 +222,6 @@ scanner_error(struct YYLTYPE *loc, void *scanner, const char *msg)
 {
     struct scanner_extra *extra = yyget_extra(scanner);
     scanner_error_extra(loc, extra, msg);
-}
-
-static void
-CheckDefaultMap(struct xkb_context *ctx, XkbFile *maps, const char *fileName)
-{
-    XkbFile *dflt = NULL, *tmp;
-
-    for (tmp = maps; tmp; tmp = (XkbFile *) tmp->common.next) {
-        if (!(tmp->flags & MAP_IS_DEFAULT))
-            continue;
-
-        if (!dflt) {
-            dflt = tmp;
-            continue;
-        }
-
-        log_vrb(ctx, 3,
-                "Multiple default components in %s; "
-                "Using %s, ignoring %s\n",
-                (fileName ? fileName : "(unknown)"),
-                (dflt->name ? dflt->name : "(first)"),
-                (tmp->name ? tmp->name : "(subsequent)"));
-
-        tmp->flags &= (~MAP_IS_DEFAULT);
-    }
-}
-
-static XkbFile *
-parse(struct xkb_context *ctx, yyscan_t scanner)
-{
-    struct parser_param param;
-
-    param.scanner = scanner;
-    param.ctx = ctx;
-
-    if (_xkbcommon_parse(&param) != 0)
-        return NULL;
-
-    CheckDefaultMap(param.ctx, param.rtrn, yyget_extra(scanner)->scanFile);
-    return param.rtrn;
 }
 
 static bool
@@ -295,7 +259,7 @@ XkbParseString(struct xkb_context *ctx, const char *string,
 
     state = yy_scan_string(string, scanner);
 
-    xkb_file = parse(ctx, scanner);
+    xkb_file = parse(ctx, scanner, NULL);
 
     yy_delete_buffer(state, scanner);
     clear_scanner(scanner);
@@ -304,7 +268,8 @@ XkbParseString(struct xkb_context *ctx, const char *string,
 }
 
 XkbFile *
-XkbParseFile(struct xkb_context *ctx, FILE *file, const char *file_name)
+XkbParseFile(struct xkb_context *ctx, FILE *file,
+             const char *file_name, const char *map)
 {
     yyscan_t scanner;
     struct scanner_extra extra;
@@ -317,7 +282,7 @@ XkbParseFile(struct xkb_context *ctx, FILE *file, const char *file_name)
     state = yy_create_buffer(file, YY_BUF_SIZE, scanner);
     yy_switch_to_buffer(state, scanner);
 
-    xkb_file = parse(ctx, scanner);
+    xkb_file = parse(ctx, scanner, map);
 
     yy_delete_buffer(state, scanner);
     clear_scanner(scanner);

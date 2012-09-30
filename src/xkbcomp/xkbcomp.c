@@ -167,7 +167,7 @@ xkb_keymap_new_from_file(struct xkb_context *ctx,
         return NULL;
     }
 
-    xkb_file = XkbParseFile(ctx, file, "(unknown file)");
+    xkb_file = XkbParseFile(ctx, file, "(unknown file)", NULL);
     if (!xkb_file) {
         log_err(ctx, "Failed to parse input xkb file\n");
         return NULL;

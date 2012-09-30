@@ -29,6 +29,13 @@
 #include "ast-build.h"
 #include "parser-priv.h"
 
+struct parser_param {
+    struct xkb_context *ctx;
+    void *scanner;
+    XkbFile *rtrn;
+    bool more_maps;
+};
+
 static void
 _xkbcommon_error(struct YYLTYPE *loc, struct parser_param *param, const char *msg)
 {
@@ -176,10 +183,24 @@ _xkbcommon_error(struct YYLTYPE *loc, struct parser_param *param, const char *ms
 
 %%
 
+/*
+ * An actual file may contain more than one map. However, if we do things
+ * in the normal yacc way, i.e. aggregate all of the maps into a list and
+ * let the caller find the map it wants, we end up scanning and parsing a
+ * lot of unneeded maps (in the end we always just need one).
+ * Instead of doing that, we make yyparse return one map at a time, and
+ * then call it repeatedly until we find the map we need. Once we find it,
+ * we don't need to parse everything that follows in the file.
+ * This does mean that if we e.g. always use the first map, the file may
+ * contain complete garbage after that. But it's worth it.
+ */
+
 XkbFile         :       XkbCompositeMap
-                        { $$ = param->rtrn = $1; }
-                |       XkbMapConfigList
-                        { $$ = param->rtrn = $1; }
+                        { $$ = param->rtrn = $1; param->more_maps = true; }
+                |       XkbMapConfig
+                        { $$ = param->rtrn = $1; param->more_maps = true; YYACCEPT; }
+                |       END_OF_FILE
+                        { $$ = param->rtrn = NULL; param->more_maps = false; }
                 ;
 
 XkbCompositeMap :       OptFlags XkbCompositeType OptMapName OBRACE
@@ -732,3 +753,50 @@ MapName         :       STRING  { $$ = $1; }
 %%
 
 #undef scanner
+
+XkbFile *
+parse(struct xkb_context *ctx, void *scanner, const char *map)
+{
+    struct parser_param param;
+    int ret;
+    XkbFile *first = NULL;
+
+    param.scanner = scanner;
+    param.ctx = ctx;
+
+    /*
+     * If we got a specific map, we look for it exclusively and return
+     * immediately upon finding it. Otherwise, we need to get the
+     * default map. If we find a map marked as default, we return it
+     * immediately. If there are no maps marked as default, we return
+     * the first map in the file.
+     */
+
+    while ((ret = yyparse(&param)) == 0 && param.more_maps) {
+        if (map) {
+            if (streq_not_null(map, param.rtrn->name))
+                return param.rtrn;
+            else
+                FreeXkbFile(param.rtrn);
+        }
+        else {
+            if (param.rtrn->flags & MAP_IS_DEFAULT) {
+                FreeXkbFile(first);
+                return param.rtrn;
+            }
+            else if (!first) {
+                first = param.rtrn;
+            }
+            else {
+                FreeXkbFile(param.rtrn);
+            }
+        }
+    }
+
+    if (ret != 0) {
+        FreeXkbFile(first);
+        return NULL;
+    }
+
+    return first;
+}
