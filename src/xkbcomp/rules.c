@@ -881,6 +881,7 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
         }
 
         /* Check for index. */
+        idx = XKB_LAYOUT_INVALID;
         if (i < value.len) {
             if (s[i] == '[') {
                 if (mlv != MLVO_LAYOUT && mlv != MLVO_VARIANT) {
