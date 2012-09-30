@@ -171,7 +171,7 @@ _xkbcommon_error(struct YYLTYPE *loc, struct parser_param *param, const char *ms
 %type <geom>    ShapeDecl SectionDecl SectionBody SectionBodyItem RowBody RowBodyItem
 %type <geom>    Keys Key OverlayDecl OverlayKeyList OverlayKey OutlineList OutlineInList
 %type <geom>    DoodadDecl
-%type <file>    XkbFile XkbMapConfigList XkbMapConfig XkbConfig
+%type <file>    XkbFile XkbMapConfigList XkbMapConfig
 %type <file>    XkbCompositeMap XkbCompMapList
 
 %%
@@ -179,8 +179,6 @@ _xkbcommon_error(struct YYLTYPE *loc, struct parser_param *param, const char *ms
 XkbFile         :       XkbCompMapList
                         { $$ = param->rtrn = $1; }
                 |       XkbMapConfigList
-                        { $$ = param->rtrn = $1; }
-                |       XkbConfig
                         { $$ = param->rtrn = $1; }
                 ;
 
@@ -226,20 +224,6 @@ XkbMapConfig    :       OptFlags FileType OptMapName OBRACE
                             }
                         }
                 ;
-
-XkbConfig       :       OptFlags FileType OptMapName DeclList
-                        {
-                            if ($2 == FILE_TYPE_GEOMETRY) {
-                                free($3);
-                                FreeStmt($4);
-                                $$ = NULL;
-                            }
-                            else {
-                                $$ = XkbFileCreate(param->ctx, $2, $3, $4, $1);
-                            }
-                        }
-                ;
-
 
 FileType        :       XKB_KEYCODES            { $$ = FILE_TYPE_KEYCODES; }
                 |       XKB_TYPES               { $$ = FILE_TYPE_TYPES; }
