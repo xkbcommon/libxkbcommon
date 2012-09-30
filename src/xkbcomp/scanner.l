@@ -32,7 +32,7 @@
 
 struct scanner_extra {
     struct xkb_context *ctx;
-    char *scanFile;
+    const char *file_name;
     char scanBuf[1024];
     char *s;
 };
@@ -210,7 +210,7 @@ scanner_error_extra(struct YYLTYPE *loc, struct scanner_extra *extra,
 {
     log_err(extra->ctx, "%s: line %d of %s\n", msg,
             loc->first_line,
-            extra->scanFile ? extra->scanFile : "(unknown)");
+            extra->file_name ? extra->file_name : "(unknown)");
 }
 
 void
@@ -270,18 +270,14 @@ init_scanner(yyscan_t *scanner, struct scanner_extra *extra,
         return false;
 
     extra->ctx = ctx;
-
-    extra->scanFile = strdup(file_name);
-    if (!extra->scanFile)
-        return false;
+    extra->file_name = file_name;
 
     return true;
 }
 
 static void
-clear_scanner(yyscan_t scanner, struct scanner_extra *extra)
+clear_scanner(yyscan_t scanner)
 {
-    free(extra->scanFile);
     yylex_destroy(scanner);
 }
 
@@ -302,7 +298,7 @@ XkbParseString(struct xkb_context *ctx, const char *string,
     xkb_file = parse(ctx, scanner);
 
     yy_delete_buffer(state, scanner);
-    clear_scanner(scanner, &extra);
+    clear_scanner(scanner);
 
     return xkb_file;
 }
@@ -324,7 +320,7 @@ XkbParseFile(struct xkb_context *ctx, FILE *file, const char *file_name)
     xkb_file = parse(ctx, scanner);
 
     yy_delete_buffer(state, scanner);
-    clear_scanner(scanner, &extra);
+    clear_scanner(scanner);
 
     return xkb_file;
 }
