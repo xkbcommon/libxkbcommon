@@ -466,11 +466,23 @@ main(int argc, char *argv[])
         goto err_out;
     }
 
-    if (keymap_path)
-        keymap = test_compile_file(ctx, keymap_path);
-    else
+    if (keymap_path) {
+        FILE *file = fopen(keymap_path, "r");
+        if (!file) {
+            ret = EXIT_FAILURE;
+            fprintf(stderr, "Couldn't open '%s': %s\n",
+                    keymap_path, strerror(errno));
+            goto err_ctx;
+        }
+        keymap = xkb_keymap_new_from_file(ctx, file,
+                                          XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+        fclose(file);
+    }
+    else {
         keymap = test_compile_rules(ctx, rules, model, layout, variant,
                                     options);
+    }
+
     if (!keymap) {
         ret = -1;
         fprintf(stderr, "Couldn't create xkb keymap\n");
