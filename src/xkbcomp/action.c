@@ -784,9 +784,9 @@ HandlePrivate(struct xkb_keymap *keymap, union xkb_action *action,
 
             if (ndx < 0 || ndx >= sizeof(act->data)) {
                 log_err(keymap->ctx,
-                        "The data for a private action is %zu bytes long; "
+                        "The data for a private action is %lu bytes long; "
                         "Attempt to use data[%d] ignored\n",
-                        sizeof(act->data), ndx);
+                        (unsigned long) sizeof(act->data), ndx);
                 return false;
             }
 

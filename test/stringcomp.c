@@ -55,8 +55,9 @@ main(int argc, char *argv[])
                 "round-trip test failed: dumped map differs from original\n");
         fprintf(stderr, "path to original file: %s\n",
                 test_get_path(DATA_PATH));
-        fprintf(stderr, "length: dumped %zu, original %zu\n",
-                strlen(dump), strlen(original));
+        fprintf(stderr, "length: dumped %lu, original %lu\n",
+                (unsigned long) strlen(dump),
+                (unsigned long) strlen(original));
         fprintf(stderr, "dumped map:\n");
         fprintf(stderr, "%s\n", dump);
         fflush(stderr);
