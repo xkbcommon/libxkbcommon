@@ -211,9 +211,6 @@ scanner_error_extra(struct YYLTYPE *loc, struct scanner_extra *extra,
     log_err(extra->ctx, "%s: line %d of %s\n", msg,
             loc->first_line,
             extra->scanFile ? extra->scanFile : "(unknown)");
-
-    log_err(extra->ctx, "last scanned symbol was: %s\n",
-            extra->scanBuf);
 }
 
 void
