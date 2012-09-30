@@ -41,8 +41,6 @@ main(void)
     struct xkb_context *ctx = test_get_context();
 
     assert(test_file(ctx, "keymaps/basic.xkb"));
-    /* XXX check we actually get qwertz here ... */
-    assert(test_file(ctx, "keymaps/default.xkb"));
     assert(test_file(ctx, "keymaps/comprehensive-plus-geom.xkb"));
     assert(test_file(ctx, "keymaps/no-types.xkb"));
 

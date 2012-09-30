@@ -172,20 +172,14 @@ _xkbcommon_error(struct YYLTYPE *loc, struct parser_param *param, const char *ms
 %type <geom>    Keys Key OverlayDecl OverlayKeyList OverlayKey OutlineList OutlineInList
 %type <geom>    DoodadDecl
 %type <file>    XkbFile XkbMapConfigList XkbMapConfig
-%type <file>    XkbCompositeMap XkbCompMapList
+%type <file>    XkbCompositeMap
 
 %%
 
-XkbFile         :       XkbCompMapList
+XkbFile         :       XkbCompositeMap
                         { $$ = param->rtrn = $1; }
                 |       XkbMapConfigList
                         { $$ = param->rtrn = $1; }
-                ;
-
-XkbCompMapList  :       XkbCompMapList XkbCompositeMap
-                        { $$ = (XkbFile *)AppendStmt(&$1->common, &$2->common); }
-                |       XkbCompositeMap
-                        { $$ = $1; }
                 ;
 
 XkbCompositeMap :       OptFlags XkbCompositeType OptMapName OBRACE
