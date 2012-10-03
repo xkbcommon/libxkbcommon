@@ -96,7 +96,7 @@ FindInterpForKey(struct xkb_keymap *keymap, const struct xkb_key *key,
      * such that when we find a match we return immediately.
      */
     darray_foreach(interp, keymap->sym_interpret) {
-        uint32_t mods;
+        xkb_mod_mask_t mods;
         bool found;
 
         if ((num_syms > 1 || interp->sym != syms[0]) &&

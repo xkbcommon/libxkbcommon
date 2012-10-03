@@ -164,7 +164,7 @@ ClearKeyInfo(KeyInfo *keyi)
 typedef struct _ModMapEntry {
     enum merge_mode merge;
     bool haveSymbol;
-    int modifier;
+    xkb_mod_index_t modifier;
     union {
         xkb_atom_t keyName;
         xkb_keysym_t keySym;
@@ -451,7 +451,7 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
     darray_foreach(mm, info->modMaps) {
         if (new->haveSymbol && mm->haveSymbol
             && (new->u.keySym == mm->u.keySym)) {
-            unsigned use, ignore;
+            xkb_mod_index_t use, ignore;
             if (mm->modifier != new->modifier) {
                 if (clobber) {
                     use = new->modifier;
@@ -472,7 +472,7 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
         }
         if ((!new->haveSymbol) && (!mm->haveSymbol) &&
             (new->u.keyName == mm->u.keyName)) {
-            unsigned use, ignore;
+            xkb_mod_index_t use, ignore;
             if (mm->modifier != new->modifier) {
                 if (clobber) {
                     use = new->modifier;

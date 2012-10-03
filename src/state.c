@@ -98,7 +98,7 @@ struct xkb_state {
      */
     int16_t mod_key_count[sizeof(xkb_mod_mask_t) * 8];
 
-    uint32_t leds;
+    xkb_led_mask_t leds;
 
     int refcnt;
     darray(struct xkb_filter) filters;
@@ -596,7 +596,7 @@ xkb_state_led_update_all(struct xkb_state *state)
     for (led = 0; led < XKB_NUM_INDICATORS; led++) {
         struct xkb_indicator_map *map = &state->keymap->indicators[led];
         xkb_mod_mask_t mod_mask = 0;
-        uint32_t group_mask = 0;
+        xkb_layout_mask_t group_mask = 0;
 
         if (map->which_mods & XKB_STATE_DEPRESSED)
             mod_mask |= state->base_mods;
@@ -860,9 +860,10 @@ xkb_state_mod_index_is_active(struct xkb_state *state,
  */
 static int
 match_mod_masks(struct xkb_state *state, enum xkb_state_match match,
-                uint32_t wanted)
+                xkb_mod_mask_t wanted)
 {
-    uint32_t active = xkb_state_serialize_mods(state, XKB_STATE_EFFECTIVE);
+    xkb_mod_mask_t active = xkb_state_serialize_mods(state,
+                                                     XKB_STATE_EFFECTIVE);
 
     if (!(match & XKB_STATE_MATCH_NON_EXCLUSIVE) && (active & ~wanted))
         return 0;
@@ -887,7 +888,7 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
 {
     va_list ap;
     xkb_mod_index_t idx = 0;
-    uint32_t wanted = 0;
+    xkb_mod_mask_t wanted = 0;
     int ret = 0;
     xkb_mod_index_t num_mods = xkb_keymap_num_mods(state->keymap);
 
@@ -939,7 +940,7 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
     va_list ap;
     xkb_mod_index_t idx = 0;
     const char *str;
-    uint32_t wanted = 0;
+    xkb_mod_mask_t wanted = 0;
     int ret = 0;
 
     va_start(ap, match);

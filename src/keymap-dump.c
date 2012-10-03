@@ -127,8 +127,7 @@ err:
 static bool
 write_vmods(struct xkb_keymap *keymap, struct buf *buf)
 {
-    int num_vmods = 0;
-    int i;
+    xkb_mod_index_t i, num_vmods = 0;
 
     for (i = 0; i < XKB_NUM_VIRTUAL_MODS; i++) {
         if (!keymap->vmod_names[i])
@@ -157,9 +156,9 @@ write_vmods(struct xkb_keymap *keymap, struct buf *buf)
 } while (0)
 
 static char *
-get_indicator_state_text(uint8_t which)
+get_indicator_state_text(enum xkb_state_component which)
 {
-    int i;
+    unsigned int i;
     static char ret[GET_TEXT_BUF_SIZE];
 
     memset(ret, 0, GET_TEXT_BUF_SIZE);
@@ -226,7 +225,7 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
 {
     struct xkb_key *key;
     struct xkb_key_alias *alias;
-    int i;
+    xkb_led_index_t i;
 
     if (keymap->keycodes_section_name)
         write_buf(buf, "\txkb_keycodes \"%s\" {\n",
@@ -728,7 +727,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
     }
 
     xkb_foreach_key(key, keymap) {
-        int mod;
+        xkb_mod_index_t mod;
 
         if (key->modmap == 0)
             continue;

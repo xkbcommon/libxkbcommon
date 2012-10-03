@@ -748,7 +748,7 @@ HandlePrivate(struct xkb_keymap *keymap, union xkb_action *action,
             return false;
         }
 
-        act->type = (uint8_t) type;
+        act->type = (enum xkb_action_type) type;
         return true;
     }
     else if (field == ACTION_FIELD_DATA) {

@@ -783,7 +783,8 @@ HandleInterpBody(CompatInfo *info, VarDef *def, SymInterpInfo *si)
 static bool
 HandleInterpDef(CompatInfo *info, InterpDef *def, enum merge_mode merge)
 {
-    unsigned pred, mods;
+    enum xkb_match_operation pred;
+    xkb_mod_mask_t mods;
     SymInterpInfo si;
 
     if (!ResolveStateAndPredicate(def->match, &pred, &mods, info)) {

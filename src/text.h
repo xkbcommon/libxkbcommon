@@ -63,7 +63,7 @@ const char *
 ModMaskText(xkb_mod_mask_t mask);
 
 const char *
-ActionTypeText(unsigned type);
+ActionTypeText(enum xkb_action_type type);
 
 const char *
 KeysymText(xkb_keysym_t sym);
@@ -72,6 +72,6 @@ const char *
 KeyNameText(struct xkb_context *ctx, xkb_atom_t name);
 
 const char *
-SIMatchText(unsigned type);
+SIMatchText(enum xkb_match_operation type);
 
 #endif /* TEXT_H */

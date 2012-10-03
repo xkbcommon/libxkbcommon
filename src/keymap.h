@@ -278,7 +278,7 @@ struct xkb_sym_interpret {
 struct xkb_indicator_map {
     xkb_atom_t name;
     enum xkb_state_component which_groups;
-    uint32_t groups;
+    xkb_layout_mask_t groups;
     enum xkb_state_component which_mods;
     struct xkb_mods mods;
     enum xkb_action_controls ctrls;
