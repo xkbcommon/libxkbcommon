@@ -836,22 +836,10 @@ xkb_state_mod_index_is_active(struct xkb_state *state,
                               xkb_mod_index_t idx,
                               enum xkb_state_component type)
 {
-    int ret = 0;
-
     if (idx >= xkb_keymap_num_mods(state->keymap))
         return -1;
 
-    if (type == XKB_STATE_EFFECTIVE)
-        return !!(state->mods & (1 << idx));
-
-    if (type & XKB_STATE_DEPRESSED)
-        ret |= (state->base_mods & (1 << idx));
-    if (type & XKB_STATE_LATCHED)
-        ret |= (state->latched_mods & (1 << idx));
-    if (type & XKB_STATE_LOCKED)
-        ret |= (state->locked_mods & (1 << idx));
-
-    return !!ret;
+    return !!(xkb_state_serialize_mods(state, type) & (1 << idx));
 }
 
 /**
