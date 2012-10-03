@@ -859,11 +859,12 @@ xkb_state_mod_index_is_active(struct xkb_state *state,
  * xkb_state_mod_names_are_active.
  */
 static int
-match_mod_masks(struct xkb_state *state, enum xkb_state_match match,
+match_mod_masks(struct xkb_state *state,
+                enum xkb_state_component type,
+                enum xkb_state_match match,
                 xkb_mod_mask_t wanted)
 {
-    xkb_mod_mask_t active = xkb_state_serialize_mods(state,
-                                                     XKB_STATE_EFFECTIVE);
+    xkb_mod_mask_t active = xkb_state_serialize_mods(state, type);
 
     if (!(match & XKB_STATE_MATCH_NON_EXCLUSIVE) && (active & ~wanted))
         return 0;
@@ -908,7 +909,7 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
     if (ret == -1)
         return ret;
 
-    return match_mod_masks(state, match, wanted);
+    return match_mod_masks(state, type, match, wanted);
 }
 
 /**
@@ -960,7 +961,7 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
     if (ret == -1)
         return ret;
 
-    return match_mod_masks(state, match, wanted);
+    return match_mod_masks(state, type, match, wanted);
 }
 
 /**
