@@ -35,9 +35,8 @@ InitVModInfo(VModInfo *info, struct xkb_keymap *keymap)
     xkb_mod_index_t i;
 
     memset(info, 0, sizeof(*info));
-    for (i = 0; i < XKB_NUM_VIRTUAL_MODS; i++)
-        if (keymap->vmod_names[i])
-            info->defined |= (1 << i);
+    for (i = 0; i < darray_size(keymap->vmods); i++)
+        info->defined |= (1 << i);
 }
 
 bool
@@ -45,44 +44,32 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
               enum merge_mode mergeMode, VModInfo *info)
 {
     xkb_mod_index_t i;
-    int nextFree;
-    xkb_mod_mask_t bit;
+    const struct xkb_vmod *vmod;
+    struct xkb_vmod new;
 
     if (stmt->value)
         log_err(keymap->ctx,
                 "Support for setting a value in a virtual_modifiers statement has been removed; "
                 "Value ignored\n");
 
-    nextFree = -1;
-    for (i = 0, bit = 1; i < XKB_NUM_VIRTUAL_MODS; i++, bit <<= 1) {
-        if (!(info->defined & bit)) {
-            if (nextFree < 0)
-                nextFree = i;
-            continue;
+    darray_enumerate(i, vmod, keymap->vmods) {
+        if (vmod->name == stmt->name) {
+            info->available |= 1 << i;
+            return true;
         }
-
-        /* Already defined. */
-        if (!keymap->vmod_names[i])
-            continue;
-
-        if (keymap->vmod_names[i] != stmt->name)
-            continue;
-
-        info->available |= bit;
-        return true;
     }
 
-    if (nextFree < 0) {
+    if (darray_size(keymap->vmods) >= XKB_MAX_VIRTUAL_MODS) {
         log_err(keymap->ctx,
                 "Too many virtual modifiers defined (maximum %d)\n",
-                XKB_NUM_VIRTUAL_MODS);
+                XKB_MAX_VIRTUAL_MODS);
         return false;
     }
 
-    info->defined |= (1 << nextFree);
-    info->available |= (1 << nextFree);
-
-    keymap->vmod_names[nextFree] = stmt->name;
+    new.name = stmt->name;
+    new.mapping = 0;
+    darray_append(keymap->vmods, new);
+    info->available |= (1 << (darray_size(keymap->vmods) - 1));
     return true;
 }
 
@@ -90,13 +77,14 @@ static bool
 LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
                 enum expr_value_type type, xkb_mod_index_t *val_rtrn)
 {
+    const struct xkb_vmod *vmod;
     xkb_mod_index_t i;
 
     if (type != EXPR_TYPE_INT)
         return false;
 
-    for (i = 0; i < XKB_NUM_VIRTUAL_MODS; i++) {
-        if (keymap->vmod_names[i] == field) {
+    darray_enumerate(i, vmod, keymap->vmods) {
+        if (vmod->name == field) {
             *val_rtrn = i;
             return true;
         }
@@ -126,6 +114,7 @@ bool
 ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
                        xkb_mod_index_t *ndx_rtrn, VModInfo *info)
 {
+    const struct xkb_vmod *vmod;
     xkb_mod_index_t i;
     xkb_atom_t name = def->value.str;
 
@@ -137,8 +126,8 @@ ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
         return false;
     }
 
-    for (i = 0; i < XKB_NUM_VIRTUAL_MODS; i++) {
-        if ((info->available & (1 << i)) && keymap->vmod_names[i] == name) {
+    darray_enumerate(i, vmod, keymap->vmods) {
+        if ((info->available & (1 << i)) && vmod->name == name) {
             *ndx_rtrn = i;
             return true;
         }

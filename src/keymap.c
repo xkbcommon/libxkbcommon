@@ -107,6 +107,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
     darray_free(keymap->sym_interpret);
     darray_free(keymap->key_aliases);
     darray_free(keymap->group_names);
+    darray_free(keymap->vmods);
     free(keymap->keycodes_section_name);
     free(keymap->symbols_section_name);
     free(keymap->types_section_name);
@@ -121,15 +122,9 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
 XKB_EXPORT xkb_mod_index_t
 xkb_keymap_num_mods(struct xkb_keymap *keymap)
 {
-    xkb_mod_index_t i;
-
-    for (i = 0; i < XKB_NUM_VIRTUAL_MODS; i++)
-        if (!keymap->vmod_names[i])
-            break;
-
     /* We always have all the core modifiers (for now), plus any virtual
      * modifiers we may have defined. */
-    return i + XKB_NUM_CORE_MODS;
+    return XKB_NUM_CORE_MODS + darray_size(keymap->vmods);
 }
 
 /**
@@ -139,6 +134,7 @@ XKB_EXPORT const char *
 xkb_keymap_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx)
 {
     const char *name;
+    const struct xkb_vmod *vmod;
 
     if (idx >= xkb_keymap_num_mods(keymap))
         return NULL;
@@ -146,11 +142,11 @@ xkb_keymap_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx)
     /* First try to find a legacy modifier name.  If that fails, try to
      * find a virtual mod name. */
     name = ModIndexToName(idx);
-    if (!name)
-        name = xkb_atom_text(keymap->ctx,
-                             keymap->vmod_names[idx - XKB_NUM_CORE_MODS]);
+    if (name)
+        return name;
 
-    return name;
+    vmod = &darray_item(keymap->vmods, idx - XKB_NUM_CORE_MODS);
+    return xkb_atom_text(keymap->ctx, vmod->name);
 }
 
 /**
@@ -161,6 +157,7 @@ xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name)
 {
     xkb_mod_index_t i;
     xkb_atom_t atom;
+    const struct xkb_vmod *vmod;
 
     i = ModNameToIndex(name);
     if (i != XKB_MOD_INVALID)
@@ -170,12 +167,9 @@ xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name)
     if (atom == XKB_ATOM_NONE)
         return XKB_MOD_INVALID;
 
-    for (i = 0; i < XKB_NUM_VIRTUAL_MODS; i++) {
-        if (keymap->vmod_names[i] == XKB_ATOM_NONE)
-            break;
-        if (keymap->vmod_names[i] == atom)
+    darray_enumerate(i, vmod, keymap->vmods)
+        if (vmod->name == atom)
             return i + XKB_NUM_CORE_MODS;
-    }
 
     return XKB_MOD_INVALID;
 }

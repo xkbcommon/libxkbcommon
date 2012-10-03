@@ -127,17 +127,15 @@ err:
 static bool
 write_vmods(struct xkb_keymap *keymap, struct buf *buf)
 {
-    xkb_mod_index_t i, num_vmods = 0;
+    const struct xkb_vmod *vmod;
+    xkb_mod_index_t num_vmods = 0;
 
-    for (i = 0; i < XKB_NUM_VIRTUAL_MODS; i++) {
-        if (!keymap->vmod_names[i])
-            continue;
+    darray_foreach(vmod, keymap->vmods) {
         if (num_vmods == 0)
             write_buf(buf, "\t\tvirtual_modifiers ");
         else
             write_buf(buf, ",");
-        write_buf(buf, "%s",
-                  xkb_atom_text(keymap->ctx, keymap->vmod_names[i]));
+        write_buf(buf, "%s", xkb_atom_text(keymap->ctx, vmod->name));
         num_vmods++;
     }
 
@@ -527,7 +525,8 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
         if (interp->virtual_mod != XKB_MOD_INVALID) {
             write_buf(buf, "\t\t\tvirtualModifier= %s;\n",
                       xkb_atom_text(keymap->ctx,
-                                    keymap->vmod_names[interp->virtual_mod]));
+                                    darray_item(keymap->vmods,
+                                                interp->virtual_mod).name));
         }
 
         if (interp->match & MATCH_LEVEL_ONE_ONLY)

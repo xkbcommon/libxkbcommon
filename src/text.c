@@ -231,36 +231,14 @@ GetBuffer(size_t size)
     return rtrn;
 }
 
-/*
- * Get a vmod name's text, where the vmod index is zero based
- * (0..XKB_NUM_VIRTUAL_MODS-1).
- */
+/* Get a vmod name's text, where the vmod index is zero based. */
 static const char *
 VModIndexText(struct xkb_keymap *keymap, xkb_mod_index_t ndx)
 {
-    int len;
-    char *rtrn;
-    const char *tmp = NULL;
-    char buf[20];
-
-    if (ndx >= XKB_NUM_VIRTUAL_MODS)
-         tmp = "illegal";
-    else
-         tmp = xkb_atom_text(keymap->ctx, keymap->vmod_names[ndx]);
-
-    if (!tmp) {
-        snprintf(buf, sizeof(buf) - 1, "%d", ndx);
-        tmp = buf;
-    }
-
-    len = strlen(tmp) + 1;
-    if (len >= BUFFER_SIZE)
-        len = BUFFER_SIZE - 1;
-
-    rtrn = GetBuffer(len);
-    strncpy(rtrn, tmp, len);
-
-    return rtrn;
+    if (ndx >= darray_size(keymap->vmods))
+        return "illegal";
+    return xkb_atom_text(keymap->ctx,
+                         darray_item(keymap->vmods, ndx).name);
 }
 
 /* Get a mod mask's text, where the mask is in rmods+vmods format. */
@@ -268,7 +246,6 @@ const char *
 VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t cmask)
 {
     xkb_mod_index_t i;
-    xkb_mod_mask_t bit;
     xkb_mod_mask_t rmask, vmask;
     int len, rem;
     const char *mm = NULL;
@@ -289,9 +266,8 @@ VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t cmask)
     rem = BUFFER_SIZE;
 
     if (vmask != 0) {
-        for (i = 0, bit = 1; i < XKB_NUM_VIRTUAL_MODS && rem > 1; i++, bit <<=
-                 1) {
-            if (!(vmask & bit))
+        for (i = 0; i < darray_size(keymap->vmods) && rem > 1; i++) {
+            if (!(vmask & (1 << i)))
                 continue;
 
             len = snprintf(str, rem, "%s%s",
