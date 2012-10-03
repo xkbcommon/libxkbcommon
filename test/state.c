@@ -149,6 +149,11 @@ test_update_key(struct xkb_keymap *keymap)
                                           XKB_MOD_NAME_CTRL,
                                           XKB_MOD_NAME_ALT,
                                           NULL) > 0);
+    assert(xkb_state_mod_names_are_active(state, XKB_STATE_LATCHED,
+                                          XKB_STATE_MATCH_ANY,
+                                          XKB_MOD_NAME_CTRL,
+                                          XKB_MOD_NAME_ALT,
+                                          NULL) == 0);
 
     /* none down */
     xkb_state_update_key(state, KEY_RIGHTALT + EVDEV_OFFSET, XKB_KEY_UP);
@@ -157,9 +162,13 @@ test_update_key(struct xkb_keymap *keymap)
 
     /* Caps locked */
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CAPS,
+                                        XKB_STATE_DEPRESSED) > 0);
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
     fprintf(stderr, "dumping state for Caps Lock:\n");
     print_state(state);
+    assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CAPS,
+                                        XKB_STATE_DEPRESSED) == 0);
     assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CAPS,
                                         XKB_STATE_LOCKED) > 0);
     assert(xkb_state_led_name_is_active(state, XKB_LED_NAME_CAPS) > 0);
