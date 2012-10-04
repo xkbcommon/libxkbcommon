@@ -36,8 +36,7 @@ void
 InitVModInfo(VModInfo *info, struct xkb_keymap *keymap);
 
 bool
-HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
-              enum merge_mode mergeMode, VModInfo *info);
+HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, VModInfo *info);
 
 bool
 ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,

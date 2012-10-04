@@ -40,8 +40,7 @@ InitVModInfo(VModInfo *info, struct xkb_keymap *keymap)
 }
 
 bool
-HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap,
-              enum merge_mode mergeMode, VModInfo *info)
+HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, VModInfo *info)
 {
     xkb_mod_index_t i;
     const struct xkb_vmod *vmod;
