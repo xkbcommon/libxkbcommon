@@ -86,12 +86,6 @@ LookupModIndex(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
                enum expr_value_type type, xkb_mod_index_t *val_rtrn)
 {
     const char *name = xkb_atom_text(ctx, field);
-
-    if (istreq(name, "none")) {
-        *val_rtrn = XKB_MOD_INVALID;
-        return true;
-    }
-
     *val_rtrn = ModNameToIndex(name);
     return (*val_rtrn != XKB_MOD_INVALID);
 }
