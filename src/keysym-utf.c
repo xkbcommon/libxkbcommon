@@ -38,8 +38,9 @@
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
 
+/* We don't use the uint32_t types here, to save some space. */
 struct codepair {
-    xkb_keysym_t keysym;
+    uint16_t keysym;
     uint16_t ucs;
 };
 
