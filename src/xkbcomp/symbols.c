@@ -85,7 +85,7 @@ typedef struct {
     xkb_atom_t type;
 } GroupInfo;
 
-typedef struct _KeyInfo {
+typedef struct {
     enum key_field defined;
     unsigned file_id;
     enum merge_mode merge;
@@ -161,7 +161,7 @@ ClearKeyInfo(KeyInfo *keyi)
 
 /***====================================================================***/
 
-typedef struct _ModMapEntry {
+typedef struct {
     enum merge_mode merge;
     bool haveSymbol;
     xkb_mod_index_t modifier;
@@ -171,7 +171,7 @@ typedef struct _ModMapEntry {
     } u;
 } ModMapEntry;
 
-typedef struct _SymbolsInfo {
+typedef struct {
     char *name;         /* e.g. pc+us+inet(evdev) */
     int errorCount;
     unsigned file_id;

@@ -142,7 +142,7 @@ enum type_field {
     TYPE_FIELD_LEVEL_NAME = (1 << 3),
 };
 
-typedef struct _KeyTypeInfo {
+typedef struct {
     enum type_field defined;
     unsigned file_id;
     enum merge_mode merge;
@@ -154,7 +154,7 @@ typedef struct _KeyTypeInfo {
     darray(xkb_atom_t) level_names;
 } KeyTypeInfo;
 
-typedef struct _KeyTypesInfo {
+typedef struct {
     char *name;
     int errorCount;
     unsigned file_id;

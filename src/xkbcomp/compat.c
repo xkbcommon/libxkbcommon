@@ -165,7 +165,7 @@ enum si_field {
     SI_FIELD_LEVEL_ONE_ONLY = (1 << 3),
 };
 
-typedef struct _SymInterpInfo {
+typedef struct {
     enum si_field defined;
     unsigned file_id;
     enum merge_mode merge;
@@ -179,7 +179,7 @@ enum led_field {
     LED_FIELD_CTRLS      = (1 << 2),
 };
 
-typedef struct _LEDInfo {
+typedef struct {
     enum led_field defined;
     unsigned file_id;
     enum merge_mode merge;
@@ -187,7 +187,7 @@ typedef struct _LEDInfo {
     struct xkb_indicator_map im;
 } LEDInfo;
 
-typedef struct _CompatInfo {
+typedef struct {
     char *name;
     unsigned file_id;
     int errorCount;

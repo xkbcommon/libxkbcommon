@@ -103,7 +103,7 @@
  * contain any useful information besides the key name at this point.
  */
 
-typedef struct _AliasInfo {
+typedef struct {
     enum merge_mode merge;
     unsigned file_id;
 
@@ -116,14 +116,14 @@ typedef struct {
     xkb_atom_t name;
 } KeyNameInfo;
 
-typedef struct _IndicatorNameInfo {
+typedef struct {
     enum merge_mode merge;
     unsigned file_id;
 
     xkb_atom_t name;
 } IndicatorNameInfo;
 
-typedef struct _KeyNamesInfo {
+typedef struct {
     char *name;     /* e.g. evdev+aliases(qwerty) */
     int errorCount;
     unsigned file_id;

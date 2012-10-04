@@ -27,7 +27,7 @@
 #ifndef XKBCOMP_VMOD_H
 #define XKBCOMP_VMOD_H
 
-typedef struct _VModInfo {
+typedef struct {
     xkb_mod_mask_t defined;
     xkb_mod_mask_t available;
 } VModInfo;

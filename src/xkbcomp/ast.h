@@ -193,63 +193,63 @@ typedef struct _Expr {
     } value;
 } ExprDef;
 
-typedef struct _VarDef {
+typedef struct {
     ParseCommon common;
     enum merge_mode merge;
     ExprDef *name;
     ExprDef *value;
 } VarDef;
 
-typedef struct _VModDef {
+typedef struct {
     ParseCommon common;
     enum merge_mode merge;
     xkb_atom_t name;
     ExprDef *value;
 } VModDef;
 
-typedef struct _KeycodeDef {
+typedef struct {
     ParseCommon common;
     enum merge_mode merge;
     xkb_atom_t name;
     int64_t value;
 } KeycodeDef;
 
-typedef struct _KeyAliasDef {
+typedef struct {
     ParseCommon common;
     enum merge_mode merge;
     xkb_atom_t alias;
     xkb_atom_t real;
 } KeyAliasDef;
 
-typedef struct _KeyTypeDef {
+typedef struct {
     ParseCommon common;
     enum merge_mode merge;
     xkb_atom_t name;
     VarDef *body;
 } KeyTypeDef;
 
-typedef struct _SymbolsDef {
+typedef struct {
     ParseCommon common;
     enum merge_mode merge;
     xkb_atom_t keyName;
     ExprDef *symbols;
 } SymbolsDef;
 
-typedef struct _ModMapDef {
+typedef struct {
     ParseCommon common;
     enum merge_mode merge;
     xkb_atom_t modifier;
     ExprDef *keys;
 } ModMapDef;
 
-typedef struct _GroupCompatDef {
+typedef struct {
     ParseCommon common;
     enum merge_mode merge;
     int group;
     ExprDef *def;
 } GroupCompatDef;
 
-typedef struct _InterpDef {
+typedef struct {
     ParseCommon common;
     enum merge_mode merge;
     char *sym;
@@ -257,7 +257,7 @@ typedef struct _InterpDef {
     VarDef *def;
 } InterpDef;
 
-typedef struct _IndicatorNameDef {
+typedef struct {
     ParseCommon common;
     enum merge_mode merge;
     int ndx;
@@ -265,7 +265,7 @@ typedef struct _IndicatorNameDef {
     bool virtual;
 } IndicatorNameDef;
 
-typedef struct _IndicatorMapDef {
+typedef struct {
     ParseCommon common;
     enum merge_mode merge;
     xkb_atom_t name;
@@ -283,7 +283,7 @@ enum xkb_map_flags {
     MAP_IS_ALTGR = (1 << 7),
 };
 
-typedef struct _XkbFile {
+typedef struct {
     ParseCommon common;
     enum xkb_file_type file_type;
     char *topName;
