@@ -744,10 +744,6 @@ xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t kc,
 {
     xkb_layout_index_t layout;
     xkb_level_index_t level;
-    const struct xkb_key *key = XkbKey(state->keymap, kc);
-
-    if (!key)
-        return -1;
 
     layout = xkb_state_key_get_layout(state, kc);
     if (layout == XKB_LAYOUT_INVALID)
