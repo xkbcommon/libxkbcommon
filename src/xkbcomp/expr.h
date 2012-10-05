@@ -33,14 +33,6 @@ ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
                ExprDef **index_rtrn);
 
 bool
-LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-              enum expr_value_type type, xkb_mod_mask_t *val_rtrn);
-
-bool
-LookupVModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-               enum expr_value_type type, xkb_mod_mask_t *val_rtrn);
-
-bool
 LookupModIndex(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
                enum expr_value_type type, xkb_mod_index_t *val_rtrn);
 
@@ -51,6 +43,10 @@ ExprResolveModMask(struct xkb_context *ctx, const ExprDef *expr,
 bool
 ExprResolveVModMask(struct xkb_keymap *keymap, const ExprDef *expr,
                     xkb_mod_mask_t *mask_rtrn);
+
+bool
+ExprResolveVMod(struct xkb_keymap *keymap, const ExprDef *def,
+                xkb_mod_index_t *ndx_rtrn);
 
 bool
 ExprResolveBoolean(struct xkb_context *ctx, const ExprDef *expr,

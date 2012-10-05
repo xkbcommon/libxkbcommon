@@ -160,7 +160,6 @@ typedef struct {
     unsigned file_id;
 
     darray(KeyTypeInfo) types;
-    VModInfo vmods;
     struct xkb_keymap *keymap;
 } KeyTypesInfo;
 
@@ -219,7 +218,6 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
     memset(info, 0, sizeof(*info));
     info->keymap = keymap;
     info->file_id = file_id;
-    InitVModInfo(&info->vmods, keymap);
 }
 
 static void
@@ -761,7 +759,7 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
             ok = true;
             break;
         case STMT_VMOD: /* virtual_modifiers NumLock, ... */
-            ok = HandleVModDef((VModDef *) stmt, info->keymap, &info->vmods);
+            ok = HandleVModDef(info->keymap, (VModDef *) stmt);
             break;
         default:
             log_err(info->keymap->ctx,

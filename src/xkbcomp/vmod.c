@@ -29,18 +29,8 @@
 #include "expr.h"
 #include "vmod.h"
 
-void
-InitVModInfo(VModInfo *info, struct xkb_keymap *keymap)
-{
-    xkb_mod_index_t i;
-
-    memset(info, 0, sizeof(*info));
-    for (i = 0; i < darray_size(keymap->vmods); i++)
-        info->defined |= (1 << i);
-}
-
 bool
-HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, VModInfo *info)
+HandleVModDef(struct xkb_keymap *keymap, VModDef *stmt)
 {
     xkb_mod_index_t i;
     const char *name;
@@ -61,12 +51,9 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, VModInfo *info)
         return false;
     }
 
-    darray_enumerate(i, vmod, keymap->vmods) {
-        if (vmod->name == stmt->name) {
-            info->available |= 1 << i;
+    darray_enumerate(i, vmod, keymap->vmods)
+        if (vmod->name == stmt->name)
             return true;
-        }
-    }
 
     if (darray_size(keymap->vmods) >= XKB_MAX_VIRTUAL_MODS) {
         log_err(keymap->ctx,
@@ -78,73 +65,5 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, VModInfo *info)
     new.name = stmt->name;
     new.mapping = 0;
     darray_append(keymap->vmods, new);
-    info->available |= (1 << (darray_size(keymap->vmods) - 1));
     return true;
-}
-
-static bool
-LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
-                enum expr_value_type type, xkb_mod_index_t *val_rtrn)
-{
-    const struct xkb_vmod *vmod;
-    xkb_mod_index_t i;
-
-    if (type != EXPR_TYPE_INT)
-        return false;
-
-    darray_enumerate(i, vmod, keymap->vmods) {
-        if (vmod->name == field) {
-            *val_rtrn = i;
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool
-LookupVModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-               enum expr_value_type type, xkb_mod_mask_t *val_rtrn)
-{
-    xkb_mod_index_t ndx;
-
-    if (LookupModMask(ctx, NULL, field, type, val_rtrn)) {
-        return true;
-    }
-    else if (LookupVModIndex(priv, field, type, &ndx)) {
-        *val_rtrn = (1 << (XKB_NUM_CORE_MODS + ndx));
-        return true;
-    }
-
-    return false;
-}
-
-bool
-ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
-                       xkb_mod_index_t *ndx_rtrn, VModInfo *info)
-{
-    const struct xkb_vmod *vmod;
-    xkb_mod_index_t i;
-    xkb_atom_t name = def->value.str;
-
-    if (def->op != EXPR_IDENT) {
-        log_err(keymap->ctx,
-                "Cannot resolve virtual modifier: "
-                "found %s where a virtual modifier name was expected\n",
-                expr_op_type_to_string(def->op));
-        return false;
-    }
-
-    darray_enumerate(i, vmod, keymap->vmods) {
-        if ((info->available & (1 << i)) && vmod->name == name) {
-            *ndx_rtrn = i;
-            return true;
-        }
-    }
-
-    log_err(keymap->ctx,
-            "Cannot resolve virtual modifier: "
-            "\"%s\" was not previously declared\n",
-            xkb_atom_text(keymap->ctx, name));
-    return false;
 }

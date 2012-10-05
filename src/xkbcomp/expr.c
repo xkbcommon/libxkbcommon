@@ -90,7 +90,7 @@ LookupModIndex(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
     return (*val_rtrn != XKB_MOD_INVALID);
 }
 
-bool
+static bool
 LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
               enum expr_value_type type, xkb_mod_mask_t *val_rtrn)
 {
@@ -624,6 +624,44 @@ ExprResolveModMask(struct xkb_context *ctx, const ExprDef *expr,
     return ExprResolveMaskLookup(ctx, expr, mask_rtrn, LookupModMask, NULL);
 }
 
+static bool
+LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
+                enum expr_value_type type, xkb_mod_index_t *val_rtrn)
+{
+    const struct xkb_vmod *vmod;
+    xkb_mod_index_t i;
+
+    if (type != EXPR_TYPE_INT)
+        return false;
+
+    darray_enumerate(i, vmod, keymap->vmods) {
+        if (vmod->name == field) {
+            *val_rtrn = i;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool
+LookupVModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
+               enum expr_value_type type, xkb_mod_mask_t *val_rtrn)
+{
+    xkb_mod_index_t ndx;
+
+    if (LookupModMask(ctx, NULL, field, type, val_rtrn)) {
+        return true;
+    }
+    else if (LookupVModIndex(priv, field, type, &ndx)) {
+        *val_rtrn = (1 << (XKB_NUM_CORE_MODS + ndx));
+        return true;
+    }
+
+    return false;
+}
+
+
 bool
 ExprResolveVModMask(struct xkb_keymap *keymap, const ExprDef *expr,
                     xkb_mod_mask_t *mask_rtrn)
@@ -654,4 +692,34 @@ ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
 
     *sym_rtrn = ((xkb_keysym_t) val) + '0';
     return true;
+}
+
+bool
+ExprResolveVMod(struct xkb_keymap *keymap, const ExprDef *def,
+                xkb_mod_index_t *ndx_rtrn)
+{
+    const struct xkb_vmod *vmod;
+    xkb_mod_index_t i;
+    xkb_atom_t name = def->value.str;
+
+    if (def->op != EXPR_IDENT) {
+        log_err(keymap->ctx,
+                "Cannot resolve virtual modifier: "
+                "found %s where a virtual modifier name was expected\n",
+                expr_op_type_to_string(def->op));
+        return false;
+    }
+
+    darray_enumerate(i, vmod, keymap->vmods) {
+        if (vmod->name == name) {
+            *ndx_rtrn = i;
+            return true;
+        }
+    }
+
+    log_err(keymap->ctx,
+            "Cannot resolve virtual modifier: "
+            "\"%s\" was not previously declared\n",
+            xkb_atom_text(keymap->ctx, name));
+    return false;
 }

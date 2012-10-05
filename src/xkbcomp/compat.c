@@ -195,7 +195,6 @@ typedef struct {
     darray(SymInterpInfo) interps;
     LEDInfo ledDflt;
     darray(LEDInfo) leds;
-    VModInfo vmods;
     ActionsInfo *actions;
     struct xkb_keymap *keymap;
 } CompatInfo;
@@ -260,7 +259,6 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id,
     info->dflt.interp.virtual_mod = XKB_MOD_INVALID;
     info->ledDflt.file_id = file_id;
     info->ledDflt.merge = MERGE_OVERRIDE;
-    InitVModInfo(&info->vmods, keymap);
 }
 
 static void
@@ -584,7 +582,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         if (arrayNdx)
             return ReportSINotArray(info, si, field);
 
-        if (!ResolveVirtualModifier(value, keymap, &ndx, &info->vmods))
+        if (!ExprResolveVMod(keymap, value, &ndx))
             return ReportSIBadType(info, si, field, "virtual modifier");
 
         si->interp.virtual_mod = ndx;
@@ -898,7 +896,7 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleGlobalVar(info, (VarDef *) stmt);
             break;
         case STMT_VMOD:
-            ok = HandleVModDef((VModDef *) stmt, info->keymap, &info->vmods);
+            ok = HandleVModDef(info->keymap, (VModDef *) stmt);
             break;
         default:
             log_err(info->keymap->ctx,

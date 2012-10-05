@@ -27,19 +27,7 @@
 #ifndef XKBCOMP_VMOD_H
 #define XKBCOMP_VMOD_H
 
-typedef struct {
-    xkb_mod_mask_t defined;
-    xkb_mod_mask_t available;
-} VModInfo;
-
-void
-InitVModInfo(VModInfo *info, struct xkb_keymap *keymap);
-
 bool
-HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, VModInfo *info);
-
-bool
-ResolveVirtualModifier(ExprDef *def, struct xkb_keymap *keymap,
-                       xkb_mod_index_t *ndx_rtrn, VModInfo *info);
+HandleVModDef(struct xkb_keymap *keymap, VModDef *stmt);
 
 #endif

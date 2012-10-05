@@ -179,7 +179,6 @@ typedef struct {
     xkb_layout_index_t explicit_group;
     darray(KeyInfo) keys;
     KeyInfo dflt;
-    VModInfo vmods;
     ActionsInfo *actions;
     darray_xkb_atom_t group_names;
     darray(ModMapEntry) modMaps;
@@ -196,7 +195,6 @@ InitSymbolsInfo(SymbolsInfo *info, struct xkb_keymap *keymap,
     info->file_id = file_id;
     info->merge = MERGE_OVERRIDE;
     InitKeyInfo(keymap->ctx, &info->dflt, file_id);
-    InitVModInfo(&info->vmods, keymap);
     info->actions = actions;
     info->explicit_group = XKB_LAYOUT_INVALID;
 }
@@ -1268,7 +1266,7 @@ HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleGlobalVar(info, (VarDef *) stmt);
             break;
         case STMT_VMOD:
-            ok = HandleVModDef((VModDef *) stmt, info->keymap, &info->vmods);
+            ok = HandleVModDef(info->keymap, (VModDef *) stmt);
             break;
         case STMT_MODMAP:
             ok = HandleModMapDef(info, (ModMapDef *) stmt);
