@@ -636,7 +636,7 @@ LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
 
     darray_enumerate(i, vmod, keymap->vmods) {
         if (vmod->name == field) {
-            *val_rtrn = i;
+            *val_rtrn = XKB_NUM_CORE_MODS + i;
             return true;
         }
     }
@@ -654,7 +654,7 @@ LookupVModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
         return true;
     }
     else if (LookupVModIndex(priv, field, type, &ndx)) {
-        *val_rtrn = (1 << (XKB_NUM_CORE_MODS + ndx));
+        *val_rtrn = (1 << ndx);
         return true;
     }
 
@@ -712,7 +712,7 @@ ExprResolveVMod(struct xkb_keymap *keymap, const ExprDef *def,
 
     darray_enumerate(i, vmod, keymap->vmods) {
         if (vmod->name == name) {
-            *ndx_rtrn = i;
+            *ndx_rtrn = XKB_NUM_CORE_MODS + i;
             return true;
         }
     }

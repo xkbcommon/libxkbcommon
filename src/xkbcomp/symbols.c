@@ -883,7 +883,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
 
         ok = ExprResolveVModMask(info->keymap, value, &mask);
         if (ok) {
-            keyi->vmodmap = (mask >> XKB_NUM_CORE_MODS) & 0xffff;
+            keyi->vmodmap = mask & (~0xff);
             keyi->defined |= KEY_FIELD_VMODMAP;
         }
         else {

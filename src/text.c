@@ -231,16 +231,6 @@ GetBuffer(size_t size)
     return rtrn;
 }
 
-/* Get a vmod name's text, where the vmod index is zero based. */
-static const char *
-VModIndexText(struct xkb_keymap *keymap, xkb_mod_index_t ndx)
-{
-    if (ndx >= darray_size(keymap->vmods))
-        return "illegal";
-    return xkb_atom_text(keymap->ctx,
-                         darray_item(keymap->vmods, ndx).name);
-}
-
 /* Get a mod mask's text, where the mask is in rmods+vmods format. */
 const char *
 VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t cmask)
@@ -253,7 +243,7 @@ VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t cmask)
     char buf[BUFFER_SIZE];
 
     rmask = cmask & 0xff;
-    vmask = cmask >> XKB_NUM_CORE_MODS;
+    vmask = cmask & (~0xff);
 
     if (rmask == 0 && vmask == 0)
         return "none";
@@ -261,26 +251,26 @@ VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t cmask)
     if (rmask != 0)
         mm = ModMaskText(rmask);
 
+    if (vmask == 0)
+        return mm;
+
     str = buf;
     buf[0] = '\0';
     rem = BUFFER_SIZE;
 
-    if (vmask != 0) {
-        for (i = 0; i < darray_size(keymap->vmods) && rem > 1; i++) {
-            if (!(vmask & (1 << i)))
-                continue;
+    for (i = 0; i < darray_size(keymap->vmods) && rem > 1; i++) {
+        const char *name;
 
-            len = snprintf(str, rem, "%s%s",
-                           (str != buf) ? "+" : "",
-                           VModIndexText(keymap, i));
-            rem -= len;
-            str += len;
-        }
+        if (!(vmask & (1 << (i + XKB_NUM_CORE_MODS))))
+            continue;
 
-        str = buf;
+        name = xkb_atom_text(keymap->ctx, darray_item(keymap->vmods, i).name);
+        len = snprintf(str, rem, "%s%s", (str != buf) ? "+" : "", name);
+        rem -= len;
+        str += len;
     }
-    else
-        str = NULL;
+
+    str = buf;
 
     len = (str ? strlen(str) : 0) + (mm ? strlen(mm) : 0) +
           (str && mm ? 1 : 0);

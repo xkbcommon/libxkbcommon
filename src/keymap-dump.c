@@ -523,10 +523,10 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
                   VModMaskText(keymap, interp->mods));
 
         if (interp->virtual_mod != XKB_MOD_INVALID) {
+            xkb_mod_index_t idx = interp->virtual_mod - XKB_NUM_CORE_MODS;
             write_buf(buf, "\t\t\tvirtualModifier= %s;\n",
                       xkb_atom_text(keymap->ctx,
-                                    darray_item(keymap->vmods,
-                                                interp->virtual_mod).name));
+                                    darray_item(keymap->vmods, idx).name));
         }
 
         if (interp->match & MATCH_LEVEL_ONE_ONLY)
@@ -666,11 +666,9 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
             simple = false;
         }
 
-        if (key->vmodmap && (key->explicit & EXPLICIT_VMODMAP)) {
-            /* XXX: vmodmap cmask? */
+        if (key->vmodmap && (key->explicit & EXPLICIT_VMODMAP))
             write_buf(buf, "\n\t\t\tvirtualMods= %s,",
-                      VModMaskText(keymap, key->vmodmap << XKB_NUM_CORE_MODS));
-        }
+                      VModMaskText(keymap, key->vmodmap));
 
         switch (key->out_of_range_group_action) {
         case RANGE_SATURATE:

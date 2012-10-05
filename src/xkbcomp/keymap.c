@@ -34,13 +34,12 @@ ComputeEffectiveMask(struct xkb_keymap *keymap, struct xkb_mods *mods)
 {
     const struct xkb_vmod *vmod;
     xkb_mod_index_t i;
-    xkb_mod_mask_t vmask = mods->mods >> XKB_NUM_CORE_MODS;
 
     /* The effective mask is only real mods for now. */
     mods->mask = mods->mods & 0xff;
 
     darray_enumerate(i, vmod, keymap->vmods)
-        if (vmask & (1 << i))
+        if (mods->mods & (1 << (i + XKB_NUM_CORE_MODS)))
             mods->mask |= vmod->mapping;
 }
 
@@ -138,7 +137,7 @@ FindInterpForKey(struct xkb_keymap *keymap, const struct xkb_key *key,
 static bool
 ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
 {
-    xkb_mod_mask_t vmodmask = 0;
+    xkb_mod_mask_t vmodmap = 0;
     xkb_layout_index_t group;
     xkb_level_index_t level;
 
@@ -162,7 +161,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
             if ((group == 0 && level == 0) ||
                 !(interp->match & MATCH_LEVEL_ONE_ONLY)) {
                 if (interp->virtual_mod != XKB_MOD_INVALID)
-                    vmodmask |= (1 << interp->virtual_mod);
+                    vmodmap |= (1 << interp->virtual_mod);
             }
 
             if (interp->act.type != ACTION_TYPE_NONE)
@@ -171,7 +170,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
     }
 
     if (!(key->explicit & EXPLICIT_VMODMAP))
-        key->vmodmap = vmodmask;
+        key->vmodmap = vmodmap;
 
     return true;
 }
@@ -199,7 +198,7 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     /* Update keymap->vmods, the virtual -> real mod mapping. */
     xkb_foreach_key(key, keymap)
         darray_enumerate(i, vmod, keymap->vmods)
-            if (key->vmodmap & (1 << i))
+            if (key->vmodmap & (1 << (XKB_NUM_CORE_MODS + i)))
                 vmod->mapping |= key->modmap;
 
     /* Now update the level masks for all the types to reflect the vmods. */
