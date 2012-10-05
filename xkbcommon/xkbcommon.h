@@ -54,6 +54,7 @@
 /*
  * Copyright © 2009-2012 Daniel Stone
  * Copyright © 2012 Intel Corporation
+ * Copyright © 2012 Ran Benita
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -112,12 +113,14 @@ struct xkb_context;
 
 /**
  * @struct xkb_keymap
- * Opaque compiled XKB keymap object.
+ * Opaque compiled keymap object.
  *
  * The keymap object holds all of the static keyboard information obtained
  * from compiling XKB files.
+ *
  * A keymap is immutable after it is created (besides reference counts, etc.);
  * if you need to change it, you must create a new one.
+ *
  * A keymap object is created, accessed and destroyed through the
  * xkb_keymap_*() API.
  */
@@ -125,25 +128,129 @@ struct xkb_keymap;
 
 /**
  * @struct xkb_state
- * Opaque XKB keyboard state object.
+ * Opaque keyboard state object.
  *
  * State objects contain the active state of a keyboard (or keyboards), such
  * as the currently effective layout and the active modifiers. It acts as a
  * simple state machine, wherein key presses and releases are the input, and
  * key symbols (keysyms) are the output.
+ *
  * A state object is created, accessed, manipulated and destroyed through the
  * xkb_state_*() API.
  */
 struct xkb_state;
 
+/**
+ * A number used to represent a physical key on a keyboard.
+ *
+ * A standard PC-compatible keyboard might have 102 keys.  An appropriate
+ * keymap would assign each of them a keycode, by which the user should
+ * refer to the key throughout the library.
+ *
+ * @todo Explain how keycodes are mapped to scancodes.
+ */
 typedef uint32_t xkb_keycode_t;
+
+/**
+ * A number used to represent the symbols visible on the keycaps of a
+ * keyboard.
+ *
+ * A key, represented by a keycode, may generate different symbols according
+ * to keyboard state.  For example, on a QWERTY keyboard, pressing the key
+ * labled <A> generates the symbol 'a'.  If the Shift key is held, it
+ * generates the symbol 'A'.  If a different layout is used, say Greek,
+ * it generates the symbol 'α'.  And so on.
+ *
+ * Each such symbol is represented by a keysym.  Note that keysyms are
+ * somewhat more general, in that they can also represent some "function",
+ * such as "Left" or "Right" for the arrow keys.  For more information,
+ * see:
+ * http://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html#keysym_encoding
+ *
+ * Specifically named keysyms can be found in the
+ * xkbcommon/xkbcommon-keysyms.h header file.  Their name does not include
+ * the XKB_KEY_ prefix.
+ *
+ * Besides those, any Unicode/ISO 10646 character in the range U0100 to
+ * U10FFFF can be represented by a keysym value in the range 0x01000100 to
+ * 0x0110FFFF.  The name of Unicode keysyms is "U<codepoint>", e.g. "Ua1b2".
+ *
+ * The name of other unnamed keysyms is the hexadecimal representation of
+ * their value, e.g. "0xabcd1234".
+ *
+ * Keysym names are case-sensitive.
+ */
 typedef uint32_t xkb_keysym_t;
+
+/**
+ * Index of a modifier.
+ *
+ * @todo Explain what are modifiers.
+ *
+ * Modifier indexes are consecutive.  The first modifier has index 0.
+ *
+ * Each modifier must have a name, and the names are unique.  Therefore, it
+ * is safe to use the name as a unique identifier for a modifier.  Modifier
+ * names are case-sensitive.
+ *
+ * @sa xkb_keymap_num_mods()
+ */
 typedef uint32_t xkb_mod_index_t;
+/** A mask of modifier indexes. */
 typedef uint32_t xkb_mod_mask_t;
+
+/**
+ * Index of a keyboard layout.
+ *
+ * @todo Explain what are layouts.
+ *
+ * Layout indexes are consecutive.  The first layout has index 0.
+ *
+ * Each layout is not required to have a name, and the names are not
+ * guarenteed to be unique (though they are usually provided and unique).
+ * Therefore, it is not safe to use the name as a unique identifier for a
+ * layout.  Layout names are case-sensitive.
+ *
+ * Layouts are also called "groups" by XKB.
+ *
+ * @sa xkb_keymap_num_layouts() xkb_keymap_num_layouts_for_key()
+ */
 typedef uint32_t xkb_layout_index_t;
+/** A mask of layout indexes. */
 typedef uint32_t xkb_layout_mask_t;
+
+/**
+ * Index of a shift level.
+ *
+ * @todo Explain what are shift levels.
+ */
 typedef uint32_t xkb_level_index_t;
+
+/**
+ * Index of a keyboard LED.
+ *
+ * @todo Explain what are LEDs.
+ *
+ * LED indexes are non-consecutive.  The first LED has index 0.
+ *
+ * LED names are case-sensitive.
+ *
+ * Each LED must have a name, and the names are unique. Therefore,
+ * it is safe to use the name as a unique identifier for a LED.
+ *
+ * @warning A given keymap may specify an exact index for a given LED.
+ * Therefore, LED indexing is not necessarily sequential, as opposed to
+ * modifiers and layouts.  This means that when iterating over the LEDs
+ * in a keymap using e.g. xkb_keymap_num_leds(), some indexes might be
+ * invalid.  Given such an index, functions like xkb_keymap_led_get_name()
+ * will return NULL, and xkb_state_led_index_is_active() will return -1.
+ *
+ * LEDs are also called "indicators" by XKB.
+ *
+ * @sa xkb_keymap_num_leds()
+ */
 typedef uint32_t xkb_led_index_t;
+/** A mask of LED indexes. */
 typedef uint32_t xkb_led_mask_t;
 
 #define XKB_MOD_INVALID     (0xffffffff)
@@ -153,15 +260,16 @@ typedef uint32_t xkb_led_mask_t;
 #define XKB_LED_INVALID     (0xffffffff)
 
 #define XKB_KEYCODE_MAX     (0xffffffff - 1)
-#define xkb_keycode_is_legal_ext(kc) (kc <= XKB_KEYCODE_MAX)
-#define xkb_keycode_is_legal_x11(kc) (kc >= 8 && kc <= 255)
+#define xkb_keycode_is_legal_ext(key) (key <= XKB_KEYCODE_MAX)
+#define xkb_keycode_is_legal_x11(key) (key >= 8 && key <= 255)
 
 /**
  * Names to compile a keymap with, also known as RMLVO.
  *
  * These names together are the primary identifier for a keymap.
  * If any of the members is NULL or an empty string (""), a default value is
- * used.
+ * used.  It is recommended to use the system default by passing NULL for
+ * unspecified values, instead of providing your own defaults.
  */
 struct xkb_rule_names {
     /** The rules file to use. The rules file describes how to interpret
@@ -191,25 +299,22 @@ struct xkb_rule_names {
 /**
  * Get the name of a keysym.
  *
+ * For a description of how keysyms are named, see @ref xkb_keysym_t.
+ *
  * @param[in]  keysym The keysym.
  * @param[out] buffer A string buffer to write the name into.
  * @param[in]  size   Size of the buffer.
  *
- * @remark Named keysyms are found in the xkbcommon/xkbcommon-keysyms.h
- * header file. Their name does not include the XKB_KEY_ prefix.
- * The name of Unicode keysyms is "U<codepoint>", e.g. "Ua1b2".
- * The name of other unnamed keysyms is the hexadecimal representation of
- * their value, e.g. "0xabcd1234".
- * An invalid keysym is returned as "Invalid".
- *
  * @warning If the buffer passed is too small, the string is truncated
- * (though still NUL-terminated); a size of at least 32 bytes is recommended.
+ * (though still NUL-terminated); a size of at least 64 bytes is recommended.
  *
- * @returns The number of bytes in the name, excluding the NUL byte, if
- * keysym is valid.  Otherwise, -1 is returned.
+ * @returns The number of bytes in the name, excluding the NUL byte. If
+ * the keysym is invalid, returns -1.
  *
- * @remark You may check if truncation has occured by comparing the return
- * value with the length of buffer, similarly to the snprintf(3) function.
+ * You may check if truncation has occured by comparing the return value
+ * with the length of buffer, similarly to the snprintf(3) function.
+ *
+ * @sa xkb_keysym_t
  */
 int
 xkb_keysym_get_name(xkb_keysym_t keysym, char *buffer, size_t size);
@@ -217,14 +322,12 @@ xkb_keysym_get_name(xkb_keysym_t keysym, char *buffer, size_t size);
 /**
  * Get a keysym from its name.
  *
- * @param name The name of a keysym. See remarks in
- * xkb_keysym_get_name(); this function will accept any name returned by that
- * function.
+ * @param name The name of a keysym. See remarks in xkb_keysym_get_name();
+ * this function will accept any name returned by that function.
  *
- * @remark The lookup is case-sensitive.
+ * @returns The keysym. If the name is invalid, returns XKB_KEY_NoSymbol.
  *
- * @returns The keysym, if name is valid.  Otherwise, XKB_KEY_NoSymbol is
- * returned.
+ * @sa xkb_keysym_t
  */
 xkb_keysym_t
 xkb_keysym_from_name(const char *name);
@@ -236,9 +339,9 @@ xkb_keysym_from_name(const char *name);
  * @param[out] buffer A buffer to write the UTF-8 string into.
  * @param[in]  size   The size of buffer.  Must be at least 7.
  *
- * @returns The number of bytes written to the buffer.  A return value of
- * 0 means that the keysym does not have a known printable Unicode
- * representation.  A return value of -1 means that the buffer was too small.
+ * @returns The number of bytes written to the buffer.  If the keysym does
+ * not have a Unicode representation, returns 0.  If the buffer is too small,
+ * returns -1.
  */
 int
 xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size);
@@ -246,11 +349,9 @@ xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size);
 /**
  * Get the Unicode/UTF-32 representation of a keysym.
  *
- * @param keysym The keysym.
- *
  * @returns The Unicode/UTF-32 representation of keysym, which is also
- * compatible with UCS-4.  A return value of 0 means the keysym does not
- * have a known printable Unicode representation.
+ * compatible with UCS-4.  If the keysym does not have a Unicode
+ * representation, returns 0.
  */
 uint32_t
 xkb_keysym_to_utf32(xkb_keysym_t keysym);
@@ -280,42 +381,50 @@ enum xkb_context_flags {
  *
  * @returns A new context, or NULL on failure.
  *
- * @remark If successful, the caller holds a reference on the context, and
- * must call xkb_context_unref() when finished.
- *
- * @remark The user may set some environment variables to affect default
- * values in the context. See e.g. xkb_context_set_log_level() and
+ * The user may set some environment variables to affect default values in
+ * the context. See e.g. xkb_context_set_log_level() and
  * xkb_context_set_log_verbosity().
+ *
+ * @memberof xkb_context
  */
 struct xkb_context *
 xkb_context_new(enum xkb_context_flags flags);
 
 /**
  * Take a new reference on a context.
- * @param context The context to reference.
+ *
  * @returns The passed in context.
+ *
+ * @memberof xkb_context
  */
 struct xkb_context *
 xkb_context_ref(struct xkb_context *context);
 
 /**
  * Release a reference on a context, and possibly free it.
- * @param context The context to unreference.
+ *
+ * @memberof xkb_context
  */
 void
 xkb_context_unref(struct xkb_context *context);
 
 /**
  * Append a new entry to the context's include path.
+ *
  * @returns 1 on success, or 0 if the include path could not be added or is
  * inaccessible.
+ *
+ * @memberof xkb_context
  */
 int
 xkb_context_include_path_append(struct xkb_context *context, const char *path);
 
 /**
  * Append the default include paths to the context's include path.
+ *
  * @returns 1 on success, or 0 if the primary include path could not be added.
+ *
+ * @memberof xkb_context
  */
 int
 xkb_context_include_path_append_default(struct xkb_context *context);
@@ -327,27 +436,35 @@ xkb_context_include_path_append_default(struct xkb_context *context);
  * default paths.
  *
  * @returns 1 on success, or 0 if the primary include path could not be added.
+ *
+ * @memberof xkb_context
  */
 int
 xkb_context_include_path_reset_defaults(struct xkb_context *context);
 
 /**
  * Remove all entries from the context's include path.
+ *
+ * @memberof xkb_context
  */
 void
 xkb_context_include_path_clear(struct xkb_context *context);
 
 /**
  * Get the number of paths in the context's include path.
- * @returns The number of paths in the context's include path.
+ *
+ * @memberof xkb_context
  */
 unsigned int
 xkb_context_num_include_paths(struct xkb_context *context);
 
 /**
  * Get a specific include path from the context's include path.
+ *
  * @returns The include path at the specified index within the context, or
  * NULL if the index is invalid.
+ *
+ * @memberof xkb_context
  */
 const char *
 xkb_context_include_path_get(struct xkb_context *context, unsigned int index);
@@ -357,6 +474,8 @@ xkb_context_include_path_get(struct xkb_context *context, unsigned int index);
  *
  * This may be useful in conjuction with xkb_context_set_log_fn() or other
  * callbacks.
+ *
+ * @memberof xkb_context
  */
 void
 xkb_context_set_user_data(struct xkb_context *context, void *user_data);
@@ -369,6 +488,8 @@ xkb_context_set_user_data(struct xkb_context *context, void *user_data);
  *
  * This may be useful to access private user data from callbacks like a
  * custom logging function.
+ *
+ * @memberof xkb_context
  **/
 void *
 xkb_context_get_user_data(struct xkb_context *context);
@@ -401,6 +522,8 @@ enum xkb_log_level {
  * The default level is XKB_LOG_LEVEL_ERROR.  The environment variable
  * XKB_LOG_LEVEL, if set in the time the context was created, overrides the
  * default value.  It may be specified as a level number or name.
+ *
+ * @memberof xkb_context
  */
 void
 xkb_context_set_log_level(struct xkb_context *context,
@@ -408,7 +531,8 @@ xkb_context_set_log_level(struct xkb_context *context,
 
 /**
  * Get the current logging level.
- * @returns The current logging level.
+ *
+ * @memberof xkb_context
  */
 enum xkb_log_level
 xkb_context_get_log_level(struct xkb_context *context);
@@ -428,14 +552,17 @@ xkb_context_get_log_level(struct xkb_context *context);
  * 1 to 10, higher values being more verbose.  0 would result in no verbose
  * messages being logged.
  *
- * @remark Most verbose messages are of level XKB_LOG_LEVEL_WARNING or lower.
+ * Most verbose messages are of level XKB_LOG_LEVEL_WARNING or lower.
+ *
+ * @memberof xkb_context
  */
 void
 xkb_context_set_log_verbosity(struct xkb_context *context, int verbosity);
 
 /**
  * Get the current logging verbosity of the context.
- * @returns The current logging verbosity.
+ *
+ * @memberof xkb_context
  */
 int
 xkb_context_get_log_verbosity(struct xkb_context *context);
@@ -457,6 +584,8 @@ xkb_context_get_log_verbosity(struct xkb_context *context);
  * You may use xkb_context_set_user_data() on the context, and then call
  * xkb_context_get_user_data() from within the logging function to provide
  * it with additional private context.
+ *
+ * @memberof xkb_context
  */
 void
 xkb_context_set_log_fn(struct xkb_context *context,
@@ -468,7 +597,7 @@ xkb_context_set_log_fn(struct xkb_context *context,
 
 /**
  * @defgroup keymap Keymap Creation
- * Creating and destroying XKB keymaps.
+ * Creating and destroying keymaps.
  *
  * @{
  */
@@ -496,6 +625,7 @@ enum xkb_keymap_compile_flags {
  * the compilation failed.
  *
  * @sa xkb_rule_names
+ * @memberof xkb_keymap
  */
 struct xkb_keymap *
 xkb_keymap_new_from_names(struct xkb_context *context,
@@ -509,20 +639,22 @@ enum xkb_keymap_format {
 };
 
 /**
- * Create a keymap from an XKB keymap file.
+ * Create a keymap from a keymap file.
  *
  * @param context The context in which to create the keymap.
- * @param file    The XKB keymap file to compile.
- * @param format  The text format of the XKB keymap file to compile.
+ * @param file    The keymap file to compile.
+ * @param format  The text format of the keymap file to compile.
  * @param flags   Optional flags for the keymap, or 0.
  *
- * @returns A keymap compiled from the given XKB keymap file, or NULL of
+ * @returns A keymap compiled from the given XKB keymap file, or NULL if
  * the compilation failed.
  *
- * @remark The file must contain an entire XKB keymap.  For example, in the
+ * The file must contain a complete keymap.  For example, in the
  * XKB_KEYMAP_FORMAT_TEXT_V1 format, this means the file must contain one
  * top level '%xkb_keymap' section, which in turn contains other required
  * sections.
+ *
+ * @memberof xkb_keymap
  */
 struct xkb_keymap *
 xkb_keymap_new_from_file(struct xkb_context *context, FILE *file,
@@ -530,12 +662,13 @@ xkb_keymap_new_from_file(struct xkb_context *context, FILE *file,
                          enum xkb_keymap_compile_flags flags);
 
 /**
- * Create a keymap from an XKB keymap given as a string.
+ * Create a keymap from a keymap string.
  *
  * This is just like xkb_keymap_new_from_file(), but instead of a file, gets
- * the XKB keymap as one enormous string.
+ * the keymap as one enormous string.
  *
  * @see xkb_keymap_new_from_string()
+ * @memberof xkb_keymap
  */
 struct xkb_keymap *
 xkb_keymap_new_from_string(struct xkb_context *context, const char *string,
@@ -544,16 +677,18 @@ xkb_keymap_new_from_string(struct xkb_context *context, const char *string,
 
 /**
  * Take a new reference on a keymap.
- * @param keymap The keymap to reference.
+ *
  * @returns The passed in keymap.
+ *
+ * @memberof xkb_keymap
  */
 struct xkb_keymap *
 xkb_keymap_ref(struct xkb_keymap *keymap);
 
 /**
  * Release a reference on a keymap, and possibly free it.
- * @param keymap The keymap to unreference. If the reference count reaches
- * zero, the keymap is freed.
+ *
+ * @memberof xkb_keymap
  */
 void
 xkb_keymap_unref(struct xkb_keymap *keymap);
@@ -574,8 +709,10 @@ xkb_keymap_unref(struct xkb_keymap *keymap);
  * The returned string may be fed back into xkb_map_new_from_string() to get
  * the exact same keymap (possibly in another process, etc.).
  *
- * @remark The returned string is dynamically allocated and should be freed
- * by the caller.
+ * The returned string is dynamically allocated and should be freed by the
+ * caller.
+ *
+ * @memberof xkb_keymap
  */
 char *
 xkb_keymap_get_as_string(struct xkb_keymap *keymap,
@@ -584,85 +721,149 @@ xkb_keymap_get_as_string(struct xkb_keymap *keymap,
 /** @} */
 
 /**
- * @defgroup components XKB State Components
+ * @defgroup components Keymap Components
  * Enumeration of state components in a keymap.
  *
  * @{
  */
 
 /**
- * Returns the number of modifiers active in the keymap.
+ * Get the number of modifiers in the keymap.
+ *
+ * @sa xkb_mod_index_t
+ * @memberof xkb_keymap
  */
 xkb_mod_index_t
 xkb_keymap_num_mods(struct xkb_keymap *keymap);
 
 /**
- * Returns the name of the modifier specified by 'idx', or NULL if invalid.
+ * Get the name of a modifier by index.
+ *
+ * @returns The name.  If the index is invalid, returns NULL.
+ *
+ * @sa xkb_mod_index_t
+ * @memberof xkb_keymap
  */
 const char *
 xkb_keymap_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx);
 
 /**
- * Returns the index of the modifier specified by 'name', or XKB_MOD_INVALID.
+ * Get the index of a modifier by name.
+ *
+ * @returns The index.  If no modifier with this name exists, returns
+ * XKB_MOD_INVALID.
+ *
+ * @sa xkb_mod_index_t
+ * @memberof xkb_keymap
  */
 xkb_mod_index_t
 xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name);
 
 /**
- * Returns the number of groups active in the keymap.
+ * Get the number of layouts in the keymap.
+ *
+ * @sa xkb_layout_index_t xkb_rule_names xkb_keymap_num_layouts_for_key()
+ * @memberof xkb_keymap
  */
 xkb_layout_index_t
 xkb_keymap_num_layouts(struct xkb_keymap *keymap);
 
 /**
- * Returns the name of the group specified by 'idx', or NULL if invalid.
+ * Get the name of a layout by index.
+ *
+ * @returns The name.  If the index is invalid, or the layout does not have
+ * a name, returns NULL.
+ *
+ * @sa xkb_layout_index_t
+ * @memberof xkb_keymap
  */
 const char *
 xkb_keymap_layout_get_name(struct xkb_keymap *keymap, xkb_layout_index_t idx);
 
 /**
- * Returns the index of the layout specified by 'name', or XKB_LAYOUT_INVALID.
+ * Get the index of a layout by name.
+ *
+ * @returns The index.  If no layout exists with this name, returns
+ * XKB_LAYOUT_INVALID.  If more than one layout in the keymap has this name,
+ * returns the lowest index among them.
+ *
+ * @memberof xkb_keymap
  */
 xkb_layout_index_t
 xkb_keymap_layout_get_index(struct xkb_keymap *keymap, const char *name);
 
 /**
- * Returns the number of layouts active for the specified key.
+ * Get the number of layouts for a specific key.
+ *
+ * This number can be different from xkb_keymap_num_layouts(), but is always
+ * smaller.  It is the appropriate value to use when iterating over the
+ * layouts of a key.
+ *
+ * @sa xkb_layout_index_t
+ * @memberof xkb_keymap
  */
 xkb_layout_index_t
 xkb_keymap_num_layouts_for_key(struct xkb_keymap *keymap, xkb_keycode_t key);
 
 /**
- * Returns the number of levels active for the specified key and layout.
+ * Get the number of shift levels of a specific key and layout.
+ *
+ * @sa xkb_level_index_t
+ * @memberof xkb_keymap
  */
 xkb_level_index_t
 xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t key,
                               xkb_layout_index_t layout);
 
 /**
- * Returns the number of LEDs in the given map.
- * Note that LED indexes are not necessarily consecutive in the keymap.
- * This means that some LEDs in the range between 0 and the return value
- * might not be valid.  Given such an index, xkb_keymap_led_get_name()
- * will return NULL, and xkb_state_led_index_is_active() will return -1.
+ * Get the number of LEDs in a keymap.
+ *
+ * @warning The range [ 0...xkb_keymap_num_leds() ) includes all of the LEDs
+ * in the keymap, but may also contain inactive LEDs.  When iterating over
+ * this range, you need the handle this case when calling functions such as
+ * xkb_keymap_led_get_name() or xkb_state_led_index_is_active().
+ *
+ * @sa xkb_led_index_t
+ * @memberof xkb_keymap
  */
 xkb_led_index_t
 xkb_keymap_num_leds(struct xkb_keymap *keymap);
 
 /**
- * Returns the name of the LED specified by 'idx', or NULL if invalid.
+ * Get the name of a LED by index.
+ *
+ * @returns The name.  If the index is invalid, returns NULL.
+ *
+ * @memberof xkb_keymap
  */
 const char *
 xkb_keymap_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx);
 
 /**
- * Returns the index of the LED specified by 'name', or XKB_LED_INVALID.
+ * Get the index of a LED by name.
+ *
+ * @returns The index.  If no LED with this name exists, returns
+ * XKB_LED_INVALID.
+ *
+ * @memberof xkb_keymap
  */
 xkb_led_index_t
 xkb_keymap_led_get_index(struct xkb_keymap *keymap, const char *name);
 
 /**
- * Returns 1 if the key should repeat, or 0 otherwise.
+ * Determine whether a key should repeat or not.
+ *
+ * A keymap may specify different repeat behaviors for different keys.
+ * Most keys should generally exhibit repeat behavior; for example, holding
+ * the 'a' key down in a text editor should normally insert a single 'a'
+ * character every few milliseconds, until the key is released.  However,
+ * there are keys which should not or do not need to be repeated.  For
+ * example, repeating modifier keys such as Left/Right Shift or Caps Lock
+ * is not generally useful or desired.
+ *
+ * @returns 1 if the key should repeat, 0 otherwise.
+ *
+ * @memberof xkb_keymap
  */
 int
 xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
@@ -670,36 +871,53 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
 /** @} */
 
 /**
- * @defgroup state XKB State Objects
+ * @defgroup state Keyboard State
  * Creating, destroying and manipulating keyboard state objects.
  *
  * @{
  */
 
 /**
- * Returns a new XKB state object for use with the given keymap, or NULL on
- * failure.
+ * Create a new keyboard state object for a keymap.
+ *
+ * @param keymap The keymap for which to create the state.
+ *
+ * @returns A new keyboard state object, or NULL on failure.
+ *
+ * @memberof xkb_state
  */
 struct xkb_state *
 xkb_state_new(struct xkb_keymap *keymap);
 
 /**
- * Takes a new reference on a state object.
+ * Take a new reference on a keyboard state object.
+ *
+ * @returns The passed in object.
+ *
+ * @memberof xkb_state
  */
 struct xkb_state *
 xkb_state_ref(struct xkb_state *state);
 
 /**
- * Unrefs and potentially deallocates a state object; the caller must not
- * use the state object after calling this.
+ * Release a reference on a keybaord state object, and possibly free it.
+ *
+ * @memberof xkb_state
  */
 void
 xkb_state_unref(struct xkb_state *state);
 
 /**
- * Get the keymap from which the state object was created.  Does not take
- * a new reference on the map; you must explicitly reference it yourself
- * if you plan to use it beyond the lifetime of the state.
+ * Get the keymap from which a keyboard state object was created.
+ *
+ * @returns The keymap which was used in xkb_state_new() to create this
+ * state object.
+ *
+ * This function does not take a new reference on the keymap; you must
+ * explicitly reference it yourself if you plan to use it beyond the
+ * lifetime of the state.
+ *
+ * @memberof xkb_state
  */
 struct xkb_keymap *
 xkb_state_get_keymap(struct xkb_state *state);
@@ -711,52 +929,133 @@ enum xkb_key_direction {
 };
 
 /**
- * Updates a state object to reflect the given key being pressed or released.
+ * Update the keyboard state to reflect a given key being pressed or
+ * released.
+ *
+ * @todo Explain.
+ *
+ * @memberof xkb_state
  */
 void
 xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
                      enum xkb_key_direction direction);
 
 /**
- * Gives the symbols obtained from pressing a particular key with the given
- * state.  *syms_out will be set to point to an array of keysyms, with the
- * return value being the number of symbols in *syms_out.  If the return
- * value is 0, *syms_out will be set to NULL, as there are no symbols produced
- * by this event.
+ * Get the keysyms obtained from pressing a particular key in a given
+ * keyboard state.
+ *
+ * Get the keysyms for a key according to the current active layout,
+ * modifiers and shift level for the key, as determined by a keyboard
+ * state.
+ *
+ * @param[in]  state    The keyboard state object.
+ * @param[in]  key      The keycode of the key.
+ * @param[out] syms_out An immutible array of keysyms corresponding the
+ * key in the given keyboard state.
+ *
+ * As an extension to XKB, this function can return more than one keysym.
+ * If you do not want to handle this case, you can use
+ * xkb_state_key_get_one_sym().
+ *
+ * @returns The number of keysyms in the syms_out array.  If no keysyms
+ * are produced by the key in the given keyboard state, returns 0 and sets
+ * syms_out to NULL.
+ *
+ * @memberof xkb_state
  */
 int
 xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
                        const xkb_keysym_t **syms_out);
 
 /**
- * As with xkb_state_key_get_syms, but either returns exactly keysym, or
- * XKB_KEY_NoSymbol if there are either zero or more than one symbols.
+ * Get the single keysym obtained from pressing a particular key in a
+ * given keyboard state.
+ *
+ * This function is similar to xkb_state_key_get_syms(), but with a
+ * simplified interface for users which cannot or do not want to handle
+ * the case where multiple keysyms are returned.
+ *
+ * @returns The keysym.  If the key does not have exactly one keysym,
+ * returns XKB_KEY_NoSymbol
+ *
+ * @sa xkb_state_key_get_syms()
+ * @memberof xkb_state
  */
 xkb_keysym_t
 xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t key);
 
 /**
- * Returns the layout number that would be active for a particular key with
- * the given state.
+ * Get the effective layout index for a key in a given keyboard state.
+ *
+ * @returns The layout index for the key in the given keyboard state.  If
+ * the given keycode is invalid, or if the key is not included in any
+ * layout at all, returns XKB_LAYOUT_INVALID.
+ *
+ * @invariant If the returned layout is valid, the following always holds:
+ * @code
+ * xkb_state_key_get_layout(state, key) < xkb_keymap_num_layouts_for_key(keymap, key)
+ * @endcode
+ *
+ * @memberof xkb_state
  */
 xkb_layout_index_t
 xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t key);
 
 /**
- * Returns the level number that would be active for a particular key with
- * the given state and layout number, usually obtained from
- * xkb_state_key_get_layout.
+ * Get the effective shift level for a key in a given keyboard state and
+ * layout.
+ *
+ * @param state The keyboard state.
+ * @param key The keycode of the key.
+ * @param layout The layout for which to get the shift level.  This must be
+ * smaller than:
+ * @code xkb_keymap_num_layouts_for_key(keymap, key) @endcode
+ * usually it would be:
+ * @code xkb_state_key_get_layout(state, key) @endcode
+ *
+ * @return The shift level index.  If the key or layout are invalid,
+ * returns XKB_LEVEL_INVALID.
+ *
+ * @invariant If the returned level is valid, the following always holds:
+ * @code
+ * xkb_state_key_get_level(state, key, layout) < xkb_keymap_num_levels_for_key(keymap, key, layout)
+ * @endcode
+ *
+ * @memberof xkb_state
  */
 xkb_level_index_t
 xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t key,
                         xkb_layout_index_t layout);
 
 /**
- * Gives the symbols obtained from pressing a particular key with the given
- * layout and level.  *syms_out will be set to point to an array of keysyms,
- * with the return value being the number of symbols in *syms_out.  If the
- * return value is 0, *syms_out will be set to NULL, as there are no symbols
- * produced by this event.
+ * Get the keysyms obtained from pressing a key in a given layout and
+ * shift level.
+ *
+ * This function is like xkb_state_key_get_syms(), only the layout and
+ * shift level are not derived from the keyboard state but are instead
+ * specified explicitly.
+ *
+ * @param[in] keymap    The keymap.
+ * @param[in] key       The keycode of the key.
+ * @param[in] layout    The layout for which to get the keysyms. This must
+ * be smaller than:
+ * @code xkb_keymap_num_layouts_for_key(keymap, key) @endcode
+ * Usually it would be:
+ * @code xkb_state_key_get_layout(state, key) @endcode
+ * @param[in] level     The shift level in the layout for which to get the
+ * keysyms. This must be smaller than:
+ * @code xkb_keymap_num_layouts_for_key(keymap, key) @endcode
+ * usually it would be:
+ * @code xkb_state_key_get_level(state, key, layout) @endcode.
+ * @param[out] syms_out An immutible array of keysyms corresponding the
+ * key in the given layout and shift level.
+ *
+ * @returns The number of keysyms in the syms_out array.  If no keysyms
+ * are produced by the key in the given layout and shift level, returns 0
+ * and sets syms_out to NULL.
+ *
+ * @sa xkb_state_key_get_syms()
+ * @memberof xkb_keymap
  */
 int
 xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
@@ -766,18 +1065,18 @@ xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
                                  const xkb_keysym_t **syms_out);
 
 /**
- * Modifier and group types for state objects.  This enum is bitmaskable,
+ * Modifier and layout types for state objects.  This enum is bitmaskable,
  * e.g. (XKB_STATE_DEPRESSED | XKB_STATE_LATCHED) is valid to exclude
  * locked modifiers.
  */
 enum xkb_state_component {
-    /** A key holding this modifier or group is currently physically
+    /** A key holding this modifier or layout is currently physically
      *  depressed; also known as 'base'. */
     XKB_STATE_DEPRESSED = (1 << 0),
-    /** Modifier or group is latched, i.e. will be unset after the next
+    /** Modifier or layout is latched, i.e. will be unset after the next
      *  non-modifier key press. */
     XKB_STATE_LATCHED = (1 << 1),
-    /** Modifier or group is locked, i.e. will be unset after the key
+    /** Modifier or layout is locked, i.e. will be unset after the key
      *  provoking the lock has been pressed again. */
     XKB_STATE_LOCKED = (1 << 2),
     /** Combinatination of depressed, latched, and locked. */
@@ -802,10 +1101,12 @@ enum xkb_state_match {
 };
 
 /**
- * Updates a state object from a set of explicit masks.  This entrypoint is
- * really only for window systems and the like, where a master process
- * holds an xkb_state, then serializes it over a wire protocol, and clients
- * then use the serialization to feed in to their own xkb_state.
+ * Update a state object from a set of explicit masks.
+ *
+ * This entrypoint is really only for window systems and the like, where a
+ * master process holds an xkb_state, then serializes it over a wire
+ * protocol, and clients then use the serialization to feed in to their own
+ * xkb_state.
  *
  * All parameters must always be passed, or the resulting state may be
  * incoherent.
@@ -815,50 +1116,70 @@ enum xkb_state_match {
  * master state.
  *
  * Please do not use this unless you fit the description above.
+ *
+ * @memberof xkb_state
  */
 void
 xkb_state_update_mask(struct xkb_state *state, xkb_mod_mask_t base_mods,
                       xkb_mod_mask_t latched_mods, xkb_mod_mask_t locked_mods,
-                      xkb_layout_index_t base_group,
-                      xkb_layout_index_t latched_group,
-                      xkb_layout_index_t locked_group);
+                      xkb_layout_index_t base_layout,
+                      xkb_layout_index_t latched_layout,
+                      xkb_layout_index_t locked_layout);
 
 /**
  * The counterpart to xkb_state_update_mask, to be used on the server side
- * of serialization.  Returns a xkb_mod_mask_t representing the given
- * component(s) of the state.
+ * of serialization.
+ *
+ * @returns A xkb_mod_mask_t representing the given component(s) of the
+ * state.
  *
  * This function should not be used in regular clients; please use the
  * xkb_state_mod_*_is_active or xkb_state_foreach_active_mod API instead.
  *
- * Can return NULL on failure.
+ * @memberof xkb_state
  */
 xkb_mod_mask_t
 xkb_state_serialize_mods(struct xkb_state *state,
                          enum xkb_state_component component);
 
 /**
- * The group equivalent of xkb_state_serialize_mods: please see its
- * documentation.
+ * The layout equivalent of xkb_state_serialize_mods.
+ *
+ * @sa xkb_state_serialize_mods
+ * @memberof xkb_state
  */
 xkb_layout_index_t
 xkb_state_serialize_layout(struct xkb_state *state,
                            enum xkb_state_component component);
 
 /**
- * Returns 1 if the modifier specified by 'name' is active in the manner
- * specified by 'type', 0 if it is unset, or -1 if the modifier does not
- * exist in the map.
+ * Test whether a modifier is active in a given keyboard state by name.
+ *
+ * @returns 1 if the modifier is active, 0 if it is not.  If the modifier
+ * name does not exist in the keymap, returns -1.
+ *
+ * @memberof xkb_state
  */
 int
 xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
                              enum xkb_state_component type);
 
 /**
- * Returns 1 if the modifiers specified by the varargs (NULL-terminated
- * strings, with a NULL sentinel) are active in the manner specified by
- * 'match', 0 otherwise, or -1 if any of the modifiers do not exist in
- * the map.
+ * Test whether a set of modifiers are active in a given keyboard state by
+ * name.
+ *
+ * @param state The keyboard state.
+ * @param type  The component of the state against which to match the
+ * given modifiers.
+ * @param match The manner by which to match the state against the
+ * given modifiers.
+ * @param ...   The set of of modifier names to test, terminated by a NULL
+ * argument (sentinel).
+ *
+ * @returns 1 if the modifiers are active, 0 if they are not.  If any of
+ * the modifier names do not exist in the keymap, returns -1.
+ *
+ * @memberof xkb_state
  */
 int
 xkb_state_mod_names_are_active(struct xkb_state *state,
@@ -867,19 +1188,33 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
                                ...);
 
 /**
- * Returns 1 if the modifier specified by 'idx' is active in the manner
- * specified by 'type', 0 if it is unset, or -1 if the modifier does not
- * exist in the current map.
+ * Test whether a modifier is active in a given keyboard state by index.
+ *
+ * @returns 1 if the modifier is active, 0 if it is not.  If the modifier
+ * index is invalid in the keymap, returns -1.
+ *
+ * @memberof xkb_state
  */
 int
 xkb_state_mod_index_is_active(struct xkb_state *state, xkb_mod_index_t idx,
                               enum xkb_state_component type);
 
 /**
- * Returns 1 if the modifiers specified by the varargs (of type
- * xkb_mod_index_t, with a XKB_MOD_INVALID sentinel) are active in the
- * manner specified by 'match' and 'type', 0 otherwise, or -1 if any of
- * the modifiers do not exist in the map.
+ * Test whether a set of modifiers are active in a given keyboard state by
+ * index.
+ *
+ * @param state The keyboard state.
+ * @param type  The component of the state against which to match the
+ * given modifiers.
+ * @param match The manner by which to match the state against the
+ * given modifiers.
+ * @param ...   The set of of modifier indexes to test, terminated by a
+ * XKB_MOD_INVALID argument (sentinel).
+ *
+ * @returns 1 if the modifiers are active, 0 if they are not.  If any of
+ * the modifier indexes are invalid in the keymap, returns -1.
+ *
+ * @memberof xkb_state
  */
 int
 xkb_state_mod_indices_are_active(struct xkb_state *state,
@@ -888,37 +1223,67 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
                                  ...);
 
 /**
- * Returns 1 if the modifier specified by 'idx' is used in the
- * translation of the keycode 'key' to the key symbols obtained by
- * pressing it (as in xkb_state_key_get_syms), given the current state,
- * 0 otherwise, or -1 if the index is invalid in the keymap.
+ * Test whether a modifier is consumed by keyboard state translation for
+ * a key.
+ *
+ * Some functions, like xkb_state_key_get_syms(), look at the state of
+ * the modifiers in the keymap and derive from it the correct shift level
+ * to use for the key.  For example, in a US layout, pressing the key
+ * labeled <A> while the Shift modifier is active, generates the keysym 'A'.
+ * In this case, the Shift modifier is said to be consumed.  However, the
+ * Num Lock modifier does not affect this translation at all, even if it
+ * active, so it is not consumed by this translation.
+ *
+ * It may be desireable for some application to not reuse consumed modifiers
+ * for further processing, e.g. for hotkeys or keyboard shortcuts.
+ *
+ * @returns 1 if the modifier is consumed, 0 if it is not.  If the modifier
+ * index is not valid in the keymap, returns -1.
+ *
+ * @sa xkb_state_mod_mask_remove_consumend()
+ * @memberof xkb_state
  */
 int
 xkb_state_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t key,
                                 xkb_mod_index_t idx);
 
 /**
+ * Remove consumed modifiers from a modifier mask for a key.
+ *
  * Takes the given modifier mask, and removes all modifiers which are
- * marked as 'consumed' (see xkb_key_mod_index_is_consumed definition)
- * for that particular key.
+ * consumed for that particular key (as in xkb_state_mod_index_is_consumed()).
+ *
+ * @sa xkb_state_mod_index_is_consumed()
+ * @memberof xkb_state
  */
 xkb_mod_mask_t
 xkb_state_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t key,
                                    xkb_mod_mask_t mask);
 
 /**
- * Returns 1 if the group specified by 'name' is active in the manner
- * specified by 'type', 0 if it is unset, or -1 if the group does not
- * exist in the current map.
+ * Test whether a layout is active in a given keyboard state by name.
+ *
+ * @returns 1 if the layout is active, 0 if it is not.  If no layout with
+ * this name exists in the keymap, return -1.
+ *
+ * If multiple layouts in the keymap have this name, the one with the lowest
+ * index is tested.
+ *
+ * @sa xkb_layout_index_t
+ * @memberof xkb_state
  */
 int
 xkb_state_layout_name_is_active(struct xkb_state *state, const char *name,
                                 enum xkb_state_component type);
 
 /**
- * Returns 1 if the group specified by 'idx' is active in the manner
- * specified by 'type', 0 if it is unset, or -1 if the group does not
- * exist in the current map.
+ * Test whether a layout is active in a given keyboard state by index.
+ *
+ * @returns 1 if the layout is active, 0 if it is not.  If the layout index
+ * is not valid in the keymap, returns -1.
+ *
+ * @sa xkb_layout_index_t
+ * @memberof xkb_state
  */
 int
 xkb_state_layout_index_is_active(struct xkb_state *state,
@@ -926,15 +1291,25 @@ xkb_state_layout_index_is_active(struct xkb_state *state,
                                  enum xkb_state_component type);
 
 /**
- * Returns 1 if the LED specified by 'name' is active, 0 if it is unset, or
- * -1 if the LED does not exist in the current map.
+ * Test whether a LED is active in a given keyboard state by name.
+ *
+ * @returns 1 if the LED is active, 0 if it not.  If no LED with this name
+ * exists in the keymap, returns -1.
+ *
+ * @sa xkb_led_index_t
+ * @memberof xkb_state
  */
 int
 xkb_state_led_name_is_active(struct xkb_state *state, const char *name);
 
 /**
- * Returns 1 if the LED specified by 'idx' is active, 0 if it is unset, or
- * -1 if the LED does not exist in the current map.
+ * Test whether a LED is active in a given keyboard state by index.
+ *
+ * @returns 1 if the LED is active, 0 if it not.  If the LED index is not
+ * valid in the keymap, returns -1.
+ *
+ * @sa xkb_led_index_t
+ * @memberof xkb_state
  */
 int
 xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx);

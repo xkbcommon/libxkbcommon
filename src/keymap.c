@@ -242,7 +242,7 @@ xkb_keymap_num_leds(struct xkb_keymap *keymap)
 }
 
 /**
- * Returns the name for a given group.
+ * Returns the name for a given LED.
  */
 XKB_EXPORT const char *
 xkb_keymap_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx)
@@ -255,7 +255,7 @@ xkb_keymap_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx)
 }
 
 /**
- * Returns the index for a named group.
+ * Returns the index for a named LED.
  */
 XKB_EXPORT xkb_led_index_t
 xkb_keymap_led_get_index(struct xkb_keymap *keymap, const char *name)
