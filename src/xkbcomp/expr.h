@@ -33,7 +33,7 @@ ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
                ExprDef **index_rtrn);
 
 bool
-ExprResolveModMask(struct xkb_context *ctx, const ExprDef *expr,
+ExprResolveModMask(struct xkb_keymap *keymap, const ExprDef *expr,
                    xkb_mod_mask_t *mask_rtrn);
 
 bool

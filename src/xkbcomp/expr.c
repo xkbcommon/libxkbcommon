@@ -85,8 +85,8 @@ static bool
 LookupModIndex(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
                enum expr_value_type type, xkb_mod_index_t *val_rtrn)
 {
-    const char *name = xkb_atom_text(ctx, field);
-    *val_rtrn = ModNameToIndex(name);
+    const struct xkb_keymap *keymap = priv;
+    *val_rtrn = ModNameToIndex(keymap, field);
     return (*val_rtrn != XKB_MOD_INVALID);
 }
 
@@ -96,6 +96,7 @@ LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
 {
     const char *str;
     xkb_mod_index_t ndx;
+    const struct xkb_keymap *keymap = priv;
 
     if (type != EXPR_TYPE_INT)
         return false;
@@ -106,7 +107,7 @@ LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
         *val_rtrn  = 0xff;
     else if (istreq(str, "none"))
         *val_rtrn = 0;
-    else if (LookupModIndex(ctx, priv, field, type, &ndx))
+    else if (LookupModIndex(ctx, keymap, field, type, &ndx))
         *val_rtrn = (1 << ndx);
     else
         return false;
@@ -618,25 +619,28 @@ ExprResolveMask(struct xkb_context *ctx, const ExprDef *expr,
 }
 
 bool
-ExprResolveModMask(struct xkb_context *ctx, const ExprDef *expr,
+ExprResolveModMask(struct xkb_keymap *keymap, const ExprDef *expr,
                    xkb_mod_mask_t *mask_rtrn)
 {
-    return ExprResolveMaskLookup(ctx, expr, mask_rtrn, LookupModMask, NULL);
+    return ExprResolveMaskLookup(keymap->ctx, expr, mask_rtrn, LookupModMask,
+                                 keymap);
 }
 
 static bool
-LookupVModIndex(const struct xkb_keymap *keymap, xkb_atom_t field,
-                enum expr_value_type type, xkb_mod_index_t *val_rtrn)
+LookupVModIndex(struct xkb_context *ctx, const void *priv,
+                xkb_atom_t field, enum expr_value_type type,
+                xkb_mod_index_t *val_rtrn)
 {
-    const struct xkb_vmod *vmod;
+    const struct xkb_mod *mod;
     xkb_mod_index_t i;
+    const struct xkb_keymap *keymap = priv;
 
     if (type != EXPR_TYPE_INT)
         return false;
 
-    darray_enumerate(i, vmod, keymap->vmods) {
-        if (vmod->name == field) {
-            *val_rtrn = XKB_NUM_CORE_MODS + i;
+    darray_enumerate(i, mod, keymap->mods) {
+        if (mod->type == MOD_VIRT && mod->name == field) {
+            *val_rtrn = i;
             return true;
         }
     }
@@ -649,18 +653,18 @@ LookupVModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
                enum expr_value_type type, xkb_mod_mask_t *val_rtrn)
 {
     xkb_mod_index_t ndx;
+    const struct xkb_keymap *keymap = priv;
 
-    if (LookupModMask(ctx, NULL, field, type, val_rtrn)) {
+    if (LookupModMask(ctx, keymap, field, type, val_rtrn)) {
         return true;
     }
-    else if (LookupVModIndex(priv, field, type, &ndx)) {
+    else if (LookupVModIndex(ctx, keymap, field, type, &ndx)) {
         *val_rtrn = (1 << ndx);
         return true;
     }
 
     return false;
 }
-
 
 bool
 ExprResolveVModMask(struct xkb_keymap *keymap, const ExprDef *expr,
@@ -698,7 +702,7 @@ bool
 ExprResolveVMod(struct xkb_keymap *keymap, const ExprDef *def,
                 xkb_mod_index_t *ndx_rtrn)
 {
-    const struct xkb_vmod *vmod;
+    const struct xkb_mod *mod;
     xkb_mod_index_t i;
     xkb_atom_t name = def->value.str;
 
@@ -710,9 +714,9 @@ ExprResolveVMod(struct xkb_keymap *keymap, const ExprDef *def,
         return false;
     }
 
-    darray_enumerate(i, vmod, keymap->vmods) {
-        if (vmod->name == name) {
-            *ndx_rtrn = XKB_NUM_CORE_MODS + i;
+    darray_enumerate(i, mod, keymap->mods) {
+        if (mod->type == MOD_VIRT && mod->name == name) {
+            *ndx_rtrn = i;
             return true;
         }
     }

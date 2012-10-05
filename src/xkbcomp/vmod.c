@@ -33,37 +33,37 @@ bool
 HandleVModDef(struct xkb_keymap *keymap, VModDef *stmt)
 {
     xkb_mod_index_t i;
-    const char *name;
-    const struct xkb_vmod *vmod;
-    struct xkb_vmod new;
+    const struct xkb_mod *mod;
+    struct xkb_mod new;
 
     if (stmt->value)
         log_err(keymap->ctx,
                 "Support for setting a value in a virtual_modifiers statement has been removed; "
                 "Value ignored\n");
 
-    name = xkb_atom_text(keymap->ctx, stmt->name);
-    if (ModNameToIndex(name) != XKB_MOD_INVALID) {
-        log_err(keymap->ctx,
-                "Can't add a virtual modifier named \"%s\"; "
-                "there is already a non-virtual modifier with this name! Ignored\n",
-                name);
-        return false;
+    darray_enumerate(i, mod, keymap->mods) {
+        if (mod->name == stmt->name) {
+            if (mod->type == MOD_VIRT)
+                return true;
+
+            log_err(keymap->ctx,
+                    "Can't add a virtual modifier named \"%s\"; "
+                    "there is already a non-virtual modifier with this name! Ignored\n",
+                    xkb_atom_text(keymap->ctx, mod->name));
+            return false;
+        }
     }
 
-    darray_enumerate(i, vmod, keymap->vmods)
-        if (vmod->name == stmt->name)
-            return true;
-
-    if (darray_size(keymap->vmods) >= XKB_MAX_VIRTUAL_MODS) {
+    if (darray_size(keymap->mods) >= XKB_MAX_MODS) {
         log_err(keymap->ctx,
-                "Too many virtual modifiers defined (maximum %d)\n",
-                XKB_MAX_VIRTUAL_MODS);
+                "Too many modifiers defined (maximum %d)\n",
+                XKB_MAX_MODS);
         return false;
     }
 
     new.name = stmt->name;
     new.mapping = 0;
-    darray_append(keymap->vmods, new);
+    new.type = MOD_VIRT;
+    darray_append(keymap->mods, new);
     return true;
 }

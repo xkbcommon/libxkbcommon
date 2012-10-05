@@ -127,15 +127,18 @@ err:
 static bool
 write_vmods(struct xkb_keymap *keymap, struct buf *buf)
 {
-    const struct xkb_vmod *vmod;
+    const struct xkb_mod *mod;
     xkb_mod_index_t num_vmods = 0;
 
-    darray_foreach(vmod, keymap->vmods) {
+    darray_foreach(mod, keymap->mods) {
+        if (mod->type != MOD_VIRT)
+            continue;
+
         if (num_vmods == 0)
             write_buf(buf, "\t\tvirtual_modifiers ");
         else
             write_buf(buf, ",");
-        write_buf(buf, "%s", xkb_atom_text(keymap->ctx, vmod->name));
+        write_buf(buf, "%s", xkb_atom_text(keymap->ctx, mod->name));
         num_vmods++;
     }
 
@@ -523,10 +526,10 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
                   VModMaskText(keymap, interp->mods));
 
         if (interp->virtual_mod != XKB_MOD_INVALID) {
-            xkb_mod_index_t idx = interp->virtual_mod - XKB_NUM_CORE_MODS;
+            xkb_mod_index_t idx = interp->virtual_mod;
             write_buf(buf, "\t\t\tvirtualModifier= %s;\n",
                       xkb_atom_text(keymap->ctx,
-                                    darray_item(keymap->vmods, idx).name));
+                                    darray_item(keymap->mods, idx).name));
         }
 
         if (interp->match & MATCH_LEVEL_ONE_ONLY)
@@ -724,17 +727,18 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
     }
 
     xkb_foreach_key(key, keymap) {
-        xkb_mod_index_t mod;
+        xkb_mod_index_t i;
+        const struct xkb_mod *mod;
 
         if (key->modmap == 0)
             continue;
 
-        for (mod = 0; mod < XKB_NUM_CORE_MODS; mod++) {
-            if (!(key->modmap & (1 << mod)))
+        darray_enumerate(i, mod, keymap->mods) {
+            if (!(key->modmap & (1 << i)))
                 continue;
 
             write_buf(buf, "\t\tmodifier_map %s { %s };\n",
-                      ModIndexToName(mod),
+                      xkb_atom_text(keymap->ctx, mod->name),
                       KeyNameText(keymap->ctx, key->name));
         }
     }

@@ -32,15 +32,15 @@
 static void
 ComputeEffectiveMask(struct xkb_keymap *keymap, struct xkb_mods *mods)
 {
-    const struct xkb_vmod *vmod;
+    const struct xkb_mod *mod;
     xkb_mod_index_t i;
 
     /* The effective mask is only real mods for now. */
     mods->mask = mods->mods & 0xff;
 
-    darray_enumerate(i, vmod, keymap->vmods)
-        if (mods->mods & (1 << (i + XKB_NUM_CORE_MODS)))
-            mods->mask |= vmod->mapping;
+    darray_enumerate(i, mod, keymap->mods)
+        if (mod->type == MOD_VIRT && mods->mods & (1 << i))
+            mods->mask |= mod->mapping;
 }
 
 static void
@@ -78,7 +78,7 @@ static const struct xkb_sym_interpret *
 FindInterpForKey(struct xkb_keymap *keymap, const struct xkb_key *key,
                  xkb_layout_index_t group, xkb_level_index_t level)
 {
-    struct xkb_sym_interpret *interp;
+    const struct xkb_sym_interpret *interp;
     const xkb_keysym_t *syms;
     int num_syms;
 
@@ -184,7 +184,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
 static bool
 UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
 {
-    struct xkb_vmod *vmod;
+    struct xkb_mod *mod;
     xkb_led_index_t led;
     unsigned int i, j;
     struct xkb_key *key;
@@ -195,11 +195,11 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
         if (!ApplyInterpsToKey(keymap, key))
             return false;
 
-    /* Update keymap->vmods, the virtual -> real mod mapping. */
+    /* Update keymap->mods, the virtual -> real mod mapping. */
     xkb_foreach_key(key, keymap)
-        darray_enumerate(i, vmod, keymap->vmods)
-            if (key->vmodmap & (1 << (XKB_NUM_CORE_MODS + i)))
-                vmod->mapping |= key->modmap;
+        darray_enumerate(i, mod, keymap->mods)
+            if (mod->type == MOD_VIRT && key->vmodmap & (1 << i))
+                mod->mapping |= key->modmap;
 
     /* Now update the level masks for all the types to reflect the vmods. */
     for (i = 0; i < keymap->num_types; i++) {
@@ -225,6 +225,28 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     /* Find maximum number of groups out of all keys in the keymap. */
     xkb_foreach_key(key, keymap)
         keymap->num_groups = MAX(keymap->num_groups, key->num_groups);
+
+    return true;
+}
+
+static bool
+UpdateBuiltinKeymapFields(struct xkb_keymap *keymap)
+{
+    struct xkb_context *ctx = keymap->ctx;
+
+    /*
+     * Add predefined (AKA real, core, X11) modifiers.
+     * The order is important!
+     */
+    darray_appends(keymap->mods,
+        { .name = xkb_atom_intern(ctx, "Shift"),   .type = MOD_REAL },
+        { .name = xkb_atom_intern(ctx, "Lock"),    .type = MOD_REAL },
+        { .name = xkb_atom_intern(ctx, "Control"), .type = MOD_REAL },
+        { .name = xkb_atom_intern(ctx, "Mod1"),    .type = MOD_REAL },
+        { .name = xkb_atom_intern(ctx, "Mod2"),    .type = MOD_REAL },
+        { .name = xkb_atom_intern(ctx, "Mod3"),    .type = MOD_REAL },
+        { .name = xkb_atom_intern(ctx, "Mod4"),    .type = MOD_REAL },
+        { .name = xkb_atom_intern(ctx, "Mod5"),    .type = MOD_REAL });
 
     return true;
 }
@@ -292,6 +314,9 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
         }
     }
     if (!ok)
+        return false;
+
+    if (!UpdateBuiltinKeymapFields(keymap))
         return false;
 
     /* Compile sections. */

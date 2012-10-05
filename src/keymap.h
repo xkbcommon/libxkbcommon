@@ -103,13 +103,17 @@
  */
 #define XKB_NUM_GROUPS 4
 
-/* Don't allow more vmods than we can hold in xkb_mod_mask_t. */
-#define XKB_MAX_VIRTUAL_MODS \
-    ((xkb_mod_index_t) (sizeof(xkb_mod_mask_t) * 8 - XKB_NUM_CORE_MODS))
+/* Don't allow more modifiers than we can hold in xkb_mod_mask_t. */
+#define XKB_MAX_MODS ((xkb_mod_index_t) (sizeof(xkb_mod_mask_t) * 8))
 
 /* These should all be dynamic. */
 #define XKB_NUM_INDICATORS 32
-#define XKB_NUM_CORE_MODS 8
+
+enum mod_type {
+    MOD_REAL = (1 << 0),
+    MOD_VIRT = (1 << 1),
+    MOD_BOTH = (MOD_REAL | MOD_VIRT),
+};
 
 enum xkb_action_type {
     ACTION_TYPE_NONE = 0,
@@ -358,8 +362,9 @@ struct xkb_key {
 
 typedef darray(xkb_atom_t) darray_xkb_atom_t;
 
-struct xkb_vmod {
+struct xkb_mod {
     xkb_atom_t name;
+    enum mod_type type;
     xkb_mod_mask_t mapping; /* vmod -> real mod mapping */
 };
 
@@ -386,7 +391,7 @@ struct xkb_keymap {
 
     darray(struct xkb_sym_interpret) sym_interpret;
 
-    darray(struct xkb_vmod) vmods;
+    darray(struct xkb_mod) mods;
 
     /* Number of groups in the key with the most groups. */
     xkb_layout_index_t num_groups;

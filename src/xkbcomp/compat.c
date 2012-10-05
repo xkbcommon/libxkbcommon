@@ -210,7 +210,7 @@ siText(SymInterpInfo *si, CompatInfo *info)
     snprintf(buf, sizeof(buf), "%s+%s(%s)",
              KeysymText(si->interp.sym),
              SIMatchText(si->interp.match),
-             ModMaskText(si->interp.mods));
+             ModMaskText(info->keymap, si->interp.mods));
     return buf;
 }
 
@@ -394,7 +394,7 @@ ResolveStateAndPredicate(ExprDef *expr, enum xkb_match_operation *pred_rtrn,
         }
     }
 
-    return ExprResolveModMask(info->keymap->ctx, expr, mods_rtrn);
+    return ExprResolveModMask(info->keymap, expr, mods_rtrn);
 }
 
 /***====================================================================***/

@@ -440,7 +440,7 @@ AddKeySymbols(SymbolsInfo *info, KeyInfo *keyi)
 }
 
 static bool
-AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
+AddModMapEntry(SymbolsInfo *info, ModMapEntry *new)
 {
     ModMapEntry *mm;
     bool clobber;
@@ -462,8 +462,9 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
                 log_err(info->keymap->ctx,
                         "%s added to symbol map for multiple modifiers; "
                         "Using %s, ignoring %s.\n",
-                        KeysymText(new->u.keySym), ModIndexText(use),
-                        ModIndexText(ignore));
+                        KeysymText(new->u.keySym),
+                        ModIndexText(info->keymap, use),
+                        ModIndexText(info->keymap, ignore));
                 mm->modifier = use;
             }
             return true;
@@ -484,7 +485,8 @@ AddModMapEntry(SymbolsInfo * info, ModMapEntry * new)
                         "Key %s added to map for multiple modifiers; "
                         "Using %s, ignoring %s.\n",
                         KeyNameText(info->keymap->ctx, new->u.keyName),
-                        ModIndexText(use), ModIndexText(ignore));
+                        ModIndexText(info->keymap, use),
+                        ModIndexText(info->keymap, ignore));
                 mm->modifier = use;
             }
             return true;
@@ -1209,7 +1211,7 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
     bool ok;
     struct xkb_context *ctx = info->keymap->ctx;
 
-    ndx = ModNameToIndex(xkb_atom_text(ctx, def->modifier));
+    ndx = ModNameToIndex(info->keymap, def->modifier);
     if (ndx == XKB_MOD_INVALID) {
         log_err(info->keymap->ctx,
                 "Illegal modifier map definition; "
@@ -1236,7 +1238,7 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
             log_err(info->keymap->ctx,
                     "Modmap entries may contain only key names or keysyms; "
                     "Illegal definition for %s modifier ignored\n",
-                    ModIndexText(tmp.modifier));
+                    ModIndexText(info->keymap, tmp.modifier));
             continue;
         }
 
@@ -1571,7 +1573,7 @@ CopyModMapDef(SymbolsInfo *info, ModMapEntry *entry)
                     "Key %s not found in keycodes; "
                     "Modifier map entry for %s not updated\n",
                     KeyNameText(keymap->ctx, entry->u.keyName),
-                    ModIndexText(entry->modifier));
+                    ModIndexText(info->keymap, entry->modifier));
             return false;
         }
     }
@@ -1582,7 +1584,7 @@ CopyModMapDef(SymbolsInfo *info, ModMapEntry *entry)
                     "Key \"%s\" not found in symbol map; "
                     "Modifier map entry for %s not updated\n",
                     KeysymText(entry->u.keySym),
-                    ModIndexText(entry->modifier));
+                    ModIndexText(info->keymap, entry->modifier));
             return false;
         }
     }
