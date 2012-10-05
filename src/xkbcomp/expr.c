@@ -81,7 +81,7 @@ SimpleLookup(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
     return false;
 }
 
-bool
+static bool
 LookupModIndex(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
                enum expr_value_type type, xkb_mod_index_t *val_rtrn)
 {

@@ -1209,7 +1209,8 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
     bool ok;
     struct xkb_context *ctx = info->keymap->ctx;
 
-    if (!LookupModIndex(ctx, NULL, def->modifier, EXPR_TYPE_INT, &ndx)) {
+    ndx = ModNameToIndex(xkb_atom_text(ctx, def->modifier));
+    if (ndx == XKB_MOD_INVALID) {
         log_err(info->keymap->ctx,
                 "Illegal modifier map definition; "
                 "Ignoring map for non-modifier \"%s\"\n",
