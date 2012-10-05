@@ -43,6 +43,7 @@ bool
 HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, VModInfo *info)
 {
     xkb_mod_index_t i;
+    const char *name;
     const struct xkb_vmod *vmod;
     struct xkb_vmod new;
 
@@ -50,6 +51,15 @@ HandleVModDef(VModDef *stmt, struct xkb_keymap *keymap, VModInfo *info)
         log_err(keymap->ctx,
                 "Support for setting a value in a virtual_modifiers statement has been removed; "
                 "Value ignored\n");
+
+    name = xkb_atom_text(keymap->ctx, stmt->name);
+    if (ModNameToIndex(name) != XKB_MOD_INVALID) {
+        log_err(keymap->ctx,
+                "Can't add a virtual modifier named \"%s\"; "
+                "there is already a non-virtual modifier with this name! Ignored\n",
+                name);
+        return false;
+    }
 
     darray_enumerate(i, vmod, keymap->vmods) {
         if (vmod->name == stmt->name) {
