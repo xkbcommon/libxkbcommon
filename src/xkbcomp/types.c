@@ -168,7 +168,7 @@ typedef struct {
 static inline const char *
 MapEntryTxt(KeyTypesInfo *info, struct xkb_kt_map_entry *entry)
 {
-    return VModMaskText(info->keymap, entry->mods.mods);
+    return ModMaskText(info->keymap, entry->mods.mods, MOD_BOTH);
 }
 
 static inline const char *
@@ -180,7 +180,7 @@ TypeTxt(KeyTypesInfo *info, KeyTypeInfo *type)
 static inline const char *
 TypeMaskTxt(KeyTypesInfo *info, KeyTypeInfo *type)
 {
-    return VModMaskText(info->keymap, type->mods);
+    return ModMaskText(info->keymap, type->mods, MOD_BOTH);
 }
 
 static inline bool
@@ -364,7 +364,6 @@ SetModifiers(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
                  "The modifiers field of a key type is not an array; "
                  "Illegal array subscript ignored\n");
 
-    /* get modifier mask for current type */
     if (!ExprResolveVModMask(info->keymap, value, &mods)) {
         log_err(info->keymap->ctx,
                 "Key type mask field must be a modifier mask; "
@@ -378,7 +377,7 @@ SetModifiers(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
                  "Using %s, ignoring %s\n",
                  xkb_atom_text(info->keymap->ctx, type->name),
                  TypeMaskTxt(info, type),
-                 VModMaskText(info->keymap, mods));
+                 ModMaskText(info->keymap, mods, MOD_BOTH));
         return false;
     }
 
@@ -457,7 +456,8 @@ SetMapEntry(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
                 "Map entry for unused modifiers in %s; "
                 "Using %s instead of %s\n",
                 TypeTxt(info, type),
-                VModMaskText(info->keymap, entry.mods.mods & type->mods),
+                ModMaskText(info->keymap, entry.mods.mods & type->mods,
+                            MOD_BOTH),
                 MapEntryTxt(info, &entry));
         entry.mods.mods &= type->mods;
     }
@@ -498,7 +498,7 @@ AddPreserve(KeyTypesInfo *info, KeyTypeInfo *type,
             log_vrb(info->keymap->ctx, 10,
                     "Identical definitions for preserve[%s] in %s; "
                     "Ignored\n",
-                    VModMaskText(info->keymap, mods),
+                    ModMaskText(info->keymap, mods, MOD_BOTH),
                     TypeTxt(info, type));
             return true;
         }
@@ -507,10 +507,10 @@ AddPreserve(KeyTypesInfo *info, KeyTypeInfo *type,
         log_vrb(info->keymap->ctx, 1,
                 "Multiple definitions for preserve[%s] in %s; "
                 "Using %s, ignoring %s\n",
-                VModMaskText(info->keymap, mods),
+                ModMaskText(info->keymap, mods, MOD_BOTH),
                 TypeTxt(info, type),
-                VModMaskText(info->keymap, preserve_mods),
-                VModMaskText(info->keymap, entry->preserve.mods));
+                ModMaskText(info->keymap, preserve_mods, MOD_BOTH),
+                ModMaskText(info->keymap, entry->preserve.mods, MOD_BOTH));
 
         entry->preserve.mods = preserve_mods;
         return true;
@@ -544,9 +544,9 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
     if (mods & ~type->mods) {
         const char *before, *after;
 
-        before = VModMaskText(info->keymap, mods);
+        before = ModMaskText(info->keymap, mods, MOD_BOTH);
         mods &= type->mods;
-        after = VModMaskText(info->keymap, mods);
+        after = ModMaskText(info->keymap, mods, MOD_BOTH);
 
         log_vrb(info->keymap->ctx, 1,
                 "Preserve for modifiers not used by the %s type; "
@@ -558,7 +558,7 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
         log_err(info->keymap->ctx,
                 "Preserve value in a key type is not a modifier mask; "
                 "Ignoring preserve[%s] in type %s\n",
-                VModMaskText(info->keymap, mods),
+                ModMaskText(info->keymap, mods, MOD_BOTH),
                 TypeTxt(info, type));
         return false;
     }
@@ -566,14 +566,14 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
     if (preserve_mods & ~mods) {
         const char *before, *after;
 
-        before = VModMaskText(info->keymap, preserve_mods);
+        before = ModMaskText(info->keymap, preserve_mods, MOD_BOTH);
         preserve_mods &= mods;
-        after = VModMaskText(info->keymap, preserve_mods);
+        after = ModMaskText(info->keymap, preserve_mods, MOD_BOTH);
 
         log_vrb(info->keymap->ctx, 1,
                 "Illegal value for preserve[%s] in type %s; "
                 "Converted %s to %s\n",
-                VModMaskText(info->keymap, mods),
+                ModMaskText(info->keymap, mods, MOD_BOTH),
                 TypeTxt(info, type), before, after);
     }
 

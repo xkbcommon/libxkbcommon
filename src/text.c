@@ -231,9 +231,9 @@ GetBuffer(size_t size)
     return rtrn;
 }
 
-static const char *
-mod_mask_text(const struct xkb_keymap *keymap, xkb_mod_mask_t mask,
-              enum mod_type type)
+const char *
+ModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask,
+            enum mod_type type)
 {
     xkb_mod_index_t i;
     xkb_mod_mask_t rmask, vmask;
@@ -279,20 +279,22 @@ mod_mask_text(const struct xkb_keymap *keymap, xkb_mod_mask_t mask,
 }
 
 const char *
-ModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask)
+ModIndexText(const struct xkb_keymap *keymap, xkb_mod_index_t ndx,
+             enum mod_type type)
 {
-    return mod_mask_text(keymap, mask, MOD_REAL);
+    if (ndx == XKB_MOD_INVALID)
+        return "none";
+
+    if (ndx >= darray_size(keymap->mods) ||
+        !(darray_item(keymap->mods, ndx).type & type))
+        return NULL;
+
+    return xkb_atom_text(keymap->ctx, darray_item(keymap->mods, ndx).name);
 }
 
-const char *
-VModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask)
-{
-    return mod_mask_text(keymap, mask, MOD_BOTH);
-}
-
-static xkb_mod_index_t
-mod_name_to_index(const struct xkb_keymap *keymap, xkb_atom_t name,
-                  enum mod_type type)
+xkb_mod_index_t
+ModNameToIndex(const struct xkb_keymap *keymap, xkb_atom_t name,
+               enum mod_type type)
 {
     xkb_mod_index_t i;
     const struct xkb_mod *mod;
@@ -302,51 +304,6 @@ mod_name_to_index(const struct xkb_keymap *keymap, xkb_atom_t name,
             return i;
 
     return XKB_MOD_INVALID;
-}
-
-xkb_mod_index_t
-ModNameToIndex(const struct xkb_keymap *keymap, xkb_atom_t name)
-{
-    return mod_name_to_index(keymap, name, MOD_REAL);
-}
-
-static xkb_mod_index_t
-mod_index_to_name(const struct xkb_keymap *keymap, xkb_mod_index_t ndx,
-                  enum mod_type type)
-{
-    if (ndx >= darray_size(keymap->mods) ||
-        !(darray_item(keymap->mods, ndx).type & type))
-        return XKB_ATOM_NONE;
-
-    return darray_item(keymap->mods, ndx).name;
-}
-
-xkb_atom_t
-ModIndexToName(const struct xkb_keymap *keymap, xkb_mod_index_t ndx)
-{
-    return mod_index_to_name(keymap, ndx, MOD_REAL);
-}
-
-static const char *
-mod_index_text(const struct xkb_keymap *keymap, xkb_mod_index_t ndx,
-               enum mod_type type)
-{
-    xkb_atom_t name;
-
-    name = mod_index_to_name(keymap, ndx, type);
-    if (name)
-        return xkb_atom_text(keymap->ctx, name);
-
-    if (ndx == XKB_MOD_INVALID)
-        return "none";
-
-    return NULL;
-}
-
-const char *
-ModIndexText(const struct xkb_keymap *keymap, xkb_mod_index_t ndx)
-{
-    return mod_index_text(keymap, ndx, MOD_REAL);
 }
 
 const char *
