@@ -82,17 +82,9 @@ SimpleLookup(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
 }
 
 static bool
-LookupModIndex(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-               enum expr_value_type type, xkb_mod_index_t *val_rtrn)
-{
-    const struct xkb_keymap *keymap = priv;
-    *val_rtrn = ModNameToIndex(keymap, field, MOD_REAL);
-    return (*val_rtrn != XKB_MOD_INVALID);
-}
-
-static bool
-LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-              enum expr_value_type type, xkb_mod_mask_t *val_rtrn)
+lookup_mod_mask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
+                enum expr_value_type type, enum mod_type mod_type,
+                xkb_mod_mask_t *val_rtrn)
 {
     const char *str;
     xkb_mod_index_t ndx;
@@ -103,16 +95,36 @@ LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
 
     str = xkb_atom_text(ctx, field);
 
-    if (istreq(str, "all"))
+    if (istreq(str, "all")) {
         *val_rtrn  = 0xff;
-    else if (istreq(str, "none"))
+        return true;
+    }
+
+    if (istreq(str, "none")) {
         *val_rtrn = 0;
-    else if (LookupModIndex(ctx, keymap, field, type, &ndx))
-        *val_rtrn = (1 << ndx);
-    else
+        return true;
+    }
+
+    ndx = ModNameToIndex(keymap, field, mod_type);
+    if (ndx == XKB_MOD_INVALID)
         return false;
 
+    *val_rtrn = (1 << ndx);
     return true;
+}
+
+static bool
+LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
+              enum expr_value_type type, xkb_mod_mask_t *val_rtrn)
+{
+    return lookup_mod_mask(ctx, priv, field, type, MOD_REAL, val_rtrn);
+}
+
+static bool
+LookupVModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
+               enum expr_value_type type, xkb_mod_mask_t *val_rtrn)
+{
+    return lookup_mod_mask(ctx, priv, field, type, MOD_BOTH, val_rtrn);
 }
 
 bool
@@ -626,46 +638,6 @@ ExprResolveModMask(struct xkb_keymap *keymap, const ExprDef *expr,
                                  keymap);
 }
 
-static bool
-LookupVModIndex(struct xkb_context *ctx, const void *priv,
-                xkb_atom_t field, enum expr_value_type type,
-                xkb_mod_index_t *val_rtrn)
-{
-    const struct xkb_mod *mod;
-    xkb_mod_index_t i;
-    const struct xkb_keymap *keymap = priv;
-
-    if (type != EXPR_TYPE_INT)
-        return false;
-
-    darray_enumerate(i, mod, keymap->mods) {
-        if (mod->type == MOD_VIRT && mod->name == field) {
-            *val_rtrn = i;
-            return true;
-        }
-    }
-
-    return false;
-}
-
-static bool
-LookupVModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-               enum expr_value_type type, xkb_mod_mask_t *val_rtrn)
-{
-    xkb_mod_index_t ndx;
-    const struct xkb_keymap *keymap = priv;
-
-    if (LookupModMask(ctx, keymap, field, type, val_rtrn)) {
-        return true;
-    }
-    else if (LookupVModIndex(ctx, keymap, field, type, &ndx)) {
-        *val_rtrn = (1 << ndx);
-        return true;
-    }
-
-    return false;
-}
-
 bool
 ExprResolveVModMask(struct xkb_keymap *keymap, const ExprDef *expr,
                     xkb_mod_mask_t *mask_rtrn)
@@ -702,8 +674,7 @@ bool
 ExprResolveVMod(struct xkb_keymap *keymap, const ExprDef *def,
                 xkb_mod_index_t *ndx_rtrn)
 {
-    const struct xkb_mod *mod;
-    xkb_mod_index_t i;
+    xkb_mod_index_t ndx;
     xkb_atom_t name = def->value.str;
 
     if (def->op != EXPR_IDENT) {
@@ -714,16 +685,15 @@ ExprResolveVMod(struct xkb_keymap *keymap, const ExprDef *def,
         return false;
     }
 
-    darray_enumerate(i, mod, keymap->mods) {
-        if (mod->type == MOD_VIRT && mod->name == name) {
-            *ndx_rtrn = i;
-            return true;
-        }
+    ndx = ModNameToIndex(keymap, name, MOD_VIRT);
+    if (ndx == XKB_MOD_INVALID) {
+        log_err(keymap->ctx,
+                "Cannot resolve virtual modifier: "
+                "\"%s\" was not previously declared\n",
+                xkb_atom_text(keymap->ctx, name));
+        return false;
     }
 
-    log_err(keymap->ctx,
-            "Cannot resolve virtual modifier: "
-            "\"%s\" was not previously declared\n",
-            xkb_atom_text(keymap->ctx, name));
-    return false;
+    *ndx_rtrn = ndx;
+    return true;
 }
