@@ -279,7 +279,7 @@ struct xkb_sym_interpret {
     xkb_keysym_t sym;
     bool repeat;
     enum xkb_match_operation match;
-    uint8_t mods;
+    xkb_mod_mask_t mods;
     xkb_mod_index_t virtual_mod;
     union xkb_action act;
 };
@@ -350,7 +350,7 @@ struct xkb_key {
 
     enum xkb_explicit_components explicit;
 
-    unsigned char modmap;
+    xkb_mod_mask_t modmap;
     xkb_mod_mask_t vmodmap;
 
     bool repeats;
