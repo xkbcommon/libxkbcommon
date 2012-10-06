@@ -48,19 +48,19 @@ extern const LookupEntry actionTypeNames[];
 extern const LookupEntry symInterpretMatchMaskNames[];
 
 const char *
-VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t mask);
+VModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask);
 
 xkb_mod_index_t
 ModNameToIndex(const struct xkb_keymap *keymap, xkb_atom_t name);
 
 xkb_atom_t
-ModIndexToName(struct xkb_keymap *keymap, xkb_mod_index_t ndx);
+ModIndexToName(const struct xkb_keymap *keymap, xkb_mod_index_t ndx);
 
 const char *
-ModIndexText(struct xkb_keymap *keymap, xkb_mod_index_t ndx);
+ModIndexText(const struct xkb_keymap *keymap, xkb_mod_index_t ndx);
 
 const char *
-ModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t mask);
+ModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask);
 
 const char *
 ActionTypeText(enum xkb_action_type type);

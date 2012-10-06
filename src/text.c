@@ -231,36 +231,32 @@ GetBuffer(size_t size)
     return rtrn;
 }
 
-/* Get a mod mask's text, where the mask is in rmods+vmods format. */
-const char *
-VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t mask)
+static const char *
+mod_mask_text(const struct xkb_keymap *keymap, xkb_mod_mask_t mask,
+              enum mod_type type)
 {
     xkb_mod_index_t i;
     xkb_mod_mask_t rmask, vmask;
-    int len, rem;
-    const char *mm = NULL;
-    char *rtrn, *str;
+    size_t len;
+    ssize_t rem;
+    char *str;
     char buf[BUFFER_SIZE];
     const struct xkb_mod *mod;
 
-    rmask = mask & 0xff;
-    vmask = mask & (~0xff);
+    rmask = (type & MOD_REAL ? mask : 0) & 0xff;
+    vmask = (type & MOD_VIRT ? mask : 0) & (~0xff);
 
     if (rmask == 0 && vmask == 0)
         return "none";
 
-    if (rmask != 0)
-        mm = ModMaskText(keymap, rmask);
-
-    if (vmask == 0)
-        return mm;
+    if (rmask == 0xff && vmask == 0)
+        return "all";
 
     str = buf;
     buf[0] = '\0';
     rem = BUFFER_SIZE;
-
     darray_enumerate(i, mod, keymap->mods) {
-        if (mod->type != MOD_VIRT || !(vmask & (1 << i)))
+        if (!(mod->type & type) || !(mask & (1 << i)))
             continue;
 
         len = snprintf(str, rem, "%s%s",
@@ -272,94 +268,85 @@ VModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t mask)
         if (rem <= 1)
             break;
     }
-
     str = buf;
 
-    len = (str ? strlen(str) : 0) + (mm ? strlen(mm) : 0) +
-          (str && mm ? 1 : 0);
+    len = strlen(str);
     if (len >= BUFFER_SIZE)
         len = BUFFER_SIZE - 1;
 
-    rtrn = GetBuffer(len + 1);
-    rtrn[0] = '\0';
+    return strcpy(GetBuffer(len + 1), str);
 
-    snprintf(rtrn, len + 1, "%s%s%s", (mm ? mm : ""),
-             (mm && str ? "+" : ""), (str ? str : ""));
-
-    return rtrn;
 }
 
-xkb_mod_index_t
-ModNameToIndex(const struct xkb_keymap *keymap, xkb_atom_t name)
+const char *
+ModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask)
+{
+    return mod_mask_text(keymap, mask, MOD_REAL);
+}
+
+const char *
+VModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask)
+{
+    return mod_mask_text(keymap, mask, MOD_BOTH);
+}
+
+static xkb_mod_index_t
+mod_name_to_index(const struct xkb_keymap *keymap, xkb_atom_t name,
+                  enum mod_type type)
 {
     xkb_mod_index_t i;
     const struct xkb_mod *mod;
 
     darray_enumerate(i, mod, keymap->mods)
-        if (mod->type == MOD_REAL && name == mod->name)
+        if ((mod->type & type) && name == mod->name)
             return i;
 
     return XKB_MOD_INVALID;
 }
 
-xkb_atom_t
-ModIndexToName(struct xkb_keymap *keymap, xkb_mod_index_t ndx)
+xkb_mod_index_t
+ModNameToIndex(const struct xkb_keymap *keymap, xkb_atom_t name)
+{
+    return mod_name_to_index(keymap, name, MOD_REAL);
+}
+
+static xkb_mod_index_t
+mod_index_to_name(const struct xkb_keymap *keymap, xkb_mod_index_t ndx,
+                  enum mod_type type)
 {
     if (ndx >= darray_size(keymap->mods) ||
-        darray_item(keymap->mods, ndx).type != MOD_REAL)
+        !(darray_item(keymap->mods, ndx).type & type))
         return XKB_ATOM_NONE;
 
     return darray_item(keymap->mods, ndx).name;
 }
 
-const char *
-ModIndexText(struct xkb_keymap *keymap, xkb_mod_index_t ndx)
+xkb_atom_t
+ModIndexToName(const struct xkb_keymap *keymap, xkb_mod_index_t ndx)
+{
+    return mod_index_to_name(keymap, ndx, MOD_REAL);
+}
+
+static const char *
+mod_index_text(const struct xkb_keymap *keymap, xkb_mod_index_t ndx,
+               enum mod_type type)
 {
     xkb_atom_t name;
 
-    name = ModIndexToName(keymap, ndx);
+    name = mod_index_to_name(keymap, ndx, type);
     if (name)
         return xkb_atom_text(keymap->ctx, name);
 
     if (ndx == XKB_MOD_INVALID)
         return "none";
 
-    return "illegal";
+    return NULL;
 }
 
 const char *
-ModMaskText(struct xkb_keymap *keymap, xkb_mod_mask_t mask)
+ModIndexText(const struct xkb_keymap *keymap, xkb_mod_index_t ndx)
 {
-    xkb_mod_index_t i;
-    int len, rem;
-    char *str, *buf;
-    const struct xkb_mod *mod;
-
-    if ((mask & 0xff) == 0xff)
-        return "all";
-
-    if ((mask & 0xff) == 0)
-        return "none";
-
-    rem = 64;
-    buf = GetBuffer(rem);
-    str = buf;
-    buf[0] = '\0';
-    darray_enumerate(i, mod, keymap->mods) {
-        if (mod->type != MOD_REAL || !(mask & (1 << i)))
-            continue;
-
-        len = snprintf(str, rem, "%s%s",
-                       (str != buf ?  "+" : ""),
-                       ModIndexText(keymap, i));
-        rem -= len;
-        str += len;
-
-        if (rem <= 1)
-            break;
-    }
-
-    return buf;
+    return mod_index_text(keymap, ndx, MOD_REAL);
 }
 
 const char *
