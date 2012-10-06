@@ -210,7 +210,7 @@ siText(SymInterpInfo *si, CompatInfo *info)
     snprintf(buf, sizeof(buf), "%s+%s(%s)",
              KeysymText(si->interp.sym),
              SIMatchText(si->interp.match),
-             ModMaskText(info->keymap, si->interp.mods, MOD_REAL));
+             ModMaskText(info->keymap, si->interp.mods));
     return buf;
 }
 

@@ -39,7 +39,7 @@ ComputeEffectiveMask(struct xkb_keymap *keymap, struct xkb_mods *mods)
     mods->mask = mods->mods & 0xff;
 
     darray_enumerate(i, mod, keymap->mods)
-        if (mod->type == MOD_VIRT && mods->mods & (1 << i))
+        if (mods->mods & (1 << i))
             mods->mask |= mod->mapping;
 }
 
@@ -198,7 +198,7 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     /* Update keymap->mods, the virtual -> real mod mapping. */
     xkb_foreach_key(key, keymap)
         darray_enumerate(i, mod, keymap->mods)
-            if (mod->type == MOD_VIRT && key->vmodmap & (1 << i))
+            if (key->vmodmap & (1 << i))
                 mod->mapping |= key->modmap;
 
     /* Now update the level masks for all the types to reflect the vmods. */

@@ -48,12 +48,10 @@ extern const LookupEntry actionTypeNames[];
 extern const LookupEntry symInterpretMatchMaskNames[];
 
 const char *
-ModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask,
-            enum mod_type type);
+ModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask);
 
 const char *
-ModIndexText(const struct xkb_keymap *keymap, xkb_mod_index_t ndx,
-             enum mod_type type);
+ModIndexText(const struct xkb_keymap *keymap, xkb_mod_index_t ndx);
 
 xkb_mod_index_t
 ModNameToIndex(const struct xkb_keymap *keymap, xkb_atom_t name,
