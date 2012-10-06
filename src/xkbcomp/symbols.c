@@ -883,9 +883,9 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
              istreq(field, "virtualmodifiers")) {
         xkb_mod_mask_t mask;
 
-        ok = ExprResolveVModMask(info->keymap, value, &mask);
+        ok = ExprResolveModMask(info->keymap, value, MOD_VIRT, &mask);
         if (ok) {
-            keyi->vmodmap = mask & (~0xff);
+            keyi->vmodmap = mask;
             keyi->defined |= KEY_FIELD_VMODMAP;
         }
         else {

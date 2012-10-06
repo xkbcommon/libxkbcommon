@@ -278,7 +278,7 @@ CheckModifierField(struct xkb_keymap *keymap, enum xkb_action_type action,
         }
     }
 
-    if (!ExprResolveVModMask(keymap, value, mods_rtrn))
+    if (!ExprResolveModMask(keymap, value, MOD_BOTH, mods_rtrn))
         return ReportMismatch(keymap, action,
                               ACTION_FIELD_MODIFIERS, "modifier mask");
 

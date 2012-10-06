@@ -34,15 +34,11 @@ ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
 
 bool
 ExprResolveModMask(struct xkb_keymap *keymap, const ExprDef *expr,
-                   xkb_mod_mask_t *mask_rtrn);
+                   enum mod_type mod_type, xkb_mod_mask_t *mask_rtrn);
 
 bool
-ExprResolveVModMask(struct xkb_keymap *keymap, const ExprDef *expr,
-                    xkb_mod_mask_t *mask_rtrn);
-
-bool
-ExprResolveVMod(struct xkb_keymap *keymap, const ExprDef *def,
-                xkb_mod_index_t *ndx_rtrn);
+ExprResolveMod(struct xkb_keymap *keymap, const ExprDef *def,
+               enum mod_type mod_type, xkb_mod_index_t *ndx_rtrn);
 
 bool
 ExprResolveBoolean(struct xkb_context *ctx, const ExprDef *expr,

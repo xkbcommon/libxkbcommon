@@ -81,14 +81,21 @@ SimpleLookup(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
     return false;
 }
 
+/* Data passed in the *priv argument for LookupModMask. */
+typedef struct {
+    const struct xkb_keymap *keymap;
+    enum mod_type mod_type;
+} LookupModMaskPriv;
+
 static bool
-lookup_mod_mask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-                enum expr_value_type type, enum mod_type mod_type,
-                xkb_mod_mask_t *val_rtrn)
+LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
+              enum expr_value_type type, xkb_mod_mask_t *val_rtrn)
 {
     const char *str;
     xkb_mod_index_t ndx;
-    const struct xkb_keymap *keymap = priv;
+    const LookupModMaskPriv *arg = priv;
+    const struct xkb_keymap *keymap = arg->keymap;
+    enum mod_type mod_type = arg->mod_type;
 
     if (type != EXPR_TYPE_INT)
         return false;
@@ -111,20 +118,6 @@ lookup_mod_mask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
 
     *val_rtrn = (1 << ndx);
     return true;
-}
-
-static bool
-LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-              enum expr_value_type type, xkb_mod_mask_t *val_rtrn)
-{
-    return lookup_mod_mask(ctx, priv, field, type, MOD_REAL, val_rtrn);
-}
-
-static bool
-LookupVModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-               enum expr_value_type type, xkb_mod_mask_t *val_rtrn)
-{
-    return lookup_mod_mask(ctx, priv, field, type, MOD_BOTH, val_rtrn);
 }
 
 bool
@@ -632,18 +625,11 @@ ExprResolveMask(struct xkb_context *ctx, const ExprDef *expr,
 
 bool
 ExprResolveModMask(struct xkb_keymap *keymap, const ExprDef *expr,
-                   xkb_mod_mask_t *mask_rtrn)
+                   enum mod_type mod_type, xkb_mod_mask_t *mask_rtrn)
 {
+    LookupModMaskPriv priv = { .keymap = keymap, .mod_type = mod_type };
     return ExprResolveMaskLookup(keymap->ctx, expr, mask_rtrn, LookupModMask,
-                                 keymap);
-}
-
-bool
-ExprResolveVModMask(struct xkb_keymap *keymap, const ExprDef *expr,
-                    xkb_mod_mask_t *mask_rtrn)
-{
-    return ExprResolveMaskLookup(keymap->ctx, expr, mask_rtrn, LookupVModMask,
-                                 keymap);
+                                 &priv);
 }
 
 bool
@@ -671,8 +657,8 @@ ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
 }
 
 bool
-ExprResolveVMod(struct xkb_keymap *keymap, const ExprDef *def,
-                xkb_mod_index_t *ndx_rtrn)
+ExprResolveMod(struct xkb_keymap *keymap, const ExprDef *def,
+               enum mod_type mod_type, xkb_mod_index_t *ndx_rtrn)
 {
     xkb_mod_index_t ndx;
     xkb_atom_t name = def->value.str;
@@ -685,7 +671,7 @@ ExprResolveVMod(struct xkb_keymap *keymap, const ExprDef *def,
         return false;
     }
 
-    ndx = ModNameToIndex(keymap, name, MOD_VIRT);
+    ndx = ModNameToIndex(keymap, name, mod_type);
     if (ndx == XKB_MOD_INVALID) {
         log_err(keymap->ctx,
                 "Cannot resolve virtual modifier: "
