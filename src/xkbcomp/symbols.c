@@ -442,55 +442,40 @@ AddKeySymbols(SymbolsInfo *info, KeyInfo *keyi)
 static bool
 AddModMapEntry(SymbolsInfo *info, ModMapEntry *new)
 {
-    ModMapEntry *mm;
-    bool clobber;
+    ModMapEntry *old;
+    bool clobber = (new->merge != MERGE_AUGMENT);
 
-    clobber = (new->merge != MERGE_AUGMENT);
-    darray_foreach(mm, info->modMaps) {
-        if (new->haveSymbol && mm->haveSymbol
-            && (new->u.keySym == mm->u.keySym)) {
-            xkb_mod_index_t use, ignore;
-            if (mm->modifier != new->modifier) {
-                if (clobber) {
-                    use = new->modifier;
-                    ignore = mm->modifier;
-                }
-                else {
-                    use = mm->modifier;
-                    ignore = new->modifier;
-                }
-                log_err(info->keymap->ctx,
-                        "%s added to symbol map for multiple modifiers; "
-                        "Using %s, ignoring %s.\n",
-                        KeysymText(new->u.keySym),
-                        ModIndexText(info->keymap, use),
-                        ModIndexText(info->keymap, ignore));
-                mm->modifier = use;
-            }
+    darray_foreach(old, info->modMaps) {
+        xkb_mod_index_t use, ignore;
+
+        if ((new->haveSymbol != old->haveSymbol) ||
+            (new->haveSymbol && new->u.keySym != old->u.keySym) ||
+            (!new->haveSymbol && new->u.keyName != old->u.keyName))
+            continue;
+
+        if (new->modifier == old->modifier)
             return true;
-        }
-        if ((!new->haveSymbol) && (!mm->haveSymbol) &&
-            (new->u.keyName == mm->u.keyName)) {
-            xkb_mod_index_t use, ignore;
-            if (mm->modifier != new->modifier) {
-                if (clobber) {
-                    use = new->modifier;
-                    ignore = mm->modifier;
-                }
-                else {
-                    use = mm->modifier;
-                    ignore = new->modifier;
-                }
-                log_err(info->keymap->ctx,
-                        "Key %s added to map for multiple modifiers; "
-                        "Using %s, ignoring %s.\n",
-                        KeyNameText(info->keymap->ctx, new->u.keyName),
-                        ModIndexText(info->keymap, use),
-                        ModIndexText(info->keymap, ignore));
-                mm->modifier = use;
-            }
-            return true;
-        }
+
+        use = (clobber ? new->modifier : old->modifier);
+        ignore = (clobber ? old->modifier : new->modifier);
+
+        if (new->haveSymbol)
+            log_err(info->keymap->ctx,
+                    "Symbol \"%s\" added to modifier map for multiple modifiers; "
+                    "Using %s, ignoring %s\n",
+                    KeysymText(new->u.keySym),
+                    ModIndexText(info->keymap, use),
+                    ModIndexText(info->keymap, ignore));
+        else
+            log_err(info->keymap->ctx,
+                    "Key \"%s\" added to modifier map for multiple modifiers; "
+                    "Using %s, ignoring %s\n",
+                    KeyNameText(info->keymap->ctx, new->u.keyName),
+                    ModIndexText(info->keymap, use),
+                    ModIndexText(info->keymap, ignore));
+
+        old->modifier = use;
+        return true;
     }
 
     darray_append(info->modMaps, *new);
