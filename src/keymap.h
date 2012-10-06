@@ -115,6 +115,8 @@ enum mod_type {
     MOD_BOTH = (MOD_REAL | MOD_VIRT),
 };
 
+#define MOD_REAL_MASK_ALL ((xkb_mod_mask_t) 0x000000ff)
+
 enum xkb_action_type {
     ACTION_TYPE_NONE = 0,
     ACTION_TYPE_MOD_SET,

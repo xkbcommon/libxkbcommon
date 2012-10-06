@@ -389,7 +389,7 @@ ResolveStateAndPredicate(ExprDef *expr, enum xkb_match_operation *pred_rtrn,
                                              expr->value.str);
         if (pred_txt && istreq(pred_txt, "any")) {
             *pred_rtrn = MATCH_ANY;
-            *mods_rtrn = 0xff;
+            *mods_rtrn = MOD_REAL_MASK_ALL;
             return true;
         }
     }

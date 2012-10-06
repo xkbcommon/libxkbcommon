@@ -36,7 +36,7 @@ ComputeEffectiveMask(struct xkb_keymap *keymap, struct xkb_mods *mods)
     xkb_mod_index_t i;
 
     /* The effective mask is only real mods for now. */
-    mods->mask = mods->mods & 0xff;
+    mods->mask = mods->mods & MOD_REAL_MASK_ALL;
 
     darray_enumerate(i, mod, keymap->mods)
         if (mods->mods & (1 << i))

@@ -103,7 +103,7 @@ LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
     str = xkb_atom_text(ctx, field);
 
     if (istreq(str, "all")) {
-        *val_rtrn  = 0xff;
+        *val_rtrn  = MOD_REAL_MASK_ALL;
         return true;
     }
 

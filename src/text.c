@@ -244,7 +244,7 @@ ModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask)
     if (mask == 0)
         return "none";
 
-    if (mask == 0xff)
+    if (mask == MOD_REAL_MASK_ALL)
         return "all";
 
     str = buf;
