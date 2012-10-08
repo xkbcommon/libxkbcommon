@@ -369,7 +369,7 @@ ResolveStateAndPredicate(ExprDef *expr, enum xkb_match_operation *pred_rtrn,
 {
     if (expr == NULL) {
         *pred_rtrn = MATCH_ANY_OR_NONE;
-        *mods_rtrn = ~0;
+        *mods_rtrn = MOD_REAL_MASK_ALL;
         return true;
     }
 
