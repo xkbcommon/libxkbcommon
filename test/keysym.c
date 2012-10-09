@@ -22,6 +22,7 @@
  */
 
 #include "test.h"
+#include "keysym.h" /* For unexported is_lower/upper/keypad() */
 
 static int
 test_string(const char *string, xkb_keysym_t expected)
@@ -96,6 +97,34 @@ main(void)
     assert(test_utf8(XKB_KEY_KP_9, "9"));
     assert(test_utf8(XKB_KEY_KP_Multiply, "*"));
     assert(test_utf8(XKB_KEY_KP_Subtract, "-"));
+
+    assert(xkb_keysym_is_lower(XKB_KEY_a));
+    assert(xkb_keysym_is_lower(XKB_KEY_Greek_lambda));
+    assert(xkb_keysym_is_lower(xkb_keysym_from_name("U03b1"))); /* GREEK SMALL LETTER ALPHA */
+    assert(xkb_keysym_is_lower(xkb_keysym_from_name("U03af"))); /* GREEK SMALL LETTER IOTA WITH TONOS */
+
+    assert(xkb_keysym_is_upper(XKB_KEY_A));
+    assert(xkb_keysym_is_upper(XKB_KEY_Greek_LAMBDA));
+    assert(xkb_keysym_is_upper(xkb_keysym_from_name("U0391"))); /* GREEK CAPITAL LETTER ALPHA */
+    assert(xkb_keysym_is_upper(xkb_keysym_from_name("U0388"))); /* GREEK CAPITAL LETTER EPSILON WITH TONOS */
+
+    assert(!xkb_keysym_is_upper(XKB_KEY_a));
+    assert(!xkb_keysym_is_lower(XKB_KEY_A));
+    assert(!xkb_keysym_is_lower(XKB_KEY_Return));
+    assert(!xkb_keysym_is_upper(XKB_KEY_Return));
+    assert(!xkb_keysym_is_lower(XKB_KEY_hebrew_aleph));
+    assert(!xkb_keysym_is_upper(XKB_KEY_hebrew_aleph));
+    assert(!xkb_keysym_is_upper(xkb_keysym_from_name("U05D0"))); /* HEBREW LETTER ALEF */
+    assert(!xkb_keysym_is_lower(xkb_keysym_from_name("U05D0"))); /* HEBREW LETTER ALEF */
+    assert(!xkb_keysym_is_lower(XKB_KEY_8));
+    assert(!xkb_keysym_is_upper(XKB_KEY_8));
+
+    assert(xkb_keysym_is_keypad(XKB_KEY_KP_Enter));
+    assert(xkb_keysym_is_keypad(XKB_KEY_KP_6));
+    assert(xkb_keysym_is_keypad(XKB_KEY_KP_Add));
+    assert(!xkb_keysym_is_keypad(XKB_KEY_Num_Lock));
+    assert(!xkb_keysym_is_keypad(XKB_KEY_1));
+    assert(!xkb_keysym_is_keypad(XKB_KEY_Return));
 
     return 0;
 }
