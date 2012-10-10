@@ -89,16 +89,18 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
     if (!keymap || --keymap->refcnt > 0)
         return;
 
-    darray_foreach(key, keymap->keys) {
-        for (i = 0; i < key->num_groups; i++) {
-            for (j = 0; j < XkbKeyGroupWidth(key, i); j++)
-                if (key->groups[i].levels[j].num_syms > 1)
-                    free(key->groups[i].levels[j].u.syms);
-            free(key->groups[i].levels);
+    if (keymap->keys) {
+        xkb_foreach_key(key, keymap) {
+            for (i = 0; i < key->num_groups; i++) {
+                for (j = 0; j < XkbKeyGroupWidth(key, i); j++)
+                    if (key->groups[i].levels[j].num_syms > 1)
+                        free(key->groups[i].levels[j].u.syms);
+                free(key->groups[i].levels);
+            }
+            free(key->groups);
         }
-        free(key->groups);
+        free(keymap->keys);
     }
-    darray_free(keymap->keys);
     for (i = 0; i < keymap->num_types; i++) {
         free(keymap->types[i].map);
         free(keymap->types[i].level_names);

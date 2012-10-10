@@ -97,7 +97,7 @@
  * The 'name' field of indicators declared in xkb_keycodes:
  *      struct xkb_indicator_map indicators[XKB_NUM_INDICATORS];
  * Further, the array of keys:
- *      darray(struct xkb_key) keys;
+ *      struct xkb_key *keys;
  * had been resized to its final size (i.e. all of the xkb_key objects are
  * referable by their keycode). However the objects themselves do not
  * contain any useful information besides the key name at this point.
@@ -690,14 +690,16 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
     xkb_keycode_t kc;
     xkb_led_index_t idx;
 
+    keymap->keys = calloc(info->max_key_code + 1, sizeof(*keymap->keys));
+    if (!keymap->keys)
+        return false;
+
     keymap->min_key_code = info->min_key_code;
     keymap->max_key_code = info->max_key_code;
 
-    darray_resize0(keymap->keys, keymap->max_key_code + 1);
     for (kc = info->min_key_code; kc <= info->max_key_code; kc++) {
-        struct xkb_key *key = &darray_item(keymap->keys, kc);
-        key->keycode = kc;
-        key->name = darray_item(info->key_names, kc).name;
+        keymap->keys[kc].keycode = kc;
+        keymap->keys[kc].name = darray_item(info->key_names, kc).name;
     }
 
     keymap->keycodes_section_name = strdup_safe(info->name);

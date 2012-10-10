@@ -382,8 +382,7 @@ struct xkb_keymap {
 
     xkb_keycode_t min_key_code;
     xkb_keycode_t max_key_code;
-
-    darray(struct xkb_key) keys;
+    struct xkb_key *keys;
 
     /* aliases in no particular order */
     darray(struct xkb_key_alias) key_aliases;
@@ -412,11 +411,13 @@ XkbKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
     if (kc < keymap->min_key_code || kc > keymap->max_key_code)
         return NULL;
-    return &darray_item(keymap->keys, kc);
+    return &keymap->keys[kc];
 }
 
 #define xkb_foreach_key(iter, keymap) \
-    darray_foreach(iter, keymap->keys)
+    for (iter = keymap->keys + keymap->min_key_code; \
+         iter <= keymap->keys + keymap->max_key_code; \
+         iter++)
 
 static inline xkb_level_index_t
 XkbKeyGroupWidth(const struct xkb_key *key, xkb_layout_index_t layout)
