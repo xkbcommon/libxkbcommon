@@ -253,7 +253,7 @@ xkb_keymap_num_leds(struct xkb_keymap *keymap)
 XKB_EXPORT const char *
 xkb_keymap_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx)
 {
-    if (idx >= xkb_keymap_num_leds(keymap))
+    if (idx >= XKB_NUM_INDICATORS)
         return NULL;
 
     return xkb_atom_text(keymap->ctx, keymap->indicators[idx].name);
@@ -265,14 +265,13 @@ xkb_keymap_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx)
 XKB_EXPORT xkb_layout_index_t
 xkb_keymap_led_get_index(struct xkb_keymap *keymap, const char *name)
 {
-    xkb_led_index_t num_leds = xkb_keymap_num_leds(keymap);
     xkb_atom_t atom = xkb_atom_lookup(keymap->ctx, name);
     xkb_led_index_t i;
 
     if (atom == XKB_ATOM_NONE)
         return XKB_LED_INVALID;
 
-    for (i = 0; i < num_leds; i++)
+    for (i = 0; i < XKB_NUM_INDICATORS; i++)
         if (keymap->indicators[i].name == atom)
             return i;
 

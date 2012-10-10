@@ -82,8 +82,8 @@ print_state(struct xkb_state *state)
                     "locked " : "");
     }
 
-    for (led = 0; led < xkb_keymap_num_leds(keymap); led++) {
-        if (!xkb_state_led_index_is_active(state, led))
+    for (led = 0; led < sizeof(xkb_led_mask_t) * 8; led++) {
+        if (xkb_state_led_index_is_active(state, led) <= 0)
             continue;
         fprintf(stderr, "\tled %s (%d): active\n",
                 xkb_keymap_led_get_name(keymap, led),
@@ -174,6 +174,33 @@ test_update_key(struct xkb_keymap *keymap)
     assert(xkb_state_led_name_is_active(state, XKB_LED_NAME_CAPS) > 0);
     num_syms = xkb_state_key_get_syms(state, KEY_Q + EVDEV_OFFSET, &syms);
     assert(num_syms == 1 && syms[0] == XKB_KEY_Q);
+
+    /* Num Lock locked */
+    xkb_state_update_key(state, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_UP);
+    fprintf(stderr, "dumping state for Caps Lock + Num Lock:\n");
+    print_state(state);
+    assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CAPS,
+                                        XKB_STATE_LOCKED) > 0);
+    assert(xkb_state_mod_name_is_active(state, "Mod2",
+                                        XKB_STATE_LOCKED) > 0);
+    num_syms = xkb_state_key_get_syms(state, KEY_KP1 + EVDEV_OFFSET, &syms);
+    assert(num_syms == 1 && syms[0] == XKB_KEY_KP_1);
+    assert(xkb_state_led_name_is_active(state, XKB_LED_NAME_NUM) > 0);
+
+    /* Num Lock unlocked */
+    xkb_state_update_key(state, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_UP);
+
+    /* Switch to group 2 */
+    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_UP);
+    assert(xkb_state_led_name_is_active(state, "Group 2") > 0);
+    assert(xkb_state_led_name_is_active(state, XKB_LED_NAME_NUM) <= 0);
+
+    /* Switch back to group 1. */
+    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_UP);
 
     /* Caps unlocked */
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
@@ -302,7 +329,7 @@ main(void)
 
     assert(context);
 
-    keymap = test_compile_rules(context, "evdev", "pc104", "us", NULL, NULL);
+    keymap = test_compile_rules(context, "evdev", "pc104", "us,ru", NULL, "grp:menu_toggle");
     assert(keymap);
 
     test_update_key(keymap);

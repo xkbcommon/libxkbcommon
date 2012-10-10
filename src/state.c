@@ -604,7 +604,7 @@ xkb_state_led_update_all(struct xkb_state *state)
             mod_mask |= state->latched_mods;
         if (map->which_mods & XKB_STATE_LOCKED)
             mod_mask |= state->locked_mods;
-        if ((map->mods.mask & mod_mask))
+        if (map->mods.mask & mod_mask)
             state->leds |= (1 << led);
 
         if (map->which_groups & XKB_STATE_DEPRESSED)
@@ -613,13 +613,11 @@ xkb_state_led_update_all(struct xkb_state *state)
             group_mask |= (1 << state->latched_group);
         if (map->which_groups & XKB_STATE_LOCKED)
             group_mask |= (1 << state->locked_group);
-        if ((map->groups & group_mask))
+        if (map->groups & group_mask)
             state->leds |= (1 << led);
 
-        if (map->ctrls) {
-            if ((map->ctrls & state->keymap->enabled_ctrls))
-                state->leds |= (1 << led);
-        }
+        if (map->ctrls & state->keymap->enabled_ctrls)
+            state->leds |= (1 << led);
     }
 }
 
@@ -998,7 +996,8 @@ xkb_state_layout_name_is_active(struct xkb_state *state, const char *name,
 XKB_EXPORT int
 xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx)
 {
-    if (idx >= xkb_keymap_num_leds(state->keymap))
+    if (idx >= XKB_NUM_INDICATORS ||
+        state->keymap->indicators[idx].name == XKB_ATOM_NONE)
         return -1;
 
     return !!(state->leds & (1 << idx));
