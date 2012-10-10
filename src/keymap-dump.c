@@ -227,6 +227,7 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
     struct xkb_key *key;
     struct xkb_key_alias *alias;
     xkb_led_index_t i;
+    const struct xkb_indicator_map *im;
 
     if (keymap->keycodes_section_name)
         write_buf(buf, "\txkb_keycodes \"%s\" {\n",
@@ -242,12 +243,10 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
                   KeyNameText(keymap->ctx, key->name), key->keycode);
     }
 
-    for (i = 0; i < XKB_NUM_INDICATORS; i++) {
-        if (keymap->indicators[i].name == XKB_ATOM_NONE)
-            continue;
-        write_buf(buf, "\t\tindicator %d = \"%s\";\n", i + 1,
-                  xkb_atom_text(keymap->ctx, keymap->indicators[i].name));
-    }
+    darray_enumerate(i, im, keymap->indicators)
+        if (im->name != XKB_ATOM_NONE)
+            write_buf(buf, "\t\tindicator %d = \"%s\";\n",
+                      i + 1, xkb_atom_text(keymap->ctx, im->name));
 
 
     darray_foreach(alias, keymap->key_aliases)
@@ -322,12 +321,11 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
 }
 
 static bool
-write_indicator_map(struct xkb_keymap *keymap, struct buf *buf, int num)
+write_indicator_map(struct xkb_keymap *keymap, struct buf *buf,
+                    const struct xkb_indicator_map *led)
 {
-    struct xkb_indicator_map *led = &keymap->indicators[num];
-
     write_buf(buf, "\t\tindicator \"%s\" {\n",
-              xkb_atom_text(keymap->ctx, keymap->indicators[num].name));
+              xkb_atom_text(keymap->ctx, led->name));
 
     if (led->which_groups) {
         if (led->which_groups != XKB_STATE_EFFECTIVE) {
@@ -499,8 +497,8 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
 static bool
 write_compat(struct xkb_keymap *keymap, struct buf *buf)
 {
-    int i;
     struct xkb_sym_interpret *interp;
+    const struct xkb_indicator_map *led;
 
     if (keymap->compat_section_name)
         write_buf(buf, "\txkb_compatibility \"%s\" {\n\n",
@@ -539,14 +537,10 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
         write_buf(buf, "\t\t};\n");
     }
 
-    for (i = 0; i < XKB_NUM_INDICATORS; i++) {
-        struct xkb_indicator_map *map = &keymap->indicators[i];
-        if (map->which_groups == 0 && map->groups == 0 &&
-            map->which_mods == 0 && map->mods.mods == 0 &&
-            map->ctrls == 0)
-            continue;
-        write_indicator_map(keymap, buf, i);
-    }
+    darray_foreach(led, keymap->indicators)
+        if (led->which_groups || led->groups || led->which_mods ||
+            led->mods.mods || led->ctrls)
+            write_indicator_map(keymap, buf, led);
 
     write_buf(buf, "\t};\n\n");
 

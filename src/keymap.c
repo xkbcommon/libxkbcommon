@@ -110,6 +110,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
     darray_free(keymap->key_aliases);
     darray_free(keymap->group_names);
     darray_free(keymap->mods);
+    darray_free(keymap->indicators);
     free(keymap->keycodes_section_name);
     free(keymap->symbols_section_name);
     free(keymap->types_section_name);
@@ -237,13 +238,12 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t kc,
 XKB_EXPORT xkb_led_index_t
 xkb_keymap_num_leds(struct xkb_keymap *keymap)
 {
+    const struct xkb_indicator_map *led;
     xkb_led_index_t ret = 0;
-    xkb_led_index_t i;
 
-    for (i = 0; i < XKB_NUM_INDICATORS; i++)
-        if (keymap->indicators[i].which_groups ||
-            keymap->indicators[i].which_mods ||
-            keymap->indicators[i].ctrls)
+    darray_foreach(led, keymap->indicators)
+        if (led->which_groups || led->groups || led->which_mods ||
+            led->mods.mods || led->ctrls)
             ret++;
 
     return ret;
@@ -255,26 +255,28 @@ xkb_keymap_num_leds(struct xkb_keymap *keymap)
 XKB_EXPORT const char *
 xkb_keymap_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx)
 {
-    if (idx >= XKB_NUM_INDICATORS)
+    if (idx >= darray_size(keymap->indicators))
         return NULL;
 
-    return xkb_atom_text(keymap->ctx, keymap->indicators[idx].name);
+    return xkb_atom_text(keymap->ctx,
+                         darray_item(keymap->indicators, idx).name);
 }
 
 /**
  * Returns the index for a named group.
  */
-XKB_EXPORT xkb_layout_index_t
+XKB_EXPORT xkb_led_index_t
 xkb_keymap_led_get_index(struct xkb_keymap *keymap, const char *name)
 {
     xkb_atom_t atom = xkb_atom_lookup(keymap->ctx, name);
     xkb_led_index_t i;
+    const struct xkb_indicator_map *led;
 
     if (atom == XKB_ATOM_NONE)
         return XKB_LED_INVALID;
 
-    for (i = 0; i < XKB_NUM_INDICATORS; i++)
-        if (keymap->indicators[i].name == atom)
+    darray_enumerate(i, led, keymap->indicators)
+        if (led->name == atom)
             return i;
 
     return XKB_LED_INVALID;

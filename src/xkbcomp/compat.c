@@ -945,34 +945,38 @@ CopyIndicatorMapDefs(CompatInfo *info)
          * Find the indicator with the given name, if it was already
          * declared in keycodes.
          */
-        for (i = 0; i < XKB_NUM_INDICATORS; i++)
-            if (keymap->indicators[i].name == led->im.name)
+        darray_enumerate(i, im, keymap->indicators)
+            if (im->name == led->im.name)
                 break;
 
         /* Not previously declared; create it with next free index. */
-        if (i >= XKB_NUM_INDICATORS) {
+        if (i >= darray_size(keymap->indicators)) {
             log_dbg(keymap->ctx,
                     "Indicator name \"%s\" was not declared in the keycodes section; "
                     "Adding new indicator\n",
                     xkb_atom_text(keymap->ctx, led->im.name));
 
-            for (i = 0; i < XKB_NUM_INDICATORS; i++)
-                if (keymap->indicators[i].name == XKB_ATOM_NONE)
+            darray_enumerate(i, im, keymap->indicators)
+                if (im->name == XKB_ATOM_NONE)
                     break;
 
-            /* Not place to put it; ignore. */
-            if (i >= XKB_NUM_INDICATORS) {
-                log_err(keymap->ctx,
-                        "Too many indicators (maximum is %d); "
-                        "Indicator name \"%s\" ignored\n",
-                        XKB_NUM_INDICATORS,
-                        xkb_atom_text(keymap->ctx, led->im.name));
-                continue;
+            if (i >= darray_size(keymap->indicators)) {
+                /* Not place to put it; ignore. */
+                if (i >= XKB_MAX_LEDS) {
+                    log_err(keymap->ctx,
+                            "Too many indicators (maximum is %d); "
+                            "Indicator name \"%s\" ignored\n",
+                            XKB_MAX_LEDS,
+                            xkb_atom_text(keymap->ctx, led->im.name));
+                    continue;
+                }
+                /* Add a new indicator. */
+                darray_resize(keymap->indicators, i + 1);
+                im = &darray_item(keymap->indicators, i);
             }
         }
 
-        im = &keymap->indicators[i];
-        *im  = led->im;
+        *im = led->im;
         if (im->groups != 0 && im->which_groups == 0)
             im->which_groups = XKB_STATE_EFFECTIVE;
         if (im->mods.mods != 0 && im->which_mods == 0)

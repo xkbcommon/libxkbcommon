@@ -590,11 +590,11 @@ static void
 xkb_state_led_update_all(struct xkb_state *state)
 {
     xkb_led_index_t led;
+    const struct xkb_indicator_map *map;
 
     state->leds = 0;
 
-    for (led = 0; led < XKB_NUM_INDICATORS; led++) {
-        struct xkb_indicator_map *map = &state->keymap->indicators[led];
+    darray_enumerate(led, map, state->keymap->indicators) {
         xkb_mod_mask_t mod_mask = 0;
         xkb_layout_mask_t group_mask = 0;
 
@@ -996,8 +996,8 @@ xkb_state_layout_name_is_active(struct xkb_state *state, const char *name,
 XKB_EXPORT int
 xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx)
 {
-    if (idx >= XKB_NUM_INDICATORS ||
-        state->keymap->indicators[idx].name == XKB_ATOM_NONE)
+    if (idx >= darray_size(state->keymap->indicators) ||
+        darray_item(state->keymap->indicators, idx).name == XKB_ATOM_NONE)
         return -1;
 
     return !!(state->leds & (1 << idx));

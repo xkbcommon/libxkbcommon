@@ -132,7 +132,7 @@ typedef struct {
     xkb_keycode_t min_key_code;
     xkb_keycode_t max_key_code;
     darray(KeyNameInfo) key_names;
-    IndicatorNameInfo indicator_names[XKB_NUM_INDICATORS];
+    darray(IndicatorNameInfo) indicator_names;
     darray(AliasInfo) aliases;
 
     struct xkb_context *ctx;
@@ -153,12 +153,13 @@ static IndicatorNameInfo *
 FindIndicatorByName(KeyNamesInfo *info, xkb_atom_t name,
                     xkb_led_index_t *idx_out)
 {
+    IndicatorNameInfo *led;
     xkb_led_index_t idx;
 
-    for (idx = 0; idx < XKB_NUM_INDICATORS; idx++) {
-        if (info->indicator_names[idx].name == name) {
+    darray_enumerate(idx, led, info->indicator_names) {
+        if (led->name == name) {
             *idx_out = idx;
-            return &info->indicator_names[idx];
+            return led;
         }
     }
 
@@ -204,8 +205,11 @@ AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
         return true;
     }
 
+    if (new_idx >= darray_size(info->indicator_names))
+        darray_resize0(info->indicator_names, new_idx + 1);
+
     /* Inidicator with the same index already exists. */
-    old = &info->indicator_names[new_idx];
+    old = &darray_item(info->indicator_names, new_idx);
     if (old->name != XKB_ATOM_NONE) {
         bool report = ((old->file_id == new->file_id && verbosity > 0) ||
                        verbosity > 9);
@@ -227,7 +231,7 @@ AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
         return true;
     }
 
-    info->indicator_names[new_idx] = *new;
+    darray_item(info->indicator_names, new_idx) = *new;
     return true;
 }
 
@@ -237,6 +241,7 @@ ClearKeyNamesInfo(KeyNamesInfo *info)
     free(info->name);
     darray_free(info->key_names);
     darray_free(info->aliases);
+    darray_free(info->indicator_names);
 }
 
 static void
@@ -377,6 +382,7 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
 {
     xkb_keycode_t i;
     xkb_led_index_t idx;
+    IndicatorNameInfo *led;
 
     if (from->errorCount > 0) {
         into->errorCount += from->errorCount;
@@ -400,8 +406,7 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
             into->errorCount++;
     }
 
-    for (idx = 0; idx < XKB_NUM_INDICATORS; idx++) {
-        IndicatorNameInfo *led = &from->indicator_names[idx];
+    darray_enumerate(idx, led, from->indicator_names) {
         if (led->name == XKB_ATOM_NONE)
             continue;
 
@@ -561,11 +566,11 @@ HandleIndicatorNameDef(KeyNamesInfo *info, IndicatorNameDef *def,
     IndicatorNameInfo ii;
     xkb_atom_t name;
 
-    if (def->ndx < 1 || def->ndx > XKB_NUM_INDICATORS) {
+    if (def->ndx < 1 || def->ndx > XKB_MAX_LEDS) {
         info->errorCount++;
         log_err(info->ctx,
-                "Name specified for illegal indicator index %d\n; Ignored\n",
-                def->ndx);
+                "Illegal indicator index (%d) specified; must be between 1 .. %d; "
+                "Ignored\n", def->ndx, XKB_MAX_LEDS);
         return false;
     }
 
@@ -689,6 +694,7 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 {
     xkb_keycode_t kc;
     xkb_led_index_t idx;
+    IndicatorNameInfo *led;
 
     keymap->keys = calloc(info->max_key_code + 1, sizeof(*keymap->keys));
     if (!keymap->keys)
@@ -704,12 +710,12 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 
     keymap->keycodes_section_name = strdup_safe(info->name);
 
-    for (idx = 0; idx < XKB_NUM_INDICATORS; idx++) {
-        IndicatorNameInfo *led = &info->indicator_names[idx];
+    darray_resize0(keymap->indicators, darray_size(info->indicator_names));
+    darray_enumerate(idx, led, info->indicator_names) {
         if (led->name == XKB_ATOM_NONE)
             continue;
 
-        keymap->indicators[idx].name = led->name;
+        darray_item(keymap->indicators, idx).name = led->name;
     }
 
     ApplyAliases(info, keymap);

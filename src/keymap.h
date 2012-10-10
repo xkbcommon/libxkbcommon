@@ -106,15 +106,15 @@
 /* Don't allow more modifiers than we can hold in xkb_mod_mask_t. */
 #define XKB_MAX_MODS ((xkb_mod_index_t) (sizeof(xkb_mod_mask_t) * 8))
 
-/* These should all be dynamic. */
-#define XKB_NUM_INDICATORS 32
+/* Don't allow more leds than we can hold in xkb_led_mask_t. */
+#define XKB_MAX_LEDS ((xkb_led_index_t) (sizeof(xkb_led_mask_t) * 8))
 
+/* These should all go away. */
 enum mod_type {
     MOD_REAL = (1 << 0),
     MOD_VIRT = (1 << 1),
     MOD_BOTH = (MOD_REAL | MOD_VIRT),
 };
-
 #define MOD_REAL_MASK_ALL ((xkb_mod_mask_t) 0x000000ff)
 
 enum xkb_action_type {
@@ -398,7 +398,7 @@ struct xkb_keymap {
     xkb_layout_index_t num_groups;
     darray_xkb_atom_t group_names;
 
-    struct xkb_indicator_map indicators[XKB_NUM_INDICATORS];
+    darray(struct xkb_indicator_map) indicators;
 
     char *keycodes_section_name;
     char *symbols_section_name;
