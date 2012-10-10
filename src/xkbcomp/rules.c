@@ -559,7 +559,7 @@ extract_layout_index(const char *s, size_t max_len, xkb_layout_index_t *out)
         return -1;
     if (s[0] != '[' || !isdigit(s[1]) || s[2] != ']')
         return -1;
-    if (s[1] - '0' < 1 || s[1] - '0' > XKB_NUM_GROUPS)
+    if (s[1] - '0' < 1 || s[1] - '0' > XKB_MAX_GROUPS)
         return -1;
     /* To zero-based index. */
     *out = s[1] - '0' - 1;

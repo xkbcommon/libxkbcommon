@@ -561,11 +561,11 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *stmt)
         next_incl.merge = next_incl.dflt.merge = MERGE_OVERRIDE;
         if (stmt->modifier) {
             next_incl.explicit_group = atoi(stmt->modifier) - 1;
-            if (next_incl.explicit_group >= XKB_NUM_GROUPS) {
+            if (next_incl.explicit_group >= XKB_MAX_GROUPS) {
                 log_err(info->keymap->ctx,
                         "Cannot set explicit group to %d - must be between 1..%d; "
                         "Ignoring group number\n",
-                        next_incl.explicit_group + 1, XKB_NUM_GROUPS);
+                        next_incl.explicit_group + 1, XKB_MAX_GROUPS);
                 next_incl.explicit_group = info->explicit_group;
             }
         }
@@ -609,11 +609,11 @@ GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
             }
         }
 
-        if (i >= XKB_NUM_GROUPS) {
+        if (i >= XKB_MAX_GROUPS) {
             log_err(info->keymap->ctx,
                     "Too many groups of %s for key %s (max %u); "
                     "Ignoring %s defined for extra groups\n",
-                    name, KeyInfoText(info, keyi), XKB_NUM_GROUPS + 1, name);
+                    name, KeyInfoText(info, keyi), XKB_MAX_GROUPS, name);
             return false;
         }
 

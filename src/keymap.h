@@ -101,7 +101,7 @@
  * the size of the xkb_layout_mask_t type (32). This is more than enough
  * though.
  */
-#define XKB_NUM_GROUPS 4
+#define XKB_MAX_GROUPS 4
 
 /* Don't allow more modifiers than we can hold in xkb_mod_mask_t. */
 #define XKB_MAX_MODS ((xkb_mod_index_t) (sizeof(xkb_mod_mask_t) * 8))
