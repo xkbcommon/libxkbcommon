@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh -e
 
 srcdir=`dirname "$0"`
 test -z "$srcdir" && srcdir=.
@@ -6,7 +6,9 @@ test -z "$srcdir" && srcdir=.
 ORIGDIR=`pwd`
 cd "$srcdir"
 
-autoreconf --verbose --install --symlink --warnings=all || exit 1
-cd "$ORIGDIR" || exit $?
+autoreconf --verbose --install --symlink --warnings=all
+cd "$ORIGDIR"
 
-exec "$srcdir/configure" --enable-maintainer-mode "$@"
+if test -z "$NOCONFIGURE"; then
+    exec "$srcdir/configure" "$@"
+fi
