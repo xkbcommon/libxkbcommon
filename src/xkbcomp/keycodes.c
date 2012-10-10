@@ -171,64 +171,58 @@ AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
 {
     xkb_led_index_t old_idx;
     IndicatorNameInfo *old;
-    bool replace, report;
+    bool replace;
     int verbosity = xkb_context_get_log_verbosity(info->ctx);
 
-    replace = (merge == MERGE_REPLACE) || (merge == MERGE_OVERRIDE);
+    replace = (merge == MERGE_REPLACE || merge == MERGE_OVERRIDE);
 
+    /* Inidicator with the same name already exists. */
     old = FindIndicatorByName(info, new->name, &old_idx);
     if (old) {
-        report = ((old->file_id == new->file_id && verbosity > 0) ||
-                  verbosity > 9);
+        bool report = ((old->file_id == new->file_id && verbosity > 0) ||
+                       verbosity > 9);
 
         if (old_idx == new_idx) {
-            if (report)
-                log_warn(info->ctx, "Multiple indicators named %s; "
-                         "Identical definitions ignored\n",
-                         xkb_atom_text(info->ctx, new->name));
+            log_warn(info->ctx,
+                     "Multiple indicators named \"%s\"; "
+                     "Identical definitions ignored\n",
+                     xkb_atom_text(info->ctx, new->name));
             return true;
         }
 
-        if (report)
+        if (report) {
+            xkb_led_index_t use = (replace ? new_idx + 1 : old_idx + 1);
+            xkb_led_index_t ignore = (replace ? old_idx + 1 : new_idx + 1);
             log_warn(info->ctx, "Multiple indicators named %s; "
                      "Using %d, ignoring %d\n",
-                     xkb_atom_text(info->ctx, new->name),
-                     (replace ? old_idx + 1 : new_idx + 1),
-                     (replace ? new_idx + 1 : old_idx + 1));
+                     xkb_atom_text(info->ctx, new->name), use, ignore);
+        }
 
-        /*
-         * XXX: If in the next check we ignore new, than we will have
-         * deleted this old for nothing!
-         */
         if (replace)
-            memset(old, 0, sizeof(*old));
+            *old = *new;
+
+        return true;
     }
 
+    /* Inidicator with the same index already exists. */
     old = &info->indicator_names[new_idx];
     if (old->name != XKB_ATOM_NONE) {
-        report = ((old->file_id == new->file_id && verbosity > 0) ||
-                  verbosity > 9);
+        bool report = ((old->file_id == new->file_id && verbosity > 0) ||
+                       verbosity > 9);
 
-        if (old->name == new->name) {
-            if (report)
-                log_warn(info->ctx, "Multiple names for indicator %d; "
-                         "Identical definitions ignored\n", new_idx + 1);
+        /* Same name case already handled above. */
+
+        if (report) {
+            xkb_atom_t use = (replace ? new->name : old->name);
+            xkb_atom_t ignore = (replace ? old->name : new->name);
+            log_warn(info->ctx, "Multiple names for indicator %d; "
+                     "Using %s, ignoring %s\n", new_idx + 1,
+                     xkb_atom_text(info->ctx, use),
+                     xkb_atom_text(info->ctx, ignore));
         }
-        else if (replace) {
-            if (report)
-                log_warn(info->ctx, "Multiple names for indicator %d; "
-                         "Using %s, ignoring %s\n", new_idx + 1,
-                         xkb_atom_text(info->ctx, new->name),
-                         xkb_atom_text(info->ctx, old->name));
-            old->name = new->name;
-        }
-        else {
-            if (report)
-                log_warn(info->ctx, "Multiple names for indicator %d; "
-                         "Using %s, ignoring %s\n", new_idx + 1,
-                         xkb_atom_text(info->ctx, old->name),
-                         xkb_atom_text(info->ctx, new->name));
-        }
+
+        if (replace)
+            *old = *new;
 
         return true;
     }
