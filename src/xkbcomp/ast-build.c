@@ -68,21 +68,17 @@ malloc_or_die(size_t size)
 }
 
 ParseCommon *
-AppendStmt(ParseCommon * to, ParseCommon * append)
+AppendStmt(ParseCommon *to, ParseCommon *append)
 {
-    ParseCommon *start = to;
+    ParseCommon *iter;
 
-    if (append == NULL)
-        return to;
-    while ((to != NULL) && (to->next != NULL))
-    {
-        to = to->next;
-    }
-    if (to) {
-        to->next = append;
-        return start;
-    }
-    return append;
+    if (!to)
+        return append;
+
+    for (iter = to; iter->next; iter = iter->next);
+
+    iter->next = append;
+    return to;
 }
 
 ExprDef *
