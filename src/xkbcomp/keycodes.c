@@ -95,7 +95,7 @@
  *      darray(struct xkb_key_alias) key_aliases;
  *      char *keycodes_section_name;
  * The 'name' field of indicators declared in xkb_keycodes:
- *      struct xkb_indicator_map indicators[XKB_NUM_INDICATORS];
+ *      darray(struct xkb_indicator_map) indicators;
  * Further, the array of keys:
  *      struct xkb_key *keys;
  * had been resized to its final size (i.e. all of the xkb_key objects are

@@ -57,28 +57,97 @@
 /*
  * The xkb_compat section
  * =====================
- * This section is the third to be processesed, after xkb_keycodes and
+ * This section is the third to be processed, after xkb_keycodes and
  * xkb_types.
  *
  * Interpret statements
  * --------------------
  * Statements of the form:
  *      interpret Num_Lock+Any { ... }
+ *      interpret Shift_Lock+AnyOf(Shift+Lock) { ... }
+ *
+ * The xkb_symbols section (see symbols.c) allows the keymap author to do,
+ * among other things, the following for each key:
+ * - Bind an action, like SetMods or LockGroup, to the key. Actions, like
+ *   symbols, are specified for each level of each group in the key
+ *   separately.
+ * - Add a virtual modifier to the key's virtual modifier mapping (vmodmap).
+ * - Specify whether the key should repeat or not.
+ *
+ * However, doing this for each key (or level) is tedious and inflexible.
+ * Interpret's are a mechanism to apply these settings to a bunch of
+ * keys/levels at once.
+ *
+ * Each interpret specifies a condition by which it attaches to certain
+ * levels. The condition consists of two parts:
+ * - A keysym. If the level has a different (or more than one) keysym, the
+ *   match failes. Leaving out the keysym is equivalent to using the
+ *   NoSymbol keysym, which always matches successfully.
+ * - A modifier predicate. The predicate consists of a matching operation
+ *   and a mask of (real) modifiers. The modifers are matched against the
+ *   key's modifier map (modmap). The matching operation can be one of the
+ *   following:
+ *   + AnyOfOrNone - The modmap must either be empty or include at least
+ *     one of the specified modifiers.
+ *   + AnyOf - The modmap must include at least one of the specified
+ *     modifiers.
+ *   + NoneOf - The modmap must not include any of the specified modifiers.
+ *   + AllOf - The modmap must include all of the specified modifiers (but
+ *     may include others as well).
+ *   + Exactly - The modmap must be exactly the same as the specified
+ *     modifiers.
+ *   Leaving out the predicate is equivalent to usign AnyOfOrNone while
+ *   specifying all modifiers. Leaving out just the matching condtition
+ *   is equivalent to using Exactly.
+ * An interpret may also include "useModMapMods = level1;" - see below.
+ *
+ * If a level fulfils the conditions of several interpret's, only the
+ * most specific one is used:
+ * - A specific keysym will always match before a generic NoSymbol
+ *   condition.
+ * - If the keysyms are the same, the interpret with the more specific
+ *   matching operation is used. The above list is sorted from least to
+ *   most specific.
+ * - If both the keysyms and the matching operations are the same (but the
+ *   modifiers are different), the first interpret is used.
+ *
+ * As described above, once an interpret "attaches" to a level, it can bind
+ * an action to that level, add one virtual modifier to the key's vmodmap,
+ * or set the key's repeat setting. You should note the following:
+ * - The key repeat is a property of the entire key; it is not level-specific.
+ *   In order to avoid confusion, it is only inspected for the first level of
+ *   the first group; the interpret's repeat setting is ignored when applied
+ *   to other levels.
+ * - If one of the above fields was set directly for a key in xkb_symbols,
+ *   the explicit setting takes precedence over the interpret.
  *
  * The body of the statment may include statements of the following
- * forms:
+ * forms (all of which are optional):
+ *
+ * - useModMapMods statement:
+ *      useModMapMods = level1;
+ *
+ *   When set to 'level1', the interpret will only match levels which are
+ *   the first level of the first group of the keys. This can be useful in
+ *   conjuction with e.g. a virtualModifier statement.
  *
  * - action statement:
  *      action = LockMods(modifiers=NumLock);
  *
+ *   Bind this action to the matching levels.
+ *
  * - virtual modifier statement:
  *      virtualModifier = NumLock;
+ *
+ *   Add this virtual modifier to the key's vmodmap. The given virtual
+ *   modifier must be declared at the top level of the file with a
+ *   virtual_modifiers statement, e.g.:
+ *      virtual_modifiers NumLock;
  *
  * - repeat statement:
  *      repeat = True;
  *
- * - useModMapMods statement:
- *      useModMapMods = level1;
+ *   Set whether the key should repeat or not. Must be a boolean value.
  *
  * Indicator map statements
  * ------------------------
@@ -107,7 +176,7 @@
  *      base, latched, locked, effective
  *      any (i.e. all of the above)
  *      none (i.e. none of the above)
- *      compat (this is legal, but unused)
+ *      compat (legacy value, treated as effective)
  *   This will cause the respective portion of the modifer state (see
  *   struct xkb_state) to be matched against the modifiers given in the
  *   "modifiers" statement.
@@ -153,7 +222,7 @@
  * After all of the xkb_compat sections have been compiled, the following
  * members of struct xkb_keymap are finalized:
  *      darray(struct xkb_sym_interpret) sym_interpret;
- *      struct xkb_indicator_map indicators[XKB_NUM_INDICATORS];
+ *      darray(struct xkb_indicator_map) indicators;
  *      char *compat_section_name;
  * TODO: virtual modifiers.
  */
