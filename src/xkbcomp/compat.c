@@ -992,11 +992,11 @@ CopyCompatToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
     if (!darray_empty(info->interps)) {
         /* Most specific to least specific. */
         CopyInterps(info, true, MATCH_EXACTLY);
-        CopyInterps(info, true, MATCH_ALL);
+        CopyInterps(info, true, MATCH_ALL | MATCH_NONE);
         CopyInterps(info, true, MATCH_ANY);
         CopyInterps(info, true, MATCH_ANY_OR_NONE);
         CopyInterps(info, false, MATCH_EXACTLY);
-        CopyInterps(info, false, MATCH_ALL);
+        CopyInterps(info, false, MATCH_ALL | MATCH_NONE);
         CopyInterps(info, false, MATCH_ANY);
         CopyInterps(info, false, MATCH_ANY_OR_NONE);
     }
