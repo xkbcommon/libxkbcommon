@@ -274,7 +274,7 @@ print_keycode(struct keyboard *kbd, xkb_keycode_t keycode)
     printf("] ");
 
     printf("leds [ ");
-    for (led = 0; led < sizeof(xkb_led_mask_t) * 8; led++) {
+    for (led = 0; led < xkb_keymap_num_leds(keymap); led++) {
         if (xkb_state_led_index_is_active(state, led) <= 0)
             continue;
         printf("%s ", xkb_keymap_led_get_name(keymap, led));

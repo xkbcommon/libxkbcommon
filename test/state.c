@@ -82,7 +82,7 @@ print_state(struct xkb_state *state)
                     "locked " : "");
     }
 
-    for (led = 0; led < sizeof(xkb_led_mask_t) * 8; led++) {
+    for (led = 0; led < xkb_keymap_num_leds(keymap); led++) {
         if (xkb_state_led_index_is_active(state, led) <= 0)
             continue;
         fprintf(stderr, "\tled %s (%d): active\n",

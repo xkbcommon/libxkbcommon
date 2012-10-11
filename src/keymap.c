@@ -233,20 +233,12 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t kc,
 }
 
 /**
- * Return the total number of active LEDs in the keymap.
+ * Return the total number of LEDs in the keymap.
  */
 XKB_EXPORT xkb_led_index_t
 xkb_keymap_num_leds(struct xkb_keymap *keymap)
 {
-    const struct xkb_indicator_map *led;
-    xkb_led_index_t ret = 0;
-
-    darray_foreach(led, keymap->indicators)
-        if (led->which_groups || led->groups || led->which_mods ||
-            led->mods.mods || led->ctrls)
-            ret++;
-
-    return ret;
+    return darray_size(keymap->indicators);
 }
 
 /**

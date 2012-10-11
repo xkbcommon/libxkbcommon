@@ -641,6 +641,10 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t key,
 
 /**
  * Returns the number of LEDs in the given map.
+ * Note that LED indexes are not necessarily consecutive in the keymap.
+ * This means that some LEDs in the range between 0 and the return value
+ * might not be valid.  Given such an index, xkb_keymap_led_get_name()
+ * will return NULL, and xkb_state_led_index_is_active() will return -1.
  */
 xkb_led_index_t
 xkb_keymap_num_leds(struct xkb_keymap *keymap);
