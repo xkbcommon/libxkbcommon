@@ -511,7 +511,7 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
     write_buf(buf, "\t\tinterpret.useModMapMods= AnyLevel;\n");
     write_buf(buf, "\t\tinterpret.repeat= False;\n");
 
-    darray_foreach(interp, keymap->sym_interpret) {
+    darray_foreach(interp, keymap->sym_interprets) {
         char keysym_name[64];
 
         if (interp->sym == XKB_KEY_NoSymbol)

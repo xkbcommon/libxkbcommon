@@ -221,7 +221,7 @@
  * ----------------
  * After all of the xkb_compat sections have been compiled, the following
  * members of struct xkb_keymap are finalized:
- *      darray(struct xkb_sym_interpret) sym_interpret;
+ *      darray(struct xkb_sym_interpret) sym_interprets;
  *      darray(struct xkb_indicator_map) indicators;
  *      char *compat_section_name;
  * TODO: virtual modifiers.
@@ -997,7 +997,7 @@ CopyInterps(CompatInfo *info, bool needSymbol, enum xkb_match_operation pred)
             (!needSymbol && si->interp.sym != XKB_KEY_NoSymbol))
             continue;
 
-        darray_append(info->keymap->sym_interpret, si->interp);
+        darray_append(info->keymap->sym_interprets, si->interp);
     }
 }
 

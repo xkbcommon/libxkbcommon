@@ -90,10 +90,10 @@ FindInterpForKey(struct xkb_keymap *keymap, const struct xkb_key *key,
     /*
      * There may be multiple matchings interprets; we should always return
      * the most specific. Here we rely on compat.c to set up the
-     * sym_interpret array from the most specific to the least specific,
+     * sym_interprets array from the most specific to the least specific,
      * such that when we find a match we return immediately.
      */
-    darray_foreach(interp, keymap->sym_interpret) {
+    darray_foreach(interp, keymap->sym_interprets) {
         xkb_mod_mask_t mods;
         bool found;
 

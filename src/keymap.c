@@ -106,7 +106,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
         free(keymap->types[i].level_names);
     }
     free(keymap->types);
-    darray_free(keymap->sym_interpret);
+    darray_free(keymap->sym_interprets);
     darray_free(keymap->key_aliases);
     darray_free(keymap->group_names);
     darray_free(keymap->mods);
