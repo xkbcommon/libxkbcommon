@@ -93,12 +93,12 @@ extern "C" {
 
 /**
  * @file
- * @brief Main libxkbcommon API.
+ * Main libxkbcommon API.
  */
 
 /**
  * @struct xkb_context
- * @brief Opaque top level library context object.
+ * Opaque top level library context object.
  *
  * The context contains various general library data and state, like
  * logging level and include paths.
@@ -112,7 +112,7 @@ struct xkb_context;
 
 /**
  * @struct xkb_keymap
- * @brief Opaque compiled XKB keymap object.
+ * Opaque compiled XKB keymap object.
  *
  * The keymap object holds all of the static keyboard information obtained
  * from compiling XKB files.
@@ -125,7 +125,7 @@ struct xkb_keymap;
 
 /**
  * @struct xkb_state
- * @brief Opaque XKB keyboard state object.
+ * Opaque XKB keyboard state object.
  *
  * State objects contain the active state of a keyboard (or keyboards), such
  * as the currently effective layout and the active modifiers. It acts as a
@@ -157,7 +157,7 @@ typedef uint32_t xkb_led_mask_t;
 #define xkb_keycode_is_legal_x11(kc) (kc >= 8 && kc <= 255)
 
 /**
- * @brief Names to compile a keymap with, also known as RMLVO.
+ * Names to compile a keymap with, also known as RMLVO.
  *
  * These names together are the primary identifier for a keymap.
  * If any of the members is NULL or an empty string (""), a default value is
@@ -183,13 +183,13 @@ struct xkb_rule_names {
 
 /**
  * @defgroup keysyms Keysyms
- * @brief Utility functions related to keysyms.
+ * Utility functions related to keysyms.
  *
  * @{
  */
 
 /**
- * @brief Get the name of a keysym.
+ * Get the name of a keysym.
  *
  * @param[in]  keysym The keysym.
  * @param[out] buffer A string buffer to write the name into.
@@ -215,7 +215,7 @@ int
 xkb_keysym_get_name(xkb_keysym_t keysym, char *buffer, size_t size);
 
 /**
- * @brief Get a keysym from its name.
+ * Get a keysym from its name.
  *
  * @param name The name of a keysym. See remarks in
  * xkb_keysym_get_name(); this function will accept any name returned by that
@@ -230,7 +230,7 @@ xkb_keysym_t
 xkb_keysym_from_name(const char *name);
 
 /**
- * @brief Get the Unicode/UTF-8 representation of a keysym.
+ * Get the Unicode/UTF-8 representation of a keysym.
  *
  * @param[in]  keysym The keysym.
  * @param[out] buffer A buffer to write the UTF-8 string into.
@@ -244,7 +244,7 @@ int
 xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size);
 
 /**
- * @brief Get the Unicode/UTF-32 representation of a keysym.
+ * Get the Unicode/UTF-32 representation of a keysym.
  *
  * @param keysym The keysym.
  *
@@ -259,7 +259,7 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym);
 
 /**
  * @defgroup context Library Context
- * @brief Creating, destroying and using library contexts.
+ * Creating, destroying and using library contexts.
  *
  * Every keymap compilation request must have a context associated with
  * it.  The context keeps around state such as the include path.
@@ -267,14 +267,14 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym);
  * @{
  */
 
-/** @brief Flags for context creation. */
+/** Flags for context creation. */
 enum xkb_context_flags {
     /** Create this context with an empty include path. */
     XKB_CONTEXT_NO_DEFAULT_INCLUDES = (1 << 0),
 };
 
 /**
- * @brief Create a new context.
+ * Create a new context.
  *
  * @param flags Optional flags for the context, or 0.
  *
@@ -291,7 +291,7 @@ struct xkb_context *
 xkb_context_new(enum xkb_context_flags flags);
 
 /**
- * @brief Take a new reference on a context.
+ * Take a new reference on a context.
  * @param context The context to reference.
  * @returns The passed in context.
  */
@@ -299,14 +299,14 @@ struct xkb_context *
 xkb_context_ref(struct xkb_context *context);
 
 /**
- * @brief Release a reference on a context, and possibly free it.
+ * Release a reference on a context, and possibly free it.
  * @param context The context to unreference.
  */
 void
 xkb_context_unref(struct xkb_context *context);
 
 /**
- * @brief Append a new entry to the context's include path.
+ * Append a new entry to the context's include path.
  * @returns 1 on success, or 0 if the include path could not be added or is
  * inaccessible.
  */
@@ -314,14 +314,14 @@ int
 xkb_context_include_path_append(struct xkb_context *context, const char *path);
 
 /**
- * @brief Append the default include paths to the context's include path.
+ * Append the default include paths to the context's include path.
  * @returns 1 on success, or 0 if the primary include path could not be added.
  */
 int
 xkb_context_include_path_append_default(struct xkb_context *context);
 
 /**
- * @brief Reset the context's include path to the default.
+ * Reset the context's include path to the default.
  *
  * Removes all entries from the context's include path, and inserts the
  * default paths.
@@ -332,20 +332,20 @@ int
 xkb_context_include_path_reset_defaults(struct xkb_context *context);
 
 /**
- * @brief Remove all entries from the context's include path.
+ * Remove all entries from the context's include path.
  */
 void
 xkb_context_include_path_clear(struct xkb_context *context);
 
 /**
- * @brief Get the number of paths in the context's include path.
+ * Get the number of paths in the context's include path.
  * @returns The number of paths in the context's include path.
  */
 unsigned int
 xkb_context_num_include_paths(struct xkb_context *context);
 
 /**
- * @brief Get a specific include path from the context's include path.
+ * Get a specific include path from the context's include path.
  * @returns The include path at the specified index within the context, or
  * NULL if the index is invalid.
  */
@@ -353,7 +353,7 @@ const char *
 xkb_context_include_path_get(struct xkb_context *context, unsigned int index);
 
 /**
- * @brief Store custom user data in the context.
+ * Store custom user data in the context.
  *
  * This may be useful in conjuction with xkb_context_set_log_fn() or other
  * callbacks.
@@ -362,7 +362,7 @@ void
 xkb_context_set_user_data(struct xkb_context *context, void *user_data);
 
 /**
- * @brief Retrieves stored user data from the context.
+ * Retrieves stored user data from the context.
  *
  * @returns The stored user data.  If the user data wasn't set, or the
  * passed in context is NULL, returns NULL.
@@ -377,12 +377,12 @@ xkb_context_get_user_data(struct xkb_context *context);
 
 /**
  * @defgroup logging Logging Handling
- * @brief Manipulating how logging from this library is handled.
+ * Manipulating how logging from this library is handled.
  *
  * @{
  */
 
-/** @brief Specifies a logging level. */
+/** Specifies a logging level. */
 enum xkb_log_level {
     XKB_LOG_LEVEL_CRITICAL = 10, /**< Log critical internal errors only. */
     XKB_LOG_LEVEL_ERROR = 20,    /**< Log all errors. */
@@ -392,7 +392,7 @@ enum xkb_log_level {
 };
 
 /**
- * @brief Set the current logging level.
+ * Set the current logging level.
  *
  * @param context The context in which to set the logging level.
  * @param level   The logging level to use.  Only messages from this level
@@ -407,14 +407,14 @@ xkb_context_set_log_level(struct xkb_context *context,
                           enum xkb_log_level level);
 
 /**
- * @brief Get the current logging level.
+ * Get the current logging level.
  * @returns The current logging level.
  */
 enum xkb_log_level
 xkb_context_get_log_level(struct xkb_context *context);
 
 /**
- * @brief Sets the current logging verbosity.
+ * Sets the current logging verbosity.
  *
  * The library can generate a number of warnings which are not helpful to
  * ordinary users of the library.  The verbosity may be increased if more
@@ -434,14 +434,14 @@ void
 xkb_context_set_log_verbosity(struct xkb_context *context, int verbosity);
 
 /**
- * @brief Get the current logging verbosity of the context.
+ * Get the current logging verbosity of the context.
  * @returns The current logging verbosity.
  */
 int
 xkb_context_get_log_verbosity(struct xkb_context *context);
 
 /**
- * @brief Set a custom function to handle logging messages.
+ * Set a custom function to handle logging messages.
  *
  * @param context The context in which to use the set logging function.
  * @param log_fn  The function that will be called for logging messages.
@@ -468,19 +468,19 @@ xkb_context_set_log_fn(struct xkb_context *context,
 
 /**
  * @defgroup keymap Keymap Creation
- * @brief Creating and destroying XKB keymaps.
+ * Creating and destroying XKB keymaps.
  *
  * @{
  */
 
-/** @brief Flags for keymap compilation. */
+/** Flags for keymap compilation. */
 enum xkb_keymap_compile_flags {
     /** Apparently you can't have empty enums.  What a drag. */
     XKB_MAP_COMPILE_PLACEHOLDER = 0,
 };
 
 /**
- * @brief Create a keymap from RMLVO names.
+ * Create a keymap from RMLVO names.
  *
  * The primary keymap entry point: creates a new XKB keymap from a set of
  * RMLVO (Rules + Model + Layouts + Variants + Options) names.
@@ -502,14 +502,14 @@ xkb_keymap_new_from_names(struct xkb_context *context,
                           const struct xkb_rule_names *names,
                           enum xkb_keymap_compile_flags flags);
 
-/** @brief The possible keymap text formats. */
+/** The possible keymap text formats. */
 enum xkb_keymap_format {
     /** The current/classic XKB text format, as generated by xkbcomp -xkb. */
     XKB_KEYMAP_FORMAT_TEXT_V1 = 1,
 };
 
 /**
- * @brief Create a keymap from an XKB keymap file.
+ * Create a keymap from an XKB keymap file.
  *
  * @param context The context in which to create the keymap.
  * @param file    The XKB keymap file to compile.
@@ -530,7 +530,7 @@ xkb_keymap_new_from_file(struct xkb_context *context, FILE *file,
                          enum xkb_keymap_compile_flags flags);
 
 /**
- * @brief Create a keymap from an XKB keymap given as a string.
+ * Create a keymap from an XKB keymap given as a string.
  *
  * This is just like xkb_keymap_new_from_file(), but instead of a file, gets
  * the XKB keymap as one enormous string.
@@ -543,7 +543,7 @@ xkb_keymap_new_from_string(struct xkb_context *context, const char *string,
                            enum xkb_keymap_compile_flags flags);
 
 /**
- * @brief Take a new reference on a keymap.
+ * Take a new reference on a keymap.
  * @param keymap The keymap to reference.
  * @returns The passed in keymap.
  */
@@ -551,7 +551,7 @@ struct xkb_keymap *
 xkb_keymap_ref(struct xkb_keymap *keymap);
 
 /**
- * @brief Release a reference on a keymap, and possibly free it.
+ * Release a reference on a keymap, and possibly free it.
  * @param keymap The keymap to unreference. If the reference count reaches
  * zero, the keymap is freed.
  */
@@ -562,7 +562,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap);
 #define XKB_KEYMAP_USE_ORIGINAL_FORMAT ((enum xkb_keymap_format) -1)
 
 /**
- * @brief Get the compiled keymap as a string.
+ * Get the compiled keymap as a string.
  *
  * @param keymap The keymap to get as a string.
  * @param format The keymap format to use for the string.  You can pass
@@ -585,7 +585,7 @@ xkb_keymap_get_as_string(struct xkb_keymap *keymap,
 
 /**
  * @defgroup components XKB State Components
- * @brief Enumeration of state components in a keymap.
+ * Enumeration of state components in a keymap.
  *
  * @{
  */
@@ -671,7 +671,7 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
 
 /**
  * @defgroup state XKB State Objects
- * @brief Creating, destroying and manipulating keyboard state objects.
+ * Creating, destroying and manipulating keyboard state objects.
  *
  * @{
  */
@@ -704,7 +704,7 @@ xkb_state_unref(struct xkb_state *state);
 struct xkb_keymap *
 xkb_state_get_keymap(struct xkb_state *state);
 
-/** @brief Specifies the direction of the key (press / release). */
+/** Specifies the direction of the key (press / release). */
 enum xkb_key_direction {
     XKB_KEY_UP,   /**< The key was released. */
     XKB_KEY_DOWN, /**< The key was pressed. */
