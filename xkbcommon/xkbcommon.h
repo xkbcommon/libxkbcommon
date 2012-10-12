@@ -399,8 +399,8 @@ enum xkb_log_level {
  * and below will be logged.
  *
  * The default level is XKB_LOG_LEVEL_ERROR.  The environment variable
- * XKB_LOG, if set in the time the context was created, overrides the default
- * value.  It may be specified as a level number or name.
+ * XKB_LOG_LEVEL, if set in the time the context was created, overrides the
+ * default value.  It may be specified as a level number or name.
  */
 void
 xkb_context_set_log_level(struct xkb_context *context,
@@ -420,8 +420,8 @@ xkb_context_get_log_level(struct xkb_context *context);
  * ordinary users of the library.  The verbosity may be increased if more
  * information is desired (e.g. when developing a new keymap).
  *
- * The default verbosity is 0.  The environment variable XKB_VERBOSITY, if
- * set in the time the context was created, overrdies the default value.
+ * The default verbosity is 0.  The environment variable XKB_LOG_VERBOSITY,
+ * if set in the time the context was created, overrides the default value.
  *
  * @param context   The context in which to use the set verbosity.
  * @param verbosity The verbosity to use.  Currently used values are

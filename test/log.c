@@ -70,9 +70,9 @@ main(void)
     struct xkb_context *ctx;
     int ret;
 
-    ret = setenv("XKB_LOG", "warn", 1);
+    ret = setenv("XKB_LOG_LEVEL", "warn", 1);
     assert(ret == 0);
-    ret = setenv("XKB_VERBOSITY", "5", 1);
+    ret = setenv("XKB_LOG_VERBOSITY", "5", 1);
     assert(ret == 0);
     ctx = xkb_context_new(0);
     assert(ctx);

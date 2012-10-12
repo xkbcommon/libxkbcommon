@@ -135,8 +135,8 @@ libtest_la_SOURCES = \
 	test/common.c
 
 AM_TESTS_ENVIRONMENT = \
-	XKB_LOG=debug; export XKB_LOG; \
-	XKB_VERBOSITY=10; export XKB_VERBOSITY; \
+	XKB_LOG_LEVEL=debug; export XKB_LOG_LEVEL; \
+	XKB_LOG_VERBOSITY=10; export XKB_LOG_VERBOSITY; \
 	$(XORG_MALLOC_DEBUG_ENV)
 
 TESTS = \

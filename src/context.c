@@ -294,11 +294,11 @@ xkb_context_new(enum xkb_context_flags flags)
     ctx->log_verbosity = 0;
 
     /* Environment overwrites defaults. */
-    env = getenv("XKB_LOG");
+    env = getenv("XKB_LOG_LEVEL");
     if (env)
         xkb_context_set_log_level(ctx, log_level(env));
 
-    env = getenv("XKB_VERBOSITY");
+    env = getenv("XKB_LOG_VERBOSITY");
     if (env)
         xkb_context_set_log_verbosity(ctx, log_verbosity(env));
 
