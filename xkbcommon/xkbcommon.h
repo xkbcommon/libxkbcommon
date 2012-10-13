@@ -890,8 +890,8 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
 /**
  * Returns 1 if the modifier specified by 'idx' is used in the
  * translation of the keycode 'key' to the key symbols obtained by
- * pressing it (as in xkb_key_get_syms), given the current state.
- * Returns 0 otherwise.
+ * pressing it (as in xkb_state_key_get_syms), given the current state,
+ * 0 otherwise, or -1 if the index is invalid in the keymap.
  */
 int
 xkb_state_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t key,

@@ -1052,8 +1052,8 @@ xkb_state_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t kc,
 {
     const struct xkb_key *key = XkbKey(state->keymap, kc);
 
-    if (!key)
-        return 0;
+    if (!key || idx >= xkb_keymap_num_mods(state->keymap))
+        return -1;
 
     return !!((1 << idx) & key_get_consumed(state, key));
 }
