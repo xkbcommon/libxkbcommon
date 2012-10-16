@@ -319,18 +319,34 @@ struct xkb_rule_names {
 int
 xkb_keysym_get_name(xkb_keysym_t keysym, char *buffer, size_t size);
 
+/** Flags for xkb_keysym_from_name(). */
+enum xkb_keysym_flags {
+    /** Find keysym by case-insensitive search. */
+    XKB_KEYSYM_CASE_INSENSITIVE = (1 << 0),
+};
+
 /**
  * Get a keysym from its name.
  *
  * @param name The name of a keysym. See remarks in xkb_keysym_get_name();
  * this function will accept any name returned by that function.
+ * @param flags A set of flags controlling how the search is done. If
+ * invalid flags are passed, this will fail with XKB_KEY_NoSymbol.
+ *
+ * If you use the XKB_KEYSYM_CASE_INSENSITIVE flag and two keysym names
+ * differ only by case, then the lower-case keysym is returned.  For
+ * instance, for KEY_a and KEY_A, this function would return KEY_a for the
+ * case-insensitive search.  If this functionality is needed, it is
+ * recommended to first call this function without this flag; and if that
+ * fails, only then to try with this flag, while possibly warning the user
+ * he had misspelled the name, and might get wrong results.
  *
  * @returns The keysym. If the name is invalid, returns XKB_KEY_NoSymbol.
  *
  * @sa xkb_keysym_t
  */
 xkb_keysym_t
-xkb_keysym_from_name(const char *name);
+xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags);
 
 /**
  * Get the Unicode/UTF-8 representation of a keysym.

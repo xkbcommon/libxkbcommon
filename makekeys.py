@@ -12,7 +12,7 @@ print('''struct name_keysym {
 };\n''')
 
 print('static const struct name_keysym name_to_keysym[] = {');
-for (name, _) in sorted(entries, key=lambda e: e[0]):
+for (name, _) in sorted(entries, key=lambda e: e[0].lower()):
     print('    {{ "{name}", XKB_KEY_{name} }},'.format(name=name))
 print('};\n')
 

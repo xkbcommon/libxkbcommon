@@ -64,7 +64,7 @@ static int
 compare_by_name(const void *a, const void *b)
 {
     const struct name_keysym *key = a, *entry = b;
-    return strcmp(key->name, entry->name);
+    return strcasecmp(key->name, entry->name);
 }
 
 XKB_EXPORT int
@@ -93,22 +93,80 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
     return snprintf(buffer, size, "0x%08x", ks);
 }
 
+/*
+ * Find the correct keysym if one case-insensitive match is given.
+ *
+ * The name_to_keysym table is sorted by strcasecmp(). So bsearch() may return
+ * _any_ of all possible case-insensitive duplicates. This function searches the
+ * returned entry @entry, all previous and all next entries that match by
+ * case-insensitive comparison and returns the exact match to @name. If @icase
+ * is true, then this returns the best case-insensitive match instead of a
+ * correct match.
+ * The "best" case-insensitive match is the lower-case keysym which we find with
+ * the help of xkb_keysym_is_lower().
+ * The only keysyms that only differ by letter-case are keysyms that are
+ * available as lower-case and upper-case variant (like KEY_a and KEY_A). So
+ * returning the first lower-case match is enough in this case.
+ */
+static const struct name_keysym *
+find_sym(const struct name_keysym *entry, const char *name, bool icase)
+{
+    const struct name_keysym *iter, *last;
+    size_t len = sizeof(name_to_keysym) / sizeof(*name_to_keysym);
+
+    if (!entry)
+        return NULL;
+
+    if (!icase && strcmp(entry->name, name) == 0)
+        return entry;
+    if (icase && xkb_keysym_is_lower(entry->keysym))
+        return entry;
+
+    for (iter = entry - 1; iter >= name_to_keysym; --iter) {
+        if (!icase && strcmp(iter->name, name) == 0)
+            return iter;
+        if (strcasecmp(iter->name, entry->name) != 0)
+            break;
+        if (icase && xkb_keysym_is_lower(iter->keysym))
+            return iter;
+    }
+
+    last = name_to_keysym + len;
+    for (iter = entry + 1; iter < last; --iter) {
+        if (!icase && strcmp(iter->name, name) == 0)
+            return iter;
+        if (strcasecmp(iter->name, entry->name) != 0)
+            break;
+        if (icase && xkb_keysym_is_lower(iter->keysym))
+            return iter;
+    }
+
+    if (icase)
+        return entry;
+    return NULL;
+}
+
 XKB_EXPORT xkb_keysym_t
-xkb_keysym_from_name(const char *s)
+xkb_keysym_from_name(const char *s, enum xkb_keysym_flags flags)
 {
     const struct name_keysym search = { .name = s, .keysym = 0 };
     const struct name_keysym *entry;
     char *tmp;
     xkb_keysym_t val;
+    bool icase = !!(flags & XKB_KEYSYM_CASE_INSENSITIVE);
+
+    if (flags & ~XKB_KEYSYM_CASE_INSENSITIVE)
+        return XKB_KEY_NoSymbol;
 
     entry = bsearch(&search, name_to_keysym,
                     sizeof(name_to_keysym) / sizeof(*name_to_keysym),
                     sizeof(*name_to_keysym),
                     compare_by_name);
+    entry = find_sym(entry, s, icase);
     if (entry)
         return entry->keysym;
 
-    if (*s == 'U') {
+    if (*s == 'U' || (icase && *s == 'u')) {
         val = strtoul(&s[1], &tmp, 16);
         if (tmp && *tmp != '\0')
             return XKB_KEY_NoSymbol;
@@ -121,7 +179,7 @@ xkb_keysym_from_name(const char *s)
             return XKB_KEY_NoSymbol;
         return val | 0x01000000;
     }
-    else if (s[0] == '0' && s[1] == 'x') {
+    else if (s[0] == '0' && (s[1] == 'x' || (icase && s[1] == 'X'))) {
         val = strtoul(&s[2], &tmp, 16);
         if (tmp && *tmp != '\0')
             return XKB_KEY_NoSymbol;
@@ -132,13 +190,14 @@ xkb_keysym_from_name(const char *s)
     /* Stupid inconsistency between the headers and XKeysymDB: the former has
      * no separating underscore, while some XF86* syms in the latter did.
      * As a last ditch effort, try without. */
-    if (strncmp(s, "XF86_", 5) == 0) {
+    if (strncmp(s, "XF86_", 5) == 0 ||
+        (icase && strncasecmp(s, "XF86_", 5) == 0)) {
         xkb_keysym_t ret;
         tmp = strdup(s);
         if (!tmp)
             return XKB_KEY_NoSymbol;
         memmove(&tmp[4], &tmp[5], strlen(s) - 5 + 1);
-        ret = xkb_keysym_from_name(tmp);
+        ret = xkb_keysym_from_name(tmp, flags);
         free(tmp);
         return ret;
     }

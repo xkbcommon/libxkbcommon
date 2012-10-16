@@ -641,7 +641,7 @@ ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
     if (expr->op == EXPR_IDENT) {
         const char *str;
         str = xkb_atom_text(ctx, expr->value.str);
-        *sym_rtrn = xkb_keysym_from_name(str);
+        *sym_rtrn = xkb_keysym_from_name(str, 0);
         if (*sym_rtrn != XKB_KEY_NoSymbol)
             return true;
     }

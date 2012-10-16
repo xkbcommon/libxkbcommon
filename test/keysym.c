@@ -29,10 +29,23 @@ test_string(const char *string, xkb_keysym_t expected)
 {
     xkb_keysym_t keysym;
 
-    keysym = xkb_keysym_from_name(string);
+    keysym = xkb_keysym_from_name(string, 0);
 
     fprintf(stderr, "Expected string %s -> %x\n", string, expected);
     fprintf(stderr, "Received string %s -> %x\n\n", string, keysym);
+
+    return keysym == expected;
+}
+
+static int
+test_casestring(const char *string, xkb_keysym_t expected)
+{
+    xkb_keysym_t keysym;
+
+    keysym = xkb_keysym_from_name(string, XKB_KEYSYM_CASE_INSENSITIVE);
+
+    fprintf(stderr, "Expected casestring %s -> %x\n", string, expected);
+    fprintf(stderr, "Received casestring %s -> %x\n\n", string, keysym);
 
     return keysym == expected;
 }
@@ -75,11 +88,38 @@ main(void)
     assert(test_string("VoidSymbol", 0xFFFFFF));
     assert(test_string("U4567", 0x1004567));
     assert(test_string("0x10203040", 0x10203040));
+    assert(test_string("a", 0x61));
+    assert(test_string("A", 0x41));
+    assert(test_string("ch", 0xfea0));
+    assert(test_string("Ch", 0xfea1));
+    assert(test_string("CH", 0xfea2));
+    assert(test_string("THORN", 0x00de));
+    assert(test_string("Thorn", 0x00de));
+    assert(test_string("thorn", 0x00fe));
 
     assert(test_keysym(0x1008FF56, "XF86Close"));
     assert(test_keysym(0x0, "NoSymbol"));
     assert(test_keysym(0x1008FE20, "XF86Ungrab"));
     assert(test_keysym(0x01001234, "U1234"));
+
+    assert(test_casestring("Undo", 0xFF65));
+    assert(test_casestring("UNDO", 0xFF65));
+    assert(test_casestring("A", 0x61));
+    assert(test_casestring("a", 0x61));
+    assert(test_casestring("ThisKeyShouldNotExist", XKB_KEY_NoSymbol));
+    assert(test_casestring("XF86_Switch_vT_5", 0x1008FE05));
+    assert(test_casestring("xF86_SwitcH_VT_5", 0x1008FE05));
+    assert(test_casestring("xF86SwiTch_VT_5", 0x1008FE05));
+    assert(test_casestring("xF86Switch_vt_5", 0x1008FE05));
+    assert(test_casestring("VoidSymbol", 0xFFFFFF));
+    assert(test_casestring("vOIDsymBol", 0xFFFFFF));
+    assert(test_casestring("U4567", 0x1004567));
+    assert(test_casestring("u4567", 0x1004567));
+    assert(test_casestring("0x10203040", 0x10203040));
+    assert(test_casestring("0X10203040", 0x10203040));
+    assert(test_casestring("THORN", 0x00fe));
+    assert(test_casestring("Thorn", 0x00fe));
+    assert(test_casestring("thorn", 0x00fe));
 
     assert(test_utf8(XKB_KEY_y, "y"));
     assert(test_utf8(XKB_KEY_u, "u"));
@@ -100,13 +140,13 @@ main(void)
 
     assert(xkb_keysym_is_lower(XKB_KEY_a));
     assert(xkb_keysym_is_lower(XKB_KEY_Greek_lambda));
-    assert(xkb_keysym_is_lower(xkb_keysym_from_name("U03b1"))); /* GREEK SMALL LETTER ALPHA */
-    assert(xkb_keysym_is_lower(xkb_keysym_from_name("U03af"))); /* GREEK SMALL LETTER IOTA WITH TONOS */
+    assert(xkb_keysym_is_lower(xkb_keysym_from_name("U03b1", 0))); /* GREEK SMALL LETTER ALPHA */
+    assert(xkb_keysym_is_lower(xkb_keysym_from_name("U03af", 0))); /* GREEK SMALL LETTER IOTA WITH TONOS */
 
     assert(xkb_keysym_is_upper(XKB_KEY_A));
     assert(xkb_keysym_is_upper(XKB_KEY_Greek_LAMBDA));
-    assert(xkb_keysym_is_upper(xkb_keysym_from_name("U0391"))); /* GREEK CAPITAL LETTER ALPHA */
-    assert(xkb_keysym_is_upper(xkb_keysym_from_name("U0388"))); /* GREEK CAPITAL LETTER EPSILON WITH TONOS */
+    assert(xkb_keysym_is_upper(xkb_keysym_from_name("U0391", 0))); /* GREEK CAPITAL LETTER ALPHA */
+    assert(xkb_keysym_is_upper(xkb_keysym_from_name("U0388", 0))); /* GREEK CAPITAL LETTER EPSILON WITH TONOS */
 
     assert(!xkb_keysym_is_upper(XKB_KEY_a));
     assert(!xkb_keysym_is_lower(XKB_KEY_A));
@@ -114,8 +154,8 @@ main(void)
     assert(!xkb_keysym_is_upper(XKB_KEY_Return));
     assert(!xkb_keysym_is_lower(XKB_KEY_hebrew_aleph));
     assert(!xkb_keysym_is_upper(XKB_KEY_hebrew_aleph));
-    assert(!xkb_keysym_is_upper(xkb_keysym_from_name("U05D0"))); /* HEBREW LETTER ALEF */
-    assert(!xkb_keysym_is_lower(xkb_keysym_from_name("U05D0"))); /* HEBREW LETTER ALEF */
+    assert(!xkb_keysym_is_upper(xkb_keysym_from_name("U05D0", 0))); /* HEBREW LETTER ALEF */
+    assert(!xkb_keysym_is_lower(xkb_keysym_from_name("U05D0", 0))); /* HEBREW LETTER ALEF */
     assert(!xkb_keysym_is_lower(XKB_KEY_8));
     assert(!xkb_keysym_is_upper(XKB_KEY_8));
 

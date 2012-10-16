@@ -305,7 +305,7 @@ main(void)
                         KEY_RIGHTSHIFT,  UP,    XKB_KEY_Shift_R,         NEXT,
                         KEY_V,           BOTH,  XKB_KEY_Cyrillic_ZHE,    FINISH));
 
-#define KS(name) xkb_keysym_from_name(name)
+#define KS(name) xkb_keysym_from_name(name, 0)
 
     /* Test that levels (1-5) in de(neo) symbols map work. */
     assert(test_key_seq(keymap,
