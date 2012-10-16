@@ -1,7 +1,5 @@
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = makekeys
-
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = xkbcommon.pc
 
@@ -92,11 +90,8 @@ src/xkbcomp/parser.c: $(top_builddir)/src/$(am__dirstamp) $(top_builddir)/src/xk
 src/xkbcomp/parser.h: $(top_builddir)/src/$(am__dirstamp) $(top_builddir)/src/xkbcomp/$(am__dirstamp)
 src/xkbcomp/scanner.c: $(top_builddir)/src/$(am__dirstamp) $(top_builddir)/src/xkbcomp/$(am__dirstamp)
 
-src/ks_tables.h: $(top_builddir)/makekeys/makekeys$(EXEEXT)
-	$(AM_V_GEN)$(top_builddir)/makekeys/makekeys $(top_srcdir)/xkbcommon/xkbcommon-keysyms.h > $@
-
-$(top_builddir)/makekeys/makekeys$(EXEEXT): $(top_srcdir)/makekeys/makekeys.c
-	$(MAKE) -C makekeys
+src/ks_tables.h: makekeys.py
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/makekeys.py $(top_srcdir)/xkbcommon/xkbcommon-keysyms.h > $@
 
 # Documentation
 

@@ -61,6 +61,9 @@ if test ! -f "src/xkbcomp/parser.c"; then
       AC_MSG_ERROR([yacc not found - unable to compile src/xkbcomp/parser.y])
    fi
 fi
+AM_PATH_PYTHON([2.6], [], [
+    AC_MSG_ERROR([python not found - unable to run makekeys])
+])
 
 # Checks for library functions.
 AC_CHECK_FUNCS([strcasecmp strncasecmp])
@@ -70,16 +73,6 @@ if test "x$ac_cv_func_strcasecmp" = xno || \
 fi
 
 AC_CHECK_FUNCS([eaccess euidaccess])
-
-# Build native compiler needed for makekeys
-AC_ARG_VAR([CC_FOR_BUILD], [Build native C compiler program])
-if test "x$CC_FOR_BUILD" = x; then
-    if test "$cross_compiling" != no; then
-        AC_PATH_PROGS([CC_FOR_BUILD], [gcc cc], [cc])
-    else
-        CC_FOR_BUILD="$CC"
-    fi
-fi
 
 XORG_TESTSET_CFLAG([CFLAGS], [-fvisibility=hidden])
 
@@ -121,7 +114,6 @@ AC_DEFINE_UNQUOTED([DEFAULT_XKB_LAYOUT], ["$DEFAULT_XKB_LAYOUT"],
 
 AC_CONFIG_FILES([
     Makefile
-    makekeys/Makefile
     xkbcommon-uninstalled.pc
     xkbcommon.pc
     doc/Doxyfile

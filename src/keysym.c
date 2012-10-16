@@ -47,49 +47,43 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include <stdlib.h>
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
-#include "ks_tables.h"
 #include "keysym.h"
+#include "ks_tables.h"
+
+static int
+compare_by_keysym(const void *a, const void *b)
+{
+    const struct name_keysym *key = a, *entry = b;
+    return key->keysym - (int32_t)entry->keysym;
+}
+
+static int
+compare_by_name(const void *a, const void *b)
+{
+    const struct name_keysym *key = a, *entry = b;
+    return strcmp(key->name, entry->name);
+}
 
 XKB_EXPORT int
 xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
 {
-    int i, n, h, idx;
-    const unsigned char *entry;
-    unsigned char val1, val2, val3, val4;
+    const struct name_keysym search = { .name = NULL, .keysym = ks };
+    const struct name_keysym *entry;
 
     if ((ks & ((unsigned long) ~0x1fffffff)) != 0) {
         snprintf(buffer, size, "Invalid");
         return -1;
     }
 
-    /* Try to find it in our hash table. */
-    if (ks <= 0x1fffffff) {
-        val1 = ks >> 24;
-        val2 = (ks >> 16) & 0xff;
-        val3 = (ks >> 8) & 0xff;
-        val4 = ks & 0xff;
-        i = ks % VTABLESIZE;
-        h = i + 1;
-        n = VMAXHASH;
-
-        while ((idx = hashKeysym[i])) {
-            entry = &_XkeyTable[idx];
-
-            if ((entry[0] == val1) && (entry[1] == val2) &&
-                (entry[2] == val3) && (entry[3] == val4)) {
-                return snprintf(buffer, size, "%s", entry + 4);
-            }
-
-            if (!--n)
-                break;
-
-            i += h;
-            if (i >= VTABLESIZE)
-                i -= VTABLESIZE;
-        }
-    }
+    entry = bsearch(&search, keysym_to_name,
+                    sizeof(keysym_to_name) / sizeof(*keysym_to_name),
+                    sizeof(*keysym_to_name),
+                    compare_by_keysym);
+    if (entry)
+        return snprintf(buffer, size, "%s", entry->name);
 
     if (ks >= 0x01000100 && ks <= 0x0110ffff)
         /* Unnamed Unicode codepoint. */
@@ -102,42 +96,17 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
 XKB_EXPORT xkb_keysym_t
 xkb_keysym_from_name(const char *s)
 {
-    int i, n, h, c, idx;
-    uint32_t sig = 0;
-    const char *p = s;
+    const struct name_keysym search = { .name = s, .keysym = 0 };
+    const struct name_keysym *entry;
     char *tmp;
-    const unsigned char *entry;
-    unsigned char sig1, sig2;
     xkb_keysym_t val;
 
-    while ((c = *p++))
-        sig = (sig << 1) + c;
-
-    i = sig % KTABLESIZE;
-    h = i + 1;
-    sig1 = (sig >> 8) & 0xff;
-    sig2 = sig & 0xff;
-    n = KMAXHASH;
-
-    while ((idx = hashString[i])) {
-        entry = &_XkeyTable[idx];
-
-        if ((entry[0] == sig1) && (entry[1] == sig2) &&
-            streq(s, (const char *) entry + 6)) {
-            val = (entry[2] << 24) | (entry[3] << 16) |
-                  (entry[4] << 8) | entry[5];
-            if (!val)
-                val = XKB_KEY_VoidSymbol;
-            return val;
-        }
-
-        if (!--n)
-            break;
-
-        i += h;
-        if (i >= KTABLESIZE)
-            i -= KTABLESIZE;
-    }
+    entry = bsearch(&search, name_to_keysym,
+                    sizeof(name_to_keysym) / sizeof(*name_to_keysym),
+                    sizeof(*name_to_keysym),
+                    compare_by_name);
+    if (entry)
+        return entry->keysym;
 
     if (*s == 'U') {
         val = strtoul(&s[1], &tmp, 16);
