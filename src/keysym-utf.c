@@ -874,8 +874,6 @@ bin_search(const struct codepair *table, size_t length, xkb_keysym_t keysym)
     return 0;
 }
 
-#define N_ELEMENTS(x) sizeof(x) / sizeof(x[0])
-
 XKB_EXPORT uint32_t
 xkb_keysym_to_utf32(xkb_keysym_t keysym)
 {
@@ -894,11 +892,11 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym)
         return keysym & 0x00ffffff;
 
     /* search smaller keypad table */
-    retval = bin_search(keysymtab_kp, N_ELEMENTS(keysymtab_kp) - 1, keysym);
+    retval = bin_search(keysymtab_kp, ARRAY_SIZE(keysymtab_kp) - 1, keysym);
 
     /* search main table */
     if (!retval)
-        retval = bin_search(keysymtab, N_ELEMENTS(keysymtab) - 1, keysym);
+        retval = bin_search(keysymtab, ARRAY_SIZE(keysymtab) - 1, keysym);
 
     return retval;
 }

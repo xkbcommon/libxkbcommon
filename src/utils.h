@@ -91,6 +91,8 @@ memdup(const void *mem, size_t nmemb, size_t size)
     return p;
 }
 
+#define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
+
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MIN3(a, b, c) MIN(MIN((a), (b)), (c))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))

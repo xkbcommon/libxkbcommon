@@ -79,7 +79,7 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
     }
 
     entry = bsearch(&search, keysym_to_name,
-                    sizeof(keysym_to_name) / sizeof(*keysym_to_name),
+                    ARRAY_SIZE(keysym_to_name),
                     sizeof(*keysym_to_name),
                     compare_by_keysym);
     if (entry)
@@ -112,7 +112,7 @@ static const struct name_keysym *
 find_sym(const struct name_keysym *entry, const char *name, bool icase)
 {
     const struct name_keysym *iter, *last;
-    size_t len = sizeof(name_to_keysym) / sizeof(*name_to_keysym);
+    size_t len = ARRAY_SIZE(name_to_keysym);
 
     if (!entry)
         return NULL;
@@ -159,7 +159,7 @@ xkb_keysym_from_name(const char *s, enum xkb_keysym_flags flags)
         return XKB_KEY_NoSymbol;
 
     entry = bsearch(&search, name_to_keysym,
-                    sizeof(name_to_keysym) / sizeof(*name_to_keysym),
+                    ARRAY_SIZE(name_to_keysym),
                     sizeof(*name_to_keysym),
                     compare_by_name);
     entry = find_sym(entry, s, icase);
