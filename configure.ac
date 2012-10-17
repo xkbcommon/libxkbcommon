@@ -61,9 +61,6 @@ if test ! -f "src/xkbcomp/parser.c"; then
       AC_MSG_ERROR([yacc not found - unable to compile src/xkbcomp/parser.y])
    fi
 fi
-AM_PATH_PYTHON([2.6], [], [
-    AC_MSG_ERROR([python not found - unable to run makekeys])
-])
 
 # Checks for library functions.
 AC_CHECK_FUNCS([strcasecmp strncasecmp])
