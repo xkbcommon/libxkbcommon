@@ -51,6 +51,10 @@ struct xkb_context {
     unsigned file_id;
 
     struct atom_table *atom_table;
+
+    /* Buffer for the *Text() functions. */
+    char text_buffer[1024];
+    size_t text_next;
 };
 
 /**
@@ -405,4 +409,21 @@ XKB_EXPORT void
 xkb_context_set_user_data(struct xkb_context *ctx, void *user_data)
 {
     ctx->user_data = user_data;
+}
+
+char *
+xkb_context_get_buffer(struct xkb_context *ctx, size_t size)
+{
+    char *rtrn;
+
+    if (size >= sizeof(ctx->text_buffer))
+        return NULL;
+
+    if (sizeof(ctx->text_buffer) - ctx->text_next <= size)
+        ctx->text_next = 0;
+
+    rtrn = &ctx->text_buffer[ctx->text_next];
+    ctx->text_next += size;
+
+    return rtrn;
 }

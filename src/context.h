@@ -63,6 +63,9 @@ xkb_atom_strdup(struct xkb_context *ctx, xkb_atom_t atom);
 const char *
 xkb_atom_text(struct xkb_context *ctx, xkb_atom_t atom);
 
+char *
+xkb_context_get_buffer(struct xkb_context *ctx, size_t size);
+
 ATTR_PRINTF(3, 4) void
 xkb_log(struct xkb_context *ctx, enum xkb_log_level level,
         const char *fmt, ...);

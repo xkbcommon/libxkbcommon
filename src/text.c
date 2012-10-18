@@ -210,27 +210,6 @@ const LookupEntry symInterpretMatchMaskNames[] = {
     { "Exactly", MATCH_EXACTLY },
 };
 
-#define BUFFER_SIZE 1024
-
-static char *
-GetBuffer(size_t size)
-{
-    static char buffer[BUFFER_SIZE];
-    static size_t next;
-    char *rtrn;
-
-    if (size >= BUFFER_SIZE)
-        return NULL;
-
-    if (BUFFER_SIZE - next <= size)
-        next = 0;
-
-    rtrn = &buffer[next];
-    next += size;
-
-    return rtrn;
-}
-
 const char *
 ModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask)
 {
@@ -238,7 +217,7 @@ ModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask)
     size_t len;
     ssize_t rem;
     char *str;
-    char buf[BUFFER_SIZE];
+    char buf[1024];
     const struct xkb_mod *mod;
 
     if (mask == 0)
@@ -249,7 +228,7 @@ ModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask)
 
     str = buf;
     buf[0] = '\0';
-    rem = BUFFER_SIZE;
+    rem = sizeof(buf);
     darray_enumerate(i, mod, keymap->mods) {
         if (!(mask & (1 << i)))
             continue;
@@ -266,10 +245,10 @@ ModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask)
     str = buf;
 
     len = strlen(str);
-    if (len >= BUFFER_SIZE)
-        len = BUFFER_SIZE - 1;
+    if (len >= sizeof(buf))
+        len = sizeof(buf) - 1;
 
-    return strcpy(GetBuffer(len + 1), str);
+    return strcpy(xkb_context_get_buffer(keymap->ctx, len + 1), str);
 
 }
 
@@ -307,7 +286,7 @@ ActionTypeText(unsigned type)
 }
 
 const char *
-KeysymText(xkb_keysym_t sym)
+KeysymText(struct xkb_context *ctx, xkb_keysym_t sym)
 {
     static char buffer[64];
 
@@ -321,7 +300,7 @@ KeyNameText(struct xkb_context *ctx, xkb_atom_t name)
 {
     const char *sname = xkb_atom_text(ctx, name);
     size_t len = strlen(sname) + 3;
-    char *buf = GetBuffer(len);
+    char *buf = xkb_context_get_buffer(ctx, len);
     snprintf(buf, len, "<%s>", sname);
     return buf;
 }

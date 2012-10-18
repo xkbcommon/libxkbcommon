@@ -61,7 +61,7 @@ const char *
 ActionTypeText(enum xkb_action_type type);
 
 const char *
-KeysymText(xkb_keysym_t sym);
+KeysymText(struct xkb_context *ctx, xkb_keysym_t sym);
 
 const char *
 KeyNameText(struct xkb_context *ctx, xkb_atom_t name);

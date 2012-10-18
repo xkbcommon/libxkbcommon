@@ -463,7 +463,7 @@ AddModMapEntry(SymbolsInfo *info, ModMapEntry *new)
             log_err(info->keymap->ctx,
                     "Symbol \"%s\" added to modifier map for multiple modifiers; "
                     "Using %s, ignoring %s\n",
-                    KeysymText(new->u.keySym),
+                    KeysymText(info->keymap->ctx, new->u.keySym),
                     ModIndexText(info->keymap, use),
                     ModIndexText(info->keymap, ignore));
         else
@@ -1568,7 +1568,7 @@ CopyModMapDef(SymbolsInfo *info, ModMapEntry *entry)
             log_vrb(info->keymap->ctx, 5,
                     "Key \"%s\" not found in symbol map; "
                     "Modifier map entry for %s not updated\n",
-                    KeysymText(entry->u.keySym),
+                    KeysymText(info->keymap->ctx, entry->u.keySym),
                     ModIndexText(info->keymap, entry->modifier));
             return false;
         }

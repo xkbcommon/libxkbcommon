@@ -277,7 +277,7 @@ siText(SymInterpInfo *si, CompatInfo *info)
         return "default";
 
     snprintf(buf, sizeof(buf), "%s+%s(%s)",
-             KeysymText(si->interp.sym),
+             KeysymText(info->keymap->ctx, si->interp.sym),
              SIMatchText(si->interp.match),
              ModMaskText(info->keymap, si->interp.mods));
     return buf;
