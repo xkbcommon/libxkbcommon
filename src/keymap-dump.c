@@ -148,79 +148,6 @@ write_vmods(struct xkb_keymap *keymap, struct buf *buf)
     return true;
 }
 
-#define GET_TEXT_BUF_SIZE 512
-
-#define append_get_text(...) do { \
-        int _size = snprintf(ret, GET_TEXT_BUF_SIZE, __VA_ARGS__); \
-        if (_size >= GET_TEXT_BUF_SIZE) \
-            return NULL; \
-} while (0)
-
-static char *
-get_indicator_state_text(enum xkb_state_component which)
-{
-    unsigned int i;
-    static char ret[GET_TEXT_BUF_SIZE];
-
-    memset(ret, 0, GET_TEXT_BUF_SIZE);
-
-    if (which == 0) {
-        strcpy(ret, "0");
-        return NULL;
-    }
-
-    for (i = 0; which != 0; i++) {
-        const char *name;
-
-        if (!(which & (1 << i)))
-            continue;
-
-        which &= ~(1 << i);
-        name = LookupValue(modComponentMaskNames, (1 << i));
-
-        if (ret[0] != '\0')
-            append_get_text("%s+%s", ret, name);
-        else
-            append_get_text("%s", name);
-    }
-
-    return ret;
-}
-
-static char *
-get_control_mask_text(enum xkb_action_controls control_mask)
-{
-    int i;
-    static char ret[GET_TEXT_BUF_SIZE];
-    const char *control_name;
-
-    memset(ret, 0, GET_TEXT_BUF_SIZE);
-
-    if (control_mask == 0) {
-        strcpy(ret, "none");
-        return ret;
-    }
-    else if (control_mask == CONTROL_ALL) {
-        strcpy(ret, "all");
-        return ret;
-    }
-
-    for (i = 0; control_mask; i++) {
-        if (!(control_mask & (1 << i)))
-            continue;
-
-        control_mask &= ~(1 << i);
-        control_name = LookupValue(ctrlMaskNames, (1 << i));
-
-        if (ret[0] != '\0')
-            append_get_text("%s+%s", ret, control_name);
-        else
-            append_get_text("%s", control_name);
-    }
-
-    return ret;
-}
-
 static bool
 write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
 {
@@ -330,7 +257,7 @@ write_indicator_map(struct xkb_keymap *keymap, struct buf *buf,
     if (led->which_groups) {
         if (led->which_groups != XKB_STATE_EFFECTIVE) {
             write_buf(buf, "\t\t\twhichGroupState= %s;\n",
-                      get_indicator_state_text(led->which_groups));
+                      IndicatorStateText(keymap->ctx, led->which_groups));
         }
         write_buf(buf, "\t\t\tgroups= 0x%02x;\n",
                   led->groups);
@@ -339,7 +266,7 @@ write_indicator_map(struct xkb_keymap *keymap, struct buf *buf,
     if (led->which_mods) {
         if (led->which_mods != XKB_STATE_EFFECTIVE) {
             write_buf(buf, "\t\t\twhichModState= %s;\n",
-                      get_indicator_state_text(led->which_mods));
+                      IndicatorStateText(keymap->ctx, led->which_mods));
         }
         write_buf(buf, "\t\t\tmodifiers= %s;\n",
                   ModMaskText(keymap, led->mods.mods));
@@ -347,7 +274,7 @@ write_indicator_map(struct xkb_keymap *keymap, struct buf *buf,
 
     if (led->ctrls) {
         write_buf(buf, "\t\t\tcontrols= %s;\n",
-                  get_control_mask_text(led->ctrls));
+                  ControlMaskText(keymap->ctx, led->ctrls));
     }
 
     write_buf(buf, "\t\t};\n");
@@ -473,7 +400,7 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
     case ACTION_TYPE_CTRL_SET:
     case ACTION_TYPE_CTRL_LOCK:
         write_buf(buf, "%s%s(controls=%s)%s", prefix, type,
-                  get_control_mask_text(action->ctrls.ctrls), suffix);
+                  ControlMaskText(keymap->ctx, action->ctrls.ctrls), suffix);
         break;
 
     case ACTION_TYPE_NONE:

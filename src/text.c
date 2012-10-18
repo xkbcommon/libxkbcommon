@@ -308,3 +308,74 @@ SIMatchText(enum xkb_match_operation type)
 {
     return LookupValue(symInterpretMatchMaskNames, type);
 }
+
+#define GET_TEXT_BUF_SIZE 512
+
+#define append_get_text(...) do { \
+        int _size = snprintf(ret, GET_TEXT_BUF_SIZE, __VA_ARGS__); \
+        if (_size >= GET_TEXT_BUF_SIZE) \
+            return NULL; \
+} while (0)
+
+const char *
+IndicatorStateText(struct xkb_context *ctx, enum xkb_state_component mask)
+{
+    unsigned int i;
+    char *ret;
+
+    if (mask == 0)
+        return "0";
+
+    ret = xkb_context_get_buffer(ctx, GET_TEXT_BUF_SIZE);
+    ret[0] = '\0';
+
+    for (i = 0; mask; i++) {
+        const char *name;
+
+        if (!(mask & (1 << i)))
+            continue;
+
+        mask &= ~(1 << i);
+        name = LookupValue(modComponentMaskNames, 1 << i);
+
+        if (ret[0] != '\0')
+            append_get_text("%s+%s", ret, name);
+        else
+            append_get_text("%s", name);
+    }
+
+    return ret;
+}
+
+const char *
+ControlMaskText(struct xkb_context *ctx, enum xkb_action_controls mask)
+{
+    unsigned int i;
+    char *ret;
+
+    if (mask == 0)
+        return "none";
+
+    if (mask == CONTROL_ALL)
+        return "all";
+
+    ret = xkb_context_get_buffer(ctx, GET_TEXT_BUF_SIZE);
+    ret[0] = '\0';
+
+    for (i = 0; mask; i++) {
+        const char *name;
+
+        if (!(mask & (1 << i)))
+            continue;
+
+        mask &= ~(1 << i);
+        name = LookupValue(ctrlMaskNames, 1 << i);
+
+        if (ret[0] != '\0')
+            append_get_text("%s+%s", ret, name);
+        else
+            append_get_text("%s", name);
+    }
+
+    return ret;
+}
