@@ -329,16 +329,5 @@ KeyNameText(struct xkb_context *ctx, xkb_atom_t name)
 const char *
 SIMatchText(enum xkb_match_operation type)
 {
-    const char *name;
-    char *buf;
-
-    type &= MATCH_OP_MASK;
-
-    name = LookupValue(symInterpretMatchMaskNames, type);
-    if (name)
-        return name;
-
-    buf = GetBuffer(40);
-    snprintf(buf, 40, "0x%x", type);
-    return buf;
+    return LookupValue(symInterpretMatchMaskNames, type);
 }

@@ -528,12 +528,12 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
             write_buf(buf, "\t\t\tvirtualModifier= %s;\n",
                       ModIndexText(keymap, interp->virtual_mod));
 
-        if (interp->match & MATCH_LEVEL_ONE_ONLY)
+        if (interp->level_one_only)
             write_buf(buf, "\t\t\tuseModMapMods=level1;\n");
         if (interp->repeat)
             write_buf(buf, "\t\t\trepeat= True;\n");
 
-        write_action(keymap, buf, &interp->act, "\t\t\taction= ", ";\n");
+        write_action(keymap, buf, &interp->action, "\t\t\taction= ", ";\n");
         write_buf(buf, "\t\t};\n");
     }
 

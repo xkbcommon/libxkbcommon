@@ -66,7 +66,7 @@ static const struct xkb_sym_interpret default_interpret = {
     .match = MATCH_ANY_OR_NONE,
     .mods = 0,
     .virtual_mod = XKB_MOD_INVALID,
-    .act = { .type = ACTION_TYPE_NONE },
+    .action = { .type = ACTION_TYPE_NONE },
 };
 
 /**
@@ -101,12 +101,12 @@ FindInterpForKey(struct xkb_keymap *keymap, const struct xkb_key *key,
             interp->sym != XKB_KEY_NoSymbol)
             continue;
 
-        if (level == 0 || !(interp->match & MATCH_LEVEL_ONE_ONLY))
-            mods = key->modmap;
-        else
+        if (interp->level_one_only && level != 0)
             mods = 0;
+        else
+            mods = key->modmap;
 
-        switch (interp->match & MATCH_OP_MASK) {
+        switch (interp->match) {
         case MATCH_NONE:
             found = !(interp->mods & mods);
             break;
@@ -121,9 +121,6 @@ FindInterpForKey(struct xkb_keymap *keymap, const struct xkb_key *key,
             break;
         case MATCH_EXACTLY:
             found = (interp->mods == mods);
-            break;
-        default:
-            found = false;
             break;
         }
 
@@ -158,14 +155,12 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
                 if (!(key->explicit & EXPLICIT_REPEAT) && interp->repeat)
                     key->repeats = true;
 
-            if ((group == 0 && level == 0) ||
-                !(interp->match & MATCH_LEVEL_ONE_ONLY)) {
+            if ((group == 0 && level == 0) || !interp->level_one_only)
                 if (interp->virtual_mod != XKB_MOD_INVALID)
                     vmodmap |= (1 << interp->virtual_mod);
-            }
 
-            if (interp->act.type != ACTION_TYPE_NONE)
-                key->groups[group].levels[level].action = interp->act;
+            if (interp->action.type != ACTION_TYPE_NONE)
+                key->groups[group].levels[level].action = interp->action;
         }
     }
 

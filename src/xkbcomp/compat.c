@@ -399,7 +399,7 @@ AddInterp(CompatInfo *info, SymInterpInfo *new)
         }
         if (UseNewInterpField(SI_FIELD_ACTION, old, new, report,
                               &collide)) {
-            old->interp.act = new->interp.act;
+            old->interp.action = new->interp.action;
             old->defined |= SI_FIELD_ACTION;
         }
         if (UseNewInterpField(SI_FIELD_AUTO_REPEAT, old, new, report,
@@ -409,8 +409,7 @@ AddInterp(CompatInfo *info, SymInterpInfo *new)
         }
         if (UseNewInterpField(SI_FIELD_LEVEL_ONE_ONLY, old, new, report,
                               &collide)) {
-            old->interp.match &= ~MATCH_LEVEL_ONE_ONLY;
-            old->interp.match |= (new->interp.match & MATCH_LEVEL_ONE_ONLY);
+            old->interp.level_one_only = new->interp.level_one_only;
             old->defined |= SI_FIELD_LEVEL_ONE_ONLY;
         }
 
@@ -641,7 +640,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         if (arrayNdx)
             return ReportSINotArray(info, si, field);
 
-        if (!HandleActionDef(value, keymap, &si->interp.act, info->actions))
+        if (!HandleActionDef(value, keymap, &si->interp.action, info->actions))
             return false;
 
         si->defined |= SI_FIELD_ACTION;
@@ -685,11 +684,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         if (!ExprResolveEnum(keymap->ctx, value, &val, useModMapValueNames))
             return ReportSIBadType(info, si, field, "level specification");
 
-        if (val)
-            si->interp.match |= MATCH_LEVEL_ONE_ONLY;
-        else
-            si->interp.match &= ~MATCH_LEVEL_ONE_ONLY;
-
+        si->interp.level_one_only = !!val;
         si->defined |= SI_FIELD_LEVEL_ONE_ONLY;
     }
     else {
@@ -862,7 +857,6 @@ HandleInterpDef(CompatInfo *info, InterpDef *def, enum merge_mode merge)
     }
 
     si = info->dflt;
-
     si.merge = merge = (def->merge == MERGE_DEFAULT ? merge : def->merge);
 
     if (!LookupKeysym(def->sym, &si.interp.sym)) {
@@ -873,8 +867,7 @@ HandleInterpDef(CompatInfo *info, InterpDef *def, enum merge_mode merge)
         return false;
     }
 
-    si.interp.match = pred & MATCH_OP_MASK;
-
+    si.interp.match = pred;
     si.interp.mods = mods;
 
     if (!HandleInterpBody(info, def->def, &si)) {
@@ -991,14 +984,10 @@ CopyInterps(CompatInfo *info, bool needSymbol, enum xkb_match_operation pred)
 {
     SymInterpInfo *si;
 
-    darray_foreach(si, info->interps) {
-        if (((si->interp.match & MATCH_OP_MASK) != pred) ||
-            (needSymbol && si->interp.sym == XKB_KEY_NoSymbol) ||
-            (!needSymbol && si->interp.sym != XKB_KEY_NoSymbol))
-            continue;
-
-        darray_append(info->keymap->sym_interprets, si->interp);
-    }
+    darray_foreach(si, info->interps)
+        if (si->interp.match == pred &&
+            (si->interp.sym != XKB_KEY_NoSymbol) == needSymbol)
+            darray_append(info->keymap->sym_interprets, si->interp);
 }
 
 static void
@@ -1061,11 +1050,13 @@ CopyCompatToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
     if (!darray_empty(info->interps)) {
         /* Most specific to least specific. */
         CopyInterps(info, true, MATCH_EXACTLY);
-        CopyInterps(info, true, MATCH_ALL | MATCH_NONE);
+        CopyInterps(info, true, MATCH_ALL);
+        CopyInterps(info, true, MATCH_NONE);
         CopyInterps(info, true, MATCH_ANY);
         CopyInterps(info, true, MATCH_ANY_OR_NONE);
         CopyInterps(info, false, MATCH_EXACTLY);
-        CopyInterps(info, false, MATCH_ALL | MATCH_NONE);
+        CopyInterps(info, false, MATCH_ALL);
+        CopyInterps(info, false, MATCH_NONE);
         CopyInterps(info, false, MATCH_ANY);
         CopyInterps(info, false, MATCH_ANY_OR_NONE);
     }
