@@ -271,15 +271,16 @@ typedef struct {
 static const char *
 siText(SymInterpInfo *si, CompatInfo *info)
 {
-    static char buf[128];
+    char *buf = xkb_context_get_buffer(info->keymap->ctx, 128);
 
     if (si == &info->dflt)
         return "default";
 
-    snprintf(buf, sizeof(buf), "%s+%s(%s)",
+    snprintf(buf, 128, "%s+%s(%s)",
              KeysymText(info->keymap->ctx, si->interp.sym),
              SIMatchText(si->interp.match),
              ModMaskText(info->keymap, si->interp.mods));
+
     return buf;
 }
 

@@ -288,10 +288,8 @@ ActionTypeText(unsigned type)
 const char *
 KeysymText(struct xkb_context *ctx, xkb_keysym_t sym)
 {
-    static char buffer[64];
-
-    xkb_keysym_get_name(sym, buffer, sizeof buffer);
-
+    char *buffer = xkb_context_get_buffer(ctx, 64);
+    xkb_keysym_get_name(sym, buffer, 64);
     return buffer;
 }
 
