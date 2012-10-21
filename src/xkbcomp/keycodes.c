@@ -473,7 +473,7 @@ HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt, enum merge_mode merge)
     if (stmt->value < 0 || stmt->value > XKB_KEYCODE_MAX) {
         log_err(info->ctx,
                 "Illegal keycode %lld: must be between 0..%u; "
-                "Key ignored\n", stmt->value, XKB_KEYCODE_MAX);
+                "Key ignored\n", (long long) stmt->value, XKB_KEYCODE_MAX);
         return false;
     }
 

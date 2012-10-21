@@ -30,7 +30,10 @@
 struct scanner_extra;
 struct parser_param;
 
+#pragma GCC diagnostic ignored "-Wredundant-decls"
+#pragma GCC diagnostic push
 #include "parser.h"
+#pragma GCC diagnostic pop
 
 void
 scanner_error(YYLTYPE *loc, void *scanner, const char *msg);
