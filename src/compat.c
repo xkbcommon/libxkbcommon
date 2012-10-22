@@ -29,7 +29,6 @@
 #include "utils.h"
 
 /* We don't carry any prototypes for these functions, as we #define them
-<<<<<<< HEAD
  * to their newer versions so people link against those. */
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
 

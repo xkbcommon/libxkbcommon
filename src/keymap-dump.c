@@ -255,7 +255,7 @@ write_indicator_map(struct xkb_keymap *keymap, struct buf *buf,
               xkb_atom_text(keymap->ctx, led->name));
 
     if (led->which_groups) {
-        if (led->which_groups != XKB_STATE_EFFECTIVE) {
+        if (led->which_groups != XKB_STATE_LAYOUT_EFFECTIVE) {
             write_buf(buf, "\t\t\twhichGroupState= %s;\n",
                       IndicatorStateText(keymap->ctx, led->which_groups));
         }
@@ -264,7 +264,7 @@ write_indicator_map(struct xkb_keymap *keymap, struct buf *buf,
     }
 
     if (led->which_mods) {
-        if (led->which_mods != XKB_STATE_EFFECTIVE) {
+        if (led->which_mods != XKB_STATE_MODS_EFFECTIVE) {
             write_buf(buf, "\t\t\twhichModState= %s;\n",
                       IndicatorStateText(keymap->ctx, led->which_mods));
         }

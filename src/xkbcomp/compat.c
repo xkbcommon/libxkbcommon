@@ -1037,9 +1037,9 @@ CopyIndicatorMapDefs(CompatInfo *info)
 
         *im = led->im;
         if (im->groups != 0 && im->which_groups == 0)
-            im->which_groups = XKB_STATE_EFFECTIVE;
+            im->which_groups = XKB_STATE_LAYOUT_EFFECTIVE;
         if (im->mods.mods != 0 && im->which_mods == 0)
-            im->which_mods = XKB_STATE_EFFECTIVE;
+            im->which_mods = XKB_STATE_MODS_EFFECTIVE;
     }
 }
 

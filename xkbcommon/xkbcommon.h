@@ -1102,22 +1102,36 @@ xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
 
 /**
  * Modifier and layout types for state objects.  This enum is bitmaskable,
- * e.g. (XKB_STATE_DEPRESSED | XKB_STATE_LATCHED) is valid to exclude
- * locked modifiers.
+ * e.g. (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LATCHED) is valid to
+ * exclude locked modifiers.
+ *
+ * In XKB, the DEPRESSED states are also known as 'base'.
  */
 enum xkb_state_component {
-    /** A key holding this modifier or layout is currently physically
-     *  depressed; also known as 'base'. */
-    XKB_STATE_DEPRESSED = (1 << 0),
-    /** Modifier or layout is latched, i.e. will be unset after the next
-     *  non-modifier key press. */
-    XKB_STATE_LATCHED = (1 << 1),
-    /** Modifier or layout is locked, i.e. will be unset after the key
-     *  provoking the lock has been pressed again. */
-    XKB_STATE_LOCKED = (1 << 2),
-    /** Combinatination of depressed, latched, and locked. */
-    XKB_STATE_EFFECTIVE =
-        (XKB_STATE_DEPRESSED | XKB_STATE_LATCHED | XKB_STATE_LOCKED),
+    /** Depressed modifiers, i.e. a key is physically holding them. */
+    XKB_STATE_MODS_DEPRESSED = (1 << 0),
+    /** Latched modifiers, i.e. will be unset after the next non-modifier
+     *  key press. */
+    XKB_STATE_MODS_LATCHED = (1 << 1),
+    /** Locked modifiers, i.e. will be unset after the key provoking the
+     *  lock has been pressed again. */
+    XKB_STATE_MODS_LOCKED = (1 << 2),
+    /** Effective modifiers, i.e. currently active and affect key
+     *  processing (derived from the other state components). */
+    XKB_STATE_MODS_EFFECTIVE = (1 << 3),
+    /** Depressed layout, i.e. a key is physically holding it. */
+    XKB_STATE_LAYOUT_DEPRESSED = (1 << 4),
+    /** Latched layout, i.e. will be unset after the next non-modifier
+     *  key press. */
+    XKB_STATE_LAYOUT_LATCHED = (1 << 5),
+    /** Locked layout, i.e. will be unset after the key provoking the lock
+     *  has been pressed again. */
+    XKB_STATE_LAYOUT_LOCKED = (1 << 6),
+    /** Effective layout, i.e. currently active and affects key processing
+     *  (derived from the other state components). */
+    XKB_STATE_LAYOUT_EFFECTIVE = (1 << 7),
+    /** LEDs (derived from the other state components). */
+    XKB_STATE_LEDS = (1 << 8),
 };
 
 /**
@@ -1163,30 +1177,48 @@ xkb_state_update_mask(struct xkb_state *state, xkb_mod_mask_t base_mods,
                       xkb_layout_index_t locked_layout);
 
 /**
- * The counterpart to xkb_state_update_mask, to be used on the server side
- * of serialization.
+ * The counterpart to xkb_state_update_mask for modifiers, to be used on
+ * the server side of serialization.
  *
- * @returns A xkb_mod_mask_t representing the given component(s) of the
- * state.
+ * @param state      The keyboard state.
+ * @param components A mask of the modifier state components to serialize.
+ * State components other than XKB_STATE_MODS_* are ignored.
+ * If XKB_STATE_MODS_EFFECTIVE is included, all other state components are
+ * ignored.
+ *
+ * @returns A xkb_mod_mask_t representing the given components of the
+ * modifier state.
  *
  * This function should not be used in regular clients; please use the
- * xkb_state_mod_*_is_active or xkb_state_foreach_active_mod API instead.
+ * xkb_state_mod_*_is_active API instead.
  *
  * @memberof xkb_state
  */
 xkb_mod_mask_t
 xkb_state_serialize_mods(struct xkb_state *state,
-                         enum xkb_state_component component);
+                         enum xkb_state_component components);
 
 /**
- * The layout equivalent of xkb_state_serialize_mods.
+ * The counterpart to xkb_state_update_mask for layouts, to be used on
+ * the server side of serialization.
  *
- * @sa xkb_state_serialize_mods
+ * @param state      The keyboard state.
+ * @param components A mask of the layout state components to serialize.
+ * State components other than XKB_STATE_LAYOUT_* are ignored.
+ * If XKB_STATE_LAYOUT_EFFECTIVE is included, all other state components are
+ * ignored.
+ *
+ * @returns A xkb_layout_mask_t representing the given components of the
+ * layout state.
+ *
+ * This function should not be used in regular clients; please use the
+ * xkb_state_layout_*_is_active API instead.
+ *
  * @memberof xkb_state
  */
 xkb_layout_index_t
 xkb_state_serialize_layout(struct xkb_state *state,
-                           enum xkb_state_component component);
+                           enum xkb_state_component components);
 
 /**
  * Test whether a modifier is active in a given keyboard state by name.

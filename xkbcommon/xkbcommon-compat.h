@@ -34,6 +34,16 @@
 #define xkb_map_compile_flags xkb_keymap_compile_flags
 #define XKB_GROUP_INVALID XKB_LAYOUT_INVALID
 
+#define XKB_STATE_DEPRESSED \
+    (XKB_STATE_MODS_DEPRESSED | XKB_STATE_LAYOUT_DEPRESSED)
+#define XKB_STATE_LATCHED \
+    (XKB_STATE_MODS_LATCHED | XKB_STATE_LAYOUT_LATCHED)
+#define XKB_STATE_LOCKED \
+    (XKB_STATE_MODS_LOCKED | XKB_STATE_LAYOUT_LOCKED)
+#define XKB_STATE_EFFECTIVE \
+    (XKB_STATE_DEPRESSED | XKB_STATE_LATCHED | XKB_STATE_LOCKED | \
+     XKB_STATE_MODS_EFFECTIVE | XKB_STATE_LAYOUT_EFFECTIVE)
+
 #define xkb_map_new_from_names(context, names, flags) \
         xkb_keymap_new_from_names(context, names, flags)
 #define xkb_map_new_from_file(context, file, format, flags) \

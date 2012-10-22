@@ -256,7 +256,8 @@ print_keycode(struct keyboard *kbd, xkb_keycode_t keycode)
 
     printf("groups [ ");
     for (group = 0; group < xkb_keymap_num_layouts(keymap); group++) {
-        if (!xkb_state_layout_index_is_active(state, group, XKB_STATE_EFFECTIVE))
+        if (xkb_state_layout_index_is_active(state, group,
+                                             XKB_STATE_LAYOUT_EFFECTIVE) <= 0)
             continue;
         printf("%s (%d) ", xkb_keymap_layout_get_name(keymap, group), group);
     }
@@ -264,7 +265,8 @@ print_keycode(struct keyboard *kbd, xkb_keycode_t keycode)
 
     printf("mods [ ");
     for (mod = 0; mod < xkb_keymap_num_mods(keymap); mod++) {
-        if (!xkb_state_mod_index_is_active(state, mod, XKB_STATE_EFFECTIVE))
+        if (xkb_state_mod_index_is_active(state, mod,
+                                          XKB_STATE_MODS_EFFECTIVE) <= 0)
             continue;
         if (xkb_state_mod_index_is_consumed(state, keycode, mod))
             printf("-%s ", xkb_keymap_mod_get_name(keymap, mod));

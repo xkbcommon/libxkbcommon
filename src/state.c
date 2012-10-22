@@ -114,7 +114,7 @@ get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
     unsigned int i;
 
     type = key->groups[group].type;
-    active_mods = xkb_state_serialize_mods(state, XKB_STATE_EFFECTIVE);
+    active_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
     active_mods &= type->mods.mask;
 
     for (i = 0; i < type->num_entries; i++)
@@ -191,7 +191,7 @@ XKB_EXPORT xkb_layout_index_t
 xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t kc)
 {
     xkb_layout_index_t group =
-        xkb_state_serialize_layout(state, XKB_STATE_EFFECTIVE);
+        xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE);
     const struct xkb_key *key = XkbKey(state->keymap, kc);
 
     if (!key)
@@ -598,20 +598,24 @@ xkb_state_led_update_all(struct xkb_state *state)
         xkb_mod_mask_t mod_mask = 0;
         xkb_layout_mask_t group_mask = 0;
 
-        if (map->which_mods & XKB_STATE_DEPRESSED)
+        if (map->which_mods & XKB_STATE_MODS_EFFECTIVE)
+            mod_mask |= state->mods;
+        if (map->which_mods & XKB_STATE_MODS_DEPRESSED)
             mod_mask |= state->base_mods;
-        if (map->which_mods & XKB_STATE_LATCHED)
+        if (map->which_mods & XKB_STATE_MODS_LATCHED)
             mod_mask |= state->latched_mods;
-        if (map->which_mods & XKB_STATE_LOCKED)
+        if (map->which_mods & XKB_STATE_MODS_LOCKED)
             mod_mask |= state->locked_mods;
         if (map->mods.mask & mod_mask)
             state->leds |= (1 << led);
 
-        if (map->which_groups & XKB_STATE_DEPRESSED)
+        if (map->which_groups & XKB_STATE_LAYOUT_EFFECTIVE)
+            group_mask |= (1 << state->group);
+        if (map->which_groups & XKB_STATE_LAYOUT_DEPRESSED)
             group_mask |= (1 << state->base_group);
-        if (map->which_groups & XKB_STATE_LATCHED)
+        if (map->which_groups & XKB_STATE_LAYOUT_LATCHED)
             group_mask |= (1 << state->latched_group);
-        if (map->which_groups & XKB_STATE_LOCKED)
+        if (map->which_groups & XKB_STATE_LAYOUT_LOCKED)
             group_mask |= (1 << state->locked_group);
         if (map->groups & group_mask)
             state->leds |= (1 << led);
@@ -785,14 +789,14 @@ xkb_state_serialize_mods(struct xkb_state *state,
 {
     xkb_mod_mask_t ret = 0;
 
-    if (type == XKB_STATE_EFFECTIVE)
+    if (type & XKB_STATE_MODS_EFFECTIVE)
         return state->mods;
 
-    if (type & XKB_STATE_DEPRESSED)
+    if (type & XKB_STATE_MODS_DEPRESSED)
         ret |= state->base_mods;
-    if (type & XKB_STATE_LATCHED)
+    if (type & XKB_STATE_MODS_LATCHED)
         ret |= state->latched_mods;
-    if (type & XKB_STATE_LOCKED)
+    if (type & XKB_STATE_MODS_LOCKED)
         ret |= state->locked_mods;
 
     return ret;
@@ -808,14 +812,14 @@ xkb_state_serialize_layout(struct xkb_state *state,
 {
     xkb_layout_index_t ret = 0;
 
-    if (type == XKB_STATE_EFFECTIVE)
+    if (type & XKB_STATE_LAYOUT_EFFECTIVE)
         return state->group;
 
-    if (type & XKB_STATE_DEPRESSED)
+    if (type & XKB_STATE_LAYOUT_DEPRESSED)
         ret += state->base_group;
-    if (type & XKB_STATE_LATCHED)
+    if (type & XKB_STATE_LAYOUT_LATCHED)
         ret += state->latched_group;
-    if (type & XKB_STATE_LOCKED)
+    if (type & XKB_STATE_LAYOUT_LOCKED)
         ret += state->locked_group;
 
     return ret;
@@ -960,15 +964,13 @@ xkb_state_layout_index_is_active(struct xkb_state *state,
     if (idx >= xkb_keymap_num_layouts(state->keymap))
         return -1;
 
-    /* Can only have one effective group. */
-    if (type == XKB_STATE_EFFECTIVE)
-        return state->group == idx;
-
-    if (type & XKB_STATE_DEPRESSED)
+    if (type & XKB_STATE_LAYOUT_EFFECTIVE)
+        ret |= (state->group == idx);
+    if (type & XKB_STATE_LAYOUT_DEPRESSED)
         ret |= (state->base_group == idx);
-    if (type & XKB_STATE_LATCHED)
+    if (type & XKB_STATE_LAYOUT_LATCHED)
         ret |= (state->latched_group == idx);
-    if (type & XKB_STATE_LOCKED)
+    if (type & XKB_STATE_LAYOUT_LOCKED)
         ret |= (state->locked_group == idx);
 
     return ret;
