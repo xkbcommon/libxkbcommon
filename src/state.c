@@ -88,7 +88,11 @@ struct state_components {
 };
 
 struct xkb_state {
-    struct state_components cur;
+    /*
+     * Before updating the state, we keep a copy. This allows us to report
+     * which components of the state have changed.
+     */
+    struct state_components cur, prev;
 
     /*
      * At each event, we accumulate all the needed modifications to the base
@@ -96,6 +100,7 @@ struct xkb_state {
      */
     xkb_mod_mask_t set_mods;
     xkb_mod_mask_t clear_mods;
+
     /*
      * We mustn't clear a base modifier if there's another depressed key
      * which affects it, e.g. given this sequence
@@ -657,11 +662,39 @@ xkb_state_update_derived(struct xkb_state *state)
     xkb_state_led_update_all(state);
 }
 
+static enum xkb_state_component
+get_state_component_changes(const struct state_components *a,
+                            const struct state_components *b)
+{
+    xkb_mod_mask_t mask = 0;
+
+    if (a->group != b->group)
+        mask |= XKB_STATE_LAYOUT_EFFECTIVE;
+    if (a->base_group != b->base_group)
+        mask |= XKB_STATE_LAYOUT_DEPRESSED;
+    if (a->latched_group != b->latched_group)
+        mask |= XKB_STATE_LAYOUT_LATCHED;
+    if (a->locked_group != b->locked_group)
+        mask |= XKB_STATE_LAYOUT_LOCKED;
+    if (a->mods != b->mods)
+        mask |= XKB_STATE_MODS_EFFECTIVE;
+    if (a->base_mods != b->base_mods)
+        mask |= XKB_STATE_MODS_DEPRESSED;
+    if (a->latched_mods != b->latched_mods)
+        mask |= XKB_STATE_MODS_LATCHED;
+    if (a->locked_mods != b->locked_mods)
+        mask |= XKB_STATE_MODS_LOCKED;
+    if (a->leds != b->leds)
+        mask |= XKB_STATE_LEDS;
+
+    return mask;
+}
+
 /**
  * Given a particular key event, updates the state structure to reflect the
  * new modifiers.
  */
-XKB_EXPORT void
+XKB_EXPORT enum xkb_state_component
 xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
                      enum xkb_key_direction direction)
 {
@@ -670,7 +703,9 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
     const struct xkb_key *key = XkbKey(state->keymap, kc);
 
     if (!key)
-        return;
+        return 0;
+
+    state->prev = state->cur;
 
     state->set_mods = 0;
     state->clear_mods = 0;
@@ -697,6 +732,8 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
     }
 
     xkb_state_update_derived(state);
+
+    return get_state_component_changes(&state->prev, &state->cur);
 }
 
 /**
@@ -706,7 +743,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
  * lossy, and should only be used to update a slave state mirroring the
  * master, e.g. in a client/server window system.
  */
-XKB_EXPORT void
+XKB_EXPORT enum xkb_state_component
 xkb_state_update_mask(struct xkb_state *state,
                       xkb_mod_mask_t base_mods,
                       xkb_mod_mask_t latched_mods,
@@ -717,6 +754,8 @@ xkb_state_update_mask(struct xkb_state *state,
 {
     xkb_mod_index_t num_mods;
     xkb_mod_index_t idx;
+
+    state->cur = state->prev;
 
     state->cur.base_mods = 0;
     state->cur.latched_mods = 0;
@@ -738,6 +777,8 @@ xkb_state_update_mask(struct xkb_state *state,
     state->cur.locked_group = locked_group;
 
     xkb_state_update_derived(state);
+
+    return get_state_component_changes(&state->prev, &state->cur);
 }
 
 /**
