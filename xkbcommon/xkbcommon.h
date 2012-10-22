@@ -167,7 +167,7 @@ typedef uint32_t xkb_keycode_t;
  *
  * A key, represented by a keycode, may generate different symbols according
  * to keyboard state.  For example, on a QWERTY keyboard, pressing the key
- * labled <A> generates the symbol 'a'.  If the Shift key is held, it
+ * labled \<A\> generates the symbol 'a'.  If the Shift key is held, it
  * generates the symbol 'A'.  If a different layout is used, say Greek,
  * it generates the symbol 'α'.  And so on.
  *
@@ -535,8 +535,8 @@ xkb_context_num_include_paths(struct xkb_context *context);
 /**
  * Get a specific include path from the context's include path.
  *
- * @returns The include path at the specified index within the context, or
- * NULL if the index is invalid.
+ * @returns The include path at the specified index.  If the index is
+ * invalid, returns NULL.
  *
  * @memberof xkb_context
  */
@@ -742,7 +742,10 @@ xkb_keymap_ref(struct xkb_keymap *keymap);
 void
 xkb_keymap_unref(struct xkb_keymap *keymap);
 
-/* See xkb_keymap_get_as_string(). */
+/**
+ * Get the keymap as a string in the format from which it was created.
+ * @sa xkb_keymap_get_as_string()
+ **/
 #define XKB_KEYMAP_USE_ORIGINAL_FORMAT ((enum xkb_keymap_format) -1)
 
 /**
@@ -855,7 +858,7 @@ xkb_layout_index_t
 xkb_keymap_num_layouts_for_key(struct xkb_keymap *keymap, xkb_keycode_t key);
 
 /**
- * Get the number of shift levels of a specific key and layout.
+ * Get the number of shift levels for a specific key and layout.
  *
  * @sa xkb_level_index_t
  * @memberof xkb_keymap
@@ -865,7 +868,44 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t key,
                               xkb_layout_index_t layout);
 
 /**
- * Get the number of LEDs in a keymap.
+ * Get the keysyms obtained from pressing a key in a given layout and
+ * shift level.
+ *
+ * This function is like xkb_state_key_get_syms(), only the layout and
+ * shift level are not derived from the keyboard state but are instead
+ * specified explicitly.
+ *
+ * @param[in] keymap    The keymap.
+ * @param[in] key       The keycode of the key.
+ * @param[in] layout    The layout for which to get the keysyms. This must
+ * be smaller than:
+ * @code xkb_keymap_num_layouts_for_key(keymap, key) @endcode
+ * Usually it would be:
+ * @code xkb_state_key_get_layout(state, key) @endcode
+ * @param[in] level     The shift level in the layout for which to get the
+ * keysyms. This must be smaller than:
+ * @code xkb_keymap_num_layouts_for_key(keymap, key) @endcode
+ * usually it would be:
+ * @code xkb_state_key_get_level(state, key, layout) @endcode
+ * @param[out] syms_out An immutible array of keysyms corresponding the
+ * key in the given layout and shift level.
+ *
+ * @returns The number of keysyms in the syms_out array.  If no keysyms
+ * are produced by the key in the given layout and shift level, returns 0
+ * and sets syms_out to NULL.
+ *
+ * @sa xkb_state_key_get_syms()
+ * @memberof xkb_keymap
+ */
+int
+xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
+                                 xkb_keycode_t key,
+                                 xkb_layout_index_t layout,
+                                 xkb_level_index_t level,
+                                 const xkb_keysym_t **syms_out);
+
+/**
+ * Get the number of LEDs in the keymap.
  *
  * @warning The range [ 0...xkb_keymap_num_leds() ) includes all of the LEDs
  * in the keymap, but may also contain inactive LEDs.  When iterating over
@@ -982,7 +1022,7 @@ enum xkb_key_direction {
  * e.g. (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LATCHED) is valid to
  * exclude locked modifiers.
  *
- * In XKB, the DEPRESSED states are also known as 'base'.
+ * In XKB, the DEPRESSED components are also known as 'base'.
  */
 enum xkb_state_component {
     /** Depressed modifiers, i.e. a key is physically holding them. */
@@ -1112,43 +1152,6 @@ xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t key,
                         xkb_layout_index_t layout);
 
 /**
- * Get the keysyms obtained from pressing a key in a given layout and
- * shift level.
- *
- * This function is like xkb_state_key_get_syms(), only the layout and
- * shift level are not derived from the keyboard state but are instead
- * specified explicitly.
- *
- * @param[in] keymap    The keymap.
- * @param[in] key       The keycode of the key.
- * @param[in] layout    The layout for which to get the keysyms. This must
- * be smaller than:
- * @code xkb_keymap_num_layouts_for_key(keymap, key) @endcode
- * Usually it would be:
- * @code xkb_state_key_get_layout(state, key) @endcode
- * @param[in] level     The shift level in the layout for which to get the
- * keysyms. This must be smaller than:
- * @code xkb_keymap_num_layouts_for_key(keymap, key) @endcode
- * usually it would be:
- * @code xkb_state_key_get_level(state, key, layout) @endcode.
- * @param[out] syms_out An immutible array of keysyms corresponding the
- * key in the given layout and shift level.
- *
- * @returns The number of keysyms in the syms_out array.  If no keysyms
- * are produced by the key in the given layout and shift level, returns 0
- * and sets syms_out to NULL.
- *
- * @sa xkb_state_key_get_syms()
- * @memberof xkb_keymap
- */
-int
-xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
-                                 xkb_keycode_t key,
-                                 xkb_layout_index_t layout,
-                                 xkb_level_index_t level,
-                                 const xkb_keysym_t **syms_out);
-
-/**
  * Match flags for xkb_state_mod_indices_are_active and
  * xkb_state_mod_names_are_active, specifying how the conditions for a
  * successful match.  XKB_STATE_MATCH_NON_EXCLUSIVE is bitmaskable with
@@ -1165,7 +1168,7 @@ enum xkb_state_match {
 };
 
 /**
- * Update a state object from a set of explicit masks.
+ * Update a keyboard state from a set of explicit masks.
  *
  * This entrypoint is really only for window systems and the like, where a
  * master process holds an xkb_state, then serializes it over a wire
@@ -1316,7 +1319,7 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
  * Some functions, like xkb_state_key_get_syms(), look at the state of
  * the modifiers in the keymap and derive from it the correct shift level
  * to use for the key.  For example, in a US layout, pressing the key
- * labeled <A> while the Shift modifier is active, generates the keysym 'A'.
+ * labeled \<A\> while the Shift modifier is active, generates the keysym 'A'.
  * In this case, the Shift modifier is said to be consumed.  However, the
  * Num Lock modifier does not affect this translation at all, even if it
  * active, so it is not consumed by this translation.
