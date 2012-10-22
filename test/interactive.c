@@ -46,6 +46,7 @@ struct keyboard {
 
 static bool terminate;
 static int evdev_offset = 8;
+static bool report_state_changes;
 
 #define NLONGS(n) (((n) + LONG_BIT - 1) / LONG_BIT)
 
@@ -286,6 +287,34 @@ print_keycode(struct keyboard *kbd, xkb_keycode_t keycode)
     printf("\n");
 }
 
+static void
+print_state_changes(enum xkb_state_component changed)
+{
+    if (changed == 0)
+        return;
+
+    printf("changed [ ");
+    if (changed & XKB_STATE_LAYOUT_EFFECTIVE)
+        printf("effective-layout ");
+    if (changed & XKB_STATE_LAYOUT_DEPRESSED)
+        printf("depressed-layout ");
+    if (changed & XKB_STATE_LAYOUT_LATCHED)
+        printf("latched-layout ");
+    if (changed & XKB_STATE_LAYOUT_LOCKED)
+        printf("locked-layout ");
+    if (changed & XKB_STATE_MODS_EFFECTIVE)
+        printf("effective-mods ");
+    if (changed & XKB_STATE_MODS_DEPRESSED)
+        printf("depressed-mods ");
+    if (changed & XKB_STATE_MODS_LATCHED)
+        printf("latched-mods ");
+    if (changed & XKB_STATE_MODS_LOCKED)
+        printf("locked-mods ");
+    if (changed & XKB_STATE_LEDS)
+        printf("leds ");
+    printf("]\n");
+}
+
 /* The meaning of the input_event 'value' field. */
 enum {
     KEY_STATE_RELEASE = 0,
@@ -298,6 +327,7 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
 {
     xkb_keycode_t keycode;
     struct xkb_keymap *keymap;
+    enum xkb_state_component changed;
 
     if (type != EV_KEY)
         return;
@@ -312,9 +342,12 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
         print_keycode(kbd, keycode);
 
     if (value == KEY_STATE_RELEASE)
-        xkb_state_update_key(kbd->state, keycode, XKB_KEY_UP);
+        changed = xkb_state_update_key(kbd->state, keycode, XKB_KEY_UP);
     else
-        xkb_state_update_key(kbd->state, keycode, XKB_KEY_DOWN);
+        changed = xkb_state_update_key(kbd->state, keycode, XKB_KEY_DOWN);
+
+    if (report_state_changes)
+        print_state_changes(changed);
 }
 
 static int
@@ -422,7 +455,7 @@ main(int argc, char *argv[])
 
     setlocale(LC_ALL, "");
 
-    while ((opt = getopt(argc, argv, "r:m:l:v:o:k:n:")) != -1) {
+    while ((opt = getopt(argc, argv, "r:m:l:v:o:k:n:c")) != -1) {
         switch (opt) {
         case 'r':
             rules = optarg;
@@ -450,13 +483,17 @@ main(int argc, char *argv[])
                 exit(EXIT_FAILURE);
             }
             break;
+        case 'c':
+            report_state_changes = true;
+            break;
         case '?':
-            fprintf(stderr, "Usage: %s [-r <rules>] [-m <model>] "
+            fprintf(stderr, "   Usage: %s [-r <rules>] [-m <model>] "
                     "[-l <layout>] [-v <variant>] [-o <options>]\n",
                     argv[0]);
-            fprintf(stderr, "   or: %s -k <path to keymap file>\n",
+            fprintf(stderr, "      or: %s -k <path to keymap file>\n",
                     argv[0]);
-            fprintf(stderr, "For both: -n <evdev keycode offset>\n");
+            fprintf(stderr, "For both: -n <evdev keycode offset>\n"
+                            "          -c (to report changes to the state)\n");
             exit(EX_USAGE);
         }
     }
