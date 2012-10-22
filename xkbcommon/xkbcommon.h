@@ -147,7 +147,17 @@ struct xkb_state;
  * keymap would assign each of them a keycode, by which the user should
  * refer to the key throughout the library.
  *
+ * Historically, the X11 protocol, and consequentially the XKB protocol,
+ * assign only 8 bits for keycodes.  This limits the number of different
+ * keys that can be used simultaneously in a single keymap to 256
+ * (disregarding other limitations).  This library does not share this limit;
+ * keycodes beyond 255 ('extended keycodes') are not treated specially.
+ * Keymaps and applications which are compatible with X11 should not use
+ * these keycodes.
+ *
  * @todo Explain how keycodes are mapped to scancodes.
+ *
+ * @sa xkb_keycode_is_legal_ext() xkb_keycode_is_legal_x11()
  */
 typedef uint32_t xkb_keycode_t;
 
@@ -260,7 +270,17 @@ typedef uint32_t xkb_led_mask_t;
 #define XKB_LED_INVALID     (0xffffffff)
 
 #define XKB_KEYCODE_MAX     (0xffffffff - 1)
+
+/**
+ * Test whether a value is a valid extended keycode.
+ * @sa xkb_keycode_t
+ **/
 #define xkb_keycode_is_legal_ext(key) (key <= XKB_KEYCODE_MAX)
+
+/**
+ * Test whether a value is a valid X11 keycode.
+ * @sa xkb_keycode_t
+ */
 #define xkb_keycode_is_legal_x11(key) (key >= 8 && key <= 255)
 
 /**
