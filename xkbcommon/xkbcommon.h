@@ -1175,10 +1175,10 @@ enum xkb_state_match {
  */
 enum xkb_state_component
 xkb_state_update_mask(struct xkb_state *state,
-                      xkb_mod_mask_t base_mods,
+                      xkb_mod_mask_t depressed_mods,
                       xkb_mod_mask_t latched_mods,
                       xkb_mod_mask_t locked_mods,
-                      xkb_layout_index_t base_layout,
+                      xkb_layout_index_t depressed_layout,
                       xkb_layout_index_t latched_layout,
                       xkb_layout_index_t locked_layout);
 
