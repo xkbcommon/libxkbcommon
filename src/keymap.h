@@ -359,8 +359,6 @@ struct xkb_key {
     struct xkb_group *groups;
 };
 
-typedef darray(xkb_atom_t) darray_xkb_atom_t;
-
 struct xkb_mod {
     xkb_atom_t name;
     enum mod_type type;
@@ -393,7 +391,9 @@ struct xkb_keymap {
 
     /* Number of groups in the key with the most groups. */
     xkb_layout_index_t num_groups;
-    darray_xkb_atom_t group_names;
+    /* Not all groups must have names. */
+    xkb_layout_index_t num_group_names;
+    xkb_atom_t *group_names;
 
     darray(struct xkb_indicator_map) indicators;
 

@@ -180,7 +180,7 @@ typedef struct {
     darray(KeyInfo) keys;
     KeyInfo dflt;
     ActionsInfo *actions;
-    darray_xkb_atom_t group_names;
+    darray(xkb_atom_t) group_names;
     darray(ModMapEntry) modMaps;
 
     struct xkb_keymap *keymap;
@@ -1587,7 +1587,8 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
 
     keymap->symbols_section_name = strdup_safe(info->name);
 
-    keymap->group_names = info->group_names;
+    keymap->num_group_names = darray_size(info->group_names);
+    keymap->group_names = darray_mem(info->group_names, 0);
     darray_init(info->group_names);
 
     darray_foreach(keyi, info->keys)

@@ -517,8 +517,7 @@ static bool
 write_symbols(struct xkb_keymap *keymap, struct buf *buf)
 {
     struct xkb_key *key;
-    xkb_layout_index_t group, tmp;
-    xkb_atom_t *group_name;
+    xkb_layout_index_t group;
     bool showActions;
 
     if (keymap->symbols_section_name)
@@ -527,16 +526,12 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
     else
         write_buf(buf, "\txkb_symbols {\n\n");
 
-    tmp = 0;
-    darray_enumerate(group, group_name, keymap->group_names) {
-        if (!*group_name)
-            continue;
-        write_buf(buf,
-                  "\t\tname[group%d]=\"%s\";\n", group + 1,
-                  xkb_atom_text(keymap->ctx, *group_name));
-        tmp++;
-    }
-    if (tmp > 0)
+    for (group = 0; group < keymap->num_group_names; group++)
+        if (keymap->group_names[group])
+            write_buf(buf,
+                      "\t\tname[group%d]=\"%s\";\n", group + 1,
+                      xkb_atom_text(keymap->ctx, keymap->group_names[group]));
+    if (group > 0)
         write_buf(buf, "\n");
 
     xkb_foreach_key(key, keymap) {
