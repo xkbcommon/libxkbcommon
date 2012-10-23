@@ -755,7 +755,7 @@ xkb_state_update_mask(struct xkb_state *state,
     xkb_mod_index_t num_mods;
     xkb_mod_index_t idx;
 
-    state->cur = state->prev;
+    state->prev = state->cur;
 
     state->cur.base_mods = 0;
     state->cur.latched_mods = 0;
