@@ -255,8 +255,9 @@ print_keycode(struct keyboard *kbd, xkb_keycode_t keycode)
     printf("] ");
 #endif
 
-    printf("groups [ ");
-    for (group = 0; group < xkb_keymap_num_layouts(keymap); group++) {
+    printf("group [ ");
+    for (group = 0; group < xkb_keymap_num_layouts_for_key(keymap, keycode);
+         group++) {
         if (xkb_state_layout_index_is_active(state, group,
                                              XKB_STATE_LAYOUT_EFFECTIVE) <= 0)
             continue;
