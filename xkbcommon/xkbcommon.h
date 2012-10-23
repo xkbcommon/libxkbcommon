@@ -445,6 +445,44 @@ void
 xkb_context_unref(struct xkb_context *context);
 
 /**
+ * Store custom user data in the context.
+ *
+ * This may be useful in conjuction with xkb_context_set_log_fn() or other
+ * callbacks.
+ *
+ * @memberof xkb_context
+ */
+void
+xkb_context_set_user_data(struct xkb_context *context, void *user_data);
+
+/**
+ * Retrieves stored user data from the context.
+ *
+ * @returns The stored user data.  If the user data wasn't set, or the
+ * passed in context is NULL, returns NULL.
+ *
+ * This may be useful to access private user data from callbacks like a
+ * custom logging function.
+ *
+ * @memberof xkb_context
+ **/
+void *
+xkb_context_get_user_data(struct xkb_context *context);
+
+/** @} */
+
+/**
+ * @defgroup include-path Include Paths
+ * Manipulating the include paths in a context.
+ *
+ * The include paths are the file-system paths that are searched when an
+ * include statement is encountered during keymap compilation.
+ * In most cases, the default include paths are sufficient.
+ *
+ * @{
+ */
+
+/**
  * Append a new entry to the context's include path.
  *
  * @returns 1 on success, or 0 if the include path could not be added or is
@@ -504,31 +542,6 @@ xkb_context_num_include_paths(struct xkb_context *context);
  */
 const char *
 xkb_context_include_path_get(struct xkb_context *context, unsigned int index);
-
-/**
- * Store custom user data in the context.
- *
- * This may be useful in conjuction with xkb_context_set_log_fn() or other
- * callbacks.
- *
- * @memberof xkb_context
- */
-void
-xkb_context_set_user_data(struct xkb_context *context, void *user_data);
-
-/**
- * Retrieves stored user data from the context.
- *
- * @returns The stored user data.  If the user data wasn't set, or the
- * passed in context is NULL, returns NULL.
- *
- * This may be useful to access private user data from callbacks like a
- * custom logging function.
- *
- * @memberof xkb_context
- **/
-void *
-xkb_context_get_user_data(struct xkb_context *context);
 
 /** @} */
 
