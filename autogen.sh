@@ -6,7 +6,7 @@ test -z "$srcdir" && srcdir=.
 ORIGDIR=`pwd`
 cd "$srcdir"
 
-autoreconf --verbose --install --symlink --warnings=all
+autoreconf --verbose --install --force --warnings=all
 cd "$ORIGDIR"
 
 if test -z "$NOCONFIGURE"; then
