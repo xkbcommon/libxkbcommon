@@ -156,12 +156,14 @@ test_log_LDADD = $(TESTS_LDADD)
 test_interactive_LDADD = $(TESTS_LDADD)
 test_rmlvo_to_kccgst_LDADD = $(TESTS_LDADD)
 test_print_compiled_keymap_LDADD = $(TESTS_LDADD)
+test_bench_key_proc_LDADD = $(TESTS_LDADD) -lrt
 
 check_PROGRAMS = \
 	$(TESTS) \
 	test/interactive \
 	test/rmlvo-to-kccgst \
-	test/print-compiled-keymap
+	test/print-compiled-keymap \
+	test/bench-key-proc
 
 EXTRA_DIST = \
 	test/data \

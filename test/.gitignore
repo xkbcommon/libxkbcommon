@@ -12,3 +12,4 @@ log
 interactive
 rmlvo-to-kccgst
 print-compiled-keymap
+bench-key-proc
