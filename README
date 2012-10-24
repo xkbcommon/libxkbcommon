@@ -1,7 +1,7 @@
 xkbcommon
 =========
 
-libxkbcommon is a keymap compiler and support library which processes a
+xkbcommon is a keymap compiler and support library which processes a
 reduced subset of keymaps as defined by the XKB specification.  Primarily,
 a keymap is created from a set of Rules/Model/Layout/Variant/Options names,
 processed through an XKB ruleset, and compiled into a struct xkb_keymap,
@@ -97,6 +97,9 @@ Notable additions:
 
 Development
 ===========
+
+An extremely rudimentary homepage can be found at:
+    http://xkbcommon.org
 
 xkbcommon is maintained in git at freedesktop.org:
     git://anongit.freedesktop.org/git/libxkbcommon
