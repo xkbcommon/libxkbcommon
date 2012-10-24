@@ -540,6 +540,17 @@ xkb_filter_apply_all(struct xkb_state *state,
         return;
 
     action = xkb_key_get_action(state, key);
+
+    /*
+     * It's possible for the keymap to set action->type explicitly, like so:
+     *     interpret XF86_Next_VMode {
+     *         action = Private(type=0x86, data="+VMode");
+     *     };
+     * We don't handle those.
+     */
+    if (action->type >= _ACTION_TYPE_NUM_ENTRIES)
+        return;
+
     if (!filter_action_funcs[action->type].new)
         return;
 
