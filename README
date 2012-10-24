@@ -99,13 +99,13 @@ Development
 ===========
 
 xkbcommon is maintained in git at freedesktop.org:
-    git://anongit.freedesktop.org/git/xorg/lib/libxkbcommon
+    git://anongit.freedesktop.org/git/libxkbcommon
 
 Patches are always welcome, and may be sent to either xorg-devel@lists.x.org,
 or wayland-devel@lists.freedesktop.org.  Bugs are tracked in Bugzilla at:
     http://bugs.freedesktop.org
 
-The primary author and maintainer is Daniel Stone, who can be reached at:
+The maintainer is Daniel Stone, who can be reached at:
     <daniel@fooishbar.org>
 
 
