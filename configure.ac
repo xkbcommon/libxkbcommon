@@ -41,7 +41,7 @@ LT_INIT
 # Require xorg-macros minimum of 1.8 for AM_SILENT_RULES
 m4_ifndef([XORG_MACROS_VERSION],
 	  [m4_fatal([must install xorg-macros 1.8 or later before running autoconf/autogen])])
-XORG_MACROS_VERSION(1.8)
+XORG_MACROS_VERSION(1.16)
 XORG_DEFAULT_OPTIONS
 XORG_MEMORY_CHECK_FLAGS
 XORG_ENABLE_DOCS
