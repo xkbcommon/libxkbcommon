@@ -118,13 +118,9 @@ static const struct xkb_kt_map_entry *
 get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
                         xkb_layout_index_t group)
 {
-    const struct xkb_key_type *type;
-    xkb_mod_mask_t active_mods;
+    const struct xkb_key_type *type = key->groups[group].type;
+    xkb_mod_mask_t active_mods = state->cur.mods & type->mods.mask;
     unsigned int i;
-
-    type = key->groups[group].type;
-    active_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
-    active_mods &= type->mods.mask;
 
     for (i = 0; i < type->num_entries; i++)
         if (type->map[i].mods.mask == active_mods)
@@ -199,14 +195,12 @@ wrap_group_into_range(int32_t group,
 XKB_EXPORT xkb_layout_index_t
 xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t kc)
 {
-    xkb_layout_index_t group =
-        xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE);
     const struct xkb_key *key = XkbKey(state->keymap, kc);
 
     if (!key)
         return XKB_LAYOUT_INVALID;
 
-    return wrap_group_into_range(group, key->num_groups,
+    return wrap_group_into_range(state->cur.group, key->num_groups,
                                  key->out_of_range_group_action,
                                  key->out_of_range_group_number);
 }
