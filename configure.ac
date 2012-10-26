@@ -72,7 +72,7 @@ fi
 
 AC_CHECK_FUNCS([eaccess euidaccess])
 
-XORG_TESTSET_CFLAG([CFLAGS], [-fvisibility=hidden])
+XORG_TESTSET_CFLAG([BASE_CFLAGS], [-fvisibility=hidden])
 
 # Define a configuration option for the XKB config root
 xkb_base=`$PKG_CONFIG --variable=xkb_base xkeyboard-config`
