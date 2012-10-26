@@ -124,7 +124,8 @@ noinst_LTLIBRARIES = libtest.la
 libtest_la_LDFLAGS = $(libxkbcommon_la_LDFLAGS)
 libtest_la_SOURCES = \
 	$(libxkbcommon_la_SOURCES) \
-	test/common.c
+	test/common.c \
+	test/test.h
 
 AM_TESTS_ENVIRONMENT = \
 	XKB_LOG_LEVEL=debug; export XKB_LOG_LEVEL; \
@@ -166,8 +167,7 @@ check_PROGRAMS = \
 	test/bench-key-proc
 
 EXTRA_DIST = \
-	test/data \
-	test/test.h
+	test/data
 
 # This sed script strips out lines that start with '#define _' which
 # removes #define _OSF_Keysyms and such.  The XK_Ydiaeresis case is to
