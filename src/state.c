@@ -646,8 +646,6 @@ xkb_state_led_update_all(struct xkb_state *state)
 static void
 xkb_state_update_derived(struct xkb_state *state)
 {
-    xkb_layout_index_t num_groups = xkb_keymap_num_layouts(state->keymap);
-
     state->cur.mods = (state->cur.base_mods |
                        state->cur.latched_mods |
                        state->cur.locked_mods);
@@ -655,13 +653,13 @@ xkb_state_update_derived(struct xkb_state *state)
     /* TODO: Use groups_wrap control instead of always RANGE_WRAP. */
 
     state->cur.locked_group = wrap_group_into_range(state->cur.locked_group,
-                                                    num_groups,
+                                                    state->keymap->num_groups,
                                                     RANGE_WRAP, 0);
 
     state->cur.group = wrap_group_into_range(state->cur.base_group +
                                              state->cur.latched_group +
                                              state->cur.locked_group,
-                                             num_groups,
+                                             state->keymap->num_groups,
                                              RANGE_WRAP, 0);
 
     xkb_state_led_update_all(state);
@@ -1011,7 +1009,7 @@ xkb_state_layout_index_is_active(struct xkb_state *state,
 {
     int ret = 0;
 
-    if (idx >= xkb_keymap_num_layouts(state->keymap))
+    if (idx >= state->keymap->num_groups)
         return -1;
 
     if (type & XKB_STATE_LAYOUT_EFFECTIVE)
