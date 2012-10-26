@@ -1230,7 +1230,7 @@ xkb_state_serialize_mods(struct xkb_state *state,
  * If XKB_STATE_LAYOUT_EFFECTIVE is included, all other state components are
  * ignored.
  *
- * @returns A xkb_layout_mask_t representing the given components of the
+ * @returns A layout index representing the given components of the
  * layout state.
  *
  * This function should not be used in regular clients; please use the
