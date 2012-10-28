@@ -439,6 +439,8 @@ xkb_context_ref(struct xkb_context *context);
 /**
  * Release a reference on a context, and possibly free it.
  *
+ * @param context The context.  If it is NULL, this function does nothing.
+ *
  * @memberof xkb_context
  */
 void
@@ -737,6 +739,8 @@ xkb_keymap_ref(struct xkb_keymap *keymap);
 /**
  * Release a reference on a keymap, and possibly free it.
  *
+ * @param keymap The keymap.  If it is NULL, this function does nothing.
+ *
  * @memberof xkb_keymap
  */
 void
@@ -990,6 +994,8 @@ xkb_state_ref(struct xkb_state *state);
 
 /**
  * Release a reference on a keybaord state object, and possibly free it.
+ *
+ * @param state The state.  If it is NULL, this function does nothing.
  *
  * @memberof xkb_state
  */

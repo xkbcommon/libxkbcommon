@@ -206,7 +206,7 @@ xkb_context_ref(struct xkb_context *ctx)
 XKB_EXPORT void
 xkb_context_unref(struct xkb_context *ctx)
 {
-    if (--ctx->refcnt > 0)
+    if (!ctx || --ctx->refcnt > 0)
         return;
 
     xkb_context_include_path_clear(ctx);

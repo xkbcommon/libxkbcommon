@@ -339,6 +339,11 @@ main(void)
 
     assert(context);
 
+    /* Make sure these are allowed. */
+    xkb_context_unref(NULL);
+    xkb_keymap_unref(NULL);
+    xkb_state_unref(NULL);
+
     keymap = test_compile_rules(context, "evdev", "pc104", "us,ru", NULL, "grp:menu_toggle");
     assert(keymap);
 

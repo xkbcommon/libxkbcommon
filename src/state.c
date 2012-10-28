@@ -583,7 +583,7 @@ xkb_state_ref(struct xkb_state *state)
 XKB_EXPORT void
 xkb_state_unref(struct xkb_state *state)
 {
-    if (--state->refcnt > 0)
+    if (!state || --state->refcnt > 0)
         return;
 
     xkb_keymap_unref(state->keymap);
