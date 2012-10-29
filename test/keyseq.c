@@ -66,6 +66,8 @@ test_key_seq(struct xkb_keymap *keymap, ...)
     unsigned int nsyms, i;
     char ksbuf[64];
 
+    fprintf(stderr, "----\n");
+
     state = xkb_state_new(keymap);
     assert(state);
 
@@ -417,6 +419,50 @@ main(void)
                         KEY_H,         BOTH, XKB_KEY_Cyrillic_er,    NEXT,
                         KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
                         KEY_H,         BOTH, XKB_KEY_h,              FINISH));
+
+    xkb_keymap_unref(keymap);
+    assert(ctx);
+    keymap = test_compile_rules(ctx, "evdev", "", "us,il,ru", "",
+                                "grp:switch,grp:lswitch,grp:menu_toggle");
+    assert(keymap);
+
+    /* Test depressed group works (Mode_switch). */
+    assert(test_key_seq(keymap,
+                        KEY_H,         BOTH, XKB_KEY_h,                 NEXT,
+                        KEY_RIGHTALT,  DOWN, XKB_KEY_Mode_switch,       NEXT,
+                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,        NEXT,
+                        KEY_RIGHTALT,  UP,   XKB_KEY_ISO_Level3_Shift,  NEXT,
+                        KEY_H,         BOTH, XKB_KEY_h,                 NEXT,
+                        KEY_RIGHTALT,  DOWN, XKB_KEY_Mode_switch,       NEXT,
+                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,        NEXT,
+                        KEY_RIGHTALT,  UP,   XKB_KEY_ISO_Level3_Shift,  NEXT,
+                        KEY_H,         BOTH, XKB_KEY_h,                 FINISH));
+
+    /* Test locked+depressed group works, with wrapping and accumulation. */
+    assert(test_key_seq(keymap,
+                        KEY_H,         BOTH, XKB_KEY_h,                 NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group,    NEXT,
+                        KEY_LEFTALT,   DOWN, XKB_KEY_Mode_switch,       NEXT,
+                        KEY_H,         BOTH, XKB_KEY_Cyrillic_er,       NEXT,
+                        KEY_LEFTALT,   UP,   XKB_KEY_Mode_switch,       NEXT,
+                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,        NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group,    NEXT,
+                        KEY_LEFTALT,   DOWN, XKB_KEY_Mode_switch,       NEXT,
+                        /* Should wrap back to first group. */
+                        KEY_H,         BOTH, XKB_KEY_h,                 NEXT,
+                        KEY_LEFTALT,   UP,   XKB_KEY_Mode_switch,       NEXT,
+                        KEY_H,         BOTH, XKB_KEY_Cyrillic_er,       NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group,    NEXT,
+                        KEY_H,         BOTH, XKB_KEY_h,                 NEXT,
+                        /* Two SetGroup(+1)'s should add up. */
+                        KEY_RIGHTALT,  DOWN, XKB_KEY_Mode_switch,       NEXT,
+                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,        NEXT,
+                        KEY_LEFTALT,   DOWN, XKB_KEY_Mode_switch,       NEXT,
+                        KEY_H,         BOTH, XKB_KEY_Cyrillic_er,       NEXT,
+                        KEY_LEFTALT,   UP,   XKB_KEY_Mode_switch,       NEXT,
+                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,        NEXT,
+                        KEY_RIGHTALT,  UP,   XKB_KEY_ISO_Level3_Shift,  NEXT,
+                        KEY_H,         BOTH, XKB_KEY_h,                 FINISH));
 
     xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
