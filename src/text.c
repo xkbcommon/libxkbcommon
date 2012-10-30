@@ -279,7 +279,7 @@ ModNameToIndex(const struct xkb_keymap *keymap, xkb_atom_t name,
 }
 
 const char *
-ActionTypeText(unsigned type)
+ActionTypeText(enum xkb_action_type type)
 {
     const char *name = LookupValue(actionTypeNames, type);
     return name ? name : "Private";

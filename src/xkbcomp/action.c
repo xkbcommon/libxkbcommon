@@ -748,7 +748,26 @@ HandlePrivate(struct xkb_keymap *keymap, union xkb_action *action,
             return false;
         }
 
-        act->type = (enum xkb_action_type) type;
+        /*
+         * It's possible for someone to write something like this:
+         *      actions = [ Private(type=3,data[0]=1,data[1]=3,data[2]=3) ]
+         * where the type refers to some existing action type, e.g. LockMods.
+         * This assumes that this action's struct is layed out in memory
+         * exactly as described in the XKB specification and libraries.
+         * We, however, have changed these structs in various ways, so this
+         * assumption is no longer true. Since this is a lousy "feature", we
+         * make actions like these no-ops for now.
+         */
+        if (type < ACTION_TYPE_PRIVATE) {
+            log_info(keymap->ctx,
+                     "Private actions of type %s are not supported; Ignored\n",
+                     ActionTypeText(type));
+            act->type = ACTION_TYPE_NONE;
+        }
+        else {
+            act->type = (enum xkb_action_type) type;
+        }
+
         return true;
     }
     else if (field == ACTION_FIELD_DATA) {
