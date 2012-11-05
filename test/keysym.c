@@ -73,8 +73,10 @@ test_utf8(xkb_keysym_t keysym, const char *expected)
     if (ret <= 0)
         return ret;
 
-    fprintf(stderr, "Expected keysym %#x -> %s\n", keysym, expected);
-    fprintf(stderr, "Received keysym %#x -> %s\n\n", keysym, s);
+    fprintf(stderr, "Expected keysym %#x -> %s (%u bytes)\n", keysym, expected,
+            (unsigned) strlen(expected));
+    fprintf(stderr, "Received keysym %#x -> %s (%u bytes)\n\n", keysym, s,
+            (unsigned) strlen(s));
 
     return streq(s, expected);
 }
@@ -133,6 +135,17 @@ main(void)
 
     assert(test_utf8(XKB_KEY_space, " "));
     assert(test_utf8(XKB_KEY_KP_Space, " "));
+    assert(test_utf8(XKB_KEY_BackSpace, "\b"));
+    assert(test_utf8(XKB_KEY_Escape, "\e"));
+    assert(test_utf8(XKB_KEY_KP_Separator, ","));
+    assert(test_utf8(XKB_KEY_KP_Decimal, "."));
+    assert(test_utf8(XKB_KEY_Tab, "\t"));
+    assert(test_utf8(XKB_KEY_KP_Tab, "\t"));
+    assert(test_utf8(XKB_KEY_hyphen, "­"));
+    assert(test_utf8(XKB_KEY_Linefeed, "\n"));
+    assert(test_utf8(XKB_KEY_Return, "\r"));
+    assert(test_utf8(XKB_KEY_KP_Enter, "\r"));
+    assert(test_utf8(XKB_KEY_KP_Equal, "="));
     assert(test_utf8(XKB_KEY_9, "9"));
     assert(test_utf8(XKB_KEY_KP_9, "9"));
     assert(test_utf8(XKB_KEY_KP_Multiply, "*"));
