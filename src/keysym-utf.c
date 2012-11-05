@@ -44,7 +44,7 @@ struct codepair {
     uint16_t ucs;
 };
 
-const struct codepair keysymtab[] = {
+static const struct codepair keysymtab[] = {
     { 0x01a1, 0x0104 }, /*                     Aogonek Ą LATIN CAPITAL LETTER A WITH OGONEK */
     { 0x01a2, 0x02d8 }, /*                       breve ˘ BREVE */
     { 0x01a3, 0x0141 }, /*                     Lstroke Ł LATIN CAPITAL LETTER L WITH STROKE */
