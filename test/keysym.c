@@ -136,7 +136,7 @@ main(void)
     assert(test_utf8(XKB_KEY_space, " "));
     assert(test_utf8(XKB_KEY_KP_Space, " "));
     assert(test_utf8(XKB_KEY_BackSpace, "\b"));
-    assert(test_utf8(XKB_KEY_Escape, "\e"));
+    assert(test_utf8(XKB_KEY_Escape, "\033"));
     assert(test_utf8(XKB_KEY_KP_Separator, ","));
     assert(test_utf8(XKB_KEY_KP_Decimal, "."));
     assert(test_utf8(XKB_KEY_Tab, "\t"));
