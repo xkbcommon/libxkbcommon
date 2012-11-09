@@ -29,7 +29,7 @@ AC_CONFIG_HEADERS([src/config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
 # Initialize Automake
-AM_INIT_AUTOMAKE([foreign dist-bzip2 subdir-objects color-tests parallel-tests])
+AM_INIT_AUTOMAKE([foreign dist-xz no-dist-gzip subdir-objects color-tests parallel-tests])
 AM_MAINTAINER_MODE([enable])
 
 # Get _GNU_SOURCE and friends
