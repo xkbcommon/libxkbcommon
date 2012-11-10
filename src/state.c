@@ -151,7 +151,7 @@ xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
     return entry->level;
 }
 
-static xkb_layout_index_t
+xkb_layout_index_t
 wrap_group_into_range(int32_t group,
                       xkb_layout_index_t num_groups,
                       enum xkb_range_exceed_type out_of_range_group_action,

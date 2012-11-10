@@ -227,6 +227,12 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t kc,
     if (!key)
         return 0;
 
+    layout = wrap_group_into_range(layout, key->num_groups,
+                                   key->out_of_range_group_action,
+                                   key->out_of_range_group_number);
+    if (layout == XKB_LAYOUT_INVALID)
+        return 0;
+
     return XkbKeyGroupWidth(key, layout);
 }
 
@@ -287,8 +293,13 @@ xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
 
     if (!key)
         goto err;
-    if (layout >= key->num_groups)
+
+    layout = wrap_group_into_range(layout, key->num_groups,
+                                   key->out_of_range_group_action,
+                                   key->out_of_range_group_number);
+    if (layout == XKB_LAYOUT_INVALID)
         goto err;
+
     if (level >= XkbKeyGroupWidth(key, layout))
         goto err;
 

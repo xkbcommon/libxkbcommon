@@ -864,6 +864,10 @@ xkb_keymap_num_layouts_for_key(struct xkb_keymap *keymap, xkb_keycode_t key);
 /**
  * Get the number of shift levels for a specific key and layout.
  *
+ * If @c layout is out of range for this key (that is, larger or equal to
+ * the value returned by xkb_keymap_num_layouts_for_key()), it is brought
+ * back into range in a manner consistent with xkb_state_key_get_layout().
+ *
  * @sa xkb_level_index_t
  * @memberof xkb_keymap
  */
@@ -881,18 +885,16 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t key,
  *
  * @param[in] keymap    The keymap.
  * @param[in] key       The keycode of the key.
- * @param[in] layout    The layout for which to get the keysyms. This must
- * be smaller than:
- * @code xkb_keymap_num_layouts_for_key(keymap, key) @endcode
- * Usually it would be:
- * @code xkb_state_key_get_layout(state, key) @endcode
+ * @param[in] layout    The layout for which to get the keysyms.
  * @param[in] level     The shift level in the layout for which to get the
  * keysyms. This must be smaller than:
  * @code xkb_keymap_num_layouts_for_key(keymap, key) @endcode
- * usually it would be:
- * @code xkb_state_key_get_level(state, key, layout) @endcode
- * @param[out] syms_out An immutible array of keysyms corresponding the
+ * @param[out] syms_out An immutible array of keysyms corresponding to the
  * key in the given layout and shift level.
+ *
+ * If @c layout is out of range for this key (that is, larger or equal to
+ * the value returned by xkb_keymap_num_layouts_for_key()), it is brought
+ * back into range in a manner consistent with xkb_state_key_get_layout().
  *
  * @returns The number of keysyms in the syms_out array.  If no keysyms
  * are produced by the key in the given layout and shift level, returns 0
