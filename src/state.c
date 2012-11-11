@@ -89,10 +89,10 @@ struct state_components {
 
 struct xkb_state {
     /*
-     * Before updating the state, we keep a copy. This allows us to report
-     * which components of the state have changed.
+     * Before updating the state, we keep a copy of just this struct. This
+     * allows us to report which components of the state have changed.
      */
-    struct state_components cur, prev;
+    struct state_components cur;
 
     /*
      * At each event, we accumulate all the needed modifications to the base
@@ -703,12 +703,13 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
 {
     xkb_mod_index_t i;
     xkb_mod_mask_t bit;
+    struct state_components prev_components;
     const struct xkb_key *key = XkbKey(state->keymap, kc);
 
     if (!key)
         return 0;
 
-    state->prev = state->cur;
+    prev_components = state->cur;
 
     state->set_mods = 0;
     state->clear_mods = 0;
@@ -736,7 +737,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
 
     xkb_state_update_derived(state);
 
-    return get_state_component_changes(&state->prev, &state->cur);
+    return get_state_component_changes(&prev_components, &state->cur);
 }
 
 /**
@@ -755,10 +756,11 @@ xkb_state_update_mask(struct xkb_state *state,
                       xkb_layout_index_t latched_group,
                       xkb_layout_index_t locked_group)
 {
+    struct state_components prev_components;
     xkb_mod_index_t num_mods;
     xkb_mod_index_t idx;
 
-    state->prev = state->cur;
+    prev_components = state->cur;
 
     state->cur.base_mods = 0;
     state->cur.latched_mods = 0;
@@ -781,7 +783,7 @@ xkb_state_update_mask(struct xkb_state *state,
 
     xkb_state_update_derived(state);
 
-    return get_state_component_changes(&state->prev, &state->cur);
+    return get_state_component_changes(&prev_components, &state->cur);
 }
 
 /**
