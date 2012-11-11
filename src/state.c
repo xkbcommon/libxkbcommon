@@ -92,7 +92,7 @@ struct xkb_state {
      * Before updating the state, we keep a copy of just this struct. This
      * allows us to report which components of the state have changed.
      */
-    struct state_components cur;
+    struct state_components components;
 
     /*
      * At each event, we accumulate all the needed modifications to the base
@@ -119,7 +119,7 @@ get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
                         xkb_layout_index_t group)
 {
     const struct xkb_key_type *type = key->groups[group].type;
-    xkb_mod_mask_t active_mods = state->cur.mods & type->mods.mask;
+    xkb_mod_mask_t active_mods = state->components.mods & type->mods.mask;
     unsigned int i;
 
     for (i = 0; i < type->num_entries; i++)
@@ -200,7 +200,7 @@ xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t kc)
     if (!key)
         return XKB_LAYOUT_INVALID;
 
-    return wrap_group_into_range(state->cur.group, key->num_groups,
+    return wrap_group_into_range(state->components.group, key->num_groups,
                                  key->out_of_range_group_action,
                                  key->out_of_range_group_number);
 }
@@ -266,10 +266,10 @@ xkb_filter_group_set_func(struct xkb_state *state,
         return 0;
     }
 
-    state->cur.base_group = filter->priv;
+    state->components.base_group = filter->priv;
 
     if (filter->action.group.flags & ACTION_LOCK_CLEAR)
-        state->cur.locked_group = 0;
+        state->components.locked_group = 0;
 
     filter->func = NULL;
     return 1;
@@ -278,11 +278,11 @@ xkb_filter_group_set_func(struct xkb_state *state,
 static void
 xkb_filter_group_set_new(struct xkb_state *state, struct xkb_filter *filter)
 {
-    filter->priv = state->cur.base_group;
+    filter->priv = state->components.base_group;
     if (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH)
-        state->cur.base_group = filter->action.group.group;
+        state->components.base_group = filter->action.group.group;
     else
-        state->cur.base_group += filter->action.group.group;
+        state->components.base_group += filter->action.group.group;
 }
 
 static int
@@ -309,9 +309,9 @@ static void
 xkb_filter_group_lock_new(struct xkb_state *state, struct xkb_filter *filter)
 {
     if (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH)
-        state->cur.locked_group = filter->action.group.group;
+        state->components.locked_group = filter->action.group.group;
     else
-        state->cur.locked_group += filter->action.group.group;
+        state->components.locked_group += filter->action.group.group;
 }
 
 static int
@@ -335,7 +335,7 @@ xkb_filter_mod_set_func(struct xkb_state *state,
 
     state->clear_mods = filter->action.mods.mods.mask;
     if (filter->action.mods.flags & ACTION_LOCK_CLEAR)
-        state->cur.locked_mods &= ~filter->action.mods.mods.mask;
+        state->components.locked_mods &= ~filter->action.mods.mods.mask;
 
     filter->func = NULL;
     return 1;
@@ -365,7 +365,7 @@ xkb_filter_mod_lock_func(struct xkb_state *state,
 
     state->clear_mods |= filter->action.mods.mods.mask;
     if (!(filter->action.mods.flags & ACTION_LOCK_NO_UNLOCK))
-        state->cur.locked_mods &= ~filter->priv;
+        state->components.locked_mods &= ~filter->priv;
 
     filter->func = NULL;
     return 1;
@@ -374,10 +374,11 @@ xkb_filter_mod_lock_func(struct xkb_state *state,
 static void
 xkb_filter_mod_lock_new(struct xkb_state *state, struct xkb_filter *filter)
 {
-    filter->priv = state->cur.locked_mods & filter->action.mods.mods.mask;
+    filter->priv = (state->components.locked_mods &
+                    filter->action.mods.mods.mask);
     state->set_mods |= filter->action.mods.mods.mask;
     if (!(filter->action.mods.flags & ACTION_LOCK_NO_LOCK))
-        state->cur.locked_mods |= filter->action.mods.mods.mask;
+        state->components.locked_mods |= filter->action.mods.mods.mask;
 }
 
 enum xkb_key_latch_state {
@@ -425,7 +426,7 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
             if (filter->action.mods.flags & ACTION_LATCH_TO_LOCK) {
                 filter->action.type = ACTION_TYPE_MOD_LOCK;
                 filter->func = xkb_filter_mod_lock_func;
-                state->cur.locked_mods |= filter->action.mods.mods.mask;
+                state->components.locked_mods |= filter->action.mods.mods.mask;
             }
             else {
                 filter->action.type = ACTION_TYPE_MOD_SET;
@@ -433,14 +434,14 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
                 state->set_mods = filter->action.mods.mods.mask;
             }
             filter->key = key;
-            state->cur.latched_mods &= ~filter->action.mods.mods.mask;
+            state->components.latched_mods &= ~filter->action.mods.mods.mask;
             /* XXX beep beep! */
             return 0;
         }
         else if (xkb_action_breaks_latch(action)) {
             /* XXX: This may be totally broken, we might need to break the
              *      latch in the next run after this press? */
-            state->cur.latched_mods &= ~filter->action.mods.mods.mask;
+            state->components.latched_mods &= ~filter->action.mods.mods.mask;
             filter->func = NULL;
             return 1;
         }
@@ -453,21 +454,22 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
          * latched. */
         if (latch == NO_LATCH ||
             ((filter->action.mods.flags & ACTION_LOCK_CLEAR) &&
-             (state->cur.locked_mods & filter->action.mods.mods.mask) ==
+             (state->components.locked_mods & filter->action.mods.mods.mask) ==
              filter->action.mods.mods.mask)) {
             /* XXX: We might be a bit overenthusiastic about clearing
              *      mods other filters have set here? */
             if (latch == LATCH_PENDING)
-                state->cur.latched_mods &= ~filter->action.mods.mods.mask;
+                state->components.latched_mods &=
+                    ~filter->action.mods.mods.mask;
             else
                 state->clear_mods = filter->action.mods.mods.mask;
-            state->cur.locked_mods &= ~filter->action.mods.mods.mask;
+            state->components.locked_mods &= ~filter->action.mods.mods.mask;
             filter->func = NULL;
         }
         else {
             latch = LATCH_PENDING;
             state->clear_mods = filter->action.mods.mods.mask;
-            state->cur.latched_mods |= filter->action.mods.mods.mask;
+            state->components.latched_mods |= filter->action.mods.mods.mask;
             /* XXX beep beep! */
         }
     }
@@ -606,36 +608,36 @@ xkb_state_led_update_all(struct xkb_state *state)
     xkb_led_index_t led;
     const struct xkb_indicator_map *map;
 
-    state->cur.leds = 0;
+    state->components.leds = 0;
 
     darray_enumerate(led, map, state->keymap->indicators) {
         xkb_mod_mask_t mod_mask = 0;
         xkb_layout_mask_t group_mask = 0;
 
         if (map->which_mods & XKB_STATE_MODS_EFFECTIVE)
-            mod_mask |= state->cur.mods;
+            mod_mask |= state->components.mods;
         if (map->which_mods & XKB_STATE_MODS_DEPRESSED)
-            mod_mask |= state->cur.base_mods;
+            mod_mask |= state->components.base_mods;
         if (map->which_mods & XKB_STATE_MODS_LATCHED)
-            mod_mask |= state->cur.latched_mods;
+            mod_mask |= state->components.latched_mods;
         if (map->which_mods & XKB_STATE_MODS_LOCKED)
-            mod_mask |= state->cur.locked_mods;
+            mod_mask |= state->components.locked_mods;
         if (map->mods.mask & mod_mask)
-            state->cur.leds |= (1 << led);
+            state->components.leds |= (1 << led);
 
         if (map->which_groups & XKB_STATE_LAYOUT_EFFECTIVE)
-            group_mask |= (1 << state->cur.group);
+            group_mask |= (1 << state->components.group);
         if (map->which_groups & XKB_STATE_LAYOUT_DEPRESSED)
-            group_mask |= (1 << state->cur.base_group);
+            group_mask |= (1 << state->components.base_group);
         if (map->which_groups & XKB_STATE_LAYOUT_LATCHED)
-            group_mask |= (1 << state->cur.latched_group);
+            group_mask |= (1 << state->components.latched_group);
         if (map->which_groups & XKB_STATE_LAYOUT_LOCKED)
-            group_mask |= (1 << state->cur.locked_group);
+            group_mask |= (1 << state->components.locked_group);
         if (map->groups & group_mask)
-            state->cur.leds |= (1 << led);
+            state->components.leds |= (1 << led);
 
         if (map->ctrls & state->keymap->enabled_ctrls)
-            state->cur.leds |= (1 << led);
+            state->components.leds |= (1 << led);
     }
 }
 
@@ -646,19 +648,19 @@ xkb_state_led_update_all(struct xkb_state *state)
 static void
 xkb_state_update_derived(struct xkb_state *state)
 {
-    state->cur.mods = (state->cur.base_mods |
-                       state->cur.latched_mods |
-                       state->cur.locked_mods);
+    state->components.mods = (state->components.base_mods |
+                       state->components.latched_mods |
+                       state->components.locked_mods);
 
     /* TODO: Use groups_wrap control instead of always RANGE_WRAP. */
 
-    state->cur.locked_group = wrap_group_into_range(state->cur.locked_group,
+    state->components.locked_group = wrap_group_into_range(state->components.locked_group,
                                                     state->keymap->num_groups,
                                                     RANGE_WRAP, 0);
 
-    state->cur.group = wrap_group_into_range(state->cur.base_group +
-                                             state->cur.latched_group +
-                                             state->cur.locked_group,
+    state->components.group = wrap_group_into_range(state->components.base_group +
+                                             state->components.latched_group +
+                                             state->components.locked_group,
                                              state->keymap->num_groups,
                                              RANGE_WRAP, 0);
 
@@ -709,7 +711,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
     if (!key)
         return 0;
 
-    prev_components = state->cur;
+    prev_components = state->components;
 
     state->set_mods = 0;
     state->clear_mods = 0;
@@ -719,7 +721,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
     for (i = 0, bit = 1; state->set_mods; i++, bit <<= 1) {
         if (state->set_mods & bit) {
             state->mod_key_count[i]++;
-            state->cur.base_mods |= bit;
+            state->components.base_mods |= bit;
             state->set_mods &= ~bit;
         }
     }
@@ -728,7 +730,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
         if (state->clear_mods & bit) {
             state->mod_key_count[i]--;
             if (state->mod_key_count[i] <= 0) {
-                state->cur.base_mods &= ~bit;
+                state->components.base_mods &= ~bit;
                 state->mod_key_count[i] = 0;
             }
             state->clear_mods &= ~bit;
@@ -737,7 +739,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
 
     xkb_state_update_derived(state);
 
-    return get_state_component_changes(&prev_components, &state->cur);
+    return get_state_component_changes(&prev_components, &state->components);
 }
 
 /**
@@ -760,30 +762,30 @@ xkb_state_update_mask(struct xkb_state *state,
     xkb_mod_index_t num_mods;
     xkb_mod_index_t idx;
 
-    prev_components = state->cur;
+    prev_components = state->components;
 
-    state->cur.base_mods = 0;
-    state->cur.latched_mods = 0;
-    state->cur.locked_mods = 0;
+    state->components.base_mods = 0;
+    state->components.latched_mods = 0;
+    state->components.locked_mods = 0;
     num_mods = xkb_keymap_num_mods(state->keymap);
 
     for (idx = 0; idx < num_mods; idx++) {
         xkb_mod_mask_t mod = (1 << idx);
         if (base_mods & mod)
-            state->cur.base_mods |= mod;
+            state->components.base_mods |= mod;
         if (latched_mods & mod)
-            state->cur.latched_mods |= mod;
+            state->components.latched_mods |= mod;
         if (locked_mods & mod)
-            state->cur.locked_mods |= mod;
+            state->components.locked_mods |= mod;
     }
 
-    state->cur.base_group = base_group;
-    state->cur.latched_group = latched_group;
-    state->cur.locked_group = locked_group;
+    state->components.base_group = base_group;
+    state->components.latched_group = latched_group;
+    state->components.locked_group = locked_group;
 
     xkb_state_update_derived(state);
 
-    return get_state_component_changes(&prev_components, &state->cur);
+    return get_state_component_changes(&prev_components, &state->components);
 }
 
 /**
@@ -840,14 +842,14 @@ xkb_state_serialize_mods(struct xkb_state *state,
     xkb_mod_mask_t ret = 0;
 
     if (type & XKB_STATE_MODS_EFFECTIVE)
-        return state->cur.mods;
+        return state->components.mods;
 
     if (type & XKB_STATE_MODS_DEPRESSED)
-        ret |= state->cur.base_mods;
+        ret |= state->components.base_mods;
     if (type & XKB_STATE_MODS_LATCHED)
-        ret |= state->cur.latched_mods;
+        ret |= state->components.latched_mods;
     if (type & XKB_STATE_MODS_LOCKED)
-        ret |= state->cur.locked_mods;
+        ret |= state->components.locked_mods;
 
     return ret;
 }
@@ -863,14 +865,14 @@ xkb_state_serialize_layout(struct xkb_state *state,
     xkb_layout_index_t ret = 0;
 
     if (type & XKB_STATE_LAYOUT_EFFECTIVE)
-        return state->cur.group;
+        return state->components.group;
 
     if (type & XKB_STATE_LAYOUT_DEPRESSED)
-        ret += state->cur.base_group;
+        ret += state->components.base_group;
     if (type & XKB_STATE_LAYOUT_LATCHED)
-        ret += state->cur.latched_group;
+        ret += state->components.latched_group;
     if (type & XKB_STATE_LAYOUT_LOCKED)
-        ret += state->cur.locked_group;
+        ret += state->components.locked_group;
 
     return ret;
 }
@@ -1015,13 +1017,13 @@ xkb_state_layout_index_is_active(struct xkb_state *state,
         return -1;
 
     if (type & XKB_STATE_LAYOUT_EFFECTIVE)
-        ret |= (state->cur.group == idx);
+        ret |= (state->components.group == idx);
     if (type & XKB_STATE_LAYOUT_DEPRESSED)
-        ret |= (state->cur.base_group == idx);
+        ret |= (state->components.base_group == idx);
     if (type & XKB_STATE_LAYOUT_LATCHED)
-        ret |= (state->cur.latched_group == idx);
+        ret |= (state->components.latched_group == idx);
     if (type & XKB_STATE_LAYOUT_LOCKED)
-        ret |= (state->cur.locked_group == idx);
+        ret |= (state->components.locked_group == idx);
 
     return ret;
 }
@@ -1052,7 +1054,7 @@ xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx)
         darray_item(state->keymap->indicators, idx).name == XKB_ATOM_NONE)
         return -1;
 
-    return !!(state->cur.leds & (1 << idx));
+    return !!(state->components.leds & (1 << idx));
 }
 
 /**
