@@ -32,15 +32,7 @@
 static void
 ComputeEffectiveMask(struct xkb_keymap *keymap, struct xkb_mods *mods)
 {
-    const struct xkb_mod *mod;
-    xkb_mod_index_t i;
-
-    /* The effective mask is only real mods for now. */
-    mods->mask = mods->mods & MOD_REAL_MASK_ALL;
-
-    xkb_mods_enumerate(i, mod, &keymap->mods)
-        if (mods->mods & (1u << i))
-            mods->mask |= mod->mapping;
+    mods->mask = mod_mask_get_effective(keymap, mods->mods);
 }
 
 static void

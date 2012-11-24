@@ -1072,6 +1072,28 @@ xkb_state_serialize_layout(struct xkb_state *state,
 }
 
 /**
+ * Gets a modifier mask and returns the resolved effective mask; this
+ * is needed because some modifiers can also map to other modifiers, e.g.
+ * the "NumLock" modifier usually also sets the "Mod2" modifier.
+ */
+xkb_mod_mask_t
+mod_mask_get_effective(struct xkb_keymap *keymap, xkb_mod_mask_t mods)
+{
+    const struct xkb_mod *mod;
+    xkb_mod_index_t i;
+    xkb_mod_mask_t mask;
+
+    /* The effective mask is only real mods for now. */
+    mask = mods & MOD_REAL_MASK_ALL;
+
+    xkb_mods_enumerate(i, mod, &keymap->mods)
+        if (mods & (1u << i))
+            mask |= mod->mapping;
+
+    return mask;
+}
+
+/**
  * Returns 1 if the given modifier is active with the specified type(s), 0 if
  * not, or -1 if the modifier is invalid.
  */

@@ -461,6 +461,9 @@ XkbWrapGroupIntoRange(int32_t group,
                       enum xkb_range_exceed_type out_of_range_group_action,
                       xkb_layout_index_t out_of_range_group_number);
 
+xkb_mod_mask_t
+mod_mask_get_effective(struct xkb_keymap *keymap, xkb_mod_mask_t mods);
+
 struct xkb_keymap_format_ops {
     bool (*keymap_new_from_names)(struct xkb_keymap *keymap,
                                   const struct xkb_rule_names *names);
