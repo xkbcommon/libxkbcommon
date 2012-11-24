@@ -307,7 +307,7 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
     case ACTION_TYPE_MOD_SET:
     case ACTION_TYPE_MOD_LATCH:
     case ACTION_TYPE_MOD_LOCK:
-        if (action->mods.flags & ACTION_MODS_LOOKUP_MODMAP)
+        if (action->mods.flags & ACTION_MODS_LOOKUP_MODMAPS)
             args = "modMapMods";
         else
             args = ModMaskText(keymap->ctx, &keymap->mods,

@@ -37,14 +37,14 @@ ComputeEffectiveMask(struct xkb_keymap *keymap, struct xkb_mods *mods)
 
 static void
 UpdateActionMods(struct xkb_keymap *keymap, union xkb_action *act,
-                 xkb_mod_mask_t modmap)
+                 xkb_mod_mask_t modmaps)
 {
     switch (act->type) {
     case ACTION_TYPE_MOD_SET:
     case ACTION_TYPE_MOD_LATCH:
     case ACTION_TYPE_MOD_LOCK:
-        if (act->mods.flags & ACTION_MODS_LOOKUP_MODMAP)
-            act->mods.mods.mods = modmap;
+        if (act->mods.flags & ACTION_MODS_LOOKUP_MODMAPS)
+            act->mods.mods.mods = modmaps;
         ComputeEffectiveMask(keymap, &act->mods.mods);
         break;
     default:
@@ -204,7 +204,7 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
         for (i = 0; i < key->num_groups; i++)
             for (j = 0; j < XkbKeyNumLevels(key, i); j++)
                 UpdateActionMods(keymap, &key->groups[i].levels[j].action,
-                                 key->modmap);
+                                 key->modmap | key->vmodmap);
 
     /* Update vmod -> led maps. */
     xkb_leds_foreach(led, keymap)

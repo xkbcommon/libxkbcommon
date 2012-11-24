@@ -379,7 +379,7 @@ static void
 test_consume(struct xkb_keymap *keymap)
 {
     struct xkb_state *state;
-    xkb_mod_index_t alt, shift, caps, ctrl, mod5;
+    xkb_mod_index_t alt, shift, caps, ctrl, mod1, mod5, level_three;
     xkb_mod_mask_t mask;
 
     state = xkb_state_new(keymap);
@@ -393,8 +393,12 @@ test_consume(struct xkb_keymap *keymap)
     assert(caps != XKB_MOD_INVALID);
     ctrl = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CTRL);
     assert(ctrl != XKB_MOD_INVALID);
+    mod1 = xkb_keymap_mod_get_index(keymap, "Mod1");
+    assert(mod1 != XKB_MOD_INVALID);
     mod5 = xkb_keymap_mod_get_index(keymap, "Mod5");
     assert(mod5 != XKB_MOD_INVALID);
+    level_three = xkb_keymap_mod_get_index(keymap, "LevelThree");
+    assert(level_three != XKB_MOD_INVALID);
 
     /* Test remove_consumed() */
     xkb_state_update_key(state, KEY_LEFTALT + EVDEV_OFFSET, XKB_KEY_DOWN);
@@ -405,10 +409,10 @@ test_consume(struct xkb_keymap *keymap)
     print_state(state);
 
     mask = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
-    assert(mask == ((1U << alt) | (1U << shift)));
+    assert((mask & ((1U << alt) | (1U << shift))) == ((1U << alt) | (1U << shift)));
     mask = xkb_state_mod_mask_remove_consumed(state, KEY_EQUAL + EVDEV_OFFSET,
                                               mask);
-    assert(mask == (1U << alt));
+    assert((mask & ((1U << alt) | (1U << shift))) == (1U << alt));
 
     /* Test get_consumed_mods() */
     mask = xkb_state_key_get_consumed_mods(state, KEY_EQUAL + EVDEV_OFFSET);
@@ -447,16 +451,19 @@ test_consume(struct xkb_keymap *keymap)
     state = xkb_state_new(keymap);
 
     mask = xkb_state_key_get_consumed_mods(state, KEY_F1 + EVDEV_OFFSET);
-    assert(mask == ((1U << shift) | (1U << alt) | (1U << ctrl) | (1U << mod5)));
+    assert(mask == ((1U << shift) | (1U << alt) | (1U << ctrl) |
+                    (1U << mod1) | (1U << mod5) | (1U << level_three)));
 
     /* Shift is preserved. */
     xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
     mask = xkb_state_key_get_consumed_mods(state, KEY_F1 + EVDEV_OFFSET);
-    assert(mask == ((1U << alt) | (1U << ctrl) | (1U << mod5)));
+    assert(mask == ((1U << alt) | (1U << ctrl) | (1U << mod1) |
+                    (1U << mod5) | (1U << level_three)));
     xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
 
     mask = xkb_state_key_get_consumed_mods(state, KEY_F1 + EVDEV_OFFSET);
-    assert(mask == ((1U << shift) | (1U << alt) | (1U << ctrl) | (1U << mod5)));
+    assert(mask == ((1U << shift) | (1U << alt) | (1U << ctrl) |
+                    (1U << mod1) | (1U << mod5) | (1U << level_three)));
 
     assert(state);
 

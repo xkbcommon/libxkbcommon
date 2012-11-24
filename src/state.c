@@ -1111,8 +1111,7 @@ mod_mask_get_effective(struct xkb_keymap *keymap, xkb_mod_mask_t mods)
     xkb_mod_index_t i;
     xkb_mod_mask_t mask;
 
-    /* The effective mask is only real mods for now. */
-    mask = mods & MOD_REAL_MASK_ALL;
+    mask = mods;
 
     xkb_mods_enumerate(i, mod, &keymap->mods)
         if (mods & (1u << i))
@@ -1146,7 +1145,10 @@ match_mod_masks(struct xkb_state *state,
                 enum xkb_state_match match,
                 xkb_mod_mask_t wanted)
 {
-    xkb_mod_mask_t active = xkb_state_serialize_mods(state, type);
+    xkb_mod_mask_t active;
+
+    active = xkb_state_serialize_mods(state, type) & MOD_REAL_MASK_ALL;
+    wanted = mod_mask_get_effective(state->keymap, wanted) & MOD_REAL_MASK_ALL;
 
     if (!(match & XKB_STATE_MATCH_NON_EXCLUSIVE) && (active & ~wanted))
         return false;
