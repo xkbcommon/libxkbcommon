@@ -1203,7 +1203,7 @@ HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleGlobalVar(info, (VarDef *) stmt);
             break;
         case STMT_VMOD:
-            ok = HandleVModDef(info->keymap, (VModDef *) stmt);
+            ok = HandleVModDef(info->keymap, (VModDef *) stmt, merge);
             break;
         case STMT_MODMAP:
             ok = HandleModMapDef(info, (ModMapDef *) stmt);
