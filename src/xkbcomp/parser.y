@@ -325,9 +325,9 @@ Decl            :       OptMergeMode VarDecl
                             $2->merge = $1;
                             $$ = &$2->common;
                         }
-                |       OptMergeMode ShapeDecl          { }
-                |       OptMergeMode SectionDecl        { }
-                |       OptMergeMode DoodadDecl         { }
+                |       OptMergeMode ShapeDecl          { $$ = NULL; }
+                |       OptMergeMode SectionDecl        { $$ = NULL; }
+                |       OptMergeMode DoodadDecl         { $$ = NULL; }
                 |       MergeMode STRING
                         {
                             $$ = &IncludeCreate(param->ctx, $2, $1)->common;
