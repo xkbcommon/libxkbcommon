@@ -23,7 +23,8 @@ dnl Process this file with autoconf to create configure.
 # Initialize Autoconf
 AC_PREREQ([2.62])
 AC_INIT([libxkbcommon], [0.2.0],
-    [https://bugs.freedesktop.org/enter_bug.cgi?product=libxkbcommon])
+        [https://bugs.freedesktop.org/enter_bug.cgi?product=libxkbcommon],
+        [libxkbcommon], [http://xkbcommon.org])
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_HEADERS([src/config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -40,7 +41,7 @@ LT_INIT
 
 # Require xorg-macros minimum of 1.8 for AM_SILENT_RULES
 m4_ifndef([XORG_MACROS_VERSION],
-	  [m4_fatal([must install xorg-macros 1.8 or later before running autoconf/autogen])])
+          [m4_fatal([must install xorg-macros 1.16 or later before running autoconf/autogen])])
 XORG_MACROS_VERSION(1.16)
 XORG_DEFAULT_OPTIONS
 XORG_MEMORY_CHECK_FLAGS
