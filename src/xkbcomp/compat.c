@@ -89,19 +89,21 @@ typedef struct {
     LedInfo default_led;
     darray(LedInfo) leds;
     ActionsInfo *actions;
+
+    struct xkb_context *ctx;
     struct xkb_keymap *keymap;
 } CompatInfo;
 
 static const char *
 siText(SymInterpInfo *si, CompatInfo *info)
 {
-    char *buf = xkb_context_get_buffer(info->keymap->ctx, 128);
+    char *buf = xkb_context_get_buffer(info->ctx, 128);
 
     if (si == &info->default_interp)
         return "default";
 
     snprintf(buf, 128, "%s+%s(%s)",
-             KeysymText(info->keymap->ctx, si->interp.sym),
+             KeysymText(info->ctx, si->interp.sym),
              SIMatchText(si->interp.match),
              ModMaskText(info->keymap, si->interp.mods));
 
@@ -111,7 +113,7 @@ siText(SymInterpInfo *si, CompatInfo *info)
 static inline bool
 ReportSINotArray(CompatInfo *info, SymInterpInfo *si, const char *field)
 {
-    return ReportNotArray(info->keymap->ctx, "symbol interpretation", field,
+    return ReportNotArray(info->ctx, "symbol interpretation", field,
                           siText(si, info));
 }
 
@@ -119,7 +121,7 @@ static inline bool
 ReportSIBadType(CompatInfo *info, SymInterpInfo *si, const char *field,
                 const char *wanted)
 {
-    return ReportBadType(info->keymap->ctx, "symbol interpretation", field,
+    return ReportBadType(info->ctx, "symbol interpretation", field,
                          siText(si, info), wanted);
 }
 
@@ -127,16 +129,16 @@ static inline bool
 ReportLedBadType(CompatInfo *info, LedInfo *ledi, const char *field,
                  const char *wanted)
 {
-    return ReportBadType(info->keymap->ctx, "indicator map", field,
-                         xkb_atom_text(info->keymap->ctx, ledi->led.name),
+    return ReportBadType(info->ctx, "indicator map", field,
+                         xkb_atom_text(info->ctx, ledi->led.name),
                          wanted);
 }
 
 static inline bool
 ReportLedNotArray(CompatInfo *info, LedInfo *ledi, const char *field)
 {
-    return ReportNotArray(info->keymap->ctx, "indicator map", field,
-                          xkb_atom_text(info->keymap->ctx, ledi->led.name));
+    return ReportNotArray(info->ctx, "indicator map", field,
+                          xkb_atom_text(info->ctx, ledi->led.name));
 }
 
 static void
@@ -144,6 +146,7 @@ InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap,
                ActionsInfo *actions)
 {
     memset(info, 0, sizeof(*info));
+    info->ctx = keymap->ctx;
     info->keymap = keymap;
     info->actions = actions;
     info->default_interp.merge = MERGE_OVERRIDE;
@@ -196,13 +199,13 @@ AddInterp(CompatInfo *info, SymInterpInfo *new, bool same_file)
 {
     SymInterpInfo *old = FindMatchingInterp(info, new);
     if (old) {
-        const int verbosity = xkb_context_get_log_verbosity(info->keymap->ctx);
+        const int verbosity = xkb_context_get_log_verbosity(info->ctx);
         const bool report = (same_file && verbosity > 0) || verbosity > 9;
         enum si_field collide = 0;
 
         if (new->merge == MERGE_REPLACE) {
             if (report)
-                log_warn(info->keymap->ctx,
+                log_warn(info->ctx,
                          "Multiple definitions for \"%s\"; "
                          "Earlier interpretation ignored\n",
                          siText(new, info));
@@ -232,7 +235,7 @@ AddInterp(CompatInfo *info, SymInterpInfo *new, bool same_file)
         }
 
         if (collide) {
-            log_warn(info->keymap->ctx,
+            log_warn(info->ctx,
                      "Multiple interpretations of \"%s\"; "
                      "Using %s definition for duplicate fields\n",
                      siText(new, info),
@@ -260,18 +263,16 @@ ResolveStateAndPredicate(ExprDef *expr, enum xkb_match_operation *pred_rtrn,
 
     *pred_rtrn = MATCH_EXACTLY;
     if (expr->expr.op == EXPR_ACTION_DECL) {
-        const char *pred_txt = xkb_atom_text(info->keymap->ctx,
-                                             expr->action.name);
+        const char *pred_txt = xkb_atom_text(info->ctx, expr->action.name);
         if (!LookupString(symInterpretMatchMaskNames, pred_txt, pred_rtrn)) {
-            log_err(info->keymap->ctx,
+            log_err(info->ctx,
                     "Illegal modifier predicate \"%s\"; Ignored\n", pred_txt);
             return false;
         }
         expr = expr->action.args;
     }
     else if (expr->expr.op == EXPR_IDENT) {
-        const char *pred_txt = xkb_atom_text(info->keymap->ctx,
-                                             expr->ident.ident);
+        const char *pred_txt = xkb_atom_text(info->ctx, expr->ident.ident);
         if (pred_txt && istreq(pred_txt, "any")) {
             *pred_rtrn = MATCH_ANY;
             *mods_rtrn = MOD_REAL_MASK_ALL;
@@ -307,8 +308,7 @@ AddLedMap(CompatInfo *info, LedInfo *new, bool same_file)
 {
     LedInfo *old;
     enum led_field collide;
-    struct xkb_context *ctx = info->keymap->ctx;
-    const int verbosity = xkb_context_get_log_verbosity(ctx);
+    const int verbosity = xkb_context_get_log_verbosity(info->ctx);
     const bool report = (same_file && verbosity > 0) || verbosity > 9;
 
     darray_foreach(old, info->leds) {
@@ -326,10 +326,10 @@ AddLedMap(CompatInfo *info, LedInfo *new, bool same_file)
 
         if (new->merge == MERGE_REPLACE) {
             if (report)
-                log_warn(info->keymap->ctx,
+                log_warn(info->ctx,
                          "Map for indicator %s redefined; "
                          "Earlier definition ignored\n",
-                         xkb_atom_text(ctx, old->led.name));
+                         xkb_atom_text(info->ctx, old->led.name));
             *old = *new;
             return true;
         }
@@ -351,10 +351,10 @@ AddLedMap(CompatInfo *info, LedInfo *new, bool same_file)
         }
 
         if (collide) {
-            log_warn(info->keymap->ctx,
+            log_warn(info->ctx,
                      "Map for indicator %s redefined; "
                      "Using %s definition for duplicate fields\n",
-                     xkb_atom_text(ctx, old->led.name),
+                     xkb_atom_text(info->ctx, old->led.name),
                      (new->merge == MERGE_AUGMENT ? "first" : "last"));
         }
 
@@ -423,7 +423,7 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
         CompatInfo next_incl;
         XkbFile *file;
 
-        file = ProcessIncludeFile(info->keymap->ctx, stmt, FILE_TYPE_COMPAT);
+        file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_COMPAT);
         if (!file) {
             info->errorCount += 10;
             ClearCompatInfo(&included);
@@ -454,14 +454,14 @@ static bool
 SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
                ExprDef *arrayNdx, ExprDef *value)
 {
-    struct xkb_keymap *keymap = info->keymap;
     xkb_mod_index_t ndx;
 
     if (istreq(field, "action")) {
         if (arrayNdx)
             return ReportSINotArray(info, si, field);
 
-        if (!HandleActionDef(value, keymap, &si->interp.action, info->actions))
+        if (!HandleActionDef(value, info->keymap, &si->interp.action,
+                             info->actions))
             return false;
 
         si->defined |= SI_FIELD_ACTION;
@@ -471,7 +471,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         if (arrayNdx)
             return ReportSINotArray(info, si, field);
 
-        if (!ExprResolveMod(keymap, value, MOD_VIRT, &ndx))
+        if (!ExprResolveMod(info->keymap, value, MOD_VIRT, &ndx))
             return ReportSIBadType(info, si, field, "virtual modifier");
 
         si->interp.virtual_mod = ndx;
@@ -483,7 +483,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         if (arrayNdx)
             return ReportSINotArray(info, si, field);
 
-        if (!ExprResolveBoolean(keymap->ctx, value, &set))
+        if (!ExprResolveBoolean(info->ctx, value, &set))
             return ReportSIBadType(info, si, field, "boolean");
 
         si->interp.repeat = set;
@@ -491,7 +491,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         si->defined |= SI_FIELD_AUTO_REPEAT;
     }
     else if (istreq(field, "locking")) {
-        log_dbg(info->keymap->ctx,
+        log_dbg(info->ctx,
                 "The \"locking\" field in symbol interpretation is unsupported; "
                 "Ignored\n");
     }
@@ -502,14 +502,14 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         if (arrayNdx)
             return ReportSINotArray(info, si, field);
 
-        if (!ExprResolveEnum(keymap->ctx, value, &val, useModMapValueNames))
+        if (!ExprResolveEnum(info->ctx, value, &val, useModMapValueNames))
             return ReportSIBadType(info, si, field, "level specification");
 
         si->interp.level_one_only = !!val;
         si->defined |= SI_FIELD_LEVEL_ONE_ONLY;
     }
     else {
-        return ReportBadField(keymap->ctx, "symbol interpretation", field,
+        return ReportBadField(info->ctx, "symbol interpretation", field,
                               siText(si, info));
     }
 
@@ -521,13 +521,13 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
                ExprDef *arrayNdx, ExprDef *value)
 {
     bool ok = true;
-    struct xkb_keymap *keymap = info->keymap;
 
     if (istreq(field, "modifiers") || istreq(field, "mods")) {
         if (arrayNdx)
             return ReportLedNotArray(info, ledi, field);
 
-        if (!ExprResolveModMask(keymap, value, MOD_BOTH, &ledi->led.mods.mods))
+        if (!ExprResolveModMask(info->keymap, value, MOD_BOTH,
+                                &ledi->led.mods.mods))
             return ReportLedBadType(info, ledi, field, "modifier mask");
 
         ledi->defined |= LED_FIELD_MODS;
@@ -538,7 +538,7 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
         if (arrayNdx)
             return ReportLedNotArray(info, ledi, field);
 
-        if (!ExprResolveMask(keymap->ctx, value, &mask, groupMaskNames))
+        if (!ExprResolveMask(info->ctx, value, &mask, groupMaskNames))
             return ReportLedBadType(info, ledi, field, "group mask");
 
         ledi->led.groups = mask;
@@ -550,14 +550,14 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
         if (arrayNdx)
             return ReportLedNotArray(info, ledi, field);
 
-        if (!ExprResolveMask(keymap->ctx, value, &mask, ctrlMaskNames))
+        if (!ExprResolveMask(info->ctx, value, &mask, ctrlMaskNames))
             return ReportLedBadType(info, ledi, field, "controls mask");
 
         ledi->led.ctrls = mask;
         ledi->defined |= LED_FIELD_CTRLS;
     }
     else if (istreq(field, "allowexplicit")) {
-        log_dbg(info->keymap->ctx,
+        log_dbg(info->ctx,
                 "The \"allowExplicit\" field in indicator statements is unsupported; "
                 "Ignored\n");
     }
@@ -568,7 +568,7 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
         if (arrayNdx)
             return ReportLedNotArray(info, ledi, field);
 
-        if (!ExprResolveMask(keymap->ctx, value, &mask,
+        if (!ExprResolveMask(info->ctx, value, &mask,
                              modComponentMaskNames))
             return ReportLedBadType(info, ledi, field,
                                     "mask of modifier state components");
@@ -581,7 +581,7 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
         if (arrayNdx)
             return ReportLedNotArray(info, ledi, field);
 
-        if (!ExprResolveMask(keymap->ctx, value, &mask,
+        if (!ExprResolveMask(info->ctx, value, &mask,
                              groupComponentMaskNames))
             return ReportLedBadType(info, ledi, field,
                                     "mask of group state components");
@@ -594,21 +594,21 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
              istreq(field, "leddriveskeyboard") ||
              istreq(field, "indicatordriveskbd") ||
              istreq(field, "indicatordriveskeyboard")) {
-        log_dbg(info->keymap->ctx,
+        log_dbg(info->ctx,
                 "The \"%s\" field in indicator statements is unsupported; "
                 "Ignored\n", field);
     }
     else if (istreq(field, "index")) {
         /* Users should see this, it might cause unexpected behavior. */
-        log_err(info->keymap->ctx,
+        log_err(info->ctx,
                 "The \"index\" field in indicator statements is unsupported; "
                 "Ignored\n");
     }
     else {
-        log_err(info->keymap->ctx,
+        log_err(info->ctx,
                 "Unknown field %s in map for %s indicator; "
                 "Definition ignored\n",
-                field, xkb_atom_text(keymap->ctx, ledi->led.name));
+                field, xkb_atom_text(info->ctx, ledi->led.name));
         ok = false;
     }
 
@@ -622,7 +622,7 @@ HandleGlobalVar(CompatInfo *info, VarDef *stmt)
     ExprDef *ndx;
     bool ret;
 
-    if (!ExprResolveLhs(info->keymap->ctx, stmt->name, &elem, &field, &ndx))
+    if (!ExprResolveLhs(info->ctx, stmt->name, &elem, &field, &ndx))
         ret = false;
     else if (elem && istreq(elem, "interpret"))
         ret = SetInterpField(info, &info->default_interp, field, ndx,
@@ -645,15 +645,14 @@ HandleInterpBody(CompatInfo *info, VarDef *def, SymInterpInfo *si)
 
     for (; def; def = (VarDef *) def->common.next) {
         if (def->name && def->name->expr.op == EXPR_FIELD_REF) {
-            log_err(info->keymap->ctx,
+            log_err(info->ctx,
                     "Cannot set a global default value from within an interpret statement; "
                     "Move statements to the global file scope\n");
             ok = false;
             continue;
         }
 
-        ok = ExprResolveLhs(info->keymap->ctx, def->name, &elem, &field,
-                            &arrayNdx);
+        ok = ExprResolveLhs(info->ctx, def->name, &elem, &field, &arrayNdx);
         if (!ok)
             continue;
 
@@ -671,7 +670,7 @@ HandleInterpDef(CompatInfo *info, InterpDef *def, enum merge_mode merge)
     SymInterpInfo si;
 
     if (!ResolveStateAndPredicate(def->match, &pred, &mods, info)) {
-        log_err(info->keymap->ctx,
+        log_err(info->ctx,
                 "Couldn't determine matching modifiers; "
                 "Symbol interpretation ignored\n");
         return false;
@@ -714,14 +713,13 @@ HandleLedMapDef(CompatInfo *info, LedMapDef *def, enum merge_mode merge)
     for (var = def->body; var != NULL; var = (VarDef *) var->common.next) {
         const char *elem, *field;
         ExprDef *arrayNdx;
-        if (!ExprResolveLhs(info->keymap->ctx, var->name, &elem, &field,
-                            &arrayNdx)) {
+        if (!ExprResolveLhs(info->ctx, var->name, &elem, &field, &arrayNdx)) {
             ok = false;
             continue;
         }
 
         if (elem) {
-            log_err(info->keymap->ctx,
+            log_err(info->ctx,
                     "Cannot set defaults for \"%s\" element in indicator map; "
                     "Assignment to %s.%s ignored\n", elem, elem, field);
             ok = false;
@@ -756,7 +754,7 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleInterpDef(info, (InterpDef *) stmt, merge);
             break;
         case STMT_GROUP_COMPAT:
-            log_dbg(info->keymap->ctx,
+            log_dbg(info->ctx,
                     "The \"group\" statement in compat is unsupported; "
                     "Ignored\n");
             ok = true;
@@ -771,7 +769,7 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleVModDef(info->keymap, (VModDef *) stmt, merge);
             break;
         default:
-            log_err(info->keymap->ctx,
+            log_err(info->ctx,
                     "Compat files may not include other types; "
                     "Ignoring %s\n", stmt_type_to_string(stmt->type));
             ok = false;
@@ -782,7 +780,7 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
             info->errorCount++;
 
         if (info->errorCount > 10) {
-            log_err(info->keymap->ctx,
+            log_err(info->ctx,
                     "Abandoning compatibility map \"%s\"\n", file->topName);
             break;
         }
