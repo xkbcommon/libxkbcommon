@@ -187,7 +187,7 @@ static inline bool
 ReportTypeShouldBeArray(KeyTypesInfo *info, KeyTypeInfo *type,
                         const char *field)
 {
-    return ReportShouldBeArray(info->keymap, "key type", field,
+    return ReportShouldBeArray(info->keymap->ctx, "key type", field,
                                TypeTxt(info, type));
 }
 

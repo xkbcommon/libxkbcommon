@@ -287,7 +287,7 @@ siText(SymInterpInfo *si, CompatInfo *info)
 static inline bool
 ReportSINotArray(CompatInfo *info, SymInterpInfo *si, const char *field)
 {
-    return ReportNotArray(info->keymap, "symbol interpretation", field,
+    return ReportNotArray(info->keymap->ctx, "symbol interpretation", field,
                           siText(si, info));
 }
 
@@ -311,7 +311,7 @@ ReportLedBadType(CompatInfo *info, LedInfo *ledi, const char *field,
 static inline bool
 ReportLedNotArray(CompatInfo *info, LedInfo *ledi, const char *field)
 {
-    return ReportNotArray(info->keymap, "indicator map", field,
+    return ReportNotArray(info->keymap->ctx, "indicator map", field,
                           xkb_atom_text(info->keymap->ctx, ledi->led.name));
 }
 
@@ -688,7 +688,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         si->defined |= SI_FIELD_LEVEL_ONE_ONLY;
     }
     else {
-        return ReportBadField(keymap, "symbol interpretation", field,
+        return ReportBadField(keymap->ctx, "symbol interpretation", field,
                               siText(si, info));
     }
 

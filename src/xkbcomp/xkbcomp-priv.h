@@ -78,10 +78,10 @@ LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn);
 /***====================================================================***/
 
 static inline bool
-ReportNotArray(struct xkb_keymap *keymap, const char *type, const char *field,
+ReportNotArray(struct xkb_context *ctx, const char *type, const char *field,
                const char *name)
 {
-    log_err(keymap->ctx,
+    log_err(ctx,
             "The %s %s field is not an array; "
             "Ignoring illegal assignment in %s\n",
             type, field, name);
@@ -89,10 +89,10 @@ ReportNotArray(struct xkb_keymap *keymap, const char *type, const char *field,
 }
 
 static inline bool
-ReportShouldBeArray(struct xkb_keymap *keymap, const char *type,
+ReportShouldBeArray(struct xkb_context *ctx, const char *type,
                     const char *field, const char *name)
 {
-    log_err(keymap->ctx,
+    log_err(ctx,
             "Missing subscript for %s %s; "
             "Ignoring illegal assignment in %s\n",
             type, field, name);
@@ -110,10 +110,10 @@ ReportBadType(struct xkb_context *ctx, const char *type, const char *field,
 }
 
 static inline bool
-ReportBadField(struct xkb_keymap *keymap, const char *type, const char *field,
+ReportBadField(struct xkb_context *ctx, const char *type, const char *field,
                const char *name)
 {
-    log_err(keymap->ctx,
+    log_err(ctx,
             "Unknown %s field %s in %s; "
             "Ignoring assignment to unknown field in %s\n",
             type, field, name, name);
