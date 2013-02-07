@@ -74,7 +74,7 @@ enum group_field {
 
 enum key_field {
     KEY_FIELD_REPEAT    = (1 << 0),
-    KEY_FIELD_TYPE_DFLT = (1 << 1),
+    KEY_FIELD_DEFAULT_TYPE = (1 << 1),
     KEY_FIELD_GROUPINFO = (1 << 2),
     KEY_FIELD_VMODMAP   = (1 << 3),
 };
@@ -96,7 +96,7 @@ typedef struct {
 
     enum key_repeat repeat;
     xkb_mod_mask_t vmodmap;
-    xkb_atom_t dfltType;
+    xkb_atom_t default_type;
 
     enum xkb_range_exceed_type out_of_range_group_action;
     xkb_layout_index_t out_of_range_group_number;
@@ -178,7 +178,7 @@ typedef struct {
     enum merge_mode merge;
     xkb_layout_index_t explicit_group;
     darray(KeyInfo) keys;
-    KeyInfo dflt;
+    KeyInfo default_key;
     ActionsInfo *actions;
     darray(xkb_atom_t) group_names;
     darray(ModMapEntry) modMaps;
@@ -194,7 +194,7 @@ InitSymbolsInfo(SymbolsInfo *info, struct xkb_keymap *keymap,
     info->keymap = keymap;
     info->file_id = file_id;
     info->merge = MERGE_OVERRIDE;
-    InitKeyInfo(keymap->ctx, &info->dflt, file_id);
+    InitKeyInfo(keymap->ctx, &info->default_key, file_id);
     info->actions = actions;
     info->explicit_group = XKB_LAYOUT_INVALID;
 }
@@ -209,7 +209,7 @@ ClearSymbolsInfo(SymbolsInfo * info)
     darray_free(info->keys);
     darray_free(info->group_names);
     darray_free(info->modMaps);
-    ClearKeyInfo(&info->dflt);
+    ClearKeyInfo(&info->default_key);
 }
 
 static const char *
@@ -391,10 +391,10 @@ MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from)
         into->repeat = from->repeat;
         into->defined |= KEY_FIELD_REPEAT;
     }
-    if (UseNewKeyField(KEY_FIELD_TYPE_DFLT, into->defined, from->defined,
+    if (UseNewKeyField(KEY_FIELD_DEFAULT_TYPE, into->defined, from->defined,
                        clobber, report, &collide)) {
-        into->dfltType = from->dfltType;
-        into->defined |= KEY_FIELD_TYPE_DFLT;
+        into->default_type = from->default_type;
+        into->defined |= KEY_FIELD_DEFAULT_TYPE;
     }
     if (UseNewKeyField(KEY_FIELD_GROUPINFO, into->defined, from->defined,
                        clobber, report, &collide)) {
@@ -558,7 +558,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *stmt)
         }
 
         InitSymbolsInfo(&next_incl, info->keymap, rtrn->id, info->actions);
-        next_incl.merge = next_incl.dflt.merge = MERGE_OVERRIDE;
+        next_incl.merge = next_incl.default_key.merge = MERGE_OVERRIDE;
         if (stmt->modifier) {
             next_incl.explicit_group = atoi(stmt->modifier) - 1;
             if (next_incl.explicit_group >= XKB_MAX_GROUPS) {
@@ -841,8 +841,8 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
                     "Ignoring illegal type definition\n");
 
         if (arrayNdx == NULL) {
-            keyi->dfltType = val;
-            keyi->defined |= KEY_FIELD_TYPE_DFLT;
+            keyi->default_type = val;
+            keyi->defined |= KEY_FIELD_DEFAULT_TYPE;
         }
         else if (!ExprResolveGroup(ctx, arrayNdx, &ndx)) {
             log_err(ctx,
@@ -1046,7 +1046,7 @@ HandleGlobalVar(SymbolsInfo *info, VarDef *stmt)
                        &arrayNdx) == 0)
         return 0;               /* internal error, already reported */
     if (elem && istreq(elem, "key")) {
-        ret = SetSymbolsField(info, &info->dflt, field, arrayNdx,
+        ret = SetSymbolsField(info, &info->default_key, field, arrayNdx,
                               stmt->value);
     }
     else if (!elem && (istreq(field, "name") ||
@@ -1160,12 +1160,12 @@ HandleSymbolsDef(SymbolsInfo *info, SymbolsDef *stmt)
     KeyInfo keyi;
     xkb_layout_index_t i;
 
-    keyi = info->dflt;
+    keyi = info->default_key;
     darray_init(keyi.groups);
-    darray_copy(keyi.groups, info->dflt.groups);
+    darray_copy(keyi.groups, info->default_key.groups);
     for (i = 0; i < darray_size(keyi.groups); i++)
         CopyGroupInfo(&darray_item(keyi.groups, i),
-                      &darray_item(info->dflt.groups, i));
+                      &darray_item(info->default_key.groups, i));
     keyi.merge = stmt->merge;
     keyi.name = stmt->keyName;
 
@@ -1400,8 +1400,8 @@ FindTypeForGroup(struct xkb_keymap *keymap, KeyInfo *keyi,
     *explicit_type = true;
 
     if (type_name == XKB_ATOM_NONE) {
-        if (keyi->dfltType != XKB_ATOM_NONE) {
-            type_name  = keyi->dfltType;
+        if (keyi->default_type != XKB_ATOM_NONE) {
+            type_name  = keyi->default_type;
         }
         else {
             type_name = FindAutomaticType(keymap->ctx, groupi);
@@ -1627,7 +1627,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
         return false;
 
     InitSymbolsInfo(&info, keymap, file->id, actions);
-    info.dflt.merge = merge;
+    info.default_key.merge = merge;
 
     HandleSymbolsFile(&info, file, merge);
 
