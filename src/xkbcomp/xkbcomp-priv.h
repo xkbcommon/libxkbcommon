@@ -50,7 +50,7 @@ FreeXkbFile(XkbFile *file);
 
 XkbFile *
 XkbFileFromComponents(struct xkb_context *ctx,
-                      struct xkb_component_names *kkctgs);
+                      const struct xkb_component_names *kkctgs);
 
 bool
 CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,

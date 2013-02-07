@@ -501,7 +501,7 @@ XkbFileCreate(struct xkb_context *ctx, enum xkb_file_type type, char *name,
 
 XkbFile *
 XkbFileFromComponents(struct xkb_context *ctx,
-                      struct xkb_component_names *kkctgs)
+                      const struct xkb_component_names *kkctgs)
 {
     IncludeStmt *inc;
     XkbFile *keycodes, *types, *compat, *symbols;
