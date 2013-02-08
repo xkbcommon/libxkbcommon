@@ -212,10 +212,11 @@ ModIndexText(const struct xkb_keymap *keymap, xkb_mod_index_t ndx)
     if (ndx == XKB_MOD_INVALID)
         return "none";
 
-    if (ndx >= darray_size(keymap->mods))
+    if (ndx >= darray_size(keymap->mods.mods))
         return NULL;
 
-    return xkb_atom_text(keymap->ctx, darray_item(keymap->mods, ndx).name);
+    return xkb_atom_text(keymap->ctx,
+                         darray_item(keymap->mods.mods, ndx).name);
 }
 
 const char *
@@ -263,7 +264,7 @@ ModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask)
     if (mask == MOD_REAL_MASK_ALL)
         return "all";
 
-    darray_enumerate(i, mod, keymap->mods) {
+    darray_enumerate(i, mod, keymap->mods.mods) {
         int ret;
 
         if (!(mask & (1u << i)))

@@ -38,7 +38,7 @@ ComputeEffectiveMask(struct xkb_keymap *keymap, struct xkb_mods *mods)
     /* The effective mask is only real mods for now. */
     mods->mask = mods->mods & MOD_REAL_MASK_ALL;
 
-    darray_enumerate(i, mod, keymap->mods)
+    darray_enumerate(i, mod, keymap->mods.mods)
         if (mods->mods & (1u << i))
             mods->mask |= mod->mapping;
 }
@@ -193,7 +193,7 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
 
     /* Update keymap->mods, the virtual -> real mod mapping. */
     xkb_foreach_key(key, keymap)
-        darray_enumerate(i, mod, keymap->mods)
+        darray_enumerate(i, mod, keymap->mods.mods)
             if (key->vmodmap & (1u << i))
                 mod->mapping |= key->modmap;
 

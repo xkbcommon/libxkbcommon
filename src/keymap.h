@@ -353,6 +353,10 @@ struct xkb_mod {
     xkb_mod_mask_t mapping; /* vmod -> real mod mapping */
 };
 
+struct xkb_mod_set {
+    darray(struct xkb_mod) mods;
+};
+
 /* Common keyboard description structure */
 struct xkb_keymap {
     struct xkb_context *ctx;
@@ -377,7 +381,7 @@ struct xkb_keymap {
     unsigned int num_sym_interprets;
     struct xkb_sym_interpret *sym_interprets;
 
-    darray(struct xkb_mod) mods;
+    struct xkb_mod_set mods;
 
     /* Number of groups in the key with the most groups. */
     xkb_layout_index_t num_groups;

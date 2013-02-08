@@ -45,7 +45,8 @@ update_builtin_keymap_fields(struct xkb_keymap *keymap)
      * Add predefined (AKA real, core, X11) modifiers.
      * The order is important!
      */
-    darray_append_items(keymap->mods, builtin_mods, ARRAY_SIZE(builtin_mods));
+    darray_append_items(keymap->mods.mods,
+                        builtin_mods, ARRAY_SIZE(builtin_mods));
 }
 
 struct xkb_keymap *
@@ -129,7 +130,7 @@ XkbModNameToIndex(const struct xkb_keymap *keymap, xkb_atom_t name,
     xkb_mod_index_t i;
     const struct xkb_mod *mod;
 
-    darray_enumerate(i, mod, keymap->mods)
+    darray_enumerate(i, mod, keymap->mods.mods)
         if ((mod->type & type) && name == mod->name)
             return i;
 

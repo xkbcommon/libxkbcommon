@@ -57,7 +57,7 @@ HandleVModDef(struct xkb_keymap *keymap, VModDef *stmt,
         mapping = 0;
     }
 
-    darray_enumerate(i, mod, keymap->mods) {
+    darray_enumerate(i, mod, keymap->mods.mods) {
         if (mod->name == stmt->name) {
             if (mod->type != MOD_VIRT) {
                 log_err(keymap->ctx,
@@ -91,7 +91,7 @@ HandleVModDef(struct xkb_keymap *keymap, VModDef *stmt,
         }
     }
 
-    if (darray_size(keymap->mods) >= XKB_MAX_MODS) {
+    if (darray_size(keymap->mods.mods) >= XKB_MAX_MODS) {
         log_err(keymap->ctx,
                 "Too many modifiers defined (maximum %d)\n",
                 XKB_MAX_MODS);
@@ -101,6 +101,6 @@ HandleVModDef(struct xkb_keymap *keymap, VModDef *stmt,
     new.name = stmt->name;
     new.mapping = mapping;
     new.type = MOD_VIRT;
-    darray_append(keymap->mods, new);
+    darray_append(keymap->mods.mods, new);
     return true;
 }
