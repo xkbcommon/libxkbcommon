@@ -461,8 +461,8 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         if (arrayNdx)
             return ReportSINotArray(info, si, field);
 
-        if (!HandleActionDef(value, info->keymap, &si->interp.action,
-                             info->actions))
+        if (!HandleActionDef(info->ctx, info->actions, &info->keymap->mods,
+                             value, &si->interp.action))
             return false;
 
         si->defined |= SI_FIELD_ACTION;
@@ -633,8 +633,8 @@ HandleGlobalVar(CompatInfo *info, VarDef *stmt)
         ret = SetLedMapField(info, &info->default_led, field, ndx,
                              stmt->value);
     else
-        ret = SetActionField(info->keymap, elem, field, ndx, stmt->value,
-                             info->actions);
+        ret = SetActionField(info->ctx, info->actions, &info->keymap->mods,
+                             elem, field, ndx, stmt->value);
     return ret;
 }
 
