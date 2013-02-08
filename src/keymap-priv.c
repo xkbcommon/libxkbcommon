@@ -124,13 +124,13 @@ XkbEscapeMapName(char *name)
 }
 
 xkb_mod_index_t
-XkbModNameToIndex(const struct xkb_keymap *keymap, xkb_atom_t name,
+XkbModNameToIndex(const struct xkb_mod_set *mods, xkb_atom_t name,
                   enum mod_type type)
 {
     xkb_mod_index_t i;
     const struct xkb_mod *mod;
 
-    darray_enumerate(i, mod, keymap->mods.mods)
+    darray_enumerate(i, mod, mods->mods)
         if ((mod->type & type) && name == mod->name)
             return i;
 

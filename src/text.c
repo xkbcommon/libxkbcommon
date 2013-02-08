@@ -207,16 +207,16 @@ const LookupEntry symInterpretMatchMaskNames[] = {
 };
 
 const char *
-ModIndexText(const struct xkb_keymap *keymap, xkb_mod_index_t ndx)
+ModIndexText(struct xkb_context *ctx, const struct xkb_mod_set *mods,
+             xkb_mod_index_t ndx)
 {
     if (ndx == XKB_MOD_INVALID)
         return "none";
 
-    if (ndx >= darray_size(keymap->mods.mods))
+    if (ndx >= darray_size(mods->mods))
         return NULL;
 
-    return xkb_atom_text(keymap->ctx,
-                         darray_item(keymap->mods.mods, ndx).name);
+    return xkb_atom_text(ctx, darray_item(mods->mods, ndx).name);
 }
 
 const char *
@@ -251,7 +251,8 @@ SIMatchText(enum xkb_match_operation type)
 }
 
 const char *
-ModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask)
+ModMaskText(struct xkb_context *ctx, const struct xkb_mod_set *mods,
+            xkb_mod_mask_t mask)
 {
     char buf[1024];
     size_t pos = 0;
@@ -264,7 +265,7 @@ ModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask)
     if (mask == MOD_REAL_MASK_ALL)
         return "all";
 
-    darray_enumerate(i, mod, keymap->mods.mods) {
+    darray_enumerate(i, mod, mods->mods) {
         int ret;
 
         if (!(mask & (1u << i)))
@@ -272,14 +273,14 @@ ModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask)
 
         ret = snprintf(buf + pos, sizeof(buf) - pos, "%s%s",
                        pos == 0 ? "" : "+",
-                       xkb_atom_text(keymap->ctx, mod->name));
+                       xkb_atom_text(ctx, mod->name));
         if (ret <= 0 || pos + ret >= sizeof(buf))
             break;
         else
             pos += ret;
     }
 
-    return strcpy(xkb_context_get_buffer(keymap->ctx, pos + 1), buf);
+    return strcpy(xkb_context_get_buffer(ctx, pos + 1), buf);
 }
 
 const char *

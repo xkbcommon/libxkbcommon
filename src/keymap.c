@@ -291,7 +291,7 @@ xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name)
     if (atom == XKB_ATOM_NONE)
         return XKB_MOD_INVALID;
 
-    return XkbModNameToIndex(keymap, atom, MOD_BOTH);
+    return XkbModNameToIndex(&keymap->mods, atom, MOD_BOTH);
 }
 
 /**

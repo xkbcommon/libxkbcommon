@@ -431,7 +431,7 @@ void
 XkbEscapeMapName(char *name);
 
 xkb_mod_index_t
-XkbModNameToIndex(const struct xkb_keymap *keymap, xkb_atom_t name,
+XkbModNameToIndex(const struct xkb_mod_set *mods, xkb_atom_t name,
                   enum mod_type type);
 
 xkb_layout_index_t

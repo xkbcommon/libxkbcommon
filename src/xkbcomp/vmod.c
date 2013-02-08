@@ -80,8 +80,8 @@ HandleVModDef(struct xkb_keymap *keymap, VModDef *stmt,
                          "Virtual modifier %s defined multiple times; "
                          "Using %s, ignoring %s\n",
                          xkb_atom_text(keymap->ctx, stmt->name),
-                         ModMaskText(keymap, use),
-                         ModMaskText(keymap, ignore));
+                         ModMaskText(keymap->ctx, &keymap->mods, use),
+                         ModMaskText(keymap->ctx, &keymap->mods, ignore));
 
                 mapping = use;
             }

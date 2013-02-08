@@ -205,7 +205,7 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
                   xkb_atom_text(keymap->ctx, type->name));
 
         write_buf(buf, "\t\tmodifiers= %s;\n",
-                  ModMaskText(keymap, type->mods.mods));
+                  ModMaskText(keymap->ctx, &keymap->mods, type->mods.mods));
 
         for (unsigned j = 0; j < type->num_entries; j++) {
             const char *str;
@@ -218,13 +218,14 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
             if (entry->level == 0 && entry->preserve.mods == 0)
                 continue;
 
-            str = ModMaskText(keymap, entry->mods.mods);
+            str = ModMaskText(keymap->ctx, &keymap->mods, entry->mods.mods);
             write_buf(buf, "\t\tmap[%s]= Level%u;\n",
                       str, entry->level + 1);
 
             if (entry->preserve.mods)
                 write_buf(buf, "\t\tpreserve[%s]= %s;\n",
-                          str, ModMaskText(keymap, entry->preserve.mods));
+                          str, ModMaskText(keymap->ctx, &keymap->mods,
+                                           entry->preserve.mods));
         }
 
         for (xkb_level_index_t n = 0; n < type->num_levels; n++)
@@ -261,7 +262,7 @@ write_led_map(struct xkb_keymap *keymap, struct buf *buf,
                       LedStateMaskText(keymap->ctx, led->which_mods));
         }
         write_buf(buf, "\t\tmodifiers= %s;\n",
-                  ModMaskText(keymap, led->mods.mods));
+                  ModMaskText(keymap->ctx, &keymap->mods, led->mods.mods));
     }
 
     if (led->ctrls) {
@@ -309,7 +310,8 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         if (action->mods.flags & ACTION_MODS_LOOKUP_MODMAP)
             args = "modMapMods";
         else
-            args = ModMaskText(keymap, action->mods.mods.mods);
+            args = ModMaskText(keymap->ctx, &keymap->mods,
+                               action->mods.mods.mods);
         write_buf(buf, "%s%s(modifiers=%s%s%s%s)%s", prefix, type, args,
                   (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LOCK_CLEAR)) ? ",clearLocks" : "",
                   (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LATCH_TO_LOCK)) ? ",latchToLock" : "",
@@ -422,11 +424,12 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
         write_buf(buf, "\tinterpret %s+%s(%s) {\n",
                   si->sym ? KeysymText(keymap->ctx, si->sym) : "Any",
                   SIMatchText(si->match),
-                  ModMaskText(keymap, si->mods));
+                  ModMaskText(keymap->ctx, &keymap->mods, si->mods));
 
         if (si->virtual_mod != XKB_MOD_INVALID)
             write_buf(buf, "\t\tvirtualModifier= %s;\n",
-                      ModIndexText(keymap, si->virtual_mod));
+                      ModIndexText(keymap->ctx, &keymap->mods,
+                                   si->virtual_mod));
 
         if (si->level_one_only)
             write_buf(buf, "\t\tuseModMapMods=level1;\n");
@@ -534,7 +537,7 @@ write_key(struct xkb_keymap *keymap, struct buf *buf,
 
     if (key->vmodmap && (key->explicit & EXPLICIT_VMODMAP))
         write_buf(buf, "\n\t\tvirtualMods= %s,",
-                    ModMaskText(keymap, key->vmodmap));
+                  ModMaskText(keymap->ctx, &keymap->mods, key->vmodmap));
 
     switch (key->out_of_range_group_action) {
     case RANGE_SATURATE:
