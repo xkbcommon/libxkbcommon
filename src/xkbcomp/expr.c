@@ -83,7 +83,7 @@ SimpleLookup(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
 
 /* Data passed in the *priv argument for LookupModMask. */
 typedef struct {
-    const struct xkb_keymap *keymap;
+    const struct xkb_mod_set *mods;
     enum mod_type mod_type;
 } LookupModMaskPriv;
 
@@ -94,7 +94,7 @@ LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
     const char *str;
     xkb_mod_index_t ndx;
     const LookupModMaskPriv *arg = priv;
-    const struct xkb_keymap *keymap = arg->keymap;
+    const struct xkb_mod_set *mods = arg->mods;
     enum mod_type mod_type = arg->mod_type;
 
     if (type != EXPR_TYPE_INT)
@@ -112,7 +112,7 @@ LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
         return true;
     }
 
-    ndx = XkbModNameToIndex(&keymap->mods, field, mod_type);
+    ndx = XkbModNameToIndex(mods, field, mod_type);
     if (ndx == XKB_MOD_INVALID)
         return false;
 
@@ -618,12 +618,12 @@ ExprResolveMask(struct xkb_context *ctx, const ExprDef *expr,
 }
 
 bool
-ExprResolveModMask(struct xkb_keymap *keymap, const ExprDef *expr,
-                   enum mod_type mod_type, xkb_mod_mask_t *mask_rtrn)
+ExprResolveModMask(struct xkb_context *ctx, const ExprDef *expr,
+                   enum mod_type mod_type, const struct xkb_mod_set *mods,
+                   xkb_mod_mask_t *mask_rtrn)
 {
-    LookupModMaskPriv priv = { .keymap = keymap, .mod_type = mod_type };
-    return ExprResolveMaskLookup(keymap->ctx, expr, mask_rtrn, LookupModMask,
-                                 &priv);
+    LookupModMaskPriv priv = { .mods = mods, .mod_type = mod_type };
+    return ExprResolveMaskLookup(ctx, expr, mask_rtrn, LookupModMask, &priv);
 }
 
 bool
@@ -650,14 +650,15 @@ ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
 }
 
 bool
-ExprResolveMod(struct xkb_keymap *keymap, const ExprDef *def,
-               enum mod_type mod_type, xkb_mod_index_t *ndx_rtrn)
+ExprResolveMod(struct xkb_context *ctx, const ExprDef *def,
+               enum mod_type mod_type, const struct xkb_mod_set *mods,
+               xkb_mod_index_t *ndx_rtrn)
 {
     xkb_mod_index_t ndx;
     xkb_atom_t name;
 
     if (def->expr.op != EXPR_IDENT) {
-        log_err(keymap->ctx,
+        log_err(ctx,
                 "Cannot resolve virtual modifier: "
                 "found %s where a virtual modifier name was expected\n",
                 expr_op_type_to_string(def->expr.op));
@@ -665,12 +666,12 @@ ExprResolveMod(struct xkb_keymap *keymap, const ExprDef *def,
     }
 
     name = def->ident.ident;
-    ndx = XkbModNameToIndex(&keymap->mods, name, mod_type);
+    ndx = XkbModNameToIndex(mods, name, mod_type);
     if (ndx == XKB_MOD_INVALID) {
-        log_err(keymap->ctx,
+        log_err(ctx,
                 "Cannot resolve virtual modifier: "
                 "\"%s\" was not previously declared\n",
-                xkb_atom_text(keymap->ctx, name));
+                xkb_atom_text(ctx, name));
         return false;
     }
 

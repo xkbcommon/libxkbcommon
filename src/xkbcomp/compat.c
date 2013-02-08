@@ -280,7 +280,8 @@ ResolveStateAndPredicate(ExprDef *expr, enum xkb_match_operation *pred_rtrn,
         }
     }
 
-    return ExprResolveModMask(info->keymap, expr, MOD_REAL, mods_rtrn);
+    return ExprResolveModMask(info->ctx, expr, MOD_REAL, &info->keymap->mods,
+                              mods_rtrn);
 }
 
 /***====================================================================***/
@@ -471,7 +472,8 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         if (arrayNdx)
             return ReportSINotArray(info, si, field);
 
-        if (!ExprResolveMod(info->keymap, value, MOD_VIRT, &ndx))
+        if (!ExprResolveMod(info->ctx, value, MOD_VIRT, &info->keymap->mods,
+                            &ndx))
             return ReportSIBadType(info, si, field, "virtual modifier");
 
         si->interp.virtual_mod = ndx;
@@ -526,8 +528,8 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
         if (arrayNdx)
             return ReportLedNotArray(info, ledi, field);
 
-        if (!ExprResolveModMask(info->keymap, value, MOD_BOTH,
-                                &ledi->led.mods.mods))
+        if (!ExprResolveModMask(info->ctx, value, MOD_BOTH,
+                                &info->keymap->mods, &ledi->led.mods.mods))
             return ReportLedBadType(info, ledi, field, "modifier mask");
 
         ledi->defined |= LED_FIELD_MODS;

@@ -46,7 +46,8 @@ HandleVModDef(struct xkb_keymap *keymap, VModDef *stmt,
          * it sets the vmod-to-real-mod[s] mapping directly instead of going
          * through modifier_map or some such.
          */
-        if (!ExprResolveModMask(keymap, stmt->value, MOD_REAL, &mapping)) {
+        if (!ExprResolveModMask(keymap->ctx, stmt->value, MOD_REAL,
+                                &keymap->mods, &mapping)) {
             log_err(keymap->ctx,
                     "Declaration of %s ignored\n",
                     xkb_atom_text(keymap->ctx, stmt->name));

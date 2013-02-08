@@ -822,7 +822,8 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
              istreq(field, "virtualmodifiers")) {
         xkb_mod_mask_t mask;
 
-        if (!ExprResolveModMask(info->keymap, value, MOD_VIRT, &mask)) {
+        if (!ExprResolveModMask(info->ctx, value, MOD_VIRT,
+                                &info->keymap->mods, &mask)) {
             log_err(info->ctx,
                     "Expected a virtual modifier mask, found %s; "
                     "Ignoring virtual modifiers definition for key %s\n",
