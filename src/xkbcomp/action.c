@@ -860,7 +860,7 @@ HandleActionDef(ExprDef *def, struct xkb_keymap *keymap,
 {
     ExprDef *arg;
     const char *str;
-    unsigned hndlrType;
+    unsigned handler_type;
 
     if (def->op != EXPR_ACTION_DECL) {
         log_err(keymap->ctx, "Expected an action definition, found %s\n",
@@ -869,7 +869,7 @@ HandleActionDef(ExprDef *def, struct xkb_keymap *keymap,
     }
 
     str = xkb_atom_text(keymap->ctx, def->value.action.name);
-    if (!stringToAction(str, &hndlrType)) {
+    if (!stringToAction(str, &handler_type)) {
         log_err(keymap->ctx, "Unknown action %s\n", str);
         return false;
     }
@@ -879,7 +879,7 @@ HandleActionDef(ExprDef *def, struct xkb_keymap *keymap,
      * statements such as:
      *     latchMods.clearLocks = True;
      */
-    *action = info->actions[hndlrType];
+    *action = info->actions[handler_type];
 
     /*
      * Now change the action properties as specified for this
@@ -923,8 +923,8 @@ HandleActionDef(ExprDef *def, struct xkb_keymap *keymap,
             return false;
         }
 
-        if (!handleAction[hndlrType](keymap, action, fieldNdx, arrayRtrn,
-                                     value))
+        if (!handleAction[handler_type](keymap, action, fieldNdx, arrayRtrn,
+                                        value))
             return false;
     }
 
