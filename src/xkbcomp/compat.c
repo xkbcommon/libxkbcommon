@@ -89,9 +89,9 @@ typedef struct {
     LedInfo default_led;
     darray(LedInfo) leds;
     ActionsInfo *actions;
+    struct xkb_mod_set mods;
 
     struct xkb_context *ctx;
-    struct xkb_keymap *keymap;
 } CompatInfo;
 
 static const char *
@@ -105,7 +105,7 @@ siText(SymInterpInfo *si, CompatInfo *info)
     snprintf(buf, 128, "%s+%s(%s)",
              KeysymText(info->ctx, si->interp.sym),
              SIMatchText(si->interp.match),
-             ModMaskText(info->ctx, &info->keymap->mods, si->interp.mods));
+             ModMaskText(info->ctx, &info->mods, si->interp.mods));
 
     return buf;
 }
@@ -142,13 +142,13 @@ ReportLedNotArray(CompatInfo *info, LedInfo *ledi, const char *field)
 }
 
 static void
-InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap,
-               ActionsInfo *actions)
+InitCompatInfo(CompatInfo *info, struct xkb_context *ctx,
+               ActionsInfo *actions, const struct xkb_mod_set *mods)
 {
     memset(info, 0, sizeof(*info));
-    info->ctx = keymap->ctx;
-    info->keymap = keymap;
+    info->ctx = ctx;
     info->actions = actions;
+    CopyModSet(&info->mods, mods);
     info->default_interp.merge = MERGE_OVERRIDE;
     info->default_interp.interp.virtual_mod = XKB_MOD_INVALID;
     info->default_led.merge = MERGE_OVERRIDE;
@@ -158,6 +158,7 @@ static void
 ClearCompatInfo(CompatInfo *info)
 {
     free(info->name);
+    ClearModSet(&info->mods);
     darray_free(info->interps);
     darray_free(info->leds);
 }
@@ -280,7 +281,7 @@ ResolveStateAndPredicate(ExprDef *expr, enum xkb_match_operation *pred_rtrn,
         }
     }
 
-    return ExprResolveModMask(info->ctx, expr, MOD_REAL, &info->keymap->mods,
+    return ExprResolveModMask(info->ctx, expr, MOD_REAL, &info->mods,
                               mods_rtrn);
 }
 
@@ -378,6 +379,8 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
         return;
     }
 
+    MoveModSet(&into->mods, &from->mods);
+
     if (into->name == NULL) {
         into->name = from->name;
         from->name = NULL;
@@ -416,7 +419,7 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
 {
     CompatInfo included;
 
-    InitCompatInfo(&included, info->keymap, info->actions);
+    InitCompatInfo(&included, info->ctx, info->actions, &info->mods);
     included.name = include->stmt;
     include->stmt = NULL;
 
@@ -431,7 +434,7 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
             return false;
         }
 
-        InitCompatInfo(&next_incl, info->keymap, info->actions);
+        InitCompatInfo(&next_incl, info->ctx, info->actions, &included.mods);
         next_incl.default_interp = info->default_interp;
         next_incl.default_interp.merge = stmt->merge;
         next_incl.default_led = info->default_led;
@@ -461,7 +464,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         if (arrayNdx)
             return ReportSINotArray(info, si, field);
 
-        if (!HandleActionDef(info->ctx, info->actions, &info->keymap->mods,
+        if (!HandleActionDef(info->ctx, info->actions, &info->mods,
                              value, &si->interp.action))
             return false;
 
@@ -472,8 +475,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         if (arrayNdx)
             return ReportSINotArray(info, si, field);
 
-        if (!ExprResolveMod(info->ctx, value, MOD_VIRT, &info->keymap->mods,
-                            &ndx))
+        if (!ExprResolveMod(info->ctx, value, MOD_VIRT, &info->mods, &ndx))
             return ReportSIBadType(info, si, field, "virtual modifier");
 
         si->interp.virtual_mod = ndx;
@@ -529,7 +531,7 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
             return ReportLedNotArray(info, ledi, field);
 
         if (!ExprResolveModMask(info->ctx, value, MOD_BOTH,
-                                &info->keymap->mods, &ledi->led.mods.mods))
+                                &info->mods, &ledi->led.mods.mods))
             return ReportLedBadType(info, ledi, field, "modifier mask");
 
         ledi->defined |= LED_FIELD_MODS;
@@ -633,7 +635,7 @@ HandleGlobalVar(CompatInfo *info, VarDef *stmt)
         ret = SetLedMapField(info, &info->default_led, field, ndx,
                              stmt->value);
     else
-        ret = SetActionField(info->ctx, info->actions, &info->keymap->mods,
+        ret = SetActionField(info->ctx, info->actions, &info->mods,
                              elem, field, ndx, stmt->value);
     return ret;
 }
@@ -768,8 +770,7 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleGlobalVar(info, (VarDef *) stmt);
             break;
         case STMT_VMOD:
-            ok = HandleVModDef(info->ctx, &info->keymap->mods,
-                               (VModDef *) stmt, merge);
+            ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt, merge);
             break;
         default:
             log_err(info->ctx,
@@ -808,12 +809,11 @@ CopyInterps(CompatInfo *info, bool needSymbol, enum xkb_match_operation pred,
 }
 
 static void
-CopyLedMapDefs(CompatInfo *info)
+CopyLedMapDefsToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
 {
     LedInfo *ledi;
     xkb_led_index_t i;
     struct xkb_led *led;
-    struct xkb_keymap *keymap = info->keymap;
 
     darray_foreach(ledi, info->leds) {
         /*
@@ -865,6 +865,8 @@ CopyCompatToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
     keymap->compat_section_name = strdup_safe(info->name);
     XkbEscapeMapName(keymap->compat_section_name);
 
+    MoveModSet(&keymap->mods, &info->mods);
+
     if (!darray_empty(info->interps)) {
         struct collect collect;
         darray_init(collect.sym_interprets);
@@ -885,7 +887,7 @@ CopyCompatToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
         keymap->sym_interprets = darray_mem(collect.sym_interprets, 0);
     }
 
-    CopyLedMapDefs(info);
+    CopyLedMapDefsToKeymap(keymap, info);
 
     return true;
 }
@@ -901,7 +903,7 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
     if (!actions)
         return false;
 
-    InitCompatInfo(&info, keymap, actions);
+    InitCompatInfo(&info, keymap->ctx, actions, &keymap->mods);
     info.default_interp.merge = merge;
     info.default_led.merge = merge;
 

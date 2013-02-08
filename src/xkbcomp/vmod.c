@@ -29,6 +29,27 @@
 #include "expr.h"
 #include "vmod.h"
 
+void
+MoveModSet(struct xkb_mod_set *into, struct xkb_mod_set *from)
+{
+    darray_free(into->mods);
+    into->mods = from->mods;
+    darray_init(from->mods);
+}
+
+void
+CopyModSet(struct xkb_mod_set *into, const struct xkb_mod_set *from)
+{
+    darray_free(into->mods);
+    darray_copy(into->mods, from->mods);
+}
+
+void
+ClearModSet(struct xkb_mod_set *mods)
+{
+    darray_free(mods->mods);
+}
+
 bool
 HandleVModDef(struct xkb_context *ctx, struct xkb_mod_set *mods,
               VModDef *stmt, enum merge_mode merge)
