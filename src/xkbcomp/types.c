@@ -645,7 +645,8 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
             ok = true;
             break;
         case STMT_VMOD:
-            ok = HandleVModDef(info->keymap, (VModDef *) stmt, merge);
+            ok = HandleVModDef(info->ctx, &info->keymap->mods,
+                               (VModDef *) stmt, merge);
             break;
         default:
             log_err(info->ctx,
