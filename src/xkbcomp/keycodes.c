@@ -111,7 +111,8 @@ typedef struct {
 } AliasInfo;
 
 typedef struct {
-    unsigned int file_id;
+    unsigned file_id;
+
     xkb_atom_t name;
 } KeyNameInfo;
 
@@ -123,10 +124,10 @@ typedef struct {
 } LedNameInfo;
 
 typedef struct {
-    char *name;     /* e.g. evdev+aliases(qwerty) */
+    char *name;
     int errorCount;
-    unsigned file_id;
     enum merge_mode merge;
+    unsigned file_id;
 
     xkb_keycode_t min_key_code;
     xkb_keycode_t max_key_code;
@@ -136,6 +137,8 @@ typedef struct {
 
     struct xkb_context *ctx;
 } KeyNamesInfo;
+
+/***====================================================================***/
 
 static void
 InitAliasInfo(AliasInfo *info, enum merge_mode merge, unsigned file_id,
@@ -171,9 +174,8 @@ AddLedName(KeyNamesInfo *info, enum merge_mode merge,
 {
     xkb_led_index_t old_idx;
     LedNameInfo *old;
+    const int verbosity = xkb_context_get_log_verbosity(info->ctx);
     const bool replace = (merge == MERGE_REPLACE || merge == MERGE_OVERRIDE);
-    int verbosity = xkb_context_get_log_verbosity(info->ctx);
-
 
     /* Inidicator with the same name already exists. */
     old = FindLedByName(info, new->name, &old_idx);
@@ -192,8 +194,8 @@ AddLedName(KeyNamesInfo *info, enum merge_mode merge,
         if (report) {
             xkb_led_index_t use = (replace ? new_idx + 1 : old_idx + 1);
             xkb_led_index_t ignore = (replace ? old_idx + 1 : new_idx + 1);
-            log_warn(info->ctx, "Multiple indicators named %s; "
-                     "Using %d, ignoring %d\n",
+            log_warn(info->ctx,
+                     "Multiple indicators named %s; Using %d, ignoring %d\n",
                      xkb_atom_text(info->ctx, new->name), use, ignore);
         }
 
@@ -209,8 +211,8 @@ AddLedName(KeyNamesInfo *info, enum merge_mode merge,
     /* Inidicator with the same index already exists. */
     old = &darray_item(info->led_names, new_idx);
     if (old->name != XKB_ATOM_NONE) {
-        bool report = ((old->file_id == new->file_id && verbosity > 0) ||
-                       verbosity > 9);
+        const bool report = ((old->file_id == new->file_id && verbosity > 0) ||
+                             verbosity > 9);
 
         /* Same name case already handled above. */
 
@@ -271,7 +273,7 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
 {
     KeyNameInfo *namei;
     xkb_keycode_t old;
-    int verbosity = xkb_context_get_log_verbosity(info->ctx);
+    const int verbosity = xkb_context_get_log_verbosity(info->ctx);
 
     if (kc >= darray_size(info->key_names))
         darray_resize0(info->key_names, kc + 1);
@@ -482,9 +484,9 @@ HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt, enum merge_mode merge)
 static void
 HandleAliasCollision(KeyNamesInfo *info, AliasInfo *old, AliasInfo *new)
 {
-    int verbosity = xkb_context_get_log_verbosity(info->ctx);
-    bool report = ((new->file_id == old->file_id && verbosity > 0) ||
-                   verbosity > 9);
+    const int verbosity = xkb_context_get_log_verbosity(info->ctx);
+    const bool report = ((new->file_id == old->file_id && verbosity > 0) ||
+                         verbosity > 9);
 
     if (new->real == old->real) {
         if (report)
@@ -576,8 +578,7 @@ HandleLedNameDef(KeyNamesInfo *info, LedNameDef *def,
         char buf[20];
         snprintf(buf, sizeof(buf), "%d", def->ndx);
         info->errorCount++;
-        return ReportBadType(info->ctx, "indicator", "name", buf,
-                             "string");
+        return ReportBadType(info->ctx, "indicator", "name", buf, "string");
     }
 
     ledi.merge = info->merge;
@@ -632,8 +633,10 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
     }
 }
 
+/***====================================================================***/
+
 static void
-ApplyAliases(KeyNamesInfo *info, struct xkb_keymap *keymap)
+CopyAliasesToKeymap(KeyNamesInfo *info, struct xkb_keymap *keymap)
 {
     struct xkb_key *key;
     struct xkb_key_alias *a, new;
@@ -715,10 +718,12 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
         darray_item(keymap->leds, idx).name = ledi->name;
     }
 
-    ApplyAliases(info, keymap);
+    CopyAliasesToKeymap(info, keymap);
 
     return true;
 }
+
+/***====================================================================***/
 
 bool
 CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
@@ -743,6 +748,8 @@ err_info:
     return false;
 }
 
+/***====================================================================***/
+
 struct xkb_key *
 FindNamedKey(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases)
 {
@@ -765,7 +772,7 @@ bool
 FindKeyNameForAlias(struct xkb_keymap *keymap, xkb_atom_t name,
                     xkb_atom_t *real_name)
 {
-    struct xkb_key_alias *a;
+    const struct xkb_key_alias *a;
 
     darray_foreach(a, keymap->key_aliases) {
         if (name == a->alias) {
