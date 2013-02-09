@@ -53,8 +53,9 @@ typedef struct {
     int errorCount;
 
     darray(KeyTypeInfo) types;
+    struct xkb_mod_set mods;
+
     struct xkb_context *ctx;
-    struct xkb_keymap *keymap;
 } KeyTypesInfo;
 
 /***====================================================================***/
@@ -62,7 +63,7 @@ typedef struct {
 static inline const char *
 MapEntryTxt(KeyTypesInfo *info, struct xkb_key_type_entry *entry)
 {
-    return ModMaskText(info->ctx, &info->keymap->mods, entry->mods.mods);
+    return ModMaskText(info->ctx, &info->mods, entry->mods.mods);
 }
 
 static inline const char *
@@ -74,7 +75,7 @@ TypeTxt(KeyTypesInfo *info, KeyTypeInfo *type)
 static inline const char *
 TypeMaskTxt(KeyTypesInfo *info, KeyTypeInfo *type)
 {
-    return ModMaskText(info->ctx, &info->keymap->mods, type->mods);
+    return ModMaskText(info->ctx, &info->mods, type->mods);
 }
 
 static inline bool
@@ -96,11 +97,12 @@ ReportTypeBadType(KeyTypesInfo *info, KeyTypeInfo *type,
 /***====================================================================***/
 
 static void
-InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap)
+InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_context *ctx,
+                 const struct xkb_mod_set *mods)
 {
     memset(info, 0, sizeof(*info));
-    info->keymap = keymap;
-    info->ctx = keymap->ctx;
+    info->ctx = ctx;
+    CopyModSet(&info->mods, mods);
 }
 
 static void
@@ -114,6 +116,7 @@ static void
 ClearKeyTypesInfo(KeyTypesInfo *info)
 {
     free(info->name);
+    ClearModSet(&info->mods);
     darray_free(info->types);
 }
 
@@ -179,6 +182,8 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
         return;
     }
 
+    MoveModSet(&into->mods, &from->mods);
+
     if (into->name == NULL) {
         into->name = from->name;
         from->name = NULL;
@@ -205,7 +210,7 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
 {
     KeyTypesInfo included;
 
-    InitKeyTypesInfo(&included, info->keymap);
+    InitKeyTypesInfo(&included, info->ctx, &info->mods);
     included.name = include->stmt;
     include->stmt = NULL;
 
@@ -220,7 +225,7 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
             return false;
         }
 
-        InitKeyTypesInfo(&next_incl, info->keymap);
+        InitKeyTypesInfo(&next_incl, info->ctx, &included.mods);
 
         HandleKeyTypesFile(&next_incl, file, stmt->merge);
 
@@ -249,8 +254,7 @@ SetModifiers(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
                  "The modifiers field of a key type is not an array; "
                  "Illegal array subscript ignored\n");
 
-    if (!ExprResolveModMask(info->ctx, value, MOD_BOTH, &info->keymap->mods,
-                            &mods)) {
+    if (!ExprResolveModMask(info->ctx, value, MOD_BOTH, &info->mods, &mods)) {
         log_err(info->ctx,
                 "Key type mask field must be a modifier mask; "
                 "Key type definition ignored\n");
@@ -263,7 +267,7 @@ SetModifiers(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
                  "Using %s, ignoring %s\n",
                  xkb_atom_text(info->ctx, type->name),
                  TypeMaskTxt(info, type),
-                 ModMaskText(info->ctx, &info->keymap->mods, mods));
+                 ModMaskText(info->ctx, &info->mods, mods));
         return false;
     }
 
@@ -334,8 +338,8 @@ SetMapEntry(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(info, type, "map entry");
 
-    if (!ExprResolveModMask(info->ctx, arrayNdx, MOD_BOTH,
-                            &info->keymap->mods, &entry.mods.mods))
+    if (!ExprResolveModMask(info->ctx, arrayNdx, MOD_BOTH, &info->mods,
+                            &entry.mods.mods))
         return ReportTypeBadType(info, type, "map entry", "modifier mask");
 
     if (entry.mods.mods & (~type->mods)) {
@@ -343,7 +347,7 @@ SetMapEntry(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
                 "Map entry for unused modifiers in %s; "
                 "Using %s instead of %s\n",
                 TypeTxt(info, type),
-                ModMaskText(info->ctx, &info->keymap->mods,
+                ModMaskText(info->ctx, &info->mods,
                             entry.mods.mods & type->mods),
                 MapEntryTxt(info, &entry));
         entry.mods.mods &= type->mods;
@@ -385,7 +389,7 @@ AddPreserve(KeyTypesInfo *info, KeyTypeInfo *type,
             log_vrb(info->ctx, 10,
                     "Identical definitions for preserve[%s] in %s; "
                     "Ignored\n",
-                    ModMaskText(info->ctx, &info->keymap->mods, mods),
+                    ModMaskText(info->ctx, &info->mods, mods),
                     TypeTxt(info, type));
             return true;
         }
@@ -394,10 +398,10 @@ AddPreserve(KeyTypesInfo *info, KeyTypeInfo *type,
         log_vrb(info->ctx, 1,
                 "Multiple definitions for preserve[%s] in %s; "
                 "Using %s, ignoring %s\n",
-                ModMaskText(info->ctx, &info->keymap->mods, mods),
+                ModMaskText(info->ctx, &info->mods, mods),
                 TypeTxt(info, type),
-                ModMaskText(info->ctx, &info->keymap->mods, preserve_mods),
-                ModMaskText(info->ctx, &info->keymap->mods, entry->preserve.mods));
+                ModMaskText(info->ctx, &info->mods, preserve_mods),
+                ModMaskText(info->ctx, &info->mods, entry->preserve.mods));
 
         entry->preserve.mods = preserve_mods;
         return true;
@@ -424,17 +428,16 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(info, type, "preserve entry");
 
-    if (!ExprResolveModMask(info->ctx, arrayNdx, MOD_BOTH, &info->keymap->mods,
-                            &mods))
+    if (!ExprResolveModMask(info->ctx, arrayNdx, MOD_BOTH, &info->mods, &mods))
         return ReportTypeBadType(info, type, "preserve entry",
                                  "modifier mask");
 
     if (mods & ~type->mods) {
         const char *before, *after;
 
-        before = ModMaskText(info->ctx, &info->keymap->mods, mods);
+        before = ModMaskText(info->ctx, &info->mods, mods);
         mods &= type->mods;
-        after = ModMaskText(info->ctx, &info->keymap->mods, mods);
+        after = ModMaskText(info->ctx, &info->mods, mods);
 
         log_vrb(info->ctx, 1,
                 "Preserve for modifiers not used by the %s type; "
@@ -442,12 +445,12 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
                 TypeTxt(info, type), before, after);
     }
 
-    if (!ExprResolveModMask(info->ctx, value, MOD_BOTH, &info->keymap->mods,
+    if (!ExprResolveModMask(info->ctx, value, MOD_BOTH, &info->mods,
                             &preserve_mods)) {
         log_err(info->ctx,
                 "Preserve value in a key type is not a modifier mask; "
                 "Ignoring preserve[%s] in type %s\n",
-                ModMaskText(info->ctx, &info->keymap->mods, mods),
+                ModMaskText(info->ctx, &info->mods, mods),
                 TypeTxt(info, type));
         return false;
     }
@@ -455,14 +458,14 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
     if (preserve_mods & ~mods) {
         const char *before, *after;
 
-        before = ModMaskText(info->ctx, &info->keymap->mods, preserve_mods);
+        before = ModMaskText(info->ctx, &info->mods, preserve_mods);
         preserve_mods &= mods;
-        after = ModMaskText(info->ctx, &info->keymap->mods, preserve_mods);
+        after = ModMaskText(info->ctx, &info->mods, preserve_mods);
 
         log_vrb(info->ctx, 1,
                 "Illegal value for preserve[%s] in type %s; "
                 "Converted %s to %s\n",
-                ModMaskText(info->ctx, &info->keymap->mods, mods),
+                ModMaskText(info->ctx, &info->mods, mods),
                 TypeTxt(info, type), before, after);
     }
 
@@ -645,8 +648,7 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
             ok = true;
             break;
         case STMT_VMOD:
-            ok = HandleVModDef(info->ctx, &info->keymap->mods,
-                               (VModDef *) stmt, merge);
+            ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt, merge);
             break;
         default:
             log_err(info->ctx,
@@ -674,6 +676,8 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
 {
     keymap->types_section_name = strdup_safe(info->name);
     XkbEscapeMapName(keymap->types_section_name);
+
+    MoveModSet(&keymap->mods, &info->mods);
 
     keymap->num_types = darray_size(info->types);
     if (keymap->num_types == 0)
@@ -723,7 +727,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
 {
     KeyTypesInfo info;
 
-    InitKeyTypesInfo(&info, keymap);
+    InitKeyTypesInfo(&info, keymap->ctx, &keymap->mods);
 
     HandleKeyTypesFile(&info, file, merge);
     if (info.errorCount != 0)
