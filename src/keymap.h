@@ -425,7 +425,7 @@ struct xkb_key *
 XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases);
 
 xkb_atom_t
-XkbResolveKeyAlias(struct xkb_keymap *keymap, xkb_atom_t name);
+XkbResolveKeyAlias(const struct xkb_keymap *keymap, xkb_atom_t name);
 
 void
 XkbEscapeMapName(char *name);

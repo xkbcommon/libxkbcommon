@@ -90,7 +90,7 @@ XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases)
 }
 
 xkb_atom_t
-XkbResolveKeyAlias(struct xkb_keymap *keymap, xkb_atom_t name)
+XkbResolveKeyAlias(const struct xkb_keymap *keymap, xkb_atom_t name)
 {
     for (unsigned i = 0; i < keymap->num_key_aliases; i++)
         if (keymap->key_aliases[i].alias == name)
