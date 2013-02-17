@@ -85,7 +85,8 @@ is_keyboard(int fd)
 }
 
 static int
-keyboard_new(struct dirent *ent, struct xkb_keymap *xkb, struct keyboard **out)
+keyboard_new(struct dirent *ent, struct xkb_keymap *keymap,
+             struct keyboard **out)
 {
     int ret;
     char *path;
@@ -109,7 +110,7 @@ keyboard_new(struct dirent *ent, struct xkb_keymap *xkb, struct keyboard **out)
         goto err_fd;
     }
 
-    state = xkb_state_new(xkb);
+    state = xkb_state_new(keymap);
     if (!state) {
         fprintf(stderr, "Couldn't create xkb state for %s\n", path);
         ret = -EFAULT;
