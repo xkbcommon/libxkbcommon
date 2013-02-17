@@ -318,7 +318,7 @@ SIMatchText(enum xkb_match_operation type)
 } while (0)
 
 const char *
-IndicatorStateText(struct xkb_context *ctx, enum xkb_state_component mask)
+LedStateText(struct xkb_context *ctx, enum xkb_state_component mask)
 {
     unsigned int i;
     char *ret;

@@ -70,11 +70,11 @@ GroupCompatCreate(int group, ExprDef *def);
 ModMapDef *
 ModMapCreate(uint32_t modifier, ExprDef *keys);
 
-IndicatorMapDef *
-IndicatorMapCreate(xkb_atom_t name, VarDef *body);
+LedMapDef *
+LedMapCreate(xkb_atom_t name, VarDef *body);
 
-IndicatorNameDef *
-IndicatorNameCreate(int ndx, ExprDef *name, bool virtual);
+LedNameDef *
+LedNameCreate(int ndx, ExprDef *name, bool virtual);
 
 ExprDef *
 ActionCreate(xkb_atom_t name, ExprDef *args);

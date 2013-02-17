@@ -614,39 +614,39 @@ xkb_state_get_keymap(struct xkb_state *state)
 static void
 xkb_state_led_update_all(struct xkb_state *state)
 {
-    xkb_led_index_t led;
-    const struct xkb_indicator_map *map;
+    xkb_led_index_t idx;
+    const struct xkb_led *led;
 
     state->components.leds = 0;
 
-    darray_enumerate(led, map, state->keymap->indicators) {
+    darray_enumerate(idx, led, state->keymap->leds) {
         xkb_mod_mask_t mod_mask = 0;
         xkb_layout_mask_t group_mask = 0;
 
-        if (map->which_mods & XKB_STATE_MODS_EFFECTIVE)
+        if (led->which_mods & XKB_STATE_MODS_EFFECTIVE)
             mod_mask |= state->components.mods;
-        if (map->which_mods & XKB_STATE_MODS_DEPRESSED)
+        if (led->which_mods & XKB_STATE_MODS_DEPRESSED)
             mod_mask |= state->components.base_mods;
-        if (map->which_mods & XKB_STATE_MODS_LATCHED)
+        if (led->which_mods & XKB_STATE_MODS_LATCHED)
             mod_mask |= state->components.latched_mods;
-        if (map->which_mods & XKB_STATE_MODS_LOCKED)
+        if (led->which_mods & XKB_STATE_MODS_LOCKED)
             mod_mask |= state->components.locked_mods;
-        if (map->mods.mask & mod_mask)
-            state->components.leds |= (1 << led);
+        if (led->mods.mask & mod_mask)
+            state->components.leds |= (1 << idx);
 
-        if (map->which_groups & XKB_STATE_LAYOUT_EFFECTIVE)
+        if (led->which_groups & XKB_STATE_LAYOUT_EFFECTIVE)
             group_mask |= (1 << state->components.group);
-        if (map->which_groups & XKB_STATE_LAYOUT_DEPRESSED)
+        if (led->which_groups & XKB_STATE_LAYOUT_DEPRESSED)
             group_mask |= (1 << state->components.base_group);
-        if (map->which_groups & XKB_STATE_LAYOUT_LATCHED)
+        if (led->which_groups & XKB_STATE_LAYOUT_LATCHED)
             group_mask |= (1 << state->components.latched_group);
-        if (map->which_groups & XKB_STATE_LAYOUT_LOCKED)
+        if (led->which_groups & XKB_STATE_LAYOUT_LOCKED)
             group_mask |= (1 << state->components.locked_group);
-        if (map->groups & group_mask)
-            state->components.leds |= (1 << led);
+        if (led->groups & group_mask)
+            state->components.leds |= (1 << idx);
 
-        if (map->ctrls & state->keymap->enabled_ctrls)
-            state->components.leds |= (1 << led);
+        if (led->ctrls & state->keymap->enabled_ctrls)
+            state->components.leds |= (1 << idx);
     }
 }
 
@@ -1059,8 +1059,8 @@ xkb_state_layout_name_is_active(struct xkb_state *state, const char *name,
 XKB_EXPORT int
 xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx)
 {
-    if (idx >= darray_size(state->keymap->indicators) ||
-        darray_item(state->keymap->indicators, idx).name == XKB_ATOM_NONE)
+    if (idx >= darray_size(state->keymap->leds) ||
+        darray_item(state->keymap->leds, idx).name == XKB_ATOM_NONE)
         return -1;
 
     return !!(state->components.leds & (1 << idx));

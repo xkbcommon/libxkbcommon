@@ -142,8 +142,8 @@ _xkbcommon_error(struct YYLTYPE *loc, struct parser_param *param, const char *ms
         SymbolsDef      *syms;
         ModMapDef       *modMask;
         GroupCompatDef  *groupCompat;
-        IndicatorMapDef *ledMap;
-        IndicatorNameDef *ledName;
+        LedMapDef       *ledMap;
+        LedNameDef      *ledName;
         KeycodeDef      *keyCode;
         KeyAliasDef     *keyAlias;
         void            *geom;
@@ -171,8 +171,8 @@ _xkbcommon_error(struct YYLTYPE *loc, struct parser_param *param, const char *ms
 %type <syms>    SymbolsDecl
 %type <modMask> ModMapDecl
 %type <groupCompat> GroupCompatDecl
-%type <ledMap>  IndicatorMapDecl
-%type <ledName> IndicatorNameDecl
+%type <ledMap>  LedMapDecl
+%type <ledName> LedNameDecl
 %type <keyCode> KeyNameDecl
 %type <keyAlias> KeyAliasDecl
 %type <geom>    ShapeDecl SectionDecl SectionBody SectionBodyItem RowBody RowBodyItem
@@ -315,12 +315,12 @@ Decl            :       OptMergeMode VarDecl
                             $2->merge = $1;
                             $$ = &$2->common;
                         }
-                |       OptMergeMode IndicatorMapDecl
+                |       OptMergeMode LedMapDecl
                         {
                             $2->merge = $1;
                             $$ = &$2->common;
                         }
-                |       OptMergeMode IndicatorNameDecl
+                |       OptMergeMode LedNameDecl
                         {
                             $2->merge = $1;
                             $$ = &$2->common;
@@ -425,14 +425,14 @@ ModMapDecl      :       MODIFIER_MAP Ident OBRACE ExprList CBRACE SEMI
                         { $$ = ModMapCreate($2, $4); }
                 ;
 
-IndicatorMapDecl:       INDICATOR String OBRACE VarDeclList CBRACE SEMI
-                        { $$ = IndicatorMapCreate($2, $4); }
+LedMapDecl:             INDICATOR String OBRACE VarDeclList CBRACE SEMI
+                        { $$ = LedMapCreate($2, $4); }
                 ;
 
-IndicatorNameDecl:      INDICATOR Integer EQUALS Expr SEMI
-                        { $$ = IndicatorNameCreate($2, $4, false); }
+LedNameDecl:            INDICATOR Integer EQUALS Expr SEMI
+                        { $$ = LedNameCreate($2, $4, false); }
                 |       VIRTUAL INDICATOR Integer EQUALS Expr SEMI
-                        { $$ = IndicatorNameCreate($3, $5, true); }
+                        { $$ = LedNameCreate($3, $5, true); }
                 ;
 
 ShapeDecl       :       SHAPE String OBRACE OutlineList CBRACE SEMI
@@ -455,7 +455,7 @@ SectionBodyItem :       ROW OBRACE RowBody CBRACE SEMI
                         { FreeStmt(&$1->common); $$ = NULL; }
                 |       DoodadDecl
                         { $$ = NULL; }
-                |       IndicatorMapDecl
+                |       LedMapDecl
                         { FreeStmt(&$1->common); $$ = NULL; }
                 |       OverlayDecl
                         { $$ = NULL; }

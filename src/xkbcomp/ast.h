@@ -85,8 +85,8 @@ enum stmt_type {
     STMT_SYMBOLS,
     STMT_MODMAP,
     STMT_GROUP_COMPAT,
-    STMT_INDICATOR_MAP,
-    STMT_INDICATOR_NAME,
+    STMT_LED_MAP,
+    STMT_LED_NAME,
 
     _STMT_NUM_VALUES
 };
@@ -263,14 +263,14 @@ typedef struct {
     int ndx;
     ExprDef *name;
     bool virtual;
-} IndicatorNameDef;
+} LedNameDef;
 
 typedef struct {
     ParseCommon common;
     enum merge_mode merge;
     xkb_atom_t name;
     VarDef *body;
-} IndicatorMapDef;
+} LedMapDef;
 
 enum xkb_map_flags {
     MAP_IS_DEFAULT = (1 << 0),

@@ -110,7 +110,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
     darray_free(keymap->key_aliases);
     free(keymap->group_names);
     darray_free(keymap->mods);
-    darray_free(keymap->indicators);
+    darray_free(keymap->leds);
     free(keymap->keycodes_section_name);
     free(keymap->symbols_section_name);
     free(keymap->types_section_name);
@@ -242,7 +242,7 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t kc,
 XKB_EXPORT xkb_led_index_t
 xkb_keymap_num_leds(struct xkb_keymap *keymap)
 {
-    return darray_size(keymap->indicators);
+    return darray_size(keymap->leds);
 }
 
 /**
@@ -251,11 +251,10 @@ xkb_keymap_num_leds(struct xkb_keymap *keymap)
 XKB_EXPORT const char *
 xkb_keymap_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx)
 {
-    if (idx >= darray_size(keymap->indicators))
+    if (idx >= darray_size(keymap->leds))
         return NULL;
 
-    return xkb_atom_text(keymap->ctx,
-                         darray_item(keymap->indicators, idx).name);
+    return xkb_atom_text(keymap->ctx, darray_item(keymap->leds, idx).name);
 }
 
 /**
@@ -266,12 +265,12 @@ xkb_keymap_led_get_index(struct xkb_keymap *keymap, const char *name)
 {
     xkb_atom_t atom = xkb_atom_lookup(keymap->ctx, name);
     xkb_led_index_t i;
-    const struct xkb_indicator_map *led;
+    const struct xkb_led *led;
 
     if (atom == XKB_ATOM_NONE)
         return XKB_LED_INVALID;
 
-    darray_enumerate(i, led, keymap->indicators)
+    darray_enumerate(i, led, keymap->leds)
         if (led->name == atom)
             return i;
 

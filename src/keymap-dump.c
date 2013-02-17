@@ -154,7 +154,7 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
     struct xkb_key *key;
     struct xkb_key_alias *alias;
     xkb_led_index_t i;
-    const struct xkb_indicator_map *im;
+    const struct xkb_led *led;
 
     if (keymap->keycodes_section_name)
         write_buf(buf, "\txkb_keycodes \"%s\" {\n",
@@ -170,10 +170,10 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
                   KeyNameText(keymap->ctx, key->name), key->keycode);
     }
 
-    darray_enumerate(i, im, keymap->indicators)
-        if (im->name != XKB_ATOM_NONE)
+    darray_enumerate(i, led, keymap->leds)
+        if (led->name != XKB_ATOM_NONE)
             write_buf(buf, "\t\tindicator %d = \"%s\";\n",
-                      i + 1, xkb_atom_text(keymap->ctx, im->name));
+                      i + 1, xkb_atom_text(keymap->ctx, led->name));
 
 
     darray_foreach(alias, keymap->key_aliases)
@@ -248,8 +248,8 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
 }
 
 static bool
-write_indicator_map(struct xkb_keymap *keymap, struct buf *buf,
-                    const struct xkb_indicator_map *led)
+write_led_map(struct xkb_keymap *keymap, struct buf *buf,
+              const struct xkb_led *led)
 {
     write_buf(buf, "\t\tindicator \"%s\" {\n",
               xkb_atom_text(keymap->ctx, led->name));
@@ -257,7 +257,7 @@ write_indicator_map(struct xkb_keymap *keymap, struct buf *buf,
     if (led->which_groups) {
         if (led->which_groups != XKB_STATE_LAYOUT_EFFECTIVE) {
             write_buf(buf, "\t\t\twhichGroupState= %s;\n",
-                      IndicatorStateText(keymap->ctx, led->which_groups));
+                      LedStateText(keymap->ctx, led->which_groups));
         }
         write_buf(buf, "\t\t\tgroups= 0x%02x;\n",
                   led->groups);
@@ -266,7 +266,7 @@ write_indicator_map(struct xkb_keymap *keymap, struct buf *buf,
     if (led->which_mods) {
         if (led->which_mods != XKB_STATE_MODS_EFFECTIVE) {
             write_buf(buf, "\t\t\twhichModState= %s;\n",
-                      IndicatorStateText(keymap->ctx, led->which_mods));
+                      LedStateText(keymap->ctx, led->which_mods));
         }
         write_buf(buf, "\t\t\tmodifiers= %s;\n",
                   ModMaskText(keymap, led->mods.mods));
@@ -425,7 +425,7 @@ static bool
 write_compat(struct xkb_keymap *keymap, struct buf *buf)
 {
     struct xkb_sym_interpret *interp;
-    const struct xkb_indicator_map *led;
+    const struct xkb_led *led;
 
     if (keymap->compat_section_name)
         write_buf(buf, "\txkb_compatibility \"%s\" {\n\n",
@@ -464,10 +464,10 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
         write_buf(buf, "\t\t};\n");
     }
 
-    darray_foreach(led, keymap->indicators)
+    darray_foreach(led, keymap->leds)
         if (led->which_groups || led->groups || led->which_mods ||
             led->mods.mods || led->ctrls)
-            write_indicator_map(keymap, buf, led);
+            write_led_map(keymap, buf, led);
 
     write_buf(buf, "\t};\n\n");
 

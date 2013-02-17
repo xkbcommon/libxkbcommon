@@ -273,14 +273,14 @@ ModMapCreate(uint32_t modifier, ExprDef * keys)
     return def;
 }
 
-IndicatorMapDef *
-IndicatorMapCreate(xkb_atom_t name, VarDef * body)
+LedMapDef *
+LedMapCreate(xkb_atom_t name, VarDef * body)
 {
-    IndicatorMapDef *def;
+    LedMapDef *def;
 
     def = malloc_or_die(sizeof(*def));
 
-    def->common.type = STMT_INDICATOR_MAP;
+    def->common.type = STMT_LED_MAP;
     def->common.next = NULL;
     def->merge = MERGE_DEFAULT;
     def->name = name;
@@ -288,14 +288,14 @@ IndicatorMapCreate(xkb_atom_t name, VarDef * body)
     return def;
 }
 
-IndicatorNameDef *
-IndicatorNameCreate(int ndx, ExprDef * name, bool virtual)
+LedNameDef *
+LedNameCreate(int ndx, ExprDef * name, bool virtual)
 {
-    IndicatorNameDef *def;
+    LedNameDef *def;
 
     def = malloc_or_die(sizeof(*def));
 
-    def->common.type = STMT_INDICATOR_NAME;
+    def->common.type = STMT_LED_NAME;
     def->common.next = NULL;
     def->merge = MERGE_DEFAULT;
     def->ndx = ndx;
@@ -639,10 +639,10 @@ FreeStmt(ParseCommon *stmt)
         case STMT_GROUP_COMPAT:
             FreeStmt(&u.groupCompat->def->common);
             break;
-        case STMT_INDICATOR_MAP:
+        case STMT_LED_MAP:
             FreeStmt(&u.ledMap->body->common);
             break;
-        case STMT_INDICATOR_NAME:
+        case STMT_LED_NAME:
             FreeStmt(&u.ledName->name->common);
             break;
         default:
@@ -717,8 +717,8 @@ static const char *stmt_type_strings[_STMT_NUM_VALUES] = {
     [STMT_SYMBOLS] = "key symbols definition",
     [STMT_MODMAP] = "modifier map declaration",
     [STMT_GROUP_COMPAT] = "group declaration",
-    [STMT_INDICATOR_MAP] = "indicator map declaration",
-    [STMT_INDICATOR_NAME] = "indicator name declaration",
+    [STMT_LED_MAP] = "indicator map declaration",
+    [STMT_LED_NAME] = "indicator name declaration",
 };
 
 const char *

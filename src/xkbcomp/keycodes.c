@@ -74,16 +74,15 @@
  * Allows to refer to a previously defined key (here <COMP>) by another
  * name (here <MENU>). Conflicts are handled similarly.
  *
- * Indicator name statements
+ * LED name statements
  * -------------------------
  * Statements of the form:
  *      indicator 1 = "Caps Lock";
  *      indicator 2 = "Num Lock";
  *      indicator 3 = "Scroll Lock";
  *
- * Assigns a name the indicator (i.e. keyboard LED) with the given index.
- * The amount of possible indicators is predetermined (XKB_NUM_INDICATORS).
- * The indicator may be referred by this name later in the compat section
+ * Assigns a name to the keyboard LED (a.k.a indicator) with the given index.
+ * The led may be referred by this name later in the compat section
  * and by the user.
  *
  * Effect on the keymap
@@ -94,8 +93,8 @@
  *      xkb_keycode_t max_key_code;
  *      darray(struct xkb_key_alias) key_aliases;
  *      char *keycodes_section_name;
- * The 'name' field of indicators declared in xkb_keycodes:
- *      darray(struct xkb_indicator_map) indicators;
+ * The 'name' field of leds declared in xkb_keycodes:
+ *      darray(struct xkb_led) leds;
  * Further, the array of keys:
  *      struct xkb_key *keys;
  * had been resized to its final size (i.e. all of the xkb_key objects are
@@ -121,7 +120,7 @@ typedef struct {
     unsigned file_id;
 
     xkb_atom_t name;
-} IndicatorNameInfo;
+} LedNameInfo;
 
 typedef struct {
     char *name;     /* e.g. evdev+aliases(qwerty) */
@@ -132,7 +131,7 @@ typedef struct {
     xkb_keycode_t min_key_code;
     xkb_keycode_t max_key_code;
     darray(KeyNameInfo) key_names;
-    darray(IndicatorNameInfo) indicator_names;
+    darray(LedNameInfo) led_names;
     darray(AliasInfo) aliases;
 
     struct xkb_context *ctx;
@@ -149,17 +148,17 @@ InitAliasInfo(AliasInfo *info, enum merge_mode merge, unsigned file_id,
     info->real = real;
 }
 
-static IndicatorNameInfo *
-FindIndicatorByName(KeyNamesInfo *info, xkb_atom_t name,
-                    xkb_led_index_t *idx_out)
+static LedNameInfo *
+FindLedByName(KeyNamesInfo *info, xkb_atom_t name,
+              xkb_led_index_t *idx_out)
 {
-    IndicatorNameInfo *led;
+    LedNameInfo *ledi;
     xkb_led_index_t idx;
 
-    darray_enumerate(idx, led, info->indicator_names) {
-        if (led->name == name) {
+    darray_enumerate(idx, ledi, info->led_names) {
+        if (ledi->name == name) {
             *idx_out = idx;
-            return led;
+            return ledi;
         }
     }
 
@@ -167,21 +166,20 @@ FindIndicatorByName(KeyNamesInfo *info, xkb_atom_t name,
 }
 
 static bool
-AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
-                 IndicatorNameInfo *new, xkb_led_index_t new_idx)
+AddLedName(KeyNamesInfo *info, enum merge_mode merge,
+           LedNameInfo *new, xkb_led_index_t new_idx)
 {
     xkb_led_index_t old_idx;
-    IndicatorNameInfo *old;
-    bool replace;
+    LedNameInfo *old;
+    const bool replace = (merge == MERGE_REPLACE || merge == MERGE_OVERRIDE);
     int verbosity = xkb_context_get_log_verbosity(info->ctx);
 
-    replace = (merge == MERGE_REPLACE || merge == MERGE_OVERRIDE);
 
     /* Inidicator with the same name already exists. */
-    old = FindIndicatorByName(info, new->name, &old_idx);
+    old = FindLedByName(info, new->name, &old_idx);
     if (old) {
-        bool report = ((old->file_id == new->file_id && verbosity > 0) ||
-                       verbosity > 9);
+        const bool report = ((old->file_id == new->file_id && verbosity > 0) ||
+                             verbosity > 9);
 
         if (old_idx == new_idx) {
             log_warn(info->ctx,
@@ -205,11 +203,11 @@ AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
         return true;
     }
 
-    if (new_idx >= darray_size(info->indicator_names))
-        darray_resize0(info->indicator_names, new_idx + 1);
+    if (new_idx >= darray_size(info->led_names))
+        darray_resize0(info->led_names, new_idx + 1);
 
     /* Inidicator with the same index already exists. */
-    old = &darray_item(info->indicator_names, new_idx);
+    old = &darray_item(info->led_names, new_idx);
     if (old->name != XKB_ATOM_NONE) {
         bool report = ((old->file_id == new->file_id && verbosity > 0) ||
                        verbosity > 9);
@@ -217,8 +215,8 @@ AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
         /* Same name case already handled above. */
 
         if (report) {
-            xkb_atom_t use = (replace ? new->name : old->name);
-            xkb_atom_t ignore = (replace ? old->name : new->name);
+            const xkb_atom_t use = (replace ? new->name : old->name);
+            const xkb_atom_t ignore = (replace ? old->name : new->name);
             log_warn(info->ctx, "Multiple names for indicator %d; "
                      "Using %s, ignoring %s\n", new_idx + 1,
                      xkb_atom_text(info->ctx, use),
@@ -231,7 +229,7 @@ AddIndicatorName(KeyNamesInfo *info, enum merge_mode merge,
         return true;
     }
 
-    darray_item(info->indicator_names, new_idx) = *new;
+    darray_item(info->led_names, new_idx) = *new;
     return true;
 }
 
@@ -241,7 +239,7 @@ ClearKeyNamesInfo(KeyNamesInfo *info)
     free(info->name);
     darray_free(info->key_names);
     darray_free(info->aliases);
-    darray_free(info->indicator_names);
+    darray_free(info->led_names);
 }
 
 static void
@@ -382,7 +380,7 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
 {
     xkb_keycode_t i;
     xkb_led_index_t idx;
-    IndicatorNameInfo *led;
+    LedNameInfo *ledi;
 
     if (from->errorCount > 0) {
         into->errorCount += from->errorCount;
@@ -406,12 +404,12 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
             into->errorCount++;
     }
 
-    darray_enumerate(idx, led, from->indicator_names) {
-        if (led->name == XKB_ATOM_NONE)
+    darray_enumerate(idx, ledi, from->led_names) {
+        if (ledi->name == XKB_ATOM_NONE)
             continue;
 
-        led->merge = (merge == MERGE_DEFAULT ? led->merge : merge);
-        if (!AddIndicatorName(into, led->merge, led, idx))
+        ledi->merge = (merge == MERGE_DEFAULT ? ledi->merge : merge);
+        if (!AddLedName(into, ledi->merge, ledi, idx))
             into->errorCount++;
     }
 
@@ -560,10 +558,10 @@ HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
 }
 
 static int
-HandleIndicatorNameDef(KeyNamesInfo *info, IndicatorNameDef *def,
-                       enum merge_mode merge)
+HandleLedNameDef(KeyNamesInfo *info, LedNameDef *def,
+                 enum merge_mode merge)
 {
-    IndicatorNameInfo ii;
+    LedNameInfo ledi;
     xkb_atom_t name;
 
     if (def->ndx < 1 || def->ndx > XKB_MAX_LEDS) {
@@ -582,10 +580,10 @@ HandleIndicatorNameDef(KeyNamesInfo *info, IndicatorNameDef *def,
                              "string");
     }
 
-    ii.merge = info->merge;
-    ii.file_id = info->file_id;
-    ii.name = name;
-    return AddIndicatorName(info, merge, &ii, def->ndx - 1);
+    ledi.merge = info->merge;
+    ledi.file_id = info->file_id;
+    ledi.name = name;
+    return AddLedName(info, merge, &ledi, def->ndx - 1);
 }
 
 static void
@@ -612,9 +610,8 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
         case STMT_VAR:
             ok = HandleKeyNameVar(info, (VarDef *) stmt);
             break;
-        case STMT_INDICATOR_NAME:
-            ok = HandleIndicatorNameDef(info, (IndicatorNameDef *) stmt,
-                                        merge);
+        case STMT_LED_NAME:
+            ok = HandleLedNameDef(info, (LedNameDef *) stmt, merge);
             break;
         default:
             log_err(info->ctx,
@@ -694,7 +691,7 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 {
     xkb_keycode_t kc;
     xkb_led_index_t idx;
-    IndicatorNameInfo *led;
+    LedNameInfo *ledi;
 
     keymap->keys = calloc(info->max_key_code + 1, sizeof(*keymap->keys));
     if (!keymap->keys)
@@ -710,12 +707,12 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 
     keymap->keycodes_section_name = strdup_safe(info->name);
 
-    darray_resize0(keymap->indicators, darray_size(info->indicator_names));
-    darray_enumerate(idx, led, info->indicator_names) {
-        if (led->name == XKB_ATOM_NONE)
+    darray_resize0(keymap->leds, darray_size(info->led_names));
+    darray_enumerate(idx, ledi, info->led_names) {
+        if (ledi->name == XKB_ATOM_NONE)
             continue;
 
-        darray_item(keymap->indicators, idx).name = led->name;
+        darray_item(keymap->leds, idx).name = ledi->name;
     }
 
     ApplyAliases(info, keymap);

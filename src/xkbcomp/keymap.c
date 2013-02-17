@@ -180,7 +180,7 @@ static bool
 UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
 {
     struct xkb_mod *mod;
-    struct xkb_indicator_map *im;
+    struct xkb_led *led;
     unsigned int i, j;
     struct xkb_key *key;
 
@@ -213,9 +213,9 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
                 UpdateActionMods(keymap, &key->groups[i].levels[j].action,
                                  key->modmap);
 
-    /* Update vmod -> indicator maps. */
-    darray_foreach(im, keymap->indicators)
-        ComputeEffectiveMask(keymap, &im->mods);
+    /* Update vmod -> led maps. */
+    darray_foreach(led, keymap->leds)
+        ComputeEffectiveMask(keymap, &led->mods);
 
     /* Find maximum number of groups out of all keys in the keymap. */
     xkb_foreach_key(key, keymap)

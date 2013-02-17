@@ -281,7 +281,7 @@ struct xkb_sym_interpret {
     bool repeat;
 };
 
-struct xkb_indicator_map {
+struct xkb_led {
     xkb_atom_t name;
     enum xkb_state_component which_groups;
     xkb_layout_mask_t groups;
@@ -395,7 +395,7 @@ struct xkb_keymap {
     xkb_layout_index_t num_group_names;
     xkb_atom_t *group_names;
 
-    darray(struct xkb_indicator_map) indicators;
+    darray(struct xkb_led) leds;
 
     char *keycodes_section_name;
     char *symbols_section_name;
