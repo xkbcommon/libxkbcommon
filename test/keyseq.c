@@ -420,7 +420,6 @@ main(void)
                         KEY_H,         BOTH, XKB_KEY_h,              FINISH));
 
     xkb_keymap_unref(keymap);
-    assert(ctx);
     keymap = test_compile_rules(ctx, "evdev", "", "us,il,ru", "",
                                 "grp:switch,grp:lswitch,grp:menu_toggle");
     assert(keymap);
@@ -462,6 +461,16 @@ main(void)
                         KEY_H,         BOTH, XKB_KEY_hebrew_yod,        NEXT,
                         KEY_RIGHTALT,  UP,   XKB_KEY_ISO_Level3_Shift,  NEXT,
                         KEY_H,         BOTH, XKB_KEY_h,                 FINISH));
+
+    xkb_keymap_unref(keymap);
+    keymap = test_compile_file(ctx, "keymaps/unbound-vmod.xkb");
+    assert(keymap);
+
+    assert(test_key_seq(keymap,
+                        KEY_H,         BOTH, XKB_KEY_h,                 NEXT,
+                        KEY_Z,         BOTH, XKB_KEY_y,                 NEXT,
+                        KEY_MINUS,     BOTH, XKB_KEY_ssharp,            NEXT,
+                        KEY_Z,         BOTH, XKB_KEY_y,                 FINISH));
 
     xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);

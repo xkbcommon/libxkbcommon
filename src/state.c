@@ -122,9 +122,18 @@ get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
     xkb_mod_mask_t active_mods = state->components.mods & type->mods.mask;
     unsigned int i;
 
-    for (i = 0; i < type->num_entries; i++)
+    for (i = 0; i < type->num_entries; i++) {
+        /*
+         * If the virtual modifiers are not bound to anything, we're
+         * supposed to skip the entry (xserver does this with cached
+         * entry->active field).
+         */
+        if (!type->map[i].mods.mask)
+            continue;
+
         if (type->map[i].mods.mask == active_mods)
             return &type->map[i];
+    }
 
     return NULL;
 }
