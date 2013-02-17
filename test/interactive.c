@@ -223,7 +223,7 @@ print_keycode(struct keyboard *kbd, xkb_keycode_t keycode)
     unsigned int nsyms;
     char s[16];
     uint32_t unicode;
-    xkb_layout_index_t group;
+    xkb_layout_index_t layout;
     xkb_mod_index_t mod;
     xkb_led_index_t led;
 
@@ -255,15 +255,12 @@ print_keycode(struct keyboard *kbd, xkb_keycode_t keycode)
     printf("] ");
 #endif
 
-    printf("group [ ");
-    for (group = 0; group < xkb_keymap_num_layouts_for_key(keymap, keycode);
-         group++) {
-        if (xkb_state_layout_index_is_active(state, group,
-                                             XKB_STATE_LAYOUT_EFFECTIVE) <= 0)
-            continue;
-        printf("%s (%d) ", xkb_keymap_layout_get_name(keymap, group), group);
-    }
-    printf("] ");
+    layout = xkb_state_key_get_layout(state, keycode);
+    printf("layout [ %s (%d) ] ",
+           xkb_keymap_layout_get_name(keymap, layout), layout);
+
+    printf("level [ %d ] ",
+           xkb_state_key_get_level(state, keycode, layout));
 
     printf("mods [ ");
     for (mod = 0; mod < xkb_keymap_num_mods(keymap); mod++) {
