@@ -370,12 +370,11 @@ main(void)
 
                         /* Level 5. */
                         KEY_RIGHTALT,    DOWN,  XKB_KEY_ISO_Level5_Shift,  NEXT,
-                        /*
-                         * XXX: This doesn't work, but gives level1 keysyms.
-                         * This does work when when de(neo) is the first layout
-                         * (before us,il etc.). It's like that in the X server
-                         * as well. Investigate.
-                         */
+                        KEY_5,           BOTH,  XKB_KEY_periodcentered,    NEXT,
+                        KEY_E,           BOTH,  XKB_KEY_Up,                NEXT,
+                        KEY_SPACE,       BOTH,  XKB_KEY_KP_0,              NEXT,
+                        KEY_KP8,         BOTH,  XKB_KEY_KP_Up,             NEXT,
+                        KEY_ESC,         BOTH,  XKB_KEY_Escape,            NEXT,
                         KEY_RIGHTALT,    UP,    XKB_KEY_ISO_Level5_Shift,  NEXT,
 
                         KEY_V,           BOTH,  XKB_KEY_p,               FINISH));
