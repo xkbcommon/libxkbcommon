@@ -38,7 +38,7 @@ xkb_symbols "deva" {
 	// INSCRIPT in place of the symbols that are here for now.  But this
 	// requires XKB to map 1 key into two to three other key presses.
 	key <AE03> { [ U0969, numbersign,  3, numbersign  ] };
-	key <AE04> { [ U096a, dollar,      4, dollar      ] };
+	key <AE04> { [ U096a, dollar,      4		  ] };
 	key <AE05> { [ U096b, percent,     5, percent     ] };
 	key <AE06> { [ U096c, asciicircum, 6, asciicircum ] };
 	key <AE07> { [ U096d, ampersand,   7, ampersand   ] };
@@ -89,6 +89,8 @@ xkb_symbols "deva" {
 
 	// space, space, Zero-Width-Non-Joiner (ZWNJ), Zero-Width-Joiner (ZWJ):
 	include "nbsp(zwnj3zwj4)"
+        include "rupeesign(4)"
+        include "level3(ralt_switch)"
 };
 
 //Name		:	Bolnagri (Combined)
@@ -98,7 +100,7 @@ xkb_symbols "deva" {
 //Inspired by "devrom" keymap by Steve Smith for the windows tool "keyman"
 //Original Author :	Noah Levitt<nlevitt at columbia.edu>
 //Past Authors  : Pramod.R <pramodr at gmail.com> and Ravikant <ravikant at sarai.net>
-// Current Main.: G Karunakar <karunakar@sarai.net>
+//Current Main. : G Karunakar <karunakar@indlinux.org>
 
 partial alphanumeric_keys
 xkb_symbols "bolnagri" {
@@ -110,7 +112,7 @@ xkb_symbols "bolnagri" {
     key <AE01>  { [   1,	exclam,		U0967,		exclam	   ] };
     key <AE02>  { [   2,	at,		U0968,		at	   ] };
     key <AE03>  { [   3,    	numbersign, 	U0969,		numbersign ] };
-    key <AE04>  { [   4,	dollar,		U096A,		dollar     ] };
+    key <AE04>  { [   4,	dollar,		U096A			    ] }; // Rupee symbol on AltGr+4
     key <AE05>  { [   5,	percent,	U096B,		percent    ] };
     key <AE06>  { [   6,	asciicircum,	U096C,		asciicircum ] };
     key <AE07>  { [   7,	ampersand,	U096D,		ampersand  ] };
@@ -125,7 +127,7 @@ xkb_symbols "bolnagri" {
     key <AD01>   { [   U200C, 	U200D   ] };  // Q: ZWNJ, ZWJ
     key <AD02>   { [   U0935,  	U950	] };  // W: wa, OM
     key <AD03>   { [   U0947,   U0948,	U090F,	U0910   ] };  // E: e, ai matras
-    key <AD04>   { [   U0930,	U0943  	] };  // R: ra, vocalic Ri
+    key <AD04>   { [   U0930,	U0943,	U0931,  U090B  	] };  // R: ra, vocalic Ri
     key <AD05>   { [   U0924,   U0925   ] };  // T: ta, tha
     key <AD06>   { [   U092f,	U091E   ] };  // Y: ya, nya
     key <AD07>   { [   U0941,   U0942,	U0909,	U090A   ] };  // U: u, uu matras
@@ -136,7 +138,7 @@ xkb_symbols "bolnagri" {
     key <AD12>	 { [   bracketright, braceright   ] };
     
     //A Row
-    key <AC01>   { [   U093E,	 U0906,	U0905,	U0906  ] };   // A: aa
+    key <AC01>   { [   U093E,	 U0906,	U0905,	U0906  ] };   // A: aa, full A, AA
     key <AC02>   { [   U0938,    U0937   ] };  // S: sa, ssa
     key <AC03>   { [   U0926,    U0927   ] };  // D: da, dha
     key <AC04>   { [   U091F,    U0920   ] };  // F: TA, THA
@@ -144,18 +146,18 @@ xkb_symbols "bolnagri" {
     key <AC06>   { [   U0939,    U0903   ] };  // H: ha, visarg 
     key <AC07>   { [   U091C,    U091D   ] };  // J: ja, jha
     key <AC08>   { [   U0915,    U0916   ] };  // K: ka, kha
-    key <AC09>   { [   U0932,	 U0962   ] };  // L: la, vocalic L or lru matra`
+    key <AC09>   { [   U0932,	 U0933,	U0962,   U090C   ] };  // L: la, vocalic L or lru matra
     key <AC10>   { [   semicolon, colon  ] }; 
     key <AC11>   { [apostrophe, quotedbl ] };
 
     //Z Row
-    key <AB01>   { [   U0936,	 U0945 	 ] };  // Z: sha, akaar candra
-    key <AB02>   { [   U094D,    U0949	 ] };  // X: halant, aakaar candra
+    key <AB01>   { [   U0936,	 U0945, U0936, U090D 	 ] };  // Z: sha, akaar candra
+    key <AB02>   { [   U094D,    U0949, U094D, U0911	 ] };  // X: halant, aakaar candra, chandra A
     key <AB03>   { [   U091A,    U091B   ] };  // C: ca, cha
     key <AB04>   { [   U0921,    U0922   ] };  // V: da, dha
     key <AB05>   { [   U092C,    U092D   ] };  // B: ba, bha
-    key <AB06>   { [   U0928,    U0923   ] };  // N: na, nha
-    key <AB07>   { [   U092E,    U093D,	U092E,	U093D   ] };  // M: ma, avagraha
+    key <AB06>   { [   U0928,    U0923   ] };  // N: na, nna
+    key <AB07>   { [   U092E,    U0919,	U092E,	U093D   ] };  // M: ma, nga, avagraha
     key <AB08>   { [   comma,    U0970	 ] };// comma: comma, dev abbreviation sign
     key <AB09>   { [   period,   U093C 	 ] };  // period: period, nukta
     key <AB10>	 { [   slash,   question ] };
@@ -165,7 +167,9 @@ xkb_symbols "bolnagri" {
 //    modifier_map Lock   { Caps_Lock };
 //    modifier_map Control{ Control_L };
 //    modifier_map Mod3   { Mode_switch };
+
     include "level3(ralt_switch)"
+    include "rupeesign(4)"
 };
 
 // based on a keyboard map from an 'xkb/symbols/ben' file
@@ -234,6 +238,9 @@ xkb_symbols "ben" {
       key <AB08> { [      comma,      U09B7 ]       };
       key <AB09> { [      period,     U0964 ]       };
       key <AB10> { [      U09DF,  U09AF	]       };
+
+    include "level3(ralt_switch)"
+    include "rupeesign(4)"
 };
 
 xkb_symbols "ben_probhat" {
@@ -307,6 +314,8 @@ xkb_symbols "ben_probhat" {
 //   modifier_map Lock   { Caps_Lock };
 //   modifier_map Control{ Control_L };
 
+    include "level3(ralt_switch)"
+    include "rupeesign(4)"
 };
 
 // Bengali Baishakhi, Bengali Baishakhi Inscript, Bengali Bornona, Uni Gitanjali Layouts are added by Promathesh Mandal <promathesh812004@gmail.com>
@@ -670,6 +679,8 @@ xkb_symbols "guj" {
       key <AB08> { [      comma,     U0AB7  ]       };
       key <AB09> { [      period,    U0964  ]       };
       key <AB10> { [      U0AAF, question   ]       };
+      include "rupeesign(4)"
+      include "level3(ralt_switch)"
 };
 
 partial alphanumeric_keys 
@@ -736,7 +747,8 @@ xkb_symbols "kan" {
 	symbols[Group1] = [ Mode_switch, Multi_key ],
 	virtualMods = AltGr
     };
-
+    include "rupeesign(4)"
+    include "level3(ralt_switch)"
 };
 
 // Description : A keymap for Malayalam
@@ -828,6 +840,9 @@ xkb_symbols "mal" {
     key <AB09> { [ period     , U0200d ] };
     key <AB10> { [ U0d2f , question   ] };
 
+    include "rupeesign(4)"
+    include "level3(ralt_switch)"
+
 };
 
 //Name		:	Lalitha
@@ -845,7 +860,7 @@ xkb_symbols "mal_lalitha" {
     key <AE01>  { [   1,	exclam,	U0D67,		exclam	   ] };
     key <AE02>  { [   2,	at,		U0D68,		at	   ] };
     key <AE03>  { [   3,    	numbersign, 	U0D69,		numbersign ] };
-    key <AE04>  { [   4,	dollar,		U0D6A,		dollar     ] };
+    key <AE04>  { [   4,	dollar,		U0D6A			     ] };
     key <AE05>  { [   5,	percent,	U0D6B,		percent    ] };
     key <AE06>  { [   6,	asciicircum,	U0D6C,		asciicircum ] };
     key <AE07>  { [   7,	ampersand,	U0D6D,		ampersand  ] };
@@ -901,6 +916,7 @@ xkb_symbols "mal_lalitha" {
 //    modifier_map Control{ Control_L };
 //    modifier_map Mod3   { Mode_switch };
     include "level3(ralt_switch)"
+    include "rupeesign(4)"
 };
 
 
@@ -964,6 +980,8 @@ xkb_symbols "ori" {
 	symbols[Group1] = [ Mode_switch, Multi_key ],
 	virtualMods = AltGr
     };
+    include "rupeesign(4)"
+    include "level3(ralt_switch)"
 };
 
 // based on a keyboard map from an 'xkb/symbols/tml' file
@@ -1029,6 +1047,9 @@ xkb_symbols "tam" {
       key <AB08> { [      comma,      U0BB7 ]       };
       key <AB09> { [      period,     U0964 ]       };
       key <AB10> { [      U0BAF,  question  ]       };
+
+      include "level3(ralt_switch)"
+      include "rupeesign(4)"
 };
 
 partial alphanumeric_keys 
@@ -1340,6 +1361,8 @@ xkb_symbols "tel" {
         symbols[Group1] = [ Mode_switch, Multi_key ],
         virtualMods = AltGr
     };
+    include "rupeesign(4)"
+    include "level3(ralt_switch)"
 };
 
 partial alphanumeric_keys 
@@ -1425,6 +1448,9 @@ xkb_symbols "guru" {
       key <AB08> { [      comma,     less       ]       };
       key <AB09> { [      period,    U0964  ]       };
       key <AB10> { [      U0A2F, question   ]       };
+
+    include "rupeesign(4)"
+    include "level3(ralt_switch)"
 };
 
 //Name		:	Jhelum (Refind Inscript)
@@ -1443,10 +1469,10 @@ xkb_symbols "jhelum" {
      key <AE01>  { [   1,exclam,	U0A67,	exclam	   ] };
      key <AE02>  { [   2,at,	U0A68,	at	   ] };
      key <AE03>  { [   3,numbersign, U0A69,	numbersign ] };
-     key <AE04>  { [   4,dollar,	U0A6A,	dollar     ] };
+     key <AE04>  { [   4,dollar,	U0A6A		 ] };
      key <AE05>  { [   5,percent,U0A6B,	percent    ] };
-     key <AE06>  { [   6,asciicircum, U0A6C,asciicircum ] };
-     key <AE07>  { [   7,ampersand,U0A6D,ampersand  ] };
+     key <AE06>  { [   6,U0A73, U0A6C,asciicircum ] };
+     key <AE07>  { [   7,U0A72,U0A6D,ampersand  ] };
      key <AE08>  { [   8,asterisk,U0A6E,	asterisk   ] };
      key <AE09>  { [   9,parenleft,U0A6F,parenleft  ] };
      key <AE10>  { [   0,parenright,U0A66,parenright ] };
@@ -1458,27 +1484,27 @@ xkb_symbols "jhelum" {
      key <AD01>   { [   U0A4C, 	U0A14   ] };  // Q: oo, ooh
      key <AD02>   { [   U0A48,  	U0A10	] };  // W: ee, ae
      key <AD03>   { [   U0A3E,   U0A06  ] };  // E: a, aa
-     key <AD04>   { [   U0A40,	U0A08  	] };  // R: ee, ai
+     key <AD04>   { [   U0A40,	U0A08, U20B9  	] };  // R: ee, ai, rupeesign
      key <AD05>   { [   U0A42,   U0A0A   ] };  // T: u, uu
      key <AD06>   { [   U0A30,	U0A5C   ] };  // Y: ra, raa
      key <AD07>   { [   U0A26,   U0A27   ] };  // U: tha, thha
-     key <AD08>   { [   U0A17,   U0A18   ] };  // I:ga, gha
+     key <AD08>   { [   U0A17,   U0A18, U0A5A   ] };  // I:ga, gha
      key <AD09>   { [   U0A24,   U0A1F   ] };  // O: ta, tha
-     key <AD10>   { [   U0A2A,   U0A5E   ] };  // P: pa, pha
+     key <AD10>   { [   U0A2A,   U0A5E, VoidSymbol,U0A5E  ] };  // P: pa, pha
      key <AD11>   { [   U0A21,   U0A22,   bracketleft,   braceleft   ] };  
      key <AD12>	 { [   U0A19,   U0A1E,   bracketright, braceright   ] };
      
      //A Row
      key <AC01>   { [   U0A4B,	 U0A13  ] };   // A: o, oo
-     key <AC02>   { [   U0A40,    U0A0F   ] };  // S: e, ee
+     key <AC02>   { [   U0A47,    U0A0F   ] };  // S: e, ee
      key <AC03>   { [   U0A4D,    U0A05   ] };  // D: halant, aa
      key <AC04>   { [   U0A3F,    U0A07   ] };  // F: i, aa
      key <AC05>   { [   U0A41,    U0A09   ] };  // G: u, uh
      key <AC06>   { [   U0A39,    U0A20   ] };  // H: ha, thha
-     key <AC07>   { [   U0A1C,    U0A1D   ] };  // J: ja, jha
-     key <AC08>   { [   U0A15,    U0A16   ] };  // K: ka, kha
-     key <AC09>   { [   U0A32,	 U0A25   ] };  // L: la, tha
-     key <AC10>   { [   U0A38,   semicolon, colon  ] }; //; sa
+     key <AC07>   { [   U0A1C,    U0A1D, U0A5B   ] };  // J: ja, jha
+     key <AC08>   { [   U0A15,    U0A16,VoidSymbol ,U0A59   ] };  // K: ka, kha
+     key <AC09>   { [   U0A32,	 U0A25, U0A33   ] };  // L: la, tha
+     key <AC10>   { [   U0A38,   colon, U0A36  ] }; //; sa
      key <AC11>   { [apostrophe, quotedbl ] };
  
      //Z Row
@@ -1563,6 +1589,8 @@ xkb_symbols "olpc" {
   include "nbsp(zwnj3zwj4)"
 
   include "group(olpc)"
+  include "rupeesign(4)"
+  include "level3(ralt_switch)"
 };
 
 partial alphanumeric_keys 
@@ -1628,6 +1656,7 @@ xkb_symbols "hin-wx" {
       key <AB10> {       [      slash,      question        ]       };
 
     include "level3(ralt_switch)"
+    include "rupeesign(4)"
 };
 
 partial alphanumeric_keys

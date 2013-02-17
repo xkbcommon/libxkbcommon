@@ -26,7 +26,7 @@ xkb_symbols "basic" {
     key <AD03>	{ [         e,          E,     EuroSign,     EuroSign ]	};
     key <AD06>	{ [         z,          Z,    leftarrow,          yen ]	};
     key <AD11>	{ [udiaeresis, Udiaeresis, dead_diaeresis, dead_abovering ] };
-    key <AD12>	{ [      plus,   asterisk,   dead_tilde,  dead_macron ]	};
+    key <AD12>	{ [      plus,   asterisk,   asciitilde,  macron ]	};
 
     key <AC02>  { [         s,          S,                U017F,     U1E9E    ] };
     key <AC07>  { [         j,          J,        dead_belowdot, dead_abovedot   ] };
@@ -47,6 +47,16 @@ xkb_symbols "basic" {
     include "kpdl(comma)"
 
     include "level3(ralt_switch)"
+};
+
+partial alphanumeric_keys
+xkb_symbols "legacy" {
+    // previous standard German layout with tilde as dead key
+
+    include "de(basic)"
+    name[Group1]="German (legacy)";
+
+    key <AD12>	{ [      plus,   asterisk,   dead_tilde,  dead_macron ]	};
 };
 
 partial alphanumeric_keys
@@ -319,7 +329,7 @@ xkb_symbols "neo_base" {
     key <AB02> { [ odiaeresis,              Odiaeresis,              dollar,                  U03F5,                   Tab,                     Tab,                     intersection,            NoSymbol                 ] };
     key <AB03> { [ adiaeresis,              Adiaeresis,              bar,                     Greek_eta,               Insert,                  Insert,                  U2135,                   NoSymbol                 ] };
     key <AB04> { [ p,                       P,                       asciitilde,              Greek_pi,                Return,                  Return,                  Greek_PI,                NoSymbol                 ] };
-    key <AB05> { [ z,                       Z,                       grave,                   Greek_zeta,              Undo,                    Undo,                    U2124,                   NoSymbol                 ] };
+    key <AB05> { [ z,                       Z,                       grave,                   Greek_zeta,              Undo,                    Redo,                    U2124,                   NoSymbol                 ] };
 
     key <AB06> { [ b,                       B,                       plus,                    Greek_beta,              colon,                   NoSymbol,                U21D0,                   NoSymbol                 ] };
     key <AB07> { [ m,                       M,                       percent,                 Greek_mu,                KP_1,                    KP_1,                    ifonlyif,                NoSymbol                 ] };
@@ -344,7 +354,7 @@ xkb_symbols "neo_base" {
     // Topmost row
     // --------------------------------------------------------------
     key <KPDV> { [ KP_Divide,               KP_Divide,               division,                U2300,                   U2215,                   NoSymbol,                U2223,                   NoSymbol                 ] };
-    key <KPMU> { [ KP_Multiply,             KP_Multiply,             U2219,                   U2299,                   multiply,                NoSymbol,                U2297,                   NoSymbol                 ] };
+    key <KPMU> { [ KP_Multiply,             KP_Multiply,             U22C5,                   U2299,                   multiply,                NoSymbol,                U2297,                   NoSymbol                 ] };
     key <KPSU> { [ KP_Subtract,             KP_Subtract,             U2212,                   U2296,                   U2216,                   NoSymbol,                U2238,                   NoSymbol                 ] };
 
     // Top row
@@ -482,6 +492,21 @@ xkb_symbols "dsb_qwertz"
 	key <AD06> { [              z,              Z,         zcaron,         Zcaron ] };
 	key <AD07> { [              u,              U,         zacute,         Zacute ] };
 	key <AD09> { [              o,              O,         oacute,         Oacute ] };
+};
+
+partial alphanumeric_keys 
+xkb_symbols "qwerty" {
+ 
+    // This layout should work exactly as a de with the exception 
+    // of 'Z' and 'Y' keys, which are in the qwerty style (ie. swapped).
+    // 2008 by Matej Košík <kosik@fiit.stuba.sk>
+    
+    include "de(basic)"
+
+    name[Group1] = "German (qwerty)";
+
+    key <AB01>	{ [         z,          Z,     leftarrow,         yen ]	};
+    key <AD06>	{ [         y,          Y, guillemotleft,        less ]	};
 };
 
 // layout for Russian letters on an german keyboard
@@ -624,4 +649,9 @@ xkb_symbols "hu" {
     key <TLDE> { [asciicircum,    degree,       notsign,     notsign ] };
     
     
+};
+
+partial alphanumeric_keys
+	xkb_symbols "sun_type6" {
+	include "sun_vndr/de(sun_type6)"
 };
