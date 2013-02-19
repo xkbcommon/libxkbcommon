@@ -520,7 +520,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
         darray_append(into->group_names, *group_name);
 
     darray_foreach(keyi, from->keys) {
-        merge = (merge == MERGE_DEFAULT ? keyi->merge : merge);
+        keyi->merge = (merge == MERGE_DEFAULT ? keyi->merge : merge);
         if (!AddKeySymbols(into, keyi))
             into->errorCount++;
     }
