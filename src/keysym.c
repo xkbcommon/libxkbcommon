@@ -85,9 +85,11 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
     if (entry)
         return snprintf(buffer, size, "%s", entry->name);
 
-    if (ks >= 0x01000100 && ks <= 0x0110ffff)
-        /* Unnamed Unicode codepoint. */
-        return snprintf(buffer, size, "U%lx", ks & 0xffffffUL);
+    /* Unnamed Unicode codepoint. */
+    if (ks >= 0x01000100 && ks <= 0x0110ffff) {
+        const int width = (ks & 0xff0000UL) ? 8 : 4;
+        return snprintf(buffer, size, "U%0*lX", width, ks & 0xffffffUL);
+    }
 
     /* Unnamed, non-Unicode, symbol (shouldn't generally happen). */
     return snprintf(buffer, size, "0x%08x", ks);

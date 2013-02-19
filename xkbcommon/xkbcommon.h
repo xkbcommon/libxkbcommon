@@ -183,7 +183,7 @@ typedef uint32_t xkb_keycode_t;
  *
  * Besides those, any Unicode/ISO 10646 character in the range U0100 to
  * U10FFFF can be represented by a keysym value in the range 0x01000100 to
- * 0x0110FFFF.  The name of Unicode keysyms is "U<codepoint>", e.g. "Ua1b2".
+ * 0x0110FFFF.  The name of Unicode keysyms is "U<codepoint>", e.g. "UA1B2".
  *
  * The name of other unnamed keysyms is the hexadecimal representation of
  * their value, e.g. "0xabcd1234".

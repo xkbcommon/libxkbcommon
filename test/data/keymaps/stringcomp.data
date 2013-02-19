@@ -1110,7 +1110,7 @@ xkb_keymap {
 			symbols[Group1]= [               4,          dollar ],
 			symbols[Group2]= [               4,       semicolon ],
 			symbols[Group3]= [               4,          dollar,            cent,        NoSymbol,      onequarter,        currency,        NoSymbol,        NoSymbol ],
-			symbols[Group4]= [               4,  guillemotright,           U203a,    femalesymbol,        NoSymbol,        NoSymbol,           U22a5,        NoSymbol ]
+			symbols[Group4]= [               4,  guillemotright,           U203A,    femalesymbol,        NoSymbol,        NoSymbol,           U22A5,        NoSymbol ]
 		};
 		key <AE05>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1126,7 +1126,7 @@ xkb_keymap {
 			symbols[Group1]= [ { H, E, L, L, O },     asciicircum ],
 			symbols[Group2]= [               6,           colon ],
 			symbols[Group3]= [               6,        question,         notsign,        NoSymbol,   threequarters,     fiveeighths,        NoSymbol,        NoSymbol ],
-			symbols[Group4]= [               6,          dollar,            cent,           U26a5,        sterling,        NoSymbol,           U2225,        NoSymbol ]
+			symbols[Group4]= [               6,          dollar,            cent,           U26A5,        sterling,        NoSymbol,           U2225,        NoSymbol ]
 		};
 		key <AE07>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1134,7 +1134,7 @@ xkb_keymap {
 			symbols[Group1]= [ { Y, E, S, space, T, H, I, S, space, I, S, space, D, O, G },       ampersand ],
 			symbols[Group2]= [               7,        question ],
 			symbols[Group3]= [               7,       ampersand,       braceleft,        NoSymbol,        NoSymbol,    seveneighths,        NoSymbol,        NoSymbol ],
-			symbols[Group4]= [               7,        EuroSign,             yen,            U3f0,        currency,        NoSymbol,      rightarrow,        NoSymbol ]
+			symbols[Group4]= [               7,        EuroSign,             yen,           U03F0,        currency,        NoSymbol,      rightarrow,        NoSymbol ]
 		};
 		key <AE08>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1142,7 +1142,7 @@ xkb_keymap {
 			symbols[Group1]= [               8,        asterisk ],
 			symbols[Group2]= [               8,        asterisk ],
 			symbols[Group3]= [               8,        asterisk,      braceright,        NoSymbol,        NoSymbol,       trademark,        NoSymbol,        NoSymbol ],
-			symbols[Group4]= [               8, doublelowquotemark, singlelowquotemark,           U27e8,             Tab,    ISO_Left_Tab,           U221e,        NoSymbol ]
+			symbols[Group4]= [               8, doublelowquotemark, singlelowquotemark,           U27E8,             Tab,    ISO_Left_Tab,           U221E,        NoSymbol ]
 		};
 		key <AE09>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1150,7 +1150,7 @@ xkb_keymap {
 			symbols[Group1]= [               9,       parenleft ],
 			symbols[Group2]= [               9,       parenleft ],
 			symbols[Group3]= [               9,       parenleft,     bracketleft,        NoSymbol,        NoSymbol,       plusminus,        NoSymbol,        NoSymbol ],
-			symbols[Group4]= [               9, leftdoublequotemark, leftsinglequotemark,           U27e9,       KP_Divide,       KP_Divide,       variation,        NoSymbol ]
+			symbols[Group4]= [               9, leftdoublequotemark, leftsinglequotemark,           U27E9,       KP_Divide,       KP_Divide,       variation,        NoSymbol ]
 		};
 		key <AE10>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1282,7 +1282,7 @@ xkb_keymap {
 			symbols[Group1]= [               p,               P ],
 			symbols[Group2]= [     Cyrillic_ze,     Cyrillic_ZE ],
 			symbols[Group3]= [               p,               P,       paragraph,        NoSymbol,           thorn,           THORN,        NoSymbol,        NoSymbol ],
-			symbols[Group4]= [               q,               Q,       ampersand,            U3d5,          KP_Add,          KP_Add,           U211a,        NoSymbol ]
+			symbols[Group4]= [               q,               Q,       ampersand,           U03D5,          KP_Add,          KP_Add,           U211A,        NoSymbol ]
 		};
 		key <AD11>               {
 			type[group2]= "ALPHABETIC",
@@ -1291,7 +1291,7 @@ xkb_keymap {
 			symbols[Group1]= [     bracketleft,       braceleft ],
 			symbols[Group2]= [     Cyrillic_ha,     Cyrillic_HA ],
 			symbols[Group3]= [ dead_circumflex,  dead_diaeresis,      dead_grave,        NoSymbol,        NoSymbol,  dead_abovering,        NoSymbol,        NoSymbol ],
-			symbols[Group4]= [          ssharp,           U1e9e,            U17f, Greek_finalsmallsigma,           U2212,        NoSymbol,             jot,        NoSymbol ]
+			symbols[Group4]= [          ssharp,           U1E9E,           U017F, Greek_finalsmallsigma,           U2212,        NoSymbol,             jot,        NoSymbol ]
 		};
 		key <AD12>               {
 			type[group2]= "ALPHABETIC",
@@ -1371,7 +1371,7 @@ xkb_keymap {
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               j,               J ],
 			symbols[Group2]= [      Cyrillic_o,      Cyrillic_O ],
-			symbols[Group3]= [               j,               J,        NoSymbol,        NoSymbol,            U133,            U132,        NoSymbol,        NoSymbol ],
+			symbols[Group3]= [               j,               J,        NoSymbol,        NoSymbol,           U0133,           U0132,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               n,               N,       parenleft,        Greek_nu,            KP_4,            KP_4,           U2115,        NoSymbol ]
 		};
 		key <AC08>               {
@@ -1382,7 +1382,7 @@ xkb_keymap {
 			symbols[Group1]= [               k,               K ],
 			symbols[Group2]= [     Cyrillic_el,     Cyrillic_EL ],
 			symbols[Group3]= [               k,               K,        NoSymbol,        NoSymbol,             kra,        NoSymbol,        NoSymbol,        NoSymbol ],
-			symbols[Group4]= [               r,               R,      parenright,       Greek_rho,            KP_5,            KP_5,           U211d,        NoSymbol ]
+			symbols[Group4]= [               r,               R,      parenright,       Greek_rho,            KP_5,            KP_5,           U211D,        NoSymbol ]
 		};
 		key <AC09>               {
 			type[group1]= "ALPHABETIC",
@@ -1391,7 +1391,7 @@ xkb_keymap {
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               l,               L ],
 			symbols[Group2]= [     Cyrillic_de,     Cyrillic_DE ],
-			symbols[Group3]= [               l,               L,        NoSymbol,        NoSymbol,            U140,            U13f,        NoSymbol,        NoSymbol ],
+			symbols[Group3]= [               l,               L,        NoSymbol,        NoSymbol,           U0140,           U013F,        NoSymbol,        NoSymbol ],
 			symbols[Group4]= [               t,               T,           minus,       Greek_tau,            KP_6,            KP_6, partialderivative,        NoSymbol ]
 		};
 		key <AC10>               {
@@ -1419,7 +1419,7 @@ xkb_keymap {
 			symbols[Group1]= [           grave,      asciitilde ],
 			symbols[Group2]= [     Cyrillic_io,     Cyrillic_IO ],
 			symbols[Group3]= [           slash,       backslash,             bar,        NoSymbol,        NoSymbol,          hyphen,        NoSymbol,        NoSymbol ],
-			symbols[Group4]= [ dead_circumflex,      dead_caron,           U21bb,            U2de,   dead_abovedot, Pointer_EnableKeys,   dead_belowdot,        NoSymbol ]
+			symbols[Group4]= [ dead_circumflex,      dead_caron,           U21BB,           U02DE,   dead_abovedot, Pointer_EnableKeys,   dead_belowdot,        NoSymbol ]
 		};
 		key <LFSH>               {
 			type[group4]= "TWO_LEVEL",
@@ -1454,7 +1454,7 @@ xkb_keymap {
 			symbols[Group1]= [               x,               X ],
 			symbols[Group2]= [    Cyrillic_che,    Cyrillic_CHE ],
 			symbols[Group3]= [               x,               X,  guillemotright,        NoSymbol ],
-			symbols[Group4]= [      odiaeresis,      Odiaeresis,          dollar,            U3f5,             Tab,             Tab,    intersection,        NoSymbol ]
+			symbols[Group4]= [      odiaeresis,      Odiaeresis,          dollar,           U03F5,             Tab,             Tab,    intersection,        NoSymbol ]
 		};
 		key <AB03>               {
 			type[group1]= "ALPHABETIC",
@@ -1493,8 +1493,8 @@ xkb_keymap {
 			type[group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 			symbols[Group1]= [               n,               N ],
 			symbols[Group2]= [     Cyrillic_te,     Cyrillic_TE ],
-			symbols[Group3]= [               n,               N,        NoSymbol,        NoSymbol,            U149,           U266a,        NoSymbol,        NoSymbol ],
-			symbols[Group4]= [               b,               B,            plus,      Greek_beta,           colon,        NoSymbol,           U21d0,        NoSymbol ]
+			symbols[Group3]= [               n,               N,        NoSymbol,        NoSymbol,           U0149,           U266A,        NoSymbol,        NoSymbol ],
+			symbols[Group4]= [               b,               B,            plus,      Greek_beta,           colon,        NoSymbol,           U21D0,        NoSymbol ]
 		};
 		key <AB07>               {
 			type[group1]= "ALPHABETIC",
@@ -1513,7 +1513,7 @@ xkb_keymap {
 			symbols[Group1]= [           comma,            less ],
 			symbols[Group2]= [     Cyrillic_be,     Cyrillic_BE ],
 			symbols[Group3]= [           comma,      apostrophe,            less,        NoSymbol,  Greek_horizbar,        multiply,        NoSymbol,        NoSymbol ],
-			symbols[Group4]= [           comma,          endash,        quotedbl,            U3f1,            KP_2,            KP_2,           U21d2,        NoSymbol ]
+			symbols[Group4]= [           comma,          endash,        quotedbl,           U03F1,            KP_2,            KP_2,           U21D2,        NoSymbol ]
 		};
 		key <AB09>               {
 			type[group2]= "ALPHABETIC",
@@ -1522,7 +1522,7 @@ xkb_keymap {
 			symbols[Group1]= [          period,         greater ],
 			symbols[Group2]= [     Cyrillic_yu,     Cyrillic_YU ],
 			symbols[Group3]= [          period,        quotedbl,         greater,        NoSymbol,  periodcentered,        division,        NoSymbol,        NoSymbol ],
-			symbols[Group4]= [          period, enfilledcircbullet,      apostrophe,            U3d1,            KP_3,            KP_3,           U21a6,        NoSymbol ]
+			symbols[Group4]= [          period, enfilledcircbullet,      apostrophe,           U03D1,            KP_3,            KP_3,           U21A6,        NoSymbol ]
 		};
 		key <AB10>               {
 			type[group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1556,7 +1556,7 @@ xkb_keymap {
 			symbols[Group1]= [           space ],
 			symbols[Group2]= [           space ],
 			symbols[Group3]= [           space,           space,    nobreakspace,        NoSymbol ],
-			symbols[Group4]= [           space,           space,           space,    nobreakspace,            KP_0,            KP_0,           U202f,        NoSymbol ]
+			symbols[Group4]= [           space,           space,           space,    nobreakspace,            KP_0,            KP_0,           U202F,        NoSymbol ]
 		};
 		key <CAPS>               {
 			type= "ONE_LEVEL",
@@ -1618,21 +1618,21 @@ xkb_keymap {
 			symbols[Group1]= [         KP_Home,            KP_7 ],
 			symbols[Group2]= [         KP_Home,            KP_7 ],
 			symbols[Group3]= [         KP_Home,            KP_7 ],
-			symbols[Group4]= [            KP_7,           U2714,           U2195,           U226a,         KP_Home,         KP_Home,         upstile,        NoSymbol ]
+			symbols[Group4]= [            KP_7,           U2714,           U2195,           U226A,         KP_Home,         KP_Home,         upstile,        NoSymbol ]
 		};
 		key <KP8>                {
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [           KP_Up,            KP_8 ],
 			symbols[Group2]= [           KP_Up,            KP_8 ],
 			symbols[Group3]= [           KP_Up,            KP_8 ],
-			symbols[Group4]= [            KP_8,           U2718,         uparrow,    intersection,           KP_Up,           KP_Up,           U22c2,        NoSymbol ]
+			symbols[Group4]= [            KP_8,           U2718,         uparrow,    intersection,           KP_Up,           KP_Up,           U22C2,        NoSymbol ]
 		};
 		key <KP9>                {
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [        KP_Prior,            KP_9 ],
 			symbols[Group2]= [        KP_Prior,            KP_9 ],
 			symbols[Group3]= [        KP_Prior,            KP_9 ],
-			symbols[Group4]= [            KP_9,          dagger,           U20d7,           U226b,        KP_Prior,        KP_Prior,           U2309,        NoSymbol ]
+			symbols[Group4]= [            KP_9,          dagger,           U20D7,           U226B,        KP_Prior,        KP_Prior,           U2309,        NoSymbol ]
 		};
 		key <KPSU>               {
 			type[group1]= "CTRL+ALT",
@@ -1656,7 +1656,7 @@ xkb_keymap {
 			symbols[Group1]= [        KP_Begin,            KP_5 ],
 			symbols[Group2]= [        KP_Begin,            KP_5 ],
 			symbols[Group3]= [        KP_Begin,            KP_5 ],
-			symbols[Group4]= [            KP_5,        EuroSign,           colon,           U22b6,        KP_Begin,        KP_Begin,           U22b7,        NoSymbol ]
+			symbols[Group4]= [            KP_5,        EuroSign,           colon,           U22B6,        KP_Begin,        KP_Begin,           U22B7,        NoSymbol ]
 		};
 		key <KP6>                {
 			type[group4]= "EIGHT_LEVEL",
@@ -1687,21 +1687,21 @@ xkb_keymap {
 			symbols[Group1]= [         KP_Down,            KP_2 ],
 			symbols[Group2]= [         KP_Down,            KP_2 ],
 			symbols[Group3]= [         KP_Down,            KP_2 ],
-			symbols[Group4]= [            KP_2,           heart,       downarrow,           union,         KP_Down,         KP_Down,           U22c3,        NoSymbol ]
+			symbols[Group4]= [            KP_2,           heart,       downarrow,           union,         KP_Down,         KP_Down,           U22C3,        NoSymbol ]
 		};
 		key <KP3>                {
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [         KP_Next,            KP_3 ],
 			symbols[Group2]= [         KP_Next,            KP_3 ],
 			symbols[Group3]= [         KP_Next,            KP_3 ],
-			symbols[Group4]= [            KP_3,           U2660,           U21cc, greaterthanequal,         KP_Next,         KP_Next,           U230b,        NoSymbol ]
+			symbols[Group4]= [            KP_3,           U2660,           U21CC, greaterthanequal,         KP_Next,         KP_Next,           U230B,        NoSymbol ]
 		};
 		key <KP0>                {
 			type[group4]= "EIGHT_LEVEL",
 			symbols[Group1]= [       KP_Insert,            KP_0 ],
 			symbols[Group2]= [       KP_Insert,            KP_0 ],
 			symbols[Group3]= [       KP_Insert,            KP_0 ],
-			symbols[Group4]= [            KP_0,           U2423,         percent,           U2030,       KP_Insert,       KP_Insert,           U25a1,        NoSymbol ]
+			symbols[Group4]= [            KP_0,           U2423,         percent,           U2030,       KP_Insert,       KP_Insert,           U25A1,        NoSymbol ]
 		};
 		key <KPDL>               {
 			type[group2]= "KEYPAD",

@@ -103,6 +103,10 @@ main(void)
     assert(test_keysym(0x0, "NoSymbol"));
     assert(test_keysym(0x1008FE20, "XF86Ungrab"));
     assert(test_keysym(0x01001234, "U1234"));
+    /* 16-bit unicode padded to width 4. */
+    assert(test_keysym(0x010002DE, "U02DE"));
+    /* 32-bit unicode padded to width 8. */
+    assert(test_keysym(0x0101F4A9, "U0001F4A9"));
 
     assert(test_casestring("Undo", 0xFF65));
     assert(test_casestring("UNDO", 0xFF65));
