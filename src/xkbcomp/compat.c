@@ -928,14 +928,13 @@ static void
 HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
 {
     bool ok;
-    ParseCommon *stmt;
 
     merge = (merge == MERGE_DEFAULT ? MERGE_AUGMENT : merge);
 
     free(info->name);
     info->name = strdup_safe(file->name);
 
-    for (stmt = file->defs; stmt; stmt = stmt->next) {
+    for (ParseCommon *stmt = file->defs; stmt; stmt = stmt->next) {
         switch (stmt->type) {
         case STMT_INCLUDE:
             ok = HandleIncludeCompatMap(info, (IncludeStmt *) stmt);

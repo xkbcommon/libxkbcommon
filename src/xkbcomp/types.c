@@ -738,17 +738,16 @@ static void
 HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
 {
     bool ok;
-    ParseCommon *stmt;
 
     free(info->name);
     info->name = strdup_safe(file->name);
 
-    for (stmt = file->defs; stmt; stmt = stmt->next) {
+    for (ParseCommon *stmt = file->defs; stmt; stmt = stmt->next) {
         switch (stmt->type) {
         case STMT_INCLUDE:
             ok = HandleIncludeKeyTypes(info, (IncludeStmt *) stmt);
             break;
-        case STMT_TYPE: /* e.g. type "ONE_LEVEL" */
+        case STMT_TYPE:
             ok = HandleKeyTypeDef(info, (KeyTypeDef *) stmt, merge);
             break;
         case STMT_VAR:
@@ -757,7 +756,7 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
                     "Statement ignored\n");
             ok = true;
             break;
-        case STMT_VMOD: /* virtual_modifiers NumLock, ... */
+        case STMT_VMOD:
             ok = HandleVModDef(info->keymap, (VModDef *) stmt);
             break;
         default:

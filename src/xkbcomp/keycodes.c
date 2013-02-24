@@ -590,13 +590,12 @@ HandleLedNameDef(KeyNamesInfo *info, LedNameDef *def,
 static void
 HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
 {
-    ParseCommon *stmt;
     bool ok;
 
     free(info->name);
     info->name = strdup_safe(file->name);
 
-    for (stmt = file->defs; stmt; stmt = stmt->next) {
+    for (ParseCommon *stmt = file->defs; stmt; stmt = stmt->next) {
         switch (stmt->type) {
         case STMT_INCLUDE:
             ok = HandleIncludeKeycodes(info, (IncludeStmt *) stmt);

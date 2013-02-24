@@ -988,7 +988,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
 static int
 SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
 {
-    xkb_layout_index_t grp, grp_to_use;
+    xkb_layout_index_t group, group_to_use;
     xkb_atom_t name;
 
     if (!arrayNdx) {
@@ -998,7 +998,7 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
         return false;
     }
 
-    if (!ExprResolveGroup(info->keymap->ctx, arrayNdx, &grp)) {
+    if (!ExprResolveGroup(info->keymap->ctx, arrayNdx, &group)) {
         log_err(info->keymap->ctx,
                 "Illegal index in group name definition; "
                 "Definition with non-integer array index ignored\n");
@@ -1008,30 +1008,30 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
     if (!ExprResolveString(info->keymap->ctx, value, &name)) {
         log_err(info->keymap->ctx,
                 "Group name must be a string; "
-                "Illegal name for group %d ignored\n", grp);
+                "Illegal name for group %d ignored\n", group);
         return false;
     }
 
-    grp_to_use = XKB_LAYOUT_INVALID;
     if (info->explicit_group == XKB_LAYOUT_INVALID) {
-        grp_to_use = grp - 1;
+        group_to_use = group - 1;
     }
-    else if (grp - 1 == 0) {
-        grp_to_use = info->explicit_group;
+    else if (group - 1 == 0) {
+        group_to_use = info->explicit_group;
     }
     else {
         log_warn(info->keymap->ctx,
                  "An explicit group was specified for the '%s' map, "
                  "but it provides a name for a group other than Group1 (%d); "
                  "Ignoring group name '%s'\n",
-                 info->name, grp,
+                 info->name, group,
                  xkb_atom_text(info->keymap->ctx, name));
         return false;
     }
 
-    if (grp_to_use >= darray_size(info->group_names))
-        darray_resize0(info->group_names, grp_to_use + 1);
-    darray_item(info->group_names, grp_to_use) = name;
+    if (group_to_use >= darray_size(info->group_names))
+        darray_resize0(info->group_names, group_to_use + 1);
+    darray_item(info->group_names, group_to_use) = name;
+
     return true;
 }
 
@@ -1236,13 +1236,11 @@ static void
 HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge)
 {
     bool ok;
-    ParseCommon *stmt;
 
     free(info->name);
     info->name = strdup_safe(file->name);
 
-    stmt = file->defs;
-    for (stmt = file->defs; stmt; stmt = stmt->next) {
+    for (ParseCommon *stmt = file->defs; stmt; stmt = stmt->next) {
         switch (stmt->type) {
         case STMT_INCLUDE:
             ok = HandleIncludeSymbols(info, (IncludeStmt *) stmt);
