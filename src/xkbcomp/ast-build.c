@@ -503,30 +503,38 @@ XkbFile *
 XkbFileFromComponents(struct xkb_context *ctx,
                       const struct xkb_component_names *kkctgs)
 {
-    IncludeStmt *inc;
-    XkbFile *keycodes, *types, *compat, *symbols;
+    char *const components[] = {
+        kkctgs->keycodes, kkctgs->types,
+        kkctgs->compat, kkctgs->symbols,
+    };
+    enum xkb_file_type type;
+    IncludeStmt *include = NULL;
+    XkbFile *file = NULL;
+    ParseCommon *defs = NULL;
 
-    inc = IncludeCreate(ctx, kkctgs->keycodes, MERGE_DEFAULT);
-    keycodes = XkbFileCreate(ctx, FILE_TYPE_KEYCODES, NULL,
-                             (ParseCommon *) inc, 0);
+    for (type = FIRST_KEYMAP_FILE_TYPE; type <= LAST_KEYMAP_FILE_TYPE; type++) {
+        include = IncludeCreate(ctx, components[type], MERGE_DEFAULT);
+        if (!include)
+            goto err;
 
-    inc = IncludeCreate(ctx, kkctgs->types, MERGE_DEFAULT);
-    types = XkbFileCreate(ctx, FILE_TYPE_TYPES, NULL,
-                          (ParseCommon *) inc, 0);
-    AppendStmt(&keycodes->common, &types->common);
+        file = XkbFileCreate(ctx, type, NULL, &include->common, 0);
+        if (!file) {
+            FreeInclude(include);
+            goto err;
+        }
 
-    inc = IncludeCreate(ctx, kkctgs->compat, MERGE_DEFAULT);
-    compat = XkbFileCreate(ctx, FILE_TYPE_COMPAT, NULL,
-                           (ParseCommon *) inc, 0);
-    AppendStmt(&keycodes->common, &compat->common);
+        defs = AppendStmt(defs, &file->common);
+    }
 
-    inc = IncludeCreate(ctx, kkctgs->symbols, MERGE_DEFAULT);
-    symbols = XkbFileCreate(ctx, FILE_TYPE_SYMBOLS, NULL,
-                            (ParseCommon *) inc, 0);
-    AppendStmt(&keycodes->common, &symbols->common);
+    file = XkbFileCreate(ctx, FILE_TYPE_KEYMAP, NULL, defs, 0);
+    if (!file)
+        goto err;
 
-    return XkbFileCreate(ctx, FILE_TYPE_KEYMAP, NULL,
-                         &keycodes->common, 0);
+    return file;
+
+err:
+    FreeXkbFile((XkbFile *) defs);
+    return NULL;
 }
 
 static void
