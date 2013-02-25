@@ -185,10 +185,10 @@ static bool
 write_types(struct xkb_keymap *keymap, struct buf *buf)
 {
     if (keymap->types_section_name)
-        write_buf(buf, "xkb_types \"%s\" {\n\n",
+        write_buf(buf, "xkb_types \"%s\" {\n",
                   keymap->types_section_name);
     else
-        write_buf(buf, "xkb_types {\n\n");
+        write_buf(buf, "xkb_types {\n");
 
     write_vmods(keymap, buf);
 
@@ -414,10 +414,10 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
     const struct xkb_led *led;
 
     if (keymap->compat_section_name)
-        write_buf(buf, "xkb_compatibility \"%s\" {\n\n",
+        write_buf(buf, "xkb_compatibility \"%s\" {\n",
                   keymap->compat_section_name);
     else
-        write_buf(buf, "xkb_compatibility {\n\n");
+        write_buf(buf, "xkb_compatibility {\n");
 
     write_vmods(keymap, buf);
 
@@ -495,10 +495,10 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
     xkb_layout_index_t group;
 
     if (keymap->symbols_section_name)
-        write_buf(buf, "xkb_symbols \"%s\" {\n\n",
+        write_buf(buf, "xkb_symbols \"%s\" {\n",
                   keymap->symbols_section_name);
     else
-        write_buf(buf, "xkb_symbols {\n\n");
+        write_buf(buf, "xkb_symbols {\n");
 
     for (group = 0; group < keymap->num_group_names; group++)
         if (keymap->group_names[group])

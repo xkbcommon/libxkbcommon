@@ -294,7 +294,6 @@ xkb_keycodes "evdev_aliases(qwerty)" {
 };
 
 xkb_types "complete" {
-
 	virtual_modifiers NumLock,Alt,LevelThree,LAlt,RAlt,RControl,LControl,ScrollLock,LevelFive,AltGr,Meta,Super,Hyper;
 
 	type "ONE_LEVEL" {
@@ -589,7 +588,6 @@ xkb_types "complete" {
 };
 
 xkb_compatibility "complete_caps(caps_lock)_4_misc(assign_shift_left_action)_4_level5(level5_lock)_4" {
-
 	virtual_modifiers NumLock,Alt,LevelThree,LAlt,RAlt,RControl,LControl,ScrollLock,LevelFive,AltGr,Meta,Super,Hyper;
 
 	interpret.useModMapMods= AnyLevel;
@@ -1073,7 +1071,6 @@ xkb_compatibility "complete_caps(caps_lock)_4_misc(assign_shift_left_action)_4_l
 };
 
 xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
-
 	name[group1]="English (US)";
 	name[group2]="Russian";
 	name[group3]="Canadian Multilingual";
