@@ -544,7 +544,7 @@ Element         :       ACTION_TOK
                 |       INDICATOR
                         { $$ = xkb_atom_intern(param->ctx, "indicator"); }
                 |       SHAPE
-                        { $$ = xkb_atom_intern(param->ctx, "shape"); }
+                        { $$ = XKB_ATOM_NONE; }
                 |       ROW
                         { $$ = XKB_ATOM_NONE; }
                 |       SECTION
