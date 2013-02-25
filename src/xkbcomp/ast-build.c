@@ -56,17 +56,6 @@
 #include "parser-priv.h"
 #include "include.h"
 
-ATTR_MALLOC static void *
-malloc_or_die(size_t size)
-{
-    void *p = malloc(size);
-    if (!p) {
-        fprintf(stderr, "Out of memory\n");
-        exit(1);
-    }
-    return p;
-}
-
 ParseCommon *
 AppendStmt(ParseCommon *to, ParseCommon *append)
 {
@@ -84,14 +73,15 @@ AppendStmt(ParseCommon *to, ParseCommon *append)
 ExprDef *
 ExprCreate(enum expr_op_type op, enum expr_value_type type)
 {
-    ExprDef *expr;
-
-    expr = malloc_or_die(sizeof(*expr));
+    ExprDef *expr = malloc(sizeof(*expr));
+    if (!expr)
+        return NULL;
 
     expr->common.type = STMT_EXPR;
     expr->common.next = NULL;
     expr->op = op;
     expr->value_type = type;
+
     return expr;
 }
 
@@ -99,23 +89,25 @@ ExprDef *
 ExprCreateUnary(enum expr_op_type op, enum expr_value_type type,
                 ExprDef *child)
 {
-    ExprDef *expr;
-    expr = malloc_or_die(sizeof(*expr));
+    ExprDef *expr = malloc(sizeof(*expr));
+    if (!expr)
+        return NULL;
 
     expr->common.type = STMT_EXPR;
     expr->common.next = NULL;
     expr->op = op;
     expr->value_type = type;
     expr->value.child = child;
+
     return expr;
 }
 
 ExprDef *
 ExprCreateBinary(enum expr_op_type op, ExprDef *left, ExprDef *right)
 {
-    ExprDef *expr;
-
-    expr = malloc_or_die(sizeof(*expr));
+    ExprDef *expr = malloc(sizeof(*expr));
+    if (!expr)
+        return NULL;
 
     expr->common.type = STMT_EXPR;
     expr->common.next = NULL;
@@ -129,61 +121,67 @@ ExprCreateBinary(enum expr_op_type op, ExprDef *left, ExprDef *right)
         expr->value_type = EXPR_TYPE_UNKNOWN;
     expr->value.binary.left = left;
     expr->value.binary.right = right;
+
     return expr;
 }
 
 KeycodeDef *
 KeycodeCreate(xkb_atom_t name, int64_t value)
 {
-    KeycodeDef *def;
-
-    def = malloc_or_die(sizeof(*def));
+    KeycodeDef *def = malloc(sizeof(*def));
+    if (!def)
+        return NULL;
 
     def->common.type = STMT_KEYCODE;
     def->common.next = NULL;
     def->name = name;
     def->value = value;
+
     return def;
 }
 
 KeyAliasDef *
 KeyAliasCreate(xkb_atom_t alias, xkb_atom_t real)
 {
-    KeyAliasDef *def;
-
-    def = malloc_or_die(sizeof(*def));
+    KeyAliasDef *def = malloc(sizeof(*def));
+    if (!def)
+        return NULL;
 
     def->common.type = STMT_ALIAS;
     def->common.next = NULL;
     def->alias = alias;
     def->real = real;
+
     return def;
 }
 
 VModDef *
-VModCreate(xkb_atom_t name, ExprDef * value)
+VModCreate(xkb_atom_t name, ExprDef *value)
 {
-    VModDef *def;
-
-    def = malloc_or_die(sizeof(*def));
+    VModDef *def = malloc(sizeof(*def));
+    if (!def)
+        return NULL;
 
     def->common.type = STMT_VMOD;
     def->common.next = NULL;
     def->name = name;
     def->value = value;
+
     return def;
 }
 
 VarDef *
-VarCreate(ExprDef * name, ExprDef * value)
+VarCreate(ExprDef *name, ExprDef *value)
 {
-    VarDef *def;
-    def = malloc_or_die(sizeof(*def));
+    VarDef *def = malloc(sizeof(*def));
+    if (!def)
+        return NULL;
 
     def->common.type = STMT_VAR;
     def->common.next = NULL;
     def->name = name;
     def->value = value;
+
     return def;
 }
 
@@ -191,109 +189,118 @@ VarDef *
 BoolVarCreate(xkb_atom_t nameToken, unsigned set)
 {
     ExprDef *name, *value;
+    VarDef *def;
 
     name = ExprCreate(EXPR_IDENT, EXPR_TYPE_UNKNOWN);
     name->value.str = nameToken;
     value = ExprCreate(EXPR_VALUE, EXPR_TYPE_BOOLEAN);
     value->value.uval = set;
-    return VarCreate(name, value);
+    def = VarCreate(name, value);
+
+    return def;
 }
 
 InterpDef *
-InterpCreate(char *sym, ExprDef * match)
+InterpCreate(char *sym, ExprDef *match)
 {
-    InterpDef *def;
-
-    def = malloc_or_die(sizeof(*def));
+    InterpDef *def = malloc(sizeof(*def));
+    if (!def)
+        return NULL;
 
     def->common.type = STMT_INTERP;
     def->common.next = NULL;
     def->sym = sym;
     def->match = match;
+
     return def;
 }
 
 KeyTypeDef *
-KeyTypeCreate(xkb_atom_t name, VarDef * body)
+KeyTypeCreate(xkb_atom_t name, VarDef *body)
 {
-    KeyTypeDef *def;
-
-    def = malloc_or_die(sizeof(*def));
+    KeyTypeDef *def = malloc(sizeof(*def));
+    if (!def)
+        return NULL;
 
     def->common.type = STMT_TYPE;
     def->common.next = NULL;
     def->merge = MERGE_DEFAULT;
     def->name = name;
     def->body = body;
+
     return def;
 }
 
 SymbolsDef *
 SymbolsCreate(xkb_atom_t keyName, ExprDef *symbols)
 {
-    SymbolsDef *def;
-
-    def = malloc_or_die(sizeof(*def));
+    SymbolsDef *def = malloc(sizeof(*def));
+    if (!def)
+        return NULL;
 
     def->common.type = STMT_SYMBOLS;
     def->common.next = NULL;
     def->merge = MERGE_DEFAULT;
     def->keyName = keyName;
     def->symbols = symbols;
+
     return def;
 }
 
 GroupCompatDef *
-GroupCompatCreate(int group, ExprDef * val)
+GroupCompatCreate(int group, ExprDef *val)
 {
-    GroupCompatDef *def;
-
-    def = malloc_or_die(sizeof(*def));
+    GroupCompatDef *def = malloc(sizeof(*def));
+    if (!def)
+        return NULL;
 
     def->common.type = STMT_GROUP_COMPAT;
     def->common.next = NULL;
     def->merge = MERGE_DEFAULT;
     def->group = group;
     def->def = val;
+
     return def;
 }
 
 ModMapDef *
-ModMapCreate(uint32_t modifier, ExprDef * keys)
+ModMapCreate(uint32_t modifier, ExprDef *keys)
 {
-    ModMapDef *def;
-
-    def = malloc_or_die(sizeof(*def));
+    ModMapDef *def = malloc(sizeof(*def));
+    if (!def)
+        return NULL;
 
     def->common.type = STMT_MODMAP;
     def->common.next = NULL;
     def->merge = MERGE_DEFAULT;
     def->modifier = modifier;
     def->keys = keys;
+
     return def;
 }
 
 LedMapDef *
-LedMapCreate(xkb_atom_t name, VarDef * body)
+LedMapCreate(xkb_atom_t name, VarDef *body)
 {
-    LedMapDef *def;
-
-    def = malloc_or_die(sizeof(*def));
+    LedMapDef *def = malloc(sizeof(*def));
+    if (!def)
+        return NULL;
 
     def->common.type = STMT_LED_MAP;
     def->common.next = NULL;
     def->merge = MERGE_DEFAULT;
     def->name = name;
     def->body = body;
+
     return def;
 }
 
 LedNameDef *
-LedNameCreate(int ndx, ExprDef * name, bool virtual)
+LedNameCreate(int ndx, ExprDef *name, bool virtual)
 {
-    LedNameDef *def;
-
-    def = malloc_or_die(sizeof(*def));
+    LedNameDef *def = malloc(sizeof(*def));
+    if (!def)
+        return NULL;
 
     def->common.type = STMT_LED_NAME;
     def->common.next = NULL;
@@ -301,21 +308,23 @@ LedNameCreate(int ndx, ExprDef * name, bool virtual)
     def->ndx = ndx;
     def->name = name;
     def->virtual = virtual;
+
     return def;
 }
 
 ExprDef *
-ActionCreate(xkb_atom_t name, ExprDef * args)
+ActionCreate(xkb_atom_t name, ExprDef *args)
 {
-    ExprDef *act;
-
-    act = malloc_or_die(sizeof(*act));
+    ExprDef *act = malloc(sizeof(*act));
+    if (!act)
+        return NULL;
 
     act->common.type = STMT_EXPR;
     act->common.next = NULL;
     act->op = EXPR_ACTION_DECL;
     act->value.action.name = name;
     act->value.action.args = args;
+
     return act;
 }
 
@@ -351,7 +360,7 @@ CreateMultiKeysymList(ExprDef *list)
 }
 
 ExprDef *
-AppendKeysymList(ExprDef * list, char *sym)
+AppendKeysymList(ExprDef *list, char *sym)
 {
     size_t nSyms = darray_size(list->value.list.syms);
 
@@ -363,7 +372,7 @@ AppendKeysymList(ExprDef * list, char *sym)
 }
 
 ExprDef *
-AppendMultiKeysymList(ExprDef * list, ExprDef * append)
+AppendMultiKeysymList(ExprDef *list, ExprDef *append)
 {
     size_t nSyms = darray_size(list->value.list.syms);
     size_t numEntries = darray_size(append->value.list.syms);
@@ -455,25 +464,25 @@ err:
     return NULL;
 }
 
-/*
- * All latin-1 alphanumerics, plus parens, slash, minus, underscore and
- * wildcards.
- */
-static const unsigned char componentSpecLegal[] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0xa7, 0xff, 0x83,
-    0xfe, 0xff, 0xff, 0x87, 0xfe, 0xff, 0xff, 0x07,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0xff, 0xff, 0x7f, 0xff, 0xff, 0xff, 0x7f, 0xff
-};
-
 static void
-EnsureSafeMapName(char *name)
+EscapeMapName(char *name)
 {
+    /*
+     * All latin-1 alphanumerics, plus parens, slash, minus, underscore and
+     * wildcards.
+     */
+    static const unsigned char legal[] = {
+        0x00, 0x00, 0x00, 0x00, 0x00, 0xa7, 0xff, 0x83,
+        0xfe, 0xff, 0xff, 0x87, 0xfe, 0xff, 0xff, 0x07,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0xff, 0xff, 0x7f, 0xff, 0xff, 0xff, 0x7f, 0xff
+    };
+
     if (!name)
         return;
 
-    while (*name != '\0') {
-        if ((componentSpecLegal[(*name) / 8] & (1 << ((*name) % 8))) == 0)
+    while (*name) {
+        if (!(legal[*name / 8] & (1 << (*name % 8))))
             *name = '_';
         name++;
     }
@@ -489,13 +498,14 @@ XkbFileCreate(struct xkb_context *ctx, enum xkb_file_type type, char *name,
     if (!file)
         return NULL;
 
-    EnsureSafeMapName(name);
+    EscapeMapName(name);
     file->file_type = type;
     file->topName = strdup_safe(name);
     file->name = name;
     file->defs = defs;
     file->id = xkb_context_take_file_id(ctx);
     file->flags = flags;
+
     return file;
 }
 
@@ -700,6 +710,7 @@ static const char *xkb_file_type_strings[_FILE_TYPE_NUM_ENTRIES] = {
     [FILE_TYPE_TYPES] = "xkb_types",
     [FILE_TYPE_COMPAT] = "xkb_compatibility",
     [FILE_TYPE_SYMBOLS] = "xkb_symbols",
+    [FILE_TYPE_GEOMETRY] = "xkb_geometry",
     [FILE_TYPE_KEYMAP] = "xkb_keymap",
     [FILE_TYPE_RULES] = "rules",
 };
