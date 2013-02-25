@@ -39,7 +39,7 @@ AC_USE_SYSTEM_EXTENSIONS
 # Initialize libtool
 LT_INIT
 
-# Require xorg-macros minimum of 1.8 for AM_SILENT_RULES
+# Add xorg-macros stuff
 m4_ifndef([XORG_MACROS_VERSION],
           [m4_fatal([must install xorg-macros 1.16 or later before running autoconf/autogen])])
 XORG_MACROS_VERSION(1.16)
