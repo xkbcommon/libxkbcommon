@@ -60,7 +60,6 @@ libxkbcommon_la_SOURCES = \
 	src/keysym.h \
 	src/keysym-utf.c \
 	src/ks_tables.h \
-	src/list.h \
 	src/keymap.c \
 	src/keymap.h \
 	src/state.c \
