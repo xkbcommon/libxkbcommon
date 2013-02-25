@@ -551,7 +551,7 @@ HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
 
     if (!istreq(field, "minimum") && !istreq(field, "maximum")) {
         log_err(info->ctx, "Unknown field encountered; "
-                "Assigment to field %s ignored\n", field);
+                "Assignment to field %s ignored\n", field);
         return false;
     }
 
