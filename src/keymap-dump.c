@@ -131,7 +131,7 @@ write_vmods(struct xkb_keymap *keymap, struct buf *buf)
             continue;
 
         if (num_vmods == 0)
-            write_buf(buf, "\t\tvirtual_modifiers ");
+            write_buf(buf, "\tvirtual_modifiers ");
         else
             write_buf(buf, ",");
         write_buf(buf, "%s", xkb_atom_text(keymap->ctx, mod->name));
@@ -153,31 +153,31 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
     const struct xkb_led *led;
 
     if (keymap->keycodes_section_name)
-        write_buf(buf, "\txkb_keycodes \"%s\" {\n",
+        write_buf(buf, "xkb_keycodes \"%s\" {\n",
                   keymap->keycodes_section_name);
     else
-        write_buf(buf, "\txkb_keycodes {\n");
+        write_buf(buf, "xkb_keycodes {\n");
 
     xkb_foreach_key(key, keymap) {
         if (key->name == XKB_ATOM_NONE)
             continue;
 
-        write_buf(buf, "\t\t%-20s = %d;\n",
+        write_buf(buf, "\t%-20s = %d;\n",
                   KeyNameText(keymap->ctx, key->name), key->keycode);
     }
 
     darray_enumerate(i, led, keymap->leds)
         if (led->name != XKB_ATOM_NONE)
-            write_buf(buf, "\t\tindicator %d = \"%s\";\n",
+            write_buf(buf, "\tindicator %d = \"%s\";\n",
                       i + 1, xkb_atom_text(keymap->ctx, led->name));
 
 
     darray_foreach(alias, keymap->key_aliases)
-        write_buf(buf, "\t\talias %-14s = %s;\n",
+        write_buf(buf, "\talias %-14s = %s;\n",
                   KeyNameText(keymap->ctx, alias->alias),
                   KeyNameText(keymap->ctx, alias->real));
 
-    write_buf(buf, "\t};\n\n");
+    write_buf(buf, "};\n\n");
     return true;
 }
 
@@ -185,20 +185,20 @@ static bool
 write_types(struct xkb_keymap *keymap, struct buf *buf)
 {
     if (keymap->types_section_name)
-        write_buf(buf, "\txkb_types \"%s\" {\n\n",
+        write_buf(buf, "xkb_types \"%s\" {\n\n",
                   keymap->types_section_name);
     else
-        write_buf(buf, "\txkb_types {\n\n");
+        write_buf(buf, "xkb_types {\n\n");
 
     write_vmods(keymap, buf);
 
     for (unsigned i = 0; i < keymap->num_types; i++) {
         const struct xkb_key_type *type = &keymap->types[i];
 
-        write_buf(buf, "\t\ttype \"%s\" {\n",
+        write_buf(buf, "\ttype \"%s\" {\n",
                   xkb_atom_text(keymap->ctx, type->name));
 
-        write_buf(buf, "\t\t\tmodifiers= %s;\n",
+        write_buf(buf, "\t\tmodifiers= %s;\n",
                   ModMaskText(keymap, type->mods.mods));
 
         for (unsigned j = 0; j < type->num_entries; j++) {
@@ -213,23 +213,23 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
                 continue;
 
             str = ModMaskText(keymap, entry->mods.mods);
-            write_buf(buf, "\t\t\tmap[%s]= Level%d;\n",
+            write_buf(buf, "\t\tmap[%s]= Level%d;\n",
                       str, entry->level + 1);
 
             if (entry->preserve.mods)
-                write_buf(buf, "\t\t\tpreserve[%s]= %s;\n",
+                write_buf(buf, "\t\tpreserve[%s]= %s;\n",
                           str, ModMaskText(keymap, entry->preserve.mods));
         }
 
         for (xkb_level_index_t n = 0; n < type->num_levels; n++)
             if (type->level_names[n])
-                write_buf(buf, "\t\t\tlevel_name[Level%d]= \"%s\";\n", n + 1,
+                write_buf(buf, "\t\tlevel_name[Level%d]= \"%s\";\n", n + 1,
                           xkb_atom_text(keymap->ctx, type->level_names[n]));
 
-        write_buf(buf, "\t\t};\n");
+        write_buf(buf, "\t};\n");
     }
 
-    write_buf(buf, "\t};\n\n");
+    write_buf(buf, "};\n\n");
     return true;
 }
 
@@ -237,33 +237,33 @@ static bool
 write_led_map(struct xkb_keymap *keymap, struct buf *buf,
               const struct xkb_led *led)
 {
-    write_buf(buf, "\t\tindicator \"%s\" {\n",
+    write_buf(buf, "\tindicator \"%s\" {\n",
               xkb_atom_text(keymap->ctx, led->name));
 
     if (led->which_groups) {
         if (led->which_groups != XKB_STATE_LAYOUT_EFFECTIVE) {
-            write_buf(buf, "\t\t\twhichGroupState= %s;\n",
+            write_buf(buf, "\t\twhichGroupState= %s;\n",
                       LedStateText(keymap->ctx, led->which_groups));
         }
-        write_buf(buf, "\t\t\tgroups= 0x%02x;\n",
+        write_buf(buf, "\t\tgroups= 0x%02x;\n",
                   led->groups);
     }
 
     if (led->which_mods) {
         if (led->which_mods != XKB_STATE_MODS_EFFECTIVE) {
-            write_buf(buf, "\t\t\twhichModState= %s;\n",
+            write_buf(buf, "\t\twhichModState= %s;\n",
                       LedStateText(keymap->ctx, led->which_mods));
         }
-        write_buf(buf, "\t\t\tmodifiers= %s;\n",
+        write_buf(buf, "\t\tmodifiers= %s;\n",
                   ModMaskText(keymap, led->mods.mods));
     }
 
     if (led->ctrls) {
-        write_buf(buf, "\t\t\tcontrols= %s;\n",
+        write_buf(buf, "\t\tcontrols= %s;\n",
                   ControlMaskText(keymap->ctx, led->ctrls));
     }
 
-    write_buf(buf, "\t\t};\n");
+    write_buf(buf, "\t};\n");
     return true;
 }
 
@@ -414,34 +414,34 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
     const struct xkb_led *led;
 
     if (keymap->compat_section_name)
-        write_buf(buf, "\txkb_compatibility \"%s\" {\n\n",
+        write_buf(buf, "xkb_compatibility \"%s\" {\n\n",
                   keymap->compat_section_name);
     else
-        write_buf(buf, "\txkb_compatibility {\n\n");
+        write_buf(buf, "xkb_compatibility {\n\n");
 
     write_vmods(keymap, buf);
 
-    write_buf(buf, "\t\tinterpret.useModMapMods= AnyLevel;\n");
-    write_buf(buf, "\t\tinterpret.repeat= False;\n");
+    write_buf(buf, "\tinterpret.useModMapMods= AnyLevel;\n");
+    write_buf(buf, "\tinterpret.repeat= False;\n");
 
     darray_foreach(si, keymap->sym_interprets) {
-        write_buf(buf, "\t\tinterpret %s+%s(%s) {\n",
+        write_buf(buf, "\tinterpret %s+%s(%s) {\n",
                   si->sym ? KeysymText(keymap->ctx, si->sym) : "Any",
                   SIMatchText(si->match),
                   ModMaskText(keymap, si->mods));
 
         if (si->virtual_mod != XKB_MOD_INVALID)
-            write_buf(buf, "\t\t\tvirtualModifier= %s;\n",
+            write_buf(buf, "\t\tvirtualModifier= %s;\n",
                       ModIndexText(keymap, si->virtual_mod));
 
         if (si->level_one_only)
-            write_buf(buf, "\t\t\tuseModMapMods=level1;\n");
+            write_buf(buf, "\t\tuseModMapMods=level1;\n");
 
         if (si->repeat)
-            write_buf(buf, "\t\t\trepeat= True;\n");
+            write_buf(buf, "\t\trepeat= True;\n");
 
-        write_action(keymap, buf, &si->action, "\t\t\taction= ", ";\n");
-        write_buf(buf, "\t\t};\n");
+        write_action(keymap, buf, &si->action, "\t\taction= ", ";\n");
+        write_buf(buf, "\t};\n");
     }
 
     darray_foreach(led, keymap->leds)
@@ -449,7 +449,7 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
             led->mods.mods || led->ctrls)
             write_led_map(keymap, buf, led);
 
-    write_buf(buf, "\t};\n\n");
+    write_buf(buf, "};\n\n");
 
     return true;
 }
@@ -495,15 +495,15 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
     xkb_layout_index_t group;
 
     if (keymap->symbols_section_name)
-        write_buf(buf, "\txkb_symbols \"%s\" {\n\n",
+        write_buf(buf, "xkb_symbols \"%s\" {\n\n",
                   keymap->symbols_section_name);
     else
-        write_buf(buf, "\txkb_symbols {\n\n");
+        write_buf(buf, "xkb_symbols {\n\n");
 
     for (group = 0; group < keymap->num_group_names; group++)
         if (keymap->group_names[group])
             write_buf(buf,
-                      "\t\tname[group%d]=\"%s\";\n", group + 1,
+                      "\tname[group%d]=\"%s\";\n", group + 1,
                       xkb_atom_text(keymap->ctx, keymap->group_names[group]));
     if (group > 0)
         write_buf(buf, "\n");
@@ -517,7 +517,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
         if (key->num_groups == 0)
             continue;
 
-        write_buf(buf, "\t\tkey %-20s {", KeyNameText(keymap->ctx, key->name));
+        write_buf(buf, "\tkey %-20s {", KeyNameText(keymap->ctx, key->name));
 
         for (group = 0; group < key->num_groups; group++) {
             if (key->groups[group].explicit_type)
@@ -537,37 +537,37 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
                         continue;
 
                     type = key->groups[group].type;
-                    write_buf(buf, "\n\t\t\ttype[group%u]= \"%s\",",
+                    write_buf(buf, "\n\t\ttype[group%u]= \"%s\",",
                               group + 1,
                               xkb_atom_text(keymap->ctx, type->name));
                 }
             }
             else {
                 type = key->groups[0].type;
-                write_buf(buf, "\n\t\t\ttype= \"%s\",",
+                write_buf(buf, "\n\t\ttype= \"%s\",",
                           xkb_atom_text(keymap->ctx, type->name));
             }
         }
 
         if (key->explicit & EXPLICIT_REPEAT) {
             if (key->repeats)
-                write_buf(buf, "\n\t\t\trepeat= Yes,");
+                write_buf(buf, "\n\t\trepeat= Yes,");
             else
-                write_buf(buf, "\n\t\t\trepeat= No,");
+                write_buf(buf, "\n\t\trepeat= No,");
             simple = false;
         }
 
         if (key->vmodmap && (key->explicit & EXPLICIT_VMODMAP))
-            write_buf(buf, "\n\t\t\tvirtualMods= %s,",
+            write_buf(buf, "\n\t\tvirtualMods= %s,",
                       ModMaskText(keymap, key->vmodmap));
 
         switch (key->out_of_range_group_action) {
         case RANGE_SATURATE:
-            write_buf(buf, "\n\t\t\tgroupsClamp,");
+            write_buf(buf, "\n\t\tgroupsClamp,");
             break;
 
         case RANGE_REDIRECT:
-            write_buf(buf, "\n\t\t\tgroupsRedirect= Group%u,",
+            write_buf(buf, "\n\t\tgroupsRedirect= Group%u,",
                       key->out_of_range_group_number + 1);
             break;
 
@@ -592,12 +592,12 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
             for (group = 0; group < key->num_groups; group++) {
                 if (group != 0)
                     write_buf(buf, ",");
-                write_buf(buf, "\n\t\t\tsymbols[Group%u]= [ ", group + 1);
+                write_buf(buf, "\n\t\tsymbols[Group%u]= [ ", group + 1);
                 if (!write_keysyms(keymap, buf, key, group))
                     return false;
                 write_buf(buf, " ]");
                 if (show_actions) {
-                    write_buf(buf, ",\n\t\t\tactions[Group%u]= [ ", group + 1);
+                    write_buf(buf, ",\n\t\tactions[Group%u]= [ ", group + 1);
                     for (level = 0;
                          level < XkbKeyGroupWidth(key, group); level++) {
                         if (level != 0)
@@ -609,7 +609,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
                     write_buf(buf, " ]");
                 }
             }
-            write_buf(buf, "\n\t\t};\n");
+            write_buf(buf, "\n\t};\n");
         }
     }
 
@@ -622,12 +622,12 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
 
         darray_enumerate(i, mod, keymap->mods)
             if (key->modmap & (1 << i))
-                write_buf(buf, "\t\tmodifier_map %s { %s };\n",
+                write_buf(buf, "\tmodifier_map %s { %s };\n",
                           xkb_atom_text(keymap->ctx, mod->name),
                           KeyNameText(keymap->ctx, key->name));
     }
 
-    write_buf(buf, "\t};\n\n");
+    write_buf(buf, "};\n\n");
     return true;
 }
 
