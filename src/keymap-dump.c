@@ -489,6 +489,114 @@ write_keysyms(struct xkb_keymap *keymap, struct buf *buf,
 }
 
 static bool
+write_key(struct xkb_keymap *keymap, struct buf *buf,
+          const struct xkb_key *key)
+{
+    xkb_layout_index_t group;
+    bool simple = true;
+    bool explicit_types = false;
+    bool multi_type = false;
+    bool show_actions;
+
+    write_buf(buf, "\tkey %-20s {", KeyNameText(keymap->ctx, key->name));
+
+    for (group = 0; group < key->num_groups; group++) {
+        if (key->groups[group].explicit_type)
+            explicit_types = true;
+
+        if (group != 0 && key->groups[group].type != key->groups[0].type)
+            multi_type = true;
+    }
+
+    if (explicit_types) {
+        const struct xkb_key_type *type;
+        simple = false;
+
+        if (multi_type) {
+            for (group = 0; group < key->num_groups; group++) {
+                if (!key->groups[group].explicit_type)
+                    continue;
+
+                type = key->groups[group].type;
+                write_buf(buf, "\n\t\ttype[group%u]= \"%s\",",
+                            group + 1,
+                            xkb_atom_text(keymap->ctx, type->name));
+            }
+        }
+        else {
+            type = key->groups[0].type;
+            write_buf(buf, "\n\t\ttype= \"%s\",",
+                        xkb_atom_text(keymap->ctx, type->name));
+        }
+    }
+
+    if (key->explicit & EXPLICIT_REPEAT) {
+        if (key->repeats)
+            write_buf(buf, "\n\t\trepeat= Yes,");
+        else
+            write_buf(buf, "\n\t\trepeat= No,");
+        simple = false;
+    }
+
+    if (key->vmodmap && (key->explicit & EXPLICIT_VMODMAP))
+        write_buf(buf, "\n\t\tvirtualMods= %s,",
+                    ModMaskText(keymap, key->vmodmap));
+
+    switch (key->out_of_range_group_action) {
+    case RANGE_SATURATE:
+        write_buf(buf, "\n\t\tgroupsClamp,");
+        break;
+
+    case RANGE_REDIRECT:
+        write_buf(buf, "\n\t\tgroupsRedirect= Group%u,",
+                    key->out_of_range_group_number + 1);
+        break;
+
+    default:
+        break;
+    }
+
+    show_actions = !!(key->explicit & EXPLICIT_INTERP);
+
+    if (key->num_groups > 1 || show_actions)
+        simple = false;
+
+    if (simple) {
+        write_buf(buf, "\t[ ");
+        if (!write_keysyms(keymap, buf, key, 0))
+            return false;
+        write_buf(buf, " ] };\n");
+    }
+    else {
+        xkb_level_index_t level;
+
+        for (group = 0; group < key->num_groups; group++) {
+            if (group != 0)
+                write_buf(buf, ",");
+            write_buf(buf, "\n\t\tsymbols[Group%u]= [ ", group + 1);
+            if (!write_keysyms(keymap, buf, key, group))
+                return false;
+            write_buf(buf, " ]");
+            if (show_actions) {
+                write_buf(buf, ",\n\t\tactions[Group%u]= [ ", group + 1);
+                for (level = 0;
+                        level < XkbKeyGroupWidth(key, group); level++) {
+                    if (level != 0)
+                        write_buf(buf, ", ");
+                    write_action(keymap, buf,
+                                    &key->groups[group].levels[level].action,
+                                    NULL, NULL);
+                }
+                write_buf(buf, " ]");
+            }
+        }
+        write_buf(buf, "\n\t};\n");
+    }
+
+    return true;
+}
+
+static bool
 write_symbols(struct xkb_keymap *keymap, struct buf *buf)
 {
     const struct xkb_key *key;
@@ -508,110 +616,9 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
     if (group > 0)
         write_buf(buf, "\n");
 
-    xkb_foreach_key(key, keymap) {
-        bool simple = true;
-        bool explicit_types = false;
-        bool multi_type = false;
-        bool show_actions;
-
-        if (key->num_groups == 0)
-            continue;
-
-        write_buf(buf, "\tkey %-20s {", KeyNameText(keymap->ctx, key->name));
-
-        for (group = 0; group < key->num_groups; group++) {
-            if (key->groups[group].explicit_type)
-                explicit_types = true;
-
-            if (group != 0 && key->groups[group].type != key->groups[0].type)
-                multi_type = true;
-        }
-
-        if (explicit_types) {
-            const struct xkb_key_type *type;
-            simple = false;
-
-            if (multi_type) {
-                for (group = 0; group < key->num_groups; group++) {
-                    if (!key->groups[group].explicit_type)
-                        continue;
-
-                    type = key->groups[group].type;
-                    write_buf(buf, "\n\t\ttype[group%u]= \"%s\",",
-                              group + 1,
-                              xkb_atom_text(keymap->ctx, type->name));
-                }
-            }
-            else {
-                type = key->groups[0].type;
-                write_buf(buf, "\n\t\ttype= \"%s\",",
-                          xkb_atom_text(keymap->ctx, type->name));
-            }
-        }
-
-        if (key->explicit & EXPLICIT_REPEAT) {
-            if (key->repeats)
-                write_buf(buf, "\n\t\trepeat= Yes,");
-            else
-                write_buf(buf, "\n\t\trepeat= No,");
-            simple = false;
-        }
-
-        if (key->vmodmap && (key->explicit & EXPLICIT_VMODMAP))
-            write_buf(buf, "\n\t\tvirtualMods= %s,",
-                      ModMaskText(keymap, key->vmodmap));
-
-        switch (key->out_of_range_group_action) {
-        case RANGE_SATURATE:
-            write_buf(buf, "\n\t\tgroupsClamp,");
-            break;
-
-        case RANGE_REDIRECT:
-            write_buf(buf, "\n\t\tgroupsRedirect= Group%u,",
-                      key->out_of_range_group_number + 1);
-            break;
-
-        default:
-            break;
-        }
-
-        show_actions = !!(key->explicit & EXPLICIT_INTERP);
-
-        if (key->num_groups > 1 || show_actions)
-            simple = false;
-
-        if (simple) {
-            write_buf(buf, "\t[ ");
-            if (!write_keysyms(keymap, buf, key, 0))
-                return false;
-            write_buf(buf, " ] };\n");
-        }
-        else {
-            xkb_level_index_t level;
-
-            for (group = 0; group < key->num_groups; group++) {
-                if (group != 0)
-                    write_buf(buf, ",");
-                write_buf(buf, "\n\t\tsymbols[Group%u]= [ ", group + 1);
-                if (!write_keysyms(keymap, buf, key, group))
-                    return false;
-                write_buf(buf, " ]");
-                if (show_actions) {
-                    write_buf(buf, ",\n\t\tactions[Group%u]= [ ", group + 1);
-                    for (level = 0;
-                         level < XkbKeyGroupWidth(key, group); level++) {
-                        if (level != 0)
-                            write_buf(buf, ", ");
-                        write_action(keymap, buf,
-                                     &key->groups[group].levels[level].action,
-                                     NULL, NULL);
-                    }
-                    write_buf(buf, " ]");
-                }
-            }
-            write_buf(buf, "\n\t};\n");
-        }
-    }
+    xkb_foreach_key(key, keymap)
+        if (key->num_groups > 0)
+            write_key(keymap, buf, key);
 
     xkb_foreach_key(key, keymap) {
         xkb_mod_index_t i;
