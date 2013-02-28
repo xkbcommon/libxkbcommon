@@ -81,5 +81,11 @@ main(int argc, char *argv[])
     printf("types:    %s\n", kccgst.types);
     printf("compat:   %s\n", kccgst.compat);
     printf("symbols:  %s\n", kccgst.symbols);
+
+    free(kccgst.keycodes);
+    free(kccgst.types);
+    free(kccgst.compat);
+    free(kccgst.symbols);
+    xkb_context_unref(ctx);
     return 0;
 }
