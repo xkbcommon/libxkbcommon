@@ -44,6 +44,8 @@ struct xkb_context {
     int log_verbosity;
     void *user_data;
 
+    struct xkb_rule_names names_dflt;
+
     darray(char *) includes;
     darray(char *) failed_includes;
 
@@ -52,6 +54,8 @@ struct xkb_context {
     /* Buffer for the *Text() functions. */
     char text_buffer[2048];
     size_t text_next;
+
+    unsigned int use_environment_names : 1;
 };
 
 /**
@@ -271,6 +275,14 @@ log_verbosity(const char *verbosity) {
     return 0;
 }
 
+#ifndef DEFAULT_XKB_VARIANT
+#define DEFAULT_XKB_VARIANT NULL
+#endif
+
+#ifndef DEFAULT_XKB_OPTIONS
+#define DEFAULT_XKB_OPTIONS NULL
+#endif
+
 /**
  * Create a new context.
  */
@@ -304,6 +316,8 @@ xkb_context_new(enum xkb_context_flags flags)
         xkb_context_unref(ctx);
         return NULL;
     }
+
+    ctx->use_environment_names = !(flags & XKB_CONTEXT_NO_ENVIRONMENT_NAMES);
 
     ctx->atom_table = atom_table_new();
     if (!ctx->atom_table) {
@@ -417,4 +431,62 @@ xkb_context_get_buffer(struct xkb_context *ctx, size_t size)
     ctx->text_next += size;
 
     return rtrn;
+}
+
+const char *
+xkb_context_get_default_rules(struct xkb_context *ctx)
+{
+    const char *env = NULL;
+
+    if (ctx->use_environment_names)
+        env = getenv("XKB_DEFAULT_RULES");
+
+    return env ? env : DEFAULT_XKB_RULES;
+}
+
+const char *
+xkb_context_get_default_model(struct xkb_context *ctx)
+{
+    const char *env = NULL;
+
+    if (ctx->use_environment_names)
+        env = getenv("XKB_DEFAULT_MODEL");
+
+    return env ? env : DEFAULT_XKB_MODEL;
+}
+
+const char *
+xkb_context_get_default_layout(struct xkb_context *ctx)
+{
+    const char *env = NULL;
+
+    if (ctx->use_environment_names)
+        env = getenv("XKB_DEFAULT_LAYOUT");
+
+    return env ? env : DEFAULT_XKB_LAYOUT;
+}
+
+const char *
+xkb_context_get_default_variant(struct xkb_context *ctx)
+{
+    const char *env = NULL;
+    const char *layout = getenv("XKB_DEFAULT_VARIANT");
+
+    /* We don't want to inherit the variant if they haven't also set a
+     * layout, since they're so closely paired. */
+    if (layout && ctx->use_environment_names)
+        env = getenv("XKB_DEFAULT_VARIANT");
+
+    return env ? env : DEFAULT_XKB_VARIANT;
+}
+
+const char *
+xkb_context_get_default_options(struct xkb_context *ctx)
+{
+    const char *env = NULL;
+
+    if (ctx->use_environment_names)
+        env = getenv("XKB_DEFAULT_OPTIONS");
+
+    return env ? env : DEFAULT_XKB_OPTIONS;
 }

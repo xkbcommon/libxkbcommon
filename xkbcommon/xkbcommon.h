@@ -417,7 +417,9 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym);
 /** Flags for context creation. */
 enum xkb_context_flags {
     /** Create this context with an empty include path. */
-    XKB_CONTEXT_NO_DEFAULT_INCLUDES = (1 << 0)
+    XKB_CONTEXT_NO_DEFAULT_INCLUDES = (1 << 0),
+    /** Don't take RMLVO names from the environment. */
+    XKB_CONTEXT_NO_ENVIRONMENT_NAMES = (1 << 1),
 };
 
 /**

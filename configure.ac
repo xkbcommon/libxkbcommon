@@ -114,6 +114,26 @@ AC_ARG_WITH([default_layout],
 AC_DEFINE_UNQUOTED([DEFAULT_XKB_LAYOUT], ["$DEFAULT_XKB_LAYOUT"],
                    [Default XKB layout])
 
+AC_ARG_WITH([default_variant],
+    [AS_HELP_STRING([--with-default-variant=<path>],
+        [Default XKB variant (default: (none))])],
+    [DEFAULT_XKB_VARIANT="$withval"],
+    [DEFAULT_XKB_VARAINT=])
+if ! test "x$DEFAULT_XKB_VARIANT" = x; then
+    AC_DEFINE_UNQUOTED([DEFAULT_XKB_VARIANT], ["$DEFAULT_XKB_VARIANT"],
+                       [Default XKB variant])
+fi
+
+AC_ARG_WITH([default_options],
+    [AS_HELP_STRING([--with-default-options=<path>],
+        [Default XKB options (default: (none))])],
+    [DEFAULT_XKB_OPTIONS="$withval"],
+    [DEFAULT_XKB_OPTIONS=])
+if ! test "x$DEFAULT_XKB_OPTIONS" = x; then
+    AC_DEFINE_UNQUOTED([DEFAULT_XKB_OPTIONS], ["$DEFAULT_XKB_OPTIONS"],
+                       [Default XKB options])
+fi
+
 AC_CONFIG_FILES([
     Makefile
     xkbcommon-uninstalled.pc

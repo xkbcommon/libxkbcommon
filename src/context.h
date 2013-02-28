@@ -77,6 +77,21 @@ xkb_log(struct xkb_context *ctx, enum xkb_log_level level,
     xkb_log_cond_level((ctx), (level), __VA_ARGS__); \
 } while (0)
 
+const char *
+xkb_context_get_default_rules(struct xkb_context *ctx);
+
+const char *
+xkb_context_get_default_model(struct xkb_context *ctx);
+
+const char *
+xkb_context_get_default_layout(struct xkb_context *ctx);
+
+const char *
+xkb_context_get_default_variant(struct xkb_context *ctx);
+
+const char *
+xkb_context_get_default_options(struct xkb_context *ctx);
+
 /*
  * The format is not part of the argument list in order to avoid the
  * "ISO C99 requires rest arguments to be used" warning when only the

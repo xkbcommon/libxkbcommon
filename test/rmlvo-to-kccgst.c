@@ -61,13 +61,6 @@ main(int argc, char *argv[])
         }
     }
 
-    if (isempty(rmlvo.rules))
-        rmlvo.rules = DEFAULT_XKB_RULES;
-    if (isempty(rmlvo.model))
-        rmlvo.model = DEFAULT_XKB_MODEL;
-    if (isempty(rmlvo.layout))
-        rmlvo.layout = DEFAULT_XKB_LAYOUT;
-
     ctx = test_get_context(0);
     if (!ctx) {
         fprintf(stderr, "Failed to get xkb context\n");

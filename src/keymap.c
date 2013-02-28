@@ -153,13 +153,24 @@ xkb_keymap_new_from_names(struct xkb_context *ctx,
         return NULL;
     }
 
-    rmlvo = *rmlvo_in;
+    if (rmlvo_in)
+        rmlvo = *rmlvo_in;
+    else
+        memset(&rmlvo, 0, sizeof(rmlvo));
+
     if (isempty(rmlvo.rules))
-        rmlvo.rules = DEFAULT_XKB_RULES;
+        rmlvo.rules = xkb_context_get_default_rules(ctx);
     if (isempty(rmlvo.model))
-        rmlvo.model = DEFAULT_XKB_MODEL;
-    if (isempty(rmlvo.layout))
-        rmlvo.layout = DEFAULT_XKB_LAYOUT;
+        rmlvo.model = xkb_context_get_default_model(ctx);
+    /* Layout and variant are tied together, so don't try to use one from
+     * the caller and one from the environment. */
+    if (isempty(rmlvo.layout)) {
+        rmlvo.layout = xkb_context_get_default_layout(ctx);
+        rmlvo.variant = xkb_context_get_default_variant(ctx);
+    }
+    /* Options can be empty, so respect that if passed in. */
+    if (rmlvo.options == NULL)
+        rmlvo.options = xkb_context_get_default_options(ctx);
 
     keymap = xkb_keymap_new(ctx, format, flags);
     if (!keymap)
