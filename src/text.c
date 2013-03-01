@@ -31,12 +31,10 @@ bool
 LookupString(const LookupEntry tab[], const char *string,
               unsigned int *value_rtrn)
 {
-    const LookupEntry *entry;
-
     if (!string)
         return false;
 
-    for (entry = tab; entry->name; entry++) {
+    for (const LookupEntry *entry = tab; entry->name; entry++) {
         if (istreq(entry->name, string)) {
             *value_rtrn = entry->value;
             return true;
@@ -49,9 +47,7 @@ LookupString(const LookupEntry tab[], const char *string,
 const char *
 LookupValue(const LookupEntry tab[], unsigned int value)
 {
-    const LookupEntry *entry;
-
-    for (entry = tab; entry->name; entry++)
+    for (const LookupEntry *entry = tab; entry->name; entry++)
         if (entry->value == value)
             return entry->name;
 
@@ -80,78 +76,78 @@ const LookupEntry ctrlMaskNames[] = {
 };
 
 const LookupEntry modComponentMaskNames[] = {
-    {"base", XKB_STATE_MODS_DEPRESSED},
-    {"latched", XKB_STATE_MODS_LATCHED},
-    {"locked", XKB_STATE_MODS_LOCKED},
-    {"effective", XKB_STATE_MODS_EFFECTIVE},
-    {"compat", XKB_STATE_MODS_EFFECTIVE},
-    {"any", XKB_STATE_MODS_EFFECTIVE},
-    {"none", 0},
-    {NULL, 0}
+    { "base", XKB_STATE_MODS_DEPRESSED },
+    { "latched", XKB_STATE_MODS_LATCHED },
+    { "locked", XKB_STATE_MODS_LOCKED },
+    { "effective", XKB_STATE_MODS_EFFECTIVE },
+    { "compat", XKB_STATE_MODS_EFFECTIVE },
+    { "any", XKB_STATE_MODS_EFFECTIVE },
+    { "none", 0 },
+    { NULL, 0 }
 };
 
 const LookupEntry groupComponentMaskNames[] = {
-    {"base", XKB_STATE_LAYOUT_DEPRESSED},
-    {"latched", XKB_STATE_LAYOUT_LATCHED},
-    {"locked", XKB_STATE_LAYOUT_LOCKED},
-    {"effective", XKB_STATE_LAYOUT_EFFECTIVE},
-    {"any", XKB_STATE_LAYOUT_EFFECTIVE},
-    {"none", 0},
-    {NULL, 0}
+    { "base", XKB_STATE_LAYOUT_DEPRESSED },
+    { "latched", XKB_STATE_LAYOUT_LATCHED },
+    { "locked", XKB_STATE_LAYOUT_LOCKED },
+    { "effective", XKB_STATE_LAYOUT_EFFECTIVE },
+    { "any", XKB_STATE_LAYOUT_EFFECTIVE },
+    { "none", 0 },
+    { NULL, 0 }
 };
 
 const LookupEntry groupMaskNames[] = {
-    {"group1", 0x01},
-    {"group2", 0x02},
-    {"group3", 0x04},
-    {"group4", 0x08},
-    {"group5", 0x10},
-    {"group6", 0x20},
-    {"group7", 0x40},
-    {"group8", 0x80},
-    {"none", 0x00},
-    {"all", 0xff},
-    {NULL, 0}
+    { "Group1", 0x01 },
+    { "Group2", 0x02 },
+    { "Group3", 0x04 },
+    { "Group4", 0x08 },
+    { "Group5", 0x10 },
+    { "Group6", 0x20 },
+    { "Group7", 0x40 },
+    { "Group8", 0x80 },
+    { "none", 0x00 },
+    { "all", 0xff },
+    { NULL, 0 }
 };
 
 const LookupEntry groupNames[] = {
-    {"group1", 1},
-    {"group2", 2},
-    {"group3", 3},
-    {"group4", 4},
-    {"group5", 5},
-    {"group6", 6},
-    {"group7", 7},
-    {"group8", 8},
-    {NULL, 0}
+    { "Group1", 1 },
+    { "Group2", 2 },
+    { "Group3", 3 },
+    { "Group4", 4 },
+    { "Group5", 5 },
+    { "Group6", 6 },
+    { "Group7", 7 },
+    { "Group8", 8 },
+    { NULL, 0 }
 };
 
 const LookupEntry levelNames[] = {
-    { "level1", 1 },
-    { "level2", 2 },
-    { "level3", 3 },
-    { "level4", 4 },
-    { "level5", 5 },
-    { "level6", 6 },
-    { "level7", 7 },
-    { "level8", 8 },
+    { "Level1", 1 },
+    { "Level2", 2 },
+    { "Level3", 3 },
+    { "Level4", 4 },
+    { "Level5", 5 },
+    { "Level6", 6 },
+    { "Level7", 7 },
+    { "Level8", 8 },
     { NULL, 0 }
 };
 
 const LookupEntry buttonNames[] = {
-    { "button1", 1 },
-    { "button2", 2 },
-    { "button3", 3 },
-    { "button4", 4 },
-    { "button5", 5 },
+    { "Button1", 1 },
+    { "Button2", 2 },
+    { "Button3", 3 },
+    { "Button4", 4 },
+    { "Button5", 5 },
     { "default", 0 },
     { NULL, 0 }
 };
 
 const LookupEntry useModMapValueNames[] = {
-    { "levelone", 1 },
-    { "level1", 1 },
-    { "anylevel", 0 },
+    { "LevelOne", 1 },
+    { "Level1", 1 },
+    { "AnyLevel", 0 },
     { "any", 0 },
     { NULL, 0 }
 };
