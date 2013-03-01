@@ -53,7 +53,7 @@ struct xkb_context {
     struct atom_table *atom_table;
 
     /* Buffer for the *Text() functions. */
-    char text_buffer[1024];
+    char text_buffer[2048];
     size_t text_next;
 };
 

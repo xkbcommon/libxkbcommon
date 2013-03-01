@@ -211,48 +211,6 @@ const LookupEntry symInterpretMatchMaskNames[] = {
 };
 
 const char *
-ModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask)
-{
-    xkb_mod_index_t i;
-    size_t len;
-    ssize_t rem;
-    char *str;
-    char buf[1024];
-    const struct xkb_mod *mod;
-
-    if (mask == 0)
-        return "none";
-
-    if (mask == MOD_REAL_MASK_ALL)
-        return "all";
-
-    str = buf;
-    buf[0] = '\0';
-    rem = sizeof(buf);
-    darray_enumerate(i, mod, keymap->mods) {
-        if (!(mask & (1 << i)))
-            continue;
-
-        len = snprintf(str, rem, "%s%s",
-                       (str != buf) ? "+" : "",
-                       xkb_atom_text(keymap->ctx, mod->name));
-        rem -= len;
-        str += len;
-
-        if (rem <= 1)
-            break;
-    }
-    str = buf;
-
-    len = strlen(str);
-    if (len >= sizeof(buf))
-        len = sizeof(buf) - 1;
-
-    return strcpy(xkb_context_get_buffer(keymap->ctx, len + 1), str);
-
-}
-
-const char *
 ModIndexText(const struct xkb_keymap *keymap, xkb_mod_index_t ndx)
 {
     if (ndx == XKB_MOD_INVALID)
@@ -309,49 +267,72 @@ SIMatchText(enum xkb_match_operation type)
     return LookupValue(symInterpretMatchMaskNames, type);
 }
 
-#define GET_TEXT_BUF_SIZE 512
+const char *
+ModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask)
+{
+    char buf[1024];
+    size_t pos = 0;
+    xkb_mod_index_t i;
+    const struct xkb_mod *mod;
 
-#define append_get_text(...) do { \
-        int _size = snprintf(ret, GET_TEXT_BUF_SIZE, __VA_ARGS__); \
-        if (_size >= GET_TEXT_BUF_SIZE) \
-            return NULL; \
-} while (0)
+    if (mask == 0)
+        return "none";
+
+    if (mask == MOD_REAL_MASK_ALL)
+        return "all";
+
+    darray_enumerate(i, mod, keymap->mods) {
+        int ret;
+
+        if (!(mask & (1 << i)))
+            continue;
+
+        ret = snprintf(buf + pos, sizeof(buf) - pos, "%s%s",
+                       pos == 0 ? "" : "+",
+                       xkb_atom_text(keymap->ctx, mod->name));
+        if (ret <= 0 || pos + ret >= sizeof(buf))
+            break;
+        else
+            pos += ret;
+    }
+
+    return strcpy(xkb_context_get_buffer(keymap->ctx, pos + 1), buf);
+}
 
 const char *
-LedStateText(struct xkb_context *ctx, enum xkb_state_component mask)
+LedStateMaskText(struct xkb_context *ctx, enum xkb_state_component mask)
 {
-    unsigned int i;
-    char *ret;
+    char buf[1024];
+    size_t pos = 0;
 
     if (mask == 0)
         return "0";
 
-    ret = xkb_context_get_buffer(ctx, GET_TEXT_BUF_SIZE);
-    ret[0] = '\0';
-
-    for (i = 0; mask; i++) {
-        const char *name;
+    for (unsigned i = 0; mask; i++) {
+        int ret;
 
         if (!(mask & (1 << i)))
             continue;
 
         mask &= ~(1 << i);
-        name = LookupValue(modComponentMaskNames, 1 << i);
 
-        if (ret[0] != '\0')
-            append_get_text("%s+%s", ret, name);
+        ret = snprintf(buf + pos, sizeof(buf) - pos, "%s%s",
+                       pos == 0 ? "" : "+",
+                       LookupValue(modComponentMaskNames, 1 << i));
+        if (ret <= 0 || pos + ret >= sizeof(buf))
+            break;
         else
-            append_get_text("%s", name);
+            pos += ret;
     }
 
-    return ret;
+    return strcpy(xkb_context_get_buffer(ctx, pos + 1), buf);
 }
 
 const char *
 ControlMaskText(struct xkb_context *ctx, enum xkb_action_controls mask)
 {
-    unsigned int i;
-    char *ret;
+    char buf[1024];
+    size_t pos = 0;
 
     if (mask == 0)
         return "none";
@@ -359,23 +340,22 @@ ControlMaskText(struct xkb_context *ctx, enum xkb_action_controls mask)
     if (mask == CONTROL_ALL)
         return "all";
 
-    ret = xkb_context_get_buffer(ctx, GET_TEXT_BUF_SIZE);
-    ret[0] = '\0';
-
-    for (i = 0; mask; i++) {
-        const char *name;
+    for (unsigned i = 0; mask; i++) {
+        int ret;
 
         if (!(mask & (1 << i)))
             continue;
 
         mask &= ~(1 << i);
-        name = LookupValue(ctrlMaskNames, 1 << i);
 
-        if (ret[0] != '\0')
-            append_get_text("%s+%s", ret, name);
+        ret = snprintf(buf + pos, sizeof(buf) - pos, "%s%s",
+                       pos == 0 ? "" : "+",
+                       LookupValue(ctrlMaskNames, 1 << i));
+        if (ret <= 0 || pos + ret >= sizeof(buf))
+            break;
         else
-            append_get_text("%s", name);
+            pos += ret;
     }
 
-    return ret;
+    return strcpy(xkb_context_get_buffer(ctx, pos + 1), buf);
 }

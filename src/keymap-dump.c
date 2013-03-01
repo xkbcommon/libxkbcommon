@@ -243,7 +243,7 @@ write_led_map(struct xkb_keymap *keymap, struct buf *buf,
     if (led->which_groups) {
         if (led->which_groups != XKB_STATE_LAYOUT_EFFECTIVE) {
             write_buf(buf, "\t\twhichGroupState= %s;\n",
-                      LedStateText(keymap->ctx, led->which_groups));
+                      LedStateMaskText(keymap->ctx, led->which_groups));
         }
         write_buf(buf, "\t\tgroups= 0x%02x;\n",
                   led->groups);
@@ -252,7 +252,7 @@ write_led_map(struct xkb_keymap *keymap, struct buf *buf,
     if (led->which_mods) {
         if (led->which_mods != XKB_STATE_MODS_EFFECTIVE) {
             write_buf(buf, "\t\twhichModState= %s;\n",
-                      LedStateText(keymap->ctx, led->which_mods));
+                      LedStateMaskText(keymap->ctx, led->which_mods));
         }
         write_buf(buf, "\t\tmodifiers= %s;\n",
                   ModMaskText(keymap, led->mods.mods));
