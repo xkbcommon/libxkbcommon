@@ -217,7 +217,7 @@ typedef uint32_t xkb_mod_mask_t;
  * Layout indexes are consecutive.  The first layout has index 0.
  *
  * Each layout is not required to have a name, and the names are not
- * guarenteed to be unique (though they are usually provided and unique).
+ * guaranteed to be unique (though they are usually provided and unique).
  * Therefore, it is not safe to use the name as a unique identifier for a
  * layout.  Layout names are case-sensitive.
  *
@@ -297,13 +297,13 @@ struct xkb_rule_names {
     const char *rules;
     /** The keyboard model by which to interpret keycodes and LEDs. */
     const char *model;
-    /** A comma seperated list of layouts (languages) to include in the
+    /** A comma separated list of layouts (languages) to include in the
      *  keymap. */
     const char *layout;
-    /** A comma seperated list of variants, one per layout, which may
+    /** A comma separated list of variants, one per layout, which may
      *  modify or augment the respective layout in various ways. */
     const char *variant;
-    /** A comma seprated list of options, through which the user specifies
+    /** A comma separated list of options, through which the user specifies
      *  non-layout related preferences, like which key combinations are used
      *  for switching layouts, or which key is the Compose key. */
     const char *options;
@@ -331,7 +331,7 @@ struct xkb_rule_names {
  * @returns The number of bytes in the name, excluding the NUL byte. If
  * the keysym is invalid, returns -1.
  *
- * You may check if truncation has occured by comparing the return value
+ * You may check if truncation has occurred by comparing the return value
  * with the length of buffer, similarly to the snprintf(3) function.
  *
  * @sa xkb_keysym_t
@@ -449,7 +449,7 @@ xkb_context_unref(struct xkb_context *context);
 /**
  * Store custom user data in the context.
  *
- * This may be useful in conjuction with xkb_context_set_log_fn() or other
+ * This may be useful in conjunction with xkb_context_set_log_fn() or other
  * callbacks.
  *
  * @memberof xkb_context
@@ -629,8 +629,8 @@ xkb_context_get_log_verbosity(struct xkb_context *context);
  * function allows you to replace the default behavior with a custom
  * handler.  The handler is only called with messages which match the
  * current logging level and verbosity settings for the context.
- * level is the logging level of the message.  format and args are the
- * same as in the vprintf(3) function.
+ * level is the logging level of the message.  \c format and \c args are
+ * the same as in the vprintf(3) function.
  *
  * You may use xkb_context_set_user_data() on the context, and then call
  * xkb_context_get_user_data() from within the logging function to provide
@@ -1082,7 +1082,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  *
  * @param[in]  state    The keyboard state object.
  * @param[in]  key      The keycode of the key.
- * @param[out] syms_out An immutible array of keysyms corresponding the
+ * @param[out] syms_out An immutable array of keysyms corresponding the
  * key in the given keyboard state.
  *
  * As an extension to XKB, this function can return more than one keysym.
@@ -1178,7 +1178,7 @@ enum xkb_state_match {
 /**
  * Update a keyboard state from a set of explicit masks.
  *
- * This entrypoint is really only for window systems and the like, where a
+ * This entry point is really only for window systems and the like, where a
  * master process holds an xkb_state, then serializes it over a wire
  * protocol, and clients then use the serialization to feed in to their own
  * xkb_state.
@@ -1332,7 +1332,7 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
  * Num Lock modifier does not affect this translation at all, even if it
  * active, so it is not consumed by this translation.
  *
- * It may be desireable for some application to not reuse consumed modifiers
+ * It may be desirable for some application to not reuse consumed modifiers
  * for further processing, e.g. for hotkeys or keyboard shortcuts. To
  * understand why, consider some requirements from a standard shortcut
  * mechanism, and how they are implemented:

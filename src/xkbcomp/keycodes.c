@@ -294,7 +294,7 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
             if (report)
                 log_warn(info->ctx,
                          "Multiple identical key name definitions; "
-                         "Later occurences of \"%s = %d\" ignored\n",
+                         "Later occurrences of \"%s = %d\" ignored\n",
                          lname, kc);
             return true;
         }

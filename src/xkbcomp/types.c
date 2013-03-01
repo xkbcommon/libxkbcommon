@@ -417,7 +417,7 @@ AddMapEntry(KeyTypesInfo *info, KeyTypeInfo *type,
         }
         else {
             log_vrb(info->keymap->ctx, 10,
-                    "Multiple occurences of map[%s]= %d in %s; Ignored\n",
+                    "Multiple occurrences of map[%s]= %d in %s; Ignored\n",
                     MapEntryTxt(info, new), new->level + 1,
                     TypeTxt(info, type));
             return true;
@@ -518,7 +518,7 @@ AddPreserve(KeyTypesInfo *info, KeyTypeInfo *type,
     /*
      * Map does not exist, i.e. preserve[] came before map[].
      * Create a map with the specified mask mapping to Level1. The level
-     * may be overriden later with an explicit map[] statement.
+     * may be overridden later with an explicit map[] statement.
      */
     new.level = 0;
     new.mods.mods = mods;

@@ -752,7 +752,7 @@ HandlePrivate(struct xkb_keymap *keymap, union xkb_action *action,
          * It's possible for someone to write something like this:
          *      actions = [ Private(type=3,data[0]=1,data[1]=3,data[2]=3) ]
          * where the type refers to some existing action type, e.g. LockMods.
-         * This assumes that this action's struct is layed out in memory
+         * This assumes that this action's struct is laid out in memory
          * exactly as described in the XKB specification and libraries.
          * We, however, have changed these structs in various ways, so this
          * assumption is no longer true. Since this is a lousy "feature", we

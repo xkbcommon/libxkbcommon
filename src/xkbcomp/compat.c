@@ -129,7 +129,7 @@
  *
  *   When set to 'level1', the interpret will only match levels which are
  *   the first level of the first group of the keys. This can be useful in
- *   conjuction with e.g. a virtualModifier statement.
+ *   conjunction with e.g. a virtualModifier statement.
  *
  * - action statement:
  *      action = LockMods(modifiers=NumLock);
