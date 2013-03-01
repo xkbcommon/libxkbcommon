@@ -30,77 +30,55 @@
 #include "xkbcomp-priv.h"
 #include "rules.h"
 
-static struct xkb_keymap *
-compile_keymap_file(struct xkb_context *ctx, XkbFile *file,
-                    enum xkb_keymap_format format,
-                    enum xkb_keymap_compile_flags flags)
+static bool
+compile_keymap_file(struct xkb_keymap *keymap, XkbFile *file)
 {
-    struct xkb_keymap *keymap;
-
-    keymap = xkb_keymap_new(ctx, format, flags);
-    if (!keymap)
-        goto err;
-
     if (file->file_type != FILE_TYPE_KEYMAP) {
-        log_err(ctx, "Cannot compile a %s file alone into a keymap\n",
+        log_err(keymap->ctx,
+                "Cannot compile a %s file alone into a keymap\n",
                 xkb_file_type_to_string(file->file_type));
-        goto err;
+        return false;
     }
 
     if (!CompileKeymap(file, keymap, MERGE_OVERRIDE)) {
-        log_err(ctx, "Failed to compile keymap\n");
-        goto err;
+        log_err(keymap->ctx,
+                "Failed to compile keymap\n");
+        return false;
     }
 
-    return keymap;
-
-err:
-    xkb_keymap_unref(keymap);
-    return NULL;
+    return true;
 }
 
-XKB_EXPORT struct xkb_keymap *
-xkb_keymap_new_from_names(struct xkb_context *ctx,
-                          const struct xkb_rule_names *rmlvo_in,
-                          enum xkb_keymap_compile_flags flags)
+static bool
+text_v1_keymap_new_from_names(struct xkb_keymap *keymap,
+                              const struct xkb_rule_names *rmlvo)
 {
     bool ok;
     struct xkb_component_names kccgst;
-    struct xkb_rule_names rmlvo = *rmlvo_in;
     XkbFile *file;
-    struct xkb_keymap *keymap;
 
-    if (isempty(rmlvo.rules))
-        rmlvo.rules = DEFAULT_XKB_RULES;
-    if (isempty(rmlvo.model))
-        rmlvo.model = DEFAULT_XKB_MODEL;
-    if (isempty(rmlvo.layout))
-        rmlvo.layout = DEFAULT_XKB_LAYOUT;
-
-    log_dbg(ctx,
+    log_dbg(keymap->ctx,
             "Compiling from RMLVO: rules '%s', model '%s', layout '%s', "
             "variant '%s', options '%s'\n",
-            strnull(rmlvo.rules), strnull(rmlvo.model),
-            strnull(rmlvo.layout), strnull(rmlvo.variant),
-            strnull(rmlvo.options));
+            rmlvo->rules, rmlvo->model, rmlvo->layout, rmlvo->variant,
+            rmlvo->options);
 
-    ok = xkb_components_from_rules(ctx, &rmlvo, &kccgst);
+    ok = xkb_components_from_rules(keymap->ctx, rmlvo, &kccgst);
     if (!ok) {
-        log_err(ctx,
+        log_err(keymap->ctx,
                 "Couldn't look up rules '%s', model '%s', layout '%s', "
                 "variant '%s', options '%s'\n",
-                strnull(rmlvo.rules), strnull(rmlvo.model),
-                strnull(rmlvo.layout), strnull(rmlvo.variant),
-                strnull(rmlvo.options));
-        return NULL;
+                rmlvo->rules, rmlvo->model, rmlvo->layout, rmlvo->variant,
+                rmlvo->options);
+        return false;
     }
 
-    log_dbg(ctx,
+    log_dbg(keymap->ctx,
             "Compiling from KcCGST: keycodes '%s', types '%s', "
             "compat '%s', symbols '%s'\n",
             kccgst.keycodes, kccgst.types, kccgst.compat, kccgst.symbols);
 
-    file = XkbFileFromComponents(ctx, &kccgst);
+    file = XkbFileFromComponents(keymap->ctx, &kccgst);
 
     free(kccgst.keycodes);
     free(kccgst.types);
@@ -108,72 +86,53 @@ xkb_keymap_new_from_names(struct xkb_context *ctx,
     free(kccgst.symbols);
 
     if (!file) {
-        log_err(ctx,
+        log_err(keymap->ctx,
                 "Failed to generate parsed XKB file from components\n");
-        return NULL;
+        return false;
     }
 
-    keymap = compile_keymap_file(ctx, file, XKB_KEYMAP_FORMAT_TEXT_V1, flags);
+    ok = compile_keymap_file(keymap, file);
     FreeXkbFile(file);
-    return keymap;
+    return ok;
 }
 
-XKB_EXPORT struct xkb_keymap *
-xkb_keymap_new_from_string(struct xkb_context *ctx,
-                           const char *string,
-                           enum xkb_keymap_format format,
-                           enum xkb_keymap_compile_flags flags)
+static bool
+text_v1_keymap_new_from_string(struct xkb_keymap *keymap, const char *string)
 {
-    XkbFile *file;
-    struct xkb_keymap *keymap;
-
-    if (format != XKB_KEYMAP_FORMAT_TEXT_V1) {
-        log_err(ctx, "Unsupported keymap format %d\n", format);
-        return NULL;
-    }
-
-    if (!string) {
-        log_err(ctx, "No string specified to generate XKB keymap\n");
-        return NULL;
-    }
-
-    file = XkbParseString(ctx, string, "input");
-    if (!file) {
-        log_err(ctx, "Failed to parse input xkb file\n");
-        return NULL;
-    }
-
-    keymap = compile_keymap_file(ctx, file, format, flags);
-    FreeXkbFile(file);
-    return keymap;
-}
-
-XKB_EXPORT struct xkb_keymap *
-xkb_keymap_new_from_file(struct xkb_context *ctx,
-                         FILE *file,
-                         enum xkb_keymap_format format,
-                         enum xkb_keymap_compile_flags flags)
-{
+    bool ok;
     XkbFile *xkb_file;
-    struct xkb_keymap *keymap;
 
-    if (format != XKB_KEYMAP_FORMAT_TEXT_V1) {
-        log_err(ctx, "Unsupported keymap format %d\n", format);
-        return NULL;
-    }
-
-    if (!file) {
-        log_err(ctx, "No file specified to generate XKB keymap\n");
-        return NULL;
-    }
-
-    xkb_file = XkbParseFile(ctx, file, "(unknown file)", NULL);
+    xkb_file = XkbParseString(keymap->ctx, string, "(input string)");
     if (!xkb_file) {
-        log_err(ctx, "Failed to parse input xkb file\n");
+        log_err(keymap->ctx, "Failed to parse input xkb string\n");
         return NULL;
     }
 
-    keymap = compile_keymap_file(ctx, xkb_file, format, flags);
+    ok = compile_keymap_file(keymap, xkb_file);
     FreeXkbFile(xkb_file);
-    return keymap;
+    return ok;
 }
+
+static bool
+text_v1_keymap_new_from_file(struct xkb_keymap *keymap, FILE *file)
+{
+    bool ok;
+    XkbFile *xkb_file;
+
+    xkb_file = XkbParseFile(keymap->ctx, file, "(unknown file)", NULL);
+    if (!xkb_file) {
+        log_err(keymap->ctx, "Failed to parse input xkb file\n");
+        return false;
+    }
+
+    ok = compile_keymap_file(keymap, xkb_file);
+    FreeXkbFile(xkb_file);
+    return ok;
+}
+
+const struct xkb_keymap_format_ops text_v1_keymap_format_ops = {
+    .keymap_new_from_names = text_v1_keymap_new_from_names,
+    .keymap_new_from_string = text_v1_keymap_new_from_string,
+    .keymap_new_from_file = text_v1_keymap_new_from_file,
+    .keymap_get_as_string = text_v1_keymap_get_as_string,
+};

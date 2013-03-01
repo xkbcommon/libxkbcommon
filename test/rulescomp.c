@@ -118,5 +118,12 @@ int main(int argc, char *argv[])
 
     assert(!test_rmlvo(ctx, "does-not-exist", "", "", "", ""));
 
+    /* Test response to invalid flags. */
+    {
+        struct xkb_rule_names rmlvo = { NULL };
+        assert(!xkb_keymap_new_from_names(ctx, &rmlvo, -1));
+        assert(!xkb_keymap_new_from_names(ctx, &rmlvo, 5453));
+    }
+
     xkb_context_unref(ctx);
 }

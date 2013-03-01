@@ -78,8 +78,8 @@
  *         Dan Nicholson <dbn.lists@gmail.com>
  */
 
-#ifndef MAP_H
-#define MAP_H
+#ifndef KEYMAP_H
+#define KEYMAP_H
 
  /* Don't use compat names in internal code. */
 #define _XKBCOMMON_COMPAT_H
@@ -422,15 +422,21 @@ XkbKeyGroupWidth(const struct xkb_key *key, xkb_layout_index_t layout)
     return key->groups[layout].type->num_levels;
 }
 
-struct xkb_keymap *
-xkb_keymap_new(struct xkb_context *ctx,
-               enum xkb_keymap_format format,
-               enum xkb_keymap_compile_flags);
-
 xkb_layout_index_t
 wrap_group_into_range(int32_t group,
                       xkb_layout_index_t num_groups,
                       enum xkb_range_exceed_type out_of_range_group_action,
                       xkb_layout_index_t out_of_range_group_number);
+
+struct xkb_keymap_format_ops {
+    bool (*keymap_new_from_names)(struct xkb_keymap *keymap,
+                                  const struct xkb_rule_names *names);
+    bool (*keymap_new_from_string)(struct xkb_keymap *keymap,
+                                   const char *string);
+    bool (*keymap_new_from_file)(struct xkb_keymap *keymap, FILE *file);
+    char *(*keymap_get_as_string)(struct xkb_keymap *keymap);
+};
+
+extern const struct xkb_keymap_format_ops text_v1_keymap_format_ops;
 
 #endif

@@ -99,4 +99,14 @@ xkb_log(struct xkb_context *ctx, enum xkb_log_level level,
 #define log_vrb(ctx, vrb, ...) \
     xkb_log_cond_verbosity((ctx), XKB_LOG_LEVEL_WARNING, (vrb), __VA_ARGS__)
 
+/*
+ * Variants which are prefixed by the name of the function they're
+ * called from.
+ * Here we must have the silly 1 variant.
+ */
+#define log_err_func(ctx, fmt, ...) \
+    log_err(ctx, "%s: " fmt, __func__, __VA_ARGS__)
+#define log_err_func1(ctx, fmt) \
+    log_err(ctx, "%s: " fmt, __func__)
+
 #endif

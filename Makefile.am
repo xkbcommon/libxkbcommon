@@ -38,6 +38,7 @@ libxkbcommon_la_SOURCES = \
 	src/xkbcomp/keycodes.c \
 	src/xkbcomp/keycodes.h \
 	src/xkbcomp/keymap.c \
+	src/xkbcomp/keymap-dump.c \
 	src/xkbcomp/parser.y \
 	src/xkbcomp/parser-priv.h \
 	src/xkbcomp/rules.c \
@@ -55,7 +56,6 @@ libxkbcommon_la_SOURCES = \
 	src/context.h \
 	src/compat.c \
 	src/darray.h \
-	src/keymap-dump.c \
 	src/keysym.c \
 	src/keysym.h \
 	src/keysym-utf.c \

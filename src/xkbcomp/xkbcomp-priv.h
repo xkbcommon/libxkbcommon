@@ -37,6 +37,9 @@ struct xkb_component_names {
     char *symbols;
 };
 
+char *
+text_v1_keymap_get_as_string(struct xkb_keymap *keymap);
+
 XkbFile *
 XkbParseFile(struct xkb_context *ctx, FILE *file,
              const char *file_name, const char *map);

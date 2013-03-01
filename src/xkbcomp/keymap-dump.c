@@ -49,7 +49,7 @@
  * Author: Daniel Stone <daniel@fooishbar.org>
  */
 
-#include "keymap.h"
+#include "xkbcomp-priv.h"
 #include "text.h"
 
 #define BUF_CHUNK_SIZE 4096
@@ -638,29 +638,26 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
     return true;
 }
 
-XKB_EXPORT char *
-xkb_keymap_get_as_string(struct xkb_keymap *keymap,
-                         enum xkb_keymap_format format)
+static bool
+write_keymap(struct xkb_keymap *keymap, struct buf *buf)
 {
-    bool ok;
+    return (check_write_buf(buf, "xkb_keymap {\n") &&
+            write_keycodes(keymap, buf) &&
+            write_types(keymap, buf) &&
+            write_compat(keymap, buf) &&
+            write_symbols(keymap, buf) &&
+            check_write_buf(buf, "};\n"));
+}
+
+char *
+text_v1_keymap_get_as_string(struct xkb_keymap *keymap)
+{
     struct buf buf = { NULL, 0, 0 };
 
-    if (format == XKB_KEYMAP_USE_ORIGINAL_FORMAT)
-        format = keymap->format;
-
-    if (format != XKB_KEYMAP_FORMAT_TEXT_V1) {
-        log_err(keymap->ctx,
-                "Trying to get a keymap as a string in an unsupported format (%d)\n",
-                format);
+    if (!write_keymap(keymap, &buf)) {
+        free(buf.buf);
         return NULL;
     }
 
-    ok = (check_write_buf(&buf, "xkb_keymap {\n") &&
-          write_keycodes(keymap, &buf) &&
-          write_types(keymap, &buf) &&
-          write_compat(keymap, &buf) &&
-          write_symbols(keymap, &buf) &&
-          check_write_buf(&buf, "};\n"));
-
-    return (ok ? buf.buf : NULL);
+    return buf.buf;
 }

@@ -48,6 +48,15 @@ main(void)
     assert(!test_file(ctx, "keymaps/bad.xkb"));
     assert(!test_file(ctx, "does not exist"));
 
+    /* Test response to invalid flags and formats. */
+    fclose(stdin);
+    assert(!xkb_keymap_new_from_file(ctx, NULL, XKB_KEYMAP_FORMAT_TEXT_V1, 0));
+    assert(!xkb_keymap_new_from_file(ctx, stdin, 0, 0));
+    assert(!xkb_keymap_new_from_file(ctx, stdin, XKB_KEYMAP_USE_ORIGINAL_FORMAT, 0));
+    assert(!xkb_keymap_new_from_file(ctx, stdin, 1234, 0));
+    assert(!xkb_keymap_new_from_file(ctx, stdin, XKB_KEYMAP_FORMAT_TEXT_V1, -1));
+    assert(!xkb_keymap_new_from_file(ctx, stdin, XKB_KEYMAP_FORMAT_TEXT_V1, 1234));
+
     xkb_context_unref(ctx);
 
     return 0;
