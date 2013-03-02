@@ -73,6 +73,10 @@ fi
 
 AC_CHECK_FUNCS([eaccess euidaccess])
 
+# Some tests use Linux-specific headers
+AC_CHECK_HEADER([linux/input.h])
+AM_CONDITIONAL(BUILD_LINUX_TESTS, [test "x$ac_cv_header_linux_input_h" = xyes])
+
 XORG_TESTSET_CFLAG([BASE_CFLAGS], [-fvisibility=hidden])
 
 # Define a configuration option for the XKB config root

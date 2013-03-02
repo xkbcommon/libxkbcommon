@@ -123,35 +123,43 @@ TESTS = \
 	test/keysym \
 	test/filecomp \
 	test/rulescomp \
-	test/state \
 	test/context \
 	test/rules-file \
 	test/stringcomp \
-	test/keyseq \
 	test/log
 TESTS_LDADD = libtest.la
 
 test_keysym_LDADD = $(TESTS_LDADD)
 test_filecomp_LDADD = $(TESTS_LDADD)
 test_rulescomp_LDADD = $(TESTS_LDADD) -lrt
-test_state_LDADD = $(TESTS_LDADD)
 test_context_LDADD = $(TESTS_LDADD)
 test_rules_file_CFLAGS = $(AM_CFLAGS) -Wno-declaration-after-statement
 test_rules_file_LDADD = $(TESTS_LDADD) -lrt
 test_stringcomp_LDADD = $(TESTS_LDADD)
-test_keyseq_LDADD = $(TESTS_LDADD)
 test_log_LDADD = $(TESTS_LDADD)
-test_interactive_LDADD = $(TESTS_LDADD)
 test_rmlvo_to_kccgst_LDADD = $(TESTS_LDADD)
 test_print_compiled_keymap_LDADD = $(TESTS_LDADD)
 test_bench_key_proc_LDADD = $(TESTS_LDADD) -lrt
 
 check_PROGRAMS = \
 	$(TESTS) \
-	test/interactive \
 	test/rmlvo-to-kccgst \
 	test/print-compiled-keymap \
 	test/bench-key-proc
+
+if BUILD_LINUX_TESTS
+TESTS += \
+	test/state \
+	test/keyseq
+
+test_keyseq_LDADD = $(TESTS_LDADD)
+test_state_LDADD = $(TESTS_LDADD)
+test_interactive_LDADD = $(TESTS_LDADD)
+
+check_PROGRAMS += \
+	test/interactive
+
+endif BUILD_LINUX_TESTS
 
 EXTRA_DIST = \
 	test/data

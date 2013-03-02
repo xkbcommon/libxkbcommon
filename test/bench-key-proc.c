@@ -23,7 +23,6 @@
 
 #include <stdlib.h>
 #include <time.h>
-#include <linux/input.h>
 
 #include "test.h"
 
