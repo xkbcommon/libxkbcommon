@@ -681,7 +681,9 @@ enum xkb_keymap_compile_flags {
  * keymaps.
  *
  * @param context The context in which to create the keymap.
- * @param names   The RMLVO names to use.
+ * @param names   The RMLVO names to use.  In xkbcommon versions prior
+ *                to 0.2.1, this field must be non-NULL.  In later
+ *                versions, passing NULL will use the default keymap.
  * @param flags   Optional flags for the keymap, or 0.
  *
  * @returns A keymap compiled according to the RMLVO names, or NULL if

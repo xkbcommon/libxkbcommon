@@ -259,14 +259,18 @@ test_compile_rules(struct xkb_context *context, const char *rules,
 {
     struct xkb_keymap *keymap;
     struct xkb_rule_names rmlvo = {
-        .rules = rules,
-        .model = model,
-        .layout = layout,
-        .variant = variant,
-        .options = options
+        .rules = isempty(rules) ? NULL : rules,
+        .model = isempty(model) ? NULL : model,
+        .layout = isempty(layout) ? NULL : layout,
+        .variant = isempty(variant) ? NULL : variant,
+        .options = isempty(options) ? NULL : options
     };
 
-    keymap = xkb_keymap_new_from_names(context, &rmlvo, 0);
+    if (!rules && !model && !layout && !variant && !options)
+        keymap = xkb_keymap_new_from_names(context, NULL, 0);
+    else
+        keymap = xkb_keymap_new_from_names(context, &rmlvo, 0);
+
     if (!keymap) {
         fprintf(stderr,
                 "Failed to compile RMLVO: '%s', '%s', '%s', '%s', '%s'\n",
