@@ -218,12 +218,6 @@ typedef darray (unsigned long)  darray_ulong;
     darray_prepend_items(arr, __src, sizeof(__src) / sizeof(*__src)); \
 } while (0)
 
-#define darray_appends(arr, ...) \
-    darray_appends_t(arr, typeof((*(arr).item)), __VA_ARGS__)
-
-#define darray_prepends(arr, ...) \
-    darray_prepends_t(arr, typeof((*(arr).item)), __VA_ARGS__)
-
 /*** Removal ***/
 
 /* Warning: Do not call darray_pop on an empty darray. */

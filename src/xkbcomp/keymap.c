@@ -233,7 +233,7 @@ UpdateBuiltinKeymapFields(struct xkb_keymap *keymap)
      * Add predefined (AKA real, core, X11) modifiers.
      * The order is important!
      */
-    darray_appends(keymap->mods,
+    darray_appends_t(keymap->mods, struct xkb_mod,
         { .name = xkb_atom_intern(ctx, "Shift"),   .type = MOD_REAL },
         { .name = xkb_atom_intern(ctx, "Lock"),    .type = MOD_REAL },
         { .name = xkb_atom_intern(ctx, "Control"), .type = MOD_REAL },

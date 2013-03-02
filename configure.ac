@@ -50,7 +50,6 @@ XORG_WITH_DOXYGEN
 
 # Check for compiler features
 AC_C_INLINE
-AC_C_TYPEOF
 
 # Check for programs
 AC_PROG_MKDIR_P
