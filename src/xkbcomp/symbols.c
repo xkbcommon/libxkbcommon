@@ -536,29 +536,26 @@ static void
 HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge);
 
 static bool
-HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *stmt)
+HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
 {
-    enum merge_mode merge = MERGE_DEFAULT;
-    XkbFile *rtrn;
-    SymbolsInfo included, next_incl;
+    SymbolsInfo included;
 
     InitSymbolsInfo(&included, info->keymap, info->file_id, info->actions);
-    if (stmt->stmt) {
-        free(included.name);
-        included.name = stmt->stmt;
-        stmt->stmt = NULL;
-    }
+    included.name = include->stmt;
+    include->stmt = NULL;
 
-    for (; stmt; stmt = stmt->next_incl) {
-        if (!ProcessIncludeFile(info->keymap->ctx, stmt, FILE_TYPE_SYMBOLS,
-                                &rtrn, &merge)) {
+    for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
+        SymbolsInfo next_incl;
+        XkbFile *file;
+
+        file = ProcessIncludeFile(info->keymap->ctx, stmt, FILE_TYPE_SYMBOLS);
+        if (!file) {
             info->errorCount += 10;
             ClearSymbolsInfo(&included);
             return false;
         }
 
-        InitSymbolsInfo(&next_incl, info->keymap, rtrn->id, info->actions);
-        next_incl.merge = next_incl.default_key.merge = MERGE_OVERRIDE;
+        InitSymbolsInfo(&next_incl, info->keymap, file->id, info->actions);
         if (stmt->modifier) {
             next_incl.explicit_group = atoi(stmt->modifier) - 1;
             if (next_incl.explicit_group >= XKB_MAX_GROUPS) {
@@ -573,15 +570,15 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *stmt)
             next_incl.explicit_group = info->explicit_group;
         }
 
-        HandleSymbolsFile(&next_incl, rtrn, MERGE_OVERRIDE);
+        HandleSymbolsFile(&next_incl, file, MERGE_OVERRIDE);
 
-        MergeIncludedSymbols(&included, &next_incl, merge);
+        MergeIncludedSymbols(&included, &next_incl, stmt->merge);
 
         ClearSymbolsInfo(&next_incl);
-        FreeXkbFile(rtrn);
+        FreeXkbFile(file);
     }
 
-    MergeIncludedSymbols(info, &included, merge);
+    MergeIncludedSymbols(info, &included, include->merge);
     ClearSymbolsInfo(&included);
 
     return (info->errorCount == 0);

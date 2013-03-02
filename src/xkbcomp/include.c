@@ -172,8 +172,6 @@ ParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
     return true;
 }
 
-/***====================================================================***/
-
 static const char *xkb_file_type_include_dirs[_FILE_TYPE_NUM_ENTRIES] = {
     [FILE_TYPE_KEYCODES] = "keycodes",
     [FILE_TYPE_TYPES] = "types",
@@ -195,19 +193,6 @@ DirectoryForInclude(enum xkb_file_type type)
     return xkb_file_type_include_dirs[type];
 }
 
-/***====================================================================***/
-
-/**
- * Search for the given file name in the include directories.
- *
- * @param ctx the XKB ctx containing the include paths
- * @param type one of FILE_TYPE_TYPES, FILE_TYPE_COMPAT, ..., or
- *             FILE_TYPE_KEYMAP or FILE_TYPE_RULES
- * @param pathRtrn is set to the full path of the file if found.
- *
- * @return an FD to the file or NULL. If NULL is returned, the value of
- * pathRtrn is undefined.
- */
 FILE *
 FindFileInXkbPath(struct xkb_context *ctx, const char *name,
                   enum xkb_file_type type, char **pathRtrn)
@@ -265,24 +250,9 @@ FindFileInXkbPath(struct xkb_context *ctx, const char *name,
     return file;
 }
 
-/**
- * Open the file given in the include statement and parse it's content.
- * If the statement defines a specific map to use, this map is returned in
- * file_rtrn. Otherwise, the default map is returned.
- *
- * @param ctx The ctx containing include paths
- * @param stmt The include statement, specifying the file name to look for.
- * @param file_type Type of file (FILE_TYPE_KEYCODES, etc.)
- * @param file_rtrn Returns the key map to be used.
- * @param merge_rtrn Always returns stmt->merge.
- *
- * @return true on success or false otherwise.
- */
-bool
-ProcessIncludeFile(struct xkb_context *ctx,
-                   IncludeStmt * stmt,
-                   enum xkb_file_type file_type,
-                   XkbFile ** file_rtrn, enum merge_mode *merge_rtrn)
+XkbFile *
+ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
+                   enum xkb_file_type file_type)
 {
     FILE *file;
     XkbFile *xkb_file;
@@ -292,6 +262,7 @@ ProcessIncludeFile(struct xkb_context *ctx,
         return false;
 
     xkb_file = XkbParseFile(ctx, file, stmt->file, stmt->map);
+    fclose(file);
     if (!xkb_file) {
         if (stmt->map)
             log_err(ctx, "Couldn't process include statement for '%s(%s)'\n",
@@ -299,10 +270,8 @@ ProcessIncludeFile(struct xkb_context *ctx,
         else
             log_err(ctx, "Couldn't process include statement for '%s'\n",
                     stmt->file);
-        fclose(file);
-        return false;
+        return NULL;
     }
-    fclose(file);
 
     if (xkb_file->file_type != file_type) {
         log_err(ctx,
@@ -310,12 +279,11 @@ ProcessIncludeFile(struct xkb_context *ctx,
                 "Include file \"%s\" ignored\n",
                 xkb_file_type_to_string(file_type),
                 xkb_file_type_to_string(xkb_file->file_type), stmt->file);
-        return false;
+        FreeXkbFile(xkb_file);
+        return NULL;
     }
 
     /* FIXME: we have to check recursive includes here (or somewhere) */
 
-    *file_rtrn = xkb_file;
-    *merge_rtrn = stmt->merge;
-    return true;
+    return xkb_file;
 }

@@ -35,9 +35,8 @@ FILE *
 FindFileInXkbPath(struct xkb_context *ctx, const char *name,
                   enum xkb_file_type type, char **pathRtrn);
 
-bool
+XkbFile *
 ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
-                   enum xkb_file_type file_type, XkbFile **file_rtrn,
-                   enum merge_mode *merge_rtrn);
+                   enum xkb_file_type file_type);
 
 #endif

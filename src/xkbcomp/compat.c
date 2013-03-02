@@ -586,44 +586,42 @@ static void
 HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge);
 
 static bool
-HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *stmt)
+HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
 {
-    enum merge_mode merge = MERGE_DEFAULT;
-    XkbFile *rtrn;
-    CompatInfo included, next_incl;
+    CompatInfo included;
 
     InitCompatInfo(&included, info->keymap, info->file_id, info->actions);
-    if (stmt->stmt) {
-        free(included.name);
-        included.name = stmt->stmt;
-        stmt->stmt = NULL;
-    }
+    included.name = include->stmt;
+    include->stmt = NULL;
 
-    for (; stmt; stmt = stmt->next_incl) {
-        if (!ProcessIncludeFile(info->keymap->ctx, stmt, FILE_TYPE_COMPAT,
-                                &rtrn, &merge)) {
+    for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
+        CompatInfo next_incl;
+        XkbFile *file;
+
+        file = ProcessIncludeFile(info->keymap->ctx, stmt, FILE_TYPE_COMPAT);
+        if (!file) {
             info->errorCount += 10;
             ClearCompatInfo(&included);
             return false;
         }
 
-        InitCompatInfo(&next_incl, info->keymap, rtrn->id, info->actions);
-        next_incl.file_id = rtrn->id;
+        InitCompatInfo(&next_incl, info->keymap, file->id, info->actions);
         next_incl.default_interp = info->default_interp;
-        next_incl.default_interp.file_id = rtrn->id;
-        next_incl.default_interp.merge = merge;
-        next_incl.default_led.file_id = rtrn->id;
-        next_incl.default_led.merge = merge;
+        next_incl.default_interp.file_id = file->id;
+        next_incl.default_interp.merge = stmt->merge;
+        next_incl.default_led = info->default_led;
+        next_incl.default_led.file_id = file->id;
+        next_incl.default_led.merge = stmt->merge;
 
-        HandleCompatMapFile(&next_incl, rtrn, MERGE_OVERRIDE);
+        HandleCompatMapFile(&next_incl, file, MERGE_OVERRIDE);
 
-        MergeIncludedCompatMaps(&included, &next_incl, merge);
+        MergeIncludedCompatMaps(&included, &next_incl, stmt->merge);
 
         ClearCompatInfo(&next_incl);
-        FreeXkbFile(rtrn);
+        FreeXkbFile(file);
     }
 
-    MergeIncludedCompatMaps(info, &included, merge);
+    MergeIncludedCompatMaps(info, &included, include->merge);
     ClearCompatInfo(&included);
 
     return (info->errorCount == 0);

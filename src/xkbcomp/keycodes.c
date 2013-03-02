@@ -423,38 +423,36 @@ static void
 HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge);
 
 static bool
-HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *stmt)
+HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *include)
 {
-    enum merge_mode merge = MERGE_DEFAULT;
-    XkbFile *rtrn;
-    KeyNamesInfo included, next_incl;
+    KeyNamesInfo included;
 
     InitKeyNamesInfo(&included, info->ctx, info->file_id);
-    if (stmt->stmt) {
-        free(included.name);
-        included.name = stmt->stmt;
-        stmt->stmt = NULL;
-    }
+    included.name = include->stmt;
+    include->stmt = NULL;
 
-    for (; stmt; stmt = stmt->next_incl) {
-        if (!ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_KEYCODES,
-                                &rtrn, &merge)) {
+    for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
+        KeyNamesInfo next_incl;
+        XkbFile *file;
+
+        file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_KEYCODES);
+        if (!file) {
             info->errorCount += 10;
             ClearKeyNamesInfo(&included);
             return false;
         }
 
-        InitKeyNamesInfo(&next_incl, info->ctx, rtrn->id);
+        InitKeyNamesInfo(&next_incl, info->ctx, file->id);
 
-        HandleKeycodesFile(&next_incl, rtrn, MERGE_OVERRIDE);
+        HandleKeycodesFile(&next_incl, file, MERGE_OVERRIDE);
 
-        MergeIncludedKeycodes(&included, &next_incl, merge);
+        MergeIncludedKeycodes(&included, &next_incl, stmt->merge);
 
         ClearKeyNamesInfo(&next_incl);
-        FreeXkbFile(rtrn);
+        FreeXkbFile(file);
     }
 
-    MergeIncludedKeycodes(info, &included, merge);
+    MergeIncludedKeycodes(info, &included, include->merge);
     ClearKeyNamesInfo(&included);
 
     return (info->errorCount == 0);
