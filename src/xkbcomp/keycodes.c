@@ -104,7 +104,6 @@
 
 typedef struct {
     enum merge_mode merge;
-    unsigned file_id;
 
     xkb_atom_t alias;
     xkb_atom_t real;
@@ -141,12 +140,11 @@ typedef struct {
 /***====================================================================***/
 
 static void
-InitAliasInfo(AliasInfo *info, enum merge_mode merge, unsigned file_id,
+InitAliasInfo(AliasInfo *info, enum merge_mode merge,
               xkb_atom_t alias, xkb_atom_t real)
 {
     memset(info, 0, sizeof(*info));
     info->merge = merge;
-    info->file_id = file_id;
     info->alias = alias;
     info->real = real;
 }
@@ -344,8 +342,7 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
 /***====================================================================***/
 
 static int
-HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge,
-               unsigned file_id);
+HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge);
 
 static bool
 MergeAliases(KeyNamesInfo *into, KeyNamesInfo *from, enum merge_mode merge)
@@ -369,7 +366,7 @@ MergeAliases(KeyNamesInfo *into, KeyNamesInfo *from, enum merge_mode merge)
         def.alias = alias->alias;
         def.real = alias->real;
 
-        if (!HandleAliasDef(into, &def, def.merge, alias->file_id))
+        if (!HandleAliasDef(into, &def, def.merge))
             return false;
     }
 
@@ -479,55 +476,42 @@ HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt, enum merge_mode merge)
                       info->file_id, true);
 }
 
-static void
-HandleAliasCollision(KeyNamesInfo *info, AliasInfo *old, AliasInfo *new)
-{
-    const int verbosity = xkb_context_get_log_verbosity(info->ctx);
-    const bool report = ((new->file_id == old->file_id && verbosity > 0) ||
-                         verbosity > 9);
-
-    if (new->real == old->real) {
-        if (report)
-            log_warn(info->ctx, "Alias of %s for %s declared more than once; "
-                     "First definition ignored\n",
-                     KeyNameText(info->ctx, new->alias),
-                     KeyNameText(info->ctx, new->real));
-    }
-    else {
-        xkb_atom_t use, ignore;
-
-        use = (new->merge == MERGE_AUGMENT ? old->real : new->real);
-        ignore = (new->merge == MERGE_AUGMENT ? new->real : old->real);
-
-        if (report)
-            log_warn(info->ctx, "Multiple definitions for alias %s; "
-                     "Using %s, ignoring %s\n",
-                     KeyNameText(info->ctx, old->alias),
-                     KeyNameText(info->ctx, use),
-                     KeyNameText(info->ctx, ignore));
-
-        old->real = use;
-    }
-
-    old->file_id = new->file_id;
-    old->merge = new->merge;
-}
-
 static int
-HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge,
-               unsigned file_id)
+HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge)
 {
-    AliasInfo *alias, new;
+    AliasInfo *old, new;
 
-    darray_foreach(alias, info->aliases) {
-        if (alias->alias == def->alias) {
-            InitAliasInfo(&new, merge, file_id, def->alias, def->real);
-            HandleAliasCollision(info, alias, &new);
+    darray_foreach(old, info->aliases) {
+        if (old->alias == def->alias) {
+            if (def->real == old->real) {
+                log_vrb(info->ctx, 1,
+                        "Alias of %s for %s declared more than once; "
+                        "First definition ignored\n",
+                        KeyNameText(info->ctx, def->alias),
+                        KeyNameText(info->ctx, def->real));
+            }
+            else {
+                xkb_atom_t use, ignore;
+
+                use = (merge == MERGE_AUGMENT ? old->real : def->real);
+                ignore = (merge == MERGE_AUGMENT ? def->real : old->real);
+
+                log_warn(info->ctx,
+                         "Multiple definitions for alias %s; "
+                         "Using %s, ignoring %s\n",
+                         KeyNameText(info->ctx, old->alias),
+                         KeyNameText(info->ctx, use),
+                         KeyNameText(info->ctx, ignore));
+
+                old->real = use;
+            }
+
+            old->merge = merge;
             return true;
         }
     }
 
-    InitAliasInfo(&new, merge, file_id, def->alias, def->real);
+    InitAliasInfo(&new, merge, def->alias, def->real);
     darray_append(info->aliases, new);
     return true;
 }
@@ -602,8 +586,7 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleKeycodeDef(info, (KeycodeDef *) stmt, merge);
             break;
         case STMT_ALIAS:
-            ok = HandleAliasDef(info, (KeyAliasDef *) stmt, merge,
-                                info->file_id);
+            ok = HandleAliasDef(info, (KeyAliasDef *) stmt, merge);
             break;
         case STMT_VAR:
             ok = HandleKeyNameVar(info, (VarDef *) stmt);
@@ -635,11 +618,12 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
 static void
 CopyAliasesToKeymap(KeyNamesInfo *info, struct xkb_keymap *keymap)
 {
-    struct xkb_key *key;
-    struct xkb_key_alias *a, new;
     AliasInfo *alias;
 
     darray_foreach(alias, info->aliases) {
+        struct xkb_key *key;
+        struct xkb_key_alias new;
+
         /* Check that ->real is a key. */
         key = FindNamedKey(keymap, alias->real, false);
         if (!key) {
@@ -660,22 +644,6 @@ CopyAliasesToKeymap(KeyNamesInfo *info, struct xkb_keymap *keymap)
                     KeyNameText(info->ctx, alias->real));
             continue;
         }
-
-        /* Check that ->alias in not already an alias, and if so handle it. */
-        darray_foreach(a, keymap->key_aliases) {
-            AliasInfo old_alias;
-
-            if (a->alias != alias->alias)
-                continue;
-
-            InitAliasInfo(&old_alias, MERGE_AUGMENT, 0, a->alias, a->real);
-            HandleAliasCollision(info, &old_alias, alias);
-            a->alias = old_alias.alias;
-            a->real = old_alias.real;
-            alias->alias = 0;
-        }
-        if (alias->alias == 0)
-            continue;
 
         /* Add the alias. */
         new.alias = alias->alias;
