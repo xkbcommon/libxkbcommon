@@ -36,7 +36,6 @@ libxkbcommon_la_SOURCES = \
 	src/xkbcomp/include.c \
 	src/xkbcomp/include.h \
 	src/xkbcomp/keycodes.c \
-	src/xkbcomp/keycodes.h \
 	src/xkbcomp/keymap.c \
 	src/xkbcomp/keymap-dump.c \
 	src/xkbcomp/parser.y \

@@ -477,3 +477,33 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t kc)
 
     return key->repeats;
 }
+
+struct xkb_key *
+XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases)
+{
+    struct xkb_key *key;
+
+    xkb_foreach_key(key, keymap)
+        if (key->name == name)
+            return key;
+
+    if (use_aliases) {
+        xkb_atom_t new_name = XkbResolveKeyAlias(keymap, name);
+        if (new_name != XKB_ATOM_NONE)
+            return XkbKeyByName(keymap, new_name, false);
+    }
+
+    return NULL;
+}
+
+xkb_atom_t
+XkbResolveKeyAlias(struct xkb_keymap *keymap, xkb_atom_t name)
+{
+    const struct xkb_key_alias *alias;
+
+    darray_foreach(alias, keymap->key_aliases)
+        if (name == alias->alias)
+            return alias->real;
+
+    return XKB_ATOM_NONE;
+}

@@ -27,7 +27,6 @@
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "expr.h"
-#include "keycodes.h"
 #include "include.h"
 
 /*
@@ -625,7 +624,7 @@ CopyAliasesToKeymap(KeyNamesInfo *info, struct xkb_keymap *keymap)
         struct xkb_key_alias new;
 
         /* Check that ->real is a key. */
-        key = FindNamedKey(keymap, alias->real, false);
+        key = XkbKeyByName(keymap, alias->real, false);
         if (!key) {
             log_vrb(info->ctx, 5,
                     "Attempt to alias %s to non-existent key %s; Ignored\n",
@@ -635,7 +634,7 @@ CopyAliasesToKeymap(KeyNamesInfo *info, struct xkb_keymap *keymap)
         }
 
         /* Check that ->alias is not a key. */
-        key = FindNamedKey(keymap, alias->alias, false);
+        key = XkbKeyByName(keymap, alias->alias, false);
         if (key) {
             log_vrb(info->ctx, 5,
                     "Attempt to create alias with the name of a real key; "
@@ -710,41 +709,5 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
 
 err_info:
     ClearKeyNamesInfo(&info);
-    return false;
-}
-
-/***====================================================================***/
-
-struct xkb_key *
-FindNamedKey(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases)
-{
-    struct xkb_key *key;
-
-    xkb_foreach_key(key, keymap)
-        if (key->name == name)
-            return key;
-
-    if (use_aliases) {
-        xkb_atom_t new_name;
-        if (FindKeyNameForAlias(keymap, name, &new_name))
-            return FindNamedKey(keymap, new_name, false);
-    }
-
-    return NULL;
-}
-
-bool
-FindKeyNameForAlias(struct xkb_keymap *keymap, xkb_atom_t name,
-                    xkb_atom_t *real_name)
-{
-    const struct xkb_key_alias *a;
-
-    darray_foreach(a, keymap->key_aliases) {
-        if (name == a->alias) {
-            *real_name = a->real;
-            return true;
-        }
-    }
-
     return false;
 }

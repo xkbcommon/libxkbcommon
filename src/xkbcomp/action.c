@@ -55,7 +55,6 @@
 #include "text.h"
 #include "expr.h"
 #include "action.h"
-#include "keycodes.h"
 
 static const ExprDef constTrue = {
     .common = { .type = STMT_EXPR, .next = NULL },

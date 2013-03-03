@@ -56,7 +56,6 @@
 #include "expr.h"
 #include "action.h"
 #include "vmod.h"
-#include "keycodes.h"
 #include "include.h"
 #include "keysym.h"
 
@@ -427,7 +426,8 @@ AddKeySymbols(SymbolsInfo *info, KeyInfo *keyi)
      * following loop) is enough, and we won't get multiple KeyInfo's
      * for the same key because of aliases.
      */
-    if (FindKeyNameForAlias(info->keymap, keyi->name, &real_name))
+    real_name = XkbResolveKeyAlias(info->keymap, keyi->name);
+    if (real_name != XKB_ATOM_NONE)
         keyi->name = real_name;
 
     darray_foreach(iter, info->keys)
@@ -1450,7 +1450,7 @@ CopySymbolsDef(SymbolsInfo *info, KeyInfo *keyi)
      * The name is guaranteed to be real and not an alias (see
      * AddKeySymbols), so 'false' is safe here.
      */
-    key = FindNamedKey(keymap, keyi->name, false);
+    key = XkbKeyByName(keymap, keyi->name, false);
     if (!key) {
         log_vrb(info->keymap->ctx, 5,
                 "Key %s not found in keycodes; Symbols ignored\n",
@@ -1547,7 +1547,7 @@ CopyModMapDef(SymbolsInfo *info, ModMapEntry *entry)
     struct xkb_keymap *keymap = info->keymap;
 
     if (!entry->haveSymbol) {
-        key = FindNamedKey(keymap, entry->u.keyName, true);
+        key = XkbKeyByName(keymap, entry->u.keyName, true);
         if (!key) {
             log_vrb(info->keymap->ctx, 5,
                     "Key %s not found in keycodes; "

@@ -403,6 +403,11 @@ struct xkb_keymap {
     char *compat_section_name;
 };
 
+#define xkb_foreach_key(iter, keymap) \
+    for (iter = keymap->keys + keymap->min_key_code; \
+         iter <= keymap->keys + keymap->max_key_code; \
+         iter++)
+
 static inline const struct xkb_key *
 XkbKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
@@ -411,16 +416,17 @@ XkbKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
     return &keymap->keys[kc];
 }
 
-#define xkb_foreach_key(iter, keymap) \
-    for (iter = keymap->keys + keymap->min_key_code; \
-         iter <= keymap->keys + keymap->max_key_code; \
-         iter++)
-
 static inline xkb_level_index_t
 XkbKeyGroupWidth(const struct xkb_key *key, xkb_layout_index_t layout)
 {
     return key->groups[layout].type->num_levels;
 }
+
+struct xkb_key *
+XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases);
+
+xkb_atom_t
+XkbResolveKeyAlias(struct xkb_keymap *keymap, xkb_atom_t name);
 
 xkb_layout_index_t
 wrap_group_into_range(int32_t group,
