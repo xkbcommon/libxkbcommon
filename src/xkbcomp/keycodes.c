@@ -110,10 +110,6 @@ typedef struct {
 } AliasInfo;
 
 typedef struct {
-    xkb_atom_t name;
-} KeyNameInfo;
-
-typedef struct {
     enum merge_mode merge;
 
     xkb_atom_t name;
@@ -126,7 +122,7 @@ typedef struct {
 
     xkb_keycode_t min_key_code;
     xkb_keycode_t max_key_code;
-    darray(KeyNameInfo) key_names;
+    darray(xkb_atom_t) key_names;
     darray(LedNameInfo) led_names;
     darray(AliasInfo) aliases;
 
@@ -169,13 +165,12 @@ AddLedName(KeyNamesInfo *info, enum merge_mode merge, bool same_file,
     xkb_led_index_t old_idx;
     LedNameInfo *old;
     const int verbosity = xkb_context_get_log_verbosity(info->ctx);
+    const bool report = (same_file && verbosity > 0) || verbosity > 9;
     const bool replace = (merge == MERGE_REPLACE || merge == MERGE_OVERRIDE);
 
-    /* Inidicator with the same name already exists. */
+    /* LED with the same name already exists. */
     old = FindLedByName(info, new->name, &old_idx);
     if (old) {
-        const bool report = (same_file && verbosity > 0) || verbosity > 9;
-
         if (old_idx == new_idx) {
             log_warn(info->ctx,
                      "Multiple indicators named \"%s\"; "
@@ -201,13 +196,9 @@ AddLedName(KeyNamesInfo *info, enum merge_mode merge, bool same_file,
     if (new_idx >= darray_size(info->led_names))
         darray_resize0(info->led_names, new_idx + 1);
 
-    /* Inidicator with the same index already exists. */
+    /* LED with the same index already exists. */
     old = &darray_item(info->led_names, new_idx);
     if (old->name != XKB_ATOM_NONE) {
-        const bool report = (same_file && verbosity > 0) || verbosity > 9;
-
-        /* Same name case already handled above. */
-
         if (report) {
             const xkb_atom_t use = (replace ? new->name : old->name);
             const xkb_atom_t ignore = (replace ? old->name : new->name);
@@ -251,7 +242,7 @@ FindKeyByName(KeyNamesInfo * info, xkb_atom_t name)
     xkb_keycode_t i;
 
     for (i = info->min_key_code; i <= info->max_key_code; i++)
-        if (darray_item(info->key_names, i).name == name)
+        if (darray_item(info->key_names, i) == name)
             return i;
 
     return XKB_KEYCODE_INVALID;
@@ -261,9 +252,11 @@ static bool
 AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
            enum merge_mode merge, bool same_file, bool report)
 {
-    KeyNameInfo *namei;
-    xkb_keycode_t old;
+    xkb_atom_t old_name;
+    xkb_keycode_t old_kc;
     const int verbosity = xkb_context_get_log_verbosity(info->ctx);
+
+    report = report && ((same_file && verbosity > 0) || verbosity > 7);
 
     if (kc >= darray_size(info->key_names))
         darray_resize0(info->key_names, kc + 1);
@@ -271,15 +264,13 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
     info->min_key_code = MIN(info->min_key_code, kc);
     info->max_key_code = MAX(info->max_key_code, kc);
 
-    namei = &darray_item(info->key_names, kc);
-
-    report = report && ((same_file && verbosity > 0) || verbosity > 7);
-
-    if (namei->name != 0) {
-        const char *lname = KeyNameText(info->ctx, namei->name);
+    /* There's already a key with this keycode. */
+    old_name = darray_item(info->key_names, kc);
+    if (old_name != XKB_ATOM_NONE) {
+        const char *lname = KeyNameText(info->ctx, old_name);
         const char *kname = KeyNameText(info->ctx, name);
 
-        if (namei->name == name) {
+        if (old_name == name) {
             if (report)
                 log_warn(info->ctx,
                          "Multiple identical key name definitions; "
@@ -299,31 +290,32 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
                 log_warn(info->ctx,
                          "Multiple names for keycode %d; "
                          "Using %s, ignoring %s\n", kc, kname, lname);
-            namei->name = 0;
+            darray_item(info->key_names, kc) = XKB_ATOM_NONE;
         }
     }
 
-    old = FindKeyByName(info, name);
-    if (old != XKB_KEYCODE_INVALID && old != kc) {
+    /* There's already a key with this name. */
+    old_kc = FindKeyByName(info, name);
+    if (old_kc != XKB_KEYCODE_INVALID && old_kc != kc) {
         const char *kname = KeyNameText(info->ctx, name);
 
         if (merge == MERGE_OVERRIDE) {
-            darray_item(info->key_names, old).name = 0;
+            darray_item(info->key_names, old_kc) = XKB_ATOM_NONE;
             if (report)
                 log_warn(info->ctx,
                          "Key name %s assigned to multiple keys; "
-                         "Using %d, ignoring %d\n", kname, kc, old);
+                         "Using %d, ignoring %d\n", kname, kc, old_kc);
         }
         else {
             if (report)
                 log_vrb(info->ctx, 3,
                         "Key name %s assigned to multiple keys; "
-                        "Using %d, ignoring %d\n", kname, old, kc);
+                        "Using %d, ignoring %d\n", kname, old_kc, kc);
             return true;
         }
     }
 
-    namei->name = name;
+    darray_item(info->key_names, kc) = name;
     return true;
 }
 
@@ -358,7 +350,7 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
             darray_resize0(into->key_names, darray_size(from->key_names));
 
         for (unsigned i = from->min_key_code; i <= from->max_key_code; i++) {
-            xkb_atom_t name = darray_item(from->key_names, i).name;
+            xkb_atom_t name = darray_item(from->key_names, i);
             if (name == XKB_ATOM_NONE)
                 continue;
 
@@ -622,7 +614,7 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
     keymap->keys = calloc(info->max_key_code + 1, sizeof(*keymap->keys));
     for (kc = info->min_key_code; kc <= info->max_key_code; kc++) {
         keymap->keys[kc].keycode = kc;
-        keymap->keys[kc].name = darray_item(info->key_names, kc).name;
+        keymap->keys[kc].name = darray_item(info->key_names, kc);
     }
 
     /*
