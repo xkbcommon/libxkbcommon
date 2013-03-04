@@ -202,7 +202,7 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
 
         for (unsigned j = 0; j < type->num_entries; j++) {
             const char *str;
-            const struct xkb_kt_map_entry *entry = &type->map[j];
+            const struct xkb_key_type_entry *entry = &type->entries[j];
 
             /*
              * Printing level 1 entries is redundant, it's the default,

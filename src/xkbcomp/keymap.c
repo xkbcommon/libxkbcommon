@@ -201,8 +201,8 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
         ComputeEffectiveMask(keymap, &keymap->types[i].mods);
 
         for (j = 0; j < keymap->types[i].num_entries; j++) {
-            ComputeEffectiveMask(keymap, &keymap->types[i].map[j].mods);
-            ComputeEffectiveMask(keymap, &keymap->types[i].map[j].preserve);
+            ComputeEffectiveMask(keymap, &keymap->types[i].entries[j].mods);
+            ComputeEffectiveMask(keymap, &keymap->types[i].entries[j].preserve);
         }
     }
 

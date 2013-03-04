@@ -114,7 +114,7 @@ struct xkb_state {
     struct xkb_keymap *keymap;
 };
 
-static const struct xkb_kt_map_entry *
+static const struct xkb_key_type_entry *
 get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
                         xkb_layout_index_t group)
 {
@@ -128,11 +128,11 @@ get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
          * supposed to skip the entry (xserver does this with cached
          * entry->active field).
          */
-        if (!type->map[i].mods.mask)
+        if (!type->entries[i].mods.mask)
             continue;
 
-        if (type->map[i].mods.mask == active_mods)
-            return &type->map[i];
+        if (type->entries[i].mods.mask == active_mods)
+            return &type->entries[i];
     }
 
     return NULL;
@@ -147,7 +147,7 @@ xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
                         xkb_layout_index_t layout)
 {
     const struct xkb_key *key = XkbKey(state->keymap, kc);
-    const struct xkb_kt_map_entry *entry;
+    const struct xkb_key_type_entry *entry;
 
     if (!key || layout >= key->num_groups)
         return XKB_LEVEL_INVALID;
@@ -1085,7 +1085,7 @@ xkb_state_led_name_is_active(struct xkb_state *state, const char *name)
 static xkb_mod_mask_t
 key_get_consumed(struct xkb_state *state, const struct xkb_key *key)
 {
-    const struct xkb_kt_map_entry *entry;
+    const struct xkb_key_type_entry *entry;
     xkb_layout_index_t group;
 
     group = xkb_state_key_get_layout(state, key->keycode);

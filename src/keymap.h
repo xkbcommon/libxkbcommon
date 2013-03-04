@@ -256,19 +256,19 @@ union xkb_action {
     struct xkb_private_action priv;
 };
 
-struct xkb_kt_map_entry {
+struct xkb_key_type_entry {
     xkb_level_index_t level;
     struct xkb_mods mods;
     struct xkb_mods preserve;
 };
 
 struct xkb_key_type {
+    xkb_atom_t name;
     struct xkb_mods mods;
     xkb_level_index_t num_levels;
-    struct xkb_kt_map_entry *map;
-    unsigned int num_entries;
-    xkb_atom_t name;
     xkb_atom_t *level_names;
+    unsigned int num_entries;
+    struct xkb_key_type_entry *entries;
 };
 
 struct xkb_sym_interpret {

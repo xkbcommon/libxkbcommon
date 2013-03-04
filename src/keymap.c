@@ -102,7 +102,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
         free(keymap->keys);
     }
     for (i = 0; i < keymap->num_types; i++) {
-        free(keymap->types[i].map);
+        free(keymap->types[i].entries);
         free(keymap->types[i].level_names);
     }
     free(keymap->types);
