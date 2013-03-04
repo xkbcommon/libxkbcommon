@@ -235,7 +235,7 @@ InitKeyNamesInfo(KeyNamesInfo *info, struct xkb_context *ctx)
 }
 
 static xkb_keycode_t
-FindKeyByName(KeyNamesInfo * info, xkb_atom_t name)
+FindKeyByName(KeyNamesInfo *info, xkb_atom_t name)
 {
     xkb_keycode_t i;
 

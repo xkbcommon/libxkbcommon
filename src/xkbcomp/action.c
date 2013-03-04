@@ -236,7 +236,7 @@ HandleNoAction(struct xkb_keymap *keymap, union xkb_action *action,
 
 static bool
 CheckLatchLockFlags(struct xkb_keymap *keymap, enum xkb_action_type action,
-                    enum action_field field, const ExprDef * value,
+                    enum action_field field, const ExprDef *value,
                     enum xkb_action_flags *flags_inout)
 {
     enum xkb_action_flags tmp;

@@ -395,7 +395,7 @@ static bool
 AddMapEntry(KeyTypesInfo *info, KeyTypeInfo *type,
             struct xkb_kt_map_entry *new, bool clobber, bool report)
 {
-    struct xkb_kt_map_entry * old;
+    struct xkb_kt_map_entry *old;
 
     old = FindMatchingMapEntry(type, new->mods.mods);
     if (old) {

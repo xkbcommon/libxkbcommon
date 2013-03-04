@@ -195,7 +195,7 @@ InitSymbolsInfo(SymbolsInfo *info, struct xkb_keymap *keymap,
 }
 
 static void
-ClearSymbolsInfo(SymbolsInfo * info)
+ClearSymbolsInfo(SymbolsInfo *info)
 {
     KeyInfo *keyi;
     free(info->name);
