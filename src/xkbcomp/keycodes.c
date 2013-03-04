@@ -343,43 +343,10 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
 static int
 HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge);
 
-static bool
-MergeAliases(KeyNamesInfo *into, KeyNamesInfo *from, enum merge_mode merge)
-{
-    AliasInfo *alias;
-    KeyAliasDef def;
-
-    if (darray_empty(from->aliases))
-        return true;
-
-    if (darray_empty(into->aliases)) {
-        into->aliases = from->aliases;
-        darray_init(from->aliases);
-        return true;
-    }
-
-    memset(&def, 0, sizeof(def));
-
-    darray_foreach(alias, from->aliases) {
-        def.merge = (merge == MERGE_DEFAULT) ? alias->merge : merge;
-        def.alias = alias->alias;
-        def.real = alias->real;
-
-        if (!HandleAliasDef(into, &def, def.merge))
-            return false;
-    }
-
-    return true;
-}
-
 static void
 MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
                       enum merge_mode merge)
 {
-    xkb_keycode_t i;
-    xkb_led_index_t idx;
-    LedNameInfo *ledi;
-
     if (from->errorCount > 0) {
         into->errorCount += from->errorCount;
         return;
@@ -390,29 +357,65 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
         from->name = NULL;
     }
 
-    if (darray_size(into->key_names) < darray_size(from->key_names))
-        darray_resize0(into->key_names, darray_size(from->key_names));
+    /* Merge key names. */
+    if (darray_empty(into->key_names)) {
+        into->key_names = from->key_names;
+        darray_init(from->key_names);
+        into->min_key_code = from->min_key_code;
+        into->max_key_code = from->max_key_code;
+    }
+    else {
+        if (darray_size(into->key_names) < darray_size(from->key_names))
+            darray_resize0(into->key_names, darray_size(from->key_names));
 
-    for (i = from->min_key_code; i <= from->max_key_code; i++) {
-        xkb_atom_t name = darray_item(from->key_names, i).name;
-        if (name == XKB_ATOM_NONE)
-            continue;
+        for (unsigned i = from->min_key_code; i <= from->max_key_code; i++) {
+            xkb_atom_t name = darray_item(from->key_names, i).name;
+            if (name == XKB_ATOM_NONE)
+                continue;
 
-        if (!AddKeyName(into, i, name, merge, from->file_id, false))
-            into->errorCount++;
+            if (!AddKeyName(into, i, name, merge, from->file_id, false))
+                into->errorCount++;
+        }
     }
 
-    darray_enumerate(idx, ledi, from->led_names) {
-        if (ledi->name == XKB_ATOM_NONE)
-            continue;
+    /* Merge key aliases. */
+    if (darray_empty(into->aliases)) {
+        into->aliases = from->aliases;
+        darray_init(from->aliases);
+    }
+    else {
+        AliasInfo *alias;
 
-        ledi->merge = (merge == MERGE_DEFAULT ? ledi->merge : merge);
-        if (!AddLedName(into, ledi->merge, ledi, idx))
-            into->errorCount++;
+        darray_foreach(alias, from->aliases) {
+            KeyAliasDef def;
+
+            def.merge = (merge == MERGE_DEFAULT ? alias->merge : merge);
+            def.alias = alias->alias;
+            def.real = alias->real;
+
+            if (!HandleAliasDef(into, &def, def.merge))
+                into->errorCount++;
+        }
     }
 
-    if (!MergeAliases(into, from, merge))
-        into->errorCount++;
+    /* Merge LED names. */
+    if (darray_empty(into->led_names)) {
+        into->led_names = from->led_names;
+        darray_init(from->led_names);
+    }
+    else {
+        xkb_led_index_t idx;
+        LedNameInfo *ledi;
+
+        darray_enumerate(idx, ledi, from->led_names) {
+            if (ledi->name == XKB_ATOM_NONE)
+                continue;
+
+            ledi->merge = (merge == MERGE_DEFAULT ? ledi->merge : merge);
+            if (!AddLedName(into, ledi->merge, ledi, idx))
+                into->errorCount++;
+        }
+    }
 }
 
 static void
