@@ -503,7 +503,6 @@ XkbFileCreate(struct xkb_context *ctx, enum xkb_file_type type, char *name,
     file->topName = strdup_safe(name);
     file->name = name;
     file->defs = defs;
-    file->id = xkb_context_take_file_id(ctx);
     file->flags = flags;
 
     return file;

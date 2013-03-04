@@ -28,9 +28,6 @@
 
 #include "atom.h"
 
-unsigned
-xkb_context_take_file_id(struct xkb_context *ctx);
-
 unsigned int
 xkb_context_num_failed_include_paths(struct xkb_context *ctx);
 

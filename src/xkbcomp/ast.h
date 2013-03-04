@@ -289,7 +289,6 @@ typedef struct {
     char *topName;
     char *name;
     ParseCommon *defs;
-    int id;
     enum xkb_map_flags flags;
 } XkbFile;
 

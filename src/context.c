@@ -47,9 +47,6 @@ struct xkb_context {
     darray(char *) includes;
     darray(char *) failed_includes;
 
-    /* xkbcomp needs to assign sequential IDs to XkbFile's it creates. */
-    unsigned file_id;
-
     struct atom_table *atom_table;
 
     /* Buffer for the *Text() functions. */
@@ -181,12 +178,6 @@ xkb_context_failed_include_path_get(struct xkb_context *ctx,
         return NULL;
 
     return darray_item(ctx->failed_includes, idx);
-}
-
-unsigned
-xkb_context_take_file_id(struct xkb_context *ctx)
-{
-    return ctx->file_id++;
 }
 
 /**
