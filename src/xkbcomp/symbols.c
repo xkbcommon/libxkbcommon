@@ -86,7 +86,6 @@ typedef struct {
 
 typedef struct {
     enum key_field defined;
-    unsigned file_id;
     enum merge_mode merge;
 
     xkb_atom_t name;
@@ -140,10 +139,9 @@ CopyGroupInfo(GroupInfo *to, const GroupInfo *from)
 }
 
 static void
-InitKeyInfo(struct xkb_context *ctx, KeyInfo *keyi, unsigned file_id)
+InitKeyInfo(struct xkb_context *ctx, KeyInfo *keyi)
 {
     memset(keyi, 0, sizeof(*keyi));
-    keyi->file_id = file_id;
     keyi->merge = MERGE_OVERRIDE;
     keyi->name = xkb_atom_intern(ctx, "*");
     keyi->out_of_range_group_action = RANGE_WRAP;
@@ -173,7 +171,6 @@ typedef struct {
 typedef struct {
     char *name;         /* e.g. pc+us+inet(evdev) */
     int errorCount;
-    unsigned file_id;
     enum merge_mode merge;
     xkb_layout_index_t explicit_group;
     darray(KeyInfo) keys;
@@ -187,13 +184,12 @@ typedef struct {
 
 static void
 InitSymbolsInfo(SymbolsInfo *info, struct xkb_keymap *keymap,
-                unsigned file_id, ActionsInfo *actions)
+                ActionsInfo *actions)
 {
     memset(info, 0, sizeof(*info));
     info->keymap = keymap;
-    info->file_id = file_id;
     info->merge = MERGE_OVERRIDE;
-    InitKeyInfo(keymap->ctx, &info->default_key, file_id);
+    InitKeyInfo(keymap->ctx, &info->default_key);
     info->actions = actions;
     info->explicit_group = XKB_LAYOUT_INVALID;
 }
@@ -348,27 +344,23 @@ UseNewKeyField(enum key_field field, enum key_field old, enum key_field new,
 }
 
 static bool
-MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from)
+MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from, bool same_file)
 {
     xkb_layout_index_t i;
     xkb_layout_index_t groups_in_both;
     enum key_field collide = 0;
-    bool clobber, report;
-    int verbosity = xkb_context_get_log_verbosity(info->keymap->ctx);
+    const int verbosity = xkb_context_get_log_verbosity(info->keymap->ctx);
+    const bool clobber = (from->merge != MERGE_AUGMENT);
+    const bool report = (same_file && verbosity > 0) || verbosity > 9;
 
     if (from->merge == MERGE_REPLACE) {
         ClearKeyInfo(into);
         *into = *from;
-        InitKeyInfo(info->keymap->ctx, from, info->file_id);
+        InitKeyInfo(info->keymap->ctx, from);
         return true;
     }
 
-    clobber = (from->merge != MERGE_AUGMENT);
-    report = (verbosity > 9 ||
-              (into->file_id == from->file_id && verbosity > 0));
-
-    groups_in_both = MIN(darray_size(into->groups),
-                         darray_size(from->groups));
+    groups_in_both = MIN(darray_size(into->groups), darray_size(from->groups));
     for (i = 0; i < groups_in_both; i++)
         MergeGroups(info,
                     &darray_item(into->groups, i),
@@ -410,12 +402,12 @@ MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from)
                  (clobber ? "first" : "last"));
 
     ClearKeyInfo(from);
-    InitKeyInfo(info->keymap->ctx, from, info->file_id);
+    InitKeyInfo(info->keymap->ctx, from);
     return true;
 }
 
 static bool
-AddKeySymbols(SymbolsInfo *info, KeyInfo *keyi)
+AddKeySymbols(SymbolsInfo *info, KeyInfo *keyi, bool same_file)
 {
     xkb_atom_t real_name;
     KeyInfo *iter;
@@ -432,10 +424,10 @@ AddKeySymbols(SymbolsInfo *info, KeyInfo *keyi)
 
     darray_foreach(iter, info->keys)
         if (iter->name == keyi->name)
-            return MergeKeys(info, iter, keyi);
+            return MergeKeys(info, iter, keyi, same_file);
 
     darray_append(info->keys, *keyi);
-    InitKeyInfo(info->keymap->ctx, keyi, info->file_id);
+    InitKeyInfo(info->keymap->ctx, keyi);
     return true;
 }
 
@@ -521,7 +513,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
 
     darray_foreach(keyi, from->keys) {
         keyi->merge = (merge == MERGE_DEFAULT ? keyi->merge : merge);
-        if (!AddKeySymbols(into, keyi))
+        if (!AddKeySymbols(into, keyi, false))
             into->errorCount++;
     }
 
@@ -540,7 +532,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
 {
     SymbolsInfo included;
 
-    InitSymbolsInfo(&included, info->keymap, info->file_id, info->actions);
+    InitSymbolsInfo(&included, info->keymap, info->actions);
     included.name = include->stmt;
     include->stmt = NULL;
 
@@ -555,7 +547,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
             return false;
         }
 
-        InitSymbolsInfo(&next_incl, info->keymap, file->id, info->actions);
+        InitSymbolsInfo(&next_incl, info->keymap, info->actions);
         if (stmt->modifier) {
             next_incl.explicit_group = atoi(stmt->modifier) - 1;
             if (next_incl.explicit_group >= XKB_MAX_GROUPS) {
@@ -1176,7 +1168,7 @@ HandleSymbolsDef(SymbolsInfo *info, SymbolsDef *stmt)
         return false;
     }
 
-    if (!AddKeySymbols(info, &keyi)) {
+    if (!AddKeySymbols(info, &keyi, true)) {
         info->errorCount++;
         return false;
     }
@@ -1621,7 +1613,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
     if (!actions)
         return false;
 
-    InitSymbolsInfo(&info, keymap, file->id, actions);
+    InitSymbolsInfo(&info, keymap, actions);
     info.default_key.merge = merge;
 
     HandleSymbolsFile(&info, file, merge);
