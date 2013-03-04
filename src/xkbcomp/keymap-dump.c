@@ -148,8 +148,7 @@ static bool
 write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
 {
     const struct xkb_key *key;
-    const struct xkb_key_alias *alias;
-    xkb_led_index_t i;
+    xkb_led_index_t idx;
     const struct xkb_led *led;
 
     if (keymap->keycodes_section_name)
@@ -166,16 +165,16 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
                   KeyNameText(keymap->ctx, key->name), key->keycode);
     }
 
-    darray_enumerate(i, led, keymap->leds)
+    darray_enumerate(idx, led, keymap->leds)
         if (led->name != XKB_ATOM_NONE)
             write_buf(buf, "\tindicator %d = \"%s\";\n",
-                      i + 1, xkb_atom_text(keymap->ctx, led->name));
+                      idx + 1, xkb_atom_text(keymap->ctx, led->name));
 
 
-    darray_foreach(alias, keymap->key_aliases)
+    for (unsigned i = 0; i < keymap->num_key_aliases; i++)
         write_buf(buf, "\talias %-14s = %s;\n",
-                  KeyNameText(keymap->ctx, alias->alias),
-                  KeyNameText(keymap->ctx, alias->real));
+                  KeyNameText(keymap->ctx, keymap->key_aliases[i].alias),
+                  KeyNameText(keymap->ctx, keymap->key_aliases[i].real));
 
     write_buf(buf, "};\n\n");
     return true;

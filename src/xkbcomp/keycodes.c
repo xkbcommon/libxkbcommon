@@ -90,7 +90,8 @@
  * following members of struct xkb_keymap are finalized:
  *      xkb_keycode_t min_key_code;
  *      xkb_keycode_t max_key_code;
- *      darray(struct xkb_key_alias) key_aliases;
+ *      unsigned int num_aliases;
+ *      struct xkb_key_alias *key_aliases;
  *      char *keycodes_section_name;
  * The 'name' field of leds declared in xkb_keycodes:
  *      darray(struct xkb_led) leds;
@@ -617,75 +618,74 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
 
 /***====================================================================***/
 
-static void
-CopyAliasesToKeymap(KeyNamesInfo *info, struct xkb_keymap *keymap)
-{
-    AliasInfo *alias;
-
-    darray_foreach(alias, info->aliases) {
-        struct xkb_key *key;
-        struct xkb_key_alias new;
-
-        /* Check that ->real is a key. */
-        key = XkbKeyByName(keymap, alias->real, false);
-        if (!key) {
-            log_vrb(info->ctx, 5,
-                    "Attempt to alias %s to non-existent key %s; Ignored\n",
-                    KeyNameText(info->ctx, alias->alias),
-                    KeyNameText(info->ctx, alias->real));
-            continue;
-        }
-
-        /* Check that ->alias is not a key. */
-        key = XkbKeyByName(keymap, alias->alias, false);
-        if (key) {
-            log_vrb(info->ctx, 5,
-                    "Attempt to create alias with the name of a real key; "
-                    "Alias \"%s = %s\" ignored\n",
-                    KeyNameText(info->ctx, alias->alias),
-                    KeyNameText(info->ctx, alias->real));
-            continue;
-        }
-
-        /* Add the alias. */
-        new.alias = alias->alias;
-        new.real = alias->real;
-        darray_append(keymap->key_aliases, new);
-    }
-
-    darray_free(info->aliases);
-}
-
 static bool
 CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 {
     xkb_keycode_t kc;
     xkb_led_index_t idx;
     LedNameInfo *ledi;
+    AliasInfo *alias;
+    unsigned i;
 
-    keymap->keys = calloc(info->max_key_code + 1, sizeof(*keymap->keys));
-    if (!keymap->keys)
-        return false;
+    keymap->keycodes_section_name = strdup_safe(info->name);
 
     keymap->min_key_code = info->min_key_code;
     keymap->max_key_code = info->max_key_code;
 
+    /* Copy key names. */
+    keymap->keys = calloc(info->max_key_code + 1, sizeof(*keymap->keys));
     for (kc = info->min_key_code; kc <= info->max_key_code; kc++) {
         keymap->keys[kc].keycode = kc;
         keymap->keys[kc].name = darray_item(info->key_names, kc).name;
     }
 
-    keymap->keycodes_section_name = strdup_safe(info->name);
-
-    darray_resize0(keymap->leds, darray_size(info->led_names));
-    darray_enumerate(idx, ledi, info->led_names) {
-        if (ledi->name == XKB_ATOM_NONE)
+    /*
+     * Do some sanity checking on the aliases. We can't do it before
+     * because keys and their aliases may be added out-of-order.
+     */
+    keymap->num_key_aliases = 0;
+    darray_foreach(alias, info->aliases) {
+        /* Check that ->real is a key. */
+        if (!XkbKeyByName(keymap, alias->real, false)) {
+            log_vrb(info->ctx, 5,
+                    "Attempt to alias %s to non-existent key %s; Ignored\n",
+                    KeyNameText(info->ctx, alias->alias),
+                    KeyNameText(info->ctx, alias->real));
+            alias->real = XKB_ATOM_NONE;
             continue;
+        }
 
-        darray_item(keymap->leds, idx).name = ledi->name;
+        /* Check that ->alias is not a key. */
+        if (XkbKeyByName(keymap, alias->alias, false)) {
+            log_vrb(info->ctx, 5,
+                    "Attempt to create alias with the name of a real key; "
+                    "Alias \"%s = %s\" ignored\n",
+                    KeyNameText(info->ctx, alias->alias),
+                    KeyNameText(info->ctx, alias->real));
+            alias->real = XKB_ATOM_NONE;
+            continue;
+        }
+
+        keymap->num_key_aliases++;
     }
 
-    CopyAliasesToKeymap(info, keymap);
+    /* Copy key aliases. */
+    keymap->key_aliases = calloc(keymap->num_key_aliases,
+                                 sizeof(*keymap->key_aliases));
+    i = 0;
+    darray_foreach(alias, info->aliases) {
+        if (alias->real != XKB_ATOM_NONE) {
+            keymap->key_aliases[i].alias = alias->alias;
+            keymap->key_aliases[i].real = alias->real;
+            i++;
+        }
+    }
+
+    /* Copy LED names. */
+    darray_resize0(keymap->leds, darray_size(info->led_names));
+    darray_enumerate(idx, ledi, info->led_names)
+        if (ledi->name != XKB_ATOM_NONE)
+            darray_item(keymap->leds, idx).name = ledi->name;
 
     return true;
 }

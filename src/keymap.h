@@ -380,7 +380,8 @@ struct xkb_keymap {
     struct xkb_key *keys;
 
     /* aliases in no particular order */
-    darray(struct xkb_key_alias) key_aliases;
+    unsigned int num_key_aliases;
+    struct xkb_key_alias *key_aliases;
 
     struct xkb_key_type *types;
     unsigned int num_types;

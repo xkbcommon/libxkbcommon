@@ -107,7 +107,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
     }
     free(keymap->types);
     darray_free(keymap->sym_interprets);
-    darray_free(keymap->key_aliases);
+    free(keymap->key_aliases);
     free(keymap->group_names);
     darray_free(keymap->mods);
     darray_free(keymap->leds);
@@ -499,11 +499,9 @@ XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases)
 xkb_atom_t
 XkbResolveKeyAlias(struct xkb_keymap *keymap, xkb_atom_t name)
 {
-    const struct xkb_key_alias *alias;
-
-    darray_foreach(alias, keymap->key_aliases)
-        if (name == alias->alias)
-            return alias->real;
+    for (unsigned i = 0; i < keymap->num_key_aliases; i++)
+        if (keymap->key_aliases[i].alias == name)
+            return keymap->key_aliases[i].real;
 
     return XKB_ATOM_NONE;
 }
