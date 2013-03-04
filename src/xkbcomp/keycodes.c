@@ -118,7 +118,6 @@ typedef struct {
 typedef struct {
     char *name;
     int errorCount;
-    enum merge_mode merge;
 
     xkb_keycode_t min_key_code;
     xkb_keycode_t max_key_code;
@@ -232,7 +231,6 @@ InitKeyNamesInfo(KeyNamesInfo *info, struct xkb_context *ctx)
 {
     memset(info, 0, sizeof(*info));
     info->ctx = ctx;
-    info->merge = MERGE_DEFAULT;
     info->min_key_code = XKB_KEYCODE_MAX;
 }
 
@@ -545,7 +543,7 @@ HandleLedNameDef(KeyNamesInfo *info, LedNameDef *def,
         return ReportBadType(info->ctx, "indicator", "name", buf, "string");
     }
 
-    ledi.merge = info->merge;
+    ledi.merge = merge;
     ledi.name = name;
     return AddLedName(info, merge, true, &ledi, def->ndx - 1);
 }
