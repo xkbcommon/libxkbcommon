@@ -236,7 +236,6 @@ enum si_field {
 
 typedef struct {
     enum si_field defined;
-    unsigned file_id;
     enum merge_mode merge;
 
     struct xkb_sym_interpret interp;
@@ -250,7 +249,6 @@ enum led_field {
 
 typedef struct {
     enum led_field defined;
-    unsigned file_id;
     enum merge_mode merge;
 
     struct xkb_led led;
@@ -258,7 +256,6 @@ typedef struct {
 
 typedef struct {
     char *name;
-    unsigned file_id;
     int errorCount;
     SymInterpInfo default_interp;
     darray(SymInterpInfo) interps;
@@ -316,17 +313,14 @@ ReportLedNotArray(CompatInfo *info, LedInfo *ledi, const char *field)
 }
 
 static void
-InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap, unsigned file_id,
+InitCompatInfo(CompatInfo *info, struct xkb_keymap *keymap,
                ActionsInfo *actions)
 {
     memset(info, 0, sizeof(*info));
     info->keymap = keymap;
-    info->file_id = file_id;
     info->actions = actions;
-    info->default_interp.file_id = file_id;
     info->default_interp.merge = MERGE_OVERRIDE;
     info->default_interp.interp.virtual_mod = XKB_MOD_INVALID;
-    info->default_led.file_id = file_id;
     info->default_led.merge = MERGE_OVERRIDE;
 }
 
@@ -371,16 +365,13 @@ UseNewInterpField(enum si_field field, SymInterpInfo *old, SymInterpInfo *new,
 }
 
 static bool
-AddInterp(CompatInfo *info, SymInterpInfo *new)
+AddInterp(CompatInfo *info, SymInterpInfo *new, bool same_file)
 {
-    enum si_field collide = 0;
-    SymInterpInfo *old;
-
-    old = FindMatchingInterp(info, new);
+    SymInterpInfo *old = FindMatchingInterp(info, new);
     if (old) {
-        int verbosity = xkb_context_get_log_verbosity(info->keymap->ctx);
-        bool report = ((old->file_id == new->file_id && verbosity > 0) ||
-                       verbosity > 9);
+        const int verbosity = xkb_context_get_log_verbosity(info->keymap->ctx);
+        const bool report = (same_file && verbosity > 0) || verbosity > 9;
+        enum si_field collide = 0;
 
         if (new->merge == MERGE_REPLACE) {
             if (report)
@@ -427,7 +418,6 @@ AddInterp(CompatInfo *info, SymInterpInfo *new)
     darray_append(info->interps, *new);
     return true;
 }
-
 
 /***====================================================================***/
 
@@ -486,16 +476,15 @@ UseNewLEDField(enum led_field field, LedInfo *old, LedInfo *new,
 }
 
 static bool
-AddLedMap(CompatInfo *info, LedInfo *new)
+AddLedMap(CompatInfo *info, LedInfo *new, bool same_file)
 {
     LedInfo *old;
     enum led_field collide;
     struct xkb_context *ctx = info->keymap->ctx;
-    int verbosity = xkb_context_get_log_verbosity(ctx);
+    const int verbosity = xkb_context_get_log_verbosity(ctx);
+    const bool report = (same_file && verbosity > 0) || verbosity > 9;
 
     darray_foreach(old, info->leds) {
-        bool report;
-
         if (old->led.name != new->led.name)
             continue;
 
@@ -507,9 +496,6 @@ AddLedMap(CompatInfo *info, LedInfo *new)
             old->defined |= new->defined;
             return true;
         }
-
-        report = ((old->file_id == new->file_id && verbosity > 0) ||
-                  verbosity > 9);
 
         if (new->merge == MERGE_REPLACE) {
             if (report)
@@ -571,13 +557,13 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
 
     darray_foreach(si, from->interps) {
         si->merge = (merge == MERGE_DEFAULT ? si->merge : merge);
-        if (!AddInterp(into, si))
+        if (!AddInterp(into, si, false))
             into->errorCount++;
     }
 
     darray_foreach(ledi, from->leds) {
         ledi->merge = (merge == MERGE_DEFAULT ? ledi->merge : merge);
-        if (!AddLedMap(into, ledi))
+        if (!AddLedMap(into, ledi, false))
             into->errorCount++;
     }
 }
@@ -590,7 +576,7 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
 {
     CompatInfo included;
 
-    InitCompatInfo(&included, info->keymap, info->file_id, info->actions);
+    InitCompatInfo(&included, info->keymap, info->actions);
     included.name = include->stmt;
     include->stmt = NULL;
 
@@ -605,12 +591,10 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
             return false;
         }
 
-        InitCompatInfo(&next_incl, info->keymap, file->id, info->actions);
+        InitCompatInfo(&next_incl, info->keymap, info->actions);
         next_incl.default_interp = info->default_interp;
-        next_incl.default_interp.file_id = file->id;
         next_incl.default_interp.merge = stmt->merge;
         next_incl.default_led = info->default_led;
-        next_incl.default_led.file_id = file->id;
         next_incl.default_led.merge = stmt->merge;
 
         HandleCompatMapFile(&next_incl, file, MERGE_OVERRIDE);
@@ -873,7 +857,7 @@ HandleInterpDef(CompatInfo *info, InterpDef *def, enum merge_mode merge)
         return false;
     }
 
-    if (!AddInterp(info, &si)) {
+    if (!AddInterp(info, &si, true)) {
         info->errorCount++;
         return false;
     }
@@ -917,7 +901,7 @@ HandleLedMapDef(CompatInfo *info, LedMapDef *def, enum merge_mode merge)
     }
 
     if (ok)
-        return AddLedMap(info, &ledi);
+        return AddLedMap(info, &ledi, true);
 
     return false;
 }
@@ -1072,7 +1056,7 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
     if (!actions)
         return false;
 
-    InitCompatInfo(&info, keymap, file->id, actions);
+    InitCompatInfo(&info, keymap, actions);
     info.default_interp.merge = merge;
     info.default_led.merge = merge;
 
