@@ -776,55 +776,54 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
     }
 }
 
-static void
-CopyDefToKeyType(KeyTypeInfo *def, struct xkb_key_type *type)
-{
-    type->mods.mods = def->mods;
-    type->num_levels = def->num_levels;
-    type->map = darray_mem(def->entries, 0);
-    type->num_entries = darray_size(def->entries);
-    darray_init(def->entries);
-    type->name = def->name;
-    type->level_names = darray_mem(def->level_names, 0);
-    darray_init(def->level_names);
-}
+/***====================================================================***/
 
 static bool
 CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
 {
-    unsigned int i;
-    unsigned int num_types;
+    keymap->types_section_name = strdup_safe(info->name);
 
-    num_types = darray_size(info->types) ? darray_size(info->types) : 1;
-    keymap->types = calloc(num_types, sizeof(*keymap->types));
-    if (!keymap->types)
-        return false;
+    keymap->num_types = darray_size(info->types);
+    if (keymap->num_types == 0)
+        keymap->num_types = 1;
 
-    keymap->num_types = num_types;
+    keymap->types = calloc(keymap->num_types, sizeof(*keymap->types));
 
     /*
      * If no types were specified, a default unnamed one-level type is
      * used for all keys.
      */
     if (darray_empty(info->types)) {
-        KeyTypeInfo dflt = {
-            .name = xkb_atom_intern(keymap->ctx, "default"),
-            .mods = 0,
-            .num_levels = 1,
-            .entries = darray_new(),
-            .level_names = darray_new(),
-        };
+        struct xkb_key_type *type = &keymap->types[0];
 
-        CopyDefToKeyType(&dflt, &keymap->types[0]);
-    } else {
-        for (i = 0; i < num_types; i++)
-            CopyDefToKeyType(&darray_item(info->types, i), &keymap->types[i]);
+        type->mods.mods = 0;
+        type->num_levels = 1;
+        type->map = NULL;
+        type->num_entries = 0;
+        type->name = xkb_atom_intern(keymap->ctx, "default");
+        type->level_names = NULL;
+
+        return true;
     }
 
-    keymap->types_section_name = strdup_safe(info->name);
+    for (unsigned i = 0; i < keymap->num_types; i++) {
+        KeyTypeInfo *def = &darray_item(info->types, i);
+        struct xkb_key_type *type = &keymap->types[i];
+
+        type->mods.mods = def->mods;
+        type->num_levels = def->num_levels;
+        type->map = darray_mem(def->entries, 0);
+        type->num_entries = darray_size(def->entries);
+        darray_init(def->entries);
+        type->name = def->name;
+        type->level_names = darray_mem(def->level_names, 0);
+        darray_init(def->level_names);
+    }
 
     return true;
 }
+
+/***====================================================================***/
 
 bool
 CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
