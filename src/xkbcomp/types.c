@@ -144,7 +144,6 @@ enum type_field {
 
 typedef struct {
     enum type_field defined;
-    unsigned file_id;
     enum merge_mode merge;
 
     xkb_atom_t name;
@@ -157,7 +156,6 @@ typedef struct {
 typedef struct {
     char *name;
     int errorCount;
-    unsigned file_id;
 
     darray(KeyTypeInfo) types;
     struct xkb_keymap *keymap;
@@ -212,12 +210,10 @@ ReportTypeBadWidth(KeyTypesInfo *info, const char *type, int has, int needs)
 /***====================================================================***/
 
 static void
-InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap,
-                 unsigned file_id)
+InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_keymap *keymap)
 {
     memset(info, 0, sizeof(*info));
     info->keymap = keymap;
-    info->file_id = file_id;
 }
 
 static void
@@ -247,16 +243,15 @@ FindMatchingKeyType(KeyTypesInfo *info, xkb_atom_t name)
 }
 
 static bool
-AddKeyType(KeyTypesInfo *info, KeyTypeInfo *new)
+AddKeyType(KeyTypesInfo *info, KeyTypeInfo *new, bool same_file)
 {
     KeyTypeInfo *old;
-    int verbosity = xkb_context_get_log_verbosity(info->keymap->ctx);
+    const int verbosity = xkb_context_get_log_verbosity(info->keymap->ctx);
 
     old = FindMatchingKeyType(info, new->name);
     if (old) {
         if (new->merge == MERGE_REPLACE || new->merge == MERGE_OVERRIDE) {
-            if ((old->file_id == new->file_id && verbosity > 0) ||
-                verbosity > 9) {
+            if ((same_file && verbosity > 0) || verbosity > 9) {
                 log_warn(info->keymap->ctx,
                          "Multiple definitions of the %s key type; "
                          "Earlier definition ignored\n",
@@ -270,7 +265,7 @@ AddKeyType(KeyTypesInfo *info, KeyTypeInfo *new)
             return true;
         }
 
-        if (old->file_id == new->file_id)
+        if (same_file)
             log_vrb(info->keymap->ctx, 4,
                     "Multiple definitions of the %s key type; "
                     "Later definition ignored\n",
@@ -280,7 +275,6 @@ AddKeyType(KeyTypesInfo *info, KeyTypeInfo *new)
         return true;
     }
 
-    new->file_id = info->file_id;
     darray_append(info->types, *new);
     return true;
 }
@@ -305,7 +299,7 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
 
     darray_foreach(type, from->types) {
         type->merge = (merge == MERGE_DEFAULT ? type->merge : merge);
-        if (!AddKeyType(into, type))
+        if (!AddKeyType(into, type, false))
             into->errorCount++;
     }
 }
@@ -318,7 +312,7 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
 {
     KeyTypesInfo included;
 
-    InitKeyTypesInfo(&included, info->keymap, info->file_id);
+    InitKeyTypesInfo(&included, info->keymap);
     included.name = include->stmt;
     include->stmt = NULL;
 
@@ -333,7 +327,7 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
             return false;
         }
 
-        InitKeyTypesInfo(&next_incl, info->keymap, file->id);
+        InitKeyTypesInfo(&next_incl, info->keymap);
 
         HandleKeyTypesFile(&next_incl, file, stmt->merge);
 
@@ -710,7 +704,6 @@ HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def, enum merge_mode merge)
 {
     KeyTypeInfo type = {
         .defined = 0,
-        .file_id = info->file_id,
         .merge = (def->merge == MERGE_DEFAULT ? merge : def->merge),
         .name = def->name,
         .mods = 0,
@@ -724,7 +717,7 @@ HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def, enum merge_mode merge)
         return false;
     }
 
-    if (!AddKeyType(info, &type)) {
+    if (!AddKeyType(info, &type, true)) {
         info->errorCount++;
         return false;
     }
@@ -831,7 +824,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
 {
     KeyTypesInfo info;
 
-    InitKeyTypesInfo(&info, keymap, file->id);
+    InitKeyTypesInfo(&info, keymap);
 
     HandleKeyTypesFile(&info, file, merge);
     if (info.errorCount != 0)
