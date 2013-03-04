@@ -658,20 +658,22 @@ static void
 xkb_state_update_derived(struct xkb_state *state)
 {
     state->components.mods = (state->components.base_mods |
-                       state->components.latched_mods |
-                       state->components.locked_mods);
+                              state->components.latched_mods |
+                              state->components.locked_mods);
 
     /* TODO: Use groups_wrap control instead of always RANGE_WRAP. */
 
-    state->components.locked_group = wrap_group_into_range(state->components.locked_group,
-                                                    state->keymap->num_groups,
-                                                    RANGE_WRAP, 0);
+    state->components.locked_group =
+        wrap_group_into_range(state->components.locked_group,
+                              state->keymap->num_groups,
+                              RANGE_WRAP, 0);
 
-    state->components.group = wrap_group_into_range(state->components.base_group +
-                                             state->components.latched_group +
-                                             state->components.locked_group,
-                                             state->keymap->num_groups,
-                                             RANGE_WRAP, 0);
+    state->components.group =
+        wrap_group_into_range(state->components.base_group +
+                              state->components.latched_group +
+                              state->components.locked_group,
+                              state->keymap->num_groups,
+                              RANGE_WRAP, 0);
 
     xkb_state_led_update_all(state);
 }
@@ -1105,7 +1107,7 @@ key_get_consumed(struct xkb_state *state, const struct xkb_key *key)
  * modifiers, e.g. when implementing hot keys or accelerators.
  *
  * See also, for example:
- * - XkbTranslateKeyCode(3), mod_rtrn retrun value, from libX11.
+ * - XkbTranslateKeyCode(3), mod_rtrn return value, from libX11.
  * - gdk_keymap_translate_keyboard_state, consumed_modifiers return value,
  *   from gtk+.
  */
