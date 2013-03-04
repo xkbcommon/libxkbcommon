@@ -110,14 +110,11 @@ typedef struct {
 } AliasInfo;
 
 typedef struct {
-    unsigned file_id;
-
     xkb_atom_t name;
 } KeyNameInfo;
 
 typedef struct {
     enum merge_mode merge;
-    unsigned file_id;
 
     xkb_atom_t name;
 } LedNameInfo;
@@ -126,7 +123,6 @@ typedef struct {
     char *name;
     int errorCount;
     enum merge_mode merge;
-    unsigned file_id;
 
     xkb_keycode_t min_key_code;
     xkb_keycode_t max_key_code;
@@ -167,7 +163,7 @@ FindLedByName(KeyNamesInfo *info, xkb_atom_t name,
 }
 
 static bool
-AddLedName(KeyNamesInfo *info, enum merge_mode merge,
+AddLedName(KeyNamesInfo *info, enum merge_mode merge, bool same_file,
            LedNameInfo *new, xkb_led_index_t new_idx)
 {
     xkb_led_index_t old_idx;
@@ -178,8 +174,7 @@ AddLedName(KeyNamesInfo *info, enum merge_mode merge,
     /* Inidicator with the same name already exists. */
     old = FindLedByName(info, new->name, &old_idx);
     if (old) {
-        const bool report = ((old->file_id == new->file_id && verbosity > 0) ||
-                             verbosity > 9);
+        const bool report = (same_file && verbosity > 0) || verbosity > 9;
 
         if (old_idx == new_idx) {
             log_warn(info->ctx,
@@ -209,8 +204,7 @@ AddLedName(KeyNamesInfo *info, enum merge_mode merge,
     /* Inidicator with the same index already exists. */
     old = &darray_item(info->led_names, new_idx);
     if (old->name != XKB_ATOM_NONE) {
-        const bool report = ((old->file_id == new->file_id && verbosity > 0) ||
-                             verbosity > 9);
+        const bool report = (same_file && verbosity > 0) || verbosity > 9;
 
         /* Same name case already handled above. */
 
@@ -243,13 +237,11 @@ ClearKeyNamesInfo(KeyNamesInfo *info)
 }
 
 static void
-InitKeyNamesInfo(KeyNamesInfo *info, struct xkb_context *ctx,
-                 unsigned file_id)
+InitKeyNamesInfo(KeyNamesInfo *info, struct xkb_context *ctx)
 {
     memset(info, 0, sizeof(*info));
     info->ctx = ctx;
     info->merge = MERGE_DEFAULT;
-    info->file_id = file_id;
     info->min_key_code = XKB_KEYCODE_MAX;
 }
 
@@ -267,7 +259,7 @@ FindKeyByName(KeyNamesInfo * info, xkb_atom_t name)
 
 static bool
 AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
-           enum merge_mode merge, unsigned file_id, bool report)
+           enum merge_mode merge, bool same_file, bool report)
 {
     KeyNameInfo *namei;
     xkb_keycode_t old;
@@ -281,8 +273,7 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
 
     namei = &darray_item(info->key_names, kc);
 
-    report = report && ((verbosity > 0 && file_id == namei->file_id) ||
-                        verbosity > 7);
+    report = report && ((same_file && verbosity > 0) || verbosity > 7);
 
     if (namei->name != 0) {
         const char *lname = KeyNameText(info->ctx, namei->name);
@@ -309,7 +300,6 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
                          "Multiple names for keycode %d; "
                          "Using %s, ignoring %s\n", kc, kname, lname);
             namei->name = 0;
-            namei->file_id = 0;
         }
     }
 
@@ -319,7 +309,6 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
 
         if (merge == MERGE_OVERRIDE) {
             darray_item(info->key_names, old).name = 0;
-            darray_item(info->key_names, old).file_id = 0;
             if (report)
                 log_warn(info->ctx,
                          "Key name %s assigned to multiple keys; "
@@ -335,7 +324,6 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
     }
 
     namei->name = name;
-    namei->file_id = file_id;
     return true;
 }
 
@@ -374,7 +362,7 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
             if (name == XKB_ATOM_NONE)
                 continue;
 
-            if (!AddKeyName(into, i, name, merge, from->file_id, false))
+            if (!AddKeyName(into, i, name, merge, true, false))
                 into->errorCount++;
         }
     }
@@ -413,7 +401,7 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
                 continue;
 
             ledi->merge = (merge == MERGE_DEFAULT ? ledi->merge : merge);
-            if (!AddLedName(into, ledi->merge, ledi, idx))
+            if (!AddLedName(into, ledi->merge, false, ledi, idx))
                 into->errorCount++;
         }
     }
@@ -427,7 +415,7 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *include)
 {
     KeyNamesInfo included;
 
-    InitKeyNamesInfo(&included, info->ctx, info->file_id);
+    InitKeyNamesInfo(&included, info->ctx);
     included.name = include->stmt;
     include->stmt = NULL;
 
@@ -442,7 +430,7 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *include)
             return false;
         }
 
-        InitKeyNamesInfo(&next_incl, info->ctx, file->id);
+        InitKeyNamesInfo(&next_incl, info->ctx);
 
         HandleKeycodesFile(&next_incl, file, MERGE_OVERRIDE);
 
@@ -475,8 +463,7 @@ HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt, enum merge_mode merge)
         return false;
     }
 
-    return AddKeyName(info, stmt->value, stmt->name, merge,
-                      info->file_id, true);
+    return AddKeyName(info, stmt->value, stmt->name, merge, false, true);
 }
 
 static int
@@ -567,9 +554,8 @@ HandleLedNameDef(KeyNamesInfo *info, LedNameDef *def,
     }
 
     ledi.merge = info->merge;
-    ledi.file_id = info->file_id;
     ledi.name = name;
-    return AddLedName(info, merge, &ledi, def->ndx - 1);
+    return AddLedName(info, merge, true, &ledi, def->ndx - 1);
 }
 
 static void
@@ -698,7 +684,7 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
 {
     KeyNamesInfo info;
 
-    InitKeyNamesInfo(&info, keymap->ctx, file->id);
+    InitKeyNamesInfo(&info, keymap->ctx);
 
     HandleKeycodesFile(&info, file, merge);
     if (info.errorCount != 0)
