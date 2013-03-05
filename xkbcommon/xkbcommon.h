@@ -103,11 +103,10 @@ extern "C" {
  *
  * The context contains various general library data and state, like
  * logging level and include paths.
+ *
  * Objects are created in a specific context, and multiple contexts may
- * coexist simultaneously. Objects from different contexts are completely
+ * coexist simultaneously.  Objects from different contexts are completely
  * separated and do not share any memory or state.
- * A context is created, accessed, manipulated and destroyed through the
- * xkb_context_*() API.
  */
 struct xkb_context;
 
@@ -120,9 +119,6 @@ struct xkb_context;
  *
  * A keymap is immutable after it is created (besides reference counts, etc.);
  * if you need to change it, you must create a new one.
- *
- * A keymap object is created, accessed and destroyed through the
- * xkb_keymap_*() API.
  */
 struct xkb_keymap;
 
@@ -131,12 +127,9 @@ struct xkb_keymap;
  * Opaque keyboard state object.
  *
  * State objects contain the active state of a keyboard (or keyboards), such
- * as the currently effective layout and the active modifiers. It acts as a
+ * as the currently effective layout and the active modifiers.  It acts as a
  * simple state machine, wherein key presses and releases are the input, and
  * key symbols (keysyms) are the output.
- *
- * A state object is created, accessed, manipulated and destroyed through the
- * xkb_state_*() API.
  */
 struct xkb_state;
 
@@ -155,15 +148,20 @@ struct xkb_state;
  * Keymaps and applications which are compatible with X11 should not use
  * these keycodes.
  *
- * @todo Explain how keycodes are mapped to scancodes.
+ * The values of specific keycodes are determined by the keymap and the
+ * underlying input system.  For example, with an X11-compatible keymap
+ * and Linux evdev scan codes (see linux/input.h), a fixed offset is used:
+ *
+ * @code
+ * xkb_keycode_t keycode_A = KEY_A + 8;
+ * @endcode
  *
  * @sa xkb_keycode_is_legal_ext() xkb_keycode_is_legal_x11()
  */
 typedef uint32_t xkb_keycode_t;
 
 /**
- * A number used to represent the symbols visible on the keycaps of a
- * keyboard.
+ * A number used to represent the symbols generated from a key on a keyboard.
  *
  * A key, represented by a keycode, may generate different symbols according
  * to keyboard state.  For example, on a QWERTY keyboard, pressing the key
@@ -193,26 +191,11 @@ typedef uint32_t xkb_keycode_t;
 typedef uint32_t xkb_keysym_t;
 
 /**
- * Index of a modifier.
- *
- * @todo Explain what are modifiers.
- *
- * Modifier indexes are consecutive.  The first modifier has index 0.
- *
- * Each modifier must have a name, and the names are unique.  Therefore, it
- * is safe to use the name as a unique identifier for a modifier.  Modifier
- * names are case-sensitive.
- *
- * @sa xkb_keymap_num_mods()
- */
-typedef uint32_t xkb_mod_index_t;
-/** A mask of modifier indexes. */
-typedef uint32_t xkb_mod_mask_t;
-
-/**
  * Index of a keyboard layout.
  *
- * @todo Explain what are layouts.
+ * The layout index is a state component which detemines which <em>keyboard
+ * layout</em> is active.  These may be different alphabets, different key
+ * arrangements, etc.
  *
  * Layout indexes are consecutive.  The first layout has index 0.
  *
@@ -237,16 +220,43 @@ typedef uint32_t xkb_layout_mask_t;
 typedef uint32_t xkb_level_index_t;
 
 /**
+ * Index of a modifier.
+ *
+ * A @e modifier is a state component which changes the way keys are
+ * interpreted.  A keymap defines a set of modifiers, such as Alt, Shift,
+ * Num Lock or Meta, and specifies which keys may @e activate which
+ * modifiers (in a many-to-many relationship, i.e. a key can activate
+ * several modifiers, and a modifier may be activated by several keys.
+ * Different keymaps do this differently).
+ *
+ * When retrieving the keysyms for a key, the active modifier set is
+ * consulted; this detemines the correct shift level to use within the
+ * currently active layout (see xkb_level_index_t).
+ *
+ * Modifier indexes are consecutive.  The first modifier has index 0.
+ *
+ * Each modifier must have a name, and the names are unique.  Therefore, it
+ * is safe to use the name as a unique identifier for a modifier.  The names
+ * of some common modifiers are provided in the xkbcommon/xkbcommon-names.h
+ * header file.  Modifier names are case-sensitive.
+ *
+ * @sa xkb_keymap_num_mods()
+ */
+typedef uint32_t xkb_mod_index_t;
+/** A mask of modifier indexes. */
+typedef uint32_t xkb_mod_mask_t;
+
+/**
  * Index of a keyboard LED.
  *
  * @todo Explain what are LEDs.
  *
  * LED indexes are non-consecutive.  The first LED has index 0.
  *
- * LED names are case-sensitive.
- *
  * Each LED must have a name, and the names are unique. Therefore,
- * it is safe to use the name as a unique identifier for a LED.
+ * it is safe to use the name as a unique identifier for a LED.  The names
+ * of some common LEDs are provided in the xkbcommon/xkbcommon-names.h
+ * header file.  LED names are case-sensitive.
  *
  * @warning A given keymap may specify an exact index for a given LED.
  * Therefore, LED indexing is not necessarily sequential, as opposed to
@@ -263,10 +273,10 @@ typedef uint32_t xkb_led_index_t;
 /** A mask of LED indexes. */
 typedef uint32_t xkb_led_mask_t;
 
-#define XKB_MOD_INVALID     (0xffffffff)
-#define XKB_LAYOUT_INVALID  (0xffffffff)
 #define XKB_KEYCODE_INVALID (0xffffffff)
+#define XKB_LAYOUT_INVALID  (0xffffffff)
 #define XKB_LEVEL_INVALID   (0xffffffff)
+#define XKB_MOD_INVALID     (0xffffffff)
 #define XKB_LED_INVALID     (0xffffffff)
 
 #define XKB_KEYCODE_MAX     (0xffffffff - 1)
@@ -629,7 +639,7 @@ xkb_context_get_log_verbosity(struct xkb_context *context);
  * function allows you to replace the default behavior with a custom
  * handler.  The handler is only called with messages which match the
  * current logging level and verbosity settings for the context.
- * level is the logging level of the message.  \c format and \c args are
+ * level is the logging level of the message.  @a format and @a args are
  * the same as in the vprintf(3) function.
  *
  * You may use xkb_context_set_user_data() on the context, and then call
@@ -683,7 +693,7 @@ xkb_keymap_new_from_names(struct xkb_context *context,
                           const struct xkb_rule_names *names,
                           enum xkb_keymap_compile_flags flags);
 
-/** The possible keymap text formats. */
+/** The possible keymap formats. */
 enum xkb_keymap_format {
     /** The current/classic XKB text format, as generated by xkbcomp -xkb. */
     XKB_KEYMAP_FORMAT_TEXT_V1 = 1
@@ -1196,6 +1206,8 @@ enum xkb_state_match {
  * the update.  If nothing in the state has changed, returns 0.
  *
  * @memberof xkb_state
+ *
+ * @sa xkb_state_component
  */
 enum xkb_state_component
 xkb_state_update_mask(struct xkb_state *state,
