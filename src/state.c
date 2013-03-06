@@ -65,10 +65,10 @@ struct xkb_filter {
     union xkb_action action;
     const struct xkb_key *key;
     uint32_t priv;
-    int (*func)(struct xkb_state *state,
-                struct xkb_filter *filter,
-                const struct xkb_key *key,
-                enum xkb_key_direction direction);
+    bool (*func)(struct xkb_state *state,
+                 struct xkb_filter *filter,
+                 const struct xkb_key *key,
+                 enum xkb_key_direction direction);
     int refcnt;
 };
 
@@ -256,7 +256,7 @@ xkb_filter_new(struct xkb_state *state)
 
 /***====================================================================***/
 
-static int
+static bool
 xkb_filter_group_set_func(struct xkb_state *state,
                           struct xkb_filter *filter,
                           const struct xkb_key *key,
@@ -264,15 +264,15 @@ xkb_filter_group_set_func(struct xkb_state *state,
 {
     if (key != filter->key) {
         filter->action.group.flags &= ~ACTION_LOCK_CLEAR;
-        return 1;
+        return true;
     }
 
     if (direction == XKB_KEY_DOWN) {
         filter->refcnt++;
-        return 0;
+        return false;
     }
     else if (--filter->refcnt > 0) {
-        return 0;
+        return false;
     }
 
     state->components.base_group = filter->priv;
@@ -281,7 +281,7 @@ xkb_filter_group_set_func(struct xkb_state *state,
         state->components.locked_group = 0;
 
     filter->func = NULL;
-    return 1;
+    return true;
 }
 
 static void
@@ -294,24 +294,24 @@ xkb_filter_group_set_new(struct xkb_state *state, struct xkb_filter *filter)
         state->components.base_group += filter->action.group.group;
 }
 
-static int
+static bool
 xkb_filter_group_lock_func(struct xkb_state *state,
                            struct xkb_filter *filter,
                            const struct xkb_key *key,
                            enum xkb_key_direction direction)
 {
     if (key != filter->key)
-        return 1;
+        return true;
 
     if (direction == XKB_KEY_DOWN) {
         filter->refcnt++;
-        return 0;
+        return false;
     }
     if (--filter->refcnt > 0)
-        return 0;
+        return false;
 
     filter->func = NULL;
-    return 1;
+    return true;
 }
 
 static void
@@ -323,7 +323,7 @@ xkb_filter_group_lock_new(struct xkb_state *state, struct xkb_filter *filter)
         state->components.locked_group += filter->action.group.group;
 }
 
-static int
+static bool
 xkb_filter_mod_set_func(struct xkb_state *state,
                         struct xkb_filter *filter,
                         const struct xkb_key *key,
@@ -331,15 +331,15 @@ xkb_filter_mod_set_func(struct xkb_state *state,
 {
     if (key != filter->key) {
         filter->action.mods.flags &= ~ACTION_LOCK_CLEAR;
-        return 1;
+        return true;
     }
 
     if (direction == XKB_KEY_DOWN) {
         filter->refcnt++;
-        return 0;
+        return false;
     }
     else if (--filter->refcnt > 0) {
-        return 0;
+        return false;
     }
 
     state->clear_mods = filter->action.mods.mods.mask;
@@ -347,7 +347,7 @@ xkb_filter_mod_set_func(struct xkb_state *state,
         state->components.locked_mods &= ~filter->action.mods.mods.mask;
 
     filter->func = NULL;
-    return 1;
+    return true;
 }
 
 static void
@@ -356,28 +356,28 @@ xkb_filter_mod_set_new(struct xkb_state *state, struct xkb_filter *filter)
     state->set_mods = filter->action.mods.mods.mask;
 }
 
-static int
+static bool
 xkb_filter_mod_lock_func(struct xkb_state *state,
                          struct xkb_filter *filter,
                          const struct xkb_key *key,
                          enum xkb_key_direction direction)
 {
     if (key != filter->key)
-        return 1;
+        return true;
 
     if (direction == XKB_KEY_DOWN) {
         filter->refcnt++;
-        return 0;
+        return false;
     }
     if (--filter->refcnt > 0)
-        return 0;
+        return false;
 
     state->clear_mods |= filter->action.mods.mods.mask;
     if (!(filter->action.mods.flags & ACTION_LOCK_NO_UNLOCK))
         state->components.locked_mods &= ~filter->priv;
 
     filter->func = NULL;
-    return 1;
+    return true;
 }
 
 static void
@@ -414,7 +414,7 @@ xkb_action_breaks_latch(const union xkb_action *action)
     }
 }
 
-static int
+static bool
 xkb_filter_mod_latch_func(struct xkb_state *state,
                           struct xkb_filter *filter,
                           const struct xkb_key *key,
@@ -445,14 +445,14 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
             filter->key = key;
             state->components.latched_mods &= ~filter->action.mods.mods.mask;
             /* XXX beep beep! */
-            return 0;
+            return false;
         }
         else if (xkb_action_breaks_latch(action)) {
             /* XXX: This may be totally broken, we might need to break the
              *      latch in the next run after this press? */
             state->components.latched_mods &= ~filter->action.mods.mods.mask;
             filter->func = NULL;
-            return 1;
+            return true;
         }
     }
     else if (direction == XKB_KEY_UP && key == filter->key) {
@@ -492,7 +492,7 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
 
     filter->priv = latch;
 
-    return 1;
+    return true;
 }
 
 static void
@@ -504,8 +504,8 @@ xkb_filter_mod_latch_new(struct xkb_state *state, struct xkb_filter *filter)
 
 static const struct {
     void (*new)(struct xkb_state *state, struct xkb_filter *filter);
-    int (*func)(struct xkb_state *state, struct xkb_filter *filter,
-                const struct xkb_key *key, enum xkb_key_direction direction);
+    bool (*func)(struct xkb_state *state, struct xkb_filter *filter,
+                 const struct xkb_key *key, enum xkb_key_direction direction);
 } filter_action_funcs[_ACTION_TYPE_NUM_ENTRIES] = {
     [ACTION_TYPE_MOD_SET]    = { xkb_filter_mod_set_new,
                                  xkb_filter_mod_set_func },
@@ -531,14 +531,14 @@ xkb_filter_apply_all(struct xkb_state *state,
 {
     struct xkb_filter *filter;
     const union xkb_action *action;
-    int send = 1;
+    bool send = true;
 
     /* First run through all the currently active filters and see if any of
      * them have claimed this event. */
     darray_foreach(filter, state->filters) {
         if (!filter->func)
             continue;
-        send &= filter->func(state, filter, key, direction);
+        send = filter->func(state, filter, key, direction) && send;
     }
 
     if (!send || direction == XKB_KEY_UP)
