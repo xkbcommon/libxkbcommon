@@ -206,6 +206,35 @@ main(void)
                         KEY_LEFTSHIFT,   UP,    XKB_KEY_Shift_L,  NEXT,
                         KEY_O,           BOTH,  XKB_KEY_o,        FINISH));
 
+    /*
+     * Two key presses from the same key (e.g. if two keyboards use the
+     * same xkb_state) should only be released after two releases.
+     */
+    assert(test_key_seq(keymap,
+                        KEY_H,           BOTH,  XKB_KEY_h,        NEXT,
+                        KEY_LEFTSHIFT,   DOWN,  XKB_KEY_Shift_L,  NEXT,
+                        KEY_H,           BOTH,  XKB_KEY_H,        NEXT,
+                        KEY_LEFTSHIFT,   DOWN,  XKB_KEY_Shift_L,  NEXT,
+                        KEY_H,           BOTH,  XKB_KEY_H,        NEXT,
+                        KEY_LEFTSHIFT,   UP,    XKB_KEY_Shift_L,  NEXT,
+                        KEY_H,           BOTH,  XKB_KEY_H,        NEXT,
+                        KEY_LEFTSHIFT,   UP,    XKB_KEY_Shift_L,  NEXT,
+                        KEY_H,           BOTH,  XKB_KEY_h,        FINISH));
+
+    /* Same as above with locked modifiers. */
+    assert(test_key_seq(keymap,
+                        KEY_H,           BOTH,  XKB_KEY_h,          NEXT,
+                        KEY_CAPSLOCK,    DOWN,  XKB_KEY_Caps_Lock,  NEXT,
+                        KEY_H,           BOTH,  XKB_KEY_H,          NEXT,
+                        KEY_CAPSLOCK,    DOWN,  XKB_KEY_Caps_Lock,  NEXT,
+                        KEY_H,           BOTH,  XKB_KEY_H,          NEXT,
+                        KEY_CAPSLOCK,    UP,    XKB_KEY_Caps_Lock,  NEXT,
+                        KEY_H,           BOTH,  XKB_KEY_H,          NEXT,
+                        KEY_CAPSLOCK,    UP,    XKB_KEY_Caps_Lock,  NEXT,
+                        KEY_H,           BOTH,  XKB_KEY_H,          NEXT,
+                        KEY_CAPSLOCK,    BOTH,  XKB_KEY_Caps_Lock,  NEXT,
+                        KEY_H,           BOTH,  XKB_KEY_h,          FINISH));
+
     /* Group switching / locking. */
     assert(test_key_seq(keymap,
                         KEY_H,        BOTH,  XKB_KEY_h,               NEXT,
