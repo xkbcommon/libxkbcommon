@@ -267,6 +267,38 @@ XkbParseString(struct xkb_context *ctx, const char *string,
     return xkb_file;
 }
 
+/*
+ * yy_scan_buffer() requires the last two bytes of \buf to be 0. These two bytes
+ * are not scanned. Other zero bytes in the buffer are scanned normally, though.
+ * Due to these terminating zeroes, \length must be greater than 2.
+ * Furthermore, the buffer must be writable and you cannot make any assumptions
+ * about it after the scanner finished.
+ * All this must be guaranteed by the caller of this function!
+ */
+XkbFile *
+XkbParseBuffer(struct xkb_context *ctx, char *buf, size_t length,
+               const char *file_name)
+{
+    yyscan_t scanner;
+    struct scanner_extra extra;
+    YY_BUFFER_STATE state;
+    XkbFile *xkb_file;
+
+    if (!init_scanner(&scanner, &extra, ctx, file_name))
+        return NULL;
+
+    xkb_file = NULL;
+    state = yy_scan_buffer(buf, length, scanner);
+    if (state) {
+        xkb_file = parse(ctx, scanner, NULL);
+        yy_delete_buffer(state, scanner);
+    }
+
+    clear_scanner(scanner);
+
+    return xkb_file;
+}
+
 XkbFile *
 XkbParseFile(struct xkb_context *ctx, FILE *file,
              const char *file_name, const char *map)

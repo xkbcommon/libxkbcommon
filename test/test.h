@@ -70,6 +70,9 @@ struct xkb_keymap *
 test_compile_string(struct xkb_context *context, const char *string);
 
 struct xkb_keymap *
+test_compile_buffer(struct xkb_context *context, const char *buf, size_t len);
+
+struct xkb_keymap *
 test_compile_rules(struct xkb_context *context, const char *rules,
                    const char *model, const char *layout, const char *variant,
                    const char *options);

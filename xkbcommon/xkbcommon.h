@@ -741,6 +741,20 @@ xkb_keymap_new_from_string(struct xkb_context *context, const char *string,
                            enum xkb_keymap_compile_flags flags);
 
 /**
+ * Create a keymap from a memory buffer.
+ *
+ * This is just like xkb_keymap_new_from_string(), but takes a length argument
+ * so the input string does not have to be zero-terminated.
+ *
+ * @see xkb_keymap_new_from_string()
+ * @memberof xkb_keymap
+ */
+struct xkb_keymap *
+xkb_keymap_new_from_buffer(struct xkb_context *context, const char *buffer,
+                           size_t length, enum xkb_keymap_format format,
+                           enum xkb_keymap_compile_flags flags);
+
+/**
  * Take a new reference on a keymap.
  *
  * @returns The passed in keymap.

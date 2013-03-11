@@ -48,6 +48,10 @@ XkbFile *
 XkbParseString(struct xkb_context *ctx, const char *string,
                const char *file_name);
 
+XkbFile *
+XkbParseBuffer(struct xkb_context *ctx, char *buf, size_t length,
+               const char *file_name);
+
 void
 FreeXkbFile(XkbFile *file);
 

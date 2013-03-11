@@ -114,6 +114,38 @@ text_v1_keymap_new_from_string(struct xkb_keymap *keymap, const char *string)
 }
 
 static bool
+text_v1_keymap_new_from_buffer(struct xkb_keymap *keymap,
+                               const char *buffer, size_t length)
+{
+    bool ok;
+    XkbFile *xkb_file;
+    char *buf;
+
+    buf = malloc(length + 2);
+    if (!buf) {
+        log_err(keymap->ctx, "Cannot allocate memory for keymap\n");
+        return NULL;
+    }
+
+    /* yy_scan_buffer requires two terminating zero bytes */
+    memcpy(buf, buffer, length);
+    buf[length] = 0;
+    buf[length + 1] = 0;
+
+    xkb_file = XkbParseBuffer(keymap->ctx, buf, length + 2, "input");
+    if (!xkb_file) {
+        log_err(keymap->ctx, "Failed to parse input xkb file\n");
+        free(buf);
+        return NULL;
+    }
+
+    ok = compile_keymap_file(keymap, xkb_file);
+    FreeXkbFile(xkb_file);
+    free(buf);
+    return ok;
+}
+
+static bool
 text_v1_keymap_new_from_file(struct xkb_keymap *keymap, FILE *file)
 {
     bool ok;
@@ -133,6 +165,7 @@ text_v1_keymap_new_from_file(struct xkb_keymap *keymap, FILE *file)
 const struct xkb_keymap_format_ops text_v1_keymap_format_ops = {
     .keymap_new_from_names = text_v1_keymap_new_from_names,
     .keymap_new_from_string = text_v1_keymap_new_from_string,
+    .keymap_new_from_buffer = text_v1_keymap_new_from_buffer,
     .keymap_new_from_file = text_v1_keymap_new_from_file,
     .keymap_get_as_string = text_v1_keymap_get_as_string,
 };

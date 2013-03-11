@@ -222,6 +222,43 @@ xkb_keymap_new_from_string(struct xkb_context *ctx,
 }
 
 XKB_EXPORT struct xkb_keymap *
+xkb_keymap_new_from_buffer(struct xkb_context *ctx,
+                           const char *buffer, size_t length,
+                           enum xkb_keymap_format format,
+                           enum xkb_keymap_compile_flags flags)
+{
+    struct xkb_keymap *keymap;
+    const struct xkb_keymap_format_ops *ops;
+
+    ops = get_keymap_format_ops(format);
+    if (!ops || !ops->keymap_new_from_string) {
+        log_err_func(ctx, "unsupported keymap format: %d\n", format);
+        return NULL;
+    }
+
+    if (flags & ~(XKB_MAP_COMPILE_PLACEHOLDER)) {
+        log_err_func(ctx, "unrecognized flags: %#x\n", flags);
+        return NULL;
+    }
+
+    if (!buffer) {
+        log_err_func1(ctx, "no buffer specified\n");
+        return NULL;
+    }
+
+    keymap = xkb_keymap_new(ctx, format, flags);
+    if (!keymap)
+        return NULL;
+
+    if (!ops->keymap_new_from_buffer(keymap, buffer, length)) {
+        xkb_keymap_unref(keymap);
+        return NULL;
+    }
+
+    return keymap;
+}
+
+XKB_EXPORT struct xkb_keymap *
 xkb_keymap_new_from_file(struct xkb_context *ctx,
                          FILE *file,
                          enum xkb_keymap_format format,

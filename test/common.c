@@ -261,6 +261,21 @@ test_compile_string(struct xkb_context *context, const char *string)
 }
 
 struct xkb_keymap *
+test_compile_buffer(struct xkb_context *context, const char *buf, size_t len)
+{
+    struct xkb_keymap *keymap;
+
+    keymap = xkb_keymap_new_from_buffer(context, buf, len,
+                                        XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+    if (!keymap) {
+        fprintf(stderr, "Failed to compile keymap from memory buffer\n");
+        return NULL;
+    }
+
+    return keymap;
+}
+
+struct xkb_keymap *
 test_compile_rules(struct xkb_context *context, const char *rules,
                    const char *model, const char *layout,
                    const char *variant, const char *options)

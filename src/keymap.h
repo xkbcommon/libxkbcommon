@@ -440,6 +440,8 @@ struct xkb_keymap_format_ops {
                                   const struct xkb_rule_names *names);
     bool (*keymap_new_from_string)(struct xkb_keymap *keymap,
                                    const char *string);
+    bool (*keymap_new_from_buffer)(struct xkb_keymap *keymap,
+                                   const char *buffer, size_t length);
     bool (*keymap_new_from_file)(struct xkb_keymap *keymap, FILE *file);
     char *(*keymap_get_as_string)(struct xkb_keymap *keymap);
 };

@@ -7,6 +7,7 @@ state
 context
 rules-file
 stringcomp
+buffercomp
 keyseq
 log
 interactive
