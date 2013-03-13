@@ -555,6 +555,7 @@ static int
 extract_layout_index(const char *s, size_t max_len, xkb_layout_index_t *out)
 {
     /* This function is pretty stupid, but works for now. */
+    *out = XKB_LAYOUT_INVALID;
     if (max_len < 3)
         return -1;
     if (s[0] != '[' || !isdigit(s[1]) || s[2] != ']')
