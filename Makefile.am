@@ -43,6 +43,7 @@ libxkbcommon_la_SOURCES = \
 	src/xkbcomp/rules.c \
 	src/xkbcomp/rules.h \
 	src/xkbcomp/scanner.l \
+	src/xkbcomp/scanner-utils.h \
 	src/xkbcomp/symbols.c \
 	src/xkbcomp/types.c \
 	src/xkbcomp/vmod.c \
