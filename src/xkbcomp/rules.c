@@ -213,35 +213,26 @@ scanner_init(struct scanner *s, struct xkb_context *ctx,
 static char
 peek(struct scanner *s)
 {
-    return s->s[s->pos];
+    return s->pos < s->len ? s->s[s->pos] : '\0';
 }
 
 static bool
 eof(struct scanner *s)
 {
-    return s->s[s->pos] == '\0' || s->pos >= s->len;
+    return peek(s) == '\0';
 }
 
 static bool
 eol(struct scanner *s)
 {
-    return s->s[s->pos] == '\n';
+    return peek(s) == '\n';
 }
 
-/*
- * Use the check_nl variant when the current char might be a new line;
- * just an optimization.
- */
 static char
 next(struct scanner *s)
 {
-    s->column++;
-    return s->s[s->pos++];
-}
-
-static char
-next_check_nl(struct scanner *s)
-{
+    if (eof(s))
+        return '\0';
     if (eol(s)) {
         s->line++;
         s->column = 1;
@@ -264,6 +255,8 @@ chr(struct scanner *s, char ch)
 static bool
 str(struct scanner *s, const char *string, size_t len)
 {
+    if (s->len - s->pos < len)
+        return false;
     if (strncasecmp(s->s + s->pos, string, len) != 0)
         return false;
     s->pos += len; s->column += len;
@@ -286,7 +279,7 @@ skip_more_whitespace_and_comments:
 
     /* New line. */
     if (eol(s)) {
-        while (eol(s)) next_check_nl(s);
+        while (eol(s)) next(s);
         return TOK_END_OF_LINE;
     }
 
@@ -297,7 +290,7 @@ skip_more_whitespace_and_comments:
                            "illegal new line escape; must appear at end of line");
             return TOK_ERROR;
         }
-        next_check_nl(s);
+        next(s);
         goto skip_more_whitespace_and_comments;
     }
 
