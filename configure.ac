@@ -70,7 +70,7 @@ if test "x$ac_cv_func_strcasecmp" = xno || \
     AC_MSG_ERROR([C library does not support strcasecmp/strncasecmp])
 fi
 
-AC_CHECK_FUNCS([eaccess euidaccess])
+AC_CHECK_FUNCS([eaccess euidaccess mmap])
 
 # Some tests use Linux-specific headers
 AC_CHECK_HEADER([linux/input.h])

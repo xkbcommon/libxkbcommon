@@ -65,6 +65,7 @@ libxkbcommon_la_SOURCES = \
 	src/state.c \
 	src/text.c \
 	src/text.h \
+	src/utils.c \
 	src/utils.h
 
 BUILT_SOURCES = \

@@ -47,13 +47,6 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include <ctype.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-
 #include "xkbcomp-priv.h"
 #include "rules.h"
 #include "include.h"
@@ -1099,36 +1092,27 @@ xkb_components_from_rules(struct xkb_context *ctx,
     bool ret = false;
     FILE *file;
     char *path;
-    int fd;
-    struct stat stat_buf;
-    char *string;
+    const char *string;
+    size_t size;
     struct matcher *matcher;
 
     file = FindFileInXkbPath(ctx, rmlvo->rules, FILE_TYPE_RULES, &path);
     if (!file)
         goto err_out;
 
-    fd = fileno(file);
-
-    if (fstat(fd, &stat_buf) != 0) {
-        log_err(ctx, "Couldn't stat rules file\n");
-        goto err_file;
-    }
-
-    string = mmap(NULL, stat_buf.st_size, PROT_READ, MAP_SHARED, fd, 0);
-    if (string == MAP_FAILED) {
-        log_err(ctx, "Couldn't mmap rules file (%lld bytes)\n",
-                (long long) stat_buf.st_size);
+    ret = map_file(file, &string, &size);
+    if (!ret) {
+        log_err(ctx, "Couldn't read rules file: %s\n", strerror(errno));
         goto err_file;
     }
 
     matcher = matcher_new(ctx, rmlvo);
-    ret = matcher_match(matcher, string, stat_buf.st_size, rmlvo->rules, out);
+    ret = matcher_match(matcher, string, size, rmlvo->rules, out);
     if (!ret)
         log_err(ctx, "No components returned from XKB rules \"%s\"\n", path);
     matcher_free(matcher);
 
-    munmap(string, stat_buf.st_size);
+    unmap_file(string, size);
 err_file:
     free(path);
     fclose(file);
