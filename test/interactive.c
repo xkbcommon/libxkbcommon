@@ -497,7 +497,7 @@ main(int argc, char *argv[])
         }
     }
 
-    ctx = test_get_context();
+    ctx = test_get_context(0);
     if (!ctx) {
         ret = -1;
         fprintf(stderr, "Couldn't create xkb context\n");

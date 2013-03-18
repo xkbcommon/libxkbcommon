@@ -58,7 +58,7 @@ main(void)
     struct xkb_state *state;
     struct timespec start, stop, elapsed;
 
-    ctx = test_get_context();
+    ctx = test_get_context(0);
     assert(ctx);
 
     keymap = test_compile_rules(ctx, "evdev", "pc104", "us,ru,il,de",

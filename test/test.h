@@ -52,8 +52,12 @@ test_get_path(const char *path_rel);
 char *
 test_read_file(const char *path_rel);
 
+enum test_context_flags {
+    CONTEXT_NO_FLAG = 0,
+};
+
 struct xkb_context *
-test_get_context(void);
+test_get_context(enum test_context_flags flags);
 
 struct xkb_keymap *
 test_compile_file(struct xkb_context *context, const char *path_rel);

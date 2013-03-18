@@ -132,7 +132,7 @@ main(int argc, char *argv[])
 {
     struct xkb_context *ctx;
 
-    ctx = test_get_context();
+    ctx = test_get_context(0);
     assert(ctx);
 
     if (argc > 1 && streq(argv[1], "bench")) {

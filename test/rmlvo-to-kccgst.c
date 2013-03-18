@@ -68,7 +68,7 @@ main(int argc, char *argv[])
     if (isempty(rmlvo.layout))
         rmlvo.layout = DEFAULT_XKB_LAYOUT;
 
-    ctx = test_get_context();
+    ctx = test_get_context(0);
     if (!ctx) {
         fprintf(stderr, "Failed to get xkb context\n");
         return 1;

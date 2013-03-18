@@ -183,7 +183,7 @@ test_read_file(const char *path_rel)
 }
 
 struct xkb_context *
-test_get_context(void)
+test_get_context(enum test_context_flags test_flags)
 {
     struct xkb_context *ctx = xkb_context_new(XKB_CONTEXT_NO_DEFAULT_INCLUDES);
 

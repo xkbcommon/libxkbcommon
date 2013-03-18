@@ -93,7 +93,7 @@ benchmark(struct xkb_context *context)
 
 int main(int argc, char *argv[])
 {
-    struct xkb_context *ctx = test_get_context();
+    struct xkb_context *ctx = test_get_context(0);
 
     assert(ctx);
 
