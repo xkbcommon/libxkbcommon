@@ -74,7 +74,7 @@ main(void)
     assert(ret == 0);
     ret = setenv("XKB_LOG_VERBOSITY", "5", 1);
     assert(ret == 0);
-    ctx = xkb_context_new(0);
+    ctx = test_get_context(0);
     assert(ctx);
 
     darray_init(log_string);
