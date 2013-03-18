@@ -25,10 +25,26 @@
 
 #include <assert.h>
 
- /* Don't use compat names in internal code. */
+/* Don't use compat names in internal code. */
 #define _XKBCOMMON_COMPAT_H
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
+
+/* The offset between KEY_* numbering, and keycodes in the XKB evdev
+ * dataset. */
+#define EVDEV_OFFSET 8
+
+enum key_seq_state {
+    DOWN,
+    REPEAT,
+    UP,
+    BOTH,
+    NEXT,
+    FINISH,
+};
+
+int
+test_key_seq(struct xkb_keymap *keymap, ...);
 
 const char *
 test_get_path(const char *path_rel);

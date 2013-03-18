@@ -38,6 +38,98 @@
 
 #include "test.h"
 
+/*
+ * Test a sequence of keysyms, resulting from a sequence of key presses,
+ * against the keysyms they're supposed to generate.
+ *
+ * - Each test runs with a clean state.
+ * - Each line in the test is made up of:
+ *   + A keycode, given as a KEY_* from linux/input.h.
+ *   + A direction - DOWN for press, UP for release, BOTH for
+ *     immediate press + release, REPEAT to just get the syms.
+ *   + A sequence of keysyms that should result from this keypress.
+ *
+ * The vararg format is:
+ * <KEY_*>  <DOWN | UP | BOTH>  <XKB_KEY_* (zero or more)>  <NEXT | FINISH>
+ *
+ * See below for examples.
+ */
+int
+test_key_seq(struct xkb_keymap *keymap, ...)
+{
+    struct xkb_state *state;
+
+    va_list ap;
+    xkb_keycode_t kc;
+    int op;
+    xkb_keysym_t keysym;
+
+    const xkb_keysym_t *syms;
+    unsigned int nsyms, i;
+    char ksbuf[64];
+
+    fprintf(stderr, "----\n");
+
+    state = xkb_state_new(keymap);
+    assert(state);
+
+    va_start(ap, keymap);
+
+    for (;;) {
+        kc = va_arg(ap, int) + EVDEV_OFFSET;
+        op = va_arg(ap, int);
+
+        nsyms = xkb_state_key_get_syms(state, kc, &syms);
+        fprintf(stderr, "got %d syms for key 0x%x: [", nsyms, kc);
+
+        if (op == DOWN || op == BOTH)
+            xkb_state_update_key(state, kc, XKB_KEY_DOWN);
+        if (op == UP || op == BOTH)
+            xkb_state_update_key(state, kc, XKB_KEY_UP);
+
+        for (i = 0; i < nsyms; i++) {
+            keysym = va_arg(ap, int);
+            xkb_keysym_get_name(syms[i], ksbuf, sizeof(ksbuf));
+            fprintf(stderr, "%s%s", (i != 0) ? ", " : "", ksbuf);
+
+            if (keysym == FINISH || keysym == NEXT) {
+                xkb_keysym_get_name(syms[i], ksbuf, sizeof(ksbuf));
+                fprintf(stderr, "Did not expect keysym: %s.\n", ksbuf);
+                goto fail;
+            }
+
+            if (keysym != syms[i]) {
+                xkb_keysym_get_name(keysym, ksbuf, sizeof(ksbuf));
+                fprintf(stderr, "Expected keysym: %s. ", ksbuf);;
+                xkb_keysym_get_name(syms[i], ksbuf, sizeof(ksbuf));
+                fprintf(stderr, "Got keysym: %s.\n", ksbuf);;
+                goto fail;
+            }
+        }
+
+        fprintf(stderr, "]\n");
+
+        keysym = va_arg(ap, int);
+        if (keysym == NEXT)
+            continue;
+        if (keysym == FINISH)
+            break;
+
+        xkb_keysym_get_name(keysym, ksbuf, sizeof(ksbuf));
+        fprintf(stderr, "Expected keysym: %s. Didn't get it.\n", ksbuf);
+        goto fail;
+    }
+
+    va_end(ap);
+    xkb_state_unref(state);
+    return 1;
+
+fail:
+    va_end(ap);
+    xkb_state_unref(state);
+    return 0;
+}
+
 const char *
 test_get_path(const char *path_rel)
 {
