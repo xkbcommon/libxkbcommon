@@ -91,9 +91,42 @@ benchmark(struct xkb_context *context)
             BENCHMARK_ITERATIONS, elapsed.tv_sec, elapsed.tv_nsec);
 }
 
-int main(int argc, char *argv[])
+static int
+test_rmlvo_env(struct xkb_context *ctx, const char *rules, const char *model,
+               const char *layout, const char *variant, const char *options)
 {
-    struct xkb_context *ctx = test_get_context(0);
+    if (!isempty(rules))
+        setenv("XKB_DEFAULT_RULES", rules, 1);
+    else
+        unsetenv("XKB_DEFAULT_RULES");
+
+    if (!isempty(model))
+        setenv("XKB_DEFAULT_MODEL", model, 1);
+    else
+        unsetenv("XKB_DEFAULT_MODEL");
+
+    if (!isempty(layout))
+        setenv("XKB_DEFAULT_LAYOUT", layout, 1);
+    else
+        unsetenv("XKB_DEFAULT_LAYOUT");
+
+    if (!isempty(variant))
+        setenv("XKB_DEFAULT_VARIANT", variant, 1);
+    else
+        unsetenv("XKB_DEFAULT_VARIANT");
+
+    if (!isempty(options))
+        setenv("XKB_DEFAULT_OPTIONS", options, 1);
+    else
+        unsetenv("XKB_DEFAULT_OPTIONS");
+
+    return test_rmlvo(ctx, NULL, NULL, NULL, NULL, NULL);
+}
+
+int
+main(int argc, char *argv[])
+{
+    struct xkb_context *ctx = test_get_context(CONTEXT_ALLOW_ENVIRONMENT_NAMES);
 
     assert(ctx);
 
@@ -114,9 +147,18 @@ int main(int argc, char *argv[])
     assert(test_rmlvo(ctx, "evdev", "", "us,,ca", "", ""));
 
     assert(test_rmlvo(ctx, "", "", "", "", ""));
-    assert(test_rmlvo(ctx, NULL, NULL, NULL, NULL, NULL));
 
     assert(!test_rmlvo(ctx, "does-not-exist", "", "", "", ""));
+
+    assert(test_rmlvo_env(ctx, "evdev", "", "us", "", ""));
+    assert(test_rmlvo_env(ctx, "evdev", "", "us", "", "ctrl:nocaps"));
+    assert(test_rmlvo_env(ctx, "evdev", "", "us,ca", ",,,multix", "grp:alts_toggle"));
+    assert(!test_rmlvo_env(ctx, "broken", "what-on-earth", "invalid", "", ""));
+
+    xkb_context_unref(ctx);
+
+    ctx = test_get_context(0);
+    assert(test_rmlvo_env(ctx, "broken", "but", "ignored", "per", "ctx flags"));
 
     /* Test response to invalid flags. */
     {
