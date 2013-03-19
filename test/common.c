@@ -55,11 +55,10 @@
  * See below for examples.
  */
 int
-test_key_seq(struct xkb_keymap *keymap, ...)
+test_key_seq_va(struct xkb_keymap *keymap, va_list ap)
 {
     struct xkb_state *state;
 
-    va_list ap;
     xkb_keycode_t kc;
     int op;
     xkb_keysym_t keysym;
@@ -72,8 +71,6 @@ test_key_seq(struct xkb_keymap *keymap, ...)
 
     state = xkb_state_new(keymap);
     assert(state);
-
-    va_start(ap, keymap);
 
     for (;;) {
         kc = va_arg(ap, int) + EVDEV_OFFSET;
@@ -120,14 +117,25 @@ test_key_seq(struct xkb_keymap *keymap, ...)
         goto fail;
     }
 
-    va_end(ap);
     xkb_state_unref(state);
     return 1;
 
 fail:
-    va_end(ap);
     xkb_state_unref(state);
     return 0;
+}
+
+int
+test_key_seq(struct xkb_keymap *keymap, ...)
+{
+    va_list ap;
+    int ret;
+
+    va_start(ap, keymap);
+    ret = test_key_seq_va(keymap, ap);
+    va_end(ap);
+
+    return ret;
 }
 
 const char *
