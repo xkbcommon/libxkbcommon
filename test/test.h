@@ -54,6 +54,7 @@ test_read_file(const char *path_rel);
 
 enum test_context_flags {
     CONTEXT_NO_FLAG = 0,
+    CONTEXT_ALLOW_ENVIRONMENT_NAMES = (1 << 0),
 };
 
 struct xkb_context *

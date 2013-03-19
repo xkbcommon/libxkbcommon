@@ -185,8 +185,22 @@ test_read_file(const char *path_rel)
 struct xkb_context *
 test_get_context(enum test_context_flags test_flags)
 {
-    struct xkb_context *ctx = xkb_context_new(XKB_CONTEXT_NO_DEFAULT_INCLUDES);
+    enum xkb_context_flags ctx_flags;
+    struct xkb_context *ctx;
 
+    ctx_flags = XKB_CONTEXT_NO_DEFAULT_INCLUDES;
+    if (test_flags & CONTEXT_ALLOW_ENVIRONMENT_NAMES) {
+        unsetenv("XKB_DEFAULT_RULES");
+        unsetenv("XKB_DEFAULT_MODEL");
+        unsetenv("XKB_DEFAULT_LAYOUT");
+        unsetenv("XKB_DEFAULT_VARIANT");
+        unsetenv("XKB_DEFAULT_OPTIONS");
+    }
+    else {
+        ctx_flags |= XKB_CONTEXT_NO_ENVIRONMENT_NAMES;
+    }
+
+    ctx = xkb_context_new(ctx_flags);
     if (!ctx)
         return NULL;
 
