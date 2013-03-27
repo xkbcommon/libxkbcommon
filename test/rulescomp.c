@@ -21,6 +21,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include <linux/input.h>
 #include <time.h>
 
 #include "test.h"
@@ -28,22 +29,42 @@
 #define BENCHMARK_ITERATIONS 1000
 
 static int
-test_rmlvo(struct xkb_context *context, const char *rules,
-           const char *model, const char *layout,
-           const char *variant, const char *options)
+test_rmlvo_va(struct xkb_context *context, const char *rules,
+              const char *model, const char *layout,
+              const char *variant, const char *options, va_list ap)
 {
     struct xkb_keymap *keymap;
+    int ret;
 
     keymap = test_compile_rules(context, rules, model, layout, variant,
                                 options);
-    if (keymap) {
-        fprintf(stderr, "Compiled '%s' '%s' '%s' '%s' '%s'\n",
-                strnull(rules), strnull(model), strnull(layout),
-                strnull(variant), strnull(options));
-        xkb_keymap_unref(keymap);
-    }
+    if (!keymap)
+        return 0;
 
-    return keymap != NULL;
+    fprintf(stderr, "Compiled '%s' '%s' '%s' '%s' '%s'\n",
+            strnull(rules), strnull(model), strnull(layout),
+            strnull(variant), strnull(options));
+
+    ret = test_key_seq_va(keymap, ap);
+
+    xkb_keymap_unref(keymap);
+
+    return ret;
+}
+
+static int
+test_rmlvo(struct xkb_context *context, const char *rules,
+           const char *model, const char *layout, const char *variant,
+           const char *options, ...)
+{
+    va_list ap;
+    int ret;
+
+    va_start(ap, options);
+    ret = test_rmlvo_va(context, rules, model, layout, variant, options, ap);
+    va_end(ap);
+
+    return ret;
 }
 
 static int
@@ -59,6 +80,48 @@ test_rmlvo_silent(struct xkb_context *context, const char *rules,
         xkb_keymap_unref(keymap);
 
     return keymap != NULL;
+}
+
+static int
+test_rmlvo_env(struct xkb_context *ctx, const char *rules, const char *model,
+               const char *layout, const char *variant, const char *options,
+               ...)
+{
+    va_list ap;
+    int ret;
+
+    va_start (ap, options);
+
+    if (!isempty(rules))
+        setenv("XKB_DEFAULT_RULES", rules, 1);
+    else
+        unsetenv("XKB_DEFAULT_RULES");
+
+    if (!isempty(model))
+        setenv("XKB_DEFAULT_MODEL", model, 1);
+    else
+        unsetenv("XKB_DEFAULT_MODEL");
+
+    if (!isempty(layout))
+        setenv("XKB_DEFAULT_LAYOUT", layout, 1);
+    else
+        unsetenv("XKB_DEFAULT_LAYOUT");
+
+    if (!isempty(variant))
+        setenv("XKB_DEFAULT_VARIANT", variant, 1);
+    else
+        unsetenv("XKB_DEFAULT_VARIANT");
+
+    if (!isempty(options))
+        setenv("XKB_DEFAULT_OPTIONS", options, 1);
+    else
+        unsetenv("XKB_DEFAULT_OPTIONS");
+
+    ret = test_rmlvo_va(ctx, NULL, NULL, NULL, NULL, NULL, ap);
+
+    va_end(ap);
+
+    return ret;
 }
 
 static void
@@ -91,38 +154,6 @@ benchmark(struct xkb_context *context)
             BENCHMARK_ITERATIONS, elapsed.tv_sec, elapsed.tv_nsec);
 }
 
-static int
-test_rmlvo_env(struct xkb_context *ctx, const char *rules, const char *model,
-               const char *layout, const char *variant, const char *options)
-{
-    if (!isempty(rules))
-        setenv("XKB_DEFAULT_RULES", rules, 1);
-    else
-        unsetenv("XKB_DEFAULT_RULES");
-
-    if (!isempty(model))
-        setenv("XKB_DEFAULT_MODEL", model, 1);
-    else
-        unsetenv("XKB_DEFAULT_MODEL");
-
-    if (!isempty(layout))
-        setenv("XKB_DEFAULT_LAYOUT", layout, 1);
-    else
-        unsetenv("XKB_DEFAULT_LAYOUT");
-
-    if (!isempty(variant))
-        setenv("XKB_DEFAULT_VARIANT", variant, 1);
-    else
-        unsetenv("XKB_DEFAULT_VARIANT");
-
-    if (!isempty(options))
-        setenv("XKB_DEFAULT_OPTIONS", options, 1);
-    else
-        unsetenv("XKB_DEFAULT_OPTIONS");
-
-    return test_rmlvo(ctx, NULL, NULL, NULL, NULL, NULL);
-}
-
 int
 main(int argc, char *argv[])
 {
@@ -135,30 +166,76 @@ main(int argc, char *argv[])
         return 0;
     }
 
-    assert(test_rmlvo(ctx, "evdev", "pc105", "us,il,ru,ca", ",,,multix", "grp:alts_toggle,ctrl:nocaps,compose:rwin"));
-    assert(test_rmlvo(ctx, "base",  "pc105", "us,in", "", ""));
-    assert(test_rmlvo(ctx, "evdev", "pc105", "us", "intl", ""));
-    assert(test_rmlvo(ctx, "evdev", "evdev", "us", "intl", "grp:alts_toggle"));
+#define KS(name) xkb_keysym_from_name(name, 0)
+
+    assert(test_rmlvo(ctx, "evdev", "pc105", "us,il,ru,ca", ",,,multix", "grp:alts_toggle,ctrl:nocaps,compose:rwin",
+                      KEY_Q,          BOTH, XKB_KEY_q,                    NEXT,
+                      KEY_LEFTALT,    DOWN, XKB_KEY_Alt_L,                NEXT,
+                      KEY_RIGHTALT,   DOWN, XKB_KEY_ISO_Next_Group,       NEXT,
+                      KEY_RIGHTALT,   UP,   XKB_KEY_ISO_Level3_Shift,     NEXT,
+                      KEY_LEFTALT,    UP,   XKB_KEY_Alt_L,                NEXT,
+                      KEY_Q,          BOTH, XKB_KEY_slash,                NEXT,
+                      KEY_LEFTSHIFT,  DOWN, XKB_KEY_Shift_L,              NEXT,
+                      KEY_Q,          BOTH, XKB_KEY_Q,                    NEXT,
+                      KEY_RIGHTMETA,  BOTH, XKB_KEY_Multi_key,            FINISH));
+    assert(test_rmlvo(ctx, "evdev",  "pc105", "us,in", "", "grp:alts_toggle",
+                      KEY_A,          BOTH, XKB_KEY_a,                    NEXT,
+                      KEY_LEFTALT,    DOWN, XKB_KEY_Alt_L,                NEXT,
+                      KEY_RIGHTALT,   DOWN, XKB_KEY_ISO_Next_Group,       NEXT,
+                      KEY_RIGHTALT,   UP,   XKB_KEY_ISO_Level3_Shift,     NEXT,
+                      KEY_LEFTALT,    UP,   XKB_KEY_Alt_L,                NEXT,
+                      KEY_A,          BOTH, KS("U094b"),                  FINISH));
+    assert(test_rmlvo(ctx, "evdev", "pc105", "us", "intl", "",
+                      KEY_GRAVE,      BOTH,  XKB_KEY_dead_grave,          FINISH));
+    assert(test_rmlvo(ctx, "evdev", "evdev", "us", "intl", "grp:alts_toggle",
+                      KEY_GRAVE,      BOTH,  XKB_KEY_dead_grave,          FINISH));
 
     /* 20 is not a legal group; make sure this is handled gracefully. */
-    assert(test_rmlvo(ctx, "evdev", "", "us:20", "", ""));
+    assert(test_rmlvo(ctx, "evdev", "", "us:20", "", "",
+                      KEY_A,          BOTH, XKB_KEY_a,                    FINISH));
 
-    /* Don't choke on missing values in RMLVO. Should just skip them. */
-    assert(test_rmlvo(ctx, "evdev", "", "us,,ca", "", ""));
+    /* Don't choke on missing values in RMLVO. Should just skip them.
+       Currently generates us,us,ca. */
+    assert(test_rmlvo(ctx, "evdev", "", "us,,ca", "", "grp:alts_toggle",
+                      KEY_A,          BOTH, XKB_KEY_a,                    NEXT,
+                      KEY_LEFTALT,    DOWN, XKB_KEY_Alt_L,                NEXT,
+                      KEY_RIGHTALT,   DOWN, XKB_KEY_ISO_Next_Group,       NEXT,
+                      KEY_RIGHTALT,   UP,   XKB_KEY_ISO_Next_Group,       NEXT,
+                      KEY_LEFTALT,    UP,   XKB_KEY_Alt_L,                NEXT,
+                      KEY_LEFTALT,    DOWN, XKB_KEY_Alt_L,                NEXT,
+                      KEY_RIGHTALT,   DOWN, XKB_KEY_ISO_Next_Group,       NEXT,
+                      KEY_RIGHTALT,   UP,   XKB_KEY_ISO_Level3_Shift,     NEXT,
+                      KEY_LEFTALT,    UP,   XKB_KEY_Alt_L,                NEXT,
+                      KEY_APOSTROPHE, BOTH, XKB_KEY_dead_grave,           FINISH));
 
-    assert(test_rmlvo(ctx, "", "", "", "", ""));
+    assert(test_rmlvo(ctx, "", "", "", "", "",
+                      KEY_A,          BOTH, XKB_KEY_a,                    FINISH));
 
-    assert(!test_rmlvo(ctx, "does-not-exist", "", "", "", ""));
+    assert(!test_rmlvo(ctx, "does-not-exist", "", "", "", "",
+                       KEY_A,          BOTH, XKB_KEY_a,                   FINISH));
 
-    assert(test_rmlvo_env(ctx, "evdev", "", "us", "", ""));
-    assert(test_rmlvo_env(ctx, "evdev", "", "us", "", "ctrl:nocaps"));
-    assert(test_rmlvo_env(ctx, "evdev", "", "us,ca", ",,,multix", "grp:alts_toggle"));
-    assert(!test_rmlvo_env(ctx, "broken", "what-on-earth", "invalid", "", ""));
+    assert(test_rmlvo_env(ctx, "evdev", "", "us", "", "",
+                          KEY_A,          BOTH, XKB_KEY_a,                FINISH));
+    assert(test_rmlvo_env(ctx, "evdev", "", "us", "", "ctrl:nocaps",
+                          KEY_CAPSLOCK,   BOTH, XKB_KEY_Control_L,        FINISH));
+
+    /* Ignores multix and generates us,ca. */
+    assert(test_rmlvo_env(ctx, "evdev", "", "us,ca", ",,,multix", "grp:alts_toggle",
+                          KEY_A,          BOTH, XKB_KEY_a,                NEXT,
+                          KEY_LEFTALT,    DOWN, XKB_KEY_Alt_L,            NEXT,
+                          KEY_RIGHTALT,   DOWN, XKB_KEY_ISO_Next_Group,   NEXT,
+                          KEY_RIGHTALT,   UP,   XKB_KEY_ISO_Level3_Shift, NEXT,
+                          KEY_LEFTALT,    UP,   XKB_KEY_Alt_L,            NEXT,
+                          KEY_GRAVE,      UP,   XKB_KEY_numbersign,       FINISH));
+
+    assert(!test_rmlvo_env(ctx, "broken", "what-on-earth", "invalid", "", "",
+                           KEY_A,          BOTH, XKB_KEY_a,               FINISH));
 
     xkb_context_unref(ctx);
 
     ctx = test_get_context(0);
-    assert(test_rmlvo_env(ctx, "broken", "but", "ignored", "per", "ctx flags"));
+    assert(test_rmlvo_env(ctx, "broken", "but", "ignored", "per", "ctx flags",
+                          KEY_A,          BOTH, XKB_KEY_a,                FINISH));
 
     /* Test response to invalid flags. */
     {

@@ -121,7 +121,6 @@ AM_TESTS_ENVIRONMENT = \
 TESTS = \
 	test/keysym \
 	test/filecomp \
-	test/rulescomp \
 	test/context \
 	test/rules-file \
 	test/stringcomp \
@@ -149,7 +148,8 @@ check_PROGRAMS = \
 if BUILD_LINUX_TESTS
 TESTS += \
 	test/state \
-	test/keyseq
+	test/keyseq \
+	test/rulescomp
 
 test_keyseq_LDADD = $(TESTS_LDADD)
 test_state_LDADD = $(TESTS_LDADD)
