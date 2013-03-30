@@ -95,7 +95,7 @@ FindInterpForKey(struct xkb_keymap *keymap, const struct xkb_key *key,
      */
     darray_foreach(interp, keymap->sym_interprets) {
         xkb_mod_mask_t mods;
-        bool found;
+        bool found = false;
 
         if ((num_syms > 1 || interp->sym != syms[0]) &&
             interp->sym != XKB_KEY_NoSymbol)
