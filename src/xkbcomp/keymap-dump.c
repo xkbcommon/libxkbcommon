@@ -157,6 +157,13 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
     else
         write_buf(buf, "xkb_keycodes {\n");
 
+    /* xkbcomp and X11 really want to see keymaps with a minimum of 8, and
+     * a maximum of at least 255, else XWayland really starts hating life.
+     * If this is a problem and people really need strictly bounded keymaps,
+     * we should probably control this with a flag. */
+    write_buf(buf, "\tminimum = %d;\n", min(keymap->min_key_code, 8));
+    write_buf(buf, "\tmaximum = %d;\n", max(keymap->max_key_code, 255));
+
     xkb_foreach_key(key, keymap) {
         if (key->name == XKB_ATOM_NONE)
             continue;

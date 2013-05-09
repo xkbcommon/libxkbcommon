@@ -93,6 +93,18 @@ memdup(const void *mem, size_t nmemb, size_t size)
     return p;
 }
 
+static inline int
+min(int misc, int other)
+{
+    return (misc < other) ? misc : other;
+}
+
+static inline int
+max(int misc, int other)
+{
+    return (misc > other) ? misc : other;
+}
+
 bool
 map_file(FILE *file, const char **string_out, size_t *size_out);
 
