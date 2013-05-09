@@ -812,6 +812,46 @@ xkb_keymap_get_as_string(struct xkb_keymap *keymap,
  */
 
 /**
+ * Get the minimum keycode in the keymap.
+ *
+ * @sa xkb_keycode_t
+ * @memberof xkb_keymap
+ */
+xkb_keycode_t
+xkb_keymap_min_keycode(struct xkb_keymap *keymap);
+
+/**
+ * Get the maximum keycode in the keymap.
+ *
+ * @sa xkb_keycode_t
+ * @memberof xkb_keymap
+ */
+xkb_keycode_t
+xkb_keymap_max_keycode(struct xkb_keymap *keymap);
+
+/**
+ * The iterator used by xkb_keymap_key_for_each().
+ *
+ * @sa xkb_keymap_key_for_each
+ * @memberof xkb_keymap
+ */
+typedef void
+(*xkb_keymap_key_iter_t)(struct xkb_keymap *keymap, xkb_keycode_t key,
+                         void *data);
+
+/**
+ * Run a specified function for every valid keycode in the keymap.  If a
+ * keymap is sparse, this function may be called fewer than
+ * (max_keycode - min_keycode + 1) times.
+ *
+ * @sa xkb_keymap_min_keycode() xkb_keymap_max_keycode() xkb_keycode_t
+ * @memberof xkb_keymap
+ */
+void
+xkb_keymap_key_for_each(struct xkb_keymap *keymap, xkb_keymap_key_iter_t iter,
+                        void *data);
+
+/**
  * Get the number of modifiers in the keymap.
  *
  * @sa xkb_mod_index_t

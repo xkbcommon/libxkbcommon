@@ -484,6 +484,28 @@ err:
     return 0;
 }
 
+XKB_EXPORT xkb_keycode_t
+xkb_keymap_min_keycode(struct xkb_keymap *keymap)
+{
+    return keymap->min_key_code;
+}
+
+XKB_EXPORT xkb_keycode_t
+xkb_keymap_max_keycode(struct xkb_keymap *keymap)
+{
+    return keymap->max_key_code;
+}
+
+XKB_EXPORT void
+xkb_keymap_key_for_each(struct xkb_keymap *keymap, xkb_keymap_key_iter_t iter,
+                        void *data)
+{
+    struct xkb_key *key;
+
+    xkb_foreach_key(key, keymap)
+        iter(keymap, key->keycode, data);
+}
+
 /**
  * Simple boolean specifying whether or not the key should repeat.
  */

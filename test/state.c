@@ -331,6 +331,28 @@ test_consume(struct xkb_keymap *keymap)
     xkb_state_unref(state);
 }
 
+static void
+key_iter(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
+{
+    int *counter = (int *) data;
+
+    assert(*counter == key);
+    (*counter)++;
+}
+
+static void
+test_range(struct xkb_keymap *keymap)
+{
+    int counter;
+
+    assert(xkb_keymap_min_keycode(keymap) == 9);
+    assert(xkb_keymap_max_keycode(keymap) == 253);
+
+    counter = xkb_keymap_min_keycode(keymap);
+    xkb_keymap_key_for_each(keymap, key_iter, &counter);
+    assert(counter == xkb_keymap_max_keycode(keymap) + 1);
+}
+
 int
 main(void)
 {
@@ -351,6 +373,7 @@ main(void)
     test_serialisation(keymap);
     test_repeat(keymap);
     test_consume(keymap);
+    test_range(keymap);
 
     xkb_keymap_unref(keymap);
     xkb_context_unref(context);
