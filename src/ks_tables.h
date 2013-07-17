@@ -2202,6 +2202,7 @@ static const struct name_keysym name_to_keysym[] = {
     { "XF86AudioForward", XKB_KEY_XF86AudioForward },
     { "XF86AudioLowerVolume", XKB_KEY_XF86AudioLowerVolume },
     { "XF86AudioMedia", XKB_KEY_XF86AudioMedia },
+    { "XF86AudioMicMute", XKB_KEY_XF86AudioMicMute },
     { "XF86AudioMute", XKB_KEY_XF86AudioMute },
     { "XF86AudioNext", XKB_KEY_XF86AudioNext },
     { "XF86AudioPause", XKB_KEY_XF86AudioPause },
@@ -4678,4 +4679,5 @@ static const struct name_keysym keysym_to_name[] = {
     { "XF86TouchpadToggle", XKB_KEY_XF86TouchpadToggle },
     { "XF86TouchpadOn", XKB_KEY_XF86TouchpadOn },
     { "XF86TouchpadOff", XKB_KEY_XF86TouchpadOff },
+    { "XF86AudioMicMute", XKB_KEY_XF86AudioMicMute },
 };
