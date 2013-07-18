@@ -775,6 +775,7 @@ static bool
 CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
 {
     keymap->types_section_name = strdup_safe(info->name);
+    XkbEscapeMapName(keymap->types_section_name);
 
     keymap->num_types = darray_size(info->types);
     if (keymap->num_types == 0)

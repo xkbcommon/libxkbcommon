@@ -34,7 +34,7 @@ main(int argc, char *argv[])
 {
     struct xkb_context *ctx = test_get_context(0);
     struct xkb_keymap *keymap;
-    char *original, *dump;
+    char *original, *dump, *dump2;
 
     assert(ctx);
 
@@ -81,6 +81,10 @@ main(int argc, char *argv[])
     xkb_keymap_unref(keymap);
     keymap = test_compile_string(ctx, dump);
     assert(keymap);
+    /* Now test that the dump of the dump is equal to the dump! */
+    dump2 = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+    assert(dump2);
+    assert(streq(dump, dump2));
 
     /* Test response to invalid formats and flags. */
     assert(!xkb_keymap_new_from_string(ctx, dump, 0, 0));
@@ -93,6 +97,7 @@ main(int argc, char *argv[])
 
     xkb_keymap_unref(keymap);
     free(dump);
+    free(dump2);
 
     xkb_context_unref(ctx);
 

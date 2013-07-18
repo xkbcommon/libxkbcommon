@@ -1025,6 +1025,7 @@ static bool
 CopyCompatToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
 {
     keymap->compat_section_name = strdup_safe(info->name);
+    XkbEscapeMapName(keymap->compat_section_name);
 
     if (!darray_empty(info->interps)) {
         /* Most specific to least specific. */

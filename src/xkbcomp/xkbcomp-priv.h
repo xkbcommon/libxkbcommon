@@ -56,6 +56,9 @@ XkbFile *
 XkbFileFromComponents(struct xkb_context *ctx,
                       const struct xkb_component_names *kkctgs);
 
+void
+XkbEscapeMapName(char *name);
+
 bool
 CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
                 enum merge_mode merge);

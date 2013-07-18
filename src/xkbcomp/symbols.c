@@ -1573,6 +1573,7 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
     struct xkb_key *key;
 
     keymap->symbols_section_name = strdup_safe(info->name);
+    XkbEscapeMapName(keymap->symbols_section_name);
 
     keymap->num_group_names = darray_size(info->group_names);
     keymap->group_names = darray_mem(info->group_names, 0);

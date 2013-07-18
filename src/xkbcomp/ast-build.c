@@ -464,8 +464,8 @@ err:
     return NULL;
 }
 
-static void
-EscapeMapName(char *name)
+void
+XkbEscapeMapName(char *name)
 {
     /*
      * All latin-1 alphanumerics, plus parens, slash, minus, underscore and
@@ -498,7 +498,7 @@ XkbFileCreate(struct xkb_context *ctx, enum xkb_file_type type, char *name,
     if (!file)
         return NULL;
 
-    EscapeMapName(name);
+    XkbEscapeMapName(name);
     file->file_type = type;
     file->topName = strdup_safe(name);
     file->name = name;

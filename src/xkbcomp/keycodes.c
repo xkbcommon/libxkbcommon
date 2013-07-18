@@ -604,6 +604,7 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
     unsigned i;
 
     keymap->keycodes_section_name = strdup_safe(info->name);
+    XkbEscapeMapName(keymap->keycodes_section_name);
 
     keymap->min_key_code = info->min_key_code;
     keymap->max_key_code = info->max_key_code;
