@@ -78,6 +78,33 @@ libxkbcommon_la_SOURCES = \
 	src/utils.c \
 	src/utils.h
 
+if ENABLE_X11
+pkgconfig_DATA += xkbcommon-x11.pc
+
+xkbcommon_x11includedir = $(xkbcommonincludedir)
+xkbcommon_x11include_HEADERS = \
+	xkbcommon/xkbcommon-x11.h
+
+lib_LTLIBRARIES += libxkbcommon-x11.la
+
+libxkbcommon_x11_la_CFLAGS = $(AM_CFLAGS) $(XCB_XKB_CFLAGS)
+libxkbcommon_x11_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/src/x11
+libxkbcommon_x11_la_LIBADD = libxkbcommon.la $(XCB_XKB_LIBS)
+
+libxkbcommon_x11_la_SOURCES = \
+	src/x11/keymap.c \
+	src/x11/state.c \
+	src/x11/util.c \
+	src/x11/x11-priv.h \
+	src/context.h \
+	src/context-priv.c \
+	src/keymap.h \
+	src/keymap-priv.c \
+	src/atom.h \
+	src/atom.c
+
+endif ENABLE_X11
+
 BUILT_SOURCES = \
 	src/xkbcomp/parser.c \
 	src/xkbcomp/parser.h
