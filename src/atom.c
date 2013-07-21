@@ -141,15 +141,13 @@ atom_strdup(struct atom_table *table, xkb_atom_t atom)
 }
 
 static bool
-find_node_pointer(struct atom_table *table, const char *string,
+find_node_pointer(struct atom_table *table, const char *string, size_t len,
                   struct atom_node ***nodep_out, unsigned int *fingerprint_out)
 {
     struct atom_node **nodep;
     unsigned int fingerprint = 0;
-    size_t len;
     bool found = false;
 
-    len = strlen(string);
     nodep = &table->root;
     for (size_t i = 0; i < (len + 1) / 2; i++) {
         fingerprint = fingerprint * 27 + string[i];
@@ -185,7 +183,7 @@ find_node_pointer(struct atom_table *table, const char *string,
 }
 
 xkb_atom_t
-atom_lookup(struct atom_table *table, const char *string)
+atom_lookup(struct atom_table *table, const char *string, size_t len)
 {
     struct atom_node **nodep;
     unsigned int fingerprint;
@@ -193,7 +191,7 @@ atom_lookup(struct atom_table *table, const char *string)
     if (!string)
         return XKB_ATOM_NONE;
 
-    if (!find_node_pointer(table, string, &nodep, &fingerprint))
+    if (!find_node_pointer(table, string, len, &nodep, &fingerprint))
         return XKB_ATOM_NONE;
 
     return (*nodep)->atom;
@@ -201,11 +199,12 @@ atom_lookup(struct atom_table *table, const char *string)
 
 /*
  * If steal is true, we do not strdup @string; therefore it must be
- * dynamically allocated, not be free'd by the caller and not be used
- * afterwards. Use to avoid some redundant allocations.
+ * dynamically allocated, NUL-terminated, not be free'd by the caller
+ * and not be used afterwards. Use to avoid some redundant allocations.
  */
 xkb_atom_t
-atom_intern(struct atom_table *table, const char *string, bool steal)
+atom_intern(struct atom_table *table, const char *string, size_t len,
+            bool steal)
 {
     struct atom_node **nodep;
     struct atom_node *node;
@@ -214,7 +213,7 @@ atom_intern(struct atom_table *table, const char *string, bool steal)
     if (!string)
         return XKB_ATOM_NONE;
 
-    if (find_node_pointer(table, string, &nodep, &fingerprint)) {
+    if (find_node_pointer(table, string, len, &nodep, &fingerprint)) {
         if (steal)
             free(UNCONSTIFY(string));
         return (*nodep)->atom;

@@ -37,10 +37,11 @@ void
 atom_table_free(struct atom_table *table);
 
 xkb_atom_t
-atom_lookup(struct atom_table *table, const char *string);
+atom_lookup(struct atom_table *table, const char *string, size_t len);
 
 xkb_atom_t
-atom_intern(struct atom_table *table, const char *string, bool steal);
+atom_intern(struct atom_table *table, const char *string, size_t len,
+            bool steal);
 
 char *
 atom_strdup(struct atom_table *table, xkb_atom_t atom);
