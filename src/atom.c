@@ -142,37 +142,35 @@ atom_strdup(struct atom_table *table, xkb_atom_t atom)
 
 static bool
 find_node_pointer(struct atom_table *table, const char *string,
-                  struct atom_node ***np_out, unsigned int *fingerprint_out)
+                  struct atom_node ***nodep_out, unsigned int *fingerprint_out)
 {
-    struct atom_node **np;
-    unsigned i;
-    int comp;
-    unsigned int fp = 0;
+    struct atom_node **nodep;
+    unsigned int fingerprint = 0;
     size_t len;
     bool found = false;
 
     len = strlen(string);
-    np = &table->root;
-    for (i = 0; i < (len + 1) / 2; i++) {
-        fp = fp * 27 + string[i];
-        fp = fp * 27 + string[len - 1 - i];
+    nodep = &table->root;
+    for (size_t i = 0; i < (len + 1) / 2; i++) {
+        fingerprint = fingerprint * 27 + string[i];
+        fingerprint = fingerprint * 27 + string[len - 1 - i];
     }
 
-    while (*np) {
-        if (fp < (*np)->fingerprint) {
-            np = &((*np)->left);
+    while (*nodep) {
+        if (fingerprint < (*nodep)->fingerprint) {
+            nodep = &((*nodep)->left);
         }
-        else if (fp > (*np)->fingerprint) {
-            np = &((*np)->right);
+        else if (fingerprint > (*nodep)->fingerprint) {
+            nodep = &((*nodep)->right);
         }
         else {
-            /* now start testing the strings */
-            comp = strncmp(string, (*np)->string, len);
-            if (comp < 0 || (comp == 0 && len < strlen((*np)->string))) {
-                np = &((*np)->left);
+            /* Now start testing the strings. */
+            const int cmp = strncmp(string, (*nodep)->string, len);
+            if (cmp < 0 || (cmp == 0 && len < strlen((*nodep)->string))) {
+                nodep = &((*nodep)->left);
             }
-            else if (comp > 0) {
-                np = &((*np)->right);
+            else if (cmp > 0) {
+                nodep = &((*nodep)->right);
             }
             else {
                 found = true;
@@ -181,24 +179,24 @@ find_node_pointer(struct atom_table *table, const char *string,
         }
     }
 
-    *fingerprint_out = fp;
-    *np_out = np;
+    *fingerprint_out = fingerprint;
+    *nodep_out = nodep;
     return found;
 }
 
 xkb_atom_t
 atom_lookup(struct atom_table *table, const char *string)
 {
-    struct atom_node **np;
-    unsigned int fp;
+    struct atom_node **nodep;
+    unsigned int fingerprint;
 
     if (!string)
         return XKB_ATOM_NONE;
 
-    if (!find_node_pointer(table, string, &np, &fp))
+    if (!find_node_pointer(table, string, &nodep, &fingerprint))
         return XKB_ATOM_NONE;
 
-    return (*np)->atom;
+    return (*nodep)->atom;
 }
 
 /*
@@ -207,42 +205,41 @@ atom_lookup(struct atom_table *table, const char *string)
  * afterwards. Use to avoid some redundant allocations.
  */
 xkb_atom_t
-atom_intern(struct atom_table *table, const char *string,
-            bool steal)
+atom_intern(struct atom_table *table, const char *string, bool steal)
 {
-    struct atom_node **np;
-    struct atom_node *nd;
-    unsigned int fp;
+    struct atom_node **nodep;
+    struct atom_node *node;
+    unsigned int fingerprint;
 
     if (!string)
         return XKB_ATOM_NONE;
 
-    if (find_node_pointer(table, string, &np, &fp)) {
+    if (find_node_pointer(table, string, &nodep, &fingerprint)) {
         if (steal)
             free(UNCONSTIFY(string));
-        return (*np)->atom;
+        return (*nodep)->atom;
     }
 
-    nd = malloc(sizeof(*nd));
-    if (!nd)
+    node = malloc(sizeof(*node));
+    if (!node)
         return XKB_ATOM_NONE;
 
     if (steal) {
-        nd->string = UNCONSTIFY(string);
+        node->string = UNCONSTIFY(string);
     }
     else {
-        nd->string = strdup(string);
-        if (!nd->string) {
-            free(nd);
+        node->string = strdup(string);
+        if (!node->string) {
+            free(node);
             return XKB_ATOM_NONE;
         }
     }
 
-    *np = nd;
-    nd->left = nd->right = NULL;
-    nd->fingerprint = fp;
-    nd->atom = darray_size(table->table);
-    darray_append(table->table, nd);
+    *nodep = node;
+    node->left = node->right = NULL;
+    node->fingerprint = fingerprint;
+    node->atom = darray_size(table->table);
+    darray_append(table->table, node);
 
-    return nd->atom;
+    return node->atom;
 }

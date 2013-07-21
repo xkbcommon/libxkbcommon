@@ -40,8 +40,7 @@ xkb_atom_t
 atom_lookup(struct atom_table *table, const char *string);
 
 xkb_atom_t
-atom_intern(struct atom_table *table, const char *string,
-            bool steal);
+atom_intern(struct atom_table *table, const char *string, bool steal);
 
 char *
 atom_strdup(struct atom_table *table, xkb_atom_t atom);
