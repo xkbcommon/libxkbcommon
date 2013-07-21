@@ -416,7 +416,6 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
 static bool
 write_compat(struct xkb_keymap *keymap, struct buf *buf)
 {
-    const struct xkb_sym_interpret *si;
     const struct xkb_led *led;
 
     if (keymap->compat_section_name)
@@ -430,7 +429,9 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
     write_buf(buf, "\tinterpret.useModMapMods= AnyLevel;\n");
     write_buf(buf, "\tinterpret.repeat= False;\n");
 
-    darray_foreach(si, keymap->sym_interprets) {
+    for (int i = 0; i < keymap->num_sym_interprets; i++) {
+        const struct xkb_sym_interpret *si = &keymap->sym_interprets[i];
+
         write_buf(buf, "\tinterpret %s+%s(%s) {\n",
                   si->sym ? KeysymText(keymap->ctx, si->sym) : "Any",
                   SIMatchText(si->match),

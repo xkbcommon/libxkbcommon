@@ -386,7 +386,8 @@ struct xkb_keymap {
     struct xkb_key_type *types;
     unsigned int num_types;
 
-    darray(struct xkb_sym_interpret) sym_interprets;
+    unsigned int num_sym_interprets;
+    struct xkb_sym_interpret *sym_interprets;
 
     darray(struct xkb_mod) mods;
 

@@ -78,7 +78,6 @@ static const struct xkb_sym_interpret *
 FindInterpForKey(struct xkb_keymap *keymap, const struct xkb_key *key,
                  xkb_layout_index_t group, xkb_level_index_t level)
 {
-    const struct xkb_sym_interpret *interp;
     const xkb_keysym_t *syms;
     int num_syms;
 
@@ -93,7 +92,9 @@ FindInterpForKey(struct xkb_keymap *keymap, const struct xkb_key *key,
      * sym_interprets array from the most specific to the least specific,
      * such that when we find a match we return immediately.
      */
-    darray_foreach(interp, keymap->sym_interprets) {
+    for (int i = 0; i < keymap->num_sym_interprets; i++) {
+        const struct xkb_sym_interpret *interp = &keymap->sym_interprets[i];
+
         xkb_mod_mask_t mods;
         bool found = false;
 
