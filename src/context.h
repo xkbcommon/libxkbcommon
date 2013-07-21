@@ -43,11 +43,14 @@ xkb_atom_t
 xkb_atom_lookup(struct xkb_context *ctx, const char *string);
 
 xkb_atom_t
-xkb_atom_intern(struct xkb_context *ctx, const char *string);
+xkb_atom_intern(struct xkb_context *ctx, const char *string, size_t len);
+
+#define xkb_atom_intern_literal(ctx, literal) \
+    xkb_atom_intern((ctx), (literal), sizeof(literal) - 1)
 
 /**
- * If @string is dynamically allocated, free'd immediately after
- * being interned, and not used afterwards, use this function
+ * If @string is dynamically allocated, NUL-terminated, free'd immediately
+ * after being interned, and not used afterwards, use this function
  * instead of xkb_atom_intern to avoid some unnecessary allocations.
  * The caller should not use or free the passed in string afterwards.
  */

@@ -794,7 +794,7 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
         type->num_levels = 1;
         type->entries = NULL;
         type->num_entries = 0;
-        type->name = xkb_atom_intern(keymap->ctx, "default");
+        type->name = xkb_atom_intern_literal(keymap->ctx, "default");
         type->level_names = NULL;
 
         return true;

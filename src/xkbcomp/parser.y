@@ -530,19 +530,19 @@ FieldSpec       :       Ident   { $$ = $1; }
                 ;
 
 Element         :       ACTION_TOK
-                        { $$ = xkb_atom_intern(param->ctx, "action"); }
+                        { $$ = xkb_atom_intern_literal(param->ctx, "action"); }
                 |       INTERPRET
-                        { $$ = xkb_atom_intern(param->ctx, "interpret"); }
+                        { $$ = xkb_atom_intern_literal(param->ctx, "interpret"); }
                 |       TYPE
-                        { $$ = xkb_atom_intern(param->ctx, "type"); }
+                        { $$ = xkb_atom_intern_literal(param->ctx, "type"); }
                 |       KEY
-                        { $$ = xkb_atom_intern(param->ctx, "key"); }
+                        { $$ = xkb_atom_intern_literal(param->ctx, "key"); }
                 |       GROUP
-                        { $$ = xkb_atom_intern(param->ctx, "group"); }
+                        { $$ = xkb_atom_intern_literal(param->ctx, "group"); }
                 |       MODIFIER_MAP
-                        {$$ = xkb_atom_intern(param->ctx, "modifier_map");}
+                        {$$ = xkb_atom_intern_literal(param->ctx, "modifier_map");}
                 |       INDICATOR
-                        { $$ = xkb_atom_intern(param->ctx, "indicator"); }
+                        { $$ = xkb_atom_intern_literal(param->ctx, "indicator"); }
                 |       SHAPE
                         { $$ = XKB_ATOM_NONE; }
                 |       ROW
@@ -737,7 +737,7 @@ KeyCode         :       INTEGER { $$ = $1; }
                 ;
 
 Ident           :       IDENT   { $$ = xkb_atom_steal(param->ctx, $1); }
-                |       DEFAULT { $$ = xkb_atom_intern(param->ctx, "default"); }
+                |       DEFAULT { $$ = xkb_atom_intern_literal(param->ctx, "default"); }
                 ;
 
 String          :       STRING  { $$ = xkb_atom_steal(param->ctx, $1); }

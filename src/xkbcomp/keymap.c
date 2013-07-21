@@ -235,14 +235,14 @@ UpdateBuiltinKeymapFields(struct xkb_keymap *keymap)
      * The order is important!
      */
     darray_appends_t(keymap->mods, struct xkb_mod,
-        { .name = xkb_atom_intern(ctx, "Shift"),   .type = MOD_REAL },
-        { .name = xkb_atom_intern(ctx, "Lock"),    .type = MOD_REAL },
-        { .name = xkb_atom_intern(ctx, "Control"), .type = MOD_REAL },
-        { .name = xkb_atom_intern(ctx, "Mod1"),    .type = MOD_REAL },
-        { .name = xkb_atom_intern(ctx, "Mod2"),    .type = MOD_REAL },
-        { .name = xkb_atom_intern(ctx, "Mod3"),    .type = MOD_REAL },
-        { .name = xkb_atom_intern(ctx, "Mod4"),    .type = MOD_REAL },
-        { .name = xkb_atom_intern(ctx, "Mod5"),    .type = MOD_REAL });
+        { .name = xkb_atom_intern_literal(ctx, "Shift"),   .type = MOD_REAL },
+        { .name = xkb_atom_intern_literal(ctx, "Lock"),    .type = MOD_REAL },
+        { .name = xkb_atom_intern_literal(ctx, "Control"), .type = MOD_REAL },
+        { .name = xkb_atom_intern_literal(ctx, "Mod1"),    .type = MOD_REAL },
+        { .name = xkb_atom_intern_literal(ctx, "Mod2"),    .type = MOD_REAL },
+        { .name = xkb_atom_intern_literal(ctx, "Mod3"),    .type = MOD_REAL },
+        { .name = xkb_atom_intern_literal(ctx, "Mod4"),    .type = MOD_REAL },
+        { .name = xkb_atom_intern_literal(ctx, "Mod5"),    .type = MOD_REAL });
 
     return true;
 }

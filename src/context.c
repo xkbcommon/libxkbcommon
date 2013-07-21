@@ -335,9 +335,9 @@ xkb_atom_lookup(struct xkb_context *ctx, const char *string)
 }
 
 xkb_atom_t
-xkb_atom_intern(struct xkb_context *ctx, const char *string)
+xkb_atom_intern(struct xkb_context *ctx, const char *string, size_t len)
 {
-    return atom_intern(ctx->atom_table, string, strlen(string), false);
+    return atom_intern(ctx->atom_table, string, len, false);
 }
 
 xkb_atom_t

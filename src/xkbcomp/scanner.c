@@ -125,7 +125,7 @@ skip_more_whitespace_and_comments:
             return scanner_error(yylloc, s, "empty key name literal");
         if (!buf_append(s, '\0') || !chr(s, '>'))
             return scanner_error(yylloc, s, "unterminated key name literal");
-        yylval->sval = xkb_atom_intern(s->ctx, s->buf);
+        yylval->sval = xkb_atom_intern(s->ctx, s->buf, s->buf_pos - 1);
         return KEYNAME;
     }
 

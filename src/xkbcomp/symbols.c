@@ -143,7 +143,7 @@ InitKeyInfo(struct xkb_context *ctx, KeyInfo *keyi)
 {
     memset(keyi, 0, sizeof(*keyi));
     keyi->merge = MERGE_OVERRIDE;
-    keyi->name = xkb_atom_intern(ctx, "*");
+    keyi->name = xkb_atom_intern_literal(ctx, "*");
     keyi->out_of_range_group_action = RANGE_WRAP;
 }
 
@@ -1339,19 +1339,19 @@ FindAutomaticType(struct xkb_context *ctx, GroupInfo *groupi)
         darray_item(groupi->levels, level).u.syms[0])
 
     if (width == 1 || width <= 0)
-        return xkb_atom_intern(ctx, "ONE_LEVEL");
+        return xkb_atom_intern_literal(ctx, "ONE_LEVEL");
 
     sym0 = GET_SYM(0);
     sym1 = GET_SYM(1);
 
     if (width == 2) {
         if (xkb_keysym_is_lower(sym0) && xkb_keysym_is_upper(sym1))
-            return xkb_atom_intern(ctx, "ALPHABETIC");
+            return xkb_atom_intern_literal(ctx, "ALPHABETIC");
 
         if (xkb_keysym_is_keypad(sym0) || xkb_keysym_is_keypad(sym1))
-            return xkb_atom_intern(ctx, "KEYPAD");
+            return xkb_atom_intern_literal(ctx, "KEYPAD");
 
-        return xkb_atom_intern(ctx, "TWO_LEVEL");
+        return xkb_atom_intern_literal(ctx, "TWO_LEVEL");
     }
 
     if (width <= 4) {
@@ -1360,15 +1360,15 @@ FindAutomaticType(struct xkb_context *ctx, GroupInfo *groupi)
             sym3 = (width == 4 ? GET_SYM(3) : XKB_KEY_NoSymbol);
 
             if (xkb_keysym_is_lower(sym2) && xkb_keysym_is_upper(sym3))
-                return xkb_atom_intern(ctx, "FOUR_LEVEL_ALPHABETIC");
+                return xkb_atom_intern_literal(ctx, "FOUR_LEVEL_ALPHABETIC");
 
-            return xkb_atom_intern(ctx, "FOUR_LEVEL_SEMIALPHABETIC");
+            return xkb_atom_intern_literal(ctx, "FOUR_LEVEL_SEMIALPHABETIC");
         }
 
         if (xkb_keysym_is_keypad(sym0) || xkb_keysym_is_keypad(sym1))
-            return xkb_atom_intern(ctx, "FOUR_LEVEL_KEYPAD");
+            return xkb_atom_intern_literal(ctx, "FOUR_LEVEL_KEYPAD");
 
-        return xkb_atom_intern(ctx, "FOUR_LEVEL");
+        return xkb_atom_intern_literal(ctx, "FOUR_LEVEL");
     }
 
     return XKB_ATOM_NONE;
