@@ -296,17 +296,32 @@ main(void)
 
                         /* Level 5. */
                         KEY_RIGHTALT,    DOWN,  XKB_KEY_ISO_Level5_Shift,  NEXT,
-                        KEY_5,           BOTH,  XKB_KEY_periodcentered,    NEXT,
-                        KEY_E,           BOTH,  XKB_KEY_Up,                NEXT,
-                        KEY_SPACE,       BOTH,  XKB_KEY_KP_0,              NEXT,
-                        KEY_KP8,         BOTH,  XKB_KEY_KP_Up,             NEXT,
+                        /* XXX: xkeyboard-config is borked when de(neo) is
+                         *      not the first group - not our fault. We test
+                         *      Level5 seprately below with only de(neo). */
+                        /* KEY_5,           BOTH,  XKB_KEY_periodcentered,    NEXT, */
+                        /* KEY_E,           BOTH,  XKB_KEY_Up,                NEXT, */
+                        /* KEY_SPACE,       BOTH,  XKB_KEY_KP_0,              NEXT, */
+                        /* KEY_KP8,         BOTH,  XKB_KEY_KP_Up,             NEXT, */
                         KEY_ESC,         BOTH,  XKB_KEY_Escape,            NEXT,
                         KEY_RIGHTALT,    UP,    XKB_KEY_ISO_Level5_Shift,  NEXT,
 
                         KEY_V,           BOTH,  XKB_KEY_p,               FINISH));
 
     xkb_keymap_unref(keymap);
-    assert(ctx);
+    keymap = test_compile_rules(ctx, "evdev", "", "de", "neo", "");
+    assert(keymap);
+    assert(test_key_seq(keymap,
+                        /* Level 5. */
+                        KEY_RIGHTALT,    DOWN,  XKB_KEY_ISO_Level5_Shift,  NEXT,
+                        KEY_5,           BOTH,  XKB_KEY_periodcentered,    NEXT,
+                        KEY_E,           BOTH,  XKB_KEY_Up,                NEXT,
+                        KEY_SPACE,       BOTH,  XKB_KEY_KP_0,              NEXT,
+                        KEY_KP8,         BOTH,  XKB_KEY_KP_Up,             NEXT,
+                        KEY_ESC,         BOTH,  XKB_KEY_Escape,            NEXT,
+                        KEY_RIGHTALT,    UP,    XKB_KEY_ISO_Level5_Shift,  FINISH));
+
+    xkb_keymap_unref(keymap);
     keymap = test_compile_rules(ctx, "evdev", "", "us,il,ru", "",
                                 "grp:alt_shift_toggle_bidir,grp:menu_toggle");
     assert(keymap);

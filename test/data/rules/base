@@ -352,6 +352,8 @@
   nokiasu8w	*			=	nokia_vndr/su-8w(%l)
   olpc		$olpclayouts		=	olpc+%l%(m)
   olpc		*			=	olpc+%l%(v)
+  olpcm		$olpclayouts		=	olpc+%l%(m)
+  olpcm		*			=	olpc+%l%(v)
  $thinkpads   	br			=	pc+br(thinkpad)
   sl-c3x00	*			=	pc+sharp_vndr/sl-c3x00(basic)
   ws003sh	*			=	pc+sharp_vndr/ws003sh(basic)
@@ -978,7 +980,8 @@
 ! model		layout		=	compat
   pc98		nec_vndr/jp	=	pc98(basic)
   *		jp		=	complete+japan
-  olpc         *               =       olpc
+  olpc          *               =       olpc
+  olpcm         *               =       olpc
   *		*		=	complete
 
 ! model		layout[1]	=	compat
@@ -1014,6 +1017,7 @@
   grp:shift_toggle	=	+group(shifts_toggle)
   altwin:menu		=	+altwin(menu)
   altwin:meta_alt	=	+altwin(meta_alt)
+  altwin:alt_win	=	+altwin(alt_win)
   altwin:ctrl_win	=	+altwin(ctrl_win)
   altwin:ctrl_alt_win	=	+altwin(ctrl_alt_win)
   altwin:meta_win	=	+altwin(meta_win)
@@ -1092,12 +1096,19 @@
   ctrl:ralt_rctrl	=	+ctrl(ralt_rctrl)
   compose:ralt		=	+compose(ralt)
   compose:lwin		=	+compose(lwin)
+  compose:lwin-altgr	=	+compose(lwin-altgr)
   compose:rwin		=	+compose(rwin)
+  compose:rwin-altgr	=	+compose(rwin-altgr)
   compose:menu		=	+compose(menu)
+  compose:menu-altgr	=	+compose(menu-altgr)
   compose:lctrl		=	+compose(lctrl)
+  compose:lctrl-altgr	=	+compose(lctrl-altgr)
   compose:rctrl		=	+compose(rctrl)
+  compose:rctrl-altgr	=	+compose(rctrl-altgr)
   compose:caps		=	+compose(caps)
+  compose:caps-altgr	=	+compose(caps-altgr)
   compose:102		=	+compose(102)
+  compose:102-altgr	=	+compose(102-altgr)
   compose:paus		=	+compose(paus)
   compose:prsc		=	+compose(prsc)
   compose:sclk		=	+compose(sclk)
