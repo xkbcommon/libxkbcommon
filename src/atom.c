@@ -210,7 +210,7 @@ atom_intern(struct atom_table *table, const char *string, size_t len,
     struct atom_node *node;
     unsigned int fingerprint;
 
-    if (!string)
+    if (!string || len == 0)
         return XKB_ATOM_NONE;
 
     if (find_node_pointer(table, string, len, &nodep, &fingerprint)) {
@@ -227,7 +227,7 @@ atom_intern(struct atom_table *table, const char *string, size_t len,
         node->string = UNCONSTIFY(string);
     }
     else {
-        node->string = strdup(string);
+        node->string = strndup(string, len);
         if (!node->string) {
             free(node);
             return XKB_ATOM_NONE;
