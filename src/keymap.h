@@ -313,8 +313,8 @@ struct xkb_controls {
 
 /* Such an awkward name.  Oh well. */
 enum xkb_range_exceed_type {
+    RANGE_WRAP = 0,
     RANGE_SATURATE,
-    RANGE_WRAP,
     RANGE_REDIRECT,
 };
 
