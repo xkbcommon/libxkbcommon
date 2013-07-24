@@ -49,7 +49,7 @@ test_key_seq(struct xkb_keymap *keymap, ...);
 int
 test_key_seq_va(struct xkb_keymap *keymap, va_list args);
 
-const char *
+char *
 test_get_path(const char *path_rel);
 
 char *

@@ -138,13 +138,22 @@ test_key_seq(struct xkb_keymap *keymap, ...)
     return ret;
 }
 
-const char *
+char *
 test_get_path(const char *path_rel)
 {
-    static char path[PATH_MAX];
+    char *path;
+    size_t path_len;
     const char *srcdir = getenv("srcdir");
 
-    snprintf(path, PATH_MAX - 1,
+    path_len = strlen(srcdir ? srcdir : ".") +
+               strlen(path_rel ? path_rel : "") + 12;
+    path = malloc(path_len);
+    if (!path) {
+        fprintf(stderr, "Failed to allocate path (%d chars) for %s\n",
+                (int) path_len, path);
+        return NULL;
+    }
+    snprintf(path, path_len,
              "%s/test/data/%s", srcdir ? srcdir : ".",
              path_rel ? path_rel : "");
 
@@ -155,10 +164,15 @@ char *
 test_read_file(const char *path_rel)
 {
     struct stat info;
-    char *ret, *tmp;
+    char *ret, *tmp, *path;
     int fd, count, remaining;
 
-    fd = open(test_get_path(path_rel), O_RDONLY);
+    path = test_get_path(path_rel);
+    if (!path)
+        return NULL;
+
+    fd = open(path, O_RDONLY);
+    free(path);
     if (fd < 0)
         return NULL;
 
@@ -195,6 +209,7 @@ test_get_context(enum test_context_flags test_flags)
 {
     enum xkb_context_flags ctx_flags;
     struct xkb_context *ctx;
+    char *path;
 
     ctx_flags = XKB_CONTEXT_NO_DEFAULT_INCLUDES;
     if (test_flags & CONTEXT_ALLOW_ENVIRONMENT_NAMES) {
@@ -212,7 +227,12 @@ test_get_context(enum test_context_flags test_flags)
     if (!ctx)
         return NULL;
 
-    xkb_context_include_path_append(ctx, test_get_path(""));
+    path = test_get_path("");
+    if (!path)
+        return NULL;
+
+    xkb_context_include_path_append(ctx, path);
+    free(path);
 
     return ctx;
 }
@@ -222,11 +242,16 @@ test_compile_file(struct xkb_context *context, const char *path_rel)
 {
     struct xkb_keymap *keymap;
     FILE *file;
-    const char *path = test_get_path(path_rel);
+    char *path;
+
+    path = test_get_path(path_rel);
+    if (!path)
+        return NULL;
 
     file = fopen(path, "r");
     if (!file) {
         fprintf(stderr, "Failed to open path: %s\n", path);
+        free(path);
         return NULL;
     }
     assert(file != NULL);
@@ -237,10 +262,12 @@ test_compile_file(struct xkb_context *context, const char *path_rel)
 
     if (!keymap) {
         fprintf(stderr, "Failed to compile path: %s\n", path);
+        free(path);
         return NULL;
     }
 
     fprintf(stderr, "Successfully compiled path: %s\n", path);
+    free(path);
 
     return keymap;
 }
