@@ -133,7 +133,6 @@ enum xkb_action_type {
     ACTION_TYPE_SWITCH_VT,
     ACTION_TYPE_CTRL_SET,
     ACTION_TYPE_CTRL_LOCK,
-    ACTION_TYPE_KEY_REDIRECT,
     ACTION_TYPE_PRIVATE,
     _ACTION_TYPE_NUM_ENTRIES
 };
@@ -213,16 +212,6 @@ struct xkb_switch_screen_action {
     int8_t screen;
 };
 
-struct xkb_redirect_key_action {
-    enum xkb_action_type type;
-    enum xkb_action_flags flags;
-    xkb_keycode_t new_kc;
-    uint8_t mods_mask;
-    uint8_t mods;
-    uint16_t vmods_mask;
-    uint16_t vmods;
-};
-
 struct xkb_pointer_action {
     enum xkb_action_type type;
     enum xkb_action_flags flags;
@@ -250,7 +239,6 @@ union xkb_action {
     struct xkb_controls_action ctrls;
     struct xkb_pointer_default_action dflt;
     struct xkb_switch_screen_action screen;
-    struct xkb_redirect_key_action redirect;    /* XXX wholly unnecessary? */
     struct xkb_pointer_action ptr;
     struct xkb_pointer_button_action btn;
     struct xkb_private_action priv;

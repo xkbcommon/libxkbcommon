@@ -405,7 +405,6 @@ xkb_action_breaks_latch(const union xkb_action *action)
     case ACTION_TYPE_PTR_LOCK:
     case ACTION_TYPE_CTRL_SET:
     case ACTION_TYPE_CTRL_LOCK:
-    case ACTION_TYPE_KEY_REDIRECT:
     case ACTION_TYPE_SWITCH_VT:
     case ACTION_TYPE_TERMINATE:
         return true;

@@ -175,10 +175,10 @@ const LookupEntry actionTypeNames[] = {
     { "SwitchScreen", ACTION_TYPE_SWITCH_VT },
     { "SetControls", ACTION_TYPE_CTRL_SET },
     { "LockControls", ACTION_TYPE_CTRL_LOCK },
-    { "RedirectKey", ACTION_TYPE_KEY_REDIRECT },
-    { "Redirect", ACTION_TYPE_KEY_REDIRECT },
     { "Private", ACTION_TYPE_PRIVATE },
     /* deprecated actions below here - unused */
+    { "RedirectKey", ACTION_TYPE_NONE },
+    { "Redirect", ACTION_TYPE_NONE },
     { "ISOLock", ACTION_TYPE_NONE },
     { "ActionMessage", ACTION_TYPE_NONE },
     { "MessageAction", ACTION_TYPE_NONE },
