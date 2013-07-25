@@ -319,7 +319,43 @@ main(void)
                         KEY_SPACE,       BOTH,  XKB_KEY_KP_0,              NEXT,
                         KEY_KP8,         BOTH,  XKB_KEY_KP_Up,             NEXT,
                         KEY_ESC,         BOTH,  XKB_KEY_Escape,            NEXT,
-                        KEY_RIGHTALT,    UP,    XKB_KEY_ISO_Level5_Shift,  FINISH));
+                        KEY_RIGHTALT,    UP,    XKB_KEY_ISO_Level5_Shift,  NEXT,
+
+                        /* Level 6. */
+                        KEY_RIGHTALT,    DOWN,  XKB_KEY_ISO_Level5_Shift,  NEXT,
+                        KEY_RIGHTSHIFT,  DOWN,  XKB_KEY_Shift_R,           NEXT,
+                        KEY_5,           BOTH,  XKB_KEY_NoSymbol,          NEXT,
+                        KEY_8,           BOTH,  XKB_KEY_ISO_Left_Tab,      NEXT,
+                        KEY_E,           BOTH,  XKB_KEY_Up,                NEXT,
+                        KEY_SPACE,       BOTH,  XKB_KEY_KP_0,              NEXT,
+                        KEY_KP8,         BOTH,  XKB_KEY_KP_Up,             NEXT,
+                        KEY_ESC,         BOTH,  XKB_KEY_Escape,            NEXT,
+                        KEY_RIGHTSHIFT,  UP,    XKB_KEY_Caps_Lock,         NEXT,
+                        KEY_RIGHTALT,    UP,    XKB_KEY_ISO_Level5_Shift,  NEXT,
+
+                        /* Level 7. */
+                        KEY_RIGHTALT,    DOWN,  XKB_KEY_ISO_Level5_Shift,  NEXT,
+                        KEY_CAPSLOCK,    DOWN,  XKB_KEY_ISO_Level3_Shift,  NEXT,
+                        KEY_5,           BOTH,  KS("U2221"),               NEXT,
+                        KEY_E,           BOTH,  XKB_KEY_Greek_LAMBDA,      NEXT,
+                        KEY_SPACE,       BOTH,  KS("U202F"),               NEXT,
+                        KEY_KP8,         BOTH,  KS("U22C2"),               NEXT,
+                        KEY_ESC,         BOTH,  XKB_KEY_Escape,            NEXT,
+                        KEY_CAPSLOCK,    UP,    XKB_KEY_ISO_Level3_Shift,  NEXT,
+                        KEY_RIGHTALT,    UP,    XKB_KEY_ISO_Level5_Shift,  NEXT,
+
+                        /* Level 8. */
+                        KEY_RIGHTALT,    DOWN,  XKB_KEY_ISO_Level5_Shift,  NEXT,
+                        KEY_CAPSLOCK,    DOWN,  XKB_KEY_ISO_Level3_Shift,  NEXT,
+                        KEY_RIGHTSHIFT,  DOWN,  XKB_KEY_Shift_R,           NEXT,
+                        /* This doesn't actually lock Level5. Not our fault. */
+                        KEY_TAB,         BOTH,  XKB_KEY_ISO_Level5_Lock,   NEXT,
+                        KEY_RIGHTSHIFT,  UP,    XKB_KEY_Caps_Lock,         NEXT,
+                        KEY_CAPSLOCK,    UP,    XKB_KEY_ISO_Level3_Shift,  NEXT,
+                        KEY_RIGHTALT,    UP,    XKB_KEY_ISO_Level5_Shift,  NEXT,
+
+                        KEY_V,           BOTH,  XKB_KEY_p,                 FINISH));
+
 
     xkb_keymap_unref(keymap);
     keymap = test_compile_rules(ctx, "evdev", "", "us,il,ru", "",

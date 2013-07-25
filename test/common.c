@@ -104,6 +104,15 @@ test_key_seq_va(struct xkb_keymap *keymap, va_list ap)
             }
         }
 
+        if (nsyms == 0) {
+            keysym = va_arg(ap, int);
+            if (keysym != XKB_KEY_NoSymbol) {
+                xkb_keysym_get_name(keysym, ksbuf, sizeof(ksbuf));
+                fprintf(stderr, "Expected %s, but got no keysyms.\n", ksbuf);
+                goto fail;
+            }
+        }
+
         fprintf(stderr, "]\n");
 
         keysym = va_arg(ap, int);
