@@ -214,15 +214,15 @@ log_level_to_prefix(enum xkb_log_level level)
 {
     switch (level) {
     case XKB_LOG_LEVEL_DEBUG:
-        return "Debug:";
+        return "xkbcommon: DEBUG: ";
     case XKB_LOG_LEVEL_INFO:
-        return "Info:";
+        return "xkbcommon: INFO: ";
     case XKB_LOG_LEVEL_WARNING:
-        return "Warning:";
+        return "xkbcommon: WARNING: ";
     case XKB_LOG_LEVEL_ERROR:
-        return "Error:";
+        return "xkbcommon: ERROR: ";
     case XKB_LOG_LEVEL_CRITICAL:
-        return "Critical:";
+        return "xkbcommon: CRITICAL: ";
     default:
         return NULL;
     }
@@ -235,7 +235,7 @@ default_log_fn(struct xkb_context *ctx, enum xkb_log_level level,
     const char *prefix = log_level_to_prefix(level);
 
     if (prefix)
-        fprintf(stderr, "%-10s", prefix);
+        fprintf(stderr, "%s", prefix);
     vfprintf(stderr, fmt, args);
 }
 
