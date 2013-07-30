@@ -30,6 +30,9 @@
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
 
+/* Automake test exit code to signify SKIP (à la PASS, FAIL, etc). */
+#define SKIP_TEST 77
+
 /* The offset between KEY_* numbering, and keycodes in the XKB evdev
  * dataset. */
 #define EVDEV_OFFSET 8
