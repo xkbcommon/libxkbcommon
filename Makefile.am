@@ -162,10 +162,10 @@ TESTS += \
 
 test_keyseq_LDADD = $(TESTS_LDADD)
 test_state_LDADD = $(TESTS_LDADD)
-test_interactive_LDADD = $(TESTS_LDADD)
+test_interactive_evdev_LDADD = $(TESTS_LDADD)
 
 check_PROGRAMS += \
-	test/interactive
+	test/interactive-evdev
 
 endif BUILD_LINUX_TESTS
 

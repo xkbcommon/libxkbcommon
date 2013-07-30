@@ -10,7 +10,7 @@ stringcomp
 buffercomp
 keyseq
 log
-interactive
+interactive-evdev
 rmlvo-to-kccgst
 print-compiled-keymap
 bench-key-proc

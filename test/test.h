@@ -76,3 +76,9 @@ struct xkb_keymap *
 test_compile_rules(struct xkb_context *context, const char *rules,
                    const char *model, const char *layout, const char *variant,
                    const char *options);
+
+void
+test_print_keycode_state(struct xkb_state *state, xkb_keycode_t keycode);
+
+void
+test_print_state_changes(enum xkb_state_component changed);
