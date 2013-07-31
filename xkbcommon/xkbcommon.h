@@ -1110,7 +1110,8 @@ enum xkb_state_component {
      *  lock has been pressed again. */
     XKB_STATE_MODS_LOCKED = (1 << 2),
     /** Effective modifiers, i.e. currently active and affect key
-     *  processing (derived from the other state components). */
+     *  processing (derived from the other state components).
+     *  Use this unless you explictly care how the state came about. */
     XKB_STATE_MODS_EFFECTIVE = (1 << 3),
     /** Depressed layout, i.e. a key is physically holding it. */
     XKB_STATE_LAYOUT_DEPRESSED = (1 << 4),
@@ -1121,7 +1122,8 @@ enum xkb_state_component {
      *  has been pressed again. */
     XKB_STATE_LAYOUT_LOCKED = (1 << 6),
     /** Effective layout, i.e. currently active and affects key processing
-     *  (derived from the other state components). */
+     *  (derived from the other state components).
+     *  Use this unless you explictly care how the state came about. */
     XKB_STATE_LAYOUT_EFFECTIVE = (1 << 7),
     /** LEDs (derived from the other state components). */
     XKB_STATE_LEDS = (1 << 8)
@@ -1131,14 +1133,63 @@ enum xkb_state_component {
  * Update the keyboard state to reflect a given key being pressed or
  * released.
  *
+ * This entry point is intended for programs which track the keyboard state
+ * explictly (like an evdev client).  If the state is serialized to you by
+ * a master process (like an X server, a Wayland compositor) you should
+ * use xkb_state_update_mask() instead.  The two functins should not
+ * generally be used together.
+ *
+ * A series of calls to this function should be consistent; that is, a call
+ * with XKB_KEY_DOWN for a key should be matched by an XKB_KEY_UP; if a key
+ * is pressed twice, it should be released twice; etc. Otherwise (e.g. due
+ * to missed input events), situations like "stuck modifiers" may occur.
+ *
  * @returns A mask of state components that have changed as a result of
  * the update.  If nothing in the state has changed, returns 0.
  *
  * @memberof xkb_state
+ *
+ * @sa xkb_state_update_mask()
  */
 enum xkb_state_component
 xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
                      enum xkb_key_direction direction);
+
+/**
+ * Update a keyboard state from a set of explicit masks.
+ *
+ * This entry point is intended for window systems and the like, where a
+ * master process holds an xkb_state, then serializes it over a wire
+ * protocol, and clients then use the serialization to feed in to their own
+ * xkb_state.
+ *
+ * All parameters must always be passed, or the resulting state may be
+ * incoherent.
+ *
+ * The serialization is lossy and will not survive round trips; it must only
+ * be used to feed slave state objects, and must not be used to update the
+ * master state.
+ *
+ * If you do not fit the description above, you should use
+ * xkb_state_update_key() instead.  The two functions should not generally be
+ * used together.
+ *
+ * @returns A mask of state components that have changed as a result of
+ * the update.  If nothing in the state has changed, returns 0.
+ *
+ * @memberof xkb_state
+ *
+ * @sa xkb_state_component
+ * @sa xkb_state_update_key
+ */
+enum xkb_state_component
+xkb_state_update_mask(struct xkb_state *state,
+                      xkb_mod_mask_t depressed_mods,
+                      xkb_mod_mask_t latched_mods,
+                      xkb_mod_mask_t locked_mods,
+                      xkb_layout_index_t depressed_layout,
+                      xkb_layout_index_t latched_layout,
+                      xkb_layout_index_t locked_layout);
 
 /**
  * Get the keysyms obtained from pressing a particular key in a given
@@ -1242,39 +1293,6 @@ enum xkb_state_match {
      *  modifier not specified in the arguments is active. */
     XKB_STATE_MATCH_NON_EXCLUSIVE = (1 << 16)
 };
-
-/**
- * Update a keyboard state from a set of explicit masks.
- *
- * This entry point is really only for window systems and the like, where a
- * master process holds an xkb_state, then serializes it over a wire
- * protocol, and clients then use the serialization to feed in to their own
- * xkb_state.
- *
- * All parameters must always be passed, or the resulting state may be
- * incoherent.
- *
- * The serialization is lossy and will not survive round trips; it must only
- * be used to feed slave state objects, and must not be used to update the
- * master state.
- *
- * Please do not use this unless you fit the description above.
- *
- * @returns A mask of state components that have changed as a result of
- * the update.  If nothing in the state has changed, returns 0.
- *
- * @memberof xkb_state
- *
- * @sa xkb_state_component
- */
-enum xkb_state_component
-xkb_state_update_mask(struct xkb_state *state,
-                      xkb_mod_mask_t depressed_mods,
-                      xkb_mod_mask_t latched_mods,
-                      xkb_mod_mask_t locked_mods,
-                      xkb_layout_index_t depressed_layout,
-                      xkb_layout_index_t latched_layout,
-                      xkb_layout_index_t locked_layout);
 
 /**
  * The counterpart to xkb_state_update_mask for modifiers, to be used on
