@@ -251,9 +251,9 @@ const char *
 KeyNameText(struct xkb_context *ctx, xkb_atom_t name)
 {
     const char *sname = xkb_atom_text(ctx, name);
-    size_t len = strlen(sname) + 3;
+    size_t len = strlen_safe(sname) + 3;
     char *buf = xkb_context_get_buffer(ctx, len);
-    snprintf(buf, len, "<%s>", sname);
+    snprintf(buf, len, "<%s>", strempty(sname));
     return buf;
 }
 

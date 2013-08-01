@@ -72,6 +72,12 @@ strdup_safe(const char *s)
     return s ? strdup(s) : NULL;
 }
 
+static inline size_t
+strlen_safe(const char *s)
+{
+    return s ? strlen(s) : 0;
+}
+
 static inline bool
 isempty(const char *s)
 {
@@ -82,6 +88,12 @@ static inline const char *
 strnull(const char *s)
 {
     return s ? s : "(null)";
+}
+
+static inline const char *
+strempty(const char *s)
+{
+    return s ? s : "";
 }
 
 static inline void *

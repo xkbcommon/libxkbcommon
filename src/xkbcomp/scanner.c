@@ -121,10 +121,9 @@ skip_more_whitespace_and_comments:
     if (chr(s, '<')) {
         while (isgraph(peek(s)) && peek(s) != '>')
             buf_append(s, next(s));
-        if (s->buf_pos == 0)
-            return scanner_error(yylloc, s, "empty key name literal");
         if (!buf_append(s, '\0') || !chr(s, '>'))
             return scanner_error(yylloc, s, "unterminated key name literal");
+        /* Empty key name literals are allowed. */
         yylval->sval = xkb_atom_intern(s->ctx, s->buf, s->buf_pos - 1);
         return KEYNAME;
     }
