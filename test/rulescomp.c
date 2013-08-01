@@ -231,6 +231,10 @@ main(int argc, char *argv[])
     assert(!test_rmlvo_env(ctx, "broken", "what-on-earth", "invalid", "", "",
                            KEY_A,          BOTH, XKB_KEY_a,               FINISH));
 
+    /* Ensure a keymap with an empty xkb_keycodes compiles fine. */
+    assert(test_rmlvo_env(ctx, "base", "empty", "empty", "", "",
+                          KEY_A,          BOTH, XKB_KEY_NoSymbol,         FINISH));
+
     xkb_context_unref(ctx);
 
     ctx = test_get_context(0);

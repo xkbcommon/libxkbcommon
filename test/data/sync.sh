@@ -32,9 +32,12 @@ for file in \
     symbols/rupeesign \
     symbols/kpdl \
     symbols/de \
+    symbols/ch \
+    symbols/empty \
     keycodes/xfree86 \
     keycodes/aliases \
     keycodes/evdev \
+    keycodes/empty \
     types/complete \
     types/pc \
     types/basic \

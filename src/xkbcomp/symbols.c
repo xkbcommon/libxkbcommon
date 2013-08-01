@@ -1619,9 +1619,6 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
 
     HandleSymbolsFile(&info, file, merge);
 
-    if (darray_empty(info.keys))
-        goto err_info;
-
     if (info.errorCount != 0)
         goto err_info;
 
