@@ -109,6 +109,7 @@ endif ENABLE_DOCS
 # Some tests need to use unexported symbols, so we link them against
 # a private copy of libxkbcommon with all symbols exposed.
 noinst_LTLIBRARIES = libtest.la
+libtest_la_CFLAGS = $(AM_CLFLAGS) -fvisibility=default
 libtest_la_SOURCES = \
 	$(libxkbcommon_la_SOURCES) \
 	test/common.c \
