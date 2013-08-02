@@ -12,6 +12,8 @@ AM_CPPFLAGS = \
 
 AM_CFLAGS = $(BASE_CFLAGS)
 
+AM_LDFLAGS = -no-undefined
+
 AM_LFLAGS = -o lex.yy.c
 AM_YFLAGS = -d
 
@@ -23,7 +25,6 @@ xkbcommoninclude_HEADERS = \
 	xkbcommon/xkbcommon-names.h
 
 lib_LTLIBRARIES = libxkbcommon.la
-libxkbcommon_la_LDFLAGS = -no-undefined
 libxkbcommon_la_SOURCES = \
 	src/xkbcomp/action.c \
 	src/xkbcomp/action.h \
@@ -108,7 +109,6 @@ endif ENABLE_DOCS
 # Some tests need to use unexported symbols, so we link them against
 # a private copy of libxkbcommon with all symbols exposed.
 noinst_LTLIBRARIES = libtest.la
-libtest_la_LDFLAGS = $(libxkbcommon_la_LDFLAGS)
 libtest_la_SOURCES = \
 	$(libxkbcommon_la_SOURCES) \
 	test/common.c \
@@ -205,7 +205,7 @@ Android_build.mk: Makefile $(BUILT_SOURCES)
 	-:TAGS eng debug \
 	-:SOURCES $(filter-out %.l %.y,$(libxkbcommon_la_SOURCES)) $(BUILT_SOURCES) \
 	-:CFLAGS $(DEFS) $(DEFAULT_INCLUDES) $(AM_CPPFLAGS) $(AM_CFLAGS) \
-	-:LDFLAGS $(libxkbcommon_la_LDFLAGS) \
+	-:LDFLAGS $(AM_LDFLAGS) \
 	\
 	-:PASSTHROUGH 'libxkbcommon-clean: clean-libxkbcommon' \
 	> $@
