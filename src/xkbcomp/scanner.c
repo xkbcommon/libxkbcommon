@@ -155,7 +155,7 @@ skip_more_whitespace_and_comments:
 
         /* Keyword. */
         tok = keyword_to_token(s->buf);
-        if (tok != -1) return tok;
+        if ((int) tok != -1) return tok;
 
         yylval->str = strdup(s->buf);
         if (!yylval->str)
