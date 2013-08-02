@@ -495,30 +495,6 @@ err:
     return NULL;
 }
 
-void
-XkbEscapeMapName(char *name)
-{
-    /*
-     * All latin-1 alphanumerics, plus parens, slash, minus, underscore and
-     * wildcards.
-     */
-    static const unsigned char legal[] = {
-        0x00, 0x00, 0x00, 0x00, 0x00, 0xa7, 0xff, 0x83,
-        0xfe, 0xff, 0xff, 0x87, 0xfe, 0xff, 0xff, 0x07,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0xff, 0xff, 0x7f, 0xff, 0xff, 0xff, 0x7f, 0xff
-    };
-
-    if (!name)
-        return;
-
-    while (*name) {
-        if (!(legal[*name / 8] & (1 << (*name % 8))))
-            *name = '_';
-        name++;
-    }
-}
-
 XkbFile *
 XkbFileCreate(struct xkb_context *ctx, enum xkb_file_type type, char *name,
               ParseCommon *defs, enum xkb_map_flags flags)

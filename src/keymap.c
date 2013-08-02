@@ -574,3 +574,27 @@ XkbResolveKeyAlias(struct xkb_keymap *keymap, xkb_atom_t name)
 
     return XKB_ATOM_NONE;
 }
+
+void
+XkbEscapeMapName(char *name)
+{
+    /*
+     * All latin-1 alphanumerics, plus parens, slash, minus, underscore and
+     * wildcards.
+     */
+    static const unsigned char legal[] = {
+        0x00, 0x00, 0x00, 0x00, 0x00, 0xa7, 0xff, 0x83,
+        0xfe, 0xff, 0xff, 0x87, 0xfe, 0xff, 0xff, 0x07,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0xff, 0xff, 0x7f, 0xff, 0xff, 0xff, 0x7f, 0xff
+    };
+
+    if (!name)
+        return;
+
+    while (*name) {
+        if (!(legal[*name / 8] & (1 << (*name % 8))))
+            *name = '_';
+        name++;
+    }
+}
