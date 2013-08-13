@@ -1248,7 +1248,7 @@ HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge)
             break;
         default:
             log_err(info->keymap->ctx,
-                    "Interpretation files may not include other types; "
+                    "Symbols files may not include other types; "
                     "Ignoring %s\n", stmt_type_to_string(stmt->type));
             ok = false;
             break;

@@ -295,7 +295,7 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
 
     if (xkb_file->file_type != file_type) {
         log_err(ctx,
-                "Include file wrong type (expected %s, got %s); "
+                "Include file of wrong type (expected %s, got %s); "
                 "Include file \"%s\" ignored\n",
                 xkb_file_type_to_string(file_type),
                 xkb_file_type_to_string(xkb_file->file_type), stmt->file);
