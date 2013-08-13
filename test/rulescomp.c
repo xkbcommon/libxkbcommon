@@ -235,6 +235,10 @@ main(int argc, char *argv[])
     assert(test_rmlvo_env(ctx, "base", "empty", "empty", "", "",
                           KEY_A,          BOTH, XKB_KEY_NoSymbol,         FINISH));
 
+    /* Has an illegal escape sequence, but shouldn't fail. */
+    assert(test_rmlvo_env(ctx, "evdev", "", "cz", "bksl", "",
+                          KEY_A,          BOTH, XKB_KEY_a,                FINISH));
+
     xkb_context_unref(ctx);
 
     ctx = test_get_context(0);

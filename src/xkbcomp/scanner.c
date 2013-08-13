@@ -25,12 +25,25 @@
 #include "parser-priv.h"
 #include "scanner-utils.h"
 
+static void
+scanner_log(enum xkb_log_level level, YYLTYPE *yylloc, struct scanner *s,
+            const char *msg)
+{
+    xkb_log_cond_level(s->ctx, level, "%s:%d:%d: %s\n", s->file_name,
+                       yylloc->first_line, yylloc->first_column, msg);
+}
+
 int
 scanner_error(YYLTYPE *yylloc, struct scanner *s, const char *msg)
 {
-    log_err(s->ctx, "%s:%d:%d: %s\n",
-            s->file_name, yylloc->first_line, yylloc->first_column, msg);
+    scanner_log(XKB_LOG_LEVEL_ERROR, yylloc, s, msg);
     return ERROR_TOK;
+}
+
+void
+scanner_warn(YYLTYPE *yylloc, struct scanner *s, const char *msg)
+{
+    scanner_log(XKB_LOG_LEVEL_WARNING, yylloc, s, msg);
 }
 
 static bool
@@ -103,8 +116,11 @@ skip_more_whitespace_and_comments:
                 else if (chr(s, 'v'))  buf_append(s, '\v');
                 else if (chr(s, 'e'))  buf_append(s, '\033');
                 else if (oct(s, &o))   buf_append(s, (char) o);
-                else return scanner_error(yylloc, s,
-                                          "illegal escape sequence in string literal");
+                else {
+                    scanner_warn(yylloc, s,
+                                 "unknown escape sequence in string literal");
+                    /* Ignore. */
+                }
             } else {
                 buf_append(s, next(s));
             }

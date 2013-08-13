@@ -35,6 +35,9 @@ struct parser_param;
 int
 scanner_error(YYLTYPE *yylloc, struct scanner *scanner, const char *msg);
 
+void
+scanner_warn(YYLTYPE *yylloc, struct scanner *s, const char *msg);
+
 int
 _xkbcommon_lex(YYSTYPE *yylval, YYLTYPE *yylloc, struct scanner *scanner);
 

@@ -18,6 +18,7 @@ for file in \
     symbols/shift \
     symbols/pc \
     symbols/ca \
+    symbols/cz \
     symbols/srvr_ctrl \
     symbols/capslock \
     symbols/latin \
