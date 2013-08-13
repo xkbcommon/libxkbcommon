@@ -236,12 +236,19 @@ print_keycode(struct keyboard *kbd, xkb_keycode_t keycode)
     if (nsyms <= 0)
         return;
 
-    printf("keysyms [ ");
-    for (i = 0; i < nsyms; i++) {
-        xkb_keysym_get_name(syms[i], s, sizeof(s));
-        printf("%-*s ", (int)sizeof(s), s);
+    if (nsyms == 1) {
+        xkb_keysym_t sym = xkb_state_key_get_one_sym(state, keycode);
+        xkb_keysym_get_name(sym, s, sizeof(s));
+        printf("keysym [ %-*s ] ", (int) sizeof(s), s);
     }
-    printf("] ");
+    else {
+        printf("keysyms [ ");
+        for (i = 0; i < nsyms; i++) {
+            xkb_keysym_get_name(syms[i], s, sizeof(s));
+            printf("%-*s ", (int) sizeof(s), s);
+        }
+        printf("] ");
+    }
 
     /*
      * Only do this if wchar_t is UCS-4, so we can be lazy and print
