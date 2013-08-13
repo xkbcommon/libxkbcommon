@@ -242,6 +242,26 @@ xkb_keysym_is_upper(xkb_keysym_t ks)
     return (ks == upper ? true : false);
 }
 
+xkb_keysym_t
+xkb_keysym_to_lower(xkb_keysym_t ks)
+{
+    xkb_keysym_t lower, upper;
+
+    XConvertCase(ks, &lower, &upper);
+
+    return lower;
+}
+
+xkb_keysym_t
+xkb_keysym_to_upper(xkb_keysym_t ks)
+{
+    xkb_keysym_t lower, upper;
+
+    XConvertCase(ks, &lower, &upper);
+
+    return upper;
+}
+
 /*
  * The following is copied verbatim from libX11:src/KeyBind.c, commit
  * d45b3fc19fbe95c41afc4e51d768df6d42332010, with the following changes:

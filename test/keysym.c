@@ -183,5 +183,18 @@ main(void)
     assert(!xkb_keysym_is_keypad(XKB_KEY_1));
     assert(!xkb_keysym_is_keypad(XKB_KEY_Return));
 
+    assert(xkb_keysym_to_upper(XKB_KEY_a) == XKB_KEY_A);
+    assert(xkb_keysym_to_upper(XKB_KEY_A) == XKB_KEY_A);
+    assert(xkb_keysym_to_lower(XKB_KEY_a) == XKB_KEY_a);
+    assert(xkb_keysym_to_lower(XKB_KEY_A) == XKB_KEY_a);
+    assert(xkb_keysym_to_upper(XKB_KEY_Return) == XKB_KEY_Return);
+    assert(xkb_keysym_to_lower(XKB_KEY_Return) == XKB_KEY_Return);
+    assert(xkb_keysym_to_upper(XKB_KEY_Greek_lambda) == XKB_KEY_Greek_LAMBDA);
+    assert(xkb_keysym_to_upper(XKB_KEY_Greek_LAMBDA) == XKB_KEY_Greek_LAMBDA);
+    assert(xkb_keysym_to_lower(XKB_KEY_Greek_lambda) == XKB_KEY_Greek_lambda);
+    assert(xkb_keysym_to_lower(XKB_KEY_Greek_LAMBDA) == XKB_KEY_Greek_lambda);
+    assert(xkb_keysym_to_upper(XKB_KEY_eacute) == XKB_KEY_Eacute);
+    assert(xkb_keysym_to_lower(XKB_KEY_Eacute) == XKB_KEY_eacute);
+
     return 0;
 }
