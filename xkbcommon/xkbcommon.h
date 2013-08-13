@@ -1135,9 +1135,9 @@ enum xkb_state_component {
  *
  * This entry point is intended for programs which track the keyboard state
  * explictly (like an evdev client).  If the state is serialized to you by
- * a master process (like an X server, a Wayland compositor) you should
- * use xkb_state_update_mask() instead.  The two functins should not
- * generally be used together.
+ * a master process (like a Wayland compositor) using functions like
+ * xkb_state_serialize_mods(), you should use xkb_state_update_mask() instead.
+ * The two functins should not generally be used together.
  *
  * A series of calls to this function should be consistent; that is, a call
  * with XKB_KEY_DOWN for a key should be matched by an XKB_KEY_UP; if a key
