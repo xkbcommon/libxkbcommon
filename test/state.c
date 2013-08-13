@@ -353,6 +353,71 @@ test_range(struct xkb_keymap *keymap)
     assert(counter == xkb_keymap_max_keycode(keymap) + 1);
 }
 
+static void
+test_caps_keysym_transformation(struct xkb_keymap *keymap)
+{
+    struct xkb_state *state = xkb_state_new(keymap);
+    xkb_mod_index_t caps, shift;
+    int nsyms;
+    xkb_keysym_t sym;
+    const xkb_keysym_t *syms;
+
+    assert(state);
+
+    /* See xkb_state_key_get_one_sym() for what's this all about. */
+
+    caps = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CAPS);
+    shift = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_SHIFT);
+    assert(caps >= 0 && shift >= 0);
+
+    assert(xkb_state_key_get_layout(state, KEY_A + 8) == 0);
+    assert(xkb_state_key_get_layout(state, KEY_SEMICOLON + 8) == 0);
+
+    /* Without caps, no transformation. */
+    assert(xkb_state_mod_index_is_active(state, caps, XKB_STATE_MODS_EFFECTIVE) == 0);
+    assert(xkb_state_mod_index_is_active(state, shift, XKB_STATE_MODS_EFFECTIVE) == 0);
+    assert(xkb_state_key_get_level(state, KEY_A + 8, 0) == 0);
+    sym = xkb_state_key_get_one_sym(state, KEY_A + 8);
+    assert(sym == XKB_KEY_a);
+    assert(xkb_state_key_get_level(state, KEY_SEMICOLON + 8, 0) == 0);
+    sym = xkb_state_key_get_one_sym(state, KEY_SEMICOLON + 8);
+    assert(sym == XKB_KEY_eacute);
+    nsyms = xkb_state_key_get_syms(state, KEY_SEMICOLON + 8, &syms);
+    assert(nsyms == 1 && syms[0] == XKB_KEY_eacute);
+
+    /* With shift, no transformation (only different level). */
+    xkb_state_update_key(state, KEY_LEFTSHIFT + 8, XKB_KEY_DOWN);
+    assert(xkb_state_mod_index_is_active(state, caps, XKB_STATE_MODS_EFFECTIVE) == 0);
+    assert(xkb_state_mod_index_is_active(state, shift, XKB_STATE_MODS_EFFECTIVE) > 0);
+    assert(xkb_state_key_get_level(state, KEY_A + 8, 0) == 1);
+    sym = xkb_state_key_get_one_sym(state, KEY_A + 8);
+    assert(sym == XKB_KEY_A);
+    sym = xkb_state_key_get_one_sym(state, KEY_SEMICOLON + 8);
+    assert(sym == XKB_KEY_odiaeresis);
+    nsyms = xkb_state_key_get_syms(state, KEY_SEMICOLON + 8, &syms);
+    assert(nsyms == 1 && syms[0] == XKB_KEY_odiaeresis);
+    xkb_state_update_key(state, KEY_LEFTSHIFT + 8, XKB_KEY_UP);
+    assert(xkb_state_mod_index_is_active(state, shift, XKB_STATE_MODS_EFFECTIVE) == 0);
+
+    /* With caps, transform in same level, only with _get_one_sym(). */
+    xkb_state_update_key(state, KEY_CAPSLOCK + 8, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_CAPSLOCK + 8, XKB_KEY_UP);
+    assert(xkb_state_mod_index_is_active(state, caps, XKB_STATE_MODS_EFFECTIVE) > 0);
+    assert(xkb_state_mod_index_is_active(state, shift, XKB_STATE_MODS_EFFECTIVE) == 0);
+    assert(xkb_state_key_get_level(state, KEY_A + 8, 0) == 1);
+    sym = xkb_state_key_get_one_sym(state, KEY_A + 8);
+    assert(sym == XKB_KEY_A);
+    assert(xkb_state_key_get_level(state, KEY_SEMICOLON + 8, 0) == 0);
+    sym = xkb_state_key_get_one_sym(state, KEY_SEMICOLON + 8);
+    assert(sym == XKB_KEY_Eacute);
+    nsyms = xkb_state_key_get_syms(state, KEY_SEMICOLON + 8, &syms);
+    assert(nsyms == 1 && syms[0] == XKB_KEY_eacute);
+    xkb_state_update_key(state, KEY_LEFTSHIFT + 8, XKB_KEY_UP);
+    assert(xkb_state_mod_index_is_active(state, shift, XKB_STATE_MODS_EFFECTIVE) == 0);
+    xkb_state_update_key(state, KEY_CAPSLOCK + 8, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_CAPSLOCK + 8, XKB_KEY_UP);
+}
+
 int
 main(void)
 {
@@ -374,6 +439,12 @@ main(void)
     test_repeat(keymap);
     test_consume(keymap);
     test_range(keymap);
+
+    xkb_keymap_unref(keymap);
+    keymap = test_compile_rules(context, "evdev", NULL, "ch", "fr", NULL);
+    assert(keymap);
+
+    test_caps_keysym_transformation(keymap);
 
     xkb_keymap_unref(keymap);
     xkb_context_unref(context);

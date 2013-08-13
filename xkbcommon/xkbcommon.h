@@ -1205,8 +1205,9 @@ xkb_state_update_mask(struct xkb_state *state,
  * key in the given keyboard state.
  *
  * As an extension to XKB, this function can return more than one keysym.
- * If you do not want to handle this case, you can use
- * xkb_state_key_get_one_sym().
+ * If you do not want to handle this case, you should use
+ * xkb_state_key_get_one_sym(), which additionally performs transformations
+ * which are specific to the one-keysym case.
  *
  * @returns The number of keysyms in the syms_out array.  If no keysyms
  * are produced by the key in the given keyboard state, returns 0 and sets
@@ -1222,9 +1223,10 @@ xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
  * Get the single keysym obtained from pressing a particular key in a
  * given keyboard state.
  *
- * This function is similar to xkb_state_key_get_syms(), but with a
- * simplified interface for users which cannot or do not want to handle
- * the case where multiple keysyms are returned.
+ * This function is similar to xkb_state_key_get_syms(), but intended
+ * for users which cannot or do not want to handle the case where
+ * multiple keysyms are returned (in which case this function is
+ * preferred).
  *
  * @returns The keysym.  If the key does not have exactly one keysym,
  * returns XKB_KEY_NoSymbol
