@@ -1041,9 +1041,9 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  */
 
 /**
- * Create a new keyboard state object for a keymap.
+ * Create a new keyboard state object.
  *
- * @param keymap The keymap for which to create the state.
+ * @param keymap The keymap which the state will use.
  *
  * @returns A new keyboard state object, or NULL on failure.
  *
@@ -1073,10 +1073,10 @@ void
 xkb_state_unref(struct xkb_state *state);
 
 /**
- * Get the keymap from which a keyboard state object was created.
+ * Get the keymap which a keyboard state object is using.
  *
- * @returns The keymap which was used in xkb_state_new() to create this
- * state object.
+ * @returns The keymap which was passed to xkb_state_new() when creating
+ * this state object.
  *
  * This function does not take a new reference on the keymap; you must
  * explicitly reference it yourself if you plan to use it beyond the
