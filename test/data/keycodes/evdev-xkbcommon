@@ -1,4 +1,5 @@
 default xkb_keycodes "evdev" {
+    <ZERO>              =  0;
     <ESC>               =  1;
     <1>                 =  2;
     <2>                 =  3;
