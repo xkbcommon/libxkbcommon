@@ -81,3 +81,4 @@ core
 cscope.out
 test-suite.log
 test-driver
+build-aux/
