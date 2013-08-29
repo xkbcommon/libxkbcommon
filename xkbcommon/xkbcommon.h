@@ -215,7 +215,14 @@ typedef uint32_t xkb_layout_mask_t;
 /**
  * Index of a shift level.
  *
- * @todo Explain what are shift levels.
+ * Any key, in any layout, can have several <em>shift levels</em>.  Each
+ * shift level can assign different keysyms to the key.  The shift level
+ * to use is chosen according to the current keyboard state; for example,
+ * if no keys are pressed, the first level may be used; if the Left Shift
+ * key is pressed, the second; if Num Lock is pressed, the third; and
+ * many such combinations are possible (see xkb_mod_index_t).
+ *
+ * Level indexes are consecutive.  The first level has index 0.
  */
 typedef uint32_t xkb_level_index_t;
 
@@ -249,7 +256,9 @@ typedef uint32_t xkb_mod_mask_t;
 /**
  * Index of a keyboard LED.
  *
- * @todo Explain what are LEDs.
+ * LEDs are logical objects which may be @e active or @e inactive.  They
+ * typically correspond to the lights on the keyboard. Their state is
+ * determined by the current keyboard state.
  *
  * LED indexes are non-consecutive.  The first LED has index 0.
  *
