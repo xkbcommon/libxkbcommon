@@ -3,6 +3,10 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = xkbcommon.pc
 
+EXTRA_DIST = \
+	makekeys.py \
+	src/xkbcomp/keywords.gperf
+
 AM_CPPFLAGS = \
 	-DDFLT_XKB_CONFIG_ROOT='"$(XKBCONFIGROOT)"' \
 	-I$(top_srcdir)/src \
@@ -164,7 +168,7 @@ check_PROGRAMS += \
 
 endif BUILD_LINUX_TESTS
 
-EXTRA_DIST = \
+EXTRA_DIST += \
 	test/data
 
 # This sed script strips out lines that start with '#define _' which
