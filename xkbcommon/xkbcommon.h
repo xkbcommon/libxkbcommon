@@ -197,7 +197,7 @@ typedef uint32_t xkb_keysym_t;
  * layout</em> is active.  These may be different alphabets, different key
  * arrangements, etc.
  *
- * Layout indexes are consecutive.  The first layout has index 0.
+ * Layout indices are consecutive.  The first layout has index 0.
  *
  * Each layout is not required to have a name, and the names are not
  * guaranteed to be unique (though they are usually provided and unique).
@@ -209,7 +209,7 @@ typedef uint32_t xkb_keysym_t;
  * @sa xkb_keymap_num_layouts() xkb_keymap_num_layouts_for_key()
  */
 typedef uint32_t xkb_layout_index_t;
-/** A mask of layout indexes. */
+/** A mask of layout indices. */
 typedef uint32_t xkb_layout_mask_t;
 
 /**
@@ -222,7 +222,7 @@ typedef uint32_t xkb_layout_mask_t;
  * key is pressed, the second; if Num Lock is pressed, the third; and
  * many such combinations are possible (see xkb_mod_index_t).
  *
- * Level indexes are consecutive.  The first level has index 0.
+ * Level indices are consecutive.  The first level has index 0.
  */
 typedef uint32_t xkb_level_index_t;
 
@@ -240,7 +240,7 @@ typedef uint32_t xkb_level_index_t;
  * consulted; this detemines the correct shift level to use within the
  * currently active layout (see xkb_level_index_t).
  *
- * Modifier indexes are consecutive.  The first modifier has index 0.
+ * Modifier indices are consecutive.  The first modifier has index 0.
  *
  * Each modifier must have a name, and the names are unique.  Therefore, it
  * is safe to use the name as a unique identifier for a modifier.  The names
@@ -250,7 +250,7 @@ typedef uint32_t xkb_level_index_t;
  * @sa xkb_keymap_num_mods()
  */
 typedef uint32_t xkb_mod_index_t;
-/** A mask of modifier indexes. */
+/** A mask of modifier indices. */
 typedef uint32_t xkb_mod_mask_t;
 
 /**
@@ -260,7 +260,7 @@ typedef uint32_t xkb_mod_mask_t;
  * typically correspond to the lights on the keyboard. Their state is
  * determined by the current keyboard state.
  *
- * LED indexes are non-consecutive.  The first LED has index 0.
+ * LED indices are non-consecutive.  The first LED has index 0.
  *
  * Each LED must have a name, and the names are unique. Therefore,
  * it is safe to use the name as a unique identifier for a LED.  The names
@@ -270,7 +270,7 @@ typedef uint32_t xkb_mod_mask_t;
  * @warning A given keymap may specify an exact index for a given LED.
  * Therefore, LED indexing is not necessarily sequential, as opposed to
  * modifiers and layouts.  This means that when iterating over the LEDs
- * in a keymap using e.g. xkb_keymap_num_leds(), some indexes might be
+ * in a keymap using e.g. xkb_keymap_num_leds(), some indices might be
  * invalid.  Given such an index, functions like xkb_keymap_led_get_name()
  * will return NULL, and xkb_state_led_index_is_active() will return -1.
  *
@@ -279,7 +279,7 @@ typedef uint32_t xkb_mod_mask_t;
  * @sa xkb_keymap_num_leds()
  */
 typedef uint32_t xkb_led_index_t;
-/** A mask of LED indexes. */
+/** A mask of LED indices. */
 typedef uint32_t xkb_led_mask_t;
 
 #define XKB_KEYCODE_INVALID (0xffffffff)
@@ -1405,11 +1405,11 @@ xkb_state_mod_index_is_active(struct xkb_state *state, xkb_mod_index_t idx,
  * given modifiers.
  * @param match The manner by which to match the state against the
  * given modifiers.
- * @param ...   The set of of modifier indexes to test, terminated by a
+ * @param ...   The set of of modifier indices to test, terminated by a
  * XKB_MOD_INVALID argument (sentinel).
  *
  * @returns 1 if the modifiers are active, 0 if they are not.  If any of
- * the modifier indexes are invalid in the keymap, returns -1.
+ * the modifier indices are invalid in the keymap, returns -1.
  *
  * @memberof xkb_state
  */
