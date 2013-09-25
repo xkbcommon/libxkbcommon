@@ -416,6 +416,8 @@ test_caps_keysym_transformation(struct xkb_keymap *keymap)
     assert(xkb_state_mod_index_is_active(state, shift, XKB_STATE_MODS_EFFECTIVE) == 0);
     xkb_state_update_key(state, KEY_CAPSLOCK + 8, XKB_KEY_DOWN);
     xkb_state_update_key(state, KEY_CAPSLOCK + 8, XKB_KEY_UP);
+
+    xkb_state_unref(state);
 }
 
 int
