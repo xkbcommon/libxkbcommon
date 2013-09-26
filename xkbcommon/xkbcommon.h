@@ -360,6 +360,8 @@ xkb_keysym_get_name(xkb_keysym_t keysym, char *buffer, size_t size);
 
 /** Flags for xkb_keysym_from_name(). */
 enum xkb_keysym_flags {
+    /** Do not apply any flags. */
+    XKB_KEYSYM_NO_FLAGS = 0,
     /** Find keysym by case-insensitive search. */
     XKB_KEYSYM_CASE_INSENSITIVE = (1 << 0)
 };
@@ -425,6 +427,8 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym);
 
 /** Flags for context creation. */
 enum xkb_context_flags {
+    /** Do not apply any context flags. */
+    XKB_CONTEXT_NO_FLAGS = 0,
     /** Create this context with an empty include path. */
     XKB_CONTEXT_NO_DEFAULT_INCLUDES = (1 << 0),
     /** Don't take RMLVO names from the environment. */
@@ -676,6 +680,8 @@ xkb_context_set_log_fn(struct xkb_context *context,
 
 /** Flags for keymap compilation. */
 enum xkb_keymap_compile_flags {
+    /** Do not apply any flags. */
+    XKB_MAP_COMPILE_NO_FLAGS = 0,
     /** Apparently you can't have empty enums.  What a drag. */
     XKB_MAP_COMPILE_PLACEHOLDER = 0
 };
