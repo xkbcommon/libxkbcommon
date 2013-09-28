@@ -9,7 +9,7 @@ static const struct keyword_tok *
 keyword_gperf_lookup(const char *str, unsigned int len);
 %}
 
-struct keyword_tok { int name; enum yytokentype tok; };
+struct keyword_tok { int name; int tok; };
 %language=ANSI-C
 %define hash-function-name keyword_gperf_hash
 %define lookup-function-name keyword_gperf_lookup

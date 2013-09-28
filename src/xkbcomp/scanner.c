@@ -47,7 +47,7 @@ scanner_warn(YYLTYPE *yylloc, struct scanner *s, const char *msg)
 }
 
 static bool
-number(struct scanner *s, int64_t *out, enum yytokentype *out_tok)
+number(struct scanner *s, int64_t *out, int *out_tok)
 {
     bool is_float = false, is_hex = false;
     const char *start = s->s + s->pos;
@@ -82,7 +82,7 @@ number(struct scanner *s, int64_t *out, enum yytokentype *out_tok)
 int
 _xkbcommon_lex(YYSTYPE *yylval, YYLTYPE *yylloc, struct scanner *s)
 {
-    enum yytokentype tok;
+    int tok;
 
 skip_more_whitespace_and_comments:
     /* Skip spaces. */

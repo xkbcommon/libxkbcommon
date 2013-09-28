@@ -38,7 +38,7 @@ keyword_gperf_hash(const char *str, unsigned int len);
 
 static const struct keyword_tok *
 keyword_gperf_lookup(const char *str, unsigned int len);
-struct keyword_tok { int name; enum yytokentype tok; };
+struct keyword_tok { int name; int tok; };
 #include <string.h>
 /* maximum key range = 70, duplicates = 0 */
 
