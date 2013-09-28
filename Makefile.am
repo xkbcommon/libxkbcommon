@@ -18,7 +18,6 @@ AM_CFLAGS = $(BASE_CFLAGS)
 
 AM_LDFLAGS = -no-undefined
 
-AM_LFLAGS = -o lex.yy.c
 AM_YFLAGS = -d
 
 xkbcommonincludedir = $(includedir)/xkbcommon
