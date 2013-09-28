@@ -45,7 +45,6 @@ _xkbcommon_error(struct YYLTYPE *loc, struct parser_param *param, const char *ms
 #define scanner param->scanner
 %}
 
-%name-prefix    "_xkbcommon_"
 %pure-parser
 %locations
 %lex-param      { struct scanner *scanner }

@@ -18,7 +18,7 @@ AM_CFLAGS = $(BASE_CFLAGS)
 
 AM_LDFLAGS = -no-undefined
 
-AM_YFLAGS = -d
+AM_YFLAGS = -d -p _xkbcommon_
 
 xkbcommonincludedir = $(includedir)/xkbcommon
 xkbcommoninclude_HEADERS = \
