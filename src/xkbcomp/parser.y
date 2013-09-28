@@ -798,3 +798,5 @@ parse(struct xkb_context *ctx, void *scanner, const char *map)
 
     return first;
 }
+
+#define scanner param->scanner
