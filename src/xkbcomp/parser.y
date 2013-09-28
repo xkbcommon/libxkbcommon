@@ -24,6 +24,12 @@
 
  ********************************************************/
 
+/*
+ * The parser should work with reasonably recent versions of either
+ * bison or byacc.  So if you make changes, try to make sure it works
+ * in both!
+ */
+
 %{
 #include "xkbcomp-priv.h"
 #include "ast-build.h"

@@ -56,6 +56,8 @@ AC_C_INLINE
 AC_PROG_MKDIR_P
 PKG_PROG_PKG_CONFIG
 
+# Note: we use some yacc extensions, which work with either GNU bison
+# (preferred) or byacc. Other yacc's may or may not work.
 AC_PROG_YACC
 AC_PATH_PROG([YACC_INST], $YACC)
 if test ! -f "src/xkbcomp/parser.c"; then
