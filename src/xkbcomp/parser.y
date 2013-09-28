@@ -37,16 +37,15 @@ struct parser_param {
 };
 
 static void
-_xkbcommon_error(struct YYLTYPE *loc, struct parser_param *param, const char *msg)
+_xkbcommon_error(struct parser_param *param, const char *msg)
 {
-    scanner_error(loc, param->scanner, msg);
+    scanner_error(param->scanner, msg);
 }
 
 #define scanner param->scanner
 %}
 
 %pure-parser
-%locations
 %lex-param      { struct scanner *scanner }
 %parse-param    { struct parser_param *param }
 

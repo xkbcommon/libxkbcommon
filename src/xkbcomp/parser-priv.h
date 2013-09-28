@@ -33,13 +33,13 @@ struct parser_param;
 #include "parser.h"
 
 int
-scanner_error(YYLTYPE *yylloc, struct scanner *scanner, const char *msg);
+scanner_error(struct scanner *scanner, const char *msg);
 
 void
-scanner_warn(YYLTYPE *yylloc, struct scanner *s, const char *msg);
+scanner_warn(struct scanner *s, const char *msg);
 
 int
-_xkbcommon_lex(YYSTYPE *yylval, YYLTYPE *yylloc, struct scanner *scanner);
+_xkbcommon_lex(YYSTYPE *yylval, struct scanner *scanner);
 
 XkbFile *
 parse(struct xkb_context *ctx, void *scanner, const char *map);

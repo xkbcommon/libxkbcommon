@@ -26,24 +26,23 @@
 #include "scanner-utils.h"
 
 static void
-scanner_log(enum xkb_log_level level, YYLTYPE *yylloc, struct scanner *s,
-            const char *msg)
+scanner_log(enum xkb_log_level level, struct scanner *s, const char *msg)
 {
     xkb_log_cond_level(s->ctx, level, "%s:%d:%d: %s\n", s->file_name,
-                       yylloc->first_line, yylloc->first_column, msg);
+                       s->token_line, s->token_column, msg);
 }
 
 int
-scanner_error(YYLTYPE *yylloc, struct scanner *s, const char *msg)
+scanner_error(struct scanner *s, const char *msg)
 {
-    scanner_log(XKB_LOG_LEVEL_ERROR, yylloc, s, msg);
+    scanner_log(XKB_LOG_LEVEL_ERROR, s, msg);
     return ERROR_TOK;
 }
 
 void
-scanner_warn(YYLTYPE *yylloc, struct scanner *s, const char *msg)
+scanner_warn(struct scanner *s, const char *msg)
 {
-    scanner_log(XKB_LOG_LEVEL_WARNING, yylloc, s, msg);
+    scanner_log(XKB_LOG_LEVEL_WARNING, s, msg);
 }
 
 static bool
@@ -80,7 +79,7 @@ number(struct scanner *s, int64_t *out, int *out_tok)
 }
 
 int
-_xkbcommon_lex(YYSTYPE *yylval, YYLTYPE *yylloc, struct scanner *s)
+_xkbcommon_lex(YYSTYPE *yylval, struct scanner *s)
 {
     int tok;
 
@@ -98,8 +97,8 @@ skip_more_whitespace_and_comments:
     if (eof(s)) return END_OF_FILE;
 
     /* New token. */
-    yylloc->first_line = yylloc->last_line = s->line;
-    yylloc->first_column = yylloc->last_column = s->column;
+    s->token_line = s->line;
+    s->token_column = s->column;
     s->buf_pos = 0;
 
     /* String literal. */
@@ -117,8 +116,7 @@ skip_more_whitespace_and_comments:
                 else if (chr(s, 'e'))  buf_append(s, '\033');
                 else if (oct(s, &o))   buf_append(s, (char) o);
                 else {
-                    scanner_warn(yylloc, s,
-                                 "unknown escape sequence in string literal");
+                    scanner_warn(s, "unknown escape sequence in string literal");
                     /* Ignore. */
                 }
             } else {
@@ -126,10 +124,10 @@ skip_more_whitespace_and_comments:
             }
         }
         if (!buf_append(s, '\0') || !chr(s, '\"'))
-            return scanner_error(yylloc, s, "unterminated string literal");
+            return scanner_error(s, "unterminated string literal");
         yylval->str = strdup(s->buf);
         if (!yylval->str)
-            return scanner_error(yylloc, s, "scanner out of memory");
+            return scanner_error(s, "scanner out of memory");
         return STRING;
     }
 
@@ -138,7 +136,7 @@ skip_more_whitespace_and_comments:
         while (isgraph(peek(s)) && peek(s) != '>')
             buf_append(s, next(s));
         if (!buf_append(s, '\0') || !chr(s, '>'))
-            return scanner_error(yylloc, s, "unterminated key name literal");
+            return scanner_error(s, "unterminated key name literal");
         /* Empty key name literals are allowed. */
         yylval->sval = xkb_atom_intern(s->ctx, s->buf, s->buf_pos - 1);
         return KEYNAME;
@@ -167,7 +165,7 @@ skip_more_whitespace_and_comments:
         while (isalnum(peek(s)) || peek(s) == '_')
             buf_append(s, next(s));
         if (!buf_append(s, '\0'))
-            return scanner_error(yylloc, s, "identifier too long");
+            return scanner_error(s, "identifier too long");
 
         /* Keyword. */
         tok = keyword_to_token(s->buf);
@@ -175,18 +173,18 @@ skip_more_whitespace_and_comments:
 
         yylval->str = strdup(s->buf);
         if (!yylval->str)
-            return scanner_error(yylloc, s, "scanner out of memory");
+            return scanner_error(s, "scanner out of memory");
         return IDENT;
     }
 
     /* Number literal (hexadecimal / decimal / float). */
     if (number(s, &yylval->num, &tok)) {
         if (tok == ERROR_TOK)
-            return scanner_error(yylloc, s, "malformed number literal");
+            return scanner_error(s, "malformed number literal");
         return tok;
     }
 
-    return scanner_error(yylloc, s, "unrecognized token");
+    return scanner_error(s, "unrecognized token");
 }
 
 XkbFile *

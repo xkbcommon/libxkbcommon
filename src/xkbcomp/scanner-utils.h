@@ -52,6 +52,8 @@ struct scanner {
     char buf[1024];
     size_t buf_pos;
     int line, column;
+    /* The line/column of the start of the current token. */
+    int token_line, token_column;
     const char *file_name;
     struct xkb_context *ctx;
 };
@@ -64,6 +66,7 @@ scanner_init(struct scanner *s, struct xkb_context *ctx,
     s->len = len;
     s->pos = 0;
     s->line = s->column = 1;
+    s->token_line = s->token_column = 1;
     s->file_name = file_name;
     s->ctx = ctx;
 }
