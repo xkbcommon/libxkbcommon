@@ -1196,6 +1196,7 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
 
     ok = true;
     tmp.modifier = ndx;
+    tmp.merge = def->merge;
 
     for (key = def->keys; key != NULL; key = (ExprDef *) key->common.next) {
         xkb_keysym_t sym;
