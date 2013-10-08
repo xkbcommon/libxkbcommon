@@ -158,11 +158,11 @@ enum rules_token {
 
 /* C99 is stupid. Just use the 1 variant when there are no args. */
 #define scanner_error1(scanner, loc, msg) \
-    log_warn(scanner->ctx, "rules/%s:%d:%d: " msg "\n", \
-             scanner->file_name, loc->line, loc->column)
+    log_warn((scanner)->ctx, "rules/%s:%d:%d: %s\n", \
+             (scanner)->file_name, (loc)->line, (loc)->column, msg)
 #define scanner_error(scanner, loc, fmt, ...) \
-    log_warn(scanner->ctx, "rules/%s:%d:%d: " fmt "\n", \
-             scanner->file_name, loc->line, loc->column, __VA_ARGS__)
+    log_warn((scanner)->ctx, "rules/%s:%d:%d: " fmt "\n", \
+             (scanner)->file_name, (loc)->line, (loc)->column, __VA_ARGS__)
 
 static enum rules_token
 lex(struct scanner *s, union lvalue *val, struct location *loc)
@@ -404,15 +404,10 @@ matcher_free(struct matcher *m)
     free(m);
 }
 
-/* C99 is stupid. Just use the 1 variant when there are no args. */
 #define matcher_error1(matcher, msg) \
-    log_warn(matcher->ctx, "rules/%s:%d:%d: " msg "\n", \
-             matcher->scanner.file_name, matcher->loc.line, \
-             matcher->loc.column)
+    scanner_error1(&(matcher)->scanner, &(matcher)->loc, msg)
 #define matcher_error(matcher, fmt, ...) \
-    log_warn(matcher->ctx, "rules/%s:%d:%d: " fmt "\n", \
-             matcher->scanner.file_name, matcher->loc.line, \
-             matcher->loc.column, __VA_ARGS__)
+    scanner_error(&(matcher)->scanner, &(matcher)->loc, fmt, __VA_ARGS__)
 
 static void
 matcher_group_start_new(struct matcher *m, struct sval name)
