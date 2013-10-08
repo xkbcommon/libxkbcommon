@@ -381,7 +381,7 @@ matcher_new(struct xkb_context *ctx,
 
     m->ctx = ctx;
     m->rmlvo.model.start = rmlvo->model;
-    m->rmlvo.model.len = rmlvo->model ? strlen(rmlvo->model) : 0;
+    m->rmlvo.model.len = strlen_safe(rmlvo->model);
     m->rmlvo.layouts = split_comma_separated_string(rmlvo->layout);
     m->rmlvo.variants = split_comma_separated_string(rmlvo->variant);
     m->rmlvo.options = split_comma_separated_string(rmlvo->options);
