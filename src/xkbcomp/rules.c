@@ -348,7 +348,6 @@ static darray_sval
 split_comma_separated_string(const char *s)
 {
     darray_sval arr = darray_new();
-    struct sval val = { NULL, 0 };
 
     /*
      * Make sure the array returned by this function always includes at
@@ -356,12 +355,13 @@ split_comma_separated_string(const char *s)
      */
 
     if (!s) {
+        struct sval val = { NULL, 0 };
         darray_append(arr, val);
         return arr;
     }
 
     while (true) {
-        val.start = s; val.len = 0;
+        struct sval val = { s, 0 };
         while (*s != '\0' && *s != ',') { s++; val.len++; }
         darray_append(arr, strip_spaces(val));
         if (*s == '\0') break;
@@ -431,10 +431,9 @@ matcher_group_add_element(struct matcher *m, struct sval element)
 static void
 matcher_mapping_start_new(struct matcher *m)
 {
-    unsigned int i;
-    for (i = 0; i < _MLVO_NUM_ENTRIES; i++)
+    for (unsigned i = 0; i < _MLVO_NUM_ENTRIES; i++)
         m->mapping.mlvo_at_pos[i] = -1;
-    for (i = 0; i < _KCCGST_NUM_ENTRIES; i++)
+    for (unsigned i = 0; i < _KCCGST_NUM_ENTRIES; i++)
         m->mapping.kccgst_at_pos[i] = -1;
     m->mapping.layout_idx = m->mapping.variant_idx = XKB_LAYOUT_INVALID;
     m->mapping.num_mlvo = m->mapping.num_kccgst = 0;
@@ -464,8 +463,6 @@ matcher_mapping_set_mlvo(struct matcher *m, struct sval ident)
 {
     enum rules_mlvo mlvo;
     struct sval mlvo_sval;
-    xkb_layout_index_t idx;
-    int consumed;
 
     for (mlvo = 0; mlvo < _MLVO_NUM_ENTRIES; mlvo++) {
         mlvo_sval = rules_mlvo_svals[mlvo];
@@ -495,8 +492,9 @@ matcher_mapping_set_mlvo(struct matcher *m, struct sval ident)
 
     /* If there are leftovers still, it must be an index. */
     if (mlvo_sval.len < ident.len) {
-        consumed = extract_layout_index(ident.start + mlvo_sval.len,
-                                       ident.len - mlvo_sval.len, &idx);
+        xkb_layout_index_t idx;
+        int consumed = extract_layout_index(ident.start + mlvo_sval.len,
+                                            ident.len - mlvo_sval.len, &idx);
         if ((int) (ident.len - mlvo_sval.len) != consumed) {
             matcher_error(m,
                           "invalid mapping:\" %.*s\" may only be followed by a valid group index; "
@@ -721,14 +719,8 @@ static bool
 append_expanded_kccgst_value(struct matcher *m, darray_char *to,
                              struct sval value)
 {
-    unsigned int i;
-    size_t original_size = darray_size(*to);
+    const size_t original_size = darray_size(*to);
     const char *s = value.start;
-    xkb_layout_index_t idx;
-    int consumed;
-    enum rules_mlvo mlv;
-    struct sval expanded;
-    char pfx, sfx;
 
     /*
      * Appending  bar to  foo ->  foo (not an error if this happens)
@@ -746,7 +738,12 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
      * Some ugly hand-lexing here, but going through the scanner is more
      * trouble than it's worth, and the format is ugly on its own merit.
      */
-    for (i = 0; i < value.len; ) {
+    for (unsigned i = 0; i < value.len; ) {
+        enum rules_mlvo mlv;
+        xkb_layout_index_t idx;
+        char pfx, sfx;
+        struct sval expanded;
+
         /* Check if that's a start of an expansion. */
         if (s[i] != '%') {
             /* Just a normal character. */
@@ -777,6 +774,8 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
         idx = XKB_LAYOUT_INVALID;
         if (i < value.len) {
             if (s[i] == '[') {
+                int consumed;
+
                 if (mlv != MLVO_LAYOUT && mlv != MLVO_VARIANT) {
                     matcher_error1(m,
                                    "invalid index in %%-expansion; "
@@ -858,37 +857,31 @@ matcher_rule_verify(struct matcher *m)
 static void
 matcher_rule_apply_if_matches(struct matcher *m)
 {
-    unsigned int i;
-    enum rules_mlvo mlvo;
-    enum rules_kccgst kccgst;
-    struct sval value, *option;
-    enum mlvo_match_type match_type;
-    bool matched = false;
-    xkb_layout_index_t idx;
-
-    for (i = 0; i < m->mapping.num_mlvo; i++) {
-        mlvo = m->mapping.mlvo_at_pos[i];
-        value = m->rule.mlvo_value_at_pos[i];
-        match_type = m->rule.match_type_at_pos[i];
+    for (unsigned i = 0; i < m->mapping.num_mlvo; i++) {
+        enum rules_mlvo mlvo = m->mapping.mlvo_at_pos[i];
+        struct sval value = m->rule.mlvo_value_at_pos[i];
+        enum mlvo_match_type match_type = m->rule.match_type_at_pos[i];
+        bool matched = false;
 
         if (mlvo == MLVO_MODEL) {
             matched = match_value(m, value, m->rmlvo.model, match_type);
         }
         else if (mlvo == MLVO_LAYOUT) {
-            idx = m->mapping.layout_idx;
+            xkb_layout_index_t idx = m->mapping.layout_idx;
             idx = (idx == XKB_LAYOUT_INVALID ? 0 : idx);
             matched = match_value(m, value,
                                   darray_item(m->rmlvo.layouts, idx),
                                   match_type);
         }
         else if (mlvo == MLVO_VARIANT) {
-            idx = m->mapping.layout_idx;
+            xkb_layout_index_t idx = m->mapping.layout_idx;
             idx = (idx == XKB_LAYOUT_INVALID ? 0 : idx);
             matched = match_value(m, value,
                                   darray_item(m->rmlvo.variants, idx),
                                   match_type);
         }
         else if (mlvo == MLVO_OPTION) {
+            struct sval *option;
             darray_foreach(option, m->rmlvo.options) {
                 matched = match_value(m, value, *option, match_type);
                 if (matched)
@@ -900,9 +893,9 @@ matcher_rule_apply_if_matches(struct matcher *m)
             return;
     }
 
-    for (i = 0; i < m->mapping.num_kccgst; i++) {
-        kccgst = m->mapping.kccgst_at_pos[i];
-        value = m->rule.kccgst_value_at_pos[i];
+    for (unsigned i = 0; i < m->mapping.num_kccgst; i++) {
+        enum rules_kccgst kccgst = m->mapping.kccgst_at_pos[i];
+        struct sval value = m->rule.kccgst_value_at_pos[i];
         append_expanded_kccgst_value(m, &m->kccgst[kccgst], value);
     }
 
