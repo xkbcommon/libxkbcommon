@@ -767,24 +767,19 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
 
         /* Check for index. */
         idx = XKB_LAYOUT_INVALID;
-        if (i < value.len) {
-            if (s[i] == '[') {
-                int consumed;
+        if (i < value.len && s[i] == '[') {
+            int consumed;
 
-                if (mlv != MLVO_LAYOUT && mlv != MLVO_VARIANT) {
-                    matcher_error1(m,
-                                   "invalid index in %%-expansion; "
-                                   "may only index layout or variant");
-                    goto error;
-                }
+            if (mlv != MLVO_LAYOUT && mlv != MLVO_VARIANT) {
+                matcher_error1(m,
+                                "invalid index in %%-expansion; "
+                                "may only index layout or variant");
+                goto error;
+            }
 
-                consumed = extract_layout_index(s + i, value.len - i, &idx);
-                if (consumed == -1) goto error;
-                i += consumed;
-            }
-            else {
-                idx = XKB_LAYOUT_INVALID;
-            }
+            consumed = extract_layout_index(s + i, value.len - i, &idx);
+            if (consumed == -1) goto error;
+            i += consumed;
         }
 
         /* Check for suffix, if there supposed to be one. */
