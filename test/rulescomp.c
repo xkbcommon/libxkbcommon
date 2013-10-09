@@ -26,7 +26,7 @@
 
 #include "test.h"
 
-#define BENCHMARK_ITERATIONS 1000
+#define BENCHMARK_ITERATIONS 2500
 
 static int
 test_rmlvo_va(struct xkb_context *context, const char *rules,
