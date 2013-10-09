@@ -80,7 +80,7 @@ peek(struct scanner *s)
 static inline bool
 eof(struct scanner *s)
 {
-    return peek(s) == '\0';
+    return s->pos >= s->len;
 }
 
 static inline bool

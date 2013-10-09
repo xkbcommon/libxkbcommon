@@ -218,7 +218,8 @@ xkb_keymap_new_from_string(struct xkb_context *ctx,
                            enum xkb_keymap_format format,
                            enum xkb_keymap_compile_flags flags)
 {
-    return xkb_keymap_new_from_buffer(ctx, string, SIZE_MAX, format, flags);
+    return xkb_keymap_new_from_buffer(ctx, string, strlen(string),
+                                      format, flags);
 }
 
 XKB_EXPORT struct xkb_keymap *
