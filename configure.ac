@@ -49,6 +49,9 @@ XORG_MEMORY_CHECK_FLAGS
 XORG_ENABLE_DOCS
 XORG_WITH_DOXYGEN
 
+# Needed in older Automakes for subdir-objects
+AM_PROG_CC_C_O
+
 # Check for compiler features
 AC_C_INLINE
 
