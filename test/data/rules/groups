@@ -1,4 +1,7 @@
-! $model_group = pc101  pc102    pc104           pc105
+! $model_group = pc101       pc102    \
+                 pc104\
+                 pc105\
+                 pc106
 ! $layout_group = ar br cr              us
 ! $variant_group =
 

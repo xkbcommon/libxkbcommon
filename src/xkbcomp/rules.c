@@ -164,6 +164,12 @@ enum rules_token {
     log_warn((scanner)->ctx, "rules/%s:%d:%d: " fmt "\n", \
              (scanner)->file_name, (loc)->line, (loc)->column, __VA_ARGS__)
 
+static inline bool
+is_ident(char ch)
+{
+    return is_graph(ch) && ch != '\\';
+}
+
 static enum rules_token
 lex(struct scanner *s, union lvalue *val, struct location *loc)
 {
@@ -209,7 +215,7 @@ skip_more_whitespace_and_comments:
     if (chr(s, '$')) {
         val->string.start = s->s + s->pos;
         val->string.len = 0;
-        while (is_graph(peek(s))) {
+        while (is_ident(peek(s))) {
             next(s);
             val->string.len++;
         }
@@ -222,10 +228,10 @@ skip_more_whitespace_and_comments:
     }
 
     /* Identifier. */
-    if (is_graph(peek(s))) {
+    if (is_ident(peek(s))) {
         val->string.start = s->s + s->pos;
         val->string.len = 0;
-        while (is_graph(peek(s))) {
+        while (is_ident(peek(s))) {
             next(s);
             val->string.len++;
         }
