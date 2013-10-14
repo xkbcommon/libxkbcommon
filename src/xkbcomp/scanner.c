@@ -53,13 +53,13 @@ number(struct scanner *s, int64_t *out, int *out_tok)
     char *end;
 
     if (lit(s, "0x")) {
-        while (isxdigit(peek(s))) next(s);
+        while (is_xdigit(peek(s))) next(s);
         is_hex = true;
     }
     else {
-        while (isdigit(peek(s))) next(s);
+        while (is_digit(peek(s))) next(s);
         is_float = chr(s, '.');
-        while (isdigit(peek(s))) next(s);
+        while (is_digit(peek(s))) next(s);
     }
     if (s->s + s->pos == start)
         return false;
@@ -85,7 +85,7 @@ _xkbcommon_lex(YYSTYPE *yylval, struct scanner *s)
 
 skip_more_whitespace_and_comments:
     /* Skip spaces. */
-    while (isspace(peek(s))) next(s);
+    while (is_space(peek(s))) next(s);
 
     /* Skip comments. */
     if (lit(s, "//") || chr(s, '#')) {
@@ -133,7 +133,7 @@ skip_more_whitespace_and_comments:
 
     /* Key name literal. */
     if (chr(s, '<')) {
-        while (isgraph(peek(s)) && peek(s) != '>')
+        while (is_graph(peek(s)) && peek(s) != '>')
             buf_append(s, next(s));
         if (!buf_append(s, '\0') || !chr(s, '>'))
             return scanner_error(s, "unterminated key name literal");
@@ -160,9 +160,9 @@ skip_more_whitespace_and_comments:
     if (chr(s, '~')) return INVERT;
 
     /* Identifier. */
-    if (isalpha(peek(s)) || peek(s) == '_') {
+    if (is_alpha(peek(s)) || peek(s) == '_') {
         s->buf_pos = 0;
-        while (isalnum(peek(s)) || peek(s) == '_')
+        while (is_alnum(peek(s)) || peek(s) == '_')
             buf_append(s, next(s));
         if (!buf_append(s, '\0'))
             return scanner_error(s, "identifier too long");

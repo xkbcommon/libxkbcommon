@@ -209,7 +209,7 @@ skip_more_whitespace_and_comments:
     if (chr(s, '$')) {
         val->string.start = s->s + s->pos;
         val->string.len = 0;
-        while (isgraph(peek(s))) {
+        while (is_graph(peek(s))) {
             next(s);
             val->string.len++;
         }
@@ -222,10 +222,10 @@ skip_more_whitespace_and_comments:
     }
 
     /* Identifier. */
-    if (isgraph(peek(s))) {
+    if (is_graph(peek(s))) {
         val->string.start = s->s + s->pos;
         val->string.len = 0;
-        while (isgraph(peek(s))) {
+        while (is_graph(peek(s))) {
             next(s);
             val->string.len++;
         }
@@ -339,8 +339,8 @@ struct matcher {
 static struct sval
 strip_spaces(struct sval v)
 {
-    while (v.len > 0 && isspace(v.start[0])) { v.len--; v.start++; }
-    while (v.len > 0 && isspace(v.start[v.len - 1])) v.len--;
+    while (v.len > 0 && is_space(v.start[0])) { v.len--; v.start++; }
+    while (v.len > 0 && is_space(v.start[v.len - 1])) v.len--;
     return v;
 }
 
@@ -444,7 +444,7 @@ extract_layout_index(const char *s, size_t max_len, xkb_layout_index_t *out)
     *out = XKB_LAYOUT_INVALID;
     if (max_len < 3)
         return -1;
-    if (s[0] != '[' || !isdigit(s[1]) || s[2] != ']')
+    if (s[0] != '[' || !is_digit(s[1]) || s[2] != ']')
         return -1;
     if (s[1] - '0' < 1 || s[1] - '0' > XKB_MAX_GROUPS)
         return -1;

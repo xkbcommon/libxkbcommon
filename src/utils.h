@@ -117,6 +117,47 @@ max(int misc, int other)
     return (misc > other) ? misc : other;
 }
 
+/* ctype.h is locale-dependent and has other oddities. */
+static inline bool
+is_space(char ch)
+{
+    return ch == ' ' || (ch >= '\t' && ch <= '\r');
+}
+
+static inline bool
+is_alpha(char ch)
+{
+    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+}
+
+static inline bool
+is_digit(char ch)
+{
+    return ch >= '0' && ch <= '9';
+}
+
+static inline bool
+is_alnum(char ch)
+{
+    return is_alpha(ch) || is_digit(ch);
+}
+
+static inline bool
+is_xdigit(char ch)
+{
+    return
+        (ch >= '0' && ch <= '9') ||
+        (ch >= 'a' && ch <= 'f') ||
+        (ch >= 'A' && ch <= 'F');
+}
+
+static inline bool
+is_graph(char ch)
+{
+    /* See table in ascii(7). */
+    return ch >= '!' && ch <= '~';
+}
+
 bool
 map_file(FILE *file, const char **string_out, size_t *size_out);
 

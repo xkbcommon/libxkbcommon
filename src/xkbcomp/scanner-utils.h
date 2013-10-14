@@ -24,8 +24,6 @@
 #ifndef XKBCOMP_SCANNER_UTILS_H
 #define XKBCOMP_SCANNER_UTILS_H
 
-#include <ctype.h>
-
 /* Point to some substring in the file; used to avoid copying. */
 struct sval {
     const char *start;

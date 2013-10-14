@@ -26,7 +26,6 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <ctype.h>
 #include <errno.h>
 #include <unistd.h>
 
@@ -246,7 +245,7 @@ log_level(const char *level) {
 
     errno = 0;
     lvl = strtol(level, &endptr, 10);
-    if (errno == 0 && (endptr[0] == '\0' || isspace(endptr[0])))
+    if (errno == 0 && (endptr[0] == '\0' || is_space(endptr[0])))
         return lvl;
     if (istreq_prefix("crit", level))
         return XKB_LOG_LEVEL_CRITICAL;
