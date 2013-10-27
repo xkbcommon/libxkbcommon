@@ -156,4 +156,17 @@ oct(struct scanner *s, uint8_t *out)
     return i > 0;
 }
 
+static inline bool
+hex(struct scanner *s, uint8_t *out)
+{
+    int i;
+    for (i = 0, *out = 0; is_xdigit(peek(s)) && i < 2; i++) {
+        const char c = next(s);
+        const char offset = (c >= '0' && c <= '9' ? '0' :
+                             c >= 'a' && c <= 'f' ? 'a' - 10 : 'A' - 10);
+        *out = *out * 16 + c - offset;
+    }
+    return i > 0;
+}
+
 #endif
