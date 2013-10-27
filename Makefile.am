@@ -51,7 +51,6 @@ libxkbcommon_la_SOURCES = \
 	src/xkbcomp/rules.c \
 	src/xkbcomp/rules.h \
 	src/xkbcomp/scanner.c \
-	src/xkbcomp/scanner-utils.h \
 	src/xkbcomp/symbols.c \
 	src/xkbcomp/types.c \
 	src/xkbcomp/vmod.c \
@@ -72,6 +71,7 @@ libxkbcommon_la_SOURCES = \
 	src/keymap.c \
 	src/keymap.h \
 	src/keymap-priv.c \
+	src/scanner-utils.h \
 	src/state.c \
 	src/text.c \
 	src/text.h \
