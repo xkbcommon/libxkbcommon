@@ -87,10 +87,6 @@ eol(struct scanner *s)
     return peek(s) == '\n';
 }
 
-/*
- * Use the check_nl variant when the current char might be a new line;
- * just an optimization.
- */
 static inline char
 next(struct scanner *s)
 {
