@@ -186,7 +186,8 @@ TESTS = \
 	test/utf8 \
 	test/state \
 	test/keyseq \
-	test/rulescomp
+	test/rulescomp \
+	test/compose
 check_PROGRAMS = \
 	test/rmlvo-to-kccgst \
 	test/print-compiled-keymap
@@ -208,6 +209,7 @@ test_keyseq_LDADD = $(TESTS_LDADD)
 test_rulescomp_LDADD = $(TESTS_LDADD)
 test_rmlvo_to_kccgst_LDADD = $(TESTS_LDADD)
 test_print_compiled_keymap_LDADD = $(TESTS_LDADD)
+test_compose_LDADD = $(TESTS_LDADD) -lrt
 
 if BUILD_LINUX_TESTS
 check_PROGRAMS += \
