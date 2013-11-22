@@ -1,0 +1,55 @@
+libxkbcommon 0.3.2
+==================
+
+- Added XKB_KEY_XF86AudioMicMute keysym, to match xproto 7.0.24.
+
+- Log messages from the library now look like "xkbcommon: ERROR" by
+  default, instead of xkbcomp-like "Error:   ".
+
+- Apply capitalization transformation on keysyms in
+  xkb_keysym_get_one_sym(), to match the behavior specified in the XKB
+  specification:
+  http://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Lock_Modifier
+
+- Support byacc for generating the parser, in addition to Bison.
+
+- Bug fixes.
+
+
+libxkbcommon 0.3.1
+==================
+
+- Replace the flex scanner with a hand-written one. flex is no longer
+  a build requirement.
+
+- New API:
+  xkb_keymap_min_keycode()
+  xkb_keymap_max_keycode()
+  xkb_keymap_key_for_each()
+
+
+libxkbcommon 0.3.0
+==================
+
+- Allow passing NULL to *_unref() functions; do nothing instead of
+  crashing.
+
+- The functions xkb_keymap_num_levels_for_key() and
+  xkb_keymap_get_syms_by_level() now allow out-of-range values for the
+  'layout' parameter. The functions now wrap the value around the number
+  of layouts instead of failing.
+
+- The function xkb_keysym_get_name() now types unicode keysyms in
+  uppercase and 0-padding, to match the format used by XKeysymToString().
+
+- Building Linux-specific tests is no longer attempted on non-Linux
+  environments.
+
+- The function xkb_keymap_new_from_names() now accepts a NULL value for
+  the 'names' parameter, instead of failing. This is equivalent to passing
+  a 'struct xkb_rule_names' with all fields set to NULL.
+
+- New API:
+  xkb_keymap_new_from_buffer()
+
+- Bug fixes.
