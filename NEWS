@@ -13,6 +13,11 @@ libxkbcommon 0.3.2
 
 - Support byacc for generating the parser, in addition to Bison.
 
+- New API:
+  XKB_KEYSYM_NO_FLAGS
+  XKB_CONTEXT_NO_FLAGS
+  XKB_MAP_COMPILE_NO_FLAGS
+
 - Bug fixes.
 
 
