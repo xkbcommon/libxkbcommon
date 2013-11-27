@@ -633,21 +633,21 @@ LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn)
 
     if (!str || istreq(str, "any") || istreq(str, "nosymbol")) {
         *sym_rtrn = XKB_KEY_NoSymbol;
-        return 1;
+        return true;
     }
 
     if (istreq(str, "none") || istreq(str, "voidsymbol")) {
         *sym_rtrn = XKB_KEY_VoidSymbol;
-        return 1;
+        return true;
     }
 
-    sym = xkb_keysym_from_name(str, 0);
+    sym = xkb_keysym_from_name(str, XKB_KEYSYM_NO_FLAGS);
     if (sym != XKB_KEY_NoSymbol) {
         *sym_rtrn = sym;
-        return 1;
+        return true;
     }
 
-    return 0;
+    return false;
 }
 
 static bool
