@@ -626,30 +626,6 @@ GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     return true;
 }
 
-bool
-LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn)
-{
-    xkb_keysym_t sym;
-
-    if (!str || istreq(str, "any") || istreq(str, "nosymbol")) {
-        *sym_rtrn = XKB_KEY_NoSymbol;
-        return true;
-    }
-
-    if (istreq(str, "none") || istreq(str, "voidsymbol")) {
-        *sym_rtrn = XKB_KEY_VoidSymbol;
-        return true;
-    }
-
-    sym = xkb_keysym_from_name(str, XKB_KEYSYM_NO_FLAGS);
-    if (sym != XKB_KEY_NoSymbol) {
-        *sym_rtrn = sym;
-        return true;
-    }
-
-    return false;
-}
-
 static bool
 AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
                 ExprDef *value)
@@ -703,28 +679,8 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
             leveli->u.syms = calloc(leveli->num_syms, sizeof(*leveli->u.syms));
 
         for (j = 0; j < leveli->num_syms; j++) {
-            char *sym_name = darray_item(value->value.list.syms,
-                                         sym_index + j);
-            xkb_keysym_t keysym;
-
-            if (!LookupKeysym(sym_name, &keysym)) {
-                const char *group_name = "unnamed";
-
-                if (ndx < darray_size(info->group_names) &&
-                    darray_item(info->group_names, ndx))
-                    group_name = xkb_atom_text(info->keymap->ctx,
-                                               darray_item(info->group_names,
-                                                           ndx));
-
-                log_warn(info->keymap->ctx,
-                         "Could not resolve keysym %s for key %s, group %u (%s), level %u\n",
-                         sym_name, KeyInfoText(info, keyi), ndx + 1,
-                         group_name, i);
-
-                ClearLevelInfo(leveli);
-                leveli->num_syms = 0;
-                break;
-            }
+            xkb_keysym_t keysym = darray_item(value->value.list.syms,
+                                              sym_index + j);
 
             if (leveli->num_syms == 1) {
                 if (keysym == XKB_KEY_NoSymbol)

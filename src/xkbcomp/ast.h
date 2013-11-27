@@ -181,7 +181,7 @@ typedef struct _Expr {
             struct _Expr *args;
         } action;
         struct {
-            darray(char *) syms;
+            darray(xkb_keysym_t) syms;
             darray(int) symsMapIndex;
             darray(unsigned int) symsNumEntries;
         } list;
@@ -252,7 +252,7 @@ typedef struct {
 typedef struct {
     ParseCommon common;
     enum merge_mode merge;
-    char *sym;
+    xkb_keysym_t sym;
     ExprDef *match;
     VarDef *def;
 } InterpDef;

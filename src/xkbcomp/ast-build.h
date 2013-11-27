@@ -56,7 +56,7 @@ VarDef *
 BoolVarCreate(xkb_atom_t nameToken, unsigned set);
 
 InterpDef *
-InterpCreate(char *sym, ExprDef *match);
+InterpCreate(xkb_keysym_t sym, ExprDef *match);
 
 KeyTypeDef *
 KeyTypeCreate(xkb_atom_t name, VarDef *body);
@@ -83,13 +83,13 @@ ExprDef *
 CreateMultiKeysymList(ExprDef *list);
 
 ExprDef *
-CreateKeysymList(char *sym);
+CreateKeysymList(xkb_keysym_t sym);
 
 ExprDef *
 AppendMultiKeysymList(ExprDef *list, ExprDef *append);
 
 ExprDef *
-AppendKeysymList(ExprDef *list, char *sym);
+AppendKeysymList(ExprDef *list, xkb_keysym_t sym);
 
 IncludeStmt *
 IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge);

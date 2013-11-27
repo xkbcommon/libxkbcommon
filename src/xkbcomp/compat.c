@@ -840,15 +840,7 @@ HandleInterpDef(CompatInfo *info, InterpDef *def, enum merge_mode merge)
 
     si = info->default_interp;
     si.merge = merge = (def->merge == MERGE_DEFAULT ? merge : def->merge);
-
-    if (!LookupKeysym(def->sym, &si.interp.sym)) {
-        log_err(info->keymap->ctx,
-                "Could not resolve keysym %s; "
-                "Symbol interpretation ignored\n",
-                def->sym);
-        return false;
-    }
-
+    si.interp.sym = def->sym;
     si.interp.match = pred;
     si.interp.mods = mods;
 

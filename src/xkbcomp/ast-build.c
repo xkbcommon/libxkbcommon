@@ -201,7 +201,7 @@ BoolVarCreate(xkb_atom_t nameToken, unsigned set)
 }
 
 InterpDef *
-InterpCreate(char *sym, ExprDef *match)
+InterpCreate(xkb_keysym_t sym, ExprDef *match)
 {
     InterpDef *def = malloc(sizeof(*def));
     if (!def)
@@ -329,7 +329,7 @@ ActionCreate(xkb_atom_t name, ExprDef *args)
 }
 
 ExprDef *
-CreateKeysymList(char *sym)
+CreateKeysymList(xkb_keysym_t sym)
 {
     ExprDef *def;
 
@@ -360,7 +360,7 @@ CreateMultiKeysymList(ExprDef *list)
 }
 
 ExprDef *
-AppendKeysymList(ExprDef *list, char *sym)
+AppendKeysymList(ExprDef *list, xkb_keysym_t sym)
 {
     size_t nSyms = darray_size(list->value.list.syms);
 
@@ -549,8 +549,6 @@ err:
 static void
 FreeExpr(ExprDef *expr)
 {
-    char **sym;
-
     if (!expr)
         return;
 
@@ -581,8 +579,6 @@ FreeExpr(ExprDef *expr)
         break;
 
     case EXPR_KEYSYM_LIST:
-        darray_foreach(sym, expr->value.list.syms)
-            free(*sym);
         darray_free(expr->value.list.syms);
         darray_free(expr->value.list.symsMapIndex);
         darray_free(expr->value.list.symsNumEntries);
@@ -640,7 +636,6 @@ FreeStmt(ParseCommon *stmt)
             FreeStmt(&u.keyType->body->common);
             break;
         case STMT_INTERP:
-            free(u.interp->sym);
             FreeStmt(&u.interp->match->common);
             FreeStmt(&u.interp->def->common);
             break;

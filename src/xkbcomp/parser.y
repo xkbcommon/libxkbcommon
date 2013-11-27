@@ -43,9 +43,45 @@ struct parser_param {
 };
 
 static void
-_xkbcommon_error(struct parser_param *param, const char *msg)
+parser_error(struct parser_param *param, const char *msg)
 {
     scanner_error(param->scanner, msg);
+}
+
+static void
+parser_warn(struct parser_param *param, const char *msg)
+{
+    scanner_warn(param->scanner, msg);
+}
+
+static void
+_xkbcommon_error(struct parser_param *param, const char *msg)
+{
+    parser_error(param, msg);
+}
+
+static bool
+resolve_keysym(const char *str, xkb_keysym_t *sym_rtrn)
+{
+    xkb_keysym_t sym;
+
+    if (!str || istreq(str, "any") || istreq(str, "nosymbol")) {
+        *sym_rtrn = XKB_KEY_NoSymbol;
+        return true;
+    }
+
+    if (istreq(str, "none") || istreq(str, "voidsymbol")) {
+        *sym_rtrn = XKB_KEY_VoidSymbol;
+        return true;
+    }
+
+    sym = xkb_keysym_from_name(str, XKB_KEYSYM_NO_FLAGS);
+    if (sym != XKB_KEY_NoSymbol) {
+        *sym_rtrn = sym;
+        return true;
+    }
+
+    return false;
 }
 
 #define scanner param->scanner
@@ -137,6 +173,7 @@ _xkbcommon_error(struct parser_param *param, const char *msg)
         xkb_atom_t      sval;
         enum merge_mode merge;
         enum xkb_map_flags mapFlags;
+        xkb_keysym_t    keysym;
         ParseCommon     *any;
         ExprDef         *expr;
         VarDef          *var;
@@ -163,8 +200,9 @@ _xkbcommon_error(struct parser_param *param, const char *msg)
 %type <file_type> XkbCompositeType FileType
 %type <uval>    DoodadType
 %type <mapFlags> Flag Flags OptFlags
-%type <str>     MapName OptMapName KeySym
+%type <str>     MapName OptMapName
 %type <sval>    FieldSpec Ident Element String
+%type <keysym>  KeySym
 %type <any>     DeclList Decl
 %type <expr>    OptExprList ExprList Expr Term Lhs Terminal ArrayInit KeySyms
 %type <expr>    OptKeySymList KeySymList Action ActionList Coord CoordList
@@ -707,18 +745,23 @@ KeySyms         :       OBRACE KeySymList CBRACE
                         { $$ = $2; }
                 ;
 
-KeySym          :       IDENT   { $$ = $1; }
-                |       SECTION { $$ = strdup("section"); }
+KeySym          :       IDENT
+                        {
+                            if (!resolve_keysym($1, &$$))
+                                parser_warn(param, "unrecognized keysym");
+                            free($1);
+                        }
+                |       SECTION { $$ = XKB_KEY_section; }
                 |       Integer
                         {
-                            if ($1 < 10) {      /* XK_0 .. XK_9 */
-                                $$ = malloc(2);
-                                $$[0] = $1 + '0';
-                                $$[1] = '\0';
+                            if ($1 < 10) {      /* XKB_KEY_0 .. XKB_KEY_9 */
+                                $$ = XKB_KEY_0 + $1;
                             }
                             else {
-                                $$ = malloc(17);
-                                snprintf($$, 17, "0x%x", $1);
+                                char buf[17];
+                                snprintf(buf, sizeof(buf), "0x%x", $1);
+                                if (!resolve_keysym(buf, &$$))
+                                    parser_warn(param, "unrecognized keysym");
                             }
                         }
                 ;

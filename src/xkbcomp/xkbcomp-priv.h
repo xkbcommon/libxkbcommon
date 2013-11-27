@@ -79,9 +79,6 @@ bool
 CompileKeymap(XkbFile *file, struct xkb_keymap *keymap,
               enum merge_mode merge);
 
-bool
-LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn);
-
 /***====================================================================***/
 
 static inline bool
