@@ -156,6 +156,7 @@ skip_more_whitespace_and_comments:
     if (chr(s, '+')) return PLUS;
     if (chr(s, '-')) return MINUS;
     if (chr(s, '*')) return TIMES;
+    if (chr(s, '/')) return DIVIDE;
     if (chr(s, '!')) return EXCLAM;
     if (chr(s, '~')) return INVERT;
 
