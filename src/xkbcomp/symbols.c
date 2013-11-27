@@ -177,7 +177,7 @@ typedef struct {
     KeyInfo default_key;
     ActionsInfo *actions;
     darray(xkb_atom_t) group_names;
-    darray(ModMapEntry) modMaps;
+    darray(ModMapEntry) modmaps;
 
     struct xkb_keymap *keymap;
 } SymbolsInfo;
@@ -203,7 +203,7 @@ ClearSymbolsInfo(SymbolsInfo *info)
         ClearKeyInfo(keyi);
     darray_free(info->keys);
     darray_free(info->group_names);
-    darray_free(info->modMaps);
+    darray_free(info->modmaps);
     ClearKeyInfo(&info->default_key);
 }
 
@@ -437,7 +437,7 @@ AddModMapEntry(SymbolsInfo *info, ModMapEntry *new)
     ModMapEntry *old;
     bool clobber = (new->merge != MERGE_AUGMENT);
 
-    darray_foreach(old, info->modMaps) {
+    darray_foreach(old, info->modmaps) {
         xkb_mod_index_t use, ignore;
 
         if ((new->haveSymbol != old->haveSymbol) ||
@@ -470,7 +470,7 @@ AddModMapEntry(SymbolsInfo *info, ModMapEntry *new)
         return true;
     }
 
-    darray_append(info->modMaps, *new);
+    darray_append(info->modmaps, *new);
     return true;
 }
 
@@ -517,7 +517,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
             into->errorCount++;
     }
 
-    darray_foreach(mm, from->modMaps) {
+    darray_foreach(mm, from->modmaps) {
         mm->merge = (merge == MERGE_DEFAULT ? mm->merge : merge);
         if (!AddModMapEntry(into, mm))
             into->errorCount++;
@@ -1596,7 +1596,7 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
         }
     }
 
-    darray_foreach(mm, info->modMaps)
+    darray_foreach(mm, info->modmaps)
         if (!CopyModMapDef(info, mm))
             info->errorCount++;
 
