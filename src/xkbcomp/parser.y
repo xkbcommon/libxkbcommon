@@ -669,7 +669,7 @@ Lhs             :       FieldSpec
                         {
                             ExprDef *expr;
                             expr = ExprCreate(EXPR_IDENT, EXPR_TYPE_UNKNOWN);
-                            expr->value.str = $1;
+                            expr->value.ident = $1;
                             $$ = expr;
                         }
                 |       FieldSpec DOT FieldSpec

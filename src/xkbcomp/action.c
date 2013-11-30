@@ -267,7 +267,7 @@ CheckModifierField(struct xkb_keymap *keymap, enum xkb_action_type action,
 {
     if (value->op == EXPR_IDENT) {
         const char *valStr;
-        valStr = xkb_atom_text(keymap->ctx, value->value.str);
+        valStr = xkb_atom_text(keymap->ctx, value->value.ident);
         if (valStr && (istreq(valStr, "usemodmapmods") ||
                        istreq(valStr, "modmapmods"))) {
 

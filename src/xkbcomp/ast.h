@@ -186,6 +186,7 @@ typedef struct _Expr {
             darray(unsigned int) symsNumEntries;
         } list;
         struct _Expr *child;
+        xkb_atom_t ident;
         xkb_atom_t str;
         unsigned uval;
         int ival;

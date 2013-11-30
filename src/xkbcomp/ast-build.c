@@ -192,7 +192,7 @@ BoolVarCreate(xkb_atom_t nameToken, unsigned set)
     VarDef *def;
 
     name = ExprCreate(EXPR_IDENT, EXPR_TYPE_UNKNOWN);
-    name->value.str = nameToken;
+    name->value.ident = nameToken;
     value = ExprCreate(EXPR_VALUE, EXPR_TYPE_BOOLEAN);
     value->value.uval = set;
     def = VarCreate(name, value);

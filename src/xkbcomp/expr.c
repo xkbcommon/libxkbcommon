@@ -40,7 +40,7 @@ ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
     switch (expr->op) {
     case EXPR_IDENT:
         *elem_rtrn = NULL;
-        *field_rtrn = xkb_atom_text(ctx, expr->value.str);
+        *field_rtrn = xkb_atom_text(ctx, expr->value.ident);
         *index_rtrn = NULL;
         return true;
     case EXPR_FIELD_REF:
@@ -139,7 +139,7 @@ ExprResolveBoolean(struct xkb_context *ctx, const ExprDef *expr,
         return true;
 
     case EXPR_IDENT:
-        ident = xkb_atom_text(ctx, expr->value.str);
+        ident = xkb_atom_text(ctx, expr->value.ident);
         if (ident) {
             if (istreq(ident, "true") ||
                 istreq(ident, "yes") ||
@@ -155,7 +155,7 @@ ExprResolveBoolean(struct xkb_context *ctx, const ExprDef *expr,
             }
         }
         log_err(ctx, "Identifier \"%s\" of type boolean is unknown\n",
-                xkb_atom_text(ctx, expr->value.str));
+                xkb_atom_text(ctx, expr->value.ident));
         return false;
 
     case EXPR_FIELD_REF:
@@ -298,11 +298,11 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, const ExprDef *expr,
 
     case EXPR_IDENT:
         if (lookup)
-            ok = lookup(ctx, lookupPriv, expr->value.str, EXPR_TYPE_INT, &u);
+            ok = lookup(ctx, lookupPriv, expr->value.ident, EXPR_TYPE_INT, &u);
 
         if (!ok)
             log_err(ctx, "Identifier \"%s\" of type int is unknown\n",
-                    xkb_atom_text(ctx, expr->value.str));
+                    xkb_atom_text(ctx, expr->value.ident));
         else
             *val_rtrn = (int) u;
 
@@ -458,7 +458,7 @@ ExprResolveString(struct xkb_context *ctx, const ExprDef *expr,
 
     case EXPR_IDENT:
         log_err(ctx, "Identifier \"%s\" of type string not found\n",
-                xkb_atom_text(ctx, expr->value.str));
+                xkb_atom_text(ctx, expr->value.ident));
         return false;
 
     case EXPR_FIELD_REF:
@@ -497,10 +497,10 @@ ExprResolveEnum(struct xkb_context *ctx, const ExprDef *expr,
         return false;
     }
 
-    if (!SimpleLookup(ctx, values, expr->value.str, EXPR_TYPE_INT,
+    if (!SimpleLookup(ctx, values, expr->value.ident, EXPR_TYPE_INT,
                       val_rtrn)) {
         log_err(ctx, "Illegal identifier %s; expected one of:\n",
-                xkb_atom_text(ctx, expr->value.str));
+                xkb_atom_text(ctx, expr->value.ident));
         while (values && values->name)
         {
             log_err(ctx, "\t%s\n", values->name);
@@ -535,11 +535,11 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
         return true;
 
     case EXPR_IDENT:
-        ok = lookup(ctx, lookupPriv, expr->value.str, EXPR_TYPE_INT,
+        ok = lookup(ctx, lookupPriv, expr->value.ident, EXPR_TYPE_INT,
                     val_rtrn);
         if (!ok)
             log_err(ctx, "Identifier \"%s\" of type int is unknown\n",
-                    xkb_atom_text(ctx, expr->value.str));
+                    xkb_atom_text(ctx, expr->value.ident));
         return ok;
 
     case EXPR_FIELD_REF:
@@ -640,7 +640,7 @@ ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
 
     if (expr->op == EXPR_IDENT) {
         const char *str;
-        str = xkb_atom_text(ctx, expr->value.str);
+        str = xkb_atom_text(ctx, expr->value.ident);
         *sym_rtrn = xkb_keysym_from_name(str, 0);
         if (*sym_rtrn != XKB_KEY_NoSymbol)
             return true;
@@ -661,7 +661,7 @@ ExprResolveMod(struct xkb_keymap *keymap, const ExprDef *def,
                enum mod_type mod_type, xkb_mod_index_t *ndx_rtrn)
 {
     xkb_mod_index_t ndx;
-    xkb_atom_t name = def->value.str;
+    xkb_atom_t name = def->value.ident;
 
     if (def->op != EXPR_IDENT) {
         log_err(keymap->ctx,

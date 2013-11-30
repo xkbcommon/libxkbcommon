@@ -444,7 +444,7 @@ ResolveStateAndPredicate(ExprDef *expr, enum xkb_match_operation *pred_rtrn,
     }
     else if (expr->op == EXPR_IDENT) {
         const char *pred_txt = xkb_atom_text(info->keymap->ctx,
-                                             expr->value.str);
+                                             expr->value.ident);
         if (pred_txt && istreq(pred_txt, "any")) {
             *pred_rtrn = MATCH_ANY;
             *mods_rtrn = MOD_REAL_MASK_ALL;
