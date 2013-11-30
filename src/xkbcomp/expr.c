@@ -135,7 +135,7 @@ ExprResolveBoolean(struct xkb_context *ctx, const ExprDef *expr,
                     expr_value_type_to_string(expr->value_type));
             return false;
         }
-        *set_rtrn = !!expr->value.ival;
+        *set_rtrn = expr->value.set;
         return true;
 
     case EXPR_IDENT:
@@ -205,7 +205,7 @@ ExprResolveKeyCode(struct xkb_context *ctx, const ExprDef *expr,
             return false;
         }
 
-        *kc = expr->value.uval;
+        *kc = (xkb_keycode_t) expr->value.ival;
         return true;
 
     case EXPR_ADD:

@@ -380,9 +380,9 @@ Decl            :       OptMergeMode VarDecl
 VarDecl         :       Lhs EQUALS Expr SEMI
                         { $$ = VarCreate($1, $3); }
                 |       Ident SEMI
-                        { $$ = BoolVarCreate($1, 1); }
+                        { $$ = BoolVarCreate($1, true); }
                 |       EXCLAM Ident SEMI
-                        { $$ = BoolVarCreate($2, 0); }
+                        { $$ = BoolVarCreate($2, false); }
                 ;
 
 KeyNameDecl     :       KEYNAME EQUALS KeyCode SEMI
@@ -448,8 +448,8 @@ SymbolsBody     :       SymbolsBody COMMA SymbolsVarDecl
 
 SymbolsVarDecl  :       Lhs EQUALS Expr         { $$ = VarCreate($1, $3); }
                 |       Lhs EQUALS ArrayInit    { $$ = VarCreate($1, $3); }
-                |       Ident                   { $$ = BoolVarCreate($1, 1); }
-                |       EXCLAM Ident            { $$ = BoolVarCreate($2, 0); }
+                |       Ident                   { $$ = BoolVarCreate($1, true); }
+                |       EXCLAM Ident            { $$ = BoolVarCreate($2, false); }
                 |       ArrayInit               { $$ = VarCreate(NULL, $1); }
                 ;
 

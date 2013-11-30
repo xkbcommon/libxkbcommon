@@ -60,14 +60,14 @@ static const ExprDef constTrue = {
     .common = { .type = STMT_EXPR, .next = NULL },
     .op = EXPR_VALUE,
     .value_type = EXPR_TYPE_BOOLEAN,
-    .value = { .ival = 1 },
+    .value = { .set = true },
 };
 
 static const ExprDef constFalse = {
     .common = { .type = STMT_EXPR, .next = NULL },
     .op = EXPR_VALUE,
     .value_type = EXPR_TYPE_BOOLEAN,
-    .value = { .ival = 0 },
+    .value = { .set = false },
 };
 
 enum action_field {

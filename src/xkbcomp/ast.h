@@ -188,7 +188,7 @@ typedef struct _Expr {
         struct _Expr *child;
         xkb_atom_t ident;
         xkb_atom_t str;
-        unsigned uval;
+        bool set;
         int ival;
         xkb_atom_t keyName;
     } value;

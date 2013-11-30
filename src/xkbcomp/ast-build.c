@@ -110,6 +110,18 @@ ExprCreateInteger(int ival)
 }
 
 ExprDef *
+ExprCreateBoolean(bool set)
+{
+    ExprDef *expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_BOOLEAN);
+    if (!expr)
+        return NULL;
+
+    expr->value.set = set;
+
+    return expr;
+}
+
+ExprDef *
 ExprCreateKeyName(xkb_atom_t key_name)
 {
     ExprDef *expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_KEYNAME);
@@ -261,18 +273,10 @@ VarCreate(ExprDef *name, ExprDef *value)
 }
 
 VarDef *
-BoolVarCreate(xkb_atom_t nameToken, unsigned set)
+BoolVarCreate(xkb_atom_t ident, bool set)
 {
-    ExprDef *name, *value;
-    VarDef *def;
-
-    name = ExprCreate(EXPR_IDENT, EXPR_TYPE_UNKNOWN);
-    name->value.ident = nameToken;
-    value = ExprCreate(EXPR_VALUE, EXPR_TYPE_BOOLEAN);
-    value->value.uval = set;
-    def = VarCreate(name, value);
-
-    return def;
+    return VarCreate(ExprCreateIdent(ident),
+                     ExprCreateBoolean(set));
 }
 
 InterpDef *

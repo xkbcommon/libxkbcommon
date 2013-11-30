@@ -37,6 +37,9 @@ ExprDef *
 ExprCreateInteger(int ival);
 
 ExprDef *
+ExprCreateBoolean(bool set);
+
+ExprDef *
 ExprCreateKeyName(xkb_atom_t key_name);
 
 ExprDef *
@@ -68,7 +71,7 @@ VarDef *
 VarCreate(ExprDef *name, ExprDef *value);
 
 VarDef *
-BoolVarCreate(xkb_atom_t nameToken, unsigned set);
+BoolVarCreate(xkb_atom_t ident, bool set);
 
 InterpDef *
 InterpCreate(xkb_keysym_t sym, ExprDef *match);
