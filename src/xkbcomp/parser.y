@@ -166,7 +166,6 @@ resolve_keysym(const char *str, xkb_keysym_t *sym_rtrn)
 
 %union  {
         int              ival;
-        unsigned         uval;
         int64_t          num;
         enum xkb_file_type file_type;
         char            *str;
@@ -195,10 +194,9 @@ resolve_keysym(const char *str, xkb_keysym_t *sym_rtrn)
 %type <str>     IDENT STRING
 %type <sval>    KEYNAME
 %type <num>     KeyCode
-%type <ival>    Number Integer Float SignedNumber
+%type <ival>    Number Integer Float SignedNumber DoodadType
 %type <merge>   MergeMode OptMergeMode
 %type <file_type> XkbCompositeType FileType
-%type <uval>    DoodadType
 %type <mapFlags> Flag Flags OptFlags
 %type <str>     MapName OptMapName
 %type <sval>    FieldSpec Ident Element String
