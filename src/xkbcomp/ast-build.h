@@ -31,7 +31,16 @@ ParseCommon *
 AppendStmt(ParseCommon *to, ParseCommon *append);
 
 ExprDef *
-ExprCreate(enum expr_op_type op, enum expr_value_type type);
+ExprCreateString(xkb_atom_t str);
+
+ExprDef *
+ExprCreateInteger(int ival);
+
+ExprDef *
+ExprCreateKeyName(xkb_atom_t key_name);
+
+ExprDef *
+ExprCreateIdent(xkb_atom_t ident);
 
 ExprDef *
 ExprCreateUnary(enum expr_op_type op, enum expr_value_type type,
@@ -39,6 +48,12 @@ ExprCreateUnary(enum expr_op_type op, enum expr_value_type type,
 
 ExprDef *
 ExprCreateBinary(enum expr_op_type op, ExprDef *left, ExprDef *right);
+
+ExprDef *
+ExprCreateFieldRef(xkb_atom_t element, xkb_atom_t field);
+
+ExprDef *
+ExprCreateArrayRef(xkb_atom_t element, xkb_atom_t field, ExprDef *entry);
 
 KeycodeDef *
 KeycodeCreate(xkb_atom_t name, int64_t value);

@@ -666,65 +666,23 @@ Action          :       FieldSpec OPAREN OptExprList CPAREN
                 ;
 
 Lhs             :       FieldSpec
-                        {
-                            ExprDef *expr;
-                            expr = ExprCreate(EXPR_IDENT, EXPR_TYPE_UNKNOWN);
-                            expr->value.ident = $1;
-                            $$ = expr;
-                        }
+                        { $$ = ExprCreateIdent($1); }
                 |       FieldSpec DOT FieldSpec
-                        {
-                            ExprDef *expr;
-                            expr = ExprCreate(EXPR_FIELD_REF, EXPR_TYPE_UNKNOWN);
-                            expr->value.field.element = $1;
-                            expr->value.field.field = $3;
-                            $$ = expr;
-                        }
+                        { $$ = ExprCreateFieldRef($1, $3); }
                 |       FieldSpec OBRACKET Expr CBRACKET
-                        {
-                            ExprDef *expr;
-                            expr = ExprCreate(EXPR_ARRAY_REF, EXPR_TYPE_UNKNOWN);
-                            expr->value.array.element = XKB_ATOM_NONE;
-                            expr->value.array.field = $1;
-                            expr->value.array.entry = $3;
-                            $$ = expr;
-                        }
+                        { $$ = ExprCreateArrayRef(XKB_ATOM_NONE, $1, $3); }
                 |       FieldSpec DOT FieldSpec OBRACKET Expr CBRACKET
-                        {
-                            ExprDef *expr;
-                            expr = ExprCreate(EXPR_ARRAY_REF, EXPR_TYPE_UNKNOWN);
-                            expr->value.array.element = $1;
-                            expr->value.array.field = $3;
-                            expr->value.array.entry = $5;
-                            $$ = expr;
-                        }
+                        { $$ = ExprCreateArrayRef($1, $3, $5); }
                 ;
 
 Terminal        :       String
-                        {
-                            ExprDef *expr;
-                            expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_STRING);
-                            expr->value.str = $1;
-                            $$ = expr;
-                        }
+                        { $$ = ExprCreateString($1); }
                 |       Integer
-                        {
-                            ExprDef *expr;
-                            expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_INT);
-                            expr->value.ival = $1;
-                            $$ = expr;
-                        }
+                        { $$ = ExprCreateInteger($1); }
                 |       Float
-                        {
-                            $$ = NULL;
-                        }
+                        { $$ = NULL; }
                 |       KEYNAME
-                        {
-                            ExprDef *expr;
-                            expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_KEYNAME);
-                            expr->value.keyName = $1;
-                            $$ = expr;
-                        }
+                        { $$ = ExprCreateKeyName($1); }
                 ;
 
 OptKeySymList   :       KeySymList      { $$ = $1; }

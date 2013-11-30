@@ -70,7 +70,7 @@ AppendStmt(ParseCommon *to, ParseCommon *append)
     return to;
 }
 
-ExprDef *
+static ExprDef *
 ExprCreate(enum expr_op_type op, enum expr_value_type type)
 {
     ExprDef *expr = malloc(sizeof(*expr));
@@ -81,6 +81,54 @@ ExprCreate(enum expr_op_type op, enum expr_value_type type)
     expr->common.next = NULL;
     expr->op = op;
     expr->value_type = type;
+
+    return expr;
+}
+
+ExprDef *
+ExprCreateString(xkb_atom_t str)
+{
+    ExprDef *expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_STRING);
+    if (!expr)
+        return NULL;
+
+    expr->value.str = str;
+
+    return expr;
+}
+
+ExprDef *
+ExprCreateInteger(int ival)
+{
+    ExprDef *expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_INT);
+    if (!expr)
+        return NULL;
+
+    expr->value.ival = ival;
+
+    return expr;
+}
+
+ExprDef *
+ExprCreateKeyName(xkb_atom_t key_name)
+{
+    ExprDef *expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_KEYNAME);
+    if (!expr)
+        return NULL;
+
+    expr->value.keyName = key_name;
+
+    return expr;
+}
+
+ExprDef *
+ExprCreateIdent(xkb_atom_t ident)
+{
+    ExprDef *expr = ExprCreate(EXPR_IDENT, EXPR_TYPE_UNKNOWN);
+    if (!expr)
+        return NULL;
+
+    expr->value.ident = ident;
 
     return expr;
 }
@@ -121,6 +169,33 @@ ExprCreateBinary(enum expr_op_type op, ExprDef *left, ExprDef *right)
         expr->value_type = EXPR_TYPE_UNKNOWN;
     expr->value.binary.left = left;
     expr->value.binary.right = right;
+
+    return expr;
+}
+
+ExprDef *
+ExprCreateFieldRef(xkb_atom_t element, xkb_atom_t field)
+{
+    ExprDef *expr = ExprCreate(EXPR_FIELD_REF, EXPR_TYPE_UNKNOWN);
+    if (!expr)
+        return NULL;
+
+    expr->value.field.element = element;
+    expr->value.field.field = field;
+
+    return expr;
+}
+
+ExprDef *
+ExprCreateArrayRef(xkb_atom_t element, xkb_atom_t field, ExprDef *entry)
+{
+    ExprDef *expr = ExprCreate(EXPR_ARRAY_REF, EXPR_TYPE_UNKNOWN);
+    if (!expr)
+        return NULL;
+
+    expr->value.array.element = element;
+    expr->value.array.field = field;
+    expr->value.array.entry = entry;
 
     return expr;
 }
