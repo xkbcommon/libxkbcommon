@@ -174,6 +174,73 @@ ExprCreateArrayRef(xkb_atom_t element, xkb_atom_t field, ExprDef *entry)
     return expr;
 }
 
+ExprDef *
+ExprCreateAction(xkb_atom_t name, ExprDef *args)
+{
+    EXPR_CREATE(ExprAction, expr, EXPR_ACTION_DECL, EXPR_TYPE_UNKNOWN);
+    expr->action.name = name;
+    expr->action.args = args;
+    return expr;
+}
+
+ExprDef *
+ExprCreateKeysymList(xkb_keysym_t sym)
+{
+    EXPR_CREATE(ExprKeysymList, expr, EXPR_KEYSYM_LIST, EXPR_TYPE_SYMBOLS);
+
+    darray_init(expr->keysym_list.syms);
+    darray_init(expr->keysym_list.symsMapIndex);
+    darray_init(expr->keysym_list.symsNumEntries);
+
+    darray_append(expr->keysym_list.syms, sym);
+    darray_append(expr->keysym_list.symsMapIndex, 0);
+    darray_append(expr->keysym_list.symsNumEntries, 1);
+
+    return expr;
+}
+
+ExprDef *
+ExprCreateMultiKeysymList(ExprDef *expr)
+{
+    size_t nLevels = darray_size(expr->keysym_list.symsMapIndex);
+
+    darray_resize(expr->keysym_list.symsMapIndex, 1);
+    darray_resize(expr->keysym_list.symsNumEntries, 1);
+    darray_item(expr->keysym_list.symsMapIndex, 0) = 0;
+    darray_item(expr->keysym_list.symsNumEntries, 0) = nLevels;
+
+    return expr;
+}
+
+ExprDef *
+ExprAppendKeysymList(ExprDef *expr, xkb_keysym_t sym)
+{
+    size_t nSyms = darray_size(expr->keysym_list.syms);
+
+    darray_append(expr->keysym_list.symsMapIndex, nSyms);
+    darray_append(expr->keysym_list.symsNumEntries, 1);
+    darray_append(expr->keysym_list.syms, sym);
+
+    return expr;
+}
+
+ExprDef *
+ExprAppendMultiKeysymList(ExprDef *expr, ExprDef *append)
+{
+    size_t nSyms = darray_size(expr->keysym_list.syms);
+    size_t numEntries = darray_size(append->keysym_list.syms);
+
+    darray_append(expr->keysym_list.symsMapIndex, nSyms);
+    darray_append(expr->keysym_list.symsNumEntries, numEntries);
+    darray_append_items(expr->keysym_list.syms,
+                        darray_mem(append->keysym_list.syms, 0), numEntries);
+
+    darray_resize(append->keysym_list.syms, 0);
+    FreeStmt(&append->common);
+
+    return expr;
+}
+
 KeycodeDef *
 KeycodeCreate(xkb_atom_t name, int64_t value)
 {
@@ -351,73 +418,6 @@ LedNameCreate(int ndx, ExprDef *name, bool virtual)
     def->virtual = virtual;
 
     return def;
-}
-
-ExprDef *
-ActionCreate(xkb_atom_t name, ExprDef *args)
-{
-    EXPR_CREATE(ExprAction, expr, EXPR_ACTION_DECL, EXPR_TYPE_UNKNOWN);
-    expr->action.name = name;
-    expr->action.args = args;
-    return expr;
-}
-
-ExprDef *
-CreateKeysymList(xkb_keysym_t sym)
-{
-    EXPR_CREATE(ExprKeysymList, expr, EXPR_KEYSYM_LIST, EXPR_TYPE_SYMBOLS);
-
-    darray_init(expr->keysym_list.syms);
-    darray_init(expr->keysym_list.symsMapIndex);
-    darray_init(expr->keysym_list.symsNumEntries);
-
-    darray_append(expr->keysym_list.syms, sym);
-    darray_append(expr->keysym_list.symsMapIndex, 0);
-    darray_append(expr->keysym_list.symsNumEntries, 1);
-
-    return expr;
-}
-
-ExprDef *
-CreateMultiKeysymList(ExprDef *expr)
-{
-    size_t nLevels = darray_size(expr->keysym_list.symsMapIndex);
-
-    darray_resize(expr->keysym_list.symsMapIndex, 1);
-    darray_resize(expr->keysym_list.symsNumEntries, 1);
-    darray_item(expr->keysym_list.symsMapIndex, 0) = 0;
-    darray_item(expr->keysym_list.symsNumEntries, 0) = nLevels;
-
-    return expr;
-}
-
-ExprDef *
-AppendKeysymList(ExprDef *expr, xkb_keysym_t sym)
-{
-    size_t nSyms = darray_size(expr->keysym_list.syms);
-
-    darray_append(expr->keysym_list.symsMapIndex, nSyms);
-    darray_append(expr->keysym_list.symsNumEntries, 1);
-    darray_append(expr->keysym_list.syms, sym);
-
-    return expr;
-}
-
-ExprDef *
-AppendMultiKeysymList(ExprDef *expr, ExprDef *append)
-{
-    size_t nSyms = darray_size(expr->keysym_list.syms);
-    size_t numEntries = darray_size(append->keysym_list.syms);
-
-    darray_append(expr->keysym_list.symsMapIndex, nSyms);
-    darray_append(expr->keysym_list.symsNumEntries, numEntries);
-    darray_append_items(expr->keysym_list.syms,
-                        darray_mem(append->keysym_list.syms, 0), numEntries);
-
-    darray_resize(append->keysym_list.syms, 0);
-    FreeStmt(&append->common);
-
-    return expr;
 }
 
 static void

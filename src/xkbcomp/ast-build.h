@@ -58,6 +58,21 @@ ExprCreateFieldRef(xkb_atom_t element, xkb_atom_t field);
 ExprDef *
 ExprCreateArrayRef(xkb_atom_t element, xkb_atom_t field, ExprDef *entry);
 
+ExprDef *
+ExprCreateAction(xkb_atom_t name, ExprDef *args);
+
+ExprDef *
+ExprCreateMultiKeysymList(ExprDef *list);
+
+ExprDef *
+ExprCreateKeysymList(xkb_keysym_t sym);
+
+ExprDef *
+ExprAppendMultiKeysymList(ExprDef *list, ExprDef *append);
+
+ExprDef *
+ExprAppendKeysymList(ExprDef *list, xkb_keysym_t sym);
+
 KeycodeDef *
 KeycodeCreate(xkb_atom_t name, int64_t value);
 
@@ -93,21 +108,6 @@ LedMapCreate(xkb_atom_t name, VarDef *body);
 
 LedNameDef *
 LedNameCreate(int ndx, ExprDef *name, bool virtual);
-
-ExprDef *
-ActionCreate(xkb_atom_t name, ExprDef *args);
-
-ExprDef *
-CreateMultiKeysymList(ExprDef *list);
-
-ExprDef *
-CreateKeysymList(xkb_keysym_t sym);
-
-ExprDef *
-AppendMultiKeysymList(ExprDef *list, ExprDef *append);
-
-ExprDef *
-AppendKeysymList(ExprDef *list, xkb_keysym_t sym);
 
 IncludeStmt *
 IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge);

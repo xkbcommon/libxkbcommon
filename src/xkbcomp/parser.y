@@ -646,7 +646,7 @@ Term            :       MINUS Term
                 |       Lhs
                         { $$ = $1;  }
                 |       FieldSpec OPAREN OptExprList CPAREN %prec OPAREN
-                        { $$ = ActionCreate($1, $3); }
+                        { $$ = ExprCreateAction($1, $3); }
                 |       Terminal
                         { $$ = $1;  }
                 |       OPAREN Expr CPAREN
@@ -660,7 +660,7 @@ ActionList      :       ActionList COMMA Action
                 ;
 
 Action          :       FieldSpec OPAREN OptExprList CPAREN
-                        { $$ = ActionCreate($1, $3); }
+                        { $$ = ExprCreateAction($1, $3); }
                 ;
 
 Lhs             :       FieldSpec
@@ -688,13 +688,13 @@ OptKeySymList   :       KeySymList      { $$ = $1; }
                 ;
 
 KeySymList      :       KeySymList COMMA KeySym
-                        { $$ = AppendKeysymList($1, $3); }
+                        { $$ = ExprAppendKeysymList($1, $3); }
                 |       KeySymList COMMA KeySyms
-                        { $$ = AppendMultiKeysymList($1, $3); }
+                        { $$ = ExprAppendMultiKeysymList($1, $3); }
                 |       KeySym
-                        { $$ = CreateKeysymList($1); }
+                        { $$ = ExprCreateKeysymList($1); }
                 |       KeySyms
-                        { $$ = CreateMultiKeysymList($1); }
+                        { $$ = ExprCreateMultiKeysymList($1); }
                 ;
 
 KeySyms         :       OBRACE KeySymList CBRACE
