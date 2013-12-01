@@ -149,14 +149,10 @@ ExprDef *
 ExprCreateUnary(enum expr_op_type op, enum expr_value_type type,
                 ExprDef *child)
 {
-    ExprDef *expr = malloc(sizeof(*expr));
+    ExprDef *expr = ExprCreate(op, type);
     if (!expr)
         return NULL;
 
-    expr->common.type = STMT_EXPR;
-    expr->common.next = NULL;
-    expr->op = op;
-    expr->value_type = type;
     expr->value.child = child;
 
     return expr;
@@ -165,20 +161,15 @@ ExprCreateUnary(enum expr_op_type op, enum expr_value_type type,
 ExprDef *
 ExprCreateBinary(enum expr_op_type op, ExprDef *left, ExprDef *right)
 {
-    ExprDef *expr = malloc(sizeof(*expr));
+    ExprDef *expr = ExprCreate(op, EXPR_TYPE_UNKNOWN);
     if (!expr)
         return NULL;
 
-    expr->common.type = STMT_EXPR;
-    expr->common.next = NULL;
-    expr->op = op;
     if (op == EXPR_ASSIGN || left->value_type == EXPR_TYPE_UNKNOWN)
         expr->value_type = right->value_type;
     else if (left->value_type == right->value_type ||
              right->value_type == EXPR_TYPE_UNKNOWN)
         expr->value_type = left->value_type;
-    else
-        expr->value_type = EXPR_TYPE_UNKNOWN;
     expr->value.binary.left = left;
     expr->value.binary.right = right;
 
@@ -394,13 +385,10 @@ LedNameCreate(int ndx, ExprDef *name, bool virtual)
 ExprDef *
 ActionCreate(xkb_atom_t name, ExprDef *args)
 {
-    ExprDef *act = malloc(sizeof(*act));
+    ExprDef *act = ExprCreate(EXPR_ACTION_DECL, EXPR_TYPE_UNKNOWN);
     if (!act)
         return NULL;
 
-    act->common.type = STMT_EXPR;
-    act->common.next = NULL;
-    act->op = EXPR_ACTION_DECL;
     act->value.action.name = name;
     act->value.action.args = args;
 
@@ -410,9 +398,9 @@ ActionCreate(xkb_atom_t name, ExprDef *args)
 ExprDef *
 CreateKeysymList(xkb_keysym_t sym)
 {
-    ExprDef *def;
-
-    def = ExprCreate(EXPR_KEYSYM_LIST, EXPR_TYPE_SYMBOLS);
+    ExprDef *def = ExprCreate(EXPR_KEYSYM_LIST, EXPR_TYPE_SYMBOLS);
+    if (!def)
+        return NULL;
 
     darray_init(def->value.list.syms);
     darray_init(def->value.list.symsMapIndex);
