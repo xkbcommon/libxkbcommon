@@ -434,7 +434,7 @@ KeyTypeDecl     :       TYPE String OBRACE
 SymbolsDecl     :       KEY KEYNAME OBRACE
                             SymbolsBody
                         CBRACE SEMI
-                        { $$ = SymbolsCreate($2, (ExprDef *)$4); }
+                        { $$ = SymbolsCreate($2, $4); }
                 ;
 
 SymbolsBody     :       SymbolsBody COMMA SymbolsVarDecl

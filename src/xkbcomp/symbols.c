@@ -1114,7 +1114,7 @@ HandleSymbolsDef(SymbolsInfo *info, SymbolsDef *stmt)
     keyi.merge = stmt->merge;
     keyi.name = stmt->keyName;
 
-    if (!HandleSymbolsBody(info, (VarDef *) stmt->symbols, &keyi)) {
+    if (!HandleSymbolsBody(info, stmt->symbols, &keyi)) {
         info->errorCount++;
         return false;
     }

@@ -233,7 +233,7 @@ typedef struct {
     ParseCommon common;
     enum merge_mode merge;
     xkb_atom_t keyName;
-    ExprDef *symbols;
+    VarDef *symbols;
 } SymbolsDef;
 
 typedef struct {

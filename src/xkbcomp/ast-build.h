@@ -80,7 +80,7 @@ KeyTypeDef *
 KeyTypeCreate(xkb_atom_t name, VarDef *body);
 
 SymbolsDef *
-SymbolsCreate(xkb_atom_t keyName, ExprDef *symbols);
+SymbolsCreate(xkb_atom_t keyName, VarDef *symbols);
 
 GroupCompatDef *
 GroupCompatCreate(int group, ExprDef *def);
