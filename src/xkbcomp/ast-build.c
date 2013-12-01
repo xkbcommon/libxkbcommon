@@ -85,68 +85,48 @@ ExprCreate(enum expr_op_type op, enum expr_value_type type, size_t size)
     return expr;
 }
 
+#define EXPR_CREATE(type_, name_, op_, value_type_) \
+    ExprDef *name_ = ExprCreate(op_, value_type_, sizeof(type_)); \
+    if (!name_) \
+        return NULL;
+
 ExprDef *
 ExprCreateString(xkb_atom_t str)
 {
-    ExprDef *expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_STRING,
-                               sizeof(ExprString));
-    if (!expr)
-        return NULL;
-
+    EXPR_CREATE(ExprString, expr, EXPR_VALUE, EXPR_TYPE_STRING);
     expr->string.str = str;
-
     return expr;
 }
 
 ExprDef *
 ExprCreateInteger(int ival)
 {
-    ExprDef *expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_INT,
-                               sizeof(ExprInteger));
-    if (!expr)
-        return NULL;
-
+    EXPR_CREATE(ExprInteger, expr, EXPR_VALUE, EXPR_TYPE_INT);
     expr->integer.ival = ival;
-
     return expr;
 }
 
 ExprDef *
 ExprCreateBoolean(bool set)
 {
-    ExprDef *expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_BOOLEAN,
-                               sizeof(ExprBoolean));
-    if (!expr)
-        return NULL;
-
+    EXPR_CREATE(ExprBoolean, expr, EXPR_VALUE, EXPR_TYPE_BOOLEAN);
     expr->boolean.set = set;
-
     return expr;
 }
 
 ExprDef *
 ExprCreateKeyName(xkb_atom_t key_name)
 {
-    ExprDef *expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_KEYNAME,
-                               sizeof(ExprKeyName));
-    if (!expr)
-        return NULL;
-
+    EXPR_CREATE(ExprKeyName, expr, EXPR_VALUE, EXPR_TYPE_KEYNAME);
     expr->key_name.key_name = key_name;
-
     return expr;
 }
 
 ExprDef *
 ExprCreateIdent(xkb_atom_t ident)
 {
-    ExprDef *expr = ExprCreate(EXPR_IDENT, EXPR_TYPE_UNKNOWN,
-                                 sizeof(ExprIdent));
-    if (!expr)
-        return NULL;
-
+    EXPR_CREATE(ExprIdent, expr, EXPR_IDENT, EXPR_TYPE_UNKNOWN);
     expr->ident.ident = ident;
-
     return expr;
 }
 
@@ -154,23 +134,15 @@ ExprDef *
 ExprCreateUnary(enum expr_op_type op, enum expr_value_type type,
                 ExprDef *child)
 {
-    ExprDef *expr = ExprCreate(op, type,
-                               sizeof(ExprUnary));
-    if (!expr)
-        return NULL;
-
+    EXPR_CREATE(ExprUnary, expr, op, type);
     expr->unary.child = child;
-
     return expr;
 }
 
 ExprDef *
 ExprCreateBinary(enum expr_op_type op, ExprDef *left, ExprDef *right)
 {
-    ExprDef *expr = ExprCreate(op, EXPR_TYPE_UNKNOWN,
-                               sizeof(ExprBinary));
-    if (!expr)
-        return NULL;
+    EXPR_CREATE(ExprBinary, expr, op, EXPR_TYPE_UNKNOWN);
 
     if (op == EXPR_ASSIGN || left->expr.value_type == EXPR_TYPE_UNKNOWN)
         expr->expr.value_type = right->expr.value_type;
@@ -186,29 +158,19 @@ ExprCreateBinary(enum expr_op_type op, ExprDef *left, ExprDef *right)
 ExprDef *
 ExprCreateFieldRef(xkb_atom_t element, xkb_atom_t field)
 {
-    ExprDef *expr = ExprCreate(EXPR_FIELD_REF, EXPR_TYPE_UNKNOWN,
-                               sizeof(ExprFieldRef));
-    if (!expr)
-        return NULL;
-
+    EXPR_CREATE(ExprFieldRef, expr, EXPR_FIELD_REF, EXPR_TYPE_UNKNOWN);
     expr->field_ref.element = element;
     expr->field_ref.field = field;
-
     return expr;
 }
 
 ExprDef *
 ExprCreateArrayRef(xkb_atom_t element, xkb_atom_t field, ExprDef *entry)
 {
-    ExprDef *expr = ExprCreate(EXPR_ARRAY_REF, EXPR_TYPE_UNKNOWN,
-                               sizeof(ExprArrayRef));
-    if (!expr)
-        return NULL;
-
+    EXPR_CREATE(ExprArrayRef, expr, EXPR_ARRAY_REF, EXPR_TYPE_UNKNOWN);
     expr->array_ref.element = element;
     expr->array_ref.field = field;
     expr->array_ref.entry = entry;
-
     return expr;
 }
 
@@ -394,24 +356,16 @@ LedNameCreate(int ndx, ExprDef *name, bool virtual)
 ExprDef *
 ActionCreate(xkb_atom_t name, ExprDef *args)
 {
-    ExprDef *expr = ExprCreate(EXPR_ACTION_DECL, EXPR_TYPE_UNKNOWN,
-                               sizeof(ExprAction));
-    if (!expr)
-        return NULL;
-
+    EXPR_CREATE(ExprAction, expr, EXPR_ACTION_DECL, EXPR_TYPE_UNKNOWN);
     expr->action.name = name;
     expr->action.args = args;
-
     return expr;
 }
 
 ExprDef *
 CreateKeysymList(xkb_keysym_t sym)
 {
-    ExprDef *expr = ExprCreate(EXPR_KEYSYM_LIST, EXPR_TYPE_SYMBOLS,
-                               sizeof(ExprKeysymList));
-    if (!expr)
-        return NULL;
+    EXPR_CREATE(ExprKeysymList, expr, EXPR_KEYSYM_LIST, EXPR_TYPE_SYMBOLS);
 
     darray_init(expr->keysym_list.syms);
     darray_init(expr->keysym_list.symsMapIndex);
