@@ -71,16 +71,16 @@ AppendStmt(ParseCommon *to, ParseCommon *append)
 }
 
 static ExprDef *
-ExprCreate(enum expr_op_type op, enum expr_value_type type)
+ExprCreate(enum expr_op_type op, enum expr_value_type type, size_t size)
 {
-    ExprDef *expr = malloc(sizeof(*expr));
+    ExprDef *expr = malloc(size);
     if (!expr)
         return NULL;
 
     expr->common.type = STMT_EXPR;
     expr->common.next = NULL;
-    expr->op = op;
-    expr->value_type = type;
+    expr->expr.op = op;
+    expr->expr.value_type = type;
 
     return expr;
 }
@@ -88,11 +88,12 @@ ExprCreate(enum expr_op_type op, enum expr_value_type type)
 ExprDef *
 ExprCreateString(xkb_atom_t str)
 {
-    ExprDef *expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_STRING);
+    ExprDef *expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_STRING,
+                               sizeof(ExprString));
     if (!expr)
         return NULL;
 
-    expr->value.str = str;
+    expr->string.str = str;
 
     return expr;
 }
@@ -100,11 +101,12 @@ ExprCreateString(xkb_atom_t str)
 ExprDef *
 ExprCreateInteger(int ival)
 {
-    ExprDef *expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_INT);
+    ExprDef *expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_INT,
+                               sizeof(ExprInteger));
     if (!expr)
         return NULL;
 
-    expr->value.ival = ival;
+    expr->integer.ival = ival;
 
     return expr;
 }
@@ -112,11 +114,12 @@ ExprCreateInteger(int ival)
 ExprDef *
 ExprCreateBoolean(bool set)
 {
-    ExprDef *expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_BOOLEAN);
+    ExprDef *expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_BOOLEAN,
+                               sizeof(ExprBoolean));
     if (!expr)
         return NULL;
 
-    expr->value.set = set;
+    expr->boolean.set = set;
 
     return expr;
 }
@@ -124,11 +127,12 @@ ExprCreateBoolean(bool set)
 ExprDef *
 ExprCreateKeyName(xkb_atom_t key_name)
 {
-    ExprDef *expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_KEYNAME);
+    ExprDef *expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_KEYNAME,
+                               sizeof(ExprKeyName));
     if (!expr)
         return NULL;
 
-    expr->value.keyName = key_name;
+    expr->key_name.key_name = key_name;
 
     return expr;
 }
@@ -136,11 +140,12 @@ ExprCreateKeyName(xkb_atom_t key_name)
 ExprDef *
 ExprCreateIdent(xkb_atom_t ident)
 {
-    ExprDef *expr = ExprCreate(EXPR_IDENT, EXPR_TYPE_UNKNOWN);
+    ExprDef *expr = ExprCreate(EXPR_IDENT, EXPR_TYPE_UNKNOWN,
+                                 sizeof(ExprIdent));
     if (!expr)
         return NULL;
 
-    expr->value.ident = ident;
+    expr->ident.ident = ident;
 
     return expr;
 }
@@ -149,11 +154,12 @@ ExprDef *
 ExprCreateUnary(enum expr_op_type op, enum expr_value_type type,
                 ExprDef *child)
 {
-    ExprDef *expr = ExprCreate(op, type);
+    ExprDef *expr = ExprCreate(op, type,
+                               sizeof(ExprUnary));
     if (!expr)
         return NULL;
 
-    expr->value.child = child;
+    expr->unary.child = child;
 
     return expr;
 }
@@ -161,17 +167,18 @@ ExprCreateUnary(enum expr_op_type op, enum expr_value_type type,
 ExprDef *
 ExprCreateBinary(enum expr_op_type op, ExprDef *left, ExprDef *right)
 {
-    ExprDef *expr = ExprCreate(op, EXPR_TYPE_UNKNOWN);
+    ExprDef *expr = ExprCreate(op, EXPR_TYPE_UNKNOWN,
+                               sizeof(ExprBinary));
     if (!expr)
         return NULL;
 
-    if (op == EXPR_ASSIGN || left->value_type == EXPR_TYPE_UNKNOWN)
-        expr->value_type = right->value_type;
-    else if (left->value_type == right->value_type ||
-             right->value_type == EXPR_TYPE_UNKNOWN)
-        expr->value_type = left->value_type;
-    expr->value.binary.left = left;
-    expr->value.binary.right = right;
+    if (op == EXPR_ASSIGN || left->expr.value_type == EXPR_TYPE_UNKNOWN)
+        expr->expr.value_type = right->expr.value_type;
+    else if (left->expr.value_type == right->expr.value_type ||
+             right->expr.value_type == EXPR_TYPE_UNKNOWN)
+        expr->expr.value_type = left->expr.value_type;
+    expr->binary.left = left;
+    expr->binary.right = right;
 
     return expr;
 }
@@ -179,12 +186,13 @@ ExprCreateBinary(enum expr_op_type op, ExprDef *left, ExprDef *right)
 ExprDef *
 ExprCreateFieldRef(xkb_atom_t element, xkb_atom_t field)
 {
-    ExprDef *expr = ExprCreate(EXPR_FIELD_REF, EXPR_TYPE_UNKNOWN);
+    ExprDef *expr = ExprCreate(EXPR_FIELD_REF, EXPR_TYPE_UNKNOWN,
+                               sizeof(ExprFieldRef));
     if (!expr)
         return NULL;
 
-    expr->value.field.element = element;
-    expr->value.field.field = field;
+    expr->field_ref.element = element;
+    expr->field_ref.field = field;
 
     return expr;
 }
@@ -192,13 +200,14 @@ ExprCreateFieldRef(xkb_atom_t element, xkb_atom_t field)
 ExprDef *
 ExprCreateArrayRef(xkb_atom_t element, xkb_atom_t field, ExprDef *entry)
 {
-    ExprDef *expr = ExprCreate(EXPR_ARRAY_REF, EXPR_TYPE_UNKNOWN);
+    ExprDef *expr = ExprCreate(EXPR_ARRAY_REF, EXPR_TYPE_UNKNOWN,
+                               sizeof(ExprArrayRef));
     if (!expr)
         return NULL;
 
-    expr->value.array.element = element;
-    expr->value.array.field = field;
-    expr->value.array.entry = entry;
+    expr->array_ref.element = element;
+    expr->array_ref.field = field;
+    expr->array_ref.entry = entry;
 
     return expr;
 }
@@ -266,8 +275,8 @@ VarCreate(ExprDef *name, ExprDef *value)
 VarDef *
 BoolVarCreate(xkb_atom_t ident, bool set)
 {
-    return VarCreate(ExprCreateIdent(ident),
-                     ExprCreateBoolean(set));
+    return VarCreate((ExprDef *) ExprCreateIdent(ident),
+                     (ExprDef *) ExprCreateBoolean(set));
 }
 
 InterpDef *
@@ -385,75 +394,76 @@ LedNameCreate(int ndx, ExprDef *name, bool virtual)
 ExprDef *
 ActionCreate(xkb_atom_t name, ExprDef *args)
 {
-    ExprDef *act = ExprCreate(EXPR_ACTION_DECL, EXPR_TYPE_UNKNOWN);
-    if (!act)
+    ExprDef *expr = ExprCreate(EXPR_ACTION_DECL, EXPR_TYPE_UNKNOWN,
+                               sizeof(ExprAction));
+    if (!expr)
         return NULL;
 
-    act->value.action.name = name;
-    act->value.action.args = args;
+    expr->action.name = name;
+    expr->action.args = args;
 
-    return act;
+    return expr;
 }
 
 ExprDef *
 CreateKeysymList(xkb_keysym_t sym)
 {
-    ExprDef *def = ExprCreate(EXPR_KEYSYM_LIST, EXPR_TYPE_SYMBOLS);
-    if (!def)
+    ExprDef *expr = ExprCreate(EXPR_KEYSYM_LIST, EXPR_TYPE_SYMBOLS,
+                               sizeof(ExprKeysymList));
+    if (!expr)
         return NULL;
 
-    darray_init(def->value.list.syms);
-    darray_init(def->value.list.symsMapIndex);
-    darray_init(def->value.list.symsNumEntries);
+    darray_init(expr->keysym_list.syms);
+    darray_init(expr->keysym_list.symsMapIndex);
+    darray_init(expr->keysym_list.symsNumEntries);
 
-    darray_append(def->value.list.syms, sym);
-    darray_append(def->value.list.symsMapIndex, 0);
-    darray_append(def->value.list.symsNumEntries, 1);
+    darray_append(expr->keysym_list.syms, sym);
+    darray_append(expr->keysym_list.symsMapIndex, 0);
+    darray_append(expr->keysym_list.symsNumEntries, 1);
 
-    return def;
+    return expr;
 }
 
 ExprDef *
-CreateMultiKeysymList(ExprDef *list)
+CreateMultiKeysymList(ExprDef *expr)
 {
-    size_t nLevels = darray_size(list->value.list.symsMapIndex);
+    size_t nLevels = darray_size(expr->keysym_list.symsMapIndex);
 
-    darray_resize(list->value.list.symsMapIndex, 1);
-    darray_resize(list->value.list.symsNumEntries, 1);
-    darray_item(list->value.list.symsMapIndex, 0) = 0;
-    darray_item(list->value.list.symsNumEntries, 0) = nLevels;
+    darray_resize(expr->keysym_list.symsMapIndex, 1);
+    darray_resize(expr->keysym_list.symsNumEntries, 1);
+    darray_item(expr->keysym_list.symsMapIndex, 0) = 0;
+    darray_item(expr->keysym_list.symsNumEntries, 0) = nLevels;
 
-    return list;
+    return expr;
 }
 
 ExprDef *
-AppendKeysymList(ExprDef *list, xkb_keysym_t sym)
+AppendKeysymList(ExprDef *expr, xkb_keysym_t sym)
 {
-    size_t nSyms = darray_size(list->value.list.syms);
+    size_t nSyms = darray_size(expr->keysym_list.syms);
 
-    darray_append(list->value.list.symsMapIndex, nSyms);
-    darray_append(list->value.list.symsNumEntries, 1);
-    darray_append(list->value.list.syms, sym);
+    darray_append(expr->keysym_list.symsMapIndex, nSyms);
+    darray_append(expr->keysym_list.symsNumEntries, 1);
+    darray_append(expr->keysym_list.syms, sym);
 
-    return list;
+    return expr;
 }
 
 ExprDef *
-AppendMultiKeysymList(ExprDef *list, ExprDef *append)
+AppendMultiKeysymList(ExprDef *expr, ExprDef *append)
 {
-    size_t nSyms = darray_size(list->value.list.syms);
-    size_t numEntries = darray_size(append->value.list.syms);
+    size_t nSyms = darray_size(expr->keysym_list.syms);
+    size_t numEntries = darray_size(append->keysym_list.syms);
 
-    darray_append(list->value.list.symsMapIndex, nSyms);
-    darray_append(list->value.list.symsNumEntries, numEntries);
-    darray_append_items(list->value.list.syms,
-                        darray_mem(append->value.list.syms, 0),
-                        numEntries);
+    darray_append(expr->keysym_list.symsMapIndex, nSyms);
+    darray_append(expr->keysym_list.symsNumEntries, numEntries);
+    darray_append_items(expr->keysym_list.syms,
+                        darray_mem(append->keysym_list.syms, 0), numEntries);
 
-    darray_resize(append->value.list.syms, 0);
+    darray_resize(append->keysym_list.syms, 0);
     FreeStmt(&append->common);
 
-    return list;
+    return expr;
 }
 
 static void
@@ -619,13 +629,13 @@ FreeExpr(ExprDef *expr)
     if (!expr)
         return;
 
-    switch (expr->op) {
+    switch (expr->expr.op) {
     case EXPR_ACTION_LIST:
     case EXPR_NEGATE:
     case EXPR_UNARY_PLUS:
     case EXPR_NOT:
     case EXPR_INVERT:
-        FreeStmt(&expr->value.child->common);
+        FreeStmt(&expr->unary.child->common);
         break;
 
     case EXPR_DIVIDE:
@@ -633,22 +643,22 @@ FreeExpr(ExprDef *expr)
     case EXPR_SUBTRACT:
     case EXPR_MULTIPLY:
     case EXPR_ASSIGN:
-        FreeStmt(&expr->value.binary.left->common);
-        FreeStmt(&expr->value.binary.right->common);
+        FreeStmt(&expr->binary.left->common);
+        FreeStmt(&expr->binary.right->common);
         break;
 
     case EXPR_ACTION_DECL:
-        FreeStmt(&expr->value.action.args->common);
+        FreeStmt(&expr->action.args->common);
         break;
 
     case EXPR_ARRAY_REF:
-        FreeStmt(&expr->value.array.entry->common);
+        FreeStmt(&expr->array_ref.entry->common);
         break;
 
     case EXPR_KEYSYM_LIST:
-        darray_free(expr->value.list.syms);
-        darray_free(expr->value.list.symsMapIndex);
-        darray_free(expr->value.list.symsNumEntries);
+        darray_free(expr->keysym_list.syms);
+        darray_free(expr->keysym_list.symsMapIndex);
+        darray_free(expr->keysym_list.symsNumEntries);
         break;
 
     default:

@@ -646,11 +646,11 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         return true;
     }
 
-    if (value->op != EXPR_KEYSYM_LIST) {
+    if (value->expr.op != EXPR_KEYSYM_LIST) {
         log_err(info->keymap->ctx,
                 "Expected a list of symbols, found %s; "
                 "Ignoring symbols for group %u of %s\n",
-                expr_op_type_to_string(value->op), ndx + 1,
+                expr_op_type_to_string(value->expr.op), ndx + 1,
                 KeyInfoText(info, keyi));
         return false;
     }
@@ -663,7 +663,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         return false;
     }
 
-    nLevels = darray_size(value->value.list.symsMapIndex);
+    nLevels = darray_size(value->keysym_list.symsMapIndex);
     if (darray_size(groupi->levels) < nLevels)
         darray_resize0(groupi->levels, nLevels);
 
@@ -673,13 +673,13 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         unsigned int sym_index;
         struct xkb_level *leveli = &darray_item(groupi->levels, i);
 
-        sym_index = darray_item(value->value.list.symsMapIndex, i);
-        leveli->num_syms = darray_item(value->value.list.symsNumEntries, i);
+        sym_index = darray_item(value->keysym_list.symsMapIndex, i);
+        leveli->num_syms = darray_item(value->keysym_list.symsNumEntries, i);
         if (leveli->num_syms > 1)
             leveli->u.syms = calloc(leveli->num_syms, sizeof(*leveli->u.syms));
 
         for (j = 0; j < leveli->num_syms; j++) {
-            xkb_keysym_t keysym = darray_item(value->value.list.syms,
+            xkb_keysym_t keysym = darray_item(value->keysym_list.syms,
                                               sym_index + j);
 
             if (leveli->num_syms == 1) {
@@ -718,11 +718,11 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         return true;
     }
 
-    if (value->op != EXPR_ACTION_LIST) {
+    if (value->expr.op != EXPR_ACTION_LIST) {
         log_wsgo(info->keymap->ctx,
                  "Bad expression type (%d) for action list value; "
                  "Ignoring actions for group %u of %s\n",
-                 value->op, ndx, KeyInfoText(info, keyi));
+                 value->expr.op, ndx, KeyInfoText(info, keyi));
         return false;
     }
 
@@ -734,7 +734,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     }
 
     nActs = 0;
-    for (act = value->value.child; act; act = (ExprDef *) act->common.next)
+    for (act = value->unary.child; act; act = (ExprDef *) act->common.next)
         nActs++;
 
     if (darray_size(groupi->levels) < nActs)
@@ -742,7 +742,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
     groupi->defined |= GROUP_FIELD_ACTS;
 
-    act = value->value.child;
+    act = value->unary.child;
     for (i = 0; i < nActs; i++) {
         toAct = &darray_item(groupi->levels, i).action;
 
@@ -822,7 +822,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             log_err(info->keymap->ctx,
                     "Expected a virtual modifier mask, found %s; "
                     "Ignoring virtual modifiers definition for key %s\n",
-                    expr_op_type_to_string(value->op),
+                    expr_op_type_to_string(value->expr.op),
                     KeyInfoText(info, keyi));
         }
     }
@@ -1038,7 +1038,7 @@ HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
     ExprDef *arrayNdx;
 
     for (; def; def = (VarDef *) def->common.next) {
-        if (def->name && def->name->op == EXPR_FIELD_REF) {
+        if (def->name && def->name->expr.op == EXPR_FIELD_REF) {
             log_err(info->keymap->ctx,
                     "Cannot set a global default value from within a key statement; "
                     "Move statements to the global file scope\n");
@@ -1046,7 +1046,7 @@ HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
         }
 
         if (!def->name) {
-            if (!def->value || def->value->op == EXPR_KEYSYM_LIST)
+            if (!def->value || def->value->expr.op == EXPR_KEYSYM_LIST)
                 field = "symbols";
             else
                 field = "actions";
@@ -1157,9 +1157,10 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
     for (key = def->keys; key != NULL; key = (ExprDef *) key->common.next) {
         xkb_keysym_t sym;
 
-        if (key->op == EXPR_VALUE && key->value_type == EXPR_TYPE_KEYNAME) {
+        if (key->expr.op == EXPR_VALUE &&
+            key->expr.value_type == EXPR_TYPE_KEYNAME) {
             tmp.haveSymbol = false;
-            tmp.u.keyName = key->value.keyName;
+            tmp.u.keyName = key->key_name.key_name;
         }
         else if (ExprResolveKeySym(ctx, key, &sym)) {
             tmp.haveSymbol = true;

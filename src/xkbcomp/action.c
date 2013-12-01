@@ -56,18 +56,22 @@
 #include "expr.h"
 #include "action.h"
 
-static const ExprDef constTrue = {
-    .common = { .type = STMT_EXPR, .next = NULL },
-    .op = EXPR_VALUE,
-    .value_type = EXPR_TYPE_BOOLEAN,
-    .value = { .set = true },
+static const ExprBoolean constTrue = {
+    .expr = {
+        .common = { .type = STMT_EXPR, .next = NULL },
+        .op = EXPR_VALUE,
+        .value_type = EXPR_TYPE_BOOLEAN,
+    },
+    .set = true,
 };
 
-static const ExprDef constFalse = {
-    .common = { .type = STMT_EXPR, .next = NULL },
-    .op = EXPR_VALUE,
-    .value_type = EXPR_TYPE_BOOLEAN,
-    .value = { .set = false },
+static const ExprBoolean constFalse = {
+    .expr = {
+        .common = { .type = STMT_EXPR, .next = NULL },
+        .op = EXPR_VALUE,
+        .value_type = EXPR_TYPE_BOOLEAN,
+    },
+    .set = false,
 };
 
 enum action_field {
@@ -265,9 +269,9 @@ CheckModifierField(struct xkb_keymap *keymap, enum xkb_action_type action,
                    const ExprDef *value, enum xkb_action_flags *flags_inout,
                    xkb_mod_mask_t *mods_rtrn)
 {
-    if (value->op == EXPR_IDENT) {
+    if (value->expr.op == EXPR_IDENT) {
         const char *valStr;
-        valStr = xkb_atom_text(keymap->ctx, value->value.ident);
+        valStr = xkb_atom_text(keymap->ctx, value->ident.ident);
         if (valStr && (istreq(valStr, "usemodmapmods") ||
                        istreq(valStr, "modmapmods"))) {
 
@@ -367,9 +371,9 @@ CheckGroupField(struct xkb_keymap *keymap, unsigned action,
 {
     const ExprDef *spec;
 
-    if (value->op == EXPR_NEGATE || value->op == EXPR_UNARY_PLUS) {
+    if (value->expr.op == EXPR_NEGATE || value->expr.op == EXPR_UNARY_PLUS) {
         *flags_inout &= ~ACTION_ABSOLUTE_SWITCH;
-        spec = value->value.child;
+        spec = value->unary.child;
     }
     else {
         *flags_inout |= ACTION_ABSOLUTE_SWITCH;
@@ -380,9 +384,9 @@ CheckGroupField(struct xkb_keymap *keymap, unsigned action,
         return ReportMismatch(keymap, action, ACTION_FIELD_GROUP,
                               "integer (range 1..8)");
 
-    if (value->op == EXPR_NEGATE)
+    if (value->expr.op == EXPR_NEGATE)
         *grp_rtrn = -*grp_rtrn;
-    else if (value->op != EXPR_UNARY_PLUS)
+    else if (value->expr.op != EXPR_UNARY_PLUS)
         (*grp_rtrn)--;
 
     return true;
@@ -472,7 +476,7 @@ HandleMovePtr(struct xkb_keymap *keymap, union xkb_action *action,
     if (field == ACTION_FIELD_X || field == ACTION_FIELD_Y) {
         int val;
 
-        if (value->op == EXPR_NEGATE || value->op == EXPR_UNARY_PLUS)
+        if (value->expr.op == EXPR_NEGATE || value->expr.op == EXPR_UNARY_PLUS)
             absolute = false;
         else
             absolute = true;
@@ -613,9 +617,10 @@ HandleSetPtrDflt(struct xkb_keymap *keymap, union xkb_action *action,
         if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
 
-        if (value->op == EXPR_NEGATE || value->op == EXPR_UNARY_PLUS) {
+        if (value->expr.op == EXPR_NEGATE ||
+            value->expr.op == EXPR_UNARY_PLUS) {
             act->flags &= ~ACTION_ABSOLUTE_SWITCH;
-            button = value->value.child;
+            button = value->unary.child;
         }
         else {
             act->flags |= ACTION_ABSOLUTE_SWITCH;
@@ -639,7 +644,7 @@ HandleSetPtrDflt(struct xkb_keymap *keymap, union xkb_action *action,
             return false;
         }
 
-        act->value = (value->op == EXPR_NEGATE ? -btn: btn);
+        act->value = (value->expr.op == EXPR_NEGATE ? -btn: btn);
         return true;
     }
 
@@ -660,9 +665,10 @@ HandleSwitchScreen(struct xkb_keymap *keymap, union xkb_action *action,
         if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
 
-        if (value->op == EXPR_NEGATE || value->op == EXPR_UNARY_PLUS) {
+        if (value->expr.op == EXPR_NEGATE ||
+            value->expr.op == EXPR_UNARY_PLUS) {
             act->flags &= ~ACTION_ABSOLUTE_SWITCH;
-            scrn = value->value.child;
+            scrn = value->unary.child;
         }
         else {
             act->flags |= ACTION_ABSOLUTE_SWITCH;
@@ -680,7 +686,7 @@ HandleSwitchScreen(struct xkb_keymap *keymap, union xkb_action *action,
             return false;
         }
 
-        act->screen = (value->op == EXPR_NEGATE ? -val : val);
+        act->screen = (value->expr.op == EXPR_NEGATE ? -val : val);
         return true;
     }
     else if (field == ACTION_FIELD_SAME) {
@@ -861,13 +867,13 @@ HandleActionDef(ExprDef *def, struct xkb_keymap *keymap,
     const char *str;
     unsigned handler_type;
 
-    if (def->op != EXPR_ACTION_DECL) {
+    if (def->expr.op != EXPR_ACTION_DECL) {
         log_err(keymap->ctx, "Expected an action definition, found %s\n",
-                expr_op_type_to_string(def->op));
+                expr_op_type_to_string(def->expr.op));
         return false;
     }
 
-    str = xkb_atom_text(keymap->ctx, def->value.action.name);
+    str = xkb_atom_text(keymap->ctx, def->action.name);
     if (!stringToAction(str, &handler_type)) {
         log_err(keymap->ctx, "Unknown action %s\n", str);
         return false;
@@ -885,24 +891,24 @@ HandleActionDef(ExprDef *def, struct xkb_keymap *keymap,
      * particular instance, e.g. "modifiers" and "clearLocks" in:
      *     SetMods(modifiers=Alt,clearLocks);
      */
-    for (arg = def->value.action.args; arg != NULL;
+    for (arg = def->action.args; arg != NULL;
          arg = (ExprDef *) arg->common.next) {
         const ExprDef *value;
         ExprDef *field, *arrayRtrn;
         const char *elemRtrn, *fieldRtrn;
         enum action_field fieldNdx;
 
-        if (arg->op == EXPR_ASSIGN) {
-            field = arg->value.binary.left;
-            value = arg->value.binary.right;
+        if (arg->expr.op == EXPR_ASSIGN) {
+            field = arg->binary.left;
+            value = arg->binary.right;
         }
-        else if (arg->op == EXPR_NOT || arg->op == EXPR_INVERT) {
-            field = arg->value.child;
-            value = &constFalse;
+        else if (arg->expr.op == EXPR_NOT || arg->expr.op == EXPR_INVERT) {
+            field = arg->unary.child;
+            value = (const ExprDef *) &constFalse;
         }
         else {
             field = arg;
-            value = &constTrue;
+            value = (const ExprDef *) &constTrue;
         }
 
         if (!ExprResolveLhs(keymap->ctx, field, &elemRtrn, &fieldRtrn,

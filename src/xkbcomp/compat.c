@@ -432,19 +432,19 @@ ResolveStateAndPredicate(ExprDef *expr, enum xkb_match_operation *pred_rtrn,
     }
 
     *pred_rtrn = MATCH_EXACTLY;
-    if (expr->op == EXPR_ACTION_DECL) {
+    if (expr->expr.op == EXPR_ACTION_DECL) {
         const char *pred_txt = xkb_atom_text(info->keymap->ctx,
-                                             expr->value.action.name);
+                                             expr->action.name);
         if (!LookupString(symInterpretMatchMaskNames, pred_txt, pred_rtrn)) {
             log_err(info->keymap->ctx,
                     "Illegal modifier predicate \"%s\"; Ignored\n", pred_txt);
             return false;
         }
-        expr = expr->value.action.args;
+        expr = expr->action.args;
     }
-    else if (expr->op == EXPR_IDENT) {
+    else if (expr->expr.op == EXPR_IDENT) {
         const char *pred_txt = xkb_atom_text(info->keymap->ctx,
-                                             expr->value.ident);
+                                             expr->ident.ident);
         if (pred_txt && istreq(pred_txt, "any")) {
             *pred_rtrn = MATCH_ANY;
             *mods_rtrn = MOD_REAL_MASK_ALL;
@@ -805,7 +805,7 @@ HandleInterpBody(CompatInfo *info, VarDef *def, SymInterpInfo *si)
     ExprDef *arrayNdx;
 
     for (; def; def = (VarDef *) def->common.next) {
-        if (def->name && def->name->op == EXPR_FIELD_REF) {
+        if (def->name && def->name->expr.op == EXPR_FIELD_REF) {
             log_err(info->keymap->ctx,
                     "Cannot set a global default value from within an interpret statement; "
                     "Move statements to the global file scope\n");
