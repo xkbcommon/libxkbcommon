@@ -204,7 +204,7 @@ atom_intern(struct atom_table *table, const char *string, size_t len,
     struct atom_node *node;
     unsigned int fingerprint;
 
-    if (!string || len == 0)
+    if (!string)
         return XKB_ATOM_NONE;
 
     if (find_node_pointer(table, string, len, &nodep, &fingerprint)) {
