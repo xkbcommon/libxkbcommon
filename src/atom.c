@@ -171,8 +171,10 @@ find_node_pointer(struct atom_table *table, const char *string, size_t len,
         }
     }
 
-    *fingerprint_out = fingerprint;
-    *nodep_out = nodep;
+    if (fingerprint_out)
+        *fingerprint_out = fingerprint;
+    if (nodep_out)
+        *nodep_out = nodep;
     return found;
 }
 
@@ -180,12 +182,11 @@ xkb_atom_t
 atom_lookup(struct atom_table *table, const char *string, size_t len)
 {
     struct atom_node **nodep;
-    unsigned int fingerprint;
 
     if (!string)
         return XKB_ATOM_NONE;
 
-    if (!find_node_pointer(table, string, len, &nodep, &fingerprint))
+    if (!find_node_pointer(table, string, len, &nodep, NULL))
         return XKB_ATOM_NONE;
 
     return (*nodep)->atom;
