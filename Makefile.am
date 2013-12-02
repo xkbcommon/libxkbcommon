@@ -130,7 +130,8 @@ TESTS = \
 	test/rules-file \
 	test/stringcomp \
 	test/buffercomp \
-	test/log
+	test/log \
+	test/atom
 TESTS_LDADD = libtest.la
 
 test_keysym_LDADD = $(TESTS_LDADD)
@@ -142,6 +143,7 @@ test_rules_file_LDADD = $(TESTS_LDADD) -lrt
 test_stringcomp_LDADD = $(TESTS_LDADD)
 test_buffercomp_LDADD = $(TESTS_LDADD)
 test_log_LDADD = $(TESTS_LDADD)
+test_atom_LDADD = $(TESTS_LDADD)
 test_rmlvo_to_kccgst_LDADD = $(TESTS_LDADD)
 test_print_compiled_keymap_LDADD = $(TESTS_LDADD)
 test_bench_key_proc_LDADD = $(TESTS_LDADD) -lrt
