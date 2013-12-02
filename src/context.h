@@ -57,9 +57,6 @@ xkb_atom_intern(struct xkb_context *ctx, const char *string, size_t len);
 xkb_atom_t
 xkb_atom_steal(struct xkb_context *ctx, char *string);
 
-char *
-xkb_atom_strdup(struct xkb_context *ctx, xkb_atom_t atom);
-
 const char *
 xkb_atom_text(struct xkb_context *ctx, xkb_atom_t atom);
 

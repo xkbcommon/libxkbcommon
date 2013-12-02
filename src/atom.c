@@ -134,12 +134,6 @@ atom_text(struct atom_table *table, xkb_atom_t atom)
     return darray_item(table->table, atom)->string;
 }
 
-char *
-atom_strdup(struct atom_table *table, xkb_atom_t atom)
-{
-    return strdup_safe(atom_text(table, atom));
-}
-
 static bool
 find_node_pointer(struct atom_table *table, const char *string, size_t len,
                   struct atom_node ***nodep_out, unsigned int *fingerprint_out)

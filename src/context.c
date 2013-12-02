@@ -345,12 +345,6 @@ xkb_atom_steal(struct xkb_context *ctx, char *string)
     return atom_intern(ctx->atom_table, string, strlen(string), true);
 }
 
-char *
-xkb_atom_strdup(struct xkb_context *ctx, xkb_atom_t atom)
-{
-    return atom_strdup(ctx->atom_table, atom);
-}
-
 const char *
 xkb_atom_text(struct xkb_context *ctx, xkb_atom_t atom)
 {
