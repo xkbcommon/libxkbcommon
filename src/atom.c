@@ -138,11 +138,10 @@ static bool
 find_node_pointer(struct atom_table *table, const char *string, size_t len,
                   struct atom_node ***nodep_out, unsigned int *fingerprint_out)
 {
-    struct atom_node **nodep;
+    struct atom_node **nodep = &table->root;
     unsigned int fingerprint = 0;
     bool found = false;
 
-    nodep = &table->root;
     for (size_t i = 0; i < (len + 1) / 2; i++) {
         fingerprint = fingerprint * 27 + string[i];
         fingerprint = fingerprint * 27 + string[len - 1 - i];
@@ -150,19 +149,19 @@ find_node_pointer(struct atom_table *table, const char *string, size_t len,
 
     while (*nodep) {
         if (fingerprint < (*nodep)->fingerprint) {
-            nodep = &((*nodep)->left);
+            nodep = &(*nodep)->left;
         }
         else if (fingerprint > (*nodep)->fingerprint) {
-            nodep = &((*nodep)->right);
+            nodep = &(*nodep)->right;
         }
         else {
             /* Now start testing the strings. */
             const int cmp = strncmp(string, (*nodep)->string, len);
             if (cmp < 0 || (cmp == 0 && len < strlen((*nodep)->string))) {
-                nodep = &((*nodep)->left);
+                nodep = &(*nodep)->left;
             }
             else if (cmp > 0) {
-                nodep = &((*nodep)->right);
+                nodep = &(*nodep)->right;
             }
             else {
                 found = true;
