@@ -206,4 +206,10 @@ unmap_file(const char *str, size_t size);
 # define ATTR_NULL_SENTINEL
 #endif /* GNUC >= 4 */
 
+#if (defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 295)
+#define ATTR_PACKED  __attribute__((__packed__))
+#else
+#define ATTR_PACKED
+#endif
+
 #endif /* UTILS_H */
