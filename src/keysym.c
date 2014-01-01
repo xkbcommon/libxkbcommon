@@ -134,7 +134,7 @@ find_sym(const struct name_keysym *entry, const char *name, bool icase)
     }
 
     last = name_to_keysym + len;
-    for (iter = entry + 1; iter < last; --iter) {
+    for (iter = entry + 1; iter < last; ++iter) {
         if (!icase && strcmp(iter->name, name) == 0)
             return iter;
         if (strcasecmp(iter->name, entry->name) != 0)
