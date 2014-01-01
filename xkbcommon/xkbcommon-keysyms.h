@@ -418,6 +418,12 @@ SOFTWARE.
 #define XKB_KEY_dead_belowcomma               0xfe6e
 #define XKB_KEY_dead_currency                 0xfe6f
 
+/* extra dead elements for German T3 layout */
+#define XKB_KEY_dead_lowline                  0xfe90
+#define XKB_KEY_dead_aboveverticalline        0xfe91
+#define XKB_KEY_dead_belowverticalline        0xfe92
+#define XKB_KEY_dead_longsolidusoverlay       0xfe93
+
 /* dead vowels for universal syllable entry */
 #define XKB_KEY_dead_a                        0xfe80
 #define XKB_KEY_dead_A                        0xfe81
