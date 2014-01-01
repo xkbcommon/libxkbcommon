@@ -53,24 +53,29 @@
 #include "keysym.h"
 #include "ks_tables.h"
 
+static inline const char *
+get_name(const struct name_keysym *entry)
+{
+    return keysym_names + entry->offset;
+}
+
 static int
 compare_by_keysym(const void *a, const void *b)
 {
-    const struct name_keysym *key = a, *entry = b;
-    return key->keysym - (int32_t)entry->keysym;
+    const struct name_keysym *entry = b;
+    return *(const int32_t *)(a) - entry->keysym;
 }
 
 static int
 compare_by_name(const void *a, const void *b)
 {
-    const struct name_keysym *key = a, *entry = b;
-    return strcasecmp(key->name, entry->name);
+    const struct name_keysym *entry = b;
+    return strcasecmp((const char *)a, get_name(entry));
 }
 
 XKB_EXPORT int
 xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
 {
-    const struct name_keysym search = { .name = NULL, .keysym = ks };
     const struct name_keysym *entry;
 
     if ((ks & ((unsigned long) ~0x1fffffff)) != 0) {
@@ -78,12 +83,12 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
         return -1;
     }
 
-    entry = bsearch(&search, keysym_to_name,
+    entry = bsearch(&ks, keysym_to_name,
                     ARRAY_SIZE(keysym_to_name),
                     sizeof(*keysym_to_name),
                     compare_by_keysym);
     if (entry)
-        return snprintf(buffer, size, "%s", entry->name);
+        return snprintf(buffer, size, "%s", get_name(entry));
 
     /* Unnamed Unicode codepoint. */
     if (ks >= 0x01000100 && ks <= 0x0110ffff) {
@@ -119,15 +124,15 @@ find_sym(const struct name_keysym *entry, const char *name, bool icase)
     if (!entry)
         return NULL;
 
-    if (!icase && strcmp(entry->name, name) == 0)
+    if (!icase && strcmp(get_name(entry), name) == 0)
         return entry;
     if (icase && xkb_keysym_is_lower(entry->keysym))
         return entry;
 
     for (iter = entry - 1; iter >= name_to_keysym; --iter) {
-        if (!icase && strcmp(iter->name, name) == 0)
+        if (!icase && strcmp(get_name(iter), name) == 0)
             return iter;
-        if (strcasecmp(iter->name, entry->name) != 0)
+        if (strcasecmp(get_name(iter), get_name(entry)) != 0)
             break;
         if (icase && xkb_keysym_is_lower(iter->keysym))
             return iter;
@@ -135,9 +140,9 @@ find_sym(const struct name_keysym *entry, const char *name, bool icase)
 
     last = name_to_keysym + len;
     for (iter = entry + 1; iter < last; ++iter) {
-        if (!icase && strcmp(iter->name, name) == 0)
+        if (!icase && strcmp(get_name(iter), name) == 0)
             return iter;
-        if (strcasecmp(iter->name, entry->name) != 0)
+        if (strcasecmp(get_name(iter), get_name(entry)) != 0)
             break;
         if (icase && xkb_keysym_is_lower(iter->keysym))
             return iter;
@@ -151,7 +156,6 @@ find_sym(const struct name_keysym *entry, const char *name, bool icase)
 XKB_EXPORT xkb_keysym_t
 xkb_keysym_from_name(const char *s, enum xkb_keysym_flags flags)
 {
-    const struct name_keysym search = { .name = s, .keysym = 0 };
     const struct name_keysym *entry;
     char *tmp;
     xkb_keysym_t val;
@@ -160,7 +164,7 @@ xkb_keysym_from_name(const char *s, enum xkb_keysym_flags flags)
     if (flags & ~XKB_KEYSYM_CASE_INSENSITIVE)
         return XKB_KEY_NoSymbol;
 
-    entry = bsearch(&search, name_to_keysym,
+    entry = bsearch(s, name_to_keysym,
                     ARRAY_SIZE(name_to_keysym),
                     sizeof(*name_to_keysym),
                     compare_by_name);
