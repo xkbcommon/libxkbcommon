@@ -62,15 +62,17 @@ get_name(const struct name_keysym *entry)
 static int
 compare_by_keysym(const void *a, const void *b)
 {
+    const xkb_keysym_t *key = a;
     const struct name_keysym *entry = b;
-    return *(const int32_t *)(a) - entry->keysym;
+    return *key - (int32_t) entry->keysym;
 }
 
 static int
 compare_by_name(const void *a, const void *b)
 {
+    const char *key = a;
     const struct name_keysym *entry = b;
-    return strcasecmp((const char *)a, get_name(entry));
+    return strcasecmp(key, get_name(entry));
 }
 
 XKB_EXPORT int
