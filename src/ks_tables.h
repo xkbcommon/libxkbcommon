@@ -5,6 +5,8 @@
  * https://raw.github.com/xkbcommon/libxkbcommon/master/src/ks_tables.h
  */
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Woverlength-strings"
 const char *keysym_names =
     "0\0"
     "1\0"
@@ -2409,6 +2411,7 @@ const char *keysym_names =
     "Zstroke\0"
     "zstroke\0"
 ;
+#pragma GCC diagnostic pop
 
 struct name_keysym {
     xkb_keysym_t keysym;

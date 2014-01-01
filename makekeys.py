@@ -16,13 +16,20 @@ print('''
 
 entry_offsets = {}
 
-print('const char *keysym_names =')
+print('''
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Woverlength-strings"
+const char *keysym_names =
+'''.strip())
 offs = 0
 for (name, _) in sorted(entries, key=lambda e: e[0].lower()):
     entry_offsets[name] = offs
     print('    "{name}\\0"'.format(name=name))
     offs += len(name) + 1
-print(';')
+print('''
+;
+#pragma GCC diagnostic pop
+'''.strip())
 
 print('''
 struct name_keysym {
