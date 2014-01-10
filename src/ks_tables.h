@@ -7,7 +7,7 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Woverlength-strings"
-const char *keysym_names =
+static const char *keysym_names =
     "0\0"
     "1\0"
     "2\0"

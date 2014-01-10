@@ -19,7 +19,7 @@ entry_offsets = {}
 print('''
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Woverlength-strings"
-const char *keysym_names =
+static const char *keysym_names =
 '''.strip())
 offs = 0
 for (name, _) in sorted(entries, key=lambda e: e[0].lower()):
