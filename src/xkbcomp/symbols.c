@@ -706,7 +706,6 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     GroupInfo *groupi;
     unsigned int nActs;
     ExprDef *act;
-    union xkb_action *toAct;
 
     if (!GetGroupIndex(info, keyi, arrayNdx, ACTIONS, &ndx))
         return false;
@@ -744,7 +743,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
     act = value->unary.child;
     for (i = 0; i < nActs; i++) {
-        toAct = &darray_item(groupi->levels, i).action;
+        union xkb_action *toAct = &darray_item(groupi->levels, i).action;
 
         if (!HandleActionDef(act, info->keymap, toAct, info->actions))
             log_err(info->keymap->ctx,
@@ -1528,7 +1527,6 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
 {
     KeyInfo *keyi;
     ModMapEntry *mm;
-    struct xkb_key *key;
 
     keymap->symbols_section_name = strdup_safe(info->name);
     XkbEscapeMapName(keymap->symbols_section_name);
@@ -1542,6 +1540,8 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
             info->errorCount++;
 
     if (xkb_context_get_log_verbosity(keymap->ctx) > 3) {
+        struct xkb_key *key;
+
         xkb_foreach_key(key, keymap) {
             if (key->name == XKB_ATOM_NONE)
                 continue;

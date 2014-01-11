@@ -216,17 +216,13 @@ free_keyboards(struct keyboard *kbds)
 static void
 print_keycode(struct keyboard *kbd, xkb_keycode_t keycode)
 {
-    unsigned int i;
     struct xkb_keymap *keymap;
     struct xkb_state *state;
 
     const xkb_keysym_t *syms;
-    unsigned int nsyms;
+    int nsyms;
     char s[16];
-    uint32_t unicode;
     xkb_layout_index_t layout;
-    xkb_mod_index_t mod;
-    xkb_led_index_t led;
 
     state = kbd->state;
     keymap = xkb_state_get_keymap(state);
@@ -243,7 +239,7 @@ print_keycode(struct keyboard *kbd, xkb_keycode_t keycode)
     }
     else {
         printf("keysyms [ ");
-        for (i = 0; i < nsyms; i++) {
+        for (int i = 0; i < nsyms; i++) {
             xkb_keysym_get_name(syms[i], s, sizeof(s));
             printf("%-*s ", (int) sizeof(s), s);
         }
@@ -256,8 +252,8 @@ print_keycode(struct keyboard *kbd, xkb_keycode_t keycode)
      */
 #ifdef __STDC_ISO_10646__
     printf("unicode [ ");
-    for (i = 0; i < nsyms; i++) {
-        unicode = xkb_keysym_to_utf32(syms[i]);
+    for (int i = 0; i < nsyms; i++) {
+        uint32_t unicode = xkb_keysym_to_utf32(syms[i]);
         printf("%lc ", (int)(unicode ? unicode : L' '));
     }
     printf("] ");
@@ -271,7 +267,7 @@ print_keycode(struct keyboard *kbd, xkb_keycode_t keycode)
            xkb_state_key_get_level(state, keycode, layout));
 
     printf("mods [ ");
-    for (mod = 0; mod < xkb_keymap_num_mods(keymap); mod++) {
+    for (xkb_mod_index_t mod = 0; mod < xkb_keymap_num_mods(keymap); mod++) {
         if (xkb_state_mod_index_is_active(state, mod,
                                           XKB_STATE_MODS_EFFECTIVE) <= 0)
             continue;
@@ -283,7 +279,7 @@ print_keycode(struct keyboard *kbd, xkb_keycode_t keycode)
     printf("] ");
 
     printf("leds [ ");
-    for (led = 0; led < xkb_keymap_num_leds(keymap); led++) {
+    for (xkb_led_index_t led = 0; led < xkb_keymap_num_leds(keymap); led++) {
         if (xkb_state_led_index_is_active(state, led) <= 0)
             continue;
         printf("%s ", xkb_keymap_led_get_name(keymap, led));
@@ -359,21 +355,18 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
 static int
 read_keyboard(struct keyboard *kbd)
 {
-    size_t i;
     ssize_t len;
     struct input_event evs[16];
-    size_t nevs;
 
     /* No fancy error checking here. */
     while ((len = read(kbd->fd, &evs, sizeof(evs))) > 0) {
-        nevs = len / sizeof(struct input_event);
-        for (i = 0; i < nevs; i++)
+        const size_t nevs = len / sizeof(struct input_event);
+        for (size_t i = 0; i < nevs; i++)
             process_event(kbd, evs[i].type, evs[i].code, evs[i].value);
     }
 
     if (len < 0 && errno != EWOULDBLOCK) {
-        fprintf(stderr, "Couldn't read %s: %s\n", kbd->path,
-                strerror(errno));
+        fprintf(stderr, "Couldn't read %s: %s\n", kbd->path, strerror(errno));
         return -errno;
     }
 

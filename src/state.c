@@ -1002,13 +1002,12 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
 {
     va_list ap;
     xkb_mod_index_t idx = 0;
-    const char *str;
     xkb_mod_mask_t wanted = 0;
     int ret = 0;
 
     va_start(ap, match);
     while (1) {
-        str = va_arg(ap, const char *);
+        const char *str = va_arg(ap, const char *);
         if (str == NULL)
             break;
         idx = xkb_keymap_mod_get_index(state->keymap, str);

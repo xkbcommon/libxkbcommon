@@ -468,18 +468,14 @@ HandleMovePtr(struct xkb_keymap *keymap, union xkb_action *action,
               const ExprDef *value)
 {
     struct xkb_pointer_action *act = &action->ptr;
-    bool absolute;
 
     if (array_ndx && (field == ACTION_FIELD_X || field == ACTION_FIELD_Y))
         return ReportActionNotArray(keymap, action->type, field);
 
     if (field == ACTION_FIELD_X || field == ACTION_FIELD_Y) {
         int val;
-
-        if (value->expr.op == EXPR_NEGATE || value->expr.op == EXPR_UNARY_PLUS)
-            absolute = false;
-        else
-            absolute = true;
+        const bool absolute = (value->expr.op != EXPR_NEGATE &&
+                               value->expr.op != EXPR_UNARY_PLUS);
 
         if (!ExprResolveInteger(keymap->ctx, value, &val))
             return ReportMismatch(keymap, action->type, field, "integer");

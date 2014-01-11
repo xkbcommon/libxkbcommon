@@ -105,18 +105,16 @@ xkb_keymap_ref(struct xkb_keymap *keymap)
 XKB_EXPORT void
 xkb_keymap_unref(struct xkb_keymap *keymap)
 {
-    unsigned int i, j;
-    struct xkb_key *key;
-
     if (!keymap || --keymap->refcnt > 0)
         return;
 
     if (keymap->keys) {
+        struct xkb_key *key;
         xkb_foreach_key(key, keymap) {
             if (key->groups) {
-                for (i = 0; i < key->num_groups; i++) {
+                for (unsigned i = 0; i < key->num_groups; i++) {
                     if (key->groups[i].levels) {
-                        for (j = 0; j < XkbKeyGroupWidth(key, i); j++)
+                        for (unsigned j = 0; j < XkbKeyGroupWidth(key, i); j++)
                             if (key->groups[i].levels[j].num_syms > 1)
                                 free(key->groups[i].levels[j].u.syms);
                         free(key->groups[i].levels);
@@ -128,7 +126,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
         free(keymap->keys);
     }
     if (keymap->types) {
-        for (i = 0; i < keymap->num_types; i++) {
+        for (unsigned i = 0; i < keymap->num_types; i++) {
             free(keymap->types[i].entries);
             free(keymap->types[i].level_names);
         }

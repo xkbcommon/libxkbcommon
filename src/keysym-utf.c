@@ -840,14 +840,13 @@ bin_search(const struct codepair *table, size_t length, xkb_keysym_t keysym)
 {
     int first = 0;
     int last = length;
-    int mid;
 
     if (keysym < table[0].keysym  || keysym > table[length].keysym)
         return 0;
 
     /* binary search in table */
     while (last >= first) {
-        mid = (first + last) / 2;
+        int mid = (first + last) / 2;
         if (table[mid].keysym < keysym)
             first = mid + 1;
         else if (table[mid].keysym > keysym)
