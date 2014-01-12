@@ -760,12 +760,12 @@ MapName         :       STRING  { $$ = $1; }
 XkbFile *
 parse(struct xkb_context *ctx, void *scanner, const char *map)
 {
-    struct parser_param param;
     int ret;
     XkbFile *first = NULL;
-
-    param.scanner = scanner;
-    param.ctx = ctx;
+    struct parser_param param = {
+        .scanner = scanner,
+        .ctx = ctx,
+    };
 
     /*
      * If we got a specific map, we look for it exclusively and return
