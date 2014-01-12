@@ -352,10 +352,13 @@ xkb_atom_text(struct xkb_context *ctx, xkb_atom_t atom)
 }
 
 void
-xkb_log(struct xkb_context *ctx, enum xkb_log_level level,
+xkb_log(struct xkb_context *ctx, enum xkb_log_level level, int verbosity,
         const char *fmt, ...)
 {
     va_list args;
+
+    if (ctx->log_level < level || ctx->log_verbosity < verbosity)
+        return;
 
     va_start(args, fmt);
     ctx->log_fn(ctx, level, fmt, args);

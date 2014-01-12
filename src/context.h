@@ -63,19 +63,9 @@ xkb_atom_text(struct xkb_context *ctx, xkb_atom_t atom);
 char *
 xkb_context_get_buffer(struct xkb_context *ctx, size_t size);
 
-ATTR_PRINTF(3, 4) void
-xkb_log(struct xkb_context *ctx, enum xkb_log_level level,
+ATTR_PRINTF(4, 5) void
+xkb_log(struct xkb_context *ctx, enum xkb_log_level level, int verbosity,
         const char *fmt, ...);
-
-#define xkb_log_cond_level(ctx, level, ...) do { \
-    if (xkb_context_get_log_level(ctx) >= (level)) \
-    xkb_log((ctx), (level), __VA_ARGS__); \
-} while (0)
-
-#define xkb_log_cond_verbosity(ctx, level, vrb, ...) do { \
-    if (xkb_context_get_log_verbosity(ctx) >= (vrb)) \
-    xkb_log_cond_level((ctx), (level), __VA_ARGS__); \
-} while (0)
 
 const char *
 xkb_context_get_default_rules(struct xkb_context *ctx);
@@ -99,17 +89,17 @@ xkb_context_get_default_options(struct xkb_context *ctx);
  * result in an error, though.
  */
 #define log_dbg(ctx, ...) \
-    xkb_log_cond_level((ctx), XKB_LOG_LEVEL_DEBUG, __VA_ARGS__)
+    xkb_log((ctx), XKB_LOG_LEVEL_DEBUG, 0, __VA_ARGS__)
 #define log_info(ctx, ...) \
-    xkb_log_cond_level((ctx), XKB_LOG_LEVEL_INFO, __VA_ARGS__)
+    xkb_log((ctx), XKB_LOG_LEVEL_INFO, 0, __VA_ARGS__)
 #define log_warn(ctx, ...) \
-    xkb_log_cond_level((ctx), XKB_LOG_LEVEL_WARNING, __VA_ARGS__)
+    xkb_log((ctx), XKB_LOG_LEVEL_WARNING, 0,  __VA_ARGS__)
 #define log_err(ctx, ...) \
-    xkb_log_cond_level((ctx), XKB_LOG_LEVEL_ERROR, __VA_ARGS__)
+    xkb_log((ctx), XKB_LOG_LEVEL_ERROR, 0,  __VA_ARGS__)
 #define log_wsgo(ctx, ...) \
-    xkb_log_cond_level((ctx), XKB_LOG_LEVEL_CRITICAL, __VA_ARGS__)
+    xkb_log((ctx), XKB_LOG_LEVEL_CRITICAL, 0, __VA_ARGS__)
 #define log_vrb(ctx, vrb, ...) \
-    xkb_log_cond_verbosity((ctx), XKB_LOG_LEVEL_WARNING, (vrb), __VA_ARGS__)
+    xkb_log((ctx), XKB_LOG_LEVEL_WARNING, (vrb), __VA_ARGS__)
 
 /*
  * Variants which are prefixed by the name of the function they're
