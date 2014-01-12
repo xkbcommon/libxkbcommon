@@ -218,17 +218,6 @@ ReportActionNotArray(struct xkb_keymap *keymap, enum xkb_action_type action,
     return false;
 }
 
-static inline bool
-ReportNotFound(struct xkb_keymap *keymap, enum xkb_action_type action,
-               enum action_field field, const char *what, const char *bad)
-{
-    log_err(keymap->ctx,
-            "%s named %s not found; "
-            "Ignoring the %s field of an %s action\n",
-            what, bad, fieldText(field), ActionTypeText(action));
-    return false;
-}
-
 static bool
 HandleNoAction(struct xkb_keymap *keymap, union xkb_action *action,
                enum action_field field, const ExprDef *array_ndx,

@@ -197,16 +197,6 @@ ReportTypeBadType(KeyTypesInfo *info, KeyTypeInfo *type,
                          TypeTxt(info, type), wanted);
 }
 
-static inline bool
-ReportTypeBadWidth(KeyTypesInfo *info, const char *type, int has, int needs)
-{
-    log_err(info->keymap->ctx,
-            "Key type \"%s\" has %d levels, must have %d; "
-            "Illegal type definition ignored\n",
-            type, has, needs);
-    return false;
-}
-
 /***====================================================================***/
 
 static void
