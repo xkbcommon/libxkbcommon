@@ -84,6 +84,9 @@ AM_CONDITIONAL(BUILD_LINUX_TESTS, [test "x$ac_cv_header_linux_input_h" = xyes])
 
 XORG_TESTSET_CFLAG([BASE_CFLAGS], [-fvisibility=hidden])
 
+XORG_CHECK_LINKER_FLAGS([-Wl,--no-undefined], [have_no_undefined=yes])
+AM_CONDITIONAL([HAVE_NO_UNDEFINED], [test "x$have_no_undefined" = xyes])
+
 # Define a configuration option for the XKB config root
 xkb_base=`$PKG_CONFIG --variable=xkb_base xkeyboard-config`
 if test "x$xkb_base" = x; then

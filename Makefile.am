@@ -17,6 +17,9 @@ AM_CPPFLAGS = \
 AM_CFLAGS = $(BASE_CFLAGS)
 
 AM_LDFLAGS = -no-undefined
+if HAVE_NO_UNDEFINED
+AM_LDFLAGS += -Wl,--no-undefined
+endif
 
 AM_YFLAGS = -d -p _xkbcommon_
 
