@@ -33,30 +33,6 @@
 #include "utils.h"
 #include "context.h"
 
-struct xkb_context {
-    int refcnt;
-
-    ATTR_PRINTF(3, 0) void (*log_fn)(struct xkb_context *ctx,
-                                     enum xkb_log_level level,
-                                     const char *fmt, va_list args);
-    enum xkb_log_level log_level;
-    int log_verbosity;
-    void *user_data;
-
-    struct xkb_rule_names names_dflt;
-
-    darray(char *) includes;
-    darray(char *) failed_includes;
-
-    struct atom_table *atom_table;
-
-    /* Buffer for the *Text() functions. */
-    char text_buffer[2048];
-    size_t text_next;
-
-    unsigned int use_environment_names : 1;
-};
-
 /**
  * Append one directory to the context's include path.
  */
@@ -154,12 +130,6 @@ xkb_context_num_include_paths(struct xkb_context *ctx)
     return darray_size(ctx->includes);
 }
 
-unsigned int
-xkb_context_num_failed_include_paths(struct xkb_context *ctx)
-{
-    return darray_size(ctx->failed_includes);
-}
-
 /**
  * Returns the given entry in the context's include path, or NULL if an
  * invalid index is passed.
@@ -171,16 +141,6 @@ xkb_context_include_path_get(struct xkb_context *ctx, unsigned int idx)
         return NULL;
 
     return darray_item(ctx->includes, idx);
-}
-
-const char *
-xkb_context_failed_include_path_get(struct xkb_context *ctx,
-                                    unsigned int idx)
-{
-    if (idx >= xkb_context_num_failed_include_paths(ctx))
-        return NULL;
-
-    return darray_item(ctx->failed_includes, idx);
 }
 
 /**
@@ -274,14 +234,6 @@ log_verbosity(const char *verbosity) {
     return 0;
 }
 
-#ifndef DEFAULT_XKB_VARIANT
-#define DEFAULT_XKB_VARIANT NULL
-#endif
-
-#ifndef DEFAULT_XKB_OPTIONS
-#define DEFAULT_XKB_OPTIONS NULL
-#endif
-
 /**
  * Create a new context.
  */
@@ -325,44 +277,6 @@ xkb_context_new(enum xkb_context_flags flags)
     }
 
     return ctx;
-}
-
-xkb_atom_t
-xkb_atom_lookup(struct xkb_context *ctx, const char *string)
-{
-    return atom_lookup(ctx->atom_table, string, strlen(string));
-}
-
-xkb_atom_t
-xkb_atom_intern(struct xkb_context *ctx, const char *string, size_t len)
-{
-    return atom_intern(ctx->atom_table, string, len, false);
-}
-
-xkb_atom_t
-xkb_atom_steal(struct xkb_context *ctx, char *string)
-{
-    return atom_intern(ctx->atom_table, string, strlen(string), true);
-}
-
-const char *
-xkb_atom_text(struct xkb_context *ctx, xkb_atom_t atom)
-{
-    return atom_text(ctx->atom_table, atom);
-}
-
-void
-xkb_log(struct xkb_context *ctx, enum xkb_log_level level, int verbosity,
-        const char *fmt, ...)
-{
-    va_list args;
-
-    if (ctx->log_level < level || ctx->log_verbosity < verbosity)
-        return;
-
-    va_start(args, fmt);
-    ctx->log_fn(ctx, level, fmt, args);
-    va_end(args);
 }
 
 XKB_EXPORT void
@@ -410,79 +324,4 @@ XKB_EXPORT void
 xkb_context_set_user_data(struct xkb_context *ctx, void *user_data)
 {
     ctx->user_data = user_data;
-}
-
-char *
-xkb_context_get_buffer(struct xkb_context *ctx, size_t size)
-{
-    char *rtrn;
-
-    if (size >= sizeof(ctx->text_buffer))
-        return NULL;
-
-    if (sizeof(ctx->text_buffer) - ctx->text_next <= size)
-        ctx->text_next = 0;
-
-    rtrn = &ctx->text_buffer[ctx->text_next];
-    ctx->text_next += size;
-
-    return rtrn;
-}
-
-const char *
-xkb_context_get_default_rules(struct xkb_context *ctx)
-{
-    const char *env = NULL;
-
-    if (ctx->use_environment_names)
-        env = getenv("XKB_DEFAULT_RULES");
-
-    return env ? env : DEFAULT_XKB_RULES;
-}
-
-const char *
-xkb_context_get_default_model(struct xkb_context *ctx)
-{
-    const char *env = NULL;
-
-    if (ctx->use_environment_names)
-        env = getenv("XKB_DEFAULT_MODEL");
-
-    return env ? env : DEFAULT_XKB_MODEL;
-}
-
-const char *
-xkb_context_get_default_layout(struct xkb_context *ctx)
-{
-    const char *env = NULL;
-
-    if (ctx->use_environment_names)
-        env = getenv("XKB_DEFAULT_LAYOUT");
-
-    return env ? env : DEFAULT_XKB_LAYOUT;
-}
-
-const char *
-xkb_context_get_default_variant(struct xkb_context *ctx)
-{
-    const char *env = NULL;
-    const char *layout = getenv("XKB_DEFAULT_VARIANT");
-
-    /* We don't want to inherit the variant if they haven't also set a
-     * layout, since they're so closely paired. */
-    if (layout && ctx->use_environment_names)
-        env = getenv("XKB_DEFAULT_VARIANT");
-
-    return env ? env : DEFAULT_XKB_VARIANT;
-}
-
-const char *
-xkb_context_get_default_options(struct xkb_context *ctx)
-{
-    const char *env = NULL;
-
-    if (ctx->use_environment_names)
-        env = getenv("XKB_DEFAULT_OPTIONS");
-
-    return env ? env : DEFAULT_XKB_OPTIONS;
 }

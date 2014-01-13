@@ -59,6 +59,7 @@ libxkbcommon_la_SOURCES = \
 	src/atom.h \
 	src/context.c \
 	src/context.h \
+	src/context-priv.c \
 	src/compat.c \
 	src/darray.h \
 	src/keysym.c \

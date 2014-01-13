@@ -28,6 +28,30 @@
 
 #include "atom.h"
 
+struct xkb_context {
+    int refcnt;
+
+    ATTR_PRINTF(3, 0) void (*log_fn)(struct xkb_context *ctx,
+                                     enum xkb_log_level level,
+                                     const char *fmt, va_list args);
+    enum xkb_log_level log_level;
+    int log_verbosity;
+    void *user_data;
+
+    struct xkb_rule_names names_dflt;
+
+    darray(char *) includes;
+    darray(char *) failed_includes;
+
+    struct atom_table *atom_table;
+
+    /* Buffer for the *Text() functions. */
+    char text_buffer[2048];
+    size_t text_next;
+
+    unsigned int use_environment_names : 1;
+};
+
 unsigned int
 xkb_context_num_failed_include_paths(struct xkb_context *ctx);
 
