@@ -67,6 +67,7 @@ libxkbcommon_la_SOURCES = \
 	src/ks_tables.h \
 	src/keymap.c \
 	src/keymap.h \
+	src/keymap-priv.c \
 	src/state.c \
 	src/text.c \
 	src/text.h \

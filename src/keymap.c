@@ -53,48 +53,6 @@
 #include "keymap.h"
 #include "text.h"
 
-static void
-update_builtin_keymap_fields(struct xkb_keymap *keymap)
-{
-    struct xkb_context *ctx = keymap->ctx;
-
-    /*
-     * Add predefined (AKA real, core, X11) modifiers.
-     * The order is important!
-     */
-    darray_appends_t(keymap->mods, struct xkb_mod,
-        { .name = xkb_atom_intern_literal(ctx, "Shift"),   .type = MOD_REAL },
-        { .name = xkb_atom_intern_literal(ctx, "Lock"),    .type = MOD_REAL },
-        { .name = xkb_atom_intern_literal(ctx, "Control"), .type = MOD_REAL },
-        { .name = xkb_atom_intern_literal(ctx, "Mod1"),    .type = MOD_REAL },
-        { .name = xkb_atom_intern_literal(ctx, "Mod2"),    .type = MOD_REAL },
-        { .name = xkb_atom_intern_literal(ctx, "Mod3"),    .type = MOD_REAL },
-        { .name = xkb_atom_intern_literal(ctx, "Mod4"),    .type = MOD_REAL },
-        { .name = xkb_atom_intern_literal(ctx, "Mod5"),    .type = MOD_REAL });
-}
-
-static struct xkb_keymap *
-xkb_keymap_new(struct xkb_context *ctx,
-               enum xkb_keymap_format format,
-               enum xkb_keymap_compile_flags flags)
-{
-    struct xkb_keymap *keymap;
-
-    keymap = calloc(1, sizeof(*keymap));
-    if (!keymap)
-        return NULL;
-
-    keymap->refcnt = 1;
-    keymap->ctx = xkb_context_ref(ctx);
-
-    keymap->format = format;
-    keymap->flags = flags;
-
-    update_builtin_keymap_fields(keymap);
-
-    return keymap;
-}
-
 XKB_EXPORT struct xkb_keymap *
 xkb_keymap_ref(struct xkb_keymap *keymap)
 {
@@ -545,56 +503,4 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t kc)
         return 0;
 
     return key->repeats;
-}
-
-struct xkb_key *
-XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases)
-{
-    struct xkb_key *key;
-
-    xkb_foreach_key(key, keymap)
-        if (key->name == name)
-            return key;
-
-    if (use_aliases) {
-        xkb_atom_t new_name = XkbResolveKeyAlias(keymap, name);
-        if (new_name != XKB_ATOM_NONE)
-            return XkbKeyByName(keymap, new_name, false);
-    }
-
-    return NULL;
-}
-
-xkb_atom_t
-XkbResolveKeyAlias(struct xkb_keymap *keymap, xkb_atom_t name)
-{
-    for (unsigned i = 0; i < keymap->num_key_aliases; i++)
-        if (keymap->key_aliases[i].alias == name)
-            return keymap->key_aliases[i].real;
-
-    return XKB_ATOM_NONE;
-}
-
-void
-XkbEscapeMapName(char *name)
-{
-    /*
-     * All latin-1 alphanumerics, plus parens, slash, minus, underscore and
-     * wildcards.
-     */
-    static const unsigned char legal[] = {
-        0x00, 0x00, 0x00, 0x00, 0x00, 0xa7, 0xff, 0x83,
-        0xfe, 0xff, 0xff, 0x87, 0xfe, 0xff, 0xff, 0x07,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0xff, 0xff, 0x7f, 0xff, 0xff, 0xff, 0x7f, 0xff
-    };
-
-    if (!name)
-        return;
-
-    while (*name) {
-        if (!(legal[*name / 8] & (1 << (*name % 8))))
-            *name = '_';
-        name++;
-    }
 }

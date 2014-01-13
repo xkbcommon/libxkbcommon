@@ -412,6 +412,11 @@ XkbKeyGroupWidth(const struct xkb_key *key, xkb_layout_index_t layout)
     return key->groups[layout].type->num_levels;
 }
 
+struct xkb_keymap *
+xkb_keymap_new(struct xkb_context *ctx,
+               enum xkb_keymap_format format,
+               enum xkb_keymap_compile_flags flags);
+
 struct xkb_key *
 XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases);
 
