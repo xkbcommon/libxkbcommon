@@ -28,6 +28,7 @@
 /* Don't use compat names in internal code. */
 #define _XKBCOMMON_COMPAT_H
 #include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-compose.h"
 #include "utils.h"
 
 /* Automake test exit code to signify SKIP (à la PASS, FAIL, etc). */
@@ -81,7 +82,9 @@ test_compile_rules(struct xkb_context *context, const char *rules,
                    const char *options);
 
 void
-test_print_keycode_state(struct xkb_state *state, xkb_keycode_t keycode);
+test_print_keycode_state(struct xkb_state *state,
+                         struct xkb_compose_state *compose_state,
+                         xkb_keycode_t keycode);
 
 void
 test_print_state_changes(enum xkb_state_component changed);

@@ -347,14 +347,18 @@ test_compile_rules(struct xkb_context *context, const char *rules,
 }
 
 void
-test_print_keycode_state(struct xkb_state *state, xkb_keycode_t keycode)
+test_print_keycode_state(struct xkb_state *state,
+                         struct xkb_compose_state *compose_state,
+                         xkb_keycode_t keycode)
 {
     struct xkb_keymap *keymap;
 
+    xkb_keysym_t sym;
     const xkb_keysym_t *syms;
     int nsyms;
     char s[16];
     xkb_layout_index_t layout;
+    enum xkb_compose_status status;
 
     keymap = xkb_state_get_keymap(state);
 
@@ -363,21 +367,34 @@ test_print_keycode_state(struct xkb_state *state, xkb_keycode_t keycode)
     if (nsyms <= 0)
         return;
 
-    if (nsyms == 1) {
-        xkb_keysym_t sym = xkb_state_key_get_one_sym(state, keycode);
-        xkb_keysym_get_name(sym, s, sizeof(s));
-        printf("keysym [ %-*s ] ", (int) sizeof(s), s);
+    status = XKB_COMPOSE_NOTHING;
+    if (compose_state)
+        status = xkb_compose_state_get_status(compose_state);
+
+    if (status == XKB_COMPOSE_COMPOSING || status == XKB_COMPOSE_CANCELLED)
+        return;
+
+    if (status == XKB_COMPOSE_COMPOSED) {
+        sym = xkb_compose_state_get_one_sym(compose_state);
+        syms = &sym;
+        nsyms = 1;
     }
-    else {
-        printf("keysyms [ ");
-        for (int i = 0; i < nsyms; i++) {
-            xkb_keysym_get_name(syms[i], s, sizeof(s));
-            printf("%-*s ", (int) sizeof(s), s);
-        }
-        printf("] ");
+    else if (nsyms == 1) {
+        sym = xkb_state_key_get_one_sym(state, keycode);
+        syms = &sym;
     }
 
-    xkb_state_key_get_utf8(state, keycode, s, sizeof(s));
+    printf("keysyms [ ");
+    for (int i = 0; i < nsyms; i++) {
+        xkb_keysym_get_name(syms[i], s, sizeof(s));
+        printf("%-*s ", (int) sizeof(s), s);
+    }
+    printf("] ");
+
+    if (status == XKB_COMPOSE_COMPOSED)
+        xkb_compose_state_get_utf8(compose_state, s, sizeof(s));
+    else
+        xkb_state_key_get_utf8(state, keycode, s, sizeof(s));
     printf("unicode [ %s ] ", s);
 
     layout = xkb_state_key_get_layout(state, keycode);
