@@ -163,3 +163,22 @@ AC_CONFIG_FILES([
     doc/Doxyfile
 ])
 AC_OUTPUT
+
+AC_MSG_RESULT([
+        $PACKAGE_NAME $VERSION
+
+        libxkbcommon:            yes
+        libxkbcommon-x11:        ${enable_x11}
+        documentation:           ${build_docs}
+
+        default XKB rules:       ${DEFAULT_XKB_RULES}
+        default XKB model:       ${DEFAULT_XKB_MODEL}
+        default XKB layout:      ${DEFAULT_XKB_LAYOUT}
+        default XKB variant:     ${DEFAULT_XKB_VARIANT}
+        default XKB options:     ${DEFAULT_XKB_OPTIONS}
+
+        prefix:                  ${prefix}
+        includedir:              ${includedir}
+        lib dir:                 ${libdir}
+        XKB config root:         ${XKBCONFIGROOT}
+])
