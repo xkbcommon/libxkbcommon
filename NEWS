@@ -1,7 +1,32 @@
-libxkbcommon 0.3.2
+libxkbcommon 0.4.0
 ==================
 
-- Added XKB_KEY_XF86AudioMicMute keysym, to match xproto 7.0.24.
+- Add a new add-on library, xkbcommon-x11, to support creating keymaps
+  with the XKB X11 protocol, by querying the X server directly.
+  See the xkbcommon/xkbcommon-x11.h header file for more details.
+  This library requires libxcb-xkb >= 1.10, and is enabled by default.
+  It can be disabled with the --disable-x11 configure switch.
+  Distributions are encouraged to split the necessary files for this
+  library (libxkbcommon-x11.so, xkbcommon-x11.pc, xkbcommon/xkbcommon-x11.h)
+  to a separate package, such that the main package does not depend on
+  X11 libraries.
+
+- Fix the keysym <-> name lookup table to not require huge amounts of
+  relocations.
+
+- Fix a bug in the keysym <-> name lookup, whereby lookup might fail in
+  some rare cases.
+
+- Reduce memory usage during keymap compilation.
+
+- New API:
+  New keysyms from xproto 7.0.25 (German T3 layout keysyms).
+  XKB_MOD_NAME_NUM for the usual NumLock modifier.
+  xkb_x11_* types and functions, XKB_X11_* constants.
+
+
+libxkbcommon 0.3.2
+==================
 
 - Log messages from the library now look like "xkbcommon: ERROR" by
   default, instead of xkbcomp-like "Error:   ".
@@ -14,6 +39,7 @@ libxkbcommon 0.3.2
 - Support byacc for generating the parser, in addition to Bison.
 
 - New API:
+  XKB_KEY_XF86AudioMicMute keysym from xproto 7.0.24.
   XKB_KEYSYM_NO_FLAGS
   XKB_CONTEXT_NO_FLAGS
   XKB_MAP_COMPILE_NO_FLAGS
