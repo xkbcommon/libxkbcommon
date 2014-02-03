@@ -148,6 +148,17 @@ buf_append(struct scanner *s, char ch)
 }
 
 static inline bool
+buf_appends(struct scanner *s, const char *str)
+{
+    int ret;
+    ret = snprintf(s->buf + s->buf_pos, sizeof(s->buf) - s->buf_pos, "%s", str);
+    if (ret < 0 || (size_t) ret >= sizeof(s->buf) - s->buf_pos)
+        return false;
+    s->buf_pos += ret;
+    return true;
+}
+
+static inline bool
 oct(struct scanner *s, uint8_t *out)
 {
     int i;
