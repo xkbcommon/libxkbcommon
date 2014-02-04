@@ -118,7 +118,7 @@ xkb_context_get_default_rules(struct xkb_context *ctx)
     const char *env = NULL;
 
     if (ctx->use_environment_names)
-        env = getenv("XKB_DEFAULT_RULES");
+        env = secure_getenv("XKB_DEFAULT_RULES");
 
     return env ? env : DEFAULT_XKB_RULES;
 }
@@ -129,7 +129,7 @@ xkb_context_get_default_model(struct xkb_context *ctx)
     const char *env = NULL;
 
     if (ctx->use_environment_names)
-        env = getenv("XKB_DEFAULT_MODEL");
+        env = secure_getenv("XKB_DEFAULT_MODEL");
 
     return env ? env : DEFAULT_XKB_MODEL;
 }
@@ -140,7 +140,7 @@ xkb_context_get_default_layout(struct xkb_context *ctx)
     const char *env = NULL;
 
     if (ctx->use_environment_names)
-        env = getenv("XKB_DEFAULT_LAYOUT");
+        env = secure_getenv("XKB_DEFAULT_LAYOUT");
 
     return env ? env : DEFAULT_XKB_LAYOUT;
 }
@@ -149,12 +149,12 @@ const char *
 xkb_context_get_default_variant(struct xkb_context *ctx)
 {
     const char *env = NULL;
-    const char *layout = getenv("XKB_DEFAULT_VARIANT");
+    const char *layout = secure_getenv("XKB_DEFAULT_VARIANT");
 
     /* We don't want to inherit the variant if they haven't also set a
      * layout, since they're so closely paired. */
     if (layout && ctx->use_environment_names)
-        env = getenv("XKB_DEFAULT_VARIANT");
+        env = secure_getenv("XKB_DEFAULT_VARIANT");
 
     return env ? env : DEFAULT_XKB_VARIANT;
 }
@@ -165,7 +165,7 @@ xkb_context_get_default_options(struct xkb_context *ctx)
     const char *env = NULL;
 
     if (ctx->use_environment_names)
-        env = getenv("XKB_DEFAULT_OPTIONS");
+        env = secure_getenv("XKB_DEFAULT_OPTIONS");
 
     return env ? env : DEFAULT_XKB_OPTIONS;
 }

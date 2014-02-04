@@ -187,6 +187,14 @@ unmap_file(const char *str, size_t size);
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MAX3(a, b, c) MAX(MAX((a), (b)), (c))
 
+#if defined(HAVE_SECURE_GETENV)
+# define secure_getenv secure_getenv
+#elif defined(HAVE___SECURE_GETENV)
+# define secure_getenv __secure_getenv
+#else
+# define secure_getenv getenv
+#endif
+
 /* Compiler Attributes */
 
 #if defined(__GNUC__) && (__GNUC__ >= 4) && !defined(__CYGWIN__)

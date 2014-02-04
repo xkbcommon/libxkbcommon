@@ -75,6 +75,12 @@ AS_IF([test "x$ac_cv_func_strcasecmp" = xno -o \
 
 AC_CHECK_FUNCS([eaccess euidaccess mmap])
 
+AC_CHECK_FUNCS([secure_getenv __secure_getenv])
+AS_IF([test "x$ac_cv_func_secure_getenv" = xno -a \
+            "x$ac_cv_func___secure_getenv" = xno], [
+    AC_MSG_WARN([C library does not support secure_getenv, using getenv instead])
+])
+
 # Some tests use Linux-specific headers
 AC_CHECK_HEADER([linux/input.h])
 AM_CONDITIONAL(BUILD_LINUX_TESTS, [test "x$ac_cv_header_linux_input_h" = xyes])
