@@ -62,19 +62,16 @@ PKG_PROG_PKG_CONFIG
 # Note: we use some yacc extensions, which work with either GNU bison
 # (preferred) or byacc. Other yacc's may or may not work.
 AC_PROG_YACC
-AC_PATH_PROG([YACC_INST], $YACC)
-if test ! -f "src/xkbcomp/parser.c"; then
-   if test -z "$YACC_INST"; then
-      AC_MSG_ERROR([yacc not found - unable to compile src/xkbcomp/parser.y])
-   fi
-fi
+AS_IF([test ! -f "src/xkbcomp/parser.c" -a "x$ac_cv_prog_YACC" = x], [
+    AC_MSG_ERROR([yacc not found - unable to compile src/xkbcomp/parser.y])
+])
 
 # Checks for library functions.
 AC_CHECK_FUNCS([strcasecmp strncasecmp])
-if test "x$ac_cv_func_strcasecmp" = xno || \
-   test "x$ac_cv_func_strncasecmp" = xno; then
+AS_IF([test "x$ac_cv_func_strcasecmp" = xno -o \
+            "x$ac_cv_func_strncasecmp" = xno], [
     AC_MSG_ERROR([C library does not support strcasecmp/strncasecmp])
-fi
+])
 
 AC_CHECK_FUNCS([eaccess euidaccess mmap])
 
@@ -89,9 +86,9 @@ AM_CONDITIONAL([HAVE_NO_UNDEFINED], [test "x$have_no_undefined" = xyes])
 
 # Define a configuration option for the XKB config root
 xkb_base=`$PKG_CONFIG --variable=xkb_base xkeyboard-config`
-if test "x$xkb_base" = x; then
-    xkb_base=$datadir/X11/xkb
-fi
+AS_IF([test "x$xkb_base" = x], [
+    xkb_base="$datadir/X11/xkb"
+])
 AC_ARG_WITH([xkb_config_root],
     [AS_HELP_STRING([--with-xkb-config-root=<path>],
         [Set default XKB config root (default: xkeyboard-config install path)])],
@@ -128,31 +125,31 @@ AC_ARG_WITH([default_variant],
         [Default XKB variant (default: (none))])],
     [DEFAULT_XKB_VARIANT="$withval"],
     [DEFAULT_XKB_VARAINT=])
-if ! test "x$DEFAULT_XKB_VARIANT" = x; then
+AS_IF([test "x$DEFAULT_XKB_VARIANT" != x], [
     AC_DEFINE_UNQUOTED([DEFAULT_XKB_VARIANT], ["$DEFAULT_XKB_VARIANT"],
                        [Default XKB variant])
-fi
+])
 
 AC_ARG_WITH([default_options],
     [AS_HELP_STRING([--with-default-options=<path>],
         [Default XKB options (default: (none))])],
     [DEFAULT_XKB_OPTIONS="$withval"],
     [DEFAULT_XKB_OPTIONS=])
-if ! test "x$DEFAULT_XKB_OPTIONS" = x; then
+AS_IF([test "x$DEFAULT_XKB_OPTIONS" != x], [
     AC_DEFINE_UNQUOTED([DEFAULT_XKB_OPTIONS], ["$DEFAULT_XKB_OPTIONS"],
                        [Default XKB options])
-fi
+])
 
 AC_ARG_ENABLE([x11],
     [AS_HELP_STRING([--disable-x11],
         [Disable support for creating keymaps with the X11 protocol (default: enabled)])],
     [], [enable_x11=yes])
-if test "x$enable_x11" == xyes; then
+AS_IF([test "x$enable_x11" = xyes], [
     PKG_CHECK_MODULES([XCB_XKB], [xcb xcb-xkb >= 1.10], [],
         [AC_MSG_ERROR([xkbcommon-x11 requires xcb-xkb >= 1.10 which was not found. \
 You can disable X11 support with --disable-x11.])])
-fi
-AM_CONDITIONAL([ENABLE_X11], [test "x$enable_x11" == xyes])
+])
+AM_CONDITIONAL([ENABLE_X11], [test "x$enable_x11" = xyes])
 
 AC_CONFIG_FILES([
     Makefile
