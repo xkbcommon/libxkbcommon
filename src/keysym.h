@@ -59,6 +59,9 @@ xkb_keysym_is_upper(xkb_keysym_t keysym);
 bool
 xkb_keysym_is_keypad(xkb_keysym_t keysym);
 
+bool
+xkb_keysym_is_modifier(xkb_keysym_t keysym);
+
 xkb_keysym_t
 xkb_keysym_to_upper(xkb_keysym_t ks);
 

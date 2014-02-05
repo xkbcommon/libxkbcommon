@@ -223,6 +223,18 @@ xkb_keysym_is_keypad(xkb_keysym_t keysym)
     return keysym >= XKB_KEY_KP_Space && keysym <= XKB_KEY_KP_Equal;
 }
 
+
+bool
+xkb_keysym_is_modifier(xkb_keysym_t keysym)
+{
+    return
+        (keysym >= XKB_KEY_Shift_L && keysym <= XKB_KEY_Hyper_R) ||
+        /* libX11 only goes upto XKB_KEY_ISO_Level5_Lock. */
+        (keysym >= XKB_KEY_ISO_Lock && keysym <= XKB_KEY_ISO_Last_Group_Lock) ||
+        keysym == XKB_KEY_Mode_switch ||
+        keysym == XKB_KEY_Num_Lock;
+}
+
 static void
 XConvertCase(xkb_keysym_t sym, xkb_keysym_t *lower, xkb_keysym_t *upper);
 
