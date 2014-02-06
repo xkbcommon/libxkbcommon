@@ -379,7 +379,7 @@ test_print_keycode_state(struct xkb_state *state, xkb_keycode_t keycode)
     printf("unicode [ ");
     for (int i = 0; i < nsyms; i++) {
         uint32_t unicode = xkb_keysym_to_utf32(syms[i]);
-        printf("%lc ", (int)(unicode ? unicode : L' '));
+        printf("%lc ", (int) (unicode > 32 ? unicode : L' '));
     }
     printf("] ");
 #endif
