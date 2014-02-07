@@ -23,10 +23,15 @@
 #ifndef CCAN_DARRAY_H
 #define CCAN_DARRAY_H
 
+/* Originally taken from: http://ccodearchive.net/info/darray.html
+ * But modified for libxkbcommon. */
+
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
+#include <limits.h>
 
-#define darray(type) struct { type *item; size_t size; size_t alloc; }
+#define darray(type) struct { type *item; unsigned size; unsigned alloc; }
 
 #define darray_new() { 0, 0, 0 }
 
@@ -85,13 +90,13 @@ typedef darray (unsigned long)  darray_ulong;
 /*** Insertion (multiple items) ***/
 
 #define darray_append_items(arr, items, count) do { \
-    size_t __count = (count), __oldSize = (arr).size; \
+    unsigned __count = (count), __oldSize = (arr).size; \
     darray_resize(arr, __oldSize + __count); \
     memcpy((arr).item + __oldSize, items, __count * sizeof(*(arr).item)); \
 } while (0)
 
 #define darray_from_items(arr, items, count) do { \
-    size_t __count = (count); \
+    unsigned __count = (count); \
     darray_resize(arr, __count); \
     memcpy((arr).item, items, __count * sizeof(*(arr).item)); \
 } while (0)
@@ -113,14 +118,14 @@ typedef darray (unsigned long)  darray_ulong;
 } while (0)
 
 #define darray_appends_nullterminate(arr, items, count) do { \
-    size_t __count = (count), __oldSize = (arr).size; \
+    unsigned __count = (count), __oldSize = (arr).size; \
     darray_resize(arr, __oldSize + __count + 1); \
     memcpy((arr).item + __oldSize, items, __count * sizeof(*(arr).item)); \
     (arr).item[--(arr).size] = 0; \
 } while (0)
 
 #define darray_prepends_nullterminate(arr, items, count) do { \
-    size_t __count = (count), __oldSize = (arr).size; \
+    unsigned __count = (count), __oldSize = (arr).size; \
     darray_resize(arr, __count + __oldSize + 1); \
     memmove((arr).item + __count, (arr).item, \
             __oldSize * sizeof(*(arr).item)); \
@@ -134,7 +139,7 @@ typedef darray (unsigned long)  darray_ulong;
     darray_growalloc(arr, (arr).size = (newSize))
 
 #define darray_resize0(arr, newSize) do { \
-    size_t __oldSize = (arr).size, __newSize = (newSize); \
+    unsigned __oldSize = (arr).size, __newSize = (newSize); \
     (arr).size = __newSize; \
     if (__newSize > __oldSize) { \
         darray_growalloc(arr, __newSize); \
@@ -149,14 +154,16 @@ typedef darray (unsigned long)  darray_ulong;
 } while (0)
 
 #define darray_growalloc(arr, need)   do { \
-    size_t __need = (need); \
+    unsigned __need = (need); \
     if (__need > (arr).alloc) \
-    darray_realloc(arr, darray_next_alloc((arr).alloc, __need)); \
+    darray_realloc(arr, darray_next_alloc((arr).alloc, __need, \
+                                          sizeof(*(arr).item))); \
 } while (0)
 
-static inline size_t
-darray_next_alloc(size_t alloc, size_t need)
+static inline unsigned
+darray_next_alloc(unsigned alloc, unsigned need, unsigned itemSize)
 {
+    assert(need < UINT_MAX / itemSize / 2); /* Overflow. */
     if (alloc == 0)
         alloc = 4;
     while (alloc < need)
