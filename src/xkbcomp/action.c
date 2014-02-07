@@ -469,15 +469,24 @@ HandleMovePtr(struct xkb_keymap *keymap, union xkb_action *action,
         if (!ExprResolveInteger(keymap->ctx, value, &val))
             return ReportMismatch(keymap, action->type, field, "integer");
 
+        if (val < INT16_MIN || val > INT16_MAX) {
+            log_err(keymap->ctx,
+                    "The %s field in the %s action must be in range %d..%d; "
+                    "Action definition ignored\n",
+                    fieldText(field), ActionTypeText(action->type),
+                    INT16_MIN, INT16_MAX);
+            return false;
+        }
+
         if (field == ACTION_FIELD_X) {
             if (absolute)
                 act->flags |= ACTION_ABSOLUTE_X;
-            act->x = val;
+            act->x = (int16_t) val;
         }
         else {
             if (absolute)
                 act->flags |= ACTION_ABSOLUTE_Y;
-            act->y = val;
+            act->y = (int16_t) val;
         }
 
         return true;
