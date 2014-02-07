@@ -299,7 +299,7 @@ typedef struct {
 typedef struct {
     ParseCommon common;
     enum merge_mode merge;
-    int group;
+    unsigned group;
     ExprDef *def;
 } GroupCompatDef;
 
@@ -314,7 +314,7 @@ typedef struct {
 typedef struct {
     ParseCommon common;
     enum merge_mode merge;
-    int ndx;
+    unsigned ndx;
     ExprDef *name;
     bool virtual;
 } LedNameDef;

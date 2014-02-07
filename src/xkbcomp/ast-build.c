@@ -356,7 +356,7 @@ SymbolsCreate(xkb_atom_t keyName, VarDef *symbols)
 }
 
 GroupCompatDef *
-GroupCompatCreate(int group, ExprDef *val)
+GroupCompatCreate(unsigned group, ExprDef *val)
 {
     GroupCompatDef *def = malloc(sizeof(*def));
     if (!def)
@@ -372,7 +372,7 @@ GroupCompatCreate(int group, ExprDef *val)
 }
 
 ModMapDef *
-ModMapCreate(uint32_t modifier, ExprDef *keys)
+ModMapCreate(xkb_atom_t modifier, ExprDef *keys)
 {
     ModMapDef *def = malloc(sizeof(*def));
     if (!def)
@@ -404,7 +404,7 @@ LedMapCreate(xkb_atom_t name, VarDef *body)
 }
 
 LedNameDef *
-LedNameCreate(int ndx, ExprDef *name, bool virtual)
+LedNameCreate(unsigned ndx, ExprDef *name, bool virtual)
 {
     LedNameDef *def = malloc(sizeof(*def));
     if (!def)
