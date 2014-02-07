@@ -226,7 +226,7 @@ typedef struct {
 typedef struct {
     ExprCommon expr;
     darray(xkb_keysym_t) syms;
-    darray(int) symsMapIndex;
+    darray(unsigned int) symsMapIndex;
     darray(unsigned int) symsNumEntries;
 } ExprKeysymList;
 
