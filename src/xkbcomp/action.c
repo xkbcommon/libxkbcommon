@@ -557,23 +557,22 @@ HandlePtrBtn(struct xkb_keymap *keymap, union xkb_action *action,
         return true;
     }
     else if (field == ACTION_FIELD_COUNT) {
-        int btn;
+        int val;
 
         if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
 
-        /* XXX: Should this actually be ResolveButton? */
-        if (!ExprResolveButton(keymap->ctx, value, &btn))
+        if (!ExprResolveInteger(keymap->ctx, value, &val))
             return ReportMismatch(keymap, action->type, field, "integer");
 
-        if (btn < 0 || btn > 255) {
+        if (val < 0 || val > 255) {
             log_err(keymap->ctx,
                     "The count field must have a value in the range 0..255; "
-                    "Illegal count %d ignored\n", btn);
+                    "Illegal count %d ignored\n", val);
             return false;
         }
 
-        act->count = btn;
+        act->count = (uint16_t) val;
         return true;
     }
     return ReportIllegal(keymap, action->type, field);
