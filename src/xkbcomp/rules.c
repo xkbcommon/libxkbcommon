@@ -731,7 +731,7 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
      */
     if (!darray_empty(*to) && s[0] != '+' && s[0] != '|') {
         if (darray_item(*to, 0) == '+' || darray_item(*to, 0) == '|')
-            darray_prepend_items_nullterminate(*to, value.start, value.len);
+            darray_prepends_nullterminate(*to, value.start, value.len);
         return true;
     }
 
@@ -748,7 +748,7 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
         /* Check if that's a start of an expansion. */
         if (s[i] != '%') {
             /* Just a normal character. */
-            darray_append_items_nullterminate(*to, &s[i++], 1);
+            darray_appends_nullterminate(*to, &s[i++], 1);
             continue;
         }
         if (++i >= value.len) goto error;
@@ -824,10 +824,10 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
             continue;
 
         if (pfx != 0)
-            darray_append_items_nullterminate(*to, &pfx, 1);
-        darray_append_items_nullterminate(*to, expanded.start, expanded.len);
+            darray_appends_nullterminate(*to, &pfx, 1);
+        darray_appends_nullterminate(*to, expanded.start, expanded.len);
         if (sfx != 0)
-            darray_append_items_nullterminate(*to, &sfx, 1);
+            darray_appends_nullterminate(*to, &sfx, 1);
     }
 
     return true;
