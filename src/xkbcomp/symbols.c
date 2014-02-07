@@ -125,12 +125,11 @@ ClearGroupInfo(GroupInfo *groupi)
 static void
 CopyGroupInfo(GroupInfo *to, const GroupInfo *from)
 {
-    xkb_level_index_t j;
     to->defined = from->defined;
     to->type = from->type;
     darray_init(to->levels);
     darray_copy(to->levels, from->levels);
-    for (j = 0; j < darray_size(to->levels); j++)
+    for (xkb_level_index_t j = 0; j < darray_size(to->levels); j++)
         if (darray_item(from->levels, j).num_syms > 1)
             darray_item(to->levels, j).u.syms =
                 memdup(darray_item(from->levels, j).u.syms,
@@ -480,7 +479,6 @@ static void
 MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
                      enum merge_mode merge)
 {
-    unsigned int i;
     KeyInfo *keyi;
     ModMapEntry *mm;
     xkb_atom_t *group_name;
@@ -498,7 +496,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
 
     group_names_in_both = MIN(darray_size(into->group_names),
                               darray_size(from->group_names));
-    for (i = 0; i < group_names_in_both; i++) {
+    for (xkb_layout_index_t i = 0; i < group_names_in_both; i++) {
         if (!darray_item(from->group_names, i))
             continue;
 
@@ -633,8 +631,6 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     xkb_layout_index_t ndx;
     GroupInfo *groupi;
     xkb_level_index_t nLevels;
-    xkb_level_index_t i;
-    int j;
 
     if (!GetGroupIndex(info, keyi, arrayNdx, SYMBOLS, &ndx))
         return false;
@@ -669,7 +665,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
     groupi->defined |= GROUP_FIELD_SYMS;
 
-    for (i = 0; i < nLevels; i++) {
+    for (xkb_level_index_t i = 0; i < nLevels; i++) {
         unsigned int sym_index;
         struct xkb_level *leveli = &darray_item(groupi->levels, i);
 
@@ -678,7 +674,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         if (leveli->num_syms > 1)
             leveli->u.syms = calloc(leveli->num_syms, sizeof(*leveli->u.syms));
 
-        for (j = 0; j < leveli->num_syms; j++) {
+        for (unsigned j = 0; j < leveli->num_syms; j++) {
             xkb_keysym_t keysym = darray_item(value->keysym_list.syms,
                                               sym_index + j);
 
@@ -701,7 +697,6 @@ static bool
 AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
                 ExprDef *value)
 {
-    unsigned int i;
     xkb_layout_index_t ndx;
     GroupInfo *groupi;
     unsigned int nActs;
@@ -742,7 +737,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     groupi->defined |= GROUP_FIELD_ACTS;
 
     act = value->unary.child;
-    for (i = 0; i < nActs; i++) {
+    for (unsigned i = 0; i < nActs; i++) {
         union xkb_action *toAct = &darray_item(groupi->levels, i).action;
 
         if (!HandleActionDef(act, info->keymap, toAct, info->actions))
@@ -1102,12 +1097,11 @@ static int
 HandleSymbolsDef(SymbolsInfo *info, SymbolsDef *stmt)
 {
     KeyInfo keyi;
-    xkb_layout_index_t i;
 
     keyi = info->default_key;
     darray_init(keyi.groups);
     darray_copy(keyi.groups, info->default_key.groups);
-    for (i = 0; i < darray_size(keyi.groups); i++)
+    for (xkb_layout_index_t i = 0; i < darray_size(keyi.groups); i++)
         CopyGroupInfo(&darray_item(keyi.groups, i),
                       &darray_item(info->default_key.groups, i));
     keyi.merge = stmt->merge;
@@ -1134,7 +1128,6 @@ HandleSymbolsDef(SymbolsInfo *info, SymbolsDef *stmt)
 static bool
 HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
 {
-    ExprDef *key;
     ModMapEntry tmp;
     xkb_mod_index_t ndx;
     bool ok;
@@ -1153,7 +1146,7 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
     tmp.modifier = ndx;
     tmp.merge = def->merge;
 
-    for (key = def->keys; key != NULL; key = (ExprDef *) key->common.next) {
+    for (ExprDef *key = def->keys; key; key = (ExprDef *) key->common.next) {
         xkb_keysym_t sym;
 
         if (key->expr.op == EXPR_VALUE &&
