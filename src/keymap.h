@@ -223,7 +223,7 @@ struct xkb_pointer_button_action {
     enum xkb_action_type type;
     enum xkb_action_flags flags;
     uint8_t count;
-    int8_t button;
+    uint8_t button;
 };
 
 struct xkb_private_action {
