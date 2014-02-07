@@ -92,7 +92,10 @@ translate_mods(uint8_t rmods, uint16_t vmods_low, uint16_t vmods_high)
 {
     /* We represent mod masks in a single uint32_t value, with real mods
      * first and vmods after (though we don't make these distinctions). */
-    return rmods | (vmods_low << 8) | (vmods_high << 16);
+    return
+        ((xkb_mod_mask_t) rmods) |
+        ((xkb_mod_mask_t) vmods_low << 8) |
+        ((xkb_mod_mask_t) vmods_high << 16);
 }
 
 static enum xkb_action_controls
