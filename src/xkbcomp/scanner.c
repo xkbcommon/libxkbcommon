@@ -169,7 +169,7 @@ skip_more_whitespace_and_comments:
             return scanner_error(s, "identifier too long");
 
         /* Keyword. */
-        tok = keyword_to_token(s->buf);
+        tok = keyword_to_token(s->buf, s->buf_pos - 1);
         if (tok != -1) return tok;
 
         yylval->str = strdup(s->buf);

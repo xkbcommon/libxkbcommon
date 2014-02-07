@@ -45,6 +45,6 @@ XkbFile *
 parse(struct xkb_context *ctx, void *scanner, const char *map);
 
 int
-keyword_to_token(const char *string);
+keyword_to_token(const char *string, unsigned int len);
 
 #endif
