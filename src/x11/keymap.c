@@ -471,8 +471,11 @@ get_actions(struct xkb_keymap *keymap, xcb_connection_t *conn,
 
     for (int i = 0; i < acts_count_length; i++) {
         xcb_xkb_key_sym_map_t *wire_sym_map = sym_maps_iter.data;
+        int syms_length = xcb_xkb_key_sym_map_syms_length(wire_sym_map);
         uint8_t wire_count = *acts_count_iter;
         struct xkb_key *key = &keymap->keys[reply->firstKeyAction + i];
+
+        FAIL_UNLESS(wire_count == 0 || wire_count == syms_length);
 
         for (int j = 0; j < wire_count; j++) {
             xcb_xkb_action_t *wire_action = acts_iter.data;
