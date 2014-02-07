@@ -47,7 +47,7 @@ random_string(char **str_out, size_t *len_out)
     str = malloc(len + 1);
     assert(str);
 
-    for (int i = 0; i < len; i++)
+    for (size_t i = 0; i < len; i++)
         str[i] = random_chars[rand() % ARRAY_SIZE(random_chars)];
     /* Don't always terminate it; should work without. */
     if (rand() % 2 == 0)

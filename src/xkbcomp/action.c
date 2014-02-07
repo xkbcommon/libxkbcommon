@@ -799,7 +799,7 @@ HandlePrivate(struct xkb_keymap *keymap, union xkb_action *action,
                 return false;
             }
 
-            if (ndx < 0 || ndx >= sizeof(act->data)) {
+            if (ndx < 0 || (size_t) ndx >= sizeof(act->data)) {
                 log_err(keymap->ctx,
                         "The data for a private action is %lu bytes long; "
                         "Attempt to use data[%d] ignored\n",

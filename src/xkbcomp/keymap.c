@@ -92,7 +92,7 @@ FindInterpForKey(struct xkb_keymap *keymap, const struct xkb_key *key,
      * sym_interprets array from the most specific to the least specific,
      * such that when we find a match we return immediately.
      */
-    for (int i = 0; i < keymap->num_sym_interprets; i++) {
+    for (unsigned i = 0; i < keymap->num_sym_interprets; i++) {
         const struct xkb_sym_interpret *interp = &keymap->sym_interprets[i];
 
         xkb_mod_mask_t mods;

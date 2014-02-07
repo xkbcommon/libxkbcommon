@@ -110,10 +110,10 @@ get_keymap_format_ops(enum xkb_keymap_format format)
         [XKB_KEYMAP_FORMAT_TEXT_V1] = &text_v1_keymap_format_ops,
     };
 
-    if ((int) format < 0 || (int) format >= ARRAY_SIZE(keymap_format_ops))
+    if ((int) format < 0 || (int) format >= (int) ARRAY_SIZE(keymap_format_ops))
         return NULL;
 
-    return keymap_format_ops[format];
+    return keymap_format_ops[(int) format];
 }
 
 XKB_EXPORT struct xkb_keymap *

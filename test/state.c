@@ -272,21 +272,21 @@ test_serialisation(struct xkb_keymap *keymap)
     latched_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_LATCHED);
     assert(latched_mods == 0);
     locked_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED);
-    assert(locked_mods == (1 << caps));
+    assert(locked_mods == (1U << caps));
     effective_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
     assert(effective_mods == locked_mods);
 
     xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
     base_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED);
-    assert(base_mods == (1 << shift));
+    assert(base_mods == (1U << shift));
     latched_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_LATCHED);
     assert(latched_mods == 0);
     locked_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED);
-    assert(locked_mods == (1 << caps));
+    assert(locked_mods == (1U << caps));
     effective_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
     assert(effective_mods == (base_mods | locked_mods));
 
-    base_mods |= (1 << ctrl);
+    base_mods |= (1U << ctrl);
     xkb_state_update_mask(state, base_mods, latched_mods, locked_mods,
                           base_group, latched_group, locked_group);
 
@@ -328,10 +328,10 @@ test_consume(struct xkb_keymap *keymap)
     print_state(state);
 
     mask = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
-    assert(mask == ((1 << alt) | (1 << shift)));
+    assert(mask == ((1U << alt) | (1U << shift)));
     mask = xkb_state_mod_mask_remove_consumed(state, KEY_EQUAL + EVDEV_OFFSET,
                                               mask);
-    assert(mask == (1 << alt));
+    assert(mask == (1U << alt));
 
     xkb_state_unref(state);
 }
@@ -339,7 +339,7 @@ test_consume(struct xkb_keymap *keymap)
 static void
 key_iter(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
 {
-    int *counter = (int *) data;
+    xkb_keycode_t *counter = data;
 
     assert(*counter == key);
     (*counter)++;
@@ -348,7 +348,7 @@ key_iter(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
 static void
 test_range(struct xkb_keymap *keymap)
 {
-    int counter;
+    xkb_keycode_t counter;
 
     assert(xkb_keymap_min_keycode(keymap) == 9);
     assert(xkb_keymap_max_keycode(keymap) == 253);

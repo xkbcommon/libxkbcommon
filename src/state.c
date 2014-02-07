@@ -121,9 +121,8 @@ get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
 {
     const struct xkb_key_type *type = key->groups[group].type;
     xkb_mod_mask_t active_mods = state->components.mods & type->mods.mask;
-    unsigned int i;
 
-    for (i = 0; i < type->num_entries; i++) {
+    for (unsigned i = 0; i < type->num_entries; i++) {
         /*
          * If the virtual modifiers are not bound to anything, we're
          * supposed to skip the entry (xserver does this with cached
@@ -170,7 +169,7 @@ wrap_group_into_range(int32_t group,
     if (num_groups == 0)
         return XKB_LAYOUT_INVALID;
 
-    if (group < num_groups)
+    if (group >= 0 && (xkb_layout_index_t) group < num_groups)
         return group;
 
     switch (out_of_range_group_action) {
@@ -1042,11 +1041,11 @@ xkb_state_layout_index_is_active(struct xkb_state *state,
     if (type & XKB_STATE_LAYOUT_EFFECTIVE)
         ret |= (state->components.group == idx);
     if (type & XKB_STATE_LAYOUT_DEPRESSED)
-        ret |= (state->components.base_group == idx);
+        ret |= (state->components.base_group == (int32_t) idx);
     if (type & XKB_STATE_LAYOUT_LATCHED)
-        ret |= (state->components.latched_group == idx);
+        ret |= (state->components.latched_group == (int32_t) idx);
     if (type & XKB_STATE_LAYOUT_LOCKED)
-        ret |= (state->components.locked_group == idx);
+        ret |= (state->components.locked_group == (int32_t) idx);
 
     return ret;
 }

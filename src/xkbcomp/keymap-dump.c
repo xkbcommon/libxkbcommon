@@ -92,7 +92,7 @@ check_write_buf(struct buf *buf, const char *fmt, ...)
     if (printed < 0)
         goto err;
 
-    if (printed >= available)
+    if ((size_t) printed >= available)
         if (!do_realloc(buf, printed))
             goto err;
 
@@ -103,7 +103,7 @@ check_write_buf(struct buf *buf, const char *fmt, ...)
     printed = vsnprintf(buf->buf + buf->size, available, fmt, args);
     va_end(args);
 
-    if (printed >= available || printed < 0)
+    if (printed < 0 || (size_t) printed >= available)
         goto err;
 
     buf->size += printed;
@@ -429,7 +429,7 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
     write_buf(buf, "\tinterpret.useModMapMods= AnyLevel;\n");
     write_buf(buf, "\tinterpret.repeat= False;\n");
 
-    for (int i = 0; i < keymap->num_sym_interprets; i++) {
+    for (unsigned i = 0; i < keymap->num_sym_interprets; i++) {
         const struct xkb_sym_interpret *si = &keymap->sym_interprets[i];
 
         write_buf(buf, "\tinterpret %s+%s(%s) {\n",

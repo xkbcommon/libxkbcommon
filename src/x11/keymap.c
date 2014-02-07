@@ -354,7 +354,7 @@ get_types(struct xkb_keymap *keymap, xcb_connection_t *conn,
             xcb_xkb_mod_def_iterator_t preserves_iter =
                 xcb_xkb_key_type_preserve_iterator(wire_type);
 
-            FAIL_UNLESS(preserves_length <= type->num_entries);
+            FAIL_UNLESS((unsigned) preserves_length <= type->num_entries);
 
             for (int j = 0; j < preserves_length; j++) {
                 xcb_xkb_mod_def_t *wire_preserve = preserves_iter.data;
@@ -405,7 +405,7 @@ get_sym_maps(struct xkb_keymap *keymap, xcb_connection_t *conn,
         FAIL_UNLESS(key->num_groups <= ARRAY_SIZE(wire_sym_map->kt_index));
         ALLOC_OR_FAIL(key->groups, key->num_groups);
 
-        for (int j = 0; j < key->num_groups; j++) {
+        for (unsigned j = 0; j < key->num_groups; j++) {
             FAIL_UNLESS(wire_sym_map->kt_index[j] < keymap->num_types);
             key->groups[j].type = &keymap->types[wire_sym_map->kt_index[j]];
 
@@ -427,7 +427,7 @@ get_sym_maps(struct xkb_keymap *keymap, xcb_connection_t *conn,
             int syms_length = xcb_xkb_key_sym_map_syms_length(wire_sym_map);
             xcb_keysym_t *syms_iter = xcb_xkb_key_sym_map_syms(wire_sym_map);
 
-            FAIL_UNLESS(syms_length == wire_sym_map->width * key->num_groups);
+            FAIL_UNLESS((unsigned) syms_length == wire_sym_map->width * key->num_groups);
 
             for (int j = 0; j < syms_length; j++) {
                 xcb_keysym_t wire_keysym = *syms_iter;
@@ -883,7 +883,7 @@ get_indicator_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
 {
     xcb_atom_t *iter = xcb_xkb_get_names_value_list_indicator_names(list);
 
-    FAIL_UNLESS(msb_pos(reply->indicators) <= darray_size(keymap->leds));
+    FAIL_UNLESS(msb_pos(reply->indicators) <= (int) darray_size(keymap->leds));
 
     for (int i = 0; i < NUM_INDICATORS; i++) {
         if (reply->indicators & (1 << i)) {
@@ -965,7 +965,7 @@ get_key_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
     FAIL_UNLESS(reply->minKeyCode == keymap->min_key_code);
     FAIL_UNLESS(reply->maxKeyCode == keymap->max_key_code);
     FAIL_UNLESS(reply->firstKey == keymap->min_key_code);
-    FAIL_UNLESS(reply->firstKey + reply->nKeys - 1 == keymap->max_key_code);
+    FAIL_UNLESS(reply->firstKey + reply->nKeys - 1U == keymap->max_key_code);
 
     for (int i = 0; i < length; i++) {
         xcb_xkb_key_name_t *wire = iter.data;
@@ -1105,7 +1105,7 @@ get_controls(struct xkb_keymap *keymap, xcb_connection_t *conn,
 
     FAIL_UNLESS(keymap->max_key_code < XCB_XKB_CONST_PER_KEY_BIT_ARRAY_SIZE * 8);
 
-    for (int i = keymap->min_key_code; i <= keymap->max_key_code; i++)
+    for (xkb_keycode_t i = keymap->min_key_code; i <= keymap->max_key_code; i++)
         keymap->keys[i].repeats = !!(reply->perKeyRepeat[i / 8] & (1 << (i % 8)));
 
     free(reply);
