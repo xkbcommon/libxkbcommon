@@ -710,14 +710,20 @@ KeySym          :       IDENT
                 |       SECTION { $$ = XKB_KEY_section; }
                 |       Integer
                         {
-                            if ($1 < 10) {      /* XKB_KEY_0 .. XKB_KEY_9 */
-                                $$ = XKB_KEY_0 + $1;
+                            if ($1 < 0) {
+                                parser_warn(param, "unrecognized keysym");
+                                $$ = XKB_KEY_NoSymbol;
+                            }
+                            else if ($1 < 10) {      /* XKB_KEY_0 .. XKB_KEY_9 */
+                                $$ = XKB_KEY_0 + (xkb_keysym_t) $1;
                             }
                             else {
                                 char buf[17];
                                 snprintf(buf, sizeof(buf), "0x%x", $1);
-                                if (!resolve_keysym(buf, &$$))
+                                if (!resolve_keysym(buf, &$$)) {
                                     parser_warn(param, "unrecognized keysym");
+                                    $$ = XKB_KEY_NoSymbol;
+                                }
                             }
                         }
                 ;
