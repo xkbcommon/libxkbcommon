@@ -373,7 +373,7 @@ test_caps_keysym_transformation(struct xkb_keymap *keymap)
 
     caps = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CAPS);
     shift = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_SHIFT);
-    assert(caps >= 0 && shift >= 0);
+    assert(caps != XKB_MOD_INVALID && shift != XKB_MOD_INVALID);
 
     assert(xkb_state_key_get_layout(state, KEY_A + 8) == 0);
     assert(xkb_state_key_get_layout(state, KEY_SEMICOLON + 8) == 0);
