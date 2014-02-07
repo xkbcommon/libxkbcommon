@@ -108,7 +108,7 @@ struct xkb_state {
      * < Left Shift down, Right Shift down, Left Shift Up >
      * the modifier should still be set. This keeps the count.
      */
-    int16_t mod_key_count[sizeof(xkb_mod_mask_t) * 8];
+    int16_t mod_key_count[XKB_MAX_MODS];
 
     int refcnt;
     darray(struct xkb_filter) filters;
