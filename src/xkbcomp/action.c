@@ -572,7 +572,7 @@ HandlePtrBtn(struct xkb_keymap *keymap, union xkb_action *action,
             return false;
         }
 
-        act->count = (uint16_t) val;
+        act->count = (uint8_t) val;
         return true;
     }
     return ReportIllegal(keymap, action->type, field);
