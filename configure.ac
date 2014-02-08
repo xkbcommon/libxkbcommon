@@ -81,6 +81,8 @@ AS_IF([test "x$ac_cv_func_secure_getenv" = xno -a \
     AC_MSG_WARN([C library does not support secure_getenv, using getenv instead])
 ])
 
+AX_GCC_BUILTIN(__builtin_expect)
+
 # Some tests use Linux-specific headers
 AC_CHECK_HEADER([linux/input.h])
 AM_CONDITIONAL(BUILD_LINUX_TESTS, [test "x$ac_cv_header_linux_input_h" = xyes])

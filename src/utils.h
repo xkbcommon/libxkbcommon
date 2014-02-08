@@ -195,6 +195,14 @@ unmap_file(const char *str, size_t size);
 # define secure_getenv getenv
 #endif
 
+#if defined(HAVE___BUILTIN_EXPECT)
+# define likely(x)   __builtin_expect(!!(x), 1)
+# define unlikely(x) __builtin_expect(!!(x), 0)
+#else
+# define likely(x)   (x)
+# define unlikely(x) (x)
+#endif
+
 /* Compiler Attributes */
 
 #if defined(__GNUC__) && (__GNUC__ >= 4) && !defined(__CYGWIN__)
