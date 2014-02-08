@@ -838,15 +838,15 @@ static const struct codepair keysymtab[] = {
 static uint32_t
 bin_search(const struct codepair *table, size_t length, xkb_keysym_t keysym)
 {
-    int first = 0;
-    int last = length;
+    size_t first = 0;
+    size_t last = length;
 
     if (keysym < table[0].keysym  || keysym > table[length].keysym)
         return 0;
 
     /* binary search in table */
     while (last >= first) {
-        int mid = (first + last) / 2;
+        size_t mid = (first + last) / 2;
         if (table[mid].keysym < keysym)
             first = mid + 1;
         else if (table[mid].keysym > keysym)
