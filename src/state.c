@@ -622,30 +622,42 @@ xkb_state_led_update_all(struct xkb_state *state)
         xkb_mod_mask_t mod_mask = 0;
         xkb_layout_mask_t group_mask = 0;
 
-        if (led->which_mods & XKB_STATE_MODS_EFFECTIVE)
-            mod_mask |= state->components.mods;
-        if (led->which_mods & XKB_STATE_MODS_DEPRESSED)
-            mod_mask |= state->components.base_mods;
-        if (led->which_mods & XKB_STATE_MODS_LATCHED)
-            mod_mask |= state->components.latched_mods;
-        if (led->which_mods & XKB_STATE_MODS_LOCKED)
-            mod_mask |= state->components.locked_mods;
-        if (led->mods.mask & mod_mask)
-            state->components.leds |= (1u << idx);
+        if (led->which_mods != 0 && led->mods.mask != 0) {
+            if (led->which_mods & XKB_STATE_MODS_EFFECTIVE)
+                mod_mask |= state->components.mods;
+            if (led->which_mods & XKB_STATE_MODS_DEPRESSED)
+                mod_mask |= state->components.base_mods;
+            if (led->which_mods & XKB_STATE_MODS_LATCHED)
+                mod_mask |= state->components.latched_mods;
+            if (led->which_mods & XKB_STATE_MODS_LOCKED)
+                mod_mask |= state->components.locked_mods;
 
-        if (led->which_groups & XKB_STATE_LAYOUT_EFFECTIVE)
-            group_mask |= (1u << state->components.group);
-        if (led->which_groups & XKB_STATE_LAYOUT_DEPRESSED)
-            group_mask |= (1u << state->components.base_group);
-        if (led->which_groups & XKB_STATE_LAYOUT_LATCHED)
-            group_mask |= (1u << state->components.latched_group);
-        if (led->which_groups & XKB_STATE_LAYOUT_LOCKED)
-            group_mask |= (1u << state->components.locked_group);
-        if (led->groups & group_mask)
-            state->components.leds |= (1u << idx);
+            if (led->mods.mask & mod_mask) {
+                state->components.leds |= (1u << idx);
+                continue;
+            }
+        }
 
-        if (led->ctrls & state->keymap->enabled_ctrls)
+        if (led->which_groups != 0 && led->groups != 0) {
+            if (led->which_groups & XKB_STATE_LAYOUT_EFFECTIVE)
+                group_mask |= (1u << state->components.group);
+            if (led->which_groups & XKB_STATE_LAYOUT_DEPRESSED)
+                group_mask |= (1u << state->components.base_group);
+            if (led->which_groups & XKB_STATE_LAYOUT_LATCHED)
+                group_mask |= (1u << state->components.latched_group);
+            if (led->which_groups & XKB_STATE_LAYOUT_LOCKED)
+                group_mask |= (1u << state->components.locked_group);
+
+            if (led->groups & group_mask) {
+                state->components.leds |= (1u << idx);
+                continue;
+            }
+        }
+
+        if (led->ctrls & state->keymap->enabled_ctrls) {
             state->components.leds |= (1u << idx);
+            continue;
+        }
     }
 }
 
