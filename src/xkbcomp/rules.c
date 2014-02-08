@@ -482,7 +482,7 @@ matcher_mapping_set_mlvo(struct matcher *m, struct sval ident)
         return;
     }
 
-    if (m->mapping.defined_mlvo_mask & (1 << mlvo)) {
+    if (m->mapping.defined_mlvo_mask & (1u << mlvo)) {
         matcher_error(m,
                       "invalid mapping: %.*s appears twice on the same line; "
                       "ignoring rule set",
@@ -522,7 +522,7 @@ matcher_mapping_set_mlvo(struct matcher *m, struct sval ident)
     }
 
     m->mapping.mlvo_at_pos[m->mapping.num_mlvo] = mlvo;
-    m->mapping.defined_mlvo_mask |= 1 << mlvo;
+    m->mapping.defined_mlvo_mask |= 1u << mlvo;
     m->mapping.num_mlvo++;
 }
 
@@ -549,7 +549,7 @@ matcher_mapping_set_kccgst(struct matcher *m, struct sval ident)
         return;
     }
 
-    if (m->mapping.defined_kccgst_mask & (1 << kccgst)) {
+    if (m->mapping.defined_kccgst_mask & (1u << kccgst)) {
         matcher_error(m,
                       "invalid mapping: %.*s appears twice on the same line; "
                       "ignoring rule set",
@@ -559,7 +559,7 @@ matcher_mapping_set_kccgst(struct matcher *m, struct sval ident)
     }
 
     m->mapping.kccgst_at_pos[m->mapping.num_kccgst] = kccgst;
-    m->mapping.defined_kccgst_mask |= 1 << kccgst;
+    m->mapping.defined_kccgst_mask |= 1u << kccgst;
     m->mapping.num_kccgst++;
 }
 
@@ -585,7 +585,7 @@ matcher_mapping_verify(struct matcher *m)
      * See the "Notes" section in the overview above.
      */
 
-    if (m->mapping.defined_mlvo_mask & (1 << MLVO_LAYOUT)) {
+    if (m->mapping.defined_mlvo_mask & (1u << MLVO_LAYOUT)) {
         if (m->mapping.layout_idx == XKB_LAYOUT_INVALID) {
             if (darray_size(m->rmlvo.layouts) > 1)
                 goto skip;
@@ -597,7 +597,7 @@ matcher_mapping_verify(struct matcher *m)
         }
     }
 
-    if (m->mapping.defined_mlvo_mask & (1 << MLVO_VARIANT)) {
+    if (m->mapping.defined_mlvo_mask & (1u << MLVO_VARIANT)) {
         if (m->mapping.variant_idx == XKB_LAYOUT_INVALID) {
             if (darray_size(m->rmlvo.variants) > 1)
                 goto skip;

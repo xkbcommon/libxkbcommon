@@ -1511,7 +1511,7 @@ CopyModMapDef(SymbolsInfo *info, ModMapEntry *entry)
         }
     }
 
-    key->modmap |= (1 << entry->modifier);
+    key->modmap |= (1u << entry->modifier);
     return true;
 }
 

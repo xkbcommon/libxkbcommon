@@ -684,7 +684,7 @@ get_indicators(struct xkb_keymap *keymap, xcb_connection_t *conn,
     darray_resize0(keymap->leds, msb_pos(reply->which));
 
     for (int i = 0; i < NUM_INDICATORS; i++) {
-        if (reply->which & (1 << i)) {
+        if (reply->which & (1u << i)) {
             xcb_xkb_indicator_map_t *wire = iter.data;
             struct xkb_led *led = &darray_item(keymap->leds, i);
 
@@ -886,7 +886,7 @@ get_indicator_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
     FAIL_UNLESS(msb_pos(reply->indicators) <= (int) darray_size(keymap->leds));
 
     for (int i = 0; i < NUM_INDICATORS; i++) {
-        if (reply->indicators & (1 << i)) {
+        if (reply->indicators & (1u << i)) {
             xcb_atom_t wire = *iter;
             struct xkb_led *led = &darray_item(keymap->leds, i);
 

@@ -631,21 +631,21 @@ xkb_state_led_update_all(struct xkb_state *state)
         if (led->which_mods & XKB_STATE_MODS_LOCKED)
             mod_mask |= state->components.locked_mods;
         if (led->mods.mask & mod_mask)
-            state->components.leds |= (1 << idx);
+            state->components.leds |= (1u << idx);
 
         if (led->which_groups & XKB_STATE_LAYOUT_EFFECTIVE)
-            group_mask |= (1 << state->components.group);
+            group_mask |= (1u << state->components.group);
         if (led->which_groups & XKB_STATE_LAYOUT_DEPRESSED)
-            group_mask |= (1 << state->components.base_group);
+            group_mask |= (1u << state->components.base_group);
         if (led->which_groups & XKB_STATE_LAYOUT_LATCHED)
-            group_mask |= (1 << state->components.latched_group);
+            group_mask |= (1u << state->components.latched_group);
         if (led->which_groups & XKB_STATE_LAYOUT_LOCKED)
-            group_mask |= (1 << state->components.locked_group);
+            group_mask |= (1u << state->components.locked_group);
         if (led->groups & group_mask)
-            state->components.leds |= (1 << idx);
+            state->components.leds |= (1u << idx);
 
         if (led->ctrls & state->keymap->enabled_ctrls)
-            state->components.leds |= (1 << idx);
+            state->components.leds |= (1u << idx);
     }
 }
 
@@ -780,7 +780,7 @@ xkb_state_update_mask(struct xkb_state *state,
     num_mods = xkb_keymap_num_mods(state->keymap);
 
     for (idx = 0; idx < num_mods; idx++) {
-        xkb_mod_mask_t mod = (1 << idx);
+        xkb_mod_mask_t mod = (1u << idx);
         if (base_mods & mod)
             state->components.base_mods |= mod;
         if (latched_mods & mod)
@@ -912,7 +912,7 @@ xkb_state_mod_index_is_active(struct xkb_state *state,
     if (idx >= xkb_keymap_num_mods(state->keymap))
         return -1;
 
-    return !!(xkb_state_serialize_mods(state, type) & (1 << idx));
+    return !!(xkb_state_serialize_mods(state, type) & (1u << idx));
 }
 
 /**
@@ -963,7 +963,7 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
             ret = -1;
             break;
         }
-        wanted |= (1 << idx);
+        wanted |= (1u << idx);
     }
     va_end(ap);
 
@@ -1014,7 +1014,7 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
             ret = -1;
             break;
         }
-        wanted |= (1 << idx);
+        wanted |= (1u << idx);
     }
     va_end(ap);
 
@@ -1076,7 +1076,7 @@ xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx)
         darray_item(state->keymap->leds, idx).name == XKB_ATOM_NONE)
         return -1;
 
-    return !!(state->components.leds & (1 << idx));
+    return !!(state->components.leds & (1u << idx));
 }
 
 /**
@@ -1131,7 +1131,7 @@ xkb_state_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t kc,
     if (!key || idx >= xkb_keymap_num_mods(state->keymap))
         return -1;
 
-    return !!((1 << idx) & key_get_consumed(state, key));
+    return !!((1u << idx) & key_get_consumed(state, key));
 }
 
 /**

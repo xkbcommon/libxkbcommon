@@ -635,7 +635,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
             continue;
 
         darray_enumerate(i, mod, keymap->mods)
-            if (key->modmap & (1 << i))
+            if (key->modmap & (1u << i))
                 write_buf(buf, "\tmodifier_map %s { %s };\n",
                           xkb_atom_text(keymap->ctx, mod->name),
                           KeyNameText(keymap->ctx, key->name));
