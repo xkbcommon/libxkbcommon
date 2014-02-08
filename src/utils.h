@@ -163,13 +163,13 @@ is_graph(char ch)
  * Note: this is 1-based! It's more useful this way, and returns 0 when
  * mask is all 0s.
  */
-static inline int
+static inline unsigned
 msb_pos(uint32_t mask)
 {
-    int pos = 0;
+    unsigned pos = 0;
     while (mask) {
         pos++;
-        mask >>= 1;
+        mask >>= 1u;
     }
     return pos;
 }

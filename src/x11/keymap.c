@@ -883,7 +883,7 @@ get_indicator_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
 {
     xcb_atom_t *iter = xcb_xkb_get_names_value_list_indicator_names(list);
 
-    FAIL_UNLESS(msb_pos(reply->indicators) <= (int) darray_size(keymap->leds));
+    FAIL_UNLESS(msb_pos(reply->indicators) <= darray_size(keymap->leds));
 
     for (int i = 0; i < NUM_INDICATORS; i++) {
         if (reply->indicators & (1u << i)) {
