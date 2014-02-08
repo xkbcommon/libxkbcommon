@@ -72,7 +72,9 @@ scanner_init(struct scanner *s, struct xkb_context *ctx,
 static inline char
 peek(struct scanner *s)
 {
-    return s->pos < s->len ? s->s[s->pos] : '\0';
+    if (unlikely(s->pos >= s->len))
+        return '\0';
+    return s->s[s->pos];
 }
 
 static inline bool
@@ -90,9 +92,9 @@ eol(struct scanner *s)
 static inline char
 next(struct scanner *s)
 {
-    if (eof(s))
+    if (unlikely(eof(s)))
         return '\0';
-    if (eol(s)) {
+    if (unlikely(eol(s))) {
         s->line++;
         s->column = 1;
     }
@@ -105,7 +107,7 @@ next(struct scanner *s)
 static inline bool
 chr(struct scanner *s, char ch)
 {
-    if (peek(s) != ch)
+    if (likely(peek(s) != ch))
         return false;
     s->pos++; s->column++;
     return true;
