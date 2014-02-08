@@ -137,14 +137,6 @@ union lvalue {
     struct sval string;
 };
 
-/*
- * Holds the location in the file of the last processed token,
- * like yylloc.
- */
-struct location {
-    int line, column;
-};
-
 enum rules_token {
     TOK_END_OF_FILE = 0,
     TOK_END_OF_LINE,
@@ -157,12 +149,14 @@ enum rules_token {
 };
 
 /* C99 is stupid. Just use the 1 variant when there are no args. */
-#define scanner_error1(scanner, loc, msg) \
+#define scanner_error1(scanner, msg) \
     log_warn((scanner)->ctx, "rules/%s:%d:%d: %s\n", \
-             (scanner)->file_name, (loc)->line, (loc)->column, msg)
-#define scanner_error(scanner, loc, fmt, ...) \
+             (scanner)->file_name, \
+             (scanner)->token_line, (scanner)->token_column, msg)
+#define scanner_error(scanner, fmt, ...) \
     log_warn((scanner)->ctx, "rules/%s:%d:%d: " fmt "\n", \
-             (scanner)->file_name, (loc)->line, (loc)->column, __VA_ARGS__)
+             (scanner)->file_name, \
+             (scanner)->token_line, (scanner)->token_column, __VA_ARGS__)
 
 static inline bool
 is_ident(char ch)
@@ -171,7 +165,7 @@ is_ident(char ch)
 }
 
 static enum rules_token
-lex(struct scanner *s, union lvalue *val, struct location *loc)
+lex(struct scanner *s, union lvalue *val)
 {
 skip_more_whitespace_and_comments:
     /* Skip spaces. */
@@ -191,8 +185,7 @@ skip_more_whitespace_and_comments:
     /* Escaped line continuation. */
     if (chr(s, '\\')) {
         if (!eol(s)) {
-            scanner_error1(s, loc,
-                           "illegal new line escape; must appear at end of line");
+            scanner_error1(s, "illegal new line escape; must appear at end of line");
             return TOK_ERROR;
         }
         next(s);
@@ -203,8 +196,8 @@ skip_more_whitespace_and_comments:
     if (eof(s)) return TOK_END_OF_FILE;
 
     /* New token. */
-    loc->line = s->line;
-    loc->column = s->column;
+    s->token_line = s->line;
+    s->token_column = s->column;
 
     /* Operators and punctuation. */
     if (chr(s, '!')) return TOK_BANG;
@@ -220,8 +213,7 @@ skip_more_whitespace_and_comments:
             val->string.len++;
         }
         if (val->string.len == 0) {
-            scanner_error1(s, loc,
-                           "unexpected character after \'$\'; expected name");
+            scanner_error1(s, "unexpected character after \'$\'; expected name");
             return TOK_ERROR;
         }
         return TOK_GROUP_NAME;
@@ -238,7 +230,7 @@ skip_more_whitespace_and_comments:
         return TOK_IDENTIFIER;
     }
 
-    scanner_error1(s, loc, "unrecognized token");
+    scanner_error1(s, "unrecognized token");
     return TOK_ERROR;
 }
 
@@ -330,7 +322,6 @@ struct matcher {
     struct xkb_context *ctx;
     /* Input.*/
     struct rule_names rmlvo;
-    struct location loc;
     union lvalue val;
     struct scanner scanner;
     darray(struct group) groups;
@@ -411,9 +402,9 @@ matcher_free(struct matcher *m)
 }
 
 #define matcher_error1(matcher, msg) \
-    scanner_error1(&(matcher)->scanner, &(matcher)->loc, msg)
+    scanner_error1(&(matcher)->scanner, msg)
 #define matcher_error(matcher, fmt, ...) \
-    scanner_error(&(matcher)->scanner, &(matcher)->loc, fmt, __VA_ARGS__)
+    scanner_error(&(matcher)->scanner, fmt, __VA_ARGS__)
 
 static void
 matcher_group_start_new(struct matcher *m, struct sval name)
@@ -907,7 +898,7 @@ matcher_rule_apply_if_matches(struct matcher *m)
 static enum rules_token
 gettok(struct matcher *m)
 {
-    return lex(&m->scanner, &m->val, &m->loc);
+    return lex(&m->scanner, &m->val);
 }
 
 static bool
