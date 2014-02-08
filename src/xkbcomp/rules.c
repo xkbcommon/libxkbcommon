@@ -720,7 +720,7 @@ static bool
 append_expanded_kccgst_value(struct matcher *m, darray_char *to,
                              struct sval value)
 {
-    const size_t original_size = darray_size(*to);
+    const unsigned original_size = darray_size(*to);
     const char *s = value.start;
 
     /*

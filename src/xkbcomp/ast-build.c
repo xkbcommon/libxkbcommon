@@ -202,7 +202,7 @@ ExprCreateKeysymList(xkb_keysym_t sym)
 ExprDef *
 ExprCreateMultiKeysymList(ExprDef *expr)
 {
-    size_t nLevels = darray_size(expr->keysym_list.symsMapIndex);
+    unsigned nLevels = darray_size(expr->keysym_list.symsMapIndex);
 
     darray_resize(expr->keysym_list.symsMapIndex, 1);
     darray_resize(expr->keysym_list.symsNumEntries, 1);
@@ -215,7 +215,7 @@ ExprCreateMultiKeysymList(ExprDef *expr)
 ExprDef *
 ExprAppendKeysymList(ExprDef *expr, xkb_keysym_t sym)
 {
-    size_t nSyms = darray_size(expr->keysym_list.syms);
+    unsigned nSyms = darray_size(expr->keysym_list.syms);
 
     darray_append(expr->keysym_list.symsMapIndex, nSyms);
     darray_append(expr->keysym_list.symsNumEntries, 1);
@@ -227,8 +227,8 @@ ExprAppendKeysymList(ExprDef *expr, xkb_keysym_t sym)
 ExprDef *
 ExprAppendMultiKeysymList(ExprDef *expr, ExprDef *append)
 {
-    size_t nSyms = darray_size(expr->keysym_list.syms);
-    size_t numEntries = darray_size(append->keysym_list.syms);
+    unsigned nSyms = darray_size(expr->keysym_list.syms);
+    unsigned numEntries = darray_size(append->keysym_list.syms);
 
     darray_append(expr->keysym_list.symsMapIndex, nSyms);
     darray_append(expr->keysym_list.symsNumEntries, numEntries);
