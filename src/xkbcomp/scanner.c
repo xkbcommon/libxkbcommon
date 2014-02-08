@@ -28,7 +28,7 @@
 static void
 scanner_log(enum xkb_log_level level, struct scanner *s, const char *msg)
 {
-    xkb_log(s->ctx, level, 0,  "%s:%d:%d: %s\n", s->file_name,
+    xkb_log(s->ctx, level, 0,  "%s:%u:%u: %s\n", s->file_name,
             s->token_line, s->token_column, msg);
 }
 

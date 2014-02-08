@@ -49,9 +49,9 @@ struct scanner {
     size_t len;
     char buf[1024];
     size_t buf_pos;
-    int line, column;
+    unsigned line, column;
     /* The line/column of the start of the current token. */
-    int token_line, token_column;
+    unsigned token_line, token_column;
     const char *file_name;
     struct xkb_context *ctx;
 };

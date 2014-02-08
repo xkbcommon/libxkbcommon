@@ -150,11 +150,11 @@ enum rules_token {
 
 /* C99 is stupid. Just use the 1 variant when there are no args. */
 #define scanner_error1(scanner, msg) \
-    log_warn((scanner)->ctx, "rules/%s:%d:%d: %s\n", \
+    log_warn((scanner)->ctx, "rules/%s:%u:%u: %s\n", \
              (scanner)->file_name, \
              (scanner)->token_line, (scanner)->token_column, msg)
 #define scanner_error(scanner, fmt, ...) \
-    log_warn((scanner)->ctx, "rules/%s:%d:%d: " fmt "\n", \
+    log_warn((scanner)->ctx, "rules/%s:%u:%u: " fmt "\n", \
              (scanner)->file_name, \
              (scanner)->token_line, (scanner)->token_column, __VA_ARGS__)
 
