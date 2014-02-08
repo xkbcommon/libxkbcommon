@@ -143,9 +143,7 @@ expr_op_type_to_string(enum expr_op_type type);
 const char *
 expr_value_type_to_string(enum expr_value_type type);
 
-/* This struct contains fields common to all other AST nodes. It is only
- * ever embedded in other structs, so save some memory by packing it. */
-typedef struct ATTR_PACKED _ParseCommon  {
+typedef struct _ParseCommon  {
     struct _ParseCommon *next;
     enum stmt_type type;
 } ParseCommon;
