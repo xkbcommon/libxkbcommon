@@ -99,7 +99,7 @@ translate_mods(uint8_t rmods, uint16_t vmods_low, uint16_t vmods_high)
 }
 
 static enum xkb_action_controls
-translate_controls_mask(uint16_t wire)
+translate_controls_mask(uint32_t wire)
 {
     enum xkb_action_controls ret = 0;
     if (wire & XCB_XKB_BOOL_CTRL_REPEAT_KEYS)
