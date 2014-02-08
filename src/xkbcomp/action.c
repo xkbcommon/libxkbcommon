@@ -772,7 +772,7 @@ HandlePrivate(struct xkb_keymap *keymap, union xkb_action *action,
         if (array_ndx == NULL) {
             xkb_atom_t val;
             const char *str;
-            int len;
+            size_t len;
 
             if (!ExprResolveString(keymap->ctx, value, &val))
                 return ReportMismatch(keymap, action->type, field, "string");
@@ -782,7 +782,7 @@ HandlePrivate(struct xkb_keymap *keymap, union xkb_action *action,
             if (len < 1 || len > 7) {
                 log_warn(keymap->ctx,
                          "A private action has 7 data bytes; "
-                         "Extra %d bytes ignored\n", len - 6);
+                         "Illegal data ignored\n");
                 return false;
             }
 
