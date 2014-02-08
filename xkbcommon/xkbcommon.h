@@ -681,9 +681,7 @@ xkb_context_set_log_fn(struct xkb_context *context,
 /** Flags for keymap compilation. */
 enum xkb_keymap_compile_flags {
     /** Do not apply any flags. */
-    XKB_MAP_COMPILE_NO_FLAGS = 0,
-    /** Apparently you can't have empty enums.  What a drag. */
-    XKB_MAP_COMPILE_PLACEHOLDER = 0
+    XKB_KEYMAP_COMPILE_NO_FLAGS = 0
 };
 
 /**

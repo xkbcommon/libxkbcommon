@@ -56,7 +56,7 @@ main(void)
     assert(device_id != -1);
 
     keymap = xkb_x11_keymap_new_from_device(ctx, conn, device_id,
-                                            XKB_MAP_COMPILE_NO_FLAGS);
+                                            XKB_KEYMAP_COMPILE_NO_FLAGS);
     assert(keymap);
 
     state = xkb_x11_state_new_from_device(keymap, conn, device_id);
