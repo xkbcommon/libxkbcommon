@@ -668,23 +668,27 @@ xkb_state_led_update_all(struct xkb_state *state)
 static void
 xkb_state_update_derived(struct xkb_state *state)
 {
+    xkb_layout_index_t wrapped;
+
     state->components.mods = (state->components.base_mods |
                               state->components.latched_mods |
                               state->components.locked_mods);
 
     /* TODO: Use groups_wrap control instead of always RANGE_WRAP. */
 
+    wrapped = wrap_group_into_range(state->components.locked_group,
+                                    state->keymap->num_groups,
+                                    RANGE_WRAP, 0);
     state->components.locked_group =
-        wrap_group_into_range(state->components.locked_group,
-                              state->keymap->num_groups,
-                              RANGE_WRAP, 0);
+        (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
 
+    wrapped = wrap_group_into_range(state->components.base_group +
+                                    state->components.latched_group +
+                                    state->components.locked_group,
+                                    state->keymap->num_groups,
+                                    RANGE_WRAP, 0);
     state->components.group =
-        wrap_group_into_range(state->components.base_group +
-                              state->components.latched_group +
-                              state->components.locked_group,
-                              state->keymap->num_groups,
-                              RANGE_WRAP, 0);
+        (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
 
     xkb_state_led_update_all(state);
 }
