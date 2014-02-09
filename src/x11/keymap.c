@@ -1099,6 +1099,7 @@ get_controls(struct xkb_keymap *keymap, xcb_connection_t *conn,
         xcb_xkb_get_controls_reply(conn, cookie, NULL);
 
     FAIL_IF_BAD_REPLY(reply, "XkbGetControls");
+    FAIL_UNLESS(reply->numGroups > 0 && reply->numGroups <= 4);
 
     keymap->enabled_ctrls = translate_controls_mask(reply->enabledControls);
     keymap->num_groups = reply->numGroups;
