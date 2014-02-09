@@ -262,10 +262,10 @@ struct xkb_key_type {
 struct xkb_sym_interpret {
     xkb_keysym_t sym;
     enum xkb_match_operation match;
-    bool level_one_only;
     xkb_mod_mask_t mods;
     xkb_mod_index_t virtual_mod;
     union xkb_action action;
+    bool level_one_only;
     bool repeat;
 };
 
