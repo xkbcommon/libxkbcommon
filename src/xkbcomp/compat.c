@@ -382,16 +382,28 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
         from->name = NULL;
     }
 
-    darray_foreach(si, from->interps) {
-        si->merge = (merge == MERGE_DEFAULT ? si->merge : merge);
-        if (!AddInterp(into, si, false))
-            into->errorCount++;
+    if (darray_empty(into->interps)) {
+        into->interps = from->interps;
+        darray_init(from->interps);
+    }
+    else {
+        darray_foreach(si, from->interps) {
+            si->merge = (merge == MERGE_DEFAULT ? si->merge : merge);
+            if (!AddInterp(into, si, false))
+                into->errorCount++;
+        }
     }
 
-    darray_foreach(ledi, from->leds) {
-        ledi->merge = (merge == MERGE_DEFAULT ? ledi->merge : merge);
-        if (!AddLedMap(into, ledi, false))
-            into->errorCount++;
+    if (darray_empty(into->leds)) {
+        into->leds = from->leds;
+        darray_init(from->leds);
+    }
+    else {
+        darray_foreach(ledi, from->leds) {
+            ledi->merge = (merge == MERGE_DEFAULT ? ledi->merge : merge);
+            if (!AddLedMap(into, ledi, false))
+                into->errorCount++;
+        }
     }
 }
 
