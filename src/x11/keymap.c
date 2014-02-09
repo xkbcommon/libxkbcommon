@@ -536,10 +536,12 @@ get_explicits(struct xkb_keymap *keymap, xcb_connection_t *conn,
 
     for (int i = 0; i < length; i++) {
         xcb_xkb_set_explicit_t *wire = iter.data;
-        struct xkb_key *key = &keymap->keys[wire->keycode];
+        struct xkb_key *key;
 
         FAIL_UNLESS(wire->keycode >= keymap->min_key_code &&
                     wire->keycode <= keymap->max_key_code);
+
+        key = &keymap->keys[wire->keycode];
 
         if ((wire->explicit & XCB_XKB_EXPLICIT_KEY_TYPE_1) &&
             key->num_groups > 0)
@@ -579,11 +581,12 @@ get_modmaps(struct xkb_keymap *keymap, xcb_connection_t *conn,
 
     for (int i = 0; i < length; i++) {
         xcb_xkb_key_mod_map_t *wire = iter.data;
-        struct xkb_key *key = &keymap->keys[wire->keycode];
+        struct xkb_key *key;
 
         FAIL_UNLESS(wire->keycode >= keymap->min_key_code &&
                     wire->keycode <= keymap->max_key_code);
 
+        key = &keymap->keys[wire->keycode];
         key->modmap = wire->mods;
 
         xcb_xkb_key_mod_map_next(&iter);
@@ -605,11 +608,12 @@ get_vmodmaps(struct xkb_keymap *keymap, xcb_connection_t *conn,
 
     for (int i = 0; i < length; i++) {
         xcb_xkb_key_v_mod_map_t *wire = iter.data;
-        struct xkb_key *key = &keymap->keys[wire->keycode];
+        struct xkb_key *key;
 
         FAIL_UNLESS(wire->keycode >= keymap->min_key_code &&
                     wire->keycode <= keymap->max_key_code);
 
+        key = &keymap->keys[wire->keycode];
         key->vmodmap = translate_mods(0, wire->vmods, 0);
 
         xcb_xkb_key_v_mod_map_next(&iter);
