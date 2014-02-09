@@ -509,16 +509,28 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
     darray_foreach_from(group_name, from->group_names, group_names_in_both)
         darray_append(into->group_names, *group_name);
 
-    darray_foreach(keyi, from->keys) {
-        keyi->merge = (merge == MERGE_DEFAULT ? keyi->merge : merge);
-        if (!AddKeySymbols(into, keyi, false))
-            into->errorCount++;
+    if (darray_empty(into->keys)) {
+        into->keys = from->keys;
+        darray_init(from->keys);
+    }
+    else {
+        darray_foreach(keyi, from->keys) {
+            keyi->merge = (merge == MERGE_DEFAULT ? keyi->merge : merge);
+            if (!AddKeySymbols(into, keyi, false))
+                into->errorCount++;
+        }
     }
 
-    darray_foreach(mm, from->modmaps) {
-        mm->merge = (merge == MERGE_DEFAULT ? mm->merge : merge);
-        if (!AddModMapEntry(into, mm))
-            into->errorCount++;
+    if (darray_empty(into->modmaps)) {
+        into->modmaps = from->modmaps;
+        darray_init(from->modmaps);
+    }
+    else {
+        darray_foreach(mm, from->modmaps) {
+            mm->merge = (merge == MERGE_DEFAULT ? mm->merge : merge);
+            if (!AddModMapEntry(into, mm))
+                into->errorCount++;
+        }
     }
 }
 
