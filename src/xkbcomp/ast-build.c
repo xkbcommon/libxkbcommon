@@ -496,8 +496,8 @@ err:
 }
 
 XkbFile *
-XkbFileCreate(struct xkb_context *ctx, enum xkb_file_type type, char *name,
-              ParseCommon *defs, enum xkb_map_flags flags)
+XkbFileCreate(enum xkb_file_type type, char *name, ParseCommon *defs,
+              enum xkb_map_flags flags)
 {
     XkbFile *file;
 
@@ -533,7 +533,7 @@ XkbFileFromComponents(struct xkb_context *ctx,
         if (!include)
             goto err;
 
-        file = XkbFileCreate(ctx, type, NULL, &include->common, 0);
+        file = XkbFileCreate(type, NULL, &include->common, 0);
         if (!file) {
             FreeInclude(include);
             goto err;
@@ -542,7 +542,7 @@ XkbFileFromComponents(struct xkb_context *ctx,
         defs = AppendStmt(defs, &file->common);
     }
 
-    file = XkbFileCreate(ctx, FILE_TYPE_KEYMAP, NULL, defs, 0);
+    file = XkbFileCreate(FILE_TYPE_KEYMAP, NULL, defs, 0);
     if (!file)
         goto err;
 
