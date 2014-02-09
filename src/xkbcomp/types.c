@@ -182,10 +182,16 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
         from->name = NULL;
     }
 
-    darray_foreach(type, from->types) {
-        type->merge = (merge == MERGE_DEFAULT ? type->merge : merge);
-        if (!AddKeyType(into, type, false))
-            into->errorCount++;
+    if (darray_empty(into->types)) {
+        into->types = from->types;
+        darray_init(from->types);
+    }
+    else {
+        darray_foreach(type, from->types) {
+            type->merge = (merge == MERGE_DEFAULT ? type->merge : merge);
+            if (!AddKeyType(into, type, false))
+                into->errorCount++;
+        }
     }
 }
 
