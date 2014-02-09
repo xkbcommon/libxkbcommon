@@ -76,6 +76,8 @@ libxkbcommon_la_SOURCES = \
 	src/state.c \
 	src/text.c \
 	src/text.h \
+	src/utf8.c \
+	src/utf8.h \
 	src/utils.c \
 	src/utils.h
 
@@ -166,7 +168,8 @@ TESTS = \
 	test/stringcomp \
 	test/buffercomp \
 	test/log \
-	test/atom
+	test/atom \
+	test/utf8
 check_PROGRAMS = \
 	test/rmlvo-to-kccgst \
 	test/print-compiled-keymap \
@@ -183,6 +186,7 @@ test_stringcomp_LDADD = $(TESTS_LDADD)
 test_buffercomp_LDADD = $(TESTS_LDADD)
 test_log_LDADD = $(TESTS_LDADD)
 test_atom_LDADD = $(TESTS_LDADD)
+test_utf8_LDADD = $(TESTS_LDADD)
 test_rmlvo_to_kccgst_LDADD = $(TESTS_LDADD)
 test_print_compiled_keymap_LDADD = $(TESTS_LDADD)
 test_bench_key_proc_LDADD = $(TESTS_LDADD) -lrt
