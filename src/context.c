@@ -82,6 +82,8 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
 
     ret |= xkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_ROOT);
 
+    ret |= xkb_context_include_path_append(ctx, "/etc/X11/xkb");
+
     home = secure_getenv("HOME");
     if (!home)
         return ret;
