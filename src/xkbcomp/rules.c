@@ -72,11 +72,11 @@ enum rules_token {
 
 /* C99 is stupid. Just use the 1 variant when there are no args. */
 #define scanner_error1(scanner, msg) \
-    log_warn((scanner)->ctx, "rules/%s:%u:%u: %s\n", \
+    log_warn((scanner)->ctx, "%s:%u:%u: %s\n", \
              (scanner)->file_name, \
              (scanner)->token_line, (scanner)->token_column, msg)
 #define scanner_error(scanner, fmt, ...) \
-    log_warn((scanner)->ctx, "rules/%s:%u:%u: " fmt "\n", \
+    log_err((scanner)->ctx, "%s:%u:%u: " fmt "\n", \
              (scanner)->file_name, \
              (scanner)->token_line, (scanner)->token_column, __VA_ARGS__)
 
@@ -1010,7 +1010,7 @@ xkb_components_from_rules(struct xkb_context *ctx,
     }
 
     matcher = matcher_new(ctx, rmlvo);
-    ret = matcher_match(matcher, string, size, rmlvo->rules, out);
+    ret = matcher_match(matcher, string, size, path, out);
     if (!ret)
         log_err(ctx, "No components returned from XKB rules \"%s\"\n", path);
     matcher_free(matcher);
