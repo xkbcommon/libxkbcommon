@@ -37,27 +37,21 @@
 
 struct parser_param {
     struct xkb_context *ctx;
-    void *scanner;
+    struct scanner *scanner;
     XkbFile *rtrn;
     bool more_maps;
 };
 
-static void
-parser_error(struct parser_param *param, const char *msg)
-{
-    scanner_error(param->scanner, msg);
-}
+#define parser_err(param, fmt, ...) \
+    scanner_err((param)->scanner, fmt, ##__VA_ARGS__)
 
-static void
-parser_warn(struct parser_param *param, const char *msg)
-{
-    scanner_warn(param->scanner, msg);
-}
+#define parser_warn(param, fmt, ...) \
+    scanner_warn((param)->scanner, fmt, ##__VA_ARGS__)
 
 static void
 _xkbcommon_error(struct parser_param *param, const char *msg)
 {
-    parser_error(param, msg);
+    parser_err(param, "%s", msg);
 }
 
 static bool
@@ -84,11 +78,11 @@ resolve_keysym(const char *str, xkb_keysym_t *sym_rtrn)
     return false;
 }
 
-#define scanner param->scanner
+#define param_scanner param->scanner
 %}
 
 %pure-parser
-%lex-param      { struct scanner *scanner }
+%lex-param      { struct scanner *param_scanner }
 %parse-param    { struct parser_param *param }
 
 %token
@@ -761,10 +755,8 @@ MapName         :       STRING  { $$ = $1; }
 
 %%
 
-#undef scanner
-
 XkbFile *
-parse(struct xkb_context *ctx, void *scanner, const char *map)
+parse(struct xkb_context *ctx, struct scanner *scanner, const char *map)
 {
     int ret;
     XkbFile *first = NULL;
@@ -809,5 +801,3 @@ parse(struct xkb_context *ctx, void *scanner, const char *map)
 
     return first;
 }
-
-#define scanner param->scanner

@@ -70,16 +70,6 @@ enum rules_token {
     TOK_ERROR
 };
 
-/* C99 is stupid. Just use the 1 variant when there are no args. */
-#define scanner_error1(scanner, msg) \
-    log_warn((scanner)->ctx, "%s:%u:%u: %s\n", \
-             (scanner)->file_name, \
-             (scanner)->token_line, (scanner)->token_column, msg)
-#define scanner_error(scanner, fmt, ...) \
-    log_err((scanner)->ctx, "%s:%u:%u: " fmt "\n", \
-             (scanner)->file_name, \
-             (scanner)->token_line, (scanner)->token_column, __VA_ARGS__)
-
 static inline bool
 is_ident(char ch)
 {
@@ -107,7 +97,7 @@ skip_more_whitespace_and_comments:
     /* Escaped line continuation. */
     if (chr(s, '\\')) {
         if (!eol(s)) {
-            scanner_error1(s, "illegal new line escape; must appear at end of line");
+            scanner_err(s, "illegal new line escape; must appear at end of line");
             return TOK_ERROR;
         }
         next(s);
@@ -135,7 +125,7 @@ skip_more_whitespace_and_comments:
             val->string.len++;
         }
         if (val->string.len == 0) {
-            scanner_error1(s, "unexpected character after \'$\'; expected name");
+            scanner_err(s, "unexpected character after \'$\'; expected name");
             return TOK_ERROR;
         }
         return TOK_GROUP_NAME;
@@ -152,7 +142,7 @@ skip_more_whitespace_and_comments:
         return TOK_IDENTIFIER;
     }
 
-    scanner_error1(s, "unrecognized token");
+    scanner_err(s, "unrecognized token");
     return TOK_ERROR;
 }
 
@@ -323,10 +313,8 @@ matcher_free(struct matcher *m)
     free(m);
 }
 
-#define matcher_error1(matcher, msg) \
-    scanner_error1(&(matcher)->scanner, msg)
-#define matcher_error(matcher, fmt, ...) \
-    scanner_error(&(matcher)->scanner, fmt, __VA_ARGS__)
+#define matcher_err(matcher, fmt, ...) \
+    scanner_err(&(matcher)->scanner, fmt, ## __VA_ARGS__)
 
 static void
 matcher_group_start_new(struct matcher *m, struct sval name)
@@ -387,19 +375,15 @@ matcher_mapping_set_mlvo(struct matcher *m, struct sval ident)
 
     /* Not found. */
     if (mlvo >= _MLVO_NUM_ENTRIES) {
-        matcher_error(m,
-                      "invalid mapping: %.*s is not a valid value here; "
-                      "ignoring rule set",
-                      ident.len, ident.start);
+        matcher_err(m, "invalid mapping: %.*s is not a valid value here; ignoring rule set",
+                    ident.len, ident.start);
         m->mapping.skip = true;
         return;
     }
 
     if (m->mapping.defined_mlvo_mask & (1u << mlvo)) {
-        matcher_error(m,
-                      "invalid mapping: %.*s appears twice on the same line; "
-                      "ignoring rule set",
-                      mlvo_sval.len, mlvo_sval.start);
+        matcher_err(m, "invalid mapping: %.*s appears twice on the same line; ignoring rule set",
+                    mlvo_sval.len, mlvo_sval.start);
         m->mapping.skip = true;
         return;
     }
@@ -410,10 +394,8 @@ matcher_mapping_set_mlvo(struct matcher *m, struct sval ident)
         int consumed = extract_layout_index(ident.start + mlvo_sval.len,
                                             ident.len - mlvo_sval.len, &idx);
         if ((int) (ident.len - mlvo_sval.len) != consumed) {
-            matcher_error(m,
-                          "invalid mapping:\" %.*s\" may only be followed by a valid group index; "
-                          "ignoring rule set",
-                          mlvo_sval.len, mlvo_sval.start);
+            matcher_err(m, "invalid mapping: \"%.*s\" may only be followed by a valid group index; ignoring rule set",
+                        mlvo_sval.len, mlvo_sval.start);
             m->mapping.skip = true;
             return;
         }
@@ -425,10 +407,8 @@ matcher_mapping_set_mlvo(struct matcher *m, struct sval ident)
             m->mapping.variant_idx = idx;
         }
         else {
-            matcher_error(m,
-                          "invalid mapping: \"%.*s\" cannot be followed by a group index; "
-                          "ignoring rule set",
-                          mlvo_sval.len, mlvo_sval.start);
+            matcher_err(m, "invalid mapping: \"%.*s\" cannot be followed by a group index; ignoring rule set",
+                        mlvo_sval.len, mlvo_sval.start);
             m->mapping.skip = true;
             return;
         }
@@ -454,19 +434,15 @@ matcher_mapping_set_kccgst(struct matcher *m, struct sval ident)
 
     /* Not found. */
     if (kccgst >= _KCCGST_NUM_ENTRIES) {
-        matcher_error(m,
-                      "invalid mapping: %.*s is not a valid value here; "
-                      "ignoring rule set",
-                      ident.len, ident.start);
+        matcher_err(m, "invalid mapping: %.*s is not a valid value here; ignoring rule set",
+                    ident.len, ident.start);
         m->mapping.skip = true;
         return;
     }
 
     if (m->mapping.defined_kccgst_mask & (1u << kccgst)) {
-        matcher_error(m,
-                      "invalid mapping: %.*s appears twice on the same line; "
-                      "ignoring rule set",
-                      kccgst_sval.len, kccgst_sval.start);
+        matcher_err(m, "invalid mapping: %.*s appears twice on the same line; ignoring rule set",
+                    kccgst_sval.len, kccgst_sval.start);
         m->mapping.skip = true;
         return;
     }
@@ -480,16 +456,12 @@ static void
 matcher_mapping_verify(struct matcher *m)
 {
     if (m->mapping.num_mlvo == 0) {
-        matcher_error1(m,
-                       "invalid mapping: must have at least one value on the left hand side; "
-                       "ignoring rule set");
+        matcher_err(m, "invalid mapping: must have at least one value on the left hand side; ignoring rule set");
         goto skip;
     }
 
     if (m->mapping.num_kccgst == 0) {
-        matcher_error1(m,
-                       "invalid mapping: must have at least one value on the right hand side; "
-                       "ignoring rule set");
+        matcher_err(m, "invalid mapping: must have at least one value on the right hand side; ignoring rule set");
         goto skip;
     }
 
@@ -540,9 +512,7 @@ matcher_rule_set_mlvo_common(struct matcher *m, struct sval ident,
                              enum mlvo_match_type match_type)
 {
     if (m->rule.num_mlvo_values + 1 > m->mapping.num_mlvo) {
-        matcher_error1(m,
-                       "invalid rule: has more values than the mapping line; "
-                       "ignoring rule");
+        matcher_err(m, "invalid rule: has more values than the mapping line; ignoring rule");
         m->rule.skip = true;
         return;
     }
@@ -574,9 +544,7 @@ static void
 matcher_rule_set_kccgst(struct matcher *m, struct sval ident)
 {
     if (m->rule.num_kccgst_values + 1 > m->mapping.num_kccgst) {
-        matcher_error1(m,
-                       "invalid rule: has more values than the mapping line; "
-                       "ignoring rule");
+        matcher_err(m, "invalid rule: has more values than the mapping line; ignoring rule");
         m->rule.skip = true;
         return;
     }
@@ -680,9 +648,7 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
             int consumed;
 
             if (mlv != MLVO_LAYOUT && mlv != MLVO_VARIANT) {
-                matcher_error1(m,
-                                "invalid index in %%-expansion; "
-                                "may only index layout or variant");
+                matcher_err(m, "invalid index in %%-expansion; may only index layout or variant");
                 goto error;
             }
 
@@ -756,7 +722,7 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
 
 error:
     darray_free(expanded);
-    matcher_error1(m, "invalid %%-expansion in value; not used");
+    matcher_err(m, "invalid %%-expansion in value; not used");
     return false;
 }
 
@@ -765,9 +731,7 @@ matcher_rule_verify(struct matcher *m)
 {
     if (m->rule.num_mlvo_values != m->mapping.num_mlvo ||
         m->rule.num_kccgst_values != m->mapping.num_kccgst) {
-        matcher_error1(m,
-                       "invalid rule: must have same number of values as mapping line;"
-                       "ignoring rule");
+        matcher_err(m, "invalid rule: must have same number of values as mapping line; ignoring rule");
         m->rule.skip = true;
     }
 }
@@ -990,7 +954,7 @@ finish:
     return true;
 
 state_error:
-    matcher_error1(m, "unexpected token");
+    matcher_err(m, "unexpected token");
 error:
     return false;
 }

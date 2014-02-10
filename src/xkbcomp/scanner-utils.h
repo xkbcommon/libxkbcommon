@@ -56,6 +56,18 @@ struct scanner {
     struct xkb_context *ctx;
 };
 
+#define scanner_log(scanner, level, fmt, ...) \
+    xkb_log((scanner)->ctx, (level), 0, \
+            "%s:%u:%u: " fmt "\n", \
+             (scanner)->file_name, \
+             (scanner)->token_line, (scanner)->token_column, ##__VA_ARGS__)
+
+#define scanner_err(scanner, fmt, ...) \
+    scanner_log(scanner, XKB_LOG_LEVEL_ERROR, fmt, ##__VA_ARGS__)
+
+#define scanner_warn(scanner, fmt, ...) \
+    scanner_log(scanner, XKB_LOG_LEVEL_WARNING, fmt, ##__VA_ARGS__)
+
 static inline void
 scanner_init(struct scanner *s, struct xkb_context *ctx,
              const char *string, size_t len, const char *file_name)
