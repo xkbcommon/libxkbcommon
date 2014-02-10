@@ -32,7 +32,7 @@ ParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
                 char *nextop_rtrn, char **extra_data);
 
 FILE *
-FindFileInXkbPath(struct xkb_context *ctx, const char *name,
+FindFileInXkbPath(struct xkb_context *ctx, const char *name, size_t name_len,
                   enum xkb_file_type type, char **pathRtrn);
 
 XkbFile *

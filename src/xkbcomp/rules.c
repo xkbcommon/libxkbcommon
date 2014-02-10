@@ -971,7 +971,8 @@ xkb_components_from_rules(struct xkb_context *ctx,
     size_t size;
     struct matcher *matcher;
 
-    file = FindFileInXkbPath(ctx, rmlvo->rules, FILE_TYPE_RULES, &path);
+    file = FindFileInXkbPath(ctx, rmlvo->rules, strlen(rmlvo->rules),
+                             FILE_TYPE_RULES, &path);
     if (!file)
         goto err_out;
 

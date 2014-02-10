@@ -194,18 +194,17 @@ DirectoryForInclude(enum xkb_file_type type)
 }
 
 FILE *
-FindFileInXkbPath(struct xkb_context *ctx, const char *name,
+FindFileInXkbPath(struct xkb_context *ctx, const char *name, size_t name_len,
                   enum xkb_file_type type, char **pathRtrn)
 {
     unsigned int i;
     FILE *file = NULL;
     char *buf = NULL;
     const char *typeDir;
-    size_t buf_size = 0, typeDirLen, name_len;
+    size_t buf_size = 0, typeDirLen;
 
     typeDir = DirectoryForInclude(type);
     typeDirLen = strlen(typeDir);
-    name_len = strlen(name);
 
     for (i = 0; i < xkb_context_num_include_paths(ctx); i++) {
         size_t new_buf_size = strlen(xkb_context_include_path_get(ctx, i)) +
@@ -277,7 +276,8 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
     FILE *file;
     XkbFile *xkb_file;
 
-    file = FindFileInXkbPath(ctx, stmt->file, file_type, NULL);
+    file = FindFileInXkbPath(ctx, stmt->file, strlen(stmt->file),
+                             file_type, NULL);
     if (!file)
         return false;
 
