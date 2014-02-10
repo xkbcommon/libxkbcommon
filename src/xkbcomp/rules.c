@@ -633,20 +633,10 @@ static bool
 append_expanded_kccgst_value(struct matcher *m, darray_char *to,
                              struct sval value)
 {
-    const unsigned original_size = darray_size(*to);
     const char *s = value.start;
-
-    /*
-     * Appending  bar to  foo ->  foo (not an error if this happens)
-     * Appending +bar to  foo ->  foo+bar
-     * Appending  bar to +foo ->  bar+foo
-     * Appending +bar to +foo -> +foo+bar
-     */
-    if (!darray_empty(*to) && s[0] != '+' && s[0] != '|') {
-        if (darray_item(*to, 0) == '+' || darray_item(*to, 0) == '|')
-            darray_prepends_nullterminate(*to, value.start, value.len);
-        return true;
-    }
+    darray_char expanded = darray_new();
+    char ch;
+    bool expanded_plus, to_plus;
 
     /*
      * Some ugly hand-lexing here, but going through the scanner is more
@@ -656,12 +646,12 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
         enum rules_mlvo mlv;
         xkb_layout_index_t idx;
         char pfx, sfx;
-        struct sval expanded;
+        struct sval expanded_value;
 
         /* Check if that's a start of an expansion. */
         if (s[i] != '%') {
             /* Just a normal character. */
-            darray_appends_nullterminate(*to, &s[i++], 1);
+            darray_appends_nullterminate(expanded, &s[i++], 1);
             continue;
         }
         if (++i >= value.len) goto error;
@@ -708,46 +698,65 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
         }
 
         /* Get the expanded value. */
-        expanded.len = 0;
+        expanded_value.len = 0;
 
         if (mlv == MLVO_LAYOUT) {
             if (idx != XKB_LAYOUT_INVALID &&
                 idx < darray_size(m->rmlvo.layouts) &&
                 darray_size(m->rmlvo.layouts) > 1)
-                expanded = darray_item(m->rmlvo.layouts, idx);
+                expanded_value = darray_item(m->rmlvo.layouts, idx);
             else if (idx == XKB_LAYOUT_INVALID &&
                      darray_size(m->rmlvo.layouts) == 1)
-                expanded = darray_item(m->rmlvo.layouts, 0);
+                expanded_value = darray_item(m->rmlvo.layouts, 0);
         }
         else if (mlv == MLVO_VARIANT) {
             if (idx != XKB_LAYOUT_INVALID &&
                 idx < darray_size(m->rmlvo.variants) &&
                 darray_size(m->rmlvo.variants) > 1)
-                expanded = darray_item(m->rmlvo.variants, idx);
+                expanded_value = darray_item(m->rmlvo.variants, idx);
             else if (idx == XKB_LAYOUT_INVALID &&
                      darray_size(m->rmlvo.variants) == 1)
-                expanded = darray_item(m->rmlvo.variants, 0);
+                expanded_value = darray_item(m->rmlvo.variants, 0);
         }
         else if (mlv == MLVO_MODEL) {
-            expanded = m->rmlvo.model;
+            expanded_value = m->rmlvo.model;
         }
 
         /* If we didn't get one, skip silently. */
-        if (expanded.len <= 0)
+        if (expanded_value.len <= 0)
             continue;
 
         if (pfx != 0)
-            darray_appends_nullterminate(*to, &pfx, 1);
-        darray_appends_nullterminate(*to, expanded.start, expanded.len);
+            darray_appends_nullterminate(expanded, &pfx, 1);
+        darray_appends_nullterminate(expanded,
+                                     expanded_value.start, expanded_value.len);
         if (sfx != 0)
-            darray_appends_nullterminate(*to, &sfx, 1);
+            darray_appends_nullterminate(expanded, &sfx, 1);
     }
 
+    /*
+     * Appending  bar to  foo ->  foo (not an error if this happens)
+     * Appending +bar to  foo ->  foo+bar
+     * Appending  bar to +foo ->  bar+foo
+     * Appending +bar to +foo -> +foo+bar
+     */
+
+    ch = (darray_empty(expanded) ? '\0' : darray_item(expanded, 0));
+    expanded_plus = (ch == '+' || ch == '|');
+    ch = (darray_empty(*to) ? '\0' : darray_item(*to, 0));
+    to_plus = (ch == '+' || ch == '|');
+
+    if (expanded_plus || darray_empty(*to))
+        darray_appends_nullterminate(*to, expanded.item, expanded.size);
+    else if (to_plus)
+        darray_prepends_nullterminate(*to, expanded.item, expanded.size);
+
+    darray_free(expanded);
     return true;
 
 error:
+    darray_free(expanded);
     matcher_error1(m, "invalid %%-expansion in value; not used");
-    darray_resize(*to, original_size);
     return false;
 }
 
