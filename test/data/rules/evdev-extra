@@ -1,0 +1,4 @@
+! model		layout		=	symbols
+  *		mylayout	=	mysymbols
+
+! include evdev

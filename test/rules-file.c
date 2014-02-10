@@ -216,6 +216,53 @@ main(int argc, char *argv[])
     };
     assert(test_rules(ctx, &test7));
 
+    struct test_data test8 = {
+        .rules = "evdev",
+
+        .model = "pc104", .layout = "us", .variant = "", .options = "",
+
+        .keycodes = "evdev+aliases(qwerty)", .types = "complete",
+        .compat = "complete",
+        .symbols = "pc+us+inet(evdev)",
+    };
+    assert(test_rules(ctx, &test8));
+
+    /* Make sure max include depth is enforced. */
+    struct test_data test9 = {
+        .rules = "loop1",
+
+        .model = "pc104", .layout = "us", .variant = "", .options = "",
+
+        .keycodes = "evdev+aliases(qwerty)", .types = "complete",
+        .compat = "complete",
+        .symbols = "pc+us+inet(evdev)",
+    };
+    assert(!test_rules(ctx, &test9));
+
+    /* File includes itself. */
+    struct test_data test10 = {
+        .rules = "loop",
+
+        .model = "pc104", .layout = "us", .variant = "", .options = "",
+
+        .keycodes = "evdev+aliases(qwerty)", .types = "complete",
+        .compat = "complete",
+        .symbols = "pc+us+inet(evdev)",
+    };
+    assert(!test_rules(ctx, &test10));
+
+    /* Test include statement. */
+    /* struct test_data test11 = { */
+    /*     .rules = "evdev-extra", */
+
+    /*     .model = "pc104", .layout = "mylayout", .variant = "", .options = "", */
+
+    /*     .keycodes = "evdev+aliases(qwerty)", .types = "complete", */
+    /*     .compat = "complete", */
+    /*     .symbols = "pc+mysymbols+inet(evdev)", */
+    /* }; */
+    /* assert(test_rules(ctx, &test11)); */
+
     xkb_context_unref(ctx);
     return 0;
 }

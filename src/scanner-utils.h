@@ -37,6 +37,9 @@ svaleq(struct sval s1, struct sval s2)
     return s1.len == s2.len && strncmp(s1.start, s2.start, s1.len) == 0;
 }
 
+#define svaleq_lit(s1, lit) \
+    ((s1).len == (sizeof(lit) - 1) && strncmp((s1).start, lit, (s1).len) == 0)
+
 static inline bool
 svaleq_prefix(struct sval s1, struct sval s2)
 {

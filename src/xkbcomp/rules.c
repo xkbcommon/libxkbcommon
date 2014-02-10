@@ -148,6 +148,8 @@ skip_more_whitespace_and_comments:
 
 /***====================================================================***/
 
+#define MAX_INCLUDE_DEPTH 5
+
 enum rules_mlvo {
     MLVO_MODEL,
     MLVO_LAYOUT,
@@ -232,10 +234,11 @@ struct rule {
  */
 struct matcher {
     struct xkb_context *ctx;
+    unsigned include_depth;
     /* Input.*/
     struct rule_names rmlvo;
     union lvalue val;
-    struct scanner scanner;
+    struct scanner *scanner;
     darray(struct group) groups;
     /* Current mapping. */
     struct mapping mapping;
@@ -289,6 +292,7 @@ matcher_new(struct xkb_context *ctx,
         return NULL;
 
     m->ctx = ctx;
+    m->include_depth = 0;
     m->rmlvo.model.start = rmlvo->model;
     m->rmlvo.model.len = strlen_safe(rmlvo->model);
     m->rmlvo.layouts = split_comma_separated_string(rmlvo->layout);
@@ -314,7 +318,7 @@ matcher_free(struct matcher *m)
 }
 
 #define matcher_err(matcher, fmt, ...) \
-    scanner_err(&(matcher)->scanner, fmt, ## __VA_ARGS__)
+    scanner_err((matcher)->scanner, fmt, ## __VA_ARGS__)
 
 static void
 matcher_group_start_new(struct matcher *m, struct sval name)
@@ -790,10 +794,62 @@ matcher_rule_apply_if_matches(struct matcher *m)
         m->mapping.skip = true;
 }
 
+static bool
+matcher_match(struct matcher *m, const char *string, size_t len,
+              const char *file_name, struct xkb_component_names *out);
+
+static bool
+matcher_include(struct matcher *m, struct sval name)
+{
+    bool ret = false;
+    FILE *file;
+    char *path;
+    const char *string;
+    size_t size;
+    struct scanner *prev_scanner;
+
+    if (m->include_depth >= MAX_INCLUDE_DEPTH) {
+        matcher_err(m, "maximum include depth (%d) exceeded; maybe there is an include loop?",
+                    MAX_INCLUDE_DEPTH);
+        return false;
+    }
+
+    file = FindFileInXkbPath(m->ctx, name.start, name.len,
+                             FILE_TYPE_RULES, &path);
+    if (!file)
+        goto err_out;
+
+    ret = map_file(file, &string, &size);
+    if (!ret) {
+        matcher_err(m, "failed to include file: \"%s\": %s",
+                    path, strerror(errno));
+        goto err_file;
+    }
+
+    m->include_depth++;
+    prev_scanner = m->scanner;
+    ret = matcher_match(m, string, size, path, NULL);
+    m->scanner = prev_scanner;
+    m->include_depth--;
+    if (!ret) {
+        matcher_err(m, "failed to include file \"%s\"", path);
+        goto err_unmap;
+    }
+
+err_unmap:
+    unmap_file(string, size);
+err_file:
+    free(path);
+    fclose(file);
+err_out:
+    return ret;
+
+}
+
 static enum rules_token
 gettok(struct matcher *m)
 {
-    return lex(&m->scanner, &m->val);
+    return lex(m->scanner, &m->val);
 }
 
 static bool
@@ -801,14 +857,18 @@ matcher_match(struct matcher *m, const char *string, size_t len,
               const char *file_name, struct xkb_component_names *out)
 {
     enum rules_token tok;
+    struct scanner scanner;
 
     if (!m)
         return false;
 
-    scanner_init(&m->scanner, m->ctx, string, len, file_name);
+    scanner_init(&scanner, m->ctx, string, len, file_name);
+    m->scanner = &scanner;
 
 initial:
     switch (tok = gettok(m)) {
+    case TOK_IDENTIFIER:
+        goto unexpected;
     case TOK_BANG:
         goto bang;
     case TOK_END_OF_LINE:
@@ -825,9 +885,29 @@ bang:
         matcher_group_start_new(m, m->val.string);
         goto group_name;
     case TOK_IDENTIFIER:
+        if (svaleq_lit(m->val.string, "include"))
+            goto include;
         matcher_mapping_start_new(m);
         matcher_mapping_set_mlvo(m, m->val.string);
         goto mapping_mlvo;
+    default:
+        goto unexpected;
+    }
+
+include:
+    switch (tok = gettok(m)) {
+    case TOK_IDENTIFIER:
+        goto include_eol;
+    default:
+        goto unexpected;
+    }
+
+include_eol:
+    switch (tok = gettok(m)) {
+    case TOK_END_OF_LINE:
+        if (!matcher_include(m, m->val.string))
+            goto error;
+        goto initial;
     default:
         goto unexpected;
     }
@@ -944,12 +1024,14 @@ finish:
         darray_empty(m->kccgst[KCCGST_SYMBOLS]))
         goto error;
 
-    out->keycodes = darray_mem(m->kccgst[KCCGST_KEYCODES], 0);
-    out->types = darray_mem(m->kccgst[KCCGST_TYPES], 0);
-    out->compat = darray_mem(m->kccgst[KCCGST_COMPAT], 0);
-    /* out->geometry = darray_mem(m->kccgst[KCCGST_GEOMETRY], 0); */
-    darray_free(m->kccgst[KCCGST_GEOMETRY]);
-    out->symbols = darray_mem(m->kccgst[KCCGST_SYMBOLS], 0);
+    if (out) {
+        out->keycodes = darray_mem(m->kccgst[KCCGST_KEYCODES], 0);
+        out->types = darray_mem(m->kccgst[KCCGST_TYPES], 0);
+        out->compat = darray_mem(m->kccgst[KCCGST_COMPAT], 0);
+        /* out->geometry = darray_mem(m->kccgst[KCCGST_GEOMETRY], 0); */
+        darray_free(m->kccgst[KCCGST_GEOMETRY]);
+        out->symbols = darray_mem(m->kccgst[KCCGST_SYMBOLS], 0);
+    }
 
     return true;
 

@@ -40,7 +40,9 @@ Grammar
 (It might be helpful to look at a file like rules/evdev along with
 this grammer. Comments, whitespace, etc. are not shown.)
 
-File         ::= { "!" (Group | RuleSet) }
+File         ::= { "!" (Group | RuleSet | Include) }
+
+Include      := "include" <ident>
 
 Group        ::= GroupName "=" { GroupElement } "\n"
 GroupName    ::= "$"<ident>
@@ -58,6 +60,9 @@ MlvoValue    ::= "*" | GroupName | <ident>
 KccgstValue  ::= <ident>
 
 Notes:
+
+- The <ident> in Include is the name of a rules file, which is searched
+  in the rules files search path as if were given in a RMLVO.
 
 - The order of values in a Rule must be the same as the Mapping it
   follows. The mapping line determines the meaning of the values in
