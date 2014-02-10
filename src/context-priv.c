@@ -149,7 +149,7 @@ const char *
 xkb_context_get_default_variant(struct xkb_context *ctx)
 {
     const char *env = NULL;
-    const char *layout = secure_getenv("XKB_DEFAULT_VARIANT");
+    const char *layout = secure_getenv("XKB_DEFAULT_LAYOUT");
 
     /* We don't want to inherit the variant if they haven't also set a
      * layout, since they're so closely paired. */
