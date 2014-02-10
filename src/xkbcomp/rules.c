@@ -1004,7 +1004,8 @@ xkb_components_from_rules(struct xkb_context *ctx,
 
     ret = map_file(file, &string, &size);
     if (!ret) {
-        log_err(ctx, "Couldn't read rules file: %s\n", strerror(errno));
+        log_err(ctx, "Couldn't read rules file \"%s\": %s\n",
+                path, strerror(errno));
         goto err_file;
     }
 
