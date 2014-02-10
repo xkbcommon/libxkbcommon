@@ -67,6 +67,8 @@ main(int argc, char *argv[])
         return 1;
     }
 
+    xkb_context_sanitize_rule_names(ctx, &rmlvo);
+
     if (!xkb_components_from_rules(ctx, &rmlvo, &kccgst))
         return 1;
 
