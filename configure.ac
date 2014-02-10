@@ -62,7 +62,8 @@ PKG_PROG_PKG_CONFIG
 # Note: we use some yacc extensions, which work with either GNU bison
 # (preferred) or byacc. Other yacc's may or may not work.
 AC_PROG_YACC
-AS_IF([test ! -f "src/xkbcomp/parser.c" -a "x$ac_cv_prog_YACC" = x], [
+AC_PATH_PROG([YACC_INST], [$YACC])
+AS_IF([test ! -f "src/xkbcomp/parser.c" -a "x$YACC_INST" = x], [
     AC_MSG_ERROR([yacc not found - unable to compile src/xkbcomp/parser.y])
 ])
 
