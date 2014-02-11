@@ -5,7 +5,8 @@ pkgconfig_DATA = xkbcommon.pc
 
 EXTRA_DIST = \
 	makekeys.py \
-	src/xkbcomp/keywords.gperf
+	src/xkbcomp/keywords.gperf \
+	test/data
 
 AM_CPPFLAGS = \
 	-DDFLT_XKB_CONFIG_ROOT='"$(XKBCONFIGROOT)"' \
@@ -102,7 +103,6 @@ libxkbcommon_x11_la_SOURCES = \
 	src/keymap-priv.c \
 	src/atom.h \
 	src/atom.c
-
 endif ENABLE_X11
 
 BUILT_SOURCES = \
@@ -113,7 +113,9 @@ CLEANFILES = $(BUILT_SOURCES)
 src/xkbcomp/parser.c: $(top_builddir)/src/$(am__dirstamp) $(top_builddir)/src/xkbcomp/$(am__dirstamp)
 src/xkbcomp/parser.h: $(top_builddir)/src/$(am__dirstamp) $(top_builddir)/src/xkbcomp/$(am__dirstamp)
 
+##
 # Documentation
+##
 
 if ENABLE_DOCS
 if HAVE_DOXYGEN
@@ -135,11 +137,12 @@ install-data-local:: doc
 
 uninstall-local::
 	rm -rf $(DESTDIR)$(htmldir)
-
 endif HAVE_DOXYGEN
 endif ENABLE_DOCS
 
+##
 # Tests
+##
 
 # Some tests need to use unexported symbols, so we link them against
 # a private copy of libxkbcommon with all symbols exposed.
@@ -164,11 +167,15 @@ TESTS = \
 	test/buffercomp \
 	test/log \
 	test/atom
+check_PROGRAMS = \
+	test/rmlvo-to-kccgst \
+	test/print-compiled-keymap \
+	test/bench-key-proc
+
 TESTS_LDADD = libtest.la
 
 test_keysym_LDADD = $(TESTS_LDADD)
 test_filecomp_LDADD = $(TESTS_LDADD)
-test_rulescomp_LDADD = $(TESTS_LDADD) -lrt
 test_context_LDADD = $(TESTS_LDADD)
 test_rules_file_CFLAGS = $(AM_CFLAGS) -Wno-declaration-after-statement
 test_rules_file_LDADD = $(TESTS_LDADD) -lrt
@@ -180,44 +187,40 @@ test_rmlvo_to_kccgst_LDADD = $(TESTS_LDADD)
 test_print_compiled_keymap_LDADD = $(TESTS_LDADD)
 test_bench_key_proc_LDADD = $(TESTS_LDADD) -lrt
 
-check_PROGRAMS = \
-	$(TESTS) \
-	test/rmlvo-to-kccgst \
-	test/print-compiled-keymap \
-	test/bench-key-proc
-
 if BUILD_LINUX_TESTS
 TESTS += \
 	test/state \
 	test/keyseq \
 	test/rulescomp
-
-test_keyseq_LDADD = $(TESTS_LDADD)
-test_state_LDADD = $(TESTS_LDADD)
-test_interactive_evdev_LDADD = $(TESTS_LDADD)
-
 check_PROGRAMS += \
 	test/interactive-evdev
 
+test_state_LDADD = $(TESTS_LDADD)
+test_keyseq_LDADD = $(TESTS_LDADD)
+test_rulescomp_LDADD = $(TESTS_LDADD) -lrt
+test_interactive_evdev_LDADD = $(TESTS_LDADD)
 endif BUILD_LINUX_TESTS
 
 if ENABLE_X11
 TESTS += \
 	test/x11
-TESTS_X11_LDADD = $(TESTS_LDADD) $(XCB_XKB_LIBS) libxkbcommon-x11.la
+check_PROGRAMS += \
+	test/interactive-x11
+
+TESTS_X11_LDADD = $(XCB_XKB_LIBS) $(TESTS_LDADD) libxkbcommon-x11.la
 TESTS_X11_CFLAGS = $(XCB_XKB_CFLAGS)
 
 test_x11_LDADD = $(TESTS_X11_LDADD)
 test_x11_CFLAGS = $(TESTS_X11_CFLAGS)
 test_interactive_x11_LDADD = $(TESTS_X11_LDADD)
 test_interactive_x11_CFLAGS = $(TESTS_X11_CFLAGS)
-
-check_PROGRAMS += \
-	test/interactive-x11
 endif ENABLE_X11
 
-EXTRA_DIST += \
-	test/data
+check_PROGRAMS += $(TESTS)
+
+##
+# Custom targets
+##
 
 # This sed script strips out lines that start with '#define _' which
 # removes #define _OSF_Keysyms and such.  The XK_Ydiaeresis case is to
@@ -246,7 +249,9 @@ update-keysyms:
 update-keywords:
 	$(AM_V_GEN)gperf < $(top_srcdir)/src/xkbcomp/keywords.gperf > $(top_srcdir)/src/xkbcomp/keywords.c
 
+##
 # Android stuff
+##
 
 Android_build.mk: Makefile $(BUILT_SOURCES)
 	androgenizer \
