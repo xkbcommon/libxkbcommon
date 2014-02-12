@@ -156,8 +156,8 @@ typedef darray (unsigned long)  darray_ulong;
 #define darray_growalloc(arr, need)   do { \
     unsigned __need = (need); \
     if (__need > (arr).alloc) \
-    darray_realloc(arr, darray_next_alloc((arr).alloc, __need, \
-                                          sizeof(*(arr).item))); \
+        darray_realloc(arr, darray_next_alloc((arr).alloc, __need, \
+                                              sizeof(*(arr).item))); \
 } while (0)
 
 static inline unsigned
