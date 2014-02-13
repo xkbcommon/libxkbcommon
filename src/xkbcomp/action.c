@@ -284,10 +284,8 @@ HandleSetLatchMods(struct xkb_keymap *keymap, union xkb_action *action,
                    const ExprDef *value)
 {
     struct xkb_mod_action *act = &action->mods;
-    enum xkb_action_flags rtrn, t1;
-    xkb_mod_mask_t t2;
 
-    if (array_ndx != NULL) {
+    if (array_ndx) {
         switch (field) {
         case ACTION_FIELD_CLEAR_LOCKS:
         case ACTION_FIELD_LATCH_TO_LOCK:
@@ -301,22 +299,11 @@ HandleSetLatchMods(struct xkb_keymap *keymap, union xkb_action *action,
     switch (field) {
     case ACTION_FIELD_CLEAR_LOCKS:
     case ACTION_FIELD_LATCH_TO_LOCK:
-        rtrn = act->flags;
-        if (CheckLatchLockFlags(keymap, action->type, field, value, &rtrn)) {
-            act->flags = rtrn;
-            return true;
-        }
-        return false;
-
+        return CheckLatchLockFlags(keymap, action->type, field, value,
+                                   &act->flags);
     case ACTION_FIELD_MODIFIERS:
-        t1 = act->flags;
-        if (CheckModifierField(keymap, action->type, value, &t1, &t2)) {
-            act->flags = t1;
-            act->mods.mods = t2;
-            return true;
-        }
-        return false;
-
+        return CheckModifierField(keymap, action->type, value,
+                               &act->flags, &act->mods.mods);
     default:
         break;
     }
@@ -330,22 +317,14 @@ HandleLockMods(struct xkb_keymap *keymap, union xkb_action *action,
                const ExprDef *value)
 {
     struct xkb_mod_action *act = &action->mods;
-    enum xkb_action_flags t1;
-    xkb_mod_mask_t t2;
 
     if (array_ndx && field == ACTION_FIELD_MODIFIERS)
         return ReportActionNotArray(keymap, action->type, field);
 
     switch (field) {
     case ACTION_FIELD_MODIFIERS:
-        t1 = act->flags;
-        if (CheckModifierField(keymap, action->type, value, &t1, &t2)) {
-            act->flags = t1;
-            act->mods.mods = t2;
-            return true;
-        }
-        return false;
-
+        return CheckModifierField(keymap, action->type, value,
+                                  &act->flags, &act->mods.mods);
     default:
         break;
     }
@@ -356,28 +335,35 @@ HandleLockMods(struct xkb_keymap *keymap, union xkb_action *action,
 static bool
 CheckGroupField(struct xkb_keymap *keymap, unsigned action,
                 const ExprDef *value, enum xkb_action_flags *flags_inout,
-                xkb_layout_index_t *grp_rtrn)
+                int32_t *group_rtrn)
 {
     const ExprDef *spec;
+    xkb_layout_index_t idx;
+    enum xkb_action_flags flags = *flags_inout;
 
     if (value->expr.op == EXPR_NEGATE || value->expr.op == EXPR_UNARY_PLUS) {
-        *flags_inout &= ~ACTION_ABSOLUTE_SWITCH;
+        flags &= ~ACTION_ABSOLUTE_SWITCH;
         spec = value->unary.child;
     }
     else {
-        *flags_inout |= ACTION_ABSOLUTE_SWITCH;
+        flags |= ACTION_ABSOLUTE_SWITCH;
         spec = value;
     }
 
-    if (!ExprResolveGroup(keymap->ctx, spec, grp_rtrn))
+    if (!ExprResolveGroup(keymap->ctx, spec, &idx))
         return ReportMismatch(keymap, action, ACTION_FIELD_GROUP,
                               "integer (range 1..8)");
 
-    if (value->expr.op == EXPR_NEGATE)
-        *grp_rtrn = -*grp_rtrn;
-    else if (value->expr.op != EXPR_UNARY_PLUS)
-        (*grp_rtrn)--;
-
+    /* +n, -n are relative, n is absolute. */
+    if (value->expr.op == EXPR_NEGATE || value->expr.op == EXPR_UNARY_PLUS) {
+        *group_rtrn = (int32_t) idx;
+        if (value->expr.op == EXPR_NEGATE)
+            *group_rtrn = -*group_rtrn;
+    }
+    else {
+        *group_rtrn = (int32_t) (idx - 1);
+    }
+    *flags_inout = flags;
     return true;
 }
 
@@ -387,16 +373,13 @@ HandleSetLatchGroup(struct xkb_keymap *keymap, union xkb_action *action,
                     const ExprDef *value)
 {
     struct xkb_group_action *act = &action->group;
-    enum xkb_action_flags rtrn, t1;
-    xkb_layout_index_t t2;
 
-    if (array_ndx != NULL) {
+    if (array_ndx) {
         switch (field) {
         case ACTION_FIELD_CLEAR_LOCKS:
         case ACTION_FIELD_LATCH_TO_LOCK:
         case ACTION_FIELD_GROUP:
             return ReportActionNotArray(keymap, action->type, field);
-
         default:
             break;
         }
@@ -405,22 +388,11 @@ HandleSetLatchGroup(struct xkb_keymap *keymap, union xkb_action *action,
     switch (field) {
     case ACTION_FIELD_CLEAR_LOCKS:
     case ACTION_FIELD_LATCH_TO_LOCK:
-        rtrn = act->flags;
-        if (CheckLatchLockFlags(keymap, action->type, field, value, &rtrn)) {
-            act->flags = rtrn;
-            return true;
-        }
-        return false;
-
+        return CheckLatchLockFlags(keymap, action->type, field, value,
+                                   &act->flags);
     case ACTION_FIELD_GROUP:
-        t1 = act->flags;
-        if (CheckGroupField(keymap, action->type, value, &t1, &t2)) {
-            act->flags = t1;
-            act->group = t2;
-            return true;
-        }
-        return false;
-
+        return CheckGroupField(keymap, action->type, value,
+                               &act->flags, &act->group);
     default:
         break;
     }
@@ -434,20 +406,14 @@ HandleLockGroup(struct xkb_keymap *keymap, union xkb_action *action,
                 const ExprDef *value)
 {
     struct xkb_group_action *act = &action->group;
-    enum xkb_action_flags t1;
-    xkb_layout_index_t t2;
 
-    if ((array_ndx != NULL) && (field == ACTION_FIELD_GROUP))
+    if (array_ndx && field == ACTION_FIELD_GROUP)
         return ReportActionNotArray(keymap, action->type, field);
-    if (field == ACTION_FIELD_GROUP) {
-        t1 = act->flags;
-        if (CheckGroupField(keymap, action->type, value, &t1, &t2)) {
-            act->flags = t1;
-            act->group = t2;
-            return true;
-        }
-        return false;
-    }
+
+    if (field == ACTION_FIELD_GROUP)
+        return CheckGroupField(keymap, action->type, value,
+                               &act->flags, &act->group);
+
     return ReportIllegal(keymap, action->type, field);
 }
 
