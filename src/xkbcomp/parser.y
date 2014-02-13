@@ -240,7 +240,7 @@ XkbFile         :       XkbCompositeMap
 XkbCompositeMap :       OptFlags XkbCompositeType OptMapName OBRACE
                             XkbMapConfigList
                         CBRACE SEMI
-                        { $$ = XkbFileCreate($2, $3, &$5->common, $1); }
+                        { $$ = XkbFileCreate($2, $3, (ParseCommon *) $5, $1); }
                 ;
 
 XkbCompositeType:       XKB_KEYMAP      { $$ = FILE_TYPE_KEYMAP; }
@@ -253,7 +253,8 @@ XkbMapConfigList :      XkbMapConfigList XkbMapConfig
                             if (!$2)
                                 $$ = $1;
                             else
-                                $$ = (XkbFile *)AppendStmt(&$1->common, &$2->common);
+                                $$ = (XkbFile *) AppendStmt((ParseCommon *) $1,
+                                                            (ParseCommon *) $2);
                         }
                 |       XkbMapConfig
                         { $$ = $1; }
@@ -307,64 +308,64 @@ DeclList        :       DeclList Decl
 Decl            :       OptMergeMode VarDecl
                         {
                             $2->merge = $1;
-                            $$ = &$2->common;
+                            $$ = (ParseCommon *) $2;
                         }
                 |       OptMergeMode VModDecl
                         {
                             $2->merge = $1;
-                            $$ = &$2->common;
+                            $$ = (ParseCommon *) $2;
                         }
                 |       OptMergeMode InterpretDecl
                         {
                             $2->merge = $1;
-                            $$ = &$2->common;
+                            $$ = (ParseCommon *) $2;
                         }
                 |       OptMergeMode KeyNameDecl
                         {
                             $2->merge = $1;
-                            $$ = &$2->common;
+                            $$ = (ParseCommon *) $2;
                         }
                 |       OptMergeMode KeyAliasDecl
                         {
                             $2->merge = $1;
-                            $$ = &$2->common;
+                            $$ = (ParseCommon *) $2;
                         }
                 |       OptMergeMode KeyTypeDecl
                         {
                             $2->merge = $1;
-                            $$ = &$2->common;
+                            $$ = (ParseCommon *) $2;
                         }
                 |       OptMergeMode SymbolsDecl
                         {
                             $2->merge = $1;
-                            $$ = &$2->common;
+                            $$ = (ParseCommon *) $2;
                         }
                 |       OptMergeMode ModMapDecl
                         {
                             $2->merge = $1;
-                            $$ = &$2->common;
+                            $$ = (ParseCommon *) $2;
                         }
                 |       OptMergeMode GroupCompatDecl
                         {
                             $2->merge = $1;
-                            $$ = &$2->common;
+                            $$ = (ParseCommon *) $2;
                         }
                 |       OptMergeMode LedMapDecl
                         {
                             $2->merge = $1;
-                            $$ = &$2->common;
+                            $$ = (ParseCommon *) $2;
                         }
                 |       OptMergeMode LedNameDecl
                         {
                             $2->merge = $1;
-                            $$ = &$2->common;
+                            $$ = (ParseCommon *) $2;
                         }
                 |       OptMergeMode ShapeDecl          { $$ = NULL; }
                 |       OptMergeMode SectionDecl        { $$ = NULL; }
                 |       OptMergeMode DoodadDecl         { $$ = NULL; }
                 |       MergeMode STRING
                         {
-                            $$ = &IncludeCreate(param->ctx, $2, $1)->common;
+                            $$ = (ParseCommon *) IncludeCreate(param->ctx, $2, $1);
                             free($2);
                         }
                 ;
@@ -390,7 +391,8 @@ VModDecl        :       VIRTUAL_MODS VModDefList SEMI
                 ;
 
 VModDefList     :       VModDefList COMMA VModDef
-                        { $$ = (VModDef *)AppendStmt(&$1->common, &$3->common); }
+                        { $$ = (VModDef *) AppendStmt((ParseCommon *) $1,
+                                                      (ParseCommon *) $3); }
                 |       VModDef
                         { $$ = $1; }
                 ;
@@ -414,7 +416,8 @@ InterpretMatch  :       KeySym PLUS Expr
                 ;
 
 VarDeclList     :       VarDeclList VarDecl
-                        { $$ = (VarDef *)AppendStmt(&$1->common, &$2->common); }
+                        { $$ = (VarDef *) AppendStmt((ParseCommon *) $1,
+                                                     (ParseCommon *) $2); }
                 |       VarDecl
                         { $$ = $1; }
                 ;
@@ -432,7 +435,8 @@ SymbolsDecl     :       KEY KEYNAME OBRACE
                 ;
 
 SymbolsBody     :       SymbolsBody COMMA SymbolsVarDecl
-                        { $$ = (VarDef *)AppendStmt(&$1->common, &$3->common); }
+                        { $$ = (VarDef *) AppendStmt((ParseCommon *) $1,
+                                                     (ParseCommon *) $3); }
                 |       SymbolsVarDecl
                         { $$ = $1; }
                 |       { $$ = NULL; }
@@ -486,11 +490,11 @@ SectionBody     :       SectionBody SectionBodyItem     { $$ = NULL;}
 SectionBodyItem :       ROW OBRACE RowBody CBRACE SEMI
                         { $$ = NULL; }
                 |       VarDecl
-                        { FreeStmt(&$1->common); $$ = NULL; }
+                        { FreeStmt((ParseCommon *) $1); $$ = NULL; }
                 |       DoodadDecl
                         { $$ = NULL; }
                 |       LedMapDecl
-                        { FreeStmt(&$1->common); $$ = NULL; }
+                        { FreeStmt((ParseCommon *) $1); $$ = NULL; }
                 |       OverlayDecl
                         { $$ = NULL; }
                 ;
@@ -501,7 +505,7 @@ RowBody         :       RowBody RowBodyItem     { $$ = NULL;}
 
 RowBodyItem     :       KEYS OBRACE Keys CBRACE SEMI { $$ = NULL; }
                 |       VarDecl
-                        { FreeStmt(&$1->common); $$ = NULL; }
+                        { FreeStmt((ParseCommon *) $1); $$ = NULL; }
                 ;
 
 Keys            :       Keys COMMA Key          { $$ = NULL; }
@@ -511,7 +515,7 @@ Keys            :       Keys COMMA Key          { $$ = NULL; }
 Key             :       KEYNAME
                         { $$ = NULL; }
                 |       OBRACE ExprList CBRACE
-                        { FreeStmt(&$2->common); $$ = NULL; }
+                        { FreeStmt((ParseCommon *) $2); $$ = NULL; }
                 ;
 
 OverlayDecl     :       OVERLAY String OBRACE OverlayKeyList CBRACE SEMI
@@ -536,7 +540,7 @@ OutlineInList   :       OBRACE CoordList CBRACE
                 |       Ident EQUALS OBRACE CoordList CBRACE
                         { $$ = NULL; }
                 |       Ident EQUALS Expr
-                        { FreeStmt(&$3->common); $$ = NULL; }
+                        { FreeStmt((ParseCommon *) $3); $$ = NULL; }
                 ;
 
 CoordList       :       CoordList COMMA Coord
@@ -550,7 +554,7 @@ Coord           :       OBRACKET SignedNumber COMMA SignedNumber CBRACKET
                 ;
 
 DoodadDecl      :       DoodadType String OBRACE VarDeclList CBRACE SEMI
-                        { FreeStmt(&$4->common); $$ = NULL; }
+                        { FreeStmt((ParseCommon *) $4); $$ = NULL; }
                 ;
 
 DoodadType      :       TEXT    { $$ = 0; }
@@ -610,7 +614,8 @@ OptExprList     :       ExprList        { $$ = $1; }
                 ;
 
 ExprList        :       ExprList COMMA Expr
-                        { $$ = (ExprDef *)AppendStmt(&$1->common, &$3->common); }
+                        { $$ = (ExprDef *) AppendStmt((ParseCommon *) $1,
+                                                      (ParseCommon *) $3); }
                 |       Expr
                         { $$ = $1; }
                 ;
@@ -648,7 +653,8 @@ Term            :       MINUS Term
                 ;
 
 ActionList      :       ActionList COMMA Action
-                        { $$ = (ExprDef *)AppendStmt(&$1->common, &$3->common); }
+                        { $$ = (ExprDef *) AppendStmt((ParseCommon *) $1,
+                                                      (ParseCommon *) $3); }
                 |       Action
                         { $$ = $1; }
                 ;

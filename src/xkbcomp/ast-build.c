@@ -53,7 +53,6 @@
 
 #include "xkbcomp-priv.h"
 #include "ast-build.h"
-#include "parser-priv.h"
 #include "include.h"
 
 ParseCommon *
@@ -533,7 +532,7 @@ XkbFileFromComponents(struct xkb_context *ctx,
         if (!include)
             goto err;
 
-        file = XkbFileCreate(type, NULL, &include->common, 0);
+        file = XkbFileCreate(type, NULL, (ParseCommon *) include, 0);
         if (!file) {
             FreeInclude(include);
             goto err;
@@ -565,7 +564,7 @@ FreeExpr(ExprDef *expr)
     case EXPR_UNARY_PLUS:
     case EXPR_NOT:
     case EXPR_INVERT:
-        FreeStmt(&expr->unary.child->common);
+        FreeStmt((ParseCommon *) expr->unary.child);
         break;
 
     case EXPR_DIVIDE:
@@ -573,16 +572,16 @@ FreeExpr(ExprDef *expr)
     case EXPR_SUBTRACT:
     case EXPR_MULTIPLY:
     case EXPR_ASSIGN:
-        FreeStmt(&expr->binary.left->common);
-        FreeStmt(&expr->binary.right->common);
+        FreeStmt((ParseCommon *) expr->binary.left);
+        FreeStmt((ParseCommon *) expr->binary.right);
         break;
 
     case EXPR_ACTION_DECL:
-        FreeStmt(&expr->action.args->common);
+        FreeStmt((ParseCommon *) expr->action.args);
         break;
 
     case EXPR_ARRAY_REF:
-        FreeStmt(&expr->array_ref.entry->common);
+        FreeStmt((ParseCommon *) expr->array_ref.entry);
         break;
 
     case EXPR_KEYSYM_LIST:
@@ -619,12 +618,10 @@ void
 FreeStmt(ParseCommon *stmt)
 {
     ParseCommon *next;
-    YYSTYPE u;
 
     while (stmt)
     {
         next = stmt->next;
-        u.any = stmt;
 
         switch (stmt->type) {
         case STMT_INCLUDE:
@@ -633,36 +630,36 @@ FreeStmt(ParseCommon *stmt)
             stmt = NULL;
             break;
         case STMT_EXPR:
-            FreeExpr(u.expr);
+            FreeExpr((ExprDef *) stmt);
             break;
         case STMT_VAR:
-            FreeStmt(&u.var->name->common);
-            FreeStmt(&u.var->value->common);
+            FreeStmt((ParseCommon *) ((VarDef *) stmt)->name);
+            FreeStmt((ParseCommon *) ((VarDef *) stmt)->value);
             break;
         case STMT_TYPE:
-            FreeStmt(&u.keyType->body->common);
+            FreeStmt((ParseCommon *) ((KeyTypeDef *) stmt)->body);
             break;
         case STMT_INTERP:
-            FreeStmt(&u.interp->match->common);
-            FreeStmt(&u.interp->def->common);
+            FreeStmt((ParseCommon *) ((InterpDef *) stmt)->match);
+            FreeStmt((ParseCommon *) ((InterpDef *) stmt)->def);
             break;
         case STMT_VMOD:
-            FreeStmt(&u.vmod->value->common);
+            FreeStmt((ParseCommon *) ((VModDef *) stmt)->value);
             break;
         case STMT_SYMBOLS:
-            FreeStmt(&u.syms->symbols->common);
+            FreeStmt((ParseCommon *) ((SymbolsDef *) stmt)->symbols);
             break;
         case STMT_MODMAP:
-            FreeStmt(&u.modMask->keys->common);
+            FreeStmt((ParseCommon *) ((ModMapDef *) stmt)->keys);
             break;
         case STMT_GROUP_COMPAT:
-            FreeStmt(&u.groupCompat->def->common);
+            FreeStmt((ParseCommon *) ((GroupCompatDef *) stmt)->def);
             break;
         case STMT_LED_MAP:
-            FreeStmt(&u.ledMap->body->common);
+            FreeStmt((ParseCommon *) ((LedMapDef *) stmt)->body);
             break;
         case STMT_LED_NAME:
-            FreeStmt(&u.ledName->name->common);
+            FreeStmt((ParseCommon *) ((LedNameDef *) stmt)->name);
             break;
         default:
             break;
