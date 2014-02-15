@@ -422,13 +422,13 @@ HandleMovePtr(struct xkb_keymap *keymap, union xkb_action *action,
 {
     struct xkb_pointer_action *act = &action->ptr;
 
-    if (array_ndx && (field == ACTION_FIELD_X || field == ACTION_FIELD_Y))
-        return ReportActionNotArray(keymap, action->type, field);
-
     if (field == ACTION_FIELD_X || field == ACTION_FIELD_Y) {
         int val;
         const bool absolute = (value->expr.op != EXPR_NEGATE &&
                                value->expr.op != EXPR_UNARY_PLUS);
+
+        if (array_ndx)
+            return ReportActionNotArray(keymap, action->type, field);
 
         if (!ExprResolveInteger(keymap->ctx, value, &val))
             return ReportMismatch(keymap, action->type, field, "integer");
@@ -457,6 +457,9 @@ HandleMovePtr(struct xkb_keymap *keymap, union xkb_action *action,
     }
     else if (field == ACTION_FIELD_ACCEL) {
         bool set;
+
+        if (array_ndx)
+            return ReportActionNotArray(keymap, action->type, field);
 
         if (!ExprResolveBoolean(keymap->ctx, value, &set))
             return ReportMismatch(keymap, action->type, field, "boolean");
@@ -687,6 +690,9 @@ HandlePrivate(struct xkb_keymap *keymap, union xkb_action *action,
     if (field == ACTION_FIELD_TYPE) {
         int type;
 
+        if (array_ndx)
+            return ReportActionNotArray(keymap, action->type, field);
+
         if (!ExprResolveInteger(keymap->ctx, value, &type))
             return ReportMismatch(keymap, ACTION_TYPE_PRIVATE, field, "integer");
 
@@ -879,7 +885,6 @@ HandleActionDef(ExprDef *def, struct xkb_keymap *keymap,
 
     return true;
 }
-
 
 bool
 SetActionField(struct xkb_keymap *keymap, const char *elem, const char *field,
