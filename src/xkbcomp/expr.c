@@ -427,14 +427,8 @@ ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
 bool
 ExprResolveButton(struct xkb_context *ctx, const ExprDef *expr, int *btn_rtrn)
 {
-    int result;
-
-    if (!ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
-                                  buttonNames))
-        return false;
-
-    *btn_rtrn = result;
-    return true;
+    return ExprResolveIntegerLookup(ctx, expr, btn_rtrn, SimpleLookup,
+                                    buttonNames);
 }
 
 bool
