@@ -311,6 +311,29 @@ HandleSetLatchMods(struct xkb_keymap *keymap, union xkb_action *action,
     return ReportIllegal(keymap, action->type, field);
 }
 
+static const LookupEntry lockWhich[] = {
+    { "both", 0 },
+    { "lock", ACTION_LOCK_NO_UNLOCK },
+    { "neither", (ACTION_LOCK_NO_LOCK | ACTION_LOCK_NO_UNLOCK) },
+    { "unlock", ACTION_LOCK_NO_LOCK },
+    { NULL, 0 }
+};
+
+static bool
+CheckAffectField(struct xkb_keymap *keymap, enum xkb_action_type action,
+                 const ExprDef *value, enum xkb_action_flags *flags_inout)
+{
+    enum xkb_action_flags flags;
+
+    if (!ExprResolveEnum(keymap->ctx, value, &flags, lockWhich))
+        return ReportMismatch(keymap, action, ACTION_FIELD_AFFECT,
+                              "lock, unlock, both, neither");
+
+    *flags_inout &= ~(ACTION_LOCK_NO_LOCK | ACTION_LOCK_NO_UNLOCK);
+    *flags_inout |= flags;
+    return true;
+}
+
 static bool
 HandleLockMods(struct xkb_keymap *keymap, union xkb_action *action,
                enum action_field field, const ExprDef *array_ndx,
@@ -318,13 +341,16 @@ HandleLockMods(struct xkb_keymap *keymap, union xkb_action *action,
 {
     struct xkb_mod_action *act = &action->mods;
 
-    if (array_ndx && field == ACTION_FIELD_MODIFIERS)
+    if (array_ndx && (field == ACTION_FIELD_MODIFIERS ||
+                      field == ACTION_FIELD_AFFECT))
         return ReportActionNotArray(keymap, action->type, field);
 
     switch (field) {
     case ACTION_FIELD_MODIFIERS:
         return CheckModifierField(keymap, action->type, value,
                                   &act->flags, &act->mods.mods);
+    case ACTION_FIELD_AFFECT:
+        return CheckAffectField(keymap, action->type, value, &act->flags);
     default:
         break;
     }
@@ -472,14 +498,6 @@ HandleMovePtr(struct xkb_keymap *keymap, union xkb_action *action,
     return ReportIllegal(keymap, action->type, field);
 }
 
-static const LookupEntry lockWhich[] = {
-    { "both", 0 },
-    { "lock", ACTION_LOCK_NO_UNLOCK },
-    { "neither", (ACTION_LOCK_NO_LOCK | ACTION_LOCK_NO_UNLOCK) },
-    { "unlock", ACTION_LOCK_NO_LOCK },
-    { NULL, 0 }
-};
-
 static bool
 HandlePtrBtn(struct xkb_keymap *keymap, union xkb_action *action,
              enum action_field field, const ExprDef *array_ndx,
@@ -509,18 +527,10 @@ HandlePtrBtn(struct xkb_keymap *keymap, union xkb_action *action,
     }
     else if (action->type == ACTION_TYPE_PTR_LOCK &&
              field == ACTION_FIELD_AFFECT) {
-        enum xkb_action_flags val;
-
         if (array_ndx)
             return ReportActionNotArray(keymap, action->type, field);
 
-        if (!ExprResolveEnum(keymap->ctx, value, &val, lockWhich))
-            return ReportMismatch(keymap, action->type, field,
-                                  "lock or unlock");
-
-        act->flags &= ~(ACTION_LOCK_NO_LOCK | ACTION_LOCK_NO_UNLOCK);
-        act->flags |= val;
-        return true;
+        return CheckAffectField(keymap, action->type, value, &act->flags);
     }
     else if (field == ACTION_FIELD_COUNT) {
         int val;
@@ -687,6 +697,12 @@ HandleSetLockControls(struct xkb_keymap *keymap, union xkb_action *action,
 
         act->ctrls = mask;
         return true;
+    }
+    else if (field == ACTION_FIELD_AFFECT) {
+        if (array_ndx)
+            return ReportActionNotArray(keymap, action->type, field);
+
+        return CheckAffectField(keymap, action->type, value, &act->flags);
     }
 
     return ReportIllegal(keymap, action->type, field);
