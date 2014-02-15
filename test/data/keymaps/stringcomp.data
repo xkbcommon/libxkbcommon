@@ -880,16 +880,16 @@ xkb_compatibility "complete_caps(caps_lock)_4_misc(assign_shift_left_action)_4_l
 		action= PtrBtn(button=3,count=2);
 	};
 	interpret Pointer_Drag_Dflt+AnyOfOrNone(all) {
-		action= LockPtrBtn(button=default,affect=both);
+		action= LockPtrBtn(button=default);
 	};
 	interpret Pointer_Drag1+AnyOfOrNone(all) {
-		action= LockPtrBtn(button=1,affect=both);
+		action= LockPtrBtn(button=1);
 	};
 	interpret Pointer_Drag2+AnyOfOrNone(all) {
-		action= LockPtrBtn(button=2,affect=both);
+		action= LockPtrBtn(button=2);
 	};
 	interpret Pointer_Drag3+AnyOfOrNone(all) {
-		action= LockPtrBtn(button=3,affect=both);
+		action= LockPtrBtn(button=3);
 	};
 	interpret Pointer_EnableKeys+AnyOfOrNone(all) {
 		action= LockControls(controls=MouseKeys);

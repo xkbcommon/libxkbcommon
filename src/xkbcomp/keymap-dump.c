@@ -335,17 +335,11 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         case ACTION_LOCK_NO_UNLOCK:
             args = ",affect=lock";
             break;
-
         case ACTION_LOCK_NO_LOCK:
             args = ",affect=unlock";
             break;
-
         case ACTION_LOCK_NO_LOCK | ACTION_LOCK_NO_UNLOCK:
             args = ",affect=neither";
-            break;
-
-        default:
-            args = ",affect=both";
             break;
         }
     case ACTION_TYPE_PTR_BUTTON:
