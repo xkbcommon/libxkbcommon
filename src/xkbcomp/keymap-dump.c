@@ -297,12 +297,8 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         else
             args = ModMaskText(keymap, action->mods.mods.mods);
         write_buf(buf, "%s%s(modifiers=%s%s%s)%s", prefix, type, args,
-                  (action->type != ACTION_TYPE_MOD_LOCK &&
-                   (action->mods.flags & ACTION_LOCK_CLEAR)) ?
-                   ",clearLocks" : "",
-                  (action->type != ACTION_TYPE_MOD_LOCK &&
-                   (action->mods.flags & ACTION_LATCH_TO_LOCK)) ?
-                   ",latchToLock" : "",
+                  (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LOCK_CLEAR)) ? ",clearLocks" : "",
+                  (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LATCH_TO_LOCK)) ? ",latchToLock" : "",
                   suffix);
         break;
 
@@ -310,16 +306,10 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
     case ACTION_TYPE_GROUP_LATCH:
     case ACTION_TYPE_GROUP_LOCK:
         write_buf(buf, "%s%s(group=%s%d%s%s)%s", prefix, type,
-                  (!(action->group.flags & ACTION_ABSOLUTE_SWITCH) &&
-                   action->group.group > 0) ? "+" : "",
-                  (action->group.flags & ACTION_ABSOLUTE_SWITCH) ?
-                  action->group.group + 1 : action->group.group,
-                  (action->type != ACTION_TYPE_GROUP_LOCK &&
-                   (action->group.flags & ACTION_LOCK_CLEAR)) ?
-                  ",clearLocks" : "",
-                  (action->type != ACTION_TYPE_GROUP_LOCK &&
-                   (action->group.flags & ACTION_LATCH_TO_LOCK)) ?
-                  ",latchToLock" : "",
+                  (!(action->group.flags & ACTION_ABSOLUTE_SWITCH) && action->group.group > 0) ? "+" : "",
+                  (action->group.flags & ACTION_ABSOLUTE_SWITCH) ? action->group.group + 1 : action->group.group,
+                  (action->type != ACTION_TYPE_GROUP_LOCK && (action->group.flags & ACTION_LOCK_CLEAR)) ? ",clearLocks" : "",
+                  (action->type != ACTION_TYPE_GROUP_LOCK && (action->group.flags & ACTION_LATCH_TO_LOCK)) ? ",latchToLock" : "",
                   suffix);
         break;
 
@@ -374,16 +364,14 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
     case ACTION_TYPE_PTR_DEFAULT:
         write_buf(buf, "%s%s(", prefix, type);
         write_buf(buf, "affect=button,button=%s%d",
-                  (!(action->dflt.flags & ACTION_ABSOLUTE_SWITCH) &&
-                   action->dflt.value >= 0) ? "+" : "",
+                  (!(action->dflt.flags & ACTION_ABSOLUTE_SWITCH) && action->dflt.value >= 0) ? "+" : "",
                   action->dflt.value);
         write_buf(buf, ")%s", suffix);
         break;
 
     case ACTION_TYPE_SWITCH_VT:
         write_buf(buf, "%s%s(screen=%s%d,%ssame)%s", prefix, type,
-                  (!(action->screen.flags & ACTION_ABSOLUTE_SWITCH) &&
-                   action->screen.screen >= 0) ? "+" : "",
+                  (!(action->screen.flags & ACTION_ABSOLUTE_SWITCH) && action->screen.screen >= 0) ? "+" : "",
                   action->screen.screen,
                   (action->screen.flags & ACTION_SAME_SCREEN) ? "!" : "",
                   suffix);
