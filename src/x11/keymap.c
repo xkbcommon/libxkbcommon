@@ -266,7 +266,7 @@ translate_action(union xkb_action *action, const xcb_xkb_action_t *wire)
 
         action->screen.screen = wire->switchscreen.newScreen;
 
-        if (wire->switchscreen.flags & XCB_XKB_SWITCH_SCREEN_FLAG_APPLICATION)
+        if (!(wire->switchscreen.flags & XCB_XKB_SWITCH_SCREEN_FLAG_APPLICATION))
             action->screen.flags |= ACTION_SAME_SCREEN;
         if (wire->switchscreen.flags & XCB_XKB_SWITCH_SCREEN_FLAG_ABSOLUTE)
             action->screen.flags |= ACTION_ABSOLUTE_SWITCH;

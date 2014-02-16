@@ -372,7 +372,7 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         write_buf(buf, "%s%s(screen=%s%d,%ssame)%s", prefix, type,
                   (!(action->screen.flags & ACTION_ABSOLUTE_SWITCH) && action->screen.screen >= 0) ? "+" : "",
                   action->screen.screen,
-                  (action->screen.flags & ACTION_SAME_SCREEN) ? "!" : "",
+                  (action->screen.flags & ACTION_SAME_SCREEN) ? "" : "!",
                   suffix);
         break;
 

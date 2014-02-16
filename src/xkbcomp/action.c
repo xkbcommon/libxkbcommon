@@ -118,6 +118,7 @@ NewActionsInfo(void)
     /* Increment default button. */
     info->actions[ACTION_TYPE_PTR_DEFAULT].dflt.flags = 0;
     info->actions[ACTION_TYPE_PTR_DEFAULT].dflt.value = 1;
+    info->actions[ACTION_TYPE_SWITCH_VT].screen.flags = ACTION_SAME_SCREEN;
 
     return info;
 }
@@ -642,9 +643,9 @@ HandleSwitchScreen(struct xkb_keymap *keymap, union xkb_action *action,
             return ReportMismatch(keymap->ctx, action->type, field, "boolean");
 
         if (set)
-            act->flags &= ~ACTION_SAME_SCREEN;
-        else
             act->flags |= ACTION_SAME_SCREEN;
+        else
+            act->flags &= ~ACTION_SAME_SCREEN;
 
         return true;
     }
