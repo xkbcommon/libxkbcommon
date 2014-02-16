@@ -334,13 +334,11 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
 
     case ACTION_TYPE_PTR_MOVE:
         write_buf(buf, "%s%s(x=%s%d,y=%s%d%s)%s", prefix, type,
-                  (!(action->ptr.flags & ACTION_ABSOLUTE_X) &&
-                   action->ptr.x >= 0) ? "+" : "",
+                  (!(action->ptr.flags & ACTION_ABSOLUTE_X) && action->ptr.x >= 0) ? "+" : "",
                   action->ptr.x,
-                  (!(action->ptr.flags & ACTION_ABSOLUTE_Y) &&
-                   action->ptr.y >= 0) ? "+" : "",
+                  (!(action->ptr.flags & ACTION_ABSOLUTE_Y) && action->ptr.y >= 0) ? "+" : "",
                   action->ptr.y,
-                  (action->ptr.flags & ACTION_NO_ACCEL) ? ",!accel" : "",
+                  (action->ptr.flags & ACTION_ACCEL) ? "" : ",!accel",
                   suffix);
         break;
 

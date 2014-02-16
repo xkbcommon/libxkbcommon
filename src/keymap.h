@@ -146,7 +146,7 @@ enum xkb_action_flags {
     ACTION_ABSOLUTE_SWITCH = (1 << 5),
     ACTION_ABSOLUTE_X = (1 << 6),
     ACTION_ABSOLUTE_Y = (1 << 7),
-    ACTION_NO_ACCEL = (1 << 8),
+    ACTION_ACCEL = (1 << 8),
     ACTION_SAME_SCREEN = (1 << 9),
 };
 

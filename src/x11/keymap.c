@@ -221,8 +221,8 @@ translate_action(union xkb_action *action, const xcb_xkb_action_t *wire)
         action->ptr.x = (wire->moveptr.xLow | (wire->moveptr.xHigh << 8));
         action->ptr.y = (wire->moveptr.yLow | (wire->moveptr.yHigh << 8));
 
-        if (wire->moveptr.flags & XCB_XKB_SA_MOVE_PTR_FLAG_NO_ACCELERATION)
-            action->ptr.flags |= ACTION_NO_ACCEL;
+        if (!(wire->moveptr.flags & XCB_XKB_SA_MOVE_PTR_FLAG_NO_ACCELERATION))
+            action->ptr.flags |= ACTION_ACCEL;
         if (wire->moveptr.flags & XCB_XKB_SA_MOVE_PTR_FLAG_MOVE_ABSOLUTE_X)
             action->ptr.flags |= ACTION_ABSOLUTE_X;
         if (wire->moveptr.flags & XCB_XKB_SA_MOVE_PTR_FLAG_MOVE_ABSOLUTE_Y)

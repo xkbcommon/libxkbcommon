@@ -118,6 +118,7 @@ NewActionsInfo(void)
     /* Increment default button. */
     info->actions[ACTION_TYPE_PTR_DEFAULT].dflt.flags = 0;
     info->actions[ACTION_TYPE_PTR_DEFAULT].dflt.value = 1;
+    info->actions[ACTION_TYPE_PTR_MOVE].ptr.flags = ACTION_ACCEL;
     info->actions[ACTION_TYPE_SWITCH_VT].screen.flags = ACTION_SAME_SCREEN;
 
     return info;
@@ -466,9 +467,9 @@ HandleMovePtr(struct xkb_keymap *keymap, union xkb_action *action,
             return ReportMismatch(keymap->ctx, action->type, field, "boolean");
 
         if (set)
-            act->flags &= ~ACTION_NO_ACCEL;
+            act->flags |= ACTION_ACCEL;
         else
-            act->flags |= ACTION_NO_ACCEL;
+            act->flags &= ~ACTION_ACCEL;
     }
 
     return ReportIllegal(keymap->ctx, action->type, field);
