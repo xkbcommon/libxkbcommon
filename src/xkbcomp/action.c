@@ -278,28 +278,6 @@ CheckModifierField(struct xkb_keymap *keymap, enum xkb_action_type action,
     return true;
 }
 
-static bool
-HandleSetLatchMods(struct xkb_keymap *keymap, union xkb_action *action,
-                   enum action_field field, const ExprDef *array_ndx,
-                   const ExprDef *value)
-{
-    struct xkb_mod_action *act = &action->mods;
-
-    if (field == ACTION_FIELD_CLEAR_LOCKS)
-        return CheckBooleanFlag(keymap->ctx, action->type, field,
-                                ACTION_LOCK_CLEAR, array_ndx, value,
-                                &act->flags);
-    if (field == ACTION_FIELD_LATCH_TO_LOCK)
-        return CheckBooleanFlag(keymap->ctx, action->type, field,
-                                ACTION_LATCH_TO_LOCK, array_ndx, value,
-                                &act->flags);
-    if (field == ACTION_FIELD_MODIFIERS)
-        return CheckModifierField(keymap, action->type, array_ndx, value,
-                                  &act->flags, &act->mods.mods);
-
-    return ReportIllegal(keymap->ctx, action->type, field);
-}
-
 static const LookupEntry lockWhich[] = {
     { "both", 0 },
     { "lock", ACTION_LOCK_NO_UNLOCK },
@@ -328,16 +306,28 @@ CheckAffectField(struct xkb_context *ctx, enum xkb_action_type action,
 }
 
 static bool
-HandleLockMods(struct xkb_keymap *keymap, union xkb_action *action,
-               enum action_field field, const ExprDef *array_ndx,
-               const ExprDef *value)
+HandleSetLatchLockMods(struct xkb_keymap *keymap, union xkb_action *action,
+                       enum action_field field, const ExprDef *array_ndx,
+                       const ExprDef *value)
 {
     struct xkb_mod_action *act = &action->mods;
+    const enum xkb_action_type type = action->type;
 
     if (field == ACTION_FIELD_MODIFIERS)
         return CheckModifierField(keymap, action->type, array_ndx, value,
                                   &act->flags, &act->mods.mods);
-    else if (field == ACTION_FIELD_AFFECT)
+    if ((type == ACTION_TYPE_MOD_SET || type == ACTION_TYPE_MOD_LATCH) &&
+        field == ACTION_FIELD_CLEAR_LOCKS)
+        return CheckBooleanFlag(keymap->ctx, action->type, field,
+                                ACTION_LOCK_CLEAR, array_ndx, value,
+                                &act->flags);
+    if (type == ACTION_TYPE_MOD_LATCH &&
+        field == ACTION_FIELD_LATCH_TO_LOCK)
+        return CheckBooleanFlag(keymap->ctx, action->type, field,
+                                ACTION_LATCH_TO_LOCK, array_ndx, value,
+                                &act->flags);
+    if (type == ACTION_TYPE_MOD_LOCK &&
+        field == ACTION_FIELD_AFFECT)
         return CheckAffectField(keymap->ctx, action->type, array_ndx, value,
                                 &act->flags);
 
@@ -383,37 +373,26 @@ CheckGroupField(struct xkb_context *ctx, unsigned action,
 }
 
 static bool
-HandleSetLatchGroup(struct xkb_keymap *keymap, union xkb_action *action,
-                    enum action_field field, const ExprDef *array_ndx,
-                    const ExprDef *value)
+HandleSetLatchLockGroup(struct xkb_keymap *keymap, union xkb_action *action,
+                        enum action_field field, const ExprDef *array_ndx,
+                        const ExprDef *value)
 {
     struct xkb_group_action *act = &action->group;
+    const enum xkb_action_type type = action->type;
 
-    if (field == ACTION_FIELD_CLEAR_LOCKS)
+    if (field == ACTION_FIELD_GROUP)
+        return CheckGroupField(keymap->ctx, action->type, array_ndx, value,
+                               &act->flags, &act->group);
+    if ((type == ACTION_TYPE_GROUP_SET || type == ACTION_TYPE_GROUP_LATCH) &&
+        field == ACTION_FIELD_CLEAR_LOCKS)
         return CheckBooleanFlag(keymap->ctx, action->type, field,
                                 ACTION_LOCK_CLEAR, array_ndx, value,
                                 &act->flags);
-    if (field == ACTION_FIELD_LATCH_TO_LOCK)
+    if (type == ACTION_TYPE_GROUP_LATCH &&
+        field == ACTION_FIELD_LATCH_TO_LOCK)
         return CheckBooleanFlag(keymap->ctx, action->type, field,
                                 ACTION_LATCH_TO_LOCK, array_ndx, value,
                                 &act->flags);
-    if (field == ACTION_FIELD_GROUP)
-        return CheckGroupField(keymap->ctx, action->type, array_ndx, value,
-                               &act->flags, &act->group);
-
-    return ReportIllegal(keymap->ctx, action->type, field);
-}
-
-static bool
-HandleLockGroup(struct xkb_keymap *keymap, union xkb_action *action,
-                enum action_field field, const ExprDef *array_ndx,
-                const ExprDef *value)
-{
-    struct xkb_group_action *act = &action->group;
-
-    if (field == ACTION_FIELD_GROUP)
-        return CheckGroupField(keymap->ctx, action->type, array_ndx, value,
-                               &act->flags, &act->group);
 
     return ReportIllegal(keymap->ctx, action->type, field);
 }
@@ -772,12 +751,12 @@ typedef bool (*actionHandler)(struct xkb_keymap *keymap,
 
 static const actionHandler handleAction[_ACTION_TYPE_NUM_ENTRIES] = {
     [ACTION_TYPE_NONE] = HandleNoAction,
-    [ACTION_TYPE_MOD_SET] = HandleSetLatchMods,
-    [ACTION_TYPE_MOD_LATCH] = HandleSetLatchMods,
-    [ACTION_TYPE_MOD_LOCK] = HandleLockMods,
-    [ACTION_TYPE_GROUP_SET] = HandleSetLatchGroup,
-    [ACTION_TYPE_GROUP_LATCH] = HandleSetLatchGroup,
-    [ACTION_TYPE_GROUP_LOCK] = HandleLockGroup,
+    [ACTION_TYPE_MOD_SET] = HandleSetLatchLockMods,
+    [ACTION_TYPE_MOD_LATCH] = HandleSetLatchLockMods,
+    [ACTION_TYPE_MOD_LOCK] = HandleSetLatchLockMods,
+    [ACTION_TYPE_GROUP_SET] = HandleSetLatchLockGroup,
+    [ACTION_TYPE_GROUP_LATCH] = HandleSetLatchLockGroup,
+    [ACTION_TYPE_GROUP_LOCK] = HandleSetLatchLockGroup,
     [ACTION_TYPE_PTR_MOVE] = HandleMovePtr,
     [ACTION_TYPE_PTR_BUTTON] = HandlePtrBtn,
     [ACTION_TYPE_PTR_LOCK] = HandlePtrBtn,
