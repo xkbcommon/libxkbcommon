@@ -1483,6 +1483,7 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
  * index is not valid in the keymap, returns -1.
  *
  * @sa xkb_state_mod_mask_remove_consumed()
+ * @sa xkb_state_key_get_consumed_mods()
  * @memberof xkb_state
  */
 int
@@ -1501,6 +1502,17 @@ xkb_state_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t key,
 xkb_mod_mask_t
 xkb_state_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t key,
                                    xkb_mod_mask_t mask);
+
+/**
+ * Get the mask of modifiers consumed by translating a given key.
+ *
+ * @returns a mask of the consumed modifiers.
+ *
+ * @sa xkb_state_mod_index_is_consumed()
+ * @memberof xkb_state
+ */
+xkb_mod_mask_t
+xkb_state_key_get_consumed_mods(struct xkb_state *state, xkb_keycode_t key);
 
 /**
  * Test whether a layout is active in a given keyboard state by name.

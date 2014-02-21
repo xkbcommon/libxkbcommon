@@ -333,6 +333,9 @@ test_consume(struct xkb_keymap *keymap)
                                               mask);
     assert(mask == (1U << alt));
 
+    mask = xkb_state_key_get_consumed_mods(state, KEY_EQUAL + EVDEV_OFFSET);
+    assert(mask == (1U << shift));
+
     xkb_state_unref(state);
 }
 
