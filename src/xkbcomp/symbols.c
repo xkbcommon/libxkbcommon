@@ -779,7 +779,6 @@ static bool
 SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
                 ExprDef *arrayNdx, ExprDef *value)
 {
-    bool ok = true;
     struct xkb_context *ctx = info->keymap->ctx;
 
     if (istreq(field, "type")) {
@@ -793,7 +792,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             return false;
         }
 
-        if (arrayNdx == NULL) {
+        if (!arrayNdx) {
             keyi->default_type = val;
             keyi->defined |= KEY_FIELD_DEFAULT_TYPE;
         }
@@ -812,32 +811,33 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             darray_item(keyi->groups, ndx).defined |= GROUP_FIELD_TYPE;
         }
     }
-    else if (istreq(field, "symbols"))
+    else if (istreq(field, "symbols")) {
         return AddSymbolsToKey(info, keyi, arrayNdx, value);
-    else if (istreq(field, "actions"))
+    }
+    else if (istreq(field, "actions")) {
         return AddActionsToKey(info, keyi, arrayNdx, value);
+    }
     else if (istreq(field, "vmods") ||
              istreq(field, "virtualmods") ||
              istreq(field, "virtualmodifiers")) {
         xkb_mod_mask_t mask;
 
-        ok = ExprResolveModMask(info->keymap, value, MOD_VIRT, &mask);
-        if (ok) {
-            keyi->vmodmap = mask;
-            keyi->defined |= KEY_FIELD_VMODMAP;
-        }
-        else {
-            log_err(info->keymap->ctx,
+        if (!ExprResolveModMask(info->keymap, value, MOD_VIRT, &mask)) {
+            log_err(ctx,
                     "Expected a virtual modifier mask, found %s; "
                     "Ignoring virtual modifiers definition for key %s\n",
                     expr_op_type_to_string(value->expr.op),
                     KeyInfoText(info, keyi));
+            return false;
         }
+
+        keyi->vmodmap = mask;
+        keyi->defined |= KEY_FIELD_VMODMAP;
     }
     else if (istreq(field, "locking") ||
              istreq(field, "lock") ||
              istreq(field, "locks")) {
-        log_err(info->keymap->ctx,
+        log_vrb(ctx, 1,
                 "Key behaviors not supported; "
                 "Ignoring locking specification for key %s\n",
                 KeyInfoText(info, keyi));
@@ -845,14 +845,14 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     else if (istreq(field, "radiogroup") ||
              istreq(field, "permanentradiogroup") ||
              istreq(field, "allownone")) {
-        log_err(info->keymap->ctx,
+        log_vrb(ctx, 1,
                 "Radio groups not supported; "
                 "Ignoring radio group specification for key %s\n",
                 KeyInfoText(info, keyi));
     }
     else if (istreq_prefix("overlay", field) ||
              istreq_prefix("permanentoverlay", field)) {
-        log_err(info->keymap->ctx,
+        log_vrb(ctx, 1,
                 "Overlays not supported; "
                 "Ignoring overlay specification for key %s\n",
                 KeyInfoText(info, keyi));
@@ -862,14 +862,14 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
              istreq(field, "repeat")) {
         unsigned int val;
 
-        ok = ExprResolveEnum(ctx, value, &val, repeatEntries);
-        if (!ok) {
-            log_err(info->keymap->ctx,
+        if (!ExprResolveEnum(ctx, value, &val, repeatEntries)) {
+            log_err(ctx,
                     "Illegal repeat setting for %s; "
                     "Non-boolean repeat setting ignored\n",
                     KeyInfoText(info, keyi));
             return false;
         }
+
         keyi->repeat = val;
         keyi->defined |= KEY_FIELD_REPEAT;
     }
@@ -878,18 +878,14 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         bool set;
 
         if (!ExprResolveBoolean(ctx, value, &set)) {
-            log_err(info->keymap->ctx,
+            log_err(ctx,
                     "Illegal groupsWrap setting for %s; "
                     "Non-boolean value ignored\n",
                     KeyInfoText(info, keyi));
             return false;
         }
 
-        if (set)
-            keyi->out_of_range_group_action = RANGE_WRAP;
-        else
-            keyi->out_of_range_group_action = RANGE_SATURATE;
-
+        keyi->out_of_range_group_action = (set ? RANGE_WRAP : RANGE_SATURATE);
         keyi->defined |= KEY_FIELD_GROUPINFO;
     }
     else if (istreq(field, "groupsclamp") ||
@@ -897,18 +893,14 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         bool set;
 
         if (!ExprResolveBoolean(ctx, value, &set)) {
-            log_err(info->keymap->ctx,
+            log_err(ctx,
                     "Illegal groupsClamp setting for %s; "
                     "Non-boolean value ignored\n",
                     KeyInfoText(info, keyi));
             return false;
         }
 
-        if (set)
-            keyi->out_of_range_group_action = RANGE_SATURATE;
-        else
-            keyi->out_of_range_group_action = RANGE_WRAP;
-
+        keyi->out_of_range_group_action = (set ? RANGE_SATURATE : RANGE_WRAP);
         keyi->defined |= KEY_FIELD_GROUPINFO;
     }
     else if (istreq(field, "groupsredirect") ||
@@ -916,7 +908,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         xkb_layout_index_t grp;
 
         if (!ExprResolveGroup(ctx, value, &grp)) {
-            log_err(info->keymap->ctx,
+            log_err(ctx,
                     "Illegal group index for redirect of key %s; "
                     "Definition with non-integer group ignored\n",
                     KeyInfoText(info, keyi));
@@ -928,14 +920,14 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         keyi->defined |= KEY_FIELD_GROUPINFO;
     }
     else {
-        log_err(info->keymap->ctx,
+        log_err(ctx,
                 "Unknown field %s in a symbol interpretation; "
                 "Definition ignored\n",
                 field);
-        ok = false;
+        return false;
     }
 
-    return ok;
+    return true;
 }
 
 static int
