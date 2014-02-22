@@ -786,10 +786,12 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         xkb_layout_index_t ndx;
         xkb_atom_t val;
 
-        if (!ExprResolveString(ctx, value, &val))
-            log_vrb(ctx, 1,
+        if (!ExprResolveString(ctx, value, &val)) {
+            log_err(ctx,
                     "The type field of a key symbol map must be a string; "
                     "Ignoring illegal type definition\n");
+            return false;
+        }
 
         if (arrayNdx == NULL) {
             keyi->default_type = val;
