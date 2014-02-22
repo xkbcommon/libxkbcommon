@@ -249,7 +249,7 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
 
 /***====================================================================***/
 
-static int
+static bool
 HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge);
 
 static void
@@ -386,7 +386,7 @@ HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt, enum merge_mode merge)
     return AddKeyName(info, stmt->value, stmt->name, merge, false, true);
 }
 
-static int
+static bool
 HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge)
 {
     AliasInfo *old, new;
@@ -426,7 +426,7 @@ HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge)
     return true;
 }
 
-static int
+static bool
 HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
 {
     const char *elem, *field;
@@ -451,7 +451,7 @@ HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
     return true;
 }
 
-static int
+static bool
 HandleLedNameDef(KeyNamesInfo *info, LedNameDef *def,
                  enum merge_mode merge)
 {

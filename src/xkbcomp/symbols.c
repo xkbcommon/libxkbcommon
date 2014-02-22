@@ -930,7 +930,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     return true;
 }
 
-static int
+static bool
 SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
 {
     xkb_layout_index_t group, group_to_use;
@@ -980,16 +980,16 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
     return true;
 }
 
-static int
+static bool
 HandleGlobalVar(SymbolsInfo *info, VarDef *stmt)
 {
     const char *elem, *field;
     ExprDef *arrayNdx;
     bool ret;
 
-    if (ExprResolveLhs(info->keymap->ctx, stmt->name, &elem, &field,
-                       &arrayNdx) == 0)
-        return 0;               /* internal error, already reported */
+    if (!ExprResolveLhs(info->keymap->ctx, stmt->name, &elem, &field, &arrayNdx))
+        return false;
+
     if (elem && istreq(elem, "key")) {
         ret = SetSymbolsField(info, &info->default_key, field, arrayNdx,
                               stmt->value);
@@ -1099,7 +1099,7 @@ SetExplicitGroup(SymbolsInfo *info, KeyInfo *keyi)
     return true;
 }
 
-static int
+static bool
 HandleSymbolsDef(SymbolsInfo *info, SymbolsDef *stmt)
 {
     KeyInfo keyi;
