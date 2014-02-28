@@ -61,29 +61,49 @@ static bool terminate;
 static int
 select_xkb_events_for_device(xcb_connection_t *conn, int32_t device_id)
 {
-    static const xcb_xkb_map_part_t required_map_parts =
-        (XCB_XKB_MAP_PART_KEY_TYPES |
-         XCB_XKB_MAP_PART_KEY_SYMS |
-         XCB_XKB_MAP_PART_MODIFIER_MAP |
-         XCB_XKB_MAP_PART_EXPLICIT_COMPONENTS |
-         XCB_XKB_MAP_PART_KEY_ACTIONS |
-         XCB_XKB_MAP_PART_VIRTUAL_MODS |
-         XCB_XKB_MAP_PART_VIRTUAL_MOD_MAP);
+    enum {
+        required_events =
+            (XCB_XKB_EVENT_TYPE_NEW_KEYBOARD_NOTIFY |
+             XCB_XKB_EVENT_TYPE_MAP_NOTIFY |
+             XCB_XKB_EVENT_TYPE_STATE_NOTIFY),
 
-    static const xcb_xkb_event_type_t required_events =
-        (XCB_XKB_EVENT_TYPE_NEW_KEYBOARD_NOTIFY |
-         XCB_XKB_EVENT_TYPE_MAP_NOTIFY |
-         XCB_XKB_EVENT_TYPE_STATE_NOTIFY);
+        required_nkn_details =
+            (XCB_XKB_NKN_DETAIL_KEYCODES),
+
+        required_map_parts =
+            (XCB_XKB_MAP_PART_KEY_TYPES |
+             XCB_XKB_MAP_PART_KEY_SYMS |
+             XCB_XKB_MAP_PART_MODIFIER_MAP |
+             XCB_XKB_MAP_PART_EXPLICIT_COMPONENTS |
+             XCB_XKB_MAP_PART_KEY_ACTIONS |
+             XCB_XKB_MAP_PART_VIRTUAL_MODS |
+             XCB_XKB_MAP_PART_VIRTUAL_MOD_MAP),
+
+        required_state_details =
+            (XCB_XKB_STATE_PART_MODIFIER_BASE |
+             XCB_XKB_STATE_PART_MODIFIER_LATCH |
+             XCB_XKB_STATE_PART_MODIFIER_LOCK |
+             XCB_XKB_STATE_PART_GROUP_BASE |
+             XCB_XKB_STATE_PART_GROUP_LATCH |
+             XCB_XKB_STATE_PART_GROUP_LOCK),
+    };
+
+    static const xcb_xkb_select_events_details_t details = {
+        .affectNewKeyboard = required_nkn_details,
+        .newKeyboardDetails = required_nkn_details,
+        .affectState = required_state_details,
+        .stateDetails = required_state_details,
+    };
 
     xcb_void_cookie_t cookie =
-        xcb_xkb_select_events_checked(conn,
-                                      device_id,
-                                      required_events,
-                                      0,
-                                      required_events,
-                                      required_map_parts,
-                                      required_map_parts,
-                                      0);
+        xcb_xkb_select_events_aux_checked(conn,
+                                          device_id,
+                                          required_events,    /* affectWhich */
+                                          0,                  /* clear */
+                                          0,                  /* selectAll */
+                                          required_map_parts, /* affectMap */
+                                          required_map_parts, /* map */
+                                          &details);          /* details */
 
     xcb_generic_error_t *error = xcb_request_check(conn, cookie);
     if (error) {
