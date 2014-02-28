@@ -1157,6 +1157,13 @@ enum xkb_state_component {
  * is pressed twice, it should be released twice; etc. Otherwise (e.g. due
  * to missed input events), situations like "stuck modifiers" may occur.
  *
+ * This function is often used in conjunction with the function
+ * xkb_state_key_get_syms() (or xkb_state_key_get_one_sym()), for example,
+ * when handling a key event.  In this case, you should prefer to get the
+ * keysyms *before* updating the key, such that the keysyms reported for
+ * the key event are not affected by the event itself.  This is the
+ * conventional behavior.
+ *
  * @returns A mask of state components that have changed as a result of
  * the update.  If nothing in the state has changed, returns 0.
  *
