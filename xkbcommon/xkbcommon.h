@@ -690,9 +690,6 @@ enum xkb_keymap_compile_flags {
  * The primary keymap entry point: creates a new XKB keymap from a set of
  * RMLVO (Rules + Model + Layouts + Variants + Options) names.
  *
- * You should almost certainly be using this and nothing else to create
- * keymaps.
- *
  * @param context The context in which to create the keymap.
  * @param names   The RMLVO names to use.  In xkbcommon versions prior
  *                to 0.2.1, this field must be non-NULL.  In later
