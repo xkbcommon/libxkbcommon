@@ -305,26 +305,60 @@ typedef uint32_t xkb_led_mask_t;
 /**
  * Names to compile a keymap with, also known as RMLVO.
  *
- * These names together are the primary identifier for a keymap.
- * If any of the members is NULL or an empty string (""), a default value is
- * used.  It is recommended to use the system default by passing NULL for
- * unspecified values, instead of providing your own defaults.
+ * The names are the common configuration values by which a user picks
+ * a keymap.
+ *
+ * If the entire struct is NULL, then each field is taken to be NULL.
+ * You should prefer passing NULL instead of choosing your own defaults.
  */
 struct xkb_rule_names {
-    /** The rules file to use. The rules file describes how to interpret
-     *  the values of the model, layout, variant and options fields. */
+    /**
+     * The rules file to use. The rules file describes how to interpret
+     * the values of the model, layout, variant and options fields.
+     *
+     * If NULL or the empty string "", a default value is used.
+     * If the XKB_DEFAULT_RULES environment variable is set, it is used
+     * as the default.  Otherwise the system default is used.
+     */
     const char *rules;
-    /** The keyboard model by which to interpret keycodes and LEDs. */
+    /**
+     * The keyboard model by which to interpret keycodes and LEDs.
+     *
+     * If NULL or the empty string "", a default value is used.
+     * If the XKB_DEFAULT_MODEL environment variable is set, it is used
+     * as the default.  Otherwise the system default is used.
+     */
     const char *model;
-    /** A comma separated list of layouts (languages) to include in the
-     *  keymap. */
+    /**
+     * A comma separated list of layouts (languages) to include in the
+     * keymap.
+     *
+     * If NULL or the empty string "", a default value is used.
+     * If the XKB_DEFAULT_LAYOUT environment variable is set, it is used
+     * as the default.  Otherwise the system default is used.
+     */
     const char *layout;
-    /** A comma separated list of variants, one per layout, which may
-     *  modify or augment the respective layout in various ways. */
+    /**
+     * A comma separated list of variants, one per layout, which may
+     * modify or augment the respective layout in various ways.
+     *
+     * If NULL or the empty string "", and a default value is also used
+     * for the layout, a default value is used.  Otherwise no variant is
+     * used.
+     * If the XKB_DEFAULT_VARIANT environment variable is set, it is used
+     * as the default.  Otherwise the system default is used.
+     */
     const char *variant;
-    /** A comma separated list of options, through which the user specifies
-     *  non-layout related preferences, like which key combinations are used
-     *  for switching layouts, or which key is the Compose key. */
+    /**
+     * A comma separated list of options, through which the user specifies
+     * non-layout related preferences, like which key combinations are used
+     * for switching layouts, or which key is the Compose key.
+     *
+     * If NULL, a default value is used.  If the empty string "", no
+     * options are used.
+     * If the XKB_DEFAULT_OPTIONS environment variable is set, it is used
+     * as the default.  Otherwise the system default is used.
+     */
     const char *options;
 };
 
@@ -691,9 +725,7 @@ enum xkb_keymap_compile_flags {
  * RMLVO (Rules + Model + Layouts + Variants + Options) names.
  *
  * @param context The context in which to create the keymap.
- * @param names   The RMLVO names to use.  In xkbcommon versions prior
- *                to 0.2.1, this field must be non-NULL.  In later
- *                versions, passing NULL will use the default keymap.
+ * @param names   The RMLVO names to use.  See xkb_rule_names.
  * @param flags   Optional flags for the keymap, or 0.
  *
  * @returns A keymap compiled according to the RMLVO names, or NULL if
