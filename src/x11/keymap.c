@@ -1033,7 +1033,7 @@ static bool
 get_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
           uint16_t device_id)
 {
-    static const xcb_xkb_name_detail_t required_names =
+    static const xcb_xkb_name_detail_t wanted =
         (XCB_XKB_NAME_DETAIL_KEYCODES |
          XCB_XKB_NAME_DETAIL_SYMBOLS |
          XCB_XKB_NAME_DETAIL_TYPES |
@@ -1045,17 +1045,21 @@ get_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
          XCB_XKB_NAME_DETAIL_KEY_ALIASES |
          XCB_XKB_NAME_DETAIL_VIRTUAL_MOD_NAMES |
          XCB_XKB_NAME_DETAIL_GROUP_NAMES);
+    static const xcb_xkb_name_detail_t required =
+        (XCB_XKB_NAME_DETAIL_KEY_TYPE_NAMES |
+         XCB_XKB_NAME_DETAIL_KT_LEVEL_NAMES |
+         XCB_XKB_NAME_DETAIL_KEY_NAMES |
+         XCB_XKB_NAME_DETAIL_VIRTUAL_MOD_NAMES);
 
     xcb_xkb_get_names_cookie_t cookie =
-        xcb_xkb_get_names(conn, device_id, required_names);
+        xcb_xkb_get_names(conn, device_id, wanted);
     xcb_xkb_get_names_reply_t *reply =
         xcb_xkb_get_names_reply(conn, cookie, NULL);
     xcb_xkb_get_names_value_list_t list;
 
     FAIL_IF_BAD_REPLY(reply, "XkbGetNames");
 
-    if ((reply->which & required_names) != required_names)
-        goto fail;
+    FAIL_UNLESS((reply->which & required) == required);
 
     xcb_xkb_get_names_value_list_unpack(xcb_xkb_get_names_value_list(reply),
                                         reply->nTypes,
