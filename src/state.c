@@ -842,6 +842,53 @@ err:
     return 0;
 }
 
+/*
+ * http://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Lock_Modifier
+ */
+static bool
+should_do_caps_transformation(struct xkb_state *state, xkb_keycode_t kc)
+{
+    xkb_mod_index_t caps =
+        xkb_keymap_mod_get_index(state->keymap, XKB_MOD_NAME_CAPS);
+
+    return
+        xkb_state_mod_index_is_active(state, caps, XKB_STATE_MODS_EFFECTIVE) > 0 &&
+        xkb_state_mod_index_is_consumed(state, kc, caps) == 0;
+}
+
+/*
+ * http://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Control_Modifier
+ */
+static bool
+should_do_ctrl_transformation(struct xkb_state *state, xkb_keycode_t kc)
+{
+    xkb_mod_index_t ctrl =
+        xkb_keymap_mod_get_index(state->keymap, XKB_MOD_NAME_CTRL);
+
+    return
+        xkb_state_mod_index_is_active(state, ctrl, XKB_STATE_MODS_EFFECTIVE) > 0 &&
+        xkb_state_mod_index_is_consumed(state, kc, ctrl) == 0;
+}
+
+/* Verbatim from libX11:src/xkb/XKBBind.c */
+static char
+XkbToControl(char ch)
+{
+    char c = ch;
+
+    if ((c >= '@' && c < '\177') || c == ' ')
+        c &= 0x1F;
+    else if (c == '2')
+        c = '\000';
+    else if (c >= '3' && c <= '7')
+        c -= ('3' - '\033');
+    else if (c == '8')
+        c = '\177';
+    else if (c == '/')
+        c = '_' & 0x1F;
+    return c;
+}
+
 /**
  * Provides either exactly one symbol, or XKB_KEY_NoSymbol.
  */
@@ -851,7 +898,6 @@ xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t kc)
     const xkb_keysym_t *syms;
     xkb_keysym_t sym;
     int num_syms;
-    xkb_mod_index_t caps;
 
     num_syms = xkb_state_key_get_syms(state, kc, &syms);
     if (num_syms != 1)
@@ -859,14 +905,61 @@ xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t kc)
 
     sym = syms[0];
 
-    /*
-     * Perform capitalization transformation, see:
-     * http://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Lock_Modifier
-     */
-    caps = xkb_keymap_mod_get_index(state->keymap, XKB_MOD_NAME_CAPS);
-    if (xkb_state_mod_index_is_active(state, caps, XKB_STATE_MODS_EFFECTIVE) > 0 &&
-        xkb_state_mod_index_is_consumed(state, kc, caps) == 0)
+    if (should_do_caps_transformation(state, kc))
         sym = xkb_keysym_to_upper(sym);
+
+    return sym;
+}
+
+/*
+ * The caps and ctrl transformations require some special handling,
+ * so we cannot simply use xkb_state_get_one_sym() for them.
+ * In particular, if Control is set, we must try very hard to find
+ * some layout in which the keysym is ASCII and thus can be (maybe)
+ * converted to a control character. libX11 allows to disable this
+ * behavior with the XkbLC_ControlFallback (see XkbSetXlibControls(3)),
+ * but it is enabled by default, yippee.
+ */
+static xkb_keysym_t
+get_one_sym_for_string(struct xkb_state *state, xkb_keycode_t kc)
+{
+    xkb_level_index_t level;
+    xkb_layout_index_t layout, num_layouts;
+    const xkb_keysym_t *syms;
+    int nsyms;
+    xkb_keysym_t sym;
+
+    layout = xkb_state_key_get_layout(state, kc);
+    num_layouts = xkb_keymap_num_layouts_for_key(state->keymap, kc);
+    level = xkb_state_key_get_level(state, kc, layout);
+    if (layout == XKB_LAYOUT_INVALID || num_layouts == 0 ||
+        level == XKB_LEVEL_INVALID)
+        return XKB_KEY_NoSymbol;
+
+    nsyms = xkb_keymap_key_get_syms_by_level(state->keymap, kc,
+                                             layout, level, &syms);
+    if (nsyms != 1)
+        return XKB_KEY_NoSymbol;
+    sym = syms[0];
+
+    if (should_do_ctrl_transformation(state, kc) && sym > 127u) {
+        for (xkb_layout_index_t i = 0; i < num_layouts; i++) {
+            level = xkb_state_key_get_level(state, kc, i);
+            if (level == XKB_LEVEL_INVALID)
+                continue;
+
+            nsyms = xkb_keymap_key_get_syms_by_level(state->keymap, kc,
+                                                     i, level, &syms);
+            if (nsyms == 1 && syms[0] <= 127u) {
+                sym = syms[0];
+                break;
+            }
+        }
+    }
+
+    if (should_do_caps_transformation(state, kc)) {
+        sym = xkb_keysym_to_upper(sym);
+    }
 
     return sym;
 }
@@ -881,8 +974,7 @@ xkb_state_key_get_utf8(struct xkb_state *state, xkb_keycode_t kc,
     int offset;
     char tmp[7];
 
-    /* Make sure the keysym transformations are applied. */
-    sym = xkb_state_key_get_one_sym(state, kc);
+    sym = get_one_sym_for_string(state, kc);
     if (sym != XKB_KEY_NoSymbol) {
         nsyms = 1; syms = &sym;
     }
@@ -910,6 +1002,10 @@ xkb_state_key_get_utf8(struct xkb_state *state, xkb_keycode_t kc,
     if (!is_valid_utf8(buffer, offset))
         goto err_bad;
 
+    if (offset == 1 && (unsigned int) buffer[0] <= 127u &&
+        should_do_ctrl_transformation(state, kc))
+        buffer[0] = XkbToControl(buffer[0]);
+
     return offset;
 
 err_trunc:
@@ -929,8 +1025,11 @@ xkb_state_key_get_utf32(struct xkb_state *state, xkb_keycode_t kc)
     xkb_keysym_t sym;
     uint32_t cp;
 
-    sym = xkb_state_key_get_one_sym(state, kc);
+    sym = get_one_sym_for_string(state, kc);
     cp = xkb_keysym_to_utf32(sym);
+
+    if (cp <= 127u && should_do_ctrl_transformation(state, kc))
+        cp = (uint32_t) XkbToControl((char) cp);
 
     return cp;
 }

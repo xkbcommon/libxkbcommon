@@ -503,6 +503,52 @@ test_get_utf8_utf32(struct xkb_keymap *keymap)
     xkb_state_unref(state);
 }
 
+static void
+test_ctrl_string_transformation(struct xkb_keymap *keymap)
+{
+    char buf[256];
+    struct xkb_state *state = xkb_state_new(keymap);
+    xkb_mod_index_t ctrl;
+
+    assert(state);
+
+    /* See xkb_state_key_get_utf8() for what's this all about. */
+
+    ctrl = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CTRL);
+    assert(ctrl != XKB_MOD_INVALID);
+
+    /* First without. */
+    TEST_KEY(KEY_A, "a", 0x61);
+    TEST_KEY(KEY_B, "b", 0x62);
+    TEST_KEY(KEY_C, "c", 0x63);
+    TEST_KEY(KEY_ESC, "\x1B", 0x1B);
+    TEST_KEY(KEY_1, "1", 0x31);
+
+    /* And with. */
+    xkb_state_update_key(state, KEY_RIGHTCTRL + EVDEV_OFFSET, XKB_KEY_DOWN);
+    assert(xkb_state_mod_index_is_active(state, ctrl, XKB_STATE_MODS_EFFECTIVE) > 0);
+    TEST_KEY(KEY_A, "\x01", 0x01);
+    TEST_KEY(KEY_B, "\x02", 0x02);
+    TEST_KEY(KEY_C, "\x03", 0x03);
+    TEST_KEY(KEY_ESC, "\x1B", 0x1B);
+    TEST_KEY(KEY_1, "1", 0x31);
+    xkb_state_update_key(state, KEY_RIGHTCTRL + EVDEV_OFFSET, XKB_KEY_UP);
+
+    /* Switch to ru layout */
+    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_UP);
+    assert(xkb_state_key_get_layout(state, KEY_A + 8) == 1);
+
+    /* Non ASCII. */
+    xkb_state_update_key(state, KEY_RIGHTCTRL + EVDEV_OFFSET, XKB_KEY_DOWN);
+    assert(xkb_state_mod_index_is_active(state, ctrl, XKB_STATE_MODS_EFFECTIVE) > 0);
+    TEST_KEY(KEY_A, "\x01", 0x01);
+    TEST_KEY(KEY_B, "\x02", 0x02);
+    xkb_state_update_key(state, KEY_RIGHTCTRL + EVDEV_OFFSET, XKB_KEY_UP);
+
+    xkb_state_unref(state);
+}
+
 int
 main(void)
 {
@@ -525,6 +571,7 @@ main(void)
     test_consume(keymap);
     test_range(keymap);
     test_get_utf8_utf32(keymap);
+    test_ctrl_string_transformation(keymap);
 
     xkb_keymap_unref(keymap);
     keymap = test_compile_rules(context, "evdev", NULL, "ch", "fr", NULL);
