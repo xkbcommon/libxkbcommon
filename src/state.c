@@ -61,6 +61,7 @@
 
 #include "keymap.h"
 #include "keysym.h"
+#include "utf8.h"
 
 struct xkb_filter {
     union xkb_action action;
@@ -868,6 +869,70 @@ xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t kc)
         sym = xkb_keysym_to_upper(sym);
 
     return sym;
+}
+
+XKB_EXPORT int
+xkb_state_key_get_utf8(struct xkb_state *state, xkb_keycode_t kc,
+                       char *buffer, size_t size)
+{
+    xkb_keysym_t sym;
+    const xkb_keysym_t *syms;
+    int nsyms;
+    int offset;
+    char tmp[7];
+
+    /* Make sure the keysym transformations are applied. */
+    sym = xkb_state_key_get_one_sym(state, kc);
+    if (sym != XKB_KEY_NoSymbol) {
+        nsyms = 1; syms = &sym;
+    }
+    else {
+        nsyms = xkb_state_key_get_syms(state, kc, &syms);
+    }
+
+    /* Make sure not to truncate in the middle of a UTF-8 sequence. */
+    offset = 0;
+    for (int i = 0; i < nsyms; i++) {
+        int ret = xkb_keysym_to_utf8(syms[i], tmp, sizeof(tmp));
+        if (ret <= 0)
+            goto err_bad;
+
+        ret--;
+        if ((size_t) (offset + ret) <= size)
+            memcpy(buffer + offset, tmp, ret);
+        offset += ret;
+    }
+
+    if ((size_t) offset >= size)
+        goto err_trunc;
+    buffer[offset] = '\0';
+
+    if (!is_valid_utf8(buffer, offset))
+        goto err_bad;
+
+    return offset;
+
+err_trunc:
+    if (size > 0)
+        buffer[size - 1] = '\0';
+    return offset;
+
+err_bad:
+    if (size > 0)
+        buffer[0] = '\0';
+    return 0;
+}
+
+XKB_EXPORT uint32_t
+xkb_state_key_get_utf32(struct xkb_state *state, xkb_keycode_t kc)
+{
+    xkb_keysym_t sym;
+    uint32_t cp;
+
+    sym = xkb_state_key_get_one_sym(state, kc);
+    cp = xkb_keysym_to_utf32(sym);
+
+    return cp;
 }
 
 /**

@@ -428,6 +428,81 @@ test_caps_keysym_transformation(struct xkb_keymap *keymap)
     xkb_state_unref(state);
 }
 
+static void
+test_get_utf8_utf32(struct xkb_keymap *keymap)
+{
+    char buf[256];
+    struct xkb_state *state = xkb_state_new(keymap);
+    assert(state);
+
+#define TEST_KEY(key, expected_utf8, expected_utf32) do { \
+    assert(xkb_state_key_get_utf8(state, key + 8, NULL, 0) == strlen(expected_utf8)); \
+    assert(xkb_state_key_get_utf8(state, key + 8, buf, sizeof(buf)) == strlen(expected_utf8)); \
+    assert(memcmp(buf, expected_utf8, sizeof(expected_utf8)) == 0); \
+    assert(xkb_state_key_get_utf32(state, key + 8) == expected_utf32); \
+} while (0)
+
+    /* Simple ASCII. */
+    TEST_KEY(KEY_A, "a", 0x61);
+    TEST_KEY(KEY_ESC, "\x1B", 0x1B);
+    TEST_KEY(KEY_1, "1", 0x31);
+
+    /* Invalid. */
+    TEST_KEY(XKB_KEYCODE_INVALID - 8, "", 0);
+    TEST_KEY(300, "", 0);
+
+    /* No string. */
+    TEST_KEY(KEY_LEFTCTRL, "", 0);
+    TEST_KEY(KEY_NUMLOCK, "", 0);
+
+    /* Multiple keysyms. */
+    TEST_KEY(KEY_6, "HELLO", 0);
+    TEST_KEY(KEY_7, "YES THIS IS DOG", 0);
+
+    /* Check truncation. */
+    memset(buf, 'X', sizeof(buf));
+    assert(xkb_state_key_get_utf8(state, KEY_6 + 8, buf, 0) == strlen("HELLO"));
+    assert(memcmp(buf, "X", 1) == 0);
+    assert(xkb_state_key_get_utf8(state, KEY_6 + 8, buf, 1) == strlen("HELLO"));
+    assert(memcmp(buf, "", 1) == 0);
+    assert(xkb_state_key_get_utf8(state, KEY_6 + 8, buf, 2) == strlen("HELLO"));
+    assert(memcmp(buf, "H", 2) == 0);
+    assert(xkb_state_key_get_utf8(state, KEY_6 + 8, buf, 3) == strlen("HELLO"));
+    assert(memcmp(buf, "HE", 3) == 0);
+    assert(xkb_state_key_get_utf8(state, KEY_6 + 8, buf, 5) == strlen("HELLO"));
+    assert(memcmp(buf, "HELL", 5) == 0);
+    assert(xkb_state_key_get_utf8(state, KEY_6 + 8, buf, 6) == strlen("HELLO"));
+    assert(memcmp(buf, "HELLO", 6) == 0);
+    assert(xkb_state_key_get_utf8(state, KEY_6 + 8, buf, 7) == strlen("HELLO"));
+    assert(memcmp(buf, "HELLO\0X", 7) == 0);
+
+    /* Switch to ru layout */
+    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_UP);
+    assert(xkb_state_key_get_layout(state, KEY_A + 8) == 1);
+
+    /* Non ASCII. */
+    TEST_KEY(KEY_ESC, "\x1B", 0x1B);
+    TEST_KEY(KEY_A, "ф", 0x0444);
+    TEST_KEY(KEY_Z, "я", 0x044F);
+
+    /* Switch back to us layout */
+    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_UP);
+    assert(xkb_state_key_get_layout(state, KEY_A + 8) == 0);
+
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
+    TEST_KEY(KEY_A, "A", 0x41);
+    TEST_KEY(KEY_ESC, "\x1B", 0x1B);
+    TEST_KEY(KEY_1, "!", 0x21);
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
+
+    TEST_KEY(KEY_6, "HELLO", 0);
+    TEST_KEY(KEY_7, "YES THIS IS DOG", 0);
+
+    xkb_state_unref(state);
+}
+
 int
 main(void)
 {
@@ -449,6 +524,7 @@ main(void)
     test_repeat(keymap);
     test_consume(keymap);
     test_range(keymap);
+    test_get_utf8_utf32(keymap);
 
     xkb_keymap_unref(keymap);
     keymap = test_compile_rules(context, "evdev", NULL, "ch", "fr", NULL);

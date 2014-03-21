@@ -371,18 +371,8 @@ test_print_keycode_state(struct xkb_state *state, xkb_keycode_t keycode)
         printf("] ");
     }
 
-    /*
-     * Only do this if wchar_t is UCS-4, so we can be lazy and print
-     * with %lc.
-     */
-#ifdef __STDC_ISO_10646__
-    printf("unicode [ ");
-    for (int i = 0; i < nsyms; i++) {
-        uint32_t unicode = xkb_keysym_to_utf32(syms[i]);
-        printf("%lc ", (int) (unicode > 32 ? unicode : L' '));
-    }
-    printf("] ");
-#endif
+    xkb_state_key_get_utf8(state, keycode, s, sizeof(s));
+    printf("unicode [ %s ] ", s);
 
     layout = xkb_state_key_get_layout(state, keycode);
     printf("layout [ %s (%d) ] ",

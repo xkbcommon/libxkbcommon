@@ -433,6 +433,11 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags);
  * @returns The number of bytes written to the buffer (including the
  * terminating byte).  If the keysym does not have a Unicode
  * representation, returns 0.  If the buffer is too small, returns -1.
+ *
+ * Prefer not to use this function on keysyms obtained from an
+ * xkb_state.  In this case, use xkb_state_key_get_utf8() instead.
+ *
+ * @sa xkb_state_key_get_utf8()
  */
 int
 xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size);
@@ -443,6 +448,11 @@ xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size);
  * @returns The Unicode/UTF-32 representation of keysym, which is also
  * compatible with UCS-4.  If the keysym does not have a Unicode
  * representation, returns 0.
+ *
+ * Prefer not to use this function on keysyms obtained from an
+ * xkb_state.  In this case, use xkb_state_key_get_utf32() instead.
+ *
+ * @sa xkb_state_key_get_utf32()
  */
 uint32_t
 xkb_keysym_to_utf32(xkb_keysym_t keysym);
@@ -1267,6 +1277,44 @@ xkb_state_update_mask(struct xkb_state *state,
 int
 xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
                        const xkb_keysym_t **syms_out);
+
+/**
+ * Get the Unicode/UTF-8 string obtained from pressing a particular key
+ * in a given keyboard state.
+ *
+ * @param[in]  state  The keyboard state object.
+ * @param[in]  key    The keycode of the key.
+ * @param[out] buffer A buffer to write the string into.
+ * @param[in]  size   Size of the buffer.
+ *
+ * @warning If the buffer passed is too small, the string is truncated
+ * (though still NUL-terminated).
+ *
+ * @returns The number of bytes required for the string, excluding the
+ * NUL byte.  If there is nothing to write, returns 0.
+ *
+ * You may check if truncation has occurred by comparing the return value
+ * with the size of @p buffer, similarly to the snprintf(3) function.
+ * You may safely pass NULL and 0 to @p buffer and @p size to find the
+ * required size (without the NUL-byte).
+ *
+ * @memberof xkb_state
+ */
+int
+xkb_state_key_get_utf8(struct xkb_state *state, xkb_keycode_t key,
+                       char *buffer, size_t size);
+
+/**
+ * Get the Unicode/UTF-32 codepoint obtained from pressing a particular
+ * key in a a given keyboard state.
+ *
+ * @returns The UTF-32 representation for the key, if it consists of only
+ * a single codepoint.  Otherwise, returns 0.
+ *
+ * @memberof xkb_state
+ */
+uint32_t
+xkb_state_key_get_utf32(struct xkb_state *state, xkb_keycode_t key);
 
 /**
  * Get the single keysym obtained from pressing a particular key in a
