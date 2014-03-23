@@ -655,7 +655,7 @@ WARN_LOGFILE           =
 # with spaces.
 
 INPUT                  = @abs_top_srcdir@/xkbcommon \
-                         @abs_top_srcdir@/README \
+                         @abs_top_srcdir@/README.md \
                          @abs_top_srcdir@/doc/quick-guide.md
 
 # This tag can be used to specify the character encoding of the source files
@@ -782,7 +782,7 @@ FILTER_SOURCE_PATTERNS =
 # (index.html). This can be useful if you have a project on for instance GitHub
 # and want reuse the introduction page also for the doxygen output.
 
-USE_MDFILE_AS_MAINPAGE =
+USE_MDFILE_AS_MAINPAGE = README.md
 
 #---------------------------------------------------------------------------
 # configuration options related to source browsing
