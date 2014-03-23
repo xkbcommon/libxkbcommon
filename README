@@ -19,6 +19,10 @@ current distributions for their X11 XKB data.  More information on
 xkeyboard-config is available here:
     http://www.freedesktop.org/wiki/Software/XKeyboardConfig
 
+Quick Guide
+===========
+
+See [Quick Guide](doc/quick-guide.md).
 
 API
 ===
