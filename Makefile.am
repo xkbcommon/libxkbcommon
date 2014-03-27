@@ -6,7 +6,11 @@ pkgconfig_DATA = xkbcommon.pc
 EXTRA_DIST = \
 	makekeys.py \
 	src/xkbcomp/keywords.gperf \
-	test/data
+	test/data \
+	README.md \
+	doc/quick-guide.md \
+	doc/keymap-format-text-v1.txt \
+	doc/rules-format.txt
 
 AM_CPPFLAGS = \
 	-DDFLT_XKB_CONFIG_ROOT='"$(XKBCONFIGROOT)"' \
