@@ -1276,18 +1276,24 @@ xkb_state_led_name_is_active(struct xkb_state *state, const char *name)
 static xkb_mod_mask_t
 key_get_consumed(struct xkb_state *state, const struct xkb_key *key)
 {
+    const struct xkb_key_type *type;
     const struct xkb_key_type_entry *entry;
+    xkb_mod_mask_t preserve;
     xkb_layout_index_t group;
 
     group = xkb_state_key_get_layout(state, key->keycode);
     if (group == XKB_LAYOUT_INVALID)
         return 0;
 
-    entry = get_entry_for_key_state(state, key, group);
-    if (!entry)
-        return 0;
+    type = key->groups[group].type;
 
-    return entry->mods.mask & ~entry->preserve.mask;
+    entry = get_entry_for_key_state(state, key, group);
+    if (entry)
+        preserve = entry->preserve.mask;
+    else
+        preserve = 0;
+
+    return type->mods.mask & ~preserve;
 }
 
 /**

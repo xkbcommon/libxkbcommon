@@ -64,6 +64,7 @@ test_key_seq_va(struct xkb_keymap *keymap, va_list ap)
     xkb_keysym_t keysym;
 
     const xkb_keysym_t *syms;
+    xkb_keysym_t sym;
     unsigned int nsyms, i;
     char ksbuf[64];
 
@@ -77,6 +78,11 @@ test_key_seq_va(struct xkb_keymap *keymap, va_list ap)
         op = va_arg(ap, int);
 
         nsyms = xkb_state_key_get_syms(state, kc, &syms);
+        if (nsyms == 1) {
+            sym = xkb_state_key_get_one_sym(state, kc);
+            syms = &sym;
+        }
+
         fprintf(stderr, "got %u syms for key 0x%x: [", nsyms, kc);
 
         if (op == DOWN || op == BOTH)

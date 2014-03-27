@@ -309,17 +309,25 @@ test_repeat(struct xkb_keymap *keymap)
 static void
 test_consume(struct xkb_keymap *keymap)
 {
-    struct xkb_state *state = xkb_state_new(keymap);
-    xkb_mod_index_t alt, shift;
+    struct xkb_state *state;
+    xkb_mod_index_t alt, shift, caps, ctrl, mod5;
     xkb_mod_mask_t mask;
 
+    state = xkb_state_new(keymap);
     assert(state);
 
     alt = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_ALT);
     assert(alt != XKB_MOD_INVALID);
     shift = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_SHIFT);
     assert(shift != XKB_MOD_INVALID);
+    caps = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CAPS);
+    assert(caps != XKB_MOD_INVALID);
+    ctrl = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CTRL);
+    assert(ctrl != XKB_MOD_INVALID);
+    mod5 = xkb_keymap_mod_get_index(keymap, "Mod5");
+    assert(mod5 != XKB_MOD_INVALID);
 
+    /* Test remove_consumed() */
     xkb_state_update_key(state, KEY_LEFTALT + EVDEV_OFFSET, XKB_KEY_DOWN);
     xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
     xkb_state_update_key(state, KEY_EQUAL + EVDEV_OFFSET, XKB_KEY_DOWN);
@@ -333,8 +341,55 @@ test_consume(struct xkb_keymap *keymap)
                                               mask);
     assert(mask == (1U << alt));
 
+    /* Test get_consumed_mods() */
     mask = xkb_state_key_get_consumed_mods(state, KEY_EQUAL + EVDEV_OFFSET);
     assert(mask == (1U << shift));
+
+    mask = xkb_state_key_get_consumed_mods(state, KEY_ESC + EVDEV_OFFSET);
+    assert(mask == 0);
+
+    xkb_state_unref(state);
+
+    /* Test is_consumed() - simple ALPHABETIC type. */
+    state = xkb_state_new(keymap);
+    assert(state);
+
+    mask = xkb_state_key_get_consumed_mods(state, KEY_A + EVDEV_OFFSET);
+    assert(mask == ((1U << shift) | (1U << caps)));
+
+    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, caps) > 0);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, shift) > 0);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, caps) > 0);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, shift) > 0);
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, caps) > 0);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, shift) > 0);
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, caps) > 0);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, shift) > 0);
+
+    xkb_state_unref(state);
+
+    /* More complicated - CTRL+ALT */
+    state = xkb_state_new(keymap);
+
+    mask = xkb_state_key_get_consumed_mods(state, KEY_F1 + EVDEV_OFFSET);
+    assert(mask == ((1U << shift) | (1U << alt) | (1U << ctrl) | (1U << mod5)));
+
+    /* Shift is preserved. */
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
+    mask = xkb_state_key_get_consumed_mods(state, KEY_F1 + EVDEV_OFFSET);
+    assert(mask == ((1U << alt) | (1U << ctrl) | (1U << mod5)));
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
+
+    mask = xkb_state_key_get_consumed_mods(state, KEY_F1 + EVDEV_OFFSET);
+    assert(mask == ((1U << shift) | (1U << alt) | (1U << ctrl) | (1U << mod5)));
+
+    assert(state);
 
     xkb_state_unref(state);
 }
