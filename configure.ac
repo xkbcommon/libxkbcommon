@@ -153,12 +153,12 @@ AS_IF([test "x$DEFAULT_XKB_OPTIONS" != x], [
 AC_ARG_ENABLE([x11],
     [AS_HELP_STRING([--disable-x11],
         [Disable support for creating keymaps with the X11 protocol (default: enabled)])],
-    [enable_x11=no], [enable_x11=yes])
+    [], [enable_x11=yes])
 AS_IF([test "x$enable_x11" = xyes], [
     PKG_CHECK_MODULES([XCB_XKB], [xcb xcb-xkb >= 1.10], [],
         [AC_MSG_ERROR([xkbcommon-x11 requires xcb-xkb >= 1.10 which was not found. \
 You can disable X11 support with --disable-x11.])])
-])
+], [enable_x11=no])
 AM_CONDITIONAL([ENABLE_X11], [test "x$enable_x11" = xyes])
 
 AC_CONFIG_FILES([
