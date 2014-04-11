@@ -363,6 +363,34 @@ struct xkb_rule_names {
 };
 
 /**
+ * @page keysym-transformations Keysym Transformations
+ *
+ * Keysym translation is subject to several "keysym transformations",
+ * as described in the XKB specification.  These are:
+ *
+ * - Capitalization transformation.  If the Caps Lock modifier is
+ *   active and was not consumed by the translation process, a single
+ *   keysym is transformed to its upper-case form (if applicable).
+ *   Similarly, the UTF-8/UTF-32 string produced is capitalized.
+ *
+ *   This is described in:
+ *   http://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Lock_Modifier
+ *
+ * - Control transformation.  If the Control modifier is active and
+ *   was not consumed by the translation process, the string produced
+ *   is transformed to its matching ASCII control character (if
+ *   applicable).  Keysyms are not affected.
+ *
+ *   This is described in:
+ *   http://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Control_Modifier
+ *
+ * Each relevant function discusses which transformations it performs.
+ *
+ * These transformations are not applicable when a key produces multiple
+ * keysyms.
+ */
+
+/**
  * @defgroup keysyms Keysyms
  * Utility functions related to keysyms.
  *
@@ -434,8 +462,8 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags);
  * terminating byte).  If the keysym does not have a Unicode
  * representation, returns 0.  If the buffer is too small, returns -1.
  *
- * Prefer not to use this function on keysyms obtained from an
- * xkb_state.  In this case, use xkb_state_key_get_utf8() instead.
+ * This function does not perform any @ref keysym-transformations.
+ * Therefore, prefer to use xkb_state_key_get_utf8() if possible.
  *
  * @sa xkb_state_key_get_utf8()
  */
@@ -449,8 +477,8 @@ xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size);
  * compatible with UCS-4.  If the keysym does not have a Unicode
  * representation, returns 0.
  *
- * Prefer not to use this function on keysyms obtained from an
- * xkb_state.  In this case, use xkb_state_key_get_utf32() instead.
+ * This function does not perform any @ref keysym-transformations.
+ * Therefore, prefer to use xkb_state_key_get_utf32() if possible.
  *
  * @sa xkb_state_key_get_utf32()
  */
@@ -1272,9 +1300,11 @@ xkb_state_update_mask(struct xkb_state *state,
  * key in the given keyboard state.
  *
  * As an extension to XKB, this function can return more than one keysym.
- * If you do not want to handle this case, you should use
- * xkb_state_key_get_one_sym(), which additionally performs transformations
- * which are specific to the one-keysym case.
+ * If you do not want to handle this case, you can use
+ * xkb_state_key_get_one_sym() for a simpler interface.
+ *
+ * This function does not perform any @ref keysym-transformations.
+ * (This might change).
  *
  * @returns The number of keysyms in the syms_out array.  If no keysyms
  * are produced by the key in the given keyboard state, returns 0 and sets
@@ -1306,6 +1336,9 @@ xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
  * You may safely pass NULL and 0 to @p buffer and @p size to find the
  * required size (without the NUL-byte).
  *
+ * This function performs Capitalization and Control @ref
+ * keysym-transformations.
+ *
  * @memberof xkb_state
  * @since 0.4.1
  */
@@ -1319,6 +1352,9 @@ xkb_state_key_get_utf8(struct xkb_state *state, xkb_keycode_t key,
  *
  * @returns The UTF-32 representation for the key, if it consists of only
  * a single codepoint.  Otherwise, returns 0.
+ *
+ * This function performs Capitalization and Control @ref
+ * keysym-transformations.
  *
  * @memberof xkb_state
  * @since 0.4.1
@@ -1337,6 +1373,8 @@ xkb_state_key_get_utf32(struct xkb_state *state, xkb_keycode_t key);
  *
  * @returns The keysym.  If the key does not have exactly one keysym,
  * returns XKB_KEY_NoSymbol
+ *
+ * This function performs Capitalization @ref keysym-transformations.
  *
  * @sa xkb_state_key_get_syms()
  * @memberof xkb_state
