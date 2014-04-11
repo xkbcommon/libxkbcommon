@@ -475,8 +475,11 @@ enum xkb_context_flags {
     XKB_CONTEXT_NO_FLAGS = 0,
     /** Create this context with an empty include path. */
     XKB_CONTEXT_NO_DEFAULT_INCLUDES = (1 << 0),
-    /** Don't take RMLVO names from the environment. */
-    XKB_CONTEXT_NO_ENVIRONMENT_NAMES = (1 << 1),
+    /**
+     * Don't take RMLVO names from the environment.
+     * @since 0.3.0
+     */
+    XKB_CONTEXT_NO_ENVIRONMENT_NAMES = (1 << 1)
 };
 
 /**
@@ -800,6 +803,7 @@ xkb_keymap_new_from_string(struct xkb_context *context, const char *string,
  *
  * @see xkb_keymap_new_from_string()
  * @memberof xkb_keymap
+ * @since 0.3.0
  */
 struct xkb_keymap *
 xkb_keymap_new_from_buffer(struct xkb_context *context, const char *buffer,
@@ -868,6 +872,7 @@ xkb_keymap_get_as_string(struct xkb_keymap *keymap,
  *
  * @sa xkb_keycode_t
  * @memberof xkb_keymap
+ * @since 0.3.1
  */
 xkb_keycode_t
 xkb_keymap_min_keycode(struct xkb_keymap *keymap);
@@ -877,6 +882,7 @@ xkb_keymap_min_keycode(struct xkb_keymap *keymap);
  *
  * @sa xkb_keycode_t
  * @memberof xkb_keymap
+ * @since 0.3.1
  */
 xkb_keycode_t
 xkb_keymap_max_keycode(struct xkb_keymap *keymap);
@@ -886,6 +892,7 @@ xkb_keymap_max_keycode(struct xkb_keymap *keymap);
  *
  * @sa xkb_keymap_key_for_each
  * @memberof xkb_keymap
+ * @since 0.3.1
  */
 typedef void
 (*xkb_keymap_key_iter_t)(struct xkb_keymap *keymap, xkb_keycode_t key,
@@ -898,6 +905,7 @@ typedef void
  *
  * @sa xkb_keymap_min_keycode() xkb_keymap_max_keycode() xkb_keycode_t
  * @memberof xkb_keymap
+ * @since 0.3.1
  */
 void
 xkb_keymap_key_for_each(struct xkb_keymap *keymap, xkb_keymap_key_iter_t iter,
@@ -1299,6 +1307,7 @@ xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
  * required size (without the NUL-byte).
  *
  * @memberof xkb_state
+ * @since 0.4.1
  */
 int
 xkb_state_key_get_utf8(struct xkb_state *state, xkb_keycode_t key,
@@ -1312,6 +1321,7 @@ xkb_state_key_get_utf8(struct xkb_state *state, xkb_keycode_t key,
  * a single codepoint.  Otherwise, returns 0.
  *
  * @memberof xkb_state
+ * @since 0.4.1
  */
 uint32_t
 xkb_state_key_get_utf32(struct xkb_state *state, xkb_keycode_t key);
@@ -1594,6 +1604,7 @@ xkb_state_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t key,
  *
  * @sa xkb_state_mod_index_is_consumed()
  * @memberof xkb_state
+ * @since 0.4.1
  */
 xkb_mod_mask_t
 xkb_state_key_get_consumed_mods(struct xkb_state *state, xkb_keycode_t key);

@@ -1,4 +1,4 @@
-libxkbcommon 0.4.1
+libxkbcommon 0.4.1 - 2014-03-27
 ==================
 
 - Converted README to markdown and added a Quick Guide to the
@@ -41,7 +41,7 @@ libxkbcommon 0.4.1
 
 - Bug fixes.
 
-libxkbcommon 0.4.0
+libxkbcommon 0.4.0 - 2014-02-02
 ==================
 
 - Add a new add-on library, xkbcommon-x11, to support creating keymaps
@@ -68,7 +68,7 @@ libxkbcommon 0.4.0
   xkb_x11_* types and functions, XKB_X11_* constants.
 
 
-libxkbcommon 0.3.2
+libxkbcommon 0.3.2 - 2013-11-22
 ==================
 
 - Log messages from the library now look like "xkbcommon: ERROR" by
@@ -90,7 +90,7 @@ libxkbcommon 0.3.2
 - Bug fixes.
 
 
-libxkbcommon 0.3.1
+libxkbcommon 0.3.1 - 2013-06-03
 ==================
 
 - Replace the flex scanner with a hand-written one. flex is no longer
@@ -102,7 +102,7 @@ libxkbcommon 0.3.1
   xkb_keymap_key_for_each()
 
 
-libxkbcommon 0.3.0
+libxkbcommon 0.3.0 - 2013-04-01
 ==================
 
 - Allow passing NULL to *_unref() functions; do nothing instead of
