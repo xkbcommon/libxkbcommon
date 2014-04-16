@@ -337,7 +337,9 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, const ExprDef *expr,
             *val_rtrn = l / r;
             break;
         default:
-            break;
+            log_err(ctx, "%s of integers not permitted\n",
+                    expr_op_type_to_string(expr->expr.op));
+            return false;
         }
 
         return true;
