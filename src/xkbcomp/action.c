@@ -103,7 +103,7 @@ enum action_field {
 ActionsInfo *
 NewActionsInfo(void)
 {
-    unsigned type;
+    enum xkb_action_type type;
     ActionsInfo *info;
 
     info = calloc(1, sizeof(*info));
@@ -168,7 +168,7 @@ static const LookupEntry fieldStrings[] = {
 };
 
 static bool
-stringToAction(const char *str, unsigned *type_rtrn)
+stringToAction(const char *str, enum xkb_action_type *type_rtrn)
 {
     return LookupString(actionTypeNames, str, type_rtrn);
 }
@@ -335,7 +335,7 @@ HandleSetLatchLockMods(struct xkb_keymap *keymap, union xkb_action *action,
 }
 
 static bool
-CheckGroupField(struct xkb_context *ctx, unsigned action,
+CheckGroupField(struct xkb_context *ctx, enum xkb_action_type action,
                 const ExprDef *array_ndx, const ExprDef *value,
                 enum xkb_action_flags *flags_inout, int32_t *group_rtrn)
 {
@@ -621,7 +621,7 @@ HandleSetLockControls(struct xkb_keymap *keymap, union xkb_action *action,
     struct xkb_controls_action *act = &action->ctrls;
 
     if (field == ACTION_FIELD_CONTROLS) {
-        unsigned int mask;
+        enum xkb_action_controls mask;
 
         if (array_ndx)
             return ReportActionNotArray(keymap->ctx, action->type, field);
@@ -851,7 +851,7 @@ bool
 SetActionField(struct xkb_keymap *keymap, const char *elem, const char *field,
                ExprDef *array_ndx, ExprDef *value, ActionsInfo *info)
 {
-    unsigned action;
+    enum xkb_action_type action;
     enum action_field action_field;
 
     if (!stringToAction(elem, &action))
