@@ -218,20 +218,6 @@ ModIndexText(const struct xkb_keymap *keymap, xkb_mod_index_t ndx)
     return xkb_atom_text(keymap->ctx, darray_item(keymap->mods, ndx).name);
 }
 
-xkb_mod_index_t
-ModNameToIndex(const struct xkb_keymap *keymap, xkb_atom_t name,
-               enum mod_type type)
-{
-    xkb_mod_index_t i;
-    const struct xkb_mod *mod;
-
-    darray_enumerate(i, mod, keymap->mods)
-        if ((mod->type & type) && name == mod->name)
-            return i;
-
-    return XKB_MOD_INVALID;
-}
-
 const char *
 ActionTypeText(enum xkb_action_type type)
 {

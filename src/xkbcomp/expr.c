@@ -112,7 +112,7 @@ LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
         return true;
     }
 
-    ndx = ModNameToIndex(keymap, field, mod_type);
+    ndx = XkbModNameToIndex(keymap, field, mod_type);
     if (ndx == XKB_MOD_INVALID)
         return false;
 
@@ -665,7 +665,7 @@ ExprResolveMod(struct xkb_keymap *keymap, const ExprDef *def,
     }
 
     name = def->ident.ident;
-    ndx = ModNameToIndex(keymap, name, mod_type);
+    ndx = XkbModNameToIndex(keymap, name, mod_type);
     if (ndx == XKB_MOD_INVALID) {
         log_err(keymap->ctx,
                 "Cannot resolve virtual modifier: "

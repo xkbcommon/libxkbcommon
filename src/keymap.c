@@ -284,19 +284,13 @@ xkb_keymap_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx)
 XKB_EXPORT xkb_mod_index_t
 xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name)
 {
-    xkb_mod_index_t i;
     xkb_atom_t atom;
-    const struct xkb_mod *mod;
 
     atom = xkb_atom_lookup(keymap->ctx, name);
     if (atom == XKB_ATOM_NONE)
         return XKB_MOD_INVALID;
 
-    darray_enumerate(i, mod, keymap->mods)
-        if (mod->name == atom)
-            return i;
-
-    return XKB_MOD_INVALID;
+    return XkbModNameToIndex(keymap, atom, MOD_BOTH);
 }
 
 /**

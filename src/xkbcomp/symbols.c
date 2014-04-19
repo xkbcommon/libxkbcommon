@@ -1139,7 +1139,7 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
     bool ok;
     struct xkb_context *ctx = info->ctx;
 
-    ndx = ModNameToIndex(info->keymap, def->modifier, MOD_REAL);
+    ndx = XkbModNameToIndex(info->keymap, def->modifier, MOD_REAL);
     if (ndx == XKB_MOD_INVALID) {
         log_err(info->ctx,
                 "Illegal modifier map definition; "

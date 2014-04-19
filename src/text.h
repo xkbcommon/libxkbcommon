@@ -53,10 +53,6 @@ ModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask);
 const char *
 ModIndexText(const struct xkb_keymap *keymap, xkb_mod_index_t ndx);
 
-xkb_mod_index_t
-ModNameToIndex(const struct xkb_keymap *keymap, xkb_atom_t name,
-               enum mod_type type);
-
 const char *
 ActionTypeText(enum xkb_action_type type);
 
