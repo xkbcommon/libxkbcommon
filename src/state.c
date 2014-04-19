@@ -162,7 +162,7 @@ xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
 }
 
 xkb_layout_index_t
-wrap_group_into_range(int32_t group,
+XkbWrapGroupIntoRange(int32_t group,
                       xkb_layout_index_t num_groups,
                       enum xkb_range_exceed_type out_of_range_group_action,
                       xkb_layout_index_t out_of_range_group_number)
@@ -210,7 +210,7 @@ xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t kc)
     if (!key)
         return XKB_LAYOUT_INVALID;
 
-    return wrap_group_into_range(state->components.group, key->num_groups,
+    return XkbWrapGroupIntoRange(state->components.group, key->num_groups,
                                  key->out_of_range_group_action,
                                  key->out_of_range_group_number);
 }
@@ -677,13 +677,13 @@ xkb_state_update_derived(struct xkb_state *state)
 
     /* TODO: Use groups_wrap control instead of always RANGE_WRAP. */
 
-    wrapped = wrap_group_into_range(state->components.locked_group,
+    wrapped = XkbWrapGroupIntoRange(state->components.locked_group,
                                     state->keymap->num_groups,
                                     RANGE_WRAP, 0);
     state->components.locked_group =
         (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
 
-    wrapped = wrap_group_into_range(state->components.base_group +
+    wrapped = XkbWrapGroupIntoRange(state->components.base_group +
                                     state->components.latched_group +
                                     state->components.locked_group,
                                     state->keymap->num_groups,

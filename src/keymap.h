@@ -431,7 +431,7 @@ XkbModNameToIndex(const struct xkb_keymap *keymap, xkb_atom_t name,
                   enum mod_type type);
 
 xkb_layout_index_t
-wrap_group_into_range(int32_t group,
+XkbWrapGroupIntoRange(int32_t group,
                       xkb_layout_index_t num_groups,
                       enum xkb_range_exceed_type out_of_range_group_action,
                       xkb_layout_index_t out_of_range_group_number);
