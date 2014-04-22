@@ -190,7 +190,4 @@ darray_next_alloc(unsigned alloc, unsigned need, unsigned itemSize)
          (idx) < (arr).size; \
          (idx)++, (val)++)
 
-#define darray_foreach_reverse(i, arr) \
-    for ((i) = &(arr).item[(arr).size]; (i)-- > &(arr).item[0]; )
-
 #endif /* CCAN_DARRAY_H */
