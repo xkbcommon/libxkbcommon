@@ -149,7 +149,7 @@ InitCompatInfo(CompatInfo *info, struct xkb_context *ctx,
     memset(info, 0, sizeof(*info));
     info->ctx = ctx;
     info->actions = actions;
-    CopyModSet(&info->mods, mods);
+    info->mods = *mods;
     info->default_interp.merge = MERGE_OVERRIDE;
     info->default_interp.interp.virtual_mod = XKB_MOD_INVALID;
     info->default_led.merge = MERGE_OVERRIDE;
@@ -384,7 +384,7 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
         return;
     }
 
-    CopyModSet(&into->mods, &from->mods);
+    into->mods = from->mods;
 
     if (into->name == NULL) {
         into->name = from->name;
@@ -872,7 +872,7 @@ CopyCompatToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
     keymap->compat_section_name = strdup_safe(info->name);
     XkbEscapeMapName(keymap->compat_section_name);
 
-    CopyModSet(&keymap->mods, &info->mods);
+    keymap->mods = info->mods;
 
     if (!darray_empty(info->interps)) {
         struct collect collect;

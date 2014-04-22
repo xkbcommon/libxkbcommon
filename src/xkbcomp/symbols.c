@@ -194,7 +194,7 @@ InitSymbolsInfo(SymbolsInfo *info, const struct xkb_keymap *keymap,
     info->merge = MERGE_OVERRIDE;
     InitKeyInfo(keymap->ctx, &info->default_key);
     info->actions = actions;
-    CopyModSet(&info->mods, mods);
+    info->mods = *mods;
     info->explicit_group = XKB_LAYOUT_INVALID;
 }
 
@@ -495,7 +495,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
         return;
     }
 
-    CopyModSet(&into->mods, &from->mods);
+    into->mods = from->mods;
 
     if (into->name == NULL) {
         into->name = from->name;
@@ -1538,7 +1538,7 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
     keymap->symbols_section_name = strdup_safe(info->name);
     XkbEscapeMapName(keymap->symbols_section_name);
 
-    CopyModSet(&keymap->mods, &info->mods);
+    keymap->mods = info->mods;
 
     keymap->num_group_names = darray_size(info->group_names);
     keymap->group_names = darray_mem(info->group_names, 0);

@@ -102,7 +102,7 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_context *ctx,
 {
     memset(info, 0, sizeof(*info));
     info->ctx = ctx;
-    CopyModSet(&info->mods, mods);
+    info->mods = *mods;
 }
 
 static void
@@ -181,7 +181,7 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
         return;
     }
 
-    CopyModSet(&into->mods, &from->mods);
+    into->mods = from->mods;
 
     if (into->name == NULL) {
         into->name = from->name;
@@ -676,7 +676,7 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
     keymap->types_section_name = strdup_safe(info->name);
     XkbEscapeMapName(keymap->types_section_name);
 
-    CopyModSet(&keymap->mods, &info->mods);
+    keymap->mods = info->mods;
 
     keymap->num_types = darray_size(info->types);
     if (keymap->num_types == 0)

@@ -29,13 +29,6 @@
 #include "expr.h"
 #include "vmod.h"
 
-void
-CopyModSet(struct xkb_mod_set *into, const struct xkb_mod_set *from)
-{
-    memcpy(into->mods, from->mods, sizeof(*from->mods) * from->num_mods);
-    into->num_mods = from->num_mods;
-}
-
 bool
 HandleVModDef(struct xkb_context *ctx, struct xkb_mod_set *mods,
               VModDef *stmt, enum merge_mode merge)
