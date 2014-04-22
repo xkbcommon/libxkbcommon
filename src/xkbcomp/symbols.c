@@ -72,10 +72,10 @@ enum group_field {
 };
 
 enum key_field {
-    KEY_FIELD_REPEAT    = (1 << 0),
+    KEY_FIELD_REPEAT = (1 << 0),
     KEY_FIELD_DEFAULT_TYPE = (1 << 1),
     KEY_FIELD_GROUPINFO = (1 << 2),
-    KEY_FIELD_VMODMAP   = (1 << 3),
+    KEY_FIELD_VMODMAP = (1 << 3),
 };
 
 typedef struct {

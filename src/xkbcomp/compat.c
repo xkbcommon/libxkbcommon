@@ -55,9 +55,9 @@
 #include "include.h"
 
 enum si_field {
-    SI_FIELD_VIRTUAL_MOD    = (1 << 0),
-    SI_FIELD_ACTION         = (1 << 1),
-    SI_FIELD_AUTO_REPEAT    = (1 << 2),
+    SI_FIELD_VIRTUAL_MOD = (1 << 0),
+    SI_FIELD_ACTION = (1 << 1),
+    SI_FIELD_AUTO_REPEAT = (1 << 2),
     SI_FIELD_LEVEL_ONE_ONLY = (1 << 3),
 };
 
@@ -69,9 +69,9 @@ typedef struct {
 } SymInterpInfo;
 
 enum led_field {
-    LED_FIELD_MODS       = (1 << 0),
-    LED_FIELD_GROUPS     = (1 << 1),
-    LED_FIELD_CTRLS      = (1 << 2),
+    LED_FIELD_MODS = (1 << 0),
+    LED_FIELD_GROUPS = (1 << 1),
+    LED_FIELD_CTRLS = (1 << 2),
 };
 
 typedef struct {

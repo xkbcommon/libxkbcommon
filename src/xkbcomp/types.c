@@ -31,9 +31,9 @@
 #include "include.h"
 
 enum type_field {
-    TYPE_FIELD_MASK       = (1 << 0),
-    TYPE_FIELD_MAP        = (1 << 1),
-    TYPE_FIELD_PRESERVE   = (1 << 2),
+    TYPE_FIELD_MASK = (1 << 0),
+    TYPE_FIELD_MAP = (1 << 1),
+    TYPE_FIELD_PRESERVE = (1 << 2),
     TYPE_FIELD_LEVEL_NAME = (1 << 3),
 };
 
