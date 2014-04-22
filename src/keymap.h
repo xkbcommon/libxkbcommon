@@ -398,9 +398,9 @@ struct xkb_keymap {
 };
 
 #define xkb_foreach_key(iter, keymap) \
-    for (iter = keymap->keys + keymap->min_key_code; \
-         iter <= keymap->keys + keymap->max_key_code; \
-         iter++)
+    for ((iter) = (keymap)->keys + (keymap)->min_key_code; \
+         (iter) <= (keymap)->keys + (keymap)->max_key_code; \
+         (iter)++)
 
 static inline const struct xkb_key *
 XkbKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
