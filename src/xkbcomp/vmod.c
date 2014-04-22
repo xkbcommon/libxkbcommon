@@ -78,7 +78,7 @@ HandleVModDef(struct xkb_context *ctx, struct xkb_mod_set *mods,
         mapping = 0;
     }
 
-    darray_enumerate(i, mod, mods->mods) {
+    xkb_mods_enumerate(i, mod, mods) {
         if (mod->name == stmt->name) {
             if (mod->type != MOD_VIRT) {
                 log_err(ctx,

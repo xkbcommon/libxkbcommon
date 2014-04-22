@@ -130,7 +130,7 @@ XkbModNameToIndex(const struct xkb_mod_set *mods, xkb_atom_t name,
     xkb_mod_index_t i;
     const struct xkb_mod *mod;
 
-    darray_enumerate(i, mod, mods->mods)
+    xkb_mods_enumerate(i, mod, mods)
         if ((mod->type & type) && name == mod->name)
             return i;
 

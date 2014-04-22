@@ -126,7 +126,7 @@ write_vmods(struct xkb_keymap *keymap, struct buf *buf)
     const struct xkb_mod *mod;
     xkb_mod_index_t num_vmods = 0;
 
-    darray_foreach(mod, keymap->mods.mods) {
+    xkb_mods_foreach(mod, &keymap->mods) {
         if (mod->type != MOD_VIRT)
             continue;
 
@@ -624,7 +624,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
         if (key->modmap == 0)
             continue;
 
-        darray_enumerate(i, mod, keymap->mods.mods)
+        xkb_mods_enumerate(i, mod, &keymap->mods)
             if (key->modmap & (1u << i))
                 write_buf(buf, "\tmodifier_map %s { %s };\n",
                           xkb_atom_text(keymap->ctx, mod->name),

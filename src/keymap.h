@@ -402,6 +402,12 @@ struct xkb_keymap {
          (iter) <= (keymap)->keys + (keymap)->max_key_code; \
          (iter)++)
 
+#define xkb_mods_foreach(iter, mods_) \
+    darray_foreach((iter), (mods_)->mods)
+
+#define xkb_mods_enumerate(idx, iter, mods_) \
+    darray_enumerate((idx), (iter), (mods_)->mods)
+
 static inline const struct xkb_key *
 XkbKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
 {

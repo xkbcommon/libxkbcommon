@@ -265,7 +265,7 @@ ModMaskText(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     if (mask == MOD_REAL_MASK_ALL)
         return "all";
 
-    darray_enumerate(i, mod, mods->mods) {
+    xkb_mods_enumerate(i, mod, mods) {
         int ret;
 
         if (!(mask & (1u << i)))
