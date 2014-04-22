@@ -28,13 +28,7 @@
 #define XKBCOMP_VMOD_H
 
 void
-MoveModSet(struct xkb_mod_set *into, struct xkb_mod_set *from);
-
-void
 CopyModSet(struct xkb_mod_set *into, const struct xkb_mod_set *from);
-
-void
-ClearModSet(struct xkb_mod_set *mods);
 
 bool
 HandleVModDef(struct xkb_context *ctx, struct xkb_mod_set *mods,

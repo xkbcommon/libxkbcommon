@@ -508,17 +508,14 @@ get_vmods(struct xkb_keymap *keymap, xcb_connection_t *conn,
 {
     uint8_t *iter = xcb_xkb_get_map_map_vmods_rtrn(map);
 
-    darray_resize0(keymap->mods.mods,
-                   NUM_REAL_MODS + msb_pos(reply->virtualMods));
+    keymap->mods.num_mods = NUM_REAL_MODS + msb_pos(reply->virtualMods);
 
     for (unsigned i = 0; i < NUM_VMODS; i++) {
         if (reply->virtualMods & (1u << i)) {
             uint8_t wire = *iter;
-            struct xkb_mod *mod = &darray_item(keymap->mods.mods,
-                                               NUM_REAL_MODS + i);
 
-            mod->type = MOD_VIRT;
-            mod->mapping = translate_mods(wire, 0, 0);
+            keymap->mods.mods[i].type = MOD_VIRT;
+            keymap->mods.mods[i].mapping = translate_mods(wire, 0, 0);
 
             iter++;
         }
@@ -920,14 +917,12 @@ get_vmod_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
      * tells us which vmods exist (a vmod must have a name), so we fix
      * up the size here.
      */
-    darray_resize0(keymap->mods.mods,
-                   NUM_REAL_MODS + msb_pos(reply->virtualMods));
+    keymap->mods.num_mods = NUM_REAL_MODS + msb_pos(reply->virtualMods);
 
     for (unsigned i = 0; i < NUM_VMODS; i++) {
         if (reply->virtualMods & (1u << i)) {
             xcb_atom_t wire = *iter;
-            struct xkb_mod *mod = &darray_item(keymap->mods.mods,
-                                               NUM_REAL_MODS + i);
+            struct xkb_mod *mod = &keymap->mods.mods[NUM_REAL_MODS + i];
 
             if (!adopt_atom(keymap->ctx, conn, wire, &mod->name))
                 return false;

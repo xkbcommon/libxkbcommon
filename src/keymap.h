@@ -354,7 +354,8 @@ struct xkb_mod {
 };
 
 struct xkb_mod_set {
-    darray(struct xkb_mod) mods;
+    struct xkb_mod mods[XKB_MAX_MODS];
+    unsigned int num_mods;
 };
 
 /* Common keyboard description structure */
@@ -403,10 +404,14 @@ struct xkb_keymap {
          (iter)++)
 
 #define xkb_mods_foreach(iter, mods_) \
-    darray_foreach((iter), (mods_)->mods)
+    for ((iter) = (mods_)->mods; \
+         (iter) < (mods_)->mods + (mods_)->num_mods; \
+         (iter)++)
 
 #define xkb_mods_enumerate(idx, iter, mods_) \
-    darray_enumerate((idx), (iter), (mods_)->mods)
+    for ((idx) = 0, (iter) = (mods_)->mods; \
+         (idx) < (mods_)->num_mods; \
+         (idx)++, (iter)++)
 
 static inline const struct xkb_key *
 XkbKey(struct xkb_keymap *keymap, xkb_keycode_t kc)

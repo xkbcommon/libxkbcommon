@@ -93,7 +93,6 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
     free(keymap->sym_interprets);
     free(keymap->key_aliases);
     free(keymap->group_names);
-    darray_free(keymap->mods.mods);
     darray_free(keymap->leds);
     free(keymap->keycodes_section_name);
     free(keymap->symbols_section_name);
@@ -263,7 +262,7 @@ xkb_keymap_get_as_string(struct xkb_keymap *keymap,
 XKB_EXPORT xkb_mod_index_t
 xkb_keymap_num_mods(struct xkb_keymap *keymap)
 {
-    return darray_size(keymap->mods.mods);
+    return keymap->mods.num_mods;
 }
 
 /**
@@ -272,11 +271,10 @@ xkb_keymap_num_mods(struct xkb_keymap *keymap)
 XKB_EXPORT const char *
 xkb_keymap_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx)
 {
-    if (idx >= darray_size(keymap->mods.mods))
+    if (idx >= keymap->mods.num_mods)
         return NULL;
 
-    return xkb_atom_text(keymap->ctx,
-                         darray_item(keymap->mods.mods, idx).name);
+    return xkb_atom_text(keymap->ctx, keymap->mods.mods[idx].name);
 }
 
 /**

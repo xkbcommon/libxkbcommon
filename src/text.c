@@ -213,10 +213,10 @@ ModIndexText(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     if (ndx == XKB_MOD_INVALID)
         return "none";
 
-    if (ndx >= darray_size(mods->mods))
+    if (ndx >= mods->num_mods)
         return NULL;
 
-    return xkb_atom_text(ctx, darray_item(mods->mods, ndx).name);
+    return xkb_atom_text(ctx, mods->mods[ndx].name);
 }
 
 const char *

@@ -29,24 +29,25 @@
 static void
 update_builtin_keymap_fields(struct xkb_keymap *keymap)
 {
-    struct xkb_context *ctx = keymap->ctx;
-    const struct xkb_mod builtin_mods[] = {
-        { .name = xkb_atom_intern_literal(ctx, "Shift"),   .type = MOD_REAL },
-        { .name = xkb_atom_intern_literal(ctx, "Lock"),    .type = MOD_REAL },
-        { .name = xkb_atom_intern_literal(ctx, "Control"), .type = MOD_REAL },
-        { .name = xkb_atom_intern_literal(ctx, "Mod1"),    .type = MOD_REAL },
-        { .name = xkb_atom_intern_literal(ctx, "Mod2"),    .type = MOD_REAL },
-        { .name = xkb_atom_intern_literal(ctx, "Mod3"),    .type = MOD_REAL },
-        { .name = xkb_atom_intern_literal(ctx, "Mod4"),    .type = MOD_REAL },
-        { .name = xkb_atom_intern_literal(ctx, "Mod5"),    .type = MOD_REAL },
+    /* Predefined (AKA real, core, X11) modifiers. The order is important! */
+    static const char *const builtin_mods[] = {
+        [0] = "Shift",
+        [1] = "Lock",
+        [2] = "Control",
+        [3] = "Mod1",
+        [4] = "Mod2",
+        [5] = "Mod3",
+        [6] = "Mod4",
+        [7] = "Mod5"
     };
 
-    /*
-     * Add predefined (AKA real, core, X11) modifiers.
-     * The order is important!
-     */
-    darray_append_items(keymap->mods.mods,
-                        builtin_mods, ARRAY_SIZE(builtin_mods));
+    for (unsigned i = 0; i < ARRAY_SIZE(builtin_mods); i++) {
+        keymap->mods.mods[i].name = xkb_atom_intern(keymap->ctx,
+                                                    builtin_mods[i],
+                                                    strlen(builtin_mods[i]));
+        keymap->mods.mods[i].type = MOD_REAL;
+    }
+    keymap->mods.num_mods = ARRAY_SIZE(builtin_mods);
 }
 
 struct xkb_keymap *

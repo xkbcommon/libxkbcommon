@@ -158,7 +158,6 @@ static void
 ClearCompatInfo(CompatInfo *info)
 {
     free(info->name);
-    ClearModSet(&info->mods);
     darray_free(info->interps);
     darray_free(info->leds);
 }
@@ -379,7 +378,7 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
         return;
     }
 
-    MoveModSet(&into->mods, &from->mods);
+    CopyModSet(&into->mods, &from->mods);
 
     if (into->name == NULL) {
         into->name = from->name;
@@ -865,7 +864,7 @@ CopyCompatToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
     keymap->compat_section_name = strdup_safe(info->name);
     XkbEscapeMapName(keymap->compat_section_name);
 
-    MoveModSet(&keymap->mods, &info->mods);
+    CopyModSet(&keymap->mods, &info->mods);
 
     if (!darray_empty(info->interps)) {
         struct collect collect;

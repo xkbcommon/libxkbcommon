@@ -203,7 +203,6 @@ ClearSymbolsInfo(SymbolsInfo *info)
 {
     KeyInfo *keyi;
     free(info->name);
-    ClearModSet(&info->mods);
     darray_foreach(keyi, info->keys)
         ClearKeyInfo(keyi);
     darray_free(info->keys);
@@ -496,7 +495,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
         return;
     }
 
-    MoveModSet(&into->mods, &from->mods);
+    CopyModSet(&into->mods, &from->mods);
 
     if (into->name == NULL) {
         into->name = from->name;
@@ -1539,7 +1538,7 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
     keymap->symbols_section_name = strdup_safe(info->name);
     XkbEscapeMapName(keymap->symbols_section_name);
 
-    MoveModSet(&keymap->mods, &info->mods);
+    CopyModSet(&keymap->mods, &info->mods);
 
     keymap->num_group_names = darray_size(info->group_names);
     keymap->group_names = darray_mem(info->group_names, 0);

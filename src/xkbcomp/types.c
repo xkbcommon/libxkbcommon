@@ -116,7 +116,6 @@ static void
 ClearKeyTypesInfo(KeyTypesInfo *info)
 {
     free(info->name);
-    ClearModSet(&info->mods);
     darray_free(info->types);
 }
 
@@ -182,7 +181,7 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
         return;
     }
 
-    MoveModSet(&into->mods, &from->mods);
+    CopyModSet(&into->mods, &from->mods);
 
     if (into->name == NULL) {
         into->name = from->name;
@@ -677,7 +676,7 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
     keymap->types_section_name = strdup_safe(info->name);
     XkbEscapeMapName(keymap->types_section_name);
 
-    MoveModSet(&keymap->mods, &info->mods);
+    CopyModSet(&keymap->mods, &info->mods);
 
     keymap->num_types = darray_size(info->types);
     if (keymap->num_types == 0)

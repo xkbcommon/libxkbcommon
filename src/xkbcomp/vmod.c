@@ -30,24 +30,10 @@
 #include "vmod.h"
 
 void
-MoveModSet(struct xkb_mod_set *into, struct xkb_mod_set *from)
-{
-    darray_free(into->mods);
-    into->mods = from->mods;
-    darray_init(from->mods);
-}
-
-void
 CopyModSet(struct xkb_mod_set *into, const struct xkb_mod_set *from)
 {
-    darray_free(into->mods);
-    darray_copy(into->mods, from->mods);
-}
-
-void
-ClearModSet(struct xkb_mod_set *mods)
-{
-    darray_free(mods->mods);
+    memcpy(into->mods, from->mods, sizeof(*from->mods) * from->num_mods);
+    into->num_mods = from->num_mods;
 }
 
 bool
@@ -57,7 +43,6 @@ HandleVModDef(struct xkb_context *ctx, struct xkb_mod_set *mods,
     xkb_mod_index_t i;
     struct xkb_mod *mod;
     xkb_mod_mask_t mapping;
-    struct xkb_mod new;
 
     merge = (merge == MERGE_DEFAULT ? stmt->merge : merge);
 
@@ -112,16 +97,16 @@ HandleVModDef(struct xkb_context *ctx, struct xkb_mod_set *mods,
         }
     }
 
-    if (darray_size(mods->mods) >= XKB_MAX_MODS) {
+    if (mods->num_mods >= XKB_MAX_MODS) {
         log_err(ctx,
                 "Too many modifiers defined (maximum %d)\n",
                 XKB_MAX_MODS);
         return false;
     }
 
-    new.name = stmt->name;
-    new.mapping = mapping;
-    new.type = MOD_VIRT;
-    darray_append(mods->mods, new);
+    mods->mods[mods->num_mods].name = stmt->name;
+    mods->mods[mods->num_mods].type = MOD_VIRT;
+    mods->mods[mods->num_mods].mapping = mapping;
+    mods->num_mods++;
     return true;
 }
