@@ -99,7 +99,7 @@ strempty(const char *s)
 static inline void *
 memdup(const void *mem, size_t nmemb, size_t size)
 {
-    void *p = malloc(nmemb * size);
+    void *p = calloc(nmemb, size);
     if (p)
         memcpy(p, mem, nmemb * size);
     return p;
