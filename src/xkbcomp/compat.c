@@ -87,7 +87,8 @@ typedef struct {
     SymInterpInfo default_interp;
     darray(SymInterpInfo) interps;
     LedInfo default_led;
-    darray(LedInfo) leds;
+    LedInfo leds[XKB_MAX_LEDS];
+    unsigned int num_leds;
     ActionsInfo *actions;
     struct xkb_mod_set mods;
 
@@ -159,7 +160,6 @@ ClearCompatInfo(CompatInfo *info)
 {
     free(info->name);
     darray_free(info->interps);
-    darray_free(info->leds);
 }
 
 static SymInterpInfo *
@@ -307,12 +307,13 @@ UseNewLEDField(enum led_field field, LedInfo *old, LedInfo *new,
 static bool
 AddLedMap(CompatInfo *info, LedInfo *new, bool same_file)
 {
-    LedInfo *old;
     enum led_field collide;
     const int verbosity = xkb_context_get_log_verbosity(info->ctx);
     const bool report = (same_file && verbosity > 0) || verbosity > 9;
 
-    darray_foreach(old, info->leds) {
+    for (xkb_led_index_t i = 0; i < info->num_leds; i++) {
+        LedInfo *old = &info->leds[i];
+
         if (old->led.name != new->led.name)
             continue;
 
@@ -362,7 +363,13 @@ AddLedMap(CompatInfo *info, LedInfo *new, bool same_file)
         return true;
     }
 
-    darray_append(info->leds, *new);
+    if (info->num_leds >= XKB_MAX_LEDS) {
+        log_err(info->ctx,
+                "Too many LEDs defined (maximum %d)\n",
+                XKB_MAX_LEDS);
+        return false;
+    }
+    info->leds[info->num_leds++] = *new;
     return true;
 }
 
@@ -371,7 +378,6 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
                         enum merge_mode merge)
 {
     SymInterpInfo *si;
-    LedInfo *ledi;
 
     if (from->errorCount > 0) {
         into->errorCount += from->errorCount;
@@ -397,12 +403,14 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
         }
     }
 
-    if (darray_empty(into->leds)) {
-        into->leds = from->leds;
-        darray_init(from->leds);
+    if (into->num_leds == 0) {
+        memcpy(into->leds, from->leds, sizeof(*from->leds) * from->num_leds);
+        into->num_leds = from->num_leds;
+        from->num_leds = 0;
     }
     else {
-        darray_foreach(ledi, from->leds) {
+        for (xkb_led_index_t i = 0; i < from->num_leds; i++) {
+            LedInfo *ledi = &from->leds[i];
             ledi->merge = (merge == MERGE_DEFAULT ? ledi->merge : merge);
             if (!AddLedMap(into, ledi, false))
                 into->errorCount++;
@@ -810,31 +818,31 @@ CopyInterps(CompatInfo *info, bool needSymbol, enum xkb_match_operation pred,
 static void
 CopyLedMapDefsToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
 {
-    LedInfo *ledi;
-    xkb_led_index_t i;
-    struct xkb_led *led;
+    for (xkb_led_index_t idx = 0; idx < info->num_leds; idx++) {
+        LedInfo *ledi = &info->leds[idx];
+        xkb_led_index_t i;
+        struct xkb_led *led;
 
-    darray_foreach(ledi, info->leds) {
         /*
          * Find the LED with the given name, if it was already declared
          * in keycodes.
          */
-        darray_enumerate(i, led, keymap->leds)
+        xkb_leds_enumerate(i, led, keymap)
             if (led->name == ledi->led.name)
                 break;
 
         /* Not previously declared; create it with next free index. */
-        if (i >= darray_size(keymap->leds)) {
+        if (i >= keymap->num_leds) {
             log_dbg(keymap->ctx,
                     "Indicator name \"%s\" was not declared in the keycodes section; "
                     "Adding new indicator\n",
                     xkb_atom_text(keymap->ctx, ledi->led.name));
 
-            darray_enumerate(i, led, keymap->leds)
+            xkb_leds_enumerate(i, led, keymap)
                 if (led->name == XKB_ATOM_NONE)
                     break;
 
-            if (i >= darray_size(keymap->leds)) {
+            if (i >= keymap->num_leds) {
                 /* Not place to put it; ignore. */
                 if (i >= XKB_MAX_LEDS) {
                     log_err(keymap->ctx,
@@ -844,9 +852,9 @@ CopyLedMapDefsToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
                             xkb_atom_text(keymap->ctx, ledi->led.name));
                     continue;
                 }
+
                 /* Add a new LED. */
-                darray_resize(keymap->leds, i + 1);
-                led = &darray_item(keymap->leds, i);
+                led = &keymap->leds[keymap->num_leds++];
             }
         }
 

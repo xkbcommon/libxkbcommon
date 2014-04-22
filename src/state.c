@@ -619,7 +619,7 @@ xkb_state_led_update_all(struct xkb_state *state)
 
     state->components.leds = 0;
 
-    darray_enumerate(idx, led, state->keymap->leds) {
+    xkb_leds_enumerate(idx, led, state->keymap) {
         xkb_mod_mask_t mod_mask = 0;
         xkb_layout_mask_t group_mask = 0;
 
@@ -1252,8 +1252,8 @@ xkb_state_layout_name_is_active(struct xkb_state *state, const char *name,
 XKB_EXPORT int
 xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx)
 {
-    if (idx >= darray_size(state->keymap->leds) ||
-        darray_item(state->keymap->leds, idx).name == XKB_ATOM_NONE)
+    if (idx >= state->keymap->num_leds ||
+        state->keymap->leds[idx].name == XKB_ATOM_NONE)
         return -1;
 
     return !!(state->components.leds & (1u << idx));

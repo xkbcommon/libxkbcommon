@@ -49,7 +49,8 @@ typedef struct {
     xkb_keycode_t min_key_code;
     xkb_keycode_t max_key_code;
     darray(xkb_atom_t) key_names;
-    darray(LedNameInfo) led_names;
+    LedNameInfo led_names[XKB_MAX_LEDS];
+    unsigned int num_led_names;
     darray(AliasInfo) aliases;
 
     struct xkb_context *ctx;
@@ -71,10 +72,8 @@ static LedNameInfo *
 FindLedByName(KeyNamesInfo *info, xkb_atom_t name,
               xkb_led_index_t *idx_out)
 {
-    LedNameInfo *ledi;
-    xkb_led_index_t idx;
-
-    darray_enumerate(idx, ledi, info->led_names) {
+    for (xkb_led_index_t idx; idx < info->num_led_names; idx++) {
+        LedNameInfo *ledi = &info->led_names[idx];
         if (ledi->name == name) {
             *idx_out = idx;
             return ledi;
@@ -119,11 +118,11 @@ AddLedName(KeyNamesInfo *info, enum merge_mode merge, bool same_file,
         return true;
     }
 
-    if (new_idx >= darray_size(info->led_names))
-        darray_resize0(info->led_names, new_idx + 1);
+    if (new_idx >= info->num_led_names)
+        info->num_led_names = new_idx + 1;
 
     /* LED with the same index already exists. */
-    old = &darray_item(info->led_names, new_idx);
+    old = &info->led_names[new_idx];
     if (old->name != XKB_ATOM_NONE) {
         if (report) {
             const xkb_atom_t use = (replace ? new->name : old->name);
@@ -140,7 +139,7 @@ AddLedName(KeyNamesInfo *info, enum merge_mode merge, bool same_file,
         return true;
     }
 
-    darray_item(info->led_names, new_idx) = *new;
+    *old = *new;
     return true;
 }
 
@@ -150,7 +149,6 @@ ClearKeyNamesInfo(KeyNamesInfo *info)
     free(info->name);
     darray_free(info->key_names);
     darray_free(info->aliases);
-    darray_free(info->led_names);
 }
 
 static void
@@ -308,15 +306,16 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
     }
 
     /* Merge LED names. */
-    if (darray_empty(into->led_names)) {
-        into->led_names = from->led_names;
-        darray_init(from->led_names);
+    if (into->num_led_names == 0) {
+        memcpy(into->led_names, from->led_names,
+               sizeof(*from->led_names) * from->num_led_names);
+        into->num_led_names = from->num_led_names;
+        from->num_led_names = 0;
     }
     else {
-        xkb_led_index_t idx;
-        LedNameInfo *ledi;
+        for (xkb_led_index_t idx = 0; idx < from->num_led_names; idx++) {
+            LedNameInfo *ledi = &from->led_names[idx];
 
-        darray_enumerate(idx, ledi, from->led_names) {
             if (ledi->name == XKB_ATOM_NONE)
                 continue;
 
@@ -528,8 +527,6 @@ static bool
 CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 {
     xkb_keycode_t kc;
-    xkb_led_index_t idx;
-    LedNameInfo *ledi;
     AliasInfo *alias;
     unsigned i;
 
@@ -600,10 +597,15 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
     }
 
     /* Copy LED names. */
-    darray_resize0(keymap->leds, darray_size(info->led_names));
-    darray_enumerate(idx, ledi, info->led_names)
-        if (ledi->name != XKB_ATOM_NONE)
-            darray_item(keymap->leds, idx).name = ledi->name;
+    keymap->num_leds = info->num_led_names;
+    for (xkb_led_index_t idx = 0; idx < info->num_led_names; idx++) {
+        LedNameInfo *ledi = &info->led_names[idx];
+
+        if (ledi->name == XKB_ATOM_NONE)
+            continue;
+
+        keymap->leds[idx].name = ledi->name;
+    }
 
     return true;
 }

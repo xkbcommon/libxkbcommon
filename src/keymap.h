@@ -390,7 +390,8 @@ struct xkb_keymap {
     xkb_layout_index_t num_group_names;
     xkb_atom_t *group_names;
 
-    darray(struct xkb_led) leds;
+    struct xkb_led leds[XKB_MAX_LEDS];
+    unsigned int num_leds;
 
     char *keycodes_section_name;
     char *symbols_section_name;
@@ -411,6 +412,16 @@ struct xkb_keymap {
 #define xkb_mods_enumerate(idx, iter, mods_) \
     for ((idx) = 0, (iter) = (mods_)->mods; \
          (idx) < (mods_)->num_mods; \
+         (idx)++, (iter)++)
+
+#define xkb_leds_foreach(iter, keymap) \
+    for ((iter) = (keymap)->leds; \
+         (iter) < (keymap)->leds + (keymap)->num_leds; \
+         (iter)++)
+
+#define xkb_leds_enumerate(idx, iter, keymap) \
+    for ((idx) = 0, (iter) = (keymap)->leds; \
+         (idx) < (keymap)->num_leds; \
          (idx)++, (iter)++)
 
 static inline const struct xkb_key *

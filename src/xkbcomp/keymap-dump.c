@@ -172,7 +172,7 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
                   KeyNameText(keymap->ctx, key->name), key->keycode);
     }
 
-    darray_enumerate(idx, led, keymap->leds)
+    xkb_leds_enumerate(idx, led, keymap)
         if (led->name != XKB_ATOM_NONE)
             write_buf(buf, "\tindicator %u = \"%s\";\n",
                       idx + 1, xkb_atom_text(keymap->ctx, led->name));
@@ -441,7 +441,7 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
         write_buf(buf, "\t};\n");
     }
 
-    darray_foreach(led, keymap->leds)
+    xkb_leds_foreach(led, keymap)
         if (led->which_groups || led->groups || led->which_mods ||
             led->mods.mods || led->ctrls)
             write_led_map(keymap, buf, led);

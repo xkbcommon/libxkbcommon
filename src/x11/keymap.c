@@ -683,12 +683,12 @@ get_indicators(struct xkb_keymap *keymap, xcb_connection_t *conn,
     xcb_xkb_indicator_map_iterator_t iter =
         xcb_xkb_get_indicator_map_maps_iterator(reply);
 
-    darray_resize0(keymap->leds, msb_pos(reply->which));
+    keymap->num_leds = msb_pos(reply->which);
 
     for (unsigned i = 0; i < NUM_INDICATORS; i++) {
         if (reply->which & (1u << i)) {
             xcb_xkb_indicator_map_t *wire = iter.data;
-            struct xkb_led *led = &darray_item(keymap->leds, i);
+            struct xkb_led *led = &keymap->leds[i];
 
             if (wire->whichGroups & XCB_XKB_IM_GROUPS_WHICH_USE_BASE)
                 led->which_groups |= XKB_STATE_LAYOUT_DEPRESSED;
@@ -885,12 +885,12 @@ get_indicator_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
 {
     xcb_atom_t *iter = xcb_xkb_get_names_value_list_indicator_names(list);
 
-    FAIL_UNLESS(msb_pos(reply->indicators) <= darray_size(keymap->leds));
+    FAIL_UNLESS(msb_pos(reply->indicators) <= keymap->num_leds);
 
     for (unsigned i = 0; i < NUM_INDICATORS; i++) {
         if (reply->indicators & (1u << i)) {
             xcb_atom_t wire = *iter;
-            struct xkb_led *led = &darray_item(keymap->leds, i);
+            struct xkb_led *led = &keymap->leds[i];
 
             if (!adopt_atom(keymap->ctx, conn, wire, &led->name))
                 return false;

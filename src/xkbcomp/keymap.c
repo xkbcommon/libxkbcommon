@@ -180,10 +180,10 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
 static bool
 UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
 {
+    struct xkb_key *key;
     struct xkb_mod *mod;
     struct xkb_led *led;
     unsigned int i, j;
-    struct xkb_key *key;
 
     /* Find all the interprets for the key and bind them to actions,
      * which will also update the vmodmap. */
@@ -215,7 +215,7 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
                                  key->modmap);
 
     /* Update vmod -> led maps. */
-    darray_foreach(led, keymap->leds)
+    xkb_leds_foreach(led, keymap)
         ComputeEffectiveMask(keymap, &led->mods);
 
     /* Find maximum number of groups out of all keys in the keymap. */
