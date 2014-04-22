@@ -68,7 +68,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
 
     if (keymap->keys) {
         struct xkb_key *key;
-        xkb_foreach_key(key, keymap) {
+        xkb_keys_foreach(key, keymap) {
             if (key->groups) {
                 for (unsigned i = 0; i < key->num_groups; i++) {
                     if (key->groups[i].levels) {
@@ -469,7 +469,7 @@ xkb_keymap_key_for_each(struct xkb_keymap *keymap, xkb_keymap_key_iter_t iter,
 {
     struct xkb_key *key;
 
-    xkb_foreach_key(key, keymap)
+    xkb_keys_foreach(key, keymap)
         iter(keymap, key->keycode, data);
 }
 

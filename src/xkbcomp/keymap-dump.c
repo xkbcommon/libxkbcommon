@@ -164,7 +164,7 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
     write_buf(buf, "\tminimum = %u;\n", min(keymap->min_key_code, 8));
     write_buf(buf, "\tmaximum = %u;\n", max(keymap->max_key_code, 255));
 
-    xkb_foreach_key(key, keymap) {
+    xkb_keys_foreach(key, keymap) {
         if (key->name == XKB_ATOM_NONE)
             continue;
 
@@ -613,11 +613,11 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
     if (group > 0)
         write_buf(buf, "\n");
 
-    xkb_foreach_key(key, keymap)
+    xkb_keys_foreach(key, keymap)
         if (key->num_groups > 0)
             write_key(keymap, buf, key);
 
-    xkb_foreach_key(key, keymap) {
+    xkb_keys_foreach(key, keymap) {
         xkb_mod_index_t i;
         const struct xkb_mod *mod;
 

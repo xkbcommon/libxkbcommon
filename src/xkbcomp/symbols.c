@@ -1247,7 +1247,7 @@ FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym)
     xkb_layout_index_t group, min_group = UINT32_MAX;
     xkb_level_index_t level, min_level = UINT16_MAX;
 
-    xkb_foreach_key(key, keymap) {
+    xkb_keys_foreach(key, keymap) {
         for (group = 0; group < key->num_groups; group++) {
             for (level = 0; level < XkbKeyGroupWidth(key, group); level++) {
                 if (key->groups[group].levels[level].num_syms != 1 ||
@@ -1552,7 +1552,7 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
     if (xkb_context_get_log_verbosity(keymap->ctx) > 3) {
         struct xkb_key *key;
 
-        xkb_foreach_key(key, keymap) {
+        xkb_keys_foreach(key, keymap) {
             if (key->name == XKB_ATOM_NONE)
                 continue;
 

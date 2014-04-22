@@ -397,7 +397,7 @@ struct xkb_keymap {
     char *compat_section_name;
 };
 
-#define xkb_foreach_key(iter, keymap) \
+#define xkb_keys_foreach(iter, keymap) \
     for ((iter) = (keymap)->keys + (keymap)->min_key_code; \
          (iter) <= (keymap)->keys + (keymap)->max_key_code; \
          (iter)++)

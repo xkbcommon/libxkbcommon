@@ -76,7 +76,7 @@ XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases)
 {
     struct xkb_key *key;
 
-    xkb_foreach_key(key, keymap)
+    xkb_keys_foreach(key, keymap)
         if (key->name == name)
             return key;
 

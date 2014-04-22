@@ -187,12 +187,12 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
 
     /* Find all the interprets for the key and bind them to actions,
      * which will also update the vmodmap. */
-    xkb_foreach_key(key, keymap)
+    xkb_keys_foreach(key, keymap)
         if (!ApplyInterpsToKey(keymap, key))
             return false;
 
     /* Update keymap->mods, the virtual -> real mod mapping. */
-    xkb_foreach_key(key, keymap)
+    xkb_keys_foreach(key, keymap)
         darray_enumerate(i, mod, keymap->mods.mods)
             if (key->vmodmap & (1u << i))
                 mod->mapping |= key->modmap;
@@ -208,7 +208,7 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     }
 
     /* Update action modifiers. */
-    xkb_foreach_key(key, keymap)
+    xkb_keys_foreach(key, keymap)
         for (i = 0; i < key->num_groups; i++)
             for (j = 0; j < XkbKeyGroupWidth(key, i); j++)
                 UpdateActionMods(keymap, &key->groups[i].levels[j].action,
@@ -219,7 +219,7 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
         ComputeEffectiveMask(keymap, &led->mods);
 
     /* Find maximum number of groups out of all keys in the keymap. */
-    xkb_foreach_key(key, keymap)
+    xkb_keys_foreach(key, keymap)
         keymap->num_groups = MAX(keymap->num_groups, key->num_groups);
 
     return true;
