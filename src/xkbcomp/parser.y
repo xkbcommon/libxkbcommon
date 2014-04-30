@@ -704,14 +704,14 @@ KeySyms         :       OBRACE KeySymList CBRACE
 KeySym          :       IDENT
                         {
                             if (!resolve_keysym($1, &$$))
-                                parser_warn(param, "unrecognized keysym");
+                                parser_warn(param, "unrecognized keysym \"%s\"", $1);
                             free($1);
                         }
                 |       SECTION { $$ = XKB_KEY_section; }
                 |       Integer
                         {
                             if ($1 < 0) {
-                                parser_warn(param, "unrecognized keysym");
+                                parser_warn(param, "unrecognized keysym \"%d\"", $1);
                                 $$ = XKB_KEY_NoSymbol;
                             }
                             else if ($1 < 10) {      /* XKB_KEY_0 .. XKB_KEY_9 */
@@ -721,7 +721,7 @@ KeySym          :       IDENT
                                 char buf[17];
                                 snprintf(buf, sizeof(buf), "0x%x", $1);
                                 if (!resolve_keysym(buf, &$$)) {
-                                    parser_warn(param, "unrecognized keysym");
+                                    parser_warn(param, "unrecognized keysym \"%s\"", buf);
                                     $$ = XKB_KEY_NoSymbol;
                                 }
                             }
