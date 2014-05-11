@@ -303,8 +303,15 @@ VarCreate(ExprDef *name, ExprDef *value)
 VarDef *
 BoolVarCreate(xkb_atom_t ident, bool set)
 {
-    return VarCreate((ExprDef *) ExprCreateIdent(ident),
-                     (ExprDef *) ExprCreateBoolean(set));
+    ExprDef *name, *value;
+    if (!(name = ExprCreateIdent(ident))) {
+        return NULL;
+    }
+    if (!(value = ExprCreateBoolean(set))) {
+        FreeStmt((ParseCommon *) name);
+        return NULL;
+    }
+    return VarCreate(name, value);
 }
 
 InterpDef *
