@@ -195,11 +195,12 @@ adopt_atoms(struct xkb_context *ctx, xcb_connection_t *conn,
 
             /*
              * If we don't discard the uncollected replies, they just
-             * sit there waiting. Sad.
+             * sit in the XCB queue waiting forever. Sad.
              */
 err_discard:
             for (size_t j = i + 1; j < stop; j++)
-                xcb_discard_reply(conn, cookies[j].sequence);
+                if (from[j] != XCB_ATOM_NONE)
+                    xcb_discard_reply(conn, cookies[j % SIZE].sequence);
             return false;
         }
     }
