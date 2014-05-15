@@ -1,3 +1,25 @@
+libxkbcommon 0.4.2 - 2014-05-15
+==================
+
+- Fixed a bug where explicitly passing "--enable-x11" to ./configure would
+  in fact disable it (regressed in 0.4.1).
+
+- Added @since version annotations to the API documentation for everything
+  introduced after the initial stable release (0.2.0).
+
+- Added a section to the documentation about keysym transformations, and
+  clarified which functions perform a given transformation.
+
+- XKB files which fail to compile during keymap construction can no longer
+  have any effect on the resulting keymap: changes are only applied when
+  the entire compilation succeeds.
+  Note: this was a minor correctness issue inherited from xkbcomp.
+
+- Fix an out-of-bounds array access in src/x11/util.c:adopt_atoms()
+  error-handling code.
+  Note: it seems impossible to trigger in the current code since the input
+  size cannot exceed the required size.
+
 libxkbcommon 0.4.1 - 2014-03-27
 ==================
 
