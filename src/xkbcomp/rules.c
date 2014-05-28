@@ -309,6 +309,8 @@ matcher_free(struct matcher *m)
     darray_free(m->rmlvo.options);
     darray_foreach(group, m->groups)
         darray_free(group->elements);
+    for (int i = 0; i < _KCCGST_NUM_ENTRIES; i++)
+        darray_free(m->kccgst[i]);
     darray_free(m->groups);
     free(m);
 }
@@ -950,6 +952,8 @@ finish:
     /* out->geometry = darray_mem(m->kccgst[KCCGST_GEOMETRY], 0); */
     darray_free(m->kccgst[KCCGST_GEOMETRY]);
     out->symbols = darray_mem(m->kccgst[KCCGST_SYMBOLS], 0);
+    for (int i = 0; i < _KCCGST_NUM_ENTRIES; i++)
+        darray_init(m->kccgst[i]);
 
     return true;
 
