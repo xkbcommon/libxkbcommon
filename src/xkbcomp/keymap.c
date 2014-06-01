@@ -115,7 +115,7 @@ FindInterpForKey(struct xkb_keymap *keymap, const struct xkb_key *key,
             found = (!mods || (interp->mods & mods));
             break;
         case MATCH_ANY:
-            found = !!(interp->mods & mods);
+            found = (interp->mods & mods);
             break;
         case MATCH_ALL:
             found = ((interp->mods & mods) == interp->mods);

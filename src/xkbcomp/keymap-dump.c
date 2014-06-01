@@ -553,7 +553,7 @@ write_key(struct xkb_keymap *keymap, struct buf *buf,
         break;
     }
 
-    show_actions = !!(key->explicit & EXPLICIT_INTERP);
+    show_actions = (key->explicit & EXPLICIT_INTERP);
 
     if (key->num_groups > 1 || show_actions)
         simple = false;

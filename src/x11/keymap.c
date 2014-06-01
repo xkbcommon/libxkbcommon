@@ -787,7 +787,7 @@ get_sym_interprets(struct xkb_keymap *keymap, xcb_connection_t *conn,
         }
 
         sym_interpret->level_one_only =
-            !!(wire->match & XCB_XKB_SYM_INTERP_MATCH_LEVEL_ONE_ONLY);
+            (wire->match & XCB_XKB_SYM_INTERP_MATCH_LEVEL_ONE_ONLY);
         sym_interpret->mods = wire->mods;
 
         if (wire->virtualMod == NO_MODIFIER)
@@ -795,7 +795,7 @@ get_sym_interprets(struct xkb_keymap *keymap, xcb_connection_t *conn,
         else
             sym_interpret->virtual_mod = NUM_REAL_MODS + wire->virtualMod;
 
-        sym_interpret->repeat = !!(wire->flags & 0x01);
+        sym_interpret->repeat = (wire->flags & 0x01);
         translate_action(&sym_interpret->action,
                          (xcb_xkb_action_t *) &wire->action);
 
@@ -1113,7 +1113,7 @@ get_controls(struct xkb_keymap *keymap, xcb_connection_t *conn,
     FAIL_UNLESS(keymap->max_key_code < XCB_XKB_CONST_PER_KEY_BIT_ARRAY_SIZE * 8);
 
     for (xkb_keycode_t i = keymap->min_key_code; i <= keymap->max_key_code; i++)
-        keymap->keys[i].repeats = !!(reply->perKeyRepeat[i / 8] & (1 << (i % 8)));
+        keymap->keys[i].repeats = (reply->perKeyRepeat[i / 8] & (1 << (i % 8)));
 
     free(reply);
     return true;

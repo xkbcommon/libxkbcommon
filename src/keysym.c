@@ -165,7 +165,7 @@ xkb_keysym_from_name(const char *s, enum xkb_keysym_flags flags)
     const struct name_keysym *entry;
     char *tmp;
     xkb_keysym_t val;
-    bool icase = !!(flags & XKB_KEYSYM_CASE_INSENSITIVE);
+    bool icase = (flags & XKB_KEYSYM_CASE_INSENSITIVE);
 
     if (flags & ~XKB_KEYSYM_CASE_INSENSITIVE)
         return XKB_KEY_NoSymbol;

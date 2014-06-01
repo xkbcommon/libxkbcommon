@@ -53,7 +53,7 @@ static bool report_state_changes;
 static bool
 evdev_bit_is_set(const unsigned long *array, int bit)
 {
-    return !!(array[bit / LONG_BIT] & (1LL << (bit % LONG_BIT)));
+    return array[bit / LONG_BIT] & (1LL << (bit % LONG_BIT));
 }
 
 /* Some heuristics to see if the device is a keyboard. */

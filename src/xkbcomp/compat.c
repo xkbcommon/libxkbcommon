@@ -516,7 +516,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         if (!ExprResolveEnum(info->ctx, value, &val, useModMapValueNames))
             return ReportSIBadType(info, si, field, "level specification");
 
-        si->interp.level_one_only = !!val;
+        si->interp.level_one_only = val;
         si->defined |= SI_FIELD_LEVEL_ONE_ONLY;
     }
     else {
