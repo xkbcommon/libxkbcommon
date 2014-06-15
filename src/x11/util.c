@@ -159,9 +159,10 @@ adopt_atoms(struct xkb_context *ctx, xcb_connection_t *conn,
 {
     enum { SIZE = 128 };
     xcb_get_atom_name_cookie_t cookies[SIZE];
+    const size_t num_batches = ROUNDUP(count, SIZE) / SIZE;
 
     /* Send and collect the atoms in batches of reasonable SIZE. */
-    for (size_t batch = 0; batch <= count / SIZE; batch++) {
+    for (size_t batch = 0; batch < num_batches; batch++) {
         const size_t start = batch * SIZE;
         const size_t stop = min((batch + 1) * SIZE, count);
 

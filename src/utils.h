@@ -187,6 +187,9 @@ unmap_file(const char *str, size_t size);
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MAX3(a, b, c) MAX(MAX((a), (b)), (c))
 
+/* Round up @a so it's divisible by @b. */
+#define ROUNDUP(a, b) (((a) + (b) - 1) / (b) * (b))
+
 #if defined(HAVE_SECURE_GETENV)
 # define secure_getenv secure_getenv
 #elif defined(HAVE___SECURE_GETENV)
