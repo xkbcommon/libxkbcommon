@@ -34,6 +34,7 @@
 #include "xkbcomp-priv.h"
 #include "ast-build.h"
 #include "parser-priv.h"
+#include "scanner-utils.h"
 
 struct parser_param {
     struct xkb_context *ctx;
@@ -55,21 +56,21 @@ _xkbcommon_error(struct parser_param *param, const char *msg)
 }
 
 static bool
-resolve_keysym(const char *str, xkb_keysym_t *sym_rtrn)
+resolve_keysym(const char *name, xkb_keysym_t *sym_rtrn)
 {
     xkb_keysym_t sym;
 
-    if (!str || istreq(str, "any") || istreq(str, "nosymbol")) {
+    if (!name || istreq(name, "any") || istreq(name, "nosymbol")) {
         *sym_rtrn = XKB_KEY_NoSymbol;
         return true;
     }
 
-    if (istreq(str, "none") || istreq(str, "voidsymbol")) {
+    if (istreq(name, "none") || istreq(name, "voidsymbol")) {
         *sym_rtrn = XKB_KEY_VoidSymbol;
         return true;
     }
 
-    sym = xkb_keysym_from_name(str, XKB_KEYSYM_NO_FLAGS);
+    sym = xkb_keysym_from_name(name, XKB_KEYSYM_NO_FLAGS);
     if (sym != XKB_KEY_NoSymbol) {
         *sym_rtrn = sym;
         return true;

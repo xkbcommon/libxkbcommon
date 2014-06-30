@@ -23,6 +23,7 @@
 
 #include "xkbcomp-priv.h"
 #include "parser-priv.h"
+#include "scanner-utils.h"
 
 static bool
 number(struct scanner *s, int64_t *out, int *out_tok)
