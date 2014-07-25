@@ -673,23 +673,20 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
 static bool
 CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
 {
-    keymap->types_section_name = strdup_safe(info->name);
-    XkbEscapeMapName(keymap->types_section_name);
+    unsigned num_types;
+    struct xkb_key_type *types;
 
-    keymap->mods = info->mods;
-
-    keymap->num_types = darray_size(info->types);
-    if (keymap->num_types == 0)
-        keymap->num_types = 1;
-
-    keymap->types = calloc(keymap->num_types, sizeof(*keymap->types));
+    num_types = darray_empty(info->types) ? 1 : darray_size(info->types);
+    types = calloc(num_types, sizeof(*types));
+    if (!types)
+        return false;
 
     /*
      * If no types were specified, a default unnamed one-level type is
      * used for all keys.
      */
     if (darray_empty(info->types)) {
-        struct xkb_key_type *type = &keymap->types[0];
+        struct xkb_key_type *type = &types[0];
 
         type->mods.mods = 0;
         type->num_levels = 1;
@@ -697,24 +694,28 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
         type->num_entries = 0;
         type->name = xkb_atom_intern_literal(keymap->ctx, "default");
         type->level_names = NULL;
+    }
+    else {
+        for (unsigned i = 0; i < num_types; i++) {
+            KeyTypeInfo *def = &darray_item(info->types, i);
+            struct xkb_key_type *type = &types[i];
 
-        return true;
+            type->mods.mods = def->mods;
+            type->num_levels = def->num_levels;
+            type->entries = darray_mem(def->entries, 0);
+            type->num_entries = darray_size(def->entries);
+            darray_init(def->entries);
+            type->name = def->name;
+            type->level_names = darray_mem(def->level_names, 0);
+            darray_init(def->level_names);
+        }
     }
 
-    for (unsigned i = 0; i < keymap->num_types; i++) {
-        KeyTypeInfo *def = &darray_item(info->types, i);
-        struct xkb_key_type *type = &keymap->types[i];
-
-        type->mods.mods = def->mods;
-        type->num_levels = def->num_levels;
-        type->entries = darray_mem(def->entries, 0);
-        type->num_entries = darray_size(def->entries);
-        darray_init(def->entries);
-        type->name = def->name;
-        type->level_names = darray_mem(def->level_names, 0);
-        darray_init(def->level_names);
-    }
-
+    keymap->types_section_name = strdup_safe(info->name);
+    XkbEscapeMapName(keymap->types_section_name);
+    keymap->num_types = num_types;
+    keymap->types = types;
+    keymap->mods = info->mods;
     return true;
 }
 
