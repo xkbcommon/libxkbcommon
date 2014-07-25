@@ -526,39 +526,45 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
 static bool
 CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 {
-    xkb_keycode_t kc;
-    AliasInfo *alias;
-    unsigned i;
+    struct xkb_key *keys;
+    xkb_keycode_t min_key_code, max_key_code, kc;
 
-    keymap->keycodes_section_name = strdup_safe(info->name);
-    XkbEscapeMapName(keymap->keycodes_section_name);
-
-    if (info->min_key_code != XKB_KEYCODE_INVALID) {
-        keymap->min_key_code = info->min_key_code;
-        keymap->max_key_code = info->max_key_code;
-    }
-    else {
-        /*
-         * If the keymap has no keys, let's just use the safest pair
-         * we know.
-         */
-        keymap->min_key_code = 8;
-        keymap->max_key_code = 255;
+    min_key_code = info->min_key_code;
+    max_key_code = info->max_key_code;
+    /* If the keymap has no keys, let's just use the safest pair we know. */
+    if (min_key_code == XKB_KEYCODE_INVALID) {
+        min_key_code = 8;
+        max_key_code = 255;
     }
 
-    keymap->keys = calloc(keymap->max_key_code + 1, sizeof(*keymap->keys));
-    for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++)
-        keymap->keys[kc].keycode = kc;
+    keys = calloc(max_key_code + 1, sizeof(*keys));
+    if (!keys)
+        return false;
 
-    /* Copy key names. */
+    for (kc = min_key_code; kc <= max_key_code; kc++)
+        keys[kc].keycode = kc;
+
     for (kc = info->min_key_code; kc <= info->max_key_code; kc++)
-        keymap->keys[kc].name = darray_item(info->key_names, kc);
+        keys[kc].name = darray_item(info->key_names, kc);
+
+    keymap->min_key_code = min_key_code;
+    keymap->max_key_code = max_key_code;
+    keymap->keys = keys;
+    return true;
+}
+
+static bool
+CopyKeyAliasesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
+{
+    AliasInfo *alias;
+    unsigned i, num_key_aliases;
+    struct xkb_key_alias *key_aliases;
 
     /*
      * Do some sanity checking on the aliases. We can't do it before
      * because keys and their aliases may be added out-of-order.
      */
-    keymap->num_key_aliases = 0;
+    num_key_aliases = 0;
     darray_foreach(alias, info->aliases) {
         /* Check that ->real is a key. */
         if (!XkbKeyByName(keymap, alias->real, false)) {
@@ -581,22 +587,31 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
             continue;
         }
 
-        keymap->num_key_aliases++;
+        num_key_aliases++;
     }
 
     /* Copy key aliases. */
-    keymap->key_aliases = calloc(keymap->num_key_aliases,
-                                 sizeof(*keymap->key_aliases));
+    key_aliases = calloc(num_key_aliases, sizeof(*key_aliases));
+    if (!key_aliases)
+        return false;
+
     i = 0;
     darray_foreach(alias, info->aliases) {
         if (alias->real != XKB_ATOM_NONE) {
-            keymap->key_aliases[i].alias = alias->alias;
-            keymap->key_aliases[i].real = alias->real;
+            key_aliases[i].alias = alias->alias;
+            key_aliases[i].real = alias->real;
             i++;
         }
     }
 
-    /* Copy LED names. */
+    keymap->num_key_aliases = num_key_aliases;
+    keymap->key_aliases = key_aliases;
+    return true;
+}
+
+static bool
+CopyLedNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
+{
     keymap->num_leds = info->num_led_names;
     for (xkb_led_index_t idx = 0; idx < info->num_led_names; idx++) {
         LedNameInfo *ledi = &info->led_names[idx];
@@ -607,6 +622,20 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
         keymap->leds[idx].name = ledi->name;
     }
 
+    return true;
+}
+
+static bool
+CopyKeyNamesInfoToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
+{
+    /* This function trashes keymap on error, but that's OK. */
+    if (!CopyKeyNamesToKeymap(keymap, info) ||
+        !CopyKeyAliasesToKeymap(keymap, info) ||
+        !CopyLedNamesToKeymap(keymap, info))
+        return false;
+
+    keymap->keycodes_section_name = strdup_safe(info->name);
+    XkbEscapeMapName(keymap->keycodes_section_name);
     return true;
 }
 
@@ -624,7 +653,7 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
     if (info.errorCount != 0)
         goto err_info;
 
-    if (!CopyKeyNamesToKeymap(keymap, &info))
+    if (!CopyKeyNamesInfoToKeymap(keymap, &info))
         goto err_info;
 
     ClearKeyNamesInfo(&info);
