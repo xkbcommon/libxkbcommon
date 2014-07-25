@@ -44,6 +44,13 @@
     darray_init(arr); \
 } while (0)
 
+#define darray_steal(arr, to, to_size) do { \
+    *(to) = (arr).item; \
+    if (to_size) \
+        *(unsigned int *) (to_size) = (arr).size; \
+    darray_init(arr); \
+} while (0)
+
 /*
  * Typedefs for darrays of common types.  These are useful
  * when you want to pass a pointer to an darray(T) around.
@@ -78,7 +85,6 @@ typedef darray (unsigned long)  darray_ulong;
 #define darray_item(arr, i)     ((arr).item[i])
 #define darray_size(arr)        ((arr).size)
 #define darray_empty(arr)       ((arr).size == 0)
-#define darray_mem(arr, offset) ((arr).item + (offset))
 
 /*** Insertion (single item) ***/
 

@@ -226,15 +226,15 @@ ExprAppendKeysymList(ExprDef *expr, xkb_keysym_t sym)
 ExprDef *
 ExprAppendMultiKeysymList(ExprDef *expr, ExprDef *append)
 {
+    xkb_keysym_t *syms;
     unsigned nSyms = darray_size(expr->keysym_list.syms);
     unsigned numEntries = darray_size(append->keysym_list.syms);
 
     darray_append(expr->keysym_list.symsMapIndex, nSyms);
     darray_append(expr->keysym_list.symsNumEntries, numEntries);
-    darray_append_items(expr->keysym_list.syms,
-                        darray_mem(append->keysym_list.syms, 0), numEntries);
+    darray_steal(append->keysym_list.syms, &syms, NULL);
+    darray_append_items(expr->keysym_list.syms, syms, numEntries);
 
-    darray_resize(append->keysym_list.syms, 0);
     FreeStmt((ParseCommon *) &append);
 
     return expr;

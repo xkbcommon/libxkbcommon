@@ -890,8 +890,8 @@ CopyCompatToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
         CopyInterps(info, false, MATCH_ANY, &collect);
         CopyInterps(info, false, MATCH_ANY_OR_NONE, &collect);
 
-        keymap->num_sym_interprets = darray_size(collect.sym_interprets);
-        keymap->sym_interprets = darray_mem(collect.sym_interprets, 0);
+        darray_steal(collect.sym_interprets,
+                     &keymap->sym_interprets, &keymap->num_sym_interprets);
     }
 
     CopyLedMapDefsToKeymap(keymap, info);

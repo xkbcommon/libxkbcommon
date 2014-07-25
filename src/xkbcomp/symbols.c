@@ -1468,10 +1468,8 @@ CopySymbolsDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
     }
 
     /* Copy levels. */
-    darray_enumerate(i, groupi, keyi->groups) {
-        key->groups[i].levels = darray_mem(groupi->levels, 0);
-        darray_init(groupi->levels);
-    }
+    darray_enumerate(i, groupi, keyi->groups)
+        darray_steal(groupi->levels, &key->groups[i].levels, NULL);
 
     key->out_of_range_group_number = keyi->out_of_range_group_number;
     key->out_of_range_group_action = keyi->out_of_range_group_action;
@@ -1540,9 +1538,8 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
 
     keymap->mods = info->mods;
 
-    keymap->num_group_names = darray_size(info->group_names);
-    keymap->group_names = darray_mem(info->group_names, 0);
-    darray_init(info->group_names);
+    darray_steal(info->group_names,
+                 &keymap->group_names, &keymap->num_group_names);
 
     darray_foreach(keyi, info->keys)
         if (!CopySymbolsDefToKeymap(keymap, info, keyi))

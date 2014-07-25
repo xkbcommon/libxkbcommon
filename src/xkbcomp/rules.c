@@ -946,14 +946,11 @@ finish:
         darray_empty(m->kccgst[KCCGST_SYMBOLS]))
         goto error;
 
-    out->keycodes = darray_mem(m->kccgst[KCCGST_KEYCODES], 0);
-    out->types = darray_mem(m->kccgst[KCCGST_TYPES], 0);
-    out->compat = darray_mem(m->kccgst[KCCGST_COMPAT], 0);
-    /* out->geometry = darray_mem(m->kccgst[KCCGST_GEOMETRY], 0); */
+    darray_steal(m->kccgst[KCCGST_KEYCODES], &out->keycodes, NULL);
+    darray_steal(m->kccgst[KCCGST_TYPES], &out->types, NULL);
+    darray_steal(m->kccgst[KCCGST_COMPAT], &out->compat, NULL);
+    darray_steal(m->kccgst[KCCGST_SYMBOLS], &out->symbols, NULL);
     darray_free(m->kccgst[KCCGST_GEOMETRY]);
-    out->symbols = darray_mem(m->kccgst[KCCGST_SYMBOLS], 0);
-    for (int i = 0; i < _KCCGST_NUM_ENTRIES; i++)
-        darray_init(m->kccgst[i]);
 
     return true;
 

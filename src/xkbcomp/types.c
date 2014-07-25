@@ -700,14 +700,12 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
             KeyTypeInfo *def = &darray_item(info->types, i);
             struct xkb_key_type *type = &types[i];
 
-            type->mods.mods = def->mods;
-            type->num_levels = def->num_levels;
-            type->entries = darray_mem(def->entries, 0);
-            type->num_entries = darray_size(def->entries);
-            darray_init(def->entries);
             type->name = def->name;
-            type->level_names = darray_mem(def->level_names, 0);
-            darray_init(def->level_names);
+            type->mods.mods = def->mods;
+            darray_steal(def->level_names,
+                         &type->level_names, &type->num_levels);
+            darray_steal(def->entries,
+                         &type->entries, &type->num_entries);
         }
     }
 
