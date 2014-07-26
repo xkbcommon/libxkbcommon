@@ -216,6 +216,14 @@ resolve_keysym(const char *name, xkb_keysym_t *sym_rtrn)
 %type <file>    XkbFile XkbMapConfigList XkbMapConfig
 %type <file>    XkbCompositeMap
 
+%destructor { FreeStmt((ParseCommon *) $$); }
+    <any> <expr> <var> <vmod> <interp> <keyType> <syms> <modMask> <groupCompat>
+    <ledMap> <ledName> <keyCode> <keyAlias>
+/* The destructor also runs on the start symbol when the parser *succeeds*.
+ * The `if` here catches this case. */
+%destructor { if (!param->rtrn) FreeXkbFile($$); } <file>
+%destructor { free($$); } <str>
+
 %%
 
 /*
@@ -770,6 +778,7 @@ parse(struct xkb_context *ctx, struct scanner *scanner, const char *map)
     struct parser_param param = {
         .scanner = scanner,
         .ctx = ctx,
+        .rtrn = NULL,
     };
 
     /*
@@ -799,6 +808,7 @@ parse(struct xkb_context *ctx, struct scanner *scanner, const char *map)
                 FreeXkbFile(param.rtrn);
             }
         }
+        param.rtrn = NULL;
     }
 
     if (ret != 0) {
