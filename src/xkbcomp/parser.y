@@ -485,7 +485,7 @@ LedNameDecl:            INDICATOR Integer EQUALS Expr SEMI
 ShapeDecl       :       SHAPE String OBRACE OutlineList CBRACE SEMI
                         { $$ = NULL; }
                 |       SHAPE String OBRACE CoordList CBRACE SEMI
-                        { $$ = NULL; }
+                        { (void) $4; $$ = NULL; }
                 ;
 
 SectionDecl     :       SECTION String OBRACE SectionBody CBRACE SEMI
@@ -545,17 +545,17 @@ OutlineList     :       OutlineList COMMA OutlineInList
                 ;
 
 OutlineInList   :       OBRACE CoordList CBRACE
-                        { $$ = NULL; }
+                        { (void) $2; $$ = NULL; }
                 |       Ident EQUALS OBRACE CoordList CBRACE
-                        { $$ = NULL; }
+                        { (void) $4; $$ = NULL; }
                 |       Ident EQUALS Expr
                         { FreeStmt((ParseCommon *) $3); $$ = NULL; }
                 ;
 
 CoordList       :       CoordList COMMA Coord
-                        { $$ = NULL; }
+                        { (void) $1; (void) $3; $$ = NULL; }
                 |       Coord
-                        { $$ = NULL; }
+                        { (void) $1; $$ = NULL; }
                 ;
 
 Coord           :       OBRACKET SignedNumber COMMA SignedNumber CBRACKET
