@@ -325,6 +325,7 @@ InterpCreate(xkb_keysym_t sym, ExprDef *match)
     def->common.next = NULL;
     def->sym = sym;
     def->match = match;
+    def->def = NULL;
 
     return def;
 }

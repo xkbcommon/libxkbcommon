@@ -48,6 +48,7 @@ main(void)
     assert(!test_file(ctx, "keymaps/divide-by-zero.xkb"));
     assert(!test_file(ctx, "keymaps/bad.xkb"));
     assert(!test_file(ctx, "keymaps/syntax-error.xkb"));
+    assert(!test_file(ctx, "keymaps/syntax-error2.xkb"));
     assert(!test_file(ctx, "does not exist"));
 
     /* Test response to invalid flags and formats. */
