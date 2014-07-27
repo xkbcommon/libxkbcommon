@@ -29,7 +29,6 @@
 #include <locale.h>
 #include <signal.h>
 #include <string.h>
-#include <sysexits.h>
 #include <unistd.h>
 
 #include <sys/epoll.h>
@@ -389,7 +388,7 @@ main(int argc, char *argv[])
                     argv[0]);
             fprintf(stderr, "For both: -n <evdev keycode offset>\n"
                             "          -c (to report changes to the state)\n");
-            exit(EX_USAGE);
+            exit(2);
         }
     }
 
