@@ -815,7 +815,7 @@ xkb_keymap_new_from_file(struct xkb_context *context, FILE *file,
  * This is just like xkb_keymap_new_from_file(), but instead of a file, gets
  * the keymap as one enormous string.
  *
- * @see xkb_keymap_new_from_string()
+ * @see xkb_keymap_new_from_file()
  * @memberof xkb_keymap
  */
 struct xkb_keymap *
