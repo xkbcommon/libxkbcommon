@@ -363,6 +363,13 @@ struct xkb_rule_names {
 };
 
 /**
+ * @defgroup keysyms Keysyms
+ * Utility functions related to keysyms.
+ *
+ * @{
+ */
+
+/**
  * @page keysym-transformations Keysym Transformations
  *
  * Keysym translation is subject to several "keysym transformations",
@@ -390,12 +397,6 @@ struct xkb_rule_names {
  * keysyms.
  */
 
-/**
- * @defgroup keysyms Keysyms
- * Utility functions related to keysyms.
- *
- * @{
- */
 
 /**
  * Get the name of a keysym.
