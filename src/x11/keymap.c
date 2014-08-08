@@ -513,9 +513,10 @@ get_vmods(struct xkb_keymap *keymap, xcb_connection_t *conn,
     for (unsigned i = 0; i < NUM_VMODS; i++) {
         if (reply->virtualMods & (1u << i)) {
             uint8_t wire = *iter;
+            struct xkb_mod *mod = &keymap->mods.mods[NUM_REAL_MODS + i];
 
-            keymap->mods.mods[i].type = MOD_VIRT;
-            keymap->mods.mods[i].mapping = translate_mods(wire, 0, 0);
+            mod->type = MOD_VIRT;
+            mod->mapping = translate_mods(wire, 0, 0);
 
             iter++;
         }
