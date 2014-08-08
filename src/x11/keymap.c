@@ -508,7 +508,8 @@ get_vmods(struct xkb_keymap *keymap, xcb_connection_t *conn,
 {
     uint8_t *iter = xcb_xkb_get_map_map_vmods_rtrn(map);
 
-    keymap->mods.num_mods = NUM_REAL_MODS + msb_pos(reply->virtualMods);
+    keymap->mods.num_mods =
+        NUM_REAL_MODS + MIN(msb_pos(reply->virtualMods), NUM_VMODS);
 
     for (unsigned i = 0; i < NUM_VMODS; i++) {
         if (reply->virtualMods & (1u << i)) {
@@ -918,7 +919,8 @@ get_vmod_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
      * tells us which vmods exist (a vmod must have a name), so we fix
      * up the size here.
      */
-    keymap->mods.num_mods = NUM_REAL_MODS + msb_pos(reply->virtualMods);
+    keymap->mods.num_mods =
+        NUM_REAL_MODS + MIN(msb_pos(reply->virtualMods), NUM_VMODS);
 
     for (unsigned i = 0; i < NUM_VMODS; i++) {
         if (reply->virtualMods & (1u << i)) {
