@@ -299,6 +299,20 @@ translate_action(union xkb_action *action, const xcb_xkb_action_t *wire)
     case XCB_XKB_SA_TYPE_DEVICE_VALUATOR:
         action->type = ACTION_TYPE_NONE;
         break;
+
+    default:
+        if (wire->type < ACTION_TYPE_PRIVATE) {
+            action->type = ACTION_TYPE_NONE;
+            break;
+        }
+
+        /* Treat high unknown actions as Private actions. */
+        action->priv.type = wire->noaction.type;
+        STATIC_ASSERT(sizeof(action->priv.data) == 7 &&
+                      sizeof(wire->noaction.pad0) == 7,
+                      "The private action data must be 7 bytes long!");
+        memcpy(action->priv.data, wire->noaction.pad0, 7);
+        break;
     }
 }
 
