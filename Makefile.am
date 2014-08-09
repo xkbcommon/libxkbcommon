@@ -211,7 +211,8 @@ endif BUILD_LINUX_TESTS
 
 if ENABLE_X11
 TESTS += \
-	test/x11
+	test/x11 \
+	test/x11comp
 check_PROGRAMS += \
 	test/interactive-x11
 
@@ -220,6 +221,8 @@ TESTS_X11_CFLAGS = $(XCB_XKB_CFLAGS)
 
 test_x11_LDADD = $(TESTS_X11_LDADD)
 test_x11_CFLAGS = $(TESTS_X11_CFLAGS)
+test_x11comp_LDADD = $(TESTS_X11_LDADD)
+test_x11comp_CFLAGS = $(TESTS_X11_CFLAGS)
 test_interactive_x11_LDADD = $(TESTS_X11_LDADD)
 test_interactive_x11_CFLAGS = $(TESTS_X11_CFLAGS)
 endif ENABLE_X11
