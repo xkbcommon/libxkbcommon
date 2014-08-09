@@ -40,6 +40,10 @@
  */
 #define UNCONSTIFY(const_ptr)  ((void *) (uintptr_t) (const_ptr))
 
+#define STATIC_ASSERT(expr, message) do { \
+    switch (0) { case 0: case (expr): ; } \
+} while (0)
+
 static inline bool
 streq(const char *s1, const char *s2)
 {
