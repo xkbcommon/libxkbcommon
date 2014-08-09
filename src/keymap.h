@@ -228,7 +228,6 @@ struct xkb_pointer_button_action {
 
 struct xkb_private_action {
     enum xkb_action_type type;
-    enum xkb_action_flags flags;
     uint8_t data[7];
 };
 
