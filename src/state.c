@@ -786,25 +786,16 @@ xkb_state_update_mask(struct xkb_state *state,
                       xkb_layout_index_t locked_group)
 {
     struct state_components prev_components;
-    xkb_mod_index_t num_mods;
-    xkb_mod_index_t idx;
+    xkb_mod_mask_t mask;
 
     prev_components = state->components;
 
-    state->components.base_mods = 0;
-    state->components.latched_mods = 0;
-    state->components.locked_mods = 0;
-    num_mods = xkb_keymap_num_mods(state->keymap);
+    /* Only include modifiers which exist in the keymap. */
+    mask = (xkb_mod_mask_t) ((1ull << xkb_keymap_num_mods(state->keymap)) - 1u);
 
-    for (idx = 0; idx < num_mods; idx++) {
-        xkb_mod_mask_t mod = (1u << idx);
-        if (base_mods & mod)
-            state->components.base_mods |= mod;
-        if (latched_mods & mod)
-            state->components.latched_mods |= mod;
-        if (locked_mods & mod)
-            state->components.locked_mods |= mod;
-    }
+    state->components.base_mods = base_mods & mask;
+    state->components.latched_mods = latched_mods & mask;
+    state->components.locked_mods = locked_mods & mask;
 
     state->components.base_group = base_group;
     state->components.latched_group = latched_group;
