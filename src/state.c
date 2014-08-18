@@ -797,6 +797,27 @@ xkb_state_update_mask(struct xkb_state *state,
     state->components.latched_mods = latched_mods & mask;
     state->components.locked_mods = locked_mods & mask;
 
+    /* Make sure the mods are fully resolved - since we get arbitrary
+     * input, they might not be.
+     *
+     * It might seem more reasonable to do this only for components.mods
+     * in xkb_state_update_derived(), rather than for each component
+     * seperately.  That would allow to distinguish between "really"
+     * depressed mods (would be in MODS_DEPRESSED) and indirectly
+     * depressed to to a mapping (would only be in MODS_EFFECTIVE).
+     * However, the traditional behavior of xkb_state_update_key() is that
+     * if a vmod is depressed, its mappings are depressed with it; so we're
+     * expected to do the same here.  Also, LEDs (usually) look if a real
+     * mod is locked, not just effective; otherwise it won't be lit.
+     *
+     * We OR here because mod_mask_get_effective() drops vmods. */
+    state->components.base_mods |=
+        mod_mask_get_effective(state->keymap, state->components.base_mods);
+    state->components.latched_mods |=
+        mod_mask_get_effective(state->keymap, state->components.latched_mods);
+    state->components.locked_mods |=
+        mod_mask_get_effective(state->keymap, state->components.locked_mods);
+
     state->components.base_group = base_group;
     state->components.latched_group = latched_group;
     state->components.locked_group = locked_group;
