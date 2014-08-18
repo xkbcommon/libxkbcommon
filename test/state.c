@@ -297,6 +297,75 @@ test_serialisation(struct xkb_keymap *keymap)
 }
 
 static void
+test_update_mask_mods(struct xkb_keymap *keymap)
+{
+    struct xkb_state *state = xkb_state_new(keymap);
+    xkb_mod_index_t caps, shift, num, alt, mod1, mod2;
+    enum xkb_state_component changed;
+
+    assert(state);
+
+    caps = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CAPS);
+    assert(caps != XKB_MOD_INVALID);
+    shift = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_SHIFT);
+    assert(shift != XKB_MOD_INVALID);
+    num = xkb_keymap_mod_get_index(keymap, "NumLock");
+    assert(num != XKB_MOD_INVALID);
+    alt = xkb_keymap_mod_get_index(keymap, "Alt");
+    assert(alt != XKB_MOD_INVALID);
+    mod1 = xkb_keymap_mod_get_index(keymap, "Mod1");
+    assert(mod1 != XKB_MOD_INVALID);
+    mod2 = xkb_keymap_mod_get_index(keymap, "Mod2");
+    assert(mod2 != XKB_MOD_INVALID);
+
+    changed = xkb_state_update_mask(state, 1 << caps, 0, 0, 0, 0, 0);
+    assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE));
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) ==
+           (1u << caps));
+
+    changed = xkb_state_update_mask(state, (1 << caps), 0, (1 << shift), 0, 0, 0);
+    assert(changed == (XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE |
+                       XKB_STATE_LEDS));
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) ==
+           ((1u << caps) | (1u << shift)));
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED) ==
+           (1u << caps));
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_LATCHED) == 0);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED) ==
+           (1u << shift));
+
+    changed = xkb_state_update_mask(state, 0, 0, 0, 0, 0, 0);
+    assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED |
+                       XKB_STATE_MODS_EFFECTIVE | XKB_STATE_LEDS));
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) == 0);
+
+    changed = xkb_state_update_mask(state, (1 << alt), 0, 0, 0, 0, 0);
+    assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE));
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) ==
+           ((1u << alt) | (1u << mod1)));
+
+    changed = xkb_state_update_mask(state, 0, 0, (1 << num), 0, 0, 0);
+    assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED |
+                       XKB_STATE_MODS_EFFECTIVE | XKB_STATE_LEDS));
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) ==
+           ((1u << num) | (1u << mod2)));
+
+    xkb_state_update_mask(state, 0, 0, 0, 0, 0, 0);
+
+    changed = xkb_state_update_mask(state, (1 << mod2), 0, (1 << num), 0, 0, 0);
+    assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED |
+                       XKB_STATE_MODS_EFFECTIVE | XKB_STATE_LEDS));
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) ==
+           ((1u << mod2) | (1u << num)));
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED) ==
+           (1u << mod2));
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED) ==
+           ((1u << num) | (1u << mod2)));
+
+    xkb_state_unref(state);
+}
+
+static void
 test_repeat(struct xkb_keymap *keymap)
 {
     assert(!xkb_keymap_key_repeats(keymap, KEY_LEFTSHIFT + 8));
@@ -622,6 +691,7 @@ main(void)
 
     test_update_key(keymap);
     test_serialisation(keymap);
+    test_update_mask_mods(keymap);
     test_repeat(keymap);
     test_consume(keymap);
     test_range(keymap);
