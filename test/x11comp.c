@@ -81,12 +81,14 @@ main(void)
     display[0] = ':';
     ret = read(pipefds[0], display + 1, sizeof(display) - 1);
     assert(ret > 0 && 1 + ret < sizeof(display) - 1);
+    if (display[ret] == '\n')
+        display[ret] = '\0';
     display[1 + ret] = '\0';
     close(pipefds[0]);
     close(pipefds[1]);
 
     conn = xcb_connect(display, NULL);
-    if (!conn || xcb_connection_has_error(conn)) {
+    if (xcb_connection_has_error(conn)) {
         ret = SKIP_TEST;
         goto err_xvfd;
     }
