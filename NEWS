@@ -1,3 +1,26 @@
+libxkbcommon 0.4.3 - 2014-08-19
+==================
+
+- Fixed a bug which caused xkb_x11_keymap_new_from_device() to misrepresent
+  modifiers for some keymaps.
+
+  https://github.com/xkbcommon/libxkbcommon/issues/9
+
+- Fixed a bug which caused xkb_x11_keymap_new_from_device() to ignore XKB
+  PrivateAction's.
+
+- Modifiers are now always fully resolved after xkb_state_update_mask().
+  Previously the given state components were used as-is, without
+  considering virtual modifier mappings.
+  Note: this only affects non-standard uses of xkb_state_update_mask().
+
+- Added a test for xkbcommon-x11, "x11comp". The test uses the system's
+  Xvfb server and xkbcomp. If they do not exist or fail, the test is
+  skipped.
+
+- Fixed memory leaks after parse errors in the XKB yacc parser.
+  The fix required changes which are currently incompatible with byacc.
+
 libxkbcommon 0.4.2 - 2014-05-15
 ==================
 
