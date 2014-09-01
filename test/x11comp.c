@@ -78,14 +78,18 @@ main(void)
         goto err_ctx;
     }
 
+    close(pipefds[1]);
+
     display[0] = ':';
     ret = read(pipefds[0], display + 1, sizeof(display) - 1);
-    assert(ret > 0 && 1 + ret < sizeof(display) - 1);
+    if (ret <= 0 || 1 + ret >= sizeof(display) - 1) {
+        ret = SKIP_TEST;
+        goto err_xvfd;
+    }
     if (display[ret] == '\n')
         display[ret] = '\0';
     display[1 + ret] = '\0';
     close(pipefds[0]);
-    close(pipefds[1]);
 
     conn = xcb_connect(display, NULL);
     if (xcb_connection_has_error(conn)) {
