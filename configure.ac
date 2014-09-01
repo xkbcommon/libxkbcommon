@@ -134,7 +134,7 @@ AC_ARG_WITH([default_variant],
     [AS_HELP_STRING([--with-default-variant=<path>],
         [Default XKB variant (default: (none))])],
     [DEFAULT_XKB_VARIANT="$withval"],
-    [DEFAULT_XKB_VARAINT=])
+    [DEFAULT_XKB_VARIANT=])
 AS_IF([test "x$DEFAULT_XKB_VARIANT" != x], [
     AC_DEFINE_UNQUOTED([DEFAULT_XKB_VARIANT], ["$DEFAULT_XKB_VARIANT"],
                        [Default XKB variant])
