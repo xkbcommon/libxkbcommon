@@ -28,7 +28,6 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <linux/input.h>
 
 #include "test.h"
 #include "xkbcommon/xkbcommon-x11.h"
