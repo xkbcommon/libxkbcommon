@@ -21,9 +21,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include <linux/input.h>
 #include <time.h>
 
+#include "evdev-scancodes.h"
 #include "test.h"
 
 #define BENCHMARK_ITERATIONS 2500

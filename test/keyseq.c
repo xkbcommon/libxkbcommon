@@ -21,8 +21,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include <linux/input.h>
-
+#include "evdev-scancodes.h"
 #include "test.h"
 
 int

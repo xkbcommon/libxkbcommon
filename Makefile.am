@@ -157,7 +157,8 @@ libtest_la_CFLAGS = $(AM_CFLAGS) -fvisibility=default
 libtest_la_SOURCES = \
 	$(libxkbcommon_la_SOURCES) \
 	test/common.c \
-	test/test.h
+	test/test.h \
+	test/evdev-scancodes.h
 
 AM_TESTS_ENVIRONMENT = \
 	XKB_LOG_LEVEL=debug; export XKB_LOG_LEVEL; \
@@ -173,7 +174,10 @@ TESTS = \
 	test/buffercomp \
 	test/log \
 	test/atom \
-	test/utf8
+	test/utf8 \
+	test/state \
+	test/keyseq \
+	test/rulescomp
 check_PROGRAMS = \
 	test/rmlvo-to-kccgst \
 	test/print-compiled-keymap \
@@ -191,21 +195,17 @@ test_buffercomp_LDADD = $(TESTS_LDADD)
 test_log_LDADD = $(TESTS_LDADD)
 test_atom_LDADD = $(TESTS_LDADD)
 test_utf8_LDADD = $(TESTS_LDADD)
+test_state_LDADD = $(TESTS_LDADD)
+test_keyseq_LDADD = $(TESTS_LDADD)
+test_rulescomp_LDADD = $(TESTS_LDADD) -lrt
 test_rmlvo_to_kccgst_LDADD = $(TESTS_LDADD)
 test_print_compiled_keymap_LDADD = $(TESTS_LDADD)
 test_bench_key_proc_LDADD = $(TESTS_LDADD) -lrt
 
 if BUILD_LINUX_TESTS
-TESTS += \
-	test/state \
-	test/keyseq \
-	test/rulescomp
 check_PROGRAMS += \
 	test/interactive-evdev
 
-test_state_LDADD = $(TESTS_LDADD)
-test_keyseq_LDADD = $(TESTS_LDADD)
-test_rulescomp_LDADD = $(TESTS_LDADD) -lrt
 test_interactive_evdev_LDADD = $(TESTS_LDADD)
 endif BUILD_LINUX_TESTS
 

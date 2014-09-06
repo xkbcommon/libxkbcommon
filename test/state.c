@@ -26,8 +26,8 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <linux/input.h>
 
+#include "evdev-scancodes.h"
 #include "test.h"
 
 /* Offset between evdev keycodes (where KEY_ESCAPE is 1), and the evdev XKB
