@@ -222,6 +222,7 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
             bool report, xkb_layout_index_t group, xkb_atom_t key_name)
 {
     xkb_level_index_t i, levels_in_both;
+    struct xkb_level *level;
 
     /* First find the type of the merged group. */
     if (into->type != from->type) {
@@ -319,9 +320,9 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
         }
     }
     /* If @from has extra levels, get them as well. */
-    for (i = levels_in_both; i < darray_size(from->levels); i++) {
-        darray_append(into->levels, darray_item(from->levels, i));
-        darray_item(from->levels, i).num_syms = 0;
+    darray_foreach_from(level, from->levels, levels_in_both) {
+        darray_append(into->levels, *level);
+        level->num_syms = 0;
     }
     into->defined |= (from->defined & GROUP_FIELD_ACTS);
     into->defined |= (from->defined & GROUP_FIELD_SYMS);
