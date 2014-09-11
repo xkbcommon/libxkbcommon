@@ -439,6 +439,16 @@ main(void)
                         KEY_H,         BOTH, XKB_KEY_h,                 FINISH));
 
     xkb_keymap_unref(keymap);
+    keymap = test_compile_rules(ctx, "evdev", "", "us", "euro", "");
+    assert(keymap);
+
+    assert(test_key_seq(keymap,
+                        KEY_5,         BOTH, XKB_KEY_5,                 NEXT,
+                        KEY_RIGHTALT,  DOWN, XKB_KEY_ISO_Level3_Shift,  NEXT,
+                        KEY_5,         BOTH, XKB_KEY_EuroSign,          NEXT,
+                        KEY_RIGHTALT,  UP,   XKB_KEY_ISO_Level3_Shift,  FINISH));
+
+    xkb_keymap_unref(keymap);
     keymap = test_compile_file(ctx, "keymaps/unbound-vmod.xkb");
     assert(keymap);
 
