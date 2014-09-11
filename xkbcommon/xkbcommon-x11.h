@@ -76,14 +76,18 @@ enum xkb_x11_setup_xkb_extension_flags {
  *
  * @param connection
  *     An XCB connection to the X server.
- * @param major_xkb_version, minor_xkb_version
+ * @param major_xkb_version
+ *     See @p minor_xkb_version.
+ * @param minor_xkb_version
  *     The XKB extension version to request.  To operate correctly, you
  *     must have (major_xkb_version, minor_xkb_version) >=
  *     (XKB_X11_MIN_MAJOR_XKB_VERSION, XKB_X11_MIN_MINOR_XKB_VERSION),
  *     though this is not enforced.
  * @param flags
  *     Optional flags, or 0.
- * @param[out] major_xkb_version_out, minor_xkb_version_out
+ * @param[out] major_xkb_version_out
+ *     See @p minor_xkb_version_out.
+ * @param[out] minor_xkb_version_out
  *     Backfilled with the compatible XKB extension version numbers picked
  *     by the server.  Can be NULL.
  * @param[out] base_event_out
