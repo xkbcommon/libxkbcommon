@@ -166,6 +166,12 @@ typedef darray (unsigned long)  darray_ulong;
                                               sizeof(*(arr).item))); \
 } while (0)
 
+#define darray_shrink(arr) do { \
+    if ((arr).size > 0) \
+        (arr).item = realloc((arr).item, \
+                             ((arr).alloc = (arr).size) * sizeof(*(arr).item)); \
+} while (0)
+
 static inline unsigned
 darray_next_alloc(unsigned alloc, unsigned need, unsigned itemSize)
 {
