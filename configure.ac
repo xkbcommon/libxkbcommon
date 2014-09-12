@@ -107,6 +107,14 @@ AC_ARG_WITH([xkb_config_root],
     [XKBCONFIGROOT="$xkb_base"])
 AC_SUBST([XKBCONFIGROOT])
 
+# Define a configuration option for the X locale directory for compose
+AC_ARG_WITH([x_locale_root],
+    [AS_HELP_STRING([--with-x-locale-root=<path>],
+        [Set X locale root (default: $datadir/X11/locale)])],
+    [XLOCALEDIR="$withval"],
+    [XLOCALEDIR="$datadir/X11/locale"])
+AC_SUBST([XLOCALEDIR])
+
 AC_ARG_WITH([default_rules],
     [AS_HELP_STRING([--with-default-rules=<path>],
         [Default XKB ruleset (default: evdev)])],
@@ -189,4 +197,5 @@ AC_MSG_RESULT([
         includedir:              ${includedir}
         lib dir:                 ${libdir}
         XKB config root:         ${XKBCONFIGROOT}
+        X11 locale root:         ${XLOCALEDIR}
 ])

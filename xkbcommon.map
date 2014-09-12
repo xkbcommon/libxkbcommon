@@ -68,6 +68,20 @@ global:
 	xkb_state_layout_index_is_active;
 	xkb_state_led_name_is_active;
 	xkb_state_led_index_is_active;
+	xkb_compose_table_new_from_locale;
+	xkb_compose_table_new_from_file;
+	xkb_compose_table_new_from_buffer;
+	xkb_compose_table_ref;
+	xkb_compose_table_unref;
+	xkb_compose_state_new;
+	xkb_compose_state_ref;
+	xkb_compose_state_unref;
+	xkb_compose_state_get_compose_table;
+	xkb_compose_state_feed;
+	xkb_compose_state_reset;
+	xkb_compose_state_get_status;
+	xkb_compose_state_get_utf8;
+	xkb_compose_state_get_one_sym;
 local:
 	*;
 };

@@ -14,6 +14,7 @@ EXTRA_DIST = \
 
 AM_CPPFLAGS = \
 	-DDFLT_XKB_CONFIG_ROOT='"$(XKBCONFIGROOT)"' \
+	-DXLOCALEDIR='"$(XLOCALEDIR)"' \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/xkbcomp \
 	-I$(top_builddir)/src/xkbcomp \
@@ -32,11 +33,19 @@ xkbcommonincludedir = $(includedir)/xkbcommon
 xkbcommoninclude_HEADERS = \
 	xkbcommon/xkbcommon.h \
 	xkbcommon/xkbcommon-compat.h \
+	xkbcommon/xkbcommon-compose.h \
 	xkbcommon/xkbcommon-keysyms.h \
 	xkbcommon/xkbcommon-names.h
 
 lib_LTLIBRARIES = libxkbcommon.la
 libxkbcommon_la_SOURCES = \
+	src/compose/parser.c \
+	src/compose/parser.h \
+	src/compose/paths.c \
+	src/compose/paths.h \
+	src/compose/state.c \
+	src/compose/table.c \
+	src/compose/table.h \
 	src/xkbcomp/action.c \
 	src/xkbcomp/action.h \
 	src/xkbcomp/ast.h \
