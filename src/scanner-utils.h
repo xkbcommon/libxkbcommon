@@ -54,6 +54,7 @@ struct scanner {
     unsigned token_line, token_column;
     const char *file_name;
     struct xkb_context *ctx;
+    void *priv;
 };
 
 #define scanner_log(scanner, level, fmt, ...) \
