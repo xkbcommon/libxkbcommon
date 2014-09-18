@@ -45,6 +45,61 @@ extern "C" {
  */
 
 /**
+ * @page x11-overview Overview
+ * @parblock
+ *
+ * The xkbcommon-x11 module provides a means for creating an xkb_keymap
+ * corresponding to the currently active keymap on the X server.  To do
+ * so, it queries the XKB X11 extension using the xcb-xkb library.  It
+ * can be used as a replacement for Xlib's keyboard handling.
+ *
+ * Following is an example workflow using xkbcommon-x11.  A complete
+ * example may be found in the test/interactive-x11.c file in the
+ * xkbcommon source repository.  On startup:
+ *
+ * 1. Connect to the X server using xcb_connect().
+ * 2. Setup the XKB X11 extension.  You can do this either by using the
+ *    xcb_xkb_use_extension() request directly, or by using the
+ *    xkb_x11_setup_xkb_extension() helper function.
+ *
+ * The XKB extension supports using separate keymaps and states for
+ * different keyboard devices.  The devices are identified by an integer
+ * device ID and are managed by another X11 extension, XInput (or its
+ * successor, XInput2).  The original X11 protocol only had one keyboard
+ * device, called the "core keyboard", which is still supported as a
+ * "virtual device".
+ *
+ * 3. We will use the core keyboard as an example.  To get its device ID,
+ *    use either the xcb_xkb_get_device_info() request directly, or the
+ *    xkb_x11_get_core_keyboard_device_id() helper function.
+ * 4. Create an initial xkb_keymap for this device, using the
+ *    xkb_x11_keymap_new_from_device() function.
+ * 5. Create an initial xkb_state for this device, using the
+ *    xkb_x11_state_new_from_device() function.
+ *
+ * Next, you need to react to state changes (e.g. a modifier was pressed,
+ * the layout was changed) and to keymap changes (e.g. a tool like xkbcomp,
+ * setxkbmap or xmodmap was used):
+ *
+ * 6. Select to listen to at least the following XKB events:
+ *    NewKeyboardNotify, MapNotify, StateNotify; using the
+ *    xcb_xkb_select_events_aux() request.
+ * 7. When NewKeyboardNotify or MapNotify are received, recreate the
+ *    xkb_keymap and xkb_state as described above.
+ * 8. When StateNotify is received, update the xkb_state accordingly
+ *    using the xkb_state_update_mask() function.
+ *
+ * Finally, when a key event is received, you can use ordinary xkbcommon
+ * functions, like xkb_state_key_get_one_sym() and xkb_state_key_get_utf8(),
+ * as you normally would.
+ *
+ * Note: There is not need to call xkb_state_update_key(); the state is
+ * already synchronized.
+ *
+ * @endparblock
+ */
+
+/**
  * The minimal compatible major version of the XKB X11 extension which
  * this library can use.
  */
