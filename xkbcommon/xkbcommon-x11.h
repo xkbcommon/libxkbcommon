@@ -93,7 +93,7 @@ extern "C" {
  * functions, like xkb_state_key_get_one_sym() and xkb_state_key_get_utf8(),
  * as you normally would.
  *
- * Note: There is not need to call xkb_state_update_key(); the state is
+ * Note: There is no need to call xkb_state_update_key(); the state is
  * already synchronized.
  *
  * @endparblock
