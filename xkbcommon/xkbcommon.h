@@ -1557,60 +1557,69 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
                                  ...);
 
 /**
- * Test whether a modifier is consumed by keyboard state translation for
- * a key.
+ * @page consumed-modifiers Consumed Modifiers
+ * @parblock
  *
  * Some functions, like xkb_state_key_get_syms(), look at the state of
  * the modifiers in the keymap and derive from it the correct shift level
  * to use for the key.  For example, in a US layout, pressing the key
- * labeled \<A\> while the Shift modifier is active, generates the keysym 'A'.
- * In this case, the Shift modifier is said to be consumed.  However, the
- * Num Lock modifier does not affect this translation at all, even if it
- * active, so it is not consumed by this translation.
+ * labeled \<A\> while the Shift modifier is active, generates the keysym
+ * 'A'.  In this case, the Shift modifier is said to be "consumed".
+ * However, the Num Lock modifier does not affect this translation at all,
+ * even if it is active, so it is not consumed by this translation.
  *
  * It may be desirable for some application to not reuse consumed modifiers
- * for further processing, e.g. for hotkeys or keyboard shortcuts. To
+ * for further processing, e.g. for hotkeys or keyboard shortcuts.  To
  * understand why, consider some requirements from a standard shortcut
  * mechanism, and how they are implemented:
  *
- * 1. The shortcut's modifiers must match exactly to the state. For example,
- *    it is possible to bind separate actions to \<Alt\>\<Tab\> and to
- *    \<Alt\>\<Shift\>\<Tab\>. Further, if only \<Alt\>\<Tab\> is bound to
- *    an action, pressing \<Alt\>\<Shift\>\<Tab\> should not trigger the
- *    shortcut.
+ * 1. The shortcut's modifiers must match exactly to the state.  For
+ *    example, it is possible to bind separate actions to \<Alt\>\<Tab\>
+ *    and to \<Alt\>\<Shift\>\<Tab\>.  Further, if only \<Alt\>\<Tab\> is
+ *    bound to an action, pressing \<Alt\>\<Shift\>\<Tab\> should not
+ *    trigger the shortcut.
  *    Effectively, this means that the modifiers are compared using the
  *    equality operator (==).
- * 2. Only relevant modifiers are considered for the matching. For example,
+ *
+ * 2. Only relevant modifiers are considered for the matching.  For example,
  *    Caps Lock and Num Lock should not generally affect the matching, e.g.
  *    when matching \<Alt\>\<Tab\> against the state, it does not matter
- *    whether Num Lock is active or not. These relevant, or significant,
+ *    whether Num Lock is active or not.  These relevant, or "significant",
  *    modifiers usually include Alt, Control, Shift, Super and similar.
  *    Effectively, this means that non-significant modifiers are masked out,
  *    before doing the comparison as described above.
- * 3. The matching must be independent of the layout/keymap. For example,
+ *
+ * 3. The matching must be independent of the layout/keymap.  For example,
  *    the \<Plus\> (+) symbol is found on the first level on some layouts,
- *    and requires holding Shift on others. If you simply bind the action
+ *    but requires holding Shift on others.  If you simply bind the action
  *    to the \<Plus\> keysym, it would work for the unshifted kind, but
- *    not for the others, because the match against Shift would fail. If
+ *    not for the others, because the match against Shift would fail.  If
  *    you bind the action to \<Shift\>\<Plus\>, only the shifted kind would
- *    work. So what is needed is to recognize that Shift is used up in the
+ *    work.  So what is needed is to recognize that Shift is used up in the
  *    translation of the keysym itself, and therefore should not be included
  *    in the matching.
  *    Effectively, this means that consumed modifiers (Shift in this example)
  *    are masked out as well, before doing the comparison.
  *
- * To summarize, this is how the matching would be performed:
+ * In summary, this is how the matching would be performed:
  * @code
  *   (keysym == shortcut_keysym) &&
- *   ((state_modifiers & ~consumed_modifiers & significant_modifiers) == shortcut_modifiers)
+ *   ((state_mods & ~consumed_mods & significant_mods) == shortcut_mods)
  * @endcode
  *
- * @c state_modifiers are the modifiers reported by
+ * @c state_mods are the modifiers reported by
  * xkb_state_mod_index_is_active() and similar functions.
- * @c consumed_modifiers are the modifiers reported by
- * xkb_state_mod_index_is_consumed().
- * @c significant_modifiers are decided upon by the application/toolkit/user;
+ * @c consumed_mods are the modifiers reported by
+ * xkb_state_mod_index_is_consumed() and similar functions.
+ * @c significant_mods are decided upon by the application/toolkit/user;
  * it is up to them to decide whether these are configurable or hard-coded.
+ *
+ * @endparblock
+ */
+
+/**
+ * Test whether a modifier is consumed by keyboard state translation for
+ * a key.
  *
  * @returns 1 if the modifier is consumed, 0 if it is not.  If the modifier
  * index is not valid in the keymap, returns -1.
