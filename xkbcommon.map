@@ -36,12 +36,12 @@ global:
 	xkb_keymap_num_layouts;
 	xkb_keymap_layout_get_name;
 	xkb_keymap_layout_get_index;
-	xkb_keymap_num_layouts_for_key;
-	xkb_keymap_num_levels_for_key;
-	xkb_keymap_key_get_syms_by_level;
 	xkb_keymap_num_leds;
 	xkb_keymap_led_get_name;
 	xkb_keymap_led_get_index;
+	xkb_keymap_num_layouts_for_key;
+	xkb_keymap_num_levels_for_key;
+	xkb_keymap_key_get_syms_by_level;
 	xkb_keymap_key_repeats;
 	xkb_state_new;
 	xkb_state_ref;

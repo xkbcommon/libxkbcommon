@@ -1006,6 +1006,41 @@ xkb_layout_index_t
 xkb_keymap_layout_get_index(struct xkb_keymap *keymap, const char *name);
 
 /**
+ * Get the number of LEDs in the keymap.
+ *
+ * @warning The range [ 0...xkb_keymap_num_leds() ) includes all of the LEDs
+ * in the keymap, but may also contain inactive LEDs.  When iterating over
+ * this range, you need the handle this case when calling functions such as
+ * xkb_keymap_led_get_name() or xkb_state_led_index_is_active().
+ *
+ * @sa xkb_led_index_t
+ * @memberof xkb_keymap
+ */
+xkb_led_index_t
+xkb_keymap_num_leds(struct xkb_keymap *keymap);
+
+/**
+ * Get the name of a LED by index.
+ *
+ * @returns The name.  If the index is invalid, returns NULL.
+ *
+ * @memberof xkb_keymap
+ */
+const char *
+xkb_keymap_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx);
+
+/**
+ * Get the index of a LED by name.
+ *
+ * @returns The index.  If no LED with this name exists, returns
+ * XKB_LED_INVALID.
+ *
+ * @memberof xkb_keymap
+ */
+xkb_led_index_t
+xkb_keymap_led_get_index(struct xkb_keymap *keymap, const char *name);
+
+/**
  * Get the number of layouts for a specific key.
  *
  * This number can be different from xkb_keymap_num_layouts(), but is always
@@ -1066,41 +1101,6 @@ xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
                                  xkb_layout_index_t layout,
                                  xkb_level_index_t level,
                                  const xkb_keysym_t **syms_out);
-
-/**
- * Get the number of LEDs in the keymap.
- *
- * @warning The range [ 0...xkb_keymap_num_leds() ) includes all of the LEDs
- * in the keymap, but may also contain inactive LEDs.  When iterating over
- * this range, you need the handle this case when calling functions such as
- * xkb_keymap_led_get_name() or xkb_state_led_index_is_active().
- *
- * @sa xkb_led_index_t
- * @memberof xkb_keymap
- */
-xkb_led_index_t
-xkb_keymap_num_leds(struct xkb_keymap *keymap);
-
-/**
- * Get the name of a LED by index.
- *
- * @returns The name.  If the index is invalid, returns NULL.
- *
- * @memberof xkb_keymap
- */
-const char *
-xkb_keymap_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx);
-
-/**
- * Get the index of a LED by name.
- *
- * @returns The index.  If no LED with this name exists, returns
- * XKB_LED_INVALID.
- *
- * @memberof xkb_keymap
- */
-xkb_led_index_t
-xkb_keymap_led_get_index(struct xkb_keymap *keymap, const char *name);
 
 /**
  * Determine whether a key should repeat or not.
