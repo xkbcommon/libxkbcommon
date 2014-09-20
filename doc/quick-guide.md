@@ -123,7 +123,7 @@ from it.  Given a keycode for a key, we can get its keysym:
 We can see which keysym we got, and get its name:
 
 ~~~{.c}
-    char[64] keysym_name;
+    char keysym_name[64];
 
     if (keysym == XKB_KEY_Space)
         <got a space>
