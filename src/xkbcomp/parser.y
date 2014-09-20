@@ -164,7 +164,7 @@ resolve_keysym(const char *name, xkb_keysym_t *sym_rtrn)
         int64_t          num;
         enum xkb_file_type file_type;
         char            *str;
-        xkb_atom_t      sval;
+        xkb_atom_t      atom;
         enum merge_mode merge;
         enum xkb_map_flags mapFlags;
         xkb_keysym_t    keysym;
@@ -187,14 +187,14 @@ resolve_keysym(const char *name, xkb_keysym_t *sym_rtrn)
 
 %type <num>     INTEGER FLOAT
 %type <str>     IDENT STRING
-%type <sval>    KEYNAME
+%type <atom>    KEYNAME
 %type <num>     KeyCode
 %type <ival>    Number Integer Float SignedNumber DoodadType
 %type <merge>   MergeMode OptMergeMode
 %type <file_type> XkbCompositeType FileType
 %type <mapFlags> Flag Flags OptFlags
 %type <str>     MapName OptMapName
-%type <sval>    FieldSpec Ident Element String
+%type <atom>    FieldSpec Ident Element String
 %type <keysym>  KeySym
 %type <any>     DeclList Decl
 %type <expr>    OptExprList ExprList Expr Term Lhs Terminal ArrayInit KeySyms

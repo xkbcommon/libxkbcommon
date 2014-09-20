@@ -122,7 +122,7 @@ skip_more_whitespace_and_comments:
             return ERROR_TOK;
         }
         /* Empty key name literals are allowed. */
-        yylval->sval = xkb_atom_intern(s->ctx, s->buf, s->buf_pos - 1);
+        yylval->atom = xkb_atom_intern(s->ctx, s->buf, s->buf_pos - 1);
         return KEYNAME;
     }
 
