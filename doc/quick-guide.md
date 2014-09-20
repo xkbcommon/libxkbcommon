@@ -138,7 +138,7 @@ single event can result in multiple keysyms. Here's how to use it:
     const xkb_keysym_t *keysyms;
     int num_keysyms;
 
-    num_keysyms = xkb_state_key_get_syms(state, keycode);
+    num_keysyms = xkb_state_key_get_syms(state, keycode, &keysyms);
 ~~~
 
 We can also get a UTF-8 string representation for this key:
