@@ -598,6 +598,8 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
 {
     const struct xkb_key *key;
     xkb_layout_index_t group;
+    xkb_mod_index_t i;
+    const struct xkb_mod *mod;
 
     if (keymap->symbols_section_name)
         write_buf(buf, "xkb_symbols \"%s\" {\n",
@@ -617,18 +619,21 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
         if (key->num_groups > 0)
             write_key(keymap, buf, key);
 
-    xkb_keys_foreach(key, keymap) {
-        xkb_mod_index_t i;
-        const struct xkb_mod *mod;
-
-        if (key->modmap == 0)
-            continue;
-
-        xkb_mods_enumerate(i, mod, &keymap->mods)
-            if (key->modmap & (1u << i))
-                write_buf(buf, "\tmodifier_map %s { %s };\n",
-                          xkb_atom_text(keymap->ctx, mod->name),
+    xkb_mods_enumerate(i, mod, &keymap->mods) {
+        bool had_any = false;
+        xkb_keys_foreach(key, keymap) {
+            if (key->modmap & (1u << i)) {
+                if (!had_any)
+                    write_buf(buf, "\tmodifier_map %s { ",
+                              xkb_atom_text(keymap->ctx, mod->name));
+                write_buf(buf, "%s%s",
+                          had_any ? ", " : "",
                           KeyNameText(keymap->ctx, key->name));
+                had_any = true;
+            }
+        }
+        if (had_any)
+            write_buf(buf, " };\n");
     }
 
     write_buf(buf, "};\n\n");
