@@ -635,7 +635,7 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
         enum rules_mlvo mlv;
         xkb_layout_index_t idx;
         char pfx, sfx;
-        struct sval expanded_value;
+        struct matched_sval *expanded_value;
 
         /* Check if that's a start of an expansion. */
         if (s[i] != '%') {
@@ -685,40 +685,42 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
         }
 
         /* Get the expanded value. */
-        expanded_value.len = 0;
+        expanded_value = NULL;
 
         if (mlv == MLVO_LAYOUT) {
             if (idx != XKB_LAYOUT_INVALID &&
                 idx < darray_size(m->rmlvo.layouts) &&
                 darray_size(m->rmlvo.layouts) > 1)
-                expanded_value = darray_item(m->rmlvo.layouts, idx).sval;
+                expanded_value = &darray_item(m->rmlvo.layouts, idx);
             else if (idx == XKB_LAYOUT_INVALID &&
                      darray_size(m->rmlvo.layouts) == 1)
-                expanded_value = darray_item(m->rmlvo.layouts, 0).sval;
+                expanded_value = &darray_item(m->rmlvo.layouts, 0);
         }
         else if (mlv == MLVO_VARIANT) {
             if (idx != XKB_LAYOUT_INVALID &&
                 idx < darray_size(m->rmlvo.variants) &&
                 darray_size(m->rmlvo.variants) > 1)
-                expanded_value = darray_item(m->rmlvo.variants, idx).sval;
+                expanded_value = &darray_item(m->rmlvo.variants, idx);
             else if (idx == XKB_LAYOUT_INVALID &&
                      darray_size(m->rmlvo.variants) == 1)
-                expanded_value = darray_item(m->rmlvo.variants, 0).sval;
+                expanded_value = &darray_item(m->rmlvo.variants, 0);
         }
         else if (mlv == MLVO_MODEL) {
-            expanded_value = m->rmlvo.model.sval;
+            expanded_value = &m->rmlvo.model;
         }
 
         /* If we didn't get one, skip silently. */
-        if (expanded_value.len <= 0)
+        if (!expanded_value || expanded_value->sval.len == 0)
             continue;
 
         if (pfx != 0)
             darray_appends_nullterminate(expanded, &pfx, 1);
         darray_appends_nullterminate(expanded,
-                                     expanded_value.start, expanded_value.len);
+                                     expanded_value->sval.start,
+                                     expanded_value->sval.len);
         if (sfx != 0)
             darray_appends_nullterminate(expanded, &sfx, 1);
+        expanded_value->matched = true;
     }
 
     /*
