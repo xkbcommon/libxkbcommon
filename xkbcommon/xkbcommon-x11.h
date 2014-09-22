@@ -93,12 +93,18 @@ extern "C" {
  * 8. When StateNotify is received, update the xkb_state accordingly
  *    using the xkb_state_update_mask() function.
  *
+ * @note It is also possible to use the KeyPress/KeyRelease @p state
+ * field to find the effective modifier and layout state, instead of
+ * using XkbStateNotify: \n
+ * http://www.x.org/releases/current/doc/kbproto/xkbproto.html#Computing_A_State_Field_from_an_XKB_State
+ * \n However, XkbStateNotify is more accurate.
+ *
+ * @note There is no need to call xkb_state_update_key(); the state is
+ * already synchronized.
+ *
  * Finally, when a key event is received, you can use ordinary xkbcommon
  * functions, like xkb_state_key_get_one_sym() and xkb_state_key_get_utf8(),
  * as you normally would.
- *
- * Note: There is no need to call xkb_state_update_key(); the state is
- * already synchronized.
  *
  * @endparblock
  */
