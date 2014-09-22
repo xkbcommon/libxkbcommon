@@ -1427,8 +1427,8 @@ xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t key,
                         xkb_layout_index_t layout);
 
 /**
- * Match flags for xkb_state_mod_indices_are_active and
- * xkb_state_mod_names_are_active, specifying how the conditions for a
+ * Match flags for xkb_state_mod_indices_are_active() and
+ * xkb_state_mod_names_are_active(), specifying the conditions for a
  * successful match.  XKB_STATE_MATCH_NON_EXCLUSIVE is bitmaskable with
  * the other modes.
  */
