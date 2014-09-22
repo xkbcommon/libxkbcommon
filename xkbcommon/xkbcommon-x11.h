@@ -77,6 +77,10 @@ extern "C" {
  * 5. Create an initial xkb_state for this device, using the
  *    xkb_x11_state_new_from_device() function.
  *
+ * @note At this point, you may consider setting various XKB controls and
+ * XKB per-client flags.  For example, enabling detectable autorepeat: \n
+ * http://www.x.org/releases/current/doc/kbproto/xkbproto.html#Detectable_Autorepeat
+ *
  * Next, you need to react to state changes (e.g. a modifier was pressed,
  * the layout was changed) and to keymap changes (e.g. a tool like xkbcomp,
  * setxkbmap or xmodmap was used):
