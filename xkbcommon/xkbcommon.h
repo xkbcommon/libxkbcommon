@@ -982,6 +982,15 @@ xkb_layout_index_t
 xkb_keymap_num_layouts(struct xkb_keymap *keymap);
 
 /**
+ * Get the maximum number of shift levels on a single key in the keymap.
+ *
+ * @sa xkb_level_index_t xkb_keymap_num_levels_for_key()
+ * @memberof xkb_keymap
+ */
+xkb_level_index_t
+xkb_keymap_num_levels(struct xkb_keymap *keymap);
+
+/**
  * Get the name of a layout by index.
  *
  * @returns The name.  If the index is invalid, or the layout does not have
