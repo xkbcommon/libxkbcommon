@@ -1243,38 +1243,32 @@ HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge)
 static struct xkb_key *
 FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym)
 {
-    struct xkb_key *key, *ret = NULL;
-    xkb_layout_index_t group, min_group = UINT32_MAX;
-    xkb_level_index_t level, min_level = UINT32_MAX;
+    struct xkb_key *key;
+    xkb_layout_index_t group;
+    xkb_level_index_t level;
+    bool got_one_group, got_one_level;
 
-    xkb_keys_foreach(key, keymap) {
-        for (group = 0; group < key->num_groups; group++) {
-            for (level = 0; level < XkbKeyGroupWidth(key, group); level++) {
-                if (key->groups[group].levels[level].num_syms != 1 ||
-                    key->groups[group].levels[level].u.sym != sym)
-                    continue;
-
-                /*
-                 * If the keysym was found in a group or level > 0, we must
-                 * keep looking since we might find a key in which the keysym
-                 * is in a lower group or level.
-                 */
-                if (group < min_group ||
-                    (group == min_group && level < min_level)) {
-                    ret = key;
-                    if (group == 0 && level == 0) {
-                        return ret;
-                    }
-                    else {
-                        min_group = group;
-                        min_level = level;
-                    }
+    group = 0;
+    do {
+        got_one_group = false;
+        level = 0;
+        do {
+            got_one_level = false;
+            xkb_keys_foreach(key, keymap) {
+                if (group < key->num_groups &&
+                    level < XkbKeyGroupWidth(key, group)) {
+                    got_one_group = got_one_level = true;
+                    if (key->groups[group].levels[level].num_syms == 1 &&
+                        key->groups[group].levels[level].u.sym == sym)
+                        return key;
                 }
             }
-        }
-    }
+            level++;
+        } while (got_one_level);
+        group++;
+    } while (got_one_group);
 
-    return ret;
+    return NULL;
 }
 
 /*
