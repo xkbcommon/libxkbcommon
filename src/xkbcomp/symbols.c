@@ -1245,7 +1245,7 @@ FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym)
 {
     struct xkb_key *key, *ret = NULL;
     xkb_layout_index_t group, min_group = UINT32_MAX;
-    xkb_level_index_t level, min_level = UINT16_MAX;
+    xkb_level_index_t level, min_level = UINT32_MAX;
 
     xkb_keys_foreach(key, keymap) {
         for (group = 0; group < key->num_groups; group++) {
