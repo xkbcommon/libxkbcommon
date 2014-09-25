@@ -455,7 +455,7 @@ static bool
 write_keysyms(struct xkb_keymap *keymap, struct buf *buf,
               const struct xkb_key *key, xkb_layout_index_t group)
 {
-    for (xkb_level_index_t level = 0; level < XkbKeyGroupWidth(key, group);
+    for (xkb_level_index_t level = 0; level < XkbKeyNumLevels(key, group);
          level++) {
         const xkb_keysym_t *syms;
         int num_syms;
@@ -576,8 +576,7 @@ write_key(struct xkb_keymap *keymap, struct buf *buf,
             write_buf(buf, " ]");
             if (show_actions) {
                 write_buf(buf, ",\n\t\tactions[Group%u]= [ ", group + 1);
-                for (level = 0;
-                        level < XkbKeyGroupWidth(key, group); level++) {
+                for (level = 0; level < XkbKeyNumLevels(key, group); level++) {
                     if (level != 0)
                         write_buf(buf, ", ");
                     write_action(keymap, buf,

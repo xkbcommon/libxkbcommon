@@ -432,7 +432,7 @@ XkbKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
 }
 
 static inline xkb_level_index_t
-XkbKeyGroupWidth(const struct xkb_key *key, xkb_layout_index_t layout)
+XkbKeyNumLevels(const struct xkb_key *key, xkb_layout_index_t layout)
 {
     return key->groups[layout].type->num_levels;
 }

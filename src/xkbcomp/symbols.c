@@ -1256,7 +1256,7 @@ FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym)
             got_one_level = false;
             xkb_keys_foreach(key, keymap) {
                 if (group < key->num_groups &&
-                    level < XkbKeyGroupWidth(key, group)) {
+                    level < XkbKeyNumLevels(key, group)) {
                     got_one_group = got_one_level = true;
                     if (key->groups[group].levels[level].num_syms == 1 &&
                         key->groups[group].levels[level].u.sym == sym)
