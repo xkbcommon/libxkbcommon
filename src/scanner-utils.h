@@ -130,7 +130,7 @@ str(struct scanner *s, const char *string, size_t len)
 {
     if (s->len - s->pos < len)
         return false;
-    if (strncasecmp(s->s + s->pos, string, len) != 0)
+    if (memcmp(s->s + s->pos, string, len) != 0)
         return false;
     s->pos += len; s->column += len;
     return true;
