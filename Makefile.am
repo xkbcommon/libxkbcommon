@@ -180,8 +180,7 @@ TESTS = \
 	test/rulescomp
 check_PROGRAMS = \
 	test/rmlvo-to-kccgst \
-	test/print-compiled-keymap \
-	test/bench-key-proc
+	test/print-compiled-keymap
 
 TESTS_LDADD = libtest.la
 
@@ -189,7 +188,7 @@ test_keysym_LDADD = $(TESTS_LDADD)
 test_filecomp_LDADD = $(TESTS_LDADD)
 test_context_LDADD = $(TESTS_LDADD)
 test_rules_file_CFLAGS = $(AM_CFLAGS) -Wno-declaration-after-statement
-test_rules_file_LDADD = $(TESTS_LDADD) -lrt
+test_rules_file_LDADD = $(TESTS_LDADD)
 test_stringcomp_LDADD = $(TESTS_LDADD)
 test_buffercomp_LDADD = $(TESTS_LDADD)
 test_log_LDADD = $(TESTS_LDADD)
@@ -197,10 +196,9 @@ test_atom_LDADD = $(TESTS_LDADD)
 test_utf8_LDADD = $(TESTS_LDADD)
 test_state_LDADD = $(TESTS_LDADD)
 test_keyseq_LDADD = $(TESTS_LDADD)
-test_rulescomp_LDADD = $(TESTS_LDADD) -lrt
+test_rulescomp_LDADD = $(TESTS_LDADD)
 test_rmlvo_to_kccgst_LDADD = $(TESTS_LDADD)
 test_print_compiled_keymap_LDADD = $(TESTS_LDADD)
-test_bench_key_proc_LDADD = $(TESTS_LDADD) -lrt
 
 if BUILD_LINUX_TESTS
 check_PROGRAMS += \
@@ -228,6 +226,20 @@ test_interactive_x11_CFLAGS = $(TESTS_X11_CFLAGS)
 endif ENABLE_X11
 
 check_PROGRAMS += $(TESTS)
+
+##
+# Benchmarks
+##
+
+BENCH_LDADD = $(TESTS_LDADD) -lrt
+
+check_PROGRAMS += \
+	bench/key-proc \
+	bench/rules \
+	bench/rulescomp
+bench_key_proc_LDADD = $(BENCH_LDADD)
+bench_rules_LDADD = $(BENCH_LDADD)
+bench_rulescomp_LDADD = $(BENCH_LDADD)
 
 ##
 # Custom targets

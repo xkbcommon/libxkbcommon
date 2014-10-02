@@ -1,5 +1,5 @@
 /*
- * Copyright © 2012 Ran Benita <ran234@gmail.com>
+ * Copyright © 2009 Dan Nicholson
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,60 +21,32 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include <stdlib.h>
 #include <time.h>
 
-#include "test.h"
+#include "../test/test.h"
 
-#define BENCHMARK_ITERATIONS 20000000
-
-static void
-bench(struct xkb_state *state)
-{
-    int8_t keys[256] = { 0 };
-    xkb_keycode_t keycode;
-    xkb_keysym_t keysym;
-    int i;
-
-    for (i = 0; i < BENCHMARK_ITERATIONS; i++) {
-        keycode = (rand() % (255 - 9)) + 9;
-        if (keys[keycode]) {
-            xkb_state_update_key(state, keycode, XKB_KEY_UP);
-            keys[keycode] = 0;
-            keysym = xkb_state_key_get_one_sym(state, keycode);
-            (void) keysym;
-        } else {
-            xkb_state_update_key(state, keycode, XKB_KEY_DOWN);
-            keys[keycode] = 1;
-        }
-    }
-}
+#define BENCHMARK_ITERATIONS 2500
 
 int
-main(void)
+main(int argc, char *argv[])
 {
     struct xkb_context *ctx;
     struct xkb_keymap *keymap;
-    struct xkb_state *state;
     struct timespec start, stop, elapsed;
+    int i;
 
     ctx = test_get_context(0);
     assert(ctx);
 
-    keymap = test_compile_rules(ctx, "evdev", "pc104", "us,ru,il,de",
-                                ",,,neo", "grp:menu_toggle");
-    assert(keymap);
-
-    state = xkb_state_new(keymap);
-    assert(state);
-
     xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
     xkb_context_set_log_verbosity(ctx, 0);
 
-    srand(time(NULL));
-
     clock_gettime(CLOCK_MONOTONIC, &start);
-    bench(state);
+    for (i = 0; i < BENCHMARK_ITERATIONS; i++) {
+        keymap = test_compile_rules(ctx, "evdev", "evdev", "us", "", "");
+        assert(keymap);
+        xkb_keymap_unref(keymap);
+    }
     clock_gettime(CLOCK_MONOTONIC, &stop);
 
     elapsed.tv_sec = stop.tv_sec - start.tv_sec;
@@ -84,12 +56,9 @@ main(void)
         elapsed.tv_sec--;
     }
 
-    fprintf(stderr, "ran %d iterations in %ld.%09lds\n",
+    fprintf(stderr, "compiled %d keymaps in %ld.%09lds\n",
             BENCHMARK_ITERATIONS, elapsed.tv_sec, elapsed.tv_nsec);
 
-    xkb_state_unref(state);
-    xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
-
     return 0;
 }

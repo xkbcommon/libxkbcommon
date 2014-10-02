@@ -13,7 +13,6 @@ log
 interactive-evdev
 rmlvo-to-kccgst
 print-compiled-keymap
-bench-key-proc
 atom
 x11
 interactive-x11
