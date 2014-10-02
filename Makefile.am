@@ -247,10 +247,12 @@ BENCH_LDADD = $(TESTS_LDADD) -lrt
 check_PROGRAMS += \
 	bench/key-proc \
 	bench/rules \
-	bench/rulescomp
+	bench/rulescomp \
+	bench/compose
 bench_key_proc_LDADD = $(BENCH_LDADD)
 bench_rules_LDADD = $(BENCH_LDADD)
 bench_rulescomp_LDADD = $(BENCH_LDADD)
+bench_compose_LDADD = $(BENCH_LDADD)
 
 ##
 # Custom targets
