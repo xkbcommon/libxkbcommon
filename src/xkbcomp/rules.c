@@ -85,7 +85,7 @@ skip_more_whitespace_and_comments:
 
     /* Skip comments. */
     if (lit(s, "//")) {
-        while (!eof(s) && !eol(s)) next(s);
+        skip_to_eol(s);
     }
 
     /* New line. */

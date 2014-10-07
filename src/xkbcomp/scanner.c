@@ -69,7 +69,7 @@ skip_more_whitespace_and_comments:
 
     /* Skip comments. */
     if (lit(s, "//") || chr(s, '#')) {
-        while (!eof(s) && !eol(s)) next(s);
+        skip_to_eol(s);
         goto skip_more_whitespace_and_comments;
     }
 

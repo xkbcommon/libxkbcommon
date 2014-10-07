@@ -102,6 +102,15 @@ eol(struct scanner *s)
     return peek(s) == '\n';
 }
 
+static inline void
+skip_to_eol(struct scanner *s)
+{
+    const char *nl = memchr(s->s + s->pos, '\n', s->len - s->pos);
+    const size_t new_pos = nl ? (size_t) (nl - s->s) : s->len;
+    s->column += new_pos - s->pos;
+    s->pos = new_pos;
+}
+
 static inline char
 next(struct scanner *s)
 {
