@@ -266,9 +266,8 @@ skip_more_whitespace_and_comments:
         return TOK_RHS_KEYSYM;
     }
 
-    /* Skip line. */
-    while (!eof(s) && !eol(s))
-        next(s);
+    /* Discard rest of line. */
+    skip_to_eol(s);
 
     scanner_err(s, "unrecognized token");
     return TOK_ERROR;
