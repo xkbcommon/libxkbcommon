@@ -182,7 +182,7 @@ XkbParseString(struct xkb_context *ctx, const char *string, size_t len,
                const char *file_name, const char *map)
 {
     struct scanner scanner;
-    scanner_init(&scanner, ctx, string, len, file_name);
+    scanner_init(&scanner, ctx, string, len, file_name, NULL);
     return parse(ctx, &scanner, map);
 }
 

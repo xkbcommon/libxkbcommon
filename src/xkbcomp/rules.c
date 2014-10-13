@@ -828,7 +828,7 @@ matcher_match(struct matcher *m, const char *string, size_t len,
     if (!m)
         return false;
 
-    scanner_init(&m->scanner, m->ctx, string, len, file_name);
+    scanner_init(&m->scanner, m->ctx, string, len, file_name, NULL);
 
 initial:
     switch (tok = gettok(m)) {

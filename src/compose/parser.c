@@ -485,7 +485,7 @@ do_include(struct xkb_compose_table *table, struct scanner *s,
         goto err_file;
     }
 
-    scanner_init(&new_s, table->ctx, string, size, path);
+    scanner_init(&new_s, table->ctx, string, size, path, s->priv);
 
     ok = parse(table, &new_s, include_depth + 1);
     if (!ok)
@@ -634,9 +634,8 @@ parse_string(struct xkb_compose_table *table, const char *string, size_t len,
 {
     struct scanner s;
     struct keysym_from_name_cache cache;
-    scanner_init(&s, table->ctx, string, len, file_name);
     memset(&cache, 0, sizeof(cache));
-    s.priv = &cache;
+    scanner_init(&s, table->ctx, string, len, file_name, &cache);
     if (!parse(table, &s, 0))
         return false;
     /* Maybe the allocator can use the excess space. */

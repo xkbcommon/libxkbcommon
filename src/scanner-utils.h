@@ -71,7 +71,8 @@ struct scanner {
 
 static inline void
 scanner_init(struct scanner *s, struct xkb_context *ctx,
-             const char *string, size_t len, const char *file_name)
+             const char *string, size_t len, const char *file_name,
+             void *priv)
 {
     s->s = string;
     s->len = len;
@@ -80,6 +81,7 @@ scanner_init(struct scanner *s, struct xkb_context *ctx,
     s->token_line = s->token_column = 1;
     s->file_name = file_name;
     s->ctx = ctx;
+    s->priv = priv;
 }
 
 static inline char
