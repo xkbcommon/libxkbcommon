@@ -470,7 +470,7 @@ do_include(struct xkb_compose_table *table, struct scanner *s,
         return false;
     }
 
-    file = fopen(s->buf, "r");
+    file = fopen(path, "r");
     if (!file) {
         scanner_err(s, "failed to open included Compose file \"%s\": %s",
                     path, strerror(errno));
