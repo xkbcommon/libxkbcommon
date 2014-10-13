@@ -148,15 +148,16 @@ enum rules_token {
 
 /* Values returned with some tokens, like yylval. */
 union lvalue {
-    const char *string;
-    xkb_keysym_t keysym;
+    struct {
+        /* Still \0-terminated. */
+        const char *str;
+        size_t len;
+    } string;
 };
 
 static enum rules_token
 lex(struct scanner *s, union lvalue *val)
 {
-    struct keysym_from_name_cache *cache = s->priv;
-
 skip_more_whitespace_and_comments:
     /* Skip spaces. */
     while (is_space(peek(s)))
@@ -189,11 +190,8 @@ skip_more_whitespace_and_comments:
             scanner_err(s, "keysym literal is too long");
             return TOK_ERROR;
         }
-        val->keysym = cached_keysym_from_name(cache, s->buf, s->buf_pos);
-        if (val->keysym == XKB_KEY_NoSymbol) {
-            scanner_err(s, "unrecognized keysym \"%s\" on left-hand side", s->buf);
-            return TOK_ERROR;
-        }
+        val->string.str = s->buf;
+        val->string.len = s->buf_pos;
         return TOK_LHS_KEYSYM;
     }
 
@@ -241,7 +239,8 @@ skip_more_whitespace_and_comments:
             scanner_err(s, "string literal is not a valid UTF-8 string");
             return TOK_ERROR;
         }
-        val->string = s->buf;
+        val->string.str = s->buf;
+        val->string.len = s->buf_pos;
         return TOK_STRING;
     }
 
@@ -258,11 +257,8 @@ skip_more_whitespace_and_comments:
         if (streq(s->buf, "include"))
             return TOK_INCLUDE;
 
-        val->keysym = cached_keysym_from_name(cache, s->buf, s->buf_pos);
-        if (val->keysym == XKB_KEY_NoSymbol) {
-            scanner_err(s, "unrecognized keysym \"%s\" on right-hand side", s->buf);
-            return TOK_ERROR;
-        }
+        val->string.str = s->buf;
+        val->string.len = s->buf_pos;
         return TOK_RHS_KEYSYM;
     }
 
@@ -342,7 +338,8 @@ lex_include_string(struct scanner *s, struct xkb_compose_table *table,
         scanner_err(s, "include path is too long");
         return TOK_ERROR;
     }
-    val_out->string = s->buf;
+    val_out->string.str = s->buf;
+    val_out->string.len = s->buf_pos;
     return TOK_INCLUDE_STRING;
 }
 
@@ -503,6 +500,8 @@ parse(struct xkb_compose_table *table, struct scanner *s,
 {
     enum rules_token tok;
     union lvalue val;
+    struct keysym_from_name_cache *cache = s->priv;
+    xkb_keysym_t keysym;
     struct production production;
     enum { MAX_ERRORS = 10 };
     int num_errors = 0;
@@ -522,11 +521,8 @@ initial_eol:
         goto finished;
     case TOK_INCLUDE:
         goto include;
-    case TOK_LHS_KEYSYM:
-        production.lhs[production.len++] = val.keysym;
-        goto lhs;
     default:
-        goto unexpected;
+        goto lhs_tok;
     }
 
 include:
@@ -540,7 +536,7 @@ include:
 include_eol:
     switch (tok = lex(s, &val)) {
     case TOK_END_OF_LINE:
-        if (!do_include(table, s, val.string, include_depth))
+        if (!do_include(table, s, val.string.str, include_depth))
             goto fail;
         goto initial;
     default:
@@ -548,14 +544,22 @@ include_eol:
     }
 
 lhs:
-    switch (tok = lex(s, &val)) {
+    tok = lex(s, &val);
+lhs_tok:
+    switch (tok) {
     case TOK_LHS_KEYSYM:
+        keysym = cached_keysym_from_name(cache, val.string.str, val.string.len);
+        if (keysym == XKB_KEY_NoSymbol) {
+            scanner_err(s, "unrecognized keysym \"%s\" on left-hand side",
+                        val.string.str);
+            goto error;
+        }
         if (production.len + 1 > MAX_LHS_LEN) {
             scanner_warn(s, "too many keysyms (%d) on left-hand side; skipping line",
                          MAX_LHS_LEN + 1);
             goto skip;
         }
-        production.lhs[production.len++] = val.keysym;
+        production.lhs[production.len++] = keysym;
         goto lhs;
     case TOK_COLON:
         if (production.len <= 0) {
@@ -574,23 +578,29 @@ rhs:
             scanner_warn(s, "right-hand side can have at most one string; skipping line");
             goto skip;
         }
-        if (*val.string == '\0') {
+        if (val.string.len <= 0) {
             scanner_warn(s, "right-hand side string must not be empty; skipping line");
             goto skip;
         }
-        if (strlen(val.string) >= sizeof(production.string)) {
+        if (val.string.len >= sizeof(production.string)) {
             scanner_warn(s, "right-hand side string is too long; skipping line");
             goto skip;
         }
-        strcpy(production.string, val.string);
+        strcpy(production.string, val.string.str);
         production.has_string = true;
         goto rhs;
     case TOK_RHS_KEYSYM:
+        keysym = cached_keysym_from_name(cache, val.string.str, val.string.len);
+        if (keysym == XKB_KEY_NoSymbol) {
+            scanner_err(s, "unrecognized keysym \"%s\" on right-hand side",
+                        val.string.str);
+            goto error;
+        }
         if (production.has_keysym) {
             scanner_warn(s, "right-hand side can have at most one keysym; skipping line");
             goto skip;
         }
-        production.keysym = val.keysym;
+        production.keysym = keysym;
         production.has_keysym = true;
     case TOK_END_OF_LINE:
         if (!production.has_string && !production.has_keysym) {
@@ -606,7 +616,7 @@ rhs:
 unexpected:
     if (tok != TOK_ERROR)
         scanner_err(s, "unexpected token");
-
+error:
     num_errors++;
     if (num_errors <= MAX_ERRORS)
         goto skip;
