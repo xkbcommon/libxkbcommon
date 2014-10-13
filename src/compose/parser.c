@@ -104,17 +104,14 @@ cached_keysym_from_name(struct keysym_from_name_cache *cache,
  * Grammar adapted from libX11/modules/im/ximcp/imLcPrs.c.
  * See also the XCompose(5) manpage.
  *
- * We don't support the MODIFIER rules, which are commented out.
- *
  * FILE          ::= { [PRODUCTION] [COMMENT] "\n" | INCLUDE }
  * INCLUDE       ::= "include" '"' INCLUDE_STRING '"'
  * PRODUCTION    ::= LHS ":" RHS [ COMMENT ]
  * COMMENT       ::= "#" {<any character except null or newline>}
  * LHS           ::= EVENT { EVENT }
- * EVENT         ::= "<" keysym ">"
- * # EVENT         ::= [MODIFIER_LIST] "<" keysym ">"
- * # MODIFIER_LIST ::= ("!" {MODIFIER} ) | "None"
- * # MODIFIER      ::= ["~"] modifier_name
+ * EVENT         ::= [MODIFIER_LIST] "<" keysym ">"
+ * MODIFIER_LIST ::= ("!" {MODIFIER} ) | "None"
+ * MODIFIER      ::= ["~"] modifier_name
  * RHS           ::= ( STRING | keysym | STRING keysym )
  * STRING        ::= '"' { CHAR } '"'
  * CHAR          ::= GRAPHIC_CHAR | ESCAPED_CHAR
@@ -141,8 +138,10 @@ enum rules_token {
     TOK_INCLUDE_STRING,
     TOK_LHS_KEYSYM,
     TOK_COLON,
+    TOK_BANG,
+    TOK_TILDE,
     TOK_STRING,
-    TOK_RHS_KEYSYM,
+    TOK_IDENT,
     TOK_ERROR
 };
 
@@ -198,6 +197,10 @@ skip_more_whitespace_and_comments:
     /* Colon. */
     if (chr(s, ':'))
         return TOK_COLON;
+    if (chr(s, '!'))
+        return TOK_BANG;
+    if (chr(s, '~'))
+        return TOK_TILDE;
 
     /* String literal. */
     if (chr(s, '\"')) {
@@ -244,7 +247,7 @@ skip_more_whitespace_and_comments:
         return TOK_STRING;
     }
 
-    /* RHS keysym or include. */
+    /* Identifier or include. */
     if (is_alpha(peek(s)) || peek(s) == '_') {
         s->buf_pos = 0;
         while (is_alnum(peek(s)) || peek(s) == '_')
@@ -259,7 +262,7 @@ skip_more_whitespace_and_comments:
 
         val->string.str = s->buf;
         val->string.len = s->buf_pos;
-        return TOK_RHS_KEYSYM;
+        return TOK_IDENT;
     }
 
     /* Discard rest of line. */
@@ -350,6 +353,9 @@ struct production {
     char string[256];
     bool has_keysym;
     bool has_string;
+
+    xkb_mod_mask_t mods;
+    xkb_mod_mask_t modmask;
 };
 
 static uint32_t
@@ -447,6 +453,28 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
     }
 }
 
+static xkb_mod_index_t
+resolve_modifier(const char *name)
+{
+    static const struct {
+        const char *name;
+        xkb_mod_index_t mod;
+    } mods[] = {
+        { "Shift", 0 },
+        { "Ctrl", 2 },
+        { "Alt", 3 },
+        { "Meta", 3 },
+        { "Lock", 1 },
+        { "Caps", 1 },
+    };
+
+    for (unsigned i = 0; i < ARRAY_SIZE(mods); i++)
+        if (streq(name, mods[i].name))
+            return mods[i].mod;
+
+    return XKB_MOD_INVALID;
+}
+
 static bool
 parse(struct xkb_compose_table *table, struct scanner *s,
       unsigned include_depth);
@@ -502,6 +530,7 @@ parse(struct xkb_compose_table *table, struct scanner *s,
     union lvalue val;
     struct keysym_from_name_cache *cache = s->priv;
     xkb_keysym_t keysym;
+    bool tilde;
     struct production production;
     enum { MAX_ERRORS = 10 };
     int num_errors = 0;
@@ -510,6 +539,8 @@ initial:
     production.len = 0;
     production.has_keysym = false;
     production.has_string = false;
+    production.mods = 0;
+    production.modmask = 0;
 
     /* fallthrough */
 
@@ -547,6 +578,32 @@ lhs:
     tok = lex(s, &val);
 lhs_tok:
     switch (tok) {
+    case TOK_COLON:
+        if (production.len <= 0) {
+            scanner_warn(s, "expected at least one keysym on left-hand side; skipping line");
+            goto skip;
+        }
+        goto rhs;
+    case TOK_IDENT:
+        if (!streq(val.string.str, "None")) {
+            scanner_err(s, "unrecognized identifier \"%s\"", val.string.str);
+            goto error;
+        }
+        production.mods = 0;
+        /* XXX Should only include the mods in resolve_mods(). */
+        production.modmask = 0xff;
+        goto lhs_keysym;
+    case TOK_BANG:
+        tilde = false;
+        goto lhs_mod_list;
+    default:
+        goto lhs_keysym_tok;
+    }
+
+lhs_keysym:
+    tok = lex(s, &val);
+lhs_keysym_tok:
+    switch (tok) {
     case TOK_LHS_KEYSYM:
         keysym = cached_keysym_from_name(cache, val.string.str, val.string.len);
         if (keysym == XKB_KEY_NoSymbol) {
@@ -560,13 +617,32 @@ lhs_tok:
             goto skip;
         }
         production.lhs[production.len++] = keysym;
+        production.mods = 0;
+        production.modmask = 0;
         goto lhs;
-    case TOK_COLON:
-        if (production.len <= 0) {
-            scanner_warn(s, "expected at least one keysym on left-hand side; skipping line");
-            goto skip;
+    default:
+        goto unexpected;
+    }
+
+lhs_mod_list:
+    switch (tok = lex(s, &val)) {
+    case TOK_TILDE:
+        tilde = true;
+        goto lhs_mod_list;
+    case TOK_IDENT: {
+        xkb_mod_index_t mod = resolve_modifier(val.string.str);
+        if (mod == XKB_MOD_INVALID) {
+            scanner_err(s, "unrecognized modifier \"%s\"",
+                        val.string.str);
+            goto error;
         }
-        goto rhs;
+        production.modmask |= 1 << mod;
+        if (tilde)
+            production.mods &= ~(1 << mod);
+        else
+            production.mods |= 1 << mod;
+        goto lhs;
+    }
     default:
         goto unexpected;
     }
@@ -589,7 +665,7 @@ rhs:
         strcpy(production.string, val.string.str);
         production.has_string = true;
         goto rhs;
-    case TOK_RHS_KEYSYM:
+    case TOK_IDENT:
         keysym = cached_keysym_from_name(cache, val.string.str, val.string.len);
         if (keysym == XKB_KEY_NoSymbol) {
             scanner_err(s, "unrecognized keysym \"%s\" on right-hand side",
