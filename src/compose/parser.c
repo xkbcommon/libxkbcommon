@@ -530,7 +530,6 @@ parse(struct xkb_compose_table *table, struct scanner *s,
     union lvalue val;
     struct keysym_from_name_cache *cache = s->priv;
     xkb_keysym_t keysym;
-    bool tilde;
     struct production production;
     enum { MAX_ERRORS = 10 };
     int num_errors = 0;
@@ -594,7 +593,6 @@ lhs_tok:
         production.modmask = 0xff;
         goto lhs_keysym;
     case TOK_BANG:
-        tilde = false;
         goto lhs_mod_list;
     default:
         goto lhs_keysym_tok;
@@ -624,27 +622,36 @@ lhs_keysym_tok:
         goto unexpected;
     }
 
-lhs_mod_list:
-    switch (tok = lex(s, &val)) {
-    case TOK_TILDE:
-        tilde = true;
-        goto lhs_mod_list;
-    case TOK_IDENT: {
-        xkb_mod_index_t mod = resolve_modifier(val.string.str);
+lhs_mod_list: {
+        bool tilde = false;
+        xkb_mod_index_t mod;
+
+        tok = lex(s, &val);
+        if (tok == TOK_TILDE) {
+            tilde = true;
+            tok = lex(s, &val);
+        }
+
+        if (tok != TOK_IDENT) {
+            if (tilde || production.modmask == 0)
+                goto unexpected;
+            goto lhs_keysym_tok;
+        }
+
+        mod = resolve_modifier(val.string.str);
         if (mod == XKB_MOD_INVALID) {
             scanner_err(s, "unrecognized modifier \"%s\"",
                         val.string.str);
             goto error;
         }
+
         production.modmask |= 1 << mod;
         if (tilde)
             production.mods &= ~(1 << mod);
         else
             production.mods |= 1 << mod;
-        goto lhs;
-    }
-    default:
-        goto unexpected;
+
+        goto lhs_mod_list;
     }
 
 rhs:
