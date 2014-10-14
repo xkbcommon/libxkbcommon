@@ -424,6 +424,51 @@ test_XCOMPOSEFILE(struct xkb_context *ctx)
     xkb_compose_table_unref(table);
 }
 
+static void
+test_modifier_syntax(struct xkb_context *ctx)
+{
+    const char *table_string;
+
+    /* We don't do anything with the modifiers, but make sure we can parse
+     * them. */
+
+    assert(test_compose_seq_buffer(ctx,
+        "None <A>          : X \n"
+        "! Shift <B>       : Y \n"
+        "! Ctrl <C>        : Y \n"
+        "! Alt <D>         : Y \n"
+        "! Caps <E>        : Y \n"
+        "! Lock <F>        : Y \n"
+        "! Shift Ctrl <G>  : Y \n"
+        "! ~Shift <H>      : Y \n"
+        "! ~Shift Ctrl <I> : Y \n"
+        "! Shift ~Ctrl <J> : Y \n"
+        "! Shift ~Ctrl ~Alt <K> : Y \n"
+        "<L> ! Shift <M>   : Y \n"
+        "None <N> ! Shift <O> : Y \n"
+        "None <P> ! Shift <Q> : Y \n",
+        XKB_KEY_NoSymbol));
+
+    fprintf(stderr, "<START bad input string>\n");
+    table_string =
+        "! None <A>        : X \n"
+        "! Foo <B>         : X \n"
+        "None ! Shift <C>  : X \n"
+        "! <D>             : X \n"
+        "! ~ <E>           : X \n"
+        "! ! <F>           : X \n"
+        "! Ctrl ! Ctrl <G> : X \n"
+        "<H> !             : X \n"
+        "<I> None          : X \n"
+        "None None <J>     : X \n"
+        "<K>               : !Shift X \n";
+    assert(!xkb_compose_table_new_from_buffer(ctx, table_string,
+                                              strlen(table_string), "C",
+                                              XKB_COMPOSE_FORMAT_TEXT_V1,
+                                              XKB_COMPOSE_COMPILE_NO_FLAGS));
+    fprintf(stderr, "<END bad input string>\n");
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -436,6 +481,7 @@ main(int argc, char *argv[])
     test_conflicting(ctx);
     test_XCOMPOSEFILE(ctx);
     test_state(ctx);
+    test_modifier_syntax(ctx);
 
     xkb_context_unref(ctx);
     return 0;
