@@ -469,6 +469,42 @@ test_modifier_syntax(struct xkb_context *ctx)
     fprintf(stderr, "<END bad input string>\n");
 }
 
+static void
+test_include(struct xkb_context *ctx)
+{
+    char *path, *table_string;
+    int ret;
+
+    path = test_get_path("compose/en_US.UTF-8/Compose");
+    assert(path);
+
+    /* We don't have a mechanism to change the include paths like we
+     * have for keymaps. So we must include the full path. */
+    ret = asprintf(&table_string,
+        "<dead_tilde> <space>   : \"foo\" X\n"
+        "include \"%s\"\n"
+        "<dead_tilde> <dead_tilde> : \"bar\" Y\n", path);
+    assert(ret >= 0);
+
+    assert(test_compose_seq_buffer(ctx, table_string,
+        /* No conflict. */
+        XKB_KEY_dead_acute,     XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_dead_acute,     XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "´",    XKB_KEY_acute,
+
+        /* Comes before - doesn't override. */
+        XKB_KEY_dead_tilde,     XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_space,          XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "~",    XKB_KEY_asciitilde,
+
+        /* Comes after - does override. */
+        XKB_KEY_dead_tilde,     XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_dead_tilde,     XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "bar",  XKB_KEY_Y,
+
+        XKB_KEY_NoSymbol));
+
+    free(path);
+    free(table_string);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -482,6 +518,7 @@ main(int argc, char *argv[])
     test_XCOMPOSEFILE(ctx);
     test_state(ctx);
     test_modifier_syntax(ctx);
+    test_include(ctx);
 
     xkb_context_unref(ctx);
     return 0;
