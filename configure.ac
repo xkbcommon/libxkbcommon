@@ -95,6 +95,11 @@ XORG_TESTSET_CFLAG([BASE_CFLAGS], [-Wdocumentation])
 XORG_CHECK_LINKER_FLAGS([-Wl,--no-undefined], [have_no_undefined=yes])
 AM_CONDITIONAL([HAVE_NO_UNDEFINED], [test "x$have_no_undefined" = xyes])
 
+AC_CHECK_LIB(rt, clock_gettime,
+    [AC_SUBST(RT_LIBS, "-lrt")],
+    [AC_SUBST(RT_LIBS, "")],
+    [-lrt])
+
 # Define a configuration option for the XKB config root
 xkb_base=`$PKG_CONFIG --variable=xkb_base xkeyboard-config`
 AS_IF([test "x$xkb_base" = x], [
