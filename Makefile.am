@@ -209,7 +209,7 @@ test_keyseq_LDADD = $(TESTS_LDADD)
 test_rulescomp_LDADD = $(TESTS_LDADD)
 test_rmlvo_to_kccgst_LDADD = $(TESTS_LDADD)
 test_print_compiled_keymap_LDADD = $(TESTS_LDADD)
-test_compose_LDADD = $(TESTS_LDADD) -lrt
+test_compose_LDADD = $(TESTS_LDADD) $(RT_LIBS)
 
 if BUILD_LINUX_TESTS
 check_PROGRAMS += \
@@ -242,7 +242,7 @@ check_PROGRAMS += $(TESTS)
 # Benchmarks
 ##
 
-BENCH_LDADD = $(TESTS_LDADD) -lrt
+BENCH_LDADD = $(TESTS_LDADD) $(RT_LIBS)
 
 check_PROGRAMS += \
 	bench/key-proc \
