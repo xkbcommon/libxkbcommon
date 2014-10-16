@@ -816,5 +816,11 @@ parse(struct xkb_context *ctx, struct scanner *scanner, const char *map)
         return NULL;
     }
 
+    if (first)
+        log_vrb(ctx, 5,
+                "No map in include statement, but \"%s\" contains several; "
+                "Using first defined map, \"%s\"\n",
+                scanner->file_name, first->name);
+
     return first;
 }
