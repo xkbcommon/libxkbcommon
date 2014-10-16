@@ -23,6 +23,8 @@ for file in \
     symbols/capslock \
     symbols/latin \
     symbols/level5 \
+    symbols/macintosh_vndr/apple \
+    symbols/macintosh_vndr/us \
     symbols/us \
     symbols/nbsp \
     symbols/il \
