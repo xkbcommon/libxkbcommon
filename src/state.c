@@ -129,7 +129,7 @@ get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
          * supposed to skip the entry (xserver does this with cached
          * entry->active field).
          */
-        if (!type->entries[i].mods.mask)
+        if (type->entries[i].mods.mods != 0 && type->entries[i].mods.mask == 0)
             continue;
 
         if (type->entries[i].mods.mask == active_mods)
