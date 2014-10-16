@@ -1,4 +1,4 @@
-default partial
+default  partial
 xkb_symbols "fr" {
     name[Group1] = "French (Canada)";
 
@@ -122,9 +122,9 @@ xkb_symbols "fr-dvorak" {
 partial
 xkb_symbols "fr-legacy" {
 
-    name[Group1] = "French (Canada, legacy)";
-
     include "ca(fr)"
+
+    name[Group1] = "French (Canada, legacy)";
 
     key <TLDE>	{ [    degree,     degree,       notsign ]	};
     key <AE01>	{ [         1,     exclam,   onesuperior ]	};
@@ -168,9 +168,9 @@ xkb_symbols "fr-legacy" {
 partial
 xkb_symbols "multi" {
 
-    name[Group1] = "Canadian Multilingual (first part)";
-
     include "ca(fr)"
+
+    name[Group1] = "Canadian Multilingual (first part)";
 
     key <TLDE>	{ [     slash,  backslash,           bar ]	};
     key <AE01>	{ [         1,     exclam ]	};
@@ -259,14 +259,13 @@ xkb_symbols "multi-2gr" {
     key <AB08>	{ [ Greek_horizbar, multiply ]	};
     key <AB09>	{ [ periodcentered, division ]	};
     key <AB10>	{ [ NoSymbol, dead_abovedot ]	};
-
 };
 
 // based on
 // Inuktitut keyboard for X11
 // written by Pablo Saratxaga <pablo@mandrakesoft.com>
 
-alphanumeric_keys 
+alphanumeric_keys
 xkb_symbols "ike" {
 
     name[Group1]= "Inuktitut";
@@ -323,8 +322,6 @@ xkb_symbols "ike" {
     key	<TLDE> { [ 0x0100157b, 0x01001575	]	};
     key	<LSGT> { [ 0x01001579, 0x01001577	]	};
     key	<BKSL> { [ backslash,  bar		]	};
-
-// End alphanumeric section
 };
 
 partial
@@ -455,34 +452,32 @@ xkb_symbols "multix" {
 xkb_symbols "olpc" {
 
     include "ca(fr)"
-    
+
     key <AE02>	{ [          2,    quotedbl,          ograve,        Ograve ] };
     key <AE03>	{ [          3,    slash,          at,        VoidSymbol ] };
-    
+
     key <AD03>	{ [          e,    E,          EuroSign, VoidSymbol]	};
-        
+
     key <AB09>	{ [  period,         period,         0x1002010 ]	};
-    
+
     key <I219>  { [  guillemotleft,  guillemotright, degree, VoidSymbol ] };
 };
 
-partial alphanumeric_keys 
+partial alphanumeric_keys
 xkb_symbols "eng" {
-    name[Group1] = "English (Canada)";
     include "us(basic)"
+    name[Group1] = "English (Canada)";
 };
 
 // EXTRAS:
 
-partial alphanumeric_keys 
+partial alphanumeric_keys
 xkb_symbols "kut" {
 
-    //Ejective U0313  and compose accents are from shs layout
+    // Ejective U0313 and acute accents are taken from shs layout.
     include "ca(shs)"
 
     name[Group1]= "Kutenai";
-
-    // Alphanumeric section
 
     // Alveolar Click
     key <AD05> {	[ t,	T,U01C2	,U01C2	]	};
@@ -505,17 +500,16 @@ xkb_symbols "kut" {
 
 // Secwepemctsin keyboard for X11
 // written by Neskie Manuel <neskiem@gmail.com>
-
-partial alphanumeric_keys  
+partial alphanumeric_keys
 xkb_symbols "shs" {
 
     include "us"
 
     name[Group1]= "Secwepemctsin";
 
-    //Using Dead key to get COMBINING COMMA ABOVE for ejectives on
-    //q, l, t, s, m, g, k, p, w, y, r
-    //XCompose key is used for the other accute and grave.
+    // Using a "dead key" to get a COMBINING COMMA ABOVE
+    // for ejectives on q, l, t, s, m, g, k, p, w, y, r.
+    // The Compose key is used for the other acutes and grave.
 
     key <AB08>	{ [ comma, less, U0313    ]	};
     key <AC01>	{ [ a, A, aacute, Aacute  ]	};
