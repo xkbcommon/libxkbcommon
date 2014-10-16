@@ -92,7 +92,15 @@ XORG_TESTSET_CFLAG([BASE_CFLAGS], [-fvisibility=hidden])
 XORG_TESTSET_CFLAG([BASE_CFLAGS], [-Wextra -Wno-unused-parameter -Wno-missing-field-initializers])
 XORG_TESTSET_CFLAG([BASE_CFLAGS], [-Wdocumentation])
 
-XORG_CHECK_LINKER_FLAGS([-Wl,--no-undefined], [have_no_undefined=yes])
+# OpenBSD does not have DT_NEEDED entries for libc by design
+# so when these flags are passed to ld via libtool the checks will fail
+case "$host_os" in
+openbsd*)
+    ;;
+*)
+    XORG_CHECK_LINKER_FLAGS([-Wl,--no-undefined], [have_no_undefined=yes]) ;;
+esac
+
 AM_CONDITIONAL([HAVE_NO_UNDEFINED], [test "x$have_no_undefined" = xyes])
 
 AC_CHECK_LIB(rt, clock_gettime,
