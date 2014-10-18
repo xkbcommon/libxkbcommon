@@ -18,11 +18,11 @@ See [Quick Guide](doc/quick-guide.md).
 
 ## API
 
-While xkbcommon's API is somewhat derived from the classic XKB API as found
+While libxkbcommon's API is somewhat derived from the classic XKB API as found
 in X11/extensions/XKB.h and friends, it has been substantially reworked to
-expose fewer internal details to clients.  The supported API is available
-in the xkbcommon/xkbcommon-*.h files.  Additional support is provided for
-X11 (XCB) clients, in the xkbcommon-x11 library, xkbcommon/xkbcommon-x11.h.
+expose fewer internal details to clients.
+
+See the [API Documentation](http://xkbcommon.org/doc/current/modules.html).
 
 ## Dataset
 
