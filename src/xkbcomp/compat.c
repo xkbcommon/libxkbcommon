@@ -792,7 +792,7 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
 
         if (info->errorCount > 10) {
             log_err(info->ctx,
-                    "Abandoning compatibility map \"%s\"\n", file->topName);
+                    "Abandoning compatibility map \"%s\"\n", file->name);
             break;
         }
     }

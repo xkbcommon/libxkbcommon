@@ -338,7 +338,6 @@ enum xkb_map_flags {
 typedef struct {
     ParseCommon common;
     enum xkb_file_type file_type;
-    char *topName;
     char *name;
     ParseCommon *defs;
     enum xkb_map_flags flags;

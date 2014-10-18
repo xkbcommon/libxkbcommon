@@ -520,8 +520,7 @@ XkbFileCreate(enum xkb_file_type type, char *name, ParseCommon *defs,
 
     XkbEscapeMapName(name);
     file->file_type = type;
-    file->topName = strdup_safe(name);
-    file->name = name;
+    file->name = name ? name : strdup("(unnamed)");
     file->defs = defs;
     file->flags = flags;
 
@@ -711,7 +710,6 @@ FreeXkbFile(XkbFile *file)
         }
 
         free(file->name);
-        free(file->topName);
         free(file);
         file = next;
     }

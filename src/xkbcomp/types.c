@@ -662,7 +662,7 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
 
         if (info->errorCount > 10) {
             log_err(info->ctx,
-                    "Abandoning keytypes file \"%s\"\n", file->topName);
+                    "Abandoning keytypes file \"%s\"\n", file->name);
             break;
         }
     }
