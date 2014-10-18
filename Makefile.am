@@ -11,7 +11,8 @@ EXTRA_DIST = \
 	doc/quick-guide.md \
 	doc/compat.md \
 	doc/keymap-format-text-v1.txt \
-	doc/rules-format.txt
+	doc/rules-format.txt \
+	doc/doxygen-extra.css
 
 AM_CPPFLAGS = \
 	-DDFLT_XKB_CONFIG_ROOT='"$(XKBCONFIGROOT)"' \
