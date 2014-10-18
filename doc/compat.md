@@ -44,3 +44,12 @@ Notable additions:
 - multiple keysyms per level
   + this requires incompatible dataset changes, such that X11 would
     not be able to parse these
+
+## Compose support
+
+Relative to the standard implementation in libX11 (described in the
+Compose(5) man-page), some features are not supported:
+
+- the (! MODIFIER) syntax
+- using modifier keysyms in Compose sequences
+- several interactions with Braille keysyms
