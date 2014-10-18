@@ -39,8 +39,8 @@ On the other hand, some features and extensions were added.
 
 Notable additions:
 - 32-bit keycodes
-- extended number of modifiers
-- extended number of groups
+- extended number of modifiers (planned)
+- extended number of groups (planned)
 - multiple keysyms per level
   + this requires incompatible dataset changes, such that X11 would
     not be able to parse these
