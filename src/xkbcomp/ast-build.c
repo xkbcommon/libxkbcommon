@@ -472,12 +472,8 @@ IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge)
             incl = incl->next_incl;
         }
 
-        if (!incl) {
-            log_wsgo(ctx,
-                     "Allocation failure in IncludeCreate; "
-                     "Using only part of the include\n");
+        if (!incl)
             break;
-        }
 
         incl->common.type = STMT_INCLUDE;
         incl->common.next = NULL;
