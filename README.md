@@ -1,7 +1,9 @@
 # libxkbcommon
 
-libxkbcommon is a keymap compiler and support library which processes a
-reduced subset of keymaps as defined by the XKB specification.
+libxkbcommon is a keyboard keymap compiler and support library which
+processes a reduced subset of keymaps as defined by the XKB (X Keyboard
+Extension) specification.  It also contains a module for handling Compose
+and dead keys.
 
 ## Quick Guide
 
@@ -22,6 +24,9 @@ testing purposes.  The most common dataset is xkeyboard-config, which is used
 by all current distributions for their X11 XKB data.  More information on
 xkeyboard-config is available here:
     http://www.freedesktop.org/wiki/Software/XKeyboardConfig
+
+The dataset for Compose is distributed in libX11, as part of the X locale
+data.
 
 ## Relation to X11
 
