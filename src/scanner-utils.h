@@ -34,13 +34,13 @@ typedef darray(struct sval) darray_sval;
 static inline bool
 svaleq(struct sval s1, struct sval s2)
 {
-    return s1.len == s2.len && strncmp(s1.start, s2.start, s1.len) == 0;
+    return s1.len == s2.len && memcmp(s1.start, s2.start, s1.len) == 0;
 }
 
 static inline bool
 svaleq_prefix(struct sval s1, struct sval s2)
 {
-    return s1.len <= s2.len && strncmp(s1.start, s2.start, s1.len) == 0;
+    return s1.len <= s2.len && memcmp(s1.start, s2.start, s1.len) == 0;
 }
 
 struct scanner {

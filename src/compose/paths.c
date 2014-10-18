@@ -115,13 +115,13 @@ resolve_name(const char *filename, enum resolve_name_direction direction,
             s++;
 
         if (direction == LEFT_TO_RIGHT) {
-            if (left_len == name_len && strncmp(left, name, left_len) == 0) {
+            if (left_len == name_len && memcmp(left, name, left_len) == 0) {
                 match = strndup(right, right_len);
                 break;
             }
         }
         else if (direction == RIGHT_TO_LEFT) {
-            if (right_len == name_len && strncmp(right, name, right_len) == 0) {
+            if (right_len == name_len && memcmp(right, name, right_len) == 0) {
                 match = strndup(left, left_len);
                 break;
             }
