@@ -1,3 +1,47 @@
+libxkbcommon 0.5.0 - 2014-10-18
+==================
+
+- Added support for Compose/dead keys in a new module (included in
+  libxkbcommon). See the documentation or the
+  xkbcommon/xkbcommon-compose.h header file for more details.
+
+- Improved and reordered some sections of the documentation.
+
+- The doxygen HTML pages were made nicer to read.
+
+- Most tests now run also on non-linux platforms.
+
+- A warning is emitted by default about RMLVO values which are not used
+  during keymap compilation, which are most often a user misconfiguration.
+  For example, "terminate:ctrl_alt_backspace" instead of
+  "terminate:ctrl_alt_bksp".
+
+- Added symbol versioning for libxkbcommon and libxkbcommon-x11.
+  Note: binaries compiled against this and future versions will not be
+  able to link against the previous versions of the library.
+
+- Removed several compatablity symbols from the binary (the API isn't
+  affected). This affects binaries which
+
+  1. Were compiled against a pre-stable (<0.2.0) version of libxkbcommon, and
+  2. Are linked against the this or later version of libxkbcommon.
+
+  Such a scenario is likely to fail already.
+
+- If Xvfb is not available, the x11comp test is now correctly skipped
+  instead of hanging.
+
+- Benchmarks were moved to a separate bench/ directory.
+
+- Build fixes from OpenBSD.
+
+- Fixed a bug where key type entries such as "map[None] = Level2;" were
+  ignored.
+
+- New API:
+  XKB_COMPOSE_*
+  xkb_compose_*
+
 libxkbcommon 0.4.3 - 2014-08-19
 ==================
 
