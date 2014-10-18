@@ -9,6 +9,7 @@ EXTRA_DIST = \
 	test/data \
 	README.md \
 	doc/quick-guide.md \
+	doc/compat.md \
 	doc/keymap-format-text-v1.txt \
 	doc/rules-format.txt
 

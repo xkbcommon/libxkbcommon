@@ -656,6 +656,7 @@ WARN_LOGFILE           =
 
 INPUT                  = @abs_top_srcdir@/README.md \
                          @abs_top_srcdir@/doc/quick-guide.md \
+                         @abs_top_srcdir@/doc/compat.md \
                          @abs_top_srcdir@/xkbcommon/xkbcommon.h \
                          @abs_top_srcdir@/xkbcommon/xkbcommon-names.h \
                          @abs_top_srcdir@/xkbcommon/xkbcommon-x11.h \
