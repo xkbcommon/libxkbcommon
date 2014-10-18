@@ -38,7 +38,7 @@ extern "C" {
 /**
  * @defgroup compose Compose and dead-keys support
  * Support for Compose and dead-keys.
- * @since TBD
+ * @since 0.5.0
  *
  * @{
  */
