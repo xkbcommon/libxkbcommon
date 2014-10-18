@@ -12,12 +12,6 @@ key events must be fed into the xkb_state object using xkb_state_update_key().
 Once this is done, the xkb_state object will be properly updated, and the
 keysyms to use can be obtained with xkb_state_key_get_syms().
 
-libxkbcommon does not distribute a dataset itself, other than for testing
-purposes.  The most common dataset is xkeyboard-config, as used by all
-current distributions for their X11 XKB data.  More information on
-xkeyboard-config is available here:
-    http://www.freedesktop.org/wiki/Software/XKeyboardConfig
-
 ## Quick Guide
 
 See [Quick Guide](doc/quick-guide.md).
@@ -29,6 +23,14 @@ in X11/extensions/XKB.h and friends, it has been substantially reworked to
 expose fewer internal details to clients.  The supported API is available
 in the xkbcommon/xkbcommon-*.h files.  Additional support is provided for
 X11 (XCB) clients, in the xkbcommon-x11 library, xkbcommon/xkbcommon-x11.h.
+
+## Dataset
+
+libxkbcommon does not distribute a keymap dataset itself, other than for
+testing purposes.  The most common dataset is xkeyboard-config, which is used
+by all current distributions for their X11 XKB data.  More information on
+xkeyboard-config is available here:
+    http://www.freedesktop.org/wiki/Software/XKeyboardConfig
 
 ## Relation to X11
 
