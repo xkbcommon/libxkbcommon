@@ -75,6 +75,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 struct keysym_from_name_cache {
     struct {
         char name[64];
+        unsigned len;
         xkb_keysym_t keysym;
     } cache[KEYSYM_FROM_NAME_CACHE_SIZE];
     unsigned next;
@@ -90,11 +91,13 @@ cached_keysym_from_name(struct keysym_from_name_cache *cache,
         return XKB_KEY_NoSymbol;
 
     for (unsigned i = 0; i < KEYSYM_FROM_NAME_CACHE_SIZE; i++)
-        if (streq(cache->cache[i].name, name))
+        if (cache->cache[i].len == len &&
+            memcmp(cache->cache[i].name, name, len) == 0)
             return cache->cache[i].keysym;
 
     keysym = xkb_keysym_from_name(name, XKB_KEYSYM_NO_FLAGS);
     strcpy(cache->cache[cache->next].name, name);
+    cache->cache[cache->next].len = len;
     cache->cache[cache->next].keysym = keysym;
     cache->next = (cache->next + 1) % KEYSYM_FROM_NAME_CACHE_SIZE;
     return keysym;
