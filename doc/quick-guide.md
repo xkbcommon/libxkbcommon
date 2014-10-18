@@ -1,6 +1,6 @@
 # Quick Guide
 
-## Intro
+## Introduction
 
 This document contains a quick walk-through of the often-used parts of
 the library. We will employ a few use-cases to lead the examples:
@@ -42,8 +42,9 @@ let's create one:
 The xkb_context contains the keymap include paths, the log level and
 functions, and other general customizable administrativia.
 
-Next we need to create a keymap, xkb_keymap. There are different ways to
-do this.
+Next we need to create a keymap, xkb_keymap. This is an immutable object
+which contains all of the information about the keys, layouts, etc. There
+are different ways to do this.
 
 If we are an evdev client, we have nothing to go by, so we need to ask
 the user for his/her keymap preferences (for example, an Icelandic
@@ -54,7 +55,14 @@ passing NULL chooses the system's default.
 
 ~~~{.c}
     struct xkb_keymap *keymap;
-    struct xkb_rule_names names = <...>;
+    /* Example RMLVO for Icelandic Dvorak. */
+    struct xkb_rule_names names = {
+        .rules = NULL,
+        .model = "pc105",
+        .layout = "is",
+        .variant = "dvorak",
+        .options = "terminate:ctrl_alt_bksp"
+    };
 
     keymap = xkb_keymap_new_from_names(ctx, &names,
                                        XKB_KEYMAP_COMPILE_NO_FLAGS);
@@ -65,6 +73,7 @@ If we are a Wayland client, the compositor gives us a string complete
 with a keymap. In this case, we can create the keymap object like this:
 
 ~~~{.c}
+    /* From the wl_keyboard::keymap event. */
     const char *keymap_string = <...>;
 
     keymap = xkb_keymap_new_from_string(ctx, keymap_string,
@@ -92,7 +101,8 @@ we will use the core keyboard device:
 ~~~
 
 Now that we have the keymap, we are ready to handle the keyboard devices.
-For each device, we create an xkb_state:
+For each device, we create an xkb_state, which remembers things like which
+keyboard modifiers and LEDs are active:
 
 ~~~{.c}
     struct xkb_state *state;
