@@ -1,16 +1,7 @@
 # libxkbcommon
 
-xkbcommon is a keymap compiler and support library which processes a
-reduced subset of keymaps as defined by the XKB specification.  Primarily,
-a keymap is created from a set of Rules/Model/Layout/Variant/Options names,
-processed through an XKB ruleset, and compiled into a struct xkb_keymap,
-which is the base type for all xkbcommon operations.
-
-From an xkb_keymap, an xkb_state object is created which holds the current
-state of all modifiers, groups, LEDs, etc, relating to that keymap.  All
-key events must be fed into the xkb_state object using xkb_state_update_key().
-Once this is done, the xkb_state object will be properly updated, and the
-keysyms to use can be obtained with xkb_state_key_get_syms().
+libxkbcommon is a keymap compiler and support library which processes a
+reduced subset of keymaps as defined by the XKB specification.
 
 ## Quick Guide
 
