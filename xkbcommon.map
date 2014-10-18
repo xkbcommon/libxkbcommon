@@ -1,4 +1,4 @@
-V_0.4.3 {
+V_0.5.0 {
 global:
 	xkb_keysym_get_name;
 	xkb_keysym_from_name;
