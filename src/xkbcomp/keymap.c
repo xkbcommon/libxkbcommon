@@ -257,10 +257,8 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
             continue;
         }
 
-        if (!file->topName) {
-            free(file->topName);
+        if (!file->topName)
             file->topName = strdup(main_name);
-        }
 
         files[file->file_type] = file;
     }
