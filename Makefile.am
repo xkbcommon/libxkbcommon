@@ -14,7 +14,8 @@ EXTRA_DIST = \
 	doc/rules-format.txt \
 	doc/doxygen-extra.css \
 	xkbcommon.map \
-	xkbcommon-x11.map
+	xkbcommon-x11.map \
+	PACKAGING
 
 AM_CPPFLAGS = \
 	-DDFLT_XKB_CONFIG_ROOT='"$(XKBCONFIGROOT)"' \
