@@ -30,14 +30,6 @@ expose fewer internal details to clients.  The supported API is available
 in the xkbcommon/xkbcommon-*.h files.  Additional support is provided for
 X11 (XCB) clients, in the xkbcommon-x11 library, xkbcommon/xkbcommon-x11.h.
 
-The xkbcommon API and ABI are stable. We will attempt to not break ABI during
-a minor release series, so applications written against 0.1.0 should be
-completely compatible with 0.5.3, but not necessarily with 1.0.0.  However, new
-symbols may be introduced in any release.  Thus, anyone packaging xkbcommon
-should make sure any package depending on it depends on a release greater than
-or equal to the version it was built against (or earlier, if it doesn't use
-any newly-introduced symbols), but less than the next major release.
-
 ## Relation to X11
 
 Relative to the XKB 1.1 specification implemented in current X servers,
