@@ -499,8 +499,6 @@ static void
 MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
                      enum merge_mode merge)
 {
-    KeyInfo *keyi;
-    ModMapEntry *mm;
     xkb_atom_t *group_name;
     xkb_layout_index_t group_names_in_both;
 
@@ -536,6 +534,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
         darray_init(from->keys);
     }
     else {
+        KeyInfo *keyi;
         darray_foreach(keyi, from->keys) {
             keyi->merge = (merge == MERGE_DEFAULT ? keyi->merge : merge);
             if (!AddKeySymbols(into, keyi, false))
@@ -548,6 +547,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
         darray_init(from->modmaps);
     }
     else {
+        ModMapEntry *mm;
         darray_foreach(mm, from->modmaps) {
             mm->merge = (merge == MERGE_DEFAULT ? mm->merge : merge);
             if (!AddModMapEntry(into, mm))
@@ -1258,13 +1258,12 @@ FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym)
 {
     struct xkb_key *key;
     xkb_layout_index_t group;
-    xkb_level_index_t level;
     bool got_one_group, got_one_level;
 
     group = 0;
     do {
+        xkb_level_index_t level = 0;
         got_one_group = false;
-        level = 0;
         do {
             got_one_level = false;
             xkb_keys_foreach(key, keymap) {
@@ -1299,8 +1298,8 @@ FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym)
 static xkb_atom_t
 FindAutomaticType(struct xkb_context *ctx, GroupInfo *groupi)
 {
-    xkb_keysym_t sym0, sym1, sym2, sym3;
-    xkb_level_index_t width = darray_size(groupi->levels);
+    xkb_keysym_t sym0, sym1;
+    const xkb_level_index_t width = darray_size(groupi->levels);
 
 #define GET_SYM(level) \
     (darray_item(groupi->levels, level).num_syms == 0 ? \
@@ -1328,6 +1327,7 @@ FindAutomaticType(struct xkb_context *ctx, GroupInfo *groupi)
 
     if (width <= 4) {
         if (xkb_keysym_is_lower(sym0) && xkb_keysym_is_upper(sym1)) {
+            xkb_keysym_t sym2, sym3;
             sym2 = GET_SYM(2);
             sym3 = (width == 4 ? GET_SYM(3) : XKB_KEY_NoSymbol);
 

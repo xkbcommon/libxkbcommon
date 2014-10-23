@@ -1163,14 +1163,13 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
                                  ...)
 {
     va_list ap;
-    xkb_mod_index_t idx = 0;
     xkb_mod_mask_t wanted = 0;
     int ret = 0;
     xkb_mod_index_t num_mods = xkb_keymap_num_mods(state->keymap);
 
     va_start(ap, match);
     while (1) {
-        idx = va_arg(ap, xkb_mod_index_t);
+        xkb_mod_index_t idx = va_arg(ap, xkb_mod_index_t);
         if (idx == XKB_MOD_INVALID)
             break;
         if (idx >= num_mods) {
@@ -1214,12 +1213,12 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
                                ...)
 {
     va_list ap;
-    xkb_mod_index_t idx = 0;
     xkb_mod_mask_t wanted = 0;
     int ret = 0;
 
     va_start(ap, match);
     while (1) {
+        xkb_mod_index_t idx;
         const char *str = va_arg(ap, const char *);
         if (str == NULL)
             break;

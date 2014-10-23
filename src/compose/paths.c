@@ -166,8 +166,6 @@ get_home_xcompose_file_path(void)
 char *
 get_locale_compose_file_path(const char *locale)
 {
-    int ret;
-    const char *xlocaledir;
     char *resolved;
     char *path;
 
@@ -193,8 +191,8 @@ get_locale_compose_file_path(const char *locale)
         path = resolved;
     }
     else {
-        xlocaledir = get_xlocaledir_path();
-        ret = asprintf(&path, "%s/%s", xlocaledir, resolved);
+        const char *xlocaledir = get_xlocaledir_path();
+        int ret = asprintf(&path, "%s/%s", xlocaledir, resolved);
         free(resolved);
         if (ret < 0)
             return NULL;

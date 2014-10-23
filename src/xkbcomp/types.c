@@ -174,8 +174,6 @@ static void
 MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
                       enum merge_mode merge)
 {
-    KeyTypeInfo *type;
-
     if (from->errorCount > 0) {
         into->errorCount += from->errorCount;
         return;
@@ -193,6 +191,7 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
         darray_init(from->types);
     }
     else {
+        KeyTypeInfo *type;
         darray_foreach(type, from->types) {
             type->merge = (merge == MERGE_DEFAULT ? type->merge : merge);
             if (!AddKeyType(into, type, false))
