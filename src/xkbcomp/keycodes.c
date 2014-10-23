@@ -467,7 +467,7 @@ HandleLedNameDef(KeyNamesInfo *info, LedNameDef *def,
 
     if (!ExprResolveString(info->ctx, def->name, &name)) {
         char buf[20];
-        snprintf(buf, sizeof(buf), "%d", def->ndx);
+        snprintf(buf, sizeof(buf), "%u", def->ndx);
         info->errorCount++;
         return ReportBadType(info->ctx, "indicator", "name", buf, "string");
     }
