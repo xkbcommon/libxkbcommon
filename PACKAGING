@@ -2,7 +2,7 @@ libxkbcommon consists of two shared libraries, libxkbcommon (the main
 library) and libxkbcommon-x11 (an addon library for XCB clients).
 
 The files for libxkbcommon-x11 are:
-    libxkbcommon-x11.a libxkbcommon.so* xkbcommon/xkbcommon-x11.h
+    libxkbcommon-x11.a libxkbcommon-x11.so* xkbcommon/xkbcommon-x11.h
     xkbcommon-x11.map xkbcommon-x11.pc
 
 libxkbcommon-x11 can be disabled with --disable-x11 (see
