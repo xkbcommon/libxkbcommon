@@ -200,7 +200,12 @@ enum xkb_compose_format {
  * The locale is used for searching the file-system for an appropriate
  * Compose file.  The search order is described in Compose(5).  It is
  * affected by the following environment variables:
- * XCOMPOSEFILE, HOME, XLOCALEDIR.
+ *
+ * 1. XCOMPOSEFILE - see Compose(5).
+ * 2. HOME - see Compose(5).
+ * 3. XLOCALEDIR - if set, used as the base directory for the system's
+ *    X locale files, e.g. /usr/share/X11/locale, instead of the
+ *    preconfigured directory.
  *
  * @param context
  *     The library context in which to create the compose table.
