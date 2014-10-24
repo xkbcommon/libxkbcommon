@@ -209,6 +209,7 @@ AC_MSG_RESULT([
         prefix:                  ${prefix}
         includedir:              ${includedir}
         lib dir:                 ${libdir}
+        datarootdir:             ${datarootdir}
         XKB config root:         ${XKBCONFIGROOT}
         X11 locale root:         ${XLOCALEDIR}
 ])
