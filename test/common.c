@@ -83,7 +83,7 @@ test_key_seq_va(struct xkb_keymap *keymap, va_list ap)
             syms = &sym;
         }
 
-        fprintf(stderr, "got %u syms for key 0x%x: [", nsyms, kc);
+        fprintf(stderr, "got %u syms for keycode %u: [", nsyms, kc);
 
         if (op == DOWN || op == BOTH)
             xkb_state_update_key(state, kc, XKB_KEY_DOWN);
