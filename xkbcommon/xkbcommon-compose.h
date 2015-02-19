@@ -55,13 +55,13 @@ extern "C" {
  * Here are some example sequences, in the libX11 Compose file format:
  *
  *     <dead_acute> <a>         : "á"   aacute # LATIN SMALL LETTER A WITH ACUTE
- *     <Multi_key> <A> <T>      : "@"   at # COMMERCIAL AT
+ *     <Multi_key> <A> <T>      : "@"   at     # COMMERCIAL AT
  *
- * When the user presses a key which produces the \<dead_acute> keysym,
+ * When the user presses a key which produces the `<dead_acute>` keysym,
  * nothing initially happens (thus the key is dubbed a "dead-key").  But
- * when the user enters <a>, "á" is "composed", in place of "a".  If
+ * when the user enters `<a>`, "á" is "composed", in place of "a".  If
  * instead the user had entered a keysym which does not follow
- * \<dead_acute\> in any compose sequence, the sequence is said to be
+ * `<dead_acute>` in any compose sequence, the sequence is said to be
  * "cancelled".
  *
  * Compose files define many such sequences.  For a description of the
@@ -73,7 +73,7 @@ extern "C" {
  * result string (using xkb_keysym_to_utf8()).
  *
  * This library provides low-level support for Compose file parsing and
- * processing.  Higher-level APIs (such as libX11's Xutf8LookupString(3))
+ * processing.  Higher-level APIs (such as libX11's `Xutf8LookupString`(3))
  * may be built upon it, or it can be used directly.
  *
  * @endparblock
@@ -90,7 +90,7 @@ extern "C" {
  * 2. An equal sequence overrides an existing one.
  * 3. A shorter sequence does not override a longer one.
  *
- * Sequences of length 1 are allowed, although they are not common.
+ * Sequences of length 1 are allowed.
  *
  * @endparblock
  */
@@ -100,15 +100,15 @@ extern "C" {
  * @parblock
  *
  * What should happen when a sequence is cancelled?  For example, consider
- * there are only the above sequences, and the input kesysms are
- * \<dead_acute\> \<b\>.  There are a few approaches:
+ * there are only the above sequences, and the input keysyms are
+ * `<dead_acute> <b>`.  There are a few approaches:
  *
  * 1. Swallow the cancelling keysym; that is, no keysym is produced.
  *    This is the approach taken by libX11.
- * 2. Let the cancelling keysym through; that is, \<b\> is produced.
- * 3. Replay the entire sequence; that is, \<dead_acute\> \<b\> is produced.
+ * 2. Let the cancelling keysym through; that is, `<b>` is produced.
+ * 3. Replay the entire sequence; that is, `<dead_acute> <b>` is produced.
  *    This is the approach taken by Microsoft Windows (approximately;
- *    instead of \<dead_acute\>, the underlying key is used.  This is
+ *    instead of `<dead_acute>`, the underlying key is used.  This is
  *    difficult to simulate with XKB keymaps).
  *
  * You can program whichever approach best fits users' expectations.
@@ -158,9 +158,10 @@ enum xkb_compose_format {
  * - Compose files are written for a locale, and the locale is used when
  *   searching for the appropriate file to use.
  * - Compose files may reference the locale internally, with directives
- *   such as %L.
+ *   such as \%L.
+ *
  * As such, functions like xkb_compose_table_new_from_locale() require
- * a @p locale parameter.  This will usually be the current locale (see
+ * a `locale` parameter.  This will usually be the current locale (see
  * locale(7) for more details).  You may also want to allow the user to
  * explicitly configure it, so he can use the Compose file of a given
  * locale, but not use that locale for other things.
@@ -172,8 +173,8 @@ enum xkb_compose_format {
  * @endcode
  *
  * This will only give useful results if the program had previously set
- * the current locale using setlocale(3), with LC_CTYPE or LC_ALL and a
- * non-NULL argument.
+ * the current locale using setlocale(3), with `LC_CTYPE` or `LC_ALL`
+ * and a non-NULL argument.
  *
  * If you prefer not to use the locale system of the C runtime library,
  * you may nevertheless obtain the user's locale directly using
@@ -201,10 +202,10 @@ enum xkb_compose_format {
  * Compose file.  The search order is described in Compose(5).  It is
  * affected by the following environment variables:
  *
- * 1. XCOMPOSEFILE - see Compose(5).
- * 2. HOME - see Compose(5).
- * 3. XLOCALEDIR - if set, used as the base directory for the system's
- *    X locale files, e.g. /usr/share/X11/locale, instead of the
+ * 1. `XCOMPOSEFILE` - see Compose(5).
+ * 2. `HOME` - see Compose(5).
+ * 3. `XLOCALEDIR` - if set, used as the base directory for the system's
+ *    X locale files, e.g. `/usr/share/X11/locale`, instead of the
  *    preconfigured directory.
  *
  * @param context
@@ -367,15 +368,15 @@ enum xkb_compose_feed_result {
  * Feed one keysym to the Compose sequence state machine.
  *
  * This function can advance into a compose sequence, cancel a sequence,
- * start a new sequence, or do nothing in particular .  The resulting
+ * start a new sequence, or do nothing in particular.  The resulting
  * status may be observed with xkb_compose_state_get_status().
  *
- * Some keysyms, such as keysysm for modifier keys, are ignored - they
+ * Some keysyms, such as keysyms for modifier keys, are ignored - they
  * have no effect on the status or otherwise.
  *
  * The following is a description of the possible status transitions, in
  * the format CURRENT STATUS => NEXT STATUS, given a non-ignored input
- * keysym @p keysym:
+ * keysym `keysym`:
  *
    @verbatim
    NOTHING or CANCELLED or COMPOSED =>
@@ -394,8 +395,8 @@ enum xkb_compose_feed_result {
  *
  * The current Compose formats do not support multiple-keysyms.
  * Therefore, if you are using a function such as xkb_state_key_get_syms()
- * and it returns more than one keysym, consider feeding
- * @p XKB_KEY_NoSymbol instead.
+ * and it returns more than one keysym, consider feeding XKB_KEY_NoSymbol
+ * instead.
  *
  * @param state
  *     The compose state object.
@@ -451,12 +452,11 @@ xkb_compose_state_get_status(struct xkb_compose_state *state);
  * @returns
  *   The number of bytes required for the string, excluding the NUL byte.
  *   If the sequence is not complete, or does not have a viable result
- *   string, returns 0, and sets @p buffer to the empty string (if
- *   possible).
+ *   string, returns 0, and sets `buffer` to the empty string (if possible).
  * @returns
  *   You may check if truncation has occurred by comparing the return value
- *   with the size of @p buffer, similarly to the snprintf(3) function.
- *   You may safely pass NULL and 0 to @p buffer and @p size to find the
+ *   with the size of `buffer`, similarly to the `snprintf`(3) function.
+ *   You may safely pass NULL and 0 to `buffer` and `size` to find the
  *   required size (without the NUL-byte).
  *
  * @memberof xkb_compose_state
