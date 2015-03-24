@@ -113,8 +113,9 @@ cached_keysym_from_name(struct keysym_from_name_cache *cache,
  * COMMENT       ::= "#" {<any character except null or newline>}
  * LHS           ::= EVENT { EVENT }
  * EVENT         ::= [MODIFIER_LIST] "<" keysym ">"
- * MODIFIER_LIST ::= ("!" {MODIFIER} ) | "None"
- * MODIFIER      ::= ["~"] modifier_name
+ * MODIFIER_LIST ::= (["!"] {MODIFIER} ) | "None"
+ * MODIFIER      ::= ["~"] MODIFIER_NAME
+ * MODIFIER_NAME ::= ("Ctrl"|"Lock"|"Caps"|"Shift"|"Alt"|"Meta")
  * RHS           ::= ( STRING | keysym | STRING keysym )
  * STRING        ::= '"' { CHAR } '"'
  * CHAR          ::= GRAPHIC_CHAR | ESCAPED_CHAR
@@ -357,8 +358,9 @@ struct production {
     bool has_keysym;
     bool has_string;
 
-    xkb_mod_mask_t mods;
+    /* The matching is as follows: (active_mods & modmask) == mods. */
     xkb_mod_mask_t modmask;
+    xkb_mod_mask_t mods;
 };
 
 static uint32_t
@@ -455,6 +457,9 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
         node->u.leaf.keysym = production->keysym;
     }
 }
+
+/* Should match resolve_modifier(). */
+#define ALL_MODS_MASK ((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3))
 
 static xkb_mod_index_t
 resolve_modifier(const char *name)
@@ -587,15 +592,16 @@ lhs_tok:
         }
         goto rhs;
     case TOK_IDENT:
-        if (!streq(val.string.str, "None")) {
-            scanner_err(s, "unrecognized identifier \"%s\"", val.string.str);
-            goto error;
+        if (streq(val.string.str, "None")) {
+            production.mods = 0;
+            production.modmask = ALL_MODS_MASK;
+            goto lhs_keysym;
         }
-        production.mods = 0;
-        /* XXX Should only include the mods in resolve_mods(). */
-        production.modmask = 0xff;
-        goto lhs_keysym;
+        goto lhs_mod_list_tok;
+    case TOK_TILDE:
+        goto lhs_mod_list_tok;
     case TOK_BANG:
+        production.modmask = ALL_MODS_MASK;
         goto lhs_mod_list;
     default:
         goto lhs_keysym_tok;
@@ -625,21 +631,22 @@ lhs_keysym_tok:
         goto unexpected;
     }
 
-lhs_mod_list: {
+lhs_mod_list:
+    tok = lex(s, &val);
+lhs_mod_list_tok: {
         bool tilde = false;
         xkb_mod_index_t mod;
 
-        tok = lex(s, &val);
+        if (tok != TOK_TILDE && tok != TOK_IDENT)
+            goto lhs_keysym_tok;
+
         if (tok == TOK_TILDE) {
             tilde = true;
             tok = lex(s, &val);
         }
 
-        if (tok != TOK_IDENT) {
-            if (tilde || production.modmask == 0)
-                goto unexpected;
-            goto lhs_keysym_tok;
-        }
+        if (tok != TOK_IDENT)
+            goto unexpected;
 
         mod = resolve_modifier(val.string.str);
         if (mod == XKB_MOD_INVALID) {
