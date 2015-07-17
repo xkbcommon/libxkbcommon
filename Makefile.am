@@ -97,7 +97,9 @@ libxkbcommon_la_SOURCES = \
 	src/utf8.h \
 	src/utils.c \
 	src/utils.h
+if HAVE_VERSION_SCRIPT
 libxkbcommon_la_LDFLAGS = -Wl,--version-script=${srcdir}/xkbcommon.map
+endif HAVE_VERSION_SCRIPT
 
 if ENABLE_X11
 pkgconfig_DATA += xkbcommon-x11.pc
@@ -111,7 +113,9 @@ lib_LTLIBRARIES += libxkbcommon-x11.la
 libxkbcommon_x11_la_CFLAGS = $(AM_CFLAGS) $(XCB_XKB_CFLAGS)
 libxkbcommon_x11_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/src/x11
 libxkbcommon_x11_la_LIBADD = libxkbcommon.la $(XCB_XKB_LIBS)
+if HAVE_VERSION_SCRIPT
 libxkbcommon_x11_la_LDFLAGS = -Wl,--version-script=${srcdir}/xkbcommon-x11.map
+endif HAVE_VERSION_SCRIPT
 
 libxkbcommon_x11_la_SOURCES = \
 	src/x11/keymap.c \
