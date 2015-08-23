@@ -328,6 +328,12 @@ xkb_types "complete" {
 		level_name[Level1]= "Base";
 		level_name[Level2]= "Shift+Alt";
 	};
+	type "PC_SUPER_LEVEL2" {
+		modifiers= Mod4;
+		map[Mod4]= Level2;
+		level_name[Level1]= "Base";
+		level_name[Level2]= "Super";
+	};
 	type "PC_CONTROL_LEVEL2" {
 		modifiers= Control;
 		map[Control]= Level2;
@@ -575,19 +581,6 @@ xkb_types "complete" {
 		level_name[Level3]= "Alt Base";
 		level_name[Level4]= "Shift Alt";
 		level_name[Level5]= "Lock";
-	};
-	type "FOUR_LEVEL_KEYPAD" {
-		modifiers= Shift+NumLock+LevelThree;
-		map[Shift]= Level2;
-		map[NumLock]= Level2;
-		map[LevelThree]= Level3;
-		map[Shift+LevelThree]= Level4;
-		map[NumLock+LevelThree]= Level4;
-		map[Shift+NumLock+LevelThree]= Level3;
-		level_name[Level1]= "Base";
-		level_name[Level2]= "Number";
-		level_name[Level3]= "Alt Base";
-		level_name[Level4]= "Alt Number";
 	};
 	type "FOUR_LEVEL_KEYPAD" {
 		modifiers= Shift+NumLock+LevelThree;
