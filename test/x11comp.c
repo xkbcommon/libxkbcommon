@@ -42,13 +42,13 @@ main(void)
     int pipefds[2];
     int ret, status;
     char displayfd[128], display[128];
-    char *search_path, *search_path_arg, *xkb_path;
+    char *xkb_path;
     char *original, *dump;
     char *envp[] = { NULL };
     char *xvfb_argv[] = { "Xvfb", "-displayfd", displayfd, NULL };
     pid_t xvfb_pid;
-    char *xkbcomp_argv[] = { "xkbcomp", "-I", NULL /* search_path_arg */,
-                             NULL /* xkb_path */, display, NULL };
+    char *xkbcomp_argv[] = { "xkbcomp", "-I", NULL /* xkb_path */, display,
+                             NULL };
     pid_t xkbcomp_pid;
 
     /*
@@ -108,15 +108,9 @@ main(void)
     assert(device_id != -1);
 
     xkb_path = test_get_path("keymaps/host.xkb");
-    search_path = test_get_path("");
-    assert(search_path);
-    ret = asprintf(&search_path_arg, "-I%s", search_path);
     assert(ret >= 0);
-    xkbcomp_argv[2] = search_path_arg;
-    xkbcomp_argv[3] = xkb_path;
+    xkbcomp_argv[2] = xkb_path;
     ret = posix_spawnp(&xkbcomp_pid, "xkbcomp", NULL, NULL, xkbcomp_argv, envp);
-    free(search_path_arg);
-    free(search_path);
     free(xkb_path);
     if (ret != 0) {
         ret = SKIP_TEST;
@@ -138,8 +132,7 @@ main(void)
     dump = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
     assert(dump);
 
-    ret = streq(original, dump);
-    if (!ret) {
+    if (!streq(original, dump)) {
         fprintf(stderr,
                 "round-trip test failed: dumped map differs from original\n");
         fprintf(stderr, "length: dumped %lu, original %lu\n",
