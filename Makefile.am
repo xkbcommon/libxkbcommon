@@ -250,8 +250,12 @@ check_PROGRAMS += $(TESTS)
 ##
 # Benchmarks
 ##
-
-BENCH_LDADD = $(TESTS_LDADD) $(RT_LIBS)
+check_LTLIBRARIES += libbench.la
+libbench_la_SOURCES = \
+	bench/bench.c \
+	bench/bench.h
+BENCH_LDADD  = libbench.la
+BENCH_LDADD += $(TESTS_LDADD) $(RT_LIBS)
 
 check_PROGRAMS += \
 	bench/key-proc \

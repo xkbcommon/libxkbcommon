@@ -109,6 +109,7 @@ AC_CHECK_LIB(rt, clock_gettime,
     [AC_SUBST(RT_LIBS, "-lrt")],
     [AC_SUBST(RT_LIBS, "")],
     [-lrt])
+AC_CHECK_FUNCS([clock_gettime])
 
 # Define a configuration option for the XKB config root
 xkb_base=`$PKG_CONFIG --variable=xkb_base xkeyboard-config`
