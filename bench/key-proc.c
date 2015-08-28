@@ -25,6 +25,7 @@
 #include <time.h>
 
 #include "../test/test.h"
+#include "bench.h"
 
 #define BENCHMARK_ITERATIONS 20000000
 
@@ -56,7 +57,8 @@ main(void)
     struct xkb_context *ctx;
     struct xkb_keymap *keymap;
     struct xkb_state *state;
-    struct timespec start, stop, elapsed;
+    struct bench_timer timer;
+    char *elapsed;
 
     ctx = test_get_context(0);
     assert(ctx);
@@ -73,19 +75,16 @@ main(void)
 
     srand(time(NULL));
 
-    clock_gettime(CLOCK_MONOTONIC, &start);
+    bench_timer_reset(&timer);
+
+    bench_timer_start(&timer);
     bench(state);
-    clock_gettime(CLOCK_MONOTONIC, &stop);
+    bench_timer_stop(&timer);
 
-    elapsed.tv_sec = stop.tv_sec - start.tv_sec;
-    elapsed.tv_nsec = stop.tv_nsec - start.tv_nsec;
-    if (elapsed.tv_nsec < 0) {
-        elapsed.tv_nsec += 1000000000;
-        elapsed.tv_sec--;
-    }
-
-    fprintf(stderr, "ran %d iterations in %ld.%09lds\n",
-            BENCHMARK_ITERATIONS, elapsed.tv_sec, elapsed.tv_nsec);
+    elapsed = bench_timer_get_elapsed_time_str(&timer);
+    fprintf(stderr, "ran %d iterations in %ss\n",
+            BENCHMARK_ITERATIONS, elapsed);
+    free(elapsed);
 
     xkb_state_unref(state);
     xkb_keymap_unref(keymap);

@@ -1,5 +1,6 @@
 /*
- * Copyright © 2009 Dan Nicholson
+ * Copyright © 2015 Kazunobu Kuriyama <kazunobu.kuriyama@nifty.com>
+ *                  Ran Benita <ran234@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,43 +22,29 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include <time.h>
+#ifndef LIBXKBCOMMON_BENCH_H
+#define LIBXKBCOMMON_BENCH_H
 
-#include "../test/test.h"
-#include "bench.h"
+struct bench_time {
+    long seconds;
+    long milliseconds;
+};
 
-#define BENCHMARK_ITERATIONS 2500
+struct bench_timer {
+    struct bench_time start;
+    struct bench_time stop;
+#if defined(__MACH__) && __MACH__ == 1
+    uint64_t scaling_factor;
+#endif
+};
 
-int
-main(int argc, char *argv[])
-{
-    struct xkb_context *ctx;
-    struct xkb_keymap *keymap;
-    struct bench_timer timer;
-    char *elapsed;
-    int i;
+void bench_timer_reset(struct bench_timer *self);
 
-    ctx = test_get_context(0);
-    assert(ctx);
+void bench_timer_start(struct bench_timer *self);
+void bench_timer_stop(struct bench_timer *self);
 
-    xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
-    xkb_context_set_log_verbosity(ctx, 0);
+void bench_timer_get_elapsed_time(struct bench_timer *self, struct bench_time *result);
+/* It's caller's responsibility to release the returned string using free(). */
+char *bench_timer_get_elapsed_time_str(struct bench_timer *self);
 
-    bench_timer_reset(&timer);
-
-    bench_timer_start(&timer);
-    for (i = 0; i < BENCHMARK_ITERATIONS; i++) {
-        keymap = test_compile_rules(ctx, "evdev", "evdev", "us", "", "");
-        assert(keymap);
-        xkb_keymap_unref(keymap);
-    }
-    bench_timer_stop(&timer);
-
-    elapsed = bench_timer_get_elapsed_time_str(&timer);
-    fprintf(stderr, "compiled %d keymaps in %ss\n",
-            BENCHMARK_ITERATIONS, elapsed);
-    free(elapsed);
-
-    xkb_context_unref(ctx);
-    return 0;
-}
+#endif /* LIBXKBCOMMON_BENCH_H */

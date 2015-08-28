@@ -26,6 +26,7 @@
 #include "xkbcommon/xkbcommon-compose.h"
 
 #include "../test/test.h"
+#include "bench.h"
 
 #define BENCHMARK_ITERATIONS 1000
 
@@ -33,10 +34,11 @@ int
 main(void)
 {
     struct xkb_context *ctx;
-    struct timespec start, stop, elapsed;
     char *path;
     FILE *file;
     struct xkb_compose_table *table;
+    struct bench_timer timer;
+    char *elapsed;
 
     ctx = test_get_context(CONTEXT_NO_FLAG);
     assert(ctx);
@@ -47,7 +49,9 @@ main(void)
     xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
     xkb_context_set_log_verbosity(ctx, 0);
 
-    clock_gettime(CLOCK_MONOTONIC, &start);
+    bench_timer_reset(&timer);
+
+    bench_timer_start(&timer);
     for (int i = 0; i < BENCHMARK_ITERATIONS; i++) {
         rewind(file);
         table = xkb_compose_table_new_from_file(ctx, file, "",
@@ -56,20 +60,15 @@ main(void)
         assert(table);
         xkb_compose_table_unref(table);
     }
-    clock_gettime(CLOCK_MONOTONIC, &stop);
+    bench_timer_stop(&timer);
 
     fclose(file);
     free(path);
 
-    elapsed.tv_sec = stop.tv_sec - start.tv_sec;
-    elapsed.tv_nsec = stop.tv_nsec - start.tv_nsec;
-    if (elapsed.tv_nsec < 0) {
-        elapsed.tv_nsec += 1000000000;
-        elapsed.tv_sec--;
-    }
-
-    fprintf(stderr, "compiled %d compose tables in %ld.%09lds\n",
-            BENCHMARK_ITERATIONS, elapsed.tv_sec, elapsed.tv_nsec);
+    elapsed = bench_timer_get_elapsed_time_str(&timer);
+    fprintf(stderr, "compiled %d compose tables in %ss\n",
+            BENCHMARK_ITERATIONS, elapsed);
+    free(elapsed);
 
     xkb_context_unref(ctx);
     return 0;
