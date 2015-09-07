@@ -215,21 +215,21 @@ xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t kc)
                                  key->out_of_range_group_number);
 }
 
-static const union xkb_action fake = { .type = ACTION_TYPE_NONE };
-
 static const union xkb_action *
 xkb_key_get_action(struct xkb_state *state, const struct xkb_key *key)
 {
+    static const union xkb_action dummy = { .type = ACTION_TYPE_NONE };
+
     xkb_layout_index_t layout;
     xkb_level_index_t level;
 
     layout = xkb_state_key_get_layout(state, key->keycode);
     if (layout == XKB_LAYOUT_INVALID)
-        return &fake;
+        return &dummy;
 
     level = xkb_state_key_get_level(state, key->keycode, layout);
     if (level == XKB_LEVEL_INVALID)
-        return &fake;
+        return &dummy;
 
     return &key->groups[layout].levels[level].action;
 }
