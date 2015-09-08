@@ -42,7 +42,7 @@ IGNORE_PREFIX          = xkb_ \
 
 HTML_EXTRA_STYLESHEET  = @abs_top_srcdir@/doc/doxygen-extra.css
 
-HTML_TIMESTAMP         = YES
+HTML_TIMESTAMP         = NO
 
 ENUM_VALUES_PER_LINE   = 1
 
