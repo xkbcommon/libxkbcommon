@@ -324,7 +324,7 @@ struct xkb_group {
     bool explicit_type;
     /* Points to a type in keymap->types. */
     const struct xkb_key_type *type;
-    /* Use XkbKeyGroupWidth for the number of levels. */
+    /* Use XkbKeyNumLevels for the number of levels. */
     struct xkb_level *levels;
 };
 
