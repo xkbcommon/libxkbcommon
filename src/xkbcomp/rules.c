@@ -1007,7 +1007,7 @@ xkb_components_from_rules(struct xkb_context *ctx,
     bool ret = false;
     FILE *file;
     char *path;
-    const char *string;
+    char *string;
     size_t size;
     struct matcher *matcher;
 

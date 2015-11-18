@@ -52,8 +52,9 @@ resolve_name(const char *filename, enum resolve_name_direction direction,
     const char *xlocaledir;
     char path[512];
     FILE *file;
-    const char *string, *end;
+    char *string;
     size_t string_size;
+    const char *end;
     const char *s, *left, *right;
     char *match;
     size_t left_len, right_len, name_len;

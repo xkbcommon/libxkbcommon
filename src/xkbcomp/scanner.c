@@ -192,7 +192,7 @@ XkbParseFile(struct xkb_context *ctx, FILE *file,
 {
     bool ok;
     XkbFile *xkb_file;
-    const char *string;
+    char *string;
     size_t size;
 
     ok = map_file(file, &string, &size);

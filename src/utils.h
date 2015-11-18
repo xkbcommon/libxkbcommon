@@ -179,10 +179,10 @@ msb_pos(uint32_t mask)
 }
 
 bool
-map_file(FILE *file, const char **string_out, size_t *size_out);
+map_file(FILE *file, char **string_out, size_t *size_out);
 
 void
-unmap_file(const char *str, size_t size);
+unmap_file(char *string, size_t size);
 
 #define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
 

@@ -493,7 +493,7 @@ do_include(struct xkb_compose_table *table, struct scanner *s,
 {
     FILE *file;
     bool ok;
-    const char *string;
+    char *string;
     size_t size;
     struct scanner new_s;
 
@@ -750,7 +750,7 @@ bool
 parse_file(struct xkb_compose_table *table, FILE *file, const char *file_name)
 {
     bool ok;
-    const char *string;
+    char *string;
     size_t size;
 
     ok = map_file(file, &string, &size);
