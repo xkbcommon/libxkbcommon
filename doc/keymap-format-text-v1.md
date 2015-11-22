@@ -1,11 +1,20 @@
-# The `xkb_keycodes` section
+# The XKB keymap text format, V1
+
+This document describes the `XKB_KEYMAP_FORMAT_TEXT_V1` keymap format,
+as implemented by libxkbcommon.
+
+A keymap consists of a single top-level `xkb_keymap` block, underwhich
+are nested the following sections.
+
+
+## The `xkb_keycodes` section
 
 This is the simplest section type, and is the first one to be
 compiled. The purpose of this is mostly to map between the
 hardware/evdev scancodes and xkb keycodes. Each key is given a name
 by which it can be referred to later, e.g. in the symbols section.
 
-## Keycode statements
+### Keycode statements
 
 Statements of the form:
 
@@ -35,7 +44,7 @@ If there's a conflict, like the same name given to different keycodes,
 or same keycode given different names, it is resolved according to the
 merge mode which applies to the definitions.
 
-## Alias statements
+### Alias statements
 
 Statements of the form:
 
@@ -45,7 +54,7 @@ Allows to refer to a previously defined key (here `<COMP>`) by another
 name (here `<MENU>`). Conflicts are handled similarly to keycode
 statements.
 
-## LED name statements
+### LED name statements
 
 Statements of the form:
 
@@ -58,7 +67,7 @@ index. The LED may be referred by this name later in the compat
 section and by the user.
 
 
-# The `xkb_types` section
+## The `xkb_types` section
 
 This section is the second to be processesed, after `xkb_keycodes`.
 However, it is completely independent and could have been the first to
@@ -81,7 +90,7 @@ affected by the modifier state. Yet more common examples are
 `TWO_LEVEL` (with Shift choosing the second level), `ALPHABETIC`
 (where Caps Lock may also choose the second level), etc.
 
-## Type definitions
+### Type definitions
 
 Statements of the form:
 
@@ -91,7 +100,7 @@ The above would create a new type named `FOUR_LEVEL`.
 The body of the definition may include statements of the following
 forms:
 
-### `level_name` statements
+#### `level_name` statements
 
     level_name[Level1] = "Base";
 
@@ -103,7 +112,7 @@ for anything.
 Note: A level may be specified as Level[1-8] or just a number (can
 be more than 8).
 
-### `modifiers` statement
+#### `modifiers` statement
 
     modifiers = Shift+Lock+LevelThree;
 
@@ -114,7 +123,7 @@ being considered when matching the modifier state against the type.
 The other modifiers, whether active or not, are masked out in the
 calculation.
 
-### `map` entry statements
+#### `map` entry statements
 
     map[Shift+LevelThree] = Level4;
 
@@ -127,7 +136,7 @@ above, if in the current keyboard state the `Shift` and `LevelThree`
 modifiers are active, while the `Lock` modifier is not, then the
 keysym(s) in the 4th level of the group will be returned to the user.
 
-### `preserve` statements
+#### `preserve` statements
 
     map[Shift+Lock+LevelThree] = Level5;
     preserve[Shift+Lock+LevelThree] = Lock;
@@ -151,12 +160,12 @@ type's modifiers; these modifiers are then "preserved" and not
 reported as consumed.
 
 
-# The `xkb_compat` section
+## The `xkb_compat` section
 
 This section is the third to be processed, after `xkb_keycodes` and
 `xkb_types`.
 
-## Interpret statements
+### Interpret statements
 
 Statements of the form:
 
@@ -237,7 +246,7 @@ or set the key's repeat setting. You should note the following:
 The body of the statement may include statements of the following
 forms (all of which are optional):
 
-### `useModMapMods` statement
+#### `useModMapMods` statement
 
     useModMapMods = level1;
 
@@ -245,13 +254,13 @@ When set to `level1`, the interpret will only match levels which are
 the first level of the first group of the keys. This can be useful in
 conjunction with e.g. a `virtualModifier` statement.
 
-### `action` statement
+#### `action` statement
 
     action = LockMods(modifiers=NumLock);
 
 Bind this action to the matching levels.
 
-### `virtualModifier` statement
+#### `virtualModifier` statement
 
     virtualModifier = NumLock;
 
@@ -261,13 +270,13 @@ modifier must be declared at the top level of the file with a
 
     virtual_modifiers NumLock;
 
-### `repeat` statement
+#### `repeat` statement
 
     repeat = True;
 
 Set whether the key should repeat or not. Must be a boolean value.
 
-## LED map statements
+### LED map statements
 
 Statements of the form:
 
@@ -283,14 +292,14 @@ The body of the statement describes the conditions of the keyboard
 state which will cause the LED to be lit. It may include the following
 statements:
 
-### `modifiers` statement
+#### `modifiers` statement
 
     modifiers = ScrollLock;
 
 If the given modifiers are in the required state (see below), the
 LED is lit.
 
-### `whichModState` statment
+#### `whichModState` statment
 
     whichModState = Latched+Locked;
 
@@ -315,14 +324,14 @@ indicator "Num Lock" {
 Whenever the NumLock modifier is locked, the Num Lock LED will light
 up.
 
-### `groups` statement
+#### `groups` statement
 
     groups = All - group1;
 
 If the given groups are in the required state (see below), the LED is
 lit.
 
-### `whichGroupState` statement
+#### `whichGroupState` statement
 
     whichGroupState = Effective;
 
@@ -340,7 +349,7 @@ Note: the above conditions are disjunctive, i.e. if any of them are
 satisfied the LED is lit.
 
 
-# The `xkb_symbols` section
+## The `xkb_symbols` section
 
 This section is the fourth to be processed, after `xkb_keycodes`,
 `xkb_types` and `xkb_compat`.
@@ -348,7 +357,7 @@ This section is the fourth to be processed, after `xkb_keycodes`,
 TODO
 
 
-# Virtual modifier statements
+## Virtual modifier statements
 
 Statements of the form:
 
