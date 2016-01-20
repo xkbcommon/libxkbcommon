@@ -470,6 +470,40 @@ xkb_keymap_key_for_each(struct xkb_keymap *keymap, xkb_keymap_key_iter_t iter,
         iter(keymap, key->keycode, data);
 }
 
+XKB_EXPORT const char *
+xkb_keymap_key_get_name(struct xkb_keymap *keymap, xkb_keycode_t kc)
+{
+    const struct xkb_key *key = XkbKey(keymap, kc);
+
+    if (!key)
+        return NULL;
+
+    return xkb_atom_text(keymap->ctx, key->name);
+}
+
+XKB_EXPORT xkb_keycode_t
+xkb_keymap_key_by_name(struct xkb_keymap *keymap, const char *name)
+{
+    struct xkb_key *key;
+    xkb_atom_t atom;
+
+    atom = xkb_atom_lookup(keymap->ctx, name);
+    if (atom) {
+        xkb_atom_t ratom = XkbResolveKeyAlias(keymap, atom);
+        if (ratom)
+            atom = ratom;
+    }
+    if (!atom)
+        return XKB_KEYCODE_INVALID;
+
+    xkb_keys_foreach(key, keymap) {
+        if (key->name == atom)
+            return key->keycode;
+    }
+
+    return XKB_KEYCODE_INVALID;
+}
+
 /**
  * Simple boolean specifying whether or not the key should repeat.
  */

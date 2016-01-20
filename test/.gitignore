@@ -2,6 +2,7 @@
 *.trs
 filecomp
 rulescomp
+keymap
 keysym
 state
 context
