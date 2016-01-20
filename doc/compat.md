@@ -44,6 +44,7 @@ Notable additions:
 - multiple keysyms per level
   + this requires incompatible dataset changes, such that X11 would
     not be able to parse these
+- key names (e.g. `<AE11>`) can be longer than 4 characters.
 
 ## Compose support
 

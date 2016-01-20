@@ -152,6 +152,10 @@ struct xkb_state;
  * underlying input system.  For example, with an X11-compatible keymap
  * and Linux evdev scan codes (see linux/input.h), a fixed offset is used:
  *
+ * The keymap defines a canonical name for each key, plus possible aliases.
+ * Historically, the XKB protocol restricts these names to at most 4 (ASCII)
+ * characters, but this library does not share this limit.
+ *
  * @code
  * xkb_keycode_t keycode_A = KEY_A + 8;
  * @endcode
@@ -943,6 +947,9 @@ xkb_keymap_key_for_each(struct xkb_keymap *keymap, xkb_keymap_key_iter_t iter,
 /**
  * Find the name of the key with the given keycode.
  *
+ * This function always returns the canonical name of the key (see
+ * description in xkb_keycode_t).
+ *
  * @returns The key name. If no key with this keycode exists,
  * returns NULL.
  *
@@ -955,6 +962,8 @@ xkb_keymap_key_get_name(struct xkb_keymap *keymap, xkb_keycode_t key);
 
 /**
  * Find the keycode of the key with the given name.
+ *
+ * The name can be either a canonical name or an alias.
  *
  * @returns The keycode. If no key with this name exists,
  * returns XKB_KEYCODE_INVALID.
