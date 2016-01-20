@@ -502,6 +502,18 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym);
  * @{
  */
 
+/**
+ * @page envvars Environment Variables
+ *
+ * The user may set some environment variables which affect the library:
+ *
+ * - `XKB_CONFIG_ROOT`, `HOME` - see @ref include-path.
+ * - `XKB_LOG_LEVEL` - see xkb_context_set_log_level().
+ * - `XKB_LOG_VERBOSITY` - see xkb_context_set_log_verbosity().
+ * - `XKB_DEFAULT_RULES`, `XKB_DEFAULT_MODEL`, `XKB_DEFAULT_LAYOUT`,
+ *   `XKB_DEFAULT_VARIANT`, `XKB_DEFAULT_OPTIONS` - see xkb_rule_names.
+ */
+
 /** Flags for context creation. */
 enum xkb_context_flags {
     /** Do not apply any context flags. */
@@ -521,10 +533,6 @@ enum xkb_context_flags {
  * @param flags Optional flags for the context, or 0.
  *
  * @returns A new context, or NULL on failure.
- *
- * The user may set some environment variables to affect default values in
- * the context. See e.g. xkb_context_set_log_level() and
- * xkb_context_set_log_verbosity().
  *
  * @memberof xkb_context
  */
@@ -584,7 +592,12 @@ xkb_context_get_user_data(struct xkb_context *context);
  *
  * The include paths are the file-system paths that are searched when an
  * include statement is encountered during keymap compilation.
- * In most cases, the default include paths are sufficient.
+ *
+ * The default include paths are:
+ * - The system XKB root, defined at library configuration time.
+ *   If * the `XKB_CONFIG_ROOT` environment is defined, it is used instead.
+ * - The path `$HOME/.xkb`, where $HOME is the value of the environment
+ *   variable `HOME`.
  *
  * @{
  */
