@@ -10,7 +10,7 @@ EXTRA_DIST = \
 	README.md \
 	doc/quick-guide.md \
 	doc/compat.md \
-	doc/keymap-format-text-v1.txt \
+	doc/keymap-format-text-v1.md \
 	doc/rules-format.txt \
 	doc/doxygen-extra.css \
 	xkbcommon.map \
