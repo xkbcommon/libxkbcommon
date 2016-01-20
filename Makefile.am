@@ -185,6 +185,7 @@ AM_TESTS_ENVIRONMENT = \
 
 TESTS = \
 	test/keysym \
+	test/keymap \
 	test/filecomp \
 	test/context \
 	test/rules-file \
@@ -204,6 +205,7 @@ check_PROGRAMS = \
 TESTS_LDADD = libtest.la
 
 test_keysym_LDADD = $(TESTS_LDADD)
+test_keymap_LDADD = $(TESTS_LDADD)
 test_filecomp_LDADD = $(TESTS_LDADD)
 test_context_LDADD = $(TESTS_LDADD)
 test_rules_file_CFLAGS = $(AM_CFLAGS) -Wno-declaration-after-statement

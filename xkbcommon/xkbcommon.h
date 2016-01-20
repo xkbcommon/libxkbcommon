@@ -941,6 +941,32 @@ xkb_keymap_key_for_each(struct xkb_keymap *keymap, xkb_keymap_key_iter_t iter,
                         void *data);
 
 /**
+ * Find the name of the key with the given keycode.
+ *
+ * @returns The key name. If no key with this keycode exists,
+ * returns NULL.
+ *
+ * @sa xkb_keycode_t
+ * @memberof xkb_keymap
+ * @since 0.6.0
+ */
+const char *
+xkb_keymap_key_get_name(struct xkb_keymap *keymap, xkb_keycode_t key);
+
+/**
+ * Find the keycode of the key with the given name.
+ *
+ * @returns The keycode. If no key with this name exists,
+ * returns XKB_KEYCODE_INVALID.
+ *
+ * @sa xkb_keycode_t
+ * @memberof xkb_keymap
+ * @since 0.6.0
+ */
+xkb_keycode_t
+xkb_keymap_key_by_name(struct xkb_keymap *keymap, const char *name);
+
+/**
  * Get the number of modifiers in the keymap.
  *
  * @sa xkb_mod_index_t
