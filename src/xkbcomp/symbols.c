@@ -218,19 +218,6 @@ KeyInfoText(SymbolsInfo *info, KeyInfo *keyi)
 }
 
 static bool
-LevelsSameSyms(const struct xkb_level *a, const struct xkb_level *b)
-{
-    if (a->num_syms != b->num_syms)
-        return false;
-    if (a->num_syms <= 1)
-        return a->u.sym == b->u.sym;
-    else
-        return memcmp(a->u.syms, b->u.syms,
-                      sizeof(*a->u.syms) * a->num_syms) == 0;
-
-}
-
-static bool
 MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
             bool report, xkb_layout_index_t group, xkb_atom_t key_name)
 {
@@ -312,7 +299,7 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
                 intoLevel->u.sym = fromLevel->u.sym;
             fromLevel->num_syms = 0;
         }
-        else if (!LevelsSameSyms(fromLevel, intoLevel)) {
+        else if (!XkbLevelsSameSyms(fromLevel, intoLevel)) {
             if (report)
                 log_warn(info->ctx,
                          "Multiple symbols for level %d/group %u on key %s; "

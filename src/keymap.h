@@ -455,6 +455,9 @@ xkb_mod_index_t
 XkbModNameToIndex(const struct xkb_mod_set *mods, xkb_atom_t name,
                   enum mod_type type);
 
+bool
+XkbLevelsSameSyms(const struct xkb_level *a, const struct xkb_level *b);
+
 xkb_layout_index_t
 XkbWrapGroupIntoRange(int32_t group,
                       xkb_layout_index_t num_groups,
