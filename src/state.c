@@ -1340,6 +1340,30 @@ key_get_consumed(struct xkb_state *state, const struct xkb_key *key,
     case XKB_CONSUMED_MODE_XKB:
         consumed = type->mods.mask;
         break;
+
+    case XKB_CONSUMED_MODE_GTK: {
+        const struct xkb_key_type_entry *no_mods_entry;
+        xkb_level_index_t no_mods_leveli;
+        const struct xkb_level *no_mods_level, *level;
+
+        no_mods_entry = get_entry_for_mods(type, 0);
+        no_mods_leveli = no_mods_entry ? no_mods_entry->level : 0;
+        no_mods_level = &key->groups[group].levels[no_mods_leveli];
+
+        for (unsigned i = 0; i < type->num_entries; i++) {
+            const struct xkb_key_type_entry *entry = &type->entries[i];
+            if (!entry_is_active(entry))
+                continue;
+
+            level = &key->groups[group].levels[entry->level];
+            if (XkbLevelsSameSyms(level, no_mods_level))
+                continue;
+
+            if (entry == matching_entry || popcount(entry->mods.mask) == 1)
+                consumed |= entry->mods.mask & ~entry->preserve.mask;
+        }
+        break;
+    }
     }
 
     return consumed & ~preserve;
@@ -1386,6 +1410,7 @@ xkb_state_key_get_consumed_mods2(struct xkb_state *state, xkb_keycode_t kc,
 
     switch (mode) {
     case XKB_CONSUMED_MODE_XKB:
+    case XKB_CONSUMED_MODE_GTK:
         break;
     default:
         log_err_func(state->keymap->ctx,
