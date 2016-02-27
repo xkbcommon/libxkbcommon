@@ -1311,13 +1311,20 @@ xkb_state_led_name_is_active(struct xkb_state *state, const char *name)
     return xkb_state_led_index_is_active(state, idx);
 }
 
+/**
+ * See:
+ * - XkbTranslateKeyCode(3), mod_rtrn return value, from libX11.
+ * - MyEnhancedXkbTranslateKeyCode(), a modification of the above, from GTK+.
+ */
 static xkb_mod_mask_t
-key_get_consumed(struct xkb_state *state, const struct xkb_key *key)
+key_get_consumed(struct xkb_state *state, const struct xkb_key *key,
+                 enum xkb_consumed_mode mode)
 {
     const struct xkb_key_type *type;
-    const struct xkb_key_type_entry *entry;
-    xkb_mod_mask_t preserve;
+    const struct xkb_key_type_entry *matching_entry;
+    xkb_mod_mask_t preserve = 0;
     xkb_layout_index_t group;
+    xkb_mod_mask_t consumed = 0;
 
     group = xkb_state_key_get_layout(state, key->keycode);
     if (group == XKB_LAYOUT_INVALID)
@@ -1325,47 +1332,40 @@ key_get_consumed(struct xkb_state *state, const struct xkb_key *key)
 
     type = key->groups[group].type;
 
-    entry = get_entry_for_key_state(state, key, group);
-    if (entry)
-        preserve = entry->preserve.mask;
-    else
-        preserve = 0;
+    matching_entry = get_entry_for_key_state(state, key, group);
+    if (matching_entry)
+        preserve = matching_entry->preserve.mask;
 
-    return type->mods.mask & ~preserve;
+    switch (mode) {
+    case XKB_CONSUMED_MODE_XKB:
+        consumed = type->mods.mask;
+        break;
+    }
+
+    return consumed & ~preserve;
 }
 
-/**
- * Tests to see if a modifier is used up by our translation of a
- * keycode to keysyms, taking note of the current modifier state and
- * the appropriate key type's preserve information, if any. This allows
- * the user to mask out the modifier in later processing of the
- * modifiers, e.g. when implementing hot keys or accelerators.
- *
- * See also, for example:
- * - XkbTranslateKeyCode(3), mod_rtrn return value, from libX11.
- * - gdk_keymap_translate_keyboard_state, consumed_modifiers return value,
- *   from gtk+.
- */
 XKB_EXPORT int
-xkb_state_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t kc,
-                                xkb_mod_index_t idx)
+xkb_state_mod_index_is_consumed2(struct xkb_state *state, xkb_keycode_t kc,
+                                 xkb_mod_index_t idx,
+                                 enum xkb_consumed_mode mode)
 {
     const struct xkb_key *key = XkbKey(state->keymap, kc);
 
     if (!key || idx >= xkb_keymap_num_mods(state->keymap))
         return -1;
 
-    return !!((1u << idx) & key_get_consumed(state, key));
+    return !!((1u << idx) & key_get_consumed(state, key, mode));
 }
 
-/**
- * Calculates which modifiers should be consumed during key processing,
- * and returns the mask with all these modifiers removed.  e.g. if
- * given a state of Alt and Shift active for a two-level alphabetic
- * key containing plus and equal on the first and second level
- * respectively, will return a mask of only Alt, as Shift has been
- * consumed by the type handling.
- */
+XKB_EXPORT int
+xkb_state_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t kc,
+                                xkb_mod_index_t idx)
+{
+    return xkb_state_mod_index_is_consumed2(state, kc, idx,
+                                            XKB_CONSUMED_MODE_XKB);
+}
+
 XKB_EXPORT xkb_mod_mask_t
 xkb_state_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t kc,
                                    xkb_mod_mask_t mask)
@@ -1375,16 +1375,33 @@ xkb_state_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t kc,
     if (!key)
         return 0;
 
-    return mask & ~key_get_consumed(state, key);
+    return mask & ~key_get_consumed(state, key, XKB_CONSUMED_MODE_XKB);
+}
+
+XKB_EXPORT xkb_mod_mask_t
+xkb_state_key_get_consumed_mods2(struct xkb_state *state, xkb_keycode_t kc,
+                                 enum xkb_consumed_mode mode)
+{
+    const struct xkb_key *key;
+
+    switch (mode) {
+    case XKB_CONSUMED_MODE_XKB:
+        break;
+    default:
+        log_err_func(state->keymap->ctx,
+                     "unrecognized consumed modifiers mode: %d\n", mode);
+        return 0;
+    }
+
+    key = XkbKey(state->keymap, kc);
+    if (!key)
+        return 0;
+
+    return key_get_consumed(state, key, mode);
 }
 
 XKB_EXPORT xkb_mod_mask_t
 xkb_state_key_get_consumed_mods(struct xkb_state *state, xkb_keycode_t kc)
 {
-    const struct xkb_key *key = XkbKey(state->keymap, kc);
-
-    if (!key)
-        return 0;
-
-    return key_get_consumed(state, key);
+    return xkb_state_key_get_consumed_mods2(state, kc, XKB_CONSUMED_MODE_XKB);
 }

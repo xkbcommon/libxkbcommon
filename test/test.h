@@ -84,7 +84,8 @@ test_compile_rules(struct xkb_context *context, const char *rules,
 void
 test_print_keycode_state(struct xkb_state *state,
                          struct xkb_compose_state *compose_state,
-                         xkb_keycode_t keycode);
+                         xkb_keycode_t keycode,
+                         enum xkb_consumed_mode consumed_mode);
 
 void
 test_print_state_changes(enum xkb_state_component changed);

@@ -260,7 +260,8 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
     }
 
     if (value != KEY_STATE_RELEASE)
-        test_print_keycode_state(kbd->state, kbd->compose_state, keycode);
+        test_print_keycode_state(kbd->state, kbd->compose_state, keycode,
+                                 XKB_CONSUMED_MODE_XKB);
 
     if (with_compose) {
         status = xkb_compose_state_get_status(kbd->compose_state);
