@@ -116,6 +116,17 @@ struct xkb_state {
     struct xkb_keymap *keymap;
 };
 
+/*
+ * If the virtual modifiers are not bound to anything, the entry
+ * is not active and should be skipped. xserver does this with
+ * cached entry->active field.
+ */
+static bool
+entry_is_active(const struct xkb_key_type_entry *entry)
+{
+    return entry->mods.mods == 0 || entry->mods.mask != 0;
+}
+
 static const struct xkb_key_type_entry *
 get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
                         xkb_layout_index_t group)
@@ -123,18 +134,10 @@ get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
     const struct xkb_key_type *type = key->groups[group].type;
     xkb_mod_mask_t active_mods = state->components.mods & type->mods.mask;
 
-    for (unsigned i = 0; i < type->num_entries; i++) {
-        /*
-         * If the virtual modifiers are not bound to anything, we're
-         * supposed to skip the entry (xserver does this with cached
-         * entry->active field).
-         */
-        if (type->entries[i].mods.mods != 0 && type->entries[i].mods.mask == 0)
-            continue;
-
-        if (type->entries[i].mods.mask == active_mods)
+    for (unsigned i = 0; i < type->num_entries; i++)
+        if (entry_is_active(&type->entries[i]) &&
+            type->entries[i].mods.mask == active_mods)
             return &type->entries[i];
-    }
 
     return NULL;
 }
