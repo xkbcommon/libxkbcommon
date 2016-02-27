@@ -128,18 +128,22 @@ entry_is_active(const struct xkb_key_type_entry *entry)
 }
 
 static const struct xkb_key_type_entry *
+get_entry_for_mods(const struct xkb_key_type *type, xkb_mod_mask_t mods)
+{
+    for (unsigned i = 0; i < type->num_entries; i++)
+        if (entry_is_active(&type->entries[i]) &&
+            type->entries[i].mods.mask == mods)
+            return &type->entries[i];
+    return NULL;
+}
+
+static const struct xkb_key_type_entry *
 get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
                         xkb_layout_index_t group)
 {
     const struct xkb_key_type *type = key->groups[group].type;
     xkb_mod_mask_t active_mods = state->components.mods & type->mods.mask;
-
-    for (unsigned i = 0; i < type->num_entries; i++)
-        if (entry_is_active(&type->entries[i]) &&
-            type->entries[i].mods.mask == active_mods)
-            return &type->entries[i];
-
-    return NULL;
+    return get_entry_for_mods(type, active_mods);
 }
 
 /**
