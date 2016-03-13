@@ -42,6 +42,7 @@ libxkbcommon 0.5.0 - 2014-10-18
   XKB_COMPOSE_*
   xkb_compose_*
 
+
 libxkbcommon 0.4.3 - 2014-08-19
 ==================
 
@@ -65,6 +66,7 @@ libxkbcommon 0.4.3 - 2014-08-19
 - Fixed memory leaks after parse errors in the XKB yacc parser.
   The fix required changes which are currently incompatible with byacc.
 
+
 libxkbcommon 0.4.2 - 2014-05-15
 ==================
 
@@ -86,6 +88,7 @@ libxkbcommon 0.4.2 - 2014-05-15
   error-handling code.
   Note: it seems impossible to trigger in the current code since the input
   size cannot exceed the required size.
+
 
 libxkbcommon 0.4.1 - 2014-03-27
 ==================
@@ -129,6 +132,7 @@ libxkbcommon 0.4.1 - 2014-03-27
     use XKB_KEYMAP_NO_FLAGS instead.
 
 - Bug fixes.
+
 
 libxkbcommon 0.4.0 - 2014-02-02
 ==================
