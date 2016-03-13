@@ -15,7 +15,8 @@ EXTRA_DIST = \
 	doc/doxygen-extra.css \
 	xkbcommon.map \
 	xkbcommon-x11.map \
-	PACKAGING
+	PACKAGING \
+	test/symbols-leak-test.bash
 
 AM_CPPFLAGS = \
 	-DDFLT_XKB_CONFIG_ROOT='"$(XKBCONFIGROOT)"' \
@@ -181,7 +182,8 @@ libtest_la_SOURCES = \
 AM_TESTS_ENVIRONMENT = \
 	XKB_LOG_LEVEL=debug; export XKB_LOG_LEVEL; \
 	XKB_LOG_VERBOSITY=10; export XKB_LOG_VERBOSITY; \
-	$(XORG_MALLOC_DEBUG_ENV)
+	$(XORG_MALLOC_DEBUG_ENV) \
+	top_srcdir=$(top_srcdir)
 
 build_run_tests = \
 	test/keysym \
@@ -201,6 +203,8 @@ build_run_tests = \
 build_only_tests = \
 	test/rmlvo-to-kccgst \
 	test/print-compiled-keymap
+run_only_tests = \
+	test/symbols-leak-test.bash
 
 TESTS_LDADD = libtest.la
 
@@ -248,7 +252,7 @@ test_interactive_x11_CFLAGS = $(TESTS_X11_CFLAGS)
 endif ENABLE_X11
 
 check_PROGRAMS = $(build_run_tests) $(build_only_tests)
-TESTS = $(build_run_tests)
+TESTS = $(build_run_tests) $(run_only_tests)
 
 ##
 # Benchmarks
