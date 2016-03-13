@@ -235,9 +235,11 @@ endif BUILD_LINUX_TESTS
 
 if ENABLE_X11
 build_run_tests += \
-	test/x11 \
-	test/x11comp
+	test/x11
+# test/x11comp is meant to be run, but it is (temporarily?) disabled.
+# See: https://github.com/xkbcommon/libxkbcommon/issues/30
 build_only_tests += \
+	test/x11comp \
 	test/interactive-x11
 
 TESTS_X11_LDADD = $(XCB_XKB_LIBS) $(TESTS_LDADD) libxkbcommon-x11.la
