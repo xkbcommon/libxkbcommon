@@ -85,3 +85,9 @@ global:
 local:
 	*;
 };
+
+V_0.6.0 {
+global:
+	xkb_keymap_key_get_name;
+	xkb_keymap_key_by_name;
+} V_0.5.0;
