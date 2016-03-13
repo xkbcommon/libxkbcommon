@@ -50,7 +50,7 @@ main(void)
                              NULL };
     pid_t xkbcomp_pid;
 
-    char *xhost;
+    char *xhost = NULL;
     int xdpy_current;
     int xdpy_candidate;
 
@@ -88,6 +88,7 @@ main(void)
             break;
         }
     }
+    free(xhost);
     if (ret != 0) {
         ret = SKIP_TEST;
         goto err_ctx;
