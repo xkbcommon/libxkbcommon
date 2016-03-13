@@ -183,7 +183,7 @@ AM_TESTS_ENVIRONMENT = \
 	XKB_LOG_VERBOSITY=10; export XKB_LOG_VERBOSITY; \
 	$(XORG_MALLOC_DEBUG_ENV)
 
-TESTS = \
+build_run_tests = \
 	test/keysym \
 	test/keymap \
 	test/filecomp \
@@ -198,7 +198,7 @@ TESTS = \
 	test/keyseq \
 	test/rulescomp \
 	test/compose
-check_PROGRAMS = \
+build_only_tests = \
 	test/rmlvo-to-kccgst \
 	test/print-compiled-keymap
 
@@ -223,17 +223,17 @@ test_print_compiled_keymap_LDADD = $(TESTS_LDADD)
 test_compose_LDADD = $(TESTS_LDADD) $(RT_LIBS)
 
 if BUILD_LINUX_TESTS
-check_PROGRAMS += \
+build_only_tests += \
 	test/interactive-evdev
 
 test_interactive_evdev_LDADD = $(TESTS_LDADD)
 endif BUILD_LINUX_TESTS
 
 if ENABLE_X11
-TESTS += \
+build_run_tests += \
 	test/x11 \
 	test/x11comp
-check_PROGRAMS += \
+build_only_tests += \
 	test/interactive-x11
 
 TESTS_X11_LDADD = $(XCB_XKB_LIBS) $(TESTS_LDADD) libxkbcommon-x11.la
@@ -247,7 +247,8 @@ test_interactive_x11_LDADD = $(TESTS_X11_LDADD)
 test_interactive_x11_CFLAGS = $(TESTS_X11_CFLAGS)
 endif ENABLE_X11
 
-check_PROGRAMS += $(TESTS)
+check_PROGRAMS = $(build_run_tests) $(build_only_tests)
+TESTS = $(build_run_tests)
 
 ##
 # Benchmarks
