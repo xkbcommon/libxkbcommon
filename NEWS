@@ -1,3 +1,26 @@
+libxkbcommon 0.6.0 - TBD
+==================
+
+- If the XKB_CONFIG_ROOT environment variable is set, it is used as the XKB
+  configuration root instead of the path determined at build time.
+
+- Tests and benchmarks now build correctly on OSX.
+
+- An XKB keymap provides a name for each key it defines.  Traditionally,
+  these names are limited to at most 4 characters, and are thus somewhat
+  obscure, but might still be useful (xkbcommon lifts the 4 character limit).
+
+  The new functions xkb_keymap_key_get_name() and xkb_keymap_key_by_name()
+  can be used to get the name of a key or find a key by name.  Note that
+  a key may have aliases.
+
+- Documentation improvements.
+
+- New API:
+  xkb_keymap_key_by_name()
+  xkb_keymap_key_get_name()
+
+
 libxkbcommon 0.5.0 - 2014-10-18
 ==================
 
