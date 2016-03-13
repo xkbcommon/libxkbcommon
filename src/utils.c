@@ -35,10 +35,13 @@ bool
 map_file(FILE *file, char **string_out, size_t *size_out)
 {
     struct stat stat_buf;
-    const int fd = fileno(file);
+    int fd;
     char *string;
 
     /* Make sure to keep the errno on failure! */
+    fd = fileno(file);
+    if (fd < 0)
+        return false;
 
     if (fstat(fd, &stat_buf) != 0)
         return false;
