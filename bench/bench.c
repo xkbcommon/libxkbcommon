@@ -33,6 +33,7 @@
 #include <sys/time.h>
 #endif
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -77,7 +78,7 @@ bench_timer_start(struct bench_timer *self)
 #if defined(USE_CLOCK_GETTIME)
     struct timespec val;
 
-    (void)clock_gettime(CLOCK_MONOTONIC, &val);
+    (void) clock_gettime(CLOCK_MONOTONIC, &val);
 
     /* With conversion from nanosecond to millisecond */
     set_bench_time(&self->start, val.tv_sec, val.tv_nsec / 1000);
@@ -93,7 +94,7 @@ bench_timer_start(struct bench_timer *self)
 #else
     struct timeval val;
 
-    (void)gettimeofday(&val, NULL);
+    (void) gettimeofday(&val, NULL);
 
     set_bench_time(&self->start, val.tv_sec, val.tv_usec);
 #endif
@@ -105,7 +106,7 @@ bench_timer_stop(struct bench_timer *self)
 #if defined(USE_CLOCK_GETTIME)
     struct timespec val;
 
-    (void)clock_gettime(CLOCK_MONOTONIC, &val);
+    (void) clock_gettime(CLOCK_MONOTONIC, &val);
 
     /* With conversion from nanosecond to millisecond */
     set_bench_time(&self->stop, val.tv_sec, val.tv_nsec / 1000);
@@ -121,7 +122,7 @@ bench_timer_stop(struct bench_timer *self)
 #else
     struct timeval val;
 
-    (void)gettimeofday(&val, NULL);
+    (void) gettimeofday(&val, NULL);
 
     set_bench_time(&self->stop, val.tv_sec, val.tv_usec);
 #endif
@@ -139,10 +140,12 @@ bench_timer_get_elapsed_time_str(struct bench_timer *self)
 {
     struct bench_time elapsed;
     char *buf;
+    int ret;
 
     bench_timer_get_elapsed_time(self, &elapsed);
     normalize_bench_time(&elapsed);
-    asprintf(&buf, "%ld.%06ld", elapsed.seconds, elapsed.milliseconds);
+    ret = asprintf(&buf, "%ld.%06ld", elapsed.seconds, elapsed.milliseconds);
+    assert(ret >= 0);
 
     return buf;
 }

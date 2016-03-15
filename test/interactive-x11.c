@@ -372,9 +372,9 @@ main(int argc, char *argv[])
         goto err_core_kbd;
     }
 
-    system("stty -echo");
+    (void) system("stty -echo");
     ret = loop(conn, &core_kbd);
-    system("stty echo");
+    (void) system("stty echo");
 
 err_core_kbd:
     deinit_kbd(&core_kbd);

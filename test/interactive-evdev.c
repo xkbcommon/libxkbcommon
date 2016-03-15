@@ -483,14 +483,14 @@ main(int argc, char *argv[])
     sigaction(SIGTERM, &act, NULL);
 
     /* Instead of fiddling with termios.. */
-    system("stty -echo");
+    (void) system("stty -echo");
 
     ret = loop(kbds);
     if (ret)
         goto err_stty;
 
 err_stty:
-    system("stty echo");
+    (void) system("stty echo");
     free_keyboards(kbds);
 err_compose:
     xkb_compose_table_unref(compose_table);
