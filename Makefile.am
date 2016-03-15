@@ -151,7 +151,7 @@ all-local:: doc
 clean-local:: clean-doc
 
 doc/stamp-doxygen: $(top_srcdir)/xkbcommon/*.h
-	$(AM_V_GEN)$(DOXYGEN) doc/Doxyfile
+	$(AM_V_GEN)(cd $(top_srcdir) && $(DOXYGEN) $(abs_top_builddir)/doc/Doxyfile)
 	touch $@
 
 clean-doxygen:

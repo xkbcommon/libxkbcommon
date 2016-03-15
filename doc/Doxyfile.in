@@ -2,7 +2,7 @@ PROJECT_NAME           = @PACKAGE_NAME@
 
 PROJECT_NUMBER         = @PACKAGE_VERSION@
 
-OUTPUT_DIRECTORY       = doc
+OUTPUT_DIRECTORY       = @abs_top_builddir@/doc
 
 BRIEF_MEMBER_DESC      = NO
 
@@ -18,13 +18,13 @@ QUIET                  = YES
 
 WARN_IF_UNDOCUMENTED   = NO
 
-INPUT                  = @abs_top_srcdir@/README.md \
-                         @abs_top_srcdir@/doc/quick-guide.md \
-                         @abs_top_srcdir@/doc/compat.md \
-                         @abs_top_srcdir@/xkbcommon/xkbcommon.h \
-                         @abs_top_srcdir@/xkbcommon/xkbcommon-names.h \
-                         @abs_top_srcdir@/xkbcommon/xkbcommon-x11.h \
-                         @abs_top_srcdir@/xkbcommon/xkbcommon-compose.h \
+INPUT                  = README.md \
+                         doc/quick-guide.md \
+                         doc/compat.md \
+                         xkbcommon/xkbcommon.h \
+                         xkbcommon/xkbcommon-names.h \
+                         xkbcommon/xkbcommon-x11.h \
+                         xkbcommon/xkbcommon-compose.h \
 
 FILE_PATTERNS          = *.c \
                          *.h
@@ -40,7 +40,7 @@ ALPHABETICAL_INDEX     = NO
 IGNORE_PREFIX          = xkb_ \
                          XKB_
 
-HTML_EXTRA_STYLESHEET  = @abs_top_srcdir@/doc/doxygen-extra.css
+HTML_EXTRA_STYLESHEET  = doc/doxygen-extra.css
 
 HTML_TIMESTAMP         = NO
 
