@@ -2,7 +2,7 @@ language: c
 
 before_install:
     - sudo apt-get update -qq
-    - sudo apt-get install xutils-dev
+    - sudo apt-get install xutils-dev doxygen
 
 compiler:
     - gcc
