@@ -1,4 +1,4 @@
-libxkbcommon 0.6.0 - TBD
+libxkbcommon 0.6.0 - 2016-03-16
 ==================
 
 - If the XKB_CONFIG_ROOT environment variable is set, it is used as the XKB
