@@ -892,7 +892,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap);
  *
  * @returns The keymap as a NUL-terminated string, or NULL if unsuccessful.
  *
- * The returned string may be fed back into xkb_map_new_from_string() to get
+ * The returned string may be fed back into xkb_keymap_new_from_string() to get
  * the exact same keymap (possibly in another process, etc.).
  *
  * The returned string is dynamically allocated and should be freed by the
