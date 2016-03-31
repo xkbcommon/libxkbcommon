@@ -16,6 +16,7 @@ EXTRA_DIST = \
 	xkbcommon.map \
 	xkbcommon-x11.map \
 	PACKAGING \
+	LICENSE \
 	test/symbols-leak-test.bash
 
 AM_CPPFLAGS = \
