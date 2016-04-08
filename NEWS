@@ -1,3 +1,11 @@
+libxkbcommon 0.6.1 - 2016-04-08
+==================
+
+- Add LICENSE to distributed files in tarball releases.
+
+- Minor typo fix in xkb_keymap_get_as_string() documentation.
+
+
 libxkbcommon 0.6.0 - 2016-03-16
 ==================
 
