@@ -17,6 +17,7 @@ print-compiled-keymap
 atom
 x11
 interactive-x11
+interactive-wayland
 utf8
 x11comp
 compose

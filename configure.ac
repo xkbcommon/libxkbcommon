@@ -186,6 +186,25 @@ You can disable X11 support with --disable-x11.])])
 ], [enable_x11=no])
 AM_CONDITIONAL([ENABLE_X11], [test "x$enable_x11" = xyes])
 
+WAYLAND_PKGS="wayland-client >= 1.2.0 wayland-protocols >= 1.0 wayland-scanner"
+AC_ARG_ENABLE([wayland],
+    [AS_HELP_STRING([--disable-wayland],
+        [Disable support for Wayland utility programs (default: auto)])],
+    [], [enable_wayland=auto])
+AS_IF([test "x$enable_wayland" = xauto], [
+    PKG_CHECK_EXISTS($WAYLAND_PKGS, [enable_wayland=yes], [enable_wayland=no])],
+    [])
+AS_IF([test "x$enable_wayland" = xyes], [
+    PKG_CHECK_MODULES([WAYLAND], $WAYLAND_PKGS, [],
+        [AC_MSG_ERROR([Wayland utilities require libwayland-client >= 1.2 which was not found. \
+You can disable Wayland support with --disable-wayland.])])
+    AC_PATH_PROG([wayland_scanner], [wayland-scanner])
+    wayland_scanner=`$PKG_CONFIG --variable=wayland_scanner wayland-scanner`
+    ac_wayland_protocols_pkgdatadir=`$PKG_CONFIG --variable=pkgdatadir wayland-protocols`
+    AC_SUBST(WAYLAND_PROTOCOLS_DATADIR, $ac_wayland_protocols_pkgdatadir)
+], [enable_wayland=no])
+AM_CONDITIONAL([ENABLE_WAYLAND], [test "x$enable_wayland" = xyes])
+
 AC_CONFIG_FILES([
     Makefile
     xkbcommon-uninstalled.pc
@@ -201,6 +220,7 @@ AC_MSG_RESULT([
 
         libxkbcommon:            yes
         libxkbcommon-x11:        ${enable_x11}
+        Wayland utilities:       ${enable_wayland}
         documentation:           ${build_docs}
 
         default XKB rules:       ${DEFAULT_XKB_RULES}

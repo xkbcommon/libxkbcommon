@@ -254,6 +254,42 @@ test_interactive_x11_LDADD = $(TESTS_X11_LDADD)
 test_interactive_x11_CFLAGS = $(TESTS_X11_CFLAGS)
 endif ENABLE_X11
 
+if ENABLE_WAYLAND
+build_only_tests += \
+	test/interactive-wayland
+
+TESTS_WAYLAND_LDADD = $(WAYLAND_LIBS) $(TESTS_LDADD)
+TESTS_WAYLAND_CFLAGS = $(WAYLAND_CFLAGS)
+
+.SECONDEXPANSION:
+
+define protostability
+$(if $(findstring unstable,$1),unstable,stable)
+endef
+
+define protoname
+$(shell echo $1 | sed 's/\([a-z\-]\+\)-[a-z]\+-v[0-9]\+/\1/')
+endef
+
+%-protocol.c: $(WAYLAND_PROTOCOLS_DATADIR)/$$(call protostability,$$*)/$$(call protoname,$$*)/$$*.xml
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) code < $< > $@
+%-client-protocol.h: $(WAYLAND_PROTOCOLS_DATADIR)/$$(call protostability,$$*)/$$(call protoname,$$*)/$$*.xml
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) client-header < $< > $@
+
+INTERACTIVE_WL_XDG_SHELL_SRCS = \
+	xdg-shell-unstable-v5-protocol.c \
+	xdg-shell-unstable-v5-client-protocol.h
+
+test_interactive_wayland_SOURCES = \
+	test/interactive-wayland.c \
+	$(INTERACTIVE_WL_XDG_SHELL_SRCS)
+test_interactive_wayland_LDADD = $(TESTS_WAYLAND_LDADD)
+test_interactive_wayland_CFLAGS = $(TESTS_WAYLAND_CFLAGS)
+
+BUILT_SOURCES += \
+	$(INTERACTIVE_WL_XDG_SHELL_SRCS)
+endif
+
 check_PROGRAMS = $(build_run_tests) $(build_only_tests)
 TESTS = $(build_run_tests) $(run_only_tests)
 
