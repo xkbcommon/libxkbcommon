@@ -240,6 +240,7 @@ buffer_create(struct interactive_dpy *inter, uint32_t width, uint32_t height)
 	pool = wl_shm_create_pool(inter->shm, fd, size);
 	buf = wl_shm_pool_create_buffer(pool, 0, width, height, stride,
 	                                inter->shm_format);
+	wl_buffer_add_listener(buf, &buffer_listener, inter);
 
 	wl_surface_attach(inter->wl_surf, buf, 0, 0);
 	wl_surface_damage(inter->wl_surf, 0, 0, width, height);
@@ -474,10 +475,8 @@ seat_capabilities(void *data, struct wl_seat *wl_seat, uint32_t caps)
 		else
 			wl_keyboard_destroy(seat->wl_kbd);
 
-		if (seat->state)
-			xkb_state_unref(seat->state);
-		if (seat->keymap)
-			xkb_keymap_unref(seat->keymap);
+		xkb_state_unref(seat->state);
+		xkb_keymap_unref(seat->keymap);
 
 		seat->state = NULL;
 		seat->keymap = NULL;
@@ -525,6 +524,7 @@ seat_create(struct interactive_dpy *inter, struct wl_registry *registry,
 	wl_seat_add_listener(seat->wl_seat, &seat_listener, seat);
 	asprintf(&seat->name_str, "seat:%d",
 	         wl_proxy_get_id((struct wl_proxy *) seat->wl_seat));
+	wl_list_insert(&inter->seats, &seat->link);
 }
 
 static void
@@ -536,10 +536,15 @@ seat_destroy(struct interactive_seat *seat)
 		else
 			wl_keyboard_destroy(seat->wl_kbd);
 
-		if (seat->state)
-			xkb_state_unref(seat->state);
-		if (seat->keymap)
-			xkb_keymap_unref(seat->keymap);
+		xkb_state_unref(seat->state);
+		xkb_keymap_unref(seat->keymap);
+	}
+
+	if (seat->wl_pointer) {
+		if (seat->version >= WL_SEAT_RELEASE_SINCE_VERSION)
+			wl_pointer_release(seat->wl_pointer);
+		else
+			wl_pointer_destroy(seat->wl_pointer);
 	}
 
 	if (seat->version >= WL_SEAT_RELEASE_SINCE_VERSION)
@@ -547,6 +552,7 @@ seat_destroy(struct interactive_seat *seat)
 	else
 		wl_seat_destroy(seat->wl_seat);
 
+	free(seat->name_str);
 	wl_list_remove(&seat->link);
 	free(seat);
 }
@@ -611,6 +617,13 @@ dpy_disconnect(struct interactive_dpy *inter)
 		wl_surface_destroy(inter->wl_surf);
 	if (inter->shell)
 		xdg_shell_destroy(inter->shell);
+	if (inter->compositor)
+		wl_compositor_destroy(inter->compositor);
+	if (inter->shm)
+		wl_shm_destroy(inter->shm);
+
+	/* Do one last roundtrip to try to destroy our wl_buffer. */
+	wl_display_roundtrip(inter->dpy);
 
 	xkb_context_unref(inter->ctx);
 	wl_display_disconnect(inter->dpy);
@@ -672,6 +685,8 @@ main(int argc, char *argv[])
 		ret = wl_display_dispatch(inter.dpy);
 	} while (ret >= 0 && !terminate);
 	(void) system("stty echo");
+
+	wl_registry_destroy(registry);
 
 err_conn:
 	dpy_disconnect(&inter);
