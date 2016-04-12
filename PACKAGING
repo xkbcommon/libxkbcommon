@@ -44,6 +44,11 @@ Dependencies for libxkbcommon-x11 tests:
 - xkbcomp, Xvfb.
   If they are not available, the relevant tests are skipped.
 
+Dependencies for Wayland tests:
+- wayland-client>=1.2.0, wayland-scanner, wayland-protocols>=1.0
+  If they are not available, the relevant example/utility program is
+  skipped.
+
 Unless libxcb is always available as part of the system, it is preferred
 that libxkbcommon and libxkbcommon-x11 be split into separate packages,
 such that the main library does not depend on libxcb. This avoids a
