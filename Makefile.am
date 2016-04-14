@@ -140,6 +140,9 @@ CLEANFILES = $(BUILT_SOURCES)
 src/xkbcomp/parser.c: $(top_builddir)/src/$(am__dirstamp) $(top_builddir)/src/xkbcomp/$(am__dirstamp)
 src/xkbcomp/parser.h: $(top_builddir)/src/$(am__dirstamp) $(top_builddir)/src/xkbcomp/$(am__dirstamp)
 
+install-data-local::
+	$(MKDIR_P) $(XKBCONFIGROOT)
+
 ##
 # Documentation
 ##
