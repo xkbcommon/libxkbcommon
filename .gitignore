@@ -82,3 +82,5 @@ cscope.out
 test-suite.log
 test-driver
 build-aux/
+/xdg-shell-unstable-v5-client-protocol.h
+/xdg-shell-unstable-v5-protocol.c
