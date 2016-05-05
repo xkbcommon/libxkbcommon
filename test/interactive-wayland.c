@@ -515,6 +515,7 @@ static void
 seat_create(struct interactive_dpy *inter, struct wl_registry *registry,
             uint32_t name, uint32_t version)
 {
+	int ret;
 	struct interactive_seat *seat = calloc(1, sizeof(*seat));
 
 	seat->global_name = name;
@@ -522,8 +523,9 @@ seat_create(struct interactive_dpy *inter, struct wl_registry *registry,
 	seat->wl_seat = wl_registry_bind(registry, name, &wl_seat_interface,
 	                                 MAX(version, 5));
 	wl_seat_add_listener(seat->wl_seat, &seat_listener, seat);
-	asprintf(&seat->name_str, "seat:%d",
-	         wl_proxy_get_id((struct wl_proxy *) seat->wl_seat));
+	ret = asprintf(&seat->name_str, "seat:%d",
+		       wl_proxy_get_id((struct wl_proxy *) seat->wl_seat));
+	assert(ret >= 0);
 	wl_list_insert(&inter->seats, &seat->link);
 }
 
