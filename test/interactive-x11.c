@@ -372,9 +372,9 @@ main(int argc, char *argv[])
         goto err_core_kbd;
     }
 
-    (void) system("stty -echo");
+    test_disable_stdin_echo();
     ret = loop(conn, &core_kbd);
-    (void) system("stty echo");
+    test_enable_stdin_echo();
 
 err_core_kbd:
     deinit_kbd(&core_kbd);

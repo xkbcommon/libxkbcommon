@@ -88,3 +88,9 @@ test_print_keycode_state(struct xkb_state *state,
 
 void
 test_print_state_changes(enum xkb_state_component changed);
+
+void
+test_disable_stdin_echo(void);
+
+void
+test_enable_stdin_echo(void);

@@ -680,14 +680,13 @@ main(int argc, char *argv[])
 		goto err_conn;
 	}
 
-	(void) system("stty -echo");
+	test_disable_stdin_echo();
 	do {
 		ret = wl_display_dispatch(inter.dpy);
 	} while (ret >= 0 && !terminate);
-	(void) system("stty echo");
+	test_enable_stdin_echo();
 
 	wl_registry_destroy(registry);
-
 err_conn:
 	dpy_disconnect(&inter);
 err_out:

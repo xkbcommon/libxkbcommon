@@ -35,6 +35,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <termios.h>
 
 #include "test.h"
 
@@ -453,4 +454,26 @@ test_print_state_changes(enum xkb_state_component changed)
     if (changed & XKB_STATE_LEDS)
         printf("leds ");
     printf("]\n");
+}
+
+void
+test_disable_stdin_echo(void)
+{
+    /* Same as `stty -echo`. */
+    struct termios termios;
+    if (tcgetattr(STDIN_FILENO, &termios) == 0) {
+        termios.c_lflag &= ~ECHO;
+        (void) tcsetattr(STDIN_FILENO, TCSADRAIN, &termios);
+    }
+}
+
+void
+test_enable_stdin_echo(void)
+{
+    /* Same as `stty echo`. */
+    struct termios termios;
+    if (tcgetattr(STDIN_FILENO, &termios) == 0) {
+        termios.c_lflag |= ECHO;
+        (void) tcsetattr(STDIN_FILENO, TCSADRAIN, &termios);
+    }
 }

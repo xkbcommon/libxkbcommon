@@ -482,15 +482,10 @@ main(int argc, char *argv[])
     sigaction(SIGINT, &act, NULL);
     sigaction(SIGTERM, &act, NULL);
 
-    /* Instead of fiddling with termios.. */
-    (void) system("stty -echo");
-
+    test_disable_stdin_echo();
     ret = loop(kbds);
-    if (ret)
-        goto err_stty;
+    test_enable_stdin_echo();
 
-err_stty:
-    (void) system("stty echo");
     free_keyboards(kbds);
 err_compose:
     xkb_compose_table_unref(compose_table);
