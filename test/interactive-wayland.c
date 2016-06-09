@@ -282,7 +282,7 @@ static const struct xdg_surface_listener surface_listener = {
 	surface_close
 };
 
-static int surface_create(struct interactive_dpy *inter)
+static void surface_create(struct interactive_dpy *inter)
 {
 	int width = 200, height = 200;
 
@@ -676,11 +676,7 @@ main(int argc, char *argv[])
 		goto err_conn;
 	}
 
-	ret = surface_create(&inter);
-	if (ret) {
-		fprintf(stderr, "Couldn't create a capture window\n");
-		goto err_conn;
-	}
+	surface_create(&inter);
 
 	test_disable_stdin_echo();
 	do {
