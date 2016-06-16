@@ -74,6 +74,7 @@ with a keymap. In this case, we can create the keymap object like this:
 ~~~{.c}
     /* From the wl_keyboard::keymap event. */
     const char *keymap_string = <...>;
+    struct xkb_keymap *keymap;
 
     keymap = xkb_keymap_new_from_string(ctx, keymap_string,
                                         XKB_KEYMAP_FORMAT_TEXT_V1,
