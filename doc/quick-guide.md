@@ -32,7 +32,7 @@ Before we can do anything interesting, we need a library context:
 ~~~{.c}
     #include <xkbcommon/xkbcommon.h>
 
-    struct xkb_context ctx;
+    struct xkb_context *ctx;
 
     ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     if (!ctx) <error>
