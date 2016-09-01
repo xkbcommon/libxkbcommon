@@ -42,8 +42,7 @@ Notable additions:
 - extended number of modifiers (planned)
 - extended number of groups (planned)
 - multiple keysyms per level
-  + this requires incompatible dataset changes, such that X11 would
-    not be able to parse these
+  + such levels are ignored by x11/xkbcomp.
 - key names (e.g. `<AE11>`) can be longer than 4 characters.
 
 ## Compose support
