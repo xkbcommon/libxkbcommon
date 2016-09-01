@@ -51,5 +51,6 @@ Relative to the standard implementation in libX11 (described in the
 Compose(5) man-page), some features are not supported:
 
 - the (! MODIFIER) syntax
+    + parsed correctly but ignored.
 - using modifier keysyms in Compose sequences
 - several interactions with Braille keysyms
