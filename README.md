@@ -9,6 +9,21 @@ and dead keys.
 
 See [Quick Guide](doc/quick-guide.md).
 
+## Building
+
+libxkbcommon is built the typical autoconf way:
+
+    ./autogen.sh
+    make
+
+To build for use with Wayland, you can disable X11 support while still
+using the X11 keyboard configuration resource files thusly:
+
+    ./autogen.sh --disable-x11 \
+        --with-xkb-config-root=/usr/share/X11/xkb \
+        --with-x-locale-root=/usr/share/X11/locale
+    make
+
 ## API
 
 While libxkbcommon's API is somewhat derived from the classic XKB API as found
