@@ -46,10 +46,10 @@ main(void)
     path = test_get_path("compose/en_US.UTF-8/Compose");
     file = fopen(path, "r");
     if (file == NULL) {
-	    perror(path);
-	    free(path);
-	    xkb_context_unref(ctx);
-	    return -1;
+        perror(path);
+        free(path);
+        xkb_context_unref(ctx);
+        return -1;
     }
 
     xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
