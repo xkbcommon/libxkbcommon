@@ -25,6 +25,8 @@
 #ifndef LIBXKBCOMMON_BENCH_H
 #define LIBXKBCOMMON_BENCH_H
 
+#include <stdint.h>
+
 struct bench_time {
     long seconds;
     long milliseconds;
