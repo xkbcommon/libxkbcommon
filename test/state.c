@@ -445,6 +445,7 @@ test_consume(struct xkb_keymap *keymap)
 
     /* More complicated - CTRL+ALT */
     state = xkb_state_new(keymap);
+    assert(state);
 
     mask = xkb_state_key_get_consumed_mods(state, KEY_F1 + EVDEV_OFFSET);
     assert(mask == ((1U << shift) | (1U << alt) | (1U << ctrl) | (1U << mod5)));
@@ -457,8 +458,6 @@ test_consume(struct xkb_keymap *keymap)
 
     mask = xkb_state_key_get_consumed_mods(state, KEY_F1 + EVDEV_OFFSET);
     assert(mask == ((1U << shift) | (1U << alt) | (1U << ctrl) | (1U << mod5)));
-
-    assert(state);
 
     xkb_state_unref(state);
 }
