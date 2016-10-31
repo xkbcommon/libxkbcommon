@@ -360,7 +360,8 @@ kbd_key(void *data, struct wl_keyboard *wl_kbd, uint32_t serial, uint32_t time,
 		return;
 
 	printf("%s: ", seat->name_str);
-	test_print_keycode_state(seat->state, NULL, key + 8);
+	test_print_keycode_state(seat->state, NULL, key + 8,
+                                 XKB_CONSUMED_MODE_XKB);
 
 	/* Exit on ESC. */
 	if (xkb_state_key_get_one_sym(seat->state, key + 8) == XKB_KEY_Escape)

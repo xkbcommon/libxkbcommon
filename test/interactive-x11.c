@@ -236,7 +236,8 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
         xcb_key_press_event_t *event = (xcb_key_press_event_t *) gevent;
         xkb_keycode_t keycode = event->detail;
 
-        test_print_keycode_state(kbd->state, NULL, keycode);
+        test_print_keycode_state(kbd->state, NULL, keycode,
+                                 XKB_CONSUMED_MODE_XKB);
 
         /* Exit on ESC. */
         if (keycode == 9)

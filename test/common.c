@@ -350,7 +350,8 @@ test_compile_rules(struct xkb_context *context, const char *rules,
 void
 test_print_keycode_state(struct xkb_state *state,
                          struct xkb_compose_state *compose_state,
-                         xkb_keycode_t keycode)
+                         xkb_keycode_t keycode,
+                         enum xkb_consumed_mode consumed_mode)
 {
     struct xkb_keymap *keymap;
 
@@ -410,7 +411,8 @@ test_print_keycode_state(struct xkb_state *state,
         if (xkb_state_mod_index_is_active(state, mod,
                                           XKB_STATE_MODS_EFFECTIVE) <= 0)
             continue;
-        if (xkb_state_mod_index_is_consumed(state, keycode, mod))
+        if (xkb_state_mod_index_is_consumed2(state, keycode, mod,
+                                             consumed_mode))
             printf("-%s ", xkb_keymap_mod_get_name(keymap, mod));
         else
             printf("%s ", xkb_keymap_mod_get_name(keymap, mod));

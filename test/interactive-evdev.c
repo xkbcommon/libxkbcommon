@@ -48,6 +48,7 @@ static bool terminate;
 static int evdev_offset = 8;
 static bool report_state_changes;
 static bool with_compose;
+static enum xkb_consumed_mode consumed_mode = XKB_CONSUMED_MODE_XKB;
 
 #define NLONGS(n) (((n) + LONG_BIT - 1) / LONG_BIT)
 
@@ -260,7 +261,8 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
     }
 
     if (value != KEY_STATE_RELEASE)
-        test_print_keycode_state(kbd->state, kbd->compose_state, keycode);
+        test_print_keycode_state(kbd->state, kbd->compose_state, keycode,
+                                 consumed_mode);
 
     if (with_compose) {
         status = xkb_compose_state_get_status(kbd->compose_state);
@@ -381,7 +383,7 @@ main(int argc, char *argv[])
 
     setlocale(LC_ALL, "");
 
-    while ((opt = getopt(argc, argv, "r:m:l:v:o:k:n:cd")) != -1) {
+    while ((opt = getopt(argc, argv, "r:m:l:v:o:k:n:cdg")) != -1) {
         switch (opt) {
         case 'r':
             rules = optarg;
@@ -415,6 +417,9 @@ main(int argc, char *argv[])
         case 'd':
             with_compose = true;
             break;
+        case 'g':
+            consumed_mode = XKB_CONSUMED_MODE_GTK;
+            break;
         case '?':
             fprintf(stderr, "   Usage: %s [-r <rules>] [-m <model>] "
                     "[-l <layout>] [-v <variant>] [-o <options>]\n",
@@ -423,7 +428,8 @@ main(int argc, char *argv[])
                     argv[0]);
             fprintf(stderr, "For both: -n <evdev keycode offset>\n"
                             "          -c (to report changes to the state)\n"
-                            "          -d (to enable compose)\n");
+                            "          -d (to enable compose)\n"
+                            "          -g (to use GTK consumed mode)\n");
             exit(2);
         }
     }

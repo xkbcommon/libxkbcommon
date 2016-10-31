@@ -178,6 +178,19 @@ msb_pos(uint32_t mask)
     return pos;
 }
 
+static inline int
+popcount(uint32_t x)
+{
+    int count;
+#if defined(HAVE___BUILTIN_POPCOUNT)
+    count = __builtin_popcount(x);
+#else
+    for (count = 0; x; count++)
+        x &= x - 1;
+#endif
+    return count;
+}
+
 bool
 map_file(FILE *file, char **string_out, size_t *size_out);
 

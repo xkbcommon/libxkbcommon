@@ -1649,7 +1649,7 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
  *    Effectively, this means that consumed modifiers (Shift in this example)
  *    are masked out as well, before doing the comparison.
  *
- * In summary, this is how the matching would be performed:
+ * In summary, this is approximately how the matching would be performed:
  * @code
  *   (keysym == shortcut_keysym) &&
  *   ((state_mods & ~consumed_mods & significant_mods) == shortcut_mods)
@@ -1666,8 +1666,78 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
  */
 
 /**
+ * Consumed modifiers mode.
+ *
+ * There are several possible methods for deciding which modifiers are
+ * consumed and which are not, each applicable for different systems or
+ * situations. The mode selects the method to use.
+ *
+ * Keep in mind that in all methods, the keymap may decide to "preserve"
+ * a modifier, meaning it is not reported as consumed even if it would
+ * have otherwise.
+ */
+enum xkb_consumed_mode {
+    /**
+     * This is the mode defined in the XKB specification and used by libX11.
+     *
+     * A modifier is consumed iff it *may affect* key translation.
+     *
+     * For example, if `Control+Alt+<Backspace>` produces some assigned keysym,
+     * then when pressing just `<Backspace>`, `Control` and `Alt` are consumed,
+     * even though they are not active, since if they *were* active they would
+     * have affected key translation.
+     */
+    XKB_CONSUMED_MODE_XKB,
+    /**
+     * This is the mode used by the GTK+ toolkit.
+     *
+     * The mode consists of the following two heuristics:
+     *
+     * - The active set of modifiers, excluding modifiers which do not affect
+     *   the key (as described above), are considered consumed, if they result
+     *   in different keysyms being produced than when no modifiers are active.
+     *
+     * - Additionally, a single modifier is considered consumed if, were it the
+     *   only active modifier affecting the key (as described above), it would
+     *   result in different keysyms being produced than when no modifiers are
+     *   active.
+     */
+    XKB_CONSUMED_MODE_GTK
+};
+
+/**
+ * Get the mask of modifiers consumed by translating a given key.
+ *
+ * @param state The keyboard state.
+ * @param key   The keycode of the key.
+ * @param mode  The consumed modifiers mode to use; see enum description.
+ *
+ * @returns a mask of the consumed modifiers.
+ *
+ * @memberof xkb_state
+ * @since 0.7.0
+ */
+xkb_mod_mask_t
+xkb_state_key_get_consumed_mods2(struct xkb_state *state, xkb_keycode_t key,
+                                 enum xkb_consumed_mode mode);
+
+/**
+ * Same as xkb_state_key_get_consumed_mods2() with mode XKB_CONSUMED_MODE_XKB.
+ *
+ * @memberof xkb_state
+ * @since 0.4.1
+ */
+xkb_mod_mask_t
+xkb_state_key_get_consumed_mods(struct xkb_state *state, xkb_keycode_t key);
+
+/**
  * Test whether a modifier is consumed by keyboard state translation for
  * a key.
+ *
+ * @param state The keyboard state.
+ * @param key   The keycode of the key.
+ * @param idx   The index of the modifier to check.
+ * @param mode  The consumed modifiers mode to use; see enum description.
  *
  * @returns 1 if the modifier is consumed, 0 if it is not.  If the modifier
  * index is not valid in the keymap, returns -1.
@@ -1675,6 +1745,19 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
  * @sa xkb_state_mod_mask_remove_consumed()
  * @sa xkb_state_key_get_consumed_mods()
  * @memberof xkb_state
+ * @since 0.7.0
+ */
+int
+xkb_state_mod_index_is_consumed2(struct xkb_state *state,
+                                 xkb_keycode_t key,
+                                 xkb_mod_index_t idx,
+                                 enum xkb_consumed_mode mode);
+
+/**
+ * Same as xkb_state_mod_index_is_consumed2() with mode XKB_CONSUMED_MOD_XKB.
+ *
+ * @memberof xkb_state
+ * @since 0.4.1
  */
 int
 xkb_state_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t key,
@@ -1682,6 +1765,8 @@ xkb_state_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t key,
 
 /**
  * Remove consumed modifiers from a modifier mask for a key.
+ *
+ * @deprecated Use xkb_state_key_get_consumed_mods2() instead.
  *
  * Takes the given modifier mask, and removes all modifiers which are
  * consumed for that particular key (as in xkb_state_mod_index_is_consumed()).
@@ -1692,18 +1777,6 @@ xkb_state_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t key,
 xkb_mod_mask_t
 xkb_state_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t key,
                                    xkb_mod_mask_t mask);
-
-/**
- * Get the mask of modifiers consumed by translating a given key.
- *
- * @returns a mask of the consumed modifiers.
- *
- * @sa xkb_state_mod_index_is_consumed()
- * @memberof xkb_state
- * @since 0.4.1
- */
-xkb_mod_mask_t
-xkb_state_key_get_consumed_mods(struct xkb_state *state, xkb_keycode_t key);
 
 /**
  * Test whether a layout is active in a given keyboard state by name.
