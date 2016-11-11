@@ -1,7 +1,30 @@
+libxkbcommon 0.7.0 - 2016-11-11
+==================
+
+- Added support for different "modes" of calculating consumed modifiers.
+  The existing mode, based on the XKB standard, has proven to be
+  unintuitive in various shortcut implementations.
+
+  A new mode, based on the calculation used by the GTK toolkit, is added.
+  This mode is less eager to declare a modifier as consumed.
+
+- Added a new interactive demo program using the Wayland protocol.
+  See the PACKAGING file for the new (optional) test dependencies.
+
+- Fixed a compilation error on GNU Hurd.
+
+- New API:
+  enum xkb_consumed_mode
+  XKB_CONSUMED_MODE_XKB
+  XKB_CONSUMED_MODE_GTK
+  xkb_state_key_get_consumed_mods2
+  xkb_state_mod_index_is_consumed2
+
+
 libxkbcommon 0.6.1 - 2016-04-08
 ==================
 
-- Add LICENSE to distributed files in tarball releases.
+- Added LICENSE to distributed files in tarball releases.
 
 - Minor typo fix in xkb_keymap_get_as_string() documentation.
 
