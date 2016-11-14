@@ -1359,7 +1359,7 @@ key_get_consumed(struct xkb_state *state, const struct xkb_key *key,
             if (XkbLevelsSameSyms(level, no_mods_level))
                 continue;
 
-            if (entry == matching_entry || popcount(entry->mods.mask) == 1)
+            if (entry == matching_entry || my_popcount(entry->mods.mask) == 1)
                 consumed |= entry->mods.mask & ~entry->preserve.mask;
         }
         break;

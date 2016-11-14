@@ -178,8 +178,9 @@ msb_pos(uint32_t mask)
     return pos;
 }
 
+// Avoid conflict with other popcount()s.
 static inline int
-popcount(uint32_t x)
+my_popcount(uint32_t x)
 {
     int count;
 #if defined(HAVE___BUILTIN_POPCOUNT)
