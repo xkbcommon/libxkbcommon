@@ -76,7 +76,7 @@ compare_by_name(const void *a, const void *b)
 {
     const char *key = a;
     const struct name_keysym *entry = b;
-    return strcasecmp(key, get_name(entry));
+    return istrcmp(key, get_name(entry));
 }
 
 XKB_EXPORT int
@@ -109,7 +109,7 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
 /*
  * Find the correct keysym if one case-insensitive match is given.
  *
- * The name_to_keysym table is sorted by strcasecmp(). So bsearch() may return
+ * The name_to_keysym table is sorted by istrcmp(). So bsearch() may return
  * _any_ of all possible case-insensitive duplicates. This function searches the
  * returned entry @entry, all previous and all next entries that match by
  * case-insensitive comparison and returns the exact match to @name. If @icase
@@ -138,7 +138,7 @@ find_sym(const struct name_keysym *entry, const char *name, bool icase)
     for (iter = entry - 1; iter >= name_to_keysym; --iter) {
         if (!icase && strcmp(get_name(iter), name) == 0)
             return iter;
-        if (strcasecmp(get_name(iter), get_name(entry)) != 0)
+        if (istrcmp(get_name(iter), get_name(entry)) != 0)
             break;
         if (icase && xkb_keysym_is_lower(iter->keysym))
             return iter;
@@ -148,7 +148,7 @@ find_sym(const struct name_keysym *entry, const char *name, bool icase)
     for (iter = entry + 1; iter < last; ++iter) {
         if (!icase && strcmp(get_name(iter), name) == 0)
             return iter;
-        if (strcasecmp(get_name(iter), get_name(entry)) != 0)
+        if (istrcmp(get_name(iter), get_name(entry)) != 0)
             break;
         if (icase && xkb_keysym_is_lower(iter->keysym))
             return iter;

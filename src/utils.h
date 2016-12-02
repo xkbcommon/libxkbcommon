@@ -29,7 +29,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include <strings.h>
 
 #include "darray.h"
 
@@ -43,6 +42,15 @@
 #define STATIC_ASSERT(expr, message) do { \
     switch (0) { case 0: case (expr): ; } \
 } while (0)
+
+char
+to_lower(char c);
+
+int
+istrcmp(const char *a, const char *b);
+
+int
+istrncmp(const char *a, const char *b, size_t n);
 
 static inline bool
 streq(const char *s1, const char *s2)
@@ -61,13 +69,13 @@ streq_not_null(const char *s1, const char *s2)
 static inline bool
 istreq(const char *s1, const char *s2)
 {
-    return strcasecmp(s1, s2) == 0;
+    return istrcmp(s1, s2) == 0;
 }
 
 static inline bool
 istreq_prefix(const char *s1, const char *s2)
 {
-    return strncasecmp(s1, s2, strlen(s1)) == 0;
+    return istrncmp(s1, s2, strlen(s1)) == 0;
 }
 
 static inline char *

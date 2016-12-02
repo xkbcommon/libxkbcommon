@@ -68,12 +68,6 @@ AS_IF([test ! -f "src/xkbcomp/parser.c" -a "x$YACC_INST" = x], [
 ])
 
 # Checks for library functions.
-AC_CHECK_FUNCS([strcasecmp strncasecmp])
-AS_IF([test "x$ac_cv_func_strcasecmp" = xno -o \
-            "x$ac_cv_func_strncasecmp" = xno], [
-    AC_MSG_ERROR([C library does not support strcasecmp/strncasecmp])
-])
-
 AC_CHECK_FUNCS([eaccess euidaccess mmap])
 
 AC_CHECK_FUNCS([secure_getenv __secure_getenv])

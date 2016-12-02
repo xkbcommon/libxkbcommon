@@ -20,6 +20,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+#include <locale.h>
 
 #include "test.h"
 #include "keysym.h" /* For unexported is_lower/upper/keypad() */
@@ -79,6 +80,25 @@ test_utf8(xkb_keysym_t keysym, const char *expected)
             (unsigned) strlen(s));
 
     return streq(s, expected);
+}
+
+static void
+test_github_issue_42(void)
+{
+    // Verify we are not dependent on locale, Turkish-i problem in particular.
+    if (setlocale(LC_CTYPE, "tr_TR.UTF-8") == NULL) {
+        // The locale is not available, probably; skip.
+        return;
+    }
+
+    assert(test_string("i", XKB_KEY_i));
+    assert(test_string("I", XKB_KEY_I));
+    assert(test_casestring("i", XKB_KEY_i));
+    assert(test_casestring("I", XKB_KEY_i));
+    assert(xkb_keysym_to_upper(XKB_KEY_i) == XKB_KEY_I);
+    assert(xkb_keysym_to_lower(XKB_KEY_I) == XKB_KEY_i);
+
+    setlocale(LC_CTYPE, "C");
 }
 
 int
@@ -195,6 +215,8 @@ main(void)
     assert(xkb_keysym_to_lower(XKB_KEY_Greek_LAMBDA) == XKB_KEY_Greek_lambda);
     assert(xkb_keysym_to_upper(XKB_KEY_eacute) == XKB_KEY_Eacute);
     assert(xkb_keysym_to_lower(XKB_KEY_Eacute) == XKB_KEY_eacute);
+
+    test_github_issue_42();
 
     return 0;
 }
