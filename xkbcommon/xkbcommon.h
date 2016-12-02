@@ -449,6 +449,9 @@ enum xkb_keysym_flags {
  * fails, only then to try with this flag, while possibly warning the user
  * he had misspelled the name, and might get wrong results.
  *
+ * Case folding is done according to the C locale; the current locale is not
+ * consulted.
+ *
  * @returns The keysym. If the name is invalid, returns XKB_KEY_NoSymbol.
  *
  * @sa xkb_keysym_t
