@@ -64,45 +64,6 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #define MAX_LHS_LEN 10
 #define MAX_INCLUDE_DEPTH 5
 
-#define KEYSYM_FROM_NAME_CACHE_SIZE 8
-
-/*
- * xkb_keysym_from_name() is fairly slow, because for internal reasons
- * it must use strcasecmp().
- * A small cache reduces about 20% from the compilation time of
- * en_US.UTF-8/Compose.
- */
-struct keysym_from_name_cache {
-    struct {
-        char name[64];
-        unsigned len;
-        xkb_keysym_t keysym;
-    } cache[KEYSYM_FROM_NAME_CACHE_SIZE];
-    unsigned next;
-};
-
-static xkb_keysym_t
-cached_keysym_from_name(struct keysym_from_name_cache *cache,
-                        const char *name, size_t len)
-{
-    xkb_keysym_t keysym;
-
-    if (len >= sizeof(cache->cache[0].name))
-        return XKB_KEY_NoSymbol;
-
-    for (unsigned i = 0; i < KEYSYM_FROM_NAME_CACHE_SIZE; i++)
-        if (cache->cache[i].len == len &&
-            memcmp(cache->cache[i].name, name, len) == 0)
-            return cache->cache[i].keysym;
-
-    keysym = xkb_keysym_from_name(name, XKB_KEYSYM_NO_FLAGS);
-    strcpy(cache->cache[cache->next].name, name);
-    cache->cache[cache->next].len = len;
-    cache->cache[cache->next].keysym = keysym;
-    cache->next = (cache->next + 1) % KEYSYM_FROM_NAME_CACHE_SIZE;
-    return keysym;
-}
-
 /*
  * Grammar adapted from libX11/modules/im/ximcp/imLcPrs.c.
  * See also the XCompose(5) manpage.
@@ -536,7 +497,6 @@ parse(struct xkb_compose_table *table, struct scanner *s,
 {
     enum rules_token tok;
     union lvalue val;
-    struct keysym_from_name_cache *cache = s->priv;
     xkb_keysym_t keysym;
     struct production production;
     enum { MAX_ERRORS = 10 };
@@ -612,7 +572,7 @@ lhs_keysym:
 lhs_keysym_tok:
     switch (tok) {
     case TOK_LHS_KEYSYM:
-        keysym = cached_keysym_from_name(cache, val.string.str, val.string.len);
+        keysym = xkb_keysym_from_name(val.string.str, XKB_KEYSYM_NO_FLAGS);
         if (keysym == XKB_KEY_NoSymbol) {
             scanner_err(s, "unrecognized keysym \"%s\" on left-hand side",
                         val.string.str);
@@ -683,7 +643,7 @@ rhs:
         production.has_string = true;
         goto rhs;
     case TOK_IDENT:
-        keysym = cached_keysym_from_name(cache, val.string.str, val.string.len);
+        keysym = xkb_keysym_from_name(val.string.str, XKB_KEYSYM_NO_FLAGS);
         if (keysym == XKB_KEY_NoSymbol) {
             scanner_err(s, "unrecognized keysym \"%s\" on right-hand side",
                         val.string.str);
@@ -735,9 +695,7 @@ parse_string(struct xkb_compose_table *table, const char *string, size_t len,
              const char *file_name)
 {
     struct scanner s;
-    struct keysym_from_name_cache cache;
-    memset(&cache, 0, sizeof(cache));
-    scanner_init(&s, table->ctx, string, len, file_name, &cache);
+    scanner_init(&s, table->ctx, string, len, file_name, NULL);
     if (!parse(table, &s, 0))
         return false;
     /* Maybe the allocator can use the excess space. */
