@@ -1,3 +1,17 @@
+libxkbcommon 0.7.1 - 2017-01-18
+==================
+
+- Fixed various reported problems when the current locale is tr_TR.UTF-8.
+
+  The function xkb_keysym_from_name() used to perform case-insensitive
+  string comparisons in a locale-dependent way, but required it to to
+  work as in the C/ASCII locale (the so called "Turkish i problem").
+
+  The function is now no longer affected by the current locale.
+
+- Fixed compilation in NetBSD.
+
+
 libxkbcommon 0.7.0 - 2016-11-11
 ==================
 
