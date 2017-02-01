@@ -1024,6 +1024,20 @@ xkb_mod_index_t
 xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name);
 
 /**
+ * Get the mask of a modifier by index.
+ *
+ * The modifier mask is a devirtualized mask that can be used to
+ * communicate back with the server for key grabs and other features.
+ *
+ * @returns The modifier mask.
+ *
+ * @sa xkb_mod_index_t
+ * @memberof xkb_keymap
+ */
+xkb_mod_mask_t
+xkb_keymap_mod_get_mask(struct xkb_keymap *keymap, xkb_mod_index_t idx);
+
+/**
  * Get the number of layouts in the keymap.
  *
  * @sa xkb_layout_index_t xkb_rule_names xkb_keymap_num_layouts_for_key()

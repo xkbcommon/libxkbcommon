@@ -292,6 +292,18 @@ xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name)
 }
 
 /**
+ * Returns the mask for a given modifier.
+ */
+XKB_EXPORT xkb_mod_mask_t
+xkb_keymap_mod_get_mask(struct xkb_keymap *keymap, xkb_mod_index_t idx)
+{
+    if (idx >= keymap->mods.num_mods)
+        return 0;
+
+    return keymap->mods.mods[idx].mapping;
+}
+
+/**
  * Return the total number of active groups in the keymap.
  */
 XKB_EXPORT xkb_layout_index_t
