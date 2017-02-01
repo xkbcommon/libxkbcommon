@@ -367,6 +367,27 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t kc,
 }
 
 /**
+ * Returns the maximum number of levels on a single key in the keymap.
+ */
+XKB_EXPORT xkb_level_index_t
+xkb_keymap_num_levels(struct xkb_keymap *keymap)
+{
+    struct xkb_key *key;
+    xkb_level_index_t max_levels = 0;
+
+    xkb_keys_foreach(key, keymap) {
+        xkb_layout_index_t layout;
+        for (layout = 0; layout < key->num_groups; layout++) {
+            xkb_level_index_t levels = XkbKeyGroupWidth(key, layout);
+            if (levels > max_levels)
+                max_levels = levels;
+        }
+    }
+
+    return max_levels;
+}
+
+/**
  * Return the total number of LEDs in the keymap.
  */
 XKB_EXPORT xkb_led_index_t

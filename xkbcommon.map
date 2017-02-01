@@ -34,6 +34,7 @@ global:
 	xkb_keymap_mod_get_name;
 	xkb_keymap_mod_get_index;
 	xkb_keymap_num_layouts;
+	xkb_keymap_num_levels;
 	xkb_keymap_layout_get_name;
 	xkb_keymap_layout_get_index;
 	xkb_keymap_num_leds;
