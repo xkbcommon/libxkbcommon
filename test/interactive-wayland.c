@@ -221,6 +221,9 @@ buffer_create(struct interactive_dpy *inter, uint32_t width, uint32_t height)
 	case WL_SHM_FORMAT_BGR565:
 		stride = width * 2;
 		break;
+        default:
+		fprintf(stderr, "Unsupported SHM format %d\n", inter->shm_format);
+		exit(1);
 	}
 
 	size = stride * height;
