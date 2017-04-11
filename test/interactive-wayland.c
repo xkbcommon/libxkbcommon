@@ -142,7 +142,7 @@ create_tmpfile_cloexec(char *tmpname)
  * If posix_fallocate() is not supported, program may receive
  * SIGBUS on accessing mmap()'ed file contents instead.
  */
-int
+static int
 os_create_anonymous_file(off_t size)
 {
 	static const char template[] = "/weston-shared-XXXXXX";
