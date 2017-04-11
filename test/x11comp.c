@@ -45,7 +45,7 @@ main(void)
     char *original, *dump;
     char *envp[] = { NULL };
     char *xvfb_argv[] = { "Xvfb", display, NULL };
-    pid_t xvfb_pid;
+    pid_t xvfb_pid = 0;
     char *xkbcomp_argv[] = { "xkbcomp", "-I", NULL /* xkb_path */, display,
                              NULL };
     pid_t xkbcomp_pid;
@@ -159,7 +159,8 @@ err_dump:
 err_xcb:
     xcb_disconnect(conn);
 err_xvfd:
-    kill(xvfb_pid, SIGTERM);
+    if (xvfb_pid > 0)
+        kill(xvfb_pid, SIGTERM);
 err_ctx:
     xkb_context_unref(ctx);
     return ret;
