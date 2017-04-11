@@ -181,7 +181,7 @@ You can disable X11 support with --disable-x11.])])
 ], [enable_x11=no])
 AM_CONDITIONAL([ENABLE_X11], [test "x$enable_x11" = xyes])
 
-WAYLAND_PKGS="wayland-client >= 1.2.0 wayland-protocols >= 1.0 wayland-scanner"
+WAYLAND_PKGS="wayland-client >= 1.2.0 wayland-protocols >= 1.7 wayland-scanner"
 AC_ARG_ENABLE([wayland],
     [AS_HELP_STRING([--disable-wayland],
         [Disable support for Wayland utility programs (default: auto)])],

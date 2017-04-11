@@ -277,8 +277,8 @@ endef
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) client-header < $< > $@
 
 INTERACTIVE_WL_XDG_SHELL_SRCS = \
-	xdg-shell-unstable-v5-protocol.c \
-	xdg-shell-unstable-v5-client-protocol.h
+	xdg-shell-unstable-v6-protocol.c \
+	xdg-shell-unstable-v6-client-protocol.h
 
 test_interactive_wayland_SOURCES = \
 	test/interactive-wayland.c \
