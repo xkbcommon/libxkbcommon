@@ -685,6 +685,7 @@ main(int argc, char *argv[])
 		        (inter.shell) ? "" : "xdg_shell ",
 			(inter.shm) ? "" : "wl_shm",
 			(inter.compositor) ? "" : "wl_compositor");
+                ret = -1;
 		goto err_conn;
 	}
 
