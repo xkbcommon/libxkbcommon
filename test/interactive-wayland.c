@@ -34,20 +34,21 @@
 #include "test.h"
 
 #include <wayland-client.h>
-#include "xdg-shell-unstable-v5-client-protocol.h"
+#include "xdg-shell-unstable-v6-client-protocol.h"
 #include <wayland-util.h>
 
 struct interactive_dpy {
 	struct wl_display *dpy;
 	struct wl_compositor *compositor;
-	struct xdg_shell *shell;
+	struct zxdg_shell_v6 *shell;
 	struct wl_shm *shm;
 	uint32_t shm_format;
 
 	struct xkb_context *ctx;
 
 	struct wl_surface *wl_surf;
-	struct xdg_surface *xdg_surf;
+	struct zxdg_surface_v6 *xdg_surf;
+	struct zxdg_toplevel_v6 *xdg_top;
 
 	struct wl_list seats;
 };
@@ -255,56 +256,65 @@ buffer_create(struct interactive_dpy *inter, uint32_t width, uint32_t height)
 }
 
 static void
-surface_configure(void *data, struct xdg_surface *surface,
-                  int32_t width, int32_t height, struct wl_array *states,
+surface_configure(void *data, struct zxdg_surface_v6 *surface,
 		  uint32_t serial)
 {
 	struct interactive_dpy *inter = data;
 
-	if (width == 0 || height == 0) {
-		xdg_surface_ack_configure(inter->xdg_surf, serial);
-		return;
-	}
-
-	buffer_create(inter, width, height);
-	xdg_surface_ack_configure(inter->xdg_surf, serial);
+	zxdg_surface_v6_ack_configure(inter->xdg_surf, serial);
 	wl_surface_commit(inter->wl_surf);
 }
 
+static const struct zxdg_surface_v6_listener surface_listener = {
+	surface_configure,
+};
+
 static void
-surface_close(void *data, struct xdg_surface *surface)
+toplevel_configure(void *data, struct zxdg_toplevel_v6 *toplevel,
+		   int32_t width, int32_t height, struct wl_array *states)
+{
+	struct interactive_dpy *inter = data;
+
+	if (width == 0)
+		width = 200;
+	if (height == 0)
+		height = 200;
+
+	buffer_create(inter, width, height);
+}
+
+static void
+toplevel_close(void *data, struct zxdg_toplevel_v6 *toplevel)
 {
 	terminate = true;
 }
 
-static const struct xdg_surface_listener surface_listener = {
-	surface_configure,
-	surface_close
+static const struct zxdg_toplevel_v6_listener toplevel_listener = {
+	toplevel_configure,
+	toplevel_close
 };
 
 static void surface_create(struct interactive_dpy *inter)
 {
-	int width = 200, height = 200;
-
 	inter->wl_surf = wl_compositor_create_surface(inter->compositor);
-	inter->xdg_surf = xdg_shell_get_xdg_surface(inter->shell,
-	                                            inter->wl_surf);
-	xdg_surface_add_listener(inter->xdg_surf, &surface_listener, inter);
-	xdg_surface_set_title(inter->xdg_surf, "xkbcommon event tester");
-	xdg_surface_set_app_id(inter->xdg_surf,
-	                       "org.xkbcommon.test.interactive-wayland");
-
-	buffer_create(inter, width, height);
+	inter->xdg_surf = zxdg_shell_v6_get_xdg_surface(inter->shell,
+	                                                inter->wl_surf);
+	zxdg_surface_v6_add_listener(inter->xdg_surf, &surface_listener, inter);
+	inter->xdg_top = zxdg_surface_v6_get_toplevel(inter->xdg_surf);
+	zxdg_toplevel_v6_add_listener(inter->xdg_top, &toplevel_listener, inter);
+	zxdg_toplevel_v6_set_title(inter->xdg_top, "xkbcommon event tester");
+	zxdg_toplevel_v6_set_app_id(inter->xdg_top,
+				    "org.xkbcommon.test.interactive-wayland");
 	wl_surface_commit(inter->wl_surf);
 }
 
 static void
-shell_ping(void *data, struct xdg_shell *shell, uint32_t serial)
+shell_ping(void *data, struct zxdg_shell_v6 *shell, uint32_t serial)
 {
-	xdg_shell_pong(shell, serial);
+	zxdg_shell_v6_pong(shell, serial);
 }
 
-static const struct xdg_shell_listener shell_listener = {
+static const struct zxdg_shell_v6_listener shell_listener = {
 	shell_ping
 };
 
@@ -418,7 +428,7 @@ pointer_button(void *data, struct wl_pointer *wl_pointer, uint32_t serial,
 {
 	struct interactive_seat *seat = data;
 
-	xdg_surface_move(seat->inter->xdg_surf, seat->wl_seat, serial);
+	zxdg_toplevel_v6_move(seat->inter->xdg_top, seat->wl_seat, serial);
 }
 
 static void
@@ -569,12 +579,11 @@ registry_global(void *data, struct wl_registry *registry, uint32_t name,
 	if (strcmp(interface, "wl_seat") == 0) {
 		seat_create(inter, registry, name, version);
 	}
-	else if (strcmp(interface, "xdg_shell") == 0) {
+	else if (strcmp(interface, "zxdg_shell_v6") == 0) {
 		inter->shell = wl_registry_bind(registry, name,
-		                                &xdg_shell_interface,
+		                                &zxdg_shell_v6_interface,
 		                                MAX(version, 1));
-		xdg_shell_add_listener(inter->shell, &shell_listener, inter);
-		xdg_shell_use_unstable_version(inter->shell, 5);
+		zxdg_shell_v6_add_listener(inter->shell, &shell_listener, inter);
 	}
 	else if (strcmp(interface, "wl_compositor") == 0) {
 		inter->compositor = wl_registry_bind(registry, name,
@@ -615,11 +624,13 @@ dpy_disconnect(struct interactive_dpy *inter)
 		seat_destroy(seat);
 
 	if (inter->xdg_surf)
-		xdg_surface_destroy(inter->xdg_surf);
+		zxdg_surface_v6_destroy(inter->xdg_surf);
+	if (inter->xdg_top)
+		zxdg_toplevel_v6_destroy(inter->xdg_top);
 	if (inter->wl_surf)
 		wl_surface_destroy(inter->wl_surf);
 	if (inter->shell)
-		xdg_shell_destroy(inter->shell);
+		zxdg_shell_v6_destroy(inter->shell);
 	if (inter->compositor)
 		wl_compositor_destroy(inter->compositor);
 	if (inter->shm)

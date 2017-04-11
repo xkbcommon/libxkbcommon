@@ -543,7 +543,7 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
 
     case EXPR_ARRAY_REF:
         bogus = "array reference";
-
+	/* fallthrough */
     case EXPR_ACTION_DECL:
         if (bogus == NULL)
             bogus = "function use";
