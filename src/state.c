@@ -264,6 +264,16 @@ xkb_filter_new(struct xkb_state *state)
 
 /***====================================================================***/
 
+static void
+xkb_filter_group_set_new(struct xkb_state *state, struct xkb_filter *filter)
+{
+    filter->priv = state->components.base_group;
+    if (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH)
+        state->components.base_group = filter->action.group.group;
+    else
+        state->components.base_group += filter->action.group.group;
+}
+
 static bool
 xkb_filter_group_set_func(struct xkb_state *state,
                           struct xkb_filter *filter,
@@ -293,13 +303,12 @@ xkb_filter_group_set_func(struct xkb_state *state,
 }
 
 static void
-xkb_filter_group_set_new(struct xkb_state *state, struct xkb_filter *filter)
+xkb_filter_group_lock_new(struct xkb_state *state, struct xkb_filter *filter)
 {
-    filter->priv = state->components.base_group;
     if (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH)
-        state->components.base_group = filter->action.group.group;
+        state->components.locked_group = filter->action.group.group;
     else
-        state->components.base_group += filter->action.group.group;
+        state->components.locked_group += filter->action.group.group;
 }
 
 static bool
@@ -323,12 +332,9 @@ xkb_filter_group_lock_func(struct xkb_state *state,
 }
 
 static void
-xkb_filter_group_lock_new(struct xkb_state *state, struct xkb_filter *filter)
+xkb_filter_mod_set_new(struct xkb_state *state, struct xkb_filter *filter)
 {
-    if (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH)
-        state->components.locked_group = filter->action.group.group;
-    else
-        state->components.locked_group += filter->action.group.group;
+    state->set_mods = filter->action.mods.mods.mask;
 }
 
 static bool
@@ -359,9 +365,13 @@ xkb_filter_mod_set_func(struct xkb_state *state,
 }
 
 static void
-xkb_filter_mod_set_new(struct xkb_state *state, struct xkb_filter *filter)
+xkb_filter_mod_lock_new(struct xkb_state *state, struct xkb_filter *filter)
 {
-    state->set_mods = filter->action.mods.mods.mask;
+    filter->priv = (state->components.locked_mods &
+                    filter->action.mods.mods.mask);
+    state->set_mods |= filter->action.mods.mods.mask;
+    if (!(filter->action.mods.flags & ACTION_LOCK_NO_LOCK))
+        state->components.locked_mods |= filter->action.mods.mods.mask;
 }
 
 static bool
@@ -388,16 +398,6 @@ xkb_filter_mod_lock_func(struct xkb_state *state,
     return true;
 }
 
-static void
-xkb_filter_mod_lock_new(struct xkb_state *state, struct xkb_filter *filter)
-{
-    filter->priv = (state->components.locked_mods &
-                    filter->action.mods.mods.mask);
-    state->set_mods |= filter->action.mods.mods.mask;
-    if (!(filter->action.mods.flags & ACTION_LOCK_NO_LOCK))
-        state->components.locked_mods |= filter->action.mods.mods.mask;
-}
-
 enum xkb_key_latch_state {
     NO_LATCH,
     LATCH_KEY_DOWN,
@@ -419,6 +419,13 @@ xkb_action_breaks_latch(const union xkb_action *action)
     default:
         return false;
     }
+}
+
+static void
+xkb_filter_mod_latch_new(struct xkb_state *state, struct xkb_filter *filter)
+{
+    filter->priv = LATCH_KEY_DOWN;
+    state->set_mods = filter->action.mods.mods.mask;
 }
 
 static bool
@@ -500,13 +507,6 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
     filter->priv = latch;
 
     return true;
-}
-
-static void
-xkb_filter_mod_latch_new(struct xkb_state *state, struct xkb_filter *filter)
-{
-    filter->priv = LATCH_KEY_DOWN;
-    state->set_mods = filter->action.mods.mods.mask;
 }
 
 static const struct {
