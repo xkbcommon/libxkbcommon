@@ -567,9 +567,6 @@ xkb_filter_apply_all(struct xkb_state *state,
         return;
 
     filter = xkb_filter_new(state);
-    if (!filter)
-        return; /* WSGO */
-
     filter->key = key;
     filter->func = filter_action_funcs[action->type].func;
     filter->action = *action;
