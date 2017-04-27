@@ -264,6 +264,21 @@ xkb_filter_new(struct xkb_state *state)
 
 /***====================================================================***/
 
+enum xkb_filter_result {
+    /*
+     * The event is consumed by the filters.
+     *
+     * An event is always processed by all filters, but any filter can
+     * prevent it from being processed further by consuming it.
+     */
+    XKB_FILTER_CONSUME,
+    /*
+     * The event may continue to be processed as far as this filter is
+     * concerned.
+     */
+    XKB_FILTER_CONTINUE,
+};
+
 static void
 xkb_filter_group_set_new(struct xkb_state *state, struct xkb_filter *filter)
 {
@@ -282,15 +297,15 @@ xkb_filter_group_set_func(struct xkb_state *state,
 {
     if (key != filter->key) {
         filter->action.group.flags &= ~ACTION_LOCK_CLEAR;
-        return true;
+        return XKB_FILTER_CONTINUE;
     }
 
     if (direction == XKB_KEY_DOWN) {
         filter->refcnt++;
-        return false;
+        return XKB_FILTER_CONSUME;
     }
     else if (--filter->refcnt > 0) {
-        return false;
+        return XKB_FILTER_CONSUME;
     }
 
     state->components.base_group = filter->priv;
@@ -299,7 +314,7 @@ xkb_filter_group_set_func(struct xkb_state *state,
         state->components.locked_group = 0;
 
     filter->func = NULL;
-    return true;
+    return XKB_FILTER_CONTINUE;
 }
 
 static void
@@ -318,17 +333,17 @@ xkb_filter_group_lock_func(struct xkb_state *state,
                            enum xkb_key_direction direction)
 {
     if (key != filter->key)
-        return true;
+        return XKB_FILTER_CONTINUE;
 
     if (direction == XKB_KEY_DOWN) {
         filter->refcnt++;
-        return false;
+        return XKB_FILTER_CONSUME;
     }
     if (--filter->refcnt > 0)
-        return false;
+        return XKB_FILTER_CONSUME;
 
     filter->func = NULL;
-    return true;
+    return XKB_FILTER_CONTINUE;
 }
 
 static void
@@ -345,15 +360,15 @@ xkb_filter_mod_set_func(struct xkb_state *state,
 {
     if (key != filter->key) {
         filter->action.mods.flags &= ~ACTION_LOCK_CLEAR;
-        return true;
+        return XKB_FILTER_CONTINUE;
     }
 
     if (direction == XKB_KEY_DOWN) {
         filter->refcnt++;
-        return false;
+        return XKB_FILTER_CONSUME;
     }
     else if (--filter->refcnt > 0) {
-        return false;
+        return XKB_FILTER_CONSUME;
     }
 
     state->clear_mods = filter->action.mods.mods.mask;
@@ -361,7 +376,7 @@ xkb_filter_mod_set_func(struct xkb_state *state,
         state->components.locked_mods &= ~filter->action.mods.mods.mask;
 
     filter->func = NULL;
-    return true;
+    return XKB_FILTER_CONTINUE;
 }
 
 static void
@@ -381,21 +396,21 @@ xkb_filter_mod_lock_func(struct xkb_state *state,
                          enum xkb_key_direction direction)
 {
     if (key != filter->key)
-        return true;
+        return XKB_FILTER_CONTINUE;
 
     if (direction == XKB_KEY_DOWN) {
         filter->refcnt++;
-        return false;
+        return XKB_FILTER_CONSUME;
     }
     if (--filter->refcnt > 0)
-        return false;
+        return XKB_FILTER_CONSUME;
 
     state->clear_mods |= filter->action.mods.mods.mask;
     if (!(filter->action.mods.flags & ACTION_LOCK_NO_UNLOCK))
         state->components.locked_mods &= ~filter->priv;
 
     filter->func = NULL;
-    return true;
+    return XKB_FILTER_CONTINUE;
 }
 
 enum xkb_key_latch_state {
@@ -459,14 +474,14 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
             filter->key = key;
             state->components.latched_mods &= ~filter->action.mods.mods.mask;
             /* XXX beep beep! */
-            return false;
+            return XKB_FILTER_CONSUME;
         }
         else if (xkb_action_breaks_latch(action)) {
             /* XXX: This may be totally broken, we might need to break the
              *      latch in the next run after this press? */
             state->components.latched_mods &= ~filter->action.mods.mods.mask;
             filter->func = NULL;
-            return true;
+            return XKB_FILTER_CONTINUE;
         }
     }
     else if (direction == XKB_KEY_UP && key == filter->key) {
@@ -506,7 +521,7 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
 
     filter->priv = latch;
 
-    return true;
+    return XKB_FILTER_CONTINUE;
 }
 
 static const struct {
@@ -538,17 +553,19 @@ xkb_filter_apply_all(struct xkb_state *state,
 {
     struct xkb_filter *filter;
     const union xkb_action *action;
-    bool send = true;
+    bool consumed;
 
     /* First run through all the currently active filters and see if any of
-     * them have claimed this event. */
+     * them have consumed this event. */
+    consumed = false;
     darray_foreach(filter, state->filters) {
         if (!filter->func)
             continue;
-        send = filter->func(state, filter, key, direction) && send;
-    }
 
-    if (!send || direction == XKB_KEY_UP)
+        if (filter->func(state, filter, key, direction) == XKB_FILTER_CONSUME)
+            consumed = true;
+    }
+    if (consumed || direction == XKB_KEY_UP)
         return;
 
     action = xkb_key_get_action(state, key);
