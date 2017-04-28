@@ -276,6 +276,10 @@ loop(xcb_connection_t *conn, struct keyboard *kbd)
         }
 
         event = xcb_wait_for_event(conn);
+        if (!event) {
+            continue;
+        }
+
         process_event(event, kbd);
         free(event);
     }
