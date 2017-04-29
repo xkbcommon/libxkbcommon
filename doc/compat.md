@@ -1,6 +1,6 @@
 # Compatibility
 
-Relative to the XKB 1.1 specification implemented in current X servers,
+Relative to the XKB 1.0 specification implemented in current X servers,
 xkbcommon has removed support for some parts of the specification which
 introduced unnecessary complications.  Many of these removals were in fact
 not implemented, or half-implemented at best, as well as being totally
