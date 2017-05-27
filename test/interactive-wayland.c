@@ -345,7 +345,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
 	}
 
 	seat->state = xkb_state_new(seat->keymap);
-	if (!seat->keymap) {
+	if (!seat->state) {
 		fprintf(stderr, "Failed to create XKB state!\n");
 		return;
 	}
