@@ -239,9 +239,9 @@ resolve_keysym(const char *name, xkb_keysym_t *sym_rtrn)
  */
 
 XkbFile         :       XkbCompositeMap
-                        { $$ = param->rtrn = $1; param->more_maps = true; }
+                        { $$ = param->rtrn = $1; param->more_maps = !!param->rtrn; }
                 |       XkbMapConfig
-                        { $$ = param->rtrn = $1; param->more_maps = true; YYACCEPT; }
+                        { $$ = param->rtrn = $1; param->more_maps = !!param->rtrn; YYACCEPT; }
                 |       END_OF_FILE
                         { $$ = param->rtrn = NULL; param->more_maps = false; }
                 ;
@@ -772,6 +772,7 @@ parse(struct xkb_context *ctx, struct scanner *scanner, const char *map)
         .scanner = scanner,
         .ctx = ctx,
         .rtrn = NULL,
+        .more_maps = false,
     };
 
     /*
