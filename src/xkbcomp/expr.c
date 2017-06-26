@@ -42,7 +42,7 @@ ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
         *elem_rtrn = NULL;
         *field_rtrn = xkb_atom_text(ctx, expr->ident.ident);
         *index_rtrn = NULL;
-        return true;
+        return (*field_rtrn != NULL);
     case EXPR_FIELD_REF:
         *elem_rtrn = xkb_atom_text(ctx, expr->field_ref.element);
         *field_rtrn = xkb_atom_text(ctx, expr->field_ref.field);
