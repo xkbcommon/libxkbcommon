@@ -11,18 +11,19 @@ See [Quick Guide](doc/quick-guide.md).
 
 ## Building
 
-libxkbcommon is built the typical autoconf way:
+libxkbcommon is built with [Meson](http://mesonbuild.com/):
 
-    ./autogen.sh
-    make
+    meson build
+    ninja -C build
 
 To build for use with Wayland, you can disable X11 support while still
 using the X11 keyboard configuration resource files thusly:
 
-    ./autogen.sh --disable-x11 \
-        --with-xkb-config-root=/usr/share/X11/xkb \
-        --with-x-locale-root=/usr/share/X11/locale
-    make
+    meson build \
+        -Denable-x11=false \
+        -Dxkb-config-root=/usr/share/X11/xkb \
+        -Dx-locale-root=/usr/share/X11/locale
+    ninja -C build
 
 ## API
 
