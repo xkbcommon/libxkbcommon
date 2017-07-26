@@ -202,10 +202,8 @@ AM_CONDITIONAL([ENABLE_WAYLAND], [test "x$enable_wayland" = xyes])
 
 AC_CONFIG_FILES([
     Makefile
-    xkbcommon-uninstalled.pc
     xkbcommon.pc
     xkbcommon-x11.pc
-    xkbcommon-x11-uninstalled.pc
     doc/Doxyfile
 ])
 AC_OUTPUT
