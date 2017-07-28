@@ -149,17 +149,28 @@ src/xkbcomp/parser.h: $(top_builddir)/src/$(am__dirstamp) $(top_builddir)/src/xk
 
 if ENABLE_DOCS
 if HAVE_DOXYGEN
-doc: doc/stamp-doxygen
+doxygen_input = \
+	$(top_srcdir)/README.md \
+	$(top_srcdir)/doc/quick-guide.md \
+	$(top_srcdir)/doc/compat.md \
+	$(top_srcdir)/xkbcommon/xkbcommon.h \
+	$(top_srcdir)/xkbcommon/xkbcommon-names.h \
+	$(top_srcdir)/xkbcommon/xkbcommon-x11.h \
+	$(top_srcdir)/xkbcommon/xkbcommon-compose.h
+
+doc/html: doc/Doxyfile $(doxygen_input)
+	$(AM_V_GEN)(\
+	    cat $<; \
+	    echo "INPUT = $(doxygen_input)"; \
+	    echo "OUTPUT_DIRECTORY = $(abs_top_builddir)/doc"; \
+	) | $(DOXYGEN) -
+clean-doxygen:
+	rm -rf doc/html
+
+doc: doc/html
 clean-doc: clean-doxygen
 all-local:: doc
 clean-local:: clean-doc
-
-doc/stamp-doxygen: $(top_srcdir)/xkbcommon/*.h
-	$(AM_V_GEN)(cd $(top_srcdir) && $(DOXYGEN) $(abs_top_builddir)/doc/Doxyfile)
-	touch $@
-
-clean-doxygen:
-	rm -rf doc/html doc/stamp-doxygen
 
 install-data-local:: doc
 	$(MKDIR_P) $(DESTDIR)$(htmldir)

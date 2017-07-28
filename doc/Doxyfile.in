@@ -2,8 +2,6 @@ PROJECT_NAME           = @PACKAGE_NAME@
 
 PROJECT_NUMBER         = @PACKAGE_VERSION@
 
-OUTPUT_DIRECTORY       = @abs_top_builddir@/doc
-
 BRIEF_MEMBER_DESC      = NO
 
 JAVADOC_AUTOBRIEF      = YES
@@ -18,13 +16,7 @@ QUIET                  = YES
 
 WARN_IF_UNDOCUMENTED   = NO
 
-INPUT                  = README.md \
-                         doc/quick-guide.md \
-                         doc/compat.md \
-                         xkbcommon/xkbcommon.h \
-                         xkbcommon/xkbcommon-names.h \
-                         xkbcommon/xkbcommon-x11.h \
-                         xkbcommon/xkbcommon-compose.h \
+INPUT                  = @INPUT@
 
 FILE_PATTERNS          = *.c \
                          *.h
@@ -40,7 +32,7 @@ ALPHABETICAL_INDEX     = NO
 IGNORE_PREFIX          = xkb_ \
                          XKB_
 
-HTML_EXTRA_STYLESHEET  = doc/doxygen-extra.css
+HTML_EXTRA_STYLESHEET  = @abs_top_srcdir@/doc/doxygen-extra.css
 
 HTML_TIMESTAMP         = NO
 
