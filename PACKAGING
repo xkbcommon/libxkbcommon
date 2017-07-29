@@ -33,7 +33,7 @@ Dependencies for libxkbcommon:
 
 - (build optional) gperf.
   Output included in git and tarball. To regenerate, use
-  `make update-keywords`.
+  `./scripts/update-keywords`.
 
 Dependencies for libxkbcommon-x11:
 - libxkbcommon.

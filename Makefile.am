@@ -4,8 +4,10 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = xkbcommon.pc
 
 EXTRA_DIST = \
-	makekeys.py \
-	makeheader.py \
+	scripts/makeheader \
+	scripts/makekeys \
+	scripts/update-keysyms \
+	scripts/update-keywords \
 	src/xkbcomp/keywords.gperf \
 	test/data \
 	README.md \
@@ -313,21 +315,6 @@ bench_key_proc_LDADD = $(BENCH_LDADD)
 bench_rules_LDADD = $(BENCH_LDADD)
 bench_rulescomp_LDADD = $(BENCH_LDADD)
 bench_compose_LDADD = $(BENCH_LDADD)
-
-##
-# Custom targets
-##
-
-# Run this to regenerate xkbcommon-keysyms.h from the X11 headers
-# defining the keysyms and update the name <-> keysym mapping.
-update-keysyms:
-	LC_CTYPE=C python $(top_srcdir)/makeheader.py > $(top_srcdir)/xkbcommon/xkbcommon-keysyms.h
-	LC_CTYPE=C python $(top_srcdir)/makekeys.py $(top_srcdir)/xkbcommon/xkbcommon-keysyms.h > $(top_srcdir)/src/ks_tables.h
-
-# Run this if you add/remove a new keyword to the xkbcomp scanner,
-# or just want to regenerate the gperf file.
-update-keywords:
-	$(AM_V_GEN)gperf < $(top_srcdir)/src/xkbcomp/keywords.gperf > $(top_srcdir)/src/xkbcomp/keywords.c
 
 ##
 # Android stuff
