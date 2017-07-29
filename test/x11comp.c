@@ -44,10 +44,13 @@ main(void)
     char *xkb_path;
     char *original, *dump;
     char *envp[] = { NULL };
-    char *xvfb_argv[] = { "Xvfb", display, NULL };
+    char *xvfb_argv[] = {
+        (char *) "Xvfb", display, NULL
+    };
     pid_t xvfb_pid = 0;
-    char *xkbcomp_argv[] = { "xkbcomp", "-I", NULL /* xkb_path */, display,
-                             NULL };
+    char *xkbcomp_argv[] = {
+        (char *) "xkbcomp", (char *) "-I", NULL /* xkb_path */, display, NULL
+    };
     pid_t xkbcomp_pid;
 
     char *xhost = NULL;
@@ -77,8 +80,6 @@ main(void)
      * is [0, 63].
      */
     for (xdpy_candidate = 63; xdpy_candidate >= 0; xdpy_candidate--) {
-        char *buf;
-
         if (xdpy_candidate == xdpy_current) {
             continue;
         }
