@@ -19,6 +19,8 @@ EXTRA_DIST = \
 	LICENSE \
 	test/symbols-leak-test.bash
 
+# The constants are added here instead of using AC_DEFINE_UNQUOTED
+# because it does not expand variables recursively.
 AM_CPPFLAGS = \
 	-DDFLT_XKB_CONFIG_ROOT='"$(XKBCONFIGROOT)"' \
 	-DXLOCALEDIR='"$(XLOCALEDIR)"' \
