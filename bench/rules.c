@@ -24,8 +24,8 @@
 #include <time.h>
 
 #include "../test/test.h"
-#include "xkbcomp-priv.h"
-#include "rules.h"
+#include "xkbcomp/xkbcomp-priv.h"
+#include "xkbcomp/rules.h"
 #include "bench.h"
 
 #define BENCHMARK_ITERATIONS 20000

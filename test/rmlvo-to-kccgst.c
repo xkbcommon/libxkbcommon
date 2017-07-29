@@ -24,8 +24,8 @@
 #include <unistd.h>
 
 #include "test.h"
-#include "xkbcomp-priv.h"
-#include "rules.h"
+#include "xkbcomp/xkbcomp-priv.h"
+#include "xkbcomp/rules.h"
 
 int
 main(int argc, char *argv[])

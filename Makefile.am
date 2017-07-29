@@ -25,8 +25,6 @@ AM_CPPFLAGS = \
 	-DDFLT_XKB_CONFIG_ROOT='"$(XKBCONFIGROOT)"' \
 	-DXLOCALEDIR='"$(XLOCALEDIR)"' \
 	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/xkbcomp \
-	-I$(top_builddir)/src/xkbcomp \
 	-include $(top_builddir)/src/config.h
 
 AM_CFLAGS = $(BASE_CFLAGS)
@@ -115,7 +113,7 @@ xkbcommon_x11include_HEADERS = \
 lib_LTLIBRARIES += libxkbcommon-x11.la
 
 libxkbcommon_x11_la_CFLAGS = $(AM_CFLAGS) $(XCB_XKB_CFLAGS)
-libxkbcommon_x11_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/src/x11
+libxkbcommon_x11_la_CPPFLAGS = $(AM_CPPFLAGS)
 libxkbcommon_x11_la_LIBADD = libxkbcommon.la $(XCB_XKB_LIBS)
 if HAVE_VERSION_SCRIPT
 libxkbcommon_x11_la_LDFLAGS = -Wl,--version-script=${srcdir}/xkbcommon-x11.map
