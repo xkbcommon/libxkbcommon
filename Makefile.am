@@ -28,6 +28,7 @@ AM_CPPFLAGS = \
 	-DDFLT_XKB_CONFIG_ROOT='"$(XKBCONFIGROOT)"' \
 	-DXLOCALEDIR='"$(XLOCALEDIR)"' \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src/xkbcomp \
 	-include $(top_builddir)/src/config.h
 
 AM_CFLAGS = $(BASE_CFLAGS)

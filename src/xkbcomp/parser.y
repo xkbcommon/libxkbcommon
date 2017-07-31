@@ -31,9 +31,9 @@
  */
 
 %{
-#include "xkbcomp-priv.h"
-#include "ast-build.h"
-#include "parser-priv.h"
+#include "xkbcomp/xkbcomp-priv.h"
+#include "xkbcomp/ast-build.h"
+#include "xkbcomp/parser-priv.h"
 #include "scanner-utils.h"
 
 struct parser_param {
