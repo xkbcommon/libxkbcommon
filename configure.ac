@@ -97,7 +97,7 @@ openbsd*)
 esac
 AM_CONDITIONAL([HAVE_NO_UNDEFINED], [test "x$have_no_undefined" = xyes])
 
-XORG_CHECK_LINKER_FLAGS([-Wl,--version-script="$srcdir/xkbcommon.map"], [have_version_script=yes])
+XORG_CHECK_LINKER_FLAGS([-Wl,--version-script="$top_srcdir/xkbcommon.map"], [have_version_script=yes])
 AM_CONDITIONAL([HAVE_VERSION_SCRIPT], [test "x$have_version_script" = xyes])
 
 AC_CHECK_LIB(rt, clock_gettime,

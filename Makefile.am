@@ -103,7 +103,7 @@ libxkbcommon_la_SOURCES = \
 	src/utils.c \
 	src/utils.h
 if HAVE_VERSION_SCRIPT
-libxkbcommon_la_LDFLAGS = -Wl,--version-script=${srcdir}/xkbcommon.map
+libxkbcommon_la_LDFLAGS = -Wl,--version-script=${top_srcdir}/xkbcommon.map
 endif HAVE_VERSION_SCRIPT
 
 if ENABLE_X11
@@ -119,7 +119,7 @@ libxkbcommon_x11_la_CFLAGS = $(AM_CFLAGS) $(XCB_XKB_CFLAGS)
 libxkbcommon_x11_la_CPPFLAGS = $(AM_CPPFLAGS)
 libxkbcommon_x11_la_LIBADD = libxkbcommon.la $(XCB_XKB_LIBS)
 if HAVE_VERSION_SCRIPT
-libxkbcommon_x11_la_LDFLAGS = -Wl,--version-script=${srcdir}/xkbcommon-x11.map
+libxkbcommon_x11_la_LDFLAGS = -Wl,--version-script=${top_srcdir}/xkbcommon-x11.map
 endif HAVE_VERSION_SCRIPT
 
 libxkbcommon_x11_la_SOURCES = \

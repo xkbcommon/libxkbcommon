@@ -159,7 +159,7 @@ test_get_path(const char *path_rel)
 {
     char *path;
     size_t path_len;
-    const char *srcdir = getenv("srcdir");
+    const char *srcdir = getenv("top_srcdir");
 
     path_len = strlen(srcdir ? srcdir : ".") +
                strlen(path_rel ? path_rel : "") + 12;
