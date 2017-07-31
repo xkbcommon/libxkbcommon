@@ -327,21 +327,3 @@ bench_key_proc_LDADD = $(BENCH_LDADD)
 bench_rules_LDADD = $(BENCH_LDADD)
 bench_rulescomp_LDADD = $(BENCH_LDADD)
 bench_compose_LDADD = $(BENCH_LDADD)
-
-##
-# Android stuff
-##
-
-Android_build.mk: Makefile $(BUILT_SOURCES)
-	androgenizer \
-	-:PROJECT libxkbcommon \
-	-:REL_TOP $(top_srcdir) -:ABS_TOP $(abs_top_srcdir) \
-	\
-	-:STATIC libxkbcommon \
-	-:TAGS eng debug \
-	-:SOURCES $(filter-out %.l %.y,$(libxkbcommon_la_SOURCES)) $(BUILT_SOURCES) \
-	-:CFLAGS $(DEFS) $(DEFAULT_INCLUDES) $(AM_CPPFLAGS) $(AM_CFLAGS) \
-	-:LDFLAGS $(AM_LDFLAGS) \
-	\
-	-:PASSTHROUGH 'libxkbcommon-clean: clean-libxkbcommon' \
-	> $@

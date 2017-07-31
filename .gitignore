@@ -84,3 +84,4 @@ test-driver
 build-aux/
 /xdg-shell-unstable-v6-client-protocol.h
 /xdg-shell-unstable-v6-protocol.c
+build/
