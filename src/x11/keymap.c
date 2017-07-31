@@ -448,6 +448,7 @@ get_sym_maps(struct xkb_keymap *keymap, xcb_connection_t *conn,
                 const xkb_layout_index_t group = j / wire_sym_map->width;
                 const xkb_level_index_t level = j % wire_sym_map->width;
 
+                assert(key->groups[group].type != NULL);
                 if (level < key->groups[group].type->num_levels &&
                     wire_keysym != XKB_KEY_NoSymbol) {
                     key->groups[group].levels[level].num_syms = 1;

@@ -203,6 +203,7 @@ get_keyboards(struct xkb_keymap *keymap,
             continue;
         }
 
+        assert(kbd != NULL);
         kbd->next = kbds;
         kbds = kbd;
     }
