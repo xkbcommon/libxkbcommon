@@ -21,6 +21,8 @@ EXTRA_DIST = \
 	xkbcommon-x11.map \
 	PACKAGING \
 	LICENSE \
+	meson.build \
+	meson_options.txt \
 	test/symbols-leak-test.bash
 
 # The constants are added here instead of using AC_DEFINE_UNQUOTED
