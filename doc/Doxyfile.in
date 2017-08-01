@@ -2,6 +2,8 @@ PROJECT_NAME           = @PACKAGE_NAME@
 
 PROJECT_NUMBER         = @PACKAGE_VERSION@
 
+OUTPUT_DIRECTORY       = @OUTPUT_DIRECTORY@
+
 BRIEF_MEMBER_DESC      = NO
 
 JAVADOC_AUTOBRIEF      = YES
@@ -32,7 +34,7 @@ ALPHABETICAL_INDEX     = NO
 IGNORE_PREFIX          = xkb_ \
                          XKB_
 
-HTML_EXTRA_STYLESHEET  = @abs_top_srcdir@/doc/doxygen-extra.css
+HTML_EXTRA_STYLESHEET  = doc/doxygen-extra.css
 
 HTML_TIMESTAMP         = NO
 

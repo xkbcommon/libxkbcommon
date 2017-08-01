@@ -447,36 +447,35 @@ if get_option('enable-docs')
         error('''Documentation requires doxygen which was not found.
 You can disable the documentation with -Denable-docs=false.''')
     endif
+    doxygen_wrapper = find_program('scripts/doxygen-wrapper')
 
     doxygen_input = [
-        join_paths(meson.source_root(), 'README.md'),
-        join_paths(meson.source_root(), 'doc/doxygen-extra.css'),
-        join_paths(meson.source_root(), 'doc/quick-guide.md'),
-        join_paths(meson.source_root(), 'doc/compat.md'),
-        join_paths(meson.source_root(), 'xkbcommon/xkbcommon.h'),
-        join_paths(meson.source_root(), 'xkbcommon/xkbcommon-names.h'),
-        join_paths(meson.source_root(), 'xkbcommon/xkbcommon-x11.h'),
-        join_paths(meson.source_root(), 'xkbcommon/xkbcommon-compose.h'),
+        'README.md',
+        'doc/doxygen-extra.css',
+        'doc/quick-guide.md',
+        'doc/compat.md',
+        'xkbcommon/xkbcommon.h',
+        'xkbcommon/xkbcommon-names.h',
+        'xkbcommon/xkbcommon-x11.h',
+        'xkbcommon/xkbcommon-compose.h',
     ]
     doxygen_data = configuration_data()
     doxygen_data.set('PACKAGE_NAME', meson.project_name())
     doxygen_data.set('PACKAGE_VERSION', meson.project_version())
     doxygen_data.set('INPUT', ' '.join(doxygen_input))
-    doxygen_data.set('abs_top_srcdir', meson.source_root())
+    doxygen_data.set('OUTPUT_DIRECTORY', meson.build_root())
     doxyfile = configure_file(
         input: 'doc/Doxyfile.in',
         output: 'Doxyfile',
         configuration: doxygen_data,
-        install: false,
     )
     # TODO: Meson should provide this.
     docdir = join_paths(get_option('datadir'), 'doc', meson.project_name())
-    # TODO: Relative links in README.md fail.
     custom_target(
         'doc',
         input: [doxyfile] + doxygen_input,
         output: 'html',
-        command: [doxygen, doxyfile],
+        command: [doxygen_wrapper, doxygen.path(), join_paths(meson.build_root(), 'Doxyfile'), meson.source_root()],
         install: true,
         install_dir: docdir,
         build_by_default: true,

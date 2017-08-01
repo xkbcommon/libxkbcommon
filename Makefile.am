@@ -8,6 +8,7 @@ EXTRA_DIST = \
 	scripts/makekeys \
 	scripts/update-keysyms \
 	scripts/update-keywords \
+	scripts/doxygen-wrapper \
 	src/xkbcomp/keywords.gperf \
 	test/data \
 	README.md \
@@ -164,7 +165,7 @@ doc/html: doc/Doxyfile $(doxygen_input)
 	    cat $<; \
 	    echo "INPUT = $(doxygen_input)"; \
 	    echo "OUTPUT_DIRECTORY = $(abs_top_builddir)/doc"; \
-	) | $(DOXYGEN) -
+	) | $(top_srcdir)/scripts/doxygen-wrapper "$(DOXYGEN)" - "$(abs_top_srcdir)"
 clean-doxygen:
 	rm -rf doc/html
 
