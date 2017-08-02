@@ -154,13 +154,13 @@ src/xkbcomp/parser.h: $(top_builddir)/src/$(am__dirstamp) $(top_builddir)/src/xk
 if ENABLE_DOCS
 if HAVE_DOXYGEN
 doxygen_input = \
-	$(top_srcdir)/README.md \
-	$(top_srcdir)/doc/quick-guide.md \
-	$(top_srcdir)/doc/compat.md \
-	$(top_srcdir)/xkbcommon/xkbcommon.h \
-	$(top_srcdir)/xkbcommon/xkbcommon-names.h \
-	$(top_srcdir)/xkbcommon/xkbcommon-x11.h \
-	$(top_srcdir)/xkbcommon/xkbcommon-compose.h
+	README.md \
+	doc/quick-guide.md \
+	doc/compat.md \
+	xkbcommon/xkbcommon.h \
+	xkbcommon/xkbcommon-names.h \
+	xkbcommon/xkbcommon-x11.h \
+	xkbcommon/xkbcommon-compose.h
 
 doc/html: doc/Doxyfile $(doxygen_input)
 	$(AM_V_GEN)(\
