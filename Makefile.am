@@ -177,8 +177,8 @@ all-local:: doc
 clean-local:: clean-doc
 
 install-data-local:: doc
-	$(MKDIR_P) $(DESTDIR)$(htmldir)
-	$(INSTALL_DATA) doc/html $(DESTDIR)$(htmldir)
+	$(MKDIR_P) $(DESTDIR)$(htmldir)/html
+	$(INSTALL_DATA) doc/html/* $(DESTDIR)$(htmldir)/html
 
 uninstall-local::
 	rm -rf $(DESTDIR)$(htmldir)
