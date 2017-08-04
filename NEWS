@@ -1,3 +1,49 @@
+libxkbcommon 0.7.2 - 2017-08-04
+==================
+
+- Added a Meson build system as an alternative to existing autotools build
+  system.
+
+  The intent is to remove the autotools build in one of the next releases.
+  Please try to convert to it and report any problems.
+
+  See http://mesonbuild.com/Quick-guide.html for basic usage, the
+  meson_options.txt for the project-specific configuration options,
+  and the PACKAGING file for more details.
+
+  There are some noteworthy differences compared to the autotools build:
+
+  - Feature auto-detection is not performed. By default, all features are
+    enabled (currently: docs, x11, wayland). The build fails if any of
+    the required dependencies are not available. To disable a feature,
+    pass -Denable-<feature>=false to meson.
+
+  - The libraries are either installed as shared or static, as specified
+    by the -Ddefault_library=shared/static option. With autotools, both
+    versions are installed by default.
+
+  - xorg-util-macros is not used.
+
+  - A parser generator (bison/byacc) is always required - there is no
+    fallback to pre-generated output bundled in the tarball, as there is
+    in autotools.
+
+- Removed Android.mk support.
+
+- Removed the *-uninstalled.pc pkgconfig files.
+
+- Ported the interactive-wayland demo program to v6 of the xdg-shell
+  protocol.
+
+- Added new keysym definitions from xproto.
+
+- New API:
+  XKB_KEY_XF86Keyboard
+  XKB_KEY_XF86WWAN
+  XKB_KEY_XF86RFKill
+  XKB_KEY_XF86AudioPreset
+
+
 libxkbcommon 0.7.1 - 2017-01-18
 ==================
 
