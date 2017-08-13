@@ -180,12 +180,13 @@ enum xkb_compose_format {
  * you may nevertheless obtain the user's locale directly using
  * environment variables, as described in locale(7).  For example,
  * @code
+ *     const char *locale;
  *     locale = getenv("LC_ALL");
- *     if (!locale)
+ *     if (!locale || !*locale)
  *         locale = getenv("LC_CTYPE");
- *     if (!locale)
+ *     if (!locale || !*locale)
  *         locale = getenv("LANG");
- *     if (!locale)
+ *     if (!locale || !*locale)
  *         locale = "C";
  * @endcode
  *
