@@ -68,7 +68,7 @@ AS_IF([test ! -f "src/xkbcomp/parser.c" -a "x$YACC_INST" = x], [
 ])
 
 # Checks for library functions.
-AC_CHECK_FUNCS([eaccess euidaccess mmap])
+AC_CHECK_FUNCS([eaccess euidaccess mmap mkostemp posix_fallocate])
 
 AC_CHECK_FUNCS([secure_getenv __secure_getenv])
 AS_IF([test "x$ac_cv_func_secure_getenv" = xno -a \

@@ -84,6 +84,12 @@ endif
 if cc.has_header_symbol('sys/mman.h', 'mmap')
     configh_data.set('HAVE_MMAP', 1)
 endif
+if cc.has_header_symbol('stdlib.h', 'mkostemp', prefix: '#define _GNU_SOURCE')
+    configh_data.set('HAVE_MKOSTEMP', 1)
+endif
+if cc.has_header_symbol('fcntl.h', 'posix_fallocate', prefix: '#define _GNU_SOURCE')
+    configh_data.set('HAVE_POSIX_FALLOCATE', 1)
+endif
 if cc.has_header_symbol('stdlib.h', 'secure_getenv', prefix: '#define _GNU_SOURCE')
     configh_data.set('HAVE_SECURE_GETENV', 1)
 elif cc.has_header_symbol('stdlib.h', '__secure_getenv', prefix: '#define _GNU_SOURCE')
