@@ -71,6 +71,16 @@ struct interactive_seat {
 
 static bool terminate;
 
+#ifdef HAVE_MKOSTEMP
+static int
+create_tmpfile_cloexec(char *tmpname)
+{
+	int fd = mkostemp(tmpname, O_CLOEXEC);
+	if (fd >= 0)
+		unlink(tmpname);
+	return fd;
+}
+#else
 /* The following utility functions are taken from Weston's
  * shared/os-compatibility.c. */
 static int
@@ -104,22 +114,14 @@ set_cloexec_or_close(int fd)
 static int
 create_tmpfile_cloexec(char *tmpname)
 {
-	int fd;
-
-#ifdef HAVE_MKOSTEMP
-	fd = mkostemp(tmpname, O_CLOEXEC);
-	if (fd >= 0)
-		unlink(tmpname);
-#else
-	fd = mkstemp(tmpname);
+	int fd = mkstemp(tmpname);
 	if (fd >= 0) {
 		fd = set_cloexec_or_close(fd);
 		unlink(tmpname);
 	}
-#endif
-
 	return fd;
 }
+#endif
 
 /*
  * Create a new, unique, anonymous file of the given size, and
