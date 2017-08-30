@@ -205,6 +205,7 @@
   *			$sun_custom	$sun_var	=	pc+sun_vndr/%l%(v)
 
 ! model		layout				=	symbols
+  testlatch	*			=	testlatch(%l)
   *		ar			=	pc+ara
   *		ben			=	pc+in(ben)
   *		bs			=	pc+ba
@@ -893,6 +894,7 @@
   *		jp		=	complete+japan
   olpc          *               =       olpc
   olpcm         *               =       olpc
+  testlatch	*		=	complete+testlatch
   *		*		=	complete
 
 ! model		layout[1]	=	compat

@@ -430,6 +430,12 @@ xkb_action_breaks_latch(const union xkb_action *action)
     case ACTION_TYPE_CTRL_LOCK:
     case ACTION_TYPE_SWITCH_VT:
     case ACTION_TYPE_TERMINATE:
+    case ACTION_TYPE_MOD_SET:
+    case ACTION_TYPE_MOD_LATCH:
+    case ACTION_TYPE_MOD_LOCK:
+    case ACTION_TYPE_GROUP_SET:
+    case ACTION_TYPE_GROUP_LATCH:
+    case ACTION_TYPE_GROUP_LOCK:
         return true;
     default:
         return false;

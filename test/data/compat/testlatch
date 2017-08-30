@@ -1,0 +1,13 @@
+partial default xkb_compatibility "testlatch" {
+	interpret Shift_L {
+		action= LatchMods(modifiers=Shift);
+	};
+
+	interpret Lock+Exactly(Shift) {
+		action= LockMods(modifiers=Lock,affect=lock);
+	};
+
+	interpret Lock+Exactly(Shift+Lock) {
+		action= LockMods(modifiers=Lock,affect=unlock);
+	};
+};

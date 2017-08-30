@@ -707,6 +707,54 @@ test_ctrl_string_transformation(struct xkb_keymap *keymap)
     xkb_state_unref(state);
 }
 
+static void
+test_latch_mod_cancel(struct xkb_context *context)
+{
+	struct xkb_keymap *keymap;
+
+	keymap = test_compile_rules(context, "evdev", "testlatch", "us",
+				    NULL, NULL);
+	assert(keymap);
+
+	assert(test_key_seq(keymap,
+			    KEY_A,		BOTH, XKB_KEY_a,		NEXT, /* plain a */
+			    KEY_1,		BOTH, XKB_KEY_1,		NEXT, /* plain 1 */
+
+			    KEY_LEFTSHIFT,	BOTH, XKB_KEY_Shift_L,		NEXT,
+			    KEY_A,		BOTH, XKB_KEY_A,		NEXT, /* shift latched */
+			    KEY_A,		BOTH, XKB_KEY_a,		NEXT, /* ... and unlatched */
+
+			    KEY_LEFTSHIFT,	BOTH, XKB_KEY_Shift_L,		NEXT,
+			    KEY_1,		BOTH, XKB_KEY_exclam,		NEXT, /* and again */
+			    KEY_1,		BOTH, XKB_KEY_1,		NEXT,
+
+			    KEY_LEFTSHIFT,	DOWN, XKB_KEY_Shift_L,		NEXT,
+			    KEY_1,		BOTH, XKB_KEY_exclam,		NEXT, /* should unlatch */
+			    KEY_LEFTSHIFT,	UP,   XKB_KEY_Caps_Lock,	NEXT,
+			    KEY_1,		BOTH, XKB_KEY_1,		NEXT,
+
+			    KEY_LEFTSHIFT,	BOTH, XKB_KEY_Shift_L,		NEXT,
+			    KEY_LEFTSHIFT,	BOTH, XKB_KEY_Caps_Lock,	NEXT, /* caps lock! */
+			    /* Without the change we fail here, as Lock is locked but Shift still latched */
+			    KEY_A,		BOTH, XKB_KEY_A,		NEXT,
+			    KEY_1,		BOTH, XKB_KEY_1,		NEXT,
+			    KEY_LEFTSHIFT,	BOTH, XKB_KEY_Shift_L,		NEXT,
+			    KEY_1,		BOTH, XKB_KEY_exclam,		NEXT, /* shift latched */
+			    KEY_1,		BOTH, XKB_KEY_1,		NEXT, /* ... and unlatched */
+			    KEY_LEFTSHIFT,	BOTH, XKB_KEY_Shift_L,		NEXT,
+			    KEY_A,		BOTH, XKB_KEY_a,		NEXT, /* shift latched, cancel */
+			    KEY_A,		BOTH, XKB_KEY_A,		NEXT,
+
+			    KEY_LEFTSHIFT,	BOTH, XKB_KEY_Shift_L,		NEXT,
+			    KEY_LEFTSHIFT,	BOTH, XKB_KEY_Caps_Lock,	NEXT, /* caps unlock */
+
+			    KEY_A,		BOTH, XKB_KEY_a,		NEXT,
+			    KEY_A,		BOTH, XKB_KEY_a,		NEXT,
+			    KEY_1,		BOTH, XKB_KEY_1,		FINISH));
+
+	xkb_keymap_unref(keymap);
+}
+
 int
 main(void)
 {
@@ -737,6 +785,8 @@ main(void)
     assert(keymap);
 
     test_caps_keysym_transformation(keymap);
+
+    test_latch_mod_cancel(context);
 
     xkb_keymap_unref(keymap);
     xkb_context_unref(context);
