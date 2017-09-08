@@ -510,8 +510,8 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
                       unsigned int *val_rtrn, IdentLookupFunc lookup,
                       const void *lookupPriv)
 {
-    bool ok = 0;
-    unsigned int l, r;
+    bool ok = false;
+    unsigned int l = 0, r = 0;
     int v;
     ExprDef *left, *right;
     const char *bogus = NULL;
