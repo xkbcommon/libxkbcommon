@@ -521,7 +521,7 @@ static const struct codepair keysymtab[] = {
     { 0x0aa8, 0x200a }, /*                   hairspace   HAIR SPACE */
     { 0x0aa9, 0x2014 }, /*                      emdash — EM DASH */
     { 0x0aaa, 0x2013 }, /*                      endash – EN DASH */
-    /*  0x0aac                               signifblank ? ??? */
+    { 0x0aac, 0x2423 }, /*                 signifblank ␣ OPEN BOX */
     { 0x0aae, 0x2026 }, /*                    ellipsis … HORIZONTAL ELLIPSIS */
     { 0x0aaf, 0x2025 }, /*             doubbaselinedot ‥ TWO DOT LEADER */
     { 0x0ab0, 0x2153 }, /*                    onethird ⅓ VULGAR FRACTION ONE THIRD */
@@ -554,6 +554,7 @@ static const struct codepair keysymtab[] = {
     { 0x0ad2, 0x201c }, /*         leftdoublequotemark “ LEFT DOUBLE QUOTATION MARK */
     { 0x0ad3, 0x201d }, /*        rightdoublequotemark ” RIGHT DOUBLE QUOTATION MARK */
     { 0x0ad4, 0x211e }, /*                prescription ℞ PRESCRIPTION TAKE */
+    { 0x0ad5, 0x2030 }, /*                    permille ‰ PER MILLE SIGN */
     { 0x0ad6, 0x2032 }, /*                     minutes ′ PRIME */
     { 0x0ad7, 0x2033 }, /*                     seconds ″ DOUBLE PRIME */
     { 0x0ad9, 0x271d }, /*                  latincross ✝ LATIN CROSS */
