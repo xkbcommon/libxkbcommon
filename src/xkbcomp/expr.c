@@ -47,11 +47,15 @@ ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
         *elem_rtrn = xkb_atom_text(ctx, expr->field_ref.element);
         *field_rtrn = xkb_atom_text(ctx, expr->field_ref.field);
         *index_rtrn = NULL;
-        return true;
+        return (*elem_rtrn != NULL && *field_rtrn != NULL);
     case EXPR_ARRAY_REF:
         *elem_rtrn = xkb_atom_text(ctx, expr->array_ref.element);
         *field_rtrn = xkb_atom_text(ctx, expr->array_ref.field);
         *index_rtrn = expr->array_ref.entry;
+	if (expr->array_ref.element != XKB_ATOM_NONE && *elem_rtrn == NULL)
+		return false;
+	if (*field_rtrn == NULL)
+		return false;
         return true;
     default:
         break;
