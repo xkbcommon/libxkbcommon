@@ -493,6 +493,26 @@ xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size);
 uint32_t
 xkb_keysym_to_utf32(xkb_keysym_t keysym);
 
+/**
+ * Convert a keysym to its uppercase form.
+ *
+ * If there is no such form, the keysym is returned unchanged.
+ *
+ * The conversion rules may be incomplete; prefer to work with the Unicode
+ * representation instead, when possible.
+ */
+xkb_keysym_t
+xkb_keysym_to_upper(xkb_keysym_t ks);
+
+/**
+ * Convert a keysym to its lowercase form.
+ *
+ * The conversion rules may be incomplete; prefer to work with the Unicode
+ * representation instead, when possible.
+ */
+xkb_keysym_t
+xkb_keysym_to_lower(xkb_keysym_t ks);
+
 /** @} */
 
 /**

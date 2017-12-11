@@ -264,7 +264,7 @@ xkb_keysym_is_upper(xkb_keysym_t ks)
     return (ks == upper ? true : false);
 }
 
-xkb_keysym_t
+XKB_EXPORT xkb_keysym_t
 xkb_keysym_to_lower(xkb_keysym_t ks)
 {
     xkb_keysym_t lower, upper;
@@ -274,7 +274,7 @@ xkb_keysym_to_lower(xkb_keysym_t ks)
     return lower;
 }
 
-xkb_keysym_t
+XKB_EXPORT xkb_keysym_t
 xkb_keysym_to_upper(xkb_keysym_t ks)
 {
     xkb_keysym_t lower, upper;

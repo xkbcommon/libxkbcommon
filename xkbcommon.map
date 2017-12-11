@@ -97,3 +97,9 @@ global:
 	xkb_state_key_get_consumed_mods2;
 	xkb_state_mod_index_is_consumed2;
 } V_0.6.0;
+
+V_0.8.0 {
+global:
+	xkb_keysym_to_lower;
+	xkb_keysym_to_upper;
+} V_0.7.0;
