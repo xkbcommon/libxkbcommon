@@ -701,8 +701,9 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
 
             type->name = def->name;
             type->mods.mods = def->mods;
+            type->num_levels = def->num_levels;
             darray_steal(def->level_names,
-                         &type->level_names, &type->num_levels);
+                         &type->level_names, NULL);
             darray_steal(def->entries,
                          &type->entries, &type->num_entries);
         }
