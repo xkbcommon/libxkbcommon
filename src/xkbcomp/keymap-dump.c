@@ -228,7 +228,7 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
                                            entry->preserve.mods));
         }
 
-        for (xkb_level_index_t n = 0; n < type->num_levels; n++)
+        for (xkb_level_index_t n = 0; n < type->num_level_names; n++)
             if (type->level_names[n])
                 write_buf(buf, "\t\tlevel_name[Level%u]= \"%s\";\n", n + 1,
                           xkb_atom_text(keymap->ctx, type->level_names[n]));

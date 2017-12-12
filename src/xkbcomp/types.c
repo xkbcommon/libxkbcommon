@@ -693,6 +693,7 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
         type->num_entries = 0;
         type->name = xkb_atom_intern_literal(keymap->ctx, "default");
         type->level_names = NULL;
+        type->num_level_names = 0;
     }
     else {
         for (unsigned i = 0; i < num_types; i++) {
@@ -702,10 +703,8 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
             type->name = def->name;
             type->mods.mods = def->mods;
             type->num_levels = def->num_levels;
-            darray_steal(def->level_names,
-                         &type->level_names, NULL);
-            darray_steal(def->entries,
-                         &type->entries, &type->num_entries);
+            darray_steal(def->level_names, &type->level_names, &type->num_level_names);
+            darray_steal(def->entries, &type->entries, &type->num_entries);
         }
     }
 

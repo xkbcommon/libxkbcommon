@@ -253,6 +253,7 @@ struct xkb_key_type {
     xkb_atom_t name;
     struct xkb_mods mods;
     xkb_level_index_t num_levels;
+    unsigned int num_level_names;
     xkb_atom_t *level_names;
     unsigned int num_entries;
     struct xkb_key_type_entry *entries;
