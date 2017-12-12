@@ -4,7 +4,7 @@ language: c
 
 before_install:
     - sudo apt-get update -qq
-    - sudo apt-get -y install xutils-dev doxygen libxcb-xkb-dev python3-pip
+    - sudo apt-get -y install xutils-dev doxygen libxcb-xkb-dev python3-pip valgrind
     - wget https://github.com/ninja-build/ninja/releases/download/v1.7.2/ninja-linux.zip && unzip ninja-linux.zip && sudo install ninja /usr/bin/
     - sudo pip3 install meson
 
@@ -14,4 +14,4 @@ compiler:
 
 script:
     - mkdir autotools-build && pushd autotools-build && ../autogen.sh && make && make check && popd
-    - meson meson-build -Denable-wayland=false && pushd meson-build && ninja && ninja test && popd
+    - meson setup meson-build -Denable-wayland=false && pushd meson-build && ninja && meson test --print-errorlogs --wrap='valgrind --leak-check=full --track-origins=yes --error-exitcode=99' && popd
