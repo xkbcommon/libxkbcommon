@@ -110,6 +110,9 @@ typedef darray (unsigned long)  darray_ulong;
 #define darray_copy(arr_to, arr_from) \
     darray_from_items((arr_to), (arr_from).item, (arr_from).size)
 
+#define darray_concat(arr_to, arr_from) \
+    darray_append_items((arr_to), (arr_from).item, (arr_from).size)
+
 /*** String buffer ***/
 
 #define darray_append_string(arr, str) do { \
