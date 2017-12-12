@@ -316,6 +316,7 @@ struct production {
     unsigned int len;
     xkb_keysym_t keysym;
     char string[256];
+    /* At least one of these is true. */
     bool has_keysym;
     bool has_string;
 
@@ -400,9 +401,20 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
     }
 
     if (node->u.leaf.utf8 != 0 || node->u.leaf.keysym != XKB_KEY_NoSymbol) {
-        if (streq(&darray_item(table->utf8, node->u.leaf.utf8),
-                  production->string) &&
-            node->u.leaf.keysym == production->keysym) {
+        bool same_string =
+            (node->u.leaf.utf8 == 0 && !production->has_string) ||
+            (
+                node->u.leaf.utf8 != 0 && production->has_string &&
+                streq(&darray_item(table->utf8, node->u.leaf.utf8),
+                      production->string)
+            );
+        bool same_keysym =
+            (node->u.leaf.keysym == XKB_KEY_NoSymbol && !production->has_keysym) ||
+            (
+                node->u.leaf.keysym != XKB_KEY_NoSymbol && production->has_keysym &&
+                node->u.leaf.keysym == production->keysym
+            );
+        if (same_string && same_keysym) {
             scanner_warn(s, "this compose sequence is a duplicate of another; skipping line");
             return;
         }
