@@ -30,6 +30,7 @@ foreach cflag: [
     '-Wlogical-op',
     '-Wdate-time',
     '-Wwrite-strings',
+    '-Wno-documentation-deprecated-sync',
 ]
     if cc.has_argument(cflag)
         add_project_arguments(cflag, language: 'c')

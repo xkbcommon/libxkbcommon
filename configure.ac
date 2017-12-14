@@ -85,7 +85,7 @@ AM_CONDITIONAL(BUILD_LINUX_TESTS, [test "x$ac_cv_header_linux_input_h" = xyes])
 
 XORG_TESTSET_CFLAG([BASE_CFLAGS], [-fvisibility=hidden])
 XORG_TESTSET_CFLAG([BASE_CFLAGS], [-Wextra -Wno-unused-parameter -Wno-missing-field-initializers])
-XORG_TESTSET_CFLAG([BASE_CFLAGS], [-Wdocumentation])
+XORG_TESTSET_CFLAG([BASE_CFLAGS], [-Wdocumentation -Wno-documentation-deprecated-sync])
 
 # OpenBSD does not have DT_NEEDED entries for libc by design
 # so when these flags are passed to ld via libtool the checks will fail
