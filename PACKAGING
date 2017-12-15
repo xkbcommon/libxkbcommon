@@ -6,7 +6,7 @@ The files for libxkbcommon-x11 are:
     xkbcommon-x11.map xkbcommon-x11.pc
 
 libxkbcommon-x11 can be disabled with -Denable-x11=false (see
-`mesonconf build` for other options/variables).
+`meson configure build` for other options/variables).
 
 Dependencies for libxkbcommon:
 - C compiler, meson, pkg-config, libc, bash, grep, sed.
