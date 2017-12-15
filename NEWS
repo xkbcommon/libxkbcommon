@@ -1,16 +1,23 @@
-libxkbcommon 0.8.0 - UNRELEASED
+libxkbcommon 0.8.0 - 2017-12-15
+==================
 
-- Add xkb_keysym_to_{upper,lower} to perform case-conversion directly on
+- Added xkb_keysym_to_{upper,lower} to perform case-conversion directly on
   keysyms. This is useful in some odd cases, but working with the Unicode
   representations should be preferred when possible.
 
 - Added Unicode conversion rules for the signifblank and permille keysyms.
 
+- Fixed a bug in the parsing of XKB key type definitions where the number
+  of levels were determined by the number of level *names*. Keymaps which
+  omit level names were hence miscompiled.
+
+  This regressed in version 0.4.3. Keymaps from xkeyboard-config were not
+  affected since they don't omit level names.
+
 - New API:
   xkb_keysym_to_upper()
   xkb_keysym_to_lower()
 
-==================
 libxkbcommon 0.7.2 - 2017-08-04
 ==================
 
