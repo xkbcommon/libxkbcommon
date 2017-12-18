@@ -64,10 +64,9 @@ extern "C" {
  *
  * The XKB extension supports using separate keymaps and states for
  * different keyboard devices.  The devices are identified by an integer
- * device ID and are managed by another X11 extension, XInput (or its
- * successor, XInput2).  The original X11 protocol only had one keyboard
- * device, called the "core keyboard", which is still supported as a
- * "virtual device".
+ * device ID and are managed by another X11 extension, XInput. The
+ * original X11 protocol only had one keyboard device, called the "core
+ * keyboard", which is still supported as a "virtual device".
  *
  * 3. We will use the core keyboard as an example.  To get its device ID,
  *    use either the xcb_xkb_get_device_info() request directly, or the
@@ -197,8 +196,9 @@ xkb_x11_get_core_keyboard_device_id(xcb_connection_t *connection);
  * @param connection
  *     An XCB connection to the X server.
  * @param device_id
- *     An XInput 1 device ID (in the range 0-255) with input class KEY.
- *     Passing values outside of this range is an error.
+ *     An XInput device ID (in the range 0-127) with input class KEY.
+ *     Passing values outside of this range is an error (the XKB protocol
+ *     predates the XInput2 protocol, which first allowed IDs > 127).
  * @param flags
  *     Optional flags for the keymap, or 0.
  *

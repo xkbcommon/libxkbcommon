@@ -1155,7 +1155,7 @@ xkb_x11_keymap_new_from_device(struct xkb_context *ctx,
         return NULL;
     }
 
-    if (device_id < 0 || device_id > 255) {
+    if (device_id < 0 || device_id > 127) {
         log_err_func(ctx, "illegal device ID: %d\n", device_id);
         return NULL;
     }
