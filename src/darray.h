@@ -23,7 +23,7 @@
 #ifndef CCAN_DARRAY_H
 #define CCAN_DARRAY_H
 
-/* Originally taken from: http://ccodearchive.net/info/darray.html
+/* Originally taken from: https://ccodearchive.net/info/darray.html
  * But modified for libxkbcommon. */
 
 #include <stdlib.h>

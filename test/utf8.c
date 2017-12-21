@@ -36,7 +36,7 @@ test_is_valid_utf8(void)
 {
     /*
      * Mostly taken from:
-     * http://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt
+     * https://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt
      */
 
     VALID("ascii");

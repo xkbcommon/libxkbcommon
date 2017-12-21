@@ -241,7 +241,7 @@ libxkbcommon 0.4.1 - 2014-03-27
   is converted to an appropriate control character.
   This matches the behavior of libX11's XLookupString(3), and
   required by the XKB specification:
-  http://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Control_Modifier
+  https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Control_Modifier
 
   https://bugs.freedesktop.org/show_bug.cgi?id=75892
 
@@ -304,7 +304,7 @@ libxkbcommon 0.3.2 - 2013-11-22
 - Apply capitalization transformation on keysyms in
   xkb_keysym_get_one_sym(), to match the behavior specified in the XKB
   specification:
-  http://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Lock_Modifier
+  https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Lock_Modifier
 
 - Support byacc for generating the parser, in addition to Bison.
 

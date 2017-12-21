@@ -78,7 +78,7 @@ extern "C" {
  *
  * @note At this point, you may consider setting various XKB controls and
  * XKB per-client flags.  For example, enabling detectable autorepeat: \n
- * http://www.x.org/releases/current/doc/kbproto/xkbproto.html#Detectable_Autorepeat
+ * https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Detectable_Autorepeat
  *
  * Next, you need to react to state changes (e.g. a modifier was pressed,
  * the layout was changed) and to keymap changes (e.g. a tool like xkbcomp,
@@ -95,7 +95,7 @@ extern "C" {
  * @note It is also possible to use the KeyPress/KeyRelease @p state
  * field to find the effective modifier and layout state, instead of
  * using XkbStateNotify: \n
- * http://www.x.org/releases/current/doc/kbproto/xkbproto.html#Computing_A_State_Field_from_an_XKB_State
+ * https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Computing_A_State_Field_from_an_XKB_State
  * \n However, XkbStateNotify is more accurate.
  *
  * @note There is no need to call xkb_state_update_key(); the state is

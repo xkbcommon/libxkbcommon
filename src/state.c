@@ -876,7 +876,7 @@ err:
 }
 
 /*
- * http://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Lock_Modifier
+ * https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Lock_Modifier
  */
 static bool
 should_do_caps_transformation(struct xkb_state *state, xkb_keycode_t kc)
@@ -890,7 +890,7 @@ should_do_caps_transformation(struct xkb_state *state, xkb_keycode_t kc)
 }
 
 /*
- * http://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Control_Modifier
+ * https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Control_Modifier
  */
 static bool
 should_do_ctrl_transformation(struct xkb_state *state, xkb_keycode_t kc)

@@ -80,7 +80,7 @@ is_valid_utf8(const char *ss, size_t len)
 
     /* This beauty is from:
      *  The Unicode Standard Version 6.2 - Core Specification, Table 3.7
-     *  http://www.unicode.org/versions/Unicode6.2.0/ch03.pdf#G7404
+     *  https://www.unicode.org/versions/Unicode6.2.0/ch03.pdf#G7404
      * We can optimize if needed. */
     while (i < len)
     {

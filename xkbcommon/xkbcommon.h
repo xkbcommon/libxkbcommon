@@ -177,7 +177,7 @@ typedef uint32_t xkb_keycode_t;
  * somewhat more general, in that they can also represent some "function",
  * such as "Left" or "Right" for the arrow keys.  For more information,
  * see:
- * http://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html#keysym_encoding
+ * https://www.x.org/releases/current/doc/xproto/x11protocol.html#keysym_encoding
  *
  * Specifically named keysyms can be found in the
  * xkbcommon/xkbcommon-keysyms.h header file.  Their name does not include
@@ -385,7 +385,7 @@ struct xkb_rule_names {
  *   Similarly, the UTF-8/UTF-32 string produced is capitalized.
  *
  *   This is described in:
- *   http://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Lock_Modifier
+ *   https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Lock_Modifier
  *
  * - Control transformation.  If the Control modifier is active and
  *   was not consumed by the translation process, the string produced
@@ -393,7 +393,7 @@ struct xkb_rule_names {
  *   applicable).  Keysyms are not affected.
  *
  *   This is described in:
- *   http://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Control_Modifier
+ *   https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Control_Modifier
  *
  * Each relevant function discusses which transformations it performs.
  *

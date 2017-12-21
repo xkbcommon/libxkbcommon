@@ -31,7 +31,7 @@ While libxkbcommon's API is somewhat derived from the classic XKB API as found
 in X11/extensions/XKB.h and friends, it has been substantially reworked to
 expose fewer internal details to clients.
 
-See the [API Documentation](http://xkbcommon.org/doc/current/modules.html).
+See the [API Documentation](https://xkbcommon.org/doc/current/modules.html).
 
 ## Dataset
 
@@ -39,7 +39,7 @@ libxkbcommon does not distribute a keymap dataset itself, other than for
 testing purposes.  The most common dataset is xkeyboard-config, which is used
 by all current distributions for their X11 XKB data.  More information on
 xkeyboard-config is available here:
-    http://www.freedesktop.org/wiki/Software/XKeyboardConfig
+    https://www.freedesktop.org/wiki/Software/XKeyboardConfig
 
 The dataset for Compose is distributed in libX11, as part of the X locale
 data.
@@ -51,7 +51,7 @@ See [Compatibility](doc/compat.md) notes.
 ## Development
 
 An extremely rudimentary homepage can be found at
-    http://xkbcommon.org
+    https://xkbcommon.org
 
 xkbcommon is maintained in git at
     https://github.com/xkbcommon/libxkbcommon

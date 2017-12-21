@@ -26,7 +26,7 @@
 /*
  * References for the lonesome traveler:
  * Xkb protocol specification:
- *      http://www.x.org/releases/current/doc/kbproto/xkbproto.html
+ *      https://www.x.org/releases/current/doc/kbproto/xkbproto.html
  * The XCB xkb XML protocol file:
  *      /user/share/xcb/xkb.xml
  * The XCB xkb header file:
