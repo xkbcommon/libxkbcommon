@@ -106,7 +106,7 @@ add_project_arguments('-include', 'config.h', language: 'c')
 # Supports -Wl,--version-script?
 have_version_script = cc.links(
     'int main(){}',
-    link_args: '-Wl,--version-script=' + join_paths(meson.source_root(), 'xkbcommon.map'),
+    args: '-Wl,--version-script=' + join_paths(meson.source_root(), 'xkbcommon.map'),
     name: '-Wl,--version-script',
 )
 
