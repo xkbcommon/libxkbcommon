@@ -284,6 +284,16 @@ test_dep = declare_dependency(
     include_directories: include_directories('src'),
     link_with: libxkbcommon_test_internal,
 )
+if get_option('enable-x11')
+    x11_test_dep = declare_dependency(
+        link_with: libxkbcommon_x11_internal,
+        dependencies: [
+            test_dep,
+            xcb_dep,
+            xcb_xkb_dep,
+        ],
+    )
+endif
 test(
     'keysym',
     executable('test-keysym', 'test/keysym.c', dependencies: test_dep),
@@ -362,12 +372,12 @@ test(
 if get_option('enable-x11')
     test(
         'x11',
-        executable('test-x11', 'test/x11.c', dependencies: test_dep, link_with: libxkbcommon_x11_internal),
+        executable('test-x11', 'test/x11.c', dependencies: x11_test_dep),
         env: test_env,
     )
     # test/x11comp is meant to be run, but it is (temporarily?) disabled.
     # See: https://github.com/xkbcommon/libxkbcommon/issues/30
-    executable('test-x11comp', 'test/x11comp.c', dependencies: test_dep, link_with: libxkbcommon_x11_internal)
+    executable('test-x11comp', 'test/x11comp.c', dependencies: x11_test_dep)
 endif
 
 
@@ -378,7 +388,7 @@ if cc.has_header('linux/input.h')
     executable('interactive-evdev', 'test/interactive-evdev.c', dependencies: test_dep)
 endif
 if get_option('enable-x11')
-    executable('interactive-x11', 'test/interactive-x11.c', dependencies: test_dep, link_with: libxkbcommon_x11_internal)
+    executable('interactive-x11', 'test/interactive-x11.c', dependencies: x11_test_dep)
 endif
 if get_option('enable-wayland')
     wayland_client_dep = dependency('wayland-client', version: '>=1.2.0', required: false)
