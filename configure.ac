@@ -21,7 +21,7 @@ dnl
 dnl Process this file with autoconf to create configure.
 
 # Initialize Autoconf
-AC_PREREQ([2.62])
+AC_PREREQ([2.63])
 AC_INIT([libxkbcommon], [0.8.0],
         [https://bugs.freedesktop.org/enter_bug.cgi?product=libxkbcommon],
         [libxkbcommon], [https://xkbcommon.org])
