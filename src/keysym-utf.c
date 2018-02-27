@@ -534,9 +534,9 @@ static const struct codepair keysymtab[] = {
     { 0x0ab7, 0x215a }, /*                  fivesixths ⅚ VULGAR FRACTION FIVE SIXTHS */
     { 0x0ab8, 0x2105 }, /*                      careof ℅ CARE OF */
     { 0x0abb, 0x2012 }, /*                     figdash ‒ FIGURE DASH */
-    { 0x0abc, 0x2329 }, /*            leftanglebracket 〈 LEFT-POINTING ANGLE BRACKET */
+    { 0x0abc, 0x27e8 }, /*            leftanglebracket ⟨ MATHEMATICAL LEFT ANGLE BRACKET */
     { 0x0abd, 0x002e }, /*                decimalpoint . FULL STOP */
-    { 0x0abe, 0x232a }, /*           rightanglebracket 〉 RIGHT-POINTING ANGLE BRACKET */
+    { 0x0abe, 0x27e9 }, /*           rightanglebracket ⟩ MATHEMATICAL RIGHT ANGLE BRACKET */
     /*  0x0abf                                  marker ? ??? */
     { 0x0ac3, 0x215b }, /*                   oneeighth ⅛ VULGAR FRACTION ONE EIGHTH */
     { 0x0ac4, 0x215c }, /*                threeeighths ⅜ VULGAR FRACTION THREE EIGHTHS */
