@@ -383,6 +383,11 @@ if get_option('enable-x11')
 endif
 
 
+# Fuzzing target programs.
+executable('fuzz-keymap', 'fuzz/keymap/target.c', dependencies: test_dep)
+executable('fuzz-compose', 'fuzz/compose/target.c', dependencies: test_dep)
+
+
 # Demo programs.
 executable('rmlvo-to-kccgst', 'test/rmlvo-to-kccgst.c', dependencies: test_dep)
 executable('print-compiled-keymap', 'test/print-compiled-keymap.c', dependencies: test_dep)
