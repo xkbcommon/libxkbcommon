@@ -106,6 +106,13 @@ ExprCreateInteger(int ival)
 }
 
 ExprDef *
+ExprCreateFloat(void)
+{
+    EXPR_CREATE(ExprFloat, expr, EXPR_VALUE, EXPR_TYPE_FLOAT);
+    return expr;
+}
+
+ExprDef *
 ExprCreateBoolean(bool set)
 {
     EXPR_CREATE(ExprBoolean, expr, EXPR_VALUE, EXPR_TYPE_BOOLEAN);
@@ -783,6 +790,7 @@ static const char *expr_value_type_strings[_EXPR_TYPE_NUM_VALUES] = {
     [EXPR_TYPE_UNKNOWN] = "unknown",
     [EXPR_TYPE_BOOLEAN] = "boolean",
     [EXPR_TYPE_INT] = "int",
+    [EXPR_TYPE_FLOAT] = "float",
     [EXPR_TYPE_STRING] = "string",
     [EXPR_TYPE_ACTION] = "action",
     [EXPR_TYPE_KEYNAME] = "keyname",

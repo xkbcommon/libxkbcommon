@@ -591,13 +591,13 @@ Element         :       ACTION_TOK
                 |       INDICATOR
                         { $$ = xkb_atom_intern_literal(param->ctx, "indicator"); }
                 |       SHAPE
-                        { $$ = XKB_ATOM_NONE; }
+                        { $$ = xkb_atom_intern_literal(param->ctx, "shape"); }
                 |       ROW
-                        { $$ = XKB_ATOM_NONE; }
+                        { $$ = xkb_atom_intern_literal(param->ctx, "row"); }
                 |       SECTION
-                        { $$ = XKB_ATOM_NONE; }
+                        { $$ = xkb_atom_intern_literal(param->ctx, "section"); }
                 |       TEXT
-                        { $$ = XKB_ATOM_NONE; }
+                        { $$ = xkb_atom_intern_literal(param->ctx, "text"); }
                 ;
 
 OptMergeMode    :       MergeMode       { $$ = $1; }
@@ -687,7 +687,7 @@ Terminal        :       String
                 |       Integer
                         { $$ = ExprCreateInteger($1); }
                 |       Float
-                        { $$ = NULL; }
+                        { $$ = ExprCreateFloat(/* Discard $1 */); }
                 |       KEYNAME
                         { $$ = ExprCreateKeyName($1); }
                 ;
