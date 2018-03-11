@@ -241,8 +241,13 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
          file = (XkbFile *) file->common.next) {
         if (file->file_type < FIRST_KEYMAP_FILE_TYPE ||
             file->file_type > LAST_KEYMAP_FILE_TYPE) {
-            log_err(ctx, "Cannot define %s in a keymap file\n",
-                    xkb_file_type_to_string(file->file_type));
+            if (file->file_type == FILE_TYPE_GEOMETRY) {
+                log_vrb(ctx, 1,
+                        "Geometry sections are not supported; ignoring\n");
+            } else {
+                log_err(ctx, "Cannot define %s in a keymap file\n",
+                        xkb_file_type_to_string(file->file_type));
+            }
             continue;
         }
 
