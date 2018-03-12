@@ -144,7 +144,7 @@ skip_more_whitespace_and_comments:
 
     /* LHS Keysym. */
     if (chr(s, '<')) {
-        while (peek(s) != '>' && !eol(s))
+        while (peek(s) != '>' && !eol(s) && !eof(s))
             buf_append(s, next(s));
         if (!chr(s, '>')) {
             scanner_err(s, "unterminated keysym literal");
