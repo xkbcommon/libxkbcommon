@@ -881,9 +881,15 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym)
         keysym == XKB_KEY_KP_Enter || keysym == XKB_KEY_KP_Equal)
         return keysym & 0x7f;
 
-    /* also check for directly encoded 24-bit UCS characters */
-    if ((keysym & 0xff000000) == 0x01000000)
-        return keysym & 0x00ffffff;
+    /* also check for directly encoded Unicode codepoints */
+    /*
+     * In theory, this is supposed to start from 0x100100, such that the ASCII
+     * range, which is already covered by 0x00-0xff, can't be encoded in two
+     * ways. However, changing this after a couple of decades probably won't
+     * go well, so it stays as it is.
+     */
+    if (0x01000000 <= keysym && keysym <= 0x0110ffff)
+        return keysym - 0x01000000;
 
     /* search main table */
     return bin_search(keysymtab, ARRAY_SIZE(keysymtab) - 1, keysym);

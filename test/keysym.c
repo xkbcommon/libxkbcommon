@@ -79,6 +79,7 @@ test_utf8(xkb_keysym_t keysym, const char *expected)
     fprintf(stderr, "Received keysym %#x -> %s (%u bytes)\n\n", keysym, s,
             (unsigned) strlen(s));
 
+    assert(expected != NULL);
     return streq(s, expected);
 }
 
@@ -174,6 +175,10 @@ main(void)
     assert(test_utf8(XKB_KEY_KP_9, "9"));
     assert(test_utf8(XKB_KEY_KP_Multiply, "*"));
     assert(test_utf8(XKB_KEY_KP_Subtract, "-"));
+
+    assert(test_utf8(0x10005d0, "א"));
+    assert(test_utf8(0x110ffff, "\xf4\x8f\xbf\xbf"));
+    assert(test_utf8(0x1110000, NULL) == 0);
 
     assert(xkb_keysym_is_lower(XKB_KEY_a));
     assert(xkb_keysym_is_lower(XKB_KEY_Greek_lambda));
