@@ -39,7 +39,7 @@ main(int argc, char *argv[])
         "evdev", "pc105", "us,il", ",", "ctrl:nocaps,grp:menu_toggle",
     };
     struct xkb_component_names kccgst;
-    struct bench_timer timer;
+    struct bench bench;
     char *elapsed;
 
     ctx = test_get_context(0);
@@ -48,9 +48,7 @@ main(int argc, char *argv[])
     xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
     xkb_context_set_log_verbosity(ctx, 0);
 
-    bench_timer_reset(&timer);
-
-    bench_timer_start(&timer);
+    bench_start(&bench);
     for (i = 0; i < BENCHMARK_ITERATIONS; i++) {
         assert(xkb_components_from_rules(ctx, &rmlvo, &kccgst));
         free(kccgst.keycodes);
@@ -58,9 +56,9 @@ main(int argc, char *argv[])
         free(kccgst.compat);
         free(kccgst.symbols);
     }
-    bench_timer_stop(&timer);
+    bench_stop(&bench);
 
-    elapsed = bench_timer_get_elapsed_time_str(&timer);
+    elapsed = bench_elapsed_str(&bench);
     fprintf(stderr, "processed %d rule files in %ss\n",
             BENCHMARK_ITERATIONS, elapsed);
     free(elapsed);

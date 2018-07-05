@@ -22,130 +22,54 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#if defined(HAVE_CLOCK_GETTIME)
-#define USE_CLOCK_GETTIME
-#include <time.h>
-#elif defined(__MACH__) && __MACH__ == 1
-#define USE_MACH_ABSOLUTE_TIME
-#include <mach/mach_time.h>
-#else
-/* gettimeofday() - a last resort */
-#include <sys/time.h>
-#endif
-
 #include <assert.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
 #include <stdio.h>
+#include <sys/time.h>
 
 #include "bench.h"
 
-static void
-set_bench_time(struct bench_time *dest, long seconds, long milliseconds)
-{
-    dest->seconds = seconds;
-    dest->milliseconds = milliseconds;
-}
-
-static void
-normalize_bench_time(struct bench_time *obj)
-{
-    if (obj->milliseconds >= 0) {
-        return;
-    }
-    obj->milliseconds += 1000000;
-    obj->seconds--;
-}
-
 void
-bench_timer_reset(struct bench_timer *self)
+bench_start(struct bench *bench)
 {
-#if defined(USE_MACH_ABSOLUTE_TIME)
-    mach_timebase_info_data_t info;
-    if (mach_timebase_info(&info) == 0) {
-        self->scaling_factor = info.numer / info.denom;
-    }
-#endif
-    self->start.seconds = 0L;
-    self->start.milliseconds = 0L;
-    self->stop.seconds = 0L;
-    self->stop.milliseconds = 0L;
-}
-
-void
-bench_timer_start(struct bench_timer *self)
-{
-#if defined(USE_CLOCK_GETTIME)
-    struct timespec val;
-
-    (void) clock_gettime(CLOCK_MONOTONIC, &val);
-
-    /* With conversion from nanosecond to millisecond */
-    set_bench_time(&self->start, val.tv_sec, val.tv_nsec / 1000);
-#elif defined(USE_MACH_ABSOLUTE_TIME)
-    uint64_t val;
-
-    val = mach_absolute_time();
-
-    /* With conversion from nanosecond to millisecond */
-    set_bench_time(&self->start,
-                   self->scaling_factor * val / 1000000000,
-                   self->scaling_factor * val % 1000000000 / 1000);
-#else
     struct timeval val;
-
     (void) gettimeofday(&val, NULL);
-
-    set_bench_time(&self->start, val.tv_sec, val.tv_usec);
-#endif
+    bench->start = (struct bench_time) {
+        .seconds = val.tv_sec,
+        .microseconds = val.tv_usec,
+    };
 }
 
 void
-bench_timer_stop(struct bench_timer *self)
+bench_stop(struct bench *bench)
 {
-#if defined(USE_CLOCK_GETTIME)
-    struct timespec val;
-
-    (void) clock_gettime(CLOCK_MONOTONIC, &val);
-
-    /* With conversion from nanosecond to millisecond */
-    set_bench_time(&self->stop, val.tv_sec, val.tv_nsec / 1000);
-#elif defined(USE_MACH_ABSOLUTE_TIME)
-    uint64_t val;
-
-    val = mach_absolute_time();
-
-    /* With conversion from nanosecond to millisecond */
-    set_bench_time(&self->stop,
-                   self->scaling_factor * val / 1000000000,
-                   self->scaling_factor * val % 1000000000 / 1000);
-#else
     struct timeval val;
-
     (void) gettimeofday(&val, NULL);
-
-    set_bench_time(&self->stop, val.tv_sec, val.tv_usec);
-#endif
+    bench->stop = (struct bench_time) {
+        .seconds = val.tv_sec,
+        .microseconds = val.tv_usec,
+    };
 }
 
 void
-bench_timer_get_elapsed_time(struct bench_timer *self, struct bench_time *result)
+bench_elapsed(const struct bench *bench, struct bench_time *result)
 {
-    result->seconds = self->stop.seconds - self->start.seconds;
-    result->milliseconds = self->stop.milliseconds - self->start.milliseconds;
+    result->seconds = bench->stop.seconds - bench->start.seconds;
+    result->microseconds = bench->stop.microseconds - bench->start.microseconds;
+    if (result->microseconds < 0) {
+        result->microseconds += 1000000;
+        result->seconds--;
+    }
 }
 
 char *
-bench_timer_get_elapsed_time_str(struct bench_timer *self)
+bench_elapsed_str(const struct bench *bench)
 {
     struct bench_time elapsed;
     char *buf;
     int ret;
 
-    bench_timer_get_elapsed_time(self, &elapsed);
-    normalize_bench_time(&elapsed);
-    ret = asprintf(&buf, "%ld.%06ld", elapsed.seconds, elapsed.milliseconds);
+    bench_elapsed(bench, &elapsed);
+    ret = asprintf(&buf, "%ld.%06ld", elapsed.seconds, elapsed.microseconds);
     assert(ret >= 0);
 
     return buf;

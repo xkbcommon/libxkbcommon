@@ -33,7 +33,7 @@ main(int argc, char *argv[])
 {
     struct xkb_context *ctx;
     struct xkb_keymap *keymap;
-    struct bench_timer timer;
+    struct bench bench;
     char *elapsed;
     int i;
 
@@ -43,17 +43,15 @@ main(int argc, char *argv[])
     xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
     xkb_context_set_log_verbosity(ctx, 0);
 
-    bench_timer_reset(&timer);
-
-    bench_timer_start(&timer);
+    bench_start(&bench);
     for (i = 0; i < BENCHMARK_ITERATIONS; i++) {
         keymap = test_compile_rules(ctx, "evdev", "evdev", "us", "", "");
         assert(keymap);
         xkb_keymap_unref(keymap);
     }
-    bench_timer_stop(&timer);
+    bench_stop(&bench);
 
-    elapsed = bench_timer_get_elapsed_time_str(&timer);
+    elapsed = bench_elapsed_str(&bench);
     fprintf(stderr, "compiled %d keymaps in %ss\n",
             BENCHMARK_ITERATIONS, elapsed);
     free(elapsed);

@@ -25,28 +25,25 @@
 #ifndef LIBXKBCOMMON_BENCH_H
 #define LIBXKBCOMMON_BENCH_H
 
-#include <stdint.h>
-
 struct bench_time {
     long seconds;
-    long milliseconds;
+    long microseconds;
 };
 
-struct bench_timer {
+struct bench {
     struct bench_time start;
     struct bench_time stop;
-#if defined(__MACH__) && __MACH__ == 1
-    uint64_t scaling_factor;
-#endif
 };
 
-void bench_timer_reset(struct bench_timer *self);
+void
+bench_start(struct bench *bench);
+void
+bench_stop(struct bench *bench);
 
-void bench_timer_start(struct bench_timer *self);
-void bench_timer_stop(struct bench_timer *self);
-
-void bench_timer_get_elapsed_time(struct bench_timer *self, struct bench_time *result);
-/* It's caller's responsibility to release the returned string using free(). */
-char *bench_timer_get_elapsed_time_str(struct bench_timer *self);
+void
+bench_elapsed(const struct bench *bench, struct bench_time *result);
+/* The caller is responsibile to free() the returned string. */
+char *
+bench_elapsed_str(const struct bench *bench);
 
 #endif /* LIBXKBCOMMON_BENCH_H */

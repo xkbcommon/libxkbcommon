@@ -30,7 +30,7 @@
 #define BENCHMARK_ITERATIONS 20000000
 
 static void
-bench(struct xkb_state *state)
+bench_key_proc(struct xkb_state *state)
 {
     int8_t keys[256] = { 0 };
     xkb_keycode_t keycode;
@@ -57,7 +57,7 @@ main(void)
     struct xkb_context *ctx;
     struct xkb_keymap *keymap;
     struct xkb_state *state;
-    struct bench_timer timer;
+    struct bench bench;
     char *elapsed;
 
     ctx = test_get_context(0);
@@ -75,13 +75,11 @@ main(void)
 
     srand(time(NULL));
 
-    bench_timer_reset(&timer);
+    bench_start(&bench);
+    bench_key_proc(state);
+    bench_stop(&bench);
 
-    bench_timer_start(&timer);
-    bench(state);
-    bench_timer_stop(&timer);
-
-    elapsed = bench_timer_get_elapsed_time_str(&timer);
+    elapsed = bench_elapsed_str(&bench);
     fprintf(stderr, "ran %d iterations in %ss\n",
             BENCHMARK_ITERATIONS, elapsed);
     free(elapsed);

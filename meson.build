@@ -421,13 +421,10 @@ endif
 
 
 # Benchmarks.
-# For clock_gettime, on some systems.
-rt_dep = cc.find_library('rt', required: false)
 libxkbcommon_bench_internal = static_library(
     'xkbcommon-bench-internal',
     'bench/bench.c',
     'bench/bench.h',
-    dependencies: rt_dep,
     link_with: libxkbcommon_test_internal,
 )
 bench_dep = declare_dependency(

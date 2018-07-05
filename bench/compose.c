@@ -37,7 +37,7 @@ main(void)
     char *path;
     FILE *file;
     struct xkb_compose_table *table;
-    struct bench_timer timer;
+    struct bench bench;
     char *elapsed;
 
     ctx = test_get_context(CONTEXT_NO_FLAG);
@@ -55,9 +55,7 @@ main(void)
     xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
     xkb_context_set_log_verbosity(ctx, 0);
 
-    bench_timer_reset(&timer);
-
-    bench_timer_start(&timer);
+    bench_start(&bench);
     for (int i = 0; i < BENCHMARK_ITERATIONS; i++) {
         rewind(file);
         table = xkb_compose_table_new_from_file(ctx, file, "",
@@ -66,12 +64,12 @@ main(void)
         assert(table);
         xkb_compose_table_unref(table);
     }
-    bench_timer_stop(&timer);
+    bench_stop(&bench);
 
     fclose(file);
     free(path);
 
-    elapsed = bench_timer_get_elapsed_time_str(&timer);
+    elapsed = bench_elapsed_str(&bench);
     fprintf(stderr, "compiled %d compose tables in %ss\n",
             BENCHMARK_ITERATIONS, elapsed);
     free(elapsed);
