@@ -216,6 +216,11 @@ if get_option('enable-x11')
 You can disable X11 support with -Denable-x11=false.''')
     endif
 
+    libxkbcommon_x11_deps = [
+        xcb_dep,
+        xcb_xkb_dep,
+    ]
+
     libxkbcommon_x11_internal = static_library(
         'xkbcommon-x11-internal',
         'src/x11/keymap.c',
@@ -230,10 +235,7 @@ You can disable X11 support with -Denable-x11=false.''')
         'src/atom.c',
         include_directories: include_directories('src'),
         link_with: libxkbcommon,
-        dependencies: [
-            xcb_dep,
-            xcb_xkb_dep,
-        ],
+        dependencies: libxkbcommon_x11_deps,
     )
     libxkbcommon_x11_link_args = []
     if have_version_script
@@ -258,6 +260,8 @@ You can disable X11 support with -Denable-x11=false.''')
         libraries: libxkbcommon_x11,
         version: meson.project_version(),
         description: 'XKB API common to servers and clients - X11 support',
+        requires: libxkbcommon,
+        requires_private: libxkbcommon_x11_deps,
     )
 endif
 
