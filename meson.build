@@ -258,8 +258,8 @@ You can disable X11 support with -Denable-x11=false.''')
         libraries: libxkbcommon_x11,
         version: meson.project_version(),
         description: 'XKB API common to servers and clients - X11 support',
-        requires: 'xkbcommon',
-        requires_private: 'xcb>=1.10 xcb-xkb>=1.10',
+        requires: ['xkbcommon'],
+        requires_private: ['xcb>=1.10', 'xcb-xkb>=1.10'],
     )
 endif
 
