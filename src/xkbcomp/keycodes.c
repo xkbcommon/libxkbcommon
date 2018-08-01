@@ -596,14 +596,14 @@ CopyKeyAliasesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
         key_aliases = calloc(num_key_aliases, sizeof(*key_aliases));
         if (!key_aliases)
             return false;
-    }
 
-    i = 0;
-    darray_foreach(alias, info->aliases) {
-        if (alias->real != XKB_ATOM_NONE) {
-            key_aliases[i].alias = alias->alias;
-            key_aliases[i].real = alias->real;
-            i++;
+        i = 0;
+        darray_foreach(alias, info->aliases) {
+            if (alias->real != XKB_ATOM_NONE) {
+                key_aliases[i].alias = alias->alias;
+                key_aliases[i].real = alias->real;
+                i++;
+            }
         }
     }
 

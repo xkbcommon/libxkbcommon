@@ -705,6 +705,7 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
                 return false;
             }
 
+            /* act->data may not be null-terminated, this is intentional */
             strncpy((char *) act->data, str, sizeof(act->data));
             return true;
         }

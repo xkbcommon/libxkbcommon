@@ -240,7 +240,7 @@ ExprAppendMultiKeysymList(ExprDef *expr, ExprDef *append)
     darray_append(expr->keysym_list.symsNumEntries, numEntries);
     darray_concat(expr->keysym_list.syms, append->keysym_list.syms);
 
-    FreeStmt((ParseCommon *) &append);
+    FreeStmt((ParseCommon *) append);
 
     return expr;
 }
