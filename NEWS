@@ -1,3 +1,40 @@
+libxkbcommon 0.8.1 - 2018-08-03
+==================
+
+- Fix various problems found in the meson build (see commit messages for more
+  details):
+
+    - Fix compilation on Darwin.
+
+    - Fix compilation of the x11 tests and demos when XCB is installed in a
+      non-standard location.
+
+    - Fix xkbcommon-x11.pc missing the Requires specification.
+
+- Fix various problems found with fuzzing and Coverity (see commit messages for
+  more details):
+
+    - Fix stack overflow in the XKB text format parser when evaluating boolean
+      negation.
+
+    - Fix NULL-dereferences in the XKB text format parser when some unsupported
+      tokens appear (the tokens are still parsed for backward compatibility).
+
+    - Fix NULL-dereference in the XKB text format parser when parsing an
+      xkb_geometry section.
+
+    - Fix an infinite loop in the Compose text format parser on some inputs.
+
+    - Fix an invalid free() when using multiple keysyms.
+
+- Replace the Unicode characters for the leftanglebracket and rightanglebracket
+  keysyms from the deprecated LEFT/RIGHT-POINTING ANGLE BRACKET to
+  MATHEMATICAL LEFT/RIGHT ANGLE BRACKET.
+
+- Reject out-of-range Unicode codepoints in xkb_keysym_to_utf8 and
+  xkb_keysym_to_utf32.
+
+
 libxkbcommon 0.8.0 - 2017-12-15
 ==================
 
@@ -17,6 +54,7 @@ libxkbcommon 0.8.0 - 2017-12-15
 - New API:
   xkb_keysym_to_upper()
   xkb_keysym_to_lower()
+
 
 libxkbcommon 0.7.2 - 2017-08-04
 ==================
