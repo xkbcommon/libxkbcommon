@@ -1,3 +1,13 @@
+libxkbcommon 0.8.2 - 2018-08-05
+==================
+
+- Fix various problems found with fuzzing (see commit messages for
+  more details):
+
+    - Fix a few NULL-dereferences, out-of-bounds access and undefined behavior
+      in the XKB text format parser.
+
+
 libxkbcommon 0.8.1 - 2018-08-03
 ==================
 
