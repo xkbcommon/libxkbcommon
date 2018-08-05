@@ -204,6 +204,7 @@ const LookupEntry symInterpretMatchMaskNames[] = {
     { "AnyOf", MATCH_ANY },
     { "AllOf", MATCH_ALL },
     { "Exactly", MATCH_EXACTLY },
+    { NULL, 0 },
 };
 
 const char *

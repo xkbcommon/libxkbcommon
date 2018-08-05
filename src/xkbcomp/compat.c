@@ -264,7 +264,8 @@ ResolveStateAndPredicate(ExprDef *expr, enum xkb_match_operation *pred_rtrn,
     *pred_rtrn = MATCH_EXACTLY;
     if (expr->expr.op == EXPR_ACTION_DECL) {
         const char *pred_txt = xkb_atom_text(info->ctx, expr->action.name);
-        if (!LookupString(symInterpretMatchMaskNames, pred_txt, pred_rtrn)) {
+        if (!LookupString(symInterpretMatchMaskNames, pred_txt, pred_rtrn) ||
+            !expr->action.args) {
             log_err(info->ctx,
                     "Illegal modifier predicate \"%s\"; Ignored\n", pred_txt);
             return false;

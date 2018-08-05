@@ -118,7 +118,8 @@ XkbEscapeMapName(char *name)
         return;
 
     while (*name) {
-        if (!(legal[*name / 8] & (1 << (*name % 8))))
+        unsigned char c = *name;
+        if (!(legal[c / 8] & (1 << (c % 8))))
             *name = '_';
         name++;
     }
