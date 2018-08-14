@@ -390,6 +390,7 @@ executable('fuzz-compose', 'fuzz/compose/target.c', dependencies: test_dep)
 
 # Demo programs.
 executable('rmlvo-to-kccgst', 'test/rmlvo-to-kccgst.c', dependencies: test_dep)
+executable('rmlvo-to-keymap', 'test/rmlvo-to-keymap.c', dependencies: test_dep)
 executable('print-compiled-keymap', 'test/print-compiled-keymap.c', dependencies: test_dep)
 if cc.has_header('linux/input.h')
     executable('interactive-evdev', 'test/interactive-evdev.c', dependencies: test_dep)
@@ -425,6 +426,15 @@ You can disable the Wayland demo programs with -Denable-wayland=false.''')
     ]
     executable('interactive-wayland', 'test/interactive-wayland.c', xdg_shell_sources, dependencies: [test_dep, wayland_client_dep])
 endif
+
+# xkeyboard-config "verifier"
+xkct_config = configuration_data()
+xkct_config.set('MESON_BUILD_ROOT', meson.build_root())
+xkct_config.set('XKB_CONFIG_ROOT', XKBCONFIGROOT)
+configure_file(input: 'test/xkeyboard-config-test.py.in',
+               output: 'xkeyboard-config-test',
+               configuration: xkct_config,
+               install: false)
 
 
 # Benchmarks.

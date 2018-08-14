@@ -1,0 +1,129 @@
+#!/usr/bin/env python
+import sys
+import subprocess
+import os
+import xml.etree.ElementTree as ET
+
+
+verbose = True
+
+DEFAULT_RULES_XML = '@XKB_CONFIG_ROOT@/rules/evdev.xml'
+
+# Meson needs to fill this in so we can call the tool in the buildir.
+EXTRA_PATH='@MESON_BUILD_ROOT@'
+os.environ['PATH'] = ':'.join([EXTRA_PATH, os.getenv('PATH')])
+
+
+# The function generating the progress bar (if any).
+progress_bar = lambda x, desc: x
+if os.isatty(sys.stdout.fileno()):
+    try:
+        from tqdm import tqdm
+        progress_bar = tqdm
+
+        verbose = False
+    except ImportError:
+        pass
+
+
+def xkbcommontool(r='evdev', m='pc105', l='us', v=None, o=None):
+    args = [
+        'rmlvo-to-keymap',
+        '--rules', r,
+        '--model', m,
+        '--layout', l,
+    ]
+    if v is not None:
+        args += ['--variant', v]
+    if o is not None:
+        args += ['--options', o]
+
+    if verbose:
+        print(':: {}'.format(' '.join(args)))
+
+    try:
+        output = subprocess.check_output(args, stderr=subprocess.STDOUT)
+        if verbose:
+            print(output.decode('utf-8'))
+    except subprocess.CalledProcessError as err:
+        print('ERROR: Failed to compile: {}'.format(' '.join(args)))
+        print(err.output.decode('utf-8'))
+        sys.exit(1)
+
+
+def xkbcomp(r='evdev', m='pc105', l='us', v='', o=''):
+    args = ['setxkbmap', '-print']
+    if r is not None:
+        args.append('-rules')
+        args.append('{}'.format(r))
+    if m is not None:
+        args.append('-model')
+        args.append('{}'.format(m))
+    if l is not None:
+        args.append('-layout')
+        args.append('{}'.format(l))
+    if o is not None:
+        args.append('-option')
+        args.append('{}'.format(o))
+
+    if verbose:
+        print(':: {}'.format(' '.join(args)))
+
+    try:
+        xkbcomp_args = ['xkbcomp', '-xkb', '-', '-']
+
+        setxkbmap = subprocess.Popen(args, stdout=subprocess.PIPE)
+        xkbcomp = subprocess.Popen(xkbcomp_args, stdin=setxkbmap.stdout,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        setxkbmap.stdout.close()
+        stdout, stderr = xkbcomp.communicate()
+        if xkbcomp.returncode != 0:
+            print('ERROR: Failed to compile: {}'.format(' '.join(args)))
+        if xkbcomp.returncode != 0 or verbose:
+            print(stdout.decode('utf-8'))
+            print(stderr.decode('utf-8'))
+
+    # This catches setxkbmap errors.
+    except subprocess.CalledProcessError as err:
+        print('ERROR: Failed to compile: {}'.format(' '.join(args)))
+        print(err.output.decode('utf-8'))
+
+
+def parse(root):
+    layouts = root.findall('layoutList/layout')
+
+    options = [
+        e.text
+        for e in root.findall('optionList/group/option/configItem/name')
+    ]
+
+    # Switch this to xkbcomp if needed.
+    tool = xkbcommontool
+    # tool = xkbcomp
+
+    for l in progress_bar(layouts, 'layout '):
+        layout = l.find('configItem/name').text
+        tool(l=layout)
+
+        variants = l.findall('variantList/variant')
+        for v in progress_bar(variants, 'variant'):
+            variant = v.find('configItem/name').text
+            tool(l=layout, v=variant)
+
+            for option in progress_bar(options, 'option '):
+                tool(l=layout, v=variant, o=option)
+
+
+def main(args):
+    try:
+        path = args[1]
+    except IndexError:
+        path = DEFAULT_RULES_XML
+
+    with open(path) as f:
+        root = ET.fromstring(f.read())
+        parse(root)
+
+
+if __name__ == '__main__':
+    main(sys.argv)

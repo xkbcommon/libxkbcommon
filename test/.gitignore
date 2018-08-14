@@ -13,6 +13,7 @@ keyseq
 log
 interactive-evdev
 rmlvo-to-kccgst
+rmlvo-to-keymap
 print-compiled-keymap
 atom
 x11

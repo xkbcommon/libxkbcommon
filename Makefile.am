@@ -219,6 +219,7 @@ build_run_tests = \
 	test/compose
 build_only_tests = \
 	test/rmlvo-to-kccgst \
+	test/rmlvo-to-keymap \
 	test/print-compiled-keymap
 run_only_tests = \
 	test/symbols-leak-test.bash
@@ -240,6 +241,7 @@ test_state_LDADD = $(TESTS_LDADD)
 test_keyseq_LDADD = $(TESTS_LDADD)
 test_rulescomp_LDADD = $(TESTS_LDADD)
 test_rmlvo_to_kccgst_LDADD = $(TESTS_LDADD)
+test_rmlvo_to_keymap_LDADD = $(TESTS_LDADD)
 test_print_compiled_keymap_LDADD = $(TESTS_LDADD)
 test_compose_LDADD = $(TESTS_LDADD) $(RT_LIBS)
 
