@@ -83,7 +83,7 @@ AX_GCC_BUILTIN(__builtin_popcount)
 AC_CHECK_HEADER([linux/input.h])
 AM_CONDITIONAL(BUILD_LINUX_TESTS, [test "x$ac_cv_header_linux_input_h" = xyes])
 
-XORG_TESTSET_CFLAG([BASE_CFLAGS], [-fvisibility=hidden])
+XORG_TESTSET_CFLAG([BASE_CFLAGS], [-fvisibility=hidden -fno-strict-aliasing -fsanitize-undefined-trap-on-error])
 XORG_TESTSET_CFLAG([BASE_CFLAGS], [-Wextra -Wno-unused-parameter -Wno-missing-field-initializers])
 XORG_TESTSET_CFLAG([BASE_CFLAGS], [-Wdocumentation -Wno-documentation-deprecated-sync])
 
