@@ -31,6 +31,7 @@ foreach cflag: [
     '-Wdate-time',
     '-Wwrite-strings',
     '-Wno-documentation-deprecated-sync',
+    '-fsanitize-undefined-trap-on-error',
 ]
     if cc.has_argument(cflag)
         add_project_arguments(cflag, language: 'c')

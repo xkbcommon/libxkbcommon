@@ -218,8 +218,8 @@ translate_action(union xkb_action *action, const xcb_xkb_action_t *wire)
     case XCB_XKB_SA_TYPE_MOVE_PTR:
         action->type = ACTION_TYPE_PTR_MOVE;
 
-        action->ptr.x = (wire->moveptr.xLow | (wire->moveptr.xHigh << 8));
-        action->ptr.y = (wire->moveptr.yLow | (wire->moveptr.yHigh << 8));
+        action->ptr.x = (int16_t) (wire->moveptr.xLow | ((uint16_t) wire->moveptr.xHigh << 8));
+        action->ptr.y = (int16_t) (wire->moveptr.yLow | ((uint16_t) wire->moveptr.yHigh << 8));
 
         if (!(wire->moveptr.flags & XCB_XKB_SA_MOVE_PTR_FLAG_NO_ACCELERATION))
             action->ptr.flags |= ACTION_ACCEL;
