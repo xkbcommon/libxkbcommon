@@ -161,6 +161,9 @@ test_get_path(const char *path_rel)
     size_t path_len;
     const char *srcdir = getenv("top_srcdir");
 
+    if (path_rel[0] == '/')
+        return strdup(path_rel);
+
     path_len = strlen(srcdir ? srcdir : ".") +
                strlen(path_rel ? path_rel : "") + 12;
     path = malloc(path_len);
