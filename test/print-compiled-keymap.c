@@ -32,44 +32,24 @@ main(int argc, char *argv[])
     int opt;
     struct xkb_context *ctx;
     struct xkb_keymap *keymap;
-    const char *rules = NULL;
-    const char *model = NULL;
-    const char *layout = NULL;
-    const char *variant = NULL;
-    const char *options = NULL;
     const char *keymap_path = NULL;
     char *dump;
 
-    while ((opt = getopt(argc, argv, "r:m:l:v:o:k:h")) != -1) {
+    while ((opt = getopt(argc, argv, "h")) != -1) {
         switch (opt) {
-        case 'r':
-            rules = optarg;
-            break;
-        case 'm':
-            model = optarg;
-            break;
-        case 'l':
-            layout = optarg;
-            break;
-        case 'v':
-            variant = optarg;
-            break;
-        case 'o':
-            options = optarg;
-            break;
-        case 'k':
-            keymap_path = optarg;
-            break;
         case 'h':
         case '?':
-            fprintf(stderr, "Usage: %s [-r <rules>] [-m <model>] "
-                    "[-l <layout>] [-v <variant>] [-o <options>]\n",
-                    argv[0]);
-            fprintf(stderr, "   or: %s -k <path to keymap file>\n",
-                    argv[0]);
+            fprintf(stderr, "Usage: %s <path to keymap file>\n", argv[0]);
             exit(EXIT_FAILURE);
         }
     }
+
+    if (optind >= argc) {
+        fprintf(stderr, "Error: missing path to keymap file\n");
+        exit(EXIT_FAILURE);
+    }
+
+    keymap_path = argv[optind];
 
     ctx = test_get_context(0);
     if (!ctx) {
@@ -77,11 +57,7 @@ main(int argc, char *argv[])
         goto err_out;
     }
 
-    if (keymap_path)
-        keymap = test_compile_file(ctx, keymap_path);
-    else
-        keymap = test_compile_rules(ctx, rules, model, layout, variant,
-                                    options);
+    keymap = test_compile_file(ctx, keymap_path);
     if (!keymap) {
         fprintf(stderr, "Couldn't create xkb keymap\n");
         goto err_ctx;
