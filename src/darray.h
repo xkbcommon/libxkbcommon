@@ -104,7 +104,7 @@ typedef darray (unsigned long)  darray_ulong;
 #define darray_from_items(arr, items, count) do { \
     unsigned __count = (count); \
     darray_resize(arr, __count); \
-    if (count != 0) \
+    if (__count != 0) \
         memcpy((arr).item, items, __count * sizeof(*(arr).item)); \
 } while (0)
 
