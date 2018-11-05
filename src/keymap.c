@@ -370,7 +370,7 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t kc,
  * Return the total number of LEDs in the keymap.
  */
 XKB_EXPORT xkb_led_index_t
-xkb_keymap_num_leds(struct xkb_keymap *keymap)
+xkb_keymap_num_leds(const struct xkb_keymap *keymap)
 {
     return keymap->num_leds;
 }

@@ -673,7 +673,7 @@ xkb_context_include_path_clear(struct xkb_context *context);
  * @memberof xkb_context
  */
 unsigned int
-xkb_context_num_include_paths(struct xkb_context *context);
+xkb_context_num_include_paths(const struct xkb_context *context);
 
 /**
  * Get a specific include path from the context's include path.
@@ -727,7 +727,7 @@ xkb_context_set_log_level(struct xkb_context *context,
  * @memberof xkb_context
  */
 enum xkb_log_level
-xkb_context_get_log_level(struct xkb_context *context);
+xkb_context_get_log_level(const struct xkb_context *context);
 
 /**
  * Sets the current logging verbosity.
@@ -757,7 +757,7 @@ xkb_context_set_log_verbosity(struct xkb_context *context, int verbosity);
  * @memberof xkb_context
  */
 int
-xkb_context_get_log_verbosity(struct xkb_context *context);
+xkb_context_get_log_verbosity(const struct xkb_context *context);
 
 /**
  * Set a custom function to handle logging messages.
@@ -1088,7 +1088,7 @@ xkb_keymap_layout_get_index(struct xkb_keymap *keymap, const char *name);
  * @memberof xkb_keymap
  */
 xkb_led_index_t
-xkb_keymap_num_leds(struct xkb_keymap *keymap);
+xkb_keymap_num_leds(const struct xkb_keymap *keymap);
 
 /**
  * Get the name of a LED by index.
@@ -1469,7 +1469,7 @@ xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t key);
  * @memberof xkb_state
  */
 xkb_layout_index_t
-xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t key);
+xkb_state_key_get_layout(const struct xkb_state *state, xkb_keycode_t key);
 
 /**
  * Get the effective shift level for a key in a given keyboard state and
@@ -1494,7 +1494,7 @@ xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t key);
  * @memberof xkb_state
  */
 xkb_level_index_t
-xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t key,
+xkb_state_key_get_level(const struct xkb_state *state, xkb_keycode_t key,
                         xkb_layout_index_t layout);
 
 /**

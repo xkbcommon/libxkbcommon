@@ -138,7 +138,7 @@ get_entry_for_mods(const struct xkb_key_type *type, xkb_mod_mask_t mods)
 }
 
 static const struct xkb_key_type_entry *
-get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
+get_entry_for_key_state(const struct xkb_state *state, const struct xkb_key *key,
                         xkb_layout_index_t group)
 {
     const struct xkb_key_type *type = key->groups[group].type;
@@ -151,7 +151,7 @@ get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
  * XKB_LEVEL_INVALID.
  */
 XKB_EXPORT xkb_level_index_t
-xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
+xkb_state_key_get_level(const struct xkb_state *state, xkb_keycode_t kc,
                         xkb_layout_index_t layout)
 {
     const struct xkb_key *key = XkbKey(state->keymap, kc);
@@ -210,7 +210,7 @@ XkbWrapGroupIntoRange(int32_t group,
  * wrapping/clamping/etc into account, or XKB_LAYOUT_INVALID.
  */
 XKB_EXPORT xkb_layout_index_t
-xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t kc)
+xkb_state_key_get_layout(const struct xkb_state *state, xkb_keycode_t kc)
 {
     const struct xkb_key *key = XkbKey(state->keymap, kc);
 

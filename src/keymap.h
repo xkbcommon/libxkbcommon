@@ -425,7 +425,7 @@ struct xkb_keymap {
          (idx)++, (iter)++)
 
 static inline const struct xkb_key *
-XkbKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
+XkbKey(const struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
     if (kc < keymap->min_key_code || kc > keymap->max_key_code)
         return NULL;

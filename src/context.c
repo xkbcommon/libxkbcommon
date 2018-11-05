@@ -129,7 +129,7 @@ xkb_context_include_path_reset_defaults(struct xkb_context *ctx)
  * Returns the number of entries in the context's include path.
  */
 XKB_EXPORT unsigned int
-xkb_context_num_include_paths(struct xkb_context *ctx)
+xkb_context_num_include_paths(const struct xkb_context *ctx)
 {
     return darray_size(ctx->includes);
 }
@@ -293,7 +293,7 @@ xkb_context_set_log_fn(struct xkb_context *ctx,
 }
 
 XKB_EXPORT enum xkb_log_level
-xkb_context_get_log_level(struct xkb_context *ctx)
+xkb_context_get_log_level(const struct xkb_context *ctx)
 {
     return ctx->log_level;
 }
@@ -305,7 +305,7 @@ xkb_context_set_log_level(struct xkb_context *ctx, enum xkb_log_level level)
 }
 
 XKB_EXPORT int
-xkb_context_get_log_verbosity(struct xkb_context *ctx)
+xkb_context_get_log_verbosity(const struct xkb_context *ctx)
 {
     return ctx->log_verbosity;
 }
