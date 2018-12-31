@@ -74,7 +74,8 @@ xkb_symbols "basic" {
 };
 
 
-// nikud patter based on Dekel Tsur's Hebrew mapping for LyX
+// nikud pattern based on Dekel Tsur's Hebrew mapping for LyX
+// SI-1432-2 is based on this mapping.
 partial alphanumeric_keys
 xkb_symbols "lyx" {
     name[Group1]= "Hebrew (lyx)";
