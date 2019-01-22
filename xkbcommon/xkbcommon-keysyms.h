@@ -80,7 +80,7 @@ SOFTWARE.
  * Unicode number plus 0x01000000. The keysym values in the range
  * 0x01000100 to 0x0110ffff are reserved to represent Unicode
  * characters in the range U+0100 to U+10FFFF.
- * 
+ *
  * While most newer Unicode-based X11 clients do already accept
  * Unicode-mapped keysyms in the range 0x01000100 to 0x0110ffff, it
  * will remain necessary for clients -- in the interest of
@@ -1951,7 +1951,7 @@ SOFTWARE.
 /*
  * Vietnamese
  */
- 
+
 #define XKB_KEY_Abelowdot                  0x1001ea0  /* U+1EA0 LATIN CAPITAL LETTER A WITH DOT BELOW */
 #define XKB_KEY_abelowdot                  0x1001ea1  /* U+1EA1 LATIN SMALL LETTER A WITH DOT BELOW */
 #define XKB_KEY_Ahook                      0x1001ea2  /* U+1EA2 LATIN CAPITAL LETTER A WITH HOOK ABOVE */
@@ -2092,7 +2092,7 @@ SOFTWARE.
 #define XKB_KEY_approxeq                   0x1002248  /* U+2245 ALMOST EQUAL TO */
 #define XKB_KEY_notapproxeq                0x1002247  /* U+2247 NOT ALMOST EQUAL TO */
 #define XKB_KEY_notidentical               0x1002262  /* U+2262 NOT IDENTICAL TO */
-#define XKB_KEY_stricteq                   0x1002263  /* U+2263 STRICTLY EQUIVALENT TO */          
+#define XKB_KEY_stricteq                   0x1002263  /* U+2263 STRICTLY EQUIVALENT TO */
 
 #define XKB_KEY_braille_dot_1                 0xfff1
 #define XKB_KEY_braille_dot_2                 0xfff2
@@ -2471,11 +2471,12 @@ SOFTWARE.
 #define XKB_KEY_XF86ModeLock		0x1008FF01	/* Mode Switch Lock */
 
 /* Backlight controls. */
-#define XKB_KEY_XF86MonBrightnessUp   0x1008FF02  /* Monitor/panel brightness */
-#define XKB_KEY_XF86MonBrightnessDown 0x1008FF03  /* Monitor/panel brightness */
-#define XKB_KEY_XF86KbdLightOnOff     0x1008FF04  /* Keyboards may be lit     */
-#define XKB_KEY_XF86KbdBrightnessUp   0x1008FF05  /* Keyboards may be lit     */
-#define XKB_KEY_XF86KbdBrightnessDown 0x1008FF06  /* Keyboards may be lit     */
+#define XKB_KEY_XF86MonBrightnessUp    0x1008FF02  /* Monitor/panel brightness */
+#define XKB_KEY_XF86MonBrightnessDown  0x1008FF03  /* Monitor/panel brightness */
+#define XKB_KEY_XF86KbdLightOnOff      0x1008FF04  /* Keyboards may be lit     */
+#define XKB_KEY_XF86KbdBrightnessUp    0x1008FF05  /* Keyboards may be lit     */
+#define XKB_KEY_XF86KbdBrightnessDown  0x1008FF06  /* Keyboards may be lit     */
+#define XKB_KEY_XF86MonBrightnessCycle 0x1008FF07  /* Monitor/panel brightness */
 
 /*
  * Keys found on some "Internet" keyboards.
@@ -2565,12 +2566,12 @@ SOFTWARE.
 #define XKB_KEY_XF86Explorer		0x1008FF5D   /* Launch file explorer        */
 #define XKB_KEY_XF86Game		0x1008FF5E   /* Launch game                 */
 #define XKB_KEY_XF86Go		0x1008FF5F   /* Go to URL                   */
-#define XKB_KEY_XF86iTouch		0x1008FF60   /* Logitch iTouch- don't use   */
+#define XKB_KEY_XF86iTouch		0x1008FF60   /* Logitech iTouch- don't use  */
 #define XKB_KEY_XF86LogOff		0x1008FF61   /* Log off system              */
 #define XKB_KEY_XF86Market		0x1008FF62   /* ??                          */
 #define XKB_KEY_XF86Meeting		0x1008FF63   /* enter meeting in calendar   */
-#define XKB_KEY_XF86MenuKB		0x1008FF65   /* distingush keyboard from PB */
-#define XKB_KEY_XF86MenuPB		0x1008FF66   /* distinuish PB from keyboard */
+#define XKB_KEY_XF86MenuKB		0x1008FF65   /* distinguish keyboard from PB */
+#define XKB_KEY_XF86MenuPB		0x1008FF66   /* distinguish PB from keyboard */
 #define XKB_KEY_XF86MySites		0x1008FF67   /* Favourites                  */
 #define XKB_KEY_XF86New		0x1008FF68   /* New (folder, document...    */
 #define XKB_KEY_XF86News		0x1008FF69   /* News                        */
@@ -2651,6 +2652,8 @@ SOFTWARE.
 #define XKB_KEY_XF86RFKill		0x1008FFB5   /* Toggle radios on/off */
 
 #define XKB_KEY_XF86AudioPreset	0x1008FFB6   /* Select equalizer preset, e.g. theatre-mode */
+
+#define XKB_KEY_XF86RotationLockToggle 0x1008FFB7 /* Toggle screen rotation lock on/off */
 
 /* Keys for special action keys (hot keys) */
 /* Virtual terminals on some operating systems */
@@ -2808,13 +2811,13 @@ Copyright 1988 by Digital Equipment Corporation, Maynard, Massachusetts.
 
                         All Rights Reserved
 
-Permission to use, copy, modify, and distribute this software and its 
-documentation for any purpose and without fee is hereby granted, 
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted,
 provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in 
+both that copyright notice and this permission notice appear in
 supporting documentation, and that the name of Digital not be
 used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.  
+software without specific, written prior permission.
 
 DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
 ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
