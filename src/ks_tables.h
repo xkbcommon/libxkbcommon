@@ -2293,6 +2293,7 @@ static const char *keysym_names =
     "XF86MenuPB\0"
     "XF86Messenger\0"
     "XF86ModeLock\0"
+    "XF86MonBrightnessCycle\0"
     "XF86MonBrightnessDown\0"
     "XF86MonBrightnessUp\0"
     "XF86Music\0"
@@ -2322,6 +2323,7 @@ static const char *keysym_names =
     "XF86RockerUp\0"
     "XF86RotateWindows\0"
     "XF86RotationKB\0"
+    "XF86RotationLockToggle\0"
     "XF86RotationPB\0"
     "XF86Save\0"
     "XF86ScreenSaver\0"
@@ -4708,127 +4710,129 @@ static const struct name_keysym name_to_keysym[] = {
     { 0x1008ff66, 27857 }, /* XF86MenuPB */
     { 0x1008ff8e, 27868 }, /* XF86Messenger */
     { 0x1008ff01, 27882 }, /* XF86ModeLock */
-    { 0x1008ff03, 27895 }, /* XF86MonBrightnessDown */
-    { 0x1008ff02, 27917 }, /* XF86MonBrightnessUp */
-    { 0x1008ff92, 27937 }, /* XF86Music */
-    { 0x1008ff33, 27947 }, /* XF86MyComputer */
-    { 0x1008ff67, 27962 }, /* XF86MySites */
-    { 0x1008ff68, 27974 }, /* XF86New */
-    { 0x1008ff69, 27982 }, /* XF86News */
-    { 0x1008fe22, 27991 }, /* XF86Next_VMode */
-    { 0x1008ff6a, 28006 }, /* XF86OfficeHome */
-    { 0x1008ff6b, 28021 }, /* XF86Open */
-    { 0x1008ff38, 28030 }, /* XF86OpenURL */
-    { 0x1008ff6c, 28042 }, /* XF86Option */
-    { 0x1008ff6d, 28053 }, /* XF86Paste */
-    { 0x1008ff6e, 28063 }, /* XF86Phone */
-    { 0x1008ff91, 28073 }, /* XF86Pictures */
-    { 0x1008ff21, 28086 }, /* XF86PowerDown */
-    { 0x1008ff2a, 28100 }, /* XF86PowerOff */
-    { 0x1008fe23, 28113 }, /* XF86Prev_VMode */
-    { 0x1008ff70, 28128 }, /* XF86Q */
-    { 0x1008ffa3, 28134 }, /* XF86Red */
-    { 0x1008ff29, 28142 }, /* XF86Refresh */
-    { 0x1008ff73, 28154 }, /* XF86Reload */
-    { 0x1008ff72, 28165 }, /* XF86Reply */
-    { 0x1008ffb5, 28175 }, /* XF86RFKill */
-    { 0x1008ff24, 28186 }, /* XF86RockerDown */
-    { 0x1008ff25, 28201 }, /* XF86RockerEnter */
-    { 0x1008ff23, 28217 }, /* XF86RockerUp */
-    { 0x1008ff74, 28230 }, /* XF86RotateWindows */
-    { 0x1008ff76, 28248 }, /* XF86RotationKB */
-    { 0x1008ff75, 28263 }, /* XF86RotationPB */
-    { 0x1008ff77, 28278 }, /* XF86Save */
-    { 0x1008ff2d, 28287 }, /* XF86ScreenSaver */
-    { 0x1008ff7a, 28303 }, /* XF86ScrollClick */
-    { 0x1008ff79, 28319 }, /* XF86ScrollDown */
-    { 0x1008ff78, 28334 }, /* XF86ScrollUp */
-    { 0x1008ff1b, 28347 }, /* XF86Search */
-    { 0x1008ffa0, 28358 }, /* XF86Select */
-    { 0x1008ff7b, 28369 }, /* XF86Send */
-    { 0x1008ff36, 28378 }, /* XF86Shop */
-    { 0x1008ff2f, 28387 }, /* XF86Sleep */
-    { 0x1008ff7c, 28397 }, /* XF86Spell */
-    { 0x1008ff7d, 28407 }, /* XF86SplitScreen */
-    { 0x1008ff10, 28423 }, /* XF86Standby */
-    { 0x1008ff1a, 28435 }, /* XF86Start */
-    { 0x1008ff28, 28445 }, /* XF86Stop */
-    { 0x1008ff9a, 28454 }, /* XF86Subtitle */
-    { 0x1008ff7e, 28467 }, /* XF86Support */
-    { 0x1008ffa7, 28479 }, /* XF86Suspend */
-    { 0x1008fe01, 28491 }, /* XF86Switch_VT_1 */
-    { 0x1008fe0a, 28507 }, /* XF86Switch_VT_10 */
-    { 0x1008fe0b, 28524 }, /* XF86Switch_VT_11 */
-    { 0x1008fe0c, 28541 }, /* XF86Switch_VT_12 */
-    { 0x1008fe02, 28558 }, /* XF86Switch_VT_2 */
-    { 0x1008fe03, 28574 }, /* XF86Switch_VT_3 */
-    { 0x1008fe04, 28590 }, /* XF86Switch_VT_4 */
-    { 0x1008fe05, 28606 }, /* XF86Switch_VT_5 */
-    { 0x1008fe06, 28622 }, /* XF86Switch_VT_6 */
-    { 0x1008fe07, 28638 }, /* XF86Switch_VT_7 */
-    { 0x1008fe08, 28654 }, /* XF86Switch_VT_8 */
-    { 0x1008fe09, 28670 }, /* XF86Switch_VT_9 */
-    { 0x1008ff7f, 28686 }, /* XF86TaskPane */
-    { 0x1008ff80, 28699 }, /* XF86Terminal */
-    { 0x1008ff9f, 28712 }, /* XF86Time */
-    { 0x1008ff1f, 28721 }, /* XF86ToDoList */
-    { 0x1008ff81, 28734 }, /* XF86Tools */
-    { 0x1008ffa2, 28744 }, /* XF86TopMenu */
-    { 0x1008ffb1, 28756 }, /* XF86TouchpadOff */
-    { 0x1008ffb0, 28772 }, /* XF86TouchpadOn */
-    { 0x1008ffa9, 28787 }, /* XF86TouchpadToggle */
-    { 0x1008ff82, 28806 }, /* XF86Travel */
-    { 0x1008fe20, 28817 }, /* XF86Ungrab */
-    { 0x1008ff85, 28828 }, /* XF86User1KB */
-    { 0x1008ff86, 28840 }, /* XF86User2KB */
-    { 0x1008ff84, 28852 }, /* XF86UserPB */
-    { 0x1008ff96, 28863 }, /* XF86UWB */
-    { 0x1008ff34, 28871 }, /* XF86VendorHome */
-    { 0x1008ff87, 28886 }, /* XF86Video */
-    { 0x1008ffa1, 28896 }, /* XF86View */
-    { 0x1008ff2b, 28905 }, /* XF86WakeUp */
-    { 0x1008ff8f, 28916 }, /* XF86WebCam */
-    { 0x1008ff88, 28927 }, /* XF86WheelButton */
-    { 0x1008ff95, 28943 }, /* XF86WLAN */
-    { 0x1008ff89, 28952 }, /* XF86Word */
-    { 0x1008ffb4, 28961 }, /* XF86WWAN */
-    { 0x1008ff2e, 28970 }, /* XF86WWW */
-    { 0x1008ff8a, 28978 }, /* XF86Xfer */
-    { 0x1008ffa5, 28987 }, /* XF86Yellow */
-    { 0x1008ff8b, 28998 }, /* XF86ZoomIn */
-    { 0x1008ff8c, 29009 }, /* XF86ZoomOut */
-    { 0x00000059, 29021 }, /* Y */
-    { 0x00000079, 29023 }, /* y */
-    { 0x000000dd, 29025 }, /* Yacute */
-    { 0x000000fd, 29032 }, /* yacute */
-    { 0x01001ef4, 29039 }, /* Ybelowdot */
-    { 0x01001ef5, 29049 }, /* ybelowdot */
-    { 0x01000176, 29059 }, /* Ycircumflex */
-    { 0x01000177, 29071 }, /* ycircumflex */
-    { 0x000000ff, 29083 }, /* ydiaeresis */
-    { 0x000013be, 29094 }, /* Ydiaeresis */
-    { 0x000000a5, 29105 }, /* yen */
-    { 0x01001ef2, 29109 }, /* Ygrave */
-    { 0x01001ef3, 29116 }, /* ygrave */
-    { 0x01001ef6, 29123 }, /* Yhook */
-    { 0x01001ef7, 29129 }, /* yhook */
-    { 0x01001ef8, 29135 }, /* Ytilde */
-    { 0x01001ef9, 29142 }, /* ytilde */
-    { 0x0000005a, 29149 }, /* Z */
-    { 0x0000007a, 29151 }, /* z */
-    { 0x000001af, 29153 }, /* Zabovedot */
-    { 0x000001bf, 29163 }, /* zabovedot */
-    { 0x000001ac, 29173 }, /* Zacute */
-    { 0x000001bc, 29180 }, /* zacute */
-    { 0x000001ae, 29187 }, /* Zcaron */
-    { 0x000001be, 29194 }, /* zcaron */
-    { 0x0000ff3d, 29201 }, /* Zen_Koho */
-    { 0x0000ff28, 29210 }, /* Zenkaku */
-    { 0x0000ff2a, 29218 }, /* Zenkaku_Hankaku */
-    { 0x01002080, 29234 }, /* zerosubscript */
-    { 0x01002070, 29248 }, /* zerosuperior */
-    { 0x010001b5, 29261 }, /* Zstroke */
-    { 0x010001b6, 29269 }, /* zstroke */
+    { 0x1008ff07, 27895 }, /* XF86MonBrightnessCycle */
+    { 0x1008ff03, 27918 }, /* XF86MonBrightnessDown */
+    { 0x1008ff02, 27940 }, /* XF86MonBrightnessUp */
+    { 0x1008ff92, 27960 }, /* XF86Music */
+    { 0x1008ff33, 27970 }, /* XF86MyComputer */
+    { 0x1008ff67, 27985 }, /* XF86MySites */
+    { 0x1008ff68, 27997 }, /* XF86New */
+    { 0x1008ff69, 28005 }, /* XF86News */
+    { 0x1008fe22, 28014 }, /* XF86Next_VMode */
+    { 0x1008ff6a, 28029 }, /* XF86OfficeHome */
+    { 0x1008ff6b, 28044 }, /* XF86Open */
+    { 0x1008ff38, 28053 }, /* XF86OpenURL */
+    { 0x1008ff6c, 28065 }, /* XF86Option */
+    { 0x1008ff6d, 28076 }, /* XF86Paste */
+    { 0x1008ff6e, 28086 }, /* XF86Phone */
+    { 0x1008ff91, 28096 }, /* XF86Pictures */
+    { 0x1008ff21, 28109 }, /* XF86PowerDown */
+    { 0x1008ff2a, 28123 }, /* XF86PowerOff */
+    { 0x1008fe23, 28136 }, /* XF86Prev_VMode */
+    { 0x1008ff70, 28151 }, /* XF86Q */
+    { 0x1008ffa3, 28157 }, /* XF86Red */
+    { 0x1008ff29, 28165 }, /* XF86Refresh */
+    { 0x1008ff73, 28177 }, /* XF86Reload */
+    { 0x1008ff72, 28188 }, /* XF86Reply */
+    { 0x1008ffb5, 28198 }, /* XF86RFKill */
+    { 0x1008ff24, 28209 }, /* XF86RockerDown */
+    { 0x1008ff25, 28224 }, /* XF86RockerEnter */
+    { 0x1008ff23, 28240 }, /* XF86RockerUp */
+    { 0x1008ff74, 28253 }, /* XF86RotateWindows */
+    { 0x1008ff76, 28271 }, /* XF86RotationKB */
+    { 0x1008ffb7, 28286 }, /* XF86RotationLockToggle */
+    { 0x1008ff75, 28309 }, /* XF86RotationPB */
+    { 0x1008ff77, 28324 }, /* XF86Save */
+    { 0x1008ff2d, 28333 }, /* XF86ScreenSaver */
+    { 0x1008ff7a, 28349 }, /* XF86ScrollClick */
+    { 0x1008ff79, 28365 }, /* XF86ScrollDown */
+    { 0x1008ff78, 28380 }, /* XF86ScrollUp */
+    { 0x1008ff1b, 28393 }, /* XF86Search */
+    { 0x1008ffa0, 28404 }, /* XF86Select */
+    { 0x1008ff7b, 28415 }, /* XF86Send */
+    { 0x1008ff36, 28424 }, /* XF86Shop */
+    { 0x1008ff2f, 28433 }, /* XF86Sleep */
+    { 0x1008ff7c, 28443 }, /* XF86Spell */
+    { 0x1008ff7d, 28453 }, /* XF86SplitScreen */
+    { 0x1008ff10, 28469 }, /* XF86Standby */
+    { 0x1008ff1a, 28481 }, /* XF86Start */
+    { 0x1008ff28, 28491 }, /* XF86Stop */
+    { 0x1008ff9a, 28500 }, /* XF86Subtitle */
+    { 0x1008ff7e, 28513 }, /* XF86Support */
+    { 0x1008ffa7, 28525 }, /* XF86Suspend */
+    { 0x1008fe01, 28537 }, /* XF86Switch_VT_1 */
+    { 0x1008fe0a, 28553 }, /* XF86Switch_VT_10 */
+    { 0x1008fe0b, 28570 }, /* XF86Switch_VT_11 */
+    { 0x1008fe0c, 28587 }, /* XF86Switch_VT_12 */
+    { 0x1008fe02, 28604 }, /* XF86Switch_VT_2 */
+    { 0x1008fe03, 28620 }, /* XF86Switch_VT_3 */
+    { 0x1008fe04, 28636 }, /* XF86Switch_VT_4 */
+    { 0x1008fe05, 28652 }, /* XF86Switch_VT_5 */
+    { 0x1008fe06, 28668 }, /* XF86Switch_VT_6 */
+    { 0x1008fe07, 28684 }, /* XF86Switch_VT_7 */
+    { 0x1008fe08, 28700 }, /* XF86Switch_VT_8 */
+    { 0x1008fe09, 28716 }, /* XF86Switch_VT_9 */
+    { 0x1008ff7f, 28732 }, /* XF86TaskPane */
+    { 0x1008ff80, 28745 }, /* XF86Terminal */
+    { 0x1008ff9f, 28758 }, /* XF86Time */
+    { 0x1008ff1f, 28767 }, /* XF86ToDoList */
+    { 0x1008ff81, 28780 }, /* XF86Tools */
+    { 0x1008ffa2, 28790 }, /* XF86TopMenu */
+    { 0x1008ffb1, 28802 }, /* XF86TouchpadOff */
+    { 0x1008ffb0, 28818 }, /* XF86TouchpadOn */
+    { 0x1008ffa9, 28833 }, /* XF86TouchpadToggle */
+    { 0x1008ff82, 28852 }, /* XF86Travel */
+    { 0x1008fe20, 28863 }, /* XF86Ungrab */
+    { 0x1008ff85, 28874 }, /* XF86User1KB */
+    { 0x1008ff86, 28886 }, /* XF86User2KB */
+    { 0x1008ff84, 28898 }, /* XF86UserPB */
+    { 0x1008ff96, 28909 }, /* XF86UWB */
+    { 0x1008ff34, 28917 }, /* XF86VendorHome */
+    { 0x1008ff87, 28932 }, /* XF86Video */
+    { 0x1008ffa1, 28942 }, /* XF86View */
+    { 0x1008ff2b, 28951 }, /* XF86WakeUp */
+    { 0x1008ff8f, 28962 }, /* XF86WebCam */
+    { 0x1008ff88, 28973 }, /* XF86WheelButton */
+    { 0x1008ff95, 28989 }, /* XF86WLAN */
+    { 0x1008ff89, 28998 }, /* XF86Word */
+    { 0x1008ffb4, 29007 }, /* XF86WWAN */
+    { 0x1008ff2e, 29016 }, /* XF86WWW */
+    { 0x1008ff8a, 29024 }, /* XF86Xfer */
+    { 0x1008ffa5, 29033 }, /* XF86Yellow */
+    { 0x1008ff8b, 29044 }, /* XF86ZoomIn */
+    { 0x1008ff8c, 29055 }, /* XF86ZoomOut */
+    { 0x00000059, 29067 }, /* Y */
+    { 0x00000079, 29069 }, /* y */
+    { 0x000000dd, 29071 }, /* Yacute */
+    { 0x000000fd, 29078 }, /* yacute */
+    { 0x01001ef4, 29085 }, /* Ybelowdot */
+    { 0x01001ef5, 29095 }, /* ybelowdot */
+    { 0x01000176, 29105 }, /* Ycircumflex */
+    { 0x01000177, 29117 }, /* ycircumflex */
+    { 0x000000ff, 29129 }, /* ydiaeresis */
+    { 0x000013be, 29140 }, /* Ydiaeresis */
+    { 0x000000a5, 29151 }, /* yen */
+    { 0x01001ef2, 29155 }, /* Ygrave */
+    { 0x01001ef3, 29162 }, /* ygrave */
+    { 0x01001ef6, 29169 }, /* Yhook */
+    { 0x01001ef7, 29175 }, /* yhook */
+    { 0x01001ef8, 29181 }, /* Ytilde */
+    { 0x01001ef9, 29188 }, /* ytilde */
+    { 0x0000005a, 29195 }, /* Z */
+    { 0x0000007a, 29197 }, /* z */
+    { 0x000001af, 29199 }, /* Zabovedot */
+    { 0x000001bf, 29209 }, /* zabovedot */
+    { 0x000001ac, 29219 }, /* Zacute */
+    { 0x000001bc, 29226 }, /* zacute */
+    { 0x000001ae, 29233 }, /* Zcaron */
+    { 0x000001be, 29240 }, /* zcaron */
+    { 0x0000ff3d, 29247 }, /* Zen_Koho */
+    { 0x0000ff28, 29256 }, /* Zenkaku */
+    { 0x0000ff2a, 29264 }, /* Zenkaku_Hankaku */
+    { 0x01002080, 29280 }, /* zerosubscript */
+    { 0x01002070, 29294 }, /* zerosuperior */
+    { 0x010001b5, 29307 }, /* Zstroke */
+    { 0x010001b6, 29315 }, /* zstroke */
 };
 
 static const struct name_keysym keysym_to_name[] = {
@@ -4890,8 +4894,8 @@ static const struct name_keysym keysym_to_name[] = {
     { 0x00000056, 26483 }, /* V */
     { 0x00000057, 26545 }, /* W */
     { 0x00000058, 26631 }, /* X */
-    { 0x00000059, 29021 }, /* Y */
-    { 0x0000005a, 29149 }, /* Z */
+    { 0x00000059, 29067 }, /* Y */
+    { 0x0000005a, 29195 }, /* Z */
     { 0x0000005b, 3603 }, /* bracketleft */
     { 0x0000005c, 3352 }, /* backslash */
     { 0x0000005d, 3615 }, /* bracketright */
@@ -4922,8 +4926,8 @@ static const struct name_keysym keysym_to_name[] = {
     { 0x00000076, 26485 }, /* v */
     { 0x00000077, 26547 }, /* w */
     { 0x00000078, 26633 }, /* x */
-    { 0x00000079, 29023 }, /* y */
-    { 0x0000007a, 29151 }, /* z */
+    { 0x00000079, 29069 }, /* y */
+    { 0x0000007a, 29197 }, /* z */
     { 0x0000007b, 3582 }, /* braceleft */
     { 0x0000007c, 3392 }, /* bar */
     { 0x0000007d, 3592 }, /* braceright */
@@ -4933,7 +4937,7 @@ static const struct name_keysym keysym_to_name[] = {
     { 0x000000a2, 8589 }, /* cent */
     { 0x000000a3, 23827 }, /* sterling */
     { 0x000000a4, 8766 }, /* currency */
-    { 0x000000a5, 29105 }, /* yen */
+    { 0x000000a5, 29151 }, /* yen */
     { 0x000000a6, 8389 }, /* brokenbar */
     { 0x000000a7, 22719 }, /* section */
     { 0x000000a8, 11203 }, /* diaeresis */
@@ -4989,7 +4993,7 @@ static const struct name_keysym keysym_to_name[] = {
     { 0x000000da, 25851 }, /* Uacute */
     { 0x000000db, 25899 }, /* Ucircumflex */
     { 0x000000dc, 25923 }, /* Udiaeresis */
-    { 0x000000dd, 29025 }, /* Yacute */
+    { 0x000000dd, 29071 }, /* Yacute */
     { 0x000000de, 25499 }, /* THORN */
     { 0x000000df, 23820 }, /* ssharp */
     { 0x000000e0, 861 }, /* agrave */
@@ -5021,9 +5025,9 @@ static const struct name_keysym keysym_to_name[] = {
     { 0x000000fa, 25858 }, /* uacute */
     { 0x000000fb, 25911 }, /* ucircumflex */
     { 0x000000fc, 25934 }, /* udiaeresis */
-    { 0x000000fd, 29032 }, /* yacute */
+    { 0x000000fd, 29078 }, /* yacute */
     { 0x000000fe, 25511 }, /* thorn */
-    { 0x000000ff, 29083 }, /* ydiaeresis */
+    { 0x000000ff, 29129 }, /* ydiaeresis */
     { 0x000001a1, 918 }, /* Aogonek */
     { 0x000001a2, 8383 }, /* breve */
     { 0x000001a3, 19517 }, /* Lstroke */
@@ -5032,9 +5036,9 @@ static const struct name_keysym keysym_to_name[] = {
     { 0x000001a9, 22617 }, /* Scaron */
     { 0x000001aa, 22631 }, /* Scedilla */
     { 0x000001ab, 24322 }, /* Tcaron */
-    { 0x000001ac, 29173 }, /* Zacute */
-    { 0x000001ae, 29187 }, /* Zcaron */
-    { 0x000001af, 29153 }, /* Zabovedot */
+    { 0x000001ac, 29219 }, /* Zacute */
+    { 0x000001ae, 29233 }, /* Zcaron */
+    { 0x000001af, 29199 }, /* Zabovedot */
     { 0x000001b1, 926 }, /* aogonek */
     { 0x000001b2, 20520 }, /* ogonek */
     { 0x000001b3, 19525 }, /* lstroke */
@@ -5044,10 +5048,10 @@ static const struct name_keysym keysym_to_name[] = {
     { 0x000001b9, 22624 }, /* scaron */
     { 0x000001ba, 22640 }, /* scedilla */
     { 0x000001bb, 24329 }, /* tcaron */
-    { 0x000001bc, 29180 }, /* zacute */
+    { 0x000001bc, 29226 }, /* zacute */
     { 0x000001bd, 11283 }, /* doubleacute */
-    { 0x000001be, 29194 }, /* zcaron */
-    { 0x000001bf, 29163 }, /* zabovedot */
+    { 0x000001be, 29240 }, /* zcaron */
+    { 0x000001bf, 29209 }, /* zabovedot */
     { 0x000001c0, 22272 }, /* Racute */
     { 0x000001c3, 445 }, /* Abreve */
     { 0x000001c5, 19147 }, /* Lacute */
@@ -5797,7 +5801,7 @@ static const struct name_keysym keysym_to_name[] = {
     { 0x00000eff, 18797 }, /* Korean_Won */
     { 0x000013bc, 20514 }, /* OE */
     { 0x000013bd, 20517 }, /* oe */
-    { 0x000013be, 29094 }, /* Ydiaeresis */
+    { 0x000013be, 29140 }, /* Ydiaeresis */
     { 0x000020ac, 12090 }, /* EuroSign */
     { 0x0000fd01, 125 }, /* 3270_Duplicate */
     { 0x0000fd02, 195 }, /* 3270_FieldMark */
@@ -5986,9 +5990,9 @@ static const struct name_keysym keysym_to_name[] = {
     { 0x0000ff25, 16635 }, /* Hiragana */
     { 0x0000ff26, 18770 }, /* Katakana */
     { 0x0000ff27, 16644 }, /* Hiragana_Katakana */
-    { 0x0000ff28, 29210 }, /* Zenkaku */
+    { 0x0000ff28, 29256 }, /* Zenkaku */
     { 0x0000ff29, 16048 }, /* Hankaku */
-    { 0x0000ff2a, 29218 }, /* Zenkaku_Hankaku */
+    { 0x0000ff2a, 29264 }, /* Zenkaku_Hankaku */
     { 0x0000ff2b, 25752 }, /* Touroku */
     { 0x0000ff2c, 19698 }, /* Massyo */
     { 0x0000ff2d, 18351 }, /* Kana_Lock */
@@ -6132,16 +6136,16 @@ static const struct name_keysym keysym_to_name[] = {
     { 0x0100012d, 17124 }, /* ibreve */
     { 0x01000174, 26563 }, /* Wcircumflex */
     { 0x01000175, 26575 }, /* wcircumflex */
-    { 0x01000176, 29059 }, /* Ycircumflex */
-    { 0x01000177, 29071 }, /* ycircumflex */
+    { 0x01000176, 29105 }, /* Ycircumflex */
+    { 0x01000177, 29117 }, /* ycircumflex */
     { 0x0100018f, 22649 }, /* SCHWA */
     { 0x0100019f, 20218 }, /* Obarred */
     { 0x010001a0, 20553 }, /* Ohorn */
     { 0x010001a1, 20559 }, /* ohorn */
     { 0x010001af, 25997 }, /* Uhorn */
     { 0x010001b0, 26003 }, /* uhorn */
-    { 0x010001b5, 29261 }, /* Zstroke */
-    { 0x010001b6, 29269 }, /* zstroke */
+    { 0x010001b5, 29307 }, /* Zstroke */
+    { 0x010001b6, 29315 }, /* zstroke */
     { 0x010001b7, 12147 }, /* EZH */
     { 0x010001d1, 20254 }, /* Ocaron */
     { 0x010001d2, 20261 }, /* ocaron */
@@ -6529,22 +6533,22 @@ static const struct name_keysym keysym_to_name[] = {
     { 0x01001eef, 26112 }, /* uhorntilde */
     { 0x01001ef0, 26031 }, /* Uhornbelowdot */
     { 0x01001ef1, 26045 }, /* uhornbelowdot */
-    { 0x01001ef2, 29109 }, /* Ygrave */
-    { 0x01001ef3, 29116 }, /* ygrave */
-    { 0x01001ef4, 29039 }, /* Ybelowdot */
-    { 0x01001ef5, 29049 }, /* ybelowdot */
-    { 0x01001ef6, 29123 }, /* Yhook */
-    { 0x01001ef7, 29129 }, /* yhook */
-    { 0x01001ef8, 29135 }, /* Ytilde */
-    { 0x01001ef9, 29142 }, /* ytilde */
-    { 0x01002070, 29248 }, /* zerosuperior */
+    { 0x01001ef2, 29155 }, /* Ygrave */
+    { 0x01001ef3, 29162 }, /* ygrave */
+    { 0x01001ef4, 29085 }, /* Ybelowdot */
+    { 0x01001ef5, 29095 }, /* ybelowdot */
+    { 0x01001ef6, 29169 }, /* Yhook */
+    { 0x01001ef7, 29175 }, /* yhook */
+    { 0x01001ef8, 29181 }, /* Ytilde */
+    { 0x01001ef9, 29188 }, /* ytilde */
+    { 0x01002070, 29294 }, /* zerosuperior */
     { 0x01002074, 12632 }, /* foursuperior */
     { 0x01002075, 12594 }, /* fivesuperior */
     { 0x01002076, 23756 }, /* sixsuperior */
     { 0x01002077, 22932 }, /* sevensuperior */
     { 0x01002078, 11765 }, /* eightsuperior */
     { 0x01002079, 20062 }, /* ninesuperior */
-    { 0x01002080, 29234 }, /* zerosubscript */
+    { 0x01002080, 29280 }, /* zerosubscript */
     { 0x01002081, 20742 }, /* onesubscript */
     { 0x01002082, 25812 }, /* twosubscript */
     { 0x01002083, 25556 }, /* threesubscript */
@@ -6932,31 +6936,32 @@ static const struct name_keysym keysym_to_name[] = {
     { 0x1005ff7b, 24215 }, /* SunVideoLowerBrightness */
     { 0x1005ff7c, 24239 }, /* SunVideoRaiseBrightness */
     { 0x1005ff7d, 24127 }, /* SunPowerSwitchShift */
-    { 0x1008fe01, 28491 }, /* XF86Switch_VT_1 */
-    { 0x1008fe02, 28558 }, /* XF86Switch_VT_2 */
-    { 0x1008fe03, 28574 }, /* XF86Switch_VT_3 */
-    { 0x1008fe04, 28590 }, /* XF86Switch_VT_4 */
-    { 0x1008fe05, 28606 }, /* XF86Switch_VT_5 */
-    { 0x1008fe06, 28622 }, /* XF86Switch_VT_6 */
-    { 0x1008fe07, 28638 }, /* XF86Switch_VT_7 */
-    { 0x1008fe08, 28654 }, /* XF86Switch_VT_8 */
-    { 0x1008fe09, 28670 }, /* XF86Switch_VT_9 */
-    { 0x1008fe0a, 28507 }, /* XF86Switch_VT_10 */
-    { 0x1008fe0b, 28524 }, /* XF86Switch_VT_11 */
-    { 0x1008fe0c, 28541 }, /* XF86Switch_VT_12 */
-    { 0x1008fe20, 28817 }, /* XF86Ungrab */
+    { 0x1008fe01, 28537 }, /* XF86Switch_VT_1 */
+    { 0x1008fe02, 28604 }, /* XF86Switch_VT_2 */
+    { 0x1008fe03, 28620 }, /* XF86Switch_VT_3 */
+    { 0x1008fe04, 28636 }, /* XF86Switch_VT_4 */
+    { 0x1008fe05, 28652 }, /* XF86Switch_VT_5 */
+    { 0x1008fe06, 28668 }, /* XF86Switch_VT_6 */
+    { 0x1008fe07, 28684 }, /* XF86Switch_VT_7 */
+    { 0x1008fe08, 28700 }, /* XF86Switch_VT_8 */
+    { 0x1008fe09, 28716 }, /* XF86Switch_VT_9 */
+    { 0x1008fe0a, 28553 }, /* XF86Switch_VT_10 */
+    { 0x1008fe0b, 28570 }, /* XF86Switch_VT_11 */
+    { 0x1008fe0c, 28587 }, /* XF86Switch_VT_12 */
+    { 0x1008fe20, 28863 }, /* XF86Ungrab */
     { 0x1008fe21, 27151 }, /* XF86ClearGrab */
-    { 0x1008fe22, 27991 }, /* XF86Next_VMode */
-    { 0x1008fe23, 28113 }, /* XF86Prev_VMode */
+    { 0x1008fe22, 28014 }, /* XF86Next_VMode */
+    { 0x1008fe23, 28136 }, /* XF86Prev_VMode */
     { 0x1008fe24, 27771 }, /* XF86LogWindowTree */
     { 0x1008fe25, 27744 }, /* XF86LogGrabInfo */
     { 0x1008ff01, 27882 }, /* XF86ModeLock */
-    { 0x1008ff02, 27917 }, /* XF86MonBrightnessUp */
-    { 0x1008ff03, 27895 }, /* XF86MonBrightnessDown */
+    { 0x1008ff02, 27940 }, /* XF86MonBrightnessUp */
+    { 0x1008ff03, 27918 }, /* XF86MonBrightnessDown */
     { 0x1008ff04, 27507 }, /* XF86KbdLightOnOff */
     { 0x1008ff05, 27487 }, /* XF86KbdBrightnessUp */
     { 0x1008ff06, 27465 }, /* XF86KbdBrightnessDown */
-    { 0x1008ff10, 28423 }, /* XF86Standby */
+    { 0x1008ff07, 27895 }, /* XF86MonBrightnessCycle */
+    { 0x1008ff10, 28469 }, /* XF86Standby */
     { 0x1008ff11, 26749 }, /* XF86AudioLowerVolume */
     { 0x1008ff12, 26802 }, /* XF86AudioMute */
     { 0x1008ff13, 26889 }, /* XF86AudioRaiseVolume */
@@ -6966,37 +6971,37 @@ static const struct name_keysym keysym_to_name[] = {
     { 0x1008ff17, 26816 }, /* XF86AudioNext */
     { 0x1008ff18, 27428 }, /* XF86HomePage */
     { 0x1008ff19, 27789 }, /* XF86Mail */
-    { 0x1008ff1a, 28435 }, /* XF86Start */
-    { 0x1008ff1b, 28347 }, /* XF86Search */
+    { 0x1008ff1a, 28481 }, /* XF86Start */
+    { 0x1008ff1b, 28393 }, /* XF86Search */
     { 0x1008ff1c, 26930 }, /* XF86AudioRecord */
     { 0x1008ff1d, 27106 }, /* XF86Calculator */
     { 0x1008ff1e, 27837 }, /* XF86Memo */
-    { 0x1008ff1f, 28721 }, /* XF86ToDoList */
+    { 0x1008ff1f, 28767 }, /* XF86ToDoList */
     { 0x1008ff20, 27121 }, /* XF86Calendar */
-    { 0x1008ff21, 28086 }, /* XF86PowerDown */
+    { 0x1008ff21, 28109 }, /* XF86PowerDown */
     { 0x1008ff22, 27189 }, /* XF86ContrastAdjust */
-    { 0x1008ff23, 28217 }, /* XF86RockerUp */
-    { 0x1008ff24, 28186 }, /* XF86RockerDown */
-    { 0x1008ff25, 28201 }, /* XF86RockerEnter */
+    { 0x1008ff23, 28240 }, /* XF86RockerUp */
+    { 0x1008ff24, 28209 }, /* XF86RockerDown */
+    { 0x1008ff25, 28224 }, /* XF86RockerEnter */
     { 0x1008ff26, 27001 }, /* XF86Back */
     { 0x1008ff27, 27333 }, /* XF86Forward */
-    { 0x1008ff28, 28445 }, /* XF86Stop */
-    { 0x1008ff29, 28142 }, /* XF86Refresh */
-    { 0x1008ff2a, 28100 }, /* XF86PowerOff */
-    { 0x1008ff2b, 28905 }, /* XF86WakeUp */
+    { 0x1008ff28, 28491 }, /* XF86Stop */
+    { 0x1008ff29, 28165 }, /* XF86Refresh */
+    { 0x1008ff2a, 28123 }, /* XF86PowerOff */
+    { 0x1008ff2b, 28951 }, /* XF86WakeUp */
     { 0x1008ff2c, 27274 }, /* XF86Eject */
-    { 0x1008ff2d, 28287 }, /* XF86ScreenSaver */
-    { 0x1008ff2e, 28970 }, /* XF86WWW */
-    { 0x1008ff2f, 28387 }, /* XF86Sleep */
+    { 0x1008ff2d, 28333 }, /* XF86ScreenSaver */
+    { 0x1008ff2e, 29016 }, /* XF86WWW */
+    { 0x1008ff2f, 28433 }, /* XF86Sleep */
     { 0x1008ff30, 27307 }, /* XF86Favorites */
     { 0x1008ff31, 26830 }, /* XF86AudioPause */
     { 0x1008ff32, 26770 }, /* XF86AudioMedia */
-    { 0x1008ff33, 27947 }, /* XF86MyComputer */
-    { 0x1008ff34, 28871 }, /* XF86VendorHome */
+    { 0x1008ff33, 27970 }, /* XF86MyComputer */
+    { 0x1008ff34, 28917 }, /* XF86VendorHome */
     { 0x1008ff35, 27730 }, /* XF86LightBulb */
-    { 0x1008ff36, 28378 }, /* XF86Shop */
+    { 0x1008ff36, 28424 }, /* XF86Shop */
     { 0x1008ff37, 27416 }, /* XF86History */
-    { 0x1008ff38, 28030 }, /* XF86OpenURL */
+    { 0x1008ff38, 28053 }, /* XF86OpenURL */
     { 0x1008ff39, 26655 }, /* XF86AddFavorite */
     { 0x1008ff3a, 27441 }, /* XF86HotLinks */
     { 0x1008ff3b, 27070 }, /* XF86BrightnessAdjust */
@@ -7042,75 +7047,76 @@ static const struct name_keysym keysym_to_name[] = {
     { 0x1008ff63, 27825 }, /* XF86Meeting */
     { 0x1008ff65, 27846 }, /* XF86MenuKB */
     { 0x1008ff66, 27857 }, /* XF86MenuPB */
-    { 0x1008ff67, 27962 }, /* XF86MySites */
-    { 0x1008ff68, 27974 }, /* XF86New */
-    { 0x1008ff69, 27982 }, /* XF86News */
-    { 0x1008ff6a, 28006 }, /* XF86OfficeHome */
-    { 0x1008ff6b, 28021 }, /* XF86Open */
-    { 0x1008ff6c, 28042 }, /* XF86Option */
-    { 0x1008ff6d, 28053 }, /* XF86Paste */
-    { 0x1008ff6e, 28063 }, /* XF86Phone */
-    { 0x1008ff70, 28128 }, /* XF86Q */
-    { 0x1008ff72, 28165 }, /* XF86Reply */
-    { 0x1008ff73, 28154 }, /* XF86Reload */
-    { 0x1008ff74, 28230 }, /* XF86RotateWindows */
-    { 0x1008ff75, 28263 }, /* XF86RotationPB */
-    { 0x1008ff76, 28248 }, /* XF86RotationKB */
-    { 0x1008ff77, 28278 }, /* XF86Save */
-    { 0x1008ff78, 28334 }, /* XF86ScrollUp */
-    { 0x1008ff79, 28319 }, /* XF86ScrollDown */
-    { 0x1008ff7a, 28303 }, /* XF86ScrollClick */
-    { 0x1008ff7b, 28369 }, /* XF86Send */
-    { 0x1008ff7c, 28397 }, /* XF86Spell */
-    { 0x1008ff7d, 28407 }, /* XF86SplitScreen */
-    { 0x1008ff7e, 28467 }, /* XF86Support */
-    { 0x1008ff7f, 28686 }, /* XF86TaskPane */
-    { 0x1008ff80, 28699 }, /* XF86Terminal */
-    { 0x1008ff81, 28734 }, /* XF86Tools */
-    { 0x1008ff82, 28806 }, /* XF86Travel */
-    { 0x1008ff84, 28852 }, /* XF86UserPB */
-    { 0x1008ff85, 28828 }, /* XF86User1KB */
-    { 0x1008ff86, 28840 }, /* XF86User2KB */
-    { 0x1008ff87, 28886 }, /* XF86Video */
-    { 0x1008ff88, 28927 }, /* XF86WheelButton */
-    { 0x1008ff89, 28952 }, /* XF86Word */
-    { 0x1008ff8a, 28978 }, /* XF86Xfer */
-    { 0x1008ff8b, 28998 }, /* XF86ZoomIn */
-    { 0x1008ff8c, 29009 }, /* XF86ZoomOut */
+    { 0x1008ff67, 27985 }, /* XF86MySites */
+    { 0x1008ff68, 27997 }, /* XF86New */
+    { 0x1008ff69, 28005 }, /* XF86News */
+    { 0x1008ff6a, 28029 }, /* XF86OfficeHome */
+    { 0x1008ff6b, 28044 }, /* XF86Open */
+    { 0x1008ff6c, 28065 }, /* XF86Option */
+    { 0x1008ff6d, 28076 }, /* XF86Paste */
+    { 0x1008ff6e, 28086 }, /* XF86Phone */
+    { 0x1008ff70, 28151 }, /* XF86Q */
+    { 0x1008ff72, 28188 }, /* XF86Reply */
+    { 0x1008ff73, 28177 }, /* XF86Reload */
+    { 0x1008ff74, 28253 }, /* XF86RotateWindows */
+    { 0x1008ff75, 28309 }, /* XF86RotationPB */
+    { 0x1008ff76, 28271 }, /* XF86RotationKB */
+    { 0x1008ff77, 28324 }, /* XF86Save */
+    { 0x1008ff78, 28380 }, /* XF86ScrollUp */
+    { 0x1008ff79, 28365 }, /* XF86ScrollDown */
+    { 0x1008ff7a, 28349 }, /* XF86ScrollClick */
+    { 0x1008ff7b, 28415 }, /* XF86Send */
+    { 0x1008ff7c, 28443 }, /* XF86Spell */
+    { 0x1008ff7d, 28453 }, /* XF86SplitScreen */
+    { 0x1008ff7e, 28513 }, /* XF86Support */
+    { 0x1008ff7f, 28732 }, /* XF86TaskPane */
+    { 0x1008ff80, 28745 }, /* XF86Terminal */
+    { 0x1008ff81, 28780 }, /* XF86Tools */
+    { 0x1008ff82, 28852 }, /* XF86Travel */
+    { 0x1008ff84, 28898 }, /* XF86UserPB */
+    { 0x1008ff85, 28874 }, /* XF86User1KB */
+    { 0x1008ff86, 28886 }, /* XF86User2KB */
+    { 0x1008ff87, 28932 }, /* XF86Video */
+    { 0x1008ff88, 28973 }, /* XF86WheelButton */
+    { 0x1008ff89, 28998 }, /* XF86Word */
+    { 0x1008ff8a, 29024 }, /* XF86Xfer */
+    { 0x1008ff8b, 29044 }, /* XF86ZoomIn */
+    { 0x1008ff8c, 29055 }, /* XF86ZoomOut */
     { 0x1008ff8d, 26992 }, /* XF86Away */
     { 0x1008ff8e, 27868 }, /* XF86Messenger */
-    { 0x1008ff8f, 28916 }, /* XF86WebCam */
+    { 0x1008ff8f, 28962 }, /* XF86WebCam */
     { 0x1008ff90, 27798 }, /* XF86MailForward */
-    { 0x1008ff91, 28073 }, /* XF86Pictures */
-    { 0x1008ff92, 27937 }, /* XF86Music */
+    { 0x1008ff91, 28096 }, /* XF86Pictures */
+    { 0x1008ff92, 27960 }, /* XF86Music */
     { 0x1008ff93, 27026 }, /* XF86Battery */
     { 0x1008ff94, 27047 }, /* XF86Bluetooth */
-    { 0x1008ff95, 28943 }, /* XF86WLAN */
-    { 0x1008ff96, 28863 }, /* XF86UWB */
+    { 0x1008ff95, 28989 }, /* XF86WLAN */
+    { 0x1008ff96, 28909 }, /* XF86UWB */
     { 0x1008ff97, 26732 }, /* XF86AudioForward */
     { 0x1008ff98, 26946 }, /* XF86AudioRepeat */
     { 0x1008ff99, 26910 }, /* XF86AudioRandomPlay */
-    { 0x1008ff9a, 28454 }, /* XF86Subtitle */
+    { 0x1008ff9a, 28500 }, /* XF86Subtitle */
     { 0x1008ff9b, 26712 }, /* XF86AudioCycleTrack */
     { 0x1008ff9c, 27225 }, /* XF86CycleAngle */
     { 0x1008ff9d, 27345 }, /* XF86FrameBack */
     { 0x1008ff9e, 27359 }, /* XF86FrameForward */
-    { 0x1008ff9f, 28712 }, /* XF86Time */
-    { 0x1008ffa0, 28358 }, /* XF86Select */
-    { 0x1008ffa1, 28896 }, /* XF86View */
-    { 0x1008ffa2, 28744 }, /* XF86TopMenu */
-    { 0x1008ffa3, 28134 }, /* XF86Red */
+    { 0x1008ff9f, 28758 }, /* XF86Time */
+    { 0x1008ffa0, 28404 }, /* XF86Select */
+    { 0x1008ffa1, 28942 }, /* XF86View */
+    { 0x1008ffa2, 28790 }, /* XF86TopMenu */
+    { 0x1008ffa3, 28157 }, /* XF86Red */
     { 0x1008ffa4, 27392 }, /* XF86Green */
-    { 0x1008ffa5, 28987 }, /* XF86Yellow */
+    { 0x1008ffa5, 29033 }, /* XF86Yellow */
     { 0x1008ffa6, 27038 }, /* XF86Blue */
-    { 0x1008ffa7, 28479 }, /* XF86Suspend */
+    { 0x1008ffa7, 28525 }, /* XF86Suspend */
     { 0x1008ffa8, 27402 }, /* XF86Hibernate */
-    { 0x1008ffa9, 28787 }, /* XF86TouchpadToggle */
-    { 0x1008ffb0, 28772 }, /* XF86TouchpadOn */
-    { 0x1008ffb1, 28756 }, /* XF86TouchpadOff */
+    { 0x1008ffa9, 28833 }, /* XF86TouchpadToggle */
+    { 0x1008ffb0, 28818 }, /* XF86TouchpadOn */
+    { 0x1008ffb1, 28802 }, /* XF86TouchpadOff */
     { 0x1008ffb2, 26785 }, /* XF86AudioMicMute */
     { 0x1008ffb3, 27525 }, /* XF86Keyboard */
-    { 0x1008ffb4, 28961 }, /* XF86WWAN */
-    { 0x1008ffb5, 28175 }, /* XF86RFKill */
+    { 0x1008ffb4, 29007 }, /* XF86WWAN */
+    { 0x1008ffb5, 28198 }, /* XF86RFKill */
     { 0x1008ffb6, 26859 }, /* XF86AudioPreset */
+    { 0x1008ffb7, 28286 }, /* XF86RotationLockToggle */
 };
