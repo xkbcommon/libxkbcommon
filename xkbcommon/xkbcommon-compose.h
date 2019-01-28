@@ -212,8 +212,8 @@ enum xkb_compose_format {
  * @param context
  *     The library context in which to create the compose table.
  * @param locale
- *     The current locale.  See @ref compose-locale.\n
- *
+ *     The current locale.  See @ref compose-locale.
+ *     \n
  *     The value is copied, so it is safe to pass the result of getenv(3)
  *     (or similar) without fear of it being invalidated by a subsequent
  *     setenv(3) (or similar).
