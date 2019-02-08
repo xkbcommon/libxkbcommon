@@ -122,8 +122,7 @@ yacc_gen = generator(
     output: ['@BASENAME@.c', '@BASENAME@.h'],
     arguments: ['@INPUT@', '--defines=@OUTPUT1@', '--output=@OUTPUT0@', '-p _xkbcommon_'],
 )
-libxkbcommon_internal = static_library(
-    'xkbcommon-internal',
+libxkbcommon_sources = [
     'src/compose/parser.c',
     'src/compose/parser.h',
     'src/compose/paths.c',
@@ -177,8 +176,7 @@ libxkbcommon_internal = static_library(
     'src/utf8.h',
     'src/utils.c',
     'src/utils.h',
-    include_directories: include_directories('src'),
-)
+]
 libxkbcommon_link_args = []
 if have_version_script
     libxkbcommon_link_args += '-Wl,--version-script=' + join_paths(meson.source_root(), 'xkbcommon.map')
@@ -186,11 +184,12 @@ endif
 libxkbcommon = library(
     'xkbcommon',
     'xkbcommon/xkbcommon.h',
-    link_whole: libxkbcommon_internal,
+    libxkbcommon_sources,
     link_args: libxkbcommon_link_args,
     link_depends: 'xkbcommon.map',
     version: '0.0.0',
     install: true,
+    include_directories: include_directories('src'),
 )
 install_headers(
     'xkbcommon/xkbcommon.h',
@@ -281,8 +280,8 @@ libxkbcommon_test_internal = static_library(
     'test/common.c',
     'test/test.h',
     'test/evdev-scancodes.h',
+    libxkbcommon_sources,
     include_directories: include_directories('src'),
-    link_with: libxkbcommon_internal,
 )
 test_dep = declare_dependency(
     include_directories: include_directories('src'),
