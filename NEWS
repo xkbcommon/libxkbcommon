@@ -1,3 +1,13 @@
+libxkbcommon 0.8.3 - 2019-02-08
+==================
+
+- Fix build of static libraries with meson.
+
+- New API:
+  XKB_KEY_XF86MonBrightnessCycle
+  XKB_KEY_XF86RotationLockToggle
+
+
 libxkbcommon 0.8.2 - 2018-08-05
 ==================
 
