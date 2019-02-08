@@ -274,7 +274,7 @@ test_env.set('MALLOC_PERTURB_', '15')
 test_env.set('MallocPreScribble', '1')
 test_env.set('MallocScribble', '1')
 # Some tests need to use unexported symbols, so we link them against
-# the internal copy of libxkbcommon with all symbols exposed.
+# an internal copy of libxkbcommon with all symbols exposed.
 libxkbcommon_test_internal = static_library(
     'xkbcommon-test-internal',
     'test/common.c',
