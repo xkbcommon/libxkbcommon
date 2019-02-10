@@ -217,8 +217,7 @@ if get_option('enable-x11')
 You can disable X11 support with -Denable-x11=false.''')
     endif
 
-    libxkbcommon_x11_internal = static_library(
-        'xkbcommon-x11-internal',
+    libxkbcommon_x11_sources = [
         'src/x11/keymap.c',
         'src/x11/state.c',
         'src/x11/util.c',
@@ -229,6 +228,10 @@ You can disable X11 support with -Denable-x11=false.''')
         'src/keymap-priv.c',
         'src/atom.h',
         'src/atom.c',
+    ]
+    libxkbcommon_x11_internal = static_library(
+        'xkbcommon-x11-internal',
+        libxkbcommon_x11_sources,
         include_directories: include_directories('src'),
         link_with: libxkbcommon,
         dependencies: [
@@ -243,11 +246,17 @@ You can disable X11 support with -Denable-x11=false.''')
     libxkbcommon_x11 = library(
         'xkbcommon-x11',
         'xkbcommon/xkbcommon-x11.h',
-        link_whole: libxkbcommon_x11_internal,
+        libxkbcommon_x11_sources,
         link_args: libxkbcommon_x11_link_args,
         link_depends: 'xkbcommon-x11.map',
         version: '0.0.0',
         install: true,
+        include_directories: include_directories('src'),
+        link_with: libxkbcommon,
+        dependencies: [
+            xcb_dep,
+            xcb_xkb_dep,
+        ],
     )
     install_headers(
         'xkbcommon/xkbcommon-x11.h',
