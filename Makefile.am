@@ -8,7 +8,9 @@ EXTRA_DIST = \
 	scripts/update-keywords \
 	scripts/doxygen-wrapper \
 	src/xkbcomp/keywords.gperf \
+	fuzz \
 	test/data \
+	test/xkeyboard-config-test.py.in \
 	README.md \
 	doc/quick-guide.md \
 	doc/compat.md \
