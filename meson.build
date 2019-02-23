@@ -411,7 +411,7 @@ endif
 if get_option('enable-wayland')
     wayland_client_dep = dependency('wayland-client', version: '>=1.2.0', required: false)
     wayland_protocols_dep = dependency('wayland-protocols', version: '>=1.7', required: false)
-    wayland_scanner_dep = dependency('wayland-scanner', required: false)
+    wayland_scanner_dep = dependency('wayland-scanner', required: false, native: true)
     if not wayland_client_dep.found() or not wayland_protocols_dep.found() or not wayland_scanner_dep.found()
         error('''The Wayland demo programs require wayland-client >= 1.2.0, wayland-protocols >= 1.7 which were not found.
 You can disable the Wayland demo programs with -Denable-wayland=false.''')
