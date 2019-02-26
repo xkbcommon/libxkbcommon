@@ -60,7 +60,7 @@ Patches are always welcome, and may be sent to either
     <xorg-devel@lists.x.org> or <wayland-devel@lists.freedesktop.org>
 or in a [GitHub](https://github.com/xkbcommon/libxkbcommon) pull request.
 
-Bug reports are also welcome, and may be filed at
+Bug reports (and usage questions) are also welcome, and may be filed at
 [GitHub](https://github.com/xkbcommon/libxkbcommon/issues).
 
 The maintainers are
