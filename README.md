@@ -58,12 +58,10 @@ xkbcommon is maintained in git at
 
 Patches are always welcome, and may be sent to either
     <xorg-devel@lists.x.org> or <wayland-devel@lists.freedesktop.org>
-or through github.
+or in a [GitHub](https://github.com/xkbcommon/libxkbcommon) pull request.
 
-Bug reports are also welcome, and may be filed either at
-    Bugzilla https://bugs.freedesktop.org/describecomponents.cgi?product=libxkbcommon
-or
-    Github https://github.com/xkbcommon/libxkbcommon/issues
+Bug reports are also welcome, and may be filed at
+[GitHub](https://github.com/xkbcommon/libxkbcommon/issues).
 
 The maintainers are
 - Daniel Stone <daniel@fooishbar.org>
