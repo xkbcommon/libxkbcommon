@@ -1,6 +1,8 @@
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = xkbcommon.pc
 
+ACLOCAL_AMFLAGS = -I m4
+
 EXTRA_DIST = \
 	scripts/makeheader \
 	scripts/makekeys \
