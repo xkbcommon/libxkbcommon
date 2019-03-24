@@ -227,6 +227,7 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
     /* First find the type of the merged group. */
     if (into->type != from->type) {
         if (from->type == XKB_ATOM_NONE) {
+            /* it's empty for consistency with other comparisons */
         }
         else if (into->type == XKB_ATOM_NONE) {
             into->type = from->type;
@@ -269,6 +270,7 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
         struct xkb_level *fromLevel = &darray_item(from->levels, i);
 
         if (fromLevel->action.type == ACTION_TYPE_NONE) {
+            /* it's empty for consistency with other comparisons */
         }
         else if (intoLevel->action.type == ACTION_TYPE_NONE) {
             intoLevel->action = fromLevel->action;
@@ -290,6 +292,7 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
         }
 
         if (fromLevel->num_syms == 0) {
+            /* it's empty for consistency with other comparisons */
         }
         else if (intoLevel->num_syms == 0) {
             intoLevel->num_syms = fromLevel->num_syms;
