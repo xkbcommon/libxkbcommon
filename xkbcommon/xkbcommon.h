@@ -1271,7 +1271,7 @@ enum xkb_state_component {
     XKB_STATE_MODS_LOCKED = (1 << 2),
     /** Effective modifiers, i.e. currently active and affect key
      *  processing (derived from the other state components).
-     *  Use this unless you explictly care how the state came about. */
+     *  Use this unless you explicitly care how the state came about. */
     XKB_STATE_MODS_EFFECTIVE = (1 << 3),
     /** Depressed layout, i.e. a key is physically holding it. */
     XKB_STATE_LAYOUT_DEPRESSED = (1 << 4),
@@ -1283,7 +1283,7 @@ enum xkb_state_component {
     XKB_STATE_LAYOUT_LOCKED = (1 << 6),
     /** Effective layout, i.e. currently active and affects key processing
      *  (derived from the other state components).
-     *  Use this unless you explictly care how the state came about. */
+     *  Use this unless you explicitly care how the state came about. */
     XKB_STATE_LAYOUT_EFFECTIVE = (1 << 7),
     /** LEDs (derived from the other state components). */
     XKB_STATE_LEDS = (1 << 8)
@@ -1294,10 +1294,10 @@ enum xkb_state_component {
  * released.
  *
  * This entry point is intended for programs which track the keyboard state
- * explictly (like an evdev client).  If the state is serialized to you by
+ * explicitly (like an evdev client).  If the state is serialized to you by
  * a master process (like a Wayland compositor) using functions like
  * xkb_state_serialize_mods(), you should use xkb_state_update_mask() instead.
- * The two functins should not generally be used together.
+ * The two functions should not generally be used together.
  *
  * A series of calls to this function should be consistent; that is, a call
  * with XKB_KEY_DOWN for a key should be matched by an XKB_KEY_UP; if a key
