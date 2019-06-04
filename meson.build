@@ -76,9 +76,6 @@ endif
 if cc.links('int main(){if(__builtin_expect(1<0,0)){}}', name: '__builtin_expect')
     configh_data.set('HAVE___BUILTIN_EXPECT', 1)
 endif
-if cc.links('int main(){__builtin_popcount(1);}', name: '__builtin_popcount')
-    configh_data.set('HAVE___BUILTIN_POPCOUNT', 1)
-endif
 if cc.has_header_symbol('unistd.h', 'eaccess', prefix: '#define _GNU_SOURCE')
     configh_data.set('HAVE_EACCESS', 1)
 endif
