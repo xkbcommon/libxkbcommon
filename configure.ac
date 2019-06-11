@@ -77,7 +77,6 @@ AS_IF([test "x$ac_cv_func_secure_getenv" = xno -a \
 ])
 
 AX_GCC_BUILTIN(__builtin_expect)
-AX_GCC_BUILTIN(__builtin_popcount)
 
 # Some tests use Linux-specific headers
 AC_CHECK_HEADER([linux/input.h])
