@@ -28,15 +28,16 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include "xkbcommon/xkbcommon.h"
 
 static bool print = false;
 
 static void
-usage(void)
+usage(char **argv)
 {
     printf("Usage: %s [--print] [--rules <rules>] [--layout <layout>] [--variant <variant>] [--options <option>]\n",
-           program_invocation_short_name);
+           basename(argv[0]));
     printf("This tool tests the compilation from RMLVO to a keymap.\n");
     printf("--print  print the resulting keymap\n");
 }
@@ -72,7 +73,7 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
 
         switch (c) {
         case 'h':
-            usage();
+            usage(argv);
             exit(0);
         case OPT_PRINT:
             print = true;
@@ -93,7 +94,7 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
             names->options = optarg;
             break;
         default:
-            usage();
+            usage(argv);
             exit(1);
         }
 
@@ -117,7 +118,7 @@ main(int argc, char **argv)
     int rc;
 
     if (argc <= 1) {
-        usage();
+        usage(argv);
         return 1;
     }
 
