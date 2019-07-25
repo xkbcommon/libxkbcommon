@@ -204,7 +204,8 @@ AM_TESTS_ENVIRONMENT = \
 	XKB_LOG_LEVEL=debug; export XKB_LOG_LEVEL; \
 	XKB_LOG_VERBOSITY=10; export XKB_LOG_VERBOSITY; \
 	$(XORG_MALLOC_DEBUG_ENV) \
-	top_srcdir=$(top_srcdir)
+	top_srcdir=$(top_srcdir) \
+	top_builddir=$(top_builddir)
 
 build_run_tests = \
 	test/keysym \
