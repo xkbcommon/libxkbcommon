@@ -37,7 +37,7 @@ static void
 usage(char **argv)
 {
     printf("Usage: %s [--print] [--rules <rules>] [--layout <layout>] [--variant <variant>] [--options <option>]\n",
-           basename(argv[0]));
+           argv[0]);
     printf("This tool tests the compilation from RMLVO to a keymap.\n");
     printf("--print  print the resulting keymap\n");
 }
