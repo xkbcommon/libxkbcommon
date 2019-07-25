@@ -1,17 +1,32 @@
-sudo: required
-dist: trusty
 language: c
 
-before_install:
-    - sudo apt-get update -qq
-    - sudo apt-get -y install xutils-dev doxygen libxcb-xkb-dev python3-pip valgrind
-    - wget https://github.com/ninja-build/ninja/releases/download/v1.7.2/ninja-linux.zip && unzip ninja-linux.zip && sudo install ninja /usr/bin/
-    - sudo pip3 install meson==0.44.1
+matrix:
+  include:
+    - os: linux
+      dist: bionic
+      compiler: gcc
+      before_install:
+        - sudo apt-get -y install xutils-dev doxygen libxcb-xkb-dev valgrind meson libwayland-dev wayland-protocols
+      script:
+        - mkdir autotools-build && pushd autotools-build && ../autogen.sh && make && make check && popd
+        - meson setup meson-build && pushd meson-build && ninja && meson test --print-errorlogs --wrap='valgrind --leak-check=full --track-origins=yes --error-exitcode=99' && popd
 
-compiler:
-    - gcc
-    - clang
+    - os: linux
+      dist: bionic
+      compiler: clang
+      before_install:
+        - sudo apt-get -y install xutils-dev doxygen libxcb-xkb-dev valgrind meson libwayland-dev wayland-protocols
+      script:
+        - mkdir autotools-build && pushd autotools-build && ../autogen.sh && make && make check && popd
+        - meson setup meson-build && pushd meson-build && ninja && meson test --print-errorlogs --wrap='valgrind --leak-check=full --track-origins=yes --error-exitcode=99' && popd
 
-script:
-    - mkdir autotools-build && pushd autotools-build && ../autogen.sh && make && make check && popd
-    - meson setup meson-build -Denable-wayland=false && pushd meson-build && ninja && meson test --print-errorlogs --wrap='valgrind --leak-check=full --track-origins=yes --error-exitcode=99' && popd
+    - os: osx
+      osx_image: xcode10.2
+      compiler: clang
+      before_install:
+        - HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 brew install meson doxygen bison
+        - brew link bison --force
+      before_script:
+        - export PATH="/usr/local/opt/bison/bin:$PATH"
+      script:
+        - meson setup meson-build -Denable-x11=false -Denable-wayland=false && pushd meson-build && ninja && meson test --print-errorlogs && popd

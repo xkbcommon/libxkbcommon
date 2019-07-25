@@ -9,11 +9,11 @@ trap 'rm -rf "$tempdir"' EXIT
 # (adding new version nodes as needed).
 
 # xkbcommon symbols
-grep -h '^\s\+xkb_' "$top_srcdir"/xkbcommon.map | sed 's/^[ \t]*\(.*\);/\1/' | sort > "$tempdir"/symbols
+grep -h '^\s\+xkb_' "$top_srcdir"/xkbcommon.map | sed 's/^[[:space:]]*\(.*\);/\1/' | sort > "$tempdir"/symbols
 grep -h 'XKB_EXPORT' -A1 "$top_srcdir"/src/{,xkbcomp,compose}/*.c | grep '^xkb_' | sed 's/(.*//' | sort > "$tempdir"/exported
 diff -a -u "$tempdir"/symbols "$tempdir"/exported
 
 # xkbcommon-x11 symbols
-grep -h '^\s\+xkb_.*' "$top_srcdir"/xkbcommon-x11.map | sed 's/^[\t ]*\(.*\);/\1/' | sort > "$tempdir"/symbols
+grep -h '^\s\+xkb_.*' "$top_srcdir"/xkbcommon-x11.map | sed 's/^[[:space:]]*\(.*\);/\1/' | sort > "$tempdir"/symbols
 grep -h 'XKB_EXPORT' -A1 "$top_srcdir"/src/x11/*.c | grep '^xkb_' | sed 's/(.*//' | sort > "$tempdir"/exported
 diff -a -u "$tempdir"/symbols "$tempdir"/exported
