@@ -203,7 +203,7 @@ xkb_keysym_from_name(const char *s, enum xkb_keysym_flags flags)
      * no separating underscore, while some XF86* syms in the latter did.
      * As a last ditch effort, try without. */
     if (strncmp(s, "XF86_", 5) == 0 ||
-        (icase && strncasecmp(s, "XF86_", 5) == 0)) {
+        (icase && istrncmp(s, "XF86_", 5) == 0)) {
         xkb_keysym_t ret;
         tmp = strdup(s);
         if (!tmp)
