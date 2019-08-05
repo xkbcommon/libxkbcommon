@@ -102,6 +102,11 @@ endif
 if cc.has_header_symbol('string.h', 'strndup', prefix: system_ext_define)
     configh_data.set('HAVE_STRNDUP', 1)
 endif
+if cc.has_header_symbol('stdio.h', 'asprintf', prefix: system_ext_define)
+    configh_data.set('HAVE_ASPRINTF', 1)
+elif cc.has_header_symbol('stdio.h', 'vasprintf', prefix: system_ext_define)
+    configh_data.set('HAVE_VASPRINTF', 1)
+endif
 if cc.has_header_symbol('stdlib.h', 'secure_getenv', prefix: system_ext_define)
     configh_data.set('HAVE_SECURE_GETENV', 1)
 elif cc.has_header_symbol('stdlib.h', '__secure_getenv', prefix: system_ext_define)

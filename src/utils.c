@@ -161,3 +161,48 @@ istrncmp(const char *a, const char *b, size_t n)
     }
     return 0;
 }
+
+#if !(defined(HAVE_ASPRINTF) && HAVE_ASPRINTF)
+int
+asprintf(char **strp, const char *fmt, ...)
+{
+    int ret;
+    va_list ap;
+    va_start(ap, fmt);
+    ret = vasprintf(strp, fmt, ap);
+    va_end(ap);
+    return ret;
+}
+
+# if !(defined(HAVE_VASPRINTF) && HAVE_VASPRINTF)
+int
+vasprintf(char **strp, const char *fmt, va_list ap)
+{
+    int ret;
+    char *buf;
+    va_list ap_copy;
+
+    /*
+     * The value of the va_list parameter is undefined after the call to
+     * vsnprintf() returns: pass a copy to make sure "ap" remains valid.
+     */
+    va_copy(ap_copy, ap);
+    ret = vsnprintf(NULL, 0, fmt, ap_copy);
+    va_end(ap_copy);
+
+    if (ret < 0)
+        return ret;
+
+    if (!(buf = malloc(ret + 1)))
+        return -1;
+
+    if ((ret = vsnprintf(buf, ret + 1, fmt, ap)) < 0) {
+        free(buf);
+        return ret;
+    }
+
+    *strp = buf;
+    return ret;
+}
+# endif /* !HAVE_VASPRINTF */
+#endif /* !HAVE_ASPRINTF */
