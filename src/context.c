@@ -29,6 +29,9 @@
 #include <errno.h>
 #ifdef _MSC_VER
 #include <io.h>
+#ifndef S_ISDIR
+#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#endif
 #else
 #include <unistd.h>
 #endif
