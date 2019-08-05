@@ -95,3 +95,8 @@ test_disable_stdin_echo(void);
 
 void
 test_enable_stdin_echo(void);
+
+#ifdef _MSC_VER
+#define setenv(varname, value, overwrite) _putenv_s((varname), (value))
+#define unsetenv(varname) _putenv(varname "=")
+#endif
