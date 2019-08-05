@@ -114,6 +114,14 @@ elif cc.has_header_symbol('stdlib.h', '__secure_getenv', prefix: system_ext_defi
 else
     message('C library does not support secure_getenv, using getenv instead')
 endif
+# Silence some security & deprecation warnings on MSVC
+# for some unix/C functions we use.
+# https://docs.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-3-c4996?view=vs-2019
+configh_data.set('_CRT_SECURE_NO_WARNINGS', 1)
+configh_data.set('_CRT_NONSTDC_NO_WARNINGS', 1)
+configh_data.set('_CRT_NONSTDC_NO_DEPRECATE', 1)
+# Reduce unnecessary includes on MSVC.
+configh_data.set('WIN32_LEAN_AND_MEAN', 1)
 configure_file(output: 'config.h', configuration: configh_data)
 
 
