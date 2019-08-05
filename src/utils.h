@@ -129,6 +129,19 @@ my_max(int misc, int other)
     return (misc > other) ? misc : other;
 }
 
+#if !(defined(HAVE_STRNDUP) && HAVE_STRNDUP)
+static inline char *
+strndup(const char *str, size_t len)
+{
+    char *p = calloc(my_min(strlen(str), len) + 1, sizeof(char));
+    if (p) {
+        memcpy(p, str, len * sizeof(char));
+        p[len] = '\0';
+    }
+    return p;
+}
+#endif
+
 /* ctype.h is locale-dependent and has other oddities. */
 static inline bool
 is_space(char ch)
