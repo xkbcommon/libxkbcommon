@@ -278,4 +278,12 @@ unmap_file(char *string, size_t size);
 #define ATTR_PACKED
 #endif
 
+#if !(defined(HAVE_ASPRINTF) && HAVE_ASPRINTF)
+int asprintf(char **strp, const char *fmt, ...) ATTR_PRINTF(2, 3);
+# if !(defined(HAVE_VASPRINTF) && HAVE_VASPRINTF)
+#  include <stdarg.h>
+int vasprintf(char **strp, const char *fmt, va_list ap);
+# endif /* !HAVE_VASPRINTF */
+#endif /* !HAVE_ASPRINTF */
+
 #endif /* UTILS_H */
