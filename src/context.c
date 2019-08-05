@@ -27,7 +27,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
+#ifdef _MSC_VER
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
