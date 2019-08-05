@@ -24,9 +24,40 @@
 
 #include <assert.h>
 #include <stdio.h>
-#include <sys/time.h>
 
 #include "bench.h"
+#include "../src/utils.h"
+
+#ifndef _MSC_VER
+#include <sys/time.h>
+#else
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <stdint.h>
+
+struct timeval {
+    long tv_sec, tv_usec;
+};
+
+static int
+gettimeofday(struct timeval *tv, void *unused)
+{
+    static const uint64_t EPOCH = ((uint64_t) 116444736000000000ULL);
+
+    SYSTEMTIME system_time;
+    FILETIME file_time;
+    uint64_t t;
+
+    GetSystemTime(&system_time);
+    SystemTimeToFileTime(&system_time, &file_time);
+    t = (uint64_t) file_time.dwLowDateTime;
+    t += ((uint64_t) file_time.dwHighDateTime) << 32;
+
+    tv->tv_sec  = (long) ((t - EPOCH) / 10000000L);
+    tv->tv_usec = (long) (system_time.wMilliseconds * 1000);
+    return 0;
+}
+#endif
 
 void
 bench_start(struct bench *bench)
