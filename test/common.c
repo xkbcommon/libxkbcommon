@@ -32,14 +32,16 @@
 
 #include <limits.h>
 #include <fcntl.h>
-#ifdef _MSC_VER
-#include <io.h>
-#else
-#include <unistd.h>
-#endif
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef _MSC_VER
+#define WIN32_LEAN_AND_MEAN
+#include <io.h>
+#include <windows.h>
+#else
+#include <unistd.h>
 #include <termios.h>
+#endif
 
 #include "test.h"
 
@@ -465,6 +467,25 @@ test_print_state_changes(enum xkb_state_component changed)
     printf("]\n");
 }
 
+#ifdef _MSC_VER
+void
+test_disable_stdin_echo(void)
+{
+    HANDLE stdin_handle = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD mode = 0;
+    GetConsoleMode(stdin_handle, &mode);
+    SetConsoleMode(stdin_handle, mode & ~ENABLE_ECHO_INPUT);
+}
+
+void
+test_enable_stdin_echo(void)
+{
+    HANDLE stdin_handle = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD mode = 0;
+    GetConsoleMode(stdin_handle, &mode);
+    SetConsoleMode(stdin_handle, mode | ENABLE_ECHO_INPUT);
+}
+#else
 void
 test_disable_stdin_echo(void)
 {
@@ -486,3 +507,4 @@ test_enable_stdin_echo(void)
         (void) tcsetattr(STDIN_FILENO, TCSADRAIN, &termios);
     }
 }
+#endif
