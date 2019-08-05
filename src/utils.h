@@ -110,6 +110,21 @@ memdup(const void *mem, size_t nmemb, size_t size)
     return p;
 }
 
+#if !(defined(HAVE_STRNDUP) && HAVE_STRNDUP)
+static inline char *
+strndup(const char *s, size_t n)
+{
+    size_t slen = strlen(s);
+    size_t len = MIN(slen, n);
+    char *p = malloc(len + 1);
+    if (!p)
+        return NULL;
+    memcpy(p, str, len);
+    p[len] = '\0';
+    return p;
+}
+#endif
+
 /* ctype.h is locale-dependent and has other oddities. */
 static inline bool
 is_space(char ch)
