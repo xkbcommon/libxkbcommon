@@ -107,7 +107,12 @@ else
     message('C library does not support secure_getenv, using getenv instead')
 endif
 configure_file(output: 'config.h', configuration: configh_data)
-add_project_arguments('-include', 'config.h', language: 'c')
+
+if cc.get_id() == 'msvc'
+  add_project_arguments('/FI', 'config.h', '/D_CRT_SECURE_NO_WARNINGS', language: 'c')
+else
+  add_project_arguments('-include', 'config.h', language: 'c')
+endif
 
 
 # Supports -Wl,--version-script?
