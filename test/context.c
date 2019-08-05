@@ -30,7 +30,15 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
+#ifdef _MSC_VER
+# include <io.h>
+# include <direct.h>
+# ifndef S_ISDIR
+#  define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+# endif
+#else
+# include <unistd.h>
+#endif
 
 /* keeps a cache of all makedir/maketmpdir directories so we can free and
  * rmdir them in one go, see unmakedirs() */
