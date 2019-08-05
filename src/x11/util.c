@@ -164,7 +164,7 @@ adopt_atoms(struct xkb_context *ctx, xcb_connection_t *conn,
     /* Send and collect the atoms in batches of reasonable SIZE. */
     for (size_t batch = 0; batch < num_batches; batch++) {
         const size_t start = batch * SIZE;
-        const size_t stop = min((batch + 1) * SIZE, count);
+        const size_t stop = my_min((batch + 1) * SIZE, count);
 
         /* Send. */
         for (size_t i = start; i < stop; i++)

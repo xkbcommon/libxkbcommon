@@ -118,13 +118,13 @@ memdup(const void *mem, size_t nmemb, size_t size)
 }
 
 static inline int
-min(int misc, int other)
+my_min(int misc, int other)
 {
     return (misc < other) ? misc : other;
 }
 
 static inline int
-max(int misc, int other)
+my_max(int misc, int other)
 {
     return (misc > other) ? misc : other;
 }
