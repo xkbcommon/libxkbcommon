@@ -111,7 +111,7 @@ configure_file(output: 'config.h', configuration: configh_data)
 if cc.get_id() == 'msvc'
   add_project_arguments('/FI', 'config.h',
 	'/D_CRT_SECURE_NO_WARNINGS',
-	'/Dstrdup=_strdup',
+	'/D_CRT_NONSTDC_NO_DEPRECATE',
 	language: 'c')
 else
   add_project_arguments('-include', 'config.h', language: 'c')
