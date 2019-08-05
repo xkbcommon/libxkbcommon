@@ -29,7 +29,15 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include <unistd.h>
+#ifdef _MSC_VER
+# include <direct.h>
+# include <io.h>
+# ifndef S_ISDIR
+#  define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+# endif
+#else
+# include <unistd.h>
+#endif
 
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
