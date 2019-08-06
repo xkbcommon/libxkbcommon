@@ -12,6 +12,7 @@ jobs:
       - template: .azure-pipelines/steps/meson.yml
         parameters:
           options: -Denable-wayland=false
+          wrapper: valgrind --leak-check=full --track-origins=yes --error-exitcode=99
   - job: 'Autotools'
     dependsOn: []
     pool:
@@ -19,3 +20,12 @@ jobs:
     steps:
       - template: .azure-pipelines/steps/dependencies-linux.yml
       - template: .azure-pipelines/steps/autotools.yml
+  - job: 'macOS'
+    dependsOn: []
+    pool:
+      vmImage: 'macos-10.13'
+    steps:
+      - template: .azure-pipelines/steps/dependencies-macos.yml
+      - template: .azure-pipelines/steps/meson.yml
+        parameters:
+          options: -Denable-wayland=false -Denable-x11=false

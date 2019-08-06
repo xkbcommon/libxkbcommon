@@ -1,10 +1,15 @@
 ---
 parameters:
   options: ""
+  wrapper: ""
   workdir: "meson-build"
 
 steps:
-  - bash: meson setup '${{ parameters.workdir }}' ${{ parameters.options }}
+  - bash: |
+      if [[ -x /usr/local/opt/bison/bin/bison ]] ; then
+        export PATH="/usr/local/opt/bison/bin:${PATH}"
+      fi
+      meson setup '${{ parameters.workdir }}' ${{ parameters.options }}
     displayName: 'Configuration (Meson)'
   - bash: ninja
     displayName: 'Build (Meson)'
@@ -12,8 +17,7 @@ steps:
     env:
       TERM: dumb
   - bash: |
-      meson test --print-errorlogs \
-        --wrap='valgrind --leak-check=full --track-origins=yes --error-exitcode=99'
+      meson test --print-errorlogs --wrap='${{ parameters.wrapper }}'
     displayName: 'Tests (Meson)'
     workingDirectory: ${{ parameters.workdir }}
   - bash: |
