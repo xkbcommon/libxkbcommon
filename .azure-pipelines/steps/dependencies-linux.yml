@@ -1,0 +1,13 @@
+---
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.7'
+    displayName: 'Use Python 3.7'
+  - bash: |
+      python -m pip install --upgrade pip meson
+      sudo apt update -y
+      sudo env DEBIAN_FRONTEND=noninteractive apt install -y \
+        xutils-dev doxygen libxcb-xkb-dev valgrind meson libwayland-dev \
+        wayland-protocols bison valgrind
+    displayName: 'Dependencies (GNU/Linux)'
