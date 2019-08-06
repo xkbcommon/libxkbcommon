@@ -31,6 +31,15 @@ steps:
       for file in "$(pwd)"/meson-logs/* ; do
         echo "##vso[task.uploadfile]${file}"
       done
-    displayName: 'Save Results (Meson)'
+      for file in "$(pwd)"/meson-logs/*.json ; do
+        python3 ../scripts/meson-junit-report.py --project-name=xkbcommon \
+          --job-id='$(Build.BuildId)' --branch='$(Build.SourceBranch)' \
+          --output="${file}-junit.xml" "${file}"
+      done
+    displayName: 'Process Results (Meson)'
     workingDirectory: ${{ parameters.workdir }}
     condition: always()
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFiles: '**/*-junit.xml'
+      failTaskOnFailedTests: true
