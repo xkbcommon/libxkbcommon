@@ -1,10 +1,16 @@
 ---
 parameters:
+  compiler: ""
   options: ""
   workdir: "autotools-build"
 
 steps:
   - bash: |
+      export COMPILER=${{ parameters.compiler }}
+      case ${COMPILER:-default} in
+        clang ) export CC=clang CXX=clang++ ;;
+        gcc   ) export CC=gcc   CXX=g++     ;;
+      esac
       mkdir '${{ parameters.workdir }}' && cd "$_"
       ../autogen.sh ${{ parameters.options }}
     displayName: 'Configuration (Autotools)'
