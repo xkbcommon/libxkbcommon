@@ -1,5 +1,6 @@
 ---
 parameters:
+  compiler: ""
   options: ""
   wrapper: ""
   workdir: "meson-build"
@@ -9,6 +10,11 @@ steps:
       if [[ -x /usr/local/opt/bison/bin/bison ]] ; then
         export PATH="/usr/local/opt/bison/bin:${PATH}"
       fi
+      export COMPILER=${{ parameters.compiler }}
+      case ${COMPILER:-default} in
+        clang ) export CC=clang CXX=clang++ ;;
+        gcc   ) export CC=gcc   CXX=g++     ;;
+      esac
       meson setup '${{ parameters.workdir }}' ${{ parameters.options }}
     displayName: 'Configuration (Meson)'
   - bash: ninja
