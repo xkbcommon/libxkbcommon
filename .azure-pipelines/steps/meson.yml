@@ -14,8 +14,13 @@ steps:
   - bash: |
       meson test --print-errorlogs \
         --wrap='valgrind --leak-check=full --track-origins=yes --error-exitcode=99'
+    displayName: 'Tests (Meson)'
+    workingDirectory: ${{ parameters.workdir }}
+  - bash: |
+      shopt -s nullglob
       for file in "$(pwd)"/meson-logs/* ; do
         echo "##vso[task.uploadfile]${file}"
       done
-    displayName: 'Tests (Meson)'
+    displayName: 'Save Results (Meson)'
     workingDirectory: ${{ parameters.workdir }}
+    condition: always()
