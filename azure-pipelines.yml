@@ -22,12 +22,6 @@ jobs:
           ../autogen.sh && make -j$(nproc) && make check
           popd
         displayName: 'Autotools'
-      - script: |
-          meson setup meson-build -Denable-wayland=false
-          ninja -C meson-build
-          meson test -C meson-build --print-errorlogs \
-            --wrap='valgrind --leak-check=full --track-origins=yes --error-exitcode=99'
-          for file in "$(pwd)"/meson-build/meson-logs/* ; do
-            echo "##vso[task.uploadfile]${file}"
-          done
-        displayName: 'Meson'
+      - template: .azure-pipelines/steps/meson.yml
+        parameters:
+          options: -Denable-wayland=false
