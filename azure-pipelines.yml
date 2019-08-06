@@ -27,4 +27,7 @@ jobs:
           ninja -C meson-build
           meson test -C meson-build --print-errorlogs \
             --wrap='valgrind --leak-check=full --track-origins=yes --error-exitcode=99'
+          for file in "$(pwd)"/meson-build/meson-logs/* ; do
+            echo "##vso[task.uploadfile]${file}"
+          done
         displayName: 'Meson'
