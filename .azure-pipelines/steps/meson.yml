@@ -1,0 +1,21 @@
+---
+parameters:
+  options: ""
+  workdir: "meson-build"
+
+steps:
+  - bash: meson setup '${{ parameters.workdir }}' ${{ parameters.options }}
+    displayName: 'Configuration (Meson)'
+  - bash: ninja
+    displayName: 'Build (Meson)'
+    workingDirectory: ${{ parameters.workdir }}
+    env:
+      TERM: dumb
+  - bash: |
+      meson test --print-errorlogs \
+        --wrap='valgrind --leak-check=full --track-origins=yes --error-exitcode=99'
+      for file in "$(pwd)"/meson-logs/* ; do
+        echo "##vso[task.uploadfile]${file}"
+      done
+    displayName: 'Tests (Meson)'
+    workingDirectory: ${{ parameters.workdir }}
