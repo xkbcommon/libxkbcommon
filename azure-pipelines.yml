@@ -1,0 +1,30 @@
+trigger:
+  - ci-azure
+
+jobs:
+  - job: 'Ubuntu_16_04'
+    pool:
+      vmImage: 'ubuntu-16.04'
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.7'
+        displayName: 'Use Python 3.7'
+      - script: |
+          python -m pip install --upgrade pip meson
+          sudo apt update -y
+          sudo env DEBIAN_FRONTEND=noninteractive apt install -y \
+            xutils-dev doxygen libxcb-xkb-dev valgrind meson libwayland-dev \
+            wayland-protocols bison valgrind
+        displayName: 'Install dependencies'
+      - script: |
+          mkdir autotools-build && pushd autotools-build
+          ../autogen.sh && make -j$(nproc) && make check
+          popd
+        displayName: 'Autotools'
+      - script: |
+          meson setup meson-build -Denable-wayland=false
+          ninja -C meson-build
+          meson test -C meson-build --print-errorlogs \
+            --wrap='valgrind --leak-check=full --track-origins=yes --error-exitcode=99'
+        displayName: 'Meson'
