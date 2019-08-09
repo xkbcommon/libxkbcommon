@@ -1,7 +1,4 @@
 ---
-trigger:
-  - ci-azure
-
 jobs:
   - job: 'Meson'
     dependsOn: []
