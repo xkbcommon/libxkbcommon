@@ -8,6 +8,6 @@ steps:
       python -m pip install --upgrade pip meson
       sudo apt update -y
       sudo env DEBIAN_FRONTEND=noninteractive apt install -y \
-        xutils-dev doxygen libxcb-xkb-dev valgrind ninja-build \
+        doxygen libxcb-xkb-dev valgrind ninja-build \
         libwayland-dev wayland-protocols bison graphviz
     displayName: 'Dependencies (GNU/Linux)'

@@ -1,6 +1,6 @@
 ---
 jobs:
-  - job: 'Meson'
+  - job: 'Linux'
     dependsOn: []
     strategy:
       matrix:
@@ -17,21 +17,6 @@ jobs:
           compiler: $(compiler)
           options: -Denable-wayland=false
           wrapper: valgrind --leak-check=full --track-origins=yes --error-exitcode=99
-  - job: 'Autotools'
-    dependsOn: []
-    strategy:
-      matrix:
-        Clang:
-          compiler: clang
-        GCC:
-          compiler: gcc
-    pool:
-      vmImage: 'ubuntu-16.04'
-    steps:
-      - template: .azure-pipelines/steps/dependencies-linux.yml
-      - template: .azure-pipelines/steps/autotools.yml
-        parameters:
-          compiler: $(compiler)
   - job: 'macOS'
     dependsOn: []
     pool:
