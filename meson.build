@@ -121,7 +121,7 @@ have_version_script = cc.links(
 # libxkbcommon.
 # Note: we use some yacc extensions, which work with either GNU bison
 # (preferred) or byacc. Other yacc's may or may not work.
-yacc = find_program('bison', 'byacc')
+yacc = find_program('bison', 'win_bison', 'byacc')
 yacc_gen = generator(
     yacc,
     output: ['@BASENAME@.c', '@BASENAME@.h'],
