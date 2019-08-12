@@ -1,6 +1,7 @@
 ---
 steps:
   - bash: |
+      set -euo pipefail
       brew install meson doxygen bison
       brew link bison --force
     displayName: 'Dependencies (macOS)'

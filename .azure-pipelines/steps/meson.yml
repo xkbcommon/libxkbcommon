@@ -1,45 +1,34 @@
 ---
 parameters:
-  compiler: ""
+  compiler: "cc"
   options: ""
   wrapper: ""
-  workdir: "meson-build"
+  prepare: ""
 
 steps:
-  - bash: |
-      if [[ -x /usr/local/opt/bison/bin/bison ]] ; then
-        export PATH="/usr/local/opt/bison/bin:${PATH}"
-      fi
-      export COMPILER=${{ parameters.compiler }}
-      case ${COMPILER:-default} in
-        clang ) export CC=clang CXX=clang++ ;;
-        gcc   ) export CC=gcc   CXX=g++     ;;
-      esac
-      meson setup '${{ parameters.workdir }}' ${{ parameters.options }}
-    displayName: 'Configuration (Meson)'
-  - bash: ninja
-    displayName: 'Build (Meson)'
-    workingDirectory: ${{ parameters.workdir }}
+  - script: |
+      ${{ parameters.prepare }}
+      meson setup ${{ parameters.options }} build
+    displayName: 'Setup'
+    env:
+      CC: ${{ parameters.compiler }}
+
+  - script: |
+      ${{ parameters.prepare }}
+      ninja -C build
+    displayName: 'Build'
     env:
       TERM: dumb
+
   - bash: |
-      meson test --print-errorlogs --wrap='${{ parameters.wrapper }}'
-    displayName: 'Tests (Meson)'
-    workingDirectory: ${{ parameters.workdir }}
-  - bash: |
-      shopt -s nullglob
-      for file in "$(pwd)"/meson-logs/* ; do
-        echo "##vso[task.uploadfile]${file}"
-      done
-      for file in "$(pwd)"/meson-logs/*.json ; do
-        python3 ../scripts/meson-junit-report.py --project-name=xkbcommon \
-          --job-id='$(Build.BuildId)' --branch='$(Build.SourceBranch)' \
-          --output="${file}-junit.xml" "${file}"
-      done
-    displayName: 'Process Results (Meson)'
-    workingDirectory: ${{ parameters.workdir }}
-    condition: always()
+      set -euo pipefail
+      meson test -C build --print-errorlogs --wrapper="${{ parameters.wrapper }}"
+      python3 scripts/meson-junit-report.py --project-name=xkbcommon \
+        --job-id='$(Build.BuildId)' --branch='$(Build.SourceBranch)' \
+        --output=testlog.xml build/meson-logs/testlog*.json
+    displayName: 'Test'
+
   - task: PublishTestResults@2
     inputs:
-      testResultsFiles: '**/*-junit.xml'
+      testResultsFiles: 'testlog.xml'
       failTaskOnFailedTests: true
