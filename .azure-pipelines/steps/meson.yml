@@ -1,30 +1,28 @@
 ---
 parameters:
-  compiler: ""
+  compiler: "cc"
   options: ""
   wrapper: ""
   workdir: "meson-build"
+  prepare: ""
 
 steps:
-  - bash: |
-      if [[ -x /usr/local/opt/bison/bin/bison ]] ; then
-        export PATH="/usr/local/opt/bison/bin:${PATH}"
-      fi
-      export COMPILER=${{ parameters.compiler }}
-      case ${COMPILER:-default} in
-        clang ) export CC=clang CXX=clang++ ;;
-        gcc   ) export CC=gcc   CXX=g++     ;;
-      esac
-      meson setup '${{ parameters.workdir }}' ${{ parameters.options }}
-    displayName: 'Configuration (Meson)'
-  - bash: ninja
-    displayName: 'Build (Meson)'
+  - script: |
+      ${{ parameters.prepare }}
+      meson setup "${{ parameters.workdir }}" ${{ parameters.options }}
+    displayName: 'Configuration'
+    env:
+      CC: ${{ parameters.compiler }}
+  - script: |
+      ${{ parameters.prepare }}
+      ninja
+    displayName: 'Build'
     workingDirectory: ${{ parameters.workdir }}
     env:
       TERM: dumb
-  - bash: |
-      meson test --print-errorlogs --wrap='${{ parameters.wrapper }}'
-    displayName: 'Tests (Meson)'
+  - script: |
+      meson test --print-errorlogs --wrap="${{ parameters.wrapper }}"
+    displayName: 'Run Tests'
     workingDirectory: ${{ parameters.workdir }}
   - bash: |
       shopt -s nullglob
@@ -36,7 +34,7 @@ steps:
           --job-id='$(Build.BuildId)' --branch='$(Build.SourceBranch)' \
           --output="${file}-junit.xml" "${file}"
       done
-    displayName: 'Process Results (Meson)'
+    displayName: 'Process Test Results'
     workingDirectory: ${{ parameters.workdir }}
     condition: always()
   - task: PublishTestResults@2

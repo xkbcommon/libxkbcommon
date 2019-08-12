@@ -1,0 +1,12 @@
+---
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.6'
+    displayName: 'Use Python 3.6'
+  - script: |
+      choco install ninja winflexbison3 -y --no-progress --stop-on-first-failure
+      if not errorlevel 0 exit /b %errorlevel%
+      python -m pip install --upgrade pip meson
+      if not errorlevel 0 exit /b %errorlevel%
+    displayName: 'Dependencies (Windows)'
