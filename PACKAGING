@@ -11,7 +11,7 @@ libxkbcommon-x11 can be disabled with -Denable-x11=false (see
 Dependencies for libxkbcommon:
 - C compiler, meson, pkg-config, libc, bash, grep, sed.
 
-- (build) bison (preferred) or byacc>=20141006.
+- (build) bison (preferred), win_bison or byacc>=20141006.
   byacc must be configured with --enable-btyacc.
 
 - (build optional, runtime) xkeyboard-config.
