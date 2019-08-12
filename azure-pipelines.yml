@@ -30,3 +30,16 @@ jobs:
         parameters:
           options: -Denable-wayland=false -Denable-x11=false
           prepare: 'export PATH="/usr/local/opt/bison/bin:${PATH}"'
+
+  - job: 'Windows'
+    dependsOn: []
+    pool:
+      vmImage: 'vs2017-win2016'
+    steps:
+      - template: .azure-pipelines/steps/dependencies-python.yml
+      - template: .azure-pipelines/steps/dependencies-windows.yml
+      - template: .azure-pipelines/steps/meson.yml
+        parameters:
+          compiler: cl
+          options: -Denable-wayland=false -Denable-x11=false -Denable-docs=false
+          prepare: 'call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64'
