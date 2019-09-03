@@ -52,6 +52,8 @@
 #include "include.h"
 #include "scanner-utils.h"
 
+#define MAX_INCLUDE_DEPTH 5
+
 /* Scanner / Lexer */
 
 /* Values returned with some tokens, like yylval. */
@@ -67,6 +69,7 @@ enum rules_token {
     TOK_BANG,
     TOK_EQUALS,
     TOK_STAR,
+    TOK_INCLUDE,
     TOK_ERROR
 };
 
@@ -130,6 +133,10 @@ skip_more_whitespace_and_comments:
         }
         return TOK_GROUP_NAME;
     }
+
+    /* Include statement. */
+    if (lit(s, "include"))
+        return TOK_INCLUDE;
 
     /* Identifier. */
     if (is_ident(peek(s))) {
@@ -336,6 +343,74 @@ matcher_group_add_element(struct matcher *m, struct scanner *s,
 {
     darray_append(darray_item(m->groups, darray_size(m->groups) - 1).elements,
                   element);
+}
+
+static bool
+read_rules_file(struct xkb_context *ctx,
+                struct matcher *matcher,
+                unsigned include_depth,
+                const char *path);
+
+static void
+matcher_include(struct matcher *m, struct scanner *parent_scanner,
+                unsigned include_depth,
+                struct sval inc)
+{
+    bool ret;
+    struct scanner s; /* parses the !include value */
+
+    scanner_init(&s, m->ctx, inc.start, inc.len,
+                 parent_scanner->file_name, NULL);
+    s.token_line = parent_scanner->token_line;
+    s.token_column = parent_scanner->token_column;
+    s.buf_pos = 0;
+
+    if (include_depth >= MAX_INCLUDE_DEPTH) {
+        scanner_err(&s, "maximum include depth (%d) exceeded; maybe there is an include loop?",
+                    MAX_INCLUDE_DEPTH);
+        return;
+    }
+
+    while (!eof(&s) && !eol(&s)) {
+        if (chr(&s, '%')) {
+            if (chr(&s, '%')) {
+                buf_append(&s, '%');
+            }
+            else if (chr(&s, 'H')) {
+                const char *home = secure_getenv("HOME");
+                if (!home) {
+                    scanner_err(&s, "%%H was used in an include statement, but the HOME environment variable is not set");
+                    return;
+                }
+                if (!buf_appends(&s, home)) {
+                    scanner_err(&s, "include path after expanding %%H is too long");
+                    return;
+                }
+            }
+            else if (chr(&s, 'S')) {
+                const char *default_root = xkb_context_include_path_get_system_path(m->ctx);
+                if (!buf_appends(&s, default_root) || !buf_appends(&s, "/rules")) {
+                    scanner_err(&s, "include path after expanding %%S is too long");
+                    return;
+                }
+            }
+            else {
+                scanner_err(&s, "unknown %% format (%c) in include statement", peek(&s));
+                return;
+            }
+        }
+        else {
+            buf_append(&s, next(&s));
+        }
+    }
+    if (!buf_append(&s, '\0')) {
+        scanner_err(&s, "include path is too long");
+        return;
+    }
+
+    ret = read_rules_file(m->ctx, m, include_depth + 1, s.buf);
+    if (!ret)
+        log_err(m->ctx, "No components returned from included XKB rules \"%s\"\n", s.buf);
 }
 
 static void
@@ -822,6 +897,7 @@ gettok(struct matcher *m, struct scanner *s)
 
 static bool
 matcher_match(struct matcher *m, struct scanner *s,
+              unsigned include_depth,
               const char *string, size_t len,
               const char *file_name)
 {
@@ -847,6 +923,8 @@ bang:
     case TOK_GROUP_NAME:
         matcher_group_start_new(m, m->val.string);
         goto group_name;
+    case TOK_INCLUDE:
+        goto include_statement;
     case TOK_IDENTIFIER:
         matcher_mapping_start_new(m);
         matcher_mapping_set_mlvo(m, s, m->val.string);
@@ -869,6 +947,15 @@ group_element:
         matcher_group_add_element(m, s, m->val.string);
         goto group_element;
     case TOK_END_OF_LINE:
+        goto initial;
+    default:
+        goto unexpected;
+    }
+
+include_statement:
+    switch (tok = gettok(m, s)) {
+    case TOK_IDENTIFIER:
+        matcher_include(m, s, include_depth, m->val.string);
         goto initial;
     default:
         goto unexpected;
@@ -971,6 +1058,7 @@ error:
 static bool
 read_rules_file(struct xkb_context *ctx,
                 struct matcher *matcher,
+                unsigned include_depth,
                 const char *path)
 {
     bool ret = false;
@@ -992,7 +1080,7 @@ read_rules_file(struct xkb_context *ctx,
 
     scanner_init(&scanner, matcher->ctx, string, size, path, NULL);
 
-    ret = matcher_match(matcher, &scanner, string, size, path);
+    ret = matcher_match(matcher, &scanner, include_depth, string, size, path);
 
     unmap_file(string, size);
 out:
@@ -1021,7 +1109,7 @@ xkb_components_from_rules(struct xkb_context *ctx,
 
     matcher = matcher_new(ctx, rmlvo);
 
-    ret = read_rules_file(ctx, matcher, path);
+    ret = read_rules_file(ctx, matcher, 0, path);
     if (!ret ||
         darray_empty(matcher->kccgst[KCCGST_KEYCODES]) ||
         darray_empty(matcher->kccgst[KCCGST_TYPES]) ||
