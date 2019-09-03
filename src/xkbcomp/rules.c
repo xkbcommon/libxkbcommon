@@ -999,6 +999,37 @@ error:
     return false;
 }
 
+static bool
+read_rules_file(struct xkb_context *ctx,
+                struct matcher *matcher,
+                const char *path,
+                struct xkb_component_names *out)
+{
+    bool ret = false;
+    FILE *file;
+    char *string;
+    size_t size;
+
+    file = fopen(path, "r");
+    if (!file)
+        goto out;
+
+    ret = map_file(file, &string, &size);
+    if (!ret) {
+        log_err(ctx, "Couldn't read rules file \"%s\": %s\n",
+                path, strerror(errno));
+        goto out;
+    }
+
+    ret = matcher_match(matcher, string, size, path, out);
+
+    unmap_file(string, size);
+out:
+    if (file)
+        fclose(file);
+    return ret;
+}
+
 bool
 xkb_components_from_rules(struct xkb_context *ctx,
                           const struct xkb_rule_names *rmlvo,
@@ -1007,31 +1038,23 @@ xkb_components_from_rules(struct xkb_context *ctx,
     bool ret = false;
     FILE *file;
     char *path;
-    char *string;
-    size_t size;
     struct matcher *matcher;
 
     file = FindFileInXkbPath(ctx, rmlvo->rules, FILE_TYPE_RULES, &path);
     if (!file)
         goto err_out;
 
-    ret = map_file(file, &string, &size);
-    if (!ret) {
-        log_err(ctx, "Couldn't read rules file \"%s\": %s\n",
-                path, strerror(errno));
-        goto err_file;
-    }
+    fclose(file); /* FIXME: fix FindFileInXkbPath to not open the file in
+                     the first place */
 
     matcher = matcher_new(ctx, rmlvo);
-    ret = matcher_match(matcher, string, size, path, out);
+
+    ret = read_rules_file(ctx, matcher, path, out);
     if (!ret)
         log_err(ctx, "No components returned from XKB rules \"%s\"\n", path);
-    matcher_free(matcher);
 
-    unmap_file(string, size);
-err_file:
+    matcher_free(matcher);
     free(path);
-    fclose(file);
 err_out:
     return ret;
 }
