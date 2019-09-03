@@ -285,6 +285,11 @@ test_env.set('XKB_LOG_LEVEL', 'debug')
 test_env.set('XKB_LOG_VERBOSITY', '10')
 test_env.set('top_srcdir', meson.source_root())
 test_env.set('top_builddir', meson.build_root())
+
+test_configh_data = configuration_data()
+test_configh_data.set_quoted('TEST_XKB_CONFIG_ROOT', join_paths(meson.source_root(), 'test', 'data'))
+configure_file(output: 'test-config.h', configuration: test_configh_data)
+
 # Some tests need to use unexported symbols, so we link them against
 # an internal copy of libxkbcommon with all symbols exposed.
 libxkbcommon_test_internal = static_library(
@@ -332,6 +337,11 @@ test(
 test(
     'rules-file',
     executable('test-rules-file', 'test/rules-file.c', dependencies: test_dep),
+    env: test_env,
+)
+test(
+    'rules-file-includes',
+    executable('test-rules-file-includes', 'test/rules-file-includes.c', dependencies: test_dep),
     env: test_env,
 )
 test(
