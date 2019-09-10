@@ -61,7 +61,15 @@ endif
 
 # config.h.
 configh_data = configuration_data()
-configh_data.set('_GNU_SOURCE', 1)
+# Like AC_USE_SYSTEM_EXTENSIONS, what #define to use to get extensions
+# beyond the base POSIX function set.
+if host_machine.system() == 'sunos'
+  system_extensions = '__EXTENSIONS__'
+else
+  system_extensions = '_GNU_SOURCE'
+endif
+configh_data.set(system_extensions, 1)
+system_ext_define = '#define ' + system_extensions
 configh_data.set_quoted('DFLT_XKB_CONFIG_ROOT', XKBCONFIGROOT)
 configh_data.set_quoted('XLOCALEDIR', XLOCALEDIR)
 configh_data.set_quoted('DEFAULT_XKB_RULES', get_option('default-rules'))
@@ -76,24 +84,24 @@ endif
 if cc.links('int main(){if(__builtin_expect(1<0,0)){}}', name: '__builtin_expect')
     configh_data.set('HAVE___BUILTIN_EXPECT', 1)
 endif
-if cc.has_header_symbol('unistd.h', 'eaccess', prefix: '#define _GNU_SOURCE')
+if cc.has_header_symbol('unistd.h', 'eaccess', prefix: system_ext_define)
     configh_data.set('HAVE_EACCESS', 1)
 endif
-if cc.has_header_symbol('unistd.h', 'euidaccess', prefix: '#define _GNU_SOURCE')
+if cc.has_header_symbol('unistd.h', 'euidaccess', prefix: system_ext_define)
     configh_data.set('HAVE_EUIDACCESS', 1)
 endif
 if cc.has_header_symbol('sys/mman.h', 'mmap')
     configh_data.set('HAVE_MMAP', 1)
 endif
-if cc.has_header_symbol('stdlib.h', 'mkostemp', prefix: '#define _GNU_SOURCE')
+if cc.has_header_symbol('stdlib.h', 'mkostemp', prefix: system_ext_define)
     configh_data.set('HAVE_MKOSTEMP', 1)
 endif
-if cc.has_header_symbol('fcntl.h', 'posix_fallocate', prefix: '#define _GNU_SOURCE')
+if cc.has_header_symbol('fcntl.h', 'posix_fallocate', prefix: system_ext_define)
     configh_data.set('HAVE_POSIX_FALLOCATE', 1)
 endif
-if cc.has_header_symbol('stdlib.h', 'secure_getenv', prefix: '#define _GNU_SOURCE')
+if cc.has_header_symbol('stdlib.h', 'secure_getenv', prefix: system_ext_define)
     configh_data.set('HAVE_SECURE_GETENV', 1)
-elif cc.has_header_symbol('stdlib.h', '__secure_getenv', prefix: '#define _GNU_SOURCE')
+elif cc.has_header_symbol('stdlib.h', '__secure_getenv', prefix: system_ext_define)
     configh_data.set('HAVE___SECURE_GETENV', 1)
 else
     message('C library does not support secure_getenv, using getenv instead')
