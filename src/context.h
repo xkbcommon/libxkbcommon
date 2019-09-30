@@ -59,6 +59,9 @@ const char *
 xkb_context_failed_include_path_get(struct xkb_context *ctx,
                                     unsigned int idx);
 
+const char *
+xkb_context_include_path_get_system_path(struct xkb_context *ctx);
+
 /*
  * Returns XKB_ATOM_NONE if @string was not previously interned,
  * otherwise returns the atom.
