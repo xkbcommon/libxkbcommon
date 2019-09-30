@@ -69,6 +69,13 @@ err:
     return 0;
 }
 
+const char *
+xkb_context_include_path_get_system_path(struct xkb_context *ctx)
+{
+    const char *root = secure_getenv("XKB_CONFIG_ROOT");
+    return root ? root : DFLT_XKB_CONFIG_ROOT;
+}
+
 /**
  * Append the default include directories to the context.
  */
@@ -106,11 +113,8 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
         }
     }
 
-    root = secure_getenv("XKB_CONFIG_ROOT");
-    if (root != NULL)
-       ret |= xkb_context_include_path_append(ctx, root);
-    else
-       ret |= xkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_ROOT);
+    root = xkb_context_include_path_get_system_path(ctx);
+    ret |= xkb_context_include_path_append(ctx, root);
 
     return ret;
 }
