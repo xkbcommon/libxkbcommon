@@ -80,12 +80,6 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
     int err;
     int ret = 0;
 
-    root = secure_getenv("XKB_CONFIG_ROOT");
-    if (root != NULL)
-       ret |= xkb_context_include_path_append(ctx, root);
-    else
-       ret |= xkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_ROOT);
-
     home = secure_getenv("HOME");
     if (!home)
         return ret;
@@ -94,6 +88,12 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
         return ret;
     ret |= xkb_context_include_path_append(ctx, user_path);
     free(user_path);
+
+    root = secure_getenv("XKB_CONFIG_ROOT");
+    if (root != NULL)
+       ret |= xkb_context_include_path_append(ctx, root);
+    else
+       ret |= xkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_ROOT);
 
     return ret;
 }
