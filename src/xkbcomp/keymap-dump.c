@@ -515,7 +515,7 @@ write_key(struct xkb_keymap *keymap, struct buf *buf,
                     continue;
 
                 type = key->groups[group].type;
-                write_buf(buf, "\n\t\ttype[group%u]= \"%s\",",
+                write_buf(buf, "\n\t\ttype[Group%u]= \"%s\",",
                             group + 1,
                             xkb_atom_text(keymap->ctx, type->name));
             }
@@ -609,7 +609,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
     for (group = 0; group < keymap->num_group_names; group++)
         if (keymap->group_names[group])
             write_buf(buf,
-                      "\tname[group%u]=\"%s\";\n", group + 1,
+                      "\tname[Group%u]=\"%s\";\n", group + 1,
                       xkb_atom_text(keymap->ctx, keymap->group_names[group]));
     if (group > 0)
         write_buf(buf, "\n");
