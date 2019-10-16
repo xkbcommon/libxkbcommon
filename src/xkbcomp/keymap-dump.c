@@ -219,7 +219,7 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
                 continue;
 
             str = ModMaskText(keymap->ctx, &keymap->mods, entry->mods.mods);
-            write_buf(buf, "\t\tmap[%s]= Level%u;\n",
+            write_buf(buf, "\t\tmap[%s]= %u;\n",
                       str, entry->level + 1);
 
             if (entry->preserve.mods)
@@ -230,7 +230,7 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
 
         for (xkb_level_index_t n = 0; n < type->num_level_names; n++)
             if (type->level_names[n])
-                write_buf(buf, "\t\tlevel_name[Level%u]= \"%s\";\n", n + 1,
+                write_buf(buf, "\t\tlevel_name[%u]= \"%s\";\n", n + 1,
                           xkb_atom_text(keymap->ctx, type->level_names[n]));
 
         write_buf(buf, "\t};\n");
