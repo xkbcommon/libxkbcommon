@@ -1,3 +1,29 @@
+libxkbcommon 0.9.0 - 2019-10-19
+==================
+
+- Move ~/.xkb to before XKB_CONFIG_ROOT (the system XKB path, usually
+  /usr/share/X11/xkb) in the default include path. This enables the user
+  to have full control of the keymap definitions, instead of only augmenting
+  them.
+
+- Remove the Autotools build system. Use the meson build system instead.
+
+- Fix invalid names used for levels above 8 when dumping keymaps. Previously,
+  e.g. "Level20" was dumped, but only up to "Level8" is accepted by the
+  parser. Now "20" is dumped.
+
+- Change level references to always be dumped as e.g. "5" instead of "Level5".
+
+  Change group references to always be dumped capitalized e.g. "Group3" instead
+  of "group3". Previously it was inconsistent.
+
+  These changes affect the output of xkb_keymap_get_as_string().
+
+- Fix several build issues on macOS/Darwin, Solaris, NetBSD, cross compilation.
+
+- Port the interactive-wayland test program to the stable version of xdg-shell.
+
+
 libxkbcommon 0.8.4 - 2019-02-22
 ==================
 
