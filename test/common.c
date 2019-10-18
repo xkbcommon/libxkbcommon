@@ -169,7 +169,7 @@ test_get_path(const char *path_rel)
     path = malloc(path_len);
     if (!path) {
         fprintf(stderr, "Failed to allocate path (%d chars) for %s\n",
-                (int) path_len, path);
+                (int) path_len, path_rel);
         return NULL;
     }
     snprintf(path, path_len,
