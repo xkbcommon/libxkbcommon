@@ -65,7 +65,7 @@ Bug reports (and usage questions) are also welcome, and may be filed at
 
 The maintainers are
 - Daniel Stone <daniel@fooishbar.org>
-- Ran Benita <ran234@gmail.com>
+- Ran Benita <ran@unusedvar.com>
 
 ## Credits
 
