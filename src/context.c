@@ -81,13 +81,13 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
     int ret = 0;
 
     home = secure_getenv("HOME");
-    if (!home)
-        return ret;
-    err = asprintf(&user_path, "%s/.xkb", home);
-    if (err <= 0)
-        return ret;
-    ret |= xkb_context_include_path_append(ctx, user_path);
-    free(user_path);
+    if (home != NULL) {
+        err = asprintf(&user_path, "%s/.xkb", home);
+        if (err <= 0)
+            return ret;
+        ret |= xkb_context_include_path_append(ctx, user_path);
+        free(user_path);
+    }
 
     root = secure_getenv("XKB_CONFIG_ROOT");
     if (root != NULL)
