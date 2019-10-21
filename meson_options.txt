@@ -56,3 +56,9 @@ option(
     value: true,
     description: 'Enable support for Wayland utility programs',
 )
+option(
+  'wayland-scanner',
+  type: 'string',
+  value: 'wayland-scanner',
+  description: 'Path to native wayland-scanner',
+)

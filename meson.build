@@ -423,7 +423,7 @@ if get_option('enable-wayland')
 You can disable the Wayland demo programs with -Denable-wayland=false.''')
     endif
 
-    wayland_scanner = find_program(wayland_scanner_dep.get_pkgconfig_variable('wayland_scanner'))
+    wayland_scanner = find_program(get_option('wayland-scanner'))
     wayland_scanner_code_gen = generator(
         wayland_scanner,
         output: '@BASENAME@-protocol.c',
