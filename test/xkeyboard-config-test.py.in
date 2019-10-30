@@ -13,12 +13,16 @@ verbose = True
 DEFAULT_RULES_XML = '@XKB_CONFIG_ROOT@/rules/evdev.xml'
 
 # Meson needs to fill this in so we can call the tool in the buildir.
-EXTRA_PATH='@MESON_BUILD_ROOT@'
+EXTRA_PATH = '@MESON_BUILD_ROOT@'
 os.environ['PATH'] = ':'.join([EXTRA_PATH, os.getenv('PATH')])
 
 
+def noop_progress_bar(x, desc):
+    return x
+
+
 # The function generating the progress bar (if any).
-progress_bar = lambda x, desc: x
+progress_bar = noop_progress_bar
 if os.isatty(sys.stdout.fileno()):
     try:
         from tqdm import tqdm
