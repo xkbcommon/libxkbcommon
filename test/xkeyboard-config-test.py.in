@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import argparse
 import sys
 import subprocess
 import os
@@ -89,17 +90,13 @@ def xkbcomp(r='evdev', m='pc105', l='us', v='', o=''):
         print(err.output.decode('utf-8'))
 
 
-def parse(root):
+def parse(root, tool):
     layouts = root.findall('layoutList/layout')
 
     options = [
         e.text
         for e in root.findall('optionList/group/option/configItem/name')
     ]
-
-    # Switch this to xkbcomp if needed.
-    tool = xkbcommontool
-    # tool = xkbcomp
 
     for l in progress_bar(layouts, 'layout '):
         layout = l.find('configItem/name').text
@@ -115,14 +112,28 @@ def parse(root):
 
 
 def main(args):
-    try:
-        path = args[1]
-    except IndexError:
-        path = DEFAULT_RULES_XML
+    tools = {
+        'libxkbcommon': xkbcommontool,
+        'xkbcomp': xkbcomp,
+    }
 
-    with open(path) as f:
+    parser = argparse.ArgumentParser(
+        description='Tool to test all layout/variant/option combinations.'
+    )
+    parser.add_argument('path', metavar='/path/to/evdev.xml',
+                        nargs='?', type=str,
+                        default=DEFAULT_RULES_XML,
+                        help='Path to xkeyboard-config\'s evdev.xml')
+    parser.add_argument('--tool', choices=tools.keys(),
+                        type=str, default='libxkbcommon',
+                        help='parsing tool to use')
+    args = parser.parse_args()
+
+    tool = tools[args.tool]
+
+    with open(args.path) as f:
         root = ET.fromstring(f.read())
-        parse(root)
+        parse(root, tool)
 
 
 if __name__ == '__main__':
