@@ -146,7 +146,7 @@ def run(combos, tool, njobs):
             if not success:
                 failed = True
             if output:
-                print(output)
+                print(output, file=sys.stdout if success else sys.stderr)
 
     return failed
 
