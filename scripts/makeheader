@@ -1,13 +1,10 @@
 #!/usr/bin/env python
-
 from __future__ import print_function
 import re
 import os
 
-prefix = os.environ.get('X11_HEADERS_PREFIX')
-if not prefix:
-    prefix = '/usr'
 
+prefix = os.environ.get('X11_HEADERS_PREFIX', '/usr')
 HEADERS = [
     prefix + '/include/X11/keysymdef.h',
     prefix + '/include/X11/XF86keysym.h',
