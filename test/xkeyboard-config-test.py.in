@@ -17,7 +17,7 @@ EXTRA_PATH = '@MESON_BUILD_ROOT@'
 os.environ['PATH'] = ':'.join([EXTRA_PATH, os.getenv('PATH')])
 
 
-def noop_progress_bar(x, desc):
+def noop_progress_bar(x, total):
     return x
 
 
@@ -156,13 +156,11 @@ def run(combos, tool, njobs):
     failed = False
     with Pool(njobs) as p:
         results = p.imap_unordered(tool, combos)
-        for r in progress_bar(results, 'testing'):
-            success, output = r
+        for success, output in progress_bar(results, total=len(combos)):
             if not success:
                 failed = True
             if output:
                 print(output, file=sys.stdout if success else sys.stderr)
-
     return failed
 
 
