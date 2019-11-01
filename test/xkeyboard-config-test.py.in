@@ -88,6 +88,9 @@ def xkbcomp(rmlvo):
         if l is not None:
             args.append('-layout')
             args.append('{}'.format(l))
+        if v is not None:
+            args.append('-variant')
+            args.append('{}'.format(v))
         if o is not None:
             args.append('-option')
             args.append('{}'.format(o))
