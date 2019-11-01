@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
+import argparse
 import sys
 import subprocess
 import os
+import io
 import xml.etree.ElementTree as ET
+from multiprocessing import Pool
 
 
 verbose = True
@@ -10,12 +13,16 @@ verbose = True
 DEFAULT_RULES_XML = '@XKB_CONFIG_ROOT@/rules/evdev.xml'
 
 # Meson needs to fill this in so we can call the tool in the buildir.
-EXTRA_PATH='@MESON_BUILD_ROOT@'
+EXTRA_PATH = '@MESON_BUILD_ROOT@'
 os.environ['PATH'] = ':'.join([EXTRA_PATH, os.getenv('PATH')])
 
 
+def noop_progress_bar(x, desc):
+    return x
+
+
 # The function generating the progress bar (if any).
-progress_bar = lambda x, desc: x
+progress_bar = noop_progress_bar
 if os.isatty(sys.stdout.fileno()):
     try:
         from tqdm import tqdm
@@ -26,70 +33,102 @@ if os.isatty(sys.stdout.fileno()):
         pass
 
 
-def xkbcommontool(r='evdev', m='pc105', l='us', v=None, o=None):
-    args = [
-        'rmlvo-to-keymap',
-        '--rules', r,
-        '--model', m,
-        '--layout', l,
-    ]
-    if v is not None:
-        args += ['--variant', v]
-    if o is not None:
-        args += ['--options', o]
-
-    if verbose:
-        print(':: {}'.format(' '.join(args)))
-
+def xkbcommontool(rmlvo):
     try:
-        output = subprocess.check_output(args, stderr=subprocess.STDOUT)
+        r = rmlvo.get('r', 'evdev')
+        m = rmlvo.get('m', 'pc105')
+        l = rmlvo.get('l', 'us')
+        v = rmlvo.get('v', None)
+        o = rmlvo.get('o', None)
+        args = [
+            'rmlvo-to-keymap',
+            '--rules', r,
+            '--model', m,
+            '--layout', l,
+        ]
+        if v is not None:
+            args += ['--variant', v]
+        if o is not None:
+            args += ['--options', o]
+
+        success = True
+        out = io.StringIO()
         if verbose:
-            print(output.decode('utf-8'))
-    except subprocess.CalledProcessError as err:
-        print('ERROR: Failed to compile: {}'.format(' '.join(args)))
-        print(err.output.decode('utf-8'))
-        sys.exit(1)
+            print(':: {}'.format(' '.join(args)), file=out)
+
+        try:
+            output = subprocess.check_output(args, stderr=subprocess.STDOUT,
+                                             universal_newlines=True)
+            if verbose:
+                print(output, file=out)
+        except subprocess.CalledProcessError as err:
+            print('ERROR: Failed to compile: {}'.format(' '.join(args)), file=out)
+            print(err.output, file=out)
+            success = False
+
+        return success, out.getvalue()
+    except KeyboardInterrupt:
+        pass
 
 
-def xkbcomp(r='evdev', m='pc105', l='us', v='', o=''):
-    args = ['setxkbmap', '-print']
-    if r is not None:
-        args.append('-rules')
-        args.append('{}'.format(r))
-    if m is not None:
-        args.append('-model')
-        args.append('{}'.format(m))
-    if l is not None:
-        args.append('-layout')
-        args.append('{}'.format(l))
-    if o is not None:
-        args.append('-option')
-        args.append('{}'.format(o))
-
-    if verbose:
-        print(':: {}'.format(' '.join(args)))
-
+def xkbcomp(rmlvo):
     try:
-        xkbcomp_args = ['xkbcomp', '-xkb', '-', '-']
+        r = rmlvo.get('r', 'evdev')
+        m = rmlvo.get('m', 'pc105')
+        l = rmlvo.get('l', 'us')
+        v = rmlvo.get('v', None)
+        o = rmlvo.get('o', None)
+        args = ['setxkbmap', '-print']
+        if r is not None:
+            args.append('-rules')
+            args.append('{}'.format(r))
+        if m is not None:
+            args.append('-model')
+            args.append('{}'.format(m))
+        if l is not None:
+            args.append('-layout')
+            args.append('{}'.format(l))
+        if v is not None:
+            args.append('-variant')
+            args.append('{}'.format(v))
+        if o is not None:
+            args.append('-option')
+            args.append('{}'.format(o))
 
-        setxkbmap = subprocess.Popen(args, stdout=subprocess.PIPE)
-        xkbcomp = subprocess.Popen(xkbcomp_args, stdin=setxkbmap.stdout,
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        setxkbmap.stdout.close()
-        stdout, stderr = xkbcomp.communicate()
-        if xkbcomp.returncode != 0:
-            print('ERROR: Failed to compile: {}'.format(' '.join(args)))
-        if xkbcomp.returncode != 0 or verbose:
-            print(stdout.decode('utf-8'))
-            print(stderr.decode('utf-8'))
+        success = True
+        out = io.StringIO()
+        if verbose:
+            print(':: {}'.format(' '.join(args)), file=out)
 
-    # This catches setxkbmap errors.
-    except subprocess.CalledProcessError as err:
-        print('ERROR: Failed to compile: {}'.format(' '.join(args)))
-        print(err.output.decode('utf-8'))
+        try:
+            xkbcomp_args = ['xkbcomp', '-xkb', '-', '-']
+
+            setxkbmap = subprocess.Popen(args, stdout=subprocess.PIPE)
+            xkbcomp = subprocess.Popen(xkbcomp_args, stdin=setxkbmap.stdout,
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                       universal_newlines=True)
+            setxkbmap.stdout.close()
+            stdout, stderr = xkbcomp.communicate()
+            if xkbcomp.returncode != 0:
+                print('ERROR: Failed to compile: {}'.format(' '.join(args)), file=out)
+                success = False
+            if xkbcomp.returncode != 0 or verbose:
+                print(stdout, file=out)
+                print(stderr, file=out)
+
+        # This catches setxkbmap errors.
+        except subprocess.CalledProcessError as err:
+            print('ERROR: Failed to compile: {}'.format(' '.join(args)), file=out)
+            print(err.output, file=out)
+            success = False
+
+        return success, out.getvalue()
+    except KeyboardInterrupt:
+        pass
 
 
-def parse(root):
+def parse(path):
+    root = ET.fromstring(open(path).read())
     layouts = root.findall('layoutList/layout')
 
     options = [
@@ -97,33 +136,66 @@ def parse(root):
         for e in root.findall('optionList/group/option/configItem/name')
     ]
 
-    # Switch this to xkbcomp if needed.
-    tool = xkbcommontool
-    # tool = xkbcomp
-
-    for l in progress_bar(layouts, 'layout '):
+    combos = []
+    for l in layouts:
         layout = l.find('configItem/name').text
-        tool(l=layout)
+        combos.append({'l': layout})
 
         variants = l.findall('variantList/variant')
-        for v in progress_bar(variants, 'variant'):
+        for v in variants:
             variant = v.find('configItem/name').text
-            tool(l=layout, v=variant)
 
-            for option in progress_bar(options, 'option '):
-                tool(l=layout, v=variant, o=option)
+            combos.append({'l': layout, 'v': variant})
+            for option in options:
+                combos.append({'l': layout, 'v': variant, 'o': option})
+
+    return combos
+
+
+def run(combos, tool, njobs):
+    failed = False
+    with Pool(njobs) as p:
+        results = p.imap_unordered(tool, combos)
+        for r in progress_bar(results, 'testing'):
+            success, output = r
+            if not success:
+                failed = True
+            if output:
+                print(output, file=sys.stdout if success else sys.stderr)
+
+    return failed
 
 
 def main(args):
-    try:
-        path = args[1]
-    except IndexError:
-        path = DEFAULT_RULES_XML
+    tools = {
+        'libxkbcommon': xkbcommontool,
+        'xkbcomp': xkbcomp,
+    }
 
-    with open(path) as f:
-        root = ET.fromstring(f.read())
-        parse(root)
+    parser = argparse.ArgumentParser(
+        description='Tool to test all layout/variant/option combinations.'
+    )
+    parser.add_argument('path', metavar='/path/to/evdev.xml',
+                        nargs='?', type=str,
+                        default=DEFAULT_RULES_XML,
+                        help='Path to xkeyboard-config\'s evdev.xml')
+    parser.add_argument('--tool', choices=tools.keys(),
+                        type=str, default='libxkbcommon',
+                        help='parsing tool to use')
+    parser.add_argument('--jobs', '-j', type=int,
+                        default=os.cpu_count() * 4,
+                        help='number of processes to use')
+    args = parser.parse_args()
+
+    tool = tools[args.tool]
+
+    combos = parse(args.path)
+    failed = run(combos, tool, args.jobs)
+    sys.exit(failed)
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    try:
+        main(sys.argv)
+    except KeyboardInterrupt:
+        print('Exiting after Ctrl+C')

@@ -75,12 +75,29 @@ err:
 XKB_EXPORT int
 xkb_context_include_path_append_default(struct xkb_context *ctx)
 {
-    const char *home, *root;
+    const char *home, *xdg, *root;
     char *user_path;
     int err;
     int ret = 0;
 
     home = secure_getenv("HOME");
+
+    xdg = secure_getenv("XDG_CONFIG_HOME");
+    if (xdg != NULL) {
+        err = asprintf(&user_path, "%s/xkb", xdg);
+        if (err >= 0) {
+            ret |= xkb_context_include_path_append(ctx, user_path);
+            free(user_path);
+        }
+    } else if (home != NULL) {
+        /* XDG_CONFIG_HOME fallback is $HOME/.config/ */
+        err = asprintf(&user_path, "%s/.config/xkb", home);
+        if (err >= 0) {
+            ret |= xkb_context_include_path_append(ctx, user_path);
+            free(user_path);
+        }
+    }
+
     if (home != NULL) {
         err = asprintf(&user_path, "%s/.xkb", home);
         if (err >= 0) {
