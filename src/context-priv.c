@@ -58,13 +58,7 @@ xkb_atom_lookup(struct xkb_context *ctx, const char *string)
 xkb_atom_t
 xkb_atom_intern(struct xkb_context *ctx, const char *string, size_t len)
 {
-    return atom_intern(ctx->atom_table, string, len, false);
-}
-
-xkb_atom_t
-xkb_atom_steal(struct xkb_context *ctx, char *string)
-{
-    return atom_intern(ctx->atom_table, string, strlen(string), true);
+    return atom_intern(ctx->atom_table, string, len);
 }
 
 const char *

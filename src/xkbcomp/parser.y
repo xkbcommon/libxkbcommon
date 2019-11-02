@@ -747,11 +747,11 @@ Integer         :       INTEGER { $$ = $1; }
 KeyCode         :       INTEGER { $$ = $1; }
                 ;
 
-Ident           :       IDENT   { $$ = xkb_atom_steal(param->ctx, $1); }
+Ident           :       IDENT   { $$ = xkb_atom_intern(param->ctx, $1, strlen($1)); free($1); }
                 |       DEFAULT { $$ = xkb_atom_intern_literal(param->ctx, "default"); }
                 ;
 
-String          :       STRING  { $$ = xkb_atom_steal(param->ctx, $1); }
+String          :       STRING  { $$ = xkb_atom_intern(param->ctx, $1, strlen($1)); free($1); }
                 ;
 
 OptMapName      :       MapName { $$ = $1; }

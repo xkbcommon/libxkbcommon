@@ -32,13 +32,6 @@
 
 #include "darray.h"
 
-/*
- * We sometimes malloc strings and then expose them as const char*'s. This
- * macro is used when we free these strings in order to avoid -Wcast-qual
- * errors.
- */
-#define UNCONSTIFY(const_ptr)  ((void *) (uintptr_t) (const_ptr))
-
 #define STATIC_ASSERT(expr, message) do { \
     switch (0) { case 0: case (expr): ; } \
 } while (0)

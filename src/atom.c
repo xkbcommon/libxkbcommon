@@ -183,14 +183,8 @@ atom_lookup(struct atom_table *table, const char *string, size_t len)
     return *atomp;
 }
 
-/*
- * If steal is true, we do not strdup @string; therefore it must be
- * dynamically allocated, NUL-terminated, not be free'd by the caller
- * and not be used afterwards. Use to avoid some redundant allocations.
- */
 xkb_atom_t
-atom_intern(struct atom_table *table, const char *string, size_t len,
-            bool steal)
+atom_intern(struct atom_table *table, const char *string, size_t len)
 {
     xkb_atom_t *atomp;
     struct atom_node node;
@@ -200,19 +194,12 @@ atom_intern(struct atom_table *table, const char *string, size_t len,
         return XKB_ATOM_NONE;
 
     if (find_atom_pointer(table, string, len, &atomp, &fingerprint)) {
-        if (steal)
-            free(UNCONSTIFY(string));
         return *atomp;
     }
 
-    if (steal) {
-        node.string = UNCONSTIFY(string);
-    }
-    else {
-        node.string = strndup(string, len);
-        if (!node.string)
-            return XKB_ATOM_NONE;
-    }
+    node.string = strndup(string, len);
+    if (!node.string)
+        return XKB_ATOM_NONE;
 
     node.left = node.right = XKB_ATOM_NONE;
     node.fingerprint = fingerprint;

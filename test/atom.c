@@ -27,7 +27,7 @@
 #include "atom.h"
 
 #define INTERN_LITERAL(table, literal) \
-    atom_intern(table, literal, sizeof(literal) - 1, false)
+    atom_intern(table, literal, sizeof(literal) - 1)
 
 #define LOOKUP_LITERAL(table, literal) \
     atom_lookup(table, literal, sizeof(literal) - 1)
@@ -105,7 +105,7 @@ test_random_strings(void)
             continue;
         }
 
-        arr[i].atom = atom_intern(table, arr[i].string, arr[i].len, false);
+        arr[i].atom = atom_intern(table, arr[i].string, arr[i].len);
         if (arr[i].atom == XKB_ATOM_NONE) {
             fprintf(stderr, "failed to intern! len: %lu, string: %.*s\n",
                     arr[i].len, (int) arr[i].len, arr[i].string);
@@ -161,7 +161,7 @@ main(void)
     assert(atom1 == LOOKUP_LITERAL(table, "hello"));
     assert(streq(atom_text(table, atom1), "hello"));
 
-    atom2 = atom_intern(table, "hello", 3, false);
+    atom2 = atom_intern(table, "hello", 3);
     assert(atom2 != XKB_ATOM_NONE);
     assert(atom1 != atom2);
     assert(streq(atom_text(table, atom2), "hel"));
@@ -169,7 +169,7 @@ main(void)
     assert(LOOKUP_LITERAL(table, "hell") == XKB_ATOM_NONE);
     assert(LOOKUP_LITERAL(table, "hello") == atom1);
 
-    atom3 = atom_intern(table, "", 0, false);
+    atom3 = atom_intern(table, "", 0);
     assert(atom3 != XKB_ATOM_NONE);
     assert(LOOKUP_LITERAL(table, "") == atom3);
 
