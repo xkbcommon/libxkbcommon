@@ -72,8 +72,14 @@
 
 #include "config.h"
 
-#include "utils.h"
+#include <assert.h>
+#include <inttypes.h>
+#include <stdbool.h>
+#include <string.h>
+
 #include "atom.h"
+#include "darray.h"
+#include "utils.h"
 
 /* FNV-1a (http://www.isthe.com/chongo/tech/comp/fnv/). */
 static inline uint32_t
@@ -90,31 +96,14 @@ hash_buf(const char *string, size_t len)
 }
 
 /*
- * The atom table is a insert-only unbalanced binary search tree
- * mapping strings to atoms.
- *
- * The tree nodes are kept contiguously in the `table` array.
- *
- * The atom value is the index of the tree node in the array.
- *
- * As an optimization, strings are not compared by value directly,
- *      s1 < s2
- * instead, they are compared by fingerprint (hash) and the value
- * is only used to resolve collisions:
- *      (fingerprint(s1), s1) < (fingerprint(s2), s2)
- * Fingerprint are pre-calculated and saved in the tree nodes.
- *
- * Why is this not just a hash table? Who knows!
+ * The atom table is an insert-only linear probing hash table
+ * mapping strings to atoms. Another array maps the atoms to
+ * strings. The atom value is the position in the strings array.
  */
-struct atom_node {
-    xkb_atom_t left, right;
-    uint32_t fingerprint;
-    char *string;
-};
-
 struct atom_table {
-    xkb_atom_t root;
-    darray(struct atom_node) table;
+    xkb_atom_t *index;
+    size_t index_size;
+    darray(char *) strings;
 };
 
 struct atom_table *
@@ -124,9 +113,10 @@ atom_table_new(void)
     if (!table)
         return NULL;
 
-    darray_init(table->table);
-    /* The original throw-away root is here, at the illegal atom 0. */
-    darray_resize0(table->table, 1);
+    darray_init(table->strings);
+    darray_append(table->strings, NULL);
+    table->index_size = 4;
+    table->index = calloc(table->index_size, sizeof(*table->index));
 
     return table;
 }
@@ -137,61 +127,67 @@ atom_table_free(struct atom_table *table)
     if (!table)
         return;
 
-    struct atom_node *node;
-    darray_foreach(node, table->table)
-        free(node->string);
-    darray_free(table->table);
+    char **string;
+    darray_foreach(string, table->strings)
+        free(*string);
+    darray_free(table->strings);
+    free(table->index);
     free(table);
 }
 
 const char *
 atom_text(struct atom_table *table, xkb_atom_t atom)
 {
-    assert(atom < darray_size(table->table));
-    return darray_item(table->table, atom).string;
+    assert(atom < darray_size(table->strings));
+    return darray_item(table->strings, atom);
 }
 
 xkb_atom_t
 atom_intern(struct atom_table *table, const char *string, size_t len, bool add)
 {
-    uint32_t fingerprint = hash_buf(string, len);
+    if (darray_size(table->strings) > 0.80 * table->index_size) {
+        table->index_size *= 2;
+        table->index = realloc(table->index, table->index_size * sizeof(*table->index));
+        memset(table->index, 0, table->index_size * sizeof(*table->index));
+        for (size_t j = 1; j < darray_size(table->strings); j++) {
+            const char *s = darray_item(table->strings, j);
+            uint32_t hash = hash_buf(s, strlen(s));
+            for (size_t i = 0; i < table->index_size; i++) {
+                size_t index_pos = (hash + i) & (table->index_size - 1);
+                if (index_pos == 0)
+                    continue;
 
-    xkb_atom_t *atomp = &table->root;
-    while (*atomp != XKB_ATOM_NONE) {
-        struct atom_node *node = &darray_item(table->table, *atomp);
-
-        if (fingerprint > node->fingerprint) {
-            atomp = &node->right;
-        }
-        else if (fingerprint < node->fingerprint) {
-            atomp = &node->left;
-        }
-        else {
-            /* Now start testing the strings. */
-            const int cmp = strncmp(string, node->string, len);
-            if (likely(cmp == 0 && node->string[len] == '\0')) {
-                return *atomp;
-            }
-            else if (cmp > 0) {
-                atomp = &node->right;
-            }
-            else {
-                atomp = &node->left;
+                xkb_atom_t atom = table->index[index_pos];
+                if (atom == XKB_ATOM_NONE) {
+                    table->index[index_pos] = j;
+                    break;
+                }
             }
         }
     }
 
-    if (!add)
-        return XKB_ATOM_NONE;
+    uint32_t hash = hash_buf(string, len);
+    for (size_t i = 0; i < table->index_size; i++) {
+        size_t index_pos = (hash + i) & (table->index_size - 1);
+        if (index_pos == 0)
+            continue;
 
-    struct atom_node node;
-    node.string = strndup(string, len);
-    assert(node.string != NULL);
-    node.left = node.right = XKB_ATOM_NONE;
-    node.fingerprint = fingerprint;
-    xkb_atom_t atom = darray_size(table->table);
-    /* Do this before the append, as it may realloc and change the offsets. */
-    *atomp = atom;
-    darray_append(table->table, node);
-    return atom;
+        xkb_atom_t existing_atom = table->index[index_pos];
+        if (existing_atom == XKB_ATOM_NONE) {
+            if (add) {
+                xkb_atom_t new_atom = darray_size(table->strings);
+                darray_append(table->strings, strndup(string, len));
+                table->index[index_pos] = new_atom;
+                return new_atom;
+            } else {
+                return XKB_ATOM_NONE;
+            }
+        }
+
+        const char *existing_value = darray_item(table->strings, existing_atom);
+        if (strncmp(existing_value, string, len) == 0 && existing_value[len] == '\0')
+            return existing_atom;
+    }
+
+    assert(!"couldn't find an empty slot during probing");
 }
