@@ -247,8 +247,10 @@ test_get_context(enum test_context_flags test_flags)
         return NULL;
 
     path = test_get_path("");
-    if (!path)
+    if (!path) {
+        xkb_context_unref(ctx);
         return NULL;
+    }
 
     xkb_context_include_path_append(ctx, path);
     free(path);
