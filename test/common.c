@@ -165,7 +165,7 @@ test_get_path(const char *path_rel)
         return strdup(path_rel);
 
     path_len = strlen(srcdir ? srcdir : ".") +
-               strlen(path_rel ? path_rel : "") + 12;
+               strlen(path_rel) + 12;
     path = malloc(path_len);
     if (!path) {
         fprintf(stderr, "Failed to allocate path (%d chars) for %s\n",
