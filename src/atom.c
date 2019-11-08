@@ -148,7 +148,7 @@ find_atom_pointer(struct atom_table *table, const char *string, size_t len,
         else {
             /* Now start testing the strings. */
             const int cmp = strncmp(string, node->string, len);
-            if (cmp < 0 || (cmp == 0 && len < strlen(node->string))) {
+            if (cmp < 0 || (cmp == 0 && node->string[len] != '\0')) {
                 atomp = &node->left;
             }
             else if (cmp > 0) {
