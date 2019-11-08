@@ -75,7 +75,6 @@
 
 struct atom_node {
     xkb_atom_t left, right;
-    xkb_atom_t atom;
     unsigned int fingerprint;
     char *string;
 };
@@ -203,10 +202,10 @@ atom_intern(struct atom_table *table, const char *string, size_t len)
 
     node.left = node.right = XKB_ATOM_NONE;
     node.fingerprint = fingerprint;
-    node.atom = darray_size(table->table);
+    xkb_atom_t atom = darray_size(table->table);
     /* Do this before the append, as it may realloc and change the offsets. */
-    *atomp = node.atom;
+    *atomp = atom;
     darray_append(table->table, node);
 
-    return node.atom;
+    return atom;
 }
