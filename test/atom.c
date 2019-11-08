@@ -75,9 +75,10 @@ test_random_strings(void)
     table = atom_table_new();
     assert(table);
 
-    srand(clock());
+    unsigned seed = (unsigned) clock();
+    srand(seed);
 
-    N = 1 + rand() % 1500;
+    N = 1 + rand() % 100000;
     arr = calloc(N, sizeof(*arr));
     assert(arr);
 
@@ -96,6 +97,7 @@ test_random_strings(void)
                         strlen(string), string);
                 fprintf(stderr, "new length %lu, string %.*s\n",
                         arr[i].len, (int) arr[i].len, arr[i].string);
+                fprintf(stderr, "seed: %u\n", seed);
                 assert(false);
             }
 
@@ -109,6 +111,7 @@ test_random_strings(void)
         if (arr[i].atom == XKB_ATOM_NONE) {
             fprintf(stderr, "failed to intern! len: %lu, string: %.*s\n",
                     arr[i].len, (int) arr[i].len, arr[i].string);
+            fprintf(stderr, "seed: %u\n", seed);
             assert(false);
         }
     }
@@ -134,6 +137,7 @@ test_random_strings(void)
             }
             fprintf(stderr, "END\n");
 
+            fprintf(stderr, "seed: %u\n", seed);
             assert(false);
         }
     }
