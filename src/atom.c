@@ -75,7 +75,7 @@
 
 struct atom_node {
     xkb_atom_t left, right;
-    unsigned int fingerprint;
+    uint32_t fingerprint;
     char *string;
 };
 
@@ -125,10 +125,10 @@ atom_text(struct atom_table *table, xkb_atom_t atom)
 
 static bool
 find_atom_pointer(struct atom_table *table, const char *string, size_t len,
-                  xkb_atom_t **atomp_out, unsigned int *fingerprint_out)
+                  xkb_atom_t **atomp_out, uint32_t *fingerprint_out)
 {
     xkb_atom_t *atomp = &table->root;
-    unsigned int fingerprint = 0;
+    uint32_t fingerprint = 0;
     bool found = false;
 
     for (size_t i = 0; i < (len + 1) / 2; i++) {
@@ -187,7 +187,7 @@ atom_intern(struct atom_table *table, const char *string, size_t len)
 {
     xkb_atom_t *atomp;
     struct atom_node node;
-    unsigned int fingerprint;
+    uint32_t fingerprint;
 
     if (!string)
         return XKB_ATOM_NONE;
