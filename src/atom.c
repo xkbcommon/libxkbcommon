@@ -73,6 +73,20 @@
 #include "utils.h"
 #include "atom.h"
 
+/* FNV-1a (http://www.isthe.com/chongo/tech/comp/fnv/). */
+static inline uint32_t
+hash_buf(const char *string, size_t len)
+{
+    uint32_t hash = 2166136261u;
+    for (size_t i = 0; i < len / 2; i++) {
+        hash ^= (uint8_t) string[i];
+        hash *= 0x01000193;
+        hash ^= (uint8_t) string[len - 1 - i];
+        hash *= 0x01000193;
+    }
+    return hash;
+}
+
 struct atom_node {
     xkb_atom_t left, right;
     uint32_t fingerprint;
@@ -122,11 +136,7 @@ static bool
 find_atom_pointer(struct atom_table *table, const char *string, size_t len,
                   xkb_atom_t **atomp_out, uint32_t *fingerprint_out)
 {
-    uint32_t fingerprint = 0;
-    for (size_t i = 0; i < (len + 1) / 2; i++) {
-        fingerprint = fingerprint * 27 + string[i];
-        fingerprint = fingerprint * 27 + string[len - 1 - i];
-    }
+    uint32_t fingerprint = hash_buf(string, len);
 
     xkb_atom_t *atomp = &table->root;
     while (*atomp != XKB_ATOM_NONE) {
