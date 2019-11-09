@@ -87,9 +87,7 @@ struct atom_table {
 struct atom_table *
 atom_table_new(void)
 {
-    struct atom_table *table;
-
-    table = calloc(1, sizeof(*table));
+    struct atom_table *table = calloc(1, sizeof(*table));
     if (!table)
         return NULL;
 
@@ -103,11 +101,10 @@ atom_table_new(void)
 void
 atom_table_free(struct atom_table *table)
 {
-    struct atom_node *node;
-
     if (!table)
         return;
 
+    struct atom_node *node;
     darray_foreach(node, table->table)
         free(node->string);
     darray_free(table->table);
@@ -125,15 +122,13 @@ static bool
 find_atom_pointer(struct atom_table *table, const char *string, size_t len,
                   xkb_atom_t **atomp_out, uint32_t *fingerprint_out)
 {
-    xkb_atom_t *atomp = &table->root;
     uint32_t fingerprint = 0;
-    bool found = false;
-
     for (size_t i = 0; i < (len + 1) / 2; i++) {
         fingerprint = fingerprint * 27 + string[i];
         fingerprint = fingerprint * 27 + string[len - 1 - i];
     }
 
+    xkb_atom_t *atomp = &table->root;
     while (*atomp != XKB_ATOM_NONE) {
         struct atom_node *node = &darray_item(table->table, *atomp);
 
@@ -146,15 +141,14 @@ find_atom_pointer(struct atom_table *table, const char *string, size_t len,
         else {
             /* Now start testing the strings. */
             const int cmp = strncmp(string, node->string, len);
-            if (cmp < 0 || (cmp == 0 && node->string[len] != '\0')) {
+            if (cmp == 0 && node->string[len] == '\0') {
+                break;
+            }
+            else if (cmp < 0) {
                 atomp = &node->left;
             }
-            else if (cmp > 0) {
-                atomp = &node->right;
-            }
             else {
-                found = true;
-                break;
+                atomp = &node->right;
             }
         }
     }
@@ -163,14 +157,13 @@ find_atom_pointer(struct atom_table *table, const char *string, size_t len,
         *fingerprint_out = fingerprint;
     if (atomp_out)
         *atomp_out = atomp;
-    return found;
+    return *atomp != XKB_ATOM_NONE;
 }
 
 xkb_atom_t
 atom_lookup(struct atom_table *table, const char *string, size_t len)
 {
     xkb_atom_t *atomp;
-
     if (!find_atom_pointer(table, string, len, &atomp, NULL))
         return XKB_ATOM_NONE;
 
@@ -181,16 +174,13 @@ xkb_atom_t
 atom_intern(struct atom_table *table, const char *string, size_t len)
 {
     xkb_atom_t *atomp;
-    struct atom_node node;
     uint32_t fingerprint;
-
-    if (find_atom_pointer(table, string, len, &atomp, &fingerprint)) {
+    if (find_atom_pointer(table, string, len, &atomp, &fingerprint))
         return *atomp;
-    }
 
+    struct atom_node node;
     node.string = strndup(string, len);
     assert(node.string != NULL);
-
     node.left = node.right = XKB_ATOM_NONE;
     node.fingerprint = fingerprint;
     xkb_atom_t atom = darray_size(table->table);
