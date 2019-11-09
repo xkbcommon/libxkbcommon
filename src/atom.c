@@ -149,9 +149,8 @@ atom_text(struct atom_table *table, xkb_atom_t atom)
     return darray_item(table->table, atom).string;
 }
 
-static bool
-find_atom_pointer(struct atom_table *table, const char *string, size_t len,
-                  xkb_atom_t **atomp_out, uint32_t *fingerprint_out)
+xkb_atom_t
+atom_intern(struct atom_table *table, const char *string, size_t len, bool add)
 {
     uint32_t fingerprint = hash_buf(string, len);
 
@@ -169,7 +168,7 @@ find_atom_pointer(struct atom_table *table, const char *string, size_t len,
             /* Now start testing the strings. */
             const int cmp = strncmp(string, node->string, len);
             if (cmp == 0 && node->string[len] == '\0') {
-                break;
+                return *atomp;
             }
             else if (cmp < 0) {
                 atomp = &node->left;
@@ -180,30 +179,8 @@ find_atom_pointer(struct atom_table *table, const char *string, size_t len,
         }
     }
 
-    if (fingerprint_out)
-        *fingerprint_out = fingerprint;
-    if (atomp_out)
-        *atomp_out = atomp;
-    return *atomp != XKB_ATOM_NONE;
-}
-
-xkb_atom_t
-atom_lookup(struct atom_table *table, const char *string, size_t len)
-{
-    xkb_atom_t *atomp;
-    if (!find_atom_pointer(table, string, len, &atomp, NULL))
+    if (!add)
         return XKB_ATOM_NONE;
-
-    return *atomp;
-}
-
-xkb_atom_t
-atom_intern(struct atom_table *table, const char *string, size_t len)
-{
-    xkb_atom_t *atomp;
-    uint32_t fingerprint;
-    if (find_atom_pointer(table, string, len, &atomp, &fingerprint))
-        return *atomp;
 
     struct atom_node node;
     node.string = strndup(string, len);
@@ -214,6 +191,5 @@ atom_intern(struct atom_table *table, const char *string, size_t len)
     /* Do this before the append, as it may realloc and change the offsets. */
     *atomp = atom;
     darray_append(table->table, node);
-
     return atom;
 }

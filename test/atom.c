@@ -27,10 +27,10 @@
 #include "atom.h"
 
 #define INTERN_LITERAL(table, literal) \
-    atom_intern(table, literal, sizeof(literal) - 1)
+    atom_intern(table, literal, sizeof(literal) - 1, true)
 
 #define LOOKUP_LITERAL(table, literal) \
-    atom_lookup(table, literal, sizeof(literal) - 1)
+    atom_intern(table, literal, sizeof(literal) - 1, false)
 
 static void
 random_string(char **str_out, size_t *len_out)
@@ -85,7 +85,7 @@ test_random_strings(void)
     for (int i = 0; i < N; i++) {
         random_string(&arr[i].string, &arr[i].len);
 
-        atom = atom_lookup(table, arr[i].string, arr[i].len);
+        atom = atom_intern(table, arr[i].string, arr[i].len, false);
         if (atom != XKB_ATOM_NONE) {
             string = atom_text(table, atom);
             assert(string);
@@ -107,7 +107,7 @@ test_random_strings(void)
             continue;
         }
 
-        arr[i].atom = atom_intern(table, arr[i].string, arr[i].len);
+        arr[i].atom = atom_intern(table, arr[i].string, arr[i].len, true);
         if (arr[i].atom == XKB_ATOM_NONE) {
             fprintf(stderr, "failed to intern! len: %lu, string: %.*s\n",
                     arr[i].len, (int) arr[i].len, arr[i].string);
@@ -158,14 +158,14 @@ main(void)
     assert(table);
 
     assert(atom_text(table, XKB_ATOM_NONE) == NULL);
-    assert(atom_lookup(table, NULL, 0) == XKB_ATOM_NONE);
+    assert(atom_intern(table, NULL, 0, false) == XKB_ATOM_NONE);
 
     atom1 = INTERN_LITERAL(table, "hello");
     assert(atom1 != XKB_ATOM_NONE);
     assert(atom1 == LOOKUP_LITERAL(table, "hello"));
     assert(streq(atom_text(table, atom1), "hello"));
 
-    atom2 = atom_intern(table, "hello", 3);
+    atom2 = atom_intern(table, "hello", 3, true);
     assert(atom2 != XKB_ATOM_NONE);
     assert(atom1 != atom2);
     assert(streq(atom_text(table, atom2), "hel"));
@@ -173,7 +173,7 @@ main(void)
     assert(LOOKUP_LITERAL(table, "hell") == XKB_ATOM_NONE);
     assert(LOOKUP_LITERAL(table, "hello") == atom1);
 
-    atom3 = atom_intern(table, "", 0);
+    atom3 = atom_intern(table, "", 0, true);
     assert(atom3 != XKB_ATOM_NONE);
     assert(LOOKUP_LITERAL(table, "") == atom3);
 
