@@ -87,6 +87,23 @@ hash_buf(const char *string, size_t len)
     return hash;
 }
 
+/*
+ * The atom table is a insert-only unbalanced binary search tree
+ * mapping strings to atoms.
+ *
+ * The tree nodes are kept contiguously in the `table` array.
+ *
+ * The atom value is the index of the tree node in the array.
+ *
+ * As an optimization, strings are not compared by value directly,
+ *      s1 < s2
+ * instead, they are compared by fingerprint (hash) and the value
+ * is only used to resolve collisions:
+ *      (fingerprint(s1), s1) < (fingerprint(s2), s2)
+ * Fingerprint are pre-calculated and saved in the tree nodes.
+ *
+ * Why is this not just a hash table? Who knows!
+ */
 struct atom_node {
     xkb_atom_t left, right;
     uint32_t fingerprint;
