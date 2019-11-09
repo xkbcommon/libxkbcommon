@@ -158,23 +158,23 @@ atom_intern(struct atom_table *table, const char *string, size_t len, bool add)
     while (*atomp != XKB_ATOM_NONE) {
         struct atom_node *node = &darray_item(table->table, *atomp);
 
-        if (fingerprint < node->fingerprint) {
-            atomp = &node->left;
-        }
-        else if (fingerprint > node->fingerprint) {
+        if (fingerprint > node->fingerprint) {
             atomp = &node->right;
+        }
+        else if (fingerprint < node->fingerprint) {
+            atomp = &node->left;
         }
         else {
             /* Now start testing the strings. */
             const int cmp = strncmp(string, node->string, len);
-            if (cmp == 0 && node->string[len] == '\0') {
+            if (likely(cmp == 0 && node->string[len] == '\0')) {
                 return *atomp;
             }
-            else if (cmp < 0) {
-                atomp = &node->left;
+            else if (cmp > 0) {
+                atomp = &node->right;
             }
             else {
-                atomp = &node->right;
+                atomp = &node->left;
             }
         }
     }
