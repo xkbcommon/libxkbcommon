@@ -52,10 +52,10 @@ ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
         *elem_rtrn = xkb_atom_text(ctx, expr->array_ref.element);
         *field_rtrn = xkb_atom_text(ctx, expr->array_ref.field);
         *index_rtrn = expr->array_ref.entry;
-	if (expr->array_ref.element != XKB_ATOM_NONE && *elem_rtrn == NULL)
-		return false;
-	if (*field_rtrn == NULL)
-		return false;
+        if (expr->array_ref.element != XKB_ATOM_NONE && *elem_rtrn == NULL)
+            return false;
+        if (*field_rtrn == NULL)
+            return false;
         return true;
     default:
         break;
@@ -549,7 +549,7 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
 
     case EXPR_ARRAY_REF:
         bogus = "array reference";
-	/* fallthrough */
+        /* fallthrough */
     case EXPR_ACTION_DECL:
         if (bogus == NULL)
             bogus = "function use";

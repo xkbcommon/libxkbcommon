@@ -667,7 +667,7 @@ rhs:
         }
         production.keysym = keysym;
         production.has_keysym = true;
-	/* fallthrough */
+        /* fallthrough */
     case TOK_END_OF_LINE:
         if (!production.has_string && !production.has_keysym) {
             scanner_warn(s, "right-hand side must have at least one of string or keysym; skipping line");
