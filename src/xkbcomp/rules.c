@@ -823,10 +823,9 @@ gettok(struct matcher *m, struct scanner *s)
 static bool
 matcher_match(struct matcher *m, struct scanner *s,
               const char *string, size_t len,
-              const char *file_name, struct xkb_component_names *out)
+              const char *file_name)
 {
     enum rules_token tok;
-    struct matched_sval *mval;
 
     if (!m)
         return false;
@@ -961,37 +960,6 @@ unexpected:
     }
 
 finish:
-    if (darray_empty(m->kccgst[KCCGST_KEYCODES]) ||
-        darray_empty(m->kccgst[KCCGST_TYPES]) ||
-        darray_empty(m->kccgst[KCCGST_COMPAT]) ||
-        /* darray_empty(m->kccgst[KCCGST_GEOMETRY]) || */
-        darray_empty(m->kccgst[KCCGST_SYMBOLS]))
-        goto error;
-
-    darray_steal(m->kccgst[KCCGST_KEYCODES], &out->keycodes, NULL);
-    darray_steal(m->kccgst[KCCGST_TYPES], &out->types, NULL);
-    darray_steal(m->kccgst[KCCGST_COMPAT], &out->compat, NULL);
-    darray_steal(m->kccgst[KCCGST_SYMBOLS], &out->symbols, NULL);
-    darray_free(m->kccgst[KCCGST_GEOMETRY]);
-
-
-    mval = &m->rmlvo.model;
-    if (!mval->matched && mval->sval.len > 0)
-        log_err(m->ctx, "Unrecognized RMLVO model \"%.*s\" was ignored\n",
-                mval->sval.len, mval->sval.start);
-    darray_foreach(mval, m->rmlvo.layouts)
-        if (!mval->matched && mval->sval.len > 0)
-            log_err(m->ctx, "Unrecognized RMLVO layout \"%.*s\" was ignored\n",
-                    mval->sval.len, mval->sval.start);
-    darray_foreach(mval, m->rmlvo.variants)
-        if (!mval->matched && mval->sval.len > 0)
-            log_err(m->ctx, "Unrecognized RMLVO variant \"%.*s\" was ignored\n",
-                    mval->sval.len, mval->sval.start);
-    darray_foreach(mval, m->rmlvo.options)
-        if (!mval->matched && mval->sval.len > 0)
-            log_err(m->ctx, "Unrecognized RMLVO option \"%.*s\" was ignored\n",
-                    mval->sval.len, mval->sval.start);
-
     return true;
 
 state_error:
@@ -1003,8 +971,7 @@ error:
 static bool
 read_rules_file(struct xkb_context *ctx,
                 struct matcher *matcher,
-                const char *path,
-                struct xkb_component_names *out)
+                const char *path)
 {
     bool ret = false;
     FILE *file;
@@ -1025,7 +992,7 @@ read_rules_file(struct xkb_context *ctx,
 
     scanner_init(&scanner, matcher->ctx, string, size, path, NULL);
 
-    ret = matcher_match(matcher, &scanner, string, size, path, out);
+    ret = matcher_match(matcher, &scanner, string, size, path);
 
     unmap_file(string, size);
 out:
@@ -1043,6 +1010,7 @@ xkb_components_from_rules(struct xkb_context *ctx,
     FILE *file;
     char *path = NULL;
     struct matcher *matcher = NULL;
+    struct matched_sval *mval;
 
     file = FindFileInXkbPath(ctx, rmlvo->rules, FILE_TYPE_RULES, &path);
     if (!file)
@@ -1053,9 +1021,40 @@ xkb_components_from_rules(struct xkb_context *ctx,
 
     matcher = matcher_new(ctx, rmlvo);
 
-    ret = read_rules_file(ctx, matcher, path, out);
-    if (!ret)
+    ret = read_rules_file(ctx, matcher, path);
+    if (!ret ||
+        darray_empty(matcher->kccgst[KCCGST_KEYCODES]) ||
+        darray_empty(matcher->kccgst[KCCGST_TYPES]) ||
+        darray_empty(matcher->kccgst[KCCGST_COMPAT]) ||
+        /* darray_empty(matcher->kccgst[KCCGST_GEOMETRY]) || */
+        darray_empty(matcher->kccgst[KCCGST_SYMBOLS])) {
         log_err(ctx, "No components returned from XKB rules \"%s\"\n", path);
+        ret = false;
+        goto err_out;
+    }
+
+    darray_steal(matcher->kccgst[KCCGST_KEYCODES], &out->keycodes, NULL);
+    darray_steal(matcher->kccgst[KCCGST_TYPES], &out->types, NULL);
+    darray_steal(matcher->kccgst[KCCGST_COMPAT], &out->compat, NULL);
+    darray_steal(matcher->kccgst[KCCGST_SYMBOLS], &out->symbols, NULL);
+    darray_free(matcher->kccgst[KCCGST_GEOMETRY]);
+
+    mval = &matcher->rmlvo.model;
+    if (!mval->matched && mval->sval.len > 0)
+        log_err(matcher->ctx, "Unrecognized RMLVO model \"%.*s\" was ignored\n",
+                mval->sval.len, mval->sval.start);
+    darray_foreach(mval, matcher->rmlvo.layouts)
+        if (!mval->matched && mval->sval.len > 0)
+            log_err(matcher->ctx, "Unrecognized RMLVO layout \"%.*s\" was ignored\n",
+                    mval->sval.len, mval->sval.start);
+    darray_foreach(mval, matcher->rmlvo.variants)
+        if (!mval->matched && mval->sval.len > 0)
+            log_err(matcher->ctx, "Unrecognized RMLVO variant \"%.*s\" was ignored\n",
+                    mval->sval.len, mval->sval.start);
+    darray_foreach(mval, matcher->rmlvo.options)
+        if (!mval->matched && mval->sval.len > 0)
+            log_err(matcher->ctx, "Unrecognized RMLVO option \"%.*s\" was ignored\n",
+                    mval->sval.len, mval->sval.start);
 
 err_out:
     matcher_free(matcher);
