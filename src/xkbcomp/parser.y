@@ -314,7 +314,8 @@ Decl            :       OptMergeMode VarDecl
                         }
                 |       OptMergeMode VModDecl
                         {
-                            $2->merge = $1;
+                            for (VModDef *vmod = $2; vmod; vmod = (VModDef *) vmod->common.next)
+                                vmod->merge = $1;
                             $$ = (ParseCommon *) $2;
                         }
                 |       OptMergeMode InterpretDecl
