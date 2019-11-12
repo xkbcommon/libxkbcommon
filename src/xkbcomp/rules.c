@@ -1034,8 +1034,8 @@ xkb_components_from_rules(struct xkb_context *ctx,
 {
     bool ret = false;
     FILE *file;
-    char *path;
-    struct matcher *matcher;
+    char *path = NULL;
+    struct matcher *matcher = NULL;
 
     file = FindFileInXkbPath(ctx, rmlvo->rules, FILE_TYPE_RULES, &path);
     if (!file)
@@ -1050,8 +1050,8 @@ xkb_components_from_rules(struct xkb_context *ctx,
     if (!ret)
         log_err(ctx, "No components returned from XKB rules \"%s\"\n", path);
 
+err_out:
     matcher_free(matcher);
     free(path);
-err_out:
     return ret;
 }
