@@ -753,7 +753,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     }
 
     nActs = 0;
-    for (act = value->unary.child; act; act = (ExprDef *) act->common.next)
+    for (act = value->actions.actions; act; act = (ExprDef *) act->common.next)
         nActs++;
 
     if (darray_size(groupi->levels) < nActs)
@@ -761,7 +761,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
     groupi->defined |= GROUP_FIELD_ACTS;
 
-    act = value->unary.child;
+    act = value->actions.actions;
     for (unsigned i = 0; i < nActs; i++) {
         union xkb_action *toAct = &darray_item(groupi->levels, i).action;
 

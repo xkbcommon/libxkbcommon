@@ -207,6 +207,16 @@ ExprCreateAction(xkb_atom_t name, ExprDef *args)
 }
 
 ExprDef *
+ExprCreateActionList(ExprDef *actions)
+{
+    ExprDef *expr = ExprCreate(EXPR_ACTION_LIST, EXPR_TYPE_ACTIONS, sizeof(ExprActionList));
+    if (!expr)
+        return NULL;
+    expr->actions.actions = actions;
+    return expr;
+}
+
+ExprDef *
 ExprCreateKeysymList(xkb_keysym_t sym)
 {
     ExprDef *expr = ExprCreate(EXPR_KEYSYM_LIST, EXPR_TYPE_SYMBOLS, sizeof(ExprKeysymList));
@@ -592,7 +602,6 @@ FreeExpr(ExprDef *expr)
         return;
 
     switch (expr->expr.op) {
-    case EXPR_ACTION_LIST:
     case EXPR_NEGATE:
     case EXPR_UNARY_PLUS:
     case EXPR_NOT:
@@ -611,6 +620,10 @@ FreeExpr(ExprDef *expr)
 
     case EXPR_ACTION_DECL:
         FreeStmt((ParseCommon *) expr->action.args);
+        break;
+
+    case EXPR_ACTION_LIST:
+        FreeStmt((ParseCommon *) expr->actions.actions);
         break;
 
     case EXPR_ARRAY_REF:
@@ -812,6 +825,7 @@ static const char *expr_value_type_strings[_EXPR_TYPE_NUM_VALUES] = {
     [EXPR_TYPE_FLOAT] = "float",
     [EXPR_TYPE_STRING] = "string",
     [EXPR_TYPE_ACTION] = "action",
+    [EXPR_TYPE_ACTIONS] = "actions",
     [EXPR_TYPE_KEYNAME] = "keyname",
     [EXPR_TYPE_SYMBOLS] = "symbols",
 };

@@ -98,6 +98,7 @@ enum expr_value_type {
     EXPR_TYPE_FLOAT,
     EXPR_TYPE_STRING,
     EXPR_TYPE_ACTION,
+    EXPR_TYPE_ACTIONS,
     EXPR_TYPE_KEYNAME,
     EXPR_TYPE_SYMBOLS,
 
@@ -230,6 +231,11 @@ typedef struct {
 
 typedef struct {
     ExprCommon expr;
+    ExprDef *actions;
+} ExprActionList;
+
+typedef struct {
+    ExprCommon expr;
     darray(xkb_keysym_t) syms;
     darray(unsigned int) symsMapIndex;
     darray(unsigned int) symsNumEntries;
@@ -249,6 +255,7 @@ union ExprDef {
     ExprFieldRef field_ref;
     ExprArrayRef array_ref;
     ExprAction action;
+    ExprActionList actions;
     ExprKeysymList keysym_list;
 };
 

@@ -65,6 +65,9 @@ ExprDef *
 ExprCreateAction(xkb_atom_t name, ExprDef *args);
 
 ExprDef *
+ExprCreateActionList(ExprDef *actions);
+
+ExprDef *
 ExprCreateMultiKeysymList(ExprDef *list);
 
 ExprDef *

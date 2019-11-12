@@ -454,7 +454,7 @@ SymbolsVarDecl  :       Lhs EQUALS Expr         { $$ = VarCreate($1, $3); }
 ArrayInit       :       OBRACKET OptKeySymList CBRACKET
                         { $$ = $2; }
                 |       OBRACKET ActionList CBRACKET
-                        { $$ = ExprCreateUnary(EXPR_ACTION_LIST, EXPR_TYPE_ACTION, $2); }
+                        { $$ = ExprCreateActionList($2); }
                 ;
 
 GroupCompatDecl :       GROUP Integer EQUALS Expr SEMI
