@@ -619,7 +619,7 @@ static bool
 append_expanded_kccgst_value(struct matcher *m, darray_char *to,
                              struct sval value)
 {
-    const char *s = value.start;
+    const char *str = value.start;
     darray_char expanded = darray_new();
     char ch;
     bool expanded_plus, to_plus;
@@ -635,9 +635,9 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
         struct matched_sval *expanded_value;
 
         /* Check if that's a start of an expansion. */
-        if (s[i] != '%') {
+        if (str[i] != '%') {
             /* Just a normal character. */
-            darray_appends_nullterminate(expanded, &s[i++], 1);
+            darray_appends_nullterminate(expanded, &str[i++], 1);
             continue;
         }
         if (++i >= value.len) goto error;
@@ -645,15 +645,15 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
         pfx = sfx = 0;
 
         /* Check for prefix. */
-        if (s[i] == '(' || s[i] == '+' || s[i] == '|' ||
-            s[i] == '_' || s[i] == '-') {
-            pfx = s[i];
-            if (s[i] == '(') sfx = ')';
+        if (str[i] == '(' || str[i] == '+' || str[i] == '|' ||
+            str[i] == '_' || str[i] == '-') {
+            pfx = str[i];
+            if (str[i] == '(') sfx = ')';
             if (++i >= value.len) goto error;
         }
 
         /* Mandatory model/layout/variant specifier. */
-        switch (s[i++]) {
+        switch (str[i++]) {
         case 'm': mlv = MLVO_MODEL; break;
         case 'l': mlv = MLVO_LAYOUT; break;
         case 'v': mlv = MLVO_VARIANT; break;
@@ -662,7 +662,7 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
 
         /* Check for index. */
         idx = XKB_LAYOUT_INVALID;
-        if (i < value.len && s[i] == '[') {
+        if (i < value.len && str[i] == '[') {
             int consumed;
 
             if (mlv != MLVO_LAYOUT && mlv != MLVO_VARIANT) {
@@ -670,7 +670,7 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
                 goto error;
             }
 
-            consumed = extract_layout_index(s + i, value.len - i, &idx);
+            consumed = extract_layout_index(str + i, value.len - i, &idx);
             if (consumed == -1) goto error;
             i += consumed;
         }
@@ -678,7 +678,7 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
         /* Check for suffix, if there supposed to be one. */
         if (sfx != 0) {
             if (i >= value.len) goto error;
-            if (s[i++] != sfx) goto error;
+            if (str[i++] != sfx) goto error;
         }
 
         /* Get the expanded value. */
