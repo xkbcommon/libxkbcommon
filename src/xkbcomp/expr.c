@@ -182,6 +182,9 @@ ExprResolveBoolean(struct xkb_context *ctx, const ExprDef *expr,
     case EXPR_ASSIGN:
     case EXPR_NEGATE:
     case EXPR_UNARY_PLUS:
+    case EXPR_ACTION_DECL:
+    case EXPR_ACTION_LIST:
+    case EXPR_KEYSYM_LIST:
         log_err(ctx, "%s of boolean values not permitted\n",
                 expr_op_type_to_string(expr->expr.op));
         break;
@@ -474,6 +477,9 @@ ExprResolveString(struct xkb_context *ctx, const ExprDef *expr,
     case EXPR_INVERT:
     case EXPR_NOT:
     case EXPR_UNARY_PLUS:
+    case EXPR_ACTION_DECL:
+    case EXPR_ACTION_LIST:
+    case EXPR_KEYSYM_LIST:
         log_err(ctx, "%s of strings not permitted\n",
                 expr_op_type_to_string(expr->expr.op));
         return false;
