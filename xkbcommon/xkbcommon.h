@@ -616,11 +616,13 @@ xkb_context_get_user_data(struct xkb_context *context);
  * The include paths are the file-system paths that are searched when an
  * include statement is encountered during keymap compilation.
  *
- * The default include paths are:
- * - The system XKB root, defined at library configuration time.
- *   If * the `XKB_CONFIG_ROOT` environment is defined, it is used instead.
+ * The default include paths are, in that lookup order:
+ * - The path `$XDG_CONFIG_HOME/xkb`, with the usual `XDG_CONFIG_HOME`
+ *   fallback to `$HOME/.config/` if unset.
  * - The path `$HOME/.xkb`, where $HOME is the value of the environment
  *   variable `HOME`.
+ * - The `XKB_CONFIG_ROOT` environment variable, if defined, otherwise
+ *   the system XKB root, defined at library configuration time.
  *
  * @{
  */
