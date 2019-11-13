@@ -258,13 +258,8 @@ XkbCompositeType:       XKB_KEYMAP      { $$ = FILE_TYPE_KEYMAP; }
                 ;
 
 XkbMapConfigList :      XkbMapConfigList XkbMapConfig
-                        {
-                            if (!$2)
-                                $$ = $1;
-                            else
-                                $$ = (XkbFile *) AppendStmt((ParseCommon *) $1,
-                                                            (ParseCommon *) $2);
-                        }
+                        { $$ = (XkbFile *) AppendStmt((ParseCommon *) $1,
+                                                      (ParseCommon *) $2); }
                 |       XkbMapConfig
                         { $$ = $1; }
                 ;
