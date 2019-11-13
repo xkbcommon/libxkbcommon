@@ -27,9 +27,6 @@
 #ifndef XKBCOMP_AST_BUILD_H
 #define XKBCOMP_AST_BUILD_H
 
-ParseCommon *
-AppendStmt(ParseCommon *to, ParseCommon *append);
-
 ExprDef *
 ExprCreateString(xkb_atom_t str);
 

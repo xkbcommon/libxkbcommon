@@ -55,20 +55,6 @@
 #include "ast-build.h"
 #include "include.h"
 
-ParseCommon *
-AppendStmt(ParseCommon *to, ParseCommon *append)
-{
-    ParseCommon *iter;
-
-    if (!to)
-        return append;
-
-    for (iter = to; iter->next; iter = iter->next);
-
-    iter->next = append;
-    return to;
-}
-
 static ExprDef *
 ExprCreate(enum expr_op_type op, enum expr_value_type type, size_t size)
 {
@@ -568,7 +554,7 @@ XkbFileFromComponents(struct xkb_context *ctx,
     enum xkb_file_type type;
     IncludeStmt *include = NULL;
     XkbFile *file = NULL;
-    ParseCommon *defs = NULL;
+    ParseCommon *defs = NULL, *defsLast = NULL;
 
     for (type = FIRST_KEYMAP_FILE_TYPE; type <= LAST_KEYMAP_FILE_TYPE; type++) {
         include = IncludeCreate(ctx, components[type], MERGE_DEFAULT);
@@ -581,7 +567,10 @@ XkbFileFromComponents(struct xkb_context *ctx,
             goto err;
         }
 
-        defs = AppendStmt(defs, &file->common);
+        if (!defs)
+            defsLast = defs = &file->common;
+        else
+            defsLast = defsLast->next = &file->common;
     }
 
     file = XkbFileCreate(FILE_TYPE_KEYMAP, NULL, defs, 0);
