@@ -349,6 +349,7 @@ static bool
 read_rules_file(struct xkb_context *ctx,
                 struct matcher *matcher,
                 unsigned include_depth,
+                FILE *file,
                 const char *path);
 
 static void
@@ -356,8 +357,8 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
                 unsigned include_depth,
                 struct sval inc)
 {
-    bool ret;
     struct scanner s; /* parses the !include value */
+    FILE *file;
 
     scanner_init(&s, m->ctx, inc.start, inc.len,
                  parent_scanner->file_name, NULL);
@@ -408,9 +409,15 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
         return;
     }
 
-    ret = read_rules_file(m->ctx, m, include_depth + 1, s.buf);
-    if (!ret)
-        log_err(m->ctx, "No components returned from included XKB rules \"%s\"\n", s.buf);
+    file = fopen(s.buf, "r");
+    if (file) {
+        bool ret = read_rules_file(m->ctx, m, include_depth + 1, file, s.buf);
+        if (!ret)
+            log_err(m->ctx, "No components returned from included XKB rules \"%s\"\n", s.buf);
+        fclose(file);
+    } else {
+        log_err(m->ctx, "Failed to open included XKB rules \"%s\"\n", s.buf);
+    }
 }
 
 static void
@@ -1059,17 +1066,13 @@ static bool
 read_rules_file(struct xkb_context *ctx,
                 struct matcher *matcher,
                 unsigned include_depth,
+                FILE *file,
                 const char *path)
 {
     bool ret = false;
-    FILE *file;
     char *string;
     size_t size;
     struct scanner scanner;
-
-    file = fopen(path, "r");
-    if (!file)
-        goto out;
 
     ret = map_file(file, &string, &size);
     if (!ret) {
@@ -1084,8 +1087,6 @@ read_rules_file(struct xkb_context *ctx,
 
     unmap_file(string, size);
 out:
-    if (file)
-        fclose(file);
     return ret;
 }
 
@@ -1104,12 +1105,9 @@ xkb_components_from_rules(struct xkb_context *ctx,
     if (!file)
         goto err_out;
 
-    fclose(file); /* FIXME: fix FindFileInXkbPath to not open the file in
-                     the first place */
-
     matcher = matcher_new(ctx, rmlvo);
 
-    ret = read_rules_file(ctx, matcher, 0, path);
+    ret = read_rules_file(ctx, matcher, 0, file, path);
     if (!ret ||
         darray_empty(matcher->kccgst[KCCGST_KEYCODES]) ||
         darray_empty(matcher->kccgst[KCCGST_TYPES]) ||
@@ -1145,6 +1143,8 @@ xkb_components_from_rules(struct xkb_context *ctx,
                     mval->sval.len, mval->sval.start);
 
 err_out:
+    if (file)
+        fclose(file);
     matcher_free(matcher);
     free(path);
     return ret;
