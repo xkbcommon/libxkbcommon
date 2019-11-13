@@ -22,6 +22,7 @@
  */
 
 #include <unistd.h>
+#include <getopt.h>
 
 #include "test.h"
 #include "xkbcomp/xkbcomp-priv.h"
@@ -30,13 +31,29 @@
 int
 main(int argc, char *argv[])
 {
-    int opt;
     struct xkb_rule_names rmlvo = { NULL };
     struct xkb_context *ctx;
     struct xkb_component_names kccgst;
 
-    while ((opt = getopt(argc, argv, "r:m:l:v:o:h")) != -1) {
-        switch (opt) {
+    static struct option opts[] = {
+        {"help",        no_argument,            0, 'h'},
+        {"rules",       required_argument,      0, 'r'},
+        {"model",       required_argument,      0, 'm'},
+        {"layout",      required_argument,      0, 'l'},
+        {"variant",     required_argument,      0, 'v'},
+        {"options",     required_argument,      0, 'o'},
+        {0, 0, 0, 0},
+    };
+
+    while (1) {
+        int c;
+        int option_index = 0;
+
+        c = getopt_long(argc, argv, "r:m:l:v:o:h", opts, &option_index);
+        if (c == -1)
+            break;
+
+        switch (c) {
         case 'r':
             rmlvo.rules = optarg;
             break;
