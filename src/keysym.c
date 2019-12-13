@@ -478,6 +478,8 @@ UCSConvertCase(uint32_t code, xkb_keysym_t *lower, xkb_keysym_t *upper)
             *upper = 0x0178;
         else if (code == 0x00b5)      /* micro sign */
             *upper = 0x039c;
+        else if (code == 0x00df)      /* ssharp */
+            *upper = 0x1e9e;
 	return;
     }
 
@@ -607,6 +609,8 @@ UCSConvertCase(uint32_t code, xkb_keysym_t *lower, xkb_keysym_t *upper)
         }
         else if (code == 0x1e9b)
             *upper = 0x1e60;
+        else if (code == 0x1e9e)
+            *lower = 0x00df; /* ssharp */
     }
 
     /* Greek Extended, U+1F00 to U+1FFF */
