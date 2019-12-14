@@ -311,23 +311,27 @@ Flag            :       PARTIAL                 { $$ = MAP_IS_PARTIAL; }
 
 DeclList        :       DeclList Decl
                         {
-                            /*
-                             * TODO: This is needed because of VModDecl, which
-                             * is a list and is "inlined" into the DeclList.
-                             * Should change to avoid the O(N)-append behavior,
-                             * like we do in the other lists.
-                             */
                             if ($2) {
-                                if (!$1.head)
-                                    $$.head = $2;
-                                else
-                                    $$.head = $1.head;
-                                if (!$1.last)
-                                    $$.last = $2;
-                                else
-                                    $$.last = $1.last->next = $2;
-                                while ($$.last->next)
-                                    $$.last = $$.last->next;
+                                if ($1.head) {
+                                    $$.head = $1.head; $1.last->next = $2; $$.last = $2;
+                                } else {
+                                    $$.head = $$.last = $2;
+                                }
+                            }
+                        }
+                        /*
+                         * VModDecl is "inlined" directly into DeclList, i.e.
+                         * each VModDef in the VModDecl is a separate Decl in
+                         * the File.
+                         */
+                |       DeclList OptMergeMode VModDecl
+                        {
+                            for (VModDef *vmod = $3.head; vmod; vmod = (VModDef *) vmod->common.next)
+                                vmod->merge = $2;
+                            if ($1.head) {
+                                $$.head = $1.head; $1.last->next = &$3.head->common; $$.last = &$3.last->common;
+                            } else {
+                                $$.head = &$3.head->common; $$.last = &$3.last->common;
                             }
                         }
                 |       { $$.head = $$.last = NULL; }
@@ -338,12 +342,7 @@ Decl            :       OptMergeMode VarDecl
                             $2->merge = $1;
                             $$ = (ParseCommon *) $2;
                         }
-                |       OptMergeMode VModDecl
-                        {
-                            for (VModDef *vmod = $2.head; vmod; vmod = (VModDef *) vmod->common.next)
-                                vmod->merge = $1;
-                            $$ = (ParseCommon *) $2.head;
-                        }
+                /*      OptMergeMode VModDecl - see above. */
                 |       OptMergeMode InterpretDecl
                         {
                             $2->merge = $1;
