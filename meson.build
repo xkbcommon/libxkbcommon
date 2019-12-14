@@ -285,9 +285,6 @@ test_env.set('XKB_LOG_LEVEL', 'debug')
 test_env.set('XKB_LOG_VERBOSITY', '10')
 test_env.set('top_srcdir', meson.source_root())
 test_env.set('top_builddir', meson.build_root())
-test_env.set('MALLOC_PERTURB_', '15')
-test_env.set('MallocPreScribble', '1')
-test_env.set('MallocScribble', '1')
 # Some tests need to use unexported symbols, so we link them against
 # an internal copy of libxkbcommon with all symbols exposed.
 libxkbcommon_test_internal = static_library(
