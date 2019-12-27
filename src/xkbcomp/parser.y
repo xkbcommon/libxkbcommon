@@ -742,7 +742,7 @@ KeySym          :       IDENT
                             }
                             else {
                                 char buf[32];
-                                snprintf(buf, sizeof(buf), "0x%lx", $1);
+                                snprintf(buf, sizeof(buf), "0x%"PRIx64, $1);
                                 if (!resolve_keysym(buf, &$$)) {
                                     parser_warn(param, "unrecognized keysym \"%s\"", buf);
                                     $$ = XKB_KEY_NoSymbol;
