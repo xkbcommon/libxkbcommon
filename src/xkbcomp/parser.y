@@ -162,7 +162,6 @@ resolve_keysym(const char *name, xkb_keysym_t *sym_rtrn)
 %start  XkbFile
 
 %union  {
-        int              ival;
         int64_t          num;
         enum xkb_file_type file_type;
         char            *str;
@@ -195,8 +194,7 @@ resolve_keysym(const char *name, xkb_keysym_t *sym_rtrn)
 %type <num>     INTEGER FLOAT
 %type <str>     IDENT STRING
 %type <atom>    KEYNAME
-%type <num>     KeyCode
-%type <ival>    Number Integer Float SignedNumber DoodadType
+%type <num>     KeyCode Number Integer Float SignedNumber DoodadType
 %type <merge>   MergeMode OptMergeMode
 %type <file_type> XkbCompositeType FileType
 %type <mapFlags> Flag Flags OptFlags
@@ -736,15 +734,15 @@ KeySym          :       IDENT
                 |       Integer
                         {
                             if ($1 < 0) {
-                                parser_warn(param, "unrecognized keysym \"%d\"", $1);
+                                parser_warn(param, "unrecognized keysym \"%ld\"", $1);
                                 $$ = XKB_KEY_NoSymbol;
                             }
                             else if ($1 < 10) {      /* XKB_KEY_0 .. XKB_KEY_9 */
                                 $$ = XKB_KEY_0 + (xkb_keysym_t) $1;
                             }
                             else {
-                                char buf[17];
-                                snprintf(buf, sizeof(buf), "0x%x", $1);
+                                char buf[32];
+                                snprintf(buf, sizeof(buf), "0x%lx", $1);
                                 if (!resolve_keysym(buf, &$$)) {
                                     parser_warn(param, "unrecognized keysym \"%s\"", buf);
                                     $$ = XKB_KEY_NoSymbol;
