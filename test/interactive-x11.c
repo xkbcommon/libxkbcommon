@@ -21,12 +21,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include "config.h"
+
 #include <locale.h>
+
+#include <xcb/xkb.h>
 
 #include "xkbcommon/xkbcommon-x11.h"
 #include "test.h"
-
-#include <xcb/xkb.h>
 
 /*
  * Note: This program only handles the core keyboard device for now.

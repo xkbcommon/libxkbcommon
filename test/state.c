@@ -23,6 +23,8 @@
  * Author: Daniel Stone <daniel@fooishbar.org>
  */
 
+#include "config.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>

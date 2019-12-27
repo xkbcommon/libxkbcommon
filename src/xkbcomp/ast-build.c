@@ -51,6 +51,8 @@
  *         Ran Benita <ran234@gmail.com>
  */
 
+#include "config.h"
+
 #include "xkbcomp-priv.h"
 #include "ast-build.h"
 #include "include.h"

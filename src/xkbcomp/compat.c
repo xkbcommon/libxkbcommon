@@ -47,6 +47,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include "config.h"
+
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "expr.h"

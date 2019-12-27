@@ -24,6 +24,8 @@
  * Author: Daniel Stone <daniel@fooishbar.org>
  */
 
+#include "config.h"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>

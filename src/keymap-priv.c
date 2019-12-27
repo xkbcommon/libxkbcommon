@@ -24,6 +24,8 @@
  * Author: Daniel Stone <daniel@fooishbar.org>
  */
 
+#include "config.h"
+
 #include "keymap.h"
 
 static void

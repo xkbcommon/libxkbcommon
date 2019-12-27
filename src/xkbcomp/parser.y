@@ -31,6 +31,8 @@
  */
 
 %{
+#include "config.h"
+
 #include "xkbcomp/xkbcomp-priv.h"
 #include "xkbcomp/ast-build.h"
 #include "xkbcomp/parser-priv.h"

@@ -21,6 +21,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include "config.h"
+
 #include "test.h"
 #include "xkbcommon/xkbcommon-x11.h"
 

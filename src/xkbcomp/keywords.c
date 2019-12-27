@@ -29,6 +29,7 @@
 #error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gnu-gperf@gnu.org>."
 #endif
 
+#include "config.h"
 
 #include "xkbcomp-priv.h"
 #include "parser-priv.h"

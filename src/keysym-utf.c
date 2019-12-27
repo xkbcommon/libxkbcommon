@@ -35,6 +35,8 @@
  *
  */
 
+#include "config.h"
+
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
 #include "utf8.h"

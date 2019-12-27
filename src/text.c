@@ -24,6 +24,8 @@
  *
  ********************************************************/
 
+#include "config.h"
+
 #include "keymap.h"
 #include "text.h"
 

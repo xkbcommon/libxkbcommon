@@ -23,6 +23,8 @@
  * Author: Mike Blumenkrantz <zmike@osg.samsung.com>
  */
 
+#include "config.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -21,6 +21,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include "config.h"
+
 #include "utils.h"
 #include "table.h"
 #include "parser.h"

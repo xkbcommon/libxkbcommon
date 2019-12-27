@@ -21,6 +21,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include "config.h"
+
 #include "xkbcomp-priv.h"
 #include "parser-priv.h"
 #include "scanner-utils.h"

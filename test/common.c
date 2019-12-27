@@ -30,6 +30,8 @@
  *         Ran Benita <ran234@gmail.com>
  */
 
+#include "config.h"
+
 #include <limits.h>
 #include <fcntl.h>
 #include <unistd.h>

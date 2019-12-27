@@ -22,6 +22,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include "config.h"
 #include "test-config.h"
 
 #include "test.h"

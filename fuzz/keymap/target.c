@@ -3,6 +3,7 @@
  *
  * Currently, just parses an input file, and hopefully doesn't crash or hang.
  */
+#include "config.h"
 
 #include <assert.h>
 

@@ -49,6 +49,8 @@
  * Author: Daniel Stone <daniel@fooishbar.org>
  */
 
+#include "config.h"
+
 #include "xkbcomp-priv.h"
 #include "text.h"
 

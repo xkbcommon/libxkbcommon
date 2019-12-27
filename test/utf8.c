@@ -21,6 +21,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include "config.h"
+
 #include <assert.h>
 #include <inttypes.h>
 #include <stdbool.h>

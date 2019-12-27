@@ -22,6 +22,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include "config.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <sys/time.h>

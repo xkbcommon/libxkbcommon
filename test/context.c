@@ -23,6 +23,8 @@
  * Author: Daniel Stone <daniel@fooishbar.org>
  */
 
+#include "config.h"
+
 #include "test.h"
 #include "context.h"
 

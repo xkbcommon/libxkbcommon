@@ -59,6 +59,8 @@
  *   - messages (very unlikely)
  */
 
+#include "config.h"
+
 #include "keymap.h"
 #include "keysym.h"
 #include "utf8.h"

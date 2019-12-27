@@ -70,6 +70,8 @@
  *
  ********************************************************/
 
+#include "config.h"
+
 #include "utils.h"
 #include "atom.h"
 

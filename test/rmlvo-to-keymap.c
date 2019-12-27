@@ -21,6 +21,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include "config.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -29,6 +30,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "xkbcommon/xkbcommon.h"
 
 static bool print = false;

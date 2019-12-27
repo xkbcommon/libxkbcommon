@@ -24,6 +24,8 @@
  * Author: Rob Bradford <rob@linux.intel.com>
  */
 
+#include "config.h"
+
 #include <stddef.h>
 #include <stdbool.h>
 #include <inttypes.h>
