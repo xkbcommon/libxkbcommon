@@ -384,7 +384,8 @@ HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt, enum merge_mode merge)
         return false;
     }
 
-    return AddKeyName(info, stmt->value, stmt->name, merge, false, true);
+    return AddKeyName(info, (xkb_keycode_t) stmt->value,
+                      stmt->name, merge, false, true);
 }
 
 static bool

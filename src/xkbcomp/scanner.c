@@ -50,7 +50,9 @@ number(struct scanner *s, int64_t *out, int *out_tok)
     if (is_hex)
         *out = strtoul(start, &end, 16);
     else if (is_float)
-        *out = strtod(start, &end);
+        /* The parser currently just ignores floats, so the cast is
+         * fine - the value doesn't matter. */
+        *out = (int64_t) strtod(start, &end);
     else
         *out = strtoul(start, &end, 10);
     if (errno != 0 || s->s + s->pos != end)
