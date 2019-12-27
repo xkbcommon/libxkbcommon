@@ -17,8 +17,10 @@ print('''
 entry_offsets = {}
 
 print('''
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Woverlength-strings"
+#endif
 static const char *keysym_names =
 '''.strip())
 offs = 0
@@ -28,7 +30,9 @@ for (name, _) in sorted(entries, key=lambda e: e[0].lower()):
     offs += len(name) + 1
 print('''
 ;
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
 '''.strip())
 
 print('''

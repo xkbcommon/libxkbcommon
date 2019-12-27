@@ -5,8 +5,10 @@
  * https://raw.github.com/xkbcommon/libxkbcommon/master/src/ks_tables.h
  */
 
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Woverlength-strings"
+#endif
 static const char *keysym_names =
     "0\0"
     "1\0"
@@ -2417,7 +2419,9 @@ static const char *keysym_names =
     "Zstroke\0"
     "zstroke\0"
 ;
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
 
 struct name_keysym {
     xkb_keysym_t keysym;
