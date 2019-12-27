@@ -52,7 +52,7 @@ number(struct scanner *s, int64_t *out, int *out_tok)
     else if (is_float)
         /* The parser currently just ignores floats, so the cast is
          * fine - the value doesn't matter. */
-        *out = (int64_t) strtod(start, &end);
+        *out = strtod(start, &end);
     else
         *out = strtoul(start, &end, 10);
     if (errno != 0 || s->s + s->pos != end)
