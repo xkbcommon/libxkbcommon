@@ -461,19 +461,19 @@ AddModMapEntry(SymbolsInfo *info, ModMapEntry *new)
         ignore = (clobber ? old->modifier : new->modifier);
 
         if (new->haveSymbol)
-            log_err(info->ctx,
-                    "Symbol \"%s\" added to modifier map for multiple modifiers; "
-                    "Using %s, ignoring %s\n",
-                    KeysymText(info->ctx, new->u.keySym),
-                    ModIndexText(info->ctx, &info->mods, use),
-                    ModIndexText(info->ctx, &info->mods, ignore));
+            log_warn(info->ctx,
+                     "Symbol \"%s\" added to modifier map for multiple modifiers; "
+                     "Using %s, ignoring %s\n",
+                     KeysymText(info->ctx, new->u.keySym),
+                     ModIndexText(info->ctx, &info->mods, use),
+                     ModIndexText(info->ctx, &info->mods, ignore));
         else
-            log_err(info->ctx,
-                    "Key \"%s\" added to modifier map for multiple modifiers; "
-                    "Using %s, ignoring %s\n",
-                    KeyNameText(info->ctx, new->u.keyName),
-                    ModIndexText(info->ctx, &info->mods, use),
-                    ModIndexText(info->ctx, &info->mods, ignore));
+            log_warn(info->ctx,
+                     "Key \"%s\" added to modifier map for multiple modifiers; "
+                     "Using %s, ignoring %s\n",
+                     KeyNameText(info->ctx, new->u.keyName),
+                     ModIndexText(info->ctx, &info->mods, use),
+                     ModIndexText(info->ctx, &info->mods, ignore));
 
         old->modifier = use;
         return true;
