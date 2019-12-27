@@ -161,8 +161,8 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
      * a maximum of at least 255, else XWayland really starts hating life.
      * If this is a problem and people really need strictly bounded keymaps,
      * we should probably control this with a flag. */
-    write_buf(buf, "\tminimum = %u;\n", min(keymap->min_key_code, 8));
-    write_buf(buf, "\tmaximum = %u;\n", max(keymap->max_key_code, 255));
+    write_buf(buf, "\tminimum = %u;\n", MIN(keymap->min_key_code, 8));
+    write_buf(buf, "\tmaximum = %u;\n", MAX(keymap->max_key_code, 255));
 
     xkb_keys_foreach(key, keymap) {
         if (key->name == XKB_ATOM_NONE)

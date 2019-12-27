@@ -110,18 +110,6 @@ memdup(const void *mem, size_t nmemb, size_t size)
     return p;
 }
 
-static inline int
-min(int misc, int other)
-{
-    return (misc < other) ? misc : other;
-}
-
-static inline int
-max(int misc, int other)
-{
-    return (misc > other) ? misc : other;
-}
-
 /* ctype.h is locale-dependent and has other oddities. */
 static inline bool
 is_space(char ch)
@@ -194,9 +182,7 @@ unmap_file(char *string, size_t size);
 #define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
-#define MIN3(a, b, c) MIN(MIN((a), (b)), (c))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
-#define MAX3(a, b, c) MAX(MAX((a), (b)), (c))
 
 /* Round up @a so it's divisible by @b. */
 #define ROUNDUP(a, b) (((a) + (b) - 1) / (b) * (b))
