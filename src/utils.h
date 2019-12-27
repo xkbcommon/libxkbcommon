@@ -36,6 +36,14 @@
     switch (0) { case 0: case (expr): ; } \
 } while (0)
 
+#define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
+
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+/* Round up @a so it's divisible by @b. */
+#define ROUNDUP(a, b) (((a) + (b) - 1) / (b) * (b))
+
 char
 to_lower(char c);
 
@@ -193,14 +201,6 @@ map_file(FILE *file, char **string_out, size_t *size_out);
 
 void
 unmap_file(char *string, size_t size);
-
-#define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
-
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-
-/* Round up @a so it's divisible by @b. */
-#define ROUNDUP(a, b) (((a) + (b) - 1) / (b) * (b))
 
 #if defined(HAVE_SECURE_GETENV)
 # define secure_getenv secure_getenv
