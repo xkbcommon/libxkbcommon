@@ -28,9 +28,9 @@
 #include "test.h"
 #include "context.h"
 
-#include <unistd.h>
 #include <sys/stat.h>
-#include <dirent.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 /* keeps a cache of all makedir/maketmpdir directories so we can free and
  * rmdir them in one go, see unmakedirs() */
@@ -150,15 +150,16 @@ test_config_root_include_path_fallback(void)
     const char *xkbdir = DFLT_XKB_CONFIG_ROOT;
     const char *context_path;
     int nincludes;
-    DIR *dir;
 
     /* quick and dirty check that the default directory exists.
      * It may not on a vanilla test box if we just run the test
      * suite, so where it's not there just skip this test. */
-    dir = opendir(xkbdir);
-    if (!dir)
+    struct stat stat_buf;
+    int err = stat(xkbdir, &stat_buf);
+    if (err != 0)
         return;
-    closedir(dir);
+    if (!S_ISDIR(stat_buf.st_mode))
+        return;
 
     buffer_env("XKB_CONFIG_ROOT");
     buffer_env("HOME");
