@@ -171,7 +171,8 @@ test_get_path(const char *path_rel)
     if (path_rel[0] == '/')
         return strdup(path_rel);
 
-    ret = asprintf(&path, "%s/test/data/%s", srcdir, path_rel);
+    ret = asprintf(&path, "%s/test/data%s%s", srcdir,
+                   path_rel[0] ? "/" : "", path_rel);
     if (ret < 0) {
         fprintf(stderr, "Failed to allocate path for %s\n", path_rel);
         return NULL;
