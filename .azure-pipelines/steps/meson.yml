@@ -23,7 +23,7 @@ steps:
   - bash: |
       set -euo pipefail
       meson test -C build --print-errorlogs --wrapper="${{ parameters.wrapper }}"
-      python3 scripts/meson-junit-report.py --project-name=xkbcommon \
+      python scripts/meson-junit-report.py --project-name=xkbcommon \
         --job-id='$(Build.BuildId)' --branch='$(Build.SourceBranch)' \
         --output=testlog.xml build/meson-logs/testlog*.json
     displayName: 'Test'

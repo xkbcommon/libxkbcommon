@@ -11,6 +11,7 @@ jobs:
     pool:
       vmImage: 'ubuntu-16.04'
     steps:
+      - template: .azure-pipelines/steps/dependencies-python.yml
       - template: .azure-pipelines/steps/dependencies-linux.yml
       - template: .azure-pipelines/steps/meson.yml
         parameters:
@@ -23,6 +24,7 @@ jobs:
     pool:
       vmImage: 'macos-10.13'
     steps:
+      - template: .azure-pipelines/steps/dependencies-python.yml
       - template: .azure-pipelines/steps/dependencies-macos.yml
       - template: .azure-pipelines/steps/meson.yml
         parameters:
