@@ -86,7 +86,7 @@ lex(struct scanner *s, union lvalue *val)
 {
 skip_more_whitespace_and_comments:
     /* Skip spaces. */
-    while (chr(s, ' ') || chr(s, '\t'));
+    while (chr(s, ' ') || chr(s, '\t') || chr(s, '\r'));
 
     /* Skip comments. */
     if (lit(s, "//")) {
@@ -101,6 +101,8 @@ skip_more_whitespace_and_comments:
 
     /* Escaped line continuation. */
     if (chr(s, '\\')) {
+        /* Optional \r. */
+        chr(s, '\r');
         if (!eol(s)) {
             scanner_err(s, "illegal new line escape; must appear at end of line");
             return TOK_ERROR;
