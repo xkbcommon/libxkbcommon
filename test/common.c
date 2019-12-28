@@ -40,6 +40,7 @@
 #include <termios.h>
 
 #include "test.h"
+#include "utils.h"
 
 /*
  * Test a sequence of keysyms, resulting from a sequence of key presses,
@@ -159,25 +160,22 @@ test_key_seq(struct xkb_keymap *keymap, ...)
 char *
 test_get_path(const char *path_rel)
 {
+    int ret;
     char *path;
-    size_t path_len;
-    const char *srcdir = getenv("top_srcdir");
+    const char *srcdir;
+
+    srcdir = getenv("top_srcdir");
+    if (!srcdir)
+        srcdir = ".";
 
     if (path_rel[0] == '/')
         return strdup(path_rel);
 
-    path_len = strlen(srcdir ? srcdir : ".") +
-               strlen(path_rel) + 12;
-    path = malloc(path_len);
-    if (!path) {
-        fprintf(stderr, "Failed to allocate path (%d chars) for %s\n",
-                (int) path_len, path_rel);
+    ret = asprintf(&path, "%s/test/data/%s", srcdir, path_rel);
+    if (ret < 0) {
+        fprintf(stderr, "Failed to allocate path for %s\n", path_rel);
         return NULL;
     }
-    snprintf(path, path_len,
-             "%s/test/data/%s", srcdir ? srcdir : ".",
-             path_rel ? path_rel : "");
-
     return path;
 }
 
