@@ -67,7 +67,7 @@ resolve_name(const char *filename, enum resolve_name_direction direction,
     if (ret < 0 || (size_t) ret >= sizeof(path))
         return false;
 
-    file = fopen(path, "r");
+    file = fopen(path, "rb");
     if (!file)
         return false;
 

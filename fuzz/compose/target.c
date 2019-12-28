@@ -31,7 +31,7 @@ main(int argc, char *argv[])
     while (__AFL_LOOP(1000))
 #endif
     {
-        file = fopen(argv[1], "r");
+        file = fopen(argv[1], "rb");
         assert(file);
         table = xkb_compose_table_new_from_file(ctx, file,
                                                 "en_US.UTF-8",

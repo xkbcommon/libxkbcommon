@@ -233,7 +233,7 @@ FindFileInXkbPath(struct xkb_context *ctx, const char *name,
             continue;
         }
 
-        file = fopen(buf, "r");
+        file = fopen(buf, "rb");
         if (file)
             break;
     }

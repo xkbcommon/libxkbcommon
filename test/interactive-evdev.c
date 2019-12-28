@@ -445,7 +445,7 @@ main(int argc, char *argv[])
     }
 
     if (keymap_path) {
-        FILE *file = fopen(keymap_path, "r");
+        FILE *file = fopen(keymap_path, "rb");
         if (!file) {
             ret = EXIT_FAILURE;
             fprintf(stderr, "Couldn't open '%s': %s\n",

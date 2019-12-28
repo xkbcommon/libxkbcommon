@@ -46,7 +46,7 @@ main(void)
     assert(ctx);
 
     path = test_get_path("compose/en_US.UTF-8/Compose");
-    file = fopen(path, "r");
+    file = fopen(path, "rb");
     if (file == NULL) {
         perror(path);
         free(path);

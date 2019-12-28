@@ -30,7 +30,7 @@ main(int argc, char *argv[])
     while (__AFL_LOOP(1000))
 #endif
     {
-        file = fopen(argv[1], "r");
+        file = fopen(argv[1], "rb");
         assert(file);
         keymap = xkb_keymap_new_from_file(ctx, file,
                                           XKB_KEYMAP_FORMAT_TEXT_V1,

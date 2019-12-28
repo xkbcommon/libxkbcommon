@@ -180,7 +180,7 @@ test_seqs(struct xkb_context *ctx)
     FILE *file;
 
     path = test_get_path("compose/en_US.UTF-8/Compose");
-    file = fopen(path, "r");
+    file = fopen(path, "rb");
     assert(file);
     free(path);
 
@@ -354,7 +354,7 @@ test_state(struct xkb_context *ctx)
     FILE *file;
 
     path = test_get_path("compose/en_US.UTF-8/Compose");
-    file = fopen(path, "r");
+    file = fopen(path, "rb");
     assert(file);
     free(path);
 

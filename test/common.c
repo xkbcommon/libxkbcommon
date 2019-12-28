@@ -270,7 +270,7 @@ test_compile_file(struct xkb_context *context, const char *path_rel)
     if (!path)
         return NULL;
 
-    file = fopen(path, "r");
+    file = fopen(path, "rb");
     if (!file) {
         fprintf(stderr, "Failed to open path: %s\n", path);
         free(path);

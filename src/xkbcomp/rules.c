@@ -411,7 +411,7 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
         return;
     }
 
-    file = fopen(s.buf, "r");
+    file = fopen(s.buf, "rb");
     if (file) {
         bool ret = read_rules_file(m->ctx, m, include_depth + 1, file, s.buf);
         if (!ret)

@@ -178,14 +178,14 @@ xkb_compose_table_new_from_locale(struct xkb_context *ctx,
 
     cpath = get_xcomposefile_path();
     if (cpath) {
-        file = fopen(cpath, "r");
+        file = fopen(cpath, "rb");
         if (file)
             goto found_path;
     }
 
     cpath = path = get_home_xcompose_file_path();
     if (path) {
-        file = fopen(path, "r");
+        file = fopen(path, "rb");
         if (file)
             goto found_path;
     }
@@ -194,7 +194,7 @@ xkb_compose_table_new_from_locale(struct xkb_context *ctx,
 
     cpath = path = get_locale_compose_file_path(table->locale);
     if (path) {
-        file = fopen(path, "r");
+        file = fopen(path, "rb");
         if (file)
             goto found_path;
     }
