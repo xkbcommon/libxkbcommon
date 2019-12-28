@@ -75,7 +75,7 @@ main(void)
     xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
     xkb_context_set_log_verbosity(ctx, 0);
 
-    srand(time(NULL));
+    srand((unsigned) time(NULL));
 
     bench_start(&bench);
     bench_key_proc(state);

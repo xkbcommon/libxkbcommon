@@ -95,9 +95,9 @@ test_random_strings(void)
             if (arr[i].len != strlen(string) ||
                 strncmp(string, arr[i].string, arr[i].len) != 0) {
                 fprintf(stderr, "got a collision, but strings don't match!\n");
-                fprintf(stderr, "existing length %lu, string %s\n",
+                fprintf(stderr, "existing length %zu, string %s\n",
                         strlen(string), string);
-                fprintf(stderr, "new length %lu, string %.*s\n",
+                fprintf(stderr, "new length %zu, string %.*s\n",
                         arr[i].len, (int) arr[i].len, arr[i].string);
                 fprintf(stderr, "seed: %u\n", seed);
                 assert(false);
@@ -111,7 +111,7 @@ test_random_strings(void)
 
         arr[i].atom = atom_intern(table, arr[i].string, arr[i].len, true);
         if (arr[i].atom == XKB_ATOM_NONE) {
-            fprintf(stderr, "failed to intern! len: %lu, string: %.*s\n",
+            fprintf(stderr, "failed to intern! len: %zu, string: %.*s\n",
                     arr[i].len, (int) arr[i].len, arr[i].string);
             fprintf(stderr, "seed: %u\n", seed);
             assert(false);
@@ -125,16 +125,16 @@ test_random_strings(void)
         if (arr[i].len != strlen(string) ||
             strncmp(string, arr[i].string, arr[i].len) != 0) {
             fprintf(stderr, "looked-up string doesn't match!\n");
-            fprintf(stderr, "found length %lu, string %s\n",
+            fprintf(stderr, "found length %zu, string %s\n",
                     strlen(string), string);
-            fprintf(stderr, "expected length %lu, string %.*s\n",
+            fprintf(stderr, "expected length %zu, string %.*s\n",
                     arr[i].len, (int) arr[i].len, arr[i].string);
 
             /* Since this is random, we need to dump the failing data,
              * so we might have some chance to reproduce. */
             fprintf(stderr, "START dump of arr, N=%d\n", N);
             for (int j = 0; j < N; j++) {
-                fprintf(stderr, "%u\t\t%lu\t\t%.*s\n", arr[i].atom,
+                fprintf(stderr, "%u\t\t%zu\t\t%.*s\n", arr[i].atom,
                         arr[i].len, (int) arr[i].len, arr[i].string);
             }
             fprintf(stderr, "END\n");
