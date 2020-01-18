@@ -40,7 +40,9 @@ Grammar
 (It might be helpful to look at a file like rules/evdev along with
 this grammer. Comments, whitespace, etc. are not shown.)
 
-File         ::= { "!" (Group | RuleSet) }
+File         ::= { "!" (Include | Group | RuleSet) }
+
+Include      ::= "include" <ident>
 
 Group        ::= GroupName "=" { GroupElement } "\n"
 GroupName    ::= "$"<ident>
@@ -58,6 +60,18 @@ MlvoValue    ::= "*" | GroupName | <ident>
 KccgstValue  ::= <ident>
 
 Notes:
+
+- Include processes the rules in the file path specified in the ident,
+  in order. %-expanasion is performed, as follows:
+
+  %%:
+    A literal %.
+
+  %H:
+    The value of the HOME environment variable.
+
+  %S:
+    The system-installed rules directory (usually /usr/share/X11/xkb/rules).
 
 - The order of values in a Rule must be the same as the Mapping it
   follows. The mapping line determines the meaning of the values in
