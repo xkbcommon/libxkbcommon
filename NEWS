@@ -1,3 +1,80 @@
+libxkbcommon 0.10.0 - 2020-01-18
+===================
+
+- (security) Fix quadratic complexity in the XKB file parser. See commit
+  message 7c42945e04a2107827a057245298dedc0475cc88 for details.
+
+- Add $XDG_CONFIG_HOME/xkb to the default search path. If $XDG_CONFIG_HOME
+  is not set, $HOME/.config/xkb is used. If $HOME is not set, the path is not
+  added.
+
+  The XDG path is looked up before the existing default search path $HOME/.xkb.
+
+  Contributed by Peter Hutterer <@who-t.net>.
+
+- Add support for include statements in XKB rules files.
+
+  This is a step towards making local XKB customizations more tenable and
+  convenient, without modifying system files.
+
+  You can now include other rules files like this:
+
+      ! include %S/evdev
+
+  Two directives are supported, %H to $HOME and %S for the system-installed
+  rules directory (usually /usr/share/X11/xkb/rules).
+
+  See commit message ca033a29d2ca910fd17b1ae287cb420205bdddc8 and
+  doc/rules-format.txt in the xkbcommon source code for more information.
+
+  Contributed by Peter Hutterer <@who-t.net>.
+
+- Downgrade "Symbol added to modifier map for multiple modifiers" log to a
+  warning.
+
+  This error message was too annoying to be shown by default. When working on
+  keymaps, set `XKB_LOG_LEVEL=debug XKB_LOG_VERBOSITY=10` to see all possible
+  messages.
+
+- Support building on Windows using the meson MSVC backend.
+
+  Contributed by Adrian Perez de Castro <@igalia.com>.
+
+- Fix bug where the merge mode only applied to the first vmod in a
+  `virtual_modifiers` statement. Given
+
+      augment virtual_modifiers NumLock,Alt,LevelThree
+
+  Previously it was incorrectly treated as
+
+      augment virtual_modifiers NumLock;
+      virtual_modifiers Alt;
+      virtual_modifiers LevelThree;
+
+  Now it is treated as
+
+      augment virtual_modifiers NumLock;
+      augment virtual_modifiers Alt;
+      augment virtual_modifiers LevelThree;
+
+- Reject interpret modifier predicate with more than one value. Given
+
+      interpret ISO_Level3_Shift+AnyOf(all,extraneous) { ... };
+
+  Previously, extraneous (and further) was ignored. Now it's rejected.
+
+- Correctly handle capitalization of the ssharp keysym.
+
+- Speed up and improve the internal `xkeyboard-config` tool. This tool
+  compiles all layout/variant combinations in the xkeyboard-config dataset
+  and reports any issues it finds.
+
+  Contributed by Peter Hutterer <@who-t.net>.
+
+- Speed up "atoms" (string interning). This code goes back at least to X11R1
+  (released 1987).
+
+
 libxkbcommon 0.9.1 - 2019-10-19
 ==================
 
