@@ -530,7 +530,7 @@ xkb_keysym_to_lower(xkb_keysym_t ks);
  *
  * The user may set some environment variables which affect the library:
  *
- * - `XKB_CONFIG_ROOT`, `HOME` - see @ref include-path.
+ * - `XKB_CONFIG_ROOT`, `XDG_CONFIG_DIR`, `HOME` - see @ref include-path.
  * - `XKB_LOG_LEVEL` - see xkb_context_set_log_level().
  * - `XKB_LOG_VERBOSITY` - see xkb_context_set_log_verbosity().
  * - `XKB_DEFAULT_RULES`, `XKB_DEFAULT_MODEL`, `XKB_DEFAULT_LAYOUT`,
