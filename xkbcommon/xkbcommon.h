@@ -1163,6 +1163,48 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t key,
                               xkb_layout_index_t layout);
 
 /**
+ * Retrieves every possible modifier mask that produces the specified
+ * shift level for a specific key and layout.
+ *
+ * This API is useful for inverse key transformation; i.e. finding out
+ * which modifiers need to be active in order to be able to type the
+ * keysym(s) corresponding to the specific key code, layout and level.
+ *
+ * @warning It returns only up to masks_size modifier masks. If the
+ * buffer passed is too small, some of the possible modifier combinations
+ * will not be returned.
+ *
+ * @param[in] keymap      The keymap.
+ * @param[in] key         The keycode of the key.
+ * @param[in] layout      The layout for which to get modifiers.
+ * @param[in] level       The shift level in the layout for which to get the
+ * modifiers. This should be smaller than:
+ * @code xkb_keymap_num_levels_for_key(keymap, key) @endcode
+ * @param[out] masks_out  A buffer in which the requested masks should be
+ * stored.
+ * @param[out] masks_size The size of the buffer pointed to by masks_out.
+ *
+ * If @c layout is out of range for this key (that is, larger or equal to
+ * the value returned by xkb_keymap_num_layouts_for_key()), it is brought
+ * back into range in a manner consistent with xkb_state_key_get_layout().
+ *
+ * @returns The number of modifier masks stored in the masks_out array.
+ * If the key is not in the keymap or if the specified shift level cannot
+ * be reached it returns 0 and does not modify the masks_out buffer.
+ *
+ * @sa xkb_level_index_t
+ * @sa xkb_mod_mask_t
+ * @memberof xkb_keymap
+ */
+size_t
+xkb_keymap_key_get_mods_for_level(struct xkb_keymap *keymap,
+                                  xkb_keycode_t key,
+                                  xkb_layout_index_t layout,
+                                  xkb_level_index_t level,
+                                  xkb_mod_mask_t *masks_out,
+                                  size_t masks_size);
+
+/**
  * Get the keysyms obtained from pressing a key in a given layout and
  * shift level.
  *
