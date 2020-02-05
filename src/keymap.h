@@ -438,6 +438,17 @@ XkbKeyNumLevels(const struct xkb_key *key, xkb_layout_index_t layout)
     return key->groups[layout].type->num_levels;
 }
 
+/*
+ * If the virtual modifiers are not bound to anything, the entry
+ * is not active and should be skipped. xserver does this with
+ * cached entry->active field.
+ */
+static inline bool
+entry_is_active(const struct xkb_key_type_entry *entry)
+{
+    return entry->mods.mods == 0 || entry->mods.mask != 0;
+}
+
 struct xkb_keymap *
 xkb_keymap_new(struct xkb_context *ctx,
                enum xkb_keymap_format format,

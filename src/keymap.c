@@ -409,6 +409,39 @@ xkb_keymap_led_get_index(struct xkb_keymap *keymap, const char *name)
     return XKB_LED_INVALID;
 }
 
+XKB_EXPORT size_t
+xkb_keymap_key_get_mods_for_level(struct xkb_keymap *keymap,
+                                  xkb_keycode_t kc,
+                                  xkb_layout_index_t layout,
+                                  xkb_level_index_t level,
+                                  xkb_mod_mask_t *masks_out,
+                                  size_t masks_size)
+{
+    const struct xkb_key *key = XkbKey(keymap, kc);
+    if (!key)
+        return 0;
+
+    layout = XkbWrapGroupIntoRange(layout, key->num_groups,
+                                   key->out_of_range_group_action,
+                                   key->out_of_range_group_number);
+    if (layout == XKB_LAYOUT_INVALID)
+        return 0;
+
+    if (level >= XkbKeyNumLevels(key, layout))
+        return 0;
+
+    const struct xkb_key_type *type = key->groups[layout].type;
+
+    size_t count = 0;
+    for (unsigned i = 0; i < type->num_entries && count < masks_size; i++)
+        if (entry_is_active(&type->entries[i]) &&
+            type->entries[i].level == level) {
+            masks_out[count] = type->entries[i].mods.mask;
+            ++count;
+        }
+    return count;
+}
+
 /**
  * As below, but takes an explicit layout/level rather than state.
  */
