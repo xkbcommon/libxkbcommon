@@ -103,3 +103,8 @@ global:
 	xkb_keysym_to_lower;
 	xkb_keysym_to_upper;
 } V_0.7.0;
+
+V_0.11.0 {
+global:
+	xkb_utf32_to_keysym;
+} V_0.8.0;

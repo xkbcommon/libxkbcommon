@@ -494,6 +494,28 @@ uint32_t
 xkb_keysym_to_utf32(xkb_keysym_t keysym);
 
 /**
+ * Get the keysym corresponding to a Unicode/UTF-32 codepoint.
+ *
+ * @returns The keysym corresponding to the specified Unicode
+ * codepoint, or XKB_KEY_NoSymbol if there is none.
+ *
+ * This function is the inverse of @ref xkb_keysym_to_utf32. In cases
+ * where a single codepoint corresponds to multiple keysyms, returns
+ * the keysym with the lowest value.
+ * 
+ * Unicode codepoints which do not have a special (legacy) keysym
+ * encoding use a direct encoding scheme. These keysyms don't usually
+ * have an associated keysym constant (XKB_KEY_*).
+ *
+ * For noncharacter Unicode codepoints and codepoints outside of the
+ * defined Unicode planes this function returns XKB_KEY_NoSymbol.
+ *
+ * @sa xkb_keysym_to_utf32()
+ */
+xkb_keysym_t
+xkb_utf32_to_keysym(uint32_t ucs);
+
+/**
  * Convert a keysym to its uppercase form.
  *
  * If there is no such form, the keysym is returned unchanged.
