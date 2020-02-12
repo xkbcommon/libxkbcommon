@@ -104,6 +104,29 @@ test_github_issue_42(void)
     setlocale(LC_CTYPE, "C");
 }
 
+static void
+get_keysym_name(xkb_keysym_t keysym, char *buffer, size_t size)
+{
+    int name_length = xkb_keysym_get_name(keysym, buffer, size);
+    if (name_length < 0) {
+        snprintf(buffer, size, "(unknown: 0x%lx)", (unsigned long)keysym);
+    }
+}
+
+static int
+test_utf32_to_keysym(uint32_t ucs, xkb_keysym_t expected)
+{
+    char expected_name[64];
+    char actual_name[64];
+    xkb_keysym_t actual = xkb_utf32_to_keysym(ucs);
+    get_keysym_name(expected, expected_name, 64);
+    get_keysym_name(actual, actual_name, 64);
+
+    fprintf(stderr, "Code point 0x%lx: expected keysym: %s, actual: %s\n\n",
+            (unsigned long)ucs, expected_name, actual_name);
+    return expected == actual;
+}
+
 int
 main(void)
 {
@@ -181,6 +204,49 @@ main(void)
     assert(test_utf8(0x10005d0, "א"));
     assert(test_utf8(0x110ffff, "\xf4\x8f\xbf\xbf"));
     assert(test_utf8(0x1110000, NULL) == 0);
+
+    assert(test_utf32_to_keysym('y', XKB_KEY_y));
+    assert(test_utf32_to_keysym('u', XKB_KEY_u));
+    assert(test_utf32_to_keysym('m', XKB_KEY_m));
+    assert(test_utf32_to_keysym(0x43c, XKB_KEY_Cyrillic_em));
+    assert(test_utf32_to_keysym(0x443, XKB_KEY_Cyrillic_u));
+    assert(test_utf32_to_keysym('!', XKB_KEY_exclam));
+    assert(test_utf32_to_keysym(0xF8, XKB_KEY_oslash));
+    assert(test_utf32_to_keysym(0x5D0, XKB_KEY_hebrew_aleph));
+    assert(test_utf32_to_keysym(0x634, XKB_KEY_Arabic_sheen));
+    assert(test_utf32_to_keysym(0x1F609, 0x0101F609)); // ;) emoji
+
+    assert(test_utf32_to_keysym('\b', XKB_KEY_BackSpace));
+    assert(test_utf32_to_keysym('\t', XKB_KEY_Tab));
+    assert(test_utf32_to_keysym('\n', XKB_KEY_Linefeed));
+    assert(test_utf32_to_keysym(0x0b, XKB_KEY_Clear));
+    assert(test_utf32_to_keysym('\r', XKB_KEY_Return));
+    assert(test_utf32_to_keysym(0x1b, XKB_KEY_Escape));
+    assert(test_utf32_to_keysym(0x7f, XKB_KEY_Delete));
+
+    assert(test_utf32_to_keysym(' ', XKB_KEY_space));
+    assert(test_utf32_to_keysym(',', XKB_KEY_comma));
+    assert(test_utf32_to_keysym('.', XKB_KEY_period));
+    assert(test_utf32_to_keysym('=', XKB_KEY_equal));
+    assert(test_utf32_to_keysym('9', XKB_KEY_9));
+    assert(test_utf32_to_keysym('*', XKB_KEY_asterisk));
+    assert(test_utf32_to_keysym(0xd7, XKB_KEY_multiply));
+    assert(test_utf32_to_keysym('-', XKB_KEY_minus));
+    assert(test_utf32_to_keysym(0x10fffd, 0x110fffd));
+
+    // Unicode non-characters
+    assert(test_utf32_to_keysym(0xfdd0, XKB_KEY_NoSymbol));
+    assert(test_utf32_to_keysym(0xfdef, XKB_KEY_NoSymbol));
+    assert(test_utf32_to_keysym(0xfffe, XKB_KEY_NoSymbol));
+    assert(test_utf32_to_keysym(0xffff, XKB_KEY_NoSymbol));
+    assert(test_utf32_to_keysym(0x7fffe, XKB_KEY_NoSymbol));
+    assert(test_utf32_to_keysym(0x7ffff, XKB_KEY_NoSymbol));
+    assert(test_utf32_to_keysym(0xafffe, XKB_KEY_NoSymbol));
+    assert(test_utf32_to_keysym(0xaffff, XKB_KEY_NoSymbol));
+
+    // Codepoints outside the Unicode planes
+    assert(test_utf32_to_keysym(0x110000, XKB_KEY_NoSymbol));
+    assert(test_utf32_to_keysym(0xdeadbeef, XKB_KEY_NoSymbol));
 
     assert(xkb_keysym_is_lower(XKB_KEY_a));
     assert(xkb_keysym_is_lower(XKB_KEY_Greek_lambda));

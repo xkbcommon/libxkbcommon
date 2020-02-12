@@ -897,6 +897,35 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym)
     return bin_search(keysymtab, ARRAY_SIZE(keysymtab) - 1, keysym);
 }
 
+XKB_EXPORT xkb_keysym_t
+xkb_utf32_to_keysym(uint32_t ucs)
+{
+    /* first check for Latin-1 characters (1:1 mapping) */
+    if ((ucs >= 0x0020 && ucs <= 0x007e) ||
+        (ucs >= 0x00a0 && ucs <= 0x00ff))
+        return ucs;
+
+    /* special keysyms */
+    if ((ucs >= (XKB_KEY_BackSpace & 0x7f) && ucs <= (XKB_KEY_Clear & 0x7f)) ||
+        ucs == (XKB_KEY_Return & 0x7f) || ucs == (XKB_KEY_Escape & 0x7f))
+        return ucs | 0xff00;
+    if (ucs == (XKB_KEY_Delete & 0x7f))
+        return XKB_KEY_Delete;
+
+    /* Unicode non-symbols and code points outside Unicode planes */
+    if ((ucs >= 0xfdd0 && ucs <= 0xfdef) ||
+        ucs > 0x10ffff || (ucs & 0xfffe) == 0xfffe)
+        return XKB_KEY_NoSymbol;
+
+    /* search main table */
+    for (size_t i = 0; i < ARRAY_SIZE(keysymtab); i++)
+        if (keysymtab[i].ucs == ucs)
+            return keysymtab[i].keysym;
+
+    /* Use direct encoding if everything else fails */
+    return ucs | 0x01000000;
+}
+
 /*
  * Copyright © 2012 Intel Corporation
  *
