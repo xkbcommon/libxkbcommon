@@ -1152,7 +1152,7 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t key,
  * @param[in] key       The keycode of the key.
  * @param[in] layout    The layout for which to get the keysyms.
  * @param[in] level     The shift level in the layout for which to get the
- * keysyms. This must be smaller than:
+ * keysyms. This should be smaller than:
  * @code xkb_keymap_num_levels_for_key(keymap, key) @endcode
  * @param[out] syms_out An immutable array of keysyms corresponding to the
  * key in the given layout and shift level.
