@@ -447,6 +447,7 @@ if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE'
     executable('rmlvo-to-kccgst', 'test/rmlvo-to-kccgst.c', dependencies: test_dep)
     executable('rmlvo-to-keymap', 'test/rmlvo-to-keymap.c', dependencies: test_dep)
     executable('print-compiled-keymap', 'test/print-compiled-keymap.c', dependencies: test_dep)
+    executable('how-to-type', 'test/how-to-type.c', dependencies: test_dep)
 endif
 if cc.has_header('linux/input.h')
     executable('interactive-evdev', 'test/interactive-evdev.c', dependencies: test_dep)
