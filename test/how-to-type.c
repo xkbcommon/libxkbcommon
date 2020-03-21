@@ -29,13 +29,15 @@
 
 #include <xkbcommon/xkbcommon.h>
 
+#define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
+
 static void
 usage(const char *argv0)
 {
     fprintf(stderr, "Usage: %s [-r <rules>] [-m <model>] "
             "[-l <layout>] [-v <variant>] [-o <options>] <unicode codepoint>\n",
             argv0);
-    fprintf(stderr, "Pipe into `column -ts $'\\t'` for nice aligned output.\n");
+    fprintf(stderr, "Pipe into `column -ts $'\\t'` for nicely aligned output.\n");
     exit(2);
 }
 
@@ -49,14 +51,14 @@ main(int argc, char *argv[])
     const char *variant = NULL;
     const char *options = NULL;
     int exit = EXIT_FAILURE;
-    struct xkb_context *ctx;
+    struct xkb_context *ctx = NULL;
     char *endp;
     long val;
     uint32_t codepoint;
     xkb_keysym_t keysym;
     int ret;
     char name[200];
-    struct xkb_keymap *keymap;
+    struct xkb_keymap *keymap = NULL;
     xkb_keycode_t min_keycode, max_keycode;
     xkb_mod_index_t num_mods;
 
@@ -88,27 +90,26 @@ main(int argc, char *argv[])
     errno = 0;
     val = strtol(argv[optind], &endp, 0);
     if (errno != 0 || endp == argv[optind] || val < 0 || val > 0x10FFFF) {
-        fprintf(stderr, "usage: %s <unicode codepoint>\n", argv[0]);
-        goto err_exit;
+        usage(argv[0]);
     }
     codepoint = (uint32_t) val;
 
     keysym = xkb_utf32_to_keysym(codepoint);
     if (keysym == XKB_KEY_NoSymbol) {
-        fprintf(stderr, "Failed to convert codepoint to keysym");
-        goto err_exit;
+        fprintf(stderr, "Failed to convert codepoint to keysym\n");
+        goto err;
     }
 
     ret = xkb_keysym_get_name(keysym, name, sizeof(name));
     if (ret < 0 || (size_t) ret >= sizeof(name)) {
-        fprintf(stderr, "Failed to get name of keysym");
-        goto err_exit;
+        fprintf(stderr, "Failed to get name of keysym\n");
+        goto err;
     }
 
     ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     if (!ctx) {
         fprintf(stderr, "Failed to create XKB context\n");
-        goto err_exit;
+        goto err;
     }
 
     struct xkb_rule_names names = {
@@ -122,7 +123,7 @@ main(int argc, char *argv[])
                                        XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (!keymap) {
         fprintf(stderr, "Failed to create XKB keymap\n");
-        goto err_ctx;
+        goto err;
     }
 
     printf("keysym: %s (%#x)\n", name, keysym);
@@ -168,7 +169,7 @@ main(int argc, char *argv[])
                 }
 
                 num_masks = xkb_keymap_key_get_mods_for_level(
-                    keymap, keycode, layout, level, masks, 100
+                    keymap, keycode, layout, level, masks, ARRAY_SIZE(masks)
                 );
                 for (size_t i = 0; i < num_masks; i++) {
                     xkb_mod_mask_t mask = masks[i];
@@ -188,9 +189,8 @@ main(int argc, char *argv[])
     }
 
     exit = EXIT_SUCCESS;
+err:
     xkb_keymap_unref(keymap);
-err_ctx:
     xkb_context_unref(ctx);
-err_exit:
     return exit;
 }
