@@ -123,7 +123,8 @@ update_keymap(struct keyboard *kbd)
     struct xkb_state *new_state;
 
     new_keymap = xkb_x11_keymap_new_from_device(kbd->ctx, kbd->conn,
-                                                kbd->device_id, 0);
+                                                kbd->device_id,
+                                                XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (!new_keymap)
         goto err_out;
 
