@@ -453,7 +453,8 @@ main(int argc, char *argv[])
             goto err_ctx;
         }
         keymap = xkb_keymap_new_from_file(ctx, file,
-                                          XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+                                          XKB_KEYMAP_FORMAT_TEXT_V1,
+                                          XKB_KEYMAP_COMPILE_NO_FLAGS);
         fclose(file);
     }
     else {
