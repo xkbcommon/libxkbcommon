@@ -339,7 +339,8 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
     }
 
     seat->keymap = xkb_keymap_new_from_buffer(seat->inter->ctx, buf, size - 1,
-                                              XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+                                              XKB_KEYMAP_FORMAT_TEXT_V1,
+                                              XKB_KEYMAP_COMPILE_NO_FLAGS);
     munmap(buf, size);
     close(fd);
     if (!seat->keymap) {
