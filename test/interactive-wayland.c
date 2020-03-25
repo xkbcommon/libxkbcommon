@@ -331,7 +331,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
     struct interactive_seat *seat = data;
     void *buf;
 
-    buf = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
+    buf = mmap(NULL, size - 1, PROT_READ, MAP_PRIVATE, fd, 0);
     if (buf == MAP_FAILED) {
         fprintf(stderr, "Failed to mmap keymap: %d\n", errno);
         close(fd);
@@ -341,7 +341,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
     seat->keymap = xkb_keymap_new_from_buffer(seat->inter->ctx, buf, size - 1,
                                               XKB_KEYMAP_FORMAT_TEXT_V1,
                                               XKB_KEYMAP_COMPILE_NO_FLAGS);
-    munmap(buf, size);
+    munmap(buf, size - 1);
     close(fd);
     if (!seat->keymap) {
         fprintf(stderr, "Failed to compile keymap!\n");
