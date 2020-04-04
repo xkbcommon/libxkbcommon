@@ -69,7 +69,8 @@ main(void)
 
     // AC01 level 0 ('a') requires no modifiers on us-pc104
     mask_count = xkb_keymap_key_get_mods_for_level(keymap, kc, 0, 0, masks_out, 4);
-    assert(mask_count == 0);
+    assert(mask_count == 1);
+    assert(masks_out[0] == 0);
 
     shift_mask = 1 << xkb_keymap_mod_get_index(keymap, "Shift");
     lock_mask = 1 << xkb_keymap_mod_get_index(keymap, "Lock");
