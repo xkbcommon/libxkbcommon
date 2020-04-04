@@ -433,12 +433,39 @@ xkb_keymap_key_get_mods_for_level(struct xkb_keymap *keymap,
     const struct xkb_key_type *type = key->groups[layout].type;
 
     size_t count = 0;
-    for (unsigned i = 0; i < type->num_entries && count < masks_size; i++)
+
+    /*
+     * If the active set of modifiers doesn't match any explicit entry of
+     * the key type, the resulting level is 0 (i.e. Level 1).
+     * So, if we are asked to find the modifiers for level==0, we can offer
+     * an ~infinite supply, which is not very workable.
+     * What we do instead, is special case the empty set of modifiers for
+     * this purpose. If the empty set isn't explicit mapped to a level, we
+     * take it to map to Level 1.
+     * This is almost always what we want. If applicable, given it priority
+     * over other ways to generate the level.
+     */
+    if (level == 0) {
+        bool empty_mapped = false;
+        for (unsigned i = 0; i < type->num_entries && count < masks_size; i++)
+            if (entry_is_active(&type->entries[i]) &&
+                type->entries[i].mods.mask == 0) {
+                empty_mapped = true;
+                break;
+            }
+        if (!empty_mapped && count < masks_size) {
+            masks_out[count++] = 0;
+        }
+    }
+
+    /* Now search explicit mappings. */
+    for (unsigned i = 0; i < type->num_entries && count < masks_size; i++) {
         if (entry_is_active(&type->entries[i]) &&
             type->entries[i].level == level) {
-            masks_out[count] = type->entries[i].mods.mask;
-            ++count;
+            masks_out[count++] = type->entries[i].mods.mask;
         }
+    }
+
     return count;
 }
 
