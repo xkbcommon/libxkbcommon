@@ -262,16 +262,6 @@ You can disable X11 support with -Denable-x11=false.''')
         'src/atom.h',
         'src/atom.c',
     ]
-    libxkbcommon_x11_internal = static_library(
-        'xkbcommon-x11-internal',
-        libxkbcommon_x11_sources,
-        include_directories: include_directories('src'),
-        link_with: libxkbcommon,
-        dependencies: [
-            xcb_dep,
-            xcb_xkb_dep,
-        ],
-    )
     libxkbcommon_x11_link_args = []
     if have_version_script
         libxkbcommon_x11_link_args += '-Wl,--version-script=' + join_paths(meson.source_root(), 'xkbcommon-x11.map')
@@ -333,6 +323,16 @@ test_dep = declare_dependency(
     link_with: libxkbcommon_test_internal,
 )
 if get_option('enable-x11')
+    libxkbcommon_x11_internal = static_library(
+        'xkbcommon-x11-internal',
+        libxkbcommon_x11_sources,
+        include_directories: include_directories('src'),
+        link_with: libxkbcommon_test_internal,
+        dependencies: [
+            xcb_dep,
+            xcb_xkb_dep,
+        ],
+    )
     x11_test_dep = declare_dependency(
         link_with: libxkbcommon_x11_internal,
         dependencies: [
