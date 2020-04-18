@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  linux:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        compiler: [clang, gcc]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.7'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip meson
+          sudo apt update -y
+          sudo env DEBIAN_FRONTEND=noninteractive apt install -y \
+            doxygen libxcb-xkb-dev valgrind ninja-build \
+            libwayland-dev wayland-protocols bison graphviz
+      - name: Setup
+        run: |
+          meson setup build
+        env:
+          CC: ${{ matrix.compiler }}
+      - name: Build
+        run: |
+          meson compile -C build
+      - name: Test
+        run:
+          meson test -C build --print-errorlogs --wrapper="valgrind --leak-check=full --track-origins=yes --error-exitcode=99"
+
+  macos:
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.7'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip meson
+          brew install doxygen bison ninja
+          brew link bison --force
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
+      - name: Setup
+        run: |
+          PATH="/usr/local/opt/bison/bin:${PATH}" meson setup -Denable-wayland=false -Denable-x11=false build
+      - name: Build
+        run: |
+          PATH="/usr/local/opt/bison/bin:${PATH}" meson compile -C build
+      - name: Test
+        run:
+          meson test -C build --print-errorlogs
+
+  windows:
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.7'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip meson
+          choco install ninja winflexbison3 -y --no-progress --stop-on-first-failure
+      - name: Setup
+        shell: cmd
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+          meson setup -Denable-wayland=false -Denable-x11=false -Denable-docs=false build
+        env:
+          CC: cl
+      - name: Build
+        shell: cmd
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+          meson compile -C build
+      - name: Test
+        run:
+          meson test -C build --print-errorlogs
