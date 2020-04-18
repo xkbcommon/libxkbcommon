@@ -1,7 +1,0 @@
----
-steps:
-  - bash: |
-      set -euo pipefail
-      choco install ninja winflexbison3 -y --no-progress --stop-on-first-failure
-      python -m pip install --upgrade pip meson
-    displayName: 'Dependencies (Windows)'
