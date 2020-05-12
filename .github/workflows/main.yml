@@ -53,7 +53,7 @@ jobs:
           HOMEBREW_NO_INSTALL_CLEANUP: 1
       - name: Setup
         run: |
-          PATH="/usr/local/opt/bison/bin:${PATH}" meson setup -Denable-wayland=false -Denable-x11=false build
+          PATH="/usr/local/opt/bison/bin:${PATH}" meson setup -Denable-wayland=false -Denable-x11=false -Denable-xkbregistry=false build
       - name: Build
         run: |
           PATH="/usr/local/opt/bison/bin:${PATH}" meson compile -C build
@@ -76,7 +76,7 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
-          meson setup -Denable-wayland=false -Denable-x11=false -Denable-docs=false build
+          meson setup -Denable-wayland=false -Denable-x11=false -Denable-docs=false -Denable-xkbregistry=false build
         env:
           CC: cl
       - name: Build

@@ -154,3 +154,66 @@ xkb_symbols "baz" {
 
 With these in place, a user may select any layout/variant together with
 the "custom:foo" and/or "custom:baz" options.
+
+## Discoverable layouts
+
+**The below requires libxkbregistry as XKB lookup tool and does not work where
+clients parse the XML file directly**.
+
+The above sections apply only to the data files and require that the user knows
+about the existence of the new entries. To make custom entries discoverable by
+the configuration tools (e.g. the GNOME Control Center), the new entries must
+also be added to the XML file that is parsed by libxkbregistry. In most cases,
+this is the `evdev.xml` file in the rules directory. The example below shows the
+XML file that would add the custom layout and custom options as outlined above
+to the XKB registry:
+
+```
+$ cat $XDG_CONFIG_HOME/xkb/rules/evdev.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xkbConfigRegistry SYSTEM "xkb.dtd">
+<xkbConfigRegistry version="1.1">
+  <layoutList>
+    <layout>
+      <configItem>
+        <name>banana</name>
+        <shortDescription>ban</shortDescription>
+        <description>Banana</description>
+      </configItem>
+      <variantList>
+        <variant>
+          <configItem>
+            <name>orange</name>
+            <shortDescription>or</shortDescription>
+            <description>Orange (Banana)</description>
+          </variant>
+      </variantList>
+  </layoutList>
+  <optionList>
+    <group allowMultipleSelection="true">
+      <configItem>
+        <name>custom</name>
+        <description>Custom options</description>
+      </configItem>
+      <option>
+      <configItem>
+        <name>custom:foo</name>
+        <description>Map Tilde to nothing</description>
+      </configItem>
+      </option>
+      <option>
+      <configItem>
+        <name>custom:baz</name>
+        <description>Map Z to K</description>
+      </configItem>
+      </option>
+    </group>
+  </optionList>
+</xkbConfigRegistry>
+```
+
+The default behavior of libxkbregistry ensures that the new layout and options
+are added to the system-provided layouts and options.
+
+For details on the XML format, see DTD in `<datadir>/X11/xkb/rules/xkb.dtd`
+and the system-provided XML files in `<datadir>/X11/xkb/rulies/xkb.dtd`.

@@ -1,3 +1,14 @@
+libxkbcommon 0.11.0
+===================
+
+- Add libxkbregistry as configure-time optional library. libxkbregistry is a C
+  library that lists available XKB models, layouts and variants for a given
+  ruleset. This is a separate library (libxkbregistry.so, pkgconfig file
+  xkbregistry.pc) and aimed at tools that provide a listing of available
+  keyboard layouts to the user. See the Documentation for details on the API.
+
+  Contributed by Peter Hutterer <@who-t.net>.
+
 libxkbcommon 0.10.0 - 2020-01-18
 ===================
 
