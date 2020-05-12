@@ -296,6 +296,53 @@ You can disable X11 support with -Denable-x11=false.''')
     )
 endif
 
+# libxkbregistry
+if get_option('enable-xkbregistry')
+    dep_libxml = dependency('libxml-2.0')
+    deps_libxkbregistry = [dep_libxml]
+    libxkbregistry_sources = [
+        'src/registry.c',
+        'src/utils.h',
+        'src/utils.c',
+        'src/util-list.h',
+        'src/util-list.c',
+    ]
+    libxkbregistry_link_args = []
+    if have_version_script
+        libxkbregistry_link_args += '-Wl,--version-script=' + join_paths(meson.source_root(), 'xkbregistry.map')
+    endif
+    libxkbregistry = library(
+        'xkbregistry',
+        'xkbcommon/xkbregistry.h',
+        libxkbregistry_sources,
+        link_args: libxkbregistry_link_args,
+        link_depends: 'xkbregistry.map',
+        dependencies: deps_libxkbregistry,
+        version: '0.0.0',
+        install: true,
+        include_directories: include_directories('src'),
+    )
+    install_headers(
+        'xkbcommon/xkbregistry.h',
+        subdir: 'xkbcommon',
+    )
+    pkgconfig.generate(
+        name: 'xkbregistry',
+        filebase: 'xkbregistry',
+        libraries: libxkbregistry,
+        version: meson.project_version(),
+        description: 'XKB API to query available rules, models, layouts, variants and options',
+    )
+
+    dep_libxkbregistry = declare_dependency(
+                                include_directories: include_directories('xkbcommon'),
+                                link_with: libxkbregistry
+                                )
+    executable('xkbcommon-registry-list',
+               'tools/registry-list.c',
+               dependencies: dep_libxkbregistry,
+               install: false)
+endif
 
 # Tests
 test_env = environment()
@@ -440,7 +487,15 @@ if get_option('enable-x11')
     # See: https://github.com/xkbcommon/libxkbcommon/issues/30
     executable('test-x11comp', 'test/x11comp.c', dependencies: x11_test_dep)
 endif
-
+if get_option('enable-xkbregistry')
+    test(
+        'registry',
+        executable('test-registry', 'test/registry.c',
+                   include_directories: include_directories('src'),
+                   dependencies: dep_libxkbregistry),
+        env: test_env,
+    )
+endif
 
 # Fuzzing target programs.
 executable('fuzz-keymap', 'fuzz/keymap/target.c', dependencies: test_dep)
@@ -577,6 +632,7 @@ You can disable the documentation with -Denable-docs=false.''')
         'xkbcommon/xkbcommon-names.h',
         'xkbcommon/xkbcommon-x11.h',
         'xkbcommon/xkbcommon-compose.h',
+        'xkbcommon/xkbregistry.h',
     ]
     doxygen_data = configuration_data()
     doxygen_data.set('PACKAGE_NAME', meson.project_name())

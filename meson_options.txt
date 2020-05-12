@@ -56,3 +56,9 @@ option(
     value: true,
     description: 'Enable support for Wayland utility programs',
 )
+option(
+    'enable-xkbregistry',
+    type: 'boolean',
+    value: true,
+    description: 'Enable building libxkbregistry',
+)

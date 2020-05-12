@@ -3,7 +3,7 @@
 libxkbcommon is a keyboard keymap compiler and support library which
 processes a reduced subset of keymaps as defined by the XKB (X Keyboard
 Extension) specification.  It also contains a module for handling Compose
-and dead keys.
+and dead keys and a separate library for listing available keyboard layouts.
 
 ## Quick Guide
 
