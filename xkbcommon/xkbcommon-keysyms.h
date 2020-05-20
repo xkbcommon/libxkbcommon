@@ -2655,6 +2655,8 @@ SOFTWARE.
 
 #define XKB_KEY_XF86RotationLockToggle 0x1008FFB7 /* Toggle screen rotation lock on/off */
 
+#define XKB_KEY_XF86FullScreen	0x1008FFB8   /* Toggle fullscreen */
+
 /* Keys for special action keys (hot keys) */
 /* Virtual terminals on some operating systems */
 #define XKB_KEY_XF86Switch_VT_1	0x1008FE01
