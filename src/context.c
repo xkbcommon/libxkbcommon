@@ -63,13 +63,8 @@ xkb_context_include_path_append(struct xkb_context *ctx, const char *path)
     if (!S_ISDIR(stat_buf.st_mode))
         goto err;
 
-#if defined(HAVE_EACCESS)
-    if (eaccess(path, R_OK | X_OK) != 0)
+    if (!check_eaccess(path, R_OK | X_OK))
         goto err;
-#elif defined(HAVE_EUIDACCESS)
-    if (euidaccess(path, R_OK | X_OK) != 0)
-        goto err;
-#endif
 
     darray_append(ctx->includes, tmp);
     return 1;
