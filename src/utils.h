@@ -29,6 +29,15 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#if defined(HAVE_EACCESS) || defined(HAVE_EUIDACCESS)
+#include <unistd.h>
+#else
+/* Required on Windows where unistd.h doesn't exist */
+#define R_OK    4               /* Test for read permission.  */
+#define W_OK    2               /* Test for write permission.  */
+#define X_OK    1               /* Test for execute permission.  */
+#define F_OK    0               /* Test for existence.  */
+#endif
 
 #include "darray.h"
 
@@ -201,6 +210,20 @@ map_file(FILE *file, char **string_out, size_t *size_out);
 
 void
 unmap_file(char *string, size_t size);
+
+static inline bool
+check_eaccess(const char *path, int mode)
+{
+#if defined(HAVE_EACCESS)
+    if (eaccess(path, mode) != 0)
+        return false;
+#elif defined(HAVE_EUIDACCESS)
+    if (euidaccess(path, mode) != 0)
+        return false;
+#endif
+
+    return true;
+}
 
 #if defined(HAVE_SECURE_GETENV)
 # define secure_getenv secure_getenv
