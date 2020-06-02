@@ -543,6 +543,7 @@ You can disable the documentation with -Denable-docs=false.''')
         'doc/doxygen-extra.css',
         'doc/quick-guide.md',
         'doc/compat.md',
+        'doc/user-configuration.md',
         'doc/rules-format.md',
         'xkbcommon/xkbcommon.h',
         'xkbcommon/xkbcommon-names.h',
