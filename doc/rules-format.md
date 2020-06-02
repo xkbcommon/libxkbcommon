@@ -38,8 +38,9 @@ near the end.
 Grammar
 -------
 (It might be helpful to look at a file like rules/evdev along with
-this grammer. Comments, whitespace, etc. are not shown.)
+this grammar. Comments, whitespace, etc. are not shown.)
 
+```
 File         ::= { "!" (Include | Group | RuleSet) }
 
 Include      ::= "include" <ident>
@@ -58,12 +59,14 @@ Kccgst       ::= "keycodes" | "symbols" | "types" | "compat" | "geometry"
 Rule         ::= { MlvoValue } "=" { KccgstValue } "\n"
 MlvoValue    ::= "*" | GroupName | <ident>
 KccgstValue  ::= <ident>
+```
 
 Notes:
 
 - Include processes the rules in the file path specified in the ident,
-  in order. %-expanasion is performed, as follows:
+  in order. %-expansion is performed, as follows:
 
+```
   %%:
     A literal %.
 
@@ -72,6 +75,7 @@ Notes:
 
   %S:
     The system-installed rules directory (usually /usr/share/X11/xkb/rules).
+```
 
 - The order of values in a Rule must be the same as the Mapping it
   follows. The mapping line determines the meaning of the values in
@@ -80,6 +84,7 @@ Notes:
 - If a Rule is matched, %-expansion is performed on the KccgstValue,
   as follows:
 
+```
   %m, %l, %v:
      The model, layout or variant, if only one was given (e.g.
      %l for "us,il" is invalid).
@@ -94,6 +99,7 @@ Notes:
 
   %(m), %(l), %(l[1]), %(v), %(v[1]):
      As above, but prefixed by '(' and suffixed by ')'.
+```
 
   In case the expansion is invalid, as described above, it is
   skipped (the rest of the string is still processed); this includes
