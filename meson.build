@@ -421,6 +421,11 @@ test(
     env: test_env,
 )
 test(
+    'utils',
+    executable('test-utils', 'test/utils.c', dependencies: test_dep),
+    env: test_env,
+)
+test(
     'symbols-leak-test',
     find_program('test/symbols-leak-test.bash'),
     env: test_env,
