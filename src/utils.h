@@ -26,6 +26,7 @@
 
 #include <errno.h>
 #include <inttypes.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -289,5 +290,19 @@ int asprintf(char **strp, const char *fmt, ...) ATTR_PRINTF(2, 3);
 int vasprintf(char **strp, const char *fmt, va_list ap);
 # endif /* !HAVE_VASPRINTF */
 #endif /* !HAVE_ASPRINTF */
+
+static inline bool
+ATTR_PRINTF(3, 4)
+snprintf_safe(char *buf, size_t sz, const char *format, ...)
+{
+    va_list ap;
+    int rc;
+
+    va_start(ap, format);
+    rc = vsnprintf(buf, sz, format, ap);
+    va_end(ap);
+
+    return rc >= 0 && (size_t)rc < sz;
+}
 
 #endif /* UTILS_H */
