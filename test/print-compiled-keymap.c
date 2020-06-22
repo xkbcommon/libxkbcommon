@@ -23,9 +23,11 @@
 
 #include "config.h"
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
-#include "test.h"
+#include "xkbcommon/xkbcommon.h"
 
 int
 main(int argc, char *argv[])
@@ -35,6 +37,7 @@ main(int argc, char *argv[])
     struct xkb_context *ctx = NULL;
     struct xkb_keymap *keymap = NULL;
     const char *keymap_path = NULL;
+    FILE *file = NULL;
     char *dump;
 
     while ((opt = getopt(argc, argv, "h")) != -1) {
@@ -53,13 +56,20 @@ main(int argc, char *argv[])
 
     keymap_path = argv[optind];
 
-    ctx = test_get_context(0);
+    ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     if (!ctx) {
         fprintf(stderr, "Couldn't create xkb context\n");
         goto out;
     }
 
-    keymap = test_compile_file(ctx, keymap_path);
+    file = fopen(keymap_path, "rb");
+    if (!file) {
+        fprintf(stderr, "Failed to open path: %s\n", keymap_path);
+        goto out;
+    }
+
+    keymap = xkb_keymap_new_from_file(ctx, file,
+                                      XKB_KEYMAP_FORMAT_TEXT_V1, 0);
     if (!keymap) {
         fprintf(stderr, "Couldn't create xkb keymap\n");
         goto out;
@@ -76,6 +86,8 @@ main(int argc, char *argv[])
     ret = EXIT_SUCCESS;
     free(dump);
 out:
+    if (file)
+        fclose(file);
     xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
     return ret;
