@@ -26,7 +26,6 @@
 #include <unistd.h>
 #include <getopt.h>
 
-#include "test.h"
 #include "xkbcomp/xkbcomp-priv.h"
 #include "xkbcomp/rules.h"
 
@@ -80,7 +79,7 @@ main(int argc, char *argv[])
         }
     }
 
-    ctx = test_get_context(0);
+    ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     if (!ctx) {
         fprintf(stderr, "Failed to get xkb context\n");
         return 1;
