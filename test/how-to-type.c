@@ -27,7 +27,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include <xkbcommon/xkbcommon.h>
+#include "xkbcommon/xkbcommon.h"
 
 #define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
 
