@@ -32,8 +32,8 @@ main(int argc, char *argv[])
 {
     int ret = EXIT_FAILURE;
     int opt;
-    struct xkb_context *ctx;
-    struct xkb_keymap *keymap;
+    struct xkb_context *ctx = NULL;
+    struct xkb_keymap *keymap = NULL;
     const char *keymap_path = NULL;
     char *dump;
 
@@ -56,29 +56,27 @@ main(int argc, char *argv[])
     ctx = test_get_context(0);
     if (!ctx) {
         fprintf(stderr, "Couldn't create xkb context\n");
-        goto err_out;
+        goto out;
     }
 
     keymap = test_compile_file(ctx, keymap_path);
     if (!keymap) {
         fprintf(stderr, "Couldn't create xkb keymap\n");
-        goto err_ctx;
+        goto out;
     }
 
     dump = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_FORMAT_TEXT_V1);
     if (!dump) {
         fprintf(stderr, "Couldn't get the keymap string\n");
-        goto err_map;
+        goto out;
     }
 
     fputs(dump, stdout);
 
     ret = EXIT_SUCCESS;
     free(dump);
-err_map:
+out:
     xkb_keymap_unref(keymap);
-err_ctx:
     xkb_context_unref(ctx);
-err_out:
     return ret;
 }
