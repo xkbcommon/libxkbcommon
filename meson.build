@@ -465,7 +465,15 @@ if cc.has_header('linux/input.h')
     executable('interactive-evdev', 'test/interactive-evdev.c', dependencies: tools_dep)
 endif
 if get_option('enable-x11')
-    executable('interactive-x11', 'test/interactive-x11.c', dependencies: x11_test_dep)
+    x11_tools_dep = declare_dependency(
+        link_with: libxkbcommon_x11_internal,
+        dependencies: [
+            tools_dep,
+            xcb_dep,
+            xcb_xkb_dep,
+        ],
+    )
+    executable('interactive-x11', 'test/interactive-x11.c', dependencies: x11_tools_dep)
 endif
 if get_option('enable-wayland')
     wayland_client_dep = dependency('wayland-client', version: '>=1.2.0', required: false)
