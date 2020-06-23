@@ -33,7 +33,7 @@
 /*
  * Note: This program only handles the core keyboard device for now.
  * It should be straigtforward to change struct keyboard to a list of
- * keyboards with device IDs, as in test/interactive-evdev.c. This would
+ * keyboards with device IDs, as in tools/interactive-evdev.c. This would
  * require:
  *
  * - Initially listing the keyboard devices.

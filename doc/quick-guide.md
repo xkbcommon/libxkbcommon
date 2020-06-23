@@ -16,11 +16,11 @@ the library. We will employ a few use-cases to lead the examples:
 The snippets are not complete, and some support code is omitted. You
 can find complete and more complex examples in the source directory:
 
-1. test/interactive-evdev.c contains an interactive evdev client.
+1. tools/interactive-evdev.c contains an interactive evdev client.
 
-2. test/interactive-x11.c contains an interactive X11 client.
+2. tools/interactive-x11.c contains an interactive X11 client.
 
-3. test/interactive-wayland.c contains an interactive Wayland client.
+3. tools/interactive-wayland.c contains an interactive Wayland client.
 
 Also, the library contains many more functions for examining and using
 the library context, the keymap and the keyboard state. See the
