@@ -456,13 +456,13 @@ tools_dep = declare_dependency(
 )
 
 if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE')
-    executable('rmlvo-to-kccgst', 'tools/rmlvo-to-kccgst.c', dependencies: tools_dep)
-    executable('rmlvo-to-keymap', 'tools/rmlvo-to-keymap.c', dependencies: tools_dep)
-    executable('print-compiled-keymap', 'tools/print-compiled-keymap.c', dependencies: tools_dep)
-    executable('how-to-type', 'tools/how-to-type.c', dependencies: tools_dep)
+    executable('xkbcommon-rmlvo-to-kccgst', 'tools/rmlvo-to-kccgst.c', dependencies: tools_dep)
+    executable('xkbcommon-rmlvo-to-keymap', 'tools/rmlvo-to-keymap.c', dependencies: tools_dep)
+    executable('xkbcommon-print-compiled-keymap', 'tools/print-compiled-keymap.c', dependencies: tools_dep)
+    executable('xkbcommon-how-to-type', 'tools/how-to-type.c', dependencies: tools_dep)
 endif
 if cc.has_header('linux/input.h')
-    executable('interactive-evdev', 'tools/interactive-evdev.c', dependencies: tools_dep)
+    executable('xkbcommon-interactive-evdev', 'tools/interactive-evdev.c', dependencies: tools_dep)
 endif
 if get_option('enable-x11')
     x11_tools_dep = declare_dependency(
@@ -473,7 +473,7 @@ if get_option('enable-x11')
             xcb_xkb_dep,
         ],
     )
-    executable('interactive-x11', 'tools/interactive-x11.c', dependencies: x11_tools_dep)
+    executable('xkbcommon-interactive-x11', 'tools/interactive-x11.c', dependencies: x11_tools_dep)
 endif
 if get_option('enable-wayland')
     wayland_client_dep = dependency('wayland-client', version: '>=1.2.0', required: false)
@@ -501,7 +501,7 @@ You can disable the Wayland demo programs with -Denable-wayland=false.''')
         wayland_scanner_code_gen.process(xdg_shell_xml),
         wayland_scanner_client_header_gen.process(xdg_shell_xml),
     ]
-    executable('interactive-wayland',
+    executable('xkbcommon-interactive-wayland',
                'tools/interactive-wayland.c',
                xdg_shell_sources,
                dependencies: [tools_dep, wayland_client_dep])
