@@ -81,18 +81,6 @@ test_compile_rules(struct xkb_context *context, const char *rules,
                    const char *model, const char *layout, const char *variant,
                    const char *options);
 
-void
-test_print_keycode_state(struct xkb_state *state,
-                         struct xkb_compose_state *compose_state,
-                         xkb_keycode_t keycode,
-                         enum xkb_consumed_mode consumed_mode);
-
-
-void
-test_disable_stdin_echo(void);
-
-void
-test_enable_stdin_echo(void);
 
 #ifdef _MSC_VER
 #define setenv(varname, value, overwrite) _putenv_s((varname), (value))
