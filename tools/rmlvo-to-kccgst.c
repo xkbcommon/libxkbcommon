@@ -90,10 +90,12 @@ main(int argc, char *argv[])
     if (!xkb_components_from_rules(ctx, &rmlvo, &kccgst))
         return 1;
 
-    printf("keycodes: %s\n", kccgst.keycodes);
-    printf("types:    %s\n", kccgst.types);
-    printf("compat:   %s\n", kccgst.compat);
-    printf("symbols:  %s\n", kccgst.symbols);
+    printf("xkb_keymap {\n"
+           "  xkb_keycodes { include \"%s\" };\n"
+           "  xkb_types { include \"%s\" };\n"
+           "  xkb_compat { include \"%s\" };\n"
+           "  xkb_symbols { include \"%s\" };\n"
+           "};\n", kccgst.keycodes, kccgst.types, kccgst.compat, kccgst.symbols);
 
     free(kccgst.keycodes);
     free(kccgst.types);
