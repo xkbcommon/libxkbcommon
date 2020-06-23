@@ -33,7 +33,7 @@
 #include <sys/mman.h>
 
 #include "xkbcommon/xkbcommon.h"
-#include "test.h"
+#include "tools-common.h"
 
 #include <wayland-client.h>
 #include "xdg-shell-client-protocol.h"
@@ -377,8 +377,8 @@ kbd_key(void *data, struct wl_keyboard *wl_kbd, uint32_t serial, uint32_t time,
         return;
 
     printf("%s: ", seat->name_str);
-    test_print_keycode_state(seat->state, NULL, key + 8,
-                             XKB_CONSUMED_MODE_XKB);
+    tools_print_keycode_state(seat->state, NULL, key + 8,
+                              XKB_CONSUMED_MODE_XKB);
 
     /* Exit on ESC. */
     if (xkb_state_key_get_one_sym(seat->state, key + 8) == XKB_KEY_Escape)
@@ -669,7 +669,7 @@ main(int argc, char *argv[])
         goto err_out;
     }
 
-    inter.ctx = test_get_context(0);
+    inter.ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     if (!inter.ctx) {
         ret = -1;
         fprintf(stderr, "Couldn't create xkb context\n");
@@ -698,11 +698,11 @@ main(int argc, char *argv[])
 
     surface_create(&inter);
 
-    test_disable_stdin_echo();
+    tools_disable_stdin_echo();
     do {
         ret = wl_display_dispatch(inter.dpy);
     } while (ret >= 0 && !terminate);
-    test_enable_stdin_echo();
+    tools_enable_stdin_echo();
 
     wl_registry_destroy(registry);
 err_conn:

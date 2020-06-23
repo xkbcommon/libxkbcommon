@@ -501,7 +501,10 @@ You can disable the Wayland demo programs with -Denable-wayland=false.''')
         wayland_scanner_code_gen.process(xdg_shell_xml),
         wayland_scanner_client_header_gen.process(xdg_shell_xml),
     ]
-    executable('interactive-wayland', 'test/interactive-wayland.c', xdg_shell_sources, dependencies: [test_dep, wayland_client_dep])
+    executable('interactive-wayland',
+               'test/interactive-wayland.c',
+               xdg_shell_sources,
+               dependencies: [tools_dep, wayland_client_dep])
 endif
 
 # xkeyboard-config "verifier"
