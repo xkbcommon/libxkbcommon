@@ -28,7 +28,7 @@
 #include <xcb/xkb.h>
 
 #include "xkbcommon/xkbcommon-x11.h"
-#include "test.h"
+#include "tools-common.h"
 
 /*
  * Note: This program only handles the core keyboard device for now.
@@ -239,8 +239,8 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
         xcb_key_press_event_t *event = (xcb_key_press_event_t *) gevent;
         xkb_keycode_t keycode = event->detail;
 
-        test_print_keycode_state(kbd->state, NULL, keycode,
-                                 XKB_CONSUMED_MODE_XKB);
+        tools_print_keycode_state(kbd->state, NULL, keycode,
+                                  XKB_CONSUMED_MODE_XKB);
 
         /* Exit on ESC. */
         if (keycode == 9)
@@ -354,7 +354,7 @@ main(int argc, char *argv[])
         goto err_conn;
     }
 
-    ctx = test_get_context(0);
+    ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     if (!ctx) {
         ret = -1;
         fprintf(stderr, "Couldn't create xkb context\n");
@@ -380,9 +380,9 @@ main(int argc, char *argv[])
         goto err_core_kbd;
     }
 
-    test_disable_stdin_echo();
+    tools_disable_stdin_echo();
     ret = loop(conn, &core_kbd);
-    test_enable_stdin_echo();
+    tools_enable_stdin_echo();
 
 err_core_kbd:
     deinit_kbd(&core_kbd);
