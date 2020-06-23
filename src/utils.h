@@ -70,6 +70,14 @@ streq(const char *s1, const char *s2)
 }
 
 static inline bool
+streq_null(const char *s1, const char *s2)
+{
+    if (s1 == NULL || s2 == NULL)
+        return s1 == s2;
+    return streq(s1, s2);
+}
+
+static inline bool
 streq_not_null(const char *s1, const char *s2)
 {
     if (!s1 || !s2)

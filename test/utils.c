@@ -46,5 +46,11 @@ main(void)
     assert(!snprintf_safe(buffer, 10, "%s", "1234567890"));
     assert(snprintf_safe(buffer, 10, "%s", "123456789"));
 
+    assert(streq_null("foo", "foo"));
+    assert(!streq_null("foobar", "foo"));
+    assert(!streq_null("foobar", NULL));
+    assert(!streq_null(NULL, "foobar"));
+    assert(streq_null(NULL, NULL));
+
     return 0;
 }
