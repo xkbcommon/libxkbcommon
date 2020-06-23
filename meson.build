@@ -462,7 +462,7 @@ if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE'
     executable('how-to-type', 'tools/how-to-type.c', dependencies: tools_dep)
 endif
 if cc.has_header('linux/input.h')
-    executable('interactive-evdev', 'test/interactive-evdev.c', dependencies: tools_dep)
+    executable('interactive-evdev', 'tools/interactive-evdev.c', dependencies: tools_dep)
 endif
 if get_option('enable-x11')
     x11_tools_dep = declare_dependency(
@@ -473,7 +473,7 @@ if get_option('enable-x11')
             xcb_xkb_dep,
         ],
     )
-    executable('interactive-x11', 'test/interactive-x11.c', dependencies: x11_tools_dep)
+    executable('interactive-x11', 'tools/interactive-x11.c', dependencies: x11_tools_dep)
 endif
 if get_option('enable-wayland')
     wayland_client_dep = dependency('wayland-client', version: '>=1.2.0', required: false)
@@ -502,7 +502,7 @@ You can disable the Wayland demo programs with -Denable-wayland=false.''')
         wayland_scanner_client_header_gen.process(xdg_shell_xml),
     ]
     executable('interactive-wayland',
-               'test/interactive-wayland.c',
+               'tools/interactive-wayland.c',
                xdg_shell_sources,
                dependencies: [tools_dep, wayland_client_dep])
 endif
