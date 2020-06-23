@@ -23,6 +23,7 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -30,13 +31,18 @@
 #include <limits.h>
 #include <locale.h>
 #include <signal.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
 #include <sys/epoll.h>
 #include <linux/input.h>
 
-#include "test.h"
+#include "xkbcommon/xkbcommon.h"
+
+#include "tools-common.h"
 
 struct keyboard {
     char *path;
@@ -264,8 +270,8 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
     }
 
     if (value != KEY_STATE_RELEASE)
-        test_print_keycode_state(kbd->state, kbd->compose_state, keycode,
-                                 consumed_mode);
+        tools_print_keycode_state(kbd->state, kbd->compose_state, keycode,
+                                  consumed_mode);
 
     if (with_compose) {
         status = xkb_compose_state_get_status(kbd->compose_state);
@@ -279,7 +285,7 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
         changed = xkb_state_update_key(kbd->state, keycode, XKB_KEY_DOWN);
 
     if (report_state_changes)
-        test_print_state_changes(changed);
+        tools_print_state_changes(changed);
 }
 
 static int
@@ -433,7 +439,7 @@ main(int argc, char *argv[])
         }
     }
 
-    ctx = test_get_context(0);
+    ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     if (!ctx) {
         fprintf(stderr, "Couldn't create xkb context\n");
         goto out;
@@ -452,8 +458,25 @@ main(int argc, char *argv[])
         fclose(file);
     }
     else {
-        keymap = test_compile_rules(ctx, rules, model, layout, variant,
-                                    options);
+        struct xkb_rule_names rmlvo = {
+            .rules = isempty(rules) ? NULL : rules,
+            .model = isempty(model) ? NULL : model,
+            .layout = isempty(layout) ? NULL : layout,
+            .variant = isempty(variant) ? NULL : variant,
+            .options = isempty(options) ? NULL : options
+        };
+
+        if (!rules && !model && !layout && !variant && !options)
+            keymap = xkb_keymap_new_from_names(ctx, NULL, 0);
+        else
+            keymap = xkb_keymap_new_from_names(ctx, &rmlvo, 0);
+
+        if (!keymap) {
+            fprintf(stderr,
+                    "Failed to compile RMLVO: '%s', '%s', '%s', '%s', '%s'\n",
+                    rules, model, layout, variant, options);
+            goto out;
+        }
     }
 
     if (!keymap) {
@@ -483,9 +506,9 @@ main(int argc, char *argv[])
     sigaction(SIGINT, &act, NULL);
     sigaction(SIGTERM, &act, NULL);
 
-    test_disable_stdin_echo();
+    tools_disable_stdin_echo();
     ret = loop(kbds);
-    test_enable_stdin_echo();
+    tools_enable_stdin_echo();
 
     free_keyboards(kbds);
 out:

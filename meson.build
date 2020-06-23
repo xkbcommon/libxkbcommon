@@ -445,11 +445,13 @@ executable('fuzz-compose', 'fuzz/compose/target.c', dependencies: test_dep)
 # Demo programs.
 libxkbcommon_tools_internal = static_library(
     'tools-internal',
+    'tools/tools-common.h',
+    'tools/tools-common.c',
     libxkbcommon_sources,
     include_directories: include_directories('src'),
 )
 tools_dep = declare_dependency(
-    include_directories: include_directories('src'),
+    include_directories: [include_directories('src'), include_directories('tools')],
     link_with: libxkbcommon_tools_internal,
 )
 
@@ -460,7 +462,7 @@ if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE'
     executable('how-to-type', 'tools/how-to-type.c', dependencies: tools_dep)
 endif
 if cc.has_header('linux/input.h')
-    executable('interactive-evdev', 'test/interactive-evdev.c', dependencies: test_dep)
+    executable('interactive-evdev', 'test/interactive-evdev.c', dependencies: tools_dep)
 endif
 if get_option('enable-x11')
     executable('interactive-x11', 'test/interactive-x11.c', dependencies: x11_test_dep)
