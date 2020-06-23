@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "utils.h"
 #include "xkbcommon/xkbcommon.h"
 
 int
@@ -62,10 +63,42 @@ main(int argc, char *argv[])
         goto out;
     }
 
-    file = fopen(keymap_path, "rb");
-    if (!file) {
-        fprintf(stderr, "Failed to open path: %s\n", keymap_path);
-        goto out;
+    if (streq(keymap_path, "-")) {
+        FILE *tmp;
+
+        tmp = tmpfile();
+        if (!tmp) {
+            fprintf(stderr, "Failed to create tmpfile\n");
+            goto out;
+        }
+
+        while (true) {
+            char buf[4096];
+            size_t len;
+
+            len = fread(buf, 1, sizeof(buf), stdin);
+            if (ferror(stdin)) {
+                fprintf(stderr, "Failed to read from stdin\n");
+                goto out;
+            }
+            if (len > 0) {
+                size_t wlen = fwrite(buf, 1, len, tmp);
+                if (wlen != len) {
+                    fprintf(stderr, "Failed to write to tmpfile\n");
+                    goto out;
+                }
+            }
+            if (feof(stdin))
+                break;
+        }
+        fseek(tmp, 0, SEEK_SET);
+        file = tmp;
+    } else {
+        file = fopen(keymap_path, "rb");
+        if (!file) {
+            fprintf(stderr, "Failed to open path: %s\n", keymap_path);
+            goto out;
+        }
     }
 
     keymap = xkb_keymap_new_from_file(ctx, file,
