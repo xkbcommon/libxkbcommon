@@ -297,7 +297,7 @@ read_keyboard(struct keyboard *kbd)
 
     if (len < 0 && errno != EWOULDBLOCK) {
         fprintf(stderr, "Couldn't read %s: %s\n", kbd->path, strerror(errno));
-        return -errno;
+        return 1;
     }
 
     return 0;
@@ -306,8 +306,8 @@ read_keyboard(struct keyboard *kbd)
 static int
 loop(struct keyboard *kbds)
 {
-    int i, ret;
-    int epfd;
+    int i, ret = 1;
+    int epfd = -1;
     struct keyboard *kbd;
     struct epoll_event ev;
     struct epoll_event evs[16];
@@ -316,7 +316,7 @@ loop(struct keyboard *kbds)
     if (epfd < 0) {
         fprintf(stderr, "Couldn't create epoll instance: %s\n",
                 strerror(errno));
-        return -errno;
+        goto out;
     }
 
     for (kbd = kbds; kbd; kbd = kbd->next) {
@@ -325,10 +325,9 @@ loop(struct keyboard *kbds)
         ev.data.ptr = kbd;
         ret = epoll_ctl(epfd, EPOLL_CTL_ADD, kbd->fd, &ev);
         if (ret) {
-            ret = -errno;
             fprintf(stderr, "Couldn't add %s to epoll: %s\n",
                     kbd->path, strerror(errno));
-            goto err_epoll;
+            goto out;
         }
     }
 
@@ -337,25 +336,22 @@ loop(struct keyboard *kbds)
         if (ret < 0) {
             if (errno == EINTR)
                 continue;
-            ret = -errno;
             fprintf(stderr, "Couldn't poll for events: %s\n",
                     strerror(errno));
-            goto err_epoll;
+            goto out;
         }
 
         for (i = 0; i < ret; i++) {
             kbd = evs[i].data.ptr;
             ret = read_keyboard(kbd);
             if (ret) {
-                goto err_epoll;
+                goto out;
             }
         }
     }
 
-    close(epfd);
-    return 0;
-
-err_epoll:
+    ret = 0;
+out:
     close(epfd);
     return ret;
 }
@@ -369,11 +365,11 @@ sigintr_handler(int signum)
 int
 main(int argc, char *argv[])
 {
-    int ret;
+    int ret = EXIT_FAILURE;
     int opt;
     struct keyboard *kbds;
-    struct xkb_context *ctx;
-    struct xkb_keymap *keymap;
+    struct xkb_context *ctx = NULL;
+    struct xkb_keymap *keymap = NULL;
     struct xkb_compose_table *compose_table = NULL;
     const char *rules = NULL;
     const char *model = NULL;
@@ -439,18 +435,16 @@ main(int argc, char *argv[])
 
     ctx = test_get_context(0);
     if (!ctx) {
-        ret = -1;
         fprintf(stderr, "Couldn't create xkb context\n");
-        goto err_out;
+        goto out;
     }
 
     if (keymap_path) {
         FILE *file = fopen(keymap_path, "rb");
         if (!file) {
-            ret = EXIT_FAILURE;
             fprintf(stderr, "Couldn't open '%s': %s\n",
                     keymap_path, strerror(errno));
-            goto err_ctx;
+            goto out;
         }
         keymap = xkb_keymap_new_from_file(ctx, file,
                                           XKB_KEYMAP_FORMAT_TEXT_V1,
@@ -463,9 +457,8 @@ main(int argc, char *argv[])
     }
 
     if (!keymap) {
-        ret = -1;
         fprintf(stderr, "Couldn't create xkb keymap\n");
-        goto err_ctx;
+        goto out;
     }
 
     if (with_compose) {
@@ -474,16 +467,14 @@ main(int argc, char *argv[])
             xkb_compose_table_new_from_locale(ctx, locale,
                                               XKB_COMPOSE_COMPILE_NO_FLAGS);
         if (!compose_table) {
-            ret = -1;
             fprintf(stderr, "Couldn't create compose from locale\n");
-            goto err_xkb;
+            goto out;
         }
     }
 
     kbds = get_keyboards(keymap, compose_table);
     if (!kbds) {
-        ret = -1;
-        goto err_compose;
+        goto out;
     }
 
     act.sa_handler = sigintr_handler;
@@ -497,12 +488,10 @@ main(int argc, char *argv[])
     test_enable_stdin_echo();
 
     free_keyboards(kbds);
-err_compose:
+out:
     xkb_compose_table_unref(compose_table);
-err_xkb:
     xkb_keymap_unref(keymap);
-err_ctx:
     xkb_context_unref(ctx);
-err_out:
-    exit(ret == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
+
+    return ret;
 }
