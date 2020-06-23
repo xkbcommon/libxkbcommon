@@ -87,8 +87,6 @@ test_print_keycode_state(struct xkb_state *state,
                          xkb_keycode_t keycode,
                          enum xkb_consumed_mode consumed_mode);
 
-void
-test_print_state_changes(enum xkb_state_component changed);
 
 void
 test_disable_stdin_echo(void);

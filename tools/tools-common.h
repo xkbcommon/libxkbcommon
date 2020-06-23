@@ -23,6 +23,10 @@
  * Author: Daniel Stone <daniel@fooishbar.org>
  */
 
+#pragma once
+
+#include "config.h"
+
 #include <assert.h>
 
 /* Don't use compat names in internal code. */
@@ -31,67 +35,20 @@
 #include "xkbcommon/xkbcommon-compose.h"
 #include "utils.h"
 
-/* The offset between KEY_* numbering, and keycodes in the XKB evdev
- * dataset. */
-#define EVDEV_OFFSET 8
-
-enum key_seq_state {
-    DOWN,
-    REPEAT,
-    UP,
-    BOTH,
-    NEXT,
-    FINISH,
-};
-
-int
-test_key_seq(struct xkb_keymap *keymap, ...);
-
-int
-test_key_seq_va(struct xkb_keymap *keymap, va_list args);
-
-char *
-test_get_path(const char *path_rel);
-
-char *
-test_read_file(const char *path_rel);
-
-enum test_context_flags {
-    CONTEXT_NO_FLAG = 0,
-    CONTEXT_ALLOW_ENVIRONMENT_NAMES = (1 << 0),
-};
-
-struct xkb_context *
-test_get_context(enum test_context_flags flags);
-
-struct xkb_keymap *
-test_compile_file(struct xkb_context *context, const char *path_rel);
-
-struct xkb_keymap *
-test_compile_string(struct xkb_context *context, const char *string);
-
-struct xkb_keymap *
-test_compile_buffer(struct xkb_context *context, const char *buf, size_t len);
-
-struct xkb_keymap *
-test_compile_rules(struct xkb_context *context, const char *rules,
-                   const char *model, const char *layout, const char *variant,
-                   const char *options);
+void
+tools_print_keycode_state(struct xkb_state *state,
+                          struct xkb_compose_state *compose_state,
+                          xkb_keycode_t keycode,
+                          enum xkb_consumed_mode consumed_mode);
 
 void
-test_print_keycode_state(struct xkb_state *state,
-                         struct xkb_compose_state *compose_state,
-                         xkb_keycode_t keycode,
-                         enum xkb_consumed_mode consumed_mode);
+tools_print_state_changes(enum xkb_state_component changed);
 
 void
-test_print_state_changes(enum xkb_state_component changed);
+tools_disable_stdin_echo(void);
 
 void
-test_disable_stdin_echo(void);
-
-void
-test_enable_stdin_echo(void);
+tools_enable_stdin_echo(void);
 
 #ifdef _MSC_VER
 #define setenv(varname, value, overwrite) _putenv_s((varname), (value))

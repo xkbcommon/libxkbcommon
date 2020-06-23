@@ -46,9 +46,120 @@
 
 #include "tools-common.h"
 
+void
+tools_print_keycode_state(struct xkb_state *state,
+                          struct xkb_compose_state *compose_state,
+                          xkb_keycode_t keycode,
+                          enum xkb_consumed_mode consumed_mode)
+{
+    struct xkb_keymap *keymap;
+
+    xkb_keysym_t sym;
+    const xkb_keysym_t *syms;
+    int nsyms;
+    char s[16];
+    xkb_layout_index_t layout;
+    enum xkb_compose_status status;
+
+    keymap = xkb_state_get_keymap(state);
+
+    nsyms = xkb_state_key_get_syms(state, keycode, &syms);
+
+    if (nsyms <= 0)
+        return;
+
+    status = XKB_COMPOSE_NOTHING;
+    if (compose_state)
+        status = xkb_compose_state_get_status(compose_state);
+
+    if (status == XKB_COMPOSE_COMPOSING || status == XKB_COMPOSE_CANCELLED)
+        return;
+
+    if (status == XKB_COMPOSE_COMPOSED) {
+        sym = xkb_compose_state_get_one_sym(compose_state);
+        syms = &sym;
+        nsyms = 1;
+    }
+    else if (nsyms == 1) {
+        sym = xkb_state_key_get_one_sym(state, keycode);
+        syms = &sym;
+    }
+
+    printf("keysyms [ ");
+    for (int i = 0; i < nsyms; i++) {
+        xkb_keysym_get_name(syms[i], s, sizeof(s));
+        printf("%-*s ", (int) sizeof(s), s);
+    }
+    printf("] ");
+
+    if (status == XKB_COMPOSE_COMPOSED)
+        xkb_compose_state_get_utf8(compose_state, s, sizeof(s));
+    else
+        xkb_state_key_get_utf8(state, keycode, s, sizeof(s));
+    printf("unicode [ %s ] ", s);
+
+    layout = xkb_state_key_get_layout(state, keycode);
+    printf("layout [ %s (%d) ] ",
+           xkb_keymap_layout_get_name(keymap, layout), layout);
+
+    printf("level [ %d ] ",
+           xkb_state_key_get_level(state, keycode, layout));
+
+    printf("mods [ ");
+    for (xkb_mod_index_t mod = 0; mod < xkb_keymap_num_mods(keymap); mod++) {
+        if (xkb_state_mod_index_is_active(state, mod,
+                                          XKB_STATE_MODS_EFFECTIVE) <= 0)
+            continue;
+        if (xkb_state_mod_index_is_consumed2(state, keycode, mod,
+                                             consumed_mode))
+            printf("-%s ", xkb_keymap_mod_get_name(keymap, mod));
+        else
+            printf("%s ", xkb_keymap_mod_get_name(keymap, mod));
+    }
+    printf("] ");
+
+    printf("leds [ ");
+    for (xkb_led_index_t led = 0; led < xkb_keymap_num_leds(keymap); led++) {
+        if (xkb_state_led_index_is_active(state, led) <= 0)
+            continue;
+        printf("%s ", xkb_keymap_led_get_name(keymap, led));
+    }
+    printf("] ");
+
+    printf("\n");
+}
+
+void
+tools_print_state_changes(enum xkb_state_component changed)
+{
+    if (changed == 0)
+        return;
+
+    printf("changed [ ");
+    if (changed & XKB_STATE_LAYOUT_EFFECTIVE)
+        printf("effective-layout ");
+    if (changed & XKB_STATE_LAYOUT_DEPRESSED)
+        printf("depressed-layout ");
+    if (changed & XKB_STATE_LAYOUT_LATCHED)
+        printf("latched-layout ");
+    if (changed & XKB_STATE_LAYOUT_LOCKED)
+        printf("locked-layout ");
+    if (changed & XKB_STATE_MODS_EFFECTIVE)
+        printf("effective-mods ");
+    if (changed & XKB_STATE_MODS_DEPRESSED)
+        printf("depressed-mods ");
+    if (changed & XKB_STATE_MODS_LATCHED)
+        printf("latched-mods ");
+    if (changed & XKB_STATE_MODS_LOCKED)
+        printf("locked-mods ");
+    if (changed & XKB_STATE_LEDS)
+        printf("leds ");
+    printf("]\n");
+}
+
 #ifdef _MSC_VER
 void
-test_disable_stdin_echo(void)
+tools_disable_stdin_echo(void)
 {
     HANDLE stdin_handle = GetStdHandle(STD_INPUT_HANDLE);
     DWORD mode = 0;
@@ -57,7 +168,7 @@ test_disable_stdin_echo(void)
 }
 
 void
-test_enable_stdin_echo(void)
+tools_enable_stdin_echo(void)
 {
     HANDLE stdin_handle = GetStdHandle(STD_INPUT_HANDLE);
     DWORD mode = 0;
@@ -66,7 +177,7 @@ test_enable_stdin_echo(void)
 }
 #else
 void
-test_disable_stdin_echo(void)
+tools_disable_stdin_echo(void)
 {
     /* Same as `stty -echo`. */
     struct termios termios;
@@ -77,7 +188,7 @@ test_disable_stdin_echo(void)
 }
 
 void
-test_enable_stdin_echo(void)
+tools_enable_stdin_echo(void)
 {
     /* Same as `stty echo`. */
     struct termios termios;

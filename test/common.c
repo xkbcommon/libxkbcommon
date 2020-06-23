@@ -441,34 +441,6 @@ test_print_keycode_state(struct xkb_state *state,
     printf("\n");
 }
 
-void
-test_print_state_changes(enum xkb_state_component changed)
-{
-    if (changed == 0)
-        return;
-
-    printf("changed [ ");
-    if (changed & XKB_STATE_LAYOUT_EFFECTIVE)
-        printf("effective-layout ");
-    if (changed & XKB_STATE_LAYOUT_DEPRESSED)
-        printf("depressed-layout ");
-    if (changed & XKB_STATE_LAYOUT_LATCHED)
-        printf("latched-layout ");
-    if (changed & XKB_STATE_LAYOUT_LOCKED)
-        printf("locked-layout ");
-    if (changed & XKB_STATE_MODS_EFFECTIVE)
-        printf("effective-mods ");
-    if (changed & XKB_STATE_MODS_DEPRESSED)
-        printf("depressed-mods ");
-    if (changed & XKB_STATE_MODS_LATCHED)
-        printf("latched-mods ");
-    if (changed & XKB_STATE_MODS_LOCKED)
-        printf("locked-mods ");
-    if (changed & XKB_STATE_LEDS)
-        printf("leds ");
-    printf("]\n");
-}
-
 #ifdef _MSC_VER
 void
 test_disable_stdin_echo(void)
