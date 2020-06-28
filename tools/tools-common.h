@@ -33,7 +33,6 @@
 #define _XKBCOMMON_COMPAT_H
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-compose.h"
-#include "utils.h"
 
 void
 tools_print_keycode_state(struct xkb_state *state,

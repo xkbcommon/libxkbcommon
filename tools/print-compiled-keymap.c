@@ -23,11 +23,12 @@
 
 #include "config.h"
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
-#include "utils.h"
 #include "xkbcommon/xkbcommon.h"
 
 int
@@ -63,7 +64,7 @@ main(int argc, char *argv[])
         goto out;
     }
 
-    if (streq(keymap_path, "-")) {
+    if (strcmp(keymap_path, "-") == 0) {
         FILE *tmp;
 
         tmp = tmpfile();

@@ -28,9 +28,12 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <locale.h>
+#include <stdbool.h>
 #include <stdint.h>
-#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/mman.h>
+#include <unistd.h>
 
 #include "xkbcommon/xkbcommon.h"
 #include "tools-common.h"
@@ -38,6 +41,8 @@
 #include <wayland-client.h>
 #include "xdg-shell-client-protocol.h"
 #include <wayland-util.h>
+
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 struct interactive_dpy {
     struct wl_display *dpy;

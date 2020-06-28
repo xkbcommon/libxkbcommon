@@ -459,11 +459,11 @@ main(int argc, char *argv[])
     }
     else {
         struct xkb_rule_names rmlvo = {
-            .rules = isempty(rules) ? NULL : rules,
-            .model = isempty(model) ? NULL : model,
-            .layout = isempty(layout) ? NULL : layout,
-            .variant = isempty(variant) ? NULL : variant,
-            .options = isempty(options) ? NULL : options
+            .rules = (rules == NULL || rules[0] == '\0') ? NULL : rules,
+            .model = (model == NULL || model[0] == '\0') ? NULL : model,
+            .layout = (layout == NULL || layout[0] == '\0') ? NULL : layout,
+            .variant = (variant == NULL || variant[0] == '\0') ? NULL : variant,
+            .options = (options == NULL || options[0] == '\0') ? NULL : options
         };
 
         if (!rules && !model && !layout && !variant && !options)
