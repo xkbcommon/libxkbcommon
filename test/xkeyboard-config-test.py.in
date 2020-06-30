@@ -41,7 +41,7 @@ def xkbcommontool(rmlvo):
         v = rmlvo.get('v', None)
         o = rmlvo.get('o', None)
         args = [
-            'rmlvo-to-keymap',
+            'xkbcommon-rmlvo-to-keymap',
             '--rules', r,
             '--model', m,
             '--layout', l,
