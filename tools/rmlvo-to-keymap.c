@@ -33,22 +33,18 @@
 
 #include "xkbcommon/xkbcommon.h"
 
-static bool print = false;
-
 static void
 usage(char **argv)
 {
-    printf("Usage: %s [--print] [--rules <rules>] [--layout <layout>] [--variant <variant>] [--options <option>]\n",
+    printf("Usage: %s [--rules <rules>] [--layout <layout>] [--variant <variant>] [--options <option>]\n",
            argv[0]);
-    printf("This tool tests the compilation from RMLVO to a keymap.\n");
-    printf("--print  print the resulting keymap\n");
+    printf("Compile the RMLVO to a keymap and print it.\n");
 }
 
 static bool
 parse_options(int argc, char **argv, struct xkb_rule_names *names)
 {
     enum options {
-        OPT_PRINT,
         OPT_RULES,
         OPT_MODEL,
         OPT_LAYOUT,
@@ -57,7 +53,6 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
     };
     static struct option opts[] = {
         {"help",        no_argument,            0, 'h'},
-        {"print",       no_argument,            0, OPT_PRINT},
         {"rules",       required_argument,      0, OPT_RULES},
         {"model",       required_argument,      0, OPT_MODEL},
         {"layout",      required_argument,      0, OPT_LAYOUT},
@@ -77,9 +72,6 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
         case 'h':
             usage(argv);
             exit(0);
-        case OPT_PRINT:
-            print = true;
-            break;
         case OPT_RULES:
             names->rules = optarg;
             break;
@@ -133,7 +125,7 @@ main(int argc, char **argv)
     keymap = xkb_keymap_new_from_names(ctx, &names, XKB_KEYMAP_COMPILE_NO_FLAGS);
     rc = (keymap == NULL);
 
-    if (rc == 0 && print)
+    if (rc == 0)
         printf("%s\n", xkb_keymap_get_as_string(keymap,
                                                 XKB_KEYMAP_FORMAT_TEXT_V1));
 
