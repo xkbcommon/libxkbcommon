@@ -99,14 +99,6 @@ xkb_context_get_buffer(struct xkb_context *ctx, size_t size)
     return rtrn;
 }
 
-#ifndef DEFAULT_XKB_VARIANT
-#define DEFAULT_XKB_VARIANT NULL
-#endif
-
-#ifndef DEFAULT_XKB_OPTIONS
-#define DEFAULT_XKB_OPTIONS NULL
-#endif
-
 static const char *
 xkb_context_get_default_rules(struct xkb_context *ctx)
 {
