@@ -36,9 +36,30 @@
 static void
 usage(char **argv)
 {
-    printf("Usage: %s [--verbose] [--rules <rules>] [--layout <layout>] [--variant <variant>] [--options <option>]\n",
-           argv[0]);
-    printf("Compile the RMLVO to a keymap and print it.\n");
+    printf("Usage: %s [OPTIONS]\n"
+           "\n"
+           "Compile the given RMLVO to a keymap and print it\n"
+           "\n"
+           "Options:\n"
+           " --verbose\n"
+           "    Enable verbose debugging output\n"
+           "\n"
+           "XKB-specific options:\n"
+           " --rules <rules>\n"
+           "    The XKB ruleset (default: '%s')\n"
+           " --model <model>\n"
+           "    The XKB model (default: '%s')\n"
+           " --layout <layout>\n"
+           "    The XKB layout (default: '%s')\n"
+           " --variant <variant>\n"
+           "    The XKB layout variant (default: '%s')\n"
+           " --options <options>\n"
+           "    The XKB options (default: '%s')\n"
+           "\n",
+           argv[0], DEFAULT_XKB_RULES,
+           DEFAULT_XKB_MODEL, DEFAULT_XKB_LAYOUT,
+           DEFAULT_XKB_VARIANT ? DEFAULT_XKB_VARIANT : "<none>",
+           DEFAULT_XKB_OPTIONS ? DEFAULT_XKB_OPTIONS : "<none>");
 }
 
 static bool
