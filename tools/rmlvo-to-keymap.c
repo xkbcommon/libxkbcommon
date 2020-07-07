@@ -41,6 +41,7 @@ static bool verbose = false;
 static enum output_format {
     FORMAT_KEYMAP,
     FORMAT_KCCGST,
+    FORMAT_KEYMAP_FROM_XKB,
 } output_format = FORMAT_KEYMAP;
 static darray(const char *) includes;
 
@@ -56,6 +57,9 @@ usage(char **argv)
            "    Enable verbose debugging output\n"
            " --kccgst\n"
            "    Print a keymap which only includes the KcCGST component names instead of the full keymap\n"
+           " --from-xkb\n"
+           "    Load the XKB file from stdin, ignore RMLVO options. This option\n"
+           "    must not be used with --kccgst.\n"
            " --include\n"
            "    Add the given path to the include path list. This option is\n"
            "    order-dependent, include paths given first are searched first.\n"
@@ -91,6 +95,7 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
     enum options {
         OPT_VERBOSE,
         OPT_KCCGST,
+        OPT_FROM_XKB,
         OPT_INCLUDE,
         OPT_INCLUDE_DEFAULTS,
         OPT_RULES,
@@ -103,6 +108,7 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
         {"help",             no_argument,            0, 'h'},
         {"verbose",          no_argument,            0, OPT_VERBOSE},
         {"kccgst",           no_argument,            0, OPT_KCCGST},
+        {"from-xkb",         no_argument,            0, OPT_FROM_XKB},
         {"include",          required_argument,      0, OPT_INCLUDE},
         {"include-defaults", no_argument,            0, OPT_INCLUDE_DEFAULTS},
         {"rules",            required_argument,      0, OPT_RULES},
@@ -129,6 +135,9 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
             break;
         case OPT_KCCGST:
             output_format = FORMAT_KCCGST;
+            break;
+        case OPT_FROM_XKB:
+            output_format = FORMAT_KEYMAP_FROM_XKB;
             break;
         case OPT_INCLUDE:
             darray_append(includes, optarg);
@@ -199,6 +208,65 @@ print_keymap(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
     return true;
 }
 
+static bool
+print_keymap_from_file(struct xkb_context *ctx)
+{
+    struct xkb_keymap *keymap = NULL;
+    char *keymap_string = NULL;
+    FILE *file = NULL;
+    bool success = false;
+
+    file = tmpfile();
+    if (!file) {
+        fprintf(stderr, "Failed to create tmpfile\n");
+        goto out;
+    }
+
+    while (true) {
+        char buf[4096];
+        size_t len;
+
+        len = fread(buf, 1, sizeof(buf), stdin);
+        if (ferror(stdin)) {
+            fprintf(stderr, "Failed to read from stdin\n");
+            goto out;
+        }
+        if (len > 0) {
+            size_t wlen = fwrite(buf, 1, len, file);
+            if (wlen != len) {
+                fprintf(stderr, "Failed to write to tmpfile\n");
+                goto out;
+            }
+        }
+        if (feof(stdin))
+            break;
+    }
+    fseek(file, 0, SEEK_SET);
+    keymap = xkb_keymap_new_from_file(ctx, file,
+                                      XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+    if (!keymap) {
+        fprintf(stderr, "Couldn't create xkb keymap\n");
+        goto out;
+    }
+
+    keymap_string = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_FORMAT_TEXT_V1);
+    if (!keymap_string) {
+        fprintf(stderr, "Couldn't get the keymap string\n");
+        goto out;
+    }
+
+    fputs(keymap_string, stdout);
+    success = true;
+
+out:
+    if (file)
+        fclose(file);
+    xkb_keymap_unref(keymap);
+    free(keymap_string);
+
+    return success;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -244,6 +312,8 @@ main(int argc, char **argv)
         rc = print_keymap(ctx, &names) ? EXIT_SUCCESS : EXIT_FAILURE;
     } else if (output_format == FORMAT_KCCGST) {
         rc = print_kccgst(ctx, &names) ? EXIT_SUCCESS : EXIT_FAILURE;
+    } else if (output_format == FORMAT_KEYMAP_FROM_XKB) {
+        rc = print_keymap_from_file(ctx);
     }
 
     xkb_context_unref(ctx);
