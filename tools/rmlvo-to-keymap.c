@@ -39,6 +39,7 @@
 
 static bool verbose = false;
 static enum output_format {
+    FORMAT_RMLVO,
     FORMAT_KEYMAP,
     FORMAT_KCCGST,
     FORMAT_KEYMAP_FROM_XKB,
@@ -57,6 +58,8 @@ usage(char **argv)
            "    Enable verbose debugging output\n"
            " --kccgst\n"
            "    Print a keymap which only includes the KcCGST component names instead of the full keymap\n"
+           " --rmlvo\n"
+           "    Print the full RMLVO with the defaults filled in for missing elements\n"
            " --from-xkb\n"
            "    Load the XKB file from stdin, ignore RMLVO options. This option\n"
            "    must not be used with --kccgst.\n"
@@ -95,6 +98,7 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
     enum options {
         OPT_VERBOSE,
         OPT_KCCGST,
+        OPT_RMLVO,
         OPT_FROM_XKB,
         OPT_INCLUDE,
         OPT_INCLUDE_DEFAULTS,
@@ -108,6 +112,7 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
         {"help",             no_argument,            0, 'h'},
         {"verbose",          no_argument,            0, OPT_VERBOSE},
         {"kccgst",           no_argument,            0, OPT_KCCGST},
+        {"rmlvo",            no_argument,            0, OPT_RMLVO},
         {"from-xkb",         no_argument,            0, OPT_FROM_XKB},
         {"include",          required_argument,      0, OPT_INCLUDE},
         {"include-defaults", no_argument,            0, OPT_INCLUDE_DEFAULTS},
@@ -135,6 +140,9 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
             break;
         case OPT_KCCGST:
             output_format = FORMAT_KCCGST;
+            break;
+        case OPT_RMLVO:
+            output_format = FORMAT_RMLVO;
             break;
         case OPT_FROM_XKB:
             output_format = FORMAT_KEYMAP_FROM_XKB;
@@ -167,6 +175,16 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
 
     }
 
+    return true;
+}
+
+static bool
+print_rmlvo(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
+{
+    printf("rules: \"%s\"\nmodel: \"%s\"\nlayout: \"%s\"\nvariant: \"%s\"\noptions: \"%s\"\n",
+           rmlvo->rules, rmlvo->model, rmlvo->layout,
+           rmlvo->variant ? rmlvo->variant : "",
+           rmlvo->options ? rmlvo->options : "");
     return true;
 }
 
@@ -308,7 +326,9 @@ main(int argc, char **argv)
             xkb_context_include_path_append(ctx, *path);
     }
 
-    if (output_format == FORMAT_KEYMAP) {
+    if (output_format == FORMAT_RMLVO) {
+        rc = print_rmlvo(ctx, &names) ? EXIT_SUCCESS : EXIT_FAILURE;
+    } else if (output_format == FORMAT_KEYMAP) {
         rc = print_keymap(ctx, &names) ? EXIT_SUCCESS : EXIT_FAILURE;
     } else if (output_format == FORMAT_KCCGST) {
         rc = print_kccgst(ctx, &names) ? EXIT_SUCCESS : EXIT_FAILURE;
