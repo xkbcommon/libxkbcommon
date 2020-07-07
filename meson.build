@@ -77,9 +77,13 @@ configh_data.set_quoted('DEFAULT_XKB_MODEL', get_option('default-model'))
 configh_data.set_quoted('DEFAULT_XKB_LAYOUT', get_option('default-layout'))
 if get_option('default-variant') != ''
     configh_data.set_quoted('DEFAULT_XKB_VARIANT', get_option('default-variant'))
+else
+    configh_data.set('DEFAULT_XKB_VARIANT', 'NULL')
 endif
 if get_option('default-options') != ''
     configh_data.set_quoted('DEFAULT_XKB_OPTIONS', get_option('default-options'))
+else
+    configh_data.set('DEFAULT_XKB_OPTIONS', 'NULL')
 endif
 if cc.links('int main(){if(__builtin_expect(1<0,0)){}}', name: '__builtin_expect')
     configh_data.set('HAVE___BUILTIN_EXPECT', 1)
