@@ -58,19 +58,28 @@ xkb_context_include_path_append(struct xkb_context *ctx, const char *path)
         goto err;
 
     err = stat(path, &stat_buf);
-    if (err != 0)
+    if (err != 0) {
+        err = errno;
         goto err;
-    if (!S_ISDIR(stat_buf.st_mode))
+    }
+    if (!S_ISDIR(stat_buf.st_mode)) {
+        err = ENOTDIR;
         goto err;
+    }
 
-    if (!check_eaccess(path, R_OK | X_OK))
+    if (!check_eaccess(path, R_OK | X_OK)) {
+        err = EACCES;
         goto err;
+    }
 
     darray_append(ctx->includes, tmp);
+    log_dbg(ctx, "Include path added: %s\n", tmp);
+
     return 1;
 
 err:
     darray_append(ctx->failed_includes, tmp);
+    log_dbg(ctx, "Include path failed: %s (%s)\n", tmp, strerror(err));
     return 0;
 }
 
