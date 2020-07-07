@@ -35,11 +35,14 @@
 #include "xkbcomp/rules.h"
 #include "xkbcommon/xkbcommon.h"
 
+#define DEFAULT_INCLUDE_PATH_PLACEHOLDER "__defaults__"
+
 static bool verbose = false;
 static enum output_format {
     FORMAT_KEYMAP,
     FORMAT_KCCGST,
 } output_format = FORMAT_KEYMAP;
+static darray(const char *) includes;
 
 static void
 usage(char **argv)
@@ -53,6 +56,16 @@ usage(char **argv)
            "    Enable verbose debugging output\n"
            " --kccgst\n"
            "    Print a keymap which only includes the KcCGST component names instead of the full keymap\n"
+           " --include\n"
+           "    Add the given path to the include path list. This option is\n"
+           "    order-dependent, include paths given first are searched first.\n"
+           "    If an include path is given, the default include path list is\n"
+           "    not used. Use --include-defaults to add the default include\n"
+           "    paths\n"
+           " --include-defaults\n"
+           "    Add the default set of include directories.\n"
+           "    This option is order-dependent, include paths given first\n"
+           "    are searched first.\n"
            "\n"
            "XKB-specific options:\n"
            " --rules <rules>\n"
@@ -78,6 +91,8 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
     enum options {
         OPT_VERBOSE,
         OPT_KCCGST,
+        OPT_INCLUDE,
+        OPT_INCLUDE_DEFAULTS,
         OPT_RULES,
         OPT_MODEL,
         OPT_LAYOUT,
@@ -85,14 +100,16 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
         OPT_OPTION,
     };
     static struct option opts[] = {
-        {"help",        no_argument,            0, 'h'},
-        {"verbose",     no_argument,            0, OPT_VERBOSE},
-        {"kccgst",      no_argument,            0, OPT_KCCGST},
-        {"rules",       required_argument,      0, OPT_RULES},
-        {"model",       required_argument,      0, OPT_MODEL},
-        {"layout",      required_argument,      0, OPT_LAYOUT},
-        {"variant",     required_argument,      0, OPT_VARIANT},
-        {"options",     required_argument,      0, OPT_OPTION},
+        {"help",             no_argument,            0, 'h'},
+        {"verbose",          no_argument,            0, OPT_VERBOSE},
+        {"kccgst",           no_argument,            0, OPT_KCCGST},
+        {"include",          required_argument,      0, OPT_INCLUDE},
+        {"include-defaults", no_argument,            0, OPT_INCLUDE_DEFAULTS},
+        {"rules",            required_argument,      0, OPT_RULES},
+        {"model",            required_argument,      0, OPT_MODEL},
+        {"layout",           required_argument,      0, OPT_LAYOUT},
+        {"variant",          required_argument,      0, OPT_VARIANT},
+        {"options",          required_argument,      0, OPT_OPTION},
         {0, 0, 0, 0},
     };
 
@@ -112,6 +129,12 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
             break;
         case OPT_KCCGST:
             output_format = FORMAT_KCCGST;
+            break;
+        case OPT_INCLUDE:
+            darray_append(includes, optarg);
+            break;
+        case OPT_INCLUDE_DEFAULTS:
+            darray_append(includes, DEFAULT_INCLUDE_PATH_PLACEHOLDER);
             break;
         case OPT_RULES:
             names->rules = optarg;
@@ -188,6 +211,7 @@ main(int argc, char **argv)
         .options = NULL,
     };
     int rc = 1;
+    const char **path;
 
     if (argc <= 1) {
         usage(argv);
@@ -206,7 +230,15 @@ main(int argc, char **argv)
     }
 
     xkb_context_sanitize_rule_names(ctx, &names);
-    xkb_context_include_path_append_default(ctx);
+    if (darray_empty(includes))
+        darray_append(includes, DEFAULT_INCLUDE_PATH_PLACEHOLDER);
+
+    darray_foreach(path, includes) {
+        if (streq(*path, DEFAULT_INCLUDE_PATH_PLACEHOLDER))
+            xkb_context_include_path_append_default(ctx);
+        else
+            xkb_context_include_path_append(ctx, *path);
+    }
 
     if (output_format == FORMAT_KEYMAP) {
         rc = print_keymap(ctx, &names) ? EXIT_SUCCESS : EXIT_FAILURE;
