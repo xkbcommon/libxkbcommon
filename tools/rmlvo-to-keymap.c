@@ -36,15 +36,16 @@
 static void
 usage(char **argv)
 {
-    printf("Usage: %s [--rules <rules>] [--layout <layout>] [--variant <variant>] [--options <option>]\n",
+    printf("Usage: %s [--verbose] [--rules <rules>] [--layout <layout>] [--variant <variant>] [--options <option>]\n",
            argv[0]);
     printf("Compile the RMLVO to a keymap and print it.\n");
 }
 
 static bool
-parse_options(int argc, char **argv, struct xkb_rule_names *names)
+parse_options(int argc, char **argv, bool *verbose, struct xkb_rule_names *names)
 {
     enum options {
+        OPT_VERBOSE,
         OPT_RULES,
         OPT_MODEL,
         OPT_LAYOUT,
@@ -53,6 +54,7 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
     };
     static struct option opts[] = {
         {"help",        no_argument,            0, 'h'},
+        {"verbose",     no_argument,            0, OPT_VERBOSE},
         {"rules",       required_argument,      0, OPT_RULES},
         {"model",       required_argument,      0, OPT_MODEL},
         {"layout",      required_argument,      0, OPT_LAYOUT},
@@ -72,6 +74,9 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
         case 'h':
             usage(argv);
             exit(0);
+        case OPT_VERBOSE:
+            *verbose = true;
+            break;
         case OPT_RULES:
             names->rules = optarg;
             break;
@@ -110,17 +115,25 @@ main(int argc, char **argv)
         .options = NULL,
     };
     int rc;
+    bool verbose = false;
 
     if (argc <= 1) {
         usage(argv);
         return 1;
     }
 
-    if (!parse_options(argc, argv, &names))
+    if (!parse_options(argc, argv, &verbose, &names))
         return 1;
 
-    ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+    ctx = xkb_context_new(XKB_CONTEXT_NO_DEFAULT_INCLUDES);
     assert(ctx);
+
+    if (verbose) {
+        xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_DEBUG);
+        xkb_context_set_log_verbosity(ctx, 10);
+    }
+
+    xkb_context_include_path_append_default(ctx);
 
     keymap = xkb_keymap_new_from_names(ctx, &names, XKB_KEYMAP_COMPILE_NO_FLAGS);
     rc = (keymap == NULL);
