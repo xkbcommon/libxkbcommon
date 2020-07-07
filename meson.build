@@ -521,7 +521,6 @@ tools_dep = declare_dependency(
 
 if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE')
     executable('xkbcommon-rmlvo-to-keymap', 'tools/rmlvo-to-keymap.c', dependencies: tools_dep)
-    executable('xkbcommon-print-compiled-keymap', 'tools/print-compiled-keymap.c', dependencies: tools_dep)
     executable('xkbcommon-how-to-type', 'tools/how-to-type.c', dependencies: tools_dep)
 endif
 if cc.has_header('linux/input.h')
