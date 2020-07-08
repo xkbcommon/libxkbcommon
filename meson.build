@@ -129,8 +129,6 @@ configh_data.set('_CRT_NONSTDC_NO_WARNINGS', 1)
 configh_data.set('_CRT_NONSTDC_NO_DEPRECATE', 1)
 # Reduce unnecessary includes on MSVC.
 configh_data.set('WIN32_LEAN_AND_MEAN', 1)
-configure_file(output: 'config.h', configuration: configh_data)
-
 
 # Supports -Wl,--version-script?
 have_version_script = cc.links(
@@ -677,3 +675,5 @@ You can disable the documentation with -Denable-docs=false.''')
         build_by_default: true,
     )
 endif
+
+configure_file(output: 'config.h', configuration: configh_data)
