@@ -1,0 +1,31 @@
+# xkbcli(1) - tool to interact with XKB keymaps
+
+## SYNOPSIS
+
+**xkbcli** [--help|--version] &lt;command&gt; [<args>]
+
+## DESCRIPTION
+
+**xkbcli** is a commandline tool to query, compile and test XKB keymaps,
+layouts and other elements.
+
+## OPTIONS
+
+  * `--help`:
+      Print help and exit
+
+  * `--version`:
+      Print the version and exit
+
+## EXIT STATUS
+
+  * 0:
+    exited successfully
+  * 1:
+    an error occured
+  * 2:
+    program was called with invalid arguments
+
+## SEE ALSO
+
+The libxkbcommon online documentation at <https://xkbcommon.org>
