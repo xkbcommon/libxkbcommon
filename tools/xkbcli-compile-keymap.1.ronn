@@ -1,0 +1,63 @@
+# xkbcli-compile-keymap(1) - compile an XKB keymap
+
+## SYNOPSIS
+
+**xkbcli** compile-keymap \[--help\] \[OPTIONS\]
+
+## DESCRIPTION
+
+**xkbcli compile-keymap** compiles and prints a keymap based on the given
+options.
+
+## OPTIONS
+
+  * `--help`:
+      Print help and exit
+
+  * `--verbose`:
+      Enable verbose debugging output
+
+  * `--kccgst`:
+      Print a keymap which only includes the KcCGST component names instead of
+      the full keymap
+
+  * ` --rmlvo`:
+      Print the full RMLVO with the defaults filled in for missing elements
+
+  * ` --from-xkb`:
+      Load the XKB file from stdin, ignore RMLVO options. This option must not
+      be used with `--kccgst`.
+
+  * ` --include`:
+      Add the given path to the include path list. This option is
+      order-dependent, include paths given first are searched first.
+      If an include path is given, the default include path list is
+      not used. Use `--include-defaults` to add the default include
+      paths
+
+  * ` --include-defaults`:
+      Add the default set of include directories.
+      This option is order-dependent, include paths given first
+      are searched first.
+
+  * ` --rules <rules>`:
+      The XKB ruleset
+
+  * ` --model <model>`:
+      The XKB model
+  * ` --layout <layout>`:
+
+      The XKB layout
+  * ` --variant <variant>`:
+
+      The XKB layout variant
+
+  * ` --options <options>`:
+      The XKB options
+
+## SEE ALSO
+
+**xkbcli**(1)
+
+The libxkbcommon online documentation at <https://xkbcommon.org>
+

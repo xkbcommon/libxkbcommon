@@ -1,0 +1,28 @@
+# xkbcli-interactive-x11(1) - interactive debugger for XKB maps
+
+## SYNOPSIS
+
+**xkbcli** interactive-x11 \[--help\] \[OPTIONS\]
+
+## DESCRIPTION
+
+**xkbcli interactive-x11** is a commandline tool to interactively
+debug XKB maps by listening to X11 events. This requires an X server to be
+running.
+
+This is a debugging tool, its behavior or output is not guaranteed to be
+stable.
+
+## OPTIONS
+
+  * `--help`:
+      Print help and exit
+
+## SEE ALSO
+
+**xkbcli**(1), **xkbcli-interactive-evdev**(1),
+**xkbcli-interactive-wayland**(1)
+
+The libxkbcommon online documentation at <https://xkbcommon.org>
+
+

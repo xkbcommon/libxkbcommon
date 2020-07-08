@@ -1,0 +1,36 @@
+# xkbcli-how-to-type(1) - query how to type a given Unicode codepoint
+
+## SYNOPSIS
+
+**xkbcli** how-to-type \[OPTIONS\] &lt;codepoint&gt;
+
+## DESCRIPTION
+
+**xkbcli how-to-type** prints key sequences to type the given Unicode
+codepoint.
+
+Pipe into `column -ts $'\\t'` for nicely aligned output.
+
+## OPTIONS
+
+  * ` -r <rules>`:
+      The XKB ruleset
+
+  * ` -m <model>`:
+      The XKB model
+
+  * `-l <layout>`:
+      The XKB layout
+
+  * `-v <variant>`:
+      The XKB layout variant
+
+  * `-o <options>`:
+      The XKB options
+
+## SEE ALSO
+
+**xkbcli**(1)
+
+The libxkbcommon online documentation at <https://xkbcommon.org>
+
