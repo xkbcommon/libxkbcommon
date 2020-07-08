@@ -12,6 +12,8 @@ project(
 pkgconfig = import('pkgconfig')
 cc = meson.get_compiler('c')
 
+dir_libexec = join_paths(get_option('prefix'), get_option('libexecdir'), 'xkbcommon')
+dir_man = join_paths(get_option('prefix'), get_option('mandir'))
 
 # Compiler flags.
 foreach cflag: [
@@ -61,6 +63,9 @@ endif
 
 # config.h.
 configh_data = configuration_data()
+configh_data.set('EXIT_INVALID_USAGE', '2')
+configh_data.set_quoted('LIBXKBCOMMON_VERSION', meson.project_version())
+configh_data.set_quoted('LIBXKBCOMMON_TOOL_PATH', dir_libexec)
 # Like AC_USE_SYSTEM_EXTENSIONS, what #define to use to get extensions
 # beyond the base POSIX function set.
 if host_machine.system() == 'sunos'
@@ -121,6 +126,9 @@ endif
 have_getopt = cc.has_header_symbol('getopt.h', 'getopt')
 have_getopt_long = cc.has_header_symbol('getopt.h', 'getopt_long',
                                         prefix: '#define _GNU_SOURCE')
+if have_getopt_long
+    configh_data.set10('HAVE_GETOPT_LONG', true)
+endif
 
 # Silence some security & deprecation warnings on MSVC
 # for some unix/C functions we use.
@@ -518,8 +526,9 @@ endif
 executable('fuzz-keymap', 'fuzz/keymap/target.c', dependencies: test_dep)
 executable('fuzz-compose', 'fuzz/compose/target.c', dependencies: test_dep)
 
+man_pages = []
 
-# Demo programs.
+# Tools
 build_tools = have_getopt
 if build_tools
     libxkbcommon_tools_internal = static_library(
@@ -533,6 +542,10 @@ if build_tools
         include_directories: [include_directories('src'), include_directories('tools')],
         link_with: libxkbcommon_tools_internal,
     )
+
+    executable('xkbcli', 'tools/xkbcli.c',
+               dependencies: tools_dep, install: true)
+    man_pages += 'tools/xkbcli.1.ronn'
 
     if have_getopt_long
         executable('xkbcommon-rmlvo-to-keymap', 'tools/rmlvo-to-keymap.c', dependencies: tools_dep)
@@ -590,6 +603,23 @@ if build_tools
                    dependencies: dep_libxkbregistry,
                    install: false)
     endif
+endif
+
+if get_option('enable-manpages')
+    prog_ronn = find_program('ronn', required: true)
+    foreach manpage : man_pages
+        # man page filenames adhere to directory/topic.section.ronn
+        topic = manpage.split('/')[-1].split('.')[-3]
+        section = manpage.split('.')[-2]
+        output = '@0@.@1@'.format(topic, section)
+        custom_target(output,
+                      input: manpage,
+                      output: output,
+                      command: [prog_ronn, '--manual=libxkbcommon manual', '--pipe', '--roff', files(manpage)],
+                      capture: true,
+                      install: true,
+                      install_dir: join_paths(dir_man, section))
+    endforeach
 endif
 
 # xkeyboard-config "verifier"

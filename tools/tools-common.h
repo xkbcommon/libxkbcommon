@@ -49,6 +49,9 @@ tools_disable_stdin_echo(void);
 void
 tools_enable_stdin_echo(void);
 
+int
+tools_exec_command(const char *prefix, int argc, char **argv);
+
 #ifdef _MSC_VER
 #define setenv(varname, value, overwrite) _putenv_s((varname), (value))
 #define unsetenv(varname) _putenv_s(varname, "")

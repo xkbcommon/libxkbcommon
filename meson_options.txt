@@ -62,3 +62,9 @@ option(
     value: true,
     description: 'Enable building libxkbregistry',
 )
+option(
+    'enable-manpages',
+    type: 'boolean',
+    value: true,
+    description: 'Enable building man pages',
+)

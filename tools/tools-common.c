@@ -34,16 +34,22 @@
 
 #include <limits.h>
 #include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifdef _MSC_VER
 #include <io.h>
 #include <windows.h>
+#ifndef PATH_MAX
+#define PATH_MAX MAX_PATH
+#endif
 #else
 #include <unistd.h>
 #include <termios.h>
 #endif
 
+#include "utils.h"
 #include "tools-common.h"
 
 void
@@ -197,4 +203,59 @@ tools_enable_stdin_echo(void)
         (void) tcsetattr(STDIN_FILENO, TCSADRAIN, &termios);
     }
 }
+
 #endif
+
+static inline bool
+tools_setup_path(void)
+{
+    const char *path = getenv("PATH");
+    const char *extra_path = LIBXKBCOMMON_TOOL_PATH;
+    char new_path[PATH_MAX];
+
+    if (snprintf_safe(new_path, sizeof(new_path), "%s:%s",
+                      extra_path, path ? path : "")) {
+        setenv("PATH", new_path, 1);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+int
+tools_exec_command(const char *prefix, int real_argc, char **real_argv)
+{
+    char *argv[64] = {NULL};
+    char executable[128];
+    const char *command;
+
+    assert((size_t)real_argc < ARRAY_SIZE(argv));
+
+    command = real_argv[0];
+
+    if (!snprintf_safe(executable, sizeof(executable),
+                       "%s-%s", prefix, command)) {
+        fprintf(stderr, "Failed to assemble command\n");
+        return EXIT_FAILURE;
+    }
+
+    if (!tools_setup_path()) {
+        fprintf(stderr, "Failed to set PATH\n");
+        return EXIT_FAILURE;
+    }
+
+    argv[0] = executable;
+    for (int i = 1; i < real_argc; i++)
+        argv[i] = real_argv[i];
+
+    execvp(executable, argv);
+    if (errno == ENOENT) {
+        fprintf(stderr, "Command '%s' is not available\n", command);
+        return EXIT_INVALID_USAGE;
+    } else {
+        fprintf(stderr, "Failed to execute '%s' (%s)\n",
+                command, strerror(errno));
+    }
+
+    return EXIT_FAILURE;
+}
