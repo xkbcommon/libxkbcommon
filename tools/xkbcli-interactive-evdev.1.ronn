@@ -1,0 +1,59 @@
+# xkbcli-interactive-evdev(1) - interactive debugger for XKB maps
+
+## SYNOPSIS
+
+**xkbcli** interactive-evdev \[--help\] \[OPTIONS\]
+
+## DESCRIPTION
+
+**xkbcli interactive-evdev** is a commandline tool to interactively
+debug XKB maps by listening to `/dev/input/eventX` evdev devices.
+
+This is a debugging tool, its behavior or output is not guaranteed to be
+stable.
+
+## OPTIONS
+
+  * `--help`:
+      Print help and exit
+
+  * `-r`:
+      Specify the XKB ruleset
+
+  * `-m`:
+      Specify the XKB model
+
+  * `-l`:
+      Specify the XKB layout
+
+  * `-v`:
+      Specify the XKB variant
+
+  * `-o`:
+      Specify the XKB options
+
+  * `-k`:
+      Specify a keymap path. This option is mutually exclusive with the rmlvo
+      options.
+
+  * `-n`:
+      Specify an evdev keycode offset.
+
+  * `-c`:
+      Report changes to the keyboard state
+
+  * `-d`:
+      Enable compose functionality
+
+  * `-g`:
+      Use GTK consumed mode
+
+
+## SEE ALSO
+
+**xkbcli**(1),
+**xkbcli-interactive-wayland**(1), **xkbcli-interactive-x11**(1)
+
+The libxkbcommon online documentation at <https://xkbcommon.org>
+
+

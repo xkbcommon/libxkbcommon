@@ -17,6 +17,28 @@ layouts and other elements.
   * `--version`:
       Print the version and exit
 
+## COMMANDS
+
+  * `how-to-type`:
+      Show how to type a given unicode codepoint, see
+      `xkbcli-how-to-type`(1)
+
+  * `interactive-x11`:
+      Interactive debugger for XKB maps for X11, see `xbkcli-interactive-x11`(1)
+
+  * `interactive-wayland`:
+      Interactive debugger for XKB maps for Wayland, see
+      `xkbcli-interactive-wayland`(1)
+
+  * `interactive-evdev`:
+      Interactive debugger for XKB maps for evdev, see
+      `xkbcli-interactive-evdev`
+
+  * `list`:
+      List available layouts and more, see `xkbcli-list`(1)
+
+Note that not all tools may be available on your system.
+
 ## EXIT STATUS
 
   * 0:

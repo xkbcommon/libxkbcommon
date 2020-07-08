@@ -1,0 +1,36 @@
+# xkbcli-list(1) - list available XKB rules, models, layouts, variants and options
+
+## SYNOPSIS
+
+**xkbcli** list [--help] [/path/to/xkbbase [/path/to/xkbbase] ...]
+
+## DESCRIPTION
+
+**xkbcli list** is a commandline tool to list available model, layout, variant
+and option (MLVO) values from the XKB registry.
+
+Arguments provided on the commandline are treated as XKB base directory
+installations.
+
+## OPTIONS
+
+  * `--help`:
+      Print help and exit
+
+  * `-v, --verbose`:
+      Increase verbosity, use multiple times for debugging output
+
+  * `--ruleset <name>`:
+      Load the ruleset with the given name
+
+  * `--skip-default-paths`:
+      Do not load the default XKB include paths
+
+  * `--load-exotic`:
+      Load exotic (extra) layouts
+
+## SEE ALSO
+
+**xkbcli**(1)
+
+The libxkbcommon online documentation at <https://xkbcommon.org>

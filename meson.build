@@ -310,6 +310,8 @@ You can disable X11 support with -Denable-x11=false.''')
     )
 endif
 
+man_pages = []
+
 # libxkbregistry
 if get_option('enable-xkbregistry')
     dep_libxml = dependency('libxml-2.0')
@@ -533,11 +535,29 @@ if build_tools
     man_pages += 'tools/xkbcli.1.ronn'
 
     if have_getopt_long
-        executable('xkbcommon-rmlvo-to-keymap', 'tools/rmlvo-to-keymap.c', dependencies: tools_dep)
-        executable('xkbcommon-how-to-type', 'tools/how-to-type.c', dependencies: tools_dep)
+        executable('xkbcli-compile-keymap',
+                   'tools/compile-keymap.c',
+                   dependencies: tools_dep,
+                   install: true,
+                   install_dir: dir_libexec)
+        man_pages += 'tools/xkbcli-compile-keymap.1.ronn'
+        configh_data.set10('HAVE_XKBCLI_COMPILE_KEYMAP', true)
+        executable('xkbcli-how-to-type',
+                   'tools/how-to-type.c',
+                   dependencies: tools_dep,
+                   install: true,
+                   install_dir: dir_libexec)
+        man_pages += 'tools/xkbcli-how-to-type.1.ronn'
+        configh_data.set10('HAVE_XKBCLI_HOW_TO_TYPE', true)
     endif
     if cc.has_header('linux/input.h')
-        executable('xkbcommon-interactive-evdev', 'tools/interactive-evdev.c', dependencies: tools_dep)
+        executable('xkbcli-interactive-evdev',
+                   'tools/interactive-evdev.c',
+                   dependencies: tools_dep,
+                   install: true,
+                   install_dir: dir_libexec)
+        configh_data.set10('HAVE_XKBCLI_INTERACTIVE_EVDEV', true)
+        man_pages += 'tools/xkbcli-interactive-evdev.1.ronn'
     endif
     if get_option('enable-x11')
         x11_tools_dep = declare_dependency(
@@ -548,7 +568,13 @@ if build_tools
                 xcb_xkb_dep,
             ],
         )
-        executable('xkbcommon-interactive-x11', 'tools/interactive-x11.c', dependencies: x11_tools_dep)
+        executable('xkbcli-interactive-x11',
+                   'tools/interactive-x11.c',
+                   dependencies: x11_tools_dep,
+                   install: true,
+                   install_dir: dir_libexec)
+        man_pages += 'tools/xkbcli-interactive-x11.1.ronn'
+        configh_data.set10('HAVE_XKBCLI_INTERACTIVE_X11', true)
     endif
     if get_option('enable-wayland')
         wayland_client_dep = dependency('wayland-client', version: '>=1.2.0', required: false)
@@ -576,17 +602,24 @@ if build_tools
             wayland_scanner_code_gen.process(xdg_shell_xml),
             wayland_scanner_client_header_gen.process(xdg_shell_xml),
         ]
-        executable('xkbcommon-interactive-wayland',
+        executable('xkbcli-interactive-wayland',
                    'tools/interactive-wayland.c',
                    xdg_shell_sources,
-                   dependencies: [tools_dep, wayland_client_dep])
+                   dependencies: [tools_dep, wayland_client_dep],
+                   install: true,
+                   install_dir: dir_libexec)
+        man_pages += 'tools/xkbcli-interactive-wayland.1.ronn'
+        configh_data.set10('HAVE_XKBCLI_INTERACTIVE_WAYLAND', true)
     endif
 
     if have_getopt_long and get_option('enable-xkbregistry')
-        executable('xkbcommon-registry-list',
+        configh_data.set10('HAVE_XKBCLI_LIST', true)
+        executable('xkbcli-list',
                    'tools/registry-list.c',
                    dependencies: dep_libxkbregistry,
-                   install: false)
+                   install: true,
+                   install_dir: dir_libexec)
+        man_pages += 'tools/xkbcli-list.1.ronn'
     endif
 endif
 

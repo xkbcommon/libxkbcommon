@@ -37,7 +37,38 @@ usage(void)
            "Global options:\n"
            "  -h, --help ...... show this help and exit\n"
            "  -V, --version ... show version information and exit\n"
-           "\n");
+           "Commands:\n"
+#if HAVE_XKBCLI_LIST
+           "  list\n"
+           "    List available rules, models, layouts, variants and options\n"
+           "\n"
+#endif
+#if HAVE_XKBCLI_INTERACTIVE_WAYLAND
+           "  interactive-wayland\n"
+           "    Interactive debugger for XKB maps for wayland\n"
+           "\n"
+#endif
+#if HAVE_XKBCLI_INTERACTIVE_x11
+           "  interactive-x11\n"
+           "    Interactive debugger for XKB maps for X11\n"
+           "\n"
+#endif
+#if HAVE_XKBCLI_INTERACTIVE_EVDEV
+           "  interactive-evdev\n"
+           "    Interactive debugger for XKB maps for evdev\n"
+           "\n"
+#endif
+#if HAVE_XKBCLI_COMPILE_KEYMAP
+           "  compile-keymap\n"
+           "    Compile n XKB keymap\n"
+           "\n"
+#endif
+#if HAVE_XKBCLI_HOW_TO_TYPE
+           "  how-to-type\n"
+           "    Print key sequences to type a Unicode codepoint\n"
+           "\n"
+#endif
+           );
 }
 
 int
