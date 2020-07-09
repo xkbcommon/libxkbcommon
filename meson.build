@@ -344,12 +344,6 @@ if get_option('enable-xkbregistry')
                                 include_directories: include_directories('xkbcommon'),
                                 link_with: libxkbregistry
                                 )
-    if have_getopt_long
-        executable('xkbcommon-registry-list',
-                   'tools/registry-list.c',
-                   dependencies: dep_libxkbregistry,
-                   install: false)
-    endif
 endif
 
 # Tests
@@ -573,6 +567,13 @@ if build_tools
                    'tools/interactive-wayland.c',
                    xdg_shell_sources,
                    dependencies: [tools_dep, wayland_client_dep])
+    endif
+
+    if have_getopt_long and get_option('enable-xkbregistry')
+        executable('xkbcommon-registry-list',
+                   'tools/registry-list.c',
+                   dependencies: dep_libxkbregistry,
+                   install: false)
     endif
 endif
 
