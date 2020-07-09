@@ -118,6 +118,7 @@ elif cc.has_header_symbol('stdlib.h', '__secure_getenv', prefix: system_ext_defi
 else
     message('C library does not support secure_getenv, using getenv instead')
 endif
+have_getopt = cc.has_header_symbol('getopt.h', 'getopt')
 have_getopt_long = cc.has_header_symbol('getopt.h', 'getopt_long',
                                         prefix: '#define _GNU_SOURCE')
 
@@ -525,66 +526,69 @@ executable('fuzz-compose', 'fuzz/compose/target.c', dependencies: test_dep)
 
 
 # Demo programs.
-libxkbcommon_tools_internal = static_library(
-    'tools-internal',
-    'tools/tools-common.h',
-    'tools/tools-common.c',
-    libxkbcommon_sources,
-    include_directories: include_directories('src'),
-)
-tools_dep = declare_dependency(
-    include_directories: [include_directories('src'), include_directories('tools')],
-    link_with: libxkbcommon_tools_internal,
-)
-
-if have_getopt_long
-    executable('xkbcommon-rmlvo-to-keymap', 'tools/rmlvo-to-keymap.c', dependencies: tools_dep)
-    executable('xkbcommon-how-to-type', 'tools/how-to-type.c', dependencies: tools_dep)
-endif
-if cc.has_header('linux/input.h')
-    executable('xkbcommon-interactive-evdev', 'tools/interactive-evdev.c', dependencies: tools_dep)
-endif
-if get_option('enable-x11')
-    x11_tools_dep = declare_dependency(
-        link_with: libxkbcommon_x11_internal,
-        dependencies: [
-            tools_dep,
-            xcb_dep,
-            xcb_xkb_dep,
-        ],
+build_tools = have_getopt
+if build_tools
+    libxkbcommon_tools_internal = static_library(
+        'tools-internal',
+        'tools/tools-common.h',
+        'tools/tools-common.c',
+        libxkbcommon_sources,
+        include_directories: include_directories('src'),
     )
-    executable('xkbcommon-interactive-x11', 'tools/interactive-x11.c', dependencies: x11_tools_dep)
-endif
-if get_option('enable-wayland')
-    wayland_client_dep = dependency('wayland-client', version: '>=1.2.0', required: false)
-    wayland_protocols_dep = dependency('wayland-protocols', version: '>=1.12', required: false)
-    wayland_scanner_dep = dependency('wayland-scanner', required: false, native: true)
-    if not wayland_client_dep.found() or not wayland_protocols_dep.found() or not wayland_scanner_dep.found()
-        error('''The Wayland demo programs require wayland-client >= 1.2.0, wayland-protocols >= 1.7 which were not found.
-You can disable the Wayland demo programs with -Denable-wayland=false.''')
+    tools_dep = declare_dependency(
+        include_directories: [include_directories('src'), include_directories('tools')],
+        link_with: libxkbcommon_tools_internal,
+    )
+
+    if have_getopt_long
+        executable('xkbcommon-rmlvo-to-keymap', 'tools/rmlvo-to-keymap.c', dependencies: tools_dep)
+        executable('xkbcommon-how-to-type', 'tools/how-to-type.c', dependencies: tools_dep)
     endif
+    if cc.has_header('linux/input.h')
+        executable('xkbcommon-interactive-evdev', 'tools/interactive-evdev.c', dependencies: tools_dep)
+    endif
+    if get_option('enable-x11')
+        x11_tools_dep = declare_dependency(
+            link_with: libxkbcommon_x11_internal,
+            dependencies: [
+                tools_dep,
+                xcb_dep,
+                xcb_xkb_dep,
+            ],
+        )
+        executable('xkbcommon-interactive-x11', 'tools/interactive-x11.c', dependencies: x11_tools_dep)
+    endif
+    if get_option('enable-wayland')
+        wayland_client_dep = dependency('wayland-client', version: '>=1.2.0', required: false)
+        wayland_protocols_dep = dependency('wayland-protocols', version: '>=1.12', required: false)
+        wayland_scanner_dep = dependency('wayland-scanner', required: false, native: true)
+        if not wayland_client_dep.found() or not wayland_protocols_dep.found() or not wayland_scanner_dep.found()
+            error('''The Wayland demo programs require wayland-client >= 1.2.0, wayland-protocols >= 1.7 which were not found.
+    You can disable the Wayland demo programs with -Denable-wayland=false.''')
+        endif
 
-    wayland_scanner = find_program(wayland_scanner_dep.get_pkgconfig_variable('wayland_scanner'))
-    wayland_scanner_code_gen = generator(
-        wayland_scanner,
-        output: '@BASENAME@-protocol.c',
-        arguments: ['code', '@INPUT@', '@OUTPUT@'],
-    )
-    wayland_scanner_client_header_gen = generator(
-        wayland_scanner,
-        output: '@BASENAME@-client-protocol.h',
-        arguments: ['client-header', '@INPUT@', '@OUTPUT@'],
-    )
-    wayland_protocols_datadir = wayland_protocols_dep.get_pkgconfig_variable('pkgdatadir')
-    xdg_shell_xml = join_paths(wayland_protocols_datadir, 'stable/xdg-shell/xdg-shell.xml')
-    xdg_shell_sources = [
-        wayland_scanner_code_gen.process(xdg_shell_xml),
-        wayland_scanner_client_header_gen.process(xdg_shell_xml),
-    ]
-    executable('xkbcommon-interactive-wayland',
-               'tools/interactive-wayland.c',
-               xdg_shell_sources,
-               dependencies: [tools_dep, wayland_client_dep])
+        wayland_scanner = find_program(wayland_scanner_dep.get_pkgconfig_variable('wayland_scanner'))
+        wayland_scanner_code_gen = generator(
+            wayland_scanner,
+            output: '@BASENAME@-protocol.c',
+            arguments: ['code', '@INPUT@', '@OUTPUT@'],
+        )
+        wayland_scanner_client_header_gen = generator(
+            wayland_scanner,
+            output: '@BASENAME@-client-protocol.h',
+            arguments: ['client-header', '@INPUT@', '@OUTPUT@'],
+        )
+        wayland_protocols_datadir = wayland_protocols_dep.get_pkgconfig_variable('pkgdatadir')
+        xdg_shell_xml = join_paths(wayland_protocols_datadir, 'stable/xdg-shell/xdg-shell.xml')
+        xdg_shell_sources = [
+            wayland_scanner_code_gen.process(xdg_shell_xml),
+            wayland_scanner_client_header_gen.process(xdg_shell_xml),
+        ]
+        executable('xkbcommon-interactive-wayland',
+                   'tools/interactive-wayland.c',
+                   xdg_shell_sources,
+                   dependencies: [tools_dep, wayland_client_dep])
+    endif
 endif
 
 # xkeyboard-config "verifier"
