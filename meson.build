@@ -575,8 +575,7 @@ xkct_config.set('MESON_BUILD_ROOT', meson.build_root())
 xkct_config.set('XKB_CONFIG_ROOT', XKBCONFIGROOT)
 configure_file(input: 'test/xkeyboard-config-test.py.in',
                output: 'xkeyboard-config-test',
-               configuration: xkct_config,
-               install: false)
+               configuration: xkct_config)
 
 
 # Benchmarks.
