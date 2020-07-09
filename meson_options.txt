@@ -4,6 +4,11 @@ option(
     description: 'The XKB config root [default=xkeyboard-config install path]',
 )
 option(
+    'xkb-config-extra-path',
+    type: 'string',
+    description: 'Extra lookup path for system-wide XKB data [default=$sysconfdir/xkb]',
+)
+option(
     'x-locale-root',
     type: 'string',
     description: 'The X locale root [default=$datadir/X11/locale]',

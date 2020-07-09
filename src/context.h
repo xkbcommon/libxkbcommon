@@ -60,6 +60,9 @@ xkb_context_failed_include_path_get(struct xkb_context *ctx,
                                     unsigned int idx);
 
 const char *
+xkb_context_include_path_get_extra_path(struct xkb_context *ctx);
+
+const char *
 xkb_context_include_path_get_system_path(struct xkb_context *ctx);
 
 /*

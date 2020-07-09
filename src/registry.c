@@ -583,7 +583,7 @@ err:
 XKB_EXPORT bool
 rxkb_context_include_path_append_default(struct rxkb_context *ctx)
 {
-    const char *home, *xdg, *root;
+    const char *home, *xdg, *root, *extra;
     char *user_path;
     bool ret = false;
 
@@ -617,6 +617,12 @@ rxkb_context_include_path_append_default(struct rxkb_context *ctx)
             free(user_path);
         }
     }
+
+    extra = secure_getenv("XKB_CONFIG_EXTRA_PATH");
+    if (extra != NULL)
+        ret |= rxkb_context_include_path_append(ctx, extra);
+    else
+        ret |= rxkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_EXTRA_PATH);
 
     root = secure_getenv("XKB_CONFIG_ROOT");
     if (root != NULL)
