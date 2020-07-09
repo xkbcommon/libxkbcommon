@@ -170,7 +170,7 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
             break;
         default:
             usage(argv);
-            exit(1);
+            exit(EXIT_INVALID_USAGE);
         }
 
     }
@@ -301,11 +301,11 @@ main(int argc, char **argv)
 
     if (argc <= 1) {
         usage(argv);
-        return 1;
+        return EXIT_INVALID_USAGE;
     }
 
     if (!parse_options(argc, argv, &names))
-        return 1;
+        return EXIT_INVALID_USAGE;
 
     ctx = xkb_context_new(XKB_CONTEXT_NO_DEFAULT_INCLUDES);
     assert(ctx);

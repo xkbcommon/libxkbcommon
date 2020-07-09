@@ -413,7 +413,7 @@ main(int argc, char *argv[])
             evdev_offset = strtol(optarg, NULL, 10);
             if (errno) {
                 fprintf(stderr, "error: -n option expects a number\n");
-                exit(EXIT_FAILURE);
+                exit(EXIT_INVALID_USAGE);
             }
             break;
         case 'c':
@@ -435,7 +435,7 @@ main(int argc, char *argv[])
                             "          -c (to report changes to the state)\n"
                             "          -d (to enable compose)\n"
                             "          -g (to use GTK consumed mode)\n");
-            exit(2);
+            exit(EXIT_INVALID_USAGE);
         }
     }
 
