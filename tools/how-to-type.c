@@ -50,7 +50,7 @@ main(int argc, char *argv[])
     const char *layout_ = NULL;
     const char *variant = NULL;
     const char *options = NULL;
-    int exit = EXIT_FAILURE;
+    int err = EXIT_FAILURE;
     struct xkb_context *ctx = NULL;
     char *endp;
     long val;
@@ -81,16 +81,19 @@ main(int argc, char *argv[])
             break;
         default:
             usage(argv[0]);
+            exit(EXIT_INVALID_USAGE);
         }
     }
     if (argc - optind != 1) {
         usage(argv[0]);
+        exit(EXIT_INVALID_USAGE);
     }
 
     errno = 0;
     val = strtol(argv[optind], &endp, 0);
     if (errno != 0 || endp == argv[optind] || val < 0 || val > 0x10FFFF) {
         usage(argv[0]);
+        exit(EXIT_INVALID_USAGE);
     }
     codepoint = (uint32_t) val;
 
@@ -188,9 +191,9 @@ main(int argc, char *argv[])
         }
     }
 
-    exit = EXIT_SUCCESS;
+    err = EXIT_SUCCESS;
 err:
     xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
-    return exit;
+    return err;
 }

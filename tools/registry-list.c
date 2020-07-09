@@ -30,9 +30,9 @@
 #include "xkbcommon/xkbregistry.h"
 
 static void
-usage(const char *progname)
+usage(const char *progname, FILE *fp)
 {
-    fprintf(stderr,
+    fprintf(fp,
             "Usage: %s [OPTIONS] [/path/to/xkb_base_directory [/path2]...]\n"
             "\n"
             "Options:\n"
@@ -77,9 +77,11 @@ main(int argc, char **argv)
 
         switch (c) {
             case 'h':
+                usage(argv[0], stdout);
+                return 0;
             case '?':
-                usage(argv[0]);
-                return 1;
+                usage(argv[0], stderr);
+                return EXIT_INVALID_USAGE;
             case 'd':
                 load_defaults = false;
                 break;

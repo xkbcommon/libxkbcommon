@@ -662,6 +662,14 @@ main(int argc, char *argv[])
     struct interactive_dpy inter;
     struct wl_registry *registry;
 
+    if (argc != 1) {
+        ret = strcmp(argv[1], "--help");
+        fprintf(ret ? stderr : stdout, "Usage: %s [--help]\n", argv[0]);
+        if (ret)
+            fprintf(stderr, "unrecognized option: %s\n", argv[1]);
+        return ret ? EXIT_INVALID_USAGE : EXIT_SUCCESS;
+    }
+
     setlocale(LC_ALL, "");
 
     memset(&inter, 0, sizeof(inter));

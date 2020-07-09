@@ -26,6 +26,7 @@
 #include <locale.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <xcb/xkb.h>
 
@@ -335,6 +336,14 @@ main(int argc, char *argv[])
     int32_t core_kbd_device_id;
     struct xkb_context *ctx;
     struct keyboard core_kbd;
+
+    if (argc != 1) {
+        ret = strcmp(argv[1], "--help");
+        fprintf(ret ? stderr : stdout, "Usage: %s [--help]\n", argv[0]);
+        if (ret)
+            fprintf(stderr, "unrecognized option: %s\n", argv[1]);
+        return ret ? EXIT_INVALID_USAGE : EXIT_SUCCESS;
+    }
 
     setlocale(LC_ALL, "");
 
