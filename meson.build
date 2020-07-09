@@ -47,6 +47,10 @@ if XKBCONFIGROOT == ''
   endif
 endif
 
+XKBCONFIGEXTRAPATH = get_option('xkb-config-extra-path')
+if XKBCONFIGEXTRAPATH == ''
+    XKBCONFIGEXTRAPATH = join_paths(get_option('prefix'), get_option('sysconfdir'), 'xkb')
+endif
 
 # The X locale directory for compose.
 XLOCALEDIR = get_option('x-locale-root')
@@ -70,6 +74,7 @@ endif
 configh_data.set(system_extensions, 1)
 system_ext_define = '#define ' + system_extensions
 configh_data.set_quoted('DFLT_XKB_CONFIG_ROOT', XKBCONFIGROOT)
+configh_data.set_quoted('DFLT_XKB_CONFIG_EXTRA_PATH', XKBCONFIGEXTRAPATH)
 configh_data.set_quoted('XLOCALEDIR', XLOCALEDIR)
 configh_data.set_quoted('DEFAULT_XKB_RULES', get_option('default-rules'))
 configh_data.set_quoted('DEFAULT_XKB_MODEL', get_option('default-model'))

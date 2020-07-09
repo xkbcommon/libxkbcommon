@@ -11,6 +11,8 @@ libxkbcommon searches the following paths for XKB configuration files:
 - `$XDG_CONFIG_HOME/xkb/`, or `$HOME/.config/xkb/` if the `$XDG_CONFIG_HOME`
   environment variable is not defined
 - `$HOME/.xkb/`
+- `$XKB_CONFIG_EXTRA_PATH` if set, otherswise `<sysconfdir>/xkb` (on most
+  distributions this is `/etc/xkb`)
 - `$XKB_CONFIG_ROOT` if set, otherwise `<datadir>/X11/xkb/` (path defined by the
   `xkeyboard-config` package, on most distributions this is
   `/usr/share/X11/xkb`)

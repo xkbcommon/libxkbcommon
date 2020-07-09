@@ -84,6 +84,13 @@ err:
 }
 
 const char *
+xkb_context_include_path_get_extra_path(struct xkb_context *ctx)
+{
+    const char *extra = secure_getenv("XKB_CONFIG_EXTRA_PATH");
+    return extra ? extra : DFLT_XKB_CONFIG_EXTRA_PATH;
+}
+
+const char *
 xkb_context_include_path_get_system_path(struct xkb_context *ctx)
 {
     const char *root = secure_getenv("XKB_CONFIG_ROOT");
@@ -96,7 +103,7 @@ xkb_context_include_path_get_system_path(struct xkb_context *ctx)
 XKB_EXPORT int
 xkb_context_include_path_append_default(struct xkb_context *ctx)
 {
-    const char *home, *xdg, *root;
+    const char *home, *xdg, *root, *extra;
     char *user_path;
     int ret = 0;
 
@@ -126,6 +133,8 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
         }
     }
 
+    extra = xkb_context_include_path_get_extra_path(ctx);
+    ret |= xkb_context_include_path_append(ctx, extra);
     root = xkb_context_include_path_get_system_path(ctx);
     ret |= xkb_context_include_path_append(ctx, root);
 

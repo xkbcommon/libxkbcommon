@@ -399,6 +399,13 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
                     return;
                 }
             }
+            else if (chr(&s, 'E')) {
+                const char *default_root = xkb_context_include_path_get_extra_path(m->ctx);
+                if (!buf_appends(&s, default_root) || !buf_appends(&s, "/rules")) {
+                    scanner_err(&s, "include path after expanding %%E is too long");
+                    return;
+                }
+            }
             else {
                 scanner_err(&s, "unknown %% format (%c) in include statement", peek(&s));
                 return;

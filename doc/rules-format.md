@@ -73,6 +73,9 @@ Notes:
   %H:
     The value of the HOME environment variable.
 
+  %E:
+    The extra lookup path for system-wide XKB data (usually /etc/xkb/rules).
+
   %S:
     The system-installed rules directory (usually /usr/share/X11/xkb/rules).
 ```

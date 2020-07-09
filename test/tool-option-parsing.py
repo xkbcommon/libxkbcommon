@@ -306,5 +306,7 @@ if __name__ == '__main__':
         # to override it with a known (empty) directory. Otherwise our test
         # behavior depends on the system the test is run on.
         os.environ['XDG_CONFIG_HOME'] = tmpdir
+        # This needs to be separated if we do specific extra path testing
+        os.environ['XKB_CONFIG_EXTRA_PATH'] = tmpdir
 
         sys.exit(pytest.main(args=[__file__]))

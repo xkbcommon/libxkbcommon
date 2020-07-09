@@ -553,7 +553,7 @@ xkb_keysym_to_lower(xkb_keysym_t ks);
  *
  * The user may set some environment variables which affect the library:
  *
- * - `XKB_CONFIG_ROOT`, `XDG_CONFIG_DIR`, `HOME` - see @ref include-path.
+ * - `XKB_CONFIG_ROOT`, `XKB_EXTRA_PATH`, `XDG_CONFIG_DIR`, `HOME` - see @ref include-path.
  * - `XKB_LOG_LEVEL` - see xkb_context_set_log_level().
  * - `XKB_LOG_VERBOSITY` - see xkb_context_set_log_verbosity().
  * - `XKB_DEFAULT_RULES`, `XKB_DEFAULT_MODEL`, `XKB_DEFAULT_LAYOUT`,
@@ -644,6 +644,9 @@ xkb_context_get_user_data(struct xkb_context *context);
  *   fallback to `$HOME/.config/` if unset.
  * - The path `$HOME/.xkb`, where $HOME is the value of the environment
  *   variable `HOME`.
+ * - The `XKB_EXTRA_PATH` environment variable, if defined, otherwise the
+ *   system configuration directory, defined at library configuration time
+ *   (usually `/etc/xkb`).
  * - The `XKB_CONFIG_ROOT` environment variable, if defined, otherwise
  *   the system XKB root, defined at library configuration time.
  *
