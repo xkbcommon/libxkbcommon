@@ -118,6 +118,9 @@ elif cc.has_header_symbol('stdlib.h', '__secure_getenv', prefix: system_ext_defi
 else
     message('C library does not support secure_getenv, using getenv instead')
 endif
+have_getopt_long = cc.has_header_symbol('getopt.h', 'getopt_long',
+                                        prefix: '#define _GNU_SOURCE')
+
 # Silence some security & deprecation warnings on MSVC
 # for some unix/C functions we use.
 # https://docs.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-3-c4996?view=vs-2019
@@ -342,10 +345,12 @@ if get_option('enable-xkbregistry')
                                 include_directories: include_directories('xkbcommon'),
                                 link_with: libxkbregistry
                                 )
-    executable('xkbcommon-registry-list',
-               'tools/registry-list.c',
-               dependencies: dep_libxkbregistry,
-               install: false)
+    if have_getopt_long
+        executable('xkbcommon-registry-list',
+                   'tools/registry-list.c',
+                   dependencies: dep_libxkbregistry,
+                   install: false)
+    endif
 endif
 
 # Tests
@@ -519,7 +524,7 @@ tools_dep = declare_dependency(
     link_with: libxkbcommon_tools_internal,
 )
 
-if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE')
+if have_getopt_long
     executable('xkbcommon-rmlvo-to-keymap', 'tools/rmlvo-to-keymap.c', dependencies: tools_dep)
     executable('xkbcommon-how-to-type', 'tools/how-to-type.c', dependencies: tools_dep)
 endif
