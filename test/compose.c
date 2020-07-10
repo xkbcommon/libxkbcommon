@@ -485,18 +485,16 @@ static void
 test_include(struct xkb_context *ctx)
 {
     char *path, *table_string;
-    int ret;
 
     path = test_get_path("compose/en_US.UTF-8/Compose");
     assert(path);
 
     /* We don't have a mechanism to change the include paths like we
      * have for keymaps. So we must include the full path. */
-    ret = asprintf(&table_string,
-        "<dead_tilde> <space>   : \"foo\" X\n"
-        "include \"%s\"\n"
-        "<dead_tilde> <dead_tilde> : \"bar\" Y\n", path);
-    assert(ret >= 0);
+    table_string = asprintf_safe("<dead_tilde> <space>   : \"foo\" X\n"
+                                 "include \"%s\"\n"
+                                 "<dead_tilde> <dead_tilde> : \"bar\" Y\n", path);
+    assert(table_string);
 
     assert(test_compose_seq_buffer(ctx, table_string,
         /* No conflict. */

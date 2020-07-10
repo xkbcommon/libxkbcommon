@@ -313,4 +313,36 @@ snprintf_safe(char *buf, size_t sz, const char *format, ...)
     return rc >= 0 && (size_t)rc < sz;
 }
 
+static inline char *
+ATTR_PRINTF(1, 0)
+vasprintf_safe(const char *fmt, va_list args)
+{
+    char *str;
+    int len;
+
+    len = vasprintf(&str, fmt, args);
+
+    if (len == -1)
+        return NULL;
+
+    return str;
+}
+
+/**
+ * A version of asprintf that returns the allocated string or NULL on error.
+ */
+static inline char *
+ATTR_PRINTF(1, 2)
+asprintf_safe(const char *fmt, ...)
+{
+    va_list args;
+    char *str;
+
+    va_start(args, fmt);
+    str = vasprintf_safe(fmt, args);
+    va_end(args);
+
+    return str;
+}
+
 #endif /* UTILS_H */

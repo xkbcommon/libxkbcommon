@@ -25,6 +25,7 @@
 
 #include "utils.h"
 #include "paths.h"
+#include "utils.h"
 
 enum resolve_name_direction {
     LEFT_TO_RIGHT,
@@ -151,19 +152,13 @@ get_xcomposefile_path(void)
 char *
 get_home_xcompose_file_path(void)
 {
-    int ret;
     const char *home;
-    char *path;
 
     home = secure_getenv("HOME");
     if (!home)
         return NULL;
 
-    ret = asprintf(&path, "%s/.XCompose", home);
-    if (ret <0)
-        return NULL;
-
-    return path;
+    return asprintf_safe("%s/.XCompose", home);
 }
 
 char *
@@ -195,10 +190,8 @@ get_locale_compose_file_path(const char *locale)
     }
     else {
         const char *xlocaledir = get_xlocaledir_path();
-        int ret = asprintf(&path, "%s/%s", xlocaledir, resolved);
+        path = asprintf_safe("%s/%s", xlocaledir, resolved);
         free(resolved);
-        if (ret < 0)
-            return NULL;
     }
 
     return path;

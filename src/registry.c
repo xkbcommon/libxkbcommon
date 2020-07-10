@@ -585,7 +585,6 @@ rxkb_context_include_path_append_default(struct rxkb_context *ctx)
 {
     const char *home, *xdg, *root;
     char *user_path;
-    int err;
     bool ret = false;
 
     if (ctx->context_state != CONTEXT_NEW) {
@@ -597,23 +596,23 @@ rxkb_context_include_path_append_default(struct rxkb_context *ctx)
 
     xdg = secure_getenv("XDG_CONFIG_HOME");
     if (xdg != NULL) {
-        err = asprintf(&user_path, "%s/xkb", xdg);
-        if (err >= 0) {
+        user_path = asprintf_safe("%s/xkb", xdg);
+        if (user_path) {
             ret |= rxkb_context_include_path_append(ctx, user_path);
             free(user_path);
         }
     } else if (home != NULL) {
         /* XDG_CONFIG_HOME fallback is $HOME/.config/ */
-        err = asprintf(&user_path, "%s/.config/xkb", home);
-        if (err >= 0) {
+        user_path = asprintf_safe("%s/.config/xkb", home);
+        if (user_path) {
             ret |= rxkb_context_include_path_append(ctx, user_path);
             free(user_path);
         }
     }
 
     if (home != NULL) {
-        err = asprintf(&user_path, "%s/.xkb", home);
-        if (err >= 0) {
+        user_path = asprintf_safe("%s/.xkb", home);
+        if (user_path) {
             ret |= rxkb_context_include_path_append(ctx, user_path);
             free(user_path);
         }
