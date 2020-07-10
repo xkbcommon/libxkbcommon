@@ -85,8 +85,8 @@ static const char *makedir(const char *parent, const char *path)
     char *dirname;
     int err;
 
-    err = asprintf(&dirname, "%s/%s", parent, path);
-    assert(err >= 0);
+    dirname = asprintf_safe("%s/%s", parent, path);
+    assert(dirname);
     err = mkdir(dirname, 0777);
     assert(err == 0);
 

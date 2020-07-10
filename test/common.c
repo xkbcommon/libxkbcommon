@@ -165,7 +165,6 @@ test_key_seq(struct xkb_keymap *keymap, ...)
 char *
 test_get_path(const char *path_rel)
 {
-    int ret;
     char *path;
     const char *srcdir;
 
@@ -176,9 +175,9 @@ test_get_path(const char *path_rel)
     if (path_rel[0] == '/')
         return strdup(path_rel);
 
-    ret = asprintf(&path, "%s/test/data%s%s", srcdir,
-                   path_rel[0] ? "/" : "", path_rel);
-    if (ret < 0) {
+    path = asprintf_safe("%s/test/data%s%s", srcdir,
+                         path_rel[0] ? "/" : "", path_rel);
+    if (!path) {
         fprintf(stderr, "Failed to allocate path for %s\n", path_rel);
         return NULL;
     }

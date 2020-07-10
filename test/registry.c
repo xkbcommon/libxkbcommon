@@ -104,8 +104,8 @@ test_create_rules(const char *ruleset,
     int rc;
     FILE *fp;
 
-    rc = asprintf(&tmpdir, "/tmp/%s.%d.XXXXXX", ruleset, iteration++);
-    assert(rc > 0);
+    tmpdir = asprintf_safe("/tmp/%s.%d.XXXXXX", ruleset, iteration++);
+    assert(tmpdir);
     assert(mkdtemp(tmpdir) == tmpdir);
 
     rc = snprintf_safe(buf, sizeof(buf), "%s/rules", tmpdir);
