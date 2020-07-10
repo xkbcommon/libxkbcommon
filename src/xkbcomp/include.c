@@ -203,39 +203,25 @@ FindFileInXkbPath(struct xkb_context *ctx, const char *name,
     FILE *file = NULL;
     char *buf = NULL;
     const char *typeDir;
-    size_t buf_size = 0, typeDirLen, name_len;
 
     typeDir = DirectoryForInclude(type);
-    typeDirLen = strlen(typeDir);
-    name_len = strlen(name);
 
     for (i = 0; i < xkb_context_num_include_paths(ctx); i++) {
-        size_t new_buf_size = strlen(xkb_context_include_path_get(ctx, i)) +
-                              typeDirLen + name_len + 3;
-        int ret;
-        if (new_buf_size > buf_size) {
-            void *buf_new = realloc(buf, new_buf_size);
-            if (buf_new) {
-                buf_size = new_buf_size;
-                buf = buf_new;
-            } else {
-                log_err(ctx, "Cannot realloc for name (%s/%s/%s)\n",
-                        xkb_context_include_path_get(ctx, i), typeDir, name);
-                continue;
-            }
-        }
-        ret = snprintf(buf, buf_size, "%s/%s/%s",
-                       xkb_context_include_path_get(ctx, i),
-                       typeDir, name);
-        if (ret < 0) {
-            log_err(ctx, "snprintf error (%s/%s/%s)\n",
+        buf = asprintf_safe("%s/%s/%s", xkb_context_include_path_get(ctx, i),
+                            typeDir, name);
+        if (!buf) {
+            log_err(ctx, "Failed to alloc buffer for (%s/%s/%s)\n",
                     xkb_context_include_path_get(ctx, i), typeDir, name);
             continue;
         }
 
         file = fopen(buf, "rb");
-        if (file)
+        if (!file) {
+            free(buf);
+            buf = NULL;
+        } else {
             break;
+        }
     }
 
     if (!file) {
