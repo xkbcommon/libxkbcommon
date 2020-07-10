@@ -220,9 +220,20 @@ LogIncludePaths(struct xkb_context *ctx)
     }
 }
 
+/**
+ * Return an open file handle to the first file (counting from offset) with the
+ * given name in the include paths, starting at the offset.
+ *
+ * offset must be zero the first time this is called and is set to the index the
+ * file was found. Call again with offset+1 to keep searching through the
+ * include paths.
+ *
+ * If this function returns NULL, no more files are available.
+ */
 FILE *
 FindFileInXkbPath(struct xkb_context *ctx, const char *name,
-                  enum xkb_file_type type, char **pathRtrn)
+                  enum xkb_file_type type, char **pathRtrn,
+                  unsigned int *offset)
 {
     unsigned int i;
     FILE *file = NULL;
@@ -231,7 +242,7 @@ FindFileInXkbPath(struct xkb_context *ctx, const char *name,
 
     typeDir = DirectoryForInclude(type);
 
-    for (i = 0; i < xkb_context_num_include_paths(ctx); i++) {
+    for (i = *offset; i < xkb_context_num_include_paths(ctx); i++) {
         buf = asprintf_safe("%s/%s/%s", xkb_context_include_path_get(ctx, i),
                             typeDir, name);
         if (!buf) {
@@ -246,13 +257,17 @@ FindFileInXkbPath(struct xkb_context *ctx, const char *name,
                 *pathRtrn = buf;
                 buf = NULL;
             }
+            *offset = i;
             goto out;
         }
     }
 
-    log_err(ctx, "Couldn't find file \"%s/%s\" in include paths\n",
-            typeDir, name);
-    LogIncludePaths(ctx);
+    /* We only print warnings if we can't find the file on the first lookup */
+    if (*offset == 0) {
+        log_err(ctx, "Couldn't find file \"%s/%s\" in include paths\n",
+                typeDir, name);
+        LogIncludePaths(ctx);
+    }
 
 out:
     free(buf);
@@ -264,14 +279,35 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
                    enum xkb_file_type file_type)
 {
     FILE *file;
-    XkbFile *xkb_file;
+    XkbFile *xkb_file = NULL;
+    unsigned int offset = 0;
 
-    file = FindFileInXkbPath(ctx, stmt->file, file_type, NULL);
+    file = FindFileInXkbPath(ctx, stmt->file, file_type, NULL, &offset);
     if (!file)
         return NULL;
 
-    xkb_file = XkbParseFile(ctx, file, stmt->file, stmt->map);
-    fclose(file);
+    while (file) {
+        xkb_file = XkbParseFile(ctx, file, stmt->file, stmt->map);
+        fclose(file);
+
+        if (xkb_file) {
+            if (xkb_file->file_type != file_type) {
+                log_err(ctx,
+                        "Include file of wrong type (expected %s, got %s); "
+                        "Include file \"%s\" ignored\n",
+                        xkb_file_type_to_string(file_type),
+                        xkb_file_type_to_string(xkb_file->file_type), stmt->file);
+                FreeXkbFile(xkb_file);
+                xkb_file = NULL;
+            } else {
+                break;
+            }
+        }
+
+        offset++;
+        file = FindFileInXkbPath(ctx, stmt->file, file_type, NULL, &offset);
+    }
+
     if (!xkb_file) {
         if (stmt->map)
             log_err(ctx, "Couldn't process include statement for '%s(%s)'\n",
@@ -279,17 +315,6 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
         else
             log_err(ctx, "Couldn't process include statement for '%s'\n",
                     stmt->file);
-        return NULL;
-    }
-
-    if (xkb_file->file_type != file_type) {
-        log_err(ctx,
-                "Include file of wrong type (expected %s, got %s); "
-                "Include file \"%s\" ignored\n",
-                xkb_file_type_to_string(file_type),
-                xkb_file_type_to_string(xkb_file->file_type), stmt->file);
-        FreeXkbFile(xkb_file);
-        return NULL;
     }
 
     /* FIXME: we have to check recursive includes here (or somewhere) */

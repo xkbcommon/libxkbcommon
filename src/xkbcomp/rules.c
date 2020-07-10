@@ -1104,8 +1104,9 @@ xkb_components_from_rules(struct xkb_context *ctx,
     char *path = NULL;
     struct matcher *matcher = NULL;
     struct matched_sval *mval;
+    unsigned int offset = 0;
 
-    file = FindFileInXkbPath(ctx, rmlvo->rules, FILE_TYPE_RULES, &path);
+    file = FindFileInXkbPath(ctx, rmlvo->rules, FILE_TYPE_RULES, &path, &offset);
     if (!file)
         goto err_out;
 
