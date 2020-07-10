@@ -644,6 +644,14 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
         install_man('tools/xkbcli-list.1')
     endif
 
+    config_scaffold = configuration_data()
+    config_scaffold.set('XKBEXTRAPATH', XKBCONFIGEXTRAPATH)
+    config_scaffold.set('DEFAULT_XKB_RULES', get_option('default-rules'))
+    configure_file(input: 'tools/xkbcli-scaffold-new-layout.py',
+                   output: 'xkbcli-scaffold-new-layout',
+                   configuration: config_scaffold,
+                   install: false)
+
     test('tool-option-parsing',
          find_program('test/tool-option-parsing.py'),
          env: test_env,
