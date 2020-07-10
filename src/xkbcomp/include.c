@@ -267,7 +267,7 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
 
     file = FindFileInXkbPath(ctx, stmt->file, file_type, NULL);
     if (!file)
-        return false;
+        return NULL;
 
     xkb_file = XkbParseFile(ctx, file, stmt->file, stmt->map);
     fclose(file);
