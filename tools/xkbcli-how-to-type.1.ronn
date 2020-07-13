@@ -13,19 +13,19 @@ Pipe into `column -ts $'\\t'` for nicely aligned output.
 
 ## OPTIONS
 
-  * ` -r <rules>`:
+  * `--rules <rules>`:
       The XKB ruleset
 
-  * ` -m <model>`:
+  * `--model <model>`:
       The XKB model
 
-  * `-l <layout>`:
+  * `--layout <layout>`:
       The XKB layout
 
-  * `-v <variant>`:
+  * `--variant <variant>`:
       The XKB layout variant
 
-  * `-o <options>`:
+  * `--options <options>`:
       The XKB options
 
 ## SEE ALSO

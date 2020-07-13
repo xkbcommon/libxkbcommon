@@ -23,6 +23,7 @@
 
 #include "config.h"
 
+#include <getopt.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
@@ -32,19 +33,17 @@
 #define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
 
 static void
-usage(const char *argv0)
+usage(const char *argv0, FILE *fp)
 {
-    fprintf(stderr, "Usage: %s [-r <rules>] [-m <model>] "
-            "[-l <layout>] [-v <variant>] [-o <options>] <unicode codepoint>\n",
-            argv0);
-    fprintf(stderr, "Pipe into `column -ts $'\\t'` for nicely aligned output.\n");
-    exit(2);
+    fprintf(fp, "Usage: %s [--rules <rules>] [--model <model>] "
+                "[--layout <layout>] [--variant <variant>] [--options <options>]"
+                " <unicode codepoint>\n", argv0);
+    fprintf(fp, "Pipe into `column -ts $'\\t'` for nicely aligned output.\n");
 }
 
 int
 main(int argc, char *argv[])
 {
-    int opt;
     const char *rules = NULL;
     const char *model = NULL;
     const char *layout_ = NULL;
@@ -61,38 +60,64 @@ main(int argc, char *argv[])
     struct xkb_keymap *keymap = NULL;
     xkb_keycode_t min_keycode, max_keycode;
     xkb_mod_index_t num_mods;
+    enum options {
+        OPT_RULES,
+        OPT_MODEL,
+        OPT_LAYOUT,
+        OPT_VARIANT,
+        OPT_OPTIONS,
+    };
+    static struct option opts[] = {
+        {"help",                 no_argument,            0, 'h'},
+        {"rules",                required_argument,      0, OPT_RULES},
+        {"model",                required_argument,      0, OPT_MODEL},
+        {"layout",               required_argument,      0, OPT_LAYOUT},
+        {"variant",              required_argument,      0, OPT_VARIANT},
+        {"options",              required_argument,      0, OPT_OPTIONS},
+        {0, 0, 0, 0},
+    };
 
-    while ((opt = getopt(argc, argv, "r:m:l:v:o:")) != -1) {
+    while (1) {
+        int opt;
+        int option_index = 0;
+
+        opt = getopt_long(argc, argv, "h", opts, &option_index);
+        if (opt == -1)
+            break;
+
         switch (opt) {
-        case 'r':
+        case OPT_RULES:
             rules = optarg;
             break;
-        case 'm':
+        case OPT_MODEL:
             model = optarg;
             break;
-        case 'l':
+        case OPT_LAYOUT:
             layout_ = optarg;
             break;
-        case 'v':
+        case OPT_VARIANT:
             variant = optarg;
             break;
-        case 'o':
+        case OPT_OPTIONS:
             options = optarg;
             break;
+        case 'h':
+            usage(argv[0], stdout);
+            exit(EXIT_SUCCESS);
         default:
-            usage(argv[0]);
+            usage(argv[0], stderr);
             exit(EXIT_INVALID_USAGE);
         }
     }
     if (argc - optind != 1) {
-        usage(argv[0]);
+        usage(argv[0], stderr);
         exit(EXIT_INVALID_USAGE);
     }
 
     errno = 0;
     val = strtol(argv[optind], &endp, 0);
     if (errno != 0 || endp == argv[optind] || val < 0 || val > 0x10FFFF) {
-        usage(argv[0]);
+        usage(argv[0], stderr);
         exit(EXIT_INVALID_USAGE);
     }
     codepoint = (uint32_t) val;
