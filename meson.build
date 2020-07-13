@@ -564,15 +564,15 @@ if build_tools
                    install_dir: dir_libexec)
         man_pages += 'tools/xkbcli-how-to-type.1.ronn'
         configh_data.set10('HAVE_XKBCLI_HOW_TO_TYPE', true)
-    endif
-    if cc.has_header('linux/input.h')
-        executable('xkbcli-interactive-evdev',
-                   'tools/interactive-evdev.c',
-                   dependencies: tools_dep,
-                   install: true,
-                   install_dir: dir_libexec)
-        configh_data.set10('HAVE_XKBCLI_INTERACTIVE_EVDEV', true)
-        man_pages += 'tools/xkbcli-interactive-evdev.1.ronn'
+        if cc.has_header('linux/input.h')
+            executable('xkbcli-interactive-evdev',
+                       'tools/interactive-evdev.c',
+                       dependencies: tools_dep,
+                       install: true,
+                       install_dir: dir_libexec)
+            configh_data.set10('HAVE_XKBCLI_INTERACTIVE_EVDEV', true)
+            man_pages += 'tools/xkbcli-interactive-evdev.1.ronn'
+        endif
     endif
     if get_option('enable-x11')
         x11_tools_dep = declare_dependency(
