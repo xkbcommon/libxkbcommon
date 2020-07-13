@@ -615,6 +615,18 @@ if build_tools
                    install_dir: dir_libexec)
         man_pages += 'tools/xkbcli-list.1.ronn'
     endif
+
+    # pytest finds files named test_foo_bar.py but not
+    # test-foo-bar.py, let's rename the source file so it only ever finds the
+    # built one.
+    config_tool_option_test = configuration_data()
+    config_tool_option_test.set('MESON_BUILD_ROOT', meson.current_build_dir())
+    tool_option_test = configure_file(input: 'tools/test-tool-option-parsing.py',
+                                      output: 'test_tool_option_parsing.py',
+                                      configuration : config_tool_option_test)
+    test('tool-option-parsing',
+         tool_option_test,
+         args: [tool_option_test, '-n', 'auto'])
 endif
 
 if get_option('enable-manpages')
