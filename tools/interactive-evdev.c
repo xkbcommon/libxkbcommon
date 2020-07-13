@@ -28,6 +28,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <fnmatch.h>
+#include <getopt.h>
 #include <limits.h>
 #include <locale.h>
 #include <signal.h>
@@ -368,11 +369,24 @@ sigintr_handler(int signum)
     terminate = true;
 }
 
+static void
+usage(FILE *fp, char *progname)
+{
+        fprintf(fp, "Usage: %s [--rules <rules>] [--model <model>] "
+                "[--layout <layout>] [--variant <variant>] [--options <options>]\n",
+                progname);
+        fprintf(fp, "      or: %s --keymap <path to keymap file>\n",
+                progname);
+        fprintf(fp, "For both:\n"
+                        "          --report-state-changes (report changes to the state)\n"
+                        "          --enable-compose (enable compose)\n"
+                        "          --consumed-mode={gtk|xkb} (select the consumed mode)\n");
+}
+
 int
 main(int argc, char *argv[])
 {
     int ret = EXIT_FAILURE;
-    int opt;
     struct keyboard *kbds;
     struct xkb_context *ctx = NULL;
     struct xkb_keymap *keymap = NULL;
@@ -385,57 +399,82 @@ main(int argc, char *argv[])
     const char *keymap_path = NULL;
     const char *locale;
     struct sigaction act;
+    enum options {
+        OPT_RULES,
+        OPT_MODEL,
+        OPT_LAYOUT,
+        OPT_VARIANT,
+        OPT_OPTION,
+        OPT_KEYMAP,
+        OPT_CONSUMED_MODE,
+        OPT_COMPOSE,
+        OPT_REPORT_STATE,
+    };
+    static struct option opts[] = {
+        {"help",                 no_argument,            0, 'h'},
+        {"rules",                required_argument,      0, OPT_RULES},
+        {"model",                required_argument,      0, OPT_MODEL},
+        {"layout",               required_argument,      0, OPT_LAYOUT},
+        {"variant",              required_argument,      0, OPT_VARIANT},
+        {"options",              required_argument,      0, OPT_OPTION},
+        {"keymap",               required_argument,      0, OPT_KEYMAP},
+        {"consumed-mode",        required_argument,      0, OPT_CONSUMED_MODE},
+        {"enable-compose",       no_argument,            0, OPT_COMPOSE},
+        {"report-state-changes", no_argument,            0, OPT_REPORT_STATE},
+        {0, 0, 0, 0},
+    };
 
     setlocale(LC_ALL, "");
 
-    while ((opt = getopt(argc, argv, "r:m:l:v:o:k:n:cdg")) != -1) {
+    while (1) {
+        int opt;
+        int option_index = 0;
+
+        opt = getopt_long(argc, argv, "h", opts, &option_index);
+        if (opt == -1)
+            break;
+
         switch (opt) {
-        case 'r':
+        case OPT_RULES:
             rules = optarg;
             break;
-        case 'm':
+        case OPT_MODEL:
             model = optarg;
             break;
-        case 'l':
+        case OPT_LAYOUT:
             layout = optarg;
             break;
-        case 'v':
+        case OPT_VARIANT:
             variant = optarg;
             break;
-        case 'o':
+        case OPT_OPTION:
             options = optarg;
             break;
-        case 'k':
+        case OPT_KEYMAP:
             keymap_path = optarg;
             break;
-        case 'n':
-            errno = 0;
-            evdev_offset = strtol(optarg, NULL, 10);
-            if (errno) {
-                fprintf(stderr, "error: -n option expects a number\n");
-                exit(EXIT_INVALID_USAGE);
-            }
-            break;
-        case 'c':
+        case OPT_REPORT_STATE:
             report_state_changes = true;
             break;
-        case 'd':
+        case OPT_COMPOSE:
             with_compose = true;
             break;
-        case 'g':
-            consumed_mode = XKB_CONSUMED_MODE_GTK;
+        case OPT_CONSUMED_MODE:
+            if (strcmp(optarg, "gtk") == 0) {
+                consumed_mode = XKB_CONSUMED_MODE_GTK;
+            } else if (strcmp(optarg, "xkb") == 0) {
+                consumed_mode = XKB_CONSUMED_MODE_XKB;
+            } else {
+                usage(stderr, argv[0]);
+                return EXIT_INVALID_USAGE;
+            }
             break;
+        case 'h':
+            usage(stdout, argv[0]);
+            return EXIT_SUCCESS;
         case '?':
-            fprintf(stderr, "   Usage: %s [-r <rules>] [-m <model>] "
-                    "[-l <layout>] [-v <variant>] [-o <options>]\n",
-                    argv[0]);
-            fprintf(stderr, "      or: %s -k <path to keymap file>\n",
-                    argv[0]);
-            fprintf(stderr, "For both: -n <evdev keycode offset>\n"
-                            "          -c (to report changes to the state)\n"
-                            "          -d (to enable compose)\n"
-                            "          -g (to use GTK consumed mode)\n");
-            exit(EXIT_INVALID_USAGE);
+            usage(stderr, argv[0]);
+            return EXIT_INVALID_USAGE;
         }
     }
 

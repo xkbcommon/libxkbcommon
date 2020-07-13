@@ -17,36 +17,33 @@ stable.
   * `--help`:
       Print help and exit
 
-  * `-r`:
-      Specify the XKB ruleset
+  * `--rules <rules>`:
+      The XKB ruleset
 
-  * `-m`:
-      Specify the XKB model
+  * `--model <model>`:
+      The XKB model
 
-  * `-l`:
-      Specify the XKB layout
+  * `--layout <layout>`:
+      The XKB layout
 
-  * `-v`:
-      Specify the XKB variant
+  * `--variant <variant>`:
+      The XKB layout variant
 
-  * `-o`:
-      Specify the XKB options
+  * `--options <options>`:
+      The XKB options
 
-  * `-k`:
+  * `--keymap`:
       Specify a keymap path. This option is mutually exclusive with the rmlvo
       options.
 
-  * `-n`:
-      Specify an evdev keycode offset.
-
-  * `-c`:
+  * `--report-state-changes`:
       Report changes to the keyboard state
 
-  * `-d`:
+  * `--enable-compose`:
       Enable compose functionality
 
-  * `-g`:
-      Use GTK consumed mode
+  * `--consumed-mode={gtk|xkb}`:
+      Set the consumed modifiers mode (default: xkb)
 
 
 ## SEE ALSO
