@@ -82,7 +82,6 @@ main(int argc, char **argv)
 
     while (1) {
         int c;
-#if HAVE_GETOPT_LONG
         static struct option opts[] = {
             { "help",    no_argument, 0, OPT_HELP },
             { "version", no_argument, 0, OPT_VERSION },
@@ -90,9 +89,6 @@ main(int argc, char **argv)
         };
 
         c = getopt_long(argc, argv, "+hV", opts, &option_index);
-#else
-        c = getopt(argc, argv, "+hV");
-#endif
         if (c == -1)
             break;
 

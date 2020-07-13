@@ -123,12 +123,8 @@ elif cc.has_header_symbol('stdlib.h', '__secure_getenv', prefix: system_ext_defi
 else
     message('C library does not support secure_getenv, using getenv instead')
 endif
-have_getopt = cc.has_header_symbol('getopt.h', 'getopt')
 have_getopt_long = cc.has_header_symbol('getopt.h', 'getopt_long',
                                         prefix: '#define _GNU_SOURCE')
-if have_getopt_long
-    configh_data.set10('HAVE_GETOPT_LONG', true)
-endif
 
 # Silence some security & deprecation warnings on MSVC
 # for some unix/C functions we use.
@@ -531,7 +527,7 @@ executable('fuzz-compose', 'fuzz/compose/target.c', dependencies: test_dep)
 man_pages = []
 
 # Tools
-build_tools = have_getopt
+build_tools = have_getopt_long
 if build_tools
     libxkbcommon_tools_internal = static_library(
         'tools-internal',
@@ -549,30 +545,28 @@ if build_tools
                dependencies: tools_dep, install: true)
     man_pages += 'tools/xkbcli.1.ronn'
 
-    if have_getopt_long
-        executable('xkbcli-compile-keymap',
-                   'tools/compile-keymap.c',
+    executable('xkbcli-compile-keymap',
+               'tools/compile-keymap.c',
+               dependencies: tools_dep,
+               install: true,
+               install_dir: dir_libexec)
+    man_pages += 'tools/xkbcli-compile-keymap.1.ronn'
+    configh_data.set10('HAVE_XKBCLI_COMPILE_KEYMAP', true)
+    executable('xkbcli-how-to-type',
+               'tools/how-to-type.c',
+               dependencies: tools_dep,
+               install: true,
+               install_dir: dir_libexec)
+    man_pages += 'tools/xkbcli-how-to-type.1.ronn'
+    configh_data.set10('HAVE_XKBCLI_HOW_TO_TYPE', true)
+    if cc.has_header('linux/input.h')
+        executable('xkbcli-interactive-evdev',
+                   'tools/interactive-evdev.c',
                    dependencies: tools_dep,
                    install: true,
                    install_dir: dir_libexec)
-        man_pages += 'tools/xkbcli-compile-keymap.1.ronn'
-        configh_data.set10('HAVE_XKBCLI_COMPILE_KEYMAP', true)
-        executable('xkbcli-how-to-type',
-                   'tools/how-to-type.c',
-                   dependencies: tools_dep,
-                   install: true,
-                   install_dir: dir_libexec)
-        man_pages += 'tools/xkbcli-how-to-type.1.ronn'
-        configh_data.set10('HAVE_XKBCLI_HOW_TO_TYPE', true)
-        if cc.has_header('linux/input.h')
-            executable('xkbcli-interactive-evdev',
-                       'tools/interactive-evdev.c',
-                       dependencies: tools_dep,
-                       install: true,
-                       install_dir: dir_libexec)
-            configh_data.set10('HAVE_XKBCLI_INTERACTIVE_EVDEV', true)
-            man_pages += 'tools/xkbcli-interactive-evdev.1.ronn'
-        endif
+        configh_data.set10('HAVE_XKBCLI_INTERACTIVE_EVDEV', true)
+        man_pages += 'tools/xkbcli-interactive-evdev.1.ronn'
     endif
     if get_option('enable-x11')
         x11_tools_dep = declare_dependency(
@@ -627,7 +621,7 @@ if build_tools
         configh_data.set10('HAVE_XKBCLI_INTERACTIVE_WAYLAND', true)
     endif
 
-    if have_getopt_long and get_option('enable-xkbregistry')
+    if get_option('enable-xkbregistry')
         configh_data.set10('HAVE_XKBCLI_LIST', true)
         executable('xkbcli-list',
                    'tools/registry-list.c',
