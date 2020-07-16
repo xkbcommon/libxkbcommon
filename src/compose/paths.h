@@ -34,6 +34,9 @@ const char *
 get_xcomposefile_path(void);
 
 char *
+get_xdg_xcompose_file_path(void);
+
+char *
 get_home_xcompose_file_path(void);
 
 char *

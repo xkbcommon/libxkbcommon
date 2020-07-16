@@ -150,6 +150,23 @@ get_xcomposefile_path(void)
 }
 
 char *
+get_xdg_xcompose_file_path(void)
+{
+    const char *xdg_config_home;
+    const char *home;
+
+    xdg_config_home = secure_getenv("XDG_CONFIG_HOME");
+    if (!xdg_config_home || xdg_config_home[0] != '/') {
+        home = secure_getenv("HOME");
+        if (!home)
+            return NULL;
+        return asprintf_safe("%s/.config/XCompose", home);
+    }
+
+    return asprintf_safe("%s/XCompose", xdg_config_home);
+}
+
+char *
 get_home_xcompose_file_path(void)
 {
     const char *home;
