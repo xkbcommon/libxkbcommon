@@ -143,10 +143,10 @@ resolve_locale(const char *locale)
     return alias ? alias : strdup(locale);
 }
 
-const char *
+char *
 get_xcomposefile_path(void)
 {
-    return secure_getenv("XCOMPOSEFILE");
+    return strdup_safe(secure_getenv("XCOMPOSEFILE"));
 }
 
 char *
