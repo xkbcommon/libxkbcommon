@@ -204,8 +204,15 @@ enum xkb_compose_format {
  * affected by the following environment variables:
  *
  * 1. `XCOMPOSEFILE` - see Compose(5).
- * 2. `HOME` - see Compose(5).
- * 3. `XLOCALEDIR` - if set, used as the base directory for the system's
+ * 2. `XDG_CONFIG_HOME` - before `$HOME/.XCompose` is checked,
+ *    `$XDG_CONFIG_HOME/XCompose` is checked (with a fall back to
+ *    `$HOME/.config/XCompose` if `XDG_CONFIG_HOME` is not defined).
+ *    This is a libxkbcommon extension to the search procedure in
+ *    Compose(5) (since libxkbcommon 0.11.0). Note that other
+ *    implementations, such as libX11, might not find a Compose file in
+ *    this path.
+ * 3. `HOME` - see Compose(5).
+ * 4. `XLOCALEDIR` - if set, used as the base directory for the system's
  *    X locale files, e.g. `/usr/share/X11/locale`, instead of the
  *    preconfigured directory.
  *

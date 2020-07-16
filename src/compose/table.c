@@ -183,6 +183,15 @@ xkb_compose_table_new_from_locale(struct xkb_context *ctx,
             goto found_path;
     }
 
+    cpath = path = get_xdg_xcompose_file_path();
+    if (path) {
+        file = fopen(path, "rb");
+        if (file)
+            goto found_path;
+    }
+    free(path);
+    path = NULL;
+
     cpath = path = get_home_xcompose_file_path();
     if (path) {
         file = fopen(path, "rb");
