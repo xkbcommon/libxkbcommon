@@ -206,27 +206,11 @@ tools_enable_stdin_echo(void)
 
 #endif
 
-static inline bool
-tools_setup_path(void)
-{
-    const char *path = getenv("PATH");
-    const char *extra_path = LIBXKBCOMMON_TOOL_PATH;
-    char new_path[PATH_MAX];
-
-    if (snprintf_safe(new_path, sizeof(new_path), "%s:%s",
-                      extra_path, path ? path : "")) {
-        setenv("PATH", new_path, 1);
-        return true;
-    } else {
-        return false;
-    }
-}
-
 int
 tools_exec_command(const char *prefix, int real_argc, char **real_argv)
 {
     char *argv[64] = {NULL};
-    char executable[128];
+    char executable[PATH_MAX];
     const char *command;
 
     if (((size_t)real_argc >= ARRAY_SIZE(argv))) {
@@ -235,15 +219,16 @@ tools_exec_command(const char *prefix, int real_argc, char **real_argv)
     }
 
     command = real_argv[0];
+#ifdef _MSC_VER
+#define PATH_SEP '\\'
+#else
+#define PATH_SEP '/'
+#endif
 
     if (!snprintf_safe(executable, sizeof(executable),
-                       "%s-%s", prefix, command)) {
+                       "%s%c%s-%s", LIBXKBCOMMON_TOOL_PATH, PATH_SEP,
+                       prefix, command)) {
         fprintf(stderr, "Failed to assemble command\n");
-        return EXIT_FAILURE;
-    }
-
-    if (!tools_setup_path()) {
-        fprintf(stderr, "Failed to set PATH\n");
         return EXIT_FAILURE;
     }
 
@@ -251,7 +236,7 @@ tools_exec_command(const char *prefix, int real_argc, char **real_argv)
     for (int i = 1; i < real_argc; i++)
         argv[i] = real_argv[i];
 
-    execvp(executable, argv);
+    execv(executable, argv);
     if (errno == ENOENT) {
         fprintf(stderr, "Command '%s' is not available\n", command);
         return EXIT_INVALID_USAGE;
