@@ -219,15 +219,9 @@ tools_exec_command(const char *prefix, int real_argc, char **real_argv)
     }
 
     command = real_argv[0];
-#ifdef _MSC_VER
-#define PATH_SEP '\\'
-#else
-#define PATH_SEP '/'
-#endif
 
     if (!snprintf_safe(executable, sizeof(executable),
-                       "%s%c%s-%s", LIBXKBCOMMON_TOOL_PATH, PATH_SEP,
-                       prefix, command)) {
+                       "%s/%s-%s", LIBXKBCOMMON_TOOL_PATH, prefix, command)) {
         fprintf(stderr, "Failed to assemble command\n");
         return EXIT_FAILURE;
     }

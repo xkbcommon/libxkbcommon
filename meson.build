@@ -13,7 +13,6 @@ pkgconfig = import('pkgconfig')
 cc = meson.get_compiler('c')
 
 dir_libexec = join_paths(get_option('prefix'), get_option('libexecdir'), 'xkbcommon')
-dir_man = join_paths(get_option('prefix'), get_option('mandir'))
 
 # Compiler flags.
 foreach cflag: [
@@ -528,21 +527,21 @@ if build_tools
 
     executable('xkbcli', 'tools/xkbcli.c',
                dependencies: tools_dep, install: true)
-    man_pages += 'tools/xkbcli.1.ronn'
+    install_man('tools/xkbcli.1')
 
     executable('xkbcli-compile-keymap',
                'tools/compile-keymap.c',
                dependencies: tools_dep,
                install: true,
                install_dir: dir_libexec)
-    man_pages += 'tools/xkbcli-compile-keymap.1.ronn'
+    install_man('tools/xkbcli-compile-keymap.1')
     configh_data.set10('HAVE_XKBCLI_COMPILE_KEYMAP', true)
     executable('xkbcli-how-to-type',
                'tools/how-to-type.c',
                dependencies: tools_dep,
                install: true,
                install_dir: dir_libexec)
-    man_pages += 'tools/xkbcli-how-to-type.1.ronn'
+    install_man('tools/xkbcli-how-to-type.1')
     configh_data.set10('HAVE_XKBCLI_HOW_TO_TYPE', true)
     if cc.has_header('linux/input.h')
         executable('xkbcli-interactive-evdev',
@@ -551,7 +550,7 @@ if build_tools
                    install: true,
                    install_dir: dir_libexec)
         configh_data.set10('HAVE_XKBCLI_INTERACTIVE_EVDEV', true)
-        man_pages += 'tools/xkbcli-interactive-evdev.1.ronn'
+        install_man('tools/xkbcli-interactive-evdev.1')
     endif
     if get_option('enable-x11')
         x11_tools_dep = declare_dependency(
@@ -567,7 +566,7 @@ if build_tools
                    dependencies: x11_tools_dep,
                    install: true,
                    install_dir: dir_libexec)
-        man_pages += 'tools/xkbcli-interactive-x11.1.ronn'
+        install_man('tools/xkbcli-interactive-x11.1')
         configh_data.set10('HAVE_XKBCLI_INTERACTIVE_X11', true)
     endif
     if get_option('enable-wayland')
@@ -602,7 +601,7 @@ if build_tools
                    dependencies: [tools_dep, wayland_client_dep],
                    install: true,
                    install_dir: dir_libexec)
-        man_pages += 'tools/xkbcli-interactive-wayland.1.ronn'
+        install_man('tools/xkbcli-interactive-wayland.1')
         configh_data.set10('HAVE_XKBCLI_INTERACTIVE_WAYLAND', true)
     endif
 
@@ -613,7 +612,7 @@ if build_tools
                    dependencies: dep_libxkbregistry,
                    install: true,
                    install_dir: dir_libexec)
-        man_pages += 'tools/xkbcli-list.1.ronn'
+        install_man('tools/xkbcli-list.1')
     endif
 
     # pytest finds files named test_foo_bar.py but not
@@ -629,22 +628,6 @@ if build_tools
          args: [tool_option_test, '-n', 'auto'])
 endif
 
-if get_option('enable-manpages')
-    prog_ronn = find_program('ronn', required: true)
-    foreach manpage : man_pages
-        # man page filenames adhere to directory/topic.section.ronn
-        topic = manpage.split('/')[-1].split('.')[-3]
-        section = manpage.split('.')[-2]
-        output = '@0@.@1@'.format(topic, section)
-        custom_target(output,
-                      input: manpage,
-                      output: output,
-                      command: [prog_ronn, '--manual=libxkbcommon manual', '--pipe', '--roff', files(manpage)],
-                      capture: true,
-                      install: true,
-                      install_dir: join_paths(dir_man, section))
-    endforeach
-endif
 
 # xkeyboard-config "verifier"
 xkct_config = configuration_data()

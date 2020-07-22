@@ -1,0 +1,41 @@
+.TH "XKBCLI\-HOW\-TO\-TYPE" "1" "" "" "libxkbcommon manual"
+.
+.SH "NAME"
+\fBxkbcli\-how\-to\-type\fR \- query how to type a given Unicode codepoint
+.
+.SH "SYNOPSIS"
+\fBxkbcli\fR how\-to\-type [OPTIONS] <codepoint>
+.
+.SH "DESCRIPTION"
+\fBxkbcli how\-to\-type\fR prints key sequences to type the given Unicode codepoint\.
+.
+.P
+Pipe into \fBcolumn \-ts $\'\e\et\'\fR for nicely aligned output\.
+.
+.SH "OPTIONS"
+.
+.TP
+\fB\-\-rules <rules>\fR
+The XKB ruleset
+.
+.TP
+\fB\-\-model <model>\fR
+The XKB model
+.
+.TP
+\fB\-\-layout <layout>\fR
+The XKB layout
+.
+.TP
+\fB\-\-variant <variant>\fR
+The XKB layout variant
+.
+.TP
+\fB\-\-options <options>\fR
+The XKB options
+.
+.SH "SEE ALSO"
+\fBxkbcli\fR(1)
+.
+.P
+The libxkbcommon online documentation at \fIhttps://xkbcommon\.org\fR
