@@ -34,7 +34,7 @@ jobs:
           meson compile -C build
       - name: Test
         run:
-          meson test -C build --print-errorlogs # --wrapper="valgrind --leak-check=full --track-origins=yes --error-exitcode=99"
+          meson test -C build --print-errorlogs --wrapper="valgrind --leak-check=full --track-origins=yes --error-exitcode=99"
 
   macos:
     runs-on: macos-10.15
