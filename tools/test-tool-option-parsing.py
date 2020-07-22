@@ -171,6 +171,10 @@ def test_xkbcli_version(xkbcli):
     assert stderr == ''
 
 
+def test_xkbcli_too_many_args(xkbcli):
+    xkbcli.run_command_invalid(['a'] * 64)
+
+
 @pytest.mark.parametrize('args', [['--verbose'],
                                   ['--rmlvo'],
                                   ['--kccgst'],

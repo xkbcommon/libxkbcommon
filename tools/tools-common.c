@@ -229,7 +229,10 @@ tools_exec_command(const char *prefix, int real_argc, char **real_argv)
     char executable[128];
     const char *command;
 
-    assert((size_t)real_argc < ARRAY_SIZE(argv));
+    if (((size_t)real_argc >= ARRAY_SIZE(argv))) {
+        fprintf(stderr, "Too many arguments\n");
+        return EXIT_INVALID_USAGE;
+    }
 
     command = real_argv[0];
 
