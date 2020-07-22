@@ -480,6 +480,7 @@ test(
     'symbols-leak-test',
     find_program('test/symbols-leak-test.py'),
     env: test_env,
+    suite: ['python-tests'],
 )
 if get_option('enable-x11')
     test(
@@ -500,6 +501,20 @@ if get_option('enable-xkbregistry')
         env: test_env,
     )
 endif
+
+valgrind = find_program('valgrind', required: false)
+if valgrind.found()
+    add_test_setup('valgrind',
+        exe_wrapper: [valgrind,
+                       '--leak-check=full',
+                       '--track-origins=yes',
+                       '--gen-suppressions=all',
+                       '--error-exitcode=99'],
+        timeout_multiplier : 10)
+else
+    message('valgrind not found, disabling valgrind test setup')
+endif
+
 
 # Fuzzing target programs.
 executable('fuzz-keymap', 'fuzz/keymap/target.c', dependencies: test_dep)
