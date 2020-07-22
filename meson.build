@@ -478,7 +478,7 @@ test(
 )
 test(
     'symbols-leak-test',
-    find_program('test/symbols-leak-test.bash'),
+    find_program('test/symbols-leak-test.py'),
     env: test_env,
 )
 if get_option('enable-x11')
