@@ -4,7 +4,6 @@
 If this fails, please update the appropriate .map file (adding new version
 nodes as needed).
 """
-import glob
 import os
 import pathlib
 import re

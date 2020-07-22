@@ -17,7 +17,7 @@ libxkbregistry can be disabled with -Denable-xkbregistry=false (see
 `meson configure build` for other options/variables).
 
 Dependencies for libxkbcommon:
-- C compiler, meson, pkg-config, libc, bash, grep, sed.
+- C compiler, meson, pkg-config, libc.
 
 - (build) bison (preferred), win_bison or byacc>=20141006.
   byacc must be configured with --enable-btyacc.
