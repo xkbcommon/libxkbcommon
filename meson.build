@@ -7,7 +7,7 @@ project(
         'warning_level=2',
         'b_lundef=true',
     ],
-    meson_version : '>= 0.41.0',
+    meson_version : '>= 0.49.0',
 )
 pkgconfig = import('pkgconfig')
 cc = meson.get_compiler('c')
@@ -237,9 +237,9 @@ install_headers(
     subdir: 'xkbcommon',
 )
 pkgconfig.generate(
+    libxkbcommon,
     name: 'xkbcommon',
     filebase: 'xkbcommon',
-    libraries: libxkbcommon,
     version: meson.project_version(),
     description: 'XKB API common to servers and clients',
 )
@@ -290,9 +290,9 @@ You can disable X11 support with -Denable-x11=false.''')
         subdir: 'xkbcommon',
     )
     pkgconfig.generate(
+        libxkbcommon_x11,
         name: 'xkbcommon-x11',
         filebase: 'xkbcommon-x11',
-        libraries: libxkbcommon_x11,
         version: meson.project_version(),
         description: 'XKB API common to servers and clients - X11 support',
         requires: ['xkbcommon'],
@@ -331,9 +331,9 @@ if get_option('enable-xkbregistry')
         subdir: 'xkbcommon',
     )
     pkgconfig.generate(
+        libxkbregistry,
         name: 'xkbregistry',
         filebase: 'xkbregistry',
-        libraries: libxkbregistry,
         version: meson.project_version(),
         description: 'XKB API to query available rules, models, layouts, variants and options',
     )
