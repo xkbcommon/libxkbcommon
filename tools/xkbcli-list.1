@@ -1,0 +1,41 @@
+.TH "XKBCLI\-LIST" "1" "" "" "libxkbcommon manual"
+.
+.SH "NAME"
+\fBxkbcli\-list\fR \- list available XKB rules, models, layouts, variants and options
+.
+.SH "SYNOPSIS"
+\fBxkbcli\fR list [\-\-help] [/path/to/xkbbase [/path/to/xkbbase] \.\.\.]
+.
+.SH "DESCRIPTION"
+\fBxkbcli list\fR is a commandline tool to list available model, layout, variant and option (MLVO) values from the XKB registry\.
+.
+.P
+Arguments provided on the commandline are treated as XKB base directory installations\.
+.
+.SH "OPTIONS"
+.
+.TP
+\fB\-\-help\fR
+Print help and exit
+.
+.TP
+\fB\-v, \-\-verbose\fR
+Increase verbosity, use multiple times for debugging output
+.
+.TP
+\fB\-\-ruleset <name>\fR
+Load the ruleset with the given name
+.
+.TP
+\fB\-\-skip\-default\-paths\fR
+Do not load the default XKB include paths
+.
+.TP
+\fB\-\-load\-exotic\fR
+Load exotic (extra) layouts
+.
+.SH "SEE ALSO"
+\fBxkbcli\fR(1)
+.
+.P
+The libxkbcommon online documentation at \fIhttps://xkbcommon\.org\fR

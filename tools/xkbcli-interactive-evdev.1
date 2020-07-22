@@ -1,0 +1,61 @@
+.TH "XKBCLI\-INTERACTIVE\-EVDEV" "1" "" "" "libxkbcommon manual"
+.
+.SH "NAME"
+\fBxkbcli\-interactive\-evdev\fR \- interactive debugger for XKB maps
+.
+.SH "SYNOPSIS"
+\fBxkbcli\fR interactive\-evdev [\-\-help] [OPTIONS]
+.
+.SH "DESCRIPTION"
+\fBxkbcli interactive\-evdev\fR is a commandline tool to interactively debug XKB maps by listening to \fB/dev/input/eventX\fR evdev devices\.
+.
+.P
+This is a debugging tool, its behavior or output is not guaranteed to be stable\.
+.
+.SH "OPTIONS"
+.
+.TP
+\fB\-\-help\fR
+Print help and exit
+.
+.TP
+\fB\-\-rules <rules>\fR
+The XKB ruleset
+.
+.TP
+\fB\-\-model <model>\fR
+The XKB model
+.
+.TP
+\fB\-\-layout <layout>\fR
+The XKB layout
+.
+.TP
+\fB\-\-variant <variant>\fR
+The XKB layout variant
+.
+.TP
+\fB\-\-options <options>\fR
+The XKB options
+.
+.TP
+\fB\-\-keymap\fR
+Specify a keymap path\. This option is mutually exclusive with the rmlvo options\.
+.
+.TP
+\fB\-\-report\-state\-changes\fR
+Report changes to the keyboard state
+.
+.TP
+\fB\-\-enable\-compose\fR
+Enable compose functionality
+.
+.TP
+\fB\-\-consumed\-mode={gtk|xkb}\fR
+Set the consumed modifiers mode (default: xkb)
+.
+.SH "SEE ALSO"
+\fBxkbcli\fR(1), \fBxkbcli\-interactive\-wayland\fR(1), \fBxkbcli\-interactive\-x11\fR(1)
+.
+.P
+The libxkbcommon online documentation at \fIhttps://xkbcommon\.org\fR

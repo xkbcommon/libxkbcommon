@@ -1,0 +1,70 @@
+.TH "XKBCLI\-COMPILE\-KEYMAP" "1" "" "" "libxkbcommon manual"
+.
+.SH "NAME"
+\fBxkbcli\-compile\-keymap\fR \- compile an XKB keymap
+.
+.SH "SYNOPSIS"
+\fBxkbcli\fR compile\-keymap [\-\-help] [OPTIONS]
+.
+.SH "DESCRIPTION"
+\fBxkbcli compile\-keymap\fR compiles and prints a keymap based on the given options\.
+.
+.SH "OPTIONS"
+.
+.TP
+\fB\-\-help\fR
+Print help and exit
+.
+.TP
+\fB\-\-verbose\fR
+Enable verbose debugging output
+.
+.TP
+\fB\-\-kccgst\fR
+Print a keymap which only includes the KcCGST component names instead of the full keymap
+.
+.TP
+\fB\-\-rmlvo\fR
+Print the full RMLVO with the defaults filled in for missing elements
+.
+.TP
+\fB\-\-from\-xkb\fR
+Load the XKB file from stdin, ignore RMLVO options\. This option must not be used with \fB\-\-kccgst\fR\.
+.
+.TP
+\fB\-\-include\fR
+Add the given path to the include path list\. This option is order\-dependent, include paths given first are searched first\. If an include path is given, the default include path list is not used\. Use \fB\-\-include\-defaults\fR to add the default include paths
+.
+.TP
+\fB\-\-include\-defaults\fR
+Add the default set of include directories\. This option is order\-dependent, include paths given first are searched first\.
+.
+.TP
+\fB\-\-rules <rules>\fR
+The XKB ruleset
+.
+.TP
+\fB\-\-model <model>\fR
+The XKB model
+.
+.TP
+\fB\-\-layout <layout>\fR:
+.
+.IP
+The XKB layout
+.
+.TP
+\fB\-\-variant <variant>\fR:
+.
+.IP
+The XKB layout variant
+.
+.TP
+\fB\-\-options <options>\fR
+The XKB options
+.
+.SH "SEE ALSO"
+\fBxkbcli\fR(1)
+.
+.P
+The libxkbcommon online documentation at \fIhttps://xkbcommon\.org\fR
