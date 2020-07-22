@@ -68,6 +68,13 @@ jobs:
       - uses: actions/setup-python@v1
         with:
           python-version: '3.7'
+      - uses: actions/cache@v2
+        with:
+          path: C:\Users\runneradmin\AppData\Local\Temp\chocolatey
+          key: ${{ runner.os }}-chocolatey-${{ matrix.os }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-chocolatey-${{ matrix.os }}-
+            ${{ runner.os }}-chocolatey-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip meson
