@@ -56,8 +56,10 @@ usage(char **argv)
            "Options:\n"
            " --verbose\n"
            "    Enable verbose debugging output\n"
+#if ENABLE_PRIVATE_APIS
            " --kccgst\n"
            "    Print a keymap which only includes the KcCGST component names instead of the full keymap\n"
+#endif
            " --rmlvo\n"
            "    Print the full RMLVO with the defaults filled in for missing elements\n"
            " --from-xkb\n"
@@ -111,7 +113,9 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
     static struct option opts[] = {
         {"help",             no_argument,            0, 'h'},
         {"verbose",          no_argument,            0, OPT_VERBOSE},
+#if ENABLE_PRIVATE_APIS
         {"kccgst",           no_argument,            0, OPT_KCCGST},
+#endif
         {"rmlvo",            no_argument,            0, OPT_RMLVO},
         {"from-xkb",         no_argument,            0, OPT_FROM_XKB},
         {"include",          required_argument,      0, OPT_INCLUDE},
@@ -191,6 +195,7 @@ print_rmlvo(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
 static bool
 print_kccgst(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
 {
+#if ENABLE_PRIVATE_APIS
         struct xkb_component_names kccgst;
 
         if (!xkb_components_from_rules(ctx, rmlvo, &kccgst))
@@ -209,6 +214,9 @@ print_kccgst(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
         free(kccgst.symbols);
 
         return true;
+#else
+        return false;
+#endif
 }
 
 static bool

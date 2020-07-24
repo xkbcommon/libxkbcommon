@@ -241,6 +241,9 @@ install_headers(
     'xkbcommon/xkbcommon-names.h',
     subdir: 'xkbcommon',
 )
+libxkbcommon_dep = declare_dependency(
+    link_with: libxkbcommon,
+)
 pkgconfig.generate(
     libxkbcommon,
     name: 'xkbcommon',
@@ -532,8 +535,8 @@ if build_tools
         'tools-internal',
         'tools/tools-common.h',
         'tools/tools-common.c',
-        libxkbcommon_sources,
         include_directories: include_directories('src'),
+        dependencies: libxkbcommon_dep,
     )
     tools_dep = declare_dependency(
         include_directories: [include_directories('src'), include_directories('tools')],
@@ -550,6 +553,13 @@ if build_tools
                install: true,
                install_dir: dir_libexec)
     install_man('tools/xkbcli-compile-keymap.1')
+    # The same tool again, but with access to some private APIS
+    executable('compile-keymap',
+               'tools/compile-keymap.c',
+               libxkbcommon_sources,
+               dependencies: [tools_dep],
+               c_args: ['-DENABLE_PRIVATE_APIS'],
+               install: false)
     configh_data.set10('HAVE_XKBCLI_COMPILE_KEYMAP', true)
     executable('xkbcli-how-to-type',
                'tools/how-to-type.c',
