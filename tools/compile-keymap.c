@@ -290,11 +290,13 @@ main(int argc, char **argv)
 {
     struct xkb_context *ctx;
     struct xkb_rule_names names = {
-        .rules = NULL,
-        .model = NULL,
+        .rules = DEFAULT_XKB_RULES,
+        .model = DEFAULT_XKB_MODEL,
+        /* layout and variant are tied together, so we either get user-supplied for
+         * both or default for both, see below */
         .layout = NULL,
         .variant = NULL,
-        .options = NULL,
+        .options = DEFAULT_XKB_OPTIONS,
     };
     int rc = 1;
     const char **path;
@@ -307,6 +309,16 @@ main(int argc, char **argv)
     if (!parse_options(argc, argv, &names))
         return EXIT_INVALID_USAGE;
 
+    /* Now fill in the layout */
+    if (isempty(names.layout)) {
+        if (!isempty(names.variant)) {
+            fprintf(stderr, "Error: a variant requires a layout\n");
+            return EXIT_INVALID_USAGE;
+        }
+        names.layout = DEFAULT_XKB_LAYOUT;
+        names.variant = DEFAULT_XKB_VARIANT;
+    }
+
     ctx = xkb_context_new(XKB_CONTEXT_NO_DEFAULT_INCLUDES);
     assert(ctx);
 
@@ -315,7 +327,6 @@ main(int argc, char **argv)
         xkb_context_set_log_verbosity(ctx, 10);
     }
 
-    xkb_context_sanitize_rule_names(ctx, &names);
     if (darray_empty(includes))
         darray_append(includes, DEFAULT_INCLUDE_PATH_PLACEHOLDER);
 
