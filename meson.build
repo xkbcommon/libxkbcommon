@@ -12,7 +12,7 @@ project(
 pkgconfig = import('pkgconfig')
 cc = meson.get_compiler('c')
 
-dir_libexec = join_paths(get_option('prefix'), get_option('libexecdir'), 'xkbcommon')
+dir_libexec = get_option('prefix')/get_option('libexecdir')/'xkbcommon'
 
 # Compiler flags.
 cflags = [
@@ -44,7 +44,7 @@ if XKBCONFIGROOT == ''
     if xkeyboard_config_dep.found()
         XKBCONFIGROOT = xkeyboard_config_dep.get_pkgconfig_variable('xkb_base')
     else
-        XKBCONFIGROOT = join_paths(get_option('prefix'), get_option('datadir'), 'X11', 'xkb')
+        XKBCONFIGROOT = get_option('prefix')/get_option('datadir')/'X11'/'xkb'
   endif
 endif
 
@@ -52,7 +52,7 @@ endif
 # The X locale directory for compose.
 XLOCALEDIR = get_option('x-locale-root')
 if XLOCALEDIR == ''
-    XLOCALEDIR = join_paths(get_option('prefix'), get_option('datadir'), 'X11', 'locale')
+    XLOCALEDIR = get_option('prefix')/get_option('datadir')/'X11'/'locale'
 endif
 
 
@@ -133,7 +133,7 @@ configh_data.set('WIN32_LEAN_AND_MEAN', 1)
 # Supports -Wl,--version-script?
 have_version_script = cc.links(
     'int main(){}',
-    args: '-Wl,--version-script=' + join_paths(meson.source_root(), 'xkbcommon.map'),
+    args: '-Wl,--version-script=' + meson.source_root()/'xkbcommon.map',
     name: '-Wl,--version-script',
 )
 
@@ -217,7 +217,7 @@ libxkbcommon_sources = [
 ]
 libxkbcommon_link_args = []
 if have_version_script
-    libxkbcommon_link_args += '-Wl,--version-script=' + join_paths(meson.source_root(), 'xkbcommon.map')
+    libxkbcommon_link_args += '-Wl,--version-script=' + meson.source_root()/'xkbcommon.map'
 endif
 libxkbcommon = library(
     'xkbcommon',
@@ -272,7 +272,7 @@ You can disable X11 support with -Denable-x11=false.''')
     ]
     libxkbcommon_x11_link_args = []
     if have_version_script
-        libxkbcommon_x11_link_args += '-Wl,--version-script=' + join_paths(meson.source_root(), 'xkbcommon-x11.map')
+        libxkbcommon_x11_link_args += '-Wl,--version-script=' + meson.source_root()/'xkbcommon-x11.map'
     endif
     libxkbcommon_x11 = library(
         'xkbcommon-x11',
@@ -320,7 +320,7 @@ if get_option('enable-xkbregistry')
     ]
     libxkbregistry_link_args = []
     if have_version_script
-        libxkbregistry_link_args += '-Wl,--version-script=' + join_paths(meson.source_root(), 'xkbregistry.map')
+        libxkbregistry_link_args += '-Wl,--version-script=' + meson.source_root()/'xkbregistry.map'
     endif
     libxkbregistry = library(
         'xkbregistry',
@@ -359,7 +359,7 @@ test_env.set('top_srcdir', meson.source_root())
 test_env.set('top_builddir', meson.build_root())
 
 test_configh_data = configuration_data()
-test_configh_data.set_quoted('TEST_XKB_CONFIG_ROOT', join_paths(meson.source_root(), 'test', 'data'))
+test_configh_data.set_quoted('TEST_XKB_CONFIG_ROOT', meson.source_root()/'test'/'data')
 configure_file(output: 'test-config.h', configuration: test_configh_data)
 
 # Some tests need to use unexported symbols, so we link them against
@@ -612,7 +612,7 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
             arguments: ['client-header', '@INPUT@', '@OUTPUT@'],
         )
         wayland_protocols_datadir = wayland_protocols_dep.get_pkgconfig_variable('pkgdatadir')
-        xdg_shell_xml = join_paths(wayland_protocols_datadir, 'stable/xdg-shell/xdg-shell.xml')
+        xdg_shell_xml = wayland_protocols_datadir/'stable/xdg-shell/xdg-shell.xml'
         xdg_shell_sources = [
             wayland_scanner_code_gen.process(xdg_shell_xml),
             wayland_scanner_client_header_gen.process(xdg_shell_xml),
@@ -728,12 +728,12 @@ You can disable the documentation with -Denable-docs=false.''')
         configuration: doxygen_data,
     )
     # TODO: Meson should provide this.
-    docdir = join_paths(get_option('datadir'), 'doc', meson.project_name())
+    docdir = get_option('datadir')/'doc'/meson.project_name()
     custom_target(
         'doc',
         input: [doxyfile] + doxygen_input,
         output: 'html',
-        command: [doxygen_wrapper, doxygen.path(), join_paths(meson.build_root(), 'Doxyfile'), meson.source_root()],
+        command: [doxygen_wrapper, doxygen.path(), meson.build_root()/'Doxyfile', meson.source_root()],
         install: true,
         install_dir: docdir,
         build_by_default: true,
