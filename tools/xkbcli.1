@@ -7,42 +7,42 @@
 \fBxkbcli\fR [\-\-help|\-\-version] <command> [\fIargs\fR]
 .
 .SH "DESCRIPTION"
-\fBxkbcli\fR is a commandline tool to query, compile and test XKB keymaps, layouts and other elements\.
+\fBxkbcli\fR is a commandline tool to query, compile and test XKB keymaps, layouts and other elements.
 .
 .SH "OPTIONS"
 .
 .TP
-\fB\-\-help\fR
+.B \-\-help
 Print help and exit
 .
 .TP
-\fB\-\-version\fR
+.B \-\-version
 Print the version and exit
 .
 .SH "COMMANDS"
 .
 .TP
-\fBhow\-to\-type\fR
-Show how to type a given unicode codepoint, see \fBxkbcli\-how\-to\-type\fR(1)
+.B how\-to\-type
+Show how to type a given Unicode codepoint, see \fBxkbcli\-how\-to\-type\fR(1)
 .
 .TP
-\fBinteractive\-x11\fR
-Interactive debugger for XKB maps for X11, see \fBxbkcli\-interactive\-x11\fR(1)
+.B interactive\-x11
+Interactive debugger for XKB keymaps for X11, see \fBxbkcli\-interactive\-x11\fR(1)
 .
 .TP
-\fBinteractive\-wayland\fR
-Interactive debugger for XKB maps for Wayland, see \fBxkbcli\-interactive\-wayland\fR(1)
+.B interactive\-wayland
+Interactive debugger for XKB keymaps for Wayland, see \fBxkbcli\-interactive\-wayland\fR(1)
 .
 .TP
-\fBinteractive\-evdev\fR
-Interactive debugger for XKB maps for evdev, see \fBxkbcli\-interactive\-evdev\fR
+.B interactive\-evdev
+Interactive debugger for XKB keymaps for evdev (Linux), see \fBxkbcli\-interactive\-evdev\fR
 .
 .TP
-\fBlist\fR
+.B list
 List available layouts and more, see \fBxkbcli\-list\fR(1)
 .
 .P
-Note that not all tools may be available on your system\.
+Note that not all tools may be available on your system.
 .
 .SH "EXIT STATUS"
 .
@@ -59,4 +59,7 @@ an error occured
 program was called with invalid arguments
 .
 .SH "SEE ALSO"
-The libxkbcommon online documentation at \fIhttps://xkbcommon\.org\fR
+The
+.UR https://xkbcommon.org
+libxkbcommon online documentation
+.UE

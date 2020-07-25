@@ -1,61 +1,73 @@
 .TH "XKBCLI\-INTERACTIVE\-EVDEV" "1" "" "" "libxkbcommon manual"
 .
 .SH "NAME"
-\fBxkbcli\-interactive\-evdev\fR \- interactive debugger for XKB maps
+\fBxkbcli\-interactive\-evdev\fR \- interactive debugger for XKB keymaps
 .
 .SH "SYNOPSIS"
 \fBxkbcli\fR interactive\-evdev [\-\-help] [OPTIONS]
 .
 .SH "DESCRIPTION"
-\fBxkbcli interactive\-evdev\fR is a commandline tool to interactively debug XKB maps by listening to \fB/dev/input/eventX\fR evdev devices\.
+\fBxkbcli interactive\-evdev\fR is a commandline tool to interactively debug XKB keymaps by listening to \fB/dev/input/eventX\fR evdev devices (Linux).
 .
 .P
-This is a debugging tool, its behavior or output is not guaranteed to be stable\.
+.B xkbcli interactive\-evdev
+requires permission to open the evdev device nodes.
+This usually requires being the \fBroot\fR user or belonging to the \fBinput\fR group.
+.
+.P
+Press the Escape key to exit.
+.
+.P
+This is a debugging tool, its behavior or output is not guaranteed to be stable.
 .
 .SH "OPTIONS"
 .
 .TP
-\fB\-\-help\fR
+.B \-\-help
 Print help and exit
 .
 .TP
-\fB\-\-rules <rules>\fR
+.B \-\-rules=<rules>
 The XKB ruleset
 .
 .TP
-\fB\-\-model <model>\fR
+.B \-\-model=<model>
 The XKB model
 .
 .TP
-\fB\-\-layout <layout>\fR
+.B \-\-layout=<layout>
 The XKB layout
 .
 .TP
-\fB\-\-variant <variant>\fR
+.B \-\-variant=<variant>
 The XKB layout variant
 .
 .TP
-\fB\-\-options <options>\fR
+.B \-\-options=<options>
 The XKB options
 .
 .TP
-\fB\-\-keymap\fR
-Specify a keymap path\. This option is mutually exclusive with the rmlvo options\.
+.B \-\-keymap=PATH
+Specify a keymap path.
+This option is mutually exclusive with the RMLVO options.
 .
 .TP
-\fB\-\-report\-state\-changes\fR
+.B \-\-report\-state\-changes
 Report changes to the keyboard state
 .
 .TP
-\fB\-\-enable\-compose\fR
-Enable compose functionality
+.B \-\-enable\-compose
+Enable Compose functionality
 .
 .TP
-\fB\-\-consumed\-mode={gtk|xkb}\fR
+.B \-\-consumed\-mode={xkb|gtk}
 Set the consumed modifiers mode (default: xkb)
 .
 .SH "SEE ALSO"
 \fBxkbcli\fR(1), \fBxkbcli\-interactive\-wayland\fR(1), \fBxkbcli\-interactive\-x11\fR(1)
 .
 .P
-The libxkbcommon online documentation at \fIhttps://xkbcommon\.org\fR
+The
+.UR https://xkbcommon.org
+libxkbcommon online documentation
+.UE

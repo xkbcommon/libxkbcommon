@@ -45,22 +45,22 @@ usage(void)
 #endif
 #if HAVE_XKBCLI_INTERACTIVE_WAYLAND
            "  interactive-wayland\n"
-           "    Interactive debugger for XKB maps for wayland\n"
+           "    Interactive debugger for XKB keymaps for Wayland\n"
            "\n"
 #endif
 #if HAVE_XKBCLI_INTERACTIVE_x11
            "  interactive-x11\n"
-           "    Interactive debugger for XKB maps for X11\n"
+           "    Interactive debugger for XKB keymaps for X11\n"
            "\n"
 #endif
 #if HAVE_XKBCLI_INTERACTIVE_EVDEV
            "  interactive-evdev\n"
-           "    Interactive debugger for XKB maps for evdev\n"
+           "    Interactive debugger for XKB keymaps for evdev (Linux)\n"
            "\n"
 #endif
 #if HAVE_XKBCLI_COMPILE_KEYMAP
            "  compile-keymap\n"
-           "    Compile n XKB keymap\n"
+           "    Compile an XKB keymap\n"
            "\n"
 #endif
 #if HAVE_XKBCLI_HOW_TO_TYPE

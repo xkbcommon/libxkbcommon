@@ -7,7 +7,7 @@
 \fBxkbcli\fR compile\-keymap [\-\-help] [OPTIONS]
 .
 .SH "DESCRIPTION"
-\fBxkbcli compile\-keymap\fR compiles and prints a keymap based on the given options\.
+\fBxkbcli compile\-keymap\fR compiles and prints a keymap based on the given options.
 .
 .SH "OPTIONS"
 .
@@ -16,51 +16,55 @@
 Print help and exit
 .
 .TP
-\fB\-\-verbose\fR
+.B \-\-verbose
 Enable verbose debugging output
 .
 .TP
-\fB\-\-rmlvo\fR
+.B \-\-rmlvo
 Print the full RMLVO with the defaults filled in for missing elements
 .
 .TP
-\fB\-\-from\-xkb\fR
-Load the XKB file from stdin, ignore RMLVO options\. This option must not be used with \fB\-\-kccgst\fR\.
+.B \-\-from\-xkb
+Load the XKB file from stdin, ignore RMLVO options.
+This option must not be used with \fB\-\-kccgst\fR.
 .
 .TP
-\fB\-\-include\fR
-Add the given path to the include path list\. This option is order\-dependent, include paths given first are searched first\. If an include path is given, the default include path list is not used\. Use \fB\-\-include\-defaults\fR to add the default include paths
+.B \-\-include=PATH
+Add the given path to the include path list.
+This option is order\-dependent, include paths given first are searched first.
+If an include path is given, the default include path list is not used.
+Use \fB\-\-include\-defaults\fR to add the default include paths.
 .
 .TP
-\fB\-\-include\-defaults\fR
-Add the default set of include directories\. This option is order\-dependent, include paths given first are searched first\.
+.B \-\-include\-defaults
+Add the default set of include directories.
+This option is order-dependent, include paths given first are searched first.
 .
 .TP
-\fB\-\-rules <rules>\fR
+.B \-\-rules=<rules>
 The XKB ruleset
 .
 .TP
-\fB\-\-model <model>\fR
+.B \-\-model=<model>
 The XKB model
 .
 .TP
-\fB\-\-layout <layout>\fR:
-.
-.IP
+.B \-\-layout=<layout>
 The XKB layout
 .
 .TP
-\fB\-\-variant <variant>\fR:
-.
-.IP
+.B \-\-variant=<variant>
 The XKB layout variant
 .
 .TP
-\fB\-\-options <options>\fR
+.B \-\-options=<options>
 The XKB options
 .
 .SH "SEE ALSO"
 \fBxkbcli\fR(1)
 .
 .P
-The libxkbcommon online documentation at \fIhttps://xkbcommon\.org\fR
+The
+.UR https://xkbcommon.org
+libxkbcommon online documentation
+.UE

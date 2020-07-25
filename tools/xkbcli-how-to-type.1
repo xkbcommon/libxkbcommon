@@ -7,35 +7,38 @@
 \fBxkbcli\fR how\-to\-type [OPTIONS] <codepoint>
 .
 .SH "DESCRIPTION"
-\fBxkbcli how\-to\-type\fR prints key sequences to type the given Unicode codepoint\.
+\fBxkbcli how\-to\-type\fR prints key sequences to type the given Unicode codepoint.
 .
 .P
-Pipe into \fBcolumn \-ts $\'\e\et\'\fR for nicely aligned output\.
+Pipe into \fBcolumn \-ts $\'\e\et\'\fR for nicely aligned output.
 .
 .SH "OPTIONS"
 .
 .TP
-\fB\-\-rules <rules>\fR
+.B \-\-rules=<rules>
 The XKB ruleset
 .
 .TP
-\fB\-\-model <model>\fR
+.B \-\-model=<model>
 The XKB model
 .
 .TP
-\fB\-\-layout <layout>\fR
+.B \-\-layout=<layout>
 The XKB layout
 .
 .TP
-\fB\-\-variant <variant>\fR
+.B \-\-variant=<variant>
 The XKB layout variant
 .
 .TP
-\fB\-\-options <options>\fR
+.B \-\-options=<options>
 The XKB options
 .
 .SH "SEE ALSO"
 \fBxkbcli\fR(1)
 .
 .P
-The libxkbcommon online documentation at \fIhttps://xkbcommon\.org\fR
+The
+.UR https://xkbcommon.org
+libxkbcommon online documentation
+.UE

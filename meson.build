@@ -297,6 +297,9 @@ You can disable X11 support with -Denable-x11=false.''')
         'xkbcommon/xkbcommon-x11.h',
         subdir: 'xkbcommon',
     )
+    libxkbcommon_x11_dep = declare_dependency(
+        link_with: libxkbcommon_x11,
+    )
     pkgconfig.generate(
         libxkbcommon_x11,
         name: 'xkbcommon-x11',
@@ -307,8 +310,6 @@ You can disable X11 support with -Denable-x11=false.''')
         requires_private: ['xcb>=1.10', 'xcb-xkb>=1.10'],
     )
 endif
-
-man_pages = []
 
 # libxkbregistry
 if get_option('enable-xkbregistry')
@@ -553,7 +554,7 @@ if build_tools
                install: true,
                install_dir: dir_libexec)
     install_man('tools/xkbcli-compile-keymap.1')
-    # The same tool again, but with access to some private APIS
+    # The same tool again, but with access to some private APIs.
     executable('compile-keymap',
                'tools/compile-keymap.c',
                libxkbcommon_sources,
@@ -579,7 +580,7 @@ if build_tools
     endif
     if get_option('enable-x11')
         x11_tools_dep = declare_dependency(
-            link_with: libxkbcommon_x11_internal,
+            link_with: libxkbcommon_x11,
             dependencies: [
                 tools_dep,
                 xcb_dep,
@@ -599,8 +600,8 @@ if build_tools
         wayland_protocols_dep = dependency('wayland-protocols', version: '>=1.12', required: false)
         wayland_scanner_dep = dependency('wayland-scanner', required: false, native: true)
         if not wayland_client_dep.found() or not wayland_protocols_dep.found() or not wayland_scanner_dep.found()
-            error('''The Wayland demo programs require wayland-client >= 1.2.0, wayland-protocols >= 1.7 which were not found.
-    You can disable the Wayland demo programs with -Denable-wayland=false.''')
+            error('''The Wayland xkbcli programs require wayland-client >= 1.2.0, wayland-protocols >= 1.7 which were not found.
+You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
         endif
 
         wayland_scanner = find_program(wayland_scanner_dep.get_pkgconfig_variable('wayland_scanner'))

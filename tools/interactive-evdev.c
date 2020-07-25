@@ -372,15 +372,17 @@ sigintr_handler(int signum)
 static void
 usage(FILE *fp, char *progname)
 {
-        fprintf(fp, "Usage: %s [--rules <rules>] [--model <model>] "
-                "[--layout <layout>] [--variant <variant>] [--options <options>]\n",
+        fprintf(fp, "Usage: %s [--rules=<rules>] [--model=<model>] "
+                "[--layout=<layout>] [--variant=<variant>] [--options=<options>]\n",
                 progname);
         fprintf(fp, "      or: %s --keymap <path to keymap file>\n",
                 progname);
         fprintf(fp, "For both:\n"
                         "          --report-state-changes (report changes to the state)\n"
-                        "          --enable-compose (enable compose)\n"
-                        "          --consumed-mode={gtk|xkb} (select the consumed mode)\n");
+                        "          --enable-compose (enable Compose)\n"
+                        "          --consumed-mode={xkb|gtk} (select the consumed modifiers mode, default: xkb)\n"
+                        "          --evdev-offset=NUM (default: 8)\n"
+        );
 }
 
 int
@@ -406,6 +408,7 @@ main(int argc, char *argv[])
         OPT_VARIANT,
         OPT_OPTION,
         OPT_KEYMAP,
+        OPT_EVDEV_OFFSET,
         OPT_CONSUMED_MODE,
         OPT_COMPOSE,
         OPT_REPORT_STATE,
@@ -418,6 +421,7 @@ main(int argc, char *argv[])
         {"variant",              required_argument,      0, OPT_VARIANT},
         {"options",              required_argument,      0, OPT_OPTION},
         {"keymap",               required_argument,      0, OPT_KEYMAP},
+        {"evdev-offset",         required_argument,      0, OPT_EVDEV_OFFSET},
         {"consumed-mode",        required_argument,      0, OPT_CONSUMED_MODE},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
         {"report-state-changes", no_argument,            0, OPT_REPORT_STATE},
@@ -453,6 +457,15 @@ main(int argc, char *argv[])
         case OPT_KEYMAP:
             keymap_path = optarg;
             break;
+        case OPT_EVDEV_OFFSET:
+            errno = 0;
+            evdev_offset = strtol(optarg, NULL, 10);
+            if (errno) {
+                fprintf(stderr, "error: --evdev-offset option expects a number\n");
+                usage(stderr, argv[0]);
+                return EXIT_INVALID_USAGE;
+            }
+            break;
         case OPT_REPORT_STATE:
             report_state_changes = true;
             break;
@@ -465,6 +478,7 @@ main(int argc, char *argv[])
             } else if (strcmp(optarg, "xkb") == 0) {
                 consumed_mode = XKB_CONSUMED_MODE_XKB;
             } else {
+                fprintf(stderr, "error: invalid --consumed-mode \"%s\"\n", optarg);
                 usage(stderr, argv[0]);
                 return EXIT_INVALID_USAGE;
             }
