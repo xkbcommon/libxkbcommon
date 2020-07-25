@@ -351,7 +351,7 @@ main(int argc, char **argv)
 
     for (size_t i = 0; i < num_includes; i++) {
         const char *include = includes[i];
-        if (strcmp(include, DEFAULT_INCLUDE_PATH_PLACEHOLDER))
+        if (strcmp(include, DEFAULT_INCLUDE_PATH_PLACEHOLDER) == 0)
             xkb_context_include_path_append_default(ctx);
         else
             xkb_context_include_path_append(ctx, include);
