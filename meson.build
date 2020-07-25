@@ -16,7 +16,6 @@ dir_libexec = get_option('prefix')/get_option('libexecdir')/'xkbcommon'
 
 # Compiler flags.
 cflags = [
-    '-fvisibility=hidden',
     '-fno-strict-aliasing',
     '-fsanitize-undefined-trap-on-error',
     '-Wno-unused-parameter',
@@ -225,6 +224,7 @@ libxkbcommon = library(
     libxkbcommon_sources,
     link_args: libxkbcommon_link_args,
     link_depends: 'xkbcommon.map',
+    gnu_symbol_visibility: 'hidden',
     version: '0.0.0',
     install: true,
     include_directories: include_directories('src'),
@@ -280,6 +280,7 @@ You can disable X11 support with -Denable-x11=false.''')
         libxkbcommon_x11_sources,
         link_args: libxkbcommon_x11_link_args,
         link_depends: 'xkbcommon-x11.map',
+        gnu_symbol_visibility: 'hidden',
         version: '0.0.0',
         install: true,
         include_directories: include_directories('src'),
@@ -328,6 +329,7 @@ if get_option('enable-xkbregistry')
         libxkbregistry_sources,
         link_args: libxkbregistry_link_args,
         link_depends: 'xkbregistry.map',
+        gnu_symbol_visibility: 'hidden',
         dependencies: deps_libxkbregistry,
         version: '0.0.0',
         install: true,
