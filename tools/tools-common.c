@@ -32,6 +32,7 @@
 
 #include "config.h"
 
+#include <errno.h>
 #include <limits.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -49,7 +50,6 @@
 #include <termios.h>
 #endif
 
-#include "utils.h"
 #include "tools-common.h"
 
 void
@@ -212,6 +212,7 @@ tools_exec_command(const char *prefix, int real_argc, char **real_argv)
     char *argv[64] = {NULL};
     char executable[PATH_MAX];
     const char *command;
+    int rc;
 
     if (((size_t)real_argc >= ARRAY_SIZE(argv))) {
         fprintf(stderr, "Too many arguments\n");
@@ -220,8 +221,9 @@ tools_exec_command(const char *prefix, int real_argc, char **real_argv)
 
     command = real_argv[0];
 
-    if (!snprintf_safe(executable, sizeof(executable),
-                       "%s/%s-%s", LIBXKBCOMMON_TOOL_PATH, prefix, command)) {
+    rc = snprintf(executable, sizeof(executable),
+                  "%s/%s-%s", LIBXKBCOMMON_TOOL_PATH, prefix, command);
+    if (rc < 0 || (size_t) rc >= sizeof(executable)) {
         fprintf(stderr, "Failed to assemble command\n");
         return EXIT_FAILURE;
     }

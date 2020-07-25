@@ -34,6 +34,8 @@
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-compose.h"
 
+#define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
+
 void
 tools_print_keycode_state(struct xkb_state *state,
                           struct xkb_compose_state *compose_state,

@@ -31,9 +31,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "xkbcommon/xkbcommon.h"
+#if ENABLE_PRIVATE_APIS
 #include "xkbcomp/xkbcomp-priv.h"
 #include "xkbcomp/rules.h"
-#include "xkbcommon/xkbcommon.h"
+#endif
+#include "tools-common.h"
 
 #define DEFAULT_INCLUDE_PATH_PLACEHOLDER "__defaults__"
 
@@ -44,7 +47,8 @@ static enum output_format {
     FORMAT_KCCGST,
     FORMAT_KEYMAP_FROM_XKB,
 } output_format = FORMAT_KEYMAP;
-static darray(const char *) includes;
+static const char *includes[64];
+static size_t num_includes = 0;
 
 static void
 usage(char **argv)
@@ -152,10 +156,18 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
             output_format = FORMAT_KEYMAP_FROM_XKB;
             break;
         case OPT_INCLUDE:
-            darray_append(includes, optarg);
+            if (num_includes >= ARRAY_SIZE(includes)) {
+                fprintf(stderr, "error: too many includes\n");
+                exit(EXIT_INVALID_USAGE);
+            }
+            includes[num_includes++] = optarg;
             break;
         case OPT_INCLUDE_DEFAULTS:
-            darray_append(includes, DEFAULT_INCLUDE_PATH_PLACEHOLDER);
+            if (num_includes >= ARRAY_SIZE(includes)) {
+                fprintf(stderr, "error: too many includes\n");
+                exit(EXIT_INVALID_USAGE);
+            }
+            includes[num_includes++] = DEFAULT_INCLUDE_PATH_PLACEHOLDER;
             break;
         case OPT_RULES:
             names->rules = optarg;
@@ -307,7 +319,6 @@ main(int argc, char **argv)
         .options = DEFAULT_XKB_OPTIONS,
     };
     int rc = 1;
-    const char **path;
 
     if (argc <= 1) {
         usage(argv);
@@ -318,8 +329,8 @@ main(int argc, char **argv)
         return EXIT_INVALID_USAGE;
 
     /* Now fill in the layout */
-    if (isempty(names.layout)) {
-        if (!isempty(names.variant)) {
+    if (!names.layout || !*names.layout) {
+        if (names.variant && *names.variant) {
             fprintf(stderr, "Error: a variant requires a layout\n");
             return EXIT_INVALID_USAGE;
         }
@@ -335,14 +346,15 @@ main(int argc, char **argv)
         xkb_context_set_log_verbosity(ctx, 10);
     }
 
-    if (darray_empty(includes))
-        darray_append(includes, DEFAULT_INCLUDE_PATH_PLACEHOLDER);
+    if (num_includes == 0)
+        includes[num_includes++] = DEFAULT_INCLUDE_PATH_PLACEHOLDER;
 
-    darray_foreach(path, includes) {
-        if (streq(*path, DEFAULT_INCLUDE_PATH_PLACEHOLDER))
+    for (size_t i = 0; i < num_includes; i++) {
+        const char *include = includes[i];
+        if (strcmp(include, DEFAULT_INCLUDE_PATH_PLACEHOLDER))
             xkb_context_include_path_append_default(ctx);
         else
-            xkb_context_include_path_append(ctx, *path);
+            xkb_context_include_path_append(ctx, include);
     }
 
     if (output_format == FORMAT_RMLVO) {

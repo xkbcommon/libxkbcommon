@@ -532,11 +532,10 @@ if build_tools
         'tools-internal',
         'tools/tools-common.h',
         'tools/tools-common.c',
-        include_directories: include_directories('src'),
         dependencies: libxkbcommon_dep,
     )
     tools_dep = declare_dependency(
-        include_directories: [include_directories('src'), include_directories('tools')],
+        include_directories: [include_directories('tools')],
         link_with: libxkbcommon_tools_internal,
     )
 
@@ -556,6 +555,7 @@ if build_tools
                libxkbcommon_sources,
                dependencies: [tools_dep],
                c_args: ['-DENABLE_PRIVATE_APIS'],
+               include_directories: [include_directories('src')],
                install: false)
     configh_data.set10('HAVE_XKBCLI_COMPILE_KEYMAP', true)
     executable('xkbcli-how-to-type',
