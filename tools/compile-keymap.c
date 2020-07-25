@@ -67,8 +67,10 @@ usage(char **argv)
            " --rmlvo\n"
            "    Print the full RMLVO with the defaults filled in for missing elements\n"
            " --from-xkb\n"
-           "    Load the XKB file from stdin, ignore RMLVO options. This option\n"
-           "    must not be used with --kccgst.\n"
+           "    Load the XKB file from stdin, ignore RMLVO options.\n"
+#if ENABLE_PRIVATE_APIS
+           "    This option must not be used with --kccgst.\n"
+#endif
            " --include\n"
            "    Add the given path to the include path list. This option is\n"
            "    order-dependent, include paths given first are searched first.\n"
