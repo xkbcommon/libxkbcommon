@@ -15,7 +15,7 @@ cc = meson.get_compiler('c')
 dir_libexec = join_paths(get_option('prefix'), get_option('libexecdir'), 'xkbcommon')
 
 # Compiler flags.
-foreach cflag: [
+cflags = [
     '-fvisibility=hidden',
     '-fno-strict-aliasing',
     '-fsanitize-undefined-trap-on-error',
@@ -34,10 +34,7 @@ foreach cflag: [
     '-Wwrite-strings',
     '-Wno-documentation-deprecated-sync',
 ]
-    if cc.has_argument(cflag)
-        add_project_arguments(cflag, language: 'c')
-    endif
-endforeach
+add_project_arguments(cc.get_supported_arguments(cflags), language: 'c')
 
 
 # The XKB config root.
