@@ -19,7 +19,6 @@ foreach cflag: [
     '-fvisibility=hidden',
     '-fno-strict-aliasing',
     '-fsanitize-undefined-trap-on-error',
-    '-Wextra',
     '-Wno-unused-parameter',
     '-Wno-missing-field-initializers',
     '-Wpointer-arith',
