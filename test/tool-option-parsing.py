@@ -179,9 +179,9 @@ def test_xkbcli_too_many_args(xkbcli):
 
 @pytest.mark.parametrize('args', [['--verbose'],
                                   ['--rmlvo'],
-                                  ['--kccgst'],
+                                  # ['--kccgst'],
                                   ['--verbose', '--rmlvo'],
-                                  ['--verbose', '--kccgst'],
+                                  # ['--verbose', '--kccgst'],
                                   ])
 def test_compile_keymap_args(xkbcli_compile_keymap, args):
     xkbcli_compile_keymap.run_command_success(args)
