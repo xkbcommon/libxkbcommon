@@ -35,6 +35,8 @@ except ImportError:
     sys.exit(77)
 
 
+top_builddir = os.environ['top_builddir']
+
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger('test')
 logger.setLevel(logging.DEBUG)
@@ -67,7 +69,7 @@ class XkbcliTool:
     subtool = None
 
     def __init__(self, subtool=None):
-        self.tool_path = "@MESON_BUILD_ROOT@"
+        self.tool_path = top_builddir
         self.subtool = subtool
 
     def run_command(self, args):
@@ -297,4 +299,4 @@ def test_interactive_wayland(xkbcli_interactive_wayland):
 
 
 if __name__ == '__main__':
-    pytest.main(args=['@MESON_BUILD_ROOT@'])
+    sys.exit(pytest.main(args=[__file__]))
