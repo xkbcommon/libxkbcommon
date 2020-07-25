@@ -32,7 +32,9 @@ VERBATIM_HEADERS       = NO
 ALPHABETICAL_INDEX     = NO
 
 IGNORE_PREFIX          = xkb_ \
-                         XKB_
+                         XKB_ \
+                         rxkb_ \
+                         RXKB_
 
 HTML_EXTRA_STYLESHEET  = doc/doxygen-extra.css
 
