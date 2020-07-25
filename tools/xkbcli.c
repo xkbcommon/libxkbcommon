@@ -79,6 +79,7 @@ main(int argc, char **argv)
         OPT_VERSION,
     };
     int option_index = 0;
+    struct xkb_library_version version;
 
     while (1) {
         int c;
@@ -99,7 +100,9 @@ main(int argc, char **argv)
                 return EXIT_SUCCESS;
             case 'V':
             case OPT_VERSION:
-                printf("%s\n", LIBXKBCOMMON_VERSION);
+                printf("xkbcli %s\n", LIBXKBCOMMON_VERSION);
+                version = xkb_get_library_version();
+                printf("libxkbcommon %d.%d.%d\n", version.major, version.minor, version.patch);
                 return EXIT_SUCCESS;
             default:
                 usage();

@@ -59,6 +59,9 @@ endif
 configh_data = configuration_data()
 configh_data.set('EXIT_INVALID_USAGE', '2')
 configh_data.set_quoted('LIBXKBCOMMON_VERSION', meson.project_version())
+configh_data.set('LIBXKBCOMMON_VERSION_MAJOR', meson.project_version().split('.')[0])
+configh_data.set('LIBXKBCOMMON_VERSION_MINOR', meson.project_version().split('.')[1])
+configh_data.set('LIBXKBCOMMON_VERSION_PATCH', meson.project_version().split('.')[2])
 configh_data.set_quoted('LIBXKBCOMMON_TOOL_PATH', dir_libexec)
 # Like AC_USE_SYSTEM_EXTENSIONS, what #define to use to get extensions
 # beyond the base POSIX function set.
@@ -213,6 +216,7 @@ libxkbcommon_sources = [
     'src/utf8.h',
     'src/utils.c',
     'src/utils.h',
+    'src/version.c',
 ]
 libxkbcommon_link_args = []
 if have_version_script

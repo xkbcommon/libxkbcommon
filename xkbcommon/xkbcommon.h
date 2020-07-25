@@ -98,6 +98,15 @@ extern "C" {
  */
 
 /**
+ * A library version.
+ *
+ * The fields correspond to major.minor.patch, e.g. 0.20.10.
+ */
+struct xkb_library_version {
+    uint32_t major, minor, patch;
+};
+
+/**
  * @struct xkb_context
  * Opaque top level library context object.
  *
@@ -365,6 +374,26 @@ struct xkb_rule_names {
      */
     const char *options;
 };
+
+/**
+ * @defgroup general General
+ * General functions.
+ *
+ * @{
+ */
+
+/**
+ * Get the version of the library.
+ *
+ * This returns the runtime version, not the build-time version.
+ *
+ * @since 0.11.0
+ */
+struct xkb_library_version
+xkb_get_library_version(void);
+
+/** @} */
+
 
 /**
  * @defgroup keysyms Keysyms
