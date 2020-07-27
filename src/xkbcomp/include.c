@@ -241,28 +241,21 @@ FindFileInXkbPath(struct xkb_context *ctx, const char *name,
         }
 
         file = fopen(buf, "rb");
-        if (!file) {
-            free(buf);
-            buf = NULL;
-        } else {
-            break;
+        if (file) {
+            if (pathRtrn) {
+                *pathRtrn = buf;
+                buf = NULL;
+            }
+            goto out;
         }
     }
 
-    if (!file) {
-        log_err(ctx, "Couldn't find file \"%s/%s\" in include paths\n",
-                typeDir, name);
+    log_err(ctx, "Couldn't find file \"%s/%s\" in include paths\n",
+            typeDir, name);
+    LogIncludePaths(ctx);
 
-        LogIncludePaths(ctx);
-
-        free(buf);
-        return NULL;
-    }
-
-    if (pathRtrn)
-        *pathRtrn = buf;
-    else
-        free(buf);
+out:
+    free(buf);
     return file;
 }
 
