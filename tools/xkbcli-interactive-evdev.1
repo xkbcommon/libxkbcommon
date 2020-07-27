@@ -63,6 +63,11 @@ Enable Compose functionality
 .B \-\-consumed\-mode={xkb|gtk}
 Set the consumed modifiers mode (default: xkb)
 .
+.TP
+.B \-\-without\-x11\-offset
+Don't add an offset of 8 when converting an evdev keycode to an XKB keycode.
+You probably don't want this option.
+.
 .SH "SEE ALSO"
 \fBxkbcli\fR(1), \fBxkbcli\-interactive\-wayland\fR(1), \fBxkbcli\-interactive\-x11\fR(1)
 .
