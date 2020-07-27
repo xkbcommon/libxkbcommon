@@ -27,6 +27,7 @@ import resource
 import sys
 import subprocess
 import logging
+import tempfile
 
 try:
     import pytest
@@ -300,4 +301,10 @@ def test_interactive_wayland(xkbcli_interactive_wayland):
 
 
 if __name__ == '__main__':
-    sys.exit(pytest.main(args=[__file__]))
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # libxkbcommon has fallbacks when XDG_CONFIG_HOME isn't set so we need
+        # to override it with a known (empty) directory. Otherwise our test
+        # behavior depends on the system the test is run on.
+        os.environ['XDG_CONFIG_HOME'] = tmpdir
+
+        sys.exit(pytest.main(args=[__file__]))
