@@ -1,44 +1,39 @@
-.TH "XKBCLI\-LIST" "1" "" "" "libxkbcommon manual"
+.Dd July 27, 2020
+.Dt XKBCLI\-LIST 1
+.Os
 .
-.SH "NAME"
-\fBxkbcli\-list\fR \- list available XKB models, layouts, variants and options
+.Sh NAME
+.Nm "xkbcli list"
+.Nd list available XKB models, layouts, variants and options
 .
-.SH "SYNOPSIS"
-\fBxkbcli\fR list [\-\-help] [/path/to/xkbbase [/path/to/xkbbase] ...]
+.Sh SYNOPSIS
+.Nm
+.Op Pa /path/to/xkbbase Oo Pa /path/to/xkbbase Oc ...
 .
-.SH "DESCRIPTION"
-\fBxkbcli list\fR is a commandline tool to list available model, layout, variant and option (MLVO) values from the XKB registry.
+.Sh DESCRIPTION
+.Nm
+is a commandline tool to list available model, layout, variant and option (MLVO) values from the XKB registry.
 .
-.P
-Arguments provided on the commandline are treated as XKB base directory installations.
+.Pp
+Positional arguments provided on the commandline are treated as XKB base directory installations.
 .
-.SH "OPTIONS"
-.
-.TP
-.B \-\-help
+.Bl -tag -width Ds
+.It Fl \-help
 Print help and exit
 .
-.TP
-.B \-v, \-\-verbose
+.It Fl \-verbose
 Increase verbosity, use multiple times for debugging output
 .
-.TP
-.B \-\-ruleset=<name>
+.It Fl \-ruleset Ar name
 Load the ruleset with the given name
 .
-.TP
-.B \-\-skip\-default\-paths
+.It Fl \-skip\-default\-paths
 Do not load the default XKB include paths
 .
-.TP
-.B \-\-load\-exotic
+.It Fl \-load\-exotic
 Load exotic (extra) layouts
+.El
 .
-.SH "SEE ALSO"
-\fBxkbcli\fR(1)
-.
-.P
-The
-.UR https://xkbcommon.org
-libxkbcommon online documentation
-.UE
+.Sh SEE ALSO
+.Xr xkbcli 1 ,
+.Lk https://xkbcommon.org "The libxkbcommon online documentation"
