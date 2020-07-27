@@ -278,6 +278,7 @@ def test_interactive_evdev_rmlvo(xkbcli_interactive_evdev, rmlvos):
                                   ['--enable-compose'],
                                   ['--consumed-mode=xkb'],
                                   ['--consumed-mode=gtk'],
+                                  ['--without-x11-offset'],
                                   ])
 def test_interactive_evdev(xkbcli_interactive_evdev, args):
     # Note: --enable-compose fails if $prefix doesn't have the compose tables

@@ -421,10 +421,10 @@ main(int argc, char *argv[])
         {"variant",              required_argument,      0, OPT_VARIANT},
         {"options",              required_argument,      0, OPT_OPTION},
         {"keymap",               required_argument,      0, OPT_KEYMAP},
-        {"without-x11-offset",   required_argument,      0, OPT_WITHOUT_X11_OFFSET},
         {"consumed-mode",        required_argument,      0, OPT_CONSUMED_MODE},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
         {"report-state-changes", no_argument,            0, OPT_REPORT_STATE},
+        {"without-x11-offset",   no_argument,            0, OPT_WITHOUT_X11_OFFSET},
         {0, 0, 0, 0},
     };
 
