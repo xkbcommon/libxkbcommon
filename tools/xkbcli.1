@@ -1,65 +1,65 @@
-.TH "XKBCLI" "1" "" "" "libxkbcommon manual"
+.Dd July 27, 2020
+.Dt XKBCLI 1
+.Os
 .
-.SH "NAME"
-\fBxkbcli\fR \- tool to interact with XKB keymaps
+.Sh NAME
+.Nm xkbcli
+.Nd tool to interact with XKB keymaps
 .
-.SH "SYNOPSIS"
-\fBxkbcli\fR [\-\-help|\-\-version] <command> [\fIargs\fR]
+.Sh SYNOPSIS
+.Nm
+.Ar command Bo arguments Bc
 .
-.SH "DESCRIPTION"
-\fBxkbcli\fR is a commandline tool to query, compile and test XKB keymaps, layouts and other elements.
+.Nm
+.Op Fl \-help | Fl \-version
 .
-.SH "OPTIONS"
+.Sh DESCRIPTION
+.Nm
+is a commandline tool to query, compile and test XKB keymaps, layouts and other elements.
 .
-.TP
-.B \-\-help
+.Bl -tag -width Ds
+.It Fl \-help
 Print help and exit
 .
-.TP
-.B \-\-version
+.It Fl \-version
 Print the version and exit
+.El
 .
-.SH "COMMANDS"
+.Ss COMMANDS
+.Bl -tag -width Ds
+.It Ic how\-to\-type
+Show how to type a given Unicode codepoint, see
+.Xr xkbcli\-how\-to\-type 1
 .
-.TP
-.B how\-to\-type
-Show how to type a given Unicode codepoint, see \fBxkbcli\-how\-to\-type\fR(1)
+.It Ic interactive\-x11
+Interactive debugger for XKB keymaps for X11, see
+.Xr xkbcli\-interactive\-x11 1
 .
-.TP
-.B interactive\-x11
-Interactive debugger for XKB keymaps for X11, see \fBxbkcli\-interactive\-x11\fR(1)
+.It Ic interactive\-wayland
+Interactive debugger for XKB keymaps for Wayland, see
+.Xr xkbcli\-interactive\-wayland 1
 .
-.TP
-.B interactive\-wayland
-Interactive debugger for XKB keymaps for Wayland, see \fBxkbcli\-interactive\-wayland\fR(1)
+.It Ic interactive\-evdev
+Interactive debugger for XKB keymaps for evdev (Linux), see
+.Xr xkbcli\-interactive\-evdev 1
 .
-.TP
-.B interactive\-evdev
-Interactive debugger for XKB keymaps for evdev (Linux), see \fBxkbcli\-interactive\-evdev\fR
+.It Ic list
+List available layouts and more, see
+.Xr xkbcli\-list 1
+.El
 .
-.TP
-.B list
-List available layouts and more, see \fBxkbcli\-list\fR(1)
-.
-.P
+.Pp
 Note that not all tools may be available on your system.
 .
-.SH "EXIT STATUS"
-.
-.TP
-0
+.Sh EXIT STATUS
+.Bl -tag -compact -width Ds
+.It 0
 exited successfully
-.
-.TP
-1
+.It 1
 an error occured
-.
-.TP
-2
+.It 2
 program was called with invalid arguments
+.El
 .
-.SH "SEE ALSO"
-The
-.UR https://xkbcommon.org
-libxkbcommon online documentation
-.UE
+.Sh SEE ALSO
+.Lk https://xkbcommon.org "The libxkbcommon online documentation"

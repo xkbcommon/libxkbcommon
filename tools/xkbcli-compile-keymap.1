@@ -1,70 +1,62 @@
-.TH "XKBCLI\-COMPILE\-KEYMAP" "1" "" "" "libxkbcommon manual"
+.Dd July 27, 2020
+.Dt XKBCLI\-COMPILE\-KEYMAP 1
+.Os
 .
-.SH "NAME"
-\fBxkbcli\-compile\-keymap\fR \- compile an XKB keymap
+.Sh NAME
+.Nm "xkbcli compile\-keymap"
+.Nd compile an XKB keymap
 .
-.SH "SYNOPSIS"
-\fBxkbcli\fR compile\-keymap [\-\-help] [OPTIONS]
+.Sh SYNOPSIS
+.Nm
+.Op Ar options
 .
-.SH "DESCRIPTION"
-\fBxkbcli compile\-keymap\fR compiles and prints a keymap based on the given options.
+.Sh DESCRIPTION
+.Nm
+compiles and prints a keymap based on the given options.
 .
-.SH "OPTIONS"
-.
-.TP
-\fB\-\-help\fR
+.Bl -tag -width Ds
+.It Fl \-help
 Print help and exit
 .
-.TP
-.B \-\-verbose
+.It Fl \-verbose
 Enable verbose debugging output
 .
-.TP
-.B \-\-rmlvo
+.It Fl \-rmlvo
 Print the full RMLVO with the defaults filled in for missing elements
 .
-.TP
-.B \-\-from\-xkb
+.It Fl \-from\-xkb
 Load the XKB file from stdin, ignore RMLVO options.
-This option must not be used with \fB\-\-kccgst\fR.
+This option must not be used with
+.Fl \-kccgst .
 .
-.TP
-.B \-\-include=PATH
+.It Fl \-include Ar PATH
 Add the given path to the include path list.
 This option is order\-dependent, include paths given first are searched first.
 If an include path is given, the default include path list is not used.
-Use \fB\-\-include\-defaults\fR to add the default include paths.
+Use
+.Fl -\-include\-defaults
+to add the default include paths.
 .
-.TP
-.B \-\-include\-defaults
+.It Fl \-include\-defaults
 Add the default set of include directories.
 This option is order-dependent, include paths given first are searched first.
 .
-.TP
-.B \-\-rules=<rules>
+.It Fl \-rules Ar rules
 The XKB ruleset
 .
-.TP
-.B \-\-model=<model>
+.It Fl \-model Ar model
 The XKB model
 .
-.TP
-.B \-\-layout=<layout>
+.It Fl \-layout Ar layout
 The XKB layout
 .
-.TP
-.B \-\-variant=<variant>
+.It Fl \-variant Ar variant
 The XKB layout variant
 .
-.TP
-.B \-\-options=<options>
+.It Fl \-options Ar options
 The XKB options
+.El
 .
-.SH "SEE ALSO"
-\fBxkbcli\fR(1)
-.
-.P
-The
-.UR https://xkbcommon.org
-libxkbcommon online documentation
-.UE
+.Sh SEE ALSO
+.Xr xkbcli 1 ,
+.Lk https://xkbcommon.org "The libxkbcommon online documentation"

@@ -1,44 +1,41 @@
-.TH "XKBCLI\-HOW\-TO\-TYPE" "1" "" "" "libxkbcommon manual"
+.Dd July 27, 2020
+.Dt XKBCLI\-HOW\-TO\-TYPE 1
+.Os
 .
-.SH "NAME"
-\fBxkbcli\-how\-to\-type\fR \- query how to type a given Unicode codepoint
+.Sh NAME
+.Nm "xkbcli how\-to\-type"
+.Nd query how to type a given Unicode codepoint
 .
-.SH "SYNOPSIS"
-\fBxkbcli\fR how\-to\-type [OPTIONS] <codepoint>
+.Sh SYNOPSIS
+.Nm
+.Op options
+.Ar codepoint
 .
-.SH "DESCRIPTION"
-\fBxkbcli how\-to\-type\fR prints key sequences to type the given Unicode codepoint.
+.Sh DESCRIPTION
+.Nm
+prints key sequences to type the given Unicode codepoint.
+.Pp
+Pipe into
+.Dq "column \-ts $\'\e\et\'"
+for nicely aligned output.
 .
-.P
-Pipe into \fBcolumn \-ts $\'\e\et\'\fR for nicely aligned output.
-.
-.SH "OPTIONS"
-.
-.TP
-.B \-\-rules=<rules>
+.Bl -tag -width Ds
+.It Fl \-rules Ar rules
 The XKB ruleset
 .
-.TP
-.B \-\-model=<model>
+.It Fl \-model Ar model
 The XKB model
 .
-.TP
-.B \-\-layout=<layout>
+.It Fl \-layout Ar layout
 The XKB layout
 .
-.TP
-.B \-\-variant=<variant>
+.It Fl \-variant Ar variant
 The XKB layout variant
 .
-.TP
-.B \-\-options=<options>
+.It Fl \-options Ar options
 The XKB options
+.El
 .
-.SH "SEE ALSO"
-\fBxkbcli\fR(1)
-.
-.P
-The
-.UR https://xkbcommon.org
-libxkbcommon online documentation
-.UE
+.Sh SEE ALSO
+.Xr xkbcli 1 ,
+.Lk https://xkbcommon.org "The libxkbcommon online documentation"

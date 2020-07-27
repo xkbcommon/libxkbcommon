@@ -1,34 +1,37 @@
-.TH "XKBCLI\-INTERACTIVE\-WAYLAND" "1" "" "" "libxkbcommon manual"
+.Dd July 27, 2020
+.Dt XKBCLI\-INTERACTIVE\-WAYLAND 1
+.Os
 .
-.SH "NAME"
-\fBxkbcli\-interactive\-wayland\fR \- interactive debugger for XKB keymaps
+.Sh NAME
+.Nm "xkbcli interactive\-wayland"
+.Nd interactive debugger for XKB keymaps
 .
-.SH "SYNOPSIS"
-\fBxkbcli\fR interactive\-wayland [\-\-help] [OPTIONS]
+.Sh SYNOPSIS
+.Nm
+.Op Ar options
 .
-.SH "DESCRIPTION"
-\fBxkbcli interactive\-wayland\fR is a commandline tool to interactively debug XKB keymaps by listening to wayland events.
+.Sh DESCRIPTION
+.Nm
+is a commandline tool to interactively debug XKB keymaps by listening to Wayland events.
 .
-.P
+.Pp
 This requires a Wayland compositor to be running.
 .
-.P
-Press the Escape key to exit.
+.Pp
+Press the
+.Aq Escape
+key to exit.
 .
-.P
+.Pp
 This is a debugging tool, its behavior or output is not guaranteed to be stable.
 .
-.SH "OPTIONS"
-.
-.TP
-.B \-\-help
+.Bl -tag -width Ds
+.It Fl \-help
 Print help and exit
+.El
 .
-.SH "SEE ALSO"
-\fBxkbcli\fR(1), \fBxkbcli\-interactive\-evdev\fR(1), \fBxkbcli\-interactive\-x11\fR(1)
-.
-.P
-The
-.UR https://xkbcommon.org
-libxkbcommon online documentation
-.UE
+.Sh SEE ALSO
+.Xr xkbcli 1 ,
+.Xr xkbcli\-interactive\-evdev 1 ,
+.Xr xkbcli\-interactive\-x11 1 ,
+.Lk https://xkbcommon.org "The libxkbcommon online documentation"
