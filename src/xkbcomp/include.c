@@ -195,6 +195,31 @@ DirectoryForInclude(enum xkb_file_type type)
     return xkb_file_type_include_dirs[type];
 }
 
+static void
+LogIncludePaths(struct xkb_context *ctx)
+{
+    unsigned int i;
+
+    if (xkb_context_num_include_paths(ctx) > 0) {
+        log_err(ctx, "%d include paths searched:\n",
+                xkb_context_num_include_paths(ctx));
+        for (i = 0; i < xkb_context_num_include_paths(ctx); i++)
+            log_err(ctx, "\t%s\n",
+                    xkb_context_include_path_get(ctx, i));
+    }
+    else {
+        log_err(ctx, "There are no include paths to search\n");
+    }
+
+    if (xkb_context_num_failed_include_paths(ctx) > 0) {
+        log_err(ctx, "%d include paths could not be added:\n",
+                xkb_context_num_failed_include_paths(ctx));
+        for (i = 0; i < xkb_context_num_failed_include_paths(ctx); i++)
+            log_err(ctx, "\t%s\n",
+                    xkb_context_failed_include_path_get(ctx, i));
+    }
+}
+
 FILE *
 FindFileInXkbPath(struct xkb_context *ctx, const char *name,
                   enum xkb_file_type type, char **pathRtrn)
@@ -228,24 +253,7 @@ FindFileInXkbPath(struct xkb_context *ctx, const char *name,
         log_err(ctx, "Couldn't find file \"%s/%s\" in include paths\n",
                 typeDir, name);
 
-        if (xkb_context_num_include_paths(ctx) > 0) {
-            log_err(ctx, "%d include paths searched:\n",
-                    xkb_context_num_include_paths(ctx));
-            for (i = 0; i < xkb_context_num_include_paths(ctx); i++)
-                log_err(ctx, "\t%s\n",
-                        xkb_context_include_path_get(ctx, i));
-        }
-        else {
-            log_err(ctx, "There are no include paths to search\n");
-        }
-
-        if (xkb_context_num_failed_include_paths(ctx) > 0) {
-            log_err(ctx, "%d include paths could not be added:\n",
-                    xkb_context_num_failed_include_paths(ctx));
-            for (i = 0; i < xkb_context_num_failed_include_paths(ctx); i++)
-                log_err(ctx, "\t%s\n",
-                        xkb_context_failed_include_path_get(ctx, i));
-        }
+        LogIncludePaths(ctx);
 
         free(buf);
         return NULL;
