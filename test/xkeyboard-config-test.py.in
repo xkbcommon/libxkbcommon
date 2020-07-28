@@ -41,8 +41,7 @@ def xkbcommontool(rmlvo):
         v = rmlvo.get('v', None)
         o = rmlvo.get('o', None)
         args = [
-            'xkbcli',
-            'compile-keymap',
+            'xkbcli-compile-keymap',  # this is run in the builddir
             '--rules', r,
             '--model', m,
             '--layout', l,
