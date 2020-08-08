@@ -145,7 +145,7 @@ if bison.found()
     yacc_gen = generator(
         bison,
         output: ['@BASENAME@.c', '@BASENAME@.h'],
-        arguments: ['@INPUT@', '--defines=@OUTPUT1@', '--output=@OUTPUT0@', '-p _xkbcommon_'],
+        arguments: ['--defines=@OUTPUT1@', '-o', '@OUTPUT0@', '-p', '_xkbcommon_', '@INPUT@'],
     )
 else
     byacc = find_program('byacc', required: false)
@@ -153,7 +153,7 @@ else
         yacc_gen = generator(
             byacc,
             output: ['@BASENAME@.c', '@BASENAME@.h'],
-            arguments: ['@INPUT@', '-H', '@OUTPUT1@', '-o', '@OUTPUT0@', '-p _xkbcommon_'],
+            arguments: ['-H', '@OUTPUT1@', '-o', '@OUTPUT0@', '-p', '_xkbcommon_', '@INPUT@'],
         )
     else
         error('Could not find a compatible YACC program (bison or byacc)')
