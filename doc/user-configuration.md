@@ -31,6 +31,15 @@ Each directory should have one or more of the following subdirectories:
 - `symbols`
 - `types`
 
+The majority of user-specific configuration involve modifying key symbols and
+this is what this document focuses on. For use-cases where a user may need to
+add new key types or compat entries the general approach remains the same. A
+detailed description for how to add those types or compat entries is out of
+scope for this document.
+
+You should never need to add user-specific keycodes. Where a keycode is missing,
+the addition should be filed in the upstream xkeyboard-config project.
+
 ## RMLVO vs KcCGST
 
 Due to how XKB is configured, there is no such thing as a "layout" in XKB
