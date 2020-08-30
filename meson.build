@@ -124,6 +124,14 @@ else
 endif
 have_getopt_long = cc.has_header_symbol('getopt.h', 'getopt_long',
                                         prefix: '#define _GNU_SOURCE')
+if not cc.has_header_symbol('limits.h', 'PATH_MAX', prefix: system_ext_define)
+    if host_machine.system() == 'windows'
+        # see https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#maximum-path-length-limitation
+        configh_data.set('PATH_MAX', 260)
+    else
+        configh_data.set('PATH_MAX', 4096)
+    endif
+endif
 
 # Silence some security & deprecation warnings on MSVC
 # for some unix/C functions we use.
