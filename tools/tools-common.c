@@ -42,9 +42,6 @@
 #ifdef _MSC_VER
 #include <io.h>
 #include <windows.h>
-#ifndef PATH_MAX
-#define PATH_MAX MAX_PATH
-#endif
 #else
 #include <unistd.h>
 #include <termios.h>
