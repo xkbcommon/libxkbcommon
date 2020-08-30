@@ -40,6 +40,9 @@ Dependencies for libxkbcommon:
   Output included in git and tarball. To regenerate, use
   `./scripts/update-keywords`.
 
+Dependencies for xkbcli:
+- libxkbcommon.
+
 Dependencies for libxkbcommon-x11:
 - libxkbcommon.
 
