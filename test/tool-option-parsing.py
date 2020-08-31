@@ -153,6 +153,11 @@ def xkbcli_interactive_wayland():
     return get_tool('interactive-wayland')
 
 
+@pytest.fixture
+def xkbcli_scaffold():
+    return get_tool('scaffold-new-layout')
+
+
 # --help is supported by all tools
 @pytest.mark.parametrize('tool', get_all_tools())
 def test_help(tool):
@@ -297,6 +302,65 @@ def test_interactive_x11(xkbcli_interactive_x11):
 def test_interactive_wayland(xkbcli_interactive_wayland):
     # To be filled in if we handle something other than --help
     pass
+
+
+def check_scaffold_files(xdg, rules, layout_variant, option):
+    basedir = xdg / 'xkb'
+    for d in ('compat', 'keycodes', 'rules', 'symbols', 'types'):
+        assert (basedir / d).exists()
+
+    assert (basedir / 'rules' / rules).exists()
+    assert (basedir / 'rules' / f'{rules}.xml').exists()
+    if layout_variant:
+        layout, variant = layout_variant
+        assert (basedir / 'symbols' / layout).exists()
+    if option:
+        group, section = option
+        assert (basedir / 'symbols' / group).exists()
+
+
+@pytest.mark.parametrize('arguments', [
+    # rules, (layout, variant), (group, section)
+    ('evdev', ('us', 'myvariant'), ('custom', 'foo')),
+    ('other', ('us', 'myvariant'), ('custom', 'foo')),
+    (None, ('fi', None), ('opts', None)),
+    (None, ('fi', None), None),
+    (None, None, ('opts', 'bar')),
+    (None, None, None),
+])
+def test_scaffold(xkbcli_scaffold, tmp_path, monkeypatch, arguments):
+    # New directory for every test because the tool doesn't overwrite existing
+    # files
+    monkeypatch.setenv('XDG_CONFIG_HOME', str(tmp_path))
+
+    rules, layout_variant, option = arguments
+    args = ['-v']
+    if rules:
+        args += [f'--rules={rules}']
+    if layout_variant:
+        l, v = layout_variant
+        if l is not None:
+            if v is not None:
+                args += [f'--layout={l}({v})']
+            else:
+                args += [f'--layout={l}']
+        else:
+            args += ['--layout=']
+    if option is not None:
+        g, o = option
+        if g is not None:
+            args += [f'--option={g}:{o}']
+        else:
+            args += ['--option=']
+
+    print(f".... {args}")
+    xkbcli_scaffold.run_command_success(args)
+    xkbargs = {
+        'rules': rules or 'evdev',
+        'layout_variant': layout_variant or ('us', 'myvariant'),
+        'option': option or ('custom', 'foo'),
+    }
+    check_scaffold_files(tmp_path, **xkbargs)
 
 
 if __name__ == '__main__':
