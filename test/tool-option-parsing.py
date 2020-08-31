@@ -267,7 +267,6 @@ def test_list_rmlvo_includes_no_defaults(xkbcli_list):
 @pytest.mark.skipif(not os.access('/dev/input/event0', os.R_OK), reason='insufficient permissions')
 @pytest.mark.parametrize('rmlvos', rmlvos)
 def test_interactive_evdev_rmlvo(xkbcli_interactive_evdev, rmlvos):
-    return
     xkbcli_interactive_evdev.run_command_success(rmlvos)
 
 
