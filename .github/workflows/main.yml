@@ -68,17 +68,15 @@ jobs:
       - uses: actions/setup-python@v1
         with:
           python-version: '3.7'
-      - uses: actions/cache@v2
-        with:
-          path: C:\Users\runneradmin\AppData\Local\Temp\chocolatey
-          key: ${{ runner.os }}-chocolatey-${{ matrix.os }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-chocolatey-${{ matrix.os }}-
-            ${{ runner.os }}-chocolatey-
       - name: Install dependencies
+        shell: powershell
         run: |
           python -m pip install --upgrade pip meson
-          choco install ninja winflexbison3 -y --no-progress --stop-on-first-failure
+          Invoke-WebRequest -Uri https://github.com/ninja-build/ninja/releases/download/v1.10.1/ninja-win.zip -OutFile ninja.zip
+          Invoke-WebRequest -Uri https://github.com/lexxmark/winflexbison/releases/download/v2.5.23/win_flex_bison-2.5.23.zip -OutFile win_flex_bison.zip
+          Expand-Archive -Path win_flex_bison.zip -DestinationPath bin
+          Expand-Archive -Path ninja.zip -DestinationPath bin
+          Write-Output ("::add-path::" + (Get-Location) + "./bin")
       - name: Setup
         shell: cmd
         run: |
