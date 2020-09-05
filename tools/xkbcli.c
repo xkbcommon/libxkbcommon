@@ -48,7 +48,7 @@ usage(void)
            "    Interactive debugger for XKB keymaps for Wayland\n"
            "\n"
 #endif
-#if HAVE_XKBCLI_INTERACTIVE_x11
+#if HAVE_XKBCLI_INTERACTIVE_X11
            "  interactive-x11\n"
            "    Interactive debugger for XKB keymaps for X11\n"
            "\n"
