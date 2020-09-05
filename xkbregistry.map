@@ -1,5 +1,5 @@
 /* versions are kept in sync with libxkbcommon.so */
-V_0.11.0 {
+V_1.0.0 {
 global:
         rxkb_context_new;
         rxkb_context_parse;

@@ -208,7 +208,7 @@ enum xkb_compose_format {
  *    `$XDG_CONFIG_HOME/XCompose` is checked (with a fall back to
  *    `$HOME/.config/XCompose` if `XDG_CONFIG_HOME` is not defined).
  *    This is a libxkbcommon extension to the search procedure in
- *    Compose(5) (since libxkbcommon 0.11.0). Note that other
+ *    Compose(5) (since libxkbcommon 1.0.0). Note that other
  *    implementations, such as libX11, might not find a Compose file in
  *    this path.
  * 3. `HOME` - see Compose(5).

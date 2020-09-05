@@ -511,7 +511,7 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym);
  * defined Unicode planes this function returns XKB_KEY_NoSymbol.
  *
  * @sa xkb_keysym_to_utf32()
- * @since 0.11.0
+ * @since 1.0.0
  */
 xkb_keysym_t
 xkb_utf32_to_keysym(uint32_t ucs);
@@ -1199,7 +1199,7 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t key,
  * @sa xkb_level_index_t
  * @sa xkb_mod_mask_t
  * @memberof xkb_keymap
- * @since 0.11.0
+ * @since 1.0.0
  */
 size_t
 xkb_keymap_key_get_mods_for_level(struct xkb_keymap *keymap,
