@@ -170,7 +170,7 @@ def test_invalid_option(tool):
 # xkbcli --version
 def test_xkbcli_version(xkbcli):
     stdout, stderr = xkbcli.run_command_success(['--version'])
-    assert stdout.startswith('0')
+    assert stdout.startswith('1')
     assert stderr == ''
 
 
