@@ -46,14 +46,14 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip meson
-          brew install doxygen bison ninja
+          brew install libxml2 doxygen bison ninja
           brew link bison --force
         env:
           HOMEBREW_NO_AUTO_UPDATE: 1
           HOMEBREW_NO_INSTALL_CLEANUP: 1
       - name: Setup
         run: |
-          PATH="/usr/local/opt/bison/bin:${PATH}" meson setup -Denable-wayland=false -Denable-x11=false -Denable-xkbregistry=false build
+          PATH="/usr/local/opt/bison/bin:${PATH}" meson setup -Denable-wayland=false -Denable-x11=false build
       - name: Build
         run: |
           PATH="/usr/local/opt/bison/bin:${PATH}" meson compile -C build
