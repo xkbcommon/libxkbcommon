@@ -30,7 +30,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#if defined(HAVE_EACCESS) || defined(HAVE_EUIDACCESS)
+#if HAVE_UNISTD_H
 #include <unistd.h>
 #else
 /* Required on Windows where unistd.h doesn't exist */
