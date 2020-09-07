@@ -133,6 +133,7 @@ static bool
 parse(struct rxkb_context *ctx, const char *path,
       enum rxkb_popularity popularity);
 
+ATTR_PRINTF(3, 4)
 static void
 rxkb_log(struct rxkb_context *ctx, enum rxkb_log_level level,
          const char *fmt, ...)
