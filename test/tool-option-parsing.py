@@ -37,6 +37,7 @@ except ImportError:
 
 
 top_builddir = os.environ['top_builddir']
+top_srcdir = os.environ['top_srcdir']
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger('test')
@@ -45,7 +46,7 @@ logger.setLevel(logging.DEBUG)
 # Permutation of RMLVO that we use in multiple tests
 rmlvos = [list(x) for x in itertools.permutations(
     ['--rules=evdev', '--model=pc104',
-     '--layout=fr', '--options=eurosign:5']
+     '--layout=ch', '--options=eurosign:5']
 )]
 
 
@@ -302,10 +303,14 @@ def test_interactive_wayland(xkbcli_interactive_wayland):
 
 if __name__ == '__main__':
     with tempfile.TemporaryDirectory() as tmpdir:
+        # Use our own test xkeyboard-config copy.
+        os.environ['XKB_CONFIG_ROOT'] = top_srcdir + '/test/data'
         # libxkbcommon has fallbacks when XDG_CONFIG_HOME isn't set so we need
         # to override it with a known (empty) directory. Otherwise our test
         # behavior depends on the system the test is run on.
         os.environ['XDG_CONFIG_HOME'] = tmpdir
+        # Prevent the legacy $HOME/.xkb from kicking in.
+        del os.environ['HOME']
         # This needs to be separated if we do specific extra path testing
         os.environ['XKB_CONFIG_EXTRA_PATH'] = tmpdir
 
