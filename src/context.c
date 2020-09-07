@@ -50,7 +50,7 @@ XKB_EXPORT int
 xkb_context_include_path_append(struct xkb_context *ctx, const char *path)
 {
     struct stat stat_buf;
-    int err;
+    int err = ENOMEM;
     char *tmp;
 
     tmp = strdup(path);
