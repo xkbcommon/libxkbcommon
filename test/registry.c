@@ -24,6 +24,9 @@
 #include "config.h"
 
 #include <assert.h>
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 #include <stdarg.h>
 #include <stdio.h>
 #include <sys/stat.h>

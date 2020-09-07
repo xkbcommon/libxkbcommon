@@ -89,6 +89,9 @@ if get_option('default-options') != ''
 else
     configh_data.set('DEFAULT_XKB_OPTIONS', 'NULL')
 endif
+if cc.has_header('unistd.h')
+    configh_data.set('HAVE_UNISTD_H', 1)
+endif
 if cc.links('int main(){if(__builtin_expect(1<0,0)){}}', name: '__builtin_expect')
     configh_data.set('HAVE___BUILTIN_EXPECT', 1)
 endif
