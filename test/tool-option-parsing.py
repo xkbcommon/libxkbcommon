@@ -65,11 +65,15 @@ class XkbcliTool:
     xkbcli_tool = 'xkbcli'
     subtool = None
 
-    def __init__(self, subtool=None):
+    def __init__(self, subtool=None, skipIf=()):
         self.tool_path = top_builddir
         self.subtool = subtool
+        self.skipIf = skipIf
 
     def run_command(self, args):
+        for condition, reason in self.skipIf:
+            if condition:
+                raise unittest.SkipTest(reason)
         if self.subtool is not None:
             tool = '{}-{}'.format(self.xkbcli_tool, self.subtool)
         else:
@@ -104,20 +108,28 @@ class XkbcliTool:
         return str(self.subtool)
 
 
-def get_tool(subtool=None):
-    return XkbcliTool(subtool)
-
-
 class TestXkbcli(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.xkbcli = get_tool()
-        cls.xkbcli_list = get_tool('list')
-        cls.xkbcli_how_to_type = get_tool('how-to-type')
-        cls.xkbcli_compile_keymap = get_tool('compile-keymap')
-        cls.xkbcli_interactive_evdev = get_tool('interactive-evdev')
-        cls.xkbcli_interactive_x11 = get_tool('interactive-x11')
-        cls.xkbcli_interactive_wayland = get_tool('interactive-wayland')
+        cls.xkbcli = XkbcliTool()
+        cls.xkbcli_list = XkbcliTool('list', skipIf=(
+            (not int(os.getenv('HAVE_XKBCLI_LIST', '1')), 'xkbregistory not enabled'),
+        ))
+        cls.xkbcli_how_to_type = XkbcliTool('how-to-type')
+        cls.xkbcli_compile_keymap = XkbcliTool('compile-keymap')
+        cls.xkbcli_interactive_evdev = XkbcliTool('interactive-evdev', skipIf=(
+            (not int(os.getenv('HAVE_XKBCLI_INTERACTIVE_EVDEV', '1')), 'evdev not enabled'),
+            (not os.path.exists('/dev/input/event0'), 'event node required'),
+            (not os.access('/dev/input/event0', os.R_OK), 'insufficient permissions'),
+        ))
+        cls.xkbcli_interactive_x11 = XkbcliTool('interactive-x11', skipIf=(
+            (not int(os.getenv('HAVE_XKBCLI_INTERACTIVE_X11', '1')), 'x11 not enabled'),
+            (not os.getenv('DISPLAY'), 'DISPLAY not set'),
+        ))
+        cls.xkbcli_interactive_wayland = XkbcliTool('interactive-wayland', skipIf=(
+            (not int(os.getenv('HAVE_XKBCLI_INTERACTIVE_WAYLAND', '1')), 'wayland not enabled'),
+            (not os.getenv('WAYLAND_DISPLAY'), 'WAYLAND_DISPLAY not set'),
+        ))
         cls.all_tools = [
             cls.xkbcli,
             cls.xkbcli_list,
@@ -236,21 +248,11 @@ class TestXkbcli(unittest.TestCase):
         assert "Failed to parse XKB description" in stderr
 
     def test_interactive_evdev_rmlvo(self):
-        if not os.path.exists('/dev/input/event0'):
-            self.skipTest('event node required')
-        if not os.access('/dev/input/event0', os.R_OK):
-            self.skipTest('insufficient permissions')
-
         for rmlvo in rmlvos:
             with self.subTest(rmlvo=rmlvo):
                 self.xkbcli_interactive_evdev.run_command_success(rmlvos)
 
     def test_interactive_evdev(self):
-        if not os.path.exists('/dev/input/event0'):
-            self.skipTest('event node required')
-        if not os.access('/dev/input/event0', os.R_OK):
-            self.skipTest('insufficient permissions')
-
         # Note: --enable-compose fails if $prefix doesn't have the compose tables
         # installed
         for args in (
@@ -264,16 +266,10 @@ class TestXkbcli(unittest.TestCase):
                 self.xkbcli_interactive_evdev.run_command_success(args)
 
     def test_interactive_x11(self):
-        if not os.getenv('DISPLAY'):
-            self.skipTest('DISPLAY not set')
-
         # To be filled in if we handle something other than --help
         pass
 
     def test_interactive_wayland(self):
-        if not os.getenv('WAYLAND_DISPLAY'):
-            self.skipTest('WAYLAND_DISPLAY not set')
-
         # To be filled in if we handle something other than --help
         pass
 
