@@ -184,7 +184,7 @@ xkb_symbols "evdev" {
     key <I218>   {      [ Print                 ]       };
 //  key <I219>   {      [ ]       }; // KEY_HP
     key <I220>   {      [ XF86WebCam            ]       };
-//  key <I221>   {      [ ]       }; // KEY_SOUND
+    key <I221>   {      [ XF86AudioPreset       ]       };
 //  key <I222>   {      [ ]       }; // KEY_QUESTION
     key <I223>   {      [ XF86Mail              ]       };
     key <I224>   {      [ XF86Messenger         ]       }; // KEY_CHAT
@@ -212,11 +212,16 @@ xkb_symbols "evdev" {
     key <I246>   {      [ XF86WLAN              ]       };
 //  key <I249>   {      [ ]       }; // KEY_VIDEO_NEXT  --  drive next video source
 //  key <I250>   {      [ ]       }; // KEY_VIDEO_PREV  --  drive previous video source
-//  key <I251>   {      [ ]       }; // KEY_BRIGHTNESS_CYCLE  --  bright up, max++ == min
+    key <I251>   {      [ XF86MonBrightnessCycle ]      }; // KEY_BRIGHTNESS_CYCLE  --  bright up, max++ == min
 //  key <I252>   {      [ ]       }; // KEY_BRIGHTNESS_ZERO  --  brightness off
 //  key <I253>   {      [ ]       }; // KEY_DISPLAY_OFF  --  turn off display
-//  key <I254>   {      [ ]       }; // KEY_WIMAX
-    key <I255>   {      [ XF86Hibernate         ]       }; // KEY_HIBERNATE
+    key <I254>   {      [ XF86WWAN              ]       }; // KEY_WWAN
+    key <I255>   {      [ XF86RFKill            ]       }; // KEY_RFKILL
+
+    key <I372>  {       [ XF86Favorites          ]       };
+    key <I382>  {       [ XF86Keyboard           ]       };
+    key <I569>  {       [ XF86RotationLockToggle ]       };
+    key <I380>  {       [ XF86FullScreen         ]       };
 
     key <FK13>   {      [ XF86Tools         ]       };
     key <FK14>   {      [ XF86Launch5       ]       };
@@ -1422,6 +1427,16 @@ xkb_symbols "microsoftmult" {
     key <I80>   {       [ XF86Documents ]       };
 };
 
+// Microsoft Surface
+partial alphanumeric_keys
+xkb_symbols "microsoftsurface" {
+    include "inet(evdev)"
+    key <I88>   {       [ XF86Search            ]         };
+    key <I163>  {       [ XF86AudioPrev         ]         };
+    key <I164>  {       [ XF86AudioPlay, XF86AudioPause ] };
+    key <I165>  {       [ XF86AudioNext         ]         };
+};
+
 
 // Oretec
 
@@ -1850,32 +1865,6 @@ xkb_symbols "pc105" {
     include "inet(media_nav_acpi_common)"
 };
 
-
-// HTC Dream
-partial alphanumeric_keys
-xkb_symbols "htcdream" {
-	key <BKSP> { [ BackSpace ] };
-	key <RTRN> { [ Return ] };
-
-        key <AE01> { [ 1, 1, exclam, exclam ] };
-        key <AE02> { [ 2, 2, at, at ] };
-        key <AE03> { [ 3, 3, numbersign, numbersign ] };
-        key <AE04> { [ 4, 4, dollar, dollar ] };
-        key <AE05> { [ 5, 5, percent, percent ] };
-        key <AE06> { [ 6, 6, dead_circumflex, dead_circumflex ] };
-        key <AE07> { [ 7, 7, ampersand, ampersand ] };
-        key <AE08> { [ 8, 8, asterisk, asterisk ] };
-        key <AE09> { [ 9, 9, parenleft, parenleft ] };
-        key <AE10> { [ 0, 0, parenright, parenright ] };
-
-	key <LFSH> { [ Shift_L ] };
-	key <SPCE> { [ space ] };
-	key <AB09> { [ period, period, slash, slash ] };
-	key <RTSH> { [ Shift_R ] };
-
-	modifier_map Shift { <LFSH>, <RTSH> };
-};
-
 partial alphanumeric_keys
 xkb_symbols "chromebook" {
 	include "level3(ralt_switch)"
@@ -1907,3 +1896,4 @@ partial alphanumeric_keys
 xkb_symbols "teck229" {
     include "inet(teck227)"
 };
+

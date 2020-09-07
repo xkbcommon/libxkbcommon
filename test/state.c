@@ -514,7 +514,7 @@ test_range(struct xkb_keymap *keymap)
     xkb_keycode_t counter;
 
     assert(xkb_keymap_min_keycode(keymap) == 9);
-    assert(xkb_keymap_max_keycode(keymap) == 253);
+    assert(xkb_keymap_max_keycode(keymap) == 569);
 
     counter = xkb_keymap_min_keycode(keymap);
     xkb_keymap_key_for_each(keymap, key_iter, &counter);
