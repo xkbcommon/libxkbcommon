@@ -38,7 +38,6 @@ usage(const char *argv0, FILE *fp)
     fprintf(fp, "Usage: %s [--rules <rules>] [--model <model>] "
                 "[--layout <layout>] [--variant <variant>] [--options <options>]"
                 " <unicode codepoint>\n", argv0);
-    fprintf(fp, "Pipe into `column -ts $'\\t'` for nicely aligned output.\n");
 }
 
 int
@@ -155,7 +154,8 @@ main(int argc, char *argv[])
     }
 
     printf("keysym: %s (%#x)\n", name, keysym);
-    printf("KEYCODE\tKEY NAME\tLAYOUT#\tLAYOUT NAME\tLEVEL#\tMODIFIERS\n");
+    printf("%-8s %-9s %-8s %-20s %-7s %-s\n",
+           "KEYCODE", "KEY NAME", "LAYOUT", "LAYOUT NAME", "LEVEL#", "MODIFIERS");
 
     min_keycode = xkb_keymap_min_keycode(keymap);
     max_keycode = xkb_keymap_max_keycode(keymap);
@@ -202,7 +202,7 @@ main(int argc, char *argv[])
                 for (size_t i = 0; i < num_masks; i++) {
                     xkb_mod_mask_t mask = masks[i];
 
-                    printf("%u\t%s\t%u\t%s\t%u\t[ ",
+                    printf("%-8u %-9s %-8u %-20s %-7u [ ",
                            keycode, key_name, layout + 1, layout_name, level + 1);
                     for (xkb_mod_index_t mod = 0; mod < num_mods; mod++) {
                         if ((mask & (1 << mod)) == 0) {

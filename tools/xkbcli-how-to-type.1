@@ -13,11 +13,8 @@
 .
 .Sh DESCRIPTION
 .Nm
-prints key sequences to type the given Unicode codepoint.
-.Pp
-Pipe into
-.Dq "column \-ts $\'\e\et\'"
-for nicely aligned output.
+prints the key combinations (keycode + modifiers) in the keymap's layouts which
+would produce the given Unicode codepoint.
 .
 .Bl -tag -width Ds
 .It Fl \-rules Ar rules
