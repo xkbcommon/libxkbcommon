@@ -734,7 +734,7 @@ KeySym          :       IDENT
                 |       Integer
                         {
                             if ($1 < 0) {
-                                parser_warn(param, "unrecognized keysym \"%ld\"", $1);
+                                parser_warn(param, "unrecognized keysym \"%" PRId64 "\"", $1);
                                 $$ = XKB_KEY_NoSymbol;
                             }
                             else if ($1 < 10) {      /* XKB_KEY_0 .. XKB_KEY_9 */
