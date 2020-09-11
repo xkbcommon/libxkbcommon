@@ -1,3 +1,14 @@
+libxkbcommon 1.0.1 - 2020-09-11
+==================
+
+- Fix the tool-option-parsing test failing.
+
+- Remove requirement for pytest in the tool-option-parsing test.
+
+- Make the table output of `xkbcli how-to-type` aligned.
+
+- Some portability and test isolation fixes.
+
 libxkbcommon 1.0.0 - 2020-09-05
 ==================
 
