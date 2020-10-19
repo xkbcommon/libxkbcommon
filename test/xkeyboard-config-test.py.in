@@ -42,6 +42,7 @@ def xkbcommontool(rmlvo):
         o = rmlvo.get('o', None)
         args = [
             'xkbcli-compile-keymap',  # this is run in the builddir
+            '--verbose',
             '--rules', r,
             '--model', m,
             '--layout', l,
@@ -61,6 +62,12 @@ def xkbcommontool(rmlvo):
                                              universal_newlines=True)
             if verbose:
                 print(output, file=out)
+
+            if "unrecognized keysym" in output:
+                for line in output.split('\n'):
+                    if "unrecognized keysym" in line:
+                        print('ERROR: {}'.format(line))
+                success = False
         except subprocess.CalledProcessError as err:
             print('ERROR: Failed to compile: {}'.format(' '.join(args)), file=out)
             print(err.output, file=out)
