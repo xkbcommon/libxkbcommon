@@ -31,8 +31,51 @@
 
 #include "test.h"
 
-int
-main(void)
+static void
+test_garbage_key(void)
+{
+    struct xkb_context *context = test_get_context(0);
+    struct xkb_keymap *keymap;
+    xkb_keycode_t kc;
+    int nsyms;
+    const xkb_keysym_t *syms;
+    const xkb_layout_index_t first_layout = 0;
+    xkb_level_index_t nlevels;
+
+    assert(context);
+
+    keymap = test_compile_rules(context, NULL, NULL, "garbage", NULL, NULL);
+    assert(keymap);
+
+    /* TLDE uses the 'us' sym on the first level and is thus [grave, exclam] */
+    kc = xkb_keymap_key_by_name(keymap, "TLDE");
+    assert(kc != XKB_KEYCODE_INVALID);
+    nlevels = xkb_keymap_num_levels_for_key(keymap, kc, first_layout);
+    assert(nlevels == 2);
+    nsyms = xkb_keymap_key_get_syms_by_level(keymap, kc, first_layout, 0, &syms);
+    assert(nsyms == 1);
+    assert(*syms == XKB_KEY_grave); /* fallback from 'us' */
+    nsyms = xkb_keymap_key_get_syms_by_level(keymap, kc, first_layout, 1, &syms);
+    assert(nsyms == 1);
+    assert(*syms == XKB_KEY_exclam);
+
+    /* AE13 has no 'us' fallback and ends up as [NoSymbol, asciitilde] */
+    kc = xkb_keymap_key_by_name(keymap, "AE13");
+    assert(kc != XKB_KEYCODE_INVALID);
+    nlevels = xkb_keymap_num_levels_for_key(keymap, kc, first_layout);
+    assert(nlevels == 2);
+    nsyms = xkb_keymap_key_get_syms_by_level(keymap, kc, first_layout, 0, &syms);
+    assert(nsyms == 0);
+    nsyms = xkb_keymap_key_get_syms_by_level(keymap, kc, first_layout, 1, &syms);
+    assert(nsyms == 1);
+    assert(*syms == XKB_KEY_asciitilde);
+
+    xkb_keymap_unref(keymap);
+    xkb_context_unref(context);
+}
+
+static void
+test_keymap(void)
 {
     struct xkb_context *context = test_get_context(0);
     struct xkb_keymap *keymap;
@@ -104,4 +147,13 @@ main(void)
 
     xkb_keymap_unref(keymap);
     xkb_context_unref(context);
+}
+
+int
+main(void)
+{
+    test_garbage_key();
+    test_keymap();
+
+    return 0;
 }
