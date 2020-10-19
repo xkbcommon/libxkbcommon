@@ -726,8 +726,10 @@ KeySyms         :       OBRACE KeySymList CBRACE
 
 KeySym          :       IDENT
                         {
-                            if (!resolve_keysym($1, &$$))
+                            if (!resolve_keysym($1, &$$)) {
                                 parser_warn(param, "unrecognized keysym \"%s\"", $1);
+                                $$ = XKB_KEY_NoSymbol;
+                            }
                             free($1);
                         }
                 |       SECTION { $$ = XKB_KEY_section; }
