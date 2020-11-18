@@ -155,6 +155,20 @@ get_atom_name(xcb_connection_t *conn, xcb_atom_t atom, char **out)
     return true;
 }
 
+struct x11_atom_cache {
+    /*
+     * Invalidate the cache based on the XCB connection.
+     * X11 atoms are actually not per connection or client, but per X server
+     * session. But better be safe just in case we survive an X server restart.
+     */
+    xcb_connection_t *conn;
+    struct {
+        xcb_atom_t from;
+        xkb_atom_t to;
+    } cache[256];
+    size_t len;
+};
+
 bool
 adopt_atoms(struct xkb_context *ctx, xcb_connection_t *conn,
             const xcb_atom_t *from, xkb_atom_t *to, const size_t count)
@@ -163,24 +177,49 @@ adopt_atoms(struct xkb_context *ctx, xcb_connection_t *conn,
     xcb_get_atom_name_cookie_t cookies[SIZE];
     const size_t num_batches = ROUNDUP(count, SIZE) / SIZE;
 
+    if (!ctx->x11_atom_cache) {
+        ctx->x11_atom_cache = calloc(1, sizeof(struct x11_atom_cache));
+    }
+    /* Can be NULL in case the malloc failed. */
+    struct x11_atom_cache *cache = ctx->x11_atom_cache;
+    if (cache && cache->conn != conn) {
+        cache->conn = conn;
+        cache->len = 0;
+    }
+
+    memset(to, 0, count * sizeof(*to));
+
     /* Send and collect the atoms in batches of reasonable SIZE. */
     for (size_t batch = 0; batch < num_batches; batch++) {
         const size_t start = batch * SIZE;
         const size_t stop = MIN((batch + 1) * SIZE, count);
 
         /* Send. */
-        for (size_t i = start; i < stop; i++)
-            if (from[i] != XCB_ATOM_NONE)
+        for (size_t i = start; i < stop; i++) {
+            bool cache_hit = false;
+            if (cache) {
+                for (size_t c = 0; c < cache->len; c++) {
+                    if (cache->cache[c].from == from[i]) {
+                        to[i] = cache->cache[c].to;
+                        cache_hit = true;
+                        break;
+                    }
+                }
+            }
+            if (!cache_hit && from[i] != XCB_ATOM_NONE)
                 cookies[i % SIZE] = xcb_get_atom_name(conn, from[i]);
+        }
 
         /* Collect. */
         for (size_t i = start; i < stop; i++) {
             xcb_get_atom_name_reply_t *reply;
 
-            if (from[i] == XCB_ATOM_NONE) {
-                to[i] = XKB_ATOM_NONE;
+            if (from[i] == XCB_ATOM_NONE)
                 continue;
-            }
+
+            /* Was filled from cache. */
+            if (to[i] != 0)
+                continue;
 
             reply = xcb_get_atom_name_reply(conn, cookies[i % SIZE], NULL);
             if (!reply)
@@ -193,6 +232,12 @@ adopt_atoms(struct xkb_context *ctx, xcb_connection_t *conn,
 
             if (to[i] == XKB_ATOM_NONE)
                 goto err_discard;
+
+            if (cache && cache->len < ARRAY_SIZE(cache->cache)) {
+                size_t idx = cache->len++;
+                cache->cache[idx].from = from[i];
+                cache->cache[idx].to = to[i];
+            }
 
             continue;
 

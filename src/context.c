@@ -210,6 +210,7 @@ xkb_context_unref(struct xkb_context *ctx)
     if (!ctx || --ctx->refcnt > 0)
         return;
 
+    free(ctx->x11_atom_cache);
     xkb_context_include_path_clear(ctx);
     atom_table_free(ctx->atom_table);
     free(ctx);
@@ -322,6 +323,8 @@ xkb_context_new(enum xkb_context_flags flags)
         xkb_context_unref(ctx);
         return NULL;
     }
+
+    ctx->x11_atom_cache = NULL;
 
     return ctx;
 }
