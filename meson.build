@@ -701,6 +701,13 @@ benchmark(
     executable('bench-compose', 'bench/compose.c', dependencies: test_dep),
     env: bench_env,
 )
+if get_option('enable-x11')
+  benchmark(
+      'x11',
+      executable('bench-x11', 'bench/x11.c', dependencies: x11_test_dep),
+      env: bench_env,
+  )
+endif
 
 
 # Documentation.
