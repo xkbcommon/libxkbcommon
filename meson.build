@@ -515,6 +515,8 @@ libxkbcommon_test_internal = static_library(
     'test/common.c',
     'test/test.h',
     'test/evdev-scancodes.h',
+    'bench/bench.c',
+    'bench/bench.h',
     libxkbcommon_sources,
     include_directories: include_directories('src'),
 )
@@ -677,36 +679,26 @@ executable('fuzz-compose', 'fuzz/compose/target.c', dependencies: test_dep)
 
 
 # Benchmarks.
-libxkbcommon_bench_internal = static_library(
-    'xkbcommon-bench-internal',
-    'bench/bench.c',
-    'bench/bench.h',
-    link_with: libxkbcommon_test_internal,
-)
-bench_dep = declare_dependency(
-    include_directories: include_directories('src'),
-    link_with: libxkbcommon_bench_internal,
-)
 bench_env = environment()
 bench_env.set('top_srcdir', meson.source_root())
 benchmark(
     'key-proc',
-    executable('bench-key-proc', 'bench/key-proc.c', dependencies: bench_dep),
+    executable('bench-key-proc', 'bench/key-proc.c', dependencies: test_dep),
     env: bench_env,
 )
 benchmark(
     'rules',
-    executable('bench-rules', 'bench/rules.c', dependencies: bench_dep),
+    executable('bench-rules', 'bench/rules.c', dependencies: test_dep),
     env: bench_env,
 )
 benchmark(
     'rulescomp',
-    executable('bench-rulescomp', 'bench/rulescomp.c', dependencies: bench_dep),
+    executable('bench-rulescomp', 'bench/rulescomp.c', dependencies: test_dep),
     env: bench_env,
 )
 benchmark(
     'compose',
-    executable('bench-compose', 'bench/compose.c', dependencies: bench_dep),
+    executable('bench-compose', 'bench/compose.c', dependencies: test_dep),
     env: bench_env,
 )
 
