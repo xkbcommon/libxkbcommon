@@ -1,3 +1,13 @@
+libxkbcommon 1.0.2 - 2020-11-20
+==================
+
+- Fix a bug where a keysym that cannot be resolved in a keymap gets compiled to
+  a garbage keysym. Now it is set to XKB_KEY_NoSymbol instead.
+
+- Improve the speed of xkb_x11_keymap_new_from_device() on repeated calls in the
+  same xkb_context().
+
+
 libxkbcommon 1.0.1 - 2020-09-11
 ==================
 
