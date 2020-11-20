@@ -445,19 +445,19 @@ get_sym_maps(struct xkb_keymap *keymap, xcb_connection_t *conn,
 
             FAIL_UNLESS((unsigned) syms_length == wire_sym_map->width * key->num_groups);
 
-            for (int j = 0; j < syms_length; j++) {
-                xcb_keysym_t wire_keysym = *syms_iter;
-                const xkb_layout_index_t group = j / wire_sym_map->width;
-                const xkb_level_index_t level = j % wire_sym_map->width;
+            for (xkb_layout_index_t group = 0; group < key->num_groups; group++) {
+                for (xkb_level_index_t level = 0; level < wire_sym_map->width; level++) {
+                    xcb_keysym_t wire_keysym = *syms_iter;
 
-                assert(key->groups[group].type != NULL);
-                if (level < key->groups[group].type->num_levels &&
-                    wire_keysym != XKB_KEY_NoSymbol) {
-                    key->groups[group].levels[level].num_syms = 1;
-                    key->groups[group].levels[level].u.sym = wire_keysym;
+                    assert(key->groups[group].type != NULL);
+                    if (level < key->groups[group].type->num_levels &&
+                        wire_keysym != XKB_KEY_NoSymbol) {
+                        key->groups[group].levels[level].num_syms = 1;
+                        key->groups[group].levels[level].u.sym = wire_keysym;
+                    }
+
+                    syms_iter++;
                 }
-
-                syms_iter++;
             }
         }
 
@@ -492,21 +492,22 @@ get_actions(struct xkb_keymap *keymap, xcb_connection_t *conn,
         uint8_t wire_count = *acts_count_iter;
         struct xkb_key *key = &keymap->keys[reply->firstKeyAction + i];
 
+        FAIL_UNLESS((unsigned) syms_length == wire_sym_map->width * key->num_groups);
         FAIL_UNLESS(wire_count == 0 || wire_count == syms_length);
 
-        for (int j = 0; j < wire_count; j++) {
-            xcb_xkb_action_t *wire_action = acts_iter.data;
-            const xkb_layout_index_t group = j / wire_sym_map->width;
-            const xkb_level_index_t level = j % wire_sym_map->width;
+        for (xkb_layout_index_t group = 0; group < key->num_groups; group++) {
+            for (xkb_level_index_t level = 0; level < wire_sym_map->width; level++) {
+                xcb_xkb_action_t *wire_action = acts_iter.data;
 
-            if (level < key->groups[group].type->num_levels) {
-                union xkb_action *action =
-                    &key->groups[group].levels[level].action;
+                if (level < key->groups[group].type->num_levels) {
+                    union xkb_action *action =
+                        &key->groups[group].levels[level].action;
 
-                translate_action(action, wire_action);
+                    translate_action(action, wire_action);
+                }
+
+                xcb_xkb_action_next(&acts_iter);
             }
-
-            xcb_xkb_action_next(&acts_iter);
         }
 
         acts_count_iter++;
