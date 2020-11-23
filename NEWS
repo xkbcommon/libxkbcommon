@@ -1,3 +1,12 @@
+libxkbcommon 1.0.3 - 2020-11-23
+==================
+
+- Fix (hopefully) a segfault in xkb_x11_keymap_new_from_device() in some
+  unclear situation (bug introduced in 1.0.2).
+
+- Fix keymaps created with xkb_x11_keymap_new_from_device() don't have level
+  names (bug introduced in 0.8.0).
+
 libxkbcommon 1.0.2 - 2020-11-20
 ==================
 
