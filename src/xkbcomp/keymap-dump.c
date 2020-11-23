@@ -277,9 +277,11 @@ write_led_map(struct xkb_keymap *keymap, struct buf *buf,
 }
 
 static const char *
-affect_lock_text(enum xkb_action_flags flags)
+affect_lock_text(enum xkb_action_flags flags, bool show_both)
 {
     switch (flags & (ACTION_LOCK_NO_LOCK | ACTION_LOCK_NO_UNLOCK)) {
+    case 0:
+        return show_both ? ",affect=both" : "";
     case ACTION_LOCK_NO_UNLOCK:
         return ",affect=lock";
     case ACTION_LOCK_NO_LOCK:
@@ -317,7 +319,7 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         write_buf(buf, "%s%s(modifiers=%s%s%s%s)%s", prefix, type, args,
                   (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LOCK_CLEAR)) ? ",clearLocks" : "",
                   (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LATCH_TO_LOCK)) ? ",latchToLock" : "",
-                  (action->type == ACTION_TYPE_MOD_LOCK) ? affect_lock_text(action->mods.flags) : "",
+                  (action->type == ACTION_TYPE_MOD_LOCK) ? affect_lock_text(action->mods.flags, false) : "",
                   suffix);
         break;
 
@@ -347,7 +349,7 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         break;
 
     case ACTION_TYPE_PTR_LOCK:
-        args = affect_lock_text(action->btn.flags);
+        args = affect_lock_text(action->btn.flags, true);
         /* fallthrough */
     case ACTION_TYPE_PTR_BUTTON:
         write_buf(buf, "%s%s(button=", prefix, type);
@@ -382,7 +384,7 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
     case ACTION_TYPE_CTRL_LOCK:
         write_buf(buf, "%s%s(controls=%s%s)%s", prefix, type,
                   ControlMaskText(keymap->ctx, action->ctrls.ctrls),
-                  (action->type == ACTION_TYPE_CTRL_LOCK) ? affect_lock_text(action->ctrls.flags) : "",
+                  (action->type == ACTION_TYPE_CTRL_LOCK) ? affect_lock_text(action->ctrls.flags, false) : "",
                   suffix);
         break;
 
