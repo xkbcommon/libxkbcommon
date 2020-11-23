@@ -495,18 +495,19 @@ get_actions(struct xkb_keymap *keymap, xcb_connection_t *conn,
         FAIL_UNLESS((unsigned) syms_length == wire_sym_map->width * key->num_groups);
         FAIL_UNLESS(wire_count == 0 || wire_count == syms_length);
 
-        for (xkb_layout_index_t group = 0; group < key->num_groups; group++) {
-            for (xkb_level_index_t level = 0; level < wire_sym_map->width; level++) {
-                xcb_xkb_action_t *wire_action = acts_iter.data;
+        if (wire_count != 0) {
+            for (xkb_layout_index_t group = 0; group < key->num_groups; group++) {
+                for (xkb_level_index_t level = 0; level < wire_sym_map->width; level++) {
+                    xcb_xkb_action_t *wire_action = acts_iter.data;
 
-                if (level < key->groups[group].type->num_levels) {
-                    union xkb_action *action =
-                        &key->groups[group].levels[level].action;
+                    if (level < key->groups[group].type->num_levels) {
+                        union xkb_action *action = &key->groups[group].levels[level].action;
 
-                    translate_action(action, wire_action);
+                        translate_action(action, wire_action);
+                    }
+
+                    xcb_xkb_action_next(&acts_iter);
                 }
-
-                xcb_xkb_action_next(&acts_iter);
             }
         }
 
