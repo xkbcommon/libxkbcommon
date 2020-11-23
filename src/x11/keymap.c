@@ -888,6 +888,7 @@ get_type_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
                          wire_num_levels))
             goto fail;
 
+        type->num_level_names = type->num_levels;
         kt_level_names_iter += wire_num_levels;
         key_type_names_iter++;
         n_levels_per_type_iter++;
