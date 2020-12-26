@@ -351,6 +351,8 @@ satisfied the LED is lit.
 
 ## The `xkb_symbols` section
 
+NOTE: This section is incomplete.
+
 This section is the fourth to be processed, after `xkb_keycodes`, `xkb_types`
 and `xkb_compat`.
 
@@ -360,21 +362,23 @@ Statements of the form:
         ...
     }
 
-Declares a symbols map named `basic`. Statements inside the curly braces will
-affect only affect the symbol map.
+Declare a symbols map named `basic`. Statements inside the curly braces will
+affect only affect the symbols map.
 
-Options can be specified above the statement, separated by one space:
+A map can have various flags applied to it above the statement, separated by
+whitespace:
 
     partial alphanumeric_keys
     xkb_symbols "basic" {
         ...
     }
 
-The possible options are the following:
+The possible flags are the following:
 
   * `partial` - Indicates that the map doesn't cover a complete keyboard
-  * `default` - Marks the symbol map as the default variant when no variant is
-    specified
+  * `default` - Marks the symbol map as the default map in the file when no
+  explicit map is specified. If no map is marked as a default, the first map in
+  the file is the default.
   * `hidden` - Variant that can only be used internally
   * `alphanumeric_keys` - Indicates that the map contains alphanumeric keys
   * `modifier_keys` - Indicates that the map contains modifier keys
@@ -383,18 +387,25 @@ The possible options are the following:
   * `alternate_group` - Indicates that the map contains keys for an alternate
     group
 
-If no `*_keys` options is supplied, then the map is assumed to cover a complete
+If no `*_keys` flags are supplied, then the map is assumed to cover a complete
 keyboard.
+
+At present, except for `default`, none of the flags affect key processing in
+libxkbcommon, and only serve as metadata.
 
 ### Name statements
 
 Statements of the form:
 
     name[Group1] = "US/ASCII";
+    groupName[1] = "US/ASCII";
 
 Gives the name "US/ASCII" to the first group of symbols. Other groups can be
 named using a different group index (ex: `Group2`), and with a different name.
 A group must be named.
+
+`group` and `groupName` mean the same thing, and the `Group` in `Group1` is
+optional.
 
 ### Include statements
 
@@ -402,10 +413,10 @@ Statements of the form:
 
     include "nokia_vndr/rx-51(nordic_base)
 
-Will include data from another `xkb_symbols` section, located in another file.
-Here it would include the `xkb_symbols` section called `nordic_base`, from the
-file `rx-51` located in the `nokia_vndr` folder, itself located in the
-`/usr/share/X11` folder.
+Will include data from another `xkb_symbols` section, possibly located in
+another file. Here it would include the `xkb_symbols` section called
+`nordic_base`, from the file `rx-51` located in the `nokia_vndr` folder, itself
+located in an XKB include path.
 
 ### Key statement
 
@@ -418,9 +429,10 @@ symbols are `q` and `Q` in this example.
 
 The possible keycodes are the keycodes defined in the `xkb_keycodes` section.
 
-Symbols are named using the symbolic names from the `keysymdef.h` file. A group
-of symbols is enclosed in brackets and separated by commas. Each element of the
-symbol arrays corresponds to a different modifier level.
+Symbols are named using the symbolic names from the
+`xkbcommon/xkbcommon-keysyms.h` file. A group of symbols is enclosed in brackets
+and separated by commas. Each element of the symbol arrays corresponds to a
+different modifier level.
 
 #### Groups
 
@@ -440,7 +452,7 @@ The long-form syntax can also be used to represent groups:
     };
 
 Groups can also be omitted, but the brackets must be present. The following
-statement will only defines the Group3 of a mapping
+statement only defines the Group3 of a mapping:
 
     key <AD01> { [], [], [ q, Q ] };
 
