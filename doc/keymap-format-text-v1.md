@@ -351,7 +351,7 @@ satisfied the LED is lit.
 
 ## The `xkb_symbols` section
 
-NOTE: This section is incomplete.
+NOTE: The documentation of this section is incomplete.
 
 This section is the fourth to be processed, after `xkb_keycodes`, `xkb_types`
 and `xkb_compat`.
@@ -362,8 +362,8 @@ Statements of the form:
         ...
     }
 
-Declare a symbols map named `basic`. Statements inside the curly braces will
-affect only affect the symbols map.
+Declare a symbols map named `basic`. Statements inside the curly braces only
+affect the symbols map.
 
 A map can have various flags applied to it above the statement, separated by
 whitespace:
@@ -373,12 +373,12 @@ whitespace:
         ...
     }
 
-The possible flags are the following:
+The possible flags are:
 
-  * `partial` - Indicates that the map doesn't cover a complete keyboard
+  * `partial` - Indicates that the map doesn't cover a complete keyboard.
   * `default` - Marks the symbol map as the default map in the file when no
-  explicit map is specified. If no map is marked as a default, the first map in
-  the file is the default.
+    explicit map is specified. If no map is marked as a default, the first map
+    in the file is the default.
   * `hidden` - Variant that can only be used internally
   * `alphanumeric_keys` - Indicates that the map contains alphanumeric keys
   * `modifier_keys` - Indicates that the map contains modifier keys
@@ -425,14 +425,13 @@ Statements of the form:
     key <AD01> { [ q, Q ] };
 
 Describes the mapping of a keycode `<AD01>` to a given group of symbols. The
-symbols are `q` and `Q` in this example.
-
-The possible keycodes are the keycodes defined in the `xkb_keycodes` section.
+possible keycodes are the keycodes defined in the `xkb_keycodes` section.
 
 Symbols are named using the symbolic names from the
 `xkbcommon/xkbcommon-keysyms.h` file. A group of symbols is enclosed in brackets
 and separated by commas. Each element of the symbol arrays corresponds to a
-different modifier level.
+different modifier level. In this example, the symbol (keysym) `XKB_KEY_q` for
+level 1 and `XKB_KEY_Q` for level 2.
 
 #### Groups
 
@@ -444,7 +443,7 @@ Each group represents a list of symbols mapped to a keycode:
     key <AD01> { [ q, Q ],
                  [ Cyrillic_shorti, Cyrillic_SHORTI ] };
 
-The long-form syntax can also be used to represent groups:
+A long-form syntax can also be used:
 
     key <AD01> {
         symbols[Group1]= [ q, Q ],
@@ -465,4 +464,3 @@ Statements of the form:
 Can appear in the `xkb_types`, `xkb_compat`, `xkb_symbols` sections.
 
 TODO
-
