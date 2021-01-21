@@ -261,7 +261,7 @@ class TestXkbcli(unittest.TestCase):
     def test_interactive_evdev_rmlvo(self):
         for rmlvo in rmlvos:
             with self.subTest(rmlvo=rmlvo):
-                self.xkbcli_interactive_evdev.run_command_success(rmlvos)
+                self.xkbcli_interactive_evdev.run_command_success(rmlvo)
 
     def test_interactive_evdev(self):
         # Note: --enable-compose fails if $prefix doesn't have the compose tables
