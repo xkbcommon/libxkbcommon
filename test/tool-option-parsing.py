@@ -31,8 +31,19 @@ import tempfile
 import unittest
 
 
-top_builddir = os.environ['top_builddir']
-top_srcdir = os.environ['top_srcdir']
+try:
+    top_builddir = os.environ['top_builddir']
+    top_srcdir = os.environ['top_srcdir']
+except KeyError:
+    print('Required environment variables not found: top_srcdir/top_builddir', file=sys.stderr)
+    from pathlib import Path
+    top_srcdir = '.'
+    try:
+        top_builddir = next(Path('.').glob('**/meson-logs/')).parent
+    except StopIteration:
+        sys.exit(1)
+    print('Using srcdir "{}", builddir "{}"'.format(top_srcdir, top_builddir), file=sys.stderr)
+
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger('test')
