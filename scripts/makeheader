@@ -3,6 +3,9 @@ from __future__ import print_function
 import re
 import os
 
+# expected format:
+# #define XF86XK_FooBar _EVDEVK(0x123) /* some optional comment */
+evdev_pattern = re.compile(r'^#define\s+XF86XK_(?P<name>\w+)\s+_EVDEVK\((?P<value>0x[0-9A-Fa-f]+)\)')
 
 prefix = os.environ.get('X11_HEADERS_PREFIX', '/usr')
 HEADERS = [
@@ -34,6 +37,14 @@ for path in HEADERS:
             # it's not already defined.
             if 'XK_Ydiaeresis' in line and '0x100000ee' in line:
                 continue
+
+            # Replace the xorgproto _EVDEVK macro with the actual value
+            # 0x10081000 is the base, the evdev hex code is added to that.
+            # We replace to make parsing of the keys later easier.
+            match = re.match(evdev_pattern, line)
+            if match:
+                value = 0x10081000 + int(match.group('value'), 16)
+                line = re.sub(r'_EVDEVK\(0x([0-9A-Fa-f]+)\)', '{:#x}'.format(value), line)
 
             line = re.sub(r'#define\s*(\w*)XK_', r'#define XKB_KEY_\1', line)
 
