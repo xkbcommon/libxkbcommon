@@ -93,8 +93,8 @@ SOFTWARE.
  * Mnemonic names for keysyms are defined in this file with lines
  * that match one of these Perl regular expressions:
  *
- *    /^\#define XKB_KEY_([a-zA-Z_0-9]+)\s+0x([0-9a-f]+)\s*\/\* U+([0-9A-F]{4,6}) (.*) \*\/\s*$/
- *    /^\#define XKB_KEY_([a-zA-Z_0-9]+)\s+0x([0-9a-f]+)\s*\/\*\(U+([0-9A-F]{4,6}) (.*)\)\*\/\s*$/
+ *    /^\#define XKB_KEY_([a-zA-Z_0-9]+)\s+0x([0-9a-f]+)\s*\/\* U\+([0-9A-F]{4,6}) (.*) \*\/\s*$/
+ *    /^\#define XKB_KEY_([a-zA-Z_0-9]+)\s+0x([0-9a-f]+)\s*\/\*\(U\+([0-9A-F]{4,6}) (.*)\)\*\/\s*$/
  *    /^\#define XKB_KEY_([a-zA-Z_0-9]+)\s+0x([0-9a-f]+)\s*(\/\*\s*(.*)\s*\*\/)?\s*$/
  *
  * Before adding new keysyms, please do consider the following: In
@@ -2897,7 +2897,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 HEWLETT-PACKARD MAKES NO WARRANTY OF ANY KIND WITH REGARD
-TO THIS SOFWARE, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+TO THIS SOFTWARE, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
 PURPOSE.  Hewlett-Packard shall not be liable for errors
 contained herein or direct, indirect, special, incidental or
