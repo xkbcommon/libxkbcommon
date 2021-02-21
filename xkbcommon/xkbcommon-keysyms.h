@@ -1431,9 +1431,9 @@ SOFTWARE.
 #define XKB_KEY_fivesixths                    0x0ab7  /* U+215A VULGAR FRACTION FIVE SIXTHS */
 #define XKB_KEY_careof                        0x0ab8  /* U+2105 CARE OF */
 #define XKB_KEY_figdash                       0x0abb  /* U+2012 FIGURE DASH */
-#define XKB_KEY_leftanglebracket              0x0abc  /*(U+27E8 MATHEMATICAL LEFT ANGLE BRACKET)*/
+#define XKB_KEY_leftanglebracket              0x0abc  /*(U+2329 LEFT-POINTING ANGLE BRACKET)*/
 #define XKB_KEY_decimalpoint                  0x0abd  /*(U+002E FULL STOP)*/
-#define XKB_KEY_rightanglebracket             0x0abe  /*(U+27E9 MATHEMATICAL RIGHT ANGLE BRACKET)*/
+#define XKB_KEY_rightanglebracket             0x0abe  /*(U+232A RIGHT-POINTING ANGLE BRACKET)*/
 #define XKB_KEY_marker                        0x0abf
 #define XKB_KEY_oneeighth                     0x0ac3  /* U+215B VULGAR FRACTION ONE EIGHTH */
 #define XKB_KEY_threeeighths                  0x0ac4  /* U+215C VULGAR FRACTION THREE EIGHTHS */
@@ -1678,106 +1678,106 @@ SOFTWARE.
 #define XKB_KEY_Hangul_switch                 0xff7e  /* Alias for mode_switch */
 
 /* Hangul Consonant Characters */
-#define XKB_KEY_Hangul_Kiyeog                 0x0ea1
-#define XKB_KEY_Hangul_SsangKiyeog            0x0ea2
-#define XKB_KEY_Hangul_KiyeogSios             0x0ea3
-#define XKB_KEY_Hangul_Nieun                  0x0ea4
-#define XKB_KEY_Hangul_NieunJieuj             0x0ea5
-#define XKB_KEY_Hangul_NieunHieuh             0x0ea6
-#define XKB_KEY_Hangul_Dikeud                 0x0ea7
-#define XKB_KEY_Hangul_SsangDikeud            0x0ea8
-#define XKB_KEY_Hangul_Rieul                  0x0ea9
-#define XKB_KEY_Hangul_RieulKiyeog            0x0eaa
-#define XKB_KEY_Hangul_RieulMieum             0x0eab
-#define XKB_KEY_Hangul_RieulPieub             0x0eac
-#define XKB_KEY_Hangul_RieulSios              0x0ead
-#define XKB_KEY_Hangul_RieulTieut             0x0eae
-#define XKB_KEY_Hangul_RieulPhieuf            0x0eaf
-#define XKB_KEY_Hangul_RieulHieuh             0x0eb0
-#define XKB_KEY_Hangul_Mieum                  0x0eb1
-#define XKB_KEY_Hangul_Pieub                  0x0eb2
-#define XKB_KEY_Hangul_SsangPieub             0x0eb3
-#define XKB_KEY_Hangul_PieubSios              0x0eb4
-#define XKB_KEY_Hangul_Sios                   0x0eb5
-#define XKB_KEY_Hangul_SsangSios              0x0eb6
-#define XKB_KEY_Hangul_Ieung                  0x0eb7
-#define XKB_KEY_Hangul_Jieuj                  0x0eb8
-#define XKB_KEY_Hangul_SsangJieuj             0x0eb9
-#define XKB_KEY_Hangul_Cieuc                  0x0eba
-#define XKB_KEY_Hangul_Khieuq                 0x0ebb
-#define XKB_KEY_Hangul_Tieut                  0x0ebc
-#define XKB_KEY_Hangul_Phieuf                 0x0ebd
-#define XKB_KEY_Hangul_Hieuh                  0x0ebe
+#define XKB_KEY_Hangul_Kiyeog                 0x0ea1  /* U+3131 HANGUL LETTER KIYEOK */
+#define XKB_KEY_Hangul_SsangKiyeog            0x0ea2  /* U+3132 HANGUL LETTER SSANGKIYEOK */
+#define XKB_KEY_Hangul_KiyeogSios             0x0ea3  /* U+3133 HANGUL LETTER KIYEOK-SIOS */
+#define XKB_KEY_Hangul_Nieun                  0x0ea4  /* U+3134 HANGUL LETTER NIEUN */
+#define XKB_KEY_Hangul_NieunJieuj             0x0ea5  /* U+3135 HANGUL LETTER NIEUN-CIEUC */
+#define XKB_KEY_Hangul_NieunHieuh             0x0ea6  /* U+3136 HANGUL LETTER NIEUN-HIEUH */
+#define XKB_KEY_Hangul_Dikeud                 0x0ea7  /* U+3137 HANGUL LETTER TIKEUT */
+#define XKB_KEY_Hangul_SsangDikeud            0x0ea8  /* U+3138 HANGUL LETTER SSANGTIKEUT */
+#define XKB_KEY_Hangul_Rieul                  0x0ea9  /* U+3139 HANGUL LETTER RIEUL */
+#define XKB_KEY_Hangul_RieulKiyeog            0x0eaa  /* U+313A HANGUL LETTER RIEUL-KIYEOK */
+#define XKB_KEY_Hangul_RieulMieum             0x0eab  /* U+313B HANGUL LETTER RIEUL-MIEUM */
+#define XKB_KEY_Hangul_RieulPieub             0x0eac  /* U+313C HANGUL LETTER RIEUL-PIEUP */
+#define XKB_KEY_Hangul_RieulSios              0x0ead  /* U+313D HANGUL LETTER RIEUL-SIOS */
+#define XKB_KEY_Hangul_RieulTieut             0x0eae  /* U+313E HANGUL LETTER RIEUL-THIEUTH */
+#define XKB_KEY_Hangul_RieulPhieuf            0x0eaf  /* U+313F HANGUL LETTER RIEUL-PHIEUPH */
+#define XKB_KEY_Hangul_RieulHieuh             0x0eb0  /* U+3140 HANGUL LETTER RIEUL-HIEUH */
+#define XKB_KEY_Hangul_Mieum                  0x0eb1  /* U+3141 HANGUL LETTER MIEUM */
+#define XKB_KEY_Hangul_Pieub                  0x0eb2  /* U+3142 HANGUL LETTER PIEUP */
+#define XKB_KEY_Hangul_SsangPieub             0x0eb3  /* U+3143 HANGUL LETTER SSANGPIEUP */
+#define XKB_KEY_Hangul_PieubSios              0x0eb4  /* U+3144 HANGUL LETTER PIEUP-SIOS */
+#define XKB_KEY_Hangul_Sios                   0x0eb5  /* U+3145 HANGUL LETTER SIOS */
+#define XKB_KEY_Hangul_SsangSios              0x0eb6  /* U+3146 HANGUL LETTER SSANGSIOS */
+#define XKB_KEY_Hangul_Ieung                  0x0eb7  /* U+3147 HANGUL LETTER IEUNG */
+#define XKB_KEY_Hangul_Jieuj                  0x0eb8  /* U+3148 HANGUL LETTER CIEUC */
+#define XKB_KEY_Hangul_SsangJieuj             0x0eb9  /* U+3149 HANGUL LETTER SSANGCIEUC */
+#define XKB_KEY_Hangul_Cieuc                  0x0eba  /* U+314A HANGUL LETTER CHIEUCH */
+#define XKB_KEY_Hangul_Khieuq                 0x0ebb  /* U+314B HANGUL LETTER KHIEUKH */
+#define XKB_KEY_Hangul_Tieut                  0x0ebc  /* U+314C HANGUL LETTER THIEUTH */
+#define XKB_KEY_Hangul_Phieuf                 0x0ebd  /* U+314D HANGUL LETTER PHIEUPH */
+#define XKB_KEY_Hangul_Hieuh                  0x0ebe  /* U+314E HANGUL LETTER HIEUH */
 
 /* Hangul Vowel Characters */
-#define XKB_KEY_Hangul_A                      0x0ebf
-#define XKB_KEY_Hangul_AE                     0x0ec0
-#define XKB_KEY_Hangul_YA                     0x0ec1
-#define XKB_KEY_Hangul_YAE                    0x0ec2
-#define XKB_KEY_Hangul_EO                     0x0ec3
-#define XKB_KEY_Hangul_E                      0x0ec4
-#define XKB_KEY_Hangul_YEO                    0x0ec5
-#define XKB_KEY_Hangul_YE                     0x0ec6
-#define XKB_KEY_Hangul_O                      0x0ec7
-#define XKB_KEY_Hangul_WA                     0x0ec8
-#define XKB_KEY_Hangul_WAE                    0x0ec9
-#define XKB_KEY_Hangul_OE                     0x0eca
-#define XKB_KEY_Hangul_YO                     0x0ecb
-#define XKB_KEY_Hangul_U                      0x0ecc
-#define XKB_KEY_Hangul_WEO                    0x0ecd
-#define XKB_KEY_Hangul_WE                     0x0ece
-#define XKB_KEY_Hangul_WI                     0x0ecf
-#define XKB_KEY_Hangul_YU                     0x0ed0
-#define XKB_KEY_Hangul_EU                     0x0ed1
-#define XKB_KEY_Hangul_YI                     0x0ed2
-#define XKB_KEY_Hangul_I                      0x0ed3
+#define XKB_KEY_Hangul_A                      0x0ebf  /* U+314F HANGUL LETTER A */
+#define XKB_KEY_Hangul_AE                     0x0ec0  /* U+3150 HANGUL LETTER AE */
+#define XKB_KEY_Hangul_YA                     0x0ec1  /* U+3151 HANGUL LETTER YA */
+#define XKB_KEY_Hangul_YAE                    0x0ec2  /* U+3152 HANGUL LETTER YAE */
+#define XKB_KEY_Hangul_EO                     0x0ec3  /* U+3153 HANGUL LETTER EO */
+#define XKB_KEY_Hangul_E                      0x0ec4  /* U+3154 HANGUL LETTER E */
+#define XKB_KEY_Hangul_YEO                    0x0ec5  /* U+3155 HANGUL LETTER YEO */
+#define XKB_KEY_Hangul_YE                     0x0ec6  /* U+3156 HANGUL LETTER YE */
+#define XKB_KEY_Hangul_O                      0x0ec7  /* U+3157 HANGUL LETTER O */
+#define XKB_KEY_Hangul_WA                     0x0ec8  /* U+3158 HANGUL LETTER WA */
+#define XKB_KEY_Hangul_WAE                    0x0ec9  /* U+3159 HANGUL LETTER WAE */
+#define XKB_KEY_Hangul_OE                     0x0eca  /* U+315A HANGUL LETTER OE */
+#define XKB_KEY_Hangul_YO                     0x0ecb  /* U+315B HANGUL LETTER YO */
+#define XKB_KEY_Hangul_U                      0x0ecc  /* U+315C HANGUL LETTER U */
+#define XKB_KEY_Hangul_WEO                    0x0ecd  /* U+315D HANGUL LETTER WEO */
+#define XKB_KEY_Hangul_WE                     0x0ece  /* U+315E HANGUL LETTER WE */
+#define XKB_KEY_Hangul_WI                     0x0ecf  /* U+315F HANGUL LETTER WI */
+#define XKB_KEY_Hangul_YU                     0x0ed0  /* U+3160 HANGUL LETTER YU */
+#define XKB_KEY_Hangul_EU                     0x0ed1  /* U+3161 HANGUL LETTER EU */
+#define XKB_KEY_Hangul_YI                     0x0ed2  /* U+3162 HANGUL LETTER YI */
+#define XKB_KEY_Hangul_I                      0x0ed3  /* U+3163 HANGUL LETTER I */
 
 /* Hangul syllable-final (JongSeong) Characters */
-#define XKB_KEY_Hangul_J_Kiyeog               0x0ed4
-#define XKB_KEY_Hangul_J_SsangKiyeog          0x0ed5
-#define XKB_KEY_Hangul_J_KiyeogSios           0x0ed6
-#define XKB_KEY_Hangul_J_Nieun                0x0ed7
-#define XKB_KEY_Hangul_J_NieunJieuj           0x0ed8
-#define XKB_KEY_Hangul_J_NieunHieuh           0x0ed9
-#define XKB_KEY_Hangul_J_Dikeud               0x0eda
-#define XKB_KEY_Hangul_J_Rieul                0x0edb
-#define XKB_KEY_Hangul_J_RieulKiyeog          0x0edc
-#define XKB_KEY_Hangul_J_RieulMieum           0x0edd
-#define XKB_KEY_Hangul_J_RieulPieub           0x0ede
-#define XKB_KEY_Hangul_J_RieulSios            0x0edf
-#define XKB_KEY_Hangul_J_RieulTieut           0x0ee0
-#define XKB_KEY_Hangul_J_RieulPhieuf          0x0ee1
-#define XKB_KEY_Hangul_J_RieulHieuh           0x0ee2
-#define XKB_KEY_Hangul_J_Mieum                0x0ee3
-#define XKB_KEY_Hangul_J_Pieub                0x0ee4
-#define XKB_KEY_Hangul_J_PieubSios            0x0ee5
-#define XKB_KEY_Hangul_J_Sios                 0x0ee6
-#define XKB_KEY_Hangul_J_SsangSios            0x0ee7
-#define XKB_KEY_Hangul_J_Ieung                0x0ee8
-#define XKB_KEY_Hangul_J_Jieuj                0x0ee9
-#define XKB_KEY_Hangul_J_Cieuc                0x0eea
-#define XKB_KEY_Hangul_J_Khieuq               0x0eeb
-#define XKB_KEY_Hangul_J_Tieut                0x0eec
-#define XKB_KEY_Hangul_J_Phieuf               0x0eed
-#define XKB_KEY_Hangul_J_Hieuh                0x0eee
+#define XKB_KEY_Hangul_J_Kiyeog               0x0ed4  /* U+11A8 HANGUL JONGSEONG KIYEOK */
+#define XKB_KEY_Hangul_J_SsangKiyeog          0x0ed5  /* U+11A9 HANGUL JONGSEONG SSANGKIYEOK */
+#define XKB_KEY_Hangul_J_KiyeogSios           0x0ed6  /* U+11AA HANGUL JONGSEONG KIYEOK-SIOS */
+#define XKB_KEY_Hangul_J_Nieun                0x0ed7  /* U+11AB HANGUL JONGSEONG NIEUN */
+#define XKB_KEY_Hangul_J_NieunJieuj           0x0ed8  /* U+11AC HANGUL JONGSEONG NIEUN-CIEUC */
+#define XKB_KEY_Hangul_J_NieunHieuh           0x0ed9  /* U+11AD HANGUL JONGSEONG NIEUN-HIEUH */
+#define XKB_KEY_Hangul_J_Dikeud               0x0eda  /* U+11AE HANGUL JONGSEONG TIKEUT */
+#define XKB_KEY_Hangul_J_Rieul                0x0edb  /* U+11AF HANGUL JONGSEONG RIEUL */
+#define XKB_KEY_Hangul_J_RieulKiyeog          0x0edc  /* U+11B0 HANGUL JONGSEONG RIEUL-KIYEOK */
+#define XKB_KEY_Hangul_J_RieulMieum           0x0edd  /* U+11B1 HANGUL JONGSEONG RIEUL-MIEUM */
+#define XKB_KEY_Hangul_J_RieulPieub           0x0ede  /* U+11B2 HANGUL JONGSEONG RIEUL-PIEUP */
+#define XKB_KEY_Hangul_J_RieulSios            0x0edf  /* U+11B3 HANGUL JONGSEONG RIEUL-SIOS */
+#define XKB_KEY_Hangul_J_RieulTieut           0x0ee0  /* U+11B4 HANGUL JONGSEONG RIEUL-THIEUTH */
+#define XKB_KEY_Hangul_J_RieulPhieuf          0x0ee1  /* U+11B5 HANGUL JONGSEONG RIEUL-PHIEUPH */
+#define XKB_KEY_Hangul_J_RieulHieuh           0x0ee2  /* U+11B6 HANGUL JONGSEONG RIEUL-HIEUH */
+#define XKB_KEY_Hangul_J_Mieum                0x0ee3  /* U+11B7 HANGUL JONGSEONG MIEUM */
+#define XKB_KEY_Hangul_J_Pieub                0x0ee4  /* U+11B8 HANGUL JONGSEONG PIEUP */
+#define XKB_KEY_Hangul_J_PieubSios            0x0ee5  /* U+11B9 HANGUL JONGSEONG PIEUP-SIOS */
+#define XKB_KEY_Hangul_J_Sios                 0x0ee6  /* U+11BA HANGUL JONGSEONG SIOS */
+#define XKB_KEY_Hangul_J_SsangSios            0x0ee7  /* U+11BB HANGUL JONGSEONG SSANGSIOS */
+#define XKB_KEY_Hangul_J_Ieung                0x0ee8  /* U+11BC HANGUL JONGSEONG IEUNG */
+#define XKB_KEY_Hangul_J_Jieuj                0x0ee9  /* U+11BD HANGUL JONGSEONG CIEUC */
+#define XKB_KEY_Hangul_J_Cieuc                0x0eea  /* U+11BE HANGUL JONGSEONG CHIEUCH */
+#define XKB_KEY_Hangul_J_Khieuq               0x0eeb  /* U+11BF HANGUL JONGSEONG KHIEUKH */
+#define XKB_KEY_Hangul_J_Tieut                0x0eec  /* U+11C0 HANGUL JONGSEONG THIEUTH */
+#define XKB_KEY_Hangul_J_Phieuf               0x0eed  /* U+11C1 HANGUL JONGSEONG PHIEUPH */
+#define XKB_KEY_Hangul_J_Hieuh                0x0eee  /* U+11C2 HANGUL JONGSEONG HIEUH */
 
 /* Ancient Hangul Consonant Characters */
-#define XKB_KEY_Hangul_RieulYeorinHieuh       0x0eef
-#define XKB_KEY_Hangul_SunkyeongeumMieum      0x0ef0
-#define XKB_KEY_Hangul_SunkyeongeumPieub      0x0ef1
-#define XKB_KEY_Hangul_PanSios                0x0ef2
-#define XKB_KEY_Hangul_KkogjiDalrinIeung      0x0ef3
-#define XKB_KEY_Hangul_SunkyeongeumPhieuf     0x0ef4
-#define XKB_KEY_Hangul_YeorinHieuh            0x0ef5
+#define XKB_KEY_Hangul_RieulYeorinHieuh       0x0eef  /* U+316D HANGUL LETTER RIEUL-YEORINHIEUH */
+#define XKB_KEY_Hangul_SunkyeongeumMieum      0x0ef0  /* U+3171 HANGUL LETTER KAPYEOUNMIEUM */
+#define XKB_KEY_Hangul_SunkyeongeumPieub      0x0ef1  /* U+3178 HANGUL LETTER KAPYEOUNPIEUP */
+#define XKB_KEY_Hangul_PanSios                0x0ef2  /* U+317F HANGUL LETTER PANSIOS */
+#define XKB_KEY_Hangul_KkogjiDalrinIeung      0x0ef3  /* U+3181 HANGUL LETTER YESIEUNG */
+#define XKB_KEY_Hangul_SunkyeongeumPhieuf     0x0ef4  /* U+3184 HANGUL LETTER KAPYEOUNPHIEUPH */
+#define XKB_KEY_Hangul_YeorinHieuh            0x0ef5  /* U+3186 HANGUL LETTER YEORINHIEUH */
 
 /* Ancient Hangul Vowel Characters */
-#define XKB_KEY_Hangul_AraeA                  0x0ef6
-#define XKB_KEY_Hangul_AraeAE                 0x0ef7
+#define XKB_KEY_Hangul_AraeA                  0x0ef6  /* U+318D HANGUL LETTER ARAEA */
+#define XKB_KEY_Hangul_AraeAE                 0x0ef7  /* U+318E HANGUL LETTER ARAEAE */
 
 /* Ancient Hangul syllable-final (JongSeong) Characters */
-#define XKB_KEY_Hangul_J_PanSios              0x0ef8
-#define XKB_KEY_Hangul_J_KkogjiDalrinIeung    0x0ef9
-#define XKB_KEY_Hangul_J_YeorinHieuh          0x0efa
+#define XKB_KEY_Hangul_J_PanSios              0x0ef8  /* U+11EB HANGUL JONGSEONG PANSIOS */
+#define XKB_KEY_Hangul_J_KkogjiDalrinIeung    0x0ef9  /* U+11F0 HANGUL JONGSEONG YESIEUNG */
+#define XKB_KEY_Hangul_J_YeorinHieuh          0x0efa  /* U+11F9 HANGUL JONGSEONG YEORINHIEUH */
 
 /* Korean currency symbol */
 #define XKB_KEY_Korean_Won                    0x0eff  /*(U+20A9 WON SIGN)*/
@@ -2044,6 +2044,11 @@ SOFTWARE.
 #define XKB_KEY_ohorn                      0x10001a1  /* U+01A1 LATIN SMALL LETTER O WITH HORN */
 #define XKB_KEY_Uhorn                      0x10001af  /* U+01AF LATIN CAPITAL LETTER U WITH HORN */
 #define XKB_KEY_uhorn                      0x10001b0  /* U+01B0 LATIN SMALL LETTER U WITH HORN */
+#define XKB_KEY_combining_tilde            0x1000303  /* U+0303 COMBINING TILDE */
+#define XKB_KEY_combining_grave            0x1000300  /* U+0300 COMBINING GRAVE ACCENT */
+#define XKB_KEY_combining_acute            0x1000301  /* U+0301 COMBINING ACUTE ACCENT */
+#define XKB_KEY_combining_hook             0x1000309  /* U+0309 COMBINING HOOK ABOVE */
+#define XKB_KEY_combining_belowdot         0x1000323  /* U+0323 COMBINING DOT BELOW */
 
 
 #define XKB_KEY_EcuSign                    0x10020a0  /* U+20A0 EURO-CURRENCY SIGN */
@@ -2451,8 +2456,10 @@ SOFTWARE.
  *
  * The XFree86 keysym range is 0x10080001 - 0x1008FFFF.
  *
- * X.Org will not be adding to the XF86 set of keysyms, though they have
- * been adopted and are considered a "standard" part of X keysym definitions.
+ * The XF86 set of keysyms is a catch-all set of defines for keysyms found
+ * on various multimedia keyboards. Originally specific to XFree86 they have
+ * been been adopted over time and are considered a "standard" part of X
+ * keysym definitions.
  * XFree86 never properly commented these keysyms, so we have done our
  * best to explain the semantic meaning of these keys.
  *
@@ -2678,6 +2685,238 @@ SOFTWARE.
 #define XKB_KEY_XF86Prev_VMode	0x1008FE23   /* prev. video mode available */
 #define XKB_KEY_XF86LogWindowTree	0x1008FE24   /* print window tree to log   */
 #define XKB_KEY_XF86LogGrabInfo	0x1008FE25   /* print all active grabs to log */
+
+
+/*
+ * Reserved range for evdev symbols: 0x10081000-0x10081FFF
+ *
+ * Key syms within this range must match the Linux kernel
+ * input-event-codes.h file in the format:
+ *     XF86XK_CamelCaseKernelName	_EVDEVK(kernel value)
+ * For example, the kernel
+ *   #define KEY_MACRO_RECORD_START	0x2b0
+ * effectively ends up as:
+ *   #define XKB_KEY_XF86MacroRecordStart	0x100812b0
+ *
+ * For historical reasons, some keysyms within the reserved range will be
+ * missing, most notably all "normal" keys that are mapped through default
+ * XKB layouts (e.g. KEY_Q).
+ *
+ * CamelCasing is done with a human control as last authority, e.g. see VOD
+ * instead of Vod for the Video on Demand key.
+ *
+ * The format for #defines is strict:
+ *
+ * #define XKB_KEY_XF86FOO<tab...>_EVDEVK(0xABC)<tab><tab> |* kver KEY_FOO *|
+ *
+ * Where
+ * - alignment by tabs
+ * - the _EVDEVK macro must be used
+ * - the hex code must be in uppercase hex
+ * - the kernel version (kver) is in the form v5.10
+ * - kver and key name are within a slash-star comment (a pipe is used in
+ *   this example for technical reasons)
+ * These #defines are parsed by scripts. Do not stray from the given format.
+ *
+ * Where the evdev keycode is mapped to a different symbol, please add a
+ * comment line starting with Use: but otherwise the same format, e.g.
+ *  Use: XF86XK_RotationLockToggle	_EVDEVK(0x231)		   v4.16 KEY_ROTATE_LOCK_TOGGLE
+ *
+ */
+/* Use: XF86XK_Eject			_EVDEVK(0x0A2)		         KEY_EJECTCLOSECD */
+/* Use: XF86XK_New			_EVDEVK(0x0B5)		   v2.6.14 KEY_NEW */
+/* Use: XK_Redo				_EVDEVK(0x0B6)		   v2.6.14 KEY_REDO */
+/* KEY_DASHBOARD has been mapped to LaunchB in xkeyboard-config since 2011 */
+/* Use: XF86XK_LaunchB			_EVDEVK(0x0CC)		   v2.6.28 KEY_DASHBOARD */
+/* Use: XF86XK_Display			_EVDEVK(0x0E3)		   v2.6.12 KEY_SWITCHVIDEOMODE */
+/* Use: XF86XK_KbdLightOnOff		_EVDEVK(0x0E4)		   v2.6.12 KEY_KBDILLUMTOGGLE */
+/* Use: XF86XK_KbdBrightnessDown	_EVDEVK(0x0E5)		   v2.6.12 KEY_KBDILLUMDOWN */
+/* Use: XF86XK_KbdBrightnessUp		_EVDEVK(0x0E6)		   v2.6.12 KEY_KBDILLUMUP */
+/* Use: XF86XK_Send			_EVDEVK(0x0E7)		   v2.6.14 KEY_SEND */
+/* Use: XF86XK_Reply			_EVDEVK(0x0E8)		   v2.6.14 KEY_REPLY */
+/* Use: XF86XK_MailForward		_EVDEVK(0x0E9)		   v2.6.14 KEY_FORWARDMAIL */
+/* Use: XF86XK_Save			_EVDEVK(0x0EA)		   v2.6.14 KEY_SAVE */
+/* Use: XF86XK_Documents		_EVDEVK(0x0EB)		   v2.6.14 KEY_DOCUMENTS */
+/* Use: XF86XK_Battery			_EVDEVK(0x0EC)		   v2.6.17 KEY_BATTERY */
+/* Use: XF86XK_Bluetooth		_EVDEVK(0x0ED)		   v2.6.19 KEY_BLUETOOTH */
+/* Use: XF86XK_WLAN			_EVDEVK(0x0EE)		   v2.6.19 KEY_WLAN */
+/* Use: XF86XK_UWB			_EVDEVK(0x0EF)		   v2.6.24 KEY_UWB */
+/* Use: XF86XK_Next_VMode		_EVDEVK(0x0F1)		   v2.6.23 KEY_VIDEO_NEXT */
+/* Use: XF86XK_Prev_VMode		_EVDEVK(0x0F2)		   v2.6.23 KEY_VIDEO_PREV */
+/* Use: XF86XK_MonBrightnessCycle	_EVDEVK(0x0F3)		   v2.6.23 KEY_BRIGHTNESS_CYCLE */
+#define XKB_KEY_XF86BrightnessAuto		0x100810f4		/* v3.16 KEY_BRIGHTNESS_AUTO */
+#define XKB_KEY_XF86DisplayOff		0x100810f5		/* v2.6.23 KEY_DISPLAY_OFF */
+/* Use: XF86XK_WWAN			_EVDEVK(0x0F6)		   v3.13 KEY_WWAN */
+/* Use: XF86XK_RFKill			_EVDEVK(0x0F7)		   v2.6.33 KEY_RFKILL */
+/* Use: XF86XK_AudioMicMute		_EVDEVK(0x0F8)		   v3.1  KEY_MICMUTE */
+#define XKB_KEY_XF86Info			0x10081166		/*       KEY_INFO */
+/* Use: XF86XK_CycleAngle		_EVDEVK(0x173)		         KEY_ANGLE */
+/* Use: XF86XK_FullScreen		_EVDEVK(0x174)		   v5.1  KEY_FULL_SCREEN */
+#define XKB_KEY_XF86AspectRatio		0x10081177		/* v5.1  KEY_ASPECT_RATIO */
+#define XKB_KEY_XF86DVD			0x10081185		/*       KEY_DVD */
+#define XKB_KEY_XF86Audio			0x10081188		/*       KEY_AUDIO */
+/* Use: XF86XK_Video			_EVDEVK(0x189)		         KEY_VIDEO */
+/* Use: XF86XK_Calendar			_EVDEVK(0x18D)		         KEY_CALENDAR */
+#define XKB_KEY_XF86ChannelUp		0x10081192		/*       KEY_CHANNELUP */
+#define XKB_KEY_XF86ChannelDown		0x10081193		/*       KEY_CHANNELDOWN */
+/* Use: XF86XK_AudioRandomPlay		_EVDEVK(0x19A)		         KEY_SHUFFLE */
+#define XKB_KEY_XF86Break			0x1008119b		/*       KEY_BREAK */
+#define XKB_KEY_XF86VideoPhone		0x100811a0		/* v2.6.20 KEY_VIDEOPHONE */
+/* Use: XF86XK_Game			_EVDEVK(0x1A1)		   v2.6.20 KEY_GAMES */
+/* Use: XF86XK_ZoomIn			_EVDEVK(0x1A2)		   v2.6.20 KEY_ZOOMIN */
+/* Use: XF86XK_ZoomOut			_EVDEVK(0x1A3)		   v2.6.20 KEY_ZOOMOUT */
+#define XKB_KEY_XF86ZoomReset		0x100811a4		/* v2.6.20 KEY_ZOOMRESET */
+/* Use: XF86XK_Word			_EVDEVK(0x1A5)		   v2.6.20 KEY_WORDPROCESSOR */
+#define XKB_KEY_XF86Editor			0x100811a6		/* v2.6.20 KEY_EDITOR */
+/* Use: XF86XK_Excel			_EVDEVK(0x1A7)		   v2.6.20 KEY_SPREADSHEET */
+#define XKB_KEY_XF86GraphicsEditor		0x100811a8		/* v2.6.20 KEY_GRAPHICSEDITOR */
+#define XKB_KEY_XF86Presentation		0x100811a9		/* v2.6.20 KEY_PRESENTATION */
+#define XKB_KEY_XF86Database			0x100811aa		/* v2.6.20 KEY_DATABASE */
+/* Use: XF86XK_News			_EVDEVK(0x1AB)		   v2.6.20 KEY_NEWS */
+#define XKB_KEY_XF86Voicemail		0x100811ac		/* v2.6.20 KEY_VOICEMAIL */
+#define XKB_KEY_XF86Addressbook		0x100811ad		/* v2.6.20 KEY_ADDRESSBOOK */
+/* Use: XF86XK_Messenger		_EVDEVK(0x1AE)		   v2.6.20 KEY_MESSENGER */
+#define XKB_KEY_XF86DisplayToggle		0x100811af		/* v2.6.20 KEY_DISPLAYTOGGLE */
+#define XKB_KEY_XF86SpellCheck		0x100811b0		/* v2.6.24 KEY_SPELLCHECK */
+/* Use: XF86XK_LogOff			_EVDEVK(0x1B1)		   v2.6.24 KEY_LOGOFF */
+/* Use: XK_dollar			_EVDEVK(0x1B2)		   v2.6.24 KEY_DOLLAR */
+/* Use: XK_EuroSign			_EVDEVK(0x1B3)		   v2.6.24 KEY_EURO */
+/* Use: XF86XK_FrameBack		_EVDEVK(0x1B4)		   v2.6.24 KEY_FRAMEBACK */
+/* Use: XF86XK_FrameForward		_EVDEVK(0x1B5)		   v2.6.24 KEY_FRAMEFORWARD */
+#define XKB_KEY_XF86ContextMenu		0x100811b6		/* v2.6.24 KEY_CONTEXT_MENU */
+#define XKB_KEY_XF86MediaRepeat		0x100811b7		/* v2.6.26 KEY_MEDIA_REPEAT */
+#define XKB_KEY_XF8610ChannelsUp		0x100811b8		/* v2.6.38 KEY_10CHANNELSUP */
+#define XKB_KEY_XF8610ChannelsDown		0x100811b9		/* v2.6.38 KEY_10CHANNELSDOWN */
+#define XKB_KEY_XF86Images			0x100811ba		/* v2.6.39 KEY_IMAGES */
+#define XKB_KEY_XF86NotificationCenter	0x100811bc		/* v5.10 KEY_NOTIFICATION_CENTER */
+#define XKB_KEY_XF86PickupPhone		0x100811bd		/* v5.10 KEY_PICKUP_PHONE */
+#define XKB_KEY_XF86HangupPhone		0x100811be		/* v5.10 KEY_HANGUP_PHONE */
+#define XKB_KEY_XF86Fn			0x100811d0		/*       KEY_FN */
+#define XKB_KEY_XF86Fn_Esc			0x100811d1		/*       KEY_FN_ESC */
+#define XKB_KEY_XF86FnRightShift		0x100811e5		/* v5.10 KEY_FN_RIGHT_SHIFT */
+/* Use: XK_braille_dot_1		_EVDEVK(0x1F1)		   v2.6.17 KEY_BRL_DOT1 */
+/* Use: XK_braille_dot_2		_EVDEVK(0x1F2)		   v2.6.17 KEY_BRL_DOT2 */
+/* Use: XK_braille_dot_3		_EVDEVK(0x1F3)		   v2.6.17 KEY_BRL_DOT3 */
+/* Use: XK_braille_dot_4		_EVDEVK(0x1F4)		   v2.6.17 KEY_BRL_DOT4 */
+/* Use: XK_braille_dot_5		_EVDEVK(0x1F5)		   v2.6.17 KEY_BRL_DOT5 */
+/* Use: XK_braille_dot_6		_EVDEVK(0x1F6)		   v2.6.17 KEY_BRL_DOT6 */
+/* Use: XK_braille_dot_7		_EVDEVK(0x1F7)		   v2.6.17 KEY_BRL_DOT7 */
+/* Use: XK_braille_dot_8		_EVDEVK(0x1F8)		   v2.6.17 KEY_BRL_DOT8 */
+/* Use: XK_braille_dot_9		_EVDEVK(0x1F9)		   v2.6.23 KEY_BRL_DOT9 */
+/* Use: XK_braille_dot_1		_EVDEVK(0x1FA)		   v2.6.23 KEY_BRL_DOT10 */
+#define XKB_KEY_XF86Numeric0			0x10081200		/* v2.6.28 KEY_NUMERIC_0 */
+#define XKB_KEY_XF86Numeric1			0x10081201		/* v2.6.28 KEY_NUMERIC_1 */
+#define XKB_KEY_XF86Numeric2			0x10081202		/* v2.6.28 KEY_NUMERIC_2 */
+#define XKB_KEY_XF86Numeric3			0x10081203		/* v2.6.28 KEY_NUMERIC_3 */
+#define XKB_KEY_XF86Numeric4			0x10081204		/* v2.6.28 KEY_NUMERIC_4 */
+#define XKB_KEY_XF86Numeric5			0x10081205		/* v2.6.28 KEY_NUMERIC_5 */
+#define XKB_KEY_XF86Numeric6			0x10081206		/* v2.6.28 KEY_NUMERIC_6 */
+#define XKB_KEY_XF86Numeric7			0x10081207		/* v2.6.28 KEY_NUMERIC_7 */
+#define XKB_KEY_XF86Numeric8			0x10081208		/* v2.6.28 KEY_NUMERIC_8 */
+#define XKB_KEY_XF86Numeric9			0x10081209		/* v2.6.28 KEY_NUMERIC_9 */
+#define XKB_KEY_XF86NumericStar		0x1008120a		/* v2.6.28 KEY_NUMERIC_STAR */
+#define XKB_KEY_XF86NumericPound		0x1008120b		/* v2.6.28 KEY_NUMERIC_POUND */
+#define XKB_KEY_XF86NumericA			0x1008120c		/* v4.1  KEY_NUMERIC_A */
+#define XKB_KEY_XF86NumericB			0x1008120d		/* v4.1  KEY_NUMERIC_B */
+#define XKB_KEY_XF86NumericC			0x1008120e		/* v4.1  KEY_NUMERIC_C */
+#define XKB_KEY_XF86NumericD			0x1008120f		/* v4.1  KEY_NUMERIC_D */
+#define XKB_KEY_XF86CameraFocus		0x10081210		/* v2.6.33 KEY_CAMERA_FOCUS */
+#define XKB_KEY_XF86WPSButton		0x10081211		/* v2.6.34 KEY_WPS_BUTTON */
+/* Use: XF86XK_TouchpadToggle		_EVDEVK(0x212)		   v2.6.37 KEY_TOUCHPAD_TOGGLE */
+/* Use: XF86XK_TouchpadOn		_EVDEVK(0x213)		   v2.6.37 KEY_TOUCHPAD_ON */
+/* Use: XF86XK_TouchpadOff		_EVDEVK(0x214)		   v2.6.37 KEY_TOUCHPAD_OFF */
+#define XKB_KEY_XF86CameraZoomIn		0x10081215		/* v2.6.39 KEY_CAMERA_ZOOMIN */
+#define XKB_KEY_XF86CameraZoomOut		0x10081216		/* v2.6.39 KEY_CAMERA_ZOOMOUT */
+#define XKB_KEY_XF86CameraUp			0x10081217		/* v2.6.39 KEY_CAMERA_UP */
+#define XKB_KEY_XF86CameraDown		0x10081218		/* v2.6.39 KEY_CAMERA_DOWN */
+#define XKB_KEY_XF86CameraLeft		0x10081219		/* v2.6.39 KEY_CAMERA_LEFT */
+#define XKB_KEY_XF86CameraRight		0x1008121a		/* v2.6.39 KEY_CAMERA_RIGHT */
+#define XKB_KEY_XF86AttendantOn		0x1008121b		/* v3.10 KEY_ATTENDANT_ON */
+#define XKB_KEY_XF86AttendantOff		0x1008121c		/* v3.10 KEY_ATTENDANT_OFF */
+#define XKB_KEY_XF86AttendantToggle		0x1008121d		/* v3.10 KEY_ATTENDANT_TOGGLE */
+#define XKB_KEY_XF86LightsToggle		0x1008121e		/* v3.10 KEY_LIGHTS_TOGGLE */
+#define XKB_KEY_XF86ALSToggle		0x10081230		/* v3.13 KEY_ALS_TOGGLE */
+/* Use: XF86XK_RotationLockToggle	_EVDEVK(0x231)		   v4.16 KEY_ROTATE_LOCK_TOGGLE */
+#define XKB_KEY_XF86Buttonconfig		0x10081240		/* v3.16 KEY_BUTTONCONFIG */
+#define XKB_KEY_XF86Taskmanager		0x10081241		/* v3.16 KEY_TASKMANAGER */
+#define XKB_KEY_XF86Journal			0x10081242		/* v3.16 KEY_JOURNAL */
+#define XKB_KEY_XF86ControlPanel		0x10081243		/* v3.16 KEY_CONTROLPANEL */
+#define XKB_KEY_XF86AppSelect		0x10081244		/* v3.16 KEY_APPSELECT */
+#define XKB_KEY_XF86Screensaver		0x10081245		/* v3.16 KEY_SCREENSAVER */
+#define XKB_KEY_XF86VoiceCommand		0x10081246		/* v3.16 KEY_VOICECOMMAND */
+#define XKB_KEY_XF86Assistant		0x10081247		/* v4.13 KEY_ASSISTANT */
+/* Use: XK_ISO_Next_Group		_EVDEVK(0x248)		   v5.2  KEY_KBD_LAYOUT_NEXT */
+#define XKB_KEY_XF86BrightnessMin		0x10081250		/* v3.16 KEY_BRIGHTNESS_MIN */
+#define XKB_KEY_XF86BrightnessMax		0x10081251		/* v3.16 KEY_BRIGHTNESS_MAX */
+#define XKB_KEY_XF86KbdInputAssistPrev	0x10081260		/* v3.18 KEY_KBDINPUTASSIST_PREV */
+#define XKB_KEY_XF86KbdInputAssistNext	0x10081261		/* v3.18 KEY_KBDINPUTASSIST_NEXT */
+#define XKB_KEY_XF86KbdInputAssistPrevgroup	0x10081262		/* v3.18 KEY_KBDINPUTASSIST_PREVGROUP */
+#define XKB_KEY_XF86KbdInputAssistNextgroup	0x10081263		/* v3.18 KEY_KBDINPUTASSIST_NEXTGROUP */
+#define XKB_KEY_XF86KbdInputAssistAccept	0x10081264		/* v3.18 KEY_KBDINPUTASSIST_ACCEPT */
+#define XKB_KEY_XF86KbdInputAssistCancel	0x10081265		/* v3.18 KEY_KBDINPUTASSIST_CANCEL */
+#define XKB_KEY_XF86RightUp			0x10081266		/* v4.7  KEY_RIGHT_UP */
+#define XKB_KEY_XF86RightDown		0x10081267		/* v4.7  KEY_RIGHT_DOWN */
+#define XKB_KEY_XF86LeftUp			0x10081268		/* v4.7  KEY_LEFT_UP */
+#define XKB_KEY_XF86LeftDown			0x10081269		/* v4.7  KEY_LEFT_DOWN */
+#define XKB_KEY_XF86RootMenu			0x1008126a		/* v4.7  KEY_ROOT_MENU */
+#define XKB_KEY_XF86MediaTopMenu		0x1008126b		/* v4.7  KEY_MEDIA_TOP_MENU */
+#define XKB_KEY_XF86Numeric11		0x1008126c		/* v4.7  KEY_NUMERIC_11 */
+#define XKB_KEY_XF86Numeric12		0x1008126d		/* v4.7  KEY_NUMERIC_12 */
+#define XKB_KEY_XF86AudioDesc		0x1008126e		/* v4.7  KEY_AUDIO_DESC */
+#define XKB_KEY_XF863DMode			0x1008126f		/* v4.7  KEY_3D_MODE */
+#define XKB_KEY_XF86NextFavorite		0x10081270		/* v4.7  KEY_NEXT_FAVORITE */
+#define XKB_KEY_XF86StopRecord		0x10081271		/* v4.7  KEY_STOP_RECORD */
+#define XKB_KEY_XF86PauseRecord		0x10081272		/* v4.7  KEY_PAUSE_RECORD */
+#define XKB_KEY_XF86VOD			0x10081273		/* v4.7  KEY_VOD */
+#define XKB_KEY_XF86Unmute			0x10081274		/* v4.7  KEY_UNMUTE */
+#define XKB_KEY_XF86FastReverse		0x10081275		/* v4.7  KEY_FASTREVERSE */
+#define XKB_KEY_XF86SlowReverse		0x10081276		/* v4.7  KEY_SLOWREVERSE */
+#define XKB_KEY_XF86Data			0x10081277		/* v4.7  KEY_DATA */
+#define XKB_KEY_XF86OnScreenKeyboard		0x10081278		/* v4.12 KEY_ONSCREEN_KEYBOARD */
+#define XKB_KEY_XF86PrivacyScreenToggle	0x10081279		/* v5.5  KEY_PRIVACY_SCREEN_TOGGLE */
+#define XKB_KEY_XF86SelectiveScreenshot	0x1008127a		/* v5.6  KEY_SELECTIVE_SCREENSHOT */
+#define XKB_KEY_XF86Macro1			0x10081290		/* v5.5  KEY_MACRO1 */
+#define XKB_KEY_XF86Macro2			0x10081291		/* v5.5  KEY_MACRO2 */
+#define XKB_KEY_XF86Macro3			0x10081292		/* v5.5  KEY_MACRO3 */
+#define XKB_KEY_XF86Macro4			0x10081293		/* v5.5  KEY_MACRO4 */
+#define XKB_KEY_XF86Macro5			0x10081294		/* v5.5  KEY_MACRO5 */
+#define XKB_KEY_XF86Macro6			0x10081295		/* v5.5  KEY_MACRO6 */
+#define XKB_KEY_XF86Macro7			0x10081296		/* v5.5  KEY_MACRO7 */
+#define XKB_KEY_XF86Macro8			0x10081297		/* v5.5  KEY_MACRO8 */
+#define XKB_KEY_XF86Macro9			0x10081298		/* v5.5  KEY_MACRO9 */
+#define XKB_KEY_XF86Macro10			0x10081299		/* v5.5  KEY_MACRO10 */
+#define XKB_KEY_XF86Macro11			0x1008129a		/* v5.5  KEY_MACRO11 */
+#define XKB_KEY_XF86Macro12			0x1008129b		/* v5.5  KEY_MACRO12 */
+#define XKB_KEY_XF86Macro13			0x1008129c		/* v5.5  KEY_MACRO13 */
+#define XKB_KEY_XF86Macro14			0x1008129d		/* v5.5  KEY_MACRO14 */
+#define XKB_KEY_XF86Macro15			0x1008129e		/* v5.5  KEY_MACRO15 */
+#define XKB_KEY_XF86Macro16			0x1008129f		/* v5.5  KEY_MACRO16 */
+#define XKB_KEY_XF86Macro17			0x100812a0		/* v5.5  KEY_MACRO17 */
+#define XKB_KEY_XF86Macro18			0x100812a1		/* v5.5  KEY_MACRO18 */
+#define XKB_KEY_XF86Macro19			0x100812a2		/* v5.5  KEY_MACRO19 */
+#define XKB_KEY_XF86Macro20			0x100812a3		/* v5.5  KEY_MACRO20 */
+#define XKB_KEY_XF86Macro21			0x100812a4		/* v5.5  KEY_MACRO21 */
+#define XKB_KEY_XF86Macro22			0x100812a5		/* v5.5  KEY_MACRO22 */
+#define XKB_KEY_XF86Macro23			0x100812a6		/* v5.5  KEY_MACRO23 */
+#define XKB_KEY_XF86Macro24			0x100812a7		/* v5.5  KEY_MACRO24 */
+#define XKB_KEY_XF86Macro25			0x100812a8		/* v5.5  KEY_MACRO25 */
+#define XKB_KEY_XF86Macro26			0x100812a9		/* v5.5  KEY_MACRO26 */
+#define XKB_KEY_XF86Macro27			0x100812aa		/* v5.5  KEY_MACRO27 */
+#define XKB_KEY_XF86Macro28			0x100812ab		/* v5.5  KEY_MACRO28 */
+#define XKB_KEY_XF86Macro29			0x100812ac		/* v5.5  KEY_MACRO29 */
+#define XKB_KEY_XF86Macro30			0x100812ad		/* v5.5  KEY_MACRO30 */
+#define XKB_KEY_XF86MacroRecordStart		0x100812b0		/* v5.5  KEY_MACRO_RECORD_START */
+#define XKB_KEY_XF86MacroRecordStop		0x100812b1		/* v5.5  KEY_MACRO_RECORD_STOP */
+#define XKB_KEY_XF86MacroPresetCycle		0x100812b2		/* v5.5  KEY_MACRO_PRESET_CYCLE */
+#define XKB_KEY_XF86MacroPreset1		0x100812b3		/* v5.5  KEY_MACRO_PRESET1 */
+#define XKB_KEY_XF86MacroPreset2		0x100812b4		/* v5.5  KEY_MACRO_PRESET2 */
+#define XKB_KEY_XF86MacroPreset3		0x100812b5		/* v5.5  KEY_MACRO_PRESET3 */
+#define XKB_KEY_XF86KbdLcdMenu1		0x100812b8		/* v5.5  KEY_KBD_LCD_MENU1 */
+#define XKB_KEY_XF86KbdLcdMenu2		0x100812b9		/* v5.5  KEY_KBD_LCD_MENU2 */
+#define XKB_KEY_XF86KbdLcdMenu3		0x100812ba		/* v5.5  KEY_KBD_LCD_MENU3 */
+#define XKB_KEY_XF86KbdLcdMenu4		0x100812bb		/* v5.5  KEY_KBD_LCD_MENU4 */
+#define XKB_KEY_XF86KbdLcdMenu5		0x100812bc		/* v5.5  KEY_KBD_LCD_MENU5 */
+#undef _EVDEVK
 /*
  * Copyright (c) 1991, Oracle and/or its affiliates. All rights reserved.
  *
