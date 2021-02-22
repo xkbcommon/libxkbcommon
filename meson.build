@@ -389,11 +389,11 @@ if build_tools
                dependencies: tools_dep, install: true)
     install_man('tools/xkbcli.1')
 
-    executable('xkbcli-compile-keymap',
-               'tools/compile-keymap.c',
-               dependencies: tools_dep,
-               install: true,
-               install_dir: dir_libexec)
+    xkbcli_compile_keymap = executable('xkbcli-compile-keymap',
+                                       'tools/compile-keymap.c',
+                                       dependencies: tools_dep,
+                                       install: true,
+                                       install_dir: dir_libexec)
     install_man('tools/xkbcli-compile-keymap.1')
     # The same tool again, but with access to some private APIs.
     executable('compile-keymap',
@@ -657,6 +657,22 @@ if build_tools
          find_program('test/tool-option-parsing.py'),
          env: test_env,
          suite: ['python-tests'])
+
+    # A set of keysyms to test for. Add one or two symbols to this array
+    # whenever the xorgproto gets updated to make sure we resolve them.
+    keysyms_to_test = [
+        'XF86Macro23',
+    ]
+
+    env = environment()
+    env.set('XKB_CONFIG_ROOT', meson.source_root()/'test'/'data')
+    foreach keysym: keysyms_to_test
+        test('keysym-test-@0@'.format(keysym),
+             find_program('test/test-keysym.py'),
+             env: env,
+             args: [keysym, '--tool', xkbcli_compile_keymap],
+             suite: ['python-tests'])
+    endforeach
 endif
 
 valgrind = find_program('valgrind', required: false)
