@@ -49,7 +49,7 @@ endif
 
 XKBCONFIGEXTRAPATH = get_option('xkb-config-extra-path')
 if XKBCONFIGEXTRAPATH == ''
-    XKBCONFIGEXTRAPATH = join_paths(get_option('prefix'), get_option('sysconfdir'), 'xkb')
+    XKBCONFIGEXTRAPATH = get_option('prefix')/get_option('sysconfdir')/'xkb'
 endif
 
 # The X locale directory for compose.
