@@ -614,8 +614,8 @@ static const struct codepair keysymtab[] = {
     { 0x0bd6, 0x222a }, /*                    downshoe ∪ UNION */
     { 0x0bd8, 0x2283 }, /*                   rightshoe ⊃ SUPERSET OF */
     { 0x0bda, 0x2282 }, /*                    leftshoe ⊂ SUBSET OF */
-    { 0x0bdc, 0x22a2 }, /*                    lefttack ⊢ RIGHT TACK */
-    { 0x0bfc, 0x22a3 }, /*                   righttack ⊣ LEFT TACK */
+    { 0x0bdc, 0x22a3 }, /*                    lefttack ⊣ LEFT TACK */
+    { 0x0bfc, 0x22a2 }, /*                   righttack ⊢ RIGHT TACK */
     { 0x0cdf, 0x2017 }, /*        hebrew_doublelowline ‗ DOUBLE LOW LINE */
     { 0x0ce0, 0x05d0 }, /*                hebrew_aleph א HEBREW LETTER ALEF */
     { 0x0ce1, 0x05d1 }, /*                  hebrew_bet ב HEBREW LETTER BET */
@@ -810,7 +810,7 @@ static const struct codepair keysymtab[] = {
     { 0x0ef0, 0x3171 }, /*    Hangul_SunkyeongeumMieum ㅱ HANGUL LETTER KAPYEOUNMIEUM */
     { 0x0ef1, 0x3178 }, /*    Hangul_SunkyeongeumPieub ㅸ HANGUL LETTER KAPYEOUNPIEUP */
     { 0x0ef2, 0x317f }, /*              Hangul_PanSios ㅿ HANGUL LETTER PANSIOS */
-/*  0x0ef3                  Hangul_KkogjiDalrinIeung ? ??? */
+    { 0x0ef3, 0x3181 }, /*    Hangul_KkogjiDalrinIeung ㆁ HANGUL LETTER YESIEUNG */
     { 0x0ef4, 0x3184 }, /*   Hangul_SunkyeongeumPhieuf ㆄ HANGUL LETTER KAPYEOUNPHIEUPH */
     { 0x0ef5, 0x3186 }, /*          Hangul_YeorinHieuh ㆆ HANGUL LETTER YEORINHIEUH */
     { 0x0ef6, 0x318d }, /*                Hangul_AraeA ㆍ HANGUL LETTER ARAEA */
