@@ -355,6 +355,9 @@ struct xkb_rule_names {
      * A comma separated list of variants, one per layout, which may
      * modify or augment the respective layout in various ways.
      *
+     * Generally, should either be empty or have the same number of values
+     * as the number of layouts. You may use empty values as in "intl,,neo".
+     *
      * If NULL or the empty string "", and a default value is also used
      * for the layout, a default value is used.  Otherwise no variant is
      * used.
