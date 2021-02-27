@@ -1,3 +1,22 @@
+libxkbcommon 1.1.0 - 2021-02-27
+==================
+
+- Publish the `xkb-format-text-v1.md` file in the HTML documentation. This file
+  existed for a long time but only in the Git repository.
+  Link: https://xkbcommon.org/doc/current/md_doc_keymap_format_text_v1.html
+
+- Add partial documentation for xkb_symbols to xkb-format-text-v1.md.
+
+  Contributed by Simon Zeni.
+
+- Update keysym definitions to latest xorgproto. In particular, this adds many
+  special keysyms corresponding to Linux evdev keycodes.
+
+  Contributed by Peter Hutterer <@who-t.net>.
+
+- New API:
+  Too many XKB_KEY_* definitions to list here.
+
 libxkbcommon 1.0.3 - 2020-11-23
 ==================
 
