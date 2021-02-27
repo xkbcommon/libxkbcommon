@@ -3,6 +3,12 @@
 This document describes the `XKB_KEYMAP_FORMAT_TEXT_V1` keymap format,
 as implemented by libxkbcommon.
 
+NOTE: This document is ever incomplete. Some additional resources are:
+
+- [Ivan Pascal's XKB documentation](https://web.archive.org/web/20190724015820/http://pascal.tsu.ru/en/xkb/)
+- [An Unreliable Guide to XKB Configuration](https://www.charvolant.org/doug/xkb/html/index.html)
+- [ArchWiki XKB page](https://wiki.archlinux.org/index.php/X_keyboard_extension)
+
 A keymap consists of a single top-level `xkb_keymap` block, underwhich
 are nested the following sections.
 
@@ -26,7 +32,7 @@ assign them the names `TLDE` and `AE01` respectively. The format
 `<WXYZ>` is always used to refer to a key by name.
 
 [The naming convention `<AE01>` just denotes the position of the key
-in the main alphanumric section of a standard QWERTY keyboard, with
+in the main alphanumeric section of a standard QWERTY keyboard, with
 the two letters specifying the row and the two digits specifying the
 column, from the bottom left.]
 
@@ -69,7 +75,7 @@ section and by the user.
 
 ## The `xkb_types` section
 
-This section is the second to be processesed, after `xkb_keycodes`.
+This section is the second to be processed, after `xkb_keycodes`.
 However, it is completely independent and could have been the first to
 be processed (it does not refer to specific keys as specified in the
 `xkb_keycodes` section).
@@ -299,7 +305,7 @@ statements:
 If the given modifiers are in the required state (see below), the
 LED is lit.
 
-#### `whichModState` statment
+#### `whichModState` statement
 
     whichModState = Latched+Locked;
 

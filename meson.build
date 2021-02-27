@@ -742,6 +742,7 @@ You can disable the documentation with -Denable-docs=false.''')
         'doc/compat.md',
         'doc/user-configuration.md',
         'doc/rules-format.md',
+        'doc/keymap-format-text-v1.md',
         'xkbcommon/xkbcommon.h',
         'xkbcommon/xkbcommon-names.h',
         'xkbcommon/xkbcommon-x11.h',
