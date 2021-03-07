@@ -29,9 +29,15 @@
 #include "keymap.h"
 #include "xkbcommon/xkbcommon-x11.h"
 
+/* Preparation for get_atom_name_reply() */
+void
+get_atom_name(xcb_connection_t *conn, xcb_atom_t atom,
+              xcb_get_atom_name_cookie_t *cookie);
+
 /* Get a strdup'd name of an X atom. */
 bool
-get_atom_name(xcb_connection_t *conn, xcb_atom_t atom, char **out);
+get_atom_name_reply(xcb_connection_t *conn, xcb_atom_t atom,
+                    xcb_get_atom_name_cookie_t cookie, char **out);
 
 struct x11_atom_interner {
     struct xkb_context *ctx;
