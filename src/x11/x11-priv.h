@@ -33,22 +33,44 @@
 bool
 get_atom_name(xcb_connection_t *conn, xcb_atom_t atom, char **out);
 
-/*
- * Make a xkb_atom_t's from X atoms (prefer to send as many as possible
- * at once, to avoid many roundtrips).
- *
- * TODO: We can make this more flexible, such that @to doesn't have to
- *       be sequential. Then we can convert most adopt_atom() calls to
- *       adopt_atoms().
- *       Atom caching would also likely be useful for avoiding quite a
- *       few requests.
- */
-bool
-adopt_atoms(struct xkb_context *ctx, xcb_connection_t *conn,
-            const xcb_atom_t *from, xkb_atom_t *to, size_t count);
+struct x11_atom_interner {
+    struct xkb_context *ctx;
+    xcb_connection_t *conn;
+    bool had_error;
+    /* Atoms for which we send a GetAtomName request */
+    struct {
+        xcb_atom_t from;
+        xkb_atom_t *out;
+        xcb_get_atom_name_cookie_t cookie;
+    } pending[128];
+    size_t num_pending;
+    /* Atoms which were already pending but queried again */
+    struct {
+        xcb_atom_t from;
+        xkb_atom_t *out;
+    } copies[128];
+    size_t num_copies;
+};
 
-bool
-adopt_atom(struct xkb_context *ctx, xcb_connection_t *conn, xcb_atom_t atom,
-           xkb_atom_t *out);
+void
+x11_atom_interner_init(struct x11_atom_interner *interner,
+                       struct xkb_context *ctx, xcb_connection_t *conn);
+
+void
+x11_atom_interner_round_trip(struct x11_atom_interner *interner);
+
+/*
+ * Make a xkb_atom_t's from X atoms. The actual write is delayed until the next
+ * call to x11_atom_interner_round_trip() or when too many atoms are pending.
+ */
+void
+x11_atom_interner_adopt_atom(struct x11_atom_interner *interner,
+                             const xcb_atom_t atom, xkb_atom_t *out);
+
+
+void
+x11_atom_interner_adopt_atoms(struct x11_atom_interner *interner,
+                              const xcb_atom_t *from, xkb_atom_t *to,
+                              size_t count);
 
 #endif
