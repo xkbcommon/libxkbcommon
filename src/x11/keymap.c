@@ -88,6 +88,14 @@
     }                                                                   \
 } while (0)
 
+static const xcb_xkb_map_part_t get_map_required_components =
+    (XCB_XKB_MAP_PART_KEY_TYPES |
+     XCB_XKB_MAP_PART_KEY_SYMS |
+     XCB_XKB_MAP_PART_MODIFIER_MAP |
+     XCB_XKB_MAP_PART_EXPLICIT_COMPONENTS |
+     XCB_XKB_MAP_PART_KEY_ACTIONS |
+     XCB_XKB_MAP_PART_VIRTUAL_MODS |
+     XCB_XKB_MAP_PART_VIRTUAL_MOD_MAP);
 
 static xkb_mod_mask_t
 translate_mods(uint8_t rmods, uint16_t vmods_low, uint16_t vmods_high)
@@ -645,26 +653,15 @@ fail:
 }
 
 static bool
-get_map(struct xkb_keymap *keymap, xcb_connection_t *conn, uint16_t device_id)
+get_map(struct xkb_keymap *keymap, xcb_connection_t *conn,
+        xcb_xkb_get_map_cookie_t cookie)
 {
-    static const xcb_xkb_map_part_t required_components =
-        (XCB_XKB_MAP_PART_KEY_TYPES |
-         XCB_XKB_MAP_PART_KEY_SYMS |
-         XCB_XKB_MAP_PART_MODIFIER_MAP |
-         XCB_XKB_MAP_PART_EXPLICIT_COMPONENTS |
-         XCB_XKB_MAP_PART_KEY_ACTIONS |
-         XCB_XKB_MAP_PART_VIRTUAL_MODS |
-         XCB_XKB_MAP_PART_VIRTUAL_MOD_MAP);
-
-    xcb_xkb_get_map_cookie_t cookie =
-        xcb_xkb_get_map(conn, device_id, required_components,
-                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     xcb_xkb_get_map_reply_t *reply = xcb_xkb_get_map_reply(conn, cookie, NULL);
     xcb_xkb_get_map_map_t map;
 
     FAIL_IF_BAD_REPLY(reply, "XkbGetMap");
 
-    if ((reply->present & required_components) != required_components)
+    if ((reply->present & get_map_required_components) != get_map_required_components)
         goto fail;
 
     xcb_xkb_get_map_map_unpack(xcb_xkb_get_map_map(reply),
@@ -1174,6 +1171,9 @@ xkb_x11_keymap_new_from_device(struct xkb_context *ctx,
     struct x11_atom_interner interner;
     x11_atom_interner_init(&interner, ctx, conn);
 
+    xcb_xkb_get_map_cookie_t get_map_cookie =
+        xcb_xkb_get_map(conn, device_id, get_map_required_components,
+                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     xcb_xkb_get_indicator_map_cookie_t indicator_map_cookie =
         xcb_xkb_get_indicator_map(conn, device_id, ALL_INDICATORS_MASK);
     xcb_xkb_get_compat_map_cookie_t compat_map_cookie =
@@ -1182,7 +1182,7 @@ xkb_x11_keymap_new_from_device(struct xkb_context *ctx,
         xcb_xkb_get_controls(conn, device_id);
 
     bool had_error = false;
-    had_error |= !get_map(keymap, conn, device_id);
+    had_error |= !get_map(keymap, conn, get_map_cookie);
     had_error |= !get_indicator_map(keymap, conn, indicator_map_cookie);
     had_error |= !get_compat_map(keymap, conn, compat_map_cookie);
     had_error |= !get_names(keymap, &interner, device_id);
