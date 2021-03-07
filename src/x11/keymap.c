@@ -97,6 +97,25 @@ static const xcb_xkb_map_part_t get_map_required_components =
      XCB_XKB_MAP_PART_VIRTUAL_MODS |
      XCB_XKB_MAP_PART_VIRTUAL_MOD_MAP);
 
+static const xcb_xkb_name_detail_t get_names_wanted =
+    (XCB_XKB_NAME_DETAIL_KEYCODES |
+     XCB_XKB_NAME_DETAIL_SYMBOLS |
+     XCB_XKB_NAME_DETAIL_TYPES |
+     XCB_XKB_NAME_DETAIL_COMPAT |
+     XCB_XKB_NAME_DETAIL_KEY_TYPE_NAMES |
+     XCB_XKB_NAME_DETAIL_KT_LEVEL_NAMES |
+     XCB_XKB_NAME_DETAIL_INDICATOR_NAMES |
+     XCB_XKB_NAME_DETAIL_KEY_NAMES |
+     XCB_XKB_NAME_DETAIL_KEY_ALIASES |
+     XCB_XKB_NAME_DETAIL_VIRTUAL_MOD_NAMES |
+     XCB_XKB_NAME_DETAIL_GROUP_NAMES);
+static const xcb_xkb_name_detail_t get_names_required =
+    (XCB_XKB_NAME_DETAIL_KEY_TYPE_NAMES |
+     XCB_XKB_NAME_DETAIL_KT_LEVEL_NAMES |
+     XCB_XKB_NAME_DETAIL_KEY_NAMES |
+     XCB_XKB_NAME_DETAIL_VIRTUAL_MOD_NAMES);
+
+
 static xkb_mod_mask_t
 translate_mods(uint8_t rmods, uint16_t vmods_low, uint16_t vmods_high)
 {
@@ -1038,36 +1057,16 @@ fail:
 
 static bool
 get_names(struct xkb_keymap *keymap, struct x11_atom_interner *interner,
-          uint16_t device_id)
+          xcb_xkb_get_names_cookie_t cookie)
 {
-    static const xcb_xkb_name_detail_t wanted =
-        (XCB_XKB_NAME_DETAIL_KEYCODES |
-         XCB_XKB_NAME_DETAIL_SYMBOLS |
-         XCB_XKB_NAME_DETAIL_TYPES |
-         XCB_XKB_NAME_DETAIL_COMPAT |
-         XCB_XKB_NAME_DETAIL_KEY_TYPE_NAMES |
-         XCB_XKB_NAME_DETAIL_KT_LEVEL_NAMES |
-         XCB_XKB_NAME_DETAIL_INDICATOR_NAMES |
-         XCB_XKB_NAME_DETAIL_KEY_NAMES |
-         XCB_XKB_NAME_DETAIL_KEY_ALIASES |
-         XCB_XKB_NAME_DETAIL_VIRTUAL_MOD_NAMES |
-         XCB_XKB_NAME_DETAIL_GROUP_NAMES);
-    static const xcb_xkb_name_detail_t required =
-        (XCB_XKB_NAME_DETAIL_KEY_TYPE_NAMES |
-         XCB_XKB_NAME_DETAIL_KT_LEVEL_NAMES |
-         XCB_XKB_NAME_DETAIL_KEY_NAMES |
-         XCB_XKB_NAME_DETAIL_VIRTUAL_MOD_NAMES);
-
     xcb_connection_t *conn = interner->conn;
-    xcb_xkb_get_names_cookie_t cookie =
-        xcb_xkb_get_names(conn, device_id, wanted);
     xcb_xkb_get_names_reply_t *reply =
         xcb_xkb_get_names_reply(conn, cookie, NULL);
     xcb_xkb_get_names_value_list_t list;
 
     FAIL_IF_BAD_REPLY(reply, "XkbGetNames");
 
-    FAIL_UNLESS((reply->which & required) == required);
+    FAIL_UNLESS((reply->which & get_names_required) == get_names_required);
 
     xcb_xkb_get_names_value_list_unpack(xcb_xkb_get_names_value_list(reply),
                                         reply->nTypes,
@@ -1178,6 +1177,8 @@ xkb_x11_keymap_new_from_device(struct xkb_context *ctx,
         xcb_xkb_get_indicator_map(conn, device_id, ALL_INDICATORS_MASK);
     xcb_xkb_get_compat_map_cookie_t compat_map_cookie =
         xcb_xkb_get_compat_map(conn, device_id, 0, true, 0, 0);
+    xcb_xkb_get_names_cookie_t get_names_cookie =
+        xcb_xkb_get_names(conn, device_id, get_names_wanted);
     xcb_xkb_get_controls_cookie_t get_controls_cookie =
         xcb_xkb_get_controls(conn, device_id);
 
@@ -1185,7 +1186,7 @@ xkb_x11_keymap_new_from_device(struct xkb_context *ctx,
     had_error |= !get_map(keymap, conn, get_map_cookie);
     had_error |= !get_indicator_map(keymap, conn, indicator_map_cookie);
     had_error |= !get_compat_map(keymap, conn, compat_map_cookie);
-    had_error |= !get_names(keymap, &interner, device_id);
+    had_error |= !get_names(keymap, &interner, get_names_cookie);
     had_error |= !get_controls(keymap, conn, get_controls_cookie);
 
     x11_atom_interner_round_trip(&interner);
