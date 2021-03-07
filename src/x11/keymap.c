@@ -1087,10 +1087,24 @@ get_names(struct xkb_keymap *keymap, struct x11_atom_interner *interner,
                                         reply->which,
                                         &list);
 
-    if (!get_atom_name(conn, list.keycodesName, &keymap->keycodes_section_name) ||
-        !get_atom_name(conn, list.symbolsName, &keymap->symbols_section_name) ||
-        !get_atom_name(conn, list.typesName, &keymap->types_section_name) ||
-        !get_atom_name(conn, list.compatName, &keymap->compat_section_name) ||
+    xcb_get_atom_name_cookie_t cookies[4];
+    get_atom_name(conn, list.keycodesName, &cookies[0]);
+    get_atom_name(conn, list.symbolsName, &cookies[1]);
+    get_atom_name(conn, list.typesName, &cookies[2]);
+    get_atom_name(conn, list.compatName, &cookies[3]);
+
+    /* We need to ensure all replies are collected and thus no short-circuit */
+    bool atom_success = true;
+    atom_success &= get_atom_name_reply(conn, list.keycodesName, cookies[0],
+                                        &keymap->keycodes_section_name);
+    atom_success &= get_atom_name_reply(conn, list.symbolsName, cookies[1],
+                                        &keymap->symbols_section_name);
+    atom_success &= get_atom_name_reply(conn, list.typesName, cookies[2],
+                                        &keymap->types_section_name);
+    atom_success &= get_atom_name_reply(conn, list.compatName, cookies[3],
+                                        &keymap->compat_section_name);
+
+    if (!atom_success ||
         !get_type_names(keymap, interner, reply, &list) ||
         !get_indicator_names(keymap, interner, reply, &list) ||
         !get_vmod_names(keymap, interner, reply, &list) ||

@@ -124,20 +124,31 @@ xkb_x11_get_core_keyboard_device_id(xcb_connection_t *conn)
     return device_id;
 }
 
-bool
-get_atom_name(xcb_connection_t *conn, xcb_atom_t atom, char **out)
+void
+get_atom_name(xcb_connection_t *conn, xcb_atom_t atom,
+              xcb_get_atom_name_cookie_t *cookie)
 {
-    xcb_get_atom_name_cookie_t cookie;
+    if (atom == 0) {
+        cookie->sequence = 0;
+    } else {
+        *cookie = xcb_get_atom_name(conn, atom);
+    }
+}
+
+bool
+get_atom_name_reply(xcb_connection_t *conn, xcb_atom_t atom,
+                    xcb_get_atom_name_cookie_t cookie, char **out)
+{
     xcb_get_atom_name_reply_t *reply;
     int length;
     char *name;
 
     if (atom == 0) {
         *out = NULL;
+        assert(cookie.sequence == 0);
         return true;
     }
 
-    cookie = xcb_get_atom_name(conn, atom);
     reply = xcb_get_atom_name_reply(conn, cookie, NULL);
     if (!reply)
         return false;
