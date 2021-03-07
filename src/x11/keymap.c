@@ -1079,36 +1079,21 @@ get_names(struct xkb_keymap *keymap, struct x11_atom_interner *interner,
                                         reply->which,
                                         &list);
 
-    xcb_get_atom_name_cookie_t cookies[4];
-    get_atom_name(conn, list.keycodesName, &cookies[0]);
-    get_atom_name(conn, list.symbolsName, &cookies[1]);
-    get_atom_name(conn, list.typesName, &cookies[2]);
-    get_atom_name(conn, list.compatName, &cookies[3]);
-
-    /* We need to ensure all replies are collected and thus no short-circuit */
-    bool atom_success = true;
-    atom_success &= get_atom_name_reply(conn, list.keycodesName, cookies[0],
-                                        &keymap->keycodes_section_name);
-    atom_success &= get_atom_name_reply(conn, list.symbolsName, cookies[1],
-                                        &keymap->symbols_section_name);
-    atom_success &= get_atom_name_reply(conn, list.typesName, cookies[2],
-                                        &keymap->types_section_name);
-    atom_success &= get_atom_name_reply(conn, list.compatName, cookies[3],
-                                        &keymap->compat_section_name);
-
-    if (!atom_success ||
-        !get_type_names(keymap, interner, reply, &list) ||
+    x11_atom_interner_get_escaped_atom_name(interner, list.keycodesName,
+                                            &keymap->keycodes_section_name);
+    x11_atom_interner_get_escaped_atom_name(interner, list.symbolsName,
+                                            &keymap->symbols_section_name);
+    x11_atom_interner_get_escaped_atom_name(interner, list.typesName,
+                                            &keymap->types_section_name);
+    x11_atom_interner_get_escaped_atom_name(interner, list.compatName,
+                                            &keymap->compat_section_name);
+    if (!get_type_names(keymap, interner, reply, &list) ||
         !get_indicator_names(keymap, interner, reply, &list) ||
         !get_vmod_names(keymap, interner, reply, &list) ||
         !get_group_names(keymap, interner, reply, &list) ||
         !get_key_names(keymap, conn, reply, &list) ||
         !get_aliases(keymap, conn, reply, &list))
         goto fail;
-
-    XkbEscapeMapName(keymap->keycodes_section_name);
-    XkbEscapeMapName(keymap->symbols_section_name);
-    XkbEscapeMapName(keymap->types_section_name);
-    XkbEscapeMapName(keymap->compat_section_name);
 
     free(reply);
     return true;

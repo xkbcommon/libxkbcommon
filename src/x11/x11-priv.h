@@ -29,16 +29,6 @@
 #include "keymap.h"
 #include "xkbcommon/xkbcommon-x11.h"
 
-/* Preparation for get_atom_name_reply() */
-void
-get_atom_name(xcb_connection_t *conn, xcb_atom_t atom,
-              xcb_get_atom_name_cookie_t *cookie);
-
-/* Get a strdup'd name of an X atom. */
-bool
-get_atom_name_reply(xcb_connection_t *conn, xcb_atom_t atom,
-                    xcb_get_atom_name_cookie_t cookie, char **out);
-
 struct x11_atom_interner {
     struct xkb_context *ctx;
     xcb_connection_t *conn;
@@ -56,6 +46,12 @@ struct x11_atom_interner {
         xkb_atom_t *out;
     } copies[128];
     size_t num_copies;
+    /* These are not interned, but saved directly (after XkbEscapeMapName) */
+    struct {
+        xcb_get_atom_name_cookie_t cookie;
+        char **out;
+    } escaped[4];
+    size_t num_escaped;
 };
 
 void
@@ -78,5 +74,13 @@ void
 x11_atom_interner_adopt_atoms(struct x11_atom_interner *interner,
                               const xcb_atom_t *from, xkb_atom_t *to,
                               size_t count);
+
+/*
+ * Get a strdup'd and XkbEscapeMapName'd name of an X atom. The actual write is
+ * delayed until the next call to x11_atom_interner_round_trip().
+ */
+void
+x11_atom_interner_get_escaped_atom_name(struct x11_atom_interner *interner,
+                                        xcb_atom_t atom, char **out);
 
 #endif

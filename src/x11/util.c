@@ -124,48 +124,6 @@ xkb_x11_get_core_keyboard_device_id(xcb_connection_t *conn)
     return device_id;
 }
 
-void
-get_atom_name(xcb_connection_t *conn, xcb_atom_t atom,
-              xcb_get_atom_name_cookie_t *cookie)
-{
-    if (atom == 0) {
-        cookie->sequence = 0;
-    } else {
-        *cookie = xcb_get_atom_name(conn, atom);
-    }
-}
-
-bool
-get_atom_name_reply(xcb_connection_t *conn, xcb_atom_t atom,
-                    xcb_get_atom_name_cookie_t cookie, char **out)
-{
-    xcb_get_atom_name_reply_t *reply;
-    int length;
-    char *name;
-
-    if (atom == 0) {
-        *out = NULL;
-        assert(cookie.sequence == 0);
-        return true;
-    }
-
-    reply = xcb_get_atom_name_reply(conn, cookie, NULL);
-    if (!reply)
-        return false;
-
-    length = xcb_get_atom_name_name_length(reply);
-    name = xcb_get_atom_name_name(reply);
-
-    *out = strndup(name, length);
-    if (!*out) {
-        free(reply);
-        return false;
-    }
-
-    free(reply);
-    return true;
-}
-
 struct x11_atom_cache {
     /*
      * Invalidate the cache based on the XCB connection.
@@ -204,6 +162,7 @@ x11_atom_interner_init(struct x11_atom_interner *interner,
     interner->conn = conn;
     interner->num_pending = 0;
     interner->num_copies = 0;
+    interner->num_escaped = 0;
 }
 
 void
@@ -298,6 +257,48 @@ void x11_atom_interner_round_trip(struct x11_atom_interner *interner) {
         }
     }
 
+    for (size_t i = 0; i < interner->num_escaped; i++) {
+        xcb_get_atom_name_reply_t *reply;
+        int length;
+        char *name;
+        char **out = interner->escaped[i].out;
+
+        reply = xcb_get_atom_name_reply(conn, interner->escaped[i].cookie, NULL);
+        *interner->escaped[i].out = NULL;
+        if (!reply) {
+            interner->had_error = true;
+        } else {
+            length = xcb_get_atom_name_name_length(reply);
+            name = xcb_get_atom_name_name(reply);
+
+            *out = strndup(name, length);
+            free(reply);
+            if (*out == NULL) {
+                interner->had_error = true;
+            } else {
+                XkbEscapeMapName(*out);
+            }
+        }
+    }
+
     interner->num_pending = 0;
     interner->num_copies = 0;
+    interner->num_escaped = 0;
+}
+
+void
+x11_atom_interner_get_escaped_atom_name(struct x11_atom_interner *interner,
+                                        xcb_atom_t atom, char **out)
+{
+    if (atom == 0) {
+        *out = NULL;
+        return;
+    }
+    size_t idx = interner->num_escaped++;
+    /* There can only be a fixed number of calls to this function "in-flight",
+     * thus we assert this number. Increase the array size if this assert fails.
+     */
+    assert(idx < ARRAY_SIZE(interner->escaped));
+    interner->escaped[idx].out = out;
+    interner->escaped[idx].cookie = xcb_get_atom_name(interner->conn, atom);
 }
