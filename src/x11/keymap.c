@@ -749,10 +749,8 @@ get_indicators(struct xkb_keymap *keymap, xcb_connection_t *conn,
 
 static bool
 get_indicator_map(struct xkb_keymap *keymap, xcb_connection_t *conn,
-                  uint16_t device_id)
+                  xcb_xkb_get_indicator_map_cookie_t cookie)
 {
-    xcb_xkb_get_indicator_map_cookie_t cookie =
-        xcb_xkb_get_indicator_map(conn, device_id, ALL_INDICATORS_MASK);
     xcb_xkb_get_indicator_map_reply_t *reply =
         xcb_xkb_get_indicator_map_reply(conn, cookie, NULL);
 
@@ -831,10 +829,8 @@ fail:
 
 static bool
 get_compat_map(struct xkb_keymap *keymap, xcb_connection_t *conn,
-               uint16_t device_id)
+               xcb_xkb_get_compat_map_cookie_t cookie)
 {
-    xcb_xkb_get_compat_map_cookie_t cookie =
-        xcb_xkb_get_compat_map(conn, device_id, 0, true, 0, 0);
     xcb_xkb_get_compat_map_reply_t *reply =
         xcb_xkb_get_compat_map_reply(conn, cookie, NULL);
 
@@ -1128,10 +1124,8 @@ fail:
 
 static bool
 get_controls(struct xkb_keymap *keymap, xcb_connection_t *conn,
-             uint16_t device_id)
+             xcb_xkb_get_controls_cookie_t cookie)
 {
-    xcb_xkb_get_controls_cookie_t cookie =
-        xcb_xkb_get_controls(conn, device_id);
     xcb_xkb_get_controls_reply_t *reply =
         xcb_xkb_get_controls_reply(conn, cookie, NULL);
 
@@ -1180,17 +1174,23 @@ xkb_x11_keymap_new_from_device(struct xkb_context *ctx,
     struct x11_atom_interner interner;
     x11_atom_interner_init(&interner, ctx, conn);
 
-    if (!get_map(keymap, conn, device_id) ||
-        !get_indicator_map(keymap, conn, device_id) ||
-        !get_compat_map(keymap, conn, device_id) ||
-        !get_names(keymap, &interner, device_id) ||
-        !get_controls(keymap, conn, device_id)) {
-        xkb_keymap_unref(keymap);
-        return NULL;
-    }
+    xcb_xkb_get_indicator_map_cookie_t indicator_map_cookie =
+        xcb_xkb_get_indicator_map(conn, device_id, ALL_INDICATORS_MASK);
+    xcb_xkb_get_compat_map_cookie_t compat_map_cookie =
+        xcb_xkb_get_compat_map(conn, device_id, 0, true, 0, 0);
+    xcb_xkb_get_controls_cookie_t get_controls_cookie =
+        xcb_xkb_get_controls(conn, device_id);
+
+    bool had_error = false;
+    had_error |= !get_map(keymap, conn, device_id);
+    had_error |= !get_indicator_map(keymap, conn, indicator_map_cookie);
+    had_error |= !get_compat_map(keymap, conn, compat_map_cookie);
+    had_error |= !get_names(keymap, &interner, device_id);
+    had_error |= !get_controls(keymap, conn, get_controls_cookie);
 
     x11_atom_interner_round_trip(&interner);
-    if (interner.had_error) {
+    had_error |= interner.had_error;
+    if (had_error) {
         xkb_keymap_unref(keymap);
         return NULL;
     }
