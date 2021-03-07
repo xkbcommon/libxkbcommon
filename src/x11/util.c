@@ -169,14 +169,9 @@ struct x11_atom_cache {
     size_t len;
 };
 
-bool
-adopt_atoms(struct xkb_context *ctx, xcb_connection_t *conn,
-            const xcb_atom_t *from, xkb_atom_t *to, const size_t count)
+static struct x11_atom_cache *
+get_cache(struct xkb_context *ctx, xcb_connection_t *conn)
 {
-    enum { SIZE = 128 };
-    xcb_get_atom_name_cookie_t cookies[SIZE];
-    const size_t num_batches = ROUNDUP(count, SIZE) / SIZE;
-
     if (!ctx->x11_atom_cache) {
         ctx->x11_atom_cache = calloc(1, sizeof(struct x11_atom_cache));
     }
@@ -186,79 +181,112 @@ adopt_atoms(struct xkb_context *ctx, xcb_connection_t *conn,
         cache->conn = conn;
         cache->len = 0;
     }
+    return cache;
+}
 
-    memset(to, 0, count * sizeof(*to));
+void
+x11_atom_interner_init(struct x11_atom_interner *interner,
+                       struct xkb_context *ctx, xcb_connection_t *conn)
+{
+    interner->had_error = false;
+    interner->ctx = ctx;
+    interner->conn = conn;
+    interner->num_pending = 0;
+    interner->num_copies = 0;
+}
 
-    /* Send and collect the atoms in batches of reasonable SIZE. */
-    for (size_t batch = 0; batch < num_batches; batch++) {
-        const size_t start = batch * SIZE;
-        const size_t stop = MIN((batch + 1) * SIZE, count);
+void
+x11_atom_interner_adopt_atom(struct x11_atom_interner *interner,
+                             const xcb_atom_t atom, xkb_atom_t *out)
+{
+    *out = 0;
 
-        /* Send. */
-        for (size_t i = start; i < stop; i++) {
-            bool cache_hit = false;
-            if (cache) {
-                for (size_t c = 0; c < cache->len; c++) {
-                    if (cache->cache[c].from == from[i]) {
-                        to[i] = cache->cache[c].to;
-                        cache_hit = true;
-                        break;
-                    }
-                }
+    /* Can be NULL in case the malloc failed. */
+    struct x11_atom_cache *cache = get_cache(interner->ctx, interner->conn);
+
+retry:
+
+    /* Already in the cache? */
+    if (cache) {
+        for (size_t c = 0; c < cache->len; c++) {
+            if (cache->cache[c].from == atom) {
+                *out = cache->cache[c].to;
+                return;
             }
-            if (!cache_hit && from[i] != XCB_ATOM_NONE)
-                cookies[i % SIZE] = xcb_get_atom_name(conn, from[i]);
-        }
-
-        /* Collect. */
-        for (size_t i = start; i < stop; i++) {
-            xcb_get_atom_name_reply_t *reply;
-
-            if (from[i] == XCB_ATOM_NONE)
-                continue;
-
-            /* Was filled from cache. */
-            if (to[i] != 0)
-                continue;
-
-            reply = xcb_get_atom_name_reply(conn, cookies[i % SIZE], NULL);
-            if (!reply)
-                goto err_discard;
-
-            to[i] = xkb_atom_intern(ctx,
-                                    xcb_get_atom_name_name(reply),
-                                    xcb_get_atom_name_name_length(reply));
-            free(reply);
-
-            if (to[i] == XKB_ATOM_NONE)
-                goto err_discard;
-
-            if (cache && cache->len < ARRAY_SIZE(cache->cache)) {
-                size_t idx = cache->len++;
-                cache->cache[idx].from = from[i];
-                cache->cache[idx].to = to[i];
-            }
-
-            continue;
-
-            /*
-             * If we don't discard the uncollected replies, they just
-             * sit in the XCB queue waiting forever. Sad.
-             */
-err_discard:
-            for (size_t j = i + 1; j < stop; j++)
-                if (from[j] != XCB_ATOM_NONE)
-                    xcb_discard_reply(conn, cookies[j % SIZE].sequence);
-            return false;
         }
     }
 
-    return true;
+    /* Already pending? */
+    for (size_t i = 0; i < interner->num_pending; i++) {
+        if (interner->pending[i].from == atom) {
+            if (interner->num_copies == ARRAY_SIZE(interner->copies)) {
+                x11_atom_interner_round_trip(interner);
+                goto retry;
+            }
+
+            size_t idx = interner->num_copies++;
+            interner->copies[idx].from = atom;
+            interner->copies[idx].out = out;
+            return;
+        }
+    }
+
+    /* We have to send a GetAtomName request */
+    if (interner->num_pending == ARRAY_SIZE(interner->pending)) {
+        x11_atom_interner_round_trip(interner);
+        assert(interner->num_pending < ARRAY_SIZE(interner->pending));
+    }
+    size_t idx = interner->num_pending++;
+    interner->pending[idx].from = atom;
+    interner->pending[idx].out = out;
+    interner->pending[idx].cookie = xcb_get_atom_name(interner->conn, atom);
 }
 
-bool
-adopt_atom(struct xkb_context *ctx, xcb_connection_t *conn, xcb_atom_t atom,
-           xkb_atom_t *out)
+void
+x11_atom_interner_adopt_atoms(struct x11_atom_interner *interner,
+                              const xcb_atom_t *from, xkb_atom_t *to,
+                              size_t count)
 {
-    return adopt_atoms(ctx, conn, &atom, out, 1);
+    for (size_t i = 0; i < count; i++) {
+        x11_atom_interner_adopt_atom(interner, from[i], &to[i]);
+    }
+}
+
+void x11_atom_interner_round_trip(struct x11_atom_interner *interner) {
+    struct xkb_context *ctx = interner->ctx;
+    xcb_connection_t *conn = interner->conn;
+
+    /* Can be NULL in case the malloc failed. */
+    struct x11_atom_cache *cache = get_cache(ctx, conn);
+
+    for (size_t i = 0; i < interner->num_pending; i++) {
+        xcb_get_atom_name_reply_t *reply;
+
+        reply = xcb_get_atom_name_reply(conn, interner->pending[i].cookie, NULL);
+        if (!reply) {
+            interner->had_error = true;
+            continue;
+        }
+        xcb_atom_t x11_atom = interner->pending[i].from;
+        xkb_atom_t atom = xkb_atom_intern(ctx,
+                                          xcb_get_atom_name_name(reply),
+                                          xcb_get_atom_name_name_length(reply));
+        free(reply);
+
+        if (cache && cache->len < ARRAY_SIZE(cache->cache)) {
+            size_t idx = cache->len++;
+            cache->cache[idx].from = x11_atom;
+            cache->cache[idx].to = atom;
+        }
+
+        *interner->pending[i].out = atom;
+
+        for (size_t j = 0; j < interner->num_copies; j++) {
+            if (interner->copies[j].from == x11_atom)
+                *interner->copies[j].out = atom;
+        }
+    }
+
+    interner->num_pending = 0;
+    interner->num_copies = 0;
 }

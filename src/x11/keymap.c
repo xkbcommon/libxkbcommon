@@ -852,7 +852,7 @@ fail:
 }
 
 static bool
-get_type_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
+get_type_names(struct xkb_keymap *keymap, struct x11_atom_interner *interner,
                xcb_xkb_get_names_reply_t *reply,
                xcb_xkb_get_names_value_list_t *list)
 {
@@ -880,13 +880,9 @@ get_type_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
 
         ALLOC_OR_FAIL(type->level_names, type->num_levels);
 
-        if (!adopt_atom(keymap->ctx, conn, wire_type_name, &type->name))
-            goto fail;
-
-        if (!adopt_atoms(keymap->ctx, conn,
-                         kt_level_names_iter, type->level_names,
-                         wire_num_levels))
-            goto fail;
+        x11_atom_interner_adopt_atom(interner, wire_type_name, &type->name);
+        x11_atom_interner_adopt_atoms(interner, kt_level_names_iter,
+                                     type->level_names, wire_num_levels);
 
         type->num_level_names = type->num_levels;
         kt_level_names_iter += wire_num_levels;
@@ -901,7 +897,8 @@ fail:
 }
 
 static bool
-get_indicator_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
+get_indicator_names(struct xkb_keymap *keymap,
+                    struct x11_atom_interner *interner,
                     xcb_xkb_get_names_reply_t *reply,
                     xcb_xkb_get_names_value_list_t *list)
 {
@@ -914,8 +911,7 @@ get_indicator_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
             xcb_atom_t wire = *iter;
             struct xkb_led *led = &keymap->leds[i];
 
-            if (!adopt_atom(keymap->ctx, conn, wire, &led->name))
-                return false;
+            x11_atom_interner_adopt_atom(interner, wire, &led->name);
 
             iter++;
         }
@@ -928,7 +924,7 @@ fail:
 }
 
 static bool
-get_vmod_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
+get_vmod_names(struct xkb_keymap *keymap, struct x11_atom_interner *interner,
                xcb_xkb_get_names_reply_t *reply,
                xcb_xkb_get_names_value_list_t *list)
 {
@@ -947,8 +943,7 @@ get_vmod_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
             xcb_atom_t wire = *iter;
             struct xkb_mod *mod = &keymap->mods.mods[NUM_REAL_MODS + i];
 
-            if (!adopt_atom(keymap->ctx, conn, wire, &mod->name))
-                return false;
+            x11_atom_interner_adopt_atom(interner, wire, &mod->name);
 
             iter++;
         }
@@ -958,7 +953,7 @@ get_vmod_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
 }
 
 static bool
-get_group_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
+get_group_names(struct xkb_keymap *keymap, struct x11_atom_interner *interner,
                 xcb_xkb_get_names_reply_t *reply,
                 xcb_xkb_get_names_value_list_t *list)
 {
@@ -968,9 +963,7 @@ get_group_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
     keymap->num_group_names = msb_pos(reply->groupNames);
     ALLOC_OR_FAIL(keymap->group_names, keymap->num_group_names);
 
-    if (!adopt_atoms(keymap->ctx, conn,
-                     iter, keymap->group_names, length))
-        goto fail;
+    x11_atom_interner_adopt_atoms(interner, iter, keymap->group_names, length);
 
     return true;
 
@@ -1051,7 +1044,7 @@ fail:
 }
 
 static bool
-get_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
+get_names(struct xkb_keymap *keymap, struct x11_atom_interner *interner,
           uint16_t device_id)
 {
     static const xcb_xkb_name_detail_t wanted =
@@ -1072,6 +1065,7 @@ get_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
          XCB_XKB_NAME_DETAIL_KEY_NAMES |
          XCB_XKB_NAME_DETAIL_VIRTUAL_MOD_NAMES);
 
+    xcb_connection_t *conn = interner->conn;
     xcb_xkb_get_names_cookie_t cookie =
         xcb_xkb_get_names(conn, device_id, wanted);
     xcb_xkb_get_names_reply_t *reply =
@@ -1097,10 +1091,10 @@ get_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
         !get_atom_name(conn, list.symbolsName, &keymap->symbols_section_name) ||
         !get_atom_name(conn, list.typesName, &keymap->types_section_name) ||
         !get_atom_name(conn, list.compatName, &keymap->compat_section_name) ||
-        !get_type_names(keymap, conn, reply, &list) ||
-        !get_indicator_names(keymap, conn, reply, &list) ||
-        !get_vmod_names(keymap, conn, reply, &list) ||
-        !get_group_names(keymap, conn, reply, &list) ||
+        !get_type_names(keymap, interner, reply, &list) ||
+        !get_indicator_names(keymap, interner, reply, &list) ||
+        !get_vmod_names(keymap, interner, reply, &list) ||
+        !get_group_names(keymap, interner, reply, &list) ||
         !get_key_names(keymap, conn, reply, &list) ||
         !get_aliases(keymap, conn, reply, &list))
         goto fail;
@@ -1169,11 +1163,20 @@ xkb_x11_keymap_new_from_device(struct xkb_context *ctx,
     if (!keymap)
         return NULL;
 
+    struct x11_atom_interner interner;
+    x11_atom_interner_init(&interner, ctx, conn);
+
     if (!get_map(keymap, conn, device_id) ||
         !get_indicator_map(keymap, conn, device_id) ||
         !get_compat_map(keymap, conn, device_id) ||
-        !get_names(keymap, conn, device_id) ||
+        !get_names(keymap, &interner, device_id) ||
         !get_controls(keymap, conn, device_id)) {
+        xkb_keymap_unref(keymap);
+        return NULL;
+    }
+
+    x11_atom_interner_round_trip(&interner);
+    if (interner.had_error) {
         xkb_keymap_unref(keymap);
         return NULL;
     }
