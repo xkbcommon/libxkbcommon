@@ -893,8 +893,10 @@ get_type_names(struct xkb_keymap *keymap, struct x11_atom_interner *interner,
         ALLOC_OR_FAIL(type->level_names, type->num_levels);
 
         x11_atom_interner_adopt_atom(interner, wire_type_name, &type->name);
-        x11_atom_interner_adopt_atoms(interner, kt_level_names_iter,
-                                     type->level_names, wire_num_levels);
+        for (size_t j = 0; j < wire_num_levels; j++) {
+            x11_atom_interner_adopt_atom(interner, kt_level_names_iter[j],
+                                         &type->level_names[j]);
+        }
 
         type->num_level_names = type->num_levels;
         kt_level_names_iter += wire_num_levels;
@@ -975,7 +977,10 @@ get_group_names(struct xkb_keymap *keymap, struct x11_atom_interner *interner,
     keymap->num_group_names = msb_pos(reply->groupNames);
     ALLOC_OR_FAIL(keymap->group_names, keymap->num_group_names);
 
-    x11_atom_interner_adopt_atoms(interner, iter, keymap->group_names, length);
+    for (size_t i = 0; i < length; i++) {
+        x11_atom_interner_adopt_atom(interner, iter[i],
+                                     &keymap->group_names[i]);
+    }
 
     return true;
 

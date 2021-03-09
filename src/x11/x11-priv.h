@@ -69,12 +69,6 @@ void
 x11_atom_interner_adopt_atom(struct x11_atom_interner *interner,
                              const xcb_atom_t atom, xkb_atom_t *out);
 
-
-void
-x11_atom_interner_adopt_atoms(struct x11_atom_interner *interner,
-                              const xcb_atom_t *from, xkb_atom_t *to,
-                              size_t count);
-
 /*
  * Get a strdup'd and XkbEscapeMapName'd name of an X atom. The actual write is
  * delayed until the next call to x11_atom_interner_round_trip().
