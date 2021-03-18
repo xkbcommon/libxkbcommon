@@ -282,18 +282,21 @@ find_models(struct rxkb_context *ctx, ...)
     va_list args;
     const char *name;
     int idx = 0;
+    bool rc = false;
 
     va_start(args, ctx);
     name = va_arg(args, const char *);
     while(name) {
         assert(++idx < 20); /* safety guard */
         if (!find_model(ctx, name))
-            return false;
+            goto out;
         name = va_arg(args, const char *);
     };
 
+    rc = true;
+out:
     va_end(args);
-    return true;
+    return rc;
 }
 
 static struct rxkb_layout *
@@ -326,6 +329,7 @@ find_layouts(struct rxkb_context *ctx, ...)
     va_list args;
     const char *name, *variant;
     int idx = 0;
+    bool rc = false;
 
     va_start(args, ctx);
     name = va_arg(args, const char *);
@@ -333,14 +337,16 @@ find_layouts(struct rxkb_context *ctx, ...)
     while(name) {
         assert(++idx < 20); /* safety guard */
         if (!find_layout(ctx, name, variant))
-            return false;
+            goto out;
         name = va_arg(args, const char *);
         if (name)
             variant = va_arg(args, const char *);
     };
 
+    rc = true;
+out:
     va_end(args);
-    return true;
+    return rc;
 }
 
 static struct rxkb_option_group *
@@ -396,6 +402,7 @@ find_options(struct rxkb_context *ctx, ...)
     va_list args;
     const char *grp, *opt;
     int idx = 0;
+    bool rc = false;
 
     va_start(args, ctx);
     grp = va_arg(args, const char *);
@@ -403,14 +410,16 @@ find_options(struct rxkb_context *ctx, ...)
     while(grp) {
         assert(++idx < 20); /* safety guard */
         if (!find_option(ctx, grp, opt))
-            return false;
+            goto out;
         grp = va_arg(args, const char *);
         if (grp)
             opt = va_arg(args, const char *);
     };
 
+    rc = true;
+out:
     va_end(args);
-    return true;
+    return rc;
 }
 
 static bool
