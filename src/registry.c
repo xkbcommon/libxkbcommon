@@ -594,7 +594,7 @@ XKB_EXPORT bool
 rxkb_context_include_path_append_default(struct rxkb_context *ctx)
 {
     const char *home, *xdg, *root, *extra;
-    char *user_path;
+    char user_path[PATH_MAX];
     bool ret = false;
 
     if (ctx->context_state != CONTEXT_NEW) {
@@ -606,26 +606,17 @@ rxkb_context_include_path_append_default(struct rxkb_context *ctx)
 
     xdg = rxkb_context_getenv(ctx, "XDG_CONFIG_HOME");
     if (xdg != NULL) {
-        user_path = asprintf_safe("%s/xkb", xdg);
-        if (user_path) {
+        if (snprintf_safe(user_path, sizeof(user_path), "%s/xkb", xdg))
             ret |= rxkb_context_include_path_append(ctx, user_path);
-            free(user_path);
-        }
     } else if (home != NULL) {
         /* XDG_CONFIG_HOME fallback is $HOME/.config/ */
-        user_path = asprintf_safe("%s/.config/xkb", home);
-        if (user_path) {
+        if (snprintf_safe(user_path, sizeof(user_path), "%s/.config/xkb", home))
             ret |= rxkb_context_include_path_append(ctx, user_path);
-            free(user_path);
-        }
     }
 
     if (home != NULL) {
-        user_path = asprintf_safe("%s/.xkb", home);
-        if (user_path) {
+        if (snprintf_safe(user_path, sizeof(user_path), "%s/.xkb", home))
             ret |= rxkb_context_include_path_append(ctx, user_path);
-            free(user_path);
-        }
     }
 
     extra = rxkb_context_getenv(ctx, "XKB_CONFIG_EXTRA_PATH");
