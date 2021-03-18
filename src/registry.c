@@ -742,6 +742,10 @@ parse_config_item(struct rxkb_context *ctx,
             if (!*name || !strlen(*name))  {
                 log_err(ctx, "xml:%d: missing required element 'name'\n",
                         ci->line);
+                free(*name);
+                free(*description);
+                free(*brief);
+                free(*vendor);
                 return false;
             }
 
