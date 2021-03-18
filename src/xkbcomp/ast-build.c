@@ -462,15 +462,16 @@ IncludeStmt *
 IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge)
 {
     IncludeStmt *incl, *first;
-    char *file, *map, *stmt, *tmp, *extra_data;
+    char *stmt, *tmp;
     char nextop;
 
     incl = first = NULL;
-    file = map = NULL;
     tmp = str;
     stmt = strdup_safe(str);
     while (tmp && *tmp)
     {
+        char *file = NULL, *map = NULL, *extra_data = NULL;
+
         if (!ParseIncludeMap(&tmp, &file, &map, &nextop, &extra_data))
             goto err;
 
@@ -494,8 +495,12 @@ IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge)
             incl = incl->next_incl;
         }
 
-        if (!incl)
+        if (!incl) {
+            free(file);
+            free(map);
+            free(extra_data);
             break;
+        }
 
         incl->common.type = STMT_INCLUDE;
         incl->common.next = NULL;
