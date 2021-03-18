@@ -564,18 +564,14 @@ rxkb_context_include_path_append(struct rxkb_context *ctx, const char *path)
         return false;
     }
 
-    tmp = strdup(path);
-    if (!tmp)
-        goto err;
-
     err = stat(path, &stat_buf);
     if (err != 0)
-        goto err;
+        return false;
     if (!S_ISDIR(stat_buf.st_mode))
-        goto err;
+        return false;
 
     if (!check_eaccess(path, R_OK | X_OK))
-        goto err;
+        return false;
 
     /* Pre-filter for the 99.9% case - if we can't assemble the default ruleset
      * path, complain here instead of during parsing later. The niche cases
@@ -583,15 +579,15 @@ rxkb_context_include_path_append(struct rxkb_context *ctx, const char *path)
      */
     if (!snprintf_safe(rules, sizeof(rules), "%s/rules/%s.xml",
                        path, DEFAULT_XKB_RULES))
-        goto err;
+        return false;
+
+    tmp = strdup(path);
+    if (!tmp)
+        return false;
 
     darray_append(ctx->includes, tmp);
 
     return true;
-
-err:
-    free(tmp);
-    return false;
 }
 
 XKB_EXPORT bool
