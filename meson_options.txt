@@ -67,3 +67,9 @@ option(
     value: true,
     description: 'Enable building libxkbregistry',
 )
+option(
+    'enable-cache',
+    type: 'boolean',
+    value: true,
+    description: 'Enable cache support for Compose files',
+)
