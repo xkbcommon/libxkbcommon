@@ -2,9 +2,14 @@
 
 import re, sys, itertools
 
+import perfect_hash
+
 pattern = re.compile(r'^#define\s+XKB_KEY_(?P<name>\w+)\s+(?P<value>0x[0-9a-fA-F]+)\s')
 matches = [pattern.match(line) for line in open(sys.argv[1])]
 entries = [(m.group("name"), int(m.group("value"), 16)) for m in matches if m]
+
+entries_isorted = sorted(entries, key=lambda e: e[0].lower())
+entries_kssorted = sorted(entries, key=lambda e: e[1])
 
 print('''
 /**
@@ -24,7 +29,7 @@ print('''
 static const char *keysym_names =
 '''.strip())
 offs = 0
-for (name, _) in sorted(entries, key=lambda e: e[0].lower()):
+for (name, _) in entries_isorted:
     entry_offsets[name] = offs
     print('    "{name}\\0"'.format(name=name))
     offs += len(name) + 1
@@ -34,6 +39,35 @@ print('''
 #pragma GCC diagnostic pop
 #endif
 '''.strip())
+
+
+template = r'''
+static const uint16_t keysym_name_G[] = {
+    $G
+};
+
+static size_t
+keysym_name_hash_f(const char *key, const char *T)
+{
+    size_t sum = 0;
+    for (size_t i = 0; key[i] != '\0'; i++)
+        sum += T[i % $NS] * key[i];
+    return sum % $NG;
+}
+
+static size_t
+keysym_name_perfect_hash(const char *key)
+{
+    return (
+        keysym_name_G[keysym_name_hash_f(key, "$S1")] +
+        keysym_name_G[keysym_name_hash_f(key, "$S2")]
+    ) % $NG;
+}
+'''
+print(perfect_hash.generate_code(
+    keys=[name for name, value in entries_isorted],
+    template=template,
+))
 
 print('''
 struct name_keysym {
@@ -46,14 +80,10 @@ def print_entries(x):
         print('    {{ 0x{value:08x}, {offs} }}, /* {name} */'.format(offs=entry_offsets[name], value=value, name=name))
 
 print('static const struct name_keysym name_to_keysym[] = {')
-print_entries(sorted(entries, key=lambda e: e[0]))
-print('};\n')
-
-print('static const struct name_keysym name_to_keysym_icase[] = {')
-print_entries(sorted(entries, key=lambda e: e[0].lower()))
+print_entries(entries_isorted)
 print('};\n')
 
 # *.sort() is stable so we always get the first keysym for duplicate
 print('static const struct name_keysym keysym_to_name[] = {')
-print_entries(next(g[1]) for g in itertools.groupby(sorted(entries, key=lambda e: e[1]), key=lambda e: e[1]))
+print_entries(next(g[1]) for g in itertools.groupby(entries_kssorted, key=lambda e: e[1]))
 print('};')
