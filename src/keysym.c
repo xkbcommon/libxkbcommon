@@ -107,22 +107,17 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
      * So do it in a fast path.
      */
     if (!icase) {
-        size_t lo = 0, hi = ARRAY_SIZE(name_to_keysym) - 1;
-        while (hi >= lo) {
-            size_t mid = (lo + hi) / 2;
-            int cmp = strcmp(name, get_name(&name_to_keysym[mid]));
-            if (cmp > 0)
-                lo = mid + 1;
-            else if (cmp < 0)
-                hi = mid - 1;
-            else
-                return name_to_keysym[mid].keysym;
+        size_t pos = keysym_name_perfect_hash(name);
+        if (pos < ARRAY_SIZE(name_to_keysym)) {
+            const char *s = get_name(&name_to_keysym[pos]);
+            if (strcmp(name, s) == 0)
+                return name_to_keysym[pos].keysym;
         }
     }
     /*
     * Find the correct keysym for case-insensitive match.
     *
-    * The name_to_keysym_icase table is sorted by istrcmp(). So the binary
+    * The name_to_keysym table is sorted by istrcmp(). So the binary
     * search may return _any_ of all possible case-insensitive duplicates. This
     * code searches the entry, all previous and all next entries that match by
     * case-insensitive comparison and returns the "best" case-insensitive
@@ -135,16 +130,16 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
     * lower-case match is enough in this case.
     */
     else {
-        size_t lo = 0, hi = ARRAY_SIZE(name_to_keysym_icase) - 1;
+        size_t lo = 0, hi = ARRAY_SIZE(name_to_keysym) - 1;
         while (hi >= lo) {
             size_t mid = (lo + hi) / 2;
-            int cmp = istrcmp(name, get_name(&name_to_keysym_icase[mid]));
+            int cmp = istrcmp(name, get_name(&name_to_keysym[mid]));
             if (cmp > 0) {
                 lo = mid + 1;
             } else if (cmp < 0) {
                 hi = mid - 1;
             } else {
-                entry = &name_to_keysym_icase[mid];
+                entry = &name_to_keysym[mid];
                 break;
             }
         }
@@ -154,14 +149,14 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
             if (icase && xkb_keysym_is_lower(entry->keysym))
                 return entry->keysym;
 
-            for (iter = entry - 1; iter >= name_to_keysym_icase; --iter) {
+            for (iter = entry - 1; iter >= name_to_keysym; --iter) {
                 if (istrcmp(get_name(iter), get_name(entry)) != 0)
                     break;
                 if (xkb_keysym_is_lower(iter->keysym))
                     return iter->keysym;
             }
 
-            last = name_to_keysym_icase + ARRAY_SIZE(name_to_keysym_icase);
+            last = name_to_keysym + ARRAY_SIZE(name_to_keysym);
             for (iter = entry + 1; iter < last; ++iter) {
                 if (istrcmp(get_name(iter), get_name(entry)) != 0)
                     break;
