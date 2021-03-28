@@ -61,42 +61,25 @@ get_name(const struct name_keysym *entry)
     return keysym_names + entry->offset;
 }
 
-static int
-compare_by_keysym(const void *a, const void *b)
-{
-    const xkb_keysym_t *key = a;
-    const struct name_keysym *entry = b;
-    if (*key < entry->keysym)
-        return -1;
-    if (*key > entry->keysym)
-        return 1;
-    return 0;
-}
-
-static int
-compare_by_name(const void *a, const void *b)
-{
-    const char *key = a;
-    const struct name_keysym *entry = b;
-    return istrcmp(key, get_name(entry));
-}
-
 XKB_EXPORT int
 xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
 {
-    const struct name_keysym *entry;
-
     if ((ks & ((unsigned long) ~0x1fffffff)) != 0) {
         snprintf(buffer, size, "Invalid");
         return -1;
     }
 
-    entry = bsearch(&ks, keysym_to_name,
-                    ARRAY_SIZE(keysym_to_name),
-                    sizeof(*keysym_to_name),
-                    compare_by_keysym);
-    if (entry)
-        return snprintf(buffer, size, "%s", get_name(entry));
+    size_t lo = 0, hi = ARRAY_SIZE(keysym_to_name) - 1;
+    while (hi >= lo) {
+        size_t mid = (lo + hi) / 2;
+        if (ks > keysym_to_name[mid].keysym) {
+            lo = mid + 1;
+        } else if (ks < keysym_to_name[mid].keysym) {
+            hi = mid - 1;
+        } else {
+            return snprintf(buffer, size, "%s", get_name(&keysym_to_name[mid]));
+        }
+    }
 
     /* Unnamed Unicode codepoint. */
     if (ks >= 0x01000100 && ks <= 0x0110ffff) {
@@ -111,7 +94,7 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
 /*
  * Find the correct keysym if one case-insensitive match is given.
  *
- * The name_to_keysym table is sorted by istrcmp(). So bsearch() may return
+ * The name_to_keysym table is sorted by istrcmp(). So the binary search may return
  * _any_ of all possible case-insensitive duplicates. This function searches the
  * returned entry @entry, all previous and all next entries that match by
  * case-insensitive comparison and returns the exact match to @name. If @icase
@@ -164,7 +147,7 @@ find_sym(const struct name_keysym *entry, const char *name, bool icase)
 XKB_EXPORT xkb_keysym_t
 xkb_keysym_from_name(const char *s, enum xkb_keysym_flags flags)
 {
-    const struct name_keysym *entry;
+    const struct name_keysym *entry = NULL;
     char *tmp;
     xkb_keysym_t val;
     bool icase = (flags & XKB_KEYSYM_CASE_INSENSITIVE);
@@ -172,10 +155,19 @@ xkb_keysym_from_name(const char *s, enum xkb_keysym_flags flags)
     if (flags & ~XKB_KEYSYM_CASE_INSENSITIVE)
         return XKB_KEY_NoSymbol;
 
-    entry = bsearch(s, name_to_keysym,
-                    ARRAY_SIZE(name_to_keysym),
-                    sizeof(*name_to_keysym),
-                    compare_by_name);
+    size_t lo = 0, hi = ARRAY_SIZE(name_to_keysym) - 1;
+    while (hi >= lo) {
+        size_t mid = (lo + hi) / 2;
+        int cmp = istrcmp(s, get_name(&name_to_keysym[mid]));
+        if (cmp > 0) {
+            lo = mid + 1;
+        } else if (cmp < 0) {
+            hi = mid - 1;
+        } else {
+            entry = &name_to_keysym[mid];
+            break;
+        }
+    }
     entry = find_sym(entry, s, icase);
     if (entry)
         return entry->keysym;
