@@ -46,6 +46,10 @@ def print_entries(x):
         print('    {{ 0x{value:08x}, {offs} }}, /* {name} */'.format(offs=entry_offsets[name], value=value, name=name))
 
 print('static const struct name_keysym name_to_keysym[] = {')
+print_entries(sorted(entries, key=lambda e: e[0]))
+print('};\n')
+
+print('static const struct name_keysym name_to_keysym_icase[] = {')
 print_entries(sorted(entries, key=lambda e: e[0].lower()))
 print('};\n')
 
