@@ -313,10 +313,10 @@ read_keyboard(struct keyboard *kbd)
 static int
 loop(struct keyboard *kbds)
 {
+    int ret = -1;
     struct keyboard *kbd;
     nfds_t nfds, i;
     struct pollfd *fds = NULL;
-    int ret;
 
     for (kbd = kbds, nfds = 0; kbd; kbd = kbd->next, nfds++) {}
     fds = calloc(nfds, sizeof(*fds));
