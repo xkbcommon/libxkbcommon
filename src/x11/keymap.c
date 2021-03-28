@@ -977,7 +977,7 @@ get_group_names(struct xkb_keymap *keymap, struct x11_atom_interner *interner,
     keymap->num_group_names = msb_pos(reply->groupNames);
     ALLOC_OR_FAIL(keymap->group_names, keymap->num_group_names);
 
-    for (size_t i = 0; i < length; i++) {
+    for (int i = 0; i < length; i++) {
         x11_atom_interner_adopt_atom(interner, iter[i],
                                      &keymap->group_names[i]);
     }
