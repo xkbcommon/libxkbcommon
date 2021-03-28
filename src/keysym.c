@@ -145,7 +145,7 @@ find_sym(const struct name_keysym *entry, const char *name, bool icase)
 }
 
 XKB_EXPORT xkb_keysym_t
-xkb_keysym_from_name(const char *s, enum xkb_keysym_flags flags)
+xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
 {
     const struct name_keysym *entry = NULL;
     char *tmp;
@@ -158,7 +158,7 @@ xkb_keysym_from_name(const char *s, enum xkb_keysym_flags flags)
     size_t lo = 0, hi = ARRAY_SIZE(name_to_keysym) - 1;
     while (hi >= lo) {
         size_t mid = (lo + hi) / 2;
-        int cmp = istrcmp(s, get_name(&name_to_keysym[mid]));
+        int cmp = istrcmp(name, get_name(&name_to_keysym[mid]));
         if (cmp > 0) {
             lo = mid + 1;
         } else if (cmp < 0) {
@@ -168,12 +168,12 @@ xkb_keysym_from_name(const char *s, enum xkb_keysym_flags flags)
             break;
         }
     }
-    entry = find_sym(entry, s, icase);
+    entry = find_sym(entry, name, icase);
     if (entry)
         return entry->keysym;
 
-    if (*s == 'U' || (icase && *s == 'u')) {
-        val = strtoul(&s[1], &tmp, 16);
+    if (*name == 'U' || (icase && *name == 'u')) {
+        val = strtoul(&name[1], &tmp, 16);
         if (tmp && *tmp != '\0')
             return XKB_KEY_NoSymbol;
 
@@ -185,8 +185,8 @@ xkb_keysym_from_name(const char *s, enum xkb_keysym_flags flags)
             return XKB_KEY_NoSymbol;
         return val | 0x01000000;
     }
-    else if (s[0] == '0' && (s[1] == 'x' || (icase && s[1] == 'X'))) {
-        val = strtoul(&s[2], &tmp, 16);
+    else if (name[0] == '0' && (name[1] == 'x' || (icase && name[1] == 'X'))) {
+        val = strtoul(&name[2], &tmp, 16);
         if (tmp && *tmp != '\0')
             return XKB_KEY_NoSymbol;
 
@@ -196,13 +196,13 @@ xkb_keysym_from_name(const char *s, enum xkb_keysym_flags flags)
     /* Stupid inconsistency between the headers and XKeysymDB: the former has
      * no separating underscore, while some XF86* syms in the latter did.
      * As a last ditch effort, try without. */
-    if (strncmp(s, "XF86_", 5) == 0 ||
-        (icase && istrncmp(s, "XF86_", 5) == 0)) {
+    if (strncmp(name, "XF86_", 5) == 0 ||
+        (icase && istrncmp(name, "XF86_", 5) == 0)) {
         xkb_keysym_t ret;
-        tmp = strdup(s);
+        tmp = strdup(name);
         if (!tmp)
             return XKB_KEY_NoSymbol;
-        memmove(&tmp[4], &tmp[5], strlen(s) - 5 + 1);
+        memmove(&tmp[4], &tmp[5], strlen(name) - 5 + 1);
         ret = xkb_keysym_from_name(tmp, flags);
         free(tmp);
         return ret;
