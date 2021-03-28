@@ -31,6 +31,7 @@
 #include <getopt.h>
 #include <limits.h>
 #include <locale.h>
+#include <poll.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -38,7 +39,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <sys/epoll.h>
 #include <linux/input.h>
 
 #include "xkbcommon/xkbcommon.h"
@@ -313,33 +313,25 @@ read_keyboard(struct keyboard *kbd)
 static int
 loop(struct keyboard *kbds)
 {
-    int i, ret = 1;
-    int epfd = -1;
     struct keyboard *kbd;
-    struct epoll_event ev;
-    struct epoll_event evs[16];
+    nfds_t nfds, i;
+    struct pollfd *fds = NULL;
+    int ret;
 
-    epfd = epoll_create1(0);
-    if (epfd < 0) {
-        fprintf(stderr, "Couldn't create epoll instance: %s\n",
-                strerror(errno));
+    for (kbd = kbds, nfds = 0; kbd; kbd = kbd->next, nfds++) {}
+    fds = calloc(nfds, sizeof(*fds));
+    if (fds == NULL) {
+        fprintf(stderr, "Out of memory");
         goto out;
     }
 
-    for (kbd = kbds; kbd; kbd = kbd->next) {
-        memset(&ev, 0, sizeof(ev));
-        ev.events = EPOLLIN;
-        ev.data.ptr = kbd;
-        ret = epoll_ctl(epfd, EPOLL_CTL_ADD, kbd->fd, &ev);
-        if (ret) {
-            fprintf(stderr, "Couldn't add %s to epoll: %s\n",
-                    kbd->path, strerror(errno));
-            goto out;
-        }
+    for (i = 0, kbd = kbds; kbd; kbd = kbd->next, i++) {
+        fds[i].fd = kbd->fd;
+        fds[i].events = POLLIN;
     }
 
     while (!terminate) {
-        ret = epoll_wait(epfd, evs, 16, -1);
+        ret = poll(fds, nfds, -1);
         if (ret < 0) {
             if (errno == EINTR)
                 continue;
@@ -348,18 +340,19 @@ loop(struct keyboard *kbds)
             goto out;
         }
 
-        for (i = 0; i < ret; i++) {
-            kbd = evs[i].data.ptr;
-            ret = read_keyboard(kbd);
-            if (ret) {
-                goto out;
+        for (i = 0, kbd = kbds; kbd; kbd = kbd->next, i++) {
+            if (fds[i].revents != 0) {
+                ret = read_keyboard(kbd);
+                if (ret) {
+                    goto out;
+                }
             }
         }
     }
 
     ret = 0;
 out:
-    close(epfd);
+    free(fds);
     return ret;
 }
 
