@@ -700,15 +700,16 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
 
             str = xkb_atom_text(ctx, val);
             len = strlen(str);
-            if (len < 1 || len > 7) {
+            if (len < 1 || len > sizeof(act->data)) {
                 log_warn(ctx,
-                         "A private action has 7 data bytes; "
-                         "Illegal data ignored\n");
+                         "A private action has %ld data bytes; "
+                         "Illegal data ignored\n", sizeof(act->data));
                 return false;
             }
 
             /* act->data may not be null-terminated, this is intentional */
-            strncpy((char *) act->data, str, sizeof(act->data));
+            memset(act->data, 0, sizeof(act->data));
+            memcpy(act->data, str, len);
             return true;
         }
         else {
