@@ -327,114 +327,107 @@ struct production {
     xkb_mod_mask_t mods;
 };
 
-static uint16_t
-add_node(struct xkb_compose_table *table, xkb_keysym_t keysym)
-{
-    struct compose_node new = {
-        .keysym = keysym,
-        .next = 0,
-        .is_leaf = true,
-    };
-    darray_append(table->nodes, new);
-    return darray_size(table->nodes) - 1;
-}
-
 static void
 add_production(struct xkb_compose_table *table, struct scanner *s,
                const struct production *production)
 {
-    unsigned lhs_pos;
-    uint16_t curr;
-    struct compose_node *node;
+    unsigned lhs_pos = 0;
+    uint16_t curr = darray_size(table->nodes) == 1 ? 0 : 1;
+    uint16_t *pptr = NULL;
+    struct compose_node *node = NULL;
 
     if (darray_size(table->nodes) + 1 == MAX_COMPOSE_NODES)
         scanner_warn(s, "too many sequences for one Compose file; will ignore further lines");
     if (darray_size(table->nodes) >= MAX_COMPOSE_NODES)
         return;
 
-    curr = 0;
-    node = &darray_item(table->nodes, curr);
-
     /*
-     * Insert the sequence to the trie, creating new nodes as needed.
+     * Insert the sequence to the ternary search tree, creating new nodes as
+     * needed.
      *
-     * TODO: This can be sped up a bit by first trying the path that the
-     * previous production took, and only then doing the linear search
-     * through the trie levels.  This will work because sequences in the
-     * Compose files are often clustered by a common prefix; especially
-     * in the 1st and 2nd keysyms, which is where the largest variation
-     * (thus, longest search) is.
+     * TODO: We insert in the order given, this means some inputs can create
+     * long O(n) chains, which results in total O(n^2) parsing time. We should
+     * ensure the tree is reasonably balanced somehow.
      */
-    for (lhs_pos = 0; lhs_pos < production->len; lhs_pos++) {
-        while (production->lhs[lhs_pos] != node->keysym) {
-            if (node->next == 0) {
-                uint16_t next = add_node(table, production->lhs[lhs_pos]);
-                /* Refetch since add_node could have realloc()ed. */
-                node = &darray_item(table->nodes, curr);
-                node->next = next;
-            }
+    while (true) {
+        const xkb_keysym_t keysym = production->lhs[lhs_pos];
+        const bool last = lhs_pos + 1 == production->len;
 
-            curr = node->next;
-            node = &darray_item(table->nodes, curr);
+        if (curr == 0) {
+            /*
+             * Create a new node and update the parent pointer to it.
+             * Update the pointer first because the append invalidates it.
+             */
+            struct compose_node new = {
+                .keysym = keysym,
+                .lokid = 0,
+                .hikid = 0,
+                .internal = {
+                    .eqkid = 0,
+                    .is_leaf = false,
+                },
+            };
+            curr = darray_size(table->nodes);
+            if (pptr != NULL) {
+                *pptr = curr;
+                pptr = NULL;
+            }
+            darray_append(table->nodes, new);
         }
 
-        if (lhs_pos + 1 == production->len)
-            break;
-
-        if (node->is_leaf) {
-            if (node->leaf.utf8 != 0 ||
-                node->leaf.keysym != XKB_KEY_NoSymbol) {
-                scanner_warn(s, "a sequence already exists which is a prefix of this sequence; overriding");
-                node->leaf.utf8 = 0;
-                node->leaf.keysym = XKB_KEY_NoSymbol;
-            }
-
-            {
-                uint16_t successor = add_node(table, production->lhs[lhs_pos + 1]);
-                /* Refetch since add_node could have realloc()ed. */
-                node = &darray_item(table->nodes, curr);
-                node->is_leaf = false;
-                node->internal.successor = successor;
-            }
-        }
-
-        curr = node->internal.successor;
         node = &darray_item(table->nodes, curr);
-    }
 
-    if (!node->is_leaf) {
-        scanner_warn(s, "this compose sequence is a prefix of another; skipping line");
-        return;
-    }
-
-    if (node->leaf.utf8 != 0 || node->leaf.keysym != XKB_KEY_NoSymbol) {
-        bool same_string =
-            (node->leaf.utf8 == 0 && !production->has_string) ||
-            (
-                node->leaf.utf8 != 0 && production->has_string &&
-                streq(&darray_item(table->utf8, node->leaf.utf8),
-                      production->string)
-            );
-        bool same_keysym =
-            (node->leaf.keysym == XKB_KEY_NoSymbol && !production->has_keysym) ||
-            (
-                node->leaf.keysym != XKB_KEY_NoSymbol && production->has_keysym &&
-                node->leaf.keysym == production->keysym
-            );
-        if (same_string && same_keysym) {
-            scanner_warn(s, "this compose sequence is a duplicate of another; skipping line");
+        if (keysym < node->keysym) {
+            pptr = &node->lokid;
+            curr = node->lokid;
+        } else if (keysym > node->keysym) {
+            pptr = &node->hikid;
+            curr = node->hikid;
+        } else if (!last) {
+            if (node->is_leaf) {
+                scanner_warn(s, "a sequence already exists which is a prefix of this sequence; overriding");
+                node->internal.eqkid = node->lokid = node->hikid = 0;
+                node->internal.is_leaf = false;
+            }
+            lhs_pos++;
+            pptr = &node->internal.eqkid;
+            curr = node->internal.eqkid;
+        } else {
+            if (node->is_leaf) {
+                bool same_string =
+                    (node->leaf.utf8 == 0 && !production->has_string) ||
+                    (
+                        node->leaf.utf8 != 0 && production->has_string &&
+                        streq(&darray_item(table->utf8, node->leaf.utf8),
+                              production->string)
+                    );
+                bool same_keysym =
+                    (node->leaf.keysym == XKB_KEY_NoSymbol && !production->has_keysym) ||
+                    (
+                        node->leaf.keysym != XKB_KEY_NoSymbol && production->has_keysym &&
+                        node->leaf.keysym == production->keysym
+                    );
+                if (same_string && same_keysym) {
+                    scanner_warn(s, "this compose sequence is a duplicate of another; skipping line");
+                    return;
+                } else {
+                    scanner_warn(s, "this compose sequence already exists; overriding");
+                }
+            } else if (node->internal.eqkid != 0) {
+                scanner_warn(s, "this compose sequence is a prefix of another; skipping line");
+                return;
+            }
+            node->is_leaf = true;
+            if (production->has_string) {
+                node->leaf.utf8 = darray_size(table->utf8);
+                darray_append_items(table->utf8, production->string,
+                                    strlen(production->string) + 1);
+            }
+            if (production->has_keysym) {
+                node->leaf.keysym = production->keysym;
+            }
             return;
         }
-        scanner_warn(s, "this compose sequence already exists; overriding");
-    }
-
-    if (production->has_string) {
-        node->leaf.utf8 = darray_size(table->utf8);
-        darray_append_items(table->utf8, production->string,
-                            strlen(production->string) + 1);
-    }
-    if (production->has_keysym) {
-        node->leaf.keysym = production->keysym;
     }
 }
 

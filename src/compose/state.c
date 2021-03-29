@@ -109,16 +109,19 @@ xkb_compose_state_feed(struct xkb_compose_state *state, xkb_keysym_t keysym)
 
     node = &darray_item(state->table->nodes, state->context);
 
-    context = (node->is_leaf ? 0 : node->internal.successor);
-    node = &darray_item(state->table->nodes, context);
-
-    while (node->keysym != keysym && node->next != 0) {
-        context = node->next;
-        node = &darray_item(state->table->nodes, context);
-    }
-
-    if (node->keysym != keysym)
+    context = (node->is_leaf ? 1 : node->internal.eqkid);
+    if (context == 1 && darray_size(state->table->nodes) == 1)
         context = 0;
+
+    while (context != 0) {
+        node = &darray_item(state->table->nodes, context);
+        if (keysym < node->keysym)
+            context = node->lokid;
+        else if (keysym > node->keysym)
+            context = node->hikid;
+        else
+            break;
+    }
 
     state->prev_context = state->context;
     state->context = context;
