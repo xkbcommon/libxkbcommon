@@ -76,12 +76,13 @@ test_utf8(xkb_keysym_t keysym, const char *expected)
     if (ret <= 0)
         return ret;
 
+    assert(expected != NULL);
+
     fprintf(stderr, "Expected keysym %#x -> %s (%u bytes)\n", keysym, expected,
             (unsigned) strlen(expected));
     fprintf(stderr, "Received keysym %#x -> %s (%u bytes)\n\n", keysym, s,
             (unsigned) strlen(s));
 
-    assert(expected != NULL);
     return streq(s, expected);
 }
 
