@@ -1,5 +1,5 @@
 /*
- * Copyright © 2013 Ran Benita <ran234@gmail.com>
+ * Copyright © 2013,2021 Ran Benita <ran234@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -36,7 +36,7 @@ xkb_compose_table_new(struct xkb_context *ctx,
 {
     char *resolved_locale;
     struct xkb_compose_table *table;
-    struct compose_node root;
+    struct compose_node dummy;
 
     resolved_locale = resolve_locale(locale);
     if (!resolved_locale)
@@ -58,12 +58,11 @@ xkb_compose_table_new(struct xkb_context *ctx,
     darray_init(table->nodes);
     darray_init(table->utf8);
 
-    root.keysym = XKB_KEY_NoSymbol;
-    root.next = 0;
-    root.is_leaf = true;
-    root.leaf.utf8 = 0;
-    root.leaf.keysym = XKB_KEY_NoSymbol;
-    darray_append(table->nodes, root);
+    dummy.keysym = XKB_KEY_NoSymbol;
+    dummy.leaf.is_leaf = true;
+    dummy.leaf.utf8 = 0;
+    dummy.leaf.keysym = XKB_KEY_NoSymbol;
+    darray_append(table->nodes, dummy);
 
     darray_append(table->utf8, '\0');
 
