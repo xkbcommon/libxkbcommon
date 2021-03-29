@@ -66,6 +66,7 @@ istrncmp(const char *a, const char *b, size_t n);
 static inline bool
 streq(const char *s1, const char *s2)
 {
+    assert(s1 && s2);
     return strcmp(s1, s2) == 0;
 }
 
