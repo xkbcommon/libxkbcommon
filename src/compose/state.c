@@ -109,7 +109,7 @@ xkb_compose_state_feed(struct xkb_compose_state *state, xkb_keysym_t keysym)
 
     node = &darray_item(state->table->nodes, state->context);
 
-    context = (node->is_leaf ? 0 : node->u.successor);
+    context = (node->is_leaf ? 0 : node->internal.successor);
     node = &darray_item(state->table->nodes, context);
 
     while (node->keysym != keysym && node->next != 0) {
@@ -164,11 +164,11 @@ xkb_compose_state_get_utf8(struct xkb_compose_state *state,
 
     /* If there's no string specified, but only a keysym, try to do the
      * most helpful thing. */
-    if (node->u.leaf.utf8 == 0 && node->u.leaf.keysym != XKB_KEY_NoSymbol) {
+    if (node->leaf.utf8 == 0 && node->leaf.keysym != XKB_KEY_NoSymbol) {
         char name[64];
         int ret;
 
-        ret = xkb_keysym_to_utf8(node->u.leaf.keysym, name, sizeof(name));
+        ret = xkb_keysym_to_utf8(node->leaf.keysym, name, sizeof(name));
         if (ret < 0 || ret == 0) {
             /* ret < 0 is impossible.
              * ret == 0 means the keysym has no string representation. */
@@ -179,7 +179,7 @@ xkb_compose_state_get_utf8(struct xkb_compose_state *state,
     }
 
     return snprintf(buffer, size, "%s",
-                    &darray_item(state->table->utf8, node->u.leaf.utf8));
+                    &darray_item(state->table->utf8, node->leaf.utf8));
 
 fail:
     if (size > 0)
@@ -194,5 +194,5 @@ xkb_compose_state_get_one_sym(struct xkb_compose_state *state)
         &darray_item(state->table->nodes, state->context);
     if (!node->is_leaf)
         return XKB_KEY_NoSymbol;
-    return node->u.leaf.keysym;
+    return node->leaf.keysym;
 }

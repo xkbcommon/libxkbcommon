@@ -61,8 +61,8 @@ xkb_compose_table_new(struct xkb_context *ctx,
     root.keysym = XKB_KEY_NoSymbol;
     root.next = 0;
     root.is_leaf = true;
-    root.u.leaf.utf8 = 0;
-    root.u.leaf.keysym = XKB_KEY_NoSymbol;
+    root.leaf.utf8 = 0;
+    root.leaf.keysym = XKB_KEY_NoSymbol;
     darray_append(table->nodes, root);
 
     darray_append(table->utf8, '\0');
