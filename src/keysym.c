@@ -96,7 +96,7 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
 {
     const struct name_keysym *entry = NULL;
     char *tmp;
-    xkb_keysym_t val;
+    unsigned long val;
     bool icase = (flags & XKB_KEYSYM_CASE_INSENSITIVE);
 
     if (flags & ~XKB_KEYSYM_CASE_INSENSITIVE)
@@ -174,24 +174,28 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
     }
 
     if (*name == 'U' || (icase && *name == 'u')) {
+        errno = 0;
         val = strtoul(&name[1], &tmp, 16);
-        if (tmp && *tmp != '\0')
+        if ((tmp && *tmp != '\0') || errno != 0)
             return XKB_KEY_NoSymbol;
 
         if (val < 0x20 || (val > 0x7e && val < 0xa0))
             return XKB_KEY_NoSymbol;
         if (val < 0x100)
-            return val;
+            return (xkb_keysym_t) val;
         if (val > 0x10ffff)
             return XKB_KEY_NoSymbol;
-        return val | 0x01000000;
+        return (xkb_keysym_t) val | 0x01000000;
     }
     else if (name[0] == '0' && (name[1] == 'x' || (icase && name[1] == 'X'))) {
+        errno = 0;
         val = strtoul(&name[2], &tmp, 16);
-        if (tmp && *tmp != '\0')
+        if ((tmp && *tmp != '\0') || errno != 0)
+            return XKB_KEY_NoSymbol;
+        if (val > UINT32_MAX)
             return XKB_KEY_NoSymbol;
 
-        return val;
+        return (xkb_keysym_t) val;
     }
 
     /* Stupid inconsistency between the headers and XKeysymDB: the former has

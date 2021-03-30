@@ -145,6 +145,10 @@ main(void)
     assert(test_string("THORN", 0x00de));
     assert(test_string("Thorn", 0x00de));
     assert(test_string("thorn", 0x00fe));
+    /* Max keysym. */
+    assert(test_string("0xffffffff", 0xffffffff));
+    /* Outside range. */
+    assert(test_string("0x100000000", XKB_KEY_NoSymbol));
 
     assert(test_keysym(0x1008FF56, "XF86Close"));
     assert(test_keysym(0x0, "NoSymbol"));
