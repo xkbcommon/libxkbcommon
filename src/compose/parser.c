@@ -382,11 +382,11 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
             break;
 
         if (node->is_leaf) {
-            if (node->u.leaf.utf8 != 0 ||
-                node->u.leaf.keysym != XKB_KEY_NoSymbol) {
+            if (node->leaf.utf8 != 0 ||
+                node->leaf.keysym != XKB_KEY_NoSymbol) {
                 scanner_warn(s, "a sequence already exists which is a prefix of this sequence; overriding");
-                node->u.leaf.utf8 = 0;
-                node->u.leaf.keysym = XKB_KEY_NoSymbol;
+                node->leaf.utf8 = 0;
+                node->leaf.keysym = XKB_KEY_NoSymbol;
             }
 
             {
@@ -394,11 +394,11 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
                 /* Refetch since add_node could have realloc()ed. */
                 node = &darray_item(table->nodes, curr);
                 node->is_leaf = false;
-                node->u.successor = successor;
+                node->internal.successor = successor;
             }
         }
 
-        curr = node->u.successor;
+        curr = node->internal.successor;
         node = &darray_item(table->nodes, curr);
     }
 
@@ -407,19 +407,19 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
         return;
     }
 
-    if (node->u.leaf.utf8 != 0 || node->u.leaf.keysym != XKB_KEY_NoSymbol) {
+    if (node->leaf.utf8 != 0 || node->leaf.keysym != XKB_KEY_NoSymbol) {
         bool same_string =
-            (node->u.leaf.utf8 == 0 && !production->has_string) ||
+            (node->leaf.utf8 == 0 && !production->has_string) ||
             (
-                node->u.leaf.utf8 != 0 && production->has_string &&
-                streq(&darray_item(table->utf8, node->u.leaf.utf8),
+                node->leaf.utf8 != 0 && production->has_string &&
+                streq(&darray_item(table->utf8, node->leaf.utf8),
                       production->string)
             );
         bool same_keysym =
-            (node->u.leaf.keysym == XKB_KEY_NoSymbol && !production->has_keysym) ||
+            (node->leaf.keysym == XKB_KEY_NoSymbol && !production->has_keysym) ||
             (
-                node->u.leaf.keysym != XKB_KEY_NoSymbol && production->has_keysym &&
-                node->u.leaf.keysym == production->keysym
+                node->leaf.keysym != XKB_KEY_NoSymbol && production->has_keysym &&
+                node->leaf.keysym == production->keysym
             );
         if (same_string && same_keysym) {
             scanner_warn(s, "this compose sequence is a duplicate of another; skipping line");
@@ -429,12 +429,12 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
     }
 
     if (production->has_string) {
-        node->u.leaf.utf8 = darray_size(table->utf8);
+        node->leaf.utf8 = darray_size(table->utf8);
         darray_append_items(table->utf8, production->string,
                             strlen(production->string) + 1);
     }
     if (production->has_keysym) {
-        node->u.leaf.keysym = production->keysym;
+        node->leaf.keysym = production->keysym;
     }
 }
 

@@ -78,14 +78,16 @@ struct compose_node {
     bool is_leaf;
 
     union {
-        /* Offset into xkb_compose_table::nodes. */
-        uint16_t successor;
+        struct {
+            /* Offset into xkb_compose_table::nodes. */
+            uint16_t successor;
+        } internal;
         struct {
             /* Offset into xkb_compose_table::utf8. */
             uint32_t utf8;
             xkb_keysym_t keysym;
         } leaf;
-    } u;
+    };
 };
 
 struct xkb_compose_table {
