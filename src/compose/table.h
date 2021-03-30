@@ -68,15 +68,18 @@
  * \0 is so offset 0 points to an empty string).
  */
 
+/* Fits in uint16_t, also a good idea to have some limit. */
+#define MAX_COMPOSE_NODES 65535
+
 struct compose_node {
     xkb_keysym_t keysym;
     /* Offset into xkb_compose_table::nodes. */
-    unsigned int next:31;
-    bool is_leaf:1;
+    uint16_t next;
+    bool is_leaf;
 
     union {
         /* Offset into xkb_compose_table::nodes. */
-        uint32_t successor;
+        uint16_t successor;
         struct {
             /* Offset into xkb_compose_table::utf8. */
             uint32_t utf8;

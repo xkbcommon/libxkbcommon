@@ -327,7 +327,7 @@ struct production {
     xkb_mod_mask_t mods;
 };
 
-static uint32_t
+static uint16_t
 add_node(struct xkb_compose_table *table, xkb_keysym_t keysym)
 {
     struct compose_node new = {
@@ -344,8 +344,13 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
                const struct production *production)
 {
     unsigned lhs_pos;
-    uint32_t curr;
+    uint16_t curr;
     struct compose_node *node;
+
+    if (darray_size(table->nodes) + 1 == MAX_COMPOSE_NODES)
+        scanner_warn(s, "too many sequences for one Compose file; will ignore further lines");
+    if (darray_size(table->nodes) >= MAX_COMPOSE_NODES)
+        return;
 
     curr = 0;
     node = &darray_item(table->nodes, curr);
@@ -363,7 +368,7 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
     for (lhs_pos = 0; lhs_pos < production->len; lhs_pos++) {
         while (production->lhs[lhs_pos] != node->keysym) {
             if (node->next == 0) {
-                uint32_t next = add_node(table, production->lhs[lhs_pos]);
+                uint16_t next = add_node(table, production->lhs[lhs_pos]);
                 /* Refetch since add_node could have realloc()ed. */
                 node = &darray_item(table->nodes, curr);
                 node->next = next;
@@ -385,7 +390,7 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
             }
 
             {
-                uint32_t successor = add_node(table, production->lhs[lhs_pos + 1]);
+                uint16_t successor = add_node(table, production->lhs[lhs_pos + 1]);
                 /* Refetch since add_node could have realloc()ed. */
                 node = &darray_item(table->nodes, curr);
                 node->is_leaf = false;

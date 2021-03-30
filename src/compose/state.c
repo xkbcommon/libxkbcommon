@@ -41,8 +41,8 @@ struct xkb_compose_state {
      * This is also sufficient for inferring the current status; see
      * xkb_compose_state_get_status().
      */
-    uint32_t prev_context;
-    uint32_t context;
+    uint16_t prev_context;
+    uint16_t context;
 };
 
 XKB_EXPORT struct xkb_compose_state *
@@ -91,7 +91,7 @@ xkb_compose_state_get_compose_table(struct xkb_compose_state *state)
 XKB_EXPORT enum xkb_compose_feed_result
 xkb_compose_state_feed(struct xkb_compose_state *state, xkb_keysym_t keysym)
 {
-    uint32_t context;
+    uint16_t context;
     const struct compose_node *node;
 
     /*
