@@ -136,7 +136,18 @@ main(void)
     assert(test_string("XF86_Switch_VT_5", 0x1008FE05));
     assert(test_string("VoidSymbol", 0xFFFFFF));
     assert(test_string("U4567", 0x1004567));
+    assert(test_string("U+4567", XKB_KEY_NoSymbol));
+    assert(test_string("U+4567ffff", XKB_KEY_NoSymbol));
+    assert(test_string("U+4567ffffff", XKB_KEY_NoSymbol));
+    assert(test_string("U   4567", XKB_KEY_NoSymbol));
+    assert(test_string("U  +4567", XKB_KEY_NoSymbol));
     assert(test_string("0x10203040", 0x10203040));
+    assert(test_string("0x102030400", XKB_KEY_NoSymbol));
+    assert(test_string("0x010203040", XKB_KEY_NoSymbol));
+    assert(test_string("0x+10203040", XKB_KEY_NoSymbol));
+    assert(test_string("0x  10203040", XKB_KEY_NoSymbol));
+    assert(test_string("0x  +10203040", XKB_KEY_NoSymbol));
+    assert(test_string("0x-10203040", XKB_KEY_NoSymbol));
     assert(test_string("a", 0x61));
     assert(test_string("A", 0x41));
     assert(test_string("ch", 0xfea0));

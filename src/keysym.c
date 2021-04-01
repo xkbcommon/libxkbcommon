@@ -91,12 +91,37 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
     return snprintf(buffer, size, "0x%08x", ks);
 }
 
+/*
+ * Parse the numeric part of a 0xXXXX and UXXXX keysym.
+ * Not using strtoul -- it's slower and accepts a bunch of stuff
+ * we don't want to allow, like signs, spaces, even locale stuff.
+ */
+static bool
+parse_keysym_hex(const char *s, uint32_t *out)
+{
+    uint32_t result = 0;
+    int i;
+    for (i = 0; i < 8 && s[i] != '\0'; i++) {
+        result <<= 4;
+        if ('0' <= s[i] && s[i] <= '9')
+            result += s[i] - '0';
+        else if ('a' <= s[i] && s[i] <= 'f')
+            result += 10 + s[i] - 'a';
+        else if ('A' <= s[i] && s[i] <= 'F')
+            result += 10 + s[i] - 'A';
+        else
+            return false;
+    }
+    *out = result;
+    return s[i] == '\0' && i > 0;
+}
+
 XKB_EXPORT xkb_keysym_t
 xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
 {
     const struct name_keysym *entry = NULL;
     char *tmp;
-    unsigned long val;
+    uint32_t val;
     bool icase = (flags & XKB_KEYSYM_CASE_INSENSITIVE);
 
     if (flags & ~XKB_KEYSYM_CASE_INSENSITIVE)
@@ -169,9 +194,7 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
     }
 
     if (*name == 'U' || (icase && *name == 'u')) {
-        errno = 0;
-        val = strtoul(&name[1], &tmp, 16);
-        if ((tmp && *tmp != '\0') || errno != 0)
+        if (!parse_keysym_hex(&name[1], &val))
             return XKB_KEY_NoSymbol;
 
         if (val < 0x20 || (val > 0x7e && val < 0xa0))
@@ -183,13 +206,8 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
         return (xkb_keysym_t) val | 0x01000000;
     }
     else if (name[0] == '0' && (name[1] == 'x' || (icase && name[1] == 'X'))) {
-        errno = 0;
-        val = strtoul(&name[2], &tmp, 16);
-        if ((tmp && *tmp != '\0') || errno != 0)
+        if (!parse_keysym_hex(&name[2], &val))
             return XKB_KEY_NoSymbol;
-        if (val > UINT32_MAX)
-            return XKB_KEY_NoSymbol;
-
         return (xkb_keysym_t) val;
     }
 
