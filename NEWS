@@ -1,3 +1,29 @@
+libxkbcommon 1.2.0 - 2021-04-03
+==================
+
+- `xkb_x11_keymap_new_from_device()` is much faster. It now performs only 2
+  roundtrips to the X server, instead of dozens (in first-time calls).
+
+  Contributed by Uli Schlachter.
+
+- Case-sensitive `xkb_keysym_from_name()` is much faster.
+
+- Keysym names of the form `0x12AB` and `U12AB` are parsed more strictly.
+  Previously the hexadecimal part was parsed with `strtoul()`, now only up
+  to 8 hexadecimal digits (0-9A-Fa-f) are allowed.
+
+- Compose files now have a size limit (65535 internal nodes). Further sequences
+  are discared and a warning is issued.
+
+- Compose table loading (`xkb_compose_table_new_from_locale()` and similar) is
+  much faster.
+
+- Use `poll()` instead of `epoll()` for `xlbcli interactive-evdev`, making it
+  portable to FreeBSD which provides evdev but not epoll. On FreeBSD, remember
+  to install the `evdev-proto` package to get the evdev headers.
+
+- The build now requires a C11 compiler (uses anonymous structs/unions).
+
 libxkbcommon 1.1.0 - 2021-02-27
 ==================
 
