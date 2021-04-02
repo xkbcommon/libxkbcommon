@@ -336,9 +336,10 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
     uint16_t *pptr = NULL;
     struct compose_node *node = NULL;
 
-    if (darray_size(table->nodes) + 1 == MAX_COMPOSE_NODES)
+    /* Warn before potentially going over the limit, discard silently after. */
+    if (darray_size(table->nodes) + production->len + MAX_LHS_LEN > MAX_COMPOSE_NODES)
         scanner_warn(s, "too many sequences for one Compose file; will ignore further lines");
-    if (darray_size(table->nodes) >= MAX_COMPOSE_NODES)
+    if (darray_size(table->nodes) + production->len >= MAX_COMPOSE_NODES)
         return;
 
     /*
