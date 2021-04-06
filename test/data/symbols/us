@@ -125,7 +125,7 @@ xkb_symbols "intl" {
 
     key <AC09> { [	   l,          L,        oslash,         Ooblique ] };
     key <AC10> { [ semicolon,      colon,     paragraph,           degree ] };
-    key <AC11> { [dead_acute, dead_diaeresis, apostrophe,        quotedbl ] };
+    key <AC11> { [dead_apostrophe, dead_quotedbl, dead_acute, dead_diaeresis ] };
 
     key <AB01> { [	   z,          Z,            ae,               AE ] };
     key <AB02> { [	   x,          X,             x,                X ] };
