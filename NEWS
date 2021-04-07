@@ -1,3 +1,10 @@
+libxkbcommon 1.2.1 - 2021-04-07
+==================
+
+- Fix `xkb_x11_keymap_new_from_device()` failing when the keymap contains key
+  types with missing level names, like the one used by the `numpad:mac` option
+  in xkeyboard-config. Regressed in 1.2.0.
+
 libxkbcommon 1.2.0 - 2021-04-03
 ==================
 
