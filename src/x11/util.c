@@ -169,7 +169,10 @@ void
 x11_atom_interner_adopt_atom(struct x11_atom_interner *interner,
                              const xcb_atom_t atom, xkb_atom_t *out)
 {
-    *out = 0;
+    *out = XKB_ATOM_NONE;
+
+    if (atom == XCB_ATOM_NONE)
+        return;
 
     /* Can be NULL in case the malloc failed. */
     struct x11_atom_cache *cache = get_cache(interner->ctx, interner->conn);
