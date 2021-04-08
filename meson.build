@@ -751,6 +751,11 @@ benchmark(
     executable('bench-compose', 'bench/compose.c', dependencies: test_dep),
     env: bench_env,
 )
+benchmark(
+    'atom',
+    executable('bench-atom', 'bench/atom.c', dependencies: test_dep),
+    env: bench_env,
+)
 if get_option('enable-x11')
   benchmark(
       'x11',
