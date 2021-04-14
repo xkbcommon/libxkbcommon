@@ -130,6 +130,27 @@ create_tmpfile_cloexec(char *tmpname)
 }
 #endif
 
+static int
+os_resize_anonymous_file(int fd, off_t size)
+{
+    int ret;
+#ifdef HAVE_POSIX_FALLOCATE
+    ret = posix_fallocate(fd, 0, size);
+    if (ret == 0)
+        return 0;
+    /*
+     * Filesystems that do support fallocate will return EINVAL
+     * or EOPNOTSUPP, fallback to ftruncate() then.
+     */
+    if (ret != EINVAL && ret != EOPNOTSUPP)
+        return ret;
+#endif
+    ret = ftruncate(fd, size);
+    if (ret != 0)
+        return errno;
+    return 0;
+}
+
 /*
  * Create a new, unique, anonymous file of the given size, and
  * return the file descriptor for it. The file descriptor is set
@@ -148,8 +169,8 @@ create_tmpfile_cloexec(char *tmpname)
  * If the C library implements posix_fallocate(), it is used to
  * guarantee that disk space is available for the file at the
  * given size. If disk space is insufficent, errno is set to ENOSPC.
- * If posix_fallocate() is not supported, program may receive
- * SIGBUS on accessing mmap()'ed file contents instead.
+ * If posix_fallocate() is not supported, program will fallback
+ * to ftruncate() instead.
  */
 static int
 os_create_anonymous_file(off_t size)
@@ -180,20 +201,12 @@ os_create_anonymous_file(off_t size)
     if (fd < 0)
         return -1;
 
-#ifdef HAVE_POSIX_FALLOCATE
-    ret = posix_fallocate(fd, 0, size);
+    ret = os_resize_anonymous_file(fd, size);
     if (ret != 0) {
         close(fd);
         errno = ret;
         return -1;
     }
-#else
-    ret = ftruncate(fd, size);
-    if (ret < 0) {
-        close(fd);
-        return -1;
-    }
-#endif
 
     return fd;
 }
