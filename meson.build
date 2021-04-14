@@ -152,6 +152,18 @@ have_version_script = cc.links(
     name: '-Wl,--version-script',
 )
 
+if get_option('enable-cache')
+    xxh3_dep = dependency('libxxhash')
+    configh_data.set('HAVE_XXHASH', 1)
+    cache_sources = [
+        'src/compose/cache.c',
+        'src/compose/cache.h',
+    ]
+else
+    configh_data.set('HAVE_XXHASH', 0)
+    cache_sources = []
+endif
+
 
 # libxkbcommon.
 # Note: we use some yacc extensions, which work with either GNU bison
@@ -176,6 +188,7 @@ else
     endif
 endif
 libxkbcommon_sources = [
+    cache_sources,
     'src/compose/parser.c',
     'src/compose/parser.h',
     'src/compose/paths.c',

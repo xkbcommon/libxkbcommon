@@ -63,6 +63,10 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #include "utf8.h"
 #include "parser.h"
 
+#if HAVE_XXHASH
+#include "cache.h"
+#endif
+
 #define MAX_LHS_LEN 10
 #define MAX_INCLUDE_DEPTH 5
 
@@ -704,9 +708,9 @@ finished:
     return true;
 }
 
-bool
-parse_string(struct xkb_compose_table *table, const char *string, size_t len,
-             const char *file_name)
+static bool
+do_parse_string(struct xkb_compose_table *table, const char *string, size_t len,
+                const char *file_name)
 {
     struct scanner s;
     scanner_init(&s, table->ctx, string, len, file_name, NULL);
@@ -716,6 +720,39 @@ parse_string(struct xkb_compose_table *table, const char *string, size_t len,
     darray_shrink(table->nodes);
     darray_shrink(table->utf8);
     return true;
+}
+
+bool
+parse_string(struct xkb_compose_table *table, const char *string, size_t len,
+             const char *file_name)
+{
+    int ret;
+
+#if HAVE_XXHASH
+    bool usable_cache;
+    char *cache_path;
+
+    usable_cache = cache_get_path_from_string(string, len, &cache_path);
+
+    /* Attempt to read the table from cache. */
+    if (usable_cache && cache_read(table, cache_path)) {
+        free(cache_path);
+        return true;
+    }
+#endif
+
+    /* The Compose string wasn’t in cache already. */
+    ret = do_parse_string(table, string, len, file_name);
+
+#if HAVE_XXHASH
+    /* If everything went well, cache the parsed table. */
+    if (usable_cache && ret)
+        cache_write(table, cache_path);
+
+    free(cache_path);
+#endif
+
+    return ret;
 }
 
 bool
