@@ -267,6 +267,13 @@ def main(args):
     parser.add_argument('--verbose', '-v', default=False, action="store_true")
     parser.add_argument('--keymap-output-dir', default=None, type=str,
                         help='Directory to print compiled keymaps to')
+    parser.add_argument('--layout', default=None, type=str,
+                        help='Only test the given layout')
+    parser.add_argument('--variant', default=None, type=str,
+                        help='Only test the given variant')
+    parser.add_argument('--option', default=None, type=str,
+                        help='Only test the given option')
+
     args = parser.parse_args()
 
     verbose = args.verbose
@@ -275,7 +282,14 @@ def main(args):
 
     tool = tools[args.tool]
 
-    combos = parse(args.path)
+    if any([args.layout, args.variant, args.option]):
+        combos = [{
+            'l': args.layout,
+            'v': args.variant,
+            'o': args.option,
+        }]
+    else:
+        combos = parse(args.path)
     failed = run(combos, tool, args.jobs, keymapdir)
     sys.exit(failed)
 
