@@ -23,7 +23,7 @@ def escape(s):
 
 # The function generating the progress bar (if any).
 def create_progress_bar(verbose):
-    def noop_progress_bar(x, total):
+    def noop_progress_bar(x, total, file=None):
         return x
 
     progress_bar = noop_progress_bar
@@ -211,7 +211,7 @@ def run(combos, tool, njobs, keymap_output_dir):
     failed = False
     with multiprocessing.Pool(njobs) as p:
         results = p.imap_unordered(tool, combos)
-        for invocation in progress_bar(results, total=len(combos)):
+        for invocation in progress_bar(results, total=len(combos), file=sys.stdout):
             if invocation.exitstatus != 0:
                 failed = True
                 target = sys.stderr
