@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 import argparse
+import multiprocessing
 import sys
 import subprocess
 import os
-import io
 import xml.etree.ElementTree as ET
-from multiprocessing import Pool
 
 
 verbose = False
@@ -37,58 +36,40 @@ def create_progress_bar(verbose):
     return progress_bar
 
 
-def xkbcommontool(rmlvo):
-    try:
-        r = rmlvo.get('r', 'evdev')
-        m = rmlvo.get('m', 'pc105')
-        l = rmlvo.get('l', 'us')
-        v = rmlvo.get('v', None)
-        o = rmlvo.get('o', None)
-        args = [
-            'xkbcli-compile-keymap',  # this is run in the builddir
-            '--verbose',
-            '--rules', r,
-            '--model', m,
-            '--layout', l,
-        ]
-        if v is not None:
-            args += ['--variant', v]
-        if o is not None:
-            args += ['--options', o]
+class Invocation:
+    def __init__(self, r, m, l, v, o):
+        self.command = ""
+        self.rules = r
+        self.model = m
+        self.layout = l
+        self.variant = v
+        self.option = o
+        self.exitstatus = 77  # default to skipped
+        self.error = None
+        self.keymap = None  # The fully compiled keymap
 
-        success = True
-        out = io.StringIO()
-        if verbose:
-            print(':: {}'.format(' '.join(args)), file=out)
+    @property
+    def rmlvo(self):
+        return self.rules, self.model, self.layout, self.variant, self.option
 
-        try:
-            output = subprocess.check_output(args, stderr=subprocess.STDOUT,
-                                             universal_newlines=True)
-            if verbose:
-                print(output, file=out)
+    def __str__(self):
+        s = []
+        rmlvo = [x or "" for x in self.rmlvo]
+        rmlvo = ', '.join([f'"{x}"' for x in rmlvo])
+        s.append(f'- rmlvo: [{rmlvo}]')
+        s.append(f'  cmd: "{escape(self.command)}"')
+        s.append(f'  status: {self.exitstatus}')
+        if self.error:
+            s.append(f'  error: "{escape(self.error.strip())}"')
+        return '\n'.join(s)
 
-            if "unrecognized keysym" in output:
-                for line in output.split('\n'):
-                    if "unrecognized keysym" in line:
-                        print('ERROR: {}'.format(line))
-                success = False
-        except subprocess.CalledProcessError as err:
-            print('ERROR: Failed to compile: {}'.format(' '.join(args)), file=out)
-            print(err.output, file=out)
-            success = False
-
-        return success, out.getvalue()
-    except KeyboardInterrupt:
-        pass
+    def run(self):
+        raise NotImplementedError
 
 
-def xkbcomp(rmlvo):
-    try:
-        r = rmlvo.get('r', 'evdev')
-        m = rmlvo.get('m', 'pc105')
-        l = rmlvo.get('l', 'us')
-        v = rmlvo.get('v', None)
-        o = rmlvo.get('o', None)
+class XkbCompInvocation(Invocation):
+    def run(self):
+        r, m, l, v, o = self.rmlvo
         args = ['setxkbmap', '-print']
         if r is not None:
             args.append('-rules')
@@ -106,34 +87,85 @@ def xkbcomp(rmlvo):
             args.append('-option')
             args.append('{}'.format(o))
 
-        success = True
-        out = io.StringIO()
-        if verbose:
-            print(':: {}'.format(' '.join(args)), file=out)
+        xkbcomp_args = ['xkbcomp', '-xkb', '-', '-']
 
-        try:
-            xkbcomp_args = ['xkbcomp', '-xkb', '-', '-']
+        self.command = " ".join(args + ["|"] + xkbcomp_args)
 
-            setxkbmap = subprocess.Popen(args, stdout=subprocess.PIPE)
-            xkbcomp = subprocess.Popen(xkbcomp_args, stdin=setxkbmap.stdout,
+        setxkbmap = subprocess.Popen(args, stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE, universal_newlines=True)
+        stdout, stderr = setxkbmap.communicate()
+        if "Cannot open display" in stderr:
+            self.error = stderr
+            self.exitstatus = 90
+        else:
+            xkbcomp = subprocess.Popen(xkbcomp_args, stdin=subprocess.PIPE,
                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                        universal_newlines=True)
-            setxkbmap.stdout.close()
-            stdout, stderr = xkbcomp.communicate()
+            stdout, stderr = xkbcomp.communicate(stdout)
             if xkbcomp.returncode != 0:
-                print('ERROR: Failed to compile: {}'.format(' '.join(args)), file=out)
-                success = False
-            if xkbcomp.returncode != 0 or verbose:
-                print(stdout, file=out)
-                print(stderr, file=out)
+                self.error = "failed to compile keymap"
+                self.exitstatus = xkbcomp.returncode
+            else:
+                self.keymap = stdout
+                self.exitstatus = 0
 
-        # This catches setxkbmap errors.
+
+class XkbcommonInvocation(Invocation):
+    def run(self):
+        r, m, l, v, o = self.rmlvo
+        args = [
+            'xkbcli-compile-keymap',  # this is run in the builddir
+            '--verbose',
+            '--rules', r,
+            '--model', m,
+            '--layout', l,
+        ]
+        if v is not None:
+            args += ['--variant', v]
+        if o is not None:
+            args += ['--options', o]
+
+        self.command = " ".join(args)
+        try:
+            output = subprocess.check_output(args, stderr=subprocess.STDOUT,
+                                             universal_newlines=True)
+            if "unrecognized keysym" in output:
+                for line in output.split('\n'):
+                    if "unrecognized keysym" in line:
+                        self.error = line
+                self.exitstatus = 99  # tool doesn't generate this one
+            else:
+                self.exitstatus = 0
+                self.keymap = output
         except subprocess.CalledProcessError as err:
-            print('ERROR: Failed to compile: {}'.format(' '.join(args)), file=out)
-            print(err.output, file=out)
-            success = False
+            self.error = "failed to compile keymap"
+            self.exitstatus = err.returncode
 
-        return success, out.getvalue()
+
+def xkbcommontool(rmlvo):
+    try:
+        r = rmlvo.get('r', 'evdev')
+        m = rmlvo.get('m', 'pc105')
+        l = rmlvo.get('l', 'us')
+        v = rmlvo.get('v', None)
+        o = rmlvo.get('o', None)
+        tool = XkbcommonInvocation(r, m, l, v, o)
+        tool.run()
+        return tool
+    except KeyboardInterrupt:
+        pass
+
+
+def xkbcomp(rmlvo):
+    try:
+        r = rmlvo.get('r', 'evdev')
+        m = rmlvo.get('m', 'pc105')
+        l = rmlvo.get('l', 'us')
+        v = rmlvo.get('v', None)
+        o = rmlvo.get('o', None)
+        tool = XkbCompInvocation(r, m, l, v, o)
+        tool.run()
+        return tool
     except KeyboardInterrupt:
         pass
 
@@ -165,13 +197,18 @@ def parse(path):
 
 def run(combos, tool, njobs):
     failed = False
-    with Pool(njobs) as p:
+    with multiprocessing.Pool(njobs) as p:
         results = p.imap_unordered(tool, combos)
-        for success, output in progress_bar(results, total=len(combos)):
-            if not success:
+        for invocation in progress_bar(results, total=len(combos)):
+            if invocation.exitstatus != 0:
                 failed = True
-            if output:
-                print(output, file=sys.stdout if success else sys.stderr)
+                target = sys.stderr
+            else:
+                target = sys.stdout if verbose else None
+
+            if target:
+                print(invocation, file=target)
+
     return failed
 
 
@@ -214,4 +251,4 @@ if __name__ == '__main__':
     try:
         main(sys.argv)
     except KeyboardInterrupt:
-        print('Exiting after Ctrl+C')
+        print('# Exiting after Ctrl+C')
