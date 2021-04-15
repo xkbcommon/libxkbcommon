@@ -5,6 +5,7 @@ import sys
 import subprocess
 import os
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 
 verbose = False
@@ -195,7 +196,18 @@ def parse(path):
     return combos
 
 
-def run(combos, tool, njobs):
+def run(combos, tool, njobs, keymap_output_dir):
+    if keymap_output_dir:
+        keymap_output_dir = Path(keymap_output_dir)
+        try:
+            keymap_output_dir.mkdir()
+        except FileExistsError as e:
+            print(e, file=sys.stderr)
+            return False
+
+    keymap_file = None
+    keymap_file_fd = None
+
     failed = False
     with multiprocessing.Pool(njobs) as p:
         results = p.imap_unordered(tool, combos)
@@ -208,6 +220,24 @@ def run(combos, tool, njobs):
 
             if target:
                 print(invocation, file=target)
+
+            if keymap_output_dir:
+                # we're running through the layouts in a somewhat sorted manner,
+                # so let's keep the fd open until we switch layouts
+                layout = invocation.layout
+                if invocation.variant:
+                    layout += f"({invocation.variant})"
+                fname = keymap_output_dir / layout
+                if fname != keymap_file:
+                    keymap_file = fname
+                    if keymap_file_fd:
+                        keymap_file_fd.close()
+                    keymap_file_fd = open(keymap_file, 'a')
+
+                rmlvo = ', '.join([x or '' for x in invocation.rmlvo])
+                print(f"// {rmlvo}", file=keymap_file_fd)
+                print(invocation.keymap, file=keymap_file_fd)
+                keymap_file_fd.flush()
 
     return failed
 
@@ -235,15 +265,18 @@ def main(args):
                         default=os.cpu_count() * 4,
                         help='number of processes to use')
     parser.add_argument('--verbose', '-v', default=False, action="store_true")
+    parser.add_argument('--keymap-output-dir', default=None, type=str,
+                        help='Directory to print compiled keymaps to')
     args = parser.parse_args()
 
     verbose = args.verbose
+    keymapdir = args.keymap_output_dir
     progress_bar = create_progress_bar(verbose)
 
     tool = tools[args.tool]
 
     combos = parse(args.path)
-    failed = run(combos, tool, args.jobs)
+    failed = run(combos, tool, args.jobs, keymapdir)
     sys.exit(failed)
 
 
