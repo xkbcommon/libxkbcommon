@@ -76,10 +76,11 @@ class XkbcliTool:
     xkbcli_tool = 'xkbcli'
     subtool = None
 
-    def __init__(self, subtool=None, skipIf=()):
+    def __init__(self, subtool=None, skipIf=(), skipError=()):
         self.tool_path = top_builddir
         self.subtool = subtool
         self.skipIf = skipIf
+        self.skipError = skipError
 
     def run_command(self, args):
         for condition, reason in self.skipIf:
@@ -95,6 +96,10 @@ class XkbcliTool:
 
     def run_command_success(self, args):
         rc, stdout, stderr = self.run_command(args)
+        if rc != 0:
+            for testfunc, reason in self.skipError:
+                if testfunc(rc, stdout, stderr):
+                    raise unittest.SkipTest(reason)
         assert rc == 0, (stdout, stderr)
         return stdout, stderr
 
@@ -132,7 +137,11 @@ class TestXkbcli(unittest.TestCase):
             (not int(os.getenv('HAVE_XKBCLI_INTERACTIVE_EVDEV', '1')), 'evdev not enabled'),
             (not os.path.exists('/dev/input/event0'), 'event node required'),
             (not os.access('/dev/input/event0', os.R_OK), 'insufficient permissions'),
-        ))
+        ), skipError=(
+            (lambda rc, stdout, stderr: 'Couldn\'t find any keyboards' in stderr,
+                'No keyboards available'),
+        ),
+        )
         cls.xkbcli_interactive_x11 = XkbcliTool('interactive-x11', skipIf=(
             (not int(os.getenv('HAVE_XKBCLI_INTERACTIVE_X11', '1')), 'x11 not enabled'),
             (not os.getenv('DISPLAY'), 'DISPLAY not set'),
