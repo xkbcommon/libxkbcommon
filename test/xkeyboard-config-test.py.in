@@ -252,7 +252,12 @@ def main(args):
     }
 
     parser = argparse.ArgumentParser(
-        description='Tool to test all layout/variant/option combinations.'
+        description='''
+                    This tool compiles a keymap for each layout, variant and
+                    options combination in the given rules XML file. The output
+                    of this tool is YAML, use your favorite YAML parser to
+                    extract error messages. Errors are printed to stderr.
+                    '''
     )
     parser.add_argument('path', metavar='/path/to/evdev.xml',
                         nargs='?', type=str,
