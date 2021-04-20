@@ -142,7 +142,7 @@ enum xkb_action_flags {
     ACTION_LATCH_TO_LOCK = (1 << 1),
     ACTION_LOCK_NO_LOCK = (1 << 2),
     ACTION_LOCK_NO_UNLOCK = (1 << 3),
-    ACTION_MODS_LOOKUP_MODMAP = (1 << 4),
+    ACTION_MODS_LOOKUP_MODMAPS = (1 << 4),
     ACTION_ABSOLUTE_SWITCH = (1 << 5),
     ACTION_ABSOLUTE_X = (1 << 6),
     ACTION_ABSOLUTE_Y = (1 << 7),

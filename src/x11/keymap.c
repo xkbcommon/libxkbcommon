@@ -174,7 +174,7 @@ translate_action(union xkb_action *action, const xcb_xkb_action_t *wire)
         if (wire->setmods.flags & XCB_XKB_SA_LATCH_TO_LOCK)
             action->mods.flags |= ACTION_LATCH_TO_LOCK;
         if (wire->setmods.flags & XCB_XKB_SA_USE_MOD_MAP_MODS)
-            action->mods.flags |= ACTION_MODS_LOOKUP_MODMAP;
+            action->mods.flags |= ACTION_MODS_LOOKUP_MODMAPS;
 
         break;
     case XCB_XKB_SA_TYPE_LATCH_MODS:
@@ -190,7 +190,7 @@ translate_action(union xkb_action *action, const xcb_xkb_action_t *wire)
         if (wire->latchmods.flags & XCB_XKB_SA_LATCH_TO_LOCK)
             action->mods.flags |= ACTION_LATCH_TO_LOCK;
         if (wire->latchmods.flags & XCB_XKB_SA_USE_MOD_MAP_MODS)
-            action->mods.flags |= ACTION_MODS_LOOKUP_MODMAP;
+            action->mods.flags |= ACTION_MODS_LOOKUP_MODMAPS;
 
         break;
     case XCB_XKB_SA_TYPE_LOCK_MODS:
@@ -206,7 +206,7 @@ translate_action(union xkb_action *action, const xcb_xkb_action_t *wire)
         if (wire->lockmods.flags & XCB_XKB_SA_ISO_LOCK_FLAG_NO_UNLOCK)
             action->mods.flags |= ACTION_LOCK_NO_UNLOCK;
         if (wire->lockmods.flags & XCB_XKB_SA_USE_MOD_MAP_MODS)
-            action->mods.flags |= ACTION_MODS_LOOKUP_MODMAP;
+            action->mods.flags |= ACTION_MODS_LOOKUP_MODMAPS;
 
         break;
     case XCB_XKB_SA_TYPE_SET_GROUP:

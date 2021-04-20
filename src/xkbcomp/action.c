@@ -268,7 +268,7 @@ CheckModifierField(struct xkb_context *ctx, const struct xkb_mod_set *mods,
         if (valStr && (istreq(valStr, "usemodmapmods") ||
                        istreq(valStr, "modmapmods"))) {
             *mods_rtrn = 0;
-            *flags_inout |= ACTION_MODS_LOOKUP_MODMAP;
+            *flags_inout |= ACTION_MODS_LOOKUP_MODMAPS;
             return true;
         }
     }
@@ -277,7 +277,7 @@ CheckModifierField(struct xkb_context *ctx, const struct xkb_mod_set *mods,
         return ReportMismatch(ctx, action,
                               ACTION_FIELD_MODIFIERS, "modifier mask");
 
-    *flags_inout &= ~ACTION_MODS_LOOKUP_MODMAP;
+    *flags_inout &= ~ACTION_MODS_LOOKUP_MODMAPS;
     return true;
 }
 
