@@ -69,9 +69,9 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
         return -1;
     }
 
-    size_t lo = 0, hi = ARRAY_SIZE(keysym_to_name) - 1;
+    int32_t lo = 0, hi = ARRAY_SIZE(keysym_to_name) - 1;
     while (hi >= lo) {
-        size_t mid = (lo + hi) / 2;
+        int32_t mid = (lo + hi) / 2;
         if (ks > keysym_to_name[mid].keysym) {
             lo = mid + 1;
         } else if (ks < keysym_to_name[mid].keysym) {
@@ -155,9 +155,9 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
     * lower-case match is enough in this case.
     */
     else {
-        size_t lo = 0, hi = ARRAY_SIZE(name_to_keysym) - 1;
+        int32_t lo = 0, hi = ARRAY_SIZE(name_to_keysym) - 1;
         while (hi >= lo) {
-            size_t mid = (lo + hi) / 2;
+            int32_t mid = (lo + hi) / 2;
             int cmp = istrcmp(name, get_name(&name_to_keysym[mid]));
             if (cmp > 0) {
                 lo = mid + 1;
