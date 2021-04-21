@@ -189,6 +189,9 @@ main(void)
     assert(test_casestring("Thorn", 0x00fe));
     assert(test_casestring("thorn", 0x00fe));
 
+    assert(test_string("", XKB_KEY_NoSymbol));
+    assert(test_casestring("", XKB_KEY_NoSymbol));
+
     assert(test_utf8(XKB_KEY_y, "y"));
     assert(test_utf8(XKB_KEY_u, "u"));
     assert(test_utf8(XKB_KEY_m, "m"));
