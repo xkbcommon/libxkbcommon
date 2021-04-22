@@ -156,7 +156,6 @@ main(int argc, char **argv)
         struct rxkb_iso3166_code *iso3166;
         const char *variant = rxkb_layout_get_variant(l);
         const char *brief = rxkb_layout_get_brief(l);
-        bool first;
 
         printf("- %s%s%s%s:%s:%s",
                rxkb_layout_get_name(l),
@@ -167,22 +166,24 @@ main(int argc, char **argv)
                rxkb_layout_get_description(l));
 
         iso639 = rxkb_layout_get_iso639_first(l);
-        if (iso639)
+        if (iso639) {
+            const char *sep = "";
             printf(":iso639-");
-        first = true;
-        while (iso639) {
-            printf("%s%s", first ? "" : ",", rxkb_iso639_code_get_code(iso639));
-            iso639 = rxkb_iso639_code_next(iso639);
-            first = false;
+            while (iso639) {
+                printf("%s%s", sep, rxkb_iso639_code_get_code(iso639));
+                iso639 = rxkb_iso639_code_next(iso639);
+                sep = ",";
+            }
         }
         iso3166 = rxkb_layout_get_iso3166_first(l);
-        if (iso3166)
+        if (iso3166) {
+            const char *sep = "";
             printf(":iso3166-");
-        first = true;
-        while (iso3166) {
-            printf("%s%s", first ? "" : ",", rxkb_iso3166_code_get_code(iso3166));
-            iso3166 = rxkb_iso3166_code_next(iso3166);
-            first = false;
+            while (iso3166) {
+                printf("%s%s", sep, rxkb_iso3166_code_get_code(iso3166));
+                iso3166 = rxkb_iso3166_code_next(iso3166);
+                sep = ",";
+            }
         }
 
         printf("\n");
