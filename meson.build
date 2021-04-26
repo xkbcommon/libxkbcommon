@@ -152,6 +152,7 @@ have_version_script = cc.links(
     name: '-Wl,--version-script',
 )
 
+map_to_def = find_program('scripts/map-to-def')
 
 # libxkbcommon.
 # Note: we use some yacc extensions, which work with either GNU bison
@@ -231,15 +232,25 @@ libxkbcommon_sources = [
     'src/utils.h',
 ]
 libxkbcommon_link_args = []
+libxkbcommon_link_deps = []
 if have_version_script
     libxkbcommon_link_args += '-Wl,--version-script=' + meson.source_root()/'xkbcommon.map'
+    libxkbcommon_link_deps += 'xkbcommon.map'
+elif cc.get_argument_syntax() == 'msvc'
+    libxkbcommon_def = custom_target('xkbcommon.def',
+        command: [map_to_def, '@INPUT@', '@OUTPUT@'],
+        input: 'xkbcommon.map',
+        output: 'kxbcommon.def',
+    )
+    libxkbcommon_link_deps += libxkbcommon_def
+    libxkbcommon_link_args += '/DEF:' + libxkbcommon_def.full_path()
 endif
 libxkbcommon = library(
     'xkbcommon',
     'xkbcommon/xkbcommon.h',
     libxkbcommon_sources,
     link_args: libxkbcommon_link_args,
-    link_depends: 'xkbcommon.map',
+    link_depends: libxkbcommon_link_deps,
     gnu_symbol_visibility: 'hidden',
     version: '0.0.0',
     install: true,
@@ -287,15 +298,25 @@ You can disable X11 support with -Denable-x11=false.''')
         'src/atom.c',
     ]
     libxkbcommon_x11_link_args = []
+    libxkbcommon_x11_link_deps = []
     if have_version_script
         libxkbcommon_x11_link_args += '-Wl,--version-script=' + meson.source_root()/'xkbcommon-x11.map'
+        libxkbcommon_x11_link_deps += 'xkbcommon-x11.map'
+    elif cc.get_argument_syntax() == 'msvc'
+        libxkbcommon_x11_def = custom_target('xkbcommon-x11.def',
+            command: [map_to_def, '@INPUT@', '@OUTPUT@'],
+            input: 'xkbcommon-x11.map',
+            output: 'xkbcommon-x11.def',
+        )
+        libxkbcommon_x11_link_deps += libxkbcommon_x11_def
+        libxkbcommon_x11_link_args += '/DEF:' + libxkbcommon_x11_def.full_path()
     endif
     libxkbcommon_x11 = library(
         'xkbcommon-x11',
         'xkbcommon/xkbcommon-x11.h',
         libxkbcommon_x11_sources,
         link_args: libxkbcommon_x11_link_args,
-        link_depends: 'xkbcommon-x11.map',
+        link_depends: libxkbcommon_x11_link_deps,
         gnu_symbol_visibility: 'hidden',
         version: '0.0.0',
         install: true,
@@ -336,15 +357,25 @@ if get_option('enable-xkbregistry')
         'src/util-list.c',
     ]
     libxkbregistry_link_args = []
+    libxkbregistry_link_deps = []
     if have_version_script
         libxkbregistry_link_args += '-Wl,--version-script=' + meson.source_root()/'xkbregistry.map'
+        libxkbregistry_link_deps += 'xkbregistry.map'
+    elif cc.get_argument_syntax() == 'msvc'
+        libxkbregistry_def = custom_target('xkbregistry.def',
+            command: [map_to_def, '@INPUT@', '@OUTPUT@'],
+            input: 'xkbregistry.map',
+            output: 'xkbregistry.def',
+        )
+        libxkbregistry_link_deps += libxkbregistry_def
+        libxkbregistry_link_args += '/DEF:' + libxkbregistry_def.full_path()
     endif
     libxkbregistry = library(
         'xkbregistry',
         'xkbcommon/xkbregistry.h',
         libxkbregistry_sources,
         link_args: libxkbregistry_link_args,
-        link_depends: 'xkbregistry.map',
+        link_depends: libxkbregistry_link_deps,
         gnu_symbol_visibility: 'hidden',
         dependencies: deps_libxkbregistry,
         version: '0.0.0',
