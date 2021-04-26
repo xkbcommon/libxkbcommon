@@ -264,8 +264,11 @@ install_headers(
     'xkbcommon/xkbcommon-names.h',
     subdir: 'xkbcommon',
 )
+
+# This variable may be used to build as a subproject and should not be renamed.
 libxkbcommon_dep = declare_dependency(
     link_with: libxkbcommon,
+    include_directories: include_directories('.'),
 )
 pkgconfig.generate(
     libxkbcommon,
@@ -331,8 +334,10 @@ You can disable X11 support with -Denable-x11=false.''')
         'xkbcommon/xkbcommon-x11.h',
         subdir: 'xkbcommon',
     )
+    # This variable may be used to build as a subproject and should not be renamed.
     libxkbcommon_x11_dep = declare_dependency(
         link_with: libxkbcommon_x11,
+        include_directories: include_directories('.'),
     )
     pkgconfig.generate(
         libxkbcommon_x11,
@@ -394,8 +399,9 @@ if get_option('enable-xkbregistry')
         description: 'XKB API to query available rules, models, layouts, variants and options',
     )
 
-    dep_libxkbregistry = declare_dependency(
-                                include_directories: include_directories('xkbcommon'),
+    # This variable may be used to build as a subproject and should not be renamed.
+    libxkbregistry_dep = declare_dependency(
+                                include_directories: include_directories('.'),
                                 link_with: libxkbregistry
                                 )
 endif
@@ -508,7 +514,7 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
         configh_data.set10('HAVE_XKBCLI_LIST', true)
         executable('xkbcli-list',
                    'tools/registry-list.c',
-                   dependencies: dep_libxkbregistry,
+                   dependencies: libxkbregistry_dep,
                    install: true,
                    install_dir: dir_libexec)
         install_man('tools/xkbcli-list.1')
@@ -679,7 +685,7 @@ if get_option('enable-xkbregistry')
         'registry',
         executable('test-registry', 'test/registry.c',
                    include_directories: include_directories('src'),
-                   dependencies: dep_libxkbregistry),
+                   dependencies: libxkbregistry_dep),
         env: test_env,
     )
 endif
