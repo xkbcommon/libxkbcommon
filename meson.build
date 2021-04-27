@@ -265,8 +265,7 @@ install_headers(
     subdir: 'xkbcommon',
 )
 
-# This variable may be used to build as a subproject and should not be renamed.
-libxkbcommon_dep = declare_dependency(
+dep_libxkbcommon = declare_dependency(
     link_with: libxkbcommon,
     include_directories: include_directories('.'),
 )
@@ -334,8 +333,7 @@ You can disable X11 support with -Denable-x11=false.''')
         'xkbcommon/xkbcommon-x11.h',
         subdir: 'xkbcommon',
     )
-    # This variable may be used to build as a subproject and should not be renamed.
-    libxkbcommon_x11_dep = declare_dependency(
+    dep_libxkbcommon_x11 = declare_dependency(
         link_with: libxkbcommon_x11,
         include_directories: include_directories('.'),
     )
@@ -399,8 +397,7 @@ if get_option('enable-xkbregistry')
         description: 'XKB API to query available rules, models, layouts, variants and options',
     )
 
-    # This variable may be used to build as a subproject and should not be renamed.
-    libxkbregistry_dep = declare_dependency(
+    dep_libxkbregistry = declare_dependency(
                                 include_directories: include_directories('.'),
                                 link_with: libxkbregistry
                                 )
@@ -415,7 +412,7 @@ if build_tools
         'tools-internal',
         'tools/tools-common.h',
         'tools/tools-common.c',
-        dependencies: libxkbcommon_dep,
+        dependencies: dep_libxkbcommon,
     )
     tools_dep = declare_dependency(
         include_directories: [include_directories('tools')],
@@ -514,7 +511,7 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
         configh_data.set10('HAVE_XKBCLI_LIST', true)
         executable('xkbcli-list',
                    'tools/registry-list.c',
-                   dependencies: libxkbregistry_dep,
+                   dependencies: dep_libxkbregistry,
                    install: true,
                    install_dir: dir_libexec)
         install_man('tools/xkbcli-list.1')
@@ -685,7 +682,7 @@ if get_option('enable-xkbregistry')
         'registry',
         executable('test-registry', 'test/registry.c',
                    include_directories: include_directories('src'),
-                   dependencies: libxkbregistry_dep),
+                   dependencies: dep_libxkbregistry),
         env: test_env,
     )
 endif
@@ -810,3 +807,14 @@ You can disable the documentation with -Denable-docs=false.''')
 endif
 
 configure_file(output: 'config.h', configuration: configh_data)
+
+
+# Stable variables for projects using xkbcommon as a subproject.
+# These variables should not be renamed.
+libxkbcommon_dep = dep_libxkbcommon
+if get_option('enable-x11')
+  libxkbcommon_x11_dep = dep_libxkbcommon_x11
+endif
+if get_option('enable-xkbregistry')
+  libxkbregistry_dep = dep_libxkbregistry
+endif
