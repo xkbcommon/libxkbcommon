@@ -247,7 +247,7 @@ elif cc.get_argument_syntax() == 'msvc'
 endif
 libxkbcommon = library(
     'xkbcommon',
-    'xkbcommon/xkbcommon.h',
+    'include/xkbcommon/xkbcommon.h',
     libxkbcommon_sources,
     link_args: libxkbcommon_link_args,
     link_depends: libxkbcommon_link_deps,
@@ -257,17 +257,17 @@ libxkbcommon = library(
     include_directories: include_directories('src'),
 )
 install_headers(
-    'xkbcommon/xkbcommon.h',
-    'xkbcommon/xkbcommon-compat.h',
-    'xkbcommon/xkbcommon-compose.h',
-    'xkbcommon/xkbcommon-keysyms.h',
-    'xkbcommon/xkbcommon-names.h',
+    'include/xkbcommon/xkbcommon.h',
+    'include/xkbcommon/xkbcommon-compat.h',
+    'include/xkbcommon/xkbcommon-compose.h',
+    'include/xkbcommon/xkbcommon-keysyms.h',
+    'include/xkbcommon/xkbcommon-names.h',
     subdir: 'xkbcommon',
 )
 
 dep_libxkbcommon = declare_dependency(
     link_with: libxkbcommon,
-    include_directories: include_directories('.'),
+    include_directories: include_directories('include'),
 )
 pkgconfig.generate(
     libxkbcommon,
@@ -315,7 +315,7 @@ You can disable X11 support with -Denable-x11=false.''')
     endif
     libxkbcommon_x11 = library(
         'xkbcommon-x11',
-        'xkbcommon/xkbcommon-x11.h',
+        'include/xkbcommon/xkbcommon-x11.h',
         libxkbcommon_x11_sources,
         link_args: libxkbcommon_x11_link_args,
         link_depends: libxkbcommon_x11_link_deps,
@@ -330,12 +330,12 @@ You can disable X11 support with -Denable-x11=false.''')
         ],
     )
     install_headers(
-        'xkbcommon/xkbcommon-x11.h',
+        'include/xkbcommon/xkbcommon-x11.h',
         subdir: 'xkbcommon',
     )
     dep_libxkbcommon_x11 = declare_dependency(
         link_with: libxkbcommon_x11,
-        include_directories: include_directories('.'),
+        include_directories: include_directories('include'),
     )
     pkgconfig.generate(
         libxkbcommon_x11,
@@ -375,7 +375,7 @@ if get_option('enable-xkbregistry')
     endif
     libxkbregistry = library(
         'xkbregistry',
-        'xkbcommon/xkbregistry.h',
+        'include/xkbcommon/xkbregistry.h',
         libxkbregistry_sources,
         link_args: libxkbregistry_link_args,
         link_depends: libxkbregistry_link_deps,
@@ -386,7 +386,7 @@ if get_option('enable-xkbregistry')
         include_directories: include_directories('src'),
     )
     install_headers(
-        'xkbcommon/xkbregistry.h',
+        'include/xkbcommon/xkbregistry.h',
         subdir: 'xkbcommon',
     )
     pkgconfig.generate(
@@ -398,9 +398,9 @@ if get_option('enable-xkbregistry')
     )
 
     dep_libxkbregistry = declare_dependency(
-                                include_directories: include_directories('.'),
-                                link_with: libxkbregistry
-                                )
+        link_with: libxkbregistry,
+        include_directories: include_directories('include'),
+    )
 endif
 
 man_pages = []
@@ -777,11 +777,11 @@ You can disable the documentation with -Denable-docs=false.''')
         'doc/user-configuration.md',
         'doc/rules-format.md',
         'doc/keymap-format-text-v1.md',
-        'xkbcommon/xkbcommon.h',
-        'xkbcommon/xkbcommon-names.h',
-        'xkbcommon/xkbcommon-x11.h',
-        'xkbcommon/xkbcommon-compose.h',
-        'xkbcommon/xkbregistry.h',
+        'include/xkbcommon/xkbcommon.h',
+        'include/xkbcommon/xkbcommon-names.h',
+        'include/xkbcommon/xkbcommon-x11.h',
+        'include/xkbcommon/xkbcommon-compose.h',
+        'include/xkbcommon/xkbregistry.h',
     ]
     doxygen_data = configuration_data()
     doxygen_data.set('PACKAGE_NAME', meson.project_name())
