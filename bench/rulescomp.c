@@ -28,7 +28,7 @@
 #include "../test/test.h"
 #include "bench.h"
 
-#define BENCHMARK_ITERATIONS 2500
+#define BENCHMARK_ITERATIONS 1000
 
 int
 main(int argc, char *argv[])
