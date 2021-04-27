@@ -254,7 +254,7 @@ libxkbcommon = library(
     gnu_symbol_visibility: 'hidden',
     version: '0.0.0',
     install: true,
-    include_directories: include_directories('src'),
+    include_directories: include_directories('src', 'include'),
 )
 install_headers(
     'include/xkbcommon/xkbcommon.h',
@@ -322,7 +322,7 @@ You can disable X11 support with -Denable-x11=false.''')
         gnu_symbol_visibility: 'hidden',
         version: '0.0.0',
         install: true,
-        include_directories: include_directories('src'),
+        include_directories: include_directories('src', 'include'),
         link_with: libxkbcommon,
         dependencies: [
             xcb_dep,
@@ -383,7 +383,7 @@ if get_option('enable-xkbregistry')
         dependencies: deps_libxkbregistry,
         version: '0.0.0',
         install: true,
-        include_directories: include_directories('src'),
+        include_directories: include_directories('src', 'include'),
     )
     install_headers(
         'include/xkbcommon/xkbregistry.h',
@@ -415,7 +415,7 @@ if build_tools
         dependencies: dep_libxkbcommon,
     )
     tools_dep = declare_dependency(
-        include_directories: [include_directories('tools')],
+        include_directories: [include_directories('tools', 'include')],
         link_with: libxkbcommon_tools_internal,
     )
 
@@ -435,7 +435,7 @@ if build_tools
                libxkbcommon_sources,
                dependencies: [tools_dep],
                c_args: ['-DENABLE_PRIVATE_APIS'],
-               include_directories: [include_directories('src')],
+               include_directories: [include_directories('src', 'include')],
                install: false)
     configh_data.set10('HAVE_XKBCLI_COMPILE_KEYMAP', true)
     executable('xkbcli-how-to-type',
@@ -552,17 +552,17 @@ libxkbcommon_test_internal = static_library(
     'bench/bench.c',
     'bench/bench.h',
     libxkbcommon_sources,
-    include_directories: include_directories('src'),
+    include_directories: include_directories('src', 'include'),
 )
 test_dep = declare_dependency(
-    include_directories: include_directories('src'),
+    include_directories: include_directories('src', 'include'),
     link_with: libxkbcommon_test_internal,
 )
 if get_option('enable-x11')
     libxkbcommon_x11_internal = static_library(
         'xkbcommon-x11-internal',
         libxkbcommon_x11_sources,
-        include_directories: include_directories('src'),
+        include_directories: include_directories('src', 'include'),
         link_with: libxkbcommon_test_internal,
         dependencies: [
             xcb_dep,
