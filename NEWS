@@ -1,3 +1,35 @@
+libxkbcommon 1.3.0 - 2021-05-01
+==================
+
+- Change `xkbcli list` to output YAML, instead of the previous ad-hoc format.
+
+  This allows to more easily process the information in a programmetic way, for
+  example
+
+    xkbcli list | yq -r ".layouts[].layout"
+
+  Contributed by Peter Hutterer.
+
+- Optimize a certain part of keymap compilation (atom interning).
+
+- Fix segmentation fault in case-insensitive `xkb_keysym_from_name` for certain
+  values like the empty string.
+
+  Contributed by Isaac Freund.
+
+- Support building libxkbcommon as a meson subproject.
+
+  Contributed by Adrian Perez de Castro.
+
+- Add `ftruncate` fallback for `posix_fallocate` in `xkbcli interactive-wayland`
+  for FreeBSD.
+
+  Contributed by Evgeniy Khramtsov.
+
+- Properly export library symbols in MSVC.
+
+  Contributed by Adrian Perez de Castro.
+
 libxkbcommon 1.2.1 - 2021-04-07
 ==================
 
