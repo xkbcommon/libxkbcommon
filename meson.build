@@ -437,6 +437,11 @@ if build_tools
                c_args: ['-DENABLE_PRIVATE_APIS'],
                include_directories: [include_directories('src', 'include')],
                install: false)
+    executable('compose',
+               'tools/compose.c',
+               dependencies: tools_dep,
+               include_directories: [include_directories('src', 'include')],
+               install: false)
     configh_data.set10('HAVE_XKBCLI_COMPILE_KEYMAP', true)
     executable('xkbcli-how-to-type',
                'tools/how-to-type.c',
