@@ -179,7 +179,7 @@ test_seqs(struct xkb_context *ctx)
     char *path;
     FILE *file;
 
-    path = test_get_path("compose/en_US.UTF-8/Compose");
+    path = test_get_path("locale/en_US.UTF-8/Compose");
     file = fopen(path, "rb");
     assert(file);
     free(path);
@@ -353,7 +353,7 @@ test_state(struct xkb_context *ctx)
     char *path;
     FILE *file;
 
-    path = test_get_path("compose/en_US.UTF-8/Compose");
+    path = test_get_path("locale/en_US.UTF-8/Compose");
     file = fopen(path, "rb");
     assert(file);
     free(path);
@@ -410,7 +410,7 @@ test_XCOMPOSEFILE(struct xkb_context *ctx)
     struct xkb_compose_table *table;
     char *path;
 
-    path = test_get_path("compose/en_US.UTF-8/Compose");
+    path = test_get_path("locale/en_US.UTF-8/Compose");
     setenv("XCOMPOSEFILE", path, 1);
     free(path);
 
@@ -486,7 +486,7 @@ test_include(struct xkb_context *ctx)
 {
     char *path, *table_string;
 
-    path = test_get_path("compose/en_US.UTF-8/Compose");
+    path = test_get_path("locale/en_US.UTF-8/Compose");
     assert(path);
 
     /* We don't have a mechanism to change the include paths like we
