@@ -1,0 +1,21 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'xkbcommon-*'
+
+jobs:
+  build:
+    name: Automatically create GitHub release for tag
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          body: |
+            See the [NEWS](https://github.com/xkbcommon/libxkbcommon/blob/master/NEWS) file for the changes.
