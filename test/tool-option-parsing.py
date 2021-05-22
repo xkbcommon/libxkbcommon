@@ -298,6 +298,10 @@ if __name__ == '__main__':
     with tempfile.TemporaryDirectory() as tmpdir:
         # Use our own test xkeyboard-config copy.
         os.environ['XKB_CONFIG_ROOT'] = top_srcdir + '/test/data'
+        # Use our own X11 locale copy.
+        os.environ['XLOCALEDIR'] = top_srcdir + '/test/data/locale'
+        # Use our own locale.
+        os.environ['LC_CTYPE'] = 'en_US.UTF-8'
         # libxkbcommon has fallbacks when XDG_CONFIG_HOME isn't set so we need
         # to override it with a known (empty) directory. Otherwise our test
         # behavior depends on the system the test is run on.
