@@ -1,4 +1,4 @@
-name: release
+name: github-release
 
 on:
   push:
@@ -19,3 +19,5 @@ jobs:
           release_name: ${{ github.ref }}
           body: |
             See the [NEWS](https://github.com/xkbcommon/libxkbcommon/blob/master/NEWS) file for the changes.
+
+            Official tarball: https://xkbcommon.org/download/lib${{ github.ref }}.tar.xz
