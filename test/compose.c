@@ -429,6 +429,49 @@ test_XCOMPOSEFILE(struct xkb_context *ctx)
 }
 
 static void
+test_from_locale(struct xkb_context *ctx)
+{
+    struct xkb_compose_table *table;
+    char *path;
+
+    path = test_get_path("locale");
+    setenv("XLOCALEDIR", path, 1);
+    free(path);
+
+    /* Direct directory name match. */
+    table = xkb_compose_table_new_from_locale(ctx, "en_US.UTF-8",
+                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+    assert(table);
+    xkb_compose_table_unref(table);
+
+    /* Direct locale name match. */
+    table = xkb_compose_table_new_from_locale(ctx, "C.UTF-8",
+                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+    assert(table);
+    xkb_compose_table_unref(table);
+
+    /* Alias. */
+    table = xkb_compose_table_new_from_locale(ctx, "univ.utf8",
+                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+    assert(table);
+    xkb_compose_table_unref(table);
+
+    /* Special case - C. */
+    table = xkb_compose_table_new_from_locale(ctx, "C",
+                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+    assert(table);
+    xkb_compose_table_unref(table);
+
+    /* Bogus - not found. */
+    table = xkb_compose_table_new_from_locale(ctx, "blabla",
+                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+    assert(!table);
+
+    unsetenv("XLOCALEDIR");
+}
+
+
+static void
 test_modifier_syntax(struct xkb_context *ctx)
 {
     const char *table_string;
@@ -528,6 +571,7 @@ main(int argc, char *argv[])
     test_seqs(ctx);
     test_conflicting(ctx);
     test_XCOMPOSEFILE(ctx);
+    test_from_locale(ctx);
     test_state(ctx);
     test_modifier_syntax(ctx);
     test_include(ctx);
