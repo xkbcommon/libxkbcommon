@@ -418,6 +418,8 @@ test_XCOMPOSEFILE(struct xkb_context *ctx)
                                               XKB_COMPOSE_COMPILE_NO_FLAGS);
     assert(table);
 
+    unsetenv("XCOMPOSEFILE");
+
     assert(test_compose_seq(table,
         XKB_KEY_dead_tilde,     XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
         XKB_KEY_space,          XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "~",    XKB_KEY_asciitilde,
