@@ -45,7 +45,7 @@ main(void)
     ctx = test_get_context(CONTEXT_NO_FLAG);
     assert(ctx);
 
-    path = test_get_path("compose/en_US.UTF-8/Compose");
+    path = test_get_path("locale/en_US.UTF-8/Compose");
     file = fopen(path, "rb");
     if (file == NULL) {
         perror(path);
