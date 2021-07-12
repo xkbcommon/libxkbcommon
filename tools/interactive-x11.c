@@ -246,7 +246,7 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
                                   XKB_CONSUMED_MODE_XKB);
 
         /* Exit on ESC. */
-        if (keycode == 9)
+        if (xkb_state_key_get_one_sym(kbd->state, keycode) == XKB_KEY_Escape)
             terminate = true;
         break;
     }
