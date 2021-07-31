@@ -9,7 +9,7 @@
 .Sh SYNOPSIS
 .Nm
 .Op options
-.Ar codepoint
+.Ar codepoint/keysym
 .
 .Sh DESCRIPTION
 .Nm
@@ -17,6 +17,9 @@ prints the key combinations (keycode + modifiers) in the keymap's layouts which
 would produce the given Unicode codepoint.
 .
 .Bl -tag -width Ds
+.It Fl \-keysym
+Treat the argument as a keysym, not a Unicode codepoint
+.
 .It Fl \-rules Ar rules
 The XKB ruleset
 .
