@@ -1160,27 +1160,27 @@ xkb_x11_keymap_new_from_device(struct xkb_context *ctx,
     struct x11_atom_interner interner;
     x11_atom_interner_init(&interner, ctx, conn);
 
-    xcb_xkb_get_map_cookie_t get_map_cookie =
+    xcb_xkb_get_map_cookie_t map_cookie =
         xcb_xkb_get_map(conn, device_id, get_map_required_components,
                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     xcb_xkb_get_indicator_map_cookie_t indicator_map_cookie =
         xcb_xkb_get_indicator_map(conn, device_id, ALL_INDICATORS_MASK);
     xcb_xkb_get_compat_map_cookie_t compat_map_cookie =
         xcb_xkb_get_compat_map(conn, device_id, 0, true, 0, 0);
-    xcb_xkb_get_names_cookie_t get_names_cookie =
+    xcb_xkb_get_names_cookie_t names_cookie =
         xcb_xkb_get_names(conn, device_id, get_names_wanted);
-    xcb_xkb_get_controls_cookie_t get_controls_cookie =
+    xcb_xkb_get_controls_cookie_t controls_cookie =
         xcb_xkb_get_controls(conn, device_id);
 
     bool had_error = false;
-    had_error |= !get_map(keymap, conn, get_map_cookie);
+    had_error |= !get_map(keymap, conn, map_cookie);
     had_error |= !get_indicator_map(keymap, conn, indicator_map_cookie);
     had_error |= !get_compat_map(keymap, conn, compat_map_cookie);
-    had_error |= !get_names(keymap, &interner, get_names_cookie);
-    had_error |= !get_controls(keymap, conn, get_controls_cookie);
-
+    had_error |= !get_names(keymap, &interner, names_cookie);
+    had_error |= !get_controls(keymap, conn, controls_cookie);
     x11_atom_interner_round_trip(&interner);
     had_error |= interner.had_error;
+
     if (had_error) {
         xkb_keymap_unref(keymap);
         return NULL;

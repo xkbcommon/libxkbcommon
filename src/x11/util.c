@@ -215,7 +215,8 @@ retry:
     interner->pending[idx].cookie = xcb_get_atom_name(interner->conn, atom);
 }
 
-void x11_atom_interner_round_trip(struct x11_atom_interner *interner) {
+void
+x11_atom_interner_round_trip(struct x11_atom_interner *interner) {
     struct xkb_context *ctx = interner->ctx;
     xcb_connection_t *conn = interner->conn;
 
