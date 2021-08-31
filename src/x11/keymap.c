@@ -1160,6 +1160,10 @@ xkb_x11_keymap_new_from_device(struct xkb_context *ctx,
     struct x11_atom_interner interner;
     x11_atom_interner_init(&interner, ctx, conn);
 
+    /*
+     * Send all requests together so only one roundtrip is needed
+     * to get the replies.
+     */
     xcb_xkb_get_map_cookie_t map_cookie =
         xcb_xkb_get_map(conn, device_id, get_map_required_components,
                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -1172,19 +1176,33 @@ xkb_x11_keymap_new_from_device(struct xkb_context *ctx,
     xcb_xkb_get_controls_cookie_t controls_cookie =
         xcb_xkb_get_controls(conn, device_id);
 
-    bool had_error = false;
-    had_error |= !get_map(keymap, conn, map_cookie);
-    had_error |= !get_indicator_map(keymap, conn, indicator_map_cookie);
-    had_error |= !get_compat_map(keymap, conn, compat_map_cookie);
-    had_error |= !get_names(keymap, &interner, names_cookie);
-    had_error |= !get_controls(keymap, conn, controls_cookie);
+    if (!get_map(keymap, conn, map_cookie))
+        goto err_map;
+    if (!get_indicator_map(keymap, conn, indicator_map_cookie))
+        goto err_indicator_map;
+    if (!get_compat_map(keymap, conn, compat_map_cookie))
+        goto err_compat_map;
+    if (!get_names(keymap, &interner, names_cookie))
+        goto err_names;
+    if (!get_controls(keymap, conn, controls_cookie))
+        goto err_controls;
     x11_atom_interner_round_trip(&interner);
-    had_error |= interner.had_error;
-
-    if (had_error) {
-        xkb_keymap_unref(keymap);
-        return NULL;
-    }
+    if (interner.had_error)
+        goto err_interner;
 
     return keymap;
+
+err_map:
+    xcb_discard_reply(conn, indicator_map_cookie.sequence);
+err_indicator_map:
+    xcb_discard_reply(conn, compat_map_cookie.sequence);
+err_compat_map:
+    xcb_discard_reply(conn, names_cookie.sequence);
+err_names:
+    xcb_discard_reply(conn, controls_cookie.sequence);
+err_controls:
+    x11_atom_interner_round_trip(&interner);
+err_interner:
+    xkb_keymap_unref(keymap);
+    return NULL;
 }
