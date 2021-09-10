@@ -1,3 +1,19 @@
+libxkbcommon 1.3.1 - 2021-09-10
+==================
+
+- In `xkbcli interactive-x11`, use the Esc keysym instead of the Esc keycode
+  for quitting.
+
+  Contributed by Simon Ser.
+
+- In `xkbcli how-to-type`, add `--keysym` argugment for how to type a keysym
+  instead of a Unicode codepoint.
+
+- Fix a crash in `xkb_x11_keymap_new_from_device` error handling given some
+  invalid keymaps. Regressed in 1.2.0.
+
+  Reported by Zack Weinberg. Tested by Uli Schlachter.
+
 libxkbcommon 1.3.0 - 2021-05-01
 ==================
 
