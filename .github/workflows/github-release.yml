@@ -29,4 +29,4 @@ jobs:
           body: |
             See the [NEWS](https://github.com/xkbcommon/libxkbcommon/blob/master/NEWS) file for the changes.
 
-            Official tarball: https://xkbcommon.org/download/lib${{ github.ref }}.tar.xz
+            Official tarball: https://xkbcommon.org/download/lib${GITHUB_REF#refs/tags/}.tar.xz
