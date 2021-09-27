@@ -299,7 +299,11 @@ xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name)
 XKB_EXPORT xkb_layout_index_t
 xkb_keymap_num_layouts(struct xkb_keymap *keymap)
 {
-    return keymap->num_groups;
+    if(keymap){
+        return keymap->num_groups;
+    }else{
+        return 0
+    }
 }
 
 /**
