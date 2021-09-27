@@ -302,7 +302,7 @@ xkb_keymap_num_layouts(struct xkb_keymap *keymap)
     if(keymap){
         return keymap->num_groups;
     }else{
-        return 0
+        return 0;
     }
 }
 
