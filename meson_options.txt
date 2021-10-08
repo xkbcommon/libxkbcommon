@@ -44,6 +44,12 @@ option(
     description: 'Default XKB options',
 )
 option(
+    'enable-tools',
+    type: 'boolean',
+    value: true,
+    description: 'Enable building tools',
+)
+option(
     'enable-x11',
     type: 'boolean',
     value: true,
@@ -59,7 +65,7 @@ option(
     'enable-wayland',
     type: 'boolean',
     value: true,
-    description: 'Enable support for Wayland utility programs',
+    description: 'Enable support for Wayland utility programs (requires enable-tools)',
 )
 option(
     'enable-xkbregistry',
