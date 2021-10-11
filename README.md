@@ -15,6 +15,8 @@ libxkbcommon is built with [Meson](http://mesonbuild.com/):
 
     meson setup build
     ninja -C build
+    ninja -C build -t targets
+    ninja -C build test
 
 To build for use with Wayland, you can disable X11 support while still
 using the X11 keyboard configuration resource files thusly:
