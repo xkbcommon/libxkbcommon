@@ -159,12 +159,12 @@ main(int argc, char **argv)
         const char *variant = rxkb_layout_get_variant(l);
         const char *brief = rxkb_layout_get_brief(l);
 
-        printf("- layout: %s\n"
-               "  variant: %s\n"
-               "  brief: %s\n"
+        printf("- layout: '%s'\n"
+               "  variant: '%s'\n"
+               "  brief: '%s'\n"
                "  description: %s\n",
                rxkb_layout_get_name(l),
-               variant ? variant : "''",
+               variant ? variant : "",
                brief ? brief : "''",
                rxkb_layout_get_description(l));
 
@@ -173,7 +173,7 @@ main(int argc, char **argv)
         if (iso639) {
             const char *sep = "";
             while (iso639) {
-                printf("%s%s", sep, rxkb_iso639_code_get_code(iso639));
+                printf("%s'%s'", sep, rxkb_iso639_code_get_code(iso639));
                 iso639 = rxkb_iso639_code_next(iso639);
                 sep = ", ";
             }
@@ -184,7 +184,7 @@ main(int argc, char **argv)
         if (iso3166) {
             const char *sep = "";
             while (iso3166) {
-                printf("%s%s", sep, rxkb_iso3166_code_get_code(iso3166));
+                printf("%s'%s'", sep, rxkb_iso3166_code_get_code(iso3166));
                 iso3166 = rxkb_iso3166_code_next(iso3166);
                 sep = ", ";
             }
@@ -199,7 +199,7 @@ main(int argc, char **argv)
     while (g) {
         struct rxkb_option *o;
 
-        printf("- name: %s\n"
+        printf("- name: '%s'\n"
                "  description: %s\n"
                "  allows_multiple: %s\n"
                "  options:\n",
