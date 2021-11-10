@@ -140,11 +140,12 @@ main(int argc, char **argv)
     m = rxkb_model_first(ctx);
     assert(m); /* Empty model list is usually a bug or a bad xml file */
     while (m) {
+        const char *vendor = rxkb_model_get_vendor(m);
         printf("- name: %s\n"
                "  vendor: %s\n"
                "  description: %s\n",
                rxkb_model_get_name(m),
-               rxkb_model_get_vendor(m),
+               vendor ? vendor : "''",
                rxkb_model_get_description(m));
         m = rxkb_model_next(m);
     }
