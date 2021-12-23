@@ -599,7 +599,7 @@ test_load_full(void)
     rxkb_layout_unref(l);
 
     l = fetch_layout(ctx, "l1", "v2");
-    struct test_layout expected = {"l1", "v2", NULL, "vdesc2"};
+    struct test_layout expected = {"l1", "v2", "lbrief1", "vdesc2"};
     assert(cmp_layouts(&expected, l));
     rxkb_layout_unref(l);
 

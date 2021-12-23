@@ -860,7 +860,8 @@ parse_variant(struct rxkb_context *ctx, struct rxkb_layout *l,
             v->name = strdup(l->name);
             v->variant = name;
             v->description = description;
-            v->brief = brief;
+            // if variant omits brief, inherit from parent layout.
+            v->brief = brief == NULL ? strdup_safe(l->brief) : brief;
             v->popularity = popularity;
             list_append(&ctx->layouts, &v->base.link);
 
@@ -870,11 +871,35 @@ parse_variant(struct rxkb_context *ctx, struct rxkb_layout *l,
                 if (!is_node(ci, "configItem"))
                     continue;
 
+                bool found_language_list = false;
+                bool found_country_list = false;
                 for (node = ci->children; node; node = node->next) {
-                    if (is_node(node, "languageList"))
+                    if (is_node(node, "languageList")) {
                         parse_language_list(node, v);
-                    if (is_node(node, "countryList"))
+                        found_language_list = true;
+                    }
+                    if (is_node(node, "countryList")) {
                         parse_country_list(node, v);
+                        found_country_list = true;
+                    }
+                }
+                if (!found_language_list) {
+                    // inherit from parent layout
+                    struct rxkb_iso639_code* x;
+                    list_for_each(x, &l->iso639s, base.link) {
+                        struct rxkb_iso639_code* code = rxkb_iso639_code_create(&v->base);
+                        code->code = strdup(x->code);
+                        list_append(&v->iso639s, &code->base.link);
+                    }
+                }
+                if (!found_country_list) {
+                    // inherit from parent layout
+                    struct rxkb_iso3166_code* x;
+                    list_for_each(x, &l->iso3166s, base.link) {
+                        struct rxkb_iso3166_code* code = rxkb_iso3166_code_create(&v->base);
+                        code->code = strdup(x->code);
+                        list_append(&v->iso3166s, &code->base.link);
+                    }
                 }
             }
         } else {
