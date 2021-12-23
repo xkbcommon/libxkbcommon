@@ -563,6 +563,7 @@ test_load_full(void)
     struct test_layout system_layouts[] =  {
         {"l1", NO_VARIANT, "lbrief1", "ldesc1"},
         {"l1", "v1", "vbrief1", "vdesc1"},
+        {"l1", "v2", NULL, "vdesc2"},
         {NULL},
     };
     struct test_option_group system_groups[] = {
@@ -595,6 +596,11 @@ test_load_full(void)
 
     l = fetch_layout(ctx, "l1", "v1");
     assert(cmp_layouts(&system_layouts[1], l));
+    rxkb_layout_unref(l);
+
+    l = fetch_layout(ctx, "l1", "v2");
+    struct test_layout expected = {"l1", "v2", NULL, "vdesc2"};
+    assert(cmp_layouts(&expected, l));
     rxkb_layout_unref(l);
 
     g = fetch_option_group(ctx, "grp1");
