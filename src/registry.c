@@ -1197,7 +1197,6 @@ parse(struct rxkb_context *ctx, const char *path,
     success = true;
 error:
     xmlFreeDoc(doc);
-    xmlCleanupParser();
 
     return success;
 }
