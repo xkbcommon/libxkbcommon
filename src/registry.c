@@ -888,7 +888,7 @@ parse_variant(struct rxkb_context *ctx, struct rxkb_layout *l,
                     struct rxkb_iso639_code* x;
                     list_for_each(x, &l->iso639s, base.link) {
                         struct rxkb_iso639_code* code = rxkb_iso639_code_create(&v->base);
-                        code->code = strdup(x->code);
+                        code->code = x->code;
                         list_append(&v->iso639s, &code->base.link);
                     }
                 }
@@ -897,7 +897,7 @@ parse_variant(struct rxkb_context *ctx, struct rxkb_layout *l,
                     struct rxkb_iso3166_code* x;
                     list_for_each(x, &l->iso3166s, base.link) {
                         struct rxkb_iso3166_code* code = rxkb_iso3166_code_create(&v->base);
-                        code->code = strdup(x->code);
+                        code->code = x->code;
                         list_append(&v->iso3166s, &code->base.link);
                     }
                 }
