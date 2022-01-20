@@ -100,7 +100,7 @@ class XkbcliTool:
             for testfunc, reason in self.skipError:
                 if testfunc(rc, stdout, stderr):
                     raise unittest.SkipTest(reason)
-        assert rc == 0, (stdout, stderr)
+        assert rc == 0, (rc, stdout, stderr)
         return stdout, stderr
 
     def run_command_invalid(self, args):
