@@ -808,6 +808,11 @@ parse_language_list(xmlNode *language_list, struct rxkb_layout *layout)
             char *str = extract_text(node);
             struct rxkb_object *parent;
 
+            if (!str || strlen(str) != 3) {
+                free(str);
+                continue;
+            }
+
             parent = &layout->base;
             code = rxkb_iso639_code_create(parent);
             code->code = str;
@@ -826,6 +831,11 @@ parse_country_list(xmlNode *country_list, struct rxkb_layout *layout)
         if (is_node(node, "iso3166Id")) {
             char *str = extract_text(node);
             struct rxkb_object *parent;
+
+            if (!str || strlen(str) != 2) {
+                free(str);
+                continue;
+            }
 
             parent = &layout->base;
             code = rxkb_iso3166_code_create(parent);
