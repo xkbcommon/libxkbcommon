@@ -685,6 +685,12 @@ test_load_languages(void)
         {"l1", "v1", "vbrief1", "vdesc1",
             .iso639 = {"efg"},
             .iso3166 = {"yz"}},
+        {"l2", NO_VARIANT, "lbrief1", "ldesc1",
+            .iso639 = { "hij", "klm" },
+            .iso3166 = { "op", "qr" }},
+        {"l2", "v2", "lbrief1", "ldesc1",
+            .iso639 = { NULL }, /* inherit from parent */
+            .iso3166 = { NULL }},  /* inherit from parent */
         {NULL},
     };
     struct test_option_group system_groups[] = {
@@ -694,6 +700,8 @@ test_load_languages(void)
     };
     struct rxkb_context *ctx;
     struct rxkb_layout *l;
+    struct rxkb_iso3166_code *iso3166;
+    struct rxkb_iso639_code *iso639;
 
     ctx = test_setup_context(system_models, NULL,
                              system_layouts, NULL,
@@ -707,6 +715,18 @@ test_load_languages(void)
     assert(cmp_layouts(&system_layouts[1], l));
     rxkb_layout_unref(l);
 
+    l = fetch_layout(ctx, "l2", "v2");
+    iso3166 = rxkb_layout_get_iso3166_first(l);
+    assert(streq(rxkb_iso3166_code_get_code(iso3166), "op"));
+    iso3166 = rxkb_iso3166_code_next(iso3166);
+    assert(streq(rxkb_iso3166_code_get_code(iso3166), "qr"));
+
+    iso639 = rxkb_layout_get_iso639_first(l);
+    assert(streq(rxkb_iso639_code_get_code(iso639), "hij"));
+    iso639 = rxkb_iso639_code_next(iso639);
+    assert(streq(rxkb_iso639_code_get_code(iso639), "klm"));
+
+    rxkb_layout_unref(l);
     rxkb_context_unref(ctx);
 }
 
