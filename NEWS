@@ -1,3 +1,29 @@
+libxkbcommon 1.4.0 - 2022-02-04
+==================
+
+- Add `enable-tools` option to Meson build (on by default) to allow disabling
+  the `xkbcli` tools.
+
+  Contributed by Alex Xu (Hello71).
+
+- In `xkbcli list`, fix "YAML Norway problem" in output.
+
+  Contributed by Peter Hutterer.
+
+- In libxkbregistry, variants now inherit iso639, iso3166 and brief from parent
+  layout if omitted.
+
+  Contributed by M Hickford.
+
+- In libxkbregistry, don't call `xmlCleanupParser()` - it's not supposed to
+  be called by libraries.
+
+  Contributed by Peter Hutterer.
+
+- In libxkbregistry, skip over invalid ISO-639 or ISO-3166 entries.
+
+  Contributed by Peter Hutterer.
+
 libxkbcommon 1.3.1 - 2021-09-10
 ==================
 
