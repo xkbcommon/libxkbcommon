@@ -19,6 +19,7 @@ cflags = [
     '-fno-strict-aliasing',
     '-fsanitize-undefined-trap-on-error',
     '-Wno-unused-parameter',
+    '-Wno-unused-function',
     '-Wno-missing-field-initializers',
     '-Wpointer-arith',
     '-Wmissing-declarations',
@@ -32,6 +33,7 @@ cflags = [
     '-Wdate-time',
     '-Wwrite-strings',
     '-Wno-documentation-deprecated-sync',
+    '-Werror=unused-command-line-argument',
 ]
 add_project_arguments(cc.get_supported_arguments(cflags), language: 'c')
 
@@ -724,11 +726,6 @@ if valgrind.found()
 else
     message('valgrind not found, disabling valgrind test setup')
 endif
-
-
-# Fuzzing target programs.
-executable('fuzz-keymap', 'fuzz/keymap/target.c', dependencies: test_dep)
-executable('fuzz-compose', 'fuzz/compose/target.c', dependencies: test_dep)
 
 
 # Benchmarks.
