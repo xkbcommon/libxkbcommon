@@ -1201,7 +1201,8 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t key,
  * @code xkb_keymap_num_levels_for_key(keymap, key) @endcode
  * @param[out] masks_out  A buffer in which the requested masks should be
  * stored.
- * @param[out] masks_size The size of the buffer pointed to by masks_out.
+ * @param[out] masks_size The number of elements in the buffer pointed to by
+ * masks_out.
  *
  * If @c layout is out of range for this key (that is, larger or equal to
  * the value returned by xkb_keymap_num_layouts_for_key()), it is brought
