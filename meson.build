@@ -531,6 +531,9 @@ configure_file(input: 'test/xkeyboard-config-test.py.in',
                configuration: xkct_config)
 
 # Tests
+
+if get_option('enable-tests')
+
 test_env = environment()
 test_env.set('XKB_LOG_LEVEL', 'debug')
 test_env.set('XKB_LOG_VERBOSITY', '10')
@@ -767,6 +770,7 @@ if get_option('enable-x11')
   )
 endif
 
+endif
 
 # Documentation.
 if get_option('enable-docs')
