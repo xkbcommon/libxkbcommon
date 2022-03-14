@@ -112,7 +112,7 @@ skip_more_whitespace_and_comments:
     }
 
     /* See if we're done. */
-    if (eof(s)) return TOK_END_OF_FILE;
+    if (s_eof(s)) return TOK_END_OF_FILE;
 
     /* New token. */
     s->token_line = s->line;
@@ -376,7 +376,7 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
         return;
     }
 
-    while (!eof(&s) && !eol(&s)) {
+    while (!s_eof(&s) && !eol(&s)) {
         if (chr(&s, '%')) {
             if (chr(&s, '%')) {
                 buf_append(&s, '%');

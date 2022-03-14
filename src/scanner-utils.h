@@ -93,7 +93,7 @@ peek(struct scanner *s)
 }
 
 static inline bool
-eof(struct scanner *s)
+s_eof(struct scanner *s)
 {
     return s->pos >= s->len;
 }
@@ -116,7 +116,7 @@ skip_to_eol(struct scanner *s)
 static inline char
 next(struct scanner *s)
 {
-    if (unlikely(eof(s)))
+    if (unlikely(s_eof(s)))
         return '\0';
     if (unlikely(eol(s))) {
         s->line++;

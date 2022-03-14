@@ -78,7 +78,7 @@ skip_more_whitespace_and_comments:
     }
 
     /* See if we're done. */
-    if (eof(s)) return END_OF_FILE;
+    if (s_eof(s)) return END_OF_FILE;
 
     /* New token. */
     s->token_line = s->line;
@@ -87,7 +87,7 @@ skip_more_whitespace_and_comments:
 
     /* String literal. */
     if (chr(s, '\"')) {
-        while (!eof(s) && !eol(s) && peek(s) != '\"') {
+        while (!s_eof(s) && !eol(s) && peek(s) != '\"') {
             if (chr(s, '\\')) {
                 uint8_t o;
                 if      (chr(s, '\\')) buf_append(s, '\\');

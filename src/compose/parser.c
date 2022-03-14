@@ -137,7 +137,7 @@ skip_more_whitespace_and_comments:
     }
 
     /* See if we're done. */
-    if (eof(s)) return TOK_END_OF_FILE;
+    if (s_eof(s)) return TOK_END_OF_FILE;
 
     /* New token. */
     s->token_line = s->line;
@@ -146,7 +146,7 @@ skip_more_whitespace_and_comments:
 
     /* LHS Keysym. */
     if (chr(s, '<')) {
-        while (peek(s) != '>' && !eol(s) && !eof(s))
+        while (peek(s) != '>' && !eol(s) && !s_eof(s))
             buf_append(s, next(s));
         if (!chr(s, '>')) {
             scanner_err(s, "unterminated keysym literal");
@@ -171,7 +171,7 @@ skip_more_whitespace_and_comments:
 
     /* String literal. */
     if (chr(s, '\"')) {
-        while (!eof(s) && !eol(s) && peek(s) != '\"') {
+        while (!s_eof(s) && !eol(s) && peek(s) != '\"') {
             if (chr(s, '\\')) {
                 uint8_t o;
                 if (chr(s, '\\')) {
@@ -256,7 +256,7 @@ lex_include_string(struct scanner *s, struct xkb_compose_table *table,
         return TOK_ERROR;
     }
 
-    while (!eof(s) && !eol(s) && peek(s) != '\"') {
+    while (!s_eof(s) && !eol(s) && peek(s) != '\"') {
         if (chr(s, '%')) {
             if (chr(s, '%')) {
                 buf_append(s, '%');
