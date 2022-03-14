@@ -85,7 +85,7 @@ scanner_init(struct scanner *s, struct xkb_context *ctx,
 }
 
 static inline char
-peek(struct scanner *s)
+scanner_peek(struct scanner *s)
 {
     if (unlikely(s->pos >= s->len))
         return '\0';
@@ -93,19 +93,19 @@ peek(struct scanner *s)
 }
 
 static inline bool
-eof(struct scanner *s)
+scanner_eof(struct scanner *s)
 {
     return s->pos >= s->len;
 }
 
 static inline bool
-eol(struct scanner *s)
+scanner_eol(struct scanner *s)
 {
-    return peek(s) == '\n';
+    return scanner_peek(s) == '\n';
 }
 
 static inline void
-skip_to_eol(struct scanner *s)
+scanner_skip_to_eol(struct scanner *s)
 {
     const char *nl = memchr(s->s + s->pos, '\n', s->len - s->pos);
     const size_t new_pos = nl ? (size_t) (nl - s->s) : s->len;
@@ -114,11 +114,11 @@ skip_to_eol(struct scanner *s)
 }
 
 static inline char
-next(struct scanner *s)
+scanner_next(struct scanner *s)
 {
-    if (unlikely(eof(s)))
+    if (unlikely(scanner_eof(s)))
         return '\0';
-    if (unlikely(eol(s))) {
+    if (unlikely(scanner_eol(s))) {
         s->line++;
         s->column = 1;
     }
@@ -129,16 +129,16 @@ next(struct scanner *s)
 }
 
 static inline bool
-chr(struct scanner *s, char ch)
+scanner_chr(struct scanner *s, char ch)
 {
-    if (likely(peek(s) != ch))
+    if (likely(scanner_peek(s) != ch))
         return false;
     s->pos++; s->column++;
     return true;
 }
 
 static inline bool
-str(struct scanner *s, const char *string, size_t len)
+scanner_str(struct scanner *s, const char *string, size_t len)
 {
     if (s->len - s->pos < len)
         return false;
@@ -148,10 +148,10 @@ str(struct scanner *s, const char *string, size_t len)
     return true;
 }
 
-#define lit(s, literal) str(s, literal, sizeof(literal) - 1)
+#define scanner_lit(s, literal) scanner_str(s, literal, sizeof(literal) - 1)
 
 static inline bool
-buf_append(struct scanner *s, char ch)
+scanner_buf_append(struct scanner *s, char ch)
 {
     if (s->buf_pos + 1 >= sizeof(s->buf))
         return false;
@@ -160,7 +160,7 @@ buf_append(struct scanner *s, char ch)
 }
 
 static inline bool
-buf_appends(struct scanner *s, const char *str)
+scanner_buf_appends(struct scanner *s, const char *str)
 {
     int ret;
     ret = snprintf(s->buf + s->buf_pos, sizeof(s->buf) - s->buf_pos, "%s", str);
@@ -171,20 +171,20 @@ buf_appends(struct scanner *s, const char *str)
 }
 
 static inline bool
-oct(struct scanner *s, uint8_t *out)
+scanner_oct(struct scanner *s, uint8_t *out)
 {
     int i;
-    for (i = 0, *out = 0; peek(s) >= '0' && peek(s) <= '7' && i < 3; i++)
-        *out = *out * 8 + next(s) - '0';
+    for (i = 0, *out = 0; scanner_peek(s) >= '0' && scanner_peek(s) <= '7' && i < 3; i++)
+        *out = *out * 8 + scanner_next(s) - '0';
     return i > 0;
 }
 
 static inline bool
-hex(struct scanner *s, uint8_t *out)
+scanner_hex(struct scanner *s, uint8_t *out)
 {
     int i;
-    for (i = 0, *out = 0; is_xdigit(peek(s)) && i < 2; i++) {
-        const char c = next(s);
+    for (i = 0, *out = 0; is_xdigit(scanner_peek(s)) && i < 2; i++) {
+        const char c = scanner_next(s);
         const char offset = (c >= '0' && c <= '9' ? '0' :
                              c >= 'a' && c <= 'f' ? 'a' - 10 : 'A' - 10);
         *out = *out * 16 + c - offset;

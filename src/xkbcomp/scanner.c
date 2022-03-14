@@ -34,14 +34,14 @@ number(struct scanner *s, int64_t *out, int *out_tok)
     const char *start = s->s + s->pos;
     char *end;
 
-    if (lit(s, "0x")) {
-        while (is_xdigit(peek(s))) next(s);
+    if (scanner_lit(s, "0x")) {
+        while (is_xdigit(scanner_peek(s))) scanner_next(s);
         is_hex = true;
     }
     else {
-        while (is_digit(peek(s))) next(s);
-        is_float = chr(s, '.');
-        while (is_digit(peek(s))) next(s);
+        while (is_digit(scanner_peek(s))) scanner_next(s);
+        is_float = scanner_chr(s, '.');
+        while (is_digit(scanner_peek(s))) scanner_next(s);
     }
     if (s->s + s->pos == start)
         return false;
@@ -69,16 +69,16 @@ _xkbcommon_lex(YYSTYPE *yylval, struct scanner *s)
 
 skip_more_whitespace_and_comments:
     /* Skip spaces. */
-    while (is_space(peek(s))) next(s);
+    while (is_space(scanner_peek(s))) scanner_next(s);
 
     /* Skip comments. */
-    if (lit(s, "//") || chr(s, '#')) {
-        skip_to_eol(s);
+    if (scanner_lit(s, "//") || scanner_chr(s, '#')) {
+        scanner_skip_to_eol(s);
         goto skip_more_whitespace_and_comments;
     }
 
     /* See if we're done. */
-    if (eof(s)) return END_OF_FILE;
+    if (scanner_eof(s)) return END_OF_FILE;
 
     /* New token. */
     s->token_line = s->line;
@@ -86,28 +86,28 @@ skip_more_whitespace_and_comments:
     s->buf_pos = 0;
 
     /* String literal. */
-    if (chr(s, '\"')) {
-        while (!eof(s) && !eol(s) && peek(s) != '\"') {
-            if (chr(s, '\\')) {
+    if (scanner_chr(s, '\"')) {
+        while (!scanner_eof(s) && !scanner_eol(s) && scanner_peek(s) != '\"') {
+            if (scanner_chr(s, '\\')) {
                 uint8_t o;
-                if      (chr(s, '\\')) buf_append(s, '\\');
-                else if (chr(s, 'n'))  buf_append(s, '\n');
-                else if (chr(s, 't'))  buf_append(s, '\t');
-                else if (chr(s, 'r'))  buf_append(s, '\r');
-                else if (chr(s, 'b'))  buf_append(s, '\b');
-                else if (chr(s, 'f'))  buf_append(s, '\f');
-                else if (chr(s, 'v'))  buf_append(s, '\v');
-                else if (chr(s, 'e'))  buf_append(s, '\033');
-                else if (oct(s, &o))   buf_append(s, (char) o);
+                if      (scanner_chr(s, '\\')) scanner_buf_append(s, '\\');
+                else if (scanner_chr(s, 'n'))  scanner_buf_append(s, '\n');
+                else if (scanner_chr(s, 't'))  scanner_buf_append(s, '\t');
+                else if (scanner_chr(s, 'r'))  scanner_buf_append(s, '\r');
+                else if (scanner_chr(s, 'b'))  scanner_buf_append(s, '\b');
+                else if (scanner_chr(s, 'f'))  scanner_buf_append(s, '\f');
+                else if (scanner_chr(s, 'v'))  scanner_buf_append(s, '\v');
+                else if (scanner_chr(s, 'e'))  scanner_buf_append(s, '\033');
+                else if (scanner_oct(s, &o))   scanner_buf_append(s, (char) o);
                 else {
                     scanner_warn(s, "unknown escape sequence in string literal");
                     /* Ignore. */
                 }
             } else {
-                buf_append(s, next(s));
+                scanner_buf_append(s, scanner_next(s));
             }
         }
-        if (!buf_append(s, '\0') || !chr(s, '\"')) {
+        if (!scanner_buf_append(s, '\0') || !scanner_chr(s, '\"')) {
             scanner_err(s, "unterminated string literal");
             return ERROR_TOK;
         }
@@ -118,10 +118,10 @@ skip_more_whitespace_and_comments:
     }
 
     /* Key name literal. */
-    if (chr(s, '<')) {
-        while (is_graph(peek(s)) && peek(s) != '>')
-            buf_append(s, next(s));
-        if (!buf_append(s, '\0') || !chr(s, '>')) {
+    if (scanner_chr(s, '<')) {
+        while (is_graph(scanner_peek(s)) && scanner_peek(s) != '>')
+            scanner_buf_append(s, scanner_next(s));
+        if (!scanner_buf_append(s, '\0') || !scanner_chr(s, '>')) {
             scanner_err(s, "unterminated key name literal");
             return ERROR_TOK;
         }
@@ -131,29 +131,29 @@ skip_more_whitespace_and_comments:
     }
 
     /* Operators and punctuation. */
-    if (chr(s, ';')) return SEMI;
-    if (chr(s, '{')) return OBRACE;
-    if (chr(s, '}')) return CBRACE;
-    if (chr(s, '=')) return EQUALS;
-    if (chr(s, '[')) return OBRACKET;
-    if (chr(s, ']')) return CBRACKET;
-    if (chr(s, '(')) return OPAREN;
-    if (chr(s, ')')) return CPAREN;
-    if (chr(s, '.')) return DOT;
-    if (chr(s, ',')) return COMMA;
-    if (chr(s, '+')) return PLUS;
-    if (chr(s, '-')) return MINUS;
-    if (chr(s, '*')) return TIMES;
-    if (chr(s, '/')) return DIVIDE;
-    if (chr(s, '!')) return EXCLAM;
-    if (chr(s, '~')) return INVERT;
+    if (scanner_chr(s, ';')) return SEMI;
+    if (scanner_chr(s, '{')) return OBRACE;
+    if (scanner_chr(s, '}')) return CBRACE;
+    if (scanner_chr(s, '=')) return EQUALS;
+    if (scanner_chr(s, '[')) return OBRACKET;
+    if (scanner_chr(s, ']')) return CBRACKET;
+    if (scanner_chr(s, '(')) return OPAREN;
+    if (scanner_chr(s, ')')) return CPAREN;
+    if (scanner_chr(s, '.')) return DOT;
+    if (scanner_chr(s, ',')) return COMMA;
+    if (scanner_chr(s, '+')) return PLUS;
+    if (scanner_chr(s, '-')) return MINUS;
+    if (scanner_chr(s, '*')) return TIMES;
+    if (scanner_chr(s, '/')) return DIVIDE;
+    if (scanner_chr(s, '!')) return EXCLAM;
+    if (scanner_chr(s, '~')) return INVERT;
 
     /* Identifier. */
-    if (is_alpha(peek(s)) || peek(s) == '_') {
+    if (is_alpha(scanner_peek(s)) || scanner_peek(s) == '_') {
         s->buf_pos = 0;
-        while (is_alnum(peek(s)) || peek(s) == '_')
-            buf_append(s, next(s));
-        if (!buf_append(s, '\0')) {
+        while (is_alnum(scanner_peek(s)) || scanner_peek(s) == '_')
+            scanner_buf_append(s, scanner_next(s));
+        if (!scanner_buf_append(s, '\0')) {
             scanner_err(s, "identifier too long");
             return ERROR_TOK;
         }

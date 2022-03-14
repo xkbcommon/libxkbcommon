@@ -86,49 +86,49 @@ lex(struct scanner *s, union lvalue *val)
 {
 skip_more_whitespace_and_comments:
     /* Skip spaces. */
-    while (chr(s, ' ') || chr(s, '\t') || chr(s, '\r'));
+    while (scanner_chr(s, ' ') || scanner_chr(s, '\t') || scanner_chr(s, '\r'));
 
     /* Skip comments. */
-    if (lit(s, "//")) {
-        skip_to_eol(s);
+    if (scanner_lit(s, "//")) {
+        scanner_skip_to_eol(s);
     }
 
     /* New line. */
-    if (eol(s)) {
-        while (eol(s)) next(s);
+    if (scanner_eol(s)) {
+        while (scanner_eol(s)) scanner_next(s);
         return TOK_END_OF_LINE;
     }
 
     /* Escaped line continuation. */
-    if (chr(s, '\\')) {
+    if (scanner_chr(s, '\\')) {
         /* Optional \r. */
-        chr(s, '\r');
-        if (!eol(s)) {
+        scanner_chr(s, '\r');
+        if (!scanner_eol(s)) {
             scanner_err(s, "illegal new line escape; must appear at end of line");
             return TOK_ERROR;
         }
-        next(s);
+        scanner_next(s);
         goto skip_more_whitespace_and_comments;
     }
 
     /* See if we're done. */
-    if (eof(s)) return TOK_END_OF_FILE;
+    if (scanner_eof(s)) return TOK_END_OF_FILE;
 
     /* New token. */
     s->token_line = s->line;
     s->token_column = s->column;
 
     /* Operators and punctuation. */
-    if (chr(s, '!')) return TOK_BANG;
-    if (chr(s, '=')) return TOK_EQUALS;
-    if (chr(s, '*')) return TOK_STAR;
+    if (scanner_chr(s, '!')) return TOK_BANG;
+    if (scanner_chr(s, '=')) return TOK_EQUALS;
+    if (scanner_chr(s, '*')) return TOK_STAR;
 
     /* Group name. */
-    if (chr(s, '$')) {
+    if (scanner_chr(s, '$')) {
         val->string.start = s->s + s->pos;
         val->string.len = 0;
-        while (is_ident(peek(s))) {
-            next(s);
+        while (is_ident(scanner_peek(s))) {
+            scanner_next(s);
             val->string.len++;
         }
         if (val->string.len == 0) {
@@ -139,15 +139,15 @@ skip_more_whitespace_and_comments:
     }
 
     /* Include statement. */
-    if (lit(s, "include"))
+    if (scanner_lit(s, "include"))
         return TOK_INCLUDE;
 
     /* Identifier. */
-    if (is_ident(peek(s))) {
+    if (is_ident(scanner_peek(s))) {
         val->string.start = s->s + s->pos;
         val->string.len = 0;
-        while (is_ident(peek(s))) {
-            next(s);
+        while (is_ident(scanner_peek(s))) {
+            scanner_next(s);
             val->string.len++;
         }
         return TOK_IDENTIFIER;
@@ -376,46 +376,46 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
         return;
     }
 
-    while (!eof(&s) && !eol(&s)) {
-        if (chr(&s, '%')) {
-            if (chr(&s, '%')) {
-                buf_append(&s, '%');
+    while (!scanner_eof(&s) && !scanner_eol(&s)) {
+        if (scanner_chr(&s, '%')) {
+            if (scanner_chr(&s, '%')) {
+                scanner_buf_append(&s, '%');
             }
-            else if (chr(&s, 'H')) {
+            else if (scanner_chr(&s, 'H')) {
                 const char *home = secure_getenv("HOME");
                 if (!home) {
                     scanner_err(&s, "%%H was used in an include statement, but the HOME environment variable is not set");
                     return;
                 }
-                if (!buf_appends(&s, home)) {
+                if (!scanner_buf_appends(&s, home)) {
                     scanner_err(&s, "include path after expanding %%H is too long");
                     return;
                 }
             }
-            else if (chr(&s, 'S')) {
+            else if (scanner_chr(&s, 'S')) {
                 const char *default_root = xkb_context_include_path_get_system_path(m->ctx);
-                if (!buf_appends(&s, default_root) || !buf_appends(&s, "/rules")) {
+                if (!scanner_buf_appends(&s, default_root) || !scanner_buf_appends(&s, "/rules")) {
                     scanner_err(&s, "include path after expanding %%S is too long");
                     return;
                 }
             }
-            else if (chr(&s, 'E')) {
+            else if (scanner_chr(&s, 'E')) {
                 const char *default_root = xkb_context_include_path_get_extra_path(m->ctx);
-                if (!buf_appends(&s, default_root) || !buf_appends(&s, "/rules")) {
+                if (!scanner_buf_appends(&s, default_root) || !scanner_buf_appends(&s, "/rules")) {
                     scanner_err(&s, "include path after expanding %%E is too long");
                     return;
                 }
             }
             else {
-                scanner_err(&s, "unknown %% format (%c) in include statement", peek(&s));
+                scanner_err(&s, "unknown %% format (%c) in include statement", scanner_peek(&s));
                 return;
             }
         }
         else {
-            buf_append(&s, next(&s));
+            scanner_buf_append(&s, scanner_next(&s));
         }
     }
-    if (!buf_append(&s, '\0')) {
+    if (!scanner_buf_append(&s, '\0')) {
         scanner_err(&s, "include path is too long");
         return;
     }
