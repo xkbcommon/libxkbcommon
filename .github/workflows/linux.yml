@@ -23,6 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade meson
+          sudo apt update
           sudo apt install -y \
             doxygen libxcb-xkb-dev valgrind ninja-build \
             libwayland-dev wayland-protocols bison graphviz
