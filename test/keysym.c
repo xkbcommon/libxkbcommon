@@ -252,6 +252,7 @@ main(void)
     assert(test_utf32_to_keysym(0xd7, XKB_KEY_multiply));
     assert(test_utf32_to_keysym('-', XKB_KEY_minus));
     assert(test_utf32_to_keysym(0x10fffd, 0x110fffd));
+    assert(test_utf32_to_keysym(0x20ac, XKB_KEY_EuroSign));
 
     // Unicode non-characters
     assert(test_utf32_to_keysym(0xfdd0, XKB_KEY_NoSymbol));
