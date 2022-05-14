@@ -560,6 +560,26 @@ test_include(struct xkb_context *ctx)
     free(table_string);
 }
 
+static void
+test_override(struct xkb_context *ctx)
+{
+    const char *table_string = "<dead_circumflex> <dead_circumflex> : \"foo\" X\n"
+                               "<dead_circumflex> <e> : \"bar\" Y\n"
+                               "<dead_circumflex> <dead_circumflex> <e> : \"baz\" Z\n";
+
+    assert(test_compose_seq_buffer(ctx, table_string,
+        /* Comes after - does override. */
+        XKB_KEY_dead_circumflex, XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_dead_circumflex, XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_e,               XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "baz",  XKB_KEY_Z,
+
+        /* Override does not affect sibling nodes */
+        XKB_KEY_dead_circumflex, XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_e,               XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "bar",  XKB_KEY_Y,
+
+        XKB_KEY_NoSymbol));
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -575,6 +595,7 @@ main(int argc, char *argv[])
     test_state(ctx);
     test_modifier_syntax(ctx);
     test_include(ctx);
+    test_override(ctx);
 
     xkb_context_unref(ctx);
     return 0;

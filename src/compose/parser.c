@@ -387,7 +387,7 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
         } else if (!last) {
             if (node->is_leaf) {
                 scanner_warn(s, "a sequence already exists which is a prefix of this sequence; overriding");
-                node->internal.eqkid = node->lokid = node->hikid = 0;
+                node->internal.eqkid = 0;
                 node->internal.is_leaf = false;
             }
             lhs_pos++;
