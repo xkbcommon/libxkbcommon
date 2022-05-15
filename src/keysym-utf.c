@@ -831,7 +831,6 @@ static const struct codepair keysymtab[] = {
     { 0x20a6, 0x20a6 }, /*                   NairaSign ₦ NAIRA SIGN */
     { 0x20a7, 0x20a7 }, /*                  PesetaSign ₧ PESETA SIGN */
     { 0x20a8, 0x20a8 }, /*                   RupeeSign ₨ RUPEE SIGN */
-    { 0x20a9, 0x20a9 }, /*                     WonSign ₩ WON SIGN */
     { 0x20aa, 0x20aa }, /*               NewSheqelSign ₪ NEW SHEQEL SIGN */
     { 0x20ab, 0x20ab }, /*                    DongSign ₫ DONG SIGN */
     { 0x20ac, 0x20ac }, /*                    EuroSign € EURO SIGN */
