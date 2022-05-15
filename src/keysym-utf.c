@@ -822,17 +822,6 @@ static const struct codepair keysymtab[] = {
     { 0x13bc, 0x0152 }, /*                          OE Œ LATIN CAPITAL LIGATURE OE */
     { 0x13bd, 0x0153 }, /*                          oe œ LATIN SMALL LIGATURE OE */
     { 0x13be, 0x0178 }, /*                  Ydiaeresis Ÿ LATIN CAPITAL LETTER Y WITH DIAERESIS */
-    { 0x20a0, 0x20a0 }, /*                     EcuSign ₠ EURO-CURRENCY SIGN */
-    { 0x20a1, 0x20a1 }, /*                   ColonSign ₡ COLON SIGN */
-    { 0x20a2, 0x20a2 }, /*                CruzeiroSign ₢ CRUZEIRO SIGN */
-    { 0x20a3, 0x20a3 }, /*                  FFrancSign ₣ FRENCH FRANC SIGN */
-    { 0x20a4, 0x20a4 }, /*                    LiraSign ₤ LIRA SIGN */
-    { 0x20a5, 0x20a5 }, /*                    MillSign ₥ MILL SIGN */
-    { 0x20a6, 0x20a6 }, /*                   NairaSign ₦ NAIRA SIGN */
-    { 0x20a7, 0x20a7 }, /*                  PesetaSign ₧ PESETA SIGN */
-    { 0x20a8, 0x20a8 }, /*                   RupeeSign ₨ RUPEE SIGN */
-    { 0x20aa, 0x20aa }, /*               NewSheqelSign ₪ NEW SHEQEL SIGN */
-    { 0x20ab, 0x20ab }, /*                    DongSign ₫ DONG SIGN */
     { 0x20ac, 0x20ac }, /*                    EuroSign € EURO SIGN */
 };
 
