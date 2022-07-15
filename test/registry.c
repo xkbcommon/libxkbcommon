@@ -27,6 +27,7 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#include <locale.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -1004,6 +1005,91 @@ test_invalid_include(void)
     rxkb_context_unref(ctx);
 }
 
+static void
+test_i18n(void)
+{
+    char *locale = setlocale(LC_ALL, NULL);
+    /* Note: this requires xkeyboard-config installed */
+
+    {
+        struct rxkb_context *ctx;
+        struct rxkb_model *m;
+        setlocale(LC_ALL, "de_DE.utf-8");
+        ctx = rxkb_context_new(RXKB_CONTEXT_NO_FLAGS);
+        assert(rxkb_context_parse_default_ruleset(ctx));
+        setlocale(LC_ALL, locale); /* for english errors */
+
+        for (m = rxkb_model_first(ctx); m; m = rxkb_model_next(m)) {
+            const char *model = rxkb_model_get_name(m);
+            if (streq(model, "pc104")) {
+                const char *desc = rxkb_model_get_description(m);
+                assert(streq(desc, "Generische PC-Tastatur mit 104 Tasten"));
+                break;
+            }
+        }
+        assert(m != NULL);
+        rxkb_context_unref(ctx);
+    }
+
+    {
+        struct rxkb_context *ctx;
+        struct rxkb_layout *l;
+        setlocale(LC_ALL, "es_ES.utf-8");
+
+        ctx = rxkb_context_new(RXKB_CONTEXT_NO_FLAGS);
+        assert(rxkb_context_parse_default_ruleset(ctx));
+        setlocale(LC_ALL, locale); /* for english errors */
+
+        for (l = rxkb_layout_first(ctx); l; l = rxkb_layout_next(l)) {
+            const char *layout = rxkb_layout_get_name(l);
+            const char *variant = rxkb_layout_get_variant(l);
+
+            if (streq(layout, "be") && variant && streq(variant, "nodeadkeys")) {
+                const char *desc = rxkb_layout_get_description(l);
+                assert(streq(desc, "Belga (sin teclas muertas)"));
+                break;
+            }
+        }
+        assert(l != NULL);
+        rxkb_context_unref(ctx);
+    }
+
+    {
+        struct rxkb_context *ctx;
+        struct rxkb_option_group *g;
+        setlocale(LC_ALL, "fr_FR.utf-8");
+
+        ctx = rxkb_context_new(RXKB_CONTEXT_NO_FLAGS);
+        assert(rxkb_context_parse_default_ruleset(ctx));
+        setlocale(LC_ALL, locale); /* for english errors */
+
+        for (g = rxkb_option_group_first(ctx); g; g = rxkb_option_group_next(g)) {
+            const char *option_group = rxkb_option_group_get_name(g);
+
+            if (streq(option_group, "grp")) {
+                struct rxkb_option *o;
+                const char *gdesc = rxkb_option_group_get_description(g);
+
+                assert(streq(gdesc, "Passage à une autre disposition"));
+
+                for (o = rxkb_option_first(g); o; o = rxkb_option_next(o)) {
+                    const char *option = rxkb_option_get_name(o);
+                    if (streq(option, "grp:switch")) {
+                        const char *odesc = rxkb_option_get_description(o);
+                        assert(streq(odesc, "Alt droite (maintenu)"));
+                        break;
+                    }
+                }
+
+                assert(o != NULL);
+                break;
+            }
+        }
+        assert(g != NULL);
+        rxkb_context_unref(ctx);
+    }
+}
+
 int
 main(void)
 {
@@ -1016,6 +1102,7 @@ main(void)
     test_load_languages();
     test_load_invalid_languages();
     test_popularity();
+    test_i18n();
 
     return 0;
 }

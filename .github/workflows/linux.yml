@@ -26,7 +26,11 @@ jobs:
           sudo apt update
           sudo apt install -y \
             doxygen libxcb-xkb-dev valgrind ninja-build \
-            libwayland-dev wayland-protocols bison graphviz
+            libwayland-dev wayland-protocols bison graphviz \
+            xkb-data
+      - name: Install languages for i18n test
+        run: |
+          sudo apt install -y language-pack-de language-pack-es language-pack-fr
       - name: Setup
         run: |
           meson setup build

@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <libintl.h>
 #include <libxml/parser.h>
 
 #include "xkbcommon/xkbregistry.h"
@@ -708,6 +709,20 @@ extract_text(xmlNode *node)
     return NULL;
 }
 
+static char *
+extract_i18n_text(xmlNode *node)
+{
+    char *result = extract_text(node);
+
+    if (result) {
+        char *translated = strdup(dgettext("xkeyboard-config", result));
+        free(result);
+        result = translated;
+    }
+
+    return result;
+}
+
 static bool
 parse_config_item(struct rxkb_context *ctx,
                   xmlNode *parent,
@@ -730,9 +745,9 @@ parse_config_item(struct rxkb_context *ctx,
                 if (is_node(node, "name"))
                     *name = extract_text(node);
                 else if (is_node(node, "description"))
-                    *description = extract_text(node);
+                    *description = extract_i18n_text(node);
                 else if (is_node(node, "shortDescription"))
-                    *brief = extract_text(node);
+                    *brief = extract_i18n_text(node); /* Never actually translated */
                 else if (is_node(node, "vendor"))
                     *vendor = extract_text(node);
                 /* Note: the DTD allows for vendor + brief but models only use

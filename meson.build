@@ -35,6 +35,13 @@ cflags = [
 ]
 add_project_arguments(cc.get_supported_arguments(cflags), language: 'c')
 
+libintl_dep = []
+if not cc.has_function('dgettext')
+    libintl_dep = cc.find_library('intl')
+    if not cc.has_function('dgettext', dependencies: libintl_dep)
+        error('libintl found but it does not provide dgettext()')
+    endif
+endif
 
 # The XKB config root.
 XKBCONFIGROOT = get_option('xkb-config-root')
@@ -253,6 +260,7 @@ libxkbcommon = library(
     version: '0.0.0',
     install: true,
     include_directories: include_directories('src', 'include'),
+    dependencies: [libintl_dep],
 )
 install_headers(
     'include/xkbcommon/xkbcommon.h',
