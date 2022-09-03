@@ -42,7 +42,7 @@
 #include "xdg-shell-client-protocol.h"
 #include <wayland-util.h>
 
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 struct interactive_dpy {
     struct wl_display *dpy;
@@ -557,7 +557,7 @@ seat_create(struct interactive_dpy *inter, struct wl_registry *registry,
     seat->global_name = name;
     seat->inter = inter;
     seat->wl_seat = wl_registry_bind(registry, name, &wl_seat_interface,
-                                     MAX(version, 5));
+                                     MIN(version, 5));
     wl_seat_add_listener(seat->wl_seat, &seat_listener, seat);
     ret = asprintf(&seat->name_str, "seat:%d",
                    wl_proxy_get_id((struct wl_proxy *) seat->wl_seat));
@@ -607,17 +607,17 @@ registry_global(void *data, struct wl_registry *registry, uint32_t name,
     else if (strcmp(interface, "xdg_wm_base") == 0) {
         inter->shell = wl_registry_bind(registry, name,
                                         &xdg_wm_base_interface,
-                                        MAX(version, 2));
+                                        MIN(version, 2));
         xdg_wm_base_add_listener(inter->shell, &shell_listener, inter);
     }
     else if (strcmp(interface, "wl_compositor") == 0) {
         inter->compositor = wl_registry_bind(registry, name,
                                              &wl_compositor_interface,
-                                             MAX(version, 1));
+                                             MIN(version, 1));
     }
     else if (strcmp(interface, "wl_shm") == 0) {
         inter->shm = wl_registry_bind(registry, name, &wl_shm_interface,
-                                      MAX(version, 1));
+                                      MIN(version, 1));
     }
 }
 
