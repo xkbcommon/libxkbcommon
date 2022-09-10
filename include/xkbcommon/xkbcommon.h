@@ -1337,7 +1337,8 @@ xkb_state_get_keymap(struct xkb_state *state);
 /** Specifies the direction of the key (press / release). */
 enum xkb_key_direction {
     XKB_KEY_UP,   /**< The key was released. */
-    XKB_KEY_DOWN  /**< The key was pressed. */
+    XKB_KEY_DOWN, /**< The key was pressed. */
+    XKB_KEY_HELD  /**< The key continues to be pressed. */
 };
 
 /**
