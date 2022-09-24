@@ -34,6 +34,7 @@
 
 #include <limits.h>
 #include <fcntl.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifdef _MSC_VER
@@ -160,6 +161,52 @@ test_key_seq(struct xkb_keymap *keymap, ...)
     va_end(ap);
 
     return ret;
+}
+
+char *
+test_makedir(const char *parent, const char *path)
+{
+    char *dirname;
+    int err;
+
+    dirname = asprintf_safe("%s/%s", parent, path);
+    assert(dirname);
+#ifdef _MSC_VER
+    err = _mkdir(dirname);
+#else
+    err = mkdir(dirname, 0777);
+#endif
+    assert(err == 0);
+
+    return dirname;
+}
+
+char *
+test_maketempdir(const char *template)
+{
+#ifdef _MSC_VER
+    const char *basetmp = getenv("TMP");
+    if (basetmp == NULL) {
+        basetmp = getenv("TEMP");
+    }
+    if (basetmp == NULL) {
+        basetmp = getenv("top_builddir");
+    }
+    assert(basetmp != NULL);
+    char *tmpdir = asprintf_safe("%s/%s", basetmp, template);
+    assert(tmpdir != NULL);
+    char *tmp = _mktemp(tmpdir);
+    assert(tmp == tmpdir);
+    int ret = _mkdir(tmp);
+    assert(ret == 0);
+    return tmpdir;
+#else
+    char *tmpdir = asprintf_safe("/tmp/%s", template);
+    assert(tmpdir != NULL);
+    char *tmp = mkdtemp(tmpdir);
+    assert(tmp == tmpdir);
+    return tmpdir;
+#endif
 }
 
 char *

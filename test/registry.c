@@ -35,6 +35,7 @@
 #include "xkbcommon/xkbregistry.h"
 
 #include "utils.h"
+#include "test.h"
 
 #define NO_VARIANT NULL
 
@@ -132,14 +133,13 @@ test_create_rules(const char *ruleset,
     int rc;
     FILE *fp;
 
-    tmpdir = asprintf_safe("/tmp/%s.%d.XXXXXX", ruleset, iteration++);
-    assert(tmpdir);
-    assert(mkdtemp(tmpdir) == tmpdir);
+    char *template = asprintf_safe("%s.%d.XXXXXX", ruleset, iteration++);
+    assert(template != NULL);
+    tmpdir = test_maketempdir(template);
+    free(template);
 
-    rc = snprintf_safe(buf, sizeof(buf), "%s/rules", tmpdir);
-    assert(rc);
-    rc = mkdir(buf, 0777);
-    assert(rc == 0);
+    free(test_makedir(tmpdir, "rules"));
+
     rc = snprintf_safe(buf, sizeof(buf), "%s/rules/%s.xml", tmpdir, ruleset);
     assert(rc);
 

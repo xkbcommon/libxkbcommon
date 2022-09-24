@@ -54,6 +54,12 @@ int
 test_key_seq_va(struct xkb_keymap *keymap, va_list args);
 
 char *
+test_makedir(const char *parent, const char *path);
+
+char *
+test_maketempdir(const char *template);
+
+char *
 test_get_path(const char *path_rel);
 
 char *
