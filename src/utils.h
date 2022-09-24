@@ -31,13 +31,21 @@
 #include <stdio.h>
 #include <string.h>
 #if HAVE_UNISTD_H
-#include <unistd.h>
+# include <unistd.h>
 #else
 /* Required on Windows where unistd.h doesn't exist */
-#define R_OK    4               /* Test for read permission.  */
-#define W_OK    2               /* Test for write permission.  */
-#define X_OK    1               /* Test for execute permission.  */
-#define F_OK    0               /* Test for existence.  */
+# define R_OK    4               /* Test for read permission.  */
+# define W_OK    2               /* Test for write permission.  */
+# define X_OK    1               /* Test for execute permission.  */
+# define F_OK    0               /* Test for existence.  */
+#endif
+
+#ifdef _MSC_VER
+# include <direct.h>
+# include <io.h>
+# ifndef S_ISDIR
+#  define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+# endif
 #endif
 
 #include "darray.h"
