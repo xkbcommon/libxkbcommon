@@ -596,14 +596,11 @@ test(
     executable('test-filecomp', 'test/filecomp.c', dependencies: test_dep),
     env: test_env,
 )
-# TODO: This test currently uses some functions that don't exist on Windows.
-if cc.get_id() != 'msvc'
-  test(
-      'context',
-      executable('test-context', 'test/context.c', dependencies: test_dep),
-      env: test_env,
-  )
-endif
+test(
+    'context',
+    executable('test-context', 'test/context.c', dependencies: test_dep),
+    env: test_env,
+)
 test(
     'rules-file',
     executable('test-rules-file', 'test/rules-file.c', dependencies: test_dep),
