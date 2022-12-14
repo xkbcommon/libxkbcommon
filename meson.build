@@ -17,7 +17,6 @@ dir_libexec = get_option('prefix')/get_option('libexecdir')/'xkbcommon'
 # Compiler flags.
 cflags = [
     '-fno-strict-aliasing',
-    '-fsanitize-undefined-trap-on-error',
     '-Wno-unused-parameter',
     '-Wno-missing-field-initializers',
     '-Wpointer-arith',
