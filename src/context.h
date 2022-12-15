@@ -53,6 +53,7 @@ struct xkb_context {
     size_t text_next;
 
     unsigned int use_environment_names : 1;
+    unsigned int use_secure_getenv : 1;
 };
 
 unsigned int

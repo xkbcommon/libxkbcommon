@@ -72,6 +72,7 @@ struct rxkb_context {
     enum context_state context_state;
 
     bool load_extra_rules_files;
+    bool use_secure_getenv;
 
     struct list models;         /* list of struct rxkb_models */
     struct list layouts;        /* list of struct rxkb_layouts */
@@ -508,11 +509,13 @@ rxkb_context_new(enum rxkb_context_flags flags)
 
     ctx->context_state = CONTEXT_NEW;
     ctx->load_extra_rules_files = flags & RXKB_CONTEXT_LOAD_EXOTIC_RULES;
+    ctx->use_secure_getenv = !(flags & RXKB_CONTEXT_NO_SECURE_GETENV);
     ctx->log_fn = default_log_fn;
     ctx->log_level = RXKB_LOG_LEVEL_ERROR;
 
     /* Environment overwrites defaults. */
-    env = secure_getenv("RXKB_LOG_LEVEL");
+    bool secure = ctx->use_secure_getenv;
+    env = xkb_context_getenv("RXKB_LOG_LEVEL", secure);
     if (env)
         rxkb_context_set_log_level(ctx, log_level(env));
 
@@ -593,9 +596,10 @@ rxkb_context_include_path_append_default(struct rxkb_context *ctx)
         return false;
     }
 
-    home = secure_getenv("HOME");
+    bool secure = ctx->use_secure_getenv;
+    home = xkb_context_getenv("HOME", secure);
 
-    xdg = secure_getenv("XDG_CONFIG_HOME");
+    xdg = xkb_context_getenv("XDG_CONFIG_HOME", secure);
     if (xdg != NULL) {
         user_path = asprintf_safe("%s/xkb", xdg);
         if (user_path) {
@@ -619,13 +623,13 @@ rxkb_context_include_path_append_default(struct rxkb_context *ctx)
         }
     }
 
-    extra = secure_getenv("XKB_CONFIG_EXTRA_PATH");
+    extra = xkb_context_getenv("XKB_CONFIG_EXTRA_PATH", secure);
     if (extra != NULL)
         ret |= rxkb_context_include_path_append(ctx, extra);
     else
         ret |= rxkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_EXTRA_PATH);
 
-    root = secure_getenv("XKB_CONFIG_ROOT");
+    root = xkb_context_getenv("XKB_CONFIG_ROOT", secure);
     if (root != NULL)
         ret |= rxkb_context_include_path_append(ctx, root);
     else

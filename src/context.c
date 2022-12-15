@@ -77,14 +77,16 @@ err:
 const char *
 xkb_context_include_path_get_extra_path(struct xkb_context *ctx)
 {
-    const char *extra = secure_getenv("XKB_CONFIG_EXTRA_PATH");
+    bool secure = ctx->use_secure_getenv;
+    const char *extra = xkb_context_getenv("XKB_CONFIG_EXTRA_PATH", secure);
     return extra ? extra : DFLT_XKB_CONFIG_EXTRA_PATH;
 }
 
 const char *
 xkb_context_include_path_get_system_path(struct xkb_context *ctx)
 {
-    const char *root = secure_getenv("XKB_CONFIG_ROOT");
+    bool secure = ctx->use_secure_getenv;
+    const char *root = xkb_context_getenv("XKB_CONFIG_ROOT", secure);
     return root ? root : DFLT_XKB_CONFIG_ROOT;
 }
 
@@ -97,10 +99,11 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
     const char *home, *xdg, *root, *extra;
     char *user_path;
     int ret = 0;
+    bool secure = ctx->use_secure_getenv;
 
-    home = secure_getenv("HOME");
+    home = xkb_context_getenv("HOME", secure);
 
-    xdg = secure_getenv("XDG_CONFIG_HOME");
+    xdg = xkb_context_getenv("XDG_CONFIG_HOME", secure);
     if (xdg != NULL) {
         user_path = asprintf_safe("%s/xkb", xdg);
         if (user_path) {
@@ -291,11 +294,12 @@ xkb_context_new(enum xkb_context_flags flags)
     ctx->log_verbosity = 0;
 
     /* Environment overwrites defaults. */
-    env = secure_getenv("XKB_LOG_LEVEL");
+    bool secure = ctx->use_secure_getenv;
+    env = xkb_context_getenv("XKB_LOG_LEVEL", secure);
     if (env)
         xkb_context_set_log_level(ctx, log_level(env));
 
-    env = secure_getenv("XKB_LOG_VERBOSITY");
+    env = xkb_context_getenv("XKB_LOG_VERBOSITY", secure);
     if (env)
         xkb_context_set_log_verbosity(ctx, log_verbosity(env));
 
@@ -308,6 +312,7 @@ xkb_context_new(enum xkb_context_flags flags)
     }
 
     ctx->use_environment_names = !(flags & XKB_CONTEXT_NO_ENVIRONMENT_NAMES);
+    ctx->use_secure_getenv = !(flags & XKB_CONTEXT_NO_SECURE_GETENV);
 
     ctx->atom_table = atom_table_new();
     if (!ctx->atom_table) {
