@@ -438,6 +438,17 @@ DECLARE_REF_UNREF_FOR_TYPE(rxkb_context);
 DECLARE_CREATE_FOR_TYPE(rxkb_context);
 DECLARE_TYPED_GETTER_FOR_TYPE(rxkb_context, log_level, enum rxkb_log_level);
 
+static char *
+rxkb_context_getenv(struct rxkb_context *ctx, const char *name)
+{
+    if (ctx->use_secure_getenv) {
+        return secure_getenv(name);
+    } else {
+        return getenv(name);
+    }
+}
+
+
 XKB_EXPORT void
 rxkb_context_set_log_level(struct rxkb_context *ctx,
                            enum rxkb_log_level level)
@@ -514,8 +525,7 @@ rxkb_context_new(enum rxkb_context_flags flags)
     ctx->log_level = RXKB_LOG_LEVEL_ERROR;
 
     /* Environment overwrites defaults. */
-    bool secure = ctx->use_secure_getenv;
-    env = xkb_context_getenv("RXKB_LOG_LEVEL", secure);
+    env = rxkb_context_getenv(ctx, "RXKB_LOG_LEVEL");
     if (env)
         rxkb_context_set_log_level(ctx, log_level(env));
 
@@ -596,10 +606,9 @@ rxkb_context_include_path_append_default(struct rxkb_context *ctx)
         return false;
     }
 
-    bool secure = ctx->use_secure_getenv;
-    home = xkb_context_getenv("HOME", secure);
+    home = rxkb_context_getenv(ctx, "HOME");
 
-    xdg = xkb_context_getenv("XDG_CONFIG_HOME", secure);
+    xdg = rxkb_context_getenv(ctx, "XDG_CONFIG_HOME");
     if (xdg != NULL) {
         user_path = asprintf_safe("%s/xkb", xdg);
         if (user_path) {
@@ -623,13 +632,13 @@ rxkb_context_include_path_append_default(struct rxkb_context *ctx)
         }
     }
 
-    extra = xkb_context_getenv("XKB_CONFIG_EXTRA_PATH", secure);
+    extra = rxkb_context_getenv(ctx, "XKB_CONFIG_EXTRA_PATH");
     if (extra != NULL)
         ret |= rxkb_context_include_path_append(ctx, extra);
     else
         ret |= rxkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_EXTRA_PATH);
 
-    root = xkb_context_getenv("XKB_CONFIG_ROOT", secure);
+    root = rxkb_context_getenv(ctx, "XKB_CONFIG_ROOT");
     if (root != NULL)
         ret |= rxkb_context_include_path_append(ctx, root);
     else

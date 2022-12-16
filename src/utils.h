@@ -251,17 +251,6 @@ check_eaccess(const char *path, int mode)
 # define secure_getenv getenv
 #endif
 
-static inline char *
-xkb_context_getenv(const char *name, bool secure)
-{
-    if (secure) {
-        return secure_getenv(name);
-    } else {
-        return getenv(name);
-    }
-}
-
-
 #if defined(HAVE___BUILTIN_EXPECT)
 # define likely(x)   __builtin_expect(!!(x), 1)
 # define unlikely(x) __builtin_expect(!!(x), 0)

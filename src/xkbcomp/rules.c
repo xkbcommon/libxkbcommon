@@ -382,7 +382,7 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
                 scanner_buf_append(&s, '%');
             }
             else if (scanner_chr(&s, 'H')) {
-                const char *home = secure_getenv("HOME");
+                const char *home = xkb_context_getenv(m->ctx, "HOME");
                 if (!home) {
                     scanner_err(&s, "%%H was used in an include statement, but the HOME environment variable is not set");
                     return;

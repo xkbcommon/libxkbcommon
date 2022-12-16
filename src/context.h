@@ -56,6 +56,9 @@ struct xkb_context {
     unsigned int use_secure_getenv : 1;
 };
 
+char *
+xkb_context_getenv(struct xkb_context *ctx, const char *name);
+
 unsigned int
 xkb_context_num_failed_include_paths(struct xkb_context *ctx);
 

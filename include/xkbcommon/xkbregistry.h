@@ -164,7 +164,8 @@ enum rxkb_context_flags {
      */
     RXKB_CONTEXT_LOAD_EXOTIC_RULES = (1 << 1),
     /**
-     * Disable the use of secure_getenv.
+     * Disable the use of secure_getenv for this context, so that privileged
+     * processes can use environment variables. Client uses at their own risk.
      */
     RXKB_CONTEXT_NO_SECURE_GETENV = (1 << 2)
 };
