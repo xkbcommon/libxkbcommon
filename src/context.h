@@ -53,7 +53,11 @@ struct xkb_context {
     size_t text_next;
 
     unsigned int use_environment_names : 1;
+    unsigned int use_secure_getenv : 1;
 };
+
+char *
+xkb_context_getenv(struct xkb_context *ctx, const char *name);
 
 unsigned int
 xkb_context_num_failed_include_paths(struct xkb_context *ctx);

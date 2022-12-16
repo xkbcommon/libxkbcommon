@@ -23,9 +23,10 @@
 
 #include "config.h"
 
+#include "xkbcommon/xkbcommon.h"
 #include "utils.h"
+#include "context.h"
 #include "paths.h"
-#include "utils.h"
 
 enum resolve_name_direction {
     LEFT_TO_RIGHT,
@@ -33,9 +34,9 @@ enum resolve_name_direction {
 };
 
 const char *
-get_xlocaledir_path(void)
+get_xlocaledir_path(struct xkb_context *ctx)
 {
-    const char *dir = secure_getenv("XLOCALEDIR");
+    const char *dir = xkb_context_getenv(ctx, "XLOCALEDIR");
     if (!dir)
         dir = XLOCALEDIR;
     return dir;
@@ -47,8 +48,8 @@ get_xlocaledir_path(void)
  * @filename is relative to the xlocaledir.
  */
 static char *
-resolve_name(const char *filename, enum resolve_name_direction direction,
-             const char *name)
+resolve_name(struct xkb_context *ctx, const char *filename,
+             enum resolve_name_direction direction, const char *name)
 {
     int ret;
     bool ok;
@@ -62,7 +63,7 @@ resolve_name(const char *filename, enum resolve_name_direction direction,
     char *match;
     size_t left_len, right_len, name_len;
 
-    xlocaledir = get_xlocaledir_path();
+    xlocaledir = get_xlocaledir_path(ctx);
 
     ret = snprintf(path, sizeof(path), "%s/%s", xlocaledir, filename);
     if (ret < 0 || (size_t) ret >= sizeof(path))
@@ -137,27 +138,27 @@ resolve_name(const char *filename, enum resolve_name_direction direction,
 }
 
 char *
-resolve_locale(const char *locale)
+resolve_locale(struct xkb_context *ctx, const char *locale)
 {
-    char *alias = resolve_name("locale.alias", LEFT_TO_RIGHT, locale);
+    char *alias = resolve_name(ctx, "locale.alias", LEFT_TO_RIGHT, locale);
     return alias ? alias : strdup(locale);
 }
 
 char *
-get_xcomposefile_path(void)
+get_xcomposefile_path(struct xkb_context *ctx)
 {
-    return strdup_safe(secure_getenv("XCOMPOSEFILE"));
+    return strdup_safe(xkb_context_getenv(ctx, "XCOMPOSEFILE"));
 }
 
 char *
-get_xdg_xcompose_file_path(void)
+get_xdg_xcompose_file_path(struct xkb_context *ctx)
 {
     const char *xdg_config_home;
     const char *home;
 
-    xdg_config_home = secure_getenv("XDG_CONFIG_HOME");
+    xdg_config_home = xkb_context_getenv(ctx, "XDG_CONFIG_HOME");
     if (!xdg_config_home || xdg_config_home[0] != '/') {
-        home = secure_getenv("HOME");
+        home = xkb_context_getenv(ctx, "HOME");
         if (!home)
             return NULL;
         return asprintf_safe("%s/.config/XCompose", home);
@@ -167,11 +168,11 @@ get_xdg_xcompose_file_path(void)
 }
 
 char *
-get_home_xcompose_file_path(void)
+get_home_xcompose_file_path(struct xkb_context *ctx)
 {
     const char *home;
 
-    home = secure_getenv("HOME");
+    home = xkb_context_getenv(ctx, "HOME");
     if (!home)
         return NULL;
 
@@ -179,7 +180,7 @@ get_home_xcompose_file_path(void)
 }
 
 char *
-get_locale_compose_file_path(const char *locale)
+get_locale_compose_file_path(struct xkb_context *ctx, const char *locale)
 {
     char *resolved;
     char *path;
@@ -198,7 +199,7 @@ get_locale_compose_file_path(const char *locale)
     if (streq(locale, "C"))
         locale = "en_US.UTF-8";
 
-    resolved = resolve_name("compose.dir", RIGHT_TO_LEFT, locale);
+    resolved = resolve_name(ctx, "compose.dir", RIGHT_TO_LEFT, locale);
     if (!resolved)
         return NULL;
 
@@ -206,7 +207,7 @@ get_locale_compose_file_path(const char *locale)
         path = resolved;
     }
     else {
-        const char *xlocaledir = get_xlocaledir_path();
+        const char *xlocaledir = get_xlocaledir_path(ctx);
         path = asprintf_safe("%s/%s", xlocaledir, resolved);
         free(resolved);
     }

@@ -262,7 +262,7 @@ lex_include_string(struct scanner *s, struct xkb_compose_table *table,
                 scanner_buf_append(s, '%');
             }
             else if (scanner_chr(s, 'H')) {
-                const char *home = secure_getenv("HOME");
+                const char *home = xkb_context_getenv(table->ctx, "HOME");
                 if (!home) {
                     scanner_err(s, "%%H was used in an include statement, but the HOME environment variable is not set");
                     return TOK_ERROR;
@@ -273,7 +273,7 @@ lex_include_string(struct scanner *s, struct xkb_compose_table *table,
                 }
             }
             else if (scanner_chr(s, 'L')) {
-                char *path = get_locale_compose_file_path(table->locale);
+                char *path = get_locale_compose_file_path(table->ctx, table->locale);
                 if (!path) {
                     scanner_err(s, "failed to expand %%L to the locale Compose file");
                     return TOK_ERROR;
@@ -286,7 +286,7 @@ lex_include_string(struct scanner *s, struct xkb_compose_table *table,
                 free(path);
             }
             else if (scanner_chr(s, 'S')) {
-                const char *xlocaledir = get_xlocaledir_path();
+                const char *xlocaledir = get_xlocaledir_path(table->ctx);
                 if (!scanner_buf_appends(s, xlocaledir)) {
                     scanner_err(s, "include path after expanding %%S is too long");
                     return TOK_ERROR;

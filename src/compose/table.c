@@ -38,7 +38,7 @@ xkb_compose_table_new(struct xkb_context *ctx,
     struct xkb_compose_table *table;
     struct compose_node dummy;
 
-    resolved_locale = resolve_locale(locale);
+    resolved_locale = resolve_locale(ctx, locale);
     if (!resolved_locale)
         return NULL;
 
@@ -174,7 +174,7 @@ xkb_compose_table_new_from_locale(struct xkb_context *ctx,
     if (!table)
         return NULL;
 
-    path = get_xcomposefile_path();
+    path = get_xcomposefile_path(ctx);
     if (path) {
         file = fopen(path, "rb");
         if (file)
@@ -182,7 +182,7 @@ xkb_compose_table_new_from_locale(struct xkb_context *ctx,
     }
     free(path);
 
-    path = get_xdg_xcompose_file_path();
+    path = get_xdg_xcompose_file_path(ctx);
     if (path) {
         file = fopen(path, "rb");
         if (file)
@@ -190,7 +190,7 @@ xkb_compose_table_new_from_locale(struct xkb_context *ctx,
     }
     free(path);
 
-    path = get_home_xcompose_file_path();
+    path = get_home_xcompose_file_path(ctx);
     if (path) {
         file = fopen(path, "rb");
         if (file)
@@ -198,7 +198,7 @@ xkb_compose_table_new_from_locale(struct xkb_context *ctx,
     }
     free(path);
 
-    path = get_locale_compose_file_path(table->locale);
+    path = get_locale_compose_file_path(ctx, table->locale);
     if (path) {
         file = fopen(path, "rb");
         if (file)

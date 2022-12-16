@@ -34,6 +34,7 @@
 #include "utils.h"
 #include "context.h"
 
+
 /**
  * Append one directory to the context's include path.
  */
@@ -77,14 +78,14 @@ err:
 const char *
 xkb_context_include_path_get_extra_path(struct xkb_context *ctx)
 {
-    const char *extra = secure_getenv("XKB_CONFIG_EXTRA_PATH");
+    const char *extra = xkb_context_getenv(ctx, "XKB_CONFIG_EXTRA_PATH");
     return extra ? extra : DFLT_XKB_CONFIG_EXTRA_PATH;
 }
 
 const char *
 xkb_context_include_path_get_system_path(struct xkb_context *ctx)
 {
-    const char *root = secure_getenv("XKB_CONFIG_ROOT");
+    const char *root = xkb_context_getenv(ctx, "XKB_CONFIG_ROOT");
     return root ? root : DFLT_XKB_CONFIG_ROOT;
 }
 
@@ -98,9 +99,9 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
     char *user_path;
     int ret = 0;
 
-    home = secure_getenv("HOME");
+    home = xkb_context_getenv(ctx, "HOME");
 
-    xdg = secure_getenv("XDG_CONFIG_HOME");
+    xdg = xkb_context_getenv(ctx, "XDG_CONFIG_HOME");
     if (xdg != NULL) {
         user_path = asprintf_safe("%s/xkb", xdg);
         if (user_path) {
@@ -289,13 +290,15 @@ xkb_context_new(enum xkb_context_flags flags)
     ctx->log_fn = default_log_fn;
     ctx->log_level = XKB_LOG_LEVEL_ERROR;
     ctx->log_verbosity = 0;
+    ctx->use_environment_names = !(flags & XKB_CONTEXT_NO_ENVIRONMENT_NAMES);
+    ctx->use_secure_getenv = !(flags & XKB_CONTEXT_NO_SECURE_GETENV);
 
     /* Environment overwrites defaults. */
-    env = secure_getenv("XKB_LOG_LEVEL");
+    env = xkb_context_getenv(ctx, "XKB_LOG_LEVEL");
     if (env)
         xkb_context_set_log_level(ctx, log_level(env));
 
-    env = secure_getenv("XKB_LOG_VERBOSITY");
+    env = xkb_context_getenv(ctx, "XKB_LOG_VERBOSITY");
     if (env)
         xkb_context_set_log_verbosity(ctx, log_verbosity(env));
 
@@ -306,8 +309,6 @@ xkb_context_new(enum xkb_context_flags flags)
         xkb_context_unref(ctx);
         return NULL;
     }
-
-    ctx->use_environment_names = !(flags & XKB_CONTEXT_NO_ENVIRONMENT_NAMES);
 
     ctx->atom_table = atom_table_new();
     if (!ctx->atom_table) {

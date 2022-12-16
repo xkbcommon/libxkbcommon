@@ -580,9 +580,17 @@ enum xkb_context_flags {
     XKB_CONTEXT_NO_DEFAULT_INCLUDES = (1 << 0),
     /**
      * Don't take RMLVO names from the environment.
+     *
      * @since 0.3.0
      */
-    XKB_CONTEXT_NO_ENVIRONMENT_NAMES = (1 << 1)
+    XKB_CONTEXT_NO_ENVIRONMENT_NAMES = (1 << 1),
+    /**
+     * Disable the use of secure_getenv for this context, so that privileged
+     * processes can use environment variables. Client uses at their own risk.
+     *
+     * @since 1.5.0
+     */
+    XKB_CONTEXT_NO_SECURE_GETENV = (1 << 2)
 };
 
 /**

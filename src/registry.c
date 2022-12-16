@@ -72,6 +72,7 @@ struct rxkb_context {
     enum context_state context_state;
 
     bool load_extra_rules_files;
+    bool use_secure_getenv;
 
     struct list models;         /* list of struct rxkb_models */
     struct list layouts;        /* list of struct rxkb_layouts */
@@ -437,6 +438,17 @@ DECLARE_REF_UNREF_FOR_TYPE(rxkb_context);
 DECLARE_CREATE_FOR_TYPE(rxkb_context);
 DECLARE_TYPED_GETTER_FOR_TYPE(rxkb_context, log_level, enum rxkb_log_level);
 
+static char *
+rxkb_context_getenv(struct rxkb_context *ctx, const char *name)
+{
+    if (ctx->use_secure_getenv) {
+        return secure_getenv(name);
+    } else {
+        return getenv(name);
+    }
+}
+
+
 XKB_EXPORT void
 rxkb_context_set_log_level(struct rxkb_context *ctx,
                            enum rxkb_log_level level)
@@ -508,11 +520,12 @@ rxkb_context_new(enum rxkb_context_flags flags)
 
     ctx->context_state = CONTEXT_NEW;
     ctx->load_extra_rules_files = flags & RXKB_CONTEXT_LOAD_EXOTIC_RULES;
+    ctx->use_secure_getenv = !(flags & RXKB_CONTEXT_NO_SECURE_GETENV);
     ctx->log_fn = default_log_fn;
     ctx->log_level = RXKB_LOG_LEVEL_ERROR;
 
     /* Environment overwrites defaults. */
-    env = secure_getenv("RXKB_LOG_LEVEL");
+    env = rxkb_context_getenv(ctx, "RXKB_LOG_LEVEL");
     if (env)
         rxkb_context_set_log_level(ctx, log_level(env));
 
@@ -593,9 +606,9 @@ rxkb_context_include_path_append_default(struct rxkb_context *ctx)
         return false;
     }
 
-    home = secure_getenv("HOME");
+    home = rxkb_context_getenv(ctx, "HOME");
 
-    xdg = secure_getenv("XDG_CONFIG_HOME");
+    xdg = rxkb_context_getenv(ctx, "XDG_CONFIG_HOME");
     if (xdg != NULL) {
         user_path = asprintf_safe("%s/xkb", xdg);
         if (user_path) {
@@ -619,13 +632,13 @@ rxkb_context_include_path_append_default(struct rxkb_context *ctx)
         }
     }
 
-    extra = secure_getenv("XKB_CONFIG_EXTRA_PATH");
+    extra = rxkb_context_getenv(ctx, "XKB_CONFIG_EXTRA_PATH");
     if (extra != NULL)
         ret |= rxkb_context_include_path_append(ctx, extra);
     else
         ret |= rxkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_EXTRA_PATH);
 
-    root = secure_getenv("XKB_CONFIG_ROOT");
+    root = rxkb_context_getenv(ctx, "XKB_CONFIG_ROOT");
     if (root != NULL)
         ret |= rxkb_context_include_path_append(ctx, root);
     else
