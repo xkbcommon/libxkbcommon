@@ -1,6 +1,10 @@
 name: linux
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 # Set permissions at the job level.
 permissions: {}
