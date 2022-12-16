@@ -7,7 +7,7 @@ project(
         'warning_level=2',
         'b_lundef=true',
     ],
-    meson_version : '>= 0.49.0',
+    meson_version : '>= 0.51.0',
 )
 pkgconfig = import('pkgconfig')
 cc = meson.get_compiler('c')
@@ -40,7 +40,7 @@ XKBCONFIGROOT = get_option('xkb-config-root')
 if XKBCONFIGROOT == ''
     xkeyboard_config_dep = dependency('xkeyboard-config', required: false)
     if xkeyboard_config_dep.found()
-        XKBCONFIGROOT = xkeyboard_config_dep.get_pkgconfig_variable('xkb_base')
+        XKBCONFIGROOT = xkeyboard_config_dep.get_variable(pkgconfig: 'xkb_base')
     else
         XKBCONFIGROOT = get_option('prefix')/get_option('datadir')/'X11'/'xkb'
   endif
@@ -145,7 +145,7 @@ configh_data.set('WIN32_LEAN_AND_MEAN', 1)
 # Supports -Wl,--version-script?
 have_version_script = cc.links(
     'int main(){}',
-    args: '-Wl,--version-script=' + meson.source_root()/'xkbcommon.map',
+    args: '-Wl,--version-script=' + meson.current_source_dir()/'xkbcommon.map',
     name: '-Wl,--version-script',
 )
 
@@ -231,7 +231,7 @@ libxkbcommon_sources = [
 libxkbcommon_link_args = []
 libxkbcommon_link_deps = []
 if have_version_script
-    libxkbcommon_link_args += '-Wl,--version-script=' + meson.source_root()/'xkbcommon.map'
+    libxkbcommon_link_args += '-Wl,--version-script=' + meson.current_source_dir()/'xkbcommon.map'
     libxkbcommon_link_deps += 'xkbcommon.map'
 elif cc.get_argument_syntax() == 'msvc'
     libxkbcommon_def = custom_target('xkbcommon.def',
@@ -299,7 +299,7 @@ You can disable X11 support with -Denable-x11=false.''')
     libxkbcommon_x11_link_args = []
     libxkbcommon_x11_link_deps = []
     if have_version_script
-        libxkbcommon_x11_link_args += '-Wl,--version-script=' + meson.source_root()/'xkbcommon-x11.map'
+        libxkbcommon_x11_link_args += '-Wl,--version-script=' + meson.current_source_dir()/'xkbcommon-x11.map'
         libxkbcommon_x11_link_deps += 'xkbcommon-x11.map'
     elif cc.get_argument_syntax() == 'msvc'
         libxkbcommon_x11_def = custom_target('xkbcommon-x11.def',
@@ -359,7 +359,7 @@ if get_option('enable-xkbregistry')
     libxkbregistry_link_args = []
     libxkbregistry_link_deps = []
     if have_version_script
-        libxkbregistry_link_args += '-Wl,--version-script=' + meson.source_root()/'xkbregistry.map'
+        libxkbregistry_link_args += '-Wl,--version-script=' + meson.current_source_dir()/'xkbregistry.map'
         libxkbregistry_link_deps += 'xkbregistry.map'
     elif cc.get_argument_syntax() == 'msvc'
         libxkbregistry_def = custom_target('xkbregistry.def',
@@ -482,7 +482,7 @@ if build_tools
 You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
         endif
 
-        wayland_scanner = find_program(wayland_scanner_dep.get_pkgconfig_variable('wayland_scanner'))
+        wayland_scanner = find_program(wayland_scanner_dep.get_variable(pkgconfig: 'wayland_scanner'))
         wayland_scanner_code_gen = generator(
             wayland_scanner,
             output: '@BASENAME@-protocol.c',
@@ -493,7 +493,7 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
             output: '@BASENAME@-client-protocol.h',
             arguments: ['client-header', '@INPUT@', '@OUTPUT@'],
         )
-        wayland_protocols_datadir = wayland_protocols_dep.get_pkgconfig_variable('pkgdatadir')
+        wayland_protocols_datadir = wayland_protocols_dep.get_variable(pkgconfig: 'pkgdatadir')
         xdg_shell_xml = wayland_protocols_datadir/'stable/xdg-shell/xdg-shell.xml'
         xdg_shell_sources = [
             wayland_scanner_code_gen.process(xdg_shell_xml),
@@ -523,7 +523,7 @@ endif
 
 # xkeyboard-config "verifier"
 xkct_config = configuration_data()
-xkct_config.set('MESON_BUILD_ROOT', meson.build_root())
+xkct_config.set('MESON_BUILD_ROOT', meson.current_build_dir())
 xkct_config.set('XKB_CONFIG_ROOT', XKBCONFIGROOT)
 configure_file(input: 'test/xkeyboard-config-test.py.in',
                output: 'xkeyboard-config-test',
@@ -533,15 +533,15 @@ configure_file(input: 'test/xkeyboard-config-test.py.in',
 test_env = environment()
 test_env.set('XKB_LOG_LEVEL', 'debug')
 test_env.set('XKB_LOG_VERBOSITY', '10')
-test_env.set('top_srcdir', meson.source_root())
-test_env.set('top_builddir', meson.build_root())
+test_env.set('top_srcdir', meson.current_source_dir())
+test_env.set('top_builddir', meson.current_build_dir())
 test_env.set('HAVE_XKBCLI_INTERACTIVE_EVDEV', configh_data.get('HAVE_XKBCLI_INTERACTIVE_EVDEV', 0).to_string())
 test_env.set('HAVE_XKBCLI_INTERACTIVE_WAYLAND', configh_data.get('HAVE_XKBCLI_INTERACTIVE_WAYLAND', 0).to_string())
 test_env.set('HAVE_XKBCLI_INTERACTIVE_X11', configh_data.get('HAVE_XKBCLI_INTERACTIVE_X11', 0).to_string())
 test_env.set('HAVE_XKBCLI_LIST', configh_data.get('HAVE_XKBCLI_LIST', 0).to_string())
 
 test_configh_data = configuration_data()
-test_configh_data.set_quoted('TEST_XKB_CONFIG_ROOT', meson.source_root()/'test'/'data')
+test_configh_data.set_quoted('TEST_XKB_CONFIG_ROOT', meson.current_source_dir()/'test'/'data')
 configure_file(output: 'test-config.h', configuration: test_configh_data)
 
 # Some tests need to use unexported symbols, so we link them against
@@ -698,7 +698,7 @@ if build_tools
     ]
 
     env = environment()
-    env.set('XKB_CONFIG_ROOT', meson.source_root()/'test'/'data')
+    env.set('XKB_CONFIG_ROOT', meson.current_source_dir()/'test'/'data')
     foreach keysym: keysyms_to_test
         test('keysym-test-@0@'.format(keysym),
              find_program('test/test-keysym.py'),
@@ -729,7 +729,7 @@ executable('fuzz-compose', 'fuzz/compose/target.c', dependencies: test_dep)
 
 # Benchmarks.
 bench_env = environment()
-bench_env.set('top_srcdir', meson.source_root())
+bench_env.set('top_srcdir', meson.current_source_dir())
 benchmark(
     'key-proc',
     executable('bench-key-proc', 'bench/key-proc.c', dependencies: test_dep),
@@ -791,7 +791,7 @@ You can disable the documentation with -Denable-docs=false.''')
     doxygen_data.set('PACKAGE_NAME', meson.project_name())
     doxygen_data.set('PACKAGE_VERSION', meson.project_version())
     doxygen_data.set('INPUT', ' '.join(doxygen_input))
-    doxygen_data.set('OUTPUT_DIRECTORY', meson.build_root())
+    doxygen_data.set('OUTPUT_DIRECTORY', meson.current_build_dir())
     doxyfile = configure_file(
         input: 'doc/Doxyfile.in',
         output: 'Doxyfile',
@@ -803,7 +803,7 @@ You can disable the documentation with -Denable-docs=false.''')
         'doc',
         input: [doxyfile] + doxygen_input,
         output: 'html',
-        command: [doxygen_wrapper, doxygen.path(), meson.build_root()/'Doxyfile', meson.source_root()],
+        command: [doxygen_wrapper, doxygen, meson.current_build_dir()/'Doxyfile', meson.current_source_dir()],
         install: true,
         install_dir: docdir,
         build_by_default: true,
