@@ -486,7 +486,7 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
         wayland_scanner_code_gen = generator(
             wayland_scanner,
             output: '@BASENAME@-protocol.c',
-            arguments: ['code', '@INPUT@', '@OUTPUT@'],
+            arguments: ['private-code', '@INPUT@', '@OUTPUT@'],
         )
         wayland_scanner_client_header_gen = generator(
             wayland_scanner,
