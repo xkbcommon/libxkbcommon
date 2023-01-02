@@ -1,3 +1,30 @@
+libxkbcommon 1.5.0 - 2023-01-02
+==================
+
+- Add `xkb_context` flag `XKB_CONTEXT_NO_SECURE_GETENV` and `rxkb_context` flag
+  `RXKB_CONTEXT_NO_SECURE_GETENV`.
+
+  xkbcommon uses `getenv_secure()` to obtain environment variables. This flag
+  makes xkbcommon use `getenv()` instead.
+
+  This is useful for some clients that have relatively benign capabilities set,
+  like CAP_SYS_NICE, that also want to use e.g. the XKB configuration from the
+  environment and user configs in XDG_CONFIG_HOME.
+
+  Contributed by Ronan Pigott.
+
+- Fix crash in `xkbcli interactive-wayland` under a compositor which supports
+  new versions of the xdg-shell protocol.
+
+  Contributed by Jan Alexander Steffens (heftig).
+
+- Fix some MSVC build issues.
+
+- Fix some issues when including xkbcommon as a meson subproject.
+
+- meson>=0.51 is now required.
+
+
 libxkbcommon 1.4.1 - 2022-05-21
 ==================
 
