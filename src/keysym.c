@@ -743,9 +743,9 @@ XConvertCase(xkb_keysym_t sym, xkb_keysym_t *lower, xkb_keysym_t *upper)
 	break;
     case 6: /* Cyrillic */
 	/* Assume the KeySym is a legal value (ignore discontinuities) */
-	if (sym >= XKB_KEY_Serbian_DJE && sym <= XKB_KEY_Serbian_DZE)
+	if (sym >= XKB_KEY_Serbian_DJE && sym <= XKB_KEY_Cyrillic_DZHE)
 	    *lower -= (XKB_KEY_Serbian_DJE - XKB_KEY_Serbian_dje);
-	else if (sym >= XKB_KEY_Serbian_dje && sym <= XKB_KEY_Serbian_dze)
+	else if (sym >= XKB_KEY_Serbian_dje && sym <= XKB_KEY_Cyrillic_dzhe)
 	    *upper += (XKB_KEY_Serbian_DJE - XKB_KEY_Serbian_dje);
 	else if (sym >= XKB_KEY_Cyrillic_YU && sym <= XKB_KEY_Cyrillic_HARDSIGN)
 	    *lower -= (XKB_KEY_Cyrillic_YU - XKB_KEY_Cyrillic_yu);
