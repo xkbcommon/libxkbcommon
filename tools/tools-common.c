@@ -39,7 +39,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef _MSC_VER
+#ifdef _WIN32
 #include <io.h>
 #include <windows.h>
 #else
@@ -160,7 +160,7 @@ tools_print_state_changes(enum xkb_state_component changed)
     printf("]\n");
 }
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 void
 tools_disable_stdin_echo(void)
 {
