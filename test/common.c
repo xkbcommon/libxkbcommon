@@ -37,7 +37,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef _MSC_VER
+#ifdef _WIN32
 #include <io.h>
 #include <windows.h>
 #else
@@ -171,7 +171,7 @@ test_makedir(const char *parent, const char *path)
 
     dirname = asprintf_safe("%s/%s", parent, path);
     assert(dirname);
-#ifdef _MSC_VER
+#ifdef _WIN32
     err = _mkdir(dirname);
 #else
     err = mkdir(dirname, 0777);
@@ -184,7 +184,7 @@ test_makedir(const char *parent, const char *path)
 char *
 test_maketempdir(const char *template)
 {
-#ifdef _MSC_VER
+#ifdef _WIN32
     const char *basetmp = getenv("TMP");
     if (basetmp == NULL) {
         basetmp = getenv("TEMP");

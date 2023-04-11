@@ -30,7 +30,7 @@
 #include "bench.h"
 #include "../src/utils.h"
 
-#ifndef _MSC_VER
+#ifndef _WIN32
 #include <sys/time.h>
 #else
 #include <windows.h>

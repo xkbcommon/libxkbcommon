@@ -40,7 +40,7 @@
 # define F_OK    0               /* Test for existence.  */
 #endif
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 # include <direct.h>
 # include <io.h>
 # ifndef S_ISDIR
