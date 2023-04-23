@@ -7,3 +7,7 @@ div#top, div.header, div.contents {
 .footer {
         display: none;
 }
+
+span.TODO::before {
+        content: '🚧 ';
+}
