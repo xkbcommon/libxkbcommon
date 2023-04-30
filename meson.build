@@ -791,9 +791,10 @@ You can disable the documentation with -Denable-docs=false.''')
         'doc/rules-format.md',
         'doc/keymap-format-text-v1.md',
         'include/xkbcommon/xkbcommon.h',
+        'include/xkbcommon/xkbcommon-compose.h',
+        'include/xkbcommon/xkbcommon-keysyms.h',
         'include/xkbcommon/xkbcommon-names.h',
         'include/xkbcommon/xkbcommon-x11.h',
-        'include/xkbcommon/xkbcommon-compose.h',
         'include/xkbcommon/xkbregistry.h',
     ]
     doxygen_data = configuration_data()
