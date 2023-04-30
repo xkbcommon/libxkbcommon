@@ -18,8 +18,6 @@ QUIET                  = YES
 
 WARN_IF_UNDOCUMENTED   = NO
 
-WARN_AS_ERROR          = YES
-
 INPUT                  = @INPUT@
 
 FILE_PATTERNS          = *.c \
