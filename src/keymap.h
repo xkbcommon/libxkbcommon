@@ -109,6 +109,9 @@
 /* Don't allow more leds than we can hold in xkb_led_mask_t. */
 #define XKB_MAX_LEDS ((xkb_led_index_t) (sizeof(xkb_led_mask_t) * 8))
 
+/* Special value to handle modMap None {…} */
+#define XKB_MOD_NONE 0xffffffffU
+
 /* These should all go away. */
 enum mod_type {
     MOD_REAL = (1 << 0),

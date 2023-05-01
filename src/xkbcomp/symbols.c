@@ -162,6 +162,8 @@ ClearKeyInfo(KeyInfo *keyi)
 typedef struct {
     enum merge_mode merge;
     bool haveSymbol;
+    // NOTE: Can also be XKB_MOD_NONE, meaning
+    //       “don’t add a modifier to the modmap”.
     xkb_mod_index_t modifier;
     union {
         xkb_atom_t keyName;
@@ -1152,14 +1154,21 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
     xkb_mod_index_t ndx;
     bool ok;
     struct xkb_context *ctx = info->ctx;
+    const char *modifier_name = xkb_atom_text(ctx, def->modifier);
 
-    ndx = XkbModNameToIndex(&info->mods, def->modifier, MOD_REAL);
-    if (ndx == XKB_MOD_INVALID) {
-        log_err(info->ctx,
-                "Illegal modifier map definition; "
-                "Ignoring map for non-modifier \"%s\"\n",
-                xkb_atom_text(ctx, def->modifier));
-        return false;
+    if (istreq(modifier_name, "none")) {
+        // Handle special "None" entry
+        ndx = XKB_MOD_NONE;
+    } else {
+        // Handle normal entry
+        ndx = XkbModNameToIndex(&info->mods, def->modifier, MOD_REAL);
+        if (ndx == XKB_MOD_INVALID) {
+            log_err(info->ctx,
+                    "Illegal modifier map definition; "
+                    "Ignoring map for non-modifier \"%s\"\n",
+                    xkb_atom_text(ctx, def->modifier));
+            return false;
+        }
     }
 
     ok = true;
@@ -1523,7 +1532,12 @@ CopyModMapDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
         }
     }
 
-    key->modmap |= (1u << entry->modifier);
+    // Handle modMap None
+    if (entry->modifier != XKB_MOD_NONE) {
+        // Convert modifier index to modifier mask
+        key->modmap |= (1u << entry->modifier);
+    }
+
     return true;
 }
 
