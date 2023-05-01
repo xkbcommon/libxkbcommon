@@ -216,6 +216,9 @@ ModIndexText(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     if (ndx == XKB_MOD_INVALID)
         return "none";
 
+    if (ndx == XKB_MOD_NONE)
+        return "None";
+
     if (ndx >= mods->num_mods)
         return NULL;
 

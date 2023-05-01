@@ -675,6 +675,11 @@ test(
     env: test_env,
     suite: ['python-tests'],
 )
+test(
+    'modifiers',
+    executable('test-modifiers', 'test/modifiers.c', dependencies: test_dep),
+    env: test_env,
+)
 if get_option('enable-x11')
     test(
         'x11',

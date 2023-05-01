@@ -47,6 +47,7 @@ main(void)
     assert(test_file(ctx, "keymaps/no-types.xkb"));
     assert(test_file(ctx, "keymaps/quartz.xkb"));
     assert(test_file(ctx, "keymaps/no-aliases.xkb"));
+    assert(test_file(ctx, "keymaps/modmap-none.xkb"));
 
     assert(!test_file(ctx, "keymaps/divide-by-zero.xkb"));
     assert(!test_file(ctx, "keymaps/bad.xkb"));
