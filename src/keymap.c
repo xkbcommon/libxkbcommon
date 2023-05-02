@@ -194,6 +194,10 @@ xkb_keymap_new_from_buffer(struct xkb_context *ctx,
     if (!keymap)
         return NULL;
 
+    /* Allow a zero-terminated string as a buffer */
+    if (length > 0 && buffer[length - 1] == '\0')
+        length--;
+
     if (!ops->keymap_new_from_string(keymap, buffer, length)) {
         xkb_keymap_unref(keymap);
         return NULL;

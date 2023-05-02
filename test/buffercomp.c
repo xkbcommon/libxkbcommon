@@ -46,29 +46,33 @@ main(int argc, char *argv[])
     original = test_read_file(DATA_PATH);
     assert(original);
 
-    keymap = test_compile_buffer(ctx, original, strlen(original));
-    assert(keymap);
+    /* Load a prebuild keymap, once without, once with the trailing \0 */
+    for (int i = 0; i <= 1; i++) {
+        keymap = test_compile_buffer(ctx, original, strlen(original) + i);
+        assert(keymap);
 
-    dump = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
-    assert(dump);
+        dump = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+        assert(dump);
 
-    if (!streq(original, dump)) {
-        fprintf(stderr,
-                "round-trip test failed: dumped map differs from original\n");
-        fprintf(stderr, "path to original file: %s\n",
-                test_get_path(DATA_PATH));
-        fprintf(stderr, "length: dumped %lu, original %lu\n",
-                (unsigned long) strlen(dump),
-                (unsigned long) strlen(original));
-        fprintf(stderr, "dumped map:\n");
-        fprintf(stderr, "%s\n", dump);
-        fflush(stderr);
-        assert(0);
+        if (!streq(original, dump)) {
+            fprintf(stderr,
+                    "round-trip test failed: dumped map differs from original\n");
+            fprintf(stderr, "path to original file: %s\n",
+                    test_get_path(DATA_PATH));
+            fprintf(stderr, "length: dumped %lu, original %lu\n",
+                    (unsigned long) strlen(dump),
+                    (unsigned long) strlen(original));
+            fprintf(stderr, "dumped map:\n");
+            fprintf(stderr, "%s\n", dump);
+            fflush(stderr);
+            assert(0);
+        }
+
+        free(dump);
+        xkb_keymap_unref(keymap);
     }
 
     free(original);
-    free(dump);
-    xkb_keymap_unref(keymap);
 
     /* Make sure we can't (falsely claim to) compile an empty string. */
     keymap = test_compile_buffer(ctx, "", 0);
