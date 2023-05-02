@@ -100,7 +100,7 @@ skip_more_whitespace_and_comments:
                 else if (scanner_chr(s, 'e'))  scanner_buf_append(s, '\033');
                 else if (scanner_oct(s, &o))   scanner_buf_append(s, (char) o);
                 else {
-                    scanner_warn(s, "unknown escape sequence in string literal");
+                    scanner_warn(s, "unknown escape sequence in string literal %c", scanner_peek(s));
                     /* Ignore. */
                 }
             } else {

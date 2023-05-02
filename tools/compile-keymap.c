@@ -49,6 +49,10 @@ static enum output_format {
 } output_format = FORMAT_KEYMAP;
 static const char *includes[64];
 static size_t num_includes = 0;
+typedef struct {
+    const char *name;
+    enum xkb_warning_flags flag;
+} WarningLookupEntry;
 
 static void
 usage(char **argv)
@@ -93,6 +97,31 @@ usage(char **argv)
            "    The XKB layout variant (default: '%s')\n"
            " --options <options>\n"
            "    The XKB options (default: '%s')\n"
+           "\n"
+           "Warnings options:\n"
+           // TODO: the warnings are downgraded to INFO level, not discarded.
+           // TODO: show default value for all warnings
+           " -W<name>/-Wno-<name>\n"
+           "   Activate/deactivate the warning <name>, where <name> is one of the following:\n"
+           "   - unrecognized-keysym: report unrecognized keysyms.\n"
+           "   - numeric-keysym: report numeric keysyms use, such as: '0x0030'.\n"
+           // TODO: description
+           "   - conflicting-key-type\n"
+           "   - conflicting-key-action\n"
+           "   - conflicting-key-keysym\n"
+           "   - conflicting-key-symbol\n"
+           "   - conflicting-modmap\n"
+           "   - group-name-for-non-base-group\n"
+           "   - multiple-group-at-once\n"
+           "   - cannot-infer-key-type\n"
+           "   - undefined-key-type\n"
+           "   - unresolved-keymap-symbol\n"
+           "   - undefined-keycode\n"
+           "   - extra-symbols-ignored\n"
+           "   - none: none of the previous warnings.\n"
+           "   - all: all of the previous warnings.\n"
+           " -E<name>/-Eno-<name>\n"
+           "    Turn the corresponding warning (see above) into an error.\n"
            "\n",
            argv[0], DEFAULT_XKB_RULES,
            DEFAULT_XKB_MODEL, DEFAULT_XKB_LAYOUT,
@@ -100,11 +129,64 @@ usage(char **argv)
            DEFAULT_XKB_OPTIONS ? DEFAULT_XKB_OPTIONS : "<none>");
 }
 
+const WarningLookupEntry warning_names[] = {
+    {"unrecognized-keysym",               XKB_WARNING_UNRECOGNIZED_KEYSYM},
+    {"numeric-keysym" ,                   XKB_WARNING_NUMERIC_KEYSYM},
+    {"conflicting-key-type",              XKB_WARNING_CONFLICTING_KEY_TYPE},
+    {"conflicting-key-action",            XKB_WARNING_CONFLICTING_KEY_ACTION},
+    {"conflicting-key-keysym",            XKB_WARNING_CONFLICTING_KEY_KEYSYM},
+    {"conflicting-key-symbol-map-fields", XKB_WARNING_CONFLICTING_KEY_SYMBOL_MAP_FIELDS},
+    {"conflicting-modmap",                XKB_WARNING_CONFLICTING_MODMAP},
+    {"group-name-for-non-base-group",     XKB_WARNING_GROUP_NAME_FOR_NON_BASE_GROUP},
+    {"multiple-group-at-once",            XKB_WARNING_MULTIPLE_GROUP_AT_ONCE},
+    {"cannot-infer-key-type",             XKB_WARNING_CANNOT_INFER_KEY_TYPE},
+    {"undefined-key-type",                XKB_WARNING_UNDEFINED_KEY_TYPE},
+    {"unresolved-keymap-symbol",          XKB_WARNING_UNRESOLVED_KEYMAP_SYMBOL},
+    {"extra-symbols-ignored",             XKB_WARNING_EXTRA_SYMBOLS_IGNORED},
+    {"undefined-keycode",                 XKB_WARNING_UNDEFINED_KEYCODE},
+    {"all",                               XKB_WARNING_ALL},
+    {"none",                              -XKB_WARNING_ALL},
+    {NULL, 0}
+};
+
+
 static bool
-parse_options(int argc, char **argv, struct xkb_rule_names *names)
+parse_xkb_warning(const char *name, enum xkb_warning_flags *flags)
+{
+    bool unset_flag = false;
+    enum xkb_warning_flags parsed_flag;
+    const char *unprefixed_name = name;
+    // Handle “no-” prefix
+    if (strncmp(name, "no-", 3) == 0) {
+        unprefixed_name += 3;
+        unset_flag = true;
+    }
+    // Lookup warning name and process it
+    for (const WarningLookupEntry *entry = warning_names; entry->name; entry++)
+        if (strcmp(entry->name, unprefixed_name) == 0) {
+            parsed_flag = entry->flag;
+            if (parsed_flag < 0) {
+                unset_flag = true;
+                parsed_flag = -parsed_flag;
+            }
+            if (unset_flag) {
+                *flags &= ~parsed_flag;
+            } else {
+                *flags |= parsed_flag;
+            }
+            return true;
+        }
+    // Not found
+    return false;
+}
+
+static bool
+parse_options(int argc, char **argv, struct xkb_rule_names *names,
+              enum xkb_warning_flags *warning_flags,
+              enum xkb_warning_flags *error_flags)
 {
     enum options {
-        OPT_VERBOSE,
+        OPT_VERBOSE = 1,
         OPT_KCCGST,
         OPT_RMLVO,
         OPT_FROM_XKB,
@@ -114,30 +196,33 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
         OPT_MODEL,
         OPT_LAYOUT,
         OPT_VARIANT,
-        OPT_OPTION,
+        OPT_OPTION
     };
-    static struct option opts[] = {
-        {"help",             no_argument,            0, 'h'},
-        {"verbose",          no_argument,            0, OPT_VERBOSE},
+    const struct option opts[] = {
+        {"help",             no_argument,            NULL, 'h'},
+        {"verbose",          no_argument,            NULL, OPT_VERBOSE},
 #if ENABLE_PRIVATE_APIS
-        {"kccgst",           no_argument,            0, OPT_KCCGST},
+        {"kccgst",           no_argument,            NULL, OPT_KCCGST},
 #endif
-        {"rmlvo",            no_argument,            0, OPT_RMLVO},
-        {"from-xkb",         no_argument,            0, OPT_FROM_XKB},
-        {"include",          required_argument,      0, OPT_INCLUDE},
-        {"include-defaults", no_argument,            0, OPT_INCLUDE_DEFAULTS},
-        {"rules",            required_argument,      0, OPT_RULES},
-        {"model",            required_argument,      0, OPT_MODEL},
-        {"layout",           required_argument,      0, OPT_LAYOUT},
-        {"variant",          required_argument,      0, OPT_VARIANT},
-        {"options",          required_argument,      0, OPT_OPTION},
-        {0, 0, 0, 0},
+        {"rmlvo",            no_argument,            NULL, OPT_RMLVO},
+        {"from-xkb",         no_argument,            NULL, OPT_FROM_XKB},
+        {"include",          required_argument,      NULL, OPT_INCLUDE},
+        {"include-defaults", no_argument,            NULL, OPT_INCLUDE_DEFAULTS},
+        {"rules",            required_argument,      NULL, OPT_RULES},
+        {"model",            required_argument,      NULL, OPT_MODEL},
+        {"layout",           required_argument,      NULL, OPT_LAYOUT},
+        {"variant",          required_argument,      NULL, OPT_VARIANT},
+        {"options",          required_argument,      NULL, OPT_OPTION},
+        {0, 0, 0, 0}
     };
+
+    *warning_flags = XKB_WARNING_DEFAULT;
+    *error_flags = XKB_ERROR_DEFAULT;
 
     while (1) {
         int c;
         int option_index = 0;
-        c = getopt_long(argc, argv, "h", opts, &option_index);
+        c = getopt_long(argc, argv, "E:hW:", opts, &option_index);
         if (c == -1)
             break;
 
@@ -145,6 +230,22 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
         case 'h':
             usage(argv);
             exit(0);
+        case 'E':
+            if (parse_xkb_warning(optarg, error_flags)) {
+                break;
+            } else {
+                fprintf(stderr, "error: unsupported warning: \"%s\".\n", optarg);
+                usage(argv);
+                exit(EXIT_INVALID_USAGE);
+            }
+        case 'W':
+            if (parse_xkb_warning(optarg, warning_flags)) {
+                break;
+            } else {
+                fprintf(stderr, "error: unsupported warning: \"%s\".\n", optarg);
+                usage(argv);
+                exit(EXIT_INVALID_USAGE);
+            }
         case OPT_VERBOSE:
             verbose = true;
             break;
@@ -320,6 +421,8 @@ main(int argc, char **argv)
         .variant = NULL,
         .options = DEFAULT_XKB_OPTIONS,
     };
+    enum xkb_warning_flags warning_flags;
+    enum xkb_warning_flags error_flags;
     int rc = 1;
 
     if (argc <= 1) {
@@ -327,7 +430,7 @@ main(int argc, char **argv)
         return EXIT_INVALID_USAGE;
     }
 
-    if (!parse_options(argc, argv, &names))
+    if (!parse_options(argc, argv, &names, &warning_flags, &error_flags))
         return EXIT_INVALID_USAGE;
 
     /* Now fill in the layout */
@@ -347,6 +450,8 @@ main(int argc, char **argv)
         xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_DEBUG);
         xkb_context_set_log_verbosity(ctx, 10);
     }
+    xkb_context_set_warning_flags(ctx, warning_flags);
+    xkb_context_set_error_flags(ctx, error_flags);
 
     if (num_includes == 0)
         includes[num_includes++] = DEFAULT_INCLUDE_PATH_PLACEHOLDER;

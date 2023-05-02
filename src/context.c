@@ -290,6 +290,8 @@ xkb_context_new(enum xkb_context_flags flags)
     ctx->log_fn = default_log_fn;
     ctx->log_level = XKB_LOG_LEVEL_ERROR;
     ctx->log_verbosity = 0;
+    ctx->warning_flags = XKB_WARNING_DEFAULT;
+    ctx->error_flags = XKB_ERROR_DEFAULT;
     ctx->use_environment_names = !(flags & XKB_CONTEXT_NO_ENVIRONMENT_NAMES);
     ctx->use_secure_getenv = !(flags & XKB_CONTEXT_NO_SECURE_GETENV);
 
@@ -366,4 +368,36 @@ XKB_EXPORT void
 xkb_context_set_user_data(struct xkb_context *ctx, void *user_data)
 {
     ctx->user_data = user_data;
+}
+
+XKB_EXPORT enum xkb_warning_flags
+xkb_context_get_warning_flags(struct xkb_context *ctx)
+{
+    if (ctx)
+        return ctx->warning_flags;
+    return -1;
+}
+
+XKB_EXPORT void
+xkb_context_set_warning_flags(struct xkb_context *ctx,
+                              enum xkb_warning_flags warning_flags)
+{
+    ctx->warning_flags = warning_flags;
+    ctx->error_flags &= ~warning_flags;
+}
+
+XKB_EXPORT enum xkb_warning_flags
+xkb_context_get_error_flags(struct xkb_context *ctx)
+{
+    if (ctx)
+        return ctx->error_flags;
+    return -1;
+}
+
+XKB_EXPORT void
+xkb_context_set_error_flags(struct xkb_context *ctx,
+                            enum xkb_warning_flags error_flags)
+{
+    ctx->warning_flags &= ~error_flags;
+    ctx->error_flags = error_flags;
 }

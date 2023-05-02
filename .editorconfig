@@ -12,3 +12,7 @@ max_line_length = 80
 [*.yml]
 indent_style = space
 indent_size = 2
+
+[*.map]
+indent_style = tab
+indent_size = 4

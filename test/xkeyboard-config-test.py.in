@@ -112,6 +112,8 @@ class XkbCompInvocation(Invocation):
 
 
 class XkbcommonInvocation(Invocation):
+    ERROR_TAGS = ('WARNING', 'ERROR', 'CRITICAL')
+
     def run(self):
         r, m, l, v, o = self.rmlvo
         args = [
@@ -125,15 +127,32 @@ class XkbcommonInvocation(Invocation):
             args += ['--variant', v]
         if o is not None:
             args += ['--options', o]
+        args += [
+            '--Wall',
+            '--Wno-unresolved-keymap-symbol',
+            '--Wno-conflicting-key-type',
+            '--Wno-conflicting-key-keysym',
+            '--Wno-numeric-keysym',
+            '--Wno-extra-symbols-ignored',
+            '--Wno-conflicting-key-symbol-map-fields',
+            '--Wno-undefined-keycode',
+            '--Wno-conflicting-modmap',
+        ]
 
         self.command = " ".join(args)
         try:
             output = subprocess.check_output(args, stderr=subprocess.STDOUT,
                                              universal_newlines=True)
-            if "unrecognized keysym" in output:
-                for line in output.split('\n'):
-                    if "unrecognized keysym" in line:
-                        self.error = line
+            if any(msg in output for msg in self.ERROR_TAGS):
+            # if "unrecognized keysym" in output:
+            #     for line in output.split('\n'):
+            #         if "unrecognized keysym" in line:
+            #             self.error = line
+                self.error = "\n".join(
+                    line
+                    for line in output.split('\n')
+                    if any(msg in line for msg in self.ERROR_TAGS)
+                )
                 self.exitstatus = 99  # tool doesn't generate this one
             else:
                 self.exitstatus = 0

@@ -27,6 +27,7 @@
 #define CONTEXT_H
 
 #include "atom.h"
+#include "xkbcommon/xkbcommon.h"
 
 struct xkb_context {
     int refcnt;
@@ -54,6 +55,9 @@ struct xkb_context {
 
     unsigned int use_environment_names : 1;
     unsigned int use_secure_getenv : 1;
+
+    enum xkb_warning_flags warning_flags;
+    enum xkb_warning_flags error_flags;
 };
 
 char *

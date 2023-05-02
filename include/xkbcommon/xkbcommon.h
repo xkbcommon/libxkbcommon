@@ -650,6 +650,116 @@ xkb_context_set_user_data(struct xkb_context *context, void *user_data);
 void *
 xkb_context_get_user_data(struct xkb_context *context);
 
+/**
+ * Control the enabled warnings.
+ *
+ * @since 1.6.0
+**/
+enum xkb_warning_flags {
+    /** No warning */
+    XKB_WARNING_NONE = 0,
+    /** Warn on unrecognized keysyms */
+    XKB_WARNING_UNRECOGNIZED_KEYSYM = (1 << 1),
+    /** Warn on numeric keysym (other than 0-9) */
+    XKB_WARNING_NUMERIC_KEYSYM = (1 << 2),
+    /** Warn if there are conflicting key types while merging groups. */
+    XKB_WARNING_CONFLICTING_KEY_TYPE = (1 << 3),
+    /** Warn if there are conflicting actions while merging keys. */
+    XKB_WARNING_CONFLICTING_KEY_ACTION = (1 << 4),
+    /** Warn if there are conflicting keysyms while merging keys. */
+    XKB_WARNING_CONFLICTING_KEY_KEYSYM = (1 << 5),
+    /** Warn if there are conflicting fields while merging keys. */
+    XKB_WARNING_CONFLICTING_KEY_SYMBOL_MAP_FIELDS = (1 << 6),
+    /** Warn if there are conflicting modmap definitions. */
+    XKB_WARNING_CONFLICTING_MODMAP = (1 << 7),
+    /** Warn if a group name was defined for group other than the first one. */
+    XKB_WARNING_GROUP_NAME_FOR_NON_BASE_GROUP = (1 << 8),
+    /** Warn if a key defines multiple groups at once. */
+    XKB_WARNING_MULTIPLE_GROUP_AT_ONCE = (1 << 9),
+    /** Warn if no key type can be inferred. */
+    XKB_WARNING_CANNOT_INFER_KEY_TYPE = (1 << 10),
+    /** Warn if using an undefined key type. */
+    XKB_WARNING_UNDEFINED_KEY_TYPE = (1 << 11),
+    /** Warn if using a symbol not defined in the keymap. */
+    XKB_WARNING_UNRESOLVED_KEYMAP_SYMBOL = (1 << 12),
+    // TODO:
+    XKB_WARNING_EXTRA_SYMBOLS_IGNORED = (1 << 13),
+    // TODO:
+    XKB_WARNING_UNDEFINED_KEYCODE = (1 << 14),
+    // TODO: deprecated keysym
+    // TODO: unicode keysym when named and recommended keysym exists
+    /** Default warnings */
+    XKB_WARNING_DEFAULT = ( \
+        XKB_WARNING_UNRECOGNIZED_KEYSYM | \
+        XKB_WARNING_CONFLICTING_KEY_TYPE | \
+        XKB_WARNING_CONFLICTING_KEY_ACTION | \
+        XKB_WARNING_CONFLICTING_KEY_KEYSYM | \
+        XKB_WARNING_CONFLICTING_KEY_SYMBOL_MAP_FIELDS | \
+        XKB_WARNING_CONFLICTING_MODMAP | \
+        XKB_WARNING_GROUP_NAME_FOR_NON_BASE_GROUP | \
+        XKB_WARNING_MULTIPLE_GROUP_AT_ONCE | \
+        XKB_WARNING_CANNOT_INFER_KEY_TYPE | \
+        XKB_WARNING_UNDEFINED_KEY_TYPE | \
+        XKB_WARNING_UNRESOLVED_KEYMAP_SYMBOL | \
+        XKB_WARNING_EXTRA_SYMBOLS_IGNORED | \
+        XKB_WARNING_UNDEFINED_KEYCODE \
+    ),
+    /** All the previous warnings */
+    XKB_WARNING_ALL = ( \
+        XKB_WARNING_DEFAULT | \
+        XKB_WARNING_NUMERIC_KEYSYM \
+    ),
+};
+
+/** Default errors */
+#define XKB_ERROR_DEFAULT 0
+
+/**
+ * Store warning flags in the context.
+ *
+ * @memberof xkb_context
+ *
+ * @since 1.6.0
+**/
+void
+xkb_context_set_warning_flags(struct xkb_context *context,
+                              enum xkb_warning_flags warning_flags);
+
+/**
+* Retrieves the warning flags from the context.
+ *
+ * @returns The current warning flags.
+ *
+ * @memberof xkb_context
+ *
+ * @since 1.6.0
+*/
+enum xkb_warning_flags
+xkb_context_get_warning_flags(struct xkb_context *context);
+
+/**
+ * Store error flags in the context.
+ *
+ * @memberof xkb_context
+ *
+ * @since 1.6.0
+**/
+void
+xkb_context_set_error_flags(struct xkb_context *context,
+                            enum xkb_warning_flags error_flags);
+
+/**
+* Retrieves the error flags from the context.
+ *
+ * @returns The current error flags.
+ *
+ * @memberof xkb_context
+ *
+ * @since 1.6.0
+*/
+enum xkb_warning_flags
+xkb_context_get_error_flags(struct xkb_context *context);
+
 /** @} */
 
 /**

@@ -9,6 +9,10 @@ global:
 	xkb_context_unref;
 	xkb_context_set_user_data;
 	xkb_context_get_user_data;
+	xkb_context_set_warning_flags;
+	xkb_context_get_warning_flags;
+	xkb_context_set_error_flags;
+	xkb_context_get_error_flags;
 	xkb_context_include_path_append;
 	xkb_context_include_path_append_default;
 	xkb_context_include_path_reset_defaults;
