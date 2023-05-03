@@ -423,6 +423,7 @@ if build_tools
     tools_dep = declare_dependency(
         include_directories: [include_directories('tools', 'include')],
         link_with: libxkbcommon_tools_internal,
+        dependencies: dep_libxkbcommon,
     )
 
     executable('xkbcli', 'tools/xkbcli.c',
