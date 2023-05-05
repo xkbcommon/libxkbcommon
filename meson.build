@@ -156,6 +156,7 @@ map_to_def = find_program('scripts/map-to-def')
 # (preferred) or byacc (with backtracking enabled).
 bison = find_program('bison', 'win_bison', required: false, version: '>= 2.3a')
 if bison.found()
+    yacc = bison
     yacc_gen = generator(
         bison,
         output: ['@BASENAME@.c', '@BASENAME@.h'],
@@ -164,6 +165,7 @@ if bison.found()
 else
     byacc = find_program('byacc', required: false)
     if byacc.found()
+        yacc = byacc
         yacc_gen = generator(
             byacc,
             output: ['@BASENAME@.c', '@BASENAME@.h'],
@@ -837,4 +839,36 @@ if get_option('enable-x11')
 endif
 if get_option('enable-xkbregistry')
   libxkbregistry_dep = dep_libxkbregistry
+endif
+
+if meson.version().version_compare('>=0.62.0')
+    summary({
+      'backend': meson.backend(),
+      'buildtype': get_option('buildtype'),
+      'c_args': get_option('c_args'),
+      'c_link_args': get_option('c_link_args'),
+      'yacc': yacc.full_path() + ' ' + yacc.version(),
+    }, section: 'Compiler')
+    summary({
+      'prefix': get_option('prefix'),
+      'bindir': get_option('bindir'),
+      'libdir': get_option('libdir'),
+      'datadir': get_option('datadir'),
+      'xkb-config-root': XKBCONFIGROOT,
+      'xkb-config-extra-path': XKBCONFIGEXTRAPATH,
+      'xlocaledir': XLOCALEDIR,
+    }, section: 'Directories')
+    summary({
+      'docs': get_option('enable-docs'),
+      'tools': get_option('enable-tools'),
+      'wayland': get_option('enable-wayland'),
+      'x11': get_option('enable-x11'),
+    }, section: 'Features')
+    summary({
+      'layout': get_option('default-layout'),
+      'model': get_option('default-model'),
+      'options': get_option('default-options'),
+      'rules': get_option('default-rules'),
+      'variant': get_option('default-variant'),
+    }, section: 'Defaults')
 endif
