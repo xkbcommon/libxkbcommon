@@ -7,7 +7,7 @@ project(
         'warning_level=2',
         'b_lundef=true',
     ],
-    meson_version : '>= 0.51.0',
+    meson_version : '>= 0.52.0',
 )
 pkgconfig = import('pkgconfig')
 cc = meson.get_compiler('c')
