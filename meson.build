@@ -154,7 +154,7 @@ map_to_def = find_program('scripts/map-to-def')
 # libxkbcommon.
 # Note: we use some yacc extensions, which work with either GNU bison
 # (preferred) or byacc (with backtracking enabled).
-bison = find_program('bison', 'win_bison', required: false)
+bison = find_program('bison', 'win_bison', required: false, version: '>= 2.3a')
 if bison.found()
     yacc_gen = generator(
         bison,
