@@ -269,7 +269,9 @@ check_eaccess(const char *path, int mode)
 # define XKB_EXPORT
 #endif
 
-#if defined(__GNUC__) && ((__GNUC__ * 100 + __GNUC_MINOR__) >= 203)
+#if defined(__MINGW32__)
+# define ATTR_PRINTF(x,y) __attribute__((__format__(__MINGW_PRINTF_FORMAT, x, y)))
+#elif defined(__GNUC__) && ((__GNUC__ * 100 + __GNUC_MINOR__) >= 203)
 # define ATTR_PRINTF(x,y) __attribute__((__format__(__printf__, x, y)))
 #else /* not gcc >= 2.3 */
 # define ATTR_PRINTF(x,y)
