@@ -34,7 +34,7 @@ jobs:
       - name: Setup
         run: |
           # -gdwarf-4 - see https://github.com/llvm/llvm-project/issues/56550.
-          CFLAGS='-gdwarf-4' meson setup build
+          CFLAGS='-gdwarf-4' meson setup build -Denable-cool-uris=true
         env:
           CC: ${{ matrix.compiler }}
       - name: Build
@@ -53,3 +53,10 @@ jobs:
           name: test logs
           path: |
             build/meson-logs/
+      - name: Store doxygen docs for use by the pages workflow
+        uses: actions/upload-artifact@v3
+        if: success()
+        with:
+          name: doxygen-docs
+          path: |
+            build/html/
