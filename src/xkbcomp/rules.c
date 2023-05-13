@@ -1104,7 +1104,8 @@ out:
 bool
 xkb_components_from_rules(struct xkb_context *ctx,
                           const struct xkb_rule_names *rmlvo,
-                          struct xkb_component_names *out)
+                          struct xkb_component_names *out,
+                          xkb_layout_index_t *layout_count)
 {
     bool ret = false;
     FILE *file;
@@ -1118,6 +1119,10 @@ xkb_components_from_rules(struct xkb_context *ctx,
         goto err_out;
 
     matcher = matcher_new(ctx, rmlvo);
+    // Set the number of explicit layouts
+    if (layout_count != NULL) {
+        *layout_count = matcher->rmlvo.layouts.size;
+    }
 
     ret = read_rules_file(ctx, matcher, 0, file, path);
     if (!ret ||

@@ -389,6 +389,8 @@ struct xkb_keymap {
 
     /* Number of groups in the key with the most groups. */
     xkb_layout_index_t num_groups;
+    /* Number of groups that were explicitly declared at section level. */
+    xkb_layout_index_t num_explicit_groups;
     /* Not all groups must have names. */
     xkb_layout_index_t num_group_names;
     xkb_atom_t *group_names;

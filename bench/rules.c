@@ -53,7 +53,8 @@ main(int argc, char *argv[])
     for (i = 0; i < BENCHMARK_ITERATIONS; i++) {
         struct xkb_component_names kccgst;
 
-        assert(xkb_components_from_rules(ctx, &rmlvo, &kccgst));
+        // [FIXME] num_explicit_groups
+        assert(xkb_components_from_rules(ctx, &rmlvo, &kccgst, NULL));
         free(kccgst.keycodes);
         free(kccgst.types);
         free(kccgst.compat);

@@ -68,6 +68,7 @@ xkb_keymap_new(struct xkb_context *ctx,
 
     keymap->format = format;
     keymap->flags = flags;
+    keymap->num_explicit_groups = 0;
 
     update_builtin_keymap_fields(keymap);
 

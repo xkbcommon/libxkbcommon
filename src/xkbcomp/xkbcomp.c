@@ -65,7 +65,7 @@ text_v1_keymap_new_from_names(struct xkb_keymap *keymap,
             rmlvo->rules, rmlvo->model, rmlvo->layout, rmlvo->variant,
             rmlvo->options);
 
-    ok = xkb_components_from_rules(keymap->ctx, rmlvo, &kccgst);
+    ok = xkb_components_from_rules(keymap->ctx, rmlvo, &kccgst, &keymap->num_explicit_groups);
     if (!ok) {
         log_err(keymap->ctx,
                 "Couldn't look up rules '%s', model '%s', layout '%s', "

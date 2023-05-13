@@ -60,6 +60,7 @@
 #include "vmod.h"
 #include "include.h"
 #include "keysym.h"
+#include "utils.h"
 
 enum key_repeat {
     KEY_REPEAT_UNDEFINED = 0,
@@ -565,7 +566,10 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
     for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
         SymbolsInfo next_incl;
         XkbFile *file;
+        xkb_layout_index_t min_layout;
+        xkb_layout_index_t max_layout;
 
+        // Parse the file
         file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_SYMBOLS);
         if (!file) {
             info->errorCount += 10;
@@ -573,27 +577,45 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
             return false;
         }
 
-        InitSymbolsInfo(&next_incl, info->keymap, info->actions,
-                        &included.mods);
         if (stmt->modifier) {
-            next_incl.explicit_group = atoi(stmt->modifier) - 1;
-            if (next_incl.explicit_group >= XKB_MAX_GROUPS) {
-                log_err(info->ctx,
-                        "Cannot set explicit group to %d - must be between 1..%d; "
-                        "Ignoring group number\n",
-                        next_incl.explicit_group + 1, XKB_MAX_GROUPS);
-                next_incl.explicit_group = info->explicit_group;
+            // Try to interpret the modifier as a layout index
+            min_layout = atoi(stmt->modifier) - 1;
+            if (min_layout >= XKB_MAX_GROUPS) {
+                // Could not parse as a layout index, could it be “all”?
+                if (istreq(stmt->modifier, "all")) {
+                    min_layout = 0;
+                    // [FIXME] check this
+                    max_layout = info->keymap->num_explicit_groups
+                               ? info->keymap->num_explicit_groups - 1
+                               : 0;
+                } else {
+                    log_err(info->ctx,
+                            "Cannot set explicit group to %d - must be between 1..%d; "
+                            "Ignoring group number\n",
+                            next_incl.explicit_group + 1, XKB_MAX_GROUPS);
+                    min_layout = max_layout = info->explicit_group;
+                }
+            } else {
+                // Explicit group
+                max_layout = min_layout;
             }
+        } else {
+            // No modifier
+            min_layout = max_layout = info->explicit_group;
         }
-        else {
-            next_incl.explicit_group = info->explicit_group;
+
+        // Loop over the layouts to include
+        // NOTE: the check "min_layout <= layout" is necessary to handle
+        //       min_layout == XKB_LAYOUT_INVALID
+        for (xkb_layout_index_t layout=min_layout;
+             min_layout <= layout && layout <= max_layout; layout++) {
+                InitSymbolsInfo(&next_incl, info->keymap, info->actions, &included.mods);
+                next_incl.explicit_group = layout;
+                HandleSymbolsFile(&next_incl, file, MERGE_OVERRIDE);
+                MergeIncludedSymbols(&included, &next_incl, stmt->merge);
+                ClearSymbolsInfo(&next_incl);
         }
 
-        HandleSymbolsFile(&next_incl, file, MERGE_OVERRIDE);
-
-        MergeIncludedSymbols(&included, &next_incl, stmt->merge);
-
-        ClearSymbolsInfo(&next_incl);
         FreeXkbFile(file);
     }
 

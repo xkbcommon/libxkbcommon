@@ -42,6 +42,7 @@ struct test_data {
     const char *types;
     const char *compat;
     const char *symbols;
+    const xkb_layout_index_t groups;
 
     /* Or set this if xkb_components_from_rules() should fail. */
     bool should_fail;
@@ -55,6 +56,7 @@ test_rules(struct xkb_context *ctx, struct test_data *data)
         data->rules, data->model, data->layout, data->variant, data->options
     };
     struct xkb_component_names kccgst;
+    xkb_layout_index_t groups;
 
     fprintf(stderr, "\n\nChecking : %s\t%s\t%s\t%s\t%s\n", data->rules,
             data->model, data->layout, data->variant, data->options);
@@ -62,21 +64,22 @@ test_rules(struct xkb_context *ctx, struct test_data *data)
     if (data->should_fail)
         fprintf(stderr, "Expecting: FAILURE\n");
     else
-        fprintf(stderr, "Expecting: %s\t%s\t%s\t%s\n",
-                data->keycodes, data->types, data->compat, data->symbols);
+        fprintf(stderr, "Expecting: %s\t%s\t%s\t%s\t%u\n",
+                data->keycodes, data->types, data->compat, data->symbols, data->groups);
 
-    if (!xkb_components_from_rules(ctx, &rmlvo, &kccgst)) {
+    if (!xkb_components_from_rules(ctx, &rmlvo, &kccgst, &groups)) {
         fprintf(stderr, "Received : FAILURE\n");
         return data->should_fail;
     }
 
-    fprintf(stderr, "Received : %s\t%s\t%s\t%s\n",
-            kccgst.keycodes, kccgst.types, kccgst.compat, kccgst.symbols);
+    fprintf(stderr, "Received : %s\t%s\t%s\t%s\t%u\n",
+            kccgst.keycodes, kccgst.types, kccgst.compat, kccgst.symbols, groups);
 
     passed = streq(kccgst.keycodes, data->keycodes) &&
              streq(kccgst.types, data->types) &&
              streq(kccgst.compat, data->compat) &&
-             streq(kccgst.symbols, data->symbols);
+             streq(kccgst.symbols, data->symbols) &&
+             groups == data->groups;
 
     free(kccgst.keycodes);
     free(kccgst.types);
@@ -103,6 +106,7 @@ main(int argc, char *argv[])
         .keycodes = "my_keycodes", .types = "my_types",
         .compat = "my_compat|some:compat",
         .symbols = "my_symbols+extra_variant",
+        .groups = 1,
     };
     assert(test_rules(ctx, &test1));
 
@@ -113,6 +117,7 @@ main(int argc, char *argv[])
 
         .keycodes = "default_keycodes", .types = "default_types",
         .compat = "default_compat", .symbols = "default_symbols",
+        .groups = 1,
     };
     assert(test_rules(ctx, &test2));
 
@@ -123,6 +128,7 @@ main(int argc, char *argv[])
 
         .keycodes = "something(pc104)", .types = "default_types",
         .compat = "default_compat", .symbols = "default_symbols",
+        .groups = 1,
     };
     assert(test_rules(ctx, &test3));
 
@@ -133,6 +139,7 @@ main(int argc, char *argv[])
 
         .keycodes = "default_keycodes", .types = "default_types",
         .compat = "default_compat", .symbols = "my_symbols+(bar)",
+        .groups = 1,
     };
     assert(test_rules(ctx, &test4));
 
@@ -155,6 +162,7 @@ main(int argc, char *argv[])
         .keycodes = "default_keycodes", .types = "default_types",
         .compat = "default_compat",
         .symbols = "default_symbols+extra:1+extra:2+extra:3+extra:4",
+        .groups = 4,
     };
     assert(test_rules(ctx, &test6));
 
@@ -167,6 +175,7 @@ main(int argc, char *argv[])
         .keycodes = "my_keycodes", .types = "my_types",
         .compat = "my_compat+some:compat+group(bla)",
         .symbols = "my_symbols+extra_variant+compose(foo)+keypad(bar)+altwin(menu)",
+        .groups = 1,
     };
     assert(test_rules(ctx, &test7));
 

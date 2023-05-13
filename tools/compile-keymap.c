@@ -212,7 +212,7 @@ print_kccgst(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
 #if ENABLE_PRIVATE_APIS
         struct xkb_component_names kccgst;
 
-        if (!xkb_components_from_rules(ctx, rmlvo, &kccgst))
+        if (!xkb_components_from_rules(ctx, rmlvo, &kccgst, NULL))
             return false;
 
         printf("xkb_keymap {\n"
