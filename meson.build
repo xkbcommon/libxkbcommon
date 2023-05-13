@@ -792,9 +792,11 @@ You can disable the documentation with -Denable-docs=false.''')
 
     doxygen_input = [
         'README.md',
+        'doc/diagrams/xkb-configuration.dot',
         'doc/doxygen-extra.css',
+        'doc/introduction-to-xkb.md',
         'doc/quick-guide.md',
-        'doc/compat.md',
+        'doc/compatibility.md',
         'doc/user-configuration.md',
         'doc/rules-format.md',
         'doc/keymap-format-text-v1.md',

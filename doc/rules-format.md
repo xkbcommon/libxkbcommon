@@ -1,24 +1,25 @@
-The rules file
+The rules file {#rule-file-format}
 ==============
 
 The purpose of the rules file is to map between configuration values
 that are easy for a user to specify and understand, and the
 configuration values xkbcomp uses and understands.
 
-xkbcomp uses the xkb_component_names struct, which maps directly to
+xkbcomp uses the `xkb_component_names` struct, which maps directly to
 include statements of the appropriate sections, called for short
-KcCGST (see doc/keymap-format-text-v1.txt; 'G' stands for "geometry",
-which is not supported). These are not really intuitive or straight-
-forward for the uninitiated.
+[KcCGST](@ref KcCGST-intro) (see the [XKB introduction](@ref xkb-intro);
+'G' stands for "geometry", which is not supported). These are not
+really intuitive or straight-forward for the uninitiated.
 
-Instead, the user passes in a xkb_rule_names struct, which consists
+Instead, the user passes in a `xkb_rule_names` struct, which consists
 of the name of a rules file (in Linux this is usually "evdev"), a
 keyboard model (e.g. "pc105"), a set of layouts (which will end up
 in different groups, e.g. "us,fr"), variants (used to alter/augment
 the respective layout, e.g. "intl,dvorak"), and a set of options
 (used to tweak some general behavior of the keyboard, e.g.
 "ctrl:nocaps,compose:menu" to make the Caps Lock key act like Ctrl
-and the Menu key like Compose). We call these RMLVO.
+and the Menu key like Compose). We call these
+[RMLVO](@ref RMLVO-intro).
 
 Format of the file
 ------------------

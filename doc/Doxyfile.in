@@ -14,9 +14,11 @@ EXTENSION_MAPPING      = no_extension=md
 
 SORT_MEMBER_DOCS       = NO
 
-QUIET                  = YES
+QUIET                  = $(DOXYGEN_QUIET)
 
 WARN_IF_UNDOCUMENTED   = NO
+
+WARN_AS_ERROR          = $(DOXYGEN_WARN_AS_ERROR)
 
 INPUT                  = @INPUT@
 
@@ -45,3 +47,9 @@ ENUM_VALUES_PER_LINE   = 1
 SEARCHENGINE           = NO
 
 GENERATE_LATEX         = NO
+
+HAVE_DOT               = YES
+
+DOTFILE_DIRS           = doc/diagrams
+
+DOT_IMAGE_FORMAT       = svg
