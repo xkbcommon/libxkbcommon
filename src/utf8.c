@@ -32,6 +32,11 @@
 
 #include "utf8.h"
 
+/* Conformant encoding form conversion from UTF-32 to UTF-8.
+ *
+ * See https://www.unicode.org/versions/Unicode15.0.0/ch03.pdf#G28875
+ * for further details.
+*/
 int
 utf32_to_utf8(uint32_t unichar, char *buffer)
 {
@@ -47,6 +52,10 @@ utf32_to_utf8(uint32_t unichar, char *buffer)
         length = 2;
         head = 0xc0;
     }
+    /* Handle surrogates */
+    else if (0xd800 <= unichar && unichar <= 0xdfff) {
+        goto ill_formed_code_unit_subsequence;
+    }
     else if (unichar <= 0xffff) {
         length = 3;
         head = 0xe0;
@@ -56,8 +65,7 @@ utf32_to_utf8(uint32_t unichar, char *buffer)
         head = 0xf0;
     }
     else {
-        buffer[0] = '\0';
-        return 0;
+        goto ill_formed_code_unit_subsequence;
     }
 
     for (count = length - 1, shift = 0; count > 0; count--, shift += 6)
@@ -67,6 +75,10 @@ utf32_to_utf8(uint32_t unichar, char *buffer)
     buffer[length] = '\0';
 
     return length + 1;
+
+ill_formed_code_unit_subsequence:
+    buffer[0] = '\0';
+    return 0;
 }
 
 bool

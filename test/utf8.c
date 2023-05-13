@@ -170,6 +170,8 @@ test_utf32_to_utf8(void)
     check_utf32_to_utf8(0x40, 2, "\x40");
     check_utf32_to_utf8(0xA1, 3, "\xc2\xa1");
     check_utf32_to_utf8(0x2701, 4, "\xe2\x9c\x81");
+    check_utf32_to_utf8(0xd800, 0, ""); // Unicode surrogates
+    check_utf32_to_utf8(0xdfff, 0, ""); // Unicode surrogates
     check_utf32_to_utf8(0x1f004, 5, "\xf0\x9f\x80\x84");
     check_utf32_to_utf8(0x110000, 0, "");
     check_utf32_to_utf8(0xffffffff, 0, "");

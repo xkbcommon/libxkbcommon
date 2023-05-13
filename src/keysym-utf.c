@@ -41,6 +41,8 @@
 #include "utils.h"
 #include "utf8.h"
 
+#define NO_KEYSYM_UNICODE_CONVERSION 0
+
 /* We don't use the uint32_t types here, to save some space. */
 struct codepair {
     uint16_t keysym;
@@ -847,7 +849,7 @@ bin_search(const struct codepair *table, size_t length, xkb_keysym_t keysym)
     }
 
     /* no matching Unicode value found in table */
-    return 0;
+    return NO_KEYSYM_UNICODE_CONVERSION;
 }
 
 XKB_EXPORT uint32_t
@@ -871,6 +873,13 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym)
         return keysym & 0x7f;
 
     /* also check for directly encoded Unicode codepoints */
+
+    /* Exclude surrogates: they are invalid in UTF-32.
+     * See https://www.unicode.org/versions/Unicode15.0.0/ch03.pdf#G28875
+     * for further details.
+    */
+    if (0x0100d800 <= keysym && keysym <= 0x0100dfff)
+        return NO_KEYSYM_UNICODE_CONVERSION;
     /*
      * In theory, this is supposed to start from 0x100100, such that the ASCII
      * range, which is already covered by 0x00-0xff, can't be encoded in two
@@ -900,7 +909,8 @@ xkb_utf32_to_keysym(uint32_t ucs)
         return XKB_KEY_Delete;
 
     /* Unicode non-symbols and code points outside Unicode planes */
-    if ((ucs >= 0xfdd0 && ucs <= 0xfdef) ||
+    if ((ucs >= 0xd800 && ucs <= 0xdfff) ||
+        (ucs >= 0xfdd0 && ucs <= 0xfdef) ||
         ucs > 0x10ffff || (ucs & 0xfffe) == 0xfffe)
         return XKB_KEY_NoSymbol;
 
@@ -948,7 +958,7 @@ xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size)
 
     codepoint = xkb_keysym_to_utf32(keysym);
 
-    if (codepoint == 0)
+    if (codepoint == NO_KEYSYM_UNICODE_CONVERSION)
         return 0;
 
     return utf32_to_utf8(codepoint, buffer);

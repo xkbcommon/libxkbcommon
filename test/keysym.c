@@ -222,6 +222,8 @@ main(void)
 
     assert(test_utf8(0x10005d0, "א"));
     assert(test_utf8(0x110ffff, "\xf4\x8f\xbf\xbf"));
+    assert(test_utf8(0x0100d800, NULL) == 0); // Unicode surrogates
+    assert(test_utf8(0x0100dfff, NULL) == 0); // Unicode surrogates
     assert(test_utf8(0x1110000, NULL) == 0);
 
     assert(test_utf32_to_keysym('y', XKB_KEY_y));
@@ -255,6 +257,8 @@ main(void)
     assert(test_utf32_to_keysym(0x20ac, XKB_KEY_EuroSign));
 
     // Unicode non-characters
+    assert(test_utf32_to_keysym(0xd800, XKB_KEY_NoSymbol)); // Unicode surrogates
+    assert(test_utf32_to_keysym(0xdfff, XKB_KEY_NoSymbol)); // Unicode surrogates
     assert(test_utf32_to_keysym(0xfdd0, XKB_KEY_NoSymbol));
     assert(test_utf32_to_keysym(0xfdef, XKB_KEY_NoSymbol));
     assert(test_utf32_to_keysym(0xfffe, XKB_KEY_NoSymbol));
