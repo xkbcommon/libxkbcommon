@@ -179,6 +179,16 @@ xkb_context_sanitize_rule_names(struct xkb_context *ctx,
      * the caller and one from the environment. */
     if (isempty(rmlvo->layout)) {
         rmlvo->layout = xkb_context_get_default_layout(ctx);
+        if (!isempty(rmlvo->variant)) {
+            const char *variant = xkb_context_get_default_variant(ctx);
+            log_warn(ctx,
+                "Layout not provided, but variant set to \"%s\": "
+                "ignoring variant and using defaults for both: "
+                "layout=\"%s\", variant=\"%s\".\n",
+                rmlvo->variant,
+                rmlvo->layout,
+                variant ? variant : "");
+        }
         rmlvo->variant = xkb_context_get_default_variant(ctx);
     }
     /* Options can be empty, so respect that if passed in. */
