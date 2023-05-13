@@ -187,6 +187,100 @@ main(int argc, char *argv[])
     assert(test_rmlvo_env(ctx, "evdev", "", "cz", "bksl", "",
                           KEY_A,          BOTH, XKB_KEY_a,                FINISH));
 
+
+    /* Include modifiers */
+    struct modifiers_data {
+        const char *layout;
+        const char *options;
+        xkb_keysym_t space_keysym1;
+        xkb_keysym_t space_keysym2;
+        xkb_keysym_t space_keysym3;
+        xkb_keysym_t space_keysym4;
+        xkb_keysym_t grave_keysym1;
+        xkb_keysym_t grave_keysym2;
+        xkb_keysym_t grave_keysym3;
+        xkb_keysym_t grave_keysym4;
+    };
+
+    struct modifiers_data test_modifiers[] = {
+        {"us,de,in", "",
+         XKB_KEY_space, XKB_KEY_space, XKB_KEY_space, XKB_KEY_space,
+         XKB_KEY_grave, XKB_KEY_grave, XKB_KEY_grave, XKB_KEY_grave},
+        // Override //////////////////////////////////////////////////
+        // Set 1st layout, 2nd layout inherits 1st layout
+        {"us,de,in", "my_option_O0",
+         XKB_KEY_space, XKB_KEY_ISO_Next_Group, XKB_KEY_ISO_Next_Group, XKB_KEY_space,
+         XKB_KEY_grave, XKB_KEY_dead_circumflex, KS("U094a"), KS("U094a")},
+        // Set 1st layout, 2nd layout inherits 1st layout
+        {"us,de,in", "my_option_O1",
+         XKB_KEY_space, XKB_KEY_ISO_Next_Group, XKB_KEY_ISO_Next_Group, XKB_KEY_space,
+         XKB_KEY_grave, XKB_KEY_dead_circumflex, KS("U094a"), KS("U094a")},
+        // Set 1st layout and 3rd layouts, 2nd layout inherits 1st layout
+        {"us,de,in", "my_option_O13",
+         XKB_KEY_space, XKB_KEY_ISO_Next_Group, XKB_KEY_ISO_Next_Group, XKB_KEY_ISO_Next_Group,
+         XKB_KEY_grave, XKB_KEY_dead_circumflex, KS("U094a"), XKB_KEY_grave},
+        // Invalid layout index defaults to 1, set 1st layout, 2nd layout inherits 1st layout
+        {"us,de,in", "my_option_Ox",
+         XKB_KEY_space, XKB_KEY_ISO_Next_Group, XKB_KEY_ISO_Next_Group, XKB_KEY_space,
+         XKB_KEY_grave, XKB_KEY_dead_circumflex, KS("U094a"), KS("U094a")},
+        // Set all layouts
+        {"us,de,in", "my_option_Oall",
+         XKB_KEY_space, XKB_KEY_ISO_Next_Group, XKB_KEY_ISO_Next_Group, XKB_KEY_ISO_Next_Group,
+         XKB_KEY_grave, XKB_KEY_dead_circumflex, KS("U094a"), XKB_KEY_grave},
+        // No match: there more than 1 layout
+        {"us,de,in", "my_option_LOall",
+         XKB_KEY_space, XKB_KEY_space, XKB_KEY_space, XKB_KEY_space,
+         XKB_KEY_grave, XKB_KEY_grave, XKB_KEY_grave, XKB_KEY_grave},
+        // Augment ///////////////////////////////////////////////////
+        // In all the following, 3rd layout can not be updated with augment mode.
+        {"us,de,in", "my_option_A0",
+         XKB_KEY_space, XKB_KEY_ISO_Next_Group, XKB_KEY_ISO_Next_Group, XKB_KEY_space,
+         XKB_KEY_grave, XKB_KEY_dead_circumflex, KS("U094a"), KS("U094a")},
+        {"us,de,in", "my_option_A1",
+         XKB_KEY_space, XKB_KEY_ISO_Next_Group, XKB_KEY_ISO_Next_Group, XKB_KEY_space,
+         XKB_KEY_grave, XKB_KEY_dead_circumflex, KS("U094a"), KS("U094a")},
+        {"us,de,in", "my_option_A13",
+         XKB_KEY_space, XKB_KEY_ISO_Next_Group, XKB_KEY_ISO_Next_Group, XKB_KEY_space,
+         XKB_KEY_grave, XKB_KEY_dead_circumflex, KS("U094a"), KS("U094a")},
+        {"us,de,in", "my_option_Ax",
+         XKB_KEY_space, XKB_KEY_ISO_Next_Group, XKB_KEY_ISO_Next_Group, XKB_KEY_space,
+         XKB_KEY_grave, XKB_KEY_dead_circumflex, KS("U094a"), KS("U094a")},
+        {"us,de,in", "my_option_Aall",
+         XKB_KEY_space, XKB_KEY_ISO_Next_Group, XKB_KEY_ISO_Next_Group, XKB_KEY_space,
+         XKB_KEY_grave, XKB_KEY_dead_circumflex, KS("U094a"), KS("U094a")},
+        {"us,de,in", "my_option_LAall", // No match: there more than 1 layout
+         XKB_KEY_space, XKB_KEY_space, XKB_KEY_space, XKB_KEY_space,
+         XKB_KEY_grave, XKB_KEY_grave, XKB_KEY_grave, XKB_KEY_grave},
+        {NULL, XKB_KEY_NoSymbol}
+    };
+
+    for (struct modifiers_data *md = test_modifiers; md->options; md++) {
+        assert(test_rmlvo(
+            // NOTE: 2nd layout “de” does not define <SPCE> so it will inherit
+            //       it form first layout. On the other hand, 3rd layout “in”
+            //       does define it, so it is not impacted by changes on
+            //       1st layout.
+            ctx, "modifiers", "", md->layout, "", md->options,
+            // Base layout
+            KEY_SPACE,         BOTH, md->space_keysym1, NEXT,
+            KEY_GRAVE,         BOTH, md->grave_keysym1, NEXT,
+            // Try to switch layout
+            KEY_LEFTALT,       DOWN, XKB_KEY_Alt_L,     NEXT,
+            KEY_SPACE,         BOTH, md->space_keysym2, NEXT,
+            KEY_LEFTALT,       UP,   XKB_KEY_Alt_L,     NEXT,
+            KEY_GRAVE,         BOTH, md->grave_keysym2, NEXT,
+            // Try to switch layout
+            KEY_LEFTALT,       DOWN, XKB_KEY_Alt_L,     NEXT,
+            KEY_SPACE,         BOTH, md->space_keysym3, NEXT,
+            KEY_LEFTALT,       UP,   XKB_KEY_Alt_L,     NEXT,
+            KEY_GRAVE,         BOTH, md->grave_keysym3, NEXT,
+            // Try to switch layout
+            KEY_LEFTALT,       DOWN, XKB_KEY_Alt_L,     NEXT,
+            KEY_SPACE,         BOTH, md->space_keysym4, NEXT,
+            KEY_LEFTALT,       UP,   XKB_KEY_Alt_L,     NEXT,
+            KEY_GRAVE,         BOTH, md->grave_keysym4, FINISH));
+    }
+
     xkb_context_unref(ctx);
 
     ctx = test_get_context(0);

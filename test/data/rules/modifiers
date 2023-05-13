@@ -1,0 +1,19 @@
+! include %S/evdev
+
+! option         = symbols
+  // Override
+  my_option_O0   = +group(alt_space_toggle)
+  my_option_O1   = +group(alt_space_toggle):1
+  my_option_O13  = +group(alt_space_toggle):1+group(alt_space_toggle):3
+  my_option_Ox   = +group(alt_space_toggle):4294967295 // invalid layout index
+  my_option_Oall = +group(alt_space_toggle):all
+  // Augment
+  my_option_A0   = |group(alt_space_toggle)
+  my_option_A1   = |group(alt_space_toggle):1
+  my_option_A13  = |group(alt_space_toggle):1|group(alt_space_toggle):3
+  my_option_Ax   = |group(alt_space_toggle):4294967295 // invalid layout index
+  my_option_Aall = |group(alt_space_toggle):all
+
+! layout option	         = symbols
+*        my_option_LOall = +group(alt_space_toggle):all
+*        my_option_LAall = |group(alt_space_toggle):all
