@@ -1,4 +1,8 @@
-# Compatibility
+# Compatibility {#xkbcommon-compatibility}
+
+@tableofcontents{html:2}
+
+## XKB support {#xkb-v1-compatibility}
 
 Relative to the XKB 1.0 specification implemented in current X servers,
 xkbcommon has removed support for some parts of the specification which
@@ -6,14 +10,17 @@ introduced unnecessary complications.  Many of these removals were in fact
 not implemented, or half-implemented at best, as well as being totally
 unused in the standard dataset.
 
-Notable removals:
-- geometry support
+### Notable removals
+
+- geometry support @anchor geometry
+  @anchor geometry-support
   + there were very few geometry definitions available, and while
     xkbcommon was responsible for parsing this insanely complex format,
     it never actually did anything with it
   + hopefully someone will develop a companion library which supports
     keyboard geometries in a more useful format
 - KcCGST (keycodes/compat/geometry/symbols/types) API
+  @anchor KcCGST-support
   + use RMLVO instead; KcCGST is now an implementation detail
   + including pre-defined keymap files
 - XKM support
@@ -37,7 +44,8 @@ Notable removals:
 
 On the other hand, some features and extensions were added.
 
-Notable additions:
+### Notable additions
+
 - 32-bit keycodes
 - extended number of modifiers (planned)
 - extended number of groups (planned)
@@ -45,7 +53,7 @@ Notable additions:
   + such levels are ignored by x11/xkbcomp.
 - key names (e.g. `<AE11>`) can be longer than 4 characters.
 
-## Compose support
+## Compose support {#compose-support}
 
 Relative to the standard implementation in libX11 (described in the
 Compose(5) man-page), some features are not supported:

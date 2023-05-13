@@ -1,13 +1,18 @@
 # libxkbcommon
 
 libxkbcommon is a keyboard keymap compiler and support library which
-processes a reduced subset of keymaps as defined by the XKB (X Keyboard
+processes a reduced subset of keymaps as defined by the [XKB] \(X Keyboard
 Extension) specification.  It also contains a module for handling Compose
 and dead keys and a separate library for listing available keyboard layouts.
 
+[XKB]: doc/introduction-to-xkb.md
+
 ## Quick Guide
 
-See [Quick Guide](doc/quick-guide.md).
+See [Introduction to XKB][XKB] to learn the essentials of XKB.
+
+See [Quick Guide](doc/quick-guide.md) for an introduction on how to use this
+library.
 
 ## Building
 
@@ -29,7 +34,7 @@ using the X11 keyboard configuration resource files thusly:
 ## API
 
 While libxkbcommon's API is somewhat derived from the classic XKB API as found
-in X11/extensions/XKB.h and friends, it has been substantially reworked to
+in `X11/extensions/XKB.h` and friends, it has been substantially reworked to
 expose fewer internal details to clients.
 
 See the [API Documentation](https://xkbcommon.org/doc/current/modules.html).
@@ -47,7 +52,7 @@ data.
 
 ## Relation to X11
 
-See [Compatibility](doc/compat.md) notes.
+See [Compatibility](doc/compatibility.md) notes.
 
 ## Development
 
