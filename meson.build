@@ -819,13 +819,32 @@ You can disable the documentation with -Denable-docs=false.''')
     )
     # TODO: Meson should provide this.
     docdir = get_option('datadir')/'doc'/meson.project_name()
-    custom_target(
+    doc_gen = custom_target(
         'doc',
         input: [doxyfile] + doxygen_input,
         output: 'html',
-        command: [doxygen_wrapper, doxygen, meson.current_build_dir()/'Doxyfile', meson.current_source_dir()],
+        command: [
+            doxygen_wrapper,
+            doxygen,
+            meson.current_build_dir()/'Doxyfile',
+            meson.current_source_dir(),
+        ],
         install: true,
         install_dir: docdir,
+        build_by_default: true,
+    )
+    ensure_stable_urls = find_program('scripts'/'ensure-stable-doc-urls.py')
+    custom_target(
+        'doc-cool-uris',
+        input: [doc_gen, 'doc'/'cool-uris.yaml'],
+        output: 'html-xtra',
+        command: [
+            ensure_stable_urls,
+            'generate-redirections',
+            meson.current_source_dir()/'doc'/'cool-uris.yaml',
+            meson.current_build_dir()/'html'
+        ],
+        install: false,
         build_by_default: true,
     )
 endif
