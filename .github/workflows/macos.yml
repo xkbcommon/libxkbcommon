@@ -23,7 +23,7 @@ jobs:
           python-version: '3.9'
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade meson
+          python -m pip install --upgrade meson PyYAML
           brew install libxml2 doxygen bison ninja
           brew link bison --force
         env:
