@@ -342,7 +342,6 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
     if (darray_size(table->nodes) + production->len >= MAX_COMPOSE_NODES)
         return;
 
-
     /*
      * Insert the sequence to the ternary search tree, creating new nodes as
      * needed.
