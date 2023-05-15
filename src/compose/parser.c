@@ -332,8 +332,8 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
                const struct production *production)
 {
     unsigned lhs_pos = 0;
-    uint16_t curr = darray_size(table->nodes) == 1 ? 0 : 1;
-    uint16_t *pptr = NULL;
+    uint32_t curr = darray_size(table->nodes) == 1 ? 0 : 1;
+    uint32_t *pptr = NULL;
     struct compose_node *node = NULL;
 
     /* Warn before potentially going over the limit, discard silently after. */
