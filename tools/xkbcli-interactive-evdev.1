@@ -37,6 +37,18 @@ This is a debugging tool, its behavior or output is not guaranteed to be stable.
 .It Fl \-help
 Print help and exit
 .
+.It Fl \-include Ar PATH
+Add the given path to the include path list.
+This option is order\-dependent, include paths given first are searched first.
+If an include path is given, the default include path list is not used.
+Use
+.Fl -\-include\-defaults
+to add the default include paths.
+.
+.It Fl \-include\-defaults
+Add the default set of include directories.
+This option is order-dependent, include paths given first are searched first.
+.
 .It Fl \-rules Ar rules
 The XKB ruleset
 .

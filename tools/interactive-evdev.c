@@ -59,6 +59,7 @@ static bool report_state_changes;
 static bool with_compose;
 static enum xkb_consumed_mode consumed_mode = XKB_CONSUMED_MODE_XKB;
 
+#define DEFAULT_INCLUDE_PATH_PLACEHOLDER "__defaults__"
 #define NLONGS(n) (((n) + LONG_BIT - 1) / LONG_BIT)
 
 static bool
@@ -365,8 +366,9 @@ sigintr_handler(int signum)
 static void
 usage(FILE *fp, char *progname)
 {
-        fprintf(fp, "Usage: %s [--rules=<rules>] [--model=<model>] "
-                "[--layout=<layout>] [--variant=<variant>] [--options=<options>]\n",
+        fprintf(fp, "Usage: %s [--include=<path>] [--include-defaults] "
+                "[--rules=<rules>] [--model=<model>] [--layout=<layout>] "
+                "[--variant=<variant>] [--options=<options>]\n",
                 progname);
         fprintf(fp, "      or: %s --keymap <path to keymap file>\n",
                 progname);
@@ -386,6 +388,8 @@ main(int argc, char *argv[])
     struct xkb_context *ctx = NULL;
     struct xkb_keymap *keymap = NULL;
     struct xkb_compose_table *compose_table = NULL;
+    const char *includes[64];
+    size_t num_includes = 0;
     const char *rules = NULL;
     const char *model = NULL;
     const char *layout = NULL;
@@ -395,6 +399,8 @@ main(int argc, char *argv[])
     const char *locale;
     struct sigaction act;
     enum options {
+        OPT_INCLUDE,
+        OPT_INCLUDE_DEFAULTS,
         OPT_RULES,
         OPT_MODEL,
         OPT_LAYOUT,
@@ -408,6 +414,8 @@ main(int argc, char *argv[])
     };
     static struct option opts[] = {
         {"help",                 no_argument,            0, 'h'},
+        {"include",              required_argument,      0, OPT_INCLUDE},
+        {"include-defaults",     no_argument,            0, OPT_INCLUDE_DEFAULTS},
         {"rules",                required_argument,      0, OPT_RULES},
         {"model",                required_argument,      0, OPT_MODEL},
         {"layout",               required_argument,      0, OPT_LAYOUT},
@@ -432,6 +440,20 @@ main(int argc, char *argv[])
             break;
 
         switch (opt) {
+        case OPT_INCLUDE:
+            if (num_includes >= ARRAY_SIZE(includes)) {
+                fprintf(stderr, "error: too many includes\n");
+                exit(EXIT_INVALID_USAGE);
+            }
+            includes[num_includes++] = optarg;
+            break;
+        case OPT_INCLUDE_DEFAULTS:
+            if (num_includes >= ARRAY_SIZE(includes)) {
+                fprintf(stderr, "error: too many includes\n");
+                exit(EXIT_INVALID_USAGE);
+            }
+            includes[num_includes++] = DEFAULT_INCLUDE_PATH_PLACEHOLDER;
+            break;
         case OPT_RULES:
             rules = optarg;
             break;
@@ -479,10 +501,21 @@ main(int argc, char *argv[])
         }
     }
 
-    ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+    ctx = xkb_context_new(XKB_CONTEXT_NO_DEFAULT_INCLUDES);
     if (!ctx) {
         fprintf(stderr, "Couldn't create xkb context\n");
         goto out;
+    }
+
+    if (num_includes == 0)
+        includes[num_includes++] = DEFAULT_INCLUDE_PATH_PLACEHOLDER;
+
+    for (size_t i = 0; i < num_includes; i++) {
+        const char *include = includes[i];
+        if (strcmp(include, DEFAULT_INCLUDE_PATH_PLACEHOLDER) == 0)
+            xkb_context_include_path_append_default(ctx);
+        else
+            xkb_context_include_path_append(ctx, include);
     }
 
     if (keymap_path) {
