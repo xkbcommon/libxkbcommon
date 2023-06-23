@@ -166,7 +166,7 @@ def generate_redirections(registry_path: Path, doc_dir: Path):
             cool = False
             print(
                 f"ERROR: missing canonical documentation page “{canonical}”. "
-                f"Please update “{registry_path}” using b{RELATIVE_SCRIPT_PATH}”."
+                f"Please update “{registry_path}” using {RELATIVE_SCRIPT_PATH}”."
             )
         # Add a redirection page
         for alias in aliases:
