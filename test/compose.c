@@ -588,6 +588,22 @@ main(int argc, char *argv[])
     ctx = test_get_context(CONTEXT_NO_FLAG);
     assert(ctx);
 
+    /*
+     * Ensure no environment variables but “top_srcdir” is set. This ensures
+     * that user Compose file paths are unset before the tests and set
+     * explicitely when necessary.
+     */
+#ifdef __linux__
+    const char *srcdir = getenv("top_srcdir");
+    clearenv();
+    setenv("top_srcdir", srcdir, 1);
+#else
+    unsetenv("XCOMPOSEFILE");
+    unsetenv("XDG_CONFIG_HOME");
+    unsetenv("HOME");
+    unsetenv("XLOCALEDIR");
+#endif
+
     test_seqs(ctx);
     test_conflicting(ctx);
     test_XCOMPOSEFILE(ctx);
