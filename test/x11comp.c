@@ -56,7 +56,7 @@ main(void)
     pid_t xkbcomp_pid;
 
     char *xhost = NULL;
-    int xdpy_current;
+    int xdpy_current = 0;
     int xdpy_candidate;
 
     /*
@@ -71,8 +71,12 @@ main(void)
      * 6. Kill the server & clean up.
      */
 
-    ret = xcb_parse_display(NULL, &xhost, &xdpy_current, NULL);
-    assert(ret != 0);
+    /*
+     * Detect current display, in order to avoid reusing it.
+     * It is OK if it fails (e.g. in headless mode).
+     */
+    xcb_parse_display(NULL, &xhost, &xdpy_current, NULL);
+
     /*
      * IANA assigns TCP port numbers from 6000 through 6063 to X11
      * clients.  In addition, the current XCB implementaion shows
@@ -85,7 +89,9 @@ main(void)
         if (xdpy_candidate == xdpy_current) {
             continue;
         }
-        snprintf(display, sizeof(display), "%s:%d", xhost, xdpy_candidate);
+        snprintf(display, sizeof(display),
+                 "%s:%d", (xhost != NULL) ? xhost : "",
+                 xdpy_candidate);
         ret = posix_spawnp(&xvfb_pid, "Xvfb", NULL, NULL, xvfb_argv, envp);
         if (ret == 0) {
             break;
