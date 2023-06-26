@@ -31,6 +31,16 @@ jobs:
           sudo apt install -y \
             doxygen libxcb-xkb-dev valgrind ninja-build \
             libwayland-dev wayland-protocols bison graphviz
+      - name: Install xkeyboard-config
+        run: |
+          # HACK: Force xkeyboard-config version to master
+          pushd ~
+          git clone --depth=1 https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config.git
+          cd "xkeyboard-config"
+          BUILDDIR=build
+          meson setup $BUILDDIR -Dprefix=/usr
+          meson install -C $BUILDDIR
+          popd
       - name: Setup
         run: |
           # -gdwarf-4 - see https://github.com/llvm/llvm-project/issues/56550.
