@@ -62,6 +62,12 @@ option(
     description: 'Enable building the documentation',
 )
 option(
+    'enable-cool-uris',
+    type: 'boolean',
+    value: false,
+    description: 'Enable creating redirections to maintain stable documentation pages',
+)
+option(
     'enable-wayland',
     type: 'boolean',
     value: true,
