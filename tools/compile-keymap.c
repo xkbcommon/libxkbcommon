@@ -322,7 +322,7 @@ main(int argc, char **argv)
     };
     int rc = 1;
 
-    if (argc <= 1) {
+    if (argc < 1) {
         usage(argv);
         return EXIT_INVALID_USAGE;
     }
