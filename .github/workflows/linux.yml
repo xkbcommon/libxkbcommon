@@ -53,6 +53,14 @@ jobs:
           name: test logs
           path: |
             build/meson-logs/
+      - name: Ensure doxygen version is correct
+        run: |
+            doxygen --version > version.txt
+            echo "1.9.6" >> version.txt
+            if [ $(sort -V version.txt | tail -n1) != "1.9.6" ]; then
+                echo "Doxygen version 1.9.6 or earlier expected, see #347"
+                exit 1
+            fi
       - name: Store doxygen docs for use by the pages workflow
         uses: actions/upload-artifact@v3
         if: success()
