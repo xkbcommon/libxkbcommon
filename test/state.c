@@ -104,6 +104,118 @@ print_state(struct xkb_state *state)
 }
 
 static void
+test_overlapping_mods(struct xkb_keymap *keymap)
+{
+    xkb_mod_index_t shift, caps, ctrl, alt, mod1, mod2, mod3, mod4, mod5,
+                    meta, super, hyper, num, level3, level5, scroll;
+
+    /* Real modifiers */
+    shift = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_SHIFT);
+    assert(shift != XKB_MOD_INVALID);
+    caps = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CAPS);
+    assert(caps != XKB_MOD_INVALID);
+    ctrl = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CTRL);
+    assert(ctrl != XKB_MOD_INVALID);
+    mod1 = xkb_keymap_mod_get_index(keymap, "Mod1");
+    assert(mod1 != XKB_MOD_INVALID);
+    mod2 = xkb_keymap_mod_get_index(keymap, "Mod2");
+    assert(mod2 != XKB_MOD_INVALID);
+    mod3 = xkb_keymap_mod_get_index(keymap, "Mod3");
+    assert(mod3 != XKB_MOD_INVALID);
+    mod4 = xkb_keymap_mod_get_index(keymap, "Mod4");
+    assert(mod4 != XKB_MOD_INVALID);
+    mod5 = xkb_keymap_mod_get_index(keymap, "Mod5");
+    assert(mod5 != XKB_MOD_INVALID);
+
+    /* Virtual modifiers */
+    alt = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_ALT);
+    assert(alt != XKB_MOD_INVALID);
+    meta = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_META);
+    assert(alt != XKB_MOD_INVALID);
+    super = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_SUPER);
+    assert(super != XKB_MOD_INVALID);
+    hyper = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_HYPER);
+    assert(hyper != XKB_MOD_INVALID);
+    num = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_NUM);
+    assert(num != XKB_MOD_INVALID);
+    level3 = xkb_keymap_mod_get_index(keymap, "LevelThree");
+    assert(level3 != XKB_MOD_INVALID);
+    level5 = xkb_keymap_mod_get_index(keymap, "LevelFive");
+    assert(level5 != XKB_MOD_INVALID);
+    scroll = xkb_keymap_mod_get_index(keymap, "ScrollLock");
+    assert(scroll != XKB_MOD_INVALID);
+
+    xkb_mod_mask_t mod1_mask   = (1u << mod1);
+    xkb_mod_mask_t mod2_mask   = (1u << mod2);
+    xkb_mod_mask_t mod3_mask   = (1u << mod3);
+    xkb_mod_mask_t mod4_mask   = (1u << mod4);
+    xkb_mod_mask_t mod5_mask   = (1u << mod5);
+    xkb_mod_mask_t alt_mask    = (1u << alt);
+    xkb_mod_mask_t meta_mask   = (1u << meta);
+    xkb_mod_mask_t super_mask  = (1u << super);
+    // xkb_mod_mask_t hyper_mask  = (1u << hyper);
+    xkb_mod_mask_t num_mask    = (1u << num);
+    xkb_mod_mask_t level3_mask = (1u << level3);
+    xkb_mod_mask_t level5_mask = (1u << level5);
+    // xkb_mod_mask_t scroll_mask = (1u << scroll);
+
+    /* Real modifiers */
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, shift, XKB_MOD_OVERLAPPING_ALL) == 0);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, shift, XKB_MOD_OVERLAPPING_CANONICAL) == 0);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, shift, XKB_MOD_OVERLAPPING_NON_CANONICAL) == 0);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, caps, XKB_MOD_OVERLAPPING_ALL) == 0);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, caps, XKB_MOD_OVERLAPPING_CANONICAL) == 0);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, caps, XKB_MOD_OVERLAPPING_NON_CANONICAL) == 0);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, ctrl, XKB_MOD_OVERLAPPING_ALL) == 0);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, ctrl, XKB_MOD_OVERLAPPING_CANONICAL) == 0);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, ctrl, XKB_MOD_OVERLAPPING_NON_CANONICAL) == 0);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, mod1, XKB_MOD_OVERLAPPING_ALL) == (alt_mask | meta_mask));
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, mod1, XKB_MOD_OVERLAPPING_CANONICAL) == 0);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, mod1, XKB_MOD_OVERLAPPING_NON_CANONICAL) == (alt_mask | meta_mask));
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, mod2, XKB_MOD_OVERLAPPING_ALL) == num_mask);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, mod2, XKB_MOD_OVERLAPPING_CANONICAL) == 0);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, mod2, XKB_MOD_OVERLAPPING_NON_CANONICAL) == num_mask);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, mod3, XKB_MOD_OVERLAPPING_ALL) == level5_mask);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, mod3, XKB_MOD_OVERLAPPING_CANONICAL) == 0);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, mod3, XKB_MOD_OVERLAPPING_NON_CANONICAL) == level5_mask);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, mod4, XKB_MOD_OVERLAPPING_ALL) == super_mask);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, mod4, XKB_MOD_OVERLAPPING_CANONICAL) == 0);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, mod4, XKB_MOD_OVERLAPPING_NON_CANONICAL) == super_mask);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, mod5, XKB_MOD_OVERLAPPING_ALL) == level3_mask);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, mod5, XKB_MOD_OVERLAPPING_CANONICAL) == 0);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, mod5, XKB_MOD_OVERLAPPING_NON_CANONICAL) == level3_mask);
+
+    /* Virtual modifiers */
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, alt, XKB_MOD_OVERLAPPING_ALL) == (mod1_mask | meta_mask));
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, alt, XKB_MOD_OVERLAPPING_CANONICAL) == mod1_mask);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, alt, XKB_MOD_OVERLAPPING_NON_CANONICAL) == meta_mask);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, meta, XKB_MOD_OVERLAPPING_ALL) == (mod1_mask | alt_mask));
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, meta, XKB_MOD_OVERLAPPING_CANONICAL) == mod1_mask);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, meta, XKB_MOD_OVERLAPPING_NON_CANONICAL) == alt_mask);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, super, XKB_MOD_OVERLAPPING_ALL) == mod4_mask);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, super, XKB_MOD_OVERLAPPING_CANONICAL) == mod4_mask);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, super, XKB_MOD_OVERLAPPING_NON_CANONICAL) == 0);
+    /* NOTE: hyper is mapped to multiple real modifiers, so it matches
+     * multiple virtual modifiers as well */
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, hyper, XKB_MOD_OVERLAPPING_ALL) == (mod3_mask | mod4_mask | super_mask | level5_mask));
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, hyper, XKB_MOD_OVERLAPPING_CANONICAL) == (mod3_mask | mod4_mask));
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, hyper, XKB_MOD_OVERLAPPING_NON_CANONICAL) == (super_mask | level5_mask));
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, num, XKB_MOD_OVERLAPPING_ALL) == mod2_mask);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, num, XKB_MOD_OVERLAPPING_CANONICAL) == mod2_mask);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, num, XKB_MOD_OVERLAPPING_NON_CANONICAL) == 0);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, level3, XKB_MOD_OVERLAPPING_ALL) == mod5_mask);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, level3, XKB_MOD_OVERLAPPING_CANONICAL) == mod5_mask);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, level3, XKB_MOD_OVERLAPPING_NON_CANONICAL) == 0);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, level5, XKB_MOD_OVERLAPPING_ALL) == mod3_mask);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, level5, XKB_MOD_OVERLAPPING_CANONICAL) == mod3_mask);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, level5, XKB_MOD_OVERLAPPING_NON_CANONICAL) == 0);
+    /* NOTE: scroll not mapped */
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, scroll, XKB_MOD_OVERLAPPING_ALL) == 0);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, scroll, XKB_MOD_OVERLAPPING_CANONICAL) == 0);
+    assert(xkb_keymap_mod_get_overlapping_mods(keymap, scroll, XKB_MOD_OVERLAPPING_NON_CANONICAL) == 0);
+}
+
+static void
 test_update_key(struct xkb_keymap *keymap)
 {
     struct xkb_state *state = xkb_state_new(keymap);
@@ -361,11 +473,11 @@ test_update_mask_mods(struct xkb_keymap *keymap)
     assert(caps != XKB_MOD_INVALID);
     shift = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_SHIFT);
     assert(shift != XKB_MOD_INVALID);
-    num = xkb_keymap_mod_get_index(keymap, "NumLock");
+    num = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_NUM);
     assert(num != XKB_MOD_INVALID);
-    alt = xkb_keymap_mod_get_index(keymap, "Alt");
+    alt = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_ALT);
     assert(alt != XKB_MOD_INVALID);
-    meta = xkb_keymap_mod_get_index(keymap, "Meta");
+    meta = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_META);
     assert(alt != XKB_MOD_INVALID);
     mod1 = xkb_keymap_mod_get_index(keymap, "Mod1");
     assert(mod1 != XKB_MOD_INVALID);
@@ -778,6 +890,13 @@ main(void)
     xkb_context_unref(NULL);
     xkb_keymap_unref(NULL);
     xkb_state_unref(NULL);
+
+    keymap = test_compile_file(context, "keymaps/modifier-mapping.xkb");
+    assert(keymap);
+
+    test_overlapping_mods(keymap);
+
+    xkb_keymap_unref(keymap);
 
     keymap = test_compile_rules(context, "evdev", "pc104", "us,ru", NULL, "grp:menu_toggle");
     assert(keymap);

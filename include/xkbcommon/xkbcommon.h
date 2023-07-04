@@ -1092,6 +1092,37 @@ xkb_mod_index_t
 xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name);
 
 /**
+ * Overlapping modifier modes.
+ *
+ * @sa xkb_keymap_mod_get_overlapping_mods
+ * @since 1.6.0
+ * */
+enum xkb_mod_overlapping_type {
+    /** Return only canonical overlapping modifiers. */
+    XKB_MOD_OVERLAPPING_CANONICAL = (1 << 1),
+    /** Return only non canonical overlapping modifiers. */
+    XKB_MOD_OVERLAPPING_NON_CANONICAL = (1 << 2),
+    /** Return every overlapping modifiers. */
+    XKB_MOD_OVERLAPPING_ALL = (XKB_MOD_OVERLAPPING_CANONICAL | XKB_MOD_OVERLAPPING_NON_CANONICAL),
+};
+
+/**
+ * Get the overlapping modifiers of a given modifier. Some modifiers may be
+ * encoded internally with overlaps.
+ *
+ * @returns The mask of overlapping modifiers.  If no modifier is overlapping,
+ * returns 0.
+ *
+ * @sa xkb_mod_mask_t
+ * @memberof xkb_keymap
+ * @since 1.6.0
+ */
+xkb_mod_mask_t
+xkb_keymap_mod_get_overlapping_mods(struct xkb_keymap *keymap,
+                                    xkb_mod_index_t idx,
+                                    enum xkb_mod_overlapping_type type);
+
+/**
  * Get the number of layouts in the keymap.
  *
  * @sa xkb_layout_index_t xkb_rule_names xkb_keymap_num_layouts_for_key()
