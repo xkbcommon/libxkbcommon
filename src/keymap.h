@@ -479,6 +479,11 @@ XkbWrapGroupIntoRange(int32_t group,
                       enum xkb_range_exceed_type out_of_range_group_action,
                       xkb_layout_index_t out_of_range_group_number);
 
+static inline bool
+is_real_mod(struct xkb_keymap *keymap, xkb_mod_index_t mod) {
+    return keymap->mods.mods[mod].type & MOD_REAL;
+}
+
 xkb_mod_mask_t
 mod_mask_get_effective(struct xkb_keymap *keymap, xkb_mod_mask_t mods);
 
