@@ -304,6 +304,15 @@ typedef uint32_t xkb_led_mask_t;
 #define XKB_KEYCODE_MAX     (0xffffffff - 1)
 
 /**
+ * Maximum keysym value
+ *
+ * @since 1.6.0
+ * @sa xkb_keysym_t
+ * @ingroup keysyms
+ */
+#define XKB_KEYSYM_MAX      0x1fffffff
+
+/**
  * Test whether a value is a valid extended keycode.
  * @sa xkb_keycode_t
  **/
