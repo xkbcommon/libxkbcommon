@@ -208,6 +208,8 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
     else if (name[0] == '0' && (name[1] == 'x' || (icase && name[1] == 'X'))) {
         if (!parse_keysym_hex(&name[2], &val))
             return XKB_KEY_NoSymbol;
+        if (val > XKB_KEYSYM_MAX)
+            return XKB_KEY_NoSymbol;
         return (xkb_keysym_t) val;
     }
 
