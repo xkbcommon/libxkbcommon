@@ -62,6 +62,9 @@
 /* Round up @a so it's divisible by @b. */
 #define ROUNDUP(a, b) (((a) + (b) - 1) / (b) * (b))
 
+#define STRINGIFY(x) #x
+#define STRINGIFY2(x) STRINGIFY(x)
+
 char
 to_lower(char c);
 
