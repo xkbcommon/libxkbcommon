@@ -29,6 +29,7 @@
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "expr.h"
+#include "keysym.h"
 
 typedef bool (*IdentLookupFunc)(struct xkb_context *ctx, const void *priv,
                                 xkb_atom_t field, enum expr_value_type type,
@@ -656,11 +657,26 @@ ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
     if (!ExprResolveInteger(ctx, expr, &val))
         return false;
 
-    if (val < 0 || val >= 10)
+    if (val < XKB_KEYSYM_MIN) {
+        log_warn(ctx, "unrecognized keysym \"-0x%x\" (%d)\n",
+                 (unsigned int) -val, val);
         return false;
+    }
 
-    *sym_rtrn = XKB_KEY_0 + (xkb_keysym_t) val;
-    return true;
+    /* Special case for digits 0..9 */
+    if (val < 10) {
+        *sym_rtrn = XKB_KEY_0 + (xkb_keysym_t) val;
+        return true;
+    }
+
+    if (val <= XKB_KEYSYM_MAX) {
+        *sym_rtrn = (xkb_keysym_t) val;
+        return true;
+    }
+
+    log_warn(ctx, "unrecognized keysym \"0x%x\" (%d)\n", val, val);
+    return false;
+
 }
 
 bool
