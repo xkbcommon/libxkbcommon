@@ -61,7 +61,6 @@
  * We try not to trust the server too much and be paranoid. If we get
  * something which we definitely shouldn't, we fail.
  */
-#define STRINGIFY(expr) #expr
 #define FAIL_UNLESS(expr) do {                                          \
     if (!(expr)) {                                                      \
         log_err(keymap->ctx,                                            \
