@@ -50,6 +50,14 @@
 #ifndef KEYSYM_H
 #define KEYSYM_H
 
+/*
+ * NOTE: this is not defined in xkbcommon.h, because if we did, it may add
+ * overhead for library user: when handling keysyms they would also need to
+ * check min keysym when previously there was no reason to.
+ */
+/** Minimum keysym value */
+#define XKB_KEYSYM_MIN      0x00000000
+
 bool
 xkb_keysym_is_lower(xkb_keysym_t keysym);
 

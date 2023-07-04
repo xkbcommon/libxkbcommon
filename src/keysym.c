@@ -64,7 +64,7 @@ get_name(const struct name_keysym *entry)
 XKB_EXPORT int
 xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
 {
-    if ((ks & ((unsigned long) ~0x1fffffff)) != 0) {
+    if (ks > XKB_KEYSYM_MAX) {
         snprintf(buffer, size, "Invalid");
         return -1;
     }
