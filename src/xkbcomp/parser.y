@@ -37,6 +37,7 @@
 #include "xkbcomp/ast-build.h"
 #include "xkbcomp/parser-priv.h"
 #include "scanner-utils.h"
+#include "keysym.h"
 
 struct parser_param {
     struct xkb_context *ctx;
@@ -735,18 +736,19 @@ KeySym          :       IDENT
                 |       SECTION { $$ = XKB_KEY_section; }
                 |       Integer
                         {
-                            if ($1 < 0) {
+                            if ($1 < XKB_KEYSYM_MIN) {
                                 parser_warn(param, "unrecognized keysym \"%"PRId64"\"", $1);
                                 $$ = XKB_KEY_NoSymbol;
                             }
+                            /* Special case for digits 0..9 */
                             else if ($1 < 10) {      /* XKB_KEY_0 .. XKB_KEY_9 */
                                 $$ = XKB_KEY_0 + (xkb_keysym_t) $1;
                             }
                             else {
-                                char buf[32];
-                                snprintf(buf, sizeof(buf), "0x%"PRIx64, $1);
-                                if (!resolve_keysym(buf, &$$)) {
-                                    parser_warn(param, "unrecognized keysym \"%s\"", buf);
+                                if ($1 <= XKB_KEYSYM_MAX) {
+                                    $$ = (xkb_keysym_t) $1;
+                                } else {
+                                    parser_warn(param, "unrecognized keysym \"0x%"PRIx64"\"", $1);
                                     $$ = XKB_KEY_NoSymbol;
                                 }
                             }
