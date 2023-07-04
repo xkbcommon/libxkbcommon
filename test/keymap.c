@@ -30,6 +30,7 @@
 #include <stdlib.h>
 
 #include "test.h"
+#include "keymap.h"
 
 static void
 test_garbage_key(void)
@@ -149,11 +150,60 @@ test_keymap(void)
     xkb_context_unref(context);
 }
 
+#define Mod1Mask (1 << 3)
+#define Mod2Mask (1 << 4)
+#define Mod3Mask (1 << 5)
+
+static void
+test_numeric_keysyms(void)
+{
+    struct xkb_context *context = test_get_context(0);
+    struct xkb_keymap *keymap;
+    const struct xkb_key *key;
+    xkb_keycode_t kc;
+    int keysyms_count;
+    const xkb_layout_index_t first_layout = 0;
+    const xkb_keysym_t *keysyms;
+
+    assert(context);
+
+    keymap = test_compile_rules(context, "evdev", "pc104", "numeric_keysyms", NULL, NULL);
+    assert(keymap);
+
+    kc = xkb_keymap_key_by_name(keymap, "AD01");
+    keysyms_count = xkb_keymap_key_get_syms_by_level(keymap, kc, first_layout, 0, &keysyms);
+    assert(keysyms_count == 1);
+    assert(keysyms[0] == 0x1ffffffd);
+    key = XkbKey(keymap, kc);
+    assert(key->modmap == Mod1Mask);
+
+    kc = xkb_keymap_key_by_name(keymap, "AD02");
+    keysyms_count = xkb_keymap_key_get_syms_by_level(keymap, kc, first_layout, 0, &keysyms);
+    assert(keysyms_count == 1);
+    assert(keysyms[0] == 0x1ffffffe);
+    key = XkbKey(keymap, kc);
+    assert(key->modmap == Mod2Mask);
+
+    kc = xkb_keymap_key_by_name(keymap, "AD03");
+    keysyms_count = xkb_keymap_key_get_syms_by_level(keymap, kc, first_layout, 0, &keysyms);
+    assert(keysyms_count == 1);
+    assert(keysyms[0] == 0x1fffffff);
+    /* Invalid numeric keysym */
+    keysyms_count = xkb_keymap_key_get_syms_by_level(keymap, kc, first_layout, 1, &keysyms);
+    assert(keysyms_count == 0);
+    key = XkbKey(keymap, kc);
+    assert(key->modmap == Mod3Mask);
+
+    xkb_keymap_unref(keymap);
+    xkb_context_unref(context);
+}
+
 int
 main(void)
 {
     test_garbage_key();
     test_keymap();
+    test_numeric_keysyms();
 
     return 0;
 }
