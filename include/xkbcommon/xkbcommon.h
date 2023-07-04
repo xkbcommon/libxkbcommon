@@ -169,28 +169,37 @@ typedef uint32_t xkb_keycode_t;
  *
  * A key, represented by a keycode, may generate different symbols according
  * to keyboard state.  For example, on a QWERTY keyboard, pressing the key
- * labled \<A\> generates the symbol 'a'.  If the Shift key is held, it
- * generates the symbol 'A'.  If a different layout is used, say Greek,
- * it generates the symbol 'α'.  And so on.
+ * labled \<A\> generates the symbol ‘a’.  If the Shift key is held, it
+ * generates the symbol ‘A’.  If a different layout is used, say Greek,
+ * it generates the symbol ‘α’.  And so on.
  *
- * Each such symbol is represented by a keysym.  Note that keysyms are
- * somewhat more general, in that they can also represent some "function",
- * such as "Left" or "Right" for the arrow keys.  For more information,
- * see:
- * https://www.x.org/releases/current/doc/xproto/x11protocol.html#keysym_encoding
+ * Each such symbol is represented by a *keysym* (short for “key symbol”).
+ * Note that keysyms are somewhat more general, in that they can also represent
+ * some “function”, such as “Left” or “Right” for the arrow keys.  For more
+ * information, see: Appendix A [“KEYSYM Encoding”][encoding] of the X Window
+ * System Protocol.
  *
  * Specifically named keysyms can be found in the
  * xkbcommon/xkbcommon-keysyms.h header file.  Their name does not include
- * the XKB_KEY_ prefix.
+ * the `XKB_KEY_` prefix.
  *
- * Besides those, any Unicode/ISO 10646 character in the range U0100 to
- * U10FFFF can be represented by a keysym value in the range 0x01000100 to
- * 0x0110FFFF.  The name of Unicode keysyms is "U<codepoint>", e.g. "UA1B2".
+ * Besides those, any Unicode/ISO&nbsp;10646 character in the range U+0100 to
+ * U+10FFFF can be represented by a keysym value in the range 0x01000100 to
+ * 0x0110FFFF.  The name of Unicode keysyms is `U<codepoint>`, e.g. `UA1B2`.
  *
  * The name of other unnamed keysyms is the hexadecimal representation of
- * their value, e.g. "0xabcd1234".
+ * their value, e.g. `0xabcd1234`.
  *
  * Keysym names are case-sensitive.
+ *
+ * @note **Encoding:** Keysyms are 32-bit integers with the 3 most significant
+ * bits always set to zero.  See: Appendix A [“KEYSYM Encoding”][encoding] of
+ * the X Window System Protocol.
+ *
+ * [encoding]: https://www.x.org/releases/current/doc/xproto/x11protocol.html#keysym_encoding
+ *
+ * @ingroup keysyms
+ * @sa XKB_KEYSYM_MAX
  */
 typedef uint32_t xkb_keysym_t;
 
@@ -389,7 +398,7 @@ struct xkb_rule_names {
 
 /**
  * @defgroup keysyms Keysyms
- * Utility functions related to keysyms.
+ * Utility functions related to *keysyms* (short for “key symbols”).
  *
  * @{
  */
