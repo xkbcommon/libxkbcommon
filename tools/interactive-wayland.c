@@ -44,6 +44,10 @@
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
+/* Offset between evdev keycodes (where KEY_ESCAPE is 1), and the evdev XKB
+ * keycode set (where ESC is 9). */
+#define EVDEV_OFFSET 8
+
 struct interactive_dpy {
     struct wl_display *dpy;
     struct wl_compositor *compositor;
@@ -395,11 +399,11 @@ kbd_key(void *data, struct wl_keyboard *wl_kbd, uint32_t serial, uint32_t time,
         return;
 
     printf("%s: ", seat->name_str);
-    tools_print_keycode_state(seat->state, NULL, key + 8,
+    tools_print_keycode_state(seat->state, NULL, key + EVDEV_OFFSET,
                               XKB_CONSUMED_MODE_XKB);
 
     /* Exit on ESC. */
-    if (xkb_state_key_get_one_sym(seat->state, key + 8) == XKB_KEY_Escape)
+    if (xkb_state_key_get_one_sym(seat->state, key + EVDEV_OFFSET) == XKB_KEY_Escape)
         terminate = true;
 }
 

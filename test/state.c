@@ -370,11 +370,11 @@ test_update_mask_mods(struct xkb_keymap *keymap)
 static void
 test_repeat(struct xkb_keymap *keymap)
 {
-    assert(!xkb_keymap_key_repeats(keymap, KEY_LEFTSHIFT + 8));
-    assert(xkb_keymap_key_repeats(keymap, KEY_A + 8));
-    assert(xkb_keymap_key_repeats(keymap, KEY_8 + 8));
-    assert(xkb_keymap_key_repeats(keymap, KEY_DOWN + 8));
-    assert(xkb_keymap_key_repeats(keymap, KEY_KBDILLUMDOWN + 8));
+    assert(!xkb_keymap_key_repeats(keymap, KEY_LEFTSHIFT + EVDEV_OFFSET));
+    assert(xkb_keymap_key_repeats(keymap, KEY_A + EVDEV_OFFSET));
+    assert(xkb_keymap_key_repeats(keymap, KEY_8 + EVDEV_OFFSET));
+    assert(xkb_keymap_key_repeats(keymap, KEY_DOWN + EVDEV_OFFSET));
+    assert(xkb_keymap_key_repeats(keymap, KEY_KBDILLUMDOWN + EVDEV_OFFSET));
 }
 
 static void
@@ -538,52 +538,52 @@ test_caps_keysym_transformation(struct xkb_keymap *keymap)
     shift = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_SHIFT);
     assert(caps != XKB_MOD_INVALID && shift != XKB_MOD_INVALID);
 
-    assert(xkb_state_key_get_layout(state, KEY_A + 8) == 0);
-    assert(xkb_state_key_get_layout(state, KEY_SEMICOLON + 8) == 0);
+    assert(xkb_state_key_get_layout(state, KEY_A + EVDEV_OFFSET) == 0);
+    assert(xkb_state_key_get_layout(state, KEY_SEMICOLON + EVDEV_OFFSET) == 0);
 
     /* Without caps, no transformation. */
     assert(xkb_state_mod_index_is_active(state, caps, XKB_STATE_MODS_EFFECTIVE) == 0);
     assert(xkb_state_mod_index_is_active(state, shift, XKB_STATE_MODS_EFFECTIVE) == 0);
-    assert(xkb_state_key_get_level(state, KEY_A + 8, 0) == 0);
-    sym = xkb_state_key_get_one_sym(state, KEY_A + 8);
+    assert(xkb_state_key_get_level(state, KEY_A + EVDEV_OFFSET, 0) == 0);
+    sym = xkb_state_key_get_one_sym(state, KEY_A + EVDEV_OFFSET);
     assert(sym == XKB_KEY_a);
-    assert(xkb_state_key_get_level(state, KEY_SEMICOLON + 8, 0) == 0);
-    sym = xkb_state_key_get_one_sym(state, KEY_SEMICOLON + 8);
+    assert(xkb_state_key_get_level(state, KEY_SEMICOLON + EVDEV_OFFSET, 0) == 0);
+    sym = xkb_state_key_get_one_sym(state, KEY_SEMICOLON + EVDEV_OFFSET);
     assert(sym == XKB_KEY_eacute);
-    nsyms = xkb_state_key_get_syms(state, KEY_SEMICOLON + 8, &syms);
+    nsyms = xkb_state_key_get_syms(state, KEY_SEMICOLON + EVDEV_OFFSET, &syms);
     assert(nsyms == 1 && syms[0] == XKB_KEY_eacute);
 
     /* With shift, no transformation (only different level). */
-    xkb_state_update_key(state, KEY_LEFTSHIFT + 8, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
     assert(xkb_state_mod_index_is_active(state, caps, XKB_STATE_MODS_EFFECTIVE) == 0);
     assert(xkb_state_mod_index_is_active(state, shift, XKB_STATE_MODS_EFFECTIVE) > 0);
-    assert(xkb_state_key_get_level(state, KEY_A + 8, 0) == 1);
-    sym = xkb_state_key_get_one_sym(state, KEY_A + 8);
+    assert(xkb_state_key_get_level(state, KEY_A + EVDEV_OFFSET, 0) == 1);
+    sym = xkb_state_key_get_one_sym(state, KEY_A + EVDEV_OFFSET);
     assert(sym == XKB_KEY_A);
-    sym = xkb_state_key_get_one_sym(state, KEY_SEMICOLON + 8);
+    sym = xkb_state_key_get_one_sym(state, KEY_SEMICOLON + EVDEV_OFFSET);
     assert(sym == XKB_KEY_odiaeresis);
-    nsyms = xkb_state_key_get_syms(state, KEY_SEMICOLON + 8, &syms);
+    nsyms = xkb_state_key_get_syms(state, KEY_SEMICOLON + EVDEV_OFFSET, &syms);
     assert(nsyms == 1 && syms[0] == XKB_KEY_odiaeresis);
-    xkb_state_update_key(state, KEY_LEFTSHIFT + 8, XKB_KEY_UP);
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
     assert(xkb_state_mod_index_is_active(state, shift, XKB_STATE_MODS_EFFECTIVE) == 0);
 
     /* With caps, transform in same level, only with _get_one_sym(). */
-    xkb_state_update_key(state, KEY_CAPSLOCK + 8, XKB_KEY_DOWN);
-    xkb_state_update_key(state, KEY_CAPSLOCK + 8, XKB_KEY_UP);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
     assert(xkb_state_mod_index_is_active(state, caps, XKB_STATE_MODS_EFFECTIVE) > 0);
     assert(xkb_state_mod_index_is_active(state, shift, XKB_STATE_MODS_EFFECTIVE) == 0);
-    assert(xkb_state_key_get_level(state, KEY_A + 8, 0) == 1);
-    sym = xkb_state_key_get_one_sym(state, KEY_A + 8);
+    assert(xkb_state_key_get_level(state, KEY_A + EVDEV_OFFSET, 0) == 1);
+    sym = xkb_state_key_get_one_sym(state, KEY_A + EVDEV_OFFSET);
     assert(sym == XKB_KEY_A);
-    assert(xkb_state_key_get_level(state, KEY_SEMICOLON + 8, 0) == 0);
-    sym = xkb_state_key_get_one_sym(state, KEY_SEMICOLON + 8);
+    assert(xkb_state_key_get_level(state, KEY_SEMICOLON + EVDEV_OFFSET, 0) == 0);
+    sym = xkb_state_key_get_one_sym(state, KEY_SEMICOLON + EVDEV_OFFSET);
     assert(sym == XKB_KEY_Eacute);
-    nsyms = xkb_state_key_get_syms(state, KEY_SEMICOLON + 8, &syms);
+    nsyms = xkb_state_key_get_syms(state, KEY_SEMICOLON + EVDEV_OFFSET, &syms);
     assert(nsyms == 1 && syms[0] == XKB_KEY_eacute);
-    xkb_state_update_key(state, KEY_LEFTSHIFT + 8, XKB_KEY_UP);
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
     assert(xkb_state_mod_index_is_active(state, shift, XKB_STATE_MODS_EFFECTIVE) == 0);
-    xkb_state_update_key(state, KEY_CAPSLOCK + 8, XKB_KEY_DOWN);
-    xkb_state_update_key(state, KEY_CAPSLOCK + 8, XKB_KEY_UP);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
 
     xkb_state_unref(state);
 }
@@ -596,10 +596,10 @@ test_get_utf8_utf32(struct xkb_keymap *keymap)
     assert(state);
 
 #define TEST_KEY(key, expected_utf8, expected_utf32) do { \
-    assert(xkb_state_key_get_utf8(state, key + 8, NULL, 0) == strlen(expected_utf8)); \
-    assert(xkb_state_key_get_utf8(state, key + 8, buf, sizeof(buf)) == strlen(expected_utf8)); \
+    assert(xkb_state_key_get_utf8(state, key + EVDEV_OFFSET, NULL, 0) == strlen(expected_utf8)); \
+    assert(xkb_state_key_get_utf8(state, key + EVDEV_OFFSET, buf, sizeof(buf)) == strlen(expected_utf8)); \
     assert(memcmp(buf, expected_utf8, sizeof(expected_utf8)) == 0); \
-    assert(xkb_state_key_get_utf32(state, key + 8) == expected_utf32); \
+    assert(xkb_state_key_get_utf32(state, key + EVDEV_OFFSET) == expected_utf32); \
 } while (0)
 
     /* Simple ASCII. */
@@ -621,25 +621,25 @@ test_get_utf8_utf32(struct xkb_keymap *keymap)
 
     /* Check truncation. */
     memset(buf, 'X', sizeof(buf));
-    assert(xkb_state_key_get_utf8(state, KEY_6 + 8, buf, 0) == strlen("HELLO"));
+    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 0) == strlen("HELLO"));
     assert(memcmp(buf, "X", 1) == 0);
-    assert(xkb_state_key_get_utf8(state, KEY_6 + 8, buf, 1) == strlen("HELLO"));
+    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 1) == strlen("HELLO"));
     assert(memcmp(buf, "", 1) == 0);
-    assert(xkb_state_key_get_utf8(state, KEY_6 + 8, buf, 2) == strlen("HELLO"));
+    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 2) == strlen("HELLO"));
     assert(memcmp(buf, "H", 2) == 0);
-    assert(xkb_state_key_get_utf8(state, KEY_6 + 8, buf, 3) == strlen("HELLO"));
+    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 3) == strlen("HELLO"));
     assert(memcmp(buf, "HE", 3) == 0);
-    assert(xkb_state_key_get_utf8(state, KEY_6 + 8, buf, 5) == strlen("HELLO"));
+    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 5) == strlen("HELLO"));
     assert(memcmp(buf, "HELL", 5) == 0);
-    assert(xkb_state_key_get_utf8(state, KEY_6 + 8, buf, 6) == strlen("HELLO"));
+    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 6) == strlen("HELLO"));
     assert(memcmp(buf, "HELLO", 6) == 0);
-    assert(xkb_state_key_get_utf8(state, KEY_6 + 8, buf, 7) == strlen("HELLO"));
+    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 7) == strlen("HELLO"));
     assert(memcmp(buf, "HELLO\0X", 7) == 0);
 
     /* Switch to ru layout */
     xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_DOWN);
     xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_UP);
-    assert(xkb_state_key_get_layout(state, KEY_A + 8) == 1);
+    assert(xkb_state_key_get_layout(state, KEY_A + EVDEV_OFFSET) == 1);
 
     /* Non ASCII. */
     TEST_KEY(KEY_ESC, "\x1B", 0x1B);
@@ -649,7 +649,7 @@ test_get_utf8_utf32(struct xkb_keymap *keymap)
     /* Switch back to us layout */
     xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_DOWN);
     xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_UP);
-    assert(xkb_state_key_get_layout(state, KEY_A + 8) == 0);
+    assert(xkb_state_key_get_layout(state, KEY_A + EVDEV_OFFSET) == 0);
 
     xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
     TEST_KEY(KEY_A, "A", 0x41);
@@ -697,7 +697,7 @@ test_ctrl_string_transformation(struct xkb_keymap *keymap)
     /* Switch to ru layout */
     xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_DOWN);
     xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_UP);
-    assert(xkb_state_key_get_layout(state, KEY_A + 8) == 1);
+    assert(xkb_state_key_get_layout(state, KEY_A + EVDEV_OFFSET) == 1);
 
     /* Non ASCII. */
     xkb_state_update_key(state, KEY_RIGHTCTRL + EVDEV_OFFSET, XKB_KEY_DOWN);
