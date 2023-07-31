@@ -7,7 +7,8 @@ configuration values xkbcomp uses and understands.
 
 xkbcomp uses the `xkb_component_names` struct, which maps directly to
 include statements of the appropriate sections, called for short
-[KcCGST](@ref KcCGST-intro) (see the [XKB introduction](@ref xkb-intro);
+[KcCGST](@ref KcCGST-intro) (see the [XKB
+introduction](doc/introduction-to-xkb.md);
 'G' stands for "geometry", which is not supported). These are not
 really intuitive or straight-forward for the uninitiated.
 
