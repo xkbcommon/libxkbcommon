@@ -85,7 +85,7 @@ resolve_keysym(const char *name, xkb_keysym_t *sym_rtrn)
 #define param_scanner param->scanner
 %}
 
-%pure-parser
+%define api.pure
 %lex-param      { struct scanner *param_scanner }
 %parse-param    { struct parser_param *param }
 
