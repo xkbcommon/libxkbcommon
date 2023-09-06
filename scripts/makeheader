@@ -17,7 +17,13 @@ keysym_entry_pattern = re.compile(
     """,
     re.VERBOSE,
 )
-# Match remaining XK_ references
+
+# Match remaining XK_ references in the comments, e.g we will replace:
+#       XF86XK_CamelCaseKernelName	_EVDEVK(kernel value)
+#       #define XKB_KEY_SunCompose		0x0000FF20	/* Same as XK_Multi_key */
+# with:
+#       XKB_KEY_XF86CamelCaseKernelName	_EVDEVK(kernel value)
+#       #define XKB_KEY_SunCompose		0x0000FF20	/* Same as XKB_KEY_Multi_key */
 xorgproto_keysym_prefix_pattern = re.compile(r"\b(?P<prefix>\w*)XK_(?!KOREAN\b)")
 
 
@@ -27,7 +33,7 @@ def make_keysym_entry(m: re.Match[str]) -> str:
     """
     if m.group("evdev"):
         if m.group("define").startswith("#"):
-            # Replace the xorgproto _EVDEVK macro with the actual value
+            # Replace the xorgproto _EVDEVK macro with the actual value:
             # 0x10081000 is the base, the evdev hex code is added to that.
             # We replace to make parsing of the keys later easier.
             value = 0x10081000 + int(m.group("value"), 16)
@@ -36,7 +42,11 @@ def make_keysym_entry(m: re.Match[str]) -> str:
             value_str = f"""_EVDEVK({m.group('value')})"""
     else:
         value_str = m.group("value")
-    return f"""{m.group('define')} XKB_KEY_{m.group('prefix') or ''}{m.group('name')}{m.group('spacing')}{value_str}"""
+    define = m.group("define")
+    prefix = m.group("prefix") or ""
+    name = m.group("name")
+    spacing = m.group("spacing")
+    return f"""{define} XKB_KEY_{prefix}{name}{spacing}{value_str}"""
 
 
 prefix = os.environ.get("X11_HEADERS_PREFIX", "/usr")
