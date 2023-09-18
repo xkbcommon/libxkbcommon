@@ -32,6 +32,7 @@
 
 #include "config.h"
 
+#include <ctype.h>
 #include <errno.h>
 #include <limits.h>
 #include <fcntl.h>
@@ -99,7 +100,17 @@ tools_print_keycode_state(struct xkb_state *state,
         xkb_compose_state_get_utf8(compose_state, s, sizeof(s));
     else
         xkb_state_key_get_utf8(state, keycode, s, sizeof(s));
-    printf("unicode [ %s ] ", s);
+    /* HACK: escape single control characters from C0 set using the
+    * Unicode codepoint convention. Ideally we would like to escape
+    * any non-printable character in the string.
+    */
+    if (!*s) {
+        printf("unicode [   ] ");
+    } else if (strlen(s) == 1 && (*s <= 0x1F || *s == 0x7F)) {
+        printf("unicode [ U+%04hX ] ", *s);
+    } else {
+        printf("unicode [ %s ] ", s);
+    }
 
     layout = xkb_state_key_get_layout(state, keycode);
     printf("layout [ %s (%d) ] ",
