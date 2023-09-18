@@ -472,7 +472,8 @@ HandleLedNameDef(KeyNamesInfo *info, LedNameDef *def,
         char buf[20];
         snprintf(buf, sizeof(buf), "%u", def->ndx);
         info->errorCount++;
-        return ReportBadType(info->ctx, "indicator", "name", buf, "string");
+        return ReportBadType(info->ctx, XKB_ERROR_WRONG_FIELD_TYPE,
+                             "indicator", "name", buf, "string");
     }
 
     ledi.merge = merge;

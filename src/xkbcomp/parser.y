@@ -46,16 +46,16 @@ struct parser_param {
     bool more_maps;
 };
 
-#define parser_err(param, fmt, ...) \
-    scanner_err((param)->scanner, fmt, ##__VA_ARGS__)
+#define parser_err(param, error_id, fmt, ...) \
+    scanner_err_with_code((param)->scanner, error_id, fmt, ##__VA_ARGS__)
 
-#define parser_warn(param, fmt, ...) \
-    scanner_warn((param)->scanner, fmt, ##__VA_ARGS__)
+#define parser_warn(param, warning_id, fmt, ...) \
+    scanner_warn_with_code((param)->scanner, warning_id, fmt, ##__VA_ARGS__)
 
 static void
 _xkbcommon_error(struct parser_param *param, const char *msg)
 {
-    parser_err(param, "%s", msg);
+    parser_err(param, XKB_ERROR_INVALID_SYNTAX, "%s", msg);
 }
 
 static bool
@@ -728,7 +728,12 @@ KeySyms         :       OBRACE KeySymList CBRACE
 KeySym          :       IDENT
                         {
                             if (!resolve_keysym($1, &$$)) {
-                                parser_warn(param, "unrecognized keysym \"%s\"", $1);
+                                parser_warn(
+                                    param,
+                                    XKB_WARNING_UNRECOGNIZED_KEYSYM,
+                                    "unrecognized keysym \"%s\"",
+                                    $1
+                                );
                                 $$ = XKB_KEY_NoSymbol;
                             }
                             free($1);
@@ -737,7 +742,12 @@ KeySym          :       IDENT
                 |       Integer
                         {
                             if ($1 < XKB_KEYSYM_MIN) {
-                                parser_warn(param, "unrecognized keysym \"%"PRId64"\"", $1);
+                                parser_warn(
+                                    param,
+                                    XKB_WARNING_UNRECOGNIZED_KEYSYM,
+                                    "unrecognized keysym \"%"PRId64"\"",
+                                    $1
+                                );
                                 $$ = XKB_KEY_NoSymbol;
                             }
                             /* Special case for digits 0..9 */
@@ -748,7 +758,11 @@ KeySym          :       IDENT
                                 if ($1 <= XKB_KEYSYM_MAX) {
                                     $$ = (xkb_keysym_t) $1;
                                 } else {
-                                    parser_warn(param, "unrecognized keysym \"0x%"PRIx64"\"", $1);
+                                    parser_warn(
+                                        param, XKB_WARNING_UNRECOGNIZED_KEYSYM,
+                                        "unrecognized keysym \"0x%"PRIx64"\" "
+                                        "(%"PRId64")", $1, $1
+                                    );
                                     $$ = XKB_KEY_NoSymbol;
                                 }
                             }

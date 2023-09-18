@@ -1,0 +1,176 @@
+# Guidelines:
+# • A message code must always have the same meaning forever.
+# • Codes may be retired or introduced in new releases. In order to avoid
+#   clashes, retired codes must not be deleted.
+# • Codes should not themselves reflect classification, e.g. a range for parse
+#   errors and a range for each keymap component.
+# • Codes should not be assigned sequentially because it is misleading.
+# • Codes must be in the range 1..999. This range may be extended once every
+#   code has be assigned.
+#
+# See the following guidelines for futher details on good practices:
+# https://github.com/haskellfoundation/error-message-index/blob/main/tool-developers.md#code-assignment-recommendations
+
+# NOTE: Field “added: ALWAYS” means that the precise version is unknown and
+# anterior to the introduction of the message registry. It will be replaced by
+# the default version 1.0.0 in the generated documentation. While this is deemed
+# good enough to avoid spelunking commit history, a more precise version would
+# be welcome.
+
+# TODO: fix missing detailed description, examples, resolution
+
+- id: "malformed-number-literal"
+  code: 34
+  added: ALWAYS
+  type: error
+  description: "Warn on malformed number literals"
+  details: |
+    xkbcommon can parse the following number literal formats:
+
+    - *decimal integer:* 1, 123, etc.
+    - *decimal floating-point number:* 1.23, etc.
+    - *hexadecimal integer:* prefixed with “0x”: 0x123, 0xff, 0xAB, etc.
+- id: "unsupported-modifier-mask"
+  code: 60
+  added: ALWAYS
+  type: error
+  description: "Warn on unsupported modifier mask"
+- id: "unrecognized-keysym"
+  code: 107
+  added: ALWAYS
+  type: warning
+  description: "Warn on unrecognized keysyms"
+  details: |
+    xkbcommon replaces keysyms it does not recognize by the keysym `NoSymbol`.
+
+    You may find the list of supported keysyms in
+    `include/xkbcommon/xkbcommon-keysyms.h`.
+  examples:
+    - name: Unrecognized keysym “`coma`”
+      description: |
+        **Error message:**
+
+        ```
+        xkbcommon: WARNING: [XKB-107] de:31:20: unrecognized keysym "coma"
+        ```
+
+        xkbcommon does not recognize the keysym “`coma`”. It is most probably
+        a typo for “<code>com<em>m</em>a</code>”.
+        See: `XKB_KEY_comma` in `include/xkbcommon/xkbcommon-keysyms.h`.
+      before: |
+        ```c
+        key <AB08> {[ coma, semicolon, periodcentered, multiply ]};
+        ```
+      after: |
+        ```c
+        key <AB08> {[ comma, semicolon, periodcentered, multiply ]};
+        ```
+- id: "cannot-infer-key-type"
+  code: 183
+  added: ALWAYS
+  type: warning
+  description: "Warn if no key type can be inferred"
+- id: "unsupported-group-index"
+  code: 237
+  added: ALWAYS
+  type: error
+  description: "Warn when a group index is not supported"
+  details: |
+    xkbcommon supports group index in the range (1..{{XKB_MAX_GROUPS}}).
+- id: "undefined-key-type"
+  code: 286
+  added: ALWAYS
+  type: warning
+  description: "Warn if using an undefined key type"
+- id: "non-base-group-name"
+  code: 305
+  added: ALWAYS
+  type: warning
+  description: "Warn if a group name was defined for group other than the first one"
+- id: "unsupported-shift-level"
+  code: 312
+  added: ALWAYS
+  type: error
+  description: "Warn when a shift level is not supported"
+  details: |
+    Shift levels are _one_-indexed. xkbcommon supports two formats of shift levels:
+    as numbers and as identifiers `LevelN`, where `N` is in the range (1..8).
+- id: "conflicting-key-symbol"
+  code: 461
+  added: ALWAYS
+  type: warning
+  description: "Warn if there are conflicting keysyms while merging keys"
+- id: "extra-symbols-ignored"
+  code: 516
+  added: ALWAYS
+  type: warning
+  description: "TODO: add description"
+- id: "wrong-field-type"
+  code: 578
+  added: ALWAYS
+  type: error
+  description: "Warn when a field has not the expected type"
+- id: "unknown-char-escape-sequence"
+  code: 645
+  added: ALWAYS
+  type: warning
+  description: "Warn on unknown escape sequence in string literal"
+  details: |
+    xkbcommon support the following escape sequences in string literals:
+
+    | Escape sequence | Corresponding character             |
+    | --------------- | ----------------------------------- |
+    | `\b`            | `U+0008` Backspace                  |
+    | `\t`            | `U+0009` Character tabulation       |
+    | `\n`            | `U+000A` Line feed                  |
+    | `\v`            | `U+000B` Vertical tabulation        |
+    | `\f`            | `U+000C` Form feed                  |
+    | `\r`            | `U+000D` Carriage return            |
+    | `\e`            | `U+001B` Escape                     |
+    | `\\`            | `U+005C` Backslash                  |
+    | `\NNN`          | _Octal_ escape, from `\0` to `\777` |
+- id: "multiple-groups-at-once"
+  code: 700
+  added: ALWAYS
+  type: warning
+  description: "Warn if a key defines multiple groups at once"
+- id: "invalid-syntax"
+  code: 769
+  added: ALWAYS
+  type: error
+  description: "The syntax is invalid and the file cannot be parsed"
+- id: "undefined-keycode"
+  code: 770
+  added: ALWAYS
+  type: warning
+  description: "TODO: add description"
+- id: "conflicting-modmap"
+  code: 800
+  added: ALWAYS
+  type: warning
+  description: "Warn if there are conflicting modmap definitions"
+  details: |
+    @todo detailed explanation and examples
+- id: "conflicting-key-action"
+  code: 883
+  added: ALWAYS
+  type: warning
+  description: "Warn if there are conflicting actions while merging keys"
+- id: "conflicting-key-type"
+  code: 893
+  added: ALWAYS
+  type: warning
+  description: "Warn if there are conflicting key types while merging groups"
+- id: "conflicting-key-fields"
+  code: 935
+  added: ALWAYS
+  type: warning
+  description: "Warn if there are conflicting fields while merging keys"
+- id: "unresolved-keymap-symbol"
+  code: 965
+  added: ALWAYS
+  type: warning
+  description: "Warn if using a symbol not defined in the keymap"
+
+# TODO: deprecated keysym
+# TODO: unicode keysym when named and recommended keysym exists

@@ -100,7 +100,10 @@ skip_more_whitespace_and_comments:
                 else if (scanner_chr(s, 'e'))  scanner_buf_append(s, '\033');
                 else if (scanner_oct(s, &o))   scanner_buf_append(s, (char) o);
                 else {
-                    scanner_warn(s, "unknown escape sequence in string literal");
+                    // TODO: display actual sequence! See: scanner_peek(s).
+                    //       require escaping any potential control character
+                    scanner_warn_with_code(s, XKB_WARNING_UNKNOWN_CHAR_ESCAPE_SEQUENCE,
+                                           "unknown escape sequence in string literal");
                     /* Ignore. */
                 }
             } else {
@@ -171,7 +174,8 @@ skip_more_whitespace_and_comments:
     /* Number literal (hexadecimal / decimal / float). */
     if (number(s, &yylval->num, &tok)) {
         if (tok == ERROR_TOK) {
-            scanner_err(s, "malformed number literal");
+            scanner_err_with_code(s, XKB_ERROR_MALFORMED_NUMBER_LITERAL,
+                                  "malformed number literal");
             return ERROR_TOK;
         }
         return tok;
