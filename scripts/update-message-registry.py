@@ -272,4 +272,7 @@ generate(
     Path("src/messages-codes.h"),
     skip_removed=True,
 )
+generate(
+    message_registry, jinja_env, args.root, Path("tools/messages.c"), skip_removed=True
+)
 generate(message_registry, jinja_env, args.root, Path("doc/message-registry.md"))

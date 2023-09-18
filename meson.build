@@ -543,6 +543,15 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
                    install_dir: dir_libexec)
         install_man('tools/xkbcli-list.1')
     endif
+
+    executable('xkb-check-messages',
+               'tools/check-messages.c',
+               'tools/messages.c',
+               'tools/messages.h',
+               'src/messages-codes.h',
+               dependencies: [tools_dep],
+               include_directories: [include_directories('src', 'include', 'tools')],
+               install: false)
 endif
 
 
@@ -696,6 +705,17 @@ test(
 test(
     'modifiers',
     executable('test-modifiers', 'test/modifiers.c', dependencies: test_dep),
+    env: test_env,
+)
+test(
+    'messages',
+    executable(
+        'test-messages',
+        'test/messages.c',
+        'tools/messages.c',
+        'tools/messages.h',
+        include_directories: include_directories('src', 'include', 'tools'),
+        dependencies: test_dep),
     env: test_env,
 )
 if get_option('enable-x11')
