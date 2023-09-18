@@ -112,6 +112,8 @@ class XkbCompInvocation(Invocation):
 
 
 class XkbcommonInvocation(Invocation):
+    UNRECOGNIZED_KEYSYM_ERROR = "XKB-107"
+
     def run(self):
         r, m, l, v, o = self.rmlvo
         args = [
@@ -130,9 +132,9 @@ class XkbcommonInvocation(Invocation):
         try:
             output = subprocess.check_output(args, stderr=subprocess.STDOUT,
                                              universal_newlines=True)
-            if "unrecognized keysym" in output:
+            if self.UNRECOGNIZED_KEYSYM_ERROR in output:
                 for line in output.split('\n'):
-                    if "unrecognized keysym" in line:
+                    if self.UNRECOGNIZED_KEYSYM_ERROR in line:
                         self.error = line
                 self.exitstatus = 99  # tool doesn't generate this one
             else:
