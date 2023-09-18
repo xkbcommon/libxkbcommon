@@ -573,9 +573,11 @@ test_dep = declare_dependency(
     link_with: libxkbcommon_test_internal,
 )
 if get_option('enable-x11')
-    libxkbcommon_x11_internal = static_library(
+    libxkbcommon_x11_test_internal = static_library(
         'xkbcommon-x11-internal',
         libxkbcommon_x11_sources,
+        'test/xvfb-wrapper.c',
+        'test/xvfb-wrapper.h',
         include_directories: include_directories('src', 'include'),
         link_with: libxkbcommon_test_internal,
         dependencies: [
@@ -584,7 +586,7 @@ if get_option('enable-x11')
         ],
     )
     x11_test_dep = declare_dependency(
-        link_with: libxkbcommon_x11_internal,
+        link_with: libxkbcommon_x11_test_internal,
         dependencies: [
             test_dep,
             xcb_dep,
