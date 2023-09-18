@@ -65,7 +65,8 @@ void
 tools_print_keycode_state(struct xkb_state *state,
                           struct xkb_compose_state *compose_state,
                           xkb_keycode_t keycode,
-                          enum xkb_consumed_mode consumed_mode)
+                          enum xkb_consumed_mode consumed_mode,
+                          print_state_fields_mask_t fields)
 {
     struct xkb_keymap *keymap;
 
@@ -109,25 +110,29 @@ tools_print_keycode_state(struct xkb_state *state,
     }
     printf("] ");
 
-    if (status == XKB_COMPOSE_COMPOSED)
-        xkb_compose_state_get_utf8(compose_state, s, sizeof(s));
-    else
-        xkb_state_key_get_utf8(state, keycode, s, sizeof(s));
-    /* HACK: escape single control characters from C0 set using the
-    * Unicode codepoint convention. Ideally we would like to escape
-    * any non-printable character in the string.
-    */
-    if (!*s) {
-        printf("unicode [   ] ");
-    } else if (strlen(s) == 1 && (*s <= 0x1F || *s == 0x7F)) {
-        printf("unicode [ U+%04hX ] ", *s);
-    } else {
-        printf("unicode [ %s ] ", s);
+    if (fields & PRINT_UNICODE) {
+        if (status == XKB_COMPOSE_COMPOSED)
+            xkb_compose_state_get_utf8(compose_state, s, sizeof(s));
+        else
+            xkb_state_key_get_utf8(state, keycode, s, sizeof(s));
+        /* HACK: escape single control characters from C0 set using the
+        * Unicode codepoint convention. Ideally we would like to escape
+        * any non-printable character in the string.
+        */
+        if (!*s) {
+            printf("unicode [   ] ");
+        } else if (strlen(s) == 1 && (*s <= 0x1F || *s == 0x7F)) {
+            printf("unicode [ U+%04hX ] ", *s);
+        } else {
+            printf("unicode [ %s ] ", s);
+        }
     }
 
     layout = xkb_state_key_get_layout(state, keycode);
-    printf("layout [ %s (%d) ] ",
-           xkb_keymap_layout_get_name(keymap, layout), layout);
+    if (fields & PRINT_LAYOUT) {
+        printf("layout [ %s (%d) ] ",
+               xkb_keymap_layout_get_name(keymap, layout), layout);
+    }
 
     printf("level [ %d ] ",
            xkb_state_key_get_level(state, keycode, layout));
