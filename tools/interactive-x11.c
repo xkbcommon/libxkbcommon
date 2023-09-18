@@ -243,7 +243,8 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
         xkb_keycode_t keycode = event->detail;
 
         tools_print_keycode_state(kbd->state, NULL, keycode,
-                                  XKB_CONSUMED_MODE_XKB);
+                                  XKB_CONSUMED_MODE_XKB,
+                                  PRINT_ALL_FIELDS);
 
         /* Exit on ESC. */
         if (xkb_state_key_get_one_sym(kbd->state, keycode) == XKB_KEY_Escape)

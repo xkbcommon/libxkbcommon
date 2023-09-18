@@ -400,7 +400,8 @@ kbd_key(void *data, struct wl_keyboard *wl_kbd, uint32_t serial, uint32_t time,
 
     printf("%s: ", seat->name_str);
     tools_print_keycode_state(seat->state, NULL, key + EVDEV_OFFSET,
-                              XKB_CONSUMED_MODE_XKB);
+                              XKB_CONSUMED_MODE_XKB,
+                              PRINT_ALL_FIELDS);
 
     /* Exit on ESC. */
     if (xkb_state_key_get_one_sym(seat->state, key + EVDEV_OFFSET) == XKB_KEY_Escape)

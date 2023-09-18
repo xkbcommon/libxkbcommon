@@ -58,6 +58,8 @@ static int evdev_offset = 8;
 static bool report_state_changes;
 static bool with_compose;
 static enum xkb_consumed_mode consumed_mode = XKB_CONSUMED_MODE_XKB;
+#define DEFAULT_PRINT_FIELDS PRINT_ALL_FIELDS
+print_state_fields_mask_t print_fields = DEFAULT_PRINT_FIELDS;
 
 #define DEFAULT_INCLUDE_PATH_PLACEHOLDER "__defaults__"
 #define NLONGS(n) (((n) + LONG_BIT - 1) / LONG_BIT)
@@ -271,9 +273,12 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
         xkb_compose_state_feed(kbd->compose_state, keysym);
     }
 
-    if (value != KEY_STATE_RELEASE)
-        tools_print_keycode_state(kbd->state, kbd->compose_state, keycode,
-                                  consumed_mode);
+    if (value != KEY_STATE_RELEASE) {
+        tools_print_keycode_state(
+            kbd->state, kbd->compose_state, keycode,
+            consumed_mode, print_fields
+        );
+    }
 
     if (with_compose) {
         status = xkb_compose_state_get_status(kbd->compose_state);
@@ -373,6 +378,7 @@ usage(FILE *fp, char *progname)
         fprintf(fp, "      or: %s --keymap <path to keymap file>\n",
                 progname);
         fprintf(fp, "For both:\n"
+                        "          --short (do not print layout nor Unicode keysym translation)\n"
                         "          --report-state-changes (report changes to the state)\n"
                         "          --enable-compose (enable Compose)\n"
                         "          --consumed-mode={xkb|gtk} (select the consumed modifiers mode, default: xkb)\n"
@@ -410,6 +416,7 @@ main(int argc, char *argv[])
         OPT_WITHOUT_X11_OFFSET,
         OPT_CONSUMED_MODE,
         OPT_COMPOSE,
+        OPT_SHORT,
         OPT_REPORT_STATE,
     };
     static struct option opts[] = {
@@ -424,6 +431,7 @@ main(int argc, char *argv[])
         {"keymap",               required_argument,      0, OPT_KEYMAP},
         {"consumed-mode",        required_argument,      0, OPT_CONSUMED_MODE},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
+        {"short",                no_argument,            0, OPT_SHORT},
         {"report-state-changes", no_argument,            0, OPT_REPORT_STATE},
         {"without-x11-offset",   no_argument,            0, OPT_WITHOUT_X11_OFFSET},
         {0, 0, 0, 0},
@@ -480,6 +488,9 @@ main(int argc, char *argv[])
             break;
         case OPT_COMPOSE:
             with_compose = true;
+            break;
+        case OPT_SHORT:
+            print_fields &= ~PRINT_VERBOSE_FIELDS;
             break;
         case OPT_CONSUMED_MODE:
             if (strcmp(optarg, "gtk") == 0) {
