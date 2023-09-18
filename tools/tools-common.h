@@ -38,6 +38,9 @@
 
 /* Fields that are printed in the interactive tools. */
 enum print_state_fields {
+#ifdef ENABLE_PRIVATE_APIS
+    PRINT_MODMAPS = (1u << 1),
+#endif
     PRINT_LAYOUT = (1u << 2),
     PRINT_UNICODE = (1u << 3),
     PRINT_ALL_FIELDS = ((PRINT_UNICODE << 1) - 1),
@@ -49,6 +52,13 @@ enum print_state_fields {
     PRINT_VERBOSE_FIELDS = (PRINT_LAYOUT | PRINT_UNICODE)
 };
 typedef uint32_t print_state_fields_mask_t;
+
+#ifdef ENABLE_PRIVATE_APIS
+void
+print_keymap_modmaps(struct xkb_keymap *keymap);
+void
+print_keys_modmaps(struct xkb_keymap *keymap);
+#endif
 
 void
 tools_print_keycode_state(struct xkb_state *state,
