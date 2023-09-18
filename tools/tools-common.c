@@ -50,6 +50,17 @@
 
 #include "tools-common.h"
 
+static void
+print_keycode(struct xkb_keymap *keymap, const char* prefix,
+              xkb_keycode_t keycode, const char *suffix) {
+    const char *keyname = xkb_keymap_key_get_name(keymap, keycode);
+    if (keyname) {
+        printf("%s%-4s%s", prefix, keyname, suffix);
+    } else {
+        printf("%s%-4d%s", prefix, keycode, suffix);
+    }
+}
+
 void
 tools_print_keycode_state(struct xkb_state *state,
                           struct xkb_compose_state *compose_state,
@@ -88,6 +99,8 @@ tools_print_keycode_state(struct xkb_state *state,
         sym = xkb_state_key_get_one_sym(state, keycode);
         syms = &sym;
     }
+
+    print_keycode(keymap, "keycode [ ", keycode, " ] ");
 
     printf("keysyms [ ");
     for (int i = 0; i < nsyms; i++) {
