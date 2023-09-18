@@ -416,10 +416,13 @@ man_pages = []
 # Tools
 build_tools = get_option('enable-tools') and cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE')
 if build_tools
-    libxkbcommon_tools_internal = static_library(
-        'tools-internal',
+    libxkbcommon_tools_internal_sources = [
         'tools/tools-common.h',
         'tools/tools-common.c',
+    ]
+    libxkbcommon_tools_internal = static_library(
+        'tools-internal',
+        libxkbcommon_tools_internal_sources,
         dependencies: dep_libxkbcommon,
     )
     tools_dep = declare_dependency(
@@ -467,6 +470,15 @@ if build_tools
                    install_dir: dir_libexec)
         configh_data.set10('HAVE_XKBCLI_INTERACTIVE_EVDEV', true)
         install_man('tools/xkbcli-interactive-evdev.1')
+        # The same tool again, but with access to some private APIs.
+        executable('interactive-evdev',
+                'tools/interactive-evdev.c',
+                libxkbcommon_sources,
+                libxkbcommon_tools_internal_sources,
+                dependencies: [tools_dep],
+                c_args: ['-DENABLE_PRIVATE_APIS'],
+                include_directories: [include_directories('src', 'include')],
+                install: false)
     endif
     if get_option('enable-x11')
         x11_tools_dep = declare_dependency(
