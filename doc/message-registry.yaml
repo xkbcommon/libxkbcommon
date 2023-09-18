@@ -100,6 +100,33 @@
   added: ALWAYS
   type: warning
   description: "Warn if there are conflicting keysyms while merging keys"
+- id: "numeric-keysym"
+  code: 489
+  added: 1.6.0
+  type: warning
+  description: "Warn on numeric keysym (other than 0-9)"
+  details: |
+    Numeric keysyms are not human-friendly. Use the corresponding named keysym
+    or Unicode keysym, if available.
+  examples:
+    - name: Hexadecimal keysym `0x1001ed0`
+      description: |
+        **Error message:**
+
+        ```
+        xkbcommon: WARNING: [XKB-489] numeric keysym "0x1001ed0"
+        ```
+      before: |
+        ```c
+        key <AE01> { [ 0x1001ed0] };
+        ```
+      after: |
+        ```c
+        // Preferred form: human-friendly
+        key <AE01> { [ Ocircumflexacute ] };
+        // or
+        key <AE01> { [ U1ED0 ] };
+        ```
 - id: "extra-symbols-ignored"
   code: 516
   added: ALWAYS

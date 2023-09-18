@@ -673,6 +673,9 @@ ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
     }
 
     if (val <= XKB_KEYSYM_MAX) {
+        log_warn_with_code(ctx, XKB_WARNING_NUMERIC_KEYSYM,
+                           "numeric keysym \"0x%x\" (%d)",
+                           (unsigned int) val, val);
         *sym_rtrn = (xkb_keysym_t) val;
         return true;
     }

@@ -47,6 +47,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_WARNING_NON_BASE_GROUP_NAME, "Non base group name"},
     {XKB_ERROR_UNSUPPORTED_SHIFT_LEVEL, "Unsupported shift level"},
     {XKB_WARNING_CONFLICTING_KEY_SYMBOL, "Conflicting key symbol"},
+    {XKB_WARNING_NUMERIC_KEYSYM, "Numeric keysym"},
     {XKB_WARNING_EXTRA_SYMBOLS_IGNORED, "Extra symbols ignored"},
     {XKB_ERROR_WRONG_FIELD_TYPE, "Wrong field type"},
     {XKB_WARNING_UNKNOWN_CHAR_ESCAPE_SEQUENCE, "Unknown char escape sequence"},
