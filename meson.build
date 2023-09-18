@@ -691,9 +691,11 @@ if get_option('enable-x11')
         executable('test-x11', 'test/x11.c', dependencies: x11_test_dep),
         env: test_env,
     )
-    # test/x11comp is meant to be run, but it is (temporarily?) disabled.
-    # See: https://github.com/xkbcommon/libxkbcommon/issues/30
-    executable('test-x11comp', 'test/x11comp.c', dependencies: x11_test_dep)
+    test(
+        'x11comp',
+        executable('test-x11comp', 'test/x11comp.c', dependencies: x11_test_dep),
+        env: test_env,
+    )
 endif
 if get_option('enable-xkbregistry')
     test(
