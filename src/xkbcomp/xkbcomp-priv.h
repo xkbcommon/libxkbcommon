@@ -101,10 +101,10 @@ ReportShouldBeArray(struct xkb_context *ctx, const char *type,
 }
 
 static inline bool
-ReportBadType(struct xkb_context *ctx, const char *type, const char *field,
-              const char *name, const char *wanted)
+ReportBadType(struct xkb_context *ctx, xkb_message_code_t code, const char *type,
+              const char *field, const char *name, const char *wanted)
 {
-    log_err(ctx, "The %s %s field must be a %s; "
+    log_err_with_code(ctx, code, "The %s %s field must be a %s; "
             "Ignoring illegal assignment in %s\n",
             type, field, wanted, name);
     return false;

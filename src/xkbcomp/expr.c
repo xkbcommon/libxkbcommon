@@ -407,8 +407,9 @@ ExprResolveGroup(struct xkb_context *ctx, const ExprDef *expr,
         return false;
 
     if (result <= 0 || result > XKB_MAX_GROUPS) {
-        log_err(ctx, "Group index %u is out of range (1..%d)\n",
-                result, XKB_MAX_GROUPS);
+        log_err_with_code(ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+                          "Group index %u is out of range (1..%d)\n",
+                          result, XKB_MAX_GROUPS);
         return false;
     }
 
@@ -429,7 +430,8 @@ ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
         return false;
 
     if (result < 1) {
-        log_err(ctx, "Shift level %d is out of range\n", result);
+        log_err_with_code(ctx, XKB_ERROR_UNSUPPORTED_SHIFT_LEVEL,
+                          "Shift level %d is out of range\n", result);
         return false;
     }
 
@@ -658,8 +660,9 @@ ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
         return false;
 
     if (val < XKB_KEYSYM_MIN) {
-        log_warn(ctx, "unrecognized keysym \"-0x%x\" (%d)\n",
-                 (unsigned int) -val, val);
+        log_warn_with_code(ctx, XKB_WARNING_UNRECOGNIZED_KEYSYM,
+                           "unrecognized keysym \"-0x%x\" (%d)\n",
+                           (unsigned int) -val, val);
         return false;
     }
 
@@ -674,7 +677,9 @@ ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
         return true;
     }
 
-    log_warn(ctx, "unrecognized keysym \"0x%x\" (%d)\n", val, val);
+    log_warn_with_code(ctx, XKB_WARNING_UNRECOGNIZED_KEYSYM,
+                       "unrecognized keysym \"0x%x\" (%d)\n",
+                       (unsigned int) val, val);
     return false;
 
 }

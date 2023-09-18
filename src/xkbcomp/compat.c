@@ -124,7 +124,8 @@ static inline bool
 ReportSIBadType(CompatInfo *info, SymInterpInfo *si, const char *field,
                 const char *wanted)
 {
-    return ReportBadType(info->ctx, "symbol interpretation", field,
+    return ReportBadType(info->ctx, XKB_ERROR_WRONG_FIELD_TYPE,
+                         "symbol interpretation", field,
                          siText(si, info), wanted);
 }
 
@@ -132,7 +133,8 @@ static inline bool
 ReportLedBadType(CompatInfo *info, LedInfo *ledi, const char *field,
                  const char *wanted)
 {
-    return ReportBadType(info->ctx, "indicator map", field,
+    return ReportBadType(info->ctx, XKB_ERROR_WRONG_FIELD_TYPE,
+                         "indicator map", field,
                          xkb_atom_text(info->ctx, ledi->led.name),
                          wanted);
 }

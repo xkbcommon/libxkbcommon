@@ -89,10 +89,10 @@ ReportTypeShouldBeArray(KeyTypesInfo *info, KeyTypeInfo *type,
 }
 
 static inline bool
-ReportTypeBadType(KeyTypesInfo *info, KeyTypeInfo *type,
-                  const char *field, const char *wanted)
+ReportTypeBadType(KeyTypesInfo *info, xkb_message_code_t code,
+                  KeyTypeInfo *type, const char *field, const char *wanted)
 {
-    return ReportBadType(info->ctx, "key type", field,
+    return ReportBadType(info->ctx, code, "key type", field,
                          TypeTxt(info, type), wanted);
 }
 
@@ -340,7 +340,8 @@ SetMapEntry(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
 
     if (!ExprResolveModMask(info->ctx, arrayNdx, MOD_BOTH, &info->mods,
                             &entry.mods.mods))
-        return ReportTypeBadType(info, type, "map entry", "modifier mask");
+        return ReportTypeBadType(info, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
+                                 type, "map entry", "modifier mask");
 
     if (entry.mods.mods & (~type->mods)) {
         log_vrb(info->ctx, 1,
@@ -354,9 +355,9 @@ SetMapEntry(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
     }
 
     if (!ExprResolveLevel(info->ctx, value, &entry.level)) {
-        log_err(info->ctx,
-                "Level specifications in a key type must be integer; "
-                "Ignoring malformed level specification\n");
+        log_err_with_code(info->ctx, XKB_ERROR_UNSUPPORTED_SHIFT_LEVEL,
+                          "Level specifications in a key type must be integer; "
+                          "Ignoring malformed level specification\n");
         return false;
     }
 
@@ -429,8 +430,8 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
         return ReportTypeShouldBeArray(info, type, "preserve entry");
 
     if (!ExprResolveModMask(info->ctx, arrayNdx, MOD_BOTH, &info->mods, &mods))
-        return ReportTypeBadType(info, type, "preserve entry",
-                                 "modifier mask");
+        return ReportTypeBadType(info, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
+                                 type, "preserve entry", "modifier mask");
 
     if (mods & ~type->mods) {
         const char *before, *after;
@@ -526,7 +527,8 @@ SetLevelName(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
         return ReportTypeShouldBeArray(info, type, "level name");
 
     if (!ExprResolveLevel(info->ctx, arrayNdx, &level))
-        return ReportTypeBadType(info, type, "level name", "integer");
+        return ReportTypeBadType(info, XKB_ERROR_UNSUPPORTED_SHIFT_LEVEL,
+                                 type, "level name", "integer");
 
     if (!ExprResolveString(info->ctx, value, &level_name)) {
         log_err(info->ctx,

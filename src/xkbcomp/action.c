@@ -190,10 +190,11 @@ fieldText(enum action_field field)
 /***====================================================================***/
 
 static inline bool
-ReportMismatch(struct xkb_context *ctx, enum xkb_action_type action,
-               enum action_field field, const char *type)
+ReportMismatch(struct xkb_context *ctx, xkb_message_code_t code,
+               enum xkb_action_type action, enum action_field field,
+               const char *type)
 {
-    log_err(ctx,
+    log_err_with_code(ctx, code,
             "Value of %s field must be of type %s; "
             "Action %s definition ignored\n",
             fieldText(field), type, ActionTypeText(action));
@@ -243,7 +244,8 @@ CheckBooleanFlag(struct xkb_context *ctx, enum xkb_action_type action,
         return ReportActionNotArray(ctx, action, field);
 
     if (!ExprResolveBoolean(ctx, value, &set))
-        return ReportMismatch(ctx, action, field, "boolean");
+        return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
+                              action, field, "boolean");
 
     if (set)
         *flags_inout |= flag;
@@ -274,7 +276,7 @@ CheckModifierField(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     }
 
     if (!ExprResolveModMask(ctx, value, MOD_BOTH, mods, mods_rtrn))
-        return ReportMismatch(ctx, action,
+        return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action,
                               ACTION_FIELD_MODIFIERS, "modifier mask");
 
     *flags_inout &= ~ACTION_MODS_LOOKUP_MODMAP;
@@ -300,7 +302,8 @@ CheckAffectField(struct xkb_context *ctx, enum xkb_action_type action,
         return ReportActionNotArray(ctx, action, ACTION_FIELD_AFFECT);
 
     if (!ExprResolveEnum(ctx, value, &flags, lockWhich))
-        return ReportMismatch(ctx, action, ACTION_FIELD_AFFECT,
+        return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
+                              action, ACTION_FIELD_AFFECT,
                               "lock, unlock, both, neither");
 
     *flags_inout &= ~(ACTION_LOCK_NO_LOCK | ACTION_LOCK_NO_UNLOCK);
@@ -359,8 +362,8 @@ CheckGroupField(struct xkb_context *ctx, enum xkb_action_type action,
     }
 
     if (!ExprResolveGroup(ctx, spec, &idx))
-        return ReportMismatch(ctx, action, ACTION_FIELD_GROUP,
-                              "integer (range 1..8)");
+        return ReportMismatch(ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX, action,
+                              ACTION_FIELD_GROUP, "integer (range 1..8)");
 
     /* +n, -n are relative, n is absolute. */
     if (value->expr.op == EXPR_NEGATE || value->expr.op == EXPR_UNARY_PLUS) {
@@ -416,7 +419,8 @@ HandleMovePtr(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             return ReportActionNotArray(ctx, action->type, field);
 
         if (!ExprResolveInteger(ctx, value, &val))
-            return ReportMismatch(ctx, action->type, field, "integer");
+            return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
+                                  field, "integer");
 
         if (val < INT16_MIN || val > INT16_MAX) {
             log_err(ctx,
@@ -462,8 +466,8 @@ HandlePtrBtn(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             return ReportActionNotArray(ctx, action->type, field);
 
         if (!ExprResolveButton(ctx, value, &btn))
-            return ReportMismatch(ctx, action->type, field,
-                                  "integer (range 1..5)");
+            return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
+                                  field, "integer (range 1..5)");
 
         if (btn < 0 || btn > 5) {
             log_err(ctx,
@@ -487,7 +491,8 @@ HandlePtrBtn(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             return ReportActionNotArray(ctx, action->type, field);
 
         if (!ExprResolveInteger(ctx, value, &val))
-            return ReportMismatch(ctx, action->type, field, "integer");
+            return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
+                                  field, "integer");
 
         if (val < 0 || val > 255) {
             log_err(ctx,
@@ -524,8 +529,8 @@ HandleSetPtrDflt(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             return ReportActionNotArray(ctx, action->type, field);
 
         if (!ExprResolveEnum(ctx, value, &val, ptrDflts))
-            return ReportMismatch(ctx, action->type, field,
-                                  "pointer component");
+            return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
+                                  field, "pointer component");
         return true;
     }
     else if (field == ACTION_FIELD_BUTTON || field == ACTION_FIELD_VALUE) {
@@ -546,8 +551,8 @@ HandleSetPtrDflt(struct xkb_context *ctx, const struct xkb_mod_set *mods,
         }
 
         if (!ExprResolveButton(ctx, button, &btn))
-            return ReportMismatch(ctx, action->type, field,
-                                  "integer (range 1..5)");
+            return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
+                                  field, "integer (range 1..5)");
 
         if (btn < 0 || btn > 5) {
             log_err(ctx,
@@ -594,8 +599,8 @@ HandleSwitchScreen(struct xkb_context *ctx, const struct xkb_mod_set *mods,
         }
 
         if (!ExprResolveInteger(ctx, scrn, &val))
-            return ReportMismatch(ctx, action->type, field,
-                                  "integer (0..255)");
+            return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
+                                  field, "integer (0..255)");
 
         if (val < 0 || val > 255) {
             log_err(ctx,
@@ -630,8 +635,8 @@ HandleSetLockControls(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             return ReportActionNotArray(ctx, action->type, field);
 
         if (!ExprResolveMask(ctx, value, &mask, ctrlMaskNames))
-            return ReportMismatch(ctx, action->type, field,
-                                  "controls mask");
+            return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
+                                  field, "controls mask");
 
         act->ctrls = mask;
         return true;
@@ -658,7 +663,8 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             return ReportActionNotArray(ctx, action->type, field);
 
         if (!ExprResolveInteger(ctx, value, &type))
-            return ReportMismatch(ctx, ACTION_TYPE_PRIVATE, field, "integer");
+            return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
+                                  ACTION_TYPE_PRIVATE, field, "integer");
 
         if (type < 0 || type > 255) {
             log_err(ctx,
@@ -696,7 +702,8 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             size_t len;
 
             if (!ExprResolveString(ctx, value, &val))
-                return ReportMismatch(ctx, action->type, field, "string");
+                return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
+                                      action->type, field, "string");
 
             str = xkb_atom_text(ctx, val);
             len = strlen(str);
@@ -731,7 +738,8 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             }
 
             if (!ExprResolveInteger(ctx, value, &datum))
-                return ReportMismatch(ctx, act->type, field, "integer");
+                return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, act->type,
+                                      field, "integer");
 
             if (datum < 0 || datum > 255) {
                 log_err(ctx,
