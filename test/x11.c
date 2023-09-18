@@ -24,10 +24,10 @@
 #include "config.h"
 
 #include "test.h"
+#include "xvfb-wrapper.h"
 #include "xkbcommon/xkbcommon-x11.h"
 
-int
-main(void)
+X11_TEST(test_basic)
 {
     struct xkb_context *ctx = test_get_context(0);
     xcb_connection_t *conn;
@@ -43,7 +43,7 @@ main(void)
     * If it fails, it's not necessarily an actual problem with the code.
     * So we don't want a FAIL here.
     */
-    conn = xcb_connect(NULL, NULL);
+    conn = xcb_connect(display, NULL);
     if (!conn || xcb_connection_has_error(conn)) {
         exit_code = SKIP_TEST;
         goto err_conn;
@@ -83,4 +83,8 @@ err_conn:
     xkb_context_unref(ctx);
 
     return exit_code;
+}
+
+int main(void) {
+    return x11_tests_run();
 }
