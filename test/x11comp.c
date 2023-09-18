@@ -32,78 +32,27 @@
 #include <sys/wait.h>
 
 #include "test.h"
+#include "xvfb-wrapper.h"
 #include "xkbcommon/xkbcommon-x11.h"
 
-int
-main(void)
+X11_TEST(test_basic)
 {
-    struct xkb_context *ctx = test_get_context(0);
     struct xkb_keymap *keymap;
     xcb_connection_t *conn;
     int32_t device_id;
     int ret, status;
-    char display[512];
     char *xkb_path;
     char *original, *dump;
     char *envp[] = { NULL };
-    char *xvfb_argv[] = {
-        (char *) "Xvfb", display, NULL
-    };
-    pid_t xvfb_pid = 0;
     char *xkbcomp_argv[] = {
         (char *) "xkbcomp", (char *) "-I", NULL /* xkb_path */, display, NULL
     };
     pid_t xkbcomp_pid;
 
-    char *xhost = NULL;
-    int xdpy_current;
-    int xdpy_candidate;
-
-    /*
-     * What all of this mess does is:
-     * 1. Launch Xvfb on available DISPLAY.
-     * 2. Make an xcb connection to this display.
-     * 3. Launch xkbcomp to change the keymap of the new display (doing
-     *    this programmatically is major work [which we may yet do some
-     *    day for xkbcommon-x11] so we use xkbcomp for now).
-     * 4. Download the keymap back from the display using xkbcommon-x11.
-     * 5. Compare received keymap to the uploaded keymap.
-     * 6. Kill the server & clean up.
-     */
-
-    ret = xcb_parse_display(NULL, &xhost, &xdpy_current, NULL);
-    assert(ret != 0);
-    /*
-     * IANA assigns TCP port numbers from 6000 through 6063 to X11
-     * clients.  In addition, the current XCB implementaion shows
-     * that, when an X11 client tries to establish a TCP connetion,
-     * the port number needed is specified by adding 6000 to a given
-     * display number.  So, one of reasonable ranges of xdpy_candidate
-     * is [0, 63].
-     */
-    for (xdpy_candidate = 63; xdpy_candidate >= 0; xdpy_candidate--) {
-        if (xdpy_candidate == xdpy_current) {
-            continue;
-        }
-        snprintf(display, sizeof(display), "%s:%d", xhost, xdpy_candidate);
-        ret = posix_spawnp(&xvfb_pid, "Xvfb", NULL, NULL, xvfb_argv, envp);
-        if (ret == 0) {
-            break;
-        }
-    }
-    free(xhost);
-    if (ret != 0) {
-        ret = SKIP_TEST;
-        goto err_ctx;
-    }
-
-    /* Wait for Xvfb fully waking up to accept a connection from a client. */
-    sleep(1);
-
     conn = xcb_connect(display, NULL);
     if (xcb_connection_has_error(conn)) {
         ret = SKIP_TEST;
-        goto err_xvfd;
+        goto err_conn;
     }
     ret = xkb_x11_setup_xkb_extension(conn,
                                       XKB_X11_MIN_MAJOR_XKB_VERSION,
@@ -132,6 +81,7 @@ main(void)
         goto err_xcb;
     }
 
+    struct xkb_context *ctx = test_get_context(0);
     keymap = xkb_x11_keymap_new_from_device(ctx, conn, device_id,
                                             XKB_KEYMAP_COMPILE_NO_FLAGS);
     assert(keymap);
@@ -159,12 +109,13 @@ err_dump:
     free(original);
     free(dump);
     xkb_keymap_unref(keymap);
+    xkb_context_unref(ctx);
 err_xcb:
     xcb_disconnect(conn);
-err_xvfd:
-    if (xvfb_pid > 0)
-        kill(xvfb_pid, SIGTERM);
-err_ctx:
-    xkb_context_unref(ctx);
+err_conn:
     return ret;
+}
+
+int main(void) {
+    return x11_tests_run();
 }
