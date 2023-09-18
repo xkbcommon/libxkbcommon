@@ -765,6 +765,11 @@ KeySym          :       IDENT
                                     );
                                     $$ = XKB_KEY_NoSymbol;
                                 }
+                                parser_warn(
+                                    param, XKB_WARNING_NUMERIC_KEYSYM,
+                                    "numeric keysym \"0x%"PRIx64"\" (%"PRId64")",
+                                    $1, $1
+                                );
                             }
                         }
                 ;

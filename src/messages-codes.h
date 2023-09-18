@@ -32,6 +32,8 @@ enum xkb_message_code {
     XKB_ERROR_UNSUPPORTED_SHIFT_LEVEL = 312,
     /** Warn if there are conflicting keysyms while merging keys */
     XKB_WARNING_CONFLICTING_KEY_SYMBOL = 461,
+    /** Warn on numeric keysym (other than 0-9) */
+    XKB_WARNING_NUMERIC_KEYSYM = 489,
     /** TODO: add description */
     XKB_WARNING_EXTRA_SYMBOLS_IGNORED = 516,
     /** Warn when a field has not the expected type */
