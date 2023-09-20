@@ -298,6 +298,41 @@ xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name)
 }
 
 /**
+ * Return a mask of overlapping modifiers
+*/
+XKB_EXPORT xkb_mod_mask_t
+xkb_keymap_mod_get_overlapping_mods(struct xkb_keymap *keymap,
+                                    xkb_mod_index_t idx,
+                                    enum xkb_mod_overlapping_type type)
+{
+    if (idx >= keymap->mods.num_mods) {
+        return 0;
+    }
+
+    xkb_mod_mask_t mask = (is_real_mod(keymap, idx))
+        ? (1u << idx)
+        : keymap->mods.mods[idx].mapping;
+
+    xkb_mod_mask_t overlapping = 0;
+
+    for (xkb_mod_index_t mod = 0; mod < keymap->mods.num_mods; mod++) {
+        if (mod == idx) {
+            continue;
+        } else if (keymap->mods.mods[mod].type & MOD_REAL) {
+            if ((type & XKB_MOD_OVERLAPPING_CANONICAL) && (mask & (1u << mod))) {
+                overlapping |= (1u << mod);
+            }
+        } else if ((type & XKB_MOD_OVERLAPPING_NON_CANONICAL) &&
+                   keymap->mods.mods[mod].mapping &&
+                   ((mask & keymap->mods.mods[mod].mapping) ==
+                        keymap->mods.mods[mod].mapping)) {
+            overlapping |= (1u << mod);
+        }
+    }
+    return overlapping;
+}
+
+/**
  * Return the total number of active groups in the keymap.
  */
 XKB_EXPORT xkb_layout_index_t

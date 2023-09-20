@@ -1,0 +1,148 @@
+xkb_keymap {
+xkb_keycodes "test" {
+    minimum = 8;
+    maximum = 255;
+	<LVL3>  = 92;
+    <LFSH>  = 50;
+	<RTSH>  = 62;
+	<LALT>  = 64;
+	<RALT>  = 108;
+	<LWIN>  = 133;
+	<RWIN>  = 134;
+	<LCTL>  = 37;
+	<RCTL>  = 105;
+	<CAPS>  = 66;
+	<NMLK>  = 77;
+	<LVL5>  = 203;
+	<ALT>   = 204;
+	<META>  = 205;
+	<SUPR>  = 206;
+	<HYPR>  = 207;
+    <COMP>  = 135;
+};
+
+xkb_types "complete" {
+    type "ONE_LEVEL" {
+        modifiers= none;
+        level_name[Level1]= "Any";
+    };
+	type "TWO_LEVEL" {
+		modifiers= Shift;
+		map[Shift]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+	};
+};
+
+xkb_compatibility "complete" {
+	virtual_modifiers NumLock,Alt,LevelThree,LevelFive,Meta,Super,Hyper,ScrollLock;
+
+    interpret.useModMapMods= AnyLevel;
+    interpret.repeat= False;
+
+    interpret Any+AnyOf(all) {
+        action= SetMods(modifiers=modMapMods,clearLocks);
+    };
+
+	interpret Caps_Lock+AnyOfOrNone(all) {
+		action= LockMods(modifiers=Lock);
+	};
+
+	interpret Num_Lock+AnyOf(all) {
+		virtualModifier= NumLock;
+		action= LockMods(modifiers=NumLock);
+	};
+
+	interpret Alt_L+AnyOf(all) {
+		virtualModifier= Alt;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret Alt_R+AnyOf(all) {
+		virtualModifier= Alt;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret Meta_L+AnyOf(all) {
+		virtualModifier= Meta;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret Meta_R+AnyOf(all) {
+		virtualModifier= Meta;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret Super_L+AnyOf(all) {
+		virtualModifier= Super;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret Super_R+AnyOf(all) {
+		virtualModifier= Super;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret Hyper_L+AnyOf(all) {
+		virtualModifier= Hyper;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret Hyper_R+AnyOf(all) {
+		virtualModifier= Hyper;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret ISO_Level3_Shift+AnyOf(all) {
+		virtualModifier= LevelThree;
+		useModMapMods=level1;
+		action= SetMods(modifiers=LevelThree,clearLocks);
+	};
+	interpret ISO_Level5_Shift+AnyOf(all) {
+		virtualModifier= LevelFive;
+		useModMapMods=level1;
+		action= SetMods(modifiers=LevelFive,clearLocks);
+	};
+	interpret Scroll_Lock+AnyOf(all) {
+		virtualModifier= ScrollLock;
+		action= LockMods(modifiers=modMapMods);
+	};
+};
+
+xkb_symbols {
+    name[group1]="Test";
+
+    key <CAPS> {[  Caps_Lock  ]};
+    key <LFSH> {[  Shift_L    ]};
+    key <RTSH> {[  Shift_R    ]};
+    key <LCTL> {[  Control_L  ]};
+    key <RCTL> {[  Control_R  ]};
+    key <LALT> {[  Alt_L,  Meta_L  ]};
+    key <RALT> {[  Alt_R,  Meta_R  ]};
+    key <LWIN> {[  Super_L    ]};
+    key <RWIN> {[  Super_R    ]};
+    key <NMLK> {[  Num_Lock  ]};
+
+    modifier_map Shift   { Shift_L, Shift_R };
+    modifier_map Lock    { Caps_Lock };
+    modifier_map Control { Control_L, Control_R };
+    modifier_map Mod1    { Alt_L, Alt_R, Meta_L, Meta_R };
+    modifier_map Mod2    { Num_Lock };
+    modifier_map Mod4    { Super_L, Super_R };
+
+    // Six fake keys for virtual<->real modifiers mapping:
+    key <LVL3> {[  ISO_Level3_Shift  ]};
+    modifier_map Mod5  { <LVL3> };
+
+    key <LVL5> {[  ISO_Level5_Shift  ]};
+    modifier_map Mod3  { <LVL5> };
+
+    key  <ALT> {[  NoSymbol, Alt_L  ]};
+    modifier_map Mod1  { <ALT> };
+
+    key <META> {[  NoSymbol, Meta_L  ]};
+    modifier_map Mod1  { <META> };
+
+    key <SUPR> {[  NoSymbol, Super_L  ]};
+    modifier_map Mod4  { <SUPR> };
+
+    // Make Hyper mapped to multiple real modifiers
+    key <HYPR> {[  NoSymbol, Hyper_L  ]};
+    modifier_map Mod4  { <HYPR> };
+    key <COMP> {[  NoSymbol, Hyper_L  ]};
+    modifier_map Mod3  { <COMP> };
+
+};
+};
