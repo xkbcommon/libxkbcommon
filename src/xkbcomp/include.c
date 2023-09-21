@@ -201,21 +201,31 @@ LogIncludePaths(struct xkb_context *ctx)
     unsigned int i;
 
     if (xkb_context_num_include_paths(ctx) > 0) {
-        log_err(ctx, "%d include paths searched:\n",
+        log_err_with_code(ctx,
+                XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
+                "%d include paths searched:\n",
                 xkb_context_num_include_paths(ctx));
         for (i = 0; i < xkb_context_num_include_paths(ctx); i++)
-            log_err(ctx, "\t%s\n",
+            log_err_with_code(ctx,
+                    XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
+                    "\t%s\n",
                     xkb_context_include_path_get(ctx, i));
     }
     else {
-        log_err(ctx, "There are no include paths to search\n");
+        log_err_with_code(ctx,
+                XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
+                "There are no include paths to search\n");
     }
 
     if (xkb_context_num_failed_include_paths(ctx) > 0) {
-        log_err(ctx, "%d include paths could not be added:\n",
+        log_err_with_code(ctx,
+                XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
+                "%d include paths could not be added:\n",
                 xkb_context_num_failed_include_paths(ctx));
         for (i = 0; i < xkb_context_num_failed_include_paths(ctx); i++)
-            log_err(ctx, "\t%s\n",
+            log_err_with_code(ctx,
+                    XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
+                    "\t%s\n",
                     xkb_context_failed_include_path_get(ctx, i));
     }
 }
@@ -246,7 +256,9 @@ FindFileInXkbPath(struct xkb_context *ctx, const char *name,
         buf = asprintf_safe("%s/%s/%s", xkb_context_include_path_get(ctx, i),
                             typeDir, name);
         if (!buf) {
-            log_err(ctx, "Failed to alloc buffer for (%s/%s/%s)\n",
+            log_err_with_code(ctx,
+                    XKB_ERROR_ALLOCATION_ERROR,
+                    "Failed to alloc buffer for (%s/%s/%s)\n",
                     xkb_context_include_path_get(ctx, i), typeDir, name);
             continue;
         }
@@ -264,7 +276,9 @@ FindFileInXkbPath(struct xkb_context *ctx, const char *name,
 
     /* We only print warnings if we can't find the file on the first lookup */
     if (*offset == 0) {
-        log_err(ctx, "Couldn't find file \"%s/%s\" in include paths\n",
+        log_err_with_code(ctx,
+                XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
+                "Couldn't find file \"%s/%s\" in include paths\n",
                 typeDir, name);
         LogIncludePaths(ctx);
     }
@@ -292,7 +306,8 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
 
         if (xkb_file) {
             if (xkb_file->file_type != file_type) {
-                log_err(ctx,
+                log_err_with_code(ctx,
+                        XKB_ERROR_INVALID_INCLUDED_FILE,
                         "Include file of wrong type (expected %s, got %s); "
                         "Include file \"%s\" ignored\n",
                         xkb_file_type_to_string(file_type),
@@ -310,10 +325,14 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
 
     if (!xkb_file) {
         if (stmt->map)
-            log_err(ctx, "Couldn't process include statement for '%s(%s)'\n",
+            log_err_with_code(ctx,
+                    XKB_ERROR_INVALID_INCLUDED_FILE,
+                    "Couldn't process include statement for '%s(%s)'\n",
                     stmt->file, stmt->map);
         else
-            log_err(ctx, "Couldn't process include statement for '%s'\n",
+            log_err_with_code(ctx,
+                    XKB_ERROR_INVALID_INCLUDED_FILE,
+                    "Couldn't process include statement for '%s'\n",
                     stmt->file);
     }
 
