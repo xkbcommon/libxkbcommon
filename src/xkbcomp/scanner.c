@@ -205,7 +205,8 @@ XkbParseFile(struct xkb_context *ctx, FILE *file,
 
     ok = map_file(file, &string, &size);
     if (!ok) {
-        log_err(ctx, "Couldn't read XKB file %s: %s\n",
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "Couldn't read XKB file %s: %s\n",
                 file_name, strerror(errno));
         return NULL;
     }

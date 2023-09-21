@@ -727,7 +727,9 @@ parse_file(struct xkb_compose_table *table, FILE *file, const char *file_name)
 
     ok = map_file(file, &string, &size);
     if (!ok) {
-        log_err(table->ctx, "Couldn't read Compose file %s: %s\n",
+        log_err(table->ctx,
+                XKB_LOG_MESSAGE_NO_ID,
+                "Couldn't read Compose file %s: %s\n",
                 file_name, strerror(errno));
         return false;
     }

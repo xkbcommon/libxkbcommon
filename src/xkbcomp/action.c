@@ -194,7 +194,7 @@ ReportMismatch(struct xkb_context *ctx, xkb_message_code_t code,
                enum xkb_action_type action, enum action_field field,
                const char *type)
 {
-    log_err_with_code(ctx, code,
+    log_err(ctx, code,
             "Value of %s field must be of type %s; "
             "Action %s definition ignored\n",
             fieldText(field), type, ActionTypeText(action));
@@ -205,7 +205,7 @@ static inline bool
 ReportIllegal(struct xkb_context *ctx, enum xkb_action_type action,
               enum action_field field)
 {
-    log_err(ctx,
+    log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
             "Field %s is not defined for an action of type %s; "
             "Action definition ignored\n",
             fieldText(field), ActionTypeText(action));
@@ -216,7 +216,7 @@ static inline bool
 ReportActionNotArray(struct xkb_context *ctx, enum xkb_action_type action,
                      enum action_field field)
 {
-    log_err(ctx,
+    log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
             "The %s field in the %s action is not an array; "
             "Action definition ignored\n",
             fieldText(field), ActionTypeText(action));
@@ -423,7 +423,7 @@ HandleMovePtr(struct xkb_context *ctx, const struct xkb_mod_set *mods,
                                   field, "integer");
 
         if (val < INT16_MIN || val > INT16_MAX) {
-            log_err(ctx,
+            log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "The %s field in the %s action must be in range %d..%d; "
                     "Action definition ignored\n",
                     fieldText(field), ActionTypeText(action->type),
@@ -470,7 +470,7 @@ HandlePtrBtn(struct xkb_context *ctx, const struct xkb_mod_set *mods,
                                   field, "integer (range 1..5)");
 
         if (btn < 0 || btn > 5) {
-            log_err(ctx,
+            log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Button must specify default or be in the range 1..5; "
                     "Illegal button value %d ignored\n", btn);
             return false;
@@ -495,7 +495,7 @@ HandlePtrBtn(struct xkb_context *ctx, const struct xkb_mod_set *mods,
                                   field, "integer");
 
         if (val < 0 || val > 255) {
-            log_err(ctx,
+            log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "The count field must have a value in the range 0..255; "
                     "Illegal count %d ignored\n", val);
             return false;
@@ -555,13 +555,13 @@ HandleSetPtrDflt(struct xkb_context *ctx, const struct xkb_mod_set *mods,
                                   field, "integer (range 1..5)");
 
         if (btn < 0 || btn > 5) {
-            log_err(ctx,
+            log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "New default button value must be in the range 1..5; "
                     "Illegal default button value %d ignored\n", btn);
             return false;
         }
         if (btn == 0) {
-            log_err(ctx,
+            log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Cannot set default pointer button to \"default\"; "
                     "Illegal default button setting ignored\n");
             return false;
@@ -603,7 +603,7 @@ HandleSwitchScreen(struct xkb_context *ctx, const struct xkb_mod_set *mods,
                                   field, "integer (0..255)");
 
         if (val < 0 || val > 255) {
-            log_err(ctx,
+            log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Screen index must be in the range 1..255; "
                     "Illegal screen value %d ignored\n", val);
             return false;
@@ -667,7 +667,7 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
                                   ACTION_TYPE_PRIVATE, field, "integer");
 
         if (type < 0 || type > 255) {
-            log_err(ctx,
+            log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Private action type must be in the range 0..255; "
                     "Illegal type %d ignored\n", type);
             return false;
@@ -684,7 +684,7 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
          * make actions like these no-ops for now.
          */
         if (type < ACTION_TYPE_PRIVATE) {
-            log_info(ctx,
+            log_info(ctx, XKB_LOG_MESSAGE_NO_ID,
                      "Private actions of type %s are not supported; Ignored\n",
                      ActionTypeText(type));
             act->type = ACTION_TYPE_NONE;
@@ -708,7 +708,7 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             str = xkb_atom_text(ctx, val);
             len = strlen(str);
             if (len < 1 || len > sizeof(act->data)) {
-                log_warn(ctx,
+                log_warn(ctx, XKB_LOG_MESSAGE_NO_ID,
                          "A private action has %ld data bytes; "
                          "Illegal data ignored\n", sizeof(act->data));
                 return false;
@@ -723,14 +723,14 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             int ndx, datum;
 
             if (!ExprResolveInteger(ctx, array_ndx, &ndx)) {
-                log_err(ctx,
+                log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                         "Array subscript must be integer; "
                         "Illegal subscript ignored\n");
                 return false;
             }
 
             if (ndx < 0 || (size_t) ndx >= sizeof(act->data)) {
-                log_err(ctx,
+                log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                         "The data for a private action is %lu bytes long; "
                         "Attempt to use data[%d] ignored\n",
                         (unsigned long) sizeof(act->data), ndx);
@@ -742,7 +742,7 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
                                       field, "integer");
 
             if (datum < 0 || datum > 255) {
-                log_err(ctx,
+                log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                         "All data for a private action must be 0..255; "
                         "Illegal datum %d ignored\n", datum);
                 return false;
@@ -794,14 +794,15 @@ HandleActionDef(struct xkb_context *ctx, ActionsInfo *info,
     enum xkb_action_type handler_type;
 
     if (def->expr.op != EXPR_ACTION_DECL) {
-        log_err(ctx, "Expected an action definition, found %s\n",
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "Expected an action definition, found %s\n",
                 expr_op_type_to_string(def->expr.op));
         return false;
     }
 
     str = xkb_atom_text(ctx, def->action.name);
     if (!stringToAction(str, &handler_type)) {
-        log_err(ctx, "Unknown action %s\n", str);
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID, "Unknown action %s\n", str);
         return false;
     }
 
@@ -841,7 +842,7 @@ HandleActionDef(struct xkb_context *ctx, ActionsInfo *info,
             return false;
 
         if (elemRtrn) {
-            log_err(ctx,
+            log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Cannot change defaults in an action definition; "
                     "Ignoring attempt to change %s.%s\n",
                     elemRtrn, fieldRtrn);
@@ -849,7 +850,8 @@ HandleActionDef(struct xkb_context *ctx, ActionsInfo *info,
         }
 
         if (!stringToField(fieldRtrn, &fieldNdx)) {
-            log_err(ctx, "Unknown field name %s\n", fieldRtrn);
+            log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                    "Unknown field name %s\n", fieldRtrn);
             return false;
         }
 
@@ -873,7 +875,8 @@ SetActionField(struct xkb_context *ctx, ActionsInfo *info,
         return false;
 
     if (!stringToField(field, &action_field)) {
-        log_err(ctx, "\"%s\" is not a legal field name\n", field);
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "\"%s\" is not a legal field name\n", field);
         return false;
     }
 

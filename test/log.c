@@ -86,25 +86,25 @@ main(void)
     xkb_context_set_user_data(ctx, &log_string);
     xkb_context_set_log_fn(ctx, log_fn);
 
-    log_warn(ctx, "first warning: %d\n", 87);
-    log_info(ctx, "first info\n");
-    log_dbg(ctx, "first debug: %s\n", "hello");
-    log_err(ctx, "first error: %lu\n", 115415UL);
+    log_warn(ctx, XKB_LOG_MESSAGE_NO_ID, "first warning: %d\n", 87);
+    log_info(ctx, XKB_LOG_MESSAGE_NO_ID, "first info\n");
+    log_dbg(ctx, XKB_LOG_MESSAGE_NO_ID, "first debug: %s\n", "hello");
+    log_err(ctx, XKB_LOG_MESSAGE_NO_ID, "first error: %lu\n", 115415UL);
     log_vrb(ctx, 5, XKB_LOG_MESSAGE_NO_ID, "first verbose 5\n");
 
     xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_DEBUG);
-    log_warn(ctx, "second warning: %d\n", 87);
-    log_dbg(ctx, "second debug: %s %s\n", "hello", "world");
-    log_info(ctx, "second info\n");
-    log_err(ctx, "second error: %lu\n", 115415UL);
+    log_warn(ctx, XKB_LOG_MESSAGE_NO_ID, "second warning: %d\n", 87);
+    log_dbg(ctx, XKB_LOG_MESSAGE_NO_ID, "second debug: %s %s\n", "hello", "world");
+    log_info(ctx, XKB_LOG_MESSAGE_NO_ID, "second info\n");
+    log_err(ctx, XKB_ERROR_MALFORMED_NUMBER_LITERAL, "second error: %lu\n", 115415UL);
     log_vrb(ctx, 6, XKB_LOG_MESSAGE_NO_ID, "second verbose 6\n");
 
     xkb_context_set_log_verbosity(ctx, 0);
     xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
-    log_warn(ctx, "third warning: %d\n", 87);
-    log_dbg(ctx, "third debug: %s %s\n", "hello", "world");
-    log_info(ctx, "third info\n");
-    log_err(ctx, "third error: %lu\n", 115415UL);
+    log_warn(ctx, XKB_LOG_MESSAGE_NO_ID, "third warning: %d\n", 87);
+    log_dbg(ctx, XKB_LOG_MESSAGE_NO_ID, "third debug: %s %s\n", "hello", "world");
+    log_info(ctx, XKB_LOG_MESSAGE_NO_ID, "third info\n");
+    log_err(ctx, XKB_LOG_MESSAGE_NO_ID, "third error: %lu\n", 115415UL);
     log_vrb(ctx, 0, XKB_LOG_MESSAGE_NO_ID, "third verbose 0\n");
 
     printf("%s", log_string.item);
@@ -112,11 +112,11 @@ main(void)
     assert(streq(log_string.item,
                  "warning: first warning: 87\n"
                  "error: first error: 115415\n"
-                 "warning: [XKB-000] first verbose 5\n"
+                 "warning: first verbose 5\n"
                  "warning: second warning: 87\n"
                  "debug: second debug: hello world\n"
                  "info: second info\n"
-                 "error: second error: 115415\n"));
+                 "error: [XKB-034] second error: 115415\n"));
 
     xkb_context_unref(ctx);
     darray_free(log_string);

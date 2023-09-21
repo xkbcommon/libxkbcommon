@@ -209,7 +209,7 @@ AddInterp(CompatInfo *info, SymInterpInfo *new, bool same_file)
 
         if (new->merge == MERGE_REPLACE) {
             if (report)
-                log_warn(info->ctx,
+                log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                          "Multiple definitions for \"%s\"; "
                          "Earlier interpretation ignored\n",
                          siText(new, info));
@@ -239,7 +239,7 @@ AddInterp(CompatInfo *info, SymInterpInfo *new, bool same_file)
         }
 
         if (collide) {
-            log_warn(info->ctx,
+            log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                      "Multiple interpretations of \"%s\"; "
                      "Using %s definition for duplicate fields\n",
                      siText(new, info),
@@ -270,7 +270,7 @@ ResolveStateAndPredicate(ExprDef *expr, enum xkb_match_operation *pred_rtrn,
         const char *pred_txt = xkb_atom_text(info->ctx, expr->action.name);
         if (!LookupString(symInterpretMatchMaskNames, pred_txt, pred_rtrn) ||
             !expr->action.args || expr->action.args->common.next) {
-            log_err(info->ctx,
+            log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Illegal modifier predicate \"%s\"; Ignored\n", pred_txt);
             return false;
         }
@@ -333,7 +333,7 @@ AddLedMap(CompatInfo *info, LedInfo *new, bool same_file)
 
         if (new->merge == MERGE_REPLACE) {
             if (report)
-                log_warn(info->ctx,
+                log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                          "Map for indicator %s redefined; "
                          "Earlier definition ignored\n",
                          xkb_atom_text(info->ctx, old->led.name));
@@ -358,7 +358,7 @@ AddLedMap(CompatInfo *info, LedInfo *new, bool same_file)
         }
 
         if (collide) {
-            log_warn(info->ctx,
+            log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                      "Map for indicator %s redefined; "
                      "Using %s definition for duplicate fields\n",
                      xkb_atom_text(info->ctx, old->led.name),
@@ -369,7 +369,7 @@ AddLedMap(CompatInfo *info, LedInfo *new, bool same_file)
     }
 
     if (info->num_leds >= XKB_MAX_LEDS) {
-        log_err(info->ctx,
+        log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                 "Too many LEDs defined (maximum %d)\n",
                 XKB_MAX_LEDS);
         return false;
@@ -506,7 +506,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         si->defined |= SI_FIELD_AUTO_REPEAT;
     }
     else if (istreq(field, "locking")) {
-        log_dbg(info->ctx,
+        log_dbg(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                 "The \"locking\" field in symbol interpretation is unsupported; "
                 "Ignored\n");
     }
@@ -572,7 +572,7 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
         ledi->defined |= LED_FIELD_CTRLS;
     }
     else if (istreq(field, "allowexplicit")) {
-        log_dbg(info->ctx,
+        log_dbg(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                 "The \"allowExplicit\" field in indicator statements is unsupported; "
                 "Ignored\n");
     }
@@ -609,18 +609,18 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
              istreq(field, "leddriveskeyboard") ||
              istreq(field, "indicatordriveskbd") ||
              istreq(field, "indicatordriveskeyboard")) {
-        log_dbg(info->ctx,
+        log_dbg(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                 "The \"%s\" field in indicator statements is unsupported; "
                 "Ignored\n", field);
     }
     else if (istreq(field, "index")) {
         /* Users should see this, it might cause unexpected behavior. */
-        log_err(info->ctx,
+        log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                 "The \"index\" field in indicator statements is unsupported; "
                 "Ignored\n");
     }
     else {
-        log_err(info->ctx,
+        log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                 "Unknown field %s in map for %s indicator; "
                 "Definition ignored\n",
                 field, xkb_atom_text(info->ctx, ledi->led.name));
@@ -660,7 +660,7 @@ HandleInterpBody(CompatInfo *info, VarDef *def, SymInterpInfo *si)
 
     for (; def; def = (VarDef *) def->common.next) {
         if (def->name && def->name->expr.op == EXPR_FIELD_REF) {
-            log_err(info->ctx,
+            log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Cannot set a global default value from within an interpret statement; "
                     "Move statements to the global file scope\n");
             ok = false;
@@ -685,7 +685,7 @@ HandleInterpDef(CompatInfo *info, InterpDef *def, enum merge_mode merge)
     SymInterpInfo si;
 
     if (!ResolveStateAndPredicate(def->match, &pred, &mods, info)) {
-        log_err(info->ctx,
+        log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                 "Couldn't determine matching modifiers; "
                 "Symbol interpretation ignored\n");
         return false;
@@ -734,7 +734,7 @@ HandleLedMapDef(CompatInfo *info, LedMapDef *def, enum merge_mode merge)
         }
 
         if (elem) {
-            log_err(info->ctx,
+            log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Cannot set defaults for \"%s\" element in indicator map; "
                     "Assignment to %s.%s ignored\n", elem, elem, field);
             ok = false;
@@ -769,7 +769,7 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleInterpDef(info, (InterpDef *) stmt, merge);
             break;
         case STMT_GROUP_COMPAT:
-            log_dbg(info->ctx,
+            log_dbg(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                     "The \"group\" statement in compat is unsupported; "
                     "Ignored\n");
             ok = true;
@@ -784,7 +784,7 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt, merge);
             break;
         default:
-            log_err(info->ctx,
+            log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Compat files may not include other types; "
                     "Ignoring %s\n", stmt_type_to_string(stmt->type));
             ok = false;
@@ -795,7 +795,7 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
             info->errorCount++;
 
         if (info->errorCount > 10) {
-            log_err(info->ctx,
+            log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Abandoning compatibility map \"%s\"\n", file->name);
             break;
         }
@@ -837,7 +837,7 @@ CopyLedMapDefsToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
 
         /* Not previously declared; create it with next free index. */
         if (i >= keymap->num_leds) {
-            log_dbg(keymap->ctx,
+            log_dbg(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Indicator name \"%s\" was not declared in the keycodes section; "
                     "Adding new indicator\n",
                     xkb_atom_text(keymap->ctx, ledi->led.name));
@@ -849,7 +849,7 @@ CopyLedMapDefsToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
             if (i >= keymap->num_leds) {
                 /* Not place to put it; ignore. */
                 if (i >= XKB_MAX_LEDS) {
-                    log_err(keymap->ctx,
+                    log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
                             "Too many indicators (maximum is %d); "
                             "Indicator name \"%s\" ignored\n",
                             XKB_MAX_LEDS,

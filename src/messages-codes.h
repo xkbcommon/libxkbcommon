@@ -8,17 +8,11 @@
 
 /**
  * Special case when no message identifier is defined.
- *
- * @added 1.6.0
- *
  */
 #define XKB_LOG_MESSAGE_NO_ID 0
 
 /**
  * @name Codes of the log messages
- *
- * @added 1.6.0
- *
  */
 enum xkb_message_code {
     _XKB_LOG_MESSAGE_MIN_CODE = 34,
