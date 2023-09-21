@@ -25,6 +25,7 @@
 
 #include "test.h"
 #include "context.h"
+#include "messages-codes.h"
 
 #ifdef __GNUC__
 #pragma GCC diagnostic ignored "-Wmissing-format-attribute"
@@ -89,14 +90,14 @@ main(void)
     log_info(ctx, "first info\n");
     log_dbg(ctx, "first debug: %s\n", "hello");
     log_err(ctx, "first error: %lu\n", 115415UL);
-    log_vrb(ctx, 5, "first verbose 5\n");
+    log_vrb(ctx, 5, XKB_LOG_MESSAGE_NO_ID, "first verbose 5\n");
 
     xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_DEBUG);
     log_warn(ctx, "second warning: %d\n", 87);
     log_dbg(ctx, "second debug: %s %s\n", "hello", "world");
     log_info(ctx, "second info\n");
     log_err(ctx, "second error: %lu\n", 115415UL);
-    log_vrb(ctx, 6, "second verbose 6\n");
+    log_vrb(ctx, 6, XKB_LOG_MESSAGE_NO_ID, "second verbose 6\n");
 
     xkb_context_set_log_verbosity(ctx, 0);
     xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
@@ -104,14 +105,14 @@ main(void)
     log_dbg(ctx, "third debug: %s %s\n", "hello", "world");
     log_info(ctx, "third info\n");
     log_err(ctx, "third error: %lu\n", 115415UL);
-    log_vrb(ctx, 0, "third verbose 0\n");
+    log_vrb(ctx, 0, XKB_LOG_MESSAGE_NO_ID, "third verbose 0\n");
 
     printf("%s", log_string.item);
 
     assert(streq(log_string.item,
                  "warning: first warning: 87\n"
                  "error: first error: 115415\n"
-                 "warning: first verbose 5\n"
+                 "warning: [XKB-000] first verbose 5\n"
                  "warning: second warning: 87\n"
                  "debug: second debug: hello world\n"
                  "info: second info\n"

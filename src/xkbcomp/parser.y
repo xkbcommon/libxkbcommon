@@ -856,6 +856,7 @@ parse(struct xkb_context *ctx, struct scanner *scanner, const char *map)
 
     if (first)
         log_vrb(ctx, 5,
+                XKB_WARNING_MISSING_DEFAULT_SECTION,
                 "No map in include statement, but \"%s\" contains several; "
                 "Using first defined map, \"%s\"\n",
                 scanner->file_name, first->name);

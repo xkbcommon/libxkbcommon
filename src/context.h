@@ -138,10 +138,8 @@ xkb_context_sanitize_rule_names(struct xkb_context *ctx,
     xkb_log_with_code((ctx), XKB_LOG_LEVEL_CRITICAL, 0, (id), __VA_ARGS__)
 #define log_wsgo(ctx, ...) \
     xkb_log((ctx), XKB_LOG_LEVEL_CRITICAL, 0, __VA_ARGS__)
-#define log_vrb_with_code(ctx, vrb, id, ...) \
+#define log_vrb(ctx, vrb, id, ...) \
     xkb_log_with_code((ctx), XKB_LOG_LEVEL_WARNING, (vrb), (id), __VA_ARGS__)
-#define log_vrb(ctx, vrb, ...) \
-    xkb_log((ctx), XKB_LOG_LEVEL_WARNING, (vrb), __VA_ARGS__)
 
 /*
  * Variants which are prefixed by the name of the function they're

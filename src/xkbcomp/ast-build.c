@@ -525,7 +525,9 @@ IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge)
     return first;
 
 err:
-    log_err(ctx, "Illegal include statement \"%s\"; Ignored\n", stmt);
+    log_err_with_code(ctx,
+            XKB_ERROR_INVALID_INCLUDE_STATEMENT,
+            "Illegal include statement \"%s\"; Ignored\n", stmt);
     FreeInclude(first);
     free(stmt);
     return NULL;

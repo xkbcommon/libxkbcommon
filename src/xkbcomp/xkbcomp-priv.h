@@ -82,7 +82,8 @@ static inline bool
 ReportNotArray(struct xkb_context *ctx, const char *type, const char *field,
                const char *name)
 {
-    log_err(ctx,
+    log_err_with_code(ctx,
+            XKB_ERROR_WRONG_FIELD_TYPE,
             "The %s %s field is not an array; "
             "Ignoring illegal assignment in %s\n",
             type, field, name);
@@ -93,7 +94,8 @@ static inline bool
 ReportShouldBeArray(struct xkb_context *ctx, const char *type,
                     const char *field, const char *name)
 {
-    log_err(ctx,
+    log_err_with_code(ctx,
+            XKB_ERROR_EXPECTED_ARRAY_ENTRY,
             "Missing subscript for %s %s; "
             "Ignoring illegal assignment in %s\n",
             type, field, name);
