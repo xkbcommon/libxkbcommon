@@ -99,7 +99,7 @@ AddLedName(KeyNamesInfo *info, enum merge_mode merge, bool same_file,
     old = FindLedByName(info, new->name, &old_idx);
     if (old) {
         if (old_idx == new_idx) {
-            log_warn(info->ctx,
+            log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                      "Multiple indicators named \"%s\"; "
                      "Identical definitions ignored\n",
                      xkb_atom_text(info->ctx, new->name));
@@ -109,7 +109,7 @@ AddLedName(KeyNamesInfo *info, enum merge_mode merge, bool same_file,
         if (report) {
             xkb_led_index_t use = (replace ? new_idx + 1 : old_idx + 1);
             xkb_led_index_t ignore = (replace ? old_idx + 1 : new_idx + 1);
-            log_warn(info->ctx,
+            log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                      "Multiple indicators named %s; Using %d, ignoring %d\n",
                      xkb_atom_text(info->ctx, new->name), use, ignore);
         }
@@ -129,7 +129,8 @@ AddLedName(KeyNamesInfo *info, enum merge_mode merge, bool same_file,
         if (report) {
             const xkb_atom_t use = (replace ? new->name : old->name);
             const xkb_atom_t ignore = (replace ? old->name : new->name);
-            log_warn(info->ctx, "Multiple names for indicator %d; "
+            log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "Multiple names for indicator %d; "
                      "Using %s, ignoring %s\n", new_idx + 1,
                      xkb_atom_text(info->ctx, use),
                      xkb_atom_text(info->ctx, ignore));
@@ -200,7 +201,7 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
 
         if (old_name == name) {
             if (report)
-                log_warn(info->ctx,
+                log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                          "Multiple identical key name definitions; "
                          "Later occurrences of \"%s = %d\" ignored\n",
                          lname, kc);
@@ -208,14 +209,14 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
         }
         else if (merge == MERGE_AUGMENT) {
             if (report)
-                log_warn(info->ctx,
+                log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                          "Multiple names for keycode %d; "
                          "Using %s, ignoring %s\n", kc, lname, kname);
             return true;
         }
         else {
             if (report)
-                log_warn(info->ctx,
+                log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                          "Multiple names for keycode %d; "
                          "Using %s, ignoring %s\n", kc, kname, lname);
             darray_item(info->key_names, kc) = XKB_ATOM_NONE;
@@ -230,7 +231,7 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
         if (merge == MERGE_OVERRIDE) {
             darray_item(info->key_names, old_kc) = XKB_ATOM_NONE;
             if (report)
-                log_warn_with_code(info->ctx,
+                log_warn(info->ctx,
                          XKB_WARNING_CONFLICTING_KEY_NAME,
                          "Key name %s assigned to multiple keys; "
                          "Using %d, ignoring %d\n", kname, kc, old_kc);
@@ -380,7 +381,7 @@ HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt, enum merge_mode merge)
     }
 
     if (stmt->value < 0 || stmt->value > XKB_KEYCODE_MAX) {
-        log_err(info->ctx,
+        log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                 "Illegal keycode %lld: must be between 0..%u; "
                 "Key ignored\n", (long long) stmt->value, XKB_KEYCODE_MAX);
         return false;
@@ -411,7 +412,7 @@ HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge)
                 use = (merge == MERGE_AUGMENT ? old->real : def->real);
                 ignore = (merge == MERGE_AUGMENT ? def->real : old->real);
 
-                log_warn_with_code(info->ctx,
+                log_warn(info->ctx,
                          XKB_WARNING_CONFLICTING_KEY_NAME,
                          "Multiple definitions for alias %s; "
                          "Using %s, ignoring %s\n",
@@ -442,13 +443,13 @@ HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
         return false;
 
     if (elem) {
-        log_err(info->ctx, "Unknown element %s encountered; "
+        log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID, "Unknown element %s encountered; "
                 "Default for field %s ignored\n", elem, field);
         return false;
     }
 
     if (!istreq(field, "minimum") && !istreq(field, "maximum")) {
-        log_err(info->ctx, "Unknown field encountered; "
+        log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID, "Unknown field encountered; "
                 "Assignment to field %s ignored\n", field);
         return false;
     }
@@ -466,7 +467,7 @@ HandleLedNameDef(KeyNamesInfo *info, LedNameDef *def,
 
     if (def->ndx < 1 || def->ndx > XKB_MAX_LEDS) {
         info->errorCount++;
-        log_err(info->ctx,
+        log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                 "Illegal indicator index (%d) specified; must be between 1 .. %d; "
                 "Ignored\n", def->ndx, XKB_MAX_LEDS);
         return false;
@@ -511,7 +512,7 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleLedNameDef(info, (LedNameDef *) stmt, merge);
             break;
         default:
-            log_err(info->ctx,
+            log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Keycode files may define key and indicator names only; "
                     "Ignoring %s\n", stmt_type_to_string(stmt->type));
             ok = false;
@@ -522,7 +523,8 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
             info->errorCount++;
 
         if (info->errorCount > 10) {
-            log_err(info->ctx, "Abandoning keycodes file \"%s\"\n",
+            log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
+                    "Abandoning keycodes file \"%s\"\n",
                     file->name);
             break;
         }

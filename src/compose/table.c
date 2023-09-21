@@ -206,7 +206,8 @@ xkb_compose_table_new_from_locale(struct xkb_context *ctx,
     }
     free(path);
 
-    log_err(ctx, "couldn't find a Compose file for locale \"%s\" (mapped to \"%s\")\n",
+    log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+            "couldn't find a Compose file for locale \"%s\" (mapped to \"%s\")\n",
             locale, table->locale);
     xkb_compose_table_unref(table);
     return NULL;
@@ -220,7 +221,8 @@ found_path:
         return NULL;
     }
 
-    log_dbg(ctx, "created compose table from locale %s with path %s\n",
+    log_dbg(ctx, XKB_LOG_MESSAGE_NO_ID,
+            "created compose table from locale %s with path %s\n",
             table->locale, path);
 
     free(path);

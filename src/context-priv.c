@@ -182,6 +182,7 @@ xkb_context_sanitize_rule_names(struct xkb_context *ctx,
         if (!isempty(rmlvo->variant)) {
             const char *variant = xkb_context_get_default_variant(ctx);
             log_warn(ctx,
+                XKB_LOG_MESSAGE_NO_ID,
                 "Layout not provided, but variant set to \"%s\": "
                 "ignoring variant and using defaults for both: "
                 "layout=\"%s\", variant=\"%s\".\n",

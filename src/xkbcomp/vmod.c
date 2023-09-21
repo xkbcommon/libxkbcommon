@@ -48,7 +48,7 @@ HandleVModDef(struct xkb_context *ctx, struct xkb_mod_set *mods,
          * through modifier_map or some such.
          */
         if (!ExprResolveModMask(ctx, stmt->value, MOD_REAL, mods, &mapping)) {
-            log_err(ctx,
+            log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Declaration of %s ignored\n",
                     xkb_atom_text(ctx, stmt->name));
             return false;
@@ -61,7 +61,7 @@ HandleVModDef(struct xkb_context *ctx, struct xkb_mod_set *mods,
     xkb_mods_enumerate(i, mod, mods) {
         if (mod->name == stmt->name) {
             if (mod->type != MOD_VIRT) {
-                log_err(ctx,
+                log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                         "Can't add a virtual modifier named \"%s\"; "
                         "there is already a non-virtual modifier with this name! Ignored\n",
                         xkb_atom_text(ctx, mod->name));
@@ -77,7 +77,7 @@ HandleVModDef(struct xkb_context *ctx, struct xkb_mod_set *mods,
                 use = (merge == MERGE_OVERRIDE ? mapping : mod->mapping);
                 ignore = (merge == MERGE_OVERRIDE ? mod->mapping : mapping);
 
-                log_warn(ctx,
+                log_warn(ctx, XKB_LOG_MESSAGE_NO_ID,
                          "Virtual modifier %s defined multiple times; "
                          "Using %s, ignoring %s\n",
                          xkb_atom_text(ctx, stmt->name),
@@ -93,7 +93,7 @@ HandleVModDef(struct xkb_context *ctx, struct xkb_mod_set *mods,
     }
 
     if (mods->num_mods >= XKB_MAX_MODS) {
-        log_err(ctx,
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                 "Too many modifiers defined (maximum %d)\n",
                 XKB_MAX_MODS);
         return false;

@@ -65,13 +65,14 @@ xkb_context_include_path_append(struct xkb_context *ctx, const char *path)
     }
 
     darray_append(ctx->includes, tmp);
-    log_dbg(ctx, "Include path added: %s\n", tmp);
+    log_dbg(ctx, XKB_LOG_MESSAGE_NO_ID, "Include path added: %s\n", tmp);
 
     return 1;
 
 err:
     darray_append(ctx->failed_includes, tmp);
-    log_dbg(ctx, "Include path failed: %s (%s)\n", tmp, strerror(err));
+    log_dbg(ctx, XKB_LOG_MESSAGE_NO_ID,
+            "Include path failed: %s (%s)\n", tmp, strerror(err));
     return 0;
 }
 
@@ -304,7 +305,8 @@ xkb_context_new(enum xkb_context_flags flags)
 
     if (!(flags & XKB_CONTEXT_NO_DEFAULT_INCLUDES) &&
         !xkb_context_include_path_append_default(ctx)) {
-        log_err(ctx, "failed to add default include path %s\n",
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "failed to add default include path %s\n",
                 DFLT_XKB_CONFIG_ROOT);
         xkb_context_unref(ctx);
         return NULL;

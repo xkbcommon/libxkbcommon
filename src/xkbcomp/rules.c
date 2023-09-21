@@ -424,10 +424,14 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
     if (file) {
         bool ret = read_rules_file(m->ctx, m, include_depth + 1, file, s.buf);
         if (!ret)
-            log_err(m->ctx, "No components returned from included XKB rules \"%s\"\n", s.buf);
+            log_err(m->ctx, XKB_LOG_MESSAGE_NO_ID,
+                    "No components returned from included XKB rules \"%s\"\n",
+                    s.buf);
         fclose(file);
     } else {
-        log_err(m->ctx, "Failed to open included XKB rules \"%s\"\n", s.buf);
+        log_err(m->ctx, XKB_LOG_MESSAGE_NO_ID,
+                "Failed to open included XKB rules \"%s\"\n",
+                s.buf);
     }
 }
 
@@ -1087,7 +1091,8 @@ read_rules_file(struct xkb_context *ctx,
 
     ret = map_file(file, &string, &size);
     if (!ret) {
-        log_err(ctx, "Couldn't read rules file \"%s\": %s\n",
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "Couldn't read rules file \"%s\": %s\n",
                 path, strerror(errno));
         goto out;
     }
@@ -1126,7 +1131,8 @@ xkb_components_from_rules(struct xkb_context *ctx,
         darray_empty(matcher->kccgst[KCCGST_COMPAT]) ||
         /* darray_empty(matcher->kccgst[KCCGST_GEOMETRY]) || */
         darray_empty(matcher->kccgst[KCCGST_SYMBOLS])) {
-        log_err(ctx, "No components returned from XKB rules \"%s\"\n", path);
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "No components returned from XKB rules \"%s\"\n", path);
         ret = false;
         goto err_out;
     }
@@ -1139,19 +1145,23 @@ xkb_components_from_rules(struct xkb_context *ctx,
 
     mval = &matcher->rmlvo.model;
     if (!mval->matched && mval->sval.len > 0)
-        log_err(matcher->ctx, "Unrecognized RMLVO model \"%.*s\" was ignored\n",
+        log_err(matcher->ctx, XKB_LOG_MESSAGE_NO_ID,
+                "Unrecognized RMLVO model \"%.*s\" was ignored\n",
                 mval->sval.len, mval->sval.start);
     darray_foreach(mval, matcher->rmlvo.layouts)
         if (!mval->matched && mval->sval.len > 0)
-            log_err(matcher->ctx, "Unrecognized RMLVO layout \"%.*s\" was ignored\n",
+            log_err(matcher->ctx, XKB_LOG_MESSAGE_NO_ID,
+                    "Unrecognized RMLVO layout \"%.*s\" was ignored\n",
                     mval->sval.len, mval->sval.start);
     darray_foreach(mval, matcher->rmlvo.variants)
         if (!mval->matched && mval->sval.len > 0)
-            log_err(matcher->ctx, "Unrecognized RMLVO variant \"%.*s\" was ignored\n",
+            log_err(matcher->ctx, XKB_LOG_MESSAGE_NO_ID,
+                    "Unrecognized RMLVO variant \"%.*s\" was ignored\n",
                     mval->sval.len, mval->sval.start);
     darray_foreach(mval, matcher->rmlvo.options)
         if (!mval->matched && mval->sval.len > 0)
-            log_err(matcher->ctx, "Unrecognized RMLVO option \"%.*s\" was ignored\n",
+            log_err(matcher->ctx, XKB_LOG_MESSAGE_NO_ID,
+                    "Unrecognized RMLVO option \"%.*s\" was ignored\n",
                     mval->sval.len, mval->sval.start);
 
 err_out:

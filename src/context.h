@@ -110,36 +110,54 @@ xkb_context_sanitize_rule_names(struct xkb_context *ctx,
                                 struct xkb_rule_names *rmlvo);
 
 /*
+ * Macro sorcery: PREPEND_MESSAGE_ID enables the log functions to format messages
+ * with the message ID only if the ID is not 0 (XKB_LOG_MESSAGE_NO_ID).
+ * This avoid checking the ID value at run time.
+ *
+ * The trick resides in CHECK_ID:
+ * • CHECK_ID(0) expands to:
+ *   ‣ SECOND(MATCH0, WITH_ID, unused)
+ *   ‣ SECOND(unused,WITHOUT_ID, WITH_ID, unused)
+ *   ‣ WITHOUT_ID
+ * • CHECK_ID(123) expands to:
+ *   ‣ SECOND(MATCH123, WITH_ID, unused)
+ *   ‣ WITH_ID
+*/
+#define EXPAND(...)              __VA_ARGS__ /* needed for MSVC compatibility */
+
+#define JOIN_EXPAND(a, b)        a##b
+#define JOIN(a, b)               JOIN_EXPAND(a, b)
+
+#define SECOND_EXPAND(a, b, ...) b
+#define SECOND(...)              EXPAND(SECOND_EXPAND(__VA_ARGS__))
+
+#define MATCH0                   unused,WITHOUT_ID
+#define CHECK_ID(value)          SECOND(JOIN(MATCH, value), WITH_ID, unused)
+
+#define FORMAT_MESSAGE_WITHOUT_ID(id, fmt) fmt
+#define FORMAT_MESSAGE_WITH_ID(id, fmt)    "[XKB-%03d] " fmt, id
+#define PREPEND_MESSAGE_ID(id, fmt) JOIN(FORMAT_MESSAGE_, CHECK_ID(id))(id, fmt)
+
+/*
  * The format is not part of the argument list in order to avoid the
  * "ISO C99 requires rest arguments to be used" warning when only the
  * format is supplied without arguments. Not supplying it would still
  * result in an error, though.
  */
 #define xkb_log_with_code(ctx, level, verbosity, msg_id, fmt, ...) \
-    xkb_log(ctx, level, verbosity, "[XKB-%03d] " fmt, \
-            msg_id, ##__VA_ARGS__)
-#define log_dbg_with_code(ctx, id, ...) \
-    xkb_log_with_code((ctx), XKB_LOG_LEVEL_DEBUG, 0, (id), __VA_ARGS__)
-#define log_dbg(ctx, ...) \
-    xkb_log((ctx), XKB_LOG_LEVEL_DEBUG, 0, __VA_ARGS__)
-#define log_info_with_code(ctx, id, ...) \
-    xkb_log_with_code((ctx), XKB_LOG_LEVEL_INFO, 0, (id), __VA_ARGS__)
-#define log_info(ctx, ...) \
-    xkb_log((ctx), XKB_LOG_LEVEL_INFO, 0, __VA_ARGS__)
-#define log_warn_with_code(ctx, id, ...) \
-    xkb_log_with_code((ctx), XKB_LOG_LEVEL_WARNING, 0, (id), __VA_ARGS__)
-#define log_warn(ctx, ...) \
-    xkb_log((ctx), XKB_LOG_LEVEL_WARNING, 0, __VA_ARGS__)
-#define log_err_with_code(ctx, id, ...) \
-    xkb_log_with_code((ctx), XKB_LOG_LEVEL_ERROR, 0, (id), __VA_ARGS__)
-#define log_err(ctx, ...) \
-    xkb_log((ctx), XKB_LOG_LEVEL_ERROR, 0, __VA_ARGS__)
-#define log_wsgo_with_code(ctx, id, ...) \
-    xkb_log_with_code((ctx), XKB_LOG_LEVEL_CRITICAL, 0, (id), __VA_ARGS__)
-#define log_wsgo(ctx, ...) \
-    xkb_log((ctx), XKB_LOG_LEVEL_CRITICAL, 0, __VA_ARGS__)
+    xkb_log(ctx, level, verbosity, PREPEND_MESSAGE_ID(msg_id, fmt), ##__VA_ARGS__)
+#define log_dbg(ctx, id, ...) \
+    xkb_log_with_code((ctx), XKB_LOG_LEVEL_DEBUG, 0, id, __VA_ARGS__)
+#define log_info(ctx, id, ...) \
+    xkb_log_with_code((ctx), XKB_LOG_LEVEL_INFO, 0, id, __VA_ARGS__)
+#define log_warn(ctx, id, ...) \
+    xkb_log_with_code((ctx), XKB_LOG_LEVEL_WARNING, 0, id, __VA_ARGS__)
+#define log_err(ctx, id, ...) \
+    xkb_log_with_code((ctx), XKB_LOG_LEVEL_ERROR, 0, id, __VA_ARGS__)
+#define log_wsgo(ctx, id, ...) \
+    xkb_log_with_code((ctx), XKB_LOG_LEVEL_CRITICAL, 0, id, __VA_ARGS__)
 #define log_vrb(ctx, vrb, id, ...) \
-    xkb_log_with_code((ctx), XKB_LOG_LEVEL_WARNING, (vrb), (id), __VA_ARGS__)
+    xkb_log_with_code((ctx), XKB_LOG_LEVEL_WARNING, (vrb), id, __VA_ARGS__)
 
 /*
  * Variants which are prefixed by the name of the function they're
@@ -147,8 +165,8 @@ xkb_context_sanitize_rule_names(struct xkb_context *ctx,
  * Here we must have the silly 1 variant.
  */
 #define log_err_func(ctx, fmt, ...) \
-    log_err(ctx, "%s: " fmt, __func__, __VA_ARGS__)
+    log_err(ctx, XKB_LOG_MESSAGE_NO_ID, "%s: " fmt, __func__, __VA_ARGS__)
 #define log_err_func1(ctx, fmt) \
-    log_err(ctx, "%s: " fmt, __func__)
+    log_err(ctx, XKB_LOG_MESSAGE_NO_ID, "%s: " fmt, __func__)
 
 #endif

@@ -36,14 +36,14 @@ static bool
 compile_keymap_file(struct xkb_keymap *keymap, XkbFile *file)
 {
     if (file->file_type != FILE_TYPE_KEYMAP) {
-        log_err(keymap->ctx,
+        log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
                 "Cannot compile a %s file alone into a keymap\n",
                 xkb_file_type_to_string(file->file_type));
         return false;
     }
 
     if (!CompileKeymap(file, keymap, MERGE_OVERRIDE)) {
-        log_err(keymap->ctx,
+        log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
                 "Failed to compile keymap\n");
         return false;
     }
@@ -59,7 +59,7 @@ text_v1_keymap_new_from_names(struct xkb_keymap *keymap,
     struct xkb_component_names kccgst;
     XkbFile *file;
 
-    log_dbg(keymap->ctx,
+    log_dbg(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
             "Compiling from RMLVO: rules '%s', model '%s', layout '%s', "
             "variant '%s', options '%s'\n",
             rmlvo->rules, rmlvo->model, rmlvo->layout, rmlvo->variant,
@@ -67,7 +67,7 @@ text_v1_keymap_new_from_names(struct xkb_keymap *keymap,
 
     ok = xkb_components_from_rules(keymap->ctx, rmlvo, &kccgst);
     if (!ok) {
-        log_err(keymap->ctx,
+        log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
                 "Couldn't look up rules '%s', model '%s', layout '%s', "
                 "variant '%s', options '%s'\n",
                 rmlvo->rules, rmlvo->model, rmlvo->layout, rmlvo->variant,
@@ -75,7 +75,7 @@ text_v1_keymap_new_from_names(struct xkb_keymap *keymap,
         return false;
     }
 
-    log_dbg(keymap->ctx,
+    log_dbg(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
             "Compiling from KcCGST: keycodes '%s', types '%s', "
             "compat '%s', symbols '%s'\n",
             kccgst.keycodes, kccgst.types, kccgst.compat, kccgst.symbols);
@@ -88,7 +88,7 @@ text_v1_keymap_new_from_names(struct xkb_keymap *keymap,
     free(kccgst.symbols);
 
     if (!file) {
-        log_err(keymap->ctx,
+        log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
                 "Failed to generate parsed XKB file from components\n");
         return false;
     }
@@ -107,7 +107,8 @@ text_v1_keymap_new_from_string(struct xkb_keymap *keymap,
 
     xkb_file = XkbParseString(keymap->ctx, string, len, "(input string)", NULL);
     if (!xkb_file) {
-        log_err(keymap->ctx, "Failed to parse input xkb string\n");
+        log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                "Failed to parse input xkb string\n");
         return false;
     }
 
@@ -124,7 +125,8 @@ text_v1_keymap_new_from_file(struct xkb_keymap *keymap, FILE *file)
 
     xkb_file = XkbParseFile(keymap->ctx, file, "(unknown file)", NULL);
     if (!xkb_file) {
-        log_err(keymap->ctx, "Failed to parse input xkb file\n");
+        log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                "Failed to parse input xkb file\n");
         return false;
     }
 
