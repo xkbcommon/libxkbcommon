@@ -894,7 +894,33 @@ should_do_ctrl_transformation(struct xkb_state *state, xkb_keycode_t kc)
         xkb_state_mod_index_is_consumed(state, kc, ctrl) == 0;
 }
 
-/* Verbatim from libX11:src/xkb/XKBBind.c */
+/*
+ * Verbatim from `libX11:src/xkb/XKBBind.c`.
+ *
+ * The basic transformations are defined in “[Interpreting the Control Modifier]”.
+ * They correspond to the [caret notation], which maps the characters
+ * `@ABC...XYZ[\]^_` by masking them with `0x1f`. Note that there is no
+ * transformation for `?`, although `^?` is defined in the [caret notation].
+ *
+ * For convenience, the range ```abc...xyz{|}~`` and the space character ` `
+ * are processed the same way. This allow to produce control characters without
+ * requiring the use of the `Shift` modifier for letters.
+ *
+ * The transformation of the digits seems to originate from the [VT220 terminal],
+ * as a compatibility for non-US keyboards. Indeed, these keyboards may not have
+ * the punctuation characters available or in a convenient position. Some mnemonics:
+ *
+ * - ^2 maps to ^@ because @ is on the key 2 in the US layout.
+ * - ^6 maps to ^^ because ^ is on the key 6 in the US layout.
+ * - characters 3, 4, 5, 6, and 7 seems to align with the sequence `[\]^_`.
+ * - 8 closes the sequence and so maps to the last control character.
+ *
+ * The `/` transformation seems to be defined for compatibility or convenience.
+ *
+ * [Interpreting the Control Modifier]: https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Control_Modifier
+ * [caret notation]: https://en.wikipedia.org/wiki/Caret_notation
+ * [VT220 terminal]: https://vt100.net/docs/vt220-rm/chapter3.html#T3-5
+ */
 static char
 XkbToControl(char ch)
 {
