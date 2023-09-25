@@ -63,9 +63,6 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #include "utf8.h"
 #include "parser.h"
 
-#define MAX_LHS_LEN 10
-#define MAX_INCLUDE_DEPTH 5
-
 /*
  * Grammar adapted from libX11/modules/im/ximcp/imLcPrs.c.
  * See also the XCompose(5) manpage.

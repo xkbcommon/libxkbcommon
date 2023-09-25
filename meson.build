@@ -805,6 +805,11 @@ benchmark(
     env: bench_env,
 )
 benchmark(
+    'compose-traversal',
+    executable('bench-compose-traversal', 'bench/compose-traversal.c', dependencies: test_dep),
+    env: bench_env,
+)
+benchmark(
     'atom',
     executable('bench-atom', 'bench/atom.c', dependencies: test_dep),
     env: bench_env,

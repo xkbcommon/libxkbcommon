@@ -580,6 +580,110 @@ test_override(struct xkb_context *ctx)
         XKB_KEY_NoSymbol));
 }
 
+static bool
+test_eq_entry_va(struct xkb_compose_table_entry *entry, xkb_keysym_t keysym_ref, const char *utf8_ref, va_list ap)
+{
+    assert (entry != NULL);
+
+    assert (xkb_compose_table_entry_keysym(entry) == keysym_ref);
+
+    const char *utf8 = xkb_compose_table_entry_utf8(entry);
+    assert (utf8 && utf8_ref && strcmp(utf8, utf8_ref) == 0);
+
+    size_t nsyms;
+    const xkb_keysym_t *sequence = xkb_compose_table_entry_sequence(entry, &nsyms);
+
+    xkb_keysym_t keysym;
+    for (unsigned k = 0; ; k++) {
+        keysym = va_arg(ap, xkb_keysym_t);
+        if (keysym == XKB_KEY_NoSymbol) {
+            return (k == nsyms - 1);
+        }
+        assert (k < nsyms);
+        assert (keysym == sequence[k]);
+    }
+}
+
+static bool
+test_eq_entry(struct xkb_compose_table_entry *entry, xkb_keysym_t keysym, const char *utf8, ...)
+{
+    va_list ap;
+    bool ok;
+    va_start(ap, utf8);
+    ok = test_eq_entry_va(entry, keysym, utf8, ap);
+    va_end(ap);
+    return ok;
+}
+
+static void
+test_traverse(struct xkb_context *ctx)
+{
+    struct xkb_compose_table *table;
+
+    const char *buffer = "<dead_circumflex> <dead_circumflex> : \"foo\" X\n"
+                         "<Ahook> <x> : \"foobar\"\n"
+                         "<Multi_key> <o> <e> : oe\n"
+                         "<dead_circumflex> <e> : \"bar\" Y\n"
+                         "<Multi_key> <a> <e> : \"æ\" ae\n"
+                         "<dead_circumflex> <a> : \"baz\" Z\n"
+                         "<dead_acute> <e> : \"é\" eacute\n"
+                         "<Multi_key> <a> <a> <c>: \"aac\"\n"
+                         "<Multi_key> <a> <a> <b>: \"aab\"\n"
+                         "<Multi_key> <a> <a> <a>: \"aaa\"\n";
+
+    table = xkb_compose_table_new_from_buffer(ctx, buffer, strlen(buffer), "",
+                                              XKB_COMPOSE_FORMAT_TEXT_V1,
+                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+    assert(table);
+
+    struct xkb_compose_table_iterator *iter = xkb_compose_table_iterator_new(table);
+
+    test_eq_entry(xkb_compose_table_iterator_next(iter),
+                  XKB_KEY_eacute, "é",
+                  XKB_KEY_dead_acute, XKB_KEY_e, XKB_KEY_NoSymbol);
+
+    test_eq_entry(xkb_compose_table_iterator_next(iter),
+                  XKB_KEY_Z, "baz",
+                  XKB_KEY_dead_circumflex, XKB_KEY_a, XKB_KEY_NoSymbol);
+
+    test_eq_entry(xkb_compose_table_iterator_next(iter),
+                  XKB_KEY_Y, "bar",
+                  XKB_KEY_dead_circumflex, XKB_KEY_e, XKB_KEY_NoSymbol);
+
+    test_eq_entry(xkb_compose_table_iterator_next(iter),
+                  XKB_KEY_X, "foo",
+                  XKB_KEY_dead_circumflex, XKB_KEY_dead_circumflex, XKB_KEY_NoSymbol);
+
+    test_eq_entry(xkb_compose_table_iterator_next(iter),
+                  XKB_KEY_NoSymbol, "aaa",
+                  XKB_KEY_Multi_key, XKB_KEY_a, XKB_KEY_a, XKB_KEY_a, XKB_KEY_NoSymbol);
+
+    test_eq_entry(xkb_compose_table_iterator_next(iter),
+                  XKB_KEY_NoSymbol, "aab",
+                  XKB_KEY_Multi_key, XKB_KEY_a, XKB_KEY_a, XKB_KEY_b, XKB_KEY_NoSymbol);
+
+    test_eq_entry(xkb_compose_table_iterator_next(iter),
+                  XKB_KEY_NoSymbol, "aac",
+                  XKB_KEY_Multi_key, XKB_KEY_a, XKB_KEY_a, XKB_KEY_c, XKB_KEY_NoSymbol);
+
+    test_eq_entry(xkb_compose_table_iterator_next(iter),
+                  XKB_KEY_ae, "æ",
+                  XKB_KEY_Multi_key, XKB_KEY_a, XKB_KEY_e, XKB_KEY_NoSymbol);
+
+    test_eq_entry(xkb_compose_table_iterator_next(iter),
+                  XKB_KEY_oe, "",
+                  XKB_KEY_Multi_key, XKB_KEY_o, XKB_KEY_e, XKB_KEY_NoSymbol);
+
+    test_eq_entry(xkb_compose_table_iterator_next(iter),
+                  XKB_KEY_NoSymbol, "foobar",
+                  XKB_KEY_Ahook, XKB_KEY_x, XKB_KEY_NoSymbol);
+
+    assert (xkb_compose_table_iterator_next(iter) == NULL);
+
+    xkb_compose_table_iterator_free(iter);
+    xkb_compose_table_unref(table);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -612,6 +716,7 @@ main(int argc, char *argv[])
     test_modifier_syntax(ctx);
     test_include(ctx);
     test_override(ctx);
+    test_traverse(ctx);
 
     xkb_context_unref(ctx);
     return 0;

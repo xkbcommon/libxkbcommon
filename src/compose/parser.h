@@ -24,6 +24,9 @@
 #ifndef COMPOSE_PARSER_H
 #define COMPOSE_PARSER_H
 
+#define MAX_LHS_LEN 10
+#define MAX_INCLUDE_DEPTH 5
+
 bool
 parse_string(struct xkb_compose_table *table,
              const char *string, size_t len,

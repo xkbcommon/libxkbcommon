@@ -114,6 +114,11 @@ typedef darray (unsigned long)  darray_ulong;
 #define darray_concat(arr_to, arr_from) \
     darray_append_items((arr_to), (arr_from).item, (arr_from).size)
 
+/*** Removal ***/
+
+/* Warning: Do not call darray_remove_last on an empty darray. */
+#define darray_remove_last(arr) (--(arr).size)
+
 /*** String buffer ***/
 
 #define darray_append_string(arr, str) do { \
