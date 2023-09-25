@@ -648,6 +648,7 @@ test_configh_data = configuration_data()
 test_configh_data.set_quoted('TEST_XKB_CONFIG_ROOT', meson.current_source_dir()/'test'/'data')
 configure_file(output: 'test-config.h', configuration: test_configh_data)
 
+m_dep = cc.find_library('m', required : false)
 # Some tests need to use unexported symbols, so we link them against
 # an internal copy of libxkbcommon with all symbols exposed.
 libxkbcommon_test_internal = static_library(
@@ -660,6 +661,7 @@ libxkbcommon_test_internal = static_library(
     libxkbcommon_sources,
     include_directories: include_directories('src', 'include'),
     c_args: ['-DENABLE_PRIVATE_APIS'],
+    dependencies: [m_dep],
 )
 test_dep = declare_dependency(
     include_directories: include_directories('src', 'include'),
@@ -910,6 +912,17 @@ benchmark(
     executable('bench-rulescomp', 'bench/rulescomp.c', dependencies: test_dep),
     env: bench_env,
 )
+if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE')
+    benchmark(
+        'compile-keymap',
+        executable(
+            'bench-compile-keymap',
+            'bench/compile-keymap.c',
+            dependencies: test_dep
+        ),
+        env: bench_env,
+    )
+endif
 benchmark(
     'compose',
     executable('bench-compose', 'bench/compose.c', dependencies: test_dep),
