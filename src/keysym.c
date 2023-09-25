@@ -116,13 +116,16 @@ parse_keysym_hex(const char *s, uint32_t *out)
     return s[i] == '\0' && i > 0;
 }
 
-XKB_EXPORT xkb_keysym_t
-xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
+xkb_keysym_t
+xkb_keysym_with_format_from_name(const char *name, enum xkb_keysym_flags flags,
+                                 xkb_keysym_format_t *keysym_format)
 {
     const struct name_keysym *entry = NULL;
     char *tmp;
     uint32_t val;
     bool icase = (flags & XKB_KEYSYM_CASE_INSENSITIVE);
+
+    *keysym_format = XKB_KEYSYM_FORMAT_NONE;
 
     if (flags & ~XKB_KEYSYM_CASE_INSENSITIVE)
         return XKB_KEY_NoSymbol;
@@ -135,8 +138,10 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
         size_t pos = keysym_name_perfect_hash(name);
         if (pos < ARRAY_SIZE(name_to_keysym)) {
             const char *s = get_name(&name_to_keysym[pos]);
-            if (strcmp(name, s) == 0)
+            if (strcmp(name, s) == 0) {
+                *keysym_format = XKB_KEYSYM_FORMAT_NAME;
                 return name_to_keysym[pos].keysym;
+            }
         }
     }
     /*
@@ -169,6 +174,7 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
             }
         }
         if (entry) {
+            *keysym_format = XKB_KEYSYM_FORMAT_NAME;
             const struct name_keysym *iter, *last;
 
             if (icase && xkb_keysym_is_lower(entry->keysym))
@@ -199,17 +205,19 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
 
         if (val < 0x20 || (val > 0x7e && val < 0xa0))
             return XKB_KEY_NoSymbol;
-        if (val < 0x100)
+        if (val < 0x100) {
+            *keysym_format = XKB_KEYSYM_FORMAT_UNICODE;
             return (xkb_keysym_t) val;
+        }
         if (val > 0x10ffff)
             return XKB_KEY_NoSymbol;
+        *keysym_format = XKB_KEYSYM_FORMAT_UNICODE;
         return (xkb_keysym_t) val | 0x01000000;
     }
     else if (name[0] == '0' && (name[1] == 'x' || (icase && name[1] == 'X'))) {
-        if (!parse_keysym_hex(&name[2], &val))
+        if (!parse_keysym_hex(&name[2], &val) || val > XKB_KEYSYM_MAX)
             return XKB_KEY_NoSymbol;
-        if (val > XKB_KEYSYM_MAX)
-            return XKB_KEY_NoSymbol;
+        *keysym_format = XKB_KEYSYM_FORMAT_NUMERIC;
         return (xkb_keysym_t) val;
     }
 
@@ -223,12 +231,19 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
         if (!tmp)
             return XKB_KEY_NoSymbol;
         memmove(&tmp[4], &tmp[5], strlen(name) - 5 + 1);
-        ret = xkb_keysym_from_name(tmp, flags);
+        ret = xkb_keysym_with_format_from_name(tmp, flags, keysym_format);
         free(tmp);
         return ret;
     }
 
     return XKB_KEY_NoSymbol;
+}
+
+XKB_EXPORT xkb_keysym_t
+xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
+{
+    xkb_keysym_format_t keysym_format;
+    return xkb_keysym_with_format_from_name(name, flags, &keysym_format);
 }
 
 bool
