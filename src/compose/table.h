@@ -119,4 +119,11 @@ struct xkb_compose_table {
     darray(struct compose_node) nodes;
 };
 
+struct xkb_compose_table_entry {
+    xkb_keysym_t *sequence;
+    size_t sequence_length;
+    xkb_keysym_t keysym;
+    const char *utf8;
+};
+
 #endif

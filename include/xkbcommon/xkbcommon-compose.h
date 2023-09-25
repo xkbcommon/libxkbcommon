@@ -299,6 +299,143 @@ xkb_compose_table_ref(struct xkb_compose_table *table);
 void
 xkb_compose_table_unref(struct xkb_compose_table *table);
 
+/**
+ * @struct xkb_compose_table_entry
+ * Opaque Compose table entry object.
+ *
+ * Represents a single entry in a Compose file in the iteration API.
+ * It is immutable.
+ *
+ * @sa xkb_compose_table_iterator_new
+ * @since 1.6.0
+ */
+struct xkb_compose_table_entry;
+
+/**
+ * Get the left-hand keysym sequence of a Compose table entry.
+ *
+ * For example, given the following entry:
+ *
+ * ```
+ * <dead_tilde> <space> : "~" asciitilde # TILDE
+ * ```
+ *
+ * it will return `{XKB_KEY_dead_tilde, XKB_KEY_space}`.
+ *
+ * @param[in]  entry The compose table entry object to process.
+ *
+ * @param[out] sequence_length Number of keysyms in the sequence.
+ *
+ * @returns The array of left-hand side keysyms.  The number of keysyms
+ * is returned in the @p sequence_length out-parameter.
+ *
+ * @memberof xkb_compose_table_entry
+ * @since 1.6.0
+ */
+const xkb_keysym_t *
+xkb_compose_table_entry_sequence(struct xkb_compose_table_entry *entry,
+                                 size_t *sequence_length);
+
+/**
+ * Get the right-hand result keysym of a Compose table entry.
+ *
+ * For example, given the following entry:
+ *
+ * ```
+ * <dead_tilde> <space> : "~" asciitilde # TILDE
+ * ```
+ *
+ * it will return `XKB_KEY_asciitilde`.
+ *
+ * The keysym is optional; if the entry does not specify a keysym,
+ * returns `XKB_KEY_NoSymbol`.
+ *
+ * @memberof xkb_compose_table_entry
+ * @since 1.6.0
+ */
+xkb_keysym_t
+xkb_compose_table_entry_keysym(struct xkb_compose_table_entry *entry);
+
+/**
+ * Get the right-hand result string of a Compose table entry.
+ *
+ * The string is UTF-8 encoded and NULL-terminated.
+ *
+ * For example, given the following entry:
+ *
+ * ```
+ * <dead_tilde> <space> : "~" asciitilde # TILDE
+ * ```
+ *
+ * it will return `"~"`.
+ *
+ * The string is optional; if the entry does not specify a string,
+ * returns the empty string.
+ *
+ * @memberof xkb_compose_table_entry
+ * @since 1.6.0
+ */
+const char *
+xkb_compose_table_entry_utf8(struct xkb_compose_table_entry *entry);
+
+/**
+ * @struct xkb_compose_table_iterator
+ * Iterator over a compose table’s entries.
+ *
+ * @sa xkb_compose_table_iterator_new()
+ * @since 1.6.0
+ */
+struct xkb_compose_table_iterator;
+
+/**
+ * Create a new iterator for a compose table.
+ *
+ * Intended use:
+ *
+ * ```c
+ * struct xkb_compose_table_iterator *iter = xkb_compose_table_iterator_new(compose_table);
+ * struct xkb_compose_table_entry *entry;
+ * while ((entry = xkb_compose_table_iterator_next(iter))) {
+ *     // ...
+ * }
+ * xkb_compose_table_iterator_free(iter);
+ * ```
+ *
+ * @returns A new compose table iterator, or `NULL` on failure.
+ *
+ * @memberof xkb_compose_table_iterator
+ * @sa xkb_compose_table_iterator_free()
+ * @since 1.6.0
+ */
+struct xkb_compose_table_iterator *
+xkb_compose_table_iterator_new(struct xkb_compose_table *table);
+
+/**
+ * Free a compose iterator.
+ *
+ * @memberof xkb_compose_table_iterator
+ * @since 1.6.0
+ */
+void
+xkb_compose_table_iterator_free(struct xkb_compose_table_iterator *iter);
+
+/**
+ * Get the next compose entry from a compose table iterator.
+ *
+ * The entries are returned in lexicographic order of the left-hand
+ * side of entries. This does not correspond to the order in which
+ * the entries appear in the Compose file.
+ *
+ * @attention The return value is valid until the next call to this function.
+ *
+ * Returns `NULL` in case there is no more entries.
+ *
+ * @memberof xkb_compose_table_iterator
+ * @since 1.6.0
+ */
+struct xkb_compose_table_entry *
+xkb_compose_table_iterator_next(struct xkb_compose_table_iterator *iter);
+
 /** Flags for compose state creation. */
 enum xkb_compose_state_flags {
     /** Do not apply any flags. */
