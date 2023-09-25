@@ -77,15 +77,17 @@ resolve_keysym(struct parser_param *param, const char *name, xkb_keysym_t *sym_r
     sym = xkb_keysym_with_format_from_name(name, XKB_KEYSYM_NO_FLAGS, &keysym_format);
     if (sym != XKB_KEY_NoSymbol) {
         *sym_rtrn = sym;
-        const char *ref_name = NULL;
-        if (xkb_keysym_is_deprecated(sym, keysym_format, name, &ref_name)) {
-            if (ref_name == NULL) {
-                parser_warn(param, XKB_WARNING_DEPRECATED_KEYSYM,
-                            "deprecated keysym \"%s\"", name);
-            } else {
-                parser_warn(param, XKB_WARNING_DEPRECATED_KEYSYM,
-                            "deprecated keysym \"%s\"; please use \"%s\"",
-                            name, ref_name);
+        if (unlikely(param->ctx->log_verbosity >= XKB_MIN_VERBOSITY_DEPRECATED_KEYSYM)) {
+            const char *ref_name = NULL;
+            if (xkb_keysym_is_deprecated(sym, keysym_format, name, &ref_name)) {
+                if (ref_name == NULL) {
+                    parser_warn(param, XKB_WARNING_DEPRECATED_KEYSYM,
+                                "deprecated keysym \"%s\"", name);
+                } else {
+                    parser_warn(param, XKB_WARNING_DEPRECATED_KEYSYM,
+                                "deprecated keysym \"%s\"; please use \"%s\"",
+                                name, ref_name);
+                }
             }
         }
         return true;
@@ -769,15 +771,18 @@ KeySym          :       IDENT
                             else {
                                 if ($1 <= XKB_KEYSYM_MAX) {
                                     $$ = (xkb_keysym_t) $1;
-                                    const char *ref_name = NULL;
-                                    if (xkb_keysym_is_deprecated($$, XKB_KEYSYM_FORMAT_NUMERIC, NULL, &ref_name)) {
-                                        if (ref_name == NULL) {
-                                            parser_warn(param, XKB_WARNING_DEPRECATED_KEYSYM,
-                                                        "deprecated keysym \"0x%"PRIx64"\"", $1);
-                                        } else {
-                                            parser_warn(param, XKB_WARNING_DEPRECATED_KEYSYM,
-                                                "deprecated keysym \"0x%"PRIx64"\"; please use \"%s\"",
-                                                $1, ref_name);
+
+                                    if (unlikely(param->ctx->log_verbosity >= XKB_MIN_VERBOSITY_DEPRECATED_KEYSYM)) {
+                                        const char *ref_name = NULL;
+                                        if (xkb_keysym_is_deprecated($$, XKB_KEYSYM_FORMAT_NUMERIC, NULL, &ref_name)) {
+                                            if (ref_name == NULL) {
+                                                parser_warn(param, XKB_WARNING_DEPRECATED_KEYSYM,
+                                                            "deprecated keysym \"0x%"PRIx64"\"", $1);
+                                            } else {
+                                                parser_warn(param, XKB_WARNING_DEPRECATED_KEYSYM,
+                                                    "deprecated keysym \"0x%"PRIx64"\"; please use \"%s\"",
+                                                    $1, ref_name);
+                                            }
                                         }
                                     }
                                 } else {

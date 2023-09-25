@@ -66,6 +66,8 @@ enum xkb_keysym_format {
     XKB_KEYSYM_FORMAT_NUMERIC
 };
 
+#define XKB_MIN_VERBOSITY_DEPRECATED_KEYSYM 5
+
 typedef uint8_t xkb_keysym_format_t;
 
 xkb_keysym_t

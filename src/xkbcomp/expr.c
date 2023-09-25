@@ -712,15 +712,17 @@ ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
         xkb_keysym_format_t keysym_format;
         *sym_rtrn = xkb_keysym_with_format_from_name(str, 0, &keysym_format);
         if (*sym_rtrn != XKB_KEY_NoSymbol) {
-            const char *ref_name = NULL;
-            if (xkb_keysym_is_deprecated(*sym_rtrn, keysym_format, str, &ref_name)) {
-                if (ref_name == NULL) {
-                    log_warn(ctx, XKB_WARNING_DEPRECATED_KEYSYM,
-                             "deprecated keysym \"%s\"\n", str);
-                } else {
-                    log_warn(ctx, XKB_WARNING_DEPRECATED_KEYSYM,
-                             "deprecated keysym \"%s\"; please use \"%s\"\n",
-                             str, ref_name);
+            if (unlikely(ctx->log_verbosity >= XKB_MIN_VERBOSITY_DEPRECATED_KEYSYM)) {
+                const char *ref_name = NULL;
+                if (xkb_keysym_is_deprecated(*sym_rtrn, keysym_format, str, &ref_name)) {
+                    if (ref_name == NULL) {
+                        log_warn(ctx, XKB_WARNING_DEPRECATED_KEYSYM,
+                                 "deprecated keysym \"%s\"\n", str);
+                    } else {
+                        log_warn(ctx, XKB_WARNING_DEPRECATED_KEYSYM,
+                                 "deprecated keysym \"%s\"; please use \"%s\"\n",
+                                 str, ref_name);
+                    }
                 }
             }
             return true;
@@ -744,10 +746,12 @@ ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
     }
 
     if (val <= XKB_KEYSYM_MAX) {
-        const char *ref_name = NULL;
-        if (xkb_keysym_is_deprecated(val, XKB_KEYSYM_FORMAT_NUMERIC, NULL, &ref_name)) {
-            log_warn(ctx, XKB_WARNING_DEPRECATED_KEYSYM,
-                     "deprecated keysym \"0x%x\" (%d)\n", val, val);
+        if (unlikely(ctx->log_verbosity >= XKB_MIN_VERBOSITY_DEPRECATED_KEYSYM)) {
+            const char *ref_name = NULL;
+            if (xkb_keysym_is_deprecated(val, XKB_KEYSYM_FORMAT_NUMERIC, NULL, &ref_name)) {
+                log_warn(ctx, XKB_WARNING_DEPRECATED_KEYSYM,
+                         "deprecated keysym \"0x%x\" (%d)\n", val, val);
+            }
         }
         log_warn(ctx, XKB_WARNING_NUMERIC_KEYSYM,
                  "numeric keysym \"0x%x\" (%d)",
