@@ -171,6 +171,7 @@ skip_more_whitespace_and_comments:
         while (!scanner_eof(s) && !scanner_eol(s) && scanner_peek(s) != '\"') {
             if (scanner_chr(s, '\\')) {
                 uint8_t o;
+                size_t start_pos = s->pos;
                 if (scanner_chr(s, '\\')) {
                     scanner_buf_append(s, '\\');
                 }
@@ -181,24 +182,27 @@ skip_more_whitespace_and_comments:
                     if (scanner_hex(s, &o) && is_valid_char((char) o)) {
                         scanner_buf_append(s, (char) o);
                     } else {
-                        // [TODO] actually show the sequence
                         scanner_warn_with_code(s,
                             XKB_WARNING_INVALID_ESCAPE_SEQUENCE,
-                            "illegal hexadecimal escape sequence in string literal");
+                            "illegal hexadecimal escape sequence (%.*s) in string literal",
+                            (int) (s->pos - start_pos + 1), &s->s[start_pos - 1]);
                     }
                 }
-                else if (scanner_oct(s, &o)) {
-                    if (is_valid_char((char) o)) {
-                        scanner_buf_append(s, (char) o);
-                    } else {
-                        // [TODO] actually show the sequence
-                        scanner_warn_with_code(s,
-                            XKB_WARNING_INVALID_ESCAPE_SEQUENCE,
-                            "illegal octal escape sequence in string literal");
-                    }
+                else if (scanner_oct(s, &o) && is_valid_char((char) o)) {
+                    scanner_buf_append(s, (char) o);
+                }
+                else if (s->pos > start_pos) {
+                    scanner_warn_with_code(s,
+                        XKB_WARNING_INVALID_ESCAPE_SEQUENCE,
+                        "illegal octal escape sequence (%.*s) in string literal",
+                        (int) (s->pos - start_pos + 1), &s->s[start_pos - 1]);
+                    /* Ignore. */
                 }
                 else {
-                    scanner_warn(s, "unknown escape sequence (%c) in string literal", scanner_peek(s));
+                    scanner_warn_with_code(s,
+                        XKB_WARNING_UNKNOWN_CHAR_ESCAPE_SEQUENCE,
+                        "unknown escape sequence (\\%c) in string literal",
+                        scanner_peek(s));
                     /* Ignore. */
                 }
             } else {
