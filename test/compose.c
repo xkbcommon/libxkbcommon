@@ -684,6 +684,17 @@ test_traverse(struct xkb_context *ctx)
     xkb_compose_table_unref(table);
 }
 
+static void
+test_escape_sequences(struct xkb_context *ctx)
+{
+    const char *table_string = "<o> <e> : \"f\\x0o\\0o\" X\n";
+
+    assert(test_compose_seq_buffer(ctx, table_string,
+        XKB_KEY_o, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_e, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSED,   "foo",  XKB_KEY_X,
+        XKB_KEY_NoSymbol));
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -717,6 +728,7 @@ main(int argc, char *argv[])
     test_include(ctx);
     test_override(ctx);
     test_traverse(ctx);
+    test_escape_sequences(ctx);
 
     xkb_context_unref(ctx);
     return 0;

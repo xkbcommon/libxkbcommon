@@ -100,6 +100,11 @@
   added: ALWAYS
   type: warning
   description: "Warn if no key type can be inferred"
+- id: "invalid-escape-sequence"
+  code: 193
+  added: ALWAYS
+  type: warning
+  description: "Invalid escape sequence in a string"
 - id: "illegal-key-type-preserve-result"
   code: 195
   added: ALWAYS

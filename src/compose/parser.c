@@ -178,13 +178,24 @@ skip_more_whitespace_and_comments:
                     scanner_buf_append(s, '"');
                 }
                 else if (scanner_chr(s, 'x') || scanner_chr(s, 'X')) {
-                    if (scanner_hex(s, &o))
+                    if (scanner_hex(s, &o) && is_valid_char((char) o)) {
                         scanner_buf_append(s, (char) o);
-                    else
-                        scanner_warn(s, "illegal hexadecimal escape sequence in string literal");
+                    } else {
+                        // [TODO] actually show the sequence
+                        scanner_warn_with_code(s,
+                            XKB_WARNING_INVALID_ESCAPE_SEQUENCE,
+                            "illegal hexadecimal escape sequence in string literal");
+                    }
                 }
                 else if (scanner_oct(s, &o)) {
-                    scanner_buf_append(s, (char) o);
+                    if (is_valid_char((char) o)) {
+                        scanner_buf_append(s, (char) o);
+                    } else {
+                        // [TODO] actually show the sequence
+                        scanner_warn_with_code(s,
+                            XKB_WARNING_INVALID_ESCAPE_SEQUENCE,
+                            "illegal octal escape sequence in string literal");
+                    }
                 }
                 else {
                     scanner_warn(s, "unknown escape sequence (%c) in string literal", scanner_peek(s));
