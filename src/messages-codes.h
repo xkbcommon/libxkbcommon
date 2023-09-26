@@ -36,6 +36,8 @@ enum xkb_message_code {
     XKB_WARNING_UNSUPPORTED_GEOMETRY_SECTION = 172,
     /** Warn if no key type can be inferred */
     XKB_WARNING_CANNOT_INFER_KEY_TYPE = 183,
+    /** Invalid escape sequence in a string */
+    XKB_WARNING_INVALID_ESCAPE_SEQUENCE = 193,
     /** The result of a key type “preserve” entry must be a subset of its input modifiers. */
     XKB_WARNING_ILLEGAL_KEY_TYPE_PRESERVE_RESULT = 195,
     /** Syntax error in the include statement */

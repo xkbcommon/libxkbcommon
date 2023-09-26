@@ -98,7 +98,15 @@ skip_more_whitespace_and_comments:
                 else if (scanner_chr(s, 'f'))  scanner_buf_append(s, '\f');
                 else if (scanner_chr(s, 'v'))  scanner_buf_append(s, '\v');
                 else if (scanner_chr(s, 'e'))  scanner_buf_append(s, '\033');
-                else if (scanner_oct(s, &o))   scanner_buf_append(s, (char) o);
+                else if (scanner_oct(s, &o)) {
+                    if (is_valid_char((char) o)) {
+                        scanner_buf_append(s, (char) o);
+                    } else {
+                        scanner_warn_with_code(s,
+                            XKB_WARNING_INVALID_ESCAPE_SEQUENCE,
+                            "invalid octal escape sequence: \\%o", o);
+                    }
+                }
                 else {
                     // TODO: display actual sequence! See: scanner_peek(s).
                     //       require escaping any potential control character

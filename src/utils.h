@@ -65,6 +65,15 @@
 #define STRINGIFY(x) #x
 #define STRINGIFY2(x) STRINGIFY(x)
 
+/* Check if a character is valid in a string literal */
+static inline bool
+is_valid_char(char c)
+{
+    /* Currently we only check for NULL character, but this could be extended
+     * in the future to further ASCII control characters. */
+    return c != 0;
+}
+
 char
 to_lower(char c);
 

@@ -1,0 +1,9 @@
+xkb_keymap {
+    // The following include statement has an octal escape sequence that
+    // must be ignored. Else it would insert a NULL character and thus
+    // truncates the string to "evde", while we expect "evdev+aliases(qwerty)".
+    xkb_keycodes  { include "evde\0v+aliases(qwerty)" };
+    xkb_types     { include "complete" };
+    xkb_compat    { include "complete" };
+    xkb_symbols   { include "pc+us" };
+};

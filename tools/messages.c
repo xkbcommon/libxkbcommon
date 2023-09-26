@@ -48,6 +48,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_ERROR_WRONG_STATEMENT_TYPE, "Wrong statement type"},
     {XKB_WARNING_UNSUPPORTED_GEOMETRY_SECTION, "Unsupported geometry section"},
     {XKB_WARNING_CANNOT_INFER_KEY_TYPE, "Cannot infer key type"},
+    {XKB_WARNING_INVALID_ESCAPE_SEQUENCE, "Invalid escape sequence"},
     {XKB_WARNING_ILLEGAL_KEY_TYPE_PRESERVE_RESULT, "Illegal key type preserve result"},
     {XKB_ERROR_INVALID_INCLUDE_STATEMENT, "Invalid include statement"},
     {XKB_ERROR_INVALID_MODMAP_ENTRY, "Invalid modmap entry"},
