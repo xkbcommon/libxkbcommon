@@ -188,7 +188,14 @@ scanner_oct(struct scanner *s, uint8_t *out)
 {
     int i;
     for (i = 0, *out = 0; scanner_peek(s) >= '0' && scanner_peek(s) <= '7' && i < 3; i++)
-        *out = *out * 8 + scanner_next(s) - '0';
+        /* Test overflow */
+        if (*out < 040) {
+            *out = *out * 8 + scanner_next(s) - '0';
+        } else {
+            /* Consume valid digit, but mark result as invalid */
+            scanner_next(s);
+            return false;
+        }
     return i > 0;
 }
 

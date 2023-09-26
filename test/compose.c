@@ -687,7 +687,11 @@ test_traverse(struct xkb_context *ctx)
 static void
 test_escape_sequences(struct xkb_context *ctx)
 {
-    const char *table_string = "<o> <e> : \"f\\x0o\\0o\" X\n";
+    /* The following escape sequences should be ignored:
+     * • \401 overflows
+     * • \0 and \x0 produce NULL
+     */
+    const char *table_string = "<o> <e> : \"\\401f\\x0o\\0o\" X\n";
 
     assert(test_compose_seq_buffer(ctx, table_string,
         XKB_KEY_o, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
