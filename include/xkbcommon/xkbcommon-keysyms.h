@@ -74,6 +74,15 @@ SOFTWARE.
  * Unicode position, as well as the official Unicode name of the
  * character.
  *
+ * Some keysyms map to a character already mapped by another keysym,
+ * with compatible but more precise semantics, such as the keypad-
+ * related keysyms. In this case, none of the keysym are deprecated.
+ * The most generic keysym is annotated as previously and more specific
+ * keysyms have the same annotation between angle brackets:
+ *
+ *     #define XKB_KEY_space                 0x0020  // U+0020 SPACE
+ *     #define XKB_KEY_KP_Space              0xff80  //<U+0020 SPACE>
+ *
  * Where the correspondence is either not one-to-one or semantically
  * unclear, the Unicode position and name are enclosed in
  * parentheses. Such legacy keysyms should be considered deprecated
@@ -93,7 +102,14 @@ SOFTWARE.
  * existing legacy keysym values in the range 0x0100 to 0x20ff.
  *
  * Where several mnemonic names are defined for the same keysym in this
- * file, all but the first one listed should be considered deprecated.
+ * file, all but the first one listed should be considered deprecated,
+ * unless the comment explicitly states the alias, e.g.:
+ *
+ *     #define XKB_KEY_dead_tilde            0xfe53
+ *     #define XKB_KEY_dead_perispomeni      0xfe53 // alias for dead_tilde
+ *
+ * Additionally, a keysym can be explicitly deprecated by starting the
+ * comment with "deprecated".
  *
  * Mnemonic names for keysyms are defined in this file with lines
  * that match one of these Perl regular expressions:
@@ -132,16 +148,16 @@ SOFTWARE.
  * tables in client code).
  */
 
-#define XKB_KEY_BackSpace                     0xff08  /* Back space, back char */
-#define XKB_KEY_Tab                           0xff09
-#define XKB_KEY_Linefeed                      0xff0a  /* Linefeed, LF */
-#define XKB_KEY_Clear                         0xff0b
-#define XKB_KEY_Return                        0xff0d  /* Return, enter */
+#define XKB_KEY_BackSpace                     0xff08  /* U+0008 BACKSPACE */
+#define XKB_KEY_Tab                           0xff09  /* U+0009 CHARACTER TABULATION */
+#define XKB_KEY_Linefeed                      0xff0a  /* U+000A LINE FEED */
+#define XKB_KEY_Clear                         0xff0b  /* U+000B LINE TABULATION */
+#define XKB_KEY_Return                        0xff0d  /* U+000D CARRIAGE RETURN */
 #define XKB_KEY_Pause                         0xff13  /* Pause, hold */
 #define XKB_KEY_Scroll_Lock                   0xff14
 #define XKB_KEY_Sys_Req                       0xff15
-#define XKB_KEY_Escape                        0xff1b
-#define XKB_KEY_Delete                        0xffff  /* Delete, rubout */
+#define XKB_KEY_Escape                        0xff1b  /* U+001B ESCAPE */
+#define XKB_KEY_Delete                        0xffff  /* U+007F DELETE */
 
 
 
@@ -186,9 +202,9 @@ SOFTWARE.
 #define XKB_KEY_Right                         0xff53  /* Move right, right arrow */
 #define XKB_KEY_Down                          0xff54  /* Move down, down arrow */
 #define XKB_KEY_Prior                         0xff55  /* Prior, previous */
-#define XKB_KEY_Page_Up                       0xff55
+#define XKB_KEY_Page_Up                       0xff55  /* deprecated alias for Prior */
 #define XKB_KEY_Next                          0xff56  /* Next */
-#define XKB_KEY_Page_Down                     0xff56
+#define XKB_KEY_Page_Down                     0xff56  /* deprecated alias for Next */
 #define XKB_KEY_End                           0xff57  /* EOL */
 #define XKB_KEY_Begin                         0xff58  /* BOL */
 
@@ -207,14 +223,14 @@ SOFTWARE.
 #define XKB_KEY_Help                          0xff6a  /* Help */
 #define XKB_KEY_Break                         0xff6b
 #define XKB_KEY_Mode_switch                   0xff7e  /* Character set switch */
-#define XKB_KEY_script_switch                 0xff7e  /* Alias for mode_switch */
+#define XKB_KEY_script_switch                 0xff7e  /* Alias for Mode_switch */
 #define XKB_KEY_Num_Lock                      0xff7f
 
 /* Keypad functions, keypad numbers cleverly chosen to map to ASCII */
 
-#define XKB_KEY_KP_Space                      0xff80  /* Space */
-#define XKB_KEY_KP_Tab                        0xff89
-#define XKB_KEY_KP_Enter                      0xff8d  /* Enter */
+#define XKB_KEY_KP_Space                      0xff80  /*<U+0020 SPACE>*/
+#define XKB_KEY_KP_Tab                        0xff89  /*<U+0009 CHARACTER TABULATION>*/
+#define XKB_KEY_KP_Enter                      0xff8d  /*<U+000D CARRIAGE RETURN>*/
 #define XKB_KEY_KP_F1                         0xff91  /* PF1, KP_A, ... */
 #define XKB_KEY_KP_F2                         0xff92
 #define XKB_KEY_KP_F3                         0xff93
@@ -225,31 +241,31 @@ SOFTWARE.
 #define XKB_KEY_KP_Right                      0xff98
 #define XKB_KEY_KP_Down                       0xff99
 #define XKB_KEY_KP_Prior                      0xff9a
-#define XKB_KEY_KP_Page_Up                    0xff9a
+#define XKB_KEY_KP_Page_Up                    0xff9a  /* deprecated alias for KP_Prior */
 #define XKB_KEY_KP_Next                       0xff9b
-#define XKB_KEY_KP_Page_Down                  0xff9b
+#define XKB_KEY_KP_Page_Down                  0xff9b  /* deprecated alias for KP_Next */
 #define XKB_KEY_KP_End                        0xff9c
 #define XKB_KEY_KP_Begin                      0xff9d
 #define XKB_KEY_KP_Insert                     0xff9e
 #define XKB_KEY_KP_Delete                     0xff9f
-#define XKB_KEY_KP_Equal                      0xffbd  /* Equals */
-#define XKB_KEY_KP_Multiply                   0xffaa
-#define XKB_KEY_KP_Add                        0xffab
-#define XKB_KEY_KP_Separator                  0xffac  /* Separator, often comma */
-#define XKB_KEY_KP_Subtract                   0xffad
-#define XKB_KEY_KP_Decimal                    0xffae
-#define XKB_KEY_KP_Divide                     0xffaf
+#define XKB_KEY_KP_Equal                      0xffbd  /*<U+003D EQUALS SIGN>*/
+#define XKB_KEY_KP_Multiply                   0xffaa  /*<U+002A ASTERISK>*/
+#define XKB_KEY_KP_Add                        0xffab  /*<U+002B PLUS SIGN>*/
+#define XKB_KEY_KP_Separator                  0xffac  /*<U+002C COMMA>*/
+#define XKB_KEY_KP_Subtract                   0xffad  /*<U+002D HYPHEN-MINUS>*/
+#define XKB_KEY_KP_Decimal                    0xffae  /*<U+002E FULL STOP>*/
+#define XKB_KEY_KP_Divide                     0xffaf  /*<U+002F SOLIDUS>*/
 
-#define XKB_KEY_KP_0                          0xffb0
-#define XKB_KEY_KP_1                          0xffb1
-#define XKB_KEY_KP_2                          0xffb2
-#define XKB_KEY_KP_3                          0xffb3
-#define XKB_KEY_KP_4                          0xffb4
-#define XKB_KEY_KP_5                          0xffb5
-#define XKB_KEY_KP_6                          0xffb6
-#define XKB_KEY_KP_7                          0xffb7
-#define XKB_KEY_KP_8                          0xffb8
-#define XKB_KEY_KP_9                          0xffb9
+#define XKB_KEY_KP_0                          0xffb0  /*<U+0030 DIGIT ZERO>*/
+#define XKB_KEY_KP_1                          0xffb1  /*<U+0031 DIGIT ONE>*/
+#define XKB_KEY_KP_2                          0xffb2  /*<U+0032 DIGIT TWO>*/
+#define XKB_KEY_KP_3                          0xffb3  /*<U+0033 DIGIT THREE>*/
+#define XKB_KEY_KP_4                          0xffb4  /*<U+0034 DIGIT FOUR>*/
+#define XKB_KEY_KP_5                          0xffb5  /*<U+0035 DIGIT FIVE>*/
+#define XKB_KEY_KP_6                          0xffb6  /*<U+0036 DIGIT SIX>*/
+#define XKB_KEY_KP_7                          0xffb7  /*<U+0037 DIGIT SEVEN>*/
+#define XKB_KEY_KP_8                          0xffb8  /*<U+0038 DIGIT EIGHT>*/
+#define XKB_KEY_KP_9                          0xffb9  /*<U+0039 DIGIT NINE>*/
 
 
 
@@ -271,55 +287,55 @@ SOFTWARE.
 #define XKB_KEY_F9                            0xffc6
 #define XKB_KEY_F10                           0xffc7
 #define XKB_KEY_F11                           0xffc8
-#define XKB_KEY_L1                            0xffc8
+#define XKB_KEY_L1                            0xffc8  /* deprecated alias for F11 */
 #define XKB_KEY_F12                           0xffc9
-#define XKB_KEY_L2                            0xffc9
+#define XKB_KEY_L2                            0xffc9  /* deprecated alias for F12 */
 #define XKB_KEY_F13                           0xffca
-#define XKB_KEY_L3                            0xffca
+#define XKB_KEY_L3                            0xffca  /* deprecated alias for F13 */
 #define XKB_KEY_F14                           0xffcb
-#define XKB_KEY_L4                            0xffcb
+#define XKB_KEY_L4                            0xffcb  /* deprecated alias for F14 */
 #define XKB_KEY_F15                           0xffcc
-#define XKB_KEY_L5                            0xffcc
+#define XKB_KEY_L5                            0xffcc  /* deprecated alias for F15 */
 #define XKB_KEY_F16                           0xffcd
-#define XKB_KEY_L6                            0xffcd
+#define XKB_KEY_L6                            0xffcd  /* deprecated alias for F16 */
 #define XKB_KEY_F17                           0xffce
-#define XKB_KEY_L7                            0xffce
+#define XKB_KEY_L7                            0xffce  /* deprecated alias for F17 */
 #define XKB_KEY_F18                           0xffcf
-#define XKB_KEY_L8                            0xffcf
+#define XKB_KEY_L8                            0xffcf  /* deprecated alias for F18 */
 #define XKB_KEY_F19                           0xffd0
-#define XKB_KEY_L9                            0xffd0
+#define XKB_KEY_L9                            0xffd0  /* deprecated alias for F19 */
 #define XKB_KEY_F20                           0xffd1
-#define XKB_KEY_L10                           0xffd1
+#define XKB_KEY_L10                           0xffd1  /* deprecated alias for F20 */
 #define XKB_KEY_F21                           0xffd2
-#define XKB_KEY_R1                            0xffd2
+#define XKB_KEY_R1                            0xffd2  /* deprecated alias for F21 */
 #define XKB_KEY_F22                           0xffd3
-#define XKB_KEY_R2                            0xffd3
+#define XKB_KEY_R2                            0xffd3  /* deprecated alias for F22 */
 #define XKB_KEY_F23                           0xffd4
-#define XKB_KEY_R3                            0xffd4
+#define XKB_KEY_R3                            0xffd4  /* deprecated alias for F23 */
 #define XKB_KEY_F24                           0xffd5
-#define XKB_KEY_R4                            0xffd5
+#define XKB_KEY_R4                            0xffd5  /* deprecated alias for F24 */
 #define XKB_KEY_F25                           0xffd6
-#define XKB_KEY_R5                            0xffd6
+#define XKB_KEY_R5                            0xffd6  /* deprecated alias for F25 */
 #define XKB_KEY_F26                           0xffd7
-#define XKB_KEY_R6                            0xffd7
+#define XKB_KEY_R6                            0xffd7  /* deprecated alias for F26 */
 #define XKB_KEY_F27                           0xffd8
-#define XKB_KEY_R7                            0xffd8
+#define XKB_KEY_R7                            0xffd8  /* deprecated alias for F27 */
 #define XKB_KEY_F28                           0xffd9
-#define XKB_KEY_R8                            0xffd9
+#define XKB_KEY_R8                            0xffd9  /* deprecated alias for F28 */
 #define XKB_KEY_F29                           0xffda
-#define XKB_KEY_R9                            0xffda
+#define XKB_KEY_R9                            0xffda  /* deprecated alias for F29 */
 #define XKB_KEY_F30                           0xffdb
-#define XKB_KEY_R10                           0xffdb
+#define XKB_KEY_R10                           0xffdb  /* deprecated alias for F30 */
 #define XKB_KEY_F31                           0xffdc
-#define XKB_KEY_R11                           0xffdc
+#define XKB_KEY_R11                           0xffdc  /* deprecated alias for F31 */
 #define XKB_KEY_F32                           0xffdd
-#define XKB_KEY_R12                           0xffdd
+#define XKB_KEY_R12                           0xffdd  /* deprecated alias for F32 */
 #define XKB_KEY_F33                           0xffde
-#define XKB_KEY_R13                           0xffde
+#define XKB_KEY_R13                           0xffde  /* deprecated alias for F33 */
 #define XKB_KEY_F34                           0xffdf
-#define XKB_KEY_R14                           0xffdf
+#define XKB_KEY_R14                           0xffdf  /* deprecated alias for F34 */
 #define XKB_KEY_F35                           0xffe0
-#define XKB_KEY_R15                           0xffe0
+#define XKB_KEY_R15                           0xffe0  /* deprecated alias for F35 */
 
 /* Modifiers */
 
@@ -353,7 +369,7 @@ SOFTWARE.
 #define XKB_KEY_ISO_Level5_Shift              0xfe11
 #define XKB_KEY_ISO_Level5_Latch              0xfe12
 #define XKB_KEY_ISO_Level5_Lock               0xfe13
-#define XKB_KEY_ISO_Group_Shift               0xff7e  /* Alias for mode_switch */
+#define XKB_KEY_ISO_Group_Shift               0xff7e  /* Alias for Mode_switch */
 #define XKB_KEY_ISO_Group_Latch               0xfe06
 #define XKB_KEY_ISO_Group_Lock                0xfe07
 #define XKB_KEY_ISO_Next_Group                0xfe08
@@ -423,12 +439,6 @@ SOFTWARE.
 #define XKB_KEY_dead_belowcomma               0xfe6e
 #define XKB_KEY_dead_currency                 0xfe6f
 
-/* extra dead elements for German T3 layout */
-#define XKB_KEY_dead_lowline                  0xfe90
-#define XKB_KEY_dead_aboveverticalline        0xfe91
-#define XKB_KEY_dead_belowverticalline        0xfe92
-#define XKB_KEY_dead_longsolidusoverlay       0xfe93
-
 /* dead vowels for universal syllable entry */
 #define XKB_KEY_dead_a                        0xfe80
 #define XKB_KEY_dead_A                        0xfe81
@@ -440,10 +450,13 @@ SOFTWARE.
 #define XKB_KEY_dead_O                        0xfe87
 #define XKB_KEY_dead_u                        0xfe88
 #define XKB_KEY_dead_U                        0xfe89
-#define XKB_KEY_dead_small_schwa              0xfe8a
-#define XKB_KEY_dead_capital_schwa            0xfe8b
+#define XKB_KEY_dead_schwa                    0xfe8a
+#define XKB_KEY_dead_SCHWA                    0xfe8b
+#define XKB_KEY_dead_small_schwa              0xfe8a  /* deprecated, remove in 2025 */
+#define XKB_KEY_dead_capital_schwa            0xfe8b  /* deprecated, remove in 2025 */
 
 #define XKB_KEY_dead_greek                    0xfe8c
+#define XKB_KEY_dead_hamza                    0xfe8d
 
 #define XKB_KEY_First_Virtual_Screen          0xfed0
 #define XKB_KEY_Prev_Virtual_Screen           0xfed1
@@ -655,7 +668,8 @@ SOFTWARE.
 #define XKB_KEY_diaeresis                     0x00a8  /* U+00A8 DIAERESIS */
 #define XKB_KEY_copyright                     0x00a9  /* U+00A9 COPYRIGHT SIGN */
 #define XKB_KEY_ordfeminine                   0x00aa  /* U+00AA FEMININE ORDINAL INDICATOR */
-#define XKB_KEY_guillemotleft                 0x00ab  /* U+00AB LEFT-POINTING DOUBLE ANGLE QUOTATION MARK */
+#define XKB_KEY_guillemetleft                 0x00ab  /* U+00AB LEFT-POINTING DOUBLE ANGLE QUOTATION MARK */
+#define XKB_KEY_guillemotleft                 0x00ab  /* deprecated misspelling */
 #define XKB_KEY_notsign                       0x00ac  /* U+00AC NOT SIGN */
 #define XKB_KEY_hyphen                        0x00ad  /* U+00AD SOFT HYPHEN */
 #define XKB_KEY_registered                    0x00ae  /* U+00AE REGISTERED SIGN */
@@ -670,8 +684,10 @@ SOFTWARE.
 #define XKB_KEY_periodcentered                0x00b7  /* U+00B7 MIDDLE DOT */
 #define XKB_KEY_cedilla                       0x00b8  /* U+00B8 CEDILLA */
 #define XKB_KEY_onesuperior                   0x00b9  /* U+00B9 SUPERSCRIPT ONE */
-#define XKB_KEY_masculine                     0x00ba  /* U+00BA MASCULINE ORDINAL INDICATOR */
-#define XKB_KEY_guillemotright                0x00bb  /* U+00BB RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK */
+#define XKB_KEY_ordmasculine                  0x00ba  /* U+00BA MASCULINE ORDINAL INDICATOR */
+#define XKB_KEY_masculine                     0x00ba  /* deprecated inconsistent name */
+#define XKB_KEY_guillemetright                0x00bb  /* U+00BB RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK */
+#define XKB_KEY_guillemotright                0x00bb  /* deprecated misspelling */
 #define XKB_KEY_onequarter                    0x00bc  /* U+00BC VULGAR FRACTION ONE QUARTER */
 #define XKB_KEY_onehalf                       0x00bd  /* U+00BD VULGAR FRACTION ONE HALF */
 #define XKB_KEY_threequarters                 0x00be  /* U+00BE VULGAR FRACTION THREE QUARTERS */
@@ -702,7 +718,7 @@ SOFTWARE.
 #define XKB_KEY_Odiaeresis                    0x00d6  /* U+00D6 LATIN CAPITAL LETTER O WITH DIAERESIS */
 #define XKB_KEY_multiply                      0x00d7  /* U+00D7 MULTIPLICATION SIGN */
 #define XKB_KEY_Oslash                        0x00d8  /* U+00D8 LATIN CAPITAL LETTER O WITH STROKE */
-#define XKB_KEY_Ooblique                      0x00d8  /* U+00D8 LATIN CAPITAL LETTER O WITH STROKE */
+#define XKB_KEY_Ooblique                      0x00d8  /* deprecated alias for Oslash */
 #define XKB_KEY_Ugrave                        0x00d9  /* U+00D9 LATIN CAPITAL LETTER U WITH GRAVE */
 #define XKB_KEY_Uacute                        0x00da  /* U+00DA LATIN CAPITAL LETTER U WITH ACUTE */
 #define XKB_KEY_Ucircumflex                   0x00db  /* U+00DB LATIN CAPITAL LETTER U WITH CIRCUMFLEX */
@@ -736,7 +752,7 @@ SOFTWARE.
 #define XKB_KEY_odiaeresis                    0x00f6  /* U+00F6 LATIN SMALL LETTER O WITH DIAERESIS */
 #define XKB_KEY_division                      0x00f7  /* U+00F7 DIVISION SIGN */
 #define XKB_KEY_oslash                        0x00f8  /* U+00F8 LATIN SMALL LETTER O WITH STROKE */
-#define XKB_KEY_ooblique                      0x00f8  /* U+00F8 LATIN SMALL LETTER O WITH STROKE */
+#define XKB_KEY_ooblique                      0x00f8  /* deprecated alias for oslash */
 #define XKB_KEY_ugrave                        0x00f9  /* U+00F9 LATIN SMALL LETTER U WITH GRAVE */
 #define XKB_KEY_uacute                        0x00fa  /* U+00FA LATIN SMALL LETTER U WITH ACUTE */
 #define XKB_KEY_ucircumflex                   0x00fb  /* U+00FB LATIN SMALL LETTER U WITH CIRCUMFLEX */
@@ -992,7 +1008,7 @@ SOFTWARE.
 #define XKB_KEY_kana_N                        0x04dd  /* U+30F3 KATAKANA LETTER N */
 #define XKB_KEY_voicedsound                   0x04de  /* U+309B KATAKANA-HIRAGANA VOICED SOUND MARK */
 #define XKB_KEY_semivoicedsound               0x04df  /* U+309C KATAKANA-HIRAGANA SEMI-VOICED SOUND MARK */
-#define XKB_KEY_kana_switch                   0xff7e  /* Alias for mode_switch */
+#define XKB_KEY_kana_switch                   0xff7e  /* Alias for Mode_switch */
 
 /*
  * Arabic
@@ -1086,10 +1102,10 @@ SOFTWARE.
 #define XKB_KEY_Arabic_noon_ghunna         0x10006ba  /* U+06BA ARABIC LETTER NOON GHUNNA */
 #define XKB_KEY_Arabic_heh_doachashmee     0x10006be  /* U+06BE ARABIC LETTER HEH DOACHASHMEE */
 #define XKB_KEY_Farsi_yeh                  0x10006cc  /* U+06CC ARABIC LETTER FARSI YEH */
-#define XKB_KEY_Arabic_farsi_yeh           0x10006cc  /* U+06CC ARABIC LETTER FARSI YEH */
+#define XKB_KEY_Arabic_farsi_yeh           0x10006cc  /* deprecated alias for Farsi_yeh */
 #define XKB_KEY_Arabic_yeh_baree           0x10006d2  /* U+06D2 ARABIC LETTER YEH BARREE */
 #define XKB_KEY_Arabic_heh_goal            0x10006c1  /* U+06C1 ARABIC LETTER HEH GOAL */
-#define XKB_KEY_Arabic_switch                 0xff7e  /* Alias for mode_switch */
+#define XKB_KEY_Arabic_switch                 0xff7e  /* Alias for Mode_switch */
 
 /*
  * Cyrillic
@@ -1248,7 +1264,7 @@ SOFTWARE.
 #define XKB_KEY_Greek_ETAaccent               0x07a3  /* U+0389 GREEK CAPITAL LETTER ETA WITH TONOS */
 #define XKB_KEY_Greek_IOTAaccent              0x07a4  /* U+038A GREEK CAPITAL LETTER IOTA WITH TONOS */
 #define XKB_KEY_Greek_IOTAdieresis            0x07a5  /* U+03AA GREEK CAPITAL LETTER IOTA WITH DIALYTIKA */
-#define XKB_KEY_Greek_IOTAdiaeresis           0x07a5  /* old typo */
+#define XKB_KEY_Greek_IOTAdiaeresis           0x07a5  /* deprecated (old typo) */
 #define XKB_KEY_Greek_OMICRONaccent           0x07a7  /* U+038C GREEK CAPITAL LETTER OMICRON WITH TONOS */
 #define XKB_KEY_Greek_UPSILONaccent           0x07a8  /* U+038E GREEK CAPITAL LETTER UPSILON WITH TONOS */
 #define XKB_KEY_Greek_UPSILONdieresis         0x07a9  /* U+03AB GREEK CAPITAL LETTER UPSILON WITH DIALYTIKA */
@@ -1277,7 +1293,7 @@ SOFTWARE.
 #define XKB_KEY_Greek_IOTA                    0x07c9  /* U+0399 GREEK CAPITAL LETTER IOTA */
 #define XKB_KEY_Greek_KAPPA                   0x07ca  /* U+039A GREEK CAPITAL LETTER KAPPA */
 #define XKB_KEY_Greek_LAMDA                   0x07cb  /* U+039B GREEK CAPITAL LETTER LAMDA */
-#define XKB_KEY_Greek_LAMBDA                  0x07cb  /* U+039B GREEK CAPITAL LETTER LAMDA */
+#define XKB_KEY_Greek_LAMBDA                  0x07cb  /* alias for Greek_LAMDA */
 #define XKB_KEY_Greek_MU                      0x07cc  /* U+039C GREEK CAPITAL LETTER MU */
 #define XKB_KEY_Greek_NU                      0x07cd  /* U+039D GREEK CAPITAL LETTER NU */
 #define XKB_KEY_Greek_XI                      0x07ce  /* U+039E GREEK CAPITAL LETTER XI */
@@ -1302,7 +1318,7 @@ SOFTWARE.
 #define XKB_KEY_Greek_iota                    0x07e9  /* U+03B9 GREEK SMALL LETTER IOTA */
 #define XKB_KEY_Greek_kappa                   0x07ea  /* U+03BA GREEK SMALL LETTER KAPPA */
 #define XKB_KEY_Greek_lamda                   0x07eb  /* U+03BB GREEK SMALL LETTER LAMDA */
-#define XKB_KEY_Greek_lambda                  0x07eb  /* U+03BB GREEK SMALL LETTER LAMDA */
+#define XKB_KEY_Greek_lambda                  0x07eb  /* alias for Greek_lamda */
 #define XKB_KEY_Greek_mu                      0x07ec  /* U+03BC GREEK SMALL LETTER MU */
 #define XKB_KEY_Greek_nu                      0x07ed  /* U+03BD GREEK SMALL LETTER NU */
 #define XKB_KEY_Greek_xi                      0x07ee  /* U+03BE GREEK SMALL LETTER XI */
@@ -1317,7 +1333,7 @@ SOFTWARE.
 #define XKB_KEY_Greek_chi                     0x07f7  /* U+03C7 GREEK SMALL LETTER CHI */
 #define XKB_KEY_Greek_psi                     0x07f8  /* U+03C8 GREEK SMALL LETTER PSI */
 #define XKB_KEY_Greek_omega                   0x07f9  /* U+03C9 GREEK SMALL LETTER OMEGA */
-#define XKB_KEY_Greek_switch                  0xff7e  /* Alias for mode_switch */
+#define XKB_KEY_Greek_switch                  0xff7e  /* Alias for Mode_switch */
 
 /*
  * Technical
@@ -1567,7 +1583,7 @@ SOFTWARE.
 #define XKB_KEY_hebrew_shin                   0x0cf9  /* U+05E9 HEBREW LETTER SHIN */
 #define XKB_KEY_hebrew_taw                    0x0cfa  /* U+05EA HEBREW LETTER TAV */
 #define XKB_KEY_hebrew_taf                    0x0cfa  /* deprecated */
-#define XKB_KEY_Hebrew_switch                 0xff7e  /* Alias for mode_switch */
+#define XKB_KEY_Hebrew_switch                 0xff7e  /* Alias for Mode_switch */
 
 /*
  * Thai
@@ -1632,7 +1648,7 @@ SOFTWARE.
 #define XKB_KEY_Thai_sarau                    0x0dd8  /* U+0E38 THAI CHARACTER SARA U */
 #define XKB_KEY_Thai_sarauu                   0x0dd9  /* U+0E39 THAI CHARACTER SARA UU */
 #define XKB_KEY_Thai_phinthu                  0x0dda  /* U+0E3A THAI CHARACTER PHINTHU */
-#define XKB_KEY_Thai_maihanakat_maitho        0x0dde
+#define XKB_KEY_Thai_maihanakat_maitho        0x0dde  /*(U+0E3E Unassigned code point)*/
 #define XKB_KEY_Thai_baht                     0x0ddf  /* U+0E3F THAI CURRENCY SYMBOL BAHT */
 #define XKB_KEY_Thai_sarae                    0x0de0  /* U+0E40 THAI CHARACTER SARA E */
 #define XKB_KEY_Thai_saraae                   0x0de1  /* U+0E41 THAI CHARACTER SARA AE */
@@ -1680,7 +1696,7 @@ SOFTWARE.
 #define XKB_KEY_Hangul_MultipleCandidate      0xff3d  /* Multiple candidate */
 #define XKB_KEY_Hangul_PreviousCandidate      0xff3e  /* Previous candidate */
 #define XKB_KEY_Hangul_Special                0xff3f  /* Special symbols */
-#define XKB_KEY_Hangul_switch                 0xff7e  /* Alias for mode_switch */
+#define XKB_KEY_Hangul_switch                 0xff7e  /* Alias for Mode_switch */
 
 /* Hangul Consonant Characters */
 #define XKB_KEY_Hangul_Kiyeog                 0x0ea1  /* U+3131 HANGUL LETTER KIYEOK */
@@ -1794,17 +1810,17 @@ SOFTWARE.
 
 #define XKB_KEY_Armenian_ligature_ew       0x1000587  /* U+0587 ARMENIAN SMALL LIGATURE ECH YIWN */
 #define XKB_KEY_Armenian_full_stop         0x1000589  /* U+0589 ARMENIAN FULL STOP */
-#define XKB_KEY_Armenian_verjaket          0x1000589  /* U+0589 ARMENIAN FULL STOP */
+#define XKB_KEY_Armenian_verjaket          0x1000589  /* deprecated alias for Armenian_full_stop */
 #define XKB_KEY_Armenian_separation_mark   0x100055d  /* U+055D ARMENIAN COMMA */
-#define XKB_KEY_Armenian_but               0x100055d  /* U+055D ARMENIAN COMMA */
+#define XKB_KEY_Armenian_but               0x100055d  /* deprecated alias for Armenian_separation_mark */
 #define XKB_KEY_Armenian_hyphen            0x100058a  /* U+058A ARMENIAN HYPHEN */
-#define XKB_KEY_Armenian_yentamna          0x100058a  /* U+058A ARMENIAN HYPHEN */
+#define XKB_KEY_Armenian_yentamna          0x100058a  /* deprecated alias for Armenian_hyphen */
 #define XKB_KEY_Armenian_exclam            0x100055c  /* U+055C ARMENIAN EXCLAMATION MARK */
-#define XKB_KEY_Armenian_amanak            0x100055c  /* U+055C ARMENIAN EXCLAMATION MARK */
+#define XKB_KEY_Armenian_amanak            0x100055c  /* deprecated alias for Armenian_exclam */
 #define XKB_KEY_Armenian_accent            0x100055b  /* U+055B ARMENIAN EMPHASIS MARK */
-#define XKB_KEY_Armenian_shesht            0x100055b  /* U+055B ARMENIAN EMPHASIS MARK */
+#define XKB_KEY_Armenian_shesht            0x100055b  /* deprecated alias for Armenian_accent */
 #define XKB_KEY_Armenian_question          0x100055e  /* U+055E ARMENIAN QUESTION MARK */
-#define XKB_KEY_Armenian_paruyk            0x100055e  /* U+055E ARMENIAN QUESTION MARK */
+#define XKB_KEY_Armenian_paruyk            0x100055e  /* deprecated alias for Armenian_question */
 #define XKB_KEY_Armenian_AYB               0x1000531  /* U+0531 ARMENIAN CAPITAL LETTER AYB */
 #define XKB_KEY_Armenian_ayb               0x1000561  /* U+0561 ARMENIAN SMALL LETTER AYB */
 #define XKB_KEY_Armenian_BEN               0x1000532  /* U+0532 ARMENIAN CAPITAL LETTER BEN */
@@ -2089,15 +2105,15 @@ SOFTWARE.
 #define XKB_KEY_eightsubscript             0x1002088  /* U+2088 SUBSCRIPT EIGHT */
 #define XKB_KEY_ninesubscript              0x1002089  /* U+2089 SUBSCRIPT NINE */
 #define XKB_KEY_partdifferential           0x1002202  /* U+2202 PARTIAL DIFFERENTIAL */
-#define XKB_KEY_emptyset                   0x1002205  /* U+2205 NULL SET */
+#define XKB_KEY_emptyset                   0x1002205  /* U+2205 EMPTY SET */
 #define XKB_KEY_elementof                  0x1002208  /* U+2208 ELEMENT OF */
 #define XKB_KEY_notelementof               0x1002209  /* U+2209 NOT AN ELEMENT OF */
-#define XKB_KEY_containsas                 0x100220B  /* U+220B CONTAINS AS MEMBER */
-#define XKB_KEY_squareroot                 0x100221A  /* U+221A SQUARE ROOT */
-#define XKB_KEY_cuberoot                   0x100221B  /* U+221B CUBE ROOT */
-#define XKB_KEY_fourthroot                 0x100221C  /* U+221C FOURTH ROOT */
-#define XKB_KEY_dintegral                  0x100222C  /* U+222C DOUBLE INTEGRAL */
-#define XKB_KEY_tintegral                  0x100222D  /* U+222D TRIPLE INTEGRAL */
+#define XKB_KEY_containsas                 0x100220b  /* U+220B CONTAINS AS MEMBER */
+#define XKB_KEY_squareroot                 0x100221a  /* U+221A SQUARE ROOT */
+#define XKB_KEY_cuberoot                   0x100221b  /* U+221B CUBE ROOT */
+#define XKB_KEY_fourthroot                 0x100221c  /* U+221C FOURTH ROOT */
+#define XKB_KEY_dintegral                  0x100222c  /* U+222C DOUBLE INTEGRAL */
+#define XKB_KEY_tintegral                  0x100222d  /* U+222D TRIPLE INTEGRAL */
 #define XKB_KEY_because                    0x1002235  /* U+2235 BECAUSE */
 #define XKB_KEY_approxeq                   0x1002248  /*(U+2248 ALMOST EQUAL TO)*/
 #define XKB_KEY_notapproxeq                0x1002247  /*(U+2247 NEITHER APPROXIMATELY NOR ACTUALLY EQUAL TO)*/
@@ -2124,12 +2140,12 @@ SOFTWARE.
 #define XKB_KEY_braille_dots_123           0x1002807  /* U+2807 BRAILLE PATTERN DOTS-123 */
 #define XKB_KEY_braille_dots_4             0x1002808  /* U+2808 BRAILLE PATTERN DOTS-4 */
 #define XKB_KEY_braille_dots_14            0x1002809  /* U+2809 BRAILLE PATTERN DOTS-14 */
-#define XKB_KEY_braille_dots_24            0x100280a  /* U+280a BRAILLE PATTERN DOTS-24 */
-#define XKB_KEY_braille_dots_124           0x100280b  /* U+280b BRAILLE PATTERN DOTS-124 */
-#define XKB_KEY_braille_dots_34            0x100280c  /* U+280c BRAILLE PATTERN DOTS-34 */
-#define XKB_KEY_braille_dots_134           0x100280d  /* U+280d BRAILLE PATTERN DOTS-134 */
-#define XKB_KEY_braille_dots_234           0x100280e  /* U+280e BRAILLE PATTERN DOTS-234 */
-#define XKB_KEY_braille_dots_1234          0x100280f  /* U+280f BRAILLE PATTERN DOTS-1234 */
+#define XKB_KEY_braille_dots_24            0x100280a  /* U+280A BRAILLE PATTERN DOTS-24 */
+#define XKB_KEY_braille_dots_124           0x100280b  /* U+280B BRAILLE PATTERN DOTS-124 */
+#define XKB_KEY_braille_dots_34            0x100280c  /* U+280C BRAILLE PATTERN DOTS-34 */
+#define XKB_KEY_braille_dots_134           0x100280d  /* U+280D BRAILLE PATTERN DOTS-134 */
+#define XKB_KEY_braille_dots_234           0x100280e  /* U+280E BRAILLE PATTERN DOTS-234 */
+#define XKB_KEY_braille_dots_1234          0x100280f  /* U+280F BRAILLE PATTERN DOTS-1234 */
 #define XKB_KEY_braille_dots_5             0x1002810  /* U+2810 BRAILLE PATTERN DOTS-5 */
 #define XKB_KEY_braille_dots_15            0x1002811  /* U+2811 BRAILLE PATTERN DOTS-15 */
 #define XKB_KEY_braille_dots_25            0x1002812  /* U+2812 BRAILLE PATTERN DOTS-25 */
@@ -2140,12 +2156,12 @@ SOFTWARE.
 #define XKB_KEY_braille_dots_1235          0x1002817  /* U+2817 BRAILLE PATTERN DOTS-1235 */
 #define XKB_KEY_braille_dots_45            0x1002818  /* U+2818 BRAILLE PATTERN DOTS-45 */
 #define XKB_KEY_braille_dots_145           0x1002819  /* U+2819 BRAILLE PATTERN DOTS-145 */
-#define XKB_KEY_braille_dots_245           0x100281a  /* U+281a BRAILLE PATTERN DOTS-245 */
-#define XKB_KEY_braille_dots_1245          0x100281b  /* U+281b BRAILLE PATTERN DOTS-1245 */
-#define XKB_KEY_braille_dots_345           0x100281c  /* U+281c BRAILLE PATTERN DOTS-345 */
-#define XKB_KEY_braille_dots_1345          0x100281d  /* U+281d BRAILLE PATTERN DOTS-1345 */
-#define XKB_KEY_braille_dots_2345          0x100281e  /* U+281e BRAILLE PATTERN DOTS-2345 */
-#define XKB_KEY_braille_dots_12345         0x100281f  /* U+281f BRAILLE PATTERN DOTS-12345 */
+#define XKB_KEY_braille_dots_245           0x100281a  /* U+281A BRAILLE PATTERN DOTS-245 */
+#define XKB_KEY_braille_dots_1245          0x100281b  /* U+281B BRAILLE PATTERN DOTS-1245 */
+#define XKB_KEY_braille_dots_345           0x100281c  /* U+281C BRAILLE PATTERN DOTS-345 */
+#define XKB_KEY_braille_dots_1345          0x100281d  /* U+281D BRAILLE PATTERN DOTS-1345 */
+#define XKB_KEY_braille_dots_2345          0x100281e  /* U+281E BRAILLE PATTERN DOTS-2345 */
+#define XKB_KEY_braille_dots_12345         0x100281f  /* U+281F BRAILLE PATTERN DOTS-12345 */
 #define XKB_KEY_braille_dots_6             0x1002820  /* U+2820 BRAILLE PATTERN DOTS-6 */
 #define XKB_KEY_braille_dots_16            0x1002821  /* U+2821 BRAILLE PATTERN DOTS-16 */
 #define XKB_KEY_braille_dots_26            0x1002822  /* U+2822 BRAILLE PATTERN DOTS-26 */
@@ -2156,12 +2172,12 @@ SOFTWARE.
 #define XKB_KEY_braille_dots_1236          0x1002827  /* U+2827 BRAILLE PATTERN DOTS-1236 */
 #define XKB_KEY_braille_dots_46            0x1002828  /* U+2828 BRAILLE PATTERN DOTS-46 */
 #define XKB_KEY_braille_dots_146           0x1002829  /* U+2829 BRAILLE PATTERN DOTS-146 */
-#define XKB_KEY_braille_dots_246           0x100282a  /* U+282a BRAILLE PATTERN DOTS-246 */
-#define XKB_KEY_braille_dots_1246          0x100282b  /* U+282b BRAILLE PATTERN DOTS-1246 */
-#define XKB_KEY_braille_dots_346           0x100282c  /* U+282c BRAILLE PATTERN DOTS-346 */
-#define XKB_KEY_braille_dots_1346          0x100282d  /* U+282d BRAILLE PATTERN DOTS-1346 */
-#define XKB_KEY_braille_dots_2346          0x100282e  /* U+282e BRAILLE PATTERN DOTS-2346 */
-#define XKB_KEY_braille_dots_12346         0x100282f  /* U+282f BRAILLE PATTERN DOTS-12346 */
+#define XKB_KEY_braille_dots_246           0x100282a  /* U+282A BRAILLE PATTERN DOTS-246 */
+#define XKB_KEY_braille_dots_1246          0x100282b  /* U+282B BRAILLE PATTERN DOTS-1246 */
+#define XKB_KEY_braille_dots_346           0x100282c  /* U+282C BRAILLE PATTERN DOTS-346 */
+#define XKB_KEY_braille_dots_1346          0x100282d  /* U+282D BRAILLE PATTERN DOTS-1346 */
+#define XKB_KEY_braille_dots_2346          0x100282e  /* U+282E BRAILLE PATTERN DOTS-2346 */
+#define XKB_KEY_braille_dots_12346         0x100282f  /* U+282F BRAILLE PATTERN DOTS-12346 */
 #define XKB_KEY_braille_dots_56            0x1002830  /* U+2830 BRAILLE PATTERN DOTS-56 */
 #define XKB_KEY_braille_dots_156           0x1002831  /* U+2831 BRAILLE PATTERN DOTS-156 */
 #define XKB_KEY_braille_dots_256           0x1002832  /* U+2832 BRAILLE PATTERN DOTS-256 */
@@ -2172,12 +2188,12 @@ SOFTWARE.
 #define XKB_KEY_braille_dots_12356         0x1002837  /* U+2837 BRAILLE PATTERN DOTS-12356 */
 #define XKB_KEY_braille_dots_456           0x1002838  /* U+2838 BRAILLE PATTERN DOTS-456 */
 #define XKB_KEY_braille_dots_1456          0x1002839  /* U+2839 BRAILLE PATTERN DOTS-1456 */
-#define XKB_KEY_braille_dots_2456          0x100283a  /* U+283a BRAILLE PATTERN DOTS-2456 */
-#define XKB_KEY_braille_dots_12456         0x100283b  /* U+283b BRAILLE PATTERN DOTS-12456 */
-#define XKB_KEY_braille_dots_3456          0x100283c  /* U+283c BRAILLE PATTERN DOTS-3456 */
-#define XKB_KEY_braille_dots_13456         0x100283d  /* U+283d BRAILLE PATTERN DOTS-13456 */
-#define XKB_KEY_braille_dots_23456         0x100283e  /* U+283e BRAILLE PATTERN DOTS-23456 */
-#define XKB_KEY_braille_dots_123456        0x100283f  /* U+283f BRAILLE PATTERN DOTS-123456 */
+#define XKB_KEY_braille_dots_2456          0x100283a  /* U+283A BRAILLE PATTERN DOTS-2456 */
+#define XKB_KEY_braille_dots_12456         0x100283b  /* U+283B BRAILLE PATTERN DOTS-12456 */
+#define XKB_KEY_braille_dots_3456          0x100283c  /* U+283C BRAILLE PATTERN DOTS-3456 */
+#define XKB_KEY_braille_dots_13456         0x100283d  /* U+283D BRAILLE PATTERN DOTS-13456 */
+#define XKB_KEY_braille_dots_23456         0x100283e  /* U+283E BRAILLE PATTERN DOTS-23456 */
+#define XKB_KEY_braille_dots_123456        0x100283f  /* U+283F BRAILLE PATTERN DOTS-123456 */
 #define XKB_KEY_braille_dots_7             0x1002840  /* U+2840 BRAILLE PATTERN DOTS-7 */
 #define XKB_KEY_braille_dots_17            0x1002841  /* U+2841 BRAILLE PATTERN DOTS-17 */
 #define XKB_KEY_braille_dots_27            0x1002842  /* U+2842 BRAILLE PATTERN DOTS-27 */
@@ -2188,12 +2204,12 @@ SOFTWARE.
 #define XKB_KEY_braille_dots_1237          0x1002847  /* U+2847 BRAILLE PATTERN DOTS-1237 */
 #define XKB_KEY_braille_dots_47            0x1002848  /* U+2848 BRAILLE PATTERN DOTS-47 */
 #define XKB_KEY_braille_dots_147           0x1002849  /* U+2849 BRAILLE PATTERN DOTS-147 */
-#define XKB_KEY_braille_dots_247           0x100284a  /* U+284a BRAILLE PATTERN DOTS-247 */
-#define XKB_KEY_braille_dots_1247          0x100284b  /* U+284b BRAILLE PATTERN DOTS-1247 */
-#define XKB_KEY_braille_dots_347           0x100284c  /* U+284c BRAILLE PATTERN DOTS-347 */
-#define XKB_KEY_braille_dots_1347          0x100284d  /* U+284d BRAILLE PATTERN DOTS-1347 */
-#define XKB_KEY_braille_dots_2347          0x100284e  /* U+284e BRAILLE PATTERN DOTS-2347 */
-#define XKB_KEY_braille_dots_12347         0x100284f  /* U+284f BRAILLE PATTERN DOTS-12347 */
+#define XKB_KEY_braille_dots_247           0x100284a  /* U+284A BRAILLE PATTERN DOTS-247 */
+#define XKB_KEY_braille_dots_1247          0x100284b  /* U+284B BRAILLE PATTERN DOTS-1247 */
+#define XKB_KEY_braille_dots_347           0x100284c  /* U+284C BRAILLE PATTERN DOTS-347 */
+#define XKB_KEY_braille_dots_1347          0x100284d  /* U+284D BRAILLE PATTERN DOTS-1347 */
+#define XKB_KEY_braille_dots_2347          0x100284e  /* U+284E BRAILLE PATTERN DOTS-2347 */
+#define XKB_KEY_braille_dots_12347         0x100284f  /* U+284F BRAILLE PATTERN DOTS-12347 */
 #define XKB_KEY_braille_dots_57            0x1002850  /* U+2850 BRAILLE PATTERN DOTS-57 */
 #define XKB_KEY_braille_dots_157           0x1002851  /* U+2851 BRAILLE PATTERN DOTS-157 */
 #define XKB_KEY_braille_dots_257           0x1002852  /* U+2852 BRAILLE PATTERN DOTS-257 */
@@ -2204,12 +2220,12 @@ SOFTWARE.
 #define XKB_KEY_braille_dots_12357         0x1002857  /* U+2857 BRAILLE PATTERN DOTS-12357 */
 #define XKB_KEY_braille_dots_457           0x1002858  /* U+2858 BRAILLE PATTERN DOTS-457 */
 #define XKB_KEY_braille_dots_1457          0x1002859  /* U+2859 BRAILLE PATTERN DOTS-1457 */
-#define XKB_KEY_braille_dots_2457          0x100285a  /* U+285a BRAILLE PATTERN DOTS-2457 */
-#define XKB_KEY_braille_dots_12457         0x100285b  /* U+285b BRAILLE PATTERN DOTS-12457 */
-#define XKB_KEY_braille_dots_3457          0x100285c  /* U+285c BRAILLE PATTERN DOTS-3457 */
-#define XKB_KEY_braille_dots_13457         0x100285d  /* U+285d BRAILLE PATTERN DOTS-13457 */
-#define XKB_KEY_braille_dots_23457         0x100285e  /* U+285e BRAILLE PATTERN DOTS-23457 */
-#define XKB_KEY_braille_dots_123457        0x100285f  /* U+285f BRAILLE PATTERN DOTS-123457 */
+#define XKB_KEY_braille_dots_2457          0x100285a  /* U+285A BRAILLE PATTERN DOTS-2457 */
+#define XKB_KEY_braille_dots_12457         0x100285b  /* U+285B BRAILLE PATTERN DOTS-12457 */
+#define XKB_KEY_braille_dots_3457          0x100285c  /* U+285C BRAILLE PATTERN DOTS-3457 */
+#define XKB_KEY_braille_dots_13457         0x100285d  /* U+285D BRAILLE PATTERN DOTS-13457 */
+#define XKB_KEY_braille_dots_23457         0x100285e  /* U+285E BRAILLE PATTERN DOTS-23457 */
+#define XKB_KEY_braille_dots_123457        0x100285f  /* U+285F BRAILLE PATTERN DOTS-123457 */
 #define XKB_KEY_braille_dots_67            0x1002860  /* U+2860 BRAILLE PATTERN DOTS-67 */
 #define XKB_KEY_braille_dots_167           0x1002861  /* U+2861 BRAILLE PATTERN DOTS-167 */
 #define XKB_KEY_braille_dots_267           0x1002862  /* U+2862 BRAILLE PATTERN DOTS-267 */
@@ -2220,12 +2236,12 @@ SOFTWARE.
 #define XKB_KEY_braille_dots_12367         0x1002867  /* U+2867 BRAILLE PATTERN DOTS-12367 */
 #define XKB_KEY_braille_dots_467           0x1002868  /* U+2868 BRAILLE PATTERN DOTS-467 */
 #define XKB_KEY_braille_dots_1467          0x1002869  /* U+2869 BRAILLE PATTERN DOTS-1467 */
-#define XKB_KEY_braille_dots_2467          0x100286a  /* U+286a BRAILLE PATTERN DOTS-2467 */
-#define XKB_KEY_braille_dots_12467         0x100286b  /* U+286b BRAILLE PATTERN DOTS-12467 */
-#define XKB_KEY_braille_dots_3467          0x100286c  /* U+286c BRAILLE PATTERN DOTS-3467 */
-#define XKB_KEY_braille_dots_13467         0x100286d  /* U+286d BRAILLE PATTERN DOTS-13467 */
-#define XKB_KEY_braille_dots_23467         0x100286e  /* U+286e BRAILLE PATTERN DOTS-23467 */
-#define XKB_KEY_braille_dots_123467        0x100286f  /* U+286f BRAILLE PATTERN DOTS-123467 */
+#define XKB_KEY_braille_dots_2467          0x100286a  /* U+286A BRAILLE PATTERN DOTS-2467 */
+#define XKB_KEY_braille_dots_12467         0x100286b  /* U+286B BRAILLE PATTERN DOTS-12467 */
+#define XKB_KEY_braille_dots_3467          0x100286c  /* U+286C BRAILLE PATTERN DOTS-3467 */
+#define XKB_KEY_braille_dots_13467         0x100286d  /* U+286D BRAILLE PATTERN DOTS-13467 */
+#define XKB_KEY_braille_dots_23467         0x100286e  /* U+286E BRAILLE PATTERN DOTS-23467 */
+#define XKB_KEY_braille_dots_123467        0x100286f  /* U+286F BRAILLE PATTERN DOTS-123467 */
 #define XKB_KEY_braille_dots_567           0x1002870  /* U+2870 BRAILLE PATTERN DOTS-567 */
 #define XKB_KEY_braille_dots_1567          0x1002871  /* U+2871 BRAILLE PATTERN DOTS-1567 */
 #define XKB_KEY_braille_dots_2567          0x1002872  /* U+2872 BRAILLE PATTERN DOTS-2567 */
@@ -2236,12 +2252,12 @@ SOFTWARE.
 #define XKB_KEY_braille_dots_123567        0x1002877  /* U+2877 BRAILLE PATTERN DOTS-123567 */
 #define XKB_KEY_braille_dots_4567          0x1002878  /* U+2878 BRAILLE PATTERN DOTS-4567 */
 #define XKB_KEY_braille_dots_14567         0x1002879  /* U+2879 BRAILLE PATTERN DOTS-14567 */
-#define XKB_KEY_braille_dots_24567         0x100287a  /* U+287a BRAILLE PATTERN DOTS-24567 */
-#define XKB_KEY_braille_dots_124567        0x100287b  /* U+287b BRAILLE PATTERN DOTS-124567 */
-#define XKB_KEY_braille_dots_34567         0x100287c  /* U+287c BRAILLE PATTERN DOTS-34567 */
-#define XKB_KEY_braille_dots_134567        0x100287d  /* U+287d BRAILLE PATTERN DOTS-134567 */
-#define XKB_KEY_braille_dots_234567        0x100287e  /* U+287e BRAILLE PATTERN DOTS-234567 */
-#define XKB_KEY_braille_dots_1234567       0x100287f  /* U+287f BRAILLE PATTERN DOTS-1234567 */
+#define XKB_KEY_braille_dots_24567         0x100287a  /* U+287A BRAILLE PATTERN DOTS-24567 */
+#define XKB_KEY_braille_dots_124567        0x100287b  /* U+287B BRAILLE PATTERN DOTS-124567 */
+#define XKB_KEY_braille_dots_34567         0x100287c  /* U+287C BRAILLE PATTERN DOTS-34567 */
+#define XKB_KEY_braille_dots_134567        0x100287d  /* U+287D BRAILLE PATTERN DOTS-134567 */
+#define XKB_KEY_braille_dots_234567        0x100287e  /* U+287E BRAILLE PATTERN DOTS-234567 */
+#define XKB_KEY_braille_dots_1234567       0x100287f  /* U+287F BRAILLE PATTERN DOTS-1234567 */
 #define XKB_KEY_braille_dots_8             0x1002880  /* U+2880 BRAILLE PATTERN DOTS-8 */
 #define XKB_KEY_braille_dots_18            0x1002881  /* U+2881 BRAILLE PATTERN DOTS-18 */
 #define XKB_KEY_braille_dots_28            0x1002882  /* U+2882 BRAILLE PATTERN DOTS-28 */
@@ -2252,12 +2268,12 @@ SOFTWARE.
 #define XKB_KEY_braille_dots_1238          0x1002887  /* U+2887 BRAILLE PATTERN DOTS-1238 */
 #define XKB_KEY_braille_dots_48            0x1002888  /* U+2888 BRAILLE PATTERN DOTS-48 */
 #define XKB_KEY_braille_dots_148           0x1002889  /* U+2889 BRAILLE PATTERN DOTS-148 */
-#define XKB_KEY_braille_dots_248           0x100288a  /* U+288a BRAILLE PATTERN DOTS-248 */
-#define XKB_KEY_braille_dots_1248          0x100288b  /* U+288b BRAILLE PATTERN DOTS-1248 */
-#define XKB_KEY_braille_dots_348           0x100288c  /* U+288c BRAILLE PATTERN DOTS-348 */
-#define XKB_KEY_braille_dots_1348          0x100288d  /* U+288d BRAILLE PATTERN DOTS-1348 */
-#define XKB_KEY_braille_dots_2348          0x100288e  /* U+288e BRAILLE PATTERN DOTS-2348 */
-#define XKB_KEY_braille_dots_12348         0x100288f  /* U+288f BRAILLE PATTERN DOTS-12348 */
+#define XKB_KEY_braille_dots_248           0x100288a  /* U+288A BRAILLE PATTERN DOTS-248 */
+#define XKB_KEY_braille_dots_1248          0x100288b  /* U+288B BRAILLE PATTERN DOTS-1248 */
+#define XKB_KEY_braille_dots_348           0x100288c  /* U+288C BRAILLE PATTERN DOTS-348 */
+#define XKB_KEY_braille_dots_1348          0x100288d  /* U+288D BRAILLE PATTERN DOTS-1348 */
+#define XKB_KEY_braille_dots_2348          0x100288e  /* U+288E BRAILLE PATTERN DOTS-2348 */
+#define XKB_KEY_braille_dots_12348         0x100288f  /* U+288F BRAILLE PATTERN DOTS-12348 */
 #define XKB_KEY_braille_dots_58            0x1002890  /* U+2890 BRAILLE PATTERN DOTS-58 */
 #define XKB_KEY_braille_dots_158           0x1002891  /* U+2891 BRAILLE PATTERN DOTS-158 */
 #define XKB_KEY_braille_dots_258           0x1002892  /* U+2892 BRAILLE PATTERN DOTS-258 */
@@ -2268,198 +2284,198 @@ SOFTWARE.
 #define XKB_KEY_braille_dots_12358         0x1002897  /* U+2897 BRAILLE PATTERN DOTS-12358 */
 #define XKB_KEY_braille_dots_458           0x1002898  /* U+2898 BRAILLE PATTERN DOTS-458 */
 #define XKB_KEY_braille_dots_1458          0x1002899  /* U+2899 BRAILLE PATTERN DOTS-1458 */
-#define XKB_KEY_braille_dots_2458          0x100289a  /* U+289a BRAILLE PATTERN DOTS-2458 */
-#define XKB_KEY_braille_dots_12458         0x100289b  /* U+289b BRAILLE PATTERN DOTS-12458 */
-#define XKB_KEY_braille_dots_3458          0x100289c  /* U+289c BRAILLE PATTERN DOTS-3458 */
-#define XKB_KEY_braille_dots_13458         0x100289d  /* U+289d BRAILLE PATTERN DOTS-13458 */
-#define XKB_KEY_braille_dots_23458         0x100289e  /* U+289e BRAILLE PATTERN DOTS-23458 */
-#define XKB_KEY_braille_dots_123458        0x100289f  /* U+289f BRAILLE PATTERN DOTS-123458 */
-#define XKB_KEY_braille_dots_68            0x10028a0  /* U+28a0 BRAILLE PATTERN DOTS-68 */
-#define XKB_KEY_braille_dots_168           0x10028a1  /* U+28a1 BRAILLE PATTERN DOTS-168 */
-#define XKB_KEY_braille_dots_268           0x10028a2  /* U+28a2 BRAILLE PATTERN DOTS-268 */
-#define XKB_KEY_braille_dots_1268          0x10028a3  /* U+28a3 BRAILLE PATTERN DOTS-1268 */
-#define XKB_KEY_braille_dots_368           0x10028a4  /* U+28a4 BRAILLE PATTERN DOTS-368 */
-#define XKB_KEY_braille_dots_1368          0x10028a5  /* U+28a5 BRAILLE PATTERN DOTS-1368 */
-#define XKB_KEY_braille_dots_2368          0x10028a6  /* U+28a6 BRAILLE PATTERN DOTS-2368 */
-#define XKB_KEY_braille_dots_12368         0x10028a7  /* U+28a7 BRAILLE PATTERN DOTS-12368 */
-#define XKB_KEY_braille_dots_468           0x10028a8  /* U+28a8 BRAILLE PATTERN DOTS-468 */
-#define XKB_KEY_braille_dots_1468          0x10028a9  /* U+28a9 BRAILLE PATTERN DOTS-1468 */
-#define XKB_KEY_braille_dots_2468          0x10028aa  /* U+28aa BRAILLE PATTERN DOTS-2468 */
-#define XKB_KEY_braille_dots_12468         0x10028ab  /* U+28ab BRAILLE PATTERN DOTS-12468 */
-#define XKB_KEY_braille_dots_3468          0x10028ac  /* U+28ac BRAILLE PATTERN DOTS-3468 */
-#define XKB_KEY_braille_dots_13468         0x10028ad  /* U+28ad BRAILLE PATTERN DOTS-13468 */
-#define XKB_KEY_braille_dots_23468         0x10028ae  /* U+28ae BRAILLE PATTERN DOTS-23468 */
-#define XKB_KEY_braille_dots_123468        0x10028af  /* U+28af BRAILLE PATTERN DOTS-123468 */
-#define XKB_KEY_braille_dots_568           0x10028b0  /* U+28b0 BRAILLE PATTERN DOTS-568 */
-#define XKB_KEY_braille_dots_1568          0x10028b1  /* U+28b1 BRAILLE PATTERN DOTS-1568 */
-#define XKB_KEY_braille_dots_2568          0x10028b2  /* U+28b2 BRAILLE PATTERN DOTS-2568 */
-#define XKB_KEY_braille_dots_12568         0x10028b3  /* U+28b3 BRAILLE PATTERN DOTS-12568 */
-#define XKB_KEY_braille_dots_3568          0x10028b4  /* U+28b4 BRAILLE PATTERN DOTS-3568 */
-#define XKB_KEY_braille_dots_13568         0x10028b5  /* U+28b5 BRAILLE PATTERN DOTS-13568 */
-#define XKB_KEY_braille_dots_23568         0x10028b6  /* U+28b6 BRAILLE PATTERN DOTS-23568 */
-#define XKB_KEY_braille_dots_123568        0x10028b7  /* U+28b7 BRAILLE PATTERN DOTS-123568 */
-#define XKB_KEY_braille_dots_4568          0x10028b8  /* U+28b8 BRAILLE PATTERN DOTS-4568 */
-#define XKB_KEY_braille_dots_14568         0x10028b9  /* U+28b9 BRAILLE PATTERN DOTS-14568 */
-#define XKB_KEY_braille_dots_24568         0x10028ba  /* U+28ba BRAILLE PATTERN DOTS-24568 */
-#define XKB_KEY_braille_dots_124568        0x10028bb  /* U+28bb BRAILLE PATTERN DOTS-124568 */
-#define XKB_KEY_braille_dots_34568         0x10028bc  /* U+28bc BRAILLE PATTERN DOTS-34568 */
-#define XKB_KEY_braille_dots_134568        0x10028bd  /* U+28bd BRAILLE PATTERN DOTS-134568 */
-#define XKB_KEY_braille_dots_234568        0x10028be  /* U+28be BRAILLE PATTERN DOTS-234568 */
-#define XKB_KEY_braille_dots_1234568       0x10028bf  /* U+28bf BRAILLE PATTERN DOTS-1234568 */
-#define XKB_KEY_braille_dots_78            0x10028c0  /* U+28c0 BRAILLE PATTERN DOTS-78 */
-#define XKB_KEY_braille_dots_178           0x10028c1  /* U+28c1 BRAILLE PATTERN DOTS-178 */
-#define XKB_KEY_braille_dots_278           0x10028c2  /* U+28c2 BRAILLE PATTERN DOTS-278 */
-#define XKB_KEY_braille_dots_1278          0x10028c3  /* U+28c3 BRAILLE PATTERN DOTS-1278 */
-#define XKB_KEY_braille_dots_378           0x10028c4  /* U+28c4 BRAILLE PATTERN DOTS-378 */
-#define XKB_KEY_braille_dots_1378          0x10028c5  /* U+28c5 BRAILLE PATTERN DOTS-1378 */
-#define XKB_KEY_braille_dots_2378          0x10028c6  /* U+28c6 BRAILLE PATTERN DOTS-2378 */
-#define XKB_KEY_braille_dots_12378         0x10028c7  /* U+28c7 BRAILLE PATTERN DOTS-12378 */
-#define XKB_KEY_braille_dots_478           0x10028c8  /* U+28c8 BRAILLE PATTERN DOTS-478 */
-#define XKB_KEY_braille_dots_1478          0x10028c9  /* U+28c9 BRAILLE PATTERN DOTS-1478 */
-#define XKB_KEY_braille_dots_2478          0x10028ca  /* U+28ca BRAILLE PATTERN DOTS-2478 */
-#define XKB_KEY_braille_dots_12478         0x10028cb  /* U+28cb BRAILLE PATTERN DOTS-12478 */
-#define XKB_KEY_braille_dots_3478          0x10028cc  /* U+28cc BRAILLE PATTERN DOTS-3478 */
-#define XKB_KEY_braille_dots_13478         0x10028cd  /* U+28cd BRAILLE PATTERN DOTS-13478 */
-#define XKB_KEY_braille_dots_23478         0x10028ce  /* U+28ce BRAILLE PATTERN DOTS-23478 */
-#define XKB_KEY_braille_dots_123478        0x10028cf  /* U+28cf BRAILLE PATTERN DOTS-123478 */
-#define XKB_KEY_braille_dots_578           0x10028d0  /* U+28d0 BRAILLE PATTERN DOTS-578 */
-#define XKB_KEY_braille_dots_1578          0x10028d1  /* U+28d1 BRAILLE PATTERN DOTS-1578 */
-#define XKB_KEY_braille_dots_2578          0x10028d2  /* U+28d2 BRAILLE PATTERN DOTS-2578 */
-#define XKB_KEY_braille_dots_12578         0x10028d3  /* U+28d3 BRAILLE PATTERN DOTS-12578 */
-#define XKB_KEY_braille_dots_3578          0x10028d4  /* U+28d4 BRAILLE PATTERN DOTS-3578 */
-#define XKB_KEY_braille_dots_13578         0x10028d5  /* U+28d5 BRAILLE PATTERN DOTS-13578 */
-#define XKB_KEY_braille_dots_23578         0x10028d6  /* U+28d6 BRAILLE PATTERN DOTS-23578 */
-#define XKB_KEY_braille_dots_123578        0x10028d7  /* U+28d7 BRAILLE PATTERN DOTS-123578 */
-#define XKB_KEY_braille_dots_4578          0x10028d8  /* U+28d8 BRAILLE PATTERN DOTS-4578 */
-#define XKB_KEY_braille_dots_14578         0x10028d9  /* U+28d9 BRAILLE PATTERN DOTS-14578 */
-#define XKB_KEY_braille_dots_24578         0x10028da  /* U+28da BRAILLE PATTERN DOTS-24578 */
-#define XKB_KEY_braille_dots_124578        0x10028db  /* U+28db BRAILLE PATTERN DOTS-124578 */
-#define XKB_KEY_braille_dots_34578         0x10028dc  /* U+28dc BRAILLE PATTERN DOTS-34578 */
-#define XKB_KEY_braille_dots_134578        0x10028dd  /* U+28dd BRAILLE PATTERN DOTS-134578 */
-#define XKB_KEY_braille_dots_234578        0x10028de  /* U+28de BRAILLE PATTERN DOTS-234578 */
-#define XKB_KEY_braille_dots_1234578       0x10028df  /* U+28df BRAILLE PATTERN DOTS-1234578 */
-#define XKB_KEY_braille_dots_678           0x10028e0  /* U+28e0 BRAILLE PATTERN DOTS-678 */
-#define XKB_KEY_braille_dots_1678          0x10028e1  /* U+28e1 BRAILLE PATTERN DOTS-1678 */
-#define XKB_KEY_braille_dots_2678          0x10028e2  /* U+28e2 BRAILLE PATTERN DOTS-2678 */
-#define XKB_KEY_braille_dots_12678         0x10028e3  /* U+28e3 BRAILLE PATTERN DOTS-12678 */
-#define XKB_KEY_braille_dots_3678          0x10028e4  /* U+28e4 BRAILLE PATTERN DOTS-3678 */
-#define XKB_KEY_braille_dots_13678         0x10028e5  /* U+28e5 BRAILLE PATTERN DOTS-13678 */
-#define XKB_KEY_braille_dots_23678         0x10028e6  /* U+28e6 BRAILLE PATTERN DOTS-23678 */
-#define XKB_KEY_braille_dots_123678        0x10028e7  /* U+28e7 BRAILLE PATTERN DOTS-123678 */
-#define XKB_KEY_braille_dots_4678          0x10028e8  /* U+28e8 BRAILLE PATTERN DOTS-4678 */
-#define XKB_KEY_braille_dots_14678         0x10028e9  /* U+28e9 BRAILLE PATTERN DOTS-14678 */
-#define XKB_KEY_braille_dots_24678         0x10028ea  /* U+28ea BRAILLE PATTERN DOTS-24678 */
-#define XKB_KEY_braille_dots_124678        0x10028eb  /* U+28eb BRAILLE PATTERN DOTS-124678 */
-#define XKB_KEY_braille_dots_34678         0x10028ec  /* U+28ec BRAILLE PATTERN DOTS-34678 */
-#define XKB_KEY_braille_dots_134678        0x10028ed  /* U+28ed BRAILLE PATTERN DOTS-134678 */
-#define XKB_KEY_braille_dots_234678        0x10028ee  /* U+28ee BRAILLE PATTERN DOTS-234678 */
-#define XKB_KEY_braille_dots_1234678       0x10028ef  /* U+28ef BRAILLE PATTERN DOTS-1234678 */
-#define XKB_KEY_braille_dots_5678          0x10028f0  /* U+28f0 BRAILLE PATTERN DOTS-5678 */
-#define XKB_KEY_braille_dots_15678         0x10028f1  /* U+28f1 BRAILLE PATTERN DOTS-15678 */
-#define XKB_KEY_braille_dots_25678         0x10028f2  /* U+28f2 BRAILLE PATTERN DOTS-25678 */
-#define XKB_KEY_braille_dots_125678        0x10028f3  /* U+28f3 BRAILLE PATTERN DOTS-125678 */
-#define XKB_KEY_braille_dots_35678         0x10028f4  /* U+28f4 BRAILLE PATTERN DOTS-35678 */
-#define XKB_KEY_braille_dots_135678        0x10028f5  /* U+28f5 BRAILLE PATTERN DOTS-135678 */
-#define XKB_KEY_braille_dots_235678        0x10028f6  /* U+28f6 BRAILLE PATTERN DOTS-235678 */
-#define XKB_KEY_braille_dots_1235678       0x10028f7  /* U+28f7 BRAILLE PATTERN DOTS-1235678 */
-#define XKB_KEY_braille_dots_45678         0x10028f8  /* U+28f8 BRAILLE PATTERN DOTS-45678 */
-#define XKB_KEY_braille_dots_145678        0x10028f9  /* U+28f9 BRAILLE PATTERN DOTS-145678 */
-#define XKB_KEY_braille_dots_245678        0x10028fa  /* U+28fa BRAILLE PATTERN DOTS-245678 */
-#define XKB_KEY_braille_dots_1245678       0x10028fb  /* U+28fb BRAILLE PATTERN DOTS-1245678 */
-#define XKB_KEY_braille_dots_345678        0x10028fc  /* U+28fc BRAILLE PATTERN DOTS-345678 */
-#define XKB_KEY_braille_dots_1345678       0x10028fd  /* U+28fd BRAILLE PATTERN DOTS-1345678 */
-#define XKB_KEY_braille_dots_2345678       0x10028fe  /* U+28fe BRAILLE PATTERN DOTS-2345678 */
-#define XKB_KEY_braille_dots_12345678      0x10028ff  /* U+28ff BRAILLE PATTERN DOTS-12345678 */
+#define XKB_KEY_braille_dots_2458          0x100289a  /* U+289A BRAILLE PATTERN DOTS-2458 */
+#define XKB_KEY_braille_dots_12458         0x100289b  /* U+289B BRAILLE PATTERN DOTS-12458 */
+#define XKB_KEY_braille_dots_3458          0x100289c  /* U+289C BRAILLE PATTERN DOTS-3458 */
+#define XKB_KEY_braille_dots_13458         0x100289d  /* U+289D BRAILLE PATTERN DOTS-13458 */
+#define XKB_KEY_braille_dots_23458         0x100289e  /* U+289E BRAILLE PATTERN DOTS-23458 */
+#define XKB_KEY_braille_dots_123458        0x100289f  /* U+289F BRAILLE PATTERN DOTS-123458 */
+#define XKB_KEY_braille_dots_68            0x10028a0  /* U+28A0 BRAILLE PATTERN DOTS-68 */
+#define XKB_KEY_braille_dots_168           0x10028a1  /* U+28A1 BRAILLE PATTERN DOTS-168 */
+#define XKB_KEY_braille_dots_268           0x10028a2  /* U+28A2 BRAILLE PATTERN DOTS-268 */
+#define XKB_KEY_braille_dots_1268          0x10028a3  /* U+28A3 BRAILLE PATTERN DOTS-1268 */
+#define XKB_KEY_braille_dots_368           0x10028a4  /* U+28A4 BRAILLE PATTERN DOTS-368 */
+#define XKB_KEY_braille_dots_1368          0x10028a5  /* U+28A5 BRAILLE PATTERN DOTS-1368 */
+#define XKB_KEY_braille_dots_2368          0x10028a6  /* U+28A6 BRAILLE PATTERN DOTS-2368 */
+#define XKB_KEY_braille_dots_12368         0x10028a7  /* U+28A7 BRAILLE PATTERN DOTS-12368 */
+#define XKB_KEY_braille_dots_468           0x10028a8  /* U+28A8 BRAILLE PATTERN DOTS-468 */
+#define XKB_KEY_braille_dots_1468          0x10028a9  /* U+28A9 BRAILLE PATTERN DOTS-1468 */
+#define XKB_KEY_braille_dots_2468          0x10028aa  /* U+28AA BRAILLE PATTERN DOTS-2468 */
+#define XKB_KEY_braille_dots_12468         0x10028ab  /* U+28AB BRAILLE PATTERN DOTS-12468 */
+#define XKB_KEY_braille_dots_3468          0x10028ac  /* U+28AC BRAILLE PATTERN DOTS-3468 */
+#define XKB_KEY_braille_dots_13468         0x10028ad  /* U+28AD BRAILLE PATTERN DOTS-13468 */
+#define XKB_KEY_braille_dots_23468         0x10028ae  /* U+28AE BRAILLE PATTERN DOTS-23468 */
+#define XKB_KEY_braille_dots_123468        0x10028af  /* U+28AF BRAILLE PATTERN DOTS-123468 */
+#define XKB_KEY_braille_dots_568           0x10028b0  /* U+28B0 BRAILLE PATTERN DOTS-568 */
+#define XKB_KEY_braille_dots_1568          0x10028b1  /* U+28B1 BRAILLE PATTERN DOTS-1568 */
+#define XKB_KEY_braille_dots_2568          0x10028b2  /* U+28B2 BRAILLE PATTERN DOTS-2568 */
+#define XKB_KEY_braille_dots_12568         0x10028b3  /* U+28B3 BRAILLE PATTERN DOTS-12568 */
+#define XKB_KEY_braille_dots_3568          0x10028b4  /* U+28B4 BRAILLE PATTERN DOTS-3568 */
+#define XKB_KEY_braille_dots_13568         0x10028b5  /* U+28B5 BRAILLE PATTERN DOTS-13568 */
+#define XKB_KEY_braille_dots_23568         0x10028b6  /* U+28B6 BRAILLE PATTERN DOTS-23568 */
+#define XKB_KEY_braille_dots_123568        0x10028b7  /* U+28B7 BRAILLE PATTERN DOTS-123568 */
+#define XKB_KEY_braille_dots_4568          0x10028b8  /* U+28B8 BRAILLE PATTERN DOTS-4568 */
+#define XKB_KEY_braille_dots_14568         0x10028b9  /* U+28B9 BRAILLE PATTERN DOTS-14568 */
+#define XKB_KEY_braille_dots_24568         0x10028ba  /* U+28BA BRAILLE PATTERN DOTS-24568 */
+#define XKB_KEY_braille_dots_124568        0x10028bb  /* U+28BB BRAILLE PATTERN DOTS-124568 */
+#define XKB_KEY_braille_dots_34568         0x10028bc  /* U+28BC BRAILLE PATTERN DOTS-34568 */
+#define XKB_KEY_braille_dots_134568        0x10028bd  /* U+28BD BRAILLE PATTERN DOTS-134568 */
+#define XKB_KEY_braille_dots_234568        0x10028be  /* U+28BE BRAILLE PATTERN DOTS-234568 */
+#define XKB_KEY_braille_dots_1234568       0x10028bf  /* U+28BF BRAILLE PATTERN DOTS-1234568 */
+#define XKB_KEY_braille_dots_78            0x10028c0  /* U+28C0 BRAILLE PATTERN DOTS-78 */
+#define XKB_KEY_braille_dots_178           0x10028c1  /* U+28C1 BRAILLE PATTERN DOTS-178 */
+#define XKB_KEY_braille_dots_278           0x10028c2  /* U+28C2 BRAILLE PATTERN DOTS-278 */
+#define XKB_KEY_braille_dots_1278          0x10028c3  /* U+28C3 BRAILLE PATTERN DOTS-1278 */
+#define XKB_KEY_braille_dots_378           0x10028c4  /* U+28C4 BRAILLE PATTERN DOTS-378 */
+#define XKB_KEY_braille_dots_1378          0x10028c5  /* U+28C5 BRAILLE PATTERN DOTS-1378 */
+#define XKB_KEY_braille_dots_2378          0x10028c6  /* U+28C6 BRAILLE PATTERN DOTS-2378 */
+#define XKB_KEY_braille_dots_12378         0x10028c7  /* U+28C7 BRAILLE PATTERN DOTS-12378 */
+#define XKB_KEY_braille_dots_478           0x10028c8  /* U+28C8 BRAILLE PATTERN DOTS-478 */
+#define XKB_KEY_braille_dots_1478          0x10028c9  /* U+28C9 BRAILLE PATTERN DOTS-1478 */
+#define XKB_KEY_braille_dots_2478          0x10028ca  /* U+28CA BRAILLE PATTERN DOTS-2478 */
+#define XKB_KEY_braille_dots_12478         0x10028cb  /* U+28CB BRAILLE PATTERN DOTS-12478 */
+#define XKB_KEY_braille_dots_3478          0x10028cc  /* U+28CC BRAILLE PATTERN DOTS-3478 */
+#define XKB_KEY_braille_dots_13478         0x10028cd  /* U+28CD BRAILLE PATTERN DOTS-13478 */
+#define XKB_KEY_braille_dots_23478         0x10028ce  /* U+28CE BRAILLE PATTERN DOTS-23478 */
+#define XKB_KEY_braille_dots_123478        0x10028cf  /* U+28CF BRAILLE PATTERN DOTS-123478 */
+#define XKB_KEY_braille_dots_578           0x10028d0  /* U+28D0 BRAILLE PATTERN DOTS-578 */
+#define XKB_KEY_braille_dots_1578          0x10028d1  /* U+28D1 BRAILLE PATTERN DOTS-1578 */
+#define XKB_KEY_braille_dots_2578          0x10028d2  /* U+28D2 BRAILLE PATTERN DOTS-2578 */
+#define XKB_KEY_braille_dots_12578         0x10028d3  /* U+28D3 BRAILLE PATTERN DOTS-12578 */
+#define XKB_KEY_braille_dots_3578          0x10028d4  /* U+28D4 BRAILLE PATTERN DOTS-3578 */
+#define XKB_KEY_braille_dots_13578         0x10028d5  /* U+28D5 BRAILLE PATTERN DOTS-13578 */
+#define XKB_KEY_braille_dots_23578         0x10028d6  /* U+28D6 BRAILLE PATTERN DOTS-23578 */
+#define XKB_KEY_braille_dots_123578        0x10028d7  /* U+28D7 BRAILLE PATTERN DOTS-123578 */
+#define XKB_KEY_braille_dots_4578          0x10028d8  /* U+28D8 BRAILLE PATTERN DOTS-4578 */
+#define XKB_KEY_braille_dots_14578         0x10028d9  /* U+28D9 BRAILLE PATTERN DOTS-14578 */
+#define XKB_KEY_braille_dots_24578         0x10028da  /* U+28DA BRAILLE PATTERN DOTS-24578 */
+#define XKB_KEY_braille_dots_124578        0x10028db  /* U+28DB BRAILLE PATTERN DOTS-124578 */
+#define XKB_KEY_braille_dots_34578         0x10028dc  /* U+28DC BRAILLE PATTERN DOTS-34578 */
+#define XKB_KEY_braille_dots_134578        0x10028dd  /* U+28DD BRAILLE PATTERN DOTS-134578 */
+#define XKB_KEY_braille_dots_234578        0x10028de  /* U+28DE BRAILLE PATTERN DOTS-234578 */
+#define XKB_KEY_braille_dots_1234578       0x10028df  /* U+28DF BRAILLE PATTERN DOTS-1234578 */
+#define XKB_KEY_braille_dots_678           0x10028e0  /* U+28E0 BRAILLE PATTERN DOTS-678 */
+#define XKB_KEY_braille_dots_1678          0x10028e1  /* U+28E1 BRAILLE PATTERN DOTS-1678 */
+#define XKB_KEY_braille_dots_2678          0x10028e2  /* U+28E2 BRAILLE PATTERN DOTS-2678 */
+#define XKB_KEY_braille_dots_12678         0x10028e3  /* U+28E3 BRAILLE PATTERN DOTS-12678 */
+#define XKB_KEY_braille_dots_3678          0x10028e4  /* U+28E4 BRAILLE PATTERN DOTS-3678 */
+#define XKB_KEY_braille_dots_13678         0x10028e5  /* U+28E5 BRAILLE PATTERN DOTS-13678 */
+#define XKB_KEY_braille_dots_23678         0x10028e6  /* U+28E6 BRAILLE PATTERN DOTS-23678 */
+#define XKB_KEY_braille_dots_123678        0x10028e7  /* U+28E7 BRAILLE PATTERN DOTS-123678 */
+#define XKB_KEY_braille_dots_4678          0x10028e8  /* U+28E8 BRAILLE PATTERN DOTS-4678 */
+#define XKB_KEY_braille_dots_14678         0x10028e9  /* U+28E9 BRAILLE PATTERN DOTS-14678 */
+#define XKB_KEY_braille_dots_24678         0x10028ea  /* U+28EA BRAILLE PATTERN DOTS-24678 */
+#define XKB_KEY_braille_dots_124678        0x10028eb  /* U+28EB BRAILLE PATTERN DOTS-124678 */
+#define XKB_KEY_braille_dots_34678         0x10028ec  /* U+28EC BRAILLE PATTERN DOTS-34678 */
+#define XKB_KEY_braille_dots_134678        0x10028ed  /* U+28ED BRAILLE PATTERN DOTS-134678 */
+#define XKB_KEY_braille_dots_234678        0x10028ee  /* U+28EE BRAILLE PATTERN DOTS-234678 */
+#define XKB_KEY_braille_dots_1234678       0x10028ef  /* U+28EF BRAILLE PATTERN DOTS-1234678 */
+#define XKB_KEY_braille_dots_5678          0x10028f0  /* U+28F0 BRAILLE PATTERN DOTS-5678 */
+#define XKB_KEY_braille_dots_15678         0x10028f1  /* U+28F1 BRAILLE PATTERN DOTS-15678 */
+#define XKB_KEY_braille_dots_25678         0x10028f2  /* U+28F2 BRAILLE PATTERN DOTS-25678 */
+#define XKB_KEY_braille_dots_125678        0x10028f3  /* U+28F3 BRAILLE PATTERN DOTS-125678 */
+#define XKB_KEY_braille_dots_35678         0x10028f4  /* U+28F4 BRAILLE PATTERN DOTS-35678 */
+#define XKB_KEY_braille_dots_135678        0x10028f5  /* U+28F5 BRAILLE PATTERN DOTS-135678 */
+#define XKB_KEY_braille_dots_235678        0x10028f6  /* U+28F6 BRAILLE PATTERN DOTS-235678 */
+#define XKB_KEY_braille_dots_1235678       0x10028f7  /* U+28F7 BRAILLE PATTERN DOTS-1235678 */
+#define XKB_KEY_braille_dots_45678         0x10028f8  /* U+28F8 BRAILLE PATTERN DOTS-45678 */
+#define XKB_KEY_braille_dots_145678        0x10028f9  /* U+28F9 BRAILLE PATTERN DOTS-145678 */
+#define XKB_KEY_braille_dots_245678        0x10028fa  /* U+28FA BRAILLE PATTERN DOTS-245678 */
+#define XKB_KEY_braille_dots_1245678       0x10028fb  /* U+28FB BRAILLE PATTERN DOTS-1245678 */
+#define XKB_KEY_braille_dots_345678        0x10028fc  /* U+28FC BRAILLE PATTERN DOTS-345678 */
+#define XKB_KEY_braille_dots_1345678       0x10028fd  /* U+28FD BRAILLE PATTERN DOTS-1345678 */
+#define XKB_KEY_braille_dots_2345678       0x10028fe  /* U+28FE BRAILLE PATTERN DOTS-2345678 */
+#define XKB_KEY_braille_dots_12345678      0x10028ff  /* U+28FF BRAILLE PATTERN DOTS-12345678 */
 
 /*
  * Sinhala (http://unicode.org/charts/PDF/U0D80.pdf)
  * http://www.nongnu.org/sinhala/doc/transliteration/sinhala-transliteration_6.html
  */
 
-#define XKB_KEY_Sinh_ng            0x1000d82  /* U+0D82 SINHALA ANUSVARAYA */
-#define XKB_KEY_Sinh_h2            0x1000d83  /* U+0D83 SINHALA VISARGAYA */
-#define XKB_KEY_Sinh_a             0x1000d85  /* U+0D85 SINHALA AYANNA */
-#define XKB_KEY_Sinh_aa            0x1000d86  /* U+0D86 SINHALA AAYANNA */
-#define XKB_KEY_Sinh_ae            0x1000d87  /* U+0D87 SINHALA AEYANNA */
-#define XKB_KEY_Sinh_aee           0x1000d88  /* U+0D88 SINHALA AEEYANNA */
-#define XKB_KEY_Sinh_i             0x1000d89  /* U+0D89 SINHALA IYANNA */
-#define XKB_KEY_Sinh_ii            0x1000d8a  /* U+0D8A SINHALA IIYANNA */
-#define XKB_KEY_Sinh_u             0x1000d8b  /* U+0D8B SINHALA UYANNA */
-#define XKB_KEY_Sinh_uu            0x1000d8c  /* U+0D8C SINHALA UUYANNA */
-#define XKB_KEY_Sinh_ri            0x1000d8d  /* U+0D8D SINHALA IRUYANNA */
-#define XKB_KEY_Sinh_rii           0x1000d8e  /* U+0D8E SINHALA IRUUYANNA */
-#define XKB_KEY_Sinh_lu            0x1000d8f  /* U+0D8F SINHALA ILUYANNA */
-#define XKB_KEY_Sinh_luu           0x1000d90  /* U+0D90 SINHALA ILUUYANNA */
-#define XKB_KEY_Sinh_e             0x1000d91  /* U+0D91 SINHALA EYANNA */
-#define XKB_KEY_Sinh_ee            0x1000d92  /* U+0D92 SINHALA EEYANNA */
-#define XKB_KEY_Sinh_ai            0x1000d93  /* U+0D93 SINHALA AIYANNA */
-#define XKB_KEY_Sinh_o             0x1000d94  /* U+0D94 SINHALA OYANNA */
-#define XKB_KEY_Sinh_oo            0x1000d95  /* U+0D95 SINHALA OOYANNA */
-#define XKB_KEY_Sinh_au            0x1000d96  /* U+0D96 SINHALA AUYANNA */
-#define XKB_KEY_Sinh_ka            0x1000d9a  /* U+0D9A SINHALA KAYANNA */
-#define XKB_KEY_Sinh_kha           0x1000d9b  /* U+0D9B SINHALA MAHA. KAYANNA */
-#define XKB_KEY_Sinh_ga            0x1000d9c  /* U+0D9C SINHALA GAYANNA */
-#define XKB_KEY_Sinh_gha           0x1000d9d  /* U+0D9D SINHALA MAHA. GAYANNA */
-#define XKB_KEY_Sinh_ng2           0x1000d9e  /* U+0D9E SINHALA KANTAJA NAASIKYAYA */
-#define XKB_KEY_Sinh_nga           0x1000d9f  /* U+0D9F SINHALA SANYAKA GAYANNA */
-#define XKB_KEY_Sinh_ca            0x1000da0  /* U+0DA0 SINHALA CAYANNA */
-#define XKB_KEY_Sinh_cha           0x1000da1  /* U+0DA1 SINHALA MAHA. CAYANNA */
-#define XKB_KEY_Sinh_ja            0x1000da2  /* U+0DA2 SINHALA JAYANNA */
-#define XKB_KEY_Sinh_jha           0x1000da3  /* U+0DA3 SINHALA MAHA. JAYANNA */
-#define XKB_KEY_Sinh_nya           0x1000da4  /* U+0DA4 SINHALA TAALUJA NAASIKYAYA */
-#define XKB_KEY_Sinh_jnya          0x1000da5  /* U+0DA5 SINHALA TAALUJA SANYOOGA NAASIKYAYA */
-#define XKB_KEY_Sinh_nja           0x1000da6  /* U+0DA6 SINHALA SANYAKA JAYANNA */
-#define XKB_KEY_Sinh_tta           0x1000da7  /* U+0DA7 SINHALA TTAYANNA */
-#define XKB_KEY_Sinh_ttha          0x1000da8  /* U+0DA8 SINHALA MAHA. TTAYANNA */
-#define XKB_KEY_Sinh_dda           0x1000da9  /* U+0DA9 SINHALA DDAYANNA */
-#define XKB_KEY_Sinh_ddha          0x1000daa  /* U+0DAA SINHALA MAHA. DDAYANNA */
-#define XKB_KEY_Sinh_nna           0x1000dab  /* U+0DAB SINHALA MUURDHAJA NAYANNA */
-#define XKB_KEY_Sinh_ndda          0x1000dac  /* U+0DAC SINHALA SANYAKA DDAYANNA */
-#define XKB_KEY_Sinh_tha           0x1000dad  /* U+0DAD SINHALA TAYANNA */
-#define XKB_KEY_Sinh_thha          0x1000dae  /* U+0DAE SINHALA MAHA. TAYANNA */
-#define XKB_KEY_Sinh_dha           0x1000daf  /* U+0DAF SINHALA DAYANNA */
-#define XKB_KEY_Sinh_dhha          0x1000db0  /* U+0DB0 SINHALA MAHA. DAYANNA */
-#define XKB_KEY_Sinh_na            0x1000db1  /* U+0DB1 SINHALA DANTAJA NAYANNA */
-#define XKB_KEY_Sinh_ndha          0x1000db3  /* U+0DB3 SINHALA SANYAKA DAYANNA */
-#define XKB_KEY_Sinh_pa            0x1000db4  /* U+0DB4 SINHALA PAYANNA */
-#define XKB_KEY_Sinh_pha           0x1000db5  /* U+0DB5 SINHALA MAHA. PAYANNA */
-#define XKB_KEY_Sinh_ba            0x1000db6  /* U+0DB6 SINHALA BAYANNA */
-#define XKB_KEY_Sinh_bha           0x1000db7  /* U+0DB7 SINHALA MAHA. BAYANNA */
-#define XKB_KEY_Sinh_ma            0x1000db8  /* U+0DB8 SINHALA MAYANNA */
-#define XKB_KEY_Sinh_mba           0x1000db9  /* U+0DB9 SINHALA AMBA BAYANNA */
-#define XKB_KEY_Sinh_ya            0x1000dba  /* U+0DBA SINHALA YAYANNA */
-#define XKB_KEY_Sinh_ra            0x1000dbb  /* U+0DBB SINHALA RAYANNA */
-#define XKB_KEY_Sinh_la            0x1000dbd  /* U+0DBD SINHALA DANTAJA LAYANNA */
-#define XKB_KEY_Sinh_va            0x1000dc0  /* U+0DC0 SINHALA VAYANNA */
-#define XKB_KEY_Sinh_sha           0x1000dc1  /* U+0DC1 SINHALA TAALUJA SAYANNA */
-#define XKB_KEY_Sinh_ssha          0x1000dc2  /* U+0DC2 SINHALA MUURDHAJA SAYANNA */
-#define XKB_KEY_Sinh_sa            0x1000dc3  /* U+0DC3 SINHALA DANTAJA SAYANNA */
-#define XKB_KEY_Sinh_ha            0x1000dc4  /* U+0DC4 SINHALA HAYANNA */
-#define XKB_KEY_Sinh_lla           0x1000dc5  /* U+0DC5 SINHALA MUURDHAJA LAYANNA */
-#define XKB_KEY_Sinh_fa            0x1000dc6  /* U+0DC6 SINHALA FAYANNA */
-#define XKB_KEY_Sinh_al            0x1000dca  /* U+0DCA SINHALA AL-LAKUNA */
-#define XKB_KEY_Sinh_aa2           0x1000dcf  /* U+0DCF SINHALA AELA-PILLA */
-#define XKB_KEY_Sinh_ae2           0x1000dd0  /* U+0DD0 SINHALA AEDA-PILLA */
-#define XKB_KEY_Sinh_aee2          0x1000dd1  /* U+0DD1 SINHALA DIGA AEDA-PILLA */
-#define XKB_KEY_Sinh_i2            0x1000dd2  /* U+0DD2 SINHALA IS-PILLA */
-#define XKB_KEY_Sinh_ii2           0x1000dd3  /* U+0DD3 SINHALA DIGA IS-PILLA */
-#define XKB_KEY_Sinh_u2            0x1000dd4  /* U+0DD4 SINHALA PAA-PILLA */
-#define XKB_KEY_Sinh_uu2           0x1000dd6  /* U+0DD6 SINHALA DIGA PAA-PILLA */
-#define XKB_KEY_Sinh_ru2           0x1000dd8  /* U+0DD8 SINHALA GAETTA-PILLA */
-#define XKB_KEY_Sinh_e2            0x1000dd9  /* U+0DD9 SINHALA KOMBUVA */
-#define XKB_KEY_Sinh_ee2           0x1000dda  /* U+0DDA SINHALA DIGA KOMBUVA */
-#define XKB_KEY_Sinh_ai2           0x1000ddb  /* U+0DDB SINHALA KOMBU DEKA */
-#define XKB_KEY_Sinh_o2            0x1000ddc  /* U+0DDC SINHALA KOMBUVA HAA AELA-PILLA*/
-#define XKB_KEY_Sinh_oo2           0x1000ddd  /* U+0DDD SINHALA KOMBUVA HAA DIGA AELA-PILLA*/
-#define XKB_KEY_Sinh_au2           0x1000dde  /* U+0DDE SINHALA KOMBUVA HAA GAYANUKITTA */
-#define XKB_KEY_Sinh_lu2           0x1000ddf  /* U+0DDF SINHALA GAYANUKITTA */
-#define XKB_KEY_Sinh_ruu2          0x1000df2  /* U+0DF2 SINHALA DIGA GAETTA-PILLA */
-#define XKB_KEY_Sinh_luu2          0x1000df3  /* U+0DF3 SINHALA DIGA GAYANUKITTA */
-#define XKB_KEY_Sinh_kunddaliya    0x1000df4  /* U+0DF4 SINHALA KUNDDALIYA */
+#define XKB_KEY_Sinh_ng                    0x1000d82  /* U+0D82 SINHALA SIGN ANUSVARAYA */
+#define XKB_KEY_Sinh_h2                    0x1000d83  /* U+0D83 SINHALA SIGN VISARGAYA */
+#define XKB_KEY_Sinh_a                     0x1000d85  /* U+0D85 SINHALA LETTER AYANNA */
+#define XKB_KEY_Sinh_aa                    0x1000d86  /* U+0D86 SINHALA LETTER AAYANNA */
+#define XKB_KEY_Sinh_ae                    0x1000d87  /* U+0D87 SINHALA LETTER AEYANNA */
+#define XKB_KEY_Sinh_aee                   0x1000d88  /* U+0D88 SINHALA LETTER AEEYANNA */
+#define XKB_KEY_Sinh_i                     0x1000d89  /* U+0D89 SINHALA LETTER IYANNA */
+#define XKB_KEY_Sinh_ii                    0x1000d8a  /* U+0D8A SINHALA LETTER IIYANNA */
+#define XKB_KEY_Sinh_u                     0x1000d8b  /* U+0D8B SINHALA LETTER UYANNA */
+#define XKB_KEY_Sinh_uu                    0x1000d8c  /* U+0D8C SINHALA LETTER UUYANNA */
+#define XKB_KEY_Sinh_ri                    0x1000d8d  /* U+0D8D SINHALA LETTER IRUYANNA */
+#define XKB_KEY_Sinh_rii                   0x1000d8e  /* U+0D8E SINHALA LETTER IRUUYANNA */
+#define XKB_KEY_Sinh_lu                    0x1000d8f  /* U+0D8F SINHALA LETTER ILUYANNA */
+#define XKB_KEY_Sinh_luu                   0x1000d90  /* U+0D90 SINHALA LETTER ILUUYANNA */
+#define XKB_KEY_Sinh_e                     0x1000d91  /* U+0D91 SINHALA LETTER EYANNA */
+#define XKB_KEY_Sinh_ee                    0x1000d92  /* U+0D92 SINHALA LETTER EEYANNA */
+#define XKB_KEY_Sinh_ai                    0x1000d93  /* U+0D93 SINHALA LETTER AIYANNA */
+#define XKB_KEY_Sinh_o                     0x1000d94  /* U+0D94 SINHALA LETTER OYANNA */
+#define XKB_KEY_Sinh_oo                    0x1000d95  /* U+0D95 SINHALA LETTER OOYANNA */
+#define XKB_KEY_Sinh_au                    0x1000d96  /* U+0D96 SINHALA LETTER AUYANNA */
+#define XKB_KEY_Sinh_ka                    0x1000d9a  /* U+0D9A SINHALA LETTER ALPAPRAANA KAYANNA */
+#define XKB_KEY_Sinh_kha                   0x1000d9b  /* U+0D9B SINHALA LETTER MAHAAPRAANA KAYANNA */
+#define XKB_KEY_Sinh_ga                    0x1000d9c  /* U+0D9C SINHALA LETTER ALPAPRAANA GAYANNA */
+#define XKB_KEY_Sinh_gha                   0x1000d9d  /* U+0D9D SINHALA LETTER MAHAAPRAANA GAYANNA */
+#define XKB_KEY_Sinh_ng2                   0x1000d9e  /* U+0D9E SINHALA LETTER KANTAJA NAASIKYAYA */
+#define XKB_KEY_Sinh_nga                   0x1000d9f  /* U+0D9F SINHALA LETTER SANYAKA GAYANNA */
+#define XKB_KEY_Sinh_ca                    0x1000da0  /* U+0DA0 SINHALA LETTER ALPAPRAANA CAYANNA */
+#define XKB_KEY_Sinh_cha                   0x1000da1  /* U+0DA1 SINHALA LETTER MAHAAPRAANA CAYANNA */
+#define XKB_KEY_Sinh_ja                    0x1000da2  /* U+0DA2 SINHALA LETTER ALPAPRAANA JAYANNA */
+#define XKB_KEY_Sinh_jha                   0x1000da3  /* U+0DA3 SINHALA LETTER MAHAAPRAANA JAYANNA */
+#define XKB_KEY_Sinh_nya                   0x1000da4  /* U+0DA4 SINHALA LETTER TAALUJA NAASIKYAYA */
+#define XKB_KEY_Sinh_jnya                  0x1000da5  /* U+0DA5 SINHALA LETTER TAALUJA SANYOOGA NAAKSIKYAYA */
+#define XKB_KEY_Sinh_nja                   0x1000da6  /* U+0DA6 SINHALA LETTER SANYAKA JAYANNA */
+#define XKB_KEY_Sinh_tta                   0x1000da7  /* U+0DA7 SINHALA LETTER ALPAPRAANA TTAYANNA */
+#define XKB_KEY_Sinh_ttha                  0x1000da8  /* U+0DA8 SINHALA LETTER MAHAAPRAANA TTAYANNA */
+#define XKB_KEY_Sinh_dda                   0x1000da9  /* U+0DA9 SINHALA LETTER ALPAPRAANA DDAYANNA */
+#define XKB_KEY_Sinh_ddha                  0x1000daa  /* U+0DAA SINHALA LETTER MAHAAPRAANA DDAYANNA */
+#define XKB_KEY_Sinh_nna                   0x1000dab  /* U+0DAB SINHALA LETTER MUURDHAJA NAYANNA */
+#define XKB_KEY_Sinh_ndda                  0x1000dac  /* U+0DAC SINHALA LETTER SANYAKA DDAYANNA */
+#define XKB_KEY_Sinh_tha                   0x1000dad  /* U+0DAD SINHALA LETTER ALPAPRAANA TAYANNA */
+#define XKB_KEY_Sinh_thha                  0x1000dae  /* U+0DAE SINHALA LETTER MAHAAPRAANA TAYANNA */
+#define XKB_KEY_Sinh_dha                   0x1000daf  /* U+0DAF SINHALA LETTER ALPAPRAANA DAYANNA */
+#define XKB_KEY_Sinh_dhha                  0x1000db0  /* U+0DB0 SINHALA LETTER MAHAAPRAANA DAYANNA */
+#define XKB_KEY_Sinh_na                    0x1000db1  /* U+0DB1 SINHALA LETTER DANTAJA NAYANNA */
+#define XKB_KEY_Sinh_ndha                  0x1000db3  /* U+0DB3 SINHALA LETTER SANYAKA DAYANNA */
+#define XKB_KEY_Sinh_pa                    0x1000db4  /* U+0DB4 SINHALA LETTER ALPAPRAANA PAYANNA */
+#define XKB_KEY_Sinh_pha                   0x1000db5  /* U+0DB5 SINHALA LETTER MAHAAPRAANA PAYANNA */
+#define XKB_KEY_Sinh_ba                    0x1000db6  /* U+0DB6 SINHALA LETTER ALPAPRAANA BAYANNA */
+#define XKB_KEY_Sinh_bha                   0x1000db7  /* U+0DB7 SINHALA LETTER MAHAAPRAANA BAYANNA */
+#define XKB_KEY_Sinh_ma                    0x1000db8  /* U+0DB8 SINHALA LETTER MAYANNA */
+#define XKB_KEY_Sinh_mba                   0x1000db9  /* U+0DB9 SINHALA LETTER AMBA BAYANNA */
+#define XKB_KEY_Sinh_ya                    0x1000dba  /* U+0DBA SINHALA LETTER YAYANNA */
+#define XKB_KEY_Sinh_ra                    0x1000dbb  /* U+0DBB SINHALA LETTER RAYANNA */
+#define XKB_KEY_Sinh_la                    0x1000dbd  /* U+0DBD SINHALA LETTER DANTAJA LAYANNA */
+#define XKB_KEY_Sinh_va                    0x1000dc0  /* U+0DC0 SINHALA LETTER VAYANNA */
+#define XKB_KEY_Sinh_sha                   0x1000dc1  /* U+0DC1 SINHALA LETTER TAALUJA SAYANNA */
+#define XKB_KEY_Sinh_ssha                  0x1000dc2  /* U+0DC2 SINHALA LETTER MUURDHAJA SAYANNA */
+#define XKB_KEY_Sinh_sa                    0x1000dc3  /* U+0DC3 SINHALA LETTER DANTAJA SAYANNA */
+#define XKB_KEY_Sinh_ha                    0x1000dc4  /* U+0DC4 SINHALA LETTER HAYANNA */
+#define XKB_KEY_Sinh_lla                   0x1000dc5  /* U+0DC5 SINHALA LETTER MUURDHAJA LAYANNA */
+#define XKB_KEY_Sinh_fa                    0x1000dc6  /* U+0DC6 SINHALA LETTER FAYANNA */
+#define XKB_KEY_Sinh_al                    0x1000dca  /* U+0DCA SINHALA SIGN AL-LAKUNA */
+#define XKB_KEY_Sinh_aa2                   0x1000dcf  /* U+0DCF SINHALA VOWEL SIGN AELA-PILLA */
+#define XKB_KEY_Sinh_ae2                   0x1000dd0  /* U+0DD0 SINHALA VOWEL SIGN KETTI AEDA-PILLA */
+#define XKB_KEY_Sinh_aee2                  0x1000dd1  /* U+0DD1 SINHALA VOWEL SIGN DIGA AEDA-PILLA */
+#define XKB_KEY_Sinh_i2                    0x1000dd2  /* U+0DD2 SINHALA VOWEL SIGN KETTI IS-PILLA */
+#define XKB_KEY_Sinh_ii2                   0x1000dd3  /* U+0DD3 SINHALA VOWEL SIGN DIGA IS-PILLA */
+#define XKB_KEY_Sinh_u2                    0x1000dd4  /* U+0DD4 SINHALA VOWEL SIGN KETTI PAA-PILLA */
+#define XKB_KEY_Sinh_uu2                   0x1000dd6  /* U+0DD6 SINHALA VOWEL SIGN DIGA PAA-PILLA */
+#define XKB_KEY_Sinh_ru2                   0x1000dd8  /* U+0DD8 SINHALA VOWEL SIGN GAETTA-PILLA */
+#define XKB_KEY_Sinh_e2                    0x1000dd9  /* U+0DD9 SINHALA VOWEL SIGN KOMBUVA */
+#define XKB_KEY_Sinh_ee2                   0x1000dda  /* U+0DDA SINHALA VOWEL SIGN DIGA KOMBUVA */
+#define XKB_KEY_Sinh_ai2                   0x1000ddb  /* U+0DDB SINHALA VOWEL SIGN KOMBU DEKA */
+#define XKB_KEY_Sinh_o2                    0x1000ddc  /* U+0DDC SINHALA VOWEL SIGN KOMBUVA HAA AELA-PILLA */
+#define XKB_KEY_Sinh_oo2                   0x1000ddd  /* U+0DDD SINHALA VOWEL SIGN KOMBUVA HAA DIGA AELA-PILLA */
+#define XKB_KEY_Sinh_au2                   0x1000dde  /* U+0DDE SINHALA VOWEL SIGN KOMBUVA HAA GAYANUKITTA */
+#define XKB_KEY_Sinh_lu2                   0x1000ddf  /* U+0DDF SINHALA VOWEL SIGN GAYANUKITTA */
+#define XKB_KEY_Sinh_ruu2                  0x1000df2  /* U+0DF2 SINHALA VOWEL SIGN DIGA GAETTA-PILLA */
+#define XKB_KEY_Sinh_luu2                  0x1000df3  /* U+0DF3 SINHALA VOWEL SIGN DIGA GAYANUKITTA */
+#define XKB_KEY_Sinh_kunddaliya            0x1000df4  /* U+0DF4 SINHALA PUNCTUATION KUNDDALIYA */
 /*
  * XFree86 vendor specific keysyms.
  *
- * The XFree86 keysym range is 0x10080001 - 0x1008FFFF.
+ * The XFree86 keysym range is 0x10080001 - 0x1008ffff.
  *
  * The XF86 set of keysyms is a catch-all set of defines for keysyms found
  * on various multimedia keyboards. Originally specific to XFree86 they have
@@ -2480,216 +2496,216 @@ SOFTWARE.
  * functionality.
  */
 
-#define XKB_KEY_XF86ModeLock		0x1008FF01	/* Mode Switch Lock */
+#define XKB_KEY_XF86ModeLock              0x1008ff01  /* Mode Switch Lock */
 
 /* Backlight controls. */
-#define XKB_KEY_XF86MonBrightnessUp    0x1008FF02  /* Monitor/panel brightness */
-#define XKB_KEY_XF86MonBrightnessDown  0x1008FF03  /* Monitor/panel brightness */
-#define XKB_KEY_XF86KbdLightOnOff      0x1008FF04  /* Keyboards may be lit     */
-#define XKB_KEY_XF86KbdBrightnessUp    0x1008FF05  /* Keyboards may be lit     */
-#define XKB_KEY_XF86KbdBrightnessDown  0x1008FF06  /* Keyboards may be lit     */
-#define XKB_KEY_XF86MonBrightnessCycle 0x1008FF07  /* Monitor/panel brightness */
+#define XKB_KEY_XF86MonBrightnessUp       0x1008ff02  /* Monitor/panel brightness */
+#define XKB_KEY_XF86MonBrightnessDown     0x1008ff03  /* Monitor/panel brightness */
+#define XKB_KEY_XF86KbdLightOnOff         0x1008ff04  /* Keyboards may be lit     */
+#define XKB_KEY_XF86KbdBrightnessUp       0x1008ff05  /* Keyboards may be lit     */
+#define XKB_KEY_XF86KbdBrightnessDown     0x1008ff06  /* Keyboards may be lit     */
+#define XKB_KEY_XF86MonBrightnessCycle    0x1008ff07  /* Monitor/panel brightness */
 
 /*
  * Keys found on some "Internet" keyboards.
  */
-#define XKB_KEY_XF86Standby		0x1008FF10   /* System into standby mode   */
-#define XKB_KEY_XF86AudioLowerVolume	0x1008FF11   /* Volume control down        */
-#define XKB_KEY_XF86AudioMute	0x1008FF12   /* Mute sound from the system */
-#define XKB_KEY_XF86AudioRaiseVolume	0x1008FF13   /* Volume control up          */
-#define XKB_KEY_XF86AudioPlay	0x1008FF14   /* Start playing of audio >   */
-#define XKB_KEY_XF86AudioStop	0x1008FF15   /* Stop playing audio         */
-#define XKB_KEY_XF86AudioPrev	0x1008FF16   /* Previous track             */
-#define XKB_KEY_XF86AudioNext	0x1008FF17   /* Next track                 */
-#define XKB_KEY_XF86HomePage		0x1008FF18   /* Display user's home page   */
-#define XKB_KEY_XF86Mail		0x1008FF19   /* Invoke user's mail program */
-#define XKB_KEY_XF86Start		0x1008FF1A   /* Start application          */
-#define XKB_KEY_XF86Search		0x1008FF1B   /* Search                     */
-#define XKB_KEY_XF86AudioRecord	0x1008FF1C   /* Record audio application   */
+#define XKB_KEY_XF86Standby               0x1008ff10  /* System into standby mode   */
+#define XKB_KEY_XF86AudioLowerVolume      0x1008ff11  /* Volume control down        */
+#define XKB_KEY_XF86AudioMute             0x1008ff12  /* Mute sound from the system */
+#define XKB_KEY_XF86AudioRaiseVolume      0x1008ff13  /* Volume control up          */
+#define XKB_KEY_XF86AudioPlay             0x1008ff14  /* Start playing of audio >   */
+#define XKB_KEY_XF86AudioStop             0x1008ff15  /* Stop playing audio         */
+#define XKB_KEY_XF86AudioPrev             0x1008ff16  /* Previous track             */
+#define XKB_KEY_XF86AudioNext             0x1008ff17  /* Next track                 */
+#define XKB_KEY_XF86HomePage              0x1008ff18  /* Display user's home page   */
+#define XKB_KEY_XF86Mail                  0x1008ff19  /* Invoke user's mail program */
+#define XKB_KEY_XF86Start                 0x1008ff1a  /* Start application          */
+#define XKB_KEY_XF86Search                0x1008ff1b  /* Search                     */
+#define XKB_KEY_XF86AudioRecord           0x1008ff1c  /* Record audio application   */
 
 /* These are sometimes found on PDA's (e.g. Palm, PocketPC or elsewhere)   */
-#define XKB_KEY_XF86Calculator	0x1008FF1D   /* Invoke calculator program  */
-#define XKB_KEY_XF86Memo		0x1008FF1E   /* Invoke Memo taking program */
-#define XKB_KEY_XF86ToDoList		0x1008FF1F   /* Invoke To Do List program  */
-#define XKB_KEY_XF86Calendar		0x1008FF20   /* Invoke Calendar program    */
-#define XKB_KEY_XF86PowerDown	0x1008FF21   /* Deep sleep the system      */
-#define XKB_KEY_XF86ContrastAdjust	0x1008FF22   /* Adjust screen contrast     */
-#define XKB_KEY_XF86RockerUp		0x1008FF23   /* Rocker switches exist up   */
-#define XKB_KEY_XF86RockerDown	0x1008FF24   /* and down                   */
-#define XKB_KEY_XF86RockerEnter	0x1008FF25   /* and let you press them     */
+#define XKB_KEY_XF86Calculator            0x1008ff1d  /* Invoke calculator program  */
+#define XKB_KEY_XF86Memo                  0x1008ff1e  /* Invoke Memo taking program */
+#define XKB_KEY_XF86ToDoList              0x1008ff1f  /* Invoke To Do List program  */
+#define XKB_KEY_XF86Calendar              0x1008ff20  /* Invoke Calendar program    */
+#define XKB_KEY_XF86PowerDown             0x1008ff21  /* Deep sleep the system      */
+#define XKB_KEY_XF86ContrastAdjust        0x1008ff22  /* Adjust screen contrast     */
+#define XKB_KEY_XF86RockerUp              0x1008ff23  /* Rocker switches exist up   */
+#define XKB_KEY_XF86RockerDown            0x1008ff24  /* and down                   */
+#define XKB_KEY_XF86RockerEnter           0x1008ff25  /* and let you press them     */
 
 /* Some more "Internet" keyboard symbols */
-#define XKB_KEY_XF86Back		0x1008FF26   /* Like back on a browser     */
-#define XKB_KEY_XF86Forward		0x1008FF27   /* Like forward on a browser  */
-#define XKB_KEY_XF86Stop		0x1008FF28   /* Stop current operation     */
-#define XKB_KEY_XF86Refresh		0x1008FF29   /* Refresh the page           */
-#define XKB_KEY_XF86PowerOff		0x1008FF2A   /* Power off system entirely  */
-#define XKB_KEY_XF86WakeUp		0x1008FF2B   /* Wake up system from sleep  */
-#define XKB_KEY_XF86Eject            0x1008FF2C   /* Eject device (e.g. DVD)    */
-#define XKB_KEY_XF86ScreenSaver      0x1008FF2D   /* Invoke screensaver         */
-#define XKB_KEY_XF86WWW              0x1008FF2E   /* Invoke web browser         */
-#define XKB_KEY_XF86Sleep            0x1008FF2F   /* Put system to sleep        */
-#define XKB_KEY_XF86Favorites	0x1008FF30   /* Show favorite locations    */
-#define XKB_KEY_XF86AudioPause	0x1008FF31   /* Pause audio playing        */
-#define XKB_KEY_XF86AudioMedia	0x1008FF32   /* Launch media collection app */
-#define XKB_KEY_XF86MyComputer	0x1008FF33   /* Display "My Computer" window */
-#define XKB_KEY_XF86VendorHome	0x1008FF34   /* Display vendor home web site */
-#define XKB_KEY_XF86LightBulb	0x1008FF35   /* Light bulb keys exist       */
-#define XKB_KEY_XF86Shop		0x1008FF36   /* Display shopping web site   */
-#define XKB_KEY_XF86History		0x1008FF37   /* Show history of web surfing */
-#define XKB_KEY_XF86OpenURL		0x1008FF38   /* Open selected URL           */
-#define XKB_KEY_XF86AddFavorite	0x1008FF39   /* Add URL to favorites list   */
-#define XKB_KEY_XF86HotLinks		0x1008FF3A   /* Show "hot" links            */
-#define XKB_KEY_XF86BrightnessAdjust	0x1008FF3B   /* Invoke brightness adj. UI   */
-#define XKB_KEY_XF86Finance		0x1008FF3C   /* Display financial site      */
-#define XKB_KEY_XF86Community	0x1008FF3D   /* Display user's community    */
-#define XKB_KEY_XF86AudioRewind	0x1008FF3E   /* "rewind" audio track        */
-#define XKB_KEY_XF86BackForward	0x1008FF3F   /* ??? */
-#define XKB_KEY_XF86Launch0		0x1008FF40   /* Launch Application          */
-#define XKB_KEY_XF86Launch1		0x1008FF41   /* Launch Application          */
-#define XKB_KEY_XF86Launch2		0x1008FF42   /* Launch Application          */
-#define XKB_KEY_XF86Launch3		0x1008FF43   /* Launch Application          */
-#define XKB_KEY_XF86Launch4		0x1008FF44   /* Launch Application          */
-#define XKB_KEY_XF86Launch5		0x1008FF45   /* Launch Application          */
-#define XKB_KEY_XF86Launch6		0x1008FF46   /* Launch Application          */
-#define XKB_KEY_XF86Launch7		0x1008FF47   /* Launch Application          */
-#define XKB_KEY_XF86Launch8		0x1008FF48   /* Launch Application          */
-#define XKB_KEY_XF86Launch9		0x1008FF49   /* Launch Application          */
-#define XKB_KEY_XF86LaunchA		0x1008FF4A   /* Launch Application          */
-#define XKB_KEY_XF86LaunchB		0x1008FF4B   /* Launch Application          */
-#define XKB_KEY_XF86LaunchC		0x1008FF4C   /* Launch Application          */
-#define XKB_KEY_XF86LaunchD		0x1008FF4D   /* Launch Application          */
-#define XKB_KEY_XF86LaunchE		0x1008FF4E   /* Launch Application          */
-#define XKB_KEY_XF86LaunchF		0x1008FF4F   /* Launch Application          */
+#define XKB_KEY_XF86Back                  0x1008ff26  /* Like back on a browser     */
+#define XKB_KEY_XF86Forward               0x1008ff27  /* Like forward on a browser  */
+#define XKB_KEY_XF86Stop                  0x1008ff28  /* Stop current operation     */
+#define XKB_KEY_XF86Refresh               0x1008ff29  /* Refresh the page           */
+#define XKB_KEY_XF86PowerOff              0x1008ff2a  /* Power off system entirely  */
+#define XKB_KEY_XF86WakeUp                0x1008ff2b  /* Wake up system from sleep  */
+#define XKB_KEY_XF86Eject                 0x1008ff2c  /* Eject device (e.g. DVD)    */
+#define XKB_KEY_XF86ScreenSaver           0x1008ff2d  /* Invoke screensaver         */
+#define XKB_KEY_XF86WWW                   0x1008ff2e  /* Invoke web browser         */
+#define XKB_KEY_XF86Sleep                 0x1008ff2f  /* Put system to sleep        */
+#define XKB_KEY_XF86Favorites             0x1008ff30  /* Show favorite locations    */
+#define XKB_KEY_XF86AudioPause            0x1008ff31  /* Pause audio playing        */
+#define XKB_KEY_XF86AudioMedia            0x1008ff32  /* Launch media collection app */
+#define XKB_KEY_XF86MyComputer            0x1008ff33  /* Display "My Computer" window */
+#define XKB_KEY_XF86VendorHome            0x1008ff34  /* Display vendor home web site */
+#define XKB_KEY_XF86LightBulb             0x1008ff35  /* Light bulb keys exist       */
+#define XKB_KEY_XF86Shop                  0x1008ff36  /* Display shopping web site   */
+#define XKB_KEY_XF86History               0x1008ff37  /* Show history of web surfing */
+#define XKB_KEY_XF86OpenURL               0x1008ff38  /* Open selected URL           */
+#define XKB_KEY_XF86AddFavorite           0x1008ff39  /* Add URL to favorites list   */
+#define XKB_KEY_XF86HotLinks              0x1008ff3a  /* Show "hot" links            */
+#define XKB_KEY_XF86BrightnessAdjust      0x1008ff3b  /* Invoke brightness adj. UI   */
+#define XKB_KEY_XF86Finance               0x1008ff3c  /* Display financial site      */
+#define XKB_KEY_XF86Community             0x1008ff3d  /* Display user's community    */
+#define XKB_KEY_XF86AudioRewind           0x1008ff3e  /* "rewind" audio track        */
+#define XKB_KEY_XF86BackForward           0x1008ff3f  /* ??? */
+#define XKB_KEY_XF86Launch0               0x1008ff40  /* Launch Application          */
+#define XKB_KEY_XF86Launch1               0x1008ff41  /* Launch Application          */
+#define XKB_KEY_XF86Launch2               0x1008ff42  /* Launch Application          */
+#define XKB_KEY_XF86Launch3               0x1008ff43  /* Launch Application          */
+#define XKB_KEY_XF86Launch4               0x1008ff44  /* Launch Application          */
+#define XKB_KEY_XF86Launch5               0x1008ff45  /* Launch Application          */
+#define XKB_KEY_XF86Launch6               0x1008ff46  /* Launch Application          */
+#define XKB_KEY_XF86Launch7               0x1008ff47  /* Launch Application          */
+#define XKB_KEY_XF86Launch8               0x1008ff48  /* Launch Application          */
+#define XKB_KEY_XF86Launch9               0x1008ff49  /* Launch Application          */
+#define XKB_KEY_XF86LaunchA               0x1008ff4a  /* Launch Application          */
+#define XKB_KEY_XF86LaunchB               0x1008ff4b  /* Launch Application          */
+#define XKB_KEY_XF86LaunchC               0x1008ff4c  /* Launch Application          */
+#define XKB_KEY_XF86LaunchD               0x1008ff4d  /* Launch Application          */
+#define XKB_KEY_XF86LaunchE               0x1008ff4e  /* Launch Application          */
+#define XKB_KEY_XF86LaunchF               0x1008ff4f  /* Launch Application          */
 
-#define XKB_KEY_XF86ApplicationLeft	0x1008FF50   /* switch to application, left */
-#define XKB_KEY_XF86ApplicationRight	0x1008FF51   /* switch to application, right*/
-#define XKB_KEY_XF86Book		0x1008FF52   /* Launch bookreader           */
-#define XKB_KEY_XF86CD		0x1008FF53   /* Launch CD/DVD player        */
-#define XKB_KEY_XF86Calculater	0x1008FF54   /* Launch Calculater           */
-#define XKB_KEY_XF86Clear		0x1008FF55   /* Clear window, screen        */
-#define XKB_KEY_XF86Close		0x1008FF56   /* Close window                */
-#define XKB_KEY_XF86Copy		0x1008FF57   /* Copy selection              */
-#define XKB_KEY_XF86Cut		0x1008FF58   /* Cut selection               */
-#define XKB_KEY_XF86Display		0x1008FF59   /* Output switch key           */
-#define XKB_KEY_XF86DOS		0x1008FF5A   /* Launch DOS (emulation)      */
-#define XKB_KEY_XF86Documents	0x1008FF5B   /* Open documents window       */
-#define XKB_KEY_XF86Excel		0x1008FF5C   /* Launch spread sheet         */
-#define XKB_KEY_XF86Explorer		0x1008FF5D   /* Launch file explorer        */
-#define XKB_KEY_XF86Game		0x1008FF5E   /* Launch game                 */
-#define XKB_KEY_XF86Go		0x1008FF5F   /* Go to URL                   */
-#define XKB_KEY_XF86iTouch		0x1008FF60   /* Logitech iTouch- don't use  */
-#define XKB_KEY_XF86LogOff		0x1008FF61   /* Log off system              */
-#define XKB_KEY_XF86Market		0x1008FF62   /* ??                          */
-#define XKB_KEY_XF86Meeting		0x1008FF63   /* enter meeting in calendar   */
-#define XKB_KEY_XF86MenuKB		0x1008FF65   /* distinguish keyboard from PB */
-#define XKB_KEY_XF86MenuPB		0x1008FF66   /* distinguish PB from keyboard */
-#define XKB_KEY_XF86MySites		0x1008FF67   /* Favourites                  */
-#define XKB_KEY_XF86New		0x1008FF68   /* New (folder, document...    */
-#define XKB_KEY_XF86News		0x1008FF69   /* News                        */
-#define XKB_KEY_XF86OfficeHome	0x1008FF6A   /* Office home (old Staroffice)*/
-#define XKB_KEY_XF86Open		0x1008FF6B   /* Open                        */
-#define XKB_KEY_XF86Option		0x1008FF6C   /* ?? */
-#define XKB_KEY_XF86Paste		0x1008FF6D   /* Paste                       */
-#define XKB_KEY_XF86Phone		0x1008FF6E   /* Launch phone; dial number   */
-#define XKB_KEY_XF86Q		0x1008FF70   /* Compaq's Q - don't use      */
-#define XKB_KEY_XF86Reply		0x1008FF72   /* Reply e.g., mail            */
-#define XKB_KEY_XF86Reload		0x1008FF73   /* Reload web page, file, etc. */
-#define XKB_KEY_XF86RotateWindows	0x1008FF74   /* Rotate windows e.g. xrandr  */
-#define XKB_KEY_XF86RotationPB	0x1008FF75   /* don't use                   */
-#define XKB_KEY_XF86RotationKB	0x1008FF76   /* don't use                   */
-#define XKB_KEY_XF86Save		0x1008FF77   /* Save (file, document, state */
-#define XKB_KEY_XF86ScrollUp		0x1008FF78   /* Scroll window/contents up   */
-#define XKB_KEY_XF86ScrollDown	0x1008FF79   /* Scrool window/contentd down */
-#define XKB_KEY_XF86ScrollClick	0x1008FF7A   /* Use XKB mousekeys instead   */
-#define XKB_KEY_XF86Send		0x1008FF7B   /* Send mail, file, object     */
-#define XKB_KEY_XF86Spell		0x1008FF7C   /* Spell checker               */
-#define XKB_KEY_XF86SplitScreen	0x1008FF7D   /* Split window or screen      */
-#define XKB_KEY_XF86Support		0x1008FF7E   /* Get support (??)            */
-#define XKB_KEY_XF86TaskPane		0x1008FF7F   /* Show tasks */
-#define XKB_KEY_XF86Terminal		0x1008FF80   /* Launch terminal emulator    */
-#define XKB_KEY_XF86Tools		0x1008FF81   /* toolbox of desktop/app.     */
-#define XKB_KEY_XF86Travel		0x1008FF82   /* ?? */
-#define XKB_KEY_XF86UserPB		0x1008FF84   /* ?? */
-#define XKB_KEY_XF86User1KB		0x1008FF85   /* ?? */
-#define XKB_KEY_XF86User2KB		0x1008FF86   /* ?? */
-#define XKB_KEY_XF86Video		0x1008FF87   /* Launch video player       */
-#define XKB_KEY_XF86WheelButton	0x1008FF88   /* button from a mouse wheel */
-#define XKB_KEY_XF86Word		0x1008FF89   /* Launch word processor     */
-#define XKB_KEY_XF86Xfer		0x1008FF8A
-#define XKB_KEY_XF86ZoomIn		0x1008FF8B   /* zoom in view, map, etc.   */
-#define XKB_KEY_XF86ZoomOut		0x1008FF8C   /* zoom out view, map, etc.  */
+#define XKB_KEY_XF86ApplicationLeft       0x1008ff50  /* switch to application, left */
+#define XKB_KEY_XF86ApplicationRight      0x1008ff51  /* switch to application, right*/
+#define XKB_KEY_XF86Book                  0x1008ff52  /* Launch bookreader           */
+#define XKB_KEY_XF86CD                    0x1008ff53  /* Launch CD/DVD player        */
+#define XKB_KEY_XF86Calculater            0x1008ff54  /* Launch Calculater           */
+#define XKB_KEY_XF86Clear                 0x1008ff55  /* Clear window, screen        */
+#define XKB_KEY_XF86Close                 0x1008ff56  /* Close window                */
+#define XKB_KEY_XF86Copy                  0x1008ff57  /* Copy selection              */
+#define XKB_KEY_XF86Cut                   0x1008ff58  /* Cut selection               */
+#define XKB_KEY_XF86Display               0x1008ff59  /* Output switch key           */
+#define XKB_KEY_XF86DOS                   0x1008ff5a  /* Launch DOS (emulation)      */
+#define XKB_KEY_XF86Documents             0x1008ff5b  /* Open documents window       */
+#define XKB_KEY_XF86Excel                 0x1008ff5c  /* Launch spread sheet         */
+#define XKB_KEY_XF86Explorer              0x1008ff5d  /* Launch file explorer        */
+#define XKB_KEY_XF86Game                  0x1008ff5e  /* Launch game                 */
+#define XKB_KEY_XF86Go                    0x1008ff5f  /* Go to URL                   */
+#define XKB_KEY_XF86iTouch                0x1008ff60  /* Logitech iTouch- don't use  */
+#define XKB_KEY_XF86LogOff                0x1008ff61  /* Log off system              */
+#define XKB_KEY_XF86Market                0x1008ff62  /* ??                          */
+#define XKB_KEY_XF86Meeting               0x1008ff63  /* enter meeting in calendar   */
+#define XKB_KEY_XF86MenuKB                0x1008ff65  /* distinguish keyboard from PB */
+#define XKB_KEY_XF86MenuPB                0x1008ff66  /* distinguish PB from keyboard */
+#define XKB_KEY_XF86MySites               0x1008ff67  /* Favourites                  */
+#define XKB_KEY_XF86New                   0x1008ff68  /* New (folder, document...    */
+#define XKB_KEY_XF86News                  0x1008ff69  /* News                        */
+#define XKB_KEY_XF86OfficeHome            0x1008ff6a  /* Office home (old Staroffice)*/
+#define XKB_KEY_XF86Open                  0x1008ff6b  /* Open                        */
+#define XKB_KEY_XF86Option                0x1008ff6c  /* ?? */
+#define XKB_KEY_XF86Paste                 0x1008ff6d  /* Paste                       */
+#define XKB_KEY_XF86Phone                 0x1008ff6e  /* Launch phone; dial number   */
+#define XKB_KEY_XF86Q                     0x1008ff70  /* Compaq's Q - don't use      */
+#define XKB_KEY_XF86Reply                 0x1008ff72  /* Reply e.g., mail            */
+#define XKB_KEY_XF86Reload                0x1008ff73  /* Reload web page, file, etc. */
+#define XKB_KEY_XF86RotateWindows         0x1008ff74  /* Rotate windows e.g. xrandr  */
+#define XKB_KEY_XF86RotationPB            0x1008ff75  /* don't use                   */
+#define XKB_KEY_XF86RotationKB            0x1008ff76  /* don't use                   */
+#define XKB_KEY_XF86Save                  0x1008ff77  /* Save (file, document, state */
+#define XKB_KEY_XF86ScrollUp              0x1008ff78  /* Scroll window/contents up   */
+#define XKB_KEY_XF86ScrollDown            0x1008ff79  /* Scrool window/contentd down */
+#define XKB_KEY_XF86ScrollClick           0x1008ff7a  /* Use XKB mousekeys instead   */
+#define XKB_KEY_XF86Send                  0x1008ff7b  /* Send mail, file, object     */
+#define XKB_KEY_XF86Spell                 0x1008ff7c  /* Spell checker               */
+#define XKB_KEY_XF86SplitScreen           0x1008ff7d  /* Split window or screen      */
+#define XKB_KEY_XF86Support               0x1008ff7e  /* Get support (??)            */
+#define XKB_KEY_XF86TaskPane              0x1008ff7f  /* Show tasks */
+#define XKB_KEY_XF86Terminal              0x1008ff80  /* Launch terminal emulator    */
+#define XKB_KEY_XF86Tools                 0x1008ff81  /* toolbox of desktop/app.     */
+#define XKB_KEY_XF86Travel                0x1008ff82  /* ?? */
+#define XKB_KEY_XF86UserPB                0x1008ff84  /* ?? */
+#define XKB_KEY_XF86User1KB               0x1008ff85  /* ?? */
+#define XKB_KEY_XF86User2KB               0x1008ff86  /* ?? */
+#define XKB_KEY_XF86Video                 0x1008ff87  /* Launch video player       */
+#define XKB_KEY_XF86WheelButton           0x1008ff88  /* button from a mouse wheel */
+#define XKB_KEY_XF86Word                  0x1008ff89  /* Launch word processor     */
+#define XKB_KEY_XF86Xfer                  0x1008ff8a
+#define XKB_KEY_XF86ZoomIn                0x1008ff8b  /* zoom in view, map, etc.   */
+#define XKB_KEY_XF86ZoomOut               0x1008ff8c  /* zoom out view, map, etc.  */
 
-#define XKB_KEY_XF86Away		0x1008FF8D   /* mark yourself as away     */
-#define XKB_KEY_XF86Messenger	0x1008FF8E   /* as in instant messaging   */
-#define XKB_KEY_XF86WebCam		0x1008FF8F   /* Launch web camera app.    */
-#define XKB_KEY_XF86MailForward	0x1008FF90   /* Forward in mail           */
-#define XKB_KEY_XF86Pictures		0x1008FF91   /* Show pictures             */
-#define XKB_KEY_XF86Music		0x1008FF92   /* Launch music application  */
+#define XKB_KEY_XF86Away                  0x1008ff8d  /* mark yourself as away     */
+#define XKB_KEY_XF86Messenger             0x1008ff8e  /* as in instant messaging   */
+#define XKB_KEY_XF86WebCam                0x1008ff8f  /* Launch web camera app.    */
+#define XKB_KEY_XF86MailForward           0x1008ff90  /* Forward in mail           */
+#define XKB_KEY_XF86Pictures              0x1008ff91  /* Show pictures             */
+#define XKB_KEY_XF86Music                 0x1008ff92  /* Launch music application  */
 
-#define XKB_KEY_XF86Battery		0x1008FF93   /* Display battery information */
-#define XKB_KEY_XF86Bluetooth	0x1008FF94   /* Enable/disable Bluetooth    */
-#define XKB_KEY_XF86WLAN		0x1008FF95   /* Enable/disable WLAN         */
-#define XKB_KEY_XF86UWB		0x1008FF96   /* Enable/disable UWB	    */
+#define XKB_KEY_XF86Battery               0x1008ff93  /* Display battery information */
+#define XKB_KEY_XF86Bluetooth             0x1008ff94  /* Enable/disable Bluetooth    */
+#define XKB_KEY_XF86WLAN                  0x1008ff95  /* Enable/disable WLAN         */
+#define XKB_KEY_XF86UWB                   0x1008ff96  /* Enable/disable UWB	    */
 
-#define XKB_KEY_XF86AudioForward	0x1008FF97   /* fast-forward audio track    */
-#define XKB_KEY_XF86AudioRepeat	0x1008FF98   /* toggle repeat mode          */
-#define XKB_KEY_XF86AudioRandomPlay	0x1008FF99   /* toggle shuffle mode         */
-#define XKB_KEY_XF86Subtitle		0x1008FF9A   /* cycle through subtitle      */
-#define XKB_KEY_XF86AudioCycleTrack	0x1008FF9B   /* cycle through audio tracks  */
-#define XKB_KEY_XF86CycleAngle	0x1008FF9C   /* cycle through angles        */
-#define XKB_KEY_XF86FrameBack	0x1008FF9D   /* video: go one frame back    */
-#define XKB_KEY_XF86FrameForward	0x1008FF9E   /* video: go one frame forward */
-#define XKB_KEY_XF86Time		0x1008FF9F   /* display, or shows an entry for time seeking */
-#define XKB_KEY_XF86Select		0x1008FFA0   /* Select button on joypads and remotes */
-#define XKB_KEY_XF86View		0x1008FFA1   /* Show a view options/properties */
-#define XKB_KEY_XF86TopMenu		0x1008FFA2   /* Go to a top-level menu in a video */
+#define XKB_KEY_XF86AudioForward          0x1008ff97  /* fast-forward audio track    */
+#define XKB_KEY_XF86AudioRepeat           0x1008ff98  /* toggle repeat mode          */
+#define XKB_KEY_XF86AudioRandomPlay       0x1008ff99  /* toggle shuffle mode         */
+#define XKB_KEY_XF86Subtitle              0x1008ff9a  /* cycle through subtitle      */
+#define XKB_KEY_XF86AudioCycleTrack       0x1008ff9b  /* cycle through audio tracks  */
+#define XKB_KEY_XF86CycleAngle            0x1008ff9c  /* cycle through angles        */
+#define XKB_KEY_XF86FrameBack             0x1008ff9d  /* video: go one frame back    */
+#define XKB_KEY_XF86FrameForward          0x1008ff9e  /* video: go one frame forward */
+#define XKB_KEY_XF86Time                  0x1008ff9f  /* display, or shows an entry for time seeking */
+#define XKB_KEY_XF86Select                0x1008ffa0  /* Select button on joypads and remotes */
+#define XKB_KEY_XF86View                  0x1008ffa1  /* Show a view options/properties */
+#define XKB_KEY_XF86TopMenu               0x1008ffa2  /* Go to a top-level menu in a video */
 
-#define XKB_KEY_XF86Red		0x1008FFA3   /* Red button                  */
-#define XKB_KEY_XF86Green		0x1008FFA4   /* Green button                */
-#define XKB_KEY_XF86Yellow		0x1008FFA5   /* Yellow button               */
-#define XKB_KEY_XF86Blue             0x1008FFA6   /* Blue button                 */
+#define XKB_KEY_XF86Red                   0x1008ffa3  /* Red button                  */
+#define XKB_KEY_XF86Green                 0x1008ffa4  /* Green button                */
+#define XKB_KEY_XF86Yellow                0x1008ffa5  /* Yellow button               */
+#define XKB_KEY_XF86Blue                  0x1008ffa6  /* Blue button                 */
 
-#define XKB_KEY_XF86Suspend		0x1008FFA7   /* Sleep to RAM                */
-#define XKB_KEY_XF86Hibernate	0x1008FFA8   /* Sleep to disk               */
-#define XKB_KEY_XF86TouchpadToggle	0x1008FFA9   /* Toggle between touchpad/trackstick */
-#define XKB_KEY_XF86TouchpadOn	0x1008FFB0   /* The touchpad got switched on */
-#define XKB_KEY_XF86TouchpadOff	0x1008FFB1   /* The touchpad got switched off */
+#define XKB_KEY_XF86Suspend               0x1008ffa7  /* Sleep to RAM                */
+#define XKB_KEY_XF86Hibernate             0x1008ffa8  /* Sleep to disk               */
+#define XKB_KEY_XF86TouchpadToggle        0x1008ffa9  /* Toggle between touchpad/trackstick */
+#define XKB_KEY_XF86TouchpadOn            0x1008ffb0  /* The touchpad got switched on */
+#define XKB_KEY_XF86TouchpadOff           0x1008ffb1  /* The touchpad got switched off */
 
-#define XKB_KEY_XF86AudioMicMute	0x1008FFB2   /* Mute the Mic from the system */
+#define XKB_KEY_XF86AudioMicMute          0x1008ffb2  /* Mute the Mic from the system */
 
-#define XKB_KEY_XF86Keyboard		0x1008FFB3   /* User defined keyboard related action */
+#define XKB_KEY_XF86Keyboard              0x1008ffb3  /* User defined keyboard related action */
 
-#define XKB_KEY_XF86WWAN		0x1008FFB4   /* Toggle WWAN (LTE, UMTS, etc.) radio */
-#define XKB_KEY_XF86RFKill		0x1008FFB5   /* Toggle radios on/off */
+#define XKB_KEY_XF86WWAN                  0x1008ffb4  /* Toggle WWAN (LTE, UMTS, etc.) radio */
+#define XKB_KEY_XF86RFKill                0x1008ffb5  /* Toggle radios on/off */
 
-#define XKB_KEY_XF86AudioPreset	0x1008FFB6   /* Select equalizer preset, e.g. theatre-mode */
+#define XKB_KEY_XF86AudioPreset           0x1008ffb6  /* Select equalizer preset, e.g. theatre-mode */
 
-#define XKB_KEY_XF86RotationLockToggle 0x1008FFB7 /* Toggle screen rotation lock on/off */
+#define XKB_KEY_XF86RotationLockToggle    0x1008ffb7  /* Toggle screen rotation lock on/off */
 
-#define XKB_KEY_XF86FullScreen	0x1008FFB8   /* Toggle fullscreen */
+#define XKB_KEY_XF86FullScreen            0x1008ffb8  /* Toggle fullscreen */
 
 /* Keys for special action keys (hot keys) */
 /* Virtual terminals on some operating systems */
-#define XKB_KEY_XF86Switch_VT_1	0x1008FE01
-#define XKB_KEY_XF86Switch_VT_2	0x1008FE02
-#define XKB_KEY_XF86Switch_VT_3	0x1008FE03
-#define XKB_KEY_XF86Switch_VT_4	0x1008FE04
-#define XKB_KEY_XF86Switch_VT_5	0x1008FE05
-#define XKB_KEY_XF86Switch_VT_6	0x1008FE06
-#define XKB_KEY_XF86Switch_VT_7	0x1008FE07
-#define XKB_KEY_XF86Switch_VT_8	0x1008FE08
-#define XKB_KEY_XF86Switch_VT_9	0x1008FE09
-#define XKB_KEY_XF86Switch_VT_10	0x1008FE0A
-#define XKB_KEY_XF86Switch_VT_11	0x1008FE0B
-#define XKB_KEY_XF86Switch_VT_12	0x1008FE0C
+#define XKB_KEY_XF86Switch_VT_1           0x1008fe01
+#define XKB_KEY_XF86Switch_VT_2           0x1008fe02
+#define XKB_KEY_XF86Switch_VT_3           0x1008fe03
+#define XKB_KEY_XF86Switch_VT_4           0x1008fe04
+#define XKB_KEY_XF86Switch_VT_5           0x1008fe05
+#define XKB_KEY_XF86Switch_VT_6           0x1008fe06
+#define XKB_KEY_XF86Switch_VT_7           0x1008fe07
+#define XKB_KEY_XF86Switch_VT_8           0x1008fe08
+#define XKB_KEY_XF86Switch_VT_9           0x1008fe09
+#define XKB_KEY_XF86Switch_VT_10          0x1008fe0a
+#define XKB_KEY_XF86Switch_VT_11          0x1008fe0b
+#define XKB_KEY_XF86Switch_VT_12          0x1008fe0c
 
-#define XKB_KEY_XF86Ungrab		0x1008FE20   /* force ungrab               */
-#define XKB_KEY_XF86ClearGrab	0x1008FE21   /* kill application with grab */
-#define XKB_KEY_XF86Next_VMode	0x1008FE22   /* next video mode available  */
-#define XKB_KEY_XF86Prev_VMode	0x1008FE23   /* prev. video mode available */
-#define XKB_KEY_XF86LogWindowTree	0x1008FE24   /* print window tree to log   */
-#define XKB_KEY_XF86LogGrabInfo	0x1008FE25   /* print all active grabs to log */
+#define XKB_KEY_XF86Ungrab                0x1008fe20  /* force ungrab               */
+#define XKB_KEY_XF86ClearGrab             0x1008fe21  /* kill application with grab */
+#define XKB_KEY_XF86Next_VMode            0x1008fe22  /* next video mode available  */
+#define XKB_KEY_XF86Prev_VMode            0x1008fe23  /* prev. video mode available */
+#define XKB_KEY_XF86LogWindowTree         0x1008fe24  /* print window tree to log   */
+#define XKB_KEY_XF86LogGrabInfo           0x1008fe25  /* print all active grabs to log */
 
 
 /*
@@ -2697,7 +2713,7 @@ SOFTWARE.
  *
  * Key syms within this range must match the Linux kernel
  * input-event-codes.h file in the format:
- *     XF86XK_CamelCaseKernelName	_EVDEVK(kernel value)
+ *     XKB_KEY_XF86CamelCaseKernelName	_EVDEVK(kernel value)
  * For example, the kernel
  *   #define KEY_MACRO_RECORD_START	0x2b0
  * effectively ends up as:
@@ -2725,207 +2741,225 @@ SOFTWARE.
  *
  * Where the evdev keycode is mapped to a different symbol, please add a
  * comment line starting with Use: but otherwise the same format, e.g.
- *  Use: XF86XK_RotationLockToggle	_EVDEVK(0x231)		   v4.16 KEY_ROTATE_LOCK_TOGGLE
+ *  Use: XKB_KEY_XF86RotationLockToggle	_EVDEVK(0x231)		   v4.16 KEY_ROTATE_LOCK_TOGGLE
  *
  */
-/* Use: XF86XK_Eject			_EVDEVK(0x0A2)		         KEY_EJECTCLOSECD */
-/* Use: XF86XK_New			_EVDEVK(0x0B5)		   v2.6.14 KEY_NEW */
-/* Use: XK_Redo				_EVDEVK(0x0B6)		   v2.6.14 KEY_REDO */
+/* Use: XKB_KEY_XF86Eject                    _EVDEVK(0x0a2)             KEY_EJECTCLOSECD */
+/* Use: XKB_KEY_XF86New                      _EVDEVK(0x0b5)     v2.6.14 KEY_NEW */
+/* Use: XKB_KEY_Redo                         _EVDEVK(0x0b6)     v2.6.14 KEY_REDO */
 /* KEY_DASHBOARD has been mapped to LaunchB in xkeyboard-config since 2011 */
-/* Use: XF86XK_LaunchB			_EVDEVK(0x0CC)		   v2.6.28 KEY_DASHBOARD */
-/* Use: XF86XK_Display			_EVDEVK(0x0E3)		   v2.6.12 KEY_SWITCHVIDEOMODE */
-/* Use: XF86XK_KbdLightOnOff		_EVDEVK(0x0E4)		   v2.6.12 KEY_KBDILLUMTOGGLE */
-/* Use: XF86XK_KbdBrightnessDown	_EVDEVK(0x0E5)		   v2.6.12 KEY_KBDILLUMDOWN */
-/* Use: XF86XK_KbdBrightnessUp		_EVDEVK(0x0E6)		   v2.6.12 KEY_KBDILLUMUP */
-/* Use: XF86XK_Send			_EVDEVK(0x0E7)		   v2.6.14 KEY_SEND */
-/* Use: XF86XK_Reply			_EVDEVK(0x0E8)		   v2.6.14 KEY_REPLY */
-/* Use: XF86XK_MailForward		_EVDEVK(0x0E9)		   v2.6.14 KEY_FORWARDMAIL */
-/* Use: XF86XK_Save			_EVDEVK(0x0EA)		   v2.6.14 KEY_SAVE */
-/* Use: XF86XK_Documents		_EVDEVK(0x0EB)		   v2.6.14 KEY_DOCUMENTS */
-/* Use: XF86XK_Battery			_EVDEVK(0x0EC)		   v2.6.17 KEY_BATTERY */
-/* Use: XF86XK_Bluetooth		_EVDEVK(0x0ED)		   v2.6.19 KEY_BLUETOOTH */
-/* Use: XF86XK_WLAN			_EVDEVK(0x0EE)		   v2.6.19 KEY_WLAN */
-/* Use: XF86XK_UWB			_EVDEVK(0x0EF)		   v2.6.24 KEY_UWB */
-/* Use: XF86XK_Next_VMode		_EVDEVK(0x0F1)		   v2.6.23 KEY_VIDEO_NEXT */
-/* Use: XF86XK_Prev_VMode		_EVDEVK(0x0F2)		   v2.6.23 KEY_VIDEO_PREV */
-/* Use: XF86XK_MonBrightnessCycle	_EVDEVK(0x0F3)		   v2.6.23 KEY_BRIGHTNESS_CYCLE */
-#define XKB_KEY_XF86BrightnessAuto		0x100810f4		/* v3.16 KEY_BRIGHTNESS_AUTO */
-#define XKB_KEY_XF86DisplayOff		0x100810f5		/* v2.6.23 KEY_DISPLAY_OFF */
-/* Use: XF86XK_WWAN			_EVDEVK(0x0F6)		   v3.13 KEY_WWAN */
-/* Use: XF86XK_RFKill			_EVDEVK(0x0F7)		   v2.6.33 KEY_RFKILL */
-/* Use: XF86XK_AudioMicMute		_EVDEVK(0x0F8)		   v3.1  KEY_MICMUTE */
-#define XKB_KEY_XF86Info			0x10081166		/*       KEY_INFO */
-/* Use: XF86XK_CycleAngle		_EVDEVK(0x173)		         KEY_ANGLE */
-/* Use: XF86XK_FullScreen		_EVDEVK(0x174)		   v5.1  KEY_FULL_SCREEN */
-#define XKB_KEY_XF86AspectRatio		0x10081177		/* v5.1  KEY_ASPECT_RATIO */
-#define XKB_KEY_XF86DVD			0x10081185		/*       KEY_DVD */
-#define XKB_KEY_XF86Audio			0x10081188		/*       KEY_AUDIO */
-/* Use: XF86XK_Video			_EVDEVK(0x189)		         KEY_VIDEO */
-/* Use: XF86XK_Calendar			_EVDEVK(0x18D)		         KEY_CALENDAR */
-#define XKB_KEY_XF86ChannelUp		0x10081192		/*       KEY_CHANNELUP */
-#define XKB_KEY_XF86ChannelDown		0x10081193		/*       KEY_CHANNELDOWN */
-/* Use: XF86XK_AudioRandomPlay		_EVDEVK(0x19A)		         KEY_SHUFFLE */
-#define XKB_KEY_XF86Break			0x1008119b		/*       KEY_BREAK */
-#define XKB_KEY_XF86VideoPhone		0x100811a0		/* v2.6.20 KEY_VIDEOPHONE */
-/* Use: XF86XK_Game			_EVDEVK(0x1A1)		   v2.6.20 KEY_GAMES */
-/* Use: XF86XK_ZoomIn			_EVDEVK(0x1A2)		   v2.6.20 KEY_ZOOMIN */
-/* Use: XF86XK_ZoomOut			_EVDEVK(0x1A3)		   v2.6.20 KEY_ZOOMOUT */
-#define XKB_KEY_XF86ZoomReset		0x100811a4		/* v2.6.20 KEY_ZOOMRESET */
-/* Use: XF86XK_Word			_EVDEVK(0x1A5)		   v2.6.20 KEY_WORDPROCESSOR */
-#define XKB_KEY_XF86Editor			0x100811a6		/* v2.6.20 KEY_EDITOR */
-/* Use: XF86XK_Excel			_EVDEVK(0x1A7)		   v2.6.20 KEY_SPREADSHEET */
-#define XKB_KEY_XF86GraphicsEditor		0x100811a8		/* v2.6.20 KEY_GRAPHICSEDITOR */
-#define XKB_KEY_XF86Presentation		0x100811a9		/* v2.6.20 KEY_PRESENTATION */
-#define XKB_KEY_XF86Database			0x100811aa		/* v2.6.20 KEY_DATABASE */
-/* Use: XF86XK_News			_EVDEVK(0x1AB)		   v2.6.20 KEY_NEWS */
-#define XKB_KEY_XF86Voicemail		0x100811ac		/* v2.6.20 KEY_VOICEMAIL */
-#define XKB_KEY_XF86Addressbook		0x100811ad		/* v2.6.20 KEY_ADDRESSBOOK */
-/* Use: XF86XK_Messenger		_EVDEVK(0x1AE)		   v2.6.20 KEY_MESSENGER */
-#define XKB_KEY_XF86DisplayToggle		0x100811af		/* v2.6.20 KEY_DISPLAYTOGGLE */
-#define XKB_KEY_XF86SpellCheck		0x100811b0		/* v2.6.24 KEY_SPELLCHECK */
-/* Use: XF86XK_LogOff			_EVDEVK(0x1B1)		   v2.6.24 KEY_LOGOFF */
-/* Use: XK_dollar			_EVDEVK(0x1B2)		   v2.6.24 KEY_DOLLAR */
-/* Use: XK_EuroSign			_EVDEVK(0x1B3)		   v2.6.24 KEY_EURO */
-/* Use: XF86XK_FrameBack		_EVDEVK(0x1B4)		   v2.6.24 KEY_FRAMEBACK */
-/* Use: XF86XK_FrameForward		_EVDEVK(0x1B5)		   v2.6.24 KEY_FRAMEFORWARD */
-#define XKB_KEY_XF86ContextMenu		0x100811b6		/* v2.6.24 KEY_CONTEXT_MENU */
-#define XKB_KEY_XF86MediaRepeat		0x100811b7		/* v2.6.26 KEY_MEDIA_REPEAT */
-#define XKB_KEY_XF8610ChannelsUp		0x100811b8		/* v2.6.38 KEY_10CHANNELSUP */
-#define XKB_KEY_XF8610ChannelsDown		0x100811b9		/* v2.6.38 KEY_10CHANNELSDOWN */
-#define XKB_KEY_XF86Images			0x100811ba		/* v2.6.39 KEY_IMAGES */
-#define XKB_KEY_XF86NotificationCenter	0x100811bc		/* v5.10 KEY_NOTIFICATION_CENTER */
-#define XKB_KEY_XF86PickupPhone		0x100811bd		/* v5.10 KEY_PICKUP_PHONE */
-#define XKB_KEY_XF86HangupPhone		0x100811be		/* v5.10 KEY_HANGUP_PHONE */
-#define XKB_KEY_XF86Fn			0x100811d0		/*       KEY_FN */
-#define XKB_KEY_XF86Fn_Esc			0x100811d1		/*       KEY_FN_ESC */
-#define XKB_KEY_XF86FnRightShift		0x100811e5		/* v5.10 KEY_FN_RIGHT_SHIFT */
-/* Use: XK_braille_dot_1		_EVDEVK(0x1F1)		   v2.6.17 KEY_BRL_DOT1 */
-/* Use: XK_braille_dot_2		_EVDEVK(0x1F2)		   v2.6.17 KEY_BRL_DOT2 */
-/* Use: XK_braille_dot_3		_EVDEVK(0x1F3)		   v2.6.17 KEY_BRL_DOT3 */
-/* Use: XK_braille_dot_4		_EVDEVK(0x1F4)		   v2.6.17 KEY_BRL_DOT4 */
-/* Use: XK_braille_dot_5		_EVDEVK(0x1F5)		   v2.6.17 KEY_BRL_DOT5 */
-/* Use: XK_braille_dot_6		_EVDEVK(0x1F6)		   v2.6.17 KEY_BRL_DOT6 */
-/* Use: XK_braille_dot_7		_EVDEVK(0x1F7)		   v2.6.17 KEY_BRL_DOT7 */
-/* Use: XK_braille_dot_8		_EVDEVK(0x1F8)		   v2.6.17 KEY_BRL_DOT8 */
-/* Use: XK_braille_dot_9		_EVDEVK(0x1F9)		   v2.6.23 KEY_BRL_DOT9 */
-/* Use: XK_braille_dot_1		_EVDEVK(0x1FA)		   v2.6.23 KEY_BRL_DOT10 */
-#define XKB_KEY_XF86Numeric0			0x10081200		/* v2.6.28 KEY_NUMERIC_0 */
-#define XKB_KEY_XF86Numeric1			0x10081201		/* v2.6.28 KEY_NUMERIC_1 */
-#define XKB_KEY_XF86Numeric2			0x10081202		/* v2.6.28 KEY_NUMERIC_2 */
-#define XKB_KEY_XF86Numeric3			0x10081203		/* v2.6.28 KEY_NUMERIC_3 */
-#define XKB_KEY_XF86Numeric4			0x10081204		/* v2.6.28 KEY_NUMERIC_4 */
-#define XKB_KEY_XF86Numeric5			0x10081205		/* v2.6.28 KEY_NUMERIC_5 */
-#define XKB_KEY_XF86Numeric6			0x10081206		/* v2.6.28 KEY_NUMERIC_6 */
-#define XKB_KEY_XF86Numeric7			0x10081207		/* v2.6.28 KEY_NUMERIC_7 */
-#define XKB_KEY_XF86Numeric8			0x10081208		/* v2.6.28 KEY_NUMERIC_8 */
-#define XKB_KEY_XF86Numeric9			0x10081209		/* v2.6.28 KEY_NUMERIC_9 */
-#define XKB_KEY_XF86NumericStar		0x1008120a		/* v2.6.28 KEY_NUMERIC_STAR */
-#define XKB_KEY_XF86NumericPound		0x1008120b		/* v2.6.28 KEY_NUMERIC_POUND */
-#define XKB_KEY_XF86NumericA			0x1008120c		/* v4.1  KEY_NUMERIC_A */
-#define XKB_KEY_XF86NumericB			0x1008120d		/* v4.1  KEY_NUMERIC_B */
-#define XKB_KEY_XF86NumericC			0x1008120e		/* v4.1  KEY_NUMERIC_C */
-#define XKB_KEY_XF86NumericD			0x1008120f		/* v4.1  KEY_NUMERIC_D */
-#define XKB_KEY_XF86CameraFocus		0x10081210		/* v2.6.33 KEY_CAMERA_FOCUS */
-#define XKB_KEY_XF86WPSButton		0x10081211		/* v2.6.34 KEY_WPS_BUTTON */
-/* Use: XF86XK_TouchpadToggle		_EVDEVK(0x212)		   v2.6.37 KEY_TOUCHPAD_TOGGLE */
-/* Use: XF86XK_TouchpadOn		_EVDEVK(0x213)		   v2.6.37 KEY_TOUCHPAD_ON */
-/* Use: XF86XK_TouchpadOff		_EVDEVK(0x214)		   v2.6.37 KEY_TOUCHPAD_OFF */
-#define XKB_KEY_XF86CameraZoomIn		0x10081215		/* v2.6.39 KEY_CAMERA_ZOOMIN */
-#define XKB_KEY_XF86CameraZoomOut		0x10081216		/* v2.6.39 KEY_CAMERA_ZOOMOUT */
-#define XKB_KEY_XF86CameraUp			0x10081217		/* v2.6.39 KEY_CAMERA_UP */
-#define XKB_KEY_XF86CameraDown		0x10081218		/* v2.6.39 KEY_CAMERA_DOWN */
-#define XKB_KEY_XF86CameraLeft		0x10081219		/* v2.6.39 KEY_CAMERA_LEFT */
-#define XKB_KEY_XF86CameraRight		0x1008121a		/* v2.6.39 KEY_CAMERA_RIGHT */
-#define XKB_KEY_XF86AttendantOn		0x1008121b		/* v3.10 KEY_ATTENDANT_ON */
-#define XKB_KEY_XF86AttendantOff		0x1008121c		/* v3.10 KEY_ATTENDANT_OFF */
-#define XKB_KEY_XF86AttendantToggle		0x1008121d		/* v3.10 KEY_ATTENDANT_TOGGLE */
-#define XKB_KEY_XF86LightsToggle		0x1008121e		/* v3.10 KEY_LIGHTS_TOGGLE */
-#define XKB_KEY_XF86ALSToggle		0x10081230		/* v3.13 KEY_ALS_TOGGLE */
-/* Use: XF86XK_RotationLockToggle	_EVDEVK(0x231)		   v4.16 KEY_ROTATE_LOCK_TOGGLE */
-#define XKB_KEY_XF86Buttonconfig		0x10081240		/* v3.16 KEY_BUTTONCONFIG */
-#define XKB_KEY_XF86Taskmanager		0x10081241		/* v3.16 KEY_TASKMANAGER */
-#define XKB_KEY_XF86Journal			0x10081242		/* v3.16 KEY_JOURNAL */
-#define XKB_KEY_XF86ControlPanel		0x10081243		/* v3.16 KEY_CONTROLPANEL */
-#define XKB_KEY_XF86AppSelect		0x10081244		/* v3.16 KEY_APPSELECT */
-#define XKB_KEY_XF86Screensaver		0x10081245		/* v3.16 KEY_SCREENSAVER */
-#define XKB_KEY_XF86VoiceCommand		0x10081246		/* v3.16 KEY_VOICECOMMAND */
-#define XKB_KEY_XF86Assistant		0x10081247		/* v4.13 KEY_ASSISTANT */
-/* Use: XK_ISO_Next_Group		_EVDEVK(0x248)		   v5.2  KEY_KBD_LAYOUT_NEXT */
-#define XKB_KEY_XF86EmojiPicker		0x10081249		/* v5.13 KEY_EMOJI_PICKER */
-#define XKB_KEY_XF86Dictate			0x1008124a		/* v5.17 KEY_DICTATE */
-#define XKB_KEY_XF86BrightnessMin		0x10081250		/* v3.16 KEY_BRIGHTNESS_MIN */
-#define XKB_KEY_XF86BrightnessMax		0x10081251		/* v3.16 KEY_BRIGHTNESS_MAX */
-#define XKB_KEY_XF86KbdInputAssistPrev	0x10081260		/* v3.18 KEY_KBDINPUTASSIST_PREV */
-#define XKB_KEY_XF86KbdInputAssistNext	0x10081261		/* v3.18 KEY_KBDINPUTASSIST_NEXT */
-#define XKB_KEY_XF86KbdInputAssistPrevgroup	0x10081262		/* v3.18 KEY_KBDINPUTASSIST_PREVGROUP */
-#define XKB_KEY_XF86KbdInputAssistNextgroup	0x10081263		/* v3.18 KEY_KBDINPUTASSIST_NEXTGROUP */
-#define XKB_KEY_XF86KbdInputAssistAccept	0x10081264		/* v3.18 KEY_KBDINPUTASSIST_ACCEPT */
-#define XKB_KEY_XF86KbdInputAssistCancel	0x10081265		/* v3.18 KEY_KBDINPUTASSIST_CANCEL */
-#define XKB_KEY_XF86RightUp			0x10081266		/* v4.7  KEY_RIGHT_UP */
-#define XKB_KEY_XF86RightDown		0x10081267		/* v4.7  KEY_RIGHT_DOWN */
-#define XKB_KEY_XF86LeftUp			0x10081268		/* v4.7  KEY_LEFT_UP */
-#define XKB_KEY_XF86LeftDown			0x10081269		/* v4.7  KEY_LEFT_DOWN */
-#define XKB_KEY_XF86RootMenu			0x1008126a		/* v4.7  KEY_ROOT_MENU */
-#define XKB_KEY_XF86MediaTopMenu		0x1008126b		/* v4.7  KEY_MEDIA_TOP_MENU */
-#define XKB_KEY_XF86Numeric11		0x1008126c		/* v4.7  KEY_NUMERIC_11 */
-#define XKB_KEY_XF86Numeric12		0x1008126d		/* v4.7  KEY_NUMERIC_12 */
-#define XKB_KEY_XF86AudioDesc		0x1008126e		/* v4.7  KEY_AUDIO_DESC */
-#define XKB_KEY_XF863DMode			0x1008126f		/* v4.7  KEY_3D_MODE */
-#define XKB_KEY_XF86NextFavorite		0x10081270		/* v4.7  KEY_NEXT_FAVORITE */
-#define XKB_KEY_XF86StopRecord		0x10081271		/* v4.7  KEY_STOP_RECORD */
-#define XKB_KEY_XF86PauseRecord		0x10081272		/* v4.7  KEY_PAUSE_RECORD */
-#define XKB_KEY_XF86VOD			0x10081273		/* v4.7  KEY_VOD */
-#define XKB_KEY_XF86Unmute			0x10081274		/* v4.7  KEY_UNMUTE */
-#define XKB_KEY_XF86FastReverse		0x10081275		/* v4.7  KEY_FASTREVERSE */
-#define XKB_KEY_XF86SlowReverse		0x10081276		/* v4.7  KEY_SLOWREVERSE */
-#define XKB_KEY_XF86Data			0x10081277		/* v4.7  KEY_DATA */
-#define XKB_KEY_XF86OnScreenKeyboard		0x10081278		/* v4.12 KEY_ONSCREEN_KEYBOARD */
-#define XKB_KEY_XF86PrivacyScreenToggle	0x10081279		/* v5.5  KEY_PRIVACY_SCREEN_TOGGLE */
-#define XKB_KEY_XF86SelectiveScreenshot	0x1008127a		/* v5.6  KEY_SELECTIVE_SCREENSHOT */
-#define XKB_KEY_XF86Macro1			0x10081290		/* v5.5  KEY_MACRO1 */
-#define XKB_KEY_XF86Macro2			0x10081291		/* v5.5  KEY_MACRO2 */
-#define XKB_KEY_XF86Macro3			0x10081292		/* v5.5  KEY_MACRO3 */
-#define XKB_KEY_XF86Macro4			0x10081293		/* v5.5  KEY_MACRO4 */
-#define XKB_KEY_XF86Macro5			0x10081294		/* v5.5  KEY_MACRO5 */
-#define XKB_KEY_XF86Macro6			0x10081295		/* v5.5  KEY_MACRO6 */
-#define XKB_KEY_XF86Macro7			0x10081296		/* v5.5  KEY_MACRO7 */
-#define XKB_KEY_XF86Macro8			0x10081297		/* v5.5  KEY_MACRO8 */
-#define XKB_KEY_XF86Macro9			0x10081298		/* v5.5  KEY_MACRO9 */
-#define XKB_KEY_XF86Macro10			0x10081299		/* v5.5  KEY_MACRO10 */
-#define XKB_KEY_XF86Macro11			0x1008129a		/* v5.5  KEY_MACRO11 */
-#define XKB_KEY_XF86Macro12			0x1008129b		/* v5.5  KEY_MACRO12 */
-#define XKB_KEY_XF86Macro13			0x1008129c		/* v5.5  KEY_MACRO13 */
-#define XKB_KEY_XF86Macro14			0x1008129d		/* v5.5  KEY_MACRO14 */
-#define XKB_KEY_XF86Macro15			0x1008129e		/* v5.5  KEY_MACRO15 */
-#define XKB_KEY_XF86Macro16			0x1008129f		/* v5.5  KEY_MACRO16 */
-#define XKB_KEY_XF86Macro17			0x100812a0		/* v5.5  KEY_MACRO17 */
-#define XKB_KEY_XF86Macro18			0x100812a1		/* v5.5  KEY_MACRO18 */
-#define XKB_KEY_XF86Macro19			0x100812a2		/* v5.5  KEY_MACRO19 */
-#define XKB_KEY_XF86Macro20			0x100812a3		/* v5.5  KEY_MACRO20 */
-#define XKB_KEY_XF86Macro21			0x100812a4		/* v5.5  KEY_MACRO21 */
-#define XKB_KEY_XF86Macro22			0x100812a5		/* v5.5  KEY_MACRO22 */
-#define XKB_KEY_XF86Macro23			0x100812a6		/* v5.5  KEY_MACRO23 */
-#define XKB_KEY_XF86Macro24			0x100812a7		/* v5.5  KEY_MACRO24 */
-#define XKB_KEY_XF86Macro25			0x100812a8		/* v5.5  KEY_MACRO25 */
-#define XKB_KEY_XF86Macro26			0x100812a9		/* v5.5  KEY_MACRO26 */
-#define XKB_KEY_XF86Macro27			0x100812aa		/* v5.5  KEY_MACRO27 */
-#define XKB_KEY_XF86Macro28			0x100812ab		/* v5.5  KEY_MACRO28 */
-#define XKB_KEY_XF86Macro29			0x100812ac		/* v5.5  KEY_MACRO29 */
-#define XKB_KEY_XF86Macro30			0x100812ad		/* v5.5  KEY_MACRO30 */
-#define XKB_KEY_XF86MacroRecordStart		0x100812b0		/* v5.5  KEY_MACRO_RECORD_START */
-#define XKB_KEY_XF86MacroRecordStop		0x100812b1		/* v5.5  KEY_MACRO_RECORD_STOP */
-#define XKB_KEY_XF86MacroPresetCycle		0x100812b2		/* v5.5  KEY_MACRO_PRESET_CYCLE */
-#define XKB_KEY_XF86MacroPreset1		0x100812b3		/* v5.5  KEY_MACRO_PRESET1 */
-#define XKB_KEY_XF86MacroPreset2		0x100812b4		/* v5.5  KEY_MACRO_PRESET2 */
-#define XKB_KEY_XF86MacroPreset3		0x100812b5		/* v5.5  KEY_MACRO_PRESET3 */
-#define XKB_KEY_XF86KbdLcdMenu1		0x100812b8		/* v5.5  KEY_KBD_LCD_MENU1 */
-#define XKB_KEY_XF86KbdLcdMenu2		0x100812b9		/* v5.5  KEY_KBD_LCD_MENU2 */
-#define XKB_KEY_XF86KbdLcdMenu3		0x100812ba		/* v5.5  KEY_KBD_LCD_MENU3 */
-#define XKB_KEY_XF86KbdLcdMenu4		0x100812bb		/* v5.5  KEY_KBD_LCD_MENU4 */
-#define XKB_KEY_XF86KbdLcdMenu5		0x100812bc		/* v5.5  KEY_KBD_LCD_MENU5 */
+/* Use: XKB_KEY_XF86LaunchB                  _EVDEVK(0x0cc)     v2.6.28 KEY_DASHBOARD */
+/* Use: XKB_KEY_XF86Display                  _EVDEVK(0x0e3)     v2.6.12 KEY_SWITCHVIDEOMODE */
+/* Use: XKB_KEY_XF86KbdLightOnOff            _EVDEVK(0x0e4)     v2.6.12 KEY_KBDILLUMTOGGLE */
+/* Use: XKB_KEY_XF86KbdBrightnessDown        _EVDEVK(0x0e5)     v2.6.12 KEY_KBDILLUMDOWN */
+/* Use: XKB_KEY_XF86KbdBrightnessUp          _EVDEVK(0x0e6)     v2.6.12 KEY_KBDILLUMUP */
+/* Use: XKB_KEY_XF86Send                     _EVDEVK(0x0e7)     v2.6.14 KEY_SEND */
+/* Use: XKB_KEY_XF86Reply                    _EVDEVK(0x0e8)     v2.6.14 KEY_REPLY */
+/* Use: XKB_KEY_XF86MailForward              _EVDEVK(0x0e9)     v2.6.14 KEY_FORWARDMAIL */
+/* Use: XKB_KEY_XF86Save                     _EVDEVK(0x0ea)     v2.6.14 KEY_SAVE */
+/* Use: XKB_KEY_XF86Documents                _EVDEVK(0x0eb)     v2.6.14 KEY_DOCUMENTS */
+/* Use: XKB_KEY_XF86Battery                  _EVDEVK(0x0ec)     v2.6.17 KEY_BATTERY */
+/* Use: XKB_KEY_XF86Bluetooth                _EVDEVK(0x0ed)     v2.6.19 KEY_BLUETOOTH */
+/* Use: XKB_KEY_XF86WLAN                     _EVDEVK(0x0ee)     v2.6.19 KEY_WLAN */
+/* Use: XKB_KEY_XF86UWB                      _EVDEVK(0x0ef)     v2.6.24 KEY_UWB */
+/* Use: XKB_KEY_XF86Next_VMode               _EVDEVK(0x0f1)     v2.6.23 KEY_VIDEO_NEXT */
+/* Use: XKB_KEY_XF86Prev_VMode               _EVDEVK(0x0f2)     v2.6.23 KEY_VIDEO_PREV */
+/* Use: XKB_KEY_XF86MonBrightnessCycle       _EVDEVK(0x0f3)     v2.6.23 KEY_BRIGHTNESS_CYCLE */
+#define XKB_KEY_XF86BrightnessAuto           0x100810f4      /* v3.16   KEY_BRIGHTNESS_AUTO */
+#define XKB_KEY_XF86DisplayOff               0x100810f5      /* v2.6.23 KEY_DISPLAY_OFF */
+/* Use: XKB_KEY_XF86WWAN                     _EVDEVK(0x0f6)     v3.13   KEY_WWAN */
+/* Use: XKB_KEY_XF86RFKill                   _EVDEVK(0x0f7)     v2.6.33 KEY_RFKILL */
+/* Use: XKB_KEY_XF86AudioMicMute             _EVDEVK(0x0f8)     v3.1    KEY_MICMUTE */
+#define XKB_KEY_XF86Info                     0x10081166      /*         KEY_INFO */
+/* Use: XKB_KEY_XF86CycleAngle               _EVDEVK(0x173)             KEY_ANGLE */
+/* Use: XKB_KEY_XF86FullScreen               _EVDEVK(0x174)     v5.1    KEY_FULL_SCREEN */
+#define XKB_KEY_XF86AspectRatio              0x10081177      /* v5.1    KEY_ASPECT_RATIO */
+#define XKB_KEY_XF86DVD                      0x10081185      /*         KEY_DVD */
+#define XKB_KEY_XF86Audio                    0x10081188      /*         KEY_AUDIO */
+/* Use: XKB_KEY_XF86Video                    _EVDEVK(0x189)             KEY_VIDEO */
+/* Use: XKB_KEY_XF86Calendar                 _EVDEVK(0x18d)             KEY_CALENDAR */
+#define XKB_KEY_XF86ChannelUp                0x10081192      /*         KEY_CHANNELUP */
+#define XKB_KEY_XF86ChannelDown              0x10081193      /*         KEY_CHANNELDOWN */
+/* Use: XKB_KEY_XF86AudioRandomPlay          _EVDEVK(0x19a)             KEY_SHUFFLE */
+#define XKB_KEY_XF86Break                    0x1008119b      /*         KEY_BREAK */
+#define XKB_KEY_XF86VideoPhone               0x100811a0      /* v2.6.20 KEY_VIDEOPHONE */
+/* Use: XKB_KEY_XF86Game                     _EVDEVK(0x1a1)     v2.6.20 KEY_GAMES */
+/* Use: XKB_KEY_XF86ZoomIn                   _EVDEVK(0x1a2)     v2.6.20 KEY_ZOOMIN */
+/* Use: XKB_KEY_XF86ZoomOut                  _EVDEVK(0x1a3)     v2.6.20 KEY_ZOOMOUT */
+#define XKB_KEY_XF86ZoomReset                0x100811a4      /* v2.6.20 KEY_ZOOMRESET */
+/* Use: XKB_KEY_XF86Word                     _EVDEVK(0x1a5)     v2.6.20 KEY_WORDPROCESSOR */
+#define XKB_KEY_XF86Editor                   0x100811a6      /* v2.6.20 KEY_EDITOR */
+/* Use: XKB_KEY_XF86Excel                    _EVDEVK(0x1a7)     v2.6.20 KEY_SPREADSHEET */
+#define XKB_KEY_XF86GraphicsEditor           0x100811a8      /* v2.6.20 KEY_GRAPHICSEDITOR */
+#define XKB_KEY_XF86Presentation             0x100811a9      /* v2.6.20 KEY_PRESENTATION */
+#define XKB_KEY_XF86Database                 0x100811aa      /* v2.6.20 KEY_DATABASE */
+/* Use: XKB_KEY_XF86News                     _EVDEVK(0x1ab)     v2.6.20 KEY_NEWS */
+#define XKB_KEY_XF86Voicemail                0x100811ac      /* v2.6.20 KEY_VOICEMAIL */
+#define XKB_KEY_XF86Addressbook              0x100811ad      /* v2.6.20 KEY_ADDRESSBOOK */
+/* Use: XKB_KEY_XF86Messenger                _EVDEVK(0x1ae)     v2.6.20 KEY_MESSENGER */
+#define XKB_KEY_XF86DisplayToggle            0x100811af      /* v2.6.20 KEY_DISPLAYTOGGLE */
+#define XKB_KEY_XF86SpellCheck               0x100811b0      /* v2.6.24 KEY_SPELLCHECK */
+/* Use: XKB_KEY_XF86LogOff                   _EVDEVK(0x1b1)     v2.6.24 KEY_LOGOFF */
+/* Use: XKB_KEY_dollar                       _EVDEVK(0x1b2)     v2.6.24 KEY_DOLLAR */
+/* Use: XKB_KEY_EuroSign                     _EVDEVK(0x1b3)     v2.6.24 KEY_EURO */
+/* Use: XKB_KEY_XF86FrameBack                _EVDEVK(0x1b4)     v2.6.24 KEY_FRAMEBACK */
+/* Use: XKB_KEY_XF86FrameForward             _EVDEVK(0x1b5)     v2.6.24 KEY_FRAMEFORWARD */
+#define XKB_KEY_XF86ContextMenu              0x100811b6      /* v2.6.24 KEY_CONTEXT_MENU */
+#define XKB_KEY_XF86MediaRepeat              0x100811b7      /* v2.6.26 KEY_MEDIA_REPEAT */
+#define XKB_KEY_XF8610ChannelsUp             0x100811b8      /* v2.6.38 KEY_10CHANNELSUP */
+#define XKB_KEY_XF8610ChannelsDown           0x100811b9      /* v2.6.38 KEY_10CHANNELSDOWN */
+#define XKB_KEY_XF86Images                   0x100811ba      /* v2.6.39 KEY_IMAGES */
+#define XKB_KEY_XF86NotificationCenter       0x100811bc      /* v5.10   KEY_NOTIFICATION_CENTER */
+#define XKB_KEY_XF86PickupPhone              0x100811bd      /* v5.10   KEY_PICKUP_PHONE */
+#define XKB_KEY_XF86HangupPhone              0x100811be      /* v5.10   KEY_HANGUP_PHONE */
+#define XKB_KEY_XF86Fn                       0x100811d0      /*         KEY_FN */
+#define XKB_KEY_XF86Fn_Esc                   0x100811d1      /*         KEY_FN_ESC */
+#define XKB_KEY_XF86FnRightShift             0x100811e5      /* v5.10   KEY_FN_RIGHT_SHIFT */
+/* Use: XKB_KEY_braille_dot_1                _EVDEVK(0x1f1)     v2.6.17 KEY_BRL_DOT1 */
+/* Use: XKB_KEY_braille_dot_2                _EVDEVK(0x1f2)     v2.6.17 KEY_BRL_DOT2 */
+/* Use: XKB_KEY_braille_dot_3                _EVDEVK(0x1f3)     v2.6.17 KEY_BRL_DOT3 */
+/* Use: XKB_KEY_braille_dot_4                _EVDEVK(0x1f4)     v2.6.17 KEY_BRL_DOT4 */
+/* Use: XKB_KEY_braille_dot_5                _EVDEVK(0x1f5)     v2.6.17 KEY_BRL_DOT5 */
+/* Use: XKB_KEY_braille_dot_6                _EVDEVK(0x1f6)     v2.6.17 KEY_BRL_DOT6 */
+/* Use: XKB_KEY_braille_dot_7                _EVDEVK(0x1f7)     v2.6.17 KEY_BRL_DOT7 */
+/* Use: XKB_KEY_braille_dot_8                _EVDEVK(0x1f8)     v2.6.17 KEY_BRL_DOT8 */
+/* Use: XKB_KEY_braille_dot_9                _EVDEVK(0x1f9)     v2.6.23 KEY_BRL_DOT9 */
+/* Use: XKB_KEY_braille_dot_1                _EVDEVK(0x1fa)     v2.6.23 KEY_BRL_DOT10 */
+#define XKB_KEY_XF86Numeric0                 0x10081200      /* v2.6.28 KEY_NUMERIC_0 */
+#define XKB_KEY_XF86Numeric1                 0x10081201      /* v2.6.28 KEY_NUMERIC_1 */
+#define XKB_KEY_XF86Numeric2                 0x10081202      /* v2.6.28 KEY_NUMERIC_2 */
+#define XKB_KEY_XF86Numeric3                 0x10081203      /* v2.6.28 KEY_NUMERIC_3 */
+#define XKB_KEY_XF86Numeric4                 0x10081204      /* v2.6.28 KEY_NUMERIC_4 */
+#define XKB_KEY_XF86Numeric5                 0x10081205      /* v2.6.28 KEY_NUMERIC_5 */
+#define XKB_KEY_XF86Numeric6                 0x10081206      /* v2.6.28 KEY_NUMERIC_6 */
+#define XKB_KEY_XF86Numeric7                 0x10081207      /* v2.6.28 KEY_NUMERIC_7 */
+#define XKB_KEY_XF86Numeric8                 0x10081208      /* v2.6.28 KEY_NUMERIC_8 */
+#define XKB_KEY_XF86Numeric9                 0x10081209      /* v2.6.28 KEY_NUMERIC_9 */
+#define XKB_KEY_XF86NumericStar              0x1008120a      /* v2.6.28 KEY_NUMERIC_STAR */
+#define XKB_KEY_XF86NumericPound             0x1008120b      /* v2.6.28 KEY_NUMERIC_POUND */
+#define XKB_KEY_XF86NumericA                 0x1008120c      /* v4.1    KEY_NUMERIC_A */
+#define XKB_KEY_XF86NumericB                 0x1008120d      /* v4.1    KEY_NUMERIC_B */
+#define XKB_KEY_XF86NumericC                 0x1008120e      /* v4.1    KEY_NUMERIC_C */
+#define XKB_KEY_XF86NumericD                 0x1008120f      /* v4.1    KEY_NUMERIC_D */
+#define XKB_KEY_XF86CameraFocus              0x10081210      /* v2.6.33 KEY_CAMERA_FOCUS */
+#define XKB_KEY_XF86WPSButton                0x10081211      /* v2.6.34 KEY_WPS_BUTTON */
+/* Use: XKB_KEY_XF86TouchpadToggle           _EVDEVK(0x212)     v2.6.37 KEY_TOUCHPAD_TOGGLE */
+/* Use: XKB_KEY_XF86TouchpadOn               _EVDEVK(0x213)     v2.6.37 KEY_TOUCHPAD_ON */
+/* Use: XKB_KEY_XF86TouchpadOff              _EVDEVK(0x214)     v2.6.37 KEY_TOUCHPAD_OFF */
+#define XKB_KEY_XF86CameraZoomIn             0x10081215      /* v2.6.39 KEY_CAMERA_ZOOMIN */
+#define XKB_KEY_XF86CameraZoomOut            0x10081216      /* v2.6.39 KEY_CAMERA_ZOOMOUT */
+#define XKB_KEY_XF86CameraUp                 0x10081217      /* v2.6.39 KEY_CAMERA_UP */
+#define XKB_KEY_XF86CameraDown               0x10081218      /* v2.6.39 KEY_CAMERA_DOWN */
+#define XKB_KEY_XF86CameraLeft               0x10081219      /* v2.6.39 KEY_CAMERA_LEFT */
+#define XKB_KEY_XF86CameraRight              0x1008121a      /* v2.6.39 KEY_CAMERA_RIGHT */
+#define XKB_KEY_XF86AttendantOn              0x1008121b      /* v3.10   KEY_ATTENDANT_ON */
+#define XKB_KEY_XF86AttendantOff             0x1008121c      /* v3.10   KEY_ATTENDANT_OFF */
+#define XKB_KEY_XF86AttendantToggle          0x1008121d      /* v3.10   KEY_ATTENDANT_TOGGLE */
+#define XKB_KEY_XF86LightsToggle             0x1008121e      /* v3.10   KEY_LIGHTS_TOGGLE */
+#define XKB_KEY_XF86ALSToggle                0x10081230      /* v3.13   KEY_ALS_TOGGLE */
+/* Use: XKB_KEY_XF86RotationLockToggle       _EVDEVK(0x231)     v4.16   KEY_ROTATE_LOCK_TOGGLE */
+#define XKB_KEY_XF86Buttonconfig             0x10081240      /* v3.16   KEY_BUTTONCONFIG */
+#define XKB_KEY_XF86Taskmanager              0x10081241      /* v3.16   KEY_TASKMANAGER */
+#define XKB_KEY_XF86Journal                  0x10081242      /* v3.16   KEY_JOURNAL */
+#define XKB_KEY_XF86ControlPanel             0x10081243      /* v3.16   KEY_CONTROLPANEL */
+#define XKB_KEY_XF86AppSelect                0x10081244      /* v3.16   KEY_APPSELECT */
+#define XKB_KEY_XF86Screensaver              0x10081245      /* v3.16   KEY_SCREENSAVER */
+#define XKB_KEY_XF86VoiceCommand             0x10081246      /* v3.16   KEY_VOICECOMMAND */
+#define XKB_KEY_XF86Assistant                0x10081247      /* v4.13   KEY_ASSISTANT */
+/* Use: XKB_KEY_ISO_Next_Group               _EVDEVK(0x248)     v5.2    KEY_KBD_LAYOUT_NEXT */
+#define XKB_KEY_XF86EmojiPicker              0x10081249      /* v5.13   KEY_EMOJI_PICKER */
+#define XKB_KEY_XF86Dictate                  0x1008124a      /* v5.17   KEY_DICTATE */
+#define XKB_KEY_XF86CameraAccessEnable       0x1008124b      /* v6.2    KEY_CAMERA_ACCESS_ENABLE */
+#define XKB_KEY_XF86CameraAccessDisable      0x1008124c      /* v6.2    KEY_CAMERA_ACCESS_DISABLE */
+#define XKB_KEY_XF86CameraAccessToggle       0x1008124d      /* v6.2    KEY_CAMERA_ACCESS_TOGGLE */
+#define XKB_KEY_XF86BrightnessMin            0x10081250      /* v3.16   KEY_BRIGHTNESS_MIN */
+#define XKB_KEY_XF86BrightnessMax            0x10081251      /* v3.16   KEY_BRIGHTNESS_MAX */
+#define XKB_KEY_XF86KbdInputAssistPrev       0x10081260      /* v3.18   KEY_KBDINPUTASSIST_PREV */
+#define XKB_KEY_XF86KbdInputAssistNext       0x10081261      /* v3.18   KEY_KBDINPUTASSIST_NEXT */
+#define XKB_KEY_XF86KbdInputAssistPrevgroup  0x10081262      /* v3.18   KEY_KBDINPUTASSIST_PREVGROUP */
+#define XKB_KEY_XF86KbdInputAssistNextgroup  0x10081263      /* v3.18   KEY_KBDINPUTASSIST_NEXTGROUP */
+#define XKB_KEY_XF86KbdInputAssistAccept     0x10081264      /* v3.18   KEY_KBDINPUTASSIST_ACCEPT */
+#define XKB_KEY_XF86KbdInputAssistCancel     0x10081265      /* v3.18   KEY_KBDINPUTASSIST_CANCEL */
+#define XKB_KEY_XF86RightUp                  0x10081266      /* v4.7    KEY_RIGHT_UP */
+#define XKB_KEY_XF86RightDown                0x10081267      /* v4.7    KEY_RIGHT_DOWN */
+#define XKB_KEY_XF86LeftUp                   0x10081268      /* v4.7    KEY_LEFT_UP */
+#define XKB_KEY_XF86LeftDown                 0x10081269      /* v4.7    KEY_LEFT_DOWN */
+#define XKB_KEY_XF86RootMenu                 0x1008126a      /* v4.7    KEY_ROOT_MENU */
+#define XKB_KEY_XF86MediaTopMenu             0x1008126b      /* v4.7    KEY_MEDIA_TOP_MENU */
+#define XKB_KEY_XF86Numeric11                0x1008126c      /* v4.7    KEY_NUMERIC_11 */
+#define XKB_KEY_XF86Numeric12                0x1008126d      /* v4.7    KEY_NUMERIC_12 */
+#define XKB_KEY_XF86AudioDesc                0x1008126e      /* v4.7    KEY_AUDIO_DESC */
+#define XKB_KEY_XF863DMode                   0x1008126f      /* v4.7    KEY_3D_MODE */
+#define XKB_KEY_XF86NextFavorite             0x10081270      /* v4.7    KEY_NEXT_FAVORITE */
+#define XKB_KEY_XF86StopRecord               0x10081271      /* v4.7    KEY_STOP_RECORD */
+#define XKB_KEY_XF86PauseRecord              0x10081272      /* v4.7    KEY_PAUSE_RECORD */
+#define XKB_KEY_XF86VOD                      0x10081273      /* v4.7    KEY_VOD */
+#define XKB_KEY_XF86Unmute                   0x10081274      /* v4.7    KEY_UNMUTE */
+#define XKB_KEY_XF86FastReverse              0x10081275      /* v4.7    KEY_FASTREVERSE */
+#define XKB_KEY_XF86SlowReverse              0x10081276      /* v4.7    KEY_SLOWREVERSE */
+#define XKB_KEY_XF86Data                     0x10081277      /* v4.7    KEY_DATA */
+#define XKB_KEY_XF86OnScreenKeyboard         0x10081278      /* v4.12   KEY_ONSCREEN_KEYBOARD */
+#define XKB_KEY_XF86PrivacyScreenToggle      0x10081279      /* v5.5    KEY_PRIVACY_SCREEN_TOGGLE */
+#define XKB_KEY_XF86SelectiveScreenshot      0x1008127a      /* v5.6    KEY_SELECTIVE_SCREENSHOT */
+#define XKB_KEY_XF86NextElement              0x1008127b      /* v5.18   KEY_NEXT_ELEMENT */
+#define XKB_KEY_XF86PreviousElement          0x1008127c      /* v5.18   KEY_PREVIOUS_ELEMENT */
+#define XKB_KEY_XF86AutopilotEngageToggle    0x1008127d      /* v5.18   KEY_AUTOPILOT_ENGAGE_TOGGLE */
+#define XKB_KEY_XF86MarkWaypoint             0x1008127e      /* v5.18   KEY_MARK_WAYPOINT */
+#define XKB_KEY_XF86Sos                      0x1008127f      /* v5.18   KEY_SOS */
+#define XKB_KEY_XF86NavChart                 0x10081280      /* v5.18   KEY_NAV_CHART */
+#define XKB_KEY_XF86FishingChart             0x10081281      /* v5.18   KEY_FISHING_CHART */
+#define XKB_KEY_XF86SingleRangeRadar         0x10081282      /* v5.18   KEY_SINGLE_RANGE_RADAR */
+#define XKB_KEY_XF86DualRangeRadar           0x10081283      /* v5.18   KEY_DUAL_RANGE_RADAR */
+#define XKB_KEY_XF86RadarOverlay             0x10081284      /* v5.18   KEY_RADAR_OVERLAY */
+#define XKB_KEY_XF86TraditionalSonar         0x10081285      /* v5.18   KEY_TRADITIONAL_SONAR */
+#define XKB_KEY_XF86ClearvuSonar             0x10081286      /* v5.18   KEY_CLEARVU_SONAR */
+#define XKB_KEY_XF86SidevuSonar              0x10081287      /* v5.18   KEY_SIDEVU_SONAR */
+#define XKB_KEY_XF86NavInfo                  0x10081288      /* v5.18   KEY_NAV_INFO */
+/* Use: XKB_KEY_XF86BrightnessAdjust         _EVDEVK(0x289)     v5.18   KEY_BRIGHTNESS_MENU */
+#define XKB_KEY_XF86Macro1                   0x10081290      /* v5.5    KEY_MACRO1 */
+#define XKB_KEY_XF86Macro2                   0x10081291      /* v5.5    KEY_MACRO2 */
+#define XKB_KEY_XF86Macro3                   0x10081292      /* v5.5    KEY_MACRO3 */
+#define XKB_KEY_XF86Macro4                   0x10081293      /* v5.5    KEY_MACRO4 */
+#define XKB_KEY_XF86Macro5                   0x10081294      /* v5.5    KEY_MACRO5 */
+#define XKB_KEY_XF86Macro6                   0x10081295      /* v5.5    KEY_MACRO6 */
+#define XKB_KEY_XF86Macro7                   0x10081296      /* v5.5    KEY_MACRO7 */
+#define XKB_KEY_XF86Macro8                   0x10081297      /* v5.5    KEY_MACRO8 */
+#define XKB_KEY_XF86Macro9                   0x10081298      /* v5.5    KEY_MACRO9 */
+#define XKB_KEY_XF86Macro10                  0x10081299      /* v5.5    KEY_MACRO10 */
+#define XKB_KEY_XF86Macro11                  0x1008129a      /* v5.5    KEY_MACRO11 */
+#define XKB_KEY_XF86Macro12                  0x1008129b      /* v5.5    KEY_MACRO12 */
+#define XKB_KEY_XF86Macro13                  0x1008129c      /* v5.5    KEY_MACRO13 */
+#define XKB_KEY_XF86Macro14                  0x1008129d      /* v5.5    KEY_MACRO14 */
+#define XKB_KEY_XF86Macro15                  0x1008129e      /* v5.5    KEY_MACRO15 */
+#define XKB_KEY_XF86Macro16                  0x1008129f      /* v5.5    KEY_MACRO16 */
+#define XKB_KEY_XF86Macro17                  0x100812a0      /* v5.5    KEY_MACRO17 */
+#define XKB_KEY_XF86Macro18                  0x100812a1      /* v5.5    KEY_MACRO18 */
+#define XKB_KEY_XF86Macro19                  0x100812a2      /* v5.5    KEY_MACRO19 */
+#define XKB_KEY_XF86Macro20                  0x100812a3      /* v5.5    KEY_MACRO20 */
+#define XKB_KEY_XF86Macro21                  0x100812a4      /* v5.5    KEY_MACRO21 */
+#define XKB_KEY_XF86Macro22                  0x100812a5      /* v5.5    KEY_MACRO22 */
+#define XKB_KEY_XF86Macro23                  0x100812a6      /* v5.5    KEY_MACRO23 */
+#define XKB_KEY_XF86Macro24                  0x100812a7      /* v5.5    KEY_MACRO24 */
+#define XKB_KEY_XF86Macro25                  0x100812a8      /* v5.5    KEY_MACRO25 */
+#define XKB_KEY_XF86Macro26                  0x100812a9      /* v5.5    KEY_MACRO26 */
+#define XKB_KEY_XF86Macro27                  0x100812aa      /* v5.5    KEY_MACRO27 */
+#define XKB_KEY_XF86Macro28                  0x100812ab      /* v5.5    KEY_MACRO28 */
+#define XKB_KEY_XF86Macro29                  0x100812ac      /* v5.5    KEY_MACRO29 */
+#define XKB_KEY_XF86Macro30                  0x100812ad      /* v5.5    KEY_MACRO30 */
+#define XKB_KEY_XF86MacroRecordStart         0x100812b0      /* v5.5    KEY_MACRO_RECORD_START */
+#define XKB_KEY_XF86MacroRecordStop          0x100812b1      /* v5.5    KEY_MACRO_RECORD_STOP */
+#define XKB_KEY_XF86MacroPresetCycle         0x100812b2      /* v5.5    KEY_MACRO_PRESET_CYCLE */
+#define XKB_KEY_XF86MacroPreset1             0x100812b3      /* v5.5    KEY_MACRO_PRESET1 */
+#define XKB_KEY_XF86MacroPreset2             0x100812b4      /* v5.5    KEY_MACRO_PRESET2 */
+#define XKB_KEY_XF86MacroPreset3             0x100812b5      /* v5.5    KEY_MACRO_PRESET3 */
+#define XKB_KEY_XF86KbdLcdMenu1              0x100812b8      /* v5.5    KEY_KBD_LCD_MENU1 */
+#define XKB_KEY_XF86KbdLcdMenu2              0x100812b9      /* v5.5    KEY_KBD_LCD_MENU2 */
+#define XKB_KEY_XF86KbdLcdMenu3              0x100812ba      /* v5.5    KEY_KBD_LCD_MENU3 */
+#define XKB_KEY_XF86KbdLcdMenu4              0x100812bb      /* v5.5    KEY_KBD_LCD_MENU4 */
+#define XKB_KEY_XF86KbdLcdMenu5              0x100812bc      /* v5.5    KEY_KBD_LCD_MENU5 */
 #undef _EVDEVK
 /*
- * Copyright (c) 1991, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1991, Oracle and/or its affiliates.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -2976,60 +3010,60 @@ in this Software without prior written authorization from The Open Group.
  * Floating Accent
  */
 
-#define XKB_KEY_SunFA_Grave		0x1005FF00
-#define XKB_KEY_SunFA_Circum		0x1005FF01
-#define XKB_KEY_SunFA_Tilde		0x1005FF02
-#define XKB_KEY_SunFA_Acute		0x1005FF03
-#define XKB_KEY_SunFA_Diaeresis	0x1005FF04
-#define XKB_KEY_SunFA_Cedilla	0x1005FF05
+#define XKB_KEY_SunFA_Grave               0x1005ff00
+#define XKB_KEY_SunFA_Circum              0x1005ff01
+#define XKB_KEY_SunFA_Tilde               0x1005ff02
+#define XKB_KEY_SunFA_Acute               0x1005ff03
+#define XKB_KEY_SunFA_Diaeresis           0x1005ff04
+#define XKB_KEY_SunFA_Cedilla             0x1005ff05
 
 /*
  * Miscellaneous Functions
  */
 
-#define XKB_KEY_SunF36		0x1005FF10	/* Labeled F11 */
-#define XKB_KEY_SunF37		0x1005FF11	/* Labeled F12 */
+#define XKB_KEY_SunF36                    0x1005ff10  /* Labeled F11 */
+#define XKB_KEY_SunF37                    0x1005ff11  /* Labeled F12 */
 
-#define XKB_KEY_SunSys_Req   	0x1005FF60
-#define XKB_KEY_SunPrint_Screen	0x0000FF61	/* Same as XK_Print */
+#define XKB_KEY_SunSys_Req                0x1005ff60
+#define XKB_KEY_SunPrint_Screen           0x0000ff61  /* Same as XKB_KEY_Print */
 
 /*
  * International & Multi-Key Character Composition
  */
 
-#define XKB_KEY_SunCompose		0x0000FF20	/* Same as XK_Multi_key */
-#define XKB_KEY_SunAltGraph		0x0000FF7E	/* Same as XK_Mode_switch */
+#define XKB_KEY_SunCompose                0x0000ff20  /* Same as XKB_KEY_Multi_key */
+#define XKB_KEY_SunAltGraph               0x0000ff7e  /* Same as XKB_KEY_Mode_switch */
 
 /*
  * Cursor Control
  */
 
-#define XKB_KEY_SunPageUp		0x0000FF55 	/* Same as XK_Prior */
-#define XKB_KEY_SunPageDown		0x0000FF56	/* Same as XK_Next */
+#define XKB_KEY_SunPageUp                 0x0000ff55  /* Same as XKB_KEY_Prior */
+#define XKB_KEY_SunPageDown               0x0000ff56  /* Same as XKB_KEY_Next */
 
 /*
  * Open Look Functions
  */
 
-#define XKB_KEY_SunUndo		0x0000FF65	/* Same as XK_Undo */
-#define XKB_KEY_SunAgain		0x0000FF66	/* Same as XK_Redo */
-#define XKB_KEY_SunFind		0x0000FF68	/* Same as XK_Find */
-#define XKB_KEY_SunStop		0x0000FF69	/* Same as XK_Cancel */
-#define XKB_KEY_SunProps		0x1005FF70
-#define XKB_KEY_SunFront		0x1005FF71
-#define XKB_KEY_SunCopy		0x1005FF72
-#define XKB_KEY_SunOpen		0x1005FF73
-#define XKB_KEY_SunPaste		0x1005FF74
-#define XKB_KEY_SunCut		0x1005FF75
+#define XKB_KEY_SunUndo                   0x0000ff65  /* Same as XKB_KEY_Undo */
+#define XKB_KEY_SunAgain                  0x0000ff66  /* Same as XKB_KEY_Redo */
+#define XKB_KEY_SunFind                   0x0000ff68  /* Same as XKB_KEY_Find */
+#define XKB_KEY_SunStop                   0x0000ff69  /* Same as XKB_KEY_Cancel */
+#define XKB_KEY_SunProps                  0x1005ff70
+#define XKB_KEY_SunFront                  0x1005ff71
+#define XKB_KEY_SunCopy                   0x1005ff72
+#define XKB_KEY_SunOpen                   0x1005ff73
+#define XKB_KEY_SunPaste                  0x1005ff74
+#define XKB_KEY_SunCut                    0x1005ff75
 
-#define XKB_KEY_SunPowerSwitch		0x1005FF76
-#define XKB_KEY_SunAudioLowerVolume		0x1005FF77
-#define XKB_KEY_SunAudioMute			0x1005FF78
-#define XKB_KEY_SunAudioRaiseVolume		0x1005FF79
-#define XKB_KEY_SunVideoDegauss		0x1005FF7A
-#define XKB_KEY_SunVideoLowerBrightness	0x1005FF7B
-#define XKB_KEY_SunVideoRaiseBrightness	0x1005FF7C
-#define XKB_KEY_SunPowerSwitchShift		0x1005FF7D
+#define XKB_KEY_SunPowerSwitch            0x1005ff76
+#define XKB_KEY_SunAudioLowerVolume       0x1005ff77
+#define XKB_KEY_SunAudioMute              0x1005ff78
+#define XKB_KEY_SunAudioRaiseVolume       0x1005ff79
+#define XKB_KEY_SunVideoDegauss           0x1005ff7a
+#define XKB_KEY_SunVideoLowerBrightness   0x1005ff7b
+#define XKB_KEY_SunVideoRaiseBrightness   0x1005ff7c
+#define XKB_KEY_SunPowerSwitchShift       0x1005ff7d
 /***********************************************************
 
 Copyright 1988, 1998  The Open Group
@@ -3084,17 +3118,17 @@ SOFTWARE.
 
 /* two-key compose sequence initiators, chosen to map to Latin1 characters */
 
-#define XKB_KEY_Dring_accent         0x1000FEB0
-#define XKB_KEY_Dcircumflex_accent   0x1000FE5E
-#define XKB_KEY_Dcedilla_accent      0x1000FE2C
-#define XKB_KEY_Dacute_accent        0x1000FE27
-#define XKB_KEY_Dgrave_accent        0x1000FE60
-#define XKB_KEY_Dtilde               0x1000FE7E
-#define XKB_KEY_Ddiaeresis           0x1000FE22
+#define XKB_KEY_Dring_accent              0x1000feb0
+#define XKB_KEY_Dcircumflex_accent        0x1000fe5e
+#define XKB_KEY_Dcedilla_accent           0x1000fe2c
+#define XKB_KEY_Dacute_accent             0x1000fe27
+#define XKB_KEY_Dgrave_accent             0x1000fe60
+#define XKB_KEY_Dtilde                    0x1000fe7e
+#define XKB_KEY_Ddiaeresis                0x1000fe22
 
 /* special keysym for LK2** "Remove" key on editing keypad */
 
-#define XKB_KEY_DRemove	0x1000FF00   /* Remove */
+#define XKB_KEY_DRemove                   0x1000ff00  /* Remove */
 /*
 
 Copyright 1987, 1998  The Open Group
@@ -3154,72 +3188,71 @@ performance, or use of this material.
 
 
 
-#define XKB_KEY_hpClearLine		0x1000FF6F
-#define XKB_KEY_hpInsertLine		0x1000FF70
-#define XKB_KEY_hpDeleteLine		0x1000FF71
-#define XKB_KEY_hpInsertChar		0x1000FF72
-#define XKB_KEY_hpDeleteChar		0x1000FF73
-#define XKB_KEY_hpBackTab		0x1000FF74
-#define XKB_KEY_hpKP_BackTab		0x1000FF75
-#define XKB_KEY_hpModelock1		0x1000FF48
-#define XKB_KEY_hpModelock2		0x1000FF49
-#define XKB_KEY_hpReset		0x1000FF6C
-#define XKB_KEY_hpSystem		0x1000FF6D
-#define XKB_KEY_hpUser		0x1000FF6E
-#define XKB_KEY_hpmute_acute		0x100000A8
-#define XKB_KEY_hpmute_grave		0x100000A9
-#define XKB_KEY_hpmute_asciicircum	0x100000AA
-#define XKB_KEY_hpmute_diaeresis	0x100000AB
-#define XKB_KEY_hpmute_asciitilde	0x100000AC
-#define XKB_KEY_hplira		0x100000AF
-#define XKB_KEY_hpguilder		0x100000BE
-#define XKB_KEY_hpYdiaeresis		0x100000EE
-#define XKB_KEY_hpIO			0x100000EE
-#define XKB_KEY_hplongminus		0x100000F6
-#define XKB_KEY_hpblock		0x100000FC
+#define XKB_KEY_hpClearLine               0x1000ff6f
+#define XKB_KEY_hpInsertLine              0x1000ff70
+#define XKB_KEY_hpDeleteLine              0x1000ff71
+#define XKB_KEY_hpInsertChar              0x1000ff72
+#define XKB_KEY_hpDeleteChar              0x1000ff73
+#define XKB_KEY_hpBackTab                 0x1000ff74
+#define XKB_KEY_hpKP_BackTab              0x1000ff75
+#define XKB_KEY_hpModelock1               0x1000ff48
+#define XKB_KEY_hpModelock2               0x1000ff49
+#define XKB_KEY_hpReset                   0x1000ff6c
+#define XKB_KEY_hpSystem                  0x1000ff6d
+#define XKB_KEY_hpUser                    0x1000ff6e
+#define XKB_KEY_hpmute_acute              0x100000a8
+#define XKB_KEY_hpmute_grave              0x100000a9
+#define XKB_KEY_hpmute_asciicircum        0x100000aa
+#define XKB_KEY_hpmute_diaeresis          0x100000ab
+#define XKB_KEY_hpmute_asciitilde         0x100000ac
+#define XKB_KEY_hplira                    0x100000af
+#define XKB_KEY_hpguilder                 0x100000be
+#define XKB_KEY_hpIO                      0x100000ee  /* deprecated alias for hpYdiaeresis */
+#define XKB_KEY_hplongminus               0x100000f6
+#define XKB_KEY_hpblock                   0x100000fc
 
 
 
-#define XKB_KEY_osfCopy		0x1004FF02
-#define XKB_KEY_osfCut		0x1004FF03
-#define XKB_KEY_osfPaste		0x1004FF04
-#define XKB_KEY_osfBackTab		0x1004FF07
-#define XKB_KEY_osfBackSpace		0x1004FF08
-#define XKB_KEY_osfClear		0x1004FF0B
-#define XKB_KEY_osfEscape		0x1004FF1B
-#define XKB_KEY_osfAddMode		0x1004FF31
-#define XKB_KEY_osfPrimaryPaste	0x1004FF32
-#define XKB_KEY_osfQuickPaste	0x1004FF33
-#define XKB_KEY_osfPageLeft		0x1004FF40
-#define XKB_KEY_osfPageUp		0x1004FF41
-#define XKB_KEY_osfPageDown		0x1004FF42
-#define XKB_KEY_osfPageRight		0x1004FF43
-#define XKB_KEY_osfActivate		0x1004FF44
-#define XKB_KEY_osfMenuBar		0x1004FF45
-#define XKB_KEY_osfLeft		0x1004FF51
-#define XKB_KEY_osfUp		0x1004FF52
-#define XKB_KEY_osfRight		0x1004FF53
-#define XKB_KEY_osfDown		0x1004FF54
-#define XKB_KEY_osfEndLine		0x1004FF57
-#define XKB_KEY_osfBeginLine		0x1004FF58
-#define XKB_KEY_osfEndData		0x1004FF59
-#define XKB_KEY_osfBeginData		0x1004FF5A
-#define XKB_KEY_osfPrevMenu		0x1004FF5B
-#define XKB_KEY_osfNextMenu		0x1004FF5C
-#define XKB_KEY_osfPrevField		0x1004FF5D
-#define XKB_KEY_osfNextField		0x1004FF5E
-#define XKB_KEY_osfSelect		0x1004FF60
-#define XKB_KEY_osfInsert		0x1004FF63
-#define XKB_KEY_osfUndo		0x1004FF65
-#define XKB_KEY_osfMenu		0x1004FF67
-#define XKB_KEY_osfCancel		0x1004FF69
-#define XKB_KEY_osfHelp		0x1004FF6A
-#define XKB_KEY_osfSelectAll		0x1004FF71
-#define XKB_KEY_osfDeselectAll	0x1004FF72
-#define XKB_KEY_osfReselect		0x1004FF73
-#define XKB_KEY_osfExtend		0x1004FF74
-#define XKB_KEY_osfRestore		0x1004FF78
-#define XKB_KEY_osfDelete		0x1004FFFF
+#define XKB_KEY_osfCopy                   0x1004ff02
+#define XKB_KEY_osfCut                    0x1004ff03
+#define XKB_KEY_osfPaste                  0x1004ff04
+#define XKB_KEY_osfBackTab                0x1004ff07
+#define XKB_KEY_osfBackSpace              0x1004ff08
+#define XKB_KEY_osfClear                  0x1004ff0b
+#define XKB_KEY_osfEscape                 0x1004ff1b
+#define XKB_KEY_osfAddMode                0x1004ff31
+#define XKB_KEY_osfPrimaryPaste           0x1004ff32
+#define XKB_KEY_osfQuickPaste             0x1004ff33
+#define XKB_KEY_osfPageLeft               0x1004ff40
+#define XKB_KEY_osfPageUp                 0x1004ff41
+#define XKB_KEY_osfPageDown               0x1004ff42
+#define XKB_KEY_osfPageRight              0x1004ff43
+#define XKB_KEY_osfActivate               0x1004ff44
+#define XKB_KEY_osfMenuBar                0x1004ff45
+#define XKB_KEY_osfLeft                   0x1004ff51
+#define XKB_KEY_osfUp                     0x1004ff52
+#define XKB_KEY_osfRight                  0x1004ff53
+#define XKB_KEY_osfDown                   0x1004ff54
+#define XKB_KEY_osfEndLine                0x1004ff57
+#define XKB_KEY_osfBeginLine              0x1004ff58
+#define XKB_KEY_osfEndData                0x1004ff59
+#define XKB_KEY_osfBeginData              0x1004ff5a
+#define XKB_KEY_osfPrevMenu               0x1004ff5b
+#define XKB_KEY_osfNextMenu               0x1004ff5c
+#define XKB_KEY_osfPrevField              0x1004ff5d
+#define XKB_KEY_osfNextField              0x1004ff5e
+#define XKB_KEY_osfSelect                 0x1004ff60
+#define XKB_KEY_osfInsert                 0x1004ff63
+#define XKB_KEY_osfUndo                   0x1004ff65
+#define XKB_KEY_osfMenu                   0x1004ff67
+#define XKB_KEY_osfCancel                 0x1004ff69
+#define XKB_KEY_osfHelp                   0x1004ff6a
+#define XKB_KEY_osfSelectAll              0x1004ff71
+#define XKB_KEY_osfDeselectAll            0x1004ff72
+#define XKB_KEY_osfReselect               0x1004ff73
+#define XKB_KEY_osfExtend                 0x1004ff74
+#define XKB_KEY_osfRestore                0x1004ff78
+#define XKB_KEY_osfDelete                 0x1004ffff
 
 
 
@@ -3227,28 +3260,28 @@ performance, or use of this material.
  * The use of the following macros is deprecated.
  * They are listed below only for backwards compatibility.
  */
-#define XKB_KEY_Reset                0x1000FF6C
-#define XKB_KEY_System               0x1000FF6D
-#define XKB_KEY_User                 0x1000FF6E
-#define XKB_KEY_ClearLine            0x1000FF6F
-#define XKB_KEY_InsertLine           0x1000FF70
-#define XKB_KEY_DeleteLine           0x1000FF71
-#define XKB_KEY_InsertChar           0x1000FF72
-#define XKB_KEY_DeleteChar           0x1000FF73
-#define XKB_KEY_BackTab              0x1000FF74
-#define XKB_KEY_KP_BackTab           0x1000FF75
-#define XKB_KEY_Ext16bit_L           0x1000FF76
-#define XKB_KEY_Ext16bit_R           0x1000FF77
-#define XKB_KEY_mute_acute           0x100000a8
-#define XKB_KEY_mute_grave           0x100000a9
-#define XKB_KEY_mute_asciicircum     0x100000aa
-#define XKB_KEY_mute_diaeresis       0x100000ab
-#define XKB_KEY_mute_asciitilde      0x100000ac
-#define XKB_KEY_lira                 0x100000af
-#define XKB_KEY_guilder              0x100000be
-#define XKB_KEY_IO                   0x100000ee
-#define XKB_KEY_longminus            0x100000f6
-#define XKB_KEY_block                0x100000fc
+#define XKB_KEY_Reset                     0x1000ff6c  /* deprecated alias for hpReset */
+#define XKB_KEY_System                    0x1000ff6d  /* deprecated alias for hpSystem */
+#define XKB_KEY_User                      0x1000ff6e  /* deprecated alias for hpUser */
+#define XKB_KEY_ClearLine                 0x1000ff6f  /* deprecated alias for hpClearLine */
+#define XKB_KEY_InsertLine                0x1000ff70  /* deprecated alias for hpInsertLine */
+#define XKB_KEY_DeleteLine                0x1000ff71  /* deprecated alias for hpDeleteLine */
+#define XKB_KEY_InsertChar                0x1000ff72  /* deprecated alias for hpInsertChar */
+#define XKB_KEY_DeleteChar                0x1000ff73  /* deprecated alias for hpDeleteChar */
+#define XKB_KEY_BackTab                   0x1000ff74  /* deprecated alias for hpBackTab */
+#define XKB_KEY_KP_BackTab                0x1000ff75  /* deprecated alias for hpKP_BackTab */
+#define XKB_KEY_Ext16bit_L                0x1000ff76  /* deprecated */
+#define XKB_KEY_Ext16bit_R                0x1000ff77  /* deprecated */
+#define XKB_KEY_mute_acute                0x100000a8  /* deprecated alias for hpmute_acute */
+#define XKB_KEY_mute_grave                0x100000a9  /* deprecated alias for hpmute_grave */
+#define XKB_KEY_mute_asciicircum          0x100000aa  /* deprecated alias for hpmute_asciicircum */
+#define XKB_KEY_mute_diaeresis            0x100000ab  /* deprecated alias for hpmute_diaeresis */
+#define XKB_KEY_mute_asciitilde           0x100000ac  /* deprecated alias for hpmute_asciitilde */
+#define XKB_KEY_lira                      0x100000af  /* deprecated alias for hplira */
+#define XKB_KEY_guilder                   0x100000be  /* deprecated alias for hpguilder */
+#define XKB_KEY_IO                        0x100000ee  /* deprecated alias for hpYdiaeresis */
+#define XKB_KEY_longminus                 0x100000f6  /* deprecated alias for hplongminus */
+#define XKB_KEY_block                     0x100000fc  /* deprecated alias for hpblock */
 
 
 
