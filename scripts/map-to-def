@@ -9,7 +9,7 @@ import pathlib
 
 
 def symbols_from_map(path):
-    return re.findall(r'^\s+(r?xkb_.*);', path.read_text('utf-8'), re.MULTILINE)
+    return re.findall(r"^\s+(r?xkb_.*);", path.read_text("utf-8"), re.MULTILINE)
 
 
 if 2 > len(sys.argv) > 3:
