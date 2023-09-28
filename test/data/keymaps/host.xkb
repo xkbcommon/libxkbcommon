@@ -1154,7 +1154,7 @@ xkb_symbols "pc_us_pt_2_us_3_inet(evdev)_group(shift_caps_toggle)_compose(ralt)"
 	key <AE12>               {
 		type[Group2]= "FOUR_LEVEL",
 		symbols[Group1]= [           equal,            plus ],
-		symbols[Group2]= [   guillemotleft,  guillemotright,    dead_cedilla,     dead_ogonek ],
+		symbols[Group2]= [        Hangul_A,        Hangul_E,    dead_cedilla,     dead_ogonek ],
 		symbols[Group3]= [           equal,            plus ]
 	};
 	key <BKSP>               {	[       BackSpace,       BackSpace ] };
@@ -1334,7 +1334,7 @@ xkb_symbols "pc_us_pt_2_us_3_inet(evdev)_group(shift_caps_toggle)_compose(ralt)"
 	key <AC11>               {
 		type[Group2]= "FOUR_LEVEL",
 		symbols[Group1]= [      apostrophe,        quotedbl ],
-		symbols[Group2]= [       masculine,     ordfeminine, dead_circumflex,      dead_caron ],
+		symbols[Group2]= [        Hangul_O,     ordfeminine, dead_circumflex,      dead_caron ],
 		symbols[Group3]= [      apostrophe,        quotedbl ]
 	};
 	key <TLDE>               {
@@ -1355,7 +1355,7 @@ xkb_symbols "pc_us_pt_2_us_3_inet(evdev)_group(shift_caps_toggle)_compose(ralt)"
 		type[Group2]= "FOUR_LEVEL_SEMIALPHABETIC",
 		type[Group3]= "ALPHABETIC",
 		symbols[Group1]= [               z,               Z ],
-		symbols[Group2]= [               z,               Z,   guillemotleft,            less ],
+		symbols[Group2]= [               z,               Z,        Hangul_A,            less ],
 		symbols[Group3]= [               z,               Z ]
 	};
 	key <AB02>               {
@@ -1363,7 +1363,7 @@ xkb_symbols "pc_us_pt_2_us_3_inet(evdev)_group(shift_caps_toggle)_compose(ralt)"
 		type[Group2]= "FOUR_LEVEL_SEMIALPHABETIC",
 		type[Group3]= "ALPHABETIC",
 		symbols[Group1]= [               x,               X ],
-		symbols[Group2]= [               x,               X,  guillemotright,         greater ],
+		symbols[Group2]= [               x,               X,        Hangul_E,         greater ],
 		symbols[Group3]= [               x,               X ]
 	};
 	key <AB03>               {
@@ -1403,7 +1403,7 @@ xkb_symbols "pc_us_pt_2_us_3_inet(evdev)_group(shift_caps_toggle)_compose(ralt)"
 		type[Group2]= "FOUR_LEVEL_SEMIALPHABETIC",
 		type[Group3]= "ALPHABETIC",
 		symbols[Group1]= [               m,               M ],
-		symbols[Group2]= [               m,               M,              mu,       masculine ],
+		symbols[Group2]= [               m,               M,              mu,        Hangul_O ],
 		symbols[Group3]= [               m,               M ]
 	};
 	key <AB08>               {
