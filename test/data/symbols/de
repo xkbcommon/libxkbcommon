@@ -131,7 +131,7 @@ xkb_symbols "T3" {
     key <AD11> { [      udiaeresis,      Udiaeresis,       dead_horn,        NoSymbol,           U017F,  dead_abovering,      dead_grave,        NoSymbol ] };
     key.type[Group1] = "EIGHT_LEVEL";
     key <AD12> { [            plus,        asterisk,      asciitilde,        NoSymbol,      dead_tilde,     dead_macron,              at,        NoSymbol ] };
-    
+
     key.type[Group1] = "ONE_LEVEL";
     key <CAPS>  { [ Caps_Lock	]	};
     key.type[Group1] = "EIGHT_LEVEL_ALPHABETIC";
@@ -210,7 +210,7 @@ xkb_symbols "ro_nodeadkeys" {
 };
 
 // German Dvorak keymap by Thorsten Staerk (www.staerk.de/thorsten)
-// Have acute and grave as dead keys, tilde and circumflex alive as they are needed 
+// Have acute and grave as dead keys, tilde and circumflex alive as they are needed
 // in many programming languages.
 // to use this keymap, use a 105-key-keyboard and the command setxkbmap -model pc105 -layout dvorak -variant de
 // source: http://www-lehre.informatik.uni-osnabrueck.de/~rfreund/dvorak.php
@@ -292,7 +292,7 @@ xkb_symbols "sundeadkeys" {
 // adopted 2004 by Hanno Behrens <Hanno.Behrens@gmx.de>
 // inspired by Dvorak/de-ergo  http://www.goebel-consult.de/de-ergo/
 //
-// Authors: 
+// Authors:
 //      Stephan Hilb <stephan at ehilb dot de>
 //      <lucky at zankt dot net>
 //      Benjamin Kellermann <Benjamin dot Kellermann at gmx dot Germany>
@@ -321,12 +321,12 @@ xkb_symbols "neo_base" {
 
     // Legend
     // ===============
-    // Levels in Xkbmap jargon to be found here in the definitions. 
+    // Levels in Xkbmap jargon to be found here in the definitions.
     // These are the levels used, and Xorg's translations:
     // --------------------------------------------------------------
-    // Xorg:       Level1                   Level2                   Level3                   Level4                   Level5                   Level6                   Level7                   Level8                   
-    // Neo:        Ebene1                   Ebene2                   Ebene3                   Ebene5                   Ebene4                   Pseudo-Ebene             Ebene6                   ???                      
-    // Keys (Neo): None                     Shift                    Mod3                     Mod3 + Shift             Mod4                     Mod4 + Shift             Mod3 + Mod4              Mod3 + Mod4 + Shift      
+    // Xorg:       Level1                   Level2                   Level3                   Level4                   Level5                   Level6                   Level7                   Level8
+    // Neo:        Ebene1                   Ebene2                   Ebene3                   Ebene5                   Ebene4                   Pseudo-Ebene             Ebene6                   ???
+    // Keys (Neo): None                     Shift                    Mod3                     Mod3 + Shift             Mod4                     Mod4 + Shift             Mod3 + Mod4              Mod3 + Mod4 + Shift
 
 
     // Alphanumeric-keys
@@ -567,7 +567,7 @@ xkb_symbols "dsb_qwertz"
 partial alphanumeric_keys
 xkb_symbols "qwerty" {
 
-    // This layout should work exactly as a de with the exception 
+    // This layout should work exactly as a de with the exception
     // of 'Z' and 'Y' keys, which are in the qwerty style (ie. swapped).
     // 2008 by Matej Košík <kosik@fiit.stuba.sk>
 
@@ -740,7 +740,7 @@ xkb_symbols "pl" {
     // https://github.com/kontextify/xkeyboard-config
 
     include "latin(type4)"
- 
+
     name[Group1]= "Polish (Germany, no dead keys)";
 
     include "de(nodeadkeys)"

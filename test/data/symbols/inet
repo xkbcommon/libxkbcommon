@@ -1896,4 +1896,3 @@ partial alphanumeric_keys
 xkb_symbols "teck229" {
     include "inet(teck227)"
 };
-

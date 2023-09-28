@@ -124,7 +124,7 @@ xkb_symbols "oldmac" {
     modifier_map Control{ Control_L, Control_R };
     modifier_map Mod2   { Num_Lock };
 
-    //  Fake keys for virtual<->real modifiers mapping 
+    //  Fake keys for virtual<->real modifiers mapping
     key <LVL3> {	[ ISO_Level3_Shift	]	};
     key <MDSW> {	[ Mode_switch 		]	};
     modifier_map Mod5   { <LVL3>, <MDSW> };
