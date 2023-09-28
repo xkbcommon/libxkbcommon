@@ -328,7 +328,7 @@ xkb_symbols "prog" {
     // Programmer keyboard. Based on the US layout with accented Czech letters and dead keys.
     // Using AltGr and a key from the 1st row generates original level 2 US key as level 3 except TLDE and AE12.
     // Using AltGr+Shift on accented letters generates its uppercase variant.
-    // Using AltGr or AltGr+Shift on letters which have accent in Czech but are not on the 1st row directly accessible generate accented letters, 
+    // Using AltGr or AltGr+Shift on letters which have accent in Czech but are not on the 1st row directly accessible generate accented letters,
     // i.e. [d, D], [t, T], [n, N], [o, O] generate with AltGr and AltGr+Shift: [dcaron, Dcaron], [tcaron, Tcaron], [ncaron, Ncaron], [oacute, Oacute].
     // Other Czech letters besides alphanumeric keys (like uacute, uring) are generated using AltGr.
 
@@ -395,14 +395,14 @@ xkb_symbols "prog" {
     key <SPCE> { [ space ] };
     key <TAB> { [ Tab,	ISO_Left_Tab ] };
     key <TLDE> { [ grave,	asciitilde ] };
-    
+
     include "level3(ralt_switch)"
 };
 
 xkb_symbols "typo" {
     // cz-typo 1.0 2019-05-15 by Viktor Grešák <vgresak@gmail.com> and Tomáš Hudec <Tommy.Hudec@gmail.com>
     //
-    // Contains typographic symbols in third and fourth level. 
+    // Contains typographic symbols in third and fourth level.
     // It is intended to be used in conjuction with other existing layout, e.g. setxkbmap -symbols "pc+cz(basic)+cz(typo)+inet(evdev)"
 
     name[Group1]="Czech (typographic)";
@@ -470,11 +470,11 @@ xkb_symbols "prog_typo" {
     // Programmer + Typographic keyboard. Based on the US layout with accented Czech letters and dead keys.
     // Using AltGr and a key from the 1st row generates original level 2 US key as level 3 except TLDE and AE12.
     // Using AltGr+Shift on accented letters generates its uppercase variant.
-    // Using AltGr or AltGr+Shift on letters which have accent in Czech but are not on the 1st row directly accessible generate accented letters, 
+    // Using AltGr or AltGr+Shift on letters which have accent in Czech but are not on the 1st row directly accessible generate accented letters,
     // i.e. [d, D], [t, T], [n, N], [o, O] generate with AltGr and AltGr+Shift: [dcaron, Dcaron], [tcaron, Tcaron], [ncaron, Ncaron], [oacute, Oacute].
     // Other Czech letters besides alphanumeric keys (like uacute, uring) are generated using AltGr.
     //
-    // Contains typographic symbols in third and fourth level. 
+    // Contains typographic symbols in third and fourth level.
 
     name[Group1]="Czech (programming, typographic)";
 

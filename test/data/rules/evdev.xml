@@ -2307,7 +2307,7 @@
             </languageList>
           </configItem>
         </variant>
-        
+
         <variant>
           <configItem>
             <name>marathi</name>
@@ -6371,7 +6371,7 @@
        </variant>
       </variantList>
     </layout>
-    <layout> 
+    <layout>
       <configItem>
         <name>jv</name>
         <shortDescription>jv</shortDescription>

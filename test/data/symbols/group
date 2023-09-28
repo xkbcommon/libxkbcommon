@@ -466,4 +466,3 @@ xkb_symbols "lctrl_lwin_toggle" {
         symbols[ Group1 ] = [ Super_L,    ISO_Next_Group ]
     };
 };
-

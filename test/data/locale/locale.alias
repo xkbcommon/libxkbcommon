@@ -1230,7 +1230,7 @@ thai						th_TH.ISO8859-11
 univ.utf8					en_US.UTF-8
 # Digital Unix utf
 universal.utf8@ucs4				en_US.UTF-8
-# Solaris and SunOS have iso_8859_1 and iso_8859_15 LC_CTYPES 
+# Solaris and SunOS have iso_8859_1 and iso_8859_15 LC_CTYPES
 # to augment LANG=C
 iso_8859_1					en_US.ISO8859-1
 iso_8859_15					en_US.ISO8859-15
@@ -2471,7 +2471,7 @@ thai:						th_TH.ISO8859-11
 univ.utf8:					en_US.UTF-8
 # Digital Unix utf
 universal.utf8@ucs4:				en_US.UTF-8
-# Solaris and SunOS have iso_8859_1 and iso_8859_15 LC_CTYPES 
+# Solaris and SunOS have iso_8859_1 and iso_8859_15 LC_CTYPES
 # to augment LANG=C
 iso_8859_1:					en_US.ISO8859-1
 iso_8859_15:					en_US.ISO8859-15

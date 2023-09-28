@@ -257,7 +257,7 @@ xkb_symbols "biblical" {
 // EXTRAS
 
 // Biblical hebrew (SIL) US Standard layout version 1.5
-// This map is based closely on v 1.5 of the standard. The only deviation being the replacement of the composite characters sin and shin 
+// This map is based closely on v 1.5 of the standard. The only deviation being the replacement of the composite characters sin and shin
 // by their more recent Unicodev6 counterparts
 // this map contains all the characters found in Biblical annotation, masoretic and Dead Sea Scroll related work.
 // The layout corresponds phonetically to a US standard layout or similar (Qwerty).
@@ -308,7 +308,7 @@ xkb_symbols "biblicalSIL" {
 	key <AC10> { [ U05B0,		U05F4,		semicolon,	U05C3 ] };		//sva		gers. p		semicolon		sof pasuq
 	key <AC11> { [ U2019,		U201D, 		U0323,		U05C4 ] };//QuoteRight	double R Quote	punctum		punctum Above
 
-	key <AB01> { [ hebrew_zain ] };								//Zayin		-			-			
+	key <AB01> { [ hebrew_zain ] };								//Zayin		-			-
 	key <AB02> { [ hebrew_chet ] };								//chet		-			-
 	key <AB03> { [ hebrew_zade, 	U05E5 ] };							// tzade, 		final tzade		-
 	key <AB04> { [ hebrew_tet ] };									//tet			-			-
