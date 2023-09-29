@@ -19,6 +19,9 @@ keysym_entry_pattern = re.compile(
     re.VERBOSE,
 )
 
+# Match keysym guarded by #ifndef
+keysym_ifndef_pattern = re.compile(r"^#ifndef\s+(?P<prefix>\w*)XK_(?P<name>\w+)\s*$")
+
 # Match remaining XK_ references in the comments, e.g we will replace:
 #       XF86XK_CamelCaseKernelName	_EVDEVK(kernel value)
 #       #define XKB_KEY_SunCompose		0x0000FF20	/* Same as XK_Multi_key */
@@ -26,6 +29,10 @@ keysym_entry_pattern = re.compile(
 #       XKB_KEY_XF86CamelCaseKernelName	_EVDEVK(kernel value)
 #       #define XKB_KEY_SunCompose		0x0000FF20	/* Same as XKB_KEY_Multi_key */
 xorgproto_keysym_prefix_pattern = re.compile(r"\b(?P<prefix>\w*)XK_(?!KOREAN\b)")
+
+
+def make_keysym_name(m: re.Match[str]) -> str:
+    return m.group("prefix") + m.group("name")
 
 
 def make_keysym_entry(m: re.Match[str]) -> str:
@@ -74,20 +81,49 @@ print(
 """
 )
 
+keysyms: set[str] = set()
 for path in HEADERS:
+    pending_guarded_keysym: str | None = None
     with path.open("rt", encoding="utf-8") as header:
         for line in header:
-            if "#ifdef" in line or "#ifndef" in line or "#endif" in line:
+            # Duplicate keysym name guard
+            if m := keysym_ifndef_pattern.match(line):
+                if pending_guarded_keysym:
+                    raise ValueError(f"Nested #ifndef {pending_guarded_keysym}")
+                pending_guarded_keysym = make_keysym_name(m)
+                continue
+
+            # Ignore C macro #ifdef/#ifndef
+            elif line.startswith("#ifdef") or line.startswith("#ifndef"):
+                if pending_guarded_keysym:
+                    raise ValueError(f"Nested C macro {pending_guarded_keysym}")
+                continue
+
+            # Ignore C macro #endif and check end of keysym name guard
+            elif line.startswith("#endif"):
+                if pending_guarded_keysym:
+                    pending_guarded_keysym = None
                 continue
 
             # Remove #define _OSF_Keysyms and such.
-            if "#define _" in line:
+            elif line.startswith("#define _"):
                 continue
 
-            # Handle a duplicate definition in HPkeysyms.h which kicks in if
-            # it's not already defined.
-            if "XK_Ydiaeresis" in line and "0x100000ee" in line:
-                continue
+            # Keysym entry: proceed various tests
+            if line.startswith("#") and (m := keysym_entry_pattern.match(line)):
+                name = make_keysym_name(m)
+                # Check expected guarded keysym, if relevant
+                if pending_guarded_keysym and name != pending_guarded_keysym:
+                    raise ValueError(f"{path}: Malformed keysym name guard: {line}")
+                # Check if name already defined
+                elif name in keysyms:
+                    if pending_guarded_keysym:
+                        # Ignore guarded keysym
+                        continue
+                    else:
+                        raise ValueError(f"{path}: Unguarded redefinition: {line}")
+                else:
+                    keysyms.add(name)
 
             # Perform _EVDEV and XK_ substitutions
             line = keysym_entry_pattern.sub(make_keysym_entry, line)
