@@ -3207,6 +3207,7 @@ performance, or use of this material.
 #define XKB_KEY_hpmute_asciitilde         0x100000ac
 #define XKB_KEY_hplira                    0x100000af
 #define XKB_KEY_hpguilder                 0x100000be
+#define XKB_KEY_hpYdiaeresis              0x100000ee
 #define XKB_KEY_hpIO                      0x100000ee  /* deprecated alias for hpYdiaeresis */
 #define XKB_KEY_hplongminus               0x100000f6
 #define XKB_KEY_hpblock                   0x100000fc
