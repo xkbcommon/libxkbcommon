@@ -14,6 +14,11 @@ option(
     description: 'The X locale root [default=$datadir/X11/locale]',
 )
 option(
+    'bash-completion-path',
+    type: 'string',
+    description: 'Directory for bash completion scripts'
+)
+option(
     'default-rules',
     type: 'string',
     value: 'evdev',
@@ -78,4 +83,10 @@ option(
     type: 'boolean',
     value: true,
     description: 'Enable building libxkbregistry',
+)
+option(
+    'enable-bash-completion',
+    type: 'boolean',
+    value: true,
+    description: 'Enable installing bash completion scripts',
 )

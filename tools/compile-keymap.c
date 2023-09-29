@@ -58,6 +58,8 @@ usage(char **argv)
            "Compile the given RMLVO to a keymap and print it\n"
            "\n"
            "Options:\n"
+           " --help\n"
+           "    Print this help and exit\n"
            " --verbose\n"
            "    Enable verbose debugging output\n"
 #if ENABLE_PRIVATE_APIS

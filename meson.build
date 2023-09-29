@@ -417,6 +417,7 @@ man_pages = []
 # Tools
 build_tools = get_option('enable-tools') and cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE')
 if build_tools
+    # Common resources
     libxkbcommon_tools_internal_sources = [
         'tools/tools-common.h',
         'tools/tools-common.c',
@@ -432,10 +433,27 @@ if build_tools
         dependencies: dep_libxkbcommon,
     )
 
+    # Tool: xkbcli
     executable('xkbcli', 'tools/xkbcli.c',
                dependencies: tools_dep, install: true)
     install_man('tools/xkbcli.1')
 
+    if get_option('enable-bash-completion')
+        bash_completion_path = get_option('bash-completion-path')
+        if bash_completion_path == ''
+            bash_completion = dependency('bash-completion', required: false)
+            if bash_completion.found()
+                bash_completion_path = bash_completion.get_variable(pkgconfig: 'completionsdir')
+            else
+                bash_completion_path = get_option('datadir') / 'bash-completion/completions'
+            endif
+        endif
+        install_data('tools/xkbcli-bash-completion.sh',
+                     rename: 'xkbcli',
+                     install_dir: bash_completion_path)
+    endif
+
+    # Tool: compile-keymap
     xkbcli_compile_keymap = executable('xkbcli-compile-keymap',
                                        'tools/compile-keymap.c',
                                        dependencies: tools_dep,
@@ -450,12 +468,16 @@ if build_tools
                c_args: ['-DENABLE_PRIVATE_APIS'],
                include_directories: [include_directories('src', 'include')],
                install: false)
+
+    # Tool: compose
     executable('compose',
                'tools/compose.c',
                dependencies: tools_dep,
                include_directories: [include_directories('src', 'include')],
                install: false)
     configh_data.set10('HAVE_XKBCLI_COMPILE_KEYMAP', true)
+
+    # Tool: how-to-type
     executable('xkbcli-how-to-type',
                'tools/how-to-type.c',
                dependencies: tools_dep,
@@ -463,6 +485,8 @@ if build_tools
                install_dir: dir_libexec)
     install_man('tools/xkbcli-how-to-type.1')
     configh_data.set10('HAVE_XKBCLI_HOW_TO_TYPE', true)
+
+    # Tool: interactive-evdev
     if cc.has_header('linux/input.h')
         executable('xkbcli-interactive-evdev',
                    'tools/interactive-evdev.c',
@@ -481,6 +505,8 @@ if build_tools
                 include_directories: [include_directories('src', 'include')],
                 install: false)
     endif
+
+    # Tool: interactive-x11
     if get_option('enable-x11')
         x11_tools_dep = declare_dependency(
             link_with: libxkbcommon_x11,
@@ -498,6 +524,8 @@ if build_tools
         install_man('tools/xkbcli-interactive-x11.1')
         configh_data.set10('HAVE_XKBCLI_INTERACTIVE_X11', true)
     endif
+
+    # Tool: interactive-wayland
     if get_option('enable-wayland')
         wayland_client_dep = dependency('wayland-client', version: '>=1.2.0', required: false)
         wayland_protocols_dep = dependency('wayland-protocols', version: '>=1.12', required: false)
@@ -534,6 +562,7 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
         configh_data.set10('HAVE_XKBCLI_INTERACTIVE_WAYLAND', true)
     endif
 
+    # Tool: list
     if get_option('enable-xkbregistry')
         configh_data.set10('HAVE_XKBCLI_LIST', true)
         executable('xkbcli-list',
@@ -544,6 +573,7 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
         install_man('tools/xkbcli-list.1')
     endif
 
+    # Tool: check-messages
     executable('xkb-check-messages',
                'tools/check-messages.c',
                'tools/messages.c',
