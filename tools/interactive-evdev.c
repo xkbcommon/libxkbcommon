@@ -391,6 +391,8 @@ usage(FILE *fp, char *progname)
                         "          --enable-compose (enable Compose)\n"
                         "          --consumed-mode={xkb|gtk} (select the consumed modifiers mode, default: xkb)\n"
                         "          --without-x11-offset (don't add X11 keycode offset)\n"
+                    "Other:\n"
+                        "          --help (display this help and exit)\n"
         );
 }
 
