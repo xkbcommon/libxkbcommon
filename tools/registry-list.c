@@ -40,6 +40,7 @@ usage(const char *progname, FILE *fp)
             "  --ruleset=foo .......... Load the 'foo' ruleset\n"
             "  --skip-default-paths ... Do not load the default XKB paths\n"
             "  --load-exotic .......... Load the exotic (extra) rulesets\n"
+            "  --help ................. Print this help and exit\n"
             "\n"
             "Trailing arguments are treated as XKB base directory installations.\n",
             progname);
