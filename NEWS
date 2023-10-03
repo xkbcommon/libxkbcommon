@@ -1,3 +1,147 @@
+libxkbcommon 1.6.0 - TBA
+==================
+
+API
+---
+
+### Breaking changes
+
+- Remove keysyms (intended for German T3 layout but unused):
+
+  - `dead_lowline`
+  - `dead_aboveverticalline`
+  - `dead_belowverticalline`
+  - `dead_longsolidusoverlay`
+
+  See the upstream [`xorproto` MR](https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/70).
+
+### New
+
+- Add Compose iterator API to iterate the entries in a compose table:
+
+  - `xkb_compose_table_entry_sequence`
+  - `xkb_compose_table_entry_keysym`
+  - `xkb_compose_table_entry_utf8`
+  - `xkb_compose_table_iterator_new`
+  - `xkb_compose_table_iterator_free`
+  - `xkb_compose_table_iterator_next`
+
+- _Structured log messages_ with a message registry. There is an _ongoing_ work
+  to assign unique identifiers to log messages and add a corresponding error
+  index documentation page:
+
+  - The log entries are preceded with an identifier in the form `XKB-NNN`, where
+    `NNN` is a decimal number.
+
+  - The log entries can then be parsed with third-party tools, to check for
+    specific identifiers.
+
+  - The new documentation page “Error index” lists all the kind of error messages
+    with their identifiers. The aim is that each entry could present detailed
+    information on the error and how to fix it.
+
+- Add a new warning for numeric keysyms.
+
+- Add the upper bound `XKB_KEYSYM_MAX` to check valid keysyms.
+
+- Add a warning when loading a keymap using RMLVO with no layout but the
+  variant set. The variant is actually discarded and both layout and variant are
+  set to default values, but this was done previously with no warning, leading
+  to confusion for end users.
+
+- Add support for `modifier_map None { … }`. This feature is missing compare to
+  the X11 implementation. It allows to reset the modifier map of a key.
+
+- Update keysyms using latest `xorgproto` (commit: `1c8128d72df22843a2022576850bc5ab5e3a46ea`):
+
+  - Add `dead_schwa` and `dead_SCHWA` keysyms and deprecate `dead_small_schwa`
+    and `dead_capital_schwa`
+    (upstream [`xorgproto` MR](https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/71)).
+
+  - Add `dead_hamza` keysym
+    (upstream [`xorproto` MR](https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/78)).
+
+  - Add `ordmasculine`, `guillemetleft` and `guillemetright` and deprecate
+    `masculine`, `guillemotleft` and `guillemotright`.
+
+    (upstream [`xorproto` MR](https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/68)).
+
+  - Add the following `evdev` keysyms (up to the Linux kernel 6.2):
+
+    - `XF86EmojiPicker`
+    - `XF86Dictate`
+    - `XF86CameraAccessEnable`
+    - `XF86CameraAccessDisable`
+    - `XF86CameraAccessToggle`
+    - `XF86NextElement`
+    - `XF86PreviousElement`
+    - `XF86AutopilotEngageToggle`
+    - `XF86MarkWaypoint`
+    - `XF86Sos`
+    - `XF86NavChart`
+    - `XF86FishingChart`
+    - `XF86SingleRangeRadar`
+    - `XF86DualRangeRadar`
+    - `XF86RadarOverlay`
+    - `XF86TraditionalSonar`
+    - `XF86ClearvuSonar`
+    - `XF86SidevuSonar`
+    - `XF86NavInfo`
+
+    (upstream `xorproto` MRs:
+    [!82](https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/82),
+    [!44](https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/44) and
+    [!49](https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/49)).
+
+- Ongoing work to improve the documentation about XKB and its V1 format.
+
+### Fixes
+
+- Prevent `xkb_keysym_from_name` to parse out-of-range hexadecimal keysyms.
+
+- Disallow producing NULL character with escape sequences `\0` and `\x0`.
+
+- Prevent overflow of octal escape sequences by making `\400..\777` invalid.
+
+- Prevent interpreting and emitting invalid Unicode encoding forms: surrogates
+  are invalid in both UTF-32 and UTF-8.
+
+- `xkb_keymap_new_from_buffer`: Allow for a NULL-terminated keymap string.
+
+- Compose: increase the limit of possible entries to handle huge Compose files.
+
+Tools
+-----
+
+### New
+
+- Add bash completions for `xkbcli`.
+
+- Interactive tools: Add options `--short` to hide some fields.
+
+- `interactive-evdev`: Add `--includes` and `--include-defaults` options.
+
+- Add `xkb-check-messages` _experimental_ tool (not installed).
+  It checks whether given messages identifiers are supported.
+
+### Fixes
+
+- `compile-keymap`: Allow to use without arguments.
+
+- Interactive tools: Always print keycode.
+
+- Interactive tools: Escape control characters for Unicode output, instead of
+  printing them as-is, messing the output.
+
+Build system
+------------
+
+- Bump required meson to 0.52.0.
+
+- Allow `xkbcommon` to be used as a subproject.
+
+- Improve Windows compilation.
+
 libxkbcommon 1.5.0 - 2023-01-02
 ==================
 
