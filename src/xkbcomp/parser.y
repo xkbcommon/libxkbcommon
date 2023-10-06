@@ -59,7 +59,7 @@ _xkbcommon_error(struct parser_param *param, const char *msg)
 }
 
 static bool
-resolve_keysym(const char *name, xkb_keysym_t *sym_rtrn)
+resolve_keysym(struct parser_param *param, const char *name, xkb_keysym_t *sym_rtrn)
 {
     xkb_keysym_t sym;
 
@@ -73,9 +73,21 @@ resolve_keysym(const char *name, xkb_keysym_t *sym_rtrn)
         return true;
     }
 
-    sym = xkb_keysym_from_name(name, XKB_KEYSYM_NO_FLAGS);
+    xkb_keysym_format_t keysym_format;
+    sym = xkb_keysym_with_format_from_name(name, XKB_KEYSYM_NO_FLAGS, &keysym_format);
     if (sym != XKB_KEY_NoSymbol) {
         *sym_rtrn = sym;
+        const char *ref_name = NULL;
+        if (xkb_keysym_is_deprecated(sym, keysym_format, name, &ref_name)) {
+            if (ref_name == NULL) {
+                parser_warn(param, XKB_WARNING_DEPRECATED_KEYSYM,
+                            "deprecated keysym \"%s\"", name);
+            } else {
+                parser_warn(param, XKB_WARNING_DEPRECATED_KEYSYM,
+                            "deprecated keysym \"%s\"; please use \"%s\"",
+                            name, ref_name);
+            }
+        }
         return true;
     }
 
@@ -727,7 +739,7 @@ KeySyms         :       OBRACE KeySymList CBRACE
 
 KeySym          :       IDENT
                         {
-                            if (!resolve_keysym($1, &$$)) {
+                            if (!resolve_keysym(param, $1, &$$)) {
                                 parser_warn(
                                     param,
                                     XKB_WARNING_UNRECOGNIZED_KEYSYM,
@@ -757,6 +769,17 @@ KeySym          :       IDENT
                             else {
                                 if ($1 <= XKB_KEYSYM_MAX) {
                                     $$ = (xkb_keysym_t) $1;
+                                    const char *ref_name = NULL;
+                                    if (xkb_keysym_is_deprecated($$, XKB_KEYSYM_FORMAT_NUMERIC, NULL, &ref_name)) {
+                                        if (ref_name == NULL) {
+                                            parser_warn(param, XKB_WARNING_DEPRECATED_KEYSYM,
+                                                        "deprecated keysym \"0x%"PRIx64"\"", $1);
+                                        } else {
+                                            parser_warn(param, XKB_WARNING_DEPRECATED_KEYSYM,
+                                                "deprecated keysym \"0x%"PRIx64"\"; please use \"%s\"",
+                                                $1, ref_name);
+                                        }
+                                    }
                                 } else {
                                     parser_warn(
                                         param, XKB_WARNING_UNRECOGNIZED_KEYSYM,

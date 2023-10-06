@@ -62,6 +62,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #include "paths.h"
 #include "utf8.h"
 #include "parser.h"
+#include "keysym.h"
 
 /*
  * Grammar adapted from libX11/modules/im/ximcp/imLcPrs.c.
@@ -469,6 +470,22 @@ resolve_modifier(const char *name)
     return XKB_MOD_INVALID;
 }
 
+static void
+check_deprecated_keysym(struct scanner *s, xkb_keysym_t keysym,
+                        xkb_keysym_format_t keysym_format, const char *name)
+{
+    const char *ref_name = NULL;
+    if (xkb_keysym_is_deprecated(keysym, keysym_format, name, &ref_name)) {
+        if (ref_name == NULL) {
+            scanner_warn(s, "deprecated keysym \"%s\"", name);
+        } else {
+            scanner_warn(s,
+                        "deprecated keysym \"%s\"; please use \"%s\"",
+                        name, ref_name);
+        }
+    }
+}
+
 static bool
 parse(struct xkb_compose_table *table, struct scanner *s,
       unsigned include_depth);
@@ -523,6 +540,7 @@ parse(struct xkb_compose_table *table, struct scanner *s,
     enum rules_token tok;
     union lvalue val;
     xkb_keysym_t keysym;
+    xkb_keysym_format_t keysym_format;
     struct production production;
     enum { MAX_ERRORS = 10 };
     int num_errors = 0;
@@ -597,12 +615,15 @@ lhs_keysym:
 lhs_keysym_tok:
     switch (tok) {
     case TOK_LHS_KEYSYM:
-        keysym = xkb_keysym_from_name(val.string.str, XKB_KEYSYM_NO_FLAGS);
+        keysym = xkb_keysym_with_format_from_name(
+            val.string.str, XKB_KEYSYM_NO_FLAGS, &keysym_format
+        );
         if (keysym == XKB_KEY_NoSymbol) {
             scanner_err(s, "unrecognized keysym \"%s\" on left-hand side",
                         val.string.str);
             goto error;
         }
+        check_deprecated_keysym(s, keysym, keysym_format, val.string.str);
         if (production.len + 1 > MAX_LHS_LEN) {
             scanner_warn(s, "too many keysyms (%d) on left-hand side; skipping line",
                          MAX_LHS_LEN + 1);
@@ -668,12 +689,15 @@ rhs:
         production.has_string = true;
         goto rhs;
     case TOK_IDENT:
-        keysym = xkb_keysym_from_name(val.string.str, XKB_KEYSYM_NO_FLAGS);
+        keysym = xkb_keysym_with_format_from_name(
+            val.string.str, XKB_KEYSYM_NO_FLAGS, &keysym_format
+        );
         if (keysym == XKB_KEY_NoSymbol) {
             scanner_err(s, "unrecognized keysym \"%s\" on right-hand side",
                         val.string.str);
             goto error;
         }
+        check_deprecated_keysym(s, keysym, keysym_format, val.string.str);
         if (production.has_keysym) {
             scanner_warn(s, "right-hand side can have at most one keysym; skipping line");
             goto skip;
