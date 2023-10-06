@@ -67,6 +67,29 @@ test_keysym(xkb_keysym_t keysym, const char *expected)
     return streq(s, expected);
 }
 
+static bool
+test_deprecated(xkb_keysym_t keysym,
+                xkb_keysym_format_t keysym_format, const char *name,
+                bool expected_deprecated, const char *expected_reference)
+{
+    const char *reference;
+    bool deprecated = xkb_keysym_is_deprecated(
+        keysym, keysym_format, name, &reference
+    );
+
+    fprintf(stderr, "Expected keysym %#x -> deprecated: %d, reference: %s\n",
+            keysym, expected_deprecated, expected_reference);
+    fprintf(stderr, "Received keysym %#x -> deprecated: %d, reference: %s\n",
+            keysym, deprecated, reference);
+
+    return deprecated == expected_deprecated &&
+           (
+            (reference == NULL && expected_reference == NULL) ||
+            (reference != NULL && expected_reference != NULL &&
+             strcmp(reference, expected_reference) == 0)
+           );
+}
+
 static int
 test_utf8(xkb_keysym_t keysym, const char *expected)
 {
@@ -197,9 +220,9 @@ main(void)
     assert(test_string("0xffffffff", XKB_KEY_NoSymbol, XKB_KEYSYM_FORMAT_NONE));
     assert(test_string("0x100000000", XKB_KEY_NoSymbol, XKB_KEYSYM_FORMAT_NONE));
     /* Hexadecimal: test syntax */
-    assert(test_string("0x10203040", 0x10203040, XKB_KEYSYM_FORMAT_NUMERIC)); /* OK:  8 digits */
+    assert(test_string("0x10203040", 0x10203040, XKB_KEYSYM_FORMAT_NUMERIC));     /* OK:  8 digits */
     assert(test_string("0x102030400", XKB_KEY_NoSymbol, XKB_KEYSYM_FORMAT_NONE)); /* ERR: 9 digits */
-    assert(test_string("0x01020304", 0x1020304, XKB_KEYSYM_FORMAT_NUMERIC));  /* OK:  8 digits, starts with 0 */
+    assert(test_string("0x01020304", 0x1020304, XKB_KEYSYM_FORMAT_NUMERIC));      /* OK:  8 digits, starts with 0 */
     assert(test_string("0x010203040", XKB_KEY_NoSymbol, XKB_KEYSYM_FORMAT_NONE)); /* ERR: 9 digits, starts with 0 */
     assert(test_string("0x+10203040", XKB_KEY_NoSymbol, XKB_KEYSYM_FORMAT_NONE));
     assert(test_string("0x01020304w", XKB_KEY_NoSymbol, XKB_KEYSYM_FORMAT_NONE)); /* Not hexadecimal digit */
@@ -235,6 +258,30 @@ main(void)
     /* Outside range. */
     assert(test_keysym(XKB_KEYSYM_MAX + 1, "Invalid"));
     assert(test_keysym(0xffffffff, "Invalid"));
+
+    assert(test_deprecated(XKB_KEY_NoSymbol, XKB_KEYSYM_FORMAT_NAME, NULL, false, NULL));
+    assert(test_deprecated(XKB_KEY_NoSymbol, XKB_KEYSYM_FORMAT_NAME, "NoSymbol", false, NULL));
+    assert(test_deprecated(XKB_KEY_A, XKB_KEYSYM_FORMAT_NAME, "A", false, NULL));
+    assert(test_deprecated(XKB_KEY_A, XKB_KEYSYM_FORMAT_NAME, NULL, false, NULL));
+    /* Name is assumed to be correct but we provide garbage */
+    assert(test_deprecated(XKB_KEY_A, XKB_KEYSYM_FORMAT_NAME, "bla bla bla", false, NULL));
+    assert(test_deprecated(XKB_KEY_ETH, XKB_KEYSYM_FORMAT_NAME, "ETH", false, "ETH"));
+    assert(test_deprecated(XKB_KEY_ETH, XKB_KEYSYM_FORMAT_NAME, "Eth", true, "ETH"));
+    /* Name is assumed to be correct but we provide garbage */
+    assert(test_deprecated(XKB_KEY_ETH, XKB_KEYSYM_FORMAT_NAME, "bla bla bla", true, "ETH"));
+    assert(test_deprecated(XKB_KEY_topleftradical, XKB_KEYSYM_FORMAT_NAME, NULL, true, NULL));
+    assert(test_deprecated(XKB_KEY_topleftradical, XKB_KEYSYM_FORMAT_NAME, "topleftradical", true, NULL));
+    /* Name is assumed to be correct but we provide garbage */
+    assert(test_deprecated(XKB_KEY_topleftradical, XKB_KEYSYM_FORMAT_NAME, "bla bla bla", true, NULL));
+    /* Unicode is never deprecated */
+    assert(test_deprecated(0x0100250C, XKB_KEYSYM_FORMAT_UNICODE, "U250C", false, NULL));
+    assert(test_deprecated(0x0100250C, XKB_KEYSYM_FORMAT_NUMERIC, "0x0100250C", false, NULL));
+    /* FIXME: use XKB_KEYSYM_MAX (wait for #357) */
+    assert(test_deprecated(0x1fffffff, XKB_KEYSYM_FORMAT_NAME, NULL, false, NULL));
+    assert(test_deprecated(0x1fffffff, XKB_KEYSYM_FORMAT_NUMERIC, NULL, false, NULL));
+    /* Invalid keysym */
+    assert(test_deprecated(0xffffffff, XKB_KEYSYM_FORMAT_NAME, NULL, false, NULL));
+    assert(test_deprecated(0xffffffff, XKB_KEYSYM_FORMAT_NUMERIC, NULL, false, NULL));
 
     assert(test_casestring("Undo", 0xFF65));
     assert(test_casestring("UNDO", 0xFF65));

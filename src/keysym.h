@@ -73,6 +73,12 @@ xkb_keysym_with_format_from_name(const char *name, enum xkb_keysym_flags flags,
                                  xkb_keysym_format_t *keysym_format);
 
 bool
+xkb_keysym_is_deprecated(xkb_keysym_t keysym,
+                         xkb_keysym_format_t keysym_format,
+                         const char *name,
+                         const char **reference_name);
+
+bool
 xkb_keysym_is_lower(xkb_keysym_t keysym);
 
 bool

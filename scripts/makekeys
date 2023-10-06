@@ -1,17 +1,78 @@
 #!/usr/bin/env python
 
+from collections import defaultdict
+from dataclasses import dataclass
+from enum import Enum
+import itertools
+from pathlib import Path
 import re
 import sys
-import itertools
+from typing import DefaultDict, Iterable, Iterator
 
 import perfect_hash
 
-pattern = re.compile(r"^#define\s+XKB_KEY_(?P<name>\w+)\s+(?P<value>0x[0-9a-fA-F]+)\s")
-matches = [pattern.match(line) for line in open(sys.argv[1])]
-entries = [(m.group("name"), int(m.group("value"), 16)) for m in matches if m]
+KEYSYM_ENTRY_PATTERN = re.compile(
+    r"""
+    ^\#define\s+
+    XKB_KEY_(?P<name>\w+)\s+
+    (?P<value>0x[0-9a-fA-F]+)\s*
+    (?:/\*\s*
+        (?:
+            (?P<deprecated>deprecated)|
+            \(U\+(?P<unicode>[0-9a-fA-F]{4,})(?:\s|\w|-)+\)|
+            .*
+        )
+    )?
+    """,
+    re.VERBOSE,
+)
 
-entries_isorted = sorted(entries, key=lambda e: e[0].lower())
-entries_kssorted = sorted(entries, key=lambda e: e[1])
+
+class Deprecation(Enum):
+    NONE = "none"
+    "No deprecation"
+    EXPLICIT = "explicit"
+    "Explicit deprecation in comment: /* deprecated */"
+    IMPLICIT = "implicit"
+    """
+    Implicit deprecation: the keysym has already been defined with a previous
+    name, and the present name has not been declared explicitly as an alias.
+    """
+
+
+@dataclass
+class Keysym:
+    name: str
+    value: int
+    deprecated: Deprecation
+
+
+def parse_keysyms(path: Path) -> Iterator[Keysym]:
+    with path.open("rt", encoding="utf-8") as fd:
+        for line in fd:
+            if m := KEYSYM_ENTRY_PATTERN.match(line):
+                yield Keysym(
+                    name=m.group("name"),
+                    value=int(m.group("value"), 16),
+                    deprecated=Deprecation.EXPLICIT
+                    if m.group("deprecated") or m.group("unicode")
+                    else Deprecation.NONE,
+                )
+
+
+def get_keysyms(path: Path) -> dict[int, list[Keysym]]:
+    keysyms: DefaultDict[int, list[Keysym]] = defaultdict(list)
+    for keysym in parse_keysyms(path):
+        if keysyms.get(keysym.value) and keysym.deprecated is Deprecation.NONE:
+            keysym.deprecated = Deprecation.IMPLICIT
+        keysyms[keysym.value].append(keysym)
+    return keysyms
+
+
+keysyms_by_value = get_keysyms(Path(sys.argv[1]))
+entries = tuple(itertools.chain(*keysyms_by_value.values()))
+entries_isorted = sorted(entries, key=lambda e: e.name.lower())
+entries_kssorted = sorted(entries, key=lambda e: e.value)
 
 print(
     """
@@ -23,7 +84,8 @@ print(
 """
 )
 
-entry_offsets = {}
+entry_offsets: dict[str, int] = {}
+DEPRECATED_KEYSYM = 0xFFFFFFFF
 
 print(
     """
@@ -35,10 +97,12 @@ static const char *keysym_names =
 """.strip()
 )
 offs = 0
-for name, _ in entries_isorted:
-    entry_offsets[name] = offs
-    print('    "{name}\\0"'.format(name=name))
-    offs += len(name) + 1
+for keysym in entries_isorted:
+    if offs >= DEPRECATED_KEYSYM:
+        raise ValueError(f"Offset must be kept under {DEPRECATED_KEYSYM}, got: {offs}.")
+    entry_offsets[keysym.name] = offs
+    print(f'    "{keysym.name}\\0"')
+    offs += len(keysym.name) + 1
 print(
     """
 ;
@@ -74,7 +138,7 @@ keysym_name_perfect_hash(const char *key)
 """
 print(
     perfect_hash.generate_code(
-        keys=[name for name, value in entries_isorted],
+        keys=[keysym.name for keysym in entries_isorted],
         template=template,
     )
 )
@@ -88,11 +152,11 @@ struct name_keysym {
 )
 
 
-def print_entries(x):
-    for name, value in x:
+def print_entries(entries: Iterable[Keysym]):
+    for entry in entries:
         print(
             "    {{ 0x{value:08x}, {offs} }}, /* {name} */".format(
-                offs=entry_offsets[name], value=value, name=name
+                offs=entry_offsets[entry.name], value=entry.value, name=entry.name
             )
         )
 
@@ -104,6 +168,41 @@ print("};\n")
 # *.sort() is stable so we always get the first keysym for duplicate
 print("static const struct name_keysym keysym_to_name[] = {")
 print_entries(
-    next(g[1]) for g in itertools.groupby(entries_kssorted, key=lambda e: e[1])
+    next(g[1]) for g in itertools.groupby(entries_kssorted, key=lambda e: e.value)
 )
+print("};\n")
+
+
+def make_deprecated_entry(
+    value, keysyms: list[Keysym], entry_offsets: dict[str, int]
+) -> str | None:
+    assert keysyms
+    if keysyms[0].deprecated is Deprecation.NONE:
+        if len(keysyms) == 1:
+            return None
+        canonical_name = f"Reference: {keysyms[0].name}. "
+        assert keysyms[0].name in entry_offsets
+        canonical_index = str(entry_offsets[keysyms[0].name])
+        deprecated_index = 1
+    else:
+        canonical_name = ""
+        canonical_index = "DEPRECATED_KEYSYM"
+        deprecated_index = 0
+    deprecated = ", ".join(ks.name for ks in keysyms[deprecated_index:])
+    comment = f"{canonical_name}Deprecated: {deprecated}"
+    return f"    {{ 0x{value:0>8x}, {canonical_index: <17} }}, /* {comment} */"
+
+
+def generate_deprecated_keysyms(
+    keysyms_by_value: dict[int, list[Keysym]], entry_offsets: dict[str, int]
+):
+    for value, keysyms in sorted(keysyms_by_value.items(), key=lambda e: e[0]):
+        assert keysyms
+        if c_entry := make_deprecated_entry(value, keysyms, entry_offsets):
+            print(c_entry)
+
+
+print(f"#define DEPRECATED_KEYSYM 0x{DEPRECATED_KEYSYM:x}\n")
+print("static const struct name_keysym deprecated_keysyms[] = {")
+generate_deprecated_keysyms(keysyms_by_value, entry_offsets)
 print("};")
