@@ -1,3 +1,153 @@
+libxkbcommon 1.6.0 - TBA
+==================
+
+API
+---
+
+### Breaking changes
+
+- *Remove* keysyms that were intended for German T3 layout but are unused:
+
+  - `XKB_KEY_dead_lowline`
+  - `XKB_KEY_dead_aboveverticalline`
+  - `XKB_KEY_dead_belowverticalline`
+  - `XKB_KEY_dead_longsolidusoverlay`
+
+  See the upstream [`xorgproto` MR](https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/70). See hereinafter for further changes related to keysyms.
+
+### New
+
+- Add Compose iterator API to iterate the entries in a compose table:
+
+  - `xkb_compose_table_entry_sequence`
+  - `xkb_compose_table_entry_keysym`
+  - `xkb_compose_table_entry_utf8`
+  - `xkb_compose_table_iterator_new`
+  - `xkb_compose_table_iterator_free`
+  - `xkb_compose_table_iterator_next`
+
+- *Structured log messages* with a message registry. There is an *ongoing* work
+  to assign unique identifiers to log messages and add a corresponding error
+  index documentation page:
+
+  - The log entries are preceded with an identifier in the form `XKB-NNN`, where
+    `NNN` is a decimal number.
+
+  - The log entries can then be parsed with third-party tools, to check for
+    specific identifiers.
+
+  - The new documentation page “**Error index**” lists all the kind of error messages
+    with their identifiers. The aim is that each entry could present detailed
+    information on the error and how to fix it.
+
+- Add a new warning for numeric keysyms references in XKB files: the preferred
+  keysym reference form is its name or its Unicode value, if relevant.
+
+- Add the upper bound `XKB_KEYSYM_MAX` to check valid keysyms.
+
+- Add a warning when loading a keymap using RMLVO with no layout but with the
+  variant set. The variant is actually discarded and both layout and variant are
+  set to default values, but this was done previously with no warning, confusing
+  end users.
+
+- Add support for `modifier_map None { … }`. This feature is missing compared to
+  the X11 implementation. It allows to reset the modifier map of a key.
+
+- Update keysyms using latest [xorgproto] (commit: `1c8128d72df22843a2022576850bc5ab5e3a46ea`):
+
+  - Additions:
+
+    - `XKB_KEY_ordmasculine` ([xorgproto-68])
+    - `XKB_KEY_guillemetleft` ([xorgproto-68])
+    - `XKB_KEY_guillemetright` ([xorgproto-68])
+    - `XKB_KEY_dead_schwa` ([xorgproto-78])
+    - `XKB_KEY_dead_SCHWA` ([xorgproto-78])
+    - `XKB_KEY_dead_hamza` ([xorgproto-71])
+    - `XKB_KEY_XF86EmojiPicker` ([xorgproto-44])
+    - `XKB_KEY_XF86Dictate` ([xorgproto-49])
+    - `XKB_KEY_XF86CameraAccessEnable` ([xorgproto-82])
+    - `XKB_KEY_XF86CameraAccessDisable` ([xorgproto-82])
+    - `XKB_KEY_XF86CameraAccessToggle` ([xorgproto-82])
+    - `XKB_KEY_XF86NextElement` ([xorgproto-82])
+    - `XKB_KEY_XF86PreviousElement` ([xorgproto-82])
+    - `XKB_KEY_XF86AutopilotEngageToggle` ([xorgproto-82])
+    - `XKB_KEY_XF86MarkWaypoint` ([xorgproto-82])
+    - `XKB_KEY_XF86Sos` ([xorgproto-82])
+    - `XKB_KEY_XF86NavChart` ([xorgproto-82])
+    - `XKB_KEY_XF86FishingChart` ([xorgproto-82])
+    - `XKB_KEY_XF86SingleRangeRadar` ([xorgproto-82])
+    - `XKB_KEY_XF86DualRangeRadar` ([xorgproto-82])
+    - `XKB_KEY_XF86RadarOverlay` ([xorgproto-82])
+    - `XKB_KEY_XF86TraditionalSonar` ([xorgproto-82])
+    - `XKB_KEY_XF86ClearvuSonar` ([xorgproto-82])
+    - `XKB_KEY_XF86SidevuSonar` ([xorgproto-82])
+    - `XKB_KEY_XF86NavInfo` ([xorgproto-82])
+
+  - Deprecations:
+
+    - `XKB_KEY_masculine`: use `XKB_KEY_ordmasculine` instead ([xorgproto-68])
+    - `XKB_KEY_guillemotleft`: use `XKB_KEY_guillemetleft` instead ([xorgproto-68])
+    - `XKB_KEY_guillemotright`: use `XKB_KEY_guillemetright` instead ([xorgproto-68])
+    - `XKB_KEY_dead_small_schwa`: use `XKB_KEY_dead_schwa` instead ([xorgproto-78])
+    - `XKB_KEY_dead_capital_schwa`: use `XKB_KEY_dead_SCHWA` instead ([xorgproto-78])
+
+  [xorgproto]: https://gitlab.freedesktop.org/xorg/proto/xorgproto
+  [xorgproto-44]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/44
+  [xorgproto-49]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/49
+  [xorgproto-68]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/68
+  [xorgproto-71]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/71
+  [xorgproto-78]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/78
+  [xorgproto-82]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/82
+
+- Ongoing work to improve the documentation about XKB and its V1 format.
+
+### Fixes
+
+- Prevent `xkb_keysym_from_name` to parse out-of-range hexadecimal keysyms.
+
+- Disallow producing NULL character with escape sequences `\0` and `\x0`.
+
+- Prevent overflow of octal escape sequences by making `\400..\777` invalid.
+
+- Prevent interpreting and emitting invalid Unicode encoding forms: surrogates
+  are invalid in both UTF-32 and UTF-8.
+
+- `xkb_keymap_new_from_buffer`: Allow for a NULL-terminated keymap string.
+
+- Compose: Increase the limit of possible entries to handle huge Compose files.
+
+Tools
+-----
+
+### New
+
+- Add bash completions for `xkbcli` and its subcommands.
+
+- `xkbcli interactive-*`: Add options `--short` to hide some fields.
+
+- `xkbcli interactive-evdev`: Add `--includes` and `--include-defaults` options.
+
+- Add `xkb-check-messages` *experimental* tool (not installed).
+  It checks whether given log messages identifiers are supported.
+
+### Fixes
+
+- `xkbcli compile-keymap`: Allow to use without arguments.
+
+- `xkbcli interactive-*`: Always print keycode.
+
+- `xkbcli interactive-*`: Escape control characters for Unicode output, instead of
+  printing them as-is, messing the output.
+
+Build system
+------------
+
+- Bump required meson to 0.52.0.
+
+- Allow `xkbcommon` to be used as a subproject.
+
+- Improve Windows compilation.
+
 libxkbcommon 1.5.0 - 2023-01-02
 ==================
 
