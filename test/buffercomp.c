@@ -31,6 +31,88 @@
 
 #define DATA_PATH "keymaps/stringcomp.data"
 
+static void
+test_recursive(void)
+{
+    struct xkb_context *ctx = test_get_context(0);
+    struct xkb_keymap *keymap;
+
+    assert(ctx);
+
+    const char* const keymaps[] = {
+        /* Recursive keycodes */
+        "Keycodes: recursive",
+        "xkb_keymap {"
+        "  xkb_keycodes { include \"evdev+recursive\" };"
+        "  xkb_types { include \"complete\" };"
+        "  xkb_compat { include \"complete\" };"
+        "  xkb_symbols { include \"pc\" };"
+        "};",
+        "Keycodes: recursive(bar)",
+        "xkb_keymap {"
+        "  xkb_keycodes { include \"evdev+recursive(bar)\" };"
+        "  xkb_types { include \"complete\" };"
+        "  xkb_compat { include \"complete\" };"
+        "  xkb_symbols { include \"pc\" };"
+        "};",
+        /* Recursive key types */
+        "Key types: recursive",
+        "xkb_keymap {"
+        "  xkb_keycodes { include \"evdev\" };"
+        "  xkb_types { include \"recursive\" };"
+        "  xkb_compat { include \"complete\" };"
+        "  xkb_symbols { include \"pc\" };"
+        "};",
+        "Key types: recursive(bar)",
+        "xkb_keymap {"
+        "  xkb_keycodes { include \"evdev\" };"
+        "  xkb_types { include \"recursive(bar)\" };"
+        "  xkb_compat { include \"complete\" };"
+        "  xkb_symbols { include \"pc\" };"
+        "};",
+        /* Recursive compat */
+        "Compat: recursive",
+        "xkb_keymap {"
+        "  xkb_keycodes { include \"evdev\" };"
+        "  xkb_types { include \"recursive\" };"
+        "  xkb_compat { include \"complete\" };"
+        "  xkb_symbols { include \"pc\" };"
+        "};",
+        "Compat: recursive(bar)",
+        "xkb_keymap {"
+        "  xkb_keycodes { include \"evdev\" };"
+        "  xkb_types { include \"complete\" };"
+        "  xkb_compat { include \"recursive(bar)\" };"
+        "  xkb_symbols { include \"pc\" };"
+        "};",
+        /* Recursive symbols */
+        "Symbols: recursive",
+        "xkb_keymap {"
+        "  xkb_keycodes { include \"evdev\" };"
+        "  xkb_types { include \"complete\" };"
+        "  xkb_compat { include \"complete\" };"
+        "  xkb_symbols { include \"recursive\" };"
+        "};",
+        "Symbols: recursive(bar)",
+        "xkb_keymap {"
+        "  xkb_keycodes { include \"evdev\" };"
+        "  xkb_types { include \"complete\" };"
+        "  xkb_compat { include \"complete\" };"
+        "  xkb_symbols { include \"recursive(bar)\" };"
+        // "};"
+    };
+
+    int len = sizeof(keymaps) / sizeof(keymaps[0]);
+
+    for (int k = 0; k < len; k++) {
+        fprintf(stderr, "*** Recursive test: %s ***\n", keymaps[k++]);
+        keymap = test_compile_buffer(ctx, keymaps[k], strlen(keymaps[k]));
+        assert(!keymap);
+    }
+
+    xkb_context_unref(ctx);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -91,6 +173,8 @@ main(int argc, char *argv[])
     free(dump);
 
     xkb_context_unref(ctx);
+
+    test_recursive();
 
     return 0;
 }

@@ -53,6 +53,8 @@ typedef struct {
 typedef struct {
     char *name;
     int errorCount;
+    /* shared list of parents includes of the current processed file */
+    include_parents *include_parents;
 
     darray(KeyTypeInfo) types;
     struct xkb_mod_set mods;
@@ -100,10 +102,12 @@ ReportTypeBadType(KeyTypesInfo *info, xkb_message_code_t code,
 
 static void
 InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_context *ctx,
+                 include_parents *parents,
                  const struct xkb_mod_set *mods)
 {
     memset(info, 0, sizeof(*info));
     info->ctx = ctx;
+    info->include_parents = parents;
     info->mods = *mods;
 }
 
@@ -217,7 +221,7 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
 {
     KeyTypesInfo included;
 
-    InitKeyTypesInfo(&included, info->ctx, &info->mods);
+    InitKeyTypesInfo(&included, info->ctx, info->include_parents, &info->mods);
     included.name = include->stmt;
     include->stmt = NULL;
 
@@ -225,14 +229,16 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
         KeyTypesInfo next_incl;
         XkbFile *file;
 
-        file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_TYPES);
+        file = ProcessIncludeFile(info->ctx, info->include_parents,
+                                  stmt, FILE_TYPE_TYPES);
         if (!file) {
             info->errorCount += 10;
             ClearKeyTypesInfo(&included);
             return false;
         }
 
-        InitKeyTypesInfo(&next_incl, info->ctx, &included.mods);
+        InitKeyTypesInfo(&next_incl, info->ctx, info->include_parents,
+                         &included.mods);
 
         HandleKeyTypesFile(&next_incl, file, stmt->merge);
 
@@ -656,6 +662,10 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
     free(info->name);
     info->name = strdup_safe(file->name);
 
+    include_parents_append(info->ctx, info->include_parents,
+                           file->file_name, file->name,
+                           !!(file->flags & MAP_IS_DEFAULT));
+
     for (ParseCommon *stmt = file->defs; stmt; stmt = stmt->next) {
         switch (stmt->type) {
         case STMT_INCLUDE:
@@ -693,6 +703,8 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
             break;
         }
     }
+
+    darray_remove_last(*info->include_parents);
 }
 
 /***====================================================================***/
@@ -751,8 +763,9 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
                 enum merge_mode merge)
 {
     KeyTypesInfo info;
+    include_parents parents = darray_new();
 
-    InitKeyTypesInfo(&info, keymap->ctx, &keymap->mods);
+    InitKeyTypesInfo(&info, keymap->ctx, &parents, &keymap->mods);
 
     HandleKeyTypesFile(&info, file, merge);
     if (info.errorCount != 0)
@@ -762,9 +775,11 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
         goto err_info;
 
     ClearKeyTypesInfo(&info);
+    darray_free(parents);
     return true;
 
 err_info:
     ClearKeyTypesInfo(&info);
+    darray_free(parents);
     return false;
 }

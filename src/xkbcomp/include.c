@@ -174,6 +174,48 @@ ParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
     return true;
 }
 
+void
+include_parents_append(struct xkb_context *ctx, include_parents *parents,
+                       const char *file, char *map, bool is_map_default)
+{
+    struct include_atom parent = {
+        .file = isempty(file) ? XKB_ATOM_NONE
+                              : xkb_atom_intern(ctx, file, strlen(file)),
+        .map = isempty(map) ? XKB_ATOM_NONE
+                            : xkb_atom_intern(ctx, map, strlen(map)),
+        .is_map_default = is_map_default
+    };
+
+    darray_append(*parents, parent);
+}
+
+static inline bool
+include_atom_eq(struct include_atom *atom, xkb_atom_t file, xkb_atom_t map)
+{
+    return atom->file == file &&
+           (atom->map == map ||
+            /* in case map is null, it must be the default map */
+            (map == XKB_ATOM_NONE && atom->is_map_default));
+}
+
+static struct include_atom *
+include_parents_lookup(struct xkb_context *ctx, include_parents *parents,
+                       const char *file_str, char *map_str)
+{
+    struct include_atom *parent;
+    xkb_atom_t file = isempty(file_str)
+        ? XKB_ATOM_NONE
+        : xkb_atom_intern(ctx, file_str, strlen(file_str));
+    xkb_atom_t map = isempty(map_str)
+        ? XKB_ATOM_NONE
+        : xkb_atom_intern(ctx, map_str, strlen(map_str));
+    darray_foreach(parent, *parents) {
+        if (include_atom_eq(parent, file, map))
+            return parent;
+    }
+    return NULL;
+}
+
 static const char *xkb_file_type_include_dirs[_FILE_TYPE_NUM_ENTRIES] = {
     [FILE_TYPE_KEYCODES] = "keycodes",
     [FILE_TYPE_TYPES] = "types",
@@ -289,18 +331,36 @@ out:
 }
 
 XkbFile *
-ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
+ProcessIncludeFile(struct xkb_context *ctx,
+                   include_parents *parents, IncludeStmt *stmt,
                    enum xkb_file_type file_type)
 {
     FILE *file;
     XkbFile *xkb_file = NULL;
+    struct include_atom *recursive_inc;
     unsigned int offset = 0;
 
-    file = FindFileInXkbPath(ctx, stmt->file, file_type, NULL, &offset);
-    if (!file)
+    /* Check recursive imports */
+    recursive_inc = include_parents_lookup(ctx, parents, stmt->file, stmt->map);
+    if (recursive_inc) {
+        struct include_atom *current_file = &darray_item(*parents, darray_size(*parents) - 1);
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "Recursive import of %s \"%s(%s)\" in \"%s(%s)\"\n",
+                xkb_file_type_to_string(file_type),
+                xkb_atom_text(ctx, recursive_inc->file),
+                xkb_atom_text(ctx, recursive_inc->map),
+                xkb_atom_text(ctx, current_file->file),
+                xkb_atom_text(ctx, current_file->map));
         return NULL;
+    }
+
+    file = FindFileInXkbPath(ctx, stmt->file, file_type, NULL, &offset);
+    if (!file) {
+        return NULL;
+    }
 
     while (file) {
+
         xkb_file = XkbParseFile(ctx, file, stmt->file, stmt->map);
         fclose(file);
 
@@ -335,8 +395,6 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
                     "Couldn't process include statement for '%s'\n",
                     stmt->file);
     }
-
-    /* FIXME: we have to check recursive includes here (or somewhere) */
 
     return xkb_file;
 }

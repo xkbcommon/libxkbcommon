@@ -116,8 +116,8 @@ IncludeStmt *
 IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge);
 
 XkbFile *
-XkbFileCreate(enum xkb_file_type type, char *name, ParseCommon *defs,
-              enum xkb_map_flags flags);
+XkbFileCreate(enum xkb_file_type type, const char *file_name, char *name,
+              ParseCommon *defs, enum xkb_map_flags flags);
 
 void
 FreeStmt(ParseCommon *stmt);

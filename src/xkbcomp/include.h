@@ -27,6 +27,21 @@
 #ifndef XKBCOMP_INCLUDE_H
 #define XKBCOMP_INCLUDE_H
 
+#include "context.h"
+#include "atom.h"
+
+struct include_atom {
+    xkb_atom_t file;
+    xkb_atom_t map;
+    bool is_map_default;
+};
+
+typedef darray(struct include_atom) include_parents;
+
+void
+include_parents_append(struct xkb_context *ctx, include_parents *parents,
+                       const char *file, char *map, bool is_map_default);
+
 bool
 ParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
                 char *nextop_rtrn, char **extra_data);
@@ -37,7 +52,8 @@ FindFileInXkbPath(struct xkb_context *ctx, const char *name,
                   unsigned int *offset);
 
 XkbFile *
-ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
+ProcessIncludeFile(struct xkb_context *ctx,
+                   include_parents *parents, IncludeStmt *stmt,
                    enum xkb_file_type file_type);
 
 #endif

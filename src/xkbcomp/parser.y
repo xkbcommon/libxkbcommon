@@ -263,7 +263,7 @@ XkbFile         :       XkbCompositeMap
 XkbCompositeMap :       OptFlags XkbCompositeType OptMapName OBRACE
                             XkbMapConfigList
                         CBRACE SEMI
-                        { $$ = XkbFileCreate($2, $3, (ParseCommon *) $5.head, $1); }
+                        { $$ = XkbFileCreate($2, param->scanner->file_name, $3, (ParseCommon *) $5.head, $1); }
                 ;
 
 XkbCompositeType:       XKB_KEYMAP      { $$ = FILE_TYPE_KEYMAP; }
@@ -281,7 +281,7 @@ XkbMapConfig    :       OptFlags FileType OptMapName OBRACE
                             DeclList
                         CBRACE SEMI
                         {
-                            $$ = XkbFileCreate($2, $3, $5.head, $1);
+                            $$ = XkbFileCreate($2, param->scanner->file_name, $3, $5.head, $1);
                         }
                 ;
 

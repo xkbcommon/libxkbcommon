@@ -86,6 +86,8 @@ typedef struct {
 typedef struct {
     char *name;
     int errorCount;
+    /* shared list of parents includes of the current processed file */
+    include_parents *include_parents;
     SymInterpInfo default_interp;
     darray(SymInterpInfo) interps;
     LedInfo default_led;
@@ -148,10 +150,12 @@ ReportLedNotArray(CompatInfo *info, LedInfo *ledi, const char *field)
 
 static void
 InitCompatInfo(CompatInfo *info, struct xkb_context *ctx,
+               include_parents *parents,
                ActionsInfo *actions, const struct xkb_mod_set *mods)
 {
     memset(info, 0, sizeof(*info));
     info->ctx = ctx;
+    info->include_parents = parents;
     info->actions = actions;
     info->mods = *mods;
     info->default_interp.merge = MERGE_OVERRIDE;
@@ -430,7 +434,8 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
 {
     CompatInfo included;
 
-    InitCompatInfo(&included, info->ctx, info->actions, &info->mods);
+    InitCompatInfo(&included, info->ctx, info->include_parents,
+                   info->actions, &info->mods);
     included.name = include->stmt;
     include->stmt = NULL;
 
@@ -438,14 +443,16 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
         CompatInfo next_incl;
         XkbFile *file;
 
-        file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_COMPAT);
+        file = ProcessIncludeFile(info->ctx, info->include_parents,
+                                  stmt, FILE_TYPE_COMPAT);
         if (!file) {
             info->errorCount += 10;
             ClearCompatInfo(&included);
             return false;
         }
 
-        InitCompatInfo(&next_incl, info->ctx, info->actions, &included.mods);
+        InitCompatInfo(&next_incl, info->ctx, info->include_parents,
+                       info->actions, &included.mods);
         next_incl.default_interp = info->default_interp;
         next_incl.default_interp.merge = stmt->merge;
         next_incl.default_led = info->default_led;
@@ -760,6 +767,10 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
     free(info->name);
     info->name = strdup_safe(file->name);
 
+    include_parents_append(info->ctx, info->include_parents,
+                           file->file_name, file->name,
+                           !!(file->flags & MAP_IS_DEFAULT));
+
     for (ParseCommon *stmt = file->defs; stmt; stmt = stmt->next) {
         switch (stmt->type) {
         case STMT_INCLUDE:
@@ -800,6 +811,8 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
             break;
         }
     }
+
+    darray_remove_last(*info->include_parents);
 }
 
 /* Temporary struct for CopyInterps. */
@@ -909,12 +922,14 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
 {
     CompatInfo info;
     ActionsInfo *actions;
+    include_parents parents = darray_new();
 
     actions = NewActionsInfo();
     if (!actions)
         return false;
 
-    InitCompatInfo(&info, keymap->ctx, actions, &keymap->mods);
+    InitCompatInfo(&info, keymap->ctx, &parents,
+                   actions, &keymap->mods);
     info.default_interp.merge = merge;
     info.default_led.merge = merge;
 
@@ -927,10 +942,12 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
 
     ClearCompatInfo(&info);
     FreeActionsInfo(actions);
+    darray_free(parents);
     return true;
 
 err_info:
     ClearCompatInfo(&info);
     FreeActionsInfo(actions);
+    darray_free(parents);
     return false;
 }

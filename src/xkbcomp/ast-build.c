@@ -534,8 +534,8 @@ err:
 }
 
 XkbFile *
-XkbFileCreate(enum xkb_file_type type, char *name, ParseCommon *defs,
-              enum xkb_map_flags flags)
+XkbFileCreate(enum xkb_file_type type, const char *file_name, char *name,
+              ParseCommon *defs, enum xkb_map_flags flags)
 {
     XkbFile *file;
 
@@ -545,6 +545,7 @@ XkbFileCreate(enum xkb_file_type type, char *name, ParseCommon *defs,
 
     XkbEscapeMapName(name);
     file->file_type = type;
+    file->file_name = file_name;
     file->name = name ? name : strdup("(unnamed)");
     file->defs = defs;
     file->flags = flags;
@@ -570,7 +571,7 @@ XkbFileFromComponents(struct xkb_context *ctx,
         if (!include)
             goto err;
 
-        file = XkbFileCreate(type, NULL, (ParseCommon *) include, 0);
+        file = XkbFileCreate(type, NULL, NULL, (ParseCommon *) include, 0);
         if (!file) {
             FreeInclude(include);
             goto err;
@@ -582,7 +583,7 @@ XkbFileFromComponents(struct xkb_context *ctx,
             defsLast = defsLast->next = &file->common;
     }
 
-    file = XkbFileCreate(FILE_TYPE_KEYMAP, NULL, defs, 0);
+    file = XkbFileCreate(FILE_TYPE_KEYMAP, NULL, NULL, defs, 0);
     if (!file)
         goto err;
 

@@ -47,6 +47,8 @@ typedef struct {
 typedef struct {
     char *name;
     int errorCount;
+    /* shared list of parents includes of the current processed file */
+    include_parents *include_parents;
 
     xkb_keycode_t min_key_code;
     xkb_keycode_t max_key_code;
@@ -155,10 +157,12 @@ ClearKeyNamesInfo(KeyNamesInfo *info)
 }
 
 static void
-InitKeyNamesInfo(KeyNamesInfo *info, struct xkb_context *ctx)
+InitKeyNamesInfo(KeyNamesInfo *info, struct xkb_context *ctx,
+                 include_parents *parents)
 {
     memset(info, 0, sizeof(*info));
     info->ctx = ctx;
+    info->include_parents = parents;
     info->min_key_code = XKB_KEYCODE_INVALID;
 #if XKB_KEYCODE_INVALID < XKB_KEYCODE_MAX
 #error "Hey, you can't be changing stuff like that."
@@ -339,7 +343,7 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *include)
 {
     KeyNamesInfo included;
 
-    InitKeyNamesInfo(&included, info->ctx);
+    InitKeyNamesInfo(&included, info->ctx, info->include_parents);
     included.name = include->stmt;
     include->stmt = NULL;
 
@@ -347,14 +351,15 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *include)
         KeyNamesInfo next_incl;
         XkbFile *file;
 
-        file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_KEYCODES);
+        file = ProcessIncludeFile(info->ctx, info->include_parents,
+                                  stmt, FILE_TYPE_KEYCODES);
         if (!file) {
             info->errorCount += 10;
             ClearKeyNamesInfo(&included);
             return false;
         }
 
-        InitKeyNamesInfo(&next_incl, info->ctx);
+        InitKeyNamesInfo(&next_incl, info->ctx, info->include_parents);
 
         HandleKeycodesFile(&next_incl, file, MERGE_OVERRIDE);
 
@@ -494,6 +499,10 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
     free(info->name);
     info->name = strdup_safe(file->name);
 
+    include_parents_append(info->ctx, info->include_parents,
+                           file->file_name, file->name,
+                           !!(file->flags & MAP_IS_DEFAULT));
+
     for (ParseCommon *stmt = file->defs; stmt; stmt = stmt->next) {
         switch (stmt->type) {
         case STMT_INCLUDE:
@@ -529,6 +538,8 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
             break;
         }
     }
+
+    darray_remove_last(*info->include_parents);
 }
 
 /***====================================================================***/
@@ -661,8 +672,9 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
                 enum merge_mode merge)
 {
     KeyNamesInfo info;
+    include_parents parents = darray_new();
 
-    InitKeyNamesInfo(&info, keymap->ctx);
+    InitKeyNamesInfo(&info, keymap->ctx, &parents);
 
     HandleKeycodesFile(&info, file, merge);
     if (info.errorCount != 0)
@@ -672,9 +684,11 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
         goto err_info;
 
     ClearKeyNamesInfo(&info);
+    darray_free(parents);
     return true;
 
 err_info:
     ClearKeyNamesInfo(&info);
+    darray_free(parents);
     return false;
 }

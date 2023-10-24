@@ -175,6 +175,8 @@ typedef struct {
 typedef struct {
     char *name;         /* e.g. pc+us+inet(evdev) */
     int errorCount;
+    /* shared list of parents includes of the current processed file */
+    include_parents *include_parents;
     enum merge_mode merge;
     xkb_layout_index_t explicit_group;
     darray(KeyInfo) keys;
@@ -191,10 +193,12 @@ typedef struct {
 
 static void
 InitSymbolsInfo(SymbolsInfo *info, const struct xkb_keymap *keymap,
+                include_parents *parents,
                 ActionsInfo *actions, const struct xkb_mod_set *mods)
 {
     memset(info, 0, sizeof(*info));
     info->ctx = keymap->ctx;
+    info->include_parents = parents;
     info->keymap = keymap;
     info->merge = MERGE_OVERRIDE;
     InitKeyInfo(keymap->ctx, &info->default_key);
@@ -569,7 +573,8 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
 {
     SymbolsInfo included;
 
-    InitSymbolsInfo(&included, info->keymap, info->actions, &info->mods);
+    InitSymbolsInfo(&included, info->keymap, info->include_parents,
+                    info->actions, &info->mods);
     included.name = include->stmt;
     include->stmt = NULL;
 
@@ -577,15 +582,16 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
         SymbolsInfo next_incl;
         XkbFile *file;
 
-        file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_SYMBOLS);
+        file = ProcessIncludeFile(info->ctx, info->include_parents,
+                                  stmt, FILE_TYPE_SYMBOLS);
         if (!file) {
             info->errorCount += 10;
             ClearSymbolsInfo(&included);
             return false;
         }
 
-        InitSymbolsInfo(&next_incl, info->keymap, info->actions,
-                        &included.mods);
+        InitSymbolsInfo(&next_incl, info->keymap, info->include_parents,
+                        info->actions, &included.mods);
         if (stmt->modifier) {
             next_incl.explicit_group = atoi(stmt->modifier) - 1;
             if (next_incl.explicit_group >= XKB_MAX_GROUPS) {
@@ -1245,6 +1251,10 @@ HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge)
     free(info->name);
     info->name = strdup_safe(file->name);
 
+    include_parents_append(info->ctx, info->include_parents,
+                           file->file_name, file->name,
+                           !!(file->flags & MAP_IS_DEFAULT));
+
     for (ParseCommon *stmt = file->defs; stmt; stmt = stmt->next) {
         switch (stmt->type) {
         case STMT_INCLUDE:
@@ -1282,6 +1292,8 @@ HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge)
             break;
         }
     }
+
+    darray_remove_last(*info->include_parents);
 }
 
 /**
@@ -1633,12 +1645,13 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
 {
     SymbolsInfo info;
     ActionsInfo *actions;
+    include_parents parents = darray_new();
 
     actions = NewActionsInfo();
     if (!actions)
         return false;
 
-    InitSymbolsInfo(&info, keymap, actions, &keymap->mods);
+    InitSymbolsInfo(&info, keymap, &parents, actions, &keymap->mods);
     info.default_key.merge = merge;
 
     HandleSymbolsFile(&info, file, merge);
@@ -1651,10 +1664,12 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
 
     ClearSymbolsInfo(&info);
     FreeActionsInfo(actions);
+    darray_free(parents);
     return true;
 
 err_info:
     FreeActionsInfo(actions);
     ClearSymbolsInfo(&info);
+    darray_free(parents);
     return false;
 }
