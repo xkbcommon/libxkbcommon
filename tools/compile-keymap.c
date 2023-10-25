@@ -244,8 +244,10 @@ print_keymap(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
     if (keymap == NULL)
         return false;
 
-    printf("%s\n", xkb_keymap_get_as_string(keymap,
-                                            XKB_KEYMAP_FORMAT_TEXT_V1));
+    char *buf = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_FORMAT_TEXT_V1);
+    printf("%s\n", buf);
+    free(buf);
+
     xkb_keymap_unref(keymap);
     return true;
 }
