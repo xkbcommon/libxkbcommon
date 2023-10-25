@@ -118,6 +118,9 @@ static void
 ClearKeyTypesInfo(KeyTypesInfo *info)
 {
     free(info->name);
+    KeyTypeInfo *type;
+    darray_foreach(type, info->types)
+        ClearKeyTypeInfo(type);
     darray_free(info->types);
 }
 
@@ -192,6 +195,7 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
 
     if (darray_empty(into->types)) {
         into->types = from->types;
+        /* Types stolen via shallow copy, so reinitialize the array */
         darray_init(from->types);
     }
     else {
@@ -201,6 +205,9 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
             if (!AddKeyType(into, type, false))
                 into->errorCount++;
         }
+        /* Types were either shallow copied or reinitialized individually
+           in `AddKeyType`, so we only need to free the array */
+        darray_free(from->types);
     }
 }
 
@@ -630,16 +637,16 @@ HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def, enum merge_mode merge)
         .level_names = darray_new(),
     };
 
-    if (!HandleKeyTypeBody(info, def->body, &type)) {
+    if (!HandleKeyTypeBody(info, def->body, &type) ||
+        !AddKeyType(info, &type, true))
+    {
         info->errorCount++;
+        ClearKeyTypeInfo(&type);
         return false;
     }
 
-    if (!AddKeyType(info, &type, true)) {
-        info->errorCount++;
-        return false;
-    }
-
+    /* Type has been either stolen via shallow copy or reinitialized in
+       `AddKeyType`: no need to free the arrays */
     return true;
 }
 
