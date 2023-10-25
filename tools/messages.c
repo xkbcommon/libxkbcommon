@@ -45,6 +45,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_WARNING_ILLEGAL_KEYCODE_ALIAS, "Illegal keycode alias"},
     {XKB_WARNING_UNRECOGNIZED_KEYSYM, "Unrecognized keysym"},
     {XKB_ERROR_UNDECLARED_VIRTUAL_MODIFIER, "Undeclared virtual modifier"},
+    {XKB_ERROR_INSUFFICIENT_BUFFER_SIZE, "Insufficient buffer size"},
     {XKB_ERROR_WRONG_STATEMENT_TYPE, "Wrong statement type"},
     {XKB_WARNING_UNSUPPORTED_GEOMETRY_SECTION, "Unsupported geometry section"},
     {XKB_WARNING_CANNOT_INFER_KEY_TYPE, "Cannot infer key type"},

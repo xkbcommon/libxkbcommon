@@ -30,6 +30,8 @@ enum xkb_message_code {
     XKB_WARNING_UNRECOGNIZED_KEYSYM = 107,
     /** A virtual modifier is used before being declared */
     XKB_ERROR_UNDECLARED_VIRTUAL_MODIFIER = 123,
+    /** A buffer has an insufficient size */
+    XKB_ERROR_INSUFFICIENT_BUFFER_SIZE = 134,
     /** The type of the statement is not allowed in the context */
     XKB_ERROR_WRONG_STATEMENT_TYPE = 150,
     /** Geometry sections are not supported */
