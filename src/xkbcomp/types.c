@@ -180,6 +180,11 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
 {
     if (from->errorCount > 0) {
         into->errorCount += from->errorCount;
+        // Free unused types
+        KeyTypeInfo *type;
+        darray_foreach(type, from->types) {
+            ClearKeyTypeInfo(type);
+        }
         return;
     }
 
