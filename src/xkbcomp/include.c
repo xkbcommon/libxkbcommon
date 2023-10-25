@@ -247,28 +247,27 @@ FindFileInXkbPath(struct xkb_context *ctx, const char *name,
 {
     unsigned int i;
     FILE *file = NULL;
-    char *buf = NULL;
+    char buf[PATH_MAX];
     const char *typeDir;
 
     typeDir = DirectoryForInclude(type);
 
     for (i = *offset; i < xkb_context_num_include_paths(ctx); i++) {
-        buf = asprintf_safe("%s/%s/%s", xkb_context_include_path_get(ctx, i),
-                            typeDir, name);
-        if (!buf) {
+        if (!snprintf_safe(buf, sizeof(buf), "%s/%s/%s",
+                           xkb_context_include_path_get(ctx, i),
+                           typeDir, name)) {
             log_err(ctx,
-                    XKB_ERROR_ALLOCATION_ERROR,
-                    "Failed to alloc buffer for (%s/%s/%s)\n",
+                    XKB_ERROR_INSUFFICIENT_BUFFER_SIZE,
+                    "Path is too long: expected max length of %lu, got: %s/%s/%s\n",
+                    (unsigned long int) sizeof(buf),
                     xkb_context_include_path_get(ctx, i), typeDir, name);
             continue;
         }
 
         file = fopen(buf, "rb");
         if (file) {
-            if (pathRtrn) {
-                *pathRtrn = buf;
-                buf = NULL;
-            }
+            if (pathRtrn)
+                *pathRtrn = strdup(buf);
             *offset = i;
             goto out;
         }
@@ -284,7 +283,6 @@ FindFileInXkbPath(struct xkb_context *ctx, const char *name,
     }
 
 out:
-    free(buf);
     return file;
 }
 
