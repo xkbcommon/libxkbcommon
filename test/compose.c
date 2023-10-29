@@ -173,6 +173,16 @@ test_compose_seq_buffer(struct xkb_context *ctx, const char *buffer, ...)
 }
 
 static void
+test_compose_utf8_bom(struct xkb_context *ctx)
+{
+    const char *buffer = "\xef\xbb\xbf<A> : X";
+    assert(test_compose_seq_buffer(ctx, buffer,
+        XKB_KEY_A, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSED, "X", XKB_KEY_X,
+        XKB_KEY_NoSymbol));
+}
+
+
+static void
 test_seqs(struct xkb_context *ctx)
 {
     struct xkb_compose_table *table;
@@ -723,6 +733,7 @@ main(int argc, char *argv[])
     unsetenv("XLOCALEDIR");
 #endif
 
+    test_compose_utf8_bom(ctx);
     test_seqs(ctx);
     test_conflicting(ctx);
     test_XCOMPOSEFILE(ctx);

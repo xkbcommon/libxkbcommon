@@ -534,6 +534,10 @@ initial:
     production.mods = 0;
     production.modmask = 0;
 
+    /* Skip UTF-8 encoded BOM (U+FEFF) */
+    /* See: https://www.unicode.org/faq/utf_bom.html#bom5 */
+    scanner_str(s, "\xef\xbb\xbf", 3);
+
     /* fallthrough */
 
 initial_eol:
