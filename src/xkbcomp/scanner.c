@@ -199,6 +199,11 @@ XkbParseString(struct xkb_context *ctx, const char *string, size_t len,
 {
     struct scanner scanner;
     scanner_init(&scanner, ctx, string, len, file_name, NULL);
+
+    /* Skip UTF-8 encoded BOM (U+FEFF) */
+    /* See: https://www.unicode.org/faq/utf_bom.html#bom5 */
+    scanner_str(&scanner, "\xef\xbb\xbf", 3);
+
     return parse(ctx, &scanner, map);
 }
 
