@@ -78,6 +78,18 @@ main(int argc, char *argv[])
     keymap = test_compile_buffer(ctx, "", 0);
     assert(!keymap);
 
+    /* Accept UTF-8 encoded BOM (U+FEFF) */
+    const char *bom =
+        "\xef\xbb\xbfxkb_keymap {"
+        "  xkb_keycodes { include \"evdev\" };"
+        "  xkb_types { include \"complete\" };"
+        "  xkb_compat { include \"complete\" };"
+        "  xkb_symbols { include \"pc\" };"
+        "};";
+    keymap = test_compile_buffer(ctx, bom, strlen(bom));
+    assert(keymap);
+    xkb_keymap_unref(keymap);
+
     /* Make sure we can recompile our output for a normal keymap from rules. */
     keymap = test_compile_rules(ctx, NULL, NULL,
                                 "ru,ca,de,us", ",multix,neo,intl", NULL);
