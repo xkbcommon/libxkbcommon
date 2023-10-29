@@ -94,6 +94,18 @@ main(int argc, char *argv[])
     ctx = test_get_context(0);
     assert(ctx);
 
+    struct test_data test_utf_8_with_bom = {
+        .rules = "utf-8_with_bom",
+
+        .model = "my_model", .layout = "my_layout", .variant = "my_variant",
+        .options = "my_option",
+
+        .keycodes = "my_keycodes", .types = "my_types",
+        .compat = "my_compat|some:compat",
+        .symbols = "my_symbols+extra_variant",
+    };
+    assert(test_rules(ctx, &test_utf_8_with_bom));
+
     struct test_data test1 = {
         .rules = "simple",
 

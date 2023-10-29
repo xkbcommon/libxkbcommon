@@ -1099,6 +1099,10 @@ read_rules_file(struct xkb_context *ctx,
 
     scanner_init(&scanner, matcher->ctx, string, size, path, NULL);
 
+    /* Skip UTF-8 encoded BOM (U+FEFF) */
+    /* See: https://www.unicode.org/faq/utf_bom.html#bom5 */
+    scanner_str(&scanner, "\xef\xbb\xbf", 3);
+
     ret = matcher_match(matcher, &scanner, include_depth, string, size, path);
 
     unmap_file(string, size);
