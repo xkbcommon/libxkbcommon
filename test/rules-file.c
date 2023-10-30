@@ -106,6 +106,42 @@ main(int argc, char *argv[])
     };
     assert(test_rules(ctx, &test_utf_8_with_bom));
 
+    struct test_data test_utf_16le_with_bom = {
+        .rules = "utf-16le_with_bom",
+
+        .model = "my_model", .layout = "my_layout", .variant = "my_variant",
+        .options = "my_option",
+
+        .keycodes = "my_keycodes", .types = "my_types",
+        .compat = "my_compat|some:compat",
+        .symbols = "my_symbols+extra_variant",
+    };
+    assert(!test_rules(ctx, &test_utf_16le_with_bom));
+
+    struct test_data test_utf_16be_with_bom = {
+        .rules = "utf-16be_with_bom",
+
+        .model = "my_model", .layout = "my_layout", .variant = "my_variant",
+        .options = "my_option",
+
+        .keycodes = "my_keycodes", .types = "my_types",
+        .compat = "my_compat|some:compat",
+        .symbols = "my_symbols+extra_variant",
+    };
+    assert(!test_rules(ctx, &test_utf_16be_with_bom));
+
+    struct test_data test_utf_32be = {
+        .rules = "utf-32be",
+
+        .model = "my_model", .layout = "my_layout", .variant = "my_variant",
+        .options = "my_option",
+
+        .keycodes = "my_keycodes", .types = "my_types",
+        .compat = "my_compat|some:compat",
+        .symbols = "my_symbols+extra_variant",
+    };
+    assert(!test_rules(ctx, &test_utf_32be));
+
     struct test_data test1 = {
         .rules = "simple",
 

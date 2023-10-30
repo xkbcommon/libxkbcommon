@@ -1084,29 +1084,36 @@ read_rules_file(struct xkb_context *ctx,
                 FILE *file,
                 const char *path)
 {
-    bool ret = false;
+    bool ret;
     char *string;
     size_t size;
     struct scanner scanner;
 
-    ret = map_file(file, &string, &size);
-    if (!ret) {
+    if (!map_file(file, &string, &size)) {
         log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                 "Couldn't read rules file \"%s\": %s\n",
                 path, strerror(errno));
-        goto out;
+        return false;
     }
 
     scanner_init(&scanner, matcher->ctx, string, size, path, NULL);
 
-    /* Skip UTF-8 encoded BOM (U+FEFF) */
-    /* See: https://www.unicode.org/faq/utf_bom.html#bom5 */
-    scanner_str(&scanner, "\xef\xbb\xbf", 3);
+    /* Basic detection of wrong character encoding.
+       The first character relevant to the grammar must be ASCII:
+       whitespace, !, / (for comment) */
+    if (!scanner_check_supported_char_encoding(&scanner)) {
+        scanner_err(&scanner,
+            "This could be a file encoding issue. "
+            "Supported encodings must be backward compatible with ASCII.");
+        scanner_err(&scanner,
+            "E.g. ISO/CEI 8859 and UTF-8 are supported "
+            "but UTF-16, UTF-32 and CP1026 are not.");
+        unmap_file(string, size);
+        return false;
+    }
 
     ret = matcher_match(matcher, &scanner, include_depth, string, size, path);
-
     unmap_file(string, size);
-out:
     return ret;
 }
 
