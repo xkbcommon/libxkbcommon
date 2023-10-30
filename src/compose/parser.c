@@ -527,16 +527,16 @@ parse(struct xkb_compose_table *table, struct scanner *s,
     enum { MAX_ERRORS = 10 };
     int num_errors = 0;
 
+    /* Skip UTF-8 encoded BOM (U+FEFF) */
+    /* See: https://www.unicode.org/faq/utf_bom.html#bom5 */
+    scanner_str(s, "\xef\xbb\xbf", 3);
+
 initial:
     production.len = 0;
     production.has_keysym = false;
     production.has_string = false;
     production.mods = 0;
     production.modmask = 0;
-
-    /* Skip UTF-8 encoded BOM (U+FEFF) */
-    /* See: https://www.unicode.org/faq/utf_bom.html#bom5 */
-    scanner_str(s, "\xef\xbb\xbf", 3);
 
     /* fallthrough */
 
