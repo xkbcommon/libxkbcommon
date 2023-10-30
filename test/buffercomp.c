@@ -31,6 +31,59 @@
 
 #define DATA_PATH "keymaps/stringcomp.data"
 
+static bool
+test_encodings(struct xkb_context *ctx)
+{
+    struct xkb_keymap *keymap;
+
+    /* Accept UTF-8 encoded BOM (U+FEFF) */
+    const char utf8_with_bom[] =
+        "\xef\xbb\xbfxkb_keymap {"
+        "  xkb_keycodes { include \"evdev\" };"
+        "  xkb_types { include \"complete\" };"
+        "  xkb_compat { include \"complete\" };"
+        "  xkb_symbols { include \"pc\" };"
+        "};";
+    keymap = test_compile_buffer(ctx, utf8_with_bom, sizeof(utf8_with_bom));
+    assert(keymap);
+    xkb_keymap_unref(keymap);
+
+    /* Reject UTF-16LE encoded string */
+    const char utf16_le[] =
+        "x\0k\0b\0_\0k\0e\0y\0m\0a\0p\0 \0{\0\n\0"
+        " \0 \0x\0k\0b\0_\0k\0e\0y\0c\0o\0d\0e\0s\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0e\0v\0d\0e\0v\0\"\0 \0}\0;\0\n\0"
+        " \0 \0x\0k\0b\0_\0t\0y\0p\0e\0s\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0c\0o\0m\0p\0l\0e\0t\0e\0\"\0 \0}\0;\0\n\0"
+        " \0 \0x\0k\0b\0_\0c\0o\0m\0p\0a\0t\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0c\0o\0m\0p\0l\0e\0t\0e\0\"\0 \0}\0;\0\n\0"
+        " \0 \0x\0k\0b\0_\0s\0y\0m\0b\0o\0l\0s\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0p\0c\0\"\0 \0}\0;\0\n\0"
+        "}\0;\0";
+    keymap = test_compile_buffer(ctx, utf16_le, sizeof(utf16_le));
+    assert(!keymap);
+
+    /* Reject UTF-16LE with BOM encoded string */
+    const char utf16_le_with_bom[] =
+        "\xff\xfex\0k\0b\0_\0k\0e\0y\0m\0a\0p\0 \0{\0\n\0"
+        " \0 \0x\0k\0b\0_\0k\0e\0y\0c\0o\0d\0e\0s\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0e\0v\0d\0e\0v\0\"\0 \0}\0;\0\n\0"
+        " \0 \0x\0k\0b\0_\0t\0y\0p\0e\0s\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0c\0o\0m\0p\0l\0e\0t\0e\0\"\0 \0}\0;\0\n\0"
+        " \0 \0x\0k\0b\0_\0c\0o\0m\0p\0a\0t\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0c\0o\0m\0p\0l\0e\0t\0e\0\"\0 \0}\0;\0\n\0"
+        " \0 \0x\0k\0b\0_\0s\0y\0m\0b\0o\0l\0s\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0p\0c\0\"\0 \0}\0;\0\n\0"
+        "}\0;\0";
+    keymap = test_compile_buffer(ctx, utf16_le_with_bom, sizeof(utf16_le_with_bom));
+    assert(!keymap);
+
+    /* Reject UTF-16BE encoded string */
+    const char utf16_be[] =
+        "\0x\0k\0b\0_\0k\0e\0y\0m\0a\0p\0 \0{\0\n\0"
+        " \0 \0x\0k\0b\0_\0k\0e\0y\0c\0o\0d\0e\0s\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0e\0v\0d\0e\0v\0\"\0 \0}\0;\0\n\0"
+        " \0 \0x\0k\0b\0_\0t\0y\0p\0e\0s\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0c\0o\0m\0p\0l\0e\0t\0e\0\"\0 \0}\0;\0\n\0"
+        " \0 \0x\0k\0b\0_\0c\0o\0m\0p\0a\0t\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0c\0o\0m\0p\0l\0e\0t\0e\0\"\0 \0}\0;\0\n\0"
+        " \0 \0x\0k\0b\0_\0s\0y\0m\0b\0o\0l\0s\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0p\0c\0\"\0 \0}\0;\0\n\0"
+        "}\0;";
+    keymap = test_compile_buffer(ctx, utf16_be, sizeof(utf16_be));
+    assert(!keymap);
+
+    return true;
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -78,17 +131,7 @@ main(int argc, char *argv[])
     keymap = test_compile_buffer(ctx, "", 0);
     assert(!keymap);
 
-    /* Accept UTF-8 encoded BOM (U+FEFF) */
-    const char *bom =
-        "\xef\xbb\xbfxkb_keymap {"
-        "  xkb_keycodes { include \"evdev\" };"
-        "  xkb_types { include \"complete\" };"
-        "  xkb_compat { include \"complete\" };"
-        "  xkb_symbols { include \"pc\" };"
-        "};";
-    keymap = test_compile_buffer(ctx, bom, strlen(bom));
-    assert(keymap);
-    xkb_keymap_unref(keymap);
+    assert(test_encodings(ctx));
 
     /* Make sure we can recompile our output for a normal keymap from rules. */
     keymap = test_compile_rules(ctx, NULL, NULL,
