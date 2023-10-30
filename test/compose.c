@@ -175,10 +175,84 @@ test_compose_seq_buffer(struct xkb_context *ctx, const char *buffer, ...)
 static void
 test_compose_utf8_bom(struct xkb_context *ctx)
 {
-    const char *buffer = "\xef\xbb\xbf<A> : X";
+    const char buffer[] = "\xef\xbb\xbf<A> : X";
     assert(test_compose_seq_buffer(ctx, buffer,
         XKB_KEY_A, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSED, "X", XKB_KEY_X,
         XKB_KEY_NoSymbol));
+}
+
+static void
+test_invalid_encodings(struct xkb_context *ctx)
+{
+    struct xkb_compose_table *table;
+
+    /* ISO 8859-1 (latin1) */
+    const char iso_8859_1[] = "<A> : \"\xe1\" acute";
+    assert(!test_compose_seq_buffer(ctx, iso_8859_1,
+        XKB_KEY_A, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSED, "\xc3\xa1", XKB_KEY_acute,
+        XKB_KEY_NoSymbol));
+
+    /* UTF-16LE */
+    const char utf_16_le[] =
+        "<\0A\0>\0 \0:\0 \0X\0\n\0"
+        "<\0B\0>\0 \0:\0 \0Y\0";
+    table = xkb_compose_table_new_from_buffer(ctx,
+                                              utf_16_le, sizeof(utf_16_le), "",
+                                              XKB_COMPOSE_FORMAT_TEXT_V1,
+                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+    assert(!table);
+
+    /* UTF-16BE */
+    const char utf_16_be[] =
+        "\0<\0A\0>\0 \0:\0 \0X\0\n"
+        "\0<\0B\0>\0 \0:\0 \0Y";
+    table = xkb_compose_table_new_from_buffer(ctx,
+                                              utf_16_be, sizeof(utf_16_be), "",
+                                              XKB_COMPOSE_FORMAT_TEXT_V1,
+                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+    assert(!table);
+
+    /* UTF-16BE with BOM */
+    const char utf_16_be_bom[] =
+        "\xfe\xff"
+        "\0<\0A\0>\0 \0:\0 \0X\0\n"
+        "\0<\0B\0>\0 \0:\0 \0Y";
+    table = xkb_compose_table_new_from_buffer(ctx,
+                                              utf_16_be_bom, sizeof(utf_16_be_bom), "",
+                                              XKB_COMPOSE_FORMAT_TEXT_V1,
+                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+    assert(!table);
+
+    /* UTF-32LE */
+    const char utf_32_le[] =
+        "<\0\0\0A\0\0\0>\0\0\0 \0\0\0:\0\0\0 \0\0\0X\0\0\0\n\0\0\0"
+        "<\0\0\0B\0\0\0>\0\0\0 \0\0\0:\0\0\0 \0\0\0Y\0\0\0";
+    table = xkb_compose_table_new_from_buffer(ctx,
+                                              utf_32_le, sizeof(utf_32_le), "",
+                                              XKB_COMPOSE_FORMAT_TEXT_V1,
+                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+    assert(!table);
+
+    /* UTF-32LE with BOM */
+    const char utf_32_le_bom[] =
+        "\xff\xfe\0\0"
+        "<\0\0\0A\0\0\0>\0\0\0 \0\0\0:\0\0\0 \0\0\0X\0\0\0\n\0\0\0"
+        "<\0\0\0B\0\0\0>\0\0\0 \0\0\0:\0\0\0 \0\0\0Y\0\0\0";
+    table = xkb_compose_table_new_from_buffer(ctx,
+                                              utf_32_le_bom, sizeof(utf_32_le_bom), "",
+                                              XKB_COMPOSE_FORMAT_TEXT_V1,
+                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+    assert(!table);
+
+    /* UTF-32BE */
+    const char utf_32_be[] =
+        "\0\0\0<\0\0\0A\0\0\0>\0\0\0 \0\0\0:\0\0\0 \0\0\0X\0\0\0\n\0\0\0"
+        "<\0\0\0B\0\0\0>\0\0\0 \0\0\0:\0\0\0 \0\0\0Y";
+    table = xkb_compose_table_new_from_buffer(ctx,
+                                              utf_32_be, sizeof(utf_32_be), "",
+                                              XKB_COMPOSE_FORMAT_TEXT_V1,
+                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+    assert(!table);
 }
 
 
@@ -734,6 +808,7 @@ main(int argc, char *argv[])
 #endif
 
     test_compose_utf8_bom(ctx);
+    test_invalid_encodings(ctx);
     test_seqs(ctx);
     test_conflicting(ctx);
     test_XCOMPOSEFILE(ctx);

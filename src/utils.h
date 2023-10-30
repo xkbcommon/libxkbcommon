@@ -174,6 +174,12 @@ strndup(const char *s, size_t n)
 
 /* ctype.h is locale-dependent and has other oddities. */
 static inline bool
+is_ascii(char ch)
+{
+    return (ch & ~0x7f) == 0;
+}
+
+static inline bool
 is_space(char ch)
 {
     return ch == ' ' || (ch >= '\t' && ch <= '\r');

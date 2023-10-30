@@ -212,4 +212,33 @@ scanner_hex(struct scanner *s, uint8_t *out)
     return i > 0;
 }
 
+/* Basic detection of wrong character encoding based on the first bytes */
+static inline bool
+scanner_check_supported_char_encoding(struct scanner *scanner)
+{
+    /* Skip UTF-8 encoded BOM (U+FEFF)
+     * See: https://www.unicode.org/faq/utf_bom.html#bom5 */
+    if (scanner_str(scanner, "\xef\xbb\xbf", 3) || scanner->len < 2) {
+        /* Assume UTF-8 encoding or trivial short input */
+        return true;
+    }
+
+    /* Early detection of wrong file encoding, e.g. UTF-16 or UTF-32 */
+    if (scanner->s[0] == '\0' || scanner->s[1] == '\0') {
+        if (scanner->s[0] != '\0')
+            scanner->token_column++;
+        scanner_err(scanner, "unexpected NULL character.");
+        return false;
+    }
+    /* Enforce the first character to be ASCII.
+       See the note before the use of this function, that explains the relevant
+       parts of the grammars of rules, keymap components and Compose. */
+    if (!is_ascii(scanner->s[0])) {
+        scanner_err(scanner, "unexpected non-ASCII character.");
+        return false;
+    }
+
+    return true;
+}
+
 #endif
