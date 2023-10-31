@@ -143,14 +143,18 @@ xkb_compose_state_get_status(struct xkb_compose_state *state)
     prev_node = &darray_item(state->table->nodes, state->prev_context);
     node = &darray_item(state->table->nodes, state->context);
 
-    if (state->context == 0 && !prev_node->is_leaf)
-        return XKB_COMPOSE_CANCELLED;
-
-    if (state->context == 0)
+    if (state->context == 0) {
+        if (!prev_node->is_leaf)
+            return prev_node->internal.resid
+                ? XKB_COMPOSE_CANDIDATE_ACCEPTED
+                : XKB_COMPOSE_CANCELLED;
         return XKB_COMPOSE_NOTHING;
+    }
 
     if (!node->is_leaf)
-        return XKB_COMPOSE_COMPOSING;
+        return node->internal.resid
+            ? XKB_COMPOSE_CANDIDATE
+            : XKB_COMPOSE_COMPOSING;
 
     return XKB_COMPOSE_COMPOSED;
 }
@@ -162,8 +166,14 @@ xkb_compose_state_get_utf8(struct xkb_compose_state *state,
     const struct compose_node *node =
         &darray_item(state->table->nodes, state->context);
 
-    if (!node->is_leaf)
-        goto fail;
+    if (!node->is_leaf) {
+        if (node->internal.resid) {
+            node = &darray_item(state->table->nodes,
+                                node->internal.resid);
+        } else {
+            goto fail;
+        }
+    }
 
     /* If there's no string specified, but only a keysym, try to do the
      * most helpful thing. */
@@ -195,7 +205,12 @@ xkb_compose_state_get_one_sym(struct xkb_compose_state *state)
 {
     const struct compose_node *node =
         &darray_item(state->table->nodes, state->context);
-    if (!node->is_leaf)
+    if (node->is_leaf) {
+        return node->leaf.keysym;
+    } else if (node->internal.resid) {
+        return darray_item(state->table->nodes,
+                           node->internal.resid).leaf.keysym;
+    } else {
         return XKB_KEY_NoSymbol;
-    return node->leaf.keysym;
+    }
 }

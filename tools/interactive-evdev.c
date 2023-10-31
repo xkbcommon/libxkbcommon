@@ -57,6 +57,7 @@ static bool terminate;
 static int evdev_offset = 8;
 static bool report_state_changes;
 static bool with_compose;
+static bool compose_overlapping;
 static enum xkb_consumed_mode consumed_mode = XKB_CONSUMED_MODE_XKB;
 
 #ifdef ENABLE_PRIVATE_APIS
@@ -287,7 +288,9 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
 
     if (with_compose) {
         status = xkb_compose_state_get_status(kbd->compose_state);
-        if (status == XKB_COMPOSE_CANCELLED || status == XKB_COMPOSE_COMPOSED)
+        if (status == XKB_COMPOSE_CANCELLED ||
+            status == XKB_COMPOSE_COMPOSED ||
+            status == XKB_COMPOSE_CANDIDATE_ACCEPTED)
             xkb_compose_state_reset(kbd->compose_state);
     }
 
@@ -389,6 +392,7 @@ usage(FILE *fp, char *progname)
                         "          --short (do not print layout nor Unicode keysym translation)\n"
                         "          --report-state-changes (report changes to the state)\n"
                         "          --enable-compose (enable Compose)\n"
+                        "          --enable-compose-overlapping (enable Compose overlapping sequences)\n"
                         "          --consumed-mode={xkb|gtk} (select the consumed modifiers mode, default: xkb)\n"
                         "          --without-x11-offset (don't add X11 keycode offset)\n"
                     "Other:\n"
@@ -426,6 +430,7 @@ main(int argc, char *argv[])
         OPT_WITHOUT_X11_OFFSET,
         OPT_CONSUMED_MODE,
         OPT_COMPOSE,
+        OPT_COMPOSE_OVERLAPPING,
         OPT_SHORT,
         OPT_REPORT_STATE,
 #ifdef ENABLE_PRIVATE_APIS
@@ -444,6 +449,7 @@ main(int argc, char *argv[])
         {"keymap",               required_argument,      0, OPT_KEYMAP},
         {"consumed-mode",        required_argument,      0, OPT_CONSUMED_MODE},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
+        {"enable-compose-overlapping", no_argument,      0, OPT_COMPOSE_OVERLAPPING},
         {"short",                no_argument,            0, OPT_SHORT},
         {"report-state-changes", no_argument,            0, OPT_REPORT_STATE},
         {"without-x11-offset",   no_argument,            0, OPT_WITHOUT_X11_OFFSET},
@@ -504,6 +510,9 @@ main(int argc, char *argv[])
             break;
         case OPT_COMPOSE:
             with_compose = true;
+            break;
+        case OPT_COMPOSE_OVERLAPPING:
+            compose_overlapping = true;
             break;
         case OPT_SHORT:
             print_fields &= ~PRINT_VERBOSE_FIELDS;
@@ -591,9 +600,13 @@ main(int argc, char *argv[])
 
     if (with_compose) {
         locale = setlocale(LC_CTYPE, NULL);
+        enum xkb_compose_compile_flags compose_compile_flags =
+            compose_overlapping
+                ? XKB_COMPOSE_COMPILE_OVERLAPPING_SEQUENCES
+                : XKB_COMPOSE_COMPILE_NO_FLAGS;
         compose_table =
             xkb_compose_table_new_from_locale(ctx, locale,
-                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+                                              compose_compile_flags);
         if (!compose_table) {
             fprintf(stderr, "Couldn't create compose from locale\n");
             goto out;

@@ -173,7 +173,7 @@ tools_print_keycode_state(char *prefix,
     if (status == XKB_COMPOSE_COMPOSING || status == XKB_COMPOSE_CANCELLED)
         return;
 
-    if (status == XKB_COMPOSE_COMPOSED) {
+    if (status == XKB_COMPOSE_COMPOSED || status == XKB_COMPOSE_CANDIDATE) {
         sym = xkb_compose_state_get_one_sym(compose_state);
         syms = &sym;
         nsyms = 1;
@@ -202,7 +202,7 @@ tools_print_keycode_state(char *prefix,
     printf("] ");
 
     if (fields & PRINT_UNICODE) {
-        if (status == XKB_COMPOSE_COMPOSED)
+        if (status == XKB_COMPOSE_COMPOSED || status == XKB_COMPOSE_CANDIDATE)
             xkb_compose_state_get_utf8(compose_state, s, sizeof(s));
         else
             xkb_state_key_get_utf8(state, keycode, s, sizeof(s));

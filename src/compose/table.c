@@ -60,8 +60,8 @@ xkb_compose_table_new(struct xkb_context *ctx,
     darray_init(table->utf8);
 
     dummy.keysym = XKB_KEY_NoSymbol;
-    dummy.leaf.is_leaf = true;
     dummy.leaf.utf8 = 0;
+    dummy.leaf.is_leaf = true;
     dummy.leaf.keysym = XKB_KEY_NoSymbol;
     darray_append(table->nodes, dummy);
 
@@ -89,6 +89,8 @@ xkb_compose_table_unref(struct xkb_compose_table *table)
     free(table);
 }
 
+#define XKB_COMPOSE_COMPILE_MASK XKB_COMPOSE_COMPILE_OVERLAPPING_SEQUENCES
+
 XKB_EXPORT struct xkb_compose_table *
 xkb_compose_table_new_from_file(struct xkb_context *ctx,
                                 FILE *file,
@@ -99,7 +101,7 @@ xkb_compose_table_new_from_file(struct xkb_context *ctx,
     struct xkb_compose_table *table;
     bool ok;
 
-    if (flags & ~(XKB_COMPOSE_COMPILE_NO_FLAGS)) {
+    if (flags & ~(XKB_COMPOSE_COMPILE_MASK)) {
         log_err_func(ctx, "unrecognized flags: %#x\n", flags);
         return NULL;
     }
@@ -132,7 +134,7 @@ xkb_compose_table_new_from_buffer(struct xkb_context *ctx,
     struct xkb_compose_table *table;
     bool ok;
 
-    if (flags & ~(XKB_COMPOSE_COMPILE_NO_FLAGS)) {
+    if (flags & ~(XKB_COMPOSE_COMPILE_MASK)) {
         log_err_func(ctx, "unrecognized flags: %#x\n", flags);
         return NULL;
     }
@@ -165,7 +167,7 @@ xkb_compose_table_new_from_locale(struct xkb_context *ctx,
     FILE *file;
     bool ok;
 
-    if (flags & ~(XKB_COMPOSE_COMPILE_NO_FLAGS)) {
+    if (flags & ~(XKB_COMPOSE_COMPILE_MASK)) {
         log_err_func(ctx, "unrecognized flags: %#x\n", flags);
         return NULL;
     }
@@ -253,13 +255,18 @@ xkb_compose_table_entry_utf8(struct xkb_compose_table_entry *entry)
 enum node_direction {
     NODE_LEFT = 0,
     NODE_DOWN,
+    NODE_DOWN_NON_OVERLAPPING,
     NODE_RIGHT,
     NODE_UP
 };
 
+#define NODE_OFFSET_BIT_FIELD_SIZE 29
+_Static_assert(MAX_COMPOSE_NODES_LOG2 + 1 <= NODE_OFFSET_BIT_FIELD_SIZE,
+               "xkb_compose_table_iterator_cursor::node_offset cannot hold MAX_COMPOSE_NODES");
+
 struct xkb_compose_table_iterator_cursor {
-    uint32_t node_offset:30; /* WARNING: ensure it fits MAX_COMPOSE_NODES */
-    uint8_t direction:2;     /* enum node_direction: current direction
+    uint32_t node_offset:NODE_OFFSET_BIT_FIELD_SIZE;
+    uint8_t direction:3;     /* enum node_direction: current direction
                               * traversing the tree */
 };
 
@@ -347,25 +354,44 @@ xkb_compose_table_iterator_next(struct xkb_compose_table_iterator *iter)
         case NODE_LEFT:
             cursor->direction = NODE_DOWN;
             if (node->lokid) {
-                struct xkb_compose_table_iterator_cursor new_cursor = {node->lokid, NODE_LEFT};
+                struct xkb_compose_table_iterator_cursor new_cursor = {
+                   .node_offset = node->lokid,
+                   .direction = NODE_LEFT
+                };
                 darray_append(iter->cursors, new_cursor);
             }
             break;
 
         case NODE_DOWN:
-            cursor->direction = NODE_RIGHT;
             assert (iter->entry.sequence_length <= MAX_LHS_LEN);
             iter->entry.sequence[iter->entry.sequence_length] = node->keysym;
             iter->entry.sequence_length++;
             if (node->is_leaf) {
+                cursor->direction = NODE_RIGHT;
+                iter->entry.keysym = node->leaf.keysym;
+                iter->entry.utf8 = &darray_item(iter->table->utf8, node->leaf.utf8);
+                return &iter->entry;
+            } else if (node->internal.resid) {
+                cursor->direction = NODE_DOWN_NON_OVERLAPPING;
+                node = &darray_item(iter->table->nodes, node->internal.resid);
                 iter->entry.keysym = node->leaf.keysym;
                 iter->entry.utf8 = &darray_item(iter->table->utf8, node->leaf.utf8);
                 return &iter->entry;
             } else {
-                struct xkb_compose_table_iterator_cursor new_cursor = {node->internal.eqkid, NODE_LEFT};
+down:
+                cursor->direction = NODE_RIGHT;
+                struct xkb_compose_table_iterator_cursor new_cursor = {
+                    .node_offset = node->internal.eqkid,
+                    .direction = NODE_LEFT
+                };
                 darray_append(iter->cursors, new_cursor);
             }
             break;
+
+        case NODE_DOWN_NON_OVERLAPPING:
+            assert (iter->entry.sequence_length <= MAX_LHS_LEN);
+            iter->entry.sequence[iter->entry.sequence_length] = node->keysym;
+            goto down;
 
         case NODE_RIGHT:
             cursor->direction = NODE_UP;

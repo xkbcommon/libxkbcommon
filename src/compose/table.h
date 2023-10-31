@@ -77,23 +77,26 @@
 
 /* 7 nodes for every potential Unicode character and then some should be
  * enough for all purposes. */
-#define MAX_COMPOSE_NODES (1 << 23)
+#define MAX_COMPOSE_NODES_LOG2 23
+#define MAX_COMPOSE_NODES (1 << MAX_COMPOSE_NODES_LOG2)
 
 struct compose_node {
     xkb_keysym_t keysym;
 
-    /* Offset into xkb_compose_table::nodes or 0. */
+    /* Low sibling keysym. Offset into xkb_compose_table::nodes or 0. */
     uint32_t lokid;
-    /* Offset into xkb_compose_table::nodes or 0. */
+    /* High sibling keysym. Offset into xkb_compose_table::nodes or 0. */
     uint32_t hikid;
 
     union {
         struct {
-            uint32_t _pad:31;
+            uint32_t _pad1:31;
             bool is_leaf:1;
+            uint32_t _pad2;
         };
         struct {
-            uint32_t _pad:31;
+            /* Overlapping result. Offset into xkb_compose_table::nodes or 0. */
+            uint32_t resid:31;
             bool is_leaf:1;
             /* Offset into xkb_compose_table::nodes or 0. */
             uint32_t eqkid;

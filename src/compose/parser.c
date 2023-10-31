@@ -346,12 +346,22 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
     uint32_t curr = darray_size(table->nodes) == 1 ? 0 : 1;
     uint32_t *pptr = NULL;
     struct compose_node *node = NULL;
+    bool allow_overlapping;
 
-    /* Warn before potentially going over the limit, discard silently after. */
-    if (darray_size(table->nodes) + production->len + MAX_LHS_LEN > MAX_COMPOSE_NODES)
+    // TODO: adapt limit if overlapping is disallowed?
+    /*
+     * Warn before potentially going over the limit, discard silently after.
+     *
+     * We may add up to production->len * 2 - 1 nodes:
+     * • one node per keysym in the sequence
+     * • plus one node per keysym for overlap, except for the last node.
+     */
+    if (darray_size(table->nodes) + production->len * 2 - 1 + MAX_LHS_LEN > MAX_COMPOSE_NODES)
         scanner_warn(s, "too many sequences for one Compose file; will ignore further lines");
-    if (darray_size(table->nodes) + production->len >= MAX_COMPOSE_NODES)
+    if (darray_size(table->nodes) + production->len * 2 - 1 >= MAX_COMPOSE_NODES)
         return;
+
+    allow_overlapping = !!(table->flags & XKB_COMPOSE_COMPILE_OVERLAPPING_SEQUENCES);
 
     /*
      * Insert the sequence to the ternary search tree, creating new nodes as
@@ -375,8 +385,9 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
                 .lokid = 0,
                 .hikid = 0,
                 .internal = {
-                    .eqkid = 0,
+                    .resid = 0,
                     .is_leaf = false,
+                    .eqkid = 0,
                 },
             };
             curr = darray_size(table->nodes);
@@ -396,28 +407,86 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
             pptr = &node->hikid;
             curr = node->hikid;
         } else if (!last) {
+            /* Adding intermediate node */
             if (node->is_leaf) {
-                scanner_warn(s, "a sequence already exists which is a prefix of this sequence; overriding");
-                node->internal.eqkid = 0;
+                /* Existing leaf */
+                if (allow_overlapping) {
+                    /* Backup overlapping sequence result */
+                    struct compose_node overlapping = {
+                        .keysym = node->keysym,
+                        .lokid = 0,
+                        .hikid = 0,
+                        .leaf = node->leaf
+                    };
+                    darray_append(table->nodes, overlapping);
+                    node = &darray_item(table->nodes, curr);
+                    node->internal.resid = darray_size(table->nodes) - 1;
+                } else {
+                    scanner_warn(s, "a sequence already exists which is a prefix of this sequence; overriding");
+                    node->internal.resid = 0;
+                }
+                /* Reset node */
                 node->internal.is_leaf = false;
+                node->internal.eqkid = 0;
             }
             lhs_pos++;
             pptr = &node->internal.eqkid;
             curr = node->internal.eqkid;
         } else {
+            /* Adding the last node of the sequence and the result */
+            struct compose_node *result = NULL;
+            bool has_previous_leaf;
             if (node->is_leaf) {
+                /* Existing leaf */
+                has_previous_leaf = true;
+                result = node;
+            } else if (node->internal.eqkid != 0) {
+                /* Existing non-leaf */
+                if (!allow_overlapping) {
+                    scanner_warn(s, "this compose sequence is a prefix of another; skipping line");
+                    return;
+                } else if (node->internal.resid) {
+                    /* Reuse existing overlapping sequence result */
+                    result = &darray_item(table->nodes, node->internal.resid);
+                    has_previous_leaf = true;
+                } else {
+                    /* Create a new overlapping sequence result */
+                    node->internal.resid = darray_size(table->nodes);
+                    struct compose_node overlapping = {
+                        .keysym = node->keysym,
+                        .lokid = 0,
+                        .hikid = 0,
+                        .leaf = {
+                            .utf8 = 0,
+                            .is_leaf = true,
+                            .keysym = XKB_KEY_NoSymbol
+                        }
+                    };
+                    darray_append(table->nodes, overlapping);
+                    node = &darray_item(table->nodes, curr);
+                    result = &darray_item(table->nodes,
+                                          node->internal.resid);
+                    has_previous_leaf = false;
+                }
+            } else {
+                /* New leaf */
+                has_previous_leaf = false;
+                node->is_leaf = true;
+                result = node;
+            }
+            if (has_previous_leaf) {
                 bool same_string =
-                    (node->leaf.utf8 == 0 && !production->has_string) ||
+                    (result->leaf.utf8 == 0 && !production->has_string) ||
                     (
-                        node->leaf.utf8 != 0 && production->has_string &&
-                        streq(&darray_item(table->utf8, node->leaf.utf8),
+                        result->leaf.utf8 != 0 && production->has_string &&
+                        streq(&darray_item(table->utf8, result->leaf.utf8),
                               production->string)
                     );
                 bool same_keysym =
-                    (node->leaf.keysym == XKB_KEY_NoSymbol && !production->has_keysym) ||
+                    (result->leaf.keysym == XKB_KEY_NoSymbol && !production->has_keysym) ||
                     (
-                        node->leaf.keysym != XKB_KEY_NoSymbol && production->has_keysym &&
-                        node->leaf.keysym == production->keysym
+                        result->leaf.keysym != XKB_KEY_NoSymbol && production->has_keysym &&
+                        result->leaf.keysym == production->keysym
                     );
                 if (same_string && same_keysym) {
                     scanner_warn(s, "this compose sequence is a duplicate of another; skipping line");
@@ -425,18 +494,15 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
                 } else {
                     scanner_warn(s, "this compose sequence already exists; overriding");
                 }
-            } else if (node->internal.eqkid != 0) {
-                scanner_warn(s, "this compose sequence is a prefix of another; skipping line");
-                return;
             }
-            node->is_leaf = true;
+            result->is_leaf = true;
             if (production->has_string) {
-                node->leaf.utf8 = darray_size(table->utf8);
+                result->leaf.utf8 = darray_size(table->utf8);
                 darray_append_items(table->utf8, production->string,
                                     strlen(production->string) + 1);
             }
             if (production->has_keysym) {
-                node->leaf.keysym = production->keysym;
+                result->leaf.keysym = production->keysym;
             }
             return;
         }
