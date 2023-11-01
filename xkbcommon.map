@@ -118,4 +118,5 @@ global:
     xkb_compose_table_iterator_new;
     xkb_compose_table_iterator_free;
     xkb_compose_table_iterator_next;
+	xkb_compose_table_for_each;
 } V_1.0.0;

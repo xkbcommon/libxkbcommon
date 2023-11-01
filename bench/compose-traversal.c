@@ -32,6 +32,16 @@
 
 #define BENCHMARK_ITERATIONS 1000
 
+// #define USE_FOREACH
+
+#ifdef USE_FOREACH
+static void
+compose_fn(struct xkb_compose_table_entry *entry, void *data)
+{
+    assert (entry);
+}
+#endif
+
 int
 main(void)
 {
@@ -39,8 +49,10 @@ main(void)
     char *path;
     FILE *file;
     struct xkb_compose_table *table;
+#ifndef USE_FOREACH
     struct xkb_compose_table_iterator *iter;
     struct xkb_compose_table_entry *entry;
+#endif
     struct bench bench;
     char *elapsed;
 
@@ -68,11 +80,15 @@ main(void)
 
     bench_start(&bench);
     for (int i = 0; i < BENCHMARK_ITERATIONS; i++) {
+#ifdef USE_FOREACH
+        xkb_compose_table_for_each(table, compose_fn, NULL);
+#else
         iter = xkb_compose_table_iterator_new(table);
         while ((entry = xkb_compose_table_iterator_next(iter))) {
             assert (entry);
         }
         xkb_compose_table_iterator_free(iter);
+#endif
     }
     bench_stop(&bench);
 
