@@ -280,7 +280,7 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
 
     if (value != KEY_STATE_RELEASE) {
         tools_print_keycode_state(
-            kbd->state, kbd->compose_state, keycode,
+            NULL, kbd->state, kbd->compose_state, keycode,
             consumed_mode, print_fields
         );
     }
