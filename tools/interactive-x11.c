@@ -23,6 +23,7 @@
 
 #include "config.h"
 
+#include <getopt.h>
 #include <locale.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -31,6 +32,7 @@
 #include <xcb/xkb.h>
 
 #include "xkbcommon/xkbcommon-x11.h"
+#include "xkbcommon/xkbcommon-compose.h"
 #include "tools-common.h"
 
 /*
@@ -58,6 +60,7 @@ struct keyboard {
 
     struct xkb_keymap *keymap;
     struct xkb_state *state;
+    struct xkb_compose_state *compose_state;
     int32_t device_id;
 };
 
@@ -153,7 +156,8 @@ err_out:
 
 static int
 init_kbd(struct keyboard *kbd, xcb_connection_t *conn, uint8_t first_xkb_event,
-         int32_t device_id, struct xkb_context *ctx)
+         int32_t device_id, struct xkb_context *ctx,
+         struct xkb_compose_table *compose_table)
 {
     int ret;
 
@@ -162,11 +166,15 @@ init_kbd(struct keyboard *kbd, xcb_connection_t *conn, uint8_t first_xkb_event,
     kbd->ctx = ctx;
     kbd->keymap = NULL;
     kbd->state = NULL;
+    kbd->compose_state = NULL;
     kbd->device_id = device_id;
 
     ret = update_keymap(kbd);
     if (ret)
         goto err_out;
+    if (compose_table)
+        kbd->compose_state = xkb_compose_state_new(compose_table,
+                                                   XKB_COMPOSE_STATE_NO_FLAGS);
 
     ret = select_xkb_events_for_device(conn, device_id);
     if (ret)
@@ -176,6 +184,7 @@ init_kbd(struct keyboard *kbd, xcb_connection_t *conn, uint8_t first_xkb_event,
 
 err_state:
     xkb_state_unref(kbd->state);
+    xkb_compose_state_unref(kbd->compose_state);
     xkb_keymap_unref(kbd->keymap);
 err_out:
     return -1;
@@ -185,6 +194,7 @@ static void
 deinit_kbd(struct keyboard *kbd)
 {
     xkb_state_unref(kbd->state);
+    xkb_compose_state_unref(kbd->compose_state);
     xkb_keymap_unref(kbd->keymap);
 }
 
@@ -242,9 +252,21 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
         xcb_key_press_event_t *event = (xcb_key_press_event_t *) gevent;
         xkb_keycode_t keycode = event->detail;
 
-        tools_print_keycode_state(NULL, kbd->state, NULL, keycode,
+        if (kbd->compose_state) {
+            xkb_keysym_t keysym = xkb_state_key_get_one_sym(kbd->state, keycode);
+            xkb_compose_state_feed(kbd->compose_state, keysym);
+        }
+
+        tools_print_keycode_state(NULL, kbd->state, kbd->compose_state, keycode,
                                   XKB_CONSUMED_MODE_XKB,
                                   PRINT_ALL_FIELDS);
+
+        if (kbd->compose_state) {
+            enum xkb_compose_status status = xkb_compose_state_get_status(kbd->compose_state);
+            if (status == XKB_COMPOSE_CANCELLED ||
+                status == XKB_COMPOSE_COMPOSED)
+                xkb_compose_state_reset(kbd->compose_state);
+        }
 
         /* Exit on ESC. */
         if (xkb_state_key_get_one_sym(kbd->state, keycode) == XKB_KEY_Escape)
@@ -328,6 +350,18 @@ create_capture_window(xcb_connection_t *conn)
     return 0;
 }
 
+static void
+usage(FILE *fp, char *progname)
+{
+        fprintf(fp,
+                "Usage: %s [--help] [--enable-compose]\n",
+                progname);
+        fprintf(fp,
+                "    --enable-compose               enable Compose\n"
+                "    --help                         display this help and exit\n"
+        );
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -337,13 +371,38 @@ main(int argc, char *argv[])
     int32_t core_kbd_device_id;
     struct xkb_context *ctx;
     struct keyboard core_kbd;
+    const char *locale;
+    struct xkb_compose_table *compose_table = NULL;
 
-    if (argc != 1) {
-        ret = strcmp(argv[1], "--help");
-        fprintf(ret ? stderr : stdout, "Usage: %s [--help]\n", argv[0]);
-        if (ret)
-            fprintf(stderr, "unrecognized option: %s\n", argv[1]);
-        return ret ? EXIT_INVALID_USAGE : EXIT_SUCCESS;
+    bool with_compose = false;
+    enum options {
+        OPT_COMPOSE,
+    };
+    static struct option opts[] = {
+        {"help",                       no_argument, 0, 'h'},
+        {"enable-compose",             no_argument, 0, OPT_COMPOSE},
+        {0, 0, 0, 0},
+    };
+
+    while (1) {
+        int opt;
+        int option_index = 0;
+
+        opt = getopt_long(argc, argv, "h", opts, &option_index);
+        if (opt == -1)
+            break;
+
+        switch (opt) {
+        case OPT_COMPOSE:
+            with_compose = true;
+            break;
+        case 'h':
+            usage(stdout, argv[0]);
+            return EXIT_SUCCESS;
+        case '?':
+            usage(stderr, argv[0]);
+            return EXIT_INVALID_USAGE;
+        }
     }
 
     setlocale(LC_ALL, "");
@@ -373,6 +432,19 @@ main(int argc, char *argv[])
         goto err_conn;
     }
 
+    if (with_compose) {
+        locale = setlocale(LC_CTYPE, NULL);
+        compose_table =
+            xkb_compose_table_new_from_locale(ctx, locale,
+                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+        if (!compose_table) {
+            fprintf(stderr, "Couldn't create compose from locale\n");
+            goto err_compose;
+        }
+    } else {
+        compose_table = NULL;
+    }
+
     core_kbd_device_id = xkb_x11_get_core_keyboard_device_id(conn);
     if (core_kbd_device_id == -1) {
         ret = -1;
@@ -380,7 +452,8 @@ main(int argc, char *argv[])
         goto err_ctx;
     }
 
-    ret = init_kbd(&core_kbd, conn, first_xkb_event, core_kbd_device_id, ctx);
+    ret = init_kbd(&core_kbd, conn, first_xkb_event, core_kbd_device_id,
+                  ctx, compose_table);
     if (ret) {
         fprintf(stderr, "Couldn't initialize core keyboard device\n");
         goto err_ctx;
@@ -396,6 +469,8 @@ main(int argc, char *argv[])
     ret = loop(conn, &core_kbd);
     tools_enable_stdin_echo();
 
+err_compose:
+    xkb_compose_table_unref(compose_table);
 err_core_kbd:
     deinit_kbd(&core_kbd);
 err_ctx:
