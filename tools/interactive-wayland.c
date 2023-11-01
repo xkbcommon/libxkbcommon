@@ -27,6 +27,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <getopt.h>
 #include <locale.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -36,7 +37,9 @@
 #include <unistd.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-compose.h"
 #include "tools-common.h"
+#include "src/utils.h"
 
 #include <wayland-client.h>
 #include "xdg-shell-client-protocol.h"
@@ -56,6 +59,7 @@ struct interactive_dpy {
     uint32_t shm_format;
 
     struct xkb_context *ctx;
+    struct xkb_compose_table *compose_table;
 
     struct wl_surface *wl_surf;
     struct xdg_surface *xdg_surf;
@@ -76,6 +80,7 @@ struct interactive_seat {
 
     struct xkb_keymap *keymap;
     struct xkb_state *state;
+    struct xkb_compose_state *compose_state;
 
     struct wl_list link;
 };
@@ -394,17 +399,30 @@ kbd_key(void *data, struct wl_keyboard *wl_kbd, uint32_t serial, uint32_t time,
         uint32_t key, uint32_t state)
 {
     struct interactive_seat *seat = data;
+    xkb_keycode_t keycode = key + EVDEV_OFFSET;
 
-    if (state != WL_KEYBOARD_KEY_STATE_PRESSED)
-        return;
+    if (seat->compose_state && state != WL_KEYBOARD_KEY_STATE_RELEASED) {
+        xkb_keysym_t keysym = xkb_state_key_get_one_sym(seat->state, keycode);
+        xkb_compose_state_feed(seat->compose_state, keysym);
+    }
 
-    printf("%s: ", seat->name_str);
-    tools_print_keycode_state(seat->state, NULL, key + EVDEV_OFFSET,
-                              XKB_CONSUMED_MODE_XKB,
-                              PRINT_ALL_FIELDS);
+    if (state != WL_KEYBOARD_KEY_STATE_RELEASED) {
+        char *prefix = asprintf_safe("%s: ", seat->name_str);
+        tools_print_keycode_state(prefix, seat->state, seat->compose_state, keycode,
+                                XKB_CONSUMED_MODE_XKB,
+                                PRINT_ALL_FIELDS);
+        free(prefix);
+    }
+
+    if (seat->compose_state) {
+        enum xkb_compose_status status = xkb_compose_state_get_status(seat->compose_state);
+        if (status == XKB_COMPOSE_CANCELLED || status == XKB_COMPOSE_COMPOSED)
+            xkb_compose_state_reset(seat->compose_state);
+    }
 
     /* Exit on ESC. */
-    if (xkb_state_key_get_one_sym(seat->state, key + EVDEV_OFFSET) == XKB_KEY_Escape)
+    if (xkb_state_key_get_one_sym(seat->state, keycode) == XKB_KEY_Escape &&
+        state != WL_KEYBOARD_KEY_STATE_PRESSED)
         terminate = true;
 }
 
@@ -518,8 +536,10 @@ seat_capabilities(void *data, struct wl_seat *wl_seat, uint32_t caps)
 
         xkb_state_unref(seat->state);
         xkb_keymap_unref(seat->keymap);
+        xkb_compose_state_unref(seat->compose_state);
 
         seat->state = NULL;
+        seat->compose_state = NULL;
         seat->keymap = NULL;
         seat->wl_kbd = NULL;
     }
@@ -564,6 +584,10 @@ seat_create(struct interactive_dpy *inter, struct wl_registry *registry,
     seat->wl_seat = wl_registry_bind(registry, name, &wl_seat_interface,
                                      MIN(version, 5));
     wl_seat_add_listener(seat->wl_seat, &seat_listener, seat);
+    if (seat->inter->compose_table) {
+        seat->compose_state = xkb_compose_state_new(seat->inter->compose_table,
+                                                    XKB_COMPOSE_STATE_NO_FLAGS);
+    }
     ret = asprintf(&seat->name_str, "seat:%d",
                    wl_proxy_get_id((struct wl_proxy *) seat->wl_seat));
     assert(ret >= 0);
@@ -580,6 +604,7 @@ seat_destroy(struct interactive_seat *seat)
             wl_keyboard_destroy(seat->wl_kbd);
 
         xkb_state_unref(seat->state);
+        xkb_compose_state_unref(seat->compose_state);
         xkb_keymap_unref(seat->keymap);
     }
 
@@ -673,19 +698,56 @@ dpy_disconnect(struct interactive_dpy *inter)
     wl_display_disconnect(inter->dpy);
 }
 
+static void
+usage(FILE *fp, char *progname)
+{
+        fprintf(fp,
+                "Usage: %s [--help] [--enable-compose]\n",
+                progname);
+        fprintf(fp,
+                "    --enable-compose   enable Compose\n"
+                "    --help             display this help and exit\n"
+        );
+}
+
 int
 main(int argc, char *argv[])
 {
     int ret;
     struct interactive_dpy inter;
     struct wl_registry *registry;
+    const char *locale;
+    struct xkb_compose_table *compose_table = NULL;
 
-    if (argc != 1) {
-        ret = strcmp(argv[1], "--help");
-        fprintf(ret ? stderr : stdout, "Usage: %s [--help]\n", argv[0]);
-        if (ret)
-            fprintf(stderr, "unrecognized option: %s\n", argv[1]);
-        return ret ? EXIT_INVALID_USAGE : EXIT_SUCCESS;
+    bool with_compose = false;
+    enum options {
+        OPT_COMPOSE,
+    };
+    static struct option opts[] = {
+        {"help",                 no_argument,            0, 'h'},
+        {"enable-compose",       no_argument,            0, OPT_COMPOSE},
+        {0, 0, 0, 0},
+    };
+
+    while (1) {
+        int opt;
+        int option_index = 0;
+
+        opt = getopt_long(argc, argv, "h", opts, &option_index);
+        if (opt == -1)
+            break;
+
+        switch (opt) {
+        case OPT_COMPOSE:
+            with_compose = true;
+            break;
+        case 'h':
+            usage(stdout, argv[0]);
+            return EXIT_SUCCESS;
+        case '?':
+            usage(stderr, argv[0]);
+            return EXIT_INVALID_USAGE;
+        }
     }
 
     setlocale(LC_ALL, "");
@@ -705,6 +767,20 @@ main(int argc, char *argv[])
         ret = -1;
         fprintf(stderr, "Couldn't create xkb context\n");
         goto err_out;
+    }
+
+    if (with_compose) {
+        locale = setlocale(LC_CTYPE, NULL);
+        compose_table =
+            xkb_compose_table_new_from_locale(inter.ctx, locale,
+                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+        if (!compose_table) {
+            fprintf(stderr, "Couldn't create compose from locale\n");
+            goto err_compose;
+        }
+        inter.compose_table = compose_table;
+    } else {
+        inter.compose_table = NULL;
     }
 
     registry = wl_display_get_registry(inter.dpy);
@@ -738,6 +814,8 @@ main(int argc, char *argv[])
     wl_registry_destroy(registry);
 err_conn:
     dpy_disconnect(&inter);
+err_compose:
+    xkb_compose_table_unref(compose_table);
 err_out:
     exit(ret >= 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 }
