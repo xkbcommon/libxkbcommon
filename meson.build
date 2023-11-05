@@ -1,6 +1,8 @@
 project(
     'libxkbcommon',
     'c',
+    # Semantic version MAJOR.MINOR.PATCH, with each component between [0,255].
+    # See `version_file` below.
     version: '1.6.0',
     default_options: [
         'c_std=c11',
@@ -256,7 +258,22 @@ libxkbcommon = library(
     install: true,
     include_directories: include_directories('src', 'include'),
 )
+
+# Version header file
+version_components = meson.project_version().split('.')
+version_file = configure_file(
+    input: 'include/xkbcommon/version.h.in',
+    output: 'version.h',
+    configuration: {
+        'XKBCOMMON_VERSION_MAJOR': version_components[0],
+        'XKBCOMMON_VERSION_MINOR': version_components[1],
+        'XKBCOMMON_VERSION_PATCH': version_components[2],
+        'XKBCOMMON_VERSION_STR': meson.project_version(),
+    },
+)
+
 install_headers(
+    version_file,
     'include/xkbcommon/xkbcommon.h',
     'include/xkbcommon/xkbcommon-compat.h',
     'include/xkbcommon/xkbcommon-compose.h',
