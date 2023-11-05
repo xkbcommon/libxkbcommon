@@ -586,7 +586,7 @@ xkb_state_new(struct xkb_keymap *keymap)
 {
     struct xkb_state *ret;
 
-    ret = calloc(sizeof(*ret), 1);
+    ret = calloc(1, sizeof(*ret));
     if (!ret)
         return NULL;
 
