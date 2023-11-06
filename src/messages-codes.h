@@ -66,6 +66,8 @@ enum xkb_message_code {
     XKB_ERROR_UNKNOWN_OPERATOR = 345,
     /** An entry is duplicated and will be ignored */
     XKB_WARNING_DUPLICATE_ENTRY = 378,
+    /** Included files form cycle */
+    XKB_ERROR_RECURSIVE_INCLUDE = 386,
     /** Conflicting definitions of a key type */
     XKB_WARNING_CONFLICTING_KEY_TYPE_DEFINITIONS = 407,
     /** A statement is in a wrong scope and should be moved */

@@ -1,0 +1,15 @@
+default
+xkb_keycodes "foo" {
+    include "recursive"
+    <FOO> = 0x100000;
+};
+
+xkb_keycodes "bar" {
+    include "recursive(baz)"
+    <BAR> = 0x100001;
+};
+
+xkb_keycodes "baz" {
+    include "recursive(bar)"
+    <BAZ> = 0x100002;
+};

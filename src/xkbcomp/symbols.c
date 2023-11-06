@@ -175,6 +175,7 @@ typedef struct {
 typedef struct {
     char *name;         /* e.g. pc+us+inet(evdev) */
     int errorCount;
+    unsigned int include_depth;
     enum merge_mode merge;
     xkb_layout_index_t explicit_group;
     darray(KeyInfo) keys;
@@ -191,10 +192,12 @@ typedef struct {
 
 static void
 InitSymbolsInfo(SymbolsInfo *info, const struct xkb_keymap *keymap,
+                unsigned int include_depth,
                 ActionsInfo *actions, const struct xkb_mod_set *mods)
 {
     memset(info, 0, sizeof(*info));
     info->ctx = keymap->ctx;
+    info->include_depth = include_depth;
     info->keymap = keymap;
     info->merge = MERGE_OVERRIDE;
     InitKeyInfo(keymap->ctx, &info->default_key);
@@ -569,7 +572,13 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
 {
     SymbolsInfo included;
 
-    InitSymbolsInfo(&included, info->keymap, info->actions, &info->mods);
+    if (ExceedsIncludeMaxDepth(info->ctx, info->include_depth)) {
+        info->errorCount += 10;
+        return false;
+    }
+
+    InitSymbolsInfo(&included, info->keymap, 0 /* unused */,
+                    info->actions, &info->mods);
     included.name = include->stmt;
     include->stmt = NULL;
 
@@ -584,8 +593,8 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
             return false;
         }
 
-        InitSymbolsInfo(&next_incl, info->keymap, info->actions,
-                        &included.mods);
+        InitSymbolsInfo(&next_incl, info->keymap, info->include_depth + 1,
+                        info->actions, &included.mods);
         if (stmt->modifier) {
             next_incl.explicit_group = atoi(stmt->modifier) - 1;
             if (next_incl.explicit_group >= XKB_MAX_GROUPS) {
@@ -1638,7 +1647,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
     if (!actions)
         return false;
 
-    InitSymbolsInfo(&info, keymap, actions, &keymap->mods);
+    InitSymbolsInfo(&info, keymap, 0, actions, &keymap->mods);
     info.default_key.merge = merge;
 
     HandleSymbolsFile(&info, file, merge);

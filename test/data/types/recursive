@@ -1,0 +1,27 @@
+default
+xkb_types "foo" {
+    type "FOO" {
+        modifiers = None;
+        map[None] = Level1;
+        level_name[Level1]= "Any";
+    };
+    include "recursive"
+};
+
+xkb_types "bar" {
+    type "BAR" {
+        modifiers = None;
+        map[None] = Level1;
+        level_name[Level1]= "Any";
+    };
+    include "recursive(baz)"
+};
+
+xkb_types "baz" {
+    type "BAZ" {
+        modifiers = None;
+        map[None] = Level1;
+        level_name[Level1]= "Any";
+    };
+    include "recursive(bar)"
+};
