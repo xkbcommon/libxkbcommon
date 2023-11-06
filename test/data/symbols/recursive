@@ -1,0 +1,12 @@
+default
+xkb_symbols "foo" {
+    include "recursive"
+};
+
+xkb_symbols "bar" {
+    include "recursive(baz)"
+};
+
+xkb_symbols "baz" {
+    include "recursive(bar)"
+};

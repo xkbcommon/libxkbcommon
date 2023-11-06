@@ -47,6 +47,7 @@ typedef struct {
 typedef struct {
     char *name;
     int errorCount;
+    unsigned int include_depth;
 
     xkb_keycode_t min_key_code;
     xkb_keycode_t max_key_code;
@@ -155,10 +156,12 @@ ClearKeyNamesInfo(KeyNamesInfo *info)
 }
 
 static void
-InitKeyNamesInfo(KeyNamesInfo *info, struct xkb_context *ctx)
+InitKeyNamesInfo(KeyNamesInfo *info, struct xkb_context *ctx,
+                 unsigned int include_depth)
 {
     memset(info, 0, sizeof(*info));
     info->ctx = ctx;
+    info->include_depth = include_depth;
     info->min_key_code = XKB_KEYCODE_INVALID;
 #if XKB_KEYCODE_INVALID < XKB_KEYCODE_MAX
 #error "Hey, you can't be changing stuff like that."
@@ -339,7 +342,12 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *include)
 {
     KeyNamesInfo included;
 
-    InitKeyNamesInfo(&included, info->ctx);
+    if (ExceedsIncludeMaxDepth(info->ctx, info->include_depth)) {
+        info->errorCount += 10;
+        return false;
+    }
+
+    InitKeyNamesInfo(&included, info->ctx, 0 /* unused */);
     included.name = include->stmt;
     include->stmt = NULL;
 
@@ -354,7 +362,7 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *include)
             return false;
         }
 
-        InitKeyNamesInfo(&next_incl, info->ctx);
+        InitKeyNamesInfo(&next_incl, info->ctx, info->include_depth + 1);
 
         HandleKeycodesFile(&next_incl, file, MERGE_OVERRIDE);
 
@@ -662,7 +670,7 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
 {
     KeyNamesInfo info;
 
-    InitKeyNamesInfo(&info, keymap->ctx);
+    InitKeyNamesInfo(&info, keymap->ctx, 0);
 
     HandleKeycodesFile(&info, file, merge);
     if (info.errorCount != 0)

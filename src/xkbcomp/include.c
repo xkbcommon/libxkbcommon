@@ -286,6 +286,20 @@ out:
     return file;
 }
 
+bool
+ExceedsIncludeMaxDepth(struct xkb_context *ctx, unsigned int include_depth)
+{
+    if (include_depth >= INCLUDE_MAX_DEPTH) {
+        log_err(ctx,
+                XKB_ERROR_RECURSIVE_INCLUDE,
+                "Exceeded include depth threshold (%d)",
+                INCLUDE_MAX_DEPTH);
+        return true;
+    } else {
+        return false;
+    }
+}
+
 XkbFile *
 ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
                    enum xkb_file_type file_type)
@@ -333,8 +347,6 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
                     "Couldn't process include statement for '%s'\n",
                     stmt->file);
     }
-
-    /* FIXME: we have to check recursive includes here (or somewhere) */
 
     return xkb_file;
 }

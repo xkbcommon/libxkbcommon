@@ -1,0 +1,12 @@
+default
+xkb_compatibility "foo" {
+    include "recursive"
+};
+
+xkb_compatibility "bar" {
+    include "recursive(baz)"
+};
+
+xkb_compatibility "baz" {
+    include "recursive(bar)"
+};

@@ -39,6 +39,7 @@ There are currently 54 entries.
 | [XKB-338] | `included-file-not-found` | Could not find a file used in an include statement | Error |
 | [XKB-345] | `unknown-operator` | Use of an operator that is unknown and thus unsupported | Error |
 | [XKB-378] | `duplicate-entry` | An entry is duplicated and will be ignored | Warning |
+| [XKB-386] | `recursive-include` | Included files form cycle | Error |
 | [XKB-407] | `conflicting-key-type-definitions` | Conflicting definitions of a key type | Warning |
 | [XKB-428] | `wrong-scope` | A statement is in a wrong scope and should be moved | Error |
 | [XKB-433] | `missing-default-section` | Missing default section in included file | Warning |
@@ -325,6 +326,14 @@ as numbers and as identifiers `LevelN`, where `N` is in the range (1..8).
   <dt>Since</dt><dd>1.0.0</dd>
   <dt>Type</dt><dd>Warning</dd>
   <dt>Summary</dt><dd>An entry is duplicated and will be ignored</dd>
+</dl>
+
+### XKB-386 – Recursive include {#XKB-386}
+
+<dl>
+  <dt>Since</dt><dd>1.7.0</dd>
+  <dt>Type</dt><dd>Error</dd>
+  <dt>Summary</dt><dd>Included files form cycle</dd>
 </dl>
 
 ### XKB-407 – Conflicting key type definitions {#XKB-407}
@@ -657,6 +666,7 @@ The modifiers used in `map` or `preserve` entries should be declared using the e
 [XKB-338]: @ref XKB-338
 [XKB-345]: @ref XKB-345
 [XKB-378]: @ref XKB-378
+[XKB-386]: @ref XKB-386
 [XKB-407]: @ref XKB-407
 [XKB-428]: @ref XKB-428
 [XKB-433]: @ref XKB-433

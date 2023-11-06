@@ -86,6 +86,7 @@ typedef struct {
 typedef struct {
     char *name;
     int errorCount;
+    unsigned int include_depth;
     SymInterpInfo default_interp;
     darray(SymInterpInfo) interps;
     LedInfo default_led;
@@ -148,10 +149,12 @@ ReportLedNotArray(CompatInfo *info, LedInfo *ledi, const char *field)
 
 static void
 InitCompatInfo(CompatInfo *info, struct xkb_context *ctx,
+               unsigned int include_depth,
                ActionsInfo *actions, const struct xkb_mod_set *mods)
 {
     memset(info, 0, sizeof(*info));
     info->ctx = ctx;
+    info->include_depth = include_depth;
     info->actions = actions;
     info->mods = *mods;
     info->default_interp.merge = MERGE_OVERRIDE;
@@ -430,7 +433,13 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
 {
     CompatInfo included;
 
-    InitCompatInfo(&included, info->ctx, info->actions, &info->mods);
+    if (ExceedsIncludeMaxDepth(info->ctx, info->include_depth)) {
+        info->errorCount += 10;
+        return false;
+    }
+
+    InitCompatInfo(&included, info->ctx, 0 /* unused */,
+                   info->actions, &info->mods);
     included.name = include->stmt;
     include->stmt = NULL;
 
@@ -445,7 +454,8 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
             return false;
         }
 
-        InitCompatInfo(&next_incl, info->ctx, info->actions, &included.mods);
+        InitCompatInfo(&next_incl, info->ctx, info->include_depth + 1,
+                       info->actions, &included.mods);
         next_incl.default_interp = info->default_interp;
         next_incl.default_interp.merge = stmt->merge;
         next_incl.default_led = info->default_led;
@@ -914,7 +924,7 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
     if (!actions)
         return false;
 
-    InitCompatInfo(&info, keymap->ctx, actions, &keymap->mods);
+    InitCompatInfo(&info, keymap->ctx, 0, actions, &keymap->mods);
     info.default_interp.merge = merge;
     info.default_led.merge = merge;
 

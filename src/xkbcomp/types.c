@@ -53,6 +53,7 @@ typedef struct {
 typedef struct {
     char *name;
     int errorCount;
+    unsigned int include_depth;
 
     darray(KeyTypeInfo) types;
     struct xkb_mod_set mods;
@@ -100,10 +101,12 @@ ReportTypeBadType(KeyTypesInfo *info, xkb_message_code_t code,
 
 static void
 InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_context *ctx,
+                 unsigned int include_depth,
                  const struct xkb_mod_set *mods)
 {
     memset(info, 0, sizeof(*info));
     info->ctx = ctx;
+    info->include_depth = include_depth;
     info->mods = *mods;
 }
 
@@ -219,7 +222,12 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
 {
     KeyTypesInfo included;
 
-    InitKeyTypesInfo(&included, info->ctx, &info->mods);
+    if (ExceedsIncludeMaxDepth(info->ctx, info->include_depth)) {
+        info->errorCount += 10;
+        return false;
+    }
+
+    InitKeyTypesInfo(&included, info->ctx, 0 /* unused */, &info->mods);
     included.name = include->stmt;
     include->stmt = NULL;
 
@@ -234,7 +242,8 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
             return false;
         }
 
-        InitKeyTypesInfo(&next_incl, info->ctx, &included.mods);
+        InitKeyTypesInfo(&next_incl, info->ctx, info->include_depth + 1,
+                         &included.mods);
 
         HandleKeyTypesFile(&next_incl, file, stmt->merge);
 
@@ -754,7 +763,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
 {
     KeyTypesInfo info;
 
-    InitKeyTypesInfo(&info, keymap->ctx, &keymap->mods);
+    InitKeyTypesInfo(&info, keymap->ctx, 0, &keymap->mods);
 
     HandleKeyTypesFile(&info, file, merge);
     if (info.errorCount != 0)

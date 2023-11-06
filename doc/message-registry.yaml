@@ -180,6 +180,11 @@
   added: ALWAYS
   type: warning
   description: "An entry is duplicated and will be ignored"
+- id: "recursive-include"
+  code: 386
+  added: 1.7.0
+  type: error
+  description: "Included files form cycle"
 - id: "conflicting-key-type-definitions"
   code: 407
   added: ALWAYS

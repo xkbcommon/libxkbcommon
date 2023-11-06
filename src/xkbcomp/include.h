@@ -27,6 +27,9 @@
 #ifndef XKBCOMP_INCLUDE_H
 #define XKBCOMP_INCLUDE_H
 
+/* Reasonable threshold, with plenty of margin for keymaps in the wild */
+#define INCLUDE_MAX_DEPTH 15
+
 bool
 ParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
                 char *nextop_rtrn, char **extra_data);
@@ -35,6 +38,9 @@ FILE *
 FindFileInXkbPath(struct xkb_context *ctx, const char *name,
                   enum xkb_file_type type, char **pathRtrn,
                   unsigned int *offset);
+
+bool
+ExceedsIncludeMaxDepth(struct xkb_context *ctx, unsigned int include_depth);
 
 XkbFile *
 ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
