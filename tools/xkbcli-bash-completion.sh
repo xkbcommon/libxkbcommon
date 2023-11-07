@@ -95,6 +95,8 @@ ___xkbcli_subcommand()
     # • https://github.com/scop/bash-completion/blob/fdf4456186eb4548ef628e65fb1be73d8e4695e9/bash_completion.d/000_bash_completion_compat.bash#L311
     # We need both as the current help messages adopt both GNU and BSD styles.
     opts=$(_parse_usage xkbcli "$1 --help")
+    opts+="
+    "
     opts+=$(_parse_help xkbcli "$1 --help")
     local cur="${COMP_WORDS[COMP_CWORD]}"
     COMPREPLY=($(compgen -W "$opts" -- "$cur"))
