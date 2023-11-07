@@ -468,6 +468,24 @@ resolve_modifier(const char *name)
     return XKB_MOD_INVALID;
 }
 
+/* Parse a string literal ("...") and return the corresponding unescaped string,
+ * or NULL if it fails.
+ * This is aimed only for testing (un)escaping characters. */
+char *
+parse_string_literal(struct xkb_context *ctx, const char *string)
+{
+    struct scanner s;
+    union lvalue val;
+    scanner_init(&s, ctx, string, strlen(string), "(unamed)", NULL);
+    switch (lex(&s, &val)) {
+        case TOK_STRING:
+            return strdup(val.string.str);
+        default:
+            fprintf(stderr, "ERROR: %s\n", s.s);
+            return NULL;
+    }
+}
+
 static bool
 parse(struct xkb_compose_table *table, struct scanner *s,
       unsigned include_depth);

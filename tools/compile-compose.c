@@ -25,12 +25,12 @@
 
 #include <getopt.h>
 #include <locale.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdbool.h>
 
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon-compose.h"
+#include "src/compose/dump.h"
 
 static void
 usage(FILE *fp, char *progname)
@@ -56,7 +56,7 @@ usage(FILE *fp, char *progname)
     );
 }
 
-static void
+static bool
 print_compose_table_entry(struct xkb_compose_table_entry *entry)
 {
     size_t nsyms;
@@ -69,10 +69,17 @@ print_compose_table_entry(struct xkb_compose_table_entry *entry)
             printf(" ");
         }
     }
-    printf(":");
+    printf(" : ");
     const char *utf8 = xkb_compose_table_entry_utf8(entry);
     if (*utf8 != '\0') {
-        printf(" \"%s\"", utf8);
+        char *escaped = escape_utf8_string_literal(utf8);
+        if (!escaped) {
+            fprintf(stderr, "ERROR: Cannot escape the string: allocation error\n");
+            return false;
+        } else {
+            printf(" \"%s\"", escaped);
+            free(escaped);
+        }
     }
     const xkb_keysym_t keysym = xkb_compose_table_entry_keysym(entry);
     if (keysym != XKB_KEY_NoSymbol) {
@@ -80,6 +87,7 @@ print_compose_table_entry(struct xkb_compose_table_entry *entry)
         printf(" %s", buf);
     }
     printf("\n");
+    return true;
 }
 
 int
@@ -182,10 +190,15 @@ main(int argc, char *argv[])
     struct xkb_compose_table_iterator *iter = xkb_compose_table_iterator_new(compose_table);
     struct xkb_compose_table_entry *entry;
     while ((entry = xkb_compose_table_iterator_next(iter))) {
-        print_compose_table_entry(entry);
+        if (!print_compose_table_entry(entry)) {
+            ret = EXIT_FAILURE;
+            goto entry_error;
+        }
     }
-    xkb_compose_table_iterator_free(iter);
+    ret = EXIT_SUCCESS;
 
+entry_error:
+    xkb_compose_table_iterator_free(iter);
 out:
     xkb_compose_table_unref(compose_table);
 file_error:
