@@ -1,0 +1,39 @@
+.Dd November 7, 2023
+.Dt XKBCLI\-COMPILE\-COMPOSE 1
+.Os
+.
+.Sh NAME
+.Nm "xkbcli compile-compose"
+.Nd compile a Compose file
+.
+.Sh SYNOPSIS
+.Nm
+.Op Ar options
+.
+.Sh DESCRIPTION
+.Nm
+compile and print a Compose file based on the given options
+.
+.Bl -tag -width Ds
+.It Fl \-help
+Print help and exit
+.
+.It Fl \-file Ar FILE
+Specify a Compose file to load
+.
+.It Fl \-locale Ar LOCALE
+Specify a locale
+.
+.It Fl \-locale-from-env
+Get the locale from the LC_ALL/LC_CTYPE/LANG environment variables
+(falling back to C)
+.
+.It Fl \-locale\-from\-setlocale
+Get the locale using
+.Xr setlocale 3
+.El
+.
+.Sh SEE ALSO
+.Xr xkbcli 1 ,
+.Xr Compose 5 ,
+.Lk https://xkbcommon.org "The libxkbcommon online documentation"

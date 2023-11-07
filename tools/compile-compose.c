@@ -36,13 +36,23 @@ static void
 usage(FILE *fp, char *progname)
 {
     fprintf(fp,
-            "Usage: %s [--file FILE] [--locale LOCALE | --locale-from-env | --locale-from-setlocale]\n",
+            "Usage: %s [--help] [--file FILE] [--locale LOCALE | --locale-from-env | --locale-from-setlocale]\n",
             progname);
     fprintf(fp,
-            "   --file - specify a file to load\n"
-            "   --locale - specify the locale directly\n"
-            "   --locale-from-env - get the locale from the LC_ALL/LC_CTYPE/LANG environment variables (falling back to C)\n"
-            "   --locale-from-setlocale - get the locale using setlocale(3)\n"
+            "\n"
+            "Compile a Compose file and print it\n"
+            "\n"
+            "Options:\n"
+            " --help\n"
+            "    Print this help and exit\n"
+            " --file FILE\n"
+            "    Specify a Compose file to load\n"
+            " --locale LOCALE\n"
+            "    Specify the locale directly\n"
+            " --locale-from-env\n"
+            "    Get the locale from the LC_ALL/LC_CTYPE/LANG environment variables (falling back to C)\n"
+            " --locale-from-setlocale\n"
+            "    Get the locale using setlocale(3)\n"
     );
 }
 
@@ -88,6 +98,7 @@ main(int argc, char *argv[])
         OPT_LOCALE_FROM_SETLOCALE,
     };
     static struct option opts[] = {
+        {"help",                  no_argument,            0, 'h'},
         {"file",                  required_argument,      0, OPT_FILE},
         {"locale",                required_argument,      0, OPT_LOCALE},
         {"locale-from-env",       no_argument,            0, OPT_LOCALE_FROM_ENV},
@@ -162,7 +173,8 @@ main(int argc, char *argv[])
             xkb_compose_table_new_from_locale(ctx, locale,
                                               XKB_COMPOSE_COMPILE_NO_FLAGS);
         if (!compose_table) {
-            fprintf(stderr, "Couldn't create compose from locale\n");
+            fprintf(stderr,
+                    "Couldn't create compose from locale \"%s\"\n", locale);
             goto out;
         }
     }

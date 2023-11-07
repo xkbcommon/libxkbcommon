@@ -73,6 +73,13 @@ ___xkbcli_subcommand()
                     return;;
             esac
             ;;
+        compile-compose)
+            case ${COMP_WORDS[COMP_CWORD-1]} in
+                --file)
+                    _filedir
+                    return;;
+            esac
+            ;;
         list)
             if [[ ${COMP_WORDS[COMP_CWORD]} != -* ]]; then
                 _filedir
