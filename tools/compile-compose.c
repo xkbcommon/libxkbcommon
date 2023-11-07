@@ -36,7 +36,7 @@ static void
 usage(FILE *fp, char *progname)
 {
     fprintf(fp,
-            "Usage: %s [--help] [--file FILE] [--locale LOCALE | --locale-from-env | --locale-from-setlocale]\n",
+            "Usage: %s [--help] [--file FILE] [--locale LOCALE]\n",
             progname);
     fprintf(fp,
             "\n"
@@ -48,12 +48,8 @@ usage(FILE *fp, char *progname)
             " --file FILE\n"
             "    Specify a Compose file to load\n"
             " --locale LOCALE\n"
-            "    Specify the locale directly\n"
-            " --locale-from-env\n"
-            "    Get the locale from the LC_ALL/LC_CTYPE/LANG environment variables (falling back to C)\n"
-            " --locale-from-setlocale\n"
-            "    Get the locale using setlocale(3)\n"
-    );
+            "    Specify the locale directly, instead of relying on the environment variables\n"
+            "    LC_ALL, LC_TYPE and LANG.\n");
 }
 
 static bool
@@ -102,19 +98,20 @@ main(int argc, char *argv[])
     enum options {
         OPT_FILE,
         OPT_LOCALE,
-        OPT_LOCALE_FROM_ENV,
-        OPT_LOCALE_FROM_SETLOCALE,
     };
     static struct option opts[] = {
-        {"help",                  no_argument,            0, 'h'},
-        {"file",                  required_argument,      0, OPT_FILE},
-        {"locale",                required_argument,      0, OPT_LOCALE},
-        {"locale-from-env",       no_argument,            0, OPT_LOCALE_FROM_ENV},
-        {"locale-from-setlocale", no_argument,            0, OPT_LOCALE_FROM_SETLOCALE},
+        {"help",   no_argument,       0, 'h'},
+        {"file",   required_argument, 0, OPT_FILE},
+        {"locale", required_argument, 0, OPT_LOCALE},
         {0, 0, 0, 0},
     };
 
     setlocale(LC_ALL, "");
+
+    /* Initialize the locale to use */
+    locale = setlocale(LC_CTYPE, NULL);
+    if (!locale)
+        locale = "C";
 
     while (1) {
         int opt;
@@ -131,18 +128,6 @@ main(int argc, char *argv[])
         case OPT_LOCALE:
             locale = optarg;
             break;
-        case OPT_LOCALE_FROM_ENV:
-            locale = getenv("LC_ALL");
-            if (!locale)
-                locale = getenv("LC_CTYPE");
-            if (!locale)
-                locale = getenv("LANG");
-            if (!locale)
-                locale = "C";
-            break;
-        case OPT_LOCALE_FROM_SETLOCALE:
-            locale = setlocale(LC_CTYPE, NULL);
-            break;
         case 'h':
             usage(stdout, argv[0]);
             return EXIT_SUCCESS;
@@ -151,7 +136,9 @@ main(int argc, char *argv[])
             return EXIT_INVALID_USAGE;
         }
     }
+
     if (locale == NULL) {
+        fprintf(stderr, "ERROR: Cannot determine the locale.\n");
         usage(stderr, argv[0]);
         return EXIT_INVALID_USAGE;
     }

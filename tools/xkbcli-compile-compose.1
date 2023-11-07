@@ -22,15 +22,8 @@ Print help and exit
 Specify a Compose file to load
 .
 .It Fl \-locale Ar LOCALE
-Specify a locale
-.
-.It Fl \-locale-from-env
-Get the locale from the LC_ALL/LC_CTYPE/LANG environment variables
-(falling back to C)
-.
-.It Fl \-locale\-from\-setlocale
-Get the locale using
-.Xr setlocale 3
+Specify the locale directly, instead of relying on the environment variables
+LC_ALL, LC_TYPE and LANG.
 .El
 .
 .Sh SEE ALSO
