@@ -27,6 +27,9 @@
 #define MAX_LHS_LEN 10
 #define MAX_INCLUDE_DEPTH 5
 
+char *
+parse_string_literal(struct xkb_context *ctx, const char *string);
+
 bool
 parse_string(struct xkb_compose_table *table,
              const char *string, size_t len,

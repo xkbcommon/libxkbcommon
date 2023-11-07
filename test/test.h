@@ -34,6 +34,16 @@
 /* Automake test exit code to signify SKIP (à la PASS, FAIL, etc). */
 #define SKIP_TEST 77
 
+#define assert_printf(cond, ...) \
+   if (!(cond)) { \
+      fprintf(stderr, "Assertion failure: " __VA_ARGS__); \
+      assert(cond); \
+   }
+
+#define assert_streq_not_null(test_name, expected, got) \
+    assert_printf(streq_not_null(expected, got), \
+                  test_name ". Expected \"%s\", got: \"%s\"\n", expected, got)
+
 /* The offset between KEY_* numbering, and keycodes in the XKB evdev
  * dataset. */
 #define EVDEV_OFFSET 8
