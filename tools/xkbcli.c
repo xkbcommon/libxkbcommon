@@ -66,6 +66,11 @@ usage(void)
            "    Compile an XKB keymap\n"
            "\n"
 #endif
+#if HAVE_XKBCLI_COMPILE_COMPOSE
+           "  compile-compose\n"
+           "    Compile a Compose file\n"
+           "\n"
+#endif
 #if HAVE_XKBCLI_HOW_TO_TYPE
            "  how-to-type\n"
            "    Print key sequences to type a Unicode codepoint\n"

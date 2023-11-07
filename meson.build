@@ -460,6 +460,7 @@ if build_tools
                                        install: true,
                                        install_dir: dir_libexec)
     install_man('tools/xkbcli-compile-keymap.1')
+    configh_data.set10('HAVE_XKBCLI_COMPILE_KEYMAP', true)
     # The same tool again, but with access to some private APIs.
     executable('compile-keymap',
                'tools/compile-keymap.c',
@@ -470,12 +471,13 @@ if build_tools
                install: false)
 
     # Tool: compose
-    executable('compose',
-               'tools/compose.c',
+    executable('xkbcli-compile-compose',
+               'tools/compile-compose.c',
                dependencies: tools_dep,
-               include_directories: [include_directories('src', 'include')],
-               install: false)
-    configh_data.set10('HAVE_XKBCLI_COMPILE_KEYMAP', true)
+               install: true,
+               install_dir: dir_libexec)
+    install_man('tools/xkbcli-compile-compose.1')
+    configh_data.set10('HAVE_XKBCLI_COMPILE_COMPOSE', true)
 
     # Tool: how-to-type
     executable('xkbcli-how-to-type',

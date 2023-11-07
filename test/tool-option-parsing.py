@@ -152,6 +152,7 @@ class TestXkbcli(unittest.TestCase):
         )
         cls.xkbcli_how_to_type = XkbcliTool("how-to-type")
         cls.xkbcli_compile_keymap = XkbcliTool("compile-keymap")
+        cls.xkbcli_compile_compose = XkbcliTool("compile-compose")
         cls.xkbcli_interactive_evdev = XkbcliTool(
             "interactive-evdev",
             skipIf=(
@@ -197,6 +198,7 @@ class TestXkbcli(unittest.TestCase):
             cls.xkbcli_list,
             cls.xkbcli_how_to_type,
             cls.xkbcli_compile_keymap,
+            cls.xkbcli_compile_compose,
             cls.xkbcli_interactive_evdev,
             cls.xkbcli_interactive_x11,
             cls.xkbcli_interactive_wayland,
