@@ -11,14 +11,14 @@ libxkbcommon searches the following paths for XKB configuration files:
 - `$XDG_CONFIG_HOME/xkb/`, or `$HOME/.config/xkb/` if the `$XDG_CONFIG_HOME`
   environment variable is not defined
 - `$HOME/.xkb/`
-- `$XKB_CONFIG_EXTRA_PATH` if set, otherswise `<sysconfdir>/xkb` (on most
+- `$XKB_CONFIG_EXTRA_PATH` if set, otherwise `<sysconfdir>/xkb` (on most
   distributions this is `/etc/xkb`)
 - `$XKB_CONFIG_ROOT` if set, otherwise `<datadir>/X11/xkb/` (path defined by the
   `xkeyboard-config` package, on most distributions this is
   `/usr/share/X11/xkb`)
 
-A keymap created with `xkb_keymap_new_from_names()` will look up those paths in
-order until the required data is found.
+A keymap created with `xkb_keymap::xkb_keymap_new_from_names()` will look up
+those paths in order until the required data is found.
 
 **Note: Where libxkbcommon runs in a privileged context, only the system
 (datadir) path is available.**
@@ -31,23 +31,25 @@ Each directory should have one or more of the following subdirectories:
 - `symbols`
 - `types`
 
-The majority of user-specific configuration involve modifying key symbols and
+The majority of user-specific configurations involve modifying key symbols and
 this is what this document focuses on. For use-cases where a user may need to
 add new key types or compat entries the general approach remains the same. A
 detailed description for how to add those types or compat entries is out of
 scope for this document.
 
 You should never need to add user-specific keycodes. Where a keycode is missing,
-the addition should be filed in the upstream xkeyboard-config project.
+the addition should be filed in the upstream [xkeyboard-config] project.
+
+[xkeyboard-config]: https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config
 
 ## RMLVO vs KcCGST
 
 Due to how XKB is configured, there is no such thing as a "layout" in XKB
-itself, or, indeed, any of the rules, models, variant, options (RMLVO) decribed
+itself, or, indeed, any of the rules, models, variant, options (RMLVO) described
 in `struct xkb_rule_names`. RMLVO names are merely lookup keys in the
 rules file provided by xkeyboard-config to map to the correct keycode, compat,
 geometry (ignored by libxkbcommon), symbols and types (KcCGST). The KcCGST data
-is the one used by XKB and libxbkcommon to map keys to actual symbols.
+is the one used by XKB and libxkbcommon to map keys to actual symbols.
 
 For example, a common RMLVO configuration is layout "us", variant "dvorak" and
 option "terminate:ctrl_alt_bksp". Using the default rules file and model
@@ -64,7 +66,7 @@ xkb_keymap {
 ```
 
 A detailed explanation of how rules files convert RMLVO to KcCGST is out of
-scope for this document. See [the rules file](md_doc_rules-format.html) page
+scope for this document. See the page “@ref rule-file-format ""” instead.
 instead.
 
 
@@ -76,7 +78,7 @@ The default rules files (usually `evdev`) have a catch-all to map a layout, say
 "foo", and a variant, say "bar", into the "bar" section in the file
 `$xkb_base_dir/symbols/foo`.
 This is sufficient to define a new keyboard layout. The example below defines
-the keyboard layout "banana" with an optional variant "orange"
+the keyboard layout "banana" with an optional variant "orange":
 
 ```
 $ cat $XDG_CONFIG_HOME/xkb/symbols/banana
@@ -117,7 +119,7 @@ symbols. The effect of this section is to swap the numbers and symbols in the
 top-most row (compared to the US layout) but otherwise use the US layout.
 
 The "orange" variant uses the "banana" symbols and includes a different section
-to define the eurosign. It does not specificially override any symbols.
+to define the eurosign. It does not specifically override any symbols.
 
 The exact details of how `xkb_symbols` work is out of scope for this document.
 
