@@ -709,9 +709,24 @@ ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
 
     if (expr->expr.op == EXPR_IDENT) {
         const char *str = xkb_atom_text(ctx, expr->ident.ident);
-        *sym_rtrn = xkb_keysym_from_name(str, 0);
-        if (*sym_rtrn != XKB_KEY_NoSymbol)
+        xkb_keysym_format_t keysym_format;
+        *sym_rtrn = xkb_keysym_with_format_from_name(str, 0, &keysym_format);
+        if (*sym_rtrn != XKB_KEY_NoSymbol) {
+            if (unlikely(ctx->log_verbosity >= XKB_MIN_VERBOSITY_DEPRECATED_KEYSYM)) {
+                const char *ref_name = NULL;
+                if (xkb_keysym_is_deprecated(*sym_rtrn, keysym_format, str, &ref_name)) {
+                    if (ref_name == NULL) {
+                        log_warn(ctx, XKB_WARNING_DEPRECATED_KEYSYM,
+                                 "deprecated keysym \"%s\"\n", str);
+                    } else {
+                        log_warn(ctx, XKB_WARNING_DEPRECATED_KEYSYM,
+                                 "deprecated keysym \"%s\"; please use \"%s\"\n",
+                                 str, ref_name);
+                    }
+                }
+            }
             return true;
+        }
     }
 
     if (!ExprResolveInteger(ctx, expr, &val))
@@ -731,16 +746,23 @@ ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
     }
 
     if (val <= XKB_KEYSYM_MAX) {
+        if (unlikely(ctx->log_verbosity >= XKB_MIN_VERBOSITY_DEPRECATED_KEYSYM)) {
+            const char *ref_name = NULL;
+            if (xkb_keysym_is_deprecated(val, XKB_KEYSYM_FORMAT_NUMERIC, NULL, &ref_name)) {
+                log_warn(ctx, XKB_WARNING_DEPRECATED_KEYSYM,
+                         "deprecated keysym \"0x%x\" (%d)\n", val, val);
+            }
+        }
         log_warn(ctx, XKB_WARNING_NUMERIC_KEYSYM,
-                           "numeric keysym \"0x%x\" (%d)",
-                           (unsigned int) val, val);
+                 "numeric keysym \"0x%x\" (%d)",
+                 (unsigned int) val, val);
         *sym_rtrn = (xkb_keysym_t) val;
         return true;
     }
 
     log_warn(ctx, XKB_WARNING_UNRECOGNIZED_KEYSYM,
-                       "unrecognized keysym \"0x%x\" (%d)\n",
-                       (unsigned int) val, val);
+             "unrecognized keysym \"0x%x\" (%d)\n",
+             (unsigned int) val, val);
     return false;
 
 }

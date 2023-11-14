@@ -116,13 +116,16 @@ parse_keysym_hex(const char *s, uint32_t *out)
     return s[i] == '\0' && i > 0;
 }
 
-XKB_EXPORT xkb_keysym_t
-xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
+xkb_keysym_t
+xkb_keysym_with_format_from_name(const char *name, enum xkb_keysym_flags flags,
+                                 xkb_keysym_format_t *keysym_format)
 {
     const struct name_keysym *entry = NULL;
     char *tmp;
     uint32_t val;
     bool icase = (flags & XKB_KEYSYM_CASE_INSENSITIVE);
+
+    *keysym_format = XKB_KEYSYM_FORMAT_NONE;
 
     if (flags & ~XKB_KEYSYM_CASE_INSENSITIVE)
         return XKB_KEY_NoSymbol;
@@ -135,8 +138,10 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
         size_t pos = keysym_name_perfect_hash(name);
         if (pos < ARRAY_SIZE(name_to_keysym)) {
             const char *s = get_name(&name_to_keysym[pos]);
-            if (strcmp(name, s) == 0)
+            if (strcmp(name, s) == 0) {
+                *keysym_format = XKB_KEYSYM_FORMAT_NAME;
                 return name_to_keysym[pos].keysym;
+            }
         }
     }
     /*
@@ -169,6 +174,7 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
             }
         }
         if (entry) {
+            *keysym_format = XKB_KEYSYM_FORMAT_NAME;
             const struct name_keysym *iter, *last;
 
             if (icase && xkb_keysym_is_lower(entry->keysym))
@@ -199,17 +205,19 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
 
         if (val < 0x20 || (val > 0x7e && val < 0xa0))
             return XKB_KEY_NoSymbol;
-        if (val < 0x100)
+        if (val < 0x100) {
+            *keysym_format = XKB_KEYSYM_FORMAT_UNICODE;
             return (xkb_keysym_t) val;
+        }
         if (val > 0x10ffff)
             return XKB_KEY_NoSymbol;
+        *keysym_format = XKB_KEYSYM_FORMAT_UNICODE;
         return (xkb_keysym_t) val | 0x01000000;
     }
     else if (name[0] == '0' && (name[1] == 'x' || (icase && name[1] == 'X'))) {
-        if (!parse_keysym_hex(&name[2], &val))
+        if (!parse_keysym_hex(&name[2], &val) || val > XKB_KEYSYM_MAX)
             return XKB_KEY_NoSymbol;
-        if (val > XKB_KEYSYM_MAX)
-            return XKB_KEY_NoSymbol;
+        *keysym_format = XKB_KEYSYM_FORMAT_NUMERIC;
         return (xkb_keysym_t) val;
     }
 
@@ -223,12 +231,81 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
         if (!tmp)
             return XKB_KEY_NoSymbol;
         memmove(&tmp[4], &tmp[5], strlen(name) - 5 + 1);
-        ret = xkb_keysym_from_name(tmp, flags);
+        ret = xkb_keysym_with_format_from_name(tmp, flags, keysym_format);
         free(tmp);
         return ret;
     }
 
     return XKB_KEY_NoSymbol;
+}
+
+XKB_EXPORT xkb_keysym_t
+xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
+{
+    xkb_keysym_format_t keysym_format;
+    return xkb_keysym_with_format_from_name(name, flags, &keysym_format);
+}
+
+/*
+ * Check whether a keysym with code "keysym" and name "name" is deprecated.
+ * • If the keysym is not deprecated itself and has no deprecated names,
+ *   then return false and write NULL in "reference_name".
+ * • If there is a non-deprecated name for the given keysym, then write this
+ *   name in "reference_name", else write NULL and return true.
+ * • If "name" is NULL, then returns false: the keysym itself is not deprecated.
+ * • If "name" is not NULL, then returns whether "name" and "reference_name"
+ *   are different.
+ *
+ * WARNING: this function is unsafe because it does not test if "name" is
+ * actually a correct name for "keysym". It is intended to be used just after
+ * keysym resolution, so name is only used when:
+ *      keysym_format=XKB_KEYSYM_FORMAT_NAME
+ */
+bool
+xkb_keysym_is_deprecated(xkb_keysym_t keysym,
+                         xkb_keysym_format_t keysym_format,
+                         const char *name,
+                         const char **reference_name)
+{
+    if (keysym > XKB_KEYSYM_MAX) {
+        /* Invalid keysym */
+        *reference_name = NULL;
+        return false;
+    }
+
+    if (keysym_format == XKB_KEYSYM_FORMAT_NONE ||
+        keysym_format == XKB_KEYSYM_FORMAT_UNICODE
+    ) {
+        *reference_name = NULL;
+        return false;
+    }
+
+    int32_t lo = 0, hi = ARRAY_SIZE(deprecated_keysyms) - 1;
+    while (hi >= lo) {
+        int32_t mid = (lo + hi) / 2;
+        if (keysym > deprecated_keysyms[mid].keysym) {
+            lo = mid + 1;
+        } else if (keysym < deprecated_keysyms[mid].keysym) {
+            hi = mid - 1;
+        } else {
+            /* Keysym have some deprecated names */
+            if (deprecated_keysyms[mid].offset == DEPRECATED_KEYSYM) {
+                /* All names are deprecated */
+                *reference_name = NULL;
+                return true;
+            } else {
+                /* There is a reference name that is not deprecated */
+                *reference_name = get_name(&deprecated_keysyms[mid]);
+                /* If there is no name given: just indicate not deprecated;
+                 * else check if the given name is the reference one */
+                return (name != NULL && strcmp(name, *reference_name) != 0);
+            }
+        }
+    }
+
+    /* Keysym has no deprecated names */
+    *reference_name = NULL;
+    return false;
 }
 
 bool

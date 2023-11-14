@@ -34,6 +34,7 @@ There are currently 54 entries.
 | [XKB-254] | `invalid-set-default-statement` | Invalid statement setting default values | Error |
 | [XKB-266] | `conflicting-key-type-map-entry` | Conflicting “map” entries in type definition | Warning |
 | [XKB-286] | `undefined-key-type` | Warn if using an undefined key type | Warning |
+| [XKB-301] | `deprecated-keysym` | A keysym has been deprecated: use the corresponding canonical keysym instead | Warning |
 | [XKB-305] | `non-base-group-name` | Warn if a group name was defined for group other than the first one | Warning |
 | [XKB-312] | `unsupported-shift-level` | Warn when a shift level is not supported | Error |
 | [XKB-338] | `included-file-not-found` | Could not find a file used in an include statement | Error |
@@ -282,6 +283,14 @@ xkbcommon supports group index in the range (1..4).
   <dt>Since</dt><dd>1.0.0</dd>
   <dt>Type</dt><dd>Warning</dd>
   <dt>Summary</dt><dd>Warn if using an undefined key type</dd>
+</dl>
+
+### XKB-301 – Deprecated keysym {#XKB-301}
+
+<dl>
+  <dt>Since</dt><dd>1.7.0</dd>
+  <dt>Type</dt><dd>Warning</dd>
+  <dt>Summary</dt><dd>A keysym has been deprecated: use the corresponding canonical keysym instead</dd>
 </dl>
 
 ### XKB-305 – Non base group name {#XKB-305}
@@ -661,6 +670,7 @@ The modifiers used in `map` or `preserve` entries should be declared using the e
 [XKB-254]: @ref XKB-254
 [XKB-266]: @ref XKB-266
 [XKB-286]: @ref XKB-286
+[XKB-301]: @ref XKB-301
 [XKB-305]: @ref XKB-305
 [XKB-312]: @ref XKB-312
 [XKB-338]: @ref XKB-338

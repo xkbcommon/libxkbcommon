@@ -830,6 +830,11 @@ benchmark(
     env: bench_env,
 )
 benchmark(
+    'compile-keymap',
+    executable('bench-compile-keymap', 'bench/compile-keymap.c', dependencies: test_dep),
+    env: bench_env,
+)
+benchmark(
     'compose',
     executable('bench-compose', 'bench/compose.c', dependencies: test_dep),
     env: bench_env,
