@@ -7,10 +7,12 @@ configuration values xkbcomp uses and understands.
 
 xkbcomp uses the `xkb_component_names` struct, which maps directly to
 include statements of the appropriate sections, called for short
-[KcCGST](@ref KcCGST-intro) (see the [XKB
-introduction](doc/introduction-to-xkb.md);
-'G' stands for "geometry", which is not supported). These are not
-really intuitive or straight-forward for the uninitiated.
+[KcCGST] \(see the [XKB introduction]; 'G' stands for "geometry",
+which is not supported). These are not really intuitive nor
+straightforward for the uninitiated.
+
+[KcCGST]: @ref KcCGST-intro
+[XKB introduction]: @ref xkb-intro
 
 Instead, the user passes in a `xkb_rule_names` struct, which consists
 of the name of a rules file (in Linux this is usually "evdev"), a

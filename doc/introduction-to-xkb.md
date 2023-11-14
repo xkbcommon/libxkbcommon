@@ -132,7 +132,7 @@ implementation.
       </dd>
       <dt>Key symbols</dt>
       <dd>
-      A translation of symbolic key codes into actual [key symbols] (keysyms).
+      A translation of symbolic key codes into actual [key symbols] \(keysyms).
       </dd>
       <dt>Key types</dt>
       <dd>
