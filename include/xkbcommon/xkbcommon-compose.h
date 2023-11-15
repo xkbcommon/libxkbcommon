@@ -83,14 +83,23 @@ extern "C" {
  * @page compose-conflicting Conflicting Sequences
  * @parblock
  *
- * To avoid ambiguity, a sequence is not allowed to be a prefix of another.
+ * Sequences of length 1 are allowed.
+ *
+ * <b><em>Without</em> `XKB_COMPOSE_COMPILE_OVERLAPPING_SEQUENCES`</b>
+ *
+ * To avoid ambiguity, a sequence is *not* allowed to be a prefix of another.
  * In such a case, the conflict is resolved thus:
  *
  * 1. A longer sequence overrides a shorter one.
  * 2. An equal sequence overrides an existing one.
  * 3. A shorter sequence does not override a longer one.
  *
- * Sequences of length 1 are allowed.
+ * <b><em>With</em> `XKB_COMPOSE_COMPILE_OVERLAPPING_SEQUENCES`</b>
+ *
+ * Overlapping sequences of different lengths are *allowed* to co-exist.
+ * Conflicts are resolved with the following rule:
+ *
+ * 1. An equal sequence overrides an existing one.
  *
  * @endparblock
  */
@@ -141,7 +150,11 @@ struct xkb_compose_state;
 /** Flags affecting Compose file compilation. */
 enum xkb_compose_compile_flags {
     /** Do not apply any flags. */
-    XKB_COMPOSE_COMPILE_NO_FLAGS = 0
+    XKB_COMPOSE_COMPILE_NO_FLAGS = 0,
+    /** Allow overlapping sequences
+     * @since 1.7.0
+     */
+    XKB_COMPOSE_COMPILE_OVERLAPPING_SEQUENCES
 };
 
 /** The recognized Compose file formats. */
@@ -450,7 +463,7 @@ enum xkb_compose_state_flags {
  * @param flags
  *     Optional flags for the compose state, or 0.
  *
- * @returns A new compose state, or NULL on failure.
+ * @returns A new compose state, or `NULL` on failure.
  *
  * @memberof xkb_compose_state
  */
@@ -471,7 +484,7 @@ xkb_compose_state_ref(struct xkb_compose_state *state);
 /**
  * Release a reference on a compose state object, and possibly free it.
  *
- * @param state The object.  If NULL, do nothing.
+ * @param state The object.  If `NULL`, do nothing.
  *
  * @memberof xkb_compose_state
  */
@@ -502,7 +515,17 @@ enum xkb_compose_status {
     /** A complete sequence has been matched. */
     XKB_COMPOSE_COMPOSED,
     /** The last sequence was cancelled due to an unmatched keysym. */
-    XKB_COMPOSE_CANCELLED
+    XKB_COMPOSE_CANCELLED,
+    /** A complete sequence has been matched, but a longer sequence also exists.
+     *
+     * @since 1.7.0
+     */
+    XKB_COMPOSE_CANDIDATE,
+    /** The last sequence was accepted due to an unmatched keysym.
+     *
+     * @since 1.7.0
+     */
+    XKB_COMPOSE_CANDIDATE_ACCEPTED
 };
 
 /** The effect of a keysym fed to xkb_compose_state_feed(). */
@@ -524,27 +547,45 @@ enum xkb_compose_feed_result {
  * have no effect on the status or otherwise.
  *
  * The following is a description of the possible status transitions, in
- * the format CURRENT STATUS => NEXT STATUS, given a non-ignored input
- * keysym `keysym`:
+ * the format `CURRENT STATUS` => `NEXT STATUS`, given a non-ignored
+ * input keysym `keysym`:
  *
    @verbatim
-   NOTHING or CANCELLED or COMPOSED =>
+   NOTHING or CANCELLED or COMPOSED or CANDIDATE_ACCEPTED =>
       NOTHING   if keysym does not start a sequence.
       COMPOSING if keysym starts a sequence.
+      CANDIDATE if keysym starts and terminates a single-keysym sequence,
+                but a longer sequence also exists.
       COMPOSED  if keysym starts and terminates a single-keysym sequence.
 
    COMPOSING =>
       COMPOSING if keysym advances any of the currently possible
                 sequences but does not terminate any of them.
+      CANDIDATE if keysym terminates one of the currently possible
+                sequences, but a longer sequence also exists.
       COMPOSED  if keysym terminates one of the currently possible
                 sequences.
       CANCELLED if keysym does not advance any of the currently
                 possible sequences.
+
+   CANDIDATE =>
+      COMPOSING if keysym advances any of the currently possible
+                sequences but does not terminate any of them.
+      CANDIDATE if keysym terminates one of the currently possible
+                sequences, but a longer sequence also exists.
+      COMPOSED  if keysym terminates one of the currently possible
+                sequences.
+      CANDIDATE_ACCEPTED
+                if keysym does not advance any of the currently
+                possible sequences, but a candidate was proposed previously.
    @endverbatim
+ *
+ * @note `CANDIDATE` and `CANDIDATE_ACCEPTED` are only possible when compiling
+ * using `XKB_COMPOSE_COMPILE_OVERLAPPING_SEQUENCES`.
  *
  * The current Compose formats do not support multiple-keysyms.
  * Therefore, if you are using a function such as xkb_state_key_get_syms()
- * and it returns more than one keysym, consider feeding XKB_KEY_NoSymbol
+ * and it returns more than one keysym, consider feeding `XKB_KEY_NoSymbol`
  * instead.
  *
  * @param state
@@ -565,7 +606,7 @@ xkb_compose_state_feed(struct xkb_compose_state *state,
 /**
  * Reset the Compose sequence state machine.
  *
- * The status is set to XKB_COMPOSE_NOTHING, and the current sequence
+ * The status is set to `XKB_COMPOSE_NOTHING`, and the current sequence
  * is discarded.
  *
  * @memberof xkb_compose_state
@@ -586,7 +627,7 @@ xkb_compose_state_get_status(struct xkb_compose_state *state);
  * Get the result Unicode/UTF-8 string for a composed sequence.
  *
  * See @ref compose-overview for more details.  This function is only
- * useful when the status is XKB_COMPOSE_COMPOSED.
+ * useful when the status is `XKB_COMPOSE_COMPOSED` or `XKB_COMPOSE_CANDIDATE`.
  *
  * @param[in] state
  *     The compose state.
@@ -618,10 +659,10 @@ xkb_compose_state_get_utf8(struct xkb_compose_state *state,
  * Get the result keysym for a composed sequence.
  *
  * See @ref compose-overview for more details.  This function is only
- * useful when the status is XKB_COMPOSE_COMPOSED.
+ * useful when the status is `XKB_COMPOSE_COMPOSED` or `XKB_COMPOSE_CANDIDATE`.
  *
  * @returns The result keysym.  If the sequence is not complete, or does
- * not specify a result keysym, returns XKB_KEY_NoSymbol.
+ * not specify a result keysym, returns `XKB_KEY_NoSymbol`.
  *
  * @memberof xkb_compose_state
  **/

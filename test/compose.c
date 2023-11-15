@@ -35,6 +35,10 @@ compose_status_string(enum xkb_compose_status status)
         return "nothing";
     case XKB_COMPOSE_COMPOSING:
         return "composing";
+    case XKB_COMPOSE_CANDIDATE:
+        return "candidate";
+    case XKB_COMPOSE_CANDIDATE_ACCEPTED:
+        return "candidate accepted";
     case XKB_COMPOSE_COMPOSED:
         return "composed";
     case XKB_COMPOSE_CANCELLED:
@@ -156,14 +160,15 @@ test_compose_seq(struct xkb_compose_table *table, ...)
 }
 
 static bool
-test_compose_seq_buffer(struct xkb_context *ctx, const char *buffer, ...)
+test_compose_seq_buffer(struct xkb_context *ctx,
+                        enum xkb_compose_compile_flags flags,
+                        const char *buffer, ...)
 {
     va_list ap;
     bool ok;
     struct xkb_compose_table *table;
     table = xkb_compose_table_new_from_buffer(ctx, buffer, strlen(buffer), "",
-                                              XKB_COMPOSE_FORMAT_TEXT_V1,
-                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+                                              XKB_COMPOSE_FORMAT_TEXT_V1, flags);
     assert(table);
     va_start(ap, buffer);
     ok = test_compose_seq_va(table, ap);
@@ -176,7 +181,7 @@ static void
 test_compose_utf8_bom(struct xkb_context *ctx)
 {
     const char buffer[] = "\xef\xbb\xbf<A> : X";
-    assert(test_compose_seq_buffer(ctx, buffer,
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_NO_FLAGS, buffer,
         XKB_KEY_A, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSED, "X", XKB_KEY_X,
         XKB_KEY_NoSymbol));
 }
@@ -188,7 +193,7 @@ test_invalid_encodings(struct xkb_context *ctx)
 
     /* ISO 8859-1 (latin1) */
     const char iso_8859_1[] = "<A> : \"\xe1\" acute";
-    assert(!test_compose_seq_buffer(ctx, iso_8859_1,
+    assert(!test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_NO_FLAGS, iso_8859_1,
         XKB_KEY_A, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSED, "\xc3\xa1", XKB_KEY_acute,
         XKB_KEY_NoSymbol));
 
@@ -328,7 +333,7 @@ test_seqs(struct xkb_context *ctx)
     xkb_compose_table_unref(table);
 
     /* Make sure one-keysym sequences work. */
-    assert(test_compose_seq_buffer(ctx,
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_NO_FLAGS,
         "<A>          :  \"foo\"  X \n"
         "<B> <A>      :  \"baz\"  Y \n",
         XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,  "foo",   XKB_KEY_X,
@@ -339,7 +344,7 @@ test_seqs(struct xkb_context *ctx)
         XKB_KEY_NoSymbol));
 
     /* No sequences at all. */
-    assert(test_compose_seq_buffer(ctx,
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_NO_FLAGS,
         "",
         XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_NOTHING,   "",      XKB_KEY_NoSymbol,
         XKB_KEY_B,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_NOTHING,   "",      XKB_KEY_NoSymbol,
@@ -349,7 +354,7 @@ test_seqs(struct xkb_context *ctx)
         XKB_KEY_NoSymbol));
 
     /* Only keysym - string derived from keysym. */
-    assert(test_compose_seq_buffer(ctx,
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_NO_FLAGS,
         "<A> <B>     :  X \n"
         "<B> <A>     :  dollar \n"
         "<C>         :  dead_acute \n",
@@ -361,7 +366,7 @@ test_seqs(struct xkb_context *ctx)
         XKB_KEY_NoSymbol));
 
     /* Make sure a cancelling keysym doesn't start a new sequence. */
-    assert(test_compose_seq_buffer(ctx,
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_NO_FLAGS,
         "<A> <B>     :  X \n"
         "<C> <D>     :  Y \n",
         XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING, "",      XKB_KEY_NoSymbol,
@@ -375,10 +380,10 @@ test_seqs(struct xkb_context *ctx)
 }
 
 static void
-test_conflicting(struct xkb_context *ctx)
+test_conflicting_without_overlapping(struct xkb_context *ctx)
 {
     // new is prefix of old
-    assert(test_compose_seq_buffer(ctx,
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_NO_FLAGS,
         "<A> <B> <C>  :  \"foo\"  A \n"
         "<A> <B>      :  \"bar\"  B \n",
         XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
@@ -387,7 +392,7 @@ test_conflicting(struct xkb_context *ctx)
         XKB_KEY_NoSymbol));
 
     // old is a prefix of new
-    assert(test_compose_seq_buffer(ctx,
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_NO_FLAGS,
         "<A> <B>      :  \"bar\"  B \n"
         "<A> <B> <C>  :  \"foo\"  A \n",
         XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
@@ -396,7 +401,7 @@ test_conflicting(struct xkb_context *ctx)
         XKB_KEY_NoSymbol));
 
     // new duplicate of old
-    assert(test_compose_seq_buffer(ctx,
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_NO_FLAGS,
         "<A> <B>      :  \"bar\"  B \n"
         "<A> <B>      :  \"bar\"  B \n",
         XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
@@ -405,7 +410,7 @@ test_conflicting(struct xkb_context *ctx)
         XKB_KEY_NoSymbol));
 
     // new same length as old #1
-    assert(test_compose_seq_buffer(ctx,
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_NO_FLAGS,
         "<A> <B>      :  \"foo\"  A \n"
         "<A> <B>      :  \"bar\"  B \n",
         XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
@@ -413,7 +418,7 @@ test_conflicting(struct xkb_context *ctx)
         XKB_KEY_NoSymbol));
 
     // new same length as old #2
-    assert(test_compose_seq_buffer(ctx,
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_NO_FLAGS,
         "<A> <B>      :  \"foo\"  A \n"
         "<A> <B>      :  \"foo\"  B \n",
         XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
@@ -421,11 +426,96 @@ test_conflicting(struct xkb_context *ctx)
         XKB_KEY_NoSymbol));
 
     // new same length as old #3
-    assert(test_compose_seq_buffer(ctx,
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_NO_FLAGS,
         "<A> <B>      :  \"foo\"  A \n"
         "<A> <B>      :  \"bar\"  A \n",
         XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
         XKB_KEY_B,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "bar",  XKB_KEY_A,
+        XKB_KEY_NoSymbol));
+
+    // overlapping tests
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_NO_FLAGS,
+        "<A>                 :  \"1\"    X \n"
+        "<A> <B> <C>         :  \"foo\"  A \n"
+        "<A> <B>             :  \"bar\"  B \n"
+        "<A>                 :  \"2\"    Y \n"
+        "<A> <B>             :  \"baz\"  C \n"
+        "<A> <B> <C> <D> <E> :  \"foo\"  D \n",
+        XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_B,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_C,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_D,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_E,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "foo",  XKB_KEY_D,
+        XKB_KEY_NoSymbol));
+}
+
+static void
+test_conflicting_with_overlapping(struct xkb_context *ctx)
+{
+    // new is prefix of old
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_OVERLAPPING_SEQUENCES,
+        "<A> <B> <C>  :  \"foo\"  A \n"
+        "<A> <B>      :  \"bar\"  B \n",
+        XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_B,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_CANDIDATE,  "bar",  XKB_KEY_B,
+        XKB_KEY_C,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "foo",  XKB_KEY_A,
+        XKB_KEY_NoSymbol));
+
+    // old is a prefix of new
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_OVERLAPPING_SEQUENCES,
+        "<A> <B>      :  \"bar\"  B \n"
+        "<A> <B> <C>  :  \"foo\"  A \n",
+        XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_B,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_CANDIDATE,  "bar",  XKB_KEY_B,
+        XKB_KEY_C,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "foo",  XKB_KEY_A,
+        XKB_KEY_NoSymbol));
+
+    // new duplicate of old
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_OVERLAPPING_SEQUENCES,
+        "<A> <B>      :  \"bar\"  B \n"
+        "<A> <B>      :  \"bar\"  B \n",
+        XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_B,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "bar",  XKB_KEY_B,
+        XKB_KEY_C,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_NOTHING,    "",     XKB_KEY_NoSymbol,
+        XKB_KEY_NoSymbol));
+
+    // new same length as old #1
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_OVERLAPPING_SEQUENCES,
+        "<A> <B>      :  \"foo\"  A \n"
+        "<A> <B>      :  \"bar\"  B \n",
+        XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_B,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "bar",  XKB_KEY_B,
+        XKB_KEY_NoSymbol));
+
+    // new same length as old #2
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_OVERLAPPING_SEQUENCES,
+        "<A> <B>      :  \"foo\"  A \n"
+        "<A> <B>      :  \"foo\"  B \n",
+        XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_B,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "foo",  XKB_KEY_B,
+        XKB_KEY_NoSymbol));
+
+    // new same length as old #3
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_OVERLAPPING_SEQUENCES,
+        "<A> <B>      :  \"foo\"  A \n"
+        "<A> <B>      :  \"bar\"  A \n",
+        XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_B,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "bar",  XKB_KEY_A,
+        XKB_KEY_NoSymbol));
+
+    // overlapping tests
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_OVERLAPPING_SEQUENCES,
+        "<A>                 :  \"1\"    X \n"  // #1: overriden by #4
+        "<A> <B> <C>         :  \"foo\"  A \n"  // #2: adds overlapping #1
+        "<A> <B>             :  \"bar\"  B \n"  // #3: adds overlapping; overriden by #5
+        "<A>                 :  \"2\"    Y \n"  // #4: overrides #1
+        "<A> <B>             :  \"baz\"  C \n"  // #5: overrides #3
+        "<A> <B> <C> <D> <E> :  \"foo\"  D \n", // #6: adds overlapping #2
+        XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_CANDIDATE,  "2",    XKB_KEY_Y,
+        XKB_KEY_B,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_CANDIDATE,  "baz",  XKB_KEY_C,
+        XKB_KEY_C,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_CANDIDATE,  "foo",  XKB_KEY_A,
+        XKB_KEY_D,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_E,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "foo",  XKB_KEY_D,
         XKB_KEY_NoSymbol));
 }
 
@@ -563,7 +653,7 @@ test_modifier_syntax(struct xkb_context *ctx)
     /* We don't do anything with the modifiers, but make sure we can parse
      * them. */
 
-    assert(test_compose_seq_buffer(ctx,
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_NO_FLAGS,
         "None <A>          : X \n"
         "Shift <B>         : Y \n"
         "Ctrl <C>          : Y \n"
@@ -625,7 +715,7 @@ test_include(struct xkb_context *ctx)
                                  "<dead_tilde> <dead_tilde> : \"bar\" Y\n", path);
     assert(table_string);
 
-    assert(test_compose_seq_buffer(ctx, table_string,
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_NO_FLAGS, table_string,
         /* No conflict. */
         XKB_KEY_dead_acute,     XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
         XKB_KEY_dead_acute,     XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "´",    XKB_KEY_acute,
@@ -649,17 +739,55 @@ test_override(struct xkb_context *ctx)
 {
     const char *table_string = "<dead_circumflex> <dead_circumflex> : \"foo\" X\n"
                                "<dead_circumflex> <e> : \"bar\" Y\n"
-                               "<dead_circumflex> <dead_circumflex> <e> : \"baz\" Z\n";
+                               "<dead_circumflex> <dead_circumflex> <e> : \"baz\" Z\n"
+                               "<dead_circumflex> <f> <g> : \"foo\" A\n"
+                               "<dead_circumflex> <f> : \"bar\" B\n";
 
-    assert(test_compose_seq_buffer(ctx, table_string,
+    /* Without overlapping */
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_NO_FLAGS, table_string,
         /* Comes after - does override. */
-        XKB_KEY_dead_circumflex, XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
-        XKB_KEY_dead_circumflex, XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
-        XKB_KEY_e,               XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "baz",  XKB_KEY_Z,
+        XKB_KEY_dead_circumflex, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSING, "",    XKB_KEY_NoSymbol,
+        XKB_KEY_dead_circumflex, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSING, "",    XKB_KEY_NoSymbol,
+        XKB_KEY_e,               XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSED,  "baz", XKB_KEY_Z,
 
         /* Override does not affect sibling nodes */
-        XKB_KEY_dead_circumflex, XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
-        XKB_KEY_e,               XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "bar",  XKB_KEY_Y,
+        XKB_KEY_dead_circumflex, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSING, "",    XKB_KEY_NoSymbol,
+        XKB_KEY_e,               XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSED,  "bar", XKB_KEY_Y,
+
+        /* Comes after - does override. */
+        XKB_KEY_dead_circumflex, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSING, "",    XKB_KEY_NoSymbol,
+        XKB_KEY_f,               XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSING, "",    XKB_KEY_NoSymbol,
+        XKB_KEY_g,               XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSED,  "foo", XKB_KEY_A,
+
+        /* Can cancel after candidate. */
+        XKB_KEY_dead_circumflex, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSING, "",    XKB_KEY_NoSymbol,
+        XKB_KEY_f,               XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSING, "",    XKB_KEY_NoSymbol,
+        XKB_KEY_f,               XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_CANCELLED, "",    XKB_KEY_NoSymbol,
+        XKB_KEY_f,               XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_NOTHING,   "",    XKB_KEY_NoSymbol,
+
+        XKB_KEY_NoSymbol));
+
+    /* With overlapping */
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_OVERLAPPING_SEQUENCES, table_string,
+        /* Comes after - does override. */
+        XKB_KEY_dead_circumflex, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSING, "",    XKB_KEY_NoSymbol,
+        XKB_KEY_dead_circumflex, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_CANDIDATE, "foo", XKB_KEY_X,
+        XKB_KEY_e,               XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSED,  "baz", XKB_KEY_Z,
+
+        /* Override does not affect sibling nodes */
+        XKB_KEY_dead_circumflex, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSING, "",    XKB_KEY_NoSymbol,
+        XKB_KEY_e,               XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSED,  "bar", XKB_KEY_Y,
+
+        /* Comes after - does override. */
+        XKB_KEY_dead_circumflex, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSING, "",    XKB_KEY_NoSymbol,
+        XKB_KEY_f,               XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_CANDIDATE, "bar", XKB_KEY_B,
+        XKB_KEY_g,               XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSED,  "foo", XKB_KEY_A,
+
+        /* Can cancel after candidate. */
+        XKB_KEY_dead_circumflex, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSING, "",    XKB_KEY_NoSymbol,
+        XKB_KEY_f,               XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_CANDIDATE, "bar", XKB_KEY_B,
+        XKB_KEY_f,               XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_CANDIDATE_ACCEPTED, "",    XKB_KEY_NoSymbol,
+        XKB_KEY_f,               XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_NOTHING,   "",    XKB_KEY_NoSymbol,
 
         XKB_KEY_NoSymbol));
 }
@@ -777,7 +905,7 @@ test_escape_sequences(struct xkb_context *ctx)
      */
     const char *table_string = "<o> <e> : \"\\401f\\x0o\\0o\" X\n";
 
-    assert(test_compose_seq_buffer(ctx, table_string,
+    assert(test_compose_seq_buffer(ctx, XKB_COMPOSE_COMPILE_NO_FLAGS, table_string,
         XKB_KEY_o, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
         XKB_KEY_e, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSED,   "foo",  XKB_KEY_X,
         XKB_KEY_NoSymbol));
@@ -810,7 +938,8 @@ main(int argc, char *argv[])
     test_compose_utf8_bom(ctx);
     test_invalid_encodings(ctx);
     test_seqs(ctx);
-    test_conflicting(ctx);
+    test_conflicting_without_overlapping(ctx);
+    test_conflicting_with_overlapping(ctx);
     test_XCOMPOSEFILE(ctx);
     test_from_locale(ctx);
     test_state(ctx);

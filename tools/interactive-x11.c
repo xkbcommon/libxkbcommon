@@ -264,7 +264,8 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
         if (kbd->compose_state) {
             enum xkb_compose_status status = xkb_compose_state_get_status(kbd->compose_state);
             if (status == XKB_COMPOSE_CANCELLED ||
-                status == XKB_COMPOSE_COMPOSED)
+                status == XKB_COMPOSE_COMPOSED ||
+                status == XKB_COMPOSE_CANDIDATE_ACCEPTED)
                 xkb_compose_state_reset(kbd->compose_state);
         }
 
@@ -354,10 +355,11 @@ static void
 usage(FILE *fp, char *progname)
 {
         fprintf(fp,
-                "Usage: %s [--help] [--enable-compose]\n",
+                "Usage: %s [--help] [--enable-compose] [--enable-compose-overlapping]\n",
                 progname);
         fprintf(fp,
                 "    --enable-compose               enable Compose\n"
+                "    --enable-compose-overlapping   enable Compose overlapping sequences\n"
                 "    --help                         display this help and exit\n"
         );
 }
@@ -375,12 +377,15 @@ main(int argc, char *argv[])
     struct xkb_compose_table *compose_table = NULL;
 
     bool with_compose = false;
+    bool compose_overlapping = false;
     enum options {
         OPT_COMPOSE,
+        OPT_COMPOSE_OVERLAPPING,
     };
     static struct option opts[] = {
         {"help",                       no_argument, 0, 'h'},
         {"enable-compose",             no_argument, 0, OPT_COMPOSE},
+        {"enable-compose-overlapping", no_argument, 0, OPT_COMPOSE_OVERLAPPING},
         {0, 0, 0, 0},
     };
 
@@ -395,6 +400,9 @@ main(int argc, char *argv[])
         switch (opt) {
         case OPT_COMPOSE:
             with_compose = true;
+            break;
+        case OPT_COMPOSE_OVERLAPPING:
+            compose_overlapping = true;
             break;
         case 'h':
             usage(stdout, argv[0]);
@@ -434,9 +442,12 @@ main(int argc, char *argv[])
 
     if (with_compose) {
         locale = setlocale(LC_CTYPE, NULL);
+        enum xkb_compose_compile_flags compose_flags =
+            compose_overlapping
+                ? XKB_COMPOSE_COMPILE_OVERLAPPING_SEQUENCES
+                : XKB_COMPOSE_COMPILE_NO_FLAGS;
         compose_table =
-            xkb_compose_table_new_from_locale(ctx, locale,
-                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+            xkb_compose_table_new_from_locale(ctx, locale, compose_flags);
         if (!compose_table) {
             fprintf(stderr, "Couldn't create compose from locale\n");
             goto err_compose;
