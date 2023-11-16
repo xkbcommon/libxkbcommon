@@ -1,0 +1,59 @@
+! model         = keycodes
+  my_model      = my_keycodes
+  *             = default_keycodes
+
+! layout        variant    = symbols
+  layout_a      my_variant = symbols_a+extra_variant
+
+! layout        = symbols
+  layout_a      = symbols_a
+  layout_b      = symbols_b
+  *             = default_symbols
+
+! layout[1]     = symbols
+  layout_a      = symbols_a:1
+  layout_b      = symbols_b:1
+  layout_x      = base:all // strange but valid
+  *             = default_symbols:1
+
+! layout[2]     = symbols
+  layout_a      = +symbols_a:2
+  layout_b      = +symbols_b:2
+  *             = +default_symbols:2
+
+! layout[3]     = symbols
+  layout_a      = +symbols_a:3
+  layout_b      = +symbols_b:3
+  *             = +default_symbols:3
+
+! layout[4]     = symbols
+  layout_a      = +symbols_a:4
+  layout_b      = +symbols_b:4
+  *             = +default_symbols:4
+
+// WARNING: Invalid at the moment. Here for future test
+! layout[5]     = symbols
+  layout_a      = +symbols_a:5
+  layout_b      = +symbols_b:5
+  layout_c      = +symbols_c:5
+  *             = +default_symbols:5
+
+// Combine with special indexes
+! layout[first] variant[first] = symbols
+  *             extra1         = +extra_symbols:all
+
+// Combine with special indexes (valid but raises a warning)
+! layout[any] variant[any] = symbols
+  *           extra2       = +extra_symbols1:%i+extra_symbols2:all
+  *           extra3       = +extra_symbols2:all+extra_symbols1:%i
+
+! model         = types
+  my_model      = my_types
+  *             = default_types
+
+! model         = compat
+  my_model      = my_compat
+  *             = default_compat
+
+! option        = symbols
+  my_option     = +extra_option:all

@@ -1076,8 +1076,55 @@ error:
 }
 
 /*
- * This function performs %-expansion on @value (see overview above),
- * and appends the result to @to.
+ * This function performs :all replacement on @value (see overview above),
+ * and appends the result to @expanded.
+ */
+static void
+expand_qualifier_in_kccgst_value(
+    struct matcher *m, struct scanner *s,
+    struct sval value, darray_char *expanded,
+    bool has_layout_idx_range, bool has_separator,
+    unsigned int prefix_idx, unsigned int *i)
+{
+    const char *str = value.start;
+
+    /* “all” followed by nothing or by a layout separator */
+    if ((*i + 3 <= value.len || is_merge_mode_prefix(str[*i + 3])) &&
+        str[*i] == 'a' && str[*i+1] == 'l' && str[*i+2] == 'l') {
+        if (has_layout_idx_range)
+            scanner_vrb(s, 2, XKB_LOG_MESSAGE_NO_ID,
+                        "Using :all qualifier with indexes range "
+                        "is not recommended.");
+        /* Add at least one layout */
+        darray_appends_nullterminate(*expanded, "1", 1);
+        /* Check for more layouts (slow path) */
+        if (darray_size(m->rmlvo.layouts) > 1) {
+            char layout_index[MAX_LAYOUT_INDEX_STR_LENGTH + 1];
+            const size_t prefix_length = darray_size(*expanded) - prefix_idx - 1;
+            xkb_layout_index_t l;
+            for (l = 1;
+                 l < MIN(XKB_MAX_GROUPS, darray_size(m->rmlvo.layouts));
+                 l++)
+            {
+                if (!has_separator)
+                    darray_append(*expanded, MERGE_DEFAULT_PREFIX);
+                /* Append prefix */
+                darray_appends_nullterminate(*expanded,
+                                             &darray_item(*expanded, prefix_idx),
+                                             prefix_length);
+                /* Append index */
+                int count = snprintf(layout_index, sizeof(layout_index),
+                                     "%"PRIu32, l + 1);
+                darray_appends_nullterminate(*expanded, layout_index, count);
+            }
+        }
+        *i += 3;
+    }
+}
+
+/*
+ * This function performs %-expansion and :all-expansion on @value
+ * (see overview above), and appends the result to @to.
  */
 static bool
 append_expanded_kccgst_value(struct matcher *m, struct scanner *s,
@@ -1088,10 +1135,20 @@ append_expanded_kccgst_value(struct matcher *m, struct scanner *s,
     darray_char expanded = darray_new();
     char ch;
     bool expanded_plus, to_plus;
+    unsigned int last_item_idx = 0;
+    bool has_separator = false;
 
     for (unsigned i = 0; i < value.len; ) {
-        /* Check if that's a start of an expansion */
+        /* Check if that's a start of an expansion or qualifier */
         switch (str[i]) {
+            /* Qualifier */
+            case ':':
+                darray_appends_nullterminate(expanded, &str[i++], 1);
+                expand_qualifier_in_kccgst_value(m, s, value, &expanded,
+                                                 m->mapping.has_layout_idx_range,
+                                                 has_separator,
+                                                 last_item_idx, &i);
+                break;
             /* Expansion */
             case '%':
                 if (++i >= value.len ||
@@ -1103,6 +1160,8 @@ append_expanded_kccgst_value(struct matcher *m, struct scanner *s,
             case MERGE_OVERRIDE_PREFIX:
             case MERGE_AUGMENT_PREFIX:
                 darray_appends_nullterminate(expanded, &str[i++], 1);
+                last_item_idx = darray_size(expanded) - 1;
+                has_separator = true;
                 break;
             /* Just a normal character. */
             default:

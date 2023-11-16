@@ -489,7 +489,6 @@
 
 ! layout[any]		option		=	symbols
   $threelevellayouts	grp:alts_toggle =	+level3(ralt_switch_for_alts_toggle):%i
-  *			misc:typo 	=	+typo(base):%i
   *			misc:apl	=	+apl(level3):%i
 
 ! option				=	symbols
@@ -692,6 +691,7 @@
   lv5:lwin_switch_lock_cancel		=	+level5(lwin_switch_lock_cancel)
   lv5:rwin_switch_lock_cancel		=	+level5(rwin_switch_lock_cancel)
   parens:swap_brackets			=	+parens(swap_brackets)
+  misc:typo				=	+typo(base):all
 
 
 ! option		=	compat

@@ -1,0 +1,18 @@
+! model         = keycodes
+  *             = default_keycodes
+
+! layout[1]     = symbols
+  *             = x:all // force x on all groups
+
+! layout[later] = symbols
+  // skipped, as it has no explicit merge mode and
+  // thus is not appended to previous
+  *             = skip
+
+! model         = types
+  *             = default_types
+
+! model         = compat
+  *             = default_compat
+
+! option        = symbols
