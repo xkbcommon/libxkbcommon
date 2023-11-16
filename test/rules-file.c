@@ -270,6 +270,19 @@ main(int argc, char *argv[])
     };
     assert(test_rules(ctx, &test11));
 
+    /* Test :all qualifier */
+    struct test_data test12 = {
+        .rules = "all_qualifier",
+
+        .model = "my_model", .layout = "layout_a,layout_b,layout_a,layout_b,layout_c", .variant = "",
+        .options = "my_option",
+
+        .keycodes = "my_keycodes", .types = "my_types",
+        .compat = "my_compat",
+        .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4+extra_option:1+extra_option:2+extra_option:3+extra_option:4+extra_option:5",
+    };
+    assert(test_rules(ctx, &test12));
+
     xkb_context_unref(ctx);
     return 0;
 }

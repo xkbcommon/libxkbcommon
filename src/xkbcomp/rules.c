@@ -1001,8 +1001,42 @@ error:
 }
 
 /*
- * This function performs %-expansion on @value (see overview above),
- * and appends the result to @to.
+ * This function performs :all replacement on @value (see overview above),
+ * and appends the result to @expanded.
+ */
+static void
+expand_qualifier_in_kccgst_value(
+    struct matcher *m, struct scanner *s,
+    struct sval value, darray_char *expanded,
+    unsigned int *i, unsigned int last_item_idx)
+{
+    const char *str = value.start;
+
+    /* “all” followed by nothing or by a layout separator */
+    if ((*i + 3 <= value.len || str[*i + 3] == '+' || str[*i + 3] == '|') &&
+        str[*i] == 'a' && str[*i+1] == 'l' && str[*i+2] == 'l') {
+        /* Add at least one layout */
+        darray_appends_nullterminate(*expanded, "1", 1);
+        /* Check for more layouts (slow path) */
+        if (m->rmlvo.layouts.size > 1) {
+            char layout_index[MAX_LAYOUT_INDEX_STR_LENGTH];
+            unsigned int last_item_length = darray_size(*expanded) - 1;
+            darray_char item = darray_new();
+            darray_from_items(item, &darray_item(*expanded, last_item_idx), last_item_length);
+            for (xkb_layout_index_t l = 1; l < m->rmlvo.layouts.size; l++) {
+                darray_appends_nullterminate(*expanded, &darray_item(item, 0), last_item_length);
+                snprintf(layout_index, sizeof(layout_index), "%"PRIu32, l + 1);
+                darray_appends_nullterminate(*expanded, layout_index, strlen(layout_index));
+            }
+            darray_free(item);
+        }
+        *i += 3;
+    }
+}
+
+/*
+ * This function performs %-expansion and :all-expansion on @value
+ * (see overview above), and appends the result to @to.
  */
 static bool
 append_expanded_kccgst_value(struct matcher *m, struct scanner *s,
@@ -1013,9 +1047,10 @@ append_expanded_kccgst_value(struct matcher *m, struct scanner *s,
     darray_char expanded = darray_new();
     char ch;
     bool expanded_plus, to_plus;
+    unsigned int last_item_idx = 0;
 
     for (unsigned i = 0; i < value.len; ) {
-        /* Check if that's a start of an expansion */
+        /* Check if that's a start of an expansion or qualifier */
         switch (str[i]) {
             /* Expansion */
             case '%':
@@ -1023,11 +1058,17 @@ append_expanded_kccgst_value(struct matcher *m, struct scanner *s,
                     !expand_rmlvo_in_kccgst_value(m, s, value, layout_idx, &expanded, &i))
                         goto error;
                 break;
+            /* Qualifier */
+            case ':':
+                darray_appends_nullterminate(expanded, &str[i++], 1);
+                expand_qualifier_in_kccgst_value(m, s, value, &expanded, &i, last_item_idx);
+                break;
             /* New item */
             // FIXME: use constants??
             case '+':
             case '|':
                 darray_appends_nullterminate(expanded, &str[i++], 1);
+                last_item_idx = darray_size(expanded) - 1;
                 break;
             /* Just a normal character. */
             default:
