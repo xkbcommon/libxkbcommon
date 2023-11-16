@@ -73,10 +73,10 @@ test_rules(struct xkb_context *ctx, struct test_data *data)
     fprintf(stderr, "Received : %s\t%s\t%s\t%s\n",
             kccgst.keycodes, kccgst.types, kccgst.compat, kccgst.symbols);
 
-    passed = streq(kccgst.keycodes, data->keycodes) &&
-             streq(kccgst.types, data->types) &&
-             streq(kccgst.compat, data->compat) &&
-             streq(kccgst.symbols, data->symbols);
+    passed = streq_not_null(kccgst.keycodes, data->keycodes) &&
+             streq_not_null(kccgst.types, data->types) &&
+             streq_not_null(kccgst.compat, data->compat) &&
+             streq_not_null(kccgst.symbols, data->symbols);
 
     free(kccgst.keycodes);
     free(kccgst.types);
@@ -217,6 +217,58 @@ main(int argc, char *argv[])
         .symbols = "my_symbols+extra_variant+compose(foo)+keypad(bar)+altwin(menu)",
     };
     assert(test_rules(ctx, &test7));
+
+    /* Test index ranges: layout vs layout[first] */
+    struct test_data test8 = {
+        .rules = "special_indexes",
+
+        .model = "my_model", .layout = "layout_a", .variant = "",
+        .options = "",
+
+        .keycodes = "my_keycodes", .types = "my_types",
+        .compat = "my_compat",
+        .symbols = "symbols_A",
+    };
+    assert(test_rules(ctx, &test8));
+
+    /* Test index ranges: invalid layout qualifier */
+    struct test_data test9 = {
+        .rules = "special_indexes",
+
+        .model = "my_model", .layout = "layout_c", .variant = "",
+        .options = "",
+
+        .keycodes = "my_keycodes", .types = "my_types",
+        .compat = "my_compat",
+        .symbols = "symbols_c:1+symbols_z:1",
+    };
+    assert(test_rules(ctx, &test9));
+
+    /* Test index ranges: invalid layout[first] qualifier */
+    struct test_data test10 = {
+        .rules = "special_indexes",
+
+        .model = "my_model", .layout = "layout_d", .variant = "",
+        .options = "",
+
+        .keycodes = "my_keycodes", .types = "my_types",
+        .compat = "my_compat",
+        .symbols = "symbols_D",
+    };
+    assert(test_rules(ctx, &test10));
+
+    /* Test index ranges: multiple layouts */
+    struct test_data test11 = {
+        .rules = "special_indexes",
+
+        .model = "my_model", .layout = "layout_a,layout_b,layout_c,layout_d", .variant = "",
+        .options = "",
+
+        .keycodes = "my_keycodes", .types = "my_types",
+        .compat = "my_compat",
+        .symbols = "symbols_a:1+symbols_y:2+layout_c:3+layout_d:4+symbols_z:3",
+    };
+    assert(test_rules(ctx, &test11));
 
     xkb_context_unref(ctx);
     return 0;

@@ -49,6 +49,8 @@
 
 #include "config.h"
 
+#include <limits.h>
+
 #include "xkbcomp-priv.h"
 #include "rules.h"
 #include "include.h"
@@ -221,11 +223,30 @@ struct mapping {
     int mlvo_at_pos[_MLVO_NUM_ENTRIES];
     unsigned int num_mlvo;
     unsigned int defined_mlvo_mask;
-    xkb_layout_index_t layout_idx, variant_idx;
+    bool has_layout_idx_range;
+    union {
+        /* No index or numeric indexes (has_layout_idx_range == false) */
+        struct {
+            xkb_layout_index_t layout_idx, variant_idx;
+        };
+        /* Range of indexes (has_layout_idx_range == true) */
+        struct {
+            xkb_layout_index_t layout_idx_min, layout_idx_max;
+        };
+    };
+    /* This member has 2 uses:
+     * • Check if the mapping is active by interpreting the value as a boolean.
+     * • Keep track of the remaining layout indexes to match when
+     *   has_layout_idx_range == true.
+     * Thus provide 2 names to reflect these semantics in the code.
+     */
+    union {
+        xkb_layout_mask_t active;
+        xkb_layout_mask_t layouts_candidates_mask;
+    };
     int kccgst_at_pos[_KCCGST_NUM_ENTRIES];
     unsigned int num_kccgst;
     unsigned int defined_kccgst_mask;
-    bool skip;
 };
 
 enum mlvo_match_type {
@@ -245,7 +266,7 @@ struct rule {
 
 /*
  * This is the main object used to match a given RMLVO against a rules
- * file and aggragate the results in a KcCGST. It goes through a simple
+ * file and aggregate the results in a KcCGST. It goes through a simple
  * matching state machine, with tokens as transitions (see
  * matcher_match()).
  */
@@ -442,27 +463,87 @@ matcher_mapping_start_new(struct matcher *m)
         m->mapping.mlvo_at_pos[i] = -1;
     for (unsigned i = 0; i < _KCCGST_NUM_ENTRIES; i++)
         m->mapping.kccgst_at_pos[i] = -1;
+    m->mapping.has_layout_idx_range = false;
     m->mapping.layout_idx = m->mapping.variant_idx = XKB_LAYOUT_INVALID;
     m->mapping.num_mlvo = m->mapping.num_kccgst = 0;
     m->mapping.defined_mlvo_mask = 0;
     m->mapping.defined_kccgst_mask = 0;
-    m->mapping.skip = false;
+    m->mapping.active = true;
 }
 
+/* Parse Kccgst layout index:
+ * "[%i]" or "[n]", where "n" is a decimal number */
 static int
-extract_layout_index(const char *s, size_t max_len, xkb_layout_index_t *out)
+extract_layout_index(const char *s, size_t max_len, xkb_layout_index_t idx,
+                     xkb_layout_index_t *out)
 {
     /* This function is pretty stupid, but works for now. */
     *out = XKB_LAYOUT_INVALID;
-    if (max_len < 3)
+    if (max_len < 3 || s[0] != '[')
         return -1;
-    if (s[0] != '[' || !is_digit(s[1]) || s[2] != ']')
+    if (max_len > 3 && s[1] == '%' && s[2] == 'i' && s[3] == ']') {
+        *out = idx;
+        return 4; /* == length "[%i]" */
+    }
+    /* TODO: We will need to rework this when we lift the current
+     *       limitation of 4 layouts */
+    if (!is_digit(s[1]) || s[2] != ']')
         return -1;
     if (s[1] - '0' < 1 || s[1] - '0' > XKB_MAX_GROUPS)
         return -1;
     /* To zero-based index. */
     *out = s[1] - '0' - 1;
-    return 3;
+    return 3; /* == length "[n]" */
+}
+
+#define LAYOUT_INDEX_ANY   (XKB_LAYOUT_INVALID - 1)
+#define LAYOUT_INDEX_LATER (XKB_LAYOUT_INVALID - 2)
+#define LAYOUT_INDEX_FIRST (XKB_LAYOUT_INVALID - 3)
+
+#if XKB_MAX_GROUPS >= LAYOUT_INDEX_FIRST
+#error "Cannot define special indexes"
+#endif
+
+/* Parse index of layout/variant in MLVO mapping */
+static int
+extract_mapping_layout_index(const char *s, size_t max_len, xkb_layout_index_t *out)
+{
+    *out = XKB_LAYOUT_INVALID;
+    if (max_len < 3 || s[0] != '[')
+        return -1;
+    switch (s[1]) {
+        case 'a': /* Special index: “any” */
+            if (max_len < 5 || strncmp(&s[2], "ny]", 3) != 0) {
+                return -1;
+            } else {
+                *out = LAYOUT_INDEX_ANY;
+                return 5; /* == length("[any]") */
+            }
+        case 'f': /* Special index: “first” */
+            if (max_len < 7 || strncmp(&s[2], "irst]", 5) != 0) {
+                return -1;
+            } else {
+                *out = LAYOUT_INDEX_FIRST;
+                return 7; /* == length("[first]") */
+            }
+        case 'l': /* Special index: “later” */
+            if (max_len < 7 || strncmp(&s[2], "ater]", 5) != 0) {
+                return -1;
+            } else {
+                *out = LAYOUT_INDEX_LATER;
+                return 7; /* == length("[later]") */
+            }
+        default: /* Numeric index */
+            /* TODO: We will need to rework this when we lift the current
+             *       limitation of 4 layouts */
+            if (!is_digit(s[1]) || s[2] != ']')
+                return -1;
+            if (s[1] - '0' < 1 || s[1] - '0' > XKB_MAX_GROUPS)
+                return -1;
+            /* To zero-based index. */
+            *out = s[1] - '0' - 1;
+            return 3; /* == length("[n]") */
+    }
 }
 
 static void
@@ -483,26 +564,27 @@ matcher_mapping_set_mlvo(struct matcher *m, struct scanner *s,
     if (mlvo >= _MLVO_NUM_ENTRIES) {
         scanner_err(s, "invalid mapping: %.*s is not a valid value here; ignoring rule set",
                     ident.len, ident.start);
-        m->mapping.skip = true;
+        m->mapping.active = false;
         return;
     }
 
     if (m->mapping.defined_mlvo_mask & (1u << mlvo)) {
         scanner_err(s, "invalid mapping: %.*s appears twice on the same line; ignoring rule set",
                     mlvo_sval.len, mlvo_sval.start);
-        m->mapping.skip = true;
+        m->mapping.active = false;
         return;
     }
 
     /* If there are leftovers still, it must be an index. */
     if (mlvo_sval.len < ident.len) {
         xkb_layout_index_t idx;
-        int consumed = extract_layout_index(ident.start + mlvo_sval.len,
-                                            ident.len - mlvo_sval.len, &idx);
+        int consumed = extract_mapping_layout_index(ident.start + mlvo_sval.len,
+                                                    ident.len - mlvo_sval.len,
+                                                    &idx);
         if ((int) (ident.len - mlvo_sval.len) != consumed) {
             scanner_err(s, "invalid mapping: \"%.*s\" may only be followed by a valid group index; ignoring rule set",
                         mlvo_sval.len, mlvo_sval.start);
-            m->mapping.skip = true;
+            m->mapping.active = false;
             return;
         }
 
@@ -515,14 +597,64 @@ matcher_mapping_set_mlvo(struct matcher *m, struct scanner *s,
         else {
             scanner_err(s, "invalid mapping: \"%.*s\" cannot be followed by a group index; ignoring rule set",
                         mlvo_sval.len, mlvo_sval.start);
-            m->mapping.skip = true;
+            m->mapping.active = false;
             return;
         }
+    }
+
+    /* Check that if both layout and variant are defined, then they must have
+       the same index */
+    if (((mlvo == MLVO_LAYOUT && (m->mapping.defined_mlvo_mask & (1u << MLVO_VARIANT))) ||
+         (mlvo == MLVO_VARIANT && (m->mapping.defined_mlvo_mask & (1u << MLVO_LAYOUT)))) &&
+        m->mapping.layout_idx != m->mapping.variant_idx) {
+        scanner_err(s,
+                    "invalid mapping: \"layout\" index must be the same as the "
+                    "\"variant\" index");
+        m->mapping.active = false;
+        return;
     }
 
     m->mapping.mlvo_at_pos[m->mapping.num_mlvo] = mlvo;
     m->mapping.defined_mlvo_mask |= 1u << mlvo;
     m->mapping.num_mlvo++;
+}
+
+static void
+matcher_mapping_set_layout_bounds(struct matcher *m)
+{
+    /* Handle case where one of the index is XKB_LAYOUT_INVALID */
+    xkb_layout_index_t idx = MIN(m->mapping.layout_idx, m->mapping.variant_idx);
+    switch (idx) {
+        case LAYOUT_INDEX_FIRST:
+            m->mapping.has_layout_idx_range = false;
+            m->mapping.layout_idx = 0;
+            m->mapping.variant_idx = 0;
+            m->mapping.layouts_candidates_mask = 1u << 0;
+            break;
+        case LAYOUT_INDEX_LATER:
+            m->mapping.has_layout_idx_range = true;
+            m->mapping.layout_idx_min = 1;
+            m->mapping.layout_idx_max = darray_size(m->rmlvo.layouts);
+            m->mapping.layouts_candidates_mask =
+                /* All but the first layout */
+                ((1u << darray_size(m->rmlvo.layouts)) - 1) & ~1;
+            break;
+        case LAYOUT_INDEX_ANY:
+            m->mapping.has_layout_idx_range = true;
+            m->mapping.layout_idx_min = 0;
+            m->mapping.layout_idx_max = darray_size(m->rmlvo.layouts);
+            m->mapping.layouts_candidates_mask =
+                /* All layouts */
+                (1u << darray_size(m->rmlvo.layouts)) - 1;
+            break;
+        case XKB_LAYOUT_INVALID:
+            idx = 0;
+            /* fallthrough */
+        default:
+            /* Mere layout index */
+            m->mapping.has_layout_idx_range = false;
+            m->mapping.layouts_candidates_mask = 1u << idx;
+    }
 }
 
 static void
@@ -542,14 +674,14 @@ matcher_mapping_set_kccgst(struct matcher *m, struct scanner *s, struct sval ide
     if (kccgst >= _KCCGST_NUM_ENTRIES) {
         scanner_err(s, "invalid mapping: %.*s is not a valid value here; ignoring rule set",
                     ident.len, ident.start);
-        m->mapping.skip = true;
+        m->mapping.active = false;
         return;
     }
 
     if (m->mapping.defined_kccgst_mask & (1u << kccgst)) {
         scanner_err(s, "invalid mapping: %.*s appears twice on the same line; ignoring rule set",
                     kccgst_sval.len, kccgst_sval.start);
-        m->mapping.skip = true;
+        m->mapping.active = false;
         return;
     }
 
@@ -558,7 +690,7 @@ matcher_mapping_set_kccgst(struct matcher *m, struct scanner *s, struct sval ide
     m->mapping.num_kccgst++;
 }
 
-static void
+static bool
 matcher_mapping_verify(struct matcher *m, struct scanner *s)
 {
     if (m->mapping.num_mlvo == 0) {
@@ -577,40 +709,59 @@ matcher_mapping_verify(struct matcher *m, struct scanner *s)
      */
 
     if (m->mapping.defined_mlvo_mask & (1u << MLVO_LAYOUT)) {
-        if (m->mapping.layout_idx == XKB_LAYOUT_INVALID) {
-            if (darray_size(m->rmlvo.layouts) > 1)
-                goto skip;
-        }
-        else {
-            if (darray_size(m->rmlvo.layouts) == 1 ||
-                m->mapping.layout_idx >= darray_size(m->rmlvo.layouts))
-                goto skip;
+        switch (m->mapping.layout_idx) {
+            case XKB_LAYOUT_INVALID:
+                /* Layout rule without index matches when exactly 1 layout is specified */
+                if (darray_size(m->rmlvo.layouts) > 1)
+                    goto skip;
+                break;
+            case LAYOUT_INDEX_ANY:
+            case LAYOUT_INDEX_LATER:
+            case LAYOUT_INDEX_FIRST:
+                /* No restrictions */
+                break;
+            default:
+                /* Layout rule without index matches when at least 2 layouts are
+                   specified. Index must be in valid range. */
+                if (darray_size(m->rmlvo.layouts) == 1 ||
+                    m->mapping.layout_idx >= darray_size(m->rmlvo.layouts))
+                    goto skip;
         }
     }
 
     if (m->mapping.defined_mlvo_mask & (1u << MLVO_VARIANT)) {
-        if (m->mapping.variant_idx == XKB_LAYOUT_INVALID) {
-            if (darray_size(m->rmlvo.variants) > 1)
-                goto skip;
-        }
-        else {
-            if (darray_size(m->rmlvo.variants) == 1 ||
-                m->mapping.variant_idx >= darray_size(m->rmlvo.variants))
-                goto skip;
+        switch (m->mapping.variant_idx) {
+            case XKB_LAYOUT_INVALID:
+                /* Variant rule without index matches when exactly 1 variant is specified */
+                if (darray_size(m->rmlvo.variants) > 1)
+                    goto skip;
+                break;
+            case LAYOUT_INDEX_ANY:
+            case LAYOUT_INDEX_LATER:
+            case LAYOUT_INDEX_FIRST:
+                /* No restriction */
+                break;
+            default:
+                /* Variant rule without index matches when exactly at least 2 variants are
+                   specified. Index must be in valid range. */
+                if (darray_size(m->rmlvo.variants) == 1 ||
+                    m->mapping.variant_idx >= darray_size(m->rmlvo.variants))
+                    goto skip;
         }
     }
 
-    return;
+    return true;
 
 skip:
-    m->mapping.skip = true;
+    m->mapping.active = false;
+    return false;
 }
 
 static void
 matcher_rule_start_new(struct matcher *m)
 {
     memset(&m->rule, 0, sizeof(m->rule));
-    m->rule.skip = m->mapping.skip;
+    m->rule.skip = !m->mapping.active;
 }
 
 static void
@@ -713,113 +864,176 @@ match_value_and_mark(struct matcher *m, struct sval val,
     return matched;
 }
 
+/* Maximum length of a layout index string:
+ * [NOTE] Currently XKB_MAX_GROUPS is 4, but the following code is
+ * future-proof for all possible indexes.
+ *
+ * length = ceiling (bitsize(xkb_layout_index_t) * logBase 10 2)
+ *        < ceiling (bitsize(xkb_layout_index_t) * 5 / 16)
+ *        < 1 + floor (bitsize(xkb_layout_index_t) * 5 / 16)
+ */
+#define MAX_LAYOUT_INDEX_STR_LENGTH \
+        (1 + (sizeof(xkb_layout_index_t) * CHAR_BIT * 5 >> 4))
+
+/*
+ * This function performs %-expansion on @value (see overview above),
+ * and appends the result to @expanded.
+ */
+static bool
+expand_rmlvo_in_kccgst_value(struct matcher *m, struct scanner *s,
+                             struct sval value, xkb_layout_index_t layout_idx,
+                             darray_char *expanded, unsigned *i)
+{
+    const char *str = value.start;
+
+    /*
+     * Some ugly hand-lexing here, but going through the scanner is more
+     * trouble than it's worth, and the format is ugly on its own merit.
+     */
+    enum rules_mlvo mlv;
+    xkb_layout_index_t idx;
+    char pfx, sfx;
+    struct matched_sval *expanded_value;
+
+    /* %i not as layout/variant index "%l[%i]" but as qualifier ":%i" */
+    if (str[*i] == 'i') {
+        if (layout_idx == XKB_LAYOUT_INVALID) {
+            scanner_err(s,
+                        "invalid %%i-expansion; may only be use with when an "
+                        "index range is used in mapping");
+            goto error;
+        } else {
+            (*i)++;
+            char index_str[MAX_LAYOUT_INDEX_STR_LENGTH];
+            int count = snprintf(index_str, sizeof(index_str), "%"PRIu32, layout_idx + 1);
+            darray_appends_nullterminate(*expanded, index_str, count);
+            return true;
+        }
+    }
+
+    pfx = sfx = 0;
+
+    /* Check for prefix. */
+    if (str[*i] == '(' || str[*i] == '+' || str[*i] == '|' ||
+        str[*i] == '_' || str[*i] == '-') {
+        pfx = str[*i];
+        if (str[*i] == '(') sfx = ')';
+        if (++(*i) >= value.len) goto error;
+    }
+
+    /* Mandatory model/layout/variant specifier. */
+    switch (str[(*i)++]) {
+    case 'm': mlv = MLVO_MODEL; break;
+    case 'l': mlv = MLVO_LAYOUT; break;
+    case 'v': mlv = MLVO_VARIANT; break;
+    default: goto error;
+    }
+
+    /* Check for index. */
+    idx = XKB_LAYOUT_INVALID;
+    if (*i < value.len && str[*i] == '[') {
+        int consumed;
+
+        if (mlv != MLVO_LAYOUT && mlv != MLVO_VARIANT) {
+            scanner_err(s, "invalid index in %%-expansion; may only index layout or variant");
+            goto error;
+        }
+
+        consumed = extract_layout_index(str + (*i), value.len - (*i), layout_idx, &idx);
+        if (consumed == -1) goto error;
+        if (idx == XKB_LAYOUT_INVALID) {
+            scanner_err(s, "invalid index in %%-expansion; %%i may only be used with range in mapping");
+            goto error;
+        }
+        *i += consumed;
+    }
+
+    /* Check for suffix, if there supposed to be one. */
+    if (sfx != 0) {
+        if (*i >= value.len) goto error;
+        if (str[(*i)++] != sfx) goto error;
+    }
+
+    /* Get the expanded value. */
+    expanded_value = NULL;
+
+    if (mlv == MLVO_LAYOUT) {
+        if (idx == XKB_LAYOUT_INVALID) {
+            if (darray_size(m->rmlvo.layouts) == 1)
+                expanded_value = &darray_item(m->rmlvo.layouts, 0);
+        } else if (idx < darray_size(m->rmlvo.layouts) &&
+                   darray_size(m->rmlvo.layouts) > 1) {
+                expanded_value = &darray_item(m->rmlvo.layouts, idx);
+        }
+    }
+    else if (mlv == MLVO_VARIANT) {
+        if (idx == XKB_LAYOUT_INVALID) {
+            if (darray_size(m->rmlvo.variants) == 1)
+                expanded_value = &darray_item(m->rmlvo.variants, 0);
+        } else if (idx < darray_size(m->rmlvo.variants) &&
+                   darray_size(m->rmlvo.variants) > 1) {
+                expanded_value = &darray_item(m->rmlvo.variants, idx);
+        }
+    }
+    else if (mlv == MLVO_MODEL) {
+        expanded_value = &m->rmlvo.model;
+    }
+
+    /* If we didn't get one, skip silently. */
+    if (!expanded_value || expanded_value->sval.len == 0) {
+        return true;
+    }
+
+    if (pfx != 0)
+        darray_appends_nullterminate(*expanded, &pfx, 1);
+    darray_appends_nullterminate(*expanded,
+                                 expanded_value->sval.start,
+                                 expanded_value->sval.len);
+    if (sfx != 0)
+        darray_appends_nullterminate(*expanded, &sfx, 1);
+    expanded_value->matched = true;
+
+    return true;
+
+error:
+    scanner_err(s, "invalid %%-expansion in value; not used");
+    return false;
+}
+
 /*
  * This function performs %-expansion on @value (see overview above),
  * and appends the result to @to.
  */
 static bool
 append_expanded_kccgst_value(struct matcher *m, struct scanner *s,
-                             darray_char *to, struct sval value)
+                             darray_char *to, struct sval value,
+                             xkb_layout_index_t layout_idx)
 {
     const char *str = value.start;
     darray_char expanded = darray_new();
     char ch;
     bool expanded_plus, to_plus;
 
-    /*
-     * Some ugly hand-lexing here, but going through the scanner is more
-     * trouble than it's worth, and the format is ugly on its own merit.
-     */
     for (unsigned i = 0; i < value.len; ) {
-        enum rules_mlvo mlv;
-        xkb_layout_index_t idx;
-        char pfx, sfx;
-        struct matched_sval *expanded_value;
-
-        /* Check if that's a start of an expansion. */
-        if (str[i] != '%') {
+        /* Check if that's a start of an expansion */
+        switch (str[i]) {
+            /* Expansion */
+            case '%':
+                if (++i >= value.len ||
+                    !expand_rmlvo_in_kccgst_value(m, s, value, layout_idx, &expanded, &i))
+                        goto error;
+                break;
+            /* New item */
+            // FIXME: use constants??
+            case '+':
+            case '|':
+                darray_appends_nullterminate(expanded, &str[i++], 1);
+                break;
             /* Just a normal character. */
-            darray_appends_nullterminate(expanded, &str[i++], 1);
-            continue;
+            default:
+                darray_appends_nullterminate(expanded, &str[i++], 1);
+                continue;
         }
-        if (++i >= value.len) goto error;
-
-        pfx = sfx = 0;
-
-        /* Check for prefix. */
-        if (str[i] == '(' || str[i] == '+' || str[i] == '|' ||
-            str[i] == '_' || str[i] == '-') {
-            pfx = str[i];
-            if (str[i] == '(') sfx = ')';
-            if (++i >= value.len) goto error;
-        }
-
-        /* Mandatory model/layout/variant specifier. */
-        switch (str[i++]) {
-        case 'm': mlv = MLVO_MODEL; break;
-        case 'l': mlv = MLVO_LAYOUT; break;
-        case 'v': mlv = MLVO_VARIANT; break;
-        default: goto error;
-        }
-
-        /* Check for index. */
-        idx = XKB_LAYOUT_INVALID;
-        if (i < value.len && str[i] == '[') {
-            int consumed;
-
-            if (mlv != MLVO_LAYOUT && mlv != MLVO_VARIANT) {
-                scanner_err(s, "invalid index in %%-expansion; may only index layout or variant");
-                goto error;
-            }
-
-            consumed = extract_layout_index(str + i, value.len - i, &idx);
-            if (consumed == -1) goto error;
-            i += consumed;
-        }
-
-        /* Check for suffix, if there supposed to be one. */
-        if (sfx != 0) {
-            if (i >= value.len) goto error;
-            if (str[i++] != sfx) goto error;
-        }
-
-        /* Get the expanded value. */
-        expanded_value = NULL;
-
-        if (mlv == MLVO_LAYOUT) {
-            if (idx != XKB_LAYOUT_INVALID &&
-                idx < darray_size(m->rmlvo.layouts) &&
-                darray_size(m->rmlvo.layouts) > 1)
-                expanded_value = &darray_item(m->rmlvo.layouts, idx);
-            else if (idx == XKB_LAYOUT_INVALID &&
-                     darray_size(m->rmlvo.layouts) == 1)
-                expanded_value = &darray_item(m->rmlvo.layouts, 0);
-        }
-        else if (mlv == MLVO_VARIANT) {
-            if (idx != XKB_LAYOUT_INVALID &&
-                idx < darray_size(m->rmlvo.variants) &&
-                darray_size(m->rmlvo.variants) > 1)
-                expanded_value = &darray_item(m->rmlvo.variants, idx);
-            else if (idx == XKB_LAYOUT_INVALID &&
-                     darray_size(m->rmlvo.variants) == 1)
-                expanded_value = &darray_item(m->rmlvo.variants, 0);
-        }
-        else if (mlv == MLVO_MODEL) {
-            expanded_value = &m->rmlvo.model;
-        }
-
-        /* If we didn't get one, skip silently. */
-        if (!expanded_value || expanded_value->sval.len == 0)
-            continue;
-
-        if (pfx != 0)
-            darray_appends_nullterminate(expanded, &pfx, 1);
-        darray_appends_nullterminate(expanded,
-                                     expanded_value->sval.start,
-                                     expanded_value->sval.len);
-        if (sfx != 0)
-            darray_appends_nullterminate(expanded, &sfx, 1);
-        expanded_value->matched = true;
     }
 
     /*
@@ -844,7 +1058,6 @@ append_expanded_kccgst_value(struct matcher *m, struct scanner *s,
 
 error:
     darray_free(expanded);
-    scanner_err(s, "invalid %%-expansion in value; not used");
     return false;
 }
 
@@ -861,6 +1074,10 @@ matcher_rule_verify(struct matcher *m, struct scanner *s)
 static void
 matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
 {
+    /* Initial candidates (used if m->mapping.has_layout_idx_range == true) */
+    xkb_layout_mask_t candidate_layouts = m->mapping.layouts_candidates_mask;
+    xkb_layout_index_t idx;
+    /* Loop over MLVO pattern components */
     for (unsigned i = 0; i < m->mapping.num_mlvo; i++) {
         enum rules_mlvo mlvo = m->mapping.mlvo_at_pos[i];
         struct sval value = m->rule.mlvo_value_at_pos[i];
@@ -873,16 +1090,54 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
             matched = match_value_and_mark(m, value, to, match_type);
         }
         else if (mlvo == MLVO_LAYOUT) {
-            xkb_layout_index_t idx = m->mapping.layout_idx;
-            idx = (idx == XKB_LAYOUT_INVALID ? 0 : idx);
-            to = &darray_item(m->rmlvo.layouts, idx);
-            matched = match_value_and_mark(m, value, to, match_type);
+            if (m->mapping.has_layout_idx_range) {
+                /* Special index: loop over the index range */
+                for (idx = m->mapping.layout_idx_min;
+                     idx < m->mapping.layout_idx_max; idx++)
+                {
+                    /* Process only if not skipped */
+                    if (candidate_layouts & (1u << idx)) {
+                        to = &darray_item(m->rmlvo.layouts, idx);
+                        if (match_value_and_mark(m, value, to, match_type)) {
+                            matched = true;
+                        } else {
+                            candidate_layouts &= ~(1u << idx);
+                        }
+                    }
+                }
+            } else {
+                /* Numeric index or no index */
+                idx = m->mapping.layout_idx == XKB_LAYOUT_INVALID
+                    ? 0
+                    : m->mapping.layout_idx;
+                to = &darray_item(m->rmlvo.layouts, idx);
+                matched = match_value_and_mark(m, value, to, match_type);
+            }
         }
         else if (mlvo == MLVO_VARIANT) {
-            xkb_layout_index_t idx = m->mapping.layout_idx;
-            idx = (idx == XKB_LAYOUT_INVALID ? 0 : idx);
-            to = &darray_item(m->rmlvo.variants, idx);
-            matched = match_value_and_mark(m, value, to, match_type);
+            if (m->mapping.has_layout_idx_range) {
+                /* Special index: loop over the index range */
+                for (idx = m->mapping.layout_idx_min;
+                     idx < m->mapping.layout_idx_max; idx++)
+                {
+                    /* Process only if not skipped */
+                    if (candidate_layouts & (1u << idx)) {
+                        to = &darray_item(m->rmlvo.variants, idx);
+                        if (match_value_and_mark(m, value, to, match_type)) {
+                            matched = true;
+                        } else {
+                            candidate_layouts &= ~(1u << idx);
+                        }
+                    }
+                }
+            } else {
+                /* Numeric index or no index */
+                idx = m->mapping.variant_idx == XKB_LAYOUT_INVALID
+                    ? 0
+                    : m->mapping.variant_idx;
+                to = &darray_item(m->rmlvo.variants, idx);
+                matched = match_value_and_mark(m, value, to, match_type);
+            }
         }
         else if (mlvo == MLVO_OPTION) {
             darray_foreach(to, m->rmlvo.options) {
@@ -896,19 +1151,44 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
             return;
     }
 
-    for (unsigned i = 0; i < m->mapping.num_kccgst; i++) {
-        enum rules_kccgst kccgst = m->mapping.kccgst_at_pos[i];
-        struct sval value = m->rule.kccgst_value_at_pos[i];
-        append_expanded_kccgst_value(m, s, &m->kccgst[kccgst], value);
-    }
+    if (!m->mapping.has_layout_idx_range) {
+        /* Numeric index or no index */
+        for (unsigned i = 0; i < m->mapping.num_kccgst; i++) {
+            enum rules_kccgst kccgst = m->mapping.kccgst_at_pos[i];
+            struct sval value = m->rule.kccgst_value_at_pos[i];
+            append_expanded_kccgst_value(m, s, &m->kccgst[kccgst], value,
+                                         XKB_LAYOUT_INVALID);
+        }
 
-    /*
-     * If a rule matches in a rule set, the rest of the set should be
-     * skipped. However, rule sets matching against options may contain
-     * several legitimate rules, so they are processed entirely.
-     */
-    if (!(m->mapping.defined_mlvo_mask & (1 << MLVO_OPTION)))
-        m->mapping.skip = true;
+        /*
+        * If a rule matches in a rule set, the rest of the set should be
+        * skipped. However, rule sets matching against options may contain
+        * several legitimate rules, so they are processed entirely.
+        */
+        if (!(m->mapping.defined_mlvo_mask & (1 << MLVO_OPTION)))
+            m->mapping.active = false;
+    } else {
+        /* Special index: loop over the index range */
+        for (idx = m->mapping.layout_idx_min;
+             idx < m->mapping.layout_idx_max; idx++)
+        {
+            if (candidate_layouts & (1u << idx)) {
+                for (unsigned i = 0; i < m->mapping.num_kccgst; i++) {
+                    enum rules_kccgst kccgst = m->mapping.kccgst_at_pos[i];
+                    struct sval value = m->rule.kccgst_value_at_pos[i];
+                    append_expanded_kccgst_value(m, s, &m->kccgst[kccgst], value, idx);
+                }
+            }
+        }
+        /*
+         * If a rule matches in a rule set, the rest of the set should be
+         * skipped. However, rule sets matching against options may contain
+         * several legitimate rules, so they are processed entirely.
+         */
+        if (!(m->mapping.defined_mlvo_mask & (1 << MLVO_OPTION))) {
+            m->mapping.layouts_candidates_mask &= ~candidate_layouts;
+        }
+    }
 }
 
 static enum rules_token
@@ -986,7 +1266,7 @@ include_statement:
 mapping_mlvo:
     switch (tok = gettok(m, s)) {
     case TOK_IDENTIFIER:
-        if (!m->mapping.skip)
+        if (m->mapping.active)
             matcher_mapping_set_mlvo(m, s, m->val.string);
         goto mapping_mlvo;
     case TOK_EQUALS:
@@ -998,12 +1278,12 @@ mapping_mlvo:
 mapping_kccgst:
     switch (tok = gettok(m, s)) {
     case TOK_IDENTIFIER:
-        if (!m->mapping.skip)
+        if (m->mapping.active)
             matcher_mapping_set_kccgst(m, s, m->val.string);
         goto mapping_kccgst;
     case TOK_END_OF_LINE:
-        if (!m->mapping.skip)
-            matcher_mapping_verify(m, s);
+        if (m->mapping.active && matcher_mapping_verify(m, s))
+            matcher_mapping_set_layout_bounds(m);
         goto rule_mlvo_first;
     default:
         goto unexpected;
