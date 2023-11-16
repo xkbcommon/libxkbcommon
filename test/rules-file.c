@@ -328,7 +328,7 @@ main(int argc, char *argv[])
                "complete+caps(caps_lock):1+misc(assign_shift_left_action):1+level5(level5_lock):1",
                "pc+de(neo)+inet(evdev)", false),
         ENTRY("pc104", "br", NULL, "misc:typo,misc:apl", "complete",
-              "pc+br+inet(evdev)+typo(base):1+apl(level3):1", false),
+              "pc+br+inet(evdev)+apl(level3):1+typo(base):1", false),
         /* evdev-modern: 2 layouts */
         ENTRY("whatever", "ar,pt", NULL, NULL, "complete", "pc+ara+pt:2+inet(evdev)", false),
         ENTRY("whatever", "pt,ar", NULL, NULL, "complete", "pc+pt+ara:2+inet(evdev)", false),
@@ -353,12 +353,106 @@ main(int argc, char *argv[])
                "complete+caps(caps_lock):2+misc(assign_shift_left_action):2+level5(level5_lock):2",
                "pc+gb+de(neo):2+inet(evdev)", false),
         ENTRY("pc104", "ca,br", NULL, "misc:typo,misc:apl", "complete",
-              "pc+ca+br:2+inet(evdev)+typo(base):1+typo(base):2+apl(level3):1+apl(level3):2", false),
+              "pc+ca+br:2+inet(evdev)+apl(level3):1+apl(level3):2+typo(base):1+typo(base):2", false),
 #undef ENTRY
     };
     for (size_t k = 0; k < ARRAY_SIZE(special_indexes_first_data); k++) {
         assert(test_rules(ctx, &special_indexes_first_data[k]));
     }
+
+    /* Test :all qualifier without special indexes, with option */
+    struct test_data all_qualified_alone1 = {
+        .rules = "all_qualifier",
+
+        .model = "my_model",
+        /* NOTE: 5 layouts is intentional;
+         * will require update when raising XKB_MAX_LAYOUTS */
+        .layout = "layout_a,layout_b,layout_a,layout_b,layout_c",
+        .variant = "",
+        .options = "my_option",
+
+        .keycodes = "my_keycodes", .types = "my_types",
+        .compat = "my_compat",
+        .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4+extra_option:1"
+                   "+extra_option:2+extra_option:3+extra_option:4",
+    };
+    assert(test_rules(ctx, &all_qualified_alone1));
+
+    /* Test :all qualifier without special indexes, base for all layout */
+    struct test_data all_qualified_alone2 = {
+        .rules = "all_qualifier",
+
+        .model = "my_model",
+        /* NOTE: 5 layouts is intentional;
+         * will require update when raising XKB_MAX_LAYOUTS */
+        .layout = "layout_x,layout_a,layout_b,layout_c,layout_d",
+        .variant = "",
+        .options = "",
+
+        .keycodes = "my_keycodes", .types = "my_types",
+        .compat = "my_compat",
+        .symbols = "base:1+base:2+base:3+base:4"
+                   "+symbols_a:2+symbols_b:3+default_symbols:4",
+    };
+    assert(test_rules(ctx, &all_qualified_alone2));
+
+    /* Test :all qualifier without special indexes, with option, too much layouts */
+    struct test_data all_qualified_invalid_layouts = {
+        .rules = "all_qualifier-limit",
+
+        .model = "my_model",
+        .layout = too_much_layouts,
+        .variant = "",
+        .options = "",
+
+        .keycodes = "default_keycodes", .types = "default_types",
+        .compat = "default_compat",
+        .symbols = too_much_symbols,
+    };
+    assert(test_rules(ctx, &all_qualified_invalid_layouts));
+
+    /* Test :all qualifier with special indexes */
+    struct test_data all_qualified_with_special_indexes1 = {
+        .rules = "all_qualifier",
+
+        .model = "my_model",
+        /* NOTE: 5 layouts is intentional;
+         * will require update when raising XKB_MAX_LAYOUTS */
+        .layout = "layout_a,layout_b,layout_a,layout_b,layout_c",
+        .variant = "extra1,,,,",
+        .options = "my_option",
+
+        .keycodes = "my_keycodes", .types = "my_types",
+        .compat = "my_compat",
+        .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4"
+                   "+extra_symbols:1+extra_symbols:2+extra_symbols:3+extra_symbols:4"
+                   "+extra_option:1+extra_option:2+extra_option:3+extra_option:4",
+    };
+    assert(test_rules(ctx, &all_qualified_with_special_indexes1));
+
+    /* Test :all qualifier with special indexes
+     * It uses :all combined with layout[any], which is valid but
+     * :%i was probably the intended qualified, so raises warning */
+    struct test_data all_qualified_with_special_indexes2 = {
+        .rules = "all_qualifier",
+
+        .model = "my_model",
+        /* NOTE: 5 layouts is intentional;
+         * will require update when raising XKB_MAX_LAYOUTS */
+        .layout = "layout_a,layout_b,layout_a,layout_b,layout_c",
+        .variant = "extra2,,extra3,,",
+        .options = "my_option",
+
+        .keycodes = "my_keycodes", .types = "my_types",
+        .compat = "my_compat",
+        .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4"
+                   "+extra_symbols1:1+extra_symbols2:1+extra_symbols2:2+extra_symbols2:3+extra_symbols2:4"
+                   "+extra_symbols2:1+extra_symbols2:2+extra_symbols2:3+extra_symbols2:4"
+                   "+extra_symbols1:3"
+                   "+extra_option:1"
+                   "+extra_option:2+extra_option:3+extra_option:4",
+    };
+    assert(test_rules(ctx, &all_qualified_with_special_indexes2));
 
     xkb_context_unref(ctx);
     return 0;

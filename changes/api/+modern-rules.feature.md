@@ -7,8 +7,9 @@ Rules: Added support for special layouts indexes:
   `layout[2]` .. `layout[4]`.
 - *any*: matches layout at any position. This is an index range.
 
-Also added the special index `%i` which correspond to the index of the matched
-layout.
+Also added:
+- the special index `%i` which correspond to the index of the matched layout.
+- the `:all` qualifier: it applies the qualified item to all layouts.
 
 See the [documentation](https://xkbcommon.org/doc/current/rule-file-format.html)
 for further information.

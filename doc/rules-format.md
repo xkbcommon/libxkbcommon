@@ -12,9 +12,9 @@ components.
 
 @tableofcontents{html:2}
 
-`xkbcomp` uses the `xkb_component_names` struct internally, which maps
-directly to [include statements] of the appropriate [sections] \(called
-[KcCGST] for short):
+`libxkbcommon`’s keymap compiler `xkbcomp` uses the `xkb_component_names`
+struct internally, which maps directly to [include statements] of the
+appropriate [sections] \(called [KcCGST] for short):
 
 - [key codes],
 - [compatibility],
@@ -150,7 +150,8 @@ Kccgst       ::= "keycodes" | "symbols" | "types" | "compat" | "geometry"
 
 Rule         ::= { MlvoValue } "=" { KccgstValue } "\n"
 MlvoValue    ::= "*" | GroupName | <ident>
-KccgstValue  ::= <ident>
+KccgstValue  ::= <ident> [ { Qualifier } ]
+Qualifier    ::= ":" ({ NumericIndex } | "all")
 ```
 
 <!--
@@ -253,7 +254,7 @@ or %%H seems to do the job though.
     </dd>
     <dt>
         @anchor rules-i-expansion
-        `%%i`,
+        `:%%i`,
         `%%l[%%i]`,
         `%(l[%%i])`,
         etc.
@@ -270,6 +271,61 @@ or %%H seems to do the job though.
   and suffix. This is why one should use e.g. <code>%(v[1])</code>
   instead of <code>(\%v[1])</code>. See @ref rules-symbols-example for
   an illustration.
+
+- @anchor rules-all-qualifier
+  (Since version `1.8.0`) If a `Rule` is matched, the `:all` *qualifier* in the
+  `KccgstValue` applies the qualified value (and its optional merge mode) to all
+  layouts. If there is no merge mode, it defaults to *override* `+`.
+
+  <table>
+    <caption>Examples of `:all` qualified use</caption>
+    <tr>
+        <th>`KccgstValue`</th>
+        <th>Layouts count</th>
+        <th>Final `KccgstValue`</th>
+    </tr>
+    <tr>
+        <td rowspan="2">`x:all`</td>
+        <td>1</td>
+        <td>`x:1`</td>
+    </tr>
+    <tr>
+        <td>2</td>
+        <td>`x:1+x:2`</td>
+    </tr>
+    <tr>
+        <td rowspan="2">`+x:all`</td>
+        <td>1</td>
+        <td>`+x:1`</td>
+    </tr>
+    <tr>
+        <td>3</td>
+        <td>`+x:1+x:2+x:3`</td>
+    </tr>
+    <tr>
+        <td rowspan="2">`|x:all`</td>
+        <td>1</td>
+        <td>`|x:1`</td>
+    </tr>
+    <tr>
+        <td>4</td>
+        <td>`|x:1|x:2|x:3|x:4`</td>
+    </tr>
+    <tr>
+        <td rowspan="2">`x|y:all`</td>
+        <td>1</td>
+        <td>`x|y:1`</td>
+    </tr>
+    <tr>
+        <td>3</td>
+        <td>`x|y:1|y:2|y:3`</td>
+    </tr>
+    <tr>
+        <td>`x:all+y|z:all`</td>
+        <td>2</td>
+        <td>`x:1+x:2+y|z:1|z:2`</td>
+    </tr>
+  </table>
 
 RMLVO resolution process {#rmlvo-resolution}
 ------------------------
@@ -396,22 +452,61 @@ Using the following example:
 ! layout = symbols
   *      = pc+%l%(v)
 
-! layout  option          = symbols
- $azerty  caps:digits_row = +capslock(digits_row)
-  *       misc:typo       = +typo(base)
-  *       lv3:ralt_alt    = +level3(ralt_alt)
- ```
+! layout[1] = symbols
+  *         = pc+%l[1]%(v[1])
+
+! layout[2] = symbols
+  *         = +%l[2]%(v[2])
+// Repeat the previous rules set with indexes 3 and 4
+
+! layout     option          = symbols
+ $azerty     caps:digits_row = +capslock(digits_row)
+  *          misc:typo       = +typo(base)
+  *          lv3:ralt_alt    = +level3(ralt_alt)
+
+! layout[1]  option          = symbols
+ $azerty     caps:digits_row = +capslock(digits_row):1
+  *          misc:typo       = +typo(base):1
+  *          lv3:ralt_alt    = +level3(ralt_alt):1
+// Repeat the previous rules set for indexes 2 to 4
+```
 
 we would have the following resolutions of <em>[symbols]</em>:
 
-| Layout  | Option                                   | Symbols                                                  |
-| ------- | ---------------------------------------- | -------------------------------------------------------- |
-| `be`    | `caps:digits_row`                        | `pc+be+capslock(digits_row)`                             |
-| `gb`    | `caps:digits_row`                        | `pc+gb`                                                  |
-| `fr`    | `misc:typo`                              | `pc+fr+typo(base)`                                       |
-| `fr`    | `misc:typo,caps:digits_row`              | `pc+fr+capslock(digits_row)+typo(base)`                  |
-| `fr`    | `lv3:ralt_alt,caps:digits_row,misc:typo` | `pc+fr+capslock(digits_row)+typo(base)+level3(ralt_alt)` |
+| Layout  | Option                                   | Symbols                                                     |
+| ------- | ---------------------------------------- | ----------------------------------------------------------- |
+| `be`    | `caps:digits_row`                        | `pc+be+capslock(digits_row)`                                |
+| `gb`    | `caps:digits_row`                        | `pc+gb`                                                     |
+| `fr`    | `misc:typo`                              | `pc+fr+typo(base)`                                          |
+| `fr`    | `misc:typo,caps:digits_row`              | `pc+fr+capslock(digits_row)+typo(base)`                     |
+| `fr`    | `lv3:ralt_alt,caps:digits_row,misc:typo` | `pc+fr+capslock(digits_row)+typo(base)+level3(ralt_alt)`    |
+| `fr,gb` | `caps:digits_row,misc:typo`              | `pc+fr+gb:2+capslock(digits_row)+typo(base):1+typo(base):2` |
 
-Note that the configuration with `gb` [layout] has no match for the [option]
-and that the order of the [options] in the [RMLVO] configuration has no
-influence on the resulting [symbols].
+Note that the configuration with `gb` [layout] has no match for the
+[option] `caps:digits_row` and that the order of the [options] in the
+[RMLVO] configuration has no influence on the resulting [symbols], as it
+depends solely on their order in the rules.
+
+Since version `1.8.0`, the previous code can be replaced with simply:
+
+```c
+! $azerty = be fr
+
+! layout[first] = symbols
+  *             = pc+%l[%i]%(v[%i])
+
+! layout[later] = symbols
+  *             = +%l[%i]%(v[%i])
+
+! layout[any]  option          = symbols
+ $azerty       caps:digits_row = +capslock(digits_row):%i
+
+! option       = symbols
+  misc:typo    = +typo(base):all
+  lv3:ralt_alt = +level3(ralt_alt):all
+
+// The previous is equivalent to:
+! layout[any]  option       = symbols
+  *            misc:typo    = +typo(base):%i
+  *            lv3:ralt_alt = +level3(ralt_alt):%i
+```
