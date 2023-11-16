@@ -708,44 +708,73 @@ extract_text(xmlNode *node)
     return NULL;
 }
 
+/* Data from “configItem” node */
+struct config_item {
+    char *name;
+    char *description;
+    char *brief;
+    char *vendor;
+    enum rxkb_popularity popularity;
+};
+
+#define config_item_new(popularity_) { \
+    .name = NULL, \
+    .description = NULL, \
+    .brief = NULL, \
+    .vendor = NULL, \
+    .popularity = popularity_ \
+}
+
+static void
+config_item_free(struct config_item *config) {
+    free(config->name);
+    free(config->description);
+    free(config->brief);
+    free(config->vendor);
+}
+
 static bool
-parse_config_item(struct rxkb_context *ctx,
-                  xmlNode *parent,
-                  char **name,
-                  char **description,
-                  char **brief,
-                  char **vendor)
+parse_config_item(struct rxkb_context *ctx, xmlNode *parent,
+                  struct config_item *config)
 {
     xmlNode *node = NULL;
     xmlNode *ci = NULL;
 
     for (ci = parent->children; ci; ci = ci->next) {
         if (is_node(ci, "configItem")) {
-            *name = NULL;
-            *description = NULL;
-            *brief = NULL;
-            *vendor = NULL;
+            /* Process attributes */
+            xmlChar *raw_popularity = xmlGetProp(ci, (const xmlChar*)"popularity");
+            if (raw_popularity) {
+                if (xmlStrEqual(raw_popularity, (const xmlChar*)"standard"))
+                    config->popularity = RXKB_POPULARITY_STANDARD;
+                else if (xmlStrEqual(raw_popularity, (const xmlChar*)"exotic"))
+                    config->popularity = RXKB_POPULARITY_EXOTIC;
+                else
+                    log_err(ctx,
+                            "xml:%d: invalid popularity attribute: expected "
+                            "'standard' or 'exotic', got: '%s'\n",
+                            ci->line, raw_popularity);
+            }
+            xmlFree(raw_popularity);
 
+            /* Process children */
             for (node = ci->children; node; node = node->next) {
                 if (is_node(node, "name"))
-                    *name = extract_text(node);
+                    config->name = extract_text(node);
                 else if (is_node(node, "description"))
-                    *description = extract_text(node);
+                    config->description = extract_text(node);
                 else if (is_node(node, "shortDescription"))
-                    *brief = extract_text(node);
+                    config->brief = extract_text(node);
                 else if (is_node(node, "vendor"))
-                    *vendor = extract_text(node);
+                    config->vendor = extract_text(node);
                 /* Note: the DTD allows for vendor + brief but models only use
                  * vendor and everything else only uses shortDescription */
             }
 
-            if (!*name || !strlen(*name))  {
+            if (!config->name || !strlen(config->name))  {
                 log_err(ctx, "xml:%d: missing required element 'name'\n",
                         ci->line);
-                free(*name);
-                free(*description);
-                free(*brief);
-                free(*vendor);
+                config_item_free(config);
                 return false;
             }
 
@@ -760,34 +789,31 @@ static void
 parse_model(struct rxkb_context *ctx, xmlNode *model,
             enum rxkb_popularity popularity)
 {
-    char *name, *description, *brief, *vendor;
+    struct config_item config = config_item_new(popularity);
 
-    if (parse_config_item(ctx, model, &name, &description, &brief, &vendor)) {
+    if (parse_config_item(ctx, model, &config)) {
         struct rxkb_model *m;
 
         list_for_each(m, &ctx->models, base.link) {
-            if (streq(m->name, name)) {
-                free(name);
-                free(description);
-                free(brief);
-                free(vendor);
+            if (streq(m->name, config.name)) {
+                config_item_free(&config);
                 return;
             }
         }
 
         /* new model */
         m = rxkb_model_create(&ctx->base);
-        m->name = name;
-        m->description = description;
-        m->vendor = vendor;
-        m->popularity = popularity;
+        m->name = config.name;
+        m->description = config.description;
+        m->vendor = config.vendor;
+        m->popularity = config.popularity;
         list_append(&ctx->models, &m->base.link);
     }
 }
 
 static void
 parse_model_list(struct rxkb_context *ctx, xmlNode *model_list,
-                enum rxkb_popularity popularity)
+                 enum rxkb_popularity popularity)
 {
     xmlNode *node = NULL;
 
@@ -850,14 +876,14 @@ parse_variant(struct rxkb_context *ctx, struct rxkb_layout *l,
               xmlNode *variant, enum rxkb_popularity popularity)
 {
     xmlNode *ci;
-    char *name, *description, *brief, *vendor;
+    struct config_item config = config_item_new(popularity);
 
-    if (parse_config_item(ctx, variant, &name, &description, &brief, &vendor)) {
+    if (parse_config_item(ctx, variant, &config)) {
         struct rxkb_layout *v;
         bool exists = false;
 
         list_for_each(v, &ctx->layouts, base.link) {
-            if (streq(v->name, name) && streq(v->name, l->name)) {
+            if (streq(v->name, config.name) && streq(v->name, l->name)) {
                 exists = true;
                 break;
             }
@@ -868,11 +894,11 @@ parse_variant(struct rxkb_context *ctx, struct rxkb_layout *l,
             list_init(&v->iso639s);
             list_init(&v->iso3166s);
             v->name = strdup(l->name);
-            v->variant = name;
-            v->description = description;
+            v->variant = config.name;
+            v->description = config.description;
             // if variant omits brief, inherit from parent layout.
-            v->brief = brief == NULL ? strdup_safe(l->brief) : brief;
-            v->popularity = popularity;
+            v->brief = config.brief == NULL ? strdup_safe(l->brief) : config.brief;
+            v->popularity = config.popularity;
             list_append(&ctx->layouts, &v->base.link);
 
             for (ci = variant->children; ci; ci = ci->next) {
@@ -913,10 +939,7 @@ parse_variant(struct rxkb_context *ctx, struct rxkb_layout *l,
                 }
             }
         } else {
-            free(name);
-            free(description);
-            free(brief);
-            free(vendor);
+            config_item_free(&config);
         }
     }
 }
@@ -937,16 +960,16 @@ static void
 parse_layout(struct rxkb_context *ctx, xmlNode *layout,
              enum rxkb_popularity popularity)
 {
-    char *name, *description, *brief, *vendor;
+    struct config_item config = config_item_new(popularity);
     struct rxkb_layout *l;
     xmlNode *node = NULL;
     bool exists = false;
 
-    if (!parse_config_item(ctx, layout, &name, &description, &brief, &vendor))
+    if (!parse_config_item(ctx, layout, &config))
         return;
 
     list_for_each(l, &ctx->layouts, base.link) {
-        if (streq(l->name, name) && l->variant == NULL) {
+        if (streq(l->name, config.name) && l->variant == NULL) {
             exists = true;
             break;
         }
@@ -956,17 +979,14 @@ parse_layout(struct rxkb_context *ctx, xmlNode *layout,
         l = rxkb_layout_create(&ctx->base);
         list_init(&l->iso639s);
         list_init(&l->iso3166s);
-        l->name = name;
+        l->name = config.name;
         l->variant = NULL;
-        l->description = description;
-        l->brief = brief;
-        l->popularity = popularity;
+        l->description = config.description;
+        l->brief = config.brief;
+        l->popularity = config.popularity;
         list_append(&ctx->layouts, &l->base.link);
     } else {
-        free(name);
-        free(description);
-        free(brief);
-        free(vendor);
+        config_item_free(&config);
     }
 
     for (node = layout->children; node; node = node->next) {
@@ -1001,25 +1021,22 @@ static void
 parse_option(struct rxkb_context *ctx, struct rxkb_option_group *group,
              xmlNode *option, enum rxkb_popularity popularity)
 {
-    char *name, *description, *brief, *vendor;
+    struct config_item config = config_item_new(popularity);
 
-    if (parse_config_item(ctx, option, &name, &description, &brief, &vendor)) {
+    if (parse_config_item(ctx, option, &config)) {
         struct rxkb_option *o;
 
         list_for_each(o, &group->options, base.link) {
-            if (streq(o->name, name)) {
-                free(name);
-                free(description);
-                free(brief);
-                free(vendor);
+            if (streq(o->name, config.name)) {
+                config_item_free(&config);
                 return;
             }
         }
 
         o = rxkb_option_create(&group->base);
-        o->name = name;
-        o->description = description;
-        o->popularity = popularity;
+        o->name = config.name;
+        o->description = config.description;
+        o->popularity = config.popularity;
         list_append(&group->options, &o->base.link);
     }
 }
@@ -1028,17 +1045,17 @@ static void
 parse_group(struct rxkb_context *ctx, xmlNode *group,
             enum rxkb_popularity popularity)
 {
-    char *name, *description, *brief, *vendor;
+    struct config_item config = config_item_new(popularity);
     struct rxkb_option_group *g;
     xmlNode *node = NULL;
     xmlChar *multiple;
     bool exists = false;
 
-    if (!parse_config_item(ctx, group, &name, &description, &brief, &vendor))
+    if (!parse_config_item(ctx, group, &config))
         return;
 
     list_for_each(g, &ctx->option_groups, base.link) {
-        if (streq(g->name, name)) {
+        if (streq(g->name, config.name)) {
             exists = true;
             break;
         }
@@ -1046,9 +1063,9 @@ parse_group(struct rxkb_context *ctx, xmlNode *group,
 
     if (!exists) {
         g = rxkb_option_group_create(&ctx->base);
-        g->name = name;
-        g->description = description;
-        g->popularity = popularity;
+        g->name = config.name;
+        g->description = config.description;
+        g->popularity = config.popularity;
 
         multiple = xmlGetProp(group, (const xmlChar*)"allowMultipleSelection");
         if (multiple && xmlStrEqual(multiple, (const xmlChar*)"true"))
@@ -1058,10 +1075,7 @@ parse_group(struct rxkb_context *ctx, xmlNode *group,
         list_init(&g->options);
         list_append(&ctx->option_groups, &g->base.link);
     } else {
-        free(name);
-        free(description);
-        free(brief);
-        free(vendor);
+        config_item_free(&config);
     }
 
     for (node = group->children; node; node = node->next) {
@@ -1146,9 +1160,12 @@ validate(struct rxkb_context *ctx, xmlDoc *doc)
     xmlValidCtxt *dtdvalid = NULL;
     xmlDtd *dtd = NULL;
     xmlParserInputBufferPtr buf = NULL;
-    /* This is a modified version of the xkeyboard-config xkb.dtd. That one
-     * requires modelList, layoutList and optionList, we
-     * allow for any of those to be missing.
+    /* This is a modified version of the xkeyboard-config xkb.dtd:
+     * • xkeyboard-config requires modelList, layoutList and optionList,
+     *   but we allow for any of those to be missing.
+     * • xkeyboard-config sets default value of “popularity” to “standard”,
+     *   but we set this value depending if we are currently parsing an
+     *   “extras” rule file.
      */
     const char dtdstr[] =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -1165,7 +1182,7 @@ validate(struct rxkb_context *ctx, xmlDoc *doc)
         "<!ATTLIST group allowMultipleSelection (true|false) \"false\">\n"
         "<!ELEMENT option (configItem)>\n"
         "<!ELEMENT configItem (name, shortDescription?, description?, vendor?, countryList?, languageList?, hwList?)>\n"
-        "<!ATTLIST configItem popularity (standard|exotic) \"standard\">\n"
+        "<!ATTLIST configItem popularity (standard|exotic) #IMPLIED>\n"
         "<!ELEMENT name (#PCDATA)>\n"
         "<!ELEMENT shortDescription (#PCDATA)>\n"
         "<!ELEMENT description (#PCDATA)>\n"

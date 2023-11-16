@@ -46,6 +46,12 @@ enum {
     OPTION,
 };
 
+enum popularity {
+    POPULARITY_UNDEFINED = 0, /* Not member of enum rxkb_popularity */
+    POPULARITY_STANDARD = RXKB_POPULARITY_STANDARD,
+    POPULARITY_EXOTIC = RXKB_POPULARITY_EXOTIC,
+};
+
 struct test_model {
     const char *name; /* required */
     const char *vendor;
@@ -59,6 +65,7 @@ struct test_layout {
     const char *description;
     const char *iso639[3];  /* language list (iso639 three letter codes), 3 is enough for our test  */
     const char *iso3166[3]; /* country list (iso3166 two letter codes), 3 is enough for our tests */
+    enum popularity popularity;
 };
 
 struct test_option {
@@ -74,6 +81,22 @@ struct test_option_group {
     struct test_option options[10];
 };
 
+static const char *
+popularity_attr(enum popularity popularity)
+{
+    switch (popularity) {
+        case POPULARITY_UNDEFINED:
+            return "";
+        case RXKB_POPULARITY_STANDARD:
+            return " popularity=\"standard\"";
+        case RXKB_POPULARITY_EXOTIC:
+            return " popularity=\"exotic\"";
+        default:
+            fprintf(stderr, "ERROR: unsupported popularity: %d\n", popularity);
+            assert(false);
+    }
+}
+
 static void
 fprint_config_item(FILE *fp,
                    const char *name,
@@ -81,10 +104,11 @@ fprint_config_item(FILE *fp,
                    const char *brief,
                    const char *description,
                    const char * const iso639[3],
-                   const char * const iso3166[3])
+                   const char * const iso3166[3],
+                   enum popularity popularity)
 {
-    fprintf(fp, "  <configItem>\n"
-                "    <name>%s</name>\n", name);
+    fprintf(fp, "  <configItem%s>\n"
+                "    <name>%s</name>\n", popularity_attr(popularity), name);
     if (brief)
         fprintf(fp, "    <shortDescription>%s</shortDescription>\n", brief);
     if (description)
@@ -156,7 +180,8 @@ test_create_rules(const char *ruleset,
 
         for (const struct test_model *m = test_models; m->name; m++) {
             fprintf(fp, "<model>\n");
-            fprint_config_item(fp, m->name, m->vendor, NULL, m->description, NULL, NULL);
+            fprint_config_item(fp, m->name, m->vendor, NULL, m->description,
+                               NULL, NULL, POPULARITY_UNDEFINED);
             fprintf(fp, "</model>\n");
         }
         fprintf(fp, "</modelList>\n");
@@ -174,13 +199,13 @@ test_create_rules(const char *ruleset,
 
         while (l->name) {
             fprintf(fp, "<layout>\n");
-            fprint_config_item(fp, l->name, NULL, l->brief, l->description, l->iso639, l->iso3166);
+            fprint_config_item(fp, l->name, NULL, l->brief, l->description, l->iso639, l->iso3166, l->popularity);
 
             if (next->name && streq(next->name, l->name)) {
                 fprintf(fp, "<variantList>\n");
                 do {
                     fprintf(fp, "<variant>\n");
-                    fprint_config_item(fp, next->variant, NULL, next->brief, next->description, next->iso639, next->iso3166);
+                    fprint_config_item(fp, next->variant, NULL, next->brief, next->description, next->iso639, next->iso3166, next->popularity);
                     fprintf(fp, "</variant>\n");
                     l = next;
                     next++;
@@ -199,10 +224,12 @@ test_create_rules(const char *ruleset,
         for (const struct test_option_group *g = test_groups; g->name; g++) {
             fprintf(fp, "<group allowMultipleSelection=\"%s\">\n",
                     g->allow_multiple_selection ? "true" : "false");
-            fprint_config_item(fp, g->name, NULL, NULL, g->description, NULL, NULL);
+            fprint_config_item(fp, g->name, NULL, NULL, g->description,
+                               NULL, NULL, POPULARITY_UNDEFINED);
             for (const struct test_option *o = g->options; o->name; o++) {
                 fprintf(fp, "  <option>\n");
-                fprint_config_item(fp, o->name, NULL, NULL, o->description, NULL, NULL);
+                fprint_config_item(fp, o->name, NULL, NULL, o->description,
+                                   NULL, NULL, POPULARITY_UNDEFINED);
                 fprintf(fp, "</option>\n");
             }
             fprintf(fp, "</group>\n");
@@ -775,35 +802,69 @@ test_load_invalid_languages(void)
 static void
 test_popularity(void)
 {
-    struct test_layout system_layouts[] =  {
-        {"l1", NO_VARIANT },
-        {"l1", "v1" },
+    assert(POPULARITY_UNDEFINED != POPULARITY_STANDARD);
+    assert(POPULARITY_UNDEFINED != POPULARITY_EXOTIC);
+
+    struct test_layout system_layouts[] = {
+        {.name = "l1", .variant = NO_VARIANT }, /* Default popularity */
+        {.name = "l1", .variant = "v1" },       /* Default popularity */
+        {.name = "l2", .popularity = POPULARITY_STANDARD },
+        {.name = "l3", .popularity = POPULARITY_EXOTIC },
         {NULL},
     };
     struct rxkb_context *ctx;
     struct rxkb_layout *l;
-    const char *ruleset = "xkbtests.extras";
-    char *dir = NULL;
+    struct ruleset_conf {
+        const char *ruleset;
+        enum rxkb_context_flags flags;
+        enum rxkb_popularity popularity; /* Default popularity */
+    };
+    struct ruleset_conf rulesets[] = {
+        {   /* Rules with “standard” popularity */
+            .ruleset="xkbtests",
+            .flags=RXKB_CONTEXT_NO_DEFAULT_INCLUDES,
+            .popularity=RXKB_POPULARITY_STANDARD
+        },
+        {   /* Rules with “exotic” popularity (hack, see below) */
+            .ruleset="xkbtests.extras",
+            .flags=RXKB_CONTEXT_NO_DEFAULT_INCLUDES |
+                   RXKB_CONTEXT_LOAD_EXOTIC_RULES,
+            .popularity=RXKB_POPULARITY_EXOTIC
+        }
+    };
+    for (size_t k = 0; k < ARRAY_SIZE(rulesets); k++) {
+        struct ruleset_conf *conf = &rulesets[k];
+        char *dir = NULL;
 
-    dir = test_create_rules(ruleset, NULL, system_layouts, NULL);
-    ctx = rxkb_context_new(RXKB_CONTEXT_NO_DEFAULT_INCLUDES |
-                           RXKB_CONTEXT_LOAD_EXOTIC_RULES);
-    assert(ctx);
-    assert(rxkb_context_include_path_append(ctx, dir));
-    /* Hack: rulest above generates xkbtests.extras.xml, loading "xkbtests"
-     * means the extras file counts as exotic */
-    assert(rxkb_context_parse(ctx, "xkbtests"));
+        dir = test_create_rules(conf->ruleset, NULL, system_layouts, NULL);
+        ctx = rxkb_context_new(conf->flags);
+        assert(ctx);
+        assert(rxkb_context_include_path_append(ctx, dir));
+        /* Hack: ruleset "xkbtests.extras" above generates xkbtests.extras.xml,
+         * loading "xkbtests" means the extras file counts as exotic */
+        assert(rxkb_context_parse(ctx, "xkbtests"));
 
-    l = fetch_layout(ctx, "l1", NO_VARIANT);
-    assert(rxkb_layout_get_popularity(l) == RXKB_POPULARITY_EXOTIC);
-    rxkb_layout_unref(l);
+        /* Test implicit popularity */
+        l = fetch_layout(ctx, "l1", NO_VARIANT);
+        assert(rxkb_layout_get_popularity(l) == conf->popularity);
+        rxkb_layout_unref(l);
 
-    l = fetch_layout(ctx, "l1", "v1");
-    assert(rxkb_layout_get_popularity(l) == RXKB_POPULARITY_EXOTIC);
-    rxkb_layout_unref(l);
+        l = fetch_layout(ctx, "l1", "v1");
+        assert(rxkb_layout_get_popularity(l) == conf->popularity);
+        rxkb_layout_unref(l);
 
-    test_remove_rules(dir, ruleset);
-    rxkb_context_unref(ctx);
+        /* Test explicit popularity */
+        l = fetch_layout(ctx, "l2", NO_VARIANT);
+        assert(rxkb_layout_get_popularity(l) == RXKB_POPULARITY_STANDARD);
+        rxkb_layout_unref(l);
+
+        l = fetch_layout(ctx, "l3", NO_VARIANT);
+        assert(rxkb_layout_get_popularity(l) == RXKB_POPULARITY_EXOTIC);
+        rxkb_layout_unref(l);
+
+        test_remove_rules(dir, conf->ruleset);
+        rxkb_context_unref(ctx);
+    }
 }
 
 
