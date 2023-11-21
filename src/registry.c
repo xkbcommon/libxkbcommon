@@ -34,6 +34,7 @@
 #include "xkbcommon/xkbregistry.h"
 #include "utils.h"
 #include "util-list.h"
+#include "util-mem.h"
 
 struct rxkb_object;
 
@@ -803,9 +804,9 @@ parse_model(struct rxkb_context *ctx, xmlNode *model,
 
         /* new model */
         m = rxkb_model_create(&ctx->base);
-        m->name = config.name;
-        m->description = config.description;
-        m->vendor = config.vendor;
+        m->name = steal(&config.name);
+        m->description = steal(&config.description);
+        m->vendor = steal(&config.vendor);
         m->popularity = config.popularity;
         list_append(&ctx->models, &m->base.link);
     }
@@ -894,10 +895,10 @@ parse_variant(struct rxkb_context *ctx, struct rxkb_layout *l,
             list_init(&v->iso639s);
             list_init(&v->iso3166s);
             v->name = strdup(l->name);
-            v->variant = config.name;
-            v->description = config.description;
+            v->variant = steal(&config.name);
+            v->description = steal(&config.description);
             // if variant omits brief, inherit from parent layout.
-            v->brief = config.brief == NULL ? strdup_safe(l->brief) : config.brief;
+            v->brief = config.brief == NULL ? strdup_safe(l->brief) : steal(&config.brief);
             v->popularity = config.popularity;
             list_append(&ctx->layouts, &v->base.link);
 
@@ -979,10 +980,10 @@ parse_layout(struct rxkb_context *ctx, xmlNode *layout,
         l = rxkb_layout_create(&ctx->base);
         list_init(&l->iso639s);
         list_init(&l->iso3166s);
-        l->name = config.name;
+        l->name = steal(&config.name);
         l->variant = NULL;
-        l->description = config.description;
-        l->brief = config.brief;
+        l->description = steal(&config.description);
+        l->brief = steal(&config.brief);
         l->popularity = config.popularity;
         list_append(&ctx->layouts, &l->base.link);
     } else {
@@ -1034,8 +1035,8 @@ parse_option(struct rxkb_context *ctx, struct rxkb_option_group *group,
         }
 
         o = rxkb_option_create(&group->base);
-        o->name = config.name;
-        o->description = config.description;
+        o->name = steal(&config.name);
+        o->description = steal(&config.description);
         o->popularity = config.popularity;
         list_append(&group->options, &o->base.link);
     }
@@ -1063,8 +1064,8 @@ parse_group(struct rxkb_context *ctx, xmlNode *group,
 
     if (!exists) {
         g = rxkb_option_group_create(&ctx->base);
-        g->name = config.name;
-        g->description = config.description;
+        g->name = steal(&config.name);
+        g->description = steal(&config.description);
         g->popularity = config.popularity;
 
         multiple = xmlGetProp(group, (const xmlChar*)"allowMultipleSelection");

@@ -364,6 +364,7 @@ if get_option('enable-xkbregistry')
         'src/utils.c',
         'src/util-list.h',
         'src/util-list.c',
+        'src/util-mem.h',
     ]
     libxkbregistry_link_args = []
     libxkbregistry_link_deps = []
