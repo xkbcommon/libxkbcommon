@@ -60,6 +60,7 @@
 #include "vmod.h"
 #include "include.h"
 #include "keysym.h"
+#include "util-mem.h"
 
 
 enum key_repeat {
@@ -518,8 +519,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
     into->mods = from->mods;
 
     if (into->name == NULL) {
-        into->name = from->name;
-        from->name = NULL;
+        into->name = steal(&from->name);
     }
 
     group_names_in_both = MIN(darray_size(into->group_names),
@@ -579,8 +579,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
 
     InitSymbolsInfo(&included, info->keymap, 0 /* unused */,
                     info->actions, &info->mods);
-    included.name = include->stmt;
-    include->stmt = NULL;
+    included.name = steal(&include->stmt);
 
     for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
         SymbolsInfo next_incl;

@@ -31,6 +31,7 @@
 #include "vmod.h"
 #include "expr.h"
 #include "include.h"
+#include "util-mem.h"
 
 enum type_field {
     TYPE_FIELD_MASK = (1 << 0),
@@ -192,8 +193,7 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
     into->mods = from->mods;
 
     if (into->name == NULL) {
-        into->name = from->name;
-        from->name = NULL;
+        into->name = steal(&from->name);
     }
 
     if (darray_empty(into->types)) {
@@ -228,8 +228,7 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
     }
 
     InitKeyTypesInfo(&included, info->ctx, 0 /* unused */, &info->mods);
-    included.name = include->stmt;
-    include->stmt = NULL;
+    included.name = steal(&include->stmt);
 
     for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
         KeyTypesInfo next_incl;

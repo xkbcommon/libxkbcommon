@@ -55,6 +55,7 @@
 #include "action.h"
 #include "vmod.h"
 #include "include.h"
+#include "util-mem.h"
 
 enum si_field {
     SI_FIELD_VIRTUAL_MOD = (1 << 0),
@@ -393,8 +394,7 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
     into->mods = from->mods;
 
     if (into->name == NULL) {
-        into->name = from->name;
-        from->name = NULL;
+        into->name = steal(&from->name);
     }
 
     if (darray_empty(into->interps)) {
@@ -440,8 +440,7 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
 
     InitCompatInfo(&included, info->ctx, 0 /* unused */,
                    info->actions, &info->mods);
-    included.name = include->stmt;
-    include->stmt = NULL;
+    included.name = steal(&include->stmt);
 
     for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
         CompatInfo next_incl;

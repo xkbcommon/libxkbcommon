@@ -30,6 +30,7 @@
 #include "text.h"
 #include "expr.h"
 #include "include.h"
+#include "util-mem.h"
 
 typedef struct {
     enum merge_mode merge;
@@ -268,8 +269,7 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
     }
 
     if (into->name == NULL) {
-        into->name = from->name;
-        from->name = NULL;
+        into->name = steal(&from->name);
     }
 
     /* Merge key names. */
@@ -348,8 +348,7 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *include)
     }
 
     InitKeyNamesInfo(&included, info->ctx, 0 /* unused */);
-    included.name = include->stmt;
-    include->stmt = NULL;
+    included.name = steal(&include->stmt);
 
     for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
         KeyNamesInfo next_incl;
