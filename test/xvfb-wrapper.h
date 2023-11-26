@@ -31,7 +31,7 @@ struct test_function {
 #define X11_TEST(_func) \
 static int _func(char* display); \
 static const struct test_function _test_##_func \
-__attribute__((used)) \
+__attribute__((retain,used)) \
 __attribute__((section("test_functions_section"))) = { \
     .name = #_func, \
     .func = _func, \
