@@ -328,7 +328,7 @@ struct production {
     xkb_keysym_t lhs[MAX_LHS_LEN];
     unsigned int len;
     xkb_keysym_t keysym;
-    char string[256];
+    char string[XKB_COMPOSE_MAX_STRING_SIZE];
     /* At least one of these is true. */
     bool has_keysym;
     bool has_string;
@@ -687,8 +687,10 @@ rhs:
             scanner_warn(s, "right-hand side string must not be empty; skipping line");
             goto skip;
         }
-        if (val.string.len >= sizeof(production.string)) {
-            scanner_warn(s, "right-hand side string is too long; skipping line");
+        if (val.string.len > sizeof(production.string)) {
+            scanner_warn(s,
+                         "right-hand side string is too long: expected max: %d, got: %d; "
+                         "skipping line", (int)sizeof(production.string) - 1, (int)val.string.len);
             goto skip;
         }
         strcpy(production.string, val.string.str);

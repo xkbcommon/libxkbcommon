@@ -74,7 +74,7 @@ test_compose_seq_va(struct xkb_compose_table *table, va_list ap)
 {
     int ret;
     struct xkb_compose_state *state;
-    char buffer[XKB_KEYSYM_NAME_MAX_SIZE];
+    char buffer[MAX(XKB_COMPOSE_MAX_STRING_SIZE, XKB_KEYSYM_NAME_MAX_SIZE)];
 
     state = xkb_compose_state_new(table, XKB_COMPOSE_STATE_NO_FLAGS);
     assert(state);
@@ -774,6 +774,27 @@ test_traverse(struct xkb_context *ctx)
 }
 
 static void
+test_string_length(struct xkb_context *ctx)
+{
+    // Invalid: empty string
+    const char table_string_1[] = "<a> <b> : \"\" X\n";
+    assert(test_compose_seq_buffer(ctx, table_string_1,
+        XKB_KEY_a, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSING, "", XKB_KEY_NoSymbol,
+        XKB_KEY_b, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSED,  "", XKB_KEY_X,
+        XKB_KEY_NoSymbol));
+
+    char long_string[XKB_COMPOSE_MAX_STRING_SIZE] = { 0 };
+    memset(long_string, 0x61, XKB_COMPOSE_MAX_STRING_SIZE - 1);
+    char table_string_2[XKB_COMPOSE_MAX_STRING_SIZE + sizeof(table_string_1) - 1];
+    assert(snprintf_safe(table_string_2, sizeof(table_string_2),
+                         "<a> <b> : \"%s\" X\n", long_string));
+    assert(test_compose_seq_buffer(ctx, table_string_2,
+        XKB_KEY_a, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSING, "",          XKB_KEY_NoSymbol,
+        XKB_KEY_b, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSED,  long_string, XKB_KEY_X,
+        XKB_KEY_NoSymbol));
+}
+
+static void
 test_decode_escape_sequences(struct xkb_context *ctx)
 {
     /* The following escape sequences should be ignored:
@@ -936,6 +957,7 @@ main(int argc, char *argv[])
     test_include(ctx);
     test_override(ctx);
     test_traverse(ctx);
+    test_string_length(ctx);
     test_decode_escape_sequences(ctx);
     test_encode_escape_sequences(ctx);
 
