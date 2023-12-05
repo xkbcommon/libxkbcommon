@@ -103,6 +103,13 @@ test_modifier(xkb_keysym_t ks)
     return false;
 }
 
+static bool
+test_keypad(xkb_keysym_t ks, char *name)
+{
+    const char prefix[] = "KP_";
+    return strncmp(prefix, name, sizeof(prefix) - 1) == 0;
+}
+
 static int
 test_string(const char *string, xkb_keysym_t expected)
 {
@@ -271,6 +278,13 @@ main(void)
         assert_printf(got == expected,
                       "xkb_keysym_is_modifier(0x%04"PRIx32"): expected %d, got: %d\n",
                       ks, expected, got);
+        /* Test keypad keysyms */
+        expected = test_keypad(ks, name);
+        got = xkb_keysym_is_keypad(ks);
+        assert_printf(got == expected,
+                      "xkb_keysym_is_keypad(0x%04"PRIx32") \"%s\": "
+                      "expected %d, got: %d\n",
+                      ks, name, expected, got);
     }
     iter = xkb_keysym_iterator_unref(iter);
     assert(ks_prev == XKB_KEYSYM_MAX_ASSIGNED);
