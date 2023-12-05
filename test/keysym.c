@@ -23,9 +23,85 @@
 #include "config.h"
 
 #include <locale.h>
+#include <stdbool.h>
 
 #include "test.h"
 #include "keysym.h" /* For unexported is_lower/upper/keypad() */
+
+/* Explicit ordered list of modifier keysyms */
+static const xkb_keysym_t modifier_keysyms[] = {
+    XKB_KEY_ISO_Lock,
+    XKB_KEY_ISO_Level2_Latch,
+    XKB_KEY_ISO_Level3_Shift,
+    XKB_KEY_ISO_Level3_Latch,
+    XKB_KEY_ISO_Level3_Lock,
+    /* XKB_KEY_ISO_Group_Shift == XKB_KEY_Mode_switch */
+    XKB_KEY_ISO_Group_Latch,
+    XKB_KEY_ISO_Group_Lock,
+    XKB_KEY_ISO_Next_Group,
+    XKB_KEY_ISO_Next_Group_Lock,
+    XKB_KEY_ISO_Prev_Group,
+    XKB_KEY_ISO_Prev_Group_Lock,
+    XKB_KEY_ISO_First_Group,
+    XKB_KEY_ISO_First_Group_Lock,
+    XKB_KEY_ISO_Last_Group,
+    XKB_KEY_ISO_Last_Group_Lock,
+    0xfe10, /* Currently unassigned, but xkb_keysym_is_modifier returns true */
+    XKB_KEY_ISO_Level5_Shift,
+    XKB_KEY_ISO_Level5_Latch,
+    XKB_KEY_ISO_Level5_Lock,
+
+    XKB_KEY_Mode_switch,
+    XKB_KEY_Num_Lock,
+
+    XKB_KEY_Shift_L,
+    XKB_KEY_Shift_R,
+    XKB_KEY_Control_L,
+    XKB_KEY_Control_R,
+    XKB_KEY_Caps_Lock,
+    XKB_KEY_Shift_Lock,
+
+    XKB_KEY_Meta_L,
+    XKB_KEY_Meta_R,
+    XKB_KEY_Alt_L,
+    XKB_KEY_Alt_R,
+    XKB_KEY_Super_L,
+    XKB_KEY_Super_R,
+    XKB_KEY_Hyper_L,
+    XKB_KEY_Hyper_R
+};
+
+#define MIN_MODIFIER_KEYSYM modifier_keysyms[0]
+#define MAX_MODIFIER_KEYSYM modifier_keysyms[ARRAY_SIZE(modifier_keysyms) - 1]
+
+static void
+test_modifiers_table(void)
+{
+    xkb_keysym_t ks = XKB_KEY_NoSymbol;
+
+    /* Ensure ordered array */
+    for (size_t k = 0; k < ARRAY_SIZE(modifier_keysyms); k++) {
+        assert_printf(ks < modifier_keysyms[k],
+                      "modifier_keysyms[] is not ordered: 0x%04"PRIx32">=0x%04"PRIx32"\n",
+                      ks, modifier_keysyms[k]);
+        ks = modifier_keysyms[k];
+    }
+
+    /* Unassigned keysym */
+    assert(!xkb_keysym_is_assigned(0xfe10));
+}
+
+static bool
+test_modifier(xkb_keysym_t ks)
+{
+    if (ks < MIN_MODIFIER_KEYSYM || ks > MAX_MODIFIER_KEYSYM)
+        return false;
+    for (size_t k = 0; k < ARRAY_SIZE(modifier_keysyms); k++) {
+        if (ks == modifier_keysyms[k])
+            return true;
+    }
+    return false;
+}
 
 static int
 test_string(const char *string, xkb_keysym_t expected)
@@ -166,6 +242,8 @@ main(void)
     assert(xkb_keysym_is_assigned(XKB_KEYSYM_MAX_ASSIGNED));
     assert(!xkb_keysym_is_assigned(XKB_KEYSYM_MAX));
 
+    test_modifiers_table();
+
     struct xkb_keysym_iterator *iter = xkb_keysym_iterator_new(false);
     xkb_keysym_t ks_prev = XKB_KEYSYM_MIN;
     uint32_t count = 0;
@@ -187,6 +265,12 @@ main(void)
         char name[XKB_KEYSYM_NAME_MAX_SIZE];
         needed = xkb_keysym_iterator_get_name(iter, name, sizeof(name));
         assert(0 < needed && (size_t)needed <= sizeof(name));
+        /* Test modifier keysyms */
+        bool expected = test_modifier(ks);
+        bool got = xkb_keysym_is_modifier(ks);
+        assert_printf(got == expected,
+                      "xkb_keysym_is_modifier(0x%04"PRIx32"): expected %d, got: %d\n",
+                      ks, expected, got);
     }
     iter = xkb_keysym_iterator_unref(iter);
     assert(ks_prev == XKB_KEYSYM_MAX_ASSIGNED);
