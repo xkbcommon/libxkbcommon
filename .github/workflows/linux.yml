@@ -30,7 +30,7 @@ jobs:
           sudo apt update
           sudo apt install -y \
             doxygen libxcb-xkb-dev valgrind ninja-build \
-            libwayland-dev wayland-protocols bison graphviz
+            libwayland-dev wayland-protocols bison graphviz libicu-dev
       - name: Install xkeyboard-config
         run: |
           # Install master version of xkeyboard-config, in order to ensure
