@@ -24,6 +24,9 @@
 
 #include <locale.h>
 #include <stdbool.h>
+#if HAVE_ICU
+#include <unicode/uchar.h>
+#endif
 
 #include "test.h"
 #include "keysym.h" /* For unexported is_lower/upper/keypad() */
@@ -169,6 +172,87 @@ test_utf8(xkb_keysym_t keysym, const char *expected)
     return streq(s, expected);
 }
 
+#if HAVE_ICU
+
+static inline uint32_t
+to_simple_lower(uint32_t cp)
+{
+    return (uint32_t)u_tolower((UChar32) cp);
+}
+
+static inline uint32_t
+to_simple_upper(uint32_t cp)
+{
+    return (uint32_t)u_toupper((UChar32) cp);
+}
+
+#define KEYSYM     "0x%04"PRIx32
+#define CODE_POINT "U+%04"PRIX32
+
+static void
+test_icu_case_mappings(xkb_keysym_t ks)
+{
+    /* Check lower case mapping */
+    xkb_keysym_t ks_mapped = xkb_keysym_to_lower(ks);
+    uint32_t cp = xkb_keysym_to_utf32(ks);
+    uint32_t expected = to_simple_lower(cp);
+    if (ks_mapped && ks_mapped != ks) {
+        uint32_t got = xkb_keysym_to_utf32(ks_mapped);
+        assert_printf(got == expected,
+                      "Invalid xkb_keysym_to_lower("KEYSYM") == "KEYSYM": "
+                      "expected "CODE_POINT", got: "CODE_POINT"\n",
+                      ks, ks_mapped, expected, got);
+        got = !!xkb_keysym_is_upper(ks);
+        expected = !!(u_isUUppercase(cp) || u_istitle(cp));
+        assert_printf(got == expected || u_istitle(cp),
+                      "Invalid xkb_keysym_is_upper("KEYSYM") ("CODE_POINT"): "
+                      "expected %d, got: %d\n",
+                      ks, cp, expected, got);
+        if (u_istitle(cp)) {
+            fprintf(stderr,
+                    "%s title case handling "KEYSYM" ("CODE_POINT")\n",
+                    (got == expected) ? "[INFO] valid" : "[WARNING] invalid",
+                    ks, cp);
+        }
+    } else if (expected != cp) {
+        fprintf(stderr,
+                "[WARNING] missing lower case mapping for "KEYSYM": "
+                "expected "CODE_POINT", got: "CODE_POINT"\n",
+                ks, expected, cp);
+        assert_printf(!xkb_keysym_is_upper(ks),
+                      "Invalid xkb_keysym_is_upper("KEYSYM") ("CODE_POINT"): "
+                      "expected false, got: true\n",
+                      ks, cp);
+    }
+
+    /* Check upper case mapping */
+    ks_mapped = xkb_keysym_to_upper(ks);
+    expected = to_simple_upper(cp);
+    if (ks_mapped && ks_mapped != ks) {
+        uint32_t got = xkb_keysym_to_utf32(ks_mapped);
+        assert_printf(got == expected,
+                      "Invalid xkb_keysym_to_upper("KEYSYM") == "KEYSYM": "
+                      "expected "CODE_POINT", got: "CODE_POINT"\n",
+                      ks, ks_mapped, expected, got);
+        got = !!xkb_keysym_is_lower(ks);
+        expected = !!u_isULowercase(cp);
+        assert_printf(got == expected,
+                      "Invalid xkb_keysym_is_lower("KEYSYM") ("CODE_POINT"): "
+                      "expected %d, got: %d\n",
+                      ks, cp, expected, got);
+    } else if (expected != cp) {
+        fprintf(stderr,
+                "[WARNING] missing upper case mapping for "KEYSYM": "
+                "expected "CODE_POINT", got: "CODE_POINT"\n",
+                ks, expected, cp);
+        assert_printf(!xkb_keysym_is_lower(ks),
+                      "Invalid xkb_keysym_is_lower("KEYSYM") ("CODE_POINT"): "
+                      "expected false, got: true\n",
+                      ks, cp);
+    }
+}
+#endif
+
 static void
 test_github_issue_42(void)
 {
@@ -285,6 +369,10 @@ main(void)
                       "xkb_keysym_is_keypad(0x%04"PRIx32") \"%s\": "
                       "expected %d, got: %d\n",
                       ks, name, expected, got);
+#if HAVE_ICU
+        /* Check case mappings */
+        test_icu_case_mappings(ks);
+#endif
     }
     iter = xkb_keysym_iterator_unref(iter);
     assert(ks_prev == XKB_KEYSYM_MAX_ASSIGNED);
