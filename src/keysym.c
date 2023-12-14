@@ -91,6 +91,14 @@ get_name(const struct name_keysym *entry)
     return keysym_names + entry->offset;
 }
 
+/* Unnamed Unicode codepoint. */
+static inline int
+get_unicode_name(xkb_keysym_t ks, char *buffer, size_t size)
+{
+    const int width = (ks & 0xff0000UL) ? 8 : 4;
+    return snprintf(buffer, size, "U%0*lX", width, ks & 0xffffffUL);
+}
+
 XKB_EXPORT int
 xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
 {
@@ -104,10 +112,8 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
         return snprintf(buffer, size, "%s", get_name(&keysym_to_name[index]));
 
     /* Unnamed Unicode codepoint. */
-    if (ks >= XKB_KEYSYM_UNICODE_MIN && ks <= XKB_KEYSYM_UNICODE_MAX) {
-        const int width = (ks & 0xff0000UL) ? 8 : 4;
-        return snprintf(buffer, size, "U%0*lX", width, ks & 0xffffffUL);
-    }
+    if (ks >= XKB_KEYSYM_UNICODE_MIN && ks <= XKB_KEYSYM_UNICODE_MAX)
+        return get_unicode_name(ks, buffer, size);
 
     /* Unnamed, non-Unicode, symbol (shouldn't generally happen). */
     return snprintf(buffer, size, "0x%08x", ks);
@@ -118,6 +124,98 @@ xkb_keysym_is_assigned(xkb_keysym_t ks)
 {
     return (XKB_KEYSYM_UNICODE_MIN <= ks && ks <= XKB_KEYSYM_UNICODE_MAX) ||
            find_keysym_index(ks) != -1;
+}
+
+struct xkb_keysym_iterator {
+    bool explicit;       /* If true, traverse only explicitly named keysyms */
+    int32_t index;       /* Current index in `keysym_to_name` */
+    xkb_keysym_t keysym; /* Current keysym */
+};
+
+struct xkb_keysym_iterator*
+xkb_keysym_iterator_new(bool iterate_only_explicit_keysyms)
+{
+    struct xkb_keysym_iterator* iter = calloc(1, sizeof(*iter));
+    iter->explicit = iterate_only_explicit_keysyms;
+    iter->index = -1;
+    iter->keysym = XKB_KEYSYM_UNICODE_MAX;
+    return iter;
+}
+
+struct xkb_keysym_iterator*
+xkb_keysym_iterator_unref(struct xkb_keysym_iterator *iter)
+{
+    free(iter);
+    return NULL;
+}
+
+xkb_keysym_t
+xkb_keysym_iterator_get_keysym(struct xkb_keysym_iterator *iter)
+{
+    return iter->keysym;
+}
+
+bool
+xkb_keysym_iterator_is_explicitly_named(struct xkb_keysym_iterator *iter)
+{
+    return iter->index >= 0 &&
+           iter->index < (int32_t)ARRAY_SIZE(keysym_to_name) &&
+           (iter->explicit ||
+            iter->keysym == keysym_to_name[iter->index].keysym);
+}
+
+int
+xkb_keysym_iterator_get_name(struct xkb_keysym_iterator *iter,
+                             char *buffer, size_t size)
+{
+    if (iter->index < 0 || iter->index >= (int32_t)ARRAY_SIZE(keysym_to_name))
+        return -1;
+    if (iter->explicit || iter->keysym == keysym_to_name[iter->index].keysym)
+        return snprintf(buffer, size, "%s",
+                        get_name(&keysym_to_name[iter->index]));
+    return get_unicode_name(iter->keysym, buffer, size);
+}
+
+/* Iterate over the *assigned* keysyms.
+ *
+ * Use:
+ *
+ * ```c
+ * struct xkb_keysym_iterator *iter = xkb_keysym_iterator_new(true);
+ * while (xkb_keysym_iterator_next(iter)) {
+ *   ...
+ * }
+ * iter = xkb_keysym_iterator_unref(iter);
+ * ```
+ */
+bool
+xkb_keysym_iterator_next(struct xkb_keysym_iterator *iter)
+{
+    if (iter->index >= (int32_t)ARRAY_SIZE(keysym_to_name) - 1)
+        return false;
+
+    /* Next keysym */
+    if (iter->explicit || iter->keysym >= XKB_KEYSYM_UNICODE_MAX ||
+        keysym_to_name[iter->index + 1].keysym < XKB_KEYSYM_UNICODE_MIN) {
+        /* Explicitly named keysyms only */
+        iter->keysym = keysym_to_name[++iter->index].keysym;
+        assert(iter->explicit ||
+               iter->keysym <= XKB_KEYSYM_UNICODE_MIN ||
+               iter->keysym >= XKB_KEYSYM_UNICODE_MAX);
+    } else {
+        /* Unicode keysyms
+         * NOTE: Unicode keysyms are within keysym_to_name keysyms range. */
+        if (iter->keysym >= keysym_to_name[iter->index].keysym)
+            iter->index++;
+        if (iter->keysym >= XKB_KEYSYM_UNICODE_MIN) {
+            /* Continue Unicode keysyms */
+            iter->keysym++;
+        } else {
+            /* Start Unicode keysyms */
+            iter->keysym = XKB_KEYSYM_UNICODE_MIN;
+        }
+    }
+    return true;
 }
 
 /*
