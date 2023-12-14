@@ -55,6 +55,36 @@
 #include "keysym.h"
 #include "ks_tables.h"
 
+static ssize_t
+find_keysym_index(xkb_keysym_t ks)
+{
+    /* Lower bound:
+     * keysym_to_name[0].keysym
+     * == XKB_KEYSYM_MIN_EXPLICIT == XKB_KEYSYM_MIN == 0
+     * No need to check: xkb_keysym_t is unsigned.
+     *
+     * Upper bound:
+     * keysym_to_name[ARRAY_SIZE(keysym_to_name) - 1].keysym
+     * == XKB_KEYSYM_MAX_EXPLICIT <= XKB_KEYSYM_MAX
+     */
+    if (ks > XKB_KEYSYM_MAX_EXPLICIT)
+        return -1;
+
+    ssize_t lo = 0, hi = ARRAY_SIZE(keysym_to_name) - 1;
+    while (hi >= lo) {
+        ssize_t mid = (lo + hi) / 2;
+        if (ks > keysym_to_name[mid].keysym) {
+            lo = mid + 1;
+        } else if (ks < keysym_to_name[mid].keysym) {
+            hi = mid - 1;
+        } else {
+            return mid;
+        }
+    }
+
+    return -1;
+}
+
 static inline const char *
 get_name(const struct name_keysym *entry)
 {
@@ -69,17 +99,9 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
         return -1;
     }
 
-    int32_t lo = 0, hi = ARRAY_SIZE(keysym_to_name) - 1;
-    while (hi >= lo) {
-        int32_t mid = (lo + hi) / 2;
-        if (ks > keysym_to_name[mid].keysym) {
-            lo = mid + 1;
-        } else if (ks < keysym_to_name[mid].keysym) {
-            hi = mid - 1;
-        } else {
-            return snprintf(buffer, size, "%s", get_name(&keysym_to_name[mid]));
-        }
-    }
+    ssize_t index = find_keysym_index(ks);
+    if (index != -1)
+        return snprintf(buffer, size, "%s", get_name(&keysym_to_name[index]));
 
     /* Unnamed Unicode codepoint. */
     if (ks >= XKB_KEYSYM_UNICODE_MIN && ks <= XKB_KEYSYM_UNICODE_MAX) {
@@ -89,6 +111,13 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
 
     /* Unnamed, non-Unicode, symbol (shouldn't generally happen). */
     return snprintf(buffer, size, "0x%08x", ks);
+}
+
+bool
+xkb_keysym_is_assigned(xkb_keysym_t ks)
+{
+    return (XKB_KEYSYM_UNICODE_MIN <= ks && ks <= XKB_KEYSYM_UNICODE_MAX) ||
+           find_keysym_index(ks) != -1;
 }
 
 /*
