@@ -43,9 +43,11 @@
 #ifdef _WIN32
 # include <direct.h>
 # include <io.h>
+# include <BaseTsd.h>
 # ifndef S_ISDIR
 #  define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 # endif
+typedef SSIZE_T ssize_t;
 #endif
 
 #include "darray.h"
