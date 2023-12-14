@@ -50,6 +50,9 @@
 #ifndef KEYSYM_H
 #define KEYSYM_H
 
+#include <stdbool.h>
+#include "xkbcommon/xkbcommon.h"
+
 /*
  * NOTE: this is not defined in xkbcommon.h, because if we did, it may add
  * overhead for library user: when handling keysyms they would also need to
@@ -73,6 +76,9 @@
 #define XKB_KEYSYM_UNICODE_MIN    0x01000100
 /** Maximum Unicode keysym, correspoding to the maximum Unicode code point */
 #define XKB_KEYSYM_UNICODE_MAX    0x0110ffff
+
+bool
+xkb_keysym_is_assigned(xkb_keysym_t ks);
 
 bool
 xkb_keysym_is_lower(xkb_keysym_t keysym);

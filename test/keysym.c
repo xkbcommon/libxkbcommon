@@ -147,6 +147,32 @@ main(void)
     assert(XKB_KEYSYM_UNICODE_MIN < XKB_KEYSYM_UNICODE_MAX);
     assert(XKB_KEYSYM_UNICODE_MAX <= XKB_KEYSYM_MAX_EXPLICIT);
 
+    /* Assigned keysyms */
+    assert(xkb_keysym_is_assigned(XKB_KEYSYM_MIN));
+    assert(xkb_keysym_is_assigned(XKB_KEYSYM_MIN_ASSIGNED));
+    assert(xkb_keysym_is_assigned(XKB_KEY_space));
+    assert(xkb_keysym_is_assigned(XKB_KEY_nobreakspace));
+    assert(xkb_keysym_is_assigned(XKB_KEY_Aogonek));
+    assert(xkb_keysym_is_assigned(XKB_KEY_Hstroke));
+    assert(xkb_keysym_is_assigned(XKB_KEY_kra));
+    assert(xkb_keysym_is_assigned(XKB_KEY_braille_dot_1));
+    assert(xkb_keysym_is_assigned(XKB_KEY_XF86KbdLcdMenu5));
+    assert(xkb_keysym_is_assigned(XKB_KEY_Shift_L));
+    assert(xkb_keysym_is_assigned(XKB_KEY_XF86MonBrightnessUp));
+    assert(xkb_keysym_is_assigned(XKB_KEY_VoidSymbol));
+    assert(xkb_keysym_is_assigned(XKB_KEYSYM_UNICODE_MIN));
+    assert(xkb_keysym_is_assigned((XKB_KEYSYM_UNICODE_MIN + XKB_KEYSYM_UNICODE_MAX) / 2));
+    assert(xkb_keysym_is_assigned(XKB_KEYSYM_UNICODE_MAX));
+    assert(xkb_keysym_is_assigned(XKB_KEYSYM_MAX_ASSIGNED));
+    assert(!xkb_keysym_is_assigned(XKB_KEYSYM_MAX));
+
+    for (xkb_keysym_t ks = XKB_KEYSYM_MIN; ks <= XKB_KEYSYM_MAX; ks++) {
+        if (!xkb_keysym_is_assigned(ks))
+            continue;
+        /* Check assigned keysyms bounds */
+        assert(XKB_KEYSYM_MIN_ASSIGNED <= (int32_t)ks && ks <= XKB_KEYSYM_MAX_ASSIGNED);
+    }
+
     /* Named keysyms */
     assert(test_string("NoSymbol", XKB_KEY_NoSymbol));
     assert(test_string("Undo", 0xFF65));

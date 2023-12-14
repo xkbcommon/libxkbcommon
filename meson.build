@@ -623,6 +623,7 @@ libxkbcommon_test_internal = static_library(
     'bench/bench.h',
     libxkbcommon_sources,
     include_directories: include_directories('src', 'include'),
+    c_args: ['-DENABLE_PRIVATE_APIS'],
 )
 test_dep = declare_dependency(
     include_directories: include_directories('src', 'include'),
@@ -652,7 +653,8 @@ if get_option('enable-x11')
 endif
 test(
     'keysym',
-    executable('test-keysym', 'test/keysym.c', dependencies: test_dep),
+    executable('test-keysym', 'test/keysym.c', dependencies: test_dep,
+               c_args: ['-DENABLE_PRIVATE_APIS']),
     env: test_env,
 )
 test(
