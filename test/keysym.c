@@ -166,9 +166,10 @@ main(void)
     assert(test_string("U009f", XKB_KEY_NoSymbol));
     assert(test_string("U00a0", 0x00000a0));
     assert(test_string("U00ff", 0x00000ff));
+    assert(test_string("U0100", XKB_KEYSYM_UNICODE_MIN));
     assert(test_string("U4567", 0x1004567));
     assert(test_string("U1F4A9", 0x0101F4A9));
-    assert(test_string("U10FFFF", 0x110ffff)); /* Max Unicode */
+    assert(test_string("U10FFFF", XKB_KEYSYM_UNICODE_MAX)); /* Max Unicode */
     assert(test_string("U110000", XKB_KEY_NoSymbol));
     /* Unicode: test syntax */
     assert(test_string("U00004567", 0x1004567));         /* OK:  8 digits */
@@ -189,8 +190,8 @@ main(void)
     assert(test_string("0x1", 0x00000001));
     assert(test_string("0x01234567", 0x01234567));
     assert(test_string("0x09abcdef", 0x09abcdef));
-    assert(test_string("0x01000100", 0x01000100)); /* Min Unicode. */
-    assert(test_string("0x0110ffff", 0x0110ffff)); /* Max Unicode. */
+    assert(test_string("0x01000100", XKB_KEYSYM_UNICODE_MIN)); /* Min Unicode. */
+    assert(test_string("0x0110ffff", XKB_KEYSYM_UNICODE_MAX)); /* Max Unicode. */
     assert(test_string(STRINGIFY2(XKB_KEYSYM_MAX), XKB_KEYSYM_MAX));   /* Max keysym. */
     assert(test_string("0x20000000", XKB_KEY_NoSymbol));
     assert(test_string("0xffffffff", XKB_KEY_NoSymbol));
@@ -215,16 +216,16 @@ main(void)
     assert(test_keysym(0x1008FF56, "XF86Close"));
     assert(test_keysym(0x0, "NoSymbol"));
     assert(test_keysym(0x1008FE20, "XF86Ungrab"));
-    assert(test_keysym(0x01000000, "0x01000000"));
+    assert(test_keysym(XKB_KEYSYM_UNICODE_OFFSET, "0x01000000"));
     /* Min Unicode */
-    assert(test_keysym(0x01000100, "U0100"));
+    assert(test_keysym(XKB_KEYSYM_UNICODE_MIN, "U0100"));
     assert(test_keysym(0x01001234, "U1234"));
     /* 16-bit unicode padded to width 4. */
     assert(test_keysym(0x010002DE, "U02DE"));
     /* 32-bit unicode padded to width 8. */
     assert(test_keysym(0x0101F4A9, "U0001F4A9"));
     /* Max Unicode */
-    assert(test_keysym(0x0110ffff, "U0010FFFF"));
+    assert(test_keysym(XKB_KEYSYM_UNICODE_MAX, "U0010FFFF"));
     /* Max Unicode + 1 */
     assert(test_keysym(0x01110000, "0x01110000"));
     /* Min keysym. */
@@ -293,14 +294,14 @@ main(void)
     assert(test_utf8(XKB_KEY_KP_Subtract, "-"));
 
     /* Unicode keysyms */
-    assert(test_utf8(0x1000000, NULL) == 0); /* Min Unicode codepoint */
+    assert(test_utf8(XKB_KEYSYM_UNICODE_OFFSET, NULL) == 0); /* Min Unicode codepoint */
     assert(test_utf8(0x1000001, "\x01"));     /* Currently accepted, but not intended (< 0x100100) */
     assert(test_utf8(0x1000020, " "));        /* Currently accepted, but not intended (< 0x100100) */
     assert(test_utf8(0x100007f, "\x7f"));     /* Currently accepted, but not intended (< 0x100100) */
     assert(test_utf8(0x10000a0, "\xc2\xa0")); /* Currently accepted, but not intended (< 0x100100) */
-    assert(test_utf8(0x1000100, "Ā")); /* Min Unicode keysym */
+    assert(test_utf8(XKB_KEYSYM_UNICODE_MIN, "Ā")); /* Min Unicode keysym */
     assert(test_utf8(0x10005d0, "א"));
-    assert(test_utf8(0x110ffff, "\xf4\x8f\xbf\xbf")); /* Max Unicode */
+    assert(test_utf8(XKB_KEYSYM_UNICODE_MAX, "\xf4\x8f\xbf\xbf")); /* Max Unicode */
     assert(test_utf8(0x0100d800, NULL) == 0); // Unicode surrogates
     assert(test_utf8(0x0100dfff, NULL) == 0); // Unicode surrogates
     assert(test_utf8(0x1110000, NULL) == 0);

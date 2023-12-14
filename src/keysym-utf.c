@@ -40,6 +40,7 @@
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
 #include "utf8.h"
+#include "keysym.h"
 
 #define NO_KEYSYM_UNICODE_CONVERSION 0
 
@@ -886,8 +887,8 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym)
      * ways. However, changing this after a couple of decades probably won't
      * go well, so it stays as it is.
      */
-    if (0x01000000 <= keysym && keysym <= 0x0110ffff)
-        return keysym - 0x01000000;
+    if (XKB_KEYSYM_UNICODE_OFFSET <= keysym && keysym <= XKB_KEYSYM_UNICODE_MAX)
+        return keysym - XKB_KEYSYM_UNICODE_OFFSET;
 
     /* search main table */
     return bin_search(keysymtab, ARRAY_SIZE(keysymtab) - 1, keysym);
@@ -920,7 +921,7 @@ xkb_utf32_to_keysym(uint32_t ucs)
             return keysymtab[i].keysym;
 
     /* Use direct encoding if everything else fails */
-    return ucs | 0x01000000;
+    return ucs | XKB_KEYSYM_UNICODE_OFFSET;
 }
 
 /*
