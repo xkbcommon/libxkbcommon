@@ -56,7 +56,13 @@
  * check min keysym when previously there was no reason to.
  */
 /** Minimum keysym value */
-#define XKB_KEYSYM_MIN      0x00000000
+#define XKB_KEYSYM_MIN            0x00000000
+/** Offset to use when converting a Unicode code point to a keysym */
+#define XKB_KEYSYM_UNICODE_OFFSET 0x01000000
+/** Minimum Unicode keysym. NOTE: code points in 0..0xff cannot be converted. */
+#define XKB_KEYSYM_UNICODE_MIN    0x01000100
+/** Maximum Unicode keysym, correspoding to the maximum Unicode code point */
+#define XKB_KEYSYM_UNICODE_MAX    0x0110ffff
 
 bool
 xkb_keysym_is_lower(xkb_keysym_t keysym);

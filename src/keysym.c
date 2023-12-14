@@ -82,7 +82,7 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
     }
 
     /* Unnamed Unicode codepoint. */
-    if (ks >= 0x01000100 && ks <= 0x0110ffff) {
+    if (ks >= XKB_KEYSYM_UNICODE_MIN && ks <= XKB_KEYSYM_UNICODE_MAX) {
         const int width = (ks & 0xff0000UL) ? 8 : 4;
         return snprintf(buffer, size, "U%0*lX", width, ks & 0xffffffUL);
     }
@@ -203,7 +203,7 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
             return (xkb_keysym_t) val;
         if (val > 0x10ffff)
             return XKB_KEY_NoSymbol;
-        return (xkb_keysym_t) val | 0x01000000;
+        return (xkb_keysym_t) val | XKB_KEYSYM_UNICODE_OFFSET;
     }
     else if (name[0] == '0' && (name[1] == 'x' || (icase && name[1] == 'X'))) {
         if (!parse_keysym_hex(&name[2], &val))
@@ -677,10 +677,10 @@ XConvertCase(xkb_keysym_t sym, xkb_keysym_t *lower, xkb_keysym_t *upper)
     }
 
     /* Unicode keysym */
-    if ((sym & 0xff000000) == 0x01000000) {
+    if ((sym & 0xff000000) == XKB_KEYSYM_UNICODE_OFFSET) {
         UCSConvertCase((sym & 0x00ffffff), lower, upper);
-        *upper |= 0x01000000;
-        *lower |= 0x01000000;
+        *upper |= XKB_KEYSYM_UNICODE_OFFSET;
+        *lower |= XKB_KEYSYM_UNICODE_OFFSET;
         return;
     }
 
