@@ -618,8 +618,6 @@ UCSConvertCase(uint32_t code, xkb_keysym_t *lower, xkb_keysym_t *upper)
             *upper = 0x0178;
         else if (code == 0x00b5)      /* micro sign */
             *upper = 0x039c;
-        else if (code == 0x00df)      /* ssharp */
-            *upper = 0x1e9e;
 	return;
     }
 
@@ -796,8 +794,8 @@ UCSConvertCase(uint32_t code, xkb_keysym_t *lower, xkb_keysym_t *upper)
 static void
 XConvertCase(xkb_keysym_t sym, xkb_keysym_t *lower, xkb_keysym_t *upper)
 {
-    /* Latin 1 keysym */
-    if (sym < 0x100) {
+    /* Latin 1 keysym (first part: fast path) */
+    if (sym < 0xb5) {
         UCSConvertCase(sym, lower, upper);
 	return;
     }
@@ -816,6 +814,14 @@ XConvertCase(xkb_keysym_t sym, xkb_keysym_t *lower, xkb_keysym_t *upper)
     *upper = sym;
 
     switch(sym >> 8) {
+    case 0: /* Latin 1 (second part) */
+    if (sym == XKB_KEY_mu)
+        *upper = XKB_KEY_Greek_MU;
+    else if (sym == XKB_KEY_ydiaeresis)
+        *upper = XKB_KEY_Ydiaeresis;
+    else
+        UCSConvertCase(sym, lower, upper);
+    break;
     case 1: /* Latin 2 */
 	/* Assume the KeySym is a legal value (ignore discontinuities) */
 	if (sym == XKB_KEY_Aogonek)
