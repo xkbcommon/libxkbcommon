@@ -80,6 +80,27 @@
 bool
 xkb_keysym_is_assigned(xkb_keysym_t ks);
 
+struct xkb_keysym_iterator;
+
+struct xkb_keysym_iterator*
+xkb_keysym_iterator_new(bool explicit);
+
+struct xkb_keysym_iterator*
+xkb_keysym_iterator_unref(struct xkb_keysym_iterator *iter);
+
+bool
+xkb_keysym_iterator_next(struct xkb_keysym_iterator *iter);
+
+xkb_keysym_t
+xkb_keysym_iterator_get_keysym(struct xkb_keysym_iterator *iter);
+
+int
+xkb_keysym_iterator_get_name(struct xkb_keysym_iterator *iter,
+                             char *buffer, size_t size);
+
+bool
+xkb_keysym_iterator_is_explicitly_named(struct xkb_keysym_iterator *iter);
+
 bool
 xkb_keysym_is_lower(xkb_keysym_t keysym);
 

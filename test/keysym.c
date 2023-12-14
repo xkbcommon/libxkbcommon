@@ -166,12 +166,23 @@ main(void)
     assert(xkb_keysym_is_assigned(XKB_KEYSYM_MAX_ASSIGNED));
     assert(!xkb_keysym_is_assigned(XKB_KEYSYM_MAX));
 
-    for (xkb_keysym_t ks = XKB_KEYSYM_MIN; ks <= XKB_KEYSYM_MAX; ks++) {
-        if (!xkb_keysym_is_assigned(ks))
-            continue;
+    struct xkb_keysym_iterator *iter = xkb_keysym_iterator_new(false);
+    xkb_keysym_t ks_prev = XKB_KEYSYM_MIN;
+    uint32_t count = 0;
+    uint32_t count_non_unicode = 0;
+    while (xkb_keysym_iterator_next(iter)) {
+        count++;
+        xkb_keysym_t ks = xkb_keysym_iterator_get_keysym(iter);
+        if (ks < XKB_KEYSYM_UNICODE_MIN || ks > XKB_KEYSYM_UNICODE_MAX)
+            count_non_unicode++;
+        assert(ks > ks_prev || count == 1);
+        ks_prev = ks;
         /* Check assigned keysyms bounds */
-        assert(XKB_KEYSYM_MIN_ASSIGNED <= (int32_t)ks && ks <= XKB_KEYSYM_MAX_ASSIGNED);
+        assert((int32_t)XKB_KEYSYM_MIN_ASSIGNED <= (int32_t)ks && ks <= XKB_KEYSYM_MAX_ASSIGNED);
     }
+    iter = xkb_keysym_iterator_unref(iter);
+    assert(ks_prev == XKB_KEYSYM_MAX_ASSIGNED);
+    assert(count == XKB_KEYSYM_UNICODE_MAX - XKB_KEYSYM_UNICODE_MIN + 1 + count_non_unicode);
 
     /* Named keysyms */
     assert(test_string("NoSymbol", XKB_KEY_NoSymbol));
