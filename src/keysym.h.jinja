@@ -58,15 +58,15 @@
 /** Minimum keysym value */
 #define XKB_KEYSYM_MIN            0x00000000
 /** Minimum keysym value assigned */
-#define XKB_KEYSYM_MIN_ASSIGNED   ((xkb_keysym_t)0x00000000)
+#define XKB_KEYSYM_MIN_ASSIGNED   ((xkb_keysym_t){{ XKB_KEYSYM_MIN_ASSIGNED | keysym }})
 /** Maximum keysym value assigned */
-#define XKB_KEYSYM_MAX_ASSIGNED   0x1008ffb8
+#define XKB_KEYSYM_MAX_ASSIGNED   {{ XKB_KEYSYM_MAX_ASSIGNED | keysym }}
 /** Minimum keysym value with explicit name */
-#define XKB_KEYSYM_MIN_EXPLICIT   0x00000000
+#define XKB_KEYSYM_MIN_EXPLICIT   {{ XKB_KEYSYM_MIN_EXPLICIT | keysym }}
 /** Maximum keysym value with explicit name */
-#define XKB_KEYSYM_MAX_EXPLICIT   0x1008ffb8
+#define XKB_KEYSYM_MAX_EXPLICIT   {{ XKB_KEYSYM_MAX_EXPLICIT | keysym }}
 /** Count of keysym value with explicit name */
-#define XKB_KEYSYM_COUNT_EXPLICIT 2442
+#define XKB_KEYSYM_COUNT_EXPLICIT {{ XKB_KEYSYM_COUNT_EXPLICIT }}
 /** Offset to use when converting a Unicode code point to a keysym */
 #define XKB_KEYSYM_UNICODE_OFFSET 0x01000000
 /** Minimum Unicode keysym. NOTE: code points in 0..0xff cannot be converted. */

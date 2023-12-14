@@ -131,6 +131,22 @@ test_utf32_to_keysym(uint32_t ucs, xkb_keysym_t expected)
 int
 main(void)
 {
+    /* Bounds */
+    assert(XKB_KEYSYM_MIN == 0);
+    assert(XKB_KEYSYM_MIN < XKB_KEYSYM_MAX);
+    assert(XKB_KEYSYM_MAX <= UINT32_MAX); /* Ensure it fits in xkb_keysym_t */
+    assert(XKB_KEYSYM_MAX <= INT32_MAX); /* Ensure correct cast to int32_t */
+    assert(XKB_KEYSYM_MIN_ASSIGNED == XKB_KEYSYM_MIN);
+    assert(XKB_KEYSYM_MIN_ASSIGNED < XKB_KEYSYM_MAX_ASSIGNED);
+    assert(XKB_KEYSYM_MAX_ASSIGNED <= XKB_KEYSYM_MAX);
+    assert(XKB_KEYSYM_MIN_EXPLICIT == XKB_KEYSYM_MIN_ASSIGNED);
+    assert(XKB_KEYSYM_MIN_EXPLICIT < XKB_KEYSYM_MAX_EXPLICIT);
+    assert(XKB_KEYSYM_MAX_EXPLICIT <= XKB_KEYSYM_MAX_ASSIGNED);
+    assert(XKB_KEYSYM_COUNT_EXPLICIT <= XKB_KEYSYM_MAX_EXPLICIT - XKB_KEYSYM_MIN_EXPLICIT + 1);
+    assert(XKB_KEYSYM_UNICODE_MIN >= XKB_KEYSYM_MIN_EXPLICIT);
+    assert(XKB_KEYSYM_UNICODE_MIN < XKB_KEYSYM_UNICODE_MAX);
+    assert(XKB_KEYSYM_UNICODE_MAX <= XKB_KEYSYM_MAX_EXPLICIT);
+
     /* Named keysyms */
     assert(test_string("NoSymbol", XKB_KEY_NoSymbol));
     assert(test_string("Undo", 0xFF65));
