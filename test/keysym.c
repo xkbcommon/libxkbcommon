@@ -179,6 +179,10 @@ main(void)
         ks_prev = ks;
         /* Check assigned keysyms bounds */
         assert((int32_t)XKB_KEYSYM_MIN_ASSIGNED <= (int32_t)ks && ks <= XKB_KEYSYM_MAX_ASSIGNED);
+        /* Check utf8 */
+        char utf8[7];
+        int needed = xkb_keysym_to_utf8(ks, utf8, sizeof(utf8));
+        assert(0 <= needed && needed <= 5);
     }
     iter = xkb_keysym_iterator_unref(iter);
     assert(ks_prev == XKB_KEYSYM_MAX_ASSIGNED);
