@@ -910,6 +910,17 @@ and separated by commas. Each element of the symbol arrays corresponds to a
 different modifier level. In this example, the symbol (keysym) `XKB_KEY_q` for
 level 1 and `XKB_KEY_Q` for level 2.
 
+As an extension to the XKB format, libxkbcommon supports multiple key symbols
+per level.
+
+    key <AD01> { [ {a, b}, Q ] };
+
+In this example, the keycode `<AD01>` produces two symbols on level 1
+(`XKB_KEY_a` and `XKB_KEY_b`) and one symbol (`XKB_KEY_Q`) on level 2.
+
+@warning Keymaps containing multiple key symbols per level are not supported
+by the various X11-related tools (`setxkbmap`, `xkbcomp`, etc.).
+
 #### Actions
 
 @todo how to bind key actions

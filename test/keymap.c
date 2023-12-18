@@ -198,12 +198,45 @@ test_numeric_keysyms(void)
     xkb_context_unref(context);
 }
 
+static void
+test_multiple_keysyms_per_level(void)
+{
+    struct xkb_context *context = test_get_context(0);
+    struct xkb_keymap *keymap;
+    xkb_keycode_t kc;
+    int keysyms_count;
+    const xkb_layout_index_t first_layout = 0;
+    const xkb_keysym_t *keysyms;
+
+    assert(context);
+
+    keymap = test_compile_rules(context, "evdev", "pc104", "awesome", NULL, NULL);
+    assert(keymap);
+
+    kc = xkb_keymap_key_by_name(keymap, "AD01");
+    keysyms_count = xkb_keymap_key_get_syms_by_level(keymap, kc, first_layout, 0, &keysyms);
+    assert(keysyms_count == 3);
+    assert(keysyms[0] == 'q');
+    assert(keysyms[1] == 'a');
+    assert(keysyms[2] == 'b');
+
+    kc = xkb_keymap_key_by_name(keymap, "AD03");
+    keysyms_count = xkb_keymap_key_get_syms_by_level(keymap, kc, first_layout, 1, &keysyms);
+    assert(keysyms_count == 2);
+    assert(keysyms[0] == 'E');
+    assert(keysyms[1] == 'F');
+
+    xkb_keymap_unref(keymap);
+    xkb_context_unref(context);
+}
+
 int
 main(void)
 {
     test_garbage_key();
     test_keymap();
     test_numeric_keysyms();
+    test_multiple_keysyms_per_level();
 
     return 0;
 }
