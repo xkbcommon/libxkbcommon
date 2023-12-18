@@ -7,11 +7,11 @@ xkb_symbols "awesome" {
     key <AE02> { [ 2, at,          Page_Up,    Page_Up     ] };
     key <AE03> { [ 3, numbersign,  Page_Down,  Page_Down   ] };
 
-    key <AD01> { [ q,  Q,          Escape,     Escape      ] };
+    key <AD01> { [ {q, a, b},  Q,  Escape,     Escape      ] };
     key <AD02> { [ w,  W,          Home,       Home        ] };
     key <AD03> {
         type="THREE_LEVEL",
-        symbols=[ e,  E,           Up]
+        symbols=[ e,  {E, F},      Up]
     };
     key <AD04> { [ r,  R,          End,        End         ] };
     key <AD05> { [ t,  T,          Tab,        Tab         ] };
