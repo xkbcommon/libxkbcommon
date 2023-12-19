@@ -47,6 +47,7 @@
 
 #include "test.h"
 #include "utils.h"
+#include "src/keysym.h"
 
 /*
  * Test a sequence of keysyms, resulting from a sequence of key presses,
@@ -76,7 +77,7 @@ test_key_seq_va(struct xkb_keymap *keymap, va_list ap)
     const xkb_keysym_t *syms;
     xkb_keysym_t sym;
     unsigned int nsyms, i;
-    char ksbuf[64];
+    char ksbuf[XKB_KEYSYM_NAME_MAX_SIZE];
 
     fprintf(stderr, "----\n");
 

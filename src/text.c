@@ -27,6 +27,7 @@
 #include "config.h"
 
 #include "keymap.h"
+#include "keysym.h"
 #include "text.h"
 
 bool
@@ -235,8 +236,8 @@ ActionTypeText(enum xkb_action_type type)
 const char *
 KeysymText(struct xkb_context *ctx, xkb_keysym_t sym)
 {
-    char *buffer = xkb_context_get_buffer(ctx, 64);
-    xkb_keysym_get_name(sym, buffer, 64);
+    char *buffer = xkb_context_get_buffer(ctx, XKB_KEYSYM_NAME_MAX_SIZE);
+    xkb_keysym_get_name(sym, buffer, XKB_KEYSYM_NAME_MAX_SIZE);
     return buffer;
 }
 

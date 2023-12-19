@@ -19,20 +19,28 @@ def load_keysyms(path: Path) -> dict[str, int]:
     keysym_max = 0
     min_unicode_keysym = 0x01000100
     max_unicode_keysym = 0x0110FFFF
-    keysyms = set()
+    canonical_names: dict[int, str] = {}
+    max_unicode_name = "U10FFFF"
+    max_keysym_name = "0x1fffffff"  # XKB_KEYSYM_MAX
     with path.open("rt", encoding="utf-8") as fd:
         for line in fd:
             if m := KEYSYM_PATTERN.match(line):
                 value = int(m.group("value"), 16)
-                keysyms.add(value)
                 keysym_min = min(keysym_min, value)
                 keysym_max = max(keysym_max, value)
+                if value not in canonical_names:
+                    canonical_names[value] = m.group("name")
     return {
         "XKB_KEYSYM_MIN_ASSIGNED": min(keysym_min, min_unicode_keysym),
         "XKB_KEYSYM_MAX_ASSIGNED": max(keysym_max, max_unicode_keysym),
         "XKB_KEYSYM_MIN_EXPLICIT": keysym_min,
         "XKB_KEYSYM_MAX_EXPLICIT": keysym_max,
-        "XKB_KEYSYM_COUNT_EXPLICIT": len(keysyms),
+        "XKB_KEYSYM_COUNT_EXPLICIT": len(canonical_names),
+        "XKB_KEYSYM_NAME_MAX_SIZE": max(
+            max(len(name) for name in canonical_names.values()),
+            len(max_unicode_name),
+            len(max_keysym_name),
+        ),
     }
 
 
