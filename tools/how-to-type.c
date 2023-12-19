@@ -30,6 +30,7 @@
 #include <errno.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "src/keysym.h"
 
 #define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
 
@@ -57,7 +58,7 @@ main(int argc, char *argv[])
     uint32_t codepoint;
     xkb_keysym_t keysym;
     int ret;
-    char name[200];
+    char name[XKB_KEYSYM_NAME_MAX_SIZE];
     struct xkb_keymap *keymap = NULL;
     xkb_keycode_t min_keycode, max_keycode;
     xkb_mod_index_t num_mods;

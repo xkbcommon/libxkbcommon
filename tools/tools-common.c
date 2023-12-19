@@ -49,6 +49,8 @@
 #endif
 
 #include "tools-common.h"
+#include "src/utils.h"
+#include "src/keysym.h"
 
 static void
 print_keycode(struct xkb_keymap *keymap, const char* prefix,
@@ -155,7 +157,9 @@ tools_print_keycode_state(char *prefix,
     xkb_keysym_t sym;
     const xkb_keysym_t *syms;
     int nsyms;
-    char s[16];
+    // FIXME: this buffer is used for xkb_compose_state_get_utf8,
+    // which can have a length up to 256. Need to import this constant from compose.
+    char s[MAX(16, XKB_KEYSYM_NAME_MAX_SIZE)];
     xkb_layout_index_t layout;
     enum xkb_compose_status status;
 

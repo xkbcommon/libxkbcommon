@@ -56,7 +56,7 @@ test_casestring(const char *string, xkb_keysym_t expected)
 static int
 test_keysym(xkb_keysym_t keysym, const char *expected)
 {
-    char s[16];
+    char s[XKB_KEYSYM_NAME_MAX_SIZE];
 
     xkb_keysym_get_name(keysym, s, sizeof(s));
 
@@ -117,11 +117,11 @@ get_keysym_name(xkb_keysym_t keysym, char *buffer, size_t size)
 static int
 test_utf32_to_keysym(uint32_t ucs, xkb_keysym_t expected)
 {
-    char expected_name[64];
-    char actual_name[64];
+    char expected_name[XKB_KEYSYM_NAME_MAX_SIZE];
+    char actual_name[XKB_KEYSYM_NAME_MAX_SIZE];
     xkb_keysym_t actual = xkb_utf32_to_keysym(ucs);
-    get_keysym_name(expected, expected_name, 64);
-    get_keysym_name(actual, actual_name, 64);
+    get_keysym_name(expected, expected_name, XKB_KEYSYM_NAME_MAX_SIZE);
+    get_keysym_name(actual, actual_name, XKB_KEYSYM_NAME_MAX_SIZE);
 
     fprintf(stderr, "Code point 0x%lx: expected keysym: %s, actual: %s\n\n",
             (unsigned long)ucs, expected_name, actual_name);
@@ -183,6 +183,10 @@ main(void)
         char utf8[7];
         int needed = xkb_keysym_to_utf8(ks, utf8, sizeof(utf8));
         assert(0 <= needed && needed <= 5);
+        /* Check maximum name length */
+        char name[XKB_KEYSYM_NAME_MAX_SIZE];
+        needed = xkb_keysym_iterator_get_name(iter, name, sizeof(name));
+        assert(0 < needed && (size_t)needed <= sizeof(name));
     }
     iter = xkb_keysym_iterator_unref(iter);
     assert(ks_prev == XKB_KEYSYM_MAX_ASSIGNED);

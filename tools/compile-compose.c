@@ -31,6 +31,7 @@
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon-compose.h"
 #include "src/compose/dump.h"
+#include "src/keysym.h"
 
 static void
 usage(FILE *fp, char *progname)
@@ -57,7 +58,7 @@ print_compose_table_entry(struct xkb_compose_table_entry *entry)
 {
     size_t nsyms;
     const xkb_keysym_t *syms = xkb_compose_table_entry_sequence(entry, &nsyms);
-    char buf[128];
+    char buf[XKB_KEYSYM_NAME_MAX_SIZE];
     for (size_t i = 0; i < nsyms; i++) {
         xkb_keysym_get_name(syms[i], buf, sizeof(buf));
         printf("<%s>", buf);

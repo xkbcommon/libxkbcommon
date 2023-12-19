@@ -28,6 +28,7 @@
 
 #include "test.h"
 #include "src/utf8.h"
+#include "src/keysym.h"
 #include "src/compose/parser.h"
 #include "src/compose/dump.h"
 
@@ -73,7 +74,7 @@ test_compose_seq_va(struct xkb_compose_table *table, va_list ap)
 {
     int ret;
     struct xkb_compose_state *state;
-    char buffer[64];
+    char buffer[XKB_KEYSYM_NAME_MAX_SIZE];
 
     state = xkb_compose_state_new(table, XKB_COMPOSE_STATE_NO_FLAGS);
     assert(state);

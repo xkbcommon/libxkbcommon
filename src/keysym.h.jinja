@@ -76,6 +76,8 @@
 #define XKB_KEYSYM_UNICODE_MIN    0x01000100
 /** Maximum Unicode keysym, correspoding to the maximum Unicode code point */
 #define XKB_KEYSYM_UNICODE_MAX    0x0110ffff
+/** Maximum keysym name length */
+#define XKB_KEYSYM_NAME_MAX_SIZE  {{ XKB_KEYSYM_NAME_MAX_SIZE }}
 
 bool
 xkb_keysym_is_assigned(xkb_keysym_t ks);
