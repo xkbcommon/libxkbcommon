@@ -4,4 +4,4 @@
 export LC_CTYPE=C
 scripts/makeheader > include/xkbcommon/xkbcommon-keysyms.h
 scripts/makekeys include/xkbcommon/xkbcommon-keysyms.h > src/ks_tables.h
-scripts/update-headers
+scripts/update-headers.py
