@@ -119,6 +119,8 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
     return snprintf(buffer, size, "0x%08x", ks);
 }
 
+#ifdef ENABLE_PRIVATE_APIS
+
 bool
 xkb_keysym_is_assigned(xkb_keysym_t ks)
 {
@@ -217,6 +219,8 @@ xkb_keysym_iterator_next(struct xkb_keysym_iterator *iter)
     }
     return true;
 }
+
+#endif
 
 /*
  * Parse the numeric part of a 0xXXXX and UXXXX keysym.
