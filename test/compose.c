@@ -708,7 +708,19 @@ static void
 test_traverse(struct xkb_context *ctx)
 {
     struct xkb_compose_table *table;
+    struct xkb_compose_table_iterator *iter;
 
+    /* Empty table */
+    table = xkb_compose_table_new_from_buffer(ctx, "", 0, "",
+                                              XKB_COMPOSE_FORMAT_TEXT_V1,
+                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+    assert(table);
+    iter = xkb_compose_table_iterator_new(table);
+    assert (xkb_compose_table_iterator_next(iter) == NULL);
+    xkb_compose_table_iterator_free(iter);
+    xkb_compose_table_unref(table);
+
+    /* Non-empty table */
     const char *buffer = "<dead_circumflex> <dead_circumflex> : \"foo\" X\n"
                          "<Ahook> <x> : \"foobar\"\n"
                          "<Multi_key> <o> <e> : oe\n"
@@ -725,7 +737,7 @@ test_traverse(struct xkb_context *ctx)
                                               XKB_COMPOSE_COMPILE_NO_FLAGS);
     assert(table);
 
-    struct xkb_compose_table_iterator *iter = xkb_compose_table_iterator_new(table);
+    iter = xkb_compose_table_iterator_new(table);
 
     test_eq_entry(xkb_compose_table_iterator_next(iter),
                   XKB_KEY_eacute, "é",
