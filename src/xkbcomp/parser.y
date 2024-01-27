@@ -465,7 +465,6 @@ SymbolsBody     :       SymbolsBody COMMA SymbolsVarDecl
                         { $$.head = $1.head; $$.last->common.next = &$3->common; $$.last = $3; }
                 |       SymbolsVarDecl
                         { $$.head = $$.last = $1; }
-                |       { $$.head = $$.last = NULL; }
                 ;
 
 SymbolsVarDecl  :       Lhs EQUALS Expr         { $$ = VarCreate($1, $3); }

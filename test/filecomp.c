@@ -54,6 +54,7 @@ main(void)
     assert(!test_file(ctx, "keymaps/bad.xkb"));
     assert(!test_file(ctx, "keymaps/syntax-error.xkb"));
     assert(!test_file(ctx, "keymaps/syntax-error2.xkb"));
+    assert(!test_file(ctx, "keymaps/empty-symbol-decl.xkb"));
     assert(!test_file(ctx, "does not exist"));
 
     /* Test response to invalid flags and formats. */
