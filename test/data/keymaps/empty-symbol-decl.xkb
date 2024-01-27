@@ -1,0 +1,10 @@
+xkb_keymap {
+    xkb_keycodes  { include "evdev+aliases(qwerty)" };
+    xkb_types     { include "complete" };
+    xkb_compat    { include "complete" };
+    xkb_symbols "sym" {
+        // This syntax caused the crash in parser before, and is not accepted
+        // anymore.
+        key <SPC> { , [Space] };
+    };
+};
