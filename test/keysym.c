@@ -464,6 +464,13 @@ main(void)
     assert(test_keysym(0x0, "NoSymbol"));
     assert(test_keysym(0x1008FE20, "XF86Ungrab"));
     assert(test_keysym(XKB_KEYSYM_UNICODE_OFFSET, "0x01000000"));
+    /* Canonical names */
+    assert(test_keysym(XKB_KEY_Henkan, "Henkan_Mode"));
+    assert(test_keysym(XKB_KEY_ISO_Group_Shift, "Mode_switch"));
+    assert(test_keysym(XKB_KEY_dead_perispomeni, "dead_tilde"));
+    assert(test_keysym(XKB_KEY_guillemetleft, "guillemotleft"));
+    assert(test_keysym(XKB_KEY_ordmasculine, "masculine"));
+    assert(test_keysym(XKB_KEY_Greek_lambda, "Greek_lamda"));
     /* Min Unicode */
     assert(test_keysym(XKB_KEYSYM_UNICODE_MIN, "U0100"));
     assert(test_keysym(0x01001234, "U1234"));
