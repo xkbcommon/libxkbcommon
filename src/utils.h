@@ -47,6 +47,9 @@
 # ifndef S_ISDIR
 #  define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 # endif
+# ifndef S_ISREG
+#  define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+# endif
 typedef SSIZE_T ssize_t;
 #endif
 
@@ -262,6 +265,9 @@ check_eaccess(const char *path, int mode)
 
     return true;
 }
+
+FILE*
+open_file(const char *path);
 
 #if defined(HAVE_SECURE_GETENV)
 # define secure_getenv secure_getenv

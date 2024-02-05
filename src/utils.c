@@ -23,14 +23,14 @@
 
 #include "config.h"
 
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "utils.h"
 
 #ifdef HAVE_MMAP
 
-#include <fcntl.h>
 #include <unistd.h>
 #include <sys/mman.h>
-#include <sys/stat.h>
 #include <sys/types.h>
 
 bool
@@ -110,6 +110,38 @@ unmap_file(char *str, size_t size)
 }
 
 #endif
+
+/* Open a file and ensure it is a regular file.
+ * Returns NULL in case of error. */
+FILE*
+open_file(const char *path)
+{
+    if (!path)
+        return NULL;
+
+    int fd = open(path, O_RDONLY);
+    if (fd < 0)
+        return NULL;
+
+    struct stat stat_buf;
+    int err = fstat(fd, &stat_buf);
+
+    if (err != 0 || !S_ISREG(stat_buf.st_mode)) {
+        close(fd);
+        return NULL;
+    }
+
+    /* While unlikely to happen, if `fp` is NULL then we must close the file
+     * descriptor. This is poorly documented and missing from the man page; see instead:
+     * https://www.ibm.com/docs/en/i/7.3?topic=functions-fdopen-associates-stream-file-descriptor)
+     * Confirmed by Peter to be necessary in glibc. */
+    FILE *fp = fdopen(fd, "rb");
+    if (fp == NULL) {
+        close(fd);
+    }
+
+    return fp;
+}
 
 // ASCII lower-case map.
 static const unsigned char lower_map[] = {
