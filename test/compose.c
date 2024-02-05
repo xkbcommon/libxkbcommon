@@ -23,6 +23,7 @@
 
 #include "config.h"
 #include <time.h>
+#include <errno.h>
 
 #include "xkbcommon/xkbcommon-compose.h"
 
@@ -499,6 +500,18 @@ test_XCOMPOSEFILE(struct xkb_context *ctx)
     struct xkb_compose_table *table;
     char *path;
 
+    /* Error: directory */
+    path = test_get_path("locale/en_US.UTF-8");
+    setenv("XCOMPOSEFILE", path, 1);
+    free(path);
+
+    table = xkb_compose_table_new_from_locale(ctx, "blabla",
+                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+    assert_printf(errno != ENODEV && errno != EISDIR,
+                  "Should not be an error from `map_file`\n");
+    assert(!table);
+
+    /* OK: regular file */
     path = test_get_path("locale/en_US.UTF-8/Compose");
     setenv("XCOMPOSEFILE", path, 1);
     free(path);

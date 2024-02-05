@@ -176,35 +176,27 @@ xkb_compose_table_new_from_locale(struct xkb_context *ctx,
         return NULL;
 
     path = get_xcomposefile_path(ctx);
-    if (path) {
-        file = fopen(path, "rb");
-        if (file)
-            goto found_path;
-    }
+    file = open_file(path);
+    if (file)
+        goto found_path;
     free(path);
 
     path = get_xdg_xcompose_file_path(ctx);
-    if (path) {
-        file = fopen(path, "rb");
-        if (file)
-            goto found_path;
-    }
+    file = open_file(path);
+    if (file)
+        goto found_path;
     free(path);
 
     path = get_home_xcompose_file_path(ctx);
-    if (path) {
-        file = fopen(path, "rb");
-        if (file)
-            goto found_path;
-    }
+    file = open_file(path);
+    if (file)
+        goto found_path;
     free(path);
 
     path = get_locale_compose_file_path(ctx, table->locale);
-    if (path) {
-        file = fopen(path, "rb");
-        if (file)
-            goto found_path;
-    }
+    file = open_file(path);
+    if (file)
+        goto found_path;
     free(path);
 
     log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
