@@ -1093,7 +1093,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		symbols[Group1]= [               2,              at ],
 		symbols[Group2]= [               2,        quotedbl ],
 		symbols[Group3]= [               2,              at,              at,        NoSymbol,     twosuperior,        NoSymbol,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               2,         section,     twosuperior,    twosubscript,    ordmasculine,        NoSymbol,       logicalor,        NoSymbol ]
+		symbols[Group4]= [               2,         section,     twosuperior,    twosubscript,       masculine,        NoSymbol,       logicalor,        NoSymbol ]
 	};
 	key <AE03>               {
 		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1109,7 +1109,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		symbols[Group1]= [               4,          dollar ],
 		symbols[Group2]= [               4,       semicolon ],
 		symbols[Group3]= [               4,          dollar,            cent,        NoSymbol,      onequarter,        currency,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               4,  guillemetright,           U203A,    femalesymbol,        NoSymbol,        NoSymbol,           U22A5,        NoSymbol ]
+		symbols[Group4]= [               4,  guillemotright,           U203A,    femalesymbol,        NoSymbol,        NoSymbol,           U22A5,        NoSymbol ]
 	};
 	key <AE05>               {
 		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1117,7 +1117,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		symbols[Group1]= [               5,         percent ],
 		symbols[Group2]= [               5,         percent ],
 		symbols[Group3]= [               5,         percent,        currency,        NoSymbol,         onehalf,    threeeighths,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               5,   guillemetleft,           U2039,      malesymbol,  periodcentered,        NoSymbol,           U2221,        NoSymbol ]
+		symbols[Group4]= [               5,   guillemotleft,           U2039,      malesymbol,  periodcentered,        NoSymbol,           U2221,        NoSymbol ]
 	};
 	key <AE06>               {
 		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1442,7 +1442,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 		symbols[Group1]= [               z,               Z ],
 		symbols[Group2]= [     Cyrillic_ya,     Cyrillic_YA ],
-		symbols[Group3]= [               z,               Z,   guillemetleft,        NoSymbol ],
+		symbols[Group3]= [               z,               Z,   guillemotleft,        NoSymbol ],
 		symbols[Group4]= [      udiaeresis,      Udiaeresis,      numbersign,        NoSymbol,          Escape,          Escape,           union,        NoSymbol ]
 	};
 	key <AB02>               {
@@ -1452,7 +1452,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 		symbols[Group1]= [               x,               X ],
 		symbols[Group2]= [    Cyrillic_che,    Cyrillic_CHE ],
-		symbols[Group3]= [               x,               X,  guillemetright,        NoSymbol ],
+		symbols[Group3]= [               x,               X,  guillemotright,        NoSymbol ],
 		symbols[Group4]= [      odiaeresis,      Odiaeresis,          dollar,           U03F5,             Tab,             Tab,    intersection,        NoSymbol ]
 	};
 	key <AB03>               {
@@ -1502,7 +1502,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
 		symbols[Group1]= [               m,               M ],
 		symbols[Group2]= [ Cyrillic_softsign, Cyrillic_SOFTSIGN ],
-		symbols[Group3]= [               m,               M,              mu,        NoSymbol,              mu,    ordmasculine,        NoSymbol,        NoSymbol ],
+		symbols[Group3]= [               m,               M,              mu,        NoSymbol,              mu,       masculine,        NoSymbol,        NoSymbol ],
 		symbols[Group4]= [               m,               M,         percent,        Greek_mu,            KP_1,            KP_1,        ifonlyif,        NoSymbol ]
 	};
 	key <AB08>               {

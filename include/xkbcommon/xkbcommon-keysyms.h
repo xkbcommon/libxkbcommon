@@ -115,6 +115,7 @@ SOFTWARE.
  * that match one of these Perl regular expressions:
  *
  *    /^\#define XKB_KEY_([a-zA-Z_0-9]+)\s+0x([0-9a-f]+)\s*\/\* U\+([0-9A-F]{4,6}) (.*) \*\/\s*$/
+ *    /^\#define XKB_KEY_([a-zA-Z_0-9]+)\s+0x([0-9a-f]+)\s*\/\*<U\+([0-9A-F]{4,6}) (.*)>\*\/\s*$/
  *    /^\#define XKB_KEY_([a-zA-Z_0-9]+)\s+0x([0-9a-f]+)\s*\/\*\(U\+([0-9A-F]{4,6}) (.*)\)\*\/\s*$/
  *    /^\#define XKB_KEY_([a-zA-Z_0-9]+)\s+0x([0-9a-f]+)\s*(\/\*\s*(.*)\s*\*\/)?\s*$/
  *
@@ -138,6 +139,24 @@ SOFTWARE.
  *   - the protocol specification in specs/keysyms.xml in this repo
  *     https://gitlab.freedesktop.org/xorg/proto/xorgproto
  *
+ * Before removing or changing the order of the keysyms, please consider
+ * the following: it is very difficult to know what keysyms are used and
+ * how.
+ *
+ *   - A sandboxed application may have incompatibilities with the host
+ *     system. For example, if new keysym name is introduced and is made
+ *     the canonical name, then an application with an older keysym parser
+ *     will not be able to parse the new name.
+ *   - Customization of keyboard layout and Compose files are two popular
+ *     use cases. Checking the standard keyboard layout database xkeyboard-config
+ *     https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config
+ *     and the standard Compose files in libx11
+ *     https://gitlab.freedesktop.org/xorg/lib/libx11 is a mandatory
+ *     step, but may *not* be enough for a proper impact assessment for
+ *     e.g. keysyms removals.
+ *
+ * Therefore, it is advised to proceed to no removal and to make a new
+ * name canonical only 10 years after its introduction.
  */
 
 #define XKB_KEY_VoidSymbol                  0xffffff  /* Void symbol */
@@ -439,6 +458,12 @@ SOFTWARE.
 #define XKB_KEY_dead_belowcomma               0xfe6e
 #define XKB_KEY_dead_currency                 0xfe6f
 
+/* extra dead elements for German T3 layout */
+#define XKB_KEY_dead_lowline                  0xfe90
+#define XKB_KEY_dead_aboveverticalline        0xfe91
+#define XKB_KEY_dead_belowverticalline        0xfe92
+#define XKB_KEY_dead_longsolidusoverlay       0xfe93
+
 /* dead vowels for universal syllable entry */
 #define XKB_KEY_dead_a                        0xfe80
 #define XKB_KEY_dead_A                        0xfe81
@@ -450,10 +475,10 @@ SOFTWARE.
 #define XKB_KEY_dead_O                        0xfe87
 #define XKB_KEY_dead_u                        0xfe88
 #define XKB_KEY_dead_U                        0xfe89
+#define XKB_KEY_dead_small_schwa              0xfe8a  /* deprecated, use dead_schwa instead */
+#define XKB_KEY_dead_capital_schwa            0xfe8b  /* deprecated, use dead_SCHWA instead */
 #define XKB_KEY_dead_schwa                    0xfe8a
 #define XKB_KEY_dead_SCHWA                    0xfe8b
-#define XKB_KEY_dead_small_schwa              0xfe8a  /* deprecated, remove in 2025 */
-#define XKB_KEY_dead_capital_schwa            0xfe8b  /* deprecated, remove in 2025 */
 
 #define XKB_KEY_dead_greek                    0xfe8c
 #define XKB_KEY_dead_hamza                    0xfe8d
@@ -668,8 +693,8 @@ SOFTWARE.
 #define XKB_KEY_diaeresis                     0x00a8  /* U+00A8 DIAERESIS */
 #define XKB_KEY_copyright                     0x00a9  /* U+00A9 COPYRIGHT SIGN */
 #define XKB_KEY_ordfeminine                   0x00aa  /* U+00AA FEMININE ORDINAL INDICATOR */
+#define XKB_KEY_guillemotleft                 0x00ab  /* deprecated misspelling. Use guillemetleft instead. */
 #define XKB_KEY_guillemetleft                 0x00ab  /* U+00AB LEFT-POINTING DOUBLE ANGLE QUOTATION MARK */
-#define XKB_KEY_guillemotleft                 0x00ab  /* deprecated misspelling */
 #define XKB_KEY_notsign                       0x00ac  /* U+00AC NOT SIGN */
 #define XKB_KEY_hyphen                        0x00ad  /* U+00AD SOFT HYPHEN */
 #define XKB_KEY_registered                    0x00ae  /* U+00AE REGISTERED SIGN */
@@ -684,10 +709,10 @@ SOFTWARE.
 #define XKB_KEY_periodcentered                0x00b7  /* U+00B7 MIDDLE DOT */
 #define XKB_KEY_cedilla                       0x00b8  /* U+00B8 CEDILLA */
 #define XKB_KEY_onesuperior                   0x00b9  /* U+00B9 SUPERSCRIPT ONE */
+#define XKB_KEY_masculine                     0x00ba  /* deprecated inconsistent name (see ordfeminine), use ordmasculine instead */
 #define XKB_KEY_ordmasculine                  0x00ba  /* U+00BA MASCULINE ORDINAL INDICATOR */
-#define XKB_KEY_masculine                     0x00ba  /* deprecated inconsistent name */
+#define XKB_KEY_guillemotright                0x00bb  /* deprecated misspelling. Use guillemotright instead. */
 #define XKB_KEY_guillemetright                0x00bb  /* U+00BB RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK */
-#define XKB_KEY_guillemotright                0x00bb  /* deprecated misspelling */
 #define XKB_KEY_onequarter                    0x00bc  /* U+00BC VULGAR FRACTION ONE QUARTER */
 #define XKB_KEY_onehalf                       0x00bd  /* U+00BD VULGAR FRACTION ONE HALF */
 #define XKB_KEY_threequarters                 0x00be  /* U+00BE VULGAR FRACTION THREE QUARTERS */
