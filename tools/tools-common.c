@@ -200,7 +200,7 @@ tools_print_keycode_state(char *prefix,
     printf("keysyms [ ");
     for (int i = 0; i < nsyms; i++) {
         xkb_keysym_get_name(syms[i], s, sizeof(s));
-        printf("%-*s ", (int) sizeof(s), s);
+        printf("%-*s ", (int)MAX(strlen(s), XKB_KEYSYM_NAME_MAX_SIZE), s);
     }
     printf("] ");
 
