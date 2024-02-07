@@ -380,7 +380,7 @@ usage(FILE *fp, char *progname)
                 "[--rules=<rules>] [--model=<model>] [--layout=<layout>] "
                 "[--variant=<variant>] [--options=<options>]\n",
                 progname);
-        fprintf(fp, "      or: %s --keymap <path to keymap file>\n",
+        fprintf(fp, "   or: %s --keymap <path to keymap file>\n",
                 progname);
         fprintf(fp, "For both:\n"
 #ifdef ENABLE_PRIVATE_APIS
