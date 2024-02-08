@@ -558,6 +558,59 @@ main(void)
     test_group_lock_on_press(keymap);
     xkb_keymap_unref(keymap);
 
+    /* Caps unlocks on release for format V1 (implicit, XKB spec) */
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                "evdev", "pc105", "us", "", "");
+    assert(keymap);
+
+#define test_caps_unlocks_on_release(keymap_)                               \
+    assert(test_key_seq(keymap_,                                            \
+                        KEY_Y,         BOTH, XKB_KEY_y,              NEXT,  \
+                        KEY_CAPSLOCK,  BOTH, XKB_KEY_Caps_Lock,      NEXT,  \
+                        KEY_Y,         BOTH, XKB_KEY_Y,              NEXT,  \
+                        KEY_CAPSLOCK,  DOWN, XKB_KEY_Caps_Lock,      NEXT,  \
+                        /* No unlock on press */                            \
+                        KEY_Y,         BOTH, XKB_KEY_Y,              NEXT,  \
+                        KEY_CAPSLOCK,  UP,   XKB_KEY_Caps_Lock,      NEXT,  \
+                        /* Unlock on release */                             \
+                        KEY_Y,         BOTH, XKB_KEY_y,              FINISH))
+    test_caps_unlocks_on_release(keymap);
+
+    xkb_keymap_unref(keymap);
+
+    /* Caps unlocks on press for format V1.1 (implicit, default) */
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1_1,
+                                "evdev", "pc105", "us", "", "");
+    assert(keymap);
+
+#define test_caps_unlocks_on_press(keymap_)                                 \
+    assert(test_key_seq(keymap_,                                            \
+                        KEY_Y,         BOTH, XKB_KEY_y,              NEXT,  \
+                        KEY_CAPSLOCK,  BOTH, XKB_KEY_Caps_Lock,      NEXT,  \
+                        KEY_Y,         BOTH, XKB_KEY_Y,              NEXT,  \
+                        KEY_CAPSLOCK,  DOWN, XKB_KEY_Caps_Lock,      NEXT,  \
+                        /* Unlock on press */                               \
+                        KEY_Y,         BOTH, XKB_KEY_y,              NEXT,  \
+                        KEY_CAPSLOCK,  UP,   XKB_KEY_Caps_Lock,      NEXT,  \
+                        KEY_Y,         BOTH, XKB_KEY_y,              FINISH))
+    test_caps_unlocks_on_press(keymap);
+
+    xkb_keymap_unref(keymap);
+
+    /* Caps unlocks on press for format V1.1 (explicit unlockOnPress=true) */
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1_1,
+                                "evdev", "pc105", "us", "", "caps:unlock_on_press");
+    assert(keymap);
+    test_caps_unlocks_on_press(keymap);
+    xkb_keymap_unref(keymap);
+
+    /* Caps unlocks on press for format V1.1 (explicit unlockOnPress=false) */
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1_1,
+                                "evdev", "pc105", "us", "", "caps:unlock_on_release");
+    assert(keymap);
+    test_caps_unlocks_on_release(keymap);
+    xkb_keymap_unref(keymap);
+
     xkb_context_unref(ctx);
     return 0;
 }

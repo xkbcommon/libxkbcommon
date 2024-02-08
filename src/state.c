@@ -395,9 +395,17 @@ xkb_filter_mod_lock_new(struct xkb_state *state, struct xkb_filter *filter)
 {
     filter->priv = (state->components.locked_mods &
                     filter->action.mods.mods.mask);
-    state->set_mods |= filter->action.mods.mods.mask;
-    if (!(filter->action.mods.flags & ACTION_LOCK_NO_LOCK))
-        state->components.locked_mods |= filter->action.mods.mods.mask;
+    if (filter->priv && (filter->action.mods.flags & ACTION_UNLOCK_ON_PRESS)) {
+        /* XKB extension: Unlock on second press */
+        state->clear_mods |= filter->action.mods.mods.mask;
+        if (!(filter->action.mods.flags & ACTION_LOCK_NO_UNLOCK))
+            state->components.locked_mods &= ~filter->priv;
+        filter->priv = 0;
+    } else {
+        state->set_mods |= filter->action.mods.mods.mask;
+        if (!(filter->action.mods.flags & ACTION_LOCK_NO_LOCK))
+            state->components.locked_mods |= filter->action.mods.mods.mask;
+    }
 }
 
 static bool

@@ -101,6 +101,7 @@ enum action_field {
     ACTION_FIELD_KEYCODE,
     ACTION_FIELD_MODS_TO_CLEAR,
     ACTION_FIELD_LOCK_ON_RELEASE,
+    ACTION_FIELD_UNLOCK_ON_PRESS,
 };
 
 ActionsInfo *
@@ -124,6 +125,10 @@ NewActionsInfo(enum xkb_keymap_format format)
     info->actions[ACTION_TYPE_PTR_MOVE].ptr.flags = ACTION_ACCEL;
     info->actions[ACTION_TYPE_SWITCH_VT].screen.flags = ACTION_SAME_SCREEN;
 
+    if (isModUnlockOnPressSupported(format)) {
+        info->actions[ACTION_TYPE_MOD_LOCK].group.flags =
+            ACTION_UNLOCK_ON_PRESS;
+    }
     if (isGroupLockOnReleaseSupported(format)) {
         info->actions[ACTION_TYPE_GROUP_LOCK].group.flags =
             ACTION_LOCK_ON_RELEASE;
@@ -173,6 +178,7 @@ static const LookupEntry fieldStrings[] = {
     { "clearmods",        ACTION_FIELD_MODS_TO_CLEAR   },
     { "clearmodifiers",   ACTION_FIELD_MODS_TO_CLEAR   },
     { "lockOnRelease",    ACTION_FIELD_LOCK_ON_RELEASE },
+    { "unlockOnPress",    ACTION_FIELD_UNLOCK_ON_PRESS },
     { NULL,               0                            }
 };
 
@@ -330,6 +336,12 @@ CheckAffectField(struct xkb_context *ctx, enum xkb_action_type action,
     return true;
 }
 
+inline bool
+isModUnlockOnPressSupported(enum xkb_keymap_format format) {
+    /* Lax bound */
+    return format >= XKB_KEYMAP_FORMAT_TEXT_V1_1;
+}
+
 static bool
 HandleSetLatchLockMods(struct xkb_context *ctx, enum xkb_keymap_format format,
                        const struct xkb_mod_set *mods,
@@ -352,10 +364,21 @@ HandleSetLatchLockMods(struct xkb_context *ctx, enum xkb_keymap_format format,
         return CheckBooleanFlag(ctx, action->type, field,
                                 ACTION_LATCH_TO_LOCK, array_ndx, value,
                                 &act->flags);
-    if (type == ACTION_TYPE_MOD_LOCK &&
-        field == ACTION_FIELD_AFFECT)
-        return CheckAffectField(ctx, action->type, array_ndx, value,
-                                &act->flags);
+    if (type == ACTION_TYPE_MOD_LOCK) {
+        if (field == ACTION_FIELD_AFFECT)
+            return CheckAffectField(ctx, action->type, array_ndx, value,
+                                    &act->flags);
+        if (field == ACTION_FIELD_UNLOCK_ON_PRESS) {
+            if (isModUnlockOnPressSupported(format)) {
+                return CheckBooleanFlag(ctx, action->type, field,
+                                        ACTION_UNLOCK_ON_PRESS, array_ndx, value,
+                                        &act->flags);
+            } else {
+                return ReportFormatVersionMismatch(ctx, action->type, field,
+                                                   ">= 1.1");
+            }
+        }
+    }
 
     return ReportIllegal(ctx, action->type, field);
 }

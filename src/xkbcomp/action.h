@@ -54,6 +54,9 @@ SetActionField(struct xkb_context *ctx, enum xkb_keymap_format format,
                const char *field, ExprDef *array_ndx, ExprDef *value);
 
 bool
+isModUnlockOnPressSupported(enum xkb_keymap_format format);
+
+bool
 isGroupLockOnReleaseSupported(enum xkb_keymap_format format);
 
 #endif

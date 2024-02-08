@@ -317,10 +317,17 @@ write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
         else
             args = ModMaskText(keymap->ctx, &keymap->mods,
                                action->mods.mods.mods);
-        write_buf(buf, "%s%s(modifiers=%s%s%s%s)%s", prefix, type, args,
+        if (action->type == ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_UNLOCK_ON_PRESS) && !isModUnlockOnPressSupported(format)) {
+            /* Default is true in format ≥ 1.1 */
+            log_err(keymap->ctx, XKB_ERROR_INCOMPATIBLE_KEYMAP_EXPORT_FORMAT,
+                    "Cannot use \"unlockOnPress=true\" in keymap format %d\n", format);
+        }
+        write_buf(buf, "%s%s(modifiers=%s%s%s%s%s)%s", prefix, type, args,
                   (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LOCK_CLEAR)) ? ",clearLocks" : "",
                   (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LATCH_TO_LOCK)) ? ",latchToLock" : "",
                   (action->type == ACTION_TYPE_MOD_LOCK) ? affect_lock_text(action->mods.flags, false) : "",
+                  /* Default is true in format ≥ 1.1 */
+                  (action->type == ACTION_TYPE_MOD_LOCK && (!(action->mods.flags & ACTION_UNLOCK_ON_PRESS)) && isModUnlockOnPressSupported(format)) ? ",unlockOnPress=false" : "",
                   suffix);
         break;
 
@@ -328,6 +335,7 @@ write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     case ACTION_TYPE_GROUP_LATCH:
     case ACTION_TYPE_GROUP_LOCK:
         if (action->type == ACTION_TYPE_GROUP_LOCK && (action->group.flags & ACTION_LOCK_ON_RELEASE) && !isGroupLockOnReleaseSupported(format)) {
+            /* Default is true in format ≥ 1.1 */
             log_err(keymap->ctx, XKB_ERROR_INCOMPATIBLE_KEYMAP_EXPORT_FORMAT,
                     "Cannot use \"lockOnRelease=true\" in keymap format %d\n", format);
         }
@@ -336,6 +344,7 @@ write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
                   (action->group.flags & ACTION_ABSOLUTE_SWITCH) ? action->group.group + 1 : action->group.group,
                   (action->type != ACTION_TYPE_GROUP_LOCK && (action->group.flags & ACTION_LOCK_CLEAR)) ? ",clearLocks" : "",
                   (action->type != ACTION_TYPE_GROUP_LOCK && (action->group.flags & ACTION_LATCH_TO_LOCK)) ? ",latchToLock" : "",
+                  /* Default is true in format ≥ 1.1 */
                   (action->type == ACTION_TYPE_GROUP_LOCK && (!(action->group.flags & ACTION_LOCK_ON_RELEASE)) && isGroupLockOnReleaseSupported(format)) ? ",lockOnRelease=false" : "",
                   suffix);
         break;
