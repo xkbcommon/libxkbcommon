@@ -1160,6 +1160,7 @@
   mod_led:compose	=	+ledcompose(compose)
   japan:kana_lock	=	+japan(kana_lock)
   caps:shiftlock	=	+ledcaps(shift_lock)
+  caps:unlock_on_press  = +caps(caps_lock_unlock_on_press)
   grab:break_actions    =       +xfree86(grab_break)
 
 

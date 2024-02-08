@@ -9,3 +9,9 @@ partial xkb_compatibility "caps_lock" {
         action = LockMods(modifiers = Lock);
     };
 };
+
+partial xkb_compatibility "caps_lock_unlock_on_press" {
+    interpret Caps_Lock {
+        action = LockMods(modifiers = Lock, unlockOnPress);
+    };
+};

@@ -152,6 +152,7 @@ enum xkb_action_flags {
     ACTION_ACCEL = (1 << 8),
     ACTION_SAME_SCREEN = (1 << 9),
     ACTION_LOCK_ON_RELEASE = (1 << 10),
+    ACTION_UNLOCK_ON_PRESS = (1 << 11),
 };
 
 enum xkb_action_controls {

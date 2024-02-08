@@ -316,10 +316,11 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         else
             args = ModMaskText(keymap->ctx, &keymap->mods,
                                action->mods.mods.mods);
-        write_buf(buf, "%s%s(modifiers=%s%s%s%s)%s", prefix, type, args,
+        write_buf(buf, "%s%s(modifiers=%s%s%s%s%s)%s", prefix, type, args,
                   (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LOCK_CLEAR)) ? ",clearLocks" : "",
                   (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LATCH_TO_LOCK)) ? ",latchToLock" : "",
                   (action->type == ACTION_TYPE_MOD_LOCK) ? affect_lock_text(action->mods.flags, false) : "",
+                  (action->type == ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_UNLOCK_ON_PRESS)) ? ",unlockOnPress" : "",
                   suffix);
         break;
 
