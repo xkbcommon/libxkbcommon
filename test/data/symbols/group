@@ -147,27 +147,39 @@ partial modifier_keys
 xkb_symbols "lctrl_lshift_toggle" {
     key <LFSH> {
         type[Group1]="PC_CONTROL_LEVEL2",
-        symbols[Group1] = [ Shift_L, ISO_Next_Group ]
+        symbols[Group1] = [ Shift_L, ISO_Next_Group ],
+        actions[Group1] = [ SetMods(modifiers=Shift), LockGroup(group=+1, lockOnRelease) ]
     };
-    key <LCTL> { [ Control_L, ISO_Next_Group ] };
+    key <LCTL> {
+        symbols[Group1] = [ Control_L, ISO_Next_Group ],
+        actions[Group1] = [ SetMods(modifiers=Control), LockGroup(group=+1, lockOnRelease) ]
+    };
 };
 
 partial modifier_keys
 xkb_symbols "lctrl_lshift_toggle_rev" {
     key <LFSH> {
         type[Group1]="PC_CONTROL_LEVEL2",
-        symbols[Group1] = [ Shift_L, ISO_Prev_Group ]
+        symbols[Group1] = [ Shift_L, ISO_Prev_Group ],
+        actions[Group1] = [ SetMods(modifiers=Shift), LockGroup(group=-1, lockOnRelease) ]
     };
-    key <LCTL> { [ Control_L, ISO_Prev_Group ] };
+    key <LCTL> {
+        symbols[Group1] = [ Control_L, ISO_Prev_Group ],
+        actions[Group1] = [ SetMods(modifiers=Control), LockGroup(group=-1, lockOnRelease) ]
+    };
 };
 
 partial modifier_keys
 xkb_symbols "rctrl_rshift_toggle" {
     key <RTSH> {
         type[Group1]="PC_CONTROL_LEVEL2",
-        symbols[Group1] = [ Shift_R, ISO_Next_Group ]
+        symbols[Group1] = [ Shift_R, ISO_Next_Group ],
+        actions[Group1] = [ SetMods(modifiers=Shift), LockGroup(group=+1, lockOnRelease) ]
     };
-    key <RCTL> { [ Control_R, ISO_Next_Group ] };
+    key <RCTL> {
+        symbols[Group1] = [ Control_R, ISO_Next_Group ],
+        actions[Group1] = [ SetMods(modifiers=Control), LockGroup(group=+1, lockOnRelease) ]
+    };
 };
 
 partial modifier_keys
