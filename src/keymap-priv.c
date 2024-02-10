@@ -31,8 +31,11 @@
 static void
 update_builtin_keymap_fields(struct xkb_keymap *keymap)
 {
-    /* Predefined (AKA real, core, X11) modifiers. The order is important! */
+    /* Predefined (AKA real) modifiers. The order is important!
+     * Indeed, the modifier position defines the bit used to encode it.
+     * We use explicit indexes here to facilitate debugging. */
     static const char *const builtin_mods[] = {
+        /* Core/X11 modifiers */
         [0] = "Shift",
         [1] = "Lock",
         [2] = "Control",
@@ -40,8 +43,16 @@ update_builtin_keymap_fields(struct xkb_keymap *keymap)
         [4] = "Mod2",
         [5] = "Mod3",
         [6] = "Mod4",
-        [7] = "Mod5"
+        [7] = "Mod5",
+        /* xkbcommon extension */
+        [8] = "Mod6",
+        [9] = "Mod7",
+        [10] = "Mod8",
+        [11] = "Mod9",
+        [12] = "Mod10"
     };
+
+    _Static_assert(ARRAY_SIZE(builtin_mods) == MOD_REAL_MAX);
 
     for (unsigned i = 0; i < ARRAY_SIZE(builtin_mods); i++) {
         keymap->mods.mods[i].name = xkb_atom_intern(keymap->ctx,
