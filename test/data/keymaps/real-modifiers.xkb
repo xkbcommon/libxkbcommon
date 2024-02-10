@@ -1,0 +1,151 @@
+xkb_keymap {
+xkb_keycodes "test" {
+    minimum = 8;
+    maximum = 255;
+	<LVL3>  = 92;
+    <LFSH>  = 50;
+	<RTSH>  = 62;
+	<LALT>  = 64;
+	<RALT>  = 108;
+	<LWIN>  = 133;
+	<RWIN>  = 134;
+	<LCTL>  = 37;
+	<RCTL>  = 105;
+	<CAPS>  = 66;
+
+	<AD01> = 24;
+	<AD02> = 25;
+	<AD03> = 26;
+	<AD04> = 27;
+	<AD05> = 28;
+	<AD06> = 29;
+	<AD07> = 30;
+	<AD08> = 31;
+	<AD09> = 32;
+};
+
+xkb_types "complete" {
+    virtual_modifiers MyMod5,MyMod6,MyMod6,MyMod7,MyMod8,MyMod9,MyMod10,WonderMod;
+
+    type "ONE_LEVEL" {
+        modifiers= none;
+        level_name[Level1]= "Any";
+    };
+	type "TWO_LEVEL" {
+		modifiers= Shift;
+		map[Shift]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+	};
+    type "SO_MANY_LEVELS" {
+        modifiers = Shift+MyMod5+MyMod6+MyMod6+MyMod7+MyMod8+MyMod9+MyMod10+WonderMod;
+        map[Shift] = 2;
+        map[MyMod5] = 3;
+        map[MyMod6] = 4;
+        map[MyMod6+Shift] = 5;
+        map[MyMod7] = 6;
+        map[MyMod8] = 7;
+        map[MyMod9] = 8;
+        map[MyMod10] = 9;
+        map[WonderMod] = 10;
+        level_name[1] = "1";
+        level_name[2] = "2";
+        level_name[3] = "3";
+        level_name[4] = "4";
+        level_name[5] = "5";
+        level_name[6] = "6";
+        level_name[7] = "7";
+        level_name[8] = "8";
+        level_name[9] = "9";
+        level_name[10] = "10";
+    };
+};
+xkb_compatibility "complete" {
+    interpret.useModMapMods= AnyLevel;
+    interpret.repeat= False;
+    interpret.locking= False;
+
+    virtual_modifiers MyMod5,MyMod6,MyMod7,MyMod8,MyMod9,MyMod10,WonderMod;
+
+    interpret Any+AnyOf(all) {
+        action = SetMods(modifiers=modMapMods,clearLocks);
+    };
+
+    interpret q {
+        useModMapMods = level1;
+        virtualModifier = MyMod5;
+        action = SetMods(modifiers=MyMod5);
+    };
+    interpret w {
+        useModMapMods = level1;
+        virtualModifier = MyMod6;
+        action = SetMods(modifiers=MyMod6);
+    };
+    interpret e {
+        useModMapMods = level1;
+        virtualModifier = MyMod7;
+        action = SetMods(modifiers=MyMod7);
+    };
+    interpret r {
+        useModMapMods = level1;
+        virtualModifier = MyMod8;
+        action = SetMods(modifiers=MyMod8);
+    };
+    interpret t {
+        useModMapMods = level1;
+        virtualModifier = MyMod9;
+        action = SetMods(modifiers=MyMod9);
+    };
+    interpret y {
+        useModMapMods = level1;
+        virtualModifier = MyMod10;
+        action = SetMods(modifiers=MyMod10);
+    };
+    interpret u {
+        useModMapMods = level1;
+        virtualModifier = WonderMod;
+        action = SetMods(modifiers=WonderMod);
+    };
+    interpret i {
+        useModMapMods = level1;
+        virtualModifier = WonderMod;
+        action = SetMods(modifiers=WonderMod);
+    };
+};
+xkb_symbols {
+    name[group1]="Test";
+
+    key <LFSH> { [Shift_L] };
+    modmap Shift { <LFSH> };
+
+    key <AD01> { [q] };
+    modMap Mod5 { <AD01> };
+
+    key <AD02> { [w] };
+    modMap Mod6 { <AD02> };
+
+    key <AD03> { [e] };
+    modMap Mod7 { <AD03> };
+
+    key <AD04> { [r] };
+    modMap Mod8 { <AD04> };
+
+    key <AD05> { [t] };
+    modMap Mod9 { <AD05> };
+
+    key <AD06> { [y] };
+    modMap Mod10 { <AD06> };
+
+    key <AD07> { [u] };
+    modMap Mod5 { <AD07> };
+
+    key <AD08> { [i] };
+    modMap Mod6 { <AD08> };
+
+    key <AD09> {
+        type[Group1]="SO_MANY_LEVELS",
+        symbols[Group1]=[a,b,c,d,e,f,g,h,i,j]
+    };
+
+};
+};

@@ -29,6 +29,7 @@
 
 #include "test.h"
 #include "keymap.h"
+#include "evdev-scancodes.h"
 
 // Standard real modifier masks
 #define ShiftMask   (1 << 0)
@@ -39,6 +40,11 @@
 #define Mod3Mask    (1 << 5)
 #define Mod4Mask    (1 << 6)
 #define Mod5Mask    (1 << 7)
+#define Mod6Mask    (1 << 8)
+#define Mod7Mask    (1 << 9)
+#define Mod8Mask    (1 << 10)
+#define Mod9Mask    (1 << 11)
+#define Mod10Mask   (1 << 12)
 #define NoModifier  0
 
 static void
@@ -151,10 +157,67 @@ test_modmap_none(void)
     xkb_context_unref(context);
 }
 
+static void
+test_real_mods(void)
+{
+    struct xkb_context *context = test_get_context(0);
+    struct xkb_keymap *keymap;
+    const struct xkb_key *key;
+    xkb_keycode_t keycode;
+
+    keymap = test_compile_file(context, "keymaps/real-modifiers.xkb");
+    assert(keymap);
+
+    keycode = xkb_keymap_key_by_name(keymap, "AD01");
+    assert(keycode != XKB_KEYCODE_INVALID);
+    key = XkbKey(keymap, keycode);
+    assert(key->modmap == Mod5Mask);
+    assert(key->vmodmap == Mod10Mask << 1);
+
+    keycode = xkb_keymap_key_by_name(keymap, "AD02");
+    assert(keycode != XKB_KEYCODE_INVALID);
+    key = XkbKey(keymap, keycode);
+    assert(key->modmap == Mod6Mask);
+    assert(key->vmodmap == Mod10Mask << 2);
+
+    assert(test_key_seq(keymap,
+                        KEY_O, BOTH, XKB_KEY_a, NEXT,
+                        KEY_Q, DOWN, XKB_KEY_q, NEXT,
+                        KEY_O, BOTH, XKB_KEY_c, NEXT,
+                        KEY_Q, UP,   XKB_KEY_q, NEXT,
+                        KEY_W, DOWN, XKB_KEY_w, NEXT,
+                        KEY_O, BOTH, XKB_KEY_d, NEXT,
+                        KEY_W, UP,   XKB_KEY_w, NEXT,
+                        KEY_E, DOWN, XKB_KEY_e, NEXT,
+                        KEY_O, BOTH, XKB_KEY_f, NEXT,
+                        KEY_E, UP,   XKB_KEY_e, NEXT,
+                        KEY_R, DOWN, XKB_KEY_r, NEXT,
+                        KEY_O, BOTH, XKB_KEY_g, NEXT,
+                        KEY_R, UP,   XKB_KEY_r, NEXT,
+                        KEY_T, DOWN, XKB_KEY_t, NEXT,
+                        KEY_O, BOTH, XKB_KEY_h, NEXT,
+                        KEY_T, UP,   XKB_KEY_t, NEXT,
+                        KEY_Y, DOWN, XKB_KEY_y, NEXT,
+                        KEY_O, BOTH, XKB_KEY_i, NEXT,
+                        KEY_Y, UP,   XKB_KEY_y, NEXT,
+                        KEY_U, DOWN, XKB_KEY_u, NEXT,
+                        KEY_O, BOTH, XKB_KEY_j, NEXT,
+                        KEY_U, UP,   XKB_KEY_u, NEXT,
+                        KEY_Q, DOWN, XKB_KEY_q, NEXT,
+                        KEY_W, DOWN, XKB_KEY_w, NEXT,
+                        KEY_O, BOTH, XKB_KEY_j, NEXT,
+                        KEY_W, UP,   XKB_KEY_w, NEXT,
+                        KEY_Q, UP,   XKB_KEY_q, FINISH));
+
+    xkb_keymap_unref(keymap);
+    xkb_context_unref(context);
+}
+
 int
 main(void)
 {
     test_modmap_none();
+    test_real_mods();
 
     return 0;
 }
