@@ -269,7 +269,8 @@ ModMaskText(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     if (mask == 0)
         return "none";
 
-    if (mask == MOD_REAL_MASK_ALL)
+    if (mask == MOD_REAL_MASK_ALL ||
+        mask == MOD_REAL_MASK_ALL_X11 /* hack for X11 compatibility */)
         return "all";
 
     xkb_mods_enumerate(i, mod, mods) {

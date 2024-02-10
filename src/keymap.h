@@ -121,12 +121,14 @@ enum mod_type {
 
 /* Count of real modifiers */
 #define MOD_REAL_MAX 13
+#define MOD_REAL_MAX_X11 8
 
 /* Ensure we can encode the modifier mask in xkb_mod_mask_t */
 _Static_assert(MOD_REAL_MAX <= XKB_MAX_MODS);
 
 /* Mask for all real modifiers */
 #define MOD_REAL_MASK_ALL ((xkb_mod_mask_t) ((1u << MOD_REAL_MAX) - 1))
+#define MOD_REAL_MASK_ALL_X11 ((xkb_mod_mask_t) ((1u << MOD_REAL_MAX_X11) - 1))
 
 enum xkb_action_type {
     ACTION_TYPE_NONE = 0,
