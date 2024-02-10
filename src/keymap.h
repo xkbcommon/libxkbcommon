@@ -104,10 +104,10 @@
 #define XKB_MAX_GROUPS 4
 
 /* Don't allow more modifiers than we can hold in xkb_mod_mask_t. */
-#define XKB_MAX_MODS ((xkb_mod_index_t) (sizeof(xkb_mod_mask_t) * 8))
+#define XKB_MAX_MODS ((xkb_mod_index_t) (sizeof(xkb_mod_mask_t) * CHAR_BIT))
 
 /* Don't allow more leds than we can hold in xkb_led_mask_t. */
-#define XKB_MAX_LEDS ((xkb_led_index_t) (sizeof(xkb_led_mask_t) * 8))
+#define XKB_MAX_LEDS ((xkb_led_index_t) (sizeof(xkb_led_mask_t) * CHAR_BIT))
 
 /* Special value to handle modMap None {…} */
 #define XKB_MOD_NONE 0xffffffffU
