@@ -45,6 +45,7 @@
 #define Mod8Mask    (1 << 10)
 #define Mod9Mask    (1 << 11)
 #define Mod10Mask   (1 << 12)
+#define HighestRealMask Mod10Mask
 #define NoModifier  0
 
 static void
@@ -172,42 +173,74 @@ test_real_mods(void)
     assert(keycode != XKB_KEYCODE_INVALID);
     key = XkbKey(keymap, keycode);
     assert(key->modmap == Mod5Mask);
-    assert(key->vmodmap == Mod10Mask << 1);
+    /* Test that MyMod5 is the first defined virtual modifier */
+    assert(key->vmodmap == HighestRealMask << 1);
 
     keycode = xkb_keymap_key_by_name(keymap, "AD02");
     assert(keycode != XKB_KEYCODE_INVALID);
     key = XkbKey(keymap, keycode);
     assert(key->modmap == Mod6Mask);
-    assert(key->vmodmap == Mod10Mask << 2);
+    /* Test that MyMod5 is the second defined virtual modifier */
+    assert(key->vmodmap == HighestRealMask << 2);
 
+    /* Test that we get the expected keysym for each level of KEY_O (<AD09>).
+     * Most levels require support of the real modifiers Mod6-Mod10. */
     assert(test_key_seq(keymap,
-                        KEY_O, BOTH, XKB_KEY_a, NEXT,
-                        KEY_Q, DOWN, XKB_KEY_q, NEXT,
-                        KEY_O, BOTH, XKB_KEY_c, NEXT,
-                        KEY_Q, UP,   XKB_KEY_q, NEXT,
-                        KEY_W, DOWN, XKB_KEY_w, NEXT,
-                        KEY_O, BOTH, XKB_KEY_d, NEXT,
-                        KEY_W, UP,   XKB_KEY_w, NEXT,
-                        KEY_E, DOWN, XKB_KEY_e, NEXT,
-                        KEY_O, BOTH, XKB_KEY_f, NEXT,
-                        KEY_E, UP,   XKB_KEY_e, NEXT,
-                        KEY_R, DOWN, XKB_KEY_r, NEXT,
-                        KEY_O, BOTH, XKB_KEY_g, NEXT,
-                        KEY_R, UP,   XKB_KEY_r, NEXT,
-                        KEY_T, DOWN, XKB_KEY_t, NEXT,
-                        KEY_O, BOTH, XKB_KEY_h, NEXT,
-                        KEY_T, UP,   XKB_KEY_t, NEXT,
-                        KEY_Y, DOWN, XKB_KEY_y, NEXT,
-                        KEY_O, BOTH, XKB_KEY_i, NEXT,
-                        KEY_Y, UP,   XKB_KEY_y, NEXT,
-                        KEY_U, DOWN, XKB_KEY_u, NEXT,
-                        KEY_O, BOTH, XKB_KEY_j, NEXT,
-                        KEY_U, UP,   XKB_KEY_u, NEXT,
-                        KEY_Q, DOWN, XKB_KEY_q, NEXT,
-                        KEY_W, DOWN, XKB_KEY_w, NEXT,
-                        KEY_O, BOTH, XKB_KEY_j, NEXT,
-                        KEY_W, UP,   XKB_KEY_w, NEXT,
-                        KEY_Q, UP,   XKB_KEY_q, FINISH));
+                        /* Level 1 */
+                        KEY_O, BOTH, XKB_KEY_1, NEXT,
+                        /* Level 2 */
+                        KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L, NEXT,
+                        KEY_O, BOTH, XKB_KEY_2, NEXT,
+                        KEY_LEFTSHIFT, UP, XKB_KEY_Shift_L, NEXT,
+                        /* Level 3 (MyMod5 = Mod5) */
+                        KEY_Q, DOWN, XKB_KEY_Q, NEXT,
+                        KEY_O, BOTH, XKB_KEY_3, NEXT,
+                        KEY_Q, UP,   XKB_KEY_Q, NEXT,
+                        /* Level 4 (MyMod6 = Mod6) */
+                        KEY_W, DOWN, XKB_KEY_W, NEXT,
+                        KEY_O, BOTH, XKB_KEY_4, NEXT,
+                        /* Level 5 (MyMod6 + Shift = Mod6 + Shift) */
+                        KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L, NEXT,
+                        KEY_O, BOTH, XKB_KEY_5, NEXT,
+                        KEY_LEFTSHIFT, UP, XKB_KEY_Shift_L, NEXT,
+                        KEY_W, UP,   XKB_KEY_W, NEXT,
+                        /* Level 6 (MyMod7 = Mod7) */
+                        KEY_E, DOWN, XKB_KEY_E, NEXT,
+                        KEY_O, BOTH, XKB_KEY_6, NEXT,
+                        KEY_E, UP,   XKB_KEY_E, NEXT,
+                        /* Level 7 (MyMod8 = Mod8) */
+                        KEY_R, DOWN, XKB_KEY_R, NEXT,
+                        KEY_O, BOTH, XKB_KEY_7, NEXT,
+                        KEY_R, UP,   XKB_KEY_R, NEXT,
+                        /* Level 8 (MyMod9 = Mod9) */
+                        KEY_T, DOWN, XKB_KEY_T, NEXT,
+                        KEY_O, BOTH, XKB_KEY_8, NEXT,
+                        KEY_T, UP,   XKB_KEY_T, NEXT,
+                        /* Level 9 (MyMod10 = Mod10) */
+                        KEY_Y, DOWN, XKB_KEY_Y, NEXT,
+                        KEY_O, BOTH, XKB_KEY_9, NEXT,
+                        KEY_Y, UP,   XKB_KEY_Y, NEXT,
+                        /* Level 10 using KEY_U (WonderMod = Mod5 + Mod6) */
+                        KEY_U, DOWN, XKB_KEY_U, NEXT,
+                        KEY_O, BOTH, XKB_KEY_A, NEXT,
+                        KEY_U, UP,   XKB_KEY_U, NEXT,
+                        /* Level 10 using KEY_I (WonderMod = Mod5 + Mod6) */
+                        KEY_I, DOWN, XKB_KEY_I, NEXT,
+                        KEY_O, BOTH, XKB_KEY_A, NEXT,
+                        KEY_I, UP,   XKB_KEY_I, NEXT,
+                        /* Level 10 using KEY_Q + KEY_W
+                         * MyMod5 + MyMod6 = Mod5 + Mod6 = WonderMod */
+                        KEY_Q, DOWN, XKB_KEY_Q, NEXT,
+                        KEY_W, DOWN, XKB_KEY_W, NEXT,
+                        KEY_O, BOTH, XKB_KEY_A, NEXT,
+                        KEY_W, UP,   XKB_KEY_W, NEXT,
+                        KEY_Q, UP,   XKB_KEY_Q, NEXT,
+                        /* Invalid level, fallback to base level */
+                        KEY_W, DOWN, XKB_KEY_W, NEXT,
+                        KEY_E, DOWN, XKB_KEY_E, NEXT,
+                        KEY_O, BOTH, XKB_KEY_1, NEXT,
+                        KEY_E, UP,   XKB_KEY_E, NEXT,
+                        KEY_W, UP,   XKB_KEY_W, FINISH));
 
     xkb_keymap_unref(keymap);
     xkb_context_unref(context);
