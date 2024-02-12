@@ -26,8 +26,8 @@ xkb_keycodes "test" {
 
 xkb_types "complete" {
     // Define a buch of virtual modifier to test mappings to Mod5-Mod10 real
-    // modifiers. WonderMod will be mapped to Mod5+Mod6.
-    virtual_modifiers MyMod5,MyMod6,MyMod6,MyMod7,MyMod8,MyMod9,MyMod10,WonderMod;
+    // modifiers. VMod11 will be mapped to Mod5+Mod6.
+    virtual_modifiers VMod5,VMod6,VMod6,VMod7,VMod8,VMod9,VMod10,VMod11;
 
     type "ONE_LEVEL" {
         modifiers= none;
@@ -40,16 +40,16 @@ xkb_types "complete" {
 		level_name[2]= "Shift";
 	};
     type "SOOO_MANY_LEVELS" {
-        modifiers = Shift+MyMod5+MyMod6+MyMod6+MyMod7+MyMod8+MyMod9+MyMod10+WonderMod;
+        modifiers = Shift+VMod5+VMod6+VMod6+VMod7+VMod8+VMod9+VMod10+VMod11;
         map[Shift] = 2;
-        map[MyMod5] = 3;
-        map[MyMod6] = 4;
-        map[MyMod6+Shift] = 5;
-        map[MyMod7] = 6;
-        map[MyMod8] = 7;
-        map[MyMod9] = 8;
-        map[MyMod10] = 9;
-        map[WonderMod] = 10;
+        map[VMod5] = 3;
+        map[VMod6] = 4;
+        map[VMod6+Shift] = 5;
+        map[VMod7] = 6;
+        map[VMod8] = 7;
+        map[VMod9] = 8;
+        map[VMod10] = 9;
+        map[VMod11] = 10;
         level_name[1] = "1";
         level_name[2] = "2";
         level_name[3] = "3";
@@ -67,7 +67,7 @@ xkb_compatibility "complete" {
     interpret.repeat= False;
     interpret.locking= False;
 
-    virtual_modifiers MyMod5,MyMod6,MyMod7,MyMod8,MyMod9,MyMod10,WonderMod;
+    virtual_modifiers VMod5,VMod6,VMod7,VMod8,VMod9,VMod10,VMod11;
 
     interpret Any+AnyOf(all) {
         action = SetMods(modifiers=modMapMods,clearLocks);
@@ -76,43 +76,43 @@ xkb_compatibility "complete" {
     // Define some letter keysyms as custom modifiers
     interpret Q {
         useModMapMods = level1;
-        virtualModifier = MyMod5;
-        action = SetMods(modifiers=MyMod5);
+        virtualModifier = VMod5;
+        action = SetMods(modifiers=VMod5);
     };
     interpret W {
         useModMapMods = level1;
-        virtualModifier = MyMod6;
-        action = SetMods(modifiers=MyMod6);
+        virtualModifier = VMod6;
+        action = SetMods(modifiers=VMod6);
     };
     interpret E {
         useModMapMods = level1;
-        virtualModifier = MyMod7;
-        action = SetMods(modifiers=MyMod7);
+        virtualModifier = VMod7;
+        action = SetMods(modifiers=VMod7);
     };
     interpret R {
         useModMapMods = level1;
-        virtualModifier = MyMod8;
-        action = SetMods(modifiers=MyMod8);
+        virtualModifier = VMod8;
+        action = SetMods(modifiers=VMod8);
     };
     interpret T {
         useModMapMods = level1;
-        virtualModifier = MyMod9;
-        action = SetMods(modifiers=MyMod9);
+        virtualModifier = VMod9;
+        action = SetMods(modifiers=VMod9);
     };
     interpret Y {
         useModMapMods = level1;
-        virtualModifier = MyMod10;
-        action = SetMods(modifiers=MyMod10);
+        virtualModifier = VMod10;
+        action = SetMods(modifiers=VMod10);
     };
     interpret U {
         useModMapMods = level1;
-        virtualModifier = WonderMod;
-        action = SetMods(modifiers=WonderMod);
+        virtualModifier = VMod11;
+        action = SetMods(modifiers=VMod11);
     };
     interpret I {
         useModMapMods = level1;
-        virtualModifier = WonderMod;
-        action = SetMods(modifiers=WonderMod);
+        virtualModifier = VMod11;
+        action = SetMods(modifiers=VMod11);
     };
 };
 xkb_symbols {
@@ -124,31 +124,31 @@ xkb_symbols {
     key <LFSH> { [Shift_L] };
     modifier_map Shift { <LFSH> };
 
-    // virtual modifier: MyMod5
+    // virtual modifier: VMod5
     key <AD01> { [Q] };
     modifier_map Mod5 { <AD01> };
 
-    // virtual modifier: MyMod6
+    // virtual modifier: VMod6
     key <AD02> { [W] };
     modifier_map Mod6 { <AD02> }; // real modifier not supported by X11
 
-    // virtual modifier: MyMod7
+    // virtual modifier: VMod7
     key <AD03> { [E] };
     modifier_map Mod7 { <AD03> }; // real modifier not supported by X11
 
-    // virtual modifier: MyMod8
+    // virtual modifier: VMod8
     key <AD04> { [R] };
     modifier_map Mod8 { <AD04> }; // real modifier not supported by X11
 
-    // virtual modifier: MyMod9
+    // virtual modifier: VMod9
     key <AD05> { [T] };
     modifier_map Mod9 { <AD05> }; // real modifier not supported by X11
 
-    // virtual modifier: MyMod10
+    // virtual modifier: VMod10
     key <AD06> { [Y] };
     modifier_map Mod10 { <AD06> }; // real modifier not supported by X11
 
-    // virtual modifier: WonderMod (Mod5+Mod6)
+    // virtual modifier: VMod11 (Mod5+Mod6)
     key <AD07> { [U] };
     modifier_map Mod5 { <AD07> };
     key <AD08> { [I] };

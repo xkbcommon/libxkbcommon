@@ -173,14 +173,14 @@ test_real_mods(void)
     assert(keycode != XKB_KEYCODE_INVALID);
     key = XkbKey(keymap, keycode);
     assert(key->modmap == Mod5Mask);
-    /* Test that MyMod5 is the first defined virtual modifier */
+    /* Test that VMod5 is the first defined virtual modifier */
     assert(key->vmodmap == HighestRealMask << 1);
 
     keycode = xkb_keymap_key_by_name(keymap, "AD02");
     assert(keycode != XKB_KEYCODE_INVALID);
     key = XkbKey(keymap, keycode);
     assert(key->modmap == Mod6Mask);
-    /* Test that MyMod5 is the second defined virtual modifier */
+    /* Test that VMod5 is the second defined virtual modifier */
     assert(key->vmodmap == HighestRealMask << 2);
 
     /* Test that we get the expected keysym for each level of KEY_O (<AD09>).
@@ -192,44 +192,44 @@ test_real_mods(void)
                         KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L, NEXT,
                         KEY_O, BOTH, XKB_KEY_2, NEXT,
                         KEY_LEFTSHIFT, UP, XKB_KEY_Shift_L, NEXT,
-                        /* Level 3 (MyMod5 = Mod5) */
+                        /* Level 3 (VMod5 = Mod5) */
                         KEY_Q, DOWN, XKB_KEY_Q, NEXT,
                         KEY_O, BOTH, XKB_KEY_3, NEXT,
                         KEY_Q, UP,   XKB_KEY_Q, NEXT,
-                        /* Level 4 (MyMod6 = Mod6) */
+                        /* Level 4 (VMod6 = Mod6) */
                         KEY_W, DOWN, XKB_KEY_W, NEXT,
                         KEY_O, BOTH, XKB_KEY_4, NEXT,
-                        /* Level 5 (MyMod6 + Shift = Mod6 + Shift) */
+                        /* Level 5 (VMod6 + Shift = Mod6 + Shift) */
                         KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L, NEXT,
                         KEY_O, BOTH, XKB_KEY_5, NEXT,
                         KEY_LEFTSHIFT, UP, XKB_KEY_Shift_L, NEXT,
                         KEY_W, UP,   XKB_KEY_W, NEXT,
-                        /* Level 6 (MyMod7 = Mod7) */
+                        /* Level 6 (VMod7 = Mod7) */
                         KEY_E, DOWN, XKB_KEY_E, NEXT,
                         KEY_O, BOTH, XKB_KEY_6, NEXT,
                         KEY_E, UP,   XKB_KEY_E, NEXT,
-                        /* Level 7 (MyMod8 = Mod8) */
+                        /* Level 7 (VMod8 = Mod8) */
                         KEY_R, DOWN, XKB_KEY_R, NEXT,
                         KEY_O, BOTH, XKB_KEY_7, NEXT,
                         KEY_R, UP,   XKB_KEY_R, NEXT,
-                        /* Level 8 (MyMod9 = Mod9) */
+                        /* Level 8 (VMod9 = Mod9) */
                         KEY_T, DOWN, XKB_KEY_T, NEXT,
                         KEY_O, BOTH, XKB_KEY_8, NEXT,
                         KEY_T, UP,   XKB_KEY_T, NEXT,
-                        /* Level 9 (MyMod10 = Mod10) */
+                        /* Level 9 (VMod10 = Mod10) */
                         KEY_Y, DOWN, XKB_KEY_Y, NEXT,
                         KEY_O, BOTH, XKB_KEY_9, NEXT,
                         KEY_Y, UP,   XKB_KEY_Y, NEXT,
-                        /* Level 10 using KEY_U (WonderMod = Mod5 + Mod6) */
+                        /* Level 10 using KEY_U (VMod11 = Mod5 + Mod6) */
                         KEY_U, DOWN, XKB_KEY_U, NEXT,
                         KEY_O, BOTH, XKB_KEY_A, NEXT,
                         KEY_U, UP,   XKB_KEY_U, NEXT,
-                        /* Level 10 using KEY_I (WonderMod = Mod5 + Mod6) */
+                        /* Level 10 using KEY_I (VMod11 = Mod5 + Mod6) */
                         KEY_I, DOWN, XKB_KEY_I, NEXT,
                         KEY_O, BOTH, XKB_KEY_A, NEXT,
                         KEY_I, UP,   XKB_KEY_I, NEXT,
                         /* Level 10 using KEY_Q + KEY_W
-                         * MyMod5 + MyMod6 = Mod5 + Mod6 = WonderMod */
+                         * VMod5 + VMod6 = Mod5 + Mod6 = VMod11 */
                         KEY_Q, DOWN, XKB_KEY_Q, NEXT,
                         KEY_W, DOWN, XKB_KEY_W, NEXT,
                         KEY_O, BOTH, XKB_KEY_A, NEXT,
