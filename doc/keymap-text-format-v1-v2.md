@@ -52,6 +52,7 @@ Some additional resources are:
 [ivan-pascal]: https://web.archive.org/web/20190724015820/http://pascal.tsu.ru/en/xkb/
 [unreliable-guide]: https://www.charvolant.org/doug/xkb/html/index.html
 [XKB Protocol]: https://www.x.org/releases/current/doc/kbproto/xkbproto.html
+[X11 Core Protocol]: https://www.x.org/releases/current/doc/xproto/x11protocol.html
 [xkeyboard-config doc]: https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config/-/blob/master/docs/README.enhancing
 [arch-wiki]: https://wiki.archlinux.org/index.php/X_keyboard_extension
 
@@ -143,8 +144,11 @@ Some additional resources are:
     </dd>
   </dl>
 
-  Each modifier defines a _mapping_ to one or multiple
-  _real_ modifier. Real modifiers map to themselves.
+  Each modifier has an associated [encoding][modifier encoding]. In keymaps
+  compatible with X11, the encoding can be interpreted as a _mapping_ to one or
+  multiple _real_ modifier. Real modifiers map to themselves: they are
+  [canonical modifiers][canonical modifier]. See the “@ref modifiers-encoding ""”
+  section for further information.
 
   The following table lists the
   <a name="usual-modifiers">usual modifiers</a>
@@ -2462,22 +2466,23 @@ For historical reasons they are divided in two categories:
 
 They are the **8** *predefined* (AKA *core*, *X11*) modifiers:
 
-| Name      | Description                |
-| --------- | -------------------------- |
-| `Shift`   | Used to type upper case letters of [bicameral scripts]; keyboard shortcuts |
-| `Lock`    | Used to type upper case letters of [bicameral scripts]: “Caps Lock” |
-| `Control` | Used in keyboard shortcuts |
-| `Mod1`    | Generic modifier 1         |
-| `Mod2`    | Generic modifier 2         |
-| `Mod3`    | Generic modifier 3         |
-| `Mod4`    | Generic modifier 4         |
-| `Mod5`    | Generic modifier 5         |
+| Name      | Index/Bit | Mask   | Description                |
+| --------- | --------- | ------ | -------------------------- |
+| `Shift`   | 0         | `0x01` | Used to type upper case letters of [bicameral scripts]; keyboard shortcuts |
+| `Lock`    | 1         | `0x02` | Used to type upper case letters of [bicameral scripts]: “Caps Lock” |
+| `Control` | 2         | `0x04` | Used in keyboard shortcuts |
+| `Mod1`    | 3         | `0x08` | Generic modifier 1         |
+| `Mod2`    | 4         | `0x10` | Generic modifier 2         |
+| `Mod3`    | 5         | `0x20` | Generic modifier 3         |
+| `Mod4`    | 6         | `0x40` | Generic modifier 4         |
+| `Mod5`    | 7         | `0x80` | Generic modifier 5         |
 
 [bicameral scripts]: https://en.wikipedia.org/wiki/Letter_case#Bicameral_script
 
-They are the modifiers defined in the *core* X11 protocol. They are qualified as
-“real”, because in the XKB protocol they denote the *bits* that *encode* the
-modifiers state. See @ref modifiers-encoding "" for further information.
+They are the modifiers defined in the [*core* X11 protocol][X11 Core Protocol].
+They are qualified as “real”, because in the XKB protocol they denote the *bits*
+that *encode* the modifiers state. See @ref modifiers-encoding "" for further
+information.
 
 Since they are predefined, they require no [explicit declaration](@ref virtual-modifier-statements)
 and have a *fixed* [encoding](@ref modifiers-encoding).
@@ -2491,7 +2496,7 @@ They are the modifiers that are *not* predefined. They require an
 
 Note that in X11, the maximum of virtual modifiers is **16** (see
 `XkbNumVirtualMods`), whereas up to **24** virtual modifiers can be defined in
-libxkbcommon.
+libxkbcommon, for a total of **32** modifiers (real + virtual).
 </dd>
 </dl>
 
@@ -2526,6 +2531,11 @@ following syntax:
   virtual_modifiers M1 = 0x20;
   virtual_modifiers M2 = 0xC0;
   virtual_modifiers M1 = 0x20, M2 = 0xC0;
+  ```
+- Use `none`, an alias for `0`:
+  ```c
+  virtual_modifiers M1 = none;
+  // Equivalent to: M1 = 0;
   ```
 
 This can be done in the [`xkb_types`][xkb_types], [`xkb_compat`][xkb_compat] and
@@ -2684,28 +2694,12 @@ OR of the encoding of each active modifiers.
 - [Virtual modifiers](@ref virtual-modifier) have a *user-defined* encoding.
 
 Virtual modifiers require to be encoded by the user,
-[*explicitly*](@ref explicit-modifier-encoding) and/or
-[*implicitly*](@ref implicit-modifier-encoding), the combination resulting in their
+*implicitly* (using the [auto mode](@ref auto-modifier-encoding) and/or the
+[legacy mode](@ref implicit-modifier-encoding)) and/or
+[*explicitly*](@ref explicit-modifier-encoding), the combination resulting in their
 [*effective*](@ref effective-modifier-encoding) encoding.
 
 <dl>
-<dt><a name="explicit-modifier-encoding">*Explicit* modifier encoding</a></dt>
-<dd>
-
-Virtual modifiers can optionally define an initial mapping using the
-[`virtual_modifiers`](@ref virtual-modifier-statements) statements:
-
-```c
-virtual_modifiers M1 = Mod1;     // Single real modifier
-virtual_modifiers M2 = Mod4+Mod5;// Real modifier mask
-virtual_modifiers M3 = 0x400;    // Numeric mask
-```
-
-See @ref virtual-modifier-statements "" for further information.
-
-@warning Although it is explicit, this may not be the
-[effective encoding][effective modifier encoding], detailed hereinafter.
-</dd>
 <dt><a name="implicit-modifier-encoding">*Implicit* modifier encoding</a></dt>
 <dd>
 
@@ -2731,16 +2725,39 @@ xkb_symbols {
 };
 ```
 </dd>
+<dt><a name="explicit-modifier-encoding">*Explicit* modifier encoding</a></dt>
+<dd>
+
+Virtual modifiers can optionally define an initial mapping using the
+[`virtual_modifiers`](@ref virtual-modifier-statements) statements:
+
+```c
+virtual_modifiers M1 = Mod1;     // Single real modifier
+virtual_modifiers M2 = Mod4+Mod5;// Real modifier mask
+virtual_modifiers M3 = 0x400;    // Numeric mask
+```
+
+See @ref virtual-modifier-statements "" for further information.
+
+@warning Although it is explicit, this may not be the
+[effective encoding][effective modifier encoding], detailed hereinafter.
+</dd>
 <dt><a name="effective-modifier-encoding">*Effective* modifier encoding</a></dt>
 <dd>
 The effective encoding is the bitwise OR of the [explicit modifier encoding]
 and the [implicit modifier encoding].
 
+@note @anchor auto-modifier-encoding If using `::XKB_KEYMAP_FORMAT_TEXT_V2`,
+virtual modifiers that were not mapped either *implicitly* using the
+`virtualModifier`/`modifier_map` feature hereinabove or
+[*explicitly*](@ref explicit-modifier-encoding), then they are mapped to their
+[*canonical* mapping](@ref canonical-modifier-def).
+
 Example:
 
 ```c
 xkb_symbols {
-    virtual_modifiers Alt, Super, Hyper = 0x400;
+    virtual_modifiers Alt, Meta, Super = none, Hyper = 0x1000, Useless = none;
 
     // Virtual modifier maps
     // Note: alternatively one can use xkb_compat interpretations.
@@ -2758,11 +2775,76 @@ xkb_symbols {
 };
 ```
 
-| Encoding  | Alt    | Super         | Hyper          |
-| --------- | ------ | ------------- | -------------- |
-| Explicit  | 0      | 0             | `0x400`        |
-| Implicit  | `Mod1` | `Mod4 + Mod5` | `Mod3`         |
-| Effecitve | `Mod1` | `Mod4 + Mod5` | `0x400 + Mod3` |
+<table>
+<caption>Modifiers encoding of the previous example</caption>
+<thead>
+<tr>
+<th>Modifier</th>
+<th>Index</th>
+<th colspan="5">Encoding</th>
+</tr>
+<tr>
+<th></th>
+<th></th>
+<th>Canonical</th>
+<th>Explicit</th>
+<th>Implicit</th>
+<th colspan="2">Effective</th>
+</tr>
+<tr>
+<th></th>
+<th colspan="2">(xkbcommon)</th>
+<th colspan="2"></th>
+<th>`::XKB_KEYMAP_FORMAT_TEXT_V1`</th>
+<th>`::XKB_KEYMAP_FORMAT_TEXT_V2`</th>
+</tr>
+<tr>
+<th>Alt</th>
+<td>8</td>
+<td>`0x100`</td>
+<td></td>
+<td>`Mod1`</td>
+<td>`Mod1`</td>
+<td>`Mod1`</td>
+</tr>
+<tr>
+<th>Meta</th>
+<td>9</td>
+<td>`0x200`</td>
+<td></td>
+<td></td>
+<td>0 (unmapped)</td>
+<td>`0x200` (canonical, xkbcommon value)</td>
+</tr>
+<tr>
+<th>Super</th>
+<td>10</td>
+<td>`0x400`</td>
+<td>0</td>
+<td>`Mod4 + Mod5`</td>
+<td>`Mod4 + Mod5`</td>
+<td>`Mod4 + Mod5`</td>
+</tr>
+<tr>
+<th>Hyper</th>
+<td>11</td>
+<td>`0x800`</td>
+<td>`0x1000`</td>
+<td></td>
+<td>`0x1000`</td>
+<td>`0x1000`</td>
+</tr>
+<tr>
+<th>Useless</th>
+<td>12</td>
+<td>`0x1000`</td>
+<td>0</td>
+<td></td>
+<td>0 (unmapped)</td>
+<td>0 (explicit mapping)</td>
+</tr>
+</tbody>
+</table>
 </dd>
 </dl>
 
@@ -2770,16 +2852,16 @@ xkb_symbols {
 [implicit modifier encoding]: @ref implicit-modifier-encoding
 [effective modifier encoding]: @ref effective-modifier-encoding
 
-<!--
-TODO: this requires the introduction of automated canonical modifiers, else we
-      rely only on the definition with explicit indexes.
-
 ### Canonical and non-canonical modifiers
 
-A canonical modifier have an encoding defined by: `1u << index`.
+@anchor canonical-modifier-def A **canonical modifier** have an encoding defined
+by: `1 << mod_index`, where `mod_index` is:
+- Fixed for the *real* modifiers, in order to match the X11 values.
+  See [real modifiers mapping](@ref real-modifier).
+- Implementation-dependent for the the *virtual* modifiers.
+  See @ref xkbcommon-vmod-encoding "" for further details.
 
-@todo
--->
+[canonical modifier]: @ref canonical-modifier-def
 
 ### Usual modifiers and associated keysyms {#usual-modifiers-keysyms}
 
@@ -2824,7 +2906,7 @@ implementations are recommended to **avoid *numeric* modifier masks** and to
 **use virtual modifiers *names* whenever possible** when serializing the keymap.
 This avoids *leaking* the indices of the modifiers.
 
-#### xkbcomp and libxkbcommon implementations
+#### xkbcomp and libxkbcommon implementations {#xkbcommon-vmod-encoding}
 
 @attention This section is not part of the keymap text format specification and
 presents libxkbcommon’s *implementation details* that may change, solely for the
@@ -2833,7 +2915,7 @@ purpose of informing other XKB implementation.
 
 Both X11 xkbcomp and libxkbcommon currently implement modifiers indices as follow:
 
-1. Real modifiers have the following indices:
+1. Real modifiers have the following indices: @anchor real-modifier-indices
    | Name      | Index |
    | --------- | ----- |
    | `Shift`   | 0     |

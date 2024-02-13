@@ -202,7 +202,8 @@ check_write_string_literal(struct buf *buf, const char* string)
 } while (0)
 
 static bool
-write_vmods(struct xkb_keymap *keymap, struct buf *buf)
+write_vmods(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+            struct buf *buf)
 {
     const struct xkb_mod *mod;
     xkb_mod_index_t vmod = 0;
@@ -216,8 +217,27 @@ write_vmods(struct xkb_keymap *keymap, struct buf *buf)
             copy_to_buf(buf, ",");
         }
         write_buf(buf, "%s", xkb_atom_text(keymap->ctx, mod->name));
+
+        /*
+         * Ensure to always honor explicit mappings when auto canonical vmods
+         * is enabled, so that parsing/serializing can round-trip. This is not
+         * required when the feature is disabled (keymap format v1).
+         *
+         * If the auto feature is enabled, `virtual_modifiers M;` will assign
+         * a canonical mapping > 0xff to `M` if there is no further explicit/
+         * implicit mapping for `M`.
+         *
+         * On the contrary, `virtual_modifiers M = none;` prevents the auto
+         * mapping of `M`. So if the auto feature is enabled and there is no
+         * further explicit/implicit mapping for `M`, then the mapping of `M`
+         * will remain unchanged: `none`. It must be serialized to an explicit
+         * mapping to prevent triggering the auto canonical mapping presented
+         * above.
+         */
+        const bool auto_canonical_mods = (format >= XKB_KEYMAP_FORMAT_TEXT_V2);
+
         if ((keymap->mods.explicit_vmods & (UINT32_C(1) << vmod)) &&
-            mod->mapping != 0) {
+            (auto_canonical_mods || mod->mapping != 0)) {
             /*
              * Explicit non-default mapping
              * NOTE: we can only pretty-print *real* modifiers in this context.
@@ -280,7 +300,8 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
 }
 
 static bool
-write_types(struct xkb_keymap *keymap, struct buf *buf)
+write_types(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+            struct buf *buf)
 {
     if (keymap->types_section_name)
         write_buf(buf, "xkb_types \"%s\" {\n",
@@ -288,7 +309,7 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
     else
         copy_to_buf(buf, "xkb_types {\n");
 
-    if (!write_vmods(keymap, buf))
+    if (!write_vmods(keymap, format, buf))
         return false;
 
     for (darray_size_t i = 0; i < keymap->num_types; i++) {
@@ -648,7 +669,7 @@ write_compat(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     else
         copy_to_buf(buf, "xkb_compatibility {\n");
 
-    if (!write_vmods(keymap, buf))
+    if (!write_vmods(keymap, format, buf))
         return false;
 
     copy_to_buf(buf, "\tinterpret.useModMapMods= AnyLevel;\n");
@@ -980,7 +1001,7 @@ write_keymap(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 
     return (check_write_buf(buf, "xkb_keymap {\n") &&
             write_keycodes(keymap, buf) &&
-            write_types(keymap, buf) &&
+            write_types(keymap, format, buf) &&
             write_compat(keymap, format, max_groups, buf) &&
             write_symbols(keymap, format, max_groups, buf) &&
             check_write_buf(buf, "};\n"));

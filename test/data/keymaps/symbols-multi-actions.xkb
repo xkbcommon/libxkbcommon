@@ -23,7 +23,7 @@ xkb_keycodes {
 };
 
 xkb_types "basic_extra" {
-	virtual_modifiers NumLock,Alt,LevelThree,AltGr;
+	virtual_modifiers NumLock=0x100,Alt=0x200,LevelThree=0x400,AltGr=0x800;
 
 	type "ONE_LEVEL" {
 		modifiers= none;
@@ -136,7 +136,7 @@ xkb_types "basic_extra" {
 };
 
 xkb_compatibility "basic" {
-	virtual_modifiers NumLock,Alt,LevelThree,AltGr;
+	virtual_modifiers NumLock=0x100,Alt=0x200,LevelThree=0x400,AltGr=0x800;
 
 	interpret.useModMapMods= AnyLevel;
 	interpret.repeat= False;

@@ -124,21 +124,6 @@ Enable up to **32** layouts when using `::XKB_KEYMAP_FORMAT_TEXT_V2`.
 </td>
 </tr>
 <tr>
-<th>Extended modifiers</th>
-<td>
-<details>
-<summary>❌️ No support</summary>
-Limited to up to **8** *independent* modifiers.
-</details>
-</td>
-<td colspan="2">
-<details>
-<summary>✅ Full support</summary>
-Enable up to **32** *independent* modifiers.
-</details>
-</td>
-</tr>
-<tr>
 <th>Unified modifiers</th>
 <td>
 <details>
@@ -154,6 +139,46 @@ Real and virtual modifiers have been collapsed into the same namespace, with a
 
 Real modifiers are predefined modifiers with fixed encoding and considered merely
 as a X11 compatibility feature.
+</details>
+</td>
+</tr>
+<tr>
+<th>Extended modifiers</th>
+<td>
+<details>
+<summary>❌️ No support</summary>
+Limited to up to **8** *independent* modifiers.
+</details>
+</td>
+<td colspan="2">
+<details>
+<summary>✅ Full support</summary>
+Enable up to **32** *independent* modifiers.
+</details>
+</td>
+</tr>
+<tr>
+<th>Canonical virtual modifiers</th>
+<td>
+<details>
+<summary>❌️ No support</summary>
+Virtual modifiers can only mapped to *real* modifiers (8 bits).
+</details>
+</td>
+<td>
+<details>
+<summary>⚠️ Partial support</summary>
+Only if using explicit mapping: e.g. `virtual_modifiers M = 0x100;` if `M` has
+the modifier index 8.
+</details>
+</td>
+<td>
+<details>
+<summary>✅ Full support</summary>
+Virtual modifiers that are not mapped either *explicitly* (using e.g.
+`virtual_modifiers M = …`) or *implicitly* (using `modifier_map` and
+`virtualModifier`) [automatically](@ref auto-modifier-encoding) use to
+their <em>[canonical mapping](@ref canonical-modifier-def)</em>.
 </details>
 </td>
 </tr>
