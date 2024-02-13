@@ -296,7 +296,7 @@ xkb_keycodes "evdev_aliases(qwerty)" {
 };
 
 xkb_types "complete" {
-	virtual_modifiers NumLock,Alt,LevelThree,LAlt=Mod1,RAlt=0x100,RControl=0x210001,LControl,ScrollLock,LevelFive,AltGr,Meta,Super,Hyper;
+	virtual_modifiers NumLock,Alt,LevelThree,LAlt=Mod1,RAlt=0x100,RControl=0x210001,LControl=0x4000,ScrollLock=0x8000,LevelFive=0x10000,AltGr,Meta,Super,Hyper;
 
 	type "ONE_LEVEL" {
 		modifiers= none;
@@ -590,7 +590,7 @@ xkb_types "complete" {
 };
 
 xkb_compatibility "complete_caps(caps_lock)_4_misc(assign_shift_left_action)_4_level5(level5_lock)_4" {
-	virtual_modifiers NumLock,Alt,LevelThree,LAlt=Mod1,RAlt=0x100,RControl=0x210001,LControl,ScrollLock,LevelFive,AltGr,Meta,Super,Hyper;
+	virtual_modifiers NumLock,Alt,LevelThree,LAlt=Mod1,RAlt=0x100,RControl=0x210001,LControl=0x4000,ScrollLock=0x8000,LevelFive=0x10000,AltGr,Meta,Super,Hyper;
 
 	interpret.useModMapMods= AnyLevel;
 	interpret.repeat= False;

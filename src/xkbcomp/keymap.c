@@ -16,6 +16,7 @@
 
 #include "keymap.h"
 #include "darray.h"
+#include "xkbcommon/xkbcommon.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
 
@@ -347,6 +348,32 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
         xkb_vmods_enumerate(idx, mod, &keymap->mods)
             if (key->vmodmap & (UINT32_C(1) << idx))
                 mod->mapping |= key->modmap;
+
+    if (keymap->format >= XKB_KEYMAP_FORMAT_TEXT_V2) {
+        /*
+         * XKB extension: canonical virtual modifiers (incompatible with X11)
+         *
+         * Virtual modifiers that are not mapped, map to their canonical
+         * encoding, i.e. themselves.
+         *
+         * This excludes:
+         * - Modifiers mapped *explicitly*: e.g. `virtual_modifiers M = 0x1;`.
+         * - Modifiers mapped *implicitly* via vmodmap/modifier_map, i.e. the
+         *   usual X11 way used in xkeyboard-config.
+         */
+        xkb_vmods_enumerate(idx, mod, &keymap->mods) {
+            const xkb_mod_mask_t mask = UINT32_C(1) << idx;
+            if (mod->mapping == 0 && !(keymap->mods.explicit_vmods & mask)) {
+                mod->mapping = mask;
+                /*
+                 * Make the mapping explicit, so that it is interoperable
+                 * without relying on the implementation-specific virtual
+                 * modifiers indices.
+                 */
+                keymap->mods.explicit_vmods |= mask;
+            }
+        }
+    }
 
     /* Update the canonical modifiers state mask */
     assert(keymap->canonical_state_mask == MOD_REAL_MASK_ALL);

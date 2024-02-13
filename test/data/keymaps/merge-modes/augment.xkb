@@ -170,7 +170,7 @@ xkb_keycodes "" {
 };
 
 xkb_types "" {
-	virtual_modifiers NumLock=Mod2,LevelThree,LevelFive=Mod3,U1,U2,U3=0x300000,Z1,Z2,Z3,M1=0x1000,M2=0x2000,M3=0x3000,U7,Z7,M7=0x700000;
+	virtual_modifiers NumLock=Mod2,LevelThree=none,LevelFive=Mod3,U1=0x800,U2=none,U3=0x300000,Z1=none,Z2=none,Z3=none,M1=0x1000,M2=0x2000,M3=0x3000,U7=0x100000,Z7=none,M7=0x700000;
 
 	type "ONE_LEVEL" {
 		modifiers= none;
@@ -250,7 +250,7 @@ xkb_types "" {
 };
 
 xkb_compatibility "" {
-	virtual_modifiers NumLock=Mod2,LevelThree,LevelFive=Mod3,U1,U2,U3=0x300000,Z1,Z2,Z3,M1=0x1000,M2=0x2000,M3=0x3000,U7,Z7,M7=0x700000;
+	virtual_modifiers NumLock=Mod2,LevelThree=none,LevelFive=Mod3,U1=0x800,U2=none,U3=0x300000,Z1=none,Z2=none,Z3=none,M1=0x1000,M2=0x2000,M3=0x3000,U7=0x100000,Z7=none,M7=0x700000;
 
 	interpret.useModMapMods= AnyLevel;
 	interpret.repeat= False;
