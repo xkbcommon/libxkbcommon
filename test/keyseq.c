@@ -650,7 +650,8 @@ main(void)
                         /* KEY_SPACE,       BOTH,  XKB_KEY_KP_0,              NEXT, */
                         /* KEY_KP8,         BOTH,  XKB_KEY_KP_Up,             NEXT, */
                         KEY_ESC,         BOTH,  XKB_KEY_Escape,            NEXT,
-                        KEY_RIGHTALT,    UP,    XKB_KEY_ISO_Level5_Shift,  NEXT,
+                        KEY_1,           BOTH,  XKB_KEY_ordfeminine,       NEXT,
+                        KEY_RIGHTALT,    UP,    XKB_KEY_ISO_Level5_Lock,   NEXT,
 
                         KEY_V,           BOTH,  XKB_KEY_p,               FINISH));
 
