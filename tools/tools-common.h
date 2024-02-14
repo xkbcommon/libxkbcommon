@@ -61,7 +61,7 @@ print_keys_modmaps(struct xkb_keymap *keymap);
 #endif
 
 void
-tools_print_keycode_state(char *prefix,
+tools_print_keycode_state(const char *prefix,
                           struct xkb_state *state,
                           struct xkb_compose_state *compose_state,
                           xkb_keycode_t keycode,
