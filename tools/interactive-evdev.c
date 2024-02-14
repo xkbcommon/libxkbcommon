@@ -53,6 +53,7 @@ struct keyboard {
     struct keyboard *next;
 };
 
+static bool verbose = false;
 static bool terminate;
 static int evdev_offset = 8;
 static bool report_state_changes;
@@ -383,6 +384,7 @@ usage(FILE *fp, char *progname)
         fprintf(fp, "   or: %s --keymap <path to keymap file>\n",
                 progname);
         fprintf(fp, "For both:\n"
+                        "          --verbose (enable verbose debugging output)\n"
 #ifdef ENABLE_PRIVATE_APIS
                         "          --print-modmaps (print real & virtual key modmaps)\n"
 #endif
@@ -415,6 +417,7 @@ main(int argc, char *argv[])
     const char *locale;
     struct sigaction act;
     enum options {
+        OPT_VERBOSE,
         OPT_INCLUDE,
         OPT_INCLUDE_DEFAULTS,
         OPT_RULES,
@@ -434,6 +437,7 @@ main(int argc, char *argv[])
     };
     static struct option opts[] = {
         {"help",                 no_argument,            0, 'h'},
+        {"verbose",              no_argument,            0, OPT_VERBOSE},
         {"include",              required_argument,      0, OPT_INCLUDE},
         {"include-defaults",     no_argument,            0, OPT_INCLUDE_DEFAULTS},
         {"rules",                required_argument,      0, OPT_RULES},
@@ -464,6 +468,9 @@ main(int argc, char *argv[])
             break;
 
         switch (opt) {
+        case OPT_VERBOSE:
+            verbose = true;
+            break;
         case OPT_INCLUDE:
             if (num_includes >= ARRAY_SIZE(includes)) {
                 fprintf(stderr, "error: too many includes\n");
@@ -537,6 +544,11 @@ main(int argc, char *argv[])
     if (!ctx) {
         fprintf(stderr, "Couldn't create xkb context\n");
         goto out;
+    }
+
+    if (verbose) {
+        xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_DEBUG);
+        xkb_context_set_log_verbosity(ctx, 10);
     }
 
     if (num_includes == 0)
