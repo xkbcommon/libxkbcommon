@@ -49,6 +49,8 @@
 #include "utils.h"
 #include "src/keysym.h"
 
+#include "tools/tools-common.h"
+
 /*
  * Test a sequence of keysyms, resulting from a sequence of key presses,
  * against the keysyms they're supposed to generate.
@@ -104,12 +106,15 @@ test_key_seq_va(struct xkb_keymap *keymap, va_list ap)
             syms = &sym;
         }
 
-        fprintf(stderr, "op %-6s got %u syms for keycode %3u: [", opstr, nsyms, kc);
-
         if (op == DOWN || op == BOTH)
             xkb_state_update_key(state, kc, XKB_KEY_DOWN);
         if (op == UP || op == BOTH)
             xkb_state_update_key(state, kc, XKB_KEY_UP);
+
+#if HAVE_TOOLS
+        tools_print_keycode_state("", state, NULL, kc, XKB_CONSUMED_MODE_XKB, PRINT_ALL_FIELDS);
+#endif
+        fprintf(stderr, "op %-6s got %u syms for keycode %3u: [", opstr, nsyms, kc);
 
         for (i = 0; i < nsyms; i++) {
             keysym = va_arg(ap, int);

@@ -434,6 +434,7 @@ if build_tools
         link_with: libxkbcommon_tools_internal,
         dependencies: dep_libxkbcommon,
     )
+    configh_data.set10('HAVE_TOOLS', true)
 
     # Tool: xkbcli
     executable('xkbcli', 'tools/xkbcli.c',
@@ -586,6 +587,8 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
                dependencies: [tools_dep],
                include_directories: [include_directories('src', 'include', 'tools')],
                install: false)
+else
+    tools_dep = declare_dependency()
 endif
 
 
@@ -628,6 +631,7 @@ libxkbcommon_test_internal = static_library(
 test_dep = declare_dependency(
     include_directories: include_directories('src', 'include'),
     link_with: libxkbcommon_test_internal,
+    dependencies: [tools_dep],
 )
 if get_option('enable-x11')
     libxkbcommon_x11_test_internal = static_library(
