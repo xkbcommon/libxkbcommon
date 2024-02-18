@@ -159,6 +159,12 @@ main(int argc, char *argv[])
     };
     assert(test_rules(ctx, &test6));
 
+    struct test_data test7 = {
+      .rules = "inc-no-newline",
+      .should_fail = true,
+    };
+    assert(test_rules(ctx, &test7));
+
     xkb_context_unref(ctx);
     return 0;
 }
