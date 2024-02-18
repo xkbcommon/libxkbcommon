@@ -978,6 +978,14 @@ include_statement:
     switch (tok = gettok(m, s)) {
     case TOK_IDENTIFIER:
         matcher_include(m, s, include_depth, m->val.string);
+        goto include_statement_end;
+    default:
+        goto unexpected;
+    }
+
+include_statement_end:
+    switch (tok = gettok(m, s)) {
+    case TOK_END_OF_LINE:
         goto initial;
     default:
         goto unexpected;
