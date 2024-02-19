@@ -298,6 +298,8 @@ test_get_context(enum test_context_flags test_flags)
     struct xkb_context *ctx;
     char *path;
 
+    setbuf(stdout, NULL);
+
     ctx_flags = XKB_CONTEXT_NO_DEFAULT_INCLUDES;
     if (test_flags & CONTEXT_ALLOW_ENVIRONMENT_NAMES) {
         unsetenv("XKB_DEFAULT_RULES");
