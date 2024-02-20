@@ -712,6 +712,8 @@ test_ctrl_string_transformation(struct xkb_keymap *keymap)
 int
 main(void)
 {
+    test_init();
+
     struct xkb_context *context = test_get_context(0);
     struct xkb_keymap *keymap;
 

@@ -156,6 +156,8 @@ main(void)
     struct atom_table *table;
     xkb_atom_t atom1, atom2, atom3;
 
+    test_init();
+
     table = atom_table_new();
     assert(table);
 

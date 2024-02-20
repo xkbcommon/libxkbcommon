@@ -59,5 +59,7 @@ test_message_get(void)
 int
 main(void)
 {
+    test_init();
+
     test_message_get();
 }

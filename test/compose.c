@@ -942,6 +942,8 @@ main(int argc, char *argv[])
 {
     struct xkb_context *ctx;
 
+    test_init();
+
     ctx = test_get_context(CONTEXT_NO_FLAG);
     assert(ctx);
 

@@ -29,6 +29,8 @@
 int
 main(void)
 {
+    test_init();
+
     struct xkb_context *ctx = test_get_context(0);
     struct xkb_keymap *keymap;
 

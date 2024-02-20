@@ -169,6 +169,8 @@ test_recursive(void)
 int
 main(int argc, char *argv[])
 {
+    test_init();
+
     struct xkb_context *ctx = test_get_context(0);
     struct xkb_keymap *keymap;
     char *original, *dump;

@@ -290,6 +290,8 @@ test_include_order(void)
 int
 main(void)
 {
+    test_init();
+
     struct xkb_context *context = test_get_context(0);
     xkb_atom_t atom;
 

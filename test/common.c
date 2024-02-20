@@ -51,6 +51,15 @@
 
 #include "tools/tools-common.h"
 
+
+/* Setup test */
+void
+test_init(void)
+{
+    /* Make stdout always unbuffered, to ensure we always get it entirely */
+    setbuf(stdout, NULL);
+}
+
 /*
  * Test a sequence of keysyms, resulting from a sequence of key presses,
  * against the keysyms they're supposed to generate.
@@ -297,8 +306,6 @@ test_get_context(enum test_context_flags test_flags)
     enum xkb_context_flags ctx_flags;
     struct xkb_context *ctx;
     char *path;
-
-    setbuf(stdout, NULL);
 
     ctx_flags = XKB_CONTEXT_NO_DEFAULT_INCLUDES;
     if (test_flags & CONTEXT_ALLOW_ENVIRONMENT_NAMES) {
