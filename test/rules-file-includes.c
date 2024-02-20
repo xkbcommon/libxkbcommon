@@ -93,6 +93,8 @@ main(int argc, char *argv[])
 {
     struct xkb_context *ctx;
 
+    test_init();
+
     setenv("XKB_CONFIG_ROOT", TEST_XKB_CONFIG_ROOT, 1);
 
     ctx = test_get_context(0);

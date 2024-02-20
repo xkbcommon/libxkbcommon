@@ -1068,6 +1068,8 @@ test_invalid_include(void)
 int
 main(void)
 {
+    test_init();
+
     test_no_include_paths();
     test_invalid_include();
     test_load_basic();

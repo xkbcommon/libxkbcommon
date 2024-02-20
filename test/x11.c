@@ -86,5 +86,7 @@ err_conn:
 }
 
 int main(void) {
+    test_init();
+
     return x11_tests_run();
 }

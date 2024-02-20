@@ -110,6 +110,8 @@ test_rmlvo_env(struct xkb_context *ctx, const char *rules, const char *model,
 int
 main(int argc, char *argv[])
 {
+    test_init();
+
     struct xkb_context *ctx = test_get_context(CONTEXT_ALLOW_ENVIRONMENT_NAMES);
 
     assert(ctx);

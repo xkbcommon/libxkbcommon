@@ -40,6 +40,8 @@ test_file(struct xkb_context *ctx, const char *path_rel)
 int
 main(void)
 {
+    test_init();
+
     struct xkb_context *ctx = test_get_context(0);
 
     assert(test_file(ctx, "keymaps/basic.xkb"));

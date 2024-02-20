@@ -44,6 +44,9 @@
     assert_printf(streq_not_null(expected, got), \
                   test_name ". Expected \"%s\", got: \"%s\"\n", expected, got)
 
+void
+test_init(void);
+
 /* The offset between KEY_* numbering, and keycodes in the XKB evdev
  * dataset. */
 #define EVDEV_OFFSET 8

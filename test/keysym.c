@@ -298,6 +298,8 @@ test_utf32_to_keysym(uint32_t ucs, xkb_keysym_t expected)
 int
 main(void)
 {
+    test_init();
+
     /* Bounds */
     assert(XKB_KEYSYM_MIN == 0);
     assert(XKB_KEYSYM_MIN < XKB_KEYSYM_MAX);

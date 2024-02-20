@@ -233,6 +233,8 @@ test_multiple_keysyms_per_level(void)
 int
 main(void)
 {
+    test_init();
+
     test_garbage_key();
     test_keymap();
     test_numeric_keysyms();

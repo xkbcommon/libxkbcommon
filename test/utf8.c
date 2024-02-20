@@ -29,6 +29,7 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "test.h"
 #include "utf8.h"
 #include "utils.h"
 
@@ -180,6 +181,8 @@ test_utf32_to_utf8(void)
 int
 main(void)
 {
+    test_init();
+
     test_is_valid_utf8();
     test_utf32_to_utf8();
 

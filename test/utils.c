@@ -36,6 +36,8 @@ main(void)
 {
     char buffer[10];
 
+    test_init();
+
     assert(!snprintf_safe(buffer, 0, "foo"));
     assert(!snprintf_safe(buffer, 1, "foo"));
     assert(!snprintf_safe(buffer, 3, "foo"));

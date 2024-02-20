@@ -154,6 +154,8 @@ test_modmap_none(void)
 int
 main(void)
 {
+    test_init();
+
     test_modmap_none();
 
     return 0;
