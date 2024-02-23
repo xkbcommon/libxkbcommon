@@ -921,6 +921,7 @@
 0x02a9:
   name: Iabovedot
   code point: 0x0130
+  lower: 0x0069 # i
 0x02ab:
   name: Gbreve
   code point: 0x011E
@@ -940,6 +941,7 @@
 0x02b9:
   name: idotless
   code point: 0x0131
+  upper: 0x0049 # I
 0x02bb:
   name: gbreve
   code point: 0x011F
@@ -2105,6 +2107,7 @@
 0x07f3:
   name: Greek_finalsmallsigma
   code point: 0x03C2
+  upper: 0x07d2 # Greek_SIGMA
 0x07f4:
   name: Greek_tau
   code point: 0x03C4
@@ -2257,6 +2260,7 @@
 0x08f6:
   name: function
   code point: 0x0192
+  upper: 0x1000191
 0x08fb:
   name: leftarrow
   code point: 0x2190
