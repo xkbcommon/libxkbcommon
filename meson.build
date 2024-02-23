@@ -216,6 +216,7 @@ libxkbcommon_sources = [
     'src/darray.h',
     'src/keysym.c',
     'src/keysym.h',
+    'src/keysym-case-mappings.c',
     'src/keysym-utf.c',
     'src/ks_tables.h',
     'src/keymap.c',

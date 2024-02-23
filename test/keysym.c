@@ -204,16 +204,10 @@ test_icu_case_mappings(xkb_keysym_t ks)
                       ks, ks_mapped, expected, got);
         got = !!xkb_keysym_is_upper(ks);
         expected = !!(u_isUUppercase(cp) || u_istitle(cp));
-        assert_printf(got == expected || u_istitle(cp),
+        assert_printf(got == expected,
                       "Invalid xkb_keysym_is_upper("KEYSYM") ("CODE_POINT"): "
                       "expected %d, got: %d\n",
                       ks, cp, expected, got);
-        if (u_istitle(cp)) {
-            fprintf(stderr,
-                    "%s title case handling "KEYSYM" ("CODE_POINT")\n",
-                    (got == expected) ? "[INFO] valid" : "[WARNING] invalid",
-                    ks, cp);
-        }
     } else if (expected != cp) {
         fprintf(stderr,
                 "[WARNING] missing lower case mapping for "KEYSYM": "

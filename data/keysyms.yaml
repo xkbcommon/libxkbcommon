@@ -2260,7 +2260,7 @@
 0x08f6:
   name: function
   code point: 0x0192
-  upper: 0x1000191
+  upper: 0x1000191 # U0191
 0x08fb:
   name: leftarrow
   code point: 0x2190
@@ -4874,120 +4874,159 @@
 0x10010d0:
   name: Georgian_an
   code point: 0x10D0
+  upper: 0x1001c90 # U1C90
 0x10010d1:
   name: Georgian_ban
   code point: 0x10D1
+  upper: 0x1001c91 # U1C91
 0x10010d2:
   name: Georgian_gan
   code point: 0x10D2
+  upper: 0x1001c92 # U1C92
 0x10010d3:
   name: Georgian_don
   code point: 0x10D3
+  upper: 0x1001c93 # U1C93
 0x10010d4:
   name: Georgian_en
   code point: 0x10D4
+  upper: 0x1001c94 # U1C94
 0x10010d5:
   name: Georgian_vin
   code point: 0x10D5
+  upper: 0x1001c95 # U1C95
 0x10010d6:
   name: Georgian_zen
   code point: 0x10D6
+  upper: 0x1001c96 # U1C96
 0x10010d7:
   name: Georgian_tan
   code point: 0x10D7
+  upper: 0x1001c97 # U1C97
 0x10010d8:
   name: Georgian_in
   code point: 0x10D8
+  upper: 0x1001c98 # U1C98
 0x10010d9:
   name: Georgian_kan
   code point: 0x10D9
+  upper: 0x1001c99 # U1C99
 0x10010da:
   name: Georgian_las
   code point: 0x10DA
+  upper: 0x1001c9a # U1C9A
 0x10010db:
   name: Georgian_man
   code point: 0x10DB
+  upper: 0x1001c9b # U1C9B
 0x10010dc:
   name: Georgian_nar
   code point: 0x10DC
+  upper: 0x1001c9c # U1C9C
 0x10010dd:
   name: Georgian_on
   code point: 0x10DD
+  upper: 0x1001c9d # U1C9D
 0x10010de:
   name: Georgian_par
   code point: 0x10DE
+  upper: 0x1001c9e # U1C9E
 0x10010df:
   name: Georgian_zhar
   code point: 0x10DF
+  upper: 0x1001c9f # U1C9F
 0x10010e0:
   name: Georgian_rae
   code point: 0x10E0
+  upper: 0x1001ca0 # U1CA0
 0x10010e1:
   name: Georgian_san
   code point: 0x10E1
+  upper: 0x1001ca1 # U1CA1
 0x10010e2:
   name: Georgian_tar
   code point: 0x10E2
+  upper: 0x1001ca2 # U1CA2
 0x10010e3:
   name: Georgian_un
   code point: 0x10E3
+  upper: 0x1001ca3 # U1CA3
 0x10010e4:
   name: Georgian_phar
   code point: 0x10E4
+  upper: 0x1001ca4 # U1CA4
 0x10010e5:
   name: Georgian_khar
   code point: 0x10E5
+  upper: 0x1001ca5 # U1CA5
 0x10010e6:
   name: Georgian_ghan
   code point: 0x10E6
+  upper: 0x1001ca6 # U1CA6
 0x10010e7:
   name: Georgian_qar
   code point: 0x10E7
+  upper: 0x1001ca7 # U1CA7
 0x10010e8:
   name: Georgian_shin
   code point: 0x10E8
+  upper: 0x1001ca8 # U1CA8
 0x10010e9:
   name: Georgian_chin
   code point: 0x10E9
+  upper: 0x1001ca9 # U1CA9
 0x10010ea:
   name: Georgian_can
   code point: 0x10EA
+  upper: 0x1001caa # U1CAA
 0x10010eb:
   name: Georgian_jil
   code point: 0x10EB
+  upper: 0x1001cab # U1CAB
 0x10010ec:
   name: Georgian_cil
   code point: 0x10EC
+  upper: 0x1001cac # U1CAC
 0x10010ed:
   name: Georgian_char
   code point: 0x10ED
+  upper: 0x1001cad # U1CAD
 0x10010ee:
   name: Georgian_xan
   code point: 0x10EE
+  upper: 0x1001cae # U1CAE
 0x10010ef:
   name: Georgian_jhan
   code point: 0x10EF
+  upper: 0x1001caf # U1CAF
 0x10010f0:
   name: Georgian_hae
   code point: 0x10F0
+  upper: 0x1001cb0 # U1CB0
 0x10010f1:
   name: Georgian_he
   code point: 0x10F1
+  upper: 0x1001cb1 # U1CB1
 0x10010f2:
   name: Georgian_hie
   code point: 0x10F2
+  upper: 0x1001cb2 # U1CB2
 0x10010f3:
   name: Georgian_we
   code point: 0x10F3
+  upper: 0x1001cb3 # U1CB3
 0x10010f4:
   name: Georgian_har
   code point: 0x10F4
+  upper: 0x1001cb4 # U1CB4
 0x10010f5:
   name: Georgian_hoe
   code point: 0x10F5
+  upper: 0x1001cb5 # U1CB5
 0x10010f6:
   name: Georgian_fi
   code point: 0x10F6
+  upper: 0x1001cb6 # U1CB6
 0x1001e02:
   name: Babovedot
   code point: 0x1E02
