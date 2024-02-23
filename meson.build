@@ -847,6 +847,15 @@ benchmark(
     env: bench_env,
 )
 benchmark(
+    'keysym-case-mappings',
+    executable(
+        'bench-keysym-case-mappings',
+        'bench/keysym-case-mappings.c',
+        dependencies: test_dep,
+        c_args: ['-DENABLE_PRIVATE_APIS'],
+    ),
+)
+benchmark(
     'rules',
     executable('bench-rules', 'bench/rules.c', dependencies: test_dep),
     env: bench_env,
