@@ -1366,7 +1366,7 @@ FindAutomaticType(struct xkb_context *ctx, GroupInfo *groupi)
     sym1 = GET_SYM(1);
 
     if (width == 2) {
-        if (xkb_keysym_is_lower(sym0) && xkb_keysym_is_upper(sym1))
+        if (xkb_keysym_is_lower(sym0) && xkb_keysym_is_upper_or_title(sym1))
             return xkb_atom_intern_literal(ctx, "ALPHABETIC");
 
         if (xkb_keysym_is_keypad(sym0) || xkb_keysym_is_keypad(sym1))
@@ -1376,12 +1376,12 @@ FindAutomaticType(struct xkb_context *ctx, GroupInfo *groupi)
     }
 
     if (width <= 4) {
-        if (xkb_keysym_is_lower(sym0) && xkb_keysym_is_upper(sym1)) {
+        if (xkb_keysym_is_lower(sym0) && xkb_keysym_is_upper_or_title(sym1)) {
             xkb_keysym_t sym2, sym3;
             sym2 = GET_SYM(2);
             sym3 = (width == 4 ? GET_SYM(3) : XKB_KEY_NoSymbol);
 
-            if (xkb_keysym_is_lower(sym2) && xkb_keysym_is_upper(sym3))
+            if (xkb_keysym_is_lower(sym2) && xkb_keysym_is_upper_or_title(sym3))
                 return xkb_atom_intern_literal(ctx, "FOUR_LEVEL_ALPHABETIC");
 
             return xkb_atom_intern_literal(ctx, "FOUR_LEVEL_SEMIALPHABETIC");

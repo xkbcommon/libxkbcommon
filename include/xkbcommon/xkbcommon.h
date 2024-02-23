@@ -551,8 +551,13 @@ xkb_utf32_to_keysym(uint32_t ucs);
  *
  * If there is no such form, the keysym is returned unchanged.
  *
- * The conversion rules may be incomplete; prefer to work with the Unicode
- * representation instead, when possible.
+ * The conversion rules are the *simple* (i.e. one-to-one) Unicode case
+ * mappings and do not depend on the locale. If you need the special
+ * case mappings (i.e. not one-to-one or locale-dependent), prefer to
+ * work with the Unicode representation instead, when possible.
+ *
+ * @since 0.8.0: Initial implementation, based on `libX11`.
+ * @since 1.8.0: Use Unicode 15.1 mappings for complete Unicode coverage.
  */
 xkb_keysym_t
 xkb_keysym_to_upper(xkb_keysym_t ks);
@@ -560,8 +565,15 @@ xkb_keysym_to_upper(xkb_keysym_t ks);
 /**
  * Convert a keysym to its lowercase form.
  *
- * The conversion rules may be incomplete; prefer to work with the Unicode
- * representation instead, when possible.
+ * If there is no such form, the keysym is returned unchanged.
+ *
+ * The conversion rules are the *simple* (i.e. one-to-one) Unicode case
+ * mappings and do not depend on the locale. If you need the special
+ * case mappings (i.e. not one-to-one or locale-dependent), prefer to
+ * work with the Unicode representation instead, when possible.
+ *
+ * @since 0.8.0: Initial implementation, based on `libX11`.
+ * @since 1.8.0: Use Unicode 15.1 mappings for complete Unicode coverage.
  */
 xkb_keysym_t
 xkb_keysym_to_lower(xkb_keysym_t ks);
