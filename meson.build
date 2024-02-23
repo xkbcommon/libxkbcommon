@@ -438,6 +438,15 @@ if build_tools
     configh_data.set10('HAVE_TOOLS', true)
 
     # Tool: xkbcli
+    executable('export-keysyms',
+               'tools/export-keysyms.c',
+               libxkbcommon_sources,
+               dependencies: [tools_dep],
+               c_args: ['-DENABLE_PRIVATE_APIS'],
+               include_directories: [include_directories('src', 'include')],
+               install: false)
+
+    # Tool: xkbcli
     executable('xkbcli', 'tools/xkbcli.c',
                dependencies: tools_dep, install: true)
     install_man('tools/xkbcli.1')
