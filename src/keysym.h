@@ -76,6 +76,8 @@
 #define XKB_KEYSYM_UNICODE_MIN    0x01000100
 /** Maximum Unicode keysym, correspoding to the maximum Unicode code point */
 #define XKB_KEYSYM_UNICODE_MAX    0x0110ffff
+/** Unicode version used for case mappings */
+#define XKB_KEYSYM_UNICODE_VERSION { 15, 1, 0, 0 }
 /** Maximum keysym name length */
 #define XKB_KEYSYM_NAME_MAX_SIZE  27
 /** Maximum bytes to encode the Unicode representation of a keysym in UTF-8:
@@ -110,7 +112,7 @@ bool
 xkb_keysym_is_lower(xkb_keysym_t keysym);
 
 bool
-xkb_keysym_is_upper(xkb_keysym_t keysym);
+xkb_keysym_is_upper_or_title(xkb_keysym_t keysym);
 
 bool
 xkb_keysym_is_keypad(xkb_keysym_t keysym);

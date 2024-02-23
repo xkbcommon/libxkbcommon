@@ -26,6 +26,8 @@
 #include <stdbool.h>
 #if HAVE_ICU
 #include <unicode/uchar.h>
+#include <unicode/ustring.h>
+#include <unicode/utf16.h>
 #endif
 
 #include "test.h"
@@ -148,7 +150,7 @@ test_ambiguous_icase_names(const struct ambiguous_icase_ks_names_entry *entry)
         assert(test_casestring(entry->names[k], entry->keysym));
         /* If the keysym is cased, then check the resulting keysym is lower-cased */
         xkb_keysym_t keysym = xkb_keysym_from_name(entry->names[k], 0);
-        if (xkb_keysym_is_lower(keysym) || xkb_keysym_is_upper(keysym)) {
+        if (xkb_keysym_is_lower(keysym) || xkb_keysym_is_upper_or_title(keysym)) {
             assert(xkb_keysym_is_lower(entry->keysym));
         }
     }
@@ -189,6 +191,36 @@ test_utf8(xkb_keysym_t keysym, const char *expected)
 
 #if HAVE_ICU
 
+static UVersionInfo xkb_unicode_version = XKB_KEYSYM_UNICODE_VERSION;
+static UVersionInfo icu_unicode_version;
+
+static inline int
+compare_unicode_version(const UVersionInfo v1, const UVersionInfo v2)
+{
+    return memcmp(v1,v2,sizeof(UVersionInfo));
+}
+
+/* Unicode assertion
+ * In case the test fails, do not raise an exception if there is
+ * an ICU version mismatch with our Unicode version. */
+#define uassert_printf(cp, cond, ...)                                                     \
+   if (!(cond)) {                                                                         \
+      fprintf(stderr, "Assertion failure: " __VA_ARGS__);                                 \
+      UVersionInfo char_age;                                                              \
+      u_charAge((UChar32)cp, char_age);                                                   \
+      if (compare_unicode_version(char_age, xkb_unicode_version) > 0) {                   \
+        fprintf(stderr,                                                                   \
+                "[WARNING] ICU version mismatch: "                                        \
+                "too recent for code point: "CODE_POINT"\n", cp);                         \
+      } else if (compare_unicode_version(icu_unicode_version, xkb_unicode_version) < 0) { \
+        fprintf(stderr,                                                                   \
+                "[WARNING] ICU version mismatch: "                                        \
+                "too old for code point: "CODE_POINT"\n", cp);                            \
+      } else {                                                                            \
+        assert(cond);                                                                     \
+      }                                                                                   \
+   }
+
 static inline uint32_t
 to_simple_lower(uint32_t cp)
 {
@@ -207,63 +239,132 @@ to_simple_upper(uint32_t cp)
 static void
 test_icu_case_mappings(xkb_keysym_t ks)
 {
+    uint32_t cp = xkb_keysym_to_utf32(ks);
+
+    /* Check predicates */
+    bool is_lower = xkb_keysym_is_lower(ks);
+    uint32_t expected = !!u_isULowercase(cp);
+    uassert_printf(cp, is_lower == expected,
+                   "Invalid xkb_keysym_is_lower("KEYSYM") ("CODE_POINT"): "
+                   "expected %d, got: %d\n",
+                   ks, cp, expected, is_lower);
+    bool is_upper_or_title = xkb_keysym_is_upper_or_title(ks);
+    expected = !!(u_isUUppercase(cp) || u_istitle(cp));
+    uassert_printf(cp, is_upper_or_title == expected,
+                   "Invalid xkb_keysym_is_upper_or_title("KEYSYM") ("CODE_POINT"): "
+                   "expected %d, got: %d\n",
+                   ks, cp, expected, is_upper_or_title);
+    assert(is_lower != is_upper_or_title || !is_lower);
+
     /* Check lower case mapping */
     xkb_keysym_t ks_mapped = xkb_keysym_to_lower(ks);
-    uint32_t cp = xkb_keysym_to_utf32(ks);
-    uint32_t expected = to_simple_lower(cp);
+    expected = to_simple_lower(cp);
+    if (u_istitle(cp)) {
+        /* Check that title case letter have simple lower case mappings */
+        uassert_printf(cp, ks_mapped != ks && expected != cp,
+                       "Invalid title case lower transformation. "
+                       "Expected keysym: "KEYSYM" != "KEYSYM" "
+                       "and code point "CODE_POINT" != "CODE_POINT"\n",
+                       ks_mapped, ks, expected, cp);
+    }
     if (ks_mapped && ks_mapped != ks) {
-        uint32_t got = xkb_keysym_to_utf32(ks_mapped);
-        assert_printf(got == expected,
-                      "Invalid xkb_keysym_to_lower("KEYSYM") == "KEYSYM": "
-                      "expected "CODE_POINT", got: "CODE_POINT"\n",
-                      ks, ks_mapped, expected, got);
-        got = !!xkb_keysym_is_upper(ks);
-        expected = !!(u_isUUppercase(cp) || u_istitle(cp));
-        assert_printf(got == expected || u_istitle(cp),
-                      "Invalid xkb_keysym_is_upper("KEYSYM") ("CODE_POINT"): "
-                      "expected %d, got: %d\n",
-                      ks, cp, expected, got);
-        if (u_istitle(cp)) {
-            fprintf(stderr,
-                    "%s title case handling "KEYSYM" ("CODE_POINT")\n",
-                    (got == expected) ? "[INFO] valid" : "[WARNING] invalid",
-                    ks, cp);
-        }
+        /* Given keysym has been transformed to lower-case */
+        uint32_t cp_mapped = xkb_keysym_to_utf32(ks_mapped);
+        uint32_t got = cp_mapped;
+        uassert_printf(cp, got == expected,
+                       "Invalid xkb_keysym_to_lower("KEYSYM") == "KEYSYM": "
+                       "expected "CODE_POINT", got: "CODE_POINT"\n",
+                       ks, ks_mapped, expected, got);
+        uassert_printf(cp, is_upper_or_title,
+                       "Expected upper case for keysym "KEYSYM" ("CODE_POINT")\n",
+                       ks, cp);
+        got = !!xkb_keysym_is_lower(ks_mapped);
+        expected = !!u_isULowercase(cp_mapped);
+        uassert_printf(cp_mapped, got == expected,
+                       "Invalid xkb_keysym_is_lower("KEYSYM") ("CODE_POINT"): "
+                       "expected %d, got: %d (tested keysym: "KEYSYM")\n",
+                       ks_mapped, cp_mapped, expected, got, ks);
     } else if (expected != cp) {
+        /* Missing case mapping; the corresponding predicate must be consistent. */
         fprintf(stderr,
-                "[WARNING] missing lower case mapping for "KEYSYM": "
+                "[WARNING] Missing lower case mapping for "KEYSYM": "
                 "expected "CODE_POINT", got: "CODE_POINT"\n",
                 ks, expected, cp);
-        assert_printf(!xkb_keysym_is_upper(ks),
-                      "Invalid xkb_keysym_is_upper("KEYSYM") ("CODE_POINT"): "
-                      "expected false, got: true\n",
-                      ks, cp);
+        uassert_printf(cp, !xkb_keysym_is_upper_or_title(ks),
+                       "Invalid xkb_keysym_is_upper_or_title("KEYSYM") ("CODE_POINT"): "
+                       "expected false, got: true\n",
+                       ks, cp);
     }
 
     /* Check upper case mapping */
     ks_mapped = xkb_keysym_to_upper(ks);
     expected = to_simple_upper(cp);
+    if (u_istitle(cp)) {
+        /* Check title case upper mapping; may be:
+         * • simple: 1 code point, or
+         * • special: muliple code points */
+        UChar cp_string[2] = {0};
+        UChar cp_expected_string[8] = {0};
+        UBool isError = false;
+        int32_t offset = 0;
+        /* Convert code point to UTF-16 string */
+        U16_APPEND(cp_string, offset, ARRAY_SIZE(cp_string), cp, isError);
+        UErrorCode pErrorCode = U_ZERO_ERROR;
+        /* Unicode full upper mapping */
+        int32_t length = u_strToUpper(cp_expected_string,
+                                      ARRAY_SIZE(cp_expected_string),
+                                      cp_string, offset, "C", &pErrorCode);
+        length = u_countChar32(cp_expected_string, length);
+        if (length == 1) {
+            /* Simple upper case mapping: one-to-one. */
+            uint32_t cp_mapped = xkb_keysym_to_utf32(ks_mapped);
+            uassert_printf(cp,
+                           !isError && pErrorCode == U_ZERO_ERROR &&
+                           ks_mapped != ks && expected != cp &&
+                           u_isUUppercase(cp_mapped),
+                           "Invalid title case simple upper transformation. "
+                           "Expected keysym: "KEYSYM" != "KEYSYM" "
+                           "and code point "CODE_POINT" != "CODE_POINT"\n",
+                           ks_mapped, ks, expected, cp);
+        } else {
+            /* Special upper case mapping: maps to multiple code points.
+             * We do not handle those, so our mapping is the original. */
+            uassert_printf(cp,
+                           !isError && pErrorCode == U_ZERO_ERROR &&
+                           ks_mapped == ks && expected == cp && length > 1,
+                           "Invalid title case special upper transformation. "
+                           "Expected keysym: "KEYSYM" == "KEYSYM" "
+                           "and code point "CODE_POINT" == "CODE_POINT"\n",
+                           ks_mapped, ks, expected, cp);
+        }
+    }
     if (ks_mapped && ks_mapped != ks) {
-        uint32_t got = xkb_keysym_to_utf32(ks_mapped);
-        assert_printf(got == expected,
-                      "Invalid xkb_keysym_to_upper("KEYSYM") == "KEYSYM": "
-                      "expected "CODE_POINT", got: "CODE_POINT"\n",
-                      ks, ks_mapped, expected, got);
-        got = !!xkb_keysym_is_lower(ks);
-        expected = !!u_isULowercase(cp);
-        assert_printf(got == expected,
-                      "Invalid xkb_keysym_is_lower("KEYSYM") ("CODE_POINT"): "
-                      "expected %d, got: %d\n",
-                      ks, cp, expected, got);
+        /* Given keysym has been transformed to upper-case */
+        uint32_t cp_mapped = xkb_keysym_to_utf32(ks_mapped);
+        uint32_t got = cp_mapped;
+        uassert_printf(cp, got == expected,
+                       "Invalid xkb_keysym_to_upper("KEYSYM") == "KEYSYM": "
+                       "expected "CODE_POINT", got: "CODE_POINT"\n",
+                       ks, ks_mapped, expected, got);
+        uassert_printf(cp, is_lower || u_istitle(cp),
+                       "Expected lower or title case for keysym "KEYSYM" ("CODE_POINT")\n",
+                       ks, cp);
+        got = !!xkb_keysym_is_upper_or_title(ks_mapped);
+        expected = !!(u_isUUppercase(cp_mapped) || u_istitle(cp_mapped));
+        uassert_printf(cp_mapped, got == expected,
+                       "Invalid xkb_keysym_is_upper_or_title("KEYSYM") ("CODE_POINT"): "
+                       "expected %d, got: %d (tested keysym: "KEYSYM")\n",
+                       ks_mapped, cp_mapped, expected, got, ks);
     } else if (expected != cp) {
+        /* Missing case mapping; the corresponding predicate must be consistent. */
         fprintf(stderr,
-                "[WARNING] missing upper case mapping for "KEYSYM": "
+                "[WARNING] Missing upper case mapping for "KEYSYM": "
                 "expected "CODE_POINT", got: "CODE_POINT"\n",
                 ks, expected, cp);
-        assert_printf(!xkb_keysym_is_lower(ks),
-                      "Invalid xkb_keysym_is_lower("KEYSYM") ("CODE_POINT"): "
-                      "expected false, got: true\n",
-                      ks, cp);
+        uassert_printf(cp, !xkb_keysym_is_lower(ks),
+                       "Invalid xkb_keysym_is_lower("KEYSYM") ("CODE_POINT"): "
+                       "expected false, got: true\n",
+                       ks, cp);
     }
 }
 #endif
@@ -314,6 +415,9 @@ int
 main(void)
 {
     test_init();
+#if HAVE_ICU
+    u_getUnicodeVersion(icu_unicode_version);
+#endif
 
     /* Bounds */
     assert(XKB_KEYSYM_MIN == 0);
@@ -633,21 +737,21 @@ main(void)
     assert(xkb_keysym_is_lower(xkb_keysym_from_name("U03b1", 0))); /* GREEK SMALL LETTER ALPHA */
     assert(xkb_keysym_is_lower(xkb_keysym_from_name("U03af", 0))); /* GREEK SMALL LETTER IOTA WITH TONOS */
 
-    assert(xkb_keysym_is_upper(XKB_KEY_A));
-    assert(xkb_keysym_is_upper(XKB_KEY_Greek_LAMBDA));
-    assert(xkb_keysym_is_upper(xkb_keysym_from_name("U0391", 0))); /* GREEK CAPITAL LETTER ALPHA */
-    assert(xkb_keysym_is_upper(xkb_keysym_from_name("U0388", 0))); /* GREEK CAPITAL LETTER EPSILON WITH TONOS */
+    assert(xkb_keysym_is_upper_or_title(XKB_KEY_A));
+    assert(xkb_keysym_is_upper_or_title(XKB_KEY_Greek_LAMBDA));
+    assert(xkb_keysym_is_upper_or_title(xkb_keysym_from_name("U0391", 0))); /* GREEK CAPITAL LETTER ALPHA */
+    assert(xkb_keysym_is_upper_or_title(xkb_keysym_from_name("U0388", 0))); /* GREEK CAPITAL LETTER EPSILON WITH TONOS */
 
-    assert(!xkb_keysym_is_upper(XKB_KEY_a));
+    assert(!xkb_keysym_is_upper_or_title(XKB_KEY_a));
     assert(!xkb_keysym_is_lower(XKB_KEY_A));
     assert(!xkb_keysym_is_lower(XKB_KEY_Return));
-    assert(!xkb_keysym_is_upper(XKB_KEY_Return));
+    assert(!xkb_keysym_is_upper_or_title(XKB_KEY_Return));
     assert(!xkb_keysym_is_lower(XKB_KEY_hebrew_aleph));
-    assert(!xkb_keysym_is_upper(XKB_KEY_hebrew_aleph));
-    assert(!xkb_keysym_is_upper(xkb_keysym_from_name("U05D0", 0))); /* HEBREW LETTER ALEF */
+    assert(!xkb_keysym_is_upper_or_title(XKB_KEY_hebrew_aleph));
+    assert(!xkb_keysym_is_upper_or_title(xkb_keysym_from_name("U05D0", 0))); /* HEBREW LETTER ALEF */
     assert(!xkb_keysym_is_lower(xkb_keysym_from_name("U05D0", 0))); /* HEBREW LETTER ALEF */
     assert(!xkb_keysym_is_lower(XKB_KEY_8));
-    assert(!xkb_keysym_is_upper(XKB_KEY_8));
+    assert(!xkb_keysym_is_upper_or_title(XKB_KEY_8));
 
     assert(xkb_keysym_is_keypad(XKB_KEY_KP_Enter));
     assert(xkb_keysym_is_keypad(XKB_KEY_KP_6));
@@ -668,6 +772,67 @@ main(void)
     assert(xkb_keysym_to_lower(XKB_KEY_Greek_LAMBDA) == XKB_KEY_Greek_lambda);
     assert(xkb_keysym_to_upper(XKB_KEY_eacute) == XKB_KEY_Eacute);
     assert(xkb_keysym_to_lower(XKB_KEY_Eacute) == XKB_KEY_eacute);
+
+    /* S sharp
+     * • U+00DF ß: lower case
+     * •       SS: upper case (special mapping, not handled by us)
+     * • U+1E9E ẞ: upper case, only for capitals
+     */
+#ifndef XKB_KEY_Ssharp
+#define XKB_KEY_Ssharp (XKB_KEYSYM_UNICODE_OFFSET + 0x1E9E)
+#endif
+    assert(!xkb_keysym_is_upper_or_title(XKB_KEY_ssharp));
+    assert(xkb_keysym_is_upper_or_title(XKB_KEY_Ssharp));
+    assert(xkb_keysym_is_lower(XKB_KEY_ssharp));
+    assert(!xkb_keysym_is_lower(XKB_KEY_Ssharp));
+    assert(xkb_keysym_to_upper(XKB_KEY_ssharp) == XKB_KEY_ssharp);
+    assert(xkb_keysym_to_lower(XKB_KEY_ssharp) == XKB_KEY_ssharp);
+    assert(xkb_keysym_to_upper(XKB_KEY_Ssharp) == XKB_KEY_Ssharp);
+    assert(xkb_keysym_to_lower(XKB_KEY_Ssharp) == XKB_KEY_ssharp);
+
+    /* Title case: simple mappings
+     * • U+01F1 Ǳ: upper case
+     * • U+01F2 ǲ: title case
+     * • U+01F3 ǳ: lower case
+     */
+#ifndef XKB_KEY_DZ
+#define XKB_KEY_DZ (XKB_KEYSYM_UNICODE_OFFSET + 0x01F1)
+#endif
+#ifndef XKB_KEY_Dz
+#define XKB_KEY_Dz (XKB_KEYSYM_UNICODE_OFFSET + 0x01F2)
+#endif
+#ifndef XKB_KEY_dz
+#define XKB_KEY_dz (XKB_KEYSYM_UNICODE_OFFSET + 0x01F3)
+#endif
+    assert(xkb_keysym_is_upper_or_title(XKB_KEY_DZ));
+    assert(xkb_keysym_is_upper_or_title(XKB_KEY_Dz));
+    assert(!xkb_keysym_is_upper_or_title(XKB_KEY_dz));
+    assert(!xkb_keysym_is_lower(XKB_KEY_DZ));
+    assert(!xkb_keysym_is_lower(XKB_KEY_Dz));
+    assert(xkb_keysym_is_lower(XKB_KEY_dz));
+    assert(xkb_keysym_to_upper(XKB_KEY_DZ) == XKB_KEY_DZ);
+    assert(xkb_keysym_to_lower(XKB_KEY_DZ) == XKB_KEY_dz);
+    assert(xkb_keysym_to_upper(XKB_KEY_Dz) == XKB_KEY_DZ);
+    assert(xkb_keysym_to_lower(XKB_KEY_Dz) == XKB_KEY_dz);
+    assert(xkb_keysym_to_upper(XKB_KEY_dz) == XKB_KEY_DZ);
+    assert(xkb_keysym_to_lower(XKB_KEY_dz) == XKB_KEY_dz);
+
+    /* Title case: special mappings
+     * • U+1F80         ᾀ: lower case
+     * • U+1F88         ᾈ: title case
+     * • U+1F88         ᾈ: upper case (simple)
+     * • U+1F08 U+0399 ἈΙ: upper case (full)
+     *
+     * We do not handle special upper mapping
+     */
+    assert(!xkb_keysym_is_upper_or_title(XKB_KEYSYM_UNICODE_OFFSET + 0x1F80));
+    assert(xkb_keysym_is_upper_or_title(XKB_KEYSYM_UNICODE_OFFSET + 0x1F88));
+    assert(xkb_keysym_is_lower(XKB_KEYSYM_UNICODE_OFFSET + 0x1F80));
+    assert(!xkb_keysym_is_lower(XKB_KEYSYM_UNICODE_OFFSET + 0x1F88));
+    assert(xkb_keysym_to_upper(XKB_KEYSYM_UNICODE_OFFSET + 0x1F80) == XKB_KEYSYM_UNICODE_OFFSET + 0x1F88);
+    assert(xkb_keysym_to_lower(XKB_KEYSYM_UNICODE_OFFSET + 0x1F80) == XKB_KEYSYM_UNICODE_OFFSET + 0x1F80);
+    assert(xkb_keysym_to_upper(XKB_KEYSYM_UNICODE_OFFSET + 0x1F88) == XKB_KEYSYM_UNICODE_OFFSET + 0x1F88);
+    assert(xkb_keysym_to_lower(XKB_KEYSYM_UNICODE_OFFSET + 0x1F88) == XKB_KEYSYM_UNICODE_OFFSET + 0x1F80);
 
     test_github_issue_42();
 

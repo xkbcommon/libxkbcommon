@@ -53,7 +53,7 @@ struct TestedFunction {
 static const struct TestedFunction functions[] = {
     { {.toLower = xkb_keysym_to_lower, .toUpper = xkb_keysym_to_upper},
       "to_lower & to_upper" },
-    { {.isLower = xkb_keysym_is_lower, .isUpper = xkb_keysym_is_upper},
+    { {.isLower = xkb_keysym_is_lower, .isUpper = xkb_keysym_is_upper_or_title},
       "is_lower & is_upper" },
 };
 
