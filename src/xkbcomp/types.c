@@ -618,12 +618,20 @@ HandleKeyTypeBody(KeyTypesInfo *info, VarDef *def, KeyTypeInfo *type)
         if (!ok)
             continue;
 
-        if (elem && istreq(elem, "type")) {
-            log_err(info->ctx,
-                    XKB_ERROR_INVALID_SET_DEFAULT_STATEMENT,
-                    "Support for changing the default type has been removed; "
-                    "Statement ignored\n");
-            continue;
+        if (elem) {
+            if (istreq(elem, "type")) {
+                log_err(info->ctx,
+                        XKB_ERROR_INVALID_SET_DEFAULT_STATEMENT,
+                        "Support for changing the default type has been removed; "
+                        "Statement ignored\n");
+                continue;
+            }
+            else {
+                log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
+                        "Qualified statement %s.%s is not allowed here,"
+                        "only plain %s is accepted.\n", elem, field, field);
+                return false;
+            }
         }
 
         ok = SetKeyTypeField(info, type, field, arrayNdx, def->value);

@@ -1,0 +1,7 @@
+default xkb_types "basic" {
+    type "ONE_LEVEL" {
+	garbage.modifiers = None;
+	garbage.map[None] = Level1;
+	garbage.level_name[Level1]= "Any";
+    };
+};

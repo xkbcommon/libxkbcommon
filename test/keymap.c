@@ -76,6 +76,20 @@ test_garbage_key(void)
 }
 
 static void
+test_garbage_type(void)
+{
+    struct xkb_context *context = test_get_context(0);
+    struct xkb_keymap *keymap;
+
+    assert(context);
+
+    keymap = test_compile_rules(context, NULL, "garbage", NULL, NULL, NULL);
+    assert(!keymap);
+
+    xkb_context_unref(context);
+}
+
+static void
 test_keymap(void)
 {
     struct xkb_context *context = test_get_context(0);
@@ -236,6 +250,7 @@ main(void)
     test_init();
 
     test_garbage_key();
+    test_garbage_type();
     test_keymap();
     test_numeric_keysyms();
     test_multiple_keysyms_per_level();

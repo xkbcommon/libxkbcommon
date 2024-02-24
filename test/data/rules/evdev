@@ -930,6 +930,7 @@
   $macs		=	complete+numpad(mac)
   $applealu	=	complete+numpad(mac)
   $nokiamodels	=	complete+nokia
+  garbage	=	garbage
   *		=	complete
 
 ! layout	option	=	symbols
