@@ -145,7 +145,7 @@ configh_data.set('WIN32_LEAN_AND_MEAN', 1)
 # Supports -Wl,--version-script?
 have_version_script = cc.links(
     'int main(){}',
-    args: '-Wl,--version-script=' + meson.current_source_dir()/'xkbcommon.map',
+    args: '-Wl,--undefined-version,--version-script=' + meson.current_source_dir()/'xkbcommon.map',
     name: '-Wl,--version-script',
 )
 
