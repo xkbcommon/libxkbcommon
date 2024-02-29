@@ -1,0 +1,55 @@
+digraph {
+    node [shape=box]
+
+    database [shape=none, label=<
+        <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+            <tr><td><b>Layout Database</b></td></tr>
+            <hr/>
+            <tr><td port="rules" href="@ref rule-file-format">Rules files</td></tr>
+            <tr><td port="keycodes" href="@ref keycode-def">Keycodes files</td></tr>
+            <tr><td port="compat" href="@ref key-action-def">Compat files</td></tr>
+            <tr><td port="geometry">(Geometry files)</td></tr>
+            <tr><td port="symbols" href="@ref keysym-def">Symbols files</td></tr>
+            <tr><td port="types" href="@ref key-type-def">Key types files</td></tr>
+        </table>
+    >];
+
+    server [
+        label=<<b>Server</b>>,
+        style=rounded
+    ];
+
+    client [
+        label=<<b>Client</b>>,
+        style=rounded
+    ];
+
+    { rank="same"; database; server; client }
+
+    database:keycodes -> server [
+        label=<<i>xkb_keycodes</i> section>,
+        labelhref="@ref the-xkb_keycodes-section"
+    ];
+    database:compat -> server [
+        label=<<i>xkb_compat</i> section>,
+        labelhref="@ref the-xkb_compat-section"
+    ];
+    database:symbols -> server [
+        label=<<i>xkb_symbols</i> section>,
+        labelhref="@ref the-xkb_symbols-section"
+    ];
+    database:types -> server [
+        label=<<i>xkb_types</i> section>,
+        labelhref="@ref the-xkb_types-section"
+    ];
+
+    server:n -> database:rules [
+        label=<RMLVO>,
+        labelhref="@ref RMLVO-intro",
+        labeltooltip="Rules, Model, Layout, Variant, Options"
+    ];
+    server -> client [
+        label=<complete keymap:<br/><i>xkb_keymap</i> block =<br/><i>xkb_keycodes</i> +<br/><i>xkb_compat</i> +<br/><i>xkb_symbols</i> +<br/><i>xkb_types</i>>,
+        labelhref="@ref the-xkb_keymap-block"
+    ];
+}

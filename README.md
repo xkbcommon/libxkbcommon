@@ -9,10 +9,10 @@ and dead keys and a separate library for listing available keyboard layouts.
 
 ## Quick Guide
 
-See [Introduction to XKB][XKB] to learn the essentials of XKB.
-
-See [Quick Guide](doc/quick-guide.md) for an introduction on how to use this
-library.
+- [Introduction to XKB][XKB]: to learn the essentials of XKB.
+- [User-configuration](doc/user-configuration.md): instructions to add
+  a *custom layout* or option.
+- [Quick Guide](doc/quick-guide.md): introduction on how to use this library.
 
 ## Building
 
