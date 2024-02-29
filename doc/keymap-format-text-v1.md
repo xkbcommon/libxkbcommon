@@ -9,11 +9,14 @@ NOTE:
   syntax highlighting.
 -->
 
-This document describes the `XKB_KEYMAP_FORMAT_TEXT_V1` keymap format,
+This document describes the `XKB_KEYMAP_FORMAT_TEXT_V1` [keymap] format,
 as implemented by libxkbcommon.
 
-The standard database of keyboard configuration data is
-[xkeyboard-config].
+@see For an overview of the role of this format, please see “@ref xkb-the-config ""”.
+
+@see For examples of keymaps in this format, please see “@ref user-configuration ""”.
+For further examples see [xkeyboard-config], the standard database of keyboard
+configuration data.
 
 @note Due to the complexity of the format, this document is still is construction.
 Some additional resources are:
@@ -309,7 +312,19 @@ Some additional resources are:
   mapping of raw keycodes to symbols and actions.
   It fully defines the behavior of a keyboard.
 
-  See [xkb_keymap] for further details.
+  Depending of the context, a keymap may refer to:
+
+  - the software object defined and managed by libxkbcommon;
+  - the text configuration used to create this software object.
+
+  See @ref keymap-components-intro and [xkb_keymap] for further details.
+  </dd>
+  <dt>Keyboard configuration database @anchor database-def</dt>
+  <dd>
+    A database that provides the [keymap components](@ref keymap-components-intro).
+    \*nix OSs uses the _standard_ database [xkeyboard-config]. One may extend
+    this database with _custom_ layouts: see “@ref user-configuration ""” for
+    further details.
   </dd>
 </dl>
 
@@ -331,33 +346,184 @@ Some additional resources are:
 [action]: @ref key-action-def
 [indicator]: @ref indicator-def
 [keymap]: @ref keymap-def
+[database]: @ref database-def
 [ISO9995]: https://en.wikipedia.org/wiki/ISO/IEC_9995
 
 
 ## Introduction to the XKB text format {#introduction}
 
 The XKB text format uses a syntax similar to the [C programming language][C].
+Note that the similarity with C stops here: the XKB text format is only a
+_configuration_ format and is not intended for programming.
 
-@todo general comment on syntax: section, values, etc.
+The XKB text format is used to configure a _keyboard keymap_, which is
+introduced in “@ref xkb-the-config ""”. It has the following two main use cases,
+illustrated in the [diagram hereinafter](@ref xkb-keymap-components-diagram):
 
-@todo the import mechanism
+- __Server:__ Load a keymap from the keymap configuration database, then handle
+  input events by updating the keyboard state. The keymap is assembled from
+  an [RMLVO configuration][RMLVO] and its corresponding
+  <strong>[KcCGST components][KcCGST]</strong> files.
 
-@todo recommended ways to feed xkbcommon
+  @see xkb_keymap::xkb_keymap_new_from_names
+
+  @see [xkeyboard-config] for the implementation of the *standard* keymap
+  configuration database.
+
+  @see “@ref user-configuration ""” to add a *custom* layout or option.
+- __Client:__ Load the active keymap from the server, then handle update events
+  sent by the server. The <strong>[complete keymap]</strong> is directly
+  available in a _self-contained_ file.
+
+  @see xkb_keymap::xkb_keymap_new_from_string
+
+@anchor xkb-keymap-components-diagram
+@dotfile xkb-keymap-components "XKB text format use cases"
 
 [C]: https://en.wikipedia.org/wiki/C_(programming_language)#Syntax
+[RMLVO]: @ref RMLVO-intro
+[KcCGST]: @ref KcCGST-intro
+[complete keymap]: @ref keymap-intro
 
-### Keywords
+### XKB file
 
-@todo keywords, other settings such as “SetMods”
+There are two kinds of files for the XKB text format:
 
-<!--
-TODO: SetMods is not a keyword, but how call it for using-facing doc?
-
-There are many keywords
-
-The key words are _case-insensitive_, e.g. the following strings denote
-the same key word: `SETMODS`, `SetMods`, `setMods` and `setmods`.
+<!-- NOTE:
+The XKB protocol (https://www.x.org/releases/current/doc/kbproto/xkbproto.html)
+uses “Keyboard description” and “Keyboard components” rather than “keymap” and
+“keymap components”.
 -->
+
+<dl>
+  <dt>Keymap file @anchor keymap-file-def</dt>
+  <dd>
+    A file with the _complete_ description of the [keymap] object.
+    It is the kind of file that the server sends to the client (see
+    the [diagram](@ref xkb-keymap-components-diagram) above).
+    Its top-level structure consists of the [xkb_keymap] block.
+  </dd>
+  <!-- TODO: not sure of the following -->
+  <!--
+  <dt>Partial keymap</dt>
+  <dd>
+  A keymap text configuration with one or more keymap sections. Some
+  sections may be missing and [include] statements may not be resolved.
+  </dd>
+  <dt>Complete keymap</dt>
+  <dd>
+  A keymap text configuration consisting of a `%xkb_keymap` block with all
+  mandatory sections; all [include] statements are resolved so that it is
+  self-contained.
+
+  See the [xkb_keymap] block for further details.
+  </dd>
+  -->
+  <dt>Keymap _component_ file @anchor keymap-component-file-def</dt>
+  <dd>
+    A file with the description of a _particular_ [KcCGST component][KcCGST].
+    It is the kind of file that the server uses to assemble a [keymap file].
+    Its top-level structure consists of a _single type_ of [keymap sections].
+    A component file may contain multiple such sections.
+  </dd>
+</dl>
+
+[keymap file]: @ref keymap-file-def
+[keymap component file]: @ref keymap-component-file-def
+[keymap sections]: @ref keymap-section-def
+[section]: @ref keymap-section-def
+[keymap components]: @ref keymap-component-def
+
+### Keymap components {#keymap-components-intro}
+
+[Keymap components][keymap components] are described with [keymap sections].
+They are grouped in [keymap component files][keymap component file] to form a
+[keyboard configuration database][database].
+
+<dl>
+  <dt>Keymap _component_ @anchor keymap-component-def</dt>
+  <dd>
+  A part of the keymap _object_. The set of keymap components is referred as
+  [KcCGST]. They are presented in the [table hereinafter][keymap components table].
+  </dd>
+  <dt>Keymap _section_ @anchor keymap-section-def</dt>
+  <dd>
+  A part of the keymap _text configuration_ dedicated to one of the
+  [keymap components][keymap components table].
+  </dd>
+  <dt>Component _folder_</dt>
+  <dd>
+  A folder in the [keymap configuration database][database], dedicated to files
+  with partial definitions of the same keymap section.
+  </dd>
+</dl>
+
+[keymap components table]: @ref keymap-components-table
+
+@anchor keymap-components-table
+<table>
+  <caption>
+    Keymap components
+  </caption>
+  <tr>
+    <th>[Component](@ref keymap-component-def)</th>
+    <th>[Section][section] in a [keymap][xkb_keymap]</th>
+    <th>Folder in a keymap configuration database</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <th><u>K</u>ey <u>c</u>odes</th>
+    <td>[xkb_keycodes]</td>
+    <td>`keycodes`</td>
+    <td>
+    A translation of the raw [key codes][keycode] from the keyboard into
+    symbolic names.
+    </td>
+  </tr>
+  <tr>
+    <th><u>C</u>ompatibility</th>
+    <td>[xkb_compat]</td>
+    <td>`compat`</td>
+    <td>
+    A specification of what internal actions modifiers and various
+    special-purpose keys produce.
+    </td>
+  </tr>
+  <tr>
+    <th>(<u>G</u>eometry)</th>
+    <td>xkb_geometry</td>
+    <td>`geometry`</td>
+    <td>
+    A description of the physical layout of a keyboard.
+
+    @attention This legacy feature is [not supported](@ref geometry-support)
+    by _xkbcommon_.
+
+    </td>
+  </tr>
+  <tr>
+    <th>Key <u>s</u>ymbols</th>
+    <td>[xkb_symbols]</td>
+    <td>`symbols`</td>
+    <td>
+    A translation of symbolic [key codes][keycode] into actual [key symbols][keysyms]
+    (keysyms).
+    </td>
+  </tr>
+  <tr>
+    <th>Key <u>t</u>ypes</th>
+    <td>[xkb_types]</td>
+    <td>`types`</td>
+    <td>
+    Types describe how a pressed key is affected by active [modifiers]
+    such as Shift, Control, Alt, etc.
+    </td>
+  </tr>
+</table>
+
+### Comments
+
+Comments are introduced following either `//` or `#` until the end of the line.
 
 ### Literals
 
@@ -395,10 +561,82 @@ the same key word: `SETMODS`, `SetMods`, `setMods` and `setmods`.
   </dd>
 </dl>
 
+### Keywords
+
+The following table presents the keywords used in the format. They are
+_case-sensitive_.
+
+<!-- NOTE: keywords are defined in `src/xkbcomp/keywords.gperf` -->
+
+| Keyword                 | Use                            |
+| ----------------------- | ------------------------------ |
+| `action`                | <span class="todo">TODO</span> |
+| `alias`                 | <span class="todo">TODO</span> |
+| `alphanumeric_keys`     | <span class="todo">TODO</span> |
+| `alternate_group`       | <span class="todo">TODO</span> |
+| `alternate`             | <span class="todo">TODO</span> |
+| `augment`               | Mode qualifier for [include] statements |
+| `default`               | <span class="todo">TODO</span> |
+| `function_keys`         | <span class="todo">TODO</span> |
+| `group`                 | <span class="todo">TODO</span> |
+| `hidden`                | <span class="todo">TODO</span> |
+| `include`               | [Include statement][include]              |
+| `indicator`             | <span class="todo">TODO</span> |
+| `interpret`             | <span class="todo">TODO</span> |
+| `key`                   | <span class="todo">TODO</span> |
+| `keypad_keys`           | <span class="todo">TODO</span> |
+| `keys`                  | <span class="todo">TODO</span> |
+| `logo`                  | <span class="todo">TODO</span> |
+| `mod_map`               | Alias of `modifier_map`                   |
+| `modifier_keys`         | <span class="todo">TODO</span> |
+| `modmap`                | Alias of `modifier_map` |
+| `modifier_map`          | <span class="todo">TODO</span> |
+| `outline`               | <span class="todo">TODO</span> |
+| `overlay`               | <span class="todo">TODO</span> |
+| `override`              | Mode qualifier for [include] statements |
+| `partial`               | <span class="todo">TODO</span> |
+| `replace`               | Mode qualifier for [include] statements |
+| `row`                   | <span class="todo">TODO</span> |
+| `section`               | <span class="todo">TODO</span> |
+| `shape`                 | <span class="todo">TODO</span> |
+| `solid`                 | <span class="todo">TODO</span> |
+| `text`                  | <span class="todo">TODO</span> |
+| `type`                  | <span class="todo">TODO</span> |
+| `virtual_modifiers`     | <span class="todo">TODO</span> |
+| `virtual`               | <span class="todo">TODO</span> |
+| `xkb_compat_map`        | Alias of `xkb_compatibility_map` |
+| `xkb_compat`            | Alias of `xkb_compatibility_map` |
+| `xkb_compatibility_map` | Declare a [compatibility section][xkb_compat] |
+| `xkb_compatibility`     | Alias of `xkb_compatibility_map` |
+| `xkb_geometry`          | Declare a geometry section (<span class="todo">TODO: legacy</span>) |
+| `xkb_keycodes`          | Declare a [keycodes section][xkb_keycodes] |
+| `xkb_keymap`            | Declare a [keymap block][xkb_keymap] |
+| `xkb_layout`            | <span class="todo">TODO</span> |
+| `xkb_semantics`         | <span class="todo">TODO</span> |
+| `xkb_symbols`           | Declare a [symbols section][xkb_symbols]   |
+| `xkb_types`             | Declare a [key types section ][xkb_types]  |
+
+[include]: @ref xkb-include
+
+### Built-in settings
+
+<!--
+TODO: SetMods is not a keyword, but how call it for user-facing doc?
+-->
+
+There are many built-in settings; they are explained in the following relevant
+sections.
+
+These settings are _case-insensitive_, e.g. the following strings denote
+the same key word: `SETMODS`, `SetMods`, `setMods` and `setmods`.
+
+### The include mechanism {#xkb-include}
+
+@todo the import mechanism, its qualifiers
 
 ## The “xkb_keymap” block {#the-xkb_keymap-block}
 
-A <strong>[keymap]</strong> consists of a single top-level `xkb_keymap`
+A <strong>[keymap file]</strong> consists of a single top-level `xkb_keymap`
 block, under which are nested the following sections:
 
 <dl>
@@ -441,11 +679,18 @@ xkb_keymap {
 };
 ```
 
+<!-- TODO: there might be several sections of the same type: explain syntax and how they are selected -->
+<!-- TODO: sections may be named -->
+<!-- TODO: introduce tags → only “default” MAP_IS_DEFAULT seems to be used; other are just documentation -->
+<!-- TODO: `xkb_semantics`, `xkb_layout`: they seem to be aliases of `xkb_keymap`
+           in xkbcommon, but they have subtle differences in original `xkbcomp`. -->
+<!-- TODO: See: [xkbcomp] xkbcomp/keymap.c CompileKeymap (XkmSemanticsFile, XkmLayoutFile) -->
+
 ## The “xkb_keycodes” section {#the-xkb_keycodes-section}
 
-This is the simplest section type, and is the first one to be
+This is the simplest [section] type, and is the first one to be
 compiled. The purpose of this is mostly to map between the
-hardware/evdev scancodes and XKB [keycodes]. Each key is given a name
+hardware/evdev scancodes and XKB [keycodes][keycode]. Each key is given a name
 by which it can be referred to later, e.g. in the symbols section.
 
 ### Keycode statements
@@ -530,7 +775,7 @@ section and by the user.
 
 ## The “xkb_types” section {#the-xkb_types-section}
 
-This section is the second to be processed, after `xkb_keycodes`.
+This [section] is the second to be processed, after `xkb_keycodes`.
 However, it is completely independent and could have been the first to
 be processed (it does not refer to specific keys as specified in the
 `xkb_keycodes` section).
@@ -623,7 +868,7 @@ reported as consumed.
 
 ## The “xkb_compat” section {#the-xkb_compat-section}
 
-This section is the third to be processed, after `xkb_keycodes` and
+This [section] is the third to be processed, after `xkb_keycodes` and
 `xkb_types`.
 
 ### Interpret statements {#interpret-statements}
@@ -830,7 +1075,7 @@ satisfied the LED is lit.
 
 @todo complete this section.
 
-This section is the fourth to be processed, after `xkb_keycodes`,
+This [section] is the fourth to be processed, after `xkb_keycodes`,
 `xkb_types` and `xkb_compat`.
 
 Statements of the form:

@@ -34,7 +34,6 @@ index.html: []
 keymap-text-format-v1.html:
 - md_doc_keymap_format_text_v1.html
 md_doc_quick_guide.html: []
-md_doc_user_configuration.html: []
 modules.html: []
 pages.html: []
 rule-file-format.html:
@@ -48,11 +47,15 @@ structrxkb__option.html: []
 structrxkb__option__group.html: []
 structxkb__compose__state.html: []
 structxkb__compose__table.html: []
+structxkb__compose__table__entry.html: []
+structxkb__compose__table__iterator.html: []
 structxkb__context.html: []
 structxkb__keymap.html: []
 structxkb__rule__names.html: []
 structxkb__state.html: []
 todo.html: []
+user-configuration.html:
+- md_doc_user_configuration.html
 xkb-intro.html: []
 xkbcommon-compatibility.html:
 - md_doc_compat.html
