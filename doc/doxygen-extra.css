@@ -12,6 +12,10 @@ dl.todo dt::before {
     content: '🚧 ';
 }
 
+dl.note dd {
+    margin-inline-start: revert;
+}
+
 span.todo::before {
     content: '🚧 ';
 }
