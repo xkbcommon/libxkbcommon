@@ -1094,14 +1094,6 @@ HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
     ExprDef *arrayNdx;
 
     for (; def; def = (VarDef *) def->common.next) {
-        if (def->name && def->name->expr.op == EXPR_FIELD_REF) {
-            log_err(info->ctx,
-                    XKB_ERROR_GLOBAL_DEFAULTS_WRONG_SCOPE,
-                    "Cannot set a global default value from within a key statement; "
-                    "Move statements to the global file scope\n");
-            continue;
-        }
-
         if (!def->name) {
             if (!def->value || def->value->expr.op == EXPR_KEYSYM_LIST)
                 field = "symbols";
@@ -1112,6 +1104,15 @@ HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
         else {
             ok = ExprResolveLhs(info->ctx, def->name, &elem, &field,
                                 &arrayNdx);
+            if (ok && elem) {
+                log_err(info->ctx, XKB_ERROR_GLOBAL_DEFAULTS_WRONG_SCOPE,
+                        "Cannot set global defaults for \"%s\" element within "
+                        "a key statement: move statements to the global file "
+                        "scope. Assignment to \"%s.%s\" ignored.\n",
+                        elem, elem, field);
+                ok = false;
+                continue;
+            }
         }
 
         if (ok)

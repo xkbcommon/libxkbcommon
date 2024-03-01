@@ -1,0 +1,8 @@
+xkb_keymap {
+    xkb_keycodes  { include "evdev" };
+    xkb_types     { include "basic" };
+    xkb_compat    { };
+    xkb_symbols   {
+        key <AD01> { garbage.symbols = [q, Q] };
+    };
+};
