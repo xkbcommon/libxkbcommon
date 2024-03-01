@@ -57,6 +57,7 @@ main(void)
     assert(!test_file(ctx, "keymaps/syntax-error.xkb"));
     assert(!test_file(ctx, "keymaps/syntax-error2.xkb"));
     assert(!test_file(ctx, "keymaps/empty-symbol-decl.xkb"));
+    assert(!test_file(ctx, "keymaps/invalid-qualified-type-field.xkb"));
     assert(!test_file(ctx, "keymaps/invalid-qualified-symbols-field.xkb"));
     assert(!test_file(ctx, "does not exist"));
 
