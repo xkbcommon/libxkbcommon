@@ -116,6 +116,8 @@ API
 
 - Compose: Increase the limit of possible entries to handle huge Compose files.
 
+  Contributed by alois31.
+
 Tools
 -----
 
@@ -145,6 +147,8 @@ Build system
 - Bump required meson to 0.52.0.
 
 - Allow `xkbcommon` to be used as a subproject.
+
+  Contributed by Simon Ser.
 
 - Improve Windows compilation.
 
