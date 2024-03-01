@@ -192,11 +192,39 @@
   description: "Conflicting definitions of a key type"
   details: |
     The given key type is defined multiple times, but only one definition is kept.
-- id: "wrong-scope"
+- id: "global-defaults-wrong-scope"
   code: 428
   added: ALWAYS
   type: error
-  description: "A statement is in a wrong scope and should be moved"
+  description: "A global defaults statement is in a wrong scope and should be moved"
+  examples:
+    - name: Default key type in key statement
+      description: |
+        **Error message:**
+
+        ```
+        xkbcommon: ERROR: [XKB-428] Cannot set global defaults for "type" element
+        within a key statement: move statements to the global file scope.
+        Assignment to "key.type" ignored.
+        ```
+      before: |
+        ```c
+        key <AE01> {
+            key.type = "FOUR_LEVEL_SEMIALPHABETIC",
+            symbols = [q, Q, at]
+        };
+        ```
+      after: |
+        ```c
+        // Either put default key type in global file scope
+        key.type = "FOUR_LEVEL_SEMIALPHABETIC";
+        key <AE01> { [q, Q, at] };
+        // or use a local setting (unqualified, i.e. without `key.`)
+        key <AE01> {
+            type = "FOUR_LEVEL_SEMIALPHABETIC",
+            symbols = [ q, Q, at ]
+        };
+        ```
 - id: "missing-default-section"
   code: 433
   added: ALWAYS

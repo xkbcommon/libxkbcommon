@@ -65,7 +65,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_WARNING_DUPLICATE_ENTRY, "Duplicate entry"},
     {XKB_ERROR_RECURSIVE_INCLUDE, "Recursive include"},
     {XKB_WARNING_CONFLICTING_KEY_TYPE_DEFINITIONS, "Conflicting key type definitions"},
-    {XKB_ERROR_WRONG_SCOPE, "Wrong scope"},
+    {XKB_ERROR_GLOBAL_DEFAULTS_WRONG_SCOPE, "Global defaults wrong scope"},
     {XKB_WARNING_MISSING_DEFAULT_SECTION, "Missing default section"},
     {XKB_WARNING_CONFLICTING_KEY_SYMBOL, "Conflicting key symbol"},
     {XKB_ERROR_INVALID_OPERATION, "Invalid operation"},

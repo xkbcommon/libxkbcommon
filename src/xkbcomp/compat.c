@@ -668,18 +668,18 @@ HandleInterpBody(CompatInfo *info, VarDef *def, SymInterpInfo *si)
     ExprDef *arrayNdx;
 
     for (; def; def = (VarDef *) def->common.next) {
-        if (def->name && def->name->expr.op == EXPR_FIELD_REF) {
-            log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
-                    "Cannot set a global default value from within an interpret statement; "
-                    "Move statements to the global file scope\n");
-            ok = false;
-            continue;
-        }
-
         ok = ExprResolveLhs(info->ctx, def->name, &elem, &field, &arrayNdx);
         if (!ok)
             continue;
-
+        if (elem) {
+            log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
+                    "Cannot set a global default value for \"%s\" element from "
+                    "within an interpret statement; "
+                    "Move assignment to \"%s.%s\" to the global file scope\n",
+                    elem, elem, field);
+            ok = false;
+            continue;
+        }
         ok = SetInterpField(info, si, field, arrayNdx, def->value);
     }
 
@@ -743,7 +743,7 @@ HandleLedMapDef(CompatInfo *info, LedMapDef *def, enum merge_mode merge)
         }
 
         if (elem) {
-            log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
+            log_err(info->ctx, XKB_ERROR_GLOBAL_DEFAULTS_WRONG_SCOPE,
                     "Cannot set defaults for \"%s\" element in indicator map; "
                     "Assignment to %s.%s ignored\n", elem, elem, field);
             ok = false;
