@@ -11,7 +11,8 @@ digraph {
         RMLVO_resolution [
             label=<<i>RMLVO resolution</i><br/>Determine KcCGST using the specified rules file:<br/>match the given model, layout, variant and options fields>,
             style=rounded,
-            color=blue
+            color=blue,
+            href="@ref rmlvo-resolution"
         ];
         KcCGST [
             label=<<i>Layout database configuration</i><br/><b>KcCGST:</b> <b>K</b>ey<b>c</b>odes, <b>C</b>ompat, <b>G</b>eometry, <b>S</b>ymbols, <b>T</b>ypes>,
@@ -24,7 +25,7 @@ digraph {
             color=blue
         ];
         Keymap [
-            label=<<i>Window server configuration</i><br/><b>Complete keymap</b>>,
+            label=<<i>Display server configuration</i><br/><b>Complete keymap</b>>,
             penwidth=3,
             href="@ref keymap-intro"
         ];
@@ -34,12 +35,12 @@ digraph {
         <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
             <tr><td><b>Layout Database</b></td></tr>
             <hr/>
-            <tr><td port="rules">Rules files</td></tr>
-            <tr><td port="keycodes">Keycodes files</td></tr>
-            <tr><td port="compat">Compat files</td></tr>
-            <tr><td port="geometry">(Geometry files)</td></tr>
-            <tr><td port="symbols">Symbols files</td></tr>
-            <tr><td port="types">Types files</td></tr>
+            <tr><td port="rules" href="@ref config-rules-def">Rules files</td></tr>
+            <tr><td port="keycodes" href="@ref config-keycodes-def">Keycodes files</td></tr>
+            <tr><td port="compat" href="@ref config-compat-def">Compat files</td></tr>
+            <tr><td port="geometry" href="@ref config-geometry-def">(Geometry files)</td></tr>
+            <tr><td port="symbols" href="@ref config-symbols-def">Symbols files</td></tr>
+            <tr><td port="types" href="@ref config-types-def">Types files</td></tr>
         </table>
     >];
 

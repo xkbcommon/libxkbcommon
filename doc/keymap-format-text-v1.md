@@ -1532,6 +1532,13 @@ another file. Here it would include the `xkb_symbols` section called
 `nordic_base`, from the file `rx-51` located in the `nokia_vndr` folder, itself
 located in an XKB include path.
 
+@anchor merge-mode-def
+One can use a **merge mode** *prefix* to specify the merge mode of the file:
+- ‘+’ selects the **override** merge mode.
+- ‘|’ selects the **augment** merge mode.
+
+@todo dedicated section for merge mode
+
 ### Key statement
 
 Statements of the form:

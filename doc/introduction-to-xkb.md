@@ -58,7 +58,7 @@ implementation.
     The RMLVO configuration consists of the following components:
 
     <dl>
-      <dt>Rules</dt>
+      <dt>Rules @anchor config-rules-def</dt>
       <dd>
       The rules define the _mapping_ from high to low level components.
       The rules _component_ is the file containing the set of rules to use.
@@ -66,7 +66,7 @@ implementation.
 
       See the [rules file format](doc/rules-format.md) for further details.
       </dd>
-      <dt>Model</dt>
+      <dt>Model @anchor config-model-def</dt>
       <dd>
       The name of the model of the keyboard hardware in use.
       It may depend on:
@@ -80,16 +80,16 @@ implementation.
       - The keyboard _vendor:_ keyboard may have a set of keys that are not
         standard, or may be specific to an OS.
       </dd>
-      <dt>Layout</dt>
+      <dt>Layout @anchor config-layout-def</dt>
       <dd>
       The identifier of the general layout to use. It usually refers to a
       country or a language.
       </dd>
-      <dt>Variant</dt>
+      <dt>Variant @anchor config-variant-def</dt>
       <dd>
       Any minor variants on the general layout. It may be national variants
       </dd>
-      <dt>Options</dt>
+      <dt>Options @anchor config-options-def</dt>
       <dd>
       Set of extra options to customize the standard layouts.
 
@@ -113,28 +113,28 @@ implementation.
     The KcCGST configuration consists of the following components:
 
     <dl>
-      <dt>Key codes</dt>
+      <dt>Key codes @anchor config-keycodes-def</dt>
       <dd>
       A translation of the raw [key codes] from the keyboard into
       symbolic names.
       </dd>
-      <dt>Compatibility</dt>
+      <dt>Compatibility @anchor config-compat-def</dt>
       <dd>
       A specification of what internal actions modifiers and various
       special-purpose keys produce.
       </dd>
-      <dt>Geometry</dt>
+      <dt>Geometry @anchor config-geometry-def</dt>
       <dd>
       A description of the physical layout of a keyboard.
 
       @attention This legacy feature is [not supported](@ref geometry-support)
       by _xkbcommon_.
       </dd>
-      <dt>Key symbols</dt>
+      <dt>Key symbols @anchor config-symbols-def</dt>
       <dd>
       A translation of symbolic key codes into actual [key symbols] \(keysyms).
       </dd>
-      <dt>Key types</dt>
+      <dt>Key types @anchor config-types-def</dt>
       <dd>
       Types describe how a pressed key is affected by active [modifiers]
       such as Shift, Control, Alt, etc.
