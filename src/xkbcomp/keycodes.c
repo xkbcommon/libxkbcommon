@@ -450,14 +450,15 @@ HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
         return false;
 
     if (elem) {
-        log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID, "Unknown element %s encountered; "
-                "Default for field %s ignored\n", elem, field);
+        log_err(info->ctx, XKB_ERROR_GLOBAL_DEFAULTS_WRONG_SCOPE,
+                "Cannot set global defaults for \"%s\" element; "
+                "Assignment to \"%s.%s\" ignored\n", elem, elem, field);
         return false;
     }
 
     if (!istreq(field, "minimum") && !istreq(field, "maximum")) {
         log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID, "Unknown field encountered; "
-                "Assignment to field %s ignored\n", field);
+                "Assignment to field \"%s\" ignored\n", field);
         return false;
     }
 

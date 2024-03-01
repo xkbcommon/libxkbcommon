@@ -1096,7 +1096,7 @@ HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
     for (; def; def = (VarDef *) def->common.next) {
         if (def->name && def->name->expr.op == EXPR_FIELD_REF) {
             log_err(info->ctx,
-                    XKB_ERROR_WRONG_SCOPE,
+                    XKB_ERROR_GLOBAL_DEFAULTS_WRONG_SCOPE,
                     "Cannot set a global default value from within a key statement; "
                     "Move statements to the global file scope\n");
             continue;

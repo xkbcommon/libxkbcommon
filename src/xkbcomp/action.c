@@ -842,9 +842,9 @@ HandleActionDef(struct xkb_context *ctx, ActionsInfo *info,
             return false;
 
         if (elemRtrn) {
-            log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+            log_err(ctx, XKB_ERROR_GLOBAL_DEFAULTS_WRONG_SCOPE,
                     "Cannot change defaults in an action definition; "
-                    "Ignoring attempt to change %s.%s\n",
+                    "Ignoring attempt to change \"%s.%s\".\n",
                     elemRtrn, fieldRtrn);
             return false;
         }

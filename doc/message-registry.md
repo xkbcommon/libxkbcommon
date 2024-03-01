@@ -41,7 +41,7 @@ There are currently 55 entries.
 | [XKB-378] | `duplicate-entry` | An entry is duplicated and will be ignored | Warning |
 | [XKB-386] | `recursive-include` | Included files form cycle | Error |
 | [XKB-407] | `conflicting-key-type-definitions` | Conflicting definitions of a key type | Warning |
-| [XKB-428] | `wrong-scope` | A statement is in a wrong scope and should be moved | Error |
+| [XKB-428] | `global-defaults-wrong-scope` | A global defaults statement is in a wrong scope and should be moved | Error |
 | [XKB-433] | `missing-default-section` | Missing default section in included file | Warning |
 | [XKB-461] | `conflicting-key-symbol` | Warn if there are conflicting keysyms while merging keys | Warning |
 | [XKB-478] | `invalid-operation` | The operation is invalid in the context | Error |
@@ -347,13 +347,57 @@ as numbers and as identifiers `LevelN`, where `N` is in the range (1..8).
 The given key type is defined multiple times, but only one definition is kept.
 
 
-### XKB-428 – Wrong scope {#XKB-428}
+### XKB-428 – Global defaults wrong scope {#XKB-428}
 
 <dl>
   <dt>Since</dt><dd>1.0.0</dd>
   <dt>Type</dt><dd>Error</dd>
-  <dt>Summary</dt><dd>A statement is in a wrong scope and should be moved</dd>
+  <dt>Summary</dt><dd>A global defaults statement is in a wrong scope and should be moved</dd>
 </dl>
+
+#### Examples
+
+<details>
+  <summary>Default key type in key statement</summary>
+
+**Error message:**
+
+```
+xkbcommon: ERROR: [XKB-428] Cannot set global defaults for "type" element
+within a key statement: move statements to the global file scope.
+Assignment to "key.type" ignored.
+```
+
+**Fix:**
+  <div class="example-container">
+    <div class="example">
+      <div class="example-inner">
+        <div class="example-title">Before</div>
+```c
+key <AE01> {
+    key.type = "FOUR_LEVEL_SEMIALPHABETIC",
+    symbols = [q, Q, at]
+};
+```
+</div>
+    </div>
+    <div class="example">
+      <div class="example-inner">
+        <div class="example-title">After</div>
+```c
+// Either put default key type in global file scope
+key.type = "FOUR_LEVEL_SEMIALPHABETIC";
+key <AE01> { [q, Q, at] };
+// or use a local setting (unqualified, i.e. without `key.`)
+key <AE01> {
+    type = "FOUR_LEVEL_SEMIALPHABETIC",
+    symbols = [ q, Q, at ]
+};
+```
+</div>
+    </div>
+  </div>
+</details>
 
 ### XKB-433 – Missing default section {#XKB-433}
 

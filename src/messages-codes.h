@@ -70,8 +70,8 @@ enum xkb_message_code {
     XKB_ERROR_RECURSIVE_INCLUDE = 386,
     /** Conflicting definitions of a key type */
     XKB_WARNING_CONFLICTING_KEY_TYPE_DEFINITIONS = 407,
-    /** A statement is in a wrong scope and should be moved */
-    XKB_ERROR_WRONG_SCOPE = 428,
+    /** A global defaults statement is in a wrong scope and should be moved */
+    XKB_ERROR_GLOBAL_DEFAULTS_WRONG_SCOPE = 428,
     /** Missing default section in included file */
     XKB_WARNING_MISSING_DEFAULT_SECTION = 433,
     /** Warn if there are conflicting keysyms while merging keys */
