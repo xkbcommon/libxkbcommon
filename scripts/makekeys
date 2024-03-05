@@ -10,7 +10,16 @@ pattern = re.compile(r"^#define\s+XKB_KEY_(?P<name>\w+)\s+(?P<value>0x[0-9a-fA-F
 matches = [pattern.match(line) for line in open(sys.argv[1])]
 entries = [(m.group("name"), int(m.group("value"), 16)) for m in matches if m]
 
-entries_isorted = sorted(entries, key=lambda e: e[0].lower())
+# Sort based on the keysym name:
+#   1. Sort by the casefolded name: e.g. kana_ya < kana_YO.
+#   2. If same casefolded name, then sort by cased name, i.e for
+#      ASCII: upper before lower: e.g kana_YA < kana_ya.
+# E.g. kana_YA < kana_ya < kana_YO < kana_yo
+# WARNING: this sort must not be changed, as some functions e.g.
+# xkb_keysym_from_name rely on upper case variant occuring first.
+entries_isorted = sorted(entries, key=lambda e: (e[0].casefold(), e[0]))
+# Sort based on keysym value. Sort is stable so in case of duplicate, the first
+# keysym occurence stays first.
 entries_kssorted = sorted(entries, key=lambda e: e[1])
 
 print(

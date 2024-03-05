@@ -270,16 +270,20 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
     * Find the correct keysym for case-insensitive match.
     *
     * The name_to_keysym table is sorted by istrcmp(). So the binary
-    * search may return _any_ of all possible case-insensitive duplicates. This
-    * code searches the entry, all previous and all next entries that match by
-    * case-insensitive comparison and returns the "best" case-insensitive
-    * match.
+    * search may return _any_ of all possible case-insensitive duplicates. The
+    * duplicates are sorted so that the "best" case-insensitive match comes
+    * last. So the code searches the entry and all next entries that match by
+    * case-insensitive comparison and returns the "best" case-insensitive match.
     *
-    * The "best" case-insensitive match is the lower-case keysym which we find
-    * with the help of xkb_keysym_is_lower(). The only keysyms that only differ
-    * by letter-case are keysyms that are available as lower-case and
-    * upper-case variant (like KEY_a and KEY_A). So returning the first
-    * lower-case match is enough in this case.
+    * The "best" case-insensitive match is the lower-case keysym name. Most
+    * keysyms names that only differ by letter-case are keysyms that are
+    * available as “small” and “big” variants. For example:
+    *
+    * - Bicameral scripts: Lower-case and upper-case variants,
+    *   e.g. KEY_a and KEY_A.
+    * - Non-bicameral scripts: e.g. KEY_kana_a and KEY_kana_A.
+    *
+    * There are some exceptions, e.g. `XF86Screensaver` and `XF86ScreenSaver`.
     */
     else {
         int32_t lo = 0, hi = ARRAY_SIZE(name_to_keysym) - 1;
@@ -296,26 +300,14 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
             }
         }
         if (entry) {
-            const struct name_keysym *iter, *last;
-
-            if (icase && xkb_keysym_is_lower(entry->keysym))
-                return entry->keysym;
-
-            for (iter = entry - 1; iter >= name_to_keysym; --iter) {
-                if (istrcmp(get_name(iter), get_name(entry)) != 0)
-                    break;
-                if (xkb_keysym_is_lower(iter->keysym))
-                    return iter->keysym;
+            const struct name_keysym *last;
+            last = name_to_keysym + ARRAY_SIZE(name_to_keysym) - 1;
+            /* Keep going until we reach end of array
+             * or non case-insensitve match */
+            while (entry < last &&
+                   istrcmp(get_name(entry + 1), get_name(entry)) == 0) {
+                entry++;
             }
-
-            last = name_to_keysym + ARRAY_SIZE(name_to_keysym);
-            for (iter = entry + 1; iter < last; ++iter) {
-                if (istrcmp(get_name(iter), get_name(entry)) != 0)
-                    break;
-                if (xkb_keysym_is_lower(iter->keysym))
-                    return iter->keysym;
-            }
-
             return entry->keysym;
         }
     }
