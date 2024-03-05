@@ -29,7 +29,8 @@
 #endif
 
 #include "test.h"
-#include "keysym.h" /* For unexported is_lower/upper/keypad() */
+#include "src/keysym.h" /* For unexported is_lower/upper/keypad() */
+#include "test/keysym.h"
 
 /* Explicit ordered list of modifier keysyms */
 static const xkb_keysym_t modifier_keysyms[] = {
@@ -137,6 +138,20 @@ test_casestring(const char *string, xkb_keysym_t expected)
     fprintf(stderr, "Received casestring %s -> %x\n\n", string, keysym);
 
     return keysym == expected;
+}
+
+static void
+test_ambiguous_icase_names(const struct ambiguous_icase_ks_names_entry *entry)
+{
+    for (int k = 0; k < entry->count; k++) {
+        /* Check expected result */
+        assert(test_casestring(entry->names[k], entry->keysym));
+        /* If the keysym is cased, then check the resulting keysym is lower-cased */
+        xkb_keysym_t keysym = xkb_keysym_from_name(entry->names[k], 0);
+        if (xkb_keysym_is_lower(keysym) || xkb_keysym_is_upper(keysym)) {
+            assert(xkb_keysym_is_lower(entry->keysym));
+        }
+    }
 }
 
 static int
@@ -510,6 +525,10 @@ main(void)
     assert(test_casestring("THORN", 0x00fe));
     assert(test_casestring("Thorn", 0x00fe));
     assert(test_casestring("thorn", 0x00fe));
+
+    for (size_t k = 0; k < ARRAY_SIZE(ambiguous_icase_ks_names); k++) {
+        test_ambiguous_icase_names(&ambiguous_icase_ks_names[k]);
+    }
 
     assert(test_string("", XKB_KEY_NoSymbol));
     assert(test_casestring("", XKB_KEY_NoSymbol));

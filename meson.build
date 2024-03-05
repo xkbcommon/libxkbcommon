@@ -665,13 +665,15 @@ if icu_dep.found()
 endif
 test(
     'keysym',
-    executable('test-keysym', 'test/keysym.c', dependencies: keysyms_test_dep,
+    executable('test-keysym', 'test/keysym.c', 'test/keysym.h',
+               dependencies: keysyms_test_dep,
                c_args: keysyms_test_c_args),
     env: test_env,
 )
 test(
     'keymap',
-    executable('test-keymap', 'test/keymap.c', dependencies: test_dep),
+    executable('test-keymap', 'test/keymap.c', 'test/keysym.h',
+               dependencies: test_dep),
     env: test_env,
 )
 test(

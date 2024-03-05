@@ -1,47 +1,72 @@
 #!/usr/bin/env python3
 
 import argparse
+from collections import defaultdict
 from pathlib import Path
 import re
 import sys
-from typing import Any
+from typing import Any, TypeAlias
 
 import jinja2
 
 KEYSYM_PATTERN = re.compile(
     r"^#define\s+XKB_KEY_(?P<name>\w+)\s+(?P<value>0x[0-9a-fA-F]+)\s"
 )
+MAX_AMBIGUOUS_NAMES = 3
+
+KeysymsBounds: TypeAlias = dict[str, int]
+KeysymsCaseFoldedNames: TypeAlias = dict[str, list[str]]
 
 
-def load_keysyms(path: Path) -> dict[str, int]:
+def load_keysyms(path: Path) -> tuple[KeysymsBounds, KeysymsCaseFoldedNames]:
     # Load the keysyms header
     keysym_min = sys.maxsize
     keysym_max = 0
     min_unicode_keysym = 0x01000100
     max_unicode_keysym = 0x0110FFFF
     canonical_names: dict[int, str] = {}
+    casefolded_names: dict[str, list[str]] = defaultdict(list)
     max_unicode_name = "U10FFFF"
     max_keysym_name = "0x1fffffff"  # XKB_KEYSYM_MAX
+
     with path.open("rt", encoding="utf-8") as fd:
         for line in fd:
             if m := KEYSYM_PATTERN.match(line):
                 value = int(m.group("value"), 16)
                 keysym_min = min(keysym_min, value)
                 keysym_max = max(keysym_max, value)
+                name = m.group("name")
+                casefolded_names[name.casefold()].append(name)
                 if value not in canonical_names:
-                    canonical_names[value] = m.group("name")
-    return {
-        "XKB_KEYSYM_MIN_ASSIGNED": min(keysym_min, min_unicode_keysym),
-        "XKB_KEYSYM_MAX_ASSIGNED": max(keysym_max, max_unicode_keysym),
-        "XKB_KEYSYM_MIN_EXPLICIT": keysym_min,
-        "XKB_KEYSYM_MAX_EXPLICIT": keysym_max,
-        "XKB_KEYSYM_COUNT_EXPLICIT": len(canonical_names),
-        "XKB_KEYSYM_NAME_MAX_SIZE": max(
-            max(len(name) for name in canonical_names.values()),
-            len(max_unicode_name),
-            len(max_keysym_name),
-        ),
-    }
+                    canonical_names[value] = name
+
+    # Keep only ambiguous case-insensitive names and sort them
+    for name in tuple(casefolded_names.keys()):
+        count = len(casefolded_names[name])
+        if count < 2:
+            del casefolded_names[name]
+        elif count > MAX_AMBIGUOUS_NAMES:
+            raise ValueError(
+                f"""Expected max {MAX_AMBIGUOUS_NAMES} keysyms for "{name}", got: {count}"""
+            )
+        else:
+            casefolded_names[name].sort()
+
+    return (
+        {
+            "XKB_KEYSYM_MIN_ASSIGNED": min(keysym_min, min_unicode_keysym),
+            "XKB_KEYSYM_MAX_ASSIGNED": max(keysym_max, max_unicode_keysym),
+            "XKB_KEYSYM_MIN_EXPLICIT": keysym_min,
+            "XKB_KEYSYM_MAX_EXPLICIT": keysym_max,
+            "XKB_KEYSYM_COUNT_EXPLICIT": len(canonical_names),
+            "XKB_KEYSYM_NAME_MAX_SIZE": max(
+                max(len(name) for name in canonical_names.values()),
+                len(max_unicode_name),
+                len(max_keysym_name),
+            ),
+        },
+        casefolded_names,
+    )
 
 
 def generate(
@@ -86,12 +111,25 @@ jinja_env = jinja2.Environment(
 jinja_env.filters["keysym"] = lambda ks: f"0x{ks:0>8x}"
 
 # Load keysyms
-keysyms_data = load_keysyms(args.root / "include/xkbcommon/xkbcommon-keysyms.h")
+keysyms_bounds, keysyms_ambiguous_case_insensitive_names = load_keysyms(
+    args.root / "include/xkbcommon/xkbcommon-keysyms.h"
+)
 
 # Generate the files
 generate(
     jinja_env,
-    keysyms_data,
+    keysyms_bounds,
     args.root,
     Path("src/keysym.h"),
+)
+
+generate(
+    jinja_env,
+    dict(
+        keysyms_bounds,
+        ambiguous_case_insensitive_names=keysyms_ambiguous_case_insensitive_names,
+        MAX_AMBIGUOUS_NAMES=MAX_AMBIGUOUS_NAMES,
+    ),
+    args.root,
+    Path("test/keysym.h"),
 )

@@ -472,7 +472,7 @@ enum xkb_keysym_flags {
  * invalid flags are passed, this will fail with XKB_KEY_NoSymbol.
  *
  * If you use the XKB_KEYSYM_CASE_INSENSITIVE flag and two keysym names
- * differ only by case, then the lower-case keysym is returned.  For
+ * differ only by case, then the lower-case keysym name is returned.  For
  * instance, for KEY_a and KEY_A, this function would return KEY_a for the
  * case-insensitive search.  If this functionality is needed, it is
  * recommended to first call this function without this flag; and if that

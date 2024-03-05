@@ -1,0 +1,25 @@
+#ifndef KEYSYM_TEST_H
+#define KEYSYM_TEST_H
+
+#include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-keysyms.h"
+
+struct ambiguous_icase_ks_names_entry {
+    xkb_keysym_t keysym;
+    const int count;
+    const char *names[{{ MAX_AMBIGUOUS_NAMES }}];
+};
+
+static const struct ambiguous_icase_ks_names_entry
+ambiguous_icase_ks_names[] = {
+    {% for names in ambiguous_case_insensitive_names.values() %}
+    { XKB_KEY_{{ names[-1] }}, {{ names | length }}, { {# -#}
+        {% for name in names -%}
+        "{{ name }}"{% if not loop.last %}, {% endif -%}
+        {% endfor %}
+    {#- #} } }
+    {%- if not loop.last %},{% endif +%}
+    {% endfor %}
+};
+
+#endif
