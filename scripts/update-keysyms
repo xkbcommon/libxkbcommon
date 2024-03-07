@@ -1,7 +1,8 @@
 #!/bin/sh
 # Run this to regenerate xkbcommon-keysyms.h from the X11 headers
 # defining the keysyms and update the name <-> keysym mapping.
-export LC_CTYPE=C
+export LC_CTYPE=C.UTF-8
+export LC_COLLATE=C.UTF-8
 scripts/makeheader > include/xkbcommon/xkbcommon-keysyms.h
 scripts/makekeys include/xkbcommon/xkbcommon-keysyms.h > src/ks_tables.h
 scripts/update-headers.py
