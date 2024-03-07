@@ -1,0 +1,42 @@
+[tool.towncrier]
+name = "libxkbcommon"
+directory = "changes"
+filename = "NEWS.md"
+start_string = "<!-- towncrier release notes start -->\n"
+all_bullets = true
+single_file = true
+orphan_prefix = "+"
+underlines = ["=", "-", ""]
+title_format = "{name} [{version}](https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-{version}) - {project_date}"
+issue_format = "[#{issue}](https://github.com/xkbcommon/libxkbcommon/issues/{issue})"
+
+# Sections configuration
+
+[[tool.towncrier.section]]
+name = "API"
+path = "api"
+
+[[tool.towncrier.section]]
+name = "Tools"
+path = "tools"
+
+[[tool.towncrier.section]]
+name = "Build system"
+path = "build"
+
+# Fragments configuration
+
+[[tool.towncrier.type]]
+directory = "breaking"
+name = "Breaking changes"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "feature"
+name = "New"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "bugfix"
+name = "Fixes"
+showcontent = true
