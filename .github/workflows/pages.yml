@@ -37,7 +37,7 @@ jobs:
       - name: Move doxygen to target directory
         run: mv doxygen/ public_html/doc/current/
       - name: Check out the static website
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: xkbcommon/website
           persist-credentials: false
