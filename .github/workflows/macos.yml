@@ -23,12 +23,7 @@ jobs:
           python-version: '3.12'
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade meson PyYAML
-          brew install libxml2 bison ninja graphviz
-          # HACK: force Doxygen version 1.9.6, because 1.9.7 breaks our cool URIs.
-          curl -O https://raw.githubusercontent.com/Homebrew/homebrew-core/d2267b9f2ad247bc9c8273eb755b39566a474a70/Formula/doxygen.rb
-          brew install --formula doxygen.rb
-          rm doxygen.rb
+          brew install bison libxml2 meson ninja pyyaml
           brew link bison --force
         env:
           HOMEBREW_NO_AUTO_UPDATE: 1
