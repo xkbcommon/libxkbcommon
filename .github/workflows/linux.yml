@@ -47,7 +47,7 @@ jobs:
       - name: Setup
         run: |
           # -gdwarf-4 - see https://github.com/llvm/llvm-project/issues/56550.
-          CFLAGS='-gdwarf-4' meson setup build -Denable-cool-uris=true
+          CFLAGS='-gdwarf-4' meson setup build -Denable-docs -Denable-cool-uris=true
         env:
           CC: ${{ matrix.compiler }}
       - name: Build
