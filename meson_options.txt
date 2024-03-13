@@ -63,7 +63,7 @@ option(
 option(
     'enable-docs',
     type: 'boolean',
-    value: true,
+    value: false,
     description: 'Enable building the documentation',
 )
 option(
