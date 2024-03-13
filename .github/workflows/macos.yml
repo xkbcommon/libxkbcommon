@@ -23,17 +23,23 @@ jobs:
           python-version: '3.12'
       - name: Install dependencies
         run: |
-          brew install bison libxml2 meson ninja pyyaml
+          brew install bison libxml2 meson ninja pyyaml xkeyboardconfig xorg-server
           brew link bison --force
         env:
           HOMEBREW_NO_AUTO_UPDATE: 1
           HOMEBREW_NO_INSTALL_CLEANUP: 1
       - name: Setup
         run: |
-          PATH="/usr/local/opt/bison/bin:${PATH}" meson setup -Denable-wayland=false -Denable-x11=false build
+          PATH="/usr/local/opt/bison/bin:${PATH}" \
+            meson setup \
+              -Denable-wayland=false \
+              -Denable-x11=true \
+              -Dxkb-config-root="$(brew --prefix xkeyboardconfig)/share/X11/xkb" \
+              -Dx-locale-root="$(brew --prefix xorg-server)/share/X11/locale" \
+              build
       - name: Build
         run: |
           PATH="/usr/local/opt/bison/bin:${PATH}" meson compile -C build
       - name: Test
-        run:
+        run: |
           meson test -C build --print-errorlogs
