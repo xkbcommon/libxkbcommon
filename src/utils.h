@@ -69,6 +69,8 @@ typedef SSIZE_T ssize_t;
 
 #define STRINGIFY(x) #x
 #define STRINGIFY2(x) STRINGIFY(x)
+#define CONCAT(x,y) x ## y
+#define CONCAT2(x,y) CONCAT(x,y)
 
 /* Check if a character is valid in a string literal */
 static inline bool

@@ -136,25 +136,25 @@ err_display_fd:
     return ret;
 }
 
-/* All X11_TEST functions are in the test_functions_section ELF section.
+/* All X11_TEST functions are in the test_func_sec ELF section.
  * __start and __stop point to the start and end of that section. See the
  * __attribute__(section) documentation.
  */
-extern const struct test_function __start_test_functions_section, __stop_test_functions_section;
+DECLARE_TEST_ELF_SECTION_POINTERS(TEST_ELF_SECTION);
 
 int
 x11_tests_run()
 {
     size_t count = 1; /* For NULL-terminated entry */
 
-    for (const struct test_function *t = &__start_test_functions_section;
-         t < &__stop_test_functions_section;
+    for (const struct test_function *t = &__start_test_func_sec;
+         t < &__stop_test_func_sec;
          t++)
         count++;
 
     int rc;
-    for (const struct test_function *t = &__start_test_functions_section;
-         t < &__stop_test_functions_section;
+    for (const struct test_function *t = &__start_test_func_sec;
+         t < &__stop_test_func_sec;
          t++) {
         fprintf(stderr, "Running test: %s from %s\n", t->name, t->file);
         rc = xvfb_wrapper(t->func);
