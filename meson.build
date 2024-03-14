@@ -773,11 +773,13 @@ if get_option('enable-x11')
         'x11',
         executable('test-x11', 'test/x11.c', dependencies: x11_test_dep),
         env: test_env,
+        is_parallel : false,
     )
     test(
         'x11comp',
         executable('test-x11comp', 'test/x11comp.c', dependencies: x11_test_dep),
         env: test_env,
+        is_parallel : false,
     )
 endif
 if get_option('enable-xkbregistry')
