@@ -31,8 +31,10 @@
 #include "xkbcommon/xkbcommon-compose.h"
 #include "utils.h"
 
-/* Automake test exit code to signify SKIP (à la PASS, FAIL, etc). */
+/* Automake test exit code to signify SKIP (à la PASS, FAIL, etc).
+ * See: https://www.gnu.org/software/automake/manual/html_node/Scripts_002dbased-Testsuites.html */
 #define SKIP_TEST 77
+#define TEST_SETUP_FAILURE 99
 
 #define assert_printf(cond, ...) \
    if (!(cond)) { \

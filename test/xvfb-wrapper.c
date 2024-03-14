@@ -67,6 +67,7 @@ xvfb_wrapper(int (*test_func)(char* display))
         goto err_display_fd;
     }
     snprintf(display_fd_string, sizeof(display_fd_string), "%d", fileno(display_fd));
+    fprintf(stderr, "display_fd_string: %s\n", display_fd_string);
 
     /* Set SIGUSR1 to SIG_IGN so Xvfb will send us that signal
      * when it's ready to accept connections */
@@ -90,7 +91,8 @@ xvfb_wrapper(int (*test_func)(char* display))
      */
     ret = posix_spawnp(&xvfb_pid, "Xvfb", NULL, NULL, xvfb_argv, envp);
     if (ret != 0) {
-        ret = SKIP_TEST;
+        fprintf(stderr, "posix_spawnp error %d: %s\n", ret, strerror(ret));
+        ret = TEST_SETUP_FAILURE;
         goto err_xvfd;
     }
 
@@ -115,7 +117,8 @@ xvfb_wrapper(int (*test_func)(char* display))
     rewind(display_fd);
     length = fread(&display[1], 1, sizeof(display) - 1, display_fd);
     if (length <= 0) {
-        ret = SKIP_TEST;
+        fprintf(stderr, "fread error: length=%zu\n", length);
+        ret = TEST_SETUP_FAILURE;
         goto err_xvfd;
     } else {
         /* Drop the newline character */
