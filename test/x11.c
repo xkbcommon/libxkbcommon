@@ -45,7 +45,7 @@ X11_TEST(test_basic)
     */
     conn = xcb_connect(display, NULL);
     if (!conn || xcb_connection_has_error(conn)) {
-        exit_code = SKIP_TEST;
+        exit_code = TEST_SETUP_FAILURE;
         goto err_conn;
     }
 
@@ -55,7 +55,7 @@ X11_TEST(test_basic)
                                       XKB_X11_SETUP_XKB_EXTENSION_NO_FLAGS,
                                       NULL, NULL, NULL, NULL);
     if (!ret) {
-        exit_code = SKIP_TEST;
+        exit_code = TEST_SETUP_FAILURE;
         goto err_conn;
     }
 

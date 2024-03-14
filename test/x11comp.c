@@ -51,7 +51,7 @@ X11_TEST(test_basic)
 
     conn = xcb_connect(display, NULL);
     if (xcb_connection_has_error(conn)) {
-        ret = SKIP_TEST;
+        ret = TEST_SETUP_FAILURE;
         goto err_conn;
     }
     ret = xkb_x11_setup_xkb_extension(conn,
@@ -60,7 +60,7 @@ X11_TEST(test_basic)
                                       XKB_X11_SETUP_XKB_EXTENSION_NO_FLAGS,
                                       NULL, NULL, NULL, NULL);
     if (!ret) {
-        ret = SKIP_TEST;
+        ret = TEST_SETUP_FAILURE;
         goto err_xcb;
     }
     device_id = xkb_x11_get_core_keyboard_device_id(conn);
@@ -72,12 +72,12 @@ X11_TEST(test_basic)
     ret = posix_spawnp(&xkbcomp_pid, "xkbcomp", NULL, NULL, xkbcomp_argv, envp);
     free(xkb_path);
     if (ret != 0) {
-        ret = SKIP_TEST;
+        ret = TEST_SETUP_FAILURE;
         goto err_xcb;
     }
     ret = waitpid(xkbcomp_pid, &status, 0);
     if (ret < 0 || !WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-        ret = SKIP_TEST;
+        ret = TEST_SETUP_FAILURE;
         goto err_xcb;
     }
 
