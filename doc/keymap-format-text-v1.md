@@ -22,7 +22,7 @@ configuration data.
 Some additional resources are:
 
 @note
-- [Ivan Pascal's XKB documentation][ivan-pascal]
+- [Ivan Pascal’s XKB documentation][ivan-pascal]
 - [An Unreliable Guide to XKB Configuration][unreliable-guide]
 - [The X Keyboard Extension: Protocol Specification][XKB Protocol]
 - [How to enhance XKB configuration][xkeyboard-config doc]
@@ -737,14 +737,14 @@ In the common case this just maps to the evdev scancodes from
     #define KEY_1                2
 
 correspond to the ones above. Similar definitions appear in the
-xf86-input-keyboard driver. Note that in all current keymaps there's a
+xf86-input-keyboard driver. Note that in all current keymaps there’s a
 constant offset of 8 (for historical reasons).
 
 Note that contrary to xkbcommon, the X11 protocol supports keycodes
 only up to `255`. Therefore, when interfacing with X11, keymaps and applications
 using keycodes beyond `255` should expect warnings.
 
-If there's a conflict, like the same name given to different keycodes,
+If there’s a conflict, like the same name given to different keycodes,
 or same keycode given different names, it is resolved according to the
 merge mode which applies to the definitions.
 
@@ -782,11 +782,11 @@ be processed (it does not refer to specific keys as specified in the
 
 This section defines [key types], which, given a key and a keyboard
 state (i.e. modifier state and group), determine the [shift level] to
-be used in translating the key to [keysyms]. These types are assigned to
-each group in each key, in the `xkb_symbols` section.
+be used in translating the key to [keysyms]. These types are assigned
+to each group in each key, in the `xkb_symbols` section.
 
 Key types are called this way because, in a way, they really describe
-the "type" of the key (or more correctly, a specific group of the
+the “type” of the key (or more correctly, a specific group of the
 key). For example, an ordinary keymap will provide a type called
 `KEYPAD`, which consists of two levels, with the second level being
 chosen according to the state of the Num Lock (or Shift) modifiers.
@@ -812,7 +812,7 @@ forms:
 
 Mandatory for each level in the type.
 
-Gives each level in this type a descriptive name. It isn't used
+Gives each level in this type a descriptive name. It isn’t used
 for anything.
 
 Note: A level may be specified as Level\[1-8\] or just a number (can
@@ -835,7 +835,7 @@ calculation.
 
 Should have at least as many mappings as there are levels in the type.
 
-If the active modifiers, masked with the type's modifiers (as stated
+If the active modifiers, masked with the type’s modifiers (as stated
 above), match (i.e. equal) the modifiers inside the `map[]` statement,
 then the level in the right hand side is chosen. For example, in the
 above, if in the current keyboard state the `Shift` and `LevelThree`
@@ -848,12 +848,12 @@ keysym(s) in the 4th level of the group will be returned to the user.
     preserve[Shift+Lock+LevelThree] = Lock;
 
 When a key type is used for keysym translation, its modifiers are said
-to be "consumed". For example, in a simple US keymap, the "g" "g" key
+to be “consumed”. For example, in a simple US keymap, the “g” key
 is assigned an ordinary `ALPHABETIC` key type, whose modifiers are
-Shift and Lock; then for the "g" key, these two modifiers are consumed
+Shift and Lock; then for the “g” key, these two modifiers are consumed
 by the translation. This information is relevant for applications
 which further process the modifiers, since by then the consumed
-modifiers have already "done their part" and should be masked out.
+modifiers have already “done their part” and should be masked out.
 
 However, sometimes even if a modifier had already affected the key
 translation through the type, it should *not* be reported as consumed,
@@ -862,7 +862,7 @@ used to augment the map entry. The modifiers inside the square
 brackets should match one of the map[] statements in the type (if
 there is no matching map entry, one mapping to Level1 is implicitly
 added). The right hand side should consists of modifiers from the
-type's modifiers; these modifiers are then "preserved" and not
+type’s modifiers; these modifiers are then “preserved” and not
 reported as consumed.
 
 
@@ -886,13 +886,13 @@ things for each key:
   Actions, like symbols, are specified for each level of each group
   in the key separately.
 
-- Add a [virtual modifier] to the key's virtual modifier mapping
+- Add a [virtual modifier] to the key’s virtual modifier mapping
   (`vmodmap`).
 
 - Specify whether the key should repeat or not.
 
 However, doing this for each key (or level) is tedious and inflexible.
-Interpret's are a mechanism to apply these settings to a bunch of
+Interpret’s are a mechanism to apply these settings to a bunch of
 keys/levels at once.
 
 Each interpret specifies a condition by which it attaches to certain
@@ -907,7 +907,7 @@ levels. The condition consists of two parts:
   - A __mask__ of _real_ modifiers: a `+`-separated list of modifiers or
     the special value `all`, which denotes all the modifiers.
 
-    The modifiers are matched against the key's modifier map (`modmap`).
+    The modifiers are matched against the key’s modifier map (`modmap`).
   - A __matching operation__, that is one of the following:
 
     * `AnyOfOrNone` – The modmap must either be empty or include at
@@ -941,13 +941,13 @@ most specific one is used:
 - If both the keysyms and the matching operations are the same (but the
   modifiers are different), the first interpret is used.
 
-As described above, once an interpret "attaches" to a level, it can bind
-an action to that level, add one virtual modifier to the key's vmodmap,
-or set the key's repeat setting. You should note the following:
+As described above, once an interpret “attaches” to a level, it can bind
+an action to that level, add one virtual modifier to the key’s vmodmap,
+or set the key’s repeat setting. You should note the following:
 
 - The key repeat is a property of the entire key; it is not
   level-specific. In order to avoid confusion, it is only inspected
-  for the first level of the first group; the interpret's repeat
+  for the first level of the first group; the interpret’s repeat
   setting is ignored when applied to other levels.
 
 - If one of the above fields was set directly for a key in
@@ -980,7 +980,7 @@ for the list of available key actions.
 
     virtualModifier = NumLock;
 
-Add this virtual modifier to the key's `vmodmap`. The given virtual
+Add this virtual modifier to the key’s `vmodmap`. The given virtual
 modifier must be declared at the top level of the file with a
 `virtual_modifiers` statement, e.g.:
 
@@ -1001,10 +1001,10 @@ Statements of the form:
     indicator "Shift Lock" { ... }
 
 This statement specifies the behavior and binding of the LED (AKA
-[indicator]) with the given name ("Shift Lock" above). The name should
+[indicator]) with the given name (“Shift Lock” above). The name should
 have been declared previously in the `xkb_keycodes` section (see
 [LED name][indicator name] statement), and given an index there.
-If it wasn't, it is created with the next free index.
+If it wasn’t, it is created with the next free index.
 
 The body of the statement describes the conditions of the keyboard
 state which will cause the LED to be lit. It may include the following
@@ -1032,7 +1032,7 @@ This will cause the respective portion of the modifier state (see
 `struct xkb_state`) to be matched against the modifiers given in the
 `modifiers` statement.
 
-Here's a simple example:
+Here’s a simple example:
 
     indicator "Num Lock" {
         modifiers = NumLock;
@@ -1097,7 +1097,7 @@ whitespace:
 
 The possible flags are:
 
-  * `partial` - Indicates that the map doesn't cover a complete keyboard.
+  * `partial` - Indicates that the map doesn’t cover a complete keyboard.
   * `default` - Marks the symbol map as the default map in the file when no
     explicit map is specified. If no map is marked as a default, the first map
     in the file is the default.
@@ -1122,7 +1122,7 @@ Statements of the form:
     name[Group1] = "US/ASCII";
     groupName[1] = "US/ASCII";
 
-Gives the name "US/ASCII" to the first group of symbols. Other groups can be
+Gives the name “US/ASCII” to the first group of symbols. Other groups can be
 named using a different group index (ex: `Group2`), and with a different name.
 A group must be named.
 
