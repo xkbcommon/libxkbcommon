@@ -59,3 +59,20 @@ div.example-title {
     padding: 0 0 1em 0;
     font-style: italic;
 }
+
+div.example table code {
+    /* Allow to keep 2 examples side by side */
+    font-size: 0.72rem;
+}
+
+div.example figure {
+    margin: 0;
+}
+
+figcaption {
+    font-style: italic;
+}
+
+figcaption p {
+    margin: 0;
+}
