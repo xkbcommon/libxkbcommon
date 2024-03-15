@@ -1,0 +1,89 @@
+digraph
+{
+    active_modifiers [
+        label="Active modifiers",
+        href="@ref xkb_state::xkb_state_mod_index_is_active"
+    ];
+    modifiers_filter [
+        shape=box,
+        label=<<b>Filter modifiers</b><br/>Keep only meaningful modifiers for the key type>,
+        style=rounded
+    ];
+    filtered_modifiers [label="Filtered modifiers"];
+    level_match [
+        shape=box,
+        label=<<b>Lookup modifiers combination</b><br/>Find the shift level<br/>matching exactly the modifiers,<br/>defaulting to the base level>,
+        style=rounded
+    ];
+    shift_level [
+        label="Shift level",
+        href="@ref level-def"
+    ];
+    consume_modifiers [
+        shape=box,
+        label=<<b>Consume modifiers</b>>,
+        style=rounded
+    ];
+    consumed_modifiers [
+        label="Consumed modifiers",
+        href="@ref consumed-modifiers"
+    ];
+    symbols_table_lookup [
+        shape=box,
+        label=<<b>Symbols table lookup</b>>,
+        style=rounded
+    ];
+    symbols_table [
+        shape=box,
+        label=<<b>Symbols table</b>>,
+        href="@ref key-symbols-table",
+        penwidth=2
+    ];
+    keysym_pre_transformation [
+        label="Raw keysym"
+    ];
+    keysyms_transformations [
+        shape=box,
+        label=<<b>Keysyms transformations</b>>,
+        href="@ref keysym-transformations",
+        style=rounded
+    ];
+    keysym_post_transformation [
+        label="Final keysym"
+    ];
+
+    key_type [shape=none, label=<
+        <table border="2" cellborder="1" cellspacing="0" cellpadding="4">
+            <tr><td href="@ref the-xkb_types-section"><b>Key type</b></td></tr>
+            <hr/>
+            <tr><td port="modifiers" href="@ref key-type-modifiers">modifiers</td></tr>
+            <tr><td port="map" href="@ref key-type-map">map</td></tr>
+            <tr><td port="preserve" href="@ref key-type-preserve">preserve</td></tr>
+        </table>
+    >];
+
+    { rank="same"; key_type; filtered_modifiers }
+    { rank="same"; level_match; consume_modifiers }
+    { rank="same"; symbols_table_lookup; symbols_table }
+
+    active_modifiers -> modifiers_filter;
+    key_type:modifiers -> modifiers_filter
+    // [
+    //     label=<<i>xkb_compat</i> section>,
+    //     labelhref="@ref the-xkb_compat-section"
+    // ];
+    //active_modifiers -> filtered_modifiers [label=""];
+    modifiers_filter -> filtered_modifiers;
+    filtered_modifiers -> level_match;
+    key_type:map -> level_match;
+    level_match -> shift_level;
+    shift_level -> symbols_table_lookup;
+    symbols_table -> symbols_table_lookup;
+    symbols_table_lookup -> keysym_pre_transformation;
+    keysym_pre_transformation -> keysyms_transformations;
+    keysyms_transformations -> keysym_post_transformation;
+    filtered_modifiers -> consume_modifiers;
+    key_type:preserve -> consume_modifiers;
+    consume_modifiers -> consumed_modifiers;
+    consumed_modifiers -> keysyms_transformations;
+}

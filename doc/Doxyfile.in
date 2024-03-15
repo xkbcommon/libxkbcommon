@@ -53,3 +53,8 @@ HAVE_DOT               = YES
 DOTFILE_DIRS           = doc/diagrams
 
 DOT_IMAGE_FORMAT       = svg
+
+ALIASES                += figure="@htmlonly[block]<figure>@endhtmlonly"
+ALIASES                += endfigure="@htmlonly[block]</figure>@endhtmlonly"
+ALIASES                += figcaption="@htmlonly[block]<figcaption>@endhtmlonly"
+ALIASES                += endfigcaption="@htmlonly[block]</figcaption>@endhtmlonly"
