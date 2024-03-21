@@ -79,6 +79,8 @@
 /** Maximum keysym name length */
 #define XKB_KEYSYM_NAME_MAX_SIZE  27
 
+#ifdef ENABLE_PRIVATE_APIS
+
 bool
 xkb_keysym_is_assigned(xkb_keysym_t ks);
 
@@ -102,6 +104,8 @@ xkb_keysym_iterator_get_name(struct xkb_keysym_iterator *iter,
 
 bool
 xkb_keysym_iterator_is_explicitly_named(struct xkb_keysym_iterator *iter);
+
+#endif
 
 bool
 xkb_keysym_is_lower(xkb_keysym_t keysym);
