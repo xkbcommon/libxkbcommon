@@ -1,0 +1,58 @@
+// Latch behaviour testing
+
+partial default alphanumeric_keys
+xkb_symbols "us" {
+    name[Group1] = "English";
+
+    include "testlatch(base)"
+
+
+    key <AD01>	{	[	q,		Q		]};
+    key <AD02>	{	[	w,		W		]};
+    key <AD03>	{	[	e,		E		]};
+    key <AD04>	{	[	r,		R		]};
+    key <AD05>	{	[	t,		T		]};
+    key <AD06>	{	[	y,		Y		]};
+    key <AD07>	{	[	u,		U		]};
+    key <AD08>	{	[	i,		I		]};
+    key <AD09>	{	[	o,		O		]};
+    key <AD10>	{	[	p,		P		]};
+
+    key <AC01>	{	[	a,		A		]};
+    key <AC02>	{	[	s,		S		]};
+    key <AC03>	{	[	d,		D		]};
+    key <AC04>	{	[	f,		F		]};
+    key <AC05>	{	[	g,		G		]};
+    key <AC06>	{	[	h,		H		]};
+    key <AC07>	{	[	j,		J		]};
+    key <AC08>	{	[	k,		K		]};
+    key <AC09>	{	[	l,		L		]};
+
+    key <AB01>	{	[	z,		Z		]};
+    key <AB02>	{	[	x,		X		]};
+    key <AB03>	{	[	c,		C		]};
+    key <AB04>	{	[	v,		V		]};
+    key <AB05>	{	[	b,		B		]};
+    key <AB06>	{	[	n,		N		]};
+    key <AB07>	{	[	m,		M		]};
+};
+
+partial alphanumeric_keys
+xkb_symbols "base" {
+    key <ESC>   {   [ Escape        ]   };
+
+    // We want Shift to latch normally, but also to produce caps when pressed
+    // twice in a row.
+    key <LFSH>	{	[	Shift_L,	Caps_Lock	]	};
+
+    key <AE01>	{	[	1,		exclam		]};
+    key <AE02>	{	[	2,		quotedbl	]};
+    key <AE03>	{	[	3,		currency	]};
+    key <AE04>	{	[	4,		at		]};
+    key <AE05>	{	[	5,		percent		]};
+    key <AE06>	{	[	6,		question	]};
+    key <AE07>	{	[	7,		minus		]};
+    key <AE08>	{	[	8,		plus		]};
+    key <AE09>	{	[	9,		apostrophe	]};
+    key <AE10>	{	[	0,		equal		]};
+};
