@@ -1,7 +1,5 @@
-libxkbcommon 1.7.0 - XXX
+libxkbcommon 1.7.0 - 2024-03-24
 ==================
-
-TODO: date
 
 API
 ---
