@@ -879,7 +879,7 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
             matched = match_value_and_mark(m, value, to, match_type);
         }
         else if (mlvo == MLVO_VARIANT) {
-            xkb_layout_index_t idx = m->mapping.layout_idx;
+            xkb_layout_index_t idx = m->mapping.variant_idx;
             idx = (idx == XKB_LAYOUT_INVALID ? 0 : idx);
             to = &darray_item(m->rmlvo.variants, idx);
             matched = match_value_and_mark(m, value, to, match_type);
