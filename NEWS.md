@@ -1,3 +1,118 @@
+libxkbcommon 1.7.0 - XXX
+==================
+
+TODO: date
+
+API
+---
+
+### New
+
+- Added early detection of invalid encodings and BOM for keymaps, rules & Compose.
+  Also added a hint that the expected encoding must be UTF-8 compatible.
+
+### Fixes
+
+- Updated keysyms using latest [xorgproto] (commit: `cd33097fc779f280925c6d6bbfbd5150f93ca5bc`):
+
+  For the sake of compatibility, this reintroduces some deleted keysyms and
+  postpones the effective deprecation of others, that landed in xkbcommon 1.6.0.
+
+  - Additions (reverted removal):
+
+    - `XKB_KEY_dead_lowline`
+    - `XKB_KEY_dead_aboveverticalline`
+    - `XKB_KEY_dead_belowverticalline`
+    - `XKB_KEY_dead_longsolidusoverlay`
+
+  - The following keysyms names remain deprecated, but are set again (i.e. as
+    before xkbcommon 1.6.0) as the reference names for their respective keysyms,
+    in order to ensure the transition to the newer names that replace them. This
+    affects functions such as `xkb_keymap_key_get_name` and `xkb_keymap_get_as_string`.
+
+    - `XKB_KEY_masculine`: is deprecated in favor of `XKB_KEY_ordmasculine`
+    - `XKB_KEY_guillemotleft`: is deprecated in favor of `XKB_KEY_guillemetleft`
+    - `XKB_KEY_guillemotright`: is deprecated in favor of `XKB_KEY_guillemetright`
+    - `XKB_KEY_dead_small_schwa`: is deprecated in favor of `XKB_KEY_dead_schwa`
+    - `XKB_KEY_dead_capital_schwa`: is deprecated in favor of `XKB_KEY_dead_SCHWA`
+
+  Relevant upstream merge requests: [xorgproto-83], [xorgproto-84].
+
+[xorgproto-83]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/83
+[xorgproto-84]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/84
+
+- Keysyms: Fixed inconsistent results in `xkb_keysym_from_name` when used with
+  the flag `XKB_KEYSYM_CASE_INSENSITIVE`. In some rare cases it would return a
+  keysym with an upper-case name instead of the expected lower-case (e.g.
+  `XKB_KEY_dead_A` instead of `XKB_KEY_dead_a`).
+
+- Keysyms: Fixed case mapping for 3 Latin 1 keysyms:
+
+  - `XKB_KEY_ydiaeresis`
+  - `XKB_KEY_mu`
+  - `XKB_KEY_ssharp`
+
+- Keysyms: Fixed `xkb_keysym_is_modifier` to detect also the following keysyms:
+
+  - `XKB_KEY_ISO_Level5_Shift`
+  - `XKB_KEY_ISO_Level5_Latch`
+  - `XKB_KEY_ISO_Level5_Lock`
+
+- Prevent recursive includes of keymap components.
+
+- Fixed global default statements `x.y = z;` in wrong scope not raising an error.
+
+  Contributed by Mikhail Gusarov
+
+- Rules: Made newline required after `!include` line.
+
+  Contributed by Mikhail Gusarov.
+
+- Rules: Fixed a bug where variant indexes were ignored with the layout index
+  used instead. They are practically always the same, but don't have to be.
+
+  Contributed by @wysiwys.
+
+- Compose: Fixed a segfault with `xkb_compose_table_iterator_next` when used on an
+  empty table.
+
+  Contributed by Yuichiro Hanada.
+
+- Compose: Added check to ensure to open only regular files, not e.g. directories.
+
+- Registry: Updated the DTD and always parse the “popularity” attribute.
+
+- Fixed a few memory leaks and keymap symbols parsing.
+
+Tools
+-----
+
+### New
+
+- `xkbcli compile-compose`: added new CLI utility to test Compose files.
+- `xkbcli interactive-evdev`: added `--verbose` option.
+- `xkbcli interactive-x11`: added support for Compose.
+- `xkbcli interactive-wayland`: added support for Compose.
+
+### Fixes
+
+- Bash completion: Fixed completion in some corner cases.
+
+Build system
+------------
+
+- Fix building with clang when using `-Wl,--gc-sections`.
+
+  Contributed by ppw0.
+
+- Fixed linking using `lld 1.17`.
+
+  Contributed by Baptiste Daroussin.
+
+- Fix building X11 tests on macOS.
+
+- Documentation is no longer built by default; it requires `-Denable-docs=true`.
+
 libxkbcommon 1.6.0 - 2023-10-08
 ==================
 
