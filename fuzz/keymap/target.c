@@ -9,36 +9,17 @@
 
 #include "xkbcommon/xkbcommon.h"
 
-int
-main(int argc, char *argv[])
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     struct xkb_context *ctx;
-    FILE *file;
     struct xkb_keymap *keymap;
-
-    if (argc != 2) {
-        fprintf(stderr, "usage: %s <file>\n", argv[0]);
-        return 1;
-    }
-
     ctx = xkb_context_new(XKB_CONTEXT_NO_DEFAULT_INCLUDES | XKB_CONTEXT_NO_ENVIRONMENT_NAMES);
     assert(ctx);
-
-#ifdef __AFL_HAVE_MANUAL_CONTROL
-  __AFL_INIT();
-
-    while (__AFL_LOOP(1000))
-#endif
-    {
-        file = fopen(argv[1], "rb");
-        assert(file);
-        keymap = xkb_keymap_new_from_file(ctx, file,
-                                          XKB_KEYMAP_FORMAT_TEXT_V1,
-                                          XKB_KEYMAP_COMPILE_NO_FLAGS);
-        xkb_keymap_unref(keymap);
-        fclose(file);
-    }
-
-    puts(keymap ? "OK" : "FAIL");
+    keymap = xkb_keymap_new_from_buffer(ctx, data, size,
+                                      XKB_KEYMAP_FORMAT_TEXT_V1,
+                                      XKB_KEYMAP_COMPILE_NO_FLAGS);
+    xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
+    return 0;
 }
+    
