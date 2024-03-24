@@ -64,6 +64,7 @@
 #include "keymap.h"
 #include "keysym.h"
 #include "utf8.h"
+#include "xkbcommon/xkbcommon.h"
 
 struct xkb_filter {
     union xkb_action action;
@@ -774,6 +775,91 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
             }
             state->clear_mods &= ~bit;
         }
+    }
+
+    xkb_state_update_derived(state);
+
+    return get_state_component_changes(&prev_components, &state->components);
+}
+
+// XXX transcription from xserver
+static void
+XkbLatchModifiers(struct xkb_state *state, xkb_mod_mask_t mask, xkb_mod_mask_t latches)
+{
+    const struct xkb_key *key = XkbKey(state->keymap, SYNTHETIC_KEYCODE);
+
+    xkb_mod_mask_t clear = mask & (~latches);
+    state->components.latched_mods &= ~clear;
+    union xkb_action none = {
+        .type = ACTION_TYPE_NONE,
+    };
+    /* Clear any pending latch to locks. */
+    xkb_filter_apply_all(state, key, XKB_KEY_DOWN);
+
+    union xkb_action latch_mods = {
+        .mods = {
+            .type = ACTION_TYPE_MOD_LATCH,
+            .mods = {
+                .mask = mask & latches,
+            },
+            .flags = 0,
+        },
+    };
+    struct xkb_filter *filter = xkb_filter_new(state);
+    filter->key = key;
+    filter->func = filter_action_funcs[latch_mods.type].func;
+    filter->action = latch_mods;
+    xkb_filter_mod_latch_new(state, filter);
+    xkb_filter_mod_latch_func(state, filter, key, XKB_KEY_DOWN);
+    xkb_filter_mod_latch_func(state, filter, key, XKB_KEY_UP);
+}
+
+// XXX transcription from xserver
+static int
+XkbLatchGroup(struct xkb_state *state, int32_t group)
+{
+    const struct xkb_key *key = XkbKey(state->keymap, SYNTHETIC_KEYCODE);
+
+    union xkb_action latch_group = {
+        .group = {
+            .type = ACTION_TYPE_GROUP_LATCH,
+            .flags = 0,
+            .group = group,
+        },
+    };
+    struct xkb_filter *filter = xkb_filter_new(state);
+    filter->key = key;
+    filter->func = filter_action_funcs[latch_group.type].func;
+    filter->action = latch_group;
+    xkb_filter_group_latch_new(state, filter);
+    xkb_filter_group_latch_func(state, filter, key, XKB_KEY_DOWN);
+    xkb_filter_group_latch_func(state, filter, key, XKB_KEY_UP);
+}
+
+XKB_EXPORT enum xkb_state_component
+xkb_state_update_latched_locked(struct xkb_state *state,
+                                xkb_mod_mask_t affect_latched_mods,
+                                xkb_mod_mask_t latched_mods,
+                                bool affect_latched_layout,
+                                int32_t latched_layout,
+                                xkb_mod_mask_t affect_locked_mods,
+                                xkb_mod_mask_t locked_mods,
+                                bool affect_locked_layout,
+                                int32_t locked_layout)
+{
+    struct state_components prev_components = state->components;
+
+    state->components.locked_mods &= ~affect_locked_mods;
+    state->components.locked_mods |= locked_mods & affect_locked_mods;
+
+    if (affect_locked_layout) {
+        state->components.locked_group = locked_layout;
+    }
+
+    XkbLatchModifiers(state, affect_latched_mods, latched_mods);
+
+    if (affect_latched_layout) {
+        XkbLatchGroup(state, latched_layout);
     }
 
     xkb_state_update_derived(state);
