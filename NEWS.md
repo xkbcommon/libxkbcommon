@@ -62,6 +62,10 @@ API
 
   Contributed by Mikhail Gusarov
 
+- Keymap: Fixed empty symbols declaration.
+
+  Contributed by Yuichiro Hanada.
+
 - Rules: Made newline required after `!include` line.
 
   Contributed by Mikhail Gusarov.
@@ -73,8 +77,6 @@ API
 
 - Compose: Fixed a segfault with `xkb_compose_table_iterator_next` when used on an
   empty table.
-
-  Contributed by Yuichiro Hanada.
 
 - Compose: Added check to ensure to open only regular files, not e.g. directories.
 
