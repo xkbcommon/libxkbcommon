@@ -769,6 +769,10 @@ test(
     env: test_env,
 )
 if get_option('enable-x11')
+    has_xvfb = find_program('Xvfb', required: false)
+    if not has_xvfb.found()
+        warning('Xvfb program not found, but is required to run X11 tests.')
+    endif
     test(
         'x11',
         executable('test-x11', 'test/x11.c', dependencies: x11_test_dep),
