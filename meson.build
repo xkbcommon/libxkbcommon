@@ -216,6 +216,7 @@ libxkbcommon_sources = [
     'src/darray.h',
     'src/keysym.c',
     'src/keysym.h',
+    'src/keysym-case-mappings.c',
     'src/keysym-utf.c',
     'src/ks_tables.h',
     'src/keymap.c',
@@ -435,6 +436,15 @@ if build_tools
         dependencies: dep_libxkbcommon,
     )
     configh_data.set10('HAVE_TOOLS', true)
+
+    # Tool: xkbcli
+    executable('export-keysyms',
+               'tools/export-keysyms.c',
+               libxkbcommon_sources,
+               dependencies: [tools_dep],
+               c_args: ['-DENABLE_PRIVATE_APIS'],
+               include_directories: [include_directories('src', 'include')],
+               install: false)
 
     # Tool: xkbcli
     executable('xkbcli', 'tools/xkbcli.c',
@@ -840,6 +850,15 @@ benchmark(
     'key-proc',
     executable('bench-key-proc', 'bench/key-proc.c', dependencies: test_dep),
     env: bench_env,
+)
+benchmark(
+    'keysym-case-mappings',
+    executable(
+        'bench-keysym-case-mappings',
+        'bench/keysym-case-mappings.c',
+        dependencies: test_dep,
+        c_args: ['-DENABLE_PRIVATE_APIS'],
+    ),
 )
 benchmark(
     'rules',
