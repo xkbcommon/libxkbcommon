@@ -409,6 +409,21 @@ xkb_filter_group_latch_func(struct xkb_state *state,
     union group_latch_priv priv = {.priv = filter->priv};
     enum xkb_key_latch_state latch = priv.latch;
 
+/* FIXME: remove */
+#define log_dbg_group_latch(msg)                                         \
+    log_dbg(                                                             \
+        state->keymap->ctx, XKB_LOG_MESSAGE_NO_ID,                       \
+        "xkb_filter_group_latch_func: " msg                              \
+        "mode: %d (%d), base: %d, latched: %d, locked: %d, delta: %d\n", \
+        latch, priv.latch,                                               \
+        state->components.base_group,                                    \
+        state->components.latched_group,                                 \
+        state->components.locked_group,                                  \
+        priv.group_delta)
+
+    /* FIXME: remove log */
+    log_dbg_group_latch("Enter: ");
+
     if (direction == XKB_KEY_DOWN && latch == LATCH_PENDING) {
         /* If this is a new keypress and we're awaiting our single latched
          * keypress, then either break the latch if any random key is pressed,
@@ -422,18 +437,26 @@ xkb_filter_group_latch_func(struct xkb_state *state,
             if (filter->action.group.flags & ACTION_LATCH_TO_LOCK &&
                 filter->action.group.group != 0) {
                 /* Promote to lock */
+                /* FIXME: remove log */
+                log_dbg(state->keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                        "Promote to lock\n");
                 filter->action.type = ACTION_TYPE_GROUP_LOCK;
                 filter->func = xkb_filter_group_lock_func;
                 xkb_filter_group_lock_new(state, filter);
             }
             else {
                 /* Degrade to plain set */
+                /* FIXME: remove log */
+                log_dbg(state->keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                        "Degrade to plain set\n");
                 filter->action.type = ACTION_TYPE_GROUP_SET;
                 filter->func = xkb_filter_group_set_func;
                 xkb_filter_group_set_new(state, filter);
             }
             filter->key = key;
             state->components.latched_group -= priv.group_delta;
+            /* FIXME: remove log */
+            log_dbg_group_latch("");
             /* XXX beep beep! */
             return XKB_FILTER_CONSUME;
         }
@@ -441,7 +464,13 @@ xkb_filter_group_latch_func(struct xkb_state *state,
             /* Breaks the latch */
             state->components.latched_group = 0;
             filter->func = NULL;
+            /* FIXME: remove log */
+            log_dbg_group_latch("Break latch: ");
             return XKB_FILTER_CONTINUE;
+        }
+        /* FIXME: remove log */
+        else {
+            log_dbg_group_latch("Do nothing: ");
         }
     }
     else if (direction == XKB_KEY_UP && key == filter->key) {
@@ -459,6 +488,10 @@ xkb_filter_group_latch_func(struct xkb_state *state,
                 state->components.base_group -= priv.group_delta;
             if (filter->action.group.flags & ACTION_LOCK_CLEAR)
                 state->components.locked_group = 0;
+
+            /* FIXME: remove log */
+            log_dbg_group_latch("Key released, no latch: ");
+
             filter->func = NULL;
         }
         else {
@@ -466,6 +499,8 @@ xkb_filter_group_latch_func(struct xkb_state *state,
             /* Switch from set to latch */
             state->components.base_group -= priv.group_delta;
             state->components.latched_group += priv.group_delta;
+            /* FIXME: remove log */
+            log_dbg_group_latch("Key released, latching: ");
             /* XXX beep beep! */
         }
     }
@@ -475,10 +510,14 @@ xkb_filter_group_latch_func(struct xkb_state *state,
          * xkb_filter_group_latch_new), but don't trip the latch, just clear
          * it as soon as the group key gets released. */
         latch = NO_LATCH;
+        /* FIXME: remove log */
+        log_dbg_group_latch("Key down, no latch: ");
     }
 
     priv.latch = latch;
     filter->priv = priv.priv;
+    /* FIXME: remove log */
+    log_dbg_group_latch("End: ");
 
     return XKB_FILTER_CONTINUE;
 }
