@@ -240,11 +240,13 @@ xkb_filter_new(struct xkb_state *state)
     darray_foreach(iter, state->filters) {
         if (iter->func)
             continue;
+        /* Use available slot */
         filter = iter;
         break;
     }
 
     if (!filter) {
+        /* No available slot: resize the filters array */
         darray_resize0(state->filters, darray_size(state->filters) + 1);
         filter = &darray_item(state->filters, darray_size(state->filters) -1);
     }
@@ -270,14 +272,23 @@ enum xkb_filter_result {
     XKB_FILTER_CONTINUE,
 };
 
+/* Modify a group component, depending on the ACTION_ABSOLUTE_SWITCH flag */
+#define apply_group_delta(filter_, state_, component_)               \
+    if (filter_->action.group.flags & ACTION_ABSOLUTE_SWITCH)        \
+        state_->components.component_ = filter_->action.group.group; \
+    else                                                             \
+        state_->components.component_ += filter_->action.group.group
+
+#define compute_group_delta(filter_, state_)                          \
+    (filter_->action.group.flags & ACTION_ABSOLUTE_SWITCH)            \
+        ? filter_->action.group.group - state_->components.base_group \
+        : filter_->action.group.group
+
 static void
 xkb_filter_group_set_new(struct xkb_state *state, struct xkb_filter *filter)
 {
     filter->priv = state->components.base_group;
-    if (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH)
-        state->components.base_group = filter->action.group.group;
-    else
-        state->components.base_group += filter->action.group.group;
+    apply_group_delta(filter, state, base_group);
 }
 
 static bool
@@ -311,10 +322,7 @@ xkb_filter_group_set_func(struct xkb_state *state,
 static void
 xkb_filter_group_lock_new(struct xkb_state *state, struct xkb_filter *filter)
 {
-    if (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH)
-        state->components.locked_group = filter->action.group.group;
-    else
-        state->components.locked_group += filter->action.group.group;
+    apply_group_delta(filter, state, locked_group);
 }
 
 static bool
@@ -334,6 +342,144 @@ xkb_filter_group_lock_func(struct xkb_state *state,
         return XKB_FILTER_CONSUME;
 
     filter->func = NULL;
+    return XKB_FILTER_CONTINUE;
+}
+
+static bool
+xkb_action_breaks_latch(const union xkb_action *action)
+{
+    switch (action->type) {
+    case ACTION_TYPE_NONE:
+    case ACTION_TYPE_PTR_BUTTON:
+    case ACTION_TYPE_PTR_LOCK:
+    case ACTION_TYPE_CTRL_SET:
+    case ACTION_TYPE_CTRL_LOCK:
+    case ACTION_TYPE_SWITCH_VT:
+    case ACTION_TYPE_TERMINATE:
+        return true;
+    default:
+        return false;
+    }
+}
+
+enum xkb_key_latch_state {
+    NO_LATCH = 0,
+    LATCH_KEY_DOWN,
+    LATCH_PENDING,
+    _KEY_LATCH_STATE_NUM_ENTRIES
+};
+
+#define MAX_XKB_KEY_LATCH_STATE_LOG2 2
+#if (_KEY_LATCH_STATE_NUM_ENTRIES > (1 << MAX_XKB_KEY_LATCH_STATE_LOG2)) || \
+    (-XKB_MAX_GROUPS) < (INT32_MIN >> MAX_XKB_KEY_LATCH_STATE_LOG2) || \
+      XKB_MAX_GROUPS > (INT32_MAX >> MAX_XKB_KEY_LATCH_STATE_LOG2)
+#error "Cannot represent priv field of the group latch filter"
+#endif
+
+/* Hold the latch state *and* the group delta */
+union group_latch_priv {
+    uint32_t priv;
+    struct {
+        /* The type is really: enum xkb_key_latch_state, but it is problematic
+         * on Windows, because it is interpreted as signed and leads to wrong
+         * negative values. */
+        unsigned int latch:MAX_XKB_KEY_LATCH_STATE_LOG2;
+        int32_t group_delta:(32 - MAX_XKB_KEY_LATCH_STATE_LOG2);
+    };
+};
+
+static void
+xkb_filter_group_latch_new(struct xkb_state *state, struct xkb_filter *filter)
+{
+    const union group_latch_priv priv = {
+        .latch = LATCH_KEY_DOWN,
+        .group_delta = compute_group_delta(filter, state)
+    };
+    filter->priv = priv.priv;
+    /* Like group set */
+    apply_group_delta(filter, state, base_group);
+}
+
+static bool
+xkb_filter_group_latch_func(struct xkb_state *state,
+                            struct xkb_filter *filter,
+                            const struct xkb_key *key,
+                            enum xkb_key_direction direction)
+{
+    union group_latch_priv priv = {.priv = filter->priv};
+    enum xkb_key_latch_state latch = priv.latch;
+
+    if (direction == XKB_KEY_DOWN && latch == LATCH_PENDING) {
+        /* If this is a new keypress and we're awaiting our single latched
+         * keypress, then either break the latch if any random key is pressed,
+         * or promote it to a lock or plain base set if it's the same
+         * group delta & flags. */
+        const union xkb_action *action = xkb_key_get_action(state, key);
+        if (action->type == ACTION_TYPE_GROUP_LATCH &&
+            action->group.group == filter->action.group.group &&
+            action->group.flags == filter->action.group.flags) {
+            filter->action = *action;
+            if (filter->action.group.flags & ACTION_LATCH_TO_LOCK &&
+                filter->action.group.group != 0) {
+                /* Promote to lock */
+                filter->action.type = ACTION_TYPE_GROUP_LOCK;
+                filter->func = xkb_filter_group_lock_func;
+                xkb_filter_group_lock_new(state, filter);
+            }
+            else {
+                /* Degrade to plain set */
+                filter->action.type = ACTION_TYPE_GROUP_SET;
+                filter->func = xkb_filter_group_set_func;
+                xkb_filter_group_set_new(state, filter);
+            }
+            filter->key = key;
+            state->components.latched_group -= priv.group_delta;
+            /* XXX beep beep! */
+            return XKB_FILTER_CONSUME;
+        }
+        else if (xkb_action_breaks_latch(action)) {
+            /* Breaks the latch */
+            state->components.latched_group = 0;
+            filter->func = NULL;
+            return XKB_FILTER_CONTINUE;
+        }
+    }
+    else if (direction == XKB_KEY_UP && key == filter->key) {
+        /* Our key got released.  If we've set it to clear locks, and we
+         * currently have a group locked, then release it and
+         * don't actually latch.  Else we've actually hit the latching
+         * stage, so set PENDING and move our group from base to
+         * latched. */
+        if (latch == NO_LATCH ||
+            ((filter->action.group.flags & ACTION_LOCK_CLEAR) &&
+             state->components.locked_group)) {
+            if (latch == LATCH_PENDING)
+                state->components.latched_group -= priv.group_delta;
+            else
+                state->components.base_group -= priv.group_delta;
+            if (filter->action.group.flags & ACTION_LOCK_CLEAR)
+                state->components.locked_group = 0;
+            filter->func = NULL;
+        }
+        else {
+            latch = LATCH_PENDING;
+            /* Switch from set to latch */
+            state->components.base_group -= priv.group_delta;
+            state->components.latched_group += priv.group_delta;
+            /* XXX beep beep! */
+        }
+    }
+    else if (direction == XKB_KEY_DOWN && latch == LATCH_KEY_DOWN) {
+        /* Another key was pressed while we've still got the latching
+         * key held down, so keep the base group active (from
+         * xkb_filter_group_latch_new), but don't trip the latch, just clear
+         * it as soon as the group key gets released. */
+        latch = NO_LATCH;
+    }
+
+    priv.latch = latch;
+    filter->priv = priv.priv;
+
     return XKB_FILTER_CONTINUE;
 }
 
@@ -402,29 +548,6 @@ xkb_filter_mod_lock_func(struct xkb_state *state,
 
     filter->func = NULL;
     return XKB_FILTER_CONTINUE;
-}
-
-enum xkb_key_latch_state {
-    NO_LATCH,
-    LATCH_KEY_DOWN,
-    LATCH_PENDING,
-};
-
-static bool
-xkb_action_breaks_latch(const union xkb_action *action)
-{
-    switch (action->type) {
-    case ACTION_TYPE_NONE:
-    case ACTION_TYPE_PTR_BUTTON:
-    case ACTION_TYPE_PTR_LOCK:
-    case ACTION_TYPE_CTRL_SET:
-    case ACTION_TYPE_CTRL_LOCK:
-    case ACTION_TYPE_SWITCH_VT:
-    case ACTION_TYPE_TERMINATE:
-        return true;
-    default:
-        return false;
-    }
 }
 
 static void
@@ -520,16 +643,18 @@ static const struct {
     bool (*func)(struct xkb_state *state, struct xkb_filter *filter,
                  const struct xkb_key *key, enum xkb_key_direction direction);
 } filter_action_funcs[_ACTION_TYPE_NUM_ENTRIES] = {
-    [ACTION_TYPE_MOD_SET]    = { xkb_filter_mod_set_new,
-                                 xkb_filter_mod_set_func },
-    [ACTION_TYPE_MOD_LATCH]  = { xkb_filter_mod_latch_new,
-                                 xkb_filter_mod_latch_func },
-    [ACTION_TYPE_MOD_LOCK]   = { xkb_filter_mod_lock_new,
-                                 xkb_filter_mod_lock_func },
-    [ACTION_TYPE_GROUP_SET]  = { xkb_filter_group_set_new,
-                                 xkb_filter_group_set_func },
-    [ACTION_TYPE_GROUP_LOCK] = { xkb_filter_group_lock_new,
-                                 xkb_filter_group_lock_func },
+    [ACTION_TYPE_MOD_SET]     = { xkb_filter_mod_set_new,
+                                  xkb_filter_mod_set_func },
+    [ACTION_TYPE_MOD_LATCH]   = { xkb_filter_mod_latch_new,
+                                  xkb_filter_mod_latch_func },
+    [ACTION_TYPE_MOD_LOCK]    = { xkb_filter_mod_lock_new,
+                                  xkb_filter_mod_lock_func },
+    [ACTION_TYPE_GROUP_SET]   = { xkb_filter_group_set_new,
+                                  xkb_filter_group_set_func },
+    [ACTION_TYPE_GROUP_LATCH] = { xkb_filter_group_latch_new,
+                                  xkb_filter_group_latch_func },
+    [ACTION_TYPE_GROUP_LOCK]  = { xkb_filter_group_lock_new,
+                                  xkb_filter_group_lock_func },
 };
 
 /**
@@ -559,6 +684,7 @@ xkb_filter_apply_all(struct xkb_state *state,
     if (consumed || direction == XKB_KEY_UP)
         return;
 
+    /* No filter consumed this event, so proceed with the key action */
     action = xkb_key_get_action(state, key);
 
     /*
@@ -571,9 +697,11 @@ xkb_filter_apply_all(struct xkb_state *state,
     if (action->type >= _ACTION_TYPE_NUM_ENTRIES)
         return;
 
+    /* Return if no corresponding action */
     if (!filter_action_funcs[action->type].new)
         return;
 
+    /* Add a new filter and run the corresponding initial action */
     filter = xkb_filter_new(state);
     filter->key = key;
     filter->func = filter_action_funcs[action->type].func;
@@ -689,12 +817,14 @@ xkb_state_update_derived(struct xkb_state *state)
 
     /* TODO: Use groups_wrap control instead of always RANGE_WRAP. */
 
+    /* Lock group must be adjusted, but not base nor latched groups */
     wrapped = XkbWrapGroupIntoRange(state->components.locked_group,
                                     state->keymap->num_groups,
                                     RANGE_WRAP, 0);
     state->components.locked_group =
         (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
 
+    /* Effective group must be adjusted */
     wrapped = XkbWrapGroupIntoRange(state->components.base_group +
                                     state->components.latched_group +
                                     state->components.locked_group,
