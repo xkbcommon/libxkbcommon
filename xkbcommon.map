@@ -124,4 +124,5 @@ V_1.8.0 {
 global:
     xkb_keymap_supported_formats;
     xkb_keymap_is_supported_format;
+    xkb_keymap_new_from_names2;
 } V_1.6.0;

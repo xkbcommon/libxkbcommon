@@ -909,13 +909,36 @@ xkb_keymap_is_supported_format(enum xkb_keymap_format format);
  * @returns A keymap compiled according to the RMLVO names, or NULL if
  * the compilation failed.
  *
- * @sa xkb_rule_names
+ * @sa xkb_rule_names xkb_keymap_new_from_names2
  * @memberof xkb_keymap
  */
 struct xkb_keymap *
 xkb_keymap_new_from_names(struct xkb_context *context,
                           const struct xkb_rule_names *names,
                           enum xkb_keymap_compile_flags flags);
+
+/**
+ * Create a keymap from RMLVO names using a specific keymap format.
+ *
+ * The primary keymap entry point: creates a new XKB keymap from a set of
+ * RMLVO (Rules + Model + Layouts + Variants + Options) names.
+ *
+ * @param context The context in which to create the keymap.
+ * @param names   The RMLVO names to use.  See xkb_rule_names.
+ * @param format  The text format of the keymap file to compile.
+ * @param flags   Optional flags for the keymap, or 0.
+ *
+ * @returns A keymap compiled according to the RMLVO names, or NULL if
+ * the compilation failed.
+ *
+ * @sa xkb_rule_names xkb_keymap_new_from_names
+ * @memberof xkb_keymap
+ */
+struct xkb_keymap *
+xkb_keymap_new_from_names2(struct xkb_context *context,
+                           const struct xkb_rule_names *names,
+                           enum xkb_keymap_format format,
+                           enum xkb_keymap_compile_flags flags);
 
 /**
  * Create a keymap from a keymap file.
