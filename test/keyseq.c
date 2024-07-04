@@ -26,6 +26,267 @@
 #include "evdev-scancodes.h"
 #include "test.h"
 
+static void
+test_group_latch(struct xkb_context *ctx)
+{
+    /* Absolute group, no lock */
+    struct xkb_keymap *keymap = test_compile_rules(
+        ctx, "evdev", "evdev",
+        "us,il,ru,de", ",,phonetic,neo",
+        "grp:menu_latch_group2,grp:sclk_toggle");
+    assert(keymap);
+
+    /* Set only */
+#define test_set_only(keymap_)                                                 \
+    assert(test_key_seq(keymap_,                                               \
+                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
+                        KEY_E,          BOTH,  XKB_KEY_e,               NEXT,  \
+                        KEY_COMPOSE,    DOWN,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      NEXT,  \
+                        KEY_E,          BOTH,  XKB_KEY_hebrew_qoph,     NEXT,  \
+                        KEY_COMPOSE,    UP,    XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        /* Lock the second group */                            \
+                        KEY_SCROLLLOCK, BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      NEXT,  \
+                        KEY_E,          BOTH,  XKB_KEY_hebrew_qoph,     NEXT,  \
+                        KEY_COMPOSE,    DOWN,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        /* Event if the latch group is absolute, it sums with  \
+                         * the locked group (see spec) */                      \
+                        KEY_H,          BOTH,  XKB_KEY_Cyrillic_ha,     NEXT,  \
+                        KEY_E,          BOTH,  XKB_KEY_Cyrillic_ie,     NEXT,  \
+                        KEY_COMPOSE,    UP,    XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      NEXT,  \
+                        KEY_E,          BOTH,  XKB_KEY_hebrew_qoph,     FINISH))
+    test_set_only(keymap);
+
+    /* Latch only */
+#define test_latch_only(keymap_)                                               \
+    assert(test_key_seq(keymap_,                                               \
+                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
+                        /* Lock the second group */                            \
+                        KEY_SCROLLLOCK, BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      NEXT,  \
+                        KEY_E,          BOTH,  XKB_KEY_hebrew_qoph,     NEXT,  \
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        /* Event if the latch group is absolute, it sums with  \
+                         * the locked group (see spec) */                      \
+                        KEY_H,          BOTH,  XKB_KEY_Cyrillic_ha,     NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      FINISH))
+    test_latch_only(keymap);
+
+    /* Latch not broken by modifier */
+#define test_latch_not_broken_by_modifier(keymap_)                           \
+    assert(test_key_seq(keymap_,                                             \
+                        KEY_H,        BOTH,  XKB_KEY_h,               NEXT,  \
+                        KEY_COMPOSE,  BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        KEY_LEFTALT,  DOWN,  XKB_KEY_Alt_L,           NEXT,  \
+                        KEY_H,        BOTH,  XKB_KEY_hebrew_yod,      NEXT,  \
+                        KEY_H,        BOTH,  XKB_KEY_h,               FINISH))
+    test_latch_not_broken_by_modifier(keymap);
+
+    /* Mo lock */
+#define test_no_latch_to_lock(keymap_)                                         \
+    assert(test_key_seq(keymap_,                                               \
+                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
+                        /* No latch-to-lock */                                 \
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
+                        KEY_E,          BOTH,  XKB_KEY_e,               NEXT,  \
+                        /* Lock the second group */                            \
+                        KEY_SCROLLLOCK, BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      NEXT,  \
+                        KEY_E,          BOTH,  XKB_KEY_hebrew_qoph,     NEXT,  \
+                        /* No latch-to-lock */                                 \
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      NEXT,  \
+                        KEY_E,          BOTH,  XKB_KEY_hebrew_qoph,     FINISH))
+    test_no_latch_to_lock(keymap);
+
+    xkb_keymap_unref(keymap);
+
+    /* Absolute group, latch-to-lock */
+    keymap = test_compile_rules(
+        ctx, "evdev", "evdev",
+        "us,il,ru,de", ",,phonetic,neo",
+        "grp:menu_latch_group2_lock,grp:sclk_toggle");
+    assert(keymap);
+
+    test_set_only(keymap);
+    test_latch_only(keymap);
+    test_latch_not_broken_by_modifier(keymap);
+
+    /* Lock */
+    assert(test_key_seq(keymap,
+                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,
+                        /* Lock the second group via latch-to-lock */
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,
+                        KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      NEXT,
+                        KEY_E,          BOTH,  XKB_KEY_hebrew_qoph,     NEXT,
+                        /* Lock the third group via usual lock */
+                        KEY_SCROLLLOCK, BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,
+                        KEY_H,          BOTH,  XKB_KEY_Cyrillic_ha,     NEXT,
+                        KEY_E,          BOTH,  XKB_KEY_Cyrillic_ie,     NEXT,
+                        /* Lock the second group via latch-to-lock */
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,
+                        KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      NEXT,
+                        KEY_E,          BOTH,  XKB_KEY_hebrew_qoph,     FINISH));
+
+    xkb_keymap_unref(keymap);
+
+    /* Relative group (positive), no lock */
+    keymap = test_compile_rules(
+        ctx, "evdev", "evdev",
+        "us,il,ru,de", ",,phonetic,neo",
+        "grp:menu_latch,grp:sclk_toggle");
+    assert(keymap);
+
+    test_set_only(keymap);
+    test_latch_only(keymap);
+    test_latch_not_broken_by_modifier(keymap);
+    test_no_latch_to_lock(keymap);
+
+    xkb_keymap_unref(keymap);
+
+    /* Relative group (positive), latch-to-lock */
+    keymap = test_compile_rules(
+        ctx, "evdev", "evdev",
+        "us,il,ru,de", ",,phonetic,neo",
+        "grp:menu_latch_lock,grp:sclk_toggle");
+    assert(keymap);
+
+    test_set_only(keymap);
+    test_latch_only(keymap);
+    test_latch_not_broken_by_modifier(keymap);
+
+    /* Lock */
+    assert(test_key_seq(keymap,
+                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,
+                        /* Lock the second group via latch-to-lock */
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,
+                        KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      NEXT,
+                        KEY_E,          BOTH,  XKB_KEY_hebrew_qoph,     NEXT,
+                        /* Lock the third group via usual lock */
+                        KEY_SCROLLLOCK, BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,
+                        KEY_H,          BOTH,  XKB_KEY_Cyrillic_ha,     NEXT,
+                        KEY_E,          BOTH,  XKB_KEY_Cyrillic_ie,     NEXT,
+                        /* Lock the fourth group via latch-to-lock */
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,
+                        KEY_H,          BOTH,  XKB_KEY_s,               NEXT,
+                        KEY_E,          BOTH,  XKB_KEY_l,               FINISH));
+
+    xkb_keymap_unref(keymap);
+
+#undef test_set_only
+#undef test_latch_only
+#undef test_latch_not_broken_by_modifier
+
+    /* Relative group (negative), no lock */
+    keymap = test_compile_rules(
+        ctx, "evdev", "evdev",
+        "us,il,ru,de", ",,phonetic,neo",
+        "grp:menu_latch_negative,grp:sclk_toggle");
+    assert(keymap);
+
+    /* Set only */
+#define test_set_only(keymap_)                                                 \
+    assert(test_key_seq(keymap_,                                               \
+                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
+                        KEY_E,          BOTH,  XKB_KEY_e,               NEXT,  \
+                        KEY_COMPOSE,    DOWN,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_s,               NEXT,  \
+                        KEY_E,          BOTH,  XKB_KEY_l,               NEXT,  \
+                        KEY_COMPOSE,    UP,    XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
+                        /* Lock the second group */                            \
+                        KEY_SCROLLLOCK, BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      NEXT,  \
+                        KEY_E,          BOTH,  XKB_KEY_hebrew_qoph,     NEXT,  \
+                        KEY_COMPOSE,    DOWN,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
+                        KEY_E,          BOTH,  XKB_KEY_e,               NEXT,  \
+                        KEY_COMPOSE,    UP,    XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      NEXT,  \
+                        KEY_E,          BOTH,  XKB_KEY_hebrew_qoph,     FINISH))
+    test_set_only(keymap);
+
+    /* Latch only */
+#define test_latch_only(keymap_)                                               \
+    assert(test_key_seq(keymap_,                                               \
+                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_s,               NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
+                        /* Lock the second group */                            \
+                        KEY_SCROLLLOCK, BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      NEXT,  \
+                        KEY_E,          BOTH,  XKB_KEY_hebrew_qoph,     NEXT,  \
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      FINISH))
+    test_latch_only(keymap);
+
+    /* Latch not broken by modifier */
+#define test_latch_not_broken_by_modifier(keymap_)                           \
+    assert(test_key_seq(keymap_,                                             \
+                        KEY_H,        BOTH,  XKB_KEY_h,               NEXT,  \
+                        KEY_COMPOSE,  BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        KEY_LEFTALT,  DOWN,  XKB_KEY_Alt_L,           NEXT,  \
+                        KEY_H,        BOTH,  XKB_KEY_s,               NEXT,  \
+                        KEY_H,        BOTH,  XKB_KEY_h,               FINISH))
+    test_latch_not_broken_by_modifier(keymap);
+
+    test_no_latch_to_lock(keymap);
+
+    xkb_keymap_unref(keymap);
+
+    /* Relative group (negative), no lock */
+    keymap = test_compile_rules(
+        ctx, "evdev", "evdev",
+        "us,il,ru,de", ",,phonetic,neo",
+        "grp:menu_latch_negative_lock,grp:sclk_toggle");
+    assert(keymap);
+
+    test_set_only(keymap);
+    test_latch_only(keymap);
+    test_latch_not_broken_by_modifier(keymap);
+
+    /* Lock */
+    assert(test_key_seq(keymap,
+                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,
+                        /* Lock the fourth group via latch-to-lock */
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,
+                        KEY_H,          BOTH,  XKB_KEY_s,               NEXT,
+                        KEY_E,          BOTH,  XKB_KEY_l,               NEXT,
+                        /* Lock the third group via usual lock */
+                        KEY_SCROLLLOCK, BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,
+                        KEY_SCROLLLOCK, BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,
+                        KEY_SCROLLLOCK, BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,
+                        KEY_H,          BOTH,  XKB_KEY_Cyrillic_ha,     NEXT,
+                        KEY_E,          BOTH,  XKB_KEY_Cyrillic_ie,     NEXT,
+                        /* Lock the second group via latch-to-lock */
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,
+                        KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      NEXT,
+                        KEY_E,          BOTH,  XKB_KEY_hebrew_qoph,     FINISH));
+
+    xkb_keymap_unref(keymap);
+
+#undef test_set_only
+#undef test_latch_only
+#undef test_latch_not_broken_by_modifier
+#undef test_no_latch_to_lock
+}
+
 int
 main(void)
 {
@@ -35,6 +296,9 @@ main(void)
     struct xkb_keymap *keymap;
 
     assert(ctx);
+
+    test_group_latch(ctx);
+
     keymap = test_compile_rules(ctx, "evdev", "evdev",
                                 "us,il,ru,de", ",,phonetic,neo",
                                 "grp:alt_shift_toggle,grp:menu_toggle");
