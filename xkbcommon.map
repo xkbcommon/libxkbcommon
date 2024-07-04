@@ -119,3 +119,9 @@ global:
     xkb_compose_table_iterator_free;
     xkb_compose_table_iterator_next;
 } V_1.0.0;
+
+V_1.8.0 {
+global:
+    xkb_keymap_supported_formats;
+    xkb_keymap_is_supported_format;
+} V_1.6.0;
