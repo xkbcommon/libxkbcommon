@@ -923,7 +923,7 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
     CompatInfo info;
     ActionsInfo *actions;
 
-    actions = NewActionsInfo();
+    actions = NewActionsInfo(keymap->format);
     if (!actions)
         return false;
 

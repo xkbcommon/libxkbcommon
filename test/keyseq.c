@@ -24,6 +24,8 @@
 #include "config.h"
 
 #include "evdev-scancodes.h"
+/* TODO: remove once XKB_KEYMAP_FORMAT_TEXT_V1_1 is public */
+#include "src/keymap.h"
 #include "test.h"
 #include "keymap.h"
 
@@ -835,6 +837,72 @@ main(void)
                         KEY_A,         BOTH, XKB_KEY_a,                 FINISH));
 
     xkb_keymap_unref(keymap);
+
+    /* Group lock on press for format V1 (implicit, XKB spec) */
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                "evdev", "pc105",
+                                "us,de", "",
+                                "grp:alt_shift_toggle");
+    assert(keymap);
+
+#define test_group_lock_on_press(keymap_)                                   \
+    assert(test_key_seq(keymap_,                                            \
+                        KEY_Y,         BOTH, XKB_KEY_y,              NEXT,  \
+                        KEY_LEFTALT,   DOWN, XKB_KEY_Alt_L,          NEXT,  \
+                        KEY_LEFTSHIFT, BOTH, XKB_KEY_ISO_Next_Group, NEXT,  \
+                        /* Group change on press */                         \
+                        KEY_Y,         BOTH, XKB_KEY_z,              NEXT,  \
+                        KEY_LEFTSHIFT, DOWN, XKB_KEY_ISO_Next_Group, NEXT,  \
+                        /* Group change on press */                         \
+                        KEY_Y,         BOTH, XKB_KEY_y,              NEXT,  \
+                        KEY_LEFTSHIFT, UP,   XKB_KEY_ISO_Next_Group, NEXT,  \
+                        KEY_Y,         BOTH, XKB_KEY_y,              NEXT,  \
+                        KEY_LEFTALT,   UP,   XKB_KEY_Alt_L,          FINISH))
+    test_group_lock_on_press(keymap);
+
+    xkb_keymap_unref(keymap);
+
+    /* Group lock on release for format V1_1 (implicit, using defaults) */
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1_1,
+                                "evdev", "pc105",
+                                "us,de", "",
+                                "grp:alt_shift_toggle");
+    assert(keymap);
+
+#define test_group_lock_on_relase(keymap_)                                  \
+    assert(test_key_seq(keymap_,                                            \
+                        KEY_Y,         BOTH, XKB_KEY_y,              NEXT,  \
+                        KEY_LEFTALT,   DOWN, XKB_KEY_Alt_L,          NEXT,  \
+                        KEY_LEFTSHIFT, BOTH, XKB_KEY_ISO_Next_Group, NEXT,  \
+                        /* Group lock on release */                         \
+                        KEY_Y,         BOTH, XKB_KEY_z,              NEXT,  \
+                        KEY_LEFTSHIFT, DOWN, XKB_KEY_ISO_Next_Group, NEXT,  \
+                        /* Key not released, no group change */             \
+                        KEY_Y,         BOTH, XKB_KEY_z,              NEXT,  \
+                        KEY_LEFTSHIFT, UP,   XKB_KEY_ISO_Next_Group, NEXT,  \
+                        /* Group lock cancelled by intermediate key press */\
+                        KEY_Y,         BOTH, XKB_KEY_z,              NEXT,  \
+                        KEY_LEFTALT,   UP,   XKB_KEY_Alt_L,          FINISH))
+    test_group_lock_on_relase(keymap);
+
+    xkb_keymap_unref(keymap);
+
+    /* Group lock on release for format V1_1 (explicit lockOnRelease=true) */
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1_1,
+                                "evdev", "pc105",
+                                "us,de", "",
+                                "grp:alt_shift_toggle,grp:lockOnRelease");
+    test_group_lock_on_relase(keymap);
+    xkb_keymap_unref(keymap);
+
+    /* Group lock on press for format V1_1 (explicit lockOnRelease=false, XKB spec) */
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1_1,
+                                "evdev", "pc105",
+                                "us,de", "",
+                                "grp:alt_shift_toggle,grp:lockOnPress");
+    test_group_lock_on_press(keymap);
+    xkb_keymap_unref(keymap);
+
     xkb_context_unref(ctx);
     return 0;
 }

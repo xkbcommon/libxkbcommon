@@ -289,6 +289,11 @@ xkb_filter_group_set_func(struct xkb_state *state,
 static void
 xkb_filter_group_lock_new(struct xkb_state *state, struct xkb_filter *filter)
 {
+    /* XKB 1.1 extension: lock on release
+     * Do nothing on press */
+    if (filter->action.group.flags & ACTION_LOCK_ON_RELEASE)
+        return;
+
     apply_group_delta(filter, state, locked_group);
 }
 
@@ -298,8 +303,15 @@ xkb_filter_group_lock_func(struct xkb_state *state,
                            const struct xkb_key *key,
                            enum xkb_key_direction direction)
 {
-    if (key != filter->key)
+    if (key != filter->key) {
+        if (filter->action.group.flags & ACTION_LOCK_ON_RELEASE &&
+            direction == XKB_KEY_DOWN) {
+            /* XKB extension: lock on release
+             * Another key has been pressed: cancel group change on release */
+            filter->action.group.flags &= ~ACTION_LOCK_ON_RELEASE;
+        }
         return XKB_FILTER_CONTINUE;
+    }
 
     if (direction == XKB_KEY_DOWN) {
         filter->refcnt++;
@@ -307,6 +319,11 @@ xkb_filter_group_lock_func(struct xkb_state *state,
     }
     if (--filter->refcnt > 0)
         return XKB_FILTER_CONSUME;
+
+    if (filter->action.group.flags & ACTION_LOCK_ON_RELEASE) {
+        /* XKB extension: lock on release */
+        apply_group_delta(filter, state, locked_group);
+    }
 
     filter->func = NULL;
     return XKB_FILTER_CONTINUE;

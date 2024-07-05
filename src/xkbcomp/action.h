@@ -37,7 +37,7 @@ typedef struct {
 } ActionsInfo;
 
 ActionsInfo *
-NewActionsInfo(void);
+NewActionsInfo(enum xkb_keymap_format format);
 
 void
 FreeActionsInfo(ActionsInfo *info);
@@ -53,5 +53,7 @@ SetActionField(struct xkb_context *ctx, enum xkb_keymap_format format,
                ActionsInfo *info, struct xkb_mod_set *mods, const char *elem,
                const char *field, ExprDef *array_ndx, ExprDef *value);
 
+bool
+isGroupLockOnReleaseSupported(enum xkb_keymap_format format);
 
 #endif

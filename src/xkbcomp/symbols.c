@@ -1726,7 +1726,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
     SymbolsInfo info;
     ActionsInfo *actions;
 
-    actions = NewActionsInfo();
+    actions = NewActionsInfo(keymap->format);
     if (!actions)
         return false;
 
