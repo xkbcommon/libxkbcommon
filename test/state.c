@@ -724,7 +724,8 @@ main(void)
     xkb_keymap_unref(NULL);
     xkb_state_unref(NULL);
 
-    keymap = test_compile_rules(context, "evdev", "pc104", "us,ru", NULL, "grp:menu_toggle");
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                "evdev", "pc104", "us,ru", NULL, "grp:menu_toggle");
     assert(keymap);
 
     test_update_key(keymap);
@@ -737,7 +738,8 @@ main(void)
     test_ctrl_string_transformation(keymap);
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(context, "evdev", NULL, "ch", "fr", NULL);
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                "evdev", NULL, "ch", "fr", NULL);
     assert(keymap);
 
     test_caps_keysym_transformation(keymap);

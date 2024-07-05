@@ -98,9 +98,9 @@ struct xkb_keymap *
 test_compile_buffer(struct xkb_context *context, const char *buf, size_t len);
 
 struct xkb_keymap *
-test_compile_rules(struct xkb_context *context, const char *rules,
-                   const char *model, const char *layout, const char *variant,
-                   const char *options);
+test_compile_rules(struct xkb_context *context, enum xkb_keymap_format format,
+                   const char *rules, const char *model, const char *layout,
+                   const char *variant, const char *options);
 
 
 #ifdef _WIN32

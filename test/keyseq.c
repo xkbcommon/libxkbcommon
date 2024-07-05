@@ -35,7 +35,8 @@ main(void)
     struct xkb_keymap *keymap;
 
     assert(ctx);
-    keymap = test_compile_rules(ctx, "evdev", "evdev",
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                "evdev", "pc105",
                                 "us,il,ru,de", ",,phonetic,neo",
                                 "grp:alt_shift_toggle,grp:menu_toggle");
     assert(keymap);
@@ -312,7 +313,8 @@ main(void)
                         KEY_V,           BOTH,  XKB_KEY_p,               FINISH));
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, "evdev", "", "de", "neo", "");
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                "evdev", "", "de", "neo", "");
     assert(keymap);
     assert(test_key_seq(keymap,
                         /* Level 5. */
@@ -364,7 +366,8 @@ main(void)
 
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, "evdev", "", "us,il,ru", "",
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                "evdev", "", "us,il,ru", "",
                                 "grp:alt_shift_toggle_bidir,grp:menu_toggle");
     assert(keymap);
 
@@ -403,7 +406,8 @@ main(void)
                         KEY_H,         BOTH, XKB_KEY_h,              FINISH));
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, "evdev", "", "us,il,ru", "",
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                "evdev", "", "us,il,ru", "",
                                 "grp:switch,grp:lswitch,grp:menu_toggle");
     assert(keymap);
 
@@ -446,7 +450,8 @@ main(void)
                         KEY_H,         BOTH, XKB_KEY_h,                 FINISH));
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, "evdev", "", "us", "euro", "");
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                "evdev", "", "us", "euro", "");
     assert(keymap);
 
     assert(test_key_seq(keymap,
@@ -466,7 +471,8 @@ main(void)
                         KEY_Z,         BOTH, XKB_KEY_y,                 FINISH));
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, "evdev", "applealu_ansi", "us", "",
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                "evdev", "applealu_ansi", "us", "",
                                 "terminate:ctrl_alt_bksp");
     assert(keymap);
 
