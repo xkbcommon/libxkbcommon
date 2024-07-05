@@ -108,6 +108,7 @@ get_keymap_format_ops(enum xkb_keymap_format format)
 {
     static const struct xkb_keymap_format_ops *keymap_format_ops[] = {
         [XKB_KEYMAP_FORMAT_TEXT_V1] = &text_v1_keymap_format_ops,
+        [XKB_KEYMAP_FORMAT_TEXT_V1_1] = &text_v1_keymap_format_ops,
     };
 
     if ((int) format < 0 || (int) format >= (int) ARRAY_SIZE(keymap_format_ops))
@@ -118,7 +119,8 @@ get_keymap_format_ops(enum xkb_keymap_format format)
 
 /* Warning: must be in ascending order */
 static const enum xkb_keymap_format supported_keymap_formats[] = {
-    XKB_KEYMAP_FORMAT_TEXT_V1
+    XKB_KEYMAP_FORMAT_TEXT_V1,
+    XKB_KEYMAP_FORMAT_TEXT_V1_1
 };
 
 XKB_EXPORT size_t
@@ -292,7 +294,7 @@ xkb_keymap_get_as_string(struct xkb_keymap *keymap,
         return NULL;
     }
 
-    return ops->keymap_get_as_string(keymap);
+    return ops->keymap_get_as_string(keymap, format);
 }
 
 /**
