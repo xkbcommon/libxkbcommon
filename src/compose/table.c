@@ -242,25 +242,6 @@ xkb_compose_table_entry_utf8(struct xkb_compose_table_entry *entry)
     return entry->utf8;
 }
 
-#define ITER_IMPL 2
-
-#if ITER_IMPL == 1
-
-enum node_direction {
-    NODE_LEFT = 0,
-    NODE_DOWN,
-    NODE_RIGHT,
-    NODE_UP
-};
-
-struct xkb_compose_table_iterator_cursor {
-    uint32_t node_offset:30; /* WARNING: ensure it fits MAX_COMPOSE_NODES */
-    uint8_t direction:2;     /* enum node_direction: current direction
-                              * traversing the tree */
-};
-
-#elif ITER_IMPL == 2
-
 #if MAX_COMPOSE_NODES_LOG2 > 31
 #error "Cannot implement bit field xkb_compose_table_iterator_pending_node.offset"
 #endif
@@ -270,18 +251,12 @@ struct xkb_compose_table_iterator_pending_node {
     bool processed:1;
 };
 
-#endif
-
 struct xkb_compose_table_iterator {
     struct xkb_compose_table *table;
     /* Current entry */
     struct xkb_compose_table_entry entry;
-#if ITER_IMPL == 1
-    darray(struct xkb_compose_table_iterator_cursor) cursors;
-#else
     /* Stack of pending nodes to process */
     darray(struct xkb_compose_table_iterator_pending_node) pending_nodes;
-#endif
 };
 
 XKB_EXPORT struct xkb_compose_table_iterator *
@@ -302,21 +277,6 @@ xkb_compose_table_iterator_new(struct xkb_compose_table *table)
     }
     iter->entry.sequence = sequence;
     iter->entry.sequence_length = 0;
-
-#if ITER_IMPL == 1
-
-    darray_init(iter->cursors);
-    /* Add first cursor only if there is at least one non-dummy node */
-    if (darray_size(iter->table->nodes) > 1) {
-        const struct xkb_compose_table_iterator_cursor cursor = {
-            .direction = NODE_LEFT,
-            /* Offset 0 is a dummy null entry, skip it. */
-            .node_offset = 1
-        };
-        darray_append(iter->cursors, cursor);
-    }
-
-#elif ITER_IMPL == 2
 
     darray_init(iter->pending_nodes);
     /* Short-circuit if table contains only the dummy entry */
@@ -339,8 +299,6 @@ xkb_compose_table_iterator_new(struct xkb_compose_table *table)
         node = &darray_item(iter->table->nodes, pending.offset);
     };
 
-#endif
-
     return iter;
 }
 
@@ -348,11 +306,7 @@ XKB_EXPORT void
 xkb_compose_table_iterator_free(struct xkb_compose_table_iterator *iter)
 {
     xkb_compose_table_unref(iter->table);
-#if ITER_IMPL == 1
-    darray_free(iter->cursors);
-#elif ITER_IMPL == 2
     darray_free(iter->pending_nodes);
-#endif
     free(iter->entry.sequence);
     free(iter);
 }
@@ -360,81 +314,6 @@ xkb_compose_table_iterator_free(struct xkb_compose_table_iterator *iter)
 XKB_EXPORT struct xkb_compose_table_entry *
 xkb_compose_table_iterator_next(struct xkb_compose_table_iterator *iter)
 {
-#if ITER_IMPL == 1
-
-    /*
-     * This function takes the following recursive traversal function,
-     * and makes it non-recursive and resumable. The iter->cursors stack
-     * is analogous to the call stack, and cursor->direction to the
-     * instruction pointer of a stack frame.
-     *
-     *    traverse(xkb_keysym_t *sequence, size_t sequence_length, uint16_t p) {
-     *        if (!p) return
-     *        // cursor->direction == NODE_LEFT
-     *        node = &darray_item(table->nodes, p)
-     *        traverse(sequence, sequence_length, node->lokid)
-     *        // cursor->direction == NODE_DOWN
-     *        sequence[sequence_length++] = node->keysym
-     *        if (node->is_leaf)
-     *            emit(sequence, sequence_length, node->leaf.keysym, table->utf[node->leaf.utf8])
-     *        else
-     *            traverse(sequence, sequence_length, node->internal.eqkid)
-     *        sequence_length--
-     *        // cursor->direction == NODE_RIGHT
-     *        traverse(sequence, sequence_length, node->hikid)
-     *        // cursor->direction == NODE_UP
-     *    }
-     */
-
-    struct xkb_compose_table_iterator_cursor *cursor;
-    const struct compose_node *node;
-
-    while (!darray_empty(iter->cursors)) {
-        cursor = &darray_item(iter->cursors, darray_size(iter->cursors) - 1);
-        node = &darray_item(iter->table->nodes, cursor->node_offset);
-
-        switch (cursor->direction) {
-        case NODE_LEFT:
-            cursor->direction = NODE_DOWN;
-            if (node->lokid) {
-                struct xkb_compose_table_iterator_cursor new_cursor = {node->lokid, NODE_LEFT};
-                darray_append(iter->cursors, new_cursor);
-            }
-            break;
-
-        case NODE_DOWN:
-            cursor->direction = NODE_RIGHT;
-            assert (iter->entry.sequence_length <= MAX_LHS_LEN);
-            iter->entry.sequence[iter->entry.sequence_length] = node->keysym;
-            iter->entry.sequence_length++;
-            if (node->is_leaf) {
-                iter->entry.keysym = node->leaf.keysym;
-                iter->entry.utf8 = &darray_item(iter->table->utf8, node->leaf.utf8);
-                return &iter->entry;
-            } else {
-                struct xkb_compose_table_iterator_cursor new_cursor = {node->internal.eqkid, NODE_LEFT};
-                darray_append(iter->cursors, new_cursor);
-            }
-            break;
-
-        case NODE_RIGHT:
-            cursor->direction = NODE_UP;
-            iter->entry.sequence_length--;
-            if (node->hikid) {
-                struct xkb_compose_table_iterator_cursor new_cursor = {node->hikid, NODE_LEFT};
-                darray_append(iter->cursors, new_cursor);
-            }
-            break;
-
-        case NODE_UP:
-            darray_remove_last(iter->cursors);
-            break;
-        }
-    }
-
-    return NULL;
-
-#elif ITER_IMPL == 2
     /* Traversal algorithm (simplified):
      * 1. Resume last pending node from the stack as the current pending node.
      * 2. If the node is not yet processed, go to 5.
@@ -520,6 +399,4 @@ node_left:
             node = &darray_item(iter->table->nodes, new.offset);
         }
     }
-
-#endif
 }
