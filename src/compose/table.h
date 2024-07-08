@@ -77,7 +77,8 @@
 
 /* 7 nodes for every potential Unicode character and then some should be
  * enough for all purposes. */
-#define MAX_COMPOSE_NODES (1 << 23)
+#define MAX_COMPOSE_NODES_LOG2 23
+#define MAX_COMPOSE_NODES (1 << MAX_COMPOSE_NODES_LOG2)
 
 struct compose_node {
     xkb_keysym_t keysym;
