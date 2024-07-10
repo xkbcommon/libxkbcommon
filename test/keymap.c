@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "evdev-scancodes.h"
 #include "test.h"
 #include "keymap.h"
 
@@ -230,6 +231,80 @@ test_multiple_keysyms_per_level(void)
     xkb_context_unref(context);
 }
 
+static void
+test_multiple_actions_per_level(void)
+{
+    struct xkb_context *context = test_get_context(0);
+    struct xkb_keymap *keymap;
+    xkb_keycode_t kc;
+    int keysyms_count;
+    const xkb_layout_index_t first_layout = 0;
+    const xkb_keysym_t *keysyms;
+    xkb_mod_index_t ctrl;
+    xkb_layout_index_t layout;
+    xkb_mod_mask_t base_mods;
+
+    assert(context);
+
+    keymap = test_compile_rules_with_flags(
+        context, "evdev", "pc104", "awesome,cz", NULL, "grp:menu_toggle",
+        XKB_KEYMAP_COMPILE_RANGE_REDIRECT_TO_0);
+    assert(keymap);
+
+    ctrl = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CTRL);
+
+    kc = xkb_keymap_key_by_name(keymap, "LCTL");
+    keysyms_count = xkb_keymap_key_get_syms_by_level(keymap, kc, first_layout, 0, &keysyms);
+    assert(keysyms_count == 2);
+    assert(keysyms[0] == XKB_KEY_Control_L);
+    assert(keysyms[1] == XKB_KEY_ISO_First_Group);
+
+    struct xkb_state *state = xkb_state_new(keymap);
+    assert(state);
+    layout = xkb_state_key_get_layout(state, KEY_LEFTCTRL + EVDEV_OFFSET);
+    assert(layout == 0);
+    xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_DOWN);
+    base_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED);
+    assert(base_mods == (1U << ctrl));
+    layout = xkb_state_key_get_layout(state, XKB_KEY_2 + EVDEV_OFFSET);
+    assert(layout == 0);
+    xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_UP);
+    base_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED);
+    assert(base_mods == 0);
+    layout = xkb_state_key_get_layout(state, XKB_KEY_2 + EVDEV_OFFSET);
+    assert(layout == 0);
+    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_UP);
+    layout = xkb_state_key_get_layout(state, XKB_KEY_2 + EVDEV_OFFSET);
+    assert(layout == 1);
+    xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_DOWN);
+    base_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED);
+    assert(base_mods == (1U << ctrl));
+    layout = xkb_state_key_get_layout(state, XKB_KEY_2 + EVDEV_OFFSET);
+    assert(layout == 0);
+    xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_UP);
+    base_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED);
+    assert(base_mods == 0);
+    layout = xkb_state_key_get_layout(state, XKB_KEY_2 + EVDEV_OFFSET);
+    assert(layout == 1);
+    xkb_state_unref(state);
+
+    assert(test_key_seq(keymap,
+                        KEY_2,        BOTH, XKB_KEY_2,         NEXT,
+                        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L, XKB_KEY_ISO_First_Group, NEXT,
+                        KEY_2,        BOTH, XKB_KEY_2,         NEXT,
+                        KEY_LEFTCTRL, UP,   XKB_KEY_Control_L, XKB_KEY_ISO_First_Group, NEXT,
+                        KEY_COMPOSE,  BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_2,        BOTH, XKB_KEY_ecaron,    NEXT,
+                        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L, XKB_KEY_ISO_First_Group, NEXT,
+                        KEY_2,        BOTH, XKB_KEY_2,         NEXT,
+                        KEY_LEFTCTRL, UP,   XKB_KEY_Control_L, XKB_KEY_ISO_First_Group, NEXT,
+                        KEY_2,        BOTH, XKB_KEY_ecaron,    FINISH));
+
+    xkb_keymap_unref(keymap);
+    xkb_context_unref(context);
+}
+
 int
 main(void)
 {
@@ -239,6 +314,7 @@ main(void)
     test_keymap();
     test_numeric_keysyms();
     test_multiple_keysyms_per_level();
+    test_multiple_actions_per_level();
 
     return 0;
 }

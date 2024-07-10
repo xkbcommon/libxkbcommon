@@ -231,7 +231,9 @@ typedef struct {
 
 typedef struct {
     ExprCommon expr;
-    ExprDef *actions;
+    darray(ExprDef*) actions;
+    darray(unsigned int) actionsMapIndex;
+    darray(unsigned int) actionsNumEntries;
 } ExprActionList;
 
 typedef struct {
