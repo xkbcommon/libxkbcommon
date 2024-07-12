@@ -78,6 +78,9 @@
 #define XKB_KEYSYM_UNICODE_MAX    0x0110ffff
 /** Maximum keysym name length */
 #define XKB_KEYSYM_NAME_MAX_SIZE  {{ XKB_KEYSYM_NAME_MAX_SIZE }}
+/** Maximum bytes to encode the Unicode representation of a keysym in UTF-8:
+ * 4 bytes + NULL-terminating byte */
+#define XKB_KEYSYM_UTF8_MAX_SIZE  5
 
 bool
 xkb_keysym_is_assigned(xkb_keysym_t ks);

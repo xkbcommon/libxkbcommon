@@ -170,7 +170,7 @@ test_keysym(xkb_keysym_t keysym, const char *expected)
 static int
 test_utf8(xkb_keysym_t keysym, const char *expected)
 {
-    char s[8];
+    char s[XKB_KEYSYM_UTF8_MAX_SIZE];
     int ret;
 
     ret = xkb_keysym_to_utf8(keysym, s, sizeof(s));
@@ -366,9 +366,10 @@ main(void)
         /* Check assigned keysyms bounds */
         assert((int32_t)XKB_KEYSYM_MIN_ASSIGNED <= (int32_t)ks && ks <= XKB_KEYSYM_MAX_ASSIGNED);
         /* Check utf8 */
+        /* Older implementation required 7 bytes for old UTF-8 (see RFC 2279) */
         char utf8[7];
         int needed = xkb_keysym_to_utf8(ks, utf8, sizeof(utf8));
-        assert(0 <= needed && needed <= 5);
+        assert(0 <= needed && needed <= XKB_KEYSYM_UTF8_MAX_SIZE);
         /* Check maximum name length */
         char name[XKB_KEYSYM_NAME_MAX_SIZE];
         needed = xkb_keysym_iterator_get_name(iter, name, sizeof(name));

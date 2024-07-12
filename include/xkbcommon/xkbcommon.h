@@ -494,7 +494,7 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags);
  *
  * @param[in]  keysym The keysym.
  * @param[out] buffer A buffer to write the UTF-8 string into.
- * @param[in]  size   The size of buffer.  Must be at least 7.
+ * @param[in]  size   The size of buffer.  Must be at least 5.
  *
  * @returns The number of bytes written to the buffer (including the
  * terminating byte).  If the keysym does not have a Unicode

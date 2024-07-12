@@ -1022,7 +1022,7 @@ xkb_state_key_get_utf8(struct xkb_state *state, xkb_keycode_t kc,
     const xkb_keysym_t *syms;
     int nsyms;
     int offset;
-    char tmp[7];
+    char tmp[XKB_KEYSYM_UTF8_MAX_SIZE];
 
     sym = get_one_sym_for_string(state, kc);
     if (sym != XKB_KEY_NoSymbol) {
