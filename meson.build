@@ -142,10 +142,17 @@ configh_data.set('_CRT_NONSTDC_NO_DEPRECATE', 1)
 # Reduce unnecessary includes on MSVC.
 configh_data.set('WIN32_LEAN_AND_MEAN', 1)
 
+xkbcommon_map = meson.current_source_dir() / 'xkbcommon.map'
+
 # Supports -Wl,--version-script?
+if cc.has_link_argument('-Wl,--undefined-version')
+    extra_linker_args = ',--undefined-version'
+else
+    extra_linker_args = ''
+endif
 have_version_script = cc.links(
     'int main(){}',
-    args: '-Wl,--undefined-version,--version-script=' + meson.current_source_dir()/'xkbcommon.map',
+    args: f'-Wl,--version-script=@xkbcommon_map@@extra_linker_args@',
     name: '-Wl,--version-script',
 )
 
@@ -235,7 +242,7 @@ libxkbcommon_sources = [
 libxkbcommon_link_args = []
 libxkbcommon_link_deps = []
 if have_version_script
-    libxkbcommon_link_args += '-Wl,--version-script=' + meson.current_source_dir()/'xkbcommon.map'
+    libxkbcommon_link_args += f'-Wl,--version-script=@xkbcommon_map@'
     libxkbcommon_link_deps += 'xkbcommon.map'
 elif cc.get_argument_syntax() == 'msvc'
     libxkbcommon_def = custom_target('xkbcommon.def',
