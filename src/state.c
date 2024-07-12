@@ -173,9 +173,9 @@ XkbWrapGroupIntoRange(int32_t group,
 
     switch (out_of_range_group_action) {
     case RANGE_REDIRECT:
-        if (out_of_range_group_number >= num_groups)
-            return 0;
-        return out_of_range_group_number;
+        return (out_of_range_group_number >= num_groups)
+                ? 0
+                : out_of_range_group_number;
 
     case RANGE_SATURATE:
         if (group < 0)
@@ -687,19 +687,26 @@ xkb_state_update_derived(struct xkb_state *state)
                               state->components.latched_mods |
                               state->components.locked_mods);
 
-    /* TODO: Use groups_wrap control instead of always RANGE_WRAP. */
-
     wrapped = XkbWrapGroupIntoRange(state->components.locked_group,
                                     state->keymap->num_groups,
-                                    RANGE_WRAP, 0);
+                                    state->keymap->out_of_range_group_action,
+                                    state->keymap->out_of_range_group_number);
     state->components.locked_group =
         (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
+
 
     wrapped = XkbWrapGroupIntoRange(state->components.base_group +
                                     state->components.latched_group +
                                     state->components.locked_group,
                                     state->keymap->num_groups,
-                                    RANGE_WRAP, 0);
+                                    state->keymap->out_of_range_group_action,
+                                    state->keymap->out_of_range_group_number);
+
+    log_err(state->keymap->ctx, 0,
+        "xkb_state_update_derived: base_group: %d, latched_group: %d, locked_group: %d, wrapped: %u, out_of_range_group_action: %u\n",
+        state->components.base_group, state->components.latched_group, state->components.locked_group,
+        wrapped, state->keymap->out_of_range_group_action);
+
     state->components.group =
         (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
 

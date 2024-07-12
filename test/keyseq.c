@@ -402,6 +402,39 @@ main(void)
                         KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
                         KEY_H,         BOTH, XKB_KEY_h,              FINISH));
 
+    /* Out-of-range group action: redirect */
+    xkb_keymap_set_out_of_range_layout_redirect(keymap, 1);
+    assert(test_key_seq(keymap,
+                        KEY_H,         BOTH, XKB_KEY_h,              NEXT,
+                        KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L,        NEXT,
+                        KEY_LEFTALT,   BOTH, XKB_KEY_ISO_Prev_Group, NEXT,
+                        KEY_LEFTSHIFT, UP,   XKB_KEY_Shift_L,        NEXT,
+                        /* Negative group: redirect to second layout */
+                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,     NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_H,         BOTH, XKB_KEY_Cyrillic_er,    NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        /* Greater that last group: redirect to second layout */
+                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,     FINISH));
+
+    /* Out-of-range group action: clamp */
+    xkb_keymap_set_out_of_range_layout_clamp(keymap);
+    assert(test_key_seq(keymap,
+                        KEY_H,         BOTH, XKB_KEY_h,              NEXT,
+                        KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L,        NEXT,
+                        KEY_LEFTALT,   BOTH, XKB_KEY_ISO_Prev_Group, NEXT,
+                        KEY_LEFTSHIFT, UP,   XKB_KEY_Shift_L,        NEXT,
+                        /* Negative group: redirect to first layout */
+                        KEY_H,         BOTH, XKB_KEY_h,              NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,     NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_H,         BOTH, XKB_KEY_Cyrillic_er,    NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        /* Greater that last group: redirect to last layout */
+                        KEY_H,         BOTH, XKB_KEY_Cyrillic_er,    FINISH));
+
     xkb_keymap_unref(keymap);
     keymap = test_compile_rules(ctx, "evdev", "", "us,il,ru", "",
                                 "grp:switch,grp:lswitch,grp:menu_toggle");
