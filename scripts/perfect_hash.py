@@ -75,6 +75,7 @@ If the procedure fails, G is cyclic, and we go back to step 2, replacing G
 with a new graph, and thereby discarding the vertex values from the failed
 attempt.
 """
+
 from __future__ import absolute_import, division, print_function
 
 import sys
