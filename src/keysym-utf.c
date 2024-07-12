@@ -954,7 +954,9 @@ xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size)
 {
     uint32_t codepoint;
 
-    if (size < 7)
+    /* Unicode code point takes up to 4 bytes in UTF-8, plus the
+     * NULL-terminating byte. */
+    if (size < XKB_KEYSYM_UTF8_MAX_SIZE)
         return -1;
 
     codepoint = xkb_keysym_to_utf32(keysym);

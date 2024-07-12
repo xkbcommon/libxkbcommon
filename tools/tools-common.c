@@ -157,7 +157,10 @@ tools_print_keycode_state(const char *prefix,
     xkb_keysym_t sym;
     const xkb_keysym_t *syms;
     int nsyms;
-    char s[MAX(XKB_COMPOSE_MAX_STRING_SIZE, XKB_KEYSYM_NAME_MAX_SIZE)];
+#define BUFFER_SIZE MAX(XKB_COMPOSE_MAX_STRING_SIZE, XKB_KEYSYM_NAME_MAX_SIZE)
+    assert(XKB_KEYSYM_UTF8_MAX_SIZE <= BUFFER_SIZE);
+    char s[BUFFER_SIZE];
+#undef BUFFER_SIZE
     xkb_layout_index_t layout;
     enum xkb_compose_status status;
 

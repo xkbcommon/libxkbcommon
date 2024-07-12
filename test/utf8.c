@@ -29,6 +29,7 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "src/keysym.h"
 #include "test.h"
 #include "utf8.h"
 #include "utils.h"
@@ -155,7 +156,7 @@ test_is_valid_utf8(void)
 
 static void
 check_utf32_to_utf8(uint32_t unichar, int expected_length, const char *expected) {
-    char buffer[7];
+    char buffer[XKB_KEYSYM_UTF8_MAX_SIZE];
     int length;
 
     length = utf32_to_utf8(unichar, buffer);

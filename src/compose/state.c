@@ -168,7 +168,7 @@ xkb_compose_state_get_utf8(struct xkb_compose_state *state,
     /* If there's no string specified, but only a keysym, try to do the
      * most helpful thing. */
     if (node->leaf.utf8 == 0 && node->leaf.keysym != XKB_KEY_NoSymbol) {
-        char utf8[7];
+        char utf8[XKB_KEYSYM_UTF8_MAX_SIZE];
         int ret;
 
         ret = xkb_keysym_to_utf8(node->leaf.keysym, utf8, sizeof(utf8));
