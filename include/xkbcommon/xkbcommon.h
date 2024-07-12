@@ -872,10 +872,60 @@ xkb_context_set_log_fn(struct xkb_context *context,
  * @{
  */
 
-/** Flags for keymap compilation. */
+/**
+ * Flags for keymap compilation.
+ *
+ * @par Out-of-range layout action
+ * [Effective layout] index may be invalid in some contexts.
+ * One of the following out-of-range layout action is then used to bring invalid
+ * layout indexes back into range:
+ *
+ * - “redirect into range” (see: ::XKB_KEYMAP_REDIRECT_OUT_OF_RANGE_LAYOUT)
+ * - “clamp into range” (see: ::XKB_KEYMAP_CLAMP_OUT_OF_RANGE_LAYOUT)
+ * - “wrap into range” using integer modulus (default)
+ *
+ * [Effective layout]: @ref ::XKB_STATE_LAYOUT_EFFECTIVE
+ */
 enum xkb_keymap_compile_flags {
     /** Do not apply any flags. */
-    XKB_KEYMAP_COMPILE_NO_FLAGS = 0
+    XKB_KEYMAP_COMPILE_NO_FLAGS = 0,
+    /*
+     * 4 least significant bit reserved to encode layout index (0..15) for
+     * XKB_KEYMAP_REDIRECT_OUT_OF_RANGE_LAYOUT.
+     */
+    /**
+     * Set the out-of-range layout action to “redirect into range”.
+     *
+     * - If the [effective layout] is invalid, it is set to a *target layout*.
+     * - If the target layout is invalid, it is set to the first one (0).
+     *
+     * A *target layout index* (range 0..15) may be provided using the 4 least
+     * significant bits of the corresponding #xkb_keymap_compile_flags value,
+     * e.g.:
+     *
+     * ```c
+     * // Set the target layout index to 1.
+     * enum xkb_keymap_compile_flags flags = XKB_KEYMAP_REDIRECT_OUT_OF_RANGE_LAYOUT | 1;
+     * ```
+     *
+     * @since 1.8.0
+     *
+     * [effective layout]: @ref ::XKB_STATE_LAYOUT_EFFECTIVE
+     */
+    XKB_KEYMAP_REDIRECT_OUT_OF_RANGE_LAYOUT = 1 << 4,
+    /**
+     * Set the out-of-range layout action to “clamp into range”: if the
+     * [effective layout] is invalid, it is set to nearest valid layout:
+     *
+     * - effective layout larger than the highest supported layout are mapped to
+     *   the highest supported layout;
+     * - effective layout less than 0 are mapped to 0.
+     *
+     * @since 1.8.0
+     *
+     * [effective layout]: @ref ::XKB_STATE_LAYOUT_EFFECTIVE
+     */
+    XKB_KEYMAP_CLAMP_OUT_OF_RANGE_LAYOUT = 1 << 5
 };
 
 /**
@@ -886,7 +936,7 @@ enum xkb_keymap_compile_flags {
  *
  * @param context The context in which to create the keymap.
  * @param names   The RMLVO names to use.  See xkb_rule_names.
- * @param flags   Optional flags for the keymap, or 0.
+ * @param flags   Optional flags for the keymap, or ::XKB_KEYMAP_COMPILE_NO_FLAGS.
  *
  * @returns A keymap compiled according to the RMLVO names, or NULL if
  * the compilation failed.
@@ -911,7 +961,7 @@ enum xkb_keymap_format {
  * @param context The context in which to create the keymap.
  * @param file    The keymap file to compile.
  * @param format  The text format of the keymap file to compile.
- * @param flags   Optional flags for the keymap, or 0.
+ * @param flags   Optional flags for the keymap, or ::XKB_KEYMAP_COMPILE_NO_FLAGS.
  *
  * @returns A keymap compiled from the given XKB keymap file, or NULL if
  * the compilation failed.

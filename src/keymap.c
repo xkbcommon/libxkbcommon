@@ -133,7 +133,7 @@ xkb_keymap_new_from_names(struct xkb_context *ctx,
         return NULL;
     }
 
-    if (flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
+    if (flags & ~XKB_KEYMAP_FLAGS_ALL) {
         log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
                      "unrecognized flags: %#x\n", flags);
         return NULL;
@@ -183,7 +183,7 @@ xkb_keymap_new_from_buffer(struct xkb_context *ctx,
         return NULL;
     }
 
-    if (flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
+    if (flags & ~XKB_KEYMAP_FLAGS_ALL) {
         log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
                      "unrecognized flags: %#x\n", flags);
         return NULL;
@@ -227,7 +227,7 @@ xkb_keymap_new_from_file(struct xkb_context *ctx,
         return NULL;
     }
 
-    if (flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
+    if (flags & ~XKB_KEYMAP_FLAGS_ALL) {
         log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
                      "unrecognized flags: %#x\n", flags);
         return NULL;

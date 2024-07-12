@@ -351,6 +351,11 @@
   added: ALWAYS
   type: error
   description: "The target file of an include statement could not be processed"
+- id: "multiple-out-of-range-layout-flags"
+  code: 697
+  added: 1.8.0
+  type: error
+  description: "Multiple out-of-range layout flags were set, but only one is allowed."
 - id: "multiple-groups-at-once"
   code: 700
   added: ALWAYS

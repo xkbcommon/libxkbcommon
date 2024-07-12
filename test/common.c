@@ -402,9 +402,10 @@ test_compile_buffer(struct xkb_context *context, const char *buf, size_t len)
 }
 
 struct xkb_keymap *
-test_compile_rules(struct xkb_context *context, const char *rules,
-                   const char *model, const char *layout,
-                   const char *variant, const char *options)
+test_compile_rules_with_flags(struct xkb_context *context, const char *rules,
+                              const char *model, const char *layout,
+                              const char *variant, const char *options,
+                              enum xkb_keymap_compile_flags flags)
 {
     struct xkb_keymap *keymap;
     struct xkb_rule_names rmlvo = {
@@ -416,9 +417,9 @@ test_compile_rules(struct xkb_context *context, const char *rules,
     };
 
     if (!rules && !model && !layout && !variant && !options)
-        keymap = xkb_keymap_new_from_names(context, NULL, 0);
+        keymap = xkb_keymap_new_from_names(context, NULL, flags);
     else
-        keymap = xkb_keymap_new_from_names(context, &rmlvo, 0);
+        keymap = xkb_keymap_new_from_names(context, &rmlvo, flags);
 
     if (!keymap) {
         fprintf(stderr,
@@ -428,4 +429,13 @@ test_compile_rules(struct xkb_context *context, const char *rules,
     }
 
     return keymap;
+}
+
+struct xkb_keymap *
+test_compile_rules(struct xkb_context *context, const char *rules,
+                   const char *model, const char *layout,
+                   const char *variant, const char *options)
+{
+    return test_compile_rules_with_flags(context, rules, model, layout,
+                                         variant, options, XKB_KEYMAP_COMPILE_NO_FLAGS);
 }

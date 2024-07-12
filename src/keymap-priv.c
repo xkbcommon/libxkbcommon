@@ -52,12 +52,43 @@ update_builtin_keymap_fields(struct xkb_keymap *keymap)
     keymap->mods.num_mods = ARRAY_SIZE(builtin_mods);
 }
 
+#define XKB_KEYMAP_OUT_OF_RANGE_LAYOUT_FLAGS \
+    (XKB_KEYMAP_REDIRECT_OUT_OF_RANGE_LAYOUT | \
+     XKB_KEYMAP_CLAMP_OUT_OF_RANGE_LAYOUT)
+
 struct xkb_keymap *
 xkb_keymap_new(struct xkb_context *ctx,
                enum xkb_keymap_format format,
                enum xkb_keymap_compile_flags flags)
 {
     struct xkb_keymap *keymap;
+    enum xkb_range_exceed_type out_of_range_group_action;
+    xkb_layout_index_t out_of_range_group_number =
+        flags & XKB_REDIRECT_LAYOUT_INDEX_MASK;
+
+    switch (flags & XKB_KEYMAP_OUT_OF_RANGE_LAYOUT_FLAGS) {
+    case 0:
+        out_of_range_group_action = RANGE_WRAP;
+        break;
+    case XKB_KEYMAP_REDIRECT_OUT_OF_RANGE_LAYOUT:
+        out_of_range_group_action = RANGE_REDIRECT;
+        break;
+    case XKB_KEYMAP_CLAMP_OUT_OF_RANGE_LAYOUT:
+        out_of_range_group_action = RANGE_SATURATE;
+        break;
+    default:
+        log_err(ctx, XKB_ERROR_MULTIPLE_OUT_OF_RANGE_LAYOUT_FLAGS,
+                "Cannot mix \"out of range layout\" keymap flags: %#x\n", flags);
+        return NULL;
+    }
+
+    if (out_of_range_group_number && out_of_range_group_action != RANGE_REDIRECT) {
+        log_err(ctx, XKB_ERROR_MULTIPLE_OUT_OF_RANGE_LAYOUT_FLAGS,
+                "Redirect layout index can only be used in combination with "
+                "XKB_KEYMAP_REDIRECT_OUT_OF_RANGE_LAYOUT flag. "
+                "Invalid keymap flags: %#x\n", flags);
+        return NULL;
+    }
 
     keymap = calloc(1, sizeof(*keymap));
     if (!keymap)
@@ -68,6 +99,9 @@ xkb_keymap_new(struct xkb_context *ctx,
 
     keymap->format = format;
     keymap->flags = flags;
+
+    keymap->out_of_range_group_action = out_of_range_group_action;
+    keymap->out_of_range_group_number = out_of_range_group_number;
 
     update_builtin_keymap_fields(keymap);
 

@@ -667,6 +667,91 @@ main(void)
                         KEY_H,         BOTH, XKB_KEY_h,              FINISH));
 
     xkb_keymap_unref(keymap);
+    keymap = test_compile_rules_with_flags(
+        ctx, "evdev", "", "us,il,ru", "",
+        "grp:alt_shift_toggle_bidir,grp:menu_toggle",
+        XKB_KEYMAP_REDIRECT_OUT_OF_RANGE_LAYOUT | 1);
+    assert(keymap);
+
+    /* Out-of-range group action: redirect to valid group */
+    assert(test_key_seq(keymap,
+                        KEY_H,         BOTH, XKB_KEY_h,              NEXT,
+                        KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L,        NEXT,
+                        KEY_LEFTALT,   BOTH, XKB_KEY_ISO_Prev_Group, NEXT,
+                        KEY_LEFTSHIFT, UP,   XKB_KEY_Shift_L,        NEXT,
+                        /* Negative group: redirect to second layout */
+                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,     NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_H,         BOTH, XKB_KEY_Cyrillic_er,    NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        /* Greater that last group: redirect to second layout */
+                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,     FINISH));
+
+    xkb_keymap_unref(keymap);
+    keymap = test_compile_rules_with_flags(
+        ctx, "evdev", "", "us,il,ru", "",
+        "grp:alt_shift_toggle_bidir,grp:menu_toggle",
+        XKB_KEYMAP_REDIRECT_OUT_OF_RANGE_LAYOUT | 4);
+    assert(keymap);
+
+    /* Out-of-range group action: redirect to invalid group */
+    assert(test_key_seq(keymap,
+                        KEY_H,         BOTH, XKB_KEY_h,              NEXT,
+                        KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L,        NEXT,
+                        KEY_LEFTALT,   BOTH, XKB_KEY_ISO_Prev_Group, NEXT,
+                        KEY_LEFTSHIFT, UP,   XKB_KEY_Shift_L,        NEXT,
+                        /* Negative group: invalid redirect, default to first layout */
+                        KEY_H,         BOTH, XKB_KEY_h,              NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,     NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_H,         BOTH, XKB_KEY_Cyrillic_er,    NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        /* Greater that last group: invalid redirect, default to first layout */
+                        KEY_H,         BOTH, XKB_KEY_h,              FINISH));
+
+    xkb_keymap_unref(keymap);
+    keymap = test_compile_rules_with_flags(
+        ctx, "evdev", "", "us,il,ru", "",
+        "grp:alt_shift_toggle_bidir,grp:menu_toggle",
+        XKB_KEYMAP_CLAMP_OUT_OF_RANGE_LAYOUT);
+    assert(keymap);
+
+    /* Out-of-range group action: clamp */
+    assert(test_key_seq(keymap,
+                        KEY_H,         BOTH, XKB_KEY_h,              NEXT,
+                        KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L,        NEXT,
+                        KEY_LEFTALT,   BOTH, XKB_KEY_ISO_Prev_Group, NEXT,
+                        KEY_LEFTSHIFT, UP,   XKB_KEY_Shift_L,        NEXT,
+                        /* Negative group: redirect to first layout */
+                        KEY_H,         BOTH, XKB_KEY_h,              NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,     NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_H,         BOTH, XKB_KEY_Cyrillic_er,    NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        /* Greater that last group: redirect to last layout */
+                        KEY_H,         BOTH, XKB_KEY_Cyrillic_er,    FINISH));
+
+    xkb_keymap_unref(keymap);
+    keymap = test_compile_rules_with_flags(
+        ctx, "evdev", "", "us,il", "", "",
+        XKB_KEYMAP_REDIRECT_OUT_OF_RANGE_LAYOUT |
+        XKB_KEYMAP_CLAMP_OUT_OF_RANGE_LAYOUT);
+    /* Cannot mix out-of-range layout flags */
+    assert(!keymap);
+    /* Cannot use redirect layout index without
+     * XKB_KEYMAP_REDIRECT_OUT_OF_RANGE_LAYOUT */
+    keymap = test_compile_rules_with_flags(
+        ctx, "evdev", "", "", "", "",
+        XKB_KEYMAP_COMPILE_NO_FLAGS | 1);
+    assert(!keymap);
+    keymap = test_compile_rules_with_flags(
+        ctx, "evdev", "", "", "", "",
+        XKB_KEYMAP_CLAMP_OUT_OF_RANGE_LAYOUT | 1);
+    assert(!keymap);
+
     keymap = test_compile_rules(ctx, "evdev", "", "us,il,ru", "",
                                 "grp:switch,grp:lswitch,grp:menu_toggle");
     assert(keymap);
