@@ -245,7 +245,7 @@ struct rule {
 
 /*
  * This is the main object used to match a given RMLVO against a rules
- * file and aggragate the results in a KcCGST. It goes through a simple
+ * file and aggregate the results in a KcCGST. It goes through a simple
  * matching state machine, with tokens as transitions (see
  * matcher_match()).
  */
