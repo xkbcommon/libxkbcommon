@@ -7,7 +7,7 @@ project(
         'warning_level=2',
         'b_lundef=true',
     ],
-    meson_version : '>= 0.52.0',
+    meson_version : '>= 0.58.0', # Released on May 2021
 )
 pkgconfig = import('pkgconfig')
 cc = meson.get_compiler('c')
@@ -270,9 +270,7 @@ dep_libxkbcommon = declare_dependency(
     link_with: libxkbcommon,
     include_directories: include_directories('include'),
 )
-if meson.version().version_compare('>= 0.54.0')
-    meson.override_dependency('xkbcommon', dep_libxkbcommon)
-endif
+meson.override_dependency('xkbcommon', dep_libxkbcommon)
 pkgconfig.generate(
     libxkbcommon,
     name: 'xkbcommon',
@@ -341,9 +339,7 @@ You can disable X11 support with -Denable-x11=false.''')
         link_with: libxkbcommon_x11,
         include_directories: include_directories('include'),
     )
-    if meson.version().version_compare('>= 0.54.0')
-        meson.override_dependency('xkbcommon-x11', dep_libxkbcommon_x11)
-    endif
+    meson.override_dependency('xkbcommon-x11', dep_libxkbcommon_x11)
     pkgconfig.generate(
         libxkbcommon_x11,
         name: 'xkbcommon-x11',
@@ -409,9 +405,7 @@ if get_option('enable-xkbregistry')
         link_with: libxkbregistry,
         include_directories: include_directories('include'),
     )
-    if meson.version().version_compare('>= 0.54.0')
-        meson.override_dependency('xkbregistry', dep_libxkbregistry)
-    endif
+    meson.override_dependency('xkbregistry', dep_libxkbregistry)
 endif
 
 man_pages = []
