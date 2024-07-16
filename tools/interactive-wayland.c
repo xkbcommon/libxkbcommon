@@ -713,7 +713,7 @@ usage(FILE *fp, char *progname)
 int
 main(int argc, char *argv[])
 {
-    int ret;
+    int ret = 0;
     struct interactive_dpy inter;
     struct wl_registry *registry;
     const char *locale;
