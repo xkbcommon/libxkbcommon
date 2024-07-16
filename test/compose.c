@@ -896,6 +896,7 @@ test_encode_escape_sequences(struct xkb_context *ctx)
     char buf[1 + MAX_CODE_POINTS_COUNT * 4];
     for (int ascii = 1; ascii >= 0; ascii--) {
         for (size_t s = 0; s < SAMPLE_SIZE; s++) {
+            memset(buf, 0xab, sizeof(buf));
             /* Create the string */
             size_t length = 1 + (rand() % MAX_CODE_POINTS_COUNT);
             size_t c = 0;
