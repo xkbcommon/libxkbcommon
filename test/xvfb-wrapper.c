@@ -152,7 +152,7 @@ x11_tests_run()
          t++)
         count++;
 
-    int rc;
+    int rc = 0;
     for (const struct test_function *t = &__start_test_func_sec;
          t < &__stop_test_func_sec;
          t++) {
