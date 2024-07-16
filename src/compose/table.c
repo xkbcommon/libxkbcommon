@@ -37,7 +37,7 @@ xkb_compose_table_new(struct xkb_context *ctx,
 {
     char *resolved_locale;
     struct xkb_compose_table *table;
-    struct compose_node dummy;
+    struct compose_node dummy = {0};
 
     resolved_locale = resolve_locale(ctx, locale);
     if (!resolved_locale)
