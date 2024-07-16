@@ -965,7 +965,8 @@ main(int argc, char *argv[])
 #ifdef __linux__
     const char *srcdir = getenv("top_srcdir");
     clearenv();
-    setenv("top_srcdir", srcdir, 1);
+    if (srcdir)
+        setenv("top_srcdir", srcdir, 1);
 #else
     unsetenv("XCOMPOSEFILE");
     unsetenv("XDG_CONFIG_HOME");
