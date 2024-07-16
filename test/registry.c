@@ -513,7 +513,7 @@ cmp_layouts(struct test_layout *tl, struct rxkb_layout *l)
         return false;
 
     iso3166 = rxkb_layout_get_iso3166_first(l);
-    for (size_t i = 0; i < sizeof(tl->iso3166); i++) {
+    for (size_t i = 0; i < ARRAY_SIZE(tl->iso3166); i++) {
         const char *iso = tl->iso3166[i];
         if (iso == NULL && iso3166 == NULL)
             break;
@@ -528,7 +528,7 @@ cmp_layouts(struct test_layout *tl, struct rxkb_layout *l)
         return false;
 
     iso639 = rxkb_layout_get_iso639_first(l);
-    for (size_t i = 0; i < sizeof(tl->iso639); i++) {
+    for (size_t i = 0; i < ARRAY_SIZE(tl->iso639); i++) {
         const char *iso = tl->iso639[i];
         if (iso == NULL && iso639 == NULL)
             break;
