@@ -45,7 +45,7 @@ escape_utf8_string_literal(const char *from)
 {
     const size_t length = strlen(from);
     /* Longest escape is converting ASCII character to "\xNN" */
-    char* to = calloc(4 * length + 1, sizeof(to));
+    char* to = calloc(4 * length + 1, sizeof(*to));
     if (!to)
         return NULL;
 
