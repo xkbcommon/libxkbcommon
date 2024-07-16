@@ -952,7 +952,7 @@ main(int argc, char *argv[])
     if (argc == 2) {
         seed = atoi(argv[1]);
     } else {
-        seed = time(NULL);
+        seed = (int)time(NULL);
     }
     fprintf(stderr, "Seed for the pseudo-random generator: %d\n", seed);
     srand(seed);
