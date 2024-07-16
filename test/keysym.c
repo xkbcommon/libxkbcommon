@@ -391,7 +391,7 @@ main(void)
         test_icu_case_mappings(ks);
 #endif
     }
-    iter = xkb_keysym_iterator_unref(iter);
+    xkb_keysym_iterator_unref(iter);
     assert(ks_prev == XKB_KEYSYM_MAX_ASSIGNED);
     assert(count == XKB_KEYSYM_UNICODE_MAX - XKB_KEYSYM_UNICODE_MIN + 1 + count_non_unicode);
 
