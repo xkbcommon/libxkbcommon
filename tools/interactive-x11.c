@@ -370,7 +370,7 @@ main(int argc, char *argv[])
     uint8_t first_xkb_event;
     int32_t core_kbd_device_id;
     struct xkb_context *ctx;
-    struct keyboard core_kbd;
+    struct keyboard core_kbd = {0};
     const char *locale;
     struct xkb_compose_table *compose_table = NULL;
 
