@@ -200,8 +200,9 @@ get_locale_compose_file_path(struct xkb_context *ctx, const char *locale)
         locale = "en_US.UTF-8";
 
     resolved = resolve_name(ctx, "compose.dir", RIGHT_TO_LEFT, locale);
-    if (!resolved)
-        return NULL;
+    if (!resolved) {
+        return asprintf_safe("%s/%s/Compose", get_xlocaledir_path(ctx), locale);
+    }
 
     if (resolved[0] == '/') {
         path = resolved;
