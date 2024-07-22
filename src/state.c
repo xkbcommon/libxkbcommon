@@ -159,43 +159,6 @@ xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
     return entry->level;
 }
 
-xkb_layout_index_t
-XkbWrapGroupIntoRange(int32_t group,
-                      xkb_layout_index_t num_groups,
-                      enum xkb_range_exceed_type out_of_range_group_action,
-                      xkb_layout_index_t out_of_range_group_number)
-{
-    if (num_groups == 0)
-        return XKB_LAYOUT_INVALID;
-
-    if (group >= 0 && (xkb_layout_index_t) group < num_groups)
-        return group;
-
-    switch (out_of_range_group_action) {
-    case RANGE_REDIRECT:
-        if (out_of_range_group_number >= num_groups)
-            return 0;
-        return out_of_range_group_number;
-
-    case RANGE_SATURATE:
-        if (group < 0)
-            return 0;
-        else
-            return num_groups - 1;
-
-    case RANGE_WRAP:
-    default:
-        /*
-         * C99 says a negative dividend in a modulo operation always
-         * gives a negative result.
-         */
-        if (group < 0)
-            return ((int) num_groups + (group % (int) num_groups));
-        else
-            return group % num_groups;
-    }
-}
-
 /**
  * Returns the layout to use for the given key and state, taking
  * wrapping/clamping/etc into account, or XKB_LAYOUT_INVALID.
@@ -213,23 +176,27 @@ xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t kc)
                                  key->out_of_range_group_number);
 }
 
-static const union xkb_action *
-xkb_key_get_action(struct xkb_state *state, const struct xkb_key *key)
+static unsigned int
+xkb_key_get_actions(struct xkb_state *state, const struct xkb_key *key,
+                    const union xkb_action **actions)
 {
-    static const union xkb_action dummy = { .type = ACTION_TYPE_NONE };
-
     xkb_layout_index_t layout;
     xkb_level_index_t level;
 
     layout = xkb_state_key_get_layout(state, key->keycode);
     if (layout == XKB_LAYOUT_INVALID)
-        return &dummy;
+        goto err;
 
     level = xkb_state_key_get_level(state, key->keycode, layout);
     if (level == XKB_LEVEL_INVALID)
-        return &dummy;
+        goto err;
 
-    return &key->groups[layout].levels[level].action;
+    return xkb_keymap_key_get_actions_by_level(state->keymap, key->keycode,
+                                               layout, level, actions);
+
+err:
+    *actions = NULL;
+    return 0;
 }
 
 static struct xkb_filter *
@@ -447,32 +414,35 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
          * keypress, then either break the latch if any random key is pressed,
          * or promote it to a lock or plain base set if it's the same
          * modifier. */
-        const union xkb_action *action = xkb_key_get_action(state, key);
-        if (action->type == ACTION_TYPE_MOD_LATCH &&
-            action->mods.flags == filter->action.mods.flags &&
-            action->mods.mods.mask == filter->action.mods.mods.mask) {
-            filter->action = *action;
-            if (filter->action.mods.flags & ACTION_LATCH_TO_LOCK) {
-                filter->action.type = ACTION_TYPE_MOD_LOCK;
-                filter->func = xkb_filter_mod_lock_func;
-                state->components.locked_mods |= filter->action.mods.mods.mask;
+        const union xkb_action *actions = NULL;
+        unsigned int count = xkb_key_get_actions(state, key, &actions);
+        for (unsigned int k = 0; k < count; k++) {
+            if (actions[k].type == ACTION_TYPE_MOD_LATCH &&
+                actions[k].mods.flags == filter->action.mods.flags &&
+                actions[k].mods.mods.mask == filter->action.mods.mods.mask) {
+                filter->action = actions[k];
+                if (filter->action.mods.flags & ACTION_LATCH_TO_LOCK) {
+                    filter->action.type = ACTION_TYPE_MOD_LOCK;
+                    filter->func = xkb_filter_mod_lock_func;
+                    state->components.locked_mods |= filter->action.mods.mods.mask;
+                }
+                else {
+                    filter->action.type = ACTION_TYPE_MOD_SET;
+                    filter->func = xkb_filter_mod_set_func;
+                    state->set_mods = filter->action.mods.mods.mask;
+                }
+                filter->key = key;
+                state->components.latched_mods &= ~filter->action.mods.mods.mask;
+                /* XXX beep beep! */
+                return XKB_FILTER_CONSUME;
             }
-            else {
-                filter->action.type = ACTION_TYPE_MOD_SET;
-                filter->func = xkb_filter_mod_set_func;
-                state->set_mods = filter->action.mods.mods.mask;
+            else if (xkb_action_breaks_latch(&(actions[k]))) {
+                /* XXX: This may be totally broken, we might need to break the
+                *      latch in the next run after this press? */
+                state->components.latched_mods &= ~filter->action.mods.mods.mask;
+                filter->func = NULL;
+                return XKB_FILTER_CONTINUE;
             }
-            filter->key = key;
-            state->components.latched_mods &= ~filter->action.mods.mods.mask;
-            /* XXX beep beep! */
-            return XKB_FILTER_CONSUME;
-        }
-        else if (xkb_action_breaks_latch(action)) {
-            /* XXX: This may be totally broken, we might need to break the
-             *      latch in the next run after this press? */
-            state->components.latched_mods &= ~filter->action.mods.mods.mask;
-            filter->func = NULL;
-            return XKB_FILTER_CONTINUE;
         }
     }
     else if (direction == XKB_KEY_UP && key == filter->key) {
@@ -543,7 +513,8 @@ xkb_filter_apply_all(struct xkb_state *state,
                      enum xkb_key_direction direction)
 {
     struct xkb_filter *filter;
-    const union xkb_action *action;
+    const union xkb_action *actions = NULL;
+    unsigned int count;
     bool consumed;
 
     /* First run through all the currently active filters and see if any of
@@ -559,26 +530,35 @@ xkb_filter_apply_all(struct xkb_state *state,
     if (consumed || direction == XKB_KEY_UP)
         return;
 
-    action = xkb_key_get_action(state, key);
+    count = xkb_key_get_actions(state, key, &actions);
 
-    /*
-     * It's possible for the keymap to set action->type explicitly, like so:
-     *     interpret XF86_Next_VMode {
-     *         action = Private(type=0x86, data="+VMode");
-     *     };
-     * We don't handle those.
-     */
-    if (action->type >= _ACTION_TYPE_NUM_ENTRIES)
-        return;
+    for (unsigned int k = 0; k < count; k++) {
+        if (count > 1) {
+            log_vrb(
+                state->keymap->ctx, 0, 0,
+                "xkb_filter_apply_all: key: %u, index: %u, action type: %d\n",
+                key->keycode, k, actions[k].type
+            );
+        }
+        /*
+        * It's possible for the keymap to set action->type explicitly, like so:
+        *     interpret XF86_Next_VMode {
+        *         action = Private(type=0x86, data="+VMode");
+        *     };
+        * We don't handle those.
+        */
+        if (actions[k].type >= _ACTION_TYPE_NUM_ENTRIES)
+            return;
 
-    if (!filter_action_funcs[action->type].new)
-        return;
+        if (!filter_action_funcs[actions[k].type].new)
+            return;
 
-    filter = xkb_filter_new(state);
-    filter->key = key;
-    filter->func = filter_action_funcs[action->type].func;
-    filter->action = *action;
-    filter_action_funcs[action->type].new(state, filter);
+        filter = xkb_filter_new(state);
+        filter->key = key;
+        filter->func = filter_action_funcs[actions[k].type].func;
+        filter->action = actions[k];
+        filter_action_funcs[actions[k].type].new(state, filter);
+    }
 }
 
 XKB_EXPORT struct xkb_state *
@@ -687,19 +667,26 @@ xkb_state_update_derived(struct xkb_state *state)
                               state->components.latched_mods |
                               state->components.locked_mods);
 
-    /* TODO: Use groups_wrap control instead of always RANGE_WRAP. */
-
     wrapped = XkbWrapGroupIntoRange(state->components.locked_group,
                                     state->keymap->num_groups,
-                                    RANGE_WRAP, 0);
+                                    state->keymap->out_of_range_group_action,
+                                    state->keymap->out_of_range_group_number);
     state->components.locked_group =
         (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
+
 
     wrapped = XkbWrapGroupIntoRange(state->components.base_group +
                                     state->components.latched_group +
                                     state->components.locked_group,
                                     state->keymap->num_groups,
-                                    RANGE_WRAP, 0);
+                                    state->keymap->out_of_range_group_action,
+                                    state->keymap->out_of_range_group_number);
+
+    log_err(state->keymap->ctx, 0,
+        "xkb_state_update_derived: base_group: %d, latched_group: %d, locked_group: %d, wrapped: %u, out_of_range_group_action: %u\n",
+        state->components.base_group, state->components.latched_group, state->components.locked_group,
+        wrapped, state->keymap->out_of_range_group_action);
+
     state->components.group =
         (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
 

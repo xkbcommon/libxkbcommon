@@ -204,9 +204,9 @@ resolve_keysym(const char *name, xkb_keysym_t *sym_rtrn)
 %type <keysym>  KeySym
 %type <any>     Decl
 %type <anyList> DeclList
-%type <expr>    Expr Term Lhs Terminal ArrayInit KeySyms
-%type <expr>    OptKeySymList KeySymList Action Coord CoordList
-%type <exprList> OptExprList ExprList ActionList
+%type <expr>    Expr Term Lhs Terminal ArrayInit Actions KeySyms
+%type <expr>    KeySymList ActionList Action Coord CoordList
+%type <exprList> OptExprList ExprList
 %type <var>     VarDecl SymbolsVarDecl
 %type <varList> VarDeclList SymbolsBody
 %type <vmod>    VModDef
@@ -474,10 +474,12 @@ SymbolsVarDecl  :       Lhs EQUALS Expr         { $$ = VarCreate($1, $3); }
                 |       ArrayInit               { $$ = VarCreate(NULL, $1); }
                 ;
 
-ArrayInit       :       OBRACKET OptKeySymList CBRACKET
+ArrayInit       :       OBRACKET KeySymList CBRACKET
                         { $$ = $2; }
                 |       OBRACKET ActionList CBRACKET
-                        { $$ = ExprCreateActionList($2.head); }
+                        { $$ = $2; }
+                |       OBRACKET CBRACKET
+                        { $$ = NULL; }
                 ;
 
 GroupCompatDecl :       GROUP Integer EQUALS Expr SEMI
@@ -677,9 +679,17 @@ Term            :       MINUS Term
                 ;
 
 ActionList      :       ActionList COMMA Action
-                        { $$.head = $1.head; $$.last->common.next = &$3->common; $$.last = $3; }
+                        { $$ = ExprAppendActionList($1, $3); }
+                |       ActionList COMMA Actions
+                        { $$ = ExprAppendMultiActionList($1, $3); }
                 |       Action
-                        { $$.head = $$.last = $1; }
+                        { $$ = ExprCreateActionList($1); }
+                |       Actions
+                        { $$ = ExprCreateMultiActionList($1); }
+                ;
+
+Actions         :       OBRACE ActionList CBRACE
+                        { $$ = $2; }
                 ;
 
 Action          :       FieldSpec OPAREN OptExprList CPAREN
@@ -704,10 +714,6 @@ Terminal        :       String
                         { $$ = ExprCreateFloat(/* Discard $1 */); }
                 |       KEYNAME
                         { $$ = ExprCreateKeyName($1); }
-                ;
-
-OptKeySymList   :       KeySymList      { $$ = $1; }
-                |                       { $$ = NULL; }
                 ;
 
 KeySymList      :       KeySymList COMMA KeySym

@@ -407,6 +407,43 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
 }
 
 static bool
+write_actions(struct xkb_keymap *keymap, struct buf *buf,
+              const struct xkb_key *key, xkb_layout_index_t group)
+{
+    static const union xkb_action noAction = { .type = ACTION_TYPE_NONE };
+
+    for (xkb_level_index_t level = 0; level < XkbKeyNumLevels(key, group);
+         level++) {
+        const union xkb_action *actions;
+        int count;
+
+        if (level != 0)
+            write_buf(buf, ", ");
+
+
+        count = xkb_keymap_key_get_actions_by_level(keymap, key->keycode,
+                                                    group, level, &actions);
+        if (count == 0) {
+            write_action(keymap, buf, &noAction, NULL, NULL);
+        }
+        else if (count == 1) {
+            write_action(keymap, buf, &(actions[0]), NULL, NULL);
+        }
+        else {
+            write_buf(buf, "{ ");
+            for (int k = 0; k < count; k++) {
+                if (k != 0)
+                    write_buf(buf, ", ");
+                write_action(keymap, buf, &(actions[k]), NULL, NULL);
+            }
+            write_buf(buf, " }");
+        }
+    }
+
+    return true;
+}
+
+static bool
 write_compat(struct xkb_keymap *keymap, struct buf *buf)
 {
     const struct xkb_led *led;
@@ -569,8 +606,6 @@ write_key(struct xkb_keymap *keymap, struct buf *buf,
         write_buf(buf, " ] };\n");
     }
     else {
-        xkb_level_index_t level;
-
         for (group = 0; group < key->num_groups; group++) {
             if (group != 0)
                 write_buf(buf, ",");
@@ -580,13 +615,8 @@ write_key(struct xkb_keymap *keymap, struct buf *buf,
             write_buf(buf, " ]");
             if (show_actions) {
                 write_buf(buf, ",\n\t\tactions[Group%u]= [ ", group + 1);
-                for (level = 0; level < XkbKeyNumLevels(key, group); level++) {
-                    if (level != 0)
-                        write_buf(buf, ", ");
-                    write_action(keymap, buf,
-                                    &key->groups[group].levels[level].action,
-                                    NULL, NULL);
-                }
+                if (!write_actions(keymap, buf, key, group))
+                    return false;
                 write_buf(buf, " ]");
             }
         }

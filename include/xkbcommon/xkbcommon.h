@@ -863,7 +863,13 @@ xkb_context_set_log_fn(struct xkb_context *context,
 /** Flags for keymap compilation. */
 enum xkb_keymap_compile_flags {
     /** Do not apply any flags. */
-    XKB_KEYMAP_COMPILE_NO_FLAGS = 0
+    XKB_KEYMAP_COMPILE_NO_FLAGS = 0,
+    XKB_KEYMAP_COMPILE_RANGE_REDIRECT_TO_0 = (1 << 0),
+    XKB_KEYMAP_COMPILE_RANGE_SATURATE = (1 << 1),
+    _XKB_KEYMAP_COMPILE_ALL =                    \
+        ( XKB_KEYMAP_COMPILE_NO_FLAGS            \
+        | XKB_KEYMAP_COMPILE_RANGE_REDIRECT_TO_0 \
+        | XKB_KEYMAP_COMPILE_RANGE_SATURATE )
 };
 
 /**

@@ -88,6 +88,10 @@ main(int argc, char *argv[])
     /* Now test that the dump of the dump is equal to the dump! */
     dump2 = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
     assert(dump2);
+    if (!streq(dump, dump2)) {
+        fprintf(stderr, "*** dump (%lu) ***\n%s\n", strlen(dump), dump);
+        fprintf(stderr, "*** dump2 (%lu) ***\n%s\n", strlen(dump2), dump2);
+    }
     assert(streq(dump, dump2));
 
     /* Test response to invalid formats and flags. */
