@@ -243,6 +243,20 @@ xkb_keymap_new_from_file(struct xkb_context *ctx,
     return keymap;
 }
 
+XKB_EXPORT void
+xkb_keymap_set_out_of_range_layout_redirect(struct xkb_keymap *keymap,
+                                            xkb_layout_index_t layout)
+{
+    keymap->out_of_range_group_action = RANGE_REDIRECT;
+    keymap->out_of_range_group_number = layout;
+}
+
+XKB_EXPORT void
+xkb_keymap_set_out_of_range_layout_clamp(struct xkb_keymap *keymap)
+{
+    keymap->out_of_range_group_action = RANGE_SATURATE;
+}
+
 XKB_EXPORT char *
 xkb_keymap_get_as_string(struct xkb_keymap *keymap,
                          enum xkb_keymap_format format)

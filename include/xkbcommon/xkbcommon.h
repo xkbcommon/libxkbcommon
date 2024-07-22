@@ -993,6 +993,33 @@ char *
 xkb_keymap_get_as_string(struct xkb_keymap *keymap,
                          enum xkb_keymap_format format);
 
+/**
+ * Set the out-of-range layout action to “redirect into range”:
+ *
+ * - If the effective layout is invalid, it is set to the given layout.
+ * - If the given layout is invalid, it is set to the first one (0).
+ *
+ * @memberof xkb_keymap
+ * @sa xkb_keymap_set_out_of_range_layout_clamp
+ */
+void
+xkb_keymap_set_out_of_range_layout_redirect(struct xkb_keymap *keymap,
+                                            xkb_layout_index_t layout);
+
+/**
+ * Set the out-of-range layout action to “clamp into range”: if the effective
+ * layout is invalid, it is set to nearest valid layout:
+ *
+ * - effective layout larger than the highest supported layout are mapped to
+ *   the highest supported layout;
+ * - effective layout less than 0 are mapped to 0.
+ *
+ * @memberof xkb_keymap
+ * @sa xkb_keymap_set_out_of_range_layout_redirect
+ */
+void
+xkb_keymap_set_out_of_range_layout_clamp(struct xkb_keymap *keymap);
+
 /** @} */
 
 /**

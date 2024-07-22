@@ -119,3 +119,8 @@ global:
     xkb_compose_table_iterator_free;
     xkb_compose_table_iterator_next;
 } V_1.0.0;
+
+V_1.8.0 {
+    xkb_keymap_set_out_of_range_layout_redirect;
+    xkb_keymap_set_out_of_range_layout_clamp;
+} V_1.6.0;

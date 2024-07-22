@@ -370,6 +370,9 @@ struct xkb_keymap {
     enum xkb_keymap_format format;
 
     enum xkb_action_controls enabled_ctrls;
+    /* groups_wrap control */
+    enum xkb_range_exceed_type out_of_range_group_action;
+    xkb_layout_index_t out_of_range_group_number;
 
     xkb_keycode_t min_key_code;
     xkb_keycode_t max_key_code;
