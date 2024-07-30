@@ -9,6 +9,22 @@ project(
     ],
     meson_version : '>= 0.58.0', # Released on May 2021
 )
+
+xkbcommon_project_version = meson.project_version().split('.')
+if xkbcommon_project_version[0] != '1'
+    # The versioning used for the shared libraries assumes that the major
+    # version of xkbcommon as a whole will increase to 2 if and only if there
+    # is an ABI break, at which point we should probably bump the SONAME of
+    # all libraries to .so.2.
+    error('We probably need to bump the SONAME of libxkbcommon')
+else
+    # To avoid an unnecessary SONAME bump, xkbcommon 1.x.y produces
+    # libxkbcommon.so.0.x.y, libxkbcommon-x11.so.0.x.y, libxkbregistry.so.0.x.y.
+    soname_version = '.'.join(
+        ['0', xkbcommon_project_version[1], xkbcommon_project_version[2]]
+    )
+endif
+
 pkgconfig = import('pkgconfig')
 cc = meson.get_compiler('c')
 
@@ -261,7 +277,7 @@ libxkbcommon = library(
     link_args: libxkbcommon_link_args,
     link_depends: libxkbcommon_link_deps,
     gnu_symbol_visibility: 'hidden',
-    version: '0.0.0',
+    version: soname_version,
     install: true,
     include_directories: include_directories('src', 'include'),
 )
@@ -330,7 +346,7 @@ You can disable X11 support with -Denable-x11=false.''')
         link_args: libxkbcommon_x11_link_args,
         link_depends: libxkbcommon_x11_link_deps,
         gnu_symbol_visibility: 'hidden',
-        version: '0.0.0',
+        version: soname_version,
         install: true,
         include_directories: include_directories('src', 'include'),
         link_with: libxkbcommon,
@@ -393,7 +409,7 @@ if get_option('enable-xkbregistry')
         link_depends: libxkbregistry_link_deps,
         gnu_symbol_visibility: 'hidden',
         dependencies: deps_libxkbregistry,
-        version: '0.0.0',
+        version: soname_version,
         install: true,
         include_directories: include_directories('src', 'include'),
     )
