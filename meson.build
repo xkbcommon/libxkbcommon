@@ -749,7 +749,15 @@ test(
 )
 test(
     'compose',
-    executable('test-compose', 'test/compose.c', dependencies: test_dep),
+    executable(
+        'test-compose',
+        'test/compose.c',
+        'test/shuffle-lines.c',
+        'test/shuffle-lines.h',
+        'test/compose-iter.c',
+        'test/compose-iter.h',
+        dependencies: test_dep
+    ),
     env: test_env,
 )
 test(
@@ -837,6 +845,7 @@ if valgrind.found()
                        '--track-origins=yes',
                        '--gen-suppressions=all',
                        '--error-exitcode=99'],
+        env: {'RUNNING_VALGRIND': '1'},
         timeout_multiplier : 10)
 else
     message('valgrind not found, disabling valgrind test setup')
