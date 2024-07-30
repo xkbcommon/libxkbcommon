@@ -23,26 +23,39 @@
 
 #include "config.h"
 
+#include <string.h>
 #include <time.h>
 
 #include "xkbcommon/xkbcommon-compose.h"
 
+#include "../test/compose-iter.h"
 #include "../test/test.h"
 #include "bench.h"
 
 #define BENCHMARK_ITERATIONS 1000
 
+static void
+compose_fn(struct xkb_compose_table_entry *entry, void *data)
+{
+    assert (entry);
+}
+
+/* Benchmark compose traversal using:
+ * • the internal recursive function `xkb_compose_table_for_each` if `foreach` is
+ *   is passed as argument to the program;
+ * • else the iterator API (`xkb_compose_table_iterator_new`, …).
+ */
 int
-main(void)
+main(int argc, char *argv[])
 {
     struct xkb_context *ctx;
     char *path;
     FILE *file;
     struct xkb_compose_table *table;
-    struct xkb_compose_table_iterator *iter;
-    struct xkb_compose_table_entry *entry;
     struct bench bench;
     char *elapsed;
+
+    bool use_foreach_impl = (argc > 1 && strcmp(argv[1], "foreach") == 0);
 
     ctx = test_get_context(CONTEXT_NO_FLAG);
     assert(ctx);
@@ -68,11 +81,17 @@ main(void)
 
     bench_start(&bench);
     for (int i = 0; i < BENCHMARK_ITERATIONS; i++) {
-        iter = xkb_compose_table_iterator_new(table);
-        while ((entry = xkb_compose_table_iterator_next(iter))) {
-            assert (entry);
+        if (use_foreach_impl) {
+            xkb_compose_table_for_each(table, compose_fn, NULL);
+        } else {
+            struct xkb_compose_table_iterator *iter;
+            struct xkb_compose_table_entry *entry;
+            iter = xkb_compose_table_iterator_new(table);
+            while ((entry = xkb_compose_table_iterator_next(iter))) {
+                assert (entry);
+            }
+            xkb_compose_table_iterator_free(iter);
         }
-        xkb_compose_table_iterator_free(iter);
     }
     bench_stop(&bench);
 
