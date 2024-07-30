@@ -917,7 +917,15 @@ benchmark(
 )
 benchmark(
     'compose-traversal',
-    executable('bench-compose-traversal', 'bench/compose-traversal.c', dependencies: test_dep),
+    executable(
+        'bench-compose-traversal',
+        'bench/compose-traversal.c',
+        'bench/bench.h',
+        'test/compose-iter.c',
+        'test/compose-iter.h',
+        'test/test.h',
+        dependencies: test_dep
+    ),
     env: bench_env,
 )
 benchmark(
