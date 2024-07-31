@@ -242,17 +242,13 @@ xkb_compose_table_entry_utf8(struct xkb_compose_table_entry *entry)
     return entry->utf8;
 }
 
-enum node_direction {
-    NODE_LEFT = 0,
-    NODE_DOWN,
-    NODE_RIGHT,
-    NODE_UP
-};
+#if MAX_COMPOSE_NODES_LOG2 > 31
+#error "Cannot implement bit field xkb_compose_table_iterator_pending_node.offset"
+#endif
 
-struct xkb_compose_table_iterator_cursor {
-    uint32_t node_offset:30; /* WARNING: ensure it fits MAX_COMPOSE_NODES */
-    uint8_t direction:2;     /* enum node_direction: current direction
-                              * traversing the tree */
+struct xkb_compose_table_iterator_pending_node {
+    uint32_t offset:31;
+    bool processed:1;
 };
 
 struct xkb_compose_table_iterator {
@@ -260,7 +256,7 @@ struct xkb_compose_table_iterator {
     /* Current entry */
     struct xkb_compose_table_entry entry;
     /* Stack of pending nodes to process */
-    darray(struct xkb_compose_table_iterator_cursor) cursors;
+    darray(struct xkb_compose_table_iterator_pending_node) pending_nodes;
 };
 
 XKB_EXPORT struct xkb_compose_table_iterator *
@@ -282,16 +278,26 @@ xkb_compose_table_iterator_new(struct xkb_compose_table *table)
     iter->entry.sequence = sequence;
     iter->entry.sequence_length = 0;
 
-    darray_init(iter->cursors);
-    /* Add first cursor only if there is at least one non-dummy node */
-    if (darray_size(iter->table->nodes) > 1) {
-        const struct xkb_compose_table_iterator_cursor cursor = {
-            .direction = NODE_LEFT,
-            /* Offset 0 is a dummy null entry, skip it. */
-            .node_offset = 1
-        };
-        darray_append(iter->cursors, cursor);
+    darray_init(iter->pending_nodes);
+    /* Short-circuit if table contains only the dummy entry */
+    if (darray_size(table->nodes) == 1) {
+        return iter;
     }
+    /* Add root node */
+    struct xkb_compose_table_iterator_pending_node pending = {
+        .offset = 1,
+        .processed = false
+    };
+    darray_append(iter->pending_nodes, pending);
+    const struct compose_node *node = &darray_item(iter->table->nodes,
+                                                   pending.offset);
+
+    /* Find the first left-most node and store intermediate nodes as pending */
+    while (node->lokid) {
+        pending.offset = node->lokid;
+        darray_append(iter->pending_nodes, pending);
+        node = &darray_item(iter->table->nodes, pending.offset);
+    };
 
     return iter;
 }
@@ -300,7 +306,7 @@ XKB_EXPORT void
 xkb_compose_table_iterator_free(struct xkb_compose_table_iterator *iter)
 {
     xkb_compose_table_unref(iter->table);
-    darray_free(iter->cursors);
+    darray_free(iter->pending_nodes);
     free(iter->entry.sequence);
     free(iter);
 }
@@ -308,75 +314,89 @@ xkb_compose_table_iterator_free(struct xkb_compose_table_iterator *iter)
 XKB_EXPORT struct xkb_compose_table_entry *
 xkb_compose_table_iterator_next(struct xkb_compose_table_iterator *iter)
 {
-    /*
-     * This function takes the following recursive traversal function,
-     * and makes it non-recursive and resumable. The iter->cursors stack
-     * is analogous to the call stack, and cursor->direction to the
-     * instruction pointer of a stack frame.
-     *
-     *    traverse(xkb_keysym_t *sequence, size_t sequence_length, uint16_t p) {
-     *        if (!p) return
-     *        // cursor->direction == NODE_LEFT
-     *        node = &darray_item(table->nodes, p)
-     *        traverse(sequence, sequence_length, node->lokid)
-     *        // cursor->direction == NODE_DOWN
-     *        sequence[sequence_length++] = node->keysym
-     *        if (node->is_leaf)
-     *            emit(sequence, sequence_length, node->leaf.keysym, table->utf[node->leaf.utf8])
-     *        else
-     *            traverse(sequence, sequence_length, node->internal.eqkid)
-     *        sequence_length--
-     *        // cursor->direction == NODE_RIGHT
-     *        traverse(sequence, sequence_length, node->hikid)
-     *        // cursor->direction == NODE_UP
-     *    }
+    /* Traversal algorithm (simplified):
+     * 1. Resume last pending node from the stack as the current pending node.
+     * 2. If the node is not yet processed, go to 5.
+     * 3. Remove node from the stack and remove last keysym from the entry.
+     * 4. If there is a right arrow, set it as the current pending node
+     *    (unprocessed) and go to 6; else go to 1.
+     * 5. Follow down arrow: set the pending node as processed, then:
+     *      a) if it is a leaf, complete the entry and return it.
+     *      b) else append the child node to the stack and set it as the current
+     *         pending node.
+     * 6. Find the next left-most arrow and store intermediate pending nodes.
+     * 7. Go to 5.
      */
 
-    struct xkb_compose_table_iterator_cursor *cursor;
+    struct xkb_compose_table_iterator_pending_node *pending;
     const struct compose_node *node;
 
-    while (!darray_empty(iter->cursors)) {
-        cursor = &darray_item(iter->cursors, darray_size(iter->cursors) - 1);
-        node = &darray_item(iter->table->nodes, cursor->node_offset);
+    /* Iterator is empty if there is no pending nodes */
+    if (unlikely(darray_empty(iter->pending_nodes))) {
+        return NULL;
+    }
 
-        switch (cursor->direction) {
-        case NODE_LEFT:
-            cursor->direction = NODE_DOWN;
-            if (node->lokid) {
-                struct xkb_compose_table_iterator_cursor new_cursor = {node->lokid, NODE_LEFT};
-                darray_append(iter->cursors, new_cursor);
+    /* Resume to the last element in the stack */
+    pending = &darray_item(iter->pending_nodes,
+                           darray_size(iter->pending_nodes) - 1);
+    node = &darray_item(iter->table->nodes, pending->offset);
+
+    struct xkb_compose_table_iterator_pending_node new = {
+        .processed = false,
+        .offset = 0
+    };
+
+    /* Remove processed leaves until an unprocessed right arrow or parent
+     * is found, then update entry accordingly */
+    while (pending->processed) {
+        /* Remove last keysym */
+        iter->entry.sequence_length--;
+        if (node->hikid) {
+            /* Follow right arrow: replace current pending node */
+            pending->processed = false;
+            pending->offset = node->hikid;
+            /* Process child’s left arrow */
+            goto node_left;
+        } else {
+            /* Remove processed node */
+            darray_remove_last(iter->pending_nodes);
+            if (unlikely(darray_empty(iter->pending_nodes))) {
+                /* No more nodes to process */
+                return NULL;
             }
-            break;
-
-        case NODE_DOWN:
-            cursor->direction = NODE_RIGHT;
-            assert (iter->entry.sequence_length <= MAX_LHS_LEN);
-            iter->entry.sequence[iter->entry.sequence_length] = node->keysym;
-            iter->entry.sequence_length++;
-            if (node->is_leaf) {
-                iter->entry.keysym = node->leaf.keysym;
-                iter->entry.utf8 = &darray_item(iter->table->utf8, node->leaf.utf8);
-                return &iter->entry;
-            } else {
-                struct xkb_compose_table_iterator_cursor new_cursor = {node->internal.eqkid, NODE_LEFT};
-                darray_append(iter->cursors, new_cursor);
-            }
-            break;
-
-        case NODE_RIGHT:
-            cursor->direction = NODE_UP;
-            iter->entry.sequence_length--;
-            if (node->hikid) {
-                struct xkb_compose_table_iterator_cursor new_cursor = {node->hikid, NODE_LEFT};
-                darray_append(iter->cursors, new_cursor);
-            }
-            break;
-
-        case NODE_UP:
-            darray_remove_last(iter->cursors);
-            break;
+            /* Get parent node */
+            pending = &darray_item(iter->pending_nodes,
+                                   darray_size(iter->pending_nodes) - 1);
+            node = &darray_item(iter->table->nodes, pending->offset);
         }
     }
 
-    return NULL;
+    while (1) {
+        /* Follow down arrow */
+        pending->processed = true;
+        iter->entry.sequence[iter->entry.sequence_length] = node->keysym;
+        iter->entry.sequence_length++;
+        if (node->is_leaf) {
+            /* Leaf: return entry */
+            iter->entry.keysym = node->leaf.keysym;
+            iter->entry.utf8 = &darray_item(iter->table->utf8, node->leaf.utf8);
+            return &iter->entry;
+        }
+        /* Not a leaf: process child node */
+        new.offset = node->internal.eqkid;
+        darray_append(iter->pending_nodes, new);
+        pending = &darray_item(iter->pending_nodes,
+                               darray_size(iter->pending_nodes) - 1);
+node_left:
+        node = &darray_item(iter->table->nodes, pending->offset);
+        /* Find the next left-most arrow and store intermediate pending nodes */
+        while (node->lokid) {
+            /* Follow left arrow */
+            new.offset = node->lokid;
+            darray_append(iter->pending_nodes, new);
+            pending = &darray_item(iter->pending_nodes,
+                                   darray_size(iter->pending_nodes) - 1);
+            node = &darray_item(iter->table->nodes, new.offset);
+        }
+    }
 }
