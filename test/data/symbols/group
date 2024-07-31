@@ -466,3 +466,51 @@ xkb_symbols "lctrl_lwin_toggle" {
         symbols[ Group1 ] = [ Super_L,    ISO_Next_Group ]
     };
 };
+
+partial modifier_keys
+xkb_symbols "menu_latch_group2" {
+	key <MENU> {
+		symbols[1] = [ ISO_Group_Latch ],
+		actions[1] = [ LatchGroup(group=2) ]
+	};
+};
+
+partial modifier_keys
+xkb_symbols "menu_latch_group2_lock" {
+	key <MENU> {
+		symbols[1] = [ ISO_Group_Latch ],
+		actions[1] = [ LatchGroup(group=2, latchToLock=yes) ]
+	};
+};
+
+partial modifier_keys
+xkb_symbols "menu_latch" {
+	key <MENU> {
+		symbols[1] = [ ISO_Group_Latch ],
+		actions[1] = [ LatchGroup(group=+1) ]
+	};
+};
+
+partial modifier_keys
+xkb_symbols "menu_latch_lock" {
+	key <MENU> {
+		symbols[1] = [ ISO_Group_Latch ],
+		actions[1] = [ LatchGroup(group=+1, latchToLock=yes) ]
+	};
+};
+
+partial modifier_keys
+xkb_symbols "menu_latch_negative" {
+	key <MENU> {
+		symbols[1] = [ ISO_Group_Latch ],
+		actions[1] = [ LatchGroup(group=-1) ]
+	};
+};
+
+partial modifier_keys
+xkb_symbols "menu_latch_negative_lock" {
+	key <MENU> {
+		symbols[1] = [ ISO_Group_Latch ],
+		actions[1] = [ LatchGroup(group=-1, latchToLock=yes) ]
+	};
+};
