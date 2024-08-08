@@ -77,6 +77,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_ERROR_INVALID_REAL_MODIFIER, "Invalid real modifier"},
     {XKB_WARNING_UNKNOWN_CHAR_ESCAPE_SEQUENCE, "Unknown char escape sequence"},
     {XKB_ERROR_INVALID_INCLUDED_FILE, "Invalid included file"},
+    {XKB_ERROR_INCOMPATIBLE_KEYMAP_EXPORT_FORMAT, "Incompatible keymap export format"},
     {XKB_WARNING_MULTIPLE_GROUPS_AT_ONCE, "Multiple groups at once"},
     {XKB_WARNING_UNSUPPORTED_SYMBOLS_FIELD, "Unsupported symbols field"},
     {XKB_ERROR_INVALID_SYNTAX, "Invalid syntax"},

@@ -385,6 +385,7 @@ usage(FILE *fp, char *progname)
                 progname);
         fprintf(fp, "For both:\n"
                         "          --verbose (enable verbose debugging output)\n"
+                        "          --format F (use keymap format F)\n"
 #ifdef ENABLE_PRIVATE_APIS
                         "          --print-modmaps (print real & virtual key modmaps)\n"
 #endif
@@ -408,6 +409,7 @@ main(int argc, char *argv[])
     struct xkb_compose_table *compose_table = NULL;
     const char *includes[64];
     size_t num_includes = 0;
+    enum xkb_keymap_format format = XKB_KEYMAP_FORMAT_TEXT_V1;
     const char *rules = NULL;
     const char *model = NULL;
     const char *layout = NULL;
@@ -426,6 +428,7 @@ main(int argc, char *argv[])
         OPT_VARIANT,
         OPT_OPTION,
         OPT_KEYMAP,
+        OPT_FORMAT,
         OPT_WITHOUT_X11_OFFSET,
         OPT_CONSUMED_MODE,
         OPT_COMPOSE,
@@ -446,6 +449,7 @@ main(int argc, char *argv[])
         {"variant",              required_argument,      0, OPT_VARIANT},
         {"options",              required_argument,      0, OPT_OPTION},
         {"keymap",               required_argument,      0, OPT_KEYMAP},
+        {"format",               required_argument,      0, OPT_FORMAT},
         {"consumed-mode",        required_argument,      0, OPT_CONSUMED_MODE},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
         {"short",                no_argument,            0, OPT_SHORT},
@@ -502,6 +506,14 @@ main(int argc, char *argv[])
             break;
         case OPT_KEYMAP:
             keymap_path = optarg;
+            break;
+        case OPT_FORMAT:
+            format = atoi(optarg);
+            if (!xkb_keymap_is_supported_format(format)) {
+                fprintf(stderr, "error: invalid --format \"%s\"\n", optarg);
+                usage(stderr, argv[0]);
+                return EXIT_INVALID_USAGE;
+            }
             break;
         case OPT_WITHOUT_X11_OFFSET:
             evdev_offset = 0;
@@ -569,8 +581,7 @@ main(int argc, char *argv[])
                     keymap_path, strerror(errno));
             goto out;
         }
-        keymap = xkb_keymap_new_from_file(ctx, file,
-                                          XKB_KEYMAP_FORMAT_TEXT_V1,
+        keymap = xkb_keymap_new_from_file(ctx, file, format,
                                           XKB_KEYMAP_COMPILE_NO_FLAGS);
         fclose(file);
     }
@@ -584,9 +595,9 @@ main(int argc, char *argv[])
         };
 
         if (!rules && !model && !layout && !variant && !options)
-            keymap = xkb_keymap_new_from_names(ctx, NULL, 0);
+            keymap = xkb_keymap_new_from_names2(ctx, NULL, format, 0);
         else
-            keymap = xkb_keymap_new_from_names(ctx, &rmlvo, 0);
+            keymap = xkb_keymap_new_from_names2(ctx, &rmlvo, format, 0);
 
         if (!keymap) {
             fprintf(stderr,

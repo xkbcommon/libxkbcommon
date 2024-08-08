@@ -151,6 +151,8 @@ enum xkb_action_flags {
     ACTION_ABSOLUTE_Y = (1 << 7),
     ACTION_ACCEL = (1 << 8),
     ACTION_SAME_SCREEN = (1 << 9),
+    ACTION_LOCK_ON_RELEASE = (1 << 10),
+    ACTION_UNLOCK_ON_PRESS = (1 << 11),
 };
 
 enum xkb_action_controls {
@@ -488,7 +490,8 @@ struct xkb_keymap_format_ops {
     bool (*keymap_new_from_string)(struct xkb_keymap *keymap,
                                    const char *string, size_t length);
     bool (*keymap_new_from_file)(struct xkb_keymap *keymap, FILE *file);
-    char *(*keymap_get_as_string)(struct xkb_keymap *keymap);
+    char *(*keymap_get_as_string)(struct xkb_keymap *keymap,
+                                  enum xkb_keymap_format format);
 };
 
 extern const struct xkb_keymap_format_ops text_v1_keymap_format_ops;

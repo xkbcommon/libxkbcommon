@@ -311,6 +311,11 @@ xkb_filter_group_set_func(struct xkb_state *state,
 static void
 xkb_filter_group_lock_new(struct xkb_state *state, struct xkb_filter *filter)
 {
+    /* XKB extension: lock on release
+     * Do nothing on press */
+    if (filter->action.group.flags & ACTION_LOCK_ON_RELEASE)
+        return;
+
     if (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH)
         state->components.locked_group = filter->action.group.group;
     else
@@ -323,8 +328,15 @@ xkb_filter_group_lock_func(struct xkb_state *state,
                            const struct xkb_key *key,
                            enum xkb_key_direction direction)
 {
-    if (key != filter->key)
+    if (key != filter->key) {
+        if (filter->action.group.flags & ACTION_LOCK_ON_RELEASE &&
+            direction == XKB_KEY_DOWN) {
+            /* XKB extension: lock on release
+             * Another key has been pressed: cancel group change on release */
+            filter->action.group.flags &= ~ACTION_LOCK_ON_RELEASE;
+        }
         return XKB_FILTER_CONTINUE;
+    }
 
     if (direction == XKB_KEY_DOWN) {
         filter->refcnt++;
@@ -332,6 +344,14 @@ xkb_filter_group_lock_func(struct xkb_state *state,
     }
     if (--filter->refcnt > 0)
         return XKB_FILTER_CONSUME;
+
+    if (filter->action.group.flags & ACTION_LOCK_ON_RELEASE) {
+        /* XKB extension: lock on release */
+        if (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH)
+            state->components.locked_group = filter->action.group.group;
+        else
+            state->components.locked_group += filter->action.group.group;
+    }
 
     filter->func = NULL;
     return XKB_FILTER_CONTINUE;
@@ -375,9 +395,17 @@ xkb_filter_mod_lock_new(struct xkb_state *state, struct xkb_filter *filter)
 {
     filter->priv = (state->components.locked_mods &
                     filter->action.mods.mods.mask);
-    state->set_mods |= filter->action.mods.mods.mask;
-    if (!(filter->action.mods.flags & ACTION_LOCK_NO_LOCK))
-        state->components.locked_mods |= filter->action.mods.mods.mask;
+    if (filter->priv && (filter->action.mods.flags & ACTION_UNLOCK_ON_PRESS)) {
+        /* XKB extension: Unlock on second press */
+        state->clear_mods |= filter->action.mods.mods.mask;
+        if (!(filter->action.mods.flags & ACTION_LOCK_NO_UNLOCK))
+            state->components.locked_mods &= ~filter->priv;
+        filter->priv = 0;
+    } else {
+        state->set_mods |= filter->action.mods.mods.mask;
+        if (!(filter->action.mods.flags & ACTION_LOCK_NO_LOCK))
+            state->components.locked_mods |= filter->action.mods.mods.mask;
+    }
 }
 
 static bool

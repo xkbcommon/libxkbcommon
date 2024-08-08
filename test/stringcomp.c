@@ -77,7 +77,8 @@ main(int argc, char *argv[])
     assert(!keymap);
 
     /* Make sure we can recompile our output for a normal keymap from rules. */
-    keymap = test_compile_rules(ctx, NULL, NULL,
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                NULL, NULL,
                                 "ru,ca,de,us", ",multix,neo,intl", NULL);
     assert(keymap);
     dump = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
@@ -93,7 +94,7 @@ main(int argc, char *argv[])
     /* Test response to invalid formats and flags. */
     assert(!xkb_keymap_new_from_string(ctx, dump, 0, 0));
     assert(!xkb_keymap_new_from_string(ctx, dump, -1, 0));
-    assert(!xkb_keymap_new_from_string(ctx, dump, XKB_KEYMAP_FORMAT_TEXT_V1+1, 0));
+    assert(!xkb_keymap_new_from_string(ctx, dump, XKB_KEYMAP_FORMAT_TEXT_V1+1000000, 0));
     assert(!xkb_keymap_new_from_string(ctx, dump, XKB_KEYMAP_FORMAT_TEXT_V1, -1));
     assert(!xkb_keymap_new_from_string(ctx, dump, XKB_KEYMAP_FORMAT_TEXT_V1, 1414));
     assert(!xkb_keymap_get_as_string(keymap, 0));

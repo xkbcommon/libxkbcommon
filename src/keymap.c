@@ -108,6 +108,7 @@ get_keymap_format_ops(enum xkb_keymap_format format)
 {
     static const struct xkb_keymap_format_ops *keymap_format_ops[] = {
         [XKB_KEYMAP_FORMAT_TEXT_V1] = &text_v1_keymap_format_ops,
+        [XKB_KEYMAP_FORMAT_TEXT_V1_1] = &text_v1_keymap_format_ops,
     };
 
     if ((int) format < 0 || (int) format >= (int) ARRAY_SIZE(keymap_format_ops))
@@ -116,14 +117,40 @@ get_keymap_format_ops(enum xkb_keymap_format format)
     return keymap_format_ops[(int) format];
 }
 
+/* Warning: must be in ascending order */
+static const enum xkb_keymap_format supported_keymap_formats[] = {
+    XKB_KEYMAP_FORMAT_TEXT_V1,
+    XKB_KEYMAP_FORMAT_TEXT_V1_1
+};
+
+XKB_EXPORT size_t
+xkb_keymap_supported_formats(const enum xkb_keymap_format **formats)
+{
+    *formats = supported_keymap_formats;
+    return ARRAY_SIZE(supported_keymap_formats);
+}
+
+XKB_EXPORT bool
+xkb_keymap_is_supported_format(enum xkb_keymap_format format)
+{
+    for (size_t k = 0; k < ARRAY_SIZE(supported_keymap_formats); k++) {
+        if (supported_keymap_formats[k] == format)
+            return true;
+        /* Short-circuit because array is sorted */
+        if (supported_keymap_formats[k] > format)
+            return false;
+    }
+    return false;
+}
+
 XKB_EXPORT struct xkb_keymap *
-xkb_keymap_new_from_names(struct xkb_context *ctx,
-                          const struct xkb_rule_names *rmlvo_in,
-                          enum xkb_keymap_compile_flags flags)
+xkb_keymap_new_from_names2(struct xkb_context *ctx,
+                           const struct xkb_rule_names *rmlvo_in,
+                           enum xkb_keymap_format format,
+                           enum xkb_keymap_compile_flags flags)
 {
     struct xkb_keymap *keymap;
     struct xkb_rule_names rmlvo;
-    const enum xkb_keymap_format format = XKB_KEYMAP_FORMAT_TEXT_V1;
     const struct xkb_keymap_format_ops *ops;
 
     ops = get_keymap_format_ops(format);
@@ -153,6 +180,15 @@ xkb_keymap_new_from_names(struct xkb_context *ctx,
     }
 
     return keymap;
+}
+
+XKB_EXPORT struct xkb_keymap *
+xkb_keymap_new_from_names(struct xkb_context *ctx,
+                          const struct xkb_rule_names *rmlvo_in,
+                          enum xkb_keymap_compile_flags flags)
+{
+    return xkb_keymap_new_from_names2(ctx, rmlvo_in,
+                                      XKB_KEYMAP_FORMAT_TEXT_V1, flags);
 }
 
 XKB_EXPORT struct xkb_keymap *
@@ -258,7 +294,7 @@ xkb_keymap_get_as_string(struct xkb_keymap *keymap,
         return NULL;
     }
 
-    return ops->keymap_get_as_string(keymap);
+    return ops->keymap_get_as_string(keymap, format);
 }
 
 /**
