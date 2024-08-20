@@ -1,0 +1,32 @@
+! model = keycodes
+  *     = evdev
+
+! model = geometry
+  *     = pc(pc104)
+
+! layout variant = symbols
+  *      *       = pc+%l%(v)
+
+! layout[1] variant[1] = symbols
+  *         *          = pc+%l[1]%(v[1])
+
+! layout[2] variant[2] = symbols
+  *         *          = +%l[2]%(v[2]):2
+
+! layout[3] variant[3] = symbols
+  *         *          = +%l[3]%(v[3]):3
+
+! layout[4] variant[3] = symbols
+  *         *          = +%l[4]%(v[4]):4
+
+! model layout = compat
+  *     *      = complete
+
+! model layout[1] = compat
+  *     *         = complete
+
+! model layout[2] = compat
+  *     *         = complete
+
+! model = types
+  *     = complete

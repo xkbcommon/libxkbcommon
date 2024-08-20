@@ -108,8 +108,10 @@ rules.
 @anchor rules-wildcard-def
 Along with matching values by simple string equality and for
 membership in a [group] defined previously, rules may also contain
-**wildcard** values “\*” which *always match*. These usually appear
-near the end of a rule set to set *default* values.
+**wildcard** values “\*” with the following behavior:
+- For `model` and `options`: *always* match.
+- For `layout` and `variant`: match any *non-empty* value.
+These usually appear near the end of a rule set to set *default* values.
 
 ```c
 ! layout = keycodes

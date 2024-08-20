@@ -159,7 +159,7 @@ main(int argc, char *argv[])
     struct test_data test2 = {
         .rules = "simple",
 
-        .model = "", .layout = "", .variant = "", .options = "",
+        .model = "", .layout = "foo", .variant = "", .options = "",
 
         .keycodes = "default_keycodes", .types = "default_types",
         .compat = "default_compat", .symbols = "default_symbols",
@@ -219,6 +219,37 @@ main(int argc, char *argv[])
         .symbols = "my_symbols+extra_variant+compose(foo)+keypad(bar)+altwin(menu)",
     };
     assert(test_rules(ctx, &test7));
+
+    /* Wild card does not match empty entries for layouts and variants */
+#define ENTRY(_model, _layout, _variant, _options, _symbols, _should_fail) \
+    { .rules = "wildcard", .model = _model,                                \
+      .layout = _layout, .variant = _variant, .options = _options,         \
+      .keycodes = "evdev", .types = "complete", .compat = "complete",      \
+      .symbols = _symbols , .should_fail = _should_fail }
+    struct test_data wildcard_data[] = {
+        /* OK: empty model and options and at least one layout+variant combo */
+        ENTRY(NULL, "a"  , "1"  , NULL, "pc+a(1)", false),
+        ENTRY(""  , "a"  , "1"  , ""  , "pc+a(1)", false),
+        ENTRY(""  , "a," , "1," , ""  , "pc+a(1)", false),
+        ENTRY(""  , ",b" , ",2" , ""  , "+b(2):2", false),
+        ENTRY(""  , "a,b", "1," , ""  , "pc+a(1)", false),
+        ENTRY(""  , "a,b", ",2" , ""  , "+b(2):2", false),
+        /* Fails: empty layout or variant */
+        ENTRY(NULL, NULL , NULL , NULL, "", true),
+        ENTRY(NULL, ""   , ""   , NULL, "", true),
+        ENTRY(NULL, NULL , "1"  , NULL, "", true),
+        ENTRY(NULL, ""   , "1"  , NULL, "", true),
+        ENTRY(NULL, ","  , "1,2", NULL, "", true),
+        ENTRY(NULL, "a"  , NULL , NULL, "", true),
+        ENTRY(NULL, "a"  , ""   , NULL, "", true),
+        ENTRY(NULL, "a,b", NULL , NULL, "", true),
+        ENTRY(NULL, "a,b", ""   , NULL, "", true),
+        ENTRY(NULL, "a,b", ","  , NULL, "", true)
+    };
+#undef ENTRY
+    for (size_t k = 0; k < ARRAY_SIZE(wildcard_data); k++) {
+        assert(test_rules(ctx, &wildcard_data[k]));
+    }
 
     xkb_context_unref(ctx);
     return 0;
