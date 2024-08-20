@@ -234,6 +234,13 @@ enum mlvo_match_type {
     MLVO_MATCH_GROUP,
 };
 
+enum wildcard_match_type {
+    /* Match only non-empty strings */
+    WILDCARD_MATCH_NONEMPTY = 0,
+    /* Match all strings */
+    WILDCARD_MATCH_ALL,
+};
+
 struct rule {
     struct sval mlvo_value_at_pos[_MLVO_NUM_ENTRIES];
     enum mlvo_match_type match_type_at_pos[_MLVO_NUM_ENTRIES];
@@ -694,10 +701,12 @@ match_group(struct matcher *m, struct sval group_name, struct sval to)
 
 static bool
 match_value(struct matcher *m, struct sval val, struct sval to,
-            enum mlvo_match_type match_type)
+            enum mlvo_match_type match_type,
+            enum wildcard_match_type wildcard_type)
 {
     if (match_type == MLVO_MATCH_WILDCARD)
-        return true;
+        /* Wild card match empty values only if explicitly required */
+        return wildcard_type == WILDCARD_MATCH_ALL || !!to.len;
     if (match_type == MLVO_MATCH_GROUP)
         return match_group(m, val, to);
     return svaleq(val, to);
@@ -705,9 +714,10 @@ match_value(struct matcher *m, struct sval val, struct sval to,
 
 static bool
 match_value_and_mark(struct matcher *m, struct sval val,
-                     struct matched_sval *to, enum mlvo_match_type match_type)
+                     struct matched_sval *to, enum mlvo_match_type match_type,
+                     enum wildcard_match_type wildcard_type)
 {
-    bool matched = match_value(m, val, to->sval, match_type);
+    bool matched = match_value(m, val, to->sval, match_type, wildcard_type);
     if (matched)
         to->matched = true;
     return matched;
@@ -868,25 +878,32 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
         struct matched_sval *to;
         bool matched = false;
 
+        /* NOTE: Wild card matches empty values only for model and options, as
+         * implemented in libxkbfile and xserver. The reason for such different
+         * treatment is not documented. */
         if (mlvo == MLVO_MODEL) {
             to = &m->rmlvo.model;
-            matched = match_value_and_mark(m, value, to, match_type);
+            matched = match_value_and_mark(m, value, to, match_type,
+                                           WILDCARD_MATCH_ALL);
         }
         else if (mlvo == MLVO_LAYOUT) {
             xkb_layout_index_t idx = m->mapping.layout_idx;
             idx = (idx == XKB_LAYOUT_INVALID ? 0 : idx);
             to = &darray_item(m->rmlvo.layouts, idx);
-            matched = match_value_and_mark(m, value, to, match_type);
+            matched = match_value_and_mark(m, value, to, match_type,
+                                           WILDCARD_MATCH_NONEMPTY);
         }
         else if (mlvo == MLVO_VARIANT) {
             xkb_layout_index_t idx = m->mapping.variant_idx;
             idx = (idx == XKB_LAYOUT_INVALID ? 0 : idx);
             to = &darray_item(m->rmlvo.variants, idx);
-            matched = match_value_and_mark(m, value, to, match_type);
+            matched = match_value_and_mark(m, value, to, match_type,
+                                           WILDCARD_MATCH_NONEMPTY);
         }
         else if (mlvo == MLVO_OPTION) {
             darray_foreach(to, m->rmlvo.options) {
-                matched = match_value_and_mark(m, value, to, match_type);
+                matched = match_value_and_mark(m, value, to, match_type,
+                                               WILDCARD_MATCH_ALL);
                 if (matched)
                     break;
             }
