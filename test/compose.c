@@ -31,7 +31,7 @@
 #include "src/utf8.h"
 #include "src/keysym.h"
 #include "src/compose/parser.h"
-#include "src/compose/dump.h"
+#include "src/compose/escape.h"
 
 static const char *
 compose_status_string(enum xkb_compose_status status)

@@ -25,8 +25,8 @@
 #define COMPOSE_COMPOSE_H
 
 #include "xkbcommon/xkbcommon-compose.h"
-#include "utils.h"
-#include "context.h"
+#include "src/utils.h"
+#include "src/context.h"
 
 /*
  * The compose table data structure is a ternary search tree.

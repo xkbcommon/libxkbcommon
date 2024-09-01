@@ -53,40 +53,6 @@ usage(FILE *fp, char *progname)
             "    LC_ALL, LC_TYPE and LANG.\n");
 }
 
-static bool
-print_compose_table_entry(struct xkb_compose_table_entry *entry)
-{
-    size_t nsyms;
-    const xkb_keysym_t *syms = xkb_compose_table_entry_sequence(entry, &nsyms);
-    char buf[XKB_KEYSYM_NAME_MAX_SIZE];
-    for (size_t i = 0; i < nsyms; i++) {
-        xkb_keysym_get_name(syms[i], buf, sizeof(buf));
-        printf("<%s>", buf);
-        if (i + 1 < nsyms) {
-            printf(" ");
-        }
-    }
-    printf(" : ");
-    const char *utf8 = xkb_compose_table_entry_utf8(entry);
-    if (*utf8 != '\0') {
-        char *escaped = escape_utf8_string_literal(utf8);
-        if (!escaped) {
-            fprintf(stderr, "ERROR: Cannot escape the string: allocation error\n");
-            return false;
-        } else {
-            printf(" \"%s\"", escaped);
-            free(escaped);
-        }
-    }
-    const xkb_keysym_t keysym = xkb_compose_table_entry_keysym(entry);
-    if (keysym != XKB_KEY_NoSymbol) {
-        xkb_keysym_get_name(keysym, buf, sizeof(buf));
-        printf(" %s", buf);
-    }
-    printf("\n");
-    return true;
-}
-
 int
 main(int argc, char *argv[])
 {
@@ -175,18 +141,10 @@ main(int argc, char *argv[])
         }
     }
 
-    struct xkb_compose_table_iterator *iter = xkb_compose_table_iterator_new(compose_table);
-    struct xkb_compose_table_entry *entry;
-    while ((entry = xkb_compose_table_iterator_next(iter))) {
-        if (!print_compose_table_entry(entry)) {
-            ret = EXIT_FAILURE;
-            goto entry_error;
-        }
-    }
-    ret = EXIT_SUCCESS;
+    ret = xkb_compose_table_dump(stdout, compose_table)
+        ? EXIT_SUCCESS
+        : EXIT_FAILURE;
 
-entry_error:
-    xkb_compose_table_iterator_free(iter);
 out:
     xkb_compose_table_unref(compose_table);
 file_error:
