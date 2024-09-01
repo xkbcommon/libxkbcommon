@@ -503,6 +503,9 @@ if build_tools
     # Tool: compose
     executable('xkbcli-compile-compose',
                'tools/compile-compose.c',
+               'src/compose/dump.c',
+               'src/compose/dump.h',
+               'src/compose/escape.h',
                dependencies: tools_dep,
                install: true,
                install_dir: dir_libexec)
@@ -765,7 +768,14 @@ test(
 )
 test(
     'compose',
-    executable('test-compose', 'test/compose.c', dependencies: test_dep),
+    executable(
+        'test-compose',
+        'test/compose.c',
+        'src/compose/dump.c',
+        'src/compose/dump.h',
+        'src/compose/escape.h',
+        dependencies: test_dep
+    ),
     env: test_env,
 )
 test(
