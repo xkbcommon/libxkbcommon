@@ -24,6 +24,7 @@
 #include "config.h"
 #include <time.h>
 #include <errno.h>
+#include <stdio.h>
 
 #include "xkbcommon/xkbcommon-compose.h"
 
@@ -1006,6 +1007,63 @@ test_encode_escape_sequences(struct xkb_context *ctx)
 #   undef MAX_CODE_POINTS_COUNT
 }
 
+/* Roundtrip check: check that a table parsed from a file and the table parsed
+ * from the dump of the previous table are identical */
+static void
+test_roundtrip(struct xkb_context *ctx)
+{
+/* TODO: add support for systems without open_memstream */
+#if HAVE_OPEN_MEMSTREAM
+    bool ok = false;
+
+    /* Parse reference file */
+    char *input = test_read_file("locale/en_US.UTF-8/Compose");
+    assert(input);
+    size_t input_length = strlen(input);
+    struct xkb_compose_table *ref_table = xkb_compose_table_new_from_buffer(
+        ctx, input, input_length, "",
+        XKB_COMPOSE_FORMAT_TEXT_V1,
+        XKB_COMPOSE_COMPILE_NO_FLAGS
+    );
+    free(input);
+    assert(ref_table);
+
+    /* Dump reference Compose table */
+    char *output;
+    size_t output_length = 0;
+    FILE *output_file = open_memstream(&output, &output_length);
+    assert(output_file);
+
+    ok = xkb_compose_table_dump(output_file, ref_table);
+    fclose(output_file);
+    assert(input);
+
+    if (!ok) {
+        free(output);
+        xkb_compose_table_unref(ref_table);
+        exit(TEST_SETUP_FAILURE);
+    }
+
+    /* Parse dumped table */
+    struct xkb_compose_table *table = xkb_compose_table_new_from_buffer(
+        ctx, output, output_length, "",
+        XKB_COMPOSE_FORMAT_TEXT_V1,
+        XKB_COMPOSE_COMPILE_NO_FLAGS
+    );
+    free(output);
+    assert(table);
+
+    /* Check roundtrip by comparing table entries */
+    struct xkb_compose_table_iterator *iter = xkb_compose_table_iterator_new(table);
+    xkb_compose_table_for_each(ref_table, compose_traverse_fn, iter);
+    assert(xkb_compose_table_iterator_next(iter) == NULL);
+
+    xkb_compose_table_iterator_free(iter);
+    xkb_compose_table_unref(table);
+    xkb_compose_table_unref(ref_table);
+#endif
+}
+
 /* CLI positional arguments:
  * 1. Seed for the pseudo-random generator:
  *    - Leave it unset or set it to “-” to use current time.
@@ -1076,6 +1134,7 @@ main(int argc, char *argv[])
     test_string_length(ctx);
     test_decode_escape_sequences(ctx);
     test_encode_escape_sequences(ctx);
+    test_roundtrip(ctx);
 
     xkb_context_unref(ctx);
     return 0;
