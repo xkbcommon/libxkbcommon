@@ -31,6 +31,7 @@
  * @brief Predefined names for common modifiers and LEDs.
  */
 
+/* Real modifiers names are hardcoded in libxkbcommon */
 #define XKB_MOD_NAME_SHIFT      "Shift"
 #define XKB_MOD_NAME_CAPS       "Lock"
 #define XKB_MOD_NAME_CTRL       "Control"
@@ -38,8 +39,13 @@
 #define XKB_MOD_NAME_NUM        "Mod2"
 #define XKB_MOD_NAME_LOGO       "Mod4"
 
-#define XKB_LED_NAME_CAPS       "Caps Lock"
+/* LEDs names are encoded in xkeyboard-config, in the keycodes and compat files.
+ * They have been stable since the beginning of the project and are unlikely to
+ * ever change. */
 #define XKB_LED_NAME_NUM        "Num Lock"
+#define XKB_LED_NAME_CAPS       "Caps Lock"
 #define XKB_LED_NAME_SCROLL     "Scroll Lock"
+#define XKB_LED_NAME_COMPOSE    "Compose"
+#define XKB_LED_NAME_KANA       "Kana"
 
 #endif
