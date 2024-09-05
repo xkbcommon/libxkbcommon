@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
+
 import argparse
+from dataclasses import dataclass
 import multiprocessing
 import sys
 import subprocess
 import os
+from typing import Any, Generator
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    Self = Any
 
-verbose = False
+WILDCARD = "*"
 
 DEFAULT_RULES_XML = "@XKB_CONFIG_ROOT@/rules/evdev.xml"
 
@@ -54,23 +61,56 @@ class Invocation:
     def rmlvo(self):
         return self.rules, self.model, self.layout, self.variant, self.option
 
-    def __str__(self):
-        s = []
-        rmlvo = [x or "" for x in self.rmlvo]
-        rmlvo = ", ".join([f'"{x}"' for x in rmlvo])
-        s.append(f"- rmlvo: [{rmlvo}]")
-        s.append(f'  cmd: "{escape(self.command)}"')
-        s.append(f"  status: {self.exitstatus}")
-        if self.error:
-            s.append(f'  error: "{escape(self.error.strip())}"')
-        return "\n".join(s)
+    @staticmethod
+    def rmlvo_labels():
+        return "rules", "model", "layout", "variant", "option"
 
-    def run(self):
+    @property
+    def rmlvo_yaml(self) -> str:
+        return (
+            "{ "
+            + ", ".join(
+                f'{key}: "{value}"'
+                for key, value in zip(self.rmlvo_labels(), self.rmlvo)
+                if value
+            )
+            + " }"
+        )
+
+    @staticmethod
+    def parse_rmlvo(rmlvo: dict[str, str | None]):
+        return (
+            rmlvo.get("r") or "evdev",
+            rmlvo.get("m") or "pc105",
+            rmlvo.get("l") or "us",
+            rmlvo.get("v", None),
+            rmlvo.get("o", None),
+        )
+
+    def __str_iter(self) -> Generator[str, None, None]:
+        rmlvo = ", ".join(f'"{x or ""}"' for x in self.rmlvo)
+        yield f"- rmlvo: [{rmlvo}]"
+        yield f'  cmd: "{escape(self.command)}"'
+        yield f"  status: {self.exitstatus}"
+        if self.error:
+            yield f'  error: "{escape(self.error.strip())}"'
+
+    def __str__(self):
+        return "\n".join(self.__str_iter())
+
+    def _run(self):
         raise NotImplementedError
+
+    @classmethod
+    def run(cls, rmlvo) -> Self:
+        r, m, l, v, o = cls.parse_rmlvo(rmlvo)
+        tool = cls(r, m, l, v, o)
+        tool._run()
+        return tool
 
 
 class XkbCompInvocation(Invocation):
-    def run(self):
+    def _run(self):
         r, m, l, v, o = self.rmlvo
         args = ["setxkbmap", "-print"]
         if r is not None:
@@ -123,7 +163,7 @@ class XkbCompInvocation(Invocation):
 class XkbcommonInvocation(Invocation):
     UNRECOGNIZED_KEYSYM_ERROR = "XKB-107"
 
-    def run(self):
+    def _run(self):
         r, m, l, v, o = self.rmlvo
         args = [
             "xkbcli-compile-keymap",  # this is run in the builddir
@@ -158,57 +198,54 @@ class XkbcommonInvocation(Invocation):
             self.exitstatus = err.returncode
 
 
-def xkbcommontool(rmlvo):
-    try:
-        r = rmlvo.get("r", "evdev")
-        m = rmlvo.get("m", "pc105")
-        l = rmlvo.get("l", "us")
-        v = rmlvo.get("v", None)
-        o = rmlvo.get("o", None)
-        tool = XkbcommonInvocation(r, m, l, v, o)
-        tool.run()
-        return tool
-    except KeyboardInterrupt:
-        pass
+@dataclass
+class Layout:
+    name: str
+    variants: list[str | None]
 
 
-def xkbcomp(rmlvo):
-    try:
-        r = rmlvo.get("r", "evdev")
-        m = rmlvo.get("m", "pc105")
-        l = rmlvo.get("l", "us")
-        v = rmlvo.get("v", None)
-        o = rmlvo.get("o", None)
-        tool = XkbCompInvocation(r, m, l, v, o)
-        tool.run()
-        return tool
-    except KeyboardInterrupt:
-        pass
-
-
-def parse(path):
+def parse(path: Path, model, layout, variant, option):
     root = ET.fromstring(open(path).read())
-    layouts = root.findall("layoutList/layout")
 
-    options = [e.text for e in root.findall("optionList/group/option/configItem/name")]
+    models = (
+        tuple(e.text for e in root.findall("modelList/model/configItem/name"))
+        if model is None
+        else [model]
+    )
+    if variant and not layout:
+        raise ValueError("Variant must be set together with layout")
+    elif layout:
+        layouts = (Layout(layout, variant.split(",") if variant else [None]),)
+    else:
+        layouts = tuple(
+            Layout(
+                e.find("configItem/name").text,
+                [None]
+                + [v.text for v in e.findall("variantList/variant/configItem/name")],
+            )
+            for e in root.findall("layoutList/layout")
+        )
+    options = (
+        tuple(e.text for e in root.findall("optionList/group/option/configItem/name"))
+        if option is None
+        else ([option] if option else [])
+    )
 
     combos = []
-    for l in layouts:
-        layout = l.find("configItem/name").text
-        combos.append({"l": layout})
 
-        variants = l.findall("variantList/variant")
-        for v in variants:
-            variant = v.find("configItem/name").text
-
-            combos.append({"l": layout, "v": variant})
-            for option in options:
-                combos.append({"l": layout, "v": variant, "o": option})
+    for m in models:
+        for l in layouts:
+            for v in l.variants:
+                combos.append({"m": m, "l": l.name, "v": v})
+                for opt in options:
+                    combos.append({"m": m, "l": l.name, "v": v, "o": opt})
 
     return combos
 
 
-def run(combos, tool, njobs, keymap_output_dir):
+def run(
+    combos, tool, njobs, keymap_output_dir, verbose: bool, short: bool, progress_bar
+):
     if keymap_output_dir:
         keymap_output_dir = Path(keymap_output_dir)
         try:
@@ -222,7 +259,8 @@ def run(combos, tool, njobs, keymap_output_dir):
 
     failed = False
     with multiprocessing.Pool(njobs) as p:
-        results = p.imap_unordered(tool, combos)
+        results = p.imap_unordered(tool.run, combos)
+        invocation: Invocation
         for invocation in progress_bar(results, total=len(combos), file=sys.stdout):
             if invocation.exitstatus != 0:
                 failed = True
@@ -231,7 +269,10 @@ def run(combos, tool, njobs, keymap_output_dir):
                 target = sys.stdout if verbose else None
 
             if target:
-                print(invocation, file=target)
+                if short:
+                    print("-", invocation.rmlvo_yaml, file=target)
+                else:
+                    print(invocation, file=target)
 
             if keymap_output_dir:
                 # we're running through the layouts in a somewhat sorted manner,
@@ -255,12 +296,9 @@ def run(combos, tool, njobs, keymap_output_dir):
 
 
 def main(args):
-    global progress_bar
-    global verbose
-
     tools = {
-        "libxkbcommon": xkbcommontool,
-        "xkbcomp": xkbcomp,
+        "libxkbcommon": XkbcommonInvocation,
+        "xkbcomp": XkbCompInvocation,
     }
 
     parser = argparse.ArgumentParser(
@@ -295,40 +333,57 @@ def main(args):
     )
     parser.add_argument("--verbose", "-v", default=False, action="store_true")
     parser.add_argument(
+        "--short", default=False, action="store_true", help="Concise output"
+    )
+    parser.add_argument(
         "--keymap-output-dir",
         default=None,
         type=str,
         help="Directory to print compiled keymaps to",
     )
     parser.add_argument(
-        "--layout", default=None, type=str, help="Only test the given layout"
+        "--model", default="", type=str, help="Only test the given model"
     )
     parser.add_argument(
-        "--variant", default=None, type=str, help="Only test the given variant"
+        "--layout", default=WILDCARD, type=str, help="Only test the given layout"
     )
     parser.add_argument(
-        "--option", default=None, type=str, help="Only test the given option"
+        "--variant", default=WILDCARD, type=str, help="Only test the given variant"
+    )
+    parser.add_argument(
+        "--option", default=WILDCARD, type=str, help="Only test the given option"
+    )
+    parser.add_argument(
+        "--no-iterations", "-1", action="store_true", help="Only test one combo"
     )
 
     args = parser.parse_args()
 
     verbose = args.verbose
+    short = args.short
     keymapdir = args.keymap_output_dir
     progress_bar = create_progress_bar(verbose)
 
     tool = tools[args.tool]
 
-    if any([args.layout, args.variant, args.option]):
+    model = None if args.model == WILDCARD else args.model
+    layout = None if args.layout == WILDCARD else args.layout
+    variant = None if args.variant == WILDCARD else args.variant
+    option = None if args.option == WILDCARD else args.option
+
+    if args.no_iterations:
         combos = [
             {
-                "l": args.layout,
-                "v": args.variant,
-                "o": args.option,
+                "m": model,
+                "l": layout,
+                "v": variant,
+                "o": option,
             }
         ]
     else:
-        combos = parse(args.path)
-    failed = run(combos, tool, args.jobs, keymapdir)
+        combos = parse(args.path, model, layout, variant, option)
+
+    failed = run(combos, tool, args.jobs, keymapdir, verbose, short, progress_bar)
     sys.exit(failed)
 
 
