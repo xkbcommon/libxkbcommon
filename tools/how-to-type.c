@@ -30,16 +30,94 @@
 #include <errno.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "src/utils.h"
 #include "src/keysym.h"
+#include "src/utf8-decoding.h"
 
 #define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
+
+static uint32_t
+parse_char_or_codepoint(const char *raw) {
+    size_t raw_length = strlen_safe(raw);
+    size_t length = 0;
+
+    if (!raw_length)
+        return INVALID_UTF8_CODE_POINT;
+
+    /* Try to parse the parameter as a UTF-8 encoded single character */
+    uint32_t codepoint = utf8_next_code_point(raw, raw_length, &length);
+
+    /* If parsing failed or did not consume all the string, then try other formats */
+    if (codepoint == INVALID_UTF8_CODE_POINT ||
+        length == 0 || length != raw_length) {
+        char *endp;
+        long val;
+        int base = 10;
+        /* Detect U+NNNN format standard Unicode code point format */
+        if (raw_length >= 2 && raw[0] == 'U' && raw[1] == '+') {
+            base = 16;
+            raw += 2;
+        }
+        /* Use strtol with explicit bases instead of `0` in order to avoid
+         * unexpected parsing as octal. */
+        for (; base <= 16; base += 6) {
+            errno = 0;
+            val = strtol(raw, &endp, base);
+            if (errno != 0 || !isempty(endp) || val < 0 || val > 0x10FFFF) {
+                val = -1;
+            } else {
+                break;
+            }
+        }
+        if (val < 0) {
+            fprintf(stderr, "ERROR: Failed to convert argument to Unicode code point\n");
+            return INVALID_UTF8_CODE_POINT;
+        }
+        codepoint = (uint32_t) val;
+    }
+    return codepoint;
+}
 
 static void
 usage(const char *argv0, FILE *fp)
 {
-    fprintf(fp, "Usage: %s [--keysym] [--rules <rules>] [--model <model>] "
+    fprintf(fp, "Usage: %s [--help] [--keysym] [--rules <rules>] [--model <model>] "
                 "[--layout <layout>] [--variant <variant>] [--options <options>]"
-                " <unicode codepoint/keysym>\n", argv0);
+                " <character/codepoint/keysym>\n", argv0);
+    fprintf(
+        fp,
+        "\n"
+        "Prints the key combinations (keycode + modifiers) in the keymap's layouts which\n"
+        "would produce the given Unicode code point or keysym.\n"
+        "\n"
+        "<character/codepoint/keysym> is either:\n"
+        "- a single character (requires a terminal which uses UTF-8 character encoding);\n"
+        "- a Unicode code point, interpreted as hexadecimal if prefixed with '0x' or 'U+'\n"
+        "  else as decimal;\n"
+        "- a keysym if --keysym is used: either a numeric value (hexadecimal if prefixed\n"
+        "  with '0x' else decimal) or a keysym name.\n"
+        "\n"
+        "Options:\n"
+        " --help\n"
+        "    Print this help and exit\n"
+        " --keysym\n"
+        "    Treat the argument as a keysym, not a Unicode code point\n"
+        "\n"
+        "XKB-specific options:\n"
+        " --rules <rules>\n"
+        "    The XKB ruleset (default: '%s')\n"
+        " --model <model>\n"
+        "    The XKB model (default: '%s')\n"
+        " --layout <layout>\n"
+        "    The XKB layout (default: '%s')\n"
+        " --variant <variant>\n"
+        "    The XKB layout variant (default: '%s')\n"
+        " --options <options>\n"
+        "    The XKB options (default: '%s')\n"
+        "\n",
+        DEFAULT_XKB_RULES, DEFAULT_XKB_MODEL, DEFAULT_XKB_LAYOUT,
+        DEFAULT_XKB_VARIANT ? DEFAULT_XKB_VARIANT : "<none>",
+        DEFAULT_XKB_OPTIONS ? DEFAULT_XKB_OPTIONS : "<none>");
 }
 
 int
@@ -117,41 +195,43 @@ main(int argc, char *argv[])
         }
     }
     if (argc - optind != 1) {
-        usage(argv[0], stderr);
-        exit(EXIT_INVALID_USAGE);
+        fprintf(stderr, "ERROR: missing positional parameter\n");
+        goto parse_error;
     }
 
     if (keysym_mode) {
+        // Try to parse keysym name or hexadecimal value (0xNNNN)
         keysym = xkb_keysym_from_name(argv[optind], XKB_KEYSYM_NO_FLAGS);
         if (keysym == XKB_KEY_NoSymbol) {
-            fprintf(stderr, "Failed to convert argument to keysym\n");
-            goto err;
+            // Try to parse numeric keysym in base 10, without prefix
+            val = strtol(argv[optind], &endp, 10);
+            if (errno != 0 || !isempty(endp) || val <= 0 || val > XKB_KEYSYM_MAX) {
+                fprintf(stderr, "ERROR: Failed to convert argument to keysym\n");
+                goto parse_error;
+            }
+            keysym = (uint32_t) val;
         }
     } else {
-        errno = 0;
-        val = strtol(argv[optind], &endp, 0);
-        if (errno != 0 || endp == argv[optind] || val < 0 || val > 0x10FFFF) {
-            usage(argv[0], stderr);
-            exit(EXIT_INVALID_USAGE);
-        }
-        codepoint = (uint32_t) val;
+        codepoint = parse_char_or_codepoint(argv[optind]);
+        if (codepoint == INVALID_UTF8_CODE_POINT)
+            goto parse_error;
 
         keysym = xkb_utf32_to_keysym(codepoint);
         if (keysym == XKB_KEY_NoSymbol) {
-            fprintf(stderr, "Failed to convert codepoint to keysym\n");
-            goto err;
+            fprintf(stderr, "ERROR: Failed to convert code point to keysym\n");
+            goto parse_error;
         }
     }
 
     ret = xkb_keysym_get_name(keysym, name, sizeof(name));
     if (ret < 0 || (size_t) ret >= sizeof(name)) {
-        fprintf(stderr, "Failed to get name of keysym\n");
+        fprintf(stderr, "ERROR: Failed to get name of keysym\n");
         goto err;
     }
 
     ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     if (!ctx) {
-        fprintf(stderr, "Failed to create XKB context\n");
+        fprintf(stderr, "ERROR: Failed to create XKB context\n");
         goto err;
     }
 
@@ -165,7 +245,7 @@ main(int argc, char *argv[])
     keymap = xkb_keymap_new_from_names(ctx, &names,
                                        XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (!keymap) {
-        fprintf(stderr, "Failed to create XKB keymap\n");
+        fprintf(stderr, "ERROR: Failed to create XKB keymap\n");
         goto err;
     }
 
@@ -237,4 +317,7 @@ err:
     xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
     return err;
+parse_error:
+    usage(argv[0], stderr);
+    exit(EXIT_INVALID_USAGE);
 }

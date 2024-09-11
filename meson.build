@@ -518,6 +518,8 @@ if build_tools
     # Tool: how-to-type
     executable('xkbcli-how-to-type',
                'tools/how-to-type.c',
+               'src/utf8-decoding.c',
+               'src/utf8-decoding.h',
                dependencies: tools_dep,
                install: true,
                install_dir: dir_libexec)

@@ -1,24 +1,78 @@
-.Dd June 4, 2024
+.Dd September 11, 2024
 .Dt XKBCLI\-HOW\-TO\-TYPE 1
 .Os
 .
 .Sh NAME
 .Nm "xkbcli\-how\-to\-type"
-.Nd query how to type a given Unicode codepoint
+.Nd query how to type a given Unicode code point or keysym
 .
 .Sh SYNOPSIS
 .Nm
 .Op options
-.Ar codepoint/keysym
+.Ar character/codepoint/keysym
 .
 .Sh DESCRIPTION
 .Nm
 prints the key combinations (keycode + modifiers) in the keymap's layouts which
-would produce the given Unicode codepoint.
+would produce the given Unicode code point or keysym.
 .
+.Pp
+.Ar codepoint/keysym
+is either:
+.
+.Bl -bullet -compact
+.It
+a single character (requires a terminal which uses UTF-8 character encoding);
+.It
+a Unicode code point, interpreted as hexadecimal if prefixed with
+.Li 0x
+or
+.Li U+
+else as decimal;
+.
+.It
+a keysym if
+.Fl \-keysym
+is used: either a \fInumeric\fP value (hexadecimal if prefixed with
+.Li 0x
+else decimal) or a keysym \fIname\fP.
+.El
+.
+.Sh EXAMPLES
+.Bl -tag -width Ds
+.It Nm Fl \-layout Ar us 97
+.It Nm Fl \-layout Ar us 0x61
+.It Nm Fl \-layout Ar us U+0061
+.It Nm Fl \-layout Ar us a
+Print the key combinations that produce the letter "a"
+.Po
+decimal code point:
+.Ar 97 ,
+hexadecimal code point:
+.Ar 61
+.Pc
+in the default
+.Ar us
+layout.
+.It Nm Fl \-layout Ar us Fl \-keysym Ar 97
+.It Nm Fl \-layout Ar us Fl \-keysym Ar 0x61
+.It Nm Fl \-layout Ar us Fl \-keysym Ar a
+Print the key combinations that produce the keysym "a"
+.Po
+decimal code:
+.Ar 97 ,
+hexadecimal code:
+.Ar 61
+.Pc
+in the default
+.Ar us
+layout.
+.Be
+.
+.Sh OPTIONS
 .Bl -tag -width Ds
 .It Fl \-keysym
-Treat the argument as a keysym, not a Unicode codepoint
+Treat the argument as a keysym, not a Unicode code point
 .
 .It Fl \-rules Ar rules
 The XKB ruleset
