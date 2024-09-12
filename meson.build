@@ -753,7 +753,13 @@ test(
 )
 test(
     'utf8',
-    executable('test-utf8', 'test/utf8.c', dependencies: test_dep),
+    executable(
+        'test-utf8',
+        'test/utf8.c',
+        'src/utf8-decoding.c',
+        'src/utf8-decoding.h',
+        dependencies: test_dep
+    ),
     env: test_env,
 )
 test(
