@@ -25,6 +25,7 @@
 
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
+#include "utils-paths.h"
 #include "context.h"
 #include "paths.h"
 
@@ -157,7 +158,7 @@ get_xdg_xcompose_file_path(struct xkb_context *ctx)
     const char *home;
 
     xdg_config_home = xkb_context_getenv(ctx, "XDG_CONFIG_HOME");
-    if (!xdg_config_home || xdg_config_home[0] != '/') {
+    if (!xdg_config_home || !is_absolute(xdg_config_home)) {
         home = xkb_context_getenv(ctx, "HOME");
         if (!home)
             return NULL;
@@ -203,7 +204,7 @@ get_locale_compose_file_path(struct xkb_context *ctx, const char *locale)
     if (!resolved)
         return NULL;
 
-    if (resolved[0] == '/') {
+    if (is_absolute(resolved)) {
         path = resolved;
     }
     else {
