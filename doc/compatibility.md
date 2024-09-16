@@ -52,6 +52,7 @@ On the other hand, some features and extensions were added.
 - multiple keysyms per level
   + such levels are ignored by x11/xkbcomp.
 - key names (e.g. `<AE11>`) can be longer than 4 characters.
+- `! include` statement for rules files.
 
 ## Compose support {#compose-support}
 

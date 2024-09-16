@@ -167,6 +167,16 @@ main(int argc, char *argv[])
     };
     assert(test_rules(ctx, &test7));
 
+    struct test_data test8 = {
+        .rules = "inc-src-relative-path",
+
+        .model = "my_model", .layout = "my_layout", .variant = "", .options = "",
+
+        .keycodes = "my_keycodes", .types = "default_types",
+        .compat = "default_compat", .symbols = "my_symbols",
+    };
+    assert(test_rules(ctx, &test8));
+
     xkb_context_unref(ctx);
     return 0;
 }

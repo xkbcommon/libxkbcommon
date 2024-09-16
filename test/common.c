@@ -47,6 +47,7 @@
 
 #include "test.h"
 #include "utils.h"
+#include "utils-paths.h"
 #include "src/keysym.h"
 
 #include "tools/tools-common.h"
@@ -244,7 +245,7 @@ test_get_path(const char *path_rel)
     if (!srcdir)
         srcdir = ".";
 
-    if (path_rel[0] == '/')
+    if (is_absolute(path_rel))
         return strdup(path_rel);
 
     path = asprintf_safe("%s/test/data%s%s", srcdir,
