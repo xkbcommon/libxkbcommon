@@ -53,6 +53,7 @@
 #include "rules.h"
 #include "include.h"
 #include "scanner-utils.h"
+#include "utils-paths.h"
 
 #define MAX_INCLUDE_DEPTH 5
 
@@ -369,7 +370,6 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
                 struct sval inc)
 {
     struct scanner s; /* parses the !include value */
-    FILE *file;
 
     scanner_init(&s, m->ctx, inc.start, inc.len,
                  parent_scanner->file_name, NULL);
@@ -383,6 +383,7 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
         return;
     }
 
+    /* Proceed to %-expansion */
     while (!scanner_eof(&s) && !scanner_eol(&s)) {
         if (scanner_chr(&s, '%')) {
             if (scanner_chr(&s, '%')) {
@@ -427,19 +428,34 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
         return;
     }
 
-    file = fopen(s.buf, "rb");
-    if (file) {
+    /* Lookup rules file in XKB paths only if the include path is relative */
+    unsigned int offset = 0;
+    FILE *file;
+    bool absolute_path = is_absolute(s.buf);
+    if (absolute_path)
+        file = fopen(s.buf, "rb");
+    else
+        file = FindFileInXkbPath(m->ctx, s.buf, FILE_TYPE_RULES, NULL, &offset);
+
+    while (file) {
         bool ret = read_rules_file(m->ctx, m, include_depth + 1, file, s.buf);
-        if (!ret)
-            log_err(m->ctx, XKB_LOG_MESSAGE_NO_ID,
-                    "No components returned from included XKB rules \"%s\"\n",
-                    s.buf);
         fclose(file);
-    } else {
+        if (ret)
+            return;
+        /* Failed to parse rules or get all the components */
         log_err(m->ctx, XKB_LOG_MESSAGE_NO_ID,
-                "Failed to open included XKB rules \"%s\"\n",
+                "No components returned from included XKB rules \"%s\"\n",
                 s.buf);
+        if (absolute_path)
+            break;
+        /* Try next XKB path */
+        offset++;
+        file = FindFileInXkbPath(m->ctx, s.buf, FILE_TYPE_RULES, NULL, &offset);
     }
+
+    log_err(m->ctx, XKB_LOG_MESSAGE_NO_ID,
+            "Failed to open included XKB rules \"%s\"\n",
+            s.buf);
 }
 
 static void

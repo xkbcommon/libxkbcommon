@@ -30,13 +30,12 @@
 
 #include "test.h"
 #include "utils.h"
+#include "utils-paths.h"
 
-int
-main(void)
+static void
+test_string_functions(void)
 {
     char buffer[10];
-
-    test_init();
 
     assert(!snprintf_safe(buffer, 0, "foo"));
     assert(!snprintf_safe(buffer, 1, "foo"));
@@ -53,6 +52,38 @@ main(void)
     assert(!streq_null("foobar", NULL));
     assert(!streq_null(NULL, "foobar"));
     assert(streq_null(NULL, NULL));
+}
+
+static void
+test_path_functions(void)
+{
+    /* Absolute paths */
+    assert(!is_absolute(""));
+#ifdef _WIN32
+    assert(!is_absolute("path\\test"));
+    assert(is_absolute("c:\\test"));
+    assert(!is_absolute("c:test"));
+    assert(is_absolute("c:\\"));
+    assert(is_absolute("c:/"));
+    assert(!is_absolute("c:"));
+    assert(is_absolute("\\\\foo"));
+    assert(is_absolute("\\\\?\\foo"));
+    assert(is_absolute("\\\\?\\UNC\\foo"));
+    assert(is_absolute("/foo"));
+    assert(is_absolute("\\foo"));
+#else
+    assert(!is_absolute("test/path"));
+    assert(is_absolute("/test" ));
+    assert(is_absolute("/" ));
+#endif
+}
+
+int
+main(void)
+{
+    test_init();
+    test_string_functions();
+    test_path_functions();
 
     return 0;
 }
