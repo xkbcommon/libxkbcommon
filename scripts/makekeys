@@ -1,14 +1,90 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
+import itertools
+import random
 import re
 import sys
-import itertools
+from collections import defaultdict
+from dataclasses import dataclass
+from enum import Enum
+from pathlib import Path
+from typing import DefaultDict, Generator, Iterable, Iterator
 
 import perfect_hash
 
-pattern = re.compile(r"^#define\s+XKB_KEY_(?P<name>\w+)\s+(?P<value>0x[0-9a-fA-F]+)\s")
-matches = [pattern.match(line) for line in open(sys.argv[1])]
-entries = [(m.group("name"), int(m.group("value"), 16)) for m in matches if m]
+# Set the seed explicitly, so we reduce diff
+random.seed(b"libxkbcommon")
+
+KEYSYM_ENTRY_PATTERN = re.compile(
+    r"""
+    ^\#define\s+
+    XKB_KEY_(?P<name>\w+)\s+
+    (?P<value>0x[0-9a-fA-F]+)\s*
+    (?:/\*\s*
+        (?:
+            (?P<deprecated>deprecated)|
+            \(<U\+(?P<unicode_alt_semantics>[0-9a-fA-F]{4,}>)\)|
+            \(U\+(?P<deprecated_unicode>[0-9a-fA-F]{4,})\s(?:\s|\w|-)+\)|
+            .*
+        )
+    )?
+    """,
+    re.VERBOSE,
+)
+
+
+class Deprecation(Enum):
+    NONE = "none"
+    "No deprecation"
+    EXPLICIT = "explicit"
+    "Explicit deprecation in comment: /* deprecated */"
+    IMPLICIT = "implicit"
+    """
+    Implicit deprecation: the keysym has already been defined with a previous
+    name, and the present name has not been declared explicitly as an alias.
+    """
+
+
+@dataclass
+class Keysym:
+    name: str
+    value: int
+    deprecated: Deprecation
+    alias: bool
+
+
+def parse_keysyms(path: Path) -> Iterator[Keysym]:
+    with path.open("rt", encoding="utf-8") as fd:
+        for line in fd:
+            if m := KEYSYM_ENTRY_PATTERN.match(line):
+                yield Keysym(
+                    name=m.group("name"),
+                    value=int(m.group("value"), 16),
+                    deprecated=Deprecation.EXPLICIT
+                    if m.group("deprecated") or m.group("deprecated_unicode")
+                    else Deprecation.NONE,
+                    alias="alias for" in line.casefold()
+                    or m.group("unicode_alt_semantics"),
+                )
+
+
+def get_keysyms(path: Path) -> dict[int, list[Keysym]]:
+    keysyms: DefaultDict[int, list[Keysym]] = defaultdict(list)
+    for keysym in parse_keysyms(path):
+        if (
+            (ks := keysyms.get(keysym.value))
+            and keysym.deprecated is Deprecation.NONE
+            and not keysym.alias
+            # deal with first name being deprecated
+            and any(k.deprecated is Deprecation.NONE for k in ks)
+        ):
+            keysym.deprecated = Deprecation.IMPLICIT
+        keysyms[keysym.value].append(keysym)
+    return keysyms
+
+
+keysyms_by_value = get_keysyms(Path(sys.argv[1]))
+entries = tuple(itertools.chain.from_iterable(keysyms_by_value.values()))
 
 # Sort based on the keysym name:
 #   1. Sort by the casefolded name: e.g. kana_ya < kana_YO.
@@ -17,10 +93,10 @@ entries = [(m.group("name"), int(m.group("value"), 16)) for m in matches if m]
 # E.g. kana_YA < kana_ya < kana_YO < kana_yo
 # WARNING: this sort must not be changed, as some functions e.g.
 # xkb_keysym_from_name rely on upper case variant occuring first.
-entries_isorted = sorted(entries, key=lambda e: (e[0].casefold(), e[0]))
+entries_isorted = sorted(entries, key=lambda e: (e.name.casefold(), e.name))
 # Sort based on keysym value. Sort is stable so in case of duplicate, the first
 # keysym occurence stays first.
-entries_kssorted = sorted(entries, key=lambda e: e[1])
+entries_kssorted = sorted(entries, key=lambda e: e.value)
 
 print(
     """
@@ -32,10 +108,22 @@ print(
 """
 )
 
-entry_offsets = {}
+entry_offsets: dict[str, int] = {}
+UINT16_MAX = (1 << 16) - 1
+DEPRECATED_KEYSYM = UINT16_MAX
+MAX_EXPLICIT_DEPRECATED_ALIAS_INDEX_LOG2 = 8
+MAX_EXPLICIT_DEPRECATED_ALIAS_INDEX = 1 << MAX_EXPLICIT_DEPRECATED_ALIAS_INDEX_LOG2
+MAX_EXPLICIT_DEPRECATED_ALIAS_COUNT_LOG2 = 4
+MAX_EXPLICIT_DEPRECATED_ALIAS_COUNT = 1 << MAX_EXPLICIT_DEPRECATED_ALIAS_COUNT_LOG2
+MAX_OFFSET = DEPRECATED_KEYSYM - 1
 
 print(
     """
+#include <stddef.h>
+#include <stdint.h>
+
+#include "xkbcommon/xkbcommon.h"
+
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Woverlength-strings"
@@ -44,10 +132,12 @@ static const char *keysym_names =
 """.strip()
 )
 offs = 0
-for name, _ in entries_isorted:
-    entry_offsets[name] = offs
-    print('    "{name}\\0"'.format(name=name))
-    offs += len(name) + 1
+for keysym in entries_isorted:
+    if offs >= MAX_OFFSET:
+        raise ValueError(f"Offset must be kept under {MAX_OFFSET}, got: {offs}.")
+    entry_offsets[keysym.name] = offs
+    print(f'    "{keysym.name}\\0"')
+    offs += len(keysym.name) + 1
 print(
     """
 ;
@@ -56,7 +146,6 @@ print(
 #endif
 """.strip()
 )
-
 
 template = r"""
 static const uint16_t keysym_name_G[] = {
@@ -83,7 +172,7 @@ keysym_name_perfect_hash(const char *key)
 """
 print(
     perfect_hash.generate_code(
-        keys=[name for name, value in entries_isorted],
+        keys=[keysym.name for keysym in entries_isorted],
         template=template,
     )
 )
@@ -92,16 +181,16 @@ print(
     """
 struct name_keysym {
     xkb_keysym_t keysym;
-    uint32_t offset;
+    uint16_t offset;
 };\n"""
 )
 
 
-def print_entries(x):
-    for name, value in x:
+def print_entries(entries: Iterable[Keysym]):
+    for entry in entries:
         print(
             "    {{ 0x{value:08x}, {offs} }}, /* {name} */".format(
-                offs=entry_offsets[name], value=value, name=name
+                offs=entry_offsets[entry.name], value=entry.value, name=entry.name
             )
         )
 
@@ -113,6 +202,122 @@ print("};\n")
 # *.sort() is stable so we always get the first keysym for duplicate
 print("static const struct name_keysym keysym_to_name[] = {")
 print_entries(
-    next(g[1]) for g in itertools.groupby(entries_kssorted, key=lambda e: e[1])
+    next(g[1]) for g in itertools.groupby(entries_kssorted, key=lambda e: e.value)
 )
+print("};\n")
+
+
+def make_deprecated_entry(
+    value,
+    keysyms: list[Keysym],
+    entry_offsets: dict[str, int],
+    explicit_deprecated_aliases_index: int,
+) -> tuple[str | None, tuple[int, ...]]:
+    assert keysyms
+    non_deprecated_ks = tuple(k for k in keysyms if k.deprecated is Deprecation.NONE)
+    explicit_deprecated_aliases: tuple[int, ...] = ()
+    if non_deprecated_ks:
+        # Keysym is not deprecated. Check if none of its aliases are.
+        if len(keysyms) == 1 or all(
+            ks.alias and ks.deprecated is Deprecation.NONE for ks in keysyms[1:]
+        ):
+            return None, ()
+        ref = non_deprecated_ks[0].name
+        canonical_name = f"Reference: {ref}. "
+        assert ref in entry_offsets
+        canonical_index = str(entry_offsets[ref])
+        deprecated_ks = tuple(k for k in keysyms if k not in non_deprecated_ks)
+        if any(ks.alias and ks.deprecated is Deprecation.NONE for ks in keysyms[1:]):
+            # keysym has both explicit and deprecated aliases
+            explicit_deprecated_aliases = tuple(
+                entry_offsets[ks.name]
+                for ks in keysyms[1:]
+                if ks.deprecated is not Deprecation.NONE
+            )
+            assert (
+                explicit_deprecated_aliases_index < MAX_EXPLICIT_DEPRECATED_ALIAS_INDEX
+            )
+            assert (
+                len(explicit_deprecated_aliases) < MAX_EXPLICIT_DEPRECATED_ALIAS_COUNT
+            )
+        else:
+            explicit_deprecated_aliases_index = 0
+    else:
+        # Keysym is deprecated
+        canonical_name = ""
+        canonical_index = "DEPRECATED_KEYSYM"
+        deprecated_ks = keysyms
+        explicit_deprecated_aliases_index = 0
+    if non_deprecated_ks[1:]:
+        non_deprecated = (
+            "Non deprecated aliases: "
+            + ", ".join(ks.name for ks in non_deprecated_ks[1:])
+            + ". "
+        )
+    else:
+        non_deprecated = ""
+    deprecated = ", ".join(ks.name for ks in deprecated_ks)
+    comment = f"{canonical_name}{non_deprecated}Deprecated: {deprecated}"
+    return (
+        f"    {{ 0x{value:0>8x}, {canonical_index: <17}, {explicit_deprecated_aliases_index}, {len(explicit_deprecated_aliases)} }}, /* {comment} */",
+        explicit_deprecated_aliases,
+    )
+
+
+def generate_deprecated_keysyms(
+    keysyms_by_value: dict[int, list[Keysym]], entry_offsets: dict[str, int]
+) -> Generator[tuple[int, ...], None, None]:
+    explicit_deprecated_aliases_index = 0
+    for value, keysyms in sorted(keysyms_by_value.items(), key=lambda e: e[0]):
+        assert keysyms
+        c_entry, explicit_deprecated_aliases = make_deprecated_entry(
+            value, keysyms, entry_offsets, explicit_deprecated_aliases_index
+        )
+        if c_entry is not None:
+            print(c_entry)
+        if explicit_deprecated_aliases:
+            yield explicit_deprecated_aliases
+            explicit_deprecated_aliases_index += len(explicit_deprecated_aliases)
+
+
+def generate_mixed_aliases(aliases: Iterable[Iterable[int]]):
+    for xs in aliases:
+        for x in xs:
+            print(f"    {x},")
+
+
+print(f"#define DEPRECATED_KEYSYM 0x{DEPRECATED_KEYSYM:x}")
+# NOTE: Alternative implementation, useful the day the indexes do not fit uint16_t.
+# print(f"""
+# struct deprecated_keysym {{
+#     xkb_keysym_t keysym;
+#     union {{
+#         uint32_t offset;
+#         struct {{
+#             uint32_t offset:{MAX_OFFSET_LOG2};
+#             /* Explicit deprecated aliases start index & count */
+#             uint8_t explicit_index:{MAX_EXPLICIT_DEPRECATED_ALIAS_INDEX_LOG2};
+#             uint8_t explicit_count:{MAX_EXPLICIT_DEPRECATED_ALIAS_COUNT_LOG2};
+#         }} details;
+#     }};
+# }};
+# """)
+print("""
+struct deprecated_keysym {
+    xkb_keysym_t keysym;
+    uint16_t offset;
+    /* Explicit deprecated aliases start index & count */
+    uint8_t explicit_index;
+    uint8_t explicit_count;
+};
+""")
+print("static const struct deprecated_keysym deprecated_keysyms[] = {")
+explicit_deprecated_aliases = tuple(
+    generate_deprecated_keysyms(keysyms_by_value, entry_offsets)
+)
+print("};\n")
+print("static const uint32_t explicit_deprecated_aliases[] = {")
+generate_mixed_aliases(explicit_deprecated_aliases)
 print("};")
+
+print(f"max name offset: {max(entry_offsets.values())}", file=sys.stderr)
