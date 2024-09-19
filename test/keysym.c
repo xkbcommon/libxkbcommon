@@ -169,6 +169,26 @@ test_keysym(xkb_keysym_t keysym, const char *expected)
     return streq(s, expected);
 }
 
+static bool
+test_deprecated(xkb_keysym_t keysym, const char *name,
+                bool expected_deprecated, const char *expected_reference)
+{
+    const char *reference;
+    bool deprecated = xkb_keysym_is_deprecated(keysym, name, &reference);
+
+    fprintf(stderr, "Expected keysym %#x -> deprecated: %d, reference: %s\n",
+            keysym, expected_deprecated, expected_reference);
+    fprintf(stderr, "Received keysym %#x -> deprecated: %d, reference: %s\n",
+            keysym, deprecated, reference);
+
+    return deprecated == expected_deprecated &&
+           (
+            (reference == NULL && expected_reference == NULL) ||
+            (reference != NULL && expected_reference != NULL &&
+             strcmp(reference, expected_reference) == 0)
+           );
+}
+
 static int
 test_utf8(xkb_keysym_t keysym, const char *expected)
 {
@@ -567,7 +587,7 @@ main(void)
     assert(test_string("0x09abcdef", 0x09abcdef));
     assert(test_string("0x01000100", XKB_KEYSYM_UNICODE_MIN)); /* Min Unicode. */
     assert(test_string("0x0110ffff", XKB_KEYSYM_UNICODE_MAX)); /* Max Unicode. */
-    assert(test_string(STRINGIFY2(XKB_KEYSYM_MAX), XKB_KEYSYM_MAX));   /* Max keysym. */
+    assert(test_string(STRINGIFY2(XKB_KEYSYM_MAX), XKB_KEYSYM_MAX)); /* Max keysym. */
     assert(test_string("0x20000000", XKB_KEY_NoSymbol));
     assert(test_string("0xffffffff", XKB_KEY_NoSymbol));
     assert(test_string("0x100000000", XKB_KEY_NoSymbol));
@@ -620,6 +640,38 @@ main(void)
     /* Outside range. */
     assert(test_keysym(XKB_KEYSYM_MAX + 1, "Invalid"));
     assert(test_keysym(0xffffffff, "Invalid"));
+
+    /* Name is assumed to be correct but we provide garbage */
+    const char garbage_name[] = "bla bla bla";
+    assert(test_deprecated(XKB_KEY_NoSymbol, NULL, false, NULL));
+    assert(test_deprecated(XKB_KEY_NoSymbol, "NoSymbol", false, NULL));
+    assert(test_deprecated(XKB_KEY_A, "A", false, NULL));
+    assert(test_deprecated(XKB_KEY_A, NULL, false, NULL));
+    assert(test_deprecated(XKB_KEY_A, garbage_name, false, NULL));
+    assert(test_deprecated(XKB_KEY_ETH, "ETH", false, "ETH"));
+    assert(test_deprecated(XKB_KEY_ETH, "Eth", true, "ETH"));
+    assert(test_deprecated(XKB_KEY_ETH, garbage_name, true, "ETH"));
+    assert(test_deprecated(XKB_KEY_topleftradical, NULL, true, NULL));
+    assert(test_deprecated(XKB_KEY_topleftradical, "topleftradical", true, NULL));
+    assert(test_deprecated(XKB_KEY_topleftradical, garbage_name, true, NULL));
+    /* Mixed deprecated and not deprecated aliases */
+    assert(test_deprecated(XKB_KEY_Mode_switch, NULL, false, "Mode_switch"));
+    assert(test_deprecated(XKB_KEY_Mode_switch, "Mode_switch", false, "Mode_switch"));
+    assert(test_deprecated(XKB_KEY_Mode_switch, garbage_name, false, "Mode_switch"));
+    assert(test_deprecated(XKB_KEY_ISO_Group_Shift, NULL, false, "Mode_switch"));
+    assert(test_deprecated(XKB_KEY_ISO_Group_Shift, "ISO_Group_Shift", false, "Mode_switch"));
+    assert(test_deprecated(XKB_KEY_ISO_Group_Shift, garbage_name, false, "Mode_switch"));
+    assert(test_deprecated(XKB_KEY_SunAltGraph, NULL, false, "Mode_switch"));
+    assert(test_deprecated(XKB_KEY_SunAltGraph, "SunAltGraph", true, "Mode_switch"));
+    assert(test_deprecated(XKB_KEY_SunAltGraph, garbage_name, false, "Mode_switch"));
+    /* Unicode is never deprecated */
+    assert(test_deprecated(0x0100250C, "U250C", false, NULL));
+    assert(test_deprecated(0x0100250C, "0x0100250C", false, NULL));
+    assert(test_deprecated(XKB_KEYSYM_MAX, NULL, false, NULL));
+    assert(test_deprecated(XKB_KEYSYM_MAX, NULL, false, NULL));
+    /* Invalid keysym */
+    assert(test_deprecated(0xffffffff, NULL, false, NULL));
+    assert(test_deprecated(0xffffffff, NULL, false, NULL));
 
     assert(test_casestring("Undo", 0xFF65));
     assert(test_casestring("UNDO", 0xFF65));

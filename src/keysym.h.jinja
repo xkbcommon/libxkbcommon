@@ -113,6 +113,11 @@ bool
 xkb_keysym_iterator_is_explicitly_named(struct xkb_keysym_iterator *iter);
 
 bool
+xkb_keysym_is_deprecated(xkb_keysym_t keysym,
+                         const char *name,
+                         const char **reference_name);
+
+bool
 xkb_keysym_is_lower(xkb_keysym_t keysym);
 
 bool

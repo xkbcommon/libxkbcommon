@@ -129,5 +129,5 @@ for path in HEADERS:
             line = keysym_entry_pattern.sub(make_keysym_entry, line)
             line = xorgproto_keysym_prefix_pattern.sub(r"XKB_KEY_\1", line)
 
-            print(line, end="")
+            print(line.rstrip(), end="\n")
 print("\n\n#endif")
