@@ -474,10 +474,10 @@ main(void)
         char utf8[7];
         int needed = xkb_keysym_to_utf8(ks, utf8, sizeof(utf8));
         assert(0 <= needed && needed <= XKB_KEYSYM_UTF8_MAX_SIZE);
-        /* Check maximum name length */
+        /* Check maximum name length (`needed` does not include the ending NULL) */
         char name[XKB_KEYSYM_NAME_MAX_SIZE];
         needed = xkb_keysym_iterator_get_name(iter, name, sizeof(name));
-        assert(0 < needed && (size_t)needed <= sizeof(name));
+        assert(0 < needed && (size_t)needed <= sizeof(name) - 1);
         /* Test modifier keysyms */
         bool expected = test_modifier(ks);
         bool got = xkb_keysym_is_modifier(ks);
@@ -519,6 +519,12 @@ main(void)
     assert(test_string("thorn", 0x00fe));
     assert(test_string(" thorn", XKB_KEY_NoSymbol));
     assert(test_string("thorn ", XKB_KEY_NoSymbol));
+#define LONGEST_NAME STRINGIFY2(XKB_KEYSYM_LONGEST_NAME)
+#define XKB_KEY_LONGEST_NAME CONCAT2(XKB_KEY_, XKB_KEYSYM_LONGEST_NAME)
+    assert(test_string(LONGEST_NAME, XKB_KEY_LONGEST_NAME));
+#define LONGEST_CANONICAL_NAME STRINGIFY2(XKB_KEYSYM_LONGEST_CANONICAL_NAME)
+#define XKB_KEY_LONGEST_CANONICAL_NAME CONCAT2(XKB_KEY_, XKB_KEYSYM_LONGEST_CANONICAL_NAME)
+    assert(test_string(LONGEST_CANONICAL_NAME, XKB_KEY_LONGEST_CANONICAL_NAME));
 
     /* Decimal keysyms are not supported (digits are special cases) */
     assert(test_string("-1", XKB_KEY_NoSymbol));
@@ -586,6 +592,9 @@ main(void)
     assert(test_keysym(0x0, "NoSymbol"));
     assert(test_keysym(0x1008FE20, "XF86Ungrab"));
     assert(test_keysym(XKB_KEYSYM_UNICODE_OFFSET, "0x01000000"));
+    /* Longest names */
+    assert(test_keysym(XKB_KEY_LONGEST_NAME, LONGEST_NAME));
+    assert(test_keysym(XKB_KEY_LONGEST_CANONICAL_NAME, LONGEST_CANONICAL_NAME));
     /* Canonical names */
     assert(test_keysym(XKB_KEY_Henkan, "Henkan_Mode"));
     assert(test_keysym(XKB_KEY_ISO_Group_Shift, "Mode_switch"));

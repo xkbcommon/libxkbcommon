@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 import argparse
-from collections import defaultdict
-from pathlib import Path
+import itertools
 import re
 import sys
+from collections import defaultdict
+from pathlib import Path
 from typing import Any, TypeAlias
 
 import jinja2
@@ -14,7 +15,7 @@ KEYSYM_PATTERN = re.compile(
 )
 MAX_AMBIGUOUS_NAMES = 3
 
-KeysymsBounds: TypeAlias = dict[str, int]
+KeysymsBounds: TypeAlias = dict[str, int | str]
 KeysymsCaseFoldedNames: TypeAlias = dict[str, list[str]]
 
 
@@ -40,6 +41,19 @@ def load_keysyms(path: Path) -> tuple[KeysymsBounds, KeysymsCaseFoldedNames]:
                 if value not in canonical_names:
                     canonical_names[value] = name
 
+    XKB_KEYSYM_LONGEST_CANONICAL_NAME = max(
+        max(canonical_names.values(), key=len),
+        max_unicode_name,
+        max_keysym_name,
+        key=len,
+    )
+    XKB_KEYSYM_LONGEST_NAME = max(
+        max(itertools.chain.from_iterable(casefolded_names.values()), key=len),
+        max_unicode_name,
+        max_keysym_name,
+        key=len,
+    )
+
     # Keep only ambiguous case-insensitive names and sort them
     for name in tuple(casefolded_names.keys()):
         count = len(casefolded_names[name])
@@ -59,11 +73,10 @@ def load_keysyms(path: Path) -> tuple[KeysymsBounds, KeysymsCaseFoldedNames]:
             "XKB_KEYSYM_MIN_EXPLICIT": keysym_min,
             "XKB_KEYSYM_MAX_EXPLICIT": keysym_max,
             "XKB_KEYSYM_COUNT_EXPLICIT": len(canonical_names),
-            "XKB_KEYSYM_NAME_MAX_SIZE": max(
-                max(len(name) for name in canonical_names.values()),
-                len(max_unicode_name),
-                len(max_keysym_name),
-            ),
+            # Extra byte for terminating NULL
+            "XKB_KEYSYM_NAME_MAX_SIZE": len(XKB_KEYSYM_LONGEST_CANONICAL_NAME) + 1,
+            "XKB_KEYSYM_LONGEST_CANONICAL_NAME": XKB_KEYSYM_LONGEST_CANONICAL_NAME,
+            "XKB_KEYSYM_LONGEST_NAME": XKB_KEYSYM_LONGEST_NAME,
         },
         casefolded_names,
     )
