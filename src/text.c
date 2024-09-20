@@ -71,10 +71,10 @@ const LookupEntry ctrlMaskNames[] = {
     { "AccessXFeedback", CONTROL_AX_FEEDBACK },
     { "AudibleBell", CONTROL_BELL },
     { "IgnoreGroupLock", CONTROL_IGNORE_GROUP_LOCK },
+    { "Overlay1", CONTROL_OVERLAY1 },
+    { "Overlay2", CONTROL_OVERLAY2 },
     { "all", CONTROL_ALL },
     { "none", 0 },
-    { "Overlay1", 0 },
-    { "Overlay2", 0 },
     { NULL, 0 }
 };
 
@@ -348,5 +348,36 @@ ControlMaskText(struct xkb_context *ctx, enum xkb_action_controls mask)
             pos += ret;
     }
 
+    return strcpy(xkb_context_get_buffer(ctx, pos + 1), buf);
+}
+
+const char *
+ControlMaskText2(struct xkb_context *ctx, enum xkb_action_controls mask,
+                 xkb_overlay_mask_t overlays)
+{
+    char buf[1024];
+    size_t pos = 0;
+    int ret;
+    if (mask) {
+        ret = snprintf(buf, sizeof(buf), "%s", ControlMaskText(ctx, mask));
+        if (ret <= 0 || pos + ret >= sizeof(buf))
+            goto error;
+        else
+            pos += ret;
+    }
+    /* Only deal with Overlay3+ */
+    xkb_overlay_index_t i = 2;
+    overlays >>= i;
+    for (; overlays && i < XKB_MAX_OVERLAYS; i++, overlays >>= 1) {
+        if (overlays & 1) {
+            ret = snprintf(buf + pos, sizeof(buf) - pos, "%sOverlay%u",
+                           pos == 0 ? "" : "+", i + 1);
+            if (ret <= 0 || pos + ret >= sizeof(buf))
+                break;
+            else
+                pos += ret;
+        }
+    }
+error:
     return strcpy(xkb_context_get_buffer(ctx, pos + 1), buf);
 }

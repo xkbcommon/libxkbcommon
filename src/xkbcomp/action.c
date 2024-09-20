@@ -630,15 +630,23 @@ HandleSetLockControls(struct xkb_context *ctx, const struct xkb_mod_set *mods,
 
     if (field == ACTION_FIELD_CONTROLS) {
         enum xkb_action_controls mask;
+        xkb_overlay_mask_t overlays;
 
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
 
-        if (!ExprResolveMask(ctx, value, &mask, ctrlMaskNames))
+        if (!ExprResolveControlsMask(ctx, value, &mask, &overlays))
             return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
                                   field, "controls mask");
 
         act->ctrls = mask;
+        act->overlays = overlays;
+
+        /* FIXME: remove debug */
+        fprintf(stderr,
+                "HandleSetLockControls: ctrls: %u, overlays: %u (%u)\n",
+                act->ctrls, act->overlays, overlays);
+
         return true;
     }
     else if (field == ACTION_FIELD_AFFECT) {

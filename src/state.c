@@ -63,6 +63,7 @@
 
 #include "keymap.h"
 #include "keysym.h"
+#include "state.h"
 #include "utf8.h"
 
 struct xkb_filter {
@@ -76,6 +77,14 @@ struct xkb_filter {
     int refcnt;
 };
 
+struct xkb_overlaid_key {
+    xkb_keycode_t from;
+    xkb_keycode_t into;
+    uint8_t count;
+};
+
+typedef darray(struct xkb_overlaid_key) xkb_overlay_keys_t;
+
 struct state_components {
     /* These may be negative, because of -1 group actions. */
     int32_t base_group; /**< depressed */
@@ -87,6 +96,11 @@ struct state_components {
     xkb_mod_mask_t latched_mods;
     xkb_mod_mask_t locked_mods;
     xkb_mod_mask_t mods; /**< effective */
+
+    xkb_overlay_mask_t base_overlays;
+    xkb_overlay_mask_t locked_overlays;
+    xkb_overlay_mask_t overlays; /**< effective */
+    xkb_overlay_keys_t overlaid_keys;
 
     xkb_led_mask_t leds;
 };
@@ -104,6 +118,8 @@ struct xkb_state {
      */
     xkb_mod_mask_t set_mods;
     xkb_mod_mask_t clear_mods;
+    xkb_overlay_mask_t set_overlays;
+    xkb_overlay_mask_t clear_overlays;
 
     /*
      * We mustn't clear a base modifier if there's another depressed key
@@ -112,6 +128,7 @@ struct xkb_state {
      * the modifier should still be set. This keeps the count.
      */
     int16_t mod_key_count[XKB_MAX_MODS];
+    int16_t overlay_key_count[XKB_MAX_OVERLAYS];
 
     int refcnt;
     darray(struct xkb_filter) filters;
@@ -135,6 +152,51 @@ get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
     const struct xkb_key_type *type = key->groups[group].type;
     xkb_mod_mask_t active_mods = state->components.mods & type->mods.mask;
     return get_entry_for_mods(type, active_mods);
+}
+
+#define key_find_active_overlay(state, key, overlays, overlay)   \
+    /* Find active overlay for the key (exactly one possible) */ \
+    for (overlay = 0; overlay < XKB_MAX_OVERLAYS; overlay++) {   \
+        if ((overlays) & (1u << overlay))                        \
+            break;                                               \
+    }
+
+static inline const struct xkb_key *
+XkbOverlaidKey(struct xkb_state *state, xkb_keycode_t kc)
+{
+    const struct xkb_key *key = XkbKey(state->keymap, kc);
+    if (key && key->overlays_mask) {
+        struct xkb_overlaid_key *overlaid_key;
+        xkb_overlay_mask_t overlays;
+        /* Check registered overlaid keys */
+        darray_foreach(overlaid_key, state->components.overlaid_keys) {
+            if (overlaid_key->from == kc) {
+                /* FIXME: remove debug */
+                fprintf(stderr, "XkbOverlaidKey: overlaid %u -> %u (%u)\n",
+                        kc, overlaid_key->into, overlaid_key->count);
+                return &state->keymap->keys[overlaid_key->into];
+            }
+        }
+        /* Check current state */
+        if ((overlays = key->overlays_mask & state->components.overlays)) {
+            xkb_overlay_index_t overlay;
+            key_find_active_overlay(state, key, overlays, overlay);
+            /* FIXME: remove debug */
+            fprintf(stderr, "XkbOverlaidKey: overlaid %u -> %u?\n",
+                    kc, key->overlays[overlay]);
+            return &state->keymap->keys[key->overlays[overlay]];
+        }
+        /* FIXME: remove debug */
+        fprintf(stderr, "XkbOverlaidKey: not overlaid %u\n", kc);
+    }
+    return key;
+}
+
+XKB_EXPORT xkb_keycode_t
+xkb_state_key_get_overlay_keycode(struct xkb_state *state, xkb_keycode_t kc)
+{
+    const struct xkb_key *key = XkbOverlaidKey(state, kc);
+    return key->keycode;
 }
 
 /**
@@ -638,6 +700,65 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
     return XKB_FILTER_CONTINUE;
 }
 
+static void
+xkb_filter_controls_set_new(struct xkb_state *state, struct xkb_filter *filter)
+{
+    /* FIXME: other controls */
+    if (!filter->action.ctrls.overlays) {
+        filter->func = NULL;
+        return;
+    }
+    xkb_overlay_mask_t overlays = filter->action.ctrls.overlays;
+    for (xkb_overlay_index_t k = 0; k < state->keymap->num_overlays; k++) {
+        xkb_overlay_mask_t mask = 1u << k;
+        if (!(mask & filter->action.ctrls.overlays))
+            continue;
+        if (state->keymap->incompatible_overlays[k] & overlays)
+            overlays &= ~mask;
+    }
+    if (overlays) {
+        state->set_overlays = overlays;
+        filter->priv = overlays;
+        /* FIXME: remove debug */
+        fprintf(stderr, "xkb_filter_controls_set_new: %u\n", overlays);
+    } else {
+        filter->func = NULL;
+        /* FIXME: remove debug */
+        fprintf(stderr, "xkb_filter_controls_set_new: no valid overlay\n");
+    }
+}
+
+static bool
+xkb_filter_controls_set_func(struct xkb_state *state,
+                             struct xkb_filter *filter,
+                             const struct xkb_key *key,
+                             enum xkb_key_direction direction)
+{
+    if (key != filter->key) {
+        // FIXME
+        // filter->action.mods.flags &= ~ACTION_LOCK_CLEAR;
+        return XKB_FILTER_CONTINUE;
+    }
+
+    if (direction == XKB_KEY_DOWN) {
+        filter->refcnt++;
+        return XKB_FILTER_CONSUME;
+    }
+    else if (--filter->refcnt > 0) {
+        return XKB_FILTER_CONSUME;
+    }
+
+    state->clear_overlays = filter->priv;
+    /* FIXME: remove debug */
+    fprintf(stderr, "xkb_filter_controls_set_func: %u\n", state->clear_overlays);
+    // FIXME
+    // if (filter->action.mods.flags & ACTION_LOCK_CLEAR)
+    //     state->components.locked_mods &= ~filter->action.mods.mods.mask;
+
+    filter->func = NULL;
+    return XKB_FILTER_CONTINUE;
+}
+
 static const struct {
     void (*new)(struct xkb_state *state, struct xkb_filter *filter);
     bool (*func)(struct xkb_state *state, struct xkb_filter *filter,
@@ -655,6 +776,9 @@ static const struct {
                                   xkb_filter_group_latch_func },
     [ACTION_TYPE_GROUP_LOCK]  = { xkb_filter_group_lock_new,
                                   xkb_filter_group_lock_func },
+    [ACTION_TYPE_CTRL_SET]    = { xkb_filter_controls_set_new,
+                                  xkb_filter_controls_set_func },
+    /* TODO: ACTION_TYPE_CTRL_LOCK */
 };
 
 /**
@@ -739,6 +863,7 @@ xkb_state_unref(struct xkb_state *state)
 
     xkb_keymap_unref(state->keymap);
     darray_free(state->filters);
+    darray_free(state->components.overlaid_keys);
     free(state);
 }
 
@@ -811,6 +936,9 @@ xkb_state_update_derived(struct xkb_state *state)
 {
     xkb_layout_index_t wrapped;
 
+    state->components.overlays = (state->components.base_overlays |
+                                  state->components.locked_overlays);
+
     state->components.mods = (state->components.base_mods |
                               state->components.latched_mods |
                               state->components.locked_mods);
@@ -858,6 +986,15 @@ get_state_component_changes(const struct state_components *a,
         mask |= XKB_STATE_MODS_LATCHED;
     if (a->locked_mods != b->locked_mods)
         mask |= XKB_STATE_MODS_LOCKED;
+    if (a->base_overlays != b->base_overlays)
+        mask |= XKB_STATE_OVERLAYS_SET;
+    if (a->locked_overlays != b->locked_overlays)
+        mask |= XKB_STATE_OVERLAYS_LOCKED;
+    if (a->base_overlays != b->base_overlays)
+        mask |= XKB_STATE_OVERLAYS_SET;
+    if (a->overlays != b->overlays)
+        mask |= XKB_STATE_OVERLAYS_EFFECTIVE;
+    // TODO overlaid keys
     if (a->leds != b->leds)
         mask |= XKB_STATE_LEDS;
 
@@ -874,11 +1011,77 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
 {
     xkb_mod_index_t i;
     xkb_mod_mask_t bit;
+    xkb_overlay_index_t overlay;
+    xkb_overlay_mask_t obit;
     struct state_components prev_components;
+    enum xkb_state_component extra_changes = 0;
     const struct xkb_key *key = XkbKey(state->keymap, kc);
 
     if (!key)
         return 0;
+
+    if (key->overlays_mask) {
+        struct xkb_overlaid_key *overlaid_key;
+        struct xkb_key *overlay_key = NULL;
+        /* FIXME: remove debug */
+        fprintf(stderr, "xkb_state_update_key: overlayable key %u\n", kc);
+        darray_foreach(overlaid_key, state->components.overlaid_keys) {
+            if (overlaid_key->from == kc) {
+                /* Key already overlaid */
+                overlay_key = &state->keymap->keys[overlaid_key->into];
+                /* FIXME: remove debug */
+                fprintf(stderr, "xkb_state_update_key: already overlaid %u (%u)\n",
+                        kc, overlaid_key->count);
+                if (direction == XKB_KEY_DOWN) {
+                    overlaid_key->count++;
+                } else if (overlaid_key->count > 1) {
+                    overlaid_key->count--;
+                } else {
+                    /* FIXME: remove debug */
+                    fprintf(stderr, "xkb_state_update_key: stop overlay key %u\n", kc);
+                    overlaid_key->count = 0;
+                    overlaid_key->from = XKB_KEYCODE_INVALID;
+                    overlaid_key->into = XKB_KEYCODE_INVALID;
+                }
+                break;
+            }
+        }
+        if (!overlay_key && direction == XKB_KEY_DOWN &&
+            (obit = key->overlays_mask & state->components.overlays)) {
+            key_find_active_overlay(state, key, obit, overlay);
+            /* Overlay key */
+            overlay_key = &state->keymap->keys[key->overlays[overlay]];
+            /* Add to overlaid keys */
+            darray_foreach(overlaid_key, state->components.overlaid_keys) {
+                if (overlaid_key->from == XKB_KEYCODE_INVALID) {
+                    /* Found free spot */
+                    overlaid_key->from = kc;
+                    overlaid_key->into = overlay_key->keycode;
+                    overlaid_key->count = 1;
+                    key = NULL;
+                    break;
+                }
+            }
+            if (key) {
+                /* No free spot, Append new entry */
+                struct xkb_overlaid_key entry = {
+                    .from = kc,
+                    .into = overlay_key->keycode,
+                    .count = 1
+                };
+                darray_append(state->components.overlaid_keys, entry);
+            }
+        }
+        if (overlay_key) {
+            /* Apply overlay key */
+            key = overlay_key;
+            /* FIXME: remove debug */
+            fprintf(stderr, "xkb_state_update_key: %u -> %u (%u)\n",
+                    kc, overlay_key->keycode, state->components.overlays);
+            kc = overlay_key->keycode;
+            extra_changes |= XKB_STATE_OVERLAID_KEYS;
+        }
+    }
 
     prev_components = state->components;
 
@@ -906,9 +1109,36 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
         }
     }
 
+    for (overlay = 0, obit = 1; state->set_overlays; overlay++, obit <<= 1) {
+        if (state->set_overlays & obit) {
+            /* FIXME: remove debug */
+            fprintf(stderr, "xkb_state_update_key: set overlay %u\n", overlay);
+            state->overlay_key_count[overlay]++;
+            state->components.base_overlays |= obit;
+            state->set_overlays &= ~obit;
+        }
+    }
+
+    for (overlay = 0, obit = 1; state->clear_overlays; overlay++, obit <<= 1) {
+        if (state->clear_overlays & obit) {
+            state->overlay_key_count[overlay]--;
+            /* FIXME: remove debug */
+            fprintf(stderr, "xkb_state_update_key: overlay %u key count %i\n",
+                    overlay, state->overlay_key_count[overlay]);
+            if (state->overlay_key_count[overlay] <= 0) {
+                /* FIXME: remove debug */
+                fprintf(stderr, "xkb_state_update_key: unset overlay %u\n", overlay);
+                state->components.base_overlays &= ~obit;
+                state->overlay_key_count[overlay] = 0;
+            }
+            state->clear_overlays &= ~obit;
+        }
+    }
+
     xkb_state_update_derived(state);
 
-    return get_state_component_changes(&prev_components, &state->components);
+    return get_state_component_changes(&prev_components, &state->components) |
+           extra_changes;
 }
 
 /**
@@ -967,6 +1197,25 @@ xkb_state_update_mask(struct xkb_state *state,
     xkb_state_update_derived(state);
 
     return get_state_component_changes(&prev_components, &state->components);
+}
+
+
+/* TODO: doc */
+xkb_overlay_mask_t
+xkb_state_serialize_overlays(struct xkb_state *state,
+                             enum xkb_state_component type)
+{
+    xkb_overlay_mask_t ret = 0;
+
+    if (type & XKB_STATE_OVERLAYS_EFFECTIVE)
+        return state->components.overlays;
+
+    if (type & XKB_STATE_OVERLAYS_SET)
+        ret |= state->components.base_overlays;
+    if (type & XKB_STATE_OVERLAYS_LOCKED)
+        ret |= state->components.locked_overlays;
+
+    return ret;
 }
 
 /**

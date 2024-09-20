@@ -152,6 +152,10 @@ translate_controls_mask(uint32_t wire)
         ret |= CONTROL_BELL;
     if (wire & XCB_XKB_BOOL_CTRL_IGNORE_GROUP_LOCK_MASK)
         ret |= CONTROL_IGNORE_GROUP_LOCK;
+    if (wire & XCB_XKB_BOOL_CTRL_OVERLAY_1_MASK)
+        ret |= CONTROL_OVERLAY1;
+    if (wire & XCB_XKB_BOOL_CTRL_OVERLAY_2_MASK)
+        ret |= CONTROL_OVERLAY2;
     /* Some controls are not supported and don't appear here. */
     return ret;
 }

@@ -52,6 +52,10 @@
 #include "src/keysym.h"
 #include "src/compose/parser.h"
 
+#ifdef ENABLE_PRIVATE_APIS
+#include "src/state.h"
+#endif
+
 static void
 print_keycode(struct xkb_keymap *keymap, const char* prefix,
               xkb_keycode_t keycode, const char *suffix) {
@@ -246,6 +250,11 @@ tools_print_keycode_state(const char *prefix,
     }
     printf("] ");
 
+#ifdef ENABLE_PRIVATE_APIS
+    printf("overlays [ %d ] ",
+           xkb_state_serialize_overlays(state, XKB_STATE_OVERLAYS_EFFECTIVE));
+#endif
+
     printf("leds [ ");
     for (xkb_led_index_t led = 0; led < xkb_keymap_num_leds(keymap); led++) {
         if (xkb_state_led_index_is_active(state, led) <= 0)
@@ -282,6 +291,7 @@ tools_print_state_changes(enum xkb_state_component changed)
         printf("locked-mods ");
     if (changed & XKB_STATE_LEDS)
         printf("leds ");
+    /* FIXME: overlays */
     printf("]\n");
 }
 

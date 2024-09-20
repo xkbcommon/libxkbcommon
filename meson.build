@@ -251,6 +251,7 @@ libxkbcommon_sources = [
     'src/messages-codes.h',
     'src/scanner-utils.h',
     'src/state.c',
+    'src/state.h',
     'src/text.c',
     'src/text.h',
     'src/utf8.c',

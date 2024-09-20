@@ -73,4 +73,8 @@ LedStateMaskText(struct xkb_context *ctx, enum xkb_state_component mask);
 const char *
 ControlMaskText(struct xkb_context *ctx, enum xkb_action_controls mask);
 
+const char *
+ControlMaskText2(struct xkb_context *ctx, enum xkb_action_controls mask,
+                 xkb_overlay_mask_t overlays);
+
 #endif /* TEXT_H */

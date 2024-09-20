@@ -383,7 +383,7 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
     case ACTION_TYPE_CTRL_SET:
     case ACTION_TYPE_CTRL_LOCK:
         write_buf(buf, "%s%s(controls=%s%s)%s", prefix, type,
-                  ControlMaskText(keymap->ctx, action->ctrls.ctrls),
+                  ControlMaskText2(keymap->ctx, action->ctrls.ctrls, action->ctrls.overlays),
                   (action->type == ACTION_TYPE_CTRL_LOCK) ? affect_lock_text(action->ctrls.flags, false) : "",
                   suffix);
         break;
@@ -557,6 +557,22 @@ write_key(struct xkb_keymap *keymap, struct buf *buf,
         break;
     }
 
+    xkb_overlay_mask_t overlays_mask = key->overlays_mask;
+    for (xkb_overlay_index_t overlay = 0;
+         overlays_mask && overlay < XKB_MAX_OVERLAYS;
+         overlay++, overlays_mask >>= 1) {
+        if (overlays_mask & 1) {
+            const struct xkb_key *overlay_key = XkbKey(keymap, key->overlays[overlay]);
+            /* FIXME: remove debug */
+            fprintf(stderr, "dump overlay %u: %u (mask: %u, key ok: %u)\n",
+                    overlay + 1, overlay_key->keycode, key->overlays_mask, !!overlay_key);
+            if (!overlay_key)
+                return false; /* impossible */
+            write_buf(buf, "\n\t\toverlay%u= %s,",
+                      overlay + 1, KeyNameText(keymap->ctx, overlay_key->name));
+        }
+    }
+
     show_actions = (key->explicit & EXPLICIT_INTERP);
 
     if (key->num_groups > 1 || show_actions)
@@ -584,8 +600,8 @@ write_key(struct xkb_keymap *keymap, struct buf *buf,
                     if (level != 0)
                         write_buf(buf, ", ");
                     write_action(keymap, buf,
-                                    &key->groups[group].levels[level].action,
-                                    NULL, NULL);
+                                 &key->groups[group].levels[level].action,
+                                 NULL, NULL);
                 }
                 write_buf(buf, " ]");
             }

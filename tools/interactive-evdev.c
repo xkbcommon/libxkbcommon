@@ -261,6 +261,7 @@ static void
 process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
 {
     xkb_keycode_t keycode;
+    xkb_keycode_t keycode_old;
     struct xkb_keymap *keymap;
     enum xkb_state_component changed;
     enum xkb_compose_status status;
@@ -268,11 +269,16 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
     if (type != EV_KEY)
         return;
 
-    keycode = evdev_offset + code;
+    keycode_old = evdev_offset + code;
+    keycode = xkb_state_key_get_overlay_keycode(kbd->state, keycode_old);
+
     keymap = xkb_state_get_keymap(kbd->state);
 
     if (value == KEY_STATE_REPEAT && !xkb_keymap_key_repeats(keymap, keycode))
         return;
+
+    /* FIXME: remove debug */
+    fprintf(stderr, "process_event: key %u -> %u\n", keycode_old, keycode);
 
     if (with_compose && value != KEY_STATE_RELEASE) {
         xkb_keysym_t keysym = xkb_state_key_get_one_sym(kbd->state, keycode);
@@ -293,9 +299,9 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
     }
 
     if (value == KEY_STATE_RELEASE)
-        changed = xkb_state_update_key(kbd->state, keycode, XKB_KEY_UP);
+        changed = xkb_state_update_key(kbd->state, keycode_old, XKB_KEY_UP);
     else
-        changed = xkb_state_update_key(kbd->state, keycode, XKB_KEY_DOWN);
+        changed = xkb_state_update_key(kbd->state, keycode_old, XKB_KEY_DOWN);
 
     if (report_state_changes)
         tools_print_state_changes(changed);

@@ -131,6 +131,45 @@ LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
     return true;
 }
 
+/* Data passed in the *priv argument for LookupControlsMask. */
+typedef struct {
+    xkb_overlay_mask_t *overlays;
+} LookupControlsMaskPriv;
+
+static bool
+LookupControlsMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
+                   enum expr_value_type type, xkb_mod_mask_t *val_rtrn)
+{
+    const LookupEntry *entry;
+    const LookupControlsMaskPriv *arg = priv;
+
+    if (!priv || field == XKB_ATOM_NONE || type != EXPR_TYPE_INT)
+        return false;
+
+    /* Check standard flags */
+    const char *str = xkb_atom_text(ctx, field);
+    for (entry = ctrlMaskNames; entry && entry->name; entry++) {
+        if (istreq(str, entry->name)) {
+            *val_rtrn = entry->value;
+            *(arg->overlays) |=
+                (entry->value & CONTROL_OVERLAYS) >> _CONTROL_OVERLAY1_LOG2;
+            return true;
+        }
+    }
+
+    /* Check extra overlay flags */
+    if (!istreq_prefix("overlay", str))
+        return false;
+
+    char *endptr;
+    unsigned long overlay = strtoul(str + 7, &endptr, 10);
+    if (endptr[0] != '\0' || overlay <= 0 || overlay >= XKB_MAX_OVERLAYS)
+        return false;
+    *val_rtrn = 0;
+    *(arg->overlays) |= 1u << (overlay - 1);
+    return true;
+}
+
 bool
 ExprResolveBoolean(struct xkb_context *ctx, const ExprDef *expr,
                    bool *set_rtrn)
@@ -699,6 +738,16 @@ ExprResolveModMask(struct xkb_context *ctx, const ExprDef *expr,
 {
     LookupModMaskPriv priv = { .mods = mods, .mod_type = mod_type };
     return ExprResolveMaskLookup(ctx, expr, mask_rtrn, LookupModMask, &priv);
+}
+
+bool
+ExprResolveControlsMask(struct xkb_context *ctx, const ExprDef *expr,
+                        enum xkb_action_controls *mask_rtrn,
+                        xkb_overlay_mask_t *overlays)
+{
+    *overlays = 0;
+    LookupControlsMaskPriv priv = { .overlays = overlays };
+    return ExprResolveMaskLookup(ctx, expr, mask_rtrn, LookupControlsMask, &priv);
 }
 
 bool

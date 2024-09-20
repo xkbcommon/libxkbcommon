@@ -79,6 +79,11 @@ ExprResolveMask(struct xkb_context *ctx, const ExprDef *expr,
                 unsigned int *mask_rtrn, const LookupEntry *values);
 
 bool
+ExprResolveControlsMask(struct xkb_context *ctx, const ExprDef *expr,
+                        enum xkb_action_controls *mask_rtrn,
+                        xkb_overlay_mask_t *overlays);
+
+bool
 ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
                   xkb_keysym_t *sym_rtrn);
 

@@ -814,6 +814,7 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
 /* Temporary struct for CopyInterps. */
 struct collect {
     darray(struct xkb_sym_interpret) sym_interprets;
+    xkb_overlay_mask_t overlays;
 };
 
 static void
@@ -824,8 +825,12 @@ CopyInterps(CompatInfo *info, bool needSymbol, enum xkb_match_operation pred,
 
     darray_foreach(si, info->interps)
         if (si->interp.match == pred &&
-            (si->interp.sym != XKB_KEY_NoSymbol) == needSymbol)
+            (si->interp.sym != XKB_KEY_NoSymbol) == needSymbol) {
             darray_append(collect->sym_interprets, si->interp);
+            if (si->interp.action.type == ACTION_TYPE_CTRL_SET ||
+                si->interp.action.type == ACTION_TYPE_CTRL_LOCK)
+                collect->overlays |= si->interp.action.ctrls.overlays;
+        }
 }
 
 static void
@@ -888,8 +893,10 @@ CopyCompatToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
     keymap->mods = info->mods;
 
     if (!darray_empty(info->interps)) {
-        struct collect collect;
-        darray_init(collect.sym_interprets);
+        struct collect collect = {
+            .sym_interprets = darray_new(),
+            .overlays = 0
+        };
 
         /* Most specific to least specific. */
         CopyInterps(info, true, MATCH_EXACTLY, &collect);
@@ -905,6 +912,13 @@ CopyCompatToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
 
         darray_steal(collect.sym_interprets,
                      &keymap->sym_interprets, &keymap->num_sym_interprets);
+
+        xkb_overlay_index_t overlay;
+        for (overlay = XKB_MAX_OVERLAYS; overlay > 0; overlay--) {
+            if (collect.overlays & (1u << (overlay - 1)))
+                break;
+        }
+        keymap->num_overlays = MAX(keymap->num_overlays, overlay);
     }
 
     CopyLedMapDefsToKeymap(keymap, info);
