@@ -78,8 +78,12 @@
 #define XKB_KEYSYM_UNICODE_MAX    0x0110ffff
 /** Unicode version used for case mappings */
 #define XKB_KEYSYM_UNICODE_VERSION { 15, 1, 0, 0 }
-/** Maximum keysym name length */
-#define XKB_KEYSYM_NAME_MAX_SIZE  27
+/** Maximum keysym canonical name length, plus terminating NULL byte */
+#define XKB_KEYSYM_NAME_MAX_SIZE  28
+/** Longest keysym canonical name */
+#define XKB_KEYSYM_LONGEST_CANONICAL_NAME ISO_Discontinuous_Underline
+/** Longest keysym name */
+#define XKB_KEYSYM_LONGEST_NAME ISO_Discontinuous_Underline
 /** Maximum bytes to encode the Unicode representation of a keysym in UTF-8:
  * 4 bytes + NULL-terminating byte */
 #define XKB_KEYSYM_UTF8_MAX_SIZE  5
