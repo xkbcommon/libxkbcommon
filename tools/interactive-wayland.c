@@ -86,6 +86,9 @@ struct interactive_seat {
 };
 
 static bool terminate;
+#ifdef KEYMAP_DUMP
+static bool dump_raw_keymap;
+#endif
 
 #ifdef HAVE_MKOSTEMP
 static int
@@ -360,10 +363,23 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
 
     buf = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
     if (buf == MAP_FAILED) {
-        fprintf(stderr, "Failed to mmap keymap: %d\n", errno);
+        fprintf(stderr, "ERROR: Failed to mmap keymap: %d\n", errno);
         close(fd);
         return;
     }
+
+#ifdef KEYMAP_DUMP
+    /* We do not want to be interactive, so stop at next loop */
+    terminate = true;
+    if (dump_raw_keymap) {
+        /* Dump the raw keymap */
+        fprintf(stdout, "%s", (char *)buf);
+        munmap(buf, size);
+        close(fd);
+        /* Do not go further */
+        return;
+    }
+#endif
 
     seat->keymap = xkb_keymap_new_from_buffer(seat->inter->ctx, buf, size - 1,
                                               XKB_KEYMAP_FORMAT_TEXT_V1,
@@ -371,13 +387,21 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
     munmap(buf, size);
     close(fd);
     if (!seat->keymap) {
-        fprintf(stderr, "Failed to compile keymap!\n");
+        fprintf(stderr, "ERROR: Failed to compile keymap!\n");
         return;
     }
+#ifdef KEYMAP_DUMP
+    /* Dump the reformatted keymap */
+    char *dump = xkb_keymap_get_as_string(seat->keymap,
+                                            XKB_KEYMAP_FORMAT_TEXT_V1);
+    fprintf(stdout, "%s", dump);
+    free(dump);
+    return;
+#endif
 
     seat->state = xkb_state_new(seat->keymap);
     if (!seat->state) {
-        fprintf(stderr, "Failed to create XKB state!\n");
+        fprintf(stderr, "ERROR: Failed to create XKB state!\n");
         return;
     }
 }
@@ -702,10 +726,20 @@ static void
 usage(FILE *fp, char *progname)
 {
         fprintf(fp,
-                "Usage: %s [--help] [--enable-compose]\n",
+                "Usage: %s [--help]"
+#ifndef KEYMAP_DUMP
+                " [--enable-compose]"
+#else
+                " [--raw]"
+#endif
+                "\n",
                 progname);
         fprintf(fp,
+#ifndef KEYMAP_DUMP
                 "    --enable-compose   enable Compose\n"
+#else
+                "    --raw              dump the raw keymap, without parsing it\n"
+#endif
                 "    --help             display this help and exit\n"
         );
 }
@@ -722,10 +756,15 @@ main(int argc, char *argv[])
     bool with_compose = false;
     enum options {
         OPT_COMPOSE,
+        OPT_RAW,
     };
     static struct option opts[] = {
         {"help",                 no_argument,            0, 'h'},
+#ifndef KEYMAP_DUMP
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
+#else
+        {"raw",                  no_argument,            0, OPT_RAW},
+#endif
         {0, 0, 0, 0},
     };
 
@@ -738,9 +777,15 @@ main(int argc, char *argv[])
             break;
 
         switch (opt) {
+#ifndef KEYMAP_DUMP
         case OPT_COMPOSE:
             with_compose = true;
             break;
+#else
+        case OPT_RAW:
+            dump_raw_keymap = true;
+            break;
+#endif
         case 'h':
             usage(stdout, argv[0]);
             return EXIT_SUCCESS;
