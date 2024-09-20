@@ -48,6 +48,15 @@ cflags = [
     '-Wwrite-strings',
     '-Wno-documentation-deprecated-sync',
 ]
+if get_option('buildtype') != 'debug'
+    cflags += [
+            '-ffunction-sections',
+            '-fdata-sections',
+    ]
+    base_link_args = ['-Wl,--gc-sections']
+else
+    base_link_args = []
+endif
 add_project_arguments(cc.get_supported_arguments(cflags), language: 'c')
 
 
@@ -259,7 +268,7 @@ libxkbcommon_sources = [
     'src/utils.c',
     'src/utils.h',
 ]
-libxkbcommon_link_args = []
+libxkbcommon_link_args = base_link_args
 libxkbcommon_link_deps = []
 if have_version_script
     libxkbcommon_link_args += f'-Wl,--version-script=@xkbcommon_map@'
@@ -328,7 +337,7 @@ You can disable X11 support with -Denable-x11=false.''')
         'src/atom.h',
         'src/atom.c',
     ]
-    libxkbcommon_x11_link_args = []
+    libxkbcommon_x11_link_args = base_link_args
     libxkbcommon_x11_link_deps = []
     if have_version_script
         libxkbcommon_x11_link_args += '-Wl,--version-script=' + meson.current_source_dir()/'xkbcommon-x11.map'
@@ -390,7 +399,7 @@ if get_option('enable-xkbregistry')
         'src/util-list.c',
         'src/util-mem.h',
     ]
-    libxkbregistry_link_args = []
+    libxkbregistry_link_args = base_link_args
     libxkbregistry_link_deps = []
     if have_version_script
         libxkbregistry_link_args += '-Wl,--version-script=' + meson.current_source_dir()/'xkbregistry.map'
