@@ -311,9 +311,9 @@ test_update_mask_mods(struct xkb_keymap *keymap)
     assert(caps != XKB_MOD_INVALID);
     shift = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_SHIFT);
     assert(shift != XKB_MOD_INVALID);
-    num = xkb_keymap_mod_get_index(keymap, "NumLock");
+    num = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_NUM);
     assert(num != XKB_MOD_INVALID);
-    alt = xkb_keymap_mod_get_index(keymap, "Alt");
+    alt = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_ALT);
     assert(alt != XKB_MOD_INVALID);
     mod1 = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_MOD1);
     assert(mod1 != XKB_MOD_INVALID);
