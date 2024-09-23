@@ -481,7 +481,7 @@ get_sym_maps(struct xkb_keymap *keymap, xcb_connection_t *conn,
                     if (level < key->groups[group].type->num_levels &&
                         wire_keysym != XKB_KEY_NoSymbol) {
                         key->groups[group].levels[level].num_syms = 1;
-                        key->groups[group].levels[level].u.sym = wire_keysym;
+                        key->groups[group].levels[level].s.sym = wire_keysym;
                     }
 
                     syms_iter++;

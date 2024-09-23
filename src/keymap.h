@@ -318,10 +318,11 @@ enum xkb_explicit_components {
 struct xkb_level {
     union xkb_action action;
     unsigned int num_syms;
+    /* Keysyms */
     union {
         xkb_keysym_t sym;       /* num_syms == 1 */
         xkb_keysym_t *syms;     /* num_syms > 1  */
-    } u;
+    } s;
 };
 
 /**
