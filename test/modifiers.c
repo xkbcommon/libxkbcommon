@@ -30,21 +30,62 @@
 #include "test.h"
 #include "keymap.h"
 
-// Standard real modifier masks
-#define ShiftMask   (1 << 0)
-#define LockMask    (1 << 1)
-#define ControlMask (1 << 2)
-#define Mod1Mask    (1 << 3)
-#define Mod2Mask    (1 << 4)
-#define Mod3Mask    (1 << 5)
-#define Mod4Mask    (1 << 6)
-#define Mod5Mask    (1 << 7)
+/* Standard real modifiers indexes */
+#define ShiftIndex   0
+#define LockIndex    1
+#define ControlIndex 2
+#define Mod1Index    3
+#define Mod2Index    4
+#define Mod3Index    5
+#define Mod4Index    6
+#define Mod5Index    7
+
+/* Standard real modifier masks */
+#define ShiftMask   (1 << ShiftIndex)
+#define LockMask    (1 << LockIndex)
+#define ControlMask (1 << ControlIndex)
+#define Mod1Mask    (1 << Mod1Index)
+#define Mod2Mask    (1 << Mod2Index)
+#define Mod3Mask    (1 << Mod3Index)
+#define Mod4Mask    (1 << Mod4Index)
+#define Mod5Mask    (1 << Mod5Index)
 #define NoModifier  0
 
-static void
-test_modmap_none(void)
+static bool
+test_real_mod(struct xkb_keymap *keymap, const char* name,
+              xkb_mod_index_t idx, xkb_mod_mask_t mapping)
 {
-    struct xkb_context *context = test_get_context(0);
+    return xkb_keymap_mod_get_index(keymap, name) == idx &&
+           (keymap->mods.mods[idx].type == MOD_REAL) &&
+           mapping == (1u << idx);
+}
+
+/* Check that the provided modifier names work */
+static void
+test_modifiers_names(struct xkb_context *context)
+{
+    struct xkb_keymap *keymap;
+
+    keymap = test_compile_rules(context, "evdev", NULL, NULL, NULL, NULL);
+    assert(keymap);
+
+    /* Real modifiers
+     * The indexes and masks are fixed and always valid */
+    assert(test_real_mod(keymap, XKB_MOD_NAME_SHIFT, ShiftIndex, ShiftMask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_CAPS, LockIndex, LockMask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_CTRL, ControlIndex, ControlMask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_MOD1, Mod1Index, Mod1Mask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_MOD2, Mod2Index, Mod2Mask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_MOD3, Mod3Index, Mod3Mask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_MOD4, Mod4Index, Mod4Mask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_MOD5, Mod5Index, Mod5Mask));
+
+    xkb_keymap_unref(keymap);
+}
+
+static void
+test_modmap_none(struct xkb_context *context)
+{
     struct xkb_keymap *keymap;
     const struct xkb_key *key;
     xkb_keycode_t keycode;
@@ -148,7 +189,6 @@ test_modmap_none(void)
     assert(key->modmap == Mod3Mask);
 
     xkb_keymap_unref(keymap);
-    xkb_context_unref(context);
 }
 
 int
@@ -156,7 +196,13 @@ main(void)
 {
     test_init();
 
-    test_modmap_none();
+    struct xkb_context *context = test_get_context(CONTEXT_NO_FLAG);
+    assert(context);
+
+    test_modmap_none(context);
+    test_modifiers_names(context);
+
+    xkb_context_unref(context);
 
     return 0;
 }
