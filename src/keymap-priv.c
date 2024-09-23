@@ -26,6 +26,7 @@
 
 #include "config.h"
 
+#include "xkbcommon/xkbcommon-names.h"
 #include "keymap.h"
 
 static void
@@ -33,14 +34,14 @@ update_builtin_keymap_fields(struct xkb_keymap *keymap)
 {
     /* Predefined (AKA real, core, X11) modifiers. The order is important! */
     static const char *const builtin_mods[] = {
-        [0] = "Shift",
-        [1] = "Lock",
-        [2] = "Control",
-        [3] = "Mod1",
-        [4] = "Mod2",
-        [5] = "Mod3",
-        [6] = "Mod4",
-        [7] = "Mod5"
+        [0] = XKB_MOD_NAME_SHIFT,
+        [1] = XKB_MOD_NAME_CAPS,
+        [2] = XKB_MOD_NAME_CTRL,
+        [3] = XKB_MOD_NAME_MOD1,
+        [4] = XKB_MOD_NAME_MOD2,
+        [5] = XKB_MOD_NAME_MOD3,
+        [6] = XKB_MOD_NAME_MOD4,
+        [7] = XKB_MOD_NAME_MOD5
     };
 
     for (unsigned i = 0; i < ARRAY_SIZE(builtin_mods); i++) {

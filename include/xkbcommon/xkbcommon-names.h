@@ -35,6 +35,13 @@
 #define XKB_MOD_NAME_SHIFT      "Shift"
 #define XKB_MOD_NAME_CAPS       "Lock"
 #define XKB_MOD_NAME_CTRL       "Control"
+#define XKB_MOD_NAME_MOD1       "Mod1"
+#define XKB_MOD_NAME_MOD2       "Mod2"
+#define XKB_MOD_NAME_MOD3       "Mod3"
+#define XKB_MOD_NAME_MOD4       "Mod4"
+#define XKB_MOD_NAME_MOD5       "Mod5"
+
+/* Usual virtual modifiers mappings to real modifiers */
 #define XKB_MOD_NAME_ALT        "Mod1"
 #define XKB_MOD_NAME_NUM        "Mod2"
 #define XKB_MOD_NAME_LOGO       "Mod4"
