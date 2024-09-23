@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import re
 from dataclasses import astuple, dataclass
 from pathlib import Path
-import re
-from typing import Callable, Generic, Sequence, TypeVar
+from typing import Any, Callable, ClassVar, Generic, Sequence, TypeVar
 
 import jinja2
 import yaml
@@ -16,14 +16,14 @@ import yaml
 class Version:
     """A semantic version number: MAJOR.MINOR.PATCH."""
 
-    UNKNOWN_VERSION = "ALWAYS"
-    DEFAULT_VERSION = "1.0.0"
+    UNKNOWN_VERSION: ClassVar[str] = "ALWAYS"
+    DEFAULT_VERSION: ClassVar[str] = "1.0.0"
 
     major: int
     minor: int
     patch: int = 0
 
-    def __str__(self):
+    def __str__(self) -> str:
         return ".".join(map(str, astuple(self)))
 
     @classmethod
@@ -47,7 +47,7 @@ class Example:
     after: str | None
 
     @classmethod
-    def parse(cls, entry) -> Example:
+    def parse(cls, entry: Any) -> Example:
         name = entry.get("name")
         assert name, entry
 
@@ -89,7 +89,7 @@ class Entry:
     """
 
     @classmethod
-    def parse(cls, entry) -> Entry:
+    def parse(cls, entry: Any) -> Entry:
         code = entry.get("code")
         assert code is not None and isinstance(code, int) and code > 0, entry
 
@@ -140,7 +140,7 @@ class Entry:
         return f"XKB_{self.type.upper()}_{id}"
 
     @property
-    def message_name(self: Entry):
+    def message_name(self: Entry) -> str:
         """Format the message string identifier for display"""
         return self.id.replace("-", " ").capitalize()
 
@@ -184,7 +184,7 @@ def generate(
     root: Path,
     file: Path,
     skip_removed: bool = False,
-):
+) -> None:
     """Generate a file from its Jinja2 template and the message registry"""
     template_path = file.with_suffix(f"{file.suffix}.jinja")
     template = env.get_template(str(template_path))
@@ -205,7 +205,7 @@ T = TypeVar("T")
 @dataclass
 class Constant(Generic[T]):
     name: str
-    pattern: re.Pattern
+    pattern: re.Pattern[str]
     conversion: Callable[[str], T]
 
 
@@ -246,7 +246,11 @@ args = parser.parse_args()
 # Read some constants from libxkbcommon that we need
 constants = read_constants(
     Path(__file__).parent.parent / "src" / "keymap.h",
-    (Constant("XKB_MAX_GROUPS", re.compile("^#define\s+XKB_MAX_GROUPS\s+(\d+)"), int),),
+    (
+        Constant(
+            "XKB_MAX_GROUPS", re.compile(r"^#define\s+XKB_MAX_GROUPS\s+(\d+)"), int
+        ),
+    ),
 )
 
 # Configure Jinja
