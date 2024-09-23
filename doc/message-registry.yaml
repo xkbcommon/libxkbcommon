@@ -152,6 +152,23 @@
   added: ALWAYS
   type: warning
   description: "Warn if using an undefined key type"
+- id: "deprecated-keysym"
+  code: 301
+  added: 1.8.0
+  type: warning
+  description: "A keysym has been deprecated: consider using an alternative keysym"
+  details: |
+    Some keysyms have ambiguous meaning. It is advised to migrate to an alternative keysym
+    if possible, as deprecated keysyms may be removed in the future. Consider using Unicode
+    keysyms (`Unnnn`) if relevant.
+- id: "deprecated-keysym-name"
+  code: 302
+  added: 1.8.0
+  type: warning
+  description: "A keysym name has been deprecated: use the corresponding canonical name instead"
+  details: |
+    Some keysym names have typos, unconventional names or are historical aliases.
+    Please consider migrating to the reference name reported in the warning message.
 - id: "non-base-group-name"
   code: 305
   added: ALWAYS
@@ -410,5 +427,4 @@
     The modifiers used in `map` or `preserve` entries should be declared using the entry
     `modifiers` in the key type.
 
-# TODO: deprecated keysym
 # TODO: unicode keysym when named and recommended keysym exists

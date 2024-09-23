@@ -56,6 +56,10 @@ enum xkb_message_code {
     XKB_WARNING_CONFLICTING_KEY_TYPE_MAP_ENTRY = 266,
     /** Warn if using an undefined key type */
     XKB_WARNING_UNDEFINED_KEY_TYPE = 286,
+    /** A keysym has been deprecated: consider using an alternative keysym */
+    XKB_WARNING_DEPRECATED_KEYSYM = 301,
+    /** A keysym name has been deprecated: use the corresponding canonical name instead */
+    XKB_WARNING_DEPRECATED_KEYSYM_NAME = 302,
     /** Warn if a group name was defined for group other than the first one */
     XKB_WARNING_NON_BASE_GROUP_NAME = 305,
     /** Warn when a shift level is not supported */
