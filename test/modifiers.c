@@ -60,6 +60,15 @@ test_real_mod(struct xkb_keymap *keymap, const char* name,
            mapping == (1u << idx);
 }
 
+static bool
+test_virtual_mod(struct xkb_keymap *keymap, const char* name,
+                 xkb_mod_index_t idx, xkb_mod_mask_t mapping)
+{
+    return xkb_keymap_mod_get_index(keymap, name) == idx &&
+           (keymap->mods.mods[idx].type == MOD_VIRT) &&
+           mapping == keymap->mods.mods[idx].mapping;
+}
+
 /* Check that the provided modifier names work */
 static void
 test_modifiers_names(struct xkb_context *context)
@@ -79,6 +88,30 @@ test_modifiers_names(struct xkb_context *context)
     assert(test_real_mod(keymap, XKB_MOD_NAME_MOD3, Mod3Index, Mod3Mask));
     assert(test_real_mod(keymap, XKB_MOD_NAME_MOD4, Mod4Index, Mod4Mask));
     assert(test_real_mod(keymap, XKB_MOD_NAME_MOD5, Mod5Index, Mod5Mask));
+
+    /* Usual virtual mods mappings */
+    assert(test_real_mod(keymap, XKB_MOD_NAME_ALT,  Mod1Index, Mod1Mask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_NUM,  Mod2Index, Mod2Mask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_LOGO, Mod4Index, Mod4Mask));
+
+    /* Virtual modifiers
+     * The indexes depends on the keymap files */
+    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_ALT,    Mod5Index + 2,  Mod1Mask));
+    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_META,   Mod5Index + 11, Mod1Mask));
+    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_NUM,    Mod5Index + 1,  Mod2Mask));
+    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_SUPER,  Mod5Index + 12, Mod4Mask));
+    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_HYPER,  Mod5Index + 13, Mod4Mask));
+    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_LEVEL3, Mod5Index + 3,  Mod5Mask));
+    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_SCROLL, Mod5Index + 8,  0));
+    /* TODO: current xkeyboard-config maps LevelFive to Nod3 by default */
+    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_LEVEL5, Mod5Index + 9,  0));
+    /* Legacy stuff, removed from xkeyboard-config */
+    assert(keymap->mods.num_mods == 21);
+    assert(test_virtual_mod(keymap, "LAlt",     Mod5Index + 4,  0));
+    assert(test_virtual_mod(keymap, "RAlt",     Mod5Index + 5,  0));
+    assert(test_virtual_mod(keymap, "LControl", Mod5Index + 7,  0));
+    assert(test_virtual_mod(keymap, "RControl", Mod5Index + 6,  0));
+    assert(test_virtual_mod(keymap, "AltGr",    Mod5Index + 10, Mod5Mask));
 
     xkb_keymap_unref(keymap);
 }
