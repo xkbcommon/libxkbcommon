@@ -120,9 +120,9 @@ test_keymap(void)
     assert(mask_count == 1);
     assert(masks_out[0] == 0);
 
-    shift_mask = 1 << xkb_keymap_mod_get_index(keymap, "Shift");
-    lock_mask = 1 << xkb_keymap_mod_get_index(keymap, "Lock");
-    mod2_mask = 1 << xkb_keymap_mod_get_index(keymap, "Mod2");
+    shift_mask = 1 << xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_SHIFT);
+    lock_mask = 1 << xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CAPS);
+    mod2_mask = 1 << xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_MOD2);
 
     // AC01 level 1 ('A') requires either Shift or Lock modifiers on us-pc104
     mask_count = xkb_keymap_key_get_mods_for_level(keymap, kc, 0, 1, masks_out, 4);
