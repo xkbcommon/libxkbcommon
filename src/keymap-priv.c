@@ -147,6 +147,6 @@ XkbLevelsSameSyms(const struct xkb_level *a, const struct xkb_level *b)
     if (a->num_syms != b->num_syms)
         return false;
     if (a->num_syms <= 1)
-        return a->u.sym == b->u.sym;
-    return memcmp(a->u.syms, b->u.syms, sizeof(*a->u.syms) * a->num_syms) == 0;
+        return a->s.sym == b->s.sym;
+    return memcmp(a->s.syms, b->s.syms, sizeof(*a->s.syms) * a->num_syms) == 0;
 }
