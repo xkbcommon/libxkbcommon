@@ -315,9 +315,9 @@ test_update_mask_mods(struct xkb_keymap *keymap)
     assert(num != XKB_MOD_INVALID);
     alt = xkb_keymap_mod_get_index(keymap, "Alt");
     assert(alt != XKB_MOD_INVALID);
-    mod1 = xkb_keymap_mod_get_index(keymap, "Mod1");
+    mod1 = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_MOD1);
     assert(mod1 != XKB_MOD_INVALID);
-    mod2 = xkb_keymap_mod_get_index(keymap, "Mod2");
+    mod2 = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_MOD2);
     assert(mod2 != XKB_MOD_INVALID);
 
     changed = xkb_state_update_mask(state, 1 << caps, 0, 0, 0, 0, 0);
@@ -395,7 +395,7 @@ test_consume(struct xkb_keymap *keymap)
     assert(caps != XKB_MOD_INVALID);
     ctrl = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CTRL);
     assert(ctrl != XKB_MOD_INVALID);
-    mod5 = xkb_keymap_mod_get_index(keymap, "Mod5");
+    mod5 = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_MOD5);
     assert(mod5 != XKB_MOD_INVALID);
 
     /* Test remove_consumed() */
