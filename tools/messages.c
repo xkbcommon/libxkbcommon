@@ -58,6 +58,8 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_ERROR_INVALID_SET_DEFAULT_STATEMENT, "Invalid set default statement"},
     {XKB_WARNING_CONFLICTING_KEY_TYPE_MAP_ENTRY, "Conflicting key type map entry"},
     {XKB_WARNING_UNDEFINED_KEY_TYPE, "Undefined key type"},
+    {XKB_WARNING_DEPRECATED_KEYSYM, "Deprecated keysym"},
+    {XKB_WARNING_DEPRECATED_KEYSYM_NAME, "Deprecated keysym name"},
     {XKB_WARNING_NON_BASE_GROUP_NAME, "Non base group name"},
     {XKB_ERROR_UNSUPPORTED_SHIFT_LEVEL, "Unsupported shift level"},
     {XKB_ERROR_INCLUDED_FILE_NOT_FOUND, "Included file not found"},

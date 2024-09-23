@@ -59,7 +59,7 @@ _xkbcommon_error(struct parser_param *param, const char *msg)
 }
 
 static bool
-resolve_keysym(const char *name, xkb_keysym_t *sym_rtrn)
+resolve_keysym(struct parser_param *param, const char *name, xkb_keysym_t *sym_rtrn)
 {
     xkb_keysym_t sym;
 
@@ -76,6 +76,8 @@ resolve_keysym(const char *name, xkb_keysym_t *sym_rtrn)
     sym = xkb_keysym_from_name(name, XKB_KEYSYM_NO_FLAGS);
     if (sym != XKB_KEY_NoSymbol) {
         *sym_rtrn = sym;
+        check_deprecated_keysyms(parser_warn, param, param->ctx,
+                                 sym, name, name, "%s", "");
         return true;
     }
 
@@ -726,7 +728,7 @@ KeySyms         :       OBRACE KeySymList CBRACE
 
 KeySym          :       IDENT
                         {
-                            if (!resolve_keysym($1, &$$)) {
+                            if (!resolve_keysym(param, $1, &$$)) {
                                 parser_warn(
                                     param,
                                     XKB_WARNING_UNRECOGNIZED_KEYSYM,
@@ -750,12 +752,15 @@ KeySym          :       IDENT
                                 $$ = XKB_KEY_NoSymbol;
                             }
                             /* Special case for digits 0..9 */
-                            else if ($1 < 10) {      /* XKB_KEY_0 .. XKB_KEY_9 */
+                            else if ($1 < 10) {     /* XKB_KEY_0 .. XKB_KEY_9 */
                                 $$ = XKB_KEY_0 + (xkb_keysym_t) $1;
                             }
                             else {
                                 if ($1 <= XKB_KEYSYM_MAX) {
                                     $$ = (xkb_keysym_t) $1;
+                                    check_deprecated_keysyms(
+                                        parser_warn, param, param->ctx,
+                                        $$, NULL, $$, "0x%"PRIx32, "");
                                 } else {
                                     parser_warn(
                                         param, XKB_WARNING_UNRECOGNIZED_KEYSYM,

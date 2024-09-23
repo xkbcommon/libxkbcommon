@@ -710,8 +710,11 @@ ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
     if (expr->expr.op == EXPR_IDENT) {
         const char *str = xkb_atom_text(ctx, expr->ident.ident);
         *sym_rtrn = xkb_keysym_from_name(str, 0);
-        if (*sym_rtrn != XKB_KEY_NoSymbol)
+        if (*sym_rtrn != XKB_KEY_NoSymbol) {
+            check_deprecated_keysyms(log_warn, ctx, ctx,
+                                     *sym_rtrn, str, str, "%s", "\n");
             return true;
+        }
     }
 
     if (!ExprResolveInteger(ctx, expr, &val))
@@ -719,8 +722,8 @@ ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
 
     if (val < XKB_KEYSYM_MIN) {
         log_warn(ctx, XKB_WARNING_UNRECOGNIZED_KEYSYM,
-                           "unrecognized keysym \"-0x%x\" (%d)\n",
-                           (unsigned int) -val, val);
+                 "unrecognized keysym \"-0x%x\" (%d)\n",
+                 (unsigned int) -val, val);
         return false;
     }
 
@@ -731,16 +734,17 @@ ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
     }
 
     if (val <= XKB_KEYSYM_MAX) {
+        check_deprecated_keysyms(log_warn, ctx, ctx, val, NULL, val, "0x%x", "\n");
         log_warn(ctx, XKB_WARNING_NUMERIC_KEYSYM,
-                           "numeric keysym \"0x%x\" (%d)",
-                           (unsigned int) val, val);
+                 "numeric keysym \"0x%x\" (%d)",
+                 (unsigned int) val, val);
         *sym_rtrn = (xkb_keysym_t) val;
         return true;
     }
 
     log_warn(ctx, XKB_WARNING_UNRECOGNIZED_KEYSYM,
-                       "unrecognized keysym \"0x%x\" (%d)\n",
-                       (unsigned int) val, val);
+             "unrecognized keysym \"0x%x\" (%d)\n",
+             (unsigned int) val, val);
     return false;
 
 }
