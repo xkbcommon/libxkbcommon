@@ -108,7 +108,7 @@ static void
 ClearLevelInfo(struct xkb_level *leveli)
 {
     if (leveli->num_syms > 1)
-        free(leveli->u.syms);
+        free(leveli->s.syms);
 }
 
 static void
@@ -135,8 +135,8 @@ CopyGroupInfo(GroupInfo *to, const GroupInfo *from)
     darray_copy(to->levels, from->levels);
     for (xkb_level_index_t j = 0; j < darray_size(to->levels); j++)
         if (darray_item(from->levels, j).num_syms > 1)
-            darray_item(to->levels, j).u.syms =
-                memdup(darray_item(from->levels, j).u.syms,
+            darray_item(to->levels, j).s.syms =
+                memdup(darray_item(from->levels, j).s.syms,
                        darray_item(from->levels, j).num_syms,
                        sizeof(xkb_keysym_t));
 }
@@ -308,9 +308,9 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
         else if (intoLevel->num_syms == 0) {
             intoLevel->num_syms = fromLevel->num_syms;
             if (fromLevel->num_syms > 1)
-                intoLevel->u.syms = fromLevel->u.syms;
+                intoLevel->s.syms = fromLevel->s.syms;
             else
-                intoLevel->u.sym = fromLevel->u.sym;
+                intoLevel->s.sym = fromLevel->s.sym;
             fromLevel->num_syms = 0;
         }
         else if (!XkbLevelsSameSyms(fromLevel, intoLevel)) {
@@ -327,9 +327,9 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
                 ClearLevelInfo(intoLevel);
                 intoLevel->num_syms = fromLevel->num_syms;
                 if (fromLevel->num_syms > 1)
-                    intoLevel->u.syms = fromLevel->u.syms;
+                    intoLevel->s.syms = fromLevel->s.syms;
                 else
-                    intoLevel->u.sym = fromLevel->u.sym;
+                    intoLevel->s.sym = fromLevel->s.sym;
                 fromLevel->num_syms = 0;
             }
         }
@@ -724,7 +724,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         sym_index = darray_item(value->keysym_list.symsMapIndex, i);
         leveli->num_syms = darray_item(value->keysym_list.symsNumEntries, i);
         if (leveli->num_syms > 1)
-            leveli->u.syms = calloc(leveli->num_syms, sizeof(*leveli->u.syms));
+            leveli->s.syms = calloc(leveli->num_syms, sizeof(*leveli->s.syms));
 
         for (unsigned j = 0; j < leveli->num_syms; j++) {
             xkb_keysym_t keysym = darray_item(value->keysym_list.syms,
@@ -734,10 +734,10 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
                 if (keysym == XKB_KEY_NoSymbol)
                     leveli->num_syms = 0;
                 else
-                    leveli->u.sym = keysym;
+                    leveli->s.sym = keysym;
             }
             else if (leveli->num_syms > 1) {
-                leveli->u.syms[j] = keysym;
+                leveli->s.syms[j] = keysym;
             }
         }
     }
@@ -1299,7 +1299,7 @@ FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym)
                     level < XkbKeyNumLevels(key, group)) {
                     got_one_group = got_one_level = true;
                     if (key->groups[group].levels[level].num_syms == 1 &&
-                        key->groups[group].levels[level].u.sym == sym)
+                        key->groups[group].levels[level].s.sym == sym)
                         return key;
                 }
             }
@@ -1333,9 +1333,9 @@ FindAutomaticType(struct xkb_context *ctx, GroupInfo *groupi)
     (darray_item(groupi->levels, level).num_syms == 0 ? \
         XKB_KEY_NoSymbol : \
      darray_item(groupi->levels, level).num_syms == 1 ? \
-        darray_item(groupi->levels, level).u.sym : \
+        darray_item(groupi->levels, level).s.sym : \
      /* num_syms > 1 */ \
-        darray_item(groupi->levels, level).u.syms[0])
+        darray_item(groupi->levels, level).s.syms[0])
 
     if (width == 1 || width <= 0)
         return xkb_atom_intern_literal(ctx, "ONE_LEVEL");
