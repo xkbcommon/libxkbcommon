@@ -307,7 +307,7 @@ keysyms (`Unnnn`) if relevant.
   <dt>Summary</dt><dd>A keysym name has been deprecated: use the corresponding canonical name instead</dd>
 </dl>
 
-Some keysym names have typos, unconventional names or historical aliases of a reference name.
+Some keysym names have typos, unconventional names or are historical aliases.
 Please consider migrating to the reference name reported in the warning message.
 
 
