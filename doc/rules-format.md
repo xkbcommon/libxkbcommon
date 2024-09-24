@@ -143,7 +143,9 @@ RuleSet      ::= Mapping { Rule }
 
 Mapping      ::= { Mlvo } "=" { Kccgst } "\n"
 Mlvo         ::= "model" | "option" | ("layout" | "variant") [ Index ]
-Index        ::= "[" 1..XKB_NUM_GROUPS "]"
+Index        ::= "[" ({ NumericIndex } | { SpecialIndex }) "]"
+NumericIndex ::= 1..XKB_MAX_GROUPS
+SpecialIndex ::= "single" | "first" | "later" | "any"
 Kccgst       ::= "keycodes" | "symbols" | "types" | "compat" | "geometry"
 
 Rule         ::= { MlvoValue } "=" { KccgstValue } "\n"
@@ -175,13 +177,46 @@ or %%H seems to do the job though.
         `/usr/share/X11/xkb/rules`).
     </dd>
   </dl>
+  **Note:** This feature is supported by libxkbcommon but not by the legacy X11
+  tools.
+
+- @anchor rules-special-indexes
+  (Since version `1.8.0`)
+  The following *special indexes* can be used to avoid repetition and clarify
+  the semantics:
+
+  <dl>
+    <dt>`single`</dt>
+    <dd>
+        Matches a single layout; `layout[single]` is the same as without
+        explicit index: `layout`.
+    </dd>
+    <dt>`first`</dt>
+    <dd>
+        Matches the first layout/variant, no matter how many layouts are in
+        the RMLVO configuration. Acts as both `layout` and `layout[1]`.
+    </dd>
+    <dt>`later`</dt>
+    <dd>
+        Matches all but the first layout. This is an index *range*.
+        Acts as `layout[2]` .. `layout[4]`.
+    </dd>
+    <dt>any</dt>
+    <dd>
+        Matches layout at any position. This is an index *range*.
+        Acts as `layout`, `layout[1]` .. `layout[4]`.
+    </dd>
+  </dl>
+
+  When using a layout index *range* (`later`, `any`), the @ref rules-i-expansion "%i expansion"
+  can be used in the `KccgstValue` to refer to the index of the matched layout.
 
 - The order of values in a `Rule` must be the same as the `Mapping` it
   follows. The mapping line determines the meaning of the values in
   the rules which follow in the `RuleSet`.
 
 - If a `Rule` is matched, **%-expansion** is performed on the
-`KccgstValue`, as follows:
+  `KccgstValue`, as follows:
 
   <dl>
     <dt><code>\%m</code>, <code>\%l</code>, <code>\%v</code></dt>
@@ -215,6 +250,18 @@ or %%H seems to do the job though.
     </dt>
     <dd>
         As above, but prefixed by ‘(’ and suffixed by ‘)’.
+    </dd>
+    <dt>
+        @anchor rules-i-expansion
+        `%%i`,
+        `%%l[%%i]`,
+        `%(l[%%i])`,
+        etc.
+    </dt>
+    <dd>
+        (Since version `1.8.0`)
+        In case the mapping uses a @ref rules-special-indexes "special index",
+        `%%i` corresponds to the index of the matched layout.
     </dd>
   </dl>
 
@@ -328,6 +375,16 @@ we would have the following resolutions of <em>[symbols]</em>:
 | `us`       | `intl`       | `pc+us(intl)`                 | #1              |
 | `us,es`    |              | `pc+us+es:2`                  | #2, #3          |
 | `us,es,fr` | `intl,,bepo` | `pc+us(intl)+es:2+fr(bepo):3` | #2, #3, #4      |
+
+Since version `1.8.0`, the previous code can be replaced with simply:
+
+```c
+! layout[first] = symbols
+  *             = pc+%l[%i]%(v[%i])
+
+! layout[later] = symbols
+  *             = +%l[%i]%(v[%i]):%i
+```
 
 ### Example: layout, option and symbols {#rules-options-example}
 
