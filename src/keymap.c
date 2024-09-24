@@ -128,12 +128,14 @@ xkb_keymap_new_from_names(struct xkb_context *ctx,
 
     ops = get_keymap_format_ops(format);
     if (!ops || !ops->keymap_new_from_names) {
-        log_err_func(ctx, "unsupported keymap format: %d\n", format);
+        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "unsupported keymap format: %d\n", format);
         return NULL;
     }
 
     if (flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
-        log_err_func(ctx, "unrecognized flags: %#x\n", flags);
+        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "unrecognized flags: %#x\n", flags);
         return NULL;
     }
 
@@ -176,17 +178,20 @@ xkb_keymap_new_from_buffer(struct xkb_context *ctx,
 
     ops = get_keymap_format_ops(format);
     if (!ops || !ops->keymap_new_from_string) {
-        log_err_func(ctx, "unsupported keymap format: %d\n", format);
+        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "unsupported keymap format: %d\n", format);
         return NULL;
     }
 
     if (flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
-        log_err_func(ctx, "unrecognized flags: %#x\n", flags);
+        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "unrecognized flags: %#x\n", flags);
         return NULL;
     }
 
     if (!buffer) {
-        log_err_func1(ctx, "no buffer specified\n");
+        log_err_func1(ctx, XKB_LOG_MESSAGE_NO_ID,
+                      "no buffer specified\n");
         return NULL;
     }
 
@@ -217,17 +222,20 @@ xkb_keymap_new_from_file(struct xkb_context *ctx,
 
     ops = get_keymap_format_ops(format);
     if (!ops || !ops->keymap_new_from_file) {
-        log_err_func(ctx, "unsupported keymap format: %d\n", format);
+        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "unsupported keymap format: %d\n", format);
         return NULL;
     }
 
     if (flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
-        log_err_func(ctx, "unrecognized flags: %#x\n", flags);
+        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "unrecognized flags: %#x\n", flags);
         return NULL;
     }
 
     if (!file) {
-        log_err_func1(ctx, "no file specified\n");
+        log_err_func1(ctx, XKB_LOG_MESSAGE_NO_ID,
+                      "no file specified\n");
         return NULL;
     }
 
@@ -254,7 +262,8 @@ xkb_keymap_get_as_string(struct xkb_keymap *keymap,
 
     ops = get_keymap_format_ops(format);
     if (!ops || !ops->keymap_get_as_string) {
-        log_err_func(keymap->ctx, "unsupported keymap format: %d\n", format);
+        log_err_func(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "unsupported keymap format: %d\n", format);
         return NULL;
     }
 

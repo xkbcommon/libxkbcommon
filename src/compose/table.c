@@ -100,12 +100,14 @@ xkb_compose_table_new_from_file(struct xkb_context *ctx,
     bool ok;
 
     if (flags & ~(XKB_COMPOSE_COMPILE_NO_FLAGS)) {
-        log_err_func(ctx, "unrecognized flags: %#x\n", flags);
+        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "unrecognized flags: %#x\n", flags);
         return NULL;
     }
 
     if (format != XKB_COMPOSE_FORMAT_TEXT_V1) {
-        log_err_func(ctx, "unsupported compose format: %d\n", format);
+        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "unsupported compose format: %d\n", format);
         return NULL;
     }
 
@@ -133,12 +135,14 @@ xkb_compose_table_new_from_buffer(struct xkb_context *ctx,
     bool ok;
 
     if (flags & ~(XKB_COMPOSE_COMPILE_NO_FLAGS)) {
-        log_err_func(ctx, "unrecognized flags: %#x\n", flags);
+        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "unrecognized flags: %#x\n", flags);
         return NULL;
     }
 
     if (format != XKB_COMPOSE_FORMAT_TEXT_V1) {
-        log_err_func(ctx, "unsupported compose format: %d\n", format);
+        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "unsupported compose format: %d\n", format);
         return NULL;
     }
 
@@ -166,7 +170,8 @@ xkb_compose_table_new_from_locale(struct xkb_context *ctx,
     bool ok;
 
     if (flags & ~(XKB_COMPOSE_COMPILE_NO_FLAGS)) {
-        log_err_func(ctx, "unrecognized flags: %#x\n", flags);
+        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "unrecognized flags: %#x\n", flags);
         return NULL;
     }
 
