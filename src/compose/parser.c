@@ -185,27 +185,28 @@ skip_more_whitespace_and_comments:
                     if (scanner_hex(s, &o) && is_valid_char((char) o)) {
                         scanner_buf_append(s, (char) o);
                     } else {
-                        scanner_warn_with_code(s,
-                            XKB_WARNING_INVALID_ESCAPE_SEQUENCE,
-                            "illegal hexadecimal escape sequence (%.*s) in string literal",
-                            (int) (s->pos - start_pos + 1), &s->s[start_pos - 1]);
+                        scanner_warn(s, XKB_WARNING_INVALID_ESCAPE_SEQUENCE,
+                                     "illegal hexadecimal escape sequence (%.*s) "
+                                     "in string literal",
+                                     (int) (s->pos - start_pos + 1),
+                                     &s->s[start_pos - 1]);
                     }
                 }
                 else if (scanner_oct(s, &o) && is_valid_char((char) o)) {
                     scanner_buf_append(s, (char) o);
                 }
                 else if (s->pos > start_pos) {
-                    scanner_warn_with_code(s,
-                        XKB_WARNING_INVALID_ESCAPE_SEQUENCE,
-                        "illegal octal escape sequence (%.*s) in string literal",
-                        (int) (s->pos - start_pos + 1), &s->s[start_pos - 1]);
+                    scanner_warn(s, XKB_WARNING_INVALID_ESCAPE_SEQUENCE,
+                                 "illegal octal escape sequence (%.*s) "
+                                 "in string literal",
+                                 (int) (s->pos - start_pos + 1),
+                                 &s->s[start_pos - 1]);
                     /* Ignore. */
                 }
                 else {
-                    scanner_warn_with_code(s,
-                        XKB_WARNING_UNKNOWN_CHAR_ESCAPE_SEQUENCE,
-                        "unknown escape sequence (\\%c) in string literal",
-                        scanner_peek(s));
+                    scanner_warn(s, XKB_WARNING_UNKNOWN_CHAR_ESCAPE_SEQUENCE,
+                                 "unknown escape sequence (\\%c) in string literal",
+                                 scanner_peek(s));
                     /* Ignore. */
                 }
             } else {
@@ -285,7 +286,8 @@ lex_include_string(struct scanner *s, struct xkb_compose_table *table,
                 const char *home = xkb_context_getenv(table->ctx, "HOME");
                 if (!home) {
                     scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
-                                "%%H was used in an include statement, but the HOME environment variable is not set");
+                                "%%H was used in an include statement, "
+                                "but the HOME environment variable is not set");
                     return TOK_ERROR;
                 }
                 if (!scanner_buf_appends(s, home)) {
@@ -366,7 +368,9 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
 
     /* Warn before potentially going over the limit, discard silently after. */
     if (darray_size(table->nodes) + production->len + MAX_LHS_LEN > MAX_COMPOSE_NODES)
-        scanner_warn(s, "too many sequences for one Compose file; will ignore further lines");
+        scanner_warn(s, XKB_LOG_MESSAGE_NO_ID,
+                     "too many sequences for one Compose file; "
+                     "will ignore further lines");
     if (darray_size(table->nodes) + production->len >= MAX_COMPOSE_NODES)
         return;
 
@@ -414,7 +418,9 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
             curr = node->hikid;
         } else if (!last) {
             if (node->is_leaf) {
-                scanner_warn(s, "a sequence already exists which is a prefix of this sequence; overriding");
+                scanner_warn(s, XKB_LOG_MESSAGE_NO_ID,
+                             "a sequence already exists which is a prefix of "
+                             "this sequence; overriding");
                 node->internal.eqkid = 0;
                 node->internal.is_leaf = false;
             }
@@ -437,13 +443,18 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
                         node->leaf.keysym == production->keysym
                     );
                 if (same_string && same_keysym) {
-                    scanner_warn(s, "this compose sequence is a duplicate of another; skipping line");
+                    scanner_warn(s, XKB_LOG_MESSAGE_NO_ID,
+                                 "this compose sequence is a duplicate of another; "
+                                 "skipping line");
                     return;
                 } else {
-                    scanner_warn(s, "this compose sequence already exists; overriding");
+                    scanner_warn(s, XKB_LOG_MESSAGE_NO_ID,
+                                 "this compose sequence already exists; overriding");
                 }
             } else if (node->internal.eqkid != 0) {
-                scanner_warn(s, "this compose sequence is a prefix of another; skipping line");
+                scanner_warn(s, XKB_LOG_MESSAGE_NO_ID,
+                             "this compose sequence is a prefix of another; "
+                             "skipping line");
                 return;
             }
             node->is_leaf = true;
@@ -619,7 +630,9 @@ lhs_tok:
     switch (tok) {
     case TOK_COLON:
         if (production.len <= 0) {
-            scanner_warn(s, "expected at least one keysym on left-hand side; skipping line");
+            scanner_warn(s, XKB_LOG_MESSAGE_NO_ID,
+                         "expected at least one keysym on left-hand side; "
+                         "skipping line");
             goto skip;
         }
         goto rhs;
@@ -651,10 +664,11 @@ lhs_keysym_tok:
                         val.string.str);
             goto error;
         }
-        check_deprecated_keysyms(scanner_warn_with_code, s, s->ctx,
+        check_deprecated_keysyms(scanner_warn, s, s->ctx,
                                  keysym, val.string.str, val.string.str, "%s", "\n");
         if (production.len + 1 > MAX_LHS_LEN) {
-            scanner_warn(s, "too many keysyms (%d) on left-hand side; skipping line",
+            scanner_warn(s, XKB_LOG_MESSAGE_NO_ID,
+                         "too many keysyms (%d) on left-hand side; skipping line",
                          MAX_LHS_LEN + 1);
             goto skip;
         }
@@ -704,17 +718,23 @@ rhs:
     switch (tok = lex(s, &val)) {
     case TOK_STRING:
         if (production.has_string) {
-            scanner_warn(s, "right-hand side can have at most one string; skipping line");
+            scanner_warn(s, XKB_LOG_MESSAGE_NO_ID,
+                         "right-hand side can have at most one string; "
+                         "skipping line");
             goto skip;
         }
         if (val.string.len <= 0) {
-            scanner_warn(s, "right-hand side string must not be empty; skipping line");
+            scanner_warn(s, XKB_LOG_MESSAGE_NO_ID,
+                         "right-hand side string must not be empty; "
+                         "skipping line");
             goto skip;
         }
         if (val.string.len > sizeof(production.string)) {
-            scanner_warn(s,
-                         "right-hand side string is too long: expected max: %d, got: %d; "
-                         "skipping line", (int)sizeof(production.string) - 1, (int)val.string.len);
+            scanner_warn(s, XKB_LOG_MESSAGE_NO_ID,
+                         "right-hand side string is too long: "
+                         "expected max: %d, got: %d; skipping line",
+                         (int)sizeof(production.string) - 1,
+                         (int)val.string.len);
             goto skip;
         }
         strcpy(production.string, val.string.str);
@@ -728,10 +748,12 @@ rhs:
                         val.string.str);
             goto error;
         }
-        check_deprecated_keysyms(scanner_warn_with_code, s, s->ctx,
+        check_deprecated_keysyms(scanner_warn, s, s->ctx,
                                  keysym, val.string.str, val.string.str, "%s", "\n");
         if (production.has_keysym) {
-            scanner_warn(s, "right-hand side can have at most one keysym; skipping line");
+            scanner_warn(s, XKB_LOG_MESSAGE_NO_ID,
+                         "right-hand side can have at most one keysym; "
+                         "skipping line");
             goto skip;
         }
         production.keysym = keysym;
@@ -739,7 +761,9 @@ rhs:
         /* fallthrough */
     case TOK_END_OF_LINE:
         if (!production.has_string && !production.has_keysym) {
-            scanner_warn(s, "right-hand side must have at least one of string or keysym; skipping line");
+            scanner_warn(s, XKB_LOG_MESSAGE_NO_ID,
+                         "right-hand side must have at least one of string "
+                         "or keysym; skipping line");
             goto skip;
         }
         add_production(table, s, &production);
