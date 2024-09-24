@@ -47,7 +47,7 @@ struct parser_param {
 };
 
 #define parser_err(param, error_id, fmt, ...) \
-    scanner_err_with_code((param)->scanner, error_id, fmt, ##__VA_ARGS__)
+    scanner_err((param)->scanner, error_id, fmt, ##__VA_ARGS__)
 
 #define parser_warn(param, warning_id, fmt, ...) \
     scanner_warn_with_code((param)->scanner, warning_id, fmt, ##__VA_ARGS__)
