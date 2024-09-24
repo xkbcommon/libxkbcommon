@@ -105,7 +105,8 @@ skip_more_whitespace_and_comments:
         /* Optional \r. */
         scanner_chr(s, '\r');
         if (!scanner_eol(s)) {
-            scanner_err(s, "illegal new line escape; must appear at end of line");
+            scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+                        "illegal new line escape; must appear at end of line");
             return TOK_ERROR;
         }
         scanner_next(s);
@@ -133,7 +134,8 @@ skip_more_whitespace_and_comments:
             val->string.len++;
         }
         if (val->string.len == 0) {
-            scanner_err(s, "unexpected character after \'$\'; expected name");
+            scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+                        "unexpected character after \'$\'; expected name");
             return TOK_ERROR;
         }
         return TOK_GROUP_NAME;
@@ -154,7 +156,8 @@ skip_more_whitespace_and_comments:
         return TOK_IDENTIFIER;
     }
 
-    scanner_err(s, "unrecognized token");
+    scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+                "unrecognized token");
     return TOK_ERROR;
 }
 
@@ -378,7 +381,9 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
     s.buf_pos = 0;
 
     if (include_depth >= MAX_INCLUDE_DEPTH) {
-        scanner_err(&s, "maximum include depth (%d) exceeded; maybe there is an include loop?",
+        scanner_err(&s, XKB_LOG_MESSAGE_NO_ID,
+                    "maximum include depth (%d) exceeded; "
+                    "maybe there is an include loop?",
                     MAX_INCLUDE_DEPTH);
         return;
     }
@@ -392,11 +397,14 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
             else if (scanner_chr(&s, 'H')) {
                 const char *home = xkb_context_getenv(m->ctx, "HOME");
                 if (!home) {
-                    scanner_err(&s, "%%H was used in an include statement, but the HOME environment variable is not set");
+                    scanner_err(&s, XKB_LOG_MESSAGE_NO_ID,
+                                "%%H was used in an include statement, but the "
+                                "HOME environment variable is not set");
                     return;
                 }
                 if (!scanner_buf_appends(&s, home)) {
-                    scanner_err(&s, "include path after expanding %%H is too long");
+                    scanner_err(&s, XKB_LOG_MESSAGE_NO_ID,
+                                "include path after expanding %%H is too long");
                     return;
                 }
             }
@@ -405,7 +413,8 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
                     xkb_context_include_path_get_system_path(m->ctx);
                 if (!scanner_buf_appends(&s, default_root) ||
                     !scanner_buf_appends(&s, "/rules")) {
-                    scanner_err(&s, "include path after expanding %%S is too long");
+                    scanner_err(&s, XKB_LOG_MESSAGE_NO_ID,
+                                "include path after expanding %%S is too long");
                     return;
                 }
             }
@@ -414,12 +423,15 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
                     xkb_context_include_path_get_extra_path(m->ctx);
                 if (!scanner_buf_appends(&s, default_root) ||
                     !scanner_buf_appends(&s, "/rules")) {
-                    scanner_err(&s, "include path after expanding %%E is too long");
+                    scanner_err(&s, XKB_LOG_MESSAGE_NO_ID,
+                                "include path after expanding %%E is too long");
                     return;
                 }
             }
             else {
-                scanner_err(&s, "unknown %% format (%c) in include statement", scanner_peek(&s));
+                scanner_err(&s, XKB_LOG_MESSAGE_NO_ID,
+                            "unknown %% format (%c) in include statement",
+                            scanner_peek(&s));
                 return;
             }
         }
@@ -428,7 +440,8 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
         }
     }
     if (!scanner_buf_append(&s, '\0')) {
-        scanner_err(&s, "include path is too long");
+        scanner_err(&s, XKB_LOG_MESSAGE_NO_ID,
+                    "include path is too long");
         return;
     }
 
@@ -508,14 +521,18 @@ matcher_mapping_set_mlvo(struct matcher *m, struct scanner *s,
 
     /* Not found. */
     if (mlvo >= _MLVO_NUM_ENTRIES) {
-        scanner_err(s, "invalid mapping: %.*s is not a valid value here; ignoring rule set",
+        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+                    "invalid mapping: %.*s is not a valid value here; "
+                    "ignoring rule set",
                     ident.len, ident.start);
         m->mapping.skip = true;
         return;
     }
 
     if (m->mapping.defined_mlvo_mask & (1u << mlvo)) {
-        scanner_err(s, "invalid mapping: %.*s appears twice on the same line; ignoring rule set",
+        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+                    "invalid mapping: %.*s appears twice on the same line; "
+                    "ignoring rule set",
                     mlvo_sval.len, mlvo_sval.start);
         m->mapping.skip = true;
         return;
@@ -527,7 +544,9 @@ matcher_mapping_set_mlvo(struct matcher *m, struct scanner *s,
         int consumed = extract_layout_index(ident.start + mlvo_sval.len,
                                             ident.len - mlvo_sval.len, &idx);
         if ((int) (ident.len - mlvo_sval.len) != consumed) {
-            scanner_err(s, "invalid mapping: \"%.*s\" may only be followed by a valid group index; ignoring rule set",
+            scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+                        "invalid mapping: \"%.*s\" may only be followed by a "
+                        "valid group index; ignoring rule set",
                         mlvo_sval.len, mlvo_sval.start);
             m->mapping.skip = true;
             return;
@@ -540,7 +559,9 @@ matcher_mapping_set_mlvo(struct matcher *m, struct scanner *s,
             m->mapping.variant_idx = idx;
         }
         else {
-            scanner_err(s, "invalid mapping: \"%.*s\" cannot be followed by a group index; ignoring rule set",
+            scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+                        "invalid mapping: \"%.*s\" cannot be followed by a group "
+                        "index; ignoring rule set",
                         mlvo_sval.len, mlvo_sval.start);
             m->mapping.skip = true;
             return;
@@ -567,14 +588,18 @@ matcher_mapping_set_kccgst(struct matcher *m, struct scanner *s, struct sval ide
 
     /* Not found. */
     if (kccgst >= _KCCGST_NUM_ENTRIES) {
-        scanner_err(s, "invalid mapping: %.*s is not a valid value here; ignoring rule set",
+        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+                    "invalid mapping: %.*s is not a valid value here; "
+                    "ignoring rule set",
                     ident.len, ident.start);
         m->mapping.skip = true;
         return;
     }
 
     if (m->mapping.defined_kccgst_mask & (1u << kccgst)) {
-        scanner_err(s, "invalid mapping: %.*s appears twice on the same line; ignoring rule set",
+        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+                    "invalid mapping: %.*s appears twice on the same line; "
+                    "ignoring rule set",
                     kccgst_sval.len, kccgst_sval.start);
         m->mapping.skip = true;
         return;
@@ -589,12 +614,16 @@ static void
 matcher_mapping_verify(struct matcher *m, struct scanner *s)
 {
     if (m->mapping.num_mlvo == 0) {
-        scanner_err(s, "invalid mapping: must have at least one value on the left hand side; ignoring rule set");
+        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+                    "invalid mapping: must have at least one value on the left "
+                    "hand side; ignoring rule set");
         goto skip;
     }
 
     if (m->mapping.num_kccgst == 0) {
-        scanner_err(s, "invalid mapping: must have at least one value on the right hand side; ignoring rule set");
+        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+                    "invalid mapping: must have at least one value on the right "
+                    "hand side; ignoring rule set");
         goto skip;
     }
 
@@ -646,7 +675,9 @@ matcher_rule_set_mlvo_common(struct matcher *m, struct scanner *s,
                              enum mlvo_match_type match_type)
 {
     if (m->rule.num_mlvo_values + 1 > m->mapping.num_mlvo) {
-        scanner_err(s, "invalid rule: has more values than the mapping line; ignoring rule");
+        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+                    "invalid rule: has more values than the mapping line; "
+                    "ignoring rule");
         m->rule.skip = true;
         return;
     }
@@ -681,7 +712,9 @@ matcher_rule_set_kccgst(struct matcher *m, struct scanner *s,
                         struct sval ident)
 {
     if (m->rule.num_kccgst_values + 1 > m->mapping.num_kccgst) {
-        scanner_err(s, "invalid rule: has more values than the mapping line; ignoring rule");
+        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+                    "invalid rule: has more values than the mapping line; "
+                    "ignoring rule");
         m->rule.skip = true;
         return;
     }
@@ -798,7 +831,9 @@ append_expanded_kccgst_value(struct matcher *m, struct scanner *s,
             int consumed;
 
             if (mlv != MLVO_LAYOUT && mlv != MLVO_VARIANT) {
-                scanner_err(s, "invalid index in %%-expansion; may only index layout or variant");
+                scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+                            "invalid index in %%-expansion; "
+                            "may only index layout or variant");
                 goto error;
             }
 
@@ -874,7 +909,8 @@ append_expanded_kccgst_value(struct matcher *m, struct scanner *s,
 
 error:
     darray_free(expanded);
-    scanner_err(s, "invalid %%-expansion in value; not used");
+    scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+                "invalid %%-expansion in value; not used");
     return false;
 }
 
@@ -883,7 +919,9 @@ matcher_rule_verify(struct matcher *m, struct scanner *s)
 {
     if (m->rule.num_mlvo_values != m->mapping.num_mlvo ||
         m->rule.num_kccgst_values != m->mapping.num_kccgst) {
-        scanner_err(s, "invalid rule: must have same number of values as mapping line; ignoring rule");
+        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+                    "invalid rule: must have same number of values "
+                    "as mapping line; ignoring rule");
         m->rule.skip = true;
     }
 }
@@ -1117,7 +1155,8 @@ finish:
     return true;
 
 state_error:
-    scanner_err(s, "unexpected token");
+    scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+                "unexpected token");
 error:
     return false;
 }
@@ -1147,10 +1186,10 @@ read_rules_file(struct xkb_context *ctx,
        The first character relevant to the grammar must be ASCII:
        whitespace, !, / (for comment) */
     if (!scanner_check_supported_char_encoding(&scanner)) {
-        scanner_err(&scanner,
+        scanner_err(&scanner, XKB_LOG_MESSAGE_NO_ID,
             "This could be a file encoding issue. "
             "Supported encodings must be backward compatible with ASCII.");
-        scanner_err(&scanner,
+        scanner_err(&scanner, XKB_LOG_MESSAGE_NO_ID,
             "E.g. ISO/CEI 8859 and UTF-8 are supported "
             "but UTF-16, UTF-32 and CP1026 are not.");
         unmap_file(string, size);

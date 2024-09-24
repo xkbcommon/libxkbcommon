@@ -70,11 +70,8 @@ struct scanner {
             (scanner)->file_name, \
             (scanner)->token_line, (scanner)->token_column, ##__VA_ARGS__)
 
-#define scanner_err_with_code(scanner, id, fmt, ...) \
+#define scanner_err(scanner, id, fmt, ...) \
     scanner_log_with_code(scanner, XKB_LOG_LEVEL_ERROR, id, fmt, ##__VA_ARGS__)
-
-#define scanner_err(scanner, fmt, ...) \
-    scanner_log(scanner, XKB_LOG_LEVEL_ERROR, fmt, ##__VA_ARGS__)
 
 #define scanner_warn_with_code(scanner, id, fmt, ...) \
     scanner_log_with_code(scanner, XKB_LOG_LEVEL_WARNING, id, fmt, ##__VA_ARGS__)
@@ -227,14 +224,16 @@ scanner_check_supported_char_encoding(struct scanner *scanner)
     if (scanner->s[0] == '\0' || scanner->s[1] == '\0') {
         if (scanner->s[0] != '\0')
             scanner->token_column++;
-        scanner_err(scanner, "unexpected NULL character.");
+        scanner_err(scanner, XKB_LOG_MESSAGE_NO_ID,
+                    "unexpected NULL character.");
         return false;
     }
     /* Enforce the first character to be ASCII.
        See the note before the use of this function, that explains the relevant
        parts of the grammars of rules, keymap components and Compose. */
     if (!is_ascii(scanner->s[0])) {
-        scanner_err(scanner, "unexpected non-ASCII character.");
+        scanner_err(scanner, XKB_LOG_MESSAGE_NO_ID,
+                    "unexpected non-ASCII character.");
         return false;
     }
 
