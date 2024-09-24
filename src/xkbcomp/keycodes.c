@@ -235,15 +235,13 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
         if (merge == MERGE_OVERRIDE) {
             darray_item(info->key_names, old_kc) = XKB_ATOM_NONE;
             if (report)
-                log_warn(info->ctx,
-                         XKB_WARNING_CONFLICTING_KEY_NAME,
+                log_warn(info->ctx, XKB_WARNING_CONFLICTING_KEY_NAME,
                          "Key name %s assigned to multiple keys; "
                          "Using %d, ignoring %d\n", kname, kc, old_kc);
         }
         else {
             if (report)
-                log_vrb(info->ctx, 3,
-                        XKB_WARNING_CONFLICTING_KEY_NAME,
+                log_vrb(info->ctx, 3, XKB_WARNING_CONFLICTING_KEY_NAME,
                         "Key name %s assigned to multiple keys; "
                         "Using %d, ignoring %d\n", kname, old_kc, kc);
             return true;
@@ -419,8 +417,7 @@ HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge)
                 use = (merge == MERGE_AUGMENT ? old->real : def->real);
                 ignore = (merge == MERGE_AUGMENT ? def->real : old->real);
 
-                log_warn(info->ctx,
-                         XKB_WARNING_CONFLICTING_KEY_NAME,
+                log_warn(info->ctx, XKB_WARNING_CONFLICTING_KEY_NAME,
                          "Multiple definitions for alias %s; "
                          "Using %s, ignoring %s\n",
                          KeyNameText(info->ctx, old->alias),
@@ -457,7 +454,8 @@ HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
     }
 
     if (!istreq(field, "minimum") && !istreq(field, "maximum")) {
-        log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID, "Unknown field encountered; "
+        log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
+                "Unknown field encountered; "
                 "Assignment to field \"%s\" ignored\n", field);
         return false;
     }
