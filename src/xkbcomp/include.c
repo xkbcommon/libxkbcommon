@@ -201,30 +201,25 @@ LogIncludePaths(struct xkb_context *ctx)
     unsigned int i;
 
     if (xkb_context_num_include_paths(ctx) > 0) {
-        log_err(ctx,
-                XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
+        log_err(ctx, XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
                 "%d include paths searched:\n",
                 xkb_context_num_include_paths(ctx));
         for (i = 0; i < xkb_context_num_include_paths(ctx); i++)
-            log_err(ctx,
-                    XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
+            log_err(ctx, XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
                     "\t%s\n",
                     xkb_context_include_path_get(ctx, i));
     }
     else {
-        log_err(ctx,
-                XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
+        log_err(ctx, XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
                 "There are no include paths to search\n");
     }
 
     if (xkb_context_num_failed_include_paths(ctx) > 0) {
-        log_err(ctx,
-                XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
+        log_err(ctx, XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
                 "%d include paths could not be added:\n",
                 xkb_context_num_failed_include_paths(ctx));
         for (i = 0; i < xkb_context_num_failed_include_paths(ctx); i++)
-            log_err(ctx,
-                    XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
+            log_err(ctx, XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
                     "\t%s\n",
                     xkb_context_failed_include_path_get(ctx, i));
     }
@@ -256,8 +251,7 @@ FindFileInXkbPath(struct xkb_context *ctx, const char *name,
         if (!snprintf_safe(buf, sizeof(buf), "%s/%s/%s",
                            xkb_context_include_path_get(ctx, i),
                            typeDir, name)) {
-            log_err(ctx,
-                    XKB_ERROR_INSUFFICIENT_BUFFER_SIZE,
+            log_err(ctx, XKB_ERROR_INSUFFICIENT_BUFFER_SIZE,
                     "Path is too long: expected max length of %lu, got: %s/%s/%s\n",
                     (unsigned long int) sizeof(buf),
                     xkb_context_include_path_get(ctx, i), typeDir, name);
@@ -275,8 +269,7 @@ FindFileInXkbPath(struct xkb_context *ctx, const char *name,
 
     /* We only print warnings if we can't find the file on the first lookup */
     if (*offset == 0) {
-        log_err(ctx,
-                XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
+        log_err(ctx, XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
                 "Couldn't find file \"%s/%s\" in include paths\n",
                 typeDir, name);
         LogIncludePaths(ctx);
@@ -290,8 +283,7 @@ bool
 ExceedsIncludeMaxDepth(struct xkb_context *ctx, unsigned int include_depth)
 {
     if (include_depth >= INCLUDE_MAX_DEPTH) {
-        log_err(ctx,
-                XKB_ERROR_RECURSIVE_INCLUDE,
+        log_err(ctx, XKB_ERROR_RECURSIVE_INCLUDE,
                 "Exceeded include depth threshold (%d)",
                 INCLUDE_MAX_DEPTH);
         return true;
@@ -318,8 +310,7 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
 
         if (xkb_file) {
             if (xkb_file->file_type != file_type) {
-                log_err(ctx,
-                        XKB_ERROR_INVALID_INCLUDED_FILE,
+                log_err(ctx, XKB_ERROR_INVALID_INCLUDED_FILE,
                         "Include file of wrong type (expected %s, got %s); "
                         "Include file \"%s\" ignored\n",
                         xkb_file_type_to_string(file_type),
@@ -337,13 +328,11 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
 
     if (!xkb_file) {
         if (stmt->map)
-            log_err(ctx,
-                    XKB_ERROR_INVALID_INCLUDED_FILE,
+            log_err(ctx, XKB_ERROR_INVALID_INCLUDED_FILE,
                     "Couldn't process include statement for '%s(%s)'\n",
                     stmt->file, stmt->map);
         else
-            log_err(ctx,
-                    XKB_ERROR_INVALID_INCLUDED_FILE,
+            log_err(ctx, XKB_ERROR_INVALID_INCLUDED_FILE,
                     "Couldn't process include statement for '%s'\n",
                     stmt->file);
     }

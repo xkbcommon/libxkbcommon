@@ -401,15 +401,19 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
                 }
             }
             else if (scanner_chr(&s, 'S')) {
-                const char *default_root = xkb_context_include_path_get_system_path(m->ctx);
-                if (!scanner_buf_appends(&s, default_root) || !scanner_buf_appends(&s, "/rules")) {
+                const char *default_root =
+                    xkb_context_include_path_get_system_path(m->ctx);
+                if (!scanner_buf_appends(&s, default_root) ||
+                    !scanner_buf_appends(&s, "/rules")) {
                     scanner_err(&s, "include path after expanding %%S is too long");
                     return;
                 }
             }
             else if (scanner_chr(&s, 'E')) {
-                const char *default_root = xkb_context_include_path_get_extra_path(m->ctx);
-                if (!scanner_buf_appends(&s, default_root) || !scanner_buf_appends(&s, "/rules")) {
+                const char *default_root =
+                    xkb_context_include_path_get_extra_path(m->ctx);
+                if (!scanner_buf_appends(&s, default_root) ||
+                    !scanner_buf_appends(&s, "/rules")) {
                     scanner_err(&s, "include path after expanding %%E is too long");
                     return;
                 }

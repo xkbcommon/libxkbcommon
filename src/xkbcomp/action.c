@@ -216,7 +216,7 @@ static inline bool
 ReportActionNotArray(struct xkb_context *ctx, enum xkb_action_type action,
                      enum action_field field)
 {
-    log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+    log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
             "The %s field in the %s action is not an array; "
             "Action definition ignored\n",
             fieldText(field), ActionTypeText(action));
@@ -794,7 +794,7 @@ HandleActionDef(struct xkb_context *ctx, ActionsInfo *info,
     enum xkb_action_type handler_type;
 
     if (def->expr.op != EXPR_ACTION_DECL) {
-        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+        log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
                 "Expected an action definition, found %s\n",
                 expr_op_type_to_string(def->expr.op));
         return false;
