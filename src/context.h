@@ -152,21 +152,21 @@ xkb_context_sanitize_rule_names(struct xkb_context *ctx,
     xkb_log_with_code((ctx), XKB_LOG_LEVEL_INFO, 0, id, __VA_ARGS__)
 #define log_warn(ctx, id, ...) \
     xkb_log_with_code((ctx), XKB_LOG_LEVEL_WARNING, 0, id, __VA_ARGS__)
+#define log_vrb(ctx, vrb, id, ...) \
+    xkb_log_with_code((ctx), XKB_LOG_LEVEL_WARNING, (vrb), id, __VA_ARGS__)
 #define log_err(ctx, id, ...) \
     xkb_log_with_code((ctx), XKB_LOG_LEVEL_ERROR, 0, id, __VA_ARGS__)
 #define log_wsgo(ctx, id, ...) \
     xkb_log_with_code((ctx), XKB_LOG_LEVEL_CRITICAL, 0, id, __VA_ARGS__)
-#define log_vrb(ctx, vrb, id, ...) \
-    xkb_log_with_code((ctx), XKB_LOG_LEVEL_WARNING, (vrb), id, __VA_ARGS__)
 
 /*
  * Variants which are prefixed by the name of the function they're
  * called from.
  * Here we must have the silly 1 variant.
  */
-#define log_err_func(ctx, fmt, ...) \
-    log_err(ctx, XKB_LOG_MESSAGE_NO_ID, "%s: " fmt, __func__, __VA_ARGS__)
-#define log_err_func1(ctx, fmt) \
-    log_err(ctx, XKB_LOG_MESSAGE_NO_ID, "%s: " fmt, __func__)
+#define log_err_func(ctx, id, fmt, ...) \
+    log_err(ctx, id, "%s: " fmt, __func__, __VA_ARGS__)
+#define log_err_func1(ctx, id, fmt) \
+    log_err(ctx, id, "%s: " fmt, __func__)
 
 #endif

@@ -1574,7 +1574,7 @@ xkb_state_key_get_consumed_mods2(struct xkb_state *state, xkb_keycode_t kc,
     case XKB_CONSUMED_MODE_GTK:
         break;
     default:
-        log_err_func(state->keymap->ctx,
+        log_err_func(state->keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
                      "unrecognized consumed modifiers mode: %d\n", mode);
         return 0;
     }
