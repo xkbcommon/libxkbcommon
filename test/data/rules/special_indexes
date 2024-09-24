@@ -1,0 +1,70 @@
+! model         = keycodes
+  my_model      = my_keycodes
+  *             = default_keycodes
+
+! layout[single] variant    = symbols // valid
+  layout_a       my_variant = symbols_a+extra_variant
+
+! layout[single] = symbols
+  layout_a       = symbols_A
+
+! layout        = symbols
+  layout_b      = symbols_B
+  layout_c      = symbols_C:%i // valid, but unusual
+  layout_d      = symbols_D
+  layout_e      = symbols_E
+  *             = %l[%i]%(v[%i]) // valid, but unusual
+
+! layout[first] = symbols
+  layout_a      = symbols_a:1
+  layout_b      = symbols_b:1
+  layout_c      = symbols_c:1
+  layout_d      = symbols_d:%i // valid, but unusual
+  layout_e      = symbols_e:1
+  *             = %l[%i]%(v[%i]) // valid, cannot be easily expressed otherwise
+
+! layout[first] = symbols
+  layout_e      = %+l // different output if single or multiple layouts
+
+! layout[later] = symbols
+  layout_a      = +symbols_x:%i
+  layout_b      = +symbols_y:%i
+  *             = +%l[%i]%(v[%i]):%i
+
+! layout[any]   = symbols
+  layout_c      = +symbols_z:%i
+
+! layout[any] variant[any] = symbols
+  *           extra        = +foo:%i|bar:%i
+
+! layout[1] variant = symbols // invalid mapping
+  *         *       = +symbols_AAA:%i
+
+! layout variant[1] = symbols // invalid mapping
+  *      *          = +symbols_BBB:%i
+
+! layout[1] variant[2] = symbols // invalid mapping
+  *         *          = +symbols_CCC:%i
+
+! layout[any] variant = symbols // invalid mapping
+  *           *       = +symbols_DDD:%i
+
+! layout variant[any] = symbols // invalid mapping
+  *      *            = +symbols_EEE:%i
+
+! layout[any] variant[1] = symbols // invalid mapping
+  *           *          = +symbols_FFF:%i
+
+! layout[any] variant[first] = symbols // invalid mapping
+  *           *              = +symbols_GGG:%i
+
+! model         = types
+  my_model      = my_types
+  *             = default_types
+
+! model         = compat
+  my_model      = my_compat
+  *             = default_compat
+
+! option        = symbols
+  my_option     = +extra_option

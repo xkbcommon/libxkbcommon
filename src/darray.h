@@ -83,6 +83,7 @@ typedef darray (unsigned long)  darray_ulong;
 /*** Access ***/
 
 #define darray_item(arr, i)     ((arr).item[i])
+#define darray_items(arr)       ((arr).item)
 #define darray_size(arr)        ((arr).size)
 #define darray_empty(arr)       ((arr).size == 0)
 

@@ -109,9 +109,9 @@ main(void)
     log_err(ctx, XKB_LOG_MESSAGE_NO_ID, "third error: %lu\n", 115415UL);
     log_vrb(ctx, 0, XKB_LOG_MESSAGE_NO_ID, "third verbose 0\n");
 
-    printf("%s", log_string.item);
+    printf("%s", darray_items(log_string));
 
-    assert(streq(log_string.item,
+    assert(streq(darray_items(log_string),
                  "warning: first warning: 87\n"
                  "error: first error: 115415\n"
                  "warning: first verbose 5\n"

@@ -1,0 +1,16 @@
+! model         = keycodes
+  *             = default_keycodes
+
+! layout[first] = symbols
+  *             = x:1
+
+! layout[later] = symbols
+  *             = +x:%i
+
+! model         = types
+  *             = default_types
+
+! model         = compat
+  *             = default_compat
+
+! option        = symbols
