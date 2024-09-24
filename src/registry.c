@@ -32,6 +32,7 @@
 #include <libxml/parser.h>
 
 #include "xkbcommon/xkbregistry.h"
+#include "messages-codes.h"
 #include "utils.h"
 #include "util-list.h"
 #include "util-mem.h"
@@ -156,16 +157,18 @@ rxkb_log(struct rxkb_context *ctx, enum rxkb_log_level level,
  * format is supplied without arguments. Not supplying it would still
  * result in an error, though.
  */
+#define rxkb_log_with_code(ctx, level, msg_id, fmt, ...) \
+    rxkb_log(ctx, level, PREPEND_MESSAGE_ID(msg_id, fmt), ##__VA_ARGS__)
 #define log_dbg(ctx, ...) \
     rxkb_log((ctx), RXKB_LOG_LEVEL_DEBUG, __VA_ARGS__)
 #define log_info(ctx, ...) \
     rxkb_log((ctx), RXKB_LOG_LEVEL_INFO, __VA_ARGS__)
-#define log_warn(ctx, ...) \
-    rxkb_log((ctx), RXKB_LOG_LEVEL_WARNING,  __VA_ARGS__)
-#define log_err(ctx, ...) \
-    rxkb_log((ctx), RXKB_LOG_LEVEL_ERROR,  __VA_ARGS__)
-#define log_wsgo(ctx, ...) \
-    rxkb_log((ctx), RXKB_LOG_LEVEL_CRITICAL, __VA_ARGS__)
+#define log_warn(ctx, id, ...) \
+    rxkb_log_with_code((ctx), RXKB_LOG_LEVEL_WARNING, id, __VA_ARGS__)
+#define log_err(ctx, id, ...) \
+    rxkb_log_with_code((ctx), RXKB_LOG_LEVEL_ERROR, id, __VA_ARGS__)
+#define log_wsgo(ctx, id, ...) \
+    rxkb_log_with_code((ctx), RXKB_LOG_LEVEL_CRITICAL, id, __VA_ARGS__)
 
 
 #define DECLARE_REF_UNREF_FOR_TYPE(type_) \
@@ -561,7 +564,8 @@ rxkb_context_include_path_append(struct rxkb_context *ctx, const char *path)
     char rules[PATH_MAX];
 
     if (ctx->context_state != CONTEXT_NEW) {
-        log_err(ctx, "include paths can only be appended to a new context\n");
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "include paths can only be appended to a new context\n");
         return false;
     }
 
@@ -599,7 +603,8 @@ rxkb_context_include_path_append_default(struct rxkb_context *ctx)
     bool ret = false;
 
     if (ctx->context_state != CONTEXT_NEW) {
-        log_err(ctx, "include paths can only be appended to a new context\n");
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "include paths can only be appended to a new context\n");
         return false;
     }
 
@@ -648,7 +653,8 @@ rxkb_context_parse(struct rxkb_context *ctx, const char *ruleset)
     bool success = false;
 
     if (ctx->context_state != CONTEXT_NEW) {
-        log_err(ctx, "parse must only be called on a new context\n");
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "parse must only be called on a new context\n");
         return false;
     }
 
@@ -751,7 +757,7 @@ parse_config_item(struct rxkb_context *ctx, xmlNode *parent,
                 else if (xmlStrEqual(raw_popularity, (const xmlChar*)"exotic"))
                     config->popularity = RXKB_POPULARITY_EXOTIC;
                 else
-                    log_err(ctx,
+                    log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                             "xml:%d: invalid popularity attribute: expected "
                             "'standard' or 'exotic', got: '%s'\n",
                             ci->line, raw_popularity);
@@ -773,7 +779,8 @@ parse_config_item(struct rxkb_context *ctx, xmlNode *parent,
             }
 
             if (!config->name || !strlen(config->name))  {
-                log_err(ctx, "xml:%d: missing required element 'name'\n",
+                log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                        "xml:%d: missing required element 'name'\n",
                         ci->line);
                 config_item_free(config);
                 return false;
@@ -1133,7 +1140,8 @@ xml_error_func(void *ctx, const char *msg, ...)
 
     /* This shouldn't really happen */
     if (rc < 0) {
-        log_err(ctx, "+++ out of cheese error. redo from start +++\n");
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "+++ out of cheese error. redo from start +++\n");
         slen = 0;
         memset(buf, 0, sizeof(buf));
         return;
@@ -1148,7 +1156,7 @@ xml_error_func(void *ctx, const char *msg, ...)
 
     /* We're assuming here that the last character is \n. */
     if (buf[slen - 1] == '\n') {
-        log_err(ctx, "%s", buf);
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID, "%s", buf);
         memset(buf, 0, sizeof(buf));
         slen = 0;
     }
@@ -1204,7 +1212,7 @@ validate(struct rxkb_context *ctx, xmlDoc *doc)
 
     dtd = xmlIOParseDTD(NULL, buf, XML_CHAR_ENCODING_UTF8);
     if (!dtd) {
-        log_err(ctx, "Failed to load DTD\n");
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID, "Failed to load DTD\n");
         return false;
     }
 
@@ -1240,7 +1248,8 @@ parse(struct rxkb_context *ctx, const char *path,
         return false;
 
     if (!validate(ctx, doc)) {
-        log_err(ctx, "XML error: failed to validate document at %s\n", path);
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "XML error: failed to validate document at %s\n", path);
         goto error;
     }
 

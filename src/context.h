@@ -110,35 +110,6 @@ xkb_context_sanitize_rule_names(struct xkb_context *ctx,
                                 struct xkb_rule_names *rmlvo);
 
 /*
- * Macro sorcery: PREPEND_MESSAGE_ID enables the log functions to format messages
- * with the message ID only if the ID is not 0 (XKB_LOG_MESSAGE_NO_ID).
- * This avoid checking the ID value at run time.
- *
- * The trick resides in CHECK_ID:
- * • CHECK_ID(0) expands to:
- *   ‣ SECOND(MATCH0, WITH_ID, unused)
- *   ‣ SECOND(unused,WITHOUT_ID, WITH_ID, unused)
- *   ‣ WITHOUT_ID
- * • CHECK_ID(123) expands to:
- *   ‣ SECOND(MATCH123, WITH_ID, unused)
- *   ‣ WITH_ID
-*/
-#define EXPAND(...)              __VA_ARGS__ /* needed for MSVC compatibility */
-
-#define JOIN_EXPAND(a, b)        a##b
-#define JOIN(a, b)               JOIN_EXPAND(a, b)
-
-#define SECOND_EXPAND(a, b, ...) b
-#define SECOND(...)              EXPAND(SECOND_EXPAND(__VA_ARGS__))
-
-#define MATCH0                   unused,WITHOUT_ID
-#define CHECK_ID(value)          SECOND(JOIN(MATCH, value), WITH_ID, unused)
-
-#define FORMAT_MESSAGE_WITHOUT_ID(id, fmt) fmt
-#define FORMAT_MESSAGE_WITH_ID(id, fmt)    "[XKB-%03d] " fmt, id
-#define PREPEND_MESSAGE_ID(id, fmt) JOIN(FORMAT_MESSAGE_, CHECK_ID(id))(id, fmt)
-
-/*
  * The format is not part of the argument list in order to avoid the
  * "ISO C99 requires rest arguments to be used" warning when only the
  * format is supplied without arguments. Not supplying it would still

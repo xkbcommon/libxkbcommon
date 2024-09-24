@@ -386,6 +386,7 @@ if get_option('enable-xkbregistry')
     deps_libxkbregistry = [dep_libxml]
     libxkbregistry_sources = [
         'src/registry.c',
+        'src/messages-codes.h',
         'src/utils.h',
         'src/utils.c',
         'src/util-list.h',
