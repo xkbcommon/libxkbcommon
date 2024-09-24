@@ -50,7 +50,7 @@ struct parser_param {
     scanner_err((param)->scanner, error_id, fmt, ##__VA_ARGS__)
 
 #define parser_warn(param, warning_id, fmt, ...) \
-    scanner_warn_with_code((param)->scanner, warning_id, fmt, ##__VA_ARGS__)
+    scanner_warn((param)->scanner, warning_id, fmt, ##__VA_ARGS__)
 
 static void
 _xkbcommon_error(struct parser_param *param, const char *msg)

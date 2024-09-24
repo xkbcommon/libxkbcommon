@@ -59,25 +59,16 @@ struct scanner {
 
 #define scanner_log_with_code(scanner, level, log_msg_id, fmt, ...) \
     xkb_log_with_code((scanner)->ctx, (level), 0, log_msg_id, \
-                    "%s:%zu:%zu: " fmt "\n", \
-                    (scanner)->file_name, \
-                    (scanner)->token_line, \
-                    (scanner)->token_column, ##__VA_ARGS__)
-
-#define scanner_log(scanner, level, fmt, ...) \
-    xkb_log((scanner)->ctx, (level), 0, \
-            "%s:%zu:%zu: " fmt "\n", \
-            (scanner)->file_name, \
-            (scanner)->token_line, (scanner)->token_column, ##__VA_ARGS__)
+                      "%s:%zu:%zu: " fmt "\n", \
+                      (scanner)->file_name, \
+                      (scanner)->token_line, \
+                      (scanner)->token_column, ##__VA_ARGS__)
 
 #define scanner_err(scanner, id, fmt, ...) \
     scanner_log_with_code(scanner, XKB_LOG_LEVEL_ERROR, id, fmt, ##__VA_ARGS__)
 
-#define scanner_warn_with_code(scanner, id, fmt, ...) \
+#define scanner_warn(scanner, id, fmt, ...) \
     scanner_log_with_code(scanner, XKB_LOG_LEVEL_WARNING, id, fmt, ##__VA_ARGS__)
-
-#define scanner_warn(scanner, fmt, ...) \
-    scanner_log(scanner, XKB_LOG_LEVEL_WARNING, fmt, ##__VA_ARGS__)
 
 static inline void
 scanner_init(struct scanner *s, struct xkb_context *ctx,
