@@ -166,7 +166,7 @@ ParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
     /* Set up the next file for the next call, if any. */
     if (*nextop_rtrn == '\0')
         *str_inout = NULL;
-    else if (*nextop_rtrn == '|' || *nextop_rtrn == '+')
+    else if (is_merge_mode_prefix(*nextop_rtrn))
         *str_inout = next;
     else
         return false;
