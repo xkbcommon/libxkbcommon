@@ -1214,8 +1214,11 @@ xkb_components_from_rules(struct xkb_context *ctx,
     unsigned int offset = 0;
 
     file = FindFileInXkbPath(ctx, rmlvo->rules, FILE_TYPE_RULES, &path, &offset);
-    if (!file)
+    if (!file) {
+        log_err(ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
+                "Cannot load XKB rules \"%s\"\n", rmlvo->rules);
         goto err_out;
+    }
 
     matcher = matcher_new(ctx, rmlvo);
 
@@ -1226,7 +1229,7 @@ xkb_components_from_rules(struct xkb_context *ctx,
         darray_empty(matcher->kccgst[KCCGST_COMPAT]) ||
         /* darray_empty(matcher->kccgst[KCCGST_GEOMETRY]) || */
         darray_empty(matcher->kccgst[KCCGST_SYMBOLS])) {
-        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+        log_err(ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
                 "No components returned from XKB rules \"%s\"\n", path);
         ret = false;
         goto err_out;
@@ -1240,22 +1243,22 @@ xkb_components_from_rules(struct xkb_context *ctx,
 
     mval = &matcher->rmlvo.model;
     if (!mval->matched && mval->sval.len > 0)
-        log_err(matcher->ctx, XKB_LOG_MESSAGE_NO_ID,
+        log_err(matcher->ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
                 "Unrecognized RMLVO model \"%.*s\" was ignored\n",
                 mval->sval.len, mval->sval.start);
     darray_foreach(mval, matcher->rmlvo.layouts)
         if (!mval->matched && mval->sval.len > 0)
-            log_err(matcher->ctx, XKB_LOG_MESSAGE_NO_ID,
+            log_err(matcher->ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
                     "Unrecognized RMLVO layout \"%.*s\" was ignored\n",
                     mval->sval.len, mval->sval.start);
     darray_foreach(mval, matcher->rmlvo.variants)
         if (!mval->matched && mval->sval.len > 0)
-            log_err(matcher->ctx, XKB_LOG_MESSAGE_NO_ID,
+            log_err(matcher->ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
                     "Unrecognized RMLVO variant \"%.*s\" was ignored\n",
                     mval->sval.len, mval->sval.start);
     darray_foreach(mval, matcher->rmlvo.options)
         if (!mval->matched && mval->sval.len > 0)
-            log_err(matcher->ctx, XKB_LOG_MESSAGE_NO_ID,
+            log_err(matcher->ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
                     "Unrecognized RMLVO option \"%.*s\" was ignored\n",
                     mval->sval.len, mval->sval.start);
 

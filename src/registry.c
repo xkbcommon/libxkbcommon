@@ -583,8 +583,13 @@ rxkb_context_include_path_append(struct rxkb_context *ctx, const char *path)
      * where this is the wrong behaviour aren't worth worrying about.
      */
     if (!snprintf_safe(rules, sizeof(rules), "%s/rules/%s.xml",
-                       path, DEFAULT_XKB_RULES))
+                       path, DEFAULT_XKB_RULES)) {
+        log_err(ctx, XKB_ERROR_INVALID_PATH,
+                "Path is too long: expected max length of %zu, "
+                "got: %s/rules/%s.xml\n",
+                sizeof(rules), path, DEFAULT_XKB_RULES);
         return false;
+    }
 
     tmp = strdup(path);
     if (!tmp)
@@ -1140,7 +1145,7 @@ xml_error_func(void *ctx, const char *msg, ...)
 
     /* This shouldn't really happen */
     if (rc < 0) {
-        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+        log_err(ctx, XKB_ERROR_INSUFFICIENT_BUFFER_SIZE,
                 "+++ out of cheese error. redo from start +++\n");
         slen = 0;
         memset(buf, 0, sizeof(buf));

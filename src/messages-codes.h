@@ -63,6 +63,8 @@ enum xkb_message_code {
     XKB_ERROR_INSUFFICIENT_BUFFER_SIZE = 134,
     /** The type of the statement is not allowed in the context */
     XKB_ERROR_WRONG_STATEMENT_TYPE = 150,
+    /** The given path is invalid */
+    XKB_ERROR_INVALID_PATH = 161,
     /** Geometry sections are not supported */
     XKB_WARNING_UNSUPPORTED_GEOMETRY_SECTION = 172,
     /** Warn if no key type can be inferred */
@@ -121,6 +123,8 @@ enum xkb_message_code {
     XKB_ERROR_ALLOCATION_ERROR = 550,
     /** Warn when a field has not the expected type */
     XKB_ERROR_WRONG_FIELD_TYPE = 578,
+    /** Cannot resolve a given (Rules, Model, Layout, Variant, Options) configuration */
+    XKB_ERROR_CANNOT_RESOLVE_RMLVO = 595,
     /** Invalid _real_ modifier */
     XKB_ERROR_INVALID_REAL_MODIFIER = 623,
     /** Warn on unknown escape sequence in string literal */
@@ -143,6 +147,8 @@ enum xkb_message_code {
     XKB_WARNING_CONFLICTING_MODMAP = 800,
     /** A field is unknown and will be ignored */
     XKB_ERROR_UNKNOWN_FIELD = 812,
+    /** Keymap compilation failed */
+    XKB_ERROR_KEYMAP_COMPILATION_FAILED = 822,
     /** Warn if there are conflicting actions while merging keys */
     XKB_WARNING_CONFLICTING_KEY_ACTION = 883,
     /** Warn if there are conflicting key types while merging groups */
