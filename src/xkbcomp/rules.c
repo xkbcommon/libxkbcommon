@@ -810,7 +810,8 @@ append_expanded_kccgst_value(struct matcher *m, struct scanner *s,
         pfx = sfx = 0;
 
         /* Check for prefix. */
-        if (str[i] == '(' || str[i] == '+' || str[i] == '|' ||
+        if (str[i] == '(' ||
+            is_merge_mode_prefix(str[i]) ||
             str[i] == '_' || str[i] == '-') {
             pfx = str[i];
             if (str[i] == '(') sfx = ')';
@@ -895,9 +896,9 @@ append_expanded_kccgst_value(struct matcher *m, struct scanner *s,
      */
 
     ch = (darray_empty(expanded) ? '\0' : darray_item(expanded, 0));
-    expanded_plus = (ch == '+' || ch == '|');
+    expanded_plus = is_merge_mode_prefix(ch);
     ch = (darray_empty(*to) ? '\0' : darray_item(*to, 0));
-    to_plus = (ch == '+' || ch == '|');
+    to_plus = is_merge_mode_prefix(ch);
 
     if (expanded_plus || darray_empty(*to))
         darray_appends_nullterminate(*to, expanded.item, expanded.size);

@@ -511,7 +511,7 @@ IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge)
         incl->modifier = extra_data;
         incl->next_incl = NULL;
 
-        if (nextop == '|')
+        if (nextop == MERGE_AUGMENT_PREFIX)
             merge = MERGE_AUGMENT;
         else
             merge = MERGE_OVERRIDE;
