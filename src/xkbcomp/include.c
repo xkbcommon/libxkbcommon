@@ -251,10 +251,11 @@ FindFileInXkbPath(struct xkb_context *ctx, const char *name,
         if (!snprintf_safe(buf, sizeof(buf), "%s/%s/%s",
                            xkb_context_include_path_get(ctx, i),
                            typeDir, name)) {
-            log_err(ctx, XKB_ERROR_INSUFFICIENT_BUFFER_SIZE,
-                    "Path is too long: expected max length of %lu, got: %s/%s/%s\n",
-                    (unsigned long int) sizeof(buf),
-                    xkb_context_include_path_get(ctx, i), typeDir, name);
+            log_err(ctx, XKB_ERROR_INVALID_PATH,
+                    "Path is too long: expected max length of %zu, "
+                    "got: %s/%s/%s\n",
+                    sizeof(buf), xkb_context_include_path_get(ctx, i),
+                    typeDir, name);
             continue;
         }
 

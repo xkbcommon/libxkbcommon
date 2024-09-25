@@ -95,6 +95,11 @@
   added: ALWAYS
   type: error
   description: "The type of the statement is not allowed in the context"
+- id: "invalid-path"
+  code: 161
+  added: ALWAYS
+  type: error
+  description: "The given path is invalid"
 - id: "unsupported-geometry-section"
   code: 172
   added: ALWAYS
@@ -312,6 +317,11 @@
   added: ALWAYS
   type: error
   description: "Warn when a field has not the expected type"
+- id: "cannot-resolve-rmlvo"
+  code: 595
+  added: ALWAYS
+  type: error
+  description: "Cannot resolve a given (Rules, Model, Layout, Variant, Options) configuration"
 - id: "invalid-real-modifier"
   code: 623
   added: ALWAYS
@@ -383,6 +393,11 @@
   added: ALWAYS
   type: error
   description: "A field is unknown and will be ignored"
+- id: "keymap-compilation-failed"
+  code: 822
+  added: ALWAYS
+  type: error
+  description: "Keymap compilation failed"
 - id: "conflicting-key-action"
   code: 883
   added: ALWAYS
