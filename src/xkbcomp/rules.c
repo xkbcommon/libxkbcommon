@@ -325,6 +325,23 @@ matcher_new(struct xkb_context *ctx,
     m->rmlvo.variants = split_comma_separated_mlvo(rmlvo->variant);
     m->rmlvo.options = split_comma_separated_mlvo(rmlvo->options);
 
+    if (darray_size(m->rmlvo.layouts) > darray_size(m->rmlvo.variants)) {
+        /* Do not warn if no variants was provided */
+        if (!isempty(rmlvo->variant))
+            log_warn(ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "More layouts than variants: \"%s\" vs. \"%s\".\n",
+                     rmlvo->layout ? rmlvo->layout : "(none)",
+                     rmlvo->variant ? rmlvo->variant : "(none)");
+        darray_resize0(m->rmlvo.variants, darray_size(m->rmlvo.layouts));
+    } else if (darray_size(m->rmlvo.layouts) < darray_size(m->rmlvo.variants)) {
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "Less layouts than variants: \"%s\" vs. \"%s\".\n",
+                rmlvo->layout ? rmlvo->layout : "(none)",
+                rmlvo->variant ? rmlvo->variant : "(none)");
+        darray_resize(m->rmlvo.variants, darray_size(m->rmlvo.layouts));
+        darray_shrink(m->rmlvo.variants);
+    }
+
     return m;
 }
 
