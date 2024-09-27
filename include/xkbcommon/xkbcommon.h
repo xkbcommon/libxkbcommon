@@ -82,6 +82,7 @@
 #define _XKBCOMMON_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdarg.h>
 
@@ -914,6 +915,72 @@ xkb_keymap_compile_options_new(enum xkb_keymap_format format,
  */
 void
 xkb_keymap_compile_options_free(struct xkb_keymap_compile_options *options);
+
+/** Out-of-range layout action
+ *
+ * [Effective layout] index may be invalid in some contexts.
+ * One of the following out-of-range layout action is then used to bring invalid
+ * layout indexes back into range:
+ *
+ * - “redirect into range” (see: ::XKB_KEYMAP_REDIRECT_OUT_OF_RANGE_LAYOUT)
+ * - “clamp into range” (see: ::XKB_KEYMAP_CLAMP_OUT_OF_RANGE_LAYOUT)
+ * - “wrap into range” using integer modulus (default)
+ *
+ * [Effective layout]: @ref ::XKB_STATE_LAYOUT_EFFECTIVE
+ *
+ * @since 1.8.0
+ */
+enum xkb_keymap_out_of_range_layout_action {
+    /**
+     * TODO: doc
+     */
+    XKB_KEYMAP_WRAP_OUT_OF_RANGE_LAYOUT = 0,
+    /**
+     * Set the out-of-range layout action to “redirect into range”.
+     *
+     * - If the [effective layout] is invalid, it is set to a *target layout*.
+     * - If the target layout is invalid, it is set to the first one (0).
+     *
+     * A *target layout index* (range 0..15) may be provided using the 4 least
+     * significant bits of the corresponding #xkb_keymap_compile_flags value,
+     * e.g.:
+     *
+     * ```c
+     * // Set the target layout index to 1.
+     * enum xkb_keymap_compile_flags flags = XKB_KEYMAP_REDIRECT_OUT_OF_RANGE_LAYOUT | 1;
+     * ```
+     *
+     * @since 1.8.0
+     *
+     * [effective layout]: @ref ::XKB_STATE_LAYOUT_EFFECTIVE
+     */
+    XKB_KEYMAP_REDIRECT_OUT_OF_RANGE_LAYOUT,
+    /**
+     * Set the out-of-range layout action to “clamp into range”: if the
+     * [effective layout] is invalid, it is set to nearest valid layout:
+     *
+     * - effective layout larger than the highest supported layout are mapped to
+     *   the highest supported layout;
+     * - effective layout less than 0 are mapped to 0.
+     *
+     * @since 1.8.0
+     *
+     * [effective layout]: @ref ::XKB_STATE_LAYOUT_EFFECTIVE
+     */
+    XKB_KEYMAP_CLAMP_OUT_OF_RANGE_LAYOUT
+};
+
+/**
+ * TODO: more doc
+ *
+ * @since 1.8.0
+ */
+bool
+xkb_keymap_compile_options_set_layout_out_of_range_action(
+    struct xkb_keymap_compile_options *options,
+    enum xkb_keymap_out_of_range_layout_action,
+    xkb_layout_index_t target
+);
 
 /**
  * Create a keymap from RMLVO names.

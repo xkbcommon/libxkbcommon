@@ -307,6 +307,7 @@ enum xkb_range_exceed_type {
     RANGE_WRAP = 0,
     RANGE_SATURATE,
     RANGE_REDIRECT,
+#define _XKB_RANGE_EXCEED_TYPE_NUM_ENTRIES 3
 };
 
 enum xkb_explicit_components {
@@ -332,6 +333,14 @@ struct xkb_group {
     struct xkb_level *levels;
 };
 
+/* Note: enum value may be interpreted as a signed int, so we need an extra bit
+ * to store the sign. */
+#define OUT_OF_RANGE_GROUP_ACTION_SIZE 3
+#define OUT_OF_RANGE_GROUP_NUMBER_SIZE (32 - OUT_OF_RANGE_GROUP_ACTION_SIZE)
+#if _XKB_RANGE_EXCEED_TYPE_NUM_ENTRIES >= (1 << (OUT_OF_RANGE_GROUP_ACTION_SIZE - 1))
+    #error "Cannot store enum xkb_range_exceed_type in bitfield out_of_range_group_number"
+#endif
+
 struct xkb_key {
     xkb_keycode_t keycode;
     xkb_atom_t name;
@@ -343,8 +352,8 @@ struct xkb_key {
 
     bool repeats;
 
-    enum xkb_range_exceed_type out_of_range_group_action;
-    xkb_layout_index_t out_of_range_group_number;
+    xkb_layout_index_t out_of_range_group_number:OUT_OF_RANGE_GROUP_NUMBER_SIZE;
+    enum xkb_range_exceed_type out_of_range_group_action:OUT_OF_RANGE_GROUP_ACTION_SIZE;
 
     xkb_layout_index_t num_groups;
     struct xkb_group *groups;
@@ -364,6 +373,8 @@ struct xkb_mod_set {
 struct xkb_keymap_compile_options {
     enum xkb_keymap_format format;
     enum xkb_keymap_compile_flags flags;
+    xkb_layout_index_t out_of_range_group_number:OUT_OF_RANGE_GROUP_NUMBER_SIZE;
+    enum xkb_range_exceed_type out_of_range_group_action:OUT_OF_RANGE_GROUP_ACTION_SIZE;
 };
 
 /* Common keyboard description structure */
@@ -397,6 +408,9 @@ struct xkb_keymap {
     /* Not all groups must have names. */
     xkb_layout_index_t num_group_names;
     xkb_atom_t *group_names;
+    /* groups_wrap control */
+    xkb_layout_index_t out_of_range_group_number:OUT_OF_RANGE_GROUP_NUMBER_SIZE;
+    enum xkb_range_exceed_type out_of_range_group_action:OUT_OF_RANGE_GROUP_ACTION_SIZE;
 
     struct xkb_led leds[XKB_MAX_LEDS];
     unsigned int num_leds;

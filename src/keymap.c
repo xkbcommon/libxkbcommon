@@ -78,6 +78,18 @@ xkb_keymap_compile_options_free(struct xkb_keymap_compile_options *options)
         free(options);
 }
 
+XKB_EXPORT bool
+xkb_keymap_compile_options_set_layout_out_of_range_action(
+    struct xkb_keymap_compile_options *options,
+    enum xkb_keymap_out_of_range_layout_action action,
+    xkb_layout_index_t target)
+{
+    // FIXME checks
+    options->out_of_range_group_action = action;
+    options->out_of_range_group_number = target;
+    return true;
+}
+
 XKB_EXPORT struct xkb_keymap *
 xkb_keymap_ref(struct xkb_keymap *keymap)
 {

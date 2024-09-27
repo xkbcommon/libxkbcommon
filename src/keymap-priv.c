@@ -57,6 +57,33 @@ xkb_keymap_new(struct xkb_context *ctx,
                const struct xkb_keymap_compile_options *options)
 {
     struct xkb_keymap *keymap;
+    enum xkb_range_exceed_type out_of_range_group_action;
+    xkb_layout_index_t out_of_range_group_number = options->out_of_range_group_number;
+
+    switch (options->out_of_range_group_action) {
+    case XKB_KEYMAP_WRAP_OUT_OF_RANGE_LAYOUT:
+        out_of_range_group_action = RANGE_WRAP;
+        break;
+    case XKB_KEYMAP_REDIRECT_OUT_OF_RANGE_LAYOUT:
+        out_of_range_group_action = RANGE_REDIRECT;
+        break;
+    case XKB_KEYMAP_CLAMP_OUT_OF_RANGE_LAYOUT:
+        out_of_range_group_action = RANGE_SATURATE;
+        break;
+    default:
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "Unsupported \"out of range layout\" action: %#x\n",
+                options->out_of_range_group_action);
+        return NULL;
+    }
+
+    if (out_of_range_group_number && out_of_range_group_action != RANGE_REDIRECT) {
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "Redirect layout index can only be used in combination with "
+                "XKB_KEYMAP_REDIRECT_OUT_OF_RANGE_LAYOUT action, but got: %#x\n",
+                options->out_of_range_group_action);
+        return NULL;
+    }
 
     keymap = calloc(1, sizeof(*keymap));
     if (!keymap)
@@ -67,6 +94,9 @@ xkb_keymap_new(struct xkb_context *ctx,
 
     keymap->format = options->format;
     keymap->flags = options->flags;
+
+    keymap->out_of_range_group_action = out_of_range_group_action;
+    keymap->out_of_range_group_number = out_of_range_group_number;
 
     update_builtin_keymap_fields(keymap);
 
