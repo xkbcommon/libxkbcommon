@@ -55,6 +55,29 @@
 #include "keymap.h"
 #include "text.h"
 
+XKB_EXPORT struct xkb_keymap_compile_options*
+xkb_keymap_compile_options_new(enum xkb_keymap_format format,
+                               enum xkb_keymap_compile_flags flags)
+{
+    struct xkb_keymap_compile_options *options;
+
+    options = calloc(1, sizeof(*options));
+    if (!options)
+        return NULL;
+
+    options->format = format;
+    options->flags = flags;
+
+    return options;
+}
+
+XKB_EXPORT void
+xkb_keymap_compile_options_free(struct xkb_keymap_compile_options *options)
+{
+    if (options)
+        free(options);
+}
+
 XKB_EXPORT struct xkb_keymap *
 xkb_keymap_ref(struct xkb_keymap *keymap)
 {
@@ -116,30 +139,36 @@ get_keymap_format_ops(enum xkb_keymap_format format)
     return keymap_format_ops[(int) format];
 }
 
+static const struct xkb_keymap_compile_options default_keymap_compile_options =
+    keymap_compile_options_new(XKB_KEYMAP_FORMAT_TEXT_V1,
+                               XKB_KEYMAP_COMPILE_NO_FLAGS);
+
 XKB_EXPORT struct xkb_keymap *
-xkb_keymap_new_from_names(struct xkb_context *ctx,
-                          const struct xkb_rule_names *rmlvo_in,
-                          enum xkb_keymap_compile_flags flags)
+xkb_keymap_new_from_names2(struct xkb_context *ctx,
+                           const struct xkb_rule_names *rmlvo_in,
+                           const struct xkb_keymap_compile_options *options)
 {
     struct xkb_keymap *keymap;
     struct xkb_rule_names rmlvo;
-    const enum xkb_keymap_format format = XKB_KEYMAP_FORMAT_TEXT_V1;
     const struct xkb_keymap_format_ops *ops;
 
-    ops = get_keymap_format_ops(format);
+    if (options == NULL)
+        options = &default_keymap_compile_options;
+
+    ops = get_keymap_format_ops(options->format);
     if (!ops || !ops->keymap_new_from_names) {
         log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "unsupported keymap format: %d\n", format);
+                     "unsupported keymap format: %d\n", options->format);
         return NULL;
     }
 
-    if (flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
+    if (options->flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
         log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "unrecognized flags: %#x\n", flags);
+                     "unrecognized flags: %#x\n", options->flags);
         return NULL;
     }
 
-    keymap = xkb_keymap_new(ctx, format, flags);
+    keymap = xkb_keymap_new(ctx, options);
     if (!keymap)
         return NULL;
 
@@ -149,7 +178,7 @@ xkb_keymap_new_from_names(struct xkb_context *ctx,
         memset(&rmlvo, 0, sizeof(rmlvo));
     xkb_context_sanitize_rule_names(ctx, &rmlvo);
 
-    if (!ops->keymap_new_from_names(keymap, &rmlvo)) {
+    if (!ops->keymap_new_from_names(keymap, &rmlvo, options)) {
         xkb_keymap_unref(keymap);
         return NULL;
     }
@@ -158,34 +187,47 @@ xkb_keymap_new_from_names(struct xkb_context *ctx,
 }
 
 XKB_EXPORT struct xkb_keymap *
+xkb_keymap_new_from_names(struct xkb_context *ctx,
+                          const struct xkb_rule_names *rmlvo_in,
+                          enum xkb_keymap_compile_flags flags)
+{
+    struct xkb_keymap_compile_options options =
+        keymap_compile_options_new(XKB_KEYMAP_FORMAT_TEXT_V1, flags);
+    return xkb_keymap_new_from_names2(ctx, rmlvo_in, &options);
+}
+
+XKB_EXPORT struct xkb_keymap *
 xkb_keymap_new_from_string(struct xkb_context *ctx,
                            const char *string,
                            enum xkb_keymap_format format,
                            enum xkb_keymap_compile_flags flags)
 {
-    return xkb_keymap_new_from_buffer(ctx, string, strlen(string),
-                                      format, flags);
+    struct xkb_keymap_compile_options options =
+        keymap_compile_options_new(format, flags);
+    return xkb_keymap_new_from_buffer2(ctx, string, strlen(string), &options);
 }
 
 XKB_EXPORT struct xkb_keymap *
-xkb_keymap_new_from_buffer(struct xkb_context *ctx,
-                           const char *buffer, size_t length,
-                           enum xkb_keymap_format format,
-                           enum xkb_keymap_compile_flags flags)
+xkb_keymap_new_from_buffer2(struct xkb_context *ctx,
+                            const char *buffer, size_t length,
+                            const struct xkb_keymap_compile_options *options)
 {
     struct xkb_keymap *keymap;
     const struct xkb_keymap_format_ops *ops;
 
-    ops = get_keymap_format_ops(format);
+    if (options == NULL)
+        options = &default_keymap_compile_options;
+
+    ops = get_keymap_format_ops(options->format);
     if (!ops || !ops->keymap_new_from_string) {
         log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "unsupported keymap format: %d\n", format);
+                     "unsupported keymap format: %d\n", options->format);
         return NULL;
     }
 
-    if (flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
+    if (options->flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
         log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "unrecognized flags: %#x\n", flags);
+                     "unrecognized flags: %#x\n", options->flags);
         return NULL;
     }
 
@@ -195,7 +237,7 @@ xkb_keymap_new_from_buffer(struct xkb_context *ctx,
         return NULL;
     }
 
-    keymap = xkb_keymap_new(ctx, format, flags);
+    keymap = xkb_keymap_new(ctx, options);
     if (!keymap)
         return NULL;
 
@@ -203,7 +245,59 @@ xkb_keymap_new_from_buffer(struct xkb_context *ctx,
     if (length > 0 && buffer[length - 1] == '\0')
         length--;
 
-    if (!ops->keymap_new_from_string(keymap, buffer, length)) {
+    if (!ops->keymap_new_from_string(keymap, buffer, length, options)) {
+        xkb_keymap_unref(keymap);
+        return NULL;
+    }
+
+    return keymap;
+}
+
+XKB_EXPORT struct xkb_keymap *
+xkb_keymap_new_from_buffer(struct xkb_context *ctx,
+                           const char *buffer, size_t length,
+                           enum xkb_keymap_format format,
+                           enum xkb_keymap_compile_flags flags)
+{
+    struct xkb_keymap_compile_options options =
+        keymap_compile_options_new(format, flags);
+    return xkb_keymap_new_from_buffer2(ctx, buffer, length, &options);
+}
+
+XKB_EXPORT struct xkb_keymap *
+xkb_keymap_new_from_file2(struct xkb_context *ctx, FILE *file,
+                          const struct xkb_keymap_compile_options *options)
+{
+    struct xkb_keymap *keymap;
+    const struct xkb_keymap_format_ops *ops;
+
+    if (options == NULL)
+        options = &default_keymap_compile_options;
+
+    ops = get_keymap_format_ops(options->format);
+    if (!ops || !ops->keymap_new_from_file) {
+        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "unsupported keymap format: %d\n", options->format);
+        return NULL;
+    }
+
+    if (options->flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
+        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "unrecognized flags: %#x\n", options->flags);
+        return NULL;
+    }
+
+    if (!file) {
+        log_err_func1(ctx, XKB_LOG_MESSAGE_NO_ID,
+                      "no file specified\n");
+        return NULL;
+    }
+
+    keymap = xkb_keymap_new(ctx, options);
+    if (!keymap)
+        return NULL;
+
+    if (!ops->keymap_new_from_file(keymap, file, options)) {
         xkb_keymap_unref(keymap);
         return NULL;
     }
@@ -217,38 +311,9 @@ xkb_keymap_new_from_file(struct xkb_context *ctx,
                          enum xkb_keymap_format format,
                          enum xkb_keymap_compile_flags flags)
 {
-    struct xkb_keymap *keymap;
-    const struct xkb_keymap_format_ops *ops;
-
-    ops = get_keymap_format_ops(format);
-    if (!ops || !ops->keymap_new_from_file) {
-        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "unsupported keymap format: %d\n", format);
-        return NULL;
-    }
-
-    if (flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
-        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "unrecognized flags: %#x\n", flags);
-        return NULL;
-    }
-
-    if (!file) {
-        log_err_func1(ctx, XKB_LOG_MESSAGE_NO_ID,
-                      "no file specified\n");
-        return NULL;
-    }
-
-    keymap = xkb_keymap_new(ctx, format, flags);
-    if (!keymap)
-        return NULL;
-
-    if (!ops->keymap_new_from_file(keymap, file)) {
-        xkb_keymap_unref(keymap);
-        return NULL;
-    }
-
-    return keymap;
+    struct xkb_keymap_compile_options options =
+        keymap_compile_options_new(format, flags);
+    return xkb_keymap_new_from_file2(ctx, file, &options);
 }
 
 XKB_EXPORT char *

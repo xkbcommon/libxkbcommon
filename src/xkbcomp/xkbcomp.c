@@ -33,7 +33,8 @@
 #include "rules.h"
 
 static bool
-compile_keymap_file(struct xkb_keymap *keymap, XkbFile *file)
+compile_keymap_file(struct xkb_keymap *keymap, XkbFile *file,
+                    const struct xkb_keymap_compile_options *options)
 {
     if (file->file_type != FILE_TYPE_KEYMAP) {
         log_err(keymap->ctx, XKB_ERROR_KEYMAP_COMPILATION_FAILED,
@@ -42,7 +43,7 @@ compile_keymap_file(struct xkb_keymap *keymap, XkbFile *file)
         return false;
     }
 
-    if (!CompileKeymap(file, keymap, MERGE_OVERRIDE)) {
+    if (!CompileKeymap(file, keymap, MERGE_OVERRIDE, options)) {
         log_err(keymap->ctx, XKB_ERROR_KEYMAP_COMPILATION_FAILED,
                 "Failed to compile keymap\n");
         return false;
@@ -53,7 +54,8 @@ compile_keymap_file(struct xkb_keymap *keymap, XkbFile *file)
 
 static bool
 text_v1_keymap_new_from_names(struct xkb_keymap *keymap,
-                              const struct xkb_rule_names *rmlvo)
+                              const struct xkb_rule_names *rmlvo,
+                              const struct xkb_keymap_compile_options *options)
 {
     bool ok;
     struct xkb_component_names kccgst;
@@ -93,14 +95,15 @@ text_v1_keymap_new_from_names(struct xkb_keymap *keymap,
         return false;
     }
 
-    ok = compile_keymap_file(keymap, file);
+    ok = compile_keymap_file(keymap, file, options);
     FreeXkbFile(file);
     return ok;
 }
 
 static bool
 text_v1_keymap_new_from_string(struct xkb_keymap *keymap,
-                               const char *string, size_t len)
+                               const char *string, size_t len,
+                               const struct xkb_keymap_compile_options *options)
 {
     bool ok;
     XkbFile *xkb_file;
@@ -112,13 +115,14 @@ text_v1_keymap_new_from_string(struct xkb_keymap *keymap,
         return false;
     }
 
-    ok = compile_keymap_file(keymap, xkb_file);
+    ok = compile_keymap_file(keymap, xkb_file, options);
     FreeXkbFile(xkb_file);
     return ok;
 }
 
 static bool
-text_v1_keymap_new_from_file(struct xkb_keymap *keymap, FILE *file)
+text_v1_keymap_new_from_file(struct xkb_keymap *keymap, FILE *file,
+                             const struct xkb_keymap_compile_options *options)
 {
     bool ok;
     XkbFile *xkb_file;
@@ -130,7 +134,7 @@ text_v1_keymap_new_from_file(struct xkb_keymap *keymap, FILE *file)
         return false;
     }
 
-    ok = compile_keymap_file(keymap, xkb_file);
+    ok = compile_keymap_file(keymap, xkb_file, options);
     FreeXkbFile(xkb_file);
     return ok;
 }

@@ -231,7 +231,8 @@ static const compile_file_fn compile_file_fns[LAST_KEYMAP_FILE_TYPE + 1] = {
 };
 
 bool
-CompileKeymap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
+CompileKeymap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge,
+              const struct xkb_keymap_compile_options *options)
 {
     bool ok;
     XkbFile *files[LAST_KEYMAP_FILE_TYPE + 1] = { NULL };
