@@ -361,6 +361,11 @@ struct xkb_mod_set {
     unsigned int num_mods;
 };
 
+struct xkb_keymap_compile_options {
+    enum xkb_keymap_format format;
+    enum xkb_keymap_compile_flags flags;
+};
+
 /* Common keyboard description structure */
 struct xkb_keymap {
     struct xkb_context *ctx;
@@ -452,10 +457,14 @@ entry_is_active(const struct xkb_key_type_entry *entry)
     return entry->mods.mods == 0 || entry->mods.mask != 0;
 }
 
+#define keymap_compile_options_new(_format, _flags) { \
+        .flags = _flags,                              \
+        .format = _format                             \
+    }
+
 struct xkb_keymap *
 xkb_keymap_new(struct xkb_context *ctx,
-               enum xkb_keymap_format format,
-               enum xkb_keymap_compile_flags flags);
+               const struct xkb_keymap_compile_options *options);
 
 struct xkb_key *
 XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases);
