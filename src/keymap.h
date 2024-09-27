@@ -361,6 +361,16 @@ struct xkb_mod_set {
     xkb_mod_mask_t explicit_vmods;
 };
 
+struct xkb_keymap_compile_options {
+    enum xkb_keymap_format format;
+    enum xkb_keymap_compile_flags flags;
+};
+
+#define keymap_compile_options_new(_format, _flags) { \
+        .flags = (_flags),                            \
+        .format = (_format)                           \
+    }
+
 /*
  * Our current implementation with continuous arrays does not allow efficient
  * mapping of keycodes. Allowing the API max valid keycode XKB_KEYCODE_MAX could
@@ -495,8 +505,7 @@ entry_is_active(const struct xkb_key_type_entry *entry)
 
 struct xkb_keymap *
 xkb_keymap_new(struct xkb_context *ctx,
-               enum xkb_keymap_format format,
-               enum xkb_keymap_compile_flags flags);
+               const struct xkb_keymap_compile_options *options);
 
 struct xkb_key *
 XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases);

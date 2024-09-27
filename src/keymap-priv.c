@@ -40,8 +40,7 @@ update_builtin_keymap_fields(struct xkb_keymap *keymap)
 
 struct xkb_keymap *
 xkb_keymap_new(struct xkb_context *ctx,
-               enum xkb_keymap_format format,
-               enum xkb_keymap_compile_flags flags)
+               const struct xkb_keymap_compile_options *options)
 {
     struct xkb_keymap *keymap;
 
@@ -52,8 +51,8 @@ xkb_keymap_new(struct xkb_context *ctx,
     keymap->refcnt = 1;
     keymap->ctx = xkb_context_ref(ctx);
 
-    keymap->format = format;
-    keymap->flags = flags;
+    keymap->format = options->format;
+    keymap->flags = options->flags;
 
     update_builtin_keymap_fields(keymap);
 

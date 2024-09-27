@@ -121,5 +121,15 @@ global:
 } V_1.0.0;
 
 V_1.9.0 {
+global:
     xkb_components_names_from_rules;
 } V_1.6.0;
+
+V_1.10.0 {
+global:
+    xkb_keymap_compile_options_new;
+    xkb_keymap_compile_options_free;
+    xkb_keymap_new_from_names2;
+    xkb_keymap_new_from_file2;
+    xkb_keymap_new_from_buffer2;
+} V_1.9.0;

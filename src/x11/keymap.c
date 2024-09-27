@@ -1159,9 +1159,6 @@ xkb_x11_keymap_new_from_device(struct xkb_context *ctx,
                                int32_t device_id,
                                enum xkb_keymap_compile_flags flags)
 {
-    struct xkb_keymap *keymap;
-    const enum xkb_keymap_format format = XKB_KEYMAP_FORMAT_TEXT_V1;
-
     if (flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
         log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
                      "unrecognized flags: %#x\n", flags);
@@ -1174,7 +1171,10 @@ xkb_x11_keymap_new_from_device(struct xkb_context *ctx,
         return NULL;
     }
 
-    keymap = xkb_keymap_new(ctx, format, flags);
+    const struct xkb_keymap_compile_options options =
+        keymap_compile_options_new(XKB_KEYMAP_FORMAT_TEXT_V1, flags);
+
+    struct xkb_keymap* const keymap = xkb_keymap_new(ctx, &options);
     if (!keymap)
         return NULL;
 
