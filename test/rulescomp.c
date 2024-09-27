@@ -24,6 +24,7 @@
 #include "config.h"
 
 #include "evdev-scancodes.h"
+#include "src/keysym.h"
 #include "test.h"
 
 static int
@@ -140,8 +141,8 @@ main(int argc, char *argv[])
     assert(test_rmlvo(ctx, "evdev", "evdev", "us", "intl", "grp:alts_toggle",
                       KEY_GRAVE,      BOTH,  XKB_KEY_dead_grave,          FINISH));
 
-    /* 20 is not a legal group; make sure this is handled gracefully. */
-    assert(test_rmlvo(ctx, "evdev", "", "us:20", "", "",
+    /* 33 is not a legal group; make sure this is handled gracefully. */
+    assert(test_rmlvo(ctx, "evdev", "", "us:33", "", "",
                       KEY_A,          BOTH, XKB_KEY_a,                    FINISH));
 
     /* Don't choke on missing values in RMLVO. Should just skip them.
@@ -188,6 +189,24 @@ main(int argc, char *argv[])
     /* Has an illegal escape sequence, but shouldn't fail. */
     assert(test_rmlvo_env(ctx, "evdev", "", "cz", "bksl", "",
                           KEY_A,          BOTH, XKB_KEY_a,                FINISH));
+
+    /* Test more than 4 groups */
+#define U(cp) (XKB_KEYSYM_UNICODE_OFFSET + cp)
+    assert(test_rmlvo_env(ctx, "evdev-modern", "", "cz,us,ca,de,in,ru,il", ",,,,,phonetic,",
+                          "grp:menu_toggle",
+                          KEY_2,          BOTH, XKB_KEY_ecaron,           NEXT,
+                          KEY_COMPOSE,    BOTH, XKB_KEY_ISO_Next_Group,   NEXT,
+                          KEY_Y,          BOTH, XKB_KEY_y,                NEXT,
+                          KEY_COMPOSE,    BOTH, XKB_KEY_ISO_Next_Group,   NEXT,
+                          KEY_102ND,      BOTH, XKB_KEY_guillemetleft,    NEXT,
+                          KEY_COMPOSE,    BOTH, XKB_KEY_ISO_Next_Group,   NEXT,
+                          KEY_Y,          BOTH, XKB_KEY_z,                NEXT,
+                          KEY_COMPOSE,    BOTH, XKB_KEY_ISO_Next_Group,   NEXT,
+                          KEY_Y,          BOTH, U(0x092c),                NEXT,
+                          KEY_COMPOSE,    BOTH, XKB_KEY_ISO_Next_Group,   NEXT,
+                          KEY_Y,          BOTH, XKB_KEY_Cyrillic_ze,      NEXT,
+                          KEY_COMPOSE,    BOTH, XKB_KEY_ISO_Next_Group,   NEXT,
+                          KEY_Y,          BOTH, XKB_KEY_hebrew_tet,       FINISH));
 
     xkb_context_unref(ctx);
 
