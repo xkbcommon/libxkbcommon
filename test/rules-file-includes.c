@@ -67,7 +67,7 @@ test_rules(struct xkb_context *ctx, struct test_data *data)
         fprintf(stderr, "Expecting: %s\t%s\t%s\t%s\n",
                 data->keycodes, data->types, data->compat, data->symbols);
 
-    if (!xkb_components_from_rules(ctx, &rmlvo, &kccgst)) {
+    if (!xkb_components_from_rules(ctx, &rmlvo, &kccgst, NULL)) {
         fprintf(stderr, "Received : FAILURE\n");
         return data->should_fail;
     }

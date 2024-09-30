@@ -27,7 +27,8 @@
 bool
 xkb_components_from_rules(struct xkb_context *ctx,
                           const struct xkb_rule_names *rmlvo,
-                          struct xkb_component_names *out);
+                          struct xkb_component_names *out,
+                          xkb_layout_index_t *explicit_layouts);
 
 /* Maximum length of a layout index string:
  * [NOTE] Currently XKB_MAX_GROUPS is 4, but the following code is
