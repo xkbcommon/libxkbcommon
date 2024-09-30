@@ -598,7 +598,17 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
                 next_incl.explicit_group = info->explicit_group;
             }
         }
+        else if (info->keymap->num_groups != 0 && next_incl.include_depth == 1) {
+            /* If keymap is the result of RMLVO resolution and we are at the
+             * first include depth, transform e.g. `pc` into `pc:1` in order to
+             * force only one group per key using the explicit group.
+             *
+             * NOTE: X11’s xkbcomp does not apply this rule. */
+            next_incl.explicit_group = 0;
+        }
         else {
+            /* The keymap was not generated from rules or this is not the first
+             * level of include: take the parent’s explicit group. */
             next_incl.explicit_group = info->explicit_group;
         }
 
@@ -1115,10 +1125,10 @@ SetExplicitGroup(SymbolsInfo *info, KeyInfo *keyi)
 
     if (warn) {
         log_warn(info->ctx, XKB_WARNING_MULTIPLE_GROUPS_AT_ONCE,
-                 "For the map %s an explicit group specified, "
+                 "For the map %s the explicit group %u is specified, "
                  "but key %s has more than one group defined; "
                  "All groups except first one will be ignored\n",
-                 info->name, KeyInfoText(info, keyi));
+                 info->name, info->explicit_group + 1, KeyInfoText(info, keyi));
     }
 
     darray_resize0(keyi->groups, info->explicit_group + 1);

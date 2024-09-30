@@ -1,0 +1,30 @@
+// Define a key with various groups at the same time.
+// Use RALT because the option `lv3:ralt_alt` used to have a similar
+// (buggy) implementation, that triggered an unexpected result
+// for `xkb_keymap_num_layouts` and `xkb_keymap_num_layouts_for_key`.
+default partial modifier_keys
+xkb_symbols "1" {
+  key <RALT> {
+    type[Group1]="ONE_LEVEL",
+    type[Group2]="ONE_LEVEL",
+    type[Group3]="ONE_LEVEL",
+    type[Group4]="ONE_LEVEL",
+    symbols[Group1] = [ a ],
+    symbols[Group2] = [ b ],
+    symbols[Group3] = [ c ],
+    symbols[Group4] = [ d ]
+  };
+};
+
+xkb_symbols "2" {
+	key <RALT> {
+	  type[Group1]="ONE_LEVEL",
+	  type[Group2]="ONE_LEVEL",
+	  type[Group3]="ONE_LEVEL",
+	  type[Group4]="ONE_LEVEL",
+	  symbols[Group1] = [ a ],
+	  symbols[Group2] = [ B ],
+	  symbols[Group3] = [ C ],
+	  symbols[Group4] = [ D ]
+	};
+      };
