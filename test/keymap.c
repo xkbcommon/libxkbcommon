@@ -35,7 +35,7 @@
 static void
 test_garbage_key(void)
 {
-    struct xkb_context *context = test_get_context(0);
+    struct xkb_context *context = test_get_context(CONTEXT_NO_FLAG);
     struct xkb_keymap *keymap;
     xkb_keycode_t kc;
     int nsyms;
@@ -78,7 +78,7 @@ test_garbage_key(void)
 static void
 test_keymap(void)
 {
-    struct xkb_context *context = test_get_context(0);
+    struct xkb_context *context = test_get_context(CONTEXT_NO_FLAG);
     struct xkb_keymap *keymap;
     xkb_keycode_t kc;
     const char *keyname;
@@ -150,6 +150,91 @@ test_keymap(void)
     xkb_context_unref(context);
 }
 
+static void
+test_no_extra_groups(void)
+{
+    struct xkb_keymap *keymap;
+    xkb_keycode_t kc;
+    const xkb_keysym_t *syms;
+    struct xkb_context *context = test_get_context(CONTEXT_NO_FLAG);
+    assert(context);
+
+    /* RMLVO: Legacy rules may add more layouts than the input RMLVO */
+    keymap = test_compile_rules(context, "multiple-groups",
+                                "old", "de", NULL, NULL);
+    assert(keymap);
+    kc = xkb_keymap_key_by_name(keymap, "AD01");
+    assert(kc != XKB_KEYCODE_INVALID);
+    /* 2 layouts, while only 1 was provided */
+    assert(xkb_keymap_num_layouts_for_key(keymap, kc) == 2);
+    assert(xkb_keymap_num_layouts(keymap) == 2);
+    xkb_keymap_unref(keymap);
+
+    /* RMLVO: “one group per key” in symbols sections */
+    const char *layouts[] = {"us", "us,us", "us,us,us", "us,us,us,us"};
+    for (xkb_layout_index_t k = 0; k < ARRAY_SIZE(layouts); k++) {
+        /* `multiple-groups` option defines 4 groups for a key */
+        keymap = test_compile_rules(context, "multiple-groups", NULL,
+                                    layouts[k], NULL, "multiple-groups");
+        assert(keymap);
+        kc = xkb_keymap_key_by_name(keymap, "RALT");
+        assert(kc != XKB_KEYCODE_INVALID);
+        /* Groups after the first one should be dropped */
+        assert(xkb_keymap_num_layouts_for_key(keymap, kc) == 1);
+        /* Here we expect RMLVO layouts count = keymap layouts count */
+        assert(xkb_keymap_num_layouts(keymap) == k + 1);
+        for (xkb_layout_index_t l = 0; l <= k; l++) {
+            assert(xkb_keymap_key_get_syms_by_level(keymap, kc, l, 0, &syms) == 1);
+            assert(syms[0] == XKB_KEY_a);
+            syms = NULL;
+        }
+        xkb_keymap_unref(keymap);
+    }
+
+    /* RMLVO: Ensure the rule “one group per key” in symbols sections works
+     * for the 2nd layout */
+    keymap = test_compile_rules(context, NULL, NULL,
+                                "multiple-groups,multiple-groups", "1,2", NULL);
+    assert(keymap);
+    kc = xkb_keymap_key_by_name(keymap, "RALT");
+    assert(kc != XKB_KEYCODE_INVALID);
+    assert(xkb_keymap_num_layouts_for_key(keymap, kc) == 2);
+    assert(xkb_keymap_num_layouts(keymap) == 2);
+    for (xkb_layout_index_t l = 0; l < 2; l++) {
+        assert(xkb_keymap_key_get_syms_by_level(keymap, kc, l, 0, &syms) == 1);
+        assert(syms[0] == XKB_KEY_a);
+        syms = NULL;
+    }
+    xkb_keymap_unref(keymap);
+
+    /* Same configuration as previous, but without using RMLVO resolution:
+     * We do accept more than one group per key in symbols sections, but only
+     * when not using a modifier: the second layout (`:2`) will have its extra
+     * groups dropped. */
+    const char keymap_str[] =
+        "xkb_keymap {"
+        "  xkb_keycodes { include \"evdev+aliases(qwerty)\" };"
+        "  xkb_types { include \"complete\" };"
+        "  xkb_compat { include \"complete\" };"
+        "  xkb_symbols { include \"pc+multiple-groups(1)+multiple-groups(2):2"
+                                  "+inet(evdev)\" };"
+        "};";
+    keymap = test_compile_string(context, keymap_str);
+    kc = xkb_keymap_key_by_name(keymap, "RALT");
+    assert(kc != XKB_KEYCODE_INVALID);
+    assert(xkb_keymap_num_layouts_for_key(keymap, kc) == 4);
+    assert(xkb_keymap_num_layouts(keymap) == 4);
+    xkb_keysym_t ref_syms[] = { XKB_KEY_a, XKB_KEY_a, XKB_KEY_c, XKB_KEY_d };
+    for (xkb_layout_index_t l = 0; l < 4; l++) {
+        assert(xkb_keymap_key_get_syms_by_level(keymap, kc, l, 0, &syms) == 1);
+        assert(syms[0] == ref_syms[l]);
+        syms = NULL;
+    }
+    xkb_keymap_unref(keymap);
+
+    xkb_context_unref(context);
+}
+
 #define Mod1Mask (1 << 3)
 #define Mod2Mask (1 << 4)
 #define Mod3Mask (1 << 5)
@@ -157,7 +242,7 @@ test_keymap(void)
 static void
 test_numeric_keysyms(void)
 {
-    struct xkb_context *context = test_get_context(0);
+    struct xkb_context *context = test_get_context(CONTEXT_NO_FLAG);
     struct xkb_keymap *keymap;
     const struct xkb_key *key;
     xkb_keycode_t kc;
@@ -201,7 +286,7 @@ test_numeric_keysyms(void)
 static void
 test_multiple_keysyms_per_level(void)
 {
-    struct xkb_context *context = test_get_context(0);
+    struct xkb_context *context = test_get_context(CONTEXT_NO_FLAG);
     struct xkb_keymap *keymap;
     xkb_keycode_t kc;
     int keysyms_count;
@@ -237,6 +322,7 @@ main(void)
 
     test_garbage_key();
     test_keymap();
+    test_no_extra_groups();
     test_numeric_keysyms();
     test_multiple_keysyms_per_level();
 

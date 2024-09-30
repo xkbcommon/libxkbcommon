@@ -1536,7 +1536,8 @@ read_rules_file(struct xkb_context *ctx,
 bool
 xkb_components_from_rules(struct xkb_context *ctx,
                           const struct xkb_rule_names *rmlvo,
-                          struct xkb_component_names *out)
+                          struct xkb_component_names *out,
+                          xkb_layout_index_t *explicit_layouts)
 {
     bool ret = false;
     FILE *file;
@@ -1593,6 +1594,23 @@ xkb_components_from_rules(struct xkb_context *ctx,
             log_err(matcher->ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
                     "Unrecognized RMLVO option \"%.*s\" was ignored\n",
                     mval->sval.len, mval->sval.start);
+
+    /* Set the number of explicit layouts */
+    if (out->symbols != NULL && explicit_layouts != NULL) {
+        *explicit_layouts = 1; /* at least one group */
+        const char *symbols = out->symbols;
+        /* Take the highest modifier */
+        while ((symbols = strchr(symbols, ':')) != NULL && symbols[1] != '\0') {
+            char *endptr;
+            unsigned long group = strtoul(++symbols, &endptr, 10);
+            /* Update only when valid group index, but continue parsing
+             * even on invalid ones, as we do not handle them here. */
+            if (group > 0 && group <= XKB_MAX_GROUPS)
+                *explicit_layouts = MAX(*explicit_layouts,
+                                        (xkb_layout_index_t)group);
+            symbols = endptr;
+        }
+    }
 
 err_out:
     if (file)

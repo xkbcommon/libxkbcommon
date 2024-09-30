@@ -65,7 +65,10 @@ text_v1_keymap_new_from_names(struct xkb_keymap *keymap,
             rmlvo->rules, rmlvo->model, rmlvo->layout, rmlvo->variant,
             rmlvo->options);
 
-    ok = xkb_components_from_rules(keymap->ctx, rmlvo, &kccgst);
+    /* Resolve the RMLVO component to KcCGST components and get the
+     * expected number of layouts */
+    ok = xkb_components_from_rules(keymap->ctx, rmlvo, &kccgst,
+                                   &keymap->num_groups);
     if (!ok) {
         log_err(keymap->ctx, XKB_ERROR_KEYMAP_COMPILATION_FAILED,
                 "Couldn't look up rules '%s', model '%s', layout '%s', "

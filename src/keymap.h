@@ -404,7 +404,9 @@ struct xkb_keymap {
 
     struct xkb_mod_set mods;
 
-    /* Number of groups in the key with the most groups. */
+    /* This field has 2 uses:
+     * • During parsing: Expected layouts count after RMLVO resolution, if any;
+     * • After parsing: Number of groups in the key with the most groups. */
     xkb_layout_index_t num_groups;
     /* Not all groups must have names. */
     xkb_layout_index_t num_group_names;

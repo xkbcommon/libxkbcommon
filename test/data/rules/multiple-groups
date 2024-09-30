@@ -1,0 +1,9 @@
+// Insert US layout before a single layout
+! model layout = symbols
+  *     us     = pc+%l%(v)
+  *     *      = pc+us+%l%(v):2
+
+! option          = symbols
+  multiple-groups = +multiple-groups
+
+! include evdev
