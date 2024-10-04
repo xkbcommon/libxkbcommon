@@ -192,6 +192,39 @@ static const struct xkb_keymap_compile_options default_keymap_compile_options =
     keymap_compile_options_new(XKB_KEYMAP_FORMAT_TEXT_V1,
                                XKB_KEYMAP_COMPILE_NO_FLAGS);
 
+// FIXME: remove environment variable trick?
+static void
+set_shortcuts_reference_layout_from_env(struct xkb_context *ctx,
+                                        struct xkb_keymap_compile_options *options)
+{
+    if (darray_size(options->shortcuts_target_group) > 0)
+        return;
+
+    const char *target_str =
+        xkb_context_getenv(ctx, "XKB_TARGET_SHORTCUT_LAYOUT");
+
+    if (isempty(target_str))
+        return;
+
+    char *endptr;
+    const unsigned long target = strtoul(target_str, &endptr, 10) - 1;
+
+    if (endptr[0] != '\0' || target > XKB_MAX_GROUPS) {
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "Invalid value for XKB_TARGET_SHORTCUT_LAYOUT: %s\n",
+                target_str);
+        return;
+    }
+
+    for (xkb_layout_index_t source = 0; source < XKB_MAX_GROUPS; source++) {
+        if (source == target)
+            continue;
+        xkb_keymap_compile_options_set_shortcuts_reference_layout(options,
+                                                                  source,
+                                                                  target);
+    }
+}
+
 XKB_EXPORT struct xkb_keymap *
 xkb_keymap_new_from_names2(struct xkb_context *ctx,
                            const struct xkb_rule_names *rmlvo_in,
@@ -200,24 +233,39 @@ xkb_keymap_new_from_names2(struct xkb_context *ctx,
     struct xkb_keymap *keymap;
     struct xkb_rule_names rmlvo;
     const struct xkb_keymap_format_ops *ops;
+    // FIXME: remove environment variable trick
+    struct xkb_keymap_compile_options final_options;
 
     if (options == NULL)
-        options = &default_keymap_compile_options;
+        // options = &default_keymap_compile_options;
+        final_options = default_keymap_compile_options;
+    else
+        final_options = *options;
 
-    ops = get_keymap_format_ops(options->format);
+    // FIXME: remove environment variable trick
+    darray_copy(final_options.shortcuts_target_group,
+                options->shortcuts_target_group);
+    set_shortcuts_reference_layout_from_env(ctx, &final_options);
+
+    // ops = get_keymap_format_ops(options->format);
+    ops = get_keymap_format_ops(final_options.format);
     if (!ops || !ops->keymap_new_from_names) {
         log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "unsupported keymap format: %d\n", options->format);
+                    //  "unsupported keymap format: %d\n", options->format);
+                     "unsupported keymap format: %d\n", final_options.format);
         return NULL;
     }
 
-    if (options->flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
+    // if (options->flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
+    if (final_options.flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
         log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "unrecognized flags: %#x\n", options->flags);
+                    //  "unrecognized flags: %#x\n", options->flags);
+                     "unrecognized flags: %#x\n", final_options.flags);
         return NULL;
     }
 
-    keymap = xkb_keymap_new(ctx, options);
+    // keymap = xkb_keymap_new(ctx, options);
+    keymap = xkb_keymap_new(ctx, &final_options);
     if (!keymap)
         return NULL;
 
@@ -227,12 +275,16 @@ xkb_keymap_new_from_names2(struct xkb_context *ctx,
         memset(&rmlvo, 0, sizeof(rmlvo));
     xkb_context_sanitize_rule_names(ctx, &rmlvo);
 
-    if (!ops->keymap_new_from_names(keymap, &rmlvo, options)) {
+    // if (!ops->keymap_new_from_names(keymap, &rmlvo, options)) {
+    if (!ops->keymap_new_from_names(keymap, &rmlvo, &final_options)) {
         xkb_keymap_unref(keymap);
         return NULL;
     }
 
-    add_shortcuts_target_group_options(keymap, options);
+    // add_shortcuts_target_group_options(keymap, options);
+    add_shortcuts_target_group_options(keymap, &final_options);
+    // FIXME: remove environment variable trick
+    darray_free(final_options.shortcuts_target_group);
 
     return keymap;
 }
