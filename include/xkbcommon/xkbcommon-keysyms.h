@@ -2924,6 +2924,7 @@ SOFTWARE.
 #define XKB_KEY_XF86LightsToggle             0x1008121e      /* v3.10   KEY_LIGHTS_TOGGLE */
 #define XKB_KEY_XF86ALSToggle                0x10081230      /* v3.13   KEY_ALS_TOGGLE */
 /* Use: XKB_KEY_XF86RotationLockToggle       _EVDEVK(0x231)     v4.16   KEY_ROTATE_LOCK_TOGGLE */
+#define XKB_KEY_XF86RefreshRateToggle        0x10081232      /* v6.9    KEY_REFRESH_RATE_TOGGLE */
 #define XKB_KEY_XF86Buttonconfig             0x10081240      /* v3.16   KEY_BUTTONCONFIG */
 #define XKB_KEY_XF86Taskmanager              0x10081241      /* v3.16   KEY_TASKMANAGER */
 #define XKB_KEY_XF86Journal                  0x10081242      /* v3.16   KEY_JOURNAL */
@@ -2938,6 +2939,8 @@ SOFTWARE.
 #define XKB_KEY_XF86CameraAccessEnable       0x1008124b      /* v6.2    KEY_CAMERA_ACCESS_ENABLE */
 #define XKB_KEY_XF86CameraAccessDisable      0x1008124c      /* v6.2    KEY_CAMERA_ACCESS_DISABLE */
 #define XKB_KEY_XF86CameraAccessToggle       0x1008124d      /* v6.2    KEY_CAMERA_ACCESS_TOGGLE */
+#define XKB_KEY_XF86Accessibility            0x1008124e      /* v6.10   KEY_ACCESSIBILITY */
+#define XKB_KEY_XF86DoNotDisturb             0x1008124f      /* v6.10   KEY_DO_NOT_DISTURB */
 #define XKB_KEY_XF86BrightnessMin            0x10081250      /* v3.16   KEY_BRIGHTNESS_MIN */
 #define XKB_KEY_XF86BrightnessMax            0x10081251      /* v3.16   KEY_BRIGHTNESS_MAX */
 #define XKB_KEY_XF86KbdInputAssistPrev       0x10081260      /* v3.18   KEY_KBDINPUTASSIST_PREV */
