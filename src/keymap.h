@@ -151,6 +151,8 @@ enum xkb_action_flags {
     ACTION_ABSOLUTE_Y = (1 << 7),
     ACTION_ACCEL = (1 << 8),
     ACTION_SAME_SCREEN = (1 << 9),
+    /* Internal flags */
+    ACTION_INTERNAL_TEMP_LAYOUT_SWITCH = (1 << 10),
 };
 
 enum xkb_action_controls {
@@ -364,6 +366,7 @@ struct xkb_mod_set {
 struct xkb_keymap_compile_options {
     enum xkb_keymap_format format;
     enum xkb_keymap_compile_flags flags;
+    darray(xkb_layout_index_t) shortcuts_target_group;
 };
 
 /* Common keyboard description structure */
@@ -397,6 +400,9 @@ struct xkb_keymap {
     /* Not all groups must have names. */
     xkb_layout_index_t num_group_names;
     xkb_atom_t *group_names;
+
+    /* Target layout for shortcuts */
+    xkb_layout_index_t *shortcuts_target_group;
 
     struct xkb_led leds[XKB_MAX_LEDS];
     unsigned int num_leds;

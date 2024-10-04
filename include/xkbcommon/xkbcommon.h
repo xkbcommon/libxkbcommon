@@ -81,6 +81,7 @@
 #ifndef _XKBCOMMON_H_
 #define _XKBCOMMON_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -914,6 +915,16 @@ xkb_keymap_compile_options_new(enum xkb_keymap_format format,
  */
 void
 xkb_keymap_compile_options_free(struct xkb_keymap_compile_options *options);
+
+/**
+ * TODO: doc
+ *
+ * @since 1.8.0
+ */
+bool
+xkb_keymap_compile_options_set_shortcuts_reference_layout(
+    struct xkb_keymap_compile_options *options,
+    xkb_layout_index_t source, xkb_layout_index_t target);
 
 /**
  * Create a keymap from RMLVO names.

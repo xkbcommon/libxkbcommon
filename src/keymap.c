@@ -67,6 +67,7 @@ xkb_keymap_compile_options_new(enum xkb_keymap_format format,
 
     options->format = format;
     options->flags = flags;
+    darray_init(options->shortcuts_target_group);
 
     return options;
 }
@@ -74,8 +75,55 @@ xkb_keymap_compile_options_new(enum xkb_keymap_format format,
 XKB_EXPORT void
 xkb_keymap_compile_options_free(struct xkb_keymap_compile_options *options)
 {
-    if (options)
-        free(options);
+    if (!options)
+        return;
+
+    darray_free(options->shortcuts_target_group);
+    free(options);
+}
+
+XKB_EXPORT bool
+xkb_keymap_compile_options_set_shortcuts_reference_layout(
+    struct xkb_keymap_compile_options *options,
+    xkb_layout_index_t source, xkb_layout_index_t target)
+{
+    if (source > XKB_MAX_GROUPS || target > XKB_MAX_GROUPS)
+        return false;
+
+    if (source >= darray_size(options->shortcuts_target_group)) {
+        size_t l = darray_size(options->shortcuts_target_group);
+        for (; l <= source; l++)
+            darray_append(options->shortcuts_target_group, XKB_LAYOUT_INVALID);
+    }
+    darray_item(options->shortcuts_target_group, source) = target;
+    return true;
+}
+
+static void
+add_shortcuts_target_group_options(struct xkb_keymap *keymap,
+                                   const struct xkb_keymap_compile_options *options)
+{
+    if (darray_size(options->shortcuts_target_group) < 1)
+        return;
+
+    keymap->shortcuts_target_group = calloc(keymap->num_groups,
+                                            sizeof(keymap->shortcuts_target_group));
+    memcpy(keymap->shortcuts_target_group,
+           darray_items(options->shortcuts_target_group),
+           MIN(darray_size(options->shortcuts_target_group), keymap->num_groups)
+           * sizeof(options->shortcuts_target_group));
+
+    for (xkb_layout_index_t l = 0; l < keymap->num_groups; l++) {
+        if (keymap->shortcuts_target_group[l] != XKB_LAYOUT_INVALID &&
+            keymap->shortcuts_target_group[l] >= keymap->num_groups) {
+            log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                    "Invalid shortcut target group \"%u\" "
+                    "for group %u (max: %u).\n",
+                    keymap->shortcuts_target_group[l] + 1, l + 1,
+                    keymap->num_groups);
+            keymap->shortcuts_target_group[l] = XKB_LAYOUT_INVALID;
+        }
+    }
 }
 
 XKB_EXPORT struct xkb_keymap *
@@ -122,6 +170,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
     free(keymap->symbols_section_name);
     free(keymap->types_section_name);
     free(keymap->compat_section_name);
+    free(keymap->shortcuts_target_group);
     xkb_context_unref(keymap->ctx);
     free(keymap);
 }
@@ -182,6 +231,8 @@ xkb_keymap_new_from_names2(struct xkb_context *ctx,
         xkb_keymap_unref(keymap);
         return NULL;
     }
+
+    add_shortcuts_target_group_options(keymap, options);
 
     return keymap;
 }
@@ -250,6 +301,8 @@ xkb_keymap_new_from_buffer2(struct xkb_context *ctx,
         return NULL;
     }
 
+    add_shortcuts_target_group_options(keymap, options);
+
     return keymap;
 }
 
@@ -301,6 +354,8 @@ xkb_keymap_new_from_file2(struct xkb_context *ctx, FILE *file,
         xkb_keymap_unref(keymap);
         return NULL;
     }
+
+    add_shortcuts_target_group_options(keymap, options);
 
     return keymap;
 }

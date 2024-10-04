@@ -165,6 +165,17 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
     return true;
 }
 
+static void
+TweakSetModsForShortcuts(struct xkb_keymap *keymap, xkb_mod_mask_t mods,
+                         union xkb_action *act)
+{
+    if (act->type != ACTION_TYPE_MOD_SET ||
+        !(act->mods.mods.mask & mods) ||
+        (act->mods.mods.mask & ~mods))
+        return;
+    act->mods.flags |= ACTION_INTERNAL_TEMP_LAYOUT_SWITCH;
+}
+
 /**
  * This collects a bunch of disparate functions which was done in the server
  * at various points that really should've been done within xkbcomp.  Turns out
@@ -172,7 +183,8 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
  * other than Shift actually do something ...
  */
 static bool
-UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
+UpdateDerivedKeymapFields(struct xkb_keymap *keymap,
+                          const struct xkb_keymap_compile_options *options)
 {
     struct xkb_key *key;
     struct xkb_mod *mod;
@@ -201,12 +213,32 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
         }
     }
 
+    xkb_mod_mask_t shortcut_mods = 0;
+    if (darray_size(options->shortcuts_target_group) > 0) {
+        /* Get the mask of modifiers we want to tweak: Control, Alt & Super */
+        const char *mod_names[] = {
+            XKB_MOD_NAME_CTRL,
+            XKB_MOD_NAME_ALT,
+            XKB_MOD_NAME_LOGO
+        };
+        for (i = 0; i < ARRAY_SIZE(mod_names); i++) {
+            xkb_mod_index_t idx = xkb_keymap_mod_get_index(keymap, mod_names[i]);
+            if (idx != XKB_MOD_INVALID)
+                shortcut_mods |= mod_mask_get_effective(keymap, (1u << idx));
+        }
+    }
+
     /* Update action modifiers. */
     xkb_keys_foreach(key, keymap)
-        for (i = 0; i < key->num_groups; i++)
-            for (j = 0; j < XkbKeyNumLevels(key, i); j++)
+        for (i = 0; i < key->num_groups; i++) {
+            for (j = 0; j < XkbKeyNumLevels(key, i); j++) {
                 UpdateActionMods(keymap, &key->groups[i].levels[j].action,
                                  key->modmap);
+                if (shortcut_mods != 0)
+                    TweakSetModsForShortcuts(keymap, shortcut_mods,
+                                             &key->groups[i].levels[j].action);
+            }
+        }
 
     /* Update vmod -> led maps. */
     xkb_leds_foreach(led, keymap)
@@ -302,5 +334,5 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge,
         }
     }
 
-    return UpdateDerivedKeymapFields(keymap);
+    return UpdateDerivedKeymapFields(keymap, options);
 }
