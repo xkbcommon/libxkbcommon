@@ -769,7 +769,7 @@ test(
 )
 test(
     'state',
-    executable('test-state', 'test/state.c', dependencies: test_dep),
+    executable('test-state', 'test/state.c', 'src/state.h', dependencies: test_dep),
     env: test_env,
 )
 test(
