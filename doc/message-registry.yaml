@@ -351,6 +351,11 @@
   added: ALWAYS
   type: error
   description: "The target file of an include statement could not be processed"
+- id: "incompatible-keymap-export-format"
+  code: 689
+  added: 1.8.0
+  type: error
+  description: "The keymap has features that cannot be exported in the target format"
 - id: "incompatible-actions-and-keysyms-count"
   code: 693
   added: 1.8.0

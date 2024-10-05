@@ -131,6 +131,8 @@ enum xkb_message_code {
     XKB_WARNING_UNKNOWN_CHAR_ESCAPE_SEQUENCE = 645,
     /** The target file of an include statement could not be processed */
     XKB_ERROR_INVALID_INCLUDED_FILE = 661,
+    /** The keymap has features that cannot be exported in the target format */
+    XKB_ERROR_INCOMPATIBLE_KEYMAP_EXPORT_FORMAT = 689,
     /** A level has a different number of keysyms and actions */
     XKB_ERROR_INCOMPATIBLE_ACTIONS_AND_KEYSYMS_COUNT = 693,
     /** Warn if a key defines multiple groups at once */
