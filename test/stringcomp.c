@@ -129,7 +129,7 @@ main(int argc, char *argv[])
     /* Test response to invalid formats and flags. */
     assert(!xkb_keymap_new_from_string(ctx, dump, 0, 0));
     assert(!xkb_keymap_new_from_string(ctx, dump, -1, 0));
-    assert(!xkb_keymap_new_from_string(ctx, dump, XKB_KEYMAP_FORMAT_TEXT_V1+1, 0));
+    assert(!xkb_keymap_new_from_string(ctx, dump, XKB_KEYMAP_FORMAT_TEXT_V1+1000000, 0));
     assert(!xkb_keymap_new_from_string(ctx, dump, XKB_KEYMAP_FORMAT_TEXT_V1, -1));
     assert(!xkb_keymap_new_from_string(ctx, dump, XKB_KEYMAP_FORMAT_TEXT_V1, 1414));
     assert(!xkb_keymap_get_as_string(keymap, 0));

@@ -529,4 +529,9 @@ struct xkb_keymap_format_ops {
 
 extern const struct xkb_keymap_format_ops text_v1_keymap_format_ops;
 
+/* NOTE: meant to be added to enum xkb_keymap_format */
+/** Extension that introduces the options `lockOnRelease` and
+ * `unlockOnPress`. */
+#define XKB_KEYMAP_FORMAT_TEXT_V1_1 2
+
 #endif

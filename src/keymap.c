@@ -110,6 +110,7 @@ get_keymap_format_ops(enum xkb_keymap_format format)
 {
     static const struct xkb_keymap_format_ops *keymap_format_ops[] = {
         [XKB_KEYMAP_FORMAT_TEXT_V1] = &text_v1_keymap_format_ops,
+        [XKB_KEYMAP_FORMAT_TEXT_V1_1] = &text_v1_keymap_format_ops,
     };
 
     if ((int) format < 0 || (int) format >= (int) ARRAY_SIZE(keymap_format_ops))
