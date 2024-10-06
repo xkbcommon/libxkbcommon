@@ -61,6 +61,16 @@ usage(void)
            "    Interactive debugger for XKB keymaps for evdev\n"
            "\n"
 #endif
+#if HAVE_XKBCLI_DUMP_KEYMAP_WAYLAND
+           "  dump-keymap-wayland\n"
+           "    Dump a XKB keymap from a Wayland compositor\n"
+           "\n"
+#endif
+#if HAVE_XKBCLI_DUMP_KEYMAP_X11
+           "  dump-keymap-x11\n"
+           "    Dump a XKB keymap from an X server\n"
+           "\n"
+#endif
 #if HAVE_XKBCLI_COMPILE_KEYMAP
            "  compile-keymap\n"
            "    Compile an XKB keymap\n"

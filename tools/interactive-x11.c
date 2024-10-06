@@ -172,6 +172,17 @@ init_kbd(struct keyboard *kbd, xcb_connection_t *conn, uint8_t first_xkb_event,
     ret = update_keymap(kbd);
     if (ret)
         goto err_out;
+
+#ifdef KEYMAP_DUMP
+    /* Dump the keymap */
+    char *dump = xkb_keymap_get_as_string(kbd->keymap,
+                                          XKB_KEYMAP_FORMAT_TEXT_V1);
+    fprintf(stdout, "%s", dump);
+    free(dump);
+    terminate = true;
+    return 0;
+#endif
+
     if (compose_table)
         kbd->compose_state = xkb_compose_state_new(compose_table,
                                                    XKB_COMPOSE_STATE_NO_FLAGS);
@@ -198,6 +209,7 @@ deinit_kbd(struct keyboard *kbd)
     xkb_keymap_unref(kbd->keymap);
 }
 
+#ifndef KEYMAP_DUMP
 static void
 process_xkb_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
 {
@@ -349,15 +361,22 @@ create_capture_window(xcb_connection_t *conn)
 
     return 0;
 }
+#endif
 
 static void
 usage(FILE *fp, char *progname)
 {
         fprintf(fp,
-                "Usage: %s [--help] [--enable-compose]\n",
+                "Usage: %s [--help]"
+#ifndef KEYMAP_DUMP
+                " [--enable-compose]"
+#endif
+                "\n",
                 progname);
         fprintf(fp,
+#ifndef KEYMAP_DUMP
                 "    --enable-compose               enable Compose\n"
+#endif
                 "    --help                         display this help and exit\n"
         );
 }
@@ -380,7 +399,9 @@ main(int argc, char *argv[])
     };
     static struct option opts[] = {
         {"help",                       no_argument, 0, 'h'},
-        {"enable-compose",             no_argument, 0, OPT_COMPOSE},
+#ifndef KEYMAP_DUMP
+        {"enable-compose",       no_argument,            0, OPT_COMPOSE},
+#endif
         {0, 0, 0, 0},
     };
 
@@ -393,9 +414,11 @@ main(int argc, char *argv[])
             break;
 
         switch (opt) {
+#ifndef KEYMAP_DUMP
         case OPT_COMPOSE:
             with_compose = true;
             break;
+#endif
         case 'h':
             usage(stdout, argv[0]);
             return EXIT_SUCCESS;
@@ -439,7 +462,7 @@ main(int argc, char *argv[])
                                               XKB_COMPOSE_COMPILE_NO_FLAGS);
         if (!compose_table) {
             fprintf(stderr, "Couldn't create compose from locale\n");
-            goto err_compose;
+            goto err_core_kbd;
         }
     } else {
         compose_table = NULL;
@@ -453,16 +476,17 @@ main(int argc, char *argv[])
     }
 
     ret = init_kbd(&core_kbd, conn, first_xkb_event, core_kbd_device_id,
-                  ctx, compose_table);
+                   ctx, compose_table);
     if (ret) {
         fprintf(stderr, "Couldn't initialize core keyboard device\n");
         goto err_ctx;
     }
 
+#ifndef KEYMAP_DUMP
     ret = create_capture_window(conn);
     if (ret) {
         fprintf(stderr, "Couldn't create a capture window\n");
-        goto err_core_kbd;
+        goto err_compose;
     }
 
     tools_disable_stdin_echo();
@@ -470,6 +494,7 @@ main(int argc, char *argv[])
     tools_enable_stdin_echo();
 
 err_compose:
+#endif
     xkb_compose_table_unref(compose_table);
 err_core_kbd:
     deinit_kbd(&core_kbd);
