@@ -129,6 +129,10 @@ xkb_keymap_new_from_names2(struct xkb_context *ctx,
     struct xkb_rule_names rmlvo;
     const struct xkb_keymap_format_ops *ops;
 
+    /* HACK: remove once not experimental anymore */
+    if (!isempty(xkb_context_getenv(ctx, "XKB_EXPERIMENTAL_LOCKS")))
+        format = XKB_KEYMAP_FORMAT_TEXT_V1_1;
+
     ops = get_keymap_format_ops(format);
     if (!ops || !ops->keymap_new_from_names) {
         log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
