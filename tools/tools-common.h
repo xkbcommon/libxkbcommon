@@ -28,6 +28,7 @@
 #include "config.h"
 
 #include <assert.h>
+#include <stdbool.h>
 
 /* Don't use compat names in internal code. */
 #define _XKBCOMMON_COMPAT_H
@@ -35,6 +36,7 @@
 #include "xkbcommon/xkbcommon-compose.h"
 
 #define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
+#define XKB_KEYMAP_DEFAULT_FORMAT_TEXT XKB_KEYMAP_FORMAT_TEXT_V1
 
 /* Fields that are printed in the interactive tools. */
 enum print_state_fields {
@@ -79,6 +81,10 @@ tools_enable_stdin_echo(void);
 
 int
 tools_exec_command(const char *prefix, int argc, char **argv);
+
+bool
+keymap_parse_format(const char *label, const char *raw,
+                    enum xkb_keymap_format *out);
 
 #ifdef _WIN32
 #define setenv(varname, value, overwrite) _putenv_s((varname), (value))

@@ -365,3 +365,17 @@ tools_exec_command(const char *prefix, int real_argc, char **real_argv)
 
     return EXIT_FAILURE;
 }
+
+bool
+keymap_parse_format(const char *label, const char *raw,
+                    enum xkb_keymap_format *out)
+{
+    char *endptr;
+    long format = strtoul(raw, &endptr, 10);
+    if (endptr[0] != '\0' || format <= 0) {
+        fprintf(stderr, "ERROR: invalid argument %s: \"%s\"\n", label, raw);
+        return false;
+    }
+    *out = format;
+    return true;
+}

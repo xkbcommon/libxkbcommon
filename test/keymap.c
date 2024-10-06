@@ -49,7 +49,8 @@ test_garbage_key(void)
 
     assert(context);
 
-    keymap = test_compile_rules(context, NULL, NULL, "garbage", NULL, NULL);
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                NULL, NULL, "garbage", NULL, NULL);
     assert(keymap);
 
     /* TLDE uses the 'us' sym on the first level and is thus [grave, exclam] */
@@ -94,7 +95,8 @@ test_keymap(void)
 
     assert(context);
 
-    keymap = test_compile_rules(context, "evdev", "pc104", "us,ru", NULL, "grp:menu_toggle");
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+                                "pc104", "us,ru", NULL, "grp:menu_toggle");
     assert(keymap);
 
     kc = xkb_keymap_key_by_name(keymap, "AE09");
@@ -164,8 +166,8 @@ test_no_extra_groups(void)
     assert(context);
 
     /* RMLVO: Legacy rules may add more layouts than the input RMLVO */
-    keymap = test_compile_rules(context, "multiple-groups",
-                                "old", "de", NULL, NULL);
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                "multiple-groups", "old", "de", NULL, NULL);
     assert(keymap);
     kc = xkb_keymap_key_by_name(keymap, "AD01");
     assert(kc != XKB_KEYCODE_INVALID);
@@ -178,7 +180,8 @@ test_no_extra_groups(void)
     const char *layouts[] = {"us", "us,us", "us,us,us", "us,us,us,us"};
     for (xkb_layout_index_t k = 0; k < ARRAY_SIZE(layouts); k++) {
         /* `multiple-groups` option defines 4 groups for a key */
-        keymap = test_compile_rules(context, "multiple-groups", NULL,
+        keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                    "multiple-groups", NULL,
                                     layouts[k], NULL, "multiple-groups");
         assert(keymap);
         kc = xkb_keymap_key_by_name(keymap, "RALT");
@@ -197,7 +200,7 @@ test_no_extra_groups(void)
 
     /* RMLVO: Ensure the rule “one group per key” in symbols sections works
      * for the 2nd layout */
-    keymap = test_compile_rules(context, NULL, NULL,
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1, NULL, NULL,
                                 "multiple-groups,multiple-groups", "1,2", NULL);
     assert(keymap);
     kc = xkb_keymap_key_by_name(keymap, "RALT");
@@ -256,7 +259,8 @@ test_numeric_keysyms(void)
 
     assert(context);
 
-    keymap = test_compile_rules(context, "evdev", "pc104", "numeric_keysyms", NULL, NULL);
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+                                "pc104", "numeric_keysyms", NULL, NULL);
     assert(keymap);
 
     kc = xkb_keymap_key_by_name(keymap, "AD01");
@@ -299,7 +303,8 @@ test_multiple_keysyms_per_level(void)
 
     assert(context);
 
-    keymap = test_compile_rules(context, "evdev", "pc104", "awesome", NULL, NULL);
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                "evdev", "pc104", "awesome", NULL, NULL);
     assert(keymap);
 
     kc = xkb_keymap_key_by_name(keymap, "AD01");
@@ -336,7 +341,8 @@ test_multiple_actions_per_level(void)
     assert(context);
 
     /* Test various ways to set multiple actions */
-    keymap = test_compile_rules(context, "evdev", "pc104",
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                "evdev", "pc104",
                                 "multiple_actions,cz", NULL, NULL);
     assert(keymap);
 
@@ -472,7 +478,8 @@ test_multiple_actions_per_level(void)
      *       layout. However, this requires to be able to configure group redirect
      *       at the *keymap* level, then use ISO_First_Group and SetGroup(group=-4).
      *       Change the symbols and this test once this is merged. */
-    keymap = test_compile_rules(context, "evdev", "pc104",
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                "evdev", "pc104",
                                 "awesome,cz", NULL, "grp:menu_toggle");
     assert(keymap);
 

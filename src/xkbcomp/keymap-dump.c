@@ -718,7 +718,8 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
 }
 
 static bool
-write_keymap(struct xkb_keymap *keymap, struct buf *buf)
+write_keymap(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+             struct buf *buf)
 {
     return (check_write_buf(buf, "xkb_keymap {\n") &&
             write_keycodes(keymap, buf) &&
@@ -729,11 +730,12 @@ write_keymap(struct xkb_keymap *keymap, struct buf *buf)
 }
 
 char *
-text_v1_keymap_get_as_string(struct xkb_keymap *keymap)
+text_v1_keymap_get_as_string(struct xkb_keymap *keymap,
+                             enum xkb_keymap_format format)
 {
     struct buf buf = { NULL, 0, 0 };
 
-    if (!write_keymap(keymap, &buf)) {
+    if (!write_keymap(keymap, format, &buf)) {
         free(buf.buf);
         return NULL;
     }
