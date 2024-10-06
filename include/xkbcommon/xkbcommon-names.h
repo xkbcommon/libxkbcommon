@@ -35,9 +35,24 @@
 #define XKB_MOD_NAME_SHIFT      "Shift"
 #define XKB_MOD_NAME_CAPS       "Lock"
 #define XKB_MOD_NAME_CTRL       "Control"
-#define XKB_MOD_NAME_ALT        "Mod1"
-#define XKB_MOD_NAME_NUM        "Mod2"
-#define XKB_MOD_NAME_LOGO       "Mod4"
+#define XKB_MOD_NAME_MOD1       "Mod1"
+#define XKB_MOD_NAME_MOD2       "Mod2"
+#define XKB_MOD_NAME_MOD3       "Mod3"
+#define XKB_MOD_NAME_MOD4       "Mod4"
+#define XKB_MOD_NAME_MOD5       "Mod5"
+
+/* Common virtual modifiers, encoded in xkeyboard-config in the compat and
+ * symbols files. They have been stable since the beginning of the project and
+ * are unlikely to ever change. */
+#define XKB_MOD_NAME_ALT        "Alt"
+#define XKB_MOD_NAME_META       "Meta"
+#define XKB_MOD_NAME_SUPER      "Super"
+#define XKB_MOD_NAME_HYPER      "Hyper"
+#define XKB_MOD_NAME_LOGO       XKB_MOD_NAME_SUPER
+#define XKB_MOD_NAME_NUM        "NumLock"
+#define XKB_MOD_NAME_LEVEL3     "LevelThree"
+#define XKB_MOD_NAME_LEVEL5     "LevelFive"
+#define XKB_MOD_NAME_SCROLL     "ScrollLock"
 
 /* LEDs names are encoded in xkeyboard-config, in the keycodes and compat files.
  * They have been stable since the beginning of the project and are unlikely to
