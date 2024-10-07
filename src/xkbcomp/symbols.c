@@ -797,7 +797,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         } else if (leveli->num_syms !=
                    darray_item(value->keysym_list.symsNumEntries, i))
         {
-            log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID, // FIXME
+            log_err(info->ctx, XKB_ERROR_INCOMPATIBLE_ACTIONS_AND_KEYSYMS_COUNT,
                     "Symbols for key %s, group %u, level %u must have the same "
                     "number of keysyms than the corresponding actions. "
                     "Expected %u, got: %u. Ignoring duplicate definition\n",
@@ -881,7 +881,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         } else if (leveli->num_syms !=
                    darray_item(value->actions.actionsNumEntries, i))
         {
-            log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID, // FIXME
+            log_err(info->ctx, XKB_ERROR_INCOMPATIBLE_ACTIONS_AND_KEYSYMS_COUNT,
                     "Symbols for key %s, group %u, level %u must have the same "
                     "number of actions than the corresponding keysyms. "
                     "Expected %u, got: %u. Ignoring duplicate definition\n",

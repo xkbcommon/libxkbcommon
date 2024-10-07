@@ -351,6 +351,13 @@
   added: ALWAYS
   type: error
   description: "The target file of an include statement could not be processed"
+- id: "incompatible-actions-and-keysyms-count"
+  code: 693
+  added: 1.8.0
+  type: error
+  description: "A level has a different number of keysyms and actions"
+  details: |
+    A level must have exactly the same number of keysyms and actions.
 - id: "multiple-groups-at-once"
   code: 700
   added: ALWAYS
