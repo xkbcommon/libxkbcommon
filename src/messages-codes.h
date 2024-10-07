@@ -131,6 +131,8 @@ enum xkb_message_code {
     XKB_WARNING_UNKNOWN_CHAR_ESCAPE_SEQUENCE = 645,
     /** The target file of an include statement could not be processed */
     XKB_ERROR_INVALID_INCLUDED_FILE = 661,
+    /** A level has a different number of keysyms and actions */
+    XKB_ERROR_INCOMPATIBLE_ACTIONS_AND_KEYSYMS_COUNT = 693,
     /** Warn if a key defines multiple groups at once */
     XKB_WARNING_MULTIPLE_GROUPS_AT_ONCE = 700,
     /** A legacy X11 symbol field is not supported */
