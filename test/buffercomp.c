@@ -161,51 +161,93 @@ test_recursive(struct xkb_context *ctx)
     }
 }
 
+/* Test various multi-{keysym,action} syntaxes */
 static void
-test_multi_keysyms(struct xkb_context *ctx)
+test_multi_keysyms_actions(struct xkb_context *ctx)
 {
     struct xkb_keymap *keymap;
-    const char* const invalid_keymaps[] = {
-#define make_keymap(keysyms)                    \
-        "xkb_keymap {\n"                        \
-        "  xkb_keycodes {\n"                    \
-        "    minimum= 8;\n"                     \
-        "    maximum= 10;\n"                    \
-        "    <AE01> = 10;\n"                    \
-        "  };\n"                                \
-        "  xkb_types { include \"basic\" };\n"  \
-        "  xkb_compat { include \"basic\" };\n" \
-        "  xkb_symbols {\n"                     \
-        "    key <AE01> { [ " keysyms " ] };\n" \
-        "  };\n"                                \
-        "};"
-        make_keymap("{}"),
-        make_keymap("{ a }"),
-        make_keymap("{ {} }"),
-        make_keymap("{ a, {} }"),
-        make_keymap("{ {}, b }"),
-        make_keymap("{ a, { b } }"),
-        make_keymap("{ { a }, b }"),
-        make_keymap("{ { a, b }, c }"),
-        make_keymap("{ a, { b, c } }"),
-        make_keymap("{ a, {}, c }"),
-        make_keymap("{ a, b, {} }"),
-        make_keymap("{ {}, b, c }"),
-        make_keymap("{ { a, b }, c, d }"),
-        make_keymap("{ a, { b, c }, d }"),
-        make_keymap("{ a, b, { c, d } }"),
-        make_keymap("{ { a, b }, { c, d } }"),
-    };
-    const size_t len = ARRAY_SIZE(invalid_keymaps);
 
-    for (size_t k = 0; k < len; k++) {
-        fprintf(stderr, "*** test_multi_keysyms: #%zu ***\n", k + 1);
-        keymap = test_compile_buffer(ctx, invalid_keymaps[k],
-                                     strlen(invalid_keymaps[k]));
-        assert_printf(!keymap,
-                      "The following symbols *do* parse:\n%s\n",
-                      invalid_keymaps[k]);
-    }
+    /* Macros to define the tests */
+#define make_keymap(keysyms, actions)               \
+        "xkb_keymap {\n"                            \
+        "  xkb_keycodes {\n"                        \
+        "    minimum= 8;\n"                         \
+        "    maximum= 10;\n"                        \
+        "    <AE01> = 10;\n"                        \
+        "  };\n"                                    \
+        "  xkb_types { include \"basic\" };\n"      \
+        "  xkb_compat { include \"basic\" };\n"     \
+        "  xkb_symbols {\n"                         \
+        "    key <AE01> { " keysyms actions " };\n" \
+        "  };\n"                                    \
+        "};"
+#define make_keymap_with_keysyms(keysyms) \
+        make_keymap("[" keysyms "]", "")
+#define make_keymap_with_actions(actions) \
+        make_keymap("", "actions[1] = [" actions "]")
+#define test_keymaps                                    \
+        make_keymaps_with(make_keymap_with_keysyms,     \
+                          "a", "b", "c", "d"),          \
+        make_keymaps_with(make_keymap_with_actions,     \
+                          "SetMods(modifiers=Control)", \
+                          "SetGroup(group=+1)",         \
+                          "Private(data=\"foo\")",      \
+                          "Private(data=\"bar\")")
+#define run_test(kind, condition, msg, ...) do {                      \
+    const char* const keymaps[] = { test_keymaps };                   \
+    for (size_t k = 0; k < ARRAY_SIZE(keymaps); k++) {                \
+        fprintf(stderr,                                               \
+                "*** test_multi_keysyms_actions: " kind "#%zu ***\n", \
+                k + 1);                                               \
+        keymap = test_compile_buffer(ctx, keymaps[k],                 \
+                                     strlen(keymaps[k]));             \
+        assert_printf(condition,                                      \
+                      "The following symbols " msg " parse:\n%s\n",   \
+                      keymaps[k]);                                    \
+        __VA_ARGS__;                                                  \
+    }                                                                 \
+} while (0)
+
+    /* Test: valid keymaps */
+#define make_keymaps_with(func, a, b, c, d)      \
+        func(a),                                 \
+        func(a", "b),                            \
+        func("{ "a", "b" }"),                    \
+        func("{ "a", "b", "c" }"),               \
+        func(a", { "b", "c" }"),                 \
+        func("{ "a", "b" }, "c),                 \
+        func("{ "a", "b" }, { "c", "d" }"),      \
+        func("{ "a", "b" }, "c", { "d", "a" }"), \
+        func("{ "a", "b" }, { "c", "d" }, "a)
+    run_test("valid", keymap != NULL, "does *not*", xkb_keymap_unref(keymap));
+#undef make_keymaps_with
+
+    /* Test: invalid keymaps */
+#define make_keymaps_with(func, a, b, c, d)    \
+        func("{}"),                            \
+        func("{ {} }"),                        \
+        func("{ "a" }"),                       \
+        func("{ "a", {} }"),                   \
+        func("{ {}, "b" }"),                   \
+        func("{ {}, {} }"),                    \
+        func("{ "a", { "b" } }"),              \
+        func("{ { "a" }, "b" }"),              \
+        func("{ { "a", "b" }, "c" }"),         \
+        func("{ "a", { "b", "c" } }"),         \
+        func("{ "a", {}, "c" }"),              \
+        func("{ "a", "b", {} }"),              \
+        func("{ {}, "b", "c" }"),              \
+        func("{ { "a", "b" }, "c", "d" }"),    \
+        func("{ "a", { "b", "c" }, "d" }"),    \
+        func("{ "a", "b", { "c", "d" } }"),    \
+        func("{ { "a", "b" }, { "c", "d" } }")
+    run_test("invalid", keymap == NULL, "*does*");
+#undef make_keymap
+#undef make_keymap_with_actions
+#undef make_keymap_with_keysyms
+#undef make_keymaps_with
+#undef test_keymaps
+#undef run_test
 }
 
 int
@@ -213,10 +255,10 @@ main(int argc, char *argv[])
 {
     test_init();
 
-    struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
     struct xkb_keymap *keymap;
     char *original, *dump;
 
+    struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
     assert(ctx);
 
     /* Load in a prebuilt keymap, make sure we can compile it from memory,
@@ -272,7 +314,7 @@ main(int argc, char *argv[])
     free(dump);
 
     test_recursive(ctx);
-    test_multi_keysyms(ctx);
+    test_multi_keysyms_actions(ctx);
 
     xkb_context_unref(ctx);
 
