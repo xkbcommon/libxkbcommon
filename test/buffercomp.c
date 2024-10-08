@@ -85,12 +85,9 @@ test_encodings(struct xkb_context *ctx)
 }
 
 static void
-test_recursive(void)
+test_recursive(struct xkb_context *ctx)
 {
-    struct xkb_context *ctx = test_get_context(0);
     struct xkb_keymap *keymap;
-
-    assert(ctx);
 
     const char* const keymaps[] = {
         /* Recursive keycodes */
@@ -152,18 +149,62 @@ test_recursive(void)
         "  xkb_types { include \"complete\" };"
         "  xkb_compat { include \"complete\" };"
         "  xkb_symbols { include \"recursive(bar)\" };"
-        // "};"
+        "};"
     };
 
-    int len = sizeof(keymaps) / sizeof(keymaps[0]);
+    const size_t len = ARRAY_SIZE(keymaps);
 
-    for (int k = 0; k < len; k++) {
+    for (size_t k = 0; k < len; k++) {
         fprintf(stderr, "*** Recursive test: %s ***\n", keymaps[k++]);
         keymap = test_compile_buffer(ctx, keymaps[k], strlen(keymaps[k]));
         assert(!keymap);
     }
+}
 
-    xkb_context_unref(ctx);
+static void
+test_multi_keysyms(struct xkb_context *ctx)
+{
+    struct xkb_keymap *keymap;
+    const char* const invalid_keymaps[] = {
+#define make_keymap(keysyms)                    \
+        "xkb_keymap {\n"                        \
+        "  xkb_keycodes {\n"                    \
+        "    minimum= 8;\n"                     \
+        "    maximum= 10;\n"                    \
+        "    <AE01> = 10;\n"                    \
+        "  };\n"                                \
+        "  xkb_types { include \"basic\" };\n"  \
+        "  xkb_compat { include \"basic\" };\n" \
+        "  xkb_symbols {\n"                     \
+        "    key <AE01> { [ " keysyms " ] };\n" \
+        "  };\n"                                \
+        "};"
+        make_keymap("{}"),
+        make_keymap("{ {} }"),
+        make_keymap("{ a, {} }"),
+        make_keymap("{ {}, b }"),
+        make_keymap("{ a, { b } }"),
+        make_keymap("{ { a }, b }"),
+        make_keymap("{ { a, b }, c }"),
+        make_keymap("{ a, { b, c } }"),
+        make_keymap("{ a, {}, c }"),
+        make_keymap("{ a, b, {} }"),
+        make_keymap("{ {}, b, c }"),
+        make_keymap("{ { a, b }, c, d }"),
+        make_keymap("{ a, { b, c }, d }"),
+        make_keymap("{ a, b, { c, d } }"),
+        make_keymap("{ { a, b }, { c, d } }"),
+    };
+    const size_t len = ARRAY_SIZE(invalid_keymaps);
+
+    for (size_t k = 0; k < len; k++) {
+        fprintf(stderr, "*** test_multi_keysyms: #%zu ***\n", k + 1);
+        keymap = test_compile_buffer(ctx, invalid_keymaps[k],
+                                     strlen(invalid_keymaps[k]));
+        assert_printf(!keymap,
+                      "The following symbols *do* parse:\n%s\n",
+                      invalid_keymaps[k]);
+    }
 }
 
 int
@@ -171,7 +212,7 @@ main(int argc, char *argv[])
 {
     test_init();
 
-    struct xkb_context *ctx = test_get_context(0);
+    struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
     struct xkb_keymap *keymap;
     char *original, *dump;
 
@@ -229,9 +270,11 @@ main(int argc, char *argv[])
     xkb_keymap_unref(keymap);
     free(dump);
 
+    test_recursive(ctx);
+    test_multi_keysyms(ctx);
+
     xkb_context_unref(ctx);
 
-    test_recursive();
 
     return 0;
 }
