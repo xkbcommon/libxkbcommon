@@ -29,8 +29,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "evdev-scancodes.h"
 #include "test.h"
 #include "keymap.h"
+
+#define KEY_LVL3 84
+#define KEY_LVL5 195
 
 static void
 test_garbage_key(void)
@@ -315,6 +319,217 @@ test_multiple_keysyms_per_level(void)
     xkb_context_unref(context);
 }
 
+static void
+test_multiple_actions_per_level(void)
+{
+    struct xkb_context *context = test_get_context(0);
+    struct xkb_keymap *keymap;
+    struct xkb_state *state;
+    xkb_keycode_t kc;
+    int keysyms_count;
+    const xkb_layout_index_t first_layout = 0;
+    const xkb_keysym_t *keysyms;
+    xkb_mod_index_t ctrl, level3;
+    xkb_layout_index_t layout;
+    xkb_mod_mask_t base_mods;
+
+    assert(context);
+
+    /* Test various ways to set multiple actions */
+    keymap = test_compile_rules(context, "evdev", "pc104",
+                                "multiple_actions,cz", NULL, NULL);
+    assert(keymap);
+
+    kc = xkb_keymap_key_by_name(keymap, "LCTL");
+    ctrl = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CTRL);
+    level3 = xkb_keymap_mod_get_index(keymap, "Mod5");
+    state = xkb_state_new(keymap);
+    assert(state);
+    layout = xkb_state_key_get_layout(state, KEY_LEFTCTRL + EVDEV_OFFSET);
+    assert(layout == 0);
+    xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_DOWN);
+    base_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED);
+    assert(base_mods == (1U << ctrl));
+    layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED);
+    assert(layout == 1);
+    layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LATCHED);
+    assert(layout == 0);
+    layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LOCKED);
+    assert(layout == 0);
+    layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE);
+    assert(layout == 1);
+    xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_UP);
+    base_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED);
+    assert(base_mods == 0);
+    layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED);
+    assert(layout == 0);
+    layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LATCHED);
+    assert(layout == 0);
+    layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LOCKED);
+    assert(layout == 0);
+    layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE);
+    assert(layout == 0);
+    xkb_state_update_key(state, KEY_LVL3 + EVDEV_OFFSET, XKB_KEY_DOWN);
+    base_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED);
+    assert(base_mods == (1U << level3));
+    layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED);
+    assert(layout == 1);
+    layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LATCHED);
+    assert(layout == 0);
+    layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LOCKED);
+    assert(layout == 0);
+    layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE);
+    assert(layout == 1);
+    xkb_state_update_key(state, KEY_LVL3 + EVDEV_OFFSET, XKB_KEY_UP);
+    base_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED);
+    assert(base_mods == 0);
+    layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED);
+    assert(layout == 0);
+    layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LATCHED);
+    assert(layout == 0);
+    layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LOCKED);
+    assert(layout == 0);
+    layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE);
+    assert(layout == 0);
+    xkb_state_unref(state);
+
+    assert(test_key_seq(
+        keymap,
+        KEY_2,         BOTH, XKB_KEY_2,         NEXT,
+        /* Control switch to the second group */
+        KEY_LEFTCTRL,  DOWN, XKB_KEY_Control_L, XKB_KEY_ISO_Group_Shift, NEXT,
+        KEY_2,         BOTH, XKB_KEY_ecaron,    NEXT,
+        KEY_LEFTCTRL,  UP,   XKB_KEY_Control_L, XKB_KEY_ISO_Group_Shift, NEXT,
+        KEY_2,         BOTH, XKB_KEY_2,         NEXT,
+        KEY_RIGHTCTRL, DOWN, XKB_KEY_NoSymbol,  XKB_KEY_NoSymbol, NEXT,
+        KEY_2,         BOTH, XKB_KEY_ecaron,    NEXT,
+        KEY_RIGHTCTRL, UP,   XKB_KEY_NoSymbol,  XKB_KEY_NoSymbol, NEXT,
+        KEY_2,         BOTH, XKB_KEY_2,         NEXT,
+        /* Fake keys switch to the second group too */
+        KEY_LVL3,      DOWN, XKB_KEY_ISO_Level3_Shift, XKB_KEY_ISO_Group_Shift, NEXT,
+        KEY_2,         BOTH, XKB_KEY_at,        NEXT,
+        KEY_LVL3,      UP,   XKB_KEY_ISO_Level3_Shift,
+                             /* Only one keysym, group=2 + level3(ralt_switch):2 */
+                             NEXT,
+        KEY_2,         BOTH, XKB_KEY_2,         NEXT,
+        KEY_LVL5,      DOWN, XKB_KEY_ISO_Level3_Shift, XKB_KEY_ISO_Group_Shift, NEXT,
+        KEY_2,         BOTH, XKB_KEY_at,        NEXT,
+        KEY_LVL5,      UP,   XKB_KEY_ISO_Level3_Shift, XKB_KEY_ISO_Group_Shift, NEXT,
+        KEY_2,         BOTH, XKB_KEY_2,         NEXT,
+        /* Alt have invalid entries and do not change the group */
+        KEY_LEFTALT,   DOWN, XKB_KEY_Alt_L,     NEXT,
+        KEY_2,         BOTH, XKB_KEY_2,         NEXT,
+        KEY_LEFTALT,   UP,   XKB_KEY_Alt_L,     NEXT,
+        KEY_RIGHTALT,  DOWN, XKB_KEY_Alt_R, XKB_KEY_ISO_Group_Shift, NEXT,
+        KEY_2,         BOTH, XKB_KEY_2,         NEXT,
+        KEY_RIGHTALT,  UP,   XKB_KEY_Alt_R, XKB_KEY_ISO_Group_Shift, NEXT,
+        /* Super have invalid entries and do not change the group */
+        KEY_LEFTMETA,  DOWN, XKB_KEY_Super_L, XKB_KEY_ISO_Group_Shift, NEXT,
+        KEY_2,         BOTH, XKB_KEY_2,         NEXT,
+        KEY_LEFTMETA,  UP,   XKB_KEY_Super_L, XKB_KEY_ISO_Group_Shift, NEXT,
+        KEY_RIGHTMETA, DOWN, XKB_KEY_Super_R, XKB_KEY_ISO_Group_Shift,
+                             XKB_KEY_NoSymbol, NEXT,
+        KEY_2,         BOTH, XKB_KEY_2,         NEXT,
+        KEY_RIGHTMETA, UP,   XKB_KEY_Super_R, XKB_KEY_ISO_Group_Shift,
+                             XKB_KEY_NoSymbol, NEXT,
+        KEY_2,         BOTH, XKB_KEY_2,        NEXT,
+        /* Incompatible actions categories */
+        KEY_RO,        DOWN, XKB_KEY_Control_L, XKB_KEY_Shift_L, NEXT,
+        KEY_2,         BOTH, XKB_KEY_2,        NEXT,
+        KEY_RO,        UP,   XKB_KEY_Control_L, XKB_KEY_Shift_L, NEXT,
+        KEY_YEN,       DOWN, XKB_KEY_Control_L, XKB_KEY_Shift_L, NEXT,
+        KEY_2,         BOTH, XKB_KEY_2,        NEXT,
+        KEY_YEN,       UP,   XKB_KEY_Control_L, XKB_KEY_Shift_L, NEXT,
+        /* Test various overrides */
+        KEY_Z,         DOWN, XKB_KEY_Control_L, XKB_KEY_ISO_Group_Shift, NEXT,
+        KEY_2,         BOTH, XKB_KEY_ecaron,   NEXT,
+        KEY_Z,         UP,   XKB_KEY_y,        NEXT,
+        KEY_X,         BOTH, XKB_KEY_x,        NEXT,
+        KEY_C,         DOWN, XKB_KEY_NoSymbol, XKB_KEY_NoSymbol, NEXT,
+        KEY_2,         BOTH, XKB_KEY_at,       NEXT,
+        KEY_C,         UP,   XKB_KEY_ampersand, NEXT,
+        KEY_V,         DOWN, XKB_KEY_NoSymbol, NEXT,
+        KEY_2,         BOTH, XKB_KEY_2,        NEXT,
+        KEY_V,         UP,   XKB_KEY_NoSymbol, NEXT,
+        KEY_B,         DOWN, XKB_KEY_ISO_Level3_Shift, XKB_KEY_ISO_Group_Shift, NEXT,
+        KEY_2,         BOTH, XKB_KEY_at,       NEXT,
+        KEY_B,         UP,   XKB_KEY_braceleft,NEXT,
+        KEY_N,         DOWN, XKB_KEY_Control_L, NEXT,
+        KEY_2,         BOTH, XKB_KEY_2,        NEXT,
+        KEY_N,         UP,   XKB_KEY_Control_L, NEXT,
+        KEY_M,         DOWN, XKB_KEY_ISO_Level3_Shift, XKB_KEY_ISO_Group_Shift, NEXT,
+        KEY_2,         BOTH, XKB_KEY_at,       NEXT,
+        KEY_M,         UP,   XKB_KEY_asciicircum, NEXT,
+        /* Modifier_Map */
+        KEY_Q,         DOWN, XKB_KEY_a, XKB_KEY_b, NEXT,
+        KEY_2,         BOTH, XKB_KEY_at,       NEXT,
+        KEY_Q,         UP,   XKB_KEY_a, XKB_KEY_b, NEXT,
+        KEY_2,         BOTH, XKB_KEY_2,        FINISH));
+
+    xkb_keymap_unref(keymap);
+
+    /* TODO: This example is intended to make keyboard shortcuts use the first
+     *       layout. However, this requires to be able to configure group redirect
+     *       at the *keymap* level, then use ISO_First_Group and SetGroup(group=-4).
+     *       Change the symbols and this test once this is merged. */
+    keymap = test_compile_rules(context, "evdev", "pc104",
+                                "awesome,cz", NULL, "grp:menu_toggle");
+    assert(keymap);
+
+    ctrl = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CTRL);
+
+    kc = xkb_keymap_key_by_name(keymap, "LCTL");
+    keysyms_count = xkb_keymap_key_get_syms_by_level(keymap, kc, first_layout, 0, &keysyms);
+    assert(keysyms_count == 2);
+    assert(keysyms[0] == XKB_KEY_Control_L);
+    assert(keysyms[1] == XKB_KEY_ISO_Next_Group);
+
+    state = xkb_state_new(keymap);
+    assert(state);
+    layout = xkb_state_key_get_layout(state, KEY_LEFTCTRL + EVDEV_OFFSET);
+    assert(layout == 0);
+    xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_DOWN);
+    base_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED);
+    assert(base_mods == (1U << ctrl));
+    layout = xkb_state_key_get_layout(state, XKB_KEY_2 + EVDEV_OFFSET);
+    assert(layout == 1);
+    xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_UP);
+    base_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED);
+    assert(base_mods == 0);
+    layout = xkb_state_key_get_layout(state, XKB_KEY_2 + EVDEV_OFFSET);
+    assert(layout == 0);
+    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_UP);
+    layout = xkb_state_key_get_layout(state, XKB_KEY_2 + EVDEV_OFFSET);
+    assert(layout == 1);
+    xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_DOWN);
+    base_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED);
+    assert(base_mods == (1U << ctrl));
+    layout = xkb_state_key_get_layout(state, XKB_KEY_2 + EVDEV_OFFSET);
+    assert(layout == 0);
+    xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_UP);
+    base_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED);
+    assert(base_mods == 0);
+    layout = xkb_state_key_get_layout(state, XKB_KEY_2 + EVDEV_OFFSET);
+    assert(layout == 1);
+    xkb_state_unref(state);
+
+    assert(test_key_seq(keymap,
+                        KEY_2,        BOTH, XKB_KEY_2,         NEXT,
+                        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_2,        BOTH, XKB_KEY_ecaron,    NEXT,
+                        KEY_LEFTCTRL, UP,   XKB_KEY_Control_L, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_COMPOSE,  BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_2,        BOTH, XKB_KEY_ecaron,    NEXT,
+                        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_2,        BOTH, XKB_KEY_2,         NEXT,
+                        KEY_LEFTCTRL, UP,   XKB_KEY_Control_L, XKB_KEY_ISO_Next_Group, NEXT,
+                        KEY_2,        BOTH, XKB_KEY_ecaron,    FINISH));
+
+    xkb_keymap_unref(keymap);
+    xkb_context_unref(context);
+}
+
 int
 main(void)
 {
@@ -325,6 +540,7 @@ main(void)
     test_no_extra_groups();
     test_numeric_keysyms();
     test_multiple_keysyms_per_level();
+    test_multiple_actions_per_level();
 
     return 0;
 }

@@ -1728,6 +1728,13 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		type= "CTRL+ALT",
 		symbols[Group1]= [             F12,             F12,             F12,             F12, XF86Switch_VT_12 ]
 	};
+	key <AB11>               {
+		repeat= No,
+		symbols[Group1]= [                      Control_L, {                      Control_L,                    Mode_switch } ],
+		actions[Group1]= [     SetMods(modifiers=Control), {     SetMods(modifiers=Control),             SetGroup(group=+1) } ],
+		symbols[Group2]= [ {                      Control_L,                    Mode_switch },                      Control_L ],
+		actions[Group2]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) },     SetMods(modifiers=Control) ]
+	};
 	key <KATA>               {	[        Katakana ] };
 	key <HIRA>               {	[        Hiragana ] };
 	key <HENK>               {	[     Henkan_Mode ] };
