@@ -582,7 +582,7 @@ _case-sensitive_.
 | `hidden`                | <span class="todo">TODO</span> |
 | `include`               | [Include statement][include]              |
 | `indicator`             | <span class="todo">TODO</span> |
-| `interpret`             | <span class="todo">TODO</span> |
+| `interpret`             | [Interpret statement][interpret] |
 | `key`                   | <span class="todo">TODO</span> |
 | `keypad_keys`           | <span class="todo">TODO</span> |
 | `keys`                  | <span class="todo">TODO</span> |
@@ -617,6 +617,8 @@ _case-sensitive_.
 | `xkb_types`             | Declare a [key types section ][xkb_types]  |
 
 [include]: @ref xkb-include
+[interpret]: @ref interpret-statements
+[interpretations]: @ref interpret-statements
 
 ### Built-in settings
 
@@ -1539,7 +1541,7 @@ One can use a **merge mode** *prefix* to specify the merge mode of the file:
 
 @todo dedicated section for merge mode
 
-### Key statement
+### Key statement {#key-statement}
 
 Statements of the form:
 
@@ -1600,13 +1602,48 @@ level 1 and `XKB_KEY_Q` for level 2. These levels are configured by the
 @remark Remember that @ref keysym-transformations may affect the resulting
 keysym when some modifiers are not [consumed](@ref consumed-modifiers).
 
-As an extension to the XKB format, libxkbcommon supports multiple key symbols
-per level.
+As an extension to the XKB legacy format, libxkbcommon supports multiple key
+symbols and actions per level (the latter since version 1.8.0):
 
     key <AD01> { [ {a, b}, Q ] };
 
 In this example, the keycode `<AD01>` produces two symbols on level 1
 (`XKB_KEY_a` and `XKB_KEY_b`) and one symbol (`XKB_KEY_Q`) on level 2.
+
+When no actions are explicitly given, they are automatically filled
+thanks to [interpretations] from the [compat section][xkb_compat].
+In the following example,
+
+    key <LCTL> { [ { Control_L, ISO_Group_Shift } ] };
+
+is equivalent to (given standard definitions from `xkeyboard-config`):
+
+    key <LCTL> {
+        symbols[1] = [ { Control_L,                  ISO_Group_Shift    } ],
+        actions[1] = [ { SetMods(modifiers=Control), SetGroup(group=+1) } ]
+    };
+
+When using this example with e.g. two layouts `fr,us` (respectively Azerty and
+Qwerty layouts), typing `Control + A` in the first layout `fr` will in fact
+result in `Control + Q`, because the actions are run sequentially: first set the
+base modifiers to Control, then switch to the second layout while `Control` is
+pressed.
+
+@note
+There are some *limitations* with this extension:
+- When both keysyms and actions are specified, they should have the exact
+  *same count* for each level.
+- For now, *at most one* action of each following categories is allowed per
+  level:
+  - [modifier actions][]: `SetMods`, `LatchMods`, `LockMods`;
+  - [group actions][]: `SetGroup`, `LatchGroup`, `LockGroup`.
+
+  Some examples of actions combination:
+  - `SetMods` + `SetGroup`: ok
+  - `SetMods` + `SetMods`: *error*
+  - `SetMods` + `LockMods`: *error*
+  - `SetMods` + `LockGroup`: ok
+- Multiple actions are only supported from version 1.8.0.
 
 @warning Keymaps containing multiple key symbols per level are not supported
 by the various X11-related tools (`setxkbmap`, `xkbcomp`, etc.).
@@ -2018,6 +2055,7 @@ Common syntax:
 ### Modifiers actions {#modifiers-actions}
 
 [modifier action]: @ref modifiers-actions
+[modifier actions]: @ref modifiers-actions
 
 @todo default values
 
@@ -2149,6 +2187,7 @@ These actions perform different tasks on key press and on key release:
 ### Group actions {#group-actions}
 
 [group action]: @ref group-actions
+[group actions]: @ref group-actions
 
 There are 3 group actions:
 
