@@ -206,9 +206,9 @@ resolve_keysym(struct parser_param *param, const char *name, xkb_keysym_t *sym_r
 %type <keysym>  KeySym
 %type <any>     Decl
 %type <anyList> DeclList
-%type <expr>    Expr Term Lhs Terminal ArrayInit KeySyms
-%type <expr>    OptKeySymList MultiKeySymList KeySymList Action Coord CoordList
-%type <exprList> OptExprList ExprList ActionList
+%type <expr>    Expr Term Lhs Terminal ArrayInit Actions KeySyms
+%type <expr>    MultiKeySymList KeySymList MultiActionList ActionList Action Coord CoordList
+%type <exprList> OptExprList ExprList
 %type <var>     VarDecl SymbolsVarDecl
 %type <varList> VarDeclList SymbolsBody
 %type <vmod>    VModDef
@@ -476,10 +476,12 @@ SymbolsVarDecl  :       Lhs EQUALS Expr         { $$ = VarCreate($1, $3); }
                 |       ArrayInit               { $$ = VarCreate(NULL, $1); }
                 ;
 
-ArrayInit       :       OBRACKET OptKeySymList CBRACKET
+ArrayInit       :       OBRACKET MultiKeySymList CBRACKET
                         { $$ = $2; }
-                |       OBRACKET ActionList CBRACKET
-                        { $$ = ExprCreateActionList($2.head); }
+                |       OBRACKET MultiActionList CBRACKET
+                        { $$ = $2; }
+                |       OBRACKET CBRACKET
+                        { $$ = NULL; }
                 ;
 
 GroupCompatDecl :       GROUP Integer EQUALS Expr SEMI
@@ -678,10 +680,27 @@ Term            :       MINUS Term
                         { $$ = $2;  }
                 ;
 
-ActionList      :       ActionList COMMA Action
-                        { $$.head = $1.head; $$.last->common.next = &$3->common; $$.last = $3; }
+MultiActionList :       MultiActionList COMMA Action
+                        { $$ = ExprAppendActionList($1, $3); }
+                |       MultiActionList COMMA Actions
+                        { $$ = ExprAppendMultiActionList($1, $3); }
                 |       Action
-                        { $$.head = $$.last = $1; }
+                        { $$ = ExprCreateActionList($1); }
+                |       Actions
+                        { $$ = ExprCreateMultiActionList($1); }
+                ;
+
+ActionList      :       ActionList COMMA Action
+                        { $$ = ExprAppendActionList($1, $3); }
+                |       Action COMMA Action
+                        {
+                            $$ = ExprCreateActionList($1);
+                            $$ = ExprAppendActionList($$, $3);
+                        }
+                ;
+
+Actions         :       OBRACE ActionList CBRACE
+                        { $$ = $2; }
                 ;
 
 Action          :       FieldSpec OPAREN OptExprList CPAREN
@@ -706,10 +725,6 @@ Terminal        :       String
                         { $$ = ExprCreateFloat(/* Discard $1 */); }
                 |       KEYNAME
                         { $$ = ExprCreateKeyName($1); }
-                ;
-
-OptKeySymList   :       MultiKeySymList { $$ = $1; }
-                |                       { $$ = NULL; }
                 ;
 
 MultiKeySymList :       MultiKeySymList COMMA KeySym

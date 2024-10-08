@@ -529,7 +529,7 @@ get_actions(struct xkb_keymap *keymap, xcb_connection_t *conn,
                     xcb_xkb_action_t *wire_action = acts_iter.data;
 
                     if (level < key->groups[group].type->num_levels) {
-                        union xkb_action *action = &key->groups[group].levels[level].action;
+                        union xkb_action *action = &key->groups[group].levels[level].a.action;
 
                         translate_action(action, wire_action);
                     }

@@ -150,3 +150,91 @@ XkbLevelsSameSyms(const struct xkb_level *a, const struct xkb_level *b)
         return a->s.sym == b->s.sym;
     return memcmp(a->s.syms, b->s.syms, sizeof(*a->s.syms) * a->num_syms) == 0;
 }
+
+bool
+XkbLevelHasNoAction(const struct xkb_level *level)
+{
+    if (level->num_syms == 0)
+        return true;
+    if (level->num_syms == 1)
+        return level->a.action.type == ACTION_TYPE_NONE;
+    for (unsigned int k = 0; k < level->num_syms; k++) {
+        if (level->a.actions[k].type != ACTION_TYPE_NONE)
+            return false;
+    }
+    return true;
+}
+
+xkb_layout_index_t
+XkbWrapGroupIntoRange(int32_t group,
+                      xkb_layout_index_t num_groups,
+                      enum xkb_range_exceed_type out_of_range_group_action,
+                      xkb_layout_index_t out_of_range_group_number)
+{
+    if (num_groups == 0)
+        return XKB_LAYOUT_INVALID;
+
+    if (group >= 0 && (xkb_layout_index_t) group < num_groups)
+        return group;
+
+    switch (out_of_range_group_action) {
+    case RANGE_REDIRECT:
+        if (out_of_range_group_number >= num_groups)
+            return 0;
+        return out_of_range_group_number;
+
+    case RANGE_SATURATE:
+        if (group < 0)
+            return 0;
+        else
+            return num_groups - 1;
+
+    case RANGE_WRAP:
+    default:
+        /*
+         * C99 says a negative dividend in a modulo operation always
+         * gives a negative result.
+         */
+        if (group < 0)
+            return ((int) num_groups + (group % (int) num_groups));
+        else
+            return group % num_groups;
+    }
+}
+
+unsigned int
+xkb_keymap_key_get_actions_by_level(struct xkb_keymap *keymap,
+                                    xkb_keycode_t kc,
+                                    xkb_layout_index_t layout,
+                                    xkb_level_index_t level,
+                                    const union xkb_action **actions)
+{
+    const struct xkb_key *key = XkbKey(keymap, kc);
+    if (!key)
+        goto err;
+
+    layout = XkbWrapGroupIntoRange(layout, key->num_groups,
+                                   key->out_of_range_group_action,
+                                   key->out_of_range_group_number);
+    if (layout == XKB_LAYOUT_INVALID)
+        goto err;
+
+    if (level >= XkbKeyNumLevels(key, layout))
+        goto err;
+
+    const unsigned int count = key->groups[layout].levels[level].num_syms;
+    switch (count) {
+        case 0:
+            goto err;
+        case 1:
+            *actions = &key->groups[layout].levels[level].a.action;
+            break;
+        default:
+            *actions = key->groups[layout].levels[level].a.actions;
+    }
+    return count;
+
+err:
+    *actions = NULL;
+    return 0;
+}
