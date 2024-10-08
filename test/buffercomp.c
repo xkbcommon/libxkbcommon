@@ -180,6 +180,7 @@ test_multi_keysyms(struct xkb_context *ctx)
         "  };\n"                                \
         "};"
         make_keymap("{}"),
+        make_keymap("{ a }"),
         make_keymap("{ {} }"),
         make_keymap("{ a, {} }"),
         make_keymap("{ {}, b }"),

@@ -724,8 +724,11 @@ MultiKeySymList :       MultiKeySymList COMMA KeySym
 
 KeySymList      :       KeySymList COMMA KeySym
                         { $$ = ExprAppendKeysymList($1, $3); }
-                |       KeySym
-                        { $$ = ExprCreateKeysymList($1); }
+                |       KeySym COMMA KeySym
+                        {
+                            $$ = ExprCreateKeysymList($1);
+                            $$ = ExprAppendKeysymList($$, $3);
+                        }
                 ;
 
 KeySyms         :       OBRACE KeySymList CBRACE
