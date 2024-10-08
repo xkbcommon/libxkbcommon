@@ -288,12 +288,12 @@ xkb_symbols "(unnamed)" {
 		//// using explicit actions makes the key keep the initial value,
 		//// i.e. repeat=No.
 		//repeat= Yes,
-		symbols[Group1]= [               t,               T ],
-		//actions[Group1]= [ NoAction(), NoAction() ],
-		symbols[Group2]= [     Cyrillic_ie,     Cyrillic_IE ],
-		actions[Group2]= [ NoAction(), NoAction() ],
-		symbols[Group3]= [               w,               W ]//,
-		//actions[Group3]= [ NoAction(), NoAction() ]
+		symbols[Group1]= [                              t,                              T ],
+		//actions[Group1]= [                     NoAction(),                     NoAction() ],
+		symbols[Group2]= [                    Cyrillic_ie,                    Cyrillic_IE ],
+		actions[Group2]= [                     NoAction(),                     NoAction() ],
+		symbols[Group3]= [                              w,                              W ]//,
+		//actions[Group3]= [                     NoAction(),                     NoAction() ]
 	};
 	key <AD06>               {
 		type[Group3]= "EIGHT_LEVEL_ALPHABETIC_LEVEL_FIVE_LOCK",
@@ -315,11 +315,11 @@ xkb_symbols "(unnamed)" {
 		type[Group2]= "TWO_LEVEL",
 		type[Group3]= "TWO_LEVEL",
 		//repeat= No,
-		symbols[Group1]= [         Shift_L ],
+		symbols[Group1]= [                        Shift_L ],
 		//actions[Group1]= [ SetMods(modifiers=Shift,clearLocks) ],
-		symbols[Group2]= [ ISO_Level3_Shift,       Multi_key ],
-		actions[Group2]= [ SetMods(modifiers=LevelThree), NoAction() ],
-		symbols[Group3]= [ ISO_Level5_Shift, ISO_Level3_Shift ]//,
+		symbols[Group2]= [               ISO_Level3_Shift,                      Multi_key ],
+		actions[Group2]= [  SetMods(modifiers=LevelThree),                     NoAction() ],
+		symbols[Group3]= [               ISO_Level5_Shift,               ISO_Level3_Shift ]//,
 		//actions[Group3]= [ SetMods(modifiers=LevelFive,clearLocks), SetMods(modifiers=LevelThree,clearLocks) ]
 	};
 	key <LVL3>               {
@@ -329,11 +329,11 @@ xkb_symbols "(unnamed)" {
 		//// disable them.
 		//repeat= No,
 		//virtualMods= LevelThree,
-		symbols[Group1]= [ ISO_Level3_Shift ],
+		symbols[Group1]= [               ISO_Level3_Shift ],
 		//actions[Group1]= [ SetMods(modifiers=LevelThree,clearLocks) ],
-		symbols[Group2]= [ ISO_Level3_Shift ],
-		actions[Group2]= [ SetMods(modifiers=LevelThree) ],
-		symbols[Group3]= [ ISO_Level3_Shift ]//,
+		symbols[Group2]= [               ISO_Level3_Shift ],
+		actions[Group2]= [  SetMods(modifiers=LevelThree) ],
+		symbols[Group3]= [               ISO_Level3_Shift ]//,
 		//actions[Group3]= [ SetMods(modifiers=LevelThree,clearLocks) ]
 	};
 	key <LSGT>               {

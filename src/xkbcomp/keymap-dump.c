@@ -292,6 +292,9 @@ affect_lock_text(enum xkb_action_flags flags, bool show_both)
     return "";
 }
 
+#define SYMBOL_PADDING 15
+#define ACTION_PADDING 30
+
 static bool
 write_action(struct xkb_keymap *keymap, struct buf *buf,
              const union xkb_action *action,
@@ -407,6 +410,59 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
 }
 
 static bool
+write_actions(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
+              const struct xkb_key *key, xkb_layout_index_t group)
+{
+    static const union xkb_action noAction = { .type = ACTION_TYPE_NONE };
+
+    for (xkb_level_index_t level = 0; level < XkbKeyNumLevels(key, group);
+         level++) {
+        const union xkb_action *actions;
+        int count;
+
+        if (level != 0)
+            write_buf(buf, ", ");
+
+        count = xkb_keymap_key_get_actions_by_level(keymap, key->keycode,
+                                                    group, level, &actions);
+        buf2->size = 0;
+        if (count == 0) {
+            if (!write_action(keymap, buf2, &noAction, NULL, NULL))
+                return false;
+            write_buf(buf, "%*s", ACTION_PADDING, buf2->buf);
+        }
+        else if (count == 1) {
+            if (!write_action(keymap, buf2, &(actions[0]), NULL, NULL))
+                return false;
+            write_buf(buf, "%*s", ACTION_PADDING, buf2->buf);
+        }
+        else {
+            write_buf(buf2, "{ ");
+            for (int k = 0; k < count; k++) {
+                if (k != 0)
+                    write_buf(buf2, ", ");
+                size_t old_size = buf2->size;
+                if (!write_action(keymap, buf2, &(actions[k]), NULL, NULL))
+                    return false;
+                /* Check if padding is necessary */
+                if (buf2->size >= old_size + ACTION_PADDING)
+                    continue;
+                /* Compute and write padding, then write the action again */
+                unsigned int padding = old_size + ACTION_PADDING - buf2->size;
+                buf2->size = old_size;
+                write_buf(buf2, "%*s", padding, "");
+                if (!write_action(keymap, buf2, &(actions[k]), NULL, NULL))
+                    return false;
+            }
+            write_buf(buf2, " }");
+            write_buf(buf, "%*s", ACTION_PADDING, buf2->buf);
+        }
+    }
+
+    return true;
+}
+
+static bool
 write_compat(struct xkb_keymap *keymap, struct buf *buf)
 {
     const struct xkb_led *led;
@@ -456,9 +512,11 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
 }
 
 static bool
-write_keysyms(struct xkb_keymap *keymap, struct buf *buf,
-              const struct xkb_key *key, xkb_layout_index_t group)
+write_keysyms(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
+              const struct xkb_key *key, xkb_layout_index_t group,
+              bool show_actions)
 {
+    unsigned int padding = show_actions ? ACTION_PADDING : SYMBOL_PADDING;
     for (xkb_level_index_t level = 0; level < XkbKeyNumLevels(key, group);
          level++) {
         const xkb_keysym_t *syms;
@@ -470,19 +528,22 @@ write_keysyms(struct xkb_keymap *keymap, struct buf *buf,
         num_syms = xkb_keymap_key_get_syms_by_level(keymap, key->keycode,
                                                     group, level, &syms);
         if (num_syms == 0) {
-            write_buf(buf, "%15s", "NoSymbol");
+            write_buf(buf, "%*s", padding, "NoSymbol");
         }
         else if (num_syms == 1) {
-            write_buf(buf, "%15s", KeysymText(keymap->ctx, syms[0]));
+            write_buf(buf, "%*s", padding, KeysymText(keymap->ctx, syms[0]));
         }
         else {
-            write_buf(buf, "{ ");
+            buf2->size = 0;
+            write_buf(buf2, "{ ");
             for (int s = 0; s < num_syms; s++) {
                 if (s != 0)
-                    write_buf(buf, ", ");
-                write_buf(buf, "%s", KeysymText(keymap->ctx, syms[s]));
+                    write_buf(buf2, ", ");
+                write_buf(buf2, "%*s", (show_actions ? padding : 0),
+                          KeysymText(keymap->ctx, syms[s]));
             }
-            write_buf(buf, " }");
+            write_buf(buf2, " }");
+            write_buf(buf, "%*s", padding, buf2->buf);
         }
     }
 
@@ -490,7 +551,7 @@ write_keysyms(struct xkb_keymap *keymap, struct buf *buf,
 }
 
 static bool
-write_key(struct xkb_keymap *keymap, struct buf *buf,
+write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
           const struct xkb_key *key)
 {
     xkb_layout_index_t group;
@@ -577,29 +638,22 @@ write_key(struct xkb_keymap *keymap, struct buf *buf,
 
     if (simple) {
         write_buf(buf, "\t[ ");
-        if (!write_keysyms(keymap, buf, key, 0))
+        if (!write_keysyms(keymap, buf, buf2, key, 0, false))
             return false;
         write_buf(buf, " ] };\n");
     }
     else {
-        xkb_level_index_t level;
-
         for (group = 0; group < key->num_groups; group++) {
             if (group != 0)
                 write_buf(buf, ",");
             write_buf(buf, "\n\t\tsymbols[Group%u]= [ ", group + 1);
-            if (!write_keysyms(keymap, buf, key, group))
+            if (!write_keysyms(keymap, buf, buf2, key, group, show_actions))
                 return false;
             write_buf(buf, " ]");
             if (show_actions) {
                 write_buf(buf, ",\n\t\tactions[Group%u]= [ ", group + 1);
-                for (level = 0; level < XkbKeyNumLevels(key, group); level++) {
-                    if (level != 0)
-                        write_buf(buf, ", ");
-                    write_action(keymap, buf,
-                                 &key->groups[group].levels[level].action,
-                                 NULL, NULL);
-                }
+                if (!write_actions(keymap, buf, buf2, key, group))
+                    return false;
                 write_buf(buf, " ]");
             }
         }
@@ -631,9 +685,16 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
     if (group > 0)
         write_buf(buf, "\n");
 
-    xkb_keys_foreach(key, keymap)
-        if (key->num_groups > 0)
-            write_key(keymap, buf, key);
+    struct buf buf2 = { NULL, 0, 0 };
+    xkb_keys_foreach(key, keymap) {
+        if (key->num_groups > 0) {
+            if (!write_key(keymap, buf, &buf2, key)) {
+                free(buf2.buf);
+                return false;
+            }
+        }
+    }
+    free(buf2.buf);
 
     xkb_mods_enumerate(i, mod, &keymap->mods) {
         bool had_any = false;

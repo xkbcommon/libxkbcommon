@@ -316,13 +316,18 @@ enum xkb_explicit_components {
 };
 
 struct xkb_level {
-    union xkb_action action;
+    /* Count of keysyms/actions */
     unsigned int num_syms;
     /* Keysyms */
     union {
-        xkb_keysym_t sym;       /* num_syms == 1 */
-        xkb_keysym_t *syms;     /* num_syms > 1  */
+        xkb_keysym_t sym;          /* num_syms == 1 */
+        xkb_keysym_t *syms;        /* num_syms > 1  */
     } s;
+    /* Actions */
+    union {
+        union xkb_action action;   /* num_syms == 1 */
+        union xkb_action *actions; /* num_syms >  1 */
+    } a;
 };
 
 /**
@@ -493,6 +498,9 @@ XkbModNameToIndex(const struct xkb_mod_set *mods, xkb_atom_t name,
 bool
 XkbLevelsSameSyms(const struct xkb_level *a, const struct xkb_level *b);
 
+bool
+XkbLevelHasNoAction(const struct xkb_level *level);
+
 xkb_layout_index_t
 XkbWrapGroupIntoRange(int32_t group,
                       xkb_layout_index_t num_groups,
@@ -501,6 +509,13 @@ XkbWrapGroupIntoRange(int32_t group,
 
 xkb_mod_mask_t
 mod_mask_get_effective(struct xkb_keymap *keymap, xkb_mod_mask_t mods);
+
+unsigned int
+xkb_keymap_key_get_actions_by_level(struct xkb_keymap *keymap,
+                                    xkb_keycode_t kc,
+                                    xkb_layout_index_t layout,
+                                    xkb_level_index_t level,
+                                    const union xkb_action **actions);
 
 struct xkb_keymap_format_ops {
     bool (*keymap_new_from_names)(struct xkb_keymap *keymap,

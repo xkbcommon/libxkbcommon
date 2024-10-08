@@ -231,13 +231,21 @@ typedef struct {
 
 typedef struct {
     ExprCommon expr;
-    ExprDef *actions;
+    /* List of actions for all levels, flattened */
+    darray(ExprDef*) actions;
+    /* List of start index in `actions`, per level */
+    darray(unsigned int) actionsMapIndex;
+    /* List of number of actions, per level */
+    darray(unsigned int) actionsNumEntries;
 } ExprActionList;
 
 typedef struct {
     ExprCommon expr;
+    /* List of keysym for all levels, flattened */
     darray(xkb_keysym_t) syms;
+    /* List of start index in `syms`, per level */
     darray(unsigned int) symsMapIndex;
+    /* List of number of keysyms, per level */
     darray(unsigned int) symsNumEntries;
 } ExprKeysymList;
 
