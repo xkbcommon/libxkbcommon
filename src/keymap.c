@@ -75,8 +75,10 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
                 for (unsigned i = 0; i < key->num_groups; i++) {
                     if (key->groups[i].levels) {
                         for (unsigned j = 0; j < XkbKeyNumLevels(key, i); j++)
-                            if (key->groups[i].levels[j].num_syms > 1)
-                                free(key->groups[i].levels[j].u.syms);
+                            if (key->groups[i].levels[j].num_syms > 1) {
+                                free(key->groups[i].levels[j].s.syms);
+                                free(key->groups[i].levels[j].a.actions);
+                            }
                         free(key->groups[i].levels);
                     }
                 }
@@ -512,9 +514,9 @@ xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
         goto err;
 
     if (num_syms == 1)
-        *syms_out = &key->groups[layout].levels[level].u.sym;
+        *syms_out = &key->groups[layout].levels[level].s.sym;
     else
-        *syms_out = key->groups[layout].levels[level].u.syms;
+        *syms_out = key->groups[layout].levels[level].s.syms;
 
     return num_syms;
 
