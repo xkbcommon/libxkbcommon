@@ -19,8 +19,13 @@ xkb_symbols "awesome" {
     key <AC01> { [ a,  A,          Return,     Return      ] };
     key <AC02> { [ s,  S,          Left] };
     key <AC03> { [ d,  D,          Down] };
-    key <AC04> { [ f,  F,          Righ] };
+    key <AC04> { [ f,  F,          Right] };
     key <AC05> { [ g,  G,          BackSpace,  BackSpace   ] };
 
     key <AB05> { [ b,  B,          Delete,     Delete      ] };
+
+    key <LCTL> {
+        symbols[1] = [ {Control_L,                  ISO_Next_Group     } ],
+        actions[1] = [ {SetMods(modifiers=Control), SetGroup(group=+1) } ]
+    };
 };

@@ -1,0 +1,140 @@
+default alphanumeric_keys modifier_keys
+xkb_symbols "basic" {
+	name[1] = "Multiple actions";
+
+	virtual_modifiers Alt, Super, LevelThree;
+
+	// Multiple keysyms but no actions: OK
+	key <LCTL> {
+		symbols[1] = [ { Control_L,                  ISO_Group_Shift    } ]
+	};
+	// Multiple actions but no keysyms: OK, but will use NoSymbol
+	key <RCTL> {
+		actions[1] = [ { SetMods(modifiers=Control), SetGroup(group=+1) } ]
+	};
+	// Multiple keysyms and matching actions
+	key <LVL3> {
+		virtualModifiers = LevelThree,
+		symbols[1] = [ { ISO_Level3_Shift,              ISO_Group_Shift    } ],
+		actions[1] = [ { SetMods(modifiers=LevelThree), SetGroup(group=+1) } ]
+	};
+	// Multiple actions and matching keysyms
+	key <MDSW> {
+		virtualModifiers = LevelThree,
+		actions[1] = [ { SetMods(modifiers=LevelThree), SetGroup(group=+1) } ],
+		symbols[1] = [ { ISO_Level3_Shift,              ISO_Group_Shift    } ]
+	};
+
+	// Incompatible actions and keysyms count: error
+	key <LALT> {
+		symbols[1] = [   Alt_L                                        ],
+		actions[1] = [ { SetMods(modifiers=Alt), SetGroup(group=+1) } ]
+	};
+	key <RALT> {
+		symbols[1] = [ { Alt_R,                  ISO_Group_Shift    } ],
+		actions[1] = [   SetMods(modifiers=Alt)                       ]
+	};
+	key <LWIN> {
+		symbols[1] = [ { Super_L,                  ISO_Group_Shift                } ],
+		actions[1] = [ { SetMods(modifiers=Super), SetGroup(group=+1), NoAction() } ]
+	};
+	key <RWIN> {
+		symbols[1] = [ { Super_R,                  ISO_Group_Shift   , NoSymbol } ],
+		actions[1] = [ { SetMods(modifiers=Super), SetGroup(group=+1)           } ]
+	};
+
+	// Incompatible categories
+	key <AB11> {
+		symbols[1] = [ { Control_L,                  Shift_L                  } ]
+	};
+	modifier_map Control { <AB11> };
+	key <AE13> {
+		symbols[1] = [ { Control_L,                  Shift_L                  } ],
+		actions[1] = [ { SetMods(modifiers=Control), SetMods(modifiers=Shift) } ]
+	};
+
+	// Various overrides, different keysyms, no explicit actions
+	key <AB01> { [ x                              ] };
+	key <AB01> { [ { Control_L, ISO_Group_Shift } ] };
+
+	key <AB02> { [ { Control_L, ISO_Group_Shift } ] };
+	key <AB02> { [ x                              ] };
+
+	// Various overrides, no keysyms, explicit actions
+	key <AB03> { actions[1] = [   SetMods(modifiers=LevelThree)                       ] };
+	key <AB03> { actions[1] = [ { SetMods(modifiers=LevelThree), SetGroup(group=+1) } ] };
+
+	key <AB04> { actions[1] = [ { SetMods(modifiers=LevelThree), SetGroup(group=+1) } ] };
+	key <AB04> { actions[1] = [   SetMods(modifiers=LevelThree)                       ] };
+
+	// Various overrides, different keysyms & actions
+	key <AB05> {
+		virtualModifiers = LevelThree,
+		symbols[1] = [ Control_L                  ],
+		actions[1] = [ SetMods(modifiers=Control) ]
+	};
+	key <AB05> {
+		symbols[1] = [ { ISO_Level3_Shift,              ISO_Group_Shift    } ],
+		actions[1] = [ { SetMods(modifiers=LevelThree), SetGroup(group=+1) } ]
+	};
+
+	key <AB06> {
+		virtualModifiers = LevelThree,
+		symbols[1] = [ { ISO_Level3_Shift,              ISO_Group_Shift    } ],
+		actions[1] = [ { SetMods(modifiers=LevelThree), SetGroup(group=+1) } ]
+	};
+	key <AB06> {
+		symbols[1] = [ Control_L                  ],
+		actions[1] = [ SetMods(modifiers=Control) ]
+	};
+
+	// Various overrides, same keysyms but different actions
+	key <AB07> {
+		virtualModifiers = LevelThree,
+		symbols[1] = [ { ISO_Level3_Shift,           ISO_Group_Shift               } ],
+		actions[1] = [ { SetMods(modifiers=Control), Private(type=254, data="foo") } ]
+	};
+	key <AB07> {
+		symbols[1] = [ { ISO_Level3_Shift,              ISO_Group_Shift    } ],
+		actions[1] = [ { SetMods(modifiers=LevelThree), SetGroup(group=+1) } ]
+	};
+
+	// Mix various number of keysyms/actions
+	key <AC01> {
+		symbols[1] = [ ISO_Level3_Shift             , { ISO_Level3_Shift,              ISO_Group_Shift    } ]
+	};
+	key <AC02> {
+		actions[1] = [ SetMods(modifiers=LevelThree), { SetMods(modifiers=LevelThree), SetGroup(group=+1) } ]
+	};
+	key <AC03> {
+		symbols[1] = [ ISO_Level3_Shift             , { ISO_Level3_Shift,              ISO_Group_Shift    } ],
+		actions[1] = [ SetMods(modifiers=LevelThree), { SetMods(modifiers=LevelThree), SetGroup(group=+1) } ]
+	};
+	key <AC04> {
+		symbols[1] = [ { ISO_Level3_Shift,              ISO_Group_Shift    }, ISO_Level3_Shift              ]
+	};
+	key <AC05> {
+		actions[1] = [ { SetMods(modifiers=LevelThree), SetGroup(group=+1) }, SetMods(modifiers=LevelThree) ]
+	};
+	key <AC06> {
+		symbols[1] = [ { ISO_Level3_Shift,              ISO_Group_Shift    }, ISO_Level3_Shift              ],
+		actions[1] = [ { SetMods(modifiers=LevelThree), SetGroup(group=+1) }, SetMods(modifiers=LevelThree) ]
+	};
+	key <AC07> {
+		symbols[1] = [ ISO_Level3_Shift             , { ISO_Level3_Shift,              ISO_Group_Shift    }, { ISO_Level3_Shift,              ISO_Group_Shift    } ]
+	};
+	key <AC08> {
+		actions[1] = [ SetMods(modifiers=LevelThree), { SetMods(modifiers=LevelThree), SetGroup(group=+1) }, { SetMods(modifiers=LevelThree), SetGroup(group=+1) } ]
+	};
+	key <AC09> {
+		symbols[1] = [ ISO_Level3_Shift             , { ISO_Level3_Shift,              ISO_Group_Shift    }, { ISO_Level3_Shift,              ISO_Group_Shift    } ],
+		actions[1] = [ SetMods(modifiers=LevelThree), { SetMods(modifiers=LevelThree), SetGroup(group=+1) }, { SetMods(modifiers=LevelThree), SetGroup(group=+1) } ]
+	};
+
+	// Using modifier_map (may trigger multiple interprets)
+	key <AD01> { symbols[1] = [ { a, b } ] };
+	modifier_map Shift { <AD01> };
+
+	// Our only alphanum key ✨
+	key <AE02> { [	  2,	at		] };
+};
