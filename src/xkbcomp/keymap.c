@@ -29,7 +29,9 @@
 
 #include "config.h"
 
+#include "darray.h"
 #include "xkbcomp-priv.h"
+#include "text.h"
 
 static void
 ComputeEffectiveMask(struct xkb_keymap *keymap, struct xkb_mods *mods)
@@ -63,22 +65,25 @@ static const struct xkb_sym_interpret default_interpret = {
     .action = { .type = ACTION_TYPE_NONE },
 };
 
+typedef darray(const struct xkb_sym_interpret*) xkb_sym_interprets;
+
 /**
  * Find an interpretation which applies to this particular level, either by
  * finding an exact match for the symbol and modifier combination, or a
  * generic XKB_KEY_NoSymbol match.
  */
-static const struct xkb_sym_interpret *
+static bool
 FindInterpForKey(struct xkb_keymap *keymap, const struct xkb_key *key,
-                 xkb_layout_index_t group, xkb_level_index_t level)
+                 xkb_layout_index_t group, xkb_level_index_t level,
+                 xkb_sym_interprets *interprets)
 {
     const xkb_keysym_t *syms;
     int num_syms;
 
     num_syms = xkb_keymap_key_get_syms_by_level(keymap, key->keycode, group,
                                                 level, &syms);
-    if (num_syms == 0)
-        return NULL;
+    if (num_syms <= 0)
+        return false;
 
     /*
      * There may be multiple matchings interprets; we should always return
@@ -86,44 +91,72 @@ FindInterpForKey(struct xkb_keymap *keymap, const struct xkb_key *key,
      * sym_interprets array from the most specific to the least specific,
      * such that when we find a match we return immediately.
      */
-    for (unsigned i = 0; i < keymap->num_sym_interprets; i++) {
-        const struct xkb_sym_interpret *interp = &keymap->sym_interprets[i];
-
-        xkb_mod_mask_t mods;
+    for (int s = 0; s < num_syms; s++) {
         bool found = false;
+        for (unsigned int i = 0; i < keymap->num_sym_interprets; i++) {
+            const struct xkb_sym_interpret *interp = &keymap->sym_interprets[i];
+            xkb_mod_mask_t mods;
 
-        if ((num_syms > 1 || interp->sym != syms[0]) &&
-            interp->sym != XKB_KEY_NoSymbol)
-            continue;
+            found = false;
 
-        if (interp->level_one_only && level != 0)
-            mods = 0;
-        else
-            mods = key->modmap;
+            if (interp->sym != syms[s] && interp->sym != XKB_KEY_NoSymbol)
+                continue;
 
-        switch (interp->match) {
-        case MATCH_NONE:
-            found = !(interp->mods & mods);
-            break;
-        case MATCH_ANY_OR_NONE:
-            found = (!mods || (interp->mods & mods));
-            break;
-        case MATCH_ANY:
-            found = (interp->mods & mods);
-            break;
-        case MATCH_ALL:
-            found = ((interp->mods & mods) == interp->mods);
-            break;
-        case MATCH_EXACTLY:
-            found = (interp->mods == mods);
-            break;
+            if (interp->level_one_only && level != 0)
+                mods = 0;
+            else
+                mods = key->modmap;
+
+            switch (interp->match) {
+            case MATCH_NONE:
+                found = !(interp->mods & mods);
+                break;
+            case MATCH_ANY_OR_NONE:
+                found = (!mods || (interp->mods & mods));
+                break;
+            case MATCH_ANY:
+                found = (interp->mods & mods);
+                break;
+            case MATCH_ALL:
+                found = ((interp->mods & mods) == interp->mods);
+                break;
+            case MATCH_EXACTLY:
+                found = (interp->mods == mods);
+                break;
+            }
+
+            if (found && i > 0 && interp->sym == XKB_KEY_NoSymbol) {
+                /*
+                 * For an interpretation matching Any keysym, we may get the
+                 * same interpretation for multiple keysyms. This may result in
+                 * unwanted duplicate actions. So set this interpretation only
+                 * if no previous keysym was matched with this interpret at this
+                 * level, else set the default interpretation.
+                 */
+                struct xkb_sym_interpret const **previous_interp;
+                darray_foreach(previous_interp, *interprets) {
+                    if (*previous_interp == interp) {
+                        found = false;
+                        log_warn(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                                 "Repeated interpretation ignored for keysym "
+                                 "#%u \"%s\" at level %u/group %u on key %s.\n",
+                                 s + 1, KeysymText(keymap->ctx, syms[s]),
+                                 level + 1, group + 1,
+                                 KeyNameText(keymap->ctx, key->name));
+                        goto not_found;
+                    }
+                }
+            }
+            if (found) {
+                darray_append(*interprets, interp);
+                break;
+            }
         }
-
-        if (found)
-            return interp;
+        if (!found)
+not_found:
+            darray_append(*interprets, &default_interpret);
     }
-
-    return &default_interpret;
+    return true;
 }
 
 static bool
@@ -139,23 +172,36 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
             continue;
 
         for (level = 0; level < XkbKeyNumLevels(key, group); level++) {
+            const struct xkb_sym_interpret **interp_iter;
             const struct xkb_sym_interpret *interp;
+            size_t k;
+            xkb_sym_interprets interprets = darray_new();
 
-            interp = FindInterpForKey(keymap, key, group, level);
-            if (!interp)
+            bool found = FindInterpForKey(keymap, key, group, level, &interprets);
+            if (!found)
                 continue;
 
-            /* Infer default key behaviours from the base level. */
-            if (group == 0 && level == 0)
-                if (!(key->explicit & EXPLICIT_REPEAT) && interp->repeat)
-                    key->repeats = true;
+            darray_enumerate(k, interp_iter, interprets) {
+                interp = *interp_iter;
+                /* Infer default key behaviours from the base level. */
+                if (group == 0 && level == 0)
+                    if (!(key->explicit & EXPLICIT_REPEAT) && interp->repeat)
+                        key->repeats = true;
 
-            if ((group == 0 && level == 0) || !interp->level_one_only)
-                if (interp->virtual_mod != XKB_MOD_INVALID)
-                    vmodmap |= (1u << interp->virtual_mod);
+                if ((group == 0 && level == 0) || !interp->level_one_only)
+                    if (interp->virtual_mod != XKB_MOD_INVALID)
+                        vmodmap |= (1u << interp->virtual_mod);
 
-            if (interp->action.type != ACTION_TYPE_NONE)
-                key->groups[group].levels[level].action = interp->action;
+                if (interp->action.type != ACTION_TYPE_NONE) {
+                    if (darray_size(interprets) == 1) {
+                        key->groups[group].levels[level].a.action = interp->action;
+                    } else {
+                        key->groups[group].levels[level].a.actions[k] = interp->action;
+                    }
+                }
+            }
+
+            darray_free(interprets);
         }
     }
 
@@ -163,6 +209,59 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
         key->vmodmap = vmodmap;
 
     return true;
+}
+
+static inline bool
+is_mod_action(union xkb_action *action)
+{
+    return action->type == ACTION_TYPE_MOD_SET ||
+           action->type == ACTION_TYPE_MOD_LATCH ||
+           action->type == ACTION_TYPE_MOD_LOCK;
+}
+
+static inline bool
+is_group_action(union xkb_action *action)
+{
+    return action->type == ACTION_TYPE_GROUP_SET ||
+           action->type == ACTION_TYPE_GROUP_LATCH ||
+           action->type == ACTION_TYPE_GROUP_LOCK;
+}
+
+/* Check for mixing actions of the same category.
+ * We do not support that yet, because it needs a careful refactor of the state
+ * handling. See: `xkb_filter_apply_all`. */
+static void
+CheckMultipleActionsCategories(struct xkb_keymap *keymap, struct xkb_key *key)
+{
+    for (xkb_layout_index_t g = 0; g < key->num_groups; g++) {
+        for (xkb_level_index_t l = 0; l < XkbKeyNumLevels(key, g); l++) {
+            struct xkb_level *level = &key->groups[g].levels[l];
+            if (level->num_syms <= 1)
+                continue;
+            for (unsigned i = 0; i < level->num_syms; i++) {
+                union xkb_action *action1 = &level->a.actions[i];
+                bool mod_action = is_mod_action(action1);
+                bool group_action = is_group_action(action1);
+                if (!(mod_action || group_action))
+                    continue;
+                for (unsigned j = i + 1; j < level->num_syms; j++) {
+                    union xkb_action *action2 = &level->a.actions[j];
+                    if ((mod_action && is_mod_action(action2)) ||
+                        (group_action && is_group_action(action2)))
+                    {
+                        log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                                "Cannot use multiple %s actions "
+                                "in the same level. Action #%u "
+                                "for key %s in group %u/level %u ignored.\n",
+                                (mod_action ? "modifiers" : "group"),
+                                j + 1, KeyNameText(keymap->ctx, key->name),
+                                g + 1, l + 1);
+                        action2->type = ACTION_TYPE_NONE;
+                    }
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -177,13 +276,15 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     struct xkb_key *key;
     struct xkb_mod *mod;
     struct xkb_led *led;
-    unsigned int i, j;
+    unsigned int i, j, k;
 
     /* Find all the interprets for the key and bind them to actions,
      * which will also update the vmodmap. */
-    xkb_keys_foreach(key, keymap)
+    xkb_keys_foreach(key, keymap) {
         if (!ApplyInterpsToKey(keymap, key))
             return false;
+        CheckMultipleActionsCategories(keymap, key);
+    }
 
     /* Update keymap->mods, the virtual -> real mod mapping. */
     xkb_keys_foreach(key, keymap)
@@ -204,9 +305,18 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     /* Update action modifiers. */
     xkb_keys_foreach(key, keymap)
         for (i = 0; i < key->num_groups; i++)
-            for (j = 0; j < XkbKeyNumLevels(key, i); j++)
-                UpdateActionMods(keymap, &key->groups[i].levels[j].action,
-                                 key->modmap);
+            for (j = 0; j < XkbKeyNumLevels(key, i); j++) {
+                if (key->groups[i].levels[j].num_syms == 1) {
+                    UpdateActionMods(keymap, &key->groups[i].levels[j].a.action,
+                                     key->modmap);
+                } else {
+                    for (k = 0; k < key->groups[i].levels[j].num_syms; k++) {
+                        UpdateActionMods(keymap,
+                                         &key->groups[i].levels[j].a.actions[k],
+                                         key->modmap);
+                    }
+                }
+            }
 
     /* Update vmod -> led maps. */
     xkb_leds_foreach(led, keymap)
