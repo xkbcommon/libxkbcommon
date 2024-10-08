@@ -207,7 +207,7 @@ resolve_keysym(struct parser_param *param, const char *name, xkb_keysym_t *sym_r
 %type <any>     Decl
 %type <anyList> DeclList
 %type <expr>    Expr Term Lhs Terminal ArrayInit KeySyms
-%type <expr>    OptKeySymList KeySymList Action Coord CoordList
+%type <expr>    OptKeySymList MultiKeySymList KeySymList Action Coord CoordList
 %type <exprList> OptExprList ExprList ActionList
 %type <var>     VarDecl SymbolsVarDecl
 %type <varList> VarDeclList SymbolsBody
@@ -708,18 +708,24 @@ Terminal        :       String
                         { $$ = ExprCreateKeyName($1); }
                 ;
 
-OptKeySymList   :       KeySymList      { $$ = $1; }
+OptKeySymList   :       MultiKeySymList { $$ = $1; }
                 |                       { $$ = NULL; }
                 ;
 
-KeySymList      :       KeySymList COMMA KeySym
+MultiKeySymList :       MultiKeySymList COMMA KeySym
                         { $$ = ExprAppendKeysymList($1, $3); }
-                |       KeySymList COMMA KeySyms
+                |       MultiKeySymList COMMA KeySyms
                         { $$ = ExprAppendMultiKeysymList($1, $3); }
                 |       KeySym
                         { $$ = ExprCreateKeysymList($1); }
                 |       KeySyms
                         { $$ = ExprCreateMultiKeysymList($1); }
+                ;
+
+KeySymList      :       KeySymList COMMA KeySym
+                        { $$ = ExprAppendKeysymList($1, $3); }
+                |       KeySym
+                        { $$ = ExprCreateKeysymList($1); }
                 ;
 
 KeySyms         :       OBRACE KeySymList CBRACE
