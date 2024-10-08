@@ -11,7 +11,7 @@ permissions: {}
 
 jobs:
   macos:
-    runs-on: macos-12
+    runs-on: macos-13
     permissions:
       contents: read
     steps:
@@ -23,8 +23,13 @@ jobs:
           python-version: '3.12'
       - name: Install dependencies
         run: |
-          brew install bison libxml2 meson ninja pyyaml xkeyboardconfig xorg-server
+          brew install bison libxml2 meson ninja xkeyboardconfig xorg-server
           brew link bison --force
+          brew link libxml2 --force
+          # https://docs.brew.sh/Homebrew-and-Python#pep-668-python312-and-virtual-environments
+          python3 -m venv venv
+          source venv/bin/activate
+          pip3 install PyYaml
         env:
           HOMEBREW_NO_AUTO_UPDATE: 1
           HOMEBREW_NO_INSTALL_CLEANUP: 1
