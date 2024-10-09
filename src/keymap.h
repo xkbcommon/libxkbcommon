@@ -324,11 +324,28 @@ struct xkb_level {
     } u;
 };
 
+/**
+ * Group in a key
+ */
 struct xkb_group {
-    bool explicit_type;
-    /* Points to a type in keymap->types. */
+    /**
+     * Flag that indicates whether a group has explicit actions. In case it has,
+     * compatibility interpretations will not be used on it.
+     * See also EXPLICIT_INTERP flag at key level.
+     */
+    bool explicit_actions:1;
+    /**
+     * Flag that indicates whether a group has an explicit key type. In case it
+     * has, type detection will not be used on it.
+     */
+    bool explicit_type:1;
+    /**
+     * Key type of the group. Points to an entry in keymap->types.
+     */
     const struct xkb_key_type *type;
-    /* Use XkbKeyNumLevels for the number of levels. */
+    /**
+     * Array of group levels. Use `XkbKeyNumLevels` for the number of levels.
+     */
     struct xkb_level *levels;
 };
 

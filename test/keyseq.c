@@ -287,17 +287,52 @@ test_group_latch(struct xkb_context *ctx)
 #undef test_no_latch_to_lock
 }
 
+static void
+test_explicit_actions(struct xkb_context *ctx)
+{
+    /* <LALT>: Groups 1 & 3 have no explicit actions while group 2 does.
+     * We expect that groups 1 & 3 will have the corresponding interpret run to
+     * set their actions. */
+    struct xkb_keymap *keymap = test_compile_file(ctx, "keymaps/explicit-actions.xkb");
+    assert(keymap);
+
+    assert(test_key_seq(keymap,
+                        KEY_Y,         BOTH,  XKB_KEY_y,                NEXT,
+                        KEY_LEFTALT,   DOWN,  XKB_KEY_Shift_L,          NEXT,
+                        KEY_Y,         BOTH,  XKB_KEY_Y,                NEXT,
+                        KEY_LEFTALT,   UP,    XKB_KEY_Shift_L,          NEXT,
+                        KEY_COMPOSE,   BOTH,  XKB_KEY_ISO_Next_Group,   NEXT,
+                        KEY_Y,         BOTH,  XKB_KEY_z,                NEXT,
+                        KEY_LEFTALT,   DOWN,  XKB_KEY_ISO_Level3_Shift, NEXT,
+                        KEY_Y,         BOTH,  XKB_KEY_leftarrow,        NEXT,
+                        KEY_LEFTALT,   UP,    XKB_KEY_ISO_Level3_Shift, NEXT,
+                        KEY_COMPOSE,   BOTH,  XKB_KEY_ISO_Next_Group,   NEXT,
+                        KEY_Y,         BOTH,  XKB_KEY_k,                NEXT,
+                        KEY_LEFTALT,   DOWN,  XKB_KEY_ISO_Level5_Shift, NEXT,
+                        KEY_Y,         BOTH,  XKB_KEY_exclamdown,       NEXT,
+                        KEY_LEFTALT,   UP,    XKB_KEY_ISO_Level5_Shift, NEXT,
+                        KEY_LEFTSHIFT, DOWN,  XKB_KEY_Shift_L,          NEXT,
+                        KEY_LEFTALT,   DOWN,  XKB_KEY_ISO_Level3_Shift, NEXT,
+                        KEY_Y,         BOTH,  XKB_KEY_Greek_kappa,      NEXT,
+                        KEY_LEFTALT,   UP,    XKB_KEY_ISO_Level3_Shift, NEXT,
+                        KEY_LEFTSHIFT, UP,    XKB_KEY_Caps_Lock,        NEXT,
+                        KEY_Y,         BOTH,  XKB_KEY_k,                FINISH));
+
+    xkb_keymap_unref(keymap);
+}
+
 int
 main(void)
 {
     test_init();
 
-    struct xkb_context *ctx = test_get_context(0);
+    struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
     struct xkb_keymap *keymap;
 
     assert(ctx);
 
     test_group_latch(ctx);
+    test_explicit_actions(ctx);
 
     keymap = test_compile_rules(ctx, "evdev", "evdev",
                                 "us,il,ru,de", ",,phonetic,neo",
