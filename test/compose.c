@@ -34,8 +34,8 @@
 #include "src/compose/parser.h"
 #include "src/compose/escape.h"
 #include "src/compose/dump.h"
-#include "test/utils-text.h"
 #include "test/compose-iter.h"
+#include "test/utils-text.h"
 
 static const char *
 compose_status_string(enum xkb_compose_status status)

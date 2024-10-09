@@ -1,0 +1,368 @@
+xkb_keymap {
+xkb_keycodes "(unnamed)" {
+	minimum = 8;
+	maximum = 255;
+	<ESC>                = 9;
+	<AE01>               = 10;
+	<AE02>               = 11;
+	<AE03>               = 12;
+	<AE04>               = 13;
+	<AE05>               = 14;
+	<AE06>               = 15;
+	<AE07>               = 16;
+	<AE08>               = 17;
+	<AE09>               = 18;
+	<AE10>               = 19;
+	<AE11>               = 20;
+	<AE12>               = 21;
+	<BKSP>               = 22;
+	<TAB>                = 23;
+	<AD01>               = 24;
+	<AD02>               = 25;
+	<AD03>               = 26;
+	<AD04>               = 27;
+	<AD05>               = 28;
+	<AD06>               = 29;
+	<AD07>               = 30;
+	<AD08>               = 31;
+	<AD09>               = 32;
+	<AD10>               = 33;
+	<AD11>               = 34;
+	<AD12>               = 35;
+	<RTRN>               = 36;
+	<LCTL>               = 37;
+	<AC01>               = 38;
+	<AC02>               = 39;
+	<AC03>               = 40;
+	<AC04>               = 41;
+	<AC05>               = 42;
+	<AC06>               = 43;
+	<AC07>               = 44;
+	<AC08>               = 45;
+	<AC09>               = 46;
+	<AC10>               = 47;
+	<AC11>               = 48;
+	<TLDE>               = 49;
+	<LFSH>               = 50;
+	<BKSL>               = 51;
+	<AB01>               = 52;
+	<AB02>               = 53;
+	<AB03>               = 54;
+	<AB04>               = 55;
+	<AB05>               = 56;
+	<AB06>               = 57;
+	<AB07>               = 58;
+	<AB08>               = 59;
+	<AB09>               = 60;
+	<AB10>               = 61;
+	<RTSH>               = 62;
+	<KPMU>               = 63;
+	<LALT>               = 64;
+	<SPCE>               = 65;
+	<CAPS>               = 66;
+	<FK01>               = 67;
+	<FK02>               = 68;
+	<FK03>               = 69;
+	<FK04>               = 70;
+	<FK05>               = 71;
+	<FK06>               = 72;
+	<FK07>               = 73;
+	<FK08>               = 74;
+	<FK09>               = 75;
+	<FK10>               = 76;
+	<NMLK>               = 77;
+	<SCLK>               = 78;
+	<KP7>                = 79;
+	<KP8>                = 80;
+	<KP9>                = 81;
+	<KPSU>               = 82;
+	<KP4>                = 83;
+	<KP5>                = 84;
+	<KP6>                = 85;
+	<KPAD>               = 86;
+	<KP1>                = 87;
+	<KP2>                = 88;
+	<KP3>                = 89;
+	<KP0>                = 90;
+	<KPDL>               = 91;
+	<LVL3>               = 92;
+	<LSGT>               = 94;
+	<FK11>               = 95;
+	<FK12>               = 96;
+	<AB11>               = 97;
+	<RCTL>               = 105;
+	<RALT>               = 108;
+	<LWIN>               = 133;
+	<RWIN>               = 134;
+	<COMP>               = 135;
+	<MDSW>               = 203;
+	<ALT>                = 204;
+	<META>               = 205;
+	<SUPR>               = 206;
+	<HYPR>               = 207;
+};
+
+xkb_types "(unnamed)" {
+	virtual_modifiers NumLock,Alt,LevelThree,ScrollLock,LevelFive,Super,AltGr,Meta,Hyper;
+
+	type "ONE_LEVEL" {
+		modifiers= none;
+		level_name[1]= "Any";
+	};
+	type "TWO_LEVEL" {
+		modifiers= Shift;
+		map[Shift]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+	};
+	type "ALPHABETIC" {
+		modifiers= Shift+Lock;
+		map[Shift]= 2;
+		map[Lock]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Caps";
+	};
+	type "FOUR_LEVEL" {
+		modifiers= Shift+LevelThree;
+		map[Shift]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "AltGr";
+		level_name[4]= "Shift AltGr";
+	};
+	type "EIGHT_LEVEL_ALPHABETIC_LEVEL_FIVE_LOCK" {
+		modifiers= Shift+Lock+NumLock+LevelThree+LevelFive;
+		map[Shift]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[LevelFive]= 5;
+		map[Shift+LevelFive]= 6;
+		preserve[Shift+LevelFive]= Shift;
+		map[LevelThree+LevelFive]= 7;
+		map[Shift+LevelThree+LevelFive]= 8;
+		map[NumLock]= 5;
+		map[Shift+NumLock]= 6;
+		preserve[Shift+NumLock]= Shift;
+		map[NumLock+LevelThree]= 7;
+		map[Shift+NumLock+LevelThree]= 8;
+		map[Shift+NumLock+LevelFive]= 2;
+		map[NumLock+LevelThree+LevelFive]= 3;
+		map[Shift+NumLock+LevelThree+LevelFive]= 4;
+		map[Lock]= 2;
+		map[Lock+LevelThree]= 3;
+		map[Shift+Lock+LevelThree]= 4;
+		map[Lock+LevelFive]= 5;
+		map[Shift+Lock+LevelFive]= 6;
+		map[Lock+LevelThree+LevelFive]= 7;
+		map[Shift+Lock+LevelThree+LevelFive]= 8;
+		map[Lock+NumLock]= 5;
+		map[Shift+Lock+NumLock]= 6;
+		map[Lock+NumLock+LevelThree]= 7;
+		map[Shift+Lock+NumLock+LevelThree]= 8;
+		map[Lock+NumLock+LevelFive]= 2;
+		map[Lock+NumLock+LevelThree+LevelFive]= 4;
+		map[Shift+Lock+NumLock+LevelThree+LevelFive]= 3;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+		level_name[5]= "X";
+		level_name[6]= "X Shift";
+		level_name[7]= "X Alt Base";
+		level_name[8]= "X Shift Alt";
+	};
+	type "FOUR_LEVEL_SEMIALPHABETIC" {
+		modifiers= Shift+Lock+LevelThree;
+		map[Shift]= 2;
+		map[Lock]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[Lock+LevelThree]= 3;
+		preserve[Lock+LevelThree]= Lock;
+		map[Shift+Lock+LevelThree]= 4;
+		preserve[Shift+Lock+LevelThree]= Lock;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "AltGr";
+		level_name[4]= "Shift AltGr";
+	};
+};
+
+xkb_compatibility "(unnamed)" {
+	virtual_modifiers NumLock,Alt,LevelThree,ScrollLock,LevelFive,Super,AltGr,Meta,Hyper;
+
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret ISO_Level2_Latch+Exactly(Shift) {
+		useModMapMods=level1;
+		action= LatchMods(modifiers=Shift,clearLocks,latchToLock);
+	};
+	interpret Shift_Lock+AnyOf(Shift+Lock) {
+		action= LockMods(modifiers=Shift);
+	};
+	interpret Num_Lock+AnyOf(all) {
+		virtualModifier= NumLock;
+		action= LockMods(modifiers=NumLock);
+	};
+	interpret ISO_Level3_Shift+AnyOf(all) {
+		virtualModifier= LevelThree;
+		useModMapMods=level1;
+		action= SetMods(modifiers=LevelThree,clearLocks);
+	};
+	interpret ISO_Level3_Latch+AnyOf(all) {
+		virtualModifier= LevelThree;
+		useModMapMods=level1;
+		action= LatchMods(modifiers=LevelThree,clearLocks,latchToLock);
+	};
+	interpret ISO_Level3_Lock+AnyOf(all) {
+		virtualModifier= LevelThree;
+		useModMapMods=level1;
+		action= LockMods(modifiers=LevelThree);
+	};
+	interpret Alt_L+AnyOf(all) {
+		virtualModifier= Alt;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret Alt_R+AnyOf(all) {
+		virtualModifier= Alt;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret ISO_Level5_Shift+AnyOf(all) {
+		virtualModifier= LevelFive;
+		useModMapMods=level1;
+		action= SetMods(modifiers=LevelFive,clearLocks);
+	};
+	interpret Mode_switch+AnyOfOrNone(all) {
+		virtualModifier= AltGr;
+		useModMapMods=level1;
+		action= SetGroup(group=+1);
+	};
+	interpret ISO_Level3_Shift+AnyOfOrNone(all) {
+		action= SetMods(modifiers=LevelThree,clearLocks);
+	};
+	interpret ISO_Next_Group+AnyOfOrNone(all) {
+		virtualModifier= AltGr;
+		useModMapMods=level1;
+		action= LockGroup(group=+1);
+	};
+	interpret ISO_Prev_Group+AnyOfOrNone(all) {
+		virtualModifier= AltGr;
+		useModMapMods=level1;
+		action= LockGroup(group=-1);
+	};
+	interpret Alt_L+AnyOfOrNone(all) {
+		action= SetMods(modifiers=Alt,clearLocks);
+	};
+	interpret Alt_R+AnyOfOrNone(all) {
+		action= SetMods(modifiers=Alt,clearLocks);
+	};
+	interpret Shift_L+AnyOfOrNone(all) {
+		action= SetMods(modifiers=Shift,clearLocks);
+	};
+	interpret Shift_R+AnyOfOrNone(all) {
+		action= SetMods(modifiers=Shift,clearLocks);
+	};
+	interpret ISO_Level5_Shift+AnyOfOrNone(all) {
+		action= SetMods(modifiers=LevelFive,clearLocks);
+	};
+	interpret ISO_Level5_Latch+AnyOfOrNone(all) {
+		action= LatchMods(modifiers=LevelFive,clearLocks,latchToLock);
+	};
+	interpret ISO_Level5_Lock+AnyOfOrNone(all) {
+		action= LockMods(modifiers=LevelFive);
+	};
+	interpret Any+AnyOf(all) {
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+};
+
+xkb_symbols "(unnamed)" {
+	name[Group1]="English (US)";
+	name[Group2]="Czech";
+	name[Group3]="German (Neo 2)";
+
+	key <AD05>               {
+		//// repeat=Yes is set with the default *interpretation*, but
+		//// using explicit actions makes the key keep the initial value,
+		//// i.e. repeat=No.
+		//repeat= Yes,
+		symbols[Group1]= [               t,               T ],
+		//actions[Group1]= [ NoAction(), NoAction() ],
+		symbols[Group2]= [     Cyrillic_ie,     Cyrillic_IE ],
+		actions[Group2]= [ NoAction(), NoAction() ],
+		symbols[Group3]= [               w,               W ]//,
+		//actions[Group3]= [ NoAction(), NoAction() ]
+	};
+	key <AD06>               {
+		type[Group3]= "EIGHT_LEVEL_ALPHABETIC_LEVEL_FIVE_LOCK",
+		symbols[Group1]= [               y,               Y ],
+		symbols[Group2]= [               z,               Z,       leftarrow,             yen ],
+		symbols[Group3]= [               k,               K,          exclam,     Greek_kappa,      exclamdown,        NoSymbol,        multiply,        NoSymbol ]
+	};
+	key <LFSH>               {
+		type[Group3]= "TWO_LEVEL",
+		symbols[Group1]= [         Shift_L ],
+		symbols[Group2]= [         Shift_L ],
+		symbols[Group3]= [         Shift_L,       Caps_Lock ]
+	};
+	//// This should set the key’s EXPLICIT_INTERP explicit flag and
+	//// the group 2 explicit_actions, but it should still allow to
+	//// interpret the keysyms in groups 1 and 3.
+	key <LALT>               {
+		type[Group1]= "ONE_LEVEL",
+		type[Group2]= "TWO_LEVEL",
+		type[Group3]= "TWO_LEVEL",
+		//repeat= No,
+		symbols[Group1]= [         Shift_L ],
+		//actions[Group1]= [ SetMods(modifiers=Shift,clearLocks) ],
+		symbols[Group2]= [ ISO_Level3_Shift,       Multi_key ],
+		actions[Group2]= [ SetMods(modifiers=LevelThree), NoAction() ],
+		symbols[Group3]= [ ISO_Level5_Shift, ISO_Level3_Shift ]//,
+		//actions[Group3]= [ SetMods(modifiers=LevelFive,clearLocks), SetMods(modifiers=LevelThree,clearLocks) ]
+	};
+	key <LVL3>               {
+		type= "ONE_LEVEL",
+		//// The following fields are added, because they are set via
+		//// compatibility interpretations, but using explicit actions
+		//// disable them.
+		//repeat= No,
+		//virtualMods= LevelThree,
+		symbols[Group1]= [ ISO_Level3_Shift ],
+		//actions[Group1]= [ SetMods(modifiers=LevelThree,clearLocks) ],
+		symbols[Group2]= [ ISO_Level3_Shift ],
+		actions[Group2]= [ SetMods(modifiers=LevelThree) ],
+		symbols[Group3]= [ ISO_Level3_Shift ]//,
+		//actions[Group3]= [ SetMods(modifiers=LevelThree,clearLocks) ]
+	};
+	key <LSGT>               {
+		symbols[Group1]= [            less,         greater,             bar,       brokenbar ],
+		symbols[Group2]= [       backslash,             bar,           slash,        NoSymbol ],
+		symbols[Group3]= [ ISO_Level5_Shift ]
+	};
+	key <RALT>               {
+		type[Group1]= "TWO_LEVEL",
+		type[Group2]= "ONE_LEVEL",
+		type[Group3]= "ONE_LEVEL",
+		symbols[Group1]= [           Alt_R,          Meta_R ],
+		symbols[Group2]= [ ISO_Level3_Shift ],
+		symbols[Group3]= [ ISO_Level5_Shift ]
+	};
+	key <COMP>               {	[  ISO_Next_Group,            Menu ] };
+	key <MDSW>               {
+		type= "ONE_LEVEL",
+		symbols[Group1]= [ ISO_Level5_Shift ],
+		symbols[Group2]= [ ISO_Level5_Shift ],
+		symbols[Group3]= [ ISO_Level5_Shift ]
+	};
+	key <ALT>                {	[        NoSymbol,           Alt_L ] };
+	key <META>               {	[        NoSymbol,          Meta_L ] };
+	key <SUPR>               {	[        NoSymbol,         Super_L ] };
+	modifier_map Shift { <LFSH>, <RTSH> };
+	modifier_map Mod1 { <RALT>, <ALT>, <META> };
+	modifier_map Mod3 { <MDSW> };
+	modifier_map Mod5 { <LVL3> };
+};
+
+};

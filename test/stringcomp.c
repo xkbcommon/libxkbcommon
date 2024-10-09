@@ -28,15 +28,50 @@
 #include <stdlib.h>
 
 #include "test.h"
+#include "test/utils-text.h"
 
 #define DATA_PATH "keymaps/stringcomp.data"
+
+static void
+test_explicit_actions(struct xkb_context *ctx)
+{
+    struct xkb_keymap *keymap;
+
+    char *original = test_read_file("keymaps/explicit-actions.xkb");
+    assert(original);
+    char *tmp = uncomment(original, strlen(original), "//");
+    assert(tmp);
+    char *expected = strip_lines(tmp, strlen(tmp), "//");
+    free(tmp);
+    assert(expected);
+    char *got = NULL;
+
+    /* Try original */
+    keymap = test_compile_string(ctx, original);
+    free(original);
+    assert(keymap);
+    got = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+    xkb_keymap_unref(keymap);
+    assert_streq_not_null("Check output from original", expected, got);
+    free(got);
+
+    /* Try round-trip */
+    keymap = test_compile_string(ctx, expected);
+    assert(keymap);
+    got = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+    xkb_keymap_unref(keymap);
+    assert_streq_not_null("Check roundtrip", expected, got);
+    free(got);
+
+    free(expected);
+}
 
 int
 main(int argc, char *argv[])
 {
     test_init();
 
-    struct xkb_context *ctx = test_get_context(0);
+    struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
     struct xkb_keymap *keymap;
     char *original, *dump, *dump2;
 
@@ -103,7 +138,9 @@ main(int argc, char *argv[])
     free(dump);
     free(dump2);
 
+    test_explicit_actions(ctx);
+
     xkb_context_unref(ctx);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
