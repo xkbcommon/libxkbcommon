@@ -31,6 +31,7 @@
 #include "test.h"
 #include "utils.h"
 #include "utils-paths.h"
+#include "test/utils-text.h"
 
 static void
 test_string_functions(void)
@@ -52,6 +53,41 @@ test_string_functions(void)
     assert(!streq_null("foobar", NULL));
     assert(!streq_null(NULL, "foobar"));
     assert(streq_null(NULL, NULL));
+
+    const char text[] =
+        "123; // abc\n"
+        "  // def\n"
+        "456 // ghi // jkl\n"
+        "// mno\n"
+        "//\n"
+        "ok; // pqr\n"
+        "foo\n";
+
+    char *out;
+    out = strip_lines(text, ARRAY_SIZE(text), "//");
+    assert_streq_not_null(
+        "strip_lines",
+        "123; \n"
+        "456 \n"
+        "ok; \n"
+        "foo\n",
+        out
+    );
+    free(out);
+
+    out = uncomment(text, ARRAY_SIZE(text), "//");
+    assert_streq_not_null(
+        "uncomment",
+        "123;  abc\n"
+        "   def\n"
+        "456  ghi // jkl\n"
+        " mno\n"
+        "\n"
+        "ok;  pqr\n"
+        "foo\n",
+        out
+    );
+    free(out);
 }
 
 static void

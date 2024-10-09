@@ -738,7 +738,13 @@ test(
 )
 test(
     'stringcomp',
-    executable('test-stringcomp', 'test/stringcomp.c', dependencies: test_dep),
+    executable(
+        'test-stringcomp',
+        'test/stringcomp.c',
+        'test/utils-text.c',
+        'test/utils-text.h',
+        dependencies: test_dep
+    ),
     env: test_env,
 )
 test(
@@ -787,10 +793,10 @@ test(
     executable(
         'test-compose',
         'test/compose.c',
-        'test/shuffle-lines.c',
-        'test/shuffle-lines.h',
         'test/compose-iter.c',
         'test/compose-iter.h',
+        'test/utils-text.c',
+        'test/utils-text.h',
         'src/compose/dump.c',
         'src/compose/dump.h',
         'src/compose/escape.h',
@@ -800,7 +806,13 @@ test(
 )
 test(
     'utils',
-    executable('test-utils', 'test/utils.c', dependencies: test_dep),
+    executable(
+        'test-utils',
+        'test/utils.c',
+        'test/utils-text.c',
+        'test/utils-text.h',
+        dependencies: test_dep
+    ),
     env: test_env,
 )
 test(

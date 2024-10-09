@@ -1494,8 +1494,13 @@ CopySymbolsDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
     }
 
     /* Copy levels. */
-    darray_enumerate(i, groupi, keyi->groups)
+    darray_enumerate(i, groupi, keyi->groups) {
         darray_steal(groupi->levels, &key->groups[i].levels, NULL);
+        if (groupi->defined & GROUP_FIELD_ACTS) {
+            key->groups[i].explicit_actions = true;
+            key->explicit |= EXPLICIT_INTERP;
+        }
+    }
 
     key->out_of_range_group_number = keyi->out_of_range_group_number;
     key->out_of_range_group_action = keyi->out_of_range_group_action;
@@ -1508,13 +1513,6 @@ CopySymbolsDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
     if (keyi->repeat != KEY_REPEAT_UNDEFINED) {
         key->repeats = (keyi->repeat == KEY_REPEAT_YES);
         key->explicit |= EXPLICIT_REPEAT;
-    }
-
-    darray_foreach(groupi, keyi->groups) {
-        if (groupi->defined & GROUP_FIELD_ACTS) {
-            key->explicit |= EXPLICIT_INTERP;
-            break;
-        }
     }
 
     return true;
