@@ -25,6 +25,7 @@
 
 #include "evdev-scancodes.h"
 #include "test.h"
+#include "keymap.h"
 
 static void
 test_group_latch(struct xkb_context *ctx)
@@ -287,17 +288,95 @@ test_group_latch(struct xkb_context *ctx)
 #undef test_no_latch_to_lock
 }
 
+struct key_properties {
+    const char *name;
+    bool repeats;
+    xkb_mod_mask_t vmodmap;
+};
+
+static void
+test_explicit_actions(struct xkb_context *ctx)
+{
+    struct xkb_keymap *original =
+        test_compile_file(ctx, "keymaps/explicit-actions.xkb");
+    assert(original);
+
+    /* Reload keymap from its dump */
+    char *dump = xkb_keymap_get_as_string(original,
+                                          XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+    assert(dump);
+    struct xkb_keymap *roundtrip = test_compile_string(ctx, dump);
+    free(dump);
+
+    struct xkb_keymap *keymaps[] = { original, roundtrip };
+
+    for (unsigned k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        assert(keymaps[k]);
+
+        /*
+         * <LALT>: Groups 1 & 3 have no explicit actions while group 2 does.
+         * We expect that groups 1 & 3 will have the corresponding interpret run
+         * to set their actions.
+         *
+         * <LVL3> has explicit actions on group 2; dumping the keymap forces
+         * explicit actions as well as the essential virtualMods=LevelThree field.
+         *
+		 * <AD05> has explicit actions on group 2; dumping the keymap forces
+         * explicit actions as well as repeat=Yes.
+         */
+        const struct key_properties keys[] = {
+            { .name = "LALT", .repeats = false, .vmodmap = 0        },
+            { .name = "LVL3", .repeats = false, .vmodmap = 1u << 10 },
+            { .name = "AD05", .repeats = true , .vmodmap = 0        },
+            /* No explicit actions, check defaults */
+            { .name = "AD06", .repeats = true , .vmodmap = 0        },
+        };
+        for (unsigned i = 0; i < ARRAY_SIZE(keys); i++) {
+            xkb_keycode_t kc = xkb_keymap_key_by_name(keymaps[k], keys[i].name);
+            assert(kc != XKB_KEYCODE_INVALID);
+            assert(keys[i].repeats == xkb_keymap_key_repeats(keymaps[k], kc));
+            assert(keys[i].vmodmap == keymaps[k]->keys[kc].vmodmap);
+        }
+        assert(test_key_seq(
+            keymaps[k],
+            KEY_Y,         BOTH,  XKB_KEY_y,                NEXT,
+            KEY_LEFTALT,   DOWN,  XKB_KEY_Shift_L,          NEXT,
+            KEY_Y,         BOTH,  XKB_KEY_Y,                NEXT,
+            KEY_LEFTALT,   UP,    XKB_KEY_Shift_L,          NEXT,
+            KEY_COMPOSE,   BOTH,  XKB_KEY_ISO_Next_Group,   NEXT,
+            KEY_Y,         BOTH,  XKB_KEY_z,                NEXT,
+            KEY_LEFTALT,   DOWN,  XKB_KEY_ISO_Level3_Shift, NEXT,
+            KEY_Y,         BOTH,  XKB_KEY_leftarrow,        NEXT,
+            KEY_LEFTALT,   UP,    XKB_KEY_ISO_Level3_Shift, NEXT,
+            KEY_COMPOSE,   BOTH,  XKB_KEY_ISO_Next_Group,   NEXT,
+            KEY_Y,         BOTH,  XKB_KEY_k,                NEXT,
+            KEY_LEFTALT,   DOWN,  XKB_KEY_ISO_Level5_Shift, NEXT,
+            KEY_Y,         BOTH,  XKB_KEY_exclamdown,       NEXT,
+            KEY_LEFTALT,   UP,    XKB_KEY_ISO_Level5_Shift, NEXT,
+            KEY_LEFTSHIFT, DOWN,  XKB_KEY_Shift_L,          NEXT,
+            KEY_LEFTALT,   DOWN,  XKB_KEY_ISO_Level3_Shift, NEXT,
+            KEY_Y,         BOTH,  XKB_KEY_Greek_kappa,      NEXT,
+            KEY_LEFTALT,   UP,    XKB_KEY_ISO_Level3_Shift, NEXT,
+            KEY_LEFTSHIFT, UP,    XKB_KEY_Caps_Lock,        NEXT,
+            KEY_Y,         BOTH,  XKB_KEY_k,                FINISH
+        ));
+
+        xkb_keymap_unref(keymaps[k]);
+    }
+}
+
 int
 main(void)
 {
     test_init();
 
-    struct xkb_context *ctx = test_get_context(0);
+    struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
     struct xkb_keymap *keymap;
 
     assert(ctx);
 
     test_group_latch(ctx);
+    test_explicit_actions(ctx);
 
     keymap = test_compile_rules(ctx, "evdev", "evdev",
                                 "us,il,ru,de", ",,phonetic,neo",

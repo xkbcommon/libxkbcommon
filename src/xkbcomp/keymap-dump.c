@@ -531,7 +531,20 @@ write_key(struct xkb_keymap *keymap, struct buf *buf,
         }
     }
 
-    if (key->explicit & EXPLICIT_REPEAT) {
+    /*
+     * NOTE: we use key->explicit and not key->group[i].explicit_actions, in
+     * order to have X11 and the previous versions of libxkbcommon (without this
+     * group property) parse the keymap as intended, by setting explicitly for
+     * this key all actions in all groups.
+     *
+     * One side effect is that no interpretation will be run on this key anymore,
+     * so we may have to set some extra fields explicitly: repeat, virtualMods.
+     */
+    show_actions = (key->explicit & EXPLICIT_INTERP);
+
+    /* If we show actions, interprets are not going to be used to set this
+     * field, so make it explicit. */
+    if ((key->explicit & EXPLICIT_REPEAT) || show_actions) {
         if (key->repeats)
             write_buf(buf, "\n\t\trepeat= Yes,");
         else
@@ -539,7 +552,9 @@ write_key(struct xkb_keymap *keymap, struct buf *buf,
         simple = false;
     }
 
-    if (key->vmodmap && (key->explicit & EXPLICIT_VMODMAP))
+    /* If we show actions, interprets are not going to be used to set this
+     * field, so make it explicit. */
+    if (key->vmodmap && ((key->explicit & EXPLICIT_VMODMAP) || show_actions))
         write_buf(buf, "\n\t\tvirtualMods= %s,",
                   ModMaskText(keymap->ctx, &keymap->mods, key->vmodmap));
 
@@ -556,8 +571,6 @@ write_key(struct xkb_keymap *keymap, struct buf *buf,
     default:
         break;
     }
-
-    show_actions = (key->explicit & EXPLICIT_INTERP);
 
     if (key->num_groups > 1 || show_actions)
         simple = false;
@@ -584,8 +597,8 @@ write_key(struct xkb_keymap *keymap, struct buf *buf,
                     if (level != 0)
                         write_buf(buf, ", ");
                     write_action(keymap, buf,
-                                    &key->groups[group].levels[level].action,
-                                    NULL, NULL);
+                                 &key->groups[group].levels[level].action,
+                                 NULL, NULL);
                 }
                 write_buf(buf, " ]");
             }

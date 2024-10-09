@@ -133,11 +133,11 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
     xkb_layout_index_t group;
     xkb_level_index_t level;
 
-    /* If we've been told not to bind interps to this key, then don't. */
-    if (key->explicit & EXPLICIT_INTERP)
-        return true;
-
     for (group = 0; group < key->num_groups; group++) {
+        /* Skip any interpretation for this group if it has explicit actions */
+        if (key->groups[group].explicit_actions)
+            continue;
+
         for (level = 0; level < XkbKeyNumLevels(key, group); level++) {
             const struct xkb_sym_interpret *interp;
 

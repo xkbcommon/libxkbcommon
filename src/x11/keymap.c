@@ -602,8 +602,13 @@ get_explicits(struct xkb_keymap *keymap, xcb_connection_t *conn,
         if ((wire->explicit & XCB_XKB_EXPLICIT_KEY_TYPE_4) &&
             key->num_groups > 3)
             key->groups[3].explicit_type = true;
-        if (wire->explicit & XCB_XKB_EXPLICIT_INTERPRET)
+        if (wire->explicit & XCB_XKB_EXPLICIT_INTERPRET) {
             key->explicit |= EXPLICIT_INTERP;
+            /* Make all key groups have explicit actions too */
+            for (xkb_layout_index_t l = 0; l < key->num_groups; l++) {
+                key->groups[l].explicit_actions = true;
+            }
+        }
         if (wire->explicit & XCB_XKB_EXPLICIT_AUTO_REPEAT)
             key->explicit |= EXPLICIT_REPEAT;
         if (wire->explicit & XCB_XKB_EXPLICIT_V_MOD_MAP)
