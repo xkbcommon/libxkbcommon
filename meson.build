@@ -787,8 +787,8 @@ test(
     executable(
         'test-compose',
         'test/compose.c',
-        'test/shuffle-lines.c',
-        'test/shuffle-lines.h',
+        'test/utils-text.c',
+        'test/utils-text.h',
         'test/compose-iter.c',
         'test/compose-iter.h',
         'src/compose/dump.c',
@@ -800,7 +800,13 @@ test(
 )
 test(
     'utils',
-    executable('test-utils', 'test/utils.c', dependencies: test_dep),
+    executable(
+        'test-utils',
+        'test/utils.c',
+        'test/utils-text.c',
+        'test/utils-text.h',
+        dependencies: test_dep
+    ),
     env: test_env,
 )
 test(
