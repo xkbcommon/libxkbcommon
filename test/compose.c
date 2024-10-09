@@ -34,7 +34,7 @@
 #include "src/compose/parser.h"
 #include "src/compose/escape.h"
 #include "src/compose/dump.h"
-#include "test/shuffle-lines.h"
+#include "test/utils-text.h"
 #include "test/compose-iter.h"
 
 static const char *

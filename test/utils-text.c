@@ -25,8 +25,105 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include "src/darray.h"
 #include "src/utils.h"
-#include "test/shuffle-lines.h"
+#include "test/utils-text.h"
+
+/* For each line, drop substring starting from a given needle, then drop
+ * the line if the rest are only whitespaces. The needle must not contain
+ * "\n". */
+char *
+strip_lines(const char *input, size_t input_length, const char *prefix)
+{
+    darray_char buf = darray_new();
+    const size_t prefix_len = strlen(prefix);
+    const char *start = input;
+    const char *end = input + input_length;
+
+    const char *next = strstr(start, prefix);
+    size_t count;
+    while (start < end && next != NULL) {
+        count = (size_t)(next - start);
+        next = start + count + prefix_len;
+        /* Find previous non-space */
+        size_t i;
+        for (i = count; i > 0; i--) {
+            if (start[i - 1] != ' ' && start[i - 1] != '\t')
+                break;
+        }
+
+        bool dropped = false;
+        /* Drop line if only whitespaces */
+        if (i == 0 || start[i - 1] == '\n') {
+            count = i;
+            dropped = true;
+        }
+
+        /* Append string */
+        darray_append_items(buf, start, count);
+
+        /* Find end of line */
+        if (next >= end) {
+            start = end;
+            break;
+        }
+        start = strchr(next, 0x0a);
+        if (start == NULL) {
+            start = end;
+            break;
+        }
+
+        if (dropped)
+            start++;
+
+        next = strstr(start, prefix);
+    }
+
+    /* Append remaining */
+    if (start < end) {
+        count = (size_t)(end - start);
+        darray_append_items(buf, start, count);
+    }
+
+    darray_append(buf, '\0');
+    return buf.item;
+}
+
+char *
+uncomment(const char *input, size_t input_length, const char *prefix)
+{
+    darray_char buf = darray_new();
+    const size_t prefix_len = strlen(prefix);
+    const char *start = input;
+    const char *end = input + input_length;
+
+    char *next = strstr(start, prefix);
+    size_t count;
+    while (start < end && next != NULL) {
+        count = (size_t)(next - start);
+        darray_append_items(buf, start, count);
+
+        /* Skip prefix */
+        start += count + prefix_len;
+
+        /* Find end of line */
+        if (start >= end)
+            break;
+        next = strchr(start, 0x0a);
+        if (next == NULL)
+            break;
+        next = strstr(next, prefix);
+    }
+
+    /* Append remaining */
+    if (start < end) {
+        count = (size_t)(end - start);
+        darray_append_items(buf, start, count);
+    }
+
+    darray_append(buf, '\0');
+    return buf.item;
+}
 
 /* Split string into lines */
 size_t
@@ -52,6 +149,23 @@ split_lines(const char *input, size_t input_length,
         i += output[l].length;
     }
     return l;
+}
+
+size_t
+concat_lines(struct text_line *lines, size_t length,
+             const char *sep, char *output)
+{
+    char *out = output;
+    size_t sep_len = strlen(sep);
+    for (size_t i = 0; i < length; i++) {
+        if (i > 0) {
+            memcpy(out, sep, sep_len);
+            out += sep_len;
+        }
+        memcpy(out, lines[i].start, lines[i].length);
+        out += lines[i].length;
+    }
+    return (size_t)(out - output);
 }
 
 size_t
