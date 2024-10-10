@@ -104,6 +104,7 @@ struct xkb_state {
      */
     xkb_mod_mask_t set_mods;
     xkb_mod_mask_t clear_mods;
+    int tweak_shortcuts_layout;
 
     /*
      * We mustn't clear a base modifier if there's another depressed key
@@ -487,6 +488,8 @@ static void
 xkb_filter_mod_set_new(struct xkb_state *state, struct xkb_filter *filter)
 {
     state->set_mods = filter->action.mods.mods.mask;
+    if (filter->action.mods.flags & ACTION_INTERNAL_TEMP_LAYOUT_SWITCH)
+        state->tweak_shortcuts_layout++;
 }
 
 static bool
@@ -511,6 +514,8 @@ xkb_filter_mod_set_func(struct xkb_state *state,
     state->clear_mods = filter->action.mods.mods.mask;
     if (filter->action.mods.flags & ACTION_LOCK_CLEAR)
         state->components.locked_mods &= ~filter->action.mods.mods.mask;
+    if (filter->action.mods.flags & ACTION_INTERNAL_TEMP_LAYOUT_SWITCH)
+        state->tweak_shortcuts_layout--;
 
     filter->func = NULL;
     return XKB_FILTER_CONTINUE;
@@ -830,6 +835,12 @@ xkb_state_update_derived(struct xkb_state *state)
                                     state->components.locked_group,
                                     state->keymap->num_groups,
                                     RANGE_WRAP, 0);
+
+    if (state->tweak_shortcuts_layout > 0 &&
+        state->keymap->shortcuts_target_group[wrapped] != XKB_LAYOUT_INVALID) {
+        wrapped = state->keymap->shortcuts_target_group[wrapped];
+    }
+
     state->components.group =
         (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
 

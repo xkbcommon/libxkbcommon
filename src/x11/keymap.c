@@ -1156,7 +1156,9 @@ xkb_x11_keymap_new_from_device(struct xkb_context *ctx,
         return NULL;
     }
 
-    keymap = xkb_keymap_new(ctx, format, flags);
+    struct xkb_keymap_compile_options options =
+        keymap_compile_options_new(format, flags);
+    keymap = xkb_keymap_new(ctx, &options);
     if (!keymap)
         return NULL;
 

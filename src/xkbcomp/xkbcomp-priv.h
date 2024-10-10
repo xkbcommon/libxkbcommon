@@ -74,7 +74,8 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
 
 bool
 CompileKeymap(XkbFile *file, struct xkb_keymap *keymap,
-              enum merge_mode merge);
+              enum merge_mode merge,
+              const struct xkb_keymap_compile_options *options);
 
 /***====================================================================***/
 

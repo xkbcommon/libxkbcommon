@@ -151,6 +151,8 @@ enum xkb_action_flags {
     ACTION_ABSOLUTE_Y = (1 << 7),
     ACTION_ACCEL = (1 << 8),
     ACTION_SAME_SCREEN = (1 << 9),
+    /* Internal flags */
+    ACTION_INTERNAL_TEMP_LAYOUT_SWITCH = (1 << 10),
 };
 
 enum xkb_action_controls {
@@ -361,6 +363,12 @@ struct xkb_mod_set {
     unsigned int num_mods;
 };
 
+struct xkb_keymap_compile_options {
+    enum xkb_keymap_format format;
+    enum xkb_keymap_compile_flags flags;
+    darray(xkb_layout_index_t) shortcuts_target_group;
+};
+
 /* Common keyboard description structure */
 struct xkb_keymap {
     struct xkb_context *ctx;
@@ -392,6 +400,9 @@ struct xkb_keymap {
     /* Not all groups must have names. */
     xkb_layout_index_t num_group_names;
     xkb_atom_t *group_names;
+
+    /* Target layout for shortcuts */
+    xkb_layout_index_t *shortcuts_target_group;
 
     struct xkb_led leds[XKB_MAX_LEDS];
     unsigned int num_leds;
@@ -452,10 +463,14 @@ entry_is_active(const struct xkb_key_type_entry *entry)
     return entry->mods.mods == 0 || entry->mods.mask != 0;
 }
 
+#define keymap_compile_options_new(_format, _flags) { \
+        .flags = _flags,                              \
+        .format = _format                             \
+    }
+
 struct xkb_keymap *
 xkb_keymap_new(struct xkb_context *ctx,
-               enum xkb_keymap_format format,
-               enum xkb_keymap_compile_flags flags);
+               const struct xkb_keymap_compile_options *options);
 
 struct xkb_key *
 XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases);
@@ -484,10 +499,13 @@ mod_mask_get_effective(struct xkb_keymap *keymap, xkb_mod_mask_t mods);
 
 struct xkb_keymap_format_ops {
     bool (*keymap_new_from_names)(struct xkb_keymap *keymap,
-                                  const struct xkb_rule_names *names);
+                                  const struct xkb_rule_names *names,
+                                  const struct xkb_keymap_compile_options *options);
     bool (*keymap_new_from_string)(struct xkb_keymap *keymap,
-                                   const char *string, size_t length);
-    bool (*keymap_new_from_file)(struct xkb_keymap *keymap, FILE *file);
+                                   const char *string, size_t length,
+                                   const struct xkb_keymap_compile_options *options);
+    bool (*keymap_new_from_file)(struct xkb_keymap *keymap, FILE *file,
+                                 const struct xkb_keymap_compile_options *options);
     char *(*keymap_get_as_string)(struct xkb_keymap *keymap);
 };
 
