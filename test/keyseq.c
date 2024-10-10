@@ -22,6 +22,7 @@
  */
 
 #include "config.h"
+#include "test-config.h"
 
 #include "evdev-scancodes.h"
 #include "test.h"
@@ -287,19 +288,13 @@ test_group_latch(struct xkb_context *ctx)
 #undef test_no_latch_to_lock
 }
 
-int
-main(void)
+static void
+test_keymaps(struct xkb_context *ctx, const char* rules)
 {
-    test_init();
-
-    struct xkb_context *ctx = test_get_context(0);
     struct xkb_keymap *keymap;
 
-    assert(ctx);
 
-    test_group_latch(ctx);
-
-    keymap = test_compile_rules(ctx, "evdev", "evdev",
+    keymap = test_compile_rules(ctx, rules, "",
                                 "us,il,ru,de", ",,phonetic,neo",
                                 "grp:alt_shift_toggle,grp:menu_toggle");
     assert(keymap);
@@ -571,12 +566,13 @@ main(void)
                         /* KEY_SPACE,       BOTH,  XKB_KEY_KP_0,              NEXT, */
                         /* KEY_KP8,         BOTH,  XKB_KEY_KP_Up,             NEXT, */
                         KEY_ESC,         BOTH,  XKB_KEY_Escape,            NEXT,
-                        KEY_RIGHTALT,    UP,    XKB_KEY_ISO_Level5_Shift,  NEXT,
+                        KEY_1,           BOTH,  XKB_KEY_ordfeminine,       NEXT,
+                        KEY_RIGHTALT,    UP,    XKB_KEY_ISO_Level5_Lock,   NEXT,
 
                         KEY_V,           BOTH,  XKB_KEY_p,               FINISH));
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, "evdev", "", "de", "neo", "");
+    keymap = test_compile_rules(ctx, rules, "", "de", "neo", "");
     assert(keymap);
     assert(test_key_seq(keymap,
                         /* Level 5. */
@@ -628,7 +624,7 @@ main(void)
 
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, "evdev", "", "us,il,ru", "",
+    keymap = test_compile_rules(ctx, rules, "", "us,il,ru", "",
                                 "grp:alt_shift_toggle_bidir,grp:menu_toggle");
     assert(keymap);
 
@@ -667,7 +663,7 @@ main(void)
                         KEY_H,         BOTH, XKB_KEY_h,              FINISH));
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, "evdev", "", "us,il,ru", "",
+    keymap = test_compile_rules(ctx, rules, "", "us,il,ru", "",
                                 "grp:switch,grp:lswitch,grp:menu_toggle");
     assert(keymap);
 
@@ -710,7 +706,7 @@ main(void)
                         KEY_H,         BOTH, XKB_KEY_h,                 FINISH));
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, "evdev", "", "us", "euro", "");
+    keymap = test_compile_rules(ctx, rules, "", "us", "euro", "");
     assert(keymap);
 
     assert(test_key_seq(keymap,
@@ -730,7 +726,7 @@ main(void)
                         KEY_Z,         BOTH, XKB_KEY_y,                 FINISH));
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, "evdev", "applealu_ansi", "us", "",
+    keymap = test_compile_rules(ctx, rules, "applealu_ansi", "us", "",
                                 "terminate:ctrl_alt_bksp");
     assert(keymap);
 
@@ -750,6 +746,25 @@ main(void)
                         KEY_A,         BOTH, XKB_KEY_a,                 FINISH));
 
     xkb_keymap_unref(keymap);
+}
+
+int
+main(void)
+{
+    test_init();
+    setenv("XKB_CONFIG_ROOT", TEST_XKB_CONFIG_ROOT, 1);
+
+    struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
+
+    assert(ctx);
+
+    /* Usual rules */
+    test_keymaps(ctx, "evdev");
+    /* Special rules to make no use of modmaps */
+    test_keymaps(ctx, "evdev-pure-virtual-mods");
+
+    test_group_latch(ctx);
+
     xkb_context_unref(ctx);
     return 0;
 }
