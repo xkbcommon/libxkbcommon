@@ -1250,20 +1250,32 @@ parse(struct rxkb_context *ctx, const char *path,
 
     doc = xmlParseFile(path);
     if (!doc)
-        return false;
+        goto parse_error;
 
     if (!validate(ctx, doc)) {
         log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                 "XML error: failed to validate document at %s\n", path);
-        goto error;
+        goto validate_error;
     }
 
     root = xmlDocGetRootElement(doc);
     parse_rules_xml(ctx, root, popularity);
 
     success = true;
-error:
+validate_error:
     xmlFreeDoc(doc);
+parse_error:
+    /*
+     * Reset the default libxml2 error handler to default, because this handler
+     * is global and may be used on an invalid rxkb_context, e.g. *after* the
+     * following sequence:
+     *
+     *     rxkb_context_new();
+     *     rxkb_context_parse();
+     *     rxkb_context_unref();
+     */
+    /* TODO: use the new API xmlCtxtSetErrorHandler */
+    xmlSetGenericErrorFunc(NULL, NULL);
 
     return success;
 }

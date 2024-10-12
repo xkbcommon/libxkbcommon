@@ -879,7 +879,7 @@ if get_option('enable-xkbregistry')
         'registry',
         executable('test-registry', 'test/registry.c',
                    include_directories: include_directories('src'),
-                   dependencies: [dep_libxkbregistry, test_dep]),
+                   dependencies: [dep_libxkbregistry, dep_libxml, test_dep]),
         env: test_env,
     )
 endif
