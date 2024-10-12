@@ -31,6 +31,8 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
 
 #include "xkbcommon/xkbregistry.h"
 
@@ -1065,11 +1067,36 @@ test_invalid_include(void)
     rxkb_context_unref(ctx);
 }
 
+/* Check that libxml2 error handler is reset after parsing */
+static void
+test_xml_error_handler(void)
+{
+    struct test_model system_models[] =  { {NULL} };
+    struct test_layout system_layouts[] =  { {NULL} };
+    struct test_option_group system_groups[] = { { NULL } };
+    struct rxkb_context *ctx;
+
+    ctx = test_setup_context(system_models, NULL,
+                             system_layouts, NULL,
+                             system_groups, NULL);
+    assert(ctx);
+    rxkb_context_unref(ctx);
+
+    const char invalid_xml[] = "<test";
+    /* This should trigger a segfault if error handler is not reset, because
+     * else it would use our error handler with an invalid (freed) context. */
+    xmlDocPtr doc = xmlParseMemory (invalid_xml, strlen(invalid_xml));
+    assert(!doc);
+    xmlFreeDoc (doc);
+    xmlCleanupParser();
+}
+
 int
 main(void)
 {
     test_init();
 
+    test_xml_error_handler();
     test_no_include_paths();
     test_invalid_include();
     test_load_basic();
