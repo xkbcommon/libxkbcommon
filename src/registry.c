@@ -1167,6 +1167,14 @@ xml_error_func(void *ctx, const char *msg, ...)
     }
 }
 
+#ifdef HAVE_XML_CTXT_SET_ERRORHANDLER
+static void
+xml_structured_error_func(void *userData, const xmlError * error)
+{
+    xmlFormatError(error, xml_error_func, userData);
+}
+#endif
+
 static bool
 validate(struct rxkb_context *ctx, xmlDoc *doc)
 {
@@ -1211,10 +1219,13 @@ validate(struct rxkb_context *ctx, xmlDoc *doc)
     /* Note: do not use xmlParserInputBufferCreateStatic, it generates random
      * DTD validity errors for unknown reasons */
     buf = xmlParserInputBufferCreateMem(dtdstr, sizeof(dtdstr),
-                                        XML_CHAR_ENCODING_UTF8);
+                                        XML_CHAR_ENCODING_NONE);
     if (!buf)
         return false;
 
+    /* TODO: use safer function with context, once published, and set
+     * the contextual error handler.
+     * See: https://gitlab.gnome.org/GNOME/libxml2/-/issues/808 */
     dtd = xmlIOParseDTD(NULL, buf, XML_CHAR_ENCODING_UTF8);
     if (!dtd) {
         log_err(ctx, XKB_LOG_MESSAGE_NO_ID, "Failed to load DTD\n");
@@ -1222,6 +1233,9 @@ validate(struct rxkb_context *ctx, xmlDoc *doc)
     }
 
     dtdvalid = xmlNewValidCtxt();
+    /* TODO: use safer function with context, once published, then set
+     * the contextual error handler.
+     * See: https://gitlab.gnome.org/GNOME/libxml2/-/issues/808 */
     if (xmlValidateDtd(dtdvalid, doc, dtd))
         success = true;
 
@@ -1246,9 +1260,19 @@ parse(struct rxkb_context *ctx, const char *path,
 
     LIBXML_TEST_VERSION
 
+    xmlParserCtxtPtr xmlCtxt = xmlNewParserCtxt();
+    if (!xmlCtxt)
+        return false;
+
+#ifdef HAVE_XML_CTXT_SET_ERRORHANDLER
+    /* Prefer contextual handler whenever possible. It takes precedence over
+     * the global generic handler. */
+    xmlCtxtSetErrorHandler(xmlCtxt, xml_structured_error_func, ctx);
+#endif
+    /* This is still unconditionnally needed for the DTD validation (for now) */
     xmlSetGenericErrorFunc(ctx, xml_error_func);
 
-    doc = xmlParseFile(path);
+    doc = xmlCtxtReadFile(xmlCtxt, path, NULL, 0);
     if (!doc)
         goto parse_error;
 
@@ -1274,8 +1298,13 @@ parse_error:
      *     rxkb_context_parse();
      *     rxkb_context_unref();
      */
-    /* TODO: use the new API xmlCtxtSetErrorHandler */
+    /* TODO: remove once safer variants of xmlIOParseDTD and xmlValidateDtd are
+     * published. See: https://gitlab.gnome.org/GNOME/libxml2/-/issues/808 */
     xmlSetGenericErrorFunc(NULL, NULL);
+#ifdef HAVE_XML_CTXT_SET_ERRORHANDLER
+    xmlCtxtSetErrorHandler(xmlCtxt, NULL, NULL);
+#endif
+    xmlFreeParserCtxt(xmlCtxt);
 
     return success;
 }
