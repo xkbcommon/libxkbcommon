@@ -383,6 +383,13 @@ endif
 # libxkbregistry
 if get_option('enable-xkbregistry')
     dep_libxml = dependency('libxml-2.0')
+    if cc.has_header_symbol(
+        'libxml/xmlerror.h',
+        'xmlCtxtSetErrorHandler',
+        prefix: system_ext_define
+    )
+        configh_data.set10('HAVE_XML_CTXT_SET_ERRORHANDLER', true)
+    endif
     deps_libxkbregistry = [dep_libxml]
     libxkbregistry_sources = [
         'src/registry.c',
