@@ -1264,6 +1264,13 @@ parse(struct rxkb_context *ctx, const char *path,
     if (!xmlCtxt)
         return false;
 
+#ifdef XML_PARSE_NO_XXE
+#define _XML_OPTIONS (XML_PARSE_NONET | XML_PARSE_NOENT | XML_PARSE_NO_XXE)
+#else
+#define _XML_OPTIONS (XML_PARSE_NONET)
+#endif
+    xmlCtxtUseOptions(xmlCtxt, _XML_OPTIONS);
+
 #ifdef HAVE_XML_CTXT_SET_ERRORHANDLER
     /* Prefer contextual handler whenever possible. It takes precedence over
      * the global generic handler. */
