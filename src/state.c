@@ -1547,10 +1547,15 @@ xkb_state_mod_index_is_consumed2(struct xkb_state *state, xkb_keycode_t kc,
 {
     const struct xkb_key *key = XkbKey(state->keymap, kc);
 
-    if (!key || idx >= xkb_keymap_num_mods(state->keymap))
+    if (unlikely(!key || idx >= xkb_keymap_num_mods(state->keymap)))
         return -1;
 
-    return !!((1u << idx) & key_get_consumed(state, key, mode));
+    xkb_mod_mask_t mapping = mod_mapping(&state->keymap->mods.mods[idx], idx);
+    if (!mapping) {
+        /* Modifier not mapped */
+        return 0;
+    }
+    return !!((mapping & key_get_consumed(state, key, mode)) == mapping);
 }
 
 XKB_EXPORT int
