@@ -1265,6 +1265,17 @@ mod_mask_get_effective(struct xkb_keymap *keymap, xkb_mod_mask_t mods)
     return mask;
 }
 
+/* Get the mapping of a modifier */
+static inline xkb_mod_mask_t
+mod_mapping(struct xkb_mod *mod, xkb_mod_index_t idx)
+{
+    /*
+     * We cannot use `mod->mapping` directly, because it is
+     * not set for real modifiers.
+     */
+    return (mod->type & MOD_REAL) ? (1u << idx) : mod->mapping;
+}
+
 /**
  * Returns 1 if the given modifier is active with the specified type(s), 0 if
  * not, or -1 if the modifier is invalid.
@@ -1274,10 +1285,16 @@ xkb_state_mod_index_is_active(struct xkb_state *state,
                               xkb_mod_index_t idx,
                               enum xkb_state_component type)
 {
-    if (idx >= xkb_keymap_num_mods(state->keymap))
+    if (unlikely(idx >= xkb_keymap_num_mods(state->keymap)))
         return -1;
 
-    return !!(xkb_state_serialize_mods(state, type) & (1u << idx));
+    xkb_mod_mask_t mapping = mod_mapping(&state->keymap->mods.mods[idx], idx);
+    if (!mapping) {
+        /* Modifier not mapped */
+        return 0;
+    }
+    /* WARNING: this may overmatch for virtual modifiers */
+    return !!((xkb_state_serialize_mods(state, type) & mapping) == mapping);
 }
 
 /**
@@ -1321,16 +1338,21 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
         xkb_mod_index_t idx = va_arg(ap, xkb_mod_index_t);
         if (idx == XKB_MOD_INVALID)
             break;
-        if (idx >= num_mods) {
+        if (unlikely(idx >= num_mods)) {
             ret = -1;
             break;
         }
-        wanted |= (1u << idx);
+        wanted |= mod_mapping(&state->keymap->mods.mods[idx], idx);
     }
     va_end(ap);
 
     if (ret == -1)
         return ret;
+
+    if (!wanted) {
+        /* Modifiers not mapped */
+        return 0;
+    }
 
     return match_mod_masks(state, type, match, wanted);
 }
@@ -1376,12 +1398,17 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
             ret = -1;
             break;
         }
-        wanted |= (1u << idx);
+        wanted |= mod_mapping(&state->keymap->mods.mods[idx], idx);
     }
     va_end(ap);
 
     if (ret == -1)
         return ret;
+
+    if (!wanted) {
+        /* Modifiers not mapped */
+        return 0;
+    }
 
     return match_mod_masks(state, type, match, wanted);
 }
@@ -1392,8 +1419,8 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
  */
 XKB_EXPORT int
 xkb_state_layout_index_is_active(struct xkb_state *state,
-                                xkb_layout_index_t idx,
-                                enum xkb_state_component type)
+                                 xkb_layout_index_t idx,
+                                 enum xkb_state_component type)
 {
     int ret = 0;
 

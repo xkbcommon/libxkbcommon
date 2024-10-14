@@ -1,0 +1,15 @@
+partial modifier_keys
+xkb_symbols "super_hyper" {
+	key <MDSW> {
+		type[1] = "TWO_LEVEL",
+		symbols[1] = [ Super_L, Hyper_L ]
+	};
+	modifier_map Mod3 { <MDSW> };
+};
+xkb_symbols "meta" {
+	key <META> {
+		type[1] = "ONE_LEVEL",
+		symbols[1] = [ Meta_L ]
+	};
+	modifier_map Mod3 { <META> };
+};
