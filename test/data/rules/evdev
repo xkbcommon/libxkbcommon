@@ -1157,6 +1157,8 @@
   lv5:lwin_switch_lock_cancel     =       +level5(lwin_switch_lock_cancel)
   lv5:rwin_switch_lock_cancel     =       +level5(rwin_switch_lock_cancel)
   parens:swap_brackets   =   +parens(swap_brackets)
+  overlapping_modifiers:super_hyper =     +overlapping_modifiers(super_hyper)
+  overlapping_modifiers:meta        =     +overlapping_modifiers(meta)
 
 
 ! option	=	compat

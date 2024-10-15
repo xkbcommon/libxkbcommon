@@ -1706,10 +1706,19 @@ xkb_state_serialize_layout(struct xkb_state *state,
 /**
  * Test whether a modifier is active in a given keyboard state by name.
  *
+ * @warning For [virtual modifiers], this function may *overmatch* in case
+ * there are virtual modifiers with overlapping mappings to [real modifiers].
+ *
  * @returns 1 if the modifier is active, 0 if it is not.  If the modifier
  * name does not exist in the keymap, returns -1.
  *
  * @memberof xkb_state
+ *
+ * @since 0.1.0: Works only with *real* modifiers
+ * @since 1.8.0: Works also with *virtual* modifiers
+ *
+ * [virtual modifiers]: @ref virtual-modifier-def
+ * [real modifiers]: @ref real-modifier-def
  */
 int
 xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
@@ -1718,6 +1727,9 @@ xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
 /**
  * Test whether a set of modifiers are active in a given keyboard state by
  * name.
+ *
+ * @warning For [virtual modifiers], this function may *overmatch* in case
+ * there are virtual modifiers with overlapping mappings to [real modifiers].
  *
  * @param state The keyboard state.
  * @param type  The component of the state against which to match the
@@ -1731,6 +1743,12 @@ xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
  * the modifier names do not exist in the keymap, returns -1.
  *
  * @memberof xkb_state
+ *
+ * @since 0.1.0: Works only with *real* modifiers
+ * @since 1.8.0: Works also with *virtual* modifiers
+ *
+ * [virtual modifiers]: @ref virtual-modifier-def
+ * [real modifiers]: @ref real-modifier-def
  */
 int
 xkb_state_mod_names_are_active(struct xkb_state *state,
@@ -1741,10 +1759,19 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
 /**
  * Test whether a modifier is active in a given keyboard state by index.
  *
+ * @warning For [virtual modifiers], this function may *overmatch* in case
+ * there are virtual modifiers with overlapping mappings to [real modifiers].
+ *
  * @returns 1 if the modifier is active, 0 if it is not.  If the modifier
  * index is invalid in the keymap, returns -1.
  *
  * @memberof xkb_state
+ *
+ * @since 0.1.0: Works only with *real* modifiers
+ * @since 1.8.0: Works also with *virtual* modifiers
+ *
+ * [virtual modifiers]: @ref virtual-modifier-def
+ * [real modifiers]: @ref real-modifier-def
  */
 int
 xkb_state_mod_index_is_active(struct xkb_state *state, xkb_mod_index_t idx,
@@ -1753,6 +1780,9 @@ xkb_state_mod_index_is_active(struct xkb_state *state, xkb_mod_index_t idx,
 /**
  * Test whether a set of modifiers are active in a given keyboard state by
  * index.
+ *
+ * @warning For [virtual modifiers], this function may *overmatch* in case
+ * there are virtual modifiers with overlapping mappings to [real modifiers].
  *
  * @param state The keyboard state.
  * @param type  The component of the state against which to match the
@@ -1766,6 +1796,12 @@ xkb_state_mod_index_is_active(struct xkb_state *state, xkb_mod_index_t idx,
  * the modifier indices are invalid in the keymap, returns -1.
  *
  * @memberof xkb_state
+ *
+ * @since 0.1.0: Works only with *real* modifiers
+ * @since 1.8.0: Works also with *virtual* modifiers
+ *
+ * [virtual modifiers]: @ref virtual-modifier-def
+ * [real modifiers]: @ref real-modifier-def
  */
 int
 xkb_state_mod_indices_are_active(struct xkb_state *state,
@@ -1882,10 +1918,12 @@ enum xkb_consumed_mode {
  * @param key   The keycode of the key.
  * @param mode  The consumed modifiers mode to use; see enum description.
  *
- * @returns a mask of the consumed modifiers.
+ * @returns a mask of the consumed [real modifiers] modifiers.
  *
  * @memberof xkb_state
  * @since 0.7.0
+ *
+ * [real modifiers]: @ref real-modifier-def
  */
 xkb_mod_mask_t
 xkb_state_key_get_consumed_mods2(struct xkb_state *state, xkb_keycode_t key,
@@ -1904,6 +1942,9 @@ xkb_state_key_get_consumed_mods(struct xkb_state *state, xkb_keycode_t key);
  * Test whether a modifier is consumed by keyboard state translation for
  * a key.
  *
+ * @warning For [virtual modifiers], this function may *overmatch* in case
+ * there are virtual modifiers with overlapping mappings to [real modifiers].
+ *
  * @param state The keyboard state.
  * @param key   The keycode of the key.
  * @param idx   The index of the modifier to check.
@@ -1915,7 +1956,11 @@ xkb_state_key_get_consumed_mods(struct xkb_state *state, xkb_keycode_t key);
  * @sa xkb_state_mod_mask_remove_consumed()
  * @sa xkb_state_key_get_consumed_mods()
  * @memberof xkb_state
- * @since 0.7.0
+ * @since 0.7.0: Works only with *real* modifiers
+ * @since 1.8.0: Works also with *virtual* modifiers
+ *
+ * [virtual modifiers]: @ref virtual-modifier-def
+ * [real modifiers]: @ref real-modifier-def
  */
 int
 xkb_state_mod_index_is_consumed2(struct xkb_state *state,
@@ -1926,8 +1971,15 @@ xkb_state_mod_index_is_consumed2(struct xkb_state *state,
 /**
  * Same as xkb_state_mod_index_is_consumed2() with mode XKB_CONSUMED_MOD_XKB.
  *
+ * @warning For [virtual modifiers], this function may *overmatch* in case
+ * there are virtual modifiers with overlapping mappings to [real modifiers].
+ *
  * @memberof xkb_state
- * @since 0.4.1
+ * @since 0.4.1: Works only with *real* modifiers
+ * @since 1.8.0: Works also with *virtual* modifiers
+ *
+ * [virtual modifiers]: @ref virtual-modifier-def
+ * [real modifiers]: @ref real-modifier-def
  */
 int
 xkb_state_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t key,
