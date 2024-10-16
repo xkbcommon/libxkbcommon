@@ -52,6 +52,7 @@
 #include "config.h"
 
 #include "xkbcomp-priv.h"
+#include "action.h"
 #include "text.h"
 
 #define BUF_CHUNK_SIZE 4096
@@ -296,8 +297,8 @@ affect_lock_text(enum xkb_action_flags flags, bool show_both)
 #define ACTION_PADDING 30
 
 static bool
-write_action(struct xkb_keymap *keymap, struct buf *buf,
-             const union xkb_action *action,
+write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+             struct buf *buf, const union xkb_action *action,
              const char *prefix, const char *suffix)
 {
     const char *type;
@@ -319,21 +320,35 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         else
             args = ModMaskText(keymap->ctx, &keymap->mods,
                                action->mods.mods.mods);
-        write_buf(buf, "%s%s(modifiers=%s%s%s%s)%s", prefix, type, args,
+        if (action->type == ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_UNLOCK_ON_PRESS) && !isModUnlockOnPressSupported(format)) {
+            /* Default is true in format ≥ 1.1 */
+            log_err(keymap->ctx, XKB_ERROR_INCOMPATIBLE_KEYMAP_EXPORT_FORMAT,
+                    "Cannot use \"unlockOnPress=true\" in keymap format %d\n", format);
+        }
+        write_buf(buf, "%s%s(modifiers=%s%s%s%s%s)%s", prefix, type, args,
                   (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LOCK_CLEAR)) ? ",clearLocks" : "",
                   (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LATCH_TO_LOCK)) ? ",latchToLock" : "",
                   (action->type == ACTION_TYPE_MOD_LOCK) ? affect_lock_text(action->mods.flags, false) : "",
+                  /* Default is true in format ≥ 1.1 */
+                  (action->type == ACTION_TYPE_MOD_LOCK && (!(action->mods.flags & ACTION_UNLOCK_ON_PRESS)) && isModUnlockOnPressSupported(format)) ? ",unlockOnPress=false" : "",
                   suffix);
         break;
 
     case ACTION_TYPE_GROUP_SET:
     case ACTION_TYPE_GROUP_LATCH:
     case ACTION_TYPE_GROUP_LOCK:
-        write_buf(buf, "%s%s(group=%s%d%s%s)%s", prefix, type,
+        if (action->type == ACTION_TYPE_GROUP_LOCK && (action->group.flags & ACTION_LOCK_ON_RELEASE) && !isGroupLockOnReleaseSupported(format)) {
+            /* Default is true in format ≥ 1.1 */
+            log_err(keymap->ctx, XKB_ERROR_INCOMPATIBLE_KEYMAP_EXPORT_FORMAT,
+                    "Cannot use \"lockOnRelease=true\" in keymap format %d\n", format);
+        }
+        write_buf(buf, "%s%s(group=%s%d%s%s%s)%s", prefix, type,
                   (!(action->group.flags & ACTION_ABSOLUTE_SWITCH) && action->group.group > 0) ? "+" : "",
                   (action->group.flags & ACTION_ABSOLUTE_SWITCH) ? action->group.group + 1 : action->group.group,
                   (action->type != ACTION_TYPE_GROUP_LOCK && (action->group.flags & ACTION_LOCK_CLEAR)) ? ",clearLocks" : "",
                   (action->type != ACTION_TYPE_GROUP_LOCK && (action->group.flags & ACTION_LATCH_TO_LOCK)) ? ",latchToLock" : "",
+                  /* Default is true in format ≥ 1.1 */
+                  (action->type == ACTION_TYPE_GROUP_LOCK && (!(action->group.flags & ACTION_LOCK_ON_RELEASE)) && isGroupLockOnReleaseSupported(format)) ? ",lockOnRelease=false" : "",
                   suffix);
         break;
 
@@ -410,7 +425,8 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
 }
 
 static bool
-write_actions(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
+write_actions(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+              struct buf *buf, struct buf *buf2,
               const struct xkb_key *key, xkb_layout_index_t group)
 {
     static const union xkb_action noAction = { .type = ACTION_TYPE_NONE };
@@ -427,12 +443,12 @@ write_actions(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
                                                     group, level, &actions);
         buf2->size = 0;
         if (count == 0) {
-            if (!write_action(keymap, buf2, &noAction, NULL, NULL))
+            if (!write_action(keymap, format, buf2, &noAction, NULL, NULL))
                 return false;
             write_buf(buf, "%*s", ACTION_PADDING, buf2->buf);
         }
         else if (count == 1) {
-            if (!write_action(keymap, buf2, &(actions[0]), NULL, NULL))
+            if (!write_action(keymap, format, buf2, &(actions[0]), NULL, NULL))
                 return false;
             write_buf(buf, "%*s", ACTION_PADDING, buf2->buf);
         }
@@ -442,7 +458,7 @@ write_actions(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
                 if (k != 0)
                     write_buf(buf2, ", ");
                 size_t old_size = buf2->size;
-                if (!write_action(keymap, buf2, &(actions[k]), NULL, NULL))
+                if (!write_action(keymap, format, buf2, &(actions[k]), NULL, NULL))
                     return false;
                 /* Check if padding is necessary */
                 if (buf2->size >= old_size + ACTION_PADDING)
@@ -451,7 +467,7 @@ write_actions(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
                 unsigned int padding = old_size + ACTION_PADDING - buf2->size;
                 buf2->size = old_size;
                 write_buf(buf2, "%*s", padding, "");
-                if (!write_action(keymap, buf2, &(actions[k]), NULL, NULL))
+                if (!write_action(keymap, format, buf2, &(actions[k]), NULL, NULL))
                     return false;
             }
             write_buf(buf2, " }");
@@ -463,7 +479,8 @@ write_actions(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
 }
 
 static bool
-write_compat(struct xkb_keymap *keymap, struct buf *buf)
+write_compat(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+             struct buf *buf)
 {
     const struct xkb_led *led;
 
@@ -497,7 +514,7 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
         if (si->repeat)
             write_buf(buf, "\t\trepeat= True;\n");
 
-        write_action(keymap, buf, &si->action, "\t\taction= ", ";\n");
+        write_action(keymap, format, buf, &si->action, "\t\taction= ", ";\n");
         write_buf(buf, "\t};\n");
     }
 
@@ -551,8 +568,8 @@ write_keysyms(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
 }
 
 static bool
-write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
-          const struct xkb_key *key)
+write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+          struct buf *buf, struct buf *buf2, const struct xkb_key *key)
 {
     xkb_layout_index_t group;
     bool simple = true;
@@ -652,7 +669,7 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
             write_buf(buf, " ]");
             if (show_actions) {
                 write_buf(buf, ",\n\t\tactions[Group%u]= [ ", group + 1);
-                if (!write_actions(keymap, buf, buf2, key, group))
+                if (!write_actions(keymap, format, buf, buf2, key, group))
                     return false;
                 write_buf(buf, " ]");
             }
@@ -664,7 +681,8 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
 }
 
 static bool
-write_symbols(struct xkb_keymap *keymap, struct buf *buf)
+write_symbols(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+              struct buf *buf)
 {
     const struct xkb_key *key;
     xkb_layout_index_t group;
@@ -688,7 +706,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
     struct buf buf2 = { NULL, 0, 0 };
     xkb_keys_foreach(key, keymap) {
         if (key->num_groups > 0) {
-            if (!write_key(keymap, buf, &buf2, key)) {
+            if (!write_key(keymap, format, buf, &buf2, key)) {
                 free(buf2.buf);
                 return false;
             }
@@ -718,22 +736,24 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
 }
 
 static bool
-write_keymap(struct xkb_keymap *keymap, struct buf *buf)
+write_keymap(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+             struct buf *buf)
 {
     return (check_write_buf(buf, "xkb_keymap {\n") &&
             write_keycodes(keymap, buf) &&
             write_types(keymap, buf) &&
-            write_compat(keymap, buf) &&
-            write_symbols(keymap, buf) &&
+            write_compat(keymap, format, buf) &&
+            write_symbols(keymap, format, buf) &&
             check_write_buf(buf, "};\n"));
 }
 
 char *
-text_v1_keymap_get_as_string(struct xkb_keymap *keymap)
+text_v1_keymap_get_as_string(struct xkb_keymap *keymap,
+                             enum xkb_keymap_format format)
 {
     struct buf buf = { NULL, 0, 0 };
 
-    if (!write_keymap(keymap, &buf)) {
+    if (!write_keymap(keymap, format, &buf)) {
         free(buf.buf);
         return NULL;
     }

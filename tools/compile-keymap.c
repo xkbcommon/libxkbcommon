@@ -95,15 +95,26 @@ usage(char **argv)
            "    The XKB layout variant (default: '%s')\n"
            " --options <options>\n"
            "    The XKB options (default: '%s')\n"
+           " --input-format <format>\n"
+           "    The keymap format to use for parsing (default: '%d')\n"
+           " --output-format <format>\n"
+           "    The keymap format to use for serializing (default: '%d')\n"
+           " --format <format>\n"
+           "    The keymap format to use for both parsing and serializing (default: '%d')\n"
            "\n",
            argv[0], DEFAULT_XKB_RULES,
            DEFAULT_XKB_MODEL, DEFAULT_XKB_LAYOUT,
            DEFAULT_XKB_VARIANT ? DEFAULT_XKB_VARIANT : "<none>",
-           DEFAULT_XKB_OPTIONS ? DEFAULT_XKB_OPTIONS : "<none>");
+           DEFAULT_XKB_OPTIONS ? DEFAULT_XKB_OPTIONS : "<none>",
+           XKB_KEYMAP_DEFAULT_FORMAT_TEXT,
+           XKB_KEYMAP_DEFAULT_FORMAT_TEXT,
+           XKB_KEYMAP_DEFAULT_FORMAT_TEXT);
 }
 
 static bool
-parse_options(int argc, char **argv, struct xkb_rule_names *names)
+parse_options(int argc, char **argv, struct xkb_rule_names *names,
+              enum xkb_keymap_format *keymap_input_format,
+              enum xkb_keymap_format *keymap_output_format)
 {
     enum options {
         OPT_VERBOSE,
@@ -117,6 +128,9 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
         OPT_LAYOUT,
         OPT_VARIANT,
         OPT_OPTION,
+        OPT_FORMAT,
+        OPT_INPUT_FORMAT,
+        OPT_OUTPUT_FORMAT,
     };
     static struct option opts[] = {
         {"help",             no_argument,            0, 'h'},
@@ -133,6 +147,9 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
         {"layout",           required_argument,      0, OPT_LAYOUT},
         {"variant",          required_argument,      0, OPT_VARIANT},
         {"options",          required_argument,      0, OPT_OPTION},
+        {"format",           required_argument,      0, OPT_FORMAT},
+        {"input-format",     required_argument,      0, OPT_INPUT_FORMAT},
+        {"output-format",    required_argument,      0, OPT_OUTPUT_FORMAT},
         {0, 0, 0, 0},
     };
 
@@ -188,6 +205,28 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
         case OPT_OPTION:
             names->options = optarg;
             break;
+        case OPT_FORMAT:
+            if (!keymap_parse_format("--format", optarg,
+                                     keymap_input_format)) {
+                usage(argv);
+                exit(EXIT_INVALID_USAGE);
+            }
+            *keymap_output_format = *keymap_input_format;
+            break;
+        case OPT_INPUT_FORMAT:
+            if (!keymap_parse_format("--input-format", optarg,
+                                     keymap_input_format)) {
+                usage(argv);
+                exit(EXIT_INVALID_USAGE);
+            }
+            break;
+        case OPT_OUTPUT_FORMAT:
+            if (!keymap_parse_format("--output-format", optarg,
+                                     keymap_output_format)) {
+                usage(argv);
+                exit(EXIT_INVALID_USAGE);
+            }
+            break;
         default:
             usage(argv);
             exit(EXIT_INVALID_USAGE);
@@ -236,15 +275,18 @@ print_kccgst(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
 }
 
 static bool
-print_keymap(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
+print_keymap(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo,
+             enum xkb_keymap_format keymap_input_format,
+             enum xkb_keymap_format keymap_output_format)
 {
     struct xkb_keymap *keymap;
 
-    keymap = xkb_keymap_new_from_names(ctx, rmlvo, XKB_KEYMAP_COMPILE_NO_FLAGS);
+    keymap = xkb_keymap_new_from_names2(ctx, rmlvo, keymap_input_format,
+                                        XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (keymap == NULL)
         return false;
 
-    char *buf = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_FORMAT_TEXT_V1);
+    char *buf = xkb_keymap_get_as_string(keymap, keymap_output_format);
     printf("%s\n", buf);
     free(buf);
 
@@ -253,7 +295,9 @@ print_keymap(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
 }
 
 static bool
-print_keymap_from_file(struct xkb_context *ctx)
+print_keymap_from_file(struct xkb_context *ctx,
+                       enum xkb_keymap_format keymap_input_format,
+                       enum xkb_keymap_format keymap_output_format)
 {
     struct xkb_keymap *keymap = NULL;
     char *keymap_string = NULL;
@@ -286,14 +330,14 @@ print_keymap_from_file(struct xkb_context *ctx)
             break;
     }
     fseek(file, 0, SEEK_SET);
-    keymap = xkb_keymap_new_from_file(ctx, file,
-                                      XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+    keymap = xkb_keymap_new_from_file(ctx, file, keymap_input_format,
+                                      XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (!keymap) {
         fprintf(stderr, "Couldn't create xkb keymap\n");
         goto out;
     }
 
-    keymap_string = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_FORMAT_TEXT_V1);
+    keymap_string = xkb_keymap_get_as_string(keymap, keymap_output_format);
     if (!keymap_string) {
         fprintf(stderr, "Couldn't get the keymap string\n");
         goto out;
@@ -324,6 +368,8 @@ main(int argc, char **argv)
         .variant = NULL,
         .options = DEFAULT_XKB_OPTIONS,
     };
+    enum xkb_keymap_format keymap_input_format = XKB_KEYMAP_DEFAULT_FORMAT_TEXT;
+    enum xkb_keymap_format keymap_output_format = XKB_KEYMAP_DEFAULT_FORMAT_TEXT;
     int rc = 1;
 
     if (argc < 1) {
@@ -331,7 +377,8 @@ main(int argc, char **argv)
         return EXIT_INVALID_USAGE;
     }
 
-    if (!parse_options(argc, argv, &names))
+    if (!parse_options(argc, argv, &names,
+                       &keymap_input_format, &keymap_output_format))
         return EXIT_INVALID_USAGE;
 
     /* Now fill in the layout */
@@ -366,11 +413,12 @@ main(int argc, char **argv)
     if (output_format == FORMAT_RMLVO) {
         rc = print_rmlvo(ctx, &names) ? EXIT_SUCCESS : EXIT_FAILURE;
     } else if (output_format == FORMAT_KEYMAP) {
-        rc = print_keymap(ctx, &names) ? EXIT_SUCCESS : EXIT_FAILURE;
+        rc = print_keymap(ctx, &names, keymap_input_format, keymap_output_format)
+           ? EXIT_SUCCESS : EXIT_FAILURE;
     } else if (output_format == FORMAT_KCCGST) {
         rc = print_kccgst(ctx, &names) ? EXIT_SUCCESS : EXIT_FAILURE;
     } else if (output_format == FORMAT_KEYMAP_FROM_XKB) {
-        rc = print_keymap_from_file(ctx);
+        rc = print_keymap_from_file(ctx, keymap_input_format, keymap_output_format);
     }
 
     xkb_context_unref(ctx);

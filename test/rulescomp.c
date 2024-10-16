@@ -34,8 +34,8 @@ test_rmlvo_va(struct xkb_context *context, const char *rules,
     struct xkb_keymap *keymap;
     int ret;
 
-    keymap = test_compile_rules(context, rules, model, layout, variant,
-                                options);
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                rules, model, layout, variant, options);
     if (!keymap)
         return 0;
 
