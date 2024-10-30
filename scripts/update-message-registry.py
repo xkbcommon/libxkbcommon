@@ -47,7 +47,7 @@ class Example:
     after: str | None
 
     @classmethod
-    def parse(cls, entry: Any) -> Example:
+    def parse(cls, entry: dict[str, Any]) -> Example:
         name = entry.get("name")
         assert name, entry
 
@@ -89,7 +89,7 @@ class Entry:
     """
 
     @classmethod
-    def parse(cls, entry: Any) -> Entry:
+    def parse(cls, entry: dict[str, Any]) -> Entry:
         code = entry.get("code")
         assert code is not None and isinstance(code, int) and code > 0, entry
 

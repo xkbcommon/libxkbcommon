@@ -87,7 +87,7 @@ def generate(
     data: dict[str, Any],
     root: Path,
     file: Path,
-):
+) -> None:
     """Generate a file from its Jinja2 template"""
     template_path = file.with_suffix(f"{file.suffix}.jinja")
     template = env.get_template(str(template_path))
