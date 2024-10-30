@@ -621,11 +621,11 @@ class OverlappedSequences(Generic[T]):
             return NotImplemented
 
     @classmethod
-    def from_singleton(cls, chunk: tuple[T, ...]):
+    def from_singleton(cls, chunk: tuple[T, ...]) -> Self:
         return cls(data=chunk, offsets={chunk: 0})
 
     @classmethod
-    def from_pair(cls, pair: DeltasPair):
+    def from_pair(cls, pair: DeltasPair) -> Self:
         return cls(
             data=pair.d1 + pair.d2[pair.overlap :],
             offsets={
@@ -635,7 +635,7 @@ class OverlappedSequences(Generic[T]):
         )
 
     @classmethod
-    def from_iterable(cls, ts: Iterable[tuple[T, ...]]):
+    def from_iterable(cls, ts: Iterable[tuple[T, ...]]) -> Self:
         return reduce(lambda s, t: s.add(t), ts, cls((), {}))
 
     @classmethod
@@ -1228,7 +1228,7 @@ class CompressedArray(Generic[I]):
             offsets2_int_size=0,
         )
 
-    @classmethod
+    @staticmethod
     def test(cls):
         c1 = (1, 2, 3, 4)
         c2 = (2, 3)
@@ -1238,9 +1238,9 @@ class CompressedArray(Generic[I]):
         s += c2
         s += c3
         s += c4
-        groups = {c1: [0, 3], c2: [4], c3: [1, 2]}
-        a = cls.from_overlapped_sequences(s, groups)
-        assert a == cls(
+        groups: Groups[int] = {c1: [0, 3], c2: [4], c3: [1, 2]}
+        a = CompressedArray.from_overlapped_sequences(s, groups)
+        assert a == CompressedArray(
             data=s.data, offsets=(0, 2, 2, 0, 1), chunk_offsets=s.offsets
         ), a
 
@@ -1275,7 +1275,7 @@ class ArrayCompressor:
         c4 = (3, 4, 5)
         c5 = (0, 1, 2)
         c6 = (2, 3, 5)
-        groups = {
+        groups: Groups[int] = {
             c1: [0],
             c2: [1],
             c3: [2],
