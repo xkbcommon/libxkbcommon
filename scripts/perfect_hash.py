@@ -277,6 +277,10 @@ class TooManyInterationsError(Exception):
     pass
 
 
+# NOTE: as of mypy 1.13, it is not possible to specify a default value for a generic
+# parameter, so `Hash: type[H] = StrSaltHash` will raise a type error. See:
+# • https://github.com/python/mypy/issues/3737
+# • https://github.com/python/mypy/issues/18017
 def generate_hash(
     keys: list[str], Hash: type[H] = StrSaltHash
 ) -> tuple[H, H, list[int]]:
@@ -393,7 +397,7 @@ class Format(object):
 
 def generate_code(
     keys: list[str],
-    Hash: type = StrSaltHash,
+    Hash: type[H] = StrSaltHash,
     template: str | None = None,
     options: Values | None = None,
 ) -> str:
