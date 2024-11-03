@@ -89,6 +89,7 @@ from enum import Enum, unique
 from functools import cache, reduce
 from pathlib import Path
 from typing import (
+    Any,
     Generator,
     Generic,
     Iterable,
@@ -144,7 +145,7 @@ class XKBCOMMON:
     xkb_keysym_t = ctypes.c_uint32
     XKB_KEYSYM_NO_FLAGS = 0
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._xkbcommon_path = os.environ.get("XKBCOMMON_LIB_PATH")
 
         if self._xkbcommon_path:
@@ -210,7 +211,7 @@ class XKBCOMMON:
     def keysym_code_point(self, keysym: Keysym) -> int:
         return self._lib.xkb_keysym_to_utf32(keysym)
 
-    def iter_case_mappings(self, unicode: bool):
+    def iter_case_mappings(self, unicode: bool) -> Iterable[tuple[Keysym, Entry]]:
         for keysym in map(
             Keysym,
             range(self.XKB_KEYSYM_MIN_EXPLICIT, self.XKB_KEYSYM_MAX_EXPLICIT + 1),
@@ -237,13 +238,16 @@ class XKBCOMMON:
     def case_mappings(self, unicode: bool) -> tuple[Entry, ...]:
         mappings = dict(self.iter_case_mappings(unicode))
         keysym_max = max(mappings)
-        return tuple(mappings.get(ks, Entry.zeros()) for ks in range(0, keysym_max + 1))
+        return tuple(
+            mappings.get(cast(Keysym, ks), Entry.zeros())
+            for ks in range(0, keysym_max + 1)
+        )
 
 
 xkbcommon = XKBCOMMON()
 
 
-def load_keysyms(path: Path, unicode: bool):
+def load_keysyms(path: Path, unicode: bool) -> tuple[Entry, ...]:
     with path.open("rt", encoding="utf-8") as fd:
         keysyms = {
             ks: entry
@@ -292,13 +296,13 @@ class Entry:
     is_upper: bool
 
     @classmethod
-    def zeros(cls):
+    def zeros(cls) -> Self:
         return cls(lower=0, upper=0, is_lower=False, is_upper=False)
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return any(self) or self.is_lower or self.is_upper
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(tuple(self))
 
     def __iter__(self) -> Generator[int, None, None]:
@@ -306,7 +310,7 @@ class Entry:
         yield self.upper
 
     @classmethod
-    def from_code_point(cls, cp: CodePoint):
+    def from_code_point(cls, cp: CodePoint) -> Self:
         return cls(
             lower=cls.lower_delta(cp),
             upper=cls.upper_delta(cp),
@@ -430,7 +434,7 @@ class Entries(Deltas[Entry]):
         cpʹ: CodePoint,
         keysym: Keysym,
         keysymʹ: Keysym,
-    ):
+    ) -> None:
         char = chr(cp)
         expected = chr(cpʹ)
         got = xkbcommon.keysym_to_str(keysymʹ)
@@ -475,8 +479,8 @@ class DeltasPair(Generic[T]):
     d2: tuple[T, ...]
     overlap: int
 
-    def __contains__(self, x):
-        return x == self.d1 or x == self.d2
+    def __contains__(self, x: tuple[T, ...]) -> bool:
+        return (x == self.d1) or (x == self.d2)
 
     @classmethod
     def compute_pairs_overlaps(
@@ -504,7 +508,7 @@ class DeltasPair(Generic[T]):
                 yield p
 
     @classmethod
-    def compute_best_pair(cls, pairs: Iterable[DeltasPair[T]]):
+    def compute_best_pair(cls, pairs: Iterable[DeltasPair[T]]) -> DeltasPair[T]:
         return max(pairs, key=lambda p: p.overlap)
 
 
@@ -527,23 +531,23 @@ class Overlap:
 
     @classmethod
     @cache
-    def compute(cls, s1: Sequence[T], s2: Sequence[T]):
+    def compute(cls, s1: Sequence[T], s2: Sequence[T]) -> Self:
         l1 = len(s1)
         l2 = len(s2)
         return max(
             (
-                Overlap(offset=start, overlap=overlap)
+                cls(offset=start, overlap=overlap)
                 for start in range(0, l1)
                 if (end := min(start + l2, l1))
                 and (overlap := end - start)
                 and s1[start:end] == s2[:overlap]
             ),
             key=lambda x: x.overlap,
-            default=Overlap(offset=l1, overlap=0),
+            default=cls(offset=l1, overlap=0),
         )
 
     @classmethod
-    def test(cls):
+    def test(cls) -> None:
         c1 = (1, 2, 3, 4)
         c2 = (2, 3)
         c3 = (3, 2, 1)
@@ -583,13 +587,13 @@ class OverlappedSequences(Generic[T]):
     data: tuple[T, ...]
     offsets: dict[tuple[T, ...], int]
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return bool(self.data)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.data, tuple(self.offsets)))
 
-    def __add__(self, x):
+    def __add__(self, x: Any) -> Self:
         if isinstance(x, self.__class__):
             return self.extend(x)
         elif isinstance(x, tuple):
@@ -597,7 +601,7 @@ class OverlappedSequences(Generic[T]):
         else:
             return NotImplemented
 
-    def __iadd__(self, x):
+    def __iadd__(self, x: Any) -> Self:
         if isinstance(x, self.__class__):
             overlap = Overlap.compute(self.data, x.data)
             self.data = (
@@ -625,7 +629,7 @@ class OverlappedSequences(Generic[T]):
         return cls(data=chunk, offsets={chunk: 0})
 
     @classmethod
-    def from_pair(cls, pair: DeltasPair) -> Self:
+    def from_pair(cls, pair: DeltasPair[T]) -> Self:
         return cls(
             data=pair.d1 + pair.d2[pair.overlap :],
             offsets={
@@ -639,13 +643,13 @@ class OverlappedSequences(Generic[T]):
         return reduce(lambda s, t: s.add(t), ts, cls((), {}))
 
     @classmethod
-    def from_ordered_iterable(cls, ts: Iterable[tuple[T, ...]]):
+    def from_ordered_iterable(cls, ts: Iterable[tuple[T, ...]]) -> Self:
         return reduce(lambda s, t: s.append(t), ts, cls((), {}))
 
-    def extend(self, s: OverlappedSequences[T]):
+    def extend(self, s: Self) -> Self:
         overlap: Overlap
-        s1: OverlappedSequences[T]
-        s2: OverlappedSequences[T]
+        s1: Self
+        s2: Self
         overlap, s1, s2 = max(
             (
                 (Overlap.compute(self.data, s.data), self, s),
@@ -664,10 +668,10 @@ class OverlappedSequences(Generic[T]):
             offsets[c] = overlap.offset + o
         return self.__class__(data=data, offsets=offsets)
 
-    def add(self, chunk: tuple[T, ...]):
+    def add(self, chunk: tuple[T, ...]) -> Self:
         return self.extend(self.from_singleton(chunk))
 
-    def append(self, chunk: tuple[T, ...]):
+    def append(self, chunk: tuple[T, ...]) -> Self:
         overlap = Overlap.compute(self.data, chunk)
         self.data = (
             self.data
@@ -677,7 +681,7 @@ class OverlappedSequences(Generic[T]):
         self.offsets[chunk] = overlap.offset
         return self
 
-    def insert(self, offset: int, overlap: int, chunk: tuple[T, ...]):
+    def insert(self, offset: int, overlap: int, chunk: tuple[T, ...]) -> None:
         chunk_length = len(chunk)
         if offset < 0:
             self.data = chunk[:-overlap] + self.data
@@ -693,7 +697,7 @@ class OverlappedSequences(Generic[T]):
             assert self.data[offset:] == chunk
             self.offsets[chunk] = offset
 
-    def merge(self, offset: int, overlap: int, s: OverlappedSequences[T]):
+    def merge(self, offset: int, overlap: int, s: OverlappedSequences[T]) -> None:
         s_length = len(s.data)
         if offset < 0:
             self.data = s.data[:-overlap] + self.data
@@ -751,13 +755,13 @@ class OverlappedSequences(Generic[T]):
         new.append(OverlappedSequences(data=self.data[start:end], offsets=pending))
         return new
 
-    def total_overlap(self):
+    def total_overlap(self) -> int:
         return sum(len(d) for d in self.offsets) - len(self.data)
 
 
 class _OverlappedSequences(OverlappedSequences[int]):
     @classmethod
-    def test(cls):
+    def test(cls) -> None:
         c1: tuple[int, ...] = (1, 2, 3, 4)
         c2: tuple[int, ...] = (2, 3)
         c3: tuple[int, ...] = (3, 4, 5)
@@ -811,7 +815,7 @@ class ChunksCompressor:
     @classmethod
     def _insert(
         cls, chunk: tuple[T, ...], index: int, offset: int, overlap: int
-    ) -> Move:
+    ) -> Move[T]:
         def action(
             pairs: list[DeltasPair[T]],
             remaining_chunks: set[tuple[T, ...]],
@@ -825,7 +829,7 @@ class ChunksCompressor:
         return action
 
     @classmethod
-    def _merge(cls, index1: int, index2: int, offset: int, overlap: int) -> Move:
+    def _merge(cls, index1: int, index2: int, offset: int, overlap: int) -> Move[T]:
         def action(
             pairs: list[DeltasPair[T]],
             remaining_chunks: set[tuple[T, ...]],
@@ -838,7 +842,7 @@ class ChunksCompressor:
         return action
 
     @classmethod
-    def _add_new_singleton(cls, chunk: tuple[T, ...]) -> Move:
+    def _add_new_singleton(cls, chunk: tuple[T, ...]) -> Move[T]:
         def action(
             pairs: list[DeltasPair[T]],
             remaining_chunks: set[tuple[T, ...]],
@@ -851,7 +855,7 @@ class ChunksCompressor:
         return action
 
     @classmethod
-    def _add_new_sequence(cls, pair: DeltasPair[T]) -> Move:
+    def _add_new_sequence(cls, pair: DeltasPair[T]) -> Move[T]:
         def action(
             pairs: list[DeltasPair[T]],
             remaining_chunks: set[tuple[T, ...]],
@@ -878,7 +882,7 @@ class ChunksCompressor:
             )
 
         overlapped_sequences: list[OverlappedSequences[T]] = []
-        best_move: Move | None = None
+        best_move: Move[T] | None = None
         total_chunks = len(remaining_chunks)
         while remaining_chunks or (len(overlapped_sequences) > 1 and best_move):
             if self.verbose:
@@ -970,7 +974,7 @@ class ChunksCompressor:
                 assert overlap_max.overlap == 0, overlap_max
 
         for _ in range(1, len(overlapped_sequences)):
-            move = self._merge(0, 1, len(overlapped_sequences[0].data), 0)
+            move: Move[T] = self._merge(0, 1, len(overlapped_sequences[0].data), 0)
             move(
                 pairs=pairs,
                 remaining_chunks=remaining_chunks,
@@ -1102,7 +1106,7 @@ class ChunksCompressor:
             )
 
     @classmethod
-    def test_compression(cls):
+    def test_compression(cls) -> None:
         c1 = (1, 2, 3)
         c2 = (-1, 0, 1)
         c3 = (-2, -1, 0)
@@ -1153,7 +1157,7 @@ class Stats:
         return self.data_size + self.offsets1_size + self.offsets2_size
 
 
-def _int_size(ts: Sequence[Iterable[int] | int], offset: int = 0):
+def _int_size(ts: Sequence[Iterable[int] | int], offset: int = 0) -> int:
     assert ts
     if isinstance(ts[0], int):
         ts = cast(Sequence[int], ts)
@@ -1167,7 +1171,7 @@ def _int_size(ts: Sequence[Iterable[int] | int], offset: int = 0):
         min_delta <<= offset
         max_delta <<= offset
     for n in range(3, 7):
-        size = 2**n
+        size: int = 2**n
         min_int = -(1 << (size - 1))
         max_int = -min_int - 1
         if min_int <= min_delta and max_delta <= max_int:
@@ -1176,13 +1180,13 @@ def _int_size(ts: Sequence[Iterable[int] | int], offset: int = 0):
         raise ValueError((min_delta, max_delta))
 
 
-def uint_size(ts: Sequence[int]):
+def uint_size(ts: Sequence[int]) -> int:
     min_delta = min(ts)
     if min_delta < 0:
         raise ValueError(min_delta)
     max_delta = max(ts)
     for n in range(3, 7):
-        size = 2**n
+        size: int = 2**n
         max_int = (1 << size) - 1
         if max_delta <= max_int:
             return size
@@ -1204,7 +1208,9 @@ class CompressedArray(Generic[I]):
     chunk_offsets: dict[tuple[I, ...], int]
 
     @classmethod
-    def from_overlapped_sequences(cls, s: OverlappedSequences[I], groups: Groups[I]):
+    def from_overlapped_sequences(
+        cls, s: OverlappedSequences[I], groups: Groups[I]
+    ) -> Self:
         offsets = tuple(
             s.offsets[d]
             for _, d in sorted(
@@ -1214,10 +1220,10 @@ class CompressedArray(Generic[I]):
         )
         return cls(data=s.data, offsets=offsets, chunk_offsets=s.offsets)
 
-    def total_overlap(self):
+    def total_overlap(self) -> int:
         return sum(len(d) for d in self.chunk_offsets) - len(self.data)
 
-    def stats(self, int_size) -> Stats:
+    def stats(self, int_size: Callable[[Sequence[Iterable[int] | int]], int]) -> Stats:
         return Stats(
             data_length=len(self.data),
             data_int_size=int_size(self.data),
@@ -1229,7 +1235,7 @@ class CompressedArray(Generic[I]):
         )
 
     @staticmethod
-    def test(cls):
+    def test() -> None:
         c1 = (1, 2, 3, 4)
         c2 = (2, 3)
         c3 = (3, 4, 5)
@@ -1268,7 +1274,7 @@ class ArrayCompressor:
         return array_compressor.run(groups)
 
     @classmethod
-    def test_compression(cls):
+    def test_compression(cls) -> None:
         c1 = (1, 2, 3)
         c2 = (-1, 0, 1)
         c3 = (-2, -1, 0)
@@ -1318,7 +1324,7 @@ class SimpleSolution(Generic[T]):
     total: int
 
     @classmethod
-    def zeros(cls):
+    def zeros(cls) -> Self:
         return cls(
             data_block_size_log2=0,
             data_int_size=0,
@@ -1334,11 +1340,11 @@ class SimpleSolution(Generic[T]):
         )
 
     @property
-    def case(self):
+    def case(self) -> str:
         return "both"
 
     @property
-    def data_size(self):
+    def data_size(self) -> int:
         return len(self.data) * self.data_int_size
 
     def _convert(self, op: Callable[[X, T], X], x: X) -> X:
@@ -1808,7 +1814,7 @@ xkb_keysym_is_upper_or_title(xkb_keysym_t ks)
 """
 
     @staticmethod
-    def myHex(n: int, max_hex_length: int):
+    def myHex(n: int, max_hex_length: int) -> str:
         return (
             f"""{"-" if n < 0 else " "}0x{hex(abs(n))[2:].rjust(max_hex_length, '0')}"""
         )
@@ -1909,11 +1915,11 @@ xkb_keysym_is_upper_or_title(xkb_keysym_t ks)
 class Strategy(Enum):
     Default = SeparateLegacyKeysymsAndUnicodeCombinedCaseMappings
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value.__name__
 
     @classmethod
-    def parse(cls, str) -> Self:
+    def parse(cls, str: str) -> Self:
         for s in cls:
             if s.name == str:
                 return s
@@ -1921,7 +1927,9 @@ class Strategy(Enum):
             raise ValueError(str)
 
     @classmethod
-    def run(cls, root: Path, config: Config, strategies: list[Self], write: bool):
+    def run(
+        cls, root: Path, config: Config, strategies: list[Self], write: bool
+    ) -> None:
         # FIXME: more generic type
         results: list[SeparateLegacyKeysymsAndUnicodeCombinedCaseMappings] = []
         best_total = math.inf
