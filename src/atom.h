@@ -30,8 +30,13 @@ typedef uint32_t xkb_atom_t;
 
 struct atom_table;
 
+#ifdef ENABLE_KEYMAP_CACHE
+struct atom_table *
+atom_table_new(size_t size);
+#else
 struct atom_table *
 atom_table_new(void);
+#endif
 
 void
 atom_table_free(struct atom_table *table);

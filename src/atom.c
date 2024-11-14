@@ -80,6 +80,9 @@
 #include "atom.h"
 #include "darray.h"
 #include "utils.h"
+#ifdef ENABLE_KEYMAP_CACHE
+#include <stdatomic.h>
+#endif
 
 /* FNV-1a (http://www.isthe.com/chongo/tech/comp/fnv/). */
 static inline uint32_t
@@ -95,6 +98,7 @@ hash_buf(const char *string, size_t len)
     return hash;
 }
 
+#ifndef ENABLE_KEYMAP_CACHE
 /*
  * The atom table is an insert-only linear probing hash table
  * mapping strings to atoms. Another array maps the atoms to
@@ -191,3 +195,108 @@ atom_intern(struct atom_table *table, const char *string, size_t len, bool add)
 
     assert(!"couldn't find an empty slot during probing");
 }
+
+#else
+
+struct atom_table {
+    size_t size;
+    char **strings;
+};
+
+struct atom_table *
+atom_table_new(size_t size_log2)
+{
+    struct atom_table *table = calloc(1, sizeof(*table));
+    if (!table)
+        return NULL;
+    size_t size = 1u << size_log2;
+    table->size = size;
+    table->strings = calloc(size, sizeof(char*));
+    return table;
+}
+
+void
+atom_table_free(struct atom_table *table)
+{
+    if (!table)
+        return;
+
+    size_t count = 0;
+    for (size_t k = 0 ; k < table->size; k++) {
+        if (table->strings[k]) {
+            free(table->strings[k]);
+            count++;
+        }
+    }
+    free(table->strings);
+    free(table);
+}
+
+
+xkb_atom_t
+atom_intern(struct atom_table *table, const char *string, size_t len, bool add)
+{
+
+    uint32_t hash = hash_buf(string, len);
+    char *new_value = NULL;
+    for (size_t i = 0; i < table->size; i++) {
+        xkb_atom_t index_pos = (hash + i) & (table->size - 1);
+        if (index_pos == XKB_ATOM_NONE)
+            continue;
+
+        char *existing_value = atomic_load_explicit(&table->strings[index_pos],
+                                                    memory_order_acquire);
+
+        /* Check if there is a value at the current index */
+        if (!existing_value) {
+            /* No value defined. Check if we are allowed to add one */
+            if (!add)
+                return XKB_ATOM_NONE;
+
+            /*
+             * Prepare addition: duplicate string.
+             * Warning: This may not be our first attempt!
+             */
+            if (!new_value)
+                new_value = strndup(string, len);
+            if (!new_value) {
+                /* Failed memory allocation */
+                // FIXME: error handling?
+                return XKB_ATOM_NONE;
+            }
+            /* Try to register a new entry */
+            if (atomic_compare_exchange_strong_explicit(
+                    &table->strings[index_pos], &existing_value, new_value,
+                    memory_order_release, memory_order_acquire)) {
+                return index_pos;
+            }
+            /*
+             * We were not fast enough to take the spot.
+             * But maybe the newly added value is our value, so read it again.
+             */
+            existing_value = atomic_load_explicit(&table->strings[index_pos],
+                                                  memory_order_acquire);
+        }
+
+        /* Check the value are equal */
+        if (strncmp(existing_value, string, len) == 0 &&
+            existing_value[len] == '\0') {
+            /* We may have tried unsuccessfully to add the string */
+            free(new_value);
+            return index_pos;
+        }
+        /* Hash collision: try next atom */
+    }
+
+    free(new_value);
+    assert(!"couldn't find an empty slot during probing");
+}
+
+const char *
+atom_text(struct atom_table *table, xkb_atom_t atom)
+{
+    assert(atom < table->size);
+    return table->strings[atom];
+}
+
+#endif
