@@ -26,8 +26,13 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
+#include "xkbcommon/xkbcommon.h"
 #include "atom.h"
 #include "messages-codes.h"
+#include "src/utils.h"
+#ifdef ENABLE_KEYMAP_CACHE
+#include "xkbcomp/cache.h"
+#endif
 
 struct xkb_context {
     int refcnt;
@@ -55,6 +60,10 @@ struct xkb_context {
 
     unsigned int use_environment_names : 1;
     unsigned int use_secure_getenv : 1;
+
+#ifdef ENABLE_KEYMAP_CACHE
+    struct xkb_keymap_cache *keymap_cache;
+#endif
 };
 
 char *

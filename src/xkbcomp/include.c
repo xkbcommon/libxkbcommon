@@ -56,6 +56,10 @@
 #include "xkbcomp-priv.h"
 #include "include.h"
 
+#ifdef ENABLE_KEYMAP_CACHE
+#include "cache.h"
+#endif
+
 /**
  * Parse an include statement. Each call returns a file name, along with
  * (possibly) a specific map in the file, an explicit group designator, and
@@ -301,6 +305,18 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
     XkbFile *xkb_file = NULL;
     unsigned int offset = 0;
 
+#ifdef ENABLE_KEYMAP_CACHE
+    char key[1024];
+    if (ctx->keymap_cache) {
+        int ret = snprintf(key, ARRAY_SIZE(key), "%s/%s\n%s",
+                           DirectoryForInclude(file_type), stmt->file,
+                           (stmt->map) ? stmt->map : "");
+        if (ret > 0 &&
+            (xkb_file = xkb_keymap_cache_search(ctx->keymap_cache, key))) {
+            return xkb_file;
+        }
+    }
+#endif
     file = FindFileInXkbPath(ctx, stmt->file, file_type, NULL, &offset);
     if (!file)
         return NULL;
@@ -337,6 +353,10 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
                     "Couldn't process include statement for '%s'\n",
                     stmt->file);
     }
-
+#ifdef ENABLE_KEYMAP_CACHE
+    if (ctx->keymap_cache) {
+        xkb_keymap_cache_add(ctx->keymap_cache, key, xkb_file);
+    }
+#endif
     return xkb_file;
 }

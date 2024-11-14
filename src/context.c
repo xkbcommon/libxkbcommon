@@ -313,7 +313,12 @@ xkb_context_new(enum xkb_context_flags flags)
         return NULL;
     }
 
+#ifdef ENABLE_KEYMAP_CACHE
+    /* NOTE: Size should be adusted to deal with xkeyboard-config database */
+    ctx->atom_table = atom_table_new(14);
+#else
     ctx->atom_table = atom_table_new();
+#endif
     if (!ctx->atom_table) {
         xkb_context_unref(ctx);
         return NULL;
