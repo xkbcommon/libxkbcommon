@@ -131,4 +131,7 @@ XkbFileCreate(enum xkb_file_type type, char *name, ParseCommon *defs,
 void
 FreeStmt(ParseCommon *stmt);
 
+ParseCommon *
+DupStmt(ParseCommon *stmt);
+
 #endif

@@ -695,6 +695,160 @@ FreeExpr(ExprDef *expr)
     }
 }
 
+static ExprDef *
+DupValueExpr(ExprDef *expr)
+{
+    if (!expr)
+        return NULL;
+    switch(expr->expr.value_type) {
+    case EXPR_TYPE_BOOLEAN:
+        return memdup(expr, 1, sizeof(ExprBoolean));
+    case EXPR_TYPE_INT:
+        return memdup(expr, 1, sizeof(ExprInteger));
+    case EXPR_TYPE_FLOAT:
+        return memdup(expr, 1, sizeof(ExprFloat));
+    case EXPR_TYPE_STRING:
+        return memdup(expr, 1, sizeof(ExprString));
+    case EXPR_TYPE_KEYNAME:
+        return memdup(expr, 1, sizeof(ExprKeyName));
+    default:
+        return memdup(expr, 1, sizeof(ExprCommon));
+    }
+}
+
+static ExprDef *
+DupExpr(ExprDef *expr)
+{
+    if (!expr)
+        return NULL;
+
+    ExprDef** action;
+    ExprDef *new;
+
+    switch (expr->expr.op) {
+    case EXPR_VALUE:
+        new = DupValueExpr(expr);
+        if (!new)
+            return NULL;
+        break;
+
+    case EXPR_IDENT:
+        new = memdup(expr, 1, sizeof(ExprIdent));
+        if (!new)
+            return NULL;
+        break;
+
+    case EXPR_NEGATE:
+    case EXPR_UNARY_PLUS:
+    case EXPR_NOT:
+    case EXPR_INVERT:
+        new = memdup(expr, 1, sizeof(ExprUnary));
+        if (!new)
+            return NULL;
+        if (expr->unary.child) {
+            new->unary.child = (ExprDef *) DupStmt((ParseCommon *) expr->unary.child);
+            if (!new->unary.child)
+                goto error;
+        }
+        break;
+
+    case EXPR_DIVIDE:
+    case EXPR_ADD:
+    case EXPR_SUBTRACT:
+    case EXPR_MULTIPLY:
+    case EXPR_ASSIGN:
+        new = memdup(expr, 1, sizeof(ExprBinary));
+        if (!new)
+            return NULL;
+        new->binary.left = (ExprDef *) DupStmt((ParseCommon *) expr->binary.left);
+        new->binary.right = (ExprDef *) DupStmt((ParseCommon *) expr->binary.right);
+        if ((expr->binary.left && !new->binary.left) ||
+            (expr->binary.right && !new->binary.right))
+            goto error;
+        break;
+
+    case EXPR_ACTION_DECL:
+        new = memdup(expr, 1, sizeof(ExprAction));
+        if (!new)
+            return NULL;
+        if (expr->action.args) {
+            new->action.args = (ExprDef *) DupStmt((ParseCommon *) expr->action.args);
+            if (!new->action.args)
+                goto error;
+        }
+        break;
+
+    case EXPR_ACTION_LIST:
+        new = memdup(expr, 1, sizeof(ExprActionList));
+        if (!new)
+            return NULL;
+        do {
+            bool ok = true;
+            darray_init(new->actions.actions);
+            darray_init(new->actions.actionsMapIndex);
+            darray_init(new->actions.actionsNumEntries);
+            darray_foreach(action, expr->actions.actions) {
+                ExprDef* new_action = (ExprDef *) DupStmt((ParseCommon *) *action);
+                if (!new_action) {
+                    ok = false;
+                    break;
+                }
+                darray_append(new->actions.actions, new_action);
+            }
+            if (!ok) {
+                darray_foreach(action, new->actions.actions) {
+                    FreeStmt((ParseCommon *) *action);
+                }
+                darray_free(new->actions.actions);
+                goto error;
+            }
+            darray_copy(new->actions.actionsMapIndex, expr->actions.actionsMapIndex);
+            darray_copy(new->actions.actionsNumEntries, expr->actions.actionsNumEntries);
+        } while (0);
+        break;
+
+    case EXPR_FIELD_REF:
+        new = memdup(expr, 1, sizeof(ExprFieldRef));
+        if (!new)
+            return NULL;
+        break;
+
+    case EXPR_ARRAY_REF:
+        new = memdup(expr, 1, sizeof(ExprArrayRef));
+        if (!new)
+            return NULL;
+        if (expr->array_ref.entry) {
+            new->array_ref.entry = (ExprDef *) DupStmt((ParseCommon *) expr->array_ref.entry);
+            if (!new->array_ref.entry)
+                goto error;
+        }
+        break;
+
+    case EXPR_KEYSYM_LIST:
+        new = memdup(expr, 1, sizeof(ExprKeysymList));
+        if (!new)
+            return NULL;
+        darray_init(new->keysym_list.syms);
+        darray_init(new->keysym_list.symsMapIndex);
+        darray_init(new->keysym_list.symsNumEntries);
+        darray_copy(new->keysym_list.syms, expr->keysym_list.syms);
+        darray_copy(new->keysym_list.symsMapIndex, expr->keysym_list.symsMapIndex);
+        darray_copy(new->keysym_list.symsNumEntries, expr->keysym_list.symsNumEntries);
+        break;
+
+    default:
+        new = memdup(expr, 1, sizeof(ExprDef));
+        if (!new)
+            return NULL;
+        break;
+    }
+    return new;
+error:
+    FreeExpr(new);
+    free(new);
+    return NULL;
+}
+
 static void
 FreeInclude(IncludeStmt *incl)
 {
@@ -712,6 +866,36 @@ FreeInclude(IncludeStmt *incl)
         free(incl);
         incl = next;
     }
+}
+
+static IncludeStmt *
+DupInclude(IncludeStmt *incl)
+{
+    if (!incl)
+        return NULL;
+    IncludeStmt *new = memdup(incl, 1, sizeof(*incl));
+    IncludeStmt *next = new;
+    while (1) {
+        if (!next)
+            goto error;
+        next->stmt = strdup_safe(incl->stmt);
+        next->file = strdup_safe(incl->file);
+        next->map = strdup_safe(incl->map);
+        next->modifier = strdup_safe(incl->modifier);
+        if ((incl->stmt && !next->stmt) || (incl->file && !next->file) ||
+            (incl->map && !next->map) || (incl->modifier && !next->modifier)) {
+            goto error;
+        }
+        incl = incl->next_incl;
+        if (!incl)
+            break;
+        next->next_incl = memdup(incl, 1, sizeof(*incl));
+        next = next->next_incl;
+    }
+    return new;
+error:
+    FreeInclude(new);
+    return NULL;
 }
 
 void
@@ -770,6 +954,164 @@ FreeStmt(ParseCommon *stmt)
     }
 }
 
+ParseCommon *
+DupStmt(ParseCommon *stmt)
+{
+    if (!stmt)
+        return NULL;
+    ParseCommon new = {0};
+    ParseCommon *next = &new;
+    do {
+        // FIXME debug
+        // fprintf(stderr, "~~~ CopyStmt: type=%d\n", stmt->type);
+
+        switch (stmt->type) {
+        case STMT_INCLUDE:
+            next->next = (ParseCommon *) DupInclude((IncludeStmt *) stmt);
+            if (!next->next)
+                goto error;
+            break;
+        case STMT_KEYCODE:
+            do {
+                KeycodeDef *def = memdup(stmt, 1, sizeof(KeycodeDef));
+                if (!def)
+                    goto error;
+                next->next = (ParseCommon *)def;
+            } while (0);
+            break;
+        case STMT_ALIAS:
+            do {
+                KeyAliasDef *def = memdup(stmt, 1, sizeof(KeyAliasDef));
+                if (!def)
+                    goto error;
+                next->next = (ParseCommon *)def;
+            } while (0);
+            break;
+        case STMT_EXPR:
+            next->next = (ParseCommon *) DupExpr((ExprDef *) stmt);
+            if (!next->next)
+                goto error;
+            break;
+        case STMT_VAR:
+            do {
+                VarDef *def = memdup(stmt, 1, sizeof(VarDef));
+                if (!def)
+                    goto error;
+                next->next = (ParseCommon *)def;
+                def->name = (ExprDef *) DupStmt((ParseCommon *) ((VarDef *)stmt)->name);
+                def->value = (ExprDef *) DupStmt((ParseCommon *) ((VarDef *)stmt)->value);
+                if ((((VarDef *)stmt)->name && !def->name) ||
+                    (((VarDef *)stmt)->value && !def->value))
+                    goto error;
+            } while (0);
+            break;
+        case STMT_TYPE:
+            do {
+                KeyTypeDef *def = memdup(stmt, 1, sizeof(KeyTypeDef));
+                if (!def)
+                    goto error;
+                next->next = (ParseCommon *)def;
+                def->body = (VarDef*) DupStmt((ParseCommon *) ((KeyTypeDef *) stmt)->body);
+                if (((KeyTypeDef *) stmt)->body && !def->body)
+                    goto error;
+            } while (0);
+            break;
+        case STMT_INTERP:
+            do {
+                InterpDef *def = memdup(stmt, 1, sizeof(InterpDef));
+                if (!def)
+                    goto error;
+                next->next = (ParseCommon *)def;
+                def->match = (ExprDef *) DupStmt((ParseCommon *) ((InterpDef *) stmt)->match);
+                def->def = (VarDef*) DupStmt((ParseCommon *) ((InterpDef *) stmt)->def);
+                if ((((InterpDef *) stmt)->match && !def->match) ||
+                    (((InterpDef *) stmt)->def && !def->def))
+                    goto error;
+            } while (0);
+            break;
+        case STMT_VMOD:
+            do {
+                VModDef *def = memdup(stmt, 1, sizeof(VModDef));
+                if (!def)
+                    goto error;
+                next->next = (ParseCommon *)def;
+                def->value = (ExprDef *) DupStmt((ParseCommon *) ((VModDef *) stmt)->value);
+                if (((VModDef *) stmt)->value && !def->value)
+                    goto error;
+            } while (0);
+            break;
+        case STMT_SYMBOLS:
+            do {
+                SymbolsDef *def = memdup(stmt, 1, sizeof(SymbolsDef));
+                if (!def)
+                    goto error;
+                next->next = (ParseCommon *)def;
+                def->symbols = (VarDef *) DupStmt((ParseCommon *) ((SymbolsDef *) stmt)->symbols);
+                if (((SymbolsDef *) stmt)->symbols && !def->symbols)
+                    goto error;
+            } while (0);
+            break;
+        case STMT_MODMAP:
+            do {
+                ModMapDef *def = memdup(stmt, 1, sizeof(ModMapDef));
+                if (!def)
+                    goto error;
+                def->keys = (ExprDef *) DupStmt((ParseCommon *) ((ModMapDef *) stmt)->keys);
+                if (((ModMapDef *) stmt)->keys && !def->keys)
+                    goto error;
+                next->next = (ParseCommon *)def;
+            } while (0);
+            break;
+        case STMT_GROUP_COMPAT:
+            do {
+                GroupCompatDef *def = memdup(stmt, 1, sizeof(GroupCompatDef));
+                if (!def)
+                    goto error;
+                next->next = (ParseCommon *)def;
+                def->def = (ExprDef *) DupStmt((ParseCommon *) ((GroupCompatDef *) stmt)->def);
+                if (((GroupCompatDef *) stmt)->def && !def->def)
+                    goto error;
+            } while (0);
+            break;
+        case STMT_LED_MAP:
+            do {
+                LedMapDef *def = memdup(stmt, 1, sizeof(LedMapDef));
+                if (!def)
+                    goto error;
+                next->next = (ParseCommon *)def;
+                def->body = (VarDef *) DupStmt((ParseCommon *) ((LedMapDef *) stmt)->body);
+                if (((LedMapDef *) stmt)->body && !def->body)
+                    goto error;
+            } while (0);
+            break;
+        case STMT_LED_NAME:
+            do {
+                LedNameDef *def = memdup(stmt, 1, sizeof(LedNameDef));
+                if (!def)
+                    goto error;
+                next->next = (ParseCommon *)def;
+                def->name = (ExprDef *) DupStmt((ParseCommon *) ((LedNameDef *) stmt)->name);
+                if (((LedNameDef *) stmt)->name && !def->name)
+                    goto error;
+            } while (0);
+            break;
+        default:
+            break;
+        }
+
+        stmt = stmt->next;
+        if (!stmt)
+            break;
+        next = next->next;
+        if (!next)
+            goto error;
+    } while (1);
+    return new.next;
+error:
+    FreeStmt(new.next);
+    return NULL;
+}
+
 void
 FreeXkbFile(XkbFile *file)
 {
@@ -800,6 +1142,61 @@ FreeXkbFile(XkbFile *file)
         free(file);
         file = next;
     }
+}
+
+XkbFile *
+DupXkbFile(XkbFile *file)
+{
+    if (!file)
+        return NULL;
+    XkbFile *new = memdup(file, 1, sizeof(*file));
+    XkbFile *next = new;
+    // FIXME debug
+    // fprintf(stderr, "~~~ DupXkbFile: start\n");
+    do {
+        // FIXME debug
+        // fprintf(stderr, "~~~ DupXkbFile: file_type=%d, %s\n", file->file_type, file->name);
+        if (!next)
+            goto error;
+        next->common.next = NULL;
+        next->defs = NULL;
+        if (file->name) {
+            next->name = strdup(file->name);
+            if (!next->name)
+                goto error;
+        }
+        switch (file->file_type) {
+        case FILE_TYPE_KEYMAP:
+            next->defs = (ParseCommon *) DupXkbFile((XkbFile *) file->defs);
+            if (!next->defs)
+                goto error;
+            break;
+
+        case FILE_TYPE_TYPES:
+        case FILE_TYPE_COMPAT:
+        case FILE_TYPE_SYMBOLS:
+        case FILE_TYPE_KEYCODES:
+        case FILE_TYPE_GEOMETRY:
+            // FIXME debug
+            // fprintf(stderr, "~~~ DupXkbFile: stmt=%d\n", file->defs->type);
+            next->defs = DupStmt(file->defs);
+            if (!next->defs)
+                goto error;
+            break;
+
+        default:
+            break;
+        }
+        file = (XkbFile *) file->common.next;
+        if (!file)
+            break;
+        next->common.next = memdup(file, 1, sizeof(*file));
+        next = (XkbFile *) next->common.next;
+    } while(1);
+    return new;
+error:
+    FreeXkbFile(new);
+    return NULL;
 }
 
 static const char *xkb_file_type_strings[_FILE_TYPE_NUM_ENTRIES] = {

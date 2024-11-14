@@ -53,6 +53,9 @@ void
 FreeXkbFile(XkbFile *file);
 
 XkbFile *
+DupXkbFile(XkbFile *file);
+
+XkbFile *
 XkbFileFromComponents(struct xkb_context *ctx,
                       const struct xkb_component_names *kkctgs);
 
