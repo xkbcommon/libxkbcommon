@@ -26,11 +26,14 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
+#include <stdatomic.h>
+
+#include "xkbcommon/xkbcommon.h"
 #include "atom.h"
 #include "messages-codes.h"
 
 struct xkb_context {
-    int refcnt;
+    atomic_int refcnt;
 
     ATTR_PRINTF(3, 0) void (*log_fn)(struct xkb_context *ctx,
                                      enum xkb_log_level level,
