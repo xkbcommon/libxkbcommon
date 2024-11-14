@@ -37,7 +37,7 @@ static void
 usage(FILE *fp, char *progname)
 {
     fprintf(fp,
-            "Usage: %s [--help] [--file FILE] [--locale LOCALE]\n",
+            "Usage: %s [--help] [--file FILE] [--locale LOCALE] [--test]\n",
             progname);
     fprintf(fp,
             "\n"
@@ -50,7 +50,9 @@ usage(FILE *fp, char *progname)
             "    Specify a Compose file to load\n"
             " --locale LOCALE\n"
             "    Specify the locale directly, instead of relying on the environment variables\n"
-            "    LC_ALL, LC_TYPE and LANG.\n");
+            "    LC_ALL, LC_TYPE and LANG.\n"
+            " --test\n"
+            "    Test compilation but do not print the Compose file.\n");
 }
 
 int
@@ -62,14 +64,17 @@ main(int argc, char *argv[])
     const char *locale = NULL;
     const char *path = NULL;
     enum xkb_compose_format format = XKB_COMPOSE_FORMAT_TEXT_V1;
+    bool test = false;
     enum options {
         OPT_FILE,
         OPT_LOCALE,
+        OPT_TEST,
     };
     static struct option opts[] = {
         {"help",   no_argument,       0, 'h'},
         {"file",   required_argument, 0, OPT_FILE},
         {"locale", required_argument, 0, OPT_LOCALE},
+        {"test",   no_argument,       0, OPT_TEST},
         {0, 0, 0, 0},
     };
 
@@ -94,6 +99,9 @@ main(int argc, char *argv[])
             break;
         case OPT_LOCALE:
             locale = optarg;
+            break;
+        case OPT_TEST:
+            test = true;
             break;
         case 'h':
             usage(stdout, argv[0]);
@@ -139,6 +147,11 @@ main(int argc, char *argv[])
                     "Couldn't create compose from locale \"%s\"\n", locale);
             goto out;
         }
+    }
+
+    if (test) {
+        ret = EXIT_SUCCESS;
+        goto out;
     }
 
     ret = xkb_compose_table_dump(stdout, compose_table)
