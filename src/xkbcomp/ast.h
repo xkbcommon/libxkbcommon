@@ -346,6 +346,23 @@ typedef struct {
     VarDef *body;
 } LedMapDef;
 
+union Statement {
+    ParseCommon _pc;
+    IncludeStmt _incl;
+    ExprDef _e;
+    VarDef _v;
+    KeycodeDef _k;
+    KeyAliasDef _a;
+    KeyTypeDef _kt;
+    InterpDef _interp;
+    VModDef _vm;
+    SymbolsDef _s;
+    ModMapDef _mm;
+    GroupCompatDef _gc;
+    LedMapDef _lm;
+    LedNameDef _ln;
+};
+
 enum xkb_map_flags {
     MAP_IS_DEFAULT = (1 << 0),
     MAP_IS_PARTIAL = (1 << 1),

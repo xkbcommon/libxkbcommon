@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Dan Nicholson
+ * Copyright © 2024 Pierre Le Marre <dev@wismill.eu>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,30 +21,39 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef ATOM_H
-#define ATOM_H
+#ifndef XKBCOMP_CACHE_H
+#define XKBCOMP_CACHE_H
 
-typedef uint32_t xkb_atom_t;
+#include <search.h>
+#include <stdbool.h>
 
-#define XKB_ATOM_NONE 0
+#include "xkbcommon/xkbcommon.h"
+#include "src/darray.h"
+#include "src/atom.h"
+#include "ast.h"
 
-struct atom_table;
+#define XKB_KEYMAP_CACHE_SIZE 100000
 
-#ifdef ENABLE_KEYMAP_CACHE
-struct atom_table *
-atom_table_new(size_t size);
-#else
-struct atom_table *
-atom_table_new(void);
-#endif
+struct xkb_keymap_cache_entry {
+    char *key;
+    XkbFile *data;
+};
+
+struct xkb_keymap_cache {
+    struct hsearch_data index;
+    darray(struct xkb_keymap_cache_entry) data;
+};
+
+struct xkb_keymap_cache*
+xkb_keymap_cache_new(void);
 
 void
-atom_table_free(struct atom_table *table);
+xkb_keymap_cache_free(struct xkb_keymap_cache *cache);
 
-xkb_atom_t
-atom_intern(struct atom_table *table, const char *string, size_t len, bool add);
+bool
+xkb_keymap_cache_add(struct xkb_keymap_cache *cache, char *key, XkbFile *data);
 
-const char *
-atom_text(struct atom_table *table, xkb_atom_t atom);
+XkbFile*
+xkb_keymap_cache_search(struct xkb_keymap_cache *cache, char *key);
 
-#endif /* ATOM_H */
+#endif
