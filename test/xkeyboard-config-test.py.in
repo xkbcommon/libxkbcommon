@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import gzip
 import itertools
 import multiprocessing
 import os
@@ -11,6 +12,7 @@ import sys
 import xml.etree.ElementTree as ET
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
@@ -124,12 +126,30 @@ class Invocation(RMLVO, metaclass=ABCMeta):
     def escape(s: str) -> str:
         return s.replace('"', '\\"')
 
-    @abstractmethod
-    def _run(self) -> Self: ...
+    def _write(self, fd: TextIO) -> None:
+        fd.write(f"// {self.to_yaml(self.rmlvo)}\n")
+        fd.write(self.keymap)
+
+    def _write_keymap(self, output_dir: Path, compress: int) -> None:
+        layout = self.layout
+        if self.variant:
+            layout += f"({self.variant})"
+        (output_dir / self.model).mkdir(exist_ok=True)
+        keymap_file = output_dir / self.model / layout
+        if compress:
+            keymap_file = keymap_file.with_suffix(".gz")
+            with gzip.open(
+                keymap_file, "wt", compresslevel=compress, encoding="utf-8"
+            ) as fd:
+                self._write(fd)
+                fd.close()
+        else:
+            with keymap_file.open("wt", encoding="utf-8") as fd:
+                self._write(fd)
 
     @classmethod
-    def run(cls, x: Self) -> Self:
-        return x._run()
+    @abstractmethod
+    def run(cls, i: Self, output_dir: Path | None, compress: int) -> Self: ...
 
     @classmethod
     def run_all(
@@ -141,6 +161,7 @@ class Invocation(RMLVO, metaclass=ABCMeta):
         verbose: bool,
         short: bool,
         progress_bar: ProgressBar[Iterable[Self]],
+        compress: int,
     ) -> bool:
         if keymap_output_dir:
             try:
@@ -149,12 +170,10 @@ class Invocation(RMLVO, metaclass=ABCMeta):
                 print(e, file=sys.stderr)
                 return False
 
-        keymap_file: Path | None = None
-        keymap_file_fd: TextIO | None = None
-
         failed = False
         with multiprocessing.Pool(njobs) as p:
-            results = p.imap_unordered(cls.run, combos)
+            f = partial(cls.run, output_dir=keymap_output_dir, compress=compress)
+            results = p.imap_unordered(f, combos)
             for invocation in progress_bar(
                 results, total=combos_count, file=sys.stdout
             ):
@@ -170,25 +189,6 @@ class Invocation(RMLVO, metaclass=ABCMeta):
                     else:
                         print(invocation, file=target)
 
-                if keymap_output_dir:
-                    # we're running through the layouts in a somewhat sorted manner,
-                    # so let's keep the fd open until we switch layouts
-                    layout = invocation.layout
-                    if invocation.variant:
-                        layout += f"({invocation.variant})"
-                    (keymap_output_dir / invocation.model).mkdir(exist_ok=True)
-                    fname = keymap_output_dir / invocation.model / layout
-                    if fname != keymap_file:
-                        keymap_file = fname
-                        if keymap_file_fd:
-                            keymap_file_fd.close()
-                        keymap_file_fd = open(keymap_file, "a")
-
-                    print(f"// {cls.to_yaml(invocation.rmlvo)}", file=keymap_file_fd)
-                    print(invocation.keymap, file=keymap_file_fd)
-                    assert keymap_file_fd
-                    keymap_file_fd.flush()
-
         return failed
 
 
@@ -196,7 +196,12 @@ class Invocation(RMLVO, metaclass=ABCMeta):
 class XkbCompInvocation(Invocation):
     xkbcomp_args: ClassVar[tuple[str, ...]] = ("xkbcomp", "-xkb", "-", "-")
 
-    def _run(self) -> Self:
+    @classmethod
+    def run(cls, i: Self, output_dir: Path | None, compress: int) -> Self:
+        i._run(output_dir, compress)
+        return i
+
+    def _run(self, output_dir: Path | None, compress: int) -> None:
         args = (
             "setxkbmap",
             "-print",
@@ -230,36 +235,48 @@ class XkbCompInvocation(Invocation):
             else:
                 self.keymap = stdout
                 self.exitstatus = 0
-        return self
+
+        if output_dir:
+            self._write_keymap(output_dir, compress)
 
 
 @dataclass
 class XkbcommonInvocation(Invocation):
     UNRECOGNIZED_KEYSYM_ERROR: ClassVar[str] = "XKB-107"
 
-    def _run(self) -> Self:
+    @classmethod
+    def run(cls, i: Self, output_dir: Path | None, compress: int) -> Self:
+        i._run(output_dir, compress)
+        return i
+
+    def _run(self, output_dir: Path | None, compress: int) -> None:
         args = (
             "xkbcli-compile-keymap",  # this is run in the builddir
             # Not needed, because we set XKB_LOG_LEVEL and XKB_LOG_VERBOSITY in env
             # "--verbose",
             *itertools.chain.from_iterable((f"--{k}", v) for k, v in self.rmlvo),
         )
+        if not output_dir:
+            args += ("--test",)
         self.command = " ".join(args)
         try:
             completed = subprocess.run(args, text=True, check=True, capture_output=True)
+        except subprocess.CalledProcessError as err:
+            self.error = "failed to compile keymap"
+            self.exitstatus = err.returncode
+        else:
             if self.UNRECOGNIZED_KEYSYM_ERROR in completed.stderr:
                 for line in completed.stderr.splitlines():
                     if self.UNRECOGNIZED_KEYSYM_ERROR in line:
                         self.error = line
-                        self.exitstatus = 99  # tool doesn't generate this one
                         break
+                self.exitstatus = 99  # tool doesn't generate this one
             else:
                 self.exitstatus = 0
                 self.keymap = completed.stdout
-        except subprocess.CalledProcessError as err:
-            self.error = "failed to compile keymap"
-            self.exitstatus = err.returncode
-        return self
+
+        if output_dir:
+            self._write_keymap(output_dir, compress)
 
 
 @dataclass
@@ -438,6 +455,9 @@ def main() -> NoReturn:
         help="Directory to print compiled keymaps to",
     )
     parser.add_argument(
+        "--compress", type=int, default=0, help="Compression level of keymaps files"
+    )
+    parser.add_argument(
         "--model", default="", type=str, help="Only test the given model"
     )
     parser.add_argument(
@@ -484,7 +504,14 @@ def main() -> NoReturn:
         )
 
     failed = tool.run_all(
-        iter_combos, count, args.jobs, keymapdir, verbose, short, progress_bar
+        iter_combos,
+        count,
+        args.jobs,
+        keymapdir,
+        verbose,
+        short,
+        progress_bar,
+        args.compress,
     )
     sys.exit(failed)
 
