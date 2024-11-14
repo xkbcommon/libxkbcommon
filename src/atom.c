@@ -200,7 +200,7 @@ atom_intern(struct atom_table *table, const char *string, size_t len, bool add)
 
 struct atom_table {
     size_t size;
-    char **strings;
+    _Atomic(char *) *strings;
 };
 
 struct atom_table *
