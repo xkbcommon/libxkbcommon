@@ -31,6 +31,7 @@
 #include "xkbcommon/xkbcommon.h"
 #include "atom.h"
 #include "messages-codes.h"
+#include "src/utils.h"
 
 struct xkb_context {
     atomic_int refcnt;
