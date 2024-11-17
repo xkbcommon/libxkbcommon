@@ -100,10 +100,12 @@ enum action_field {
     ACTION_FIELD_DEVICE,
     ACTION_FIELD_KEYCODE,
     ACTION_FIELD_MODS_TO_CLEAR,
+    ACTION_FIELD_LOCK_ON_RELEASE,
+    ACTION_FIELD_UNLOCK_ON_PRESS,
 };
 
 ActionsInfo *
-NewActionsInfo(void)
+NewActionsInfo(enum xkb_keymap_format format)
 {
     enum xkb_action_type type;
     ActionsInfo *info;
@@ -123,6 +125,15 @@ NewActionsInfo(void)
     info->actions[ACTION_TYPE_PTR_MOVE].ptr.flags = ACTION_ACCEL;
     info->actions[ACTION_TYPE_SWITCH_VT].screen.flags = ACTION_SAME_SCREEN;
 
+    if (isModUnlockOnPressSupported(format)) {
+        info->actions[ACTION_TYPE_MOD_LOCK].group.flags =
+            ACTION_UNLOCK_ON_PRESS;
+    }
+    if (isGroupLockOnReleaseSupported(format)) {
+        info->actions[ACTION_TYPE_GROUP_LOCK].group.flags =
+            ACTION_LOCK_ON_RELEASE;
+    }
+
     return info;
 }
 
@@ -133,40 +144,42 @@ FreeActionsInfo(ActionsInfo *info)
 }
 
 static const LookupEntry fieldStrings[] = {
-    { "clearLocks",       ACTION_FIELD_CLEAR_LOCKS   },
-    { "latchToLock",      ACTION_FIELD_LATCH_TO_LOCK },
-    { "genKeyEvent",      ACTION_FIELD_GEN_KEY_EVENT },
-    { "generateKeyEvent", ACTION_FIELD_GEN_KEY_EVENT },
-    { "report",           ACTION_FIELD_REPORT        },
-    { "default",          ACTION_FIELD_DEFAULT       },
-    { "affect",           ACTION_FIELD_AFFECT        },
-    { "increment",        ACTION_FIELD_INCREMENT     },
-    { "modifiers",        ACTION_FIELD_MODIFIERS     },
-    { "mods",             ACTION_FIELD_MODIFIERS     },
-    { "group",            ACTION_FIELD_GROUP         },
-    { "x",                ACTION_FIELD_X             },
-    { "y",                ACTION_FIELD_Y             },
-    { "accel",            ACTION_FIELD_ACCEL         },
-    { "accelerate",       ACTION_FIELD_ACCEL         },
-    { "repeat",           ACTION_FIELD_ACCEL         },
-    { "button",           ACTION_FIELD_BUTTON        },
-    { "value",            ACTION_FIELD_VALUE         },
-    { "controls",         ACTION_FIELD_CONTROLS      },
-    { "ctrls",            ACTION_FIELD_CONTROLS      },
-    { "type",             ACTION_FIELD_TYPE          },
-    { "count",            ACTION_FIELD_COUNT         },
-    { "screen",           ACTION_FIELD_SCREEN        },
-    { "same",             ACTION_FIELD_SAME          },
-    { "sameServer",       ACTION_FIELD_SAME          },
-    { "data",             ACTION_FIELD_DATA          },
-    { "device",           ACTION_FIELD_DEVICE        },
-    { "dev",              ACTION_FIELD_DEVICE        },
-    { "key",              ACTION_FIELD_KEYCODE       },
-    { "keycode",          ACTION_FIELD_KEYCODE       },
-    { "kc",               ACTION_FIELD_KEYCODE       },
-    { "clearmods",        ACTION_FIELD_MODS_TO_CLEAR },
-    { "clearmodifiers",   ACTION_FIELD_MODS_TO_CLEAR },
-    { NULL,               0                          }
+    { "clearLocks",       ACTION_FIELD_CLEAR_LOCKS     },
+    { "latchToLock",      ACTION_FIELD_LATCH_TO_LOCK   },
+    { "genKeyEvent",      ACTION_FIELD_GEN_KEY_EVENT   },
+    { "generateKeyEvent", ACTION_FIELD_GEN_KEY_EVENT   },
+    { "report",           ACTION_FIELD_REPORT          },
+    { "default",          ACTION_FIELD_DEFAULT         },
+    { "affect",           ACTION_FIELD_AFFECT          },
+    { "increment",        ACTION_FIELD_INCREMENT       },
+    { "modifiers",        ACTION_FIELD_MODIFIERS       },
+    { "mods",             ACTION_FIELD_MODIFIERS       },
+    { "group",            ACTION_FIELD_GROUP           },
+    { "x",                ACTION_FIELD_X               },
+    { "y",                ACTION_FIELD_Y               },
+    { "accel",            ACTION_FIELD_ACCEL           },
+    { "accelerate",       ACTION_FIELD_ACCEL           },
+    { "repeat",           ACTION_FIELD_ACCEL           },
+    { "button",           ACTION_FIELD_BUTTON          },
+    { "value",            ACTION_FIELD_VALUE           },
+    { "controls",         ACTION_FIELD_CONTROLS        },
+    { "ctrls",            ACTION_FIELD_CONTROLS        },
+    { "type",             ACTION_FIELD_TYPE            },
+    { "count",            ACTION_FIELD_COUNT           },
+    { "screen",           ACTION_FIELD_SCREEN          },
+    { "same",             ACTION_FIELD_SAME            },
+    { "sameServer",       ACTION_FIELD_SAME            },
+    { "data",             ACTION_FIELD_DATA            },
+    { "device",           ACTION_FIELD_DEVICE          },
+    { "dev",              ACTION_FIELD_DEVICE          },
+    { "key",              ACTION_FIELD_KEYCODE         },
+    { "keycode",          ACTION_FIELD_KEYCODE         },
+    { "kc",               ACTION_FIELD_KEYCODE         },
+    { "clearmods",        ACTION_FIELD_MODS_TO_CLEAR   },
+    { "clearmodifiers",   ACTION_FIELD_MODS_TO_CLEAR   },
+    { "lockOnRelease",    ACTION_FIELD_LOCK_ON_RELEASE },
+    { "unlockOnPress",    ACTION_FIELD_UNLOCK_ON_PRESS },
+    { NULL,               0                            }
 };
 
 static bool
@@ -202,6 +215,17 @@ ReportMismatch(struct xkb_context *ctx, xkb_message_code_t code,
 }
 
 static inline bool
+ReportFormatVersionMismatch(struct xkb_context *ctx, enum xkb_action_type action,
+                            enum action_field field, const char *versions)
+{
+    log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+            "Field %s for an action of type %s requires keymap format %s; "
+            "Action definition ignored\n",
+            fieldText(field), ActionTypeText(action), versions);
+    return false;
+}
+
+static inline bool
 ReportIllegal(struct xkb_context *ctx, enum xkb_action_type action,
               enum action_field field)
 {
@@ -224,7 +248,8 @@ ReportActionNotArray(struct xkb_context *ctx, enum xkb_action_type action,
 }
 
 static bool
-HandleNoAction(struct xkb_context *ctx, const struct xkb_mod_set *mods,
+HandleNoAction(struct xkb_context *ctx, enum xkb_keymap_format format,
+               const struct xkb_mod_set *mods,
                union xkb_action *action, enum action_field field,
                const ExprDef *array_ndx, const ExprDef *value)
 
@@ -311,8 +336,15 @@ CheckAffectField(struct xkb_context *ctx, enum xkb_action_type action,
     return true;
 }
 
+inline bool
+isModUnlockOnPressSupported(enum xkb_keymap_format format) {
+    /* Lax bound */
+    return format >= XKB_KEYMAP_FORMAT_TEXT_V1_1;
+}
+
 static bool
-HandleSetLatchLockMods(struct xkb_context *ctx, const struct xkb_mod_set *mods,
+HandleSetLatchLockMods(struct xkb_context *ctx, enum xkb_keymap_format format,
+                       const struct xkb_mod_set *mods,
                        union xkb_action *action, enum action_field field,
                        const ExprDef *array_ndx, const ExprDef *value)
 {
@@ -332,10 +364,21 @@ HandleSetLatchLockMods(struct xkb_context *ctx, const struct xkb_mod_set *mods,
         return CheckBooleanFlag(ctx, action->type, field,
                                 ACTION_LATCH_TO_LOCK, array_ndx, value,
                                 &act->flags);
-    if (type == ACTION_TYPE_MOD_LOCK &&
-        field == ACTION_FIELD_AFFECT)
-        return CheckAffectField(ctx, action->type, array_ndx, value,
-                                &act->flags);
+    if (type == ACTION_TYPE_MOD_LOCK) {
+        if (field == ACTION_FIELD_AFFECT)
+            return CheckAffectField(ctx, action->type, array_ndx, value,
+                                    &act->flags);
+        if (field == ACTION_FIELD_UNLOCK_ON_PRESS) {
+            if (isModUnlockOnPressSupported(format)) {
+                return CheckBooleanFlag(ctx, action->type, field,
+                                        ACTION_UNLOCK_ON_PRESS, array_ndx, value,
+                                        &act->flags);
+            } else {
+                return ReportFormatVersionMismatch(ctx, action->type, field,
+                                                   ">= 1.1");
+            }
+        }
+    }
 
     return ReportIllegal(ctx, action->type, field);
 }
@@ -378,8 +421,15 @@ CheckGroupField(struct xkb_context *ctx, enum xkb_action_type action,
     return true;
 }
 
+inline bool
+isGroupLockOnReleaseSupported(enum xkb_keymap_format format) {
+    /* Lax bound */
+    return format >= XKB_KEYMAP_FORMAT_TEXT_V1_1;
+}
+
 static bool
-HandleSetLatchLockGroup(struct xkb_context *ctx, const struct xkb_mod_set *mods,
+HandleSetLatchLockGroup(struct xkb_context *ctx, enum xkb_keymap_format format,
+                        const struct xkb_mod_set *mods,
                         union xkb_action *action, enum action_field field,
                         const ExprDef *array_ndx, const ExprDef *value)
 {
@@ -399,12 +449,24 @@ HandleSetLatchLockGroup(struct xkb_context *ctx, const struct xkb_mod_set *mods,
         return CheckBooleanFlag(ctx, action->type, field,
                                 ACTION_LATCH_TO_LOCK, array_ndx, value,
                                 &act->flags);
+    if (type == ACTION_TYPE_GROUP_LOCK &&
+        field == ACTION_FIELD_LOCK_ON_RELEASE) {
+        if (isGroupLockOnReleaseSupported(format)) {
+            return CheckBooleanFlag(ctx, action->type, field,
+                                    ACTION_LOCK_ON_RELEASE, array_ndx, value,
+                                    &act->flags);
+        } else {
+            return ReportFormatVersionMismatch(ctx, action->type, field,
+                                               ">= 1.1");
+        }
+    }
 
     return ReportIllegal(ctx, action->type, field);
 }
 
 static bool
-HandleMovePtr(struct xkb_context *ctx, const struct xkb_mod_set *mods,
+HandleMovePtr(struct xkb_context *ctx, enum xkb_keymap_format format,
+              const struct xkb_mod_set *mods,
               union xkb_action *action, enum action_field field,
               const ExprDef *array_ndx, const ExprDef *value)
 {
@@ -453,7 +515,8 @@ HandleMovePtr(struct xkb_context *ctx, const struct xkb_mod_set *mods,
 }
 
 static bool
-HandlePtrBtn(struct xkb_context *ctx, const struct xkb_mod_set *mods,
+HandlePtrBtn(struct xkb_context *ctx, enum xkb_keymap_format format,
+             const struct xkb_mod_set *mods,
              union xkb_action *action, enum action_field field,
              const ExprDef *array_ndx, const ExprDef *value)
 {
@@ -516,7 +579,8 @@ static const LookupEntry ptrDflts[] = {
 };
 
 static bool
-HandleSetPtrDflt(struct xkb_context *ctx, const struct xkb_mod_set *mods,
+HandleSetPtrDflt(struct xkb_context *ctx, enum xkb_keymap_format format,
+                 const struct xkb_mod_set *mods,
                  union xkb_action *action, enum action_field field,
                  const ExprDef *array_ndx, const ExprDef *value)
 {
@@ -575,7 +639,8 @@ HandleSetPtrDflt(struct xkb_context *ctx, const struct xkb_mod_set *mods,
 }
 
 static bool
-HandleSwitchScreen(struct xkb_context *ctx, const struct xkb_mod_set *mods,
+HandleSwitchScreen(struct xkb_context *ctx, enum xkb_keymap_format format,
+                   const struct xkb_mod_set *mods,
                    union xkb_action *action, enum action_field field,
                    const ExprDef *array_ndx, const ExprDef *value)
 {
@@ -622,7 +687,8 @@ HandleSwitchScreen(struct xkb_context *ctx, const struct xkb_mod_set *mods,
 }
 
 static bool
-HandleSetLockControls(struct xkb_context *ctx, const struct xkb_mod_set *mods,
+HandleSetLockControls(struct xkb_context *ctx, enum xkb_keymap_format format,
+                      const struct xkb_mod_set *mods,
                       union xkb_action *action, enum action_field field,
                       const ExprDef *array_ndx, const ExprDef *value)
 {
@@ -650,7 +716,8 @@ HandleSetLockControls(struct xkb_context *ctx, const struct xkb_mod_set *mods,
 }
 
 static bool
-HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
+HandlePrivate(struct xkb_context *ctx, enum xkb_keymap_format format,
+              const struct xkb_mod_set *mods,
               union xkb_action *action, enum action_field field,
               const ExprDef *array_ndx, const ExprDef *value)
 {
@@ -757,6 +824,7 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
 }
 
 typedef bool (*actionHandler)(struct xkb_context *ctx,
+                              enum xkb_keymap_format format,
                               const struct xkb_mod_set *mods,
                               union xkb_action *action,
                               enum action_field field,
@@ -785,7 +853,8 @@ static const actionHandler handleAction[_ACTION_TYPE_NUM_ENTRIES] = {
 /***====================================================================***/
 
 bool
-HandleActionDef(struct xkb_context *ctx, ActionsInfo *info,
+HandleActionDef(struct xkb_context *ctx, enum xkb_keymap_format format,
+                ActionsInfo *info,
                 const struct xkb_mod_set *mods, ExprDef *def,
                 union xkb_action *action)
 {
@@ -855,7 +924,7 @@ HandleActionDef(struct xkb_context *ctx, ActionsInfo *info,
             return false;
         }
 
-        if (!handleAction[handler_type](ctx, mods, action, fieldNdx,
+        if (!handleAction[handler_type](ctx, format, mods, action, fieldNdx,
                                         arrayRtrn, value))
             return false;
     }
@@ -864,8 +933,8 @@ HandleActionDef(struct xkb_context *ctx, ActionsInfo *info,
 }
 
 bool
-SetActionField(struct xkb_context *ctx, ActionsInfo *info,
-               struct xkb_mod_set *mods, const char *elem,
+SetActionField(struct xkb_context *ctx, enum xkb_keymap_format format,
+               ActionsInfo *info, struct xkb_mod_set *mods, const char *elem,
                const char *field, ExprDef *array_ndx, ExprDef *value)
 {
     enum xkb_action_type action;
@@ -880,6 +949,6 @@ SetActionField(struct xkb_context *ctx, ActionsInfo *info,
         return false;
     }
 
-    return handleAction[action](ctx, mods, &info->actions[action],
+    return handleAction[action](ctx, format, mods, &info->actions[action],
                                 action_field, array_ndx, value);
 }

@@ -33,8 +33,7 @@
 #include "src/utils.h"
 #include "src/keysym.h"
 #include "src/utf8-decoding.h"
-
-#define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
+#include "tools-common.h"
 
 static uint32_t
 parse_char_or_codepoint(const char *raw) {
@@ -79,11 +78,11 @@ parse_char_or_codepoint(const char *raw) {
 }
 
 static void
-usage(const char *argv0, FILE *fp)
+usage(FILE *fp, const char *argv0)
 {
     fprintf(fp, "Usage: %s [--help] [--keysym] [--rules <rules>] [--model <model>] "
-                "[--layout <layout>] [--variant <variant>] [--options <options>]"
-                " <character/codepoint/keysym>\n", argv0);
+                "[--layout <layout>] [--variant <variant>] [--options <options>] "
+                "[--format <format>] <character/codepoint/keysym>\n", argv0);
     fprintf(
         fp,
         "\n"
@@ -114,10 +113,13 @@ usage(const char *argv0, FILE *fp)
         "    The XKB layout variant (default: '%s')\n"
         " --options <options>\n"
         "    The XKB options (default: '%s')\n"
+        " --format <format>\n"
+        "    The keymap format (default: '%d')\n"
         "\n",
         DEFAULT_XKB_RULES, DEFAULT_XKB_MODEL, DEFAULT_XKB_LAYOUT,
         DEFAULT_XKB_VARIANT ? DEFAULT_XKB_VARIANT : "<none>",
-        DEFAULT_XKB_OPTIONS ? DEFAULT_XKB_OPTIONS : "<none>");
+        DEFAULT_XKB_OPTIONS ? DEFAULT_XKB_OPTIONS : "<none>",
+        XKB_KEYMAP_DEFAULT_FORMAT_TEXT);
 }
 
 int
@@ -128,6 +130,7 @@ main(int argc, char *argv[])
     const char *layout_ = NULL;
     const char *variant = NULL;
     const char *options = NULL;
+    enum xkb_keymap_format format = XKB_KEYMAP_DEFAULT_FORMAT_TEXT;
     bool keysym_mode = false;
     int err = EXIT_FAILURE;
     struct xkb_context *ctx = NULL;
@@ -147,6 +150,7 @@ main(int argc, char *argv[])
         OPT_LAYOUT,
         OPT_VARIANT,
         OPT_OPTIONS,
+        OPT_FORMAT,
     };
     static struct option opts[] = {
         {"help",                 no_argument,            0, 'h'},
@@ -156,6 +160,7 @@ main(int argc, char *argv[])
         {"layout",               required_argument,      0, OPT_LAYOUT},
         {"variant",              required_argument,      0, OPT_VARIANT},
         {"options",              required_argument,      0, OPT_OPTIONS},
+        {"format",               required_argument,      0, OPT_FORMAT},
         {0, 0, 0, 0},
     };
 
@@ -186,11 +191,17 @@ main(int argc, char *argv[])
         case OPT_OPTIONS:
             options = optarg;
             break;
+        case OPT_FORMAT:
+            if (!keymap_parse_format("--format", optarg, &format)) {
+                usage(stderr, argv[0]);
+                exit(EXIT_INVALID_USAGE);
+            }
+            break;
         case 'h':
-            usage(argv[0], stdout);
+            usage(stdout, argv[0]);
             exit(EXIT_SUCCESS);
         default:
-            usage(argv[0], stderr);
+            usage(stderr, argv[0]);
             exit(EXIT_INVALID_USAGE);
         }
     }
@@ -242,8 +253,8 @@ main(int argc, char *argv[])
         .variant = variant,
         .options = options,
     };
-    keymap = xkb_keymap_new_from_names(ctx, &names,
-                                       XKB_KEYMAP_COMPILE_NO_FLAGS);
+    keymap = xkb_keymap_new_from_names2(ctx, &names, format,
+                                        XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (!keymap) {
         fprintf(stderr, "ERROR: Failed to create XKB keymap\n");
         goto err;
@@ -318,6 +329,6 @@ err:
     xkb_context_unref(ctx);
     return err;
 parse_error:
-    usage(argv[0], stderr);
+    usage(stderr, argv[0]);
     exit(EXIT_INVALID_USAGE);
 }
