@@ -1993,8 +1993,14 @@ xkb_state_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t key,
  * Takes the given modifier mask, and removes all modifiers which are
  * consumed for that particular key (as in xkb_state_mod_index_is_consumed()).
  *
+ * @returns a mask of [real modifiers] modifiers.
+ *
  * @sa xkb_state_mod_index_is_consumed()
  * @memberof xkb_state
+ * @since 0.5.0: Works only with *real* modifiers
+ * @since 1.8.0: Works also with *virtual* modifiers
+ *
+ * [real modifiers]: @ref real-modifier-def
  */
 xkb_mod_mask_t
 xkb_state_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t key,

@@ -1575,7 +1575,8 @@ xkb_state_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t kc,
     if (!key)
         return 0;
 
-    return mask & ~key_get_consumed(state, key, XKB_CONSUMED_MODE_XKB);
+    return mod_mask_get_effective(state->keymap, mask) &
+           ~key_get_consumed(state, key, XKB_CONSUMED_MODE_XKB);
 }
 
 XKB_EXPORT xkb_mod_mask_t

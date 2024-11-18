@@ -525,6 +525,7 @@ test_consume(struct xkb_keymap *keymap)
     xkb_mod_index_t caps  = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CAPS);
     xkb_mod_index_t ctrl  = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CTRL);
     xkb_mod_index_t mod1  = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_MOD1);
+    xkb_mod_index_t mod2  = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_MOD2);
     xkb_mod_index_t mod5  = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_MOD5);
     xkb_mod_index_t alt   = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_ALT);
     xkb_mod_index_t meta  = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_META);
@@ -623,6 +624,12 @@ test_consume(struct xkb_keymap *keymap)
     assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, mod1) > 0);
     assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, alt) > 0);
     assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, meta) > 0);
+    mask = (1U << ctrl) | (1U << mod1) | (1U << mod2);
+    mask = xkb_state_mod_mask_remove_consumed(state, KEY_F1 + EVDEV_OFFSET, mask);
+    assert(mask == (1U << mod2));
+    mask = (1U << ctrl) | (1U << alt) | (1U << meta) | (1U << mod2);
+    mask = xkb_state_mod_mask_remove_consumed(state, KEY_F1 + EVDEV_OFFSET, mask);
+    assert(mask == (1U << mod2));
 
     xkb_state_unref(state);
 
@@ -696,6 +703,7 @@ test_overlapping_mods(struct xkb_context *context)
         xkb_state_update_mask(state, entry->state, 0, 0, 0, 0, 0);
         check_mods(keymap, state, entry, XKB_STATE_MODS_DEPRESSED);
     }
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) == (mod3 | mod4));
     assert(xkb_state_mod_indices_are_active(state, XKB_STATE_MODS_EFFECTIVE,
                                             XKB_STATE_MATCH_ANY,
                                             mod3Idx, mod4Idx, superIdx, hyperIdx,
@@ -706,6 +714,8 @@ test_overlapping_mods(struct xkb_context *context)
                                             XKB_MOD_INVALID) > 0);
     assert(xkb_state_key_get_consumed_mods2(state, KEY_F1 + EVDEV_OFFSET, XKB_CONSUMED_MODE_XKB) ==
            (shift | ctrl | mod1 | mod5));
+    assert(xkb_state_mod_mask_remove_consumed(state, KEY_F1 + EVDEV_OFFSET, (mod1 | mod4 | mod5)) == mod4);
+    assert(xkb_state_mod_mask_remove_consumed(state, KEY_F1 + EVDEV_OFFSET, (alt | super)) == (mod3 | mod4));
     assert(xkb_state_mod_index_is_consumed2(state, KEY_F1 + EVDEV_OFFSET, shiftIdx,  XKB_CONSUMED_MODE_XKB) > 0);
     assert(xkb_state_mod_index_is_consumed2(state, KEY_F1 + EVDEV_OFFSET, capsIdx,   XKB_CONSUMED_MODE_XKB) == 0);
     assert(xkb_state_mod_index_is_consumed2(state, KEY_F1 + EVDEV_OFFSET, ctrlIdx,   XKB_CONSUMED_MODE_XKB) > 0);
@@ -717,6 +727,8 @@ test_overlapping_mods(struct xkb_context *context)
     assert(xkb_state_mod_index_is_consumed2(state, KEY_F1 + EVDEV_OFFSET, hyperIdx,  XKB_CONSUMED_MODE_XKB) == 0);
     assert(xkb_state_mod_index_is_consumed2(state, KEY_F1 + EVDEV_OFFSET, scrollIdx, XKB_CONSUMED_MODE_XKB) == 0);
     assert(xkb_state_key_get_consumed_mods2(state, KEY_SPACE + EVDEV_OFFSET, XKB_CONSUMED_MODE_XKB) == mod4);
+    assert(xkb_state_mod_mask_remove_consumed(state, KEY_SPACE + EVDEV_OFFSET, (mod3 | mod4)) == mod3);
+    assert(xkb_state_mod_mask_remove_consumed(state, KEY_SPACE + EVDEV_OFFSET, (super | hyper)) == mod3);
     assert(xkb_state_mod_index_is_consumed2(state, KEY_SPACE + EVDEV_OFFSET, shiftIdx,  XKB_CONSUMED_MODE_XKB) == 0);
     assert(xkb_state_mod_index_is_consumed2(state, KEY_SPACE + EVDEV_OFFSET, capsIdx,   XKB_CONSUMED_MODE_XKB) == 0);
     assert(xkb_state_mod_index_is_consumed2(state, KEY_SPACE + EVDEV_OFFSET, ctrlIdx,   XKB_CONSUMED_MODE_XKB) == 0);
@@ -790,6 +802,8 @@ test_overlapping_mods(struct xkb_context *context)
                                             XKB_MOD_INVALID) > 0);
     assert(xkb_state_key_get_consumed_mods2(state, KEY_F1 + EVDEV_OFFSET, XKB_CONSUMED_MODE_XKB) ==
            (shift | ctrl | mod1 | mod5));
+    assert(xkb_state_mod_mask_remove_consumed(state, KEY_F1 + EVDEV_OFFSET, (mod1 | mod4 | mod5)) == mod4);
+    assert(xkb_state_mod_mask_remove_consumed(state, KEY_F1 + EVDEV_OFFSET, (alt | super)) == mod4);
     assert(xkb_state_mod_index_is_consumed2(state, KEY_F1 + EVDEV_OFFSET, shiftIdx, XKB_CONSUMED_MODE_XKB) > 0);
     assert(xkb_state_mod_index_is_consumed2(state, KEY_F1 + EVDEV_OFFSET, capsIdx,  XKB_CONSUMED_MODE_XKB) == 0);
     assert(xkb_state_mod_index_is_consumed2(state, KEY_F1 + EVDEV_OFFSET, ctrlIdx,  XKB_CONSUMED_MODE_XKB) > 0);
@@ -801,6 +815,8 @@ test_overlapping_mods(struct xkb_context *context)
     assert(xkb_state_mod_index_is_consumed2(state, KEY_F1 + EVDEV_OFFSET, hyperIdx, XKB_CONSUMED_MODE_XKB) == 0);
     assert(xkb_state_key_get_consumed_mods2(state, KEY_SPACE + EVDEV_OFFSET, XKB_CONSUMED_MODE_XKB) ==
            mod4);
+    assert(xkb_state_mod_mask_remove_consumed(state, KEY_SPACE + EVDEV_OFFSET, (mod3 | mod4)) == mod3);
+    assert(xkb_state_mod_mask_remove_consumed(state, KEY_SPACE + EVDEV_OFFSET, (super | hyper)) == 0);
     assert(xkb_state_mod_index_is_consumed2(state, KEY_SPACE + EVDEV_OFFSET, shiftIdx, XKB_CONSUMED_MODE_XKB) == 0);
     assert(xkb_state_mod_index_is_consumed2(state, KEY_SPACE + EVDEV_OFFSET, capsIdx,  XKB_CONSUMED_MODE_XKB) == 0);
     assert(xkb_state_mod_index_is_consumed2(state, KEY_SPACE + EVDEV_OFFSET, ctrlIdx,  XKB_CONSUMED_MODE_XKB) == 0);
@@ -880,6 +896,8 @@ test_overlapping_mods(struct xkb_context *context)
                                             XKB_MOD_INVALID) > 0);
     assert(xkb_state_key_get_consumed_mods2(state, KEY_F1 + EVDEV_OFFSET, XKB_CONSUMED_MODE_XKB) ==
            (shift | ctrl | mod1 | mod5));
+    assert(xkb_state_mod_mask_remove_consumed(state, KEY_F1 + EVDEV_OFFSET, (mod1 | mod4 | mod5)) == mod4);
+    assert(xkb_state_mod_mask_remove_consumed(state, KEY_F1 + EVDEV_OFFSET, (alt | super)) == (mod3 | mod4));
     assert(xkb_state_mod_index_is_consumed2(state, KEY_F1 + EVDEV_OFFSET, shiftIdx, XKB_CONSUMED_MODE_XKB) > 0);
     assert(xkb_state_mod_index_is_consumed2(state, KEY_F1 + EVDEV_OFFSET, capsIdx,  XKB_CONSUMED_MODE_XKB) == 0);
     assert(xkb_state_mod_index_is_consumed2(state, KEY_F1 + EVDEV_OFFSET, ctrlIdx,  XKB_CONSUMED_MODE_XKB) > 0);
