@@ -83,6 +83,7 @@
 
  /* Don't use compat names in internal code. */
 #define _XKBCOMMON_COMPAT_H
+#include <stdatomic.h>
 #include "xkbcommon/xkbcommon.h"
 
 #include "utils.h"
@@ -388,7 +389,7 @@ struct xkb_mod_set {
 struct xkb_keymap {
     struct xkb_context *ctx;
 
-    int refcnt;
+    atomic_int refcnt;
     enum xkb_keymap_compile_flags flags;
     enum xkb_keymap_format format;
 
