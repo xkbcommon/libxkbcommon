@@ -68,16 +68,16 @@ resolve_name(struct xkb_context *ctx, const char *filename,
 
     ret = snprintf(path, sizeof(path), "%s/%s", xlocaledir, filename);
     if (ret < 0 || (size_t) ret >= sizeof(path))
-        return false;
+        return NULL;
 
     file = fopen(path, "rb");
     if (!file)
-        return false;
+        return NULL;
 
     ok = map_file(file, &string, &string_size);
     fclose(file);
     if (!ok)
-        return false;
+        return NULL;
 
     s = string;
     end = string + string_size;
