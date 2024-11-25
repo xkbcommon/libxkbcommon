@@ -6,8 +6,10 @@ start_string = "<!-- towncrier release notes start -->\n"
 all_bullets = true
 single_file = true
 orphan_prefix = "+"
-underlines = ["=", "-", ""]
-title_format = "{name} [{version}](https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-{version}) - {project_date}"
+title_format = """\
+{name} [{version}](https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-{version}) - {project_date}
+=============================================================================================\
+"""
 issue_format = "[#{issue}](https://github.com/xkbcommon/libxkbcommon/issues/{issue})"
 
 # Sections configuration
