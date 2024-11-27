@@ -29,6 +29,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <stdatomic.h>
 
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
@@ -189,7 +190,7 @@ xkb_context_include_path_get(struct xkb_context *ctx, unsigned int idx)
 XKB_EXPORT struct xkb_context *
 xkb_context_ref(struct xkb_context *ctx)
 {
-    ctx->refcnt++;
+    atomic_fetch_add(&ctx->refcnt, 1);
     return ctx;
 }
 
@@ -200,7 +201,7 @@ xkb_context_ref(struct xkb_context *ctx)
 XKB_EXPORT void
 xkb_context_unref(struct xkb_context *ctx)
 {
-    if (!ctx || --ctx->refcnt > 0)
+    if (!ctx || atomic_fetch_sub(&ctx->refcnt, 1) > 1)
         return;
 
     free(ctx->x11_atom_cache);
@@ -312,7 +313,12 @@ xkb_context_new(enum xkb_context_flags flags)
         return NULL;
     }
 
+#ifdef ENABLE_KEYMAP_SOCKET
+    /* NOTE: Size should be adusted to deal with xkeyboard-config database */
+    ctx->atom_table = atom_table_new(14);
+#else
     ctx->atom_table = atom_table_new();
+#endif
     if (!ctx->atom_table) {
         xkb_context_unref(ctx);
         return NULL;
