@@ -62,6 +62,60 @@ xkb_symbols "pc105" {
     key <KIUP> { [ XF86KbdBrightnessUp ] };
 };
 
+xkb_symbols "pc105-pure-virtual-modifiers" {
+
+    key <ESC>  {	[ Escape		]	};
+
+    // The extra key on many European keyboards:
+    key <LSGT> {	[ less, greater, bar, brokenbar ] };
+
+    // The following keys are common to all layouts.
+    key <BKSL> {	[ backslash,	bar	]	};
+    key <SPCE> {	[ 	 space		]	};
+
+    include "srvr_ctrl(fkey2vt)"
+    include "pc(editing)"
+    include "keypad(x11)"
+
+    key <BKSP> {	[ BackSpace, BackSpace	]	};
+
+    key  <TAB> {	[ Tab,	ISO_Left_Tab	]	};
+    key <RTRN> {	[ Return		]	};
+
+    key <CAPS> {	[ Caps_Lock		]	};
+    key <NMLK> {	[ Num_Lock 		]	};
+
+    key <LFSH> {	[ Shift_L		]	};
+    key <LCTL> {	[ Control_L		]	};
+    key <LWIN> {	[ Super_L		]	};
+
+    key <RTSH> {	[ Shift_R		]	};
+    key <RCTL> {	[ Control_R		]	};
+    key <RWIN> {	[ Super_R		]	};
+    key <MENU> {	[ Menu			]	};
+
+    // Fake keys for virtual<->real modifiers mapping:
+    key <LVL3> {	[ ISO_Level3_Shift	]	};
+    key <MDSW> {	[ Mode_switch 		]	};
+
+    key <ALT>  {	[ NoSymbol, Alt_L	]	};
+    key <LALT> { [ Alt_L, Meta_L ] };
+    key <RALT> { type[Group1] = "TWO_LEVEL",
+                 symbols[Group1] = [ Alt_R, Meta_R ] };
+
+    key <META> {	[ NoSymbol, Meta_L	]	};
+
+    key <SUPR> {	[ NoSymbol, Super_L	]	};
+
+    key <HYPR> {	[ NoSymbol, Hyper_L	]	};
+    // End of modifier mappings.
+
+    key <OUTP> { [ XF86Display ] };
+    key <KITG> { [ XF86KbdLightOnOff ] };
+    key <KIDN> { [ XF86KbdBrightnessDown ] };
+    key <KIUP> { [ XF86KbdBrightnessUp ] };
+};
+
 hidden partial alphanumeric_keys
 xkb_symbols "editing" {
     key <PRSC> {

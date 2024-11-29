@@ -1,0 +1,24 @@
+// Special rules to test pure virtual modifiers.
+
+// Needed for a test involving `applealu_ansi`.
+! $macvendorlayouts = ch de dk fi fr gb is it latam nl no pt se us
+! $applealu = applealu_ansi applealu_iso applealu_jis
+
+! model		layout			=	symbols
+ $applealu	$macvendorlayouts	=	macintosh_vndr/apple(alukbd)+macintosh_vndr/%l%(v)
+  *		*			=	pc(pc105-pure-virtual-modifiers)+%l%(v)
+
+! model		layout[1]	=	symbols
+  *		*		=	pc(pc105-pure-virtual-modifiers)+%l[1]%(v[1])
+
+! model		layout		=	compat
+  *		*		=	complete+basic(pure-virtual-modifiers)
+
+! model		layout[1]	=	compat
+  *		*		=	complete+basic(pure-virtual-modifiers)
+
+// The rules in the current file will *not* be overridden by the
+// following include, because the keymap sections do not start with
+// an explicit merge operator. E.g. `[pc(x), pc]` is merged as `pc(x)`,
+// while `[pc, +us]` is merged as `pc+us`.
+! include evdev
