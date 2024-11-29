@@ -1930,7 +1930,7 @@
   code point: 0x03CB
   upper: 0x07a9 # Greek_UPSILONdieresis
 0x07ba:
-  name: Greek_upsilonaccentdieresi
+  name: Greek_upsilonaccentdieresis
   code point: 0x03B0
 0x07bb:
   name: Greek_omegaaccent
@@ -3404,7 +3404,7 @@
 0xfe30:
   name: ISO_Continuous_Underline
 0xfe31:
-  name: ISO_Discontinuous_Underlin
+  name: ISO_Discontinuous_Underline
 0xfe32:
   name: ISO_Emphasize
 0xfe33:
@@ -6691,6 +6691,8 @@
   name: XF86LightsToggle
 0x10081230:
   name: XF86ALSToggle
+0x10081232:
+  name: XF86RefreshRateToggle
 0x10081240:
   name: XF86Buttonconfig
 0x10081241:
@@ -6717,6 +6719,10 @@
   name: XF86CameraAccessDisable
 0x1008124d:
   name: XF86CameraAccessToggle
+0x1008124e:
+  name: XF86Accessibility
+0x1008124f:
+  name: XF86DoNotDisturb
 0x10081250:
   name: XF86BrightnessMin
 0x10081251:
@@ -6726,9 +6732,9 @@
 0x10081261:
   name: XF86KbdInputAssistNext
 0x10081262:
-  name: XF86KbdInputAssistPrevgrou
+  name: XF86KbdInputAssistPrevgroup
 0x10081263:
-  name: XF86KbdInputAssistNextgrou
+  name: XF86KbdInputAssistNextgroup
 0x10081264:
   name: XF86KbdInputAssistAccept
 0x10081265:
