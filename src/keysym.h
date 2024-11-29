@@ -74,10 +74,10 @@
 #define XKB_KEYSYM_UNICODE_OFFSET 0x01000000
 /** Minimum Unicode keysym. NOTE: code points in 0..0xff cannot be converted. */
 #define XKB_KEYSYM_UNICODE_MIN    0x01000100
-/** Maximum Unicode keysym, correspoding to the maximum Unicode code point */
+/** Maximum Unicode keysym, corresponding to the maximum Unicode code point */
 #define XKB_KEYSYM_UNICODE_MAX    0x0110ffff
 /** Unicode version used for case mappings */
-#define XKB_KEYSYM_UNICODE_VERSION { 15, 1, 0, 0 }
+#define XKB_KEYSYM_UNICODE_VERSION { 16, 0, 0, 0 }
 /** Maximum keysym canonical name length, plus terminating NULL byte */
 #define XKB_KEYSYM_NAME_MAX_SIZE  28
 /** Longest keysym canonical name */
