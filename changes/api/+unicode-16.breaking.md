@@ -1,8 +1,8 @@
-Updated keysyms case mappings to cover full **[Unicode 15.1]**. This change
+Updated keysyms case mappings to cover full **[Unicode 16.0]**. This change
 provides a *consistent behavior* with respect to case mappings, and affects
 the following:
 
-- `xkb_keysym_to_lower()` and `xkb_keysym_to_upper()` give different ouput
+- `xkb_keysym_to_lower()` and `xkb_keysym_to_upper()` give different output
   for keysyms not covered previously and handle *title*-cased keysyms.
 
   Example of title-cased keysym: `0x10001f2` (`U+01F2` “ǲ”):
@@ -17,4 +17,4 @@ For example, the full upper case of `U+01F0` “ǰ” is “J̌” (2 characters
 and `U+030C`), which would require 2 keysyms, which is not supported by the
 current API.
 
-[Unicode 15.1]: https://www.unicode.org/versions/Unicode15.1.0/
+[Unicode 16.0]: https://www.unicode.org/versions/Unicode16.0.0/

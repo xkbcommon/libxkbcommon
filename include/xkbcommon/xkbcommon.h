@@ -557,7 +557,7 @@ xkb_utf32_to_keysym(uint32_t ucs);
  * work with the Unicode representation instead, when possible.
  *
  * @since 0.8.0: Initial implementation, based on `libX11`.
- * @since 1.8.0: Use Unicode 15.1 mappings for complete Unicode coverage.
+ * @since 1.8.0: Use Unicode 16.0 mappings for complete Unicode coverage.
  */
 xkb_keysym_t
 xkb_keysym_to_upper(xkb_keysym_t ks);
@@ -573,7 +573,7 @@ xkb_keysym_to_upper(xkb_keysym_t ks);
  * work with the Unicode representation instead, when possible.
  *
  * @since 0.8.0: Initial implementation, based on `libX11`.
- * @since 1.8.0: Use Unicode 15.1 mappings for complete Unicode coverage.
+ * @since 1.8.0: Use Unicode 16.0 mappings for complete Unicode coverage.
  */
 xkb_keysym_t
 xkb_keysym_to_lower(xkb_keysym_t ks);
