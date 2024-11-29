@@ -448,6 +448,7 @@ endif
 man_pages = []
 
 # Tools
+icu_dep = dependency('icu-uc', required: false)
 build_tools = get_option('enable-tools') and cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE')
 if build_tools
     # Common resources
@@ -468,10 +469,14 @@ if build_tools
     configh_data.set10('HAVE_TOOLS', true)
 
     # Tool: xkbcli
+    export_keysym_dep = [tools_dep]
+    if icu_dep.found()
+        export_keysym_dep += [icu_dep]
+    endif
     executable('export-keysyms',
                'tools/export-keysyms.c',
                libxkbcommon_sources,
-               dependencies: [tools_dep],
+               dependencies: export_keysym_dep,
                c_args: ['-DENABLE_PRIVATE_APIS'],
                include_directories: [include_directories('src', 'include')],
                install: false)
@@ -724,7 +729,6 @@ endif
 # TODO: version range?
 keysyms_test_dep = [test_dep]
 keysyms_test_c_args = ['-DENABLE_PRIVATE_APIS']
-icu_dep = dependency('icu-uc', required: false)
 if icu_dep.found()
     keysyms_test_dep += [icu_dep]
     configh_data.set10('HAVE_ICU', true)
