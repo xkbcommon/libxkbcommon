@@ -517,7 +517,7 @@ write_actions(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
         if (level != 0)
             copy_to_buf(buf, ", ");
 
-        count = xkb_keymap_key_get_actions_by_level(keymap, key->keycode,
+        count = xkb_keymap_key_get_actions_by_level(keymap, key,
                                                     group, level, &actions);
         buf2->size = 0;
         if (count == 0) {
