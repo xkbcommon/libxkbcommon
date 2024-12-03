@@ -34,6 +34,14 @@ xkb_symbols "lwin_switch" {
     };
 };
 
+partial modifier_keys
+xkb_symbols "lwin_latch" {
+	key <LWIN> {
+		symbols[1] = [ ISO_Group_Latch ],
+		actions[1] = [ LatchGroup(group=+1) ]
+	};
+};
+
 // The right Win key (while pressed) chooses the second keyboard group.
 // (Using this map, you should declare your keyboard as pc101 or pc102
 // instead of pc104 or pc105.)
@@ -43,6 +51,14 @@ xkb_symbols "rwin_switch" {
         symbols[Group1] = [ Mode_switch, Multi_key ],
         virtualMods= AltGr
     };
+};
+
+partial modifier_keys
+xkb_symbols "rwin_latch_lock_clear" {
+	key <RWIN> {
+		symbols[1] = [ ISO_Group_Latch ],
+		actions[1] = [ LatchGroup(group=+1, latchToLock, clearLocks) ]
+	};
 };
 
 // The right Menu key (while pressed) chooses the second keyboard group.
