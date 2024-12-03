@@ -31,6 +31,11 @@
     assert_printf(streq_not_null(expected, got), \
                   test_name ". Expected \"%s\", got: \"%s\"\n", expected, got)
 
+#define assert_eq(test_name, expected, got, format, ...) \
+    assert_printf(expected == got, \
+                  test_name ". Expected " format ", got: " format "\n", \
+                  __VA_ARGS__, expected, got)
+
 void
 test_init(void);
 

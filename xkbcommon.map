@@ -128,4 +128,5 @@ global:
 V_1.10.0 {
 global:
     xkb_keymap_mod_get_mask;
+    xkb_state_update_latched_locked;
 } V_1.9.0;
