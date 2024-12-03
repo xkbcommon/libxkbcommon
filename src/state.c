@@ -137,6 +137,23 @@ get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
     return get_entry_for_mods(type, active_mods);
 }
 
+static inline xkb_level_index_t
+_xkb_state_key_get_level(struct xkb_state *state, const struct xkb_key *key,
+                         xkb_layout_index_t layout)
+{
+    if (layout >= key->num_groups)
+        return XKB_LEVEL_INVALID;
+
+    /* If we don't find an explicit match the default is 0. */
+    const struct xkb_key_type_entry *entry =
+        get_entry_for_key_state(state, key, layout);
+
+    if (!entry)
+        return 0;
+
+    return entry->level;
+}
+
 /**
  * Returns the level to use for the given key and state, or
  * XKB_LEVEL_INVALID.
@@ -146,17 +163,19 @@ xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
                         xkb_layout_index_t layout)
 {
     const struct xkb_key *key = XkbKey(state->keymap, kc);
-    const struct xkb_key_type_entry *entry;
 
-    if (!key || layout >= key->num_groups)
+    if (!key)
         return XKB_LEVEL_INVALID;
 
-    /* If we don't find an explicit match the default is 0. */
-    entry = get_entry_for_key_state(state, key, layout);
-    if (!entry)
-        return 0;
+    return _xkb_state_key_get_level(state, key, layout);
+}
 
-    return entry->level;
+static inline xkb_layout_index_t
+_xkb_state_key_get_layout(struct xkb_state *state, const struct xkb_key *key)
+{
+    return XkbWrapGroupIntoRange(state->components.group, key->num_groups,
+                                 key->out_of_range_group_action,
+                                 key->out_of_range_group_number);
 }
 
 /**
@@ -171,32 +190,22 @@ xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t kc)
     if (!key)
         return XKB_LAYOUT_INVALID;
 
-    return XkbWrapGroupIntoRange(state->components.group, key->num_groups,
-                                 key->out_of_range_group_action,
-                                 key->out_of_range_group_number);
+    return _xkb_state_key_get_layout(state, key);
 }
 
 static unsigned int
 xkb_key_get_actions(struct xkb_state *state, const struct xkb_key *key,
                     const union xkb_action **actions)
 {
-    xkb_layout_index_t layout;
-    xkb_level_index_t level;
+    xkb_layout_index_t layout = _xkb_state_key_get_layout(state, key);
+    xkb_level_index_t level = _xkb_state_key_get_level(state, key, layout);
+    if (level == XKB_LEVEL_INVALID) {
+        *actions = NULL;
+        return 0;
+    }
 
-    layout = xkb_state_key_get_layout(state, key->keycode);
-    if (layout == XKB_LAYOUT_INVALID)
-        goto err;
-
-    level = xkb_state_key_get_level(state, key->keycode, layout);
-    if (level == XKB_LEVEL_INVALID)
-        goto err;
-
-    return xkb_keymap_key_get_actions_by_level(state->keymap, key->keycode,
+    return xkb_keymap_key_get_actions_by_level(state->keymap, key,
                                                layout, level, actions);
-
-err:
-    *actions = NULL;
-    return 0;
 }
 
 static struct xkb_filter *
