@@ -512,7 +512,7 @@ mod_mask_get_effective(struct xkb_keymap *keymap, xkb_mod_mask_t mods);
 
 unsigned int
 xkb_keymap_key_get_actions_by_level(struct xkb_keymap *keymap,
-                                    xkb_keycode_t kc,
+                                    const struct xkb_key *key,
                                     xkb_layout_index_t layout,
                                     xkb_level_index_t level,
                                     const union xkb_action **actions);
