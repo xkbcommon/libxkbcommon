@@ -147,8 +147,8 @@ action_equal(const union xkb_action *a, const union xkb_action *b)
         return false;
 
     /* Ensure we support all action types */
-    static_assert(ACTION_TYPE_PRIVATE == 15 &&
-                  ACTION_TYPE_PRIVATE + 1 == _ACTION_TYPE_NUM_ENTRIES,
+    static_assert(ACTION_TYPE_INTERNAL == 16 &&
+                  ACTION_TYPE_INTERNAL + 1 == _ACTION_TYPE_NUM_ENTRIES,
                   "Missing action type");
 
     switch (a->type) {
@@ -188,6 +188,9 @@ action_equal(const union xkb_action *a, const union xkb_action *b)
                 a->ctrls.ctrls == b->ctrls.ctrls);
     case ACTION_TYPE_PRIVATE:
         return (a->priv.data == b->priv.data);
+    case ACTION_TYPE_INTERNAL:
+        return (a->internal.flags == b->internal.flags) &&
+               (a->internal.clear_latched_mods == b->internal.clear_latched_mods);
     default:
         assert(!"Unsupported action");
         return false;

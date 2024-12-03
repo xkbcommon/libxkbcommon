@@ -92,6 +92,7 @@ enum xkb_action_type {
     ACTION_TYPE_CTRL_SET,
     ACTION_TYPE_CTRL_LOCK,
     ACTION_TYPE_PRIVATE,
+    ACTION_TYPE_INTERNAL, /* Action specific and internal to xkbcommon */
     _ACTION_TYPE_NUM_ENTRIES
 };
 
@@ -189,6 +190,21 @@ struct xkb_private_action {
     uint8_t data[7];
 };
 
+enum xkb_internal_action_flags {
+    INTERNAL_BREAKS_GROUP_LATCH = (1 << 0),
+    INTERNAL_BREAKS_MOD_LATCH = (1 << 1),
+};
+
+/* Action specific and internal to xkbcommon */
+struct xkb_internal_action {
+    enum xkb_action_type type;
+    enum xkb_internal_action_flags flags;
+    union {
+        /* flag == INTERNAL_BREAKS_MOD_LATCH */
+        xkb_mod_mask_t clear_latched_mods;
+    };
+};
+
 union xkb_action {
     enum xkb_action_type type;
     struct xkb_mod_action mods;
@@ -199,6 +215,7 @@ union xkb_action {
     struct xkb_pointer_action ptr;
     struct xkb_pointer_button_action btn;
     struct xkb_private_action priv;
+    struct xkb_internal_action internal;
 };
 
 struct xkb_key_type_entry {
