@@ -323,7 +323,8 @@ xkb_filter_group_lock_func(struct xkb_state *state,
 
 static bool
 xkb_action_breaks_latch(const union xkb_action *action,
-                        enum xkb_internal_action_flags flag)
+                        enum xkb_internal_action_flags flag,
+                        xkb_mod_mask_t mask)
 {
     switch (action->type) {
     case ACTION_TYPE_NONE:
@@ -335,7 +336,8 @@ xkb_action_breaks_latch(const union xkb_action *action,
     case ACTION_TYPE_TERMINATE:
         return true;
     case ACTION_TYPE_INTERNAL:
-        return action->internal.flags & flag;
+        return (action->internal.flags & flag) &&
+               ((action->internal.clear_latched_mods & mask) == mask);
     default:
         return false;
     }
@@ -419,7 +421,7 @@ xkb_filter_group_latch_func(struct xkb_state *state,
                 return XKB_FILTER_CONSUME;
             }
             else if (xkb_action_breaks_latch(&(actions[k]),
-                                             INTERNAL_BREAKS_GROUP_LATCH)) {
+                                             INTERNAL_BREAKS_GROUP_LATCH, 0)) {
                 /* Breaks the latch */
                 state->components.latched_group = 0;
                 filter->func = NULL;
@@ -576,7 +578,8 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
                 return XKB_FILTER_CONSUME;
             }
             else if (xkb_action_breaks_latch(&(actions[k]),
-                                             INTERNAL_BREAKS_MOD_LATCH)) {
+                                             INTERNAL_BREAKS_MOD_LATCH,
+                                             filter->action.mods.mods.mask)) {
                 /* XXX: This may be totally broken, we might need to break the
                  *      latch in the next run after this press? */
                 state->components.latched_mods &= ~filter->action.mods.mods.mask;
@@ -934,39 +937,40 @@ static const struct xkb_key synthetic_key_break_group_latch = {
     .num_groups = 1,
     .groups = &synthetic_key_group_break_group_latch
 };
-static struct xkb_level synthetic_key_level_break_mod_latch = {
-    .num_syms = 1,
-    .s = { XKB_KEY_NoSymbol },
-    .a = { { .internal = {
-        .type = ACTION_TYPE_INTERNAL,
-        .flags = INTERNAL_BREAKS_MOD_LATCH
-    } } }
-};
-static struct xkb_group synthetic_key_group_break_mod_latch = {
-    .type = &synthetic_key_type,
-    .levels = &synthetic_key_level_break_mod_latch
-};
-static const struct xkb_key synthetic_key_break_mod_latch = {
-    .num_groups = 1,
-    .groups = &synthetic_key_group_break_mod_latch
-};
+static const struct xkb_key synthetic_key = { 0 };
 
 /* Transcription from xserver: XkbLatchModifiers */
 static void
 update_latch_modifiers(struct xkb_state *state,
                        xkb_mod_mask_t mask, xkb_mod_mask_t latches)
 {
-    const struct xkb_key *key = &synthetic_key_break_mod_latch;
-
     /* Clear affected latched modifiers */
     const xkb_mod_mask_t clear =
         mod_mask_get_effective(state->keymap, mask & ~latches);
     state->components.latched_mods &= ~clear;
 
     /* Clear any pending latch to locks. */
-    xkb_filter_apply_all(state, key, XKB_KEY_DOWN);
+    const struct xkb_level synthetic_key_level_break_mod_latch = {
+        .num_syms = 1,
+        .s = { XKB_KEY_NoSymbol },
+        .a = { { .internal = {
+            .type = ACTION_TYPE_INTERNAL,
+            .flags = INTERNAL_BREAKS_MOD_LATCH,
+            .clear_latched_mods = clear
+        } } }
+    };
+    const struct xkb_group synthetic_key_group_break_mod_latch = {
+        .type = &synthetic_key_type,
+        .levels = &synthetic_key_level_break_mod_latch
+    };
+    const const struct xkb_key synthetic_key_break_mod_latch = {
+        .num_groups = 1,
+        .groups = &synthetic_key_group_break_mod_latch
+    };
+    xkb_filter_apply_all(state, &synthetic_key_break_mod_latch, XKB_KEY_DOWN);
 
     /* Simulate tapping a key with a modifier latch action */
+    const struct xkb_key *key = &synthetic_key;
     const union xkb_action latch_mods = {
         .mods = {
             .type = ACTION_TYPE_MOD_LATCH,
@@ -989,17 +993,16 @@ update_latch_modifiers(struct xkb_state *state,
 static void
 update_latch_group(struct xkb_state *state, int32_t group)
 {
+    /* Clear any pending latch to locks. */
+    xkb_filter_apply_all(state, &synthetic_key_break_group_latch, XKB_KEY_DOWN);
+
     /* Simulate tapping a key with a group latch action, but in isolation: i.e.
      * without affecting the other filters. */
-    const struct xkb_key *key = &synthetic_key_break_group_latch;
-
-    /* Clear any pending latch to locks. */
-    xkb_filter_apply_all(state, key, XKB_KEY_DOWN);
-
+    const struct xkb_key *key = &synthetic_key;
     const union xkb_action latch_group = {
         .group = {
             .type = ACTION_TYPE_GROUP_LATCH,
-            .flags = 0,
+            .flags = ACTION_ABSOLUTE_SWITCH,
             .group = group,
         },
     };

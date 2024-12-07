@@ -244,6 +244,9 @@ enum xkb_internal_action_flags {
 struct xkb_internal_action {
     enum xkb_action_type type;
     enum xkb_internal_action_flags flags;
+    union {
+        xkb_mod_mask_t clear_latched_mods;
+    };
 };
 
 union xkb_action {
