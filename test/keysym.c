@@ -28,6 +28,7 @@
 #include <unicode/uchar.h>
 #include <unicode/ustring.h>
 #include <unicode/utf16.h>
+#include "test/keysym-case-mapping.h"
 #endif
 
 #include "test.h"
@@ -240,18 +241,6 @@ compare_unicode_version(const UVersionInfo v1, const UVersionInfo v2)
         assert(cond);                                                                     \
       }                                                                                   \
    }
-
-static inline uint32_t
-to_simple_lower(uint32_t cp)
-{
-    return (uint32_t)u_tolower((UChar32) cp);
-}
-
-static inline uint32_t
-to_simple_upper(uint32_t cp)
-{
-    return (uint32_t)u_toupper((UChar32) cp);
-}
 
 #define KEYSYM     "0x%04"PRIx32
 #define CODE_POINT "U+%04"PRIX32
@@ -846,7 +835,7 @@ main(void)
     assert(xkb_keysym_is_upper_or_title(XKB_KEY_Ssharp));
     assert(xkb_keysym_is_lower(XKB_KEY_ssharp));
     assert(!xkb_keysym_is_lower(XKB_KEY_Ssharp));
-    assert(xkb_keysym_to_upper(XKB_KEY_ssharp) == XKB_KEY_ssharp);
+    assert(xkb_keysym_to_upper(XKB_KEY_ssharp) == XKB_KEY_Ssharp);
     assert(xkb_keysym_to_lower(XKB_KEY_ssharp) == XKB_KEY_ssharp);
     assert(xkb_keysym_to_upper(XKB_KEY_Ssharp) == XKB_KEY_Ssharp);
     assert(xkb_keysym_to_lower(XKB_KEY_Ssharp) == XKB_KEY_ssharp);

@@ -742,8 +742,12 @@ test(
 )
 test(
     'keymap',
-    executable('test-keymap', 'test/keymap.c', 'test/keysym.h',
-               dependencies: test_dep),
+    executable(
+        'test-keymap',
+        'test/keymap.c',
+        'test/keysym.h',
+        'test/keysym-case-mapping.h',
+        dependencies: test_dep),
     env: test_env,
 )
 test(

@@ -560,6 +560,7 @@
 0x00df:
   name: ssharp
   code point: 0x00DF
+  upper: 0x1001e9e # U1E9E
 0x00e0:
   name: agrave
   code point: 0x00E0
