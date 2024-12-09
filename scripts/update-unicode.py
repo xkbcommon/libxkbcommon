@@ -90,6 +90,7 @@ from functools import cache, reduce
 from pathlib import Path
 from typing import (
     Any,
+    ClassVar,
     Generator,
     Generic,
     Iterable,
@@ -101,8 +102,10 @@ from typing import (
     TypeVar,
     cast,
 )
+import unicodedata
 
 import icu
+import jinja2
 import yaml
 
 assert sys.version_info >= (3, 12)
@@ -110,6 +113,7 @@ assert sys.version_info >= (3, 12)
 c = icu.Locale.createFromName("C")
 icu.Locale.setDefault(c)
 
+SCRIPT = Path(__file__)
 CodePoint = NewType("CodePoint", int)
 Keysym = NewType("Keysym", int)
 KeysymName = NewType("KeysymName", str)
@@ -294,6 +298,9 @@ class Entry:
     upper: int
     is_lower: bool
     is_upper: bool
+    # [NOTE] Exceptions must be documented in `xkbcommon.h`.
+    to_upper_exceptions: ClassVar[dict[str, str]] = {"ß": "ẞ"}
+    "Upper mappings exceptions"
 
     @classmethod
     def zeros(cls) -> Self:
@@ -326,16 +333,20 @@ class Entry:
     def upper_delta(cls, cp: CodePoint) -> int:
         return cp - cls.to_upper_cp(cp)
 
-    @staticmethod
-    def to_upper_cp(cp: CodePoint) -> CodePoint:
+    @classmethod
+    def to_upper_cp(cls, cp: CodePoint) -> CodePoint:
+        if upper := cls.to_upper_exceptions.get(chr(cp)):
+            return ord(upper)
         return icu.Char.toupper(cp)
 
     @staticmethod
     def to_lower_cp(cp: CodePoint) -> CodePoint:
         return icu.Char.tolower(cp)
 
-    @staticmethod
-    def to_upper_char(char: str) -> str:
+    @classmethod
+    def to_upper_char(cls, char: str) -> str:
+        if upper := cls.to_upper_exceptions.get(char):
+            return upper
         return icu.Char.toupper(char)
 
     @staticmethod
@@ -1954,6 +1965,37 @@ class Strategy(Enum):
         best_solution.test(config)
         if write:
             best_solution.write(root)
+            cls.write_tests(root)
+
+    @classmethod
+    def write_tests(cls, root: Path) -> None:
+        # Configure Jinja
+        template_loader = jinja2.FileSystemLoader(root, encoding="utf-8")
+        jinja_env = jinja2.Environment(
+            loader=template_loader,
+            keep_trailing_newline=True,
+            trim_blocks=True,
+            lstrip_blocks=True,
+        )
+
+        def code_point_name_constant(c: str, padding: int = 0) -> str:
+            if not (name := unicodedata.name(c)):
+                raise ValueError(f"No Unicode name for code point: U+{ord(c):0>4X}")
+            name = name.replace("-", "_").replace(" ", "_").upper()
+            return name.ljust(padding)
+
+        jinja_env.filters["code_point"] = lambda c: f"0x{ord(c):0>4x}"
+        jinja_env.filters["code_point_name_constant"] = code_point_name_constant
+        path = root / "test/keysym-case-mapping.h"
+        template_path = path.with_suffix(f"{path.suffix}.jinja")
+        template = jinja_env.get_template(str(template_path.relative_to(root)))
+        with path.open("wt", encoding="utf-8") as fd:
+            fd.writelines(
+                template.generate(
+                    upper_exceptions=Entry.to_upper_exceptions,
+                    script=SCRIPT.relative_to(root),
+                )
+            )
 
 
 ################################################################################
