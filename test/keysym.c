@@ -241,6 +241,10 @@ compare_unicode_version(const UVersionInfo v1, const UVersionInfo v2)
       }                                                                                   \
    }
 
+/* Unicode code points for exception */
+#define SMALL_SHARP_S   0x00DF
+#define CAPITAL_SHARP_S 0x1E9E
+
 static inline uint32_t
 to_simple_lower(uint32_t cp)
 {
@@ -250,6 +254,10 @@ to_simple_lower(uint32_t cp)
 static inline uint32_t
 to_simple_upper(uint32_t cp)
 {
+    /* Some exceptions */
+    if (cp == SMALL_SHARP_S) {
+        return CAPITAL_SHARP_S;
+    }
     return (uint32_t)u_toupper((UChar32) cp);
 }
 
@@ -846,7 +854,7 @@ main(void)
     assert(xkb_keysym_is_upper_or_title(XKB_KEY_Ssharp));
     assert(xkb_keysym_is_lower(XKB_KEY_ssharp));
     assert(!xkb_keysym_is_lower(XKB_KEY_Ssharp));
-    assert(xkb_keysym_to_upper(XKB_KEY_ssharp) == XKB_KEY_ssharp);
+    assert(xkb_keysym_to_upper(XKB_KEY_ssharp) == XKB_KEY_Ssharp);
     assert(xkb_keysym_to_lower(XKB_KEY_ssharp) == XKB_KEY_ssharp);
     assert(xkb_keysym_to_upper(XKB_KEY_Ssharp) == XKB_KEY_Ssharp);
     assert(xkb_keysym_to_lower(XKB_KEY_Ssharp) == XKB_KEY_ssharp);

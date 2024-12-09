@@ -552,9 +552,18 @@ xkb_utf32_to_keysym(uint32_t ucs);
  * If there is no such form, the keysym is returned unchanged.
  *
  * The conversion rules are the *simple* (i.e. one-to-one) Unicode case
- * mappings and do not depend on the locale. If you need the special
- * case mappings (i.e. not one-to-one or locale-dependent), prefer to
- * work with the Unicode representation instead, when possible.
+ * mappings (with some exceptions, see hereinafter) and do not depend
+ * on the locale. If you need the special case mappings (i.e. not
+ * one-to-one or locale-dependent), prefer to work with the Unicode
+ * representation instead, when possible.
+ *
+ * Exceptions to the Unicode mappings:
+ *
+ * | Lower keysym | Lower letter | Upper keysym | Upper letter | Comment |
+ * | ------------ | ------------ | ------------ | ------------ | ------- |
+ * | `ssharp`     | `U+00DF`: ß  | `U1E9E`      | `U+1E9E`: ẞ  | [Council for German Orthography] |
+ *
+ * [Council for German Orthography]: https://www.rechtschreibrat.com/regeln-und-woerterverzeichnis/
  *
  * @since 0.8.0: Initial implementation, based on `libX11`.
  * @since 1.8.0: Use Unicode 16.0 mappings for complete Unicode coverage.
