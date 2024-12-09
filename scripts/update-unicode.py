@@ -90,6 +90,7 @@ from functools import cache, reduce
 from pathlib import Path
 from typing import (
     Any,
+    ClassVar,
     Generator,
     Generic,
     Iterable,
@@ -294,6 +295,9 @@ class Entry:
     upper: int
     is_lower: bool
     is_upper: bool
+    # [NOTE] Exceptions must be documented in `xkbcommon.h`.
+    to_upper_exceptions: ClassVar[dict[str, str]] = {"ß": "ẞ"}
+    "Upper mappings exceptions"
 
     @classmethod
     def zeros(cls) -> Self:
@@ -326,16 +330,20 @@ class Entry:
     def upper_delta(cls, cp: CodePoint) -> int:
         return cp - cls.to_upper_cp(cp)
 
-    @staticmethod
-    def to_upper_cp(cp: CodePoint) -> CodePoint:
+    @classmethod
+    def to_upper_cp(cls, cp: CodePoint) -> CodePoint:
+        if upper := cls.to_upper_exceptions.get(chr(cp)):
+            return ord(upper)
         return icu.Char.toupper(cp)
 
     @staticmethod
     def to_lower_cp(cp: CodePoint) -> CodePoint:
         return icu.Char.tolower(cp)
 
-    @staticmethod
-    def to_upper_char(char: str) -> str:
+    @classmethod
+    def to_upper_char(cls, char: str) -> str:
+        if upper := cls.to_upper_exceptions.get(char):
+            return upper
         return icu.Char.toupper(char)
 
     @staticmethod
