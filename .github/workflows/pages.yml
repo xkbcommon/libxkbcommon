@@ -45,7 +45,7 @@ jobs:
       - name: Move static website to target directory
         run: mv website/* public_html/
       - name: Setup Pages
-        uses: actions/configure-pages@v3
+        uses: actions/configure-pages@v5
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v1
         with:
