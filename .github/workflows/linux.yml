@@ -76,7 +76,7 @@ jobs:
             fi
       - name: Store doxygen docs for use by the pages workflow
         uses: actions/upload-artifact@v4
-        if: success()
+        if: success() && matrix.compiler == 'gcc'
         with:
           name: doxygen-docs
           path: |
