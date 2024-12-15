@@ -1,0 +1,278 @@
+xkb_keymap {
+xkb_keycodes "test" {
+    minimum = 8;
+    maximum = 255;
+
+	<TLDE> = 49;
+	<AE01> = 10;
+	<AE02> = 11;
+	<AE03> = 12;
+	<AE04> = 13;
+	<AE05> = 14;
+	<AE06> = 15;
+	<AE07> = 16;
+	<AE08> = 17;
+	<AE09> = 18;
+	<AE10> = 19;
+	<AE11> = 20;
+	<AE12> = 21;
+	<BKSP> = 22;
+
+	<TAB> = 23;
+	<AD01> = 24;
+	<AD02> = 25;
+	<AD03> = 26;
+	<AD04> = 27;
+	<AD05> = 28;
+	<AD06> = 29;
+	<AD07> = 30;
+	<AD08> = 31;
+	<AD09> = 32;
+	<AD10> = 33;
+	<AD11> = 34;
+	<AD12> = 35;
+	<BKSL> = 51;
+	<RTRN> = 36;
+
+	<CAPS> = 66;
+	<AC01> = 38;
+	<AC02> = 39;
+	<AC03> = 40;
+	<AC04> = 41;
+	<AC05> = 42;
+	<AC06> = 43;
+	<AC07> = 44;
+	<AC08> = 45;
+	<AC09> = 46;
+	<AC10> = 47;
+	<AC11> = 48;
+	alias <AC12> = <BKSL>;
+
+	<LFSH> = 50;
+	<LSGT> = 94;
+	<AB01> = 52;
+	<AB02> = 53;
+	<AB03> = 54;
+	<AB04> = 55;
+	<AB05> = 56;
+	<AB06> = 57;
+	<AB07> = 58;
+	<AB08> = 59;
+	<AB09> = 60;
+	<AB10> = 61;
+	<RTSH> = 62;
+
+	<LVL3>  = 92;
+	<RALT> = 108;
+};
+
+xkb_types "complete" {
+    // Define >20 virtual modifiers. This lead to overcome the X11 limit of
+    // 16 virtual modifiers.
+    virtual_modifiers LevelThree, ModA, ModB, ModC, ModD, ModE, ModF,
+                      ModG, ModH, ModI, ModJ, ModK, ModL, ModM, ModN,
+                      ModO, ModP, ModQ, ModR, ModS, ModT, ModU, ModV;
+
+    type "ONE_LEVEL" {
+        modifiers= none;
+        level_name[Level1]= "Any";
+    };
+	type "TWO_LEVEL" {
+		modifiers= Shift;
+		map[Shift]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+	};
+    type "TEST" {
+		modifiers= Shift + LevelThree +
+                   ModA + ModB + ModC + ModD + ModE + ModF + ModG +
+                   ModH + ModI + ModJ + ModK + ModL + ModM + ModN +
+                   ModO + ModP + ModQ + ModR + ModS + ModT + ModU + ModV;
+		map[ModA]= 2;
+		map[ModB]= 3;
+		map[ModC]= 4;
+		map[ModD]= 5;
+		map[ModE]= 6;
+		map[ModF]= 7;
+		map[ModG]= 8;
+		map[ModH]= 9;
+		map[ModI]= 10;
+		map[ModJ]= 11;
+		map[ModK]= 12;
+		map[ModL]= 13;
+		map[ModM]= 14;
+		map[ModN]= 15;
+		map[ModO]= 16;
+		map[ModP]= 17;
+		map[ModQ]= 18;
+		map[ModR]= 19;
+		map[ModS]= 20;
+		map[ModT]= 21;
+		map[ModU]= 22;
+		map[ModV]= 23;
+		map[ModV+Shift]= 24;
+		map[ModA+ModS]= 25;
+		map[ModA+ModQ]= 26;
+		map[LevelThree+ModA]= 27;
+		map[LevelThree+ModA+ModS]= 28;
+		map[ModA+ModB+ModC]= 29;
+
+		level_name[1]= "1";
+		level_name[2]= "2";
+		level_name[3]= "3";
+		level_name[4]= "4";
+		level_name[5]= "5";
+		level_name[6]= "6";
+		level_name[7]= "7";
+		level_name[8]= "8";
+		level_name[9]= "9";
+		level_name[10]= "10";
+		level_name[11]= "11";
+		level_name[12]= "12";
+		level_name[13]= "13";
+		level_name[14]= "14";
+		level_name[15]= "15";
+		level_name[16]= "16";
+		level_name[17]= "17";
+		level_name[18]= "18";
+		level_name[19]= "19";
+		level_name[20]= "20";
+		level_name[21]= "21";
+		level_name[22]= "22";
+		level_name[23]= "23";
+		level_name[24]= "24";
+		level_name[25]= "25";
+		level_name[26]= "26";
+		level_name[27]= "27";
+		level_name[28]= "28";
+		level_name[29]= "29";
+    };
+};
+xkb_compatibility "complete" {
+    virtual_modifiers LevelThree, ModA, ModB, ModC, ModD;
+
+    interpret.useModMapMods= AnyLevel;
+    interpret.repeat= False;
+    interpret.locking= False;
+
+    interpret Any+AnyOf(all) {
+        action= SetMods(modifiers=modMapMods,clearLocks);
+    };
+
+	interpret ISO_Level3_Shift+AnyOf(all) {
+		virtualModifier= LevelThree;
+		useModMapMods=level1;
+		action= SetMods(modifiers=LevelThree,clearLocks);
+	};
+    interpret a {
+        action= SetMods(modifiers=ModA,clearLocks);
+    };
+    interpret b {
+        action= SetMods(modifiers=ModB,clearLocks);
+    };
+    interpret c {
+        action= SetMods(modifiers=ModC,clearLocks);
+    };
+    interpret d {
+        action= SetMods(modifiers=ModD,clearLocks);
+    };
+    interpret e {
+        action= SetMods(modifiers=ModE,clearLocks);
+    };
+    interpret f {
+        action= SetMods(modifiers=ModF,clearLocks);
+    };
+    interpret g {
+        action= SetMods(modifiers=ModG,clearLocks);
+    };
+    interpret h {
+        action= SetMods(modifiers=ModH,clearLocks);
+    };
+    interpret i {
+        action= SetMods(modifiers=ModI,clearLocks);
+    };
+    interpret j {
+        action= SetMods(modifiers=ModJ,clearLocks);
+    };
+    interpret k {
+        action= SetMods(modifiers=ModK,clearLocks);
+    };
+    interpret l {
+        action= SetMods(modifiers=ModL,clearLocks);
+    };
+    interpret m {
+        action= SetMods(modifiers=ModM,clearLocks);
+    };
+    interpret n {
+        action= SetMods(modifiers=ModN,clearLocks);
+    };
+    interpret o {
+        action= SetMods(modifiers=ModO,clearLocks);
+    };
+    interpret p {
+        action= SetMods(modifiers=ModP,clearLocks);
+    };
+    interpret q {
+        action= SetMods(modifiers=ModQ,clearLocks);
+    };
+    interpret r {
+        action= SetMods(modifiers=ModR,clearLocks);
+    };
+    interpret s {
+        action= SetMods(modifiers=ModS,clearLocks);
+    };
+    interpret t {
+        action= SetMods(modifiers=ModT,clearLocks);
+    };
+    interpret u {
+        action= SetMods(modifiers=ModU,clearLocks);
+    };
+    interpret v {
+        action= SetMods(modifiers=ModV,clearLocks);
+    };
+};
+xkb_symbols {
+    name[group1]="Test";
+
+    key <LFSH> { [Shift_L] };
+    key <RALT> { [ISO_Level3_Shift] };
+    key <LVL3> { [ISO_Level3_Shift] };
+    modmap Shift { <LFSH> };
+    modmap Mod5 { <LVL3>, <RALT> };
+
+    key <AD01>	{[	 q,	 Q	]};
+    key <AD02>	{[	 w,	 W	]};
+    key <AD03>	{[	 e,	 E	]};
+    key <AD04>	{[	 r,	 R	]};
+    key <AD05>	{[	 t,	 T	]};
+    key <AD06>	{[	 y,	 Y	]};
+    key <AD07>	{[	 u,	 U	]};
+    key <AD08>	{[	 i,	 I	]};
+    key <AD09>	{[	 o,	 O	]};
+    key <AD10>	{[	 p,	 P	]};
+
+    key <AC01>	{[	 a,	 A	]};
+    key <AC02>	{[	 s,	 S	]};
+    key <AC03>	{[	 d,	 D	]};
+    key <AC04>	{[	 f,	 F	]};
+    key <AC05>	{[	 g,	 G	]};
+    key <AC06>	{[	 h,	 H	]};
+    key <AC07>	{[	 j,	 J	]};
+    key <AC08>	{[	 k,	 K	]};
+    key <AC09>	{[	 l,	 L	]};
+
+    key <AB01>	{[	 z,	 Z	]};
+    key <AB02>	{[	 x,	 X	]};
+    key <AB03>	{[	 c,	 C	]};
+    key <AB04>	{[	 v,	 V	]};
+    key <AB05>	{[	 b,	 B	]};
+    key <AB06>	{[	 n,	 N	]};
+    key <AB07>	{[	 m,	 M	]};
+
+    key.type[1] = "TEST";
+    key <AD02> {
+        [ w, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v
+        , V, 1, 2, 3, 4, 5 ]
+    };
+};
+};
