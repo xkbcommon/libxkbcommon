@@ -60,7 +60,7 @@ jobs:
         run:
           meson test -C build --print-errorlogs --setup=valgrind --no-suite python-tests
       - name: Upload test logs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: test logs
@@ -75,7 +75,7 @@ jobs:
                 exit 1
             fi
       - name: Store doxygen docs for use by the pages workflow
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: success()
         with:
           name: doxygen-docs
