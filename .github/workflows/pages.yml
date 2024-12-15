@@ -28,7 +28,7 @@ jobs:
       - name: Set up directory tree
         run: mkdir -p public_html/doc/
       - name: Download doxygen from Linux build
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v7
         with:
           workflow: linux.yml
           workflow_conclusion: success
