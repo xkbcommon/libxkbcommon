@@ -1,3 +1,4 @@
+# TEST
 project(
     'libxkbcommon',
     'c',
