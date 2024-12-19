@@ -23,6 +23,9 @@
  * Author: Daniel Stone <daniel@fooishbar.org>
  */
 
+#ifndef TEST_H
+#define TEST_H
+
 #include <assert.h>
 
 /* Don't use compat names in internal code. */
@@ -106,4 +109,6 @@ test_compile_rules(struct xkb_context *context, const char *rules,
 #ifdef _WIN32
 #define setenv(varname, value, overwrite) _putenv_s((varname), (value))
 #define unsetenv(varname) _putenv_s(varname, "")
+#endif
+
 #endif

@@ -783,7 +783,12 @@ test(
 )
 test(
     'buffercomp',
-    executable('test-buffercomp', 'test/buffercomp.c', dependencies: test_dep),
+    executable(
+        'test-buffercomp',
+        'test/buffercomp.c',
+        'test/merge_modes.h',
+        dependencies: test_dep
+    ),
     env: test_env,
 )
 test(
