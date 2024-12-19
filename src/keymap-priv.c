@@ -153,6 +153,30 @@ XkbLevelsSameSyms(const struct xkb_level *a, const struct xkb_level *b)
 }
 
 bool
+XkbLevelHasNoKeysym(const struct xkb_level *level)
+{
+    if (level->num_syms == 0)
+        return true;
+    if (level->num_syms == 1)
+        return level->s.sym == XKB_KEY_NoSymbol;
+    for (unsigned int k = 0; k < level->num_syms; k++) {
+        if (level->s.syms[k] != XKB_KEY_NoSymbol)
+            return false;
+    }
+    return true;
+}
+
+bool
+XkbLevelsSameActions(const struct xkb_level *a, const struct xkb_level *b)
+{
+    if (a->num_syms != b->num_syms)
+        return false;
+    if (a->num_syms <= 1)
+        return memcmp(&a->a.action, &b->a.action, sizeof(a->a.action)) == 0;
+    return memcmp(a->a.actions, b->a.actions, sizeof(*a->a.actions) * a->num_syms) == 0;
+}
+
+bool
 XkbLevelHasNoAction(const struct xkb_level *level)
 {
     if (level->num_syms == 0)
