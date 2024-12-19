@@ -28,6 +28,8 @@
 #include <stdlib.h>
 
 #include "test.h"
+#include "merge_modes.h"
+#include "merge_modes_xkbcommon.h"
 
 #define DATA_PATH "keymaps/stringcomp.data"
 
@@ -208,20 +210,6 @@ test_multi_keysyms_actions(struct xkb_context *ctx)
     }                                                                 \
 } while (0)
 
-    /* Test: valid keymaps */
-#define make_keymaps_with(func, a, b, c, d)      \
-        func(a),                                 \
-        func(a", "b),                            \
-        func("{ "a", "b" }"),                    \
-        func("{ "a", "b", "c" }"),               \
-        func(a", { "b", "c" }"),                 \
-        func("{ "a", "b" }, "c),                 \
-        func("{ "a", "b" }, { "c", "d" }"),      \
-        func("{ "a", "b" }, "c", { "d", "a" }"), \
-        func("{ "a", "b" }, { "c", "d" }, "a)
-    run_test("valid", keymap != NULL, "does *not*", xkb_keymap_unref(keymap));
-#undef make_keymaps_with
-
     /* Test: invalid keymaps */
 #define make_keymaps_with(func, a, b, c, d)    \
         func("{}"),                            \
@@ -242,12 +230,52 @@ test_multi_keysyms_actions(struct xkb_context *ctx)
         func("{ "a", "b", { "c", "d" } }"),    \
         func("{ { "a", "b" }, { "c", "d" } }")
     run_test("invalid", keymap == NULL, "*does*");
+#undef make_keymaps_with
+
+    /* Test: valid keymaps */
+#define make_keymaps_with(func, a, b, c, d)      \
+        func(a),                                 \
+        func(a", "b),                            \
+        func("{ "a", "b" }"),                    \
+        func("{ "a", "b", "c" }"),               \
+        func(a", { "b", "c" }"),                 \
+        func("{ "a", "b" }, "c),                 \
+        func("{ "a", "b" }, { "c", "d" }"),      \
+        func("{ "a", "b" }, "c", { "d", "a" }"), \
+        func("{ "a", "b" }, { "c", "d" }, "a)
+    run_test("valid", keymap != NULL, "does *not*", xkb_keymap_unref(keymap));
+
+#undef test_keymaps
+#define test_keymaps                                                   \
+    make_keymap("[{A, A}],", "[SetMods(), SetMods()]"),                \
+    "xkb_keymap {\n"                                                   \
+    "  xkb_keycodes {\n"                                               \
+    "    minimum= 8;\n"                                                \
+    "    maximum= 10;\n"                                               \
+    "    <AE01> = 10;\n"                                               \
+    "  };\n"                                                           \
+    "  xkb_types { include \"basic\" };\n"                             \
+    "  xkb_compat { include \"basic\" };\n"                            \
+    "  xkb_symbols {\n"                                                \
+    "    key <AE01> { [ A ] };"                                        \
+    "    augment key <AE01> { [{A, A}], [{SetMods(), SetMods()}] };\n" \
+    "  };\n"                                                           \
+    "};"
+    run_test("valid", keymap != NULL, "does *not*", xkb_keymap_unref(keymap));
+
 #undef make_keymap
 #undef make_keymap_with_actions
 #undef make_keymap_with_keysyms
 #undef make_keymaps_with
 #undef test_keymaps
 #undef run_test
+}
+
+static struct xkb_keymap *
+_test_compile_buffer(struct xkb_context *context, const char *buf, size_t len,
+                     void *private)
+{
+    return test_compile_buffer(context, buf, len);
 }
 
 int
@@ -315,9 +343,10 @@ main(int argc, char *argv[])
 
     test_recursive(ctx);
     test_multi_keysyms_actions(ctx);
+    test_merge_modes(ctx, _test_compile_buffer, NULL);
+    test_merge_modes_xkbcommon(ctx, _test_compile_buffer, NULL);
 
     xkb_context_unref(ctx);
 
-
-    return 0;
+    return EXIT_SUCCESS;
 }
