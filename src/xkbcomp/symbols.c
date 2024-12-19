@@ -298,21 +298,62 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
 
     /* Merge the actions and syms. */
     levels_in_both = MIN(darray_size(into->levels), darray_size(from->levels));
+    unsigned int fromKeysymsCount = 0;
+    unsigned int fromActionsCount = 0;
     for (i = 0; i < levels_in_both; i++) {
         struct xkb_level *intoLevel = &darray_item(into->levels, i);
         struct xkb_level *fromLevel = &darray_item(from->levels, i);
 
-        if (fromLevel->num_syms == 0) {
-            /* it's empty for consistency with other comparisons */
+        const bool fromHasNoKeysym = XkbLevelHasNoKeysym(fromLevel);
+        const bool fromHasNoAction = XkbLevelHasNoAction(fromLevel);
+        if (fromHasNoKeysym && fromHasNoAction) {
+            /* Empty `from`: do nothing */
+            continue;
         }
-        else if (intoLevel->num_syms == 0) {
+
+        const bool intoHasNoKeysym = XkbLevelHasNoKeysym(intoLevel);
+        const bool intoHasNoAction = XkbLevelHasNoAction(intoLevel);
+        if (intoHasNoKeysym && intoHasNoAction) {
+            /* Empty `into`: use `from` keysyms and actions */
             StealLevelInfo(intoLevel, fromLevel);
+            fromKeysymsCount++;
+            fromActionsCount++;
+            continue;
+        }
+
+        if (intoLevel->num_syms != fromLevel->num_syms) {
+            /* Handle different keysyms/actions count */
+            assert(intoLevel->num_syms > 0);
+            assert(fromLevel->num_syms > 0);
+            if (report) {
+                log_warn(info->ctx, XKB_WARNING_CONFLICTING_KEY_SYMBOL,
+                         "Multiple definitions for level %d/group %u on key %s "
+                         "with incompatible keysyms/actions count; "
+                         "Using %s (count: %u), ignoring %s (count: %u)\n",
+                         i + 1, group + 1, KeyNameText(info->ctx, key_name),
+                         (clobber ? "from" : "to"),
+                         (clobber ? fromLevel->num_syms : intoLevel->num_syms),
+                         (clobber ? "to" : "from"),
+                         (clobber ? intoLevel->num_syms : fromLevel->num_syms));
+            }
+            if (clobber) {
+                /* There is no obvious way to deal with this case other than
+                 * just cloning `from` */
+                StealLevelInfo(intoLevel, fromLevel);
+                fromKeysymsCount++;
+                fromActionsCount++;
+            }
+            continue;
         }
         else {
-            bool actions_replaced = false;
+            /* Possible level conflict */
+            assert(intoLevel->num_syms > 0);
+            assert(fromLevel->num_syms == intoLevel->num_syms);
+
             /* Handle keysyms */
             if (!XkbLevelsSameSyms(fromLevel, intoLevel)) {
-                if (report) {
+                /* Incompatible keysyms */
+                if (report && !(intoHasNoKeysym || fromHasNoKeysym)) {
                     log_warn(info->ctx, XKB_WARNING_CONFLICTING_KEY_SYMBOL,
                              "Multiple symbols for level %d/group %u on key %s; "
                              "Using %s, ignoring %s\n",
@@ -320,47 +361,43 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
                              (clobber ? "from" : "to"),
                              (clobber ? "to" : "from"));
                 }
-
-                if (clobber) {
-                    /* Use `from` keysyms and actions */
-                    if (report && !XkbLevelHasNoAction(intoLevel)) {
-                        if (fromLevel->num_syms > 1) {
-                            log_warn(
-                                info->ctx, XKB_WARNING_CONFLICTING_KEY_ACTION,
-                                "Multiple actions for level %d/group %u "
-                                "on key %s; Using from, ignoring to\n",
-                                i + 1, group + 1,
-                                KeyNameText(info->ctx, key_name));
-                        } else {
-                            log_warn(
-                                info->ctx, XKB_WARNING_CONFLICTING_KEY_ACTION,
-                                "Multiple actions for level %d/group %u "
-                                "on key %s; Using %s, ignoring %s\n",
-                                i + 1, group + 1,
-                                KeyNameText(info->ctx, key_name),
-                                ActionTypeText(fromLevel->a.action.type),
-                                ActionTypeText(intoLevel->a.action.type));
+                if (fromHasNoKeysym) {
+                    /* No keysym to copy */
+                } else if (clobber) {
+                    /* Override: copy any defined keysym from `from` */
+                    if (unlikely(intoLevel->num_syms > 1)) {
+                        for (unsigned int k = 0; k < fromLevel->num_syms; k++) {
+                            if (fromLevel->s.syms[k] != XKB_KEY_NoSymbol)
+                                intoLevel->s.syms[k] = fromLevel->s.syms[k];
                         }
+                    } else if (fromLevel->s.sym != XKB_KEY_NoSymbol) {
+                        intoLevel->s.sym = fromLevel->s.sym;
                     }
-                    StealLevelInfo(intoLevel, fromLevel);
-                    actions_replaced = true;
+                    fromKeysymsCount++;
+                } else {
+                    /* Augment: copy only the keysyms from `from` that are
+                     * undefined in `into` */
+                    if (unlikely(intoLevel->num_syms > 1)) {
+                        bool copiedSome = false;
+                        for (unsigned int k = 0; k < intoLevel->num_syms; k++) {
+                            if (intoLevel->s.syms[k] == XKB_KEY_NoSymbol) {
+                                intoLevel->s.syms[k] = fromLevel->s.syms[k];
+                                copiedSome = true;
+                            }
+                        }
+                        fromKeysymsCount += copiedSome;
+                    } else if (intoLevel->s.sym == XKB_KEY_NoSymbol) {
+                        intoLevel->s.sym = fromLevel->s.sym;
+                        fromKeysymsCount++;
+                    }
                 }
             }
 
             /* Handle actions */
-            if (actions_replaced) {
-                /* Already handled, included incompatible keysyms/actions count */
-            } else if (XkbLevelHasNoAction(fromLevel)) {
-                /* It's empty for consistency with other comparisons */
-            } else if (XkbLevelHasNoAction(intoLevel)) {
-                /* Take actions from `from` */
-                assert(intoLevel->num_syms == fromLevel->num_syms);
-                StealLevelInfo(intoLevel, fromLevel);
-            } else {
+            if (!XkbLevelsSameActions(intoLevel, fromLevel)) {
                 /* Incompatible actions */
-                assert(intoLevel->num_syms == fromLevel->num_syms);
-                if (report) {
-                    if (intoLevel->num_syms > 1) {
+                if (report && !(intoHasNoAction || fromHasNoAction)) {
+                    if (unlikely(intoLevel->num_syms > 1)) {
                         log_warn(
                             info->ctx, XKB_WARNING_CONFLICTING_KEY_ACTION,
                             "Multiple actions for level %d/group %u on key %s; "
@@ -386,18 +423,60 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
                                  ActionTypeText(ignore->type));
                     }
                 }
-                if (clobber)
-                    StealLevelInfo(intoLevel, fromLevel);
+                if (fromHasNoAction)
+                    continue;
+                if (clobber) {
+                    /* Override: copy any defined action from `from` */
+                    if (unlikely(fromLevel->num_syms > 1)) {
+                        for (unsigned int k = 0; k < fromLevel->num_syms; k++) {
+                            if (fromLevel->a.actions[k].type != ACTION_TYPE_NONE)
+                                intoLevel->a.actions[k] = fromLevel->a.actions[k];
+                        }
+                    } else if (fromLevel->a.action.type != ACTION_TYPE_NONE) {
+                        intoLevel->a.action = fromLevel->a.action;
+                    }
+                    fromActionsCount++;
+                } else {
+                    /* Augment: copy only the actions from `from` that are
+                     * undefined in `into` */
+                    if (unlikely(intoLevel->num_syms > 1)) {
+                        bool copiedSome = false;
+                        for (unsigned int k = 0; k < intoLevel->num_syms; k++) {
+                            if (intoLevel->a.actions[k].type == ACTION_TYPE_NONE) {
+                                intoLevel->a.actions[k] = fromLevel->a.actions[k];
+                                copiedSome = true;
+                            }
+                        }
+                        fromActionsCount += copiedSome;
+                    } else if (intoLevel->a.action.type == ACTION_TYPE_NONE) {
+                        intoLevel->a.action = fromLevel->a.action;
+                        fromActionsCount++;
+                    }
+                }
             }
         }
     }
     /* If @from has extra levels, get them as well. */
     darray_foreach_from(level, from->levels, levels_in_both) {
         darray_append(into->levels, *level);
+        /* We may have stolen keysyms or actions arrays:
+         * do not free them when clearing `from` */
         level->num_syms = 0;
+        fromKeysymsCount++;
+        fromActionsCount++;
     }
-    into->defined |= (from->defined & GROUP_FIELD_ACTS);
-    into->defined |= (from->defined & GROUP_FIELD_SYMS);
+    if (fromKeysymsCount) {
+        /* Reset defined keysyms field if we used no keysym from `into` */
+        if (fromKeysymsCount == darray_size(into->levels))
+            into->defined &= ~GROUP_FIELD_SYMS;
+        into->defined |= (from->defined & GROUP_FIELD_SYMS);
+    }
+    if (fromActionsCount) {
+        /* Reset defined actions field if we used no action from `into` */
+        if (fromActionsCount == darray_size(into->levels))
+            into->defined &= ~GROUP_FIELD_ACTS;
+        into->defined |= (from->defined & GROUP_FIELD_ACTS);
+    }
 
     return true;
 }
