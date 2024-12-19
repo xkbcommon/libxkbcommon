@@ -210,7 +210,7 @@ resolve_keysym(struct parser_param *param, const char *name, xkb_keysym_t *sym_r
 %type <expr>    MultiKeySymList KeySymList MultiActionList ActionList Action Coord CoordList
 %type <exprList> OptExprList ExprList
 %type <var>     VarDecl SymbolsVarDecl
-%type <varList> VarDeclList SymbolsBody
+%type <varList> VarDeclList SymbolsBody OptSymbolsBody
 %type <vmod>    VModDef
 %type <vmodList> VModDefList VModDecl
 %type <interp>  InterpretDecl InterpretMatch
@@ -458,9 +458,13 @@ KeyTypeDecl     :       TYPE String OBRACE
                 ;
 
 SymbolsDecl     :       KEY KEYNAME OBRACE
-                            SymbolsBody
+                            OptSymbolsBody
                         CBRACE SEMI
                         { $$ = SymbolsCreate($2, $4.head); }
+                ;
+
+OptSymbolsBody  :       SymbolsBody { $$ = $1; }
+                |                   { $$.head = $$.last = NULL; }
                 ;
 
 SymbolsBody     :       SymbolsBody COMMA SymbolsVarDecl
