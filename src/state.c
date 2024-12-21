@@ -123,6 +123,15 @@ xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
     return entry->level;
 }
 
+static xkb_layout_index_t
+xkb_state_xkb_key_get_layout(struct xkb_state *state, const struct xkb_key *key) {
+    static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
+    return XkbWrapGroupIntoRange((int32_t) state->components.group,
+                                 key->num_groups,
+                                 key->out_of_range_group_action,
+                                 key->out_of_range_group_number);
+}
+
 /**
  * Returns the layout to use for the given key and state, taking
  * wrapping/clamping/etc into account, or XKB_LAYOUT_INVALID.
@@ -135,11 +144,7 @@ xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t kc)
     if (!key)
         return XKB_LAYOUT_INVALID;
 
-    static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
-    return XkbWrapGroupIntoRange((int32_t) state->components.group,
-                                 key->num_groups,
-                                 key->out_of_range_group_action,
-                                 key->out_of_range_group_number);
+    return xkb_state_xkb_key_get_layout(state, key);
 }
 
 /* Empty action used for empty levels */
@@ -286,6 +291,7 @@ xkb_filter_group_lock_func(struct xkb_state *state,
     return XKB_FILTER_CONTINUE;
 }
 
+/* Mod latches have additional break conditions not handled by this function */
 static bool
 xkb_action_breaks_latch(const union xkb_action *action)
 {
@@ -545,10 +551,29 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
             }
             else if (xkb_action_breaks_latch(&(actions[k]))) {
                 /* XXX: This may be totally broken, we might need to break the
-                *      latch in the next run after this press? */
+                 *      latch in the next run after this press? */
                 state->components.latched_mods &= ~filter->action.mods.mods.mask;
                 filter->func = NULL;
                 return XKB_FILTER_CONTINUE;
+            }
+            else if (actions->type == ACTION_TYPE_GROUP_LATCH ||
+                     actions->type == ACTION_TYPE_MOD_LATCH) {
+                /* We break latches only if there is overlap with the type's mod mask. */
+                xkb_layout_index_t group = xkb_state_xkb_key_get_layout(state, key);
+                const struct xkb_key_type *type = key->groups[group].type;
+                xkb_mod_mask_t type_mod_mask = type->mods.mask;
+
+                const struct xkb_key_type_entry *entry = get_entry_for_mods(type, state->components.mods & type_mod_mask);
+                if (entry) {
+                    type_mod_mask &= ~entry->preserve.mask;
+                }
+
+                xkb_mod_mask_t filter_mod_mask = filter->action.mods.mods.mask;
+                if (filter_mod_mask & type_mod_mask) {
+                    state->components.latched_mods &= ~filter_mod_mask;
+                    filter->func = NULL;
+                    return XKB_FILTER_CONTINUE;
+                }
             }
         }
     }
