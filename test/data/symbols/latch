@@ -8,6 +8,8 @@ xkb_symbols "modifiers" {
 
 	key <AD01> { [ q, Q ], type[Group1] = "ALPHABETIC" };
 
+	key <AC01> { [ a, A, ISO_Level5_Latch, NoSymbol ], type[Group1] = "FOUR_LEVEL_SEMIALPHABETIC" };
+
 	key <LFSH> {
 		symbols[Group1] = [ Shift_L ],
 		actions[Group1] = [ LatchMods(modifiers=Shift,latchToLock=true,clearLocks=true) ]
@@ -43,8 +45,26 @@ xkb_symbols "modifiers" {
 
 	key <FK01> { [XF86_Switch_VT_1], type[Group1] = "ONE_LEVEL" };
 	key <FK02> { [ISO_Group_Shift], type[Group1] = "ONE_LEVEL" };
+	key <FK03> {
+		symbols[Group1] = [Shift_L, Caps_Lock],
+		actions[Group1] = [ LatchMods(modifiers=Shift,latchToLock=true,clearLocks=true), LockMods(modifiers=Lock) ],
+		type[Group1] = "TWO_LEVEL"
+	};
+	key <FK04> {
+		symbols[Group1] = [ Caps_Lock, Shift_R ],
+		actions[Group1] = [ LatchMods(modifiers=Lock,latchToLock=true,clearLocks=true), LatchMods(modifiers=Lock,latchToLock=true,clearLocks=true) ],
+		type[Group1] = "PC_ALT_LEVEL2"
+	};
+
+	key <FK05> {
+		symbols[Group1] = [ Shift_R, Shift_R, Shift_R, Shift_R, Shift_R ],
+		actions[Group1] = [ LatchMods(modifiers=Lock), LatchMods(modifiers=Lock), LatchMods(modifiers=Lock), LatchMods(modifiers=Lock), LatchMods(modifiers=Lock) ],
+		type[Group1]="CTRL+ALT"
+	};
 
 	key <LSGT> { [ ISO_Level3_Lock ], type[Group1] = "ONE_LEVEL" };
 
 	key <CAPS> { [ ISO_Group_Latch ] };
+
+	modifier_map Mod1 { <ALT>, <META> };
 };
