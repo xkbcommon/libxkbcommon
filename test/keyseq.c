@@ -1084,6 +1084,85 @@ test_simultaneous_modifier_clear(struct xkb_context *context)
     xkb_keymap_unref(keymap);
 }
 
+static void
+test_latch_mod_cancel(struct xkb_context *context)
+{
+    struct xkb_keymap *keymap;
+
+    keymap = test_compile_rules(context, "evdev", "evdev", "latch", "", "");
+    assert(keymap);
+
+    // Basic latch/unlatch
+    assert(test_key_seq(keymap,
+        KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L, NEXT, // Latch Shift
+        KEY_Q         , BOTH, XKB_KEY_Q      , NEXT, // Unlatch Shift
+        KEY_Q         , BOTH, XKB_KEY_q      , NEXT,
+
+        KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L, NEXT, // Latch Shift
+        KEY_1         , BOTH, XKB_KEY_exclam , NEXT, // Unlatch Shift
+        KEY_1         , BOTH, XKB_KEY_1      , FINISH
+    ));
+
+    // Lock/unlock cancels latch
+    assert(test_key_seq(keymap,
+        KEY_F3        , BOTH, XKB_KEY_Shift_L  , NEXT, // Latch Shift
+        KEY_F3        , BOTH, XKB_KEY_Caps_Lock, NEXT, // Lock Caps, unlatch Shift
+        KEY_Q         , BOTH, XKB_KEY_Q        , NEXT,
+        KEY_1         , BOTH, XKB_KEY_1        , NEXT,
+        KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L  , NEXT, // Latch Shift
+        KEY_1         , BOTH, XKB_KEY_exclam   , NEXT, // Unlatch Shift
+        KEY_1         , BOTH, XKB_KEY_1        , NEXT,
+        KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L  , NEXT, // Latch Shift
+        KEY_Q         , BOTH, XKB_KEY_q        , NEXT, // Unlatch Shift
+        KEY_Q         , BOTH, XKB_KEY_Q        , NEXT,
+        KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L  , NEXT, // Latch Shift
+        KEY_F3        , BOTH, XKB_KEY_Caps_Lock, NEXT, // Unlock Caps, unlatch Shift
+        KEY_Q         , BOTH, XKB_KEY_q        , FINISH
+    ));
+
+    // Double latch/unlatch
+    assert(test_key_seq(keymap,
+        KEY_LEFTCTRL  , BOTH, XKB_KEY_Control_L, NEXT, // Latch Control
+        KEY_LEFTALT   , BOTH, XKB_KEY_Alt_L    , NEXT, // Latch Alt
+        KEY_1         , BOTH, XKB_KEY_plus     , NEXT, // Unlatch Control, Unlatch Alt
+
+        KEY_F4        , BOTH, XKB_KEY_Caps_Lock, NEXT, // Latch Lock
+        KEY_LEFTCTRL  , BOTH, XKB_KEY_Control_L, NEXT, // Latch Control
+        KEY_LEFTALT   , BOTH, XKB_KEY_Alt_L    , NEXT, // Latch Alt
+        KEY_1         , BOTH, XKB_KEY_plus     , NEXT, // Unlatch Control, Unlatch Lock, Unlatch Alt
+        KEY_Q         , BOTH, XKB_KEY_q        , NEXT,
+
+        KEY_LEFTALT   , BOTH, XKB_KEY_Alt_L    , NEXT, // Latch Alt
+        KEY_F4        , BOTH, XKB_KEY_Shift_R  , NEXT, // Latch Lock, unlatch Alt
+        KEY_LEFTCTRL  , BOTH, XKB_KEY_Control_L, NEXT, // Latch Control
+        KEY_1         , BOTH, XKB_KEY_1        , NEXT, // Unlatch Control, Unlatch Lock
+        KEY_Q         , BOTH, XKB_KEY_q        , NEXT,
+
+        KEY_LEFTALT   , BOTH, XKB_KEY_Alt_L    , NEXT, // Latch Alt
+        KEY_LEFTCTRL  , BOTH, XKB_KEY_Control_L, NEXT, // Latch Control
+        KEY_F4        , BOTH, XKB_KEY_Shift_R  , NEXT, // Latch Lock, Unlatch Control, Unlatch Alt
+        KEY_1         , BOTH, XKB_KEY_1        , NEXT, // Unlatch Lock
+        KEY_Q         , BOTH, XKB_KEY_q        , NEXT,
+
+        KEY_LEFTALT   , BOTH, XKB_KEY_Alt_L    , NEXT, // Latch Alt
+        KEY_LEFTCTRL  , BOTH, XKB_KEY_Control_L, NEXT, // Latch Control
+        KEY_F4        , BOTH, XKB_KEY_Shift_R  , NEXT, // Latch Lock, Unlatch Control, Unlatch Alt
+        KEY_Q         , BOTH, XKB_KEY_Q        , NEXT, // Unlatch Lock
+        KEY_Q         , BOTH, XKB_KEY_q        , FINISH
+    ));
+
+    // Preserved latches are not broken by new latches
+    assert(test_key_seq(keymap,
+        KEY_F5        , BOTH, XKB_KEY_Shift_R         , NEXT, // Latch Lock
+        KEY_RIGHTALT  , BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, // Latch LevelThree
+        KEY_A         , BOTH, XKB_KEY_ISO_Level5_Latch, NEXT, // Latch LevelFive, unlatch LevelThree
+        KEY_Q         , BOTH, XKB_KEY_Q               , NEXT, // Unlatch Lock, unlatch LevelFive
+        KEY_Q         , BOTH, XKB_KEY_q               , FINISH
+    ));
+
+    xkb_keymap_unref(keymap);
+}
+
 int
 main(void)
 {
@@ -1098,6 +1177,7 @@ main(void)
     test_group_latch(ctx);
     test_mod_latch(ctx);
     test_explicit_actions(ctx);
+    test_latch_mod_cancel(ctx);
 
     keymap = test_compile_rules(ctx, "evdev", "evdev",
                                 "us,il,ru,de", ",,phonetic,neo",
