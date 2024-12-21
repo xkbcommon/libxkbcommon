@@ -294,6 +294,7 @@ xkb_filter_group_lock_func(struct xkb_state *state,
     return XKB_FILTER_CONTINUE;
 }
 
+/* Mod latches have additional break conditions not handled by this function */
 static bool
 xkb_action_breaks_latch(const union xkb_action *action,
                         enum xkb_internal_action_flags flag,
@@ -567,6 +568,25 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
                 state->components.latched_mods &= ~filter->action.mods.mods.mask;
                 filter->func = NULL;
                 return XKB_FILTER_CONTINUE;
+            }
+            else if (actions->type == ACTION_TYPE_GROUP_LATCH ||
+                     actions->type == ACTION_TYPE_MOD_LATCH) {
+                /* We break latches only if there is overlap with the type's mod mask. */
+                xkb_layout_index_t group = state_key_get_layout(state, key);
+                const struct xkb_key_type *type = key->groups[group].type;
+                xkb_mod_mask_t type_mod_mask = type->mods.mask;
+
+                const struct xkb_key_type_entry *entry = get_entry_for_mods(type, state->components.mods & type_mod_mask);
+                if (entry) {
+                    type_mod_mask &= ~entry->preserve.mask;
+                }
+
+                xkb_mod_mask_t filter_mod_mask = filter->action.mods.mods.mask;
+                if (filter_mod_mask & type_mod_mask) {
+                    state->components.latched_mods &= ~filter_mod_mask;
+                    filter->func = NULL;
+                    return XKB_FILTER_CONTINUE;
+                }
             }
         }
     }
