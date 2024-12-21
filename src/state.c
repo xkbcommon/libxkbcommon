@@ -291,12 +291,16 @@ xkb_action_breaks_latch(const union xkb_action *action)
 {
     switch (action->type) {
     case ACTION_TYPE_NONE:
+    case ACTION_TYPE_MOD_LOCK:
+    case ACTION_TYPE_GROUP_LOCK:
+    case ACTION_TYPE_PTR_MOVE:
     case ACTION_TYPE_PTR_BUTTON:
     case ACTION_TYPE_PTR_LOCK:
+    case ACTION_TYPE_PTR_DEFAULT:
+    case ACTION_TYPE_TERMINATE:
+    case ACTION_TYPE_SWITCH_VT:
     case ACTION_TYPE_CTRL_SET:
     case ACTION_TYPE_CTRL_LOCK:
-    case ACTION_TYPE_SWITCH_VT:
-    case ACTION_TYPE_TERMINATE:
         return true;
     default:
         return false;
