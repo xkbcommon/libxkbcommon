@@ -417,8 +417,8 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
             } else if (node->internal.eqkid != 0) {
                 scanner_warn(s, XKB_LOG_MESSAGE_NO_ID,
                              "this compose sequence is a prefix of another; "
-                             "skipping line");
-                return;
+                             "overriding");
+                node->internal.eqkid = 0;
             }
 
             /* NOTE: If there was a previous entry, its string may *not* be
