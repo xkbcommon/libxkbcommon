@@ -117,7 +117,7 @@ test_group_latch(struct xkb_context *ctx)
                         /* Sequential */                                      \
                         KEY_COMPOSE,    BOTH, XKB_KEY_ISO_Group_Latch, NEXT,  \
                         KEY_SCROLLLOCK, BOTH, XKB_KEY_ISO_Next_Group,  NEXT,  \
-                        KEY_H,          BOTH, XKB_KEY_Cyrillic_ha,     NEXT,  \
+                        KEY_H,          BOTH, XKB_KEY_hebrew_yod,      NEXT,  \
                         KEY_H,          BOTH, XKB_KEY_hebrew_yod,      NEXT,  \
                         KEY_LEFTCTRL,   BOTH, XKB_KEY_ISO_First_Group, NEXT,  \
                         KEY_H,          BOTH, XKB_KEY_h,               NEXT,  \
@@ -372,7 +372,7 @@ test_group_latch(struct xkb_context *ctx)
                         /* Sequential */                                      \
                         KEY_COMPOSE,    BOTH, XKB_KEY_ISO_Group_Latch, NEXT,  \
                         KEY_SCROLLLOCK, BOTH, XKB_KEY_ISO_Next_Group,  NEXT,  \
-                        KEY_H,          BOTH, XKB_KEY_hebrew_yod,      NEXT,  \
+                        KEY_H,          BOTH, XKB_KEY_Cyrillic_ha,     NEXT,  \
                         KEY_H,          BOTH, XKB_KEY_Cyrillic_ha,     NEXT,  \
                         KEY_RIGHTCTRL,  BOTH, XKB_KEY_ISO_Last_Group,  NEXT,  \
                         KEY_H,          BOTH, XKB_KEY_hebrew_yod,      NEXT,  \
@@ -640,8 +640,8 @@ test_mod_latch(struct xkb_context *context)
         KEY_Q         , BOTH, XKB_KEY_q              , NEXT,
 
         KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L        , NEXT, /* Latch Shift */
-        KEY_102ND     , BOTH, XKB_KEY_ISO_Level3_Lock, NEXT, /* Modifier action does not break latches */
-        KEY_1         , BOTH, XKB_KEY_exclamdown     , NEXT, /* Unlatch Shift */
+        KEY_102ND     , BOTH, XKB_KEY_ISO_Level3_Lock, NEXT, /* Unlatch Shift */
+        KEY_1         , BOTH, XKB_KEY_onesuperior     , NEXT,
         KEY_1         , BOTH, XKB_KEY_onesuperior    , NEXT,
         KEY_102ND     , BOTH, XKB_KEY_ISO_Level3_Lock, NEXT,
         KEY_1         , BOTH, XKB_KEY_1              , NEXT,
