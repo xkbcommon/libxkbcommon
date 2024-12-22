@@ -83,18 +83,11 @@ test_group_latch(struct xkb_context *ctx)
                         KEY_LEFTALT,  BOTH,  XKB_KEY_Alt_L,           NEXT,  \
                         KEY_H,        BOTH,  XKB_KEY_hebrew_yod,      NEXT,  \
                         KEY_H,        BOTH,  XKB_KEY_h,               NEXT,  \
-                        /*                                                   \
-                         * WARNING: it is ambiguous what prevents a latch    \
-                         *          when multiple keys are *simultenously*   \
-                         *          operated together. Assuming any action   \
-                         *          that is not identical to the considered  \
-                         *          latch prevents it.                       \
-                         */                                                  \
                         /* Simultaneous */                                   \
                         KEY_COMPOSE,  DOWN,  XKB_KEY_ISO_Group_Latch, NEXT,  \
                         KEY_LEFTALT,  BOTH,  XKB_KEY_Alt_L,           NEXT,  \
                         KEY_COMPOSE,  UP,    XKB_KEY_ISO_Group_Latch, NEXT,  \
-                      /*KEY_H,        BOTH,  XKB_KEY_hebrew_yod,      NEXT,*/\
+                        KEY_H,        BOTH,  XKB_KEY_hebrew_yod,      NEXT,  \
                         KEY_H,        BOTH,  XKB_KEY_h,               NEXT,  \
                         /* Simultaneous */                                   \
                         KEY_LEFTALT,  DOWN,  XKB_KEY_Alt_L,           NEXT,  \
@@ -122,18 +115,10 @@ test_group_latch(struct xkb_context *ctx)
                         KEY_H,          BOTH, XKB_KEY_hebrew_yod,      NEXT,  \
                         KEY_LEFTCTRL,   BOTH, XKB_KEY_ISO_First_Group, NEXT,  \
                         KEY_H,          BOTH, XKB_KEY_h,               NEXT,  \
-                        /*                                                    \
-                         * WARNING: it is ambiguous what prevents a latch     \
-                         *          when multiple keys are *simultenously*    \
-                         *          operated together. Assuming any action    \
-                         *          that is not identical to the considered   \
-                         *          latch prevents it.                        \
-                         */                                                   \
                         /* Simultaneous */                                    \
                         KEY_COMPOSE,    DOWN, XKB_KEY_ISO_Group_Latch, NEXT,  \
                         KEY_SCROLLLOCK, BOTH, XKB_KEY_ISO_Next_Group,  NEXT,  \
                         KEY_COMPOSE,    UP,   XKB_KEY_ISO_Group_Latch, NEXT,  \
-                      /*KEY_H,          BOTH, XKB_KEY_Cyrillic_ha,     NEXT,*/\
                         KEY_H,          BOTH, XKB_KEY_hebrew_yod,      NEXT,  \
                         KEY_H,          BOTH, XKB_KEY_hebrew_yod,      NEXT,  \
                         KEY_LEFTCTRL,   BOTH, XKB_KEY_ISO_First_Group, NEXT,  \
@@ -336,18 +321,11 @@ test_group_latch(struct xkb_context *ctx)
                         KEY_LEFTALT,  BOTH,  XKB_KEY_Alt_L,           NEXT,  \
                         KEY_H,        BOTH,  XKB_KEY_s,               NEXT,  \
                         KEY_H,        BOTH,  XKB_KEY_h,               NEXT,  \
-                        /*                                                   \
-                         * WARNING: it is ambiguous what prevents a latch    \
-                         *          when multiple keys are *simultenously*   \
-                         *          operated together. Assuming any action   \
-                         *          that is not identical to the considered  \
-                         *          latch prevents it.                       \
-                         */                                                  \
                         /* Simultaneous */                                   \
                         KEY_COMPOSE,  DOWN,  XKB_KEY_ISO_Group_Latch, NEXT,  \
                         KEY_LEFTALT,  BOTH,  XKB_KEY_Alt_L,           NEXT,  \
                         KEY_COMPOSE,  UP,    XKB_KEY_ISO_Group_Latch, NEXT,  \
-                      /*KEY_H,        BOTH,  XKB_KEY_s,               NEXT,*/\
+                        KEY_H,        BOTH,  XKB_KEY_s,               NEXT,  \
                         KEY_H,        BOTH,  XKB_KEY_h,               NEXT,  \
                         /* Simultaneous */                                   \
                         KEY_LEFTALT,  DOWN,  XKB_KEY_Alt_L,           NEXT,  \
@@ -377,18 +355,10 @@ test_group_latch(struct xkb_context *ctx)
                         KEY_H,          BOTH, XKB_KEY_Cyrillic_ha,     NEXT,  \
                         KEY_RIGHTCTRL,  BOTH, XKB_KEY_ISO_Last_Group,  NEXT,  \
                         KEY_H,          BOTH, XKB_KEY_hebrew_yod,      NEXT,  \
-                        /*                                                    \
-                         * WARNING: it is ambiguous what prevents a latch     \
-                         *          when multiple keys are *simultenously*    \
-                         *          operated together. Assuming any action    \
-                         *          that is not identical to the considered   \
-                         *          latch prevents it.                        \
-                         */                                                   \
                         /* Simultaneous */                                    \
                         KEY_COMPOSE,    DOWN, XKB_KEY_ISO_Group_Latch, NEXT,  \
                         KEY_SCROLLLOCK, BOTH, XKB_KEY_ISO_Next_Group,  NEXT,  \
                         KEY_COMPOSE,    UP,   XKB_KEY_ISO_Group_Latch, NEXT,  \
-                      /*KEY_H,          BOTH, XKB_KEY_hebrew_yod,      NEXT,*/\
                         KEY_H,          BOTH, XKB_KEY_Cyrillic_ha,     NEXT,  \
                         KEY_H,          BOTH, XKB_KEY_Cyrillic_ha,     NEXT,  \
                         KEY_RIGHTCTRL,  BOTH, XKB_KEY_ISO_Last_Group,  NEXT,  \
@@ -500,21 +470,16 @@ test_mod_latch(struct xkb_context *context)
         KEY_LEFTSHIFT , UP,   XKB_KEY_Shift_L        , NEXT,
         KEY_Q         , BOTH, XKB_KEY_q              , NEXT,
 
-        /*
-         * WARNING: it is ambiguous what prevents a latch
-         *          when multiple keys are *simultenously*
-         *          operated together. Assuming any action
-         *          that is not identical to the considered
-         *          latch prevents it.
-         */
         KEY_LEFTSHIFT , DOWN, XKB_KEY_Shift_L         , NEXT,
-        KEY_LVL3      , BOTH, XKB_KEY_ISO_Level3_Shift, NEXT, /* Prevent latch */
+        KEY_LVL3      , BOTH, XKB_KEY_ISO_Level3_Shift, NEXT,
         KEY_LEFTSHIFT , UP,   XKB_KEY_Shift_L         , NEXT,
+        KEY_Q         , BOTH,   XKB_KEY_Q               , NEXT,
         KEY_Q         , BOTH, XKB_KEY_q               , NEXT,
 
         KEY_LEFTSHIFT , DOWN, XKB_KEY_Shift_L         , NEXT,
-        KEY_CAPSLOCK  , BOTH, XKB_KEY_ISO_Group_Latch , NEXT, /* Prevent latch */
+        KEY_CAPSLOCK  , BOTH, XKB_KEY_ISO_Group_Latch , NEXT,
         KEY_LEFTSHIFT , UP,   XKB_KEY_Shift_L         , NEXT,
+        KEY_Q         , BOTH, XKB_KEY_Q               , NEXT,
         KEY_Q         , BOTH, XKB_KEY_q               , FINISH
     ));
 
@@ -652,24 +617,16 @@ test_mod_latch(struct xkb_context *context)
         KEY_Q         , BOTH, XKB_KEY_Q              , NEXT, /* Unlatch Shift */
         KEY_Q         , BOTH, XKB_KEY_q              , NEXT,
 
-        /*
-         * WARNING: it is ambiguous what prevents a latch
-         *          when multiple keys are *simultenously*
-         *          operated together. Assuming any action
-         *          that is not identical to the considered
-         *          latch prevents it.
-         */
         /* Latch not prevented (DOWN/UP events) */
         KEY_LEFTSHIFT , DOWN, XKB_KEY_Shift_L  , NEXT, /* Set Shift */
         KEY_RIGHTCTRL , BOTH, XKB_KEY_Control_R, NEXT,
         KEY_LEFTSHIFT , UP  , XKB_KEY_Shift_L  , NEXT, /* Latch Shift */
-      //KEY_Q         , BOTH, XKB_KEY_Q        , NEXT, /* Unlatch Shift */
+        KEY_Q         , BOTH, XKB_KEY_Q        , NEXT, /* Unlatch Shift */
         KEY_Q         , BOTH, XKB_KEY_q        , NEXT,
 
         KEY_LEFTSHIFT , DOWN, XKB_KEY_Shift_L        , NEXT, /* Set Shift */
         KEY_102ND     , BOTH, XKB_KEY_ISO_Level3_Lock, NEXT,
-        KEY_LEFTSHIFT , UP  , XKB_KEY_Shift_L        , NEXT, /* Latch Shift */
-      //KEY_1         , BOTH, XKB_KEY_exclamdown     , NEXT, /* Unlatch Shift */
+        KEY_LEFTSHIFT , UP  , XKB_KEY_Shift_L        , NEXT,
         KEY_1         , BOTH, XKB_KEY_onesuperior    , NEXT,
         KEY_102ND     , BOTH, XKB_KEY_ISO_Level3_Lock, NEXT,
         KEY_1         , BOTH, XKB_KEY_1              , NEXT,
@@ -679,14 +636,13 @@ test_mod_latch(struct xkb_context *context)
         KEY_RIGHTCTRL , DOWN, XKB_KEY_Control_R, NEXT,
         KEY_LEFTSHIFT , UP  , XKB_KEY_Shift_L  , NEXT, /* Latch Shift */
         KEY_RIGHTCTRL , UP  , XKB_KEY_Control_R, NEXT,
-      //KEY_Q         , BOTH, XKB_KEY_Q        , NEXT, /* Unlatch Shift */
+        KEY_Q         , BOTH, XKB_KEY_Q        , NEXT, /* Unlatch Shift */
         KEY_Q         , BOTH, XKB_KEY_q        , NEXT,
 
         KEY_LEFTSHIFT , DOWN, XKB_KEY_Shift_L        , NEXT, /* Set Shift */
         KEY_102ND     , DOWN, XKB_KEY_ISO_Level3_Lock, NEXT,
-        KEY_LEFTSHIFT , UP  , XKB_KEY_Shift_L        , NEXT, /* Latch Shift */
+        KEY_LEFTSHIFT , UP  , XKB_KEY_Shift_L        , NEXT,
         KEY_102ND     , UP  , XKB_KEY_ISO_Level3_Lock, NEXT,
-      //KEY_1         , BOTH, XKB_KEY_exclamdown     , NEXT, /* Unlatch Shift */
         KEY_1         , BOTH, XKB_KEY_onesuperior    , NEXT,
         KEY_102ND     , BOTH, XKB_KEY_ISO_Level3_Lock, NEXT,
         KEY_1         , BOTH, XKB_KEY_1              , NEXT,
@@ -851,27 +807,18 @@ test_mod_latch(struct xkb_context *context)
         KEY_RIGHTALT  , UP  , XKB_KEY_ISO_Level3_Latch, NEXT, /* Unset Level3 */
         KEY_1         , BOTH, XKB_KEY_1               , NEXT,
 
-        /*
-         * WARNING: it is ambiguous what prevents a latch
-         *          when multiple keys are *simultenously*
-         *          operated together. Assuming any action
-         *          that is not identical to the considered
-         *          latch prevents it.
-         */
         /* Set both, latch both */
         KEY_RIGHTALT  , DOWN, XKB_KEY_ISO_Level3_Latch, NEXT, /* Set Level3 */
         KEY_LEFTSHIFT , DOWN, XKB_KEY_Shift_L         , NEXT, /* Set Shift */
         KEY_RIGHTALT  , UP  , XKB_KEY_ISO_Level3_Latch, NEXT, /* Latch Level3 */
         KEY_LEFTSHIFT , UP  , XKB_KEY_Shift_L         , NEXT, /* Latch Shift */
-      //KEY_1         , BOTH, XKB_KEY_exclamdown      , NEXT, /* Unlatch both */
-        KEY_1         , BOTH, XKB_KEY_exclam          , NEXT, /* Unlatch Shift */
+        KEY_1         , BOTH, XKB_KEY_exclamdown      , NEXT, /* Unlatch both */
         KEY_1         , BOTH, XKB_KEY_1               , NEXT,
 
         KEY_RIGHTALT  , DOWN, XKB_KEY_ISO_Level3_Latch, NEXT, /* Set Level3 */
         KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Latch Shift */
         KEY_RIGHTALT  , UP  , XKB_KEY_ISO_Level3_Latch, NEXT, /* Latch Level3 */
-      //KEY_1         , BOTH, XKB_KEY_exclamdown      , NEXT, /* Unlatch both */
-        KEY_1         , BOTH, XKB_KEY_exclam          , NEXT, /* Unlatch Shift */
+        KEY_1         , BOTH, XKB_KEY_exclamdown      , NEXT, /* Unlatch both */
         KEY_1         , BOTH, XKB_KEY_1               , NEXT,
 
         /* Set one, lock the other */
@@ -914,7 +861,7 @@ test_mod_latch(struct xkb_context *context)
         KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Latch Shift */
         KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Lock Shift */
         KEY_RIGHTALT  , UP  , XKB_KEY_ISO_Level3_Latch, NEXT, /* Latch Level3 */
-      //KEY_1         , BOTH, XKB_KEY_exclamdown      , NEXT, /* Unlatch Level3 */
+        KEY_1         , BOTH, XKB_KEY_exclamdown      , NEXT, /* Unlatch Level3 */
         KEY_1         , BOTH, XKB_KEY_exclam          , NEXT,
         KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Unlock Shift */
         KEY_1         , BOTH, XKB_KEY_1               , NEXT,
@@ -923,7 +870,7 @@ test_mod_latch(struct xkb_context *context)
         KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Latch Shift */
         KEY_RIGHTALT  , UP  , XKB_KEY_ISO_Level3_Latch, NEXT, /* Latch Level3 */
         KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Lock Shift */
-      //KEY_1         , BOTH, XKB_KEY_exclamdown      , NEXT, /* Unlatch level 3*/
+        KEY_1         , BOTH, XKB_KEY_exclamdown      , NEXT, /* Unlatch level 3*/
         KEY_1         , BOTH, XKB_KEY_exclam          , NEXT,
         KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Unlock Shift */
         KEY_1         , BOTH, XKB_KEY_1               , FINISH
@@ -1159,6 +1106,22 @@ test_latch_mod_cancel(struct xkb_context *context)
         KEY_A         , BOTH, XKB_KEY_ISO_Level5_Latch, NEXT, // Latch LevelFive, unlatch LevelThree
         KEY_Q         , BOTH, XKB_KEY_Q               , NEXT, // Unlatch Lock, unlatch LevelFive
         KEY_Q         , BOTH, XKB_KEY_q               , FINISH
+    ));
+
+    // Simultaneous latch
+    assert(test_key_seq(keymap,
+        KEY_LEFTCTRL  , DOWN, XKB_KEY_Control_L, NEXT, // Set Control
+        KEY_LEFTALT   , DOWN, XKB_KEY_Alt_L    , NEXT, // Latch Alt
+        KEY_LEFTCTRL  , UP  , XKB_KEY_Control_L, NEXT, // Latch Control
+        KEY_LEFTALT   , UP  , XKB_KEY_Alt_L    , NEXT, // Latch Alt
+        KEY_1         , BOTH, XKB_KEY_plus     , NEXT, // Unlatch Control, Unlatch Alt
+
+        KEY_LEFTCTRL  , DOWN, XKB_KEY_Control_L, NEXT, // Set Control
+        KEY_LEFTALT   , DOWN, XKB_KEY_Alt_L    , NEXT, // Latch Alt
+        KEY_LEFTALT   , UP  , XKB_KEY_Alt_L    , NEXT, // Latch Alt
+        KEY_LEFTCTRL  , UP  , XKB_KEY_Control_L, NEXT, // Latch Control
+        KEY_1         , BOTH, XKB_KEY_plus     , NEXT, // Unlatch Control, Unlatch Alt
+        KEY_1         , BOTH, XKB_KEY_1        , FINISH
     ));
 
     xkb_keymap_unref(keymap);
