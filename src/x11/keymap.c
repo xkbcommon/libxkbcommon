@@ -478,8 +478,9 @@ get_sym_maps(struct xkb_keymap *keymap, xcb_connection_t *conn,
                     xcb_keysym_t wire_keysym = *syms_iter;
 
                     assert(key->groups[group].type != NULL);
-                    if (level < key->groups[group].type->num_levels &&
-                        wire_keysym != XKB_KEY_NoSymbol) {
+                    if (level < key->groups[group].type->num_levels) {
+                        /* Do not discard the keysym yet if it is NoSymbol, because
+                         * there may be an action set */
                         key->groups[group].levels[level].num_syms = 1;
                         key->groups[group].levels[level].s.sym = wire_keysym;
                     }
@@ -532,6 +533,12 @@ get_actions(struct xkb_keymap *keymap, xcb_connection_t *conn,
                         union xkb_action *action = &key->groups[group].levels[level].a.action;
 
                         translate_action(action, wire_action);
+                        /* If the action and the keysym are both undefined,
+                         * discard them */
+                        if (action->type == ACTION_TYPE_NONE &&
+                            key->groups[group].levels[level].s.sym == XKB_KEY_NoSymbol) {
+                            key->groups[group].levels[level].num_syms = 0;
+                        }
                     }
 
                     xcb_xkb_action_next(&acts_iter);

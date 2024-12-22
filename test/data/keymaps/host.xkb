@@ -1657,6 +1657,11 @@ xkb_symbols "pc_us_pt_2_us_3_inet(evdev)_group(shift_caps_toggle)_compose(ralt)"
 	key <I244>               {	[     XF86Battery ] };
 	key <I245>               {	[   XF86Bluetooth ] };
 	key <I246>               {	[        XF86WLAN ] };
+	key <I247>               {
+		repeat= Yes,
+		symbols[Group1]= [                       NoSymbol ],
+		actions[Group1]= [       SetMods(modifiers=Shift) ]
+	};
 	modifier_map Shift { <LFSH>, <RTSH> };
 	modifier_map Lock { <CAPS> };
 	modifier_map Control { <LCTL>, <RCTL> };
