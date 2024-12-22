@@ -518,6 +518,20 @@ test_latch_mod_cancel(struct xkb_context *context)
                 NEXT, KEY_Q         , BOTH, XKB_KEY_Q        , // Unlatch Lock
                 NEXT, KEY_Q         , BOTH, XKB_KEY_q        ,
 
+                // Simultaneous latch
+
+                NEXT, KEY_LEFTCTRL  , DOWN, XKB_KEY_Control_L, // Set Control
+                NEXT, KEY_LEFTALT   , DOWN, XKB_KEY_Alt_L    , // Latch Alt
+                NEXT, KEY_LEFTCTRL  , UP  , XKB_KEY_Control_L, // Latch Control
+                NEXT, KEY_LEFTALT   , UP  , XKB_KEY_Alt_L    , // Latch Alt
+                NEXT, KEY_1         , BOTH, XKB_KEY_plus     , // Unlatch Control, Unlatch Alt
+
+                NEXT, KEY_LEFTCTRL  , DOWN, XKB_KEY_Control_L, // Set Control
+                NEXT, KEY_LEFTALT   , DOWN, XKB_KEY_Alt_L    , // Latch Alt
+                NEXT, KEY_LEFTALT   , UP  , XKB_KEY_Alt_L    , // Latch Alt
+                NEXT, KEY_LEFTCTRL  , UP  , XKB_KEY_Control_L, // Latch Control
+                NEXT, KEY_1         , BOTH, XKB_KEY_plus     , // Unlatch Control, Unlatch Alt
+
                 FINISH));
 
     xkb_keymap_unref(keymap);
