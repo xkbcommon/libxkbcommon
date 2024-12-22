@@ -362,40 +362,55 @@ xkb_filter_group_latch_func(struct xkb_state *state,
     union group_latch_priv priv = {.priv = filter->priv};
     enum xkb_key_latch_state latch = priv.latch;
 
-    if (direction == XKB_KEY_DOWN && latch == LATCH_PENDING) {
-        /* If this is a new keypress and we're awaiting our single latched
-         * keypress, then either break the latch if any random key is pressed,
-         * or promote it to a lock if it's the same group delta & flags and
-         * latchToLock option is enabled. */
+    if (direction == XKB_KEY_DOWN) {
         const union xkb_action *actions = NULL;
-        const unsigned int count = xkb_key_get_actions(state, key, &actions);
-        for (unsigned int k = 0; k < count; k++) {
-            if (actions[k].type == ACTION_TYPE_GROUP_LATCH &&
-                actions[k].group.group == filter->action.group.group &&
-                actions[k].group.flags == filter->action.group.flags) {
-                filter->action = actions[k];
-                if (filter->action.group.flags & ACTION_LATCH_TO_LOCK &&
-                    filter->action.group.group != 0) {
-                    /* Promote to lock */
-                    filter->action.type = ACTION_TYPE_GROUP_LOCK;
-                    filter->func = xkb_filter_group_lock_func;
-                    xkb_filter_group_lock_new(state, filter);
-                    state->components.latched_group -= priv.group_delta;
-                    filter->key = key;
-                    /* XXX beep beep! */
-                    return XKB_FILTER_CONSUME;
+        unsigned int count = xkb_key_get_actions(state, key, &actions);
+        if (latch == LATCH_PENDING) {
+            /* If this is a new keypress and we're awaiting our single latched
+             * keypress, then either break the latch if any random key is pressed,
+             * or promote it to a lock if it's the same group delta & flags and
+             * latchToLock option is enabled. */
+            for (unsigned int k = 0; k < count; k++) {
+                if (actions[k].type == ACTION_TYPE_GROUP_LATCH &&
+                    actions[k].group.group == filter->action.group.group &&
+                    actions[k].group.flags == filter->action.group.flags) {
+                    filter->action = actions[k];
+                    if (filter->action.group.flags & ACTION_LATCH_TO_LOCK &&
+                        filter->action.group.group != 0) {
+                        /* Promote to lock */
+                        filter->action.type = ACTION_TYPE_GROUP_LOCK;
+                        filter->func = xkb_filter_group_lock_func;
+                        xkb_filter_group_lock_new(state, filter);
+                        state->components.latched_group -= priv.group_delta;
+                        filter->key = key;
+                        /* XXX beep beep! */
+                        return XKB_FILTER_CONSUME;
+                    }
+                    /* Do nothing if latchToLock option is not activated; if the
+                     * latch is not broken by the following actions and the key is
+                     * not consumed, then another latch filter will be created.
+                     */
+                    continue;
                 }
-                /* Do nothing if latchToLock option is not activated; if the
-                 * latch is not broken by the following actions and the key is
-                 * not consumed, then another latch filter will be created.
-                 */
-                continue;
+                else if (xkb_action_breaks_latch(&(actions[k]))) {
+                    /* Breaks the latch */
+                    state->components.latched_group -= priv.group_delta;
+                    filter->func = NULL;
+                    return XKB_FILTER_CONTINUE;
+                }
             }
-            else if (xkb_action_breaks_latch(&(actions[k]))) {
-                /* Breaks the latch */
-                state->components.latched_group -= priv.group_delta;
-                filter->func = NULL;
-                return XKB_FILTER_CONTINUE;
+        }
+        else if (latch == LATCH_KEY_DOWN) {
+            /* Another key was pressed while we've still got the latching
+            * key held down, so keep the base group active (from
+            * xkb_filter_group_latch_new), but don't trip the latch Just clear
+            * it as soon as the group key gets released, but only if the action
+            * is eligible to break latches. */
+            for (unsigned int k = 0; k < count; k++) {
+                if (xkb_action_breaks_latch(&(actions[k]))) {
+                    latch = NO_LATCH;
+                    break;
+                }
             }
         }
     }
@@ -425,13 +440,6 @@ xkb_filter_group_latch_func(struct xkb_state *state,
             state->components.latched_group += priv.group_delta;
             /* XXX beep beep! */
         }
-    }
-    else if (direction == XKB_KEY_DOWN && latch == LATCH_KEY_DOWN) {
-        /* Another key was pressed while we've still got the latching
-         * key held down, so keep the base group active (from
-         * xkb_filter_group_latch_new), but don't trip the latch, just clear
-         * it as soon as the group key gets released. */
-        latch = NO_LATCH;
     }
 
     priv.latch = latch;
@@ -522,57 +530,88 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
 {
     enum xkb_key_latch_state latch = filter->priv;
 
-    if (direction == XKB_KEY_DOWN && latch == LATCH_PENDING) {
-        /* If this is a new keypress and we're awaiting our single latched
-         * keypress, then either break the latch if any random key is pressed,
-         * or promote it to a lock or plain base set if it's the same
-         * modifier. */
+    if (direction == XKB_KEY_DOWN) {
         const union xkb_action *actions = NULL;
-        const unsigned int count = xkb_key_get_actions(state, key, &actions);
-        for (unsigned int k = 0; k < count; k++) {
-            if (actions[k].type == ACTION_TYPE_MOD_LATCH &&
-                actions[k].mods.flags == filter->action.mods.flags &&
-                actions[k].mods.mods.mask == filter->action.mods.mods.mask) {
-                filter->action = actions[k];
-                if (filter->action.mods.flags & ACTION_LATCH_TO_LOCK) {
-                    filter->action.type = ACTION_TYPE_MOD_LOCK;
-                    filter->func = xkb_filter_mod_lock_func;
-                    state->components.locked_mods |= filter->action.mods.mods.mask;
+        unsigned int count = xkb_key_get_actions(state, key, &actions);
+        if (latch == LATCH_PENDING) {
+            /* If this is a new keypress and we're awaiting our single latched
+             * keypress, then either break the latch if any random key is pressed,
+             * or promote it to a lock or plain base set if it's the same
+             * modifier. */
+            for (unsigned int k = 0; k < count; k++) {
+                if (actions[k].type == ACTION_TYPE_MOD_LATCH &&
+                    actions[k].mods.flags == filter->action.mods.flags &&
+                    actions[k].mods.mods.mask == filter->action.mods.mods.mask) {
+                    filter->action = actions[k];
+                    if (filter->action.mods.flags & ACTION_LATCH_TO_LOCK) {
+                        filter->action.type = ACTION_TYPE_MOD_LOCK;
+                        filter->func = xkb_filter_mod_lock_func;
+                        state->components.locked_mods |= filter->action.mods.mods.mask;
+                    }
+                    else {
+                        filter->action.type = ACTION_TYPE_MOD_SET;
+                        filter->func = xkb_filter_mod_set_func;
+                        state->set_mods |= filter->action.mods.mods.mask;
+                    }
+                    filter->key = key;
+                    state->components.latched_mods &= ~filter->action.mods.mods.mask;
+                    /* XXX beep beep! */
+                    return XKB_FILTER_CONSUME;
                 }
-                else {
-                    filter->action.type = ACTION_TYPE_MOD_SET;
-                    filter->func = xkb_filter_mod_set_func;
-                    state->set_mods |= filter->action.mods.mods.mask;
-                }
-                filter->key = key;
-                state->components.latched_mods &= ~filter->action.mods.mods.mask;
-                /* XXX beep beep! */
-                return XKB_FILTER_CONSUME;
-            }
-            else if (xkb_action_breaks_latch(&(actions[k]))) {
-                /* XXX: This may be totally broken, we might need to break the
-                 *      latch in the next run after this press? */
-                state->components.latched_mods &= ~filter->action.mods.mods.mask;
-                filter->func = NULL;
-                return XKB_FILTER_CONTINUE;
-            }
-            else if (actions->type == ACTION_TYPE_GROUP_LATCH ||
-                     actions->type == ACTION_TYPE_MOD_LATCH) {
-                /* We break latches only if there is overlap with the type's mod mask. */
-                xkb_layout_index_t group = xkb_state_xkb_key_get_layout(state, key);
-                const struct xkb_key_type *type = key->groups[group].type;
-                xkb_mod_mask_t type_mod_mask = type->mods.mask;
-
-                const struct xkb_key_type_entry *entry = get_entry_for_mods(type, state->components.mods & type_mod_mask);
-                if (entry) {
-                    type_mod_mask &= ~entry->preserve.mask;
-                }
-
-                xkb_mod_mask_t filter_mod_mask = filter->action.mods.mods.mask;
-                if (filter_mod_mask & type_mod_mask) {
-                    state->components.latched_mods &= ~filter_mod_mask;
+                else if (xkb_action_breaks_latch(&(actions[k]))) {
+                    /* XXX: This may be totally broken, we might need to break the
+                     *      latch in the next run after this press? */
+                    state->components.latched_mods &= ~filter->action.mods.mods.mask;
                     filter->func = NULL;
                     return XKB_FILTER_CONTINUE;
+                }
+                else if (actions->type == ACTION_TYPE_GROUP_LATCH ||
+                         actions->type == ACTION_TYPE_MOD_LATCH) {
+                    /* We break latches only if there is overlap with the type's mod mask. */
+                    xkb_layout_index_t group = xkb_state_xkb_key_get_layout(state, key);
+                    const struct xkb_key_type *type = key->groups[group].type;
+                    xkb_mod_mask_t type_mod_mask = type->mods.mask;
+
+                    const struct xkb_key_type_entry *entry = get_entry_for_mods(type, state->components.mods & type_mod_mask);
+                    if (entry) {
+                        type_mod_mask &= ~entry->preserve.mask;
+                    }
+
+                    xkb_mod_mask_t filter_mod_mask = filter->action.mods.mods.mask;
+                    if (filter_mod_mask & type_mod_mask) {
+                        state->components.latched_mods &= ~filter_mod_mask;
+                        filter->func = NULL;
+                        return XKB_FILTER_CONTINUE;
+                    }
+                }
+            }
+        }
+        else if (latch == LATCH_KEY_DOWN) {
+            /* Someone's pressed another key while we've still got the latching
+            * key held down, so keep the base modifier state active (from
+            * xkb_filter_mod_latch_new), but don't trip the latch, just clear
+            * it as soon as the modifier gets released - but only if the action
+            * is eligible to break latches. */
+            for (unsigned int k = 0; k < count; k++) {
+                if (xkb_action_breaks_latch(&(actions[k]))) {
+                    latch = NO_LATCH;
+                    break;
+                } else if (actions->type == ACTION_TYPE_GROUP_LATCH ||
+                           actions->type == ACTION_TYPE_MOD_LATCH) {
+                    xkb_layout_index_t group = xkb_state_xkb_key_get_layout(state, key);
+                    const struct xkb_key_type *type = key->groups[group].type;
+                    xkb_mod_mask_t type_mod_mask = type->mods.mask;
+
+                    const struct xkb_key_type_entry *entry = get_entry_for_mods(type, state->components.mods & type_mod_mask);
+                    if (entry) {
+                        type_mod_mask &= ~entry->preserve.mask;
+                    }
+
+                    xkb_mod_mask_t filter_mod_mask = filter->action.mods.mods.mask;
+                    if (filter_mod_mask & type_mod_mask) {
+                        latch = NO_LATCH;
+                        break;
+                    }
                 }
             }
         }
@@ -603,13 +642,6 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
             state->components.latched_mods |= filter->action.mods.mods.mask;
             /* XXX beep beep! */
         }
-    }
-    else if (direction == XKB_KEY_DOWN && latch == LATCH_KEY_DOWN) {
-        /* Someone's pressed another key while we've still got the latching
-         * key held down, so keep the base modifier state active (from
-         * xkb_filter_mod_latch_new), but don't trip the latch, just clear
-         * it as soon as the modifier gets released. */
-        latch = NO_LATCH;
     }
 
     filter->priv = latch;
