@@ -590,10 +590,16 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
                 }
                 else if (actions->type == ACTION_TYPE_GROUP_LATCH ||
                         actions->type == ACTION_TYPE_MOD_LATCH) {
-                    /* We break latches only for mods that are part of the type's mod mask. */
+                    /* We break latches only for mods that are part of the type's mod mask,
+                    and are not preserved. */
                     xkb_layout_index_t group = xkb_state_xkb_key_get_layout(state, key);
                     const struct xkb_key_type *type = key->groups[group].type;
                     xkb_mod_mask_t type_mod_mask = type->mods.mask;
+
+                    const struct xkb_key_type_entry *entry = get_entry_for_mods(type, state->components.mods & type_mod_mask);
+                    if (entry) {
+                        type_mod_mask &= ~entry->preserve.mask;
+                    }
 
                     xkb_mod_mask_t filter_mod_mask = filter->action.mods.mods.mask;
                     xkb_mod_mask_t mods_to_unlatch_mask = filter_mod_mask & type_mod_mask;
