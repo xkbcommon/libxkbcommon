@@ -251,6 +251,57 @@ enum xkb_filter_result {
     else                                                                 \
         (state_)->components.component_ += (filter_)->action.group.group
 
+enum xkb_key_latch_state {
+    NO_LATCH = 0,
+    LATCH_KEY_DOWN,
+    LATCH_PENDING,
+    _KEY_LATCH_STATE_NUM_ENTRIES
+};
+
+#define MAX_XKB_KEY_LATCH_STATE_LOG2 2
+#if (_KEY_LATCH_STATE_NUM_ENTRIES > (1 << MAX_XKB_KEY_LATCH_STATE_LOG2)) || \
+    (-XKB_MAX_GROUPS) < (INT32_MIN >> MAX_XKB_KEY_LATCH_STATE_LOG2) || \
+      XKB_MAX_GROUPS > (INT32_MAX >> MAX_XKB_KEY_LATCH_STATE_LOG2)
+#error "Cannot represent priv field of the group latch filter"
+#endif
+
+/* Hold the latch state *and* the group delta */
+union group_latch_priv {
+    uint32_t priv;
+    struct {
+        /* The type is really: enum xkb_key_latch_state, but it is problematic
+         * on Windows, because it is interpreted as signed and leads to wrong
+         * negative values. */
+        unsigned int latch:MAX_XKB_KEY_LATCH_STATE_LOG2;
+        int32_t group_delta:(32 - MAX_XKB_KEY_LATCH_STATE_LOG2);
+    };
+};
+
+static void
+xkb_break_all_latches(struct xkb_state *state) {
+    struct xkb_filter *filter;
+
+    darray_foreach(filter, state->filters) {
+        if (filter->action.type == ACTION_TYPE_MOD_LATCH) {
+            if (filter->priv == LATCH_PENDING) {
+                filter->func = NULL;
+            } else {
+                filter->priv = NO_LATCH;
+            }
+        } else if (filter->action.type == ACTION_TYPE_GROUP_LATCH) {
+            union group_latch_priv priv = {.priv = filter->priv};
+            if (priv.latch == LATCH_PENDING) {
+                filter->func = NULL;
+            } else {
+                priv.latch = NO_LATCH;
+                filter->priv = priv.priv;
+            }
+        }
+    }
+    state->components.latched_mods = 0;
+    state->components.latched_group = 0;
+}
+
 static void
 xkb_filter_group_set_new(struct xkb_state *state, struct xkb_filter *filter)
 {
@@ -279,8 +330,10 @@ xkb_filter_group_set_func(struct xkb_state *state,
 
     state->components.base_group = filter->priv;
 
-    if (filter->action.group.flags & ACTION_LOCK_CLEAR)
+    if (filter->action.group.flags & ACTION_LOCK_CLEAR && state->components.locked_group) {
         state->components.locked_group = 0;
+        xkb_break_all_latches(state);
+    }
 
     filter->func = NULL;
     return XKB_FILTER_CONTINUE;
@@ -334,32 +387,6 @@ xkb_action_breaks_latch(const union xkb_action *action)
     }
 }
 
-enum xkb_key_latch_state {
-    NO_LATCH = 0,
-    LATCH_KEY_DOWN,
-    LATCH_PENDING,
-    _KEY_LATCH_STATE_NUM_ENTRIES
-};
-
-#define MAX_XKB_KEY_LATCH_STATE_LOG2 2
-#if (_KEY_LATCH_STATE_NUM_ENTRIES > (1 << MAX_XKB_KEY_LATCH_STATE_LOG2)) || \
-    (-XKB_MAX_GROUPS) < (INT32_MIN >> MAX_XKB_KEY_LATCH_STATE_LOG2) || \
-      XKB_MAX_GROUPS > (INT32_MAX >> MAX_XKB_KEY_LATCH_STATE_LOG2)
-#error "Cannot represent priv field of the group latch filter"
-#endif
-
-/* Hold the latch state *and* the group delta */
-union group_latch_priv {
-    uint32_t priv;
-    struct {
-        /* The type is really: enum xkb_key_latch_state, but it is problematic
-         * on Windows, because it is interpreted as signed and leads to wrong
-         * negative values. */
-        unsigned int latch:MAX_XKB_KEY_LATCH_STATE_LOG2;
-        int32_t group_delta:(32 - MAX_XKB_KEY_LATCH_STATE_LOG2);
-    };
-};
-
 static void
 xkb_filter_group_latch_new(struct xkb_state *state, struct xkb_filter *filter)
 {
@@ -399,10 +426,10 @@ xkb_filter_group_latch_func(struct xkb_state *state,
                     if (filter->action.group.flags & ACTION_LATCH_TO_LOCK &&
                         filter->action.group.group != 0) {
                         /* Promote to lock */
+                        xkb_break_all_latches(state); // Must be run *before* setting filter->func
                         filter->action.type = ACTION_TYPE_GROUP_LOCK;
                         filter->func = xkb_filter_group_lock_func;
                         xkb_filter_group_lock_new(state, filter);
-                        state->components.latched_group -= priv.group_delta;
                         filter->key = key;
                         /* XXX beep beep! */
                         return XKB_FILTER_CONSUME;
@@ -437,8 +464,8 @@ xkb_filter_group_latch_func(struct xkb_state *state,
     }
     else if (direction == XKB_KEY_UP && key == filter->key) {
         /* Our key got released.  If we've set it to clear locks, and we
-         * currently have a group locked, then release it and
-         * don't actually latch.  Else we've actually hit the latching
+         * currently have a group locked, then release it, break all latches,
+         * and don't actually latch.  Else we've actually hit the latching
          * stage, so set PENDING and move our group from base to
          * latched. */
         if (latch == NO_LATCH ||
@@ -448,8 +475,10 @@ xkb_filter_group_latch_func(struct xkb_state *state,
                 state->components.latched_group -= priv.group_delta;
             else
                 state->components.base_group -= priv.group_delta;
-            if (filter->action.group.flags & ACTION_LOCK_CLEAR)
+            if (filter->action.group.flags & ACTION_LOCK_CLEAR && state->components.locked_group) {
                 state->components.locked_group = 0;
+                xkb_break_all_latches(state);
+            }
             filter->func = NULL;
         }
         /* We may already have reached the latch state if pressing the
@@ -495,8 +524,10 @@ xkb_filter_mod_set_func(struct xkb_state *state,
     }
 
     state->clear_mods |= filter->action.mods.mods.mask;
-    if (filter->action.mods.flags & ACTION_LOCK_CLEAR)
+    if (filter->action.mods.flags & ACTION_LOCK_CLEAR && state->components.locked_mods & filter->action.mods.mods.mask) {
         state->components.locked_mods &= ~filter->action.mods.mods.mask;
+        xkb_break_all_latches(state);
+    }
 
     filter->func = NULL;
     return XKB_FILTER_CONTINUE;
@@ -568,6 +599,7 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
                         filter->action.type = ACTION_TYPE_MOD_LOCK;
                         filter->func = xkb_filter_mod_lock_func;
                         state->components.locked_mods |= filter->action.mods.mods.mask;
+                        xkb_break_all_latches(state);
                     }
                     else {
                         filter->action.type = ACTION_TYPE_MOD_SET;
@@ -598,7 +630,6 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
                     if (entry) {
                         type_mod_mask &= ~entry->preserve.mask;
                     }
-
                     xkb_mod_mask_t filter_mod_mask = filter->action.mods.mods.mask;
 
                     if (filter_mod_mask & type_mod_mask) {
@@ -625,7 +656,12 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
                     xkb_layout_index_t group = xkb_state_xkb_key_get_layout(state, key);
                     const struct xkb_key_type *type = key->groups[group].type;
                     xkb_mod_mask_t type_mod_mask = type->mods.mask;
+                    const struct xkb_key_type_entry *entry = get_entry_for_mods(type, state->components.mods & type_mod_mask);
+                    if (entry) {
+                        type_mod_mask &= ~entry->preserve.mask;
+                    }
                     xkb_mod_mask_t filter_mod_mask = filter->action.mods.mods.mask;
+
                     if (filter_mod_mask & type_mod_mask) {
                         latch = NO_LATCH;
                         break;
@@ -636,9 +672,10 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
     }
     else if (direction == XKB_KEY_UP && key == filter->key) {
         /* Our key got released.  If we've set it to clear locks, and we
-         * currently have the same modifiers locked, then release them and
-         * don't actually latch.  Else we've actually hit the latching
-         * stage, so set PENDING and move our modifier from base to
+         * currently have the same modifiers locked, then release them,
+         * break all latches, and don't actually latch.
+         * Else we've actually hit the latching stage,
+         * so set PENDING and move our modifier from base to
          * latched. */
         if (latch == NO_LATCH ||
             ((filter->action.mods.flags & ACTION_LOCK_CLEAR) &&
@@ -651,7 +688,11 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
                     ~filter->action.mods.mods.mask;
             else
                 state->clear_mods |= filter->action.mods.mods.mask;
-            state->components.locked_mods &= ~filter->action.mods.mods.mask;
+            if (filter->action.mods.flags & ACTION_LOCK_CLEAR &&
+                state->components.locked_mods & filter->action.mods.mods.mask) {
+                state->components.locked_mods &= ~filter->action.mods.mods.mask;
+                xkb_break_all_latches(state);
+            }
             filter->func = NULL;
         }
         else {
