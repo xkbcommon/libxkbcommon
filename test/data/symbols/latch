@@ -6,22 +6,29 @@ xkb_symbols "base" {
 
 	key <AD01> { [ q, Q ], type[Group1] = "ALPHABETIC" };
 
-	key <CAPS> { [ Caps_Lock ] };
+	key <AC01> { [ a, A, ISO_Level5_Latch, NoSymbol ], type[Group1] = "FOUR_LEVEL_SEMIALPHABETIC" };
+
+	key <CAPS> { [ Caps_Lock ], type[Group1] = "ONE_LEVEL" };
 
 	key <LFSH> {
 		symbols[Group1] = [ Shift_L, Caps_Lock ],
-		actions[Group1] = [ LatchMods(modifiers=Shift), LockMods(modifiers=Lock) ]
+		actions[Group1] = [ LatchMods(modifiers=Shift), LockMods(modifiers=Lock) ],
+		type[Group1] = "TWO_LEVEL"
 	};
 
 	key <LCTL> {
 		symbols[Group1] = [ Control_L ],
-		actions[Group1] = [ LatchMods(modifiers=Control) ]
+		actions[Group1] = [ LatchMods(modifiers=Control) ],
+		type[Group1] = "ONE_LEVEL"
 	};
 
 	key <LALT> {
 		symbols[Group1] = [ Alt_L ],
-		actions[Group1] = [ LatchMods(modifiers=Alt) ]
+		actions[Group1] = [ LatchMods(modifiers=Alt) ],
+		type[Group1] = "ONE_LEVEL"
 	};
+
+	key <RCTL> { [ ISO_Level3_Latch ], type[Group1] = "ONE_LEVEL" };
 
 	key <RTSH> {
 		symbols[Group1] = [ Shift_R, Shift_R, Shift_R, Shift_R, Shift_R ],
