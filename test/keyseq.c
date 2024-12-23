@@ -749,8 +749,8 @@ test_mod_latch(struct xkb_context *context)
 
         KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Latch Shift */
         KEY_RIGHTALT  , BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, /* Latch Level3 */
-        KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Lock Shift */
-        KEY_1         , BOTH, XKB_KEY_exclamdown      , NEXT, /* Unlatch Level3 */
+        KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Lock Shift, unlatch Level3 */
+        KEY_1         , BOTH, XKB_KEY_exclam          , NEXT,
         KEY_1         , BOTH, XKB_KEY_exclam          , NEXT,
         KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Unlock Shift */
         KEY_1         , BOTH, XKB_KEY_1               , NEXT,
@@ -769,12 +769,12 @@ test_mod_latch(struct xkb_context *context)
 
         KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Latch Shift */
         KEY_RIGHTALT  , BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, /* Latch Level3 */
-        KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Lock Shift */
-        KEY_RIGHTALT  , BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, /* Lock Level3 */
-        KEY_1         , BOTH, XKB_KEY_exclamdown      , NEXT,
-        KEY_1         , BOTH, XKB_KEY_exclamdown      , NEXT,
-        KEY_RIGHTALT  , BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, /* Unlock Level3 */
+        KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Lock Shift, unlatch Level3 */
+        KEY_RIGHTALT  , BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, /* Latch Level3 */
+        KEY_1         , BOTH, XKB_KEY_exclamdown      , NEXT, /* Unatch Level3 */
         KEY_1         , BOTH, XKB_KEY_exclam          , NEXT,
+        KEY_RIGHTALT  , BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, /* Latch Level3 */
+        KEY_1         , BOTH, XKB_KEY_exclamdown      , NEXT,
         KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Unlock Shift */
         KEY_1         , BOTH, XKB_KEY_1               , FINISH
     ));
@@ -859,8 +859,8 @@ test_mod_latch(struct xkb_context *context)
         KEY_RIGHTALT  , DOWN, XKB_KEY_ISO_Level3_Latch, NEXT, /* Set Level3 */
         KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Latch Shift */
         KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Lock Shift */
-        KEY_RIGHTALT  , UP  , XKB_KEY_ISO_Level3_Latch, NEXT, /* Latch Level3 */
-        KEY_1         , BOTH, XKB_KEY_exclamdown      , NEXT, /* Unlatch Level3 */
+        KEY_RIGHTALT  , UP  , XKB_KEY_ISO_Level3_Latch, NEXT,
+        KEY_1         , BOTH, XKB_KEY_exclam          , NEXT,
         KEY_1         , BOTH, XKB_KEY_exclam          , NEXT,
         KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Unlock Shift */
         KEY_1         , BOTH, XKB_KEY_1               , NEXT,
@@ -868,8 +868,8 @@ test_mod_latch(struct xkb_context *context)
         KEY_RIGHTALT  , DOWN, XKB_KEY_ISO_Level3_Latch, NEXT, /* Set Level3 */
         KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Latch Shift */
         KEY_RIGHTALT  , UP  , XKB_KEY_ISO_Level3_Latch, NEXT, /* Latch Level3 */
-        KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Lock Shift */
-        KEY_1         , BOTH, XKB_KEY_exclamdown      , NEXT, /* Unlatch level 3*/
+        KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Lock Shift, unlatch Level3  */
+        KEY_1         , BOTH, XKB_KEY_exclam          , NEXT,
         KEY_1         , BOTH, XKB_KEY_exclam          , NEXT,
         KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Unlock Shift */
         KEY_1         , BOTH, XKB_KEY_1               , FINISH
@@ -1121,6 +1121,52 @@ test_latch_mod_cancel(struct xkb_context *context)
         KEY_LEFTCTRL  , UP  , XKB_KEY_Control_L, NEXT, // Latch Control
         KEY_1         , BOTH, XKB_KEY_plus     , NEXT, // Unlatch Control, Unlatch Alt
         KEY_1         , BOTH, XKB_KEY_1        , FINISH
+    ));
+
+    // `latchToLock` locks and `clearLocks` unlocks break existing latches...
+    assert(test_key_seq(keymap,
+        KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, // Latch Shift
+        KEY_RIGHTALT  , BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, // Latch LevelThree
+        KEY_A         , BOTH, XKB_KEY_minus           , NEXT, // Unlatch Shift, unlatch LevelThree
+
+        KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, // Latch Shift
+        KEY_RIGHTALT  , BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, // Latch LevelThree
+        KEY_RIGHTALT  , BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, // Lock LevelThree, unlatch Shift
+        KEY_A         , BOTH, XKB_KEY_ISO_Level5_Latch, NEXT, // Latch LevelFive
+        KEY_Q         , BOTH, XKB_KEY_q               , NEXT, // Unlatch LevelFive
+        KEY_A         , BOTH, XKB_KEY_ISO_Level5_Latch, NEXT, // Latch LevelFive
+        KEY_Q         , BOTH, XKB_KEY_q               , NEXT, // Unlatch LevelFive
+        KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, // Latch Shift
+        KEY_Q         , BOTH, XKB_KEY_Q               , NEXT, // Unlatch Shift
+        KEY_Q         , BOTH, XKB_KEY_q               , NEXT,
+        KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, // Latch Shift
+        KEY_RIGHTALT  , BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, // Unlock LevelThree, unlatch Shift
+        KEY_A         , BOTH, XKB_KEY_a               , FINISH
+    ));
+
+    // ... but a latch key still sets while being held down
+    assert(test_key_seq(keymap,
+        KEY_F3        , DOWN, XKB_KEY_Shift_L         , NEXT, // Set Shift
+        KEY_RIGHTALT  , BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, // Latch LevelThree
+        KEY_RIGHTALT  , BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, // Lock LevelThree
+        KEY_1         , BOTH, XKB_KEY_exclamdown      , NEXT,
+        KEY_1         , BOTH, XKB_KEY_exclamdown      , NEXT,
+        KEY_F3        , UP  , XKB_KEY_Caps_Lock       , NEXT, // Unset Shift
+        KEY_1         , BOTH, XKB_KEY_onesuperior     , NEXT,
+        KEY_1         , BOTH, XKB_KEY_onesuperior     , NEXT,
+        KEY_RIGHTALT  , BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, // Unlock LevelThree
+        KEY_1         , BOTH, XKB_KEY_1               , NEXT,
+
+        KEY_RIGHTALT  , BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, // Latch LevelThree
+        KEY_F3        , DOWN, XKB_KEY_Shift_L         , NEXT, // Set Shift
+        KEY_RIGHTALT  , BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, // Lock LevelThree
+        KEY_1         , BOTH, XKB_KEY_exclamdown      , NEXT,
+        KEY_1         , BOTH, XKB_KEY_exclamdown      , NEXT,
+        KEY_F3        , UP  , XKB_KEY_Caps_Lock       , NEXT, // Unset Shift
+        KEY_1         , BOTH, XKB_KEY_onesuperior     , NEXT,
+        KEY_1         , BOTH, XKB_KEY_onesuperior     , NEXT,
+        KEY_RIGHTALT  , BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, // Unlock LevelThree
+        KEY_1         , BOTH, XKB_KEY_1               , FINISH
     ));
 
     xkb_keymap_unref(keymap);
