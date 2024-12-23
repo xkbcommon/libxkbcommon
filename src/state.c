@@ -284,8 +284,11 @@ xkb_filter_group_set_func(struct xkb_state *state,
 
     state->components.base_group = filter->priv;
 
-    if (filter->action.group.flags & ACTION_LOCK_CLEAR)
+    if (filter->action.group.flags & ACTION_LOCK_CLEAR && state->components.locked_group) {
         state->components.locked_group = 0;
+        // break all mod latches
+        state->components.latched_mods = 0;
+    }
 
     filter->func = NULL;
     return XKB_FILTER_CONTINUE;
@@ -405,6 +408,8 @@ xkb_filter_group_latch_func(struct xkb_state *state,
                         filter->action.type = ACTION_TYPE_GROUP_LOCK;
                         filter->func = xkb_filter_group_lock_func;
                         xkb_filter_group_lock_new(state, filter);
+                        // break all mod latches
+                        state->components.latched_mods = 0;
                     }
                     else {
                         /* Degrade to plain set */
@@ -441,8 +446,8 @@ xkb_filter_group_latch_func(struct xkb_state *state,
     }
     else if (direction == XKB_KEY_UP && key == filter->key) {
         /* Our key got released.  If we've set it to clear locks, and we
-         * currently have a group locked, then release it and
-         * don't actually latch.  Else we've actually hit the latching
+         * currently have a group locked, then release it, break all mod latches,
+         * and don't actually latch.  Else we've actually hit the latching
          * stage, so set PENDING and move our group from base to
          * latched. */
         if (latch == NO_LATCH ||
@@ -452,8 +457,11 @@ xkb_filter_group_latch_func(struct xkb_state *state,
                 state->components.latched_group -= priv.group_delta;
             else
                 state->components.base_group -= priv.group_delta;
-            if (filter->action.group.flags & ACTION_LOCK_CLEAR)
+            if (filter->action.group.flags & ACTION_LOCK_CLEAR) {
                 state->components.locked_group = 0;
+                // break all mod latches
+                state->components.latched_mods = 0;
+            }
             filter->func = NULL;
         }
         else {
@@ -497,8 +505,11 @@ xkb_filter_mod_set_func(struct xkb_state *state,
     }
 
     state->clear_mods = filter->action.mods.mods.mask;
-    if (filter->action.mods.flags & ACTION_LOCK_CLEAR)
+    if (filter->action.mods.flags & ACTION_LOCK_CLEAR && state->components.locked_mods & filter->action.mods.mods.mask) {
         state->components.locked_mods &= ~filter->action.mods.mods.mask;
+        // break all mod latches
+        state->components.latched_mods = 0;
+    }
 
     filter->func = NULL;
     return XKB_FILTER_CONTINUE;
@@ -570,6 +581,8 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
                         filter->action.type = ACTION_TYPE_MOD_LOCK;
                         filter->func = xkb_filter_mod_lock_func;
                         state->components.locked_mods |= filter->action.mods.mods.mask;
+                        // break all mod latches
+                        state->components.latched_mods = 0;
                     }
                     else {
                         filter->action.type = ACTION_TYPE_MOD_SET;
@@ -642,9 +655,10 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
     }
     else if (direction == XKB_KEY_UP && key == filter->key) {
         /* Our key got released.  If we've set it to clear locks, and we
-         * currently have the same modifiers locked, then release them and
-         * don't actually latch.  Else we've actually hit the latching
-         * stage, so set PENDING and move our modifier from base to
+         * currently have the same modifiers locked, then release them,
+         * break all mod latches, and don't actually latch.
+         * Else we've actually hit the latching stage,
+         * so set PENDING and move our modifier from base to
          * latched. */
         if (latch == NO_LATCH ||
             ((filter->action.mods.flags & ACTION_LOCK_CLEAR) &&
@@ -657,7 +671,12 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
                     ~filter->action.mods.mods.mask;
             else
                 state->clear_mods = filter->action.mods.mods.mask;
-            state->components.locked_mods &= ~filter->action.mods.mods.mask;
+            if (filter->action.mods.flags & ACTION_LOCK_CLEAR &&
+                state->components.locked_mods & filter->action.mods.mods.mask) {
+                state->components.locked_mods &= ~filter->action.mods.mods.mask;
+                // break all mod latches
+                state->components.latched_mods = 0;
+            }
             filter->func = NULL;
         }
         else {

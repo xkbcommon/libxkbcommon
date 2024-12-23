@@ -455,6 +455,28 @@ test_latch_mod_cancel(struct xkb_context *context)
                 NEXT, KEY_Q         , BOTH, XKB_KEY_Q               , // Unlatch Lock, unlatch LevelFive
                 NEXT, KEY_Q         , BOTH, XKB_KEY_q               ,
 
+                // `latchToLock` locks and `clearLocks` unlocks break existing latches
+
+                NEXT, KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , // Latch Shift
+                NEXT, KEY_RIGHTCTRL , BOTH, XKB_KEY_ISO_Level3_Latch, // Latch LevelThree
+                NEXT, KEY_A         , BOTH, XKB_KEY_minus           , // Unlatch Shift, unlatch LevelThree
+
+                NEXT, KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , // Latch Shift
+                NEXT, KEY_RIGHTCTRL , BOTH, XKB_KEY_ISO_Level3_Latch, // Latch LevelThree
+                NEXT, KEY_RIGHTCTRL , BOTH, XKB_KEY_ISO_Level3_Latch, // Lock LevelThree, unlatch Shift
+                NEXT, KEY_A         , BOTH, XKB_KEY_ISO_Level5_Latch, // Latch LevelFive
+                NEXT, KEY_Q         , BOTH, XKB_KEY_q               , // Unlatch LevelFive
+                NEXT, KEY_A         , BOTH, XKB_KEY_ISO_Level5_Latch, // Latch LevelFive
+                NEXT, KEY_Q         , BOTH, XKB_KEY_q               , // Unlatch LevelFive
+                NEXT, KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , // Latch Shift
+                NEXT, KEY_Q         , BOTH, XKB_KEY_Q               , // Unlatch Shift
+                NEXT, KEY_Q         , BOTH, XKB_KEY_q               ,
+                NEXT, KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , // Latch Shift
+                NEXT, KEY_RIGHTCTRL , BOTH, XKB_KEY_ISO_Level3_Latch, // Unlock LevelThree, unlatch Shift
+                NEXT, KEY_A         , BOTH, XKB_KEY_a               ,
+
+
+
                 FINISH));
 
     xkb_keymap_unref(keymap);
