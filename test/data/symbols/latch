@@ -8,7 +8,7 @@ xkb_symbols "modifiers" {
 
 	key <AD01> { [ q, Q ], type[Group1] = "ALPHABETIC" };
 
-	key <AC01> { [ a, A, ISO_Level5_Latch, NoSymbol ], type[Group1] = "FOUR_LEVEL_SEMIALPHABETIC" };
+	key <AC01> { [ a, A, ISO_Level5_Latch, minus ], type[Group1] = "FOUR_LEVEL_SEMIALPHABETIC" };
 
 	key <LFSH> {
 		symbols[Group1] = [ Shift_L ],
