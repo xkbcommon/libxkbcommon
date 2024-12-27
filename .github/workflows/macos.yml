@@ -26,6 +26,9 @@ jobs:
           brew install bison libxml2 meson ninja xkeyboardconfig xorg-server
           brew link bison --force
           brew link libxml2 --force
+          # Use patched xkbcomp
+          # See: https://gitlab.freedesktop.org/xorg/app/xkbcomp/-/merge_requests/26
+          brew reinstall --build-from-source --verbose --formula ./.github/workflows/macos/xkbcomp.rb
           # https://docs.brew.sh/Homebrew-and-Python#pep-668-python312-and-virtual-environments
           python3 -m venv venv
           source venv/bin/activate
