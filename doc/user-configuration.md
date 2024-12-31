@@ -9,9 +9,15 @@ parsed by libxkbcommon.
 @warning The below requires libxkbcommon as keymap compiler and
 **does not work in X**.
 
+@important An erroneous XKB configuration may make your keyboard unusable.
+Therefore it is advised to try custom configurations safely using `xkbcli` tools;
+see [debugging] for further details.
+
+[debugging]: @ref testing-custom-config
+
 @tableofcontents{html:2}
 
-## Data locations
+## Data locations {#user-config-locations}
 
 libxkbcommon searches the following paths for XKB configuration files:
 1. `$XDG_CONFIG_HOME/xkb/`, or `$HOME/.config/xkb/` if the `$XDG_CONFIG_HOME`
@@ -53,7 +59,7 @@ the addition should be filed in the upstream [xkeyboard-config] project.
 Due to how XKB is configured, there is no such thing as a "layout" in XKB
 itself, or, indeed, any of the rules, models, variant, options (RMLVO) described
 in `struct xkb_rule_names`. RMLVO names are merely lookup keys in the
-rules file provided by xkeyboard-config to map to the correct keycode, compat,
+rules file provided by [xkeyboard-config] to map to the correct keycode, compat,
 geometry (ignored by libxkbcommon), symbols and types (KcCGST). The KcCGST data
 is the one used by XKB and libxkbcommon to map keys to actual symbols.
 
@@ -238,3 +244,9 @@ are added to the system-provided layouts and options.
 
 For details on the XML format, see the DTD in `<datadir>/X11/xkb/rules/xkb.dtd`
 and the system-provided XML files `<datadir>/X11/xkb/rules/*.xml`.
+
+@note Depending on the desktop environment, it may require restarting the session
+in order to make the configuration changes effective.
+
+@note It is advised to try the custom configuration *before* restarting the
+session using the various `xkbcli` tools. See [debugging] for further details.
