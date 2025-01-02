@@ -3,7 +3,7 @@ default partial xkb_types "default" {
     // Defines a type with an eight-level shift, similar to the three-level
     // type used for iso9995, but it lets the Shift key behave "normally".
 
-    virtual_modifiers LevelThree,ScrollLock,LevelFive;
+    virtual_modifiers NumLock,LevelThree,ScrollLock,LevelFive;
 
     type "EIGHT_LEVEL" {
 	modifiers = Shift+LevelThree+LevelFive;

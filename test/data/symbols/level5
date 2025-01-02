@@ -58,6 +58,7 @@ xkb_symbols "modifier_mapping" {
 // See also: compat/level5(level5_lock)
 partial modifier_keys
 xkb_symbols "lock" {
+  virtual_modifiers NumLock;
   key.type[Group1] = "ONE_LEVEL";
   include "level5(modifier_mapping)"
   replace key <HYPR> {
