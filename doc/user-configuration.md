@@ -21,13 +21,18 @@ see [debugging] for further details.
 
 libxkbcommon searches the following paths for XKB configuration files:
 1. `$XDG_CONFIG_HOME/xkb/`, or `$HOME/.config/xkb/` if the `$XDG_CONFIG_HOME`
-   environment variable is not defined
-2. `$HOME/.xkb/`
+   environment variable is not defined. See the [XDG Base Directory Specification]
+   for further details.
+2. <div><!-- [HACK] Doxygen requires this extra div -->
+   @deprecated `$HOME/.xkb/` as a *legacy* alternative to the previous XDG option.
+   </div>
 3. `$XKB_CONFIG_EXTRA_PATH` if set, otherwise `<sysconfdir>/xkb` (on most
-   distributions this is `/etc/xkb`)
+   distributions this is `/etc/xkb`).
 4. `$XKB_CONFIG_ROOT` if set, otherwise `<datadir>/X11/xkb/` (path defined by
    the `xkeyboard-config` package, on most distributions this is
-   `/usr/share/X11/xkb`)
+   `/usr/share/X11/xkb`).
+
+[XDG Base Directory Specification]: https://specifications.freedesktop.org/basedir-spec/latest/
 
 A keymap created with `xkb_keymap::xkb_keymap_new_from_names()` will look up
 those paths in order until the required data is found.
