@@ -44,6 +44,14 @@ _xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name)
     return mod;
 }
 
+static inline xkb_led_index_t
+_xkb_keymap_led_get_index(struct xkb_keymap *keymap, const char *name)
+{
+    xkb_mod_index_t led = xkb_keymap_led_get_index(keymap, name);
+    assert(led != XKB_LED_INVALID);
+    return led;
+}
+
 static void
 print_state(struct xkb_state *state)
 {
@@ -1141,6 +1149,129 @@ test_ctrl_string_transformation(struct xkb_keymap *keymap)
     xkb_state_unref(state);
 }
 
+static bool
+test_active_leds(struct xkb_state *state, xkb_led_mask_t leds_expected)
+{
+    struct xkb_keymap *keymap = xkb_state_get_keymap(state);
+    bool ret = true;
+    xkb_led_mask_t leds_got = 0;
+    for (xkb_led_index_t led = 0; led < xkb_keymap_num_leds(keymap); led++) {
+        const int status = xkb_state_led_index_is_active(state, led);
+        if (status < 0)
+            continue;
+        const xkb_led_mask_t mask = (1u << led);
+        const bool expected = !!(leds_expected & mask);
+        if (status)
+            leds_got |= mask;
+        if (!!status ^ expected) {
+            fprintf(stderr, "ERROR: LED \"%s\" status: expected %d, got %d\n",
+                    xkb_keymap_led_get_name(keymap, led), expected, !!status);
+            ret = false;
+        }
+    }
+    if (!ret) {
+        fprintf(stderr, "ERROR: LEDs: expected 0x%x, got 0x%x\n",
+                leds_expected, leds_got);
+    }
+    return ret;
+}
+
+static void
+test_leds(struct xkb_context *ctx)
+{
+    const char buf[] =
+        "xkb_keymap {\n"
+        "    xkb_keycodes { include \"evdev\" };\n"
+        "    xkb_types { include \"basic\" };\n"
+        "    xkb_compat {\n"
+        "        include \"leds(groups)\"\n"
+        "        interpret ISO_Group_Shift { action= SetGroup(group=+1); };\n"
+        "        interpret ISO_Group_Latch { action= LatchGroup(group=+1); };\n"
+        "        interpret ISO_Group_Lock  { action= LockGroup(group=+1); };\n"
+        "    };\n"
+        "    xkb_symbols {\n"
+        "        key <AD01> { [ q, Q ], [w, W], [e, E] };\n"
+        "        key <LFSH> { [ ISO_Group_Shift ] };\n"
+        "        key <MENU> { [ ISO_Group_Latch ] };\n"
+        "        key <CAPS> { [ ISO_Group_Lock ] };\n"
+        "    };\n"
+        "};";
+
+    struct xkb_keymap *keymap = test_compile_buffer(ctx, buf, ARRAY_SIZE(buf));
+    assert(keymap);
+
+    const xkb_led_index_t caps_idx = _xkb_keymap_led_get_index(keymap, XKB_LED_NAME_CAPS);
+    const xkb_led_index_t num_idx = _xkb_keymap_led_get_index(keymap, XKB_LED_NAME_NUM);
+    const xkb_led_index_t scroll_idx = _xkb_keymap_led_get_index(keymap, XKB_LED_NAME_SCROLL);
+    const xkb_led_index_t compose_idx = _xkb_keymap_led_get_index(keymap, XKB_LED_NAME_COMPOSE);
+    // const xkb_led_index_t kana_idx = _xkb_keymap_led_get_index(keymap, XKB_LED_NAME_KANA);
+    const xkb_led_index_t sleep_idx = _xkb_keymap_led_get_index(keymap, "Sleep");
+    // const xkb_led_index_t suspend_idx = _xkb_keymap_led_get_index(keymap, "Suspend");
+    const xkb_led_index_t mute_idx = _xkb_keymap_led_get_index(keymap, "Mute");
+    const xkb_led_index_t misc_idx = _xkb_keymap_led_get_index(keymap, "Misc");
+    const xkb_led_index_t mail_idx = _xkb_keymap_led_get_index(keymap, "Mail");
+    const xkb_led_index_t charging_idx = _xkb_keymap_led_get_index(keymap, "Charging");
+
+    const xkb_led_mask_t caps = 1u << caps_idx;
+    const xkb_led_mask_t num = 1u << num_idx;
+    const xkb_led_mask_t scroll = 1u << scroll_idx;
+    const xkb_led_mask_t compose = 1u << compose_idx;
+    // const xkb_led_mask_t kana = 1u << kana_idx;
+    const xkb_led_mask_t sleep = 1u << sleep_idx;
+    // const xkb_led_mask_t suspend = 1u << suspend_idx;
+    const xkb_led_mask_t mute = 1u << mute_idx;
+    const xkb_led_mask_t misc = 1u << misc_idx;
+    const xkb_led_mask_t mail = 1u << mail_idx;
+    const xkb_led_mask_t charging = 1u << charging_idx;
+
+    struct xkb_state *state = xkb_state_new(keymap);
+    assert(state);
+
+    xkb_state_update_key(state, KEY_Q + EVDEV_OFFSET, XKB_KEY_UP);
+    assert(test_active_leds(state, (caps | scroll)));
+
+    /* SetGroup */
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE) == 0x1);
+    assert(test_active_leds(state, (num | scroll | mute | misc)));
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
+
+    /* LatchGroup */
+    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_UP);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE) == 0x1);
+    assert(test_active_leds(state, (caps | compose | mute | misc | charging)));
+    xkb_state_update_key(state, KEY_Q + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_Q + EVDEV_OFFSET, XKB_KEY_UP);
+
+    /* LockGroup 2 */
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE) == 0x1);
+    assert(test_active_leds(state, (caps | scroll | sleep | mute | mail)));
+
+    /* LockGroup 2 + SetGroup */
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE) == 0x2);
+    assert(test_active_leds(state, (num | scroll | sleep | mute | misc | mail | charging)));
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
+
+    /* LockGroup 3 */
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE) == 0x2);
+    assert(test_active_leds(state, (caps | scroll | sleep | mute | charging)));
+
+    /* LockGroup 3 + SetGroup */
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE) == 0x0);
+    assert(test_active_leds(state, (num | scroll | sleep | misc | charging)));
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
+
+    xkb_state_unref(state);
+    xkb_keymap_unref(keymap);
+}
+
 int
 main(void)
 {
@@ -1177,5 +1308,7 @@ main(void)
     test_caps_keysym_transformation(keymap);
 
     xkb_keymap_unref(keymap);
+    test_leds(context);
+
     xkb_context_unref(context);
 }

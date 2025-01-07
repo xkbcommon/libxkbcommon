@@ -1,0 +1,58 @@
+default partial xkb_compatibility "groups" {
+    indicator "Caps Lock" {
+	modifiers= None;
+	whichGroupState=Base;
+	groups=0;
+    };
+    indicator "Num Lock" {
+	modifiers= None;
+	whichGroupState=Base;
+	groups=All; // Same as All-Group1
+    };
+    indicator "Scroll Lock" {
+	modifiers= None;
+	whichGroupState=Latched;
+	groups=0;
+    };
+    indicator "Compose" {
+	modifiers= None;
+	whichGroupState=Latched;
+	groups=All; // Same as All-Group1
+    };
+    indicator "Kana" {
+	modifiers= None;
+	whichGroupState=Locked;
+	groups=0; // Inactive
+    };
+    indicator "Sleep" {
+	modifiers= None;
+	whichGroupState=Locked;
+	groups=All-Group1;
+    };
+    indicator "Suspend" {
+	modifiers= None;
+	whichGroupState=Effective;
+	groups=0; // Inactive
+    };
+    indicator "Mute" {
+	modifiers= None;
+	whichGroupState=Effective;
+	groups=All-Group1;
+    };
+    // Specific group + whichGroupState mask
+    indicator "Misc" {
+	modifiers= None;
+	whichGroupState=Base+Latched;
+	groups=Group2;
+    };
+    indicator "Mail" {
+	modifiers= None;
+	whichGroupState=Locked;
+	groups=Group2;
+    };
+    indicator "Charging" {
+	modifiers= None;
+	whichGroupState=Latched+Locked+Effective;
+	groups=Group3;
+    };
+};
