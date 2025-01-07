@@ -88,14 +88,14 @@ test_group_latch(struct xkb_context *ctx)
                         KEY_H,        BOTH,  XKB_KEY_h,               FINISH))
     test_latch_not_broken_by_modifier(keymap);
 
-    /* Mo lock */
+    /* No lock */
 #define test_no_latch_to_lock(keymap_)                                         \
     assert(test_key_seq(keymap_,                                               \
                         KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
                         /* No latch-to-lock */                                 \
                         KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
                         KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
-                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_Cyrillic_ha,     NEXT,  \
                         KEY_E,          BOTH,  XKB_KEY_e,               NEXT,  \
                         /* Lock the second group */                            \
                         KEY_SCROLLLOCK, BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,  \
@@ -104,8 +104,17 @@ test_group_latch(struct xkb_context *ctx)
                         /* No latch-to-lock */                                 \
                         KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
                         KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
-                        KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      NEXT,  \
-                        KEY_E,          BOTH,  XKB_KEY_hebrew_qoph,     FINISH))
+                        KEY_H,          BOTH,  XKB_KEY_s,               NEXT,  \
+                        KEY_E,          BOTH,  XKB_KEY_hebrew_qoph,     NEXT,  \
+                        /* Lock the third group */                             \
+                        KEY_SCROLLLOCK, BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_Cyrillic_ha,     NEXT,  \
+                        KEY_E,          BOTH,  XKB_KEY_Cyrillic_ie,     NEXT,  \
+                        /* No latch-to-lock */                                 \
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
+                        KEY_E,          BOTH,  XKB_KEY_Cyrillic_ie,     FINISH))
     test_no_latch_to_lock(keymap);
 
     xkb_keymap_unref(keymap);
