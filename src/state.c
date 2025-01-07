@@ -743,10 +743,9 @@ xkb_state_led_update_all(struct xkb_state *state)
     state->components.leds = 0;
 
     xkb_leds_enumerate(idx, led, state->keymap) {
-        xkb_mod_mask_t mod_mask = 0;
-        xkb_layout_mask_t group_mask = 0;
 
         if (led->which_mods != 0 && led->mods.mask != 0) {
+            xkb_mod_mask_t mod_mask = 0;
             if (led->which_mods & XKB_STATE_MODS_EFFECTIVE)
                 mod_mask |= state->components.mods;
             if (led->which_mods & XKB_STATE_MODS_DEPRESSED)
@@ -762,19 +761,39 @@ xkb_state_led_update_all(struct xkb_state *state)
             }
         }
 
-        if (led->which_groups != 0 && led->groups != 0) {
-            if (led->which_groups & XKB_STATE_LAYOUT_EFFECTIVE)
-                group_mask |= (1u << state->components.group);
-            if (led->which_groups & XKB_STATE_LAYOUT_DEPRESSED)
-                group_mask |= (1u << state->components.base_group);
-            if (led->which_groups & XKB_STATE_LAYOUT_LATCHED)
-                group_mask |= (1u << state->components.latched_group);
-            if (led->which_groups & XKB_STATE_LAYOUT_LOCKED)
-                group_mask |= (1u << state->components.locked_group);
+        if (led->which_groups != 0) {
+            if (likely(led->groups) != 0) {
+                xkb_layout_mask_t group_mask = 0;
+                /* Effective and locked groups have been brought into range */
+                assert(state->components.group < XKB_MAX_GROUPS);
+                assert(state->components.locked_group >= 0 &&
+                       state->components.locked_group < XKB_MAX_GROUPS);
+                /* Effective and locked groups are used as mask */
+                if (led->which_groups & XKB_STATE_LAYOUT_EFFECTIVE)
+                    group_mask |= (1u << state->components.group);
+                if (led->which_groups & XKB_STATE_LAYOUT_LOCKED)
+                    group_mask |= (1u << state->components.locked_group);
+                /* Base and latched groups only have to be non-zero */
+                if ((led->which_groups & XKB_STATE_LAYOUT_DEPRESSED) &&
+                    state->components.base_group != 0)
+                    group_mask |= led->groups;
+                if ((led->which_groups & XKB_STATE_LAYOUT_LATCHED) &&
+                    state->components.latched_group != 0)
+                    group_mask |= led->groups;
 
-            if (led->groups & group_mask) {
-                state->components.leds |= (1u << idx);
-                continue;
+                if (led->groups & group_mask) {
+                    state->components.leds |= (1u << idx);
+                    continue;
+                }
+            } else {
+                /* Special case for Base and latched groups */
+                if (((led->which_groups & XKB_STATE_LAYOUT_DEPRESSED) &&
+                     state->components.base_group == 0) ||
+                    ((led->which_groups & XKB_STATE_LAYOUT_LATCHED) &&
+                     state->components.latched_group == 0)) {
+                    state->components.leds |= (1u << idx);
+                    continue;
+                }
             }
         }
 
