@@ -240,16 +240,11 @@ enum xkb_filter_result {
 };
 
 /* Modify a group component, depending on the ACTION_ABSOLUTE_SWITCH flag */
-#define apply_group_delta(filter_, state_, component_)               \
-    if (filter_->action.group.flags & ACTION_ABSOLUTE_SWITCH)        \
-        state_->components.component_ = filter_->action.group.group; \
-    else                                                             \
-        state_->components.component_ += filter_->action.group.group
-
-#define compute_group_delta(filter_, state_)                          \
-    (filter_->action.group.flags & ACTION_ABSOLUTE_SWITCH)            \
-        ? filter_->action.group.group - state_->components.base_group \
-        : filter_->action.group.group
+#define apply_group_delta(filter_, state_, component_)                   \
+    if ((filter_)->action.group.flags & ACTION_ABSOLUTE_SWITCH)          \
+        (state_)->components.component_ = (filter_)->action.group.group; \
+    else                                                                 \
+        (state_)->components.component_ += (filter_)->action.group.group
 
 static void
 xkb_filter_group_set_new(struct xkb_state *state, struct xkb_filter *filter)
@@ -360,7 +355,9 @@ xkb_filter_group_latch_new(struct xkb_state *state, struct xkb_filter *filter)
 {
     const union group_latch_priv priv = {
         .latch = LATCH_KEY_DOWN,
-        .group_delta = compute_group_delta(filter, state)
+        .group_delta = (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH)
+            ? filter->action.group.group - state->components.base_group
+            : filter->action.group.group
     };
     filter->priv = priv.priv;
     /* Like group set */
@@ -379,8 +376,8 @@ xkb_filter_group_latch_func(struct xkb_state *state,
     if (direction == XKB_KEY_DOWN && latch == LATCH_PENDING) {
         /* If this is a new keypress and we're awaiting our single latched
          * keypress, then either break the latch if any random key is pressed,
-         * or promote it to a lock or plain base set if it's the same
-         * group delta & flags. */
+         * or promote it to a lock if it's the same group delta & flags and
+         * latchToLock option is enabled. */
         const union xkb_action *actions = NULL;
         unsigned int count = xkb_key_get_actions(state, key, &actions);
         for (unsigned int k = 0; k < count; k++) {
@@ -394,21 +391,20 @@ xkb_filter_group_latch_func(struct xkb_state *state,
                     filter->action.type = ACTION_TYPE_GROUP_LOCK;
                     filter->func = xkb_filter_group_lock_func;
                     xkb_filter_group_lock_new(state, filter);
+                    state->components.latched_group -= priv.group_delta;
+                    filter->key = key;
+                    /* XXX beep beep! */
+                    return XKB_FILTER_CONSUME;
                 }
-                else {
-                    /* Degrade to plain set */
-                    filter->action.type = ACTION_TYPE_GROUP_SET;
-                    filter->func = xkb_filter_group_set_func;
-                    xkb_filter_group_set_new(state, filter);
-                }
-                filter->key = key;
-                state->components.latched_group -= priv.group_delta;
-                /* XXX beep beep! */
-                return XKB_FILTER_CONSUME;
+                /* Do nothing if latchToLock option is not activated; if the
+                 * latch is not broken by the following actions and the key is
+                 * not consummed, then another latch filter will be created.
+                 */
+                continue;
             }
             else if (xkb_action_breaks_latch(&(actions[k]))) {
                 /* Breaks the latch */
-                state->components.latched_group = 0;
+                state->components.latched_group -= priv.group_delta;
                 filter->func = NULL;
                 return XKB_FILTER_CONTINUE;
             }
@@ -431,7 +427,9 @@ xkb_filter_group_latch_func(struct xkb_state *state,
                 state->components.locked_group = 0;
             filter->func = NULL;
         }
-        else {
+        /* We may already have reached the latch state if pressing the
+         * key multiple times without latch-to-lock enabled. */
+        else if (latch == LATCH_KEY_DOWN) {
             latch = LATCH_PENDING;
             /* Switch from set to latch */
             state->components.base_group -= priv.group_delta;

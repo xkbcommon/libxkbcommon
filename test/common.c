@@ -61,6 +61,30 @@ test_init(void)
     setbuf(stdout, NULL);
 }
 
+void
+print_detailed_state(struct xkb_state *state)
+{
+    fprintf(stderr, "  Layout: base: %d, latched: %d, locked: %d, effective: %u\n",
+            xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED),
+            xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LATCHED),
+            xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LOCKED),
+            xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE));
+    fprintf(stderr, "  Modifiers: base: 0x%x, latched: 0x%x, locked: 0x%x, effective: 0x%x\n",
+            xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED),
+            xkb_state_serialize_mods(state, XKB_STATE_MODS_LATCHED),
+            xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED),
+            xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE));
+
+    /* There is currently no xkb_state_serialize_leds */
+    struct xkb_keymap *keymap = xkb_state_get_keymap(state);
+    xkb_led_mask_t leds = 0;
+    for (xkb_led_index_t led = 0; led < xkb_keymap_num_leds(keymap); led++) {
+        if (xkb_state_led_index_is_active(state, led) > 0)
+            leds |= 1u << led;
+    }
+    fprintf(stderr, "  LEDs: 0x%x\n", leds);
+}
+
 /*
  * Test a sequence of keysyms, resulting from a sequence of key presses,
  * against the keysyms they're supposed to generate.
@@ -133,13 +157,13 @@ test_key_seq_va(struct xkb_keymap *keymap, va_list ap)
 
             if (keysym == FINISH || keysym == NEXT) {
                 xkb_keysym_get_name(syms[i], ksbuf, sizeof(ksbuf));
-                fprintf(stderr, " Did not expect keysym: %s.\n", ksbuf);
+                fprintf(stderr, "\nERROR: Did not expect keysym: %s.\n", ksbuf);
                 goto fail;
             }
 
             if (keysym != syms[i]) {
                 xkb_keysym_get_name(keysym, ksbuf, sizeof(ksbuf));
-                fprintf(stderr, " Expected keysym: %s. ", ksbuf);;
+                fprintf(stderr, "\nERROR: Expected keysym: %s. ", ksbuf);;
                 xkb_keysym_get_name(syms[i], ksbuf, sizeof(ksbuf));
                 fprintf(stderr, " Got keysym: %s.\n", ksbuf);;
                 goto fail;
@@ -150,7 +174,7 @@ test_key_seq_va(struct xkb_keymap *keymap, va_list ap)
             keysym = va_arg(ap, int);
             if (keysym != XKB_KEY_NoSymbol) {
                 xkb_keysym_get_name(keysym, ksbuf, sizeof(ksbuf));
-                fprintf(stderr, " Expected %s, but got no keysyms.\n", ksbuf);
+                fprintf(stderr, "\nERROR: Expected %s, but got no keysyms.\n", ksbuf);
                 goto fail;
             }
         }
@@ -164,7 +188,7 @@ test_key_seq_va(struct xkb_keymap *keymap, va_list ap)
             break;
 
         xkb_keysym_get_name(keysym, ksbuf, sizeof(ksbuf));
-        fprintf(stderr, "Expected keysym: %s. Didn't get it.\n", ksbuf);
+        fprintf(stderr, "\nERROR: Expected keysym: %s. Didn't get it.\n", ksbuf);
         goto fail;
     }
 
@@ -172,6 +196,8 @@ test_key_seq_va(struct xkb_keymap *keymap, va_list ap)
     return 1;
 
 fail:
+    fprintf(stderr, "Current state:\n");
+    print_detailed_state(state);
     xkb_state_unref(state);
     return 0;
 }

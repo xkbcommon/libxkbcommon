@@ -49,6 +49,9 @@
 void
 test_init(void);
 
+void
+print_detailed_state(struct xkb_state *state);
+
 /* The offset between KEY_* numbering, and keycodes in the XKB evdev
  * dataset. */
 #define EVDEV_OFFSET 8
