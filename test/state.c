@@ -1204,9 +1204,7 @@ test_leds(struct xkb_context *ctx)
     const xkb_led_index_t num_idx = _xkb_keymap_led_get_index(keymap, XKB_LED_NAME_NUM);
     const xkb_led_index_t scroll_idx = _xkb_keymap_led_get_index(keymap, XKB_LED_NAME_SCROLL);
     const xkb_led_index_t compose_idx = _xkb_keymap_led_get_index(keymap, XKB_LED_NAME_COMPOSE);
-    // const xkb_led_index_t kana_idx = _xkb_keymap_led_get_index(keymap, XKB_LED_NAME_KANA);
     const xkb_led_index_t sleep_idx = _xkb_keymap_led_get_index(keymap, "Sleep");
-    // const xkb_led_index_t suspend_idx = _xkb_keymap_led_get_index(keymap, "Suspend");
     const xkb_led_index_t mute_idx = _xkb_keymap_led_get_index(keymap, "Mute");
     const xkb_led_index_t misc_idx = _xkb_keymap_led_get_index(keymap, "Misc");
     const xkb_led_index_t mail_idx = _xkb_keymap_led_get_index(keymap, "Mail");
@@ -1216,9 +1214,7 @@ test_leds(struct xkb_context *ctx)
     const xkb_led_mask_t num = 1u << num_idx;
     const xkb_led_mask_t scroll = 1u << scroll_idx;
     const xkb_led_mask_t compose = 1u << compose_idx;
-    // const xkb_led_mask_t kana = 1u << kana_idx;
     const xkb_led_mask_t sleep = 1u << sleep_idx;
-    // const xkb_led_mask_t suspend = 1u << suspend_idx;
     const xkb_led_mask_t mute = 1u << mute_idx;
     const xkb_led_mask_t misc = 1u << misc_idx;
     const xkb_led_mask_t mail = 1u << mail_idx;
