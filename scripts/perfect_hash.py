@@ -554,8 +554,7 @@ is processed and the output code is written to stdout.
         action="store",
         default=76,
         type="int",
-        help="Maximal width of generated list when "
-        "wrapped.  Default width is %default",
+        help="Maximal width of generated list when wrapped.  Default width is %default",
         metavar="INT",
     )
 
@@ -622,7 +621,7 @@ is processed and the output code is written to stdout.
         "-e",
         "--execute",
         action="store_true",
-        help="Execute the generated code within " "the Python interpreter.",
+        help="Execute the generated code within the Python interpreter.",
     )
 
     parser.add_option(

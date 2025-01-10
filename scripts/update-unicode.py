@@ -1659,7 +1659,7 @@ class SeparateLegacyKeysymsAndUnicodeCombinedCaseMappings:
                     f"data_overlap={s.data_overlap}",
                     f"offsets1={len(s.offsets1)} (uint size: {s.offsets1_int_size})",
                     f"offsets2={len(s.offsets2)} (uint size: {s.offsets2_int_size})",
-                    f"total={s.total} ({s.total//8})",
+                    f"total={s.total} ({s.total // 8})",
                 )
         print(f"Total: {result.total} ({result.total // 8})")
         print("".center(90, "*"))
@@ -1827,7 +1827,7 @@ xkb_keysym_is_upper_or_title(xkb_keysym_t ks)
     @staticmethod
     def myHex(n: int, max_hex_length: int) -> str:
         return (
-            f"""{"-" if n < 0 else " "}0x{hex(abs(n))[2:].rjust(max_hex_length, '0')}"""
+            f"""{"-" if n < 0 else " "}0x{hex(abs(n))[2:].rjust(max_hex_length, "0")}"""
         )
 
     @classmethod
@@ -1959,7 +1959,7 @@ class Strategy(Enum):
         assert best_solution
         for strategy, sol in zip(strategies, results):
             print(
-                f"{strategy.name}: {sol.total} ({sol.total//8})",
+                f"{strategy.name}: {sol.total} ({sol.total // 8})",
                 "✨✨✨" if sol is best_solution else "",
             )
         best_solution.test(config)

@@ -31,9 +31,9 @@ class Version:
         if raw_version == cls.UNKNOWN_VERSION:
             raw_version = cls.DEFAULT_VERSION
         version = raw_version.split(".")
-        assert 2 <= len(version) <= 3 and all(
-            n.isdecimal() for n in version
-        ), raw_version
+        assert 2 <= len(version) <= 3 and all(n.isdecimal() for n in version), (
+            raw_version
+        )
         return Version(*map(int, version))
 
 
