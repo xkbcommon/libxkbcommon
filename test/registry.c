@@ -216,6 +216,7 @@ test_create_rules(const char *ruleset,
             }
             fprintf(fp, "</layout>\n");
             l++;
+            next = l + 1;
         }
         fprintf(fp, "</layoutList>\n");
     }
@@ -397,6 +398,48 @@ find_layouts(struct rxkb_context *ctx, ...)
     };
 
     rc = true;
+out:
+    va_end(args);
+    return rc;
+}
+
+static bool
+check_layouts_order(struct rxkb_context *ctx, ...)
+{
+    va_list args;
+    const char *layout, *variant;
+    int idx = 0;
+    bool rc = false;
+    struct rxkb_layout *l = rxkb_layout_first(ctx);
+
+    va_start(args, ctx);
+    layout = va_arg(args, const char *);
+    variant = va_arg(args, const char *);
+    while(layout) {
+        assert(++idx < 20); /* safety guard */
+        if (!l) {
+            fprintf(stderr, "ERROR: expected layout #%d \"%s(%s)\", got none\n",
+                    idx, layout, variant ? variant : "-");
+            goto out;
+        }
+        const char *v = rxkb_layout_get_variant(l);
+        if (!streq(rxkb_layout_get_name(l), layout) || !streq_null(v, variant)) {
+            fprintf(stderr, "ERROR: expected layout #%d \"%s(%s)\", got \"%s(%s)\"\n",
+                    idx, layout, variant ? variant : "-",
+                    rxkb_layout_get_name(l), v ? v : "-");
+            goto out;
+        }
+        layout = va_arg(args, const char *);
+        if (layout)
+            variant = va_arg(args, const char *);
+        l = rxkb_layout_next(l);
+    };
+    if (l) {
+        const char *v = rxkb_layout_get_variant(l);
+        fprintf(stderr, "ERROR: unexpected layout at #%d: \"%s(%s)\"\n",
+                idx + 1, rxkb_layout_get_name(l), v ? v : "-");
+    }
+    rc = l == NULL;
 out:
     va_end(args);
     return rc;
@@ -891,6 +934,9 @@ test_load_merge(void)
     struct test_layout user_layouts[] =  {
         {"l2", NO_VARIANT, "lbrief2", "ldesc2"},
         {"l2", "v2", "vbrief2", "vdesc2"},
+        // Duplicate with system
+        {"l1", NO_VARIANT, "lbrief1bis", "ldesc1bis"},
+        {"l1", "v1", "vbrief1bis", "vdesc1bis"},
         {NULL},
     };
     struct test_option_group system_groups[] = {
@@ -953,6 +999,12 @@ test_load_merge(void)
     l = fetch_layout(ctx, "l2", "v2");
     assert(cmp_layouts(&user_layouts[1], l));
     rxkb_layout_unref(l);
+
+    /* Check that the duplicate layouts are skipped */
+    assert(check_layouts_order(ctx,
+                               "l1", NO_VARIANT, "l1", "v1",
+                               "l2", NO_VARIANT, "l2", "v2",
+                               NULL));
 
     g = fetch_option_group(ctx, "grp1");
     assert(cmp_option_groups(&system_groups[0], g, CMP_EXACT));
