@@ -164,14 +164,10 @@ configh_data.set('WIN32_LEAN_AND_MEAN', 1)
 xkbcommon_map = meson.current_source_dir() / 'xkbcommon.map'
 
 # Supports -Wl,--version-script?
-if cc.has_link_argument('-Wl,--undefined-version')
-    extra_linker_args = ',--undefined-version'
-else
-    extra_linker_args = ''
-endif
+meson_test_map = meson.current_source_dir() / 'test/meson_test.map'
 have_version_script = cc.links(
-    'int main(){}',
-    args: f'-Wl,--version-script=@xkbcommon_map@@extra_linker_args@',
+    'int main() { return 0; }',
+    args: f'-Wl,--version-script=@meson_test_map@',
     name: '-Wl,--version-script',
 )
 
