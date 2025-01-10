@@ -896,7 +896,8 @@ parse_variant(struct rxkb_context *ctx, struct rxkb_layout *l,
         bool exists = false;
 
         list_for_each(v, &ctx->layouts, base.link) {
-            if (streq(v->name, config.name) && streq(v->name, l->name)) {
+            if (streq_null(v->variant, config.name) &&
+                streq(v->name, l->name)) {
                 exists = true;
                 break;
             }
