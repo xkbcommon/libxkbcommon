@@ -9,7 +9,6 @@ default partial xkb_types "pc" {
 	level_name[Level1] = "Base";
 	level_name[Level2] = "Number";
     };
-    include "extra(keypad)"
 };
 
 // On Mac keypads, level 1 and 2 are swapped.
