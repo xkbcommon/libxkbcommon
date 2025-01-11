@@ -1254,9 +1254,15 @@ mod_mask_get_effective(struct xkb_keymap *keymap, xkb_mod_mask_t mods)
     const struct xkb_mod *mod;
     xkb_mod_index_t i;
     xkb_mod_mask_t mask;
+    xkb_mod_mask_t pure_mask = 0;
 
-    /* The effective mask is only real mods for now. */
-    mask = mods & MOD_REAL_MASK_ALL;
+    /* Find pure virtual modifiers, i.e. those not mapped to a real modifier
+     * and include those in the effective mask */
+    xkb_mods_enumerate(i, mod, &keymap->mods)
+        if (mod->type == MOD_VIRT && mod->mapping == 0x0)
+            pure_mask |= (1u << i);
+
+    mask = mods & (MOD_REAL_MASK_ALL | pure_mask);
 
     xkb_mods_enumerate(i, mod, &keymap->mods)
         if (mods & (1u << i))
@@ -1271,9 +1277,9 @@ mod_mapping(struct xkb_mod *mod, xkb_mod_index_t idx)
 {
     /*
      * We cannot use `mod->mapping` directly, because it is
-     * not set for real modifiers.
+     * not set for canonical modifiers.
      */
-    return (mod->type & MOD_REAL) ? (1u << idx) : mod->mapping;
+    return (mod->mapping == 0) ? (1u << idx) : mod->mapping;
 }
 
 /**
