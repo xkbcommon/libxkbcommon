@@ -29,9 +29,24 @@ enum update_files {
 
 #define GOLDEN_TESTS_OUTPUTS "keymaps/merge-modes/"
 
+#ifdef XKBCOMP_COMPATIBILITY
+#define xkb_keycodes_body "\n    include\"evdev\""
+#define xkb_types_body "    include \"numpad\"\n"
+#define xkb_compat_body                                                    \
+    "    interpret Any + Any { action=SetMods(modifiers=modMapMods); };\n" \
+    "    indicator \"XXX\" { !allowExplicit; };\n"
+#define xkb_symbols_body "    key <I255> { [End] };\n"
+#else
+#define xkb_keycodes_body
+#define xkb_types_body
+#define xkb_compat_body
+#define xkb_symbols_body
+#endif
+
+
 #define keymap_common                                                         \
     "xkb_keymap {\n"                                                          \
-    "  xkb_keycodes { include \"merge_modes\" };\n"                           \
+    "  xkb_keycodes { include \"merge_modes\"" xkb_keycodes_body " };\n"      \
     "  xkb_types {\n"                                                         \
     "    include \"basic\"\n"                                                 \
     /* Add only used levels; `types/extra` has some types uneeded here */     \
@@ -77,14 +92,16 @@ enum update_files {
 	"        level_name[Level3] = \"Alt Base\";\n"                            \
 	"        level_name[Level4] = \"Shift Alt\";\n"                           \
     "    };\n"                                                                \
+         xkb_types_body                                                       \
     "  };\n"                                                                  \
-    "  xkb_compat { };\n"
+    "  xkb_compat {" xkb_compat_body "};\n"
 
 /* Helper to create a keymap string to initialize output files */
 #define make_ref_keymap(file, map, suffix)           \
     keymap_common                                    \
     "  xkb_symbols {\n"                              \
     "    include \"" file "(" map suffix ")\"\n"     \
+         xkb_symbols_body                            \
     "  };\n"                                         \
     "};"
 
@@ -99,6 +116,7 @@ enum update_files {
      */                                                                       \
     "    include \"" file "(" map "base)\"\n"                                 \
     "    " merge_mode " \"" file "(" map "new)\"\n"                           \
+         xkb_symbols_body                                                     \
     "  };\n"                                                                  \
     "};"
 

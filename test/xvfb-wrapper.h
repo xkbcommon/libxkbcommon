@@ -15,11 +15,12 @@
 
 #pragma once
 
-int xvfb_wrapper(int (*f)(char* display));
+typedef int (* x11_test_func_t)(const char* display, void *private);
+
+int xvfb_wrapper(x11_test_func_t f, void *private);
 
 int x11_tests_run(void);
 
-typedef int (* x11_test_func_t)(char* display);
 
 struct test_function {
     const char *name;     /* function name */
@@ -58,11 +59,11 @@ extern const struct test_function CONCAT2(__stop_, _section) \
 #endif
 
 #define X11_TEST(_func) \
-static int _func(char* display); \
+static int _func(const char* display, void *private); \
 static const struct test_function _test_##_func \
 SET_TEST_ELF_SECTION(TEST_ELF_SECTION) = { \
     .name = #_func, \
     .func = _func, \
     .file = __FILE__, \
 }; \
-static int _func(char* display)
+static int _func(const char* display, void *private)

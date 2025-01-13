@@ -1707,7 +1707,11 @@ TESTS_XKBCOMMON = TestFile(
     "_xkbcommon",
     (TESTS_BOTH.with_implementation(Implementation.xkbcommon),),
 )
-TESTS = (TESTS_XKBCOMMON,)
+TESTS_X11 = TestFile(
+    "_x11",
+    (TESTS_BOTH.with_implementation(Implementation.x11),),
+)
+TESTS = (TESTS_XKBCOMMON, TESTS_X11)
 
 
 if __name__ == "__main__":
