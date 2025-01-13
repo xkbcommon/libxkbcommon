@@ -429,3 +429,52 @@ test_compile_rules(struct xkb_context *context, const char *rules,
 
     return keymap;
 }
+
+bool
+test_compile_output(struct xkb_context *ctx,
+                    test_compile_buffer_t compile_buffer,
+                    void *compile_buffer_private, const char *test_title,
+                    const char *keymap_str, size_t keymap_len,
+                    const char *rel_path, bool update_output_files)
+{
+    int success = true;
+    fprintf(stderr, "*** %s ***\n", test_title);
+
+    struct xkb_keymap *keymap =
+        compile_buffer(ctx, keymap_str, keymap_len, compile_buffer_private);
+    assert(keymap);
+
+    char *got = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+    assert(got);
+
+    xkb_keymap_unref(keymap);
+
+    char *path = test_get_path(rel_path);
+    assert(path);
+
+    if (update_output_files) {
+        fprintf(stderr, "Writing golden test output to: %s\n", path);
+        FILE *file = fopen(path, "wb");
+        assert(file);
+        fwrite(got, 1, strlen(got), file);
+        fclose(file);
+    } else {
+        fprintf(stderr, "Reading golden test output: %s\n", path);
+        char *expected = test_read_file(rel_path);
+        assert(expected);
+        if (!streq(expected, got)) {
+            fprintf(stderr,
+                    "Golden test failed: dumped map differs from expected.\n");
+            fprintf(stderr, "Path to expected file: %s\n", path);
+            fprintf(stderr, "Length: expected %zu, got: %zu\n",
+                    strlen(expected), strlen(got));
+            fprintf(stderr, "Dumped map:\n");
+            fprintf(stderr, "%s\n", got);
+            success = false;
+        }
+        free(expected);
+    }
+    free(got);
+    free(path);
+    return success;
+}
