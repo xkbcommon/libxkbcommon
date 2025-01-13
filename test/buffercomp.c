@@ -318,6 +318,5 @@ main(int argc, char *argv[])
 
     xkb_context_unref(ctx);
 
-
-    return 0;
+    return EXIT_SUCCESS;
 }

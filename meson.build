@@ -787,6 +787,17 @@ test(
     env: test_env,
 )
 test(
+    'merge-modes',
+    executable(
+        'test-merge-modes',
+        'test/merge_modes.c',
+        'test/merge_modes.h',
+        'src/messages-codes.h',
+        dependencies: test_dep
+    ),
+    env: test_env,
+)
+test(
     'log',
     executable('test-log', 'test/log.c', dependencies: test_dep),
     env: test_env,
