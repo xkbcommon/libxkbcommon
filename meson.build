@@ -787,6 +787,16 @@ test(
     env: test_env,
 )
 test(
+    'merge-modes',
+    executable(
+        'test-merge-modes',
+        'test/merge_modes.c',
+        'test/merge_modes.h',
+        dependencies: test_dep
+    ),
+    env: test_env,
+)
+test(
     'log',
     executable('test-log', 'test/log.c', dependencies: test_dep),
     env: test_env,
@@ -884,7 +894,14 @@ if get_option('enable-x11')
     )
     test(
         'x11comp',
-        executable('test-x11comp', 'test/x11comp.c', dependencies: x11_test_dep),
+        executable(
+            'test-x11comp',
+            'test/x11comp.c',
+            'test/utils-text.c',
+            'test/utils-text.h',
+            'test/merge_modes.h',
+            dependencies: x11_test_dep
+        ),
         env: test_env,
         is_parallel : false,
     )
