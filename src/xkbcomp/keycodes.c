@@ -95,10 +95,12 @@ AddLedName(KeyNamesInfo *info, enum merge_mode merge, bool same_file,
                      xkb_atom_text(info->ctx, new->name), use, ignore);
         }
 
-        if (replace)
-            *old = *new;
-
-        return true;
+        if (replace) {
+            /* Unset previous */
+            old->name = XKB_ATOM_NONE;
+        } else {
+            return true;
+        }
     }
 
     if (new_idx >= info->num_led_names)
