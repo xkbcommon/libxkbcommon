@@ -127,7 +127,7 @@ AddKeyType(KeyTypesInfo *info, KeyTypeInfo *new, bool same_file)
 
     old = FindMatchingKeyType(info, new->name);
     if (old) {
-        if (new->merge == MERGE_REPLACE || new->merge == MERGE_OVERRIDE) {
+        if (new->merge != MERGE_AUGMENT) {
             if ((same_file && verbosity > 0) || verbosity > 9) {
                 log_warn(info->ctx,
                          XKB_WARNING_CONFLICTING_KEY_TYPE_DEFINITIONS,
