@@ -140,7 +140,6 @@ static void
 InitKeyInfo(struct xkb_context *ctx, KeyInfo *keyi)
 {
     memset(keyi, 0, sizeof(*keyi));
-    keyi->merge = MERGE_OVERRIDE;
     keyi->name = xkb_atom_intern_literal(ctx, "*");
     keyi->out_of_range_group_action = RANGE_WRAP;
 }
