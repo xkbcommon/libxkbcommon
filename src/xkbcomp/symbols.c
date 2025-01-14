@@ -457,8 +457,7 @@ UseNewKeyField(enum key_field field, enum key_field old, enum key_field new,
         if (report)
             *collide |= field;
 
-        if (clobber)
-            return true;
+        return clobber;
     }
 
     return false;
