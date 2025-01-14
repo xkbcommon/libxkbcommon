@@ -119,9 +119,9 @@ InitCompatInfo(CompatInfo *info, struct xkb_context *ctx,
     info->include_depth = include_depth;
     info->actions = actions;
     info->mods = *mods;
-    info->default_interp.merge = MERGE_OVERRIDE;
+    info->default_interp.merge = MERGE_DEFAULT; /* Unused */
     info->default_interp.interp.virtual_mod = XKB_MOD_INVALID;
-    info->default_led.merge = MERGE_OVERRIDE;
+    info->default_led.merge = MERGE_DEFAULT; /* Unused */
 }
 
 static void
@@ -422,9 +422,7 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
         InitCompatInfo(&next_incl, info->ctx, info->include_depth + 1,
                        info->actions, &included.mods);
         next_incl.default_interp = info->default_interp;
-        next_incl.default_interp.merge = stmt->merge;
         next_incl.default_led = info->default_led;
-        next_incl.default_led.merge = stmt->merge;
 
         HandleCompatMapFile(&next_incl, file, MERGE_OVERRIDE);
 
@@ -884,8 +882,6 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
         return false;
 
     InitCompatInfo(&info, keymap->ctx, 0, actions, &keymap->mods);
-    info.default_interp.merge = merge;
-    info.default_led.merge = merge;
 
     HandleCompatMapFile(&info, file, merge);
     if (info.errorCount != 0)
