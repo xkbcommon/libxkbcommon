@@ -172,7 +172,6 @@ typedef struct {
     char *name;         /* e.g. pc+us+inet(evdev) */
     int errorCount;
     unsigned int include_depth;
-    enum merge_mode merge;
     xkb_layout_index_t explicit_group;
     darray(KeyInfo) keys;
     KeyInfo default_key;
@@ -195,7 +194,6 @@ InitSymbolsInfo(SymbolsInfo *info, const struct xkb_keymap *keymap,
     info->ctx = keymap->ctx;
     info->include_depth = include_depth;
     info->keymap = keymap;
-    info->merge = MERGE_OVERRIDE;
     InitKeyInfo(keymap->ctx, &info->default_key);
     info->actions = actions;
     info->mods = *mods;
