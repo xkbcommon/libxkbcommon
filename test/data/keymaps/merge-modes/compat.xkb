@@ -1,0 +1,55 @@
+xkb_keymap {
+xkb_keycodes "(unnamed)" {
+	minimum = 8;
+	maximum = 255;
+	indicator 1 = "A";
+	indicator 2 = "B";
+	indicator 3 = "C";
+	indicator 4 = "D";
+};
+
+xkb_types "(unnamed)" {
+	type "default" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility "(unnamed)" {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret A+AnyOfOrNone(all) {
+		repeat= True;
+		action= SetMods(modifiers=Mod1);
+	};
+	interpret B+AnyOfOrNone(all) {
+		repeat= True;
+		action= SetMods(modifiers=Mod1);
+	};
+	interpret C+AnyOfOrNone(all) {
+		repeat= True;
+		action= SetMods(modifiers=Mod1);
+	};
+	interpret D+AnyOfOrNone(all) {
+		action= SetMods(modifiers=Mod1);
+	};
+	indicator "A" {
+		groups= 0x01;
+		modifiers= Lock;
+	};
+	indicator "B" {
+		groups= 0x01;
+		modifiers= Lock;
+	};
+	indicator "C" {
+		groups= 0x01;
+		modifiers= Lock;
+	};
+	indicator "D" {
+		groups= 0x01;
+	};
+};
+
+xkb_symbols "(unnamed)" {
+};
+
+};
