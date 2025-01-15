@@ -438,6 +438,12 @@ struct xkb_keymap {
          (iter) < (mods_)->mods + (mods_)->num_mods; \
          (iter)++)
 
+#define xkb_mods_mask_foreach(mask, iter, mods_) \
+    for ((iter) = (mods_)->mods; \
+         mask && (iter) < (mods_)->mods + (mods_)->num_mods; \
+         (iter)++, mask >>= 1) \
+        if (mask & 0x1)
+
 #define xkb_mods_enumerate(idx, iter, mods_) \
     for ((idx) = 0, (iter) = (mods_)->mods; \
          (idx) < (mods_)->num_mods; \
