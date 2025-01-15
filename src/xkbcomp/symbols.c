@@ -1772,8 +1772,7 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
 }
 
 bool
-CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
-               enum merge_mode merge)
+CompileSymbols(XkbFile *file, struct xkb_keymap *keymap)
 {
     SymbolsInfo info;
     ActionsInfo *actions;
@@ -1784,7 +1783,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
 
     InitSymbolsInfo(&info, keymap, 0, actions, &keymap->mods);
 
-    HandleSymbolsFile(&info, file, merge);
+    HandleSymbolsFile(&info, file, MERGE_DEFAULT);
 
     if (info.errorCount != 0)
         goto err_info;
