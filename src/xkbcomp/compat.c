@@ -424,7 +424,7 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
         next_incl.default_interp = info->default_interp;
         next_incl.default_led = info->default_led;
 
-        HandleCompatMapFile(&next_incl, file, MERGE_OVERRIDE);
+        HandleCompatMapFile(&next_incl, file, stmt->merge);
 
         MergeIncludedCompatMaps(&included, &next_incl, stmt->merge);
 

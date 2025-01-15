@@ -711,7 +711,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
             next_incl.explicit_group = info->explicit_group;
         }
 
-        HandleSymbolsFile(&next_incl, file, MERGE_OVERRIDE);
+        HandleSymbolsFile(&next_incl, file, stmt->merge);
 
         MergeIncludedSymbols(&included, &next_incl, stmt->merge);
 
