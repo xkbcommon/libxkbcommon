@@ -263,7 +263,6 @@ ModMaskText(struct xkb_context *ctx, const struct xkb_mod_set *mods,
 {
     char buf[1024] = {0};
     size_t pos = 0;
-    xkb_mod_index_t i;
     const struct xkb_mod *mod;
 
     if (mask == 0)
@@ -272,19 +271,21 @@ ModMaskText(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     if (mask == MOD_REAL_MASK_ALL)
         return "all";
 
-    xkb_mods_enumerate(i, mod, mods) {
-        int ret;
-
-        if (!(mask & (UINT32_C(1) << i)))
-            continue;
-
-        ret = snprintf(buf + pos, sizeof(buf) - pos, "%s%s",
-                       pos == 0 ? "" : "+",
-                       xkb_atom_text(ctx, mod->name));
-        if (ret <= 0 || pos + ret >= sizeof(buf))
-            break;
-        else
-            pos += ret;
+    if (unlikely(mask & ~((UINT64_C(1) << mods->num_mods) - 1))) {
+        /* If we get a mask that cannot be expressed with the known modifiers,
+         * print it as hexadecimal */
+        snprintf(buf + pos, sizeof(buf) - pos, "0x%"PRIx32, mask);
+    } else {
+        /* Print known mods */
+        xkb_mods_mask_foreach(mask, mod, mods) {
+            int ret = snprintf(buf + pos, sizeof(buf) - pos, "%s%s",
+                               pos == 0 ? "" : "+",
+                               xkb_atom_text(ctx, mod->name));
+            if (ret <= 0 || pos + ret >= sizeof(buf))
+                break;
+            else
+                pos += ret;
+        }
     }
 
     return strcpy(xkb_context_get_buffer(ctx, pos + 1), buf);
