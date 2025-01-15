@@ -185,18 +185,17 @@ FindMatchingInterp(CompatInfo *info, SymInterpInfo *new)
 }
 
 static bool
-UseNewInterpField(enum si_field field, SymInterpInfo *old, SymInterpInfo *new,
-                  bool report, enum si_field *collide)
+UseNewInterpField(enum si_field field, enum si_field old, enum si_field new,
+                  bool clobber, bool report, enum si_field *collide)
 {
-    if (!(old->defined & field))
-        return true;
+    if (!(old & field))
+        return (new & field);
 
-    if (new->defined & field) {
+    if (new & field) {
         if (report)
             *collide |= field;
 
-        if (new->merge != MERGE_AUGMENT)
-            return true;
+        return clobber;
     }
 
     return false;
@@ -207,6 +206,7 @@ AddInterp(CompatInfo *info, SymInterpInfo *new, bool same_file)
 {
     SymInterpInfo *old = FindMatchingInterp(info, new);
     if (old) {
+        const bool clobber = (new->merge != MERGE_AUGMENT);
         const int verbosity = xkb_context_get_log_verbosity(info->ctx);
         const bool report = (same_file && verbosity > 0) || verbosity > 9;
         enum si_field collide = 0;
@@ -221,23 +221,23 @@ AddInterp(CompatInfo *info, SymInterpInfo *new, bool same_file)
             return true;
         }
 
-        if (UseNewInterpField(SI_FIELD_VIRTUAL_MOD, old, new, report,
-                              &collide)) {
+        if (UseNewInterpField(SI_FIELD_VIRTUAL_MOD, old->defined, new->defined,
+                              clobber, report, &collide)) {
             old->interp.virtual_mod = new->interp.virtual_mod;
             old->defined |= SI_FIELD_VIRTUAL_MOD;
         }
-        if (UseNewInterpField(SI_FIELD_ACTION, old, new, report,
-                              &collide)) {
+        if (UseNewInterpField(SI_FIELD_ACTION, old->defined, new->defined,
+                              clobber, report, &collide)) {
             old->interp.action = new->interp.action;
             old->defined |= SI_FIELD_ACTION;
         }
-        if (UseNewInterpField(SI_FIELD_AUTO_REPEAT, old, new, report,
-                              &collide)) {
+        if (UseNewInterpField(SI_FIELD_AUTO_REPEAT, old->defined, new->defined,
+                              clobber, report, &collide)) {
             old->interp.repeat = new->interp.repeat;
             old->defined |= SI_FIELD_AUTO_REPEAT;
         }
-        if (UseNewInterpField(SI_FIELD_LEVEL_ONE_ONLY, old, new, report,
-                              &collide)) {
+        if (UseNewInterpField(SI_FIELD_LEVEL_ONE_ONLY, old->defined, new->defined,
+                              clobber, report, &collide)) {
             old->interp.level_one_only = new->interp.level_one_only;
             old->defined |= SI_FIELD_LEVEL_ONE_ONLY;
         }
@@ -247,7 +247,7 @@ AddInterp(CompatInfo *info, SymInterpInfo *new, bool same_file)
                      "Multiple interpretations of \"%s\"; "
                      "Using %s definition for duplicate fields\n",
                      siText(new, info),
-                     (new->merge != MERGE_AUGMENT ? "last" : "first"));
+                     (clobber ? "last" : "first"));
         }
 
         return true;
@@ -296,18 +296,17 @@ ResolveStateAndPredicate(ExprDef *expr, enum xkb_match_operation *pred_rtrn,
 /***====================================================================***/
 
 static bool
-UseNewLEDField(enum led_field field, LedInfo *old, LedInfo *new,
-               bool report, enum led_field *collide)
+UseNewLEDField(enum led_field field, enum led_field old, enum led_field new,
+               bool clobber, bool report, enum led_field *collide)
 {
-    if (!(old->defined & field))
-        return true;
+    if (!(old & field))
+        return (new & field);
 
-    if (new->defined & field) {
+    if (new & field) {
         if (report)
             *collide |= field;
 
-        if (new->merge != MERGE_AUGMENT)
-            return true;
+        return clobber;
     }
 
     return false;
@@ -317,6 +316,7 @@ static bool
 AddLedMap(CompatInfo *info, LedInfo *new, bool same_file)
 {
     enum led_field collide;
+    const bool clobber = (new->merge != MERGE_AUGMENT);
     const int verbosity = xkb_context_get_log_verbosity(info->ctx);
     const bool report = (same_file && verbosity > 0) || verbosity > 9;
 
@@ -346,17 +346,20 @@ AddLedMap(CompatInfo *info, LedInfo *new, bool same_file)
         }
 
         collide = 0;
-        if (UseNewLEDField(LED_FIELD_MODS, old, new, report, &collide)) {
+        if (UseNewLEDField(LED_FIELD_MODS, old->defined, new->defined,
+                           clobber, report, &collide)) {
             old->led.which_mods = new->led.which_mods;
             old->led.mods = new->led.mods;
             old->defined |= LED_FIELD_MODS;
         }
-        if (UseNewLEDField(LED_FIELD_GROUPS, old, new, report, &collide)) {
+        if (UseNewLEDField(LED_FIELD_GROUPS, old->defined, new->defined,
+                           clobber, report, &collide)) {
             old->led.which_groups = new->led.which_groups;
             old->led.groups = new->led.groups;
             old->defined |= LED_FIELD_GROUPS;
         }
-        if (UseNewLEDField(LED_FIELD_CTRLS, old, new, report, &collide)) {
+        if (UseNewLEDField(LED_FIELD_CTRLS, old->defined, new->defined,
+                           clobber, report, &collide)) {
             old->led.ctrls = new->led.ctrls;
             old->defined |= LED_FIELD_CTRLS;
         }
@@ -366,7 +369,7 @@ AddLedMap(CompatInfo *info, LedInfo *new, bool same_file)
                      "Map for indicator %s redefined; "
                      "Using %s definition for duplicate fields\n",
                      xkb_atom_text(info->ctx, old->led.name),
-                     (new->merge == MERGE_AUGMENT ? "first" : "last"));
+                     (clobber ? "last" : "first"));
         }
 
         return true;
@@ -726,11 +729,8 @@ HandleLedMapDef(CompatInfo *info, LedMapDef *def, enum merge_mode merge)
     VarDef *var;
     bool ok;
 
-    if (def->merge != MERGE_DEFAULT)
-        merge = def->merge;
-
     ledi = info->default_led;
-    ledi.merge = merge;
+    ledi.merge = (def->merge == MERGE_DEFAULT ? merge : def->merge);
     ledi.led.name = def->name;
 
     ok = true;
