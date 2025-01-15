@@ -126,21 +126,32 @@ static bool
 write_vmods(struct xkb_keymap *keymap, struct buf *buf)
 {
     const struct xkb_mod *mod;
-    xkb_mod_index_t num_vmods = 0;
+    xkb_mod_index_t vmod = 0;
+    bool has_some = false;
 
-    xkb_mods_foreach(mod, &keymap->mods) {
+    xkb_mods_enumerate(vmod, mod, &keymap->mods) {
         if (mod->type != MOD_VIRT)
             continue;
 
-        if (num_vmods == 0)
+        if (!has_some) {
             write_buf(buf, "\tvirtual_modifiers ");
-        else
+            has_some = true;
+        } else {
             write_buf(buf, ",");
+        }
         write_buf(buf, "%s", xkb_atom_text(keymap->ctx, mod->name));
-        num_vmods++;
+        if (keymap->mods.explicit_vmods & (UINT32_C(1) << vmod)) {
+            /* Can only pretty-print real modifiers in this context */
+            if (mod->mapping & ~MOD_REAL_MASK_ALL) {
+                write_buf(buf, "=0x%"PRIx32, mod->mapping);
+            } else {
+                write_buf(buf, "=%s",
+                          ModMaskText(keymap->ctx, &keymap->mods, mod->mapping));
+            }
+        }
     }
 
-    if (num_vmods > 0)
+    if (has_some)
         write_buf(buf, ";\n\n");
 
     return true;
