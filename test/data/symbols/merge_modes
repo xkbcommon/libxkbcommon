@@ -1458,3 +1458,7 @@ xkb_symbols "override" {
 	////// Issue #564 //////
 	key <T204> { [{A, A}], [{SetGroup(group=3), SetMods(mods=Mod5)}] };
 };
+
+xkb_symbols "replace" {
+	include "merge_modes(new)"
+};

@@ -155,10 +155,18 @@ xkb_keycodes "(unnamed)" {
 	<T189>               = 197;
 	<T192>               = 200;
 	<T204>               = 212;
+	indicator 1 = "Caps Lock";
+	indicator 2 = "Num Lock";
+	indicator 3 = "Scroll Lock";
+	indicator 4 = "Compose";
+	indicator 5 = "Kana";
+	alias <SHFT>         = <LFSH>;
+	alias <ALGR>         = <RALT>;
+	alias <XXXX>         = <LFSH>;
 };
 
 xkb_types "(unnamed)" {
-	virtual_modifiers NumLock,LevelThree;
+	virtual_modifiers NumLock,LevelThree,Mapped1 = Mod1,Mapped2 = Mod2,Mapped3 = Mod3,Mapped4 = Mod4,Unmapped1 = Control+Mod5,Unmapped2,Mapped5 = Mod5;
 
 	type "ONE_LEVEL" {
 		modifiers= none;
@@ -176,6 +184,13 @@ xkb_types "(unnamed)" {
 		map[Lock]= 2;
 		level_name[1]= "Base";
 		level_name[2]= "Caps";
+	};
+	type "KEYPAD" {
+		modifiers= Shift+NumLock;
+		map[Shift]= 2;
+		map[NumLock]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Number";
 	};
 	type "FOUR_LEVEL" {
 		modifiers= Shift+LevelThree;
@@ -215,13 +230,35 @@ xkb_types "(unnamed)" {
 		level_name[3]= "Alt Base";
 		level_name[4]= "Shift Alt";
 	};
+	type "XXX" {
+		modifiers= none;
+		level_name[1]= "New";
+	};
 };
 
 xkb_compatibility "(unnamed)" {
-	virtual_modifiers NumLock,LevelThree;
+	virtual_modifiers NumLock,LevelThree,Mapped1 = Mod1,Mapped2 = Mod2,Mapped3 = Mod3,Mapped4 = Mod4,Unmapped1 = Control+Mod5,Unmapped2,Mapped5 = Mod5;
 
 	interpret.useModMapMods= AnyLevel;
 	interpret.repeat= False;
+	interpret Caps_Lock+AnyOfOrNone(all) {
+		action= LockMods(modifiers=Lock);
+	};
+	interpret Any+AnyOf(all) {
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	indicator "Caps Lock" {
+		whichModState= locked;
+		modifiers= Lock;
+	};
+	indicator "Num Lock" {
+		whichModState= locked;
+		modifiers= NumLock;
+	};
+	indicator "Kana" {
+		whichModState= locked;
+		modifiers= Control;
+	};
 };
 
 xkb_symbols "(unnamed)" {

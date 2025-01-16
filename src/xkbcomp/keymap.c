@@ -329,9 +329,7 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     return true;
 }
 
-typedef bool (*compile_file_fn)(XkbFile *file,
-                                struct xkb_keymap *keymap,
-                                enum merge_mode merge);
+typedef bool (*compile_file_fn)(XkbFile *file, struct xkb_keymap *keymap);
 
 static const compile_file_fn compile_file_fns[LAST_KEYMAP_FILE_TYPE + 1] = {
     [FILE_TYPE_KEYCODES] = CompileKeycodes,
@@ -341,7 +339,7 @@ static const compile_file_fn compile_file_fns[LAST_KEYMAP_FILE_TYPE + 1] = {
 };
 
 bool
-CompileKeymap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
+CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
 {
     bool ok;
     XkbFile *files[LAST_KEYMAP_FILE_TYPE + 1] = { NULL };
@@ -402,7 +400,7 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
                 "Compiling %s \"%s\"\n",
                 xkb_file_type_to_string(type), files[type]->name);
 
-        ok = compile_file_fns[type](files[type], keymap, merge);
+        ok = compile_file_fns[type](files[type], keymap);
         if (!ok) {
             log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Failed to compile %s\n",

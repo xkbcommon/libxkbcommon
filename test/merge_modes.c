@@ -84,10 +84,10 @@ test_compat(struct xkb_context *ctx, enum update_files update_output_files)
 }
 
 static void
-test_symbols(struct xkb_context *ctx, enum update_files update_output_files)
+test_merge_modes(struct xkb_context *ctx, enum update_files update_output_files)
 {
-    make_symbols_tests("merge_modes", "", "",
-                       compile_buffer, NULL, update_output_files);
+    make_tests("merge_modes", "", "",
+               compile_buffer, NULL, update_output_files);
 }
 
 int
@@ -114,7 +114,7 @@ main(int argc, char *argv[])
     assert(ctx);
 
     test_compat(ctx, update_output_files);
-    test_symbols(ctx, update_output_files);
+    test_merge_modes(ctx, update_output_files);
 
     xkb_context_unref(ctx);
 

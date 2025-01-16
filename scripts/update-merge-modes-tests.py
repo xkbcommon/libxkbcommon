@@ -834,7 +834,33 @@ class TestFile:
     suffix: str
     tests: tuple[TestGroup, ...]
     symbols_file: ClassVar[str] = "merge_modes"
+    map_file: ClassVar[str] = "merge_modes"
     test_file: ClassVar[str] = "merge_modes_symbols.h"
+
+    @classmethod
+    def write_map(
+        cls,
+        root: Path,
+        jinja_env: jinja2.Environment,
+        type: str,
+        filename: str = "",
+        **kwargs,
+    ) -> None:
+        """
+        XKB custom map
+        """
+        if not filename:
+            filename = cls.map_file
+        path = root / f"test/data/{type}/{filename}"
+        template_path = path.with_suffix(f"{path.suffix}.jinja")
+        template = jinja_env.get_template(str(template_path.relative_to(root)))
+
+        with path.open("wt", encoding="utf-8") as fd:
+            fd.writelines(
+                template.generate(
+                    script=SCRIPT.relative_to(root), filename=filename, **kwargs
+                )
+            )
 
     @classmethod
     def write_keycodes(
@@ -843,9 +869,6 @@ class TestFile:
         """
         XKB custom keycodes
         """
-        path = root / f"test/data/keycodes/{cls.symbols_file}"
-        template_path = path.with_suffix(f"{path.suffix}.jinja")
-        template = jinja_env.get_template(str(template_path.relative_to(root)))
         ids: set[TestId] = set(
             t.id
             for f in tests
@@ -854,13 +877,7 @@ class TestFile:
             if isinstance(t, TestEntry)
         )
 
-        with path.open("wt", encoding="utf-8") as fd:
-            fd.writelines(
-                template.generate(
-                    ids=sorted(ids, key=lambda id: id.xkb_key),
-                    script=SCRIPT.relative_to(root),
-                )
-            )
+        cls.write_map(root=root, jinja_env=jinja_env, type="keycodes", ids=ids)
 
     @classmethod
     def write_symbols(
@@ -1748,6 +1765,8 @@ if __name__ == "__main__":
     jinja_env.globals["is_not_comment"] = is_not_comment
     jinja_env.tests["is_not_comment"] = is_not_comment
     TestFile.write_keycodes(root=args.root, jinja_env=jinja_env, tests=TESTS)
+    TestFile.write_map(root=args.root, jinja_env=jinja_env, type="types")
+    TestFile.write_map(root=args.root, jinja_env=jinja_env, type="compat")
     TestFile.write_symbols(
         root=args.root,
         jinja_env=jinja_env,

@@ -93,7 +93,7 @@ xkb_keycodes "(unnamed)" {
 	<T097>               = 105;
 	<T098>               = 106;
 	<T099>               = 107;
-	<RALT>               = 108;
+	<RALT>               = 109;
 	<T103>               = 111;
 	<T104>               = 112;
 	<T105>               = 113;
@@ -155,27 +155,42 @@ xkb_keycodes "(unnamed)" {
 	<T189>               = 197;
 	<T192>               = 200;
 	<T204>               = 212;
+	indicator 1 = "Caps Lock";
+	indicator 3 = "Scroll Lock";
+	indicator 4 = "XXXX";
+	indicator 5 = "Kana";
+	indicator 6 = "Num Lock";
+	alias <SHFT>         = <RALT>;
+	alias <ALGR>         = <LFSH>;
+	alias <XXXX>         = <LFSH>;
 };
 
 xkb_types "(unnamed)" {
-	virtual_modifiers NumLock,LevelThree;
+	virtual_modifiers NumLock,LevelThree,Mapped1 = Mod2,Mapped2 = Mod2,Mapped3,Mapped4 = Mod4,Unmapped1 = Control+Mod5,Unmapped2,Mapped5 = Mod5;
 
 	type "ONE_LEVEL" {
 		modifiers= none;
-		level_name[1]= "Any";
+		level_name[1]= "New";
 	};
 	type "TWO_LEVEL" {
-		modifiers= Shift;
+		modifiers= Shift+Mapped1;
 		map[Shift]= 2;
+		map[Mapped1]= 2;
 		level_name[1]= "Base";
 		level_name[2]= "Shift";
 	};
 	type "ALPHABETIC" {
-		modifiers= Shift+Lock;
-		map[Shift]= 2;
-		map[Lock]= 2;
+		modifiers= Lock;
+		map[none]= 2;
 		level_name[1]= "Base";
 		level_name[2]= "Caps";
+	};
+	type "KEYPAD" {
+		modifiers= Shift+NumLock;
+		map[NumLock]= 3;
+		level_name[1]= "Base";
+		level_name[2]= "Number";
+		level_name[3]= "Number bis";
 	};
 	type "FOUR_LEVEL" {
 		modifiers= Shift+LevelThree;
@@ -215,13 +230,35 @@ xkb_types "(unnamed)" {
 		level_name[3]= "Alt Base";
 		level_name[4]= "Shift Alt";
 	};
+	type "XXX" {
+		modifiers= none;
+		level_name[1]= "New";
+	};
 };
 
 xkb_compatibility "(unnamed)" {
-	virtual_modifiers NumLock,LevelThree;
+	virtual_modifiers NumLock,LevelThree,Mapped1 = Mod2,Mapped2 = Mod2,Mapped3,Mapped4 = Mod4,Unmapped1 = Control+Mod5,Unmapped2,Mapped5 = Mod5;
 
 	interpret.useModMapMods= AnyLevel;
 	interpret.repeat= False;
+	interpret Caps_Lock+AnyOfOrNone(all) {
+		action= LockMods(modifiers=NumLock);
+	};
+	interpret Any+AnyOf(all) {
+		action= SetMods(modifiers=modMapMods);
+	};
+	indicator "Caps Lock" {
+		whichModState= locked;
+		modifiers= Lock;
+	};
+	indicator "Kana" {
+		whichModState= locked;
+		modifiers= Control;
+	};
+	indicator "Num Lock" {
+		whichModState= base;
+		modifiers= Lock;
+	};
 };
 
 xkb_symbols "(unnamed)" {

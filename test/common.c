@@ -468,6 +468,10 @@ test_compile_output(struct xkb_context *ctx,
 
     struct xkb_keymap *keymap =
         compile_buffer(ctx, keymap_str, keymap_len, compile_buffer_private);
+    if (!keymap) {
+        fprintf(stderr, "ERROR: Cannot compile keymap:\n%.*s\n",
+                (int)keymap_len, keymap_str);
+    }
     assert(keymap);
 
     char *got = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
