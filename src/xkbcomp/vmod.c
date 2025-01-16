@@ -14,10 +14,7 @@ bool
 HandleVModDef(struct xkb_context *ctx, struct xkb_mod_set *mods,
               VModDef *stmt, enum merge_mode merge)
 {
-    xkb_mod_index_t i;
-    struct xkb_mod *mod;
-    xkb_mod_mask_t mapping;
-
+    xkb_mod_mask_t mapping = 0;
     if (stmt->value) {
         /*
          * This is a statement such as 'virtualModifiers NumLock = Mod1';
@@ -31,12 +28,10 @@ HandleVModDef(struct xkb_context *ctx, struct xkb_mod_set *mods,
             return false;
         }
     }
-    else {
-        mapping = 0;
-    }
 
     merge = (merge == MERGE_DEFAULT ? stmt->merge : merge);
-
+    xkb_mod_index_t i;
+    struct xkb_mod *mod;
     xkb_mods_enumerate(i, mod, mods) {
         if (mod->name == stmt->name) {
             if (mod->type != MOD_VIRT) {

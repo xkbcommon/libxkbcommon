@@ -52,14 +52,11 @@ static bool
 SimpleLookup(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
              enum expr_value_type type, uint32_t *val_rtrn)
 {
-    const LookupEntry *entry;
-    const char *str;
-
     if (!priv || field == XKB_ATOM_NONE || type != EXPR_TYPE_INT)
         return false;
 
-    str = xkb_atom_text(ctx, field);
-    for (entry = priv; entry && entry->name; entry++) {
+    const char *str = xkb_atom_text(ctx, field);
+    for (const LookupEntry *entry = priv; entry && entry->name; entry++) {
         if (istreq(str, entry->name)) {
             *val_rtrn = entry->value;
             return true;
@@ -79,8 +76,6 @@ static bool
 LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
               enum expr_value_type type, xkb_mod_mask_t *val_rtrn)
 {
-    const char *str;
-    xkb_mod_index_t ndx;
     const LookupModMaskPriv *arg = priv;
     const struct xkb_mod_set *mods = arg->mods;
     enum mod_type mod_type = arg->mod_type;
@@ -88,7 +83,7 @@ LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
     if (type != EXPR_TYPE_INT)
         return false;
 
-    str = xkb_atom_text(ctx, field);
+    const char *str = xkb_atom_text(ctx, field);
     if (!str)
         return false;
 
@@ -102,7 +97,7 @@ LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
         return true;
     }
 
-    ndx = XkbModNameToIndex(mods, field, mod_type);
+    xkb_mod_index_t ndx = XkbModNameToIndex(mods, field, mod_type);
     if (ndx == XKB_MOD_INVALID)
         return false;
 
@@ -191,7 +186,8 @@ bool
 ExprResolveKeyCode(struct xkb_context *ctx, const ExprDef *expr,
                    xkb_keycode_t *kc)
 {
-    xkb_keycode_t leftRtrn, rightRtrn;
+    xkb_keycode_t leftRtrn = XKB_KEYCODE_INVALID;
+    xkb_keycode_t rightRtrn = XKB_KEYCODE_INVALID;
 
     switch (expr->expr.op) {
     case EXPR_VALUE:
@@ -277,8 +273,8 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, const ExprDef *expr,
                          const void *lookupPriv)
 {
     bool ok = false;
-    int64_t l, r;
-    uint32_t u;
+    int64_t l = 0, r = 0;
+    uint32_t u = 0;
     ExprDef *left, *right;
 
     switch (expr->expr.op) {
@@ -396,11 +392,9 @@ bool
 ExprResolveGroup(struct xkb_context *ctx, const ExprDef *expr,
                  xkb_layout_index_t *group_rtrn)
 {
-    bool ok;
-    int64_t result;
-
-    ok = ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
-                                  groupNames);
+    int64_t result = 0;
+    bool ok = ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
+                                       groupNames);
     if (!ok)
         return false;
 
@@ -419,11 +413,9 @@ bool
 ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
                  xkb_level_index_t *level_rtrn)
 {
-    bool ok;
-    int64_t result;
-
-    ok = ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
-                                  levelNames);
+    int64_t result = 0;
+    bool ok = ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
+                                       levelNames);
     if (!ok)
         return false;
 
@@ -536,7 +528,7 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
 {
     bool ok = false;
     uint32_t l = 0, r = 0;
-    int64_t v;
+    int64_t v = 0;
     ExprDef *left, *right;
     const char *bogus = NULL;
 
@@ -662,7 +654,7 @@ bool
 ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
                   xkb_keysym_t *sym_rtrn)
 {
-    int64_t val;
+    int64_t val = 0;
 
     if (expr->expr.op == EXPR_IDENT) {
         const char *str = xkb_atom_text(ctx, expr->ident.ident);
@@ -710,9 +702,6 @@ ExprResolveMod(struct xkb_context *ctx, const ExprDef *def,
                enum mod_type mod_type, const struct xkb_mod_set *mods,
                xkb_mod_index_t *ndx_rtrn)
 {
-    xkb_mod_index_t ndx;
-    xkb_atom_t name;
-
     if (def->expr.op != EXPR_IDENT) {
         log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
                 "Cannot resolve virtual modifier: "
@@ -721,8 +710,8 @@ ExprResolveMod(struct xkb_context *ctx, const ExprDef *def,
         return false;
     }
 
-    name = def->ident.ident;
-    ndx = XkbModNameToIndex(mods, name, mod_type);
+    xkb_atom_t name = def->ident.ident;
+    xkb_mod_index_t ndx = XkbModNameToIndex(mods, name, mod_type);
     if (ndx == XKB_MOD_INVALID) {
         log_err(ctx, XKB_ERROR_UNDECLARED_VIRTUAL_MODIFIER,
                 "Cannot resolve virtual modifier: "
