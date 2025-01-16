@@ -44,7 +44,7 @@ ExprCreateString(xkb_atom_t str)
 }
 
 ExprDef *
-ExprCreateInteger(int ival)
+ExprCreateInteger(int64_t ival)
 {
     ExprDef *expr = ExprCreate(EXPR_VALUE, EXPR_TYPE_INT, sizeof(ExprInteger));
     if (!expr)

@@ -10,7 +10,7 @@ ExprDef *
 ExprCreateString(xkb_atom_t str);
 
 ExprDef *
-ExprCreateInteger(int ival);
+ExprCreateInteger(int64_t ival);
 
 ExprDef *
 ExprCreateFloat(void);

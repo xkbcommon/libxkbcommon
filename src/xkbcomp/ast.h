@@ -151,7 +151,7 @@ typedef struct {
 
 typedef struct {
     ExprCommon expr;
-    int ival;
+    int64_t ival;
 } ExprInteger;
 
 typedef struct {
