@@ -1751,7 +1751,7 @@ CopyModMapDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
     // Handle modMap None
     if (entry->modifier != XKB_MOD_NONE) {
         // Convert modifier index to modifier mask
-        key->modmap |= (1u << entry->modifier);
+        key->modmap |= (UINT32_C(1) << entry->modifier);
     }
 
     return true;

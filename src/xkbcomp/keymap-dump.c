@@ -699,7 +699,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
     xkb_mods_enumerate(i, mod, &keymap->mods) {
         bool had_any = false;
         xkb_keys_foreach(key, keymap) {
-            if (key->modmap & (1u << i)) {
+            if (key->modmap & (UINT32_C(1) << i)) {
                 if (!had_any)
                     write_buf(buf, "\tmodifier_map %s { ",
                               xkb_atom_text(keymap->ctx, mod->name));

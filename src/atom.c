@@ -85,7 +85,7 @@
 static inline uint32_t
 hash_buf(const char *string, size_t len)
 {
-    uint32_t hash = 2166136261u;
+    uint32_t hash = UINT32_C(2166136261);
     for (size_t i = 0; i < (len + 1) / 2; i++) {
         hash ^= (uint8_t) string[i];
         hash *= 0x01000193;

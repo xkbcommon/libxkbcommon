@@ -127,7 +127,7 @@ LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
     if (ndx == XKB_MOD_INVALID)
         return false;
 
-    *val_rtrn = (1u << ndx);
+    *val_rtrn = (UINT32_C(1) << ndx);
     return true;
 }
 

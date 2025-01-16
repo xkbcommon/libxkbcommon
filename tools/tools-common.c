@@ -76,7 +76,7 @@ print_keymap_modmaps(struct xkb_keymap *keymap) {
         if (keymap->mods.mods[vmod].mapping) {
             bool first = true;
             for (xkb_mod_index_t mod = 0; mod < xkb_keymap_num_mods(keymap); mod++) {
-                if (keymap->mods.mods[vmod].mapping & (1u << mod)) {
+                if (keymap->mods.mods[vmod].mapping & (UINT32_C(1) << mod)) {
                     if (first) {
                         first = false;
                         printf("%s", xkb_keymap_mod_get_name(keymap, mod));
@@ -103,7 +103,7 @@ print_key_modmaps(struct xkb_keymap *keymap, xkb_keycode_t keycode) {
         printf("modmap [ ");
         if (key->modmap) {
             for (mod = 0; mod < xkb_keymap_num_mods(keymap); mod++) {
-                if (key->modmap & (1u << mod)) {
+                if (key->modmap & (UINT32_C(1) << mod)) {
                     printf("%-*s", (int) MODMAP_PADDING,
                            xkb_keymap_mod_get_name(keymap, mod));
                     break;
@@ -117,7 +117,7 @@ print_key_modmaps(struct xkb_keymap *keymap, xkb_keycode_t keycode) {
         int length = 0;
         const char *mod_name;
         for (mod = 0; mod < xkb_keymap_num_mods(keymap); mod++) {
-            if (key->vmodmap & (1u << mod)) {
+            if (key->vmodmap & (UINT32_C(1) << mod)) {
                 mod_name = xkb_keymap_mod_get_name(keymap, mod);
                 length += strlen(mod_name) + 1;
                 printf("%s ", mod_name);

@@ -190,7 +190,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
 
                 if ((group == 0 && level == 0) || !interp->level_one_only)
                     if (interp->virtual_mod != XKB_MOD_INVALID)
-                        vmodmap |= (1u << interp->virtual_mod);
+                        vmodmap |= (UINT32_C(1) << interp->virtual_mod);
 
                 if (interp->action.type != ACTION_TYPE_NONE) {
                     if (darray_size(interprets) == 1) {
@@ -289,7 +289,7 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     /* Update keymap->mods, the virtual -> real mod mapping. */
     xkb_keys_foreach(key, keymap)
         xkb_mods_enumerate(i, mod, &keymap->mods)
-            if (key->vmodmap & (1u << i))
+            if (key->vmodmap & (UINT32_C(1) << i))
                 mod->mapping |= key->modmap;
 
     /* Now update the level masks for all the types to reflect the vmods. */
