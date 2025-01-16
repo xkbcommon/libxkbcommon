@@ -307,7 +307,7 @@ CheckAffectField(struct xkb_context *ctx, enum xkb_action_type action,
                               "lock, unlock, both, neither");
 
     *flags_inout &= ~(ACTION_LOCK_NO_LOCK | ACTION_LOCK_NO_UNLOCK);
-    *flags_inout |= flags;
+    *flags_inout |= (enum xkb_action_flags) flags;
     return true;
 }
 
@@ -476,7 +476,7 @@ HandlePtrBtn(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             return false;
         }
 
-        act->button = btn;
+        act->button = (uint8_t) btn;
         return true;
     }
     else if (action->type == ACTION_TYPE_PTR_LOCK &&
@@ -567,7 +567,7 @@ HandleSetPtrDflt(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             return false;
         }
 
-        act->value = (value->expr.op == EXPR_NEGATE ? -btn: btn);
+        act->value = (uint8_t) (value->expr.op == EXPR_NEGATE ? -btn: btn);
         return true;
     }
 
@@ -638,7 +638,7 @@ HandleSetLockControls(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
                                   field, "controls mask");
 
-        act->ctrls = mask;
+        act->ctrls = (enum xkb_action_controls) mask;
         return true;
     }
     else if (field == ACTION_FIELD_AFFECT) {
