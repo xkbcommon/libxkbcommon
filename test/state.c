@@ -347,21 +347,21 @@ test_serialisation(struct xkb_keymap *keymap)
     xkb_mod_index_t numIdx    = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_NUM);
     xkb_mod_index_t level3Idx = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_LEVEL3);
     xkb_mod_index_t altGrIdx  = _xkb_keymap_mod_get_index(keymap, "AltGr");
-    xkb_mod_mask_t shift  = (1u << shiftIdx);
-    xkb_mod_mask_t caps   = (1u << capsIdx);
-    xkb_mod_mask_t ctrl   = (1u << ctrlIdx);
-    xkb_mod_mask_t mod1   = (1u << mod1Idx);
-    xkb_mod_mask_t mod2   = (1u << mod2Idx);
-    xkb_mod_mask_t mod3   = (1u << mod3Idx);
-    xkb_mod_mask_t mod4   = (1u << mod4Idx);
-    xkb_mod_mask_t mod5   = (1u << mod5Idx);
-    xkb_mod_mask_t alt    = (1u << altIdx);
-    xkb_mod_mask_t meta   = (1u << metaIdx);
-    xkb_mod_mask_t super  = (1u << superIdx);
-    xkb_mod_mask_t hyper  = (1u << hyperIdx);
-    xkb_mod_mask_t num    = (1u << numIdx);
-    xkb_mod_mask_t level3 = (1u << level3Idx);
-    xkb_mod_mask_t altGr  = (1u << altGrIdx);
+    xkb_mod_mask_t shift  = (UINT32_C(1) << shiftIdx);
+    xkb_mod_mask_t caps   = (UINT32_C(1) << capsIdx);
+    xkb_mod_mask_t ctrl   = (UINT32_C(1) << ctrlIdx);
+    xkb_mod_mask_t mod1   = (UINT32_C(1) << mod1Idx);
+    xkb_mod_mask_t mod2   = (UINT32_C(1) << mod2Idx);
+    xkb_mod_mask_t mod3   = (UINT32_C(1) << mod3Idx);
+    xkb_mod_mask_t mod4   = (UINT32_C(1) << mod4Idx);
+    xkb_mod_mask_t mod5   = (UINT32_C(1) << mod5Idx);
+    xkb_mod_mask_t alt    = (UINT32_C(1) << altIdx);
+    xkb_mod_mask_t meta   = (UINT32_C(1) << metaIdx);
+    xkb_mod_mask_t super  = (UINT32_C(1) << superIdx);
+    xkb_mod_mask_t hyper  = (UINT32_C(1) << hyperIdx);
+    xkb_mod_mask_t num    = (UINT32_C(1) << numIdx);
+    xkb_mod_mask_t level3 = (UINT32_C(1) << level3Idx);
+    xkb_mod_mask_t altGr  = (UINT32_C(1) << altGrIdx);
 
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
@@ -409,7 +409,7 @@ test_serialisation(struct xkb_keymap *keymap)
         const struct test_active_mods_entry *entry = &test_data[k];
 #define check_mods(keymap, state, entry, type)                                      \
         for (xkb_mod_index_t idx = 0; idx < xkb_keymap_num_mods(keymap); idx++) {   \
-            xkb_mod_mask_t mask = 1u << idx;                                        \
+            xkb_mod_mask_t mask = UINT32_C(1) << idx;                                        \
             bool expected = !!(mask & entry->active);                               \
             bool got = !!xkb_state_mod_index_is_active(state, idx, type);           \
             fprintf(stderr, "#%u State 0x%x, mod: %u: expected %u, got: %u\n",      \
@@ -458,13 +458,13 @@ test_update_mask_mods(struct xkb_keymap *keymap)
     xkb_mod_index_t altIdx   = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_ALT);
     xkb_mod_index_t metaIdx  = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_META);
     xkb_mod_index_t numIdx   = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_NUM);
-    xkb_mod_mask_t caps  = (1u << capsIdx);
-    xkb_mod_mask_t shift = (1u << shiftIdx);
-    xkb_mod_mask_t mod1  = (1u << mod1Idx);
-    xkb_mod_mask_t mod2  = (1u << mod2Idx);
-    xkb_mod_mask_t alt   = (1u << altIdx);
-    xkb_mod_mask_t meta  = (1u << metaIdx);
-    xkb_mod_mask_t num   = (1u << numIdx);
+    xkb_mod_mask_t caps  = (UINT32_C(1) << capsIdx);
+    xkb_mod_mask_t shift = (UINT32_C(1) << shiftIdx);
+    xkb_mod_mask_t mod1  = (UINT32_C(1) << mod1Idx);
+    xkb_mod_mask_t mod2  = (UINT32_C(1) << mod2Idx);
+    xkb_mod_mask_t alt   = (UINT32_C(1) << altIdx);
+    xkb_mod_mask_t meta  = (UINT32_C(1) << metaIdx);
+    xkb_mod_mask_t num   = (UINT32_C(1) << numIdx);
 
     changed = xkb_state_update_mask(state, caps, 0, 0, 0, 0, 0);
     assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE));
@@ -549,14 +549,14 @@ test_consume(struct xkb_keymap *keymap)
     print_state(state);
 
     mask = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
-    assert(mask == ((1U << mod1) | (1U << shift)));
+    assert(mask == ((UINT32_C(1) << mod1) | (UINT32_C(1) << shift)));
     mask = xkb_state_mod_mask_remove_consumed(state, KEY_EQUAL + EVDEV_OFFSET,
                                               mask);
-    assert(mask == (1U << mod1));
+    assert(mask == (UINT32_C(1) << mod1));
 
     /* Test get_consumed_mods() */
     mask = xkb_state_key_get_consumed_mods(state, KEY_EQUAL + EVDEV_OFFSET);
-    assert(mask == (1U << shift));
+    assert(mask == (UINT32_C(1) << shift));
 
     mask = xkb_state_key_get_consumed_mods(state, KEY_ESC + EVDEV_OFFSET);
     assert(mask == 0);
@@ -573,7 +573,7 @@ test_consume(struct xkb_keymap *keymap)
     assert(state);
 
     mask = xkb_state_key_get_consumed_mods(state, KEY_A + EVDEV_OFFSET);
-    assert(mask == ((1U << shift) | (1U << caps)));
+    assert(mask == ((UINT32_C(1) << shift) | (UINT32_C(1) << caps)));
 
     assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, caps) > 0);
     assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, shift) > 0);
@@ -597,16 +597,19 @@ test_consume(struct xkb_keymap *keymap)
     assert(state);
 
     mask = xkb_state_key_get_consumed_mods(state, KEY_F1 + EVDEV_OFFSET);
-    assert(mask == ((1U << shift) | (1U << mod1) | (1U << ctrl) | (1U << mod5)));
+    assert(mask == ((UINT32_C(1) << shift) | (UINT32_C(1) << mod1) |
+                    (UINT32_C(1) << ctrl) | (UINT32_C(1) << mod5)));
 
     /* Shift is preserved. */
     xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
     mask = xkb_state_key_get_consumed_mods(state, KEY_F1 + EVDEV_OFFSET);
-    assert(mask == ((1U << mod1) | (1U << ctrl) | (1U << mod5)));
+    assert(mask == ((UINT32_C(1) << mod1) | (UINT32_C(1) << ctrl) |
+                    (UINT32_C(1) << mod5)));
     xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
 
     mask = xkb_state_key_get_consumed_mods(state, KEY_F1 + EVDEV_OFFSET);
-    assert(mask == ((1U << shift) | (1U << mod1) | (1U << ctrl) | (1U << mod5)));
+    assert(mask == ((UINT32_C(1) << shift) | (UINT32_C(1) << mod1) |
+                    (UINT32_C(1) << ctrl) | (UINT32_C(1) << mod5)));
 
     xkb_state_unref(state);
 
@@ -626,18 +629,19 @@ test_consume(struct xkb_keymap *keymap)
     xkb_state_update_key(state, KEY_LEFTALT + EVDEV_OFFSET, XKB_KEY_DOWN);
     mask = xkb_state_key_get_consumed_mods2(state, KEY_F1 + EVDEV_OFFSET,
                                             XKB_CONSUMED_MODE_GTK);
-    assert(mask == ((1U << mod1) | (1U << ctrl)));
+    assert(mask == ((UINT32_C(1) << mod1) | (UINT32_C(1) << ctrl)));
     assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, shift) > 0);
     assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, ctrl) > 0);
     assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, mod1) > 0);
     assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, alt) > 0);
     assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, meta) > 0);
-    mask = (1U << ctrl) | (1U << mod1) | (1U << mod2);
+    mask = (UINT32_C(1) << ctrl) | (UINT32_C(1) << mod1) | (UINT32_C(1) << mod2);
     mask = xkb_state_mod_mask_remove_consumed(state, KEY_F1 + EVDEV_OFFSET, mask);
-    assert(mask == (1U << mod2));
-    mask = (1U << ctrl) | (1U << alt) | (1U << meta) | (1U << mod2);
+    assert(mask == (UINT32_C(1) << mod2));
+    mask = (UINT32_C(1) << ctrl) | (UINT32_C(1) << alt) | (UINT32_C(1) << meta) |
+           (UINT32_C(1) << mod2);
     mask = xkb_state_mod_mask_remove_consumed(state, KEY_F1 + EVDEV_OFFSET, mask);
-    assert(mask == (1U << mod2));
+    assert(mask == (UINT32_C(1) << mod2));
 
     xkb_state_unref(state);
 
@@ -647,12 +651,12 @@ test_consume(struct xkb_keymap *keymap)
 
     mask = xkb_state_key_get_consumed_mods2(state, KEY_A + EVDEV_OFFSET,
                                             XKB_CONSUMED_MODE_GTK);
-    assert(mask == ((1U << shift) | (1U << caps)));
+    assert(mask == ((UINT32_C(1) << shift) | (UINT32_C(1) << caps)));
 
     xkb_state_update_key(state, KEY_LEFTALT + EVDEV_OFFSET, XKB_KEY_DOWN);
     mask = xkb_state_key_get_consumed_mods2(state, KEY_A + EVDEV_OFFSET,
                                             XKB_CONSUMED_MODE_GTK);
-    assert(mask == ((1U << shift) | (1U << caps)));
+    assert(mask == ((UINT32_C(1) << shift) | (UINT32_C(1) << caps)));
 
     xkb_state_unref(state);
 }
@@ -681,16 +685,16 @@ test_overlapping_mods(struct xkb_context *context)
     xkb_mod_index_t hyperIdx = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_HYPER);
     /* Note: not mapped */
     xkb_mod_index_t scrollIdx = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_SCROLL);
-    xkb_mod_mask_t shift = (1u << shiftIdx);
-    xkb_mod_mask_t ctrl  = (1u << ctrlIdx);
-    xkb_mod_mask_t mod1  = (1u << mod1Idx);
-    xkb_mod_mask_t mod3  = (1u << mod3Idx);
-    xkb_mod_mask_t mod4  = (1u << mod4Idx);
-    xkb_mod_mask_t mod5  = (1u << mod5Idx);
-    xkb_mod_mask_t alt   = (1u << altIdx);
-    xkb_mod_mask_t meta  = (1u << metaIdx);
-    xkb_mod_mask_t super = (1u << superIdx);
-    xkb_mod_mask_t hyper = (1u << hyperIdx);
+    xkb_mod_mask_t shift = (UINT32_C(1) << shiftIdx);
+    xkb_mod_mask_t ctrl  = (UINT32_C(1) << ctrlIdx);
+    xkb_mod_mask_t mod1  = (UINT32_C(1) << mod1Idx);
+    xkb_mod_mask_t mod3  = (UINT32_C(1) << mod3Idx);
+    xkb_mod_mask_t mod4  = (UINT32_C(1) << mod4Idx);
+    xkb_mod_mask_t mod5  = (UINT32_C(1) << mod5Idx);
+    xkb_mod_mask_t alt   = (UINT32_C(1) << altIdx);
+    xkb_mod_mask_t meta  = (UINT32_C(1) << metaIdx);
+    xkb_mod_mask_t super = (UINT32_C(1) << superIdx);
+    xkb_mod_mask_t hyper = (UINT32_C(1) << hyperIdx);
     state = xkb_state_new(keymap);
     assert(state);
 
@@ -771,10 +775,10 @@ test_overlapping_mods(struct xkb_context *context)
     metaIdx  = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_META);
     superIdx = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_SUPER);
     hyperIdx = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_HYPER);
-    alt   = (1u << altIdx);
-    meta  = (1u << metaIdx);
-    super = (1u << superIdx);
-    hyper = (1u << hyperIdx);
+    alt   = (UINT32_C(1) << altIdx);
+    meta  = (UINT32_C(1) << metaIdx);
+    super = (UINT32_C(1) << superIdx);
+    hyper = (UINT32_C(1) << hyperIdx);
     state = xkb_state_new(keymap);
     assert(state);
 
@@ -864,10 +868,10 @@ test_overlapping_mods(struct xkb_context *context)
     metaIdx  = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_META);
     superIdx = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_SUPER);
     hyperIdx = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_HYPER);
-    alt   = (1u << altIdx);
-    meta  = (1u << metaIdx);
-    super = (1u << superIdx);
-    hyper = (1u << hyperIdx);
+    alt   = (UINT32_C(1) << altIdx);
+    meta  = (UINT32_C(1) << metaIdx);
+    super = (UINT32_C(1) << superIdx);
+    hyper = (UINT32_C(1) << hyperIdx);
     state = xkb_state_new(keymap);
     assert(state);
 
@@ -1159,7 +1163,7 @@ test_active_leds(struct xkb_state *state, xkb_led_mask_t leds_expected)
         const int status = xkb_state_led_index_is_active(state, led);
         if (status < 0)
             continue;
-        const xkb_led_mask_t mask = (1u << led);
+        const xkb_led_mask_t mask = (UINT32_C(1) << led);
         const bool expected = !!(leds_expected & mask);
         if (status)
             leds_got |= mask;
@@ -1210,15 +1214,15 @@ test_leds(struct xkb_context *ctx)
     const xkb_led_index_t mail_idx = _xkb_keymap_led_get_index(keymap, "Mail");
     const xkb_led_index_t charging_idx = _xkb_keymap_led_get_index(keymap, "Charging");
 
-    const xkb_led_mask_t caps = 1u << caps_idx;
-    const xkb_led_mask_t num = 1u << num_idx;
-    const xkb_led_mask_t scroll = 1u << scroll_idx;
-    const xkb_led_mask_t compose = 1u << compose_idx;
-    const xkb_led_mask_t sleep = 1u << sleep_idx;
-    const xkb_led_mask_t mute = 1u << mute_idx;
-    const xkb_led_mask_t misc = 1u << misc_idx;
-    const xkb_led_mask_t mail = 1u << mail_idx;
-    const xkb_led_mask_t charging = 1u << charging_idx;
+    const xkb_led_mask_t caps = UINT32_C(1) << caps_idx;
+    const xkb_led_mask_t num = UINT32_C(1) << num_idx;
+    const xkb_led_mask_t scroll = UINT32_C(1) << scroll_idx;
+    const xkb_led_mask_t compose = UINT32_C(1) << compose_idx;
+    const xkb_led_mask_t sleep = UINT32_C(1) << sleep_idx;
+    const xkb_led_mask_t mute = UINT32_C(1) << mute_idx;
+    const xkb_led_mask_t misc = UINT32_C(1) << misc_idx;
+    const xkb_led_mask_t mail = UINT32_C(1) << mail_idx;
+    const xkb_led_mask_t charging = UINT32_C(1) << charging_idx;
 
     struct xkb_state *state = xkb_state_new(keymap);
     assert(state);

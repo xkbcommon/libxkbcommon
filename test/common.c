@@ -80,7 +80,7 @@ print_detailed_state(struct xkb_state *state)
     xkb_led_mask_t leds = 0;
     for (xkb_led_index_t led = 0; led < xkb_keymap_num_leds(keymap); led++) {
         if (xkb_state_led_index_is_active(state, led) > 0)
-            leds |= 1u << led;
+            leds |= UINT32_C(1) << led;
     }
     fprintf(stderr, "  LEDs: 0x%x\n", leds);
 }

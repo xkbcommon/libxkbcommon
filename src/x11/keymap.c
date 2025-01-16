@@ -736,7 +736,7 @@ get_indicators(struct xkb_keymap *keymap, xcb_connection_t *conn,
     keymap->num_leds = msb_pos(reply->which);
 
     for (unsigned i = 0; i < NUM_INDICATORS; i++) {
-        if (reply->which & (1u << i)) {
+        if (reply->which & (UINT32_C(1) << i)) {
             xcb_xkb_indicator_map_t *wire = iter.data;
             struct xkb_led *led = &keymap->leds[i];
 
@@ -934,7 +934,7 @@ get_indicator_names(struct xkb_keymap *keymap,
     FAIL_UNLESS(msb_pos(reply->indicators) <= keymap->num_leds);
 
     for (unsigned i = 0; i < NUM_INDICATORS; i++) {
-        if (reply->indicators & (1u << i)) {
+        if (reply->indicators & (UINT32_C(1) << i)) {
             xcb_atom_t wire = *iter;
             struct xkb_led *led = &keymap->leds[i];
 
@@ -1137,7 +1137,7 @@ get_controls(struct xkb_keymap *keymap, xcb_connection_t *conn,
     FAIL_UNLESS(keymap->max_key_code < XCB_XKB_CONST_PER_KEY_BIT_ARRAY_SIZE * 8);
 
     for (xkb_keycode_t i = keymap->min_key_code; i <= keymap->max_key_code; i++)
-        keymap->keys[i].repeats = (reply->perKeyRepeat[i / 8] & (1 << (i % 8)));
+        keymap->keys[i].repeats = (reply->perKeyRepeat[i / 8] & (1u << (i % 8)));
 
     free(reply);
     return true;

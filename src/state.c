@@ -754,7 +754,7 @@ xkb_state_led_update_all(struct xkb_state *state)
                 mod_mask |= state->components.locked_mods;
 
             if (led->mods.mask & mod_mask) {
-                state->components.leds |= (1u << idx);
+                state->components.leds |= (UINT32_C(1) << idx);
                 continue;
             }
         }
@@ -768,9 +768,9 @@ xkb_state_led_update_all(struct xkb_state *state)
                        state->components.locked_group < XKB_MAX_GROUPS);
                 /* Effective and locked groups are used as mask */
                 if (led->which_groups & XKB_STATE_LAYOUT_EFFECTIVE)
-                    group_mask |= (1u << state->components.group);
+                    group_mask |= (UINT32_C(1) << state->components.group);
                 if (led->which_groups & XKB_STATE_LAYOUT_LOCKED)
-                    group_mask |= (1u << state->components.locked_group);
+                    group_mask |= (UINT32_C(1) << state->components.locked_group);
                 /* Base and latched groups only have to be non-zero */
                 if ((led->which_groups & XKB_STATE_LAYOUT_DEPRESSED) &&
                     state->components.base_group != 0)
@@ -780,7 +780,7 @@ xkb_state_led_update_all(struct xkb_state *state)
                     group_mask |= led->groups;
 
                 if (led->groups & group_mask) {
-                    state->components.leds |= (1u << idx);
+                    state->components.leds |= (UINT32_C(1) << idx);
                     continue;
                 }
             } else {
@@ -789,14 +789,14 @@ xkb_state_led_update_all(struct xkb_state *state)
                      state->components.base_group == 0) ||
                     ((led->which_groups & XKB_STATE_LAYOUT_LATCHED) &&
                      state->components.latched_group == 0)) {
-                    state->components.leds |= (1u << idx);
+                    state->components.leds |= (UINT32_C(1) << idx);
                     continue;
                 }
             }
         }
 
         if (led->ctrls & state->keymap->enabled_ctrls) {
-            state->components.leds |= (1u << idx);
+            state->components.leds |= (UINT32_C(1) << idx);
             continue;
         }
     }
@@ -933,7 +933,8 @@ xkb_state_update_mask(struct xkb_state *state,
     prev_components = state->components;
 
     /* Only include modifiers which exist in the keymap. */
-    mask = (xkb_mod_mask_t) ((1ull << xkb_keymap_num_mods(state->keymap)) - 1u);
+    mask = (xkb_mod_mask_t) ((UINT64_C(1) << xkb_keymap_num_mods(state->keymap))
+         - UINT64_C(1));
 
     state->components.base_mods = base_mods & mask;
     state->components.latched_mods = latched_mods & mask;
@@ -1276,7 +1277,7 @@ mod_mask_get_effective(struct xkb_keymap *keymap, xkb_mod_mask_t mods)
     mask = mods & MOD_REAL_MASK_ALL;
 
     xkb_mods_enumerate(i, mod, &keymap->mods)
-        if (mods & (1u << i))
+        if (mods & (UINT32_C(1) << i))
             mask |= mod->mapping;
 
     return mask;
@@ -1290,7 +1291,7 @@ mod_mapping(struct xkb_mod *mod, xkb_mod_index_t idx)
      * We cannot use `mod->mapping` directly, because it is
      * not set for real modifiers.
      */
-    return (mod->type & MOD_REAL) ? (1u << idx) : mod->mapping;
+    return (mod->type & MOD_REAL) ? (UINT32_C(1) << idx) : mod->mapping;
 }
 
 /**
@@ -1482,7 +1483,7 @@ xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx)
         state->keymap->leds[idx].name == XKB_ATOM_NONE)
         return -1;
 
-    return !!(state->components.leds & (1u << idx));
+    return !!(state->components.leds & (UINT32_C(1) << idx));
 }
 
 /**

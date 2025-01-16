@@ -334,11 +334,11 @@ test_explicit_actions(struct xkb_context *ctx)
          * explicit actions as well as repeat=Yes.
          */
         const struct key_properties keys[] = {
-            { .name = "LALT", .repeats = false, .vmodmap = 0        },
-            { .name = "LVL3", .repeats = false, .vmodmap = 1u << 10 },
-            { .name = "AD05", .repeats = true , .vmodmap = 0        },
+            { .name = "LALT", .repeats = false, .vmodmap = 0 },
+            { .name = "LVL3", .repeats = false, .vmodmap = UINT32_C(1) << 10 },
+            { .name = "AD05", .repeats = true , .vmodmap = 0 },
             /* No explicit actions, check defaults */
-            { .name = "AD06", .repeats = true , .vmodmap = 0        },
+            { .name = "AD06", .repeats = true , .vmodmap = 0 },
         };
         for (unsigned i = 0; i < ARRAY_SIZE(keys); i++) {
             xkb_keycode_t kc = xkb_keymap_key_by_name(keymaps[k], keys[i].name);

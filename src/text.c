@@ -275,7 +275,7 @@ ModMaskText(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     xkb_mods_enumerate(i, mod, mods) {
         int ret;
 
-        if (!(mask & (1u << i)))
+        if (!(mask & (UINT32_C(1) << i)))
             continue;
 
         ret = snprintf(buf + pos, sizeof(buf) - pos, "%s%s",

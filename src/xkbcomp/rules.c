@@ -717,7 +717,7 @@ matcher_mapping_set_layout_bounds(struct matcher *m)
             m->mapping.has_layout_idx_range = false;
             m->mapping.layout_idx_min = idx;
             m->mapping.layout_idx_max = idx + 1;
-            m->mapping.layouts_candidates_mask = 1u << idx;
+            m->mapping.layouts_candidates_mask = UINT32_C(1) << idx;
     }
 }
 
@@ -1242,7 +1242,7 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
                      idx++)                                                  \
                 {                                                            \
                     /* Process only if index not skipped */                  \
-                    xkb_layout_mask_t mask = 1u << idx;                      \
+                    xkb_layout_mask_t mask = UINT32_C(1) << idx;             \
                     if (candidate_layouts & mask) {                          \
                         to = &darray_item(m->rmlvo._component, idx);         \
                         if (match_value_and_mark(m, value, to, match_type,   \
@@ -1290,7 +1290,7 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
              idx < m->mapping.layout_idx_max;
              idx++)
         {
-            if (candidate_layouts & (1u << idx)) {
+            if (candidate_layouts & (UINT32_C(1) << idx)) {
                 for (unsigned i = 0; i < m->mapping.num_kccgst; i++) {
                     enum rules_kccgst kccgst = m->mapping.kccgst_at_pos[i];
                     struct sval value = m->rule.kccgst_value_at_pos[i];

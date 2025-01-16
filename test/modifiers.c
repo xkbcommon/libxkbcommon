@@ -41,14 +41,14 @@
 #define Mod5Index    7
 
 /* Standard real modifier masks */
-#define ShiftMask   (1 << ShiftIndex)
-#define LockMask    (1 << LockIndex)
-#define ControlMask (1 << ControlIndex)
-#define Mod1Mask    (1 << Mod1Index)
-#define Mod2Mask    (1 << Mod2Index)
-#define Mod3Mask    (1 << Mod3Index)
-#define Mod4Mask    (1 << Mod4Index)
-#define Mod5Mask    (1 << Mod5Index)
+#define ShiftMask   (UINT32_C(1) << ShiftIndex)
+#define LockMask    (UINT32_C(1) << LockIndex)
+#define ControlMask (UINT32_C(1) << ControlIndex)
+#define Mod1Mask    (UINT32_C(1) << Mod1Index)
+#define Mod2Mask    (UINT32_C(1) << Mod2Index)
+#define Mod3Mask    (UINT32_C(1) << Mod3Index)
+#define Mod4Mask    (UINT32_C(1) << Mod4Index)
+#define Mod5Mask    (UINT32_C(1) << Mod5Index)
 #define NoModifier  0
 
 static bool
@@ -57,7 +57,7 @@ test_real_mod(struct xkb_keymap *keymap, const char* name,
 {
     return xkb_keymap_mod_get_index(keymap, name) == idx &&
            (keymap->mods.mods[idx].type == MOD_REAL) &&
-           mapping == (1u << idx);
+           mapping == (UINT32_C(1) << idx);
 }
 
 static bool

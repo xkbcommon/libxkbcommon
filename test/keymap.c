@@ -349,7 +349,7 @@ test_multiple_actions_per_level(void)
     assert(layout == 0);
     xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_DOWN);
     base_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED);
-    assert(base_mods == (1U << ctrl));
+    assert(base_mods == (UINT32_C(1) << ctrl));
     layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED);
     assert(layout == 1);
     layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LATCHED);
@@ -371,7 +371,7 @@ test_multiple_actions_per_level(void)
     assert(layout == 0);
     xkb_state_update_key(state, KEY_LVL3 + EVDEV_OFFSET, XKB_KEY_DOWN);
     base_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED);
-    assert(base_mods == (1U << level3));
+    assert(base_mods == (UINT32_C(1) << level3));
     layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED);
     assert(layout == 1);
     layout = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LATCHED);
@@ -490,7 +490,7 @@ test_multiple_actions_per_level(void)
     assert(layout == 0);
     xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_DOWN);
     base_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED);
-    assert(base_mods == (1U << ctrl));
+    assert(base_mods == (UINT32_C(1) << ctrl));
     layout = xkb_state_key_get_layout(state, XKB_KEY_2 + EVDEV_OFFSET);
     assert(layout == 1);
     xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_UP);
@@ -504,7 +504,7 @@ test_multiple_actions_per_level(void)
     assert(layout == 1);
     xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_DOWN);
     base_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED);
-    assert(base_mods == (1U << ctrl));
+    assert(base_mods == (UINT32_C(1) << ctrl));
     layout = xkb_state_key_get_layout(state, XKB_KEY_2 + EVDEV_OFFSET);
     assert(layout == 0);
     xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_UP);
