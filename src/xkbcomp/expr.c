@@ -12,7 +12,7 @@
 
 typedef bool (*IdentLookupFunc)(struct xkb_context *ctx, const void *priv,
                                 xkb_atom_t field, enum expr_value_type type,
-                                unsigned int *val_rtrn);
+                                uint32_t *val_rtrn);
 
 bool
 ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
@@ -50,7 +50,7 @@ ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
 
 static bool
 SimpleLookup(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-             enum expr_value_type type, unsigned int *val_rtrn)
+             enum expr_value_type type, uint32_t *val_rtrn)
 {
     const LookupEntry *entry;
     const char *str;
@@ -270,12 +270,12 @@ ExprResolveKeyCode(struct xkb_context *ctx, const ExprDef *expr,
  */
 static bool
 ExprResolveIntegerLookup(struct xkb_context *ctx, const ExprDef *expr,
-                         int *val_rtrn, IdentLookupFunc lookup,
+                         int64_t *val_rtrn, IdentLookupFunc lookup,
                          const void *lookupPriv)
 {
     bool ok = false;
-    int l, r;
-    unsigned u;
+    int64_t l, r;
+    uint32_t u;
     ExprDef *left, *right;
 
     switch (expr->expr.op) {
@@ -299,7 +299,7 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, const ExprDef *expr,
                     "Identifier \"%s\" of type int is unknown\n",
                     xkb_atom_text(ctx, expr->ident.ident));
         else
-            *val_rtrn = (int) u;
+            *val_rtrn = (int64_t) u;
 
         return ok;
 
@@ -333,7 +333,7 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, const ExprDef *expr,
         case EXPR_DIVIDE:
             if (r == 0) {
                 log_err(ctx, XKB_ERROR_INVALID_OPERATION,
-                        "Cannot divide by zero: %d / %d\n", l, r);
+                        "Cannot divide by zero: %"PRId64" / %"PRId64"\n", l, r);
                 return false;
             }
             *val_rtrn = l / r;
@@ -384,7 +384,7 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, const ExprDef *expr,
 
 bool
 ExprResolveInteger(struct xkb_context *ctx, const ExprDef *expr,
-                   int *val_rtrn)
+                   int64_t *val_rtrn)
 {
     return ExprResolveIntegerLookup(ctx, expr, val_rtrn, NULL, NULL);
 }
@@ -394,7 +394,7 @@ ExprResolveGroup(struct xkb_context *ctx, const ExprDef *expr,
                  xkb_layout_index_t *group_rtrn)
 {
     bool ok;
-    int result;
+    int64_t result;
 
     ok = ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
                                   groupNames);
@@ -403,7 +403,7 @@ ExprResolveGroup(struct xkb_context *ctx, const ExprDef *expr,
 
     if (result <= 0 || result > XKB_MAX_GROUPS) {
         log_err(ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
-                "Group index %u is out of range (1..%d)\n",
+                "Group index %"PRId64" is out of range (1..%u)\n",
                 result, XKB_MAX_GROUPS);
         return false;
     }
@@ -417,7 +417,7 @@ ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
                  xkb_level_index_t *level_rtrn)
 {
     bool ok;
-    int result;
+    int64_t result;
 
     ok = ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
                                   levelNames);
@@ -426,7 +426,7 @@ ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
 
     if (result < 1 || result > XKB_LEVEL_MAX_IMPL) {
         log_err(ctx, XKB_ERROR_UNSUPPORTED_SHIFT_LEVEL,
-                "Shift level %d is out of range (1..%u)\n",
+                "Shift level %"PRId64" is out of range (1..%u)\n",
                 result, XKB_LEVEL_MAX_IMPL);
         return false;
     }
@@ -437,7 +437,7 @@ ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
 }
 
 bool
-ExprResolveButton(struct xkb_context *ctx, const ExprDef *expr, int *btn_rtrn)
+ExprResolveButton(struct xkb_context *ctx, const ExprDef *expr, int64_t *btn_rtrn)
 {
     return ExprResolveIntegerLookup(ctx, expr, btn_rtrn, SimpleLookup,
                                     buttonNames);
@@ -501,7 +501,7 @@ ExprResolveString(struct xkb_context *ctx, const ExprDef *expr,
 
 bool
 ExprResolveEnum(struct xkb_context *ctx, const ExprDef *expr,
-                unsigned int *val_rtrn, const LookupEntry *values)
+                uint32_t *val_rtrn, const LookupEntry *values)
 {
     if (expr->expr.op != EXPR_IDENT) {
         log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
@@ -528,12 +528,12 @@ ExprResolveEnum(struct xkb_context *ctx, const ExprDef *expr,
 
 static bool
 ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
-                      unsigned int *val_rtrn, IdentLookupFunc lookup,
+                      uint32_t *val_rtrn, IdentLookupFunc lookup,
                       const void *lookupPriv)
 {
     bool ok = false;
-    unsigned int l = 0, r = 0;
-    int v;
+    uint32_t l = 0, r = 0;
+    int64_t v;
     ExprDef *left, *right;
     const char *bogus = NULL;
 
@@ -545,7 +545,7 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
                     expr_value_type_to_string(expr->expr.value_type));
             return false;
         }
-        *val_rtrn = (unsigned int) expr->integer.ival;
+        *val_rtrn = (uint32_t) expr->integer.ival;
         return true;
 
     case EXPR_IDENT:
@@ -614,7 +614,7 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
         if (!ExprResolveIntegerLookup(ctx, left, &v, lookup, lookupPriv))
             return false;
 
-        *val_rtrn = ~v;
+        *val_rtrn = (uint32_t) ~v;
         return true;
 
     case EXPR_UNARY_PLUS:
@@ -624,7 +624,7 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
         if (!ExprResolveIntegerLookup(ctx, left, &v, lookup, lookupPriv))
             log_err(ctx, XKB_ERROR_INVALID_OPERATION,
                     "The %s operator cannot be used with a mask\n",
-                    (expr->expr.op == EXPR_NEGATE ? "-" : "!"));
+                    expr_op_type_to_string(expr->expr.op));
         return false;
 
     default:
@@ -639,7 +639,7 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
 
 bool
 ExprResolveMask(struct xkb_context *ctx, const ExprDef *expr,
-                unsigned int *mask_rtrn, const LookupEntry *values)
+                uint32_t *mask_rtrn, const LookupEntry *values)
 {
     return ExprResolveMaskLookup(ctx, expr, mask_rtrn, SimpleLookup, values);
 }
@@ -657,7 +657,7 @@ bool
 ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
                   xkb_keysym_t *sym_rtrn)
 {
-    int val;
+    int64_t val;
 
     if (expr->expr.op == EXPR_IDENT) {
         const char *str = xkb_atom_text(ctx, expr->ident.ident);
@@ -674,8 +674,8 @@ ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
 
     if (val < XKB_KEYSYM_MIN) {
         log_warn(ctx, XKB_WARNING_UNRECOGNIZED_KEYSYM,
-                 "unrecognized keysym \"-0x%x\" (%d)\n",
-                 (unsigned int) -val, val);
+                 "unrecognized keysym \"-0x%"PRIx64"\" (%"PRId64")\n",
+                 (uint64_t) -val, val);
         return false;
     }
 
@@ -686,19 +686,18 @@ ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
     }
 
     if (val <= XKB_KEYSYM_MAX) {
-        check_deprecated_keysyms(log_warn, ctx, ctx, val, NULL, val, "0x%x", "\n");
+        check_deprecated_keysyms(log_warn, ctx, ctx, val, NULL, val, "0x%"PRIx64, "\n");
         log_warn(ctx, XKB_WARNING_NUMERIC_KEYSYM,
-                 "numeric keysym \"0x%x\" (%d)",
-                 (unsigned int) val, val);
+                 "numeric keysym \"0x%"PRIx64"\" (%"PRId64")",
+                 (uint64_t) val, val);
         *sym_rtrn = (xkb_keysym_t) val;
         return true;
     }
 
     log_warn(ctx, XKB_WARNING_UNRECOGNIZED_KEYSYM,
-             "unrecognized keysym \"0x%x\" (%d)\n",
-             (unsigned int) val, val);
+             "unrecognized keysym \"0x%"PRIx64"\" (%"PRId64")\n",
+             (uint64_t) val, val);
     return false;
-
 }
 
 bool
