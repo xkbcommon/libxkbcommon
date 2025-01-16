@@ -222,6 +222,8 @@ ExprResolveKeyCode(struct xkb_context *ctx, const ExprDef *expr,
             return false;
         }
 
+        // FIXME: bound check
+
         *kc = (xkb_keycode_t) expr->integer.ival;
         return true;
 
@@ -233,6 +235,7 @@ ExprResolveKeyCode(struct xkb_context *ctx, const ExprDef *expr,
             !ExprResolveKeyCode(ctx, expr->binary.right, &rightRtrn))
             return false;
 
+        // TODO: bounds check?
         switch (expr->expr.op) {
         case EXPR_ADD:
             *kc = leftRtrn + rightRtrn;
@@ -563,6 +566,7 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
                     expr_value_type_to_string(expr->expr.value_type));
             return false;
         }
+        // FIXME: bounds check
         *val_rtrn = (uint32_t) expr->integer.ival;
         return true;
 
@@ -632,6 +636,7 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
         if (!ExprResolveIntegerLookup(ctx, left, &v, lookup, lookupPriv))
             return false;
 
+        // FIXME: Bounds check
         *val_rtrn = (uint32_t) ~v;
         return true;
 
