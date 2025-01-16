@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import itertools
 import random
 import re
@@ -11,6 +12,17 @@ from pathlib import Path
 from typing import DefaultDict, Generator, Iterable, Iterator
 
 import perfect_hash
+
+# Root of the project
+ROOT = Path(__file__).parent.parent
+
+# Parse commands
+parser = argparse.ArgumentParser(description="Generate C file to handle keysym names")
+parser.add_argument(
+    "c_header", type=Path, help="Path to the libxkbcommon keysym header"
+)
+parser.add_argument("gperf", type=Path, help="Path to the gperf file")
+args = parser.parse_args()
 
 # Set the seed explicitly, so we reduce diff
 random.seed(b"libxkbcommon")
@@ -83,7 +95,7 @@ def get_keysyms(path: Path) -> dict[int, list[Keysym]]:
     return keysyms
 
 
-keysyms_by_value = get_keysyms(Path(sys.argv[1]))
+keysyms_by_value = get_keysyms(args.c_header)
 entries = tuple(itertools.chain.from_iterable(keysyms_by_value.values()))
 
 # Sort based on the keysym name:
@@ -321,3 +333,87 @@ generate_mixed_aliases(explicit_deprecated_aliases)
 print("};")
 
 print(f"max name offset: {max(entry_offsets.values())}", file=sys.stderr)
+
+
+# Check that the keywords of our XKB parser that clash with keysyms are handled properly
+def parse_gperf_keywords(path: Path) -> Iterator[str]:
+    with path.open("rt", encoding="utf-8") as fd:
+        in_keyword_section = False
+        for line in fd:
+            if line.startswith(r"%%"):
+                # This is a boundary of the keywords section
+                if in_keyword_section:
+                    break
+                in_keyword_section = True
+            elif in_keyword_section:
+                # Parse the keywords
+                keyword, *_ = line.split(",")
+                yield keyword.strip().casefold()
+            # Skip any line until we reach the keywords
+        else:
+            raise ValueError("Parse error: keywords section boundary not found")
+
+
+SUPPORTED_KEYWORDS_CLASHES = {"section"}
+UNSUPPORTED_KEYWORDS_CLASHES = frozenset(parse_gperf_keywords(args.gperf)).difference(
+    SUPPORTED_KEYWORDS_CLASHES
+)
+expected_clashes: set[str] = set()
+errors = 0
+for entry in entries:
+    if entry.name.casefold() in UNSUPPORTED_KEYWORDS_CLASHES:
+        print(
+            f"ERROR: keysym “{entry.name}” (0x{entry.value:0>4x}) clashes with keywords",
+            "and cannot be parsed properly.",
+            file=sys.stderr,
+        )
+        errors += 1
+    elif (lower := entry.name.lower()) in SUPPORTED_KEYWORDS_CLASHES:
+        if not entry.name.islower():
+            # Keywords’s atoms are registered in *lower* case, so the keysym will be
+            # replaced by the keysym with the corresponding name, but they may not match.
+            entry2: Keysym = Keysym("NoSymbol", 0, Deprecation.NONE, False)
+            if any(
+                e.name == lower
+                for e in keysyms_by_value[entry.value]
+                if e.name != entry.value
+            ):
+                # There is a keysym in lower case that is an alias
+                print(
+                    f"WARNING: keysym “{entry.name}”",
+                    f"will be parsed as “{lower}” (expected)",
+                    file=sys.stderr,
+                )
+            else:
+                # Lookup the keysym mismatch
+                for e in entries:
+                    if e.name == lower:
+                        entry2 = e
+                        break
+                print(
+                    f"ERROR: keysym “{entry.name}” (0x{entry.value:0>4x})",
+                    r"clashes with keywords and will be replaced by",
+                    f"“{entry2.name}” (0x{entry2.value:0>4x}).",
+                    file=sys.stderr,
+                )
+                errors += 1
+        else:
+            print(
+                f"WARNING: keysym “{entry.name}” clashing with keywords (expected)",
+                file=sys.stderr,
+            )
+            expected_clashes.add(entry.name)
+if diff := SUPPORTED_KEYWORDS_CLASHES.difference(expected_clashes):
+    print(f"ERROR: Unexpected missing clashing keysyms: {diff}", file=sys.stderr)
+    errors += 1
+if errors:
+    print(
+        f" {errors} ERRORS ".center(80, "-"),
+        "Please update the parser file `parser.y` to handle keysyms causing clashes.",
+        "The relevant entries are:",
+        "- Keysym",
+        "- Element (for modmap, parsed via: Expr -> Term -> Lhs -> FieldSpec -> Element)",
+        file=sys.stderr,
+        sep="\n",
+    )
+    exit(1)
