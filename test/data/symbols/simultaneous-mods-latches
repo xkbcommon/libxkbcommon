@@ -1,0 +1,16 @@
+default partial alphanumeric_keys
+xkb_symbols "base" {
+	name[Group1] = "Test issue #583";
+
+	key <AB01> { [ z, Z, y, Y, ezh, EZH, ydiaeresis, Ydiaeresis ], type[Group1] = "EIGHT_LEVEL" };
+	key <AB02> { [ x, X ], type[Group1] = "PC_CONTROL_LEVEL2" };
+
+	key <RALT> { [ ISO_Level3_Latch, ISO_Level5_Latch ], type[Group1] = "PC_CONTROL_LEVEL2" };
+	key <RCTL> { [ Control_R ], [LatchMods(modifiers=Control)] };
+	key <LWIN> { [ ISO_Level3_Latch ], type[Group1] = "ONE_LEVEL" };
+	key <RWIN> { [ ISO_Level5_Latch ], type[Group1] = "ONE_LEVEL" };
+
+	modifier_map None { <RALT> };
+	modifier_map Mod3 { <RWIN> };
+	modifier_map Mod5 { <LWIN> };
+};

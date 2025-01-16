@@ -374,6 +374,82 @@ test_explicit_actions(struct xkb_context *ctx)
     }
 }
 
+static void
+test_simultaneous_modifier_clear(struct xkb_context *context)
+{
+    struct xkb_keymap *keymap;
+
+    keymap = test_compile_rules(context, "evdev", "pc104",
+                                "simultaneous-mods-latches", "", "");
+    assert(keymap);
+
+    /*
+     * Github issue #583: simultaneous latches of *different* modifiers should
+     * not affect each other when clearing their mods.
+     */
+
+    /* Original key sequence reported in the issue */
+    assert(test_key_seq(keymap,
+        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L       , NEXT, /* Set Control                    */
+        KEY_RIGHTALT, BOTH, XKB_KEY_ISO_Level5_Latch, NEXT, /* Latch Level5                   */
+        KEY_LEFTCTRL, UP  , XKB_KEY_Control_L       , NEXT, /* Unset Control                  */
+        KEY_RIGHTALT, BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, /* Latch Level3                   */
+        KEY_Z       , BOTH, XKB_KEY_ydiaeresis      , NEXT, /* Unlatch Level3, unlatch Level5 */
+        KEY_Z       , BOTH, XKB_KEY_z               , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_z               , FINISH
+    ));
+
+    /* Alternative key sequence with only mod latches */
+    assert(test_key_seq(keymap,
+        KEY_RIGHTCTRL, BOTH, XKB_KEY_Control_R       , NEXT, /* Latch Control                      */
+        KEY_RIGHTALT,  BOTH, XKB_KEY_ISO_Level5_Latch, NEXT, /* Latch Level5                       */
+        KEY_LEFTMETA,  BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, /* Latch Level3                       */
+        KEY_Z       ,  BOTH, XKB_KEY_ydiaeresis      , NEXT, /* Unlatch Control, Level3 and Level5 */
+        KEY_Z       ,  BOTH, XKB_KEY_z               , NEXT,
+        KEY_Z       ,  BOTH, XKB_KEY_z               , NEXT,
+        KEY_X       ,  BOTH, XKB_KEY_x               , FINISH
+    ));
+
+    /* Alternative simplier key sequence */
+    assert(test_key_seq(keymap,
+        KEY_LEFTMETA,  BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, /* Latch Level3                   */
+        KEY_RIGHTMETA, BOTH, XKB_KEY_ISO_Level5_Latch, NEXT, /* Latch Level5                   */
+        KEY_Z       ,  BOTH, XKB_KEY_ydiaeresis      , NEXT, /* Unlatch Level3, unlatch Level5 */
+        KEY_Z       ,  BOTH, XKB_KEY_z               , NEXT,
+        KEY_Z       ,  BOTH, XKB_KEY_z               , FINISH
+    ));
+
+    /*
+     * Test same modifier latch but on a different key
+     */
+
+    /* Level 3 */
+    assert(test_key_seq(keymap,
+        KEY_LEFTMETA, BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, /* Latch Level3          */
+        KEY_RIGHTALT, BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, /* Lock Level3 via latch */
+        KEY_Z       , BOTH, XKB_KEY_y               , NEXT, /* Locked Level3         */
+        KEY_Z       , BOTH, XKB_KEY_y               , NEXT,
+        KEY_RIGHTALT, BOTH, XKB_KEY_ISO_Level3_Latch, NEXT, /* Unlock Level3 via latch */
+        KEY_Z       , BOTH, XKB_KEY_z               , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_z               , FINISH
+    ));
+
+    /* Level 5, via Control latch */
+    assert(test_key_seq(keymap,
+        KEY_RIGHTCTRL, BOTH, XKB_KEY_Control_R       , NEXT, /* Latch Control        */
+        KEY_RIGHTALT,  BOTH, XKB_KEY_ISO_Level5_Latch, NEXT, /* Lock Level5 via latch */
+        KEY_RIGHTMETA, BOTH, XKB_KEY_ISO_Level5_Latch, NEXT, /* Latch Level5          */
+        KEY_Z       ,  BOTH, XKB_KEY_ezh             , NEXT, /* Locked Level5         */
+        KEY_Z       ,  BOTH, XKB_KEY_ezh             , NEXT,
+        KEY_RIGHTMETA, BOTH, XKB_KEY_ISO_Level5_Latch, NEXT, /* Unlock Level5 via latch */
+        KEY_Z       ,  BOTH, XKB_KEY_z               , NEXT,
+        KEY_Z       ,  BOTH, XKB_KEY_z               , NEXT,
+        KEY_X       ,  BOTH, XKB_KEY_x               , FINISH
+    ));
+
+    xkb_keymap_unref(keymap);
+}
+
 int
 main(void)
 {
@@ -384,6 +460,7 @@ main(void)
 
     assert(ctx);
 
+    test_simultaneous_modifier_clear(ctx);
     test_group_latch(ctx);
     test_explicit_actions(ctx);
 
@@ -839,5 +916,5 @@ main(void)
 
     xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
-    return 0;
+    return EXIT_SUCCESS;
 }
