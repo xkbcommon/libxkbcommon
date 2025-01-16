@@ -781,13 +781,13 @@ xkb_state_led_update_all(struct xkb_state *state)
 
         if (led->which_groups != 0 && led->groups != 0) {
             if (led->which_groups & XKB_STATE_LAYOUT_EFFECTIVE)
-                group_mask |= (1u << state->components.group);
+                group_mask |= (UINT32_C(1) << state->components.group);
             if (led->which_groups & XKB_STATE_LAYOUT_DEPRESSED)
-                group_mask |= (1u << state->components.base_group);
+                group_mask |= (UINT32_C(1) << state->components.base_group);
             if (led->which_groups & XKB_STATE_LAYOUT_LATCHED)
-                group_mask |= (1u << state->components.latched_group);
+                group_mask |= (UINT32_C(1) << state->components.latched_group);
             if (led->which_groups & XKB_STATE_LAYOUT_LOCKED)
-                group_mask |= (1u << state->components.locked_group);
+                group_mask |= (UINT32_C(1) << state->components.locked_group);
 
             if (led->groups & group_mask) {
                 state->components.leds |= (1u << idx);

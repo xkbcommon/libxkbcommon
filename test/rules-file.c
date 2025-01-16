@@ -299,10 +299,8 @@ main(int argc, char *argv[])
               "extra,,,extra", NULL,
               "symbols_a:1+symbols_y:2+layout_c:3+layout_d(extra):4+symbols_z:3"
               "+foo:1|bar:1+foo:4|bar:4", false),
-        /* NOTE: 5 layouts is intentional;
-         * will require update when raising XKB_MAX_LAYOUTS */
         ENTRY("layout_a,layout_b,layout_c,layout_d,layout_e", NULL, NULL,
-              "symbols_a:1+symbols_y:2+layout_c:3+layout_d:4+symbols_z:3", false),
+              "symbols_a:1+symbols_y:2+layout_c:3+layout_d:4+layout_e:5+symbols_z:3", false),
 #undef ENTRY
         /* Test index ranges: too much layouts */
         ENTRY2("special_indexes-limit", NULL, too_much_layouts, NULL, NULL,
@@ -365,16 +363,15 @@ main(int argc, char *argv[])
         .rules = "all_qualifier",
 
         .model = "my_model",
-        /* NOTE: 5 layouts is intentional;
-         * will require update when raising XKB_MAX_LAYOUTS */
         .layout = "layout_a,layout_b,layout_a,layout_b,layout_c",
         .variant = "",
         .options = "my_option",
 
         .keycodes = "my_keycodes", .types = "my_types",
         .compat = "my_compat",
-        .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4+extra_option:1"
-                   "+extra_option:2+extra_option:3+extra_option:4",
+        .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4+symbols_c:5"
+                   "+extra_option:1+extra_option:2+extra_option:3+extra_option:4"
+                   "+extra_option:5",
     };
     assert(test_rules(ctx, &all_qualified_alone1));
 
@@ -383,16 +380,14 @@ main(int argc, char *argv[])
         .rules = "all_qualifier",
 
         .model = "my_model",
-        /* NOTE: 5 layouts is intentional;
-         * will require update when raising XKB_MAX_LAYOUTS */
         .layout = "layout_x,layout_a,layout_b,layout_c,layout_d",
         .variant = "",
         .options = "",
 
         .keycodes = "my_keycodes", .types = "my_types",
         .compat = "my_compat",
-        .symbols = "base:1+base:2+base:3+base:4"
-                   "+symbols_a:2+symbols_b:3+default_symbols:4",
+        .symbols = "base:1+base:2+base:3+base:4+base:5"
+                   "+symbols_a:2+symbols_b:3+default_symbols:4+default_symbols:5",
     };
     assert(test_rules(ctx, &all_qualified_alone2));
 
@@ -416,17 +411,15 @@ main(int argc, char *argv[])
         .rules = "all_qualifier",
 
         .model = "my_model",
-        /* NOTE: 5 layouts is intentional;
-         * will require update when raising XKB_MAX_LAYOUTS */
         .layout = "layout_a,layout_b,layout_a,layout_b,layout_c",
         .variant = "extra1,,,,",
         .options = "my_option",
 
         .keycodes = "my_keycodes", .types = "my_types",
         .compat = "my_compat",
-        .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4"
-                   "+extra_symbols:1+extra_symbols:2+extra_symbols:3+extra_symbols:4"
-                   "+extra_option:1+extra_option:2+extra_option:3+extra_option:4",
+        .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4+symbols_c:5"
+                   "+extra_symbols:1+extra_symbols:2+extra_symbols:3+extra_symbols:4+extra_symbols:5"
+                   "+extra_option:1+extra_option:2+extra_option:3+extra_option:4+extra_option:5",
     };
     assert(test_rules(ctx, &all_qualified_with_special_indexes1));
 
@@ -437,20 +430,18 @@ main(int argc, char *argv[])
         .rules = "all_qualifier",
 
         .model = "my_model",
-        /* NOTE: 5 layouts is intentional;
-         * will require update when raising XKB_MAX_LAYOUTS */
         .layout = "layout_a,layout_b,layout_a,layout_b,layout_c",
         .variant = "extra2,,extra3,,",
         .options = "my_option",
 
         .keycodes = "my_keycodes", .types = "my_types",
         .compat = "my_compat",
-        .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4"
-                   "+extra_symbols1:1+extra_symbols2:1+extra_symbols2:2+extra_symbols2:3+extra_symbols2:4"
-                   "+extra_symbols2:1+extra_symbols2:2+extra_symbols2:3+extra_symbols2:4"
+        .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4+symbols_c:5"
+                   "+extra_symbols1:1+extra_symbols2:1+extra_symbols2:2+extra_symbols2:3+extra_symbols2:4+extra_symbols2:5"
+                   "+extra_symbols2:1+extra_symbols2:2+extra_symbols2:3+extra_symbols2:4+extra_symbols2:5"
                    "+extra_symbols1:3"
                    "+extra_option:1"
-                   "+extra_option:2+extra_option:3+extra_option:4",
+                   "+extra_option:2+extra_option:3+extra_option:4+extra_option:5",
     };
     assert(test_rules(ctx, &all_qualified_with_special_indexes2));
 
