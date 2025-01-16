@@ -238,7 +238,7 @@ CheckBooleanFlag(struct xkb_context *ctx, enum xkb_action_type action,
                  const ExprDef *array_ndx, const ExprDef *value,
                  enum xkb_action_flags *flags_inout)
 {
-    bool set;
+    bool set = false;
 
     if (array_ndx)
         return ReportActionNotArray(ctx, action, field);
@@ -296,7 +296,7 @@ CheckAffectField(struct xkb_context *ctx, enum xkb_action_type action,
                  const ExprDef *array_ndx, const ExprDef *value,
                  enum xkb_action_flags *flags_inout)
 {
-    uint32_t flags;
+    uint32_t flags = 0;
 
     if (array_ndx)
         return ReportActionNotArray(ctx, action, ACTION_FIELD_AFFECT);
@@ -346,7 +346,7 @@ CheckGroupField(struct xkb_context *ctx, enum xkb_action_type action,
                 enum xkb_action_flags *flags_inout, int32_t *group_rtrn)
 {
     const ExprDef *spec;
-    xkb_layout_index_t idx;
+    xkb_layout_index_t idx = 0;
     enum xkb_action_flags flags = *flags_inout;
 
     if (array_ndx)
@@ -411,7 +411,7 @@ HandleMovePtr(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     struct xkb_pointer_action *act = &action->ptr;
 
     if (field == ACTION_FIELD_X || field == ACTION_FIELD_Y) {
-        int64_t val;
+        int64_t val = 0;
         const bool absolute = (value->expr.op != EXPR_NEGATE &&
                                value->expr.op != EXPR_UNARY_PLUS);
 
@@ -460,7 +460,7 @@ HandlePtrBtn(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     struct xkb_pointer_button_action *act = &action->btn;
 
     if (field == ACTION_FIELD_BUTTON) {
-        int64_t btn;
+        int64_t btn = 0;
 
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
@@ -485,7 +485,7 @@ HandlePtrBtn(struct xkb_context *ctx, const struct xkb_mod_set *mods,
                                 &act->flags);
     }
     else if (field == ACTION_FIELD_COUNT) {
-        int64_t val;
+        int64_t val = 0;
 
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
@@ -523,7 +523,7 @@ HandleSetPtrDflt(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     struct xkb_pointer_default_action *act = &action->dflt;
 
     if (field == ACTION_FIELD_AFFECT) {
-        uint32_t val;
+        uint32_t val = 0;
 
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
@@ -535,7 +535,7 @@ HandleSetPtrDflt(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     }
     else if (field == ACTION_FIELD_BUTTON || field == ACTION_FIELD_VALUE) {
         const ExprDef *button;
-        int64_t btn;
+        int64_t btn = 0;
 
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
@@ -583,7 +583,7 @@ HandleSwitchScreen(struct xkb_context *ctx, const struct xkb_mod_set *mods,
 
     if (field == ACTION_FIELD_SCREEN) {
         const ExprDef *scrn;
-        int64_t val;
+        int64_t val = 0;
 
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
@@ -629,7 +629,7 @@ HandleSetLockControls(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     struct xkb_controls_action *act = &action->ctrls;
 
     if (field == ACTION_FIELD_CONTROLS) {
-        uint32_t mask;
+        uint32_t mask = 0;
 
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
@@ -657,7 +657,7 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     struct xkb_private_action *act = &action->priv;
 
     if (field == ACTION_FIELD_TYPE) {
-        int64_t type;
+        int64_t type = 0;
 
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
@@ -697,16 +697,14 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     }
     else if (field == ACTION_FIELD_DATA) {
         if (array_ndx == NULL) {
-            xkb_atom_t val;
-            const char *str;
-            size_t len;
+            xkb_atom_t val = XKB_ATOM_NONE;
 
             if (!ExprResolveString(ctx, value, &val))
                 return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
                                       action->type, field, "string");
 
-            str = xkb_atom_text(ctx, val);
-            len = strlen(str);
+            const char *str = xkb_atom_text(ctx, val);
+            size_t len = strlen(str);
             if (len < 1 || len > sizeof(act->data)) {
                 log_warn(ctx, XKB_LOG_MESSAGE_NO_ID,
                          "A private action has %ld data bytes; "
@@ -720,7 +718,7 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             return true;
         }
         else {
-            int64_t ndx, datum;
+            int64_t ndx = 0, datum = 0;
 
             if (!ExprResolveInteger(ctx, array_ndx, &ndx)) {
                 log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
