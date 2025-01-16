@@ -695,7 +695,8 @@ matcher_mapping_set_layout_bounds(struct matcher *m)
                                             darray_size(m->rmlvo.layouts));
             m->mapping.layouts_candidates_mask =
                 /* All but the first layout */
-                ((1u << m->mapping.layout_idx_max) - 1) & ~1;
+                ((UINT64_C(1) << m->mapping.layout_idx_max) - UINT64_C(1)) &
+                ~UINT64_C(1);
             break;
         case LAYOUT_INDEX_ANY:
             m->mapping.has_layout_idx_range = true;
@@ -704,7 +705,7 @@ matcher_mapping_set_layout_bounds(struct matcher *m)
                                             darray_size(m->rmlvo.layouts));
             m->mapping.layouts_candidates_mask =
                 /* All layouts */
-                (1u << m->mapping.layout_idx_max) - 1;
+                (UINT64_C(1) << m->mapping.layout_idx_max) - UINT64_C(1);
             break;
         case LAYOUT_INDEX_FIRST:
         case XKB_LAYOUT_INVALID:

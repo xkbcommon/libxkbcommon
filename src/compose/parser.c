@@ -472,7 +472,7 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
 }
 
 /* Should match resolve_modifier(). */
-#define ALL_MODS_MASK ((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3))
+#define ALL_MODS_MASK ((1u << 0) | (1u << 1) | (1u << 2) | (1u << 3))
 
 static xkb_mod_index_t
 resolve_modifier(const char *name)
@@ -705,11 +705,11 @@ lhs_mod_list_tok: {
             goto error;
         }
 
-        production.modmask |= 1 << mod;
+        production.modmask |= UINT32_C(1) << mod;
         if (tilde)
-            production.mods &= ~(1 << mod);
+            production.mods &= ~(UINT32_C(1) << mod);
         else
-            production.mods |= 1 << mod;
+            production.mods |= UINT32_C(1) << mod;
 
         goto lhs_mod_list;
     }
