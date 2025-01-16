@@ -1057,7 +1057,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             return false;
         }
 
-        keyi->repeat = val;
+        keyi->repeat = (enum key_repeat) val;
         keyi->defined |= KEY_FIELD_REPEAT;
     }
     else if (istreq(field, "groupswrap") ||
