@@ -26,7 +26,7 @@
 
 typedef struct {
     const char *name;
-    unsigned int value;
+    uint32_t value;
 } LookupEntry;
 
 bool
