@@ -26,8 +26,15 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
+#include <threads.h>
+
 #include "atom.h"
 #include "messages-codes.h"
+
+typedef struct {
+    char text[2048];
+    size_t next;
+} context_buffer;
 
 struct xkb_context {
     int refcnt;
@@ -50,8 +57,7 @@ struct xkb_context {
     void *x11_atom_cache;
 
     /* Buffer for the *Text() functions. */
-    char text_buffer[2048];
-    size_t text_next;
+    tss_t text_buffer;
 
     unsigned int use_environment_names : 1;
     unsigned int use_secure_getenv : 1;
@@ -97,6 +103,12 @@ xkb_atom_steal(struct xkb_context *ctx, char *string);
 
 const char *
 xkb_atom_text(struct xkb_context *ctx, xkb_atom_t atom);
+
+bool
+xkb_context_create_buffer(struct xkb_context *ctx);
+
+void
+xkb_context_destroy_buffer(struct xkb_context *ctx);
 
 char *
 xkb_context_get_buffer(struct xkb_context *ctx, size_t size);
