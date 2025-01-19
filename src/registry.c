@@ -525,7 +525,6 @@ XKB_EXPORT bool
 rxkb_context_include_path_append(struct rxkb_context *ctx, const char *path)
 {
     struct stat stat_buf;
-    int err;
     char *tmp = NULL;
     char rules[PATH_MAX];
 
@@ -535,7 +534,7 @@ rxkb_context_include_path_append(struct rxkb_context *ctx, const char *path)
         return false;
     }
 
-    err = stat(path, &stat_buf);
+    const int err = stat(path, &stat_buf);
     if (err != 0)
         return false;
     if (!S_ISDIR(stat_buf.st_mode))

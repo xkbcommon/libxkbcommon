@@ -1045,9 +1045,7 @@ xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t kc)
 {
     const xkb_keysym_t *syms;
     xkb_keysym_t sym;
-    int num_syms;
-
-    num_syms = xkb_state_key_get_syms(state, kc, &syms);
+    const int num_syms = xkb_state_key_get_syms(state, kc, &syms);
     if (num_syms != 1)
         return XKB_KEY_NoSymbol;
 
