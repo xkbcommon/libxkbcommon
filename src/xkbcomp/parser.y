@@ -767,6 +767,7 @@ KeySym          :       IDENT
                             }
                             free($1);
                         }
+                        /* Handle keysym that is also a keyword  */
                 |       SECTION { $$ = XKB_KEY_section; }
                 |       Integer
                         {

@@ -4,5 +4,6 @@
 export LC_CTYPE=C.UTF-8
 export LC_COLLATE=C.UTF-8
 scripts/makeheader > include/xkbcommon/xkbcommon-keysyms.h
-scripts/makekeys include/xkbcommon/xkbcommon-keysyms.h > src/ks_tables.h
+scripts/makekeys include/xkbcommon/xkbcommon-keysyms.h \
+                 src/xkbcomp/keywords.gperf > src/ks_tables.h
 scripts/update-headers.py
