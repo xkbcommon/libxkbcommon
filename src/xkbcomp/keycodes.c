@@ -268,7 +268,7 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
         if (darray_size(into->key_names) < darray_size(from->key_names))
             darray_resize0(into->key_names, darray_size(from->key_names));
 
-        for (unsigned i = from->min_key_code; i <= from->max_key_code; i++) {
+        for (xkb_keycode_t i = from->min_key_code; i <= from->max_key_code; i++) {
             xkb_atom_t name = darray_item(from->key_names, i);
             if (name == XKB_ATOM_NONE)
                 continue;

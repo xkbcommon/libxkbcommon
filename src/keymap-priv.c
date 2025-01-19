@@ -175,7 +175,7 @@ XkbWrapGroupIntoRange(int32_t group,
          * gives a negative result.
          */
         if (group < 0)
-            return ((int) num_groups + (group % (int) num_groups));
+            return ((int32_t) num_groups + (group % (int32_t) num_groups));
         else
             return group % num_groups;
     }

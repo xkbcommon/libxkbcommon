@@ -190,7 +190,7 @@ static bool
 parse_keysym_hex(const char *s, uint32_t *out)
 {
     uint32_t result = 0;
-    int i;
+    unsigned int i;
     for (i = 0; i < 8 && s[i] != '\0'; i++) {
         result <<= 4;
         if ('0' <= s[i] && s[i] <= '9')
