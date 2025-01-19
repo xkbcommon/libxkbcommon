@@ -1675,11 +1675,11 @@ CopySymbolsDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
             struct xkb_level *leveli;
 
             log_vrb(info->ctx, 1, XKB_WARNING_EXTRA_SYMBOLS_IGNORED,
-                    "Type \"%s\" has %d levels, but %s has %d levels; "
+                    "Type \"%s\" has %d levels, but %s has %u levels; "
                     "Ignoring extra symbols\n",
                     xkb_atom_text(keymap->ctx, type->name), type->num_levels,
                     KeyInfoText(info, keyi),
-                    (int) darray_size(groupi->levels));
+                    darray_size(groupi->levels));
 
             darray_foreach_from(leveli, groupi->levels, type->num_levels)
                 ClearLevelInfo(leveli);
