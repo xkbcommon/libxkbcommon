@@ -379,7 +379,7 @@ xkb_filter_group_latch_func(struct xkb_state *state,
          * or promote it to a lock if it's the same group delta & flags and
          * latchToLock option is enabled. */
         const union xkb_action *actions = NULL;
-        unsigned int count = xkb_key_get_actions(state, key, &actions);
+        const unsigned int count = xkb_key_get_actions(state, key, &actions);
         for (unsigned int k = 0; k < count; k++) {
             if (actions[k].type == ACTION_TYPE_GROUP_LATCH &&
                 actions[k].group.group == filter->action.group.group &&
@@ -539,7 +539,7 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
          * or promote it to a lock or plain base set if it's the same
          * modifier. */
         const union xkb_action *actions = NULL;
-        unsigned int count = xkb_key_get_actions(state, key, &actions);
+        const unsigned int count = xkb_key_get_actions(state, key, &actions);
         for (unsigned int k = 0; k < count; k++) {
             if (actions[k].type == ACTION_TYPE_MOD_LATCH &&
                 actions[k].mods.flags == filter->action.mods.flags &&
@@ -640,7 +640,6 @@ xkb_filter_apply_all(struct xkb_state *state,
 {
     struct xkb_filter *filter;
     const union xkb_action *actions = NULL;
-    unsigned int count;
     bool consumed;
 
     /* First run through all the currently active filters and see if any of
@@ -657,7 +656,7 @@ xkb_filter_apply_all(struct xkb_state *state,
         return;
 
     /* No filter consumed this event, so proceed with the key actions */
-    count = xkb_key_get_actions(state, key, &actions);
+    const unsigned int count = xkb_key_get_actions(state, key, &actions);
 
     /*
      * Process actions sequentially.
@@ -1078,9 +1077,7 @@ xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t kc)
 {
     const xkb_keysym_t *syms;
     xkb_keysym_t sym;
-    int num_syms;
-
-    num_syms = xkb_state_key_get_syms(state, kc, &syms);
+    const int num_syms = xkb_state_key_get_syms(state, kc, &syms);
     if (num_syms != 1)
         return XKB_KEY_NoSymbol;
 
