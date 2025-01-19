@@ -640,11 +640,10 @@ xkb_filter_apply_all(struct xkb_state *state,
 {
     struct xkb_filter *filter;
     const union xkb_action *actions = NULL;
-    bool consumed;
 
     /* First run through all the currently active filters and see if any of
      * them have consumed this event. */
-    consumed = false;
+    bool consumed = false;
     darray_foreach(filter, state->filters) {
         if (!filter->func)
             continue;
@@ -1076,17 +1075,13 @@ XKB_EXPORT xkb_keysym_t
 xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t kc)
 {
     const xkb_keysym_t *syms;
-    xkb_keysym_t sym;
     const int num_syms = xkb_state_key_get_syms(state, kc, &syms);
     if (num_syms != 1)
         return XKB_KEY_NoSymbol;
 
-    sym = syms[0];
-
-    if (should_do_caps_transformation(state, kc))
-        sym = xkb_keysym_to_upper(sym);
-
-    return sym;
+    return should_do_caps_transformation(state, kc)
+         ? xkb_keysym_to_upper(syms[0])
+         : syms[0];
 }
 
 /*
