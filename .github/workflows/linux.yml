@@ -17,6 +17,10 @@ jobs:
     strategy:
       matrix:
         compiler: [clang, gcc]
+        sanitizers: ['sanitizers', 'no sanitizer']
+        exclude:
+          - compiler: clang
+            sanitizers: sanitizers
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,7 +34,8 @@ jobs:
           sudo apt update
           sudo apt install -y \
             doxygen libxcb-xkb-dev valgrind ninja-build \
-            libwayland-dev wayland-protocols bison graphviz libicu-dev
+            libwayland-dev wayland-protocols bison graphviz libicu-dev \
+            ${{ matrix.sanitizers == 'sanitizers' && 'libasan8 libubsan1' || '' }}
       - name: Install xkeyboard-config
         run: |
           # Install master version of xkeyboard-config, in order to ensure
@@ -47,9 +52,14 @@ jobs:
       - name: Setup
         run: |
           # -gdwarf-4 - see https://github.com/llvm/llvm-project/issues/56550.
-          CFLAGS='-gdwarf-4' meson setup build -Denable-docs=true -Denable-cool-uris=true
+          CFLAGS='-gdwarf-4 -fno-omit-frame-pointer' \
+              meson setup -Denable-docs=true -Denable-cool-uris=true \
+                          $MESON_EXTRA_FLAGS \
+                          build
         env:
           CC: ${{ matrix.compiler }}
+          # Use sanitizers only if not using Valgrind
+          MESON_EXTRA_FLAGS: ${{ matrix.sanitizers == 'sanitizers' && '-Db_sanitize=address,undefined' || '' }}
       - name: Build
         run: |
           meson compile -C build
@@ -57,6 +67,7 @@ jobs:
         run:
           meson test -C build --print-errorlogs --no-suite python-tests
       - name: Test with valgrind
+        if: matrix.sanitizers != 'sanitizers'
         run:
           meson test -C build --print-errorlogs --setup=valgrind --no-suite python-tests
       - name: Upload test logs
@@ -76,7 +87,7 @@ jobs:
             fi
       - name: Store doxygen docs for use by the pages workflow
         uses: actions/upload-artifact@v4
-        if: success() && matrix.compiler == 'gcc'
+        if: success() && matrix.compiler == 'gcc' && matrix.sanitizers == 'sanitizers'
         with:
           name: doxygen-docs
           path: |
