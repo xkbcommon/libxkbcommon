@@ -772,7 +772,7 @@ GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     const char *name = (what == SYMBOLS ? "symbols" : "actions");
 
     if (arrayNdx == NULL) {
-        xkb_layout_index_t i;
+        xkb_layout_index_t i = 0;
         GroupInfo *groupi;
         enum group_field field = (what == SYMBOLS ?
                                   GROUP_FIELD_SYMS : GROUP_FIELD_ACTS);

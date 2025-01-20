@@ -196,23 +196,28 @@ darray_next_alloc(unsigned alloc, unsigned need, unsigned itemSize)
 /*** Traversal ***/
 
 #define darray_foreach(i, arr) \
+    if ((arr).item) \
     for ((i) = &(arr).item[0]; (i) < &(arr).item[(arr).size]; (i)++)
 
 #define darray_foreach_from(i, arr, from) \
+    if ((arr).item) \
     for ((i) = &(arr).item[from]; (i) < &(arr).item[(arr).size]; (i)++)
 
 /* Iterate on index and value at the same time, like Python's enumerate. */
 #define darray_enumerate(idx, val, arr) \
+    if ((arr).item) \
     for ((idx) = 0, (val) = &(arr).item[0]; \
          (idx) < (arr).size; \
          (idx)++, (val)++)
 
 #define darray_enumerate_from(idx, val, arr, from) \
+    if ((arr).item) \
     for ((idx) = (from), (val) = &(arr).item[from]; \
          (idx) < (arr).size; \
          (idx)++, (val)++)
 
 #define darray_foreach_reverse(i, arr) \
+    if ((arr).item) \
     for ((i) = &(arr).item[(arr).size - 1]; (arr).size > 0 && (i) >= &(arr).item[0]; (i)--)
 
 #endif /* CCAN_DARRAY_H */
