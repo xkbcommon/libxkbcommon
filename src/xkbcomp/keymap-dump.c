@@ -88,7 +88,7 @@ check_write_buf(struct buf *buf, const char *fmt, ...)
 
     available = buf->alloc - buf->size;
     /* Try to write to the buffer and get the required min size (without the
-     * final NULL char).
+     * final null byte).
      * C11 states that if `available` is 0, then the pointer may be null. */
     assert(buf->buf || available == 0);
     va_start(args, fmt);
@@ -96,22 +96,24 @@ check_write_buf(struct buf *buf, const char *fmt, ...)
                         fmt, args);
     va_end(args);
 
-    if (printed < 0)
+    if (printed < 0) {
+        /* Some error */
         goto err;
-
-    if ((size_t) printed >= available)
-        if (!do_realloc(buf, printed))
+    } else if ((size_t) printed >= available) {
+        /* Not enough space: need to realloc */
+        if (!do_realloc(buf, printed + 1))
             goto err;
 
-    /* The buffer has enough space now. */
+        /* The buffer has enough space now. */
+        available = buf->alloc - buf->size;
+        assert(buf->buf && (size_t) printed < available);
+        va_start(args, fmt);
+        printed = vsnprintf(buf->buf + buf->size, available, fmt, args);
+        va_end(args);
 
-    available = buf->alloc - buf->size;
-    va_start(args, fmt);
-    printed = vsnprintf(buf->buf + buf->size, available, fmt, args);
-    va_end(args);
-
-    if (printed < 0 || (size_t) printed >= available)
-        goto err;
+        if (printed < 0 || (size_t) printed >= available)
+            goto err;
+    }
 
     buf->size += printed;
     return true;
