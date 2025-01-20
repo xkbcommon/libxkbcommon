@@ -87,8 +87,13 @@ check_write_buf(struct buf *buf, const char *fmt, ...)
     size_t available;
 
     available = buf->alloc - buf->size;
+    /* Try to write to the buffer and get the required min size (without the
+     * final NULL char).
+     * C11 states that if `available` is 0, then the pointer may be null. */
+    assert(buf->buf || available == 0);
     va_start(args, fmt);
-    printed = vsnprintf(buf->buf + buf->size, available, fmt, args);
+    printed = vsnprintf(buf->buf ? buf->buf + buf->size : buf->buf, available,
+                        fmt, args);
     va_end(args);
 
     if (printed < 0)
