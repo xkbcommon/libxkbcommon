@@ -180,7 +180,6 @@ main(int argc, char **argv)
         exit(1);
 
     struct xkb_keymap *keymap;
-    char *keymap_str;
 
     keymap = xkb_keymap_new_from_names(context, &rmlvo, XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (!keymap) {
@@ -188,8 +187,10 @@ main(int argc, char **argv)
         goto keymap_error;
         exit(1);
     }
-    keymap_str = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_FORMAT_TEXT_V1);
+#ifndef KEYMAP_DUMP
+    char *keymap_str = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_FORMAT_TEXT_V1);
     xkb_keymap_unref(keymap);
+#endif
 
     /* Suspend stdout and stderr outputs */
     fflush(stdout);
@@ -207,11 +208,17 @@ main(int argc, char **argv)
         stdev = 0;
         bench_start2(&bench);
         for (int i = 0; i < max_iterations; i++) {
+#ifndef KEYMAP_DUMP
             keymap = xkb_keymap_new_from_string(
                 context, keymap_str,
                 XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS);
             assert(keymap);
             xkb_keymap_unref(keymap);
+#else
+            char *s = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+            assert(s);
+            free(s);
+#endif
         }
         bench_stop2(&bench);
 
@@ -221,11 +228,18 @@ main(int argc, char **argv)
     } else {
         bench_start2(&bench);
         BENCH(stdev, max_iterations, elapsed, est,
+#ifndef KEYMAP_DUMP
             keymap = xkb_keymap_new_from_string(
                 context, keymap_str,
                 XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS);
             assert(keymap);
             xkb_keymap_unref(keymap);
+#else
+            char *s = xkb_keymap_get_as_string(
+                        keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+            assert(s);
+            free(s);
+#endif
         );
         bench_stop2(&bench);
     }
@@ -238,7 +252,11 @@ main(int argc, char **argv)
     dup2(stderr_old, STDERR_FILENO);
     close(stderr_old);
 
+#ifndef KEYMAP_DUMP
     free(keymap_str);
+#else
+    xkb_keymap_unref(keymap);
+#endif
 
     struct bench_time total_elapsed;
     bench_elapsed(&bench, &total_elapsed);

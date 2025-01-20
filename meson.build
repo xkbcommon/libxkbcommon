@@ -986,6 +986,16 @@ if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE'
         ),
         env: bench_env,
     )
+    benchmark(
+        'dump-keymap',
+        executable(
+            'bench-dump-keymap',
+            'bench/compile-keymap.c',
+            dependencies: test_dep,
+            c_args: ['-DKEYMAP_DUMP'],
+        ),
+        env: bench_env,
+    )
 endif
 benchmark(
     'compose',
