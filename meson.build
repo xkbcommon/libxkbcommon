@@ -4,7 +4,7 @@ project(
     version: '1.7.0',
     default_options: [
         'c_std=c11',
-        'warning_level=2',
+        'warning_level=3',
     ],
     meson_version : '>= 0.58.0', # Released on May 2021
 )
@@ -46,6 +46,7 @@ cflags = [
     '-Wdate-time',
     '-Wwrite-strings',
     '-Wno-documentation-deprecated-sync',
+    '-Wno-pedantic',
 ]
 add_project_arguments(cc.get_supported_arguments(cflags), language: 'c')
 
