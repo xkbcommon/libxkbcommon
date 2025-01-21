@@ -190,4 +190,5 @@ atom_intern(struct atom_table *table, const char *string, size_t len, bool add)
     }
 
     assert(!"couldn't find an empty slot during probing");
+    return XKB_ATOM_NONE;
 }
