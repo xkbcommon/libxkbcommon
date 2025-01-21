@@ -272,12 +272,14 @@ ResolveStateAndPredicate(ExprDef *expr, enum xkb_match_operation *pred_rtrn,
     *pred_rtrn = MATCH_EXACTLY;
     if (expr->expr.op == EXPR_ACTION_DECL) {
         const char *pred_txt = xkb_atom_text(info->ctx, expr->action.name);
-        if (!LookupString(symInterpretMatchMaskNames, pred_txt, pred_rtrn) ||
+        unsigned int pred = 0;
+        if (!LookupString(symInterpretMatchMaskNames, pred_txt, &pred) ||
             !expr->action.args || expr->action.args->common.next) {
             log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Illegal modifier predicate \"%s\"; Ignored\n", pred_txt);
             return false;
         }
+        *pred_rtrn = (enum xkb_match_operation) pred;
         expr = expr->action.args;
     }
     else if (expr->expr.op == EXPR_IDENT) {
