@@ -5,7 +5,6 @@ project(
     default_options: [
         'c_std=c11',
         'warning_level=2',
-        'b_lundef=true',
     ],
     meson_version : '>= 0.58.0', # Released on May 2021
 )
