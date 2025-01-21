@@ -46,11 +46,11 @@ struct parser_param {
     bool more_maps;
 };
 
-#define parser_err(param, error_id, fmt, ...) \
-    scanner_err((param)->scanner, error_id, fmt, ##__VA_ARGS__)
+#define parser_err(param, error_id, ...) \
+    scanner_err((param)->scanner, error_id, __VA_ARGS__)
 
-#define parser_warn(param, warning_id, fmt, ...) \
-    scanner_warn((param)->scanner, warning_id, fmt, ##__VA_ARGS__)
+#define parser_warn(param, warning_id, ...) \
+    scanner_warn((param)->scanner, warning_id, __VA_ARGS__)
 
 static void
 _xkbcommon_error(struct parser_param *param, const char *msg)

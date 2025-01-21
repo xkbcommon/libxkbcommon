@@ -115,8 +115,8 @@ xkb_context_sanitize_rule_names(struct xkb_context *ctx,
  * format is supplied without arguments. Not supplying it would still
  * result in an error, though.
  */
-#define xkb_log_with_code(ctx, level, verbosity, msg_id, fmt, ...) \
-    xkb_log(ctx, level, verbosity, PREPEND_MESSAGE_ID(msg_id, fmt), ##__VA_ARGS__)
+#define xkb_log_with_code(ctx, level, verbosity, msg_id, ...) \
+    xkb_log(ctx, level, verbosity, PREPEND_MESSAGE_ID(msg_id, __VA_ARGS__))
 #define log_dbg(ctx, id, ...) \
     xkb_log_with_code((ctx), XKB_LOG_LEVEL_DEBUG, 0, id, __VA_ARGS__)
 #define log_info(ctx, id, ...) \

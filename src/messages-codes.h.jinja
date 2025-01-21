@@ -25,15 +25,36 @@
 #define JOIN_EXPAND(a, b)        a##b
 #define JOIN(a, b)               JOIN_EXPAND(a, b)
 
+/* Determine if we have one or more arguments (up to 24) */
+#define _ARGS_COUNT(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13,\
+                    _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, ...) _24
+#define ARGS_COUNT(...)          _ARGS_COUNT(__VA_ARGS__, \
+                                   MORE, MORE, MORE, MORE, MORE, MORE, MORE, \
+                                   MORE, MORE, MORE, MORE, MORE, MORE, MORE, \
+                                   MORE, MORE, MORE, MORE, MORE, MORE, MORE, \
+                                   MORE, MORE, ONE, unused)
+
+#define FIRST_ONE(a)             a
+#define FIRST_MORE(a, ...)       a
+#define FIRST(...)               JOIN(FIRST_, ARGS_COUNT(__VA_ARGS__))(__VA_ARGS__)
+
 #define SECOND_EXPAND(a, b, ...) b
 #define SECOND(...)              EXPAND(SECOND_EXPAND(__VA_ARGS__))
+
+#define LATER_ONE(a)
+#define LATER_MORE(a, ...)       , __VA_ARGS__
+#define LATER(...)               JOIN(LATER_, ARGS_COUNT(__VA_ARGS__))(__VA_ARGS__)
+
+#define SWAP_FIRST_TWO_ONE(a, b)       b, a
+#define SWAP_FIRST_TWO_MORE(a, b, ...) b, a, __VA_ARGS__
+#define SWAP_FIRST_TWO(a, ...)   JOIN(SWAP_FIRST_TWO_, ARGS_COUNT(__VA_ARGS__))(a, __VA_ARGS__)
 
 #define MATCH0                   unused,WITHOUT_ID
 #define CHECK_ID(value)          SECOND(JOIN(MATCH, value), WITH_ID, unused)
 
-#define FORMAT_MESSAGE_WITHOUT_ID(id, fmt) fmt
-#define FORMAT_MESSAGE_WITH_ID(id, fmt)    "[XKB-%03d] " fmt, id
-#define PREPEND_MESSAGE_ID(id, fmt) JOIN(FORMAT_MESSAGE_, CHECK_ID(id))(id, fmt)
+#define FORMAT_MESSAGE_WITHOUT_ID(id, ...) __VA_ARGS__
+#define FORMAT_MESSAGE_WITH_ID(id, ...)    "[XKB-%03d] " SWAP_FIRST_TWO(id, __VA_ARGS__)
+#define PREPEND_MESSAGE_ID(id, ...) JOIN(FORMAT_MESSAGE_, CHECK_ID(id))(id, __VA_ARGS__)
 
 /**
  * Special case when no message identifier is defined.

@@ -24,6 +24,8 @@
 #ifndef XKBCOMP_SCANNER_UTILS_H
 #define XKBCOMP_SCANNER_UTILS_H
 
+#include "messages-codes.h"
+
 /* Point to some substring in the file; used to avoid copying. */
 struct sval {
     const char *start;
@@ -57,24 +59,22 @@ struct scanner {
     void *priv;
 };
 
-#define scanner_log_with_code(scanner, level, verbosity, log_msg_id, fmt, ...) \
-    xkb_log_with_code((scanner)->ctx, (level), verbosity, log_msg_id,          \
-                      "%s:%zu:%zu: " fmt "\n",                                 \
-                      (scanner)->file_name,                                    \
-                      (scanner)->token_line,                                   \
-                      (scanner)->token_column, ##__VA_ARGS__)
+#define scanner_log_with_code(scanner, level, verbosity, log_msg_id, ...) \
+    xkb_log_with_code((scanner)->ctx, (level), verbosity, log_msg_id,     \
+                      "%s:%zu:%zu: " FIRST(__VA_ARGS__) "\n",             \
+                      (scanner)->file_name,                               \
+                      (scanner)->token_line,                              \
+                      (scanner)->token_column LATER(__VA_ARGS__))
 
-#define scanner_err(scanner, id, fmt, ...)                     \
-    scanner_log_with_code(scanner, XKB_LOG_LEVEL_ERROR, 0, id, \
-                          fmt, ##__VA_ARGS__)
+#define scanner_err(scanner, id, ...) \
+    scanner_log_with_code(scanner, XKB_LOG_LEVEL_ERROR, 0, id, __VA_ARGS__)
 
-#define scanner_warn(scanner, id, fmt, ...)                      \
-    scanner_log_with_code(scanner, XKB_LOG_LEVEL_WARNING, 0, id, \
-                          fmt, ##__VA_ARGS__)
+#define scanner_warn(scanner, id, ...) \
+    scanner_log_with_code(scanner, XKB_LOG_LEVEL_WARNING, 0, id, __VA_ARGS__)
 
-#define scanner_vrb(scanner, verbosity, id, fmt, ...)                    \
-    scanner_log_with_code(scanner, XKB_LOG_LEVEL_WARNING, verbosity, id, \
-                          fmt, ##__VA_ARGS__)
+#define scanner_vrb(scanner, verbosity, id, ...)          \
+    scanner_log_with_code(scanner, XKB_LOG_LEVEL_WARNING, \
+                          verbosity, id, __VA_ARGS__)
 
 static inline void
 scanner_init(struct scanner *s, struct xkb_context *ctx,
