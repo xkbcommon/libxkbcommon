@@ -457,14 +457,6 @@ fetch_option_group(struct rxkb_context *ctx, const char *grp)
     return NULL;
 }
 
-static inline bool
-find_option_group(struct rxkb_context *ctx, const char *grp)
-{
-    struct rxkb_option_group *g = fetch_option_group(ctx, grp);
-    rxkb_option_group_unref(g);
-    return g != NULL;
-}
-
 static struct rxkb_option *
 fetch_option(struct rxkb_context *ctx, const char *grp, const char *opt)
 {
