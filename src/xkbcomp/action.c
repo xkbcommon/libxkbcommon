@@ -600,16 +600,18 @@ HandleSwitchScreen(struct xkb_context *ctx, const struct xkb_mod_set *mods,
 
         if (!ExprResolveInteger(ctx, scrn, &val))
             return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
-                                  field, "integer (0..255)");
+                                  field, "integer (-128..127)");
 
-        if (val < 0 || val > 255) {
+        val = (value->expr.op == EXPR_NEGATE ? -val : val);
+        if (val < INT8_MIN || val > INT8_MAX) {
             log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
-                    "Screen index must be in the range 1..255; "
-                    "Illegal screen value %d ignored\n", val);
+                    "Screen index must be in the range %d..%d; "
+                    "Illegal screen value %d ignored\n",
+                    INT8_MIN, INT8_MAX, val);
             return false;
         }
 
-        act->screen = (value->expr.op == EXPR_NEGATE ? -val : val);
+        act->screen = (int8_t) val;
         return true;
     }
     else if (field == ACTION_FIELD_SAME) {
