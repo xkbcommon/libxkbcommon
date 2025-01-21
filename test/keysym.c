@@ -317,7 +317,7 @@ test_icu_case_mappings(xkb_keysym_t ks)
         UBool isError = false;
         int32_t offset = 0;
         /* Convert code point to UTF-16 string */
-        U16_APPEND(cp_string, offset, ARRAY_SIZE(cp_string), cp, isError);
+        U16_APPEND(cp_string, offset, (int32_t) ARRAY_SIZE(cp_string), cp, isError);
         UErrorCode pErrorCode = U_ZERO_ERROR;
         /* Unicode full upper mapping */
         int32_t length = u_strToUpper(cp_expected_string,
