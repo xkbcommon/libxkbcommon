@@ -816,14 +816,12 @@ static bool
 AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
                 ExprDef *value)
 {
-    xkb_layout_index_t ndx;
-    GroupInfo *groupi;
-    xkb_level_index_t nLevels;
+    xkb_layout_index_t ndx = 0;
 
     if (!GetGroupIndex(info, keyi, arrayNdx, SYMBOLS, &ndx))
         return false;
 
-    groupi = &darray_item(keyi->groups, ndx);
+    GroupInfo *groupi = &darray_item(keyi->groups, ndx);
 
     if (value == NULL) {
         groupi->defined |= GROUP_FIELD_SYMS;
@@ -847,7 +845,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         return false;
     }
 
-    nLevels = darray_size(value->keysym_list.symsMapIndex);
+    xkb_level_index_t nLevels = darray_size(value->keysym_list.symsMapIndex);
     if (darray_size(groupi->levels) < nLevels)
         darray_resize0(groupi->levels, nLevels);
 
@@ -904,14 +902,12 @@ static bool
 AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
                 ExprDef *value)
 {
-    xkb_layout_index_t ndx;
-    GroupInfo *groupi;
-    xkb_level_index_t nLevels;
+    xkb_layout_index_t ndx = 0;
 
     if (!GetGroupIndex(info, keyi, arrayNdx, ACTIONS, &ndx))
         return false;
 
-    groupi = &darray_item(keyi->groups, ndx);
+    GroupInfo *groupi = &darray_item(keyi->groups, ndx);
 
     if (value == NULL) {
         groupi->defined |= GROUP_FIELD_ACTS;
@@ -933,7 +929,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         return false;
     }
 
-    nLevels = darray_size(value->actions.actionsMapIndex);
+    xkb_level_index_t nLevels = darray_size(value->actions.actionsMapIndex);
     if (darray_size(groupi->levels) < nLevels)
         darray_resize0(groupi->levels, nLevels);
 
@@ -1004,8 +1000,8 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
                 ExprDef *arrayNdx, ExprDef *value)
 {
     if (istreq(field, "type")) {
-        xkb_layout_index_t ndx;
-        xkb_atom_t val;
+        xkb_layout_index_t ndx = 0;
+        xkb_atom_t val = XKB_ATOM_NONE;
 
         if (!ExprResolveString(info->ctx, value, &val)) {
             log_err(info->ctx, XKB_ERROR_WRONG_FIELD_TYPE,
@@ -1042,7 +1038,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     else if (istreq(field, "vmods") ||
              istreq(field, "virtualmods") ||
              istreq(field, "virtualmodifiers")) {
-        xkb_mod_mask_t mask;
+        xkb_mod_mask_t mask = 0;
 
         if (!ExprResolveModMask(info->ctx, value, MOD_VIRT, &info->mods,
                                 &mask)) {
@@ -1083,7 +1079,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     else if (istreq(field, "repeating") ||
              istreq(field, "repeats") ||
              istreq(field, "repeat")) {
-        unsigned int val;
+        uint32_t val = 0;
 
         if (!ExprResolveEnum(info->ctx, value, &val, repeatEntries)) {
             log_err(info->ctx, XKB_ERROR_INVALID_VALUE,
@@ -1093,12 +1089,12 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             return false;
         }
 
-        keyi->repeat = val;
+        keyi->repeat = (enum key_repeat) val;
         keyi->defined |= KEY_FIELD_REPEAT;
     }
     else if (istreq(field, "groupswrap") ||
              istreq(field, "wrapgroups")) {
-        bool set;
+        bool set = false;
 
         if (!ExprResolveBoolean(info->ctx, value, &set)) {
             log_err(info->ctx, XKB_ERROR_INVALID_VALUE,
@@ -1113,7 +1109,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     }
     else if (istreq(field, "groupsclamp") ||
              istreq(field, "clampgroups")) {
-        bool set;
+        bool set = false;
 
         if (!ExprResolveBoolean(info->ctx, value, &set)) {
             log_err(info->ctx, XKB_ERROR_INVALID_VALUE,
@@ -1128,7 +1124,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     }
     else if (istreq(field, "groupsredirect") ||
              istreq(field, "redirectgroups")) {
-        xkb_layout_index_t grp;
+        xkb_layout_index_t grp = 0;
 
         if (!ExprResolveGroup(info->ctx, value, &grp)) {
             log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
@@ -1156,9 +1152,6 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
 static bool
 SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
 {
-    xkb_layout_index_t group, group_to_use;
-    xkb_atom_t name;
-
     if (!arrayNdx) {
         log_vrb(info->ctx, 1, XKB_WARNING_MISSING_SYMBOLS_GROUP_NAME_INDEX,
                 "You must specify an index when specifying a group name; "
@@ -1166,6 +1159,7 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
         return false;
     }
 
+    xkb_layout_index_t group = 0;
     if (!ExprResolveGroup(info->ctx, arrayNdx, &group)) {
         log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                 "Illegal index in group name definition; "
@@ -1173,6 +1167,7 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
         return false;
     }
 
+    xkb_atom_t name = XKB_ATOM_NONE;
     if (!ExprResolveString(info->ctx, value, &name)) {
         log_err(info->ctx, XKB_ERROR_WRONG_FIELD_TYPE,
                 "Group name must be a string; "
@@ -1180,6 +1175,7 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
         return false;
     }
 
+    xkb_layout_index_t group_to_use;
     if (info->explicit_group == XKB_LAYOUT_INVALID) {
         group_to_use = group - 1;
     }
@@ -1386,7 +1382,7 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
     tmp.merge = def->merge;
 
     for (ExprDef *key = def->keys; key; key = (ExprDef *) key->common.next) {
-        xkb_keysym_t sym;
+        xkb_keysym_t sym = XKB_KEY_NoSymbol;
 
         if (key->expr.op == EXPR_VALUE &&
             key->expr.value_type == EXPR_TYPE_KEYNAME) {
@@ -1679,11 +1675,11 @@ CopySymbolsDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
             struct xkb_level *leveli;
 
             log_vrb(info->ctx, 1, XKB_WARNING_EXTRA_SYMBOLS_IGNORED,
-                    "Type \"%s\" has %d levels, but %s has %d levels; "
+                    "Type \"%s\" has %d levels, but %s has %u levels; "
                     "Ignoring extra symbols\n",
                     xkb_atom_text(keymap->ctx, type->name), type->num_levels,
                     KeyInfoText(info, keyi),
-                    (int) darray_size(groupi->levels));
+                    darray_size(groupi->levels));
 
             darray_foreach_from(leveli, groupi->levels, type->num_levels)
                 ClearLevelInfo(leveli);

@@ -281,7 +281,7 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
         if (darray_size(into->key_names) < darray_size(from->key_names))
             darray_resize0(into->key_names, darray_size(from->key_names));
 
-        for (unsigned i = from->min_key_code; i <= from->max_key_code; i++) {
+        for (xkb_keycode_t i = from->min_key_code; i <= from->max_key_code; i++) {
             xkb_atom_t name = darray_item(from->key_names, i);
             if (name == XKB_ATOM_NONE)
                 continue;
@@ -468,9 +468,6 @@ static bool
 HandleLedNameDef(KeyNamesInfo *info, LedNameDef *def,
                  enum merge_mode merge)
 {
-    LedNameInfo ledi;
-    xkb_atom_t name;
-
     if (def->ndx < 1 || def->ndx > XKB_MAX_LEDS) {
         info->errorCount++;
         log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
@@ -479,6 +476,7 @@ HandleLedNameDef(KeyNamesInfo *info, LedNameDef *def,
         return false;
     }
 
+    xkb_atom_t name = XKB_ATOM_NONE;
     if (!ExprResolveString(info->ctx, def->name, &name)) {
         char buf[20];
         snprintf(buf, sizeof(buf), "%u", def->ndx);
@@ -487,8 +485,7 @@ HandleLedNameDef(KeyNamesInfo *info, LedNameDef *def,
                              "indicator", "name", buf, "string");
     }
 
-    ledi.merge = merge;
-    ledi.name = name;
+    LedNameInfo ledi = {.merge = merge, .name = name};
     return AddLedName(info, merge, true, &ledi, def->ndx - 1);
 }
 

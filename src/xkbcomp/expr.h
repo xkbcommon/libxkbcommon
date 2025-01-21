@@ -47,12 +47,8 @@ ExprResolveBoolean(struct xkb_context *ctx, const ExprDef *expr,
                    bool *set_rtrn);
 
 bool
-ExprResolveKeyCode(struct xkb_context *ctx, const ExprDef *expr,
-                   xkb_keycode_t *kc);
-
-bool
 ExprResolveInteger(struct xkb_context *ctx, const ExprDef *expr,
-                   int *val_rtrn);
+                   int64_t *val_rtrn);
 
 bool
 ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
@@ -64,7 +60,7 @@ ExprResolveGroup(struct xkb_context *ctx, const ExprDef *expr,
 
 bool
 ExprResolveButton(struct xkb_context *ctx, const ExprDef *expr,
-                  int *btn_rtrn);
+                  int64_t *btn_rtrn);
 
 bool
 ExprResolveString(struct xkb_context *ctx, const ExprDef *expr,
@@ -72,11 +68,11 @@ ExprResolveString(struct xkb_context *ctx, const ExprDef *expr,
 
 bool
 ExprResolveEnum(struct xkb_context *ctx, const ExprDef *expr,
-                unsigned int *val_rtrn, const LookupEntry *values);
+                uint32_t *val_rtrn, const LookupEntry *values);
 
 bool
 ExprResolveMask(struct xkb_context *ctx, const ExprDef *expr,
-                unsigned int *mask_rtrn, const LookupEntry *values);
+                uint32_t *mask_rtrn, const LookupEntry *values);
 
 bool
 ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
