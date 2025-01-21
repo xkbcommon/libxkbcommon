@@ -1119,6 +1119,7 @@ if meson.version().version_compare('>=0.62.0')
     summary({
       'backend': meson.backend(),
       'buildtype': get_option('buildtype'),
+      'id': cc.get_id(),
       'c_args': get_option('c_args'),
       'c_link_args': get_option('c_link_args'),
       'yacc': yacc.full_path() + ' ' + yacc.version(),
