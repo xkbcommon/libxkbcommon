@@ -945,87 +945,91 @@ endif
 
 
 # Fuzzing target programs.
-executable('fuzz-keymap', 'fuzz/keymap/target.c', dependencies: test_dep)
-executable('fuzz-compose', 'fuzz/compose/target.c', dependencies: test_dep)
+if get_option('enable-fuzzers')
+    executable('fuzz-keymap', 'fuzz/keymap/target.c', dependencies: test_dep)
+    executable('fuzz-compose', 'fuzz/compose/target.c', dependencies: test_dep)
+endif
 
 
 # Benchmarks.
-bench_env = environment()
-bench_env.set('top_srcdir', meson.current_source_dir())
-benchmark(
-    'key-proc',
-    executable('bench-key-proc', 'bench/key-proc.c', dependencies: test_dep),
-    env: bench_env,
-)
-benchmark(
-    'keysym-case-mappings',
-    executable(
-        'bench-keysym-case-mappings',
-        'bench/keysym-case-mappings.c',
-        dependencies: test_dep,
-        c_args: ['-DENABLE_PRIVATE_APIS'],
-    ),
-)
-benchmark(
-    'rules',
-    executable('bench-rules', 'bench/rules.c', dependencies: test_dep),
-    env: bench_env,
-)
-benchmark(
-    'rulescomp',
-    executable('bench-rulescomp', 'bench/rulescomp.c', dependencies: test_dep),
-    env: bench_env,
-)
-if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE')
+if get_option('enable-benchmarks')
+    bench_env = environment()
+    bench_env.set('top_srcdir', meson.current_source_dir())
     benchmark(
-        'compile-keymap',
+        'key-proc',
+        executable('bench-key-proc', 'bench/key-proc.c', dependencies: test_dep),
+        env: bench_env,
+    )
+    benchmark(
+        'keysym-case-mappings',
         executable(
-            'bench-compile-keymap',
-            'bench/compile-keymap.c',
+            'bench-keysym-case-mappings',
+            'bench/keysym-case-mappings.c',
+            dependencies: test_dep,
+            c_args: ['-DENABLE_PRIVATE_APIS'],
+        ),
+    )
+    benchmark(
+        'rules',
+        executable('bench-rules', 'bench/rules.c', dependencies: test_dep),
+        env: bench_env,
+    )
+    benchmark(
+        'rulescomp',
+        executable('bench-rulescomp', 'bench/rulescomp.c', dependencies: test_dep),
+        env: bench_env,
+    )
+    if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE')
+        benchmark(
+            'compile-keymap',
+            executable(
+                'bench-compile-keymap',
+                'bench/compile-keymap.c',
+                dependencies: test_dep
+            ),
+            env: bench_env,
+        )
+        benchmark(
+            'dump-keymap',
+            executable(
+                'bench-dump-keymap',
+                'bench/compile-keymap.c',
+                dependencies: test_dep,
+                c_args: ['-DKEYMAP_DUMP'],
+            ),
+            env: bench_env,
+        )
+    endif
+    benchmark(
+        'compose',
+        executable('bench-compose', 'bench/compose.c', dependencies: test_dep),
+        env: bench_env,
+    )
+    benchmark(
+        'compose-traversal',
+        executable(
+            'bench-compose-traversal',
+            'bench/compose-traversal.c',
+            'bench/bench.h',
+            'test/compose-iter.c',
+            'test/compose-iter.h',
+            'test/test.h',
             dependencies: test_dep
         ),
         env: bench_env,
     )
     benchmark(
-        'dump-keymap',
-        executable(
-            'bench-dump-keymap',
-            'bench/compile-keymap.c',
-            dependencies: test_dep,
-            c_args: ['-DKEYMAP_DUMP'],
-        ),
+        'atom',
+        executable('bench-atom', 'bench/atom.c', dependencies: test_dep),
         env: bench_env,
     )
-endif
-benchmark(
-    'compose',
-    executable('bench-compose', 'bench/compose.c', dependencies: test_dep),
-    env: bench_env,
-)
-benchmark(
-    'compose-traversal',
-    executable(
-        'bench-compose-traversal',
-        'bench/compose-traversal.c',
-        'bench/bench.h',
-        'test/compose-iter.c',
-        'test/compose-iter.h',
-        'test/test.h',
-        dependencies: test_dep
-    ),
-    env: bench_env,
-)
-benchmark(
-    'atom',
-    executable('bench-atom', 'bench/atom.c', dependencies: test_dep),
-    env: bench_env,
-)
-if get_option('enable-x11')
-  benchmark(
-      'x11',
-      executable('bench-x11', 'bench/x11.c', dependencies: x11_test_dep),
-      env: bench_env,
-  )
+    if get_option('enable-x11')
+        benchmark(
+            'x11',
+            executable('bench-x11', 'bench/x11.c', dependencies: x11_test_dep),
+            env: bench_env,
+        )
+    endif
 endif
 
 

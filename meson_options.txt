@@ -90,3 +90,15 @@ option(
     value: true,
     description: 'Enable installing bash completion scripts',
 )
+option(
+    'enable-benchmarks',
+    type: 'boolean',
+    value: false,
+    description: 'Enable building the benches',
+)
+option(
+    'enable-fuzzers',
+    type: 'boolean',
+    value: false,
+    description: 'Enable building the fuzzers',
+)

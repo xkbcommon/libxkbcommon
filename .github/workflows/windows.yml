@@ -32,7 +32,10 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
-          meson setup --backend=vs -Denable-wayland=false -Denable-x11=false -Denable-docs=false -Denable-xkbregistry=false build
+          meson setup --backend=vs -Denable-wayland=false -Denable-x11=false ^
+                      -Denable-docs=false -Denable-xkbregistry=false ^
+                      -Denable-benchmarks=true -Denable-fuzzers=true ^
+                      build
       - name: Build
         shell: cmd
         run: |
