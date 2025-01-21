@@ -227,20 +227,22 @@ main(int argc, char **argv)
         est.stdev = 0;
     } else {
         bench_start2(&bench);
-        BENCH(stdev, max_iterations, elapsed, est,
 #ifndef KEYMAP_DUMP
+        BENCH(stdev, max_iterations, elapsed, est,
             keymap = xkb_keymap_new_from_string(
                 context, keymap_str,
                 XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS);
             assert(keymap);
             xkb_keymap_unref(keymap);
+        );
 #else
+        BENCH(stdev, max_iterations, elapsed, est,
             char *s = xkb_keymap_get_as_string(
                         keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
             assert(s);
             free(s);
-#endif
         );
+#endif
         bench_stop2(&bench);
     }
 
