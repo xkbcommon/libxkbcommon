@@ -466,7 +466,7 @@ write_actions(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
                 if (buf2->size >= old_size + ACTION_PADDING)
                     continue;
                 /* Compute and write padding, then write the action again */
-                unsigned int padding = old_size + ACTION_PADDING - buf2->size;
+                const int padding = (int)(old_size + ACTION_PADDING - buf2->size);
                 buf2->size = old_size;
                 write_buf(buf2, "%*s", padding, "");
                 if (!write_action(keymap, buf2, &(actions[k]), NULL, NULL))
