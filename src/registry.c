@@ -39,8 +39,6 @@
 
 struct rxkb_object;
 
-typedef void (*destroy_func_t)(struct rxkb_object *object);
-
 /**
  * All our objects are refcounted and are linked to iterate through them.
  * Abstract those bits away into a shared parent class so we can generate
@@ -50,7 +48,6 @@ struct rxkb_object {
     struct rxkb_object *parent;
     uint32_t refcount;
     struct list link;
-    destroy_func_t destroy;
 };
 
 struct rxkb_iso639_code {
@@ -178,14 +175,20 @@ XKB_EXPORT struct type_ * type_##_ref(struct type_ *object) { \
 } \
 XKB_EXPORT struct type_ * type_##_unref(struct type_ *object) { \
     if (!object) return NULL; \
-    return rxkb_object_unref(&object->base); \
+    assert(object->base.refcount >= 1); \
+    if (--object->base.refcount == 0) {\
+        type_##_destroy(object); \
+        list_remove(&object->base.link);\
+        free(object); \
+    } \
+    return NULL;\
 }
 
 #define DECLARE_CREATE_FOR_TYPE(type_) \
 static inline struct type_ * type_##_create(struct rxkb_object *parent) { \
     struct type_ *t = calloc(1, sizeof *t); \
     if (t) \
-        rxkb_object_init(&t->base, parent, (destroy_func_t)type_##_destroy); \
+        rxkb_object_init(&t->base, parent); \
     return t; \
 }
 
@@ -217,21 +220,11 @@ type_##_next(struct type_ *o) \
 }
 
 static void
-rxkb_object_init(struct rxkb_object *object, struct rxkb_object *parent, destroy_func_t destroy)
+rxkb_object_init(struct rxkb_object *object, struct rxkb_object *parent)
 {
     object->refcount = 1;
-    object->destroy = destroy;
     object->parent = parent;
     list_init(&object->link);
-}
-
-static void
-rxkb_object_destroy(struct rxkb_object *object)
-{
-    if (object->destroy)
-        object->destroy(object);
-    list_remove(&object->link);
-    free(object);
 }
 
 static void *
@@ -240,15 +233,6 @@ rxkb_object_ref(struct rxkb_object *object)
     assert(object->refcount >= 1);
     ++object->refcount;
     return object;
-}
-
-static void *
-rxkb_object_unref(struct rxkb_object *object)
-{
-    assert(object->refcount >= 1);
-    if (--object->refcount == 0)
-        rxkb_object_destroy(object);
-    return NULL;
 }
 
 static void
