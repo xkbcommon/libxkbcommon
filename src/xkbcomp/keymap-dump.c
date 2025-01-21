@@ -751,10 +751,14 @@ text_v1_keymap_get_as_string(struct xkb_keymap *keymap)
 {
     struct buf buf = { NULL, 0, 0 };
 
+    if (!xkb_context_create_buffer(keymap->ctx))
+        return false;
+
     if (!write_keymap(keymap, &buf)) {
         free(buf.buf);
-        return NULL;
+        buf.buf = NULL;
     }
 
+    xkb_context_destroy_buffer(keymap->ctx);
     return buf.buf;
 }

@@ -28,6 +28,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <threads.h>
 #include <errno.h>
 
 #include "xkbcommon/xkbcommon.h"
@@ -92,19 +93,54 @@ xkb_log(struct xkb_context *ctx, enum xkb_log_level level, int verbosity,
     va_end(args);
 }
 
+bool
+xkb_context_create_buffer(struct xkb_context *ctx)
+{
+    if (tss_get(ctx->text_buffer))
+        return true;
+    if (tss_create(&ctx->text_buffer, NULL) == thrd_error)
+        goto create_error;
+    context_buffer *buf = calloc(1, sizeof(context_buffer));
+    if (!buf)
+        goto alloc_error;
+    if (tss_set(ctx->text_buffer, buf) == thrd_error)
+        goto set_error;
+    return true;
+
+set_error:
+    free(buf);
+alloc_error:
+    tss_delete(ctx->text_buffer);
+create_error:
+    log_err(ctx, XKB_ERROR_ALLOCATION_ERROR,
+            "Cannot create context buffer\n");
+    return false;
+}
+
+void
+xkb_context_destroy_buffer(struct xkb_context *ctx)
+{
+    context_buffer *buf = tss_get(ctx->text_buffer);
+    if (!buf)
+        return;
+    free(buf);
+    tss_delete(ctx->text_buffer);
+}
+
 char *
 xkb_context_get_buffer(struct xkb_context *ctx, size_t size)
 {
     char *rtrn;
+    context_buffer *buf = tss_get(ctx->text_buffer);
 
-    if (size >= sizeof(ctx->text_buffer))
+    if (!buf || size >= ARRAY_SIZE(buf->text))
         return NULL;
 
-    if (sizeof(ctx->text_buffer) - ctx->text_next <= size)
-        ctx->text_next = 0;
+    if (ARRAY_SIZE(buf->text) - buf->next <= size)
+        buf->next = 0;
 
-    rtrn = &ctx->text_buffer[ctx->text_next];
-    ctx->text_next += size;
+    rtrn = &buf->text[buf->next];
+    buf->next += size;
 
     return rtrn;
 }

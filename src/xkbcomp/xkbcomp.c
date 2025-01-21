@@ -83,6 +83,9 @@ text_v1_keymap_new_from_names(struct xkb_keymap *keymap,
             "compat '%s', symbols '%s'\n",
             kccgst.keycodes, kccgst.types, kccgst.compat, kccgst.symbols);
 
+    if (!xkb_context_create_buffer(keymap->ctx))
+        return false;
+
     file = XkbFileFromComponents(keymap->ctx, &kccgst);
 
     free(kccgst.keycodes);
@@ -93,11 +96,14 @@ text_v1_keymap_new_from_names(struct xkb_keymap *keymap,
     if (!file) {
         log_err(keymap->ctx, XKB_ERROR_KEYMAP_COMPILATION_FAILED,
                 "Failed to generate parsed XKB file from components\n");
-        return false;
+        ok = false;
+        goto xkb_file_error;
     }
 
     ok = compile_keymap_file(keymap, file);
     FreeXkbFile(file);
+xkb_file_error:
+    xkb_context_destroy_buffer(keymap->ctx);
     return ok;
 }
 
@@ -108,15 +114,21 @@ text_v1_keymap_new_from_string(struct xkb_keymap *keymap,
     bool ok;
     XkbFile *xkb_file;
 
+    if (!xkb_context_create_buffer(keymap->ctx))
+        return false;
+
     xkb_file = XkbParseString(keymap->ctx, string, len, "(input string)", NULL);
     if (!xkb_file) {
         log_err(keymap->ctx, XKB_ERROR_KEYMAP_COMPILATION_FAILED,
                 "Failed to parse input xkb string\n");
-        return false;
+        ok = false;
+        goto xkb_file_error;
     }
 
     ok = compile_keymap_file(keymap, xkb_file);
     FreeXkbFile(xkb_file);
+xkb_file_error:
+    xkb_context_destroy_buffer(keymap->ctx);
     return ok;
 }
 
@@ -126,15 +138,21 @@ text_v1_keymap_new_from_file(struct xkb_keymap *keymap, FILE *file)
     bool ok;
     XkbFile *xkb_file;
 
+    if (!xkb_context_create_buffer(keymap->ctx))
+        return false;
+
     xkb_file = XkbParseFile(keymap->ctx, file, "(unknown file)", NULL);
     if (!xkb_file) {
         log_err(keymap->ctx, XKB_ERROR_KEYMAP_COMPILATION_FAILED,
                 "Failed to parse input xkb file\n");
-        return false;
+        ok = false;
+        goto xkb_file_error;
     }
 
     ok = compile_keymap_file(keymap, xkb_file);
     FreeXkbFile(xkb_file);
+xkb_file_error:
+    xkb_context_destroy_buffer(keymap->ctx);
     return ok;
 }
 
