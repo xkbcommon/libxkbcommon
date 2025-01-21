@@ -33,7 +33,6 @@
 
 #include "test.h"
 #include "xvfb-wrapper.h"
-#include "xkbcommon/xkbcommon-x11.h"
 
 static bool xvfb_is_ready;
 
@@ -147,15 +146,8 @@ err_display_fd:
 DECLARE_TEST_ELF_SECTION_POINTERS(TEST_ELF_SECTION);
 
 int
-x11_tests_run()
+x11_tests_run(void)
 {
-    size_t count = 1; /* For NULL-terminated entry */
-
-    for (const struct test_function *t = &__start_test_func_sec;
-         t < &__stop_test_func_sec;
-         t++)
-        count++;
-
     int rc = 0;
     for (const struct test_function *t = &__start_test_func_sec;
          t < &__stop_test_func_sec;
