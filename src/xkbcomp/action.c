@@ -170,15 +170,21 @@ static const LookupEntry fieldStrings[] = {
 };
 
 static bool
-stringToAction(const char *str, enum xkb_action_type *type_rtrn)
+stringToActionType(const char *str, enum xkb_action_type *type_rtrn)
 {
-    return LookupString(actionTypeNames, str, type_rtrn);
+    unsigned int type = 0;
+    const bool ret = LookupString(actionTypeNames, str, &type);
+    *type_rtrn = (enum xkb_action_type) type;
+    return ret;
 }
 
 static bool
 stringToField(const char *str, enum action_field *field_rtrn)
 {
-    return LookupString(fieldStrings, str, field_rtrn);
+    unsigned int field = 0;
+    const bool ret = LookupString(fieldStrings, str, &field);
+    *field_rtrn = (enum action_field) field;
+    return ret;
 }
 
 static const char *
@@ -296,18 +302,17 @@ CheckAffectField(struct xkb_context *ctx, enum xkb_action_type action,
                  const ExprDef *array_ndx, const ExprDef *value,
                  enum xkb_action_flags *flags_inout)
 {
-    enum xkb_action_flags flags;
-
     if (array_ndx)
         return ReportActionNotArray(ctx, action, ACTION_FIELD_AFFECT);
 
+    unsigned int flags = 0;
     if (!ExprResolveEnum(ctx, value, &flags, lockWhich))
         return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
                               action, ACTION_FIELD_AFFECT,
                               "lock, unlock, both, neither");
 
     *flags_inout &= ~(ACTION_LOCK_NO_LOCK | ACTION_LOCK_NO_UNLOCK);
-    *flags_inout |= flags;
+    *flags_inout |= (enum xkb_action_flags) flags;
     return true;
 }
 
@@ -629,16 +634,15 @@ HandleSetLockControls(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     struct xkb_controls_action *act = &action->ctrls;
 
     if (field == ACTION_FIELD_CONTROLS) {
-        enum xkb_action_controls mask;
-
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
 
+        unsigned int mask = 0;
         if (!ExprResolveMask(ctx, value, &mask, ctrlMaskNames))
             return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
                                   field, "controls mask");
 
-        act->ctrls = mask;
+        act->ctrls = (enum xkb_action_controls) mask;
         return true;
     }
     else if (field == ACTION_FIELD_AFFECT) {
@@ -789,10 +793,6 @@ HandleActionDef(struct xkb_context *ctx, ActionsInfo *info,
                 const struct xkb_mod_set *mods, ExprDef *def,
                 union xkb_action *action)
 {
-    ExprDef *arg;
-    const char *str;
-    enum xkb_action_type handler_type;
-
     if (def->expr.op != EXPR_ACTION_DECL) {
         log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
                 "Expected an action definition, found %s\n",
@@ -800,8 +800,9 @@ HandleActionDef(struct xkb_context *ctx, ActionsInfo *info,
         return false;
     }
 
-    str = xkb_atom_text(ctx, def->action.name);
-    if (!stringToAction(str, &handler_type)) {
+    const char *str = xkb_atom_text(ctx, def->action.name);
+    enum xkb_action_type handler_type;
+    if (!stringToActionType(str, &handler_type)) {
         log_err(ctx, XKB_LOG_MESSAGE_NO_ID, "Unknown action %s\n", str);
         return false;
     }
@@ -818,12 +819,11 @@ HandleActionDef(struct xkb_context *ctx, ActionsInfo *info,
      * particular instance, e.g. "modifiers" and "clearLocks" in:
      *     SetMods(modifiers=Alt,clearLocks);
      */
-    for (arg = def->action.args; arg != NULL;
+    for (ExprDef *arg = def->action.args; arg != NULL;
          arg = (ExprDef *) arg->common.next) {
         const ExprDef *value;
         ExprDef *field, *arrayRtrn;
         const char *elemRtrn, *fieldRtrn;
-        enum action_field fieldNdx;
 
         if (arg->expr.op == EXPR_ASSIGN) {
             field = arg->binary.left;
@@ -849,6 +849,7 @@ HandleActionDef(struct xkb_context *ctx, ActionsInfo *info,
             return false;
         }
 
+        enum action_field fieldNdx;
         if (!stringToField(fieldRtrn, &fieldNdx)) {
             log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Unknown field name %s\n", fieldRtrn);
@@ -869,11 +870,10 @@ SetActionField(struct xkb_context *ctx, ActionsInfo *info,
                const char *field, ExprDef *array_ndx, ExprDef *value)
 {
     enum xkb_action_type action;
-    enum action_field action_field;
-
-    if (!stringToAction(elem, &action))
+    if (!stringToActionType(elem, &action))
         return false;
 
+    enum action_field action_field;
     if (!stringToField(field, &action_field)) {
         log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                 "\"%s\" is not a legal field name\n", field);
