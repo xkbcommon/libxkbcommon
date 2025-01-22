@@ -23,6 +23,8 @@
 
 #include "config.h"
 
+#include <assert.h>
+
 #include "x11-priv.h"
 
 /*
@@ -338,7 +340,7 @@ translate_action(union xkb_action *action, const xcb_xkb_action_t *wire)
 
         /* Treat high unknown actions as Private actions. */
         action->priv.type = wire->noaction.type;
-        STATIC_ASSERT(sizeof(action->priv.data) == 7 &&
+        static_assert(sizeof(action->priv.data) == 7 &&
                       sizeof(wire->noaction.pad0) == 7,
                       "The private action data must be 7 bytes long!");
         memcpy(action->priv.data, wire->noaction.pad0, 7);
