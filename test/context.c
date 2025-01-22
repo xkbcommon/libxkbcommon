@@ -105,7 +105,6 @@ test_config_root_include_path(void)
     struct xkb_context *ctx;
     const char *tmpdir;
     const char *context_path;
-    int nincludes;
 
     buffer_env("XKB_CONFIG_ROOT");
     buffer_env("HOME");
@@ -118,7 +117,7 @@ test_config_root_include_path(void)
 
     /* built-in path is last */
     ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-    nincludes = xkb_context_num_include_paths(ctx);
+    const unsigned int nincludes = xkb_context_num_include_paths(ctx);
     assert(nincludes >= 1);
     context_path = xkb_context_include_path_get(ctx, nincludes - 1);
     assert(strcmp(context_path, tmpdir) == 0);
@@ -134,7 +133,6 @@ test_config_root_include_path_fallback(void)
     struct xkb_context *ctx;
     const char *xkbdir = DFLT_XKB_CONFIG_ROOT;
     const char *context_path;
-    int nincludes;
 
     /* quick and dirty check that the default directory exists.
      * It may not on a vanilla test box if we just run the test
@@ -156,7 +154,7 @@ test_config_root_include_path_fallback(void)
 
     /* built-in path is last */
     ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-    nincludes = xkb_context_num_include_paths(ctx);
+    const unsigned int nincludes = xkb_context_num_include_paths(ctx);
     assert(nincludes >= 1);
     context_path = xkb_context_include_path_get(ctx, nincludes - 1);
     assert(strcmp(context_path, xkbdir) == 0);

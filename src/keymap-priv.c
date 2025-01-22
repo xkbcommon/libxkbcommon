@@ -238,7 +238,7 @@ xkb_keymap_key_get_actions_by_level(struct xkb_keymap *keymap,
     if (!key)
         goto err;
 
-    layout = XkbWrapGroupIntoRange(layout, key->num_groups,
+    layout = XkbWrapGroupIntoRange((int32_t) layout, key->num_groups,
                                    key->out_of_range_group_action,
                                    key->out_of_range_group_number);
     if (layout == XKB_LAYOUT_INVALID)

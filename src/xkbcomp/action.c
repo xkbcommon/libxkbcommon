@@ -572,7 +572,7 @@ HandleSetPtrDflt(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             return false;
         }
 
-        act->value = (value->expr.op == EXPR_NEGATE ? -btn: btn);
+        act->value = (int8_t)(value->expr.op == EXPR_NEGATE ? -btn: btn);
         return true;
     }
 

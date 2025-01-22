@@ -88,7 +88,7 @@ main(int argc, char **argv)
         .variant = NULL,
         .options = DEFAULT_XKB_OPTIONS,
     };
-    int max_iterations = DEFAULT_ITERATIONS;
+    unsigned int max_iterations = DEFAULT_ITERATIONS;
     double stdev = DEFAULT_STDEV;
 
     enum options {
@@ -144,9 +144,13 @@ main(int argc, char **argv)
                 usage(argv);
                 exit(EXIT_INVALID_USAGE);
             }
-            max_iterations = atoi(optarg);
-            if (max_iterations <= 0)
-                max_iterations = DEFAULT_ITERATIONS;
+            {
+                const int max_iterations_raw = atoi(optarg);
+                if (max_iterations_raw <= 0)
+                    max_iterations = DEFAULT_ITERATIONS;
+                else
+                    max_iterations = (unsigned int) max_iterations_raw;
+            }
             explicit_iterations = true;
             break;
         case OPT_STDEV:
@@ -215,7 +219,7 @@ main(int argc, char **argv)
     if (explicit_iterations) {
         stdev = 0;
         bench_start2(&bench);
-        for (int i = 0; i < max_iterations; i++) {
+        for (unsigned int i = 0; i < max_iterations; i++) {
 #ifndef KEYMAP_DUMP
             keymap = xkb_keymap_new_from_string(
                 context, keymap_str,
@@ -272,15 +276,16 @@ main(int argc, char **argv)
     bench_elapsed(&bench, &total_elapsed);
     if (explicit_iterations) {
         fprintf(stderr,
-                "mean: %lld µs; compiled %d keymaps in %ld.%06lds\n",
+                "mean: %lld µs; compiled %u keymaps in %ld.%06lds\n",
                 est.elapsed / 1000, max_iterations,
                 total_elapsed.seconds, total_elapsed.nanoseconds / 1000);
     } else {
         fprintf(stderr,
-                "mean: %lld µs; stdev: %f%% (target: %f%%); "
-                "last run: compiled %d keymaps in %ld.%06lds; "
-                "total time: %ld.%06lds\n",
-                est.elapsed / 1000, est.stdev * 100.0 / est.elapsed, stdev * 100,
+                "mean: %lld µs; stdev: %Lf%% (target: %f%%); "
+                "last run: compiled %u keymaps in %ld.%06lds; "
+                "total time: %ld.%06lds\n", est.elapsed / 1000,
+                (long double) est.stdev * 100.0 / (long double) est.elapsed,
+                stdev * 100,
                 max_iterations, elapsed.seconds, elapsed.nanoseconds / 1000,
                 total_elapsed.seconds, total_elapsed.nanoseconds / 1000);
     }

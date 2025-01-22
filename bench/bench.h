@@ -80,8 +80,8 @@ bench_elapsed_str(const struct bench *bench);
     bench_elapsed(&_bench, &_t1);                                                 \
     do {                                                                          \
         bench_start2(&_bench);                                                    \
-        for (int k = 0; k < 2 * n; k++) {                                         \
-            do { __VA_ARGS__ } while (0);                                         \
+        for (unsigned int k = 0; k < 2 * n; k++) {                                \
+            __VA_ARGS__                                                           \
         }                                                                         \
         bench_stop2(&_bench);                                                     \
         bench_elapsed(&_bench, &_t2);                                             \

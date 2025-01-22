@@ -145,7 +145,7 @@ predict(long long t1, long long t2, struct estimate *est)
 {
     const long long t = fit(t1, t2);
     est->elapsed = t;
-    est->stdev = trunc(sqrt((double)sqr(t1 - t) + (double)sqr(t2 - 2 * t)));
+    est->stdev = truncl(sqrtl((long double)sqr(t1 - t) + (long double)sqr(t2 - 2 * t)));
 }
 
 #define high(t, prec) ((t) + (prec))
