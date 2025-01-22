@@ -24,6 +24,13 @@
 #ifndef COMPOSE_PARSER_H
 #define COMPOSE_PARSER_H
 
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdio.h>
+
+#include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-compose.h"
+
 #define MAX_LHS_LEN 10
 #define MAX_INCLUDE_DEPTH 5
 /** Maximum size of the string returned by xkb_compose_state_get_utf8() */

@@ -27,6 +27,8 @@
 #ifndef XKBCOMP_INCLUDE_H
 #define XKBCOMP_INCLUDE_H
 
+#include "ast.h"
+
 /* Reasonable threshold, with plenty of margin for keymaps in the wild */
 #define INCLUDE_MAX_DEPTH 15
 

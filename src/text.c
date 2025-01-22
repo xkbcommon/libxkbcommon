@@ -26,7 +26,6 @@
 
 #include "config.h"
 
-#include "keymap.h"
 #include "keysym.h"
 #include "text.h"
 

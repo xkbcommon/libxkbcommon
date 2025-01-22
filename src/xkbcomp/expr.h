@@ -27,6 +27,10 @@
 #ifndef XKBCOMP_EXPR_H
 #define XKBCOMP_EXPR_H
 
+#include "ast.h"
+#include "keymap.h"
+#include "text.h"
+
 bool
 ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
                const char **elem_rtrn, const char **field_rtrn,

@@ -27,6 +27,9 @@
 #ifndef XKBCOMP_ACTION_H
 #define XKBCOMP_ACTION_H
 
+#include "ast.h"
+#include "keymap.h"
+
 /*
  * This struct contains the default values which every new action
  * (e.g. in an interpret statement) starts off with. It can be

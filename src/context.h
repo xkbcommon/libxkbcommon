@@ -26,8 +26,13 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
+#include <stddef.h>
+
+#include "xkbcommon/xkbcommon.h"
 #include "atom.h"
+#include "darray.h"
 #include "messages-codes.h"
+#include "utils.h"
 
 struct xkb_context {
     int refcnt;

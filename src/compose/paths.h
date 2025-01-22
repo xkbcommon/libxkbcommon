@@ -24,6 +24,8 @@
 #ifndef COMPOSE_RESOLVE_H
 #define COMPOSE_RESOLVE_H
 
+#include "xkbcommon/xkbcommon.h"
+
 char *
 resolve_locale(struct xkb_context *ctx, const char *locale);
 

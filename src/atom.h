@@ -24,6 +24,10 @@
 #ifndef ATOM_H
 #define ATOM_H
 
+#include <stddef.h>
+#include <stdint.h>
+#include <stdbool.h>
+
 typedef uint32_t xkb_atom_t;
 
 #define XKB_ATOM_NONE 0

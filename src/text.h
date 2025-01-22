@@ -24,6 +24,12 @@
 #ifndef TEXT_H
 #define TEXT_H
 
+#include <stdbool.h>
+
+#include "xkbcommon/xkbcommon.h"
+#include "atom.h"
+#include "keymap.h"
+
 typedef struct {
     const char *name;
     unsigned int value;
