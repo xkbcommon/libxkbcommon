@@ -27,6 +27,8 @@
 #ifndef XKBCOMP_AST_BUILD_H
 #define XKBCOMP_AST_BUILD_H
 
+#include "ast.h"
+
 ExprDef *
 ExprCreateString(xkb_atom_t str);
 

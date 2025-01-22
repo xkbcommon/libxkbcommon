@@ -27,6 +27,10 @@
 #ifndef XKBCOMMON_UTF8_H
 #define XKBCOMMON_UTF8_H
 
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
 int
 utf32_to_utf8(uint32_t unichar, char *buffer);
 

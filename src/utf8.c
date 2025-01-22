@@ -26,10 +26,6 @@
 
 #include "config.h"
 
-#include <stddef.h>
-#include <stdbool.h>
-#include <inttypes.h>
-
 #include "utf8.h"
 
 /* Conformant encoding form conversion from UTF-32 to UTF-8.

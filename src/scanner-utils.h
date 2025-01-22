@@ -24,6 +24,15 @@
 #ifndef XKBCOMP_SCANNER_UTILS_H
 #define XKBCOMP_SCANNER_UTILS_H
 
+#include <stdbool.h>
+#include <stddef.h>
+#include <string.h>
+
+#include "context.h"
+#include "darray.h"
+#include "messages-codes.h"
+#include "utils.h"
+
 /* Point to some substring in the file; used to avoid copying. */
 struct sval {
     const char *start;

@@ -50,6 +50,11 @@
 #ifndef XKBCOMP_AST_H
 #define XKBCOMP_AST_H
 
+#include "xkbcommon/xkbcommon.h"
+
+#include "atom.h"
+#include "darray.h"
+
 enum xkb_file_type {
     /* Component files, by order of compilation. */
     FILE_TYPE_KEYCODES = 0,

@@ -24,6 +24,10 @@
 #ifndef XKBCOMP_RULES_H
 #define XKBCOMP_RULES_H
 
+#include <stdbool.h>
+
+#include "xkbcomp-priv.h"
+
 bool
 xkb_components_from_rules(struct xkb_context *ctx,
                           const struct xkb_rule_names *rmlvo,
