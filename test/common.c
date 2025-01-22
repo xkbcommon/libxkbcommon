@@ -288,7 +288,7 @@ test_read_file(const char *path_rel)
 {
     struct stat info;
     char *ret, *tmp, *path;
-    int fd, count, remaining;
+    int fd;
 
     path = test_get_path(path_rel);
     if (!path)
@@ -310,9 +310,10 @@ test_read_file(const char *path_rel)
         return NULL;
     }
 
-    remaining = info.st_size;
+    size_t remaining = info.st_size;
+    ssize_t count;
     tmp = ret;
-    while ((count = read(fd, tmp, remaining))) {
+    while ((count = read(fd, tmp, remaining)) > 0) {
         remaining -= count;
         tmp += count;
     }
