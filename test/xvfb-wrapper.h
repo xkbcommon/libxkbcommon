@@ -62,7 +62,7 @@ static int _func(char* display); \
 static const struct test_function _test_##_func \
 SET_TEST_ELF_SECTION(TEST_ELF_SECTION) = { \
     .name = #_func, \
-    .func = _func, \
+    .func = (_func), \
     .file = __FILE__, \
 }; \
 static int _func(char* display)

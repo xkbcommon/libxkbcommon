@@ -43,5 +43,5 @@ _steal(void *ptr) {
     _steal(ptr_)
 #else
 #define steal(ptr_) \
-    (__typeof__(*ptr_))_steal(ptr_)
+    (__typeof__(*(ptr_)))_steal(ptr_)
 #endif

@@ -541,12 +541,12 @@ extract_layout_index(const char *s, size_t max_len, xkb_layout_index_t *out)
 
 #define parse_layout_int_index(s, endptr, index, out)              \
     char *endptr;                                                  \
-    long index = strtol(&s[1], &endptr, 10);                       \
+    long index = strtol(&(s)[1], &endptr, 10);                     \
     if (index < 0 || endptr[0] != ']' || index > XKB_MAX_GROUPS)   \
         return -1;                                                 \
     /* To zero-based index. */                                     \
-    *out = (xkb_layout_index_t)index - 1;                          \
-    return (int)(endptr - s + 1) /* == length "[index]" */
+    *(out) = (xkb_layout_index_t)index - 1;                        \
+    return (int)(endptr - (s) + 1) /* == length "[index]" */
 
     parse_layout_int_index(s, endptr, index, out);
 }
@@ -583,7 +583,7 @@ extract_mapping_layout_index(const char *s, size_t max_len,
 #define if_index(s, index, out)                                    \
     /* Compare s against "index]" */                               \
     if (strncmp(s, index##_STR "]", sizeof(index##_STR)) == 0) {   \
-        *out = index;                                              \
+        *(out) = index;                                            \
         return sizeof(index##_STR) + 1; /* == length("[index]") */ \
     }
     else if_index(&s[1], LAYOUT_INDEX_SINGLE, out)
@@ -1235,31 +1235,31 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
         }
 #define process_component(_component, m, value, idx, candidate_layouts, to,  \
                           match_type, matched)                               \
-            if (m->mapping.has_layout_idx_range) {                           \
+            if ((m)->mapping.has_layout_idx_range) {                         \
                 /* Special index: loop over the index range */               \
-                for (idx = m->mapping.layout_idx_min;                        \
-                     idx < m->mapping.layout_idx_max;                        \
-                     idx++)                                                  \
+                for ((idx) = (m)->mapping.layout_idx_min;                    \
+                     (idx) < (m)->mapping.layout_idx_max;                    \
+                     (idx)++)                                                \
                 {                                                            \
                     /* Process only if index not skipped */                  \
-                    xkb_layout_mask_t mask = UINT32_C(1) << idx;             \
-                    if (candidate_layouts & mask) {                          \
-                        to = &darray_item(m->rmlvo._component, idx);         \
+                    const xkb_layout_mask_t mask = UINT32_C(1) << (idx);     \
+                    if ((candidate_layouts) & mask) {                        \
+                        (to) = &darray_item((m)->rmlvo._component, (idx));   \
                         if (match_value_and_mark(m, value, to, match_type,   \
                                                  WILDCARD_MATCH_NONEMPTY)) { \
                             /* Mark matched, keep index */                   \
-                            matched = true;                                  \
+                            (matched) = true;                                \
                         } else {                                             \
                             /* Not matched, remove index */                  \
-                            candidate_layouts &= ~mask;                      \
+                            (candidate_layouts) &= ~mask;                    \
                         }                                                    \
                     }                                                        \
                 }                                                            \
             } else {                                                         \
                 /* Numeric index or no index */                              \
-                to = &darray_item(m->rmlvo._component,                       \
-                                  m->mapping.layout_idx_min);                \
-                matched = match_value_and_mark(m, value, to, match_type,     \
+                (to) = &darray_item((m)->rmlvo._component,                   \
+                                  (m)->mapping.layout_idx_min);              \
+                (matched) = match_value_and_mark(m, value, to, match_type,   \
                                                WILDCARD_MATCH_NONEMPTY);     \
             }
         else if (mlvo == MLVO_LAYOUT) {

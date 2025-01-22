@@ -325,13 +325,13 @@ typedef uint32_t xkb_led_mask_t;
  * Test whether a value is a valid extended keycode.
  * @sa xkb_keycode_t
  **/
-#define xkb_keycode_is_legal_ext(key) (key <= XKB_KEYCODE_MAX)
+#define xkb_keycode_is_legal_ext(key) ((key) <= XKB_KEYCODE_MAX)
 
 /**
  * Test whether a value is a valid X11 keycode.
  * @sa xkb_keycode_t
  */
-#define xkb_keycode_is_legal_x11(key) (key >= 8 && key <= 255)
+#define xkb_keycode_is_legal_x11(key) ((key) >= 8 && (key) <= 255)
 
 /**
  * Names to compile a keymap with, also known as RMLVO.
