@@ -89,7 +89,10 @@ escape_utf8_string_literal(const char *from)
         previous_is_hex_escape = false;
     }
     to[t++] = '\0';
-    return realloc(to, t);
+    char* ret = realloc(to, t);
+    if (!ret)
+        free(to);
+    return ret;
 }
 
 #endif
