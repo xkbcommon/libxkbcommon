@@ -199,12 +199,13 @@ os_create_anonymous_file(off_t size)
         return -1;
     }
 
-    name = malloc(strlen(path) + sizeof(template));
+    const size_t len = strlen(path);
+    name = malloc(len + sizeof(template));
     if (!name)
         return -1;
 
-    strcpy(name, path);
-    strcat(name, template);
+    memcpy(name, path, len);
+    memcpy(name + len, template, sizeof(template));
 
     fd = create_tmpfile_cloexec(name);
 

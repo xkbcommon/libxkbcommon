@@ -734,10 +734,10 @@ rhs:
                          "right-hand side string is too long: "
                          "expected max: %d, got: %d; skipping line",
                          (int)sizeof(production.string) - 1,
-                         (int)val.string.len);
+                         (int)val.string.len - 1);
             goto skip;
         }
-        strcpy(production.string, val.string.str);
+        memcpy(production.string, val.string.str, val.string.len);
         production.has_string = true;
         goto rhs;
     case TOK_IDENT:
