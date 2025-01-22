@@ -250,6 +250,50 @@ test_multi_keysyms_actions(struct xkb_context *ctx)
 #undef run_test
 }
 
+static void
+test_invalid_symbols_fields(struct xkb_context *ctx)
+{
+    /* Any of the following is invalid syntax, but also use to trigger
+     * a NULL pointer deference, thus this regression test */
+    const char * const keymaps[] = {
+        "xkb_keymap {\n"
+        "    xkb_keycodes { <> = 9; };\n"
+        "    xkb_types { };\n"
+        "    xkb_compat { };\n"
+        "    xkb_symbols { key <> { vmods = [] }; };\n"
+        "};",
+        "xkb_keymap {\n"
+        "    xkb_keycodes { <> = 9; };\n"
+        "    xkb_types { };\n"
+        "    xkb_compat { };\n"
+        "    xkb_symbols { key <> { repeat = [] }; };\n"
+        "};",
+        "xkb_keymap {\n"
+        "    xkb_keycodes { <> = 9; };\n"
+        "    xkb_types { };\n"
+        "    xkb_compat { };\n"
+        "    xkb_symbols { key <> { type = [] }; };\n"
+        "};",
+        "xkb_keymap {\n"
+        "    xkb_keycodes { <> = 9; };\n"
+        "    xkb_types { };\n"
+        "    xkb_compat { };\n"
+        "    xkb_symbols { key <> { groupswrap = [] }; };\n"
+        "};",
+        "xkb_keymap {\n"
+        "    xkb_keycodes { <> = 9; };\n"
+        "    xkb_types { };\n"
+        "    xkb_compat { };\n"
+        "    xkb_symbols { key <> { groupsredirect = [] }; };\n"
+        "};"
+    };
+    for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        const struct xkb_keymap *keymap =
+            test_compile_buffer(ctx, keymaps[k], strlen(keymaps[k]));
+        assert(!keymap);
+    }
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -315,6 +359,7 @@ main(int argc, char *argv[])
 
     test_recursive(ctx);
     test_multi_keysyms_actions(ctx);
+    test_invalid_symbols_fields(ctx);
 
     xkb_context_unref(ctx);
 

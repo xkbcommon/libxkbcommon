@@ -184,6 +184,12 @@ ExprCreateArrayRef(xkb_atom_t element, xkb_atom_t field, ExprDef *entry)
 }
 
 ExprDef *
+ExprEmptyList(void)
+{
+    return ExprCreate(EXPR_EMPTY_LIST, EXPR_TYPE_UNKNOWN, sizeof(ExprCommon));
+}
+
+ExprDef *
 ExprCreateAction(xkb_atom_t name, ExprDef *args)
 {
     ExprDef *expr = ExprCreate(EXPR_ACTION_DECL, EXPR_TYPE_UNKNOWN, sizeof(ExprAction));
@@ -851,6 +857,7 @@ static const char *expr_op_type_strings[_EXPR_NUM_VALUES] = {
     [EXPR_ACTION_DECL] = "action declaration",
     [EXPR_FIELD_REF] = "field reference",
     [EXPR_ARRAY_REF] = "array reference",
+    [EXPR_EMPTY_LIST] = "empty list",
     [EXPR_KEYSYM_LIST] = "list of keysyms",
     [EXPR_ACTION_LIST] = "list of actions",
     [EXPR_ADD] = "addition",

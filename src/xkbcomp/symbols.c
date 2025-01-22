@@ -825,7 +825,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
     groupi = &darray_item(keyi->groups, ndx);
 
-    if (value == NULL) {
+    if (value->expr.op == EXPR_EMPTY_LIST) {
         groupi->defined |= GROUP_FIELD_SYMS;
         return true;
     }
@@ -913,7 +913,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
     groupi = &darray_item(keyi->groups, ndx);
 
-    if (value == NULL) {
+    if (value->expr.op == EXPR_EMPTY_LIST) {
         groupi->defined |= GROUP_FIELD_ACTS;
         return true;
     }
@@ -1262,8 +1262,8 @@ HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
 
     for (; def; def = (VarDef *) def->common.next) {
         if (!def->name) {
-            if (!def->value || def->value->expr.op == EXPR_KEYSYM_LIST)
-                field = "symbols";
+            if (unlikely(!def->value) || def->value->expr.op != EXPR_ACTION_LIST)
+                field = "symbols"; /* Default to symbols field */
             else
                 field = "actions";
             arrayNdx = NULL;
@@ -1280,6 +1280,13 @@ HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
                 ok = false;
                 continue;
             }
+        }
+        if (unlikely(!def->value)) {
+            log_err(info->ctx, XKB_ERROR_ALLOCATION_ERROR,
+                    "Could not allocate the value of field \"%s\". "
+                    "Statement ignored.\n", field);
+            ok = false;
+            continue;
         }
 
         if (ok)

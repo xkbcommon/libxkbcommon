@@ -485,7 +485,7 @@ ArrayInit       :       OBRACKET MultiKeySymList CBRACKET
                 |       OBRACKET MultiActionList CBRACKET
                         { $$ = $2; }
                 |       OBRACKET CBRACKET
-                        { $$ = NULL; }
+                        { $$ = ExprEmptyList(); }
                 ;
 
 GroupCompatDecl :       GROUP Integer EQUALS Expr SEMI

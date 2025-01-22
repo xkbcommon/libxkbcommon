@@ -189,6 +189,7 @@ ExprResolveBoolean(struct xkb_context *ctx, const ExprDef *expr,
     case EXPR_ASSIGN:
     case EXPR_NEGATE:
     case EXPR_UNARY_PLUS:
+    case EXPR_EMPTY_LIST:
     case EXPR_ACTION_DECL:
     case EXPR_ACTION_LIST:
     case EXPR_KEYSYM_LIST:
@@ -500,6 +501,7 @@ ExprResolveString(struct xkb_context *ctx, const ExprDef *expr,
     case EXPR_INVERT:
     case EXPR_NOT:
     case EXPR_UNARY_PLUS:
+    case EXPR_EMPTY_LIST:
     case EXPR_ACTION_DECL:
     case EXPR_ACTION_LIST:
     case EXPR_KEYSYM_LIST:
