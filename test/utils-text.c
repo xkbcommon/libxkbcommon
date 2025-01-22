@@ -165,6 +165,7 @@ concat_lines(struct text_line *lines, size_t length,
         memcpy(out, lines[i].start, lines[i].length);
         out += lines[i].length;
     }
+    *out = '\0';
     return (size_t)(out - output);
 }
 

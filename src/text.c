@@ -26,6 +26,8 @@
 
 #include "config.h"
 
+#include <assert.h>
+
 #include "keysym.h"
 #include "text.h"
 
@@ -273,7 +275,11 @@ ModMaskText(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     if (unlikely(mask & ~((UINT64_C(1) << mods->num_mods) - 1))) {
         /* If we get a mask that cannot be expressed with the known modifiers,
          * print it as hexadecimal */
-        snprintf(buf + pos, sizeof(buf) - pos, "0x%"PRIx32, mask);
+        const int ret = snprintf(buf, sizeof(buf), "0x%"PRIx32, mask);
+        static_assert(sizeof(mask) == 4 && sizeof(buf) >= sizeof("0xffffffff"),
+                      "Buffer too small");
+        assert(ret >= 0 && (size_t) ret < sizeof(buf));
+        pos = (size_t) ret;
     } else {
         /* Print known mods */
         xkb_mods_mask_foreach(mask, mod, mods) {
@@ -286,8 +292,9 @@ ModMaskText(struct xkb_context *ctx, const struct xkb_mod_set *mods,
                 pos += ret;
         }
     }
+    pos++;
 
-    return strcpy(xkb_context_get_buffer(ctx, pos + 1), buf);
+    return memcpy(xkb_context_get_buffer(ctx, pos), buf, pos);
 }
 
 const char *
@@ -315,8 +322,9 @@ LedStateMaskText(struct xkb_context *ctx, enum xkb_state_component mask)
         else
             pos += ret;
     }
+    pos++;
 
-    return strcpy(xkb_context_get_buffer(ctx, pos + 1), buf);
+    return memcpy(xkb_context_get_buffer(ctx, pos), buf, pos);
 }
 
 const char *
@@ -347,6 +355,7 @@ ControlMaskText(struct xkb_context *ctx, enum xkb_action_controls mask)
         else
             pos += ret;
     }
+    pos++;
 
-    return strcpy(xkb_context_get_buffer(ctx, pos + 1), buf);
+    return memcpy(xkb_context_get_buffer(ctx, pos), buf, pos);
 }
