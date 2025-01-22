@@ -111,6 +111,8 @@ enum expr_op_type {
     EXPR_ACTION_DECL,
     EXPR_FIELD_REF,
     EXPR_ARRAY_REF,
+    /* Needed because of the ambiguity between keysym and action empty lists */
+    EXPR_EMPTY_LIST,
     EXPR_KEYSYM_LIST,
     EXPR_ACTION_LIST,
     EXPR_ADD,

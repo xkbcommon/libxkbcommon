@@ -59,6 +59,9 @@ ExprDef *
 ExprCreateArrayRef(xkb_atom_t element, xkb_atom_t field, ExprDef *entry);
 
 ExprDef *
+ExprEmptyList(void);
+
+ExprDef *
 ExprCreateAction(xkb_atom_t name, ExprDef *args);
 
 ExprDef *
