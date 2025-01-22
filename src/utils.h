@@ -55,10 +55,6 @@ typedef SSIZE_T ssize_t;
 
 #include "darray.h"
 
-#define STATIC_ASSERT(expr, message) do { \
-    switch (0) { case 0: case (expr): ; } \
-} while (0)
-
 #define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
