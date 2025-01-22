@@ -1152,7 +1152,8 @@ append_expanded_kccgst_value(struct matcher *m, struct scanner *s,
                 break;
             /* Expansion */
             case '%':
-                if (++i >= value.len ||
+                i++;
+                if (i >= value.len ||
                     !expand_rmlvo_in_kccgst_value(m, s, value, layout_idx,
                                                   &expanded, &i))
                         goto error;
