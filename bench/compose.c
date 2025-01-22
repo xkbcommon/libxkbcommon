@@ -59,7 +59,7 @@ main(void)
 
     bench_start(&bench);
     for (int i = 0; i < BENCHMARK_ITERATIONS; i++) {
-        rewind(file);
+        fseek(file, 0, SEEK_SET);
         table = xkb_compose_table_new_from_file(ctx, file, "",
                                                 XKB_COMPOSE_FORMAT_TEXT_V1,
                                                 XKB_COMPOSE_COMPILE_NO_FLAGS);

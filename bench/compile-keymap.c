@@ -185,7 +185,7 @@ main(int argc, char **argv)
     if (!keymap) {
         fprintf(stderr, "ERROR: Cannot compile keymap.\n");
         goto keymap_error;
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 #ifndef KEYMAP_DUMP
     char *keymap_str = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_FORMAT_TEXT_V1);
@@ -196,12 +196,20 @@ main(int argc, char **argv)
     fflush(stdout);
     int stdout_old = dup(STDOUT_FILENO);
     int stdout_new = open("/dev/null", O_WRONLY);
-    dup2(stdout_new, STDOUT_FILENO);
+    if (stdout_old == -1 || stdout_new == -1 ||
+        dup2(stdout_new, STDOUT_FILENO) == -1) {
+        perror("Stdout error");
+        exit(EXIT_FAILURE);
+    }
     close(stdout_new);
     fflush(stderr);
     int stderr_old = dup(STDERR_FILENO);
     int stderr_new = open("/dev/null", O_WRONLY);
-    dup2(stderr_new, STDERR_FILENO);
+    if (stderr_old == -1 || stderr_new == -1 ||
+        dup2(stderr_new, STDERR_FILENO) == -1) {
+        perror("Stderr error");
+        exit(EXIT_FAILURE);
+    }
     close(stderr_new);
 
     if (explicit_iterations) {
