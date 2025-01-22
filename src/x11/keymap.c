@@ -360,6 +360,7 @@ get_types(struct xkb_keymap *keymap, xcb_connection_t *conn,
 
     keymap->num_types = reply->nTypes;
     ALLOC_OR_FAIL(keymap->types, keymap->num_types);
+    assert(types_length == (int) keymap->num_types);
 
     for (int i = 0; i < types_length; i++) {
         xcb_xkb_key_type_t *wire_type = types_iter.data;
@@ -379,6 +380,7 @@ get_types(struct xkb_keymap *keymap, xcb_connection_t *conn,
 
             type->num_entries = wire_type->nMapEntries;
             ALLOC_OR_FAIL(type->entries, type->num_entries);
+            assert(entries_length == (int) type->num_entries);
 
             for (int j = 0; j < entries_length; j++) {
                 xcb_xkb_kt_map_entry_t *wire_entry = entries_iter.data;
