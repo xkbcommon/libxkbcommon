@@ -237,10 +237,10 @@ main(int argc, char *argv[])
 
     /* Wild card does not match empty entries for layouts and variants */
 #define ENTRY(_model, _layout, _variant, _options, _symbols, _layouts, _fail) \
-    { .rules = "wildcard", .model = _model,                                   \
-      .layout = _layout, .variant = _variant, .options = _options,            \
+    { .rules = "wildcard", .model = (_model),                                 \
+      .layout = (_layout), .variant = (_variant), .options = (_options),      \
       .keycodes = "evdev", .types = "complete", .compat = "complete",         \
-      .symbols = _symbols , .explicit_layouts = _layouts, .should_fail = _fail }
+      .symbols = (_symbols) , .explicit_layouts = (_layouts), .should_fail = (_fail) }
     struct test_data wildcard_data[] = {
         /* OK: empty model and options and at least one layout+variant combo */
         ENTRY(NULL, "a"  , "1"  , NULL, "pc+a(1)", 1, false),
@@ -284,11 +284,11 @@ main(int argc, char *argv[])
 
 #define ENTRY2(_rules, _model, _layout, _variant, _options,                \
                _keycodes, _types, _compat, _symbols, _count, _should_fail) \
-    { .rules = _rules, .model = _model,                                    \
-      .layout = _layout, .variant = _variant, .options = _options,         \
-      .keycodes = _keycodes, .types = _types, .compat = _compat,           \
-      .symbols = _symbols , .explicit_layouts = _count,                    \
-      .should_fail = _should_fail }
+    { .rules = (_rules), .model = _model,                                  \
+      .layout = (_layout), .variant = (_variant), .options = (_options),   \
+      .keycodes = (_keycodes), .types = (_types), .compat = (_compat),     \
+      .symbols = (_symbols) , .explicit_layouts = (_count),                \
+      .should_fail = (_should_fail) }
 #define ENTRY(layout, variant, options, symbols, count, should_fail)           \
         ENTRY2("special_indexes", NULL, layout, variant, options,              \
                "default_keycodes", "default_types", "default_compat", symbols, \

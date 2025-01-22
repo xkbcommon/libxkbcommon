@@ -85,7 +85,7 @@ find_keysym_index(xkb_keysym_t ks)
     return -1;
 }
 
-#define get_name_by_index(index) keysym_names + index
+#define get_name_by_index(index) (keysym_names + (index))
 
 static inline const char *
 get_name(const struct name_keysym *entry)

@@ -137,8 +137,8 @@ bench_elapsed_str(const struct bench *bench)
 
 /* Utils for bench method adapted from: https://hackage.haskell.org/package/tasty-bench */
 
-#define fit(x1, x2) (x1) / 5 + 2 * ((x2) / 5)
-#define sqr(x) (x) * (x)
+#define fit(x1, x2) ((x1) / 5 + 2 * ((x2) / 5))
+#define sqr(x) ((x) * (x))
 
 static void
 predict(long long t1, long long t2, struct estimate *est)
@@ -148,8 +148,8 @@ predict(long long t1, long long t2, struct estimate *est)
     est->stdev = trunc(sqrt((double)sqr(t1 - t) + (double)sqr(t2 - 2 * t)));
 }
 
-#define high(t, prec) t + prec
-#define low(t, prec) t - prec
+#define high(t, prec) ((t) + (prec))
+#define low(t, prec) ((t) - (prec))
 #define MIN_PRECISION 1000000 /* 1ms */
 
 void

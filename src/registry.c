@@ -718,7 +718,7 @@ struct config_item {
     .description = NULL, \
     .brief = NULL, \
     .vendor = NULL, \
-    .popularity = popularity_ \
+    .popularity = (popularity_) \
 }
 
 static void

@@ -407,27 +407,27 @@ test_serialisation(struct xkb_keymap *keymap)
 
     for (unsigned k = 0; k < ARRAY_SIZE(test_data); k++) {
         const struct test_active_mods_entry *entry = &test_data[k];
-#define check_mods(keymap, state, entry, type)                                      \
+#define check_mods(keymap, state_, entry, type)                                     \
         for (xkb_mod_index_t idx = 0; idx < xkb_keymap_num_mods(keymap); idx++) {   \
-            xkb_mod_mask_t mask = UINT32_C(1) << idx;                                        \
-            bool expected = !!(mask & entry->active);                               \
-            bool got = !!xkb_state_mod_index_is_active(state, idx, type);           \
+            xkb_mod_mask_t mask = UINT32_C(1) << idx;                               \
+            bool expected = !!(mask & (entry)->active);                             \
+            bool got = !!xkb_state_mod_index_is_active(state_, idx, type);          \
             fprintf(stderr, "#%u State 0x%x, mod: %u: expected %u, got: %u\n",      \
-                    k, entry->state, idx, expected, got);                           \
+                    k, (entry)->state, idx, expected, got);                         \
             assert_printf(got == expected,                                          \
                           "xkb_state_mod_index_is_active, " STRINGIFY2(type) "\n"); \
-            got = !!xkb_state_mod_index_is_active(state, idx,                       \
+            got = !!xkb_state_mod_index_is_active(state_, idx,                      \
                                                   XKB_STATE_MODS_EFFECTIVE);        \
             assert_printf(got == expected, "xkb_state_mod_index_is_active, "        \
                           STRINGIFY2(XKB_STATE_MODS_EFFECTIVE) "\n");               \
             got = !!xkb_state_mod_indices_are_active(                               \
-                        state, type,                                                \
+                        state_, type,                                               \
                         XKB_STATE_MATCH_ALL | XKB_STATE_MATCH_NON_EXCLUSIVE,        \
                         idx, XKB_MOD_INVALID);                                      \
             assert_printf(got == expected, "xkb_state_mod_indices_are_active, "     \
                           STRINGIFY2(type) "\n");                                   \
             got = !!xkb_state_mod_indices_are_active(                               \
-                        state, XKB_STATE_MODS_EFFECTIVE,                            \
+                        state_, XKB_STATE_MODS_EFFECTIVE,                           \
                         XKB_STATE_MATCH_ALL | XKB_STATE_MATCH_NON_EXCLUSIVE,        \
                         idx, XKB_MOD_INVALID);                                      \
             assert_printf(got == expected, "xkb_state_mod_indices_are_active, "     \
@@ -1043,10 +1043,10 @@ test_get_utf8_utf32(struct xkb_keymap *keymap)
     assert(state);
 
 #define TEST_KEY(key, expected_utf8, expected_utf32) do { \
-    assert(xkb_state_key_get_utf8(state, key + EVDEV_OFFSET, NULL, 0) == strlen(expected_utf8)); \
-    assert(xkb_state_key_get_utf8(state, key + EVDEV_OFFSET, buf, sizeof(buf)) == strlen(expected_utf8)); \
+    assert(xkb_state_key_get_utf8(state, (key) + EVDEV_OFFSET, NULL, 0) == strlen(expected_utf8)); \
+    assert(xkb_state_key_get_utf8(state, (key) + EVDEV_OFFSET, buf, sizeof(buf)) == strlen(expected_utf8)); \
     assert(memcmp(buf, expected_utf8, sizeof(expected_utf8)) == 0); \
-    assert(xkb_state_key_get_utf32(state, key + EVDEV_OFFSET) == expected_utf32); \
+    assert(xkb_state_key_get_utf32(state, (key) + EVDEV_OFFSET) == (expected_utf32)); \
 } while (0)
 
     /* Simple ASCII. */

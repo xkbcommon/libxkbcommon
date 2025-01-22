@@ -60,9 +60,9 @@ void
 bench_elapsed(const struct bench *bench, struct bench_time *result);
 
 #define bench_time_elapsed_microseconds(elapsed) \
-    (elapsed)->nanoseconds / 1000 + 1000000 * (elapsed)->seconds
+    ((elapsed)->nanoseconds / 1000 + 1000000 * (elapsed)->seconds)
 #define bench_time_elapsed_nanoseconds(elapsed) \
-    (elapsed)->nanoseconds + 1000000000 * (elapsed)->seconds
+    ((elapsed)->nanoseconds + 1000000000 * (elapsed)->seconds)
 
 /* The caller is responsibile to free() the returned string. */
 char *
@@ -102,8 +102,8 @@ predictPerturbed(const struct bench_time *t1, const struct bench_time *t2,
                  struct estimate *est);
 
 #define scale_estimate(est, n) do { \
-    est.elapsed /= n;               \
-    est.stdev /= n;                 \
+    (est).elapsed /= (n);           \
+    (est).stdev /= (n);             \
 } while (0);
 
 #endif /* LIBXKBCOMMON_BENCH_H */

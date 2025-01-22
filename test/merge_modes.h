@@ -135,9 +135,9 @@ enum update_files {
     assert(test_compile_output(                                                        \
         ctx, compile, priv,                                                            \
         "test_merge_mode: " map ", " #localness " " #merge_mode,                       \
-        (update == UPDATE_USING_TEST_INPUT) ? keymap_ref_str : keymap_test_str,        \
-        (update == UPDATE_USING_TEST_INPUT) ? ARRAY_SIZE(keymap_ref_str)               \
-                                            : ARRAY_SIZE(keymap_test_str),             \
+        ((update) == UPDATE_USING_TEST_INPUT) ? keymap_ref_str : keymap_test_str,      \
+        ((update) == UPDATE_USING_TEST_INPUT) ? ARRAY_SIZE(keymap_ref_str)             \
+                                              : ARRAY_SIZE(keymap_test_str),           \
         /* Local and global merge modes use the same result file */                    \
         GOLDEN_TESTS_OUTPUTS #merge_mode map file_suffix ".xkb",                       \
         !!update));                                                                    \

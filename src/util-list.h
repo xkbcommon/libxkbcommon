@@ -52,20 +52,20 @@ bool list_is_last(const struct list *list, const struct list *elm);
 		 offsetof(__typeof__(type), member))
 
 #define list_first_entry(head, pos, member)				\
-	container_of((head)->next, __typeof__(*pos), member)
+	container_of((head)->next, __typeof__(*(pos)), member)
 
 #define list_last_entry(head, pos, member)				\
-	container_of((head)->prev, __typeof__(*pos), member)
+	container_of((head)->prev, __typeof__(*(pos)), member)
 
 #define list_for_each(pos, head, member)				\
-	for (pos = 0, pos = list_first_entry(head, pos, member);	\
-	     &pos->member != (head);					\
-	     pos = list_first_entry(&pos->member, pos, member))
+	for ((pos) = 0, (pos) = list_first_entry(head, pos, member);	\
+	     &(pos)->member != (head);					\
+	     (pos) = list_first_entry(&(pos)->member, pos, member))
 
 #define list_for_each_safe(pos, tmp, head, member)			\
-	for (pos = 0, tmp = 0,						\
-	     pos = list_first_entry(head, pos, member),			\
-	     tmp = list_first_entry(&pos->member, tmp, member);		\
-	     &pos->member != (head);					\
-	     pos = tmp,							\
-	     tmp = list_first_entry(&pos->member, tmp, member))
+	for ((pos) = 0, (tmp) = 0,						\
+	     (pos) = list_first_entry(head, pos, member),			\
+	     (tmp) = list_first_entry(&(pos)->member, tmp, member);		\
+	     &(pos)->member != (head);					\
+	     (pos) = (tmp),							\
+	     (tmp) = list_first_entry(&(pos)->member, tmp, member))
