@@ -762,20 +762,16 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
     return (info->errorCount == 0);
 }
 
-#define SYMBOLS 1
-#define ACTIONS 2
-
 static bool
 GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
-              unsigned what, xkb_layout_index_t *ndx_rtrn)
+              enum group_field field, xkb_layout_index_t *ndx_rtrn)
 {
-    const char *name = (what == SYMBOLS ? "symbols" : "actions");
+    assert (field == GROUP_FIELD_SYMS || field == GROUP_FIELD_ACTS);
+    const char *name = (field == GROUP_FIELD_SYMS ? "symbols" : "actions");
 
     if (arrayNdx == NULL) {
         xkb_layout_index_t i = 0;
         GroupInfo *groupi;
-        enum group_field field = (what == SYMBOLS ?
-                                  GROUP_FIELD_SYMS : GROUP_FIELD_ACTS);
 
         darray_enumerate(i, groupi, keyi->groups) {
             if (!(groupi->defined & field)) {
@@ -820,7 +816,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     GroupInfo *groupi;
     xkb_level_index_t nLevels;
 
-    if (!GetGroupIndex(info, keyi, arrayNdx, SYMBOLS, &ndx))
+    if (!GetGroupIndex(info, keyi, arrayNdx, GROUP_FIELD_SYMS, &ndx))
         return false;
 
     groupi = &darray_item(keyi->groups, ndx);
@@ -908,7 +904,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     GroupInfo *groupi;
     xkb_level_index_t nLevels;
 
-    if (!GetGroupIndex(info, keyi, arrayNdx, ACTIONS, &ndx))
+    if (!GetGroupIndex(info, keyi, arrayNdx, GROUP_FIELD_ACTS, &ndx))
         return false;
 
     groupi = &darray_item(keyi->groups, ndx);
