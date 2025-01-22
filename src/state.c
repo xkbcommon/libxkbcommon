@@ -1171,7 +1171,7 @@ xkb_state_key_get_utf8(struct xkb_state *state, xkb_keycode_t kc,
             goto err_bad;
 
         ret--;
-        if ((size_t) (offset + ret) <= size)
+        if ((size_t) offset + ret <= size)
             memcpy(buffer + offset, tmp, ret);
         offset += ret;
     }

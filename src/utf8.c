@@ -40,7 +40,7 @@ utf32_to_utf8(uint32_t unichar, char *buffer)
     uint8_t head;
 
     if (unichar <= 0x007f) {
-        buffer[0] = unichar;
+        buffer[0] = (char) unichar;
         buffer[1] = '\0';
         return 2;
     }
@@ -65,9 +65,9 @@ utf32_to_utf8(uint32_t unichar, char *buffer)
     }
 
     for (count = length - 1, shift = 0; count > 0; count--, shift += 6)
-        buffer[count] = 0x80 | ((unichar >> shift) & 0x3f);
+        buffer[count] = (char)(0x80 | ((unichar >> shift) & 0x3f));
 
-    buffer[0] = head | ((unichar >> shift) & 0x3f);
+    buffer[0] = (char)(head | ((unichar >> shift) & 0x3f));
     buffer[length] = '\0';
 
     return length + 1;

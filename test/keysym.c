@@ -252,13 +252,13 @@ test_icu_case_mappings(xkb_keysym_t ks)
 
     /* Check predicates */
     bool is_lower = xkb_keysym_is_lower(ks);
-    uint32_t expected = !!u_isULowercase(cp);
+    uint32_t expected = !!u_isULowercase((UChar32) cp);
     uassert_printf(cp, is_lower == expected,
                    "Invalid xkb_keysym_is_lower("KEYSYM") ("CODE_POINT"): "
                    "expected %d, got: %d\n",
                    ks, cp, expected, is_lower);
     bool is_upper_or_title = xkb_keysym_is_upper_or_title(ks);
-    expected = !!(u_isUUppercase(cp) || u_istitle(cp));
+    expected = !!(u_isUUppercase((UChar32) cp) || u_istitle((UChar32) cp));
     uassert_printf(cp, is_upper_or_title == expected,
                    "Invalid xkb_keysym_is_upper_or_title("KEYSYM") ("CODE_POINT"): "
                    "expected %d, got: %d\n",
@@ -268,7 +268,7 @@ test_icu_case_mappings(xkb_keysym_t ks)
     /* Check lower case mapping */
     xkb_keysym_t ks_mapped = xkb_keysym_to_lower(ks);
     expected = to_simple_lower(cp);
-    if (u_istitle(cp)) {
+    if (u_istitle((UChar32) cp)) {
         /* Check that title case letter have simple lower case mappings */
         uassert_printf(cp, ks_mapped != ks && expected != cp,
                        "Invalid title case lower transformation. "
@@ -288,7 +288,7 @@ test_icu_case_mappings(xkb_keysym_t ks)
                        "Expected upper case for keysym "KEYSYM" ("CODE_POINT")\n",
                        ks, cp);
         got = !!xkb_keysym_is_lower(ks_mapped);
-        expected = !!u_isULowercase(cp_mapped);
+        expected = !!u_isULowercase((UChar32) cp_mapped);
         uassert_printf(cp_mapped, got == expected,
                        "Invalid xkb_keysym_is_lower("KEYSYM") ("CODE_POINT"): "
                        "expected %d, got: %d (tested keysym: "KEYSYM")\n",
@@ -308,7 +308,7 @@ test_icu_case_mappings(xkb_keysym_t ks)
     /* Check upper case mapping */
     ks_mapped = xkb_keysym_to_upper(ks);
     expected = to_simple_upper(cp);
-    if (u_istitle(cp)) {
+    if (u_istitle((UChar32) cp)) {
         /* Check title case upper mapping; may be:
          * • simple: 1 code point, or
          * • special: muliple code points */
@@ -359,7 +359,7 @@ test_icu_case_mappings(xkb_keysym_t ks)
                        "Expected lower or title case for keysym "KEYSYM" ("CODE_POINT")\n",
                        ks, cp);
         got = !!xkb_keysym_is_upper_or_title(ks_mapped);
-        expected = !!(u_isUUppercase(cp_mapped) || u_istitle(cp_mapped));
+        expected = !!(u_isUUppercase((UChar32)cp_mapped) || u_istitle((UChar32)cp_mapped));
         uassert_printf(cp_mapped, got == expected,
                        "Invalid xkb_keysym_is_upper_or_title("KEYSYM") ("CODE_POINT"): "
                        "expected %d, got: %d (tested keysym: "KEYSYM")\n",
