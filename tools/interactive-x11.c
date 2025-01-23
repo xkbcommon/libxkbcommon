@@ -253,6 +253,10 @@ process_xkb_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
                               event->state_notify.latchedGroup,
                               event->state_notify.lockedGroup);
         break;
+
+    default:
+        /* Ignore */
+        break;
     }
 }
 
@@ -422,7 +426,7 @@ main(int argc, char *argv[])
         case 'h':
             usage(stdout, argv[0]);
             return EXIT_SUCCESS;
-        case '?':
+        default:
             usage(stderr, argv[0]);
             return EXIT_INVALID_USAGE;
         }

@@ -306,8 +306,9 @@ affect_lock_text(enum xkb_action_flags flags, bool show_both)
         return ",affect=unlock";
     case ACTION_LOCK_NO_LOCK | ACTION_LOCK_NO_UNLOCK:
         return ",affect=neither";
+    default:
+        return "";
     }
-    return "";
 }
 
 #define SYMBOL_PADDING 15
