@@ -31,7 +31,7 @@
 
 #define DATA_PATH "keymaps/stringcomp.data"
 
-static bool
+static void
 test_encodings(struct xkb_context *ctx)
 {
     struct xkb_keymap *keymap;
@@ -39,10 +39,10 @@ test_encodings(struct xkb_context *ctx)
     /* Accept UTF-8 encoded BOM (U+FEFF) */
     const char utf8_with_bom[] =
         "\xef\xbb\xbfxkb_keymap {"
-        "  xkb_keycodes { include \"evdev\" };"
-        "  xkb_types { include \"complete\" };"
-        "  xkb_compat { include \"complete\" };"
-        "  xkb_symbols { include \"pc\" };"
+        "  xkb_keycodes { };"
+        "  xkb_types { };"
+        "  xkb_compat { };"
+        "  xkb_symbols { };"
         "};";
     keymap = test_compile_buffer(ctx, utf8_with_bom, sizeof(utf8_with_bom));
     assert(keymap);
@@ -80,8 +80,6 @@ test_encodings(struct xkb_context *ctx)
         "}\0;";
     keymap = test_compile_buffer(ctx, utf16_be, sizeof(utf16_be));
     assert(!keymap);
-
-    return true;
 }
 
 static void
@@ -117,6 +115,7 @@ test_component_syntax_error(struct xkb_context *ctx)
     };
 
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
         const struct xkb_keymap *keymap =
             test_compile_buffer(ctx, keymaps[k], strlen(keymaps[k]));
         assert(!keymap);
@@ -191,10 +190,9 @@ test_recursive(struct xkb_context *ctx)
         "};"
     };
 
-    const size_t len = ARRAY_SIZE(keymaps);
-
-    for (size_t k = 0; k < len; k++) {
-        fprintf(stderr, "*** Recursive test: %s ***\n", keymaps[k++]);
+    for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%u %s ***\n", __func__, k, keymaps[k]);
+        k++;
         keymap = test_compile_buffer(ctx, keymaps[k], strlen(keymaps[k]));
         assert(!keymap);
     }
@@ -236,8 +234,9 @@ test_multi_keysyms_actions(struct xkb_context *ctx)
     const char* const keymaps[] = { test_keymaps };                   \
     for (size_t k = 0; k < ARRAY_SIZE(keymaps); k++) {                \
         fprintf(stderr,                                               \
-                "*** test_multi_keysyms_actions: " kind "#%zu ***\n", \
-                k + 1);                                               \
+                "------\n"                                            \
+                "*** %s: " kind "#%zu ***\n",                         \
+                __func__, k + 1);                                     \
         keymap = test_compile_buffer(ctx, keymaps[k],                 \
                                      strlen(keymaps[k]));             \
         assert_printf(condition,                                      \
@@ -341,35 +340,31 @@ test_invalid_symbols_fields(struct xkb_context *ctx)
         "};"
     };
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
         const struct xkb_keymap *keymap =
             test_compile_buffer(ctx, keymaps[k], strlen(keymaps[k]));
         assert(!keymap);
     }
 }
 
-int
-main(int argc, char *argv[])
+static void
+test_prebuilt_keymap_roundtrip(struct xkb_context *ctx)
 {
-    test_init();
-
-    struct xkb_keymap *keymap;
-    char *original, *dump;
-
-    struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
-    assert(ctx);
-
     /* Load in a prebuilt keymap, make sure we can compile it from memory,
      * then compare it to make sure we get the same result when dumping it
      * to a string. */
-    original = test_read_file(DATA_PATH);
+    char *original = test_read_file(DATA_PATH);
     assert(original);
 
     /* Load a prebuild keymap, once without, once with the trailing \0 */
-    for (int i = 0; i <= 1; i++) {
-        keymap = test_compile_buffer(ctx, original, strlen(original) + i);
+    for (unsigned int i = 0; i <= 1; i++) {
+        fprintf(stderr, "------\n*** %s, trailing \\0: %d ***\n", __func__, i);
+        struct xkb_keymap *keymap =
+            test_compile_buffer(ctx, original, strlen(original) + i);
         assert(keymap);
 
-        dump = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+        char *dump =
+            xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
         assert(dump);
 
         if (!streq(original, dump)) {
@@ -391,29 +386,45 @@ main(int argc, char *argv[])
     }
 
     free(original);
+}
 
-    /* Make sure we can't (falsely claim to) compile an empty string. */
-    keymap = test_compile_buffer(ctx, "", 0);
-    assert(!keymap);
-
-    assert(test_encodings(ctx));
-
+static void
+test_keymap_from_rules(struct xkb_context *ctx)
+{
     /* Make sure we can recompile our output for a normal keymap from rules. */
-    keymap = test_compile_rules(ctx, NULL, NULL,
-                                "ru,ca,de,us", ",multix,neo,intl", NULL);
+    fprintf(stderr, "------\n*** %s ***\n", __func__);
+    struct xkb_keymap *keymap = test_compile_rules(ctx, NULL, NULL,
+                                                   "ru,ca,de,us",
+                                                   ",multix,neo,intl", NULL);
     assert(keymap);
-    dump = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+    char *dump = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
     assert(dump);
     xkb_keymap_unref(keymap);
     keymap = test_compile_buffer(ctx, dump, strlen(dump));
     assert(keymap);
     xkb_keymap_unref(keymap);
     free(dump);
+}
 
+int
+main(int argc, char *argv[])
+{
+    test_init();
+
+    struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
+    assert(ctx);
+
+    /* Make sure we can't (falsely claim to) compile an empty string. */
+    struct xkb_keymap *keymap = test_compile_buffer(ctx, "", 0);
+    assert(!keymap);
+
+    test_encodings(ctx);
     test_component_syntax_error(ctx);
     test_recursive(ctx);
     test_multi_keysyms_actions(ctx);
     test_invalid_symbols_fields(ctx);
+    test_prebuilt_keymap_roundtrip(ctx);
+    test_keymap_from_rules(ctx);
 
     xkb_context_unref(ctx);
 
