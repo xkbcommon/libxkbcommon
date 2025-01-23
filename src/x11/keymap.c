@@ -832,6 +832,11 @@ get_sym_interprets(struct xkb_keymap *keymap, xcb_connection_t *conn,
         case XCB_XKB_SYM_INTERPRET_MATCH_EXACTLY:
             sym_interpret->match = MATCH_EXACTLY;
             break;
+        default:
+            log_err_func(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                         "unrecognized interpret match value: %#x\n",
+                         wire->match & XCB_XKB_SYM_INTERP_MATCH_OP_MASK);
+            goto fail;
         }
 
         sym_interpret->level_one_only =

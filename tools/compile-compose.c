@@ -106,7 +106,7 @@ main(int argc, char *argv[])
         case 'h':
             usage(stdout, argv[0]);
             return EXIT_SUCCESS;
-        case '?':
+        default:
             usage(stderr, argv[0]);
             return EXIT_INVALID_USAGE;
         }

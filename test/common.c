@@ -132,6 +132,9 @@ test_key_seq_va(struct xkb_keymap *keymap, va_list ap)
             case BOTH: opstr = "BOTH"; break;
             case NEXT: opstr = "NEXT"; break;
             case FINISH: opstr = "FINISH"; break;
+            default:
+                fprintf(stderr, "ERROR: Unsupported operation: %d\n", op);
+                goto fail;
         }
 
         nsyms = xkb_state_key_get_syms(state, kc, &syms);
