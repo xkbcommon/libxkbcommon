@@ -1256,11 +1256,16 @@ HandleGlobalVar(SymbolsInfo *info, VarDef *stmt)
 static bool
 HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
 {
-    bool ok = true;
-    const char *elem, *field;
-    ExprDef *arrayNdx;
+    if (!def)
+        return true; /* Empty body */
+
+    bool all_valid_entries = true;
 
     for (; def; def = (VarDef *) def->common.next) {
+        const char *field;
+        ExprDef *arrayNdx;
+        bool ok = true;
+
         if (!def->name) {
             if (unlikely(!def->value) || def->value->expr.op != EXPR_ACTION_LIST)
                 field = "symbols"; /* Default to symbols field */
@@ -1269,6 +1274,7 @@ HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
             arrayNdx = NULL;
         }
         else {
+            const char *elem;
             ok = ExprResolveLhs(info->ctx, def->name, &elem, &field,
                                 &arrayNdx);
             if (ok && elem) {
@@ -1278,22 +1284,21 @@ HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
                         "scope. Assignment to \"%s.%s\" ignored.\n",
                         elem, elem, field);
                 ok = false;
-                continue;
             }
         }
+
         if (unlikely(!def->value)) {
             log_err(info->ctx, XKB_ERROR_ALLOCATION_ERROR,
                     "Could not allocate the value of field \"%s\". "
                     "Statement ignored.\n", field);
             ok = false;
-            continue;
         }
 
-        if (ok)
-            ok = SetSymbolsField(info, keyi, field, arrayNdx, def->value);
+        if (!ok || !SetSymbolsField(info, keyi, field, arrayNdx, def->value))
+            all_valid_entries = false;
     }
 
-    return ok;
+    return all_valid_entries;
 }
 
 static bool
