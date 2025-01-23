@@ -285,6 +285,20 @@ test_invalid_symbols_fields(struct xkb_context *ctx)
         "    xkb_types { };\n"
         "    xkb_compat { };\n"
         "    xkb_symbols { key <> { groupsredirect = [] }; };\n"
+        "};",
+        /* Used to parse without error because the “repeats” key field is valid,
+         * but we should fail in the following 2 keymaps */
+        "xkb_keymap {\n"
+        "    xkb_keycodes { <> = 9; };\n"
+        "    xkb_types { };\n"
+        "    xkb_compat { };\n"
+        "    xkb_symbols { key <> { vmods=[], repeats=false }; };\n"
+        "};",
+        "xkb_keymap {\n"
+        "    xkb_keycodes { <> = 9; };\n"
+        "    xkb_types { };\n"
+        "    xkb_compat { };\n"
+        "    xkb_symbols { key <> { repeats=false, vmods=[] }; };\n"
         "};"
     };
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
