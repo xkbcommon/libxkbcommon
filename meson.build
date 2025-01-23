@@ -151,6 +151,12 @@ if not cc.has_header_symbol('limits.h', 'PATH_MAX', prefix: system_ext_define)
         configh_data.set('PATH_MAX', 4096)
     endif
 endif
+if cc.get_argument_syntax() == 'msvc'
+    add_project_arguments(
+        cc.get_supported_arguments(['/experimental:c11atomics']),
+        language: 'c'
+    )
+endif
 
 # Silence some security & deprecation warnings on MSVC
 # for some unix/C functions we use.
@@ -513,6 +519,17 @@ if build_tools
                c_args: ['-DENABLE_PRIVATE_APIS'],
                include_directories: [include_directories('src', 'include')],
                install: false)
+    thread_dep = dependency('threads', required: false)
+    if thread_dep.found() and cc.has_header('sys/un.h')
+        # Similar to previous tool, but for batch processing using a server
+        executable('compile-keymap-server',
+                   'tools/compile-keymap-server.c',
+                   libxkbcommon_sources,
+                   dependencies: [tools_dep, thread_dep],
+                   c_args: ['-DENABLE_KEYMAP_SOCKET'],
+                   include_directories: [include_directories('src', 'include')],
+                   install: false)
+    endif
 
     # Tool: compose
     executable('xkbcli-compile-compose',

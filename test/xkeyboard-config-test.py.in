@@ -3,19 +3,26 @@
 from __future__ import annotations
 
 import argparse
+import ctypes
 import gzip
 import itertools
+import json
 import multiprocessing
 import os
+import socket
 import subprocess
 import sys
+import tempfile
+import traceback
 import xml.etree.ElementTree as ET
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
+from time import sleep
 from typing import (
     TYPE_CHECKING,
+    BinaryIO,
     ClassVar,
     Iterable,
     Iterator,
@@ -55,7 +62,6 @@ class RMLVO:
     variant: str | None
     option: str | None
 
-    @property
     def __iter__(self) -> Iterator[str | None]:
         yield self.rules
         yield self.model
@@ -97,15 +103,15 @@ class RMLVO:
 class Invocation(RMLVO, metaclass=ABCMeta):
     exitstatus: int = 77  # default to “skipped”
     error: str | None = None
-    keymap: str = ""
+    keymap: bytes = b""
     command: str = ""  # The fully compiled keymap
 
     def __str_iter(self) -> Iterator[str]:
         yield f"- rmlvo: {self.to_yaml(self.rmlvo)}"
-        yield f'  cmd: "{self.escape(self.command)}"'
+        yield f"  cmd: {json.dumps(self.command)}"
         yield f"  status: {self.exitstatus}"
         if self.error:
-            yield f'  error: "{self.escape(self.error.strip())}"'
+            yield f"  error: {json.dumps(self.error.strip())}"
 
     def __str__(self) -> str:
         return "\n".join(self.__str_iter())
@@ -119,15 +125,11 @@ class Invocation(RMLVO, metaclass=ABCMeta):
 
     @staticmethod
     def to_yaml(xs: Iterable[tuple[str, str | int]]) -> str:
-        fields = ", ".join(f'{k}: "{v}"' for k, v in xs)
+        fields = ", ".join(f"{k}: {json.dumps(v)}" for k, v in xs)
         return f"{{ {fields} }}"
 
-    @staticmethod
-    def escape(s: str) -> str:
-        return s.replace('"', '\\"')
-
-    def _write(self, fd: TextIO) -> None:
-        fd.write(f"// {self.to_yaml(self.rmlvo)}\n")
+    def _write(self, fd: BinaryIO) -> None:
+        fd.write(f"// {self.to_yaml(self.rmlvo)}\n".encode("utf-8"))
         fd.write(self.keymap)
 
     def _write_keymap(self, output_dir: Path, compress: int) -> None:
@@ -138,18 +140,30 @@ class Invocation(RMLVO, metaclass=ABCMeta):
         keymap_file = output_dir / self.model / layout
         if compress:
             keymap_file = keymap_file.with_suffix(".gz")
-            with gzip.open(
-                keymap_file, "wt", compresslevel=compress, encoding="utf-8"
-            ) as fd:
+            with gzip.open(keymap_file, "wb", compresslevel=compress) as fd:
                 self._write(fd)
                 fd.close()
         else:
-            with keymap_file.open("wt", encoding="utf-8") as fd:
+            with keymap_file.open("wb") as fd:
                 self._write(fd)
+
+    def _print_result(self, short: bool, verbose: bool) -> None:
+        if self.exitstatus != 0:
+            target = sys.stderr
+        else:
+            target = sys.stdout if verbose else None
+
+        if target:
+            if short:
+                print("-", self.to_yaml(self.short), file=target)
+            else:
+                print(self, file=target)
 
     @classmethod
     @abstractmethod
-    def run(cls, i: Self, output_dir: Path | None, compress: int) -> Self: ...
+    def run(
+        cls, i: Self, output_dir: Path | None, compress: int, *args, **kwargs
+    ) -> Self: ...
 
     @classmethod
     def run_all(
@@ -161,7 +175,9 @@ class Invocation(RMLVO, metaclass=ABCMeta):
         verbose: bool,
         short: bool,
         progress_bar: ProgressBar[Iterable[Self]],
+        chunksize: int,
         compress: int,
+        **kwargs,
     ) -> bool:
         if keymap_output_dir:
             try:
@@ -172,22 +188,19 @@ class Invocation(RMLVO, metaclass=ABCMeta):
 
         failed = False
         with multiprocessing.Pool(njobs) as p:
-            f = partial(cls.run, output_dir=keymap_output_dir, compress=compress)
-            results = p.imap_unordered(f, combos)
+            f = partial(
+                cls.run,
+                output_dir=keymap_output_dir,
+                compress=compress,
+            )
+            results = p.imap_unordered(f, combos, chunksize=chunksize)
             for invocation in progress_bar(
                 results, total=combos_count, file=sys.stdout
             ):
                 if invocation.exitstatus != 0:
                     failed = True
-                    target = sys.stderr
-                else:
-                    target = sys.stdout if verbose else None
 
-                if target:
-                    if short:
-                        print("-", cls.to_yaml(invocation.short), file=target)
-                    else:
-                        print(invocation, file=target)
+                invocation._print_result(short, verbose)
 
         return failed
 
@@ -197,7 +210,14 @@ class XkbCompInvocation(Invocation):
     xkbcomp_args: ClassVar[tuple[str, ...]] = ("xkbcomp", "-xkb", "-", "-")
 
     @classmethod
-    def run(cls, i: Self, output_dir: Path | None, compress: int) -> Self:
+    def run(
+        cls,
+        i: Self,
+        output_dir: Path | None,
+        compress: int,
+        *args,
+        **kwargs,
+    ) -> Self:
         i._run(output_dir, compress)
         return i
 
@@ -233,7 +253,7 @@ class XkbCompInvocation(Invocation):
                 self.error = "failed to compile keymap"
                 self.exitstatus = xkbcomp.returncode
             else:
-                self.keymap = stdout
+                self.keymap = stdout.encode("utf-8")
                 self.exitstatus = 0
 
         if output_dir:
@@ -244,8 +264,27 @@ class XkbCompInvocation(Invocation):
 class XkbcommonInvocation(Invocation):
     UNRECOGNIZED_KEYSYM_ERROR: ClassVar[str] = "XKB-107"
 
+    def _check_stderr(self, stderr: str) -> bool:
+        if self.UNRECOGNIZED_KEYSYM_ERROR in stderr:
+            for line in stderr.splitlines():
+                if self.UNRECOGNIZED_KEYSYM_ERROR in line:
+                    self.error = line
+                    break
+            self.exitstatus = 99  # tool doesn't generate this one
+            return False
+        else:
+            self.exitstatus = 0
+            return True
+
     @classmethod
-    def run(cls, i: Self, output_dir: Path | None, compress: int) -> Self:
+    def run(
+        cls,
+        i: Self,
+        output_dir: Path | None,
+        compress: int,
+        *args,
+        **kwargs,
+    ) -> Self:
         i._run(output_dir, compress)
         return i
 
@@ -265,18 +304,200 @@ class XkbcommonInvocation(Invocation):
             self.error = "failed to compile keymap"
             self.exitstatus = err.returncode
         else:
-            if self.UNRECOGNIZED_KEYSYM_ERROR in completed.stderr:
-                for line in completed.stderr.splitlines():
-                    if self.UNRECOGNIZED_KEYSYM_ERROR in line:
-                        self.error = line
-                        break
-                self.exitstatus = 99  # tool doesn't generate this one
-            else:
-                self.exitstatus = 0
-                self.keymap = completed.stdout
+            if self._check_stderr(completed.stderr):
+                self.keymap = completed.stdout.encode("utf-8")
+        if output_dir:
+            self._write_keymap(output_dir, compress)
+
+
+@dataclass
+class CompileKeymapPool:
+    count: int
+    pool: tuple[subprocess.Popen] = ()
+    tmp: tempfile.TemporaryDirectory | None = None
+    socket: Path | None = None
+
+    @property
+    def sockets(self) -> Iterable[Path]:
+        if self.socket:
+            yield self.socket
+        elif self.tmp:
+            for k in range(self.count):
+                yield Path(self.tmp.name) / str(k)
+
+    def __enter__(self):
+        if not self.pool and not self.socket:
+            self.tmp = tempfile.TemporaryDirectory()
+            if self.pool:
+                for p in self.pool:
+                    p.kill()
+            pool: list[subprocess.Popen] = []
+            for path in self.sockets:
+                args = ("compile-keymap-server", "--socket", str(path))
+                pool.append(
+                    subprocess.Popen(
+                        args,
+                        close_fds=True,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        # stderr=None,
+                    )
+                )
+            self.pool = tuple(pool)
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.socket:
+            return
+        for path in self.sockets:
+            self.bye(path)
+        sleep(0.5)
+        if self.pool:
+            for p in self.pool:
+                p.kill()
+        self.pool = ()
+        self.tmp.cleanup()
+
+    @classmethod
+    def _get_response(cls, s: socket.socket, more: bool) -> tuple[bool, int, bytes]:
+        # Get size of the message
+        response = s.recv(ctypes.sizeof(ctypes.c_ssize_t))
+        response_size = int.from_bytes(response, byteorder=sys.byteorder, signed=True)
+        # Get message
+        response = b""
+        if response_size > 0:
+            to_read = response_size
+            ba = bytearray(response_size)
+            view = memoryview(ba)
+            while to_read:
+                nbytes = s.recv_into(view, to_read, 0)
+                view = view[nbytes:]
+                to_read -= nbytes
+            response = bytes(ba)
+            assert len(response) == response_size, (response_size, len(response))
+            ok = True
+        else:
+            response = b""
+            ok = not (response_size < 0)
+        # Confirm reception
+        s.sendall(b"1" if more else b"0")
+        return ok, response_size, response
+
+    @classmethod
+    def message(cls, socket_path: Path, msg: bytes) -> tuple[bool, bytes, bytes]:
+        response = b""
+        response_size = 0
+        stderr = b""
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+            ok = True
+            try:
+                s.settimeout(6)
+                s.connect(str(socket_path))
+                s.sendall(msg)
+                _ok, response_size, response = cls._get_response(s, True)
+                ok &= _ok
+                _ok, response_size, stderr = cls._get_response(s, False)
+                ok &= _ok
+            except OSError as err:
+                print(
+                    "Socket error:", err, ok, response_size, response, file=sys.stderr
+                )
+                traceback.print_exception(err, file=sys.stderr)
+                ok = False
+            s.shutdown(socket.SHUT_RDWR)
+        return ok, response, stderr
+
+    @classmethod
+    def bye(cls, socket_path: Path) -> None:
+        try:
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+                s.settimeout(6)
+                s.connect(str(socket_path))
+                s.sendall(b"\x1b")
+                s.shutdown(socket.SHUT_RDWR)
+        except OSError:
+            pass
+
+    @classmethod
+    def get_keymap(
+        cls, socket_path: Path, rmlvo: RMLVO, serialize: bool
+    ) -> tuple[bool, bytes, bytes]:
+        query = f"{int(serialize)}\n" + "\n".join(v or "" for v in rmlvo)
+        return cls.message(socket_path, query.encode())
+
+
+@dataclass
+class XkbcommonInvocationServer(XkbcommonInvocation):
+    def _write(self, fd: BinaryIO) -> None:
+        super()._write(fd)
+        if self.keymap:
+            fd.write(b"\n")
+
+    @classmethod
+    def run(
+        cls,
+        i: Self,
+        output_dir: Path | None,
+        compress: int,
+        socket_path: Path,
+        *args,
+        **kwargs,
+    ) -> Self:
+        i._run(output_dir, compress, socket_path)
+        return i
+
+    def _run(self, output_dir: Path | None, compress: int, socket_path: Path) -> None:
+        serialize = bool(output_dir)
+        ok, self.keymap, stderr = CompileKeymapPool.get_keymap(
+            socket_path, self, serialize
+        )
+
+        self.exitstatus = 0 if ok else 1
+        self._check_stderr(stderr.decode("utf-8"))
 
         if output_dir:
             self._write_keymap(output_dir, compress)
+
+    @classmethod
+    def run_all(
+        cls,
+        combos: Iterable[Self],
+        combos_count: int,
+        njobs: int,
+        keymap_output_dir: Path | None,
+        verbose: bool,
+        short: bool,
+        progress_bar: ProgressBar[Iterable[Self]],
+        chunksize: int,
+        compress: int,
+        **kwargs,
+    ) -> bool:
+        if keymap_output_dir:
+            try:
+                keymap_output_dir.mkdir(parents=True)
+            except FileExistsError as e:
+                print(e, file=sys.stderr)
+                return False
+
+        failed = False
+
+        with CompileKeymapPool(1, socket=kwargs.get("server_socket")) as kmp:
+            with multiprocessing.Pool(njobs, maxtasksperchild=1000) as p:
+                f = partial(
+                    cls.run,
+                    socket_path=tuple(kmp.sockets)[0],
+                    output_dir=keymap_output_dir,
+                    compress=compress,
+                )
+                results = p.imap_unordered(f, combos, chunksize=chunksize)
+                for invocation in progress_bar(
+                    results, total=combos_count, file=sys.stdout
+                ):
+                    if invocation.exitstatus != 0:
+                        failed = True
+                    invocation._print_result(short, verbose)
+
+        return failed
 
 
 @dataclass
@@ -428,6 +649,7 @@ def main() -> NoReturn:
     )
     tools: dict[str, type[Invocation]] = {
         "libxkbcommon": XkbcommonInvocation,
+        "libxkbcommon-server": XkbcommonInvocationServer,
         "xkbcomp": XkbCompInvocation,
     }
     parser.add_argument(
@@ -463,6 +685,7 @@ def main() -> NoReturn:
     parser.add_argument(
         "--layout", default=WILDCARD, type=str, help="Only test the given layout"
     )
+    parser.add_argument("--chunksize", default=1, type=int)
     parser.add_argument(
         "--variant",
         default=WILDCARD,
@@ -475,6 +698,7 @@ def main() -> NoReturn:
     parser.add_argument(
         "--no-iterations", "-1", action="store_true", help="Only test one combo"
     )
+    parser.add_argument("--socket", type=Path)
 
     args = parser.parse_args()
 
@@ -511,7 +735,9 @@ def main() -> NoReturn:
         verbose,
         short,
         progress_bar,
-        args.compress,
+        args.chunksize,
+        server_socket=args.socket,
+        compress=args.compress,
     )
     sys.exit(failed)
 
