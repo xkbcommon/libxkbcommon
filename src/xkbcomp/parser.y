@@ -882,7 +882,9 @@ parse(struct xkb_context *ctx, struct scanner *scanner, const char *map)
     }
 
     if (ret != 0) {
+        /* Some error happend; clear the Xkbfiles parsed so far */
         FreeXkbFile(first);
+        FreeXkbFile(param.rtrn);
         return NULL;
     }
 

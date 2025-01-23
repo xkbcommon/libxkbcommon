@@ -85,6 +85,45 @@ test_encodings(struct xkb_context *ctx)
 }
 
 static void
+test_component_syntax_error(struct xkb_context *ctx)
+{
+    /* The following used to trigger memory leak */
+    const char* const keymaps[] = {
+        "xkb_keymap {"
+        "  xkb_keycodes { };"
+        "};"
+        "};", /* Syntax error, keymap “complete” */
+        "xkb_keymap {"
+        "  xkb_keycodes { };"
+        "  xkb_types { };"
+        "  xkb_compat { };"
+        "  xkb_symbols { };"
+        "};"
+        "};"/* Syntax error, keymap complete */,
+        "xkb_keymap {"
+        "  xkb_keycodes { };"
+        "}" /* Syntax error, incomplete map */
+        "  xkb_types { };"
+        "  xkb_compat { };"
+        "  xkb_symbols { };"
+        "};",
+        "xkb_keymap {"
+        "  xkb_keycodes { };"
+        ";" /* Syntax error, incomplete map */
+        "  xkb_types { };"
+        "  xkb_compat { };"
+        "  xkb_symbols { };"
+        "};",
+    };
+
+    for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        const struct xkb_keymap *keymap =
+            test_compile_buffer(ctx, keymaps[k], strlen(keymaps[k]));
+        assert(!keymap);
+    }
+}
+
+static void
 test_recursive(struct xkb_context *ctx)
 {
     struct xkb_keymap *keymap;
@@ -371,6 +410,7 @@ main(int argc, char *argv[])
     xkb_keymap_unref(keymap);
     free(dump);
 
+    test_component_syntax_error(ctx);
     test_recursive(ctx);
     test_multi_keysyms_actions(ctx);
     test_invalid_symbols_fields(ctx);
