@@ -99,8 +99,8 @@
  *
  */
 bool
-ParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
-                char *nextop_rtrn, char **extra_data)
+ParseIncludeMap(struct bump *bump, char **str_inout, char **file_rtrn,
+                char **map_rtrn, char *nextop_rtrn, char **extra_data)
 {
     char *tmp, *str, *next;
 
@@ -130,7 +130,7 @@ ParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
     tmp = strchr(str, ':');
     if (tmp != NULL) {
         *tmp++ = '\0';
-        *extra_data = strdup(tmp);
+        *extra_data = bump_strdup(bump, tmp);
     }
     else {
         *extra_data = NULL;
@@ -140,27 +140,24 @@ ParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
     tmp = strchr(str, '(');
     if (tmp == NULL) {
         /* No map. */
-        *file_rtrn = strdup(str);
+        *file_rtrn = bump_strdup(bump, str);
         *map_rtrn = NULL;
     }
     else if (str[0] == '(') {
         /* Map without file - invalid. */
-        free(*extra_data);
         return false;
     }
     else {
         /* Got a map; separate the file and the map for the strdup's. */
         *tmp++ = '\0';
-        *file_rtrn = strdup(str);
+        *file_rtrn = bump_strdup(bump, str);
         str = tmp;
         tmp = strchr(str, ')');
         if (tmp == NULL || tmp[1] != '\0') {
-            free(*file_rtrn);
-            free(*extra_data);
             return false;
         }
         *tmp++ = '\0';
-        *map_rtrn = strdup(str);
+        *map_rtrn = bump_strdup(bump, str);
     }
 
     /* Set up the next file for the next call, if any. */
@@ -294,8 +291,8 @@ ExceedsIncludeMaxDepth(struct xkb_context *ctx, unsigned int include_depth)
 }
 
 XkbFile *
-ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
-                   enum xkb_file_type file_type)
+ProcessIncludeFile(struct bump *bump, struct xkb_context *ctx,
+                   IncludeStmt *stmt, enum xkb_file_type file_type)
 {
     FILE *file;
     XkbFile *xkb_file = NULL;
@@ -306,7 +303,7 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
         return NULL;
 
     while (file) {
-        xkb_file = XkbParseFile(ctx, file, stmt->file, stmt->map);
+        xkb_file = XkbParseFile(bump, ctx, file, stmt->file, stmt->map);
         fclose(file);
 
         if (xkb_file) {
@@ -316,7 +313,6 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
                         "Include file \"%s\" ignored\n",
                         xkb_file_type_to_string(file_type),
                         xkb_file_type_to_string(xkb_file->file_type), stmt->file);
-                FreeXkbFile(xkb_file);
                 xkb_file = NULL;
             } else {
                 break;

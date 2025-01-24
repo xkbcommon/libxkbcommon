@@ -31,7 +31,6 @@
 #include "vmod.h"
 #include "expr.h"
 #include "include.h"
-#include "util-mem.h"
 
 enum type_field {
     TYPE_FIELD_MASK = (1 << 0),
@@ -193,7 +192,7 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
     into->mods = from->mods;
 
     if (into->name == NULL) {
-        into->name = steal(&from->name);
+        into->name = strdup(from->name);
     }
 
     if (darray_empty(into->types)) {
@@ -218,7 +217,7 @@ static void
 HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge);
 
 static bool
-HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
+HandleIncludeKeyTypes(struct bump *bump, KeyTypesInfo *info, IncludeStmt *include)
 {
     KeyTypesInfo included;
 
@@ -228,13 +227,13 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
     }
 
     InitKeyTypesInfo(&included, info->ctx, 0 /* unused */, &info->mods);
-    included.name = steal(&include->stmt);
+    included.name = strdup(include->stmt);
 
     for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
         KeyTypesInfo next_incl;
         XkbFile *file;
 
-        file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_TYPES);
+        file = ProcessIncludeFile(bump, info->ctx, stmt, FILE_TYPE_TYPES);
         if (!file) {
             info->errorCount += 10;
             ClearKeyTypesInfo(&included);
@@ -249,7 +248,6 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
         MergeIncludedKeyTypes(&included, &next_incl, stmt->merge);
 
         ClearKeyTypesInfo(&next_incl);
-        FreeXkbFile(file);
     }
 
     MergeIncludedKeyTypes(info, &included, include->merge);
@@ -665,7 +663,7 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
     for (ParseCommon *stmt = file->defs; stmt; stmt = stmt->next) {
         switch (stmt->type) {
         case STMT_INCLUDE:
-            ok = HandleIncludeKeyTypes(info, (IncludeStmt *) stmt);
+            ok = HandleIncludeKeyTypes(file->bump, info, (IncludeStmt *) stmt);
             break;
         case STMT_TYPE:
             ok = HandleKeyTypeDef(info, (KeyTypeDef *) stmt, merge);

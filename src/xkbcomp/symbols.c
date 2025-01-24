@@ -651,7 +651,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
     into->mods = from->mods;
 
     if (into->name == NULL) {
-        into->name = steal(&from->name);
+        into->name = strdup(from->name);
     }
 
     group_names_in_both = MIN(darray_size(into->group_names),
@@ -700,7 +700,7 @@ static void
 HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge);
 
 static bool
-HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
+HandleIncludeSymbols(struct bump *bump, SymbolsInfo *info, IncludeStmt *include)
 {
     SymbolsInfo included;
 
@@ -711,13 +711,13 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
 
     InitSymbolsInfo(&included, info->keymap, 0 /* unused */,
                     info->actions, &info->mods);
-    included.name = steal(&include->stmt);
+    included.name = strdup(include->stmt);
 
     for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
         SymbolsInfo next_incl;
         XkbFile *file;
 
-        file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_SYMBOLS);
+        file = ProcessIncludeFile(bump, info->ctx, stmt, FILE_TYPE_SYMBOLS);
         if (!file) {
             info->errorCount += 10;
             ClearSymbolsInfo(&included);
@@ -755,7 +755,6 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
         MergeIncludedSymbols(&included, &next_incl, stmt->merge);
 
         ClearSymbolsInfo(&next_incl);
-        FreeXkbFile(file);
     }
 
     MergeIncludedSymbols(info, &included, include->merge);
@@ -1443,7 +1442,7 @@ HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge)
     for (ParseCommon *stmt = file->defs; stmt; stmt = stmt->next) {
         switch (stmt->type) {
         case STMT_INCLUDE:
-            ok = HandleIncludeSymbols(info, (IncludeStmt *) stmt);
+            ok = HandleIncludeSymbols(file->bump, info, (IncludeStmt *) stmt);
             break;
         case STMT_SYMBOLS:
             ok = HandleSymbolsDef(info, (SymbolsDef *) stmt);

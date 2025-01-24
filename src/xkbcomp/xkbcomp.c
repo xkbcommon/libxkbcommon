@@ -29,6 +29,7 @@
 
 #include "config.h"
 
+#include "bump.h"
 #include "xkbcomp-priv.h"
 #include "rules.h"
 
@@ -78,12 +79,15 @@ text_v1_keymap_new_from_names(struct xkb_keymap *keymap,
         return false;
     }
 
+    struct bump bump;
+    bump_init(&bump);
+
     log_dbg(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
             "Compiling from KcCGST: keycodes '%s', types '%s', "
             "compat '%s', symbols '%s'\n",
             kccgst.keycodes, kccgst.types, kccgst.compat, kccgst.symbols);
 
-    file = XkbFileFromComponents(keymap->ctx, &kccgst);
+    file = XkbFileFromComponents(&bump, keymap->ctx, &kccgst);
 
     free(kccgst.keycodes);
     free(kccgst.types);
@@ -93,11 +97,13 @@ text_v1_keymap_new_from_names(struct xkb_keymap *keymap,
     if (!file) {
         log_err(keymap->ctx, XKB_ERROR_KEYMAP_COMPILATION_FAILED,
                 "Failed to generate parsed XKB file from components\n");
-        return false;
+        ok = false;
+        goto out;
     }
 
     ok = compile_keymap_file(keymap, file);
-    FreeXkbFile(file);
+out:
+    bump_uninit(&bump);
     return ok;
 }
 
@@ -108,15 +114,20 @@ text_v1_keymap_new_from_string(struct xkb_keymap *keymap,
     bool ok;
     XkbFile *xkb_file;
 
-    xkb_file = XkbParseString(keymap->ctx, string, len, "(input string)", NULL);
+    struct bump bump;
+    bump_init(&bump);
+
+    xkb_file = XkbParseString(&bump, keymap->ctx, string, len, "(input string)", NULL);
     if (!xkb_file) {
         log_err(keymap->ctx, XKB_ERROR_KEYMAP_COMPILATION_FAILED,
                 "Failed to parse input xkb string\n");
-        return false;
+        ok = false;
+        goto out;
     }
 
     ok = compile_keymap_file(keymap, xkb_file);
-    FreeXkbFile(xkb_file);
+out:
+    bump_uninit(&bump);
     return ok;
 }
 
@@ -126,15 +137,20 @@ text_v1_keymap_new_from_file(struct xkb_keymap *keymap, FILE *file)
     bool ok;
     XkbFile *xkb_file;
 
-    xkb_file = XkbParseFile(keymap->ctx, file, "(unknown file)", NULL);
+    struct bump bump;
+    bump_init(&bump);
+
+    xkb_file = XkbParseFile(&bump, keymap->ctx, file, "(unknown file)", NULL);
     if (!xkb_file) {
         log_err(keymap->ctx, XKB_ERROR_KEYMAP_COMPILATION_FAILED,
                 "Failed to parse input xkb file\n");
-        return false;
+        ok = false;
+        goto out;
     }
 
     ok = compile_keymap_file(keymap, xkb_file);
-    FreeXkbFile(xkb_file);
+out:
+    bump_uninit(&bump);
     return ok;
 }
 

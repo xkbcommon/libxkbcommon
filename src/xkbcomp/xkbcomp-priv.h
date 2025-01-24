@@ -29,6 +29,7 @@
 
 #include "keymap.h"
 #include "ast.h"
+#include "bump.h"
 
 struct xkb_component_names {
     char *keycodes;
@@ -41,19 +42,16 @@ char *
 text_v1_keymap_get_as_string(struct xkb_keymap *keymap);
 
 XkbFile *
-XkbParseFile(struct xkb_context *ctx, FILE *file,
+XkbParseFile(struct bump *bump, struct xkb_context *ctx, FILE *file,
              const char *file_name, const char *map);
 
 XkbFile *
-XkbParseString(struct xkb_context *ctx,
+XkbParseString(struct bump *bump, struct xkb_context *ctx,
                const char *string, size_t len,
                const char *file_name, const char *map);
 
-void
-FreeXkbFile(XkbFile *file);
-
 XkbFile *
-XkbFileFromComponents(struct xkb_context *ctx,
+XkbFileFromComponents(struct bump *bump, struct xkb_context *ctx,
                       const struct xkb_component_names *kkctgs);
 
 bool

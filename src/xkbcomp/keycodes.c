@@ -30,7 +30,6 @@
 #include "text.h"
 #include "expr.h"
 #include "include.h"
-#include "util-mem.h"
 
 typedef struct {
     enum merge_mode merge;
@@ -267,7 +266,7 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
     }
 
     if (into->name == NULL) {
-        into->name = steal(&from->name);
+        into->name = strdup(from->name);
     }
 
     /* Merge key names. */
@@ -336,7 +335,7 @@ static void
 HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge);
 
 static bool
-HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *include)
+HandleIncludeKeycodes(struct bump *bump, KeyNamesInfo *info, IncludeStmt *include)
 {
     KeyNamesInfo included;
 
@@ -346,13 +345,13 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *include)
     }
 
     InitKeyNamesInfo(&included, info->ctx, 0 /* unused */);
-    included.name = steal(&include->stmt);
+    included.name = strdup(include->stmt);
 
     for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
         KeyNamesInfo next_incl;
         XkbFile *file;
 
-        file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_KEYCODES);
+        file = ProcessIncludeFile(bump, info->ctx, stmt, FILE_TYPE_KEYCODES);
         if (!file) {
             info->errorCount += 10;
             ClearKeyNamesInfo(&included);
@@ -366,7 +365,6 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *include)
         MergeIncludedKeycodes(&included, &next_incl, stmt->merge);
 
         ClearKeyNamesInfo(&next_incl);
-        FreeXkbFile(file);
     }
 
     MergeIncludedKeycodes(info, &included, include->merge);
@@ -503,7 +501,7 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
     for (ParseCommon *stmt = file->defs; stmt; stmt = stmt->next) {
         switch (stmt->type) {
         case STMT_INCLUDE:
-            ok = HandleIncludeKeycodes(info, (IncludeStmt *) stmt);
+            ok = HandleIncludeKeycodes(file->bump, info, (IncludeStmt *) stmt);
             break;
         case STMT_KEYCODE:
             ok = HandleKeycodeDef(info, (KeycodeDef *) stmt, merge);
