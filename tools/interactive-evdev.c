@@ -73,7 +73,7 @@ print_state_fields_mask_t print_fields = DEFAULT_PRINT_FIELDS;
 static bool
 evdev_bit_is_set(const unsigned long *array, int bit)
 {
-    return array[bit / LONG_BIT] & (1LL << (bit % LONG_BIT));
+    return array[bit / LONG_BIT] & (1ULL << (bit % LONG_BIT));
 }
 
 /* Some heuristics to see if the device is a keyboard. */
