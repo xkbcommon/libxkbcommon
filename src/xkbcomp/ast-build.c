@@ -216,15 +216,22 @@ ExprCreateKeysymList(xkb_keysym_t sym)
     ExprDef *expr = ExprCreate(EXPR_KEYSYM_LIST, EXPR_TYPE_SYMBOLS, sizeof(ExprKeysymList));
     if (!expr)
         return NULL;
-    darray_init(expr->keysym_list.syms);
-    darray_append(expr->keysym_list.syms, sym);
+    expr->keysym_list.syms = malloc(sizeof(*expr->keysym_list.syms));
+    if (!expr->keysym_list.syms) {
+        FreeStmt(&expr->common);
+        return NULL;
+    }
+    expr->keysym_list.num_syms = 1;
+    expr->keysym_list.syms[0] = sym;
     return expr;
 }
 
 ExprDef *
 ExprAppendKeysymList(ExprDef *expr, xkb_keysym_t sym)
 {
-    darray_append(expr->keysym_list.syms, sym);
+    ExprKeysymList *kl = &expr->keysym_list;
+    kl->syms = realloc(kl->syms, (kl->num_syms + 1) * sizeof(*kl->syms));
+    kl->syms[kl->num_syms++] = sym;
     return expr;
 }
 
@@ -594,7 +601,7 @@ FreeExpr(ExprDef *expr)
         break;
 
     case EXPR_KEYSYM_LIST:
-        darray_free(expr->keysym_list.syms);
+        free(expr->keysym_list.syms);
         break;
 
     default:

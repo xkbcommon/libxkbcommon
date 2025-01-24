@@ -862,7 +862,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         struct xkb_level *leveli = &darray_item(groupi->levels, level);
 
         if (leveli->num_syms == 0) {
-            leveli->num_syms = darray_size(keysymList->syms);
+            leveli->num_syms = keysymList->num_syms;
             if (leveli->num_syms > 1) {
                 /* Allocate keysyms */
                 leveli->s.syms =
@@ -876,24 +876,24 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
                     leveli->a.actions[j] = dummy;
                 }
             }
-        } else if (leveli->num_syms != darray_size(keysymList->syms))
+        } else if (leveli->num_syms != keysymList->num_syms)
         {
             log_err(info->ctx, XKB_ERROR_INCOMPATIBLE_ACTIONS_AND_KEYSYMS_COUNT,
                     "Symbols for key %s, group %u, level %u must have the same "
                     "number of keysyms than the corresponding actions. "
                     "Expected %u, got: %u. Ignoring duplicate definition\n",
                     KeyInfoText(info, keyi), ndx + 1, level + 1, leveli->num_syms,
-                    darray_size(keysymList->syms));
+                    keysymList->num_syms);
             continue;
         }
 
         if (leveli->num_syms <= 1) {
-            leveli->s.sym = darray_item(keysymList->syms, 0);
+            leveli->s.sym = keysymList->syms[0];
             if (leveli->s.sym == XKB_KEY_NoSymbol)
                 leveli->num_syms = 0;
         } else {
             for (unsigned j = 0; j < leveli->num_syms; j++) {
-                leveli->s.syms[j] = darray_item(keysymList->syms, j);
+                leveli->s.syms[j] = keysymList->syms[j];
             }
         }
     }
