@@ -849,25 +849,28 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         return false;
     }
 
-    nLevels = darray_size(value->keysym_list.symsMapIndex);
+    nLevels = 0;
+    for (ParseCommon *p = &value->common; p; p = p->next)
+        nLevels++;
     if (darray_size(groupi->levels) < nLevels)
         darray_resize0(groupi->levels, nLevels);
 
     groupi->defined |= GROUP_FIELD_SYMS;
 
-    for (xkb_level_index_t i = 0; i < nLevels; i++) {
-        unsigned int sym_index;
-        struct xkb_level *leveli = &darray_item(groupi->levels, i);
+    xkb_level_index_t level = 0;
+    for (ExprKeysymList *keysymList = (ExprKeysymList *) value;
+         keysymList;
+         keysymList = (ExprKeysymList *) keysymList->expr.common.next, level++) {
+        struct xkb_level *leveli = &darray_item(groupi->levels, level);
         assert(leveli->num_syms == 0);
 
-        sym_index = darray_item(value->keysym_list.symsMapIndex, i);
-        leveli->num_syms = darray_item(value->keysym_list.symsNumEntries, i);
+        leveli->num_syms = darray_size(keysymList->syms);
         switch (leveli->num_syms) {
         case 0:
             leveli->s.sym = XKB_KEY_NoSymbol;
             break;
         case 1:
-            leveli->s.sym = darray_item(value->keysym_list.syms, sym_index);
+            leveli->s.sym = darray_item(keysymList->syms, 0);
             assert(leveli->s.sym != XKB_KEY_NoSymbol);
             break;
         default:
@@ -880,7 +883,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
                 return false;
             }
             memcpy(leveli->s.syms,
-                   &darray_item(value->keysym_list.syms, sym_index),
+                   &darray_item(keysymList->syms, 0),
                    leveli->num_syms * sizeof(*leveli->s.syms));
 #ifndef NDEBUG
             /* Canonical list: all NoSymbol were dropped */

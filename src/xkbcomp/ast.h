@@ -244,12 +244,8 @@ typedef struct {
 
 typedef struct {
     ExprCommon expr;
-    /* List of keysym for all levels, flattened */
+    /* List of keysym for a single level. */
     darray(xkb_keysym_t) syms;
-    /* List of start index in `syms`, per level */
-    darray(unsigned int) symsMapIndex;
-    /* List of number of keysyms, per level */
-    darray(unsigned int) symsNumEntries;
 } ExprKeysymList;
 
 union ExprDef {

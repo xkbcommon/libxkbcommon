@@ -70,13 +70,7 @@ ExprDef *
 ExprCreateActionList(ExprDef *actions);
 
 ExprDef *
-ExprCreateMultiKeysymList(ExprDef *list);
-
-ExprDef *
 ExprCreateKeysymList(xkb_keysym_t sym);
-
-ExprDef *
-ExprAppendMultiKeysymList(ExprDef *list, ExprDef *append);
 
 ExprDef *
 ExprAppendKeysymList(ExprDef *list, xkb_keysym_t sym);
