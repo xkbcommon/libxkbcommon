@@ -845,19 +845,24 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         return false;
     }
 
-    nLevels = darray_size(value->keysym_list.symsMapIndex);
+    nLevels = 0;
+    for (ParseCommon *p = &value->common; p; p = p->next) {
+        nLevels++;
+    }
+
     if (darray_size(groupi->levels) < nLevels)
         darray_resize0(groupi->levels, nLevels);
 
     groupi->defined |= GROUP_FIELD_SYMS;
 
-    for (xkb_level_index_t i = 0; i < nLevels; i++) {
-        unsigned int sym_index;
-        struct xkb_level *leveli = &darray_item(groupi->levels, i);
+    xkb_level_index_t level = 0;
+    for (ExprKeysymList *keysymList = (ExprKeysymList *) value;
+         keysymList;
+         keysymList = (ExprKeysymList *) keysymList->expr.common.next, level++) {
+        struct xkb_level *leveli = &darray_item(groupi->levels, level);
 
-        sym_index = darray_item(value->keysym_list.symsMapIndex, i);
         if (leveli->num_syms == 0) {
-            leveli->num_syms = darray_item(value->keysym_list.symsNumEntries, i);
+            leveli->num_syms = darray_size(keysymList->syms);
             if (leveli->num_syms > 1) {
                 /* Allocate keysyms */
                 leveli->s.syms =
@@ -871,26 +876,24 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
                     leveli->a.actions[j] = dummy;
                 }
             }
-        } else if (leveli->num_syms !=
-                   darray_item(value->keysym_list.symsNumEntries, i))
+        } else if (leveli->num_syms != darray_size(keysymList->syms))
         {
             log_err(info->ctx, XKB_ERROR_INCOMPATIBLE_ACTIONS_AND_KEYSYMS_COUNT,
                     "Symbols for key %s, group %u, level %u must have the same "
                     "number of keysyms than the corresponding actions. "
                     "Expected %u, got: %u. Ignoring duplicate definition\n",
-                    KeyInfoText(info, keyi), ndx + 1, i + 1, leveli->num_syms,
-                    darray_item(value->keysym_list.symsMapIndex, i));
+                    KeyInfoText(info, keyi), ndx + 1, level + 1, leveli->num_syms,
+                    darray_size(keysymList->syms));
             continue;
         }
 
         if (leveli->num_syms <= 1) {
-            leveli->s.sym = darray_item(value->keysym_list.syms, sym_index);
+            leveli->s.sym = darray_item(keysymList->syms, 0);
             if (leveli->s.sym == XKB_KEY_NoSymbol)
                 leveli->num_syms = 0;
         } else {
             for (unsigned j = 0; j < leveli->num_syms; j++) {
-                leveli->s.syms[j] =
-                    darray_item(value->keysym_list.syms, sym_index + j);
+                leveli->s.syms[j] = darray_item(keysymList->syms, j);
             }
         }
     }
