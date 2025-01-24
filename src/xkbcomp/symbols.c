@@ -926,31 +926,35 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         return false;
     }
 
-    nLevels = darray_size(value->actions.actionsMapIndex);
+    nLevels = 0;
+    for (ParseCommon *p = &value->common; p; p = p->next)
+        nLevels++;
     if (darray_size(groupi->levels) < nLevels)
         darray_resize0(groupi->levels, nLevels);
 
     groupi->defined |= GROUP_FIELD_ACTS;
 
-    for (unsigned i = 0; i < nLevels; i++) {
-        unsigned int act_index;
-        struct xkb_level *leveli = &darray_item(groupi->levels, i);
+    xkb_level_index_t level = 0;
+    for (ExprActionList *actionList = (ExprActionList *) value;
+         actionList;
+         actionList = (ExprActionList *) actionList->expr.common.next, level++) {
+        struct xkb_level *leveli = &darray_item(groupi->levels, level);
         assert(leveli->num_actions == 0);
 
-        act_index = darray_item(value->actions.actionsMapIndex, i);
-        const unsigned int num_actions =
-            darray_item(value->actions.actionsNumEntries, i);
+        unsigned int num_actions = 0;
+        for (ParseCommon *p = &actionList->actions->common; p; p = p->next)
+            num_actions++;
 
         /* Parse actions and add only defined actions */
         darray(union xkb_action) actions = darray_new();
-        for (unsigned j = 0; j < num_actions; j++) {
-            ExprDef *act = darray_item(value->actions.actions, act_index + j);
+        unsigned int act_index = 0;
+        for (ExprDef *act = actionList->actions; act; act = (ExprDef *) act->common.next, act_index++) {
             union xkb_action toAct = { 0 };
             if (!HandleActionDef(info->ctx, info->actions, &info->mods, act, &toAct))
                 log_err(info->ctx, XKB_ERROR_INVALID_VALUE,
                         "Illegal action definition for %s; "
                         "Action for group %u/level %u ignored\n",
-                        KeyInfoText(info, keyi), ndx + 1, i + 1);
+                        KeyInfoText(info, keyi), ndx + 1, level + 1);
             if (toAct.type == ACTION_TYPE_NONE) {
                 /* Drop action */
             } else if (likely(num_actions == 1)) {

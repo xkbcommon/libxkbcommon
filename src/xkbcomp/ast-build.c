@@ -206,58 +206,7 @@ ExprCreateActionList(ExprDef *actions)
     ExprDef *expr = ExprCreate(EXPR_ACTION_LIST, EXPR_TYPE_ACTIONS, sizeof(ExprActionList));
     if (!expr)
         return NULL;
-
-    darray_init(expr->actions.actions);
-    darray_init(expr->actions.actionsMapIndex);
-    darray_init(expr->actions.actionsNumEntries);
-
-    darray_append(expr->actions.actions, actions);
-    darray_append(expr->actions.actionsMapIndex, 0);
-    darray_append(expr->actions.actionsNumEntries, 1);
-    return expr;
-}
-
-ExprDef *
-ExprCreateMultiActionList(ExprDef *expr)
-{
-    unsigned nLevels = darray_size(expr->actions.actionsMapIndex);
-
-    darray_resize(expr->actions.actionsMapIndex, 1);
-    darray_resize(expr->actions.actionsNumEntries, 1);
-    darray_item(expr->actions.actionsMapIndex, 0) = 0;
-    darray_item(expr->actions.actionsNumEntries, 0) = nLevels;
-
-    return expr;
-}
-
-ExprDef *
-ExprAppendActionList(ExprDef *expr, ExprDef *action)
-{
-    /* TODO: drop NoAction() here if multi-actions list (add drop parameter) */
-    unsigned nActions = darray_size(expr->actions.actions);
-
-    darray_append(expr->actions.actionsMapIndex, nActions);
-    darray_append(expr->actions.actionsNumEntries, 1);
-    darray_append(expr->actions.actions, action);
-
-    return expr;
-}
-
-ExprDef *
-ExprAppendMultiActionList(ExprDef *expr, ExprDef *append)
-{
-    unsigned nSyms = darray_size(expr->actions.actions);
-    unsigned numEntries = darray_size(append->actions.actions);
-
-    darray_append(expr->actions.actionsMapIndex, nSyms);
-    darray_append(expr->actions.actionsNumEntries, numEntries);
-
-    /* Steal */
-    darray_concat(expr->actions.actions, append->actions.actions);
-    darray_free(append->actions.actions);
-
-    FreeStmt((ParseCommon *) append);
-
+    expr->actions.actions = actions;
     return expr;
 }
 
@@ -665,8 +614,6 @@ FreeExpr(ExprDef *expr)
     if (!expr)
         return;
 
-    ExprDef** action;
-
     switch (expr->expr.op) {
     case EXPR_NEGATE:
     case EXPR_UNARY_PLUS:
@@ -689,12 +636,7 @@ FreeExpr(ExprDef *expr)
         break;
 
     case EXPR_ACTION_LIST:
-        darray_foreach(action, expr->actions.actions) {
-            FreeStmt((ParseCommon *) *action);
-        }
-        darray_free(expr->actions.actions);
-        darray_free(expr->actions.actionsMapIndex);
-        darray_free(expr->actions.actionsNumEntries);
+        FreeStmt((ParseCommon *) expr->actions.actions);
         break;
 
     case EXPR_ARRAY_REF:

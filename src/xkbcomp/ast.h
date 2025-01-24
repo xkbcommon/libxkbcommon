@@ -238,12 +238,8 @@ typedef struct {
 
 typedef struct {
     ExprCommon expr;
-    /* List of actions for all levels, flattened */
-    darray(ExprDef*) actions;
-    /* List of start index in `actions`, per level */
-    darray(unsigned int) actionsMapIndex;
-    /* List of number of actions, per level */
-    darray(unsigned int) actionsNumEntries;
+    /* List of actions for a single level. */
+    ExprDef *actions;
 } ExprActionList;
 
 typedef struct {
