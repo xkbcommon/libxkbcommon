@@ -53,6 +53,7 @@
 
 #include "config.h"
 
+#include "xkbcommon/xkbcommon.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "expr.h"
@@ -61,6 +62,7 @@
 #include "include.h"
 #include "keysym.h"
 #include "util-mem.h"
+#include "xkbcomp/ast.h"
 
 
 enum key_repeat {
@@ -929,19 +931,29 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         return false;
     }
 
-    nLevels = darray_size(value->actions.actionsMapIndex);
+    nLevels = 0;
+    for (ParseCommon *p = &value->common; p; p = p->next) {
+        nLevels++;
+    }
+
     if (darray_size(groupi->levels) < nLevels)
         darray_resize0(groupi->levels, nLevels);
 
     groupi->defined |= GROUP_FIELD_ACTS;
 
-    for (unsigned i = 0; i < nLevels; i++) {
-        unsigned int act_index;
-        struct xkb_level *leveli = &darray_item(groupi->levels, i);
+    xkb_level_index_t level = 0;
+    for (ExprActionList *actionList = (ExprActionList *) value;
+         actionList;
+         actionList = (ExprActionList *) actionList->expr.common.next, level++) {
+        struct xkb_level *leveli = &darray_item(groupi->levels, level);
 
-        act_index = darray_item(value->actions.actionsMapIndex, i);
+        unsigned numEntries = 0;
+        for (ParseCommon *p = &actionList->actions->common; p; p = p->next) {
+            numEntries++;
+        }
+
         if (leveli->num_syms == 0) {
-            leveli->num_syms = darray_item(value->actions.actionsNumEntries, i);
+            leveli->num_syms = numEntries;
             if (leveli->num_syms > 1) {
                 /* Allocate actions */
                 leveli->a.actions =
@@ -953,31 +965,30 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
                     leveli->s.syms[j] = XKB_KEY_NoSymbol;
                 }
             }
-        } else if (leveli->num_syms !=
-                   darray_item(value->actions.actionsNumEntries, i))
+        } else if (leveli->num_syms != numEntries)
         {
             log_err(info->ctx, XKB_ERROR_INCOMPATIBLE_ACTIONS_AND_KEYSYMS_COUNT,
                     "Symbols for key %s, group %u, level %u must have the same "
                     "number of actions than the corresponding keysyms. "
                     "Expected %u, got: %u. Ignoring duplicate definition\n",
-                    KeyInfoText(info, keyi), ndx + 1, i + 1, leveli->num_syms,
-                    darray_item(value->actions.actionsNumEntries, i));
+                    KeyInfoText(info, keyi), ndx + 1, level + 1, leveli->num_syms,
+                    numEntries);
             continue;
         }
 
-        for (unsigned j = 0; j < leveli->num_syms; j++) {
-            ExprDef *act = darray_item(value->actions.actions, act_index + j);
+        unsigned actNdx = 0;
+        for (ExprDef *act = actionList->actions; act; act = (ExprDef *) act->common.next, actNdx++) {
             union xkb_action *toAct;
             if (leveli->num_syms > 1) {
-                toAct = &darray_item(groupi->levels, i).a.actions[j];
+                toAct = &darray_item(groupi->levels, level).a.actions[actNdx];
             } else {
-                toAct = &darray_item(groupi->levels, i).a.action;
+                toAct = &darray_item(groupi->levels, level).a.action;
             }
             if (!HandleActionDef(info->ctx, info->actions, &info->mods, act, toAct))
                 log_err(info->ctx, XKB_ERROR_INVALID_VALUE,
                         "Illegal action definition for %s; "
                         "Action for group %u/level %u ignored\n",
-                        KeyInfoText(info, keyi), ndx + 1, i + 1);
+                        KeyInfoText(info, keyi), ndx + 1, level + 1);
         }
     }
 

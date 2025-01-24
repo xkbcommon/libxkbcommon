@@ -70,15 +70,6 @@ ExprDef *
 ExprCreateActionList(ExprDef *actions);
 
 ExprDef *
-ExprCreateMultiActionList(ExprDef *expr);
-
-ExprDef *
-ExprAppendActionList(ExprDef *expr, ExprDef *action);
-
-ExprDef *
-ExprAppendMultiActionList(ExprDef *expr, ExprDef *append);
-
-ExprDef *
 ExprCreateMultiKeysymList(ExprDef *list);
 
 ExprDef *

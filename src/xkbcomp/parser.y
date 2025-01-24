@@ -207,8 +207,8 @@ resolve_keysym(struct parser_param *param, const char *name, xkb_keysym_t *sym_r
 %type <any>     Decl
 %type <anyList> DeclList
 %type <expr>    Expr Term Lhs Terminal ArrayInit Actions KeySyms
-%type <expr>    MultiKeySymList KeySymList MultiActionList ActionList Action Coord CoordList
-%type <exprList> OptExprList ExprList
+%type <expr>    MultiKeySymList KeySymList Action Coord CoordList
+%type <exprList> OptExprList ExprList ActionList MultiActionList
 %type <var>     VarDecl SymbolsVarDecl
 %type <varList> VarDeclList SymbolsBody OptSymbolsBody
 %type <vmod>    VModDef
@@ -483,7 +483,7 @@ SymbolsVarDecl  :       Lhs EQUALS Expr         { $$ = VarCreate($1, $3); }
 ArrayInit       :       OBRACKET MultiKeySymList CBRACKET
                         { $$ = $2; }
                 |       OBRACKET MultiActionList CBRACKET
-                        { $$ = $2; }
+                        { $$ = $2.head; }
                 |       OBRACKET CBRACKET
                         { $$ = ExprEmptyList(); }
                 ;
@@ -685,26 +685,27 @@ Term            :       MINUS Term
                 ;
 
 MultiActionList :       MultiActionList COMMA Action
-                        { $$ = ExprAppendActionList($1, $3); }
+                        {
+                            ExprDef *expr = ExprCreateActionList($3);
+                            $$ = $1;
+                            $$.last->common.next = &expr->common; $$.last = expr;
+                        }
                 |       MultiActionList COMMA Actions
-                        { $$ = ExprAppendMultiActionList($1, $3); }
+                        { $$ = $1; $$.last->common.next = &$3->common; $$.last = $3; }
                 |       Action
-                        { $$ = ExprCreateActionList($1); }
+                        { $$.head = $$.last = ExprCreateActionList($1); }
                 |       Actions
-                        { $$ = ExprCreateMultiActionList($1); }
+                        { $$.head = $$.last = $1; }
                 ;
 
 ActionList      :       ActionList COMMA Action
-                        { $$ = ExprAppendActionList($1, $3); }
+                        { $$ = $1; $$.last->common.next = &$3->common; $$.last = $3; }
                 |       Action COMMA Action
-                        {
-                            $$ = ExprCreateActionList($1);
-                            $$ = ExprAppendActionList($$, $3);
-                        }
+                        { $$.head = $1; $$.head->common.next = &$3->common; $$.last = $3; }
                 ;
 
 Actions         :       OBRACE ActionList CBRACE
-                        { $$ = $2; }
+                        { $$ = ExprCreateActionList($2.head); }
                 ;
 
 Action          :       FieldSpec OPAREN OptExprList CPAREN
