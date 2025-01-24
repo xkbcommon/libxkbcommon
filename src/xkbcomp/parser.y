@@ -207,8 +207,8 @@ resolve_keysym(struct parser_param *param, const char *name, xkb_keysym_t *sym_r
 %type <any>     Decl
 %type <anyList> DeclList
 %type <expr>    Expr Term Lhs Terminal ArrayInit Actions KeySyms
-%type <expr>    MultiKeySymList KeySymList Action Coord CoordList
-%type <exprList> OptExprList ExprList ActionList MultiActionList
+%type <expr>    KeySymList Action Coord CoordList
+%type <exprList> OptExprList ExprList ActionList MultiActionList MultiKeySymList
 %type <var>     VarDecl SymbolsVarDecl
 %type <varList> VarDeclList SymbolsBody OptSymbolsBody
 %type <vmod>    VModDef
@@ -481,7 +481,7 @@ SymbolsVarDecl  :       Lhs EQUALS Expr         { $$ = VarCreate($1, $3); }
                 ;
 
 ArrayInit       :       OBRACKET MultiKeySymList CBRACKET
-                        { $$ = $2; }
+                        { $$ = $2.head; }
                 |       OBRACKET MultiActionList CBRACKET
                         { $$ = $2.head; }
                 |       OBRACKET CBRACKET
@@ -733,13 +733,17 @@ Terminal        :       String
                 ;
 
 MultiKeySymList :       MultiKeySymList COMMA KeySym
-                        { $$ = ExprAppendKeysymList($1, $3); }
+                        {
+                            ExprDef *expr = ExprCreateKeysymList($3);
+                            $$ = $1;
+                            $$.last->common.next = &expr->common; $$.last = expr;
+                        }
                 |       MultiKeySymList COMMA KeySyms
-                        { $$ = ExprAppendMultiKeysymList($1, $3); }
+                        { $$ = $1; $$.last->common.next = &$3->common; $$.last = $3; }
                 |       KeySym
-                        { $$ = ExprCreateKeysymList($1); }
+                        { $$.head = $$.last = ExprCreateKeysymList($1); }
                 |       KeySyms
-                        { $$ = ExprCreateMultiKeysymList($1); }
+                        { $$.head = $$.last = $1; }
                 ;
 
 KeySymList      :       KeySymList COMMA KeySym

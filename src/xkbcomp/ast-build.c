@@ -216,65 +216,23 @@ ExprCreateKeysymList(xkb_keysym_t sym)
     ExprDef *expr = ExprCreate(EXPR_KEYSYM_LIST, EXPR_TYPE_SYMBOLS, sizeof(ExprKeysymList));
     if (!expr)
         return NULL;
-
     darray_init(expr->keysym_list.syms);
-    darray_init(expr->keysym_list.symsMapIndex);
-    darray_init(expr->keysym_list.symsNumEntries);
-
-    darray_append(expr->keysym_list.symsMapIndex, 0);
     if (sym == XKB_KEY_NoSymbol) {
         /* Discard NoSymbol */
-        darray_append(expr->keysym_list.symsNumEntries, 0);
     } else {
-        darray_append(expr->keysym_list.symsNumEntries, 1);
         darray_append(expr->keysym_list.syms, sym);
     }
-
-    return expr;
-}
-
-ExprDef *
-ExprCreateMultiKeysymList(ExprDef *expr)
-{
-    const unsigned nLevels = darray_size(expr->keysym_list.syms);
-
-    darray_resize(expr->keysym_list.symsMapIndex, 1);
-    darray_resize(expr->keysym_list.symsNumEntries, 1);
-    darray_item(expr->keysym_list.symsMapIndex, 0) = 0;
-    darray_item(expr->keysym_list.symsNumEntries, 0) = nLevels;
-
     return expr;
 }
 
 ExprDef *
 ExprAppendKeysymList(ExprDef *expr, xkb_keysym_t sym)
 {
-    const unsigned nSyms = darray_size(expr->keysym_list.syms);
-    darray_append(expr->keysym_list.symsMapIndex, nSyms);
-
     if (sym == XKB_KEY_NoSymbol) {
         /* Discard NoSymbol */
-        darray_append(expr->keysym_list.symsNumEntries, 0);
     } else {
-        darray_append(expr->keysym_list.symsNumEntries, 1);
         darray_append(expr->keysym_list.syms, sym);
     }
-
-    return expr;
-}
-
-ExprDef *
-ExprAppendMultiKeysymList(ExprDef *expr, ExprDef *append)
-{
-    const unsigned nSyms = darray_size(expr->keysym_list.syms);
-    const unsigned numEntries = darray_size(append->keysym_list.syms);
-
-    darray_append(expr->keysym_list.symsMapIndex, nSyms);
-    darray_append(expr->keysym_list.symsNumEntries, numEntries);
-    darray_concat(expr->keysym_list.syms, append->keysym_list.syms);
-
-    FreeStmt((ParseCommon *) append);
-
     return expr;
 }
 
@@ -645,8 +603,6 @@ FreeExpr(ExprDef *expr)
 
     case EXPR_KEYSYM_LIST:
         darray_free(expr->keysym_list.syms);
-        darray_free(expr->keysym_list.symsMapIndex);
-        darray_free(expr->keysym_list.symsNumEntries);
         break;
 
     default:
