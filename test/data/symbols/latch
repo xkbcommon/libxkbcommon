@@ -1,0 +1,50 @@
+default partial alphanumeric_keys
+xkb_symbols "modifiers" {
+	name[Group1] = "Test latching behavior";
+
+	virtual_modifiers LevelThree;
+
+	key <AE01> { [ 1, exclam, onesuperior, exclamdown, plus ], type[Group1]="CTRL+ALT"};
+
+	key <AD01> { [ q, Q ], type[Group1] = "ALPHABETIC" };
+
+	key <LFSH> {
+		symbols[Group1] = [ Shift_L ],
+		actions[Group1] = [ LatchMods(modifiers=Shift,latchToLock=true,clearLocks=true) ]
+	};
+
+	key <RTSH> {
+		symbols[Group1] = [ Shift_R ],
+		actions[Group1] = [ LatchMods(modifiers=Shift,latchToLock=false,clearLocks=false) ]
+	};
+
+	key <LCTL> {
+		symbols[Group1] = [ Control_L ],
+		actions[Group1] = [ LatchMods(modifiers=Control) ]
+	};
+
+	key <LALT> {
+		type[Group1] = "ONE_LEVEL",
+		symbols[Group1] = [ Alt_L ],
+		actions[Group1] = [ LatchMods(modifiers=Alt) ]
+	};
+
+	key <RALT> {
+		type[Group1] = "ONE_LEVEL",
+		symbols[Group1] = [ ISO_Level3_Latch ],
+		actions[Group1] = [ LatchMods(modifiers=LevelThree,latchToLock=true,clearLocks=true) ]
+	};
+
+	key <MENU> {
+		type[Group1] = "ONE_LEVEL",
+		symbols[Group1] = [ ISO_Level3_Latch ],
+		actions[Group1] = [ LatchMods(modifiers=LevelThree,latchToLock=false,clearLocks=false) ]
+	};
+
+	key <FK01> { [XF86_Switch_VT_1], type[Group1] = "ONE_LEVEL" };
+	key <FK02> { [ISO_Group_Shift], type[Group1] = "ONE_LEVEL" };
+
+	key <LSGT> { [ ISO_Level3_Lock ], type[Group1] = "ONE_LEVEL" };
+
+	key <CAPS> { [ ISO_Group_Latch ] };
+};
