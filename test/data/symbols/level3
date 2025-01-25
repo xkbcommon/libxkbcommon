@@ -210,6 +210,14 @@ xkb_symbols "lsgt_switch_latch" {
   include "level3(modifier_mapping)"
 };
 
+partial modifier_keys
+xkb_symbols "lsgt_latch" {
+  key <LSGT> {
+    type[Group1]="ONE_LEVEL",
+    symbols[Group1] = [ ISO_Level3_Latch ]
+  };
+};
+
 // Number key 4 chooses third shift level when pressed in isolation.
 partial modifier_keys
 xkb_symbols "4_switch_isolated" {
