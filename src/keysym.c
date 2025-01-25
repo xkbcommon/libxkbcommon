@@ -62,7 +62,7 @@ get_unicode_name(xkb_keysym_t ks, char *buffer, size_t size)
     return snprintf(buffer, size, "U%0*lX", width, ks & 0xffffffUL);
 }
 
-XKB_EXPORT int
+int
 xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
 {
     if (ks > XKB_KEYSYM_MAX) {
@@ -206,7 +206,7 @@ parse_keysym_hex(const char *s, uint32_t *out)
     return s[i] == '\0' && i > 0;
 }
 
-XKB_EXPORT xkb_keysym_t
+xkb_keysym_t
 xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
 {
     const struct name_keysym *entry = NULL;

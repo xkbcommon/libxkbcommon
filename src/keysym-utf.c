@@ -853,7 +853,7 @@ bin_search(const struct codepair *table, size_t length, xkb_keysym_t keysym)
     return NO_KEYSYM_UNICODE_CONVERSION;
 }
 
-XKB_EXPORT uint32_t
+uint32_t
 xkb_keysym_to_utf32(xkb_keysym_t keysym)
 {
     /* first check for Latin-1 characters (1:1 mapping) */
@@ -894,7 +894,7 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym)
     return bin_search(keysymtab, ARRAY_SIZE(keysymtab) - 1, keysym);
 }
 
-XKB_EXPORT xkb_keysym_t
+xkb_keysym_t
 xkb_utf32_to_keysym(uint32_t ucs)
 {
     /* first check for Latin-1 characters (1:1 mapping) */
@@ -932,7 +932,7 @@ xkb_utf32_to_keysym(uint32_t ucs)
  * Author: Rob Bradford <rob@linux.intel.com>
  */
 
-XKB_EXPORT int
+int
 xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size)
 {
     uint32_t codepoint;

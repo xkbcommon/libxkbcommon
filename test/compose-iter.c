@@ -47,7 +47,7 @@ for_each_helper(struct xkb_compose_table *table,
     for_each_helper(table, iter, data, syms, nsyms, node->hikid);
 }
 
-XKB_EXPORT void
+void
 xkb_compose_table_for_each(struct xkb_compose_table *table,
                            xkb_compose_table_iter_t iter,
                            void *data)

@@ -27,7 +27,7 @@ struct xkb_compose_state {
     uint32_t context;
 };
 
-XKB_EXPORT struct xkb_compose_state *
+struct xkb_compose_state *
 xkb_compose_state_new(struct xkb_compose_table *table,
                       enum xkb_compose_state_flags flags)
 {
@@ -47,14 +47,14 @@ xkb_compose_state_new(struct xkb_compose_table *table,
     return state;
 }
 
-XKB_EXPORT struct xkb_compose_state *
+struct xkb_compose_state *
 xkb_compose_state_ref(struct xkb_compose_state *state)
 {
     state->refcnt++;
     return state;
 }
 
-XKB_EXPORT void
+void
 xkb_compose_state_unref(struct xkb_compose_state *state)
 {
     if (!state || --state->refcnt > 0)
@@ -64,13 +64,13 @@ xkb_compose_state_unref(struct xkb_compose_state *state)
     free(state);
 }
 
-XKB_EXPORT struct xkb_compose_table *
+struct xkb_compose_table *
 xkb_compose_state_get_compose_table(struct xkb_compose_state *state)
 {
     return state->table;
 }
 
-XKB_EXPORT enum xkb_compose_feed_result
+enum xkb_compose_feed_result
 xkb_compose_state_feed(struct xkb_compose_state *state, xkb_keysym_t keysym)
 {
     uint32_t context;
@@ -110,14 +110,14 @@ xkb_compose_state_feed(struct xkb_compose_state *state, xkb_keysym_t keysym)
     return XKB_COMPOSE_FEED_ACCEPTED;
 }
 
-XKB_EXPORT void
+void
 xkb_compose_state_reset(struct xkb_compose_state *state)
 {
     state->prev_context = 0;
     state->context = 0;
 }
 
-XKB_EXPORT enum xkb_compose_status
+enum xkb_compose_status
 xkb_compose_state_get_status(struct xkb_compose_state *state)
 {
     const struct compose_node *prev_node, *node;
@@ -137,7 +137,7 @@ xkb_compose_state_get_status(struct xkb_compose_state *state)
     return XKB_COMPOSE_COMPOSED;
 }
 
-XKB_EXPORT int
+int
 xkb_compose_state_get_utf8(struct xkb_compose_state *state,
                            char *buffer, size_t size)
 {
@@ -172,7 +172,7 @@ fail:
     return 0;
 }
 
-XKB_EXPORT xkb_keysym_t
+xkb_keysym_t
 xkb_compose_state_get_one_sym(struct xkb_compose_state *state)
 {
     const struct compose_node *node =
