@@ -176,27 +176,36 @@ xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t kc)
                                  key->out_of_range_group_number);
 }
 
+/* Empty action used for empty levels */
+static const union xkb_action dummy_action = { .type = ACTION_TYPE_NONE };
+
 static unsigned int
 xkb_key_get_actions(struct xkb_state *state, const struct xkb_key *key,
                     const union xkb_action **actions)
 {
-    xkb_layout_index_t layout;
-    xkb_level_index_t level;
-
-    layout = xkb_state_key_get_layout(state, key->keycode);
+    const xkb_layout_index_t layout =
+        xkb_state_key_get_layout(state, key->keycode);
     if (layout == XKB_LAYOUT_INVALID)
         goto err;
 
-    level = xkb_state_key_get_level(state, key->keycode, layout);
+    const xkb_level_index_t level =
+        xkb_state_key_get_level(state, key->keycode, layout);
     if (level == XKB_LEVEL_INVALID)
         goto err;
 
-    return xkb_keymap_key_get_actions_by_level(state->keymap, key->keycode,
-                                               layout, level, actions);
+    const unsigned int count =
+        xkb_keymap_key_get_actions_by_level(state->keymap, key->keycode,
+                                            layout, level, actions);
+    if (!count)
+        goto err;
+
+    return count;
 
 err:
-    *actions = NULL;
-    return 0;
+    /* Use a dummy action if no corresponding level was found or if it is empty.
+     * This is required e.g. to handle latches properly. */
+    *actions = &dummy_action;
+    return 1;
 }
 
 static struct xkb_filter *
@@ -379,7 +388,7 @@ xkb_filter_group_latch_func(struct xkb_state *state,
          * or promote it to a lock if it's the same group delta & flags and
          * latchToLock option is enabled. */
         const union xkb_action *actions = NULL;
-        unsigned int count = xkb_key_get_actions(state, key, &actions);
+        const unsigned int count = xkb_key_get_actions(state, key, &actions);
         for (unsigned int k = 0; k < count; k++) {
             if (actions[k].type == ACTION_TYPE_GROUP_LATCH &&
                 actions[k].group.group == filter->action.group.group &&
@@ -398,7 +407,7 @@ xkb_filter_group_latch_func(struct xkb_state *state,
                 }
                 /* Do nothing if latchToLock option is not activated; if the
                  * latch is not broken by the following actions and the key is
-                 * not consummed, then another latch filter will be created.
+                 * not consumed, then another latch filter will be created.
                  */
                 continue;
             }
@@ -539,7 +548,7 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
          * or promote it to a lock or plain base set if it's the same
          * modifier. */
         const union xkb_action *actions = NULL;
-        unsigned int count = xkb_key_get_actions(state, key, &actions);
+        const unsigned int count = xkb_key_get_actions(state, key, &actions);
         for (unsigned int k = 0; k < count; k++) {
             if (actions[k].type == ACTION_TYPE_MOD_LATCH &&
                 actions[k].mods.flags == filter->action.mods.flags &&
@@ -638,14 +647,10 @@ xkb_filter_apply_all(struct xkb_state *state,
                      const struct xkb_key *key,
                      enum xkb_key_direction direction)
 {
-    struct xkb_filter *filter;
-    const union xkb_action *actions = NULL;
-    unsigned int count;
-    bool consumed;
-
     /* First run through all the currently active filters and see if any of
      * them have consumed this event. */
-    consumed = false;
+    bool consumed = false;
+    struct xkb_filter *filter;
     darray_foreach(filter, state->filters) {
         if (!filter->func)
             continue;
@@ -657,7 +662,8 @@ xkb_filter_apply_all(struct xkb_state *state,
         return;
 
     /* No filter consumed this event, so proceed with the key actions */
-    count = xkb_key_get_actions(state, key, &actions);
+    const union xkb_action *actions = NULL;
+    const unsigned int count = xkb_key_get_actions(state, key, &actions);
 
     /*
      * Process actions sequentially.

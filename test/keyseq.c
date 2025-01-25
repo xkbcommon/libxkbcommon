@@ -71,6 +71,15 @@ test_group_latch(struct xkb_context *ctx)
                         KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
                         KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      NEXT,  \
                         KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
+                        /* Empty level breaks latches */                       \
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        KEY_YEN,        BOTH,  XKB_KEY_NoSymbol,        NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
+                        /* Unknown key does not break latches */               \
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        UINT32_MAX,     BOTH,  XKB_KEY_NoSymbol,        NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
                         /* Lock the second group */                            \
                         KEY_SCROLLLOCK, BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,  \
                         KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      NEXT,  \
@@ -317,6 +326,15 @@ test_group_latch(struct xkb_context *ctx)
                         KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
                         KEY_H,          BOTH,  XKB_KEY_s,               NEXT,  \
                         KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
+                        /* Empty level breaks latches */                       \
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        KEY_YEN,        BOTH,  XKB_KEY_NoSymbol,        NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
+                        /* Unknown key does not break latches */               \
+                        KEY_COMPOSE,    BOTH,  XKB_KEY_ISO_Group_Latch, NEXT,  \
+                        UINT32_MAX,     BOTH,  XKB_KEY_NoSymbol,        NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_s,               NEXT,  \
+                        KEY_H,          BOTH,  XKB_KEY_h,               NEXT,  \
                         /* Lock the second group */                            \
                         KEY_SCROLLLOCK, BOTH,  XKB_KEY_ISO_Next_Group,  NEXT,  \
                         KEY_H,          BOTH,  XKB_KEY_hebrew_yod,      NEXT,  \
@@ -469,6 +487,19 @@ test_mod_latch(struct xkb_context *context)
     assert(test_key_seq(keymap,
         KEY_Q         , BOTH, XKB_KEY_q      , NEXT,
         KEY_1         , BOTH, XKB_KEY_1      , NEXT,
+
+        /* Empty level */
+        KEY_LEFTSHIFT , DOWN, XKB_KEY_Shift_L , NEXT,
+        KEY_YEN       , BOTH, XKB_KEY_NoSymbol, NEXT, /* Prevent latch */
+        KEY_LEFTSHIFT , UP,   XKB_KEY_Shift_L , NEXT,
+        KEY_Q         , BOTH, XKB_KEY_q       , NEXT,
+
+        /* Unknown key */
+        KEY_LEFTSHIFT , DOWN, XKB_KEY_Shift_L , NEXT,
+        UINT32_MAX    , BOTH, XKB_KEY_NoSymbol, NEXT, /* Does not prevent latch */
+        KEY_LEFTSHIFT , UP,   XKB_KEY_Shift_L , NEXT,
+        KEY_1         , BOTH, XKB_KEY_exclam  , NEXT,
+        KEY_Q         , BOTH, XKB_KEY_q       , NEXT,
 
         KEY_LEFTSHIFT , DOWN, XKB_KEY_Shift_L, NEXT,
         KEY_Q         , BOTH, XKB_KEY_Q      , NEXT,  /* Prevent latch */
