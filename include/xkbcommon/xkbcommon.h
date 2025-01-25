@@ -94,6 +94,8 @@ extern "C" {
 
 #if defined(__GNUC__) && !defined(__CYGWIN__)
 # define XKB_EXPORT      __attribute__((visibility("default")))
+#elif defined(_WIN32)
+# define XKB_EXPORT      __declspec(dllexport)
 #else
 # define XKB_EXPORT
 #endif
