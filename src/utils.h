@@ -267,42 +267,39 @@ open_file(const char *path);
 
 /* Compiler Attributes */
 
-#if defined(__GNUC__) && (__GNUC__ >= 4) && !defined(__CYGWIN__)
+#if defined(__GNUC__) && !defined(__CYGWIN__)
 # define XKB_EXPORT      __attribute__((visibility("default")))
-#elif defined(__SUNPRO_C) && (__SUNPRO_C >= 0x550)
-# define XKB_EXPORT      __global
-#else /* not gcc >= 4 and not Sun Studio >= 8 */
+#else
 # define XKB_EXPORT
 #endif
 
 #if defined(__MINGW32__)
 # define ATTR_PRINTF(x,y) __attribute__((__format__(__MINGW_PRINTF_FORMAT, x, y)))
-#elif defined(__GNUC__) && ((__GNUC__ * 100 + __GNUC_MINOR__) >= 203)
+#elif defined(__GNUC__)
 # define ATTR_PRINTF(x,y) __attribute__((__format__(__printf__, x, y)))
-#else /* not gcc >= 2.3 */
+#else
 # define ATTR_PRINTF(x,y)
 #endif
 
-#if (defined(__GNUC__) && ((__GNUC__ * 100 + __GNUC_MINOR__) >= 205)) \
-    || (defined(__SUNPRO_C) && (__SUNPRO_C >= 0x590))
+#if defined(__GNUC__)
 # define ATTR_NORETURN __attribute__((__noreturn__))
 #else
 # define ATTR_NORETURN
 #endif /* GNUC  */
 
-#if (defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 296)
+#if defined(__GNUC__)
 #define ATTR_MALLOC  __attribute__((__malloc__))
 #else
 #define ATTR_MALLOC
 #endif
 
-#if defined(__GNUC__) && (__GNUC__ >= 4)
+#if defined(__GNUC__)
 # define ATTR_NULL_SENTINEL __attribute__((__sentinel__))
 #else
 # define ATTR_NULL_SENTINEL
-#endif /* GNUC >= 4 */
+#endif
 
-#if (defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 295)
+#if defined(__GNUC__)
 #define ATTR_PACKED  __attribute__((__packed__))
 #else
 #define ATTR_PACKED
