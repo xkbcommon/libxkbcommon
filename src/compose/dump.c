@@ -34,7 +34,6 @@
 #include "escape.h"
 #include "dump.h"
 #include "src/keysym.h"
-#include "src/utils.h"
 
 bool
 print_compose_table_entry(FILE *file, struct xkb_compose_table_entry *entry)

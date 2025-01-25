@@ -26,6 +26,7 @@
 
 #include "config.h"
 
+#include "utils.h"
 #include "utf8.h"
 
 /* Conformant encoding form conversion from UTF-32 to UTF-8.

@@ -31,10 +31,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-int
+#include "utils.h"
+
+XKB_EXPORT_PRIVATE int
 utf32_to_utf8(uint32_t unichar, char *buffer);
 
-bool
+XKB_EXPORT_PRIVATE bool
 is_valid_utf8(const char *ss, size_t len);
 
 #endif
