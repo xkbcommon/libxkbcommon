@@ -1156,7 +1156,7 @@ fail:
     return false;
 }
 
-XKB_EXPORT struct xkb_keymap *
+struct xkb_keymap *
 xkb_x11_keymap_new_from_device(struct xkb_context *ctx,
                                xcb_connection_t *conn,
                                int32_t device_id,

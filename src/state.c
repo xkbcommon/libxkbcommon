@@ -141,7 +141,7 @@ get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
  * Returns the level to use for the given key and state, or
  * XKB_LEVEL_INVALID.
  */
-XKB_EXPORT xkb_level_index_t
+xkb_level_index_t
 xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
                         xkb_layout_index_t layout)
 {
@@ -163,7 +163,7 @@ xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
  * Returns the layout to use for the given key and state, taking
  * wrapping/clamping/etc into account, or XKB_LAYOUT_INVALID.
  */
-XKB_EXPORT xkb_layout_index_t
+xkb_layout_index_t
 xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t kc)
 {
     const struct xkb_key *key = XkbKey(state->keymap, kc);
@@ -690,7 +690,7 @@ xkb_filter_apply_all(struct xkb_state *state,
     }
 }
 
-XKB_EXPORT struct xkb_state *
+struct xkb_state *
 xkb_state_new(struct xkb_keymap *keymap)
 {
     struct xkb_state *ret;
@@ -705,14 +705,14 @@ xkb_state_new(struct xkb_keymap *keymap)
     return ret;
 }
 
-XKB_EXPORT struct xkb_state *
+struct xkb_state *
 xkb_state_ref(struct xkb_state *state)
 {
     state->refcnt++;
     return state;
 }
 
-XKB_EXPORT void
+void
 xkb_state_unref(struct xkb_state *state)
 {
     if (!state || --state->refcnt > 0)
@@ -723,7 +723,7 @@ xkb_state_unref(struct xkb_state *state)
     free(state);
 }
 
-XKB_EXPORT struct xkb_keymap *
+struct xkb_keymap *
 xkb_state_get_keymap(struct xkb_state *state)
 {
     return state->keymap;
@@ -868,7 +868,7 @@ get_state_component_changes(const struct state_components *a,
  * Given a particular key event, updates the state structure to reflect the
  * new modifiers.
  */
-XKB_EXPORT enum xkb_state_component
+enum xkb_state_component
 xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
                      enum xkb_key_direction direction)
 {
@@ -918,7 +918,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
  * lossy, and should only be used to update a slave state mirroring the
  * master, e.g. in a client/server window system.
  */
-XKB_EXPORT enum xkb_state_component
+enum xkb_state_component
 xkb_state_update_mask(struct xkb_state *state,
                       xkb_mod_mask_t base_mods,
                       xkb_mod_mask_t latched_mods,
@@ -974,7 +974,7 @@ xkb_state_update_mask(struct xkb_state *state,
  * Provides the symbols to use for the given key and state.  Returns the
  * number of symbols pointed to in syms_out.
  */
-XKB_EXPORT int
+int
 xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t kc,
                        const xkb_keysym_t **syms_out)
 {
@@ -1073,7 +1073,7 @@ XkbToControl(char ch)
 /**
  * Provides either exactly one symbol, or XKB_KEY_NoSymbol.
  */
-XKB_EXPORT xkb_keysym_t
+xkb_keysym_t
 xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t kc)
 {
     const xkb_keysym_t *syms;
@@ -1145,7 +1145,7 @@ get_one_sym_for_string(struct xkb_state *state, xkb_keycode_t kc)
     return sym;
 }
 
-XKB_EXPORT int
+int
 xkb_state_key_get_utf8(struct xkb_state *state, xkb_keycode_t kc,
                        char *buffer, size_t size)
 {
@@ -1200,7 +1200,7 @@ err_bad:
     return 0;
 }
 
-XKB_EXPORT uint32_t
+uint32_t
 xkb_state_key_get_utf32(struct xkb_state *state, xkb_keycode_t kc)
 {
     xkb_keysym_t sym;
@@ -1219,7 +1219,7 @@ xkb_state_key_get_utf32(struct xkb_state *state, xkb_keycode_t kc)
  * Serialises the requested modifier state into an xkb_mod_mask_t, with all
  * the same disclaimers as in xkb_state_update_mask.
  */
-XKB_EXPORT xkb_mod_mask_t
+xkb_mod_mask_t
 xkb_state_serialize_mods(struct xkb_state *state,
                          enum xkb_state_component type)
 {
@@ -1242,7 +1242,7 @@ xkb_state_serialize_mods(struct xkb_state *state,
  * Serialises the requested group state, with all the same disclaimers as
  * in xkb_state_update_mask.
  */
-XKB_EXPORT xkb_layout_index_t
+xkb_layout_index_t
 xkb_state_serialize_layout(struct xkb_state *state,
                            enum xkb_state_component type)
 {
@@ -1298,7 +1298,7 @@ mod_mapping(struct xkb_mod *mod, xkb_mod_index_t idx)
  * Returns 1 if the given modifier is active with the specified type(s), 0 if
  * not, or -1 if the modifier is invalid.
  */
-XKB_EXPORT int
+int
 xkb_state_mod_index_is_active(struct xkb_state *state,
                               xkb_mod_index_t idx,
                               enum xkb_state_component type)
@@ -1340,7 +1340,7 @@ match_mod_masks(struct xkb_state *state,
  * Returns 1 if the modifiers are active with the specified type(s), 0 if
  * not, or -1 if any of the modifiers are invalid.
  */
-XKB_EXPORT int
+int
 xkb_state_mod_indices_are_active(struct xkb_state *state,
                                  enum xkb_state_component type,
                                  enum xkb_state_match match,
@@ -1379,7 +1379,7 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
  * Returns 1 if the given modifier is active with the specified type(s), 0 if
  * not, or -1 if the modifier is invalid.
  */
-XKB_EXPORT int
+int
 xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
                              enum xkb_state_component type)
 {
@@ -1395,7 +1395,7 @@ xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
  * Returns 1 if the modifiers are active with the specified type(s), 0 if
  * not, or -1 if any of the modifiers are invalid.
  */
-XKB_EXPORT ATTR_NULL_SENTINEL int
+ATTR_NULL_SENTINEL int
 xkb_state_mod_names_are_active(struct xkb_state *state,
                                enum xkb_state_component type,
                                enum xkb_state_match match,
@@ -1435,7 +1435,7 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
  * Returns 1 if the given group is active with the specified type(s), 0 if
  * not, or -1 if the group is invalid.
  */
-XKB_EXPORT int
+int
 xkb_state_layout_index_is_active(struct xkb_state *state,
                                  xkb_layout_index_t idx,
                                  enum xkb_state_component type)
@@ -1461,7 +1461,7 @@ xkb_state_layout_index_is_active(struct xkb_state *state,
  * Returns 1 if the given modifier is active with the specified type(s), 0 if
  * not, or -1 if the modifier is invalid.
  */
-XKB_EXPORT int
+int
 xkb_state_layout_name_is_active(struct xkb_state *state, const char *name,
                                 enum xkb_state_component type)
 {
@@ -1476,7 +1476,7 @@ xkb_state_layout_name_is_active(struct xkb_state *state, const char *name,
 /**
  * Returns 1 if the given LED is active, 0 if not, or -1 if the LED is invalid.
  */
-XKB_EXPORT int
+int
 xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx)
 {
     if (idx >= state->keymap->num_leds ||
@@ -1489,7 +1489,7 @@ xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx)
 /**
  * Returns 1 if the given LED is active, 0 if not, or -1 if the LED is invalid.
  */
-XKB_EXPORT int
+int
 xkb_state_led_name_is_active(struct xkb_state *state, const char *name)
 {
     xkb_led_index_t idx = xkb_keymap_led_get_index(state->keymap, name);
@@ -1558,7 +1558,7 @@ key_get_consumed(struct xkb_state *state, const struct xkb_key *key,
     return consumed & ~preserve;
 }
 
-XKB_EXPORT int
+int
 xkb_state_mod_index_is_consumed2(struct xkb_state *state, xkb_keycode_t kc,
                                  xkb_mod_index_t idx,
                                  enum xkb_consumed_mode mode)
@@ -1576,7 +1576,7 @@ xkb_state_mod_index_is_consumed2(struct xkb_state *state, xkb_keycode_t kc,
     return !!((mapping & key_get_consumed(state, key, mode)) == mapping);
 }
 
-XKB_EXPORT int
+int
 xkb_state_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t kc,
                                 xkb_mod_index_t idx)
 {
@@ -1584,7 +1584,7 @@ xkb_state_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t kc,
                                             XKB_CONSUMED_MODE_XKB);
 }
 
-XKB_EXPORT xkb_mod_mask_t
+xkb_mod_mask_t
 xkb_state_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t kc,
                                    xkb_mod_mask_t mask)
 {
@@ -1597,7 +1597,7 @@ xkb_state_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t kc,
            ~key_get_consumed(state, key, XKB_CONSUMED_MODE_XKB);
 }
 
-XKB_EXPORT xkb_mod_mask_t
+xkb_mod_mask_t
 xkb_state_key_get_consumed_mods2(struct xkb_state *state, xkb_keycode_t kc,
                                  enum xkb_consumed_mode mode)
 {
@@ -1620,7 +1620,7 @@ xkb_state_key_get_consumed_mods2(struct xkb_state *state, xkb_keycode_t kc,
     return key_get_consumed(state, key, mode);
 }
 
-XKB_EXPORT xkb_mod_mask_t
+xkb_mod_mask_t
 xkb_state_key_get_consumed_mods(struct xkb_state *state, xkb_keycode_t kc)
 {
     return xkb_state_key_get_consumed_mods2(state, kc, XKB_CONSUMED_MODE_XKB);

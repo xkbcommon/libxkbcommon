@@ -38,7 +38,7 @@
 /**
  * Append one directory to the context's include path.
  */
-XKB_EXPORT int
+int
 xkb_context_include_path_append(struct xkb_context *ctx, const char *path)
 {
     struct stat stat_buf;
@@ -93,7 +93,7 @@ xkb_context_include_path_get_system_path(struct xkb_context *ctx)
 /**
  * Append the default include directories to the context.
  */
-XKB_EXPORT int
+int
 xkb_context_include_path_append_default(struct xkb_context *ctx)
 {
     const char *home, *xdg, *root, *extra;
@@ -137,7 +137,7 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
 /**
  * Remove all entries in the context's include path.
  */
-XKB_EXPORT void
+void
 xkb_context_include_path_clear(struct xkb_context *ctx)
 {
     char **path;
@@ -154,7 +154,7 @@ xkb_context_include_path_clear(struct xkb_context *ctx)
 /**
  * xkb_context_include_path_clear() + xkb_context_include_path_append_default()
  */
-XKB_EXPORT int
+int
 xkb_context_include_path_reset_defaults(struct xkb_context *ctx)
 {
     xkb_context_include_path_clear(ctx);
@@ -164,7 +164,7 @@ xkb_context_include_path_reset_defaults(struct xkb_context *ctx)
 /**
  * Returns the number of entries in the context's include path.
  */
-XKB_EXPORT unsigned int
+unsigned int
 xkb_context_num_include_paths(struct xkb_context *ctx)
 {
     return darray_size(ctx->includes);
@@ -174,7 +174,7 @@ xkb_context_num_include_paths(struct xkb_context *ctx)
  * Returns the given entry in the context's include path, or NULL if an
  * invalid index is passed.
  */
-XKB_EXPORT const char *
+const char *
 xkb_context_include_path_get(struct xkb_context *ctx, unsigned int idx)
 {
     if (idx >= xkb_context_num_include_paths(ctx))
@@ -186,7 +186,7 @@ xkb_context_include_path_get(struct xkb_context *ctx, unsigned int idx)
 /**
  * Take a new reference on the context.
  */
-XKB_EXPORT struct xkb_context *
+struct xkb_context *
 xkb_context_ref(struct xkb_context *ctx)
 {
     ctx->refcnt++;
@@ -197,7 +197,7 @@ xkb_context_ref(struct xkb_context *ctx)
  * Drop an existing reference on the context, and free it if the refcnt is
  * now 0.
  */
-XKB_EXPORT void
+void
 xkb_context_unref(struct xkb_context *ctx)
 {
     if (!ctx || --ctx->refcnt > 0)
@@ -278,7 +278,7 @@ log_verbosity(const char *verbosity) {
 /**
  * Create a new context.
  */
-XKB_EXPORT struct xkb_context *
+struct xkb_context *
 xkb_context_new(enum xkb_context_flags flags)
 {
     const char *env;
@@ -323,7 +323,7 @@ xkb_context_new(enum xkb_context_flags flags)
     return ctx;
 }
 
-XKB_EXPORT void
+void
 xkb_context_set_log_fn(struct xkb_context *ctx,
                        void (*log_fn)(struct xkb_context *ctx,
                                       enum xkb_log_level level,
@@ -332,31 +332,31 @@ xkb_context_set_log_fn(struct xkb_context *ctx,
     ctx->log_fn = (log_fn ? log_fn : default_log_fn);
 }
 
-XKB_EXPORT enum xkb_log_level
+enum xkb_log_level
 xkb_context_get_log_level(struct xkb_context *ctx)
 {
     return ctx->log_level;
 }
 
-XKB_EXPORT void
+void
 xkb_context_set_log_level(struct xkb_context *ctx, enum xkb_log_level level)
 {
     ctx->log_level = level;
 }
 
-XKB_EXPORT int
+int
 xkb_context_get_log_verbosity(struct xkb_context *ctx)
 {
     return ctx->log_verbosity;
 }
 
-XKB_EXPORT void
+void
 xkb_context_set_log_verbosity(struct xkb_context *ctx, int verbosity)
 {
     ctx->log_verbosity = verbosity;
 }
 
-XKB_EXPORT void *
+void *
 xkb_context_get_user_data(struct xkb_context *ctx)
 {
     if (ctx)
@@ -364,7 +364,7 @@ xkb_context_get_user_data(struct xkb_context *ctx)
     return NULL;
 }
 
-XKB_EXPORT void
+void
 xkb_context_set_user_data(struct xkb_context *ctx, void *user_data)
 {
     ctx->user_data = user_data;

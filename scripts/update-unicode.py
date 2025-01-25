@@ -1746,7 +1746,7 @@ struct CaseMappings{{
 
 {unicode_mappings}
 
-XKB_EXPORT xkb_keysym_t
+xkb_keysym_t
 xkb_keysym_to_lower(xkb_keysym_t ks)
 {{
     if (ks <= 0x{max_non_unicode:0>4x}) {{
@@ -1765,7 +1765,7 @@ xkb_keysym_to_lower(xkb_keysym_t ks)
     }}
 }}
 
-XKB_EXPORT xkb_keysym_t
+xkb_keysym_t
 xkb_keysym_to_upper(xkb_keysym_t ks)
 {{
     if (ks <= 0x{max_non_unicode:0>4x}) {{
