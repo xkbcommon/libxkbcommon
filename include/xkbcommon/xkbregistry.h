@@ -40,6 +40,8 @@ extern "C" {
 
 #if defined(__GNUC__) && !defined(__CYGWIN__)
 # define RXKB_EXPORT      __attribute__((visibility("default")))
+#elif defined(_WIN32)
+# define RXKB_EXPORT      __declspec(dllexport)
 #else
 # define RXKB_EXPORT
 #endif
