@@ -7,6 +7,7 @@
 #pragma once
 
 #include <assert.h>
+#include <stdbool.h>
 
 /* Don't use compat names in internal code. */
 #define _XKBCOMMON_COMPAT_H

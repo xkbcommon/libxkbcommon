@@ -265,6 +265,19 @@ open_file(const char *path);
 
 /* Compiler Attributes */
 
+/* Private functions only exposed in tests. */
+#ifdef ENABLE_PRIVATE_APIS
+# if defined(__GNUC__) && !defined(__CYGWIN__)
+#  define XKB_EXPORT_PRIVATE __attribute__((visibility("default")))
+# elif defined(_WIN32)
+#  define XKB_EXPORT_PRIVATE __declspec(dllexport)
+# else
+#  define XKB_EXPORT_PRIVATE
+# endif
+#else
+# define XKB_EXPORT_PRIVATE
+#endif
+
 #if defined(__MINGW32__)
 # define ATTR_PRINTF(x,y) __attribute__((__format__(__MINGW_PRINTF_FORMAT, x, y)))
 #elif defined(__GNUC__)
@@ -298,10 +311,10 @@ open_file(const char *path);
 #endif
 
 #if !(defined(HAVE_ASPRINTF) && HAVE_ASPRINTF)
-int asprintf(char **strp, const char *fmt, ...) ATTR_PRINTF(2, 3);
+XKB_EXPORT_PRIVATE int asprintf(char **strp, const char *fmt, ...) ATTR_PRINTF(2, 3);
 # if !(defined(HAVE_VASPRINTF) && HAVE_VASPRINTF)
 #  include <stdarg.h>
-int vasprintf(char **strp, const char *fmt, va_list ap);
+XKB_EXPORT_PRIVATE int vasprintf(char **strp, const char *fmt, va_list ap);
 # endif /* !HAVE_VASPRINTF */
 #endif /* !HAVE_ASPRINTF */
 

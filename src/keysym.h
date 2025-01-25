@@ -11,6 +11,7 @@
 
 #include <stdbool.h>
 #include "xkbcommon/xkbcommon.h"
+#include "utils.h"
 
 /*
  * NOTE: this is not defined in xkbcommon.h, because if we did, it may add
@@ -47,31 +48,31 @@
  * 4 bytes + NULL-terminating byte */
 #define XKB_KEYSYM_UTF8_MAX_SIZE  5
 
-bool
+XKB_EXPORT_PRIVATE bool
 xkb_keysym_is_assigned(xkb_keysym_t ks);
 
 struct xkb_keysym_iterator;
 
-struct xkb_keysym_iterator*
+XKB_EXPORT_PRIVATE struct xkb_keysym_iterator*
 xkb_keysym_iterator_new(bool explicit);
 
-struct xkb_keysym_iterator*
+XKB_EXPORT_PRIVATE struct xkb_keysym_iterator*
 xkb_keysym_iterator_unref(struct xkb_keysym_iterator *iter);
 
-bool
+XKB_EXPORT_PRIVATE bool
 xkb_keysym_iterator_next(struct xkb_keysym_iterator *iter);
 
-xkb_keysym_t
+XKB_EXPORT_PRIVATE xkb_keysym_t
 xkb_keysym_iterator_get_keysym(struct xkb_keysym_iterator *iter);
 
-int
+XKB_EXPORT_PRIVATE int
 xkb_keysym_iterator_get_name(struct xkb_keysym_iterator *iter,
                              char *buffer, size_t size);
 
-bool
+XKB_EXPORT_PRIVATE bool
 xkb_keysym_iterator_is_explicitly_named(struct xkb_keysym_iterator *iter);
 
-bool
+XKB_EXPORT_PRIVATE bool
 xkb_keysym_is_deprecated(xkb_keysym_t keysym,
                          const char *name,
                          const char **reference_name);
@@ -92,14 +93,14 @@ xkb_keysym_is_deprecated(xkb_keysym_t keysym,
         }                                                                                    \
     }
 
-bool
+XKB_EXPORT_PRIVATE bool
 xkb_keysym_is_lower(xkb_keysym_t keysym);
 
-bool
+XKB_EXPORT_PRIVATE bool
 xkb_keysym_is_upper_or_title(xkb_keysym_t keysym);
 
-bool
+XKB_EXPORT_PRIVATE bool
 xkb_keysym_is_keypad(xkb_keysym_t keysym);
 
-bool
+XKB_EXPORT_PRIVATE bool
 xkb_keysym_is_modifier(xkb_keysym_t keysym);
