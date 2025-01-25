@@ -11,12 +11,14 @@
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-compose.h"
 
+#include "src/utils.h"
+
 #define MAX_LHS_LEN 10
 #define MAX_INCLUDE_DEPTH 5
 /** Maximum size of the string returned by xkb_compose_state_get_utf8() */
 #define XKB_COMPOSE_MAX_STRING_SIZE 256
 
-char *
+XKB_EXPORT_PRIVATE char *
 parse_string_literal(struct xkb_context *ctx, const char *string);
 
 bool
