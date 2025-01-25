@@ -31,7 +31,7 @@ update_initial_state(struct xkb_state *state, xcb_connection_t *conn,
     return true;
 }
 
-XKB_EXPORT struct xkb_state *
+struct xkb_state *
 xkb_x11_state_new_from_device(struct xkb_keymap *keymap,
                               xcb_connection_t *conn, int32_t device_id)
 {

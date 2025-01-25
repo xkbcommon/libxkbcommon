@@ -7,7 +7,7 @@
 
 #include "x11-priv.h"
 
-XKB_EXPORT int
+int
 xkb_x11_setup_xkb_extension(xcb_connection_t *conn,
                             uint16_t major_xkb_version,
                             uint16_t minor_xkb_version,
@@ -88,7 +88,7 @@ xkb_x11_setup_xkb_extension(xcb_connection_t *conn,
     return 1;
 }
 
-XKB_EXPORT int32_t
+int32_t
 xkb_x11_get_core_keyboard_device_id(xcb_connection_t *conn)
 {
     int32_t device_id;

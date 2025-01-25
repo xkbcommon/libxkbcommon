@@ -265,12 +265,6 @@ open_file(const char *path);
 
 /* Compiler Attributes */
 
-#if defined(__GNUC__) && !defined(__CYGWIN__)
-# define XKB_EXPORT      __attribute__((visibility("default")))
-#else
-# define XKB_EXPORT
-#endif
-
 #if defined(__MINGW32__)
 # define ATTR_PRINTF(x,y) __attribute__((__format__(__MINGW_PRINTF_FORMAT, x, y)))
 #elif defined(__GNUC__)

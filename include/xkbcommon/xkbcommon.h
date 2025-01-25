@@ -31,6 +31,12 @@
 extern "C" {
 #endif
 
+#if defined(__GNUC__) && !defined(__CYGWIN__)
+# define XKB_EXPORT      __attribute__((visibility("default")))
+#else
+# define XKB_EXPORT
+#endif
+
 /**
  * @file
  * Main libxkbcommon API.
@@ -391,7 +397,7 @@ struct xkb_rule_names {
  *
  * @sa xkb_keysym_t
  */
-int
+XKB_EXPORT int
 xkb_keysym_get_name(xkb_keysym_t keysym, char *buffer, size_t size);
 
 /** Flags for xkb_keysym_from_name(). */
@@ -425,7 +431,7 @@ enum xkb_keysym_flags {
  *
  * @sa xkb_keysym_t
  */
-xkb_keysym_t
+XKB_EXPORT xkb_keysym_t
 xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags);
 
 /**
@@ -444,7 +450,7 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags);
  *
  * @sa xkb_state_key_get_utf8()
  */
-int
+XKB_EXPORT int
 xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size);
 
 /**
@@ -459,7 +465,7 @@ xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size);
  *
  * @sa xkb_state_key_get_utf32()
  */
-uint32_t
+XKB_EXPORT uint32_t
 xkb_keysym_to_utf32(xkb_keysym_t keysym);
 
 /**
@@ -482,7 +488,7 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym);
  * @sa xkb_keysym_to_utf32()
  * @since 1.0.0
  */
-xkb_keysym_t
+XKB_EXPORT xkb_keysym_t
 xkb_utf32_to_keysym(uint32_t ucs);
 
 /**
@@ -507,7 +513,7 @@ xkb_utf32_to_keysym(uint32_t ucs);
  * @since 0.8.0: Initial implementation, based on `libX11`.
  * @since 1.8.0: Use Unicode 16.0 mappings for complete Unicode coverage.
  */
-xkb_keysym_t
+XKB_EXPORT xkb_keysym_t
 xkb_keysym_to_upper(xkb_keysym_t ks);
 
 /**
@@ -523,7 +529,7 @@ xkb_keysym_to_upper(xkb_keysym_t ks);
  * @since 0.8.0: Initial implementation, based on `libX11`.
  * @since 1.8.0: Use Unicode 16.0 mappings for complete Unicode coverage.
  */
-xkb_keysym_t
+XKB_EXPORT xkb_keysym_t
 xkb_keysym_to_lower(xkb_keysym_t ks);
 
 /** @} */
@@ -580,7 +586,7 @@ enum xkb_context_flags {
  *
  * @memberof xkb_context
  */
-struct xkb_context *
+XKB_EXPORT struct xkb_context *
 xkb_context_new(enum xkb_context_flags flags);
 
 /**
@@ -590,7 +596,7 @@ xkb_context_new(enum xkb_context_flags flags);
  *
  * @memberof xkb_context
  */
-struct xkb_context *
+XKB_EXPORT struct xkb_context *
 xkb_context_ref(struct xkb_context *context);
 
 /**
@@ -600,7 +606,7 @@ xkb_context_ref(struct xkb_context *context);
  *
  * @memberof xkb_context
  */
-void
+XKB_EXPORT void
 xkb_context_unref(struct xkb_context *context);
 
 /**
@@ -611,7 +617,7 @@ xkb_context_unref(struct xkb_context *context);
  *
  * @memberof xkb_context
  */
-void
+XKB_EXPORT void
 xkb_context_set_user_data(struct xkb_context *context, void *user_data);
 
 /**
@@ -625,7 +631,7 @@ xkb_context_set_user_data(struct xkb_context *context, void *user_data);
  *
  * @memberof xkb_context
  **/
-void *
+XKB_EXPORT void *
 xkb_context_get_user_data(struct xkb_context *context);
 
 /** @} */
@@ -659,7 +665,7 @@ xkb_context_get_user_data(struct xkb_context *context);
  *
  * @memberof xkb_context
  */
-int
+XKB_EXPORT int
 xkb_context_include_path_append(struct xkb_context *context, const char *path);
 
 /**
@@ -669,7 +675,7 @@ xkb_context_include_path_append(struct xkb_context *context, const char *path);
  *
  * @memberof xkb_context
  */
-int
+XKB_EXPORT int
 xkb_context_include_path_append_default(struct xkb_context *context);
 
 /**
@@ -682,7 +688,7 @@ xkb_context_include_path_append_default(struct xkb_context *context);
  *
  * @memberof xkb_context
  */
-int
+XKB_EXPORT int
 xkb_context_include_path_reset_defaults(struct xkb_context *context);
 
 /**
@@ -690,7 +696,7 @@ xkb_context_include_path_reset_defaults(struct xkb_context *context);
  *
  * @memberof xkb_context
  */
-void
+XKB_EXPORT void
 xkb_context_include_path_clear(struct xkb_context *context);
 
 /**
@@ -698,7 +704,7 @@ xkb_context_include_path_clear(struct xkb_context *context);
  *
  * @memberof xkb_context
  */
-unsigned int
+XKB_EXPORT unsigned int
 xkb_context_num_include_paths(struct xkb_context *context);
 
 /**
@@ -709,7 +715,7 @@ xkb_context_num_include_paths(struct xkb_context *context);
  *
  * @memberof xkb_context
  */
-const char *
+XKB_EXPORT const char *
 xkb_context_include_path_get(struct xkb_context *context, unsigned int index);
 
 /** @} */
@@ -743,7 +749,7 @@ enum xkb_log_level {
  *
  * @memberof xkb_context
  */
-void
+XKB_EXPORT void
 xkb_context_set_log_level(struct xkb_context *context,
                           enum xkb_log_level level);
 
@@ -752,7 +758,7 @@ xkb_context_set_log_level(struct xkb_context *context,
  *
  * @memberof xkb_context
  */
-enum xkb_log_level
+XKB_EXPORT enum xkb_log_level
 xkb_context_get_log_level(struct xkb_context *context);
 
 /**
@@ -774,7 +780,7 @@ xkb_context_get_log_level(struct xkb_context *context);
  *
  * @memberof xkb_context
  */
-void
+XKB_EXPORT void
 xkb_context_set_log_verbosity(struct xkb_context *context, int verbosity);
 
 /**
@@ -782,7 +788,7 @@ xkb_context_set_log_verbosity(struct xkb_context *context, int verbosity);
  *
  * @memberof xkb_context
  */
-int
+XKB_EXPORT int
 xkb_context_get_log_verbosity(struct xkb_context *context);
 
 /**
@@ -805,7 +811,7 @@ xkb_context_get_log_verbosity(struct xkb_context *context);
  *
  * @memberof xkb_context
  */
-void
+XKB_EXPORT void
 xkb_context_set_log_fn(struct xkb_context *context,
                        void (*log_fn)(struct xkb_context *context,
                                       enum xkb_log_level level,
@@ -842,7 +848,7 @@ enum xkb_keymap_compile_flags {
  * @sa xkb_rule_names
  * @memberof xkb_keymap
  */
-struct xkb_keymap *
+XKB_EXPORT struct xkb_keymap *
 xkb_keymap_new_from_names(struct xkb_context *context,
                           const struct xkb_rule_names *names,
                           enum xkb_keymap_compile_flags flags);
@@ -871,7 +877,7 @@ enum xkb_keymap_format {
  *
  * @memberof xkb_keymap
  */
-struct xkb_keymap *
+XKB_EXPORT struct xkb_keymap *
 xkb_keymap_new_from_file(struct xkb_context *context, FILE *file,
                          enum xkb_keymap_format format,
                          enum xkb_keymap_compile_flags flags);
@@ -885,7 +891,7 @@ xkb_keymap_new_from_file(struct xkb_context *context, FILE *file,
  * @see xkb_keymap_new_from_file()
  * @memberof xkb_keymap
  */
-struct xkb_keymap *
+XKB_EXPORT struct xkb_keymap *
 xkb_keymap_new_from_string(struct xkb_context *context, const char *string,
                            enum xkb_keymap_format format,
                            enum xkb_keymap_compile_flags flags);
@@ -900,7 +906,7 @@ xkb_keymap_new_from_string(struct xkb_context *context, const char *string,
  * @memberof xkb_keymap
  * @since 0.3.0
  */
-struct xkb_keymap *
+XKB_EXPORT struct xkb_keymap *
 xkb_keymap_new_from_buffer(struct xkb_context *context, const char *buffer,
                            size_t length, enum xkb_keymap_format format,
                            enum xkb_keymap_compile_flags flags);
@@ -912,7 +918,7 @@ xkb_keymap_new_from_buffer(struct xkb_context *context, const char *buffer,
  *
  * @memberof xkb_keymap
  */
-struct xkb_keymap *
+XKB_EXPORT struct xkb_keymap *
 xkb_keymap_ref(struct xkb_keymap *keymap);
 
 /**
@@ -922,7 +928,7 @@ xkb_keymap_ref(struct xkb_keymap *keymap);
  *
  * @memberof xkb_keymap
  */
-void
+XKB_EXPORT void
 xkb_keymap_unref(struct xkb_keymap *keymap);
 
 /**
@@ -949,7 +955,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap);
  *
  * @memberof xkb_keymap
  */
-char *
+XKB_EXPORT char *
 xkb_keymap_get_as_string(struct xkb_keymap *keymap,
                          enum xkb_keymap_format format);
 
@@ -969,7 +975,7 @@ xkb_keymap_get_as_string(struct xkb_keymap *keymap,
  * @memberof xkb_keymap
  * @since 0.3.1
  */
-xkb_keycode_t
+XKB_EXPORT xkb_keycode_t
 xkb_keymap_min_keycode(struct xkb_keymap *keymap);
 
 /**
@@ -979,7 +985,7 @@ xkb_keymap_min_keycode(struct xkb_keymap *keymap);
  * @memberof xkb_keymap
  * @since 0.3.1
  */
-xkb_keycode_t
+XKB_EXPORT xkb_keycode_t
 xkb_keymap_max_keycode(struct xkb_keymap *keymap);
 
 /**
@@ -1002,7 +1008,7 @@ typedef void
  * @memberof xkb_keymap
  * @since 0.3.1
  */
-void
+XKB_EXPORT void
 xkb_keymap_key_for_each(struct xkb_keymap *keymap, xkb_keymap_key_iter_t iter,
                         void *data);
 
@@ -1019,7 +1025,7 @@ xkb_keymap_key_for_each(struct xkb_keymap *keymap, xkb_keymap_key_iter_t iter,
  * @memberof xkb_keymap
  * @since 0.6.0
  */
-const char *
+XKB_EXPORT const char *
 xkb_keymap_key_get_name(struct xkb_keymap *keymap, xkb_keycode_t key);
 
 /**
@@ -1034,7 +1040,7 @@ xkb_keymap_key_get_name(struct xkb_keymap *keymap, xkb_keycode_t key);
  * @memberof xkb_keymap
  * @since 0.6.0
  */
-xkb_keycode_t
+XKB_EXPORT xkb_keycode_t
 xkb_keymap_key_by_name(struct xkb_keymap *keymap, const char *name);
 
 /**
@@ -1043,7 +1049,7 @@ xkb_keymap_key_by_name(struct xkb_keymap *keymap, const char *name);
  * @sa xkb_mod_index_t
  * @memberof xkb_keymap
  */
-xkb_mod_index_t
+XKB_EXPORT xkb_mod_index_t
 xkb_keymap_num_mods(struct xkb_keymap *keymap);
 
 /**
@@ -1054,7 +1060,7 @@ xkb_keymap_num_mods(struct xkb_keymap *keymap);
  * @sa xkb_mod_index_t
  * @memberof xkb_keymap
  */
-const char *
+XKB_EXPORT const char *
 xkb_keymap_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx);
 
 /**
@@ -1066,7 +1072,7 @@ xkb_keymap_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx);
  * @sa xkb_mod_index_t
  * @memberof xkb_keymap
  */
-xkb_mod_index_t
+XKB_EXPORT xkb_mod_index_t
 xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name);
 
 /**
@@ -1075,7 +1081,7 @@ xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name);
  * @sa xkb_layout_index_t xkb_rule_names xkb_keymap_num_layouts_for_key()
  * @memberof xkb_keymap
  */
-xkb_layout_index_t
+XKB_EXPORT xkb_layout_index_t
 xkb_keymap_num_layouts(struct xkb_keymap *keymap);
 
 /**
@@ -1088,7 +1094,7 @@ xkb_keymap_num_layouts(struct xkb_keymap *keymap);
  *     For notes on layout names.
  * @memberof xkb_keymap
  */
-const char *
+XKB_EXPORT const char *
 xkb_keymap_layout_get_name(struct xkb_keymap *keymap, xkb_layout_index_t idx);
 
 /**
@@ -1102,7 +1108,7 @@ xkb_keymap_layout_get_name(struct xkb_keymap *keymap, xkb_layout_index_t idx);
  *     For notes on layout names.
  * @memberof xkb_keymap
  */
-xkb_layout_index_t
+XKB_EXPORT xkb_layout_index_t
 xkb_keymap_layout_get_index(struct xkb_keymap *keymap, const char *name);
 
 /**
@@ -1116,7 +1122,7 @@ xkb_keymap_layout_get_index(struct xkb_keymap *keymap, const char *name);
  * @sa xkb_led_index_t
  * @memberof xkb_keymap
  */
-xkb_led_index_t
+XKB_EXPORT xkb_led_index_t
 xkb_keymap_num_leds(struct xkb_keymap *keymap);
 
 /**
@@ -1126,7 +1132,7 @@ xkb_keymap_num_leds(struct xkb_keymap *keymap);
  *
  * @memberof xkb_keymap
  */
-const char *
+XKB_EXPORT const char *
 xkb_keymap_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx);
 
 /**
@@ -1137,7 +1143,7 @@ xkb_keymap_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx);
  *
  * @memberof xkb_keymap
  */
-xkb_led_index_t
+XKB_EXPORT xkb_led_index_t
 xkb_keymap_led_get_index(struct xkb_keymap *keymap, const char *name);
 
 /**
@@ -1150,7 +1156,7 @@ xkb_keymap_led_get_index(struct xkb_keymap *keymap, const char *name);
  * @sa xkb_layout_index_t
  * @memberof xkb_keymap
  */
-xkb_layout_index_t
+XKB_EXPORT xkb_layout_index_t
 xkb_keymap_num_layouts_for_key(struct xkb_keymap *keymap, xkb_keycode_t key);
 
 /**
@@ -1163,7 +1169,7 @@ xkb_keymap_num_layouts_for_key(struct xkb_keymap *keymap, xkb_keycode_t key);
  * @sa xkb_level_index_t
  * @memberof xkb_keymap
  */
-xkb_level_index_t
+XKB_EXPORT xkb_level_index_t
 xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t key,
                               xkb_layout_index_t layout);
 
@@ -1203,7 +1209,7 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t key,
  * @memberof xkb_keymap
  * @since 1.0.0
  */
-size_t
+XKB_EXPORT size_t
 xkb_keymap_key_get_mods_for_level(struct xkb_keymap *keymap,
                                   xkb_keycode_t key,
                                   xkb_layout_index_t layout,
@@ -1239,7 +1245,7 @@ xkb_keymap_key_get_mods_for_level(struct xkb_keymap *keymap,
  * @sa xkb_state_key_get_syms()
  * @memberof xkb_keymap
  */
-int
+XKB_EXPORT int
 xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
                                  xkb_keycode_t key,
                                  xkb_layout_index_t layout,
@@ -1261,7 +1267,7 @@ xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
  *
  * @memberof xkb_keymap
  */
-int
+XKB_EXPORT int
 xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
 
 /** @} */
@@ -1282,7 +1288,7 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  *
  * @memberof xkb_state
  */
-struct xkb_state *
+XKB_EXPORT struct xkb_state *
 xkb_state_new(struct xkb_keymap *keymap);
 
 /**
@@ -1292,7 +1298,7 @@ xkb_state_new(struct xkb_keymap *keymap);
  *
  * @memberof xkb_state
  */
-struct xkb_state *
+XKB_EXPORT struct xkb_state *
 xkb_state_ref(struct xkb_state *state);
 
 /**
@@ -1302,7 +1308,7 @@ xkb_state_ref(struct xkb_state *state);
  *
  * @memberof xkb_state
  */
-void
+XKB_EXPORT void
 xkb_state_unref(struct xkb_state *state);
 
 /**
@@ -1317,7 +1323,7 @@ xkb_state_unref(struct xkb_state *state);
  *
  * @memberof xkb_state
  */
-struct xkb_keymap *
+XKB_EXPORT struct xkb_keymap *
 xkb_state_get_keymap(struct xkb_state *state);
 
 /**
@@ -1415,7 +1421,7 @@ enum xkb_state_component {
  *
  * @sa xkb_state_update_mask()
  */
-enum xkb_state_component
+XKB_EXPORT enum xkb_state_component
 xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
                      enum xkb_key_direction direction);
 
@@ -1441,7 +1447,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  * @sa xkb_state_component
  * @sa xkb_state_update_key
  */
-enum xkb_state_component
+XKB_EXPORT enum xkb_state_component
 xkb_state_update_mask(struct xkb_state *state,
                       xkb_mod_mask_t depressed_mods,
                       xkb_mod_mask_t latched_mods,
@@ -1476,7 +1482,7 @@ xkb_state_update_mask(struct xkb_state *state,
  *
  * @memberof xkb_state
  */
-int
+XKB_EXPORT int
 xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
                        const xkb_keysym_t **syms_out);
 
@@ -1506,7 +1512,7 @@ xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
  * @memberof xkb_state
  * @since 0.4.1
  */
-int
+XKB_EXPORT int
 xkb_state_key_get_utf8(struct xkb_state *state, xkb_keycode_t key,
                        char *buffer, size_t size);
 
@@ -1523,7 +1529,7 @@ xkb_state_key_get_utf8(struct xkb_state *state, xkb_keycode_t key,
  * @memberof xkb_state
  * @since 0.4.1
  */
-uint32_t
+XKB_EXPORT uint32_t
 xkb_state_key_get_utf32(struct xkb_state *state, xkb_keycode_t key);
 
 /**
@@ -1543,7 +1549,7 @@ xkb_state_key_get_utf32(struct xkb_state *state, xkb_keycode_t key);
  * @sa xkb_state_key_get_syms()
  * @memberof xkb_state
  */
-xkb_keysym_t
+XKB_EXPORT xkb_keysym_t
 xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t key);
 
 /**
@@ -1560,7 +1566,7 @@ xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t key);
  *
  * @memberof xkb_state
  */
-xkb_layout_index_t
+XKB_EXPORT xkb_layout_index_t
 xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t key);
 
 /**
@@ -1585,7 +1591,7 @@ xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t key);
  *
  * @memberof xkb_state
  */
-xkb_level_index_t
+XKB_EXPORT xkb_level_index_t
 xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t key,
                         xkb_layout_index_t layout);
 
@@ -1624,7 +1630,7 @@ enum xkb_state_match {
  *
  * @memberof xkb_state
  */
-xkb_mod_mask_t
+XKB_EXPORT xkb_mod_mask_t
 xkb_state_serialize_mods(struct xkb_state *state,
                          enum xkb_state_component components);
 
@@ -1647,7 +1653,7 @@ xkb_state_serialize_mods(struct xkb_state *state,
  *
  * @memberof xkb_state
  */
-xkb_layout_index_t
+XKB_EXPORT xkb_layout_index_t
 xkb_state_serialize_layout(struct xkb_state *state,
                            enum xkb_state_component components);
 
@@ -1668,7 +1674,7 @@ xkb_state_serialize_layout(struct xkb_state *state,
  * [virtual modifiers]: @ref virtual-modifier-def
  * [real modifiers]: @ref real-modifier-def
  */
-int
+XKB_EXPORT int
 xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
                              enum xkb_state_component type);
 
@@ -1698,7 +1704,7 @@ xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
  * [virtual modifiers]: @ref virtual-modifier-def
  * [real modifiers]: @ref real-modifier-def
  */
-int
+XKB_EXPORT int
 xkb_state_mod_names_are_active(struct xkb_state *state,
                                enum xkb_state_component type,
                                enum xkb_state_match match,
@@ -1721,7 +1727,7 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
  * [virtual modifiers]: @ref virtual-modifier-def
  * [real modifiers]: @ref real-modifier-def
  */
-int
+XKB_EXPORT int
 xkb_state_mod_index_is_active(struct xkb_state *state, xkb_mod_index_t idx,
                               enum xkb_state_component type);
 
@@ -1751,7 +1757,7 @@ xkb_state_mod_index_is_active(struct xkb_state *state, xkb_mod_index_t idx,
  * [virtual modifiers]: @ref virtual-modifier-def
  * [real modifiers]: @ref real-modifier-def
  */
-int
+XKB_EXPORT int
 xkb_state_mod_indices_are_active(struct xkb_state *state,
                                  enum xkb_state_component type,
                                  enum xkb_state_match match,
@@ -1873,7 +1879,7 @@ enum xkb_consumed_mode {
  *
  * [real modifiers]: @ref real-modifier-def
  */
-xkb_mod_mask_t
+XKB_EXPORT xkb_mod_mask_t
 xkb_state_key_get_consumed_mods2(struct xkb_state *state, xkb_keycode_t key,
                                  enum xkb_consumed_mode mode);
 
@@ -1883,7 +1889,7 @@ xkb_state_key_get_consumed_mods2(struct xkb_state *state, xkb_keycode_t key,
  * @memberof xkb_state
  * @since 0.4.1
  */
-xkb_mod_mask_t
+XKB_EXPORT xkb_mod_mask_t
 xkb_state_key_get_consumed_mods(struct xkb_state *state, xkb_keycode_t key);
 
 /**
@@ -1910,7 +1916,7 @@ xkb_state_key_get_consumed_mods(struct xkb_state *state, xkb_keycode_t key);
  * [virtual modifiers]: @ref virtual-modifier-def
  * [real modifiers]: @ref real-modifier-def
  */
-int
+XKB_EXPORT int
 xkb_state_mod_index_is_consumed2(struct xkb_state *state,
                                  xkb_keycode_t key,
                                  xkb_mod_index_t idx,
@@ -1929,7 +1935,7 @@ xkb_state_mod_index_is_consumed2(struct xkb_state *state,
  * [virtual modifiers]: @ref virtual-modifier-def
  * [real modifiers]: @ref real-modifier-def
  */
-int
+XKB_EXPORT int
 xkb_state_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t key,
                                 xkb_mod_index_t idx);
 
@@ -1950,7 +1956,7 @@ xkb_state_mod_index_is_consumed(struct xkb_state *state, xkb_keycode_t key,
  *
  * [real modifiers]: @ref real-modifier-def
  */
-xkb_mod_mask_t
+XKB_EXPORT xkb_mod_mask_t
 xkb_state_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t key,
                                    xkb_mod_mask_t mask);
 
@@ -1966,7 +1972,7 @@ xkb_state_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t key,
  * @sa xkb_layout_index_t
  * @memberof xkb_state
  */
-int
+XKB_EXPORT int
 xkb_state_layout_name_is_active(struct xkb_state *state, const char *name,
                                 enum xkb_state_component type);
 
@@ -1979,7 +1985,7 @@ xkb_state_layout_name_is_active(struct xkb_state *state, const char *name,
  * @sa xkb_layout_index_t
  * @memberof xkb_state
  */
-int
+XKB_EXPORT int
 xkb_state_layout_index_is_active(struct xkb_state *state,
                                  xkb_layout_index_t idx,
                                  enum xkb_state_component type);
@@ -1993,7 +1999,7 @@ xkb_state_layout_index_is_active(struct xkb_state *state,
  * @sa xkb_led_index_t
  * @memberof xkb_state
  */
-int
+XKB_EXPORT int
 xkb_state_led_name_is_active(struct xkb_state *state, const char *name);
 
 /**
@@ -2005,7 +2011,7 @@ xkb_state_led_name_is_active(struct xkb_state *state, const char *name);
  * @sa xkb_led_index_t
  * @memberof xkb_state
  */
-int
+XKB_EXPORT int
 xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx);
 
 /** @} */

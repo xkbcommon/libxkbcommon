@@ -52,14 +52,14 @@ xkb_compose_table_new(struct xkb_context *ctx,
     return table;
 }
 
-XKB_EXPORT struct xkb_compose_table *
+struct xkb_compose_table *
 xkb_compose_table_ref(struct xkb_compose_table *table)
 {
     table->refcnt++;
     return table;
 }
 
-XKB_EXPORT void
+void
 xkb_compose_table_unref(struct xkb_compose_table *table)
 {
     if (!table || --table->refcnt > 0)
@@ -71,7 +71,7 @@ xkb_compose_table_unref(struct xkb_compose_table *table)
     free(table);
 }
 
-XKB_EXPORT struct xkb_compose_table *
+struct xkb_compose_table *
 xkb_compose_table_new_from_file(struct xkb_context *ctx,
                                 FILE *file,
                                 const char *locale,
@@ -106,7 +106,7 @@ xkb_compose_table_new_from_file(struct xkb_context *ctx,
     return table;
 }
 
-XKB_EXPORT struct xkb_compose_table *
+struct xkb_compose_table *
 xkb_compose_table_new_from_buffer(struct xkb_context *ctx,
                                   const char *buffer, size_t length,
                                   const char *locale,
@@ -141,7 +141,7 @@ xkb_compose_table_new_from_buffer(struct xkb_context *ctx,
     return table;
 }
 
-XKB_EXPORT struct xkb_compose_table *
+struct xkb_compose_table *
 xkb_compose_table_new_from_locale(struct xkb_context *ctx,
                                   const char *locale,
                                   enum xkb_compose_compile_flags flags)
@@ -209,7 +209,7 @@ found_path:
     return table;
 }
 
-XKB_EXPORT const xkb_keysym_t *
+const xkb_keysym_t *
 xkb_compose_table_entry_sequence(struct xkb_compose_table_entry *entry,
                                  size_t *sequence_length)
 {
@@ -217,13 +217,13 @@ xkb_compose_table_entry_sequence(struct xkb_compose_table_entry *entry,
     return entry->sequence;
 }
 
-XKB_EXPORT xkb_keysym_t
+xkb_keysym_t
 xkb_compose_table_entry_keysym(struct xkb_compose_table_entry *entry)
 {
     return entry->keysym;
 }
 
-XKB_EXPORT const char *
+const char *
 xkb_compose_table_entry_utf8(struct xkb_compose_table_entry *entry)
 {
     return entry->utf8;
@@ -246,7 +246,7 @@ struct xkb_compose_table_iterator {
     darray(struct xkb_compose_table_iterator_pending_node) pending_nodes;
 };
 
-XKB_EXPORT struct xkb_compose_table_iterator *
+struct xkb_compose_table_iterator *
 xkb_compose_table_iterator_new(struct xkb_compose_table *table)
 {
     struct xkb_compose_table_iterator *iter;
@@ -289,7 +289,7 @@ xkb_compose_table_iterator_new(struct xkb_compose_table *table)
     return iter;
 }
 
-XKB_EXPORT void
+void
 xkb_compose_table_iterator_free(struct xkb_compose_table_iterator *iter)
 {
     xkb_compose_table_unref(iter->table);
@@ -298,7 +298,7 @@ xkb_compose_table_iterator_free(struct xkb_compose_table_iterator *iter)
     free(iter);
 }
 
-XKB_EXPORT struct xkb_compose_table_entry *
+struct xkb_compose_table_entry *
 xkb_compose_table_iterator_next(struct xkb_compose_table_iterator *iter)
 {
     /* Traversal algorithm (simplified):

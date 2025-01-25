@@ -151,11 +151,11 @@ rxkb_log(struct rxkb_context *ctx, enum rxkb_log_level level,
 
 
 #define DECLARE_REF_UNREF_FOR_TYPE(type_) \
-XKB_EXPORT struct type_ * type_##_ref(struct type_ *object) { \
+struct type_ * type_##_ref(struct type_ *object) { \
     rxkb_object_ref(&object->base); \
     return object; \
 } \
-XKB_EXPORT struct type_ * type_##_unref(struct type_ *object) { \
+struct type_ * type_##_unref(struct type_ *object) { \
     if (!object) return NULL; \
     assert(object->base.refcount >= 1); \
     if (--object->base.refcount == 0) {\
@@ -175,7 +175,7 @@ static inline struct type_ * type_##_create(struct rxkb_object *parent) { \
 }
 
 #define DECLARE_TYPED_GETTER_FOR_TYPE(type_, field_, rtype_) \
-XKB_EXPORT rtype_ type_##_get_##field_(struct type_ *object) { \
+rtype_ type_##_get_##field_(struct type_ *object) { \
     return object->field_; \
 }
 
@@ -183,13 +183,13 @@ XKB_EXPORT rtype_ type_##_get_##field_(struct type_ *object) { \
    DECLARE_TYPED_GETTER_FOR_TYPE(type_, field_, const char*)
 
 #define DECLARE_FIRST_NEXT_FOR_TYPE(type_, parent_type_, parent_field_) \
-XKB_EXPORT struct type_ * type_##_first(struct parent_type_ *parent) { \
+struct type_ * type_##_first(struct parent_type_ *parent) { \
     struct type_ *o = NULL; \
     if (!list_empty(&parent->parent_field_)) \
         o = list_first_entry(&parent->parent_field_, o, base.link); \
     return o; \
 } \
-XKB_EXPORT struct type_ * \
+struct type_ * \
 type_##_next(struct type_ *o) \
 { \
     struct parent_type_ *parent; \
@@ -223,7 +223,7 @@ rxkb_iso639_code_destroy(struct rxkb_iso639_code *code)
     free(code->code);
 }
 
-XKB_EXPORT struct rxkb_iso639_code *
+struct rxkb_iso639_code *
 rxkb_layout_get_iso639_first(struct rxkb_layout *layout)
 {
     struct rxkb_iso639_code *code = NULL;
@@ -234,7 +234,7 @@ rxkb_layout_get_iso639_first(struct rxkb_layout *layout)
     return code;
 }
 
-XKB_EXPORT struct rxkb_iso639_code *
+struct rxkb_iso639_code *
 rxkb_iso639_code_next(struct rxkb_iso639_code *code)
 {
     struct rxkb_iso639_code *next = NULL;
@@ -260,7 +260,7 @@ rxkb_iso3166_code_destroy(struct rxkb_iso3166_code *code)
     free(code->code);
 }
 
-XKB_EXPORT struct rxkb_iso3166_code *
+struct rxkb_iso3166_code *
 rxkb_layout_get_iso3166_first(struct rxkb_layout *layout)
 {
     struct rxkb_iso3166_code *code = NULL;
@@ -271,7 +271,7 @@ rxkb_layout_get_iso3166_first(struct rxkb_layout *layout)
     return code;
 }
 
-XKB_EXPORT struct rxkb_iso3166_code *
+struct rxkb_iso3166_code *
 rxkb_iso3166_code_next(struct rxkb_iso3166_code *code)
 {
     struct rxkb_iso3166_code *next = NULL;
@@ -364,7 +364,7 @@ rxkb_option_group_destroy(struct rxkb_option_group *og)
     }
 }
 
-XKB_EXPORT bool
+bool
 rxkb_option_group_allows_multiple(struct rxkb_option_group *g)
 {
     return g->allow_multiple;
@@ -419,7 +419,7 @@ rxkb_context_getenv(struct rxkb_context *ctx, const char *name)
 }
 
 
-XKB_EXPORT void
+void
 rxkb_context_set_log_level(struct rxkb_context *ctx,
                            enum rxkb_log_level level)
 {
@@ -479,7 +479,7 @@ log_level(const char *level) {
     return RXKB_LOG_LEVEL_ERROR;
 }
 
-XKB_EXPORT struct rxkb_context *
+struct rxkb_context *
 rxkb_context_new(enum rxkb_context_flags flags)
 {
     struct rxkb_context *ctx = rxkb_context_create(NULL);
@@ -512,7 +512,7 @@ rxkb_context_new(enum rxkb_context_flags flags)
     return ctx;
 }
 
-XKB_EXPORT void
+void
 rxkb_context_set_log_fn(struct rxkb_context *ctx,
                         void (*log_fn)(struct rxkb_context *ctx,
                                        enum rxkb_log_level level,
@@ -521,7 +521,7 @@ rxkb_context_set_log_fn(struct rxkb_context *ctx,
     ctx->log_fn = (log_fn ? log_fn : default_log_fn);
 }
 
-XKB_EXPORT bool
+bool
 rxkb_context_include_path_append(struct rxkb_context *ctx, const char *path)
 {
     struct stat stat_buf;
@@ -566,7 +566,7 @@ rxkb_context_include_path_append(struct rxkb_context *ctx, const char *path)
     return true;
 }
 
-XKB_EXPORT bool
+bool
 rxkb_context_include_path_append_default(struct rxkb_context *ctx)
 {
     const char *home, *xdg, *root, *extra;
@@ -611,13 +611,13 @@ rxkb_context_include_path_append_default(struct rxkb_context *ctx)
     return ret;
 }
 
-XKB_EXPORT bool
+bool
 rxkb_context_parse_default_ruleset(struct rxkb_context *ctx)
 {
     return rxkb_context_parse(ctx, DEFAULT_XKB_RULES);
 }
 
-XKB_EXPORT bool
+bool
 rxkb_context_parse(struct rxkb_context *ctx, const char *ruleset)
 {
     char **path;
@@ -654,13 +654,13 @@ rxkb_context_parse(struct rxkb_context *ctx, const char *ruleset)
 }
 
 
-XKB_EXPORT void
+void
 rxkb_context_set_user_data(struct rxkb_context *ctx, void *userdata)
 {
     ctx->userdata = userdata;
 }
 
-XKB_EXPORT void *
+void *
 rxkb_context_get_user_data(struct rxkb_context *ctx)
 {
     return ctx->userdata;
