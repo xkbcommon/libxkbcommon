@@ -268,7 +268,7 @@ elif cc.get_argument_syntax() == 'msvc'
     libxkbcommon_def = custom_target('xkbcommon.def',
         command: [map_to_def, '@INPUT@', '@OUTPUT@'],
         input: 'xkbcommon.map',
-        output: 'kxbcommon.def',
+        output: 'xkbcommon.def',
     )
     libxkbcommon_link_deps += libxkbcommon_def
     libxkbcommon_link_args += '/DEF:' + libxkbcommon_def.full_path()
