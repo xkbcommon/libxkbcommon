@@ -28,7 +28,7 @@
 
 #include "xkbcomp-priv.h"
 
-bool
+XKB_EXPORT_PRIVATE bool
 xkb_components_from_rules(struct xkb_context *ctx,
                           const struct xkb_rule_names *rmlvo,
                           struct xkb_component_names *out,

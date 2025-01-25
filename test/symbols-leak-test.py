@@ -19,7 +19,7 @@ def symbols_from_map(path):
 
 
 def symbols_from_src(path):
-    return re.findall(r"XKB_EXPORT.*\n(xkb_.*)\(", path.read_text("utf-8"))
+    return re.findall(r"\bXKB_EXPORT\b.*\n(xkb_.*)\(", path.read_text("utf-8"))
 
 
 def diff(map_path, src_paths):
