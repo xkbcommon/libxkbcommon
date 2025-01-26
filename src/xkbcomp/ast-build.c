@@ -61,7 +61,7 @@
 static ExprDef *
 ExprCreate(struct bump *bump, enum expr_op_type op, enum expr_value_type type, size_t size)
 {
-    ExprDef *expr = bump_alloc(bump, size);
+    ExprDef *expr = bump_aligned_alloc(bump, alignof(*expr), size);
     if (!expr)
         return NULL;
 
@@ -217,7 +217,7 @@ ExprCreateKeysymList(struct bump *bump, xkb_keysym_t sym)
     ExprDef *expr = ExprCreate(bump, EXPR_KEYSYM_LIST, EXPR_TYPE_SYMBOLS, sizeof(ExprKeysymList));
     if (!expr)
         return NULL;
-    expr->keysym_list.syms = bump_alloc(bump, sizeof(*expr->keysym_list.syms));
+    expr->keysym_list.syms = bump_alloc(bump, *expr->keysym_list.syms);
     if (!expr->keysym_list.syms) {
         return NULL;
     }
@@ -231,7 +231,7 @@ ExprAppendKeysymList(struct bump *bump, ExprDef *expr, xkb_keysym_t sym)
 {
     ExprKeysymList *kl = &expr->keysym_list;
     xkb_keysym_t *old = kl->syms;
-    kl->syms = bump_alloc(bump, (kl->num_syms + 1) * sizeof(*kl->syms));
+    kl->syms = bump_aligned_alloc(bump, alignof(*kl->syms), (kl->num_syms + 1) * sizeof(*kl->syms));
     for (unsigned i = 0; i < kl->num_syms; i++)
         kl->syms[i] = old[i];
     kl->syms[kl->num_syms++] = sym;
@@ -241,7 +241,7 @@ ExprAppendKeysymList(struct bump *bump, ExprDef *expr, xkb_keysym_t sym)
 KeycodeDef *
 KeycodeCreate(struct bump *bump, xkb_atom_t name, int64_t value)
 {
-    KeycodeDef *def = bump_alloc(bump, sizeof(*def));
+    KeycodeDef *def = bump_alloc(bump, *def);
     if (!def)
         return NULL;
 
@@ -256,7 +256,7 @@ KeycodeCreate(struct bump *bump, xkb_atom_t name, int64_t value)
 KeyAliasDef *
 KeyAliasCreate(struct bump *bump, xkb_atom_t alias, xkb_atom_t real)
 {
-    KeyAliasDef *def = bump_alloc(bump, sizeof(*def));
+    KeyAliasDef *def = bump_alloc(bump, *def);
     if (!def)
         return NULL;
 
@@ -271,7 +271,7 @@ KeyAliasCreate(struct bump *bump, xkb_atom_t alias, xkb_atom_t real)
 VModDef *
 VModCreate(struct bump *bump, xkb_atom_t name, ExprDef *value)
 {
-    VModDef *def = bump_alloc(bump, sizeof(*def));
+    VModDef *def = bump_alloc(bump, *def);
     if (!def)
         return NULL;
 
@@ -286,7 +286,7 @@ VModCreate(struct bump *bump, xkb_atom_t name, ExprDef *value)
 VarDef *
 VarCreate(struct bump *bump, ExprDef *name, ExprDef *value)
 {
-    VarDef *def = bump_alloc(bump, sizeof(*def));
+    VarDef *def = bump_alloc(bump, *def);
     if (!def)
         return NULL;
 
@@ -318,7 +318,7 @@ BoolVarCreate(struct bump *bump, xkb_atom_t ident, bool set)
 InterpDef *
 InterpCreate(struct bump *bump, xkb_keysym_t sym, ExprDef *match)
 {
-    InterpDef *def = bump_alloc(bump, sizeof(*def));
+    InterpDef *def = bump_alloc(bump, *def);
     if (!def)
         return NULL;
 
@@ -334,7 +334,7 @@ InterpCreate(struct bump *bump, xkb_keysym_t sym, ExprDef *match)
 KeyTypeDef *
 KeyTypeCreate(struct bump *bump, xkb_atom_t name, VarDef *body)
 {
-    KeyTypeDef *def = bump_alloc(bump, sizeof(*def));
+    KeyTypeDef *def = bump_alloc(bump, *def);
     if (!def)
         return NULL;
 
@@ -350,7 +350,7 @@ KeyTypeCreate(struct bump *bump, xkb_atom_t name, VarDef *body)
 SymbolsDef *
 SymbolsCreate(struct bump *bump, xkb_atom_t keyName, VarDef *symbols)
 {
-    SymbolsDef *def = bump_alloc(bump, sizeof(*def));
+    SymbolsDef *def = bump_alloc(bump, *def);
     if (!def)
         return NULL;
 
@@ -366,7 +366,7 @@ SymbolsCreate(struct bump *bump, xkb_atom_t keyName, VarDef *symbols)
 GroupCompatDef *
 GroupCompatCreate(struct bump *bump, unsigned group, ExprDef *val)
 {
-    GroupCompatDef *def = bump_alloc(bump, sizeof(*def));
+    GroupCompatDef *def = bump_alloc(bump, *def);
     if (!def)
         return NULL;
 
@@ -382,7 +382,7 @@ GroupCompatCreate(struct bump *bump, unsigned group, ExprDef *val)
 ModMapDef *
 ModMapCreate(struct bump *bump, xkb_atom_t modifier, ExprDef *keys)
 {
-    ModMapDef *def = bump_alloc(bump, sizeof(*def));
+    ModMapDef *def = bump_alloc(bump, *def);
     if (!def)
         return NULL;
 
@@ -398,7 +398,7 @@ ModMapCreate(struct bump *bump, xkb_atom_t modifier, ExprDef *keys)
 LedMapDef *
 LedMapCreate(struct bump *bump, xkb_atom_t name, VarDef *body)
 {
-    LedMapDef *def = bump_alloc(bump, sizeof(*def));
+    LedMapDef *def = bump_alloc(bump, *def);
     if (!def)
         return NULL;
 
@@ -414,7 +414,7 @@ LedMapCreate(struct bump *bump, xkb_atom_t name, VarDef *body)
 LedNameDef *
 LedNameCreate(struct bump *bump, unsigned ndx, ExprDef *name, bool virtual)
 {
-    LedNameDef *def = bump_alloc(bump, sizeof(*def));
+    LedNameDef *def = bump_alloc(bump, *def);
     if (!def)
         return NULL;
 
@@ -456,9 +456,9 @@ IncludeCreate(struct bump *bump, struct xkb_context *ctx, char *str, enum merge_
         }
 
         if (first == NULL) {
-            first = incl = bump_alloc(bump, sizeof(*first));
+            first = incl = bump_alloc(bump, *first);
         } else {
-            incl->next_incl = bump_alloc(bump, sizeof(*first));
+            incl->next_incl = bump_alloc(bump, *first);
             incl = incl->next_incl;
         }
 
@@ -498,7 +498,7 @@ XkbFileCreate(struct bump *bump, enum xkb_file_type type, char *name,
 {
     XkbFile *file;
 
-    file = bump_alloc(bump, sizeof(*file));
+    file = bump_alloc(bump, *file);
     if (!file)
         return NULL;
     memset(file, 0, sizeof(*file));

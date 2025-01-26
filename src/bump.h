@@ -22,7 +22,9 @@ void
 bump_init(struct bump *bump);
 void
 bump_uninit(struct bump *bump);
-void
-*bump_alloc(struct bump *bump, size_t size);
+void *
+bump_aligned_alloc(struct bump *bump, size_t alignment, size_t size);
 char *
 bump_strdup(struct bump *bump, const char *s);
+
+#define bump_alloc(bump, of) bump_aligned_alloc((bump), alignof(of), sizeof(of))
