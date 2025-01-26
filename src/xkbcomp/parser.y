@@ -231,8 +231,6 @@ resolve_keysym(struct parser_param *param, const char *name, xkb_keysym_t *sym_r
 %type <fileList> XkbMapConfigList
 %type <file>    XkbCompositeMap
 
-%destructor { free($$); } <str>
-
 %%
 
 /*
@@ -390,7 +388,6 @@ Decl            :       OptMergeMode VarDecl
                 |       MergeMode STRING
                         {
                             $$ = (ParseCommon *) IncludeCreate(param->bump, param->ctx, $2, $1);
-                            free($2);
                         }
                 ;
 
@@ -763,7 +760,6 @@ KeySym          :       IDENT
                                 );
                                 $$ = XKB_KEY_NoSymbol;
                             }
-                            free($1);
                         }
                         /* Handle keysym that is also a keyword  */
                 |       SECTION { $$ = XKB_KEY_section; }
@@ -822,18 +818,18 @@ Integer         :       INTEGER { $$ = $1; }
 KeyCode         :       INTEGER { $$ = $1; }
                 ;
 
-Ident           :       IDENT   { $$ = xkb_atom_intern(param->ctx, $1, strlen($1)); free($1); }
+Ident           :       IDENT   { $$ = xkb_atom_intern(param->ctx, $1, strlen($1)); }
                 |       DEFAULT { $$ = xkb_atom_intern_literal(param->ctx, "default"); }
                 ;
 
-String          :       STRING  { $$ = xkb_atom_intern(param->ctx, $1, strlen($1)); free($1); }
+String          :       STRING  { $$ = xkb_atom_intern(param->ctx, $1, strlen($1)); }
                 ;
 
 OptMapName      :       MapName { $$ = $1; }
                 |               { $$ = NULL; }
                 ;
 
-MapName         :       STRING  { $$ = bump_strdup(param->bump, $1); free($1); }
+MapName         :       STRING  { $$ = bump_strdup(param->bump, $1); }
                 ;
 
 %%

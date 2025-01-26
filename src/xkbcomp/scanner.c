@@ -23,6 +23,7 @@
 
 #include "config.h"
 
+#include "bump.h"
 #include "xkbcomp-priv.h"
 #include "parser-priv.h"
 #include "scanner-utils.h"
@@ -123,7 +124,7 @@ skip_more_whitespace_and_comments:
                         "unterminated string literal");
             return ERROR_TOK;
         }
-        yylval->str = strdup(s->buf);
+        yylval->str = s->bump ? bump_strdup(s->bump, s->buf) : strdup(s->buf);
         if (!yylval->str)
             return ERROR_TOK;
         return STRING;
@@ -176,7 +177,7 @@ skip_more_whitespace_and_comments:
         tok = keyword_to_token(s->buf, s->buf_pos - 1);
         if (tok != -1) return tok;
 
-        yylval->str = strdup(s->buf);
+        yylval->str = s->bump ? bump_strdup(s->bump, s->buf) : strdup(s->buf);
         if (!yylval->str)
             return ERROR_TOK;
         return IDENT;
@@ -203,7 +204,7 @@ XkbParseString(struct bump *bump, struct xkb_context *ctx,
                const char *file_name, const char *map)
 {
     struct scanner scanner;
-    scanner_init(&scanner, ctx, string, len, file_name, NULL);
+    scanner_init(&scanner, ctx, bump, string, len, file_name, NULL);
 
     /* Basic detection of wrong character encoding.
        The first character relevant to the grammar must be ASCII:

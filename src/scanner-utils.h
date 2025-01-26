@@ -28,6 +28,7 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "bump.h"
 #include "context.h"
 #include "darray.h"
 #include "messages-codes.h"
@@ -63,6 +64,7 @@ struct scanner {
     size_t token_line, token_column;
     const char *file_name;
     struct xkb_context *ctx;
+    struct bump *bump;
     void *priv;
 };
 
@@ -87,6 +89,7 @@ struct scanner {
 
 static inline void
 scanner_init(struct scanner *s, struct xkb_context *ctx,
+             struct bump *bump,
              const char *string, size_t len, const char *file_name,
              void *priv)
 {
@@ -97,6 +100,7 @@ scanner_init(struct scanner *s, struct xkb_context *ctx,
     s->token_line = s->token_column = 1;
     s->file_name = file_name;
     s->ctx = ctx;
+    s->bump = bump;
     s->priv = priv;
 }
 

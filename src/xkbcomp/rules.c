@@ -408,7 +408,7 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
 {
     struct scanner s; /* parses the !include value */
 
-    scanner_init(&s, m->ctx, inc.start, inc.len,
+    scanner_init(&s, m->ctx, NULL, inc.start, inc.len,
                  parent_scanner->file_name, NULL);
     s.token_line = parent_scanner->token_line;
     s.token_column = parent_scanner->token_column;
@@ -1514,7 +1514,7 @@ read_rules_file(struct xkb_context *ctx,
         return false;
     }
 
-    scanner_init(&scanner, matcher->ctx, string, size, path, NULL);
+    scanner_init(&scanner, matcher->ctx, NULL, string, size, path, NULL);
 
     /* Basic detection of wrong character encoding.
        The first character relevant to the grammar must be ASCII:
