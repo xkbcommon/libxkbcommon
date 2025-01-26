@@ -504,7 +504,7 @@ parse_string_literal(struct xkb_context *ctx, const char *string)
 {
     struct scanner s;
     union lvalue val;
-    scanner_init(&s, ctx, NULL, string, strlen(string), "(unamed)", NULL);
+    scanner_init(&s, ctx, string, strlen(string), "(unamed)", NULL);
     switch (lex(&s, &val)) {
         case TOK_STRING:
             return strdup(val.string.str);
@@ -551,7 +551,7 @@ do_include(struct xkb_compose_table *table, struct scanner *s,
         goto err_file;
     }
 
-    scanner_init(&new_s, table->ctx, NULL, string, size, path, s->priv);
+    scanner_init(&new_s, table->ctx, string, size, path, s->priv);
 
     ok = parse(table, &new_s, include_depth + 1);
     if (!ok)
@@ -804,7 +804,7 @@ parse_string(struct xkb_compose_table *table, const char *string, size_t len,
              const char *file_name)
 {
     struct scanner s;
-    scanner_init(&s, table->ctx, NULL, string, len, file_name, NULL);
+    scanner_init(&s, table->ctx, string, len, file_name, NULL);
     if (!parse(table, &s, 0))
         return false;
     /* Maybe the allocator can use the excess space. */

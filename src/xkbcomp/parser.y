@@ -86,10 +86,11 @@ resolve_keysym(struct parser_param *param, const char *name, xkb_keysym_t *sym_r
 }
 
 #define param_scanner param->scanner
+#define param_bump param->bump
 %}
 
 %define api.pure
-%lex-param      { struct scanner *param_scanner }
+%lex-param      { struct scanner *param_scanner } { struct bump *param_bump }
 %parse-param    { struct parser_param *param }
 
 %token

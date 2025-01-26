@@ -33,7 +33,7 @@ struct scanner;
 #include "parser.h"
 
 int
-_xkbcommon_lex(YYSTYPE *yylval, struct scanner *scanner);
+_xkbcommon_lex(YYSTYPE *yylval, struct scanner *s, struct bump *bump);
 
 XkbFile *
 parse(struct bump *bump, struct xkb_context *ctx, struct scanner *scanner, const char *map);
