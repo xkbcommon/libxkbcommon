@@ -172,14 +172,27 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
             continue;
 
         for (level = 0; level < XkbKeyNumLevels(key, group); level++) {
+            assert(key->groups[group].levels[level].num_actions == 0);
+
             const struct xkb_sym_interpret **interp_iter;
             const struct xkb_sym_interpret *interp;
             size_t k;
+            // FIXME: do not use darray, add actions directly in FindInterpForKey
             xkb_sym_interprets interprets = darray_new();
 
-            bool found = FindInterpForKey(keymap, key, group, level, &interprets);
+            const bool found = FindInterpForKey(keymap, key, group, level, &interprets);
             if (!found)
                 continue;
+
+            key->groups[group].levels[level].num_actions =
+                key->groups[group].levels[level].num_syms;
+
+            /* Allocate actions */
+            if (key->groups[group].levels[level].num_actions > 1) {
+                key->groups[group].levels[level].a.actions =
+                    calloc(key->groups[group].levels[level].num_actions,
+                           sizeof(*key->groups[group].levels[level].a.actions));
+            }
 
             darray_enumerate(k, interp_iter, interprets) {
                 interp = *interp_iter;
@@ -193,7 +206,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
                         vmodmap |= (UINT32_C(1) << interp->virtual_mod);
 
                 if (interp->action.type != ACTION_TYPE_NONE) {
-                    if (darray_size(interprets) == 1) {
+                    if (key->groups[group].levels[level].num_actions == 1) {
                         key->groups[group].levels[level].a.action = interp->action;
                     } else {
                         key->groups[group].levels[level].a.actions[k] = interp->action;
@@ -236,15 +249,15 @@ CheckMultipleActionsCategories(struct xkb_keymap *keymap, struct xkb_key *key)
     for (xkb_layout_index_t g = 0; g < key->num_groups; g++) {
         for (xkb_level_index_t l = 0; l < XkbKeyNumLevels(key, g); l++) {
             struct xkb_level *level = &key->groups[g].levels[l];
-            if (level->num_syms <= 1)
+            if (level->num_actions <= 1)
                 continue;
-            for (unsigned i = 0; i < level->num_syms; i++) {
+            for (unsigned i = 0; i < level->num_actions; i++) {
                 union xkb_action *action1 = &level->a.actions[i];
                 bool mod_action = is_mod_action(action1);
                 bool group_action = is_group_action(action1);
                 if (!(mod_action || group_action))
                     continue;
-                for (unsigned j = i + 1; j < level->num_syms; j++) {
+                for (unsigned j = i + 1; j < level->num_actions; j++) {
                     union xkb_action *action2 = &level->a.actions[j];
                     if ((mod_action && is_mod_action(action2)) ||
                         (group_action && is_group_action(action2)))
@@ -306,11 +319,11 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     xkb_keys_foreach(key, keymap)
         for (i = 0; i < key->num_groups; i++)
             for (j = 0; j < XkbKeyNumLevels(key, i); j++) {
-                if (key->groups[i].levels[j].num_syms == 1) {
+                if (key->groups[i].levels[j].num_actions == 1) {
                     UpdateActionMods(keymap, &key->groups[i].levels[j].a.action,
                                      key->modmap);
                 } else {
-                    for (k = 0; k < key->groups[i].levels[j].num_syms; k++) {
+                    for (k = 0; k < key->groups[i].levels[j].num_actions; k++) {
                         UpdateActionMods(keymap,
                                          &key->groups[i].levels[j].a.actions[k],
                                          key->modmap);

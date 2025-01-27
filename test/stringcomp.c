@@ -66,50 +66,48 @@ test_explicit_actions(struct xkb_context *ctx)
     free(expected);
 }
 
+static struct xkb_keymap*
+compile_string(struct xkb_context *context,
+               const char *buf, size_t len, void *private)
+{
+    return test_compile_string(context, buf);
+}
+
 int
 main(int argc, char *argv[])
 {
     test_init();
 
-    struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
-    struct xkb_keymap *keymap;
-    char *original, *dump, *dump2;
-
-    assert(ctx);
-
-    /* Load in a prebuilt keymap, make sure we can compile it from a string,
-     * then compare it to make sure we get the same result when dumping it
-     * to a string. */
-    original = test_read_file(DATA_PATH);
-    assert(original);
-
-    keymap = test_compile_string(ctx, original);
-    assert(keymap);
-
-    dump = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
-    assert(dump);
-
-    if (!streq(original, dump)) {
-        fprintf(stderr,
-                "round-trip test failed: dumped map differs from original\n");
-        fprintf(stderr, "path to original file: %s\n",
-                test_get_path(DATA_PATH));
-        fprintf(stderr, "length: dumped %lu, original %lu\n",
-                (unsigned long) strlen(dump),
-                (unsigned long) strlen(original));
-        fprintf(stderr, "dumped map:\n");
-        fprintf(stderr, "%s\n", dump);
-        fflush(stderr);
-        assert(0);
+    bool update_output_files = false;
+    if (argc > 1) {
+        if (streq(argv[1], "update")) {
+            /* Update files with *obtained* results */
+            update_output_files = true;
+        } else {
+            fprintf(stderr, "ERROR: unsupported argument: \"%s\n\".", argv[1]);
+            exit(EXIT_FAILURE);
+        }
     }
 
-    free(original);
-    free(dump);
-    xkb_keymap_unref(keymap);
+    struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
+    struct xkb_keymap *keymap;
+    char *dump, *dump2;
+
+    assert(ctx);
 
     /* Make sure we can't (falsely claim to) compile an empty string. */
     keymap = test_compile_string(ctx, "");
     assert(!keymap);
+
+    /* Load in a prebuilt keymap, make sure we can compile it from a string,
+     * then compare it to make sure we get the same result when dumping it
+     * to a string. */
+    char *original = test_read_file(DATA_PATH);
+    assert(original);
+    assert(test_compile_output(ctx, compile_string, NULL, "Round-trip",
+                               original, 0 /* unused */, DATA_PATH,
+                               update_output_files));
+    free(original);
 
     /* Make sure we can recompile our output for a normal keymap from rules. */
     keymap = test_compile_rules(ctx, NULL, NULL,

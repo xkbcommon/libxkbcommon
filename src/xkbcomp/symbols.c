@@ -109,6 +109,8 @@ ClearLevelInfo(struct xkb_level *leveli)
 {
     if (leveli->num_syms > 1) {
         free(leveli->s.syms);
+    }
+    if (leveli->num_actions > 1) {
         free(leveli->a.actions);
     }
 }
@@ -120,13 +122,19 @@ StealLevelInfo(struct xkb_level *into, struct xkb_level *from)
     if (from->num_syms > 1) {
         /* Steal */
         into->s.syms = steal(&from->s.syms);
-        into->a.actions = steal(&from->a.actions);
     } else {
         into->s.sym = from->s.sym;
-        into->a.action = from->a.action;
     }
     into->num_syms = from->num_syms;
     from->num_syms = 0;
+
+    if (from->num_actions > 1) {
+        into->a.actions = steal(&from->a.actions);
+    } else {
+        into->a.action = from->a.action;
+    }
+    into->num_actions = from->num_actions;
+    from->num_actions = 0;
 }
 
 static void
@@ -151,17 +159,20 @@ CopyGroupInfo(GroupInfo *to, const GroupInfo *from)
     to->type = from->type;
     darray_init(to->levels);
     darray_copy(to->levels, from->levels);
-    for (xkb_level_index_t j = 0; j < darray_size(to->levels); j++)
+    for (xkb_level_index_t j = 0; j < darray_size(to->levels); j++) {
         if (darray_item(from->levels, j).num_syms > 1) {
             darray_item(to->levels, j).s.syms =
                 memdup(darray_item(from->levels, j).s.syms,
                        darray_item(from->levels, j).num_syms,
                        sizeof(xkb_keysym_t));
+        }
+        if (darray_item(from->levels, j).num_actions > 1) {
             darray_item(to->levels, j).a.actions =
                 memdup(darray_item(from->levels, j).a.actions,
-                       darray_item(from->levels, j).num_syms,
+                       darray_item(from->levels, j).num_actions,
                        sizeof(union xkb_action));
         }
+    }
 }
 
 static void
@@ -304,15 +315,15 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
         struct xkb_level *intoLevel = &darray_item(into->levels, i);
         struct xkb_level *fromLevel = &darray_item(from->levels, i);
 
-        const bool fromHasNoKeysym = XkbLevelHasNoKeysym(fromLevel);
-        const bool fromHasNoAction = XkbLevelHasNoAction(fromLevel);
+        const bool fromHasNoKeysym = fromLevel->num_syms == 0;
+        const bool fromHasNoAction = fromLevel->num_actions == 0;
         if (fromHasNoKeysym && fromHasNoAction) {
             /* Empty `from`: do nothing */
             continue;
         }
 
-        const bool intoHasNoKeysym = XkbLevelHasNoKeysym(intoLevel);
-        const bool intoHasNoAction = XkbLevelHasNoAction(intoLevel);
+        const bool intoHasNoKeysym = intoLevel->num_syms == 0;
+        const bool intoHasNoAction = intoLevel->num_actions == 0;
         if (intoHasNoKeysym && intoHasNoAction) {
             /* Empty `into`: use `from` keysyms and actions */
             StealLevelInfo(intoLevel, fromLevel);
@@ -321,137 +332,131 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
             continue;
         }
 
-        if (intoLevel->num_syms != fromLevel->num_syms) {
-            /* Handle different keysyms/actions count */
-            assert(intoLevel->num_syms > 0);
-            assert(fromLevel->num_syms > 0);
-            if (report) {
-                log_warn(info->ctx, XKB_WARNING_CONFLICTING_KEY_SYMBOL,
-                         "Multiple definitions for level %d/group %u on key %s "
-                         "with incompatible keysyms/actions count; "
-                         "Using %s (count: %u), ignoring %s (count: %u)\n",
-                         i + 1, group + 1, KeyNameText(info->ctx, key_name),
-                         (clobber ? "from" : "to"),
-                         (clobber ? fromLevel->num_syms : intoLevel->num_syms),
-                         (clobber ? "to" : "from"),
-                         (clobber ? intoLevel->num_syms : fromLevel->num_syms));
-            }
-            if (clobber) {
-                /* There is no obvious way to deal with this case other than
-                 * just cloning `from` */
-                StealLevelInfo(intoLevel, fromLevel);
-                fromKeysymsCount++;
-                fromActionsCount++;
-            }
-            continue;
-        }
-        else {
-            /* Possible level conflict */
-            assert(intoLevel->num_syms > 0);
-            assert(fromLevel->num_syms == intoLevel->num_syms);
+        /* Possible level conflict */
+        assert(intoLevel->num_syms > 0 || intoLevel->num_actions > 0);
+        assert(fromLevel->num_syms > 0 || fromLevel->num_actions > 0);
 
-            /* Handle keysyms */
-            if (!XkbLevelsSameSyms(fromLevel, intoLevel)) {
-                /* Incompatible keysyms */
-                if (report && !(intoHasNoKeysym || fromHasNoKeysym)) {
-                    log_warn(info->ctx, XKB_WARNING_CONFLICTING_KEY_SYMBOL,
-                             "Multiple symbols for level %d/group %u on key %s; "
-                             "Using %s, ignoring %s\n",
-                             i + 1, group + 1, KeyNameText(info->ctx, key_name),
-                             (clobber ? "from" : "to"),
-                             (clobber ? "to" : "from"));
+        /* Handle keysyms */
+        if (!XkbLevelsSameSyms(fromLevel, intoLevel)) {
+            /* Incompatible keysyms */
+            if (report && !(intoHasNoKeysym || fromHasNoKeysym)) {
+                log_warn(info->ctx, XKB_WARNING_CONFLICTING_KEY_SYMBOL,
+                            "Multiple symbols for level %d/group %u on key %s; "
+                            "Using %s, ignoring %s\n",
+                            i + 1, group + 1, KeyNameText(info->ctx, key_name),
+                            (clobber ? "from" : "to"),
+                            (clobber ? "to" : "from"));
+            }
+            if (fromHasNoKeysym) {
+                /* No keysym to copy */
+            } else if (clobber) {
+                /* Override: copy any defined keysym from `from` */
+                if (unlikely(fromLevel->num_syms > 1)) {
+                    /* Multiple keysyms: always replace, all syms are defined */
+                    if (unlikely(intoLevel->num_syms > 1))
+                        free(intoLevel->s.syms);
+                    /* Steal */
+                    intoLevel->s.syms = fromLevel->s.syms;
+                    intoLevel->num_syms = fromLevel->num_syms;
+                    fromLevel->num_syms = 0;
+                    fromKeysymsCount++;
+                } else if (fromLevel->s.sym != XKB_KEY_NoSymbol) {
+                    /* Single defined keysym */
+                    if (unlikely(intoLevel->num_syms > 1))
+                        free(intoLevel->s.syms);
+                    intoLevel->s.sym = fromLevel->s.sym;
+                    intoLevel->num_syms = 1;
+                    fromKeysymsCount++;
                 }
-                if (fromHasNoKeysym) {
-                    /* No keysym to copy */
-                } else if (clobber) {
-                    /* Override: copy any defined keysym from `from` */
-                    if (unlikely(intoLevel->num_syms > 1)) {
-                        for (unsigned int k = 0; k < fromLevel->num_syms; k++) {
-                            if (fromLevel->s.syms[k] != XKB_KEY_NoSymbol)
-                                intoLevel->s.syms[k] = fromLevel->s.syms[k];
-                        }
-                    } else if (fromLevel->s.sym != XKB_KEY_NoSymbol) {
+            } else {
+                /* Augment: copy only the keysyms from `from` that are
+                 * undefined in `into` */
+                if (unlikely(intoLevel->num_syms > 1)) {
+                    /* Multiple keysyms: always ignore, all syms are defined */
+                } else if (intoLevel->s.sym == XKB_KEY_NoSymbol) {
+                    /* Single undefined keysym */
+                    if (unlikely(fromLevel->num_syms > 1)) {
+                        /* Steal */
+                        intoLevel->s.syms = fromLevel->s.syms;
+                        intoLevel->num_syms = fromLevel->num_syms;
+                        fromLevel->num_syms = 0;
+                    } else {
                         intoLevel->s.sym = fromLevel->s.sym;
+                        intoLevel->num_syms = 1;
                     }
                     fromKeysymsCount++;
-                } else {
-                    /* Augment: copy only the keysyms from `from` that are
-                     * undefined in `into` */
-                    if (unlikely(intoLevel->num_syms > 1)) {
-                        bool copiedSome = false;
-                        for (unsigned int k = 0; k < intoLevel->num_syms; k++) {
-                            if (intoLevel->s.syms[k] == XKB_KEY_NoSymbol) {
-                                intoLevel->s.syms[k] = fromLevel->s.syms[k];
-                                copiedSome = true;
-                            }
-                        }
-                        fromKeysymsCount += copiedSome;
-                    } else if (intoLevel->s.sym == XKB_KEY_NoSymbol) {
-                        intoLevel->s.sym = fromLevel->s.sym;
-                        fromKeysymsCount++;
-                    }
                 }
             }
+        }
 
-            /* Handle actions */
-            if (!XkbLevelsSameActions(intoLevel, fromLevel)) {
-                /* Incompatible actions */
-                if (report && !(intoHasNoAction || fromHasNoAction)) {
-                    if (unlikely(intoLevel->num_syms > 1)) {
-                        log_warn(
-                            info->ctx, XKB_WARNING_CONFLICTING_KEY_ACTION,
-                            "Multiple actions for level %d/group %u on key %s; "
-                            "%s\n",
-                            i + 1, group + 1, KeyNameText(info->ctx, key_name),
-                            clobber ? "Using from, ignoring to"
-                                    : "Using to, ignoring from");
-                    } else {
-                        union xkb_action *use, *ignore;
-                        use = clobber
-                            ? &fromLevel->a.action
-                            : &intoLevel->a.action;
-                        ignore = clobber
-                            ? &intoLevel->a.action
-                            : &fromLevel->a.action;
+        /* Handle actions */
+        if (!XkbLevelsSameActions(intoLevel, fromLevel)) {
+            /* Incompatible actions */
+            if (report && !(intoHasNoAction || fromHasNoAction)) {
+                if (unlikely(intoLevel->num_actions > 1)) {
+                    log_warn(
+                        info->ctx, XKB_WARNING_CONFLICTING_KEY_ACTION,
+                        "Multiple actions for level %d/group %u on key %s; "
+                        "%s\n",
+                        i + 1, group + 1, KeyNameText(info->ctx, key_name),
+                        clobber ? "Using from, ignoring to"
+                                : "Using to, ignoring from");
+                } else {
+                    union xkb_action *use, *ignore;
+                    use = clobber
+                        ? &fromLevel->a.action
+                        : &intoLevel->a.action;
+                    ignore = clobber
+                        ? &intoLevel->a.action
+                        : &fromLevel->a.action;
 
-                        log_warn(info->ctx, XKB_WARNING_CONFLICTING_KEY_ACTION,
-                                 "Multiple actions for level %d/group %u "
-                                 "on key %s; Using %s, ignoring %s\n",
-                                 i + 1, group + 1,
-                                 KeyNameText(info->ctx, key_name),
-                                 ActionTypeText(use->type),
-                                 ActionTypeText(ignore->type));
-                    }
+                    log_warn(info->ctx, XKB_WARNING_CONFLICTING_KEY_ACTION,
+                                "Multiple actions for level %d/group %u "
+                                "on key %s; Using %s, ignoring %s\n",
+                                i + 1, group + 1,
+                                KeyNameText(info->ctx, key_name),
+                                ActionTypeText(use->type),
+                                ActionTypeText(ignore->type));
                 }
-                if (fromHasNoAction)
-                    continue;
-                if (clobber) {
-                    /* Override: copy any defined action from `from` */
-                    if (unlikely(fromLevel->num_syms > 1)) {
-                        for (unsigned int k = 0; k < fromLevel->num_syms; k++) {
-                            if (fromLevel->a.actions[k].type != ACTION_TYPE_NONE)
-                                intoLevel->a.actions[k] = fromLevel->a.actions[k];
-                        }
-                    } else if (fromLevel->a.action.type != ACTION_TYPE_NONE) {
+            }
+            if (fromHasNoAction) {
+                /* No action to copy */
+            } else if (clobber) {
+                /* Override: copy any defined action from `from` */
+                if (unlikely(fromLevel->num_actions > 1)) {
+                    /* Multiple actions: always replace, all syms are defined */
+                    if (unlikely(intoLevel->num_actions > 1))
+                        free(intoLevel->a.actions);
+                    /* Steal */
+                    intoLevel->a.actions = fromLevel->a.actions;
+                    intoLevel->num_actions = fromLevel->num_actions;
+                    fromLevel->num_actions = 0;
+                    fromActionsCount++;
+                } else if (fromLevel->a.action.type != ACTION_TYPE_NONE) {
+                    /* Single defined action */
+                    if (unlikely(intoLevel->num_actions > 1))
+                        free(intoLevel->a.actions);
+                    intoLevel->a.action = fromLevel->a.action;
+                    intoLevel->num_actions = 1;
+                    fromActionsCount++;
+                }
+            } else {
+                /* Augment: copy only the actions from `from` that are
+                 * undefined in `into` */
+                if (unlikely(intoLevel->num_actions > 1)) {
+                    /* Multiple keysyms: always ignore, all syms are defined */
+                } else if (intoLevel->a.action.type == ACTION_TYPE_NONE) {
+                    /* Single undefined keysym */
+                    if (unlikely(fromLevel->num_actions > 1)) {
+                        /* Steal */
+                        intoLevel->a.actions = fromLevel->a.actions;
+                        intoLevel->num_actions = fromLevel->num_actions;
+                        fromLevel->num_actions = 0;
+                    } else {
                         intoLevel->a.action = fromLevel->a.action;
+                        intoLevel->num_actions = 1;
                     }
                     fromActionsCount++;
-                } else {
-                    /* Augment: copy only the actions from `from` that are
-                     * undefined in `into` */
-                    if (unlikely(intoLevel->num_syms > 1)) {
-                        bool copiedSome = false;
-                        for (unsigned int k = 0; k < intoLevel->num_syms; k++) {
-                            if (intoLevel->a.actions[k].type == ACTION_TYPE_NONE) {
-                                intoLevel->a.actions[k] = fromLevel->a.actions[k];
-                                copiedSome = true;
-                            }
-                        }
-                        fromActionsCount += copiedSome;
-                    } else if (intoLevel->a.action.type == ACTION_TYPE_NONE) {
-                        intoLevel->a.action = fromLevel->a.action;
-                        fromActionsCount++;
-                    }
                 }
             }
         }
@@ -462,6 +467,7 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
         /* We may have stolen keysyms or actions arrays:
          * do not free them when clearing `from` */
         level->num_syms = 0;
+        level->num_actions = 0;
         fromKeysymsCount++;
         fromActionsCount++;
     }
@@ -852,44 +858,35 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     for (xkb_level_index_t i = 0; i < nLevels; i++) {
         unsigned int sym_index;
         struct xkb_level *leveli = &darray_item(groupi->levels, i);
+        assert(leveli->num_syms == 0);
 
         sym_index = darray_item(value->keysym_list.symsMapIndex, i);
-        if (leveli->num_syms == 0) {
-            leveli->num_syms = darray_item(value->keysym_list.symsNumEntries, i);
-            if (leveli->num_syms > 1) {
-                /* Allocate keysyms */
-                leveli->s.syms =
-                    calloc(leveli->num_syms, sizeof(*leveli->s.syms));
-                /* Initialize actions */
-                leveli->a.actions =
-                    calloc(leveli->num_syms, sizeof(*leveli->a.actions));
-                static const union xkb_action dummy =
-                    { .type = ACTION_TYPE_NONE };
-                for (unsigned j = 0; j < leveli->num_syms; j++) {
-                    leveli->a.actions[j] = dummy;
-                }
-            }
-        } else if (leveli->num_syms !=
-                   darray_item(value->keysym_list.symsNumEntries, i))
-        {
-            log_err(info->ctx, XKB_ERROR_INCOMPATIBLE_ACTIONS_AND_KEYSYMS_COUNT,
-                    "Symbols for key %s, group %u, level %u must have the same "
-                    "number of keysyms than the corresponding actions. "
-                    "Expected %u, got: %u. Ignoring duplicate definition\n",
-                    KeyInfoText(info, keyi), ndx + 1, i + 1, leveli->num_syms,
-                    darray_item(value->keysym_list.symsMapIndex, i));
-            continue;
-        }
-
-        if (leveli->num_syms <= 1) {
+        leveli->num_syms = darray_item(value->keysym_list.symsNumEntries, i);
+        switch (leveli->num_syms) {
+        case 0:
+            leveli->s.sym = XKB_KEY_NoSymbol;
+            break;
+        case 1:
             leveli->s.sym = darray_item(value->keysym_list.syms, sym_index);
-            if (leveli->s.sym == XKB_KEY_NoSymbol)
+            assert(leveli->s.sym != XKB_KEY_NoSymbol);
+            break;
+        default:
+            leveli->s.syms =
+                calloc(leveli->num_syms, sizeof(*leveli->s.syms));
+            if (!leveli->s.syms) {
                 leveli->num_syms = 0;
-        } else {
-            for (unsigned j = 0; j < leveli->num_syms; j++) {
-                leveli->s.syms[j] =
-                    darray_item(value->keysym_list.syms, sym_index + j);
+                log_err(info->ctx, XKB_ERROR_ALLOCATION_ERROR,
+                        "Could not allocate keysyms\n");
+                return false;
             }
+            memcpy(leveli->s.syms,
+                   &darray_item(value->keysym_list.syms, sym_index),
+                   leveli->num_syms * sizeof(*leveli->s.syms));
+#ifndef NDEBUG
+            /* Canonical list: all NoSymbol were dropped */
+            for (unsigned int k = 0; k < leveli->num_syms; k++)
+                assert(leveli->s.syms[k] != XKB_KEY_NoSymbol);
+#endif
         }
     }
 
@@ -938,47 +935,54 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     for (unsigned i = 0; i < nLevels; i++) {
         unsigned int act_index;
         struct xkb_level *leveli = &darray_item(groupi->levels, i);
+        assert(leveli->num_actions == 0);
 
         act_index = darray_item(value->actions.actionsMapIndex, i);
-        if (leveli->num_syms == 0) {
-            leveli->num_syms = darray_item(value->actions.actionsNumEntries, i);
-            if (leveli->num_syms > 1) {
-                /* Allocate actions */
-                leveli->a.actions =
-                    calloc(leveli->num_syms, sizeof(*leveli->a.actions));
-                /* Initialize keysyms */
-                leveli->s.syms =
-                    calloc(leveli->num_syms, sizeof(*leveli->s.syms));
-                for (unsigned j = 0; j < leveli->num_syms; j++) {
-                    leveli->s.syms[j] = XKB_KEY_NoSymbol;
-                }
-            }
-        } else if (leveli->num_syms !=
-                   darray_item(value->actions.actionsNumEntries, i))
-        {
-            log_err(info->ctx, XKB_ERROR_INCOMPATIBLE_ACTIONS_AND_KEYSYMS_COUNT,
-                    "Symbols for key %s, group %u, level %u must have the same "
-                    "number of actions than the corresponding keysyms. "
-                    "Expected %u, got: %u. Ignoring duplicate definition\n",
-                    KeyInfoText(info, keyi), ndx + 1, i + 1, leveli->num_syms,
-                    darray_item(value->actions.actionsNumEntries, i));
-            continue;
-        }
+        const unsigned int num_actions =
+            darray_item(value->actions.actionsNumEntries, i);
 
-        for (unsigned j = 0; j < leveli->num_syms; j++) {
+        /* Parse actions and add only defined actions */
+        darray(union xkb_action) actions = darray_new();
+        for (unsigned j = 0; j < num_actions; j++) {
             ExprDef *act = darray_item(value->actions.actions, act_index + j);
-            union xkb_action *toAct;
-            if (leveli->num_syms > 1) {
-                toAct = &darray_item(groupi->levels, i).a.actions[j];
-            } else {
-                toAct = &darray_item(groupi->levels, i).a.action;
-            }
-            if (!HandleActionDef(info->ctx, info->actions, &info->mods, act, toAct))
+            union xkb_action toAct = { 0 };
+            if (!HandleActionDef(info->ctx, info->actions, &info->mods, act, &toAct))
                 log_err(info->ctx, XKB_ERROR_INVALID_VALUE,
                         "Illegal action definition for %s; "
                         "Action for group %u/level %u ignored\n",
                         KeyInfoText(info, keyi), ndx + 1, i + 1);
+            if (toAct.type == ACTION_TYPE_NONE) {
+                /* Drop action */
+            } else if (likely(num_actions == 1)) {
+                /* Only one action: do not allocate */
+                leveli->num_actions = 1;
+                leveli->a.action = toAct;
+                goto next_level;
+            } else {
+                darray_append(actions, toAct);
+            }
         }
+        if (darray_empty(actions)) {
+            leveli->num_actions = 0;
+        } else if (likely(darray_size(actions) > 1)) {
+            leveli->num_actions = darray_size(actions);
+            darray_shrink(actions);
+            darray_steal(actions, &leveli->a.actions, NULL);
+#ifndef NDEBUG
+            /* Canonical list: all NoAction() were dropped */
+            for (unsigned int k = 0; k < leveli->num_actions; k++)
+                assert(leveli->a.actions[k].type != ACTION_TYPE_NONE);
+#endif
+        } else {
+            /* Unlikely: some actions were dropped and only one remains */
+            assert(num_actions > darray_size(actions));
+            leveli->num_actions = 1;
+            leveli->a.action = darray_item(actions, 0);
+            assert(leveli->a.action.type != ACTION_TYPE_NONE);
+            darray_free(actions);
+        }
+next_level:
+        ;
     }
 
     return true;

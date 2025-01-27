@@ -228,6 +228,12 @@ LINUX_EVENT_CODES = (
     "CLOSE",
     "PLAY",
     "FASTFORWARD",
+    "BASSBOOST",
+    "PRINT",
+    "HP",
+    "CAMERA",
+    "SOUND",
+    "QUESTION",
 )
 
 
@@ -1309,8 +1315,8 @@ TESTS_BOTH = TestGroup(
                 Level.Actions(Modifier.LevelThree, 3),
             ),
             augment=KeyEntry(
-                Level.Actions(2, Modifier.LevelThree),
-                Level.Actions(Modifier.LevelThree, 2),
+                Level.Actions(2, None),
+                Level.Actions(None, 2),
             ),
             override=KeyEntry(
                 Level.Actions(3, Modifier.LevelThree),
@@ -1344,9 +1350,7 @@ TESTS_BOTH = TestGroup(
             augment=KeyEntry(
                 Level.Actions(2, Modifier.Control), Level.Actions(Modifier.Control, 2)
             ),
-            override=KeyEntry(
-                Level.Actions(3, Modifier.Control), Level.Actions(Modifier.Control, 3)
-            ),
+            override=KeyEntry(Level.Actions(3, None), Level.Actions(None, 3)),
             implementations=Implementation.xkbcommon,
         ),
         TestEntry(
@@ -1490,9 +1494,13 @@ TESTS_BOTH = TestGroup(
             update=KeyEntry(
                 Level.Actions(3, Modifier.LevelThree), Level.Keysyms("X", "Y")
             ),
-            augment=KeyEntry(Level.Keysyms("a"), Level.Actions(2)),
+            augment=KeyEntry(
+                Level.Mix(("a",), (3, Modifier.LevelThree)),
+                Level.Mix(("X", "Y"), (2,)),
+            ),
             override=KeyEntry(
-                Level.Actions(3, Modifier.LevelThree), Level.Keysyms("X", "Y")
+                Level.Mix(("a",), (3, Modifier.LevelThree)),
+                Level.Mix(("X", "Y"), (2,)),
             ),
             implementations=Implementation.xkbcommon,
         ),
@@ -1502,9 +1510,13 @@ TESTS_BOTH = TestGroup(
             KeyEntry(Level.Keysyms("a", "b"), Level.Actions(2, Modifier.Control)),
             update=KeyEntry(Level.Actions(3), Level.Keysyms("X")),
             augment=KeyEntry(
-                Level.Keysyms("a", "b"), Level.Actions(2, Modifier.Control)
+                Level.Mix(("a", "b"), (3,)),
+                Level.Mix(("X",), (2, Modifier.Control)),
             ),
-            override=KeyEntry(Level.Actions(3), Level.Keysyms("X")),
+            override=KeyEntry(
+                Level.Mix(("a", "b"), (3,)),
+                Level.Mix(("X",), (2, Modifier.Control)),
+            ),
             implementations=Implementation.xkbcommon,
         ),
         Comment("Multiple keysyms/actions –> multiple (xor)"),
@@ -1533,8 +1545,8 @@ TESTS_BOTH = TestGroup(
                 Level.Mix(("X", "Y"), (3, Modifier.LevelThree)),
             ),
             augment=KeyEntry(
-                Level.Mix(("a", "y"), (3, Modifier.LevelThree)),
-                Level.Mix(("X", "Y"), (2, Modifier.LevelThree)),
+                Level.Mix(("a", None), (3, Modifier.LevelThree)),
+                Level.Mix(("X", "Y"), (2, None)),
             ),
             override=KeyEntry(
                 Level.Mix(("x", "y"), (3, Modifier.LevelThree)),
@@ -1554,8 +1566,8 @@ TESTS_BOTH = TestGroup(
                 Level.Mix(("X", "Y"), (2, Modifier.Control)),
             ),
             override=KeyEntry(
-                Level.Mix(("x", "b"), (3, Modifier.LevelThree)),
-                Level.Mix(("X", "Y"), (3, Modifier.Control)),
+                Level.Mix(("x", None), (3, Modifier.LevelThree)),
+                Level.Mix(("X", "Y"), (3, None)),
             ),
             implementations=Implementation.xkbcommon,
         ),
@@ -1572,8 +1584,8 @@ TESTS_BOTH = TestGroup(
                 Level.Mix(("A", "B"), (2, Modifier.Control)),
             ),
             override=KeyEntry(
-                Level.Mix(("x", "b"), (2, Modifier.Control)),
-                Level.Mix(("A", "B"), (3, Modifier.Control)),
+                Level.Mix(("x", None), (2, Modifier.Control)),
+                Level.Mix(("A", "B"), (3, None)),
             ),
             implementations=Implementation.xkbcommon,
         ),
@@ -1587,8 +1599,8 @@ TESTS_BOTH = TestGroup(
                 Level.Keysyms("x", "y"), Level.Actions(3, Modifier.LevelThree)
             ),
             augment=KeyEntry(
-                Level.Mix(("a", "y"), (2, Modifier.Control)),
-                Level.Mix(("A", "B"), (2, Modifier.LevelThree)),
+                Level.Mix(("a", None), (2, Modifier.Control)),
+                Level.Mix(("A", "B"), (2, None)),
             ),
             override=KeyEntry(
                 Level.Mix(("x", "y"), (2, Modifier.Control)),
@@ -1609,10 +1621,10 @@ TESTS_BOTH = TestGroup(
             ),
             augment=KeyEntry(
                 Level.Mix(("a", "b"), (2, Modifier.Control)),
-                Level.Mix(("X", "B"), (2, Modifier.LevelThree)),
+                Level.Mix((None, "B"), (2, None)),
             ),
             override=KeyEntry(
-                Level.Mix(("a", "y"), (3, Modifier.Control)),
+                Level.Mix((None, "y"), (3, None)),
                 Level.Mix(("X", "Y"), (3, Modifier.LevelThree)),
             ),
             implementations=Implementation.xkbcommon,
@@ -1628,12 +1640,12 @@ TESTS_BOTH = TestGroup(
                 Level.Mix(("X", None), (3, None)),
             ),
             augment=KeyEntry(
-                Level.Mix(("a", "y"), (2, Modifier.LevelThree)),
-                Level.Mix(("X", "B"), (3, Modifier.Control)),
+                Level.Mix(("a", None), (2, None)),
+                Level.Mix((None, "B"), (None, Modifier.Control)),
             ),
             override=KeyEntry(
-                Level.Mix(("a", "y"), (2, Modifier.LevelThree)),
-                Level.Mix(("X", "B"), (3, Modifier.Control)),
+                Level.Mix((None, "y"), (None, Modifier.LevelThree)),
+                Level.Mix(("X", None), (3, None)),
             ),
             implementations=Implementation.xkbcommon,
         ),
@@ -1649,12 +1661,12 @@ TESTS_BOTH = TestGroup(
                 Level.Actions(3),
             ),
             augment=KeyEntry(
-                Level.Keysyms("a"),
-                Level.Keysyms("A", "B"),
+                Level.Mix(("a"), (3, Modifier.LevelThree)),
+                Level.Mix(("A", "B"), (3,)),
             ),
             override=KeyEntry(
-                Level.Actions(3, Modifier.LevelThree),
-                Level.Actions(3),
+                Level.Mix(("a"), (3, Modifier.LevelThree)),
+                Level.Mix(("A", "B"), (3,)),
             ),
             implementations=Implementation.xkbcommon,
         ),
@@ -1669,12 +1681,12 @@ TESTS_BOTH = TestGroup(
                 Level.Keysyms("a"),
             ),
             augment=KeyEntry(
-                Level.Actions(3),
-                Level.Actions(3, Modifier.LevelThree),
+                Level.Mix(("A", "B"), (3,)),
+                Level.Mix(("a"), (3, Modifier.LevelThree)),
             ),
             override=KeyEntry(
-                Level.Keysyms("A", "B"),
-                Level.Keysyms("a"),
+                Level.Mix(("A", "B"), (3,)),
+                Level.Mix(("a"), (3, Modifier.LevelThree)),
             ),
             implementations=Implementation.xkbcommon,
         ),
@@ -1703,8 +1715,27 @@ TESTS_BOTH = TestGroup(
             TestId(TestType.KeysymsAndActions),
             KeyEntry(Level.Keysyms("A")),
             update=KeyEntry(Level.Mix(("A", "A"), (3, Modifier.LevelThree))),
-            augment=KeyEntry(Level.Keysyms("A")),
+            augment=KeyEntry(Level.Mix(("A",), (3, Modifier.LevelThree))),
             override=KeyEntry(Level.Mix(("A", "A"), (3, Modifier.LevelThree))),
+            implementations=Implementation.xkbcommon,
+        ),
+        Comment("Drop NoSymbol/NoAction"),
+        TestEntry(
+            TestId(TestType.KeysymsAndActions),
+            KeyEntry(Level.Mix(("A",), (2,))),
+            update=KeyEntry(Level.Mix((None, "Y", None), (None, 3, None))),
+            augment=KeyEntry(Level.Mix(("A",), (2,))),
+            override=KeyEntry(Level.Mix(("Y",), (3,))),
+            implementations=Implementation.xkbcommon,
+        ),
+        Comment("Drop NoSymbol/NoAction and invalid keysyms"),
+        TestEntry(
+            TestId(TestType.KeysymsAndActions),
+            KeyEntry(Level.Mix(("notAKeysym", None, "thisEither"), (None, None))),
+            update=KeyEntry(Level.Mix((None, None), (None, None))),
+            augment=KeyEntry(Level.Keysyms(None)),
+            override=KeyEntry(Level.Keysyms(None)),
+            replace=KeyEntry(Level.Keysyms(None)),
             implementations=Implementation.xkbcommon,
         ),
     ),

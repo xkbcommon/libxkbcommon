@@ -155,6 +155,8 @@ xkb_keycodes "(unnamed)" {
 	<T189>               = 197;
 	<T192>               = 200;
 	<T204>               = 212;
+	<T207>               = 215;
+	<T210>               = 218;
 };
 
 xkb_types "(unnamed)" {
@@ -261,7 +263,7 @@ xkb_symbols "(unnamed)" {
 	key <T013>               {	[               a,        { A, Y } ] };
 	key <T014>               {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol, {                       NoSymbol,                       NoSymbol } ],
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
 		actions[Group1]= [              SetGroup(group=2), {              SetGroup(group=2),     SetMods(modifiers=Control) } ]
 	};
 	key <T015>               {
@@ -412,65 +414,65 @@ xkb_symbols "(unnamed)" {
 		symbols[Group1]= [                              a,                              X ],
 		actions[Group1]= [              SetGroup(group=3),              SetGroup(group=2) ]
 	};
-	key <T061>               {	[ { Greek_alpha, NoSymbol },        NoSymbol ] };
+	key <T061>               {	[     Greek_alpha,        NoSymbol ] };
 	key <T062>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol },                       NoSymbol ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction() },                     NoAction() ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [              SetGroup(group=3),                     NoAction() ]
 	};
 	key <T063>               {
 		repeat= No,
-		symbols[Group1]= [ {                    Greek_alpha,                       NoSymbol },                       NoSymbol ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction() },                     NoAction() ]
+		symbols[Group1]= [                    Greek_alpha,                       NoSymbol ],
+		actions[Group1]= [              SetGroup(group=3),                     NoAction() ]
 	};
-	key <T064>               {	[ { Greek_alpha, NoSymbol },        NoSymbol ] };
+	key <T064>               {	[     Greek_alpha,        NoSymbol ] };
 	key <T065>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol },                       NoSymbol ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction() },                     NoAction() ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [              SetGroup(group=3),                     NoAction() ]
 	};
 	key <T066>               {
 		repeat= No,
-		symbols[Group1]= [ {                    Greek_alpha,                       NoSymbol },                       NoSymbol ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction() },                     NoAction() ]
+		symbols[Group1]= [                    Greek_alpha,                       NoSymbol ],
+		actions[Group1]= [              SetGroup(group=3),                     NoAction() ]
 	};
-	key <T067>               {	[        NoSymbol, { Greek_ALPHA, NoSymbol } ] };
+	key <T067>               {	[        NoSymbol,     Greek_ALPHA ] };
 	key <T068>               {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol, {                       NoSymbol,                       NoSymbol } ],
-		actions[Group1]= [                     NoAction(), {              SetGroup(group=3),                     NoAction() } ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [                     NoAction(),              SetGroup(group=3) ]
 	};
 	key <T069>               {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol, {                    Greek_ALPHA,                       NoSymbol } ],
-		actions[Group1]= [                     NoAction(), {              SetGroup(group=3),                     NoAction() } ]
+		symbols[Group1]= [                       NoSymbol,                    Greek_ALPHA ],
+		actions[Group1]= [                     NoAction(),              SetGroup(group=3) ]
 	};
-	key <T070>               {	[        NoSymbol, { Greek_ALPHA, NoSymbol } ] };
+	key <T070>               {	[        NoSymbol,     Greek_ALPHA ] };
 	key <T071>               {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol, {                       NoSymbol,                       NoSymbol } ],
-		actions[Group1]= [                     NoAction(), {              SetGroup(group=3),                     NoAction() } ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [                     NoAction(),              SetGroup(group=3) ]
 	};
 	key <T072>               {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol, {                    Greek_ALPHA,                       NoSymbol } ],
-		actions[Group1]= [                     NoAction(), {              SetGroup(group=3),                     NoAction() } ]
+		symbols[Group1]= [                       NoSymbol,                    Greek_ALPHA ],
+		actions[Group1]= [                     NoAction(),              SetGroup(group=3) ]
 	};
-	key <T073>               {	[ { Greek_alpha, NoSymbol }, { Greek_ALPHA, NoSymbol } ] };
+	key <T073>               {	[     Greek_alpha,     Greek_ALPHA ] };
 	key <T074>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol }, {                       NoSymbol,                       NoSymbol } ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction() }, {              SetGroup(group=3),                     NoAction() } ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [              SetGroup(group=3),              SetGroup(group=3) ]
 	};
 	key <T075>               {
 		repeat= No,
-		symbols[Group1]= [ {                    Greek_alpha,                       NoSymbol }, {                    Greek_ALPHA,                       NoSymbol } ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction() }, {              SetGroup(group=3),                     NoAction() } ]
+		symbols[Group1]= [                    Greek_alpha,                    Greek_ALPHA ],
+		actions[Group1]= [              SetGroup(group=3),              SetGroup(group=3) ]
 	};
 	key <T076>               {	[ { Greek_alpha, Greek_upsilon }, { Greek_ALPHA, Greek_UPSILON } ] };
 	key <T077>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol }, {                       NoSymbol,                       NoSymbol } ],
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
 		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) }, {              SetGroup(group=3),        SetMods(modifiers=Mod5) } ]
 	};
 	key <T078>               {
@@ -478,65 +480,65 @@ xkb_symbols "(unnamed)" {
 		symbols[Group1]= [ {                    Greek_alpha,                  Greek_upsilon }, {                    Greek_ALPHA,                  Greek_UPSILON } ],
 		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) }, {              SetGroup(group=3),        SetMods(modifiers=Mod5) } ]
 	};
-	key <T079>               {	[ { Greek_alpha, NoSymbol },               A ] };
+	key <T079>               {	[     Greek_alpha,               A ] };
 	key <T080>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol },                       NoSymbol ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction() },              SetGroup(group=2) ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [              SetGroup(group=3),              SetGroup(group=2) ]
 	};
 	key <T081>               {
 		repeat= No,
-		symbols[Group1]= [ {                    Greek_alpha,                       NoSymbol },                              A ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction() },              SetGroup(group=2) ]
+		symbols[Group1]= [                    Greek_alpha,                              A ],
+		actions[Group1]= [              SetGroup(group=3),              SetGroup(group=2) ]
 	};
-	key <T085>               {	[ { Greek_alpha, NoSymbol },               A ] };
+	key <T085>               {	[     Greek_alpha,               A ] };
 	key <T086>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol },                       NoSymbol ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction() },              SetGroup(group=2) ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [              SetGroup(group=3),              SetGroup(group=2) ]
 	};
 	key <T087>               {
 		repeat= No,
-		symbols[Group1]= [ {                    Greek_alpha,                       NoSymbol },                              A ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction() },              SetGroup(group=2) ]
+		symbols[Group1]= [                    Greek_alpha,                              A ],
+		actions[Group1]= [              SetGroup(group=3),              SetGroup(group=2) ]
 	};
-	key <T088>               {	[               a, { Greek_ALPHA, NoSymbol } ] };
+	key <T088>               {	[               a,     Greek_ALPHA ] };
 	key <T089>               {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol, {                       NoSymbol,                       NoSymbol } ],
-		actions[Group1]= [              SetGroup(group=2), {              SetGroup(group=3),                     NoAction() } ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [              SetGroup(group=2),              SetGroup(group=3) ]
 	};
 	key <T090>               {
 		repeat= No,
-		symbols[Group1]= [                              a, {                    Greek_ALPHA,                       NoSymbol } ],
-		actions[Group1]= [              SetGroup(group=2), {              SetGroup(group=3),                     NoAction() } ]
+		symbols[Group1]= [                              a,                    Greek_ALPHA ],
+		actions[Group1]= [              SetGroup(group=2),              SetGroup(group=3) ]
 	};
-	key <T091>               {	[               a, { Greek_ALPHA, NoSymbol } ] };
+	key <T091>               {	[               a,     Greek_ALPHA ] };
 	key <T092>               {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol, {                       NoSymbol,                       NoSymbol } ],
-		actions[Group1]= [              SetGroup(group=2), {              SetGroup(group=3),                     NoAction() } ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [              SetGroup(group=2),              SetGroup(group=3) ]
 	};
 	key <T093>               {
 		repeat= No,
-		symbols[Group1]= [                              a, {                    Greek_ALPHA,                       NoSymbol } ],
-		actions[Group1]= [              SetGroup(group=2), {              SetGroup(group=3),                     NoAction() } ]
+		symbols[Group1]= [                              a,                    Greek_ALPHA ],
+		actions[Group1]= [              SetGroup(group=2),              SetGroup(group=3) ]
 	};
-	key <T094>               {	[ { Greek_alpha, NoSymbol }, { Greek_ALPHA, NoSymbol } ] };
+	key <T094>               {	[     Greek_alpha,     Greek_ALPHA ] };
 	key <T095>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol }, {                       NoSymbol,                       NoSymbol } ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction() }, {              SetGroup(group=3),                     NoAction() } ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [              SetGroup(group=3),              SetGroup(group=3) ]
 	};
 	key <T096>               {
 		repeat= No,
-		symbols[Group1]= [ {                    Greek_alpha,                       NoSymbol }, {                    Greek_ALPHA,                       NoSymbol } ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction() }, {              SetGroup(group=3),                     NoAction() } ]
+		symbols[Group1]= [                    Greek_alpha,                    Greek_ALPHA ],
+		actions[Group1]= [              SetGroup(group=3),              SetGroup(group=3) ]
 	};
 	key <T097>               {	[ { Greek_alpha, Greek_upsilon }, { Greek_ALPHA, Greek_UPSILON } ] };
 	key <T098>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol }, {                       NoSymbol,                       NoSymbol } ],
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
 		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) }, {              SetGroup(group=3),        SetMods(modifiers=Mod5) } ]
 	};
 	key <T099>               {
@@ -544,32 +546,32 @@ xkb_symbols "(unnamed)" {
 		symbols[Group1]= [ {                    Greek_alpha,                  Greek_upsilon }, {                    Greek_ALPHA,                  Greek_UPSILON } ],
 		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) }, {              SetGroup(group=3),        SetMods(modifiers=Mod5) } ]
 	};
-	key <T103>               {	[ { NoSymbol, NoSymbol }, { Greek_ALPHA, Greek_UPSILON } ] };
+	key <T103>               {	[        NoSymbol, { Greek_ALPHA, Greek_UPSILON } ] };
 	key <T104>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol }, {                       NoSymbol,                       NoSymbol } ],
-		actions[Group1]= [ {                     NoAction(),                     NoAction() }, {              SetGroup(group=3),        SetMods(modifiers=Mod5) } ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [                     NoAction(), {              SetGroup(group=3),        SetMods(modifiers=Mod5) } ]
 	};
 	key <T105>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol }, {                    Greek_ALPHA,                  Greek_UPSILON } ],
-		actions[Group1]= [ {                     NoAction(),                     NoAction() }, {              SetGroup(group=3),        SetMods(modifiers=Mod5) } ]
+		symbols[Group1]= [                       NoSymbol, {                    Greek_ALPHA,                  Greek_UPSILON } ],
+		actions[Group1]= [                     NoAction(), {              SetGroup(group=3),        SetMods(modifiers=Mod5) } ]
 	};
-	key <T106>               {	[ { Greek_alpha, NoSymbol }, { NoSymbol, Greek_BETA } ] };
+	key <T106>               {	[     Greek_alpha,      Greek_BETA ] };
 	key <T107>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol }, {                       NoSymbol,                       NoSymbol } ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction() }, {                     NoAction(),              SetGroup(group=3) } ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [              SetGroup(group=3),              SetGroup(group=3) ]
 	};
 	key <T108>               {
 		repeat= No,
-		symbols[Group1]= [ {                    Greek_alpha,                       NoSymbol }, {                       NoSymbol,                     Greek_BETA } ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction() }, {                     NoAction(),              SetGroup(group=3) } ]
+		symbols[Group1]= [                    Greek_alpha,                     Greek_BETA ],
+		actions[Group1]= [              SetGroup(group=3),              SetGroup(group=3) ]
 	};
 	key <T109>               {	[ { Greek_alpha, Greek_upsilon }, { Greek_ALPHA, Greek_UPSILON } ] };
 	key <T110>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol }, {                       NoSymbol,                       NoSymbol } ],
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
 		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) }, {              SetGroup(group=3),        SetMods(modifiers=Mod5) } ]
 	};
 	key <T111>               {
@@ -577,21 +579,21 @@ xkb_symbols "(unnamed)" {
 		symbols[Group1]= [ {                    Greek_alpha,                  Greek_upsilon }, {                    Greek_ALPHA,                  Greek_UPSILON } ],
 		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) }, {              SetGroup(group=3),        SetMods(modifiers=Mod5) } ]
 	};
-	key <T112>               {	[ { Greek_alpha, NoSymbol }, { NoSymbol, Greek_BETA } ] };
+	key <T112>               {	[     Greek_alpha,      Greek_BETA ] };
 	key <T113>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol }, {                       NoSymbol,                       NoSymbol } ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction() }, {                     NoAction(),              SetGroup(group=3) } ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [              SetGroup(group=3),              SetGroup(group=3) ]
 	};
 	key <T114>               {
 		repeat= No,
-		symbols[Group1]= [ {                    Greek_alpha,                       NoSymbol }, {                       NoSymbol,                     Greek_BETA } ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction() }, {                     NoAction(),              SetGroup(group=3) } ]
+		symbols[Group1]= [                    Greek_alpha,                     Greek_BETA ],
+		actions[Group1]= [              SetGroup(group=3),              SetGroup(group=3) ]
 	};
 	key <T115>               {	[ { Greek_alpha, Greek_upsilon }, { Greek_XI, Greek_BETA } ] };
 	key <T116>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol }, {                       NoSymbol,                       NoSymbol } ],
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
 		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) }, {        SetMods(modifiers=Mod5),              SetGroup(group=3) } ]
 	};
 	key <T117>               {
@@ -602,7 +604,7 @@ xkb_symbols "(unnamed)" {
 	key <T118>               {	[        { a, y }, { Greek_ALPHA, Greek_UPSILON } ] };
 	key <T119>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol }, {                       NoSymbol,                       NoSymbol } ],
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
 		actions[Group1]= [ {              SetGroup(group=2),     SetMods(modifiers=Control) }, {              SetGroup(group=3),        SetMods(modifiers=Mod5) } ]
 	};
 	key <T120>               {
@@ -610,67 +612,67 @@ xkb_symbols "(unnamed)" {
 		symbols[Group1]= [ {                              a,                              y }, {                    Greek_ALPHA,                  Greek_UPSILON } ],
 		actions[Group1]= [ {              SetGroup(group=2),     SetMods(modifiers=Control) }, {              SetGroup(group=3),        SetMods(modifiers=Mod5) } ]
 	};
-	key <T121>               {	[ { Greek_alpha, y }, { X, Greek_BETA } ] };
+	key <T121>               {	[     Greek_alpha,      Greek_BETA ] };
 	key <T122>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol }, {                       NoSymbol,                       NoSymbol } ],
-		actions[Group1]= [ {              SetGroup(group=3),     SetMods(modifiers=Control) }, {     SetMods(modifiers=Control),              SetGroup(group=3) } ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [              SetGroup(group=3),              SetGroup(group=3) ]
 	};
 	key <T123>               {
 		repeat= No,
-		symbols[Group1]= [ {                    Greek_alpha,                              y }, {                              X,                     Greek_BETA } ],
-		actions[Group1]= [ {              SetGroup(group=3),     SetMods(modifiers=Control) }, {     SetMods(modifiers=Control),              SetGroup(group=3) } ]
+		symbols[Group1]= [                    Greek_alpha,                     Greek_BETA ],
+		actions[Group1]= [              SetGroup(group=3),              SetGroup(group=3) ]
 	};
-	key <T124>               {	[ { NoSymbol, NoSymbol }, { NoSymbol, NoSymbol, NoSymbol } ] };
+	key <T124>               {	[        NoSymbol,        NoSymbol ] };
 	key <T125>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol }, {                       NoSymbol,                       NoSymbol,                       NoSymbol } ],
-		actions[Group1]= [ {                     NoAction(),                     NoAction() }, {                     NoAction(),                     NoAction(),                     NoAction() } ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [                     NoAction(),                     NoAction() ]
 	};
-	key <T126>               {	[ { NoSymbol, NoSymbol }, { NoSymbol, NoSymbol, NoSymbol } ] };
-	key <T127>               {	[ { Greek_alpha, NoSymbol, Greek_xi }, { Greek_XI, Greek_BETA } ] };
+	key <T126>               {	[        NoSymbol,        NoSymbol ] };
+	key <T127>               {	[ { Greek_alpha, Greek_xi }, { Greek_XI, Greek_BETA } ] };
 	key <T128>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol,                       NoSymbol }, {                       NoSymbol,                       NoSymbol } ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction(),        SetMods(modifiers=Mod5) }, {        SetMods(modifiers=Mod5),              SetGroup(group=3) } ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) }, {        SetMods(modifiers=Mod5),              SetGroup(group=3) } ]
 	};
 	key <T129>               {
 		repeat= No,
-		symbols[Group1]= [ {                    Greek_alpha,                       NoSymbol,                       Greek_xi }, {                       Greek_XI,                     Greek_BETA } ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction(),        SetMods(modifiers=Mod5) }, {        SetMods(modifiers=Mod5),              SetGroup(group=3) } ]
+		symbols[Group1]= [ {                    Greek_alpha,                       Greek_xi }, {                       Greek_XI,                     Greek_BETA } ],
+		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) }, {        SetMods(modifiers=Mod5),              SetGroup(group=3) } ]
 	};
-	key <T130>               {	[        { a, y }, { X, NoSymbol, A } ] };
+	key <T130>               {	[        { a, y },        { X, A } ] };
 	key <T131>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol }, {                       NoSymbol,                       NoSymbol,                       NoSymbol } ],
-		actions[Group1]= [ {              SetGroup(group=2),     SetMods(modifiers=Control) }, {     SetMods(modifiers=Control),                     NoAction(),              SetGroup(group=2) } ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [ {              SetGroup(group=2),     SetMods(modifiers=Control) }, {     SetMods(modifiers=Control),              SetGroup(group=2) } ]
 	};
 	key <T132>               {
 		repeat= No,
-		symbols[Group1]= [ {                              a,                              y }, {                              X,                       NoSymbol,                              A } ],
-		actions[Group1]= [ {              SetGroup(group=2),     SetMods(modifiers=Control) }, {     SetMods(modifiers=Control),                     NoAction(),              SetGroup(group=2) } ]
+		symbols[Group1]= [ {                              a,                              y }, {                              X,                              A } ],
+		actions[Group1]= [ {              SetGroup(group=2),     SetMods(modifiers=Control) }, {     SetMods(modifiers=Control),              SetGroup(group=2) } ]
 	};
-	key <T133>               {	[ { Greek_alpha, NoSymbol, Greek_xi }, { Greek_XI, Greek_BETA } ] };
+	key <T133>               {	[ { Greek_alpha, Greek_xi }, { Greek_XI, Greek_BETA } ] };
 	key <T134>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol,                       NoSymbol }, {                       NoSymbol,                       NoSymbol } ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction(),        SetMods(modifiers=Mod5) }, {        SetMods(modifiers=Mod5),              SetGroup(group=3) } ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) }, {        SetMods(modifiers=Mod5),              SetGroup(group=3) } ]
 	};
 	key <T135>               {
 		repeat= No,
-		symbols[Group1]= [ {                    Greek_alpha,                       NoSymbol,                       Greek_xi }, {                       Greek_XI,                     Greek_BETA } ],
-		actions[Group1]= [ {              SetGroup(group=3),                     NoAction(),        SetMods(modifiers=Mod5) }, {        SetMods(modifiers=Mod5),              SetGroup(group=3) } ]
+		symbols[Group1]= [ {                    Greek_alpha,                       Greek_xi }, {                       Greek_XI,                     Greek_BETA } ],
+		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) }, {        SetMods(modifiers=Mod5),              SetGroup(group=3) } ]
 	};
-	key <T136>               {	[ { NoSymbol, NoSymbol },        { A, Y } ] };
+	key <T136>               {	[        NoSymbol,        { A, Y } ] };
 	key <T137>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol }, {                       NoSymbol,                       NoSymbol } ],
-		actions[Group1]= [ {                     NoAction(),                     NoAction() }, {              SetGroup(group=2),     SetMods(modifiers=Control) } ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [                     NoAction(), {              SetGroup(group=2),     SetMods(modifiers=Control) } ]
 	};
 	key <T138>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol }, {                              A,                              Y } ],
-		actions[Group1]= [ {                     NoAction(),                     NoAction() }, {              SetGroup(group=2),     SetMods(modifiers=Control) } ]
+		symbols[Group1]= [                       NoSymbol, {                              A,                              Y } ],
+		actions[Group1]= [                     NoAction(), {              SetGroup(group=2),     SetMods(modifiers=Control) } ]
 	};
 	key <T139>               {	[     Greek_alpha,     Greek_ALPHA ] };
 	key <T140>               {
@@ -683,16 +685,16 @@ xkb_symbols "(unnamed)" {
 		symbols[Group1]= [                    Greek_alpha,                    Greek_ALPHA ],
 		actions[Group1]= [              SetGroup(group=3),              SetGroup(group=3) ]
 	};
-	key <T142>               {	[ { a, NoSymbol }, { NoSymbol, B } ] };
+	key <T142>               {	[               a,               B ] };
 	key <T143>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol }, {                       NoSymbol,                       NoSymbol } ],
-		actions[Group1]= [ {              SetGroup(group=2),                     NoAction() }, {                     NoAction(),              SetGroup(group=2) } ]
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [              SetGroup(group=2),              SetGroup(group=2) ]
 	};
 	key <T144>               {
 		repeat= No,
-		symbols[Group1]= [ {                              a,                       NoSymbol }, {                       NoSymbol,                              B } ],
-		actions[Group1]= [ {              SetGroup(group=2),                     NoAction() }, {                     NoAction(),              SetGroup(group=2) } ]
+		symbols[Group1]= [                              a,                              B ],
+		actions[Group1]= [              SetGroup(group=2),              SetGroup(group=2) ]
 	};
 	key <T145>               {	[     Greek_alpha,     Greek_ALPHA ] };
 	key <T146>               {
@@ -707,28 +709,28 @@ xkb_symbols "(unnamed)" {
 	};
 	key <T150>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol }, {                       NoSymbol,                       NoSymbol } ],
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
 		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) }, {              SetGroup(group=3),        SetMods(modifiers=Mod5) } ]
 	};
 	key <T153>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol },                       NoSymbol ],
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
 		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) },              SetGroup(group=3) ]
 	};
 	key <T156>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol },                       NoSymbol ],
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
 		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) },              SetGroup(group=3) ]
 	};
 	key <T159>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol }, {                              X,                              Y } ],
-		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) }, {                     NoAction(),                     NoAction() } ]
+		symbols[Group1]= [                              a, {                              X,                              Y } ],
+		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) },              SetGroup(group=2) ]
 	};
 	key <T162>               {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol,                              X ],
-		actions[Group1]= [              SetGroup(group=3),                     NoAction() ]
+		symbols[Group1]= [ {                              a,                              b },                              X ],
+		actions[Group1]= [              SetGroup(group=3), {              SetGroup(group=2),     SetMods(modifiers=Control) } ]
 	};
 	key <T165>               {
 		repeat= No,
@@ -742,13 +744,13 @@ xkb_symbols "(unnamed)" {
 	};
 	key <T171>               {
 		repeat= No,
-		symbols[Group1]= [ {                              x,                              b }, {                              X,                              Y } ],
-		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) }, {              SetGroup(group=3),     SetMods(modifiers=Control) } ]
+		symbols[Group1]= [                              x, {                              X,                              Y } ],
+		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) },              SetGroup(group=3) ]
 	};
 	key <T174>               {
 		repeat= No,
-		symbols[Group1]= [ {                              x,                              b }, {                              A,                              B } ],
-		actions[Group1]= [ {              SetGroup(group=2),     SetMods(modifiers=Control) }, {              SetGroup(group=3),     SetMods(modifiers=Control) } ]
+		symbols[Group1]= [                              x, {                              A,                              B } ],
+		actions[Group1]= [ {              SetGroup(group=2),     SetMods(modifiers=Control) },              SetGroup(group=3) ]
 	};
 	key <T177>               {
 		repeat= No,
@@ -757,20 +759,24 @@ xkb_symbols "(unnamed)" {
 	};
 	key <T180>               {
 		repeat= No,
-		symbols[Group1]= [ {                              a,                              y }, {                              X,                              Y } ],
-		actions[Group1]= [ {              SetGroup(group=3),     SetMods(modifiers=Control) }, {              SetGroup(group=3),        SetMods(modifiers=Mod5) } ]
+		symbols[Group1]= [                              y, {                              X,                              Y } ],
+		actions[Group1]= [              SetGroup(group=3), {              SetGroup(group=3),        SetMods(modifiers=Mod5) } ]
 	};
 	key <T183>               {
 		repeat= No,
-		symbols[Group1]= [ {                              a,                              y }, {                              X,                              B } ],
-		actions[Group1]= [ {              SetGroup(group=2),        SetMods(modifiers=Mod5) }, {              SetGroup(group=3),     SetMods(modifiers=Control) } ]
+		symbols[Group1]= [                              y,                              X ],
+		actions[Group1]= [        SetMods(modifiers=Mod5),              SetGroup(group=3) ]
 	};
 	key <T186>               {
 		repeat= No,
-		symbols[Group1]= [ {                       NoSymbol,                       NoSymbol },                       NoSymbol ],
+		symbols[Group1]= [                              a, {                              A,                              B } ],
 		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) },              SetGroup(group=3) ]
 	};
-	key <T189>               {	[        { A, B },               a ] };
+	key <T189>               {
+		repeat= No,
+		symbols[Group1]= [ {                              A,                              B },                              a ],
+		actions[Group1]= [              SetGroup(group=3), {              SetGroup(group=3),        SetMods(modifiers=Mod5) } ]
+	};
 	key <T192>               {
 		repeat= No,
 		symbols[Group1]= [ {                              x,                              y },                              X ],
@@ -781,6 +787,12 @@ xkb_symbols "(unnamed)" {
 		symbols[Group1]= [ {                              A,                              A } ],
 		actions[Group1]= [ {              SetGroup(group=3),        SetMods(modifiers=Mod5) } ]
 	};
+	key <T207>               {
+		repeat= No,
+		symbols[Group1]= [                              Y ],
+		actions[Group1]= [              SetGroup(group=3) ]
+	};
+	key <T210>               {	[        NoSymbol ] };
 };
 
 };

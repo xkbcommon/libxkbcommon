@@ -16,6 +16,9 @@ xkb_symbols "awesome" {
     key <AD04> { [ r,  R,          End,        End         ] };
     key <AD05> { [ t,  T,          Tab,        Tab         ] };
 
+    // Unknown keysyms
+    key <AD06> { [{notAKeysym, ydiaeresis}, {thisEither, norThis} ] };
+
     key <AC01> { [ a,  A,          Return,     Return      ] };
     key <AC02> { [ s,  S,          Left] };
     key <AC03> { [ d,  D,          Down] };

@@ -1629,10 +1629,19 @@ result in `Control + Q`, because the actions are run sequentially: first set the
 base modifiers to Control, then switch to the second layout while `Control` is
 pressed.
 
+@remark
+Given a level, keysyms and actions may have a *different count*. For instance,
+the following would achieve the same effect than the former example with only
+1 keysym, but it requires to use 2 explicit actions:
+```c
+key <LCTL> {
+    symbols[1] = [ Control_L                                          ],
+    actions[1] = [ { SetMods(modifiers=Control), SetGroup(group=+1) } ]
+};
+```
+
 @note
 There are some *limitations* with this extension:
-- When both keysyms and actions are specified, they should have the exact
-  *same count* for each level.
 - For now, *at most one* action of each following categories is allowed per
   level:
   - [modifier actions][]: `SetMods`, `LatchMods`, `LockMods`;
