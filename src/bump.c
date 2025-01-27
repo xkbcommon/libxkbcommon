@@ -15,8 +15,8 @@ const size_t INITIAL_CHUNK_SIZE = 4096;
 const size_t GROWTH_FACTOR = 2;
 
 static struct bump_chunk dummy_chunk = {
-    .end = 0,
-    .ptr = 0,
+    .end = dummy_chunk.memory,
+    .ptr = dummy_chunk.memory,
     .prev = NULL,
 };
 

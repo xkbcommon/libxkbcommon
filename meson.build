@@ -47,7 +47,6 @@ cflags = [
     '-Wwrite-strings',
     '-Wno-documentation-deprecated-sync',
     '-Wno-pedantic',
-    '-Wno-gnu-alignof-expression',
 ]
 add_project_arguments(cc.get_supported_arguments(cflags), language: 'c')
 

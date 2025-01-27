@@ -54,6 +54,7 @@
 #include "bump.h"
 #include "config.h"
 
+#include "xkbcommon/xkbcommon.h"
 #include "xkbcomp-priv.h"
 #include "ast-build.h"
 #include "include.h"
@@ -61,7 +62,7 @@
 static ExprDef *
 ExprCreate(struct bump *bump, enum expr_op_type op, enum expr_value_type type, size_t size)
 {
-    ExprDef *expr = bump_aligned_alloc(bump, alignof(*expr), size);
+    ExprDef *expr = bump_aligned_alloc(bump, alignof(ExprDef), size);
     if (!expr)
         return NULL;
 
@@ -231,7 +232,7 @@ ExprAppendKeysymList(struct bump *bump, ExprDef *expr, xkb_keysym_t sym)
 {
     ExprKeysymList *kl = &expr->keysym_list;
     xkb_keysym_t *old = kl->syms;
-    kl->syms = bump_aligned_alloc(bump, alignof(*kl->syms), (kl->num_syms + 1) * sizeof(*kl->syms));
+    kl->syms = bump_aligned_alloc(bump, alignof(xkb_keysym_t), (kl->num_syms + 1) * sizeof(*kl->syms));
     for (unsigned i = 0; i < kl->num_syms; i++)
         kl->syms[i] = old[i];
     kl->syms[kl->num_syms++] = sym;
