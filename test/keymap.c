@@ -315,6 +315,17 @@ test_multiple_keysyms_per_level(void)
     assert(keysyms[0] == 'E');
     assert(keysyms[1] == 'F');
 
+    // Invalid keysyms
+    kc = xkb_keymap_key_by_name(keymap, "AD06");
+    // Only the invalid keysym is dropped, remaining one overrides previous entry
+    keysyms_count = xkb_keymap_key_get_syms_by_level(keymap, kc, first_layout, 0, &keysyms);
+    assert(keysyms_count == 1);
+    assert(keysyms[0] == XKB_KEY_ydiaeresis);
+    // All the keysyms are invalid and dropped, previous entry not overriden
+    keysyms_count = xkb_keymap_key_get_syms_by_level(keymap, kc, first_layout, 1, &keysyms);
+    assert(keysyms_count == 1);
+    assert(keysyms[0] == 'Y');
+
     xkb_keymap_unref(keymap);
     xkb_context_unref(context);
 }
@@ -401,9 +412,9 @@ test_multiple_actions_per_level(void)
         KEY_2,         BOTH, XKB_KEY_ecaron,    NEXT,
         KEY_LEFTCTRL,  UP,   XKB_KEY_Control_L, XKB_KEY_ISO_Group_Shift, NEXT,
         KEY_2,         BOTH, XKB_KEY_2,         NEXT,
-        KEY_RIGHTCTRL, DOWN, XKB_KEY_NoSymbol,  XKB_KEY_NoSymbol, NEXT,
+        KEY_RIGHTCTRL, DOWN, XKB_KEY_Control_R, NEXT,
         KEY_2,         BOTH, XKB_KEY_ecaron,    NEXT,
-        KEY_RIGHTCTRL, UP,   XKB_KEY_NoSymbol,  XKB_KEY_NoSymbol, NEXT,
+        KEY_RIGHTCTRL, UP,   XKB_KEY_Control_R, NEXT,
         KEY_2,         BOTH, XKB_KEY_2,         NEXT,
         /* Fake keys switch to the second group too */
         KEY_LVL3,      DOWN, XKB_KEY_ISO_Level3_Shift, XKB_KEY_ISO_Group_Shift, NEXT,
@@ -416,22 +427,20 @@ test_multiple_actions_per_level(void)
         KEY_2,         BOTH, XKB_KEY_at,        NEXT,
         KEY_LVL5,      UP,   XKB_KEY_ISO_Level3_Shift, XKB_KEY_ISO_Group_Shift, NEXT,
         KEY_2,         BOTH, XKB_KEY_2,         NEXT,
-        /* Alt have invalid entries and do not change the group */
+        /* Alt have different keysyms & actions count */
         KEY_LEFTALT,   DOWN, XKB_KEY_Alt_L,     NEXT,
-        KEY_2,         BOTH, XKB_KEY_2,         NEXT,
+        KEY_2,         BOTH, XKB_KEY_ecaron,    NEXT,
         KEY_LEFTALT,   UP,   XKB_KEY_Alt_L,     NEXT,
         KEY_RIGHTALT,  DOWN, XKB_KEY_Alt_R, XKB_KEY_ISO_Group_Shift, NEXT,
         KEY_2,         BOTH, XKB_KEY_2,         NEXT,
         KEY_RIGHTALT,  UP,   XKB_KEY_Alt_R, XKB_KEY_ISO_Group_Shift, NEXT,
-        /* Super have invalid entries and do not change the group */
+        /* Super have different keysyms & actions count */
         KEY_LEFTMETA,  DOWN, XKB_KEY_Super_L, XKB_KEY_ISO_Group_Shift, NEXT,
-        KEY_2,         BOTH, XKB_KEY_2,         NEXT,
+        KEY_2,         BOTH, XKB_KEY_ecaron,    NEXT,
         KEY_LEFTMETA,  UP,   XKB_KEY_Super_L, XKB_KEY_ISO_Group_Shift, NEXT,
-        KEY_RIGHTMETA, DOWN, XKB_KEY_Super_R, XKB_KEY_ISO_Group_Shift,
-                             XKB_KEY_NoSymbol, NEXT,
-        KEY_2,         BOTH, XKB_KEY_2,         NEXT,
-        KEY_RIGHTMETA, UP,   XKB_KEY_Super_R, XKB_KEY_ISO_Group_Shift,
-                             XKB_KEY_NoSymbol, NEXT,
+        KEY_RIGHTMETA, DOWN, XKB_KEY_Super_R, XKB_KEY_ISO_Group_Shift, NEXT,
+        KEY_2,         BOTH, XKB_KEY_ecaron,    NEXT,
+        KEY_RIGHTMETA, UP,   XKB_KEY_Super_R, XKB_KEY_ISO_Group_Shift, NEXT,
         KEY_2,         BOTH, XKB_KEY_2,        NEXT,
         /* Incompatible actions categories */
         KEY_RO,        DOWN, XKB_KEY_Control_L, XKB_KEY_Shift_L, NEXT,
@@ -445,7 +454,7 @@ test_multiple_actions_per_level(void)
         KEY_2,         BOTH, XKB_KEY_ecaron,   NEXT,
         KEY_Z,         UP,   XKB_KEY_y,        NEXT,
         KEY_X,         BOTH, XKB_KEY_x,        NEXT,
-        KEY_C,         DOWN, XKB_KEY_NoSymbol, XKB_KEY_NoSymbol, NEXT,
+        KEY_C,         DOWN, XKB_KEY_NoSymbol, NEXT,
         KEY_2,         BOTH, XKB_KEY_at,       NEXT,
         KEY_C,         UP,   XKB_KEY_ampersand, NEXT,
         KEY_V,         DOWN, XKB_KEY_NoSymbol, NEXT,

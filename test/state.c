@@ -412,8 +412,9 @@ test_serialisation(struct xkb_keymap *keymap)
             xkb_mod_mask_t mask = UINT32_C(1) << idx;                               \
             bool expected = !!(mask & (entry)->active);                             \
             bool got = !!xkb_state_mod_index_is_active(state_, idx, type);          \
-            fprintf(stderr, "#%u State 0x%x, mod: %u: expected %u, got: %u\n",      \
-                    k, (entry)->state, idx, expected, got);                         \
+            fprintf(stderr, "#%u State 0x%x, mod: %s (%u): expected %u, got: %u\n", \
+                    k, (entry)->state, xkb_keymap_mod_get_name(keymap, idx), idx,   \
+                    expected, got);                                                 \
             assert_printf(got == expected,                                          \
                           "xkb_state_mod_index_is_active, " STRINGIFY2(type) "\n"); \
             got = !!xkb_state_mod_index_is_active(state_, idx,                      \

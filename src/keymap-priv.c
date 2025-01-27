@@ -153,41 +153,13 @@ XkbLevelsSameSyms(const struct xkb_level *a, const struct xkb_level *b)
 }
 
 bool
-XkbLevelHasNoKeysym(const struct xkb_level *level)
-{
-    if (level->num_syms == 0)
-        return true;
-    if (level->num_syms == 1)
-        return level->s.sym == XKB_KEY_NoSymbol;
-    for (unsigned int k = 0; k < level->num_syms; k++) {
-        if (level->s.syms[k] != XKB_KEY_NoSymbol)
-            return false;
-    }
-    return true;
-}
-
-bool
 XkbLevelsSameActions(const struct xkb_level *a, const struct xkb_level *b)
 {
-    if (a->num_syms != b->num_syms)
+    if (a->num_actions != b->num_actions)
         return false;
-    if (a->num_syms <= 1)
+    if (a->num_actions <= 1)
         return memcmp(&a->a.action, &b->a.action, sizeof(a->a.action)) == 0;
-    return memcmp(a->a.actions, b->a.actions, sizeof(*a->a.actions) * a->num_syms) == 0;
-}
-
-bool
-XkbLevelHasNoAction(const struct xkb_level *level)
-{
-    if (level->num_syms == 0)
-        return true;
-    if (level->num_syms == 1)
-        return level->a.action.type == ACTION_TYPE_NONE;
-    for (unsigned int k = 0; k < level->num_syms; k++) {
-        if (level->a.actions[k].type != ACTION_TYPE_NONE)
-            return false;
-    }
-    return true;
+    return memcmp(a->a.actions, b->a.actions, sizeof(*a->a.actions) * a->num_actions) == 0;
 }
 
 xkb_layout_index_t
@@ -247,7 +219,7 @@ xkb_keymap_key_get_actions_by_level(struct xkb_keymap *keymap,
     if (level >= XkbKeyNumLevels(key, layout))
         goto err;
 
-    const unsigned int count = key->groups[layout].levels[level].num_syms;
+    const unsigned int count = key->groups[layout].levels[level].num_actions;
     switch (count) {
         case 0:
             goto err;

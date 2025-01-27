@@ -316,8 +316,10 @@ enum xkb_explicit_components {
 };
 
 struct xkb_level {
-    /* Count of keysyms/actions */
+    /* Count of keysyms */
     unsigned int num_syms;
+    /* Count of actions */
+    unsigned int num_actions;
     /* Keysyms */
     union {
         xkb_keysym_t sym;          /* num_syms == 1 */
@@ -325,8 +327,8 @@ struct xkb_level {
     } s;
     /* Actions */
     union {
-        union xkb_action action;   /* num_syms == 1 */
-        union xkb_action *actions; /* num_syms >  1 */
+        union xkb_action action;   /* num_actions == 1 */
+        union xkb_action *actions; /* num_actions >  1 */
     } a;
 };
 
@@ -506,13 +508,7 @@ bool
 XkbLevelsSameSyms(const struct xkb_level *a, const struct xkb_level *b);
 
 bool
-XkbLevelHasNoKeysym(const struct xkb_level *level);
-
-bool
 XkbLevelsSameActions(const struct xkb_level *a, const struct xkb_level *b);
-
-bool
-XkbLevelHasNoAction(const struct xkb_level *level);
 
 xkb_layout_index_t
 XkbWrapGroupIntoRange(int32_t group,

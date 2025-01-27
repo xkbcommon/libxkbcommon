@@ -25,7 +25,7 @@ xkb_symbols "basic" {
 		symbols[1] = [ { ISO_Level3_Shift,              ISO_Group_Shift    } ]
 	};
 
-	// Incompatible actions and keysyms count: error
+	// Different actions and keysyms count
 	key <LALT> {
 		symbols[1] = [   Alt_L                                        ],
 		actions[1] = [ { SetMods(modifiers=Alt), SetGroup(group=+1) } ]

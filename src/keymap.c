@@ -74,11 +74,12 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
             if (key->groups) {
                 for (unsigned i = 0; i < key->num_groups; i++) {
                     if (key->groups[i].levels) {
-                        for (unsigned j = 0; j < XkbKeyNumLevels(key, i); j++)
-                            if (key->groups[i].levels[j].num_syms > 1) {
+                        for (unsigned j = 0; j < XkbKeyNumLevels(key, i); j++) {
+                            if (key->groups[i].levels[j].num_syms > 1)
                                 free(key->groups[i].levels[j].s.syms);
+                            if (key->groups[i].levels[j].num_actions > 1)
                                 free(key->groups[i].levels[j].a.actions);
-                            }
+                        }
                         free(key->groups[i].levels);
                     }
                 }

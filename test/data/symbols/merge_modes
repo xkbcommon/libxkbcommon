@@ -151,6 +151,8 @@ xkb_symbols "base" {
 	key <T189> { [SetGroup(group=3), {SetGroup(group=3), SetMods(mods=Mod5)}] };
 	key <T192> { [a, {A, B}], [SetGroup(group=2), {SetGroup(group=2), SetMods(mods=Control)}] };
 	key <T204> { [A] };
+	key <T207> { [A], [SetGroup(group=2)] };
+	key <T210> { [{notAKeysym, NoSymbol, thisEither}] };
 };
 
 xkb_symbols "new" {
@@ -337,6 +339,12 @@ xkb_symbols "new" {
 
 	////// Issue #564 //////
 	key <T204> { [{A, A}], [{SetGroup(group=3), SetMods(mods=Mod5)}] };
+
+	////// Drop NoSymbol/NoAction //////
+	key <T207> { [{NoSymbol, Y, NoSymbol}], [{NoAction(), SetGroup(group=3), NoAction()}] };
+
+	////// Drop NoSymbol/NoAction and invalid keysyms //////
+	key <T210> { [{NoSymbol, NoSymbol}] };
 };
 
 xkb_symbols "new-default" {
@@ -524,6 +532,12 @@ xkb_symbols "new-default" {
 
 	////// Issue #564 //////
 	key <T204> { [{A, A}], [{SetGroup(group=3), SetMods(mods=Mod5)}] };
+
+	////// Drop NoSymbol/NoAction //////
+	key <T207> { [{NoSymbol, Y, NoSymbol}], [{NoAction(), SetGroup(group=3), NoAction()}] };
+
+	////// Drop NoSymbol/NoAction and invalid keysyms //////
+	key <T210> { [{NoSymbol, NoSymbol}] };
 };
 
 xkb_symbols "new-augment" {
@@ -711,6 +725,12 @@ xkb_symbols "new-augment" {
 
 	////// Issue #564 //////
 	augment key <T204> { [{A, A}], [{SetGroup(group=3), SetMods(mods=Mod5)}] };
+
+	////// Drop NoSymbol/NoAction //////
+	augment key <T207> { [{NoSymbol, Y, NoSymbol}], [{NoAction(), SetGroup(group=3), NoAction()}] };
+
+	////// Drop NoSymbol/NoAction and invalid keysyms //////
+	augment key <T210> { [{NoSymbol, NoSymbol}] };
 };
 
 xkb_symbols "new-override" {
@@ -898,6 +918,12 @@ xkb_symbols "new-override" {
 
 	////// Issue #564 //////
 	override key <T204> { [{A, A}], [{SetGroup(group=3), SetMods(mods=Mod5)}] };
+
+	////// Drop NoSymbol/NoAction //////
+	override key <T207> { [{NoSymbol, Y, NoSymbol}], [{NoAction(), SetGroup(group=3), NoAction()}] };
+
+	////// Drop NoSymbol/NoAction and invalid keysyms //////
+	override key <T210> { [{NoSymbol, NoSymbol}] };
 };
 
 xkb_symbols "new-replace" {
@@ -1085,6 +1111,12 @@ xkb_symbols "new-replace" {
 
 	////// Issue #564 //////
 	replace key <T204> { [{A, A}], [{SetGroup(group=3), SetMods(mods=Mod5)}] };
+
+	////// Drop NoSymbol/NoAction //////
+	replace key <T207> { [{NoSymbol, Y, NoSymbol}], [{NoAction(), SetGroup(group=3), NoAction()}] };
+
+	////// Drop NoSymbol/NoAction and invalid keysyms //////
+	replace key <T210> { [{NoSymbol, NoSymbol}] };
 };
 
 xkb_symbols "augment" {
@@ -1202,9 +1234,9 @@ xkb_symbols "augment" {
 	key <T112> { [{a, NoSymbol}, {NoSymbol, B}] };
 	key <T113> { [{SetGroup(group=2), NoAction()}, {NoAction(), SetGroup(group=2)}] };
 	key <T114> { [{a, NoSymbol}, {NoSymbol, B}], [{SetGroup(group=2), NoAction()}, {NoAction(), SetGroup(group=2)}] };
-	key <T115> { [{a, Greek_upsilon}, {Greek_XI, B}] };
-	key <T116> { [{SetGroup(group=2), SetMods(mods=Mod5)}, {SetMods(mods=Mod5), SetGroup(group=2)}] };
-	key <T117> { [{a, Greek_upsilon}, {Greek_XI, B}], [{SetGroup(group=2), SetMods(mods=Mod5)}, {SetMods(mods=Mod5), SetGroup(group=2)}] };
+	key <T115> { [{a, NoSymbol}, {NoSymbol, B}] };
+	key <T116> { [{SetGroup(group=2), NoAction()}, {NoAction(), SetGroup(group=2)}] };
+	key <T117> { [{a, NoSymbol}, {NoSymbol, B}], [{SetGroup(group=2), NoAction()}, {NoAction(), SetGroup(group=2)}] };
 	key <T118> { [{a, y}, {A, Y}] };
 	key <T119> { [{SetGroup(group=2), SetMods(mods=Control)}, {SetGroup(group=2), SetMods(mods=Control)}] };
 	key <T120> { [{a, y}, {A, Y}], [{SetGroup(group=2), SetMods(mods=Control)}, {SetGroup(group=2), SetMods(mods=Control)}] };
@@ -1244,33 +1276,39 @@ xkb_symbols "augment" {
 	key <T156> { [SetGroup(group=2), {SetGroup(group=2), SetMods(mods=Control)}] };
 
 	////// Mix //////
-	key <T159> { [a, NoSymbol], [NoAction(), SetGroup(group=2)] };
+	key <T159> { [a, {X, Y}], [{SetGroup(group=3), SetMods(mods=Mod5)}, SetGroup(group=2)] };
 
 	////// Multiple keysyms/actions –> single //////
-	key <T162> { [{a, b}, NoSymbol], [NoAction(), {SetGroup(group=2), SetMods(mods=Control)}] };
+	key <T162> { [{a, b}, X], [SetGroup(group=3), {SetGroup(group=2), SetMods(mods=Control)}] };
 
 	////// Multiple keysyms/actions –> multiple (xor) //////
 	key <T165> { [{a, b}, {X, Y}], [{SetGroup(group=3), SetMods(mods=Mod5)}, {SetGroup(group=2), SetMods(mods=Control)}] };
 
 	////// Multiple keysyms/actions –> multiple (mix) //////
-	key <T168> { [{a, y}, {X, Y}], [{SetGroup(group=3), SetMods(mods=Mod5)}, {SetGroup(group=2), SetMods(mods=Mod5)}] };
+	key <T168> { [{a, NoSymbol}, {X, Y}], [{SetGroup(group=3), SetMods(mods=Mod5)}, {SetGroup(group=2), NoAction()}] };
 	key <T171> { [{a, b}, {X, Y}], [{SetGroup(group=3), SetMods(mods=Mod5)}, {SetGroup(group=2), SetMods(mods=Control)}] };
 
 	////// Multiple (mix) –> multiple keysyms/actions //////
 	key <T174> { [{a, b}, {A, B}], [{SetGroup(group=2), SetMods(mods=Control)}, {SetGroup(group=2), SetMods(mods=Control)}] };
-	key <T177> { [{a, y}, {A, B}], [{SetGroup(group=2), SetMods(mods=Control)}, {SetGroup(group=2), SetMods(mods=Mod5)}] };
+	key <T177> { [{a, NoSymbol}, {A, B}], [{SetGroup(group=2), SetMods(mods=Control)}, {SetGroup(group=2), NoAction()}] };
 
 	////// Multiple (mix) –> multiple (mix) //////
-	key <T180> { [{a, b}, {X, B}], [{SetGroup(group=2), SetMods(mods=Control)}, {SetGroup(group=2), SetMods(mods=Mod5)}] };
-	key <T183> { [{a, y}, {X, B}], [{SetGroup(group=2), SetMods(mods=Mod5)}, {SetGroup(group=3), SetMods(mods=Control)}] };
+	key <T180> { [{a, b}, {NoSymbol, B}], [{SetGroup(group=2), SetMods(mods=Control)}, {SetGroup(group=2), NoAction()}] };
+	key <T183> { [{a, NoSymbol}, {NoSymbol, B}], [{SetGroup(group=2), NoAction()}, {NoAction(), SetMods(mods=Control)}] };
 
 	////// Mismatch count with mix //////
-	key <T186> { [a, {A, B}] };
-	key <T189> { [SetGroup(group=3), {SetGroup(group=3), SetMods(mods=Mod5)}] };
+	key <T186> { [a, {A, B}], [{SetGroup(group=3), SetMods(mods=Mod5)}, SetGroup(group=3)] };
+	key <T189> { [{A, B}, a], [SetGroup(group=3), {SetGroup(group=3), SetMods(mods=Mod5)}] };
 	key <T192> { [a, {A, B}], [SetGroup(group=2), {SetGroup(group=2), SetMods(mods=Control)}] };
 
 	////// Issue #564 //////
-	key <T204> { [A] };
+	key <T204> { [A], [{SetGroup(group=3), SetMods(mods=Mod5)}] };
+
+	////// Drop NoSymbol/NoAction //////
+	key <T207> { [A], [SetGroup(group=2)] };
+
+	////// Drop NoSymbol/NoAction and invalid keysyms //////
+	key <T210> { [NoSymbol] };
 };
 
 xkb_symbols "override" {
@@ -1394,9 +1432,9 @@ xkb_symbols "override" {
 	key <T118> { [{a, y}, {Greek_ALPHA, Greek_UPSILON}] };
 	key <T119> { [{SetGroup(group=2), SetMods(mods=Control)}, {SetGroup(group=3), SetMods(mods=Mod5)}] };
 	key <T120> { [{a, y}, {Greek_ALPHA, Greek_UPSILON}], [{SetGroup(group=2), SetMods(mods=Control)}, {SetGroup(group=3), SetMods(mods=Mod5)}] };
-	key <T121> { [{Greek_alpha, y}, {X, Greek_BETA}] };
-	key <T122> { [{SetGroup(group=3), SetMods(mods=Control)}, {SetMods(mods=Control), SetGroup(group=3)}] };
-	key <T123> { [{Greek_alpha, y}, {X, Greek_BETA}], [{SetGroup(group=3), SetMods(mods=Control)}, {SetMods(mods=Control), SetGroup(group=3)}] };
+	key <T121> { [{Greek_alpha, NoSymbol}, {NoSymbol, Greek_BETA}] };
+	key <T122> { [{SetGroup(group=3), NoAction()}, {NoAction(), SetGroup(group=3)}] };
+	key <T123> { [{Greek_alpha, NoSymbol}, {NoSymbol, Greek_BETA}], [{SetGroup(group=3), NoAction()}, {NoAction(), SetGroup(group=3)}] };
 	key <T124> { [{NoSymbol, NoSymbol}, {NoSymbol, NoSymbol, NoSymbol}] };
 	key <T125> { [{NoAction(), NoAction()}, {NoAction(), NoAction(), NoAction()}] };
 	key <T126> { [{NoSymbol, NoSymbol}, {NoSymbol, NoSymbol, NoSymbol}] };
@@ -1430,31 +1468,37 @@ xkb_symbols "override" {
 	key <T156> { [{SetGroup(group=3), SetMods(mods=Mod5)}, SetGroup(group=3)] };
 
 	////// Mix //////
-	key <T159> { [NoSymbol, {X, Y}], [{SetGroup(group=3), SetMods(mods=Mod5)}, NoAction()] };
+	key <T159> { [a, {X, Y}], [{SetGroup(group=3), SetMods(mods=Mod5)}, SetGroup(group=2)] };
 
 	////// Multiple keysyms/actions –> single //////
-	key <T162> { [NoSymbol, X], [SetGroup(group=3), NoAction()] };
+	key <T162> { [{a, b}, X], [SetGroup(group=3), {SetGroup(group=2), SetMods(mods=Control)}] };
 
 	////// Multiple keysyms/actions –> multiple (xor) //////
 	key <T165> { [{a, b}, {X, Y}], [{SetGroup(group=3), SetMods(mods=Mod5)}, {SetGroup(group=2), SetMods(mods=Control)}] };
 
 	////// Multiple keysyms/actions –> multiple (mix) //////
 	key <T168> { [{x, y}, {X, Y}], [{SetGroup(group=3), SetMods(mods=Mod5)}, {SetGroup(group=3), SetMods(mods=Mod5)}] };
-	key <T171> { [{x, b}, {X, Y}], [{SetGroup(group=3), SetMods(mods=Mod5)}, {SetGroup(group=3), SetMods(mods=Control)}] };
+	key <T171> { [{x, NoSymbol}, {X, Y}], [{SetGroup(group=3), SetMods(mods=Mod5)}, {SetGroup(group=3), NoAction()}] };
 
 	////// Multiple (mix) –> multiple keysyms/actions //////
-	key <T174> { [{x, b}, {A, B}], [{SetGroup(group=2), SetMods(mods=Control)}, {SetGroup(group=3), SetMods(mods=Control)}] };
+	key <T174> { [{x, NoSymbol}, {A, B}], [{SetGroup(group=2), SetMods(mods=Control)}, {SetGroup(group=3), NoAction()}] };
 	key <T177> { [{x, y}, {A, B}], [{SetGroup(group=2), SetMods(mods=Control)}, {SetGroup(group=3), SetMods(mods=Mod5)}] };
 
 	////// Multiple (mix) –> multiple (mix) //////
-	key <T180> { [{a, y}, {X, Y}], [{SetGroup(group=3), SetMods(mods=Control)}, {SetGroup(group=3), SetMods(mods=Mod5)}] };
-	key <T183> { [{a, y}, {X, B}], [{SetGroup(group=2), SetMods(mods=Mod5)}, {SetGroup(group=3), SetMods(mods=Control)}] };
+	key <T180> { [{NoSymbol, y}, {X, Y}], [{SetGroup(group=3), NoAction()}, {SetGroup(group=3), SetMods(mods=Mod5)}] };
+	key <T183> { [{NoSymbol, y}, {X, NoSymbol}], [{NoAction(), SetMods(mods=Mod5)}, {SetGroup(group=3), NoAction()}] };
 
 	////// Mismatch count with mix //////
-	key <T186> { [{SetGroup(group=3), SetMods(mods=Mod5)}, SetGroup(group=3)] };
-	key <T189> { [{A, B}, a] };
+	key <T186> { [a, {A, B}], [{SetGroup(group=3), SetMods(mods=Mod5)}, SetGroup(group=3)] };
+	key <T189> { [{A, B}, a], [SetGroup(group=3), {SetGroup(group=3), SetMods(mods=Mod5)}] };
 	key <T192> { [{x, y}, X], [{SetGroup(group=3), SetMods(mods=Mod5)}, SetGroup(group=3)] };
 
 	////// Issue #564 //////
 	key <T204> { [{A, A}], [{SetGroup(group=3), SetMods(mods=Mod5)}] };
+
+	////// Drop NoSymbol/NoAction //////
+	key <T207> { [Y], [SetGroup(group=3)] };
+
+	////// Drop NoSymbol/NoAction and invalid keysyms //////
+	key <T210> { [NoSymbol] };
 };
