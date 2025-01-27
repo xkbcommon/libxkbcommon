@@ -330,6 +330,12 @@ open_file(const char *path);
 #define ATTR_PACKED
 #endif
 
+#if defined(__GNUC__)
+#define ATTR_NOINLINE  __attribute__((__noinline__))
+#else
+#define ATTR_NOINLINE
+#endif
+
 #if !(defined(HAVE_ASPRINTF) && HAVE_ASPRINTF)
 XKB_EXPORT_PRIVATE int asprintf(char **strp, const char *fmt, ...) ATTR_PRINTF(2, 3);
 # if !(defined(HAVE_VASPRINTF) && HAVE_VASPRINTF)

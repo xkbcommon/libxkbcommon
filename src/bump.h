@@ -1,17 +1,19 @@
 #pragma once
 
-#include <stddef.h>
+#include "config.h"
+
 #include <stdalign.h>
+#include <stddef.h>
 
 struct bump_chunk {
-    // Size of the chunk.
-    size_t size;
+    // One past the end of memory.
+    char *end;
     // Next free address in memory.
     char *ptr;
     // Pointer to the previous chunk.
     struct bump_chunk *prev;
     // Pointer to the allocated memory.
-    alignas(max_align_t) char memory[0];
+    char memory[0];
 };
 
 struct bump {

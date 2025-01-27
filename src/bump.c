@@ -7,14 +7,15 @@
 #include <string.h>
 
 #include "bump.h"
+#include "utils.h"
 
 /* Size of initial chunk. */
-#define INITIAL_CHUNK_SIZE 4096
+const size_t INITIAL_CHUNK_SIZE = 4096;
 /* Factor by which to grow chunk sizes. */
-#define GROWTH_FACTOR 2
+const size_t GROWTH_FACTOR = 2;
 
 static struct bump_chunk dummy_chunk = {
-    .size = 0,
+    .end = 0,
     .ptr = 0,
     .prev = NULL,
 };
@@ -26,34 +27,53 @@ bump_init(struct bump *bump)
     bump->current = &dummy_chunk;
 }
 
+static inline char *
+align_up(char *ptr, size_t alignment)
+{
+    uintptr_t addr = (uintptr_t) ptr;
+    uintptr_t aligned_addr = ((addr + alignment - 1) & ~(alignment - 1));
+    /*
+     * Roundabout way to avoid messing the pointer provenance.
+     * The compiler optimizes it away.
+     */
+    return ptr + (aligned_addr - addr);
+}
+
+ATTR_NOINLINE static void *
+bump_aligned_alloc_slow(struct bump *bump, size_t alignment, size_t size)
+{
+    struct bump_chunk *prev_chunk = bump->current;
+    size_t new_chunk_size;
+    if (prev_chunk == &dummy_chunk) {
+        new_chunk_size = INITIAL_CHUNK_SIZE;
+    } else {
+        new_chunk_size = (prev_chunk->end - prev_chunk->memory) * GROWTH_FACTOR;
+    }
+    struct bump_chunk *new_chunk = malloc(sizeof(*new_chunk) + new_chunk_size);
+    if (!new_chunk) {
+        return NULL;
+    }
+    new_chunk->end = new_chunk->memory + new_chunk_size;
+    new_chunk->prev = prev_chunk;
+    char *ptr = align_up(new_chunk->memory, alignment);
+    if ((uintptr_t) ptr + size >= (uintptr_t) new_chunk->end) {
+        free(new_chunk);
+        return NULL;
+    }
+    new_chunk->ptr = ptr + size;
+    bump->current = new_chunk;
+    return ptr;
+}
+
 void *
 bump_aligned_alloc(struct bump *bump, size_t alignment, size_t size)
 {
-    assert(size <= INITIAL_CHUNK_SIZE);
-
-    /* Align size to the max alignemnt. */
-    const size_t max_alignment = alignof(max_align_t);
-
     struct bump_chunk *chunk = bump->current;
-    char *ptr = (char *) (((uintptr_t) chunk->ptr + alignment - 1) & ~(alignment - 1));
-
-    /* Check if there is enough space in the current chunk. */
-    if ((size_t) (ptr - chunk->memory) + size > chunk->size) {
-        /* Not enough space, create a new chunk. */
-        size_t new_chunk_size = chunk->size == 0 ? INITIAL_CHUNK_SIZE : chunk->size * GROWTH_FACTOR;
-        struct bump_chunk *new_chunk = aligned_alloc(max_alignment, sizeof(*new_chunk) + new_chunk_size);
-        if (!new_chunk) {
-            return NULL;
-        }
-        new_chunk->size = new_chunk_size;
-        new_chunk->ptr = new_chunk->memory;
-        new_chunk->prev = chunk;
-
-        bump->current = new_chunk;
-        chunk = new_chunk;
-        ptr = chunk->memory;
+    char *ptr = align_up(chunk->ptr, alignment);
+    if (unlikely((uintptr_t) ptr + size >= (uintptr_t) chunk->end)) {
+        /* Not enough space, slow path allocating new chunk. */
+        return bump_aligned_alloc_slow(bump, alignment, size);
     }
-
     chunk->ptr = ptr + size;
     return ptr;
 }
