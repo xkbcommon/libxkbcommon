@@ -233,9 +233,10 @@ ExprCreateMultiActionList(ExprDef *expr)
 ExprDef *
 ExprAppendActionList(ExprDef *expr, ExprDef *action)
 {
-    unsigned nSyms = darray_size(expr->actions.actions);
+    /* TODO: drop NoAction() here if multi-actions list (add drop parameter) */
+    unsigned nActions = darray_size(expr->actions.actions);
 
-    darray_append(expr->actions.actionsMapIndex, nSyms);
+    darray_append(expr->actions.actionsMapIndex, nActions);
     darray_append(expr->actions.actionsNumEntries, 1);
     darray_append(expr->actions.actions, action);
 
@@ -271,9 +272,14 @@ ExprCreateKeysymList(xkb_keysym_t sym)
     darray_init(expr->keysym_list.symsMapIndex);
     darray_init(expr->keysym_list.symsNumEntries);
 
-    darray_append(expr->keysym_list.syms, sym);
     darray_append(expr->keysym_list.symsMapIndex, 0);
-    darray_append(expr->keysym_list.symsNumEntries, 1);
+    if (sym == XKB_KEY_NoSymbol) {
+        /* Discard NoSymbol */
+        darray_append(expr->keysym_list.symsNumEntries, 0);
+    } else {
+        darray_append(expr->keysym_list.symsNumEntries, 1);
+        darray_append(expr->keysym_list.syms, sym);
+    }
 
     return expr;
 }
@@ -281,7 +287,7 @@ ExprCreateKeysymList(xkb_keysym_t sym)
 ExprDef *
 ExprCreateMultiKeysymList(ExprDef *expr)
 {
-    unsigned nLevels = darray_size(expr->keysym_list.symsMapIndex);
+    const unsigned nLevels = darray_size(expr->keysym_list.syms);
 
     darray_resize(expr->keysym_list.symsMapIndex, 1);
     darray_resize(expr->keysym_list.symsNumEntries, 1);
@@ -294,11 +300,16 @@ ExprCreateMultiKeysymList(ExprDef *expr)
 ExprDef *
 ExprAppendKeysymList(ExprDef *expr, xkb_keysym_t sym)
 {
-    unsigned nSyms = darray_size(expr->keysym_list.syms);
-
+    const unsigned nSyms = darray_size(expr->keysym_list.syms);
     darray_append(expr->keysym_list.symsMapIndex, nSyms);
-    darray_append(expr->keysym_list.symsNumEntries, 1);
-    darray_append(expr->keysym_list.syms, sym);
+
+    if (sym == XKB_KEY_NoSymbol) {
+        /* Discard NoSymbol */
+        darray_append(expr->keysym_list.symsNumEntries, 0);
+    } else {
+        darray_append(expr->keysym_list.symsNumEntries, 1);
+        darray_append(expr->keysym_list.syms, sym);
+    }
 
     return expr;
 }
@@ -306,8 +317,8 @@ ExprAppendKeysymList(ExprDef *expr, xkb_keysym_t sym)
 ExprDef *
 ExprAppendMultiKeysymList(ExprDef *expr, ExprDef *append)
 {
-    unsigned nSyms = darray_size(expr->keysym_list.syms);
-    unsigned numEntries = darray_size(append->keysym_list.syms);
+    const unsigned nSyms = darray_size(expr->keysym_list.syms);
+    const unsigned numEntries = darray_size(append->keysym_list.syms);
 
     darray_append(expr->keysym_list.symsMapIndex, nSyms);
     darray_append(expr->keysym_list.symsNumEntries, numEntries);

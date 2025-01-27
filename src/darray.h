@@ -112,8 +112,10 @@ typedef darray (unsigned long)  darray_ulong;
 #define darray_copy(arr_to, arr_from) \
     darray_from_items((arr_to), (arr_from).item, (arr_from).size)
 
-#define darray_concat(arr_to, arr_from) \
-    darray_append_items((arr_to), (arr_from).item, (arr_from).size)
+#define darray_concat(arr_to, arr_from) do { \
+    if ((arr_from).size > 0) \
+        darray_append_items((arr_to), (arr_from).item, (arr_from).size); \
+} while (0)
 
 /*** Removal ***/
 

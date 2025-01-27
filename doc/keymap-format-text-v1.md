@@ -1644,6 +1644,14 @@ There are some *limitations* with this extension:
   - `SetMods` + `LockMods`: *error*
   - `SetMods` + `LockGroup`: ok
 - Multiple actions are only supported from version 1.8.0.
+- Since 1.8.0, `NoSymbol` and `NoAction` are dropped in order to normalize levels:
+
+  ```c
+  // Before normalization
+  key <> { [{NoSymbol}, {a, NoSymbol}, {NoSymbol,b}, {a, NoSymbol, b}] };
+  // After normalization
+  key <> { [NoSymbol, a, b, {a, b}] };
+  ```
 
 @warning Keymaps containing multiple key symbols per level are not supported
 by the various X11-related tools (`setxkbmap`, `xkbcomp`, etc.).
