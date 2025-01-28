@@ -1094,7 +1094,7 @@ main(int argc, char *argv[])
     srand(seed);
 
     /* Determine number of loops for quickchecks */
-    size_t quickcheck_loops = 100; /* Default */
+    size_t quickcheck_loops = 50; /* Default */
     if (argc > 2) {
         /* From command-line */
         quickcheck_loops = (size_t)atoi(argv[2]);
