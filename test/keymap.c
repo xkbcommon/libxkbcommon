@@ -37,6 +37,23 @@
 #define KEY_LVL5 195
 
 static void
+test_supported_formats(void)
+{
+    const enum xkb_keymap_format *formats;
+    assert(!xkb_keymap_is_supported_format(-1));
+    assert(!xkb_keymap_is_supported_format(0));
+    assert(!xkb_keymap_is_supported_format(100000000));
+    size_t count = xkb_keymap_supported_formats(&formats);
+    assert(count);
+    enum xkb_keymap_format previous = 0;
+    for (size_t k = 0; k < count; k++) {
+        assert(previous < formats[k]);
+        assert(xkb_keymap_is_supported_format(formats[k]));
+        previous = formats[k];
+    }
+}
+
+static void
 test_garbage_key(void)
 {
     struct xkb_context *context = test_get_context(CONTEXT_NO_FLAG);
@@ -535,6 +552,7 @@ main(void)
 {
     test_init();
 
+    test_supported_formats();
     test_garbage_key();
     test_keymap();
     test_no_extra_groups();
