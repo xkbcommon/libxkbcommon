@@ -9,6 +9,7 @@
 .Sh SYNOPSIS
 .Nm
 .Op Ar options
+.Op Ar KEYMAP_PATH
 .
 .Sh DESCRIPTION
 .Nm
@@ -34,6 +35,11 @@ key to exit.
 This is a debugging tool, its behavior or output is not guaranteed to be stable.
 .
 .Bl -tag -width Ds
+.It Ar KEYMAP_PATH
+Path to a keymap file, or
+.Dq \-
+to read the standard input
+.
 .It Fl \-help
 Print help and exit
 .

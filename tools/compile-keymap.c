@@ -189,8 +189,6 @@ parse_options(int argc, char **argv, char **path, struct xkb_rule_names *names)
             } else {
                 *path = optarg;
             }
-            if (isempty(*path) || strcmp(*path, "-") == 0)
-                *path = NULL;
             break;
         case OPT_INCLUDE:
             if (num_includes >= ARRAY_SIZE(includes)) {
@@ -242,6 +240,29 @@ parse_options(int argc, char **argv, char **path, struct xkb_rule_names *names)
         }
 
     }
+
+    if (optind < argc && !isempty(argv[optind])) {
+        /* Some positional arguments left: use as a keymap input */
+        if (output_format != FORMAT_KEYMAP_FROM_RMLVO)
+            goto output_format_error;
+        if (has_rmlvo_options)
+            goto too_much_arguments;
+        output_format = FORMAT_KEYMAP_FROM_XKB;
+        *path = argv[optind++];
+        if (optind < argc) {
+too_much_arguments:
+            fprintf(stderr, "ERROR: Too much positional arguments\n");
+            usage(argv);
+            exit(EXIT_INVALID_USAGE);
+        }
+    } else if (is_pipe_or_regular_file(STDIN_FILENO) && !has_rmlvo_options &&
+               output_format != FORMAT_KEYMAP_FROM_XKB) {
+        /* No positional argument: detect piping */
+        output_format = FORMAT_KEYMAP_FROM_XKB;
+    }
+
+    if (isempty(*path) || strcmp(*path, "-") == 0)
+        *path = NULL;
 
     return true;
 output_format_error:

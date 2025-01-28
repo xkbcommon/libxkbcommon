@@ -28,6 +28,7 @@
 #include "config.h"
 
 #include <assert.h>
+#include <stdbool.h>
 
 /* Don't use compat names in internal code. */
 #define _XKBCOMMON_COMPAT_H
@@ -79,6 +80,9 @@ tools_enable_stdin_echo(void);
 
 int
 tools_exec_command(const char *prefix, int argc, char **argv);
+
+bool
+is_pipe_or_regular_file(int fd);
 
 FILE*
 tools_read_stdin(void);
