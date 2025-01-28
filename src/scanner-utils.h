@@ -24,6 +24,8 @@
 #ifndef XKBCOMP_SCANNER_UTILS_H
 #define XKBCOMP_SCANNER_UTILS_H
 
+#include "config.h"
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
@@ -52,26 +54,36 @@ svaleq_prefix(struct sval s1, struct sval s2)
     return s1.len <= s2.len && memcmp(s1.start, s2.start, s1.len) == 0;
 }
 
+/* A line:column location in the input string (1-based). */
+struct scanner_loc {
+    size_t line, column;
+};
+
 struct scanner {
     const char *s;
     size_t pos;
     size_t len;
     char buf[1024];
     size_t buf_pos;
-    size_t line, column;
-    /* The line/column of the start of the current token. */
-    size_t token_line, token_column;
+    /* The position of the start of the current token. */
+    size_t token_pos;
     const char *file_name;
     struct xkb_context *ctx;
     void *priv;
 };
 
-#define scanner_log_with_code(scanner, level, verbosity, log_msg_id, fmt, ...) \
-    xkb_log_with_code((scanner)->ctx, (level), verbosity, log_msg_id,          \
-                      "%s:%zu:%zu: " fmt "\n",                                 \
-                      (scanner)->file_name,                                    \
-                      (scanner)->token_line,                                   \
-                      (scanner)->token_column, ##__VA_ARGS__)
+/* Compute the line:column location for the current token (slow). */
+struct scanner_loc
+scanner_token_location(struct scanner *s);
+
+#define scanner_log_with_code(scanner, level, verbosity, log_msg_id, fmt, ...) do { \
+    struct scanner_loc loc = scanner_token_location((scanner));                     \
+    xkb_log_with_code((scanner)->ctx, (level), verbosity, log_msg_id,               \
+                      "%s:%zu:%zu: " fmt "\n",                                      \
+                      (scanner)->file_name,                                         \
+                      loc.line,                                                     \
+                      loc.column, ##__VA_ARGS__);                                   \
+} while(0)
 
 #define scanner_err(scanner, id, fmt, ...)                     \
     scanner_log_with_code(scanner, XKB_LOG_LEVEL_ERROR, 0, id, \
@@ -93,8 +105,7 @@ scanner_init(struct scanner *s, struct xkb_context *ctx,
     s->s = string;
     s->len = len;
     s->pos = 0;
-    s->line = s->column = 1;
-    s->token_line = s->token_column = 1;
+    s->token_pos = 0;
     s->file_name = file_name;
     s->ctx = ctx;
     s->priv = priv;
@@ -125,7 +136,6 @@ scanner_skip_to_eol(struct scanner *s)
 {
     const char *nl = memchr(s->s + s->pos, '\n', s->len - s->pos);
     const size_t new_pos = nl ? (size_t) (nl - s->s) : s->len;
-    s->column += new_pos - s->pos;
     s->pos = new_pos;
 }
 
@@ -134,13 +144,6 @@ scanner_next(struct scanner *s)
 {
     if (unlikely(scanner_eof(s)))
         return '\0';
-    if (unlikely(scanner_eol(s))) {
-        s->line++;
-        s->column = 1;
-    }
-    else {
-        s->column++;
-    }
     return s->s[s->pos++];
 }
 
@@ -149,7 +152,7 @@ scanner_chr(struct scanner *s, char ch)
 {
     if (likely(scanner_peek(s) != ch))
         return false;
-    s->pos++; s->column++;
+    s->pos++;
     return true;
 }
 
@@ -160,7 +163,7 @@ scanner_str(struct scanner *s, const char *string, size_t len)
         return false;
     if (memcmp(s->s + s->pos, string, len) != 0)
         return false;
-    s->pos += len; s->column += len;
+    s->pos += len;
     return true;
 }
 
@@ -228,8 +231,6 @@ scanner_check_supported_char_encoding(struct scanner *scanner)
 
     /* Early detection of wrong file encoding, e.g. UTF-16 or UTF-32 */
     if (scanner->s[0] == '\0' || scanner->s[1] == '\0') {
-        if (scanner->s[0] != '\0')
-            scanner->token_column++;
         scanner_err(scanner, XKB_LOG_MESSAGE_NO_ID,
                     "unexpected NULL character.");
         return false;
