@@ -80,6 +80,9 @@ tools_enable_stdin_echo(void);
 int
 tools_exec_command(const char *prefix, int argc, char **argv);
 
+FILE*
+tools_read_stdin(void);
+
 #ifdef _WIN32
 #define setenv(varname, value, overwrite) _putenv_s((varname), (value))
 #define unsetenv(varname) _putenv_s(varname, "")
