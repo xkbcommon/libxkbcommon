@@ -138,8 +138,7 @@ skip_more_whitespace_and_comments:
     if (scanner_eof(s)) return TOK_END_OF_FILE;
 
     /* New token. */
-    s->token_line = s->line;
-    s->token_column = s->column;
+    s->token_pos = s->pos;
     s->buf_pos = 0;
 
     /* LHS Keysym. */
@@ -267,8 +266,7 @@ lex_include_string(struct scanner *s, struct xkb_compose_table *table,
         if (scanner_next(s) == '\n')
             return TOK_END_OF_LINE;
 
-    s->token_line = s->line;
-    s->token_column = s->column;
+    s->token_pos = s->pos;
     s->buf_pos = 0;
 
     if (!scanner_chr(s, '\"')) {

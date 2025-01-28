@@ -119,8 +119,7 @@ skip_more_whitespace_and_comments:
     if (scanner_eof(s)) return TOK_END_OF_FILE;
 
     /* New token. */
-    s->token_line = s->line;
-    s->token_column = s->column;
+    s->token_pos = s->pos;
 
     /* Operators and punctuation. */
     if (scanner_chr(s, '!')) return TOK_BANG;
@@ -410,8 +409,7 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
 
     scanner_init(&s, m->ctx, inc.start, inc.len,
                  parent_scanner->file_name, NULL);
-    s.token_line = parent_scanner->token_line;
-    s.token_column = parent_scanner->token_column;
+    s.token_pos = s.pos;
     s.buf_pos = 0;
 
     if (include_depth >= MAX_INCLUDE_DEPTH) {

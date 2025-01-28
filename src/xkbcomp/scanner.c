@@ -81,8 +81,7 @@ skip_more_whitespace_and_comments:
     if (scanner_eof(s)) return END_OF_FILE;
 
     /* New token. */
-    s->token_line = s->line;
-    s->token_column = s->column;
+    s->token_pos = s->pos;
     s->buf_pos = 0;
 
     /* String literal. */
