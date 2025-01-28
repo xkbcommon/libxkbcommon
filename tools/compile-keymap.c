@@ -53,9 +53,10 @@ static size_t num_includes = 0;
 static bool test = false;
 
 static void
-usage(char **argv)
+usage(FILE *file, const char *progname)
 {
-    printf("Usage: %s [OPTIONS]\n"
+    fprintf(file,
+           "Usage: %s [OPTIONS]\n"
            "\n"
            "Compile the given RMLVO to a keymap and print it\n"
            "\n"
@@ -102,7 +103,7 @@ usage(char **argv)
            " --options <options>\n"
            "    The XKB options (default: '%s')\n"
            "\n",
-           argv[0], DEFAULT_XKB_RULES,
+           progname, DEFAULT_XKB_RULES,
            DEFAULT_XKB_MODEL, DEFAULT_XKB_LAYOUT,
            DEFAULT_XKB_VARIANT ? DEFAULT_XKB_VARIANT : "<none>",
            DEFAULT_XKB_OPTIONS ? DEFAULT_XKB_OPTIONS : "<none>");
@@ -148,15 +149,14 @@ parse_options(int argc, char **argv, char **path, struct xkb_rule_names *names)
 
     bool has_rmlvo_options = false;
     while (1) {
-        int c;
         int option_index = 0;
-        c = getopt_long(argc, argv, "h", opts, &option_index);
+        int c = getopt_long(argc, argv, "h", opts, &option_index);
         if (c == -1)
             break;
 
         switch (c) {
         case 'h':
-            usage(argv);
+            usage(stdout, argv[0]);
             exit(0);
         case OPT_VERBOSE:
             verbose = true;
@@ -191,17 +191,13 @@ parse_options(int argc, char **argv, char **path, struct xkb_rule_names *names)
             }
             break;
         case OPT_INCLUDE:
-            if (num_includes >= ARRAY_SIZE(includes)) {
-                fprintf(stderr, "error: too many includes\n");
-                exit(EXIT_INVALID_USAGE);
-            }
+            if (num_includes >= ARRAY_SIZE(includes))
+                goto too_many_includes;
             includes[num_includes++] = optarg;
             break;
         case OPT_INCLUDE_DEFAULTS:
-            if (num_includes >= ARRAY_SIZE(includes)) {
-                fprintf(stderr, "error: too many includes\n");
-                exit(EXIT_INVALID_USAGE);
-            }
+            if (num_includes >= ARRAY_SIZE(includes))
+                goto too_many_includes;
             includes[num_includes++] = DEFAULT_INCLUDE_PATH_PLACEHOLDER;
             break;
         case OPT_RULES:
@@ -235,10 +231,9 @@ parse_options(int argc, char **argv, char **path, struct xkb_rule_names *names)
             has_rmlvo_options = true;
             break;
         default:
-            usage(argv);
+            usage(stderr, argv[0]);
             exit(EXIT_INVALID_USAGE);
         }
-
     }
 
     if (optind < argc && !isempty(argv[optind])) {
@@ -252,7 +247,7 @@ parse_options(int argc, char **argv, char **path, struct xkb_rule_names *names)
         if (optind < argc) {
 too_much_arguments:
             fprintf(stderr, "ERROR: Too much positional arguments\n");
-            usage(argv);
+            usage(stderr, argv[0]);
             exit(EXIT_INVALID_USAGE);
         }
     } else if (is_pipe_or_regular_file(STDIN_FILENO) && !has_rmlvo_options &&
@@ -265,16 +260,21 @@ too_much_arguments:
         *path = NULL;
 
     return true;
+
 output_format_error:
     fprintf(stderr, "ERROR: Cannot mix output formats\n");
-    usage(argv);
+    usage(stderr, argv[0]);
     exit(EXIT_INVALID_USAGE);
 
 input_format_error:
     fprintf(stderr, "ERROR: Cannot use RMLVO options with keymap input\n");
-    usage(argv);
+    usage(stderr, argv[0]);
     exit(EXIT_INVALID_USAGE);
 
+too_many_includes:
+    fprintf(stderr, "ERROR: too many includes (max: %zu)\n",
+            ARRAY_SIZE(includes));
+    exit(EXIT_INVALID_USAGE);
 }
 
 static int
@@ -354,7 +354,7 @@ print_keymap_from_file(struct xkb_context *ctx, const char *path)
         file = tools_read_stdin();
     }
     if (!file) {
-        fprintf(stderr, "Failed to open keymap file \"%s\": %s\n",
+        fprintf(stderr, "ERROR: Failed to open keymap file \"%s\": %s\n",
                 path ? path : "stdin", strerror(errno));
         goto out;
     }
@@ -362,7 +362,7 @@ print_keymap_from_file(struct xkb_context *ctx, const char *path)
                                       XKB_KEYMAP_FORMAT_TEXT_V1,
                                       XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (!keymap) {
-        fprintf(stderr, "Couldn't create xkb keymap\n");
+        fprintf(stderr, "ERROR: Couldn't create xkb keymap\n");
         goto out;
     } else if (test) {
         ret = EXIT_SUCCESS;
@@ -371,7 +371,7 @@ print_keymap_from_file(struct xkb_context *ctx, const char *path)
 
     keymap_string = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_FORMAT_TEXT_V1);
     if (!keymap_string) {
-        fprintf(stderr, "Couldn't get the keymap string\n");
+        fprintf(stderr, "ERROR: Couldn't get the keymap string\n");
         goto out;
     }
 
@@ -404,7 +404,7 @@ main(int argc, char **argv)
     int rc = 1;
 
     if (argc < 1) {
-        usage(argv);
+        usage(stderr, argv[0]);
         return EXIT_INVALID_USAGE;
     }
 
@@ -414,7 +414,7 @@ main(int argc, char **argv)
     /* Now fill in the layout */
     if (!names.layout || !*names.layout) {
         if (names.variant && *names.variant) {
-            fprintf(stderr, "Error: a variant requires a layout\n");
+            fprintf(stderr, "ERROR: a variant requires a layout\n");
             return EXIT_INVALID_USAGE;
         }
         names.layout = DEFAULT_XKB_LAYOUT;
@@ -440,14 +440,18 @@ main(int argc, char **argv)
             xkb_context_include_path_append(ctx, include);
     }
 
-    if (output_format == FORMAT_RMLVO) {
+    switch (output_format) {
+    case FORMAT_RMLVO:
         rc = print_rmlvo(ctx, &names);
-    } else if (output_format == FORMAT_KEYMAP_FROM_RMLVO) {
-        rc = print_keymap_from_names(ctx, &names);
-    } else if (output_format == FORMAT_KCCGST) {
+        break;
+    case FORMAT_KCCGST:
         rc = print_kccgst(ctx, &names);
-    } else if (output_format == FORMAT_KEYMAP_FROM_XKB) {
+        break;
+    case FORMAT_KEYMAP_FROM_XKB:
         rc = print_keymap_from_file(ctx, keymap_path);
+        break;
+    default:
+        rc = print_keymap_from_names(ctx, &names);
     }
 
     xkb_context_unref(ctx);

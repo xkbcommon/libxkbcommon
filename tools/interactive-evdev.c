@@ -462,10 +462,8 @@ main(int argc, char *argv[])
 
     bool has_rmlvo_options = false;
     while (1) {
-        int opt;
         int option_index = 0;
-
-        opt = getopt_long(argc, argv, "h", opts, &option_index);
+        int opt = getopt_long(argc, argv, "h", opts, &option_index);
         if (opt == -1)
             break;
 
@@ -474,17 +472,13 @@ main(int argc, char *argv[])
             verbose = true;
             break;
         case OPT_INCLUDE:
-            if (num_includes >= ARRAY_SIZE(includes)) {
-                fprintf(stderr, "error: too many includes\n");
-                exit(EXIT_INVALID_USAGE);
-            }
+            if (num_includes >= ARRAY_SIZE(includes))
+                goto too_many_includes;
             includes[num_includes++] = optarg;
             break;
         case OPT_INCLUDE_DEFAULTS:
-            if (num_includes >= ARRAY_SIZE(includes)) {
-                fprintf(stderr, "error: too many includes\n");
-                exit(EXIT_INVALID_USAGE);
-            }
+            if (num_includes >= ARRAY_SIZE(includes))
+                goto too_many_includes;
             includes[num_includes++] = DEFAULT_INCLUDE_PATH_PLACEHOLDER;
             break;
         case OPT_RULES:
@@ -540,7 +534,7 @@ main(int argc, char *argv[])
             } else if (strcmp(optarg, "xkb") == 0) {
                 consumed_mode = XKB_CONSUMED_MODE_XKB;
             } else {
-                fprintf(stderr, "error: invalid --consumed-mode \"%s\"\n", optarg);
+                fprintf(stderr, "ERROR: invalid --consumed-mode \"%s\"\n", optarg);
                 usage(stderr, argv[0]);
                 return EXIT_INVALID_USAGE;
             }
@@ -574,7 +568,7 @@ too_much_arguments:
 
     ctx = xkb_context_new(XKB_CONTEXT_NO_DEFAULT_INCLUDES);
     if (!ctx) {
-        fprintf(stderr, "Couldn't create xkb context\n");
+        fprintf(stderr, "ERROR: Couldn't create xkb context\n");
         goto out;
     }
 
@@ -597,7 +591,7 @@ too_much_arguments:
     if (keymap_path) {
         FILE *file = fopen(keymap_path, "rb");
         if (!file) {
-            fprintf(stderr, "Couldn't open '%s': %s\n",
+            fprintf(stderr, "ERROR: Couldn't open '%s': %s\n",
                     keymap_path, strerror(errno));
             goto out;
         }
@@ -622,14 +616,15 @@ too_much_arguments:
 
         if (!keymap) {
             fprintf(stderr,
-                    "Failed to compile RMLVO: '%s', '%s', '%s', '%s', '%s'\n",
+                    "ERROR: Failed to compile RMLVO: "
+                    "'%s', '%s', '%s', '%s', '%s'\n",
                     rules, model, layout, variant, options);
             goto out;
         }
     }
 
     if (!keymap) {
-        fprintf(stderr, "Couldn't create xkb keymap\n");
+        fprintf(stderr, "ERROR: Couldn't create xkb keymap\n");
         goto out;
     }
 
@@ -639,7 +634,7 @@ too_much_arguments:
             xkb_compose_table_new_from_locale(ctx, locale,
                                               XKB_COMPOSE_COMPILE_NO_FLAGS);
         if (!compose_table) {
-            fprintf(stderr, "Couldn't create compose from locale\n");
+            fprintf(stderr, "ERROR: Couldn't create compose from locale\n");
             goto out;
         }
     }
@@ -675,6 +670,11 @@ out:
     xkb_context_unref(ctx);
 
     return ret;
+
+too_many_includes:
+    fprintf(stderr, "ERROR: too many includes (max: %zu)\n",
+            ARRAY_SIZE(includes));
+    exit(EXIT_INVALID_USAGE);
 
 input_format_error:
     fprintf(stderr, "ERROR: Cannot use RMLVO options with keymap input\n");
