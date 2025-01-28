@@ -206,24 +206,24 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
     return true;
 }
 
-static bool
+static int
 print_rmlvo(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
 {
     printf("rules: \"%s\"\nmodel: \"%s\"\nlayout: \"%s\"\nvariant: \"%s\"\noptions: \"%s\"\n",
            rmlvo->rules, rmlvo->model, rmlvo->layout,
            rmlvo->variant ? rmlvo->variant : "",
            rmlvo->options ? rmlvo->options : "");
-    return true;
+    return EXIT_SUCCESS;
 }
 
-static bool
+static int
 print_kccgst(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
 {
 #if ENABLE_PRIVATE_APIS
         struct xkb_component_names kccgst;
 
         if (!xkb_components_from_rules(ctx, rmlvo, &kccgst, NULL))
-            return false;
+            return EXIT_FAILURE;
         if (test)
             goto out;
 
@@ -240,20 +240,20 @@ out:
         free(kccgst.compat);
         free(kccgst.symbols);
 
-        return true;
+        return EXIT_SUCCESS;
 #else
-        return false;
+        return EXIT_FAILURE;
 #endif
 }
 
-static bool
+static int
 print_keymap(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
 {
     struct xkb_keymap *keymap;
 
     keymap = xkb_keymap_new_from_names(ctx, rmlvo, XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (keymap == NULL)
-        return false;
+        return EXIT_FAILURE;
 
     if (test)
         goto out;
@@ -264,16 +264,16 @@ print_keymap(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
 
 out:
     xkb_keymap_unref(keymap);
-    return true;
+    return EXIT_SUCCESS;
 }
 
-static bool
+static int
 print_keymap_from_file(struct xkb_context *ctx)
 {
     struct xkb_keymap *keymap = NULL;
     char *keymap_string = NULL;
     FILE *file = NULL;
-    bool success = false;
+    int ret = EXIT_FAILURE;
 
     file = tmpfile();
     if (!file) {
@@ -307,7 +307,7 @@ print_keymap_from_file(struct xkb_context *ctx)
         fprintf(stderr, "Couldn't create xkb keymap\n");
         goto out;
     } else if (test) {
-        success = true;
+        ret = EXIT_SUCCESS;
         goto out;
     }
 
@@ -318,7 +318,7 @@ print_keymap_from_file(struct xkb_context *ctx)
     }
 
     fputs(keymap_string, stdout);
-    success = true;
+    ret = EXIT_SUCCESS;
 
 out:
     if (file)
@@ -326,7 +326,7 @@ out:
     xkb_keymap_unref(keymap);
     free(keymap_string);
 
-    return success;
+    return ret;
 }
 
 int
@@ -382,11 +382,11 @@ main(int argc, char **argv)
     }
 
     if (output_format == FORMAT_RMLVO) {
-        rc = print_rmlvo(ctx, &names) ? EXIT_SUCCESS : EXIT_FAILURE;
+        rc = print_rmlvo(ctx, &names);
     } else if (output_format == FORMAT_KEYMAP) {
-        rc = print_keymap(ctx, &names) ? EXIT_SUCCESS : EXIT_FAILURE;
+        rc = print_keymap(ctx, &names);
     } else if (output_format == FORMAT_KCCGST) {
-        rc = print_kccgst(ctx, &names) ? EXIT_SUCCESS : EXIT_FAILURE;
+        rc = print_kccgst(ctx, &names);
     } else if (output_format == FORMAT_KEYMAP_FROM_XKB) {
         rc = print_keymap_from_file(ctx);
     }
