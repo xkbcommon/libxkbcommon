@@ -39,7 +39,7 @@ align_up(char *ptr, size_t alignment)
     return ptr + (aligned_addr - addr);
 }
 
-ATTR_NOINLINE static void *
+ATTR_NOINLINE ATTR_MALLOC ATTR_ALLOC_ALIGN(2) static void *
 bump_aligned_alloc_slow(struct bump *bump, size_t alignment, size_t size)
 {
     struct bump_chunk *prev_chunk = bump->current;
@@ -65,7 +65,7 @@ bump_aligned_alloc_slow(struct bump *bump, size_t alignment, size_t size)
     return ptr;
 }
 
-void *
+ATTR_MALLOC ATTR_ALLOC_ALIGN(2) void *
 bump_aligned_alloc(struct bump *bump, size_t alignment, size_t size)
 {
     struct bump_chunk *chunk = bump->current;

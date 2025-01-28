@@ -336,6 +336,12 @@ open_file(const char *path);
 #define ATTR_NOINLINE
 #endif
 
+#if defined(__GNUC__)
+#define ATTR_ALLOC_ALIGN(position)  __attribute__((alloc_align(position)))
+#else
+#define ATTR_ALLOC_ALIGN(position)
+#endif
+
 #if !(defined(HAVE_ASPRINTF) && HAVE_ASPRINTF)
 XKB_EXPORT_PRIVATE int asprintf(char **strp, const char *fmt, ...) ATTR_PRINTF(2, 3);
 # if !(defined(HAVE_VASPRINTF) && HAVE_VASPRINTF)
