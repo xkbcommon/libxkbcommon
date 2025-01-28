@@ -366,6 +366,17 @@ tools_exec_command(const char *prefix, int real_argc, char **real_argv)
     return EXIT_FAILURE;
 }
 
+bool
+is_pipe_or_regular_file(int fd)
+{
+    struct stat info;
+    if (fstat(fd, &info) == 0) {
+        return S_ISFIFO(info.st_mode) || S_ISREG(info.st_mode);
+    } else {
+        return false;
+    }
+}
+
 FILE*
 tools_read_stdin(void)
 {

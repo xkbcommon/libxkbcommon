@@ -43,6 +43,7 @@
 
 #include "xkbcommon/xkbcommon.h"
 
+#include "src/utils.h"
 #include "tools-common.h"
 
 struct keyboard {
@@ -459,6 +460,7 @@ main(int argc, char *argv[])
 
     setlocale(LC_ALL, "");
 
+    bool has_rmlvo_options = false;
     while (1) {
         int opt;
         int option_index = 0;
@@ -486,21 +488,38 @@ main(int argc, char *argv[])
             includes[num_includes++] = DEFAULT_INCLUDE_PATH_PLACEHOLDER;
             break;
         case OPT_RULES:
+            if (keymap_path)
+                goto input_format_error;
             rules = optarg;
+            has_rmlvo_options = true;
             break;
         case OPT_MODEL:
+            if (keymap_path)
+                goto input_format_error;
             model = optarg;
+            has_rmlvo_options = true;
             break;
         case OPT_LAYOUT:
+            if (keymap_path)
+                goto input_format_error;
             layout = optarg;
+            has_rmlvo_options = true;
             break;
         case OPT_VARIANT:
+            if (keymap_path)
+                goto input_format_error;
             variant = optarg;
+            has_rmlvo_options = true;
             break;
         case OPT_OPTION:
+            if (keymap_path)
+                goto input_format_error;
             options = optarg;
+            has_rmlvo_options = true;
             break;
         case OPT_KEYMAP:
+            if (has_rmlvo_options)
+                goto input_format_error;
             keymap_path = optarg;
             break;
         case OPT_WITHOUT_X11_OFFSET:
@@ -537,6 +556,19 @@ main(int argc, char *argv[])
         default:
             usage(stderr, argv[0]);
             return EXIT_INVALID_USAGE;
+        }
+    }
+
+    if (optind < argc && !isempty(argv[optind])) {
+        /* Some positional arguments left: use as a keymap input */
+        if (keymap_path || has_rmlvo_options)
+            goto too_much_arguments;
+        keymap_path = argv[optind++];
+        if (optind < argc) {
+too_much_arguments:
+            fprintf(stderr, "ERROR: Too much positional arguments\n");
+            usage(stderr, argv[0]);
+            exit(EXIT_INVALID_USAGE);
         }
     }
 
@@ -643,4 +675,9 @@ out:
     xkb_context_unref(ctx);
 
     return ret;
+
+input_format_error:
+    fprintf(stderr, "ERROR: Cannot use RMLVO options with keymap input\n");
+    usage(stderr, argv[0]);
+    exit(EXIT_INVALID_USAGE);
 }
