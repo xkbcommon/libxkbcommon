@@ -37,16 +37,17 @@
 #include "xkbcomp/rules.h"
 #endif
 #include "tools-common.h"
+#include "src/utils.h"
 
 #define DEFAULT_INCLUDE_PATH_PLACEHOLDER "__defaults__"
 
 static bool verbose = false;
 static enum output_format {
     FORMAT_RMLVO,
-    FORMAT_KEYMAP,
     FORMAT_KCCGST,
+    FORMAT_KEYMAP_FROM_RMLVO,
     FORMAT_KEYMAP_FROM_XKB,
-} output_format = FORMAT_KEYMAP;
+} output_format = FORMAT_KEYMAP_FROM_RMLVO;
 static const char *includes[64];
 static size_t num_includes = 0;
 static bool test = false;
@@ -71,8 +72,10 @@ usage(char **argv)
 #endif
            " --rmlvo\n"
            "    Print the full RMLVO with the defaults filled in for missing elements\n"
-           " --from-xkb\n"
-           "    Load the XKB file from stdin, ignore RMLVO options.\n"
+           " --keymap <file>\n"
+           " --from-xkb <file>\n"
+           "    Load the corresponding XKB file, ignore RMLVO options. If <file>\n"
+           "    is \"-\" or missing, then load from stdin."
 #if ENABLE_PRIVATE_APIS
            "    This option must not be used with --kccgst.\n"
 #endif
@@ -106,7 +109,7 @@ usage(char **argv)
 }
 
 static bool
-parse_options(int argc, char **argv, struct xkb_rule_names *names)
+parse_options(int argc, char **argv, char **path, struct xkb_rule_names *names)
 {
     enum options {
         OPT_VERBOSE,
@@ -130,7 +133,9 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
         {"kccgst",           no_argument,            0, OPT_KCCGST},
 #endif
         {"rmlvo",            no_argument,            0, OPT_RMLVO},
-        {"from-xkb",         no_argument,            0, OPT_FROM_XKB},
+        {"keymap",           optional_argument,      0, OPT_FROM_XKB},
+        /* Alias maintained for backward compatibility */
+        {"from-xkb",         optional_argument,      0, OPT_FROM_XKB},
         {"include",          required_argument,      0, OPT_INCLUDE},
         {"include-defaults", no_argument,            0, OPT_INCLUDE_DEFAULTS},
         {"rules",            required_argument,      0, OPT_RULES},
@@ -141,6 +146,7 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
         {0, 0, 0, 0},
     };
 
+    bool has_rmlvo_options = false;
     while (1) {
         int c;
         int option_index = 0;
@@ -159,13 +165,32 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
             test = true;
             break;
         case OPT_KCCGST:
+            if (output_format != FORMAT_KEYMAP_FROM_RMLVO)
+                goto output_format_error;
             output_format = FORMAT_KCCGST;
             break;
         case OPT_RMLVO:
+            if (output_format != FORMAT_KEYMAP_FROM_RMLVO)
+                goto output_format_error;
             output_format = FORMAT_RMLVO;
             break;
         case OPT_FROM_XKB:
+            if (output_format != FORMAT_KEYMAP_FROM_RMLVO)
+                goto output_format_error;
+            if (has_rmlvo_options)
+                goto input_format_error;
             output_format = FORMAT_KEYMAP_FROM_XKB;
+            /* Optional arguments require `=`, but we want to make this
+             * requirement optional too, so that both `--keymap=xxx` and
+             * `--keymap xxx` work. */
+            if (!optarg && argv[optind] &&
+                (argv[optind][0] != '-' || strcmp(argv[optind], "-") == 0 )) {
+                *path = argv[optind++];
+            } else {
+                *path = optarg;
+            }
+            if (isempty(*path) || strcmp(*path, "-") == 0)
+                *path = NULL;
             break;
         case OPT_INCLUDE:
             if (num_includes >= ARRAY_SIZE(includes)) {
@@ -182,19 +207,34 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
             includes[num_includes++] = DEFAULT_INCLUDE_PATH_PLACEHOLDER;
             break;
         case OPT_RULES:
+            if (output_format == FORMAT_KEYMAP_FROM_XKB)
+                goto input_format_error;
             names->rules = optarg;
+            has_rmlvo_options = true;
             break;
         case OPT_MODEL:
+            if (output_format == FORMAT_KEYMAP_FROM_XKB)
+                goto input_format_error;
             names->model = optarg;
+            has_rmlvo_options = true;
             break;
         case OPT_LAYOUT:
+            if (output_format == FORMAT_KEYMAP_FROM_XKB)
+                goto input_format_error;
             names->layout = optarg;
+            has_rmlvo_options = true;
             break;
         case OPT_VARIANT:
+            if (output_format == FORMAT_KEYMAP_FROM_XKB)
+                goto input_format_error;
             names->variant = optarg;
+            has_rmlvo_options = true;
             break;
         case OPT_OPTION:
+            if (output_format == FORMAT_KEYMAP_FROM_XKB)
+                goto input_format_error;
             names->options = optarg;
+            has_rmlvo_options = true;
             break;
         default:
             usage(argv);
@@ -204,6 +244,16 @@ parse_options(int argc, char **argv, struct xkb_rule_names *names)
     }
 
     return true;
+output_format_error:
+    fprintf(stderr, "ERROR: Cannot mix output formats\n");
+    usage(argv);
+    exit(EXIT_INVALID_USAGE);
+
+input_format_error:
+    fprintf(stderr, "ERROR: Cannot use RMLVO options with keymap input\n");
+    usage(argv);
+    exit(EXIT_INVALID_USAGE);
+
 }
 
 static int
@@ -247,7 +297,7 @@ out:
 }
 
 static int
-print_keymap(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
+print_keymap_from_names(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
 {
     struct xkb_keymap *keymap;
 
@@ -268,41 +318,28 @@ out:
 }
 
 static int
-print_keymap_from_file(struct xkb_context *ctx)
+print_keymap_from_file(struct xkb_context *ctx, const char *path)
 {
     struct xkb_keymap *keymap = NULL;
     char *keymap_string = NULL;
     FILE *file = NULL;
     int ret = EXIT_FAILURE;
 
-    file = tmpfile();
+    if (path) {
+        /* Read from regular file */
+        file = fopen(path, "rb");
+    } else {
+        /* Read from stdin */
+        file = tools_read_stdin();
+    }
     if (!file) {
-        fprintf(stderr, "Failed to create tmpfile\n");
+        fprintf(stderr, "Failed to open keymap file \"%s\": %s\n",
+                path ? path : "stdin", strerror(errno));
         goto out;
     }
-
-    while (true) {
-        char buf[4096];
-        size_t len;
-
-        len = fread(buf, 1, sizeof(buf), stdin);
-        if (ferror(stdin)) {
-            fprintf(stderr, "Failed to read from stdin\n");
-            goto out;
-        }
-        if (len > 0) {
-            size_t wlen = fwrite(buf, 1, len, file);
-            if (wlen != len) {
-                fprintf(stderr, "Failed to write to tmpfile\n");
-                goto out;
-            }
-        }
-        if (feof(stdin))
-            break;
-    }
-    fseek(file, 0, SEEK_SET);
     keymap = xkb_keymap_new_from_file(ctx, file,
-                                      XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+                                      XKB_KEYMAP_FORMAT_TEXT_V1,
+                                      XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (!keymap) {
         fprintf(stderr, "Couldn't create xkb keymap\n");
         goto out;
@@ -333,6 +370,7 @@ int
 main(int argc, char **argv)
 {
     struct xkb_context *ctx;
+    char *keymap_path = NULL;
     struct xkb_rule_names names = {
         .rules = DEFAULT_XKB_RULES,
         .model = DEFAULT_XKB_MODEL,
@@ -349,7 +387,7 @@ main(int argc, char **argv)
         return EXIT_INVALID_USAGE;
     }
 
-    if (!parse_options(argc, argv, &names))
+    if (!parse_options(argc, argv, &keymap_path, &names))
         return EXIT_INVALID_USAGE;
 
     /* Now fill in the layout */
@@ -383,12 +421,12 @@ main(int argc, char **argv)
 
     if (output_format == FORMAT_RMLVO) {
         rc = print_rmlvo(ctx, &names);
-    } else if (output_format == FORMAT_KEYMAP) {
-        rc = print_keymap(ctx, &names);
+    } else if (output_format == FORMAT_KEYMAP_FROM_RMLVO) {
+        rc = print_keymap_from_names(ctx, &names);
     } else if (output_format == FORMAT_KCCGST) {
         rc = print_kccgst(ctx, &names);
     } else if (output_format == FORMAT_KEYMAP_FROM_XKB) {
-        rc = print_keymap_from_file(ctx);
+        rc = print_keymap_from_file(ctx, keymap_path);
     }
 
     xkb_context_unref(ctx);

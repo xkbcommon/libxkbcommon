@@ -365,3 +365,36 @@ tools_exec_command(const char *prefix, int real_argc, char **real_argv)
 
     return EXIT_FAILURE;
 }
+
+FILE*
+tools_read_stdin(void)
+{
+    FILE *file = tmpfile();
+    if (!file) {
+        fprintf(stderr, "Failed to create tmpfile\n");
+        return NULL;
+    }
+
+    while (true) {
+        char buf[4096] = {0};
+        const size_t len = fread(buf, 1, sizeof(buf), stdin);
+        if (ferror(stdin)) {
+            fprintf(stderr, "Failed to read from stdin\n");
+            goto err;
+        }
+        if (len > 0) {
+            size_t wlen = fwrite(buf, 1, len, file);
+            if (wlen != len) {
+                fprintf(stderr, "Failed to write to tmpfile\n");
+                goto err;
+            }
+        }
+        if (feof(stdin))
+            break;
+    }
+    fseek(file, 0, SEEK_SET);
+    return file;
+err:
+    fclose(file);
+    return NULL;
+}

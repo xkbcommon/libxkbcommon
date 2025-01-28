@@ -27,10 +27,12 @@ Test compilation but do not print the keymap
 .It Fl \-rmlvo
 Print the full RMLVO with the defaults filled in for missing elements
 .
-.It Fl \-from\-xkb
-Load the XKB file from stdin, ignore RMLVO options.
-This option must not be used with
-.Fl \-kccgst .
+.It Fl \-keymap Oo Ar PATH Oc , Fl \-from\-xkb Oo Ar PATH Oc
+Load the XKB file from a file, ignore RMLVO options. If
+.Ar PATH
+is empty or
+.Dq \- ,
+read the stdin.
 .
 .It Fl \-include Ar PATH
 Add the given path to the include path list.
