@@ -67,6 +67,9 @@ struct scanner {
     size_t buf_pos;
     /* The position of the start of the current token. */
     size_t token_pos;
+    /* Cached values used by scanner_token_location. */
+    size_t cached_pos;
+    struct scanner_loc cached_loc;
     const char *file_name;
     struct xkb_context *ctx;
     void *priv;
@@ -106,6 +109,8 @@ scanner_init(struct scanner *s, struct xkb_context *ctx,
     s->len = len;
     s->pos = 0;
     s->token_pos = 0;
+    s->cached_pos = 0;
+    s->cached_loc.line = s->cached_loc.column = 1;
     s->file_name = file_name;
     s->ctx = ctx;
     s->priv = priv;
