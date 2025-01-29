@@ -168,7 +168,7 @@
 
 # Quotation marks
 <Multi_key> <less> <less>        	: "«"   guillemotleft # LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
-<Multi_key> <greater> <greater>  	: "»"   guillemotright # RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+<Multi_key> <greater> <greater>  	: "»"   guillemetright # RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
 <Multi_key> <less> <apostrophe>  	: "‘"   U2018 # LEFT SINGLE QUOTATION MARK
 <Multi_key> <apostrophe> <less>  	: "‘"   U2018 # LEFT SINGLE QUOTATION MARK
 <Multi_key> <greater> <apostrophe> 	: "’"   U2019 # RIGHT SINGLE QUOTATION MARK
@@ -525,8 +525,6 @@
 <Multi_key> <minus> <comma>      	: "¬"   notsign # NOT SIGN
 <dead_circumflex> <Multi_key> <underscore> <a> 	: "ª"   ordfeminine # FEMININE ORDINAL INDICATOR
 <Multi_key> <asciicircum> <underscore> <a> 	: "ª"   ordfeminine # FEMININE ORDINAL INDICATOR
-<dead_circumflex> <Multi_key> <underbar> <a> 	: "ª"   ordfeminine # FEMININE ORDINAL INDICATOR
-<Multi_key> <asciicircum> <underbar> <a> 	: "ª"   ordfeminine # FEMININE ORDINAL INDICATOR
 <dead_circumflex> <2>            	: "²"   twosuperior # SUPERSCRIPT TWO
 <Multi_key> <asciicircum> <2>    	: "²"   twosuperior # SUPERSCRIPT TWO
 <dead_circumflex> <KP_Space>     	: "²"   twosuperior # SUPERSCRIPT TWO
@@ -547,10 +545,8 @@
 <dead_circumflex> <KP_1>         	: "¹"   onesuperior # SUPERSCRIPT ONE
 <Multi_key> <asciicircum> <KP_1> 	: "¹"   onesuperior # SUPERSCRIPT ONE
 <Multi_key> <1> <asciicircum> 		: "¹"   onesuperior # SUPERSCRIPT ONE
-<dead_circumflex> <Multi_key> <underscore> <o> 	: "º"   masculine # MASCULINE ORDINAL INDICATOR
-<Multi_key> <asciicircum> <underscore> <o> 	: "º"   masculine # MASCULINE ORDINAL INDICATOR
-<dead_circumflex> <Multi_key> <underbar> <o> 	: "º"   masculine # MASCULINE ORDINAL INDICATOR
-<Multi_key> <asciicircum> <underbar> <o> 	: "º"   masculine # MASCULINE ORDINAL INDICATOR
+<dead_circumflex> <Multi_key> <underscore> <o> 	: "º"   masculine    # MASCULINE ORDINAL INDICATOR
+<Multi_key> <asciicircum> <underscore> <o> 	: "º"   ordmasculine # MASCULINE ORDINAL INDICATOR
 <Multi_key> <1> <4>              	: "¼"   onequarter # VULGAR FRACTION ONE QUARTER
 <Multi_key> <1> <2>              	: "½"   onehalf # VULGAR FRACTION ONE HALF
 <Multi_key> <3> <4>              	: "¾"   threequarters # VULGAR FRACTION THREE QUARTERS
@@ -1471,9 +1467,9 @@
 <dead_acute> <ae>                	: "ǽ"   U01FD # LATIN SMALL LETTER AE WITH ACUTE
 <Multi_key> <acute> <ae>         	: "ǽ"   U01FD # LATIN SMALL LETTER AE WITH ACUTE
 <Multi_key> <apostrophe> <ae>    	: "ǽ"   U01FD # LATIN SMALL LETTER AE WITH ACUTE
-<dead_acute> <Ooblique>          	: "Ǿ"   U01FE # LATIN CAPITAL LETTER O WITH STROKE AND ACUTE
-<Multi_key> <acute> <Ooblique>   	: "Ǿ"   U01FE # LATIN CAPITAL LETTER O WITH STROKE AND ACUTE
-<Multi_key> <apostrophe> <Ooblique> 	: "Ǿ"   U01FE # LATIN CAPITAL LETTER O WITH STROKE AND ACUTE
+<dead_acute> <Oslash>          	: "Ǿ"   U01FE # LATIN CAPITAL LETTER O WITH STROKE AND ACUTE
+<Multi_key> <acute> <Oslash>   	: "Ǿ"   U01FE # LATIN CAPITAL LETTER O WITH STROKE AND ACUTE
+<Multi_key> <apostrophe> <Oslash> 	: "Ǿ"   U01FE # LATIN CAPITAL LETTER O WITH STROKE AND ACUTE
 <dead_acute> <dead_stroke> <O>  	: "Ǿ"   U01FE # LATIN CAPITAL LETTER O WITH STROKE AND ACUTE
 <dead_acute> <Multi_key> <slash> <O> 	: "Ǿ"   U01FE # LATIN CAPITAL LETTER O WITH STROKE AND ACUTE
 <Multi_key> <acute> <slash> <O>  	: "Ǿ"   U01FE # LATIN CAPITAL LETTER O WITH STROKE AND ACUTE
@@ -1601,60 +1597,32 @@
 <Multi_key> <KP_Divide> <U0294> 	: "ʡ"   U02A1 # LATIN LETTER GLOTTAL STOP WITH STROKE
 <dead_circumflex> <Multi_key> <underscore> <h> 	: "ʰ"   U02B0 # MODIFIER LETTER SMALL H
 <Multi_key> <asciicircum> <underscore> <h> 	: "ʰ"   U02B0 # MODIFIER LETTER SMALL H
-<dead_circumflex> <Multi_key> <underbar> <h> 	: "ʰ"   U02B0 # MODIFIER LETTER SMALL H
-<Multi_key> <asciicircum> <underbar> <h> 	: "ʰ"   U02B0 # MODIFIER LETTER SMALL H
 <dead_circumflex> <Multi_key> <underscore> <U0266> 	: "ʱ"   U02B1 # MODIFIER LETTER SMALL H WITH HOOK
 <Multi_key> <asciicircum> <underscore> <U0266> 	: "ʱ"   U02B1 # MODIFIER LETTER SMALL H WITH HOOK
-<dead_circumflex> <Multi_key> <underbar> <U0266> 	: "ʱ"   U02B1 # MODIFIER LETTER SMALL H WITH HOOK
-<Multi_key> <asciicircum> <underbar> <U0266> 	: "ʱ"   U02B1 # MODIFIER LETTER SMALL H WITH HOOK
 <dead_circumflex> <Multi_key> <underscore> <j> 	: "ʲ"   U02B2 # MODIFIER LETTER SMALL J
 <Multi_key> <asciicircum> <underscore> <j> 	: "ʲ"   U02B2 # MODIFIER LETTER SMALL J
-<dead_circumflex> <Multi_key> <underbar> <j> 	: "ʲ"   U02B2 # MODIFIER LETTER SMALL J
-<Multi_key> <asciicircum> <underbar> <j> 	: "ʲ"   U02B2 # MODIFIER LETTER SMALL J
 <dead_circumflex> <Multi_key> <underscore> <r> 	: "ʳ"   U02B3 # MODIFIER LETTER SMALL R
 <Multi_key> <asciicircum> <underscore> <r> 	: "ʳ"   U02B3 # MODIFIER LETTER SMALL R
-<dead_circumflex> <Multi_key> <underbar> <r> 	: "ʳ"   U02B3 # MODIFIER LETTER SMALL R
-<Multi_key> <asciicircum> <underbar> <r> 	: "ʳ"   U02B3 # MODIFIER LETTER SMALL R
 <dead_circumflex> <Multi_key> <underscore> <U0279> 	: "ʴ"   U02B4 # MODIFIER LETTER SMALL TURNED R
 <Multi_key> <asciicircum> <underscore> <U0279> 	: "ʴ"   U02B4 # MODIFIER LETTER SMALL TURNED R
-<dead_circumflex> <Multi_key> <underbar> <U0279> 	: "ʴ"   U02B4 # MODIFIER LETTER SMALL TURNED R
-<Multi_key> <asciicircum> <underbar> <U0279> 	: "ʴ"   U02B4 # MODIFIER LETTER SMALL TURNED R
 <dead_circumflex> <Multi_key> <underscore> <U027B> 	: "ʵ"   U02B5 # MODIFIER LETTER SMALL TURNED R WITH HOOK
 <Multi_key> <asciicircum> <underscore> <U027B> 	: "ʵ"   U02B5 # MODIFIER LETTER SMALL TURNED R WITH HOOK
-<dead_circumflex> <Multi_key> <underbar> <U027B> 	: "ʵ"   U02B5 # MODIFIER LETTER SMALL TURNED R WITH HOOK
-<Multi_key> <asciicircum> <underbar> <U027B> 	: "ʵ"   U02B5 # MODIFIER LETTER SMALL TURNED R WITH HOOK
 <dead_circumflex> <Multi_key> <underscore> <U0281> 	: "ʶ"   U02B6 # MODIFIER LETTER SMALL CAPITAL INVERTED R
 <Multi_key> <asciicircum> <underscore> <U0281> 	: "ʶ"   U02B6 # MODIFIER LETTER SMALL CAPITAL INVERTED R
-<dead_circumflex> <Multi_key> <underbar> <U0281> 	: "ʶ"   U02B6 # MODIFIER LETTER SMALL CAPITAL INVERTED R
-<Multi_key> <asciicircum> <underbar> <U0281> 	: "ʶ"   U02B6 # MODIFIER LETTER SMALL CAPITAL INVERTED R
 <dead_circumflex> <Multi_key> <underscore> <w> 	: "ʷ"   U02B7 # MODIFIER LETTER SMALL W
 <Multi_key> <asciicircum> <underscore> <w> 	: "ʷ"   U02B7 # MODIFIER LETTER SMALL W
-<dead_circumflex> <Multi_key> <underbar> <w> 	: "ʷ"   U02B7 # MODIFIER LETTER SMALL W
-<Multi_key> <asciicircum> <underbar> <w> 	: "ʷ"   U02B7 # MODIFIER LETTER SMALL W
 <dead_circumflex> <Multi_key> <underscore> <y> 	: "ʸ"   U02B8 # MODIFIER LETTER SMALL Y
 <Multi_key> <asciicircum> <underscore> <y> 	: "ʸ"   U02B8 # MODIFIER LETTER SMALL Y
-<dead_circumflex> <Multi_key> <underbar> <y> 	: "ʸ"   U02B8 # MODIFIER LETTER SMALL Y
-<Multi_key> <asciicircum> <underbar> <y> 	: "ʸ"   U02B8 # MODIFIER LETTER SMALL Y
 <dead_circumflex> <Multi_key> <underscore> <U0263> 	: "ˠ"   U02E0 # MODIFIER LETTER SMALL GAMMA
 <Multi_key> <asciicircum> <underscore> <U0263> 	: "ˠ"   U02E0 # MODIFIER LETTER SMALL GAMMA
-<dead_circumflex> <Multi_key> <underbar> <U0263> 	: "ˠ"   U02E0 # MODIFIER LETTER SMALL GAMMA
-<Multi_key> <asciicircum> <underbar> <U0263> 	: "ˠ"   U02E0 # MODIFIER LETTER SMALL GAMMA
 <dead_circumflex> <Multi_key> <underscore> <l> 	: "ˡ"   U02E1 # MODIFIER LETTER SMALL L
 <Multi_key> <asciicircum> <underscore> <l> 	: "ˡ"   U02E1 # MODIFIER LETTER SMALL L
-<dead_circumflex> <Multi_key> <underbar> <l> 	: "ˡ"   U02E1 # MODIFIER LETTER SMALL L
-<Multi_key> <asciicircum> <underbar> <l> 	: "ˡ"   U02E1 # MODIFIER LETTER SMALL L
 <dead_circumflex> <Multi_key> <underscore> <s> 	: "ˢ"   U02E2 # MODIFIER LETTER SMALL S
 <Multi_key> <asciicircum> <underscore> <s> 	: "ˢ"   U02E2 # MODIFIER LETTER SMALL S
-<dead_circumflex> <Multi_key> <underbar> <s> 	: "ˢ"   U02E2 # MODIFIER LETTER SMALL S
-<Multi_key> <asciicircum> <underbar> <s> 	: "ˢ"   U02E2 # MODIFIER LETTER SMALL S
 <dead_circumflex> <Multi_key> <underscore> <x> 	: "ˣ"   U02E3 # MODIFIER LETTER SMALL X
 <Multi_key> <asciicircum> <underscore> <x> 	: "ˣ"   U02E3 # MODIFIER LETTER SMALL X
-<dead_circumflex> <Multi_key> <underbar> <x> 	: "ˣ"   U02E3 # MODIFIER LETTER SMALL X
-<Multi_key> <asciicircum> <underbar> <x> 	: "ˣ"   U02E3 # MODIFIER LETTER SMALL X
 <dead_circumflex> <Multi_key> <underscore> <U0295> 	: "ˤ"   U02E4 # MODIFIER LETTER SMALL REVERSED GLOTTAL STOP
 <Multi_key> <asciicircum> <underscore> <U0295> 	: "ˤ"   U02E4 # MODIFIER LETTER SMALL REVERSED GLOTTAL STOP
-<dead_circumflex> <Multi_key> <underbar> <U0295> 	: "ˤ"   U02E4 # MODIFIER LETTER SMALL REVERSED GLOTTAL STOP
-<Multi_key> <asciicircum> <underbar> <U0295> 	: "ˤ"   U02E4 # MODIFIER LETTER SMALL REVERSED GLOTTAL STOP
 <dead_diaeresis> <acute>         	: "̈́"   U0344 # COMBINING GREEK DIALYTIKA TONOS
 <dead_diaeresis> <apostrophe>    	: "̈́"   U0344 # COMBINING GREEK DIALYTIKA TONOS
 <Multi_key> <quotedbl> <dead_acute> 	: "̈́"   U0344 # COMBINING GREEK DIALYTIKA TONOS
@@ -4378,8 +4346,6 @@
 <Multi_key> <asciicircum> <KP_0> 	: "⁰"   U2070 # SUPERSCRIPT ZERO
 <dead_circumflex> <Multi_key> <underscore> <i> 	: "ⁱ"   U2071 # SUPERSCRIPT LATIN SMALL LETTER I
 <Multi_key> <asciicircum> <underscore> <i> 	: "ⁱ"   U2071 # SUPERSCRIPT LATIN SMALL LETTER I
-<dead_circumflex> <Multi_key> <underbar> <i> 	: "ⁱ"   U2071 # SUPERSCRIPT LATIN SMALL LETTER I
-<Multi_key> <asciicircum> <underbar> <i> 	: "ⁱ"   U2071 # SUPERSCRIPT LATIN SMALL LETTER I
 <dead_circumflex> <4>            	: "⁴"   U2074 # SUPERSCRIPT FOUR
 <Multi_key> <asciicircum> <4>    	: "⁴"   U2074 # SUPERSCRIPT FOUR
 <dead_circumflex> <KP_4>         	: "⁴"   U2074 # SUPERSCRIPT FOUR
@@ -4420,64 +4386,34 @@
 <Multi_key> <asciicircum> <parenright> 	: "⁾"   U207E # SUPERSCRIPT RIGHT PARENTHESIS
 <dead_circumflex> <Multi_key> <underscore> <n> 	: "ⁿ"   U207F # SUPERSCRIPT LATIN SMALL LETTER N
 <Multi_key> <asciicircum> <underscore> <n> 	: "ⁿ"   U207F # SUPERSCRIPT LATIN SMALL LETTER N
-<dead_circumflex> <Multi_key> <underbar> <n> 	: "ⁿ"   U207F # SUPERSCRIPT LATIN SMALL LETTER N
-<Multi_key> <asciicircum> <underbar> <n> 	: "ⁿ"   U207F # SUPERSCRIPT LATIN SMALL LETTER N
 <Multi_key> <underscore> <0>     	: "₀"   U2080 # SUBSCRIPT ZERO
 <Multi_key> <underscore> <KP_0>  	: "₀"   U2080 # SUBSCRIPT ZERO
-<Multi_key> <underbar> <0>       	: "₀"   U2080 # SUBSCRIPT ZERO
-<Multi_key> <underbar> <KP_0>    	: "₀"   U2080 # SUBSCRIPT ZERO
 <Multi_key> <underscore> <1>     	: "₁"   U2081 # SUBSCRIPT ONE
 <Multi_key> <underscore> <KP_1>  	: "₁"   U2081 # SUBSCRIPT ONE
-<Multi_key> <underbar> <1>       	: "₁"   U2081 # SUBSCRIPT ONE
-<Multi_key> <underbar> <KP_1>    	: "₁"   U2081 # SUBSCRIPT ONE
 <Multi_key> <underscore> <2>     	: "₂"   U2082 # SUBSCRIPT TWO
 <Multi_key> <underscore> <KP_Space> 	: "₂"   U2082 # SUBSCRIPT TWO
 <Multi_key> <underscore> <KP_2>  	: "₂"   U2082 # SUBSCRIPT TWO
-<Multi_key> <underbar> <2>       	: "₂"   U2082 # SUBSCRIPT TWO
-<Multi_key> <underbar> <KP_Space> 	: "₂"   U2082 # SUBSCRIPT TWO
-<Multi_key> <underbar> <KP_2>    	: "₂"   U2082 # SUBSCRIPT TWO
 <Multi_key> <underscore> <3>     	: "₃"   U2083 # SUBSCRIPT THREE
 <Multi_key> <underscore> <KP_3>  	: "₃"   U2083 # SUBSCRIPT THREE
-<Multi_key> <underbar> <3>       	: "₃"   U2083 # SUBSCRIPT THREE
-<Multi_key> <underbar> <KP_3>    	: "₃"   U2083 # SUBSCRIPT THREE
 <Multi_key> <underscore> <4>     	: "₄"   U2084 # SUBSCRIPT FOUR
 <Multi_key> <underscore> <KP_4>  	: "₄"   U2084 # SUBSCRIPT FOUR
-<Multi_key> <underbar> <4>       	: "₄"   U2084 # SUBSCRIPT FOUR
-<Multi_key> <underbar> <KP_4>    	: "₄"   U2084 # SUBSCRIPT FOUR
 <Multi_key> <underscore> <5>     	: "₅"   U2085 # SUBSCRIPT FIVE
 <Multi_key> <underscore> <KP_5>  	: "₅"   U2085 # SUBSCRIPT FIVE
-<Multi_key> <underbar> <5>       	: "₅"   U2085 # SUBSCRIPT FIVE
-<Multi_key> <underbar> <KP_5>    	: "₅"   U2085 # SUBSCRIPT FIVE
 <Multi_key> <underscore> <6>     	: "₆"   U2086 # SUBSCRIPT SIX
 <Multi_key> <underscore> <KP_6>  	: "₆"   U2086 # SUBSCRIPT SIX
-<Multi_key> <underbar> <6>       	: "₆"   U2086 # SUBSCRIPT SIX
-<Multi_key> <underbar> <KP_6>    	: "₆"   U2086 # SUBSCRIPT SIX
 <Multi_key> <underscore> <7>     	: "₇"   U2087 # SUBSCRIPT SEVEN
 <Multi_key> <underscore> <KP_7>  	: "₇"   U2087 # SUBSCRIPT SEVEN
-<Multi_key> <underbar> <7>       	: "₇"   U2087 # SUBSCRIPT SEVEN
-<Multi_key> <underbar> <KP_7>    	: "₇"   U2087 # SUBSCRIPT SEVEN
 <Multi_key> <underscore> <8>     	: "₈"   U2088 # SUBSCRIPT EIGHT
 <Multi_key> <underscore> <KP_8>  	: "₈"   U2088 # SUBSCRIPT EIGHT
-<Multi_key> <underbar> <8>       	: "₈"   U2088 # SUBSCRIPT EIGHT
-<Multi_key> <underbar> <KP_8>    	: "₈"   U2088 # SUBSCRIPT EIGHT
 <Multi_key> <underscore> <9>     	: "₉"   U2089 # SUBSCRIPT NINE
 <Multi_key> <underscore> <KP_9>  	: "₉"   U2089 # SUBSCRIPT NINE
-<Multi_key> <underbar> <9>       	: "₉"   U2089 # SUBSCRIPT NINE
-<Multi_key> <underbar> <KP_9>    	: "₉"   U2089 # SUBSCRIPT NINE
 <Multi_key> <underscore> <plus>  	: "₊"   U208A # SUBSCRIPT PLUS SIGN
 <Multi_key> <underscore> <KP_Add> 	: "₊"   U208A # SUBSCRIPT PLUS SIGN
-<Multi_key> <underbar> <plus>    	: "₊"   U208A # SUBSCRIPT PLUS SIGN
-<Multi_key> <underbar> <KP_Add>  	: "₊"   U208A # SUBSCRIPT PLUS SIGN
 <Multi_key> <underscore> <U2212> 	: "₋"   U208B # SUBSCRIPT MINUS
-<Multi_key> <underbar> <U2212> 	: "₋"   U208B # SUBSCRIPT MINUS
 <Multi_key> <underscore> <equal> 	: "₌"   U208C # SUBSCRIPT EQUALS SIGN
 <Multi_key> <underscore> <KP_Equal> 	: "₌"   U208C # SUBSCRIPT EQUALS SIGN
-<Multi_key> <underbar> <equal>   	: "₌"   U208C # SUBSCRIPT EQUALS SIGN
-<Multi_key> <underbar> <KP_Equal> 	: "₌"   U208C # SUBSCRIPT EQUALS SIGN
 <Multi_key> <underscore> <parenleft> 	: "₍"   U208D # SUBSCRIPT LEFT PARENTHESIS
-<Multi_key> <underbar> <parenleft> 	: "₍"   U208D # SUBSCRIPT LEFT PARENTHESIS
 <Multi_key> <underscore> <parenright> 	: "₎"   U208E # SUBSCRIPT RIGHT PARENTHESIS
-<Multi_key> <underbar> <parenright> 	: "₎"   U208E # SUBSCRIPT RIGHT PARENTHESIS
 <dead_circumflex> <Multi_key> <S> <M> 	: "℠"   U2120 # SERVICE MARK
 <Multi_key> <S> <M>		 	: "℠"   U2120 # SERVICE MARK
 <dead_circumflex> <Multi_key> <s> <M> 	: "℠"   U2120 # SERVICE MARK
@@ -4537,9 +4473,7 @@
 <Multi_key> <greater> <equal> 	: "≥" U2265 # GREATER-THAN OR EQUAL TO
 <Multi_key> <U224D> <U0338> 	: "≭"   U226D # NOT EQUIVALENT TO
 <Multi_key> <less> <U0338>   	: "≮"   U226E # NOT LESS-THAN
-<Multi_key> <leftcaret> <U0338> 	: "≮"   U226E # NOT LESS-THAN
 <Multi_key> <greater> <U0338> 	: "≯"   U226F # NOT GREATER-THAN
-<Multi_key> <rightcaret> <U0338> 	: "≯"   U226F # NOT GREATER-THAN
 <Multi_key> <lessthanequal> <U0338> 	: "≰"   U2270 # NEITHER LESS-THAN NOR EQUAL TO
 <Multi_key> <greaterthanequal> <U0338> 	: "≱"   U2271 # NEITHER GREATER-THAN NOR EQUAL TO
 <Multi_key> <U2272> <U0338> 	: "≴"   U2274 # NEITHER LESS-THAN NOR EQUIVALENT TO
@@ -4551,7 +4485,6 @@
 <Multi_key> <includedin> <U0338> 	: "⊄"   U2284 # NOT A SUBSET OF
 <Multi_key> <leftshoe> <U0338> 	: "⊄"   U2284 # NOT A SUBSET OF
 <Multi_key> <includes> <U0338> 	: "⊅"   U2285 # NOT A SUPERSET OF
-<Multi_key> <rightshoe> <U0338> 	: "⊅"   U2285 # NOT A SUPERSET OF
 <Multi_key> <U2286> <U0338> 	: "⊈"   U2288 # NEITHER A SUBSET OF NOR EQUAL TO
 <Multi_key> <U2287> <U0338> 	: "⊉"   U2289 # NEITHER A SUPERSET OF NOR EQUAL TO
 <Multi_key> <righttack> <U0338> 	: "⊬"   U22AC # DOES NOT PROVE
