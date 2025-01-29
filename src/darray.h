@@ -184,10 +184,12 @@ typedef darray (unsigned long)  darray_ulong;
                              ((arr).alloc = (arr).size) * sizeof(*(arr).item)); \
 } while (0)
 
+#define darray_max_alloc(itemSize) (UINT_MAX / (itemSize))
+
 static inline unsigned
 darray_next_alloc(unsigned alloc, unsigned need, unsigned itemSize)
 {
-    assert(need < UINT_MAX / itemSize / 2); /* Overflow. */
+    assert(need < darray_max_alloc(itemSize) / 2); /* Overflow. */
     if (alloc == 0)
         alloc = 4;
     while (alloc < need)

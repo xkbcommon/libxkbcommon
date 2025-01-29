@@ -445,9 +445,10 @@ ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
     if (!ok)
         return false;
 
-    if (result < 1) {
+    if (result < 1 || result > XKB_LEVEL_MAX_IMPL) {
         log_err(ctx, XKB_ERROR_UNSUPPORTED_SHIFT_LEVEL,
-                "Shift level %d is out of range\n", result);
+                "Shift level %d is out of range (1..%u)\n",
+                result, XKB_LEVEL_MAX_IMPL);
         return false;
     }
 

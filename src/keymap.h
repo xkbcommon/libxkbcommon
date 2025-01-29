@@ -387,6 +387,36 @@ struct xkb_mod_set {
     xkb_mod_mask_t explicit_vmods;
 };
 
+/*
+ * Our current implementation with continuous arrays does not allow efficient
+ * mapping of keycodes. Allowing the API max valid keycode XKB_KEYCODE_MAX could
+ * result in memory exhaustion or memory waste (sparse arrays) with huge enough
+ * valid values. Let’s be more conservative for now, based on the existing Linux
+ * keycodes.
+ */
+#define XKB_KEYCODE_MAX_IMPL 0xfff
+static_assert(XKB_KEYCODE_MAX_IMPL < XKB_KEYCODE_MAX,
+              "Valid keycodes");
+static_assert(XKB_KEYCODE_MAX_IMPL < darray_max_alloc(sizeof(xkb_atom_t)),
+              "Max keycodes names");
+static_assert(XKB_KEYCODE_MAX_IMPL < darray_max_alloc(sizeof(struct xkb_key)),
+              "Max keymap keys");
+
+/*
+ * Our current implementation with continuous arrays does not allow efficient
+ * mapping of levels. Allowing the max valid level UINT32_MAX could result in
+ * memory exhaustion or memory waste (sparse arrays) with huge enough valid
+ * values. Let’s be more conservative for now. This value should be big enough
+ * to satisfy automatically generated keymaps.
+ */
+#define XKB_LEVEL_MAX_IMPL 2048
+static_assert(XKB_LEVEL_MAX_IMPL < XKB_LEVEL_INVALID,
+              "Valid levels");
+static_assert(XKB_LEVEL_MAX_IMPL < darray_max_alloc(sizeof(xkb_atom_t)),
+              "Max key types level names");
+static_assert(XKB_LEVEL_MAX_IMPL < darray_max_alloc(sizeof(struct xkb_level)),
+              "Max keys levels");
+
 /* Common keyboard description structure */
 struct xkb_keymap {
     struct xkb_context *ctx;
