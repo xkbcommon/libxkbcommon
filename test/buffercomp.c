@@ -198,6 +198,46 @@ test_recursive(struct xkb_context *ctx)
     }
 }
 
+/* Test some limits related to allocations */
+static void
+test_alloc_limits(struct xkb_context *ctx)
+{
+    const char * const keymaps[] = {
+        /* Keycodes */
+        "xkb_keymap {\n"
+        /* Valid keycode value, but we should not handle it
+         * with our *continuous* array! */
+        "  xkb_keycodes { <> = 0xfffffffe; };\n"
+        "  xkb_types { };\n"
+        "  xkb_compat { };\n"
+        "  xkb_symbols { key <> {[a]}; };\n"
+        "};",
+        /* Key types */
+        "xkb_keymap {\n"
+        "  xkb_keycodes { };\n"
+        "  xkb_types {\n"
+        "    type \"X\" { map[none] = 0xfffffffe; };\n" /* Invalid level index */
+        "  };\n"
+        "  xkb_compat { };\n"
+        "  xkb_symbols { };\n"
+        "};",
+        "xkb_keymap {\n"
+        "  xkb_keycodes { };\n"
+        "  xkb_types {\n"
+        "    type \"X\" {levelname[0xfffffffe]=\"x\";};\n" /* Invalid level index */
+        "  };\n"
+        "  xkb_compat { };\n"
+        "  xkb_symbols { };\n"
+        "};"
+    };
+    for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        const struct xkb_keymap *keymap =
+            test_compile_buffer(ctx, keymaps[k], strlen(keymaps[k]));
+        assert(!keymap);
+    }
+}
+
 /* Test various multi-{keysym,action} syntaxes */
 static void
 test_multi_keysyms_actions(struct xkb_context *ctx)
@@ -421,6 +461,7 @@ main(int argc, char *argv[])
     test_encodings(ctx);
     test_component_syntax_error(ctx);
     test_recursive(ctx);
+    test_alloc_limits(ctx);
     test_multi_keysyms_actions(ctx);
     test_invalid_symbols_fields(ctx);
     test_prebuilt_keymap_roundtrip(ctx);

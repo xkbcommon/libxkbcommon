@@ -191,6 +191,14 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
 
     report = report && ((same_file && verbosity > 0) || verbosity > 7);
 
+    /* Check keycode is not too huge for our continuous array */
+    if (kc > XKB_KEYCODE_MAX_IMPL) {
+        log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
+                "Keycode too big: must be < %#"PRIx32", got %#"PRIx32"; "
+                "Key ignored\n", XKB_KEYCODE_MAX_IMPL, kc);
+        return false;
+    }
+
     if (kc >= darray_size(info->key_names))
         darray_resize0(info->key_names, kc + 1);
 
