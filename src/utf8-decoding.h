@@ -1,3 +1,7 @@
+/*
+ * Copyright © 2024 Pierre Le Marre <dev@wismill.eu>
+ * SPDX-License-Identifier: MIT
+ */
 
 #ifndef UTF8_DECODING_H
 #define UTF8_DECODING_H

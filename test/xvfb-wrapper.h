@@ -1,4 +1,11 @@
-/* This is a wrapper around X11 tests to make it faster to use for the simple
+/*
+ * Copyright © 2014 Ran Benita <ran234@gmail.com>
+ * Copyright © 2023 Pierre Le Marre <dev@wismill.eu>
+ * SPDX-License-Identifier: MIT
+ */
+
+/*
+ *This is a wrapper around X11 tests to make it faster to use for the simple
  * type of test cases.
  *
  * Use with the X11_TEST macro like this:
