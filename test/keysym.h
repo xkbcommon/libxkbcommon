@@ -1,3 +1,8 @@
+/*
+ * Copyright © 2024 Pierre Le Marre <dev@wismill.eu>
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifndef KEYSYM_TEST_H
 #define KEYSYM_TEST_H
 
