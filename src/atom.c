@@ -76,6 +76,7 @@
 #include <string.h>
 
 #include "atom.h"
+#include "atom-priv.h"
 #include "darray.h"
 #include "utils.h"
 
@@ -93,16 +94,6 @@ hash_buf(const char *string, size_t len)
     return hash;
 }
 
-/*
- * The atom table is an insert-only linear probing hash table
- * mapping strings to atoms. Another array maps the atoms to
- * strings. The atom value is the position in the strings array.
- */
-struct atom_table {
-    xkb_atom_t *index;
-    size_t index_size;
-    darray(char *) strings;
-};
 
 struct atom_table *
 atom_table_new(void)
