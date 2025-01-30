@@ -1,5 +1,272 @@
-libxkbcommon 1.7.0 - 2024-03-24
-==================
+libxkbcommon [1.8.0] - 2025-02-04
+=================================
+
+[1.8.0]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.8.0
+
+## API
+
+### Breaking changes
+
+- `NoSymbol` is now systematically dropped in multi-keysyms levels:
+
+  ```c
+  // Before normalization
+  key <> { [{NoSymbol}, {a, NoSymbol}, {NoSymbol,b}, {a, NoSymbol, b}] };
+  // After normalization
+  key <> { [NoSymbol, a, b, {a, b}] };
+  ```
+
+- Added the upper case mapping ß → ẞ (`ssharp` → `U1E9E`). This enable to type
+  ẞ using CapsLock thanks to the internal capitalization rules.
+
+- Updated keysyms case mappings to cover full **[Unicode 16.0]**. This change
+  provides a *consistent behavior* with respect to case mappings, and affects
+  the following:
+
+  - `xkb_keysym_to_lower()` and `xkb_keysym_to_upper()` give different output
+    for keysyms not covered previously and handle *title*-cased keysyms.
+
+    Example of title-cased keysym: `U01F2` “ǲ”:
+    - `xkb_keysym_to_lower(U01F2) == U01F3` “ǲ” → “ǳ”
+    - `xkb_keysym_to_upper(U01F2) == U01F1` “ǲ” → “Ǳ”
+  - *Implicit* alphabetic key types are better detected, because they use the
+    latest Unicode case mappings and now handle the *title*-cased keysyms the
+    same way as upper-case ones.
+
+  Note: There is a single *exception* that do not follow the Unicode mappings:
+  - `xkb_keysym_to_upper(ssharp) == U1E9E` “ß” → “ẞ”
+
+  Note: As before, only *simple* case mappings (i.e. one-to-one) are supported.
+  For example, the full upper case of `U+01F0` “ǰ” is “J̌” (2 characters: `U+004A`
+  and `U+030C`), which would require 2 keysyms, which is not supported by the
+  current API.
+
+  [Unicode 16.0]: https://www.unicode.org/versions/Unicode16.0.0/
+
+### New
+
+- Implemented the `GroupLatch` action, usually activated with the keysym
+  `ISO_Group_Latch`.
+  ([#455](https://github.com/xkbcommon/libxkbcommon/issues/455))
+
+- Symbols: Added support for *multiple actions per levels:*
+  - When no action is specified, `interpret` statements are used to find an
+    action corresponding to *each* keysym, as expected.
+  - When both keysyms and actions are specified, they may have a different count
+    for each level.
+  - For now, at most one action of each of the following categories is allowed
+    per level:
+    - modifier actions: `SetMods`, `LatchMods`, `LockMods`;
+    - group actions: `SetGroup`, `LatchGroup`, `LockGroup`.
+
+    Some examples:
+    - `SetMods` + `SetGroup`: ok
+    - `SetMods` + `SetMods`: error
+    - `SetMods` + `LockMods`: error
+    - `SetMods` + `LockGroup`: ok
+
+  ([#486](https://github.com/xkbcommon/libxkbcommon/issues/486))
+
+- Updated keysyms using latest [xorgproto]
+  (commit: `d7ea44d5f04cc476dee83ef439a847172f7a6bd1`):
+
+    Additions:
+
+    - `XKB_KEY_XF86RefreshRateToggle`
+    - `XKB_KEY_XF86Accessibility`
+    - `XKB_KEY_XF86DoNotDisturb`
+
+    Relevant upstream merge request: [xorgproto-91].
+
+  [xorgproto-91]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/91
+
+- Added deprecated keysym warnings:
+  - *name* deprecation (typo, historical alias), reporting the reference name;
+  - *keysym* deprecation (ambiguous meaning, all names deprecated).
+
+  These warnings are activated by setting the log verbosity to at least 2.
+
+  It is advised to fix these warnings, as the deprecated items may be removed in
+  a future release.
+
+- `xkbcommon-names.h`: Added the following modifiers names definitions:
+  - `XKB_MOD_NAME_MOD1`
+  - `XKB_MOD_NAME_MOD2`
+  - `XKB_MOD_NAME_MOD3`
+  - `XKB_MOD_NAME_MOD4`
+  - `XKB_MOD_NAME_MOD5`
+  - `XKB_VMOD_NAME_ALT`
+  - `XKB_VMOD_NAME_META`
+  - `XKB_VMOD_NAME_NUM`
+  - `XKB_VMOD_NAME_SUPER`
+  - `XKB_VMOD_NAME_HYPER`
+  - `XKB_VMOD_NAME_LEVEL3`
+  - `XKB_VMOD_NAME_LEVEL5`
+  - `XKB_VMOD_NAME_SCROLL`
+
+- `xkbcommon-names.h`: Added `XKB_LED_NAME_COMPOSE` and `XKB_LED_NAME_KANA`
+  definitions to cover all LEDs defined in
+  [USB HID](https://usb.org/sites/default/files/hid1_11.pdf).
+
+  Contributed by Martin Rys
+
+- Rules: Use XKB paths to resolve relative paths in include statements.
+  ([#501](https://github.com/xkbcommon/libxkbcommon/issues/501))
+
+- Rules: Added support for special layouts indexes:
+  - *single*: matches a single layout; `layout[single]` is the same as without
+    explicit index: `layout`.
+  - *first*: matches the first layout/variant, no matter how many layouts are in
+    the RMLVO configuration. Acts as both `layout` and `layout[1]`.
+  - *later*: matches all but the first layout. This is an index range. Acts as
+    `layout[2]` .. `layout[MAX_LAYOUT]`, where `MAX_LAYOUT` is currently 4.
+  - *any*: matches layout at any position. This is an index range.
+
+  Also added:
+  - the special index `%i` which correspond to the index of the matched layout.
+  - the `:all` qualifier: it applies the qualified item to all layouts.
+
+  See the [documentation](https://xkbcommon.org/doc/current/rule-file-format.html)
+  for further information.
+
+### Fixes
+
+- Previously, setting *explicit actions* for a group in symbols files made the
+  parser skip compatibility interpretations for *all* groups in the corresponding
+  key, resulting in possibly broken groups with *no* explicit actions or missing
+  key fields.
+
+  Fixed by skipping interpretations only for groups with explicit actions when
+  parsing a keymap and setting relevant fields explicitly when serializing a
+  keymap to a string.
+  ([#511](https://github.com/xkbcommon/libxkbcommon/issues/511))
+
+- `xkb_keymap_new_from_names`: Allow only one group per key in symbols sections.
+  While the original issue was [fixed in `xkeyboard-config`][xkeyboard-config-253]
+  project, the previous handling in `libxkbcommon` of extra key groups was deemed
+  unintuitive.
+
+  [xkeyboard-config-253]: https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config/-/merge_requests/253
+
+  Note: rules resolution may still produce more groups than the input layouts.
+  This is currently true for some [legacy rules in `xkeyboard-config`][xkeyboard-config-legacy-rules].
+
+  ([#262](https://github.com/xkbcommon/libxkbcommon/issues/262))
+
+  [xkeyboard-config-legacy-rules]: https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config/-/blob/6a2eb9e63bcb3c52584580570d31cd91110d1f2e/rules/0013-modellayout_symbols.part#L2
+
+- Fixed `xkb_keymap_get_as_string` truncating the *4* longest keysyms names,
+  such as `Greek_upsilonaccentdieresis`.
+
+- `xkb_keysym_to_utf8`: Require only 5 bytes for the buffer, as UTF-8 encodes
+  code points on up to 4 bytes + 1 byte for the NULL-terminating byte.
+  Previous standard [RFC 2279](https://datatracker.ietf.org/doc/html/rfc2279)
+  (1998) required up to 6 bytes per code point, but has been superseded by
+  [RFC 3629](https://datatracker.ietf.org/doc/html/rfc3629) (2003).
+  ([#418](https://github.com/xkbcommon/libxkbcommon/issues/418))
+
+- Registry: Fixed `libxml2` global error handler not reset after parsing, which
+  could trigger a crash if the corresponding `rxkb_context` has been freed.
+
+  Contributed by Sebastian Keller.
+  ([#529](https://github.com/xkbcommon/libxkbcommon/issues/529))
+
+- Rules: Fix handling of wild card `*` to match the behavior of `libxkbfile`.
+  Previously `*` would match any value, even empty one. Now:
+  - For `model` and `options`: *always* match.
+  - For `layout` and `variant`: match any *non-empty* value.
+
+  ([#497](https://github.com/xkbcommon/libxkbcommon/issues/497))
+
+- Fixed `LatchGroup` action with the `latchToLock` option disabled not applying
+  its latch effect multiple times.
+  ([#577](https://github.com/xkbcommon/libxkbcommon/issues/577))
+
+- Fixed incorrect handling of group indicators when `whichGroupState` is set with
+  `Base` or `Latched`.
+  ([#579](https://github.com/xkbcommon/libxkbcommon/issues/579))
+
+- Fixed missing explicit virtual modifier mappings when export the keymap as a string.
+
+- Fixed the lower case mapping ẞ → ß (`U1E9E` → `ssharp`). This re-enable the
+  detection of alphabetic key types for the pair (ß, ẞ).
+
+- Fixed modifiers not properly unset when multiple latches are used simultaneously.
+  ([#583](https://github.com/xkbcommon/libxkbcommon/issues/583))
+
+- The following functions now allow to query also *virtual* modifiers, so they work
+  with *any* modifiers (real *and* virtual):
+  - `xkb_state_mod_index_is_active`
+  - `xkb_state_mod_indices_are_active`
+  - `xkb_state_mod_name_is_active`
+  - `xkb_state_mod_names_are_active`
+  - `xkb_state_mod_index_is_consumed`
+  - `xkb_state_mod_index_is_consumed2`
+  - `xkb_state_mod_mask_remove_consumed`
+
+  Warning: they may overmatch in case there are overlappings virtual-to-real
+  modifiers mappings.
+
+- X11: Do not drop a level when the keysym is undefined but not the action.
+
+
+## Tools
+
+### New
+
+- Added `xkbcli dump-keymap-wayland` and `xkbcli dump-keymap-x11` debugging
+  tools to dump a keymap from a Wayland compositor or a X server, similar to
+  what `xkbcomp -xkb $DISPLAY -` does for X servers.
+
+- `xkbcli compile-compose`: the Compose file may be passed as a positional
+  argument and `--file` is now deprecated. The file can also be piped to the
+  standard input by setting the path to `-`.
+
+- `xkbcli compile-keymap`: Added `--keymap` as a more intuitive alias for
+  `--from-xkb`. Both now accept an optional keymap file argument. These flags
+  may be omitted; in this case the keymap file may be passed as a positional
+  argument.
+
+- Added `--test` option to `compile-keymap` and `compile-compose`, to enable
+  testing compilation without printing the resulting file.
+
+- `xkbcli how-to-type`: added new input formats and their corresponding documentation.
+
+  *Unicode code points* can be passed in the following formats:
+  - Literal character (requires UTF-8 character encoding of the terminal);
+  - Decimal number;
+  - Hexadecimal number: either `0xNNNN` or `U+NNNN`.
+
+  *Keysyms* can to be passed in the following formats:
+  - Decimal number;
+  - Hexadecimal number: `0xNNNN`;
+  - Name.
+
+### Fixes
+
+- Fixed various tools truncating the *4* longest keysyms names, such as
+  `Greek_upsilonaccentdieresis`.
+
+- `xkbcli list`: Fix duplicate variants.
+  ([#587](https://github.com/xkbcommon/libxkbcommon/issues/587))
+
+
+## Build system
+
+### Breaking changes
+
+- Raised minimal meson version requirement to 0.58.
+
+### Fixes
+
+- Make the test of `-Wl,--version-script` more robust.
+  ([#481](https://github.com/xkbcommon/libxkbcommon/issues/481))
+
+
+libxkbcommon [1.7.0] - 2024-03-24
+=================================
+
+[1.7.0]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.7.0
 
 API
 ---
