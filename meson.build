@@ -520,6 +520,8 @@ if build_tools
                'src/compose/dump.c',
                'src/compose/dump.h',
                'src/compose/escape.h',
+               'tools/tools-common.c',
+               'tools/tools-common.h',
                dependencies: tools_dep,
                install: true,
                install_dir: dir_libexec)
