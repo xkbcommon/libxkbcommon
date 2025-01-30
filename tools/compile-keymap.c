@@ -246,7 +246,7 @@ parse_options(int argc, char **argv, char **path, struct xkb_rule_names *names)
         *path = argv[optind++];
         if (optind < argc) {
 too_much_arguments:
-            fprintf(stderr, "ERROR: Too much positional arguments\n");
+            fprintf(stderr, "ERROR: Too many positional arguments\n");
             usage(stderr, argv[0]);
             exit(EXIT_INVALID_USAGE);
         }
