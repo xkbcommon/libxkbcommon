@@ -85,7 +85,7 @@ xkb_context_include_path_get_system_path(struct xkb_context *ctx);
 xkb_atom_t
 xkb_atom_lookup(struct xkb_context *ctx, const char *string);
 
-xkb_atom_t
+XKB_EXPORT_PRIVATE xkb_atom_t
 xkb_atom_intern(struct xkb_context *ctx, const char *string, size_t len);
 
 #define xkb_atom_intern_literal(ctx, literal) \
@@ -100,13 +100,13 @@ xkb_atom_intern(struct xkb_context *ctx, const char *string, size_t len);
 xkb_atom_t
 xkb_atom_steal(struct xkb_context *ctx, char *string);
 
-const char *
+XKB_EXPORT_PRIVATE const char *
 xkb_atom_text(struct xkb_context *ctx, xkb_atom_t atom);
 
 char *
 xkb_context_get_buffer(struct xkb_context *ctx, size_t size);
 
-ATTR_PRINTF(4, 5) void
+XKB_EXPORT_PRIVATE ATTR_PRINTF(4, 5) void
 xkb_log(struct xkb_context *ctx, enum xkb_log_level level, int verbosity,
         const char *fmt, ...);
 

@@ -596,7 +596,7 @@ get_unicode_entry(xkb_keysym_t ks)
     return &unicode_data[unicode_offsets1[unicode_offsets2[ks >> 8] + ((ks >> 3) & 0x1f)] + (ks & 0x07)];
 }
 
-XKB_EXPORT xkb_keysym_t
+xkb_keysym_t
 xkb_keysym_to_lower(xkb_keysym_t ks)
 {
     if (ks <= 0x13be) {
@@ -615,7 +615,7 @@ xkb_keysym_to_lower(xkb_keysym_t ks)
     }
 }
 
-XKB_EXPORT xkb_keysym_t
+xkb_keysym_t
 xkb_keysym_to_upper(xkb_keysym_t ks)
 {
     if (ks <= 0x13be) {

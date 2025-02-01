@@ -38,6 +38,14 @@
 extern "C" {
 #endif
 
+#if defined(__GNUC__) && !defined(__CYGWIN__)
+# define RXKB_EXPORT      __attribute__((visibility("default")))
+#elif defined(_WIN32)
+# define RXKB_EXPORT      __declspec(dllexport)
+#else
+# define RXKB_EXPORT
+#endif
+
 /**
  * @defgroup registry Query for available RMLVO
  *
@@ -184,7 +192,7 @@ enum rxkb_context_flags {
  * @param flags Flags affecting context behavior
  * @return A new xkb registry context or NULL on failure
  */
-struct rxkb_context *
+RXKB_EXPORT struct rxkb_context *
 rxkb_context_new(enum rxkb_context_flags flags);
 
 /** Specifies a logging level. */
@@ -207,14 +215,14 @@ enum rxkb_log_level {
  * RXKB_LOG_LEVEL, if set at the time the context was created, overrides the
  * default value.  It may be specified as a level number or name.
  */
-void
+RXKB_EXPORT void
 rxkb_context_set_log_level(struct rxkb_context *ctx,
                            enum rxkb_log_level level);
 
 /**
  * Get the current logging level.
  */
-enum rxkb_log_level
+RXKB_EXPORT enum rxkb_log_level
 rxkb_context_get_log_level(struct rxkb_context *ctx);
 
 /**
@@ -235,7 +243,7 @@ rxkb_context_get_log_level(struct rxkb_context *ctx);
  * rxkb_context_get_user_data() from within the logging function to provide
  * it with additional private context.
  */
-void
+RXKB_EXPORT void
 rxkb_context_set_log_fn(struct rxkb_context *ctx,
                         void (*log_fn)(struct rxkb_context *ctx,
                                        enum rxkb_log_level level,
@@ -262,14 +270,14 @@ rxkb_context_set_log_fn(struct rxkb_context *ctx,
  * @param ruleset The ruleset to parse, e.g. "evdev"
  * @return true on success or false on failure
  */
-bool
+RXKB_EXPORT bool
 rxkb_context_parse(struct rxkb_context *ctx, const char *ruleset);
 
 /**
  * Parse the default ruleset as configured at build time. See
  * rxkb_context_parse() for details.
  */
-bool
+RXKB_EXPORT bool
 rxkb_context_parse_default_ruleset(struct rxkb_context *ctx);
 
 /**
@@ -278,7 +286,7 @@ rxkb_context_parse_default_ruleset(struct rxkb_context *ctx);
  * @param ctx The xkb registry context
  * @return The passed in object
  */
-struct rxkb_context*
+RXKB_EXPORT struct rxkb_context*
 rxkb_context_ref(struct rxkb_context *ctx);
 
 /**
@@ -288,7 +296,7 @@ rxkb_context_ref(struct rxkb_context *ctx);
  * @param ctx The xkb registry context
  * @return always NULL
  */
-struct rxkb_context*
+RXKB_EXPORT struct rxkb_context*
 rxkb_context_unref(struct rxkb_context *ctx);
 
 /**
@@ -299,7 +307,7 @@ rxkb_context_unref(struct rxkb_context *ctx);
  * @param ctx The xkb registry context
  * @param user_data User-specific data pointer
  */
-void
+RXKB_EXPORT void
 rxkb_context_set_user_data(struct rxkb_context *ctx, void *user_data);
 
 /**
@@ -308,7 +316,7 @@ rxkb_context_set_user_data(struct rxkb_context *ctx, void *user_data);
  * @param ctx The xkb registry context
  * @return User-specific data pointer
  */
-void *
+RXKB_EXPORT void *
 rxkb_context_get_user_data(struct rxkb_context *ctx);
 
 /**
@@ -375,7 +383,7 @@ rxkb_context_get_user_data(struct rxkb_context *ctx);
  * @returns true on success, or false if the include path could not be added
  * or is inaccessible.
  */
-bool
+RXKB_EXPORT bool
 rxkb_context_include_path_append(struct rxkb_context *ctx, const char *path);
 
 /**
@@ -388,7 +396,7 @@ rxkb_context_include_path_append(struct rxkb_context *ctx, const char *path);
  * @returns true on success, or false if the include path could not be added
  * or is inaccessible.
  */
-bool
+RXKB_EXPORT bool
 rxkb_context_include_path_append_default(struct rxkb_context *ctx);
 
 /**
@@ -400,7 +408,7 @@ rxkb_context_include_path_append_default(struct rxkb_context *ctx);
  *
  * @return The first model in the model list.
  */
-struct rxkb_model *
+RXKB_EXPORT struct rxkb_model *
 rxkb_model_first(struct rxkb_context *ctx);
 
 /**
@@ -412,7 +420,7 @@ rxkb_model_first(struct rxkb_context *ctx);
  *
  * @return the next model or NULL at the end of the list
  */
-struct rxkb_model *
+RXKB_EXPORT struct rxkb_model *
 rxkb_model_next(struct rxkb_model *m);
 
 /**
@@ -420,7 +428,7 @@ rxkb_model_next(struct rxkb_model *m);
  *
  * @returns The argument passed in to this function.
  */
-struct rxkb_model *
+RXKB_EXPORT struct rxkb_model *
 rxkb_model_ref(struct rxkb_model *m);
 
 /**
@@ -429,33 +437,33 @@ rxkb_model_ref(struct rxkb_model *m);
  *
  * @returns always NULL
  */
-struct rxkb_model *
+RXKB_EXPORT struct rxkb_model *
 rxkb_model_unref(struct rxkb_model *m);
 
 /**
  * Return the name of this model. This is the value for M in RMLVO, to be used
  * with libxkbcommon.
  */
-const char *
+RXKB_EXPORT const char *
 rxkb_model_get_name(struct rxkb_model *m);
 
 /**
  * Return a human-readable description of this model. This function may return
  * NULL.
  */
-const char *
+RXKB_EXPORT const char *
 rxkb_model_get_description(struct rxkb_model *m);
 
 /**
  * Return the vendor name for this model. This function may return NULL.
  */
-const char *
+RXKB_EXPORT const char *
 rxkb_model_get_vendor(struct rxkb_model *m);
 
 /**
  * Return the popularity for this model.
  */
-enum rxkb_popularity
+RXKB_EXPORT enum rxkb_popularity
 rxkb_model_get_popularity(struct rxkb_model *m);
 
 /**
@@ -467,7 +475,7 @@ rxkb_model_get_popularity(struct rxkb_model *m);
  *
  * @return The first layout in the layout list.
  */
-struct rxkb_layout *
+RXKB_EXPORT struct rxkb_layout *
 rxkb_layout_first(struct rxkb_context *ctx);
 
 /**
@@ -479,7 +487,7 @@ rxkb_layout_first(struct rxkb_context *ctx);
  *
  * @return the next layout or NULL at the end of the list
  */
-struct rxkb_layout *
+RXKB_EXPORT struct rxkb_layout *
 rxkb_layout_next(struct rxkb_layout *l);
 
 /**
@@ -487,7 +495,7 @@ rxkb_layout_next(struct rxkb_layout *l);
  *
  * @returns The argument passed in to this function.
  */
-struct rxkb_layout *
+RXKB_EXPORT struct rxkb_layout *
 rxkb_layout_ref(struct rxkb_layout *l);
 
 /**
@@ -496,14 +504,14 @@ rxkb_layout_ref(struct rxkb_layout *l);
  *
  * @returns always NULL
  */
-struct rxkb_layout *
+RXKB_EXPORT struct rxkb_layout *
 rxkb_layout_unref(struct rxkb_layout *l);
 
 /**
  * Return the name of this layout. This is the value for L in RMLVO, to be used
  * with libxkbcommon.
  */
-const char *
+RXKB_EXPORT const char *
 rxkb_layout_get_name(struct rxkb_layout *l);
 
 /**
@@ -516,27 +524,27 @@ rxkb_layout_get_name(struct rxkb_layout *l);
  *
  * Where the variant is NULL, the layout is the base layout (e.g. "us").
  */
-const char *
+RXKB_EXPORT const char *
 rxkb_layout_get_variant(struct rxkb_layout *l);
 
 /**
  * Return a short (one-word) description of this layout. This function may
  * return NULL.
  */
-const char *
+RXKB_EXPORT const char *
 rxkb_layout_get_brief(struct rxkb_layout *l);
 
 /**
  * Return a human-readable description of this layout. This function may return
  * NULL.
  */
-const char *
+RXKB_EXPORT const char *
 rxkb_layout_get_description(struct rxkb_layout *l);
 
 /**
  * Return the popularity for this layout.
  */
-enum rxkb_popularity
+RXKB_EXPORT enum rxkb_popularity
 rxkb_layout_get_popularity(struct rxkb_layout *l);
 
 /**
@@ -550,7 +558,7 @@ rxkb_layout_get_popularity(struct rxkb_layout *l);
  *
  * @return The first option group in the option group list.
  */
-struct rxkb_option_group *
+RXKB_EXPORT struct rxkb_option_group *
 rxkb_option_group_first(struct rxkb_context *ctx);
 
 /**
@@ -563,7 +571,7 @@ rxkb_option_group_first(struct rxkb_context *ctx);
  *
  * @return the next option group or NULL at the end of the list
  */
-struct rxkb_option_group *
+RXKB_EXPORT struct rxkb_option_group *
 rxkb_option_group_next(struct rxkb_option_group *g);
 
 /**
@@ -571,7 +579,7 @@ rxkb_option_group_next(struct rxkb_option_group *g);
  *
  * @returns The argument passed in to this function.
  */
-struct rxkb_option_group *
+RXKB_EXPORT struct rxkb_option_group *
 rxkb_option_group_ref(struct rxkb_option_group *g);
 
 /**
@@ -580,7 +588,7 @@ rxkb_option_group_ref(struct rxkb_option_group *g);
  *
  * @returns always NULL
  */
-struct rxkb_option_group *
+RXKB_EXPORT struct rxkb_option_group *
 rxkb_option_group_unref(struct rxkb_option_group *g);
 
 /**
@@ -588,14 +596,14 @@ rxkb_option_group_unref(struct rxkb_option_group *g);
  * RMLVO, the name can be used for internal sorting in the caller. This function
  * may return NULL.
  */
-const char *
+RXKB_EXPORT const char *
 rxkb_option_group_get_name(struct rxkb_option_group *m);
 
 /**
  * Return a human-readable description of this option group. This function may
  * return NULL.
  */
-const char *
+RXKB_EXPORT const char *
 rxkb_option_group_get_description(struct rxkb_option_group *m);
 
 /**
@@ -603,13 +611,13 @@ rxkb_option_group_get_description(struct rxkb_option_group *m);
  *              simultaneously, false if all options within this option group
  *              are mutually exclusive.
  */
-bool
+RXKB_EXPORT bool
 rxkb_option_group_allows_multiple(struct rxkb_option_group *g);
 
 /**
  * Return the popularity for this option group.
  */
-enum rxkb_popularity
+RXKB_EXPORT enum rxkb_popularity
 rxkb_option_group_get_popularity(struct rxkb_option_group *g);
 
 /**
@@ -622,7 +630,7 @@ rxkb_option_group_get_popularity(struct rxkb_option_group *g);
  *
  * @return The first option in the option list.
  */
-struct rxkb_option *
+RXKB_EXPORT struct rxkb_option *
 rxkb_option_first(struct rxkb_option_group *group);
 
 /**
@@ -634,7 +642,7 @@ rxkb_option_first(struct rxkb_option_group *group);
  *
  * @returns The next option or NULL at the end of the list
  */
-struct rxkb_option *
+RXKB_EXPORT struct rxkb_option *
 rxkb_option_next(struct rxkb_option *o);
 
 /**
@@ -642,7 +650,7 @@ rxkb_option_next(struct rxkb_option *o);
  *
  * @returns The argument passed in to this function.
  */
-struct rxkb_option *
+RXKB_EXPORT struct rxkb_option *
 rxkb_option_ref(struct rxkb_option *o);
 
 /**
@@ -651,34 +659,34 @@ rxkb_option_ref(struct rxkb_option *o);
  *
  * @returns always NULL
  */
-struct rxkb_option *
+RXKB_EXPORT struct rxkb_option *
 rxkb_option_unref(struct rxkb_option *o);
 
 /**
  * Return the name of this option. This is the value for O in RMLVO, to be used
  * with libxkbcommon.
  */
-const char *
+RXKB_EXPORT const char *
 rxkb_option_get_name(struct rxkb_option *o);
 
 /**
  * Return a short (one-word) description of this option. This function may
  * return NULL.
  */
-const char *
+RXKB_EXPORT const char *
 rxkb_option_get_brief(struct rxkb_option *o);
 
 /**
  * Return a human-readable description of this option. This function may return
  * NULL.
  */
-const char *
+RXKB_EXPORT const char *
 rxkb_option_get_description(struct rxkb_option *o);
 
 /**
  * Return the popularity for this option.
  */
-enum rxkb_popularity
+RXKB_EXPORT enum rxkb_popularity
 rxkb_option_get_popularity(struct rxkb_option *o);
 
 /**
@@ -686,7 +694,7 @@ rxkb_option_get_popularity(struct rxkb_option *o);
  *
  * @returns The argument passed in to this function.
  */
-struct rxkb_iso639_code *
+RXKB_EXPORT struct rxkb_iso639_code *
 rxkb_iso639_code_ref(struct rxkb_iso639_code *iso639);
 
 /**
@@ -695,13 +703,13 @@ rxkb_iso639_code_ref(struct rxkb_iso639_code *iso639);
  *
  * @returns always NULL
  */
-struct rxkb_iso639_code *
+RXKB_EXPORT struct rxkb_iso639_code *
 rxkb_iso639_code_unref(struct rxkb_iso639_code *iso639);
 
 /**
  * Return the ISO 639-3 code for this code (e.g. "eng", "fra").
  */
-const char *
+RXKB_EXPORT const char *
 rxkb_iso639_code_get_code(struct rxkb_iso639_code *iso639);
 
 /**
@@ -714,7 +722,7 @@ rxkb_iso639_code_get_code(struct rxkb_iso639_code *iso639);
  *
  * @return The first code in the code list.
  */
-struct rxkb_iso639_code *
+RXKB_EXPORT struct rxkb_iso639_code *
 rxkb_layout_get_iso639_first(struct rxkb_layout *layout);
 
 /**
@@ -727,7 +735,7 @@ rxkb_layout_get_iso639_first(struct rxkb_layout *layout);
  *
  * @returns The next code or NULL at the end of the list
  */
-struct rxkb_iso639_code *
+RXKB_EXPORT struct rxkb_iso639_code *
 rxkb_iso639_code_next(struct rxkb_iso639_code *iso639);
 
 /**
@@ -735,7 +743,7 @@ rxkb_iso639_code_next(struct rxkb_iso639_code *iso639);
  *
  * @returns The argument passed in to this function.
  */
-struct rxkb_iso3166_code *
+RXKB_EXPORT struct rxkb_iso3166_code *
 rxkb_iso3166_code_ref(struct rxkb_iso3166_code *iso3166);
 
 /**
@@ -744,13 +752,13 @@ rxkb_iso3166_code_ref(struct rxkb_iso3166_code *iso3166);
  *
  * @returns always NULL
  */
-struct rxkb_iso3166_code *
+RXKB_EXPORT struct rxkb_iso3166_code *
 rxkb_iso3166_code_unref(struct rxkb_iso3166_code *iso3166);
 
 /**
  * Return the ISO 3166 Alpha 2 code for this code (e.g. "US", "FR").
  */
-const char *
+RXKB_EXPORT const char *
 rxkb_iso3166_code_get_code(struct rxkb_iso3166_code *iso3166);
 
 /**
@@ -764,7 +772,7 @@ rxkb_iso3166_code_get_code(struct rxkb_iso3166_code *iso3166);
  *
  * @return The first code in the code list.
  */
-struct rxkb_iso3166_code *
+RXKB_EXPORT struct rxkb_iso3166_code *
 rxkb_layout_get_iso3166_first(struct rxkb_layout *layout);
 
 /**
@@ -777,7 +785,7 @@ rxkb_layout_get_iso3166_first(struct rxkb_layout *layout);
  *
  * @returns The next code or NULL at the end of the list
  */
-struct rxkb_iso3166_code *
+RXKB_EXPORT struct rxkb_iso3166_code *
 rxkb_iso3166_code_next(struct rxkb_iso3166_code *iso3166);
 
 /** @} */

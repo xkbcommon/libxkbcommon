@@ -13,7 +13,7 @@
 #define is_path_separator(s) ((s) == PATH_SEPARATOR)
 #endif
 
-bool
+XKB_EXPORT_PRIVATE bool
 is_absolute(const char *path);
 
 #endif

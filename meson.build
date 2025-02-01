@@ -267,7 +267,7 @@ elif cc.get_argument_syntax() == 'msvc'
     libxkbcommon_def = custom_target('xkbcommon.def',
         command: [map_to_def, '@INPUT@', '@OUTPUT@'],
         input: 'xkbcommon.map',
-        output: 'kxbcommon.def',
+        output: 'xkbcommon.def',
     )
     libxkbcommon_link_deps += libxkbcommon_def
     libxkbcommon_link_args += '/DEF:' + libxkbcommon_def.full_path()
@@ -449,18 +449,12 @@ icu_dep = dependency('icu-uc', required: false)
 build_tools = get_option('enable-tools') and cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE')
 if build_tools
     # Common resources
-    libxkbcommon_tools_internal_sources = [
-        'tools/tools-common.h',
-        'tools/tools-common.c',
-    ]
-    libxkbcommon_tools_internal = static_library(
-        'tools-internal',
-        libxkbcommon_tools_internal_sources,
-        dependencies: dep_libxkbcommon,
-    )
     tools_dep = declare_dependency(
+        sources: [
+            'tools/tools-common.h',
+            'tools/tools-common.c',
+        ],
         include_directories: [include_directories('tools', 'include')],
-        link_with: libxkbcommon_tools_internal,
         dependencies: dep_libxkbcommon,
     )
     configh_data.set10('HAVE_TOOLS', true)
@@ -552,8 +546,6 @@ if build_tools
         # The same tool again, but with access to some private APIs.
         executable('interactive-evdev',
                 'tools/interactive-evdev.c',
-                libxkbcommon_sources,
-                libxkbcommon_tools_internal_sources,
                 dependencies: [tools_dep],
                 c_args: ['-DENABLE_PRIVATE_APIS'],
                 include_directories: [include_directories('src', 'include')],
@@ -686,30 +678,34 @@ configure_file(output: 'test-config.h', configuration: test_configh_data)
 m_dep = cc.find_library('m', required : false)
 # Some tests need to use unexported symbols, so we link them against
 # an internal copy of libxkbcommon with all symbols exposed.
-libxkbcommon_test_internal = static_library(
+libxkbcommon_test_internal = library(
     'xkbcommon-test-internal',
-    'test/common.c',
-    'test/test.h',
-    'test/evdev-scancodes.h',
-    'bench/bench.c',
-    'bench/bench.h',
     libxkbcommon_sources,
     include_directories: include_directories('src', 'include'),
     c_args: ['-DENABLE_PRIVATE_APIS'],
-    dependencies: [m_dep],
+    gnu_symbol_visibility: 'hidden',
 )
 test_dep = declare_dependency(
+    sources: [
+        'bench/bench.c',
+        'bench/bench.h',
+        'test/common.c',
+        'test/evdev-scancodes.h',
+        'test/test.h',
+        'tools/tools-common.c',
+        'tools/tools-common.h',
+    ],
     include_directories: include_directories('src', 'include'),
     link_with: libxkbcommon_test_internal,
-    dependencies: [tools_dep],
+    dependencies: [m_dep],
 )
 if get_option('enable-x11')
-    libxkbcommon_x11_test_internal = static_library(
+    libxkbcommon_x11_test_internal = library(
         'xkbcommon-x11-internal',
         libxkbcommon_x11_sources,
-        'test/xvfb-wrapper.c',
-        'test/xvfb-wrapper.h',
         include_directories: include_directories('src', 'include'),
+        c_args: ['-DENABLE_PRIVATE_APIS'],
+        gnu_symbol_visibility: 'hidden',
         link_with: libxkbcommon_test_internal,
         dependencies: [
             xcb_dep,
@@ -721,8 +717,14 @@ if get_option('enable-x11')
         dependencies: [
             test_dep,
             xcb_dep,
-            xcb_xkb_dep,
         ],
+    )
+    x11_xvfb_test_dep = declare_dependency(
+        sources: [
+            'test/xvfb-wrapper.c',
+            'test/xvfb-wrapper.h',
+        ],
+        dependencies: [x11_test_dep],
     )
 endif
 # TODO: version range?
@@ -888,13 +890,13 @@ if get_option('enable-x11')
     endif
     test(
         'x11',
-        executable('test-x11', 'test/x11.c', dependencies: x11_test_dep),
+        executable('test-x11', 'test/x11.c', dependencies: x11_xvfb_test_dep),
         env: test_env,
         is_parallel : false,
     )
     test(
         'x11comp',
-        executable('test-x11comp', 'test/x11comp.c', dependencies: x11_test_dep),
+        executable('test-x11comp', 'test/x11comp.c', dependencies: x11_xvfb_test_dep),
         env: test_env,
         is_parallel : false,
     )

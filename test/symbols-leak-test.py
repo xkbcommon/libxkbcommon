@@ -19,7 +19,7 @@ def symbols_from_map(path):
 
 
 def symbols_from_src(path):
-    return re.findall(r"XKB_EXPORT.*\n(xkb_.*)\(", path.read_text("utf-8"))
+    return re.findall(r"\bXKB_EXPORT\b.*\n(xkb_.*)\(", path.read_text("utf-8"))
 
 
 def diff(map_path, src_paths):
@@ -34,9 +34,8 @@ exit = 0
 left, right = diff(
     top_srcdir / "xkbcommon.map",
     [
-        *(top_srcdir / "src").glob("*.c"),
-        *(top_srcdir / "src" / "xkbcomp").glob("*.c"),
-        *(top_srcdir / "src" / "compose").glob("*.c"),
+        top_srcdir / "include/xkbcommon/xkbcommon.h",
+        top_srcdir / "include/xkbcommon/xkbcommon-compose.h",
     ],
 )
 if left:
@@ -50,7 +49,7 @@ if right:
 left, right = diff(
     top_srcdir / "xkbcommon-x11.map",
     [
-        *(top_srcdir / "src" / "x11").glob("*.c"),
+        top_srcdir / "include/xkbcommon/xkbcommon-x11.h",
     ],
 )
 if left:
