@@ -28,6 +28,7 @@
 #define XKBCOMP_AST_BUILD_H
 
 #include "ast.h"
+#include "src/scanner-utils.h"
 
 ExprDef *
 ExprCreateString(xkb_atom_t str);
@@ -74,6 +75,10 @@ ExprCreateKeysymList(xkb_keysym_t sym);
 
 ExprDef *
 ExprAppendKeysymList(ExprDef *list, xkb_keysym_t sym);
+
+ExprDef *
+ExprKeysymListAppendString(struct scanner *param,
+                           ExprDef *expr, const char *string);
 
 KeycodeDef *
 KeycodeCreate(xkb_atom_t name, int64_t value);

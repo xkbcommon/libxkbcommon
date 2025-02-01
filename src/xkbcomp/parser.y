@@ -748,15 +748,46 @@ MultiKeySymList :       MultiKeySymList COMMA KeySym
 
 KeySymList      :       KeySymList COMMA KeySym
                         { $$ = ExprAppendKeysymList($1, $3); }
+                |       KeySymList COMMA STRING
+                        {
+                            $$ = ExprKeysymListAppendString(param->scanner, $1, $3);
+                            free($3);
+                            if (!$$)
+                                YYERROR;
+                        }
                 |       KeySym COMMA KeySym
                         {
                             $$ = ExprCreateKeysymList($1);
                             $$ = ExprAppendKeysymList($$, $3);
                         }
+                |       KeySym COMMA STRING
+                        {
+                            $$ = ExprCreateKeysymList($1);
+                            $$ = ExprKeysymListAppendString(param->scanner, $$, $3);
+                            free($3);
+                            if (!$$)
+                                YYERROR;
+                        }
+                |       STRING
+                        {
+                            $$ = ExprCreateKeysymList(XKB_KEY_NoSymbol);
+                            $$ = ExprKeysymListAppendString(param->scanner, $$, $1);
+                            free($1);
+                            if (!$$)
+                                YYERROR;
+                        }
                 ;
 
 KeySyms         :       OBRACE KeySymList CBRACE
                         { $$ = $2; }
+                |       STRING
+                        {
+                            $$ = ExprCreateKeysymList(XKB_KEY_NoSymbol);
+                            $$ = ExprKeysymListAppendString(param->scanner, $$, $1);
+                            free($1);
+                            if (!$$)
+                                YYERROR;
+                        }
                 ;
 
 KeySym          :       IDENT
