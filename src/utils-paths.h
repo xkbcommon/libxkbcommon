@@ -1,3 +1,8 @@
+/*
+ * Copyright © 2024 Pierre Le Marre
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifndef UTILS_PATHS_H
 #define UTILS_PATHS_H
 

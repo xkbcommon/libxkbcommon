@@ -1,3 +1,8 @@
+/*
+ * Copyright © 2022 Ran Benita <ran@unusedvar.com>
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifndef COMPOSE_LEGACY_ITER_H
 #define COMPOSE_LEGACY_ITER_H
 
