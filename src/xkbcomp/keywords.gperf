@@ -18,6 +18,7 @@ struct keyword_tok { int name; int tok; };
 %struct-type
 %pic
 %ignore-case
+%compare-lengths
 
 %%
 action,                 ACTION_TOK
