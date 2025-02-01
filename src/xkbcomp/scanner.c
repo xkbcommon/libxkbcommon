@@ -113,14 +113,16 @@ skip_more_whitespace_and_comments:
     /* Key name literal. */
     if (scanner_chr(s, '<')) {
         while (is_graph(scanner_peek(s)) && scanner_peek(s) != '>')
-            scanner_buf_append(s, scanner_next(s));
-        if (!scanner_buf_append(s, '\0') || !scanner_chr(s, '>')) {
+            scanner_next(s);
+        if (!scanner_chr(s, '>')) {
             scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
                         "unterminated key name literal");
             return ERROR_TOK;
         }
         /* Empty key name literals are allowed. */
-        yylval->atom = xkb_atom_intern(s->ctx, s->buf, s->buf_pos - 1);
+        const char *start = s->s + s->token_pos + 1;
+        const size_t len = s->pos - s->token_pos - 2;
+        yylval->atom = xkb_atom_intern(s->ctx, start, len);
         return KEYNAME;
     }
 
@@ -144,20 +146,17 @@ skip_more_whitespace_and_comments:
 
     /* Identifier. */
     if (is_alpha(scanner_peek(s)) || scanner_peek(s) == '_') {
-        s->buf_pos = 0;
         while (is_alnum(scanner_peek(s)) || scanner_peek(s) == '_')
-            scanner_buf_append(s, scanner_next(s));
-        if (!scanner_buf_append(s, '\0')) {
-            scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
-                        "identifier too long");
-            return ERROR_TOK;
-        }
+            scanner_next(s);
+
+        const char *start = s->s + s->token_pos;
+        const size_t len = s->pos - s->token_pos;
 
         /* Keyword. */
-        tok = keyword_to_token(s->buf, s->buf_pos - 1);
-        if (tok != -1) return tok;
+        tok = keyword_to_token(start, len);
+        if (tok >= 0) return tok;
 
-        yylval->str = strdup(s->buf);
+        yylval->str = strndup(start, len);
         if (!yylval->str)
             return ERROR_TOK;
         return IDENT;
