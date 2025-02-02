@@ -7,6 +7,7 @@
 struct parser_param;
 struct scanner;
 
+#include "scanner-utils.h"
 #include "parser.h"
 
 int

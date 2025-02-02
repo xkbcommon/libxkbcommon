@@ -29,10 +29,20 @@ svaleq(struct sval s1, struct sval s2)
 }
 
 static inline bool
+isvaleq(struct sval s1, struct sval s2)
+{
+    return s1.len == s2.len && istrncmp(s1.start, s2.start, s1.len) == 0;
+}
+
+static inline bool
 svaleq_prefix(struct sval s1, struct sval s2)
 {
     return s1.len <= s2.len && memcmp(s1.start, s2.start, s1.len) == 0;
 }
+
+#define SVAL(start, len) (struct sval){(start), len}
+#define SVAL_LIT(literal) SVAL(literal, sizeof(literal) - 1)
+#define SVAL_INIT(literal) { literal, sizeof(literal) - 1 }
 
 /* A line:column location in the input string (1-based). */
 struct scanner_loc {

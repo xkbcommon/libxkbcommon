@@ -15,7 +15,6 @@
 #include "xkbcomp/xkbcomp-priv.h"
 #include "xkbcomp/ast-build.h"
 #include "xkbcomp/parser-priv.h"
-#include "scanner-utils.h"
 #include "keysym.h"
 
 struct parser_param {
@@ -38,25 +37,33 @@ _xkbcommon_error(struct parser_param *param, const char *msg)
 }
 
 static bool
-resolve_keysym(struct parser_param *param, const char *name, xkb_keysym_t *sym_rtrn)
+resolve_keysym(struct parser_param *param, struct sval name, xkb_keysym_t *sym_rtrn)
 {
     xkb_keysym_t sym;
 
-    if (!name || istreq(name, "any") || istreq(name, "nosymbol")) {
+    if (isvaleq(name, SVAL_LIT("any")) || isvaleq(name, SVAL_LIT("nosymbol"))) {
         *sym_rtrn = XKB_KEY_NoSymbol;
         return true;
     }
 
-    if (istreq(name, "none") || istreq(name, "voidsymbol")) {
+    if (isvaleq(name, SVAL_LIT("none")) || isvaleq(name, SVAL_LIT("voidsymbol"))) {
         *sym_rtrn = XKB_KEY_VoidSymbol;
         return true;
     }
 
-    sym = xkb_keysym_from_name(name, XKB_KEYSYM_NO_FLAGS);
+    /* xkb_keysym_from_name needs a C string. */
+    char buf[XKB_KEYSYM_NAME_MAX_SIZE];
+    if (name.len >= sizeof(buf)) {
+        return false;
+    }
+    memcpy(buf, name.start, name.len);
+    buf[name.len] = '\0';
+
+    sym = xkb_keysym_from_name(buf, XKB_KEYSYM_NO_FLAGS);
     if (sym != XKB_KEY_NoSymbol) {
         *sym_rtrn = sym;
         check_deprecated_keysyms(parser_warn, param, param->ctx,
-                                 sym, name, name, "%s", "");
+                                 sym, buf, buf, "%s", "");
         return true;
     }
 
@@ -147,6 +154,7 @@ resolve_keysym(struct parser_param *param, const char *name, xkb_keysym_t *sym_r
         int64_t          num;
         enum xkb_file_type file_type;
         char            *str;
+        struct sval     sval;
         xkb_atom_t      atom;
         enum merge_mode merge;
         enum xkb_map_flags mapFlags;
@@ -174,7 +182,8 @@ resolve_keysym(struct parser_param *param, const char *name, xkb_keysym_t *sym_r
 }
 
 %type <num>     INTEGER FLOAT
-%type <str>     IDENT STRING
+%type <str>     STRING
+%type <sval>    IDENT
 %type <atom>    KEYNAME
 %type <num>     KeyCode Number Integer Float SignedNumber DoodadType
 %type <merge>   MergeMode OptMergeMode
@@ -744,12 +753,11 @@ KeySym          :       IDENT
                                 parser_warn(
                                     param,
                                     XKB_WARNING_UNRECOGNIZED_KEYSYM,
-                                    "unrecognized keysym \"%s\"",
-                                    $1
+                                    "unrecognized keysym \"%.*s\"",
+                                    $1.len, $1.start
                                 );
                                 $$ = XKB_KEY_NoSymbol;
                             }
-                            free($1);
                         }
                         /* Handle keysym that is also a keyword  */
                 |       SECTION { $$ = XKB_KEY_section; }
@@ -808,7 +816,7 @@ Integer         :       INTEGER { $$ = $1; }
 KeyCode         :       INTEGER { $$ = $1; }
                 ;
 
-Ident           :       IDENT   { $$ = xkb_atom_intern(param->ctx, $1, strlen($1)); free($1); }
+Ident           :       IDENT   { $$ = xkb_atom_intern(param->ctx, $1.start, $1.len); }
                 |       DEFAULT { $$ = xkb_atom_intern_literal(param->ctx, "default"); }
                 ;
 

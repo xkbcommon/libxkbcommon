@@ -7,7 +7,6 @@
 
 #include "xkbcomp-priv.h"
 #include "parser-priv.h"
-#include "scanner-utils.h"
 
 static bool
 number(struct scanner *s, int64_t *out, int *out_tok)
@@ -156,9 +155,7 @@ skip_more_whitespace_and_comments:
         tok = keyword_to_token(start, len);
         if (tok >= 0) return tok;
 
-        yylval->str = strndup(start, len);
-        if (!yylval->str)
-            return ERROR_TOK;
+        yylval->sval = SVAL(start, len);
         return IDENT;
     }
 

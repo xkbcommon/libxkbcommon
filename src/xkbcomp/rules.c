@@ -133,13 +133,11 @@ enum rules_mlvo {
     _MLVO_NUM_ENTRIES
 };
 
-#define SVAL_LIT(literal) { literal, sizeof(literal) - 1 }
-
 static const struct sval rules_mlvo_svals[_MLVO_NUM_ENTRIES] = {
-    [MLVO_MODEL] = SVAL_LIT("model"),
-    [MLVO_LAYOUT] = SVAL_LIT("layout"),
-    [MLVO_VARIANT] = SVAL_LIT("variant"),
-    [MLVO_OPTION] = SVAL_LIT("option"),
+    [MLVO_MODEL] = SVAL_INIT("model"),
+    [MLVO_LAYOUT] = SVAL_INIT("layout"),
+    [MLVO_VARIANT] = SVAL_INIT("variant"),
+    [MLVO_OPTION] = SVAL_INIT("option"),
 };
 
 enum rules_kccgst {
@@ -152,11 +150,11 @@ enum rules_kccgst {
 };
 
 static const struct sval rules_kccgst_svals[_KCCGST_NUM_ENTRIES] = {
-    [KCCGST_KEYCODES] = SVAL_LIT("keycodes"),
-    [KCCGST_TYPES] = SVAL_LIT("types"),
-    [KCCGST_COMPAT] = SVAL_LIT("compat"),
-    [KCCGST_SYMBOLS] = SVAL_LIT("symbols"),
-    [KCCGST_GEOMETRY] = SVAL_LIT("geometry"),
+    [KCCGST_KEYCODES] = SVAL_INIT("keycodes"),
+    [KCCGST_TYPES] = SVAL_INIT("types"),
+    [KCCGST_COMPAT] = SVAL_INIT("compat"),
+    [KCCGST_SYMBOLS] = SVAL_INIT("symbols"),
+    [KCCGST_GEOMETRY] = SVAL_INIT("geometry"),
 };
 
 /* We use this to keep score whether an mlvo was matched or not; if not,
