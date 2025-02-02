@@ -165,6 +165,8 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
     xkb_mod_mask_t vmodmap = 0;
     xkb_layout_index_t group;
     xkb_level_index_t level;
+    // FIXME: do not use darray, add actions directly in FindInterpForKey
+    xkb_sym_interprets interprets = darray_new();
 
     for (group = 0; group < key->num_groups; group++) {
         /* Skip any interpretation for this group if it has explicit actions */
@@ -177,8 +179,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
             const struct xkb_sym_interpret **interp_iter;
             const struct xkb_sym_interpret *interp;
             size_t k;
-            // FIXME: do not use darray, add actions directly in FindInterpForKey
-            xkb_sym_interprets interprets = darray_new();
+            darray_resize(interprets, 0);
 
             const bool found = FindInterpForKey(keymap, key, group, level, &interprets);
             if (!found)
@@ -213,10 +214,10 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
                     }
                 }
             }
-
-            darray_free(interprets);
         }
     }
+
+    darray_free(interprets);
 
     if (!(key->explicit & EXPLICIT_VMODMAP))
         key->vmodmap = vmodmap;
