@@ -32,7 +32,7 @@
 
 - [ ] Tag `git pull && git tag --annotate -m xkbcommon-<MAJOR.MINOR.PATCH> xkbcommon-<MAJOR.MINOR.PATCH>`.
 
-- [ ] Push the tag `git push xkbcommon-<MAJOR.MINOR.PATCH>`.
+- [ ] Push the tag `git push origin xkbcommon-<MAJOR.MINOR.PATCH>`.
 
 #### Send announcement email to wayland-devel
 
