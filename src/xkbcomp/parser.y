@@ -88,70 +88,72 @@ resolve_keysym(struct parser_param *param, struct sval name, xkb_keysym_t *sym_r
 %lex-param      { struct scanner *param_scanner }
 %parse-param    { struct parser_param *param }
 
+%define parse.error detailed
+
 %token
-        END_OF_FILE     0
-        ERROR_TOK       255
-        XKB_KEYMAP      1
-        XKB_KEYCODES    2
-        XKB_TYPES       3
-        XKB_SYMBOLS     4
-        XKB_COMPATMAP   5
-        XKB_GEOMETRY    6
-        XKB_SEMANTICS   7
-        XKB_LAYOUT      8
-        INCLUDE         10
-        OVERRIDE        11
-        AUGMENT         12
-        REPLACE         13
-        ALTERNATE       14
-        VIRTUAL_MODS    20
-        TYPE            21
-        INTERPRET       22
-        ACTION_TOK      23
-        KEY             24
-        ALIAS           25
-        GROUP           26
-        MODIFIER_MAP    27
-        INDICATOR       28
-        SHAPE           29
-        KEYS            30
-        ROW             31
-        SECTION         32
-        OVERLAY         33
-        TEXT            34
-        OUTLINE         35
-        SOLID           36
-        LOGO            37
-        VIRTUAL         38
-        EQUALS          40
-        PLUS            41
-        MINUS           42
-        DIVIDE          43
-        TIMES           44
-        OBRACE          45
-        CBRACE          46
-        OPAREN          47
-        CPAREN          48
-        OBRACKET        49
-        CBRACKET        50
-        DOT             51
-        COMMA           52
-        SEMI            53
-        EXCLAM          54
-        INVERT          55
-        STRING          60
-        INTEGER         61
-        FLOAT           62
-        IDENT           63
-        KEYNAME         64
-        PARTIAL         70
-        DEFAULT         71
-        HIDDEN          72
-        ALPHANUMERIC_KEYS       73
-        MODIFIER_KEYS           74
-        KEYPAD_KEYS             75
-        FUNCTION_KEYS           76
-        ALTERNATE_GROUP         77
+        END_OF_FILE     0 "end of file"
+        ERROR_TOK       255 "invalid token"
+        XKB_KEYMAP      1 "xkb_keymap"
+        XKB_KEYCODES    2 "xkb_keycodes"
+        XKB_TYPES       3 "xkb_types"
+        XKB_SYMBOLS     4 "xkb_symbols"
+        XKB_COMPATMAP   5 "xkb_compatibility"
+        XKB_GEOMETRY    6 "xkb_geometry"
+        XKB_SEMANTICS   7 "xkb_semantics"
+        XKB_LAYOUT      8 "xkb_layout"
+        INCLUDE         10 "include"
+        OVERRIDE        11 "override"
+        AUGMENT         12 "augment"
+        REPLACE         13 "replace"
+        ALTERNATE       14 "alternate"
+        VIRTUAL_MODS    20 "virtual_modifiers"
+        TYPE            21 "type"
+        INTERPRET       22 "interpret"
+        ACTION_TOK      23 "action"
+        KEY             24 "key"
+        ALIAS           25 "alias"
+        GROUP           26 "group"
+        MODIFIER_MAP    27 "modifier_map"
+        INDICATOR       28 "indicator"
+        SHAPE           29 "shape"
+        KEYS            30 "keys"
+        ROW             31 "row"
+        SECTION         32 "section"
+        OVERLAY         33 "overlay"
+        TEXT            34 "text"
+        OUTLINE         35 "outline"
+        SOLID           36 "solid"
+        LOGO            37 "logo"
+        VIRTUAL         38 "virtual"
+        EQUALS          40 "="
+        PLUS            41 "+"
+        MINUS           42 "-"
+        DIVIDE          43 "/"
+        TIMES           44 "*"
+        OBRACE          45 "{"
+        CBRACE          46 "}"
+        OPAREN          47 "("
+        CPAREN          48 ")"
+        OBRACKET        49 "["
+        CBRACKET        50 "]"
+        DOT             51 "."
+        COMMA           52 ","
+        SEMI            53 ";"
+        EXCLAM          54 "!"
+        INVERT          55 "~"
+        STRING          60 "string literal"
+        INTEGER         61 "integer literal"
+        FLOAT           62 "float literal"
+        IDENT           63 "identifier"
+        KEYNAME         64 "key name"
+        PARTIAL         70 "partial"
+        DEFAULT         71 "default"
+        HIDDEN          72 "hidden"
+        ALPHANUMERIC_KEYS       73 "alphanumeric_keys"
+        MODIFIER_KEYS           74 "modifier_keys"
+        KEYPAD_KEYS             75 "keypad_keys"
+        FUNCTION_KEYS           76 "function_keys"
+        ALTERNATE_GROUP         77 "alternate_group"
 
 %right  EQUALS
 %left   PLUS MINUS
