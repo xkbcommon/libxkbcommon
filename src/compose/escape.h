@@ -2,9 +2,7 @@
  * Copyright © 2023 Pierre Le Marre <dev@wismill.eu>
  * SPDX-License-Identifier: MIT
  */
-
-#ifndef COMPOSE_ESCAPE_H
-#define COMPOSE_ESCAPE_H
+#pragma once
 
 #include "config.h"
 
@@ -75,5 +73,3 @@ escape_utf8_string_literal(const char *from)
         free(to);
     return ret;
 }
-
-#endif

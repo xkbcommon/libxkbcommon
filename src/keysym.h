@@ -7,9 +7,7 @@
   *
   * SPDX-License-Identifier: MIT-open-group AND MIT
   */
-
-#ifndef KEYSYM_H
-#define KEYSYM_H
+#pragma once
 
 #include <stdbool.h>
 #include "xkbcommon/xkbcommon.h"
@@ -105,5 +103,3 @@ xkb_keysym_is_keypad(xkb_keysym_t keysym);
 
 bool
 xkb_keysym_is_modifier(xkb_keysym_t keysym);
-
-#endif

@@ -2,9 +2,7 @@
  * Copyright © 2009 Dan Nicholson
  * SPDX-License-Identifier: MIT
  */
-
-#ifndef TEXT_H
-#define TEXT_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -60,5 +58,3 @@ LedStateMaskText(struct xkb_context *ctx, enum xkb_state_component mask);
 
 const char *
 ControlMaskText(struct xkb_context *ctx, enum xkb_action_controls mask);
-
-#endif /* TEXT_H */

@@ -2,9 +2,7 @@
  * Copyright © 2009 Dan Nicholson
  * SPDX-License-Identifier: MIT
  */
-
-#ifndef XKBCOMP_RULES_H
-#define XKBCOMP_RULES_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -26,5 +24,3 @@ xkb_components_from_rules(struct xkb_context *ctx,
  */
 #define MAX_LAYOUT_INDEX_STR_LENGTH \
         (1 + ((sizeof(xkb_layout_index_t) * CHAR_BIT * 5) >> 4))
-
-#endif

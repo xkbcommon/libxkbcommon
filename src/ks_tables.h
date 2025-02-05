@@ -4,6 +4,7 @@
  * You can always fetch the latest version from:
  * https://raw.github.com/xkbcommon/libxkbcommon/master/src/ks_tables.h
  */
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>

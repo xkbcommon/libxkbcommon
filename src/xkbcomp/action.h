@@ -2,9 +2,7 @@
  * Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
  * SPDX-License-Identifier: HPND
  */
-
-#ifndef XKBCOMP_ACTION_H
-#define XKBCOMP_ACTION_H
+#pragma once
 
 #include "ast.h"
 #include "keymap.h"
@@ -33,6 +31,3 @@ bool
 SetActionField(struct xkb_context *ctx, ActionsInfo *info,
                struct xkb_mod_set *mods, const char *elem,
                const char *field, ExprDef *array_ndx, ExprDef *value);
-
-
-#endif

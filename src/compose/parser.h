@@ -2,9 +2,7 @@
  * Copyright © 2013 Ran Benita <ran234@gmail.com>
  * SPDX-License-Identifier: MIT
  */
-
-#ifndef COMPOSE_PARSER_H
-#define COMPOSE_PARSER_H
+#pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -29,5 +27,3 @@ parse_string(struct xkb_compose_table *table,
 bool
 parse_file(struct xkb_compose_table *table,
            FILE *file, const char *file_name);
-
-#endif

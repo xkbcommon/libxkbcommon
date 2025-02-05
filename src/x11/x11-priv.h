@@ -2,9 +2,7 @@
  * Copyright © 2013 Ran Benita
  * SPDX-License-Identifier: MIT
  */
-
-#ifndef _XKBCOMMON_X11_PRIV_H
-#define _XKBCOMMON_X11_PRIV_H
+#pragma once
 
 #include <xcb/xkb.h>
 
@@ -58,5 +56,3 @@ x11_atom_interner_adopt_atom(struct x11_atom_interner *interner,
 void
 x11_atom_interner_get_escaped_atom_name(struct x11_atom_interner *interner,
                                         xcb_atom_t atom, char **out);
-
-#endif

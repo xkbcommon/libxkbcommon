@@ -2,9 +2,7 @@
  * Copyright © 2024 Pierre Le Marre <dev@wismill.eu>
  * SPDX-License-Identifier: MIT
  */
-
-#ifndef KEYSYM_TEST_H
-#define KEYSYM_TEST_H
+#pragma once
 
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
@@ -358,5 +356,3 @@ ambiguous_icase_ks_names[] = {
     { XKB_KEY_uhorn, 2, { "Uhorn", "uhorn" } },
     { XKB_KEY_XF86Screensaver, 2, { "XF86ScreenSaver", "XF86Screensaver" } }
 };
-
-#endif

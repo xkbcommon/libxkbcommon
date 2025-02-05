@@ -2,9 +2,7 @@
  * Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
  * SPDX-License-Identifier: HPND
  */
-
-#ifndef XKBCOMP_PRIV_H
-#define XKBCOMP_PRIV_H
+#pragma once
 
 #include "keymap.h"
 #include "ast.h"
@@ -100,5 +98,3 @@ ReportBadField(struct xkb_context *ctx, const char *type, const char *field,
             type, field, name, name);
     return false;
 }
-
-#endif

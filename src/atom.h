@@ -2,9 +2,7 @@
  * Copyright © 2009 Dan Nicholson
  * SPDX-License-Identifier: MIT
  */
-
-#ifndef ATOM_H
-#define ATOM_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -27,5 +25,3 @@ atom_intern(struct atom_table *table, const char *string, size_t len, bool add);
 
 const char *
 atom_text(struct atom_table *table, xkb_atom_t atom);
-
-#endif /* ATOM_H */

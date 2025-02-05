@@ -2,9 +2,7 @@
  * Copyright (C) 2011 Joseph Adams <joeyadams3.14159@gmail.com>
  * SPDX-License-Identifier: MIT
  */
-
-#ifndef CCAN_DARRAY_H
-#define CCAN_DARRAY_H
+#pragma once
 
 /* Originally taken from: https://ccodearchive.net/info/darray.html
  * But modified for libxkbcommon. */
@@ -206,5 +204,3 @@ darray_next_alloc(unsigned alloc, unsigned need, unsigned itemSize)
 #define darray_foreach_reverse(i, arr) \
     if ((arr).item) \
     for ((i) = &(arr).item[(arr).size - 1]; (arr).size > 0 && (i) >= &(arr).item[0]; (i)--)
-
-#endif /* CCAN_DARRAY_H */

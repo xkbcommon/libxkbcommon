@@ -2,9 +2,7 @@
  * Copyright © 2012 Ran Benita <ran234@gmail.com>
  * SPDX-License-Identifier: MIT
  */
-
-#ifndef UTILS_H
-#define UTILS_H 1
+#pragma once
 
 #include <errno.h>
 #include <inttypes.h>
@@ -358,5 +356,3 @@ asprintf_safe(const char *fmt, ...)
 
     return str;
 }
-
-#endif /* UTILS_H */

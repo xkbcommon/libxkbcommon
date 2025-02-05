@@ -4,9 +4,7 @@
  *
  * Author: Daniel Stone <daniel@fooishbar.org>
  */
-
-#ifndef TEST_H
-#define TEST_H
+#pragma once
 
 #include <assert.h>
 
@@ -106,6 +104,4 @@ test_compile_rules(struct xkb_context *context, const char *rules,
 #ifdef _WIN32
 #define setenv(varname, value, overwrite) _putenv_s((varname), (value))
 #define unsetenv(varname) _putenv_s(varname, "")
-#endif
-
 #endif

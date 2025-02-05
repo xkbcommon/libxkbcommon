@@ -2,9 +2,7 @@
  * Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
  * SPDX-License-Identifier: HPND
  */
-
-#ifndef XKBCOMP_INCLUDE_H
-#define XKBCOMP_INCLUDE_H
+#pragma once
 
 #include "ast.h"
 
@@ -32,5 +30,3 @@ ExceedsIncludeMaxDepth(struct xkb_context *ctx, unsigned int include_depth);
 XkbFile *
 ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
                    enum xkb_file_type file_type);
-
-#endif

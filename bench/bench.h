@@ -3,9 +3,7 @@
  * Copyright © 2015 Ran Benita <ran234@gmail.com>
  * SPDX-License-Identifier: MIT
  */
-
-#ifndef LIBXKBCOMMON_BENCH_H
-#define LIBXKBCOMMON_BENCH_H
+#pragma once
 
 struct bench_time {
     long seconds;
@@ -87,5 +85,3 @@ predictPerturbed(const struct bench_time *t1, const struct bench_time *t2,
     (est).elapsed /= (n);           \
     (est).stdev /= (n);             \
 } while (0);
-
-#endif /* LIBXKBCOMMON_BENCH_H */

@@ -1,8 +1,6 @@
 // NOTE: This file has been generated automatically by “update-message-registry.py”.
 //       Do not edit manually!
-
-#ifndef MESSAGES_H
-#define MESSAGES_H
+#pragma once
 
 #include <stdint.h>
 
@@ -171,5 +169,3 @@ enum xkb_message_code {
 };
 
 typedef uint32_t xkb_message_code_t;
-
-#endif
