@@ -1044,6 +1044,7 @@ You can disable the documentation with -Denable-docs=false.''')
 
     doxygen_input = [
         'README.md',
+        'meson_options.txt',
         'doc/debugging.md',
         'doc/diagrams/xkb-configuration.dot',
         'doc/diagrams/xkb-keymap-components.dot',
