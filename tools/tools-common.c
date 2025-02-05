@@ -32,6 +32,10 @@
 #include "src/keysym.h"
 #include "src/compose/parser.h"
 
+#ifdef _WIN32
+#define S_ISFIFO(mode) 0
+#endif
+
 static void
 print_keycode(struct xkb_keymap *keymap, const char* prefix,
               xkb_keycode_t keycode, const char *suffix) {
