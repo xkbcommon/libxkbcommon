@@ -2,7 +2,12 @@ PROJECT_NAME           = @PACKAGE_NAME@
 
 PROJECT_NUMBER         = @PACKAGE_VERSION@
 
+PROJECT_BRIEF          = Library implementing the XKB specification for parsing \
+                         keyboard descriptions and handling keyboard state
+
 OUTPUT_DIRECTORY       = @OUTPUT_DIRECTORY@
+
+SITEMAP_URL            = https://xkbcommon.org/doc/@PACKAGE_VERSION@/
 
 BRIEF_MEMBER_DESC      = NO
 
@@ -31,6 +36,8 @@ USE_MDFILE_AS_MAINPAGE = README.md
 
 VERBATIM_HEADERS       = NO
 
+MARKDOWN_ID_STYLE      = GITHUB
+
 ALPHABETICAL_INDEX     = NO
 
 IGNORE_PREFIX          = xkb_ \
@@ -38,13 +45,19 @@ IGNORE_PREFIX          = xkb_ \
                          rxkb_ \
                          RXKB_
 
+DISABLE_INDEX          = NO
+
+GENERATE_TREEVIEW      = NO
+
+FULL_SIDEBAR           = NO
+
 HTML_EXTRA_STYLESHEET  = doc/doxygen-extra.css
 
 TIMESTAMP              = NO
 
 ENUM_VALUES_PER_LINE   = 1
 
-SEARCHENGINE           = NO
+SEARCHENGINE           = YES
 
 GENERATE_LATEX         = NO
 

@@ -54,7 +54,7 @@ Some additional resources are:
 -->
 
 [terminology]: @ref terminology
-[introduction]: @ref introduction
+[introduction]: @ref introduction-to-the-xkb-text-format
 [xkb_keymap]: @ref the-xkb_keymap-block
 [xkb_keycodes]: @ref the-xkb_keycodes-section
 [xkb_types]: @ref the-xkb_types-section
@@ -350,7 +350,7 @@ Some additional resources are:
 [ISO9995]: https://en.wikipedia.org/wiki/ISO/IEC_9995
 
 
-## Introduction to the XKB text format {#introduction}
+## Introduction to the XKB text format
 
 The XKB text format uses a syntax similar to the [C programming language][C].
 Note that the similarity with C stops here: the XKB text format is only a
