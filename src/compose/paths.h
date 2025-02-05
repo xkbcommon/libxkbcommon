@@ -3,8 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef COMPOSE_RESOLVE_H
-#define COMPOSE_RESOLVE_H
+#pragma once
 
 #include "xkbcommon/xkbcommon.h"
 
@@ -25,5 +24,3 @@ get_home_xcompose_file_path(struct xkb_context *ctx);
 
 char *
 get_locale_compose_file_path(struct xkb_context *ctx, const char *locale);
-
-#endif
