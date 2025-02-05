@@ -2,9 +2,7 @@
  * Copyright © 2024 Pierre Le Marre <dev@wismill.eu>
  * SPDX-License-Identifier: MIT
  */
-
-#ifndef UTF8_DECODING_H
-#define UTF8_DECODING_H
+#pragma once
 
 #include "config.h"
 
@@ -20,5 +18,3 @@ utf8_sequence_length(const char *s);
 
 uint32_t
 utf8_next_code_point(const char *s, size_t max_size, size_t *size_out);
-
-#endif

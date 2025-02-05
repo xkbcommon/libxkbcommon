@@ -1,5 +1,4 @@
-#ifndef KEYSYM_TEST_H
-#define KEYSYM_TEST_H
+#pragma once
 
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
@@ -21,5 +20,3 @@ ambiguous_icase_ks_names[] = {
     {%- if not loop.last %},{% endif +%}
     {% endfor %}
 };
-
-#endif

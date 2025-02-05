@@ -2,9 +2,7 @@
  * Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
  * SPDX-License-Identifier: HPND
  */
-
-#ifndef XKBCOMP_AST_BUILD_H
-#define XKBCOMP_AST_BUILD_H
+#pragma once
 
 #include "ast.h"
 
@@ -99,5 +97,3 @@ XkbFileCreate(enum xkb_file_type type, char *name, ParseCommon *defs,
 
 void
 FreeStmt(ParseCommon *stmt);
-
-#endif

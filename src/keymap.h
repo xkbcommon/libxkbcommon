@@ -15,9 +15,7 @@
  * Author: Daniel Stone <daniel@fooishbar.org>
  * Author: Dan Nicholson <dbn.lists@gmail.com>
  */
-
-#ifndef KEYMAP_H
-#define KEYMAP_H
+#pragma once
 
  /* Don't use compat names in internal code. */
 #define _XKBCOMMON_COMPAT_H
@@ -504,5 +502,3 @@ struct xkb_keymap_format_ops {
 };
 
 extern const struct xkb_keymap_format_ops text_v1_keymap_format_ops;
-
-#endif

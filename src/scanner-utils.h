@@ -2,9 +2,7 @@
  * Copyright © 2012 Ran Benita <ran234@gmail.com>
  * SPDX-License-Identifier: MIT
  */
-
-#ifndef XKBCOMP_SCANNER_UTILS_H
-#define XKBCOMP_SCANNER_UTILS_H
+#pragma once
 
 #include "config.h"
 
@@ -233,5 +231,3 @@ scanner_check_supported_char_encoding(struct scanner *scanner)
 
     return true;
 }
-
-#endif

@@ -4,9 +4,7 @@
  *
  * Author: Daniel Stone <daniel@fooishbar.org>
  */
-
-#ifndef CONTEXT_H
-#define CONTEXT_H
+#pragma once
 
 #include <stddef.h>
 
@@ -126,5 +124,3 @@ xkb_context_sanitize_rule_names(struct xkb_context *ctx,
     log_err(ctx, id, "%s: " fmt, __func__, __VA_ARGS__)
 #define log_err_func1(ctx, id, fmt) \
     log_err(ctx, id, "%s: " fmt, __func__)
-
-#endif

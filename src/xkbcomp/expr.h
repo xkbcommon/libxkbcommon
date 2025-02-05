@@ -2,9 +2,7 @@
  * Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
  * SPDX-License-Identifier: HPND
  */
-
-#ifndef XKBCOMP_EXPR_H
-#define XKBCOMP_EXPR_H
+#pragma once
 
 #include "ast.h"
 #include "keymap.h"
@@ -64,5 +62,3 @@ ExprResolveMask(struct xkb_context *ctx, const ExprDef *expr,
 bool
 ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
                   xkb_keysym_t *sym_rtrn);
-
-#endif

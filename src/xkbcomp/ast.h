@@ -7,9 +7,7 @@
  *
  * SPDX-License-Identifier: HPND AND MIT
  */
-
-#ifndef XKBCOMP_AST_H
-#define XKBCOMP_AST_H
+#pragma once
 
 #include "xkbcommon/xkbcommon.h"
 
@@ -324,5 +322,3 @@ typedef struct {
     ParseCommon *defs;
     enum xkb_map_flags flags;
 } XkbFile;
-
-#endif

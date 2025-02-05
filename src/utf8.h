@@ -5,9 +5,7 @@
  *
  * Author: Rob Bradford <rob@linux.intel.com>
  */
-
-#ifndef XKBCOMMON_UTF8_H
-#define XKBCOMMON_UTF8_H
+#pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -18,5 +16,3 @@ utf32_to_utf8(uint32_t unichar, char *buffer);
 
 bool
 is_valid_utf8(const char *ss, size_t len);
-
-#endif

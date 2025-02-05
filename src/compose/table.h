@@ -2,9 +2,7 @@
  * Copyright © 2013,2021 Ran Benita <ran234@gmail.com>
  * SPDX-License-Identifier: MIT
  */
-
-#ifndef COMPOSE_COMPOSE_H
-#define COMPOSE_COMPOSE_H
+#pragma once
 
 #include "xkbcommon/xkbcommon-compose.h"
 #include "src/utils.h"
@@ -108,5 +106,3 @@ struct xkb_compose_table_entry {
     xkb_keysym_t keysym;
     const char *utf8;
 };
-
-#endif

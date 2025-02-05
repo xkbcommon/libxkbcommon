@@ -2,6 +2,7 @@
  * Copyright © 2024 Pierre Le Marre <dev@wismill.eu>
  * SPDX-License-Identifier: MIT
  */
+#pragma once
 
 /* Use macro sorcery */
 #include "src/messages-codes.h"
