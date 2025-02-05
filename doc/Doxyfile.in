@@ -15,7 +15,8 @@ JAVADOC_AUTOBRIEF      = YES
 
 OPTIMIZE_OUTPUT_FOR_C  = YES
 
-EXTENSION_MAPPING      = no_extension=md
+EXTENSION_MAPPING      = no_extension=md \
+                         txt=md
 
 SORT_MEMBER_DOCS       = NO
 
@@ -52,6 +53,8 @@ GENERATE_TREEVIEW      = NO
 FULL_SIDEBAR           = NO
 
 HTML_EXTRA_STYLESHEET  = doc/doxygen-extra.css
+
+HTML_EXTRA_FILES       = meson_options.txt
 
 TIMESTAMP              = NO
 
