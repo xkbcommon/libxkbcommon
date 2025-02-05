@@ -205,7 +205,7 @@ CheckBooleanFlag(struct xkb_context *ctx, enum xkb_action_type action,
                  const ExprDef *array_ndx, const ExprDef *value,
                  enum xkb_action_flags *flags_inout)
 {
-    bool set;
+    bool set = false;
 
     if (array_ndx)
         return ReportActionNotArray(ctx, action, field);
@@ -266,7 +266,7 @@ CheckAffectField(struct xkb_context *ctx, enum xkb_action_type action,
     if (array_ndx)
         return ReportActionNotArray(ctx, action, ACTION_FIELD_AFFECT);
 
-    unsigned int flags = 0;
+    uint32_t flags = 0;
     if (!ExprResolveEnum(ctx, value, &flags, lockWhich))
         return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
                               action, ACTION_FIELD_AFFECT,
@@ -312,7 +312,7 @@ CheckGroupField(struct xkb_context *ctx, enum xkb_action_type action,
                 enum xkb_action_flags *flags_inout, int32_t *group_rtrn)
 {
     const ExprDef *spec;
-    xkb_layout_index_t idx;
+    xkb_layout_index_t idx = 0;
     enum xkb_action_flags flags = *flags_inout;
 
     if (array_ndx)
@@ -377,7 +377,7 @@ HandleMovePtr(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     struct xkb_pointer_action *act = &action->ptr;
 
     if (field == ACTION_FIELD_X || field == ACTION_FIELD_Y) {
-        int val;
+        int64_t val = 0;
         const bool absolute = (value->expr.op != EXPR_NEGATE &&
                                value->expr.op != EXPR_UNARY_PLUS);
 
@@ -390,10 +390,10 @@ HandleMovePtr(struct xkb_context *ctx, const struct xkb_mod_set *mods,
 
         if (val < INT16_MIN || val > INT16_MAX) {
             log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
-                    "The %s field in the %s action must be in range %d..%d; "
-                    "Action definition ignored\n",
+                    "The %s field in the %s action must be in range %d..%d, "
+                    "but got %"PRId64". Action definition ignored\n",
                     fieldText(field), ActionTypeText(action->type),
-                    INT16_MIN, INT16_MAX);
+                    INT16_MIN, INT16_MAX, val);
             return false;
         }
 
@@ -426,7 +426,7 @@ HandlePtrBtn(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     struct xkb_pointer_button_action *act = &action->btn;
 
     if (field == ACTION_FIELD_BUTTON) {
-        int btn;
+        int64_t btn = 0;
 
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
@@ -438,11 +438,11 @@ HandlePtrBtn(struct xkb_context *ctx, const struct xkb_mod_set *mods,
         if (btn < 0 || btn > 5) {
             log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Button must specify default or be in the range 1..5; "
-                    "Illegal button value %d ignored\n", btn);
+                    "Illegal button value %"PRId64" ignored\n", btn);
             return false;
         }
 
-        act->button = btn;
+        act->button = (uint8_t) btn;
         return true;
     }
     else if (action->type == ACTION_TYPE_PTR_LOCK &&
@@ -451,7 +451,7 @@ HandlePtrBtn(struct xkb_context *ctx, const struct xkb_mod_set *mods,
                                 &act->flags);
     }
     else if (field == ACTION_FIELD_COUNT) {
-        int val;
+        int64_t val = 0;
 
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
@@ -463,7 +463,7 @@ HandlePtrBtn(struct xkb_context *ctx, const struct xkb_mod_set *mods,
         if (val < 0 || val > 255) {
             log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "The count field must have a value in the range 0..255; "
-                    "Illegal count %d ignored\n", val);
+                    "Illegal count %"PRId64" ignored\n", val);
             return false;
         }
 
@@ -489,7 +489,7 @@ HandleSetPtrDflt(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     struct xkb_pointer_default_action *act = &action->dflt;
 
     if (field == ACTION_FIELD_AFFECT) {
-        unsigned int val;
+        uint32_t val = 0;
 
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
@@ -501,7 +501,7 @@ HandleSetPtrDflt(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     }
     else if (field == ACTION_FIELD_BUTTON || field == ACTION_FIELD_VALUE) {
         const ExprDef *button;
-        int btn;
+        int64_t btn = 0;
 
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
@@ -523,7 +523,7 @@ HandleSetPtrDflt(struct xkb_context *ctx, const struct xkb_mod_set *mods,
         if (btn < 0 || btn > 5) {
             log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "New default button value must be in the range 1..5; "
-                    "Illegal default button value %d ignored\n", btn);
+                    "Illegal default button value %"PRId64" ignored\n", btn);
             return false;
         }
         if (btn == 0) {
@@ -533,7 +533,7 @@ HandleSetPtrDflt(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             return false;
         }
 
-        act->value = (int8_t)(value->expr.op == EXPR_NEGATE ? -btn: btn);
+        act->value = (int8_t) (value->expr.op == EXPR_NEGATE ? -btn: btn);
         return true;
     }
 
@@ -549,7 +549,7 @@ HandleSwitchScreen(struct xkb_context *ctx, const struct xkb_mod_set *mods,
 
     if (field == ACTION_FIELD_SCREEN) {
         const ExprDef *scrn;
-        int val;
+        int64_t val = 0;
 
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
@@ -572,7 +572,7 @@ HandleSwitchScreen(struct xkb_context *ctx, const struct xkb_mod_set *mods,
         if (val < INT8_MIN || val > INT8_MAX) {
             log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Screen index must be in the range %d..%d; "
-                    "Illegal screen value %d ignored\n",
+                    "Illegal screen value %"PRId64" ignored\n",
                     INT8_MIN, INT8_MAX, val);
             return false;
         }
@@ -600,7 +600,7 @@ HandleSetLockControls(struct xkb_context *ctx, const struct xkb_mod_set *mods,
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
 
-        unsigned int mask = 0;
+        uint32_t mask = 0;
         if (!ExprResolveMask(ctx, value, &mask, ctrlMaskNames))
             return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
                                   field, "controls mask");
@@ -624,7 +624,7 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     struct xkb_private_action *act = &action->priv;
 
     if (field == ACTION_FIELD_TYPE) {
-        int type;
+        int64_t type = 0;
 
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
@@ -636,7 +636,7 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
         if (type < 0 || type > 255) {
             log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Private action type must be in the range 0..255; "
-                    "Illegal type %d ignored\n", type);
+                    "Illegal type %"PRId64" ignored\n", type);
             return false;
         }
 
@@ -653,7 +653,7 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
         if (type < ACTION_TYPE_PRIVATE) {
             log_info(ctx, XKB_LOG_MESSAGE_NO_ID,
                      "Private actions of type %s are not supported; Ignored\n",
-                     ActionTypeText(type));
+                     ActionTypeText((enum xkb_action_type) type));
             act->type = ACTION_TYPE_NONE;
         }
         else {
@@ -664,16 +664,14 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     }
     else if (field == ACTION_FIELD_DATA) {
         if (array_ndx == NULL) {
-            xkb_atom_t val;
-            const char *str;
-            size_t len;
+            xkb_atom_t val = XKB_ATOM_NONE;
 
             if (!ExprResolveString(ctx, value, &val))
                 return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
                                       action->type, field, "string");
 
-            str = xkb_atom_text(ctx, val);
-            len = strlen(str);
+            const char *str = xkb_atom_text(ctx, val);
+            size_t len = strlen(str);
             if (len < 1 || len > sizeof(act->data)) {
                 log_warn(ctx, XKB_LOG_MESSAGE_NO_ID,
                          "A private action has %ld data bytes; "
@@ -687,7 +685,7 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             return true;
         }
         else {
-            int ndx, datum;
+            int64_t ndx = 0, datum = 0;
 
             if (!ExprResolveInteger(ctx, array_ndx, &ndx)) {
                 log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
@@ -698,9 +696,9 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
 
             if (ndx < 0 || (size_t) ndx >= sizeof(act->data)) {
                 log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
-                        "The data for a private action is %lu bytes long; "
-                        "Attempt to use data[%d] ignored\n",
-                        (unsigned long) sizeof(act->data), ndx);
+                        "The data for a private action is %zu bytes long; "
+                        "Attempt to use data[%"PRId64"] ignored\n",
+                        sizeof(act->data), ndx);
                 return false;
             }
 
@@ -711,7 +709,7 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             if (datum < 0 || datum > 255) {
                 log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                         "All data for a private action must be 0..255; "
-                        "Illegal datum %d ignored\n", datum);
+                        "Illegal datum %"PRId64" ignored\n", datum);
                 return false;
             }
 
