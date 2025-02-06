@@ -755,7 +755,6 @@ static const char *expr_value_type_strings[_EXPR_TYPE_NUM_VALUES] = {
     [EXPR_TYPE_INT] = "int",
     [EXPR_TYPE_FLOAT] = "float",
     [EXPR_TYPE_STRING] = "string",
-    [EXPR_TYPE_ACTION] = "action",
     [EXPR_TYPE_ACTIONS] = "actions",
     [EXPR_TYPE_KEYNAME] = "keyname",
     [EXPR_TYPE_SYMBOLS] = "symbols",
