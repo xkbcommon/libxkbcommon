@@ -17,10 +17,9 @@
 #include "xkbcomp-priv.h"
 #include "ast-build.h"
 #include "include.h"
-#include "xkbcomp/ast.h"
 
 static ExprDef *
-ExprCreate(enum stmt_type op, enum expr_value_type type, size_t size)
+ExprCreate(enum stmt_type op, size_t size)
 {
     ExprDef *expr = malloc(size);
     if (!expr)
@@ -28,7 +27,6 @@ ExprCreate(enum stmt_type op, enum expr_value_type type, size_t size)
 
     expr->common.type = op;
     expr->common.next = NULL;
-    expr->expr.value_type = type;
 
     return expr;
 }
@@ -36,7 +34,7 @@ ExprCreate(enum stmt_type op, enum expr_value_type type, size_t size)
 ExprDef *
 ExprCreateString(xkb_atom_t str)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_VALUE, EXPR_TYPE_STRING, sizeof(ExprString));
+    ExprDef *expr = ExprCreate(STMT_EXPR_STRING_LITERAL, sizeof(ExprString));
     if (!expr)
         return NULL;
     expr->string.str = str;
@@ -46,7 +44,7 @@ ExprCreateString(xkb_atom_t str)
 ExprDef *
 ExprCreateInteger(int ival)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_VALUE, EXPR_TYPE_INT, sizeof(ExprInteger));
+    ExprDef *expr = ExprCreate(STMT_EXPR_INTEGER_LITERAL, sizeof(ExprInteger));
     if (!expr)
         return NULL;
     expr->integer.ival = ival;
@@ -56,7 +54,7 @@ ExprCreateInteger(int ival)
 ExprDef *
 ExprCreateFloat(void)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_VALUE, EXPR_TYPE_FLOAT, sizeof(ExprFloat));
+    ExprDef *expr = ExprCreate(STMT_EXPR_FLOAT_LITERAL, sizeof(ExprFloat));
     if (!expr)
         return NULL;
     return expr;
@@ -65,7 +63,7 @@ ExprCreateFloat(void)
 ExprDef *
 ExprCreateBoolean(bool set)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_VALUE, EXPR_TYPE_BOOLEAN, sizeof(ExprBoolean));
+    ExprDef *expr = ExprCreate(STMT_EXPR_BOOLEAN_LITERAL, sizeof(ExprBoolean));
     if (!expr)
         return NULL;
     expr->boolean.set = set;
@@ -75,7 +73,7 @@ ExprCreateBoolean(bool set)
 ExprDef *
 ExprCreateKeyName(xkb_atom_t key_name)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_VALUE, EXPR_TYPE_KEYNAME, sizeof(ExprKeyName));
+    ExprDef *expr = ExprCreate(STMT_EXPR_KEYNAME_LITERAL, sizeof(ExprKeyName));
     if (!expr)
         return NULL;
     expr->key_name.key_name = key_name;
@@ -85,7 +83,7 @@ ExprCreateKeyName(xkb_atom_t key_name)
 ExprDef *
 ExprCreateIdent(xkb_atom_t ident)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_IDENT, EXPR_TYPE_UNKNOWN, sizeof(ExprIdent));
+    ExprDef *expr = ExprCreate(STMT_EXPR_IDENT, sizeof(ExprIdent));
     if (!expr)
         return NULL;
     expr->ident.ident = ident;
@@ -93,10 +91,9 @@ ExprCreateIdent(xkb_atom_t ident)
 }
 
 ExprDef *
-ExprCreateUnary(enum stmt_type op, enum expr_value_type type,
-                ExprDef *child)
+ExprCreateUnary(enum stmt_type op, ExprDef *child)
 {
-    ExprDef *expr = ExprCreate(op, type, sizeof(ExprUnary));
+    ExprDef *expr = ExprCreate(op, sizeof(ExprUnary));
     if (!expr)
         return NULL;
     expr->unary.child = child;
@@ -106,15 +103,10 @@ ExprCreateUnary(enum stmt_type op, enum expr_value_type type,
 ExprDef *
 ExprCreateBinary(enum stmt_type op, ExprDef *left, ExprDef *right)
 {
-    ExprDef *expr = ExprCreate(op, EXPR_TYPE_UNKNOWN, sizeof(ExprBinary));
+    ExprDef *expr = ExprCreate(op, sizeof(ExprBinary));
     if (!expr)
         return NULL;
 
-    if (op == STMT_EXPR_ASSIGN || left->expr.value_type == EXPR_TYPE_UNKNOWN)
-        expr->expr.value_type = right->expr.value_type;
-    else if (left->expr.value_type == right->expr.value_type ||
-             right->expr.value_type == EXPR_TYPE_UNKNOWN)
-        expr->expr.value_type = left->expr.value_type;
     expr->binary.left = left;
     expr->binary.right = right;
 
@@ -124,7 +116,7 @@ ExprCreateBinary(enum stmt_type op, ExprDef *left, ExprDef *right)
 ExprDef *
 ExprCreateFieldRef(xkb_atom_t element, xkb_atom_t field)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_FIELD_REF, EXPR_TYPE_UNKNOWN, sizeof(ExprFieldRef));
+    ExprDef *expr = ExprCreate(STMT_EXPR_FIELD_REF, sizeof(ExprFieldRef));
     if (!expr)
         return NULL;
     expr->field_ref.element = element;
@@ -135,7 +127,7 @@ ExprCreateFieldRef(xkb_atom_t element, xkb_atom_t field)
 ExprDef *
 ExprCreateArrayRef(xkb_atom_t element, xkb_atom_t field, ExprDef *entry)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_ARRAY_REF, EXPR_TYPE_UNKNOWN, sizeof(ExprArrayRef));
+    ExprDef *expr = ExprCreate(STMT_EXPR_ARRAY_REF, sizeof(ExprArrayRef));
     if (!expr)
         return NULL;
     expr->array_ref.element = element;
@@ -147,13 +139,13 @@ ExprCreateArrayRef(xkb_atom_t element, xkb_atom_t field, ExprDef *entry)
 ExprDef *
 ExprEmptyList(void)
 {
-    return ExprCreate(STMT_EXPR_EMPTY_LIST, EXPR_TYPE_UNKNOWN, sizeof(ExprCommon));
+    return ExprCreate(STMT_EXPR_EMPTY_LIST, sizeof(ExprCommon));
 }
 
 ExprDef *
 ExprCreateAction(xkb_atom_t name, ExprDef *args)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_ACTION_DECL, EXPR_TYPE_UNKNOWN, sizeof(ExprAction));
+    ExprDef *expr = ExprCreate(STMT_EXPR_ACTION_DECL, sizeof(ExprAction));
     if (!expr)
         return NULL;
     expr->action.name = name;
@@ -164,7 +156,7 @@ ExprCreateAction(xkb_atom_t name, ExprDef *args)
 ExprDef *
 ExprCreateActionList(ExprDef *actions)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_ACTION_LIST, EXPR_TYPE_ACTIONS, sizeof(ExprActionList));
+    ExprDef *expr = ExprCreate(STMT_EXPR_ACTION_LIST, sizeof(ExprActionList));
     if (!expr)
         return NULL;
     expr->actions.actions = actions;
@@ -174,7 +166,7 @@ ExprCreateActionList(ExprDef *actions)
 ExprDef *
 ExprCreateKeysymList(xkb_keysym_t sym)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_KEYSYM_LIST, EXPR_TYPE_SYMBOLS, sizeof(ExprKeysymList));
+    ExprDef *expr = ExprCreate(STMT_EXPR_KEYSYM_LIST, sizeof(ExprKeysymList));
     if (!expr)
         return NULL;
     darray_init(expr->keysym_list.syms);
@@ -687,7 +679,11 @@ static const char *stmt_type_strings[_STMT_NUM_VALUES] = {
     [STMT_INCLUDE] = "include statement",
     [STMT_KEYCODE] = "key name definition",
     [STMT_ALIAS] = "key alias definition",
-    [STMT_EXPR_VALUE] = "literal expression",
+    [STMT_EXPR_STRING_LITERAL] = "string literal expression",
+    [STMT_EXPR_INTEGER_LITERAL] = "integer literal expression",
+    [STMT_EXPR_FLOAT_LITERAL] = "float literal expression",
+    [STMT_EXPR_BOOLEAN_LITERAL] = "boolean literal expression",
+    [STMT_EXPR_KEYNAME_LITERAL] = "key name expression",
     [STMT_EXPR_IDENT] = "identifier expression",
     [STMT_EXPR_ACTION_DECL] = "action declaration expression",
     [STMT_EXPR_FIELD_REF] = "field reference expression",
@@ -721,23 +717,4 @@ stmt_type_to_string(enum stmt_type type)
     if (type >= _STMT_NUM_VALUES)
         return NULL;
     return stmt_type_strings[type];
-}
-
-static const char *expr_value_type_strings[_EXPR_TYPE_NUM_VALUES] = {
-    [EXPR_TYPE_UNKNOWN] = "unknown",
-    [EXPR_TYPE_BOOLEAN] = "boolean",
-    [EXPR_TYPE_INT] = "int",
-    [EXPR_TYPE_FLOAT] = "float",
-    [EXPR_TYPE_STRING] = "string",
-    [EXPR_TYPE_ACTIONS] = "actions",
-    [EXPR_TYPE_KEYNAME] = "keyname",
-    [EXPR_TYPE_SYMBOLS] = "symbols",
-};
-
-const char *
-expr_value_type_to_string(enum expr_value_type type)
-{
-    if (type >= _EXPR_TYPE_NUM_VALUES)
-        return NULL;
-    return expr_value_type_strings[type];
 }

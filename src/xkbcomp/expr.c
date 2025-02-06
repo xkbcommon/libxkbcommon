@@ -11,8 +11,7 @@
 #include "keysym.h"
 
 typedef bool (*IdentLookupFunc)(struct xkb_context *ctx, const void *priv,
-                                xkb_atom_t field, enum expr_value_type type,
-                                unsigned int *val_rtrn);
+                                xkb_atom_t field, unsigned int *val_rtrn);
 
 bool
 ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
@@ -50,12 +49,12 @@ ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
 
 static bool
 SimpleLookup(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-             enum expr_value_type type, unsigned int *val_rtrn)
+             unsigned int *val_rtrn)
 {
     const LookupEntry *entry;
     const char *str;
 
-    if (!priv || field == XKB_ATOM_NONE || type != EXPR_TYPE_INT)
+    if (!priv || field == XKB_ATOM_NONE)
         return false;
 
     str = xkb_atom_text(ctx, field);
@@ -77,16 +76,13 @@ typedef struct {
 
 static bool
 LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-              enum expr_value_type type, xkb_mod_mask_t *val_rtrn)
+              xkb_mod_mask_t *val_rtrn)
 {
     const char *str;
     xkb_mod_index_t ndx;
     const LookupModMaskPriv *arg = priv;
     const struct xkb_mod_set *mods = arg->mods;
     enum mod_type mod_type = arg->mod_type;
-
-    if (type != EXPR_TYPE_INT)
-        return false;
 
     str = xkb_atom_text(ctx, field);
     if (!str)
@@ -118,15 +114,18 @@ ExprResolveBoolean(struct xkb_context *ctx, const ExprDef *expr,
     const char *ident;
 
     switch (expr->common.type) {
-    case STMT_EXPR_VALUE:
-        if (expr->expr.value_type != EXPR_TYPE_BOOLEAN) {
-            log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
-                    "Found constant of type %s where boolean was expected\n",
-                    expr_value_type_to_string(expr->expr.value_type));
-            return false;
-        }
+    case STMT_EXPR_BOOLEAN_LITERAL:
         *set_rtrn = expr->boolean.set;
         return true;
+
+    case STMT_EXPR_STRING_LITERAL:
+    case STMT_EXPR_INTEGER_LITERAL:
+    case STMT_EXPR_FLOAT_LITERAL:
+    case STMT_EXPR_KEYNAME_LITERAL:
+        log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
+                "Found %s where boolean was expected\n",
+                stmt_type_to_string(expr->common.type));
+        return false;
 
     case STMT_EXPR_IDENT:
         ident = xkb_atom_text(ctx, expr->ident.ident);
@@ -194,16 +193,18 @@ ExprResolveKeyCode(struct xkb_context *ctx, const ExprDef *expr,
     xkb_keycode_t leftRtrn, rightRtrn;
 
     switch (expr->common.type) {
-    case STMT_EXPR_VALUE:
-        if (expr->expr.value_type != EXPR_TYPE_INT) {
-            log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
-                    "Found constant of type %s where an int was expected\n",
-                    expr_value_type_to_string(expr->expr.value_type));
-            return false;
-        }
-
+    case STMT_EXPR_INTEGER_LITERAL:
         *kc = (xkb_keycode_t) expr->integer.ival;
         return true;
+
+    case STMT_EXPR_STRING_LITERAL:
+    case STMT_EXPR_FLOAT_LITERAL:
+    case STMT_EXPR_BOOLEAN_LITERAL:
+    case STMT_EXPR_KEYNAME_LITERAL:
+        log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
+                "Found %s where an int was expected\n",
+                stmt_type_to_string(expr->common.type));
+        return false;
 
     case STMT_EXPR_ADD:
     case STMT_EXPR_SUBTRACT:
@@ -279,20 +280,22 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, const ExprDef *expr,
     ExprDef *left, *right;
 
     switch (expr->common.type) {
-    case STMT_EXPR_VALUE:
-        if (expr->expr.value_type != EXPR_TYPE_INT) {
-            log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
-                    "Found constant of type %s where an int was expected\n",
-                    expr_value_type_to_string(expr->expr.value_type));
-            return false;
-        }
-
+    case STMT_EXPR_INTEGER_LITERAL:
         *val_rtrn = expr->integer.ival;
         return true;
 
+    case STMT_EXPR_STRING_LITERAL:
+    case STMT_EXPR_FLOAT_LITERAL:
+    case STMT_EXPR_BOOLEAN_LITERAL:
+    case STMT_EXPR_KEYNAME_LITERAL:
+        log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
+                "Found %s where an int was expected\n",
+                stmt_type_to_string(expr->common.type));
+        return false;
+
     case STMT_EXPR_IDENT:
         if (lookup)
-            ok = lookup(ctx, lookupPriv, expr->ident.ident, EXPR_TYPE_INT, &u);
+            ok = lookup(ctx, lookupPriv, expr->ident.ident, &u);
 
         if (!ok)
             log_err(ctx, XKB_ERROR_INVALID_IDENTIFIER,
@@ -448,16 +451,18 @@ ExprResolveString(struct xkb_context *ctx, const ExprDef *expr,
                   xkb_atom_t *val_rtrn)
 {
     switch (expr->common.type) {
-    case STMT_EXPR_VALUE:
-        if (expr->expr.value_type != EXPR_TYPE_STRING) {
-            log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
-                    "Found constant of type %s, expected a string\n",
-                    expr_value_type_to_string(expr->expr.value_type));
-            return false;
-        }
-
+    case STMT_EXPR_STRING_LITERAL:
         *val_rtrn = expr->string.str;
         return true;
+
+    case STMT_EXPR_INTEGER_LITERAL:
+    case STMT_EXPR_FLOAT_LITERAL:
+    case STMT_EXPR_BOOLEAN_LITERAL:
+    case STMT_EXPR_KEYNAME_LITERAL:
+        log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
+                "Found %s, expected a string\n",
+                stmt_type_to_string(expr->common.type));
+        return false;
 
     case STMT_EXPR_IDENT:
         log_err(ctx, XKB_ERROR_INVALID_IDENTIFIER,
@@ -510,8 +515,7 @@ ExprResolveEnum(struct xkb_context *ctx, const ExprDef *expr,
         return false;
     }
 
-    if (!SimpleLookup(ctx, values, expr->ident.ident, EXPR_TYPE_INT,
-                      val_rtrn)) {
+    if (!SimpleLookup(ctx, values, expr->ident.ident, val_rtrn)) {
         log_err(ctx, XKB_ERROR_INVALID_IDENTIFIER,
                 "Illegal identifier %s; expected one of:\n",
                 xkb_atom_text(ctx, expr->ident.ident));
@@ -538,19 +542,21 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
     const char *bogus = NULL;
 
     switch (expr->common.type) {
-    case STMT_EXPR_VALUE:
-        if (expr->expr.value_type != EXPR_TYPE_INT) {
-            log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
-                    "Found constant of type %s where a mask was expected\n",
-                    expr_value_type_to_string(expr->expr.value_type));
-            return false;
-        }
+    case STMT_EXPR_INTEGER_LITERAL:
         *val_rtrn = (unsigned int) expr->integer.ival;
         return true;
 
+    case STMT_EXPR_STRING_LITERAL:
+    case STMT_EXPR_FLOAT_LITERAL:
+    case STMT_EXPR_BOOLEAN_LITERAL:
+    case STMT_EXPR_KEYNAME_LITERAL:
+        log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
+                "Found %s where a mask was expected\n",
+                stmt_type_to_string(expr->common.type));
+        return false;
+
     case STMT_EXPR_IDENT:
-        ok = lookup(ctx, lookupPriv, expr->ident.ident, EXPR_TYPE_INT,
-                    val_rtrn);
+        ok = lookup(ctx, lookupPriv, expr->ident.ident, val_rtrn);
         if (!ok)
             log_err(ctx, XKB_ERROR_INVALID_IDENTIFIER,
                     "Identifier \"%s\" of type int is unknown\n",

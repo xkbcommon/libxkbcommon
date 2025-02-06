@@ -1368,8 +1368,7 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
     for (ExprDef *key = def->keys; key; key = (ExprDef *) key->common.next) {
         xkb_keysym_t sym;
 
-        if (key->common.type == STMT_EXPR_VALUE &&
-            key->expr.value_type == EXPR_TYPE_KEYNAME) {
+        if (key->common.type == STMT_EXPR_KEYNAME_LITERAL) {
             tmp.haveSymbol = false;
             tmp.u.keyName = key->key_name.key_name;
         }

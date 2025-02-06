@@ -21,16 +21,14 @@
 
 static const ExprBoolean constTrue = {
     .expr = {
-        .common = { .type = STMT_EXPR_VALUE, .next = NULL },
-        .value_type = EXPR_TYPE_BOOLEAN,
+        .common = { .type = STMT_EXPR_BOOLEAN_LITERAL, .next = NULL },
     },
     .set = true,
 };
 
 static const ExprBoolean constFalse = {
     .expr = {
-        .common = { .type = STMT_EXPR_VALUE, .next = NULL },
-        .value_type = EXPR_TYPE_BOOLEAN,
+        .common = { .type = STMT_EXPR_BOOLEAN_LITERAL, .next = NULL },
     },
     .set = false,
 };
