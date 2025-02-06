@@ -25,8 +25,7 @@ ExprDef *
 ExprCreateIdent(xkb_atom_t ident);
 
 ExprDef *
-ExprCreateUnary(enum stmt_type op, enum expr_value_type type,
-                ExprDef *child);
+ExprCreateUnary(enum stmt_type op, ExprDef *child);
 
 ExprDef *
 ExprCreateBinary(enum stmt_type op, ExprDef *left, ExprDef *right);

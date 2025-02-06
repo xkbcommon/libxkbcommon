@@ -655,13 +655,13 @@ Expr            :       Expr DIVIDE Expr
                 ;
 
 Term            :       MINUS Term
-                        { $$ = ExprCreateUnary(STMT_EXPR_NEGATE, $2->expr.value_type, $2); }
+                        { $$ = ExprCreateUnary(STMT_EXPR_NEGATE, $2); }
                 |       PLUS Term
-                        { $$ = ExprCreateUnary(STMT_EXPR_UNARY_PLUS, $2->expr.value_type, $2); }
+                        { $$ = ExprCreateUnary(STMT_EXPR_UNARY_PLUS, $2); }
                 |       EXCLAM Term
-                        { $$ = ExprCreateUnary(STMT_EXPR_NOT, EXPR_TYPE_BOOLEAN, $2); }
+                        { $$ = ExprCreateUnary(STMT_EXPR_NOT, $2); }
                 |       INVERT Term
-                        { $$ = ExprCreateUnary(STMT_EXPR_INVERT, $2->expr.value_type, $2); }
+                        { $$ = ExprCreateUnary(STMT_EXPR_INVERT, $2); }
                 |       Lhs
                         { $$ = $1;  }
                 |       FieldSpec OPAREN OptExprList CPAREN %prec OPAREN

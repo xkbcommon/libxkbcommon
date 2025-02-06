@@ -41,7 +41,11 @@ enum stmt_type {
     STMT_INCLUDE,
     STMT_KEYCODE,
     STMT_ALIAS,
-    STMT_EXPR_VALUE,
+    STMT_EXPR_STRING_LITERAL,
+    STMT_EXPR_INTEGER_LITERAL,
+    STMT_EXPR_FLOAT_LITERAL,
+    STMT_EXPR_BOOLEAN_LITERAL,
+    STMT_EXPR_KEYNAME_LITERAL,
     STMT_EXPR_IDENT,
     STMT_EXPR_ACTION_DECL,
     STMT_EXPR_FIELD_REF,
@@ -72,19 +76,6 @@ enum stmt_type {
     _STMT_NUM_VALUES
 };
 
-enum expr_value_type {
-    EXPR_TYPE_UNKNOWN = 0,
-    EXPR_TYPE_BOOLEAN,
-    EXPR_TYPE_INT,
-    EXPR_TYPE_FLOAT,
-    EXPR_TYPE_STRING,
-    EXPR_TYPE_ACTIONS,
-    EXPR_TYPE_KEYNAME,
-    EXPR_TYPE_SYMBOLS,
-
-    _EXPR_TYPE_NUM_VALUES
-};
-
 enum merge_mode {
     MERGE_DEFAULT,
     MERGE_AUGMENT,
@@ -97,9 +88,6 @@ xkb_file_type_to_string(enum xkb_file_type type);
 
 const char *
 stmt_type_to_string(enum stmt_type type);
-
-const char *
-expr_value_type_to_string(enum expr_value_type type);
 
 typedef struct _ParseCommon  {
     struct _ParseCommon *next;
@@ -118,7 +106,6 @@ typedef struct _IncludeStmt {
 
 typedef struct {
     ParseCommon common;
-    enum expr_value_type value_type;
 } ExprCommon;
 
 typedef union ExprDef ExprDef;
